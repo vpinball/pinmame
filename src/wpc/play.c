@@ -175,8 +175,8 @@ static WRITE_HANDLER(out_n) {
 }
 
 static READ_HANDLER(in_n) {
-  logerror("in: %d\n", offset);
   int diag = keyboard_pressed_memory_repeat(KEYCODE_Z, 0);
+  logerror("in: %d\n", offset);
   switch (offset) {
     case SWITCH:
       if (locals.digitSel < 6)
