@@ -33,12 +33,12 @@ RSC=rc.exe
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\Release"
+# PROP BASE Output_Dir ".\obj\VC60\PinMAME\Win32\Release"
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj\VC60\PinMAME\Win32\Release"
+# PROP Output_Dir ".\obj\VC60\PinMAME\Win32\Release"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
@@ -52,7 +52,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe
@@ -76,12 +76,12 @@ BuildCmds= \
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\Debug"
+# PROP BASE Output_Dir ".\obj\VC60\PinMAME\Win32\Debug"
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj\VC60\PinMAME\Win32\Debug"
+# PROP Output_Dir ".\obj\VC60\PinMAME\Win32\Debug"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
@@ -95,7 +95,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe" /pdbtype:sept /libpath:"zlib"
 # SUBTRACT LINK32 /map
 # Begin Custom Build - Copying to root...
 ProjDir=.
@@ -121,12 +121,12 @@ BuildCmds= \
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\ReleaseMD"
+# PROP BASE Output_Dir ".\obj\VC60\PinMAME\Win32\ReleaseMD"
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj\VC60\PinMAME\Win32\ReleaseMD"
+# PROP Output_Dir ".\obj\VC60\PinMAME\Win32\ReleaseMD"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
@@ -140,7 +140,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe
@@ -1357,9 +1357,9 @@ SOURCE=src\windows\asmblit.asm
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows
 InputPath=src\windows\asmblit.asm
 InputName=asmblit
@@ -1371,9 +1371,9 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows
 InputPath=src\windows\asmblit.asm
 InputName=asmblit
@@ -1385,9 +1385,9 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Release with MAME Debugger"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
 InputPath=src\windows\asmblit.asm
 InputName=asmblit
@@ -1406,9 +1406,9 @@ SOURCE=src\windows\asmtile.asm
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows
 InputPath=src\windows\asmtile.asm
 InputName=asmtile
@@ -1420,9 +1420,9 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows
 InputPath=src\windows\asmtile.asm
 InputName=asmtile
@@ -1434,9 +1434,9 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Release with MAME Debugger"
 
-# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
-# Begin Custom Build
+# Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
 InputPath=src\windows\asmtile.asm
 InputName=asmtile
