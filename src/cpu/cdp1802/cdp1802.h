@@ -18,9 +18,7 @@ extern const char *cdp1802_info(void *context, int regnum);
 extern void cdp1802_set_irq_line(int irqline, int state);
 extern void cdp1802_set_irq_callback(int (*callback)(int irqline));
 
-#ifdef	MAME_DEBUG
 extern unsigned cdp1802_dasm(char *buffer, unsigned pc);
-#endif
 
 enum {
 	CDP1802_INPUT_LINE_INT = 0,
