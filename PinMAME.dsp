@@ -20,6 +20,7 @@ CFG=PinMAME - Win32 Debug
 !MESSAGE "PinMAME - Win32 Release" (based on "Win32 (x86) Console Application")
 !MESSAGE "PinMAME - Win32 Debug" (based on "Win32 (x86) Console Application")
 !MESSAGE "PinMAME - Win32 Release with MAME Debugger" (based on "Win32 (x86) Console Application")
+!MESSAGE "PinMAME - Win32 Debug with MAME Debugger" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
@@ -86,7 +87,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x41d /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -95,14 +96,14 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe" /pdbtype:sept /libpath:"zlib"
 # SUBTRACT LINK32 /map
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME\Win32\Debug
-TargetPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe
-TargetName=PinMAME_VC60d
-InputPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe
+TargetPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe
+TargetName=PinMAME_VC60vcd
+InputPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe
 SOURCE="$(InputPath)"
 
 BuildCmds= \
@@ -153,6 +154,52 @@ SOURCE="$(InputPath)"
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug with MAME Debugger"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir ".\obj\VC60\PinMAME\Win32\DebugMD"
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir ".\obj\VC60\PinMAME\Win32\DebugMD"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /FD /GZ /c
+# SUBTRACT CPP /YX
+# ADD BASE RSC /l 0x41d /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe" /pdbtype:sept /libpath:"zlib"
+# SUBTRACT LINK32 /map
+# Begin Custom Build - Copying to root...
+ProjDir=.
+TargetDir=.\obj\VC60\PinMAME\Win32\DebugMD
+TargetPath=.\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe
+TargetName=PinMAME_VC60vcmd
+InputPath=.\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe
+SOURCE="$(InputPath)"
+
+BuildCmds= \
+	copy "$(TargetPath)" "$(ProjDir)" \
+	copy "$(TargetDir)\$(TargetName).pdb" "$(ProjDir)" \
+	
+
+"$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(ProjDir)\$(TargetName).pdb" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
 !ENDIF 
 
 # Begin Target
@@ -160,6 +207,7 @@ SOURCE="$(InputPath)"
 # Name "PinMAME - Win32 Release"
 # Name "PinMAME - Win32 Debug"
 # Name "PinMAME - Win32 Release with MAME Debugger"
+# Name "PinMAME - Win32 Debug with MAME Debugger"
 # Begin Group "Source Files"
 
 # PROP Default_Filter ""
@@ -179,6 +227,7 @@ SOURCE=.\src\cpu\adsp2100\2100dasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\adsp2100\2100ops.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -200,11 +249,13 @@ SOURCE=.\src\cpu\m6809\6809dasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m6809\6809ops.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\cpu\m6809\6809tbl.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -226,11 +277,13 @@ SOURCE=.\src\cpu\m6800\6800dasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m6800\6800ops.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\cpu\m6800\6800tbl.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -304,11 +357,13 @@ SOURCE=.\src\cpu\m6502\opsn2a03.h
 # Begin Source File
 
 SOURCE=.\src\cpu\m6502\t6502.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\cpu\m6502\t65c02.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # End Group
@@ -346,6 +401,7 @@ SOURCE=.\src\cpu\m68000\m68kdasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\m68kmake.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -475,6 +531,7 @@ SOURCE=.\src\cpu\i86\i86intf.h
 # Begin Source File
 
 SOURCE=.\src\cpu\i86\i86time.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -484,6 +541,7 @@ SOURCE=.\src\cpu\i86\instr186.h
 # Begin Source File
 
 SOURCE=.\src\cpu\i86\instr86.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -834,31 +892,37 @@ SOURCE=.\src\sound\dac.h
 # Begin Source File
 
 SOURCE=.\src\sound\disc_dev.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\disc_flt.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\disc_inp.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\disc_mth.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\disc_out.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\disc_wav.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -984,6 +1048,7 @@ SOURCE=.\src\sound\tms5220.h
 # Begin Source File
 
 SOURCE=.\src\sound\tms5220r.c
+# PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -1397,6 +1462,20 @@ InputName=asmblit
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug with MAME Debugger"
+
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\DebugMD\Intermediate\Windows"
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build - Assembling $(InputPath)...
+IntDir=.\obj\VC60\PinMAME\Win32\DebugMD\Intermediate\Windows
+InputPath=.\src\windows\asmblit.asm
+InputName=asmblit
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -1446,158 +1525,203 @@ InputName=asmtile
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug with MAME Debugger"
+
+# PROP Intermediate_Dir ".\obj\VC60\PinMAME\Win32\DebugMD\Intermediate\Windows"
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build - Assembling $(InputPath)...
+IntDir=.\obj\VC60\PinMAME\Win32\DebugMD\Intermediate\Windows
+InputPath=.\src\windows\asmtile.asm
+InputName=asmtile
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\config.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\d3d_extra.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\dirty.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fileio.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fronthlp.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\input.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\misc.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\misc.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\osd_cpu.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\osinline.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\pattern.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\rc.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\rc.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\snprintf.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
+# PROP BASE Exclude_From_Build 1
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\sound.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\video.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\video.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\wind3d.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\wind3d.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\wind3dfx.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\wind3dfx.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\window.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\window.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winmain.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winprefix.h
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # End Group
