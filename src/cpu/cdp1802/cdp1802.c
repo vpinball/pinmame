@@ -245,7 +245,7 @@ INLINE void cdp1802_short_branch(int taken)
 {
 	if (taken)
 	{
-		R[P] = ((R[P] + 1) & 0xff00) | cpu_readop(R[P]);
+		R[P] = (R[P] & 0xff00) | cpu_readop(R[P]);
 	}
 	else
 	{
