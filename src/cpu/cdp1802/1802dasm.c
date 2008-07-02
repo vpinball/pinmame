@@ -151,8 +151,8 @@ unsigned cdp1802_dasm(char *dst, unsigned oldpc)
 				sprintf(dst,"%-5s#%.2x",table[oper].mnemonic,cpu_readmem16(pc++));
 				break;
 			case Low:
-				absolut=cpu_readmem16(pc++);
-				absolut|=pc&0xff00;
+				absolut=(pc&0xff00)|cpu_readmem16(pc);
+				pc++;
 				sprintf(dst,"%-5s%.4x",table[oper].mnemonic,absolut);
 				break;
 			case Abs:
