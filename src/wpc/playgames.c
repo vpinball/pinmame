@@ -41,15 +41,6 @@ core_tLCDLayout play_disp6[] = {
   {0}
 };
 
-core_tLCDLayout play_disp6a[] = {
-  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
-  { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 },
-  { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 },
-  { 6,20,13,1,CORE_SEG7 }, { 6,22, 8,5,CORE_SEG7 },
-  { 3,10, 5,1,CORE_SEG7 }, { 3,12, 0,2,CORE_SEG7 }, { 3,18, 3,2,CORE_SEG7 },
-  {0}
-};
-
 core_tLCDLayout play_disp7[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
   { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 }, { 6,12,51,1,CORE_SEG7 },
@@ -93,7 +84,7 @@ CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS
 /*-------------------------------------------------------------------
 / Mad Race (1982)
 /-------------------------------------------------------------------*/
-INITGAME(madrace, play_disp6a, 1)
+INITGAME(madrace, play_disp6, 1)
 PLAYMATIC_ROMSTART000(madrace,	"madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
 								"madrace.2b0", CRC(dcb54b39) SHA1(8e2ca7180f5ea3a28feb34b01f3387b523dbfa3b),
 								"madrace.2c0", CRC(b24ea245) SHA1(3f868ccbc4bfb77c40c4cc05dcd8eeca85ecd76f))
