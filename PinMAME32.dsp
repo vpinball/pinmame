@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
@@ -86,7 +86,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "_DEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "_DEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG" /d _WIN32_IE=0x0400
@@ -131,7 +131,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
@@ -174,20 +174,20 @@ SOURCE="$(InputPath)"
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\adsp2100\2100dasm.c
+SOURCE=.\src\cpu\adsp2100\2100dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\adsp2100\2100ops.c
+SOURCE=.\src\cpu\adsp2100\2100ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\adsp2100\adsp2100.c
+SOURCE=.\src\cpu\adsp2100\adsp2100.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\adsp2100\adsp2100.h
+SOURCE=.\src\cpu\adsp2100\adsp2100.h
 # End Source File
 # End Group
 # Begin Group "M6809"
@@ -195,25 +195,25 @@ SOURCE=src\cpu\adsp2100\adsp2100.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\m6809\6809dasm.c
+SOURCE=.\src\cpu\m6809\6809dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6809\6809ops.c
+SOURCE=.\src\cpu\m6809\6809ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6809\6809tbl.c
+SOURCE=.\src\cpu\m6809\6809tbl.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6809\m6809.c
+SOURCE=.\src\cpu\m6809\m6809.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6809\m6809.h
+SOURCE=.\src\cpu\m6809\m6809.h
 # End Source File
 # End Group
 # Begin Group "M6800"
@@ -221,25 +221,25 @@ SOURCE=src\cpu\m6809\m6809.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\m6800\6800dasm.c
+SOURCE=.\src\cpu\m6800\6800dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6800\6800ops.c
+SOURCE=.\src\cpu\m6800\6800ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6800\6800tbl.c
+SOURCE=.\src\cpu\m6800\6800tbl.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6800\m6800.c
+SOURCE=.\src\cpu\m6800\m6800.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6800\m6800.h
+SOURCE=.\src\cpu\m6800\m6800.h
 # End Source File
 # End Group
 # Begin Group "Z80"
@@ -247,23 +247,23 @@ SOURCE=src\cpu\m6800\m6800.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\z80\z80.c
+SOURCE=.\src\cpu\z80\z80.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\z80\z80.h
+SOURCE=.\src\cpu\z80\z80.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\z80\z80daa.h
+SOURCE=.\src\cpu\z80\z80daa.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\z80\z80dasm.c
+SOURCE=.\src\cpu\z80\z80dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\z80\z80dasm.h
+SOURCE=.\src\cpu\z80\z80dasm.h
 # End Source File
 # End Group
 # Begin Group "M6502"
@@ -271,44 +271,44 @@ SOURCE=src\cpu\z80\z80dasm.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\m6502\6502dasm.c
+SOURCE=.\src\cpu\m6502\6502dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\ill02.h
+SOURCE=.\src\cpu\m6502\ill02.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\m6502.c
+SOURCE=.\src\cpu\m6502\m6502.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\m6502.h
+SOURCE=.\src\cpu\m6502\m6502.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\m65ce02.h
+SOURCE=.\src\cpu\m6502\m65ce02.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\ops02.h
+SOURCE=.\src\cpu\m6502\ops02.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\opsc02.h
+SOURCE=.\src\cpu\m6502\opsc02.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\opsn2a03.h
+SOURCE=.\src\cpu\m6502\opsn2a03.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\t6502.c
+SOURCE=.\src\cpu\m6502\t6502.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m6502\t65c02.c
+SOURCE=.\src\cpu\m6502\t65c02.c
 # PROP Exclude_From_Build 1
 # End Source File
 # End Group
@@ -317,64 +317,64 @@ SOURCE=src\cpu\m6502\t65c02.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\m68000\cpudefs.h
+SOURCE=.\src\cpu\m68000\cpudefs.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68000.h
+SOURCE=.\src\cpu\m68000\m68000.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68k.h
+SOURCE=.\src\cpu\m68000\m68k.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kconf.h
+SOURCE=.\src\cpu\m68000\m68kconf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kcpu.c
+SOURCE=.\src\cpu\m68000\m68kcpu.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kcpu.h
+SOURCE=.\src\cpu\m68000\m68kcpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kdasm.c
+SOURCE=.\src\cpu\m68000\m68kdasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kmake.c
+SOURCE=.\src\cpu\m68000\m68kmake.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kmame.c
+SOURCE=.\src\cpu\m68000\m68kmame.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kmame.h
+SOURCE=.\src\cpu\m68000\m68kmame.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kopac.c
+SOURCE=.\src\cpu\m68000\m68kopac.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kopdm.c
+SOURCE=.\src\cpu\m68000\m68kopdm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kopnz.c
+SOURCE=.\src\cpu\m68000\m68kopnz.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kops.c
+SOURCE=.\src\cpu\m68000\m68kops.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\m68000\m68kops.h
+SOURCE=.\src\cpu\m68000\m68kops.h
 # End Source File
 # End Group
 # Begin Group "S2650"
@@ -382,19 +382,19 @@ SOURCE=src\cpu\m68000\m68kops.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\s2650\2650dasm.c
+SOURCE=.\src\cpu\s2650\2650dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\s2650\s2650.c
+SOURCE=.\src\cpu\s2650\s2650.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\s2650\s2650.h
+SOURCE=.\src\cpu\s2650\s2650.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\s2650\s2650cpu.h
+SOURCE=.\src\cpu\s2650\s2650cpu.h
 # End Source File
 # End Group
 # Begin Group "I8085"
@@ -402,23 +402,23 @@ SOURCE=src\cpu\s2650\s2650cpu.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\i8085\8085dasm.c
+SOURCE=.\src\cpu\i8085\8085dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8085\i8085.c
+SOURCE=.\src\cpu\i8085\i8085.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8085\i8085.h
+SOURCE=.\src\cpu\i8085\i8085.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8085\i8085cpu.h
+SOURCE=.\src\cpu\i8085\i8085cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8085\i8085daa.h
+SOURCE=.\src\cpu\i8085\i8085daa.h
 # End Source File
 # End Group
 # Begin Group "I8039"
@@ -426,15 +426,15 @@ SOURCE=src\cpu\i8085\i8085daa.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\i8039\8039dasm.c
+SOURCE=.\src\cpu\i8039\8039dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8039\i8039.c
+SOURCE=.\src\cpu\i8039\i8039.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8039\i8039.h
+SOURCE=.\src\cpu\i8039\i8039.h
 # End Source File
 # End Group
 # Begin Group "I86"
@@ -442,65 +442,65 @@ SOURCE=src\cpu\i8039\i8039.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\i86\ea.h
+SOURCE=.\src\cpu\i86\ea.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\host.h
+SOURCE=.\src\cpu\i86\host.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i186intf.h
+SOURCE=.\src\cpu\i86\i186intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i188intf.h
+SOURCE=.\src\cpu\i86\i188intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i86.c
+SOURCE=.\src\cpu\i86\i86.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i86.h
+SOURCE=.\src\cpu\i86\i86.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i86dasm.c
+SOURCE=.\src\cpu\i86\i86dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i86intf.h
+SOURCE=.\src\cpu\i86\i86intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\i86time.c
+SOURCE=.\src\cpu\i86\i86time.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\instr186.h
+SOURCE=.\src\cpu\i86\instr186.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\instr86.c
+SOURCE=.\src\cpu\i86\instr86.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\instr86.h
+SOURCE=.\src\cpu\i86\instr86.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\modrm.h
+SOURCE=.\src\cpu\i86\modrm.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\table186.h
+SOURCE=.\src\cpu\i86\table186.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i86\table86.h
+SOURCE=.\src\cpu\i86\table86.h
 # End Source File
 # End Group
 # Begin Group "I4004"
@@ -508,23 +508,23 @@ SOURCE=src\cpu\i86\table86.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\i4004\4004dasm.c
+SOURCE=.\src\cpu\i4004\4004dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i4004\i4004.c
+SOURCE=.\src\cpu\i4004\i4004.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i4004\i4004.h
+SOURCE=.\src\cpu\i4004\i4004.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i4004\i4004cpu.h
+SOURCE=.\src\cpu\i4004\i4004cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i4004\i4004daa.h
+SOURCE=.\src\cpu\i4004\i4004daa.h
 # End Source File
 # End Group
 # Begin Group "PPS4"
@@ -532,19 +532,19 @@ SOURCE=src\cpu\i4004\i4004daa.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\pps4\pps4.c
+SOURCE=.\src\cpu\pps4\pps4.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\pps4\pps4.h
+SOURCE=.\src\cpu\pps4\pps4.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\pps4\pps4cpu.h
+SOURCE=.\src\cpu\pps4\pps4cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\pps4\pps4dasm.c
+SOURCE=.\src\cpu\pps4\pps4dasm.c
 # End Source File
 # End Group
 # Begin Group "SCAMP"
@@ -552,15 +552,15 @@ SOURCE=src\cpu\pps4\pps4dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\scamp\scamp.c
+SOURCE=.\src\cpu\scamp\scamp.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\scamp\scamp.h
+SOURCE=.\src\cpu\scamp\scamp.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\scamp\scampdsm.c
+SOURCE=.\src\cpu\scamp\scampdsm.c
 # End Source File
 # End Group
 # Begin Group "I8051"
@@ -568,15 +568,15 @@ SOURCE=src\cpu\scamp\scampdsm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\i8051\8051dasm.c
+SOURCE=.\src\cpu\i8051\8051dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8051\i8051.c
+SOURCE=.\src\cpu\i8051\i8051.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\i8051\i8051.h
+SOURCE=.\src\cpu\i8051\i8051.h
 # End Source File
 # End Group
 # Begin Group "TMS7000"
@@ -584,15 +584,15 @@ SOURCE=src\cpu\i8051\i8051.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\tms7000\7000dasm.c
+SOURCE=.\src\cpu\tms7000\7000dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms7000\tms7000.c
+SOURCE=.\src\cpu\tms7000\tms7000.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms7000\tms7000.h
+SOURCE=.\src\cpu\tms7000\tms7000.h
 # End Source File
 # End Group
 # Begin Group "AT91"
@@ -600,15 +600,15 @@ SOURCE=src\cpu\tms7000\tms7000.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\at91\at91.c
+SOURCE=.\src\cpu\at91\at91.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\at91\at91.h
+SOURCE=.\src\cpu\at91\at91.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\at91\at91dasm.c
+SOURCE=.\src\cpu\at91\at91dasm.c
 # End Source File
 # End Group
 # Begin Group "ARM7"
@@ -616,15 +616,15 @@ SOURCE=src\cpu\at91\at91dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\arm7\arm7.c
+SOURCE=.\src\cpu\arm7\arm7.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\arm7\arm7.h
+SOURCE=.\src\cpu\arm7\arm7.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\arm7\arm7dasm.c
+SOURCE=.\src\cpu\arm7\arm7dasm.c
 # End Source File
 # End Group
 # Begin Group "CDP1802"
@@ -632,15 +632,15 @@ SOURCE=src\cpu\arm7\arm7dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\cdp1802\1802dasm.c
+SOURCE=.\src\cpu\cdp1802\1802dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\cdp1802\cdp1802.c
+SOURCE=.\src\cpu\cdp1802\cdp1802.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\cdp1802\cdp1802.h
+SOURCE=.\src\cpu\cdp1802\cdp1802.h
 # End Source File
 # End Group
 # Begin Group "TMS9900"
@@ -648,35 +648,35 @@ SOURCE=src\cpu\cdp1802\cdp1802.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\9900dasm.c
+SOURCE=.\src\cpu\tms9900\9900dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\9900stat.h
+SOURCE=.\src\cpu\tms9900\9900stat.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\99xxcore.h
+SOURCE=.\src\cpu\tms9900\99xxcore.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\99xxstat.h
+SOURCE=.\src\cpu\tms9900\99xxstat.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\tms9900.c
+SOURCE=.\src\cpu\tms9900\tms9900.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\tms9900.h
+SOURCE=.\src\cpu\tms9900\tms9900.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\tms9980a.c
+SOURCE=.\src\cpu\tms9900\tms9980a.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpu\tms9900\tms9995.c
+SOURCE=.\src\cpu\tms9900\tms9995.c
 # End Source File
 # End Group
 # End Group
@@ -685,91 +685,91 @@ SOURCE=src\cpu\tms9900\tms9995.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\machine\4094.c
+SOURCE=.\src\machine\4094.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\4094.h
+SOURCE=.\src\machine\4094.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6522via.c
+SOURCE=.\src\machine\6522via.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6522via.h
+SOURCE=.\src\machine\6522via.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6530riot.c
+SOURCE=.\src\machine\6530riot.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6530riot.h
+SOURCE=.\src\machine\6530riot.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6532riot.c
+SOURCE=.\src\machine\6532riot.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6532riot.h
+SOURCE=.\src\machine\6532riot.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6821pia.c
+SOURCE=.\src\machine\6821pia.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\6821pia.h
+SOURCE=.\src\machine\6821pia.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\8255ppi.c
+SOURCE=.\src\machine\8255ppi.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\8255ppi.h
+SOURCE=.\src\machine\8255ppi.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\eeprom.c
+SOURCE=.\src\machine\eeprom.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\eeprom.h
+SOURCE=.\src\machine\eeprom.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\mathbox.c
+SOURCE=.\src\machine\mathbox.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\mathbox.h
+SOURCE=.\src\machine\mathbox.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\pic8259.c
+SOURCE=.\src\machine\pic8259.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\pic8259.h
+SOURCE=.\src\machine\pic8259.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\ticket.c
+SOURCE=.\src\machine\ticket.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\ticket.h
+SOURCE=.\src\machine\ticket.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\z80fmly.c
+SOURCE=.\src\machine\z80fmly.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\machine\z80fmly.h
+SOURCE=.\src\machine\z80fmly.h
 # End Source File
 # End Group
 # Begin Group "Sound"
@@ -777,234 +777,234 @@ SOURCE=src\machine\z80fmly.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\sound\2151intf.c
+SOURCE=.\src\sound\2151intf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\2151intf.h
+SOURCE=.\src\sound\2151intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\3812intf.c
+SOURCE=.\src\sound\3812intf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\3812intf.h
+SOURCE=.\src\sound\3812intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\5220intf.c
+SOURCE=.\src\sound\5220intf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\5220intf.h
+SOURCE=.\src\sound\5220intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\adpcm.c
+SOURCE=.\src\sound\adpcm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\adpcm.h
+SOURCE=.\src\sound\adpcm.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\ay8910.c
+SOURCE=.\src\sound\ay8910.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\ay8910.h
+SOURCE=.\src\sound\ay8910.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\bsmt2000.c
+SOURCE=.\src\sound\bsmt2000.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\bsmt2000.h
+SOURCE=.\src\sound\bsmt2000.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\dac.c
+SOURCE=.\src\sound\dac.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\dac.h
+SOURCE=.\src\sound\dac.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_dev.c
+SOURCE=.\src\sound\disc_dev.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_flt.c
+SOURCE=.\src\sound\disc_flt.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_inp.c
+SOURCE=.\src\sound\disc_inp.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_mth.c
+SOURCE=.\src\sound\disc_mth.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_out.c
+SOURCE=.\src\sound\disc_out.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\disc_wav.c
+SOURCE=.\src\sound\disc_wav.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\discrete.c
+SOURCE=.\src\sound\discrete.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\discrete.h
+SOURCE=.\src\sound\discrete.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\fm.c
+SOURCE=.\src\sound\fm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\fm.h
+SOURCE=.\src\sound\fm.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\fmopl.c
+SOURCE=.\src\sound\fmopl.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\fmopl.h
+SOURCE=.\src\sound\fmopl.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\hc55516.c
+SOURCE=.\src\sound\hc55516.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\hc55516.h
+SOURCE=.\src\sound\hc55516.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\m114s.c
+SOURCE=.\src\sound\m114s.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\m114s.h
+SOURCE=.\src\sound\m114s.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\mixer.c
+SOURCE=.\src\sound\mixer.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\mixer.h
+SOURCE=.\src\sound\mixer.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\msm5205.c
+SOURCE=.\src\sound\msm5205.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\msm5205.h
+SOURCE=.\src\sound\msm5205.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\s14001a.c
+SOURCE=.\src\sound\s14001a.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\s14001a.h
+SOURCE=.\src\sound\s14001a.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\samples.c
+SOURCE=.\src\sound\samples.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\samples.h
+SOURCE=.\src\sound\samples.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76477.c
+SOURCE=.\src\sound\sn76477.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76477.h
+SOURCE=.\src\sound\sn76477.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76496.c
+SOURCE=.\src\sound\sn76496.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76496.h
+SOURCE=.\src\sound\sn76496.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sp0250.c
+SOURCE=.\src\sound\sp0250.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sp0250.h
+SOURCE=.\src\sound\sp0250.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\streams.c
+SOURCE=.\src\sound\streams.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\streams.h
+SOURCE=.\src\sound\streams.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\tms320av120.c
+SOURCE=.\src\sound\tms320av120.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\tms320av120.h
+SOURCE=.\src\sound\tms320av120.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\tms5220.c
+SOURCE=.\src\sound\tms5220.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\tms5220.h
+SOURCE=.\src\sound\tms5220.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\tms5220r.c
+SOURCE=.\src\sound\tms5220r.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\votrax.c
+SOURCE=.\src\sound\votrax.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\votrax.h
+SOURCE=.\src\sound\votrax.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\vtxsmpls.inc
+SOURCE=.\src\sound\vtxsmpls.inc
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\ym2151.c
+SOURCE=.\src\sound\ym2151.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\ym2151.h
+SOURCE=.\src\sound\ym2151.h
 # End Source File
 # End Group
 # Begin Group "VidHrdw"
@@ -1012,340 +1012,340 @@ SOURCE=src\sound\ym2151.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\vidhrdw\avgdvg.c
+SOURCE=.\src\vidhrdw\avgdvg.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\avgdvg.h
+SOURCE=.\src\vidhrdw\avgdvg.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\crtc6845.c
+SOURCE=.\src\vidhrdw\crtc6845.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\crtc6845.h
+SOURCE=.\src\vidhrdw\crtc6845.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\generic.c
+SOURCE=.\src\vidhrdw\generic.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\generic.h
+SOURCE=.\src\vidhrdw\generic.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\tms9928a.c
+SOURCE=.\src\vidhrdw\tms9928a.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\tms9928a.h
+SOURCE=.\src\vidhrdw\tms9928a.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\vector.c
+SOURCE=.\src\vidhrdw\vector.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vidhrdw\vector.h
+SOURCE=.\src\vidhrdw\vector.h
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=src\artwork.c
+SOURCE=.\src\artwork.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\artwork.h
+SOURCE=.\src\artwork.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\audit.c
+SOURCE=.\src\audit.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\audit.h
+SOURCE=.\src\audit.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cheat.c
+SOURCE=.\src\cheat.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cheat.h
+SOURCE=.\src\cheat.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\common.c
+SOURCE=.\src\common.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\common.h
+SOURCE=.\src\common.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\config.c
+SOURCE=.\src\config.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\config.h
+SOURCE=.\src\config.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuexec.c
+SOURCE=.\src\cpuexec.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuexec.h
+SOURCE=.\src\cpuexec.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuint.c
+SOURCE=.\src\cpuint.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuint.h
+SOURCE=.\src\cpuint.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuintrf.c
+SOURCE=.\src\cpuintrf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\cpuintrf.h
+SOURCE=.\src\cpuintrf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\datafile.c
+SOURCE=.\src\datafile.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\datafile.h
+SOURCE=.\src\datafile.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\drawgfx.c
+SOURCE=.\src\drawgfx.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\drawgfx.h
+SOURCE=.\src\drawgfx.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\driver.h
+SOURCE=.\src\driver.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\fileio.c
+SOURCE=.\src\fileio.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\fileio.h
+SOURCE=.\src\fileio.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\filter.c
+SOURCE=.\src\sound\filter.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\filter.h
+SOURCE=.\src\sound\filter.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\gfxobj.h
+SOURCE=.\src\gfxobj.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\harddisk.c
+SOURCE=.\src\harddisk.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\harddisk.h
+SOURCE=.\src\harddisk.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\hash.c
+SOURCE=.\src\hash.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\hash.h
+SOURCE=.\src\hash.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\hiscore.c
+SOURCE=.\src\hiscore.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\hiscore.h
+SOURCE=.\src\hiscore.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\info.c
+SOURCE=.\src\info.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\info.h
+SOURCE=.\src\info.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\inptport.c
+SOURCE=.\src\inptport.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\inptport.h
+SOURCE=.\src\inptport.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\input.c
+SOURCE=.\src\input.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\input.h
+SOURCE=.\src\input.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\legacy.h
+SOURCE=.\src\legacy.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\mame.c
+SOURCE=.\src\mame.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\mame.h
+SOURCE=.\src\mame.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\mamedbg.c
+SOURCE=.\src\mamedbg.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\mamedbg.h
+SOURCE=.\src\mamedbg.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\md5.c
+SOURCE=.\src\md5.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\md5.h
+SOURCE=.\src\md5.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\memory.c
+SOURCE=.\src\memory.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\memory.h
+SOURCE=.\src\memory.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\osdepend.h
+SOURCE=.\src\osdepend.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\palette.c
+SOURCE=.\src\palette.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\palette.h
+SOURCE=.\src\palette.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\png.c
+SOURCE=.\src\png.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\png.h
+SOURCE=.\src\png.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\profiler.c
+SOURCE=.\src\profiler.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\profiler.h
+SOURCE=.\src\profiler.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sha1.c
+SOURCE=.\src\sha1.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sha1.h
+SOURCE=.\src\sha1.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sndintrf.c
+SOURCE=.\src\sndintrf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sndintrf.h
+SOURCE=.\src\sndintrf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sprite.h
+SOURCE=.\src\sprite.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\state.c
+SOURCE=.\src\state.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\state.h
+SOURCE=.\src\state.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\tilemap.c
+SOURCE=.\src\tilemap.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\tilemap.h
+SOURCE=.\src\tilemap.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\timer.c
+SOURCE=.\src\timer.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\timer.h
+SOURCE=.\src\timer.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui_text.c
+SOURCE=.\src\ui_text.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui_text.h
+SOURCE=.\src\ui_text.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\unzip.c
+SOURCE=.\src\unzip.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\unzip.h
+SOURCE=.\src\unzip.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\usrintrf.c
+SOURCE=.\src\usrintrf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\usrintrf.h
+SOURCE=.\src\usrintrf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\version.c
+SOURCE=.\src\version.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\window.c
+SOURCE=.\src\window.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\window.h
+SOURCE=.\src\window.h
 # End Source File
 # End Group
 # Begin Group "Windows"
@@ -1353,7 +1353,7 @@ SOURCE=src\window.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\windows\asmblit.asm
+SOURCE=.\src\windows\asmblit.asm
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
@@ -1361,7 +1361,7 @@ SOURCE=src\windows\asmblit.asm
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\Release\Intermediate\Windows
-InputPath=src\windows\asmblit.asm
+InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1375,7 +1375,7 @@ InputName=asmblit
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\Debug\Intermediate\Windows
-InputPath=src\windows\asmblit.asm
+InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1389,7 +1389,7 @@ InputName=asmblit
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\ReleaseMD\Intermediate\Windows
-InputPath=src\windows\asmblit.asm
+InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1402,7 +1402,7 @@ InputName=asmblit
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\asmtile.asm
+SOURCE=.\src\windows\asmtile.asm
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
@@ -1410,7 +1410,7 @@ SOURCE=src\windows\asmtile.asm
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\Release\Intermediate\Windows
-InputPath=src\windows\asmtile.asm
+InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1424,7 +1424,7 @@ InputName=asmtile
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\Debug\Intermediate\Windows
-InputPath=src\windows\asmtile.asm
+InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1438,7 +1438,7 @@ InputName=asmtile
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Assembling $(InputPath)...
 IntDir=.\obj\VC60\PinMAME32\Win32\ReleaseMD\Intermediate\Windows
-InputPath=src\windows\asmtile.asm
+InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -1451,153 +1451,153 @@ InputName=asmtile
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\blit.c
+SOURCE=.\src\windows\blit.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\blit.h
+SOURCE=.\src\windows\blit.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\config.c
+SOURCE=.\src\windows\config.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\d3d_extra.h
+SOURCE=.\src\windows\d3d_extra.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\dirty.h
+SOURCE=.\src\windows\dirty.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\fileio.c
+SOURCE=.\src\windows\fileio.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\fronthlp.c
+SOURCE=.\src\windows\fronthlp.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\input.c
+SOURCE=.\src\windows\input.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\misc.c
+SOURCE=.\src\windows\misc.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\misc.h
+SOURCE=.\src\windows\misc.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\osd_cpu.h
+SOURCE=.\src\windows\osd_cpu.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\osinline.h
+SOURCE=.\src\windows\osinline.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\pattern.h
+SOURCE=.\src\windows\pattern.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\rc.c
+SOURCE=.\src\windows\rc.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\rc.h
+SOURCE=.\src\windows\rc.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\snprintf.c
+SOURCE=.\src\windows\snprintf.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\sound.c
+SOURCE=.\src\windows\sound.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\ticker.c
+SOURCE=.\src\windows\ticker.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\video.c
+SOURCE=.\src\windows\video.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\video.h
+SOURCE=.\src\windows\video.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\wind3d.c
+SOURCE=.\src\windows\wind3d.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\wind3d.h
+SOURCE=.\src\windows\wind3d.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\wind3dfx.c
+SOURCE=.\src\windows\wind3dfx.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\wind3dfx.h
+SOURCE=.\src\windows\wind3dfx.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\winddraw.c
+SOURCE=.\src\windows\winddraw.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\winddraw.h
+SOURCE=.\src\windows\winddraw.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\window.c
+SOURCE=.\src\windows\window.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\window.h
+SOURCE=.\src\windows\window.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\winmain.c
+SOURCE=.\src\windows\winmain.c
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=src\windows\winprefix.h
+SOURCE=.\src\windows\winprefix.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # End Group
@@ -1606,11 +1606,11 @@ SOURCE=src\windows\winprefix.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\zlib\zconf.h
+SOURCE=.\src\zlib\zconf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\zlib\zlib.h
+SOURCE=.\src\zlib\zlib.h
 # End Source File
 # End Group
 # Begin Group "PinMAME"
@@ -1627,11 +1627,11 @@ SOURCE=src\zlib\zlib.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\s11\full\dd.c
+SOURCE=.\src\wpc\sims\s11\full\dd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\s11\full\milln.c
+SOURCE=.\src\wpc\sims\s11\full\milln.c
 # End Source File
 # End Group
 # Begin Group "prelim_s11"
@@ -1639,7 +1639,7 @@ SOURCE=src\wpc\sims\s11\full\milln.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\s11\prelim\eatpm.c
+SOURCE=.\src\wpc\sims\s11\prelim\eatpm.c
 # End Source File
 # End Group
 # End Group
@@ -1651,107 +1651,107 @@ SOURCE=src\wpc\sims\s11\prelim\eatpm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\afm.c
+SOURCE=.\src\wpc\sims\wpc\full\afm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\bop.c
+SOURCE=.\src\wpc\sims\wpc\full\bop.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\br.c
+SOURCE=.\src\wpc\sims\wpc\full\br.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\cftbl.c
+SOURCE=.\src\wpc\sims\wpc\full\cftbl.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\dd_wpc.c
+SOURCE=.\src\wpc\sims\wpc\full\dd_wpc.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\drac.c
+SOURCE=.\src\wpc\sims\wpc\full\drac.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\fh.c
+SOURCE=.\src\wpc\sims\wpc\full\fh.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\ft.c
+SOURCE=.\src\wpc\sims\wpc\full\ft.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\gi.c
+SOURCE=.\src\wpc\sims\wpc\full\gi.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\gw.c
+SOURCE=.\src\wpc\sims\wpc\full\gw.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\hd.c
+SOURCE=.\src\wpc\sims\wpc\full\hd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\hurr.c
+SOURCE=.\src\wpc\sims\wpc\full\hurr.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\ij.c
+SOURCE=.\src\wpc\sims\wpc\full\ij.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\jd.c
+SOURCE=.\src\wpc\sims\wpc\full\jd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\mm.c
+SOURCE=.\src\wpc\sims\wpc\full\mm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\ngg.c
+SOURCE=.\src\wpc\sims\wpc\full\ngg.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\pz.c
+SOURCE=.\src\wpc\sims\wpc\full\pz.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\rs.c
+SOURCE=.\src\wpc\sims\wpc\full\rs.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\ss.c
+SOURCE=.\src\wpc\sims\wpc\full\ss.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\sttng.c
+SOURCE=.\src\wpc\sims\wpc\full\sttng.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\t2.c
+SOURCE=.\src\wpc\sims\wpc\full\t2.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\taf.c
+SOURCE=.\src\wpc\sims\wpc\full\taf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\tom.c
+SOURCE=.\src\wpc\sims\wpc\full\tom.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\tz.c
+SOURCE=.\src\wpc\sims\wpc\full\tz.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\wcs.c
+SOURCE=.\src\wpc\sims\wpc\full\wcs.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\full\ww.c
+SOURCE=.\src\wpc\sims\wpc\full\ww.c
 # End Source File
 # End Group
 # Begin Group "prelim_wpc"
@@ -1759,87 +1759,87 @@ SOURCE=src\wpc\sims\wpc\full\ww.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\cc.c
+SOURCE=.\src\wpc\sims\wpc\prelim\cc.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\congo.c
+SOURCE=.\src\wpc\sims\wpc\prelim\congo.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\corv.c
+SOURCE=.\src\wpc\sims\wpc\prelim\corv.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\cp.c
+SOURCE=.\src\wpc\sims\wpc\prelim\cp.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\cv.c
+SOURCE=.\src\wpc\sims\wpc\prelim\cv.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\dh.c
+SOURCE=.\src\wpc\sims\wpc\prelim\dh.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\dm.c
+SOURCE=.\src\wpc\sims\wpc\prelim\dm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\dw.c
+SOURCE=.\src\wpc\sims\wpc\prelim\dw.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\fs.c
+SOURCE=.\src\wpc\sims\wpc\prelim\fs.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\i500.c
+SOURCE=.\src\wpc\sims\wpc\prelim\i500.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\jb.c
+SOURCE=.\src\wpc\sims\wpc\prelim\jb.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\jm.c
+SOURCE=.\src\wpc\sims\wpc\prelim\jm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\jy.c
+SOURCE=.\src\wpc\sims\wpc\prelim\jy.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\mb.c
+SOURCE=.\src\wpc\sims\wpc\prelim\mb.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\nbaf.c
+SOURCE=.\src\wpc\sims\wpc\prelim\nbaf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\nf.c
+SOURCE=.\src\wpc\sims\wpc\prelim\nf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\pop.c
+SOURCE=.\src\wpc\sims\wpc\prelim\pop.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\sc.c
+SOURCE=.\src\wpc\sims\wpc\prelim\sc.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\totan.c
+SOURCE=.\src\wpc\sims\wpc\prelim\totan.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\ts.c
+SOURCE=.\src\wpc\sims\wpc\prelim\ts.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\wpc\prelim\wd.c
+SOURCE=.\src\wpc\sims\wpc\prelim\wd.c
 # End Source File
 # End Group
 # End Group
@@ -1851,11 +1851,11 @@ SOURCE=src\wpc\sims\wpc\prelim\wd.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\s7\full\bk.c
+SOURCE=.\src\wpc\sims\s7\full\bk.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\s7\full\tmfnt.c
+SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 # End Source File
 # End Group
 # Begin Group "prelim_s7"
@@ -1871,578 +1871,578 @@ SOURCE=src\wpc\sims\s7\full\tmfnt.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\wpc\sims\se\prelim\elvis.c
+SOURCE=.\src\wpc\sims\se\prelim\elvis.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sims\se\prelim\monopoly.c
+SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group
 # End Group
 # End Group
 # Begin Source File
 
-SOURCE=src\wpc\allied.c
+SOURCE=.\src\wpc\allied.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvg.c
+SOURCE=.\src\wpc\alvg.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvg.h
+SOURCE=.\src\wpc\alvg.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvgdmd.c
+SOURCE=.\src\wpc\alvgdmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvgdmd.h
+SOURCE=.\src\wpc\alvgdmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvggames.c
+SOURCE=.\src\wpc\alvggames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvgs.c
+SOURCE=.\src\wpc\alvgs.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\alvgs.h
+SOURCE=.\src\wpc\alvgs.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\atari.c
+SOURCE=.\src\wpc\atari.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\atari.h
+SOURCE=.\src\wpc\atari.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\atarigames.c
+SOURCE=.\src\wpc\atarigames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\atarisnd.c
+SOURCE=.\src\wpc\atarisnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\bingo.c
+SOURCE=.\src\wpc\bingo.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\bowarrow.c
+SOURCE=.\src\wpc\bowarrow.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\bowlgames.c
+SOURCE=.\src\wpc\bowlgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by35.c
+SOURCE=.\src\wpc\by35.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by35.h
+SOURCE=.\src\wpc\by35.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by35games.c
+SOURCE=.\src\wpc\by35games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by35snd.c
+SOURCE=.\src\wpc\by35snd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by35snd.h
+SOURCE=.\src\wpc\by35snd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by6803.c
+SOURCE=.\src\wpc\by6803.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by6803.h
+SOURCE=.\src\wpc\by6803.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by6803games.c
+SOURCE=.\src\wpc\by6803games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by68701.c
+SOURCE=.\src\wpc\by68701.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\byvidgames.c
+SOURCE=.\src\wpc\byvidgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\byvidpin.c
+SOURCE=.\src\wpc\byvidpin.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\byvidpin.h
+SOURCE=.\src\wpc\byvidpin.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\capcom.c
+SOURCE=.\src\wpc\capcom.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\capcom.h
+SOURCE=.\src\wpc\capcom.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\capcoms.c
+SOURCE=.\src\wpc\capcoms.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\capcoms.h
+SOURCE=.\src\wpc\capcoms.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\capgames.c
+SOURCE=.\src\wpc\capgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\core.c
+SOURCE=.\src\wpc\core.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\core.h
+SOURCE=.\src\wpc\core.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\dedmd.c
+SOURCE=.\src\wpc\dedmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\dedmd.h
+SOURCE=.\src\wpc\dedmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\degames.c
+SOURCE=.\src\wpc\degames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\desound.c
+SOURCE=.\src\wpc\desound.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\desound.h
+SOURCE=.\src\wpc\desound.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\driver.c
+SOURCE=.\src\wpc\driver.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\flicker.c
+SOURCE=.\src\wpc\flicker.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gen.h
+SOURCE=.\src\wpc\gen.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gp.c
+SOURCE=.\src\wpc\gp.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gp.h
+SOURCE=.\src\wpc\gp.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gpgames.c
+SOURCE=.\src\wpc\gpgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gpsnd.c
+SOURCE=.\src\wpc\gpsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gpsnd.h
+SOURCE=.\src\wpc\gpsnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts1.c
+SOURCE=.\src\wpc\gts1.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts1.h
+SOURCE=.\src\wpc\gts1.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts1games.c
+SOURCE=.\src\wpc\gts1games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3.c
+SOURCE=.\src\wpc\gts3.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3.h
+SOURCE=.\src\wpc\gts3.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3dmd.c
+SOURCE=.\src\wpc\gts3dmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3dmd.h
+SOURCE=.\src\wpc\gts3dmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3games.c
+SOURCE=.\src\wpc\gts3games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts80.c
+SOURCE=.\src\wpc\gts80.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts80.h
+SOURCE=.\src\wpc\gts80.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts80games.c
+SOURCE=.\src\wpc\gts80games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts80s.c
+SOURCE=.\src\wpc\gts80s.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts80s.h
+SOURCE=.\src\wpc\gts80s.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\hnkgames.c
+SOURCE=.\src\wpc\hnkgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\hnks.c
+SOURCE=.\src\wpc\hnks.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\hnks.h
+SOURCE=.\src\wpc\hnks.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\inder.c
+SOURCE=.\src\wpc\inder.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\inder.h
+SOURCE=.\src\wpc\inder.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\indergames.c
+SOURCE=.\src\wpc\indergames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\jp.c
+SOURCE=.\src\wpc\jp.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\jp.h
+SOURCE=.\src\wpc\jp.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\jpgames.c
+SOURCE=.\src\wpc\jpgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\ltd.c
+SOURCE=.\src\wpc\ltd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\ltd.h
+SOURCE=.\src\wpc\ltd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\ltdgames.c
+SOURCE=.\src\wpc\ltdgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\mech.c
+SOURCE=.\src\wpc\mech.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\mech.h
+SOURCE=.\src\wpc\mech.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\mrgame.c
+SOURCE=.\src\wpc\mrgame.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\mrgame.h
+SOURCE=.\src\wpc\mrgame.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\mrgamegames.c
+SOURCE=.\src\wpc\mrgamegames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\nsm.c
+SOURCE=.\src\wpc\nsm.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\nuova.c
+SOURCE=.\src\wpc\nuova.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\peyper.c
+SOURCE=.\src\wpc\peyper.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\peyper.h
+SOURCE=.\src\wpc\peyper.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\peypergames.c
+SOURCE=.\src\wpc\peypergames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\pinmame.h
+SOURCE=.\src\pinmame.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\play.c
+SOURCE=.\src\wpc\play.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\play.h
+SOURCE=.\src\wpc\play.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\playgames.c
+SOURCE=.\src\wpc\playgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\rotation.c
+SOURCE=.\src\wpc\rotation.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\rowamet.c
+SOURCE=.\src\wpc\rowamet.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s11.c
+SOURCE=.\src\wpc\s11.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s11.h
+SOURCE=.\src\wpc\s11.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s11games.c
+SOURCE=.\src\wpc\s11games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s3games.c
+SOURCE=.\src\wpc\s3games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s4.c
+SOURCE=.\src\wpc\s4.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s4.h
+SOURCE=.\src\wpc\s4.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s4games.c
+SOURCE=.\src\wpc\s4games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s6.c
+SOURCE=.\src\wpc\s6.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s6.h
+SOURCE=.\src\wpc\s6.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s6games.c
+SOURCE=.\src\wpc\s6games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s7.c
+SOURCE=.\src\wpc\s7.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s7.h
+SOURCE=.\src\wpc\s7.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s7games.c
+SOURCE=.\src\wpc\s7games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\se.c
+SOURCE=.\src\wpc\se.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\se.h
+SOURCE=.\src\wpc\se.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\segames.c
+SOURCE=.\src\wpc\segames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sim.c
+SOURCE=.\src\wpc\sim.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sim.h
+SOURCE=.\src\wpc\sim.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sleic.c
+SOURCE=.\src\wpc\sleic.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sleic.h
+SOURCE=.\src\wpc\sleic.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sleicgames.c
+SOURCE=.\src\wpc\sleicgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\snd_cmd.c
+SOURCE=.\src\wpc\snd_cmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\snd_cmd.h
+SOURCE=.\src\wpc\snd_cmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sndbrd.c
+SOURCE=.\src\wpc\sndbrd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\sndbrd.h
+SOURCE=.\src\wpc\sndbrd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\spinb.c
+SOURCE=.\src\wpc\spinb.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\spinb.h
+SOURCE=.\src\wpc\spinb.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\spinbgames.c
+SOURCE=.\src\wpc\spinbgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\stgames.c
+SOURCE=.\src\wpc\stgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\stsnd.c
+SOURCE=.\src\wpc\stsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\stsnd.h
+SOURCE=.\src\wpc\stsnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\taito.c
+SOURCE=.\src\wpc\taito.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\taito.h
+SOURCE=.\src\wpc\taito.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\taitogames.c
+SOURCE=.\src\wpc\taitogames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\taitos.c
+SOURCE=.\src\wpc\taitos.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\taitos.h
+SOURCE=.\src\wpc\taitos.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\techno.c
+SOURCE=.\src\wpc\techno.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\vpintf.c
+SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\vpintf.h
+SOURCE=.\src\wpc\vpintf.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wico.c
+SOURCE=.\src\wpc\wico.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wmssnd.c
+SOURCE=.\src\wpc\wmssnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wmssnd.h
+SOURCE=.\src\wpc\wmssnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wpc.c
+SOURCE=.\src\wpc\wpc.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wpc.h
+SOURCE=.\src\wpc\wpc.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wpcgames.c
+SOURCE=.\src\wpc\wpcgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wpcsam.c
+SOURCE=.\src\wpc\wpcsam.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\wpcsam.h
+SOURCE=.\src\wpc\wpcsam.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zac.c
+SOURCE=.\src\wpc\zac.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zac.h
+SOURCE=.\src\wpc\zac.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zacgames.c
+SOURCE=.\src\wpc\zacgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zacproto.c
+SOURCE=.\src\wpc\zacproto.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zacsnd.c
+SOURCE=.\src\wpc\zacsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\zacsnd.h
+SOURCE=.\src\wpc\zacsnd.h
 # End Source File
 # End Group
 # Begin Group "VC"
@@ -2450,15 +2450,15 @@ SOURCE=src\wpc\zacsnd.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\vc\dirent.c
+SOURCE=.\src\vc\dirent.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\vc\dirent.h
+SOURCE=.\src\vc\dirent.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\vc\unistd.h
+SOURCE=.\src\vc\unistd.h
 # End Source File
 # End Group
 # Begin Group "ui"
@@ -2466,179 +2466,179 @@ SOURCE=src\vc\unistd.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\ui\audit32.c
+SOURCE=.\src\ui\audit32.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\audit32.h
+SOURCE=.\src\ui\audit32.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\bitmask.c
+SOURCE=.\src\ui\bitmask.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\bitmask.h
+SOURCE=.\src\ui\bitmask.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\columnedit.c
+SOURCE=.\src\ui\columnedit.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\columnedit.h
+SOURCE=.\src\ui\columnedit.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\datamap.c
+SOURCE=.\src\ui\datamap.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\datamap.h
+SOURCE=.\src\ui\datamap.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dialogs.c
+SOURCE=.\src\ui\dialogs.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dialogs.h
+SOURCE=.\src\ui\dialogs.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dijoystick.c
+SOURCE=.\src\ui\dijoystick.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dijoystick.h
+SOURCE=.\src\ui\dijoystick.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directdraw.c
+SOURCE=.\src\ui\directdraw.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directdraw.h
+SOURCE=.\src\ui\directdraw.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directinput.c
+SOURCE=.\src\ui\directinput.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directinput.h
+SOURCE=.\src\ui\directinput.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directories.c
+SOURCE=.\src\ui\directories.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\directories.h
+SOURCE=.\src\ui\directories.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dxdecode.c
+SOURCE=.\src\ui\dxdecode.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\dxdecode.h
+SOURCE=.\src\ui\dxdecode.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\file.h
+SOURCE=.\src\ui\file.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\help.c
+SOURCE=.\src\ui\help.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\help.h
+SOURCE=.\src\ui\help.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\history.c
+SOURCE=.\src\ui\history.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\history.h
+SOURCE=.\src\ui\history.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\layout.c
+SOURCE=.\src\ui\layout.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\m32main.c
+SOURCE=.\src\ui\m32main.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\m32util.c
+SOURCE=.\src\ui\m32util.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\m32util.h
+SOURCE=.\src\ui\m32util.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\mame32.h
+SOURCE=.\src\ui\mame32.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\options.c
+SOURCE=.\src\ui\options.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\options.h
+SOURCE=.\src\ui\options.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\pinmame32.rc
+SOURCE=.\src\ui\pinmame32.rc
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\properties.c
+SOURCE=.\src\ui\properties.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\properties.h
+SOURCE=.\src\ui\properties.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\resource.h
+SOURCE=.\src\ui\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\screenshot.c
+SOURCE=.\src\ui\screenshot.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\screenshot.h
+SOURCE=.\src\ui\screenshot.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\splitters.c
+SOURCE=.\src\ui\splitters.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\splitters.h
+SOURCE=.\src\ui\splitters.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\treeview.c
+SOURCE=.\src\ui\treeview.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\treeview.h
+SOURCE=.\src\ui\treeview.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\win32ui.c
+SOURCE=.\src\ui\win32ui.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\win32ui.h
+SOURCE=.\src\ui\win32ui.h
 # End Source File
 # End Group
 # End Group
@@ -2647,127 +2647,127 @@ SOURCE=src\ui\win32ui.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=src\ui\res\about.bmp
+SOURCE=.\src\ui\res\about.bmp
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\checkmark.ico
+SOURCE=.\src\ui\res\checkmark.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\cpu.ico
+SOURCE=.\src\ui\res\cpu.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\display.ico
+SOURCE=.\src\ui\res\display.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldavail.ico
+SOURCE=.\src\ui\res\foldavail.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\folder.ico
+SOURCE=.\src\ui\res\folder.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldmanu.ico
+SOURCE=.\src\ui\res\foldmanu.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldopen.ico
+SOURCE=.\src\ui\res\foldopen.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldsrc.ico
+SOURCE=.\src\ui\res\foldsrc.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldunav.ico
+SOURCE=.\src\ui\res\foldunav.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\foldyear.ico
+SOURCE=.\src\ui\res\foldyear.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\harddisk.ico
+SOURCE=.\src\ui\res\harddisk.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\header_down.ico
+SOURCE=.\src\ui\res\header_down.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\header_up.ico
+SOURCE=.\src\ui\res\header_up.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\joystick.ico
+SOURCE=.\src\ui\res\joystick.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\keyboard.ico
+SOURCE=.\src\ui\res\keyboard.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\manufact.ico
+SOURCE=.\src\ui\res\manufact.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\nonwork.ico
+SOURCE=.\src\ui\res\nonwork.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\pinmame32.ico
+SOURCE=.\src\ui\res\pinmame32.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\pinmame32.manifest
+SOURCE=.\src\ui\res\pinmame32.manifest
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\samples.ico
+SOURCE=.\src\ui\res\samples.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\source.ico
+SOURCE=.\src\ui\res\source.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\splith.cur
+SOURCE=.\src\ui\res\splith.cur
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\toolbar.bmp
+SOURCE=.\src\ui\res\toolbar.bmp
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\win_clone.ico
+SOURCE=.\src\ui\res\win_clone.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\win_noro.ico
+SOURCE=.\src\ui\res\win_noro.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\win_redx.ico
+SOURCE=.\src\ui\res\win_redx.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\win_roms.ico
+SOURCE=.\src\ui\res\win_roms.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\win_unkn.ico
+SOURCE=.\src\ui\res\win_unkn.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\working.ico
+SOURCE=.\src\ui\res\working.ico
 # End Source File
 # Begin Source File
 
-SOURCE=src\ui\res\year.ico
+SOURCE=.\src\ui\res\year.ico
 # End Source File
 # End Group
 # End Target
