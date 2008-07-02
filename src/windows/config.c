@@ -820,7 +820,7 @@ static int config_handle_arg(char *arg)
 #ifdef VPINMAME // VPM defines its own log function
 FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
 #else /* VPINMAME */
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
+#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
 void CLIB_DECL logerror(const char *text,...) {
 	va_list arg;
 
