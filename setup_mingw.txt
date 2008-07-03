@@ -23,6 +23,8 @@ The MinGW homepage is available at http://www.mingw.org/
 The Allegro homepage is available at http://alleg.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
 The NASM homepage is available at http://nasm.sourceforge.net/
+The GCC manuals are available at http://gcc.gnu.org/onlinedocs/
+The Make manual is available at http://www.gnu.org/software/make/manual/
 
 
 -----------------
@@ -149,8 +151,6 @@ Step 4: Compilation
 -------------------
 - Change to the PinMAME source directory
 - To compile PinMAME type "mingw32-make"
-  Add "MAME_DEBUG=1 SUFFIX=md" to include the MAME debugger
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
-  Add "MAME_DEBUG=1" and use "SUFFIX=32md" instead to include the MAME debugger
-- To compile a debug build, which also always includes the MAME debugger, only
+- To compile a debug build of these, which also includes the MAME debugger, just
   add "DEBUG=1"
