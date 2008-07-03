@@ -95,7 +95,7 @@ endif
 
 # build the targets in different object dirs, since mess changes
 # some structures and thus they can't be linked against each other.
-OBJ = obj/$(NAME)
+OBJ = obj/gcc/$(NAME)
 
 EMULATOR = $(NAME)$(EXE)
 
@@ -143,7 +143,7 @@ endif
 # platform .mak files will want to add to this
 LIBS = -lz
 
-OBJDIRS = obj $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
+OBJDIRS = obj obj/gcc $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
 	$(OBJ)/machine $(OBJ)/vidhrdw
 ifneq ($(TARGET),pinmame)
 OBJDIRS += $(OBJ)/drivers $(OBJ)/sndhrdw
