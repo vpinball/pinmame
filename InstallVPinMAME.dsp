@@ -33,12 +33,12 @@ RSC=rc.exe
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Output_Dir ".\obj\VC60\InstallVPinMAME\Win32\Release"
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj\VC60\InstallVPinMAME\Win32\Release"
+# PROP Output_Dir ".\obj\VC60\InstallVPinMAME\Win32\Release"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
@@ -71,12 +71,12 @@ SOURCE="$(InputPath)"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "obj\VC60\InstallVPinMAME\Win32\Debug"
+# PROP BASE Output_Dir ".\obj\VC60\InstallVPinMAME\Win32\Debug"
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj\VC60\InstallVPinMAME\Win32\Debug"
+# PROP Output_Dir ".\obj\VC60\InstallVPinMAME\Win32\Debug"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
@@ -92,7 +92,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /debug /machine:I386 /out:"obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe" /pdbtype:sept
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\InstallVPinMAME\Win32\Debug
@@ -119,23 +119,23 @@ SOURCE="$(InputPath)"
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=src\instvpm\Globals.cpp
+SOURCE=.\src\instvpm\Globals.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\InstallVPinMAME.cpp
+SOURCE=.\src\instvpm\InstallVPinMAME.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\InstallVPinMAME.rc
+SOURCE=.\src\instvpm\InstallVPinMAME.rc
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\TestVPinMAME.cpp
+SOURCE=.\src\instvpm\TestVPinMAME.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\Utils.cpp
+SOURCE=.\src\instvpm\Utils.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -143,19 +143,19 @@ SOURCE=src\instvpm\Utils.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=src\instvpm\Globals.h
+SOURCE=.\src\instvpm\Globals.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\resource.h
+SOURCE=.\src\instvpm\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\TestVPinMAME.h
+SOURCE=.\src\instvpm\TestVPinMAME.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\instvpm\Utils.h
+SOURCE=.\src\instvpm\Utils.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -163,7 +163,7 @@ SOURCE=src\instvpm\Utils.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=src\instvpm\Res\InstallVPinMAME.ICO
+SOURCE=.\src\instvpm\Res\InstallVPinMAME.ICO
 # End Source File
 # End Group
 # End Target
