@@ -160,7 +160,6 @@ SOURCE="$(InputPath)"
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir ".\obj\VC60\PinMAME\Win32\DebugMD"
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
-# PROP BASE Ignore_Export_Lib 0
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
