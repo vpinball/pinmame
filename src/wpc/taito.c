@@ -71,8 +71,10 @@ static INTERRUPT_GEN(taito_vblank) {
 
 static SWITCH_UPDATE(taito) {
 	if (inports) {
+    CORE_SETKEYSW(inports[TAITO_COMINPORT]>>8, 0x80, 0);
     CORE_SETKEYSW(inports[TAITO_COMINPORT],    0xff, 1);
     CORE_SETKEYSW(inports[TAITO_COMINPORT]>>8, 0x1f, 8);
+    if (inports[TAITO_COMINPORT] & 0x8000) sndbrd_0_diag(1);
 	}
 }
 
@@ -92,6 +94,20 @@ static MACHINE_INIT(taito) {
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
+	if (core_gameData->hw.soundBoard)
+		sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+
+	TAITOlocals.vblankCount = 1;
+}
+
+static MACHINE_INIT(taito_old) {
+	memset(&TAITOlocals, 0, sizeof(TAITOlocals));
+
+	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x1000;
+	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x1010;
+
+	TAITOlocals.timer_irq = timer_alloc(timer_irq);
+	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(5.293/4.0), 0, TIME_IN_HZ(5.293/4.0));
 	if (core_gameData->hw.soundBoard)
 		sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
 
@@ -278,15 +294,17 @@ static MEMORY_READ_START(taito_readmem_old)
 MEMORY_END
 
 static MEMORY_WRITE_START(taito_writemem_old)
+  { 0x0000, 0x0fff, MWA_NOP },
   { 0x1000, 0x100f, dma_display },
   { 0x1010, 0x101f, dma_commands },
   { 0x1020, 0x10ff, MWA_RAM },
+  { 0x1400, 0x1408, switches_w },
 MEMORY_END
 
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
-  MDRV_CPU_ADD_TAG("mcpu", 8080, 1888888) // 17 MHz / 9
+  MDRV_CPU_ADD_TAG("mcpu", 8080, 17000000/9)
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, 1)
   MDRV_NVRAM_HANDLER(taito)
@@ -332,7 +350,8 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(taito_old)
   MDRV_IMPORT_FROM(taito_sintetizador)
 
-  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CORE_INIT_RESET_STOP(taito_old,NULL,taito)
+  MDRV_CPU_REPLACE("mcpu", 8080, 19000000/9)
   MDRV_CPU_MEMORY(taito_readmem_old, taito_writemem_old)
   MDRV_NVRAM_HANDLER(taito_old)
 MACHINE_DRIVER_END

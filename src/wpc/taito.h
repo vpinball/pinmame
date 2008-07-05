@@ -19,6 +19,7 @@
     COREPORT_BIT(     0x0400, "Adjustments",	  KEYCODE_8) \
     COREPORT_BIT(     0x0800, "Configurations",   KEYCODE_9) \
     COREPORT_BIT(     0x1000, "Enter",			  KEYCODE_0) \
+    COREPORT_BIT(     0x8000, "Sound Test",		  KEYCODE_PGUP) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "Adjust 1") \
       COREPORT_DIPSET(0x0000, "0" ) \
