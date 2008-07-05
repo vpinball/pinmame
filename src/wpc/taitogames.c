@@ -40,17 +40,17 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /*--------------------------------
 / Shock
 /-------------------------------*/
-INITGAME(shock,SNDBRD_TAITO_SINTETIZADOR)
-TAITO_ROMSTART11111(shock,"shock1.bin", CRC(7f4cd52f) SHA1(b2d5344182e39421d9ab3901c1897b0c53464b23),
+INITGAME1(shock,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART11111(shock,"shock1.bin", CRC(d844287a) SHA1(c2ff9e2585fc625623c6351c74063f7a09f80cd7),
                           "shock2.bin", CRC(068b84c7) SHA1(622bd3b24df175cd783cdf46e5b7e910159d2bea),
                           "shock3.bin", CRC(a7f0e116) SHA1(bdb5d6120f7802ce4e1dad434158010b3150233a),
                           "shock4.bin", CRC(549cc14f) SHA1(38ce6ed4cf330a5596394c752257ac0f4b972eda),
-                          "shock5.bin",NO_DUMP)
+                          "shock5.bin", CRC(d1f33c6b) SHA1(c3c1061f2f55cefe8037b19d5ebe087579854992))
 TAITO_SOUNDROMS11("shock_s1.bin", CRC(1f8543e9) SHA1(209c88198659844aeba1e4c39c04eb4d96b10de4),
 				  "shock_s2.bin", CRC(c03e8009) SHA1(33e7e90f313d4dd2555feae9bd9912989c7d2de2))
 TAITO_ROMEND
 #define input_ports_shock input_ports_taito
-CORE_GAMEDEFNV(shock,"Shock",1979,"Taito",taito_old,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(shock,"Shock",1979,"Taito",taito_old,0)
 
 //??/?? Sultan (G Sinbad, 05/78)
 
