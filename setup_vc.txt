@@ -10,6 +10,7 @@ The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
   Information about the VC++ macro _MSC_VER is available at
     http://support.microsoft.com/kb/65472
     http://msdn2.microsoft.com/library/b0084kay(VS.71).aspx
+  TechNet Security Updates are available at http://www.microsoft.com/technet/security/current.aspx
 The NASM homepage is available at http://nasm.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
 
