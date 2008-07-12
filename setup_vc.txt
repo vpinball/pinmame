@@ -122,14 +122,6 @@ Compilation
 -----------
 - Directly load a project file (*.dsp or .vcproj), choose between Release or
   Debug build and then compile.
-- Another way is to use a workspace (*.dsw or .sln), which is a bracket that
-  holds all separate projects together.
-  Unfortunately Visual C++ 6.0 and 2002 have the annoying behaviour to *always*
-  change the workspace file when it is loaded (changing internal comments to the
-  language of your Visual C++ installation, etc.), which creates too many
-  unnecessary "changes" in the CVS repository.
-  Therefore for these versions a template workspace file (*.tmpl) is included.
-  Just make a duplicate of it, remove the .tmpl suffix and use it with Visual C++.
 - Note: Project files for Visual C++ 2002-2008 are comming later, in the
         meantime contact Maddes at http://www.maddes.net/ .
 

@@ -5,7 +5,7 @@
 #include "Utils.h"
 #include "TestVPinMAME.h"
 
-#import "..\win32com\autogen\VPinMAME.tlb" no_namespace raw_interfaces_only
+#import "VPinMAME.tlb" no_namespace raw_interfaces_only
 
 void EnableButtons(HWND hWnd, IController *pController);
 
