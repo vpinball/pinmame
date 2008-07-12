@@ -5,12 +5,13 @@ Important steps to take before a release:
 - check the date and version in all .txt files!
 - remove the entire obj folder preferrably. Only this way you may ensure nothing was forgotten!
 - remove the DEBUG define in the makefile (which is probably not there anyway)!
+- edit "src/version.c" for the correct version number
+- edit "src/ui/PinMAME32.rc" for the correct version numbers
+- edit "src/win32com/VPinMAME.cpp" for the desired release date
+- edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
 - execute "mingw32-make" to build PinMAME.
 - Make sure to regenerate gamelist and include it (I believe it's regenerated automatically on a build)
 - execute "mingw32-make WINUI=1 SUFFIX=32" to build PinMAME32.
-- edit "src/version.c" for the correct version number
-- edit "src/win32com/VPinMAME.cpp" for the desired release date
-- edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
 - build VPinMAME.DLL
 - MAKE SURE STERN GAMES CANNOT WORK, and that TEST_STERN_GAMES FLAG, NO_TIME_LIMIT are not defined!
 - Make sure all default folders are included in the VPM zip
