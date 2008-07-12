@@ -40,16 +40,16 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj/VPinMAME/Debug"
-# PROP Intermediate_Dir "obj/VPinMAME/Debug"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\Debug"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /GZ /c
 # SUBTRACT CPP /Fr
-# ADD MTL /out ".\src\win32com\autogen"
+# ADD MTL /out ".\src\win32com\autogen\VC60"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
-# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "_DEBUG"
+# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -57,9 +57,9 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Performing registration
-IntDir=.\obj/VPinMAME/Debug
-TargetPath=.\obj\VPinMAME\Debug\VPinMAME.dll
-InputPath=.\obj\VPinMAME\Debug\VPinMAME.dll
+IntDir=.\obj\VC60\VPinMAME\Win32\Debug
+TargetPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 "$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -77,15 +77,15 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj/VPinMAME/MDebug"
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\MDebug"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /c
-# ADD MTL /out ".\src\win32com\autogen"
+# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /c
+# ADD MTL /out ".\src\win32com\autogen\VC60"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
+# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -93,11 +93,11 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying and performing registration
-IntDir=.\obj/VPinMAME/MDebug
+IntDir=.\obj\VC60\VPinMAME\Win32\MDebug
 ProjDir=.
-TargetPath=.\obj\VPinMAME\MDebug\VPinMAME.dll
+TargetPath=.\obj\VC60\VPinMAME\Win32\MDebug\VPinMAME.dll
 TargetName=VPinMAME
-InputPath=.\obj\VPinMAME\MDebug\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\MDebug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 BuildCmds= \
@@ -122,16 +122,16 @@ BuildCmds= \
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj/VPinMAME/VCMDebug"
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /GZ /c
 # SUBTRACT CPP /Fr
-# ADD MTL /out ".\src\win32com\autogen"
+# ADD MTL /out ".\src\win32com\autogen\VC60"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
-# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "_DEBUG"
+# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -139,9 +139,9 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Performing registration
-IntDir=.\obj/VPinMAME/VCMDebug
-TargetPath=.\obj\VPinMAME\VCMDebug\VPinMAME.dll
-InputPath=.\obj\VPinMAME\VCMDebug\VPinMAME.dll
+IntDir=.\obj\VC60\VPinMAME\Win32\VCMDebug
+TargetPath=.\obj\VC60\VPinMAME\Win32\VCMDebug\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\VCMDebug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 "$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -159,15 +159,15 @@ SOURCE="$(InputPath)"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj/VPinMAME/Release"
-# PROP Intermediate_Dir "obj/VPinMAME/Release"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\Release"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /c
-# ADD MTL /out ".\src\win32com\autogen"
+# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /c
+# ADD MTL /out ".\src\win32com\autogen\VC60"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
+# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -175,11 +175,11 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying and performing registration
-IntDir=.\obj/VPinMAME/Release
+IntDir=.\obj\VC60\VPinMAME\Win32\Release
 ProjDir=.
-TargetPath=.\obj\VPinMAME\Release\VPinMAME.dll
+TargetPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
 TargetName=VPinMAME
-InputPath=.\obj\VPinMAME\Release\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 BuildCmds= \
@@ -603,20 +603,12 @@ SOURCE=.\src\win32com\VPinMAME.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\autogen\VPinMAME.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\win32com\VPinMAME.idl
-# ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME.h" /iid "VPinMAME_i.c"
+# ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAME.rc
-# ADD BASE RSC /l 0x407 /i "src\win32com"
-# SUBTRACT BASE RSC /i ".\src\win32com\autogen"
-# ADD RSC /l 0x409 /i "src\win32com" /i "src\win32com\autogen"
-# SUBTRACT RSC /i ".\src\win32com\autogen"
 # End Source File
 # Begin Source File
 
@@ -2682,9 +2674,9 @@ SOURCE=.\src\windows\asmblit.asm
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Debug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Debug/Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2695,9 +2687,9 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/MDebug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\MDebug/Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2708,9 +2700,9 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/VCMDebug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\VCMDebug/Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2721,9 +2713,9 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Release/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Release/Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2741,9 +2733,9 @@ SOURCE=.\src\windows\asmtile.asm
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Debug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Debug/Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -2754,9 +2746,9 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/MDebug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\MDebug/Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -2767,9 +2759,9 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/VCMDebug/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\VCMDebug/Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -2780,9 +2772,9 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Release/Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Release/Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -2800,19 +2792,19 @@ SOURCE=.\src\windows\blit.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2823,19 +2815,19 @@ SOURCE=.\src\windows\blit.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2846,19 +2838,19 @@ SOURCE=.\src\windows\config.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2873,19 +2865,19 @@ SOURCE=.\src\windows\dirty.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2896,19 +2888,19 @@ SOURCE=.\src\windows\fileio.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2919,19 +2911,19 @@ SOURCE=.\src\windows\fronthlp.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2942,19 +2934,19 @@ SOURCE=.\src\windows\input.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2965,19 +2957,19 @@ SOURCE=.\src\windows\misc.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -2988,19 +2980,19 @@ SOURCE=.\src\windows\misc.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3011,19 +3003,19 @@ SOURCE=.\src\windows\osd_cpu.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3034,19 +3026,19 @@ SOURCE=.\src\windows\osinline.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3057,19 +3049,19 @@ SOURCE=.\src\windows\rc.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3080,19 +3072,19 @@ SOURCE=.\src\windows\rc.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3103,19 +3095,19 @@ SOURCE=.\src\windows\snprintf.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3126,19 +3118,19 @@ SOURCE=.\src\windows\sound.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3149,19 +3141,19 @@ SOURCE=.\src\windows\ticker.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3172,19 +3164,19 @@ SOURCE=.\src\windows\video.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3195,19 +3187,19 @@ SOURCE=.\src\windows\video.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3234,19 +3226,19 @@ SOURCE=.\src\windows\winddraw.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3257,19 +3249,19 @@ SOURCE=.\src\windows\winddraw.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3280,19 +3272,19 @@ SOURCE=.\src\windows\window.c
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3303,19 +3295,19 @@ SOURCE=.\src\windows\window.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 
@@ -3326,19 +3318,19 @@ SOURCE=.\src\windows\winprefix.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Debug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\MDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\VCMDebug/Windows"
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release/Windows"
 
 !ENDIF 
 

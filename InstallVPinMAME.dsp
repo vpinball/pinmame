@@ -43,10 +43,11 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "src\win32com\autogen\VC60" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /out ".\src\win32com\autogen\VC60" /win32
+# SUBTRACT MTL /mktyplib203
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x407 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -81,10 +82,11 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "src\win32com\autogen\VC60" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /out ".\src\win32com\autogen\VC60" /win32
+# SUBTRACT MTL /mktyplib203
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -102,10 +104,9 @@ InputPath=.\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy "$(TargetPath)" "$(ProjDir)" \
-	copy "$(TargetDir)\$(TargetName).pdb" "$(ProjDir)" \
+	copy "$(TargetPath)" "$(ProjDir)" 
+	copy "$(TargetDir)\$(TargetName).pdb" "$(ProjDir)" 
 	
-
 # End Custom Build
 
 !ENDIF 
@@ -117,6 +118,16 @@ SOURCE="$(InputPath)"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "VPinMAME"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.idl
+# ADD BASE MTL /tlb "VPinMAME.tlb"
+# ADD MTL /tlb "VPinMAME.tlb"
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\src\instvpm\Globals.cpp
