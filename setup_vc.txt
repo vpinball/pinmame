@@ -78,6 +78,7 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   (folders: utilities, include, lib)
   http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
 - Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
+- Project Files (.dsp) are maintained in the repository
 
 
 ---------------
@@ -98,6 +99,12 @@ Visual C++ 2003 (7.1, _MSC_VER = 1310)
   January 2003, but January 2006 should work too.
 - Last MSDN Library with Visual Studio 2003 information/integration was
   January 2006.
+- Project Files (.vcproj) for VC2002 are maintained in the repository
+  As the VC2003 format is the same as VC2002 (except for the version nummber)
+  just create a copy of each VC2002 project files and rename them to VC2003.
+  Then replace all occurrences of VC2002 in them with VC2003.
+  Finally convert them with VC2003.
+  A batch file is provided to assist you with the copying.
 
 
 ---------------
@@ -115,6 +122,8 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
   http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
 - Current MSDN Library works with both versions.
   First MSDN Library with Visual Studio 2005 information/integration was April 2006.
+- Note: Project files for Visual C++ 2005-2008 are coming later, in the
+        meantime contact Maddes at http://www.maddes.net/ .
 
 
 -----------
@@ -122,8 +131,6 @@ Compilation
 -----------
 - Directly load a project file (*.dsp or .vcproj), choose between Release or
   Debug build and then compile.
-- Note: Project files for Visual C++ 2002-2008 are comming later, in the
-        meantime contact Maddes at http://www.maddes.net/ .
 
 
 -------------------
