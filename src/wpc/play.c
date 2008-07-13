@@ -31,7 +31,7 @@
 #define PLAYMATIC_VBLANKFREQ   60 /* VBLANK frequency */
 #define NTSC_QUARTZ 3579545.0 /* 3.58 MHz quartz */
 
-enum { COLUMN=1, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN };
+enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN };
 
 /*----------------
 /  Local variables
@@ -91,18 +91,10 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
 
 static SWITCH_UPDATE(PLAYMATIC) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : 0xf7, 7);
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x01, 8);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : 0xf7, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x01, 0);
   }
-  locals.ef[4] = !(coreGlobals.swMatrix[8] & 1);
-}
-
-static READ_HANDLER(sw_r) {
-  return coreGlobals.swMatrix[offset+1];
-}
-
-static WRITE_HANDLER(lamp_w) {
-  coreGlobals.tmpLampMatrix[offset] = data;
+  locals.ef[4] = !(coreGlobals.swMatrix[0] & 1);
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -129,14 +121,14 @@ static int bitColToNum(int tmp)
 
 static WRITE_HANDLER(out_n) {
   static int outports[4][8] =
-    {{ COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
-     { COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
-     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
-     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
+    {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
+     { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
+     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
+     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
   const int out = outports[locals.cpuType][offset-1];
   logerror("out: %d:%02x\n", out, data);
   switch (out) {
-    case COLUMN:
+    case DISPCOL:
       if (!(data & 0x7f))
         locals.panelSel = 0;
       else
@@ -148,28 +140,41 @@ static WRITE_HANDLER(out_n) {
       break;
     case SOUND:
       if (cpu_gettotalcpu() > 1) {
-        cpu_set_irq_line(PLAYMATIC_SCPU, 0, PULSE_LINE);
+	    locals.sndCmd = data;
       }
       break;
-    case SOL:
-      if ((data >> 4) < 11)
-        locals.solenoids |= 1 << (data >> 4);
-      locals.lampCol = data & 0x07;
+    case LAMPCOL:
+      locals.lampCol = data;
       break;
     case LAMP:
       if (locals.cpuType < 2) {
-        if (locals.lampCol & 1) {
-          if (data & 0x08) coreGlobals.tmpLampMatrix[0] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[0] &= 0xff ^ (1 << (data & 0x07));
+        if (!(data & 0x80)) {
+          if (locals.ef[3])
+            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0xf0) | ((data & 0x0f) ^ 0x0f);
+          else
+            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
         }
-        if (locals.lampCol & 2) {
-          if (data & 0x08) coreGlobals.tmpLampMatrix[1] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[1] &= 0xff ^ (1 << (data & 0x07));
-        }
-        if (locals.lampCol & 4) {
-          if (data & 0x08) coreGlobals.tmpLampMatrix[2] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[2] &= 0xff ^ (1 << (data & 0x07));
-        }
+        locals.solenoids |= (locals.lampCol >> 3) << ((locals.lampCol & 0x07) * 5);
+/*
+if (!(locals.lampCol & 0x07)) printf("\n");
+if (locals.lampCol >> 3) printf("%02x:%02x ", locals.lampCol, data);
+*/
       } else {
-        coreGlobals.tmpLampMatrix[locals.lampCol] = ~data;
+        if (!(data & 0x10)) {
+          if (!locals.ef[3])
+            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0xf0) | ((data & 0x0f) ^ 0x0f);
+          else
+            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
+        }
+        locals.solenoids |= (locals.lampCol >> 3) << ((locals.lampCol & 0x07) * 5);
+/*
+if (!(locals.lampCol & 0x07)) printf("\n");
+if (locals.lampCol >> 3) printf("%02x:%02x ", locals.lampCol, data);
+*/
       }
+      break;
+    case UNKNOWN:
+      logerror("unkown out_n write: %02x\n", data);
       break;
   }
 }
@@ -180,13 +185,13 @@ static READ_HANDLER(in_n) {
   switch (offset) {
     case SWITCH:
       if (locals.digitSel < 6)
-        return coreGlobals.swMatrix[locals.digitSel+1];
+        return coreGlobals.swMatrix[locals.digitSel+2];
       else
         printf("digitSel = %d!\n", locals.digitSel);
       break;
     case DIAG:
       if (diag) return 0;
-      return coreGlobals.swMatrix[7] ^ (locals.cpuType < 2 ? 0xff : 0x0f);
+      return coreGlobals.swMatrix[1] ^ (locals.cpuType < 2 ? 0xff : 0x0f);
       break;
   }
   return 0;
@@ -281,6 +286,9 @@ DISCRETE_SOUND_START(play_tones)
 	DISCRETE_OUTPUT(NODE_50, 50)                               // Take the output from the mixer
 DISCRETE_SOUND_END
 
+static int play_sw2m(int no) { return (no/10)*8+(no%10-1); }
+static int play_m2sw(int col, int row) { return col*10+row+1; }
+
 MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 400000)
@@ -291,6 +299,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
+  MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
   MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
 //  MDRV_NVRAM_HANDLER(generic_0fill)
@@ -309,6 +318,7 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
+  MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
   MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
@@ -336,6 +346,11 @@ static WRITE_HANDLER(ay1_w) {
 	AY8910Write(1,offset % 2,data);
 }
 
+static WRITE_HANDLER(out_snd) {
+  logerror("snd out %d: %02x\n", offset, data);
+  cpu_set_irq_line(PLAYMATIC_SCPU, 0, data ? ASSERT_LINE : CLEAR_LINE);
+}
+
 static MEMORY_READ_START(playsound_readmem)
   {0x0000,0x1fff, MRA_ROM},
   {0x2000,0x2fff, MRA_ROM},
@@ -350,12 +365,39 @@ static MEMORY_WRITE_START(playsound_writemem)
   {0x8000,0x80ff, MWA_RAM},
 MEMORY_END
 
+static PORT_READ_START(playsound_readport)
+MEMORY_END
+
+static PORT_WRITE_START(playsound_writeport)
+  {0x00,0x01, out_snd},
+MEMORY_END
+
+static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
+
+static UINT8 snd_ef(void) {
+  int cmd = locals.sndCmd & 1;
+  locals.sndCmd >>= 1;
+  return cmd;
+}
+
+static CDP1802_CONFIG play1802_snd_config =
+{
+	snd_mode,	// MODE
+	snd_ef,		// EF
+	NULL,		// SC
+	NULL,		// Q
+	NULL,		// DMA read
+	NULL		// DMA write
+};
+
 MACHINE_DRIVER_START(PLAYMATIC2S)
   MDRV_IMPORT_FROM(PLAYMATIC2)
 
   MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000)
+  MDRV_CPU_CONFIG(play1802_snd_config)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
+  MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
   MDRV_SOUND_ADD(AY8910, play_ay8910)
 MACHINE_DRIVER_END
 
