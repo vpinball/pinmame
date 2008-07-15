@@ -127,7 +127,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
   VC2002 project file and rename them to VC2005 or VC2008.
   Then replace all occurrences of VC2002 in them with VC2005 or VC2008 respectively.
   Finally convert them with VC2005 or VC2008.
-  Add _CRT_SECURE_NO_WARNINGS to the C/C++ preprocessor definitions in PinMAME/32 builds.
+  Add _CRT_SECURE_NO_WARNINGS to the C/C++ preprocessor definitions in all builds.
   A batch file is provided to assist you with the copying.
 - Info about new security enhancments:
   http://msdn.microsoft.com/library/8ef0s5kh.aspx
