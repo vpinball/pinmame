@@ -23,9 +23,6 @@
 #  ifndef PI
 #    define PI 3.14159265354
 #  endif
-#  ifdef _MSC_VER
-#    define vsnprintf _vsnprintf
-#  endif
 #else // MAMEVER < 6800
 #  define CRC(a) 0x##a
 #  define SHA1(a)
@@ -144,8 +141,6 @@
 #pragma warning(disable:4550)		// "expression evaluates to a function which is missing an argument list"
 #pragma warning(disable:4090)		// "different 'const' qualifiers"
 #define M_PI 3.14159265358
-#define strcasecmp stricmp
-#define snprintf _snprintf
 
 #ifndef DD_OK
 #define DD_OK DS_OK

@@ -30,7 +30,6 @@ uclock_t uclock(void);
 void print_colums(const char *text1, const char *text2);
 void fprint_colums(FILE *f, const char *text1, const char *text2);
 
-int snprintf(char *s, size_t maxlen, const char *fmt, ...);
 
 
 

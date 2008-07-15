@@ -2643,7 +2643,7 @@ static void UpdateStatusBar()
 	}
 
 	/* Show number of games in the current 'View' in the status bar */
-	snprintf(game_text, sizeof(game_text) / sizeof(game_text[0]), g_szGameCountString, games_shown);
+	_snprintf(game_text, sizeof(game_text) / sizeof(game_text[0]), g_szGameCountString, games_shown);
 	SendMessage(hStatusBar, SB_SETTEXT, (WPARAM)2, (LPARAM)game_text);
 
 	i = GetSelectedPickItem();
@@ -2713,7 +2713,7 @@ static void EnableSelection(int nGame)
 	MENUITEMINFO	mmi;
 	HMENU			hMenu = GetMenu(hMain);
 
-	snprintf(buf, sizeof(buf) / sizeof(buf[0]), g_szPlayGameString, ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
+	_snprintf(buf, sizeof(buf) / sizeof(buf[0]), g_szPlayGameString, ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
 	mmi.cbSize	   = sizeof(mmi);
 	mmi.fMask	   = MIIM_TYPE;
 	mmi.fType	   = MFT_STRING;
@@ -4390,7 +4390,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 	switch (sort_subitem)
 	{
 	case COLUMN_GAMES:
-		value = stricmp(ModifyThe(drivers[index1]->description),
+		value = _stricmp(ModifyThe(drivers[index1]->description),
 						ModifyThe(drivers[index2]->description));
 		break;
 
@@ -4465,14 +4465,14 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		break;
 
 	case COLUMN_DIRECTORY:
-		value = stricmp(drivers[index1]->name, drivers[index2]->name);
+		value = _stricmp(drivers[index1]->name, drivers[index2]->name);
 		break;
 
    	case COLUMN_SRCDRIVERS:
-		if (stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12) == 0)
+		if (_stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12) == 0)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-		value = stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12);
+		value = _stricmp(drivers[index1]->source_file+12, drivers[index2]->source_file+12);
 		break;
 	case COLUMN_PLAYTIME:
 	   value = GetPlayTime(index1) - GetPlayTime(index2);
@@ -4510,17 +4510,17 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 	   break;
 
 	case COLUMN_MANUFACTURER:
-		if (stricmp(drivers[index1]->manufacturer, drivers[index2]->manufacturer) == 0)
+		if (_stricmp(drivers[index1]->manufacturer, drivers[index2]->manufacturer) == 0)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-		value = stricmp(drivers[index1]->manufacturer, drivers[index2]->manufacturer);
+		value = _stricmp(drivers[index1]->manufacturer, drivers[index2]->manufacturer);
 		break;
 
 	case COLUMN_YEAR:
-		if (stricmp(drivers[index1]->year, drivers[index2]->year) == 0)
+		if (_stricmp(drivers[index1]->year, drivers[index2]->year) == 0)
 			return BasicCompareFunc(index1, index2, COLUMN_GAMES);
 
-		value = stricmp(drivers[index1]->year, drivers[index2]->year);
+		value = _stricmp(drivers[index1]->year, drivers[index2]->year);
 		break;
 
 	case COLUMN_CLONE:
@@ -4540,7 +4540,7 @@ static int BasicCompareFunc(LPARAM index1, LPARAM index2, int sort_subitem)
 		else if (name1 == NULL)
 			value = 1;
 		else
-			value = stricmp(name1, name2);
+			value = _stricmp(name1, name2);
 		break;
 
 	default :
@@ -5167,7 +5167,7 @@ static void UpdateMenu(HMENU hMenu)
 
 	if (have_selection)
 	{
-		snprintf(buf, sizeof(buf), g_szPlayGameString,
+		_snprintf(buf, sizeof(buf), g_szPlayGameString,
 				 ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
 
 		mItem.cbSize	 = sizeof(mItem);
