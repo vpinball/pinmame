@@ -1613,7 +1613,7 @@ static unsigned get_register_id( char **parg, int *size )
 	for( i = 0; i < DBGREGS.count; i++ )
 	{
 		l = strlen( DBGREGS.name[i] );
-		if( l > 0 && !strnicmp( *parg, DBGREGS.name[i], l ) )
+		if( l > 0 && !_strnicmp( *parg, DBGREGS.name[i], l ) )
 		{
 			if( !isalnum( (*parg)[l] ) )
 			{

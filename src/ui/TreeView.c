@@ -1384,7 +1384,7 @@ static int InitExtraFolders(void)
 				strcpy(buf, files.name);
 				ext = strrchr(buf, '.');
 
-				if (ext && *(ext + 1) && !stricmp(ext + 1, "ini"))
+				if (ext && *(ext + 1) && !_stricmp(ext + 1, "ini"))
 				{
 					ExtraFolderData[count] = malloc(sizeof(EXFOLDERDATA));
 					if (ExtraFolderData[count]) 
@@ -1540,7 +1540,7 @@ BOOL TryAddExtraFolderAndChildren(int parent_index)
             }
 
             /* IMPORTANT: This assumes that all driver names are lowercase! */
-            strlwr( name );
+            _strlwr( name );
 
 			if (lpTemp == NULL)
 			{
@@ -1601,8 +1601,8 @@ BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name)
 	
 	// a parent extra folder was renamed, so rename the file
 
-    snprintf(new_filename,sizeof(new_filename),"%s\\%s.ini",GetFolderDir(),new_name);
-    snprintf(filename,sizeof(filename),"%s\\%s.ini",GetFolderDir(),lpFolder->m_lpTitle);
+    _snprintf(new_filename,sizeof(new_filename),"%s\\%s.ini",GetFolderDir(),new_name);
+    _snprintf(filename,sizeof(filename),"%s\\%s.ini",GetFolderDir(),lpFolder->m_lpTitle);
 
 	retval = MoveFile(filename,new_filename);
 
@@ -1615,7 +1615,7 @@ BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name)
 	else
 	{
 		char buf[500];
-		snprintf(buf,sizeof(buf),"Error while renaming custom file %s to %s",
+		_snprintf(buf,sizeof(buf),"Error while renaming custom file %s to %s",
 				 filename,new_filename);
 		MessageBox(GetMainWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
 	}
@@ -1691,7 +1691,7 @@ BOOL TrySaveExtraFolder(LPTREEFOLDER lpFolder)
 	}
     /* "folder\title.ini" */
 
-    snprintf( fname, sizeof(fname), "%s\\%s.ini", GetFolderDir(), extra_folder->m_szTitle);
+    _snprintf( fname, sizeof(fname), "%s\\%s.ini", GetFolderDir(), extra_folder->m_szTitle);
 
     fp = fopen(fname, "wt");
     if (fp == NULL)
@@ -1757,7 +1757,7 @@ BOOL TrySaveExtraFolder(LPTREEFOLDER lpFolder)
 	if (error)
 	{
 		char buf[500];
-		snprintf(buf,sizeof(buf),"Error while saving custom file %s",fname);
+		_snprintf(buf,sizeof(buf),"Error while saving custom file %s",fname);
 		MessageBox(GetMainWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
 	}
 	return !error;

@@ -36,7 +36,6 @@
 #ifdef _MSC_VER
 //#undef INLINE
 //#define INLINE static inline
-#define strcasecmp stricmp
 #endif
 
 typedef unsigned char						UINT8;

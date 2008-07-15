@@ -153,7 +153,7 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 		
 		Button_SetCheck(GetDlgItem(hDlg,IDC_HIDE_MOUSE),GetHideMouseOnStartup());
 
-		itoa( GetCycleScreenshot(), pcscreenshot, 10);
+		_itoa( GetCycleScreenshot(), pcscreenshot, 10);
 		Edit_SetText(GetDlgItem(hDlg, IDC_CYCLETIMESEC), pcscreenshot);
 		if( GetCycleScreenshot() <= 0 )
 		{
@@ -257,7 +257,7 @@ INT_PTR CALLBACK FilterDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 			Edit_SetSel(GetDlgItem(hDlg, IDC_FILTER_EDIT), 0, -1);
 
 			// Display current folder name in dialog titlebar
-			snprintf(tmp,sizeof(tmp),"Filters for %s Folder",folder->m_lpTitle);
+			_snprintf(tmp,sizeof(tmp),"Filters for %s Folder",folder->m_lpTitle);
 			SetWindowText(hDlg, tmp);
 
 			// Mask out non filter flags

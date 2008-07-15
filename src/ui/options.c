@@ -514,7 +514,7 @@ BOOL OptionsInit()
 
 	num_games = GetNumGames();
 
-	settings.default_game    = strdup(g_szDefaultGame);
+	settings.default_game    = _strdup(g_szDefaultGame);
 	settings.folder_id       = 0;
 	settings.view            = VIEW_GROUPED;
 	settings.show_folderlist = TRUE;
@@ -614,42 +614,42 @@ BOOL OptionsInit()
 	settings.ui_joy_exec[2] = 0;
 	settings.ui_joy_exec[3] = 0;
 
-	settings.exec_command             = strdup("");
+	settings.exec_command             = _strdup("");
 	settings.exec_wait                = 0;
 	settings.hide_mouse               = FALSE;
 	settings.full_screen              = FALSE;
 	settings.cycle_screenshot = 0;
 	settings.stretch_screenshot_larger = TRUE;
 
-	settings.language          = strdup("english");
-	settings.flyerdir          = strdup("flyers");
-	settings.cabinetdir        = strdup("cabinets");
-	settings.marqueedir        = strdup("marquees");
-	settings.titlesdir         = strdup("titles");
-	settings.cpaneldir         = strdup("cpanel");
+	settings.language          = _strdup("english");
+	settings.flyerdir          = _strdup("flyers");
+	settings.cabinetdir        = _strdup("cabinets");
+	settings.marqueedir        = _strdup("marquees");
+	settings.titlesdir         = _strdup("titles");
+	settings.cpaneldir         = _strdup("cpanel");
 
-	settings.romdirs           = strdup("roms");
-	settings.sampledirs        = strdup("samples");
-	settings.inidir 		   = strdup("ini");
-	settings.cfgdir            = strdup("cfg");
-	settings.nvramdir          = strdup("nvram");
-	settings.memcarddir        = strdup("memcard");
-	settings.inpdir            = strdup("inp");
-	settings.hidir             = strdup("hi");
-	settings.statedir          = strdup("sta");
-	settings.artdir            = strdup("artwork");
-	settings.imgdir            = strdup("snap");
-	settings.diffdir           = strdup("diff");
-	settings.iconsdir          = strdup("icons");
-	settings.bgdir             = strdup("bkground");
+	settings.romdirs           = _strdup("roms");
+	settings.sampledirs        = _strdup("samples");
+	settings.inidir 		   = _strdup("ini");
+	settings.cfgdir            = _strdup("cfg");
+	settings.nvramdir          = _strdup("nvram");
+	settings.memcarddir        = _strdup("memcard");
+	settings.inpdir            = _strdup("inp");
+	settings.hidir             = _strdup("hi");
+	settings.statedir          = _strdup("sta");
+	settings.artdir            = _strdup("artwork");
+	settings.imgdir            = _strdup("snap");
+	settings.diffdir           = _strdup("diff");
+	settings.iconsdir          = _strdup("icons");
+	settings.bgdir             = _strdup("bkground");
 #ifdef PINMAME
-	settings.wavedir           = strdup("wave");
+	settings.wavedir           = _strdup("wave");
 #endif /* PINMAME */
-	settings.cheat_filename    = strdup("cheat.dat");
-	settings.history_filename  = strdup("history.dat");
-	settings.mameinfo_filename = strdup("mameinfo.dat");
-	settings.ctrlrdir          = strdup("ctrlr");
-	settings.folderdir         = strdup("folders");
+	settings.cheat_filename    = _strdup("cheat.dat");
+	settings.history_filename  = _strdup("history.dat");
+	settings.mameinfo_filename = _strdup("mameinfo.dat");
+	settings.ctrlrdir          = _strdup("ctrlr");
+	settings.folderdir         = _strdup("folders");
 
 	settings.list_font.lfHeight         = -8;
 	settings.list_font.lfWidth          = 0;
@@ -682,7 +682,7 @@ BOOL OptionsInit()
 	global.window_mode       = FALSE;
 	global.use_ddraw         = TRUE;
 	global.ddraw_stretch     = TRUE;
-	global.resolution        = strdup("auto");
+	global.resolution        = _strdup("auto");
 	global.gfx_refresh       = 0;
 	global.scanlines         = FALSE;
 	global.switchres         = TRUE;
@@ -694,8 +694,8 @@ BOOL OptionsInit()
 	global.throttle          = TRUE;
 	global.gfx_brightness    = 1.0;
 	global.frames_to_display = 0;
-	global.effect            = strdup("none");
-	global.aspect            = strdup("4:3");
+	global.effect            = _strdup("none");
+	global.aspect            = _strdup("4:3");
 	global.clean_stretch     = CLEAN_STRETCH_AUTO;
 	global.zoom              = 2;
 
@@ -717,7 +717,7 @@ BOOL OptionsInit()
 	global.f_a2d             = 0.3;
 	global.steadykey         = FALSE;
 	global.lightgun          = FALSE;
-	global.ctrlr             = strdup("Standard");
+	global.ctrlr             = _strdup("Standard");
 
 	/* Core video */
 	global.f_bright_correct  = 1.0;
@@ -729,7 +729,7 @@ BOOL OptionsInit()
 	global.auto_rol          = FALSE;
 	global.flipx             = FALSE;
 	global.flipy             = FALSE;
-	global.debugres          = strdup("auto");
+	global.debugres          = _strdup("auto");
 	global.f_gamma_correct   = 1.0;
 
 	/* Core vector */
@@ -806,10 +806,10 @@ BOOL OptionsInit()
 
 	// have our mame core (file code) know about our rom path
 	// this leaks a little, but the win32 file core writes to this string
-	set_pathlist(FILETYPE_ROM,strdup(settings.romdirs));
-	set_pathlist(FILETYPE_SAMPLE,strdup(settings.sampledirs));
+	set_pathlist(FILETYPE_ROM,_strdup(settings.romdirs));
+	set_pathlist(FILETYPE_SAMPLE,_strdup(settings.sampledirs));
 #ifdef MESS
-	set_pathlist(FILETYPE_CRC,strdup(settings.crcdir));
+	set_pathlist(FILETYPE_CRC,_strdup(settings.crcdir));
 #endif
 	return TRUE;
 
@@ -900,7 +900,7 @@ void CopyGameOptions(options_type *source,options_type *dest)
 				(char **)((char *)dest + ((char *)regGameOpts[i].m_vpData - (char *)&gOpts));
 			if (*string_to_copy != NULL)
 			{
-				*string_to_copy = strdup(*string_to_copy);
+				*string_to_copy = _strdup(*string_to_copy);
 			}
 		}
 	}
@@ -1203,7 +1203,7 @@ void SetDefaultGame(const char *name)
 	FreeIfAllocated(&settings.default_game);
 
 	if (name != NULL)
-		settings.default_game = strdup(name);
+		settings.default_game = _strdup(name);
 }
 
 const char *GetDefaultGame(void)
@@ -1391,7 +1391,7 @@ void SetLanguage(const char* lang)
 	FreeIfAllocated(&settings.language);
 
 	if (lang != NULL)
-		settings.language = strdup(lang);
+		settings.language = _strdup(lang);
 }
 
 const char* GetRomDirs(void)
@@ -1405,11 +1405,11 @@ void SetRomDirs(const char* paths)
 
 	if (paths != NULL)
 	{
-		settings.romdirs = strdup(paths);
+		settings.romdirs = _strdup(paths);
 
 		// have our mame core (file code) know about it
 		// this leaks a little, but the win32 file core writes to this string
-		set_pathlist(FILETYPE_ROM,strdup(settings.romdirs));
+		set_pathlist(FILETYPE_ROM,_strdup(settings.romdirs));
 	}
 }
 
@@ -1424,11 +1424,11 @@ void SetSampleDirs(const char* paths)
 
 	if (paths != NULL)
 	{
-		settings.sampledirs = strdup(paths);
+		settings.sampledirs = _strdup(paths);
 		
 		// have our mame core (file code) know about it
 		// this leaks a little, but the win32 file core writes to this string
-		set_pathlist(FILETYPE_SAMPLE,strdup(settings.sampledirs));
+		set_pathlist(FILETYPE_SAMPLE,_strdup(settings.sampledirs));
 	}
 
 }
@@ -1443,7 +1443,7 @@ void SetIniDir(const char *path)
 	FreeIfAllocated(&settings.inidir);
 
 	if (path != NULL)
-		settings.inidir = strdup(path);
+		settings.inidir = _strdup(path);
 }
 
 const char* GetCtrlrDir(void)
@@ -1456,7 +1456,7 @@ void SetCtrlrDir(const char* path)
 	FreeIfAllocated(&settings.ctrlrdir);
 
 	if (path != NULL)
-		settings.ctrlrdir = strdup(path);
+		settings.ctrlrdir = _strdup(path);
 }
 
 const char* GetCfgDir(void)
@@ -1469,7 +1469,7 @@ void SetCfgDir(const char* path)
 	FreeIfAllocated(&settings.cfgdir);
 
 	if (path != NULL)
-		settings.cfgdir = strdup(path);
+		settings.cfgdir = _strdup(path);
 }
 
 const char* GetHiDir(void)
@@ -1482,7 +1482,7 @@ void SetHiDir(const char* path)
 	FreeIfAllocated(&settings.hidir);
 
 	if (path != NULL)
-		settings.hidir = strdup(path);
+		settings.hidir = _strdup(path);
 }
 
 const char* GetNvramDir(void)
@@ -1495,7 +1495,7 @@ void SetNvramDir(const char* path)
 	FreeIfAllocated(&settings.nvramdir);
 
 	if (path != NULL)
-		settings.nvramdir = strdup(path);
+		settings.nvramdir = _strdup(path);
 }
 
 const char* GetInpDir(void)
@@ -1508,7 +1508,7 @@ void SetInpDir(const char* path)
 	FreeIfAllocated(&settings.inpdir);
 
 	if (path != NULL)
-		settings.inpdir = strdup(path);
+		settings.inpdir = _strdup(path);
 }
 
 const char* GetImgDir(void)
@@ -1521,7 +1521,7 @@ void SetImgDir(const char* path)
 	FreeIfAllocated(&settings.imgdir);
 
 	if (path != NULL)
-		settings.imgdir = strdup(path);
+		settings.imgdir = _strdup(path);
 }
 
 const char* GetStateDir(void)
@@ -1534,7 +1534,7 @@ void SetStateDir(const char* path)
 	FreeIfAllocated(&settings.statedir);
 
 	if (path != NULL)
-		settings.statedir = strdup(path);
+		settings.statedir = _strdup(path);
 }
 
 const char* GetArtDir(void)
@@ -1547,7 +1547,7 @@ void SetArtDir(const char* path)
 	FreeIfAllocated(&settings.artdir);
 
 	if (path != NULL)
-		settings.artdir = strdup(path);
+		settings.artdir = _strdup(path);
 }
 
 const char* GetMemcardDir(void)
@@ -1560,7 +1560,7 @@ void SetMemcardDir(const char* path)
 	FreeIfAllocated(&settings.memcarddir);
 
 	if (path != NULL)
-		settings.memcarddir = strdup(path);
+		settings.memcarddir = _strdup(path);
 }
 
 const char* GetFlyerDir(void)
@@ -1573,7 +1573,7 @@ void SetFlyerDir(const char* path)
 	FreeIfAllocated(&settings.flyerdir);
 
 	if (path != NULL)
-		settings.flyerdir = strdup(path);
+		settings.flyerdir = _strdup(path);
 }
 
 const char* GetCabinetDir(void)
@@ -1586,7 +1586,7 @@ void SetCabinetDir(const char* path)
 	FreeIfAllocated(&settings.cabinetdir);
 
 	if (path != NULL)
-		settings.cabinetdir = strdup(path);
+		settings.cabinetdir = _strdup(path);
 }
 
 const char* GetMarqueeDir(void)
@@ -1599,7 +1599,7 @@ void SetMarqueeDir(const char* path)
 	FreeIfAllocated(&settings.marqueedir);
 
 	if (path != NULL)
-		settings.marqueedir = strdup(path);
+		settings.marqueedir = _strdup(path);
 }
 
 const char* GetTitlesDir(void)
@@ -1612,7 +1612,7 @@ void SetTitlesDir(const char* path)
 	FreeIfAllocated(&settings.titlesdir);
 
 	if (path != NULL)
-		settings.titlesdir = strdup(path);
+		settings.titlesdir = _strdup(path);
 }
 
 const char * GetControlPanelDir(void)
@@ -1624,7 +1624,7 @@ void SetControlPanelDir(const char *path)
 {
 	FreeIfAllocated(&settings.cpaneldir);
 	if (path != NULL)
-		settings.cpaneldir = strdup(path);
+		settings.cpaneldir = _strdup(path);
 }
 
 const char * GetDiffDir(void)
@@ -1637,7 +1637,7 @@ void SetDiffDir(const char* path)
 	FreeIfAllocated(&settings.diffdir);
 
 	if (path != NULL)
-		settings.diffdir = strdup(path);
+		settings.diffdir = _strdup(path);
 }
 
 const char* GetIconsDir(void)
@@ -1650,7 +1650,7 @@ void SetIconsDir(const char* path)
 	FreeIfAllocated(&settings.iconsdir);
 
 	if (path != NULL)
-		settings.iconsdir = strdup(path);
+		settings.iconsdir = _strdup(path);
 }
 
 const char* GetBgDir (void)
@@ -1663,7 +1663,7 @@ void SetBgDir (const char* path)
 	FreeIfAllocated(&settings.bgdir);
 
 	if (path != NULL)
-		settings.bgdir = strdup(path);
+		settings.bgdir = _strdup(path);
 }
 #ifdef PINMAME
 const char* GetWaveDir(void)
@@ -1676,7 +1676,7 @@ void SetWaveDir(const char* path)
 	FreeIfAllocated(&settings.wavedir);
 
 	if (path != NULL)
-		settings.wavedir = strdup(path);
+		settings.wavedir = _strdup(path);
 }
 #endif /* PINMAME */
 
@@ -1690,7 +1690,7 @@ void SetFolderDir(const char* path)
 	FreeIfAllocated(&settings.folderdir);
 
 	if (path != NULL)
-		settings.folderdir = strdup(path);
+		settings.folderdir = _strdup(path);
 }
 
 const char* GetCheatFileName(void)
@@ -1703,7 +1703,7 @@ void SetCheatFileName(const char* path)
 	FreeIfAllocated(&settings.cheat_filename);
 
 	if (path != NULL)
-		settings.cheat_filename = strdup(path);
+		settings.cheat_filename = _strdup(path);
 }
 
 const char* GetHistoryFileName(void)
@@ -1716,7 +1716,7 @@ void SetHistoryFileName(const char* path)
 	FreeIfAllocated(&settings.history_filename);
 
 	if (path != NULL)
-		settings.history_filename = strdup(path);
+		settings.history_filename = _strdup(path);
 }
 
 
@@ -1730,7 +1730,7 @@ void SetMAMEInfoFileName(const char* path)
 	FreeIfAllocated(&settings.mameinfo_filename);
 
 	if (path != NULL)
-		settings.mameinfo_filename = strdup(path);
+		settings.mameinfo_filename = _strdup(path);
 }
 
 void ResetGameOptions(int driver_index)
@@ -2073,13 +2073,13 @@ static void ColumnEncodeStringWithCount(void* data, char *str, int count)
 	int  i;
 	char buffer[100];
 
-	snprintf(buffer,sizeof(buffer),"%d",value[0]);
+	_snprintf(buffer,sizeof(buffer),"%d",value[0]);
 	
 	strcpy(str,buffer);
 
     for (i = 1; i < count; i++)
 	{
-		snprintf(buffer,sizeof(buffer),",%d",value[i]);
+		_snprintf(buffer,sizeof(buffer),",%d",value[i]);
 		strcat(str,buffer);
 	}
 }
@@ -2264,7 +2264,7 @@ static void D3DEffectDecodeString(const char *str,void *data)
 
 	for (i=0;i<MAX_D3D_EFFECTS;i++)
 	{
-		if (stricmp(GetD3DEffectShortName(i),str) == 0)
+		if (_stricmp(GetD3DEffectShortName(i),str) == 0)
 		{
 			*(int *)data = i;
 			return;
@@ -2288,7 +2288,7 @@ static void D3DPrescaleDecodeString(const char *str,void *data)
 
 	for (i=0;i<MAX_D3D_PRESCALE;i++)
 	{
-		if (stricmp(GetD3DPrescaleShortName(i),str) == 0)
+		if (_stricmp(GetD3DPrescaleShortName(i),str) == 0)
 		{
 			*(int *)data = i;
 			return;
@@ -2312,7 +2312,7 @@ static void CleanStretchDecodeString(const char *str,void *data)
 
 	for (i=0;i<MAX_CLEAN_STRETCH;i++)
 	{
-		if (stricmp(GetCleanStretchShortName(i),str) == 0)
+		if (_stricmp(GetCleanStretchShortName(i),str) == 0)
 		{
 			*(int *)data = i;
 			return;
@@ -2336,7 +2336,7 @@ static void CurrentTabDecodeString(const char *str,void *data)
 
 	for (i=0;i<MAX_TAB_TYPES;i++)
 	{
-		if (stricmp(GetImageTabShortName(i),str) == 0)
+		if (_stricmp(GetImageTabShortName(i),str) == 0)
 		{
 			*(int *)data = i;
 			return;
@@ -2383,7 +2383,7 @@ static void FolderFlagsDecodeString(const char *str,void *data)
 	extern FOLDERDATA g_folderData[];
 	char *token;
 
-	snprintf(s,sizeof(s),"%s",str);
+	_snprintf(s,sizeof(s),"%s",str);
 
 	SetAllBits(*(LPBITS *)data,TRUE);
 
@@ -2432,7 +2432,7 @@ static void TabFlagsDecodeString(const char *str,void *data)
 	char s[2000];
 	char *token;
 
-	snprintf(s,sizeof(s),"%s",str);
+	_snprintf(s,sizeof(s),"%s",str);
 
 	// simple way to set all tab bits "on"
 	*(int *)data = (1 << MAX_TAB_TYPES) - 1;
@@ -2497,7 +2497,7 @@ static void LoadOption(REG_OPTION *option,const char *value_str)
 	case RO_STRING:
 		if (*(char**)option->m_vpData != NULL)
 			free(*(char**)option->m_vpData);
-		*(char **)option->m_vpData = strdup(value_str);
+		*(char **)option->m_vpData = _strdup(value_str);
 		break;
 
 	case RO_BOOL:
@@ -2535,7 +2535,7 @@ static BOOL LoadGameVariableOrFolderFilter(char *key,const char *value)
 
 	for (i = 0; i < sizeof(gamevariable_options) / sizeof(gamevariable_options[0]); i++)
 	{
-		snprintf(fake_option.ini_name, sizeof(fake_option.ini_name), "drivername_%s", gamevariable_options[i].name);
+		_snprintf(fake_option.ini_name, sizeof(fake_option.ini_name), "drivername_%s", gamevariable_options[i].name);
 		suffix = strchr(fake_option.ini_name, '_');
 
 		if (StringIsSuffixedBy(key, suffix))
@@ -2691,7 +2691,7 @@ static void LoadOptionsAndSettings(void)
 		fclose(fptr);
 	}
 
-	snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
+	_snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
 	gOpts = global;
 	if (LoadOptions(buffer,&global,TRUE))
 	{
@@ -2705,7 +2705,7 @@ void LoadGameOptions(int driver_index)
 {
 	char buffer[512];
 
-	snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
+	_snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
 	
 	CopyGameOptions(&global,&gOpts);
 	if (LoadOptions(buffer,&game_options[driver_index],FALSE))
@@ -2894,7 +2894,7 @@ void SaveGameOptions(int driver_index)
 		}
 	}
 
-	snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
+	_snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
 	if (options_different)
 	{
 		fptr = fopen(buffer,"wt");
@@ -2931,7 +2931,7 @@ void SaveDefaultOptions(void)
 	FILE *fptr;
 	char buffer[512];
 
-	snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
+	_snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
 
 	fptr = fopen(buffer,"wt");
 	if (fptr != NULL)

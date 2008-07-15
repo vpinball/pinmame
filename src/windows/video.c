@@ -424,7 +424,7 @@ static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription
 										 LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 {
 	screen_guid_ptr = NULL;
-	if (screen_name != NULL && stricmp(lpDriverName, screen_name) == 0)
+	if (screen_name != NULL && _stricmp(lpDriverName, screen_name) == 0)
 	{
 		// found 
 		if ( lpGUID ) {

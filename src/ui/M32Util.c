@@ -227,7 +227,7 @@ char* MyStrStrI(const char* pFirst, const char* pSrch)
 		s1 = cp;
 		s2 = (char*)pSrch;
 		
-		while (*s1 && *s2 && !strnicmp(s1, s2, 1))
+		while (*s1 && *s2 && !_strnicmp(s1, s2, 1))
 			s1++, s2++;
 		
 		if (!*s2)

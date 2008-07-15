@@ -623,7 +623,7 @@ static char *GameInfoManufactured(UINT nIndex)
 {
 	static char buffer[1024];
 
-	snprintf(buffer,sizeof(buffer),"%s %s",drivers[nIndex]->year,drivers[nIndex]->manufacturer);
+	_snprintf(buffer,sizeof(buffer),"%s %s",drivers[nIndex]->year,drivers[nIndex]->manufacturer);
 	return buffer;
 }
 
@@ -1074,7 +1074,7 @@ static void PropToOptions(HWND hWnd, options_type *o)
 		if (strcmp(buffer,"0x0x0") == 0)
 			sprintf(buffer,"auto");
 		FreeIfAllocated(&o->resolution);
-		o->resolution = strdup(buffer);
+		o->resolution = _strdup(buffer);
 	}
 
 	/* refresh */
@@ -1107,9 +1107,9 @@ static void PropToOptions(HWND hWnd, options_type *o)
 			d = 3;
 		}
 
-		snprintf(buffer,sizeof(buffer),"%d:%d",n,d);
+		_snprintf(buffer,sizeof(buffer),"%d:%d",n,d);
 		FreeIfAllocated(&o->aspect);
-		o->aspect = strdup(buffer);
+		o->aspect = _strdup(buffer);
 	}
 #ifdef MESS
 	MessPropToOptions(g_nGame, hWnd, o);
@@ -1132,7 +1132,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 	/* video */
 
 	/* get desired resolution */
-	if (!stricmp(o->resolution, "auto"))
+	if (!_stricmp(o->resolution, "auto"))
 	{
 		w = h = 0;
 	}
@@ -1261,7 +1261,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 	hCtrl = GetDlgItem(hWnd, IDC_BRIGHTNESSDISP);
 	if (hCtrl)
 	{
-		snprintf(buf,sizeof(buf), "%03.2f", o->gfx_brightness);
+		_snprintf(buf,sizeof(buf), "%03.2f", o->gfx_brightness);
 		Static_SetText(hCtrl, buf);
 	}
 	
@@ -1369,7 +1369,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		{
 			ComboBox_GetLBText(hCtrl, nCount, buf);
 
-			if (stricmp (buf,o->ctrlr) == 0)
+			if (_stricmp (buf,o->ctrlr) == 0)
 			{
 				g_nInputIndex = nCount;
 			}
@@ -1665,7 +1665,7 @@ static void AssignEffect(HWND hWnd)
 
 	FreeIfAllocated(&pGameOpts->effect);
 	if (ptr != NULL)
-		pGameOpts->effect = strdup(ptr);
+		pGameOpts->effect = _strdup(ptr);
 }
 
 #ifdef PINMAME
@@ -1720,10 +1720,10 @@ static void ResetDataMap(void)
 	g_nA2DIndex				= (int)(pGameOpts->f_a2d                    * 20.0 + 0.001);
 
 	// if no controller type was specified or it was standard
-	if (pGameOpts->ctrlr == NULL || stricmp(pGameOpts->ctrlr,"Standard") == 0)
+	if (pGameOpts->ctrlr == NULL || _stricmp(pGameOpts->ctrlr,"Standard") == 0)
 	{
 		FreeIfAllocated(&pGameOpts->ctrlr);
-		pGameOpts->ctrlr = strdup("Standard");
+		pGameOpts->ctrlr = _strdup("Standard");
 	}
 
 	g_nRotateIndex = 0;
@@ -1750,7 +1750,7 @@ static void ResetDataMap(void)
 	g_nEffectIndex = 0;
 	for (i = 0; i < NUMEFFECTS; i++)
 	{
-		if (!stricmp(pGameOpts->effect, g_ComboBoxEffect[i].m_pData))
+		if (!_stricmp(pGameOpts->effect, g_ComboBoxEffect[i].m_pData))
 			g_nEffectIndex = i;
 	}
 #ifdef PINMAME
@@ -2257,7 +2257,7 @@ static void BeamSelectionChange(HWND hwnd)
 	dBeam = nValue / 20.0 + 1.0;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dBeam);
+	_snprintf(buf,sizeof(buf), "%03.2f", dBeam);
 	Static_SetText(GetDlgItem(hwnd, IDC_BEAMDISP), buf);
 }
 
@@ -2274,7 +2274,7 @@ static void FlickerSelectionChange(HWND hwnd)
 	dFlicker = nValue;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dFlicker);
+	_snprintf(buf,sizeof(buf), "%03.2f", dFlicker);
 	Static_SetText(GetDlgItem(hwnd, IDC_FLICKERDISP), buf);
 }
 
@@ -2291,7 +2291,7 @@ static void GammaSelectionChange(HWND hwnd)
 	dGamma = nValue / 20.0 + 0.5;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dGamma);
+	_snprintf(buf,sizeof(buf), "%03.2f", dGamma);
 	Static_SetText(GetDlgItem(hwnd, IDC_GAMMADISP), buf);
 }
 
@@ -2308,7 +2308,7 @@ static void BrightCorrectSelectionChange(HWND hwnd)
 	dValue = nValue / 20.0 + 0.5;
 
 	/* Set the static display to the new value */
-	snprintf(buf, sizeof(buf), "%03.2f", dValue);
+	_snprintf(buf, sizeof(buf), "%03.2f", dValue);
 	Static_SetText(GetDlgItem(hwnd, IDC_BRIGHTCORRECTDISP), buf);
 }
 
@@ -2325,7 +2325,7 @@ static void PauseBrightSelectionChange(HWND hwnd)
 	dValue = nValue / 20.0 + 0.5;
 
 	/* Set the static display to the new value */
-	snprintf(buf, sizeof(buf), "%03.2f", dValue);
+	_snprintf(buf, sizeof(buf), "%03.2f", dValue);
 	Static_SetText(GetDlgItem(hwnd, IDC_PAUSEBRIGHTDISP), buf);
 }
 
@@ -2342,7 +2342,7 @@ static void BrightnessSelectionChange(HWND hwnd)
 	dBrightness = nValue / 20.0 + 0.1;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf),"%03.2f", dBrightness);
+	_snprintf(buf,sizeof(buf),"%03.2f", dBrightness);
 	Static_SetText(GetDlgItem(hwnd, IDC_BRIGHTNESSDISP), buf);
 }
 
@@ -2359,7 +2359,7 @@ static void IntensitySelectionChange(HWND hwnd)
 	dIntensity = nValue / 20.0 + 0.5;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dIntensity);
+	_snprintf(buf,sizeof(buf), "%03.2f", dIntensity);
 	Static_SetText(GetDlgItem(hwnd, IDC_INTENSITYDISP), buf);
 }
 
@@ -2376,7 +2376,7 @@ static void A2DSelectionChange(HWND hwnd)
 	dA2D = nValue / 20.0;
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%03.2f", dA2D);
+	_snprintf(buf,sizeof(buf), "%03.2f", dA2D);
 	Static_SetText(GetDlgItem(hwnd, IDC_A2DDISP), buf);
 }
 
@@ -2442,7 +2442,7 @@ static void VolumeSelectionChange(HWND hwnd)
 	nValue = SendMessage(GetDlgItem(hwnd, IDC_VOLUME), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
-	snprintf(buf,sizeof(buf), "%ddB", nValue - 32);
+	_snprintf(buf,sizeof(buf), "%ddB", nValue - 32);
 	Static_SetText(GetDlgItem(hwnd, IDC_VOLUMEDISP), buf);
 }
 
@@ -2455,7 +2455,7 @@ static void AudioLatencySelectionChange(HWND hwnd)
 	value = SendMessage(GetDlgItem(hwnd,IDC_AUDIO_LATENCY), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
-	snprintf(buffer,sizeof(buffer),"%i/5",value);
+	_snprintf(buffer,sizeof(buffer),"%i/5",value);
 	Static_SetText(GetDlgItem(hwnd,IDC_AUDIO_LATENCY_DISP),buffer);
 
 }
@@ -2469,7 +2469,7 @@ static void D3DScanlinesSelectionChange(HWND hwnd)
 	value = SendMessage(GetDlgItem(hwnd,IDC_D3D_SCANLINES), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
-	snprintf(buffer,sizeof(buffer),"%i",value);
+	_snprintf(buffer,sizeof(buffer),"%i",value);
 	Static_SetText(GetDlgItem(hwnd,IDC_D3D_SCANLINES_DISP),buffer);
 
 }
@@ -2483,7 +2483,7 @@ static void D3DFeedbackSelectionChange(HWND hwnd)
 	value = SendMessage(GetDlgItem(hwnd,IDC_D3D_FEEDBACK), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
-	snprintf(buffer,sizeof(buffer),"%i",value);
+	_snprintf(buffer,sizeof(buffer),"%i",value);
 	Static_SetText(GetDlgItem(hwnd,IDC_D3D_FEEDBACK_DISP),buffer);
 
 }
@@ -2497,7 +2497,7 @@ static void ZoomSelectionChange(HWND hwnd)
 	value = SendMessage(GetDlgItem(hwnd,IDC_ZOOM), TBM_GETPOS, 0, 0);
 
 	/* Set the static display to the new value */
-	snprintf(buffer,sizeof(buffer),"%i",value);
+	_snprintf(buffer,sizeof(buffer),"%i",value);
 	Static_SetText(GetDlgItem(hwnd,IDC_ZOOMDIST),buffer);
 
 }

@@ -1784,7 +1784,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 
 #if 0
 	// if a controller type hasn't been specified
-	if (ctrlrtype == NULL || *ctrlrtype == 0 || (stricmp(ctrlrtype,"Standard") == 0))
+	if (ctrlrtype == NULL || *ctrlrtype == 0 || (_stricmp(ctrlrtype,"Standard") == 0))
 	{
 		// default to the legacy controller types if selected
 		if (hotrod)
@@ -1849,7 +1849,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 	process_ctrlr_file (rc, NULL, "windows");
 
 	// if a custom controller has been selected
-	if (ctrlrtype && *ctrlrtype != 0 && (stricmp(ctrlrtype,"Standard") != 0))
+	if (ctrlrtype && *ctrlrtype != 0 && (_stricmp(ctrlrtype,"Standard") != 0))
 	{
 		const struct InputPortTiny* input = Machine->gamedrv->input_ports;
 		int paddle = 0, dial = 0, trackball = 0, adstick = 0, pedal = 0, lightgun = 0;
