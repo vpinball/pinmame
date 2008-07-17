@@ -316,6 +316,8 @@ InputName=Controller.h
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -328,6 +330,8 @@ InputName=Controller.h
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Debug with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -340,6 +344,8 @@ InputName=Controller.h
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -429,6 +435,8 @@ InputName=ControllerRun.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -441,6 +449,8 @@ InputName=ControllerRun.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Debug with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -453,6 +463,8 @@ InputName=ControllerRun.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -538,6 +550,8 @@ InputName=VPinMAME.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -550,6 +564,8 @@ InputName=VPinMAME.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Debug with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
@@ -562,6 +578,8 @@ InputName=VPinMAME.cpp
 	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
 	echo >NUL 
 	
+# End Custom Build
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
