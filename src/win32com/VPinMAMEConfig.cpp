@@ -6,10 +6,6 @@
 #include "VPinMAMEConfig.h"
 #include "ControllerRegKeys.h"
 
-#ifdef _MSC_VER
-  #define strcasecmp stricmp
-#endif
-
 extern "C" {
   #include "driver.h"
   #include "rc.h"
@@ -325,7 +321,7 @@ BOOL FindSettingInList(char* pList[], const char* pszName)
 		return FALSE;
 
 	while ( *pList ) {
-		if ( strcmpi(*pList, pszName)==0 )
+		if ( _strcmpi(*pList, pszName)==0 )
 			return TRUE;
 		pList++;
 	}

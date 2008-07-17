@@ -106,7 +106,7 @@ STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR 
 
 	m_iType = 0;
 	while ( pszCtrlTypes[m_iType] ) {
-		if ( strcmpi(szType, pszCtrlTypes[m_iType])==0 ) {
+		if ( _strcmpi(szType, pszCtrlTypes[m_iType])==0 ) {
 			switch (m_iType) {
 			case CTRLTYPE_OKBUTTON:
 				m_vValue = 1;
