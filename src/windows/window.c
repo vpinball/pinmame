@@ -105,7 +105,7 @@ int win_match_refresh;
 int win_sync_refresh;
 float win_gfx_brightness;
 int win_blit_effect;
-float win_screen_aspect = (4.0 / 3.0);
+float win_screen_aspect = (4.0f / 3.0f);
 
 // windows
 HWND win_video_window;
