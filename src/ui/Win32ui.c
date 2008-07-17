@@ -44,6 +44,10 @@
 #include <wingdi.h>
 #include <time.h>
 
+#include "DirectDraw.h"
+#include "DirectInput.h"
+#include "DIJoystick.h"     /* For DIJoystick avalibility. */
+
 #include <driver.h>
 #include <osdepend.h>
 #include <unzip.h>
@@ -65,10 +69,6 @@
 #include "history.h"
 #include "options.h"
 #include "dialogs.h"
-
-#include "DirectDraw.h"
-#include "DirectInput.h"
-#include "DIJoystick.h"     /* For DIJoystick avalibility. */
 
 #if defined(__GNUC__)
 
