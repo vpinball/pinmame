@@ -2733,28 +2733,32 @@ echo &gt;NUL
 				<File
 					RelativePath="src\windows\snprintf.c">
 					<FileConfiguration
-						Name="Release with MAME Debugger|Win32">
+						Name="Release with MAME Debugger|Win32"
+						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Release|Win32"
+						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Debug with MAME Debugger|Win32"
+						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
