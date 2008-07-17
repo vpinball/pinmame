@@ -709,7 +709,7 @@ void set_pathlist(int file_type, const char *new_rawpath)
 
 		for (pathindex = 0; pathindex < list->pathcount; pathindex++)
 			free((void *)list->path[pathindex]);
-		free(list->path);
+		free((void *)list->path);
 	}
 
 	// by default, start with an empty list
