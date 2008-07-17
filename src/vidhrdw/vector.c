@@ -54,9 +54,9 @@ static int beam_diameter_is_one;		  /* flag that beam is one pixel wide */
 static float vector_scale_x;              /* scaling to screen */
 static float vector_scale_y;              /* scaling to screen */
 
-static float gamma_correction = 1.2;
-static float flicker_correction = 0.0;
-static float intensity_correction = 1.5;
+static float gamma_correction = 1.2f;
+static float flicker_correction = 0.0f;
+static float intensity_correction = 1.5f;
 
 static int (*vector_aux_renderer)(point *start, int num_points) = NULL;
 
