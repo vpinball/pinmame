@@ -49,7 +49,7 @@ static const char* crcOfGamesNotSupported[] = {
 
 const char* checkGameAlias(const char* aRomName) {
   for (const tAliasTable* ii = aliasTable; ii->alias; ++ii)
-    if (stricmp(aRomName, ii->alias) == 0) return ii->real;
+    if (_stricmp(aRomName, ii->alias) == 0) return ii->real;
   return aRomName;
 }
 
