@@ -52,8 +52,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /pdbtype:sept /libpath:"zlib"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe
@@ -95,8 +95,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmtd.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe" /pdbtype:sept /libpath:"zlib"
 # SUBTRACT LINK32 /map
 # Begin Custom Build - Copying to root...
 ProjDir=.
@@ -140,8 +140,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /pdbtype:sept /libpath:"zlib"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe
@@ -176,8 +176,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmtd.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe" /pdbtype:sept /libpath:"zlib"
 # SUBTRACT LINK32 /map
 # Begin Custom Build - Copying to root...
 ProjDir=.

@@ -55,12 +55,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /machine:I386 /out:".\obj\VC60\InstallVPinMAME\Win32\Release\InstallVPinMAME_VC60.exe" 
 # Begin Custom Build - Copying to root...
 ProjDir=.
-TargetPath=.\obj\VC60\InstallVPinMAME\Win32\Release\InstallVPinMAME.exe
-TargetName=InstallVPinMAME
-InputPath=.\obj\VC60\InstallVPinMAME\Win32\Release\InstallVPinMAME.exe
+TargetPath=.\obj\VC60\InstallVPinMAME\Win32\Release\InstallVPinMAME_VC60.exe
+TargetName=InstallVPinMAME_VC60
+InputPath=.\obj\VC60\InstallVPinMAME\Win32\Release\InstallVPinMAME_VC60.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -94,13 +94,13 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib version.lib /nologo /version:4.0 /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAME_VC60d.exe" /pdbtype:sept
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\InstallVPinMAME\Win32\Debug
-TargetPath=.\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe
-TargetName=InstallVPinMAMEd
-InputPath=.\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAMEd.exe
+TargetPath=.\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAME_VC60d.exe
+TargetName=InstallVPinMAME_VC60d
+InputPath=.\obj\VC60\InstallVPinMAME\Win32\Debug\InstallVPinMAME_VC60d.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
