@@ -21,8 +21,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS"
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
 				AssemblerListingLocation="$(IntDir)\"
@@ -52,9 +52,11 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -65,9 +67,10 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\instvpm"/>
+				ShowProgress="FALSE"/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCWebServiceProxyGeneratorTool"
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
@@ -82,8 +85,8 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
 				EnableFunctionLevelLinking="TRUE"
@@ -110,9 +113,11 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -123,9 +128,10 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\instvpm"/>
+				ShowProgress="FALSE"/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCWebServiceProxyGeneratorTool"
+				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
