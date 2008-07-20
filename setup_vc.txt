@@ -11,6 +11,8 @@ The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
     http://support.microsoft.com/kb/65472
     http://msdn2.microsoft.com/library/b0084kay(VS.71).aspx
   TechNet Security Updates are available at http://www.microsoft.com/technet/security/current.aspx
+The Visual Studio documentation is available at http://msdn.microsoft.com/library/aa187916.aspx
+  VS6 documentation is only available in english languages (as of 2008-07)
 The NASM homepage is available at http://nasm.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
 
@@ -105,6 +107,7 @@ Visual C++ 2003 (7.1, _MSC_VER = 1310)
   Then replace all occurrences of VC2002 in them with VC2003.
   Finally convert them with VC2003.
   A batch file is provided to assist you with the copying.
+- Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
 
 
 ---------------
@@ -129,6 +132,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
   Finally convert them with VC2005 or VC2008.
   Add _CRT_SECURE_NO_WARNINGS to the C/C++ preprocessor definitions in all builds.
   A batch file is provided to assist you with the copying.
+- Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
 - Info about new security enhancments:
   http://msdn.microsoft.com/library/8ef0s5kh.aspx
 - Note on Express Editions: These work fine for PinMAME/32.
