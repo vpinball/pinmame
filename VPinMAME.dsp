@@ -58,7 +58,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
-# Begin Custom Build - Performing registration
+# Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\Debug
 TargetPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
 InputPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
@@ -97,7 +97,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
-# Begin Custom Build - Copying and performing registration
+# Begin Custom Build - Copying and performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\Release
 ProjDir=.
 TargetPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
@@ -145,7 +145,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
-# Begin Custom Build - Performing registration
+# Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\DebugMD
 TargetPath=.\obj\VC60\VPinMAME\Win32\DebugMD\VPinMAME.dll
 InputPath=.\obj\VC60\VPinMAME\Win32\DebugMD\VPinMAME.dll
@@ -184,7 +184,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
-# Begin Custom Build - Copying and performing registration
+# Begin Custom Build - Performing registration...
 OutDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD
 TargetPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
 InputPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
