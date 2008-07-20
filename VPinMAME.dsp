@@ -18,9 +18,9 @@ CFG=Visual PinMame - Win32 Debug
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "Visual PinMame - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "Visual PinMame - Win32 Release with MAME Debugger" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "Visual PinMame - Win32 Debug with MAME Debugger" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Visual PinMame - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "Visual PinMame - Win32 Debug with MAME Debugger" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "Visual PinMame - Win32 Release with MAME Debugger" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -45,17 +45,19 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /GZ /c
-# SUBTRACT CPP /Fr
-# ADD MTL /out ".\src\win32com\autogen\VC60"
-# ADD BASE RSC /l 0x407 /d "_DEBUG"
-# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "_DEBUG"
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\win32com" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "VPINMAME" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
+# SUBTRACT MTL /mktyplib203
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /i "$(OUTDIR)\Intermediate\MIDL" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib zlibstatmtd.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Performing registration
 OutDir=.\obj\VC60\VPinMAME\Win32\Debug
 TargetPath=.\obj\VC60\VPinMAME\Win32\Debug\VPinMAME.dll
@@ -68,36 +70,39 @@ SOURCE="$(InputPath)"
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseMD"
-# PROP BASE Intermediate_Dir "ReleaseMD"
+# PROP BASE Output_Dir "Release"
+# PROP BASE Intermediate_Dir "Release"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\Release"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /c
-# ADD MTL /out ".\src\win32com\autogen\VC60"
-# ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "NDEBUG"
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\win32com" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "VPINMAME" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
+# SUBTRACT MTL /mktyplib203
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /i "$(OUTDIR)\Intermediate\MIDL" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib zlibstatmt.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying and performing registration
-OutDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD
+OutDir=.\obj\VC60\VPinMAME\Win32\Release
 ProjDir=.
-TargetPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
+TargetPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
 TargetName=VPinMAME
-InputPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 BuildCmds= \
@@ -127,17 +132,19 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /GZ /c
-# SUBTRACT CPP /Fr
-# ADD MTL /out ".\src\win32com\autogen\VC60"
-# ADD BASE RSC /l 0x407 /d "_DEBUG"
-# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "_DEBUG"
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\win32com" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "VPINMAME" /D "MAME_DEBUG" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
+# SUBTRACT MTL /mktyplib203
+# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /i "$(OUTDIR)\Intermediate\MIDL" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib zlibstatmtd.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Performing registration
 OutDir=.\obj\VC60\VPinMAME\Win32\DebugMD
 TargetPath=.\obj\VC60\VPinMAME\Win32\DebugMD\VPinMAME.dll
@@ -150,49 +157,43 @@ SOURCE="$(InputPath)"
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Output_Dir "ReleaseMD"
+# PROP BASE Intermediate_Dir "ReleaseMD"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\Release"
+# PROP Output_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32com" /I "src\win32com\autogen\VC60" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=7300 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /FD /c
-# ADD MTL /out ".\src\win32com\autogen\VC60"
-# ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x409 /i "src\win32com\autogen\VC60" /i "src\win32com" /d "NDEBUG"
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\win32com" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "VPINMAME" /D "MAME_DEBUG" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
+# SUBTRACT MTL /mktyplib203
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /i "$(OUTDIR)\Intermediate\MIDL" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib zlibstatmt.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying and performing registration
-OutDir=.\obj\VC60\VPinMAME\Win32\Release
-ProjDir=.
-TargetPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
-TargetName=VPinMAME
-InputPath=.\obj\VC60\VPinMAME\Win32\Release\VPinMAME.dll
+OutDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD
+TargetPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
+InputPath=.\obj\VC60\VPinMAME\Win32\ReleaseMD\VPinMAME.dll
 SOURCE="$(InputPath)"
 
-BuildCmds= \
-	copy "$(TargetPath)" "$(ProjDir)" \
-	regsvr32 /s /c "$(ProjDir)\$(TargetName).dll" \
-	echo regsvr32 exec.time > "$(OutDir)\regsvr32.trg" \
-	
-
-"$(ProjDir)\$(TargetName).dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
 "$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
+	regsvr32 /s /c "$(TargetPath)" 
+	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
+	
 # End Custom Build
 
 !ENDIF 
@@ -200,9 +201,9 @@ BuildCmds= \
 # Begin Target
 
 # Name "Visual PinMame - Win32 Debug"
-# Name "Visual PinMame - Win32 Release with MAME Debugger"
-# Name "Visual PinMame - Win32 Debug with MAME Debugger"
 # Name "Visual PinMame - Win32 Release"
+# Name "Visual PinMame - Win32 Debug with MAME Debugger"
+# Name "Visual PinMame - Win32 Release with MAME Debugger"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -251,7 +252,7 @@ InputName=Controller.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -279,7 +280,7 @@ InputName=Controller.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -318,7 +319,7 @@ InputName=Controller.h
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -346,7 +347,7 @@ InputName=Controller.h
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -437,7 +438,7 @@ InputName=ControllerRun.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -465,7 +466,7 @@ InputName=ControllerRun.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -552,7 +553,7 @@ InputName=VPinMAME.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -580,7 +581,7 @@ InputName=VPinMAME.cpp
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
 # Begin Custom Build - Decrypting $(InputPath)...
 InputDir=.\src\win32com
@@ -604,7 +605,8 @@ SOURCE=.\src\win32com\VPinMAME.def
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAME.idl
-# ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME.h"
+# ADD BASE MTL /tlb "VPinMAME.tlb"
+# ADD MTL /tlb "VPinMAME.tlb"
 # End Source File
 # Begin Source File
 
@@ -2691,11 +2693,11 @@ InputName=asmblit
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows"
 # Begin Custom Build - Assembling $(InputPath)...
-IntDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2717,11 +2719,11 @@ InputName=asmblit
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
-# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows"
 # Begin Custom Build - Assembling $(InputPath)...
-IntDir=.\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -2750,11 +2752,11 @@ InputName=asmtile
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows"
 # Begin Custom Build - Assembling $(InputPath)...
-IntDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -2776,11 +2778,11 @@ InputName=asmtile
 
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release with MAME Debugger"
 
-# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows"
+# PROP Intermediate_Dir ".\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows"
 # Begin Custom Build - Assembling $(InputPath)...
-IntDir=.\obj\VC60\VPinMAME\Win32\Release\Intermediate\Windows
+IntDir=.\obj\VC60\VPinMAME\Win32\ReleaseMD\Intermediate\Windows
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
