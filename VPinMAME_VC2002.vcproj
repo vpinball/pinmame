@@ -23,9 +23,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows;src\win32com;src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="NDEBUG;MAME_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=7300;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME;MAME_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -36,15 +35,14 @@
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying and performing registration..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;
-regsvr32 /s /c &quot;$(ProjectDir)$(TargetFileName)&quot;
-echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
+				Description="Performing registration..."
+				CommandLine="regsvr32 /s /c &quot;$(TargetPath)&quot;
+echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 "
-				Outputs="$(ProjectDir)$(TargetFileName);$(OutDir)\regsvr32.trg"/>
+				Outputs="$(OutDir)\regsvr32.trg"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="20.0"
 				LinkIncremental="0"
@@ -57,9 +55,11 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -70,7 +70,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\win32com"/>
+				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -88,9 +88,8 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows;src\win32com;src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=7300;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -109,7 +108,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Outputs="$(ProjectDir)$(TargetFileName);$(OutDir)\regsvr32.trg"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="20.0"
 				LinkIncremental="0"
@@ -122,9 +121,11 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -135,7 +136,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\win32com"/>
+				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -152,9 +153,8 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows;src\win32com;src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=7300;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -173,7 +173,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Outputs="$(OutDir)\regsvr32.trg"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="4.0"
 				LinkIncremental="2"
@@ -187,9 +187,11 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -200,7 +202,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\win32com"/>
+				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -217,9 +219,8 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows;src\win32com;src\win32com\autogen\VC2002"
-				PreprocessorDefinitions="_DEBUG;MAME_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=7300;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -231,14 +232,14 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Performing registration"
+				Description="Performing registration..."
 				CommandLine="regsvr32 /s /c &quot;$(TargetPath)&quot;
 echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 "
 				Outputs="$(OutDir)\regsvr32.trg"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="4.0"
 				LinkIncremental="2"
@@ -252,9 +253,11 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="src\win32com\autogen\VC2002"/>
+				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -265,7 +268,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="src\win32com\autogen\VC2002;src\win32com"/>
+				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
