@@ -20,8 +20,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows"
-				PreprocessorDefinitions="_DEBUG;MAME_DEBUG;WIN32;_CONSOLE;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -76,8 +76,8 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows"
-				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -133,8 +133,8 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows"
-				PreprocessorDefinitions="NDEBUG;MAME_DEBUG;WIN32;_CONSOLE;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;MAME_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -188,8 +188,8 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\zlib;src\vc;src\windows"
-				PreprocessorDefinitions="NDEBUG;WIN32;_CONSOLE;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
