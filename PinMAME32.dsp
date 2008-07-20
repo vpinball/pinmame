@@ -2,7 +2,7 @@
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
-# TARGTYPE "Win32 (x86) Console Application" 0x0103
+# TARGTYPE "Win32 (x86) Application" 0x0101
 
 CFG=PinMAME32 - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
@@ -17,10 +17,10 @@ CFG=PinMAME32 - Win32 Debug
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "PinMAME32 - Win32 Release" (based on "Win32 (x86) Console Application")
-!MESSAGE "PinMAME32 - Win32 Debug" (based on "Win32 (x86) Console Application")
-!MESSAGE "PinMAME32 - Win32 Release with MAME Debugger" (based on "Win32 (x86) Console Application")
-!MESSAGE "PinMAME32 - Win32 Debug with MAME Debugger" (based on "Win32 (x86) Console Application")
+!MESSAGE "PinMAME32 - Win32 Release" (based on "Win32 (x86) Application")
+!MESSAGE "PinMAME32 - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "PinMAME32 - Win32 Release with MAME Debugger" (based on "Win32 (x86) Application")
+!MESSAGE "PinMAME32 - Win32 Debug with MAME Debugger" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -43,17 +43,17 @@ RSC=rc.exe
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
+# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX- /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\htmlhelp\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib zlibstatmt.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe" /libpath:"src/htmlhelp/lib" /libpath:"zlib"
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe" /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe
@@ -86,18 +86,17 @@ BuildCmds= \
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /GZ /c
-# SUBTRACT CPP /YX
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX- /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\htmlhelp\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib zlibstatmtd.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Debug\PinMAME32_VC60vcd.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Debug\PinMAME32_VC60vcd.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME32\Win32\Debug
@@ -131,17 +130,17 @@ BuildCmds= \
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "NDEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /c
+# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX- /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\htmlhelp\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "MAME_DEBUG" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib zlibstatmt.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe" /libpath:"src/htmlhelp/lib" /libpath:"zlib"
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe" /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe
@@ -167,18 +166,17 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /I "src\htmlhelp\include" /D "_DEBUG" /D "MAME_DEBUG" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "WIN32" /D "_CONSOLE" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /FD /GZ /c
-# SUBTRACT CPP /YX
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX- /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /I "src\htmlhelp\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D MAME32NAME=\"PinMAME32\" /D WINUI=1 /D SUFFIX=32 /D _WIN32_IE=0x0500 /D _WIN32_WINNT=0x0400 /D "MAME_DEBUG" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG" /d _WIN32_IE=0x0400
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib zlibstatmtd.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\DebugMD\PinMAME32_VC60vcmd.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
-# SUBTRACT LINK32 /pdb:none
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\DebugMD\PinMAME32_VC60vcmd.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME32\Win32\DebugMD
