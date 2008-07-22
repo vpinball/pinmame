@@ -79,8 +79,7 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  if ((locals.vblankCount % PLAYMATIC_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % PLAYMATIC_SOLSMOOTH) == 0)
@@ -102,10 +101,6 @@ static WRITE_HANDLER(disp_w) {
   coreGlobals.segments[48 + offset / 8].w = data & 0x80 ? core_bcd2seg7[0] : 0;
 }
 
-static WRITE_HANDLER(sol_w) {
-  locals.solenoids |= data;
-}
-
 static int bitColToNum(int tmp)
 {
 	int i, data;
@@ -120,6 +115,7 @@ static int bitColToNum(int tmp)
 }
 
 static WRITE_HANDLER(out_n) {
+  int i;
   static int outports[4][8] =
     {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
      { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
@@ -154,11 +150,6 @@ static WRITE_HANDLER(out_n) {
           else
             coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
         }
-        locals.solenoids |= (locals.lampCol >> 3) << ((locals.lampCol & 0x07) * 5);
-/*
-if (!(locals.lampCol & 0x07)) printf("\n");
-if (locals.lampCol >> 3) printf("%02x:%02x ", locals.lampCol, data);
-*/
       } else {
         if (!(data & 0x10)) {
           if (!locals.ef[3])
@@ -166,12 +157,15 @@ if (locals.lampCol >> 3) printf("%02x:%02x ", locals.lampCol, data);
           else
             coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
         }
-        locals.solenoids |= (locals.lampCol >> 3) << ((locals.lampCol & 0x07) * 5);
-/*
-if (!(locals.lampCol & 0x07)) printf("\n");
-if (locals.lampCol >> 3) printf("%02x:%02x ", locals.lampCol, data);
-*/
       }
+      coreGlobals.tmpLampMatrix[8 + (locals.lampCol & 0x07)] = locals.lampCol >> 3;
+      locals.vblankCount = 5;
+      if (locals.cpuType == 2) locals.vblankCount = 4;
+      for (i=0; i < 8; i++) {
+        locals.solenoids |= (coreGlobals.tmpLampMatrix[8 + i] & 1) << i;
+        locals.solenoids |= (coreGlobals.tmpLampMatrix[8 + i] & 2) << (7 + i);
+      }
+      locals.solenoids |= (coreGlobals.tmpLampMatrix[8] & 4) << 14;
       break;
     case UNKNOWN:
       logerror("unkown out_n write: %02x\n", data);
