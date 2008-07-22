@@ -13,21 +13,21 @@
 
 #define INITGAME(name, disptype, balls) \
 	PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,8}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
 
 #define INITGAME3(name, disptype, balls) \
 	PLAYMATIC3_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,8}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
 
 #define INITGAME4(name, disptype, balls) \
 	PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,8}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
