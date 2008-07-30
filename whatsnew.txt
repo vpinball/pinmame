@@ -1,3 +1,13 @@
+Version ?.?? (August ??, 2008) - "???"
+------------------------------------------------------------------------------
+
+Changes:
+
+*** CORE/CPU ***
+Added new debugger command CODELIST
+Fixed some disassembler glitches in the 6809 debugger
+
+
 Version 1.60 (April 18, 2008) - "For Tanja"
 ------------------------------------------------------------------------------
 This latest release took a little longer as originally expected because
@@ -201,7 +211,7 @@ Version 1.55 (March 30, 2007) - "Let there be Light"
 ------------------------------------------------------------------------------
 Happy 6th Birthday to PinMAME & Visual PinMAME! :)
 
-After all these years, we're finally seeing the light on two of our longest 
+After all these years, we're finally seeing the light on two of our longest
 standing missing features! In honor of the 6th year since our first release
 we bring you our latest efforts.
 
@@ -327,7 +337,7 @@ but already we have been able to add signficant improvements as a result of all 
 we had together! It was great getting to meet each other in person for the first time ever.
 Next time we hope Martin, Tom B, and Okaegi can join in the fun!
 
-Let me use this occasion to thank all the great pinball fans in and around the city of Atlanta, GA 
+Let me use this occasion to thank all the great pinball fans in and around the city of Atlanta, GA
 for their unparalleled enthusiasm, support and hospitality in hosting our meetings, and helping us
 to find bugs and missing features we never would have had known about otherwise. A huge thank you to
 Al, Craig, Jeff, and Jon, for tons of pinball fun and the best of times! You guys are great!!! :)
@@ -335,7 +345,7 @@ Al, Craig, Jeff, and Jon, for tons of pinball fun and the best of times! You guy
 We also decided as a team that there's no real need to upgrade to the latest M.A.M.E. core.
 We now have support for all the CPUs ever used on pinball hardware, and all the other type chips
 that aren't supported yet won't probably be supported by M.A.M.E. anytime soon either,
-so we'll stick with the tested, proven, reliable, and FAST older 0.76 core. 
+so we'll stick with the tested, proven, reliable, and FAST older 0.76 core.
 Why break a good thing?
 
 Amazing how time flies: Okaegi and TomB joined the team a year ago this month!
@@ -451,8 +461,8 @@ New Features
 - Emulation of the Stern SB-100 sound board
   [Oliver Kaegi]
 
-- Separated ARM7 core code for easier maintenance and to allow other cpu cores to 
-  be easily built using it. 
+- Separated ARM7 core code for easier maintenance and to allow other cpu cores to
+  be easily built using it.
   Also optimized the ARM7 core a bit, which resulted in some decent speed ups (10-20FPS)
 - Modified AT91 CPU Emulation to use new ARM7 core
   [Steve Ellenoff]
@@ -463,18 +473,18 @@ New Features
 
 Version 1.50 (November 1, 2004) - "Sound of the future"
 -------------------------------------------------------
-The future of PinMAME has never looked or sounded better! 
+The future of PinMAME has never looked or sounded better!
 
-With new team members Thomas Behrens and Oliver Kaegi making huge and immediate contributions, 
-and Steve's temporary break from retirement, this release is destined to be one of the largest and 
+With new team members Thomas Behrens and Oliver Kaegi making huge and immediate contributions,
+and Steve's temporary break from retirement, this release is destined to be one of the largest and
 most significant yet. Many often requested features and bug fixes are included, as well as
-several new hardware systems. Pinball fans will definitely be pleased with this release. 
+several new hardware systems. Pinball fans will definitely be pleased with this release.
 It's so much stuff, we cannot guarantee we listed all the items contained... :)
 
 Amazingly, Steve wrote an Atmel AT91 core ready to emulate the new Stern sound,
 as used on Stern's LOTR and later games. There still are some issues with it, so
 for instance, Elvis is not working correctly yet, and it's also running too slow, seems
-anything less than 3-4Ghz won't get 60 FPS. But still this is a major breakthrough, 
+anything less than 3-4Ghz won't get 60 FPS. But still this is a major breakthrough,
 so we chose to add it for you to check out.
 
 BTW, this should really be the final version being built on the MAME 0.76 basis,
