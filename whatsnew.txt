@@ -1,11 +1,52 @@
-Version ?.?? (August ??, 2008) - "???"
+Version 2.0 (August 1, 2008) - "Free Play Only!"
 ------------------------------------------------------------------------------
+This major version number change has nothing to do with new functionality for
+once - it was done to mark a different milestone in the PinMAME development:
+from this day on, anybody will be free to compile Visual PinMAME for himself,
+so the four formerly crypted files are available in their unencrypted version
+from our source code repository now!
+
+At the same time the expiration date was removed, so this version is both
+totally OPEN SOURCE and NEVER-EXPIRING at the same time. Well worth a 2.0,
+what do you think? ;)
+
+On a sad note, this means we won't emulate the new S.A.M. system by Stern for
+quite some time to come - because of the same reason Visual PinMAME was closed
+source before: once you're able to emulate one of the games using that
+platform, all of the other games will work instantaneously as well!
+
+However, development on all other manufacturer's platforms is continuing.
+Playmatic games are working a little by now, and we will see more improvement
+in the future for sure; sound is next on our issue list.
+
+The TMS5200 is about the most complicated piece of hardware to emulate it
+seems; Lord Nightmare spends almost all of his free time to get it right,
+and we'll keep track of the latest outcomings as used in MAME, and will port
+the updates to PinMAME as soon as they are available.
+With this release, the speech sounds no longer as "hollow" as it did before,
+and a few chirps and clicks are gone by using the TMS5200 specific emulation.
+
+Some more (Nuova) Bell games were added, and a dart-based pinball conversion
+kit for Bally machines was found by JRR (thanks!)
+Brian also came up with Alvin G.'s "USA Football". :)
 
 Changes:
 
 *** CORE/CPU ***
 Added new debugger command CODELIST
 Fixed some disassembler glitches in the 6809 debugger
+Better TMS5200 emulation for Bally / Zaccaria games that use it
+
+*** ROM SUPPORT ***
+Added Bell's Tiger Rag (thanks to Inkochnito & Hans Balk)
+Added Nuova Bell's World Defender (-"-)
+Added Nuova Bell's Dark Shadow (-"-)
+Added Nuova Bell's Skill Flight (-"-)
+Added Nuova Bell's Cobra (-"-)
+Added Nuova Bell's Top Pin (-"-)
+Added Nuova Bell's U-Boat 65 (-"-)
+Added Grand Products' 301/Bullseye (thanks to Inkochnito & J.R.Robertson)
+Added Alvin G.'s USA Football
 
 
 Version 1.60 (April 18, 2008) - "For Tanja"

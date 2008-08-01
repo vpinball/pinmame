@@ -1,6 +1,11 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.0 (August 1st, 2008)
+-------------------------------
+- Visual PinMAME went open source!
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
 Version 1.60 (April 18th, 2008)
 -------------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes

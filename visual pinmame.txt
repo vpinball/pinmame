@@ -1,7 +1,7 @@
 **************************************************************************************
                     Visual PinMAME
-                     Version 1.60
-                   (April 18, 2007)
+                     Version 2.0
+                   (August 1, 2008)
                 http://www.pinmame.com
 **************************************************************************************
 
@@ -76,3 +76,4 @@ Gerrit Volkenborn  (gaston at pinmame.de)
 Brian Smith        (destruk at comcast.net)
 Thomas Behrens     (TomB1709 at gmail.com)
 Oliver Kaegi       (okaegi at freesurf.ch)
+Matthias Buecher   (maddes.b at arcor.de)
