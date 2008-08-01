@@ -73,8 +73,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,60,0,0
- PRODUCTVERSION 1,60,0,0
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "1, 60, 0, 0"
+            VALUE "FileVersion", "2, 0, 0, 0"
             VALUE "InternalName", "VPinMAME"
             VALUE "LegalCopyright", "© 2000-2008 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, and T. Behrens"
             VALUE "OriginalFilename", "VPinMAME.DLL"
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "1.60"
+            VALUE "ProductVersion", "2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -199,7 +199,7 @@ BEGIN
                     SS_LEFTNOWORDWRAP,8,168,55,9
     CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
                     SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, and Thomas Behrens",
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, and Matthias Bücher",
                     IDC_STATIC,152,51,154,24
 END
 
