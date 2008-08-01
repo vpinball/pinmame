@@ -15,6 +15,7 @@ The Visual Studio documentation is available at http://msdn.microsoft.com/librar
   VS6 documentation is only available in english languages (as of 2008-07)
 The NASM homepage is available at http://nasm.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
+Additional DirectX information is available at http://www.toymaker.info/Games/html/directx_9_0c.html
 
 
 -------
@@ -133,10 +134,27 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
   Add _CRT_SECURE_NO_WARNINGS to the C/C++ preprocessor definitions in all builds.
   A batch file is provided to assist you with the copying.
 - Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
-- Info about new security enhancments:
+- Info about new security enhancments and possible optimisations:
   http://msdn.microsoft.com/library/8ef0s5kh.aspx
-- Note on Express Editions: These work fine for PinMAME/32.
-  Investigations for Visual PinMAME (ATL project) are planned.
+  http://www.themssforum.com/VC/optimization-Express/
+
+Additional notes on Express Editions:
+- Both (2005 & 2008) work fine without any changes and can compile PinMAME and PinMAME32
+- The Express Editions are lacking the resource editors and also support for ATL
+  and MFC projects. VPinMAME is an ATL DLL project (Release = MinDependency) and
+  therefore not compilable with a normal Express Edition setup.
+  http://msdn.microsoft.com/library/hs24szh9.aspx
+- Through investigations we found out that it is possible to compile VPinMAME
+  with the Visual C++ 2008 Express Edition and using a "trick":
+  Install the 90-day Trial Version of Visual C++ 2008 *and* the Express Edition.
+  With the trial version you get all the ATL and MFC includes plus libraries.
+  The Express Edition still contains all the configurations settings to use these.
+  This way you can compile existing ATL and MFC projects, but you can not create
+  a new ATL or MFC project as the corresponding wizard definitions are missing
+  for the Express Edition.
+  Btw this "trick" failed with the Express Edition of VisualC++ 2005.
+  http://msdn.microsoft.com/evalcenter/
+  http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
 
 
 -----------
