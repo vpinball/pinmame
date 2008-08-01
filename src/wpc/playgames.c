@@ -8,7 +8,7 @@
 #ifdef MAME_DEBUG
 #define GAME_STATUS 0
 #else
-#define GAME_STATUS GAME_NOT_WORKING
+#define GAME_STATUS GAME_NOT_WORKING|GAME_NO_SOUND
 #endif
 
 #define INITGAME(name, disptype, balls) \
