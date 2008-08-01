@@ -16,7 +16,7 @@ public:
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnClick)
 		MESSAGE_HANDLER(WM_TIMER, OnClick)
 		MESSAGE_HANDLER(WM_CHAR, OnChar)
-		MESSAGE_HANDLER(WM_PAINT, OnPaint) 
+		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 	END_MSG_MAP()
 
@@ -105,7 +105,7 @@ private:
 		HDC hDC = GetDC();
 		m_hFont = CreateFont(
 			-MulDiv(8, GetDeviceCaps(hDC, LOGPIXELSY), 72),
-			0, 0, 0, iWeight, 0, 0, 0, ANSI_CHARSET, 0, 0, 0, 
+			0, 0, 0, iWeight, 0, 0, 0, ANSI_CHARSET, 0, 0, 0,
 			FF_DONTCARE, "Microsoft Sans Serife"
 		);
 		ReleaseDC(hDC);
@@ -138,13 +138,13 @@ private:
 				// resize the window so it fits the bitmap
 				RECT Rect = {0, 0, m_Bitmap.bmWidth, m_Bitmap.bmHeight};
 				SetWindowPos((HWND) 0, &Rect, SWP_NOMOVE|SWP_NOZORDER);
-				
+
 				// center all
 				CenterWindow();
 
 				// repaint the window
 				InvalidateRect(NULL, true);
-				
+
 				if ( m_uClosedTimer ) {
 					KillTimer(m_uClosedTimer);
 					m_uClosedTimer = 0;
@@ -182,9 +182,6 @@ void CreateSplashWnd(void **ppData, char* pszCredits)
 	if ( !ppData )
 		return;
 
-#ifdef ULTRACADE
-*ppData = NULL;
-#else 
 	// create and display dialog on the desktop
 	CSplashWnd* pSplashWnd = new CSplashWnd;
 	pSplashWnd->Create((HWND) 0, CWindow::rcDefault, NULL, WS_VISIBLE|WS_POPUP, NULL, 0U, pszCredits);
@@ -192,8 +189,6 @@ void CreateSplashWnd(void **ppData, char* pszCredits)
 
 	/* remove this line if you want to run the game at once */
 	WaitForSplashWndToClose(ppData);
-
-#endif
 }
 
 void DestroySplashWnd(void **ppData)
@@ -222,7 +217,7 @@ void WaitForSplashWndToClose(void **ppData)
 	while ( pSplashWnd->IsWindow() ) {
 		GetMessage(&msg,pSplashWnd->m_hWnd,0,0);
 
-		TranslateMessage(&msg); 
+		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 }
