@@ -280,8 +280,8 @@ DISCRETE_SOUND_START(play_tones)
 	DISCRETE_OUTPUT(NODE_50, 50)                               // Take the output from the mixer
 DISCRETE_SOUND_END
 
-static int play_sw2m(int no) { return (no/10)*8+(no%10-1); }
-static int play_m2sw(int col, int row) { return col*10+row+1; }
+static int play_sw2m(int no) { return 8+(no/10)*8+(no%10-1); }
+static int play_m2sw(int col, int row) { return (col-1)*10+row+1; }
 
 MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_IMPORT_FROM(PinMAME)
