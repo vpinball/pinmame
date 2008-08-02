@@ -1,10 +1,13 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.0.1 (August 2nd, 2008)
+--------------------------------
+- Added support for Stern's "Nascar" and "Grand Prix"
+
 Version 2.0 (August 1st, 2008)
--------------------------------
+------------------------------
 - Visual PinMAME went open source!
-- No interface changes, refer to whatsnew.txt for PinMAME changes
 
 Version 1.60 (April 18th, 2008)
 -------------------------------
