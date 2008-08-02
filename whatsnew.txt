@@ -1,4 +1,4 @@
-Version 2.00 (August 1, 2008) - "Free Play Only!"
+Version 2.0 (August 1, 2008) - "Free Play Only!"
 ------------------------------------------------------------------------------
 This major version number change has nothing to do with new functionality for
 once - it was done to mark a different milestone in the PinMAME development:
@@ -36,6 +36,7 @@ Changes:
 Added new debugger command CODELIST
 Fixed some disassembler glitches in the 6809 debugger
 Better TMS5200 emulation for Bally / Zaccaria games that use it
+Updates CDP1802 CPU to lastest MAME core
 
 *** ROM SUPPORT ***
 Added Bell's Tiger Rag (thanks to Inkochnito & Hans Balk)
