@@ -896,8 +896,13 @@ DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
 DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
 DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
 DRIVERNV(soprano3)      //Whitestar: 02/05 The Sopranos (v3.00)
-
-#ifdef INCLUDE_NEW_STERN
+DRIVERNV(nascar)		//Whitestar: 05/05 Nascar
+DRIVERNV(nascarl)		//Whitestar: 05/05 Nascar (Spain)
+DRIVERNV(gprix)			//Whitestar: 05/05 Grand Prix
+DRIVERNV(gprixg)		//Whitestar: 05/05 Grand Prix (Germany)
+DRIVERNV(gprixl)		//Whitestar: 05/05 Grand Prix (Spain)
+DRIVERNV(gprixf)		//Whitestar: 05/05 Grand Prix (France)
+DRIVERNV(gprixi)		//Whitestar: 05/05 Grand Prix (Italy)
 
 //The following are all Stern Whitestar games using 8MB Roms running on the new ARM7 sound board for testing the ARM7
 #ifdef TEST_NEW_SOUND
@@ -914,14 +919,6 @@ DRIVERNV(rctnew)
 DRIVERNV(simpnew)
 DRIVERNV(t3new)
 #endif /* TEST_NEW_SOUND */
-
-DRIVERNV(nascar)		//Whitestar: 05/05 Nascar
-DRIVERNV(nascarl)		//Whitestar: 05/05 Nascar (Spain)
-DRIVERNV(gprix)			//Whitestar: 05/05 Grand Prix
-DRIVERNV(gprixg)		//Whitestar: 05/05 Grand Prix (Germany)
-DRIVERNV(gprixl)		//Whitestar: 05/05 Grand Prix (Spain)
-DRIVERNV(gprixf)		//Whitestar: 05/05 Grand Prix (France)
-DRIVERNV(gprixi)		//Whitestar: 05/05 Grand Prix (Italy)
 
 // Stern S.A.M System
 #ifdef INCLUDE_STERN_SAM
@@ -1056,8 +1053,6 @@ DRIVERNV(ij4_113g)   		//S.A.M: 05/08 Indiana Jones - V1.13   (German)
 DRIVERNV(ij4_113i)   		//S.A.M: 05/08 Indiana Jones - V1.13   (Italian)
 DRIVERNV(ij4_113l)   		//S.A.M: 05/08 Indiana Jones - V1.13   (Spanish)
 #endif
-
-#endif /* INCLUDE_NEW_STERN */
 
 // ---------------
 // TAITO GAMES
