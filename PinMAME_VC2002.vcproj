@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="PinMAME"
+	ProjectGUID="{20DB3784-CEFD-43B8-8B62-E1E10854BF18}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
