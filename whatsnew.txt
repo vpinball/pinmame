@@ -1,4 +1,14 @@
-Version 2.0 (August 1, 2008) - "Free Play Only!"
+Version 2.01 (August 2, 2008) - "Free Play Only! #2"
+------------------------------------------------------------------------------
+Just forgot to add some ROMs.
+
+Changes:
+
+*** ROM SUPPORT ***
+Added support for Stern's "Nascar" and "Grand Prix"
+
+
+Version 2.00 (August 1, 2008) - "Free Play Only!"
 ------------------------------------------------------------------------------
 This major version number change has nothing to do with new functionality for
 once - it was done to mark a different milestone in the PinMAME development:
