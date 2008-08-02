@@ -1,6 +1,6 @@
 // ControllerSettings.cpp : Implementation of CControllerSettings
 #include "stdafx.h"
-#include "VPinMAME.h"
+#include "VPinMAME_h.h"
 #include "ControllerSettings.h"
 #include "VPinMAMEConfig.h"
 #include "VPinMAMEAboutDlg.h"

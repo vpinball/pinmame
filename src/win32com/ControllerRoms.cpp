@@ -1,6 +1,6 @@
 // ControllerRoms.cpp : Implementation of CRoms
 #include "stdafx.h"
-#include "VPinMAME.h"
+#include "VPinMAME_h.h"
 #include "ControllerRom.h"
 #include "ControllerRoms.h"
 
