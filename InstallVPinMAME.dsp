@@ -124,8 +124,8 @@ SOURCE="$(InputPath)"
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAME.idl
-# ADD BASE MTL /tlb "VPinMAME.tlb"
-# ADD MTL /tlb "VPinMAME.tlb"
+# ADD BASE MTL /tlb "VPinMAME.tlb" /h "VPinMAME_h.h"
+# ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME_h.h"
 # End Source File
 # End Group
 # Begin Source File

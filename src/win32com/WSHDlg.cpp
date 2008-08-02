@@ -1,6 +1,6 @@
 // WSHDlg.cpp : Implementation of CWSHDlg
 #include "Stdafx.h"
-#include "VPinMAME.h"
+#include "VPinMAME_h.h"
 #include "WSHDlg.h"
 
 /////////////////////////////////////////////////////////////////////////////

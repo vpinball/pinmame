@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "VPinMAME.h"
+#include "VPinMAME_h.h"
 
 #include "ControllerDisclaimerDlg.h"
 

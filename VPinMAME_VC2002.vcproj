@@ -24,7 +24,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(IntDir)\MIDL"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME;MAME_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -60,7 +60,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -71,7 +71,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -89,7 +89,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(IntDir)\MIDL"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -126,7 +126,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -137,7 +137,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -154,7 +154,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(IntDir)\MIDL"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -192,7 +192,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -203,7 +203,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -220,7 +220,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(OutDir)\Intermediate\MIDL"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\win32com;$(IntDir)\MIDL"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;VPINMAME;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -258,7 +258,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
 				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="$(OutDir)\Intermediate\MIDL"/>
+				OutputDirectory="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -269,7 +269,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(OutDir)\Intermediate\MIDL"/>
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
@@ -385,30 +385,6 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				</File>
 				<File
 					RelativePath="src\win32com\VPinMAME.idl">
-					<FileConfiguration
-						Name="Release with MAME Debugger|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="src\win32com\VPinMAME.rc">

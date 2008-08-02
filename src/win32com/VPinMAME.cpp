@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <initguid.h>
-#include "VPinMAME.h"
+#include "VPinMAME_h.h"
 #include "dlldatax.h"
 
 #define NO_EXPIRATION_DATE 1

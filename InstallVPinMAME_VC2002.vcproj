@@ -161,18 +161,6 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Filter="">
 				<File
 					RelativePath="src\win32com\VPinMAME.idl">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCMIDLTool"
-							HeaderFileName="$(InputName).h"/>
-					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
