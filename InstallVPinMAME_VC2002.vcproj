@@ -12,6 +12,67 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)\Intermediate"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="$(IntDir)\MIDL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				StringPooling="TRUE"
+				RuntimeLibrary="4"
+				EnableFunctionLevelLinking="TRUE"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				Description="Copying to root..."
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;
+"
+				Outputs="$(ProjectDir)$(TargetFileName)"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib"
+				OutputFile="$(OutDir)\$(ProjectName)_VC2002.exe"
+				Version="4.0"
+				LinkIncremental="0"
+				SuppressStartupBanner="TRUE"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
+				SubSystem="2"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)\MIDL"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				ShowProgress="FALSE"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+				SuppressStartupBanner="TRUE"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+		</Configuration>
+		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\Intermediate"
@@ -67,67 +128,6 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				ShowProgress="FALSE"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)\Intermediate"
-			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(IntDir)\MIDL"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				StringPooling="TRUE"
-				RuntimeLibrary="4"
-				EnableFunctionLevelLinking="TRUE"
-				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
-			<Tool
-				Name="VCCustomBuildTool"
-				Description="Copying to root..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;
-"
-				Outputs="$(ProjectDir)$(TargetFileName)"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib version.lib"
-				OutputFile="$(OutDir)\$(ProjectName)_VC2002.exe"
-				Version="4.0"
-				LinkIncremental="0"
-				SuppressStartupBanner="TRUE"
-				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
-				SubSystem="2"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName="$(InputName).tlb"
-				OutputDirectory="$(IntDir)\MIDL"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
 				ShowProgress="FALSE"/>
 			<Tool

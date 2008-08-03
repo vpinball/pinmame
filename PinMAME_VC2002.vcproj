@@ -12,41 +12,41 @@
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug with MAME Debugger|Win32"
-			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\DebugMD"
+			Name="Release|Win32"
+			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="1"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;MAME_DEBUG"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
+				StringPooling="TRUE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying to root..."
+				Description="Copying to root and generating gamelist.txt..."
 				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;
-copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
+&quot;$(ProjectDir)$(TargetFileName)&quot; -gamelist -noclones -sortname &gt;&quot;$(ProjectDir)$(TargetName)_gamelist.txt&quot;
 "
-				Outputs="$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb"/>
+				Outputs="$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
-				OutputFile="$(OutDir)\$(ProjectName)_VC2002vcmd.exe"
-				LinkIncremental="2"
+				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				OutputFile="$(OutDir)\$(ProjectName)_VC2002.exe"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="zlib"
-				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
@@ -60,7 +60,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -179,41 +179,41 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\$(ConfigurationName)"
+			Name="Debug with MAME Debugger|Win32"
+			OutputDirectory="obj\VC2002\$(ProjectName)\$(PlatformName)\DebugMD"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="1"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
+				Optimization="0"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;MAME_DEBUG"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\$(TargetName).pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="Copying to root and generating gamelist.txt..."
+				Description="Copying to root..."
 				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)&quot;
-&quot;$(ProjectDir)$(TargetFileName)&quot; -gamelist -noclones -sortname &gt;&quot;$(ProjectDir)$(TargetName)_gamelist.txt&quot;
+copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 "
-				Outputs="$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt"/>
+				Outputs="$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
-				OutputFile="$(OutDir)\$(ProjectName)_VC2002.exe"
-				LinkIncremental="0"
+				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				OutputFile="$(OutDir)\$(ProjectName)_VC2002vcmd.exe"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="zlib"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
@@ -227,7 +227,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -384,6 +384,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					RelativePath="src\memory.h">
 				</File>
 				<File
+					RelativePath="src\multidef.h">
+				</File>
+				<File
 					RelativePath="src\osdepend.h">
 				</File>
 				<File
@@ -476,7 +479,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\adsp2100\2100ops.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -494,7 +497,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -516,7 +519,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6809\6809ops.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -534,7 +537,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -543,7 +546,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6809\6809tbl.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -561,7 +564,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -583,7 +586,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6800\6800ops.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -601,7 +604,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -610,7 +613,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6800\6800tbl.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -628,7 +631,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -690,7 +693,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6502\t6502.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -708,7 +711,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -717,7 +720,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m6502\t65c02.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -735,7 +738,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -769,7 +772,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m68000\m68kmake.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -787,7 +790,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -893,7 +896,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\i86\i86time.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -911,7 +914,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -923,7 +926,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\i86\instr86.c">
 							<FileConfiguration
-								Name="Debug with MAME Debugger|Win32"
+								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -941,7 +944,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 									Name="VCCLCompilerTool"/>
 							</FileConfiguration>
 							<FileConfiguration
-								Name="Release|Win32"
+								Name="Debug with MAME Debugger|Win32"
 								ExcludedFromBuild="TRUE">
 								<Tool
 									Name="VCCLCompilerTool"/>
@@ -1220,7 +1223,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_dev.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1238,7 +1241,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1247,7 +1250,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_flt.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1265,7 +1268,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1274,7 +1277,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_inp.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1292,7 +1295,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1301,7 +1304,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_mth.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1319,7 +1322,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1328,7 +1331,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_out.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1346,7 +1349,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1355,7 +1358,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\disc_wav.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1373,7 +1376,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1472,7 +1475,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					<File
 						RelativePath="src\sound\tms5220r.c">
 						<FileConfiguration
-							Name="Debug with MAME Debugger|Win32"
+							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1490,7 +1493,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32"
+							Name="Debug with MAME Debugger|Win32"
 							ExcludedFromBuild="TRUE">
 							<Tool
 								Name="VCCLCompilerTool"/>
@@ -1553,7 +1556,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\asmblit.asm">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
@@ -1580,7 +1583,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
@@ -1592,7 +1595,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\asmtile.asm">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
@@ -1619,7 +1622,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
@@ -1631,7 +1634,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\blit.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1652,7 +1655,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1665,7 +1668,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\config.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1686,7 +1689,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1702,7 +1705,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\fileio.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1723,7 +1726,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1733,7 +1736,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\fronthlp.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1754,7 +1757,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1764,7 +1767,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\input.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1785,7 +1788,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1795,7 +1798,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\misc.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1816,7 +1819,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1838,7 +1841,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\rc.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1859,7 +1862,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1872,7 +1875,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\snprintf.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32"
+						Name="Release|Win32"
 						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1896,7 +1899,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Debug with MAME Debugger|Win32"
 						ExcludedFromBuild="TRUE">
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1907,7 +1910,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\sound.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1928,7 +1931,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1938,7 +1941,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\ticker.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1959,7 +1962,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1969,7 +1972,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\video.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -1990,7 +1993,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2003,7 +2006,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\wind3d.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2024,7 +2027,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2037,7 +2040,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\wind3dfx.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2058,7 +2061,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2071,7 +2074,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\winddraw.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2092,7 +2095,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2105,7 +2108,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\window.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2126,7 +2129,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2139,7 +2142,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				<File
 					RelativePath="src\windows\winmain.c">
 					<FileConfiguration
-						Name="Debug with MAME Debugger|Win32">
+						Name="Release|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
@@ -2160,7 +2163,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Debug with MAME Debugger|Win32">
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)\Windows\"
