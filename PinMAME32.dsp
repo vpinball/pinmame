@@ -1303,6 +1303,10 @@ SOURCE=.\src\memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\multidef.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\osdepend.h
 # End Source File
 # Begin Source File
