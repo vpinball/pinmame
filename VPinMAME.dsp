@@ -222,6 +222,12 @@ SOURCE=.\src\cpu\adsp2100\2100dasm.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\adsp2100\2100ops.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\adsp2100\adsp2100.c
 # End Source File
 # Begin Source File
@@ -238,6 +244,18 @@ SOURCE=.\src\cpu\m6809\6809dasm.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\m6809\6809ops.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6809\6809tbl.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\m6809\m6809.c
 # End Source File
 # Begin Source File
@@ -251,6 +269,18 @@ SOURCE=.\src\cpu\m6809\m6809.h
 # Begin Source File
 
 SOURCE=.\src\cpu\m6800\6800dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\6800ops.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\6800tbl.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -322,7 +352,25 @@ SOURCE=.\src\cpu\m6502\opsn2a03.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\m6502\t6502.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\t6510.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\m6502\t65c02.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\t65sc02.c
 # PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
 # End Source File
@@ -361,6 +409,8 @@ SOURCE=.\src\cpu\m68000\m68kdasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\m68kmake.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -494,6 +544,12 @@ SOURCE=.\src\cpu\i86\i86time.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\i86\instr186.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\i86\instr186.h
 # End Source File
 # Begin Source File
@@ -594,6 +650,12 @@ SOURCE=.\src\cpu\i8051\i8051.c
 
 SOURCE=.\src\cpu\i8051\i8051.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8051\i8051ops.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
 # End Group
 # Begin Group "TMS7000"
 
@@ -609,6 +671,18 @@ SOURCE=.\src\cpu\tms7000\tms7000.c
 # Begin Source File
 
 SOURCE=.\src\cpu\tms7000\tms7000.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms7000\tms70op.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms7000\tms70tb.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "AT91"
@@ -640,7 +714,23 @@ SOURCE=.\src\cpu\arm7\arm7.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\arm7\arm7core.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\arm7\arm7core.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\arm7\arm7dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\arm7\arm7exec.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "CDP1802"
@@ -2750,46 +2840,6 @@ SOURCE=.\src\win32com\Res\VPinMAMESplash4.bmp
 # Begin Source File
 
 SOURCE=.\src\win32com\WSHDlg.rgs
-# End Source File
-# End Group
-# Begin Group "Included Files"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\adsp2100\2100ops.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6800\6800ops.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6800\6800tbl.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6809\6809ops.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6809\6809tbl.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\t6502.c
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # End Target
