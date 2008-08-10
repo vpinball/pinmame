@@ -718,7 +718,61 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							</FileConfiguration>
 						</File>
 						<File
+							RelativePath="src\cpu\m6502\t6510.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
+						<File
 							RelativePath="src\cpu\m6502\t65c02.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath="src\cpu\m6502\t65sc02.c">
 							<FileConfiguration
 								Name="Release|Win32"
 								ExcludedFromBuild="TRUE">
@@ -921,6 +975,33 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							</FileConfiguration>
 						</File>
 						<File
+							RelativePath="src\cpu\i86\instr186.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
+						<File
 							RelativePath="src\cpu\i86\instr186.h">
 						</File>
 						<File
@@ -1023,6 +1104,33 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\i8051\i8051.h">
 						</File>
+						<File
+							RelativePath="src\cpu\i8051\i8051ops.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
 					</Filter>
 					<Filter
 						Name="TMS7000"
@@ -1035,6 +1143,60 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						</File>
 						<File
 							RelativePath="src\cpu\tms7000\tms7000.h">
+						</File>
+						<File
+							RelativePath="src\cpu\tms7000\tms70op.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath="src\cpu\tms7000\tms70tb.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
 						</File>
 					</Filter>
 					<Filter
@@ -1060,7 +1222,64 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							RelativePath="src\cpu\arm7\arm7.h">
 						</File>
 						<File
+							RelativePath="src\cpu\arm7\arm7core.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath="src\cpu\arm7\arm7core.h">
+						</File>
+						<File
 							RelativePath="src\cpu\arm7\arm7dasm.c">
+						</File>
+						<File
+							RelativePath="src\cpu\arm7\arm7exec.c">
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="TRUE">
+								<Tool
+									Name="VCCLCompilerTool"/>
+							</FileConfiguration>
 						</File>
 					</Filter>
 					<Filter
