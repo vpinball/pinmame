@@ -14,7 +14,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="obj\VC2002\VPinMAME\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(VS_OUTPUT)obj\VC2002\VPinMAME\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -80,7 +80,7 @@ echo regsvr32 exec.time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="obj\VC2002\VPinMAME\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(VS_OUTPUT)obj\VC2002\VPinMAME\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -146,7 +146,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 		</Configuration>
 		<Configuration
 			Name="Release with MAME Debugger|Win32"
-			OutputDirectory="obj\VC2002\VPinMAME\$(PlatformName)\ReleaseMD"
+			OutputDirectory="$(VS_OUTPUT)obj\VC2002\VPinMAME\$(PlatformName)\ReleaseMD"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -211,7 +211,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 		</Configuration>
 		<Configuration
 			Name="Debug with MAME Debugger|Win32"
-			OutputDirectory="obj\VC2002\VPinMAME\$(PlatformName)\DebugMD"
+			OutputDirectory="$(VS_OUTPUT)obj\VC2002\VPinMAME\$(PlatformName)\DebugMD"
 			IntermediateDirectory="$(OutDir)\Intermediate"
 			ConfigurationType="2"
 			UseOfMFC="0"
