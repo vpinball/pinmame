@@ -86,7 +86,7 @@ BOOL IsSingleThreadedApartment()
 	if ( !szThreadingModel[0] )
 		return TRUE;
 
-	return strcmpi(szThreadingModel, "Apartment")?FALSE:TRUE;
+	return _strcmpi(szThreadingModel, "Apartment")?FALSE:TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
