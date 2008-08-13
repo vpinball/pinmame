@@ -117,9 +117,11 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 ---------------
 - Service Packs
   2005 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2005+SP&sortCriteria=date
+  2008 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2008+service+pack&sortCriteria=date
 - Windows Platform SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
   (folders: bin, include, include\gl, lib)
   http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
+  http://www.microsoft.com/downloads/results.aspx?freetext=Windows+Platform+SDK&sortCriteria=date
 - Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
   source code, is August 2007.
   (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
@@ -140,6 +142,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 
 Additional notes on Express Editions:
 - Both (2005 & 2008) work fine without any changes and can compile PinMAME and PinMAME32
+  http://www.microsoft.com/express/
 - The Express Editions are lacking the resource editors and also support for ATL
   and MFC projects. VPinMAME is an ATL DLL project (Release = MinDependency) and
   therefore not compilable with a normal Express Edition setup.
@@ -155,6 +158,10 @@ Additional notes on Express Editions:
   Btw this "trick" failed with the Express Edition of VisualC++ 2005.
   http://msdn.microsoft.com/evalcenter/
   http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
+
+Known Issues:
+- Error when compiling PinMAME32 debug builds with VC++ 2005 or 2008
+  "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
 
 
 -----------
