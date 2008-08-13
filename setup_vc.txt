@@ -164,6 +164,23 @@ Compilation
   Debug build and then compile.
 
 
+----------------
+Virtual Machines (or placing intermediate files somewhere else)
+----------------
+The project files for VC++ 2002 (and later) allow to place the intermediate
+files into a separate location. This can be very useful if you get the error
+"fatal error C1090: PDB API call failed, error code '23'", which happens quite a
+lot in virtual machines with shared folders.
+
+To use a different location just set the environment variable VS_OUTPUT to the
+desired location plus a backslash. A trailing backslash is MANDATORY if you use it!!!
+If you set or changed the environment variable while Visual Studio was running,
+then you have to exit and restart Visual Studio for the change to take effect.
+
+If the environment variable VS_OUTPUT is not set or empty, then the OBJ folder
+will be inside the project folder as usual.
+
+
 -------------------
 Addendum: Libraries
 -------------------
