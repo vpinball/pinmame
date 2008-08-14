@@ -118,6 +118,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 - Service Packs
   2005 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2005+SP&sortCriteria=date
   2008 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2008+service+pack&sortCriteria=date
+  Slipstreaming VS service packs: http://blogs.msdn.com/heaths/archive/2006/12/16/slipstreaming-visual-studio-2005-service-pack-1.aspx
 - Windows Platform SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
   (folders: bin, include, include\gl, lib)
   http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
