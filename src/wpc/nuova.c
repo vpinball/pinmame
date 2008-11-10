@@ -177,7 +177,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
   // CPU clock adjusted to fit recorded live sample
-  MDRV_CPU_ADD_TAG("scpu", M6803, 975000)
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
@@ -297,7 +297,7 @@ BY35_INPUT_PORTS_START(spacehaw, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(spacehaw,cybrnaut,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Dark Shadow (Spy Hunter Clone)
+/ Dark Shadow
 /-------------------------------*/
 ROM_START(darkshad)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -306,12 +306,12 @@ ROM_START(darkshad)
     ROM_COPY(REGION_CPU1, 0xe800, 0x1800,0x0800)
     ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x0800)
     ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
-BY45_SOUNDROM11(         "spy_u3.532", CRC(95ffc1b8) SHA1(28f058f74abbbee120dca06f7321bcb588bef3c6),
-                         "spy_u4.532", CRC(a43887d0) SHA1(6bbc55943fa9f0cd97f946767f21652e19d85265))
+BY45_SOUNDROM11(         "bp_u3.532",  CRC(a5005067) SHA1(bd460a20a6e8f33746880d72241d6776b85126cf),
+                         "bp_u4.532",  CRC(57978b4a) SHA1(4995837790d81b02325d39b548fb882a591769c5))
 ROM_END
 INITGAME(darkshad,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
 BY35_INPUT_PORTS_START(darkshad, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(darkshad,spyhuntr,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(darkshad,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Skill Flight
