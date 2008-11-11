@@ -338,8 +338,8 @@ S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12
 S11_ROMEND
 #define input_ports_bnzai input_ports_s11
 
-S11_ROMSTART48(bnzai,l1,"u26-l1.rom", CRC(556abdc0) SHA1(6de78345e5839a4ae9ff97273b6edb2635e0e8b4),
-                        "u27-l1.rom", CRC(7fc6de2e) SHA1(a7b42c2cd8c1e3810a319c755e52273454d5ca41))
+S11_ROMSTART48(bnzai,g3,"banz_u26.l3g",CRC(744b8758) SHA1(0bcd5dfd872656d0261a819e3dbd222754585ec0),
+                        "banz_u27.l3", CRC(af66fac4) SHA1(84929aaad8a8e4a312a230b73f206d3b43a04dc3))
 S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
                         "banz_u22.l1", CRC(e8159033) SHA1(e8f15801feefeb30768e88d685c208108aa134e8))
 S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12ab5943a7be8709bfe3),
@@ -347,18 +347,28 @@ S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12
                         "banz_u20.l1", CRC(26b3d15c) SHA1(528084b6c62394f8ed9fc0f90b91d844060fc904))
 S11_ROMEND
 
-S11_ROMSTART48(bnzai,p1,"u26-pa.rom", CRC(65a73e31) SHA1(0332b51ecfc548f72eaca402d83a5ad6dd223272),
-                        "u27-pa.rom", CRC(c64e2898) SHA1(b2291e9e65f8392f2f05f116dc47fcaf37500e60))
+S11_ROMSTART48(bnzai,l1,"u26-l1.rom",  CRC(556abdc0) SHA1(6de78345e5839a4ae9ff97273b6edb2635e0e8b4),
+                        "u27-l1.rom",  CRC(7fc6de2e) SHA1(a7b42c2cd8c1e3810a319c755e52273454d5ca41))
 S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
                         "banz_u22.l1", CRC(e8159033) SHA1(e8f15801feefeb30768e88d685c208108aa134e8))
-S11CS_SOUNDROM888(      "u4-p7.rom",  CRC(630d1ce9) SHA1(fb7f6004b94bf20281216519f18b53949eef4405),
+S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12ab5943a7be8709bfe3),
+                        "banz_u19.l1", CRC(9104248c) SHA1(48a8c41f3a4127f4fb4de37e876c8380e3511e1f),
+                        "banz_u20.l1", CRC(26b3d15c) SHA1(528084b6c62394f8ed9fc0f90b91d844060fc904))
+S11_ROMEND
+
+S11_ROMSTART48(bnzai,pa,"u26-pa.rom",  CRC(65a73e31) SHA1(0332b51ecfc548f72eaca402d83a5ad6dd223272),
+                        "u27-pa.rom",  CRC(c64e2898) SHA1(b2291e9e65f8392f2f05f116dc47fcaf37500e60))
+S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
+                        "banz_u22.l1", CRC(e8159033) SHA1(e8f15801feefeb30768e88d685c208108aa134e8))
+S11CS_SOUNDROM888(      "u4-p7.rom",   CRC(630d1ce9) SHA1(fb7f6004b94bf20281216519f18b53949eef4405),
                         "banz_u19.l1", CRC(9104248c) SHA1(48a8c41f3a4127f4fb4de37e876c8380e3511e1f),
                         "banz_u20.l1", CRC(26b3d15c) SHA1(528084b6c62394f8ed9fc0f90b91d844060fc904))
 S11_ROMEND
 
 CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,p1,l3,"Banzai Run (P-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (L-3) Germany", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,l1,l3,"Banzai Run (L-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,pa,l3,"Banzai Run (P-A)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Swords of Fury 8/88
