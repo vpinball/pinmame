@@ -990,7 +990,10 @@ DRIVERNV(potc_400af)		//S.A.M: 04/07 Pirates of the Caribbean - V4.00 (English, 
 DRIVERNV(potc_400ai)		//S.A.M: 04/07 Pirates of the Caribbean - V4.00 (English, Italian)
 DRIVERNV(potc_400al)		//S.A.M: 04/07 Pirates of the Caribbean - V4.00 (English, Spanish)
 DRIVERNV(potc_400gf)		//S.A.M: 04/07 Pirates of the Caribbean - V4.00 (German, French)
+DRIVERNV(potc_600af)		//S.A.M: 01/08 Pirates of the Caribbean - V6.00 (English, French)
+DRIVERNV(potc_600ai)		//S.A.M: 01/08 Pirates of the Caribbean - V6.00 (English, Italian)
 DRIVERNV(potc_600as)		//S.A.M: 01/08 Pirates of the Caribbean - V6.00 (English, Spanish)
+DRIVERNV(potc_600gf)		//S.A.M: 01/08 Pirates of the Caribbean - V6.00 (German, French)
 DRIVERNV(fg_200a) 			//S.A.M: 02/07 Family Guy - V2.00
 DRIVERNV(fg_300ai)			//S.A.M: 02/07 Family Guy - V3.00  (English, Italian)
 DRIVERNV(fg_800al)			//S.A.M: 03/07 Family Guy - V8.00  (English, Spanish)
