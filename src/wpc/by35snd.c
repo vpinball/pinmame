@@ -248,6 +248,7 @@ static void by32_init(struct sndbrdData *brdData) {
 /      B6: Speach clock
 /      B7: Speach data
 /      CA1: SoundEnable
+/      CB1: fed by 555 timer (not equipped?)
 /      CA2: ? (volume circuit)
 /      CB2: ? (volume circuit)
 /      IRQ: CPU IRQ
@@ -294,10 +295,16 @@ static MEMORY_WRITE_START(sp_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
+static INTERRUPT_GEN(sp555_timer) {
+  static int cb1;
+  pia_set_input_cb1(SP_PIA0, cb1 = !cb1);
+}
+
 MACHINE_DRIVER_START(by51)
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
+//MDRV_CPU_PERIODIC_INT(sp555_timer, 250)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(AY8910, sp_ay8910Int)
 MACHINE_DRIVER_END
@@ -312,27 +319,29 @@ MACHINE_DRIVER_END
 static READ_HANDLER(sp_8910r);
 static WRITE_HANDLER(sp_pia0a_w);
 static WRITE_HANDLER(sp_pia0b_w);
+static WRITE_HANDLER(sp_pia0cb2_w);
 static void sp_irq(int state);
 
 static const struct pia6821_interface sp_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ sp_pia0a_w, sp_pia0b_w, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*o: A/B,CA/B2       */ sp_pia0a_w, sp_pia0b_w, 0, sp_pia0cb2_w,
   /*irq: A/B           */ sp_irq, sp_irq
 };
 
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b;
-  int lastcmd, cmdin, cmdout, cmd[2], lastctrl;
+  UINT8 lastcmd, cmd[2], lastctrl;
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
+  int i;
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
-  splocals.cmdin = splocals.cmdout = 2;
   if (splocals.brdData.subType == 1) { // -56 board
     hc55516_set_gain(0, 40000);
   }
+  for (i=0; i < 0x80; i++) memory_region(BY51_CPUREGION)[i] = 0xff;
 }
 static void sp_diag(int button) {
   cpu_set_nmi_line(splocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
@@ -353,19 +362,26 @@ static WRITE_HANDLER(sp_pia0b_w) {
   }
   if (splocals.pia0b & 0x02) AY8910Write(0, splocals.pia0b ^ 0x01, splocals.pia0a);
 }
+static WRITE_HANDLER(sp_pia0cb2_w) {
+  logerror("Mute sound: %d\n", data);
+  // spaceinv seems to use this feature at game start time but not anymore afterwards!?
+  mixer_set_volume(0, data ? 75 : 100);
+}
 
 static WRITE_HANDLER(sp51_data_w) {
   splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
 }
 static WRITE_HANDLER(sp51_ctrl_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
+  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) << 3);
   pia_set_input_ca1(SP_PIA0, data & 0x01);
 }
 static WRITE_HANDLER(sp51_manCmd_w) {
   splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
 }
 
-static READ_HANDLER(sp_8910a_r) { return ~splocals.lastcmd; }
+static READ_HANDLER(sp_8910a_r) {
+  return (0x1f & ~splocals.lastcmd) | 0x20;
+}
 
 static void sp_irq(int state) {
   cpu_set_irq_line(splocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -469,7 +485,7 @@ static void snt_irq(int state);
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b;
-  int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
+  UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
@@ -481,12 +497,13 @@ static const struct pia6821_interface snt_pia[] = {{
   /*irq: A/B           */ snt_irq, snt_irq
 }};
 static void snt_init(struct sndbrdData *brdData) {
+  int i;
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
-  sntlocals.cmdin = sntlocals.cmdout = 2;
   tms5220_reset();
   tms5220_set_variant(variant_tmc0285);
+  for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
 }
 static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
@@ -702,7 +719,7 @@ static struct {
   int cmd, dacdata, status;
 } tcslocals;
 static const struct pia6821_interface tcs_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ 0, tcs_pia0b_r, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, tcs_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ tcs_pia0a_w, tcs_pia0b_w, 0, tcs_pia0cb2_w,
   /*irq: A/B           */ tcs_pia0irq, tcs_pia0irq
 };
@@ -800,7 +817,6 @@ static WRITE_HANDLER(sd_man_w) {
   sd_cmd_w(0, data);
 }
 static WRITE_HANDLER(sd_cmd_w) {
-//printf("%02x ", data);
   sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
   if (sdlocals.irqnext) {
     pia_set_input_ca1(SD_PIA0,0); pia_set_input_ca1(SD_PIA0,1);
@@ -808,7 +824,6 @@ static WRITE_HANDLER(sd_cmd_w) {
   }
 }
 static WRITE_HANDLER(sd_ctrl_w) {
-//printf("%d ", data);
   if (!(data & 0x01)) sdlocals.irqnext = 1;
 }
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
