@@ -768,12 +768,12 @@ static struct DACinterface sd_dacInt = { 1, { 80 }};
 static MEMORY_READ16_START(sd_readmem)
   {0x00000000, 0x0003ffff, MRA16_ROM},		/*ROM (4 X 64K)*/
   {0x00060000, 0x00060007, pia_msb_r(SD_PIA0) },	/*PIA - CPU D8-15 connected to PIA D0-7*/
-  {0x00070000, 0x0007ffff, MRA16_RAM},		/*RAM*/
+  {0x00070000, 0x00070fff, MRA16_RAM},		/*RAM*/
 MEMORY_END
 static MEMORY_WRITE16_START(sd_writemem)
   {0x00000000, 0x0003ffff, MWA16_ROM},		/*ROM (4 X 64K)*/
   {0x00060000, 0x00060007, pia_msb_w(SD_PIA0)},	/*PIA - CPU D8-15 connected to PIA D0-7*/
-  {0x00070000, 0x0007ffff, MWA16_RAM},		/*RAM*/
+  {0x00070000, 0x00070fff, MWA16_RAM},		/*RAM*/
 MEMORY_END
 
 MACHINE_DRIVER_START(bySD)
@@ -793,7 +793,8 @@ static void sd_pia0irq(int state);
 static struct {
   struct sndbrdData brdData;
   UINT16 dacdata;
-  int cmd[2], status, irqnext, cmdsync;
+  int status, ledcount;
+  UINT8 cmd, latch;
 } sdlocals;
 
 static const struct pia6821_interface sd_pia = {
@@ -803,33 +804,42 @@ static const struct pia6821_interface sd_pia = {
 };
 static void sd_init(struct sndbrdData *brdData) {
   sdlocals.brdData = *brdData;
+  sdlocals.ledcount = 0;
   pia_config(SD_PIA0, PIA_ALTERNATE_ORDERING, &sd_pia);
 }
 static WRITE_HANDLER(sd_pia0cb2_w) {
+  if (!data) {
+    sdlocals.ledcount++;
+    logerror("SD LED: %d\n", sdlocals.ledcount);
+  }
   sndbrd_ctrl_cb(sdlocals.brdData.boardNo,data);
 }
 static void sd_diag(int button) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_3, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static WRITE_HANDLER(sd_man_w) {
+  sd_cmd_w(0, data);
   sd_ctrl_w(0, 0);
   sd_ctrl_w(0, 1);
-  sd_cmd_w(0, data);
+  sd_cmd_w(0, data >> 4);
 }
 static WRITE_HANDLER(sd_cmd_w) {
-  sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
-  if (sdlocals.irqnext) {
-    pia_set_input_ca1(SD_PIA0,0); pia_set_input_ca1(SD_PIA0,1);
-    sdlocals.irqnext = 0;
-  }
+  logerror("SD cmd: %02x\n", data);
+  sdlocals.latch = data;
 }
 static WRITE_HANDLER(sd_ctrl_w) {
-  if (!(data & 0x01)) sdlocals.irqnext = 1;
+  logerror("SD ctrl:%d\n", data);
+  if (!(data & 0x01)) sdlocals.cmd = sdlocals.latch;
+  if (sdlocals.ledcount > 5) // wait until soundboard ready
+    pia_set_input_ca1(SD_PIA0, data & 0x01);
 }
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
 
 static READ_HANDLER(sd_pia0b_r) {
-  return 0x30 | (sdlocals.cmd[sdlocals.cmdsync ^= 1] & 0x0f);
+  UINT8 val = 0x30 | (sdlocals.cmd & 0x0f);
+  logerror("SD read:%02x\n", val);
+  sdlocals.cmd >>= 4;
+  return val;
 }
 
 static WRITE_HANDLER(sd_pia0a_w) {
