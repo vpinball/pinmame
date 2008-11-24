@@ -232,7 +232,8 @@ CORE_CLONEDEFNV(esclwrlg,esclwrld,"Escape from the Lost World (German)",1987,"Ba
 /*------------------------------------
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
-INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
+static core_tGameData black100GameData = {GEN_BY6803A,dispBy104,{FLIP6803,0,4,0,SNDBRD_BYSD, BY6803_DISPALPHA, 1}};
+static void init_black100(void) { core_gameData = &black100GameData; }
 BY6803_ROMSTART44(black100, "u2.cpu", CRC(411fa773) SHA1(9756c7eee0f78792823a0b0379d2baac28cb03e8),
                             "u3.cpu", CRC(d6f6f890) SHA1(8fe4dae471f4c89f2fd72c6e647ead5206881c63))
 BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda853279696718d3adbf7e3),
@@ -241,7 +242,7 @@ BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda8532
                             "u13.bin",CRC(f5890443) SHA1(77cd18cf5541ae9f7e2dd1c060a9bf29b242d05d))
 BY6803_ROMEND
 #define input_ports_black100 input_ports_by6803a
-CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
 
 BY6803_ROMSTART44(black10s, "sb2.cpu", CRC(b6fdbb0f) SHA1(5b36a725db3a1e023bbb54b8f85300fe99174b6e),
                             "sb3.cpu", CRC(ae9930b8) SHA1(1b6c63ce98939ecded300639d872df62548157a4))
@@ -252,7 +253,7 @@ BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda8532
 BY6803_ROMEND
 #define init_black10s init_black100
 #define input_ports_black10s input_ports_by6803a
-CORE_CLONEDEFNV(black10s,black100,"Blackwater 100 (Single Ball Play)",1988,"Bally",by_mBY6803_SDS,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(black10s,black100,"Blackwater 100 (Single Ball Play)",1988,"Bally",by_mBY6803_SDS,0)
 
 //Games below use 6803 MPU & Williams System 11C Sound Hardware
 /*-------------------------------------------------------------
