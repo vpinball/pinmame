@@ -114,8 +114,6 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments, pseg;
   int dispcol, disprow, commacol;
-  int diagnosticLed;
-  int sounddiagnosticLed;
   int vblankCount;
   int phase_a, p21;
   void (*DISPSTROBE)(int mask);
@@ -290,10 +288,10 @@ static WRITE_HANDLER(pia0cb2_w) {
   if (locals.p0_cb2 & ~data) locals.lampadr = locals.p0_a & 0x0f;
   locals.p0_cb2 = data;
 }
-/* PIA1:CA2-W Diagnostic LED */
+/* PIA1:CA2-W Diagnostic LED (earlier games) */
 static WRITE_HANDLER(pia1ca2_w) {
   //DBGLOG(("PIA1:CA2=%d\n",data));
-  locals.diagnosticLed = data;
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | data;
 }
 
 /* PIA0:CA2-W Display Blanking/Select */
@@ -337,10 +335,6 @@ static void vblank_all(void) {
     coreGlobals.solenoids = locals.solenoids;
     locals.solenoids = coreGlobals.pulsedSolState;
   }
-
-  /*update leds*/
-  coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.sounddiagnosticLed<<1);
-  locals.diagnosticLed = locals.sounddiagnosticLed = 0;
 
   core_updateSw(core_getSol(19));
 }
@@ -428,11 +422,11 @@ CA2 = N/A
 IRQ:  NOT? Wired to Main 6803 CPU IRQ.
 */
 static struct pia6821_interface piaIntf[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, 0,0, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  0,0, 0,0, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0,0, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,0,pia1cb2_w,
 /* IRQ: A/B              */  0,0
 }};
@@ -489,13 +483,13 @@ static READ_HANDLER(port2_r) { return (locals.phase_a && !locals.p21) | 0x18; }
 
 //Diagnostic LED & Sound Interrupt
 static WRITE_HANDLER(port2_w) {
-  locals.diagnosticLed= ((data>>2)&1);
-  sndbrd_0_ctrl_w(0, (data & 0x10) ? 1 : 0);
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | ((data>>2) & 0x01);
+  sndbrd_0_ctrl_w(0, (data & 0x10) >> 4);
   locals.p21 = data & 0x02;
   cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static WRITE_HANDLER(by6803_soundLED) { locals.sounddiagnosticLed = data; }
+static WRITE_HANDLER(by6803_soundLED) { coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x01) | (data << 1); }
 
 /*-----------------------------------
 /  Memory map for CPU board
@@ -553,7 +547,7 @@ PORT_END
 static MACHINE_DRIVER_START(by6803)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by6803,by6803,by6803)
-  MDRV_CPU_ADD_TAG("mcpu", M6803, 3580000/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6803, 3579545/4)
   MDRV_CPU_MEMORY(by6803_readmem, by6803_writemem)
   MDRV_CPU_PORTS(by6803_readport, by6803_writeport)
   MDRV_CPU_VBLANK_INT(by6803_vblank, 1)
