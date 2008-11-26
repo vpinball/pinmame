@@ -80,25 +80,24 @@ CORE_CLONEDEFNV(motrshwa,motrshow,"Motor Show (alternate set)",1988,"Mr. Game (I
 
 
 /*-------------------------------------------------------------------
-/ Mac Attack (1989?)
+/ Mac Attack (1990)
 /-------------------------------------------------------------------*/
 INITGAME(macattck, mrgame_disp_g2, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(macattck,	"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)
-MRGAME_VIDEOROM2(		"vid_ic91.rom", NO_DUMP,
-						"vid_ic14.rom", NO_DUMP,
-						"vid_ic15.rom", NO_DUMP,
-						"vid_ic16.rom", NO_DUMP,
-						"vid_ic17.rom", NO_DUMP,
-						"vid_ic18.rom", NO_DUMP,
-						"vid_ic61.rom", NO_DUMP)
+MRGAME_VIDEOROM2(		"vid_ic91.rom", CRC(42d2ba01) SHA1(c13d38c2798575760461912cef65dde57dfd938c),
+						"vid_ic14.rom", CRC(f6e047fb) SHA1(6be712dda60257b9e7014315c8fee19812622bf6),
+						"vid_ic15.rom", CRC(405a8f54) SHA1(4d58915763db3c3be2bfc166be1a12285ff2c38b),
+						"vid_ic16.rom", CRC(063ea783) SHA1(385dbfcc8ecd3a784f9a8752d00e060b48d70d6a),
+						"vid_ic17.rom", CRC(9f95abf8) SHA1(d71cf36c8bf27ad41b2d3cebd0af620a34ce0062) BAD_DUMP,
+						"vid_ic18.rom", CRC(83ef25f8) SHA1(bab482badb8646b099dbb197ca9af3a126b274e3),
+						"vid_ic61.rom", CRC(538c72ae) SHA1(f704492568257fcc4a4f1189207c6fb6526eb81c) BAD_DUMP)
 MRGAME_SOUNDROM14(		"snd_ic06.rom", NO_DUMP,
-						"snd_ic07.rom", NO_DUMP,
 						"snd_ic22.rom", NO_DUMP,
-						"snd_ic35.rom", NO_DUMP)
- 
+						"snd_ic35.rom", NO_DUMP,
+						"snd_ic36.rom", NO_DUMP)
 MRGAME_ROMEND
-CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME2,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(macattck,"Mac Attack",1990,"Mr. Game (Italy)",mMRGAME2,GAME_IMPERFECT_SOUND)
 
 
 /*-------------------------------------------------------------------
