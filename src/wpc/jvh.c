@@ -239,7 +239,7 @@ static void jvh_init(struct sndbrdData *brdData) {
   for (i=0; i < 0x80; i++) memory_region(REGION_CPU2)[i] = 0xff;
   via_reset();
   via_config(0, &jvh_via);
-  memset(&locals, 0, sizeof(sndlocals));
+  memset(&sndlocals, 0, sizeof(sndlocals));
   sndlocals.brdData = *brdData;
 }
 
