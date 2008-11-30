@@ -2335,6 +2335,10 @@ SOURCE=.\src\wpc\jpgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\jvh.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\ltd.c
 # End Source File
 # Begin Source File
