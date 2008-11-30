@@ -33,7 +33,7 @@ static INTERRUPT_GEN(vblank) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 
-  core_updateSw(0);
+  core_updateSw(core_getSol(17));
 }
 
 static INTERRUPT_GEN(irq) {
@@ -96,6 +96,10 @@ static WRITE_HANDLER(snd_w) {
   }
 }
 
+static WRITE_HANDLER(enable_w) {
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xfffeffff) | (data << 16);
+}
+
 static WRITE_HANDLER(out1a_w) {
   coreGlobals.tmpLampMatrix[0] = (coreGlobals.tmpLampMatrix[0] & ~(1 << offset)) | ((data & 1) << offset);
 }
@@ -150,6 +154,7 @@ static PORT_WRITE_START(writeport)
   { 0x10, 0x15, snd_w },
   { 0x16, 0x16, latch_w },
   { 0x17, 0x19, out1a_w },
+  { 0x1a, 0x1a, enable_w },
   { 0x1b, 0x1f, out1b_w },
   { 0x20, 0x27, out2a_w },
   { 0x28, 0x2f, out2b_w },
@@ -197,22 +202,25 @@ static struct {
   UINT8 via_a, via_b;
 } sndlocals;
 
+static READ_HANDLER(jvh_via_a_r) {
+  return sndlocals.via_a;
+}
 static READ_HANDLER(jvh_via_b_r) {
   return ((sndlocals.via_a & 0xc0) == 0x40) ? AY8910Read(0) : 0;
 }
 static WRITE_HANDLER(jvh_via_a_w) {
-  sndlocals.via_a = data;
+  sndlocals.via_a = (sndlocals.via_a & 0x3f) | (data & 0xc0);
   if (sndlocals.via_a & 0x80)
-    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, sndlocals.via_b);
+    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, ~sndlocals.via_b);
 }
 static WRITE_HANDLER(jvh_via_b_w) {
   sndlocals.via_b = data;
   if (sndlocals.via_a & 0x80)
-    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, sndlocals.via_b);
+    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, ~sndlocals.via_b);
 }
 
 static WRITE_HANDLER(jvh_data_w) {
-  sndlocals.via_a = ~data & 0x3f;
+  sndlocals.via_a = (sndlocals.via_a & 0xc0) | (data & 0x3f);
   via_set_input_a(0, sndlocals.via_a);
 }
 
@@ -221,17 +229,18 @@ static void jvh_irq(int state) {
 }
 
 static const struct via6522_interface jvh_via = {
-  /*i: A/B,CA/B1,CA/B2 */ 0, jvh_via_b_r, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ jvh_via_a_r, jvh_via_b_r, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ jvh_via_a_w, jvh_via_b_w, 0, 0,
   /*irq                */ jvh_irq
 };
 
 static void jvh_init(struct sndbrdData *brdData) {
   int i;
-  sndlocals.brdData = *brdData;
-  via_config(0, &jvh_via);
-  via_reset();
   for (i=0; i < 0x80; i++) memory_region(REGION_CPU2)[i] = 0xff;
+  via_reset();
+  via_config(0, &jvh_via);
+  memset(&locals, 0, sizeof(sndlocals));
+  sndlocals.brdData = *brdData;
 }
 
 const struct sndbrdIntf jvhIntf = {
@@ -242,7 +251,7 @@ static struct AY8910interface jvh_ay8912Int  = { 1, 1000000, {20} };
 
 // what's this memory read for?
 static READ_HANDLER(snd_r) {
-  return 0xff; //sndlocals.via_a;
+  return sndlocals.via_a;
 }
 
 static MEMORY_READ_START(snd_readmem)
@@ -259,6 +268,15 @@ MEMORY_END
 
 // driver section
 
+static int jvh_sw2m(int no) {
+  if (no < 1) return no + 7;
+  return 8 * (1 + no/10) + no%10 - 1;
+}
+static int jvh_m2sw(int col, int row) {
+  if (col < 1) return row-7;
+  return (col-1)*10 + row;
+}
+
 MACHINE_DRIVER_START(jvh)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(jvh,jvh,NULL)
@@ -270,6 +288,7 @@ MACHINE_DRIVER_START(jvh)
   MDRV_TIMER_ADD(zc, 200) // European zc frequency * 2
   MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_UPDATE(jvh)
+  MDRV_SWITCH_CONV(jvh_sw2m, jvh_m2sw)
   MDRV_DIPS(24)
   MDRV_NVRAM_HANDLER(generic_1fill)
 
@@ -353,7 +372,7 @@ INPUT_PORTS_START(escape) \
       COREPORT_DIPSET(0x001c, "5/4 (1,1,1,2)" ) \
       COREPORT_DIPSET(0x001d, "7/4 (1,2,1,3)" ) \
       COREPORT_DIPSET(0x001e, "7/4 (1,2,2,2)" ) \
-      COREPORT_DIPSET(0x001f, "2/5 (1,0,1,0,1)" ) \
+      COREPORT_DIPSET(0x001f, "2/5 (0,0,1,0,1)" ) \
     COREPORT_DIPNAME( 0x1f00, 0x0000, "Center Coin Chute (credits/coins)") \
       COREPORT_DIPSET(0x0000, "1/1" ) \
       COREPORT_DIPSET(0x0100, "2/1" ) \
@@ -386,7 +405,7 @@ INPUT_PORTS_START(escape) \
       COREPORT_DIPSET(0x1c00, "5/4 (1,1,1,2)" ) \
       COREPORT_DIPSET(0x1d00, "7/4 (1,2,1,3)" ) \
       COREPORT_DIPSET(0x1e00, "7/4 (1,2,2,2)" ) \
-      COREPORT_DIPSET(0x1f00, "2/5 (1,0,1,0,1)" ) \
+      COREPORT_DIPSET(0x1f00, "2/5 (0,0,1,0,1)" ) \
   PORT_START /* 2 */ \
     COREPORT_DIPNAME( 0x001f, 0x0000, "Right Coin Chute (credits/coins)") \
       COREPORT_DIPSET(0x0000, "1/1" ) \
@@ -420,7 +439,7 @@ INPUT_PORTS_START(escape) \
       COREPORT_DIPSET(0x001c, "5/4 (1,1,1,2)" ) \
       COREPORT_DIPSET(0x001d, "7/4 (1,2,1,3)" ) \
       COREPORT_DIPSET(0x001e, "7/4 (1,2,2,2)" ) \
-      COREPORT_DIPSET(0x001f, "2/5 (1,0,1,0,1)" ) \
+      COREPORT_DIPSET(0x001f, "2/5 (0,0,1,0,1)" ) \
     COREPORT_DIPNAME( 0x0060, 0x0060, "Replays for beating HSTD") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
