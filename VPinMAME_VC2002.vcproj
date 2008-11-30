@@ -2624,6 +2624,9 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 					RelativePath="src\wpc\jpgames.c">
 				</File>
 				<File
+					RelativePath="src\wpc\jvh.c">
+				</File>
+				<File
 					RelativePath="src\wpc\ltd.c">
 				</File>
 				<File

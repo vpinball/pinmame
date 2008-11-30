@@ -95,6 +95,7 @@
 #define HAS_AT91     1
 #define HAS_ARM7	 1
 #define HAS_CDP1802	 1
+#define HAS_TMS9980  1
 #define HAS_TMS9995	 1
 
 // Sound

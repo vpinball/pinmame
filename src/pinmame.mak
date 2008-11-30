@@ -62,6 +62,7 @@ DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
 DRVLIBS += $(PINOBJ)/nsm.o
 DRVLIBS += $(PINOBJ)/allied.o
+DRVLIBS += $(PINOBJ)/jvh.o
 #
 # Games
 #
@@ -181,6 +182,7 @@ CPUS += SCAMP@
 CPUS += ARM7@
 CPUS += AT91@
 CPUS += CDP1802@
+CPUS += TMS9980@
 CPUS += TMS9995@
 
 SOUNDS += DAC@
