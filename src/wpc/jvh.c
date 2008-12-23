@@ -4,7 +4,6 @@
  Rare Dutch manufacturer.
  The TMS9980 emulation in MAME 0.76 is a bit complicated.
  However, the game works fine, according to all sources. :)
- Sound yet to do...
 
  Hardware:
  ---------
@@ -199,29 +198,25 @@ static SWITCH_UPDATE(jvh) {
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 via_a, via_b;
+  UINT8 cmd, via_b;
 } sndlocals;
 
 static READ_HANDLER(jvh_via_a_r) {
-  return sndlocals.via_a;
-}
-static READ_HANDLER(jvh_via_b_r) {
-  return ((sndlocals.via_a & 0xc0) == 0x40) ? AY8910Read(0) : 0;
+  UINT8 cmd = sndlocals.cmd ^ 0x3f;
+  return cmd ? cmd : 0xff; // avoid passing in 0x00 as a command because it stops all sound forever
 }
 static WRITE_HANDLER(jvh_via_a_w) {
-  sndlocals.via_a = (sndlocals.via_a & 0x3f) | (data & 0xc0);
-  if (sndlocals.via_a & 0x80)
-    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, ~sndlocals.via_b);
+  if (data >> 7)
+    AY8910Write(0, (data ^ 0x40) >> 6, sndlocals.via_b);
 }
 static WRITE_HANDLER(jvh_via_b_w) {
   sndlocals.via_b = data;
-  if (sndlocals.via_a & 0x80)
-    AY8910Write(0, (sndlocals.via_a & 0x40) >> 6, ~sndlocals.via_b);
 }
 
 static WRITE_HANDLER(jvh_data_w) {
-  sndlocals.via_a = (sndlocals.via_a & 0xc0) | (data & 0x3f);
-  via_set_input_a(0, sndlocals.via_a);
+  sndlocals.cmd = data & 0x3f;
+  UINT8 cmd = sndlocals.cmd ^ 0x3f;
+  via_set_input_a(0, cmd ? cmd : 0xff); // avoid passing in 0x00 as a command because it stops all sound forever
 }
 
 static void jvh_irq(int state) {
@@ -229,7 +224,7 @@ static void jvh_irq(int state) {
 }
 
 static const struct via6522_interface jvh_via = {
-  /*i: A/B,CA/B1,CA/B2 */ jvh_via_a_r, jvh_via_b_r, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ jvh_via_a_r, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ jvh_via_a_w, jvh_via_b_w, 0, 0,
   /*irq                */ jvh_irq
 };
@@ -247,16 +242,10 @@ const struct sndbrdIntf jvhIntf = {
   "JVH", jvh_init, NULL, NULL, jvh_data_w, jvh_data_w
 };
 
-static struct AY8910interface jvh_ay8912Int  = { 1, 1000000, {20} };
-
-// what's this memory read for?
-static READ_HANDLER(snd_r) {
-  return sndlocals.via_a;
-}
+static struct AY8910interface jvh_ay8912Int  = { 1, 1000000, {25} };
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x007f, MRA_RAM },
-  { 0x00ff, 0x00ff, snd_r },
   { 0x0080, 0x008f, via_0_r },
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -280,7 +269,7 @@ static int jvh_m2sw(int col, int row) {
 MACHINE_DRIVER_START(jvh)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(jvh,jvh,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", TMS9980, 2000000) // ~8MHz, divided by 4?
+  MDRV_CPU_ADD_TAG("mcpu", TMS9980, 1000000) // ~8MHz, divided by 8?
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_PORTS(readport, writeport)
   MDRV_CPU_VBLANK_INT(vblank, 1)
@@ -337,9 +326,9 @@ INPUT_PORTS_START(escape) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "Enable clear bookkeeping") \
       COREPORT_DIPSET(0x0080, DEF_STR(No) ) \
       COREPORT_DIPSET(0x0000, DEF_STR(Yes) ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, DEF_STR(Unknown)) \
-      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
-      COREPORT_DIPSET(0x8000, DEF_STR(On) ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Background music") \
+      COREPORT_DIPSET(0x8000, DEF_STR(Off) ) \
+      COREPORT_DIPSET(0x0000, DEF_STR(On) ) \
     COREPORT_DIPNAME( 0x001f, 0x0000, "Left Coin Chute (credits/coins)") \
       COREPORT_DIPSET(0x0000, "1/1" ) \
       COREPORT_DIPSET(0x0001, "2/1" ) \
@@ -459,4 +448,4 @@ ROM_START(escape) \
     ROM_RELOAD(0xe000, 0x2000) \
 ROM_END
 #define init_escape init_jvh
-CORE_GAMEDEFNV(escape,"Escape",1987,"Jac Van Ham (Royal)",jvh,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(escape,"Escape",1987,"Jac Van Ham (Royal)",jvh,0)
