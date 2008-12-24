@@ -105,10 +105,10 @@ enum {
 
 #define UINT16_XOR_LE(o) (((o)&~1)|(((o)&1)^1))
 #define UINT32_XOR_LE(o) (((o)&~3)|(((o)&3)^3))
-#define HOST_XOR_LE  0
+#define HOST_XOR_LE	0
 #define UINT16_XOR_BE(o) (o)
 #define UINT32_XOR_BE(o) (o)
-#define HOST_XOR_BE  0
+#define HOST_XOR_BE	0
 
 /****************************************************************************
  * Statics
@@ -520,9 +520,9 @@ typedef struct {
 	UINT32	brk_regs_mask;		/* mask register value before comparing */
 	UINT32	brk_temp;			/* temporary execution breakpoint */
 #if defined(PINMAME) && defined(DBG_BPR)
-        UINT32  bprstart, bprend;
-        int     bprnext;
-        struct { UINT32 adr; int length; } bprdata[10];
+	UINT32	bprstart, bprend;
+	int		bprnext;
+	struct { UINT32 adr; int length; } bprdata[10];
 #endif
 
 	s_regs	regs;
@@ -912,7 +912,7 @@ static s_command commands[] = {
 /* CODELIST */
 {	(1<<EDIT_CMDS),
 	"CODELIST",      0,          CODE_NONE,
-	"<filename>|OFF",
+	"[filename]|OFF",
 	"Collect code addresses during execution and condense them to blocks.\nCode blocks data is written to <filename> when switched off",
 	cmd_codelist_to_file },
 #endif /* PINMAME */
@@ -1868,47 +1868,48 @@ static int hit_brk_data(void)
  * Return non zero if the bpr watchpoint for the activecpu was hit
  **************************************************************************/
 void bpr_memref(UINT32 adr, int length) {
-  if (mame_debug && !dbg_fast && !dbg_active) {
-    active_cpu = cpu_getactivecpu();
-    if (!DBG.ignore && DBG.bprstart != INVALID && DBG.bprnext < 10) {
-      DBG.bprdata[DBG.bprnext].adr = adr;
-      DBG.bprdata[DBG.bprnext].length = length;
-      DBG.bprnext += 1;
-    }
-  }
+	if (mame_debug && !dbg_fast && !dbg_active) {
+		active_cpu = cpu_getactivecpu();
+		if (!DBG.ignore && DBG.bprstart != INVALID && DBG.bprnext < 10) {
+			DBG.bprdata[DBG.bprnext].adr = adr;
+			DBG.bprdata[DBG.bprnext].length = length;
+			DBG.bprnext += 1;
+		}
+	}
 }
 
 static int bpr_check(void) {
-  static char dbg_info[63+1];
-  int ii = 0;
+	static char dbg_info[63+1];
+	int ii = 0;
 
-  if (DBG.bprstart == INVALID) return 0;
-  while (ii < DBG.bprnext) {
-    if ((DBG.bprdata[ii].adr+DBG.bprdata[ii].length-1 >= DBG.bprstart) &&
-        (DBG.bprdata[ii].adr                          <= DBG.bprend)) {
-      sprintf(dbg_info, "Hit reference watchpoint between $%X $%X", DBG.bprstart, DBG.bprend);
-      dbg_info_once = dbg_info;
-      DBG.bprnext = 0;
-      return 1;
-    }
-    ii += 1;
-  }
-  DBG.bprnext = 0;
-  return 0;
+	if (DBG.bprstart == INVALID) return 0;
+	while (ii < DBG.bprnext) {
+		if ((DBG.bprdata[ii].adr+DBG.bprdata[ii].length-1 >= DBG.bprstart) &&
+		    (DBG.bprdata[ii].adr                          <= DBG.bprend)) {
+			sprintf(dbg_info, "Hit reference watchpoint between $%X $%X", DBG.bprstart, DBG.bprend);
+			dbg_info_once = dbg_info;
+			DBG.bprnext = 0;
+			return 1;
+		}
+		ii += 1;
+	}
+	DBG.bprnext = 0;
+	return 0;
 }
-static void bpr_set(void) {
-  char *cmd = CMD;
-  int length;
 
-  DBG.bprstart = get_register_or_value(&cmd, &length );
-  if (length) {
-    DBG.bprstart = rshift(DBG.bprstart) & AMASK; /* EHC 11/14/99: Need to shift + mask otherwise we die */
-    DBG.bprend = get_register_or_value(&cmd, &length);
-    if (!length) DBG.bprend = DBG.bprstart;
-  }
-  else DBG.bprstart = INVALID;
-  dbg_update = 1;
-  edit_cmds_reset();
+static void bpr_set(void) {
+	char *cmd = CMD;
+	int length;
+
+	DBG.bprstart = get_register_or_value(&cmd, &length );
+	if (length) {
+		DBG.bprstart = rshift(DBG.bprstart) & AMASK; /* EHC 11/14/99: Need to shift + mask otherwise we die */
+		DBG.bprend = get_register_or_value(&cmd, &length);
+		if (!length) DBG.bprend = DBG.bprstart;
+	}
+	else DBG.bprstart = INVALID;
+	dbg_update = 1;
+	edit_cmds_reset();
 }
 #endif
 
@@ -4930,7 +4931,7 @@ static void cmd_dasm_down( void )
 {
 	DBGDASM.pc_cur = dasm_line( DBGDASM.pc_cur, 1 );
 	if( DBGDASM.pc_cur >= DBGDASM.pc_end )
-		  DBGDASM.pc_top = dasm_line( DBGDASM.pc_top, 1 );
+		DBGDASM.pc_top = dasm_line( DBGDASM.pc_top, 1 );
 	DBGDASM.pc_end = dump_dasm( DBGDASM.pc_top );
 	edit_cmds_reset();
 }
@@ -5428,8 +5429,8 @@ void mame_debug_init(void)
 		DBG.brk_regs_mask = 0xffffffff;
 		DBG.brk_temp = INVALID;
 #if defined(PINMAME) && defined(DBG_BPR)
-                DBG.bprstart = INVALID;
-                DBG.bprnext = 0;
+		DBG.bprstart = INVALID;
+		DBG.bprnext = 0;
 #endif /* DBG_BPR */
 		DBGMEM[0].base = 0x0000;
 		DBGMEM[1].base = 1 << (ABITS / 2);
@@ -5747,20 +5748,28 @@ static void cmd_codelist_to_file( void )
  * codelist_init
  * Creates codelist output files for all CPUs
  **************************************************************************/
-static void codelist_init( const char *filename )
+static void codelist_init( const char *given_filename )
 {
 	extern int activecpu;	// needed for ABITS and AMASK
 	int prevcpu;
+	char *filename;
 
 	char name[100];
 
 	if( codelist_on )
 		return;
 
+	// if no filename given, default to game name
+	filename = (char *)given_filename;
+	if ( !filename || filename[0] == 0 )
+	{
+		filename = (char *)Machine->gamedrv->name;
+	}
+
 	prevcpu = activecpu;
 	for( tracecpu = 0; tracecpu < total_cpu; tracecpu++ )
 	{
-		sprintf( name, "%s.codelist.%d", filename, tracecpu );
+		sprintf( name, "%s.codelist.cpu%d", filename, tracecpu );
 		TRACE.codelistfile = fopen(name,"w");
 		TRACE.codelist = NULL;
 
@@ -5793,6 +5802,41 @@ void codelist_done(void)
 	{
 		if( TRACE.codelistfile )
 		{
+			// list banks
+			codelist = TRACE.codelist;
+			size = 0;
+			dst = buffer;
+			dst += sprintf( dst, "banks:" );
+			while ( codelist )
+			{
+				if ( codelist->bankid != FAKE_BANKID )
+				{
+					dst += sprintf( dst, " 0x%02X", codelist->bankid );
+				}
+				else
+				{
+					dst += sprintf( dst, " STATIC" );
+				}
+
+				size++;
+				if ( size == 8 )
+				{
+					fprintf( TRACE.codelistfile, "%s\n", buffer );
+					size = 0;
+					dst = buffer;
+					dst += sprintf( dst, "banks:" );
+				}
+
+				codelist = codelist->next;
+			}
+			if ( size > 0 )
+			{
+				fprintf( TRACE.codelistfile, "%s\n", buffer );
+			}
+			sprintf( buffer, "---" );
+			fprintf( TRACE.codelistfile, "%s\n", buffer );
+
+			// list codeblocks of banks
 			codelist = TRACE.codelist;
 			while ( codelist )
 			{
@@ -5817,13 +5861,16 @@ void codelist_done(void)
 					dst2 = dst;
 					dst2 += sprintf( dst2, "%0*X", TRACE.addr_width, start );
 					dst2 += sprintf( dst2, "\t\t; up to 0x%0*X", TRACE.addr_width, end );
-					dst2 += sprintf( dst2, ", size 0x%0*X\n", TRACE.addr_width, size );
-					fprintf( TRACE.codelistfile, "%s", buffer );
+					dst2 += sprintf( dst2, ", size 0x%0*X", TRACE.addr_width, size );
+					fprintf( TRACE.codelistfile, "%s\n", buffer );
 
 					prevblock = codeblock;
 					codeblock = codeblock->next;
 					free ( prevblock );
 				}
+
+				sprintf( buffer, "---" );
+				fprintf( TRACE.codelistfile, "%s\n", buffer );
 
 				prevlist = codelist;
 				codelist = codelist->next;
@@ -5846,114 +5893,132 @@ void codelist_done(void)
  **************************************************************************/
 static void codelist_select( void )
 {
+	UINT32 bankid;
+	struct s_codelist	*codelist, *prevlist;
+
+	UINT32 pc;
+	struct s_codeblock	*codeblock, *prevblock;
+	UINT32 size, afteraddr;
 	static char buffer[127+1];
 
 	if( active_cpu < total_cpu )
 		tracecpu = active_cpu;
 
-	if( codelist_on && TRACE.codelistfile )
+	if( !codelist_on || !TRACE.codelistfile )
 	{
-		UINT32 pc;
-		UINT32 bankid;
-		struct s_codelist	*codelist, *prevlist;
-		struct s_codeblock	*codeblock, *prevblock;
+		return;
+	}
 
-		pc = activecpu_get_pc();
+	// Find a matching codelist for the bank id
+	bankid = FAKE_BANKID;
+	if ( opcode_entry >= STATIC_BANK1 && opcode_entry <= STATIC_BANKMAX )
+	{
+		bankid = cpu_bankid[opcode_entry];
+	}
 
-		bankid = FAKE_BANKID;
-		if (opcode_entry >= STATIC_BANK1 && opcode_entry <= STATIC_BANKMAX)
+	prevlist = NULL;
+	codelist = TRACE.codelist;
+	while ( codelist )
+	{
+		if ( codelist->bankid == bankid )	// found match
 		{
-			bankid = cpu_bankid[opcode_entry];
+			break;
+		}
+		if ( codelist->bankid > bankid )	// not found in sorted list
+		{
+			codelist = NULL;
+			break;
 		}
 
-		// Find a matching codelist for the bank id
-		prevlist = NULL;
-		codelist = TRACE.codelist;
-		while ( codelist )
-		{
-			if ( codelist->bankid == bankid )	// found match
-			{
-				break;
-			}
-			if ( codelist->bankid > bankid )	// not found in sorted list
-			{
-				codelist = NULL;
-				break;
-			}
+		prevlist = codelist;
+		codelist = codelist->next;
+	}
+	if ( !codelist )	// not found, create new one
+	{
+		codelist = malloc ( sizeof (struct s_codelist) );
 
-			prevlist = codelist;
-			codelist = codelist->next;
+		codelist->bankid = bankid;
+		codelist->blocks = NULL;
+
+		// link into list
+		if ( prevlist )
+		{
+			codelist->next = prevlist->next;
+			prevlist->next = codelist;
 		}
-		if ( !codelist )	// not found, create new one
+		else
 		{
-			codelist = malloc ( sizeof (struct s_codelist) );
+			codelist->next = TRACE.codelist;
+			TRACE.codelist = codelist;
+		}
+	}
 
-			if ( prevlist )
-			{
-				codelist->next = prevlist->next;
-				prevlist->next = codelist;
-			}
-			else
-			{
-				codelist->next = TRACE.codelist;
-				TRACE.codelist = codelist;
-			}
+	// Find a matching codeblock for the PC
+	pc = activecpu_get_pc();
 
-			codelist->bankid = bankid;
-			codelist->blocks = NULL;
+	prevblock = NULL;
+	codeblock = codelist->blocks;
+	while ( codeblock )
+	{
+		if ( codeblock->startAddr <= pc && codeblock->afterAddr > pc )	// already recorded
+		{
+			return;	// nothing to do, exit routine
 		}
 
-		// Find a matching codeblock for the PC
-		prevblock = NULL;
-		codeblock = codelist->blocks;
-		while ( codeblock )
+		if ( codeblock->afterAddr == pc )	// found match/extendable at the end
 		{
-			if ( codeblock->startAddr <= pc && codeblock->afterAddr >= pc )	// found match/extendable
-			{
-				break;
-			}
-			if ( codeblock->startAddr > pc )	// not found in sorted list
-			{
-				codeblock = NULL;
-				break;
-			}
-
-			prevblock = codeblock;
-			codeblock = codeblock->next;
+			break;
 		}
-		if ( !codeblock )	// not found, create new one
+
+		if ( codeblock->startAddr > pc )	// not found in sorted list, maybe extendable at the start
 		{
-			codeblock = malloc ( sizeof (struct s_codeblock) );
-
-			if ( prevblock )
-			{
-				codeblock->next = prevblock->next;
-				prevblock->next = codeblock;
-			}
-			else
-			{
-				codeblock->next = codelist->blocks;
-				codelist->blocks = codeblock;
-			}
-
-			codeblock->startAddr = pc;
-			codeblock->afterAddr = pc + activecpu_dasm( buffer, pc );
+			break;
 		}
-		else if ( codeblock->afterAddr == pc )	// found extendable codeblock
+
+		prevblock = codeblock;
+		codeblock = codeblock->next;
+	}
+
+	size = activecpu_dasm( buffer, pc );
+	afteraddr = pc + size;
+
+	if ( codeblock && codeblock->startAddr == afteraddr )	// extendable at the start
+	{
+		codeblock->startAddr = pc;
+	}
+	else if ( codeblock && codeblock->afterAddr == pc )	// extendable at the end
+	{
+		struct s_codeblock	*nextblock;
+
+		codeblock->afterAddr = afteraddr;
+
+		// check if codeblock can be merged with next one
+		nextblock = codeblock->next;
+		if ( nextblock && nextblock->startAddr == codeblock->afterAddr )
 		{
-			struct s_codeblock	*nextblock;
+			codeblock->afterAddr = nextblock->afterAddr;
+			codeblock->next = nextblock->next;
 
-			codeblock->afterAddr = pc + activecpu_dasm( buffer, pc );
+			free ( nextblock );
+		}
+	}
+	else	// really not found, create new codeblock
+	{
+		codeblock = malloc ( sizeof (struct s_codeblock) );
 
-			// check if codeblock can be merged with next one
-			nextblock = codeblock->next;
-			if ( nextblock && nextblock->startAddr == codeblock->afterAddr )
-			{
-				codeblock->afterAddr = nextblock->afterAddr;
-				codeblock->next = nextblock->next;
+		codeblock->startAddr = pc;
+		codeblock->afterAddr = afteraddr;
 
-				free ( nextblock );
-			}
+		// link into list
+		if ( prevblock )
+		{
+			codeblock->next = prevblock->next;
+			prevblock->next = codeblock;
+		}
+		else
+		{
+			codeblock->next = codelist->blocks;
+			codelist->blocks = codeblock;
 		}
 	}
 }
