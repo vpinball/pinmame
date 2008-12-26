@@ -214,8 +214,10 @@ static WRITE_HANDLER(jvh_via_b_w) {
 }
 
 static WRITE_HANDLER(jvh_data_w) {
+  UINT8 cmd;
+
   sndlocals.cmd = data & 0x3f;
-  UINT8 cmd = sndlocals.cmd ^ 0x3f;
+  cmd = sndlocals.cmd ^ 0x3f;
   via_set_input_a(0, cmd ? cmd : 0xff); // avoid passing in 0x00 as a command because it stops all sound forever
 }
 
