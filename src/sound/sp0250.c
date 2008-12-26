@@ -4,12 +4,14 @@
    By O. Galibert.
 
    Unknown:
+   - Exact clock divider
    - Exact noise algorithm
    - Exact noise pitch (probably ok)
-   - Exact main frequency (probably ok)
-   - Exact amplitude decoding (aka mantissa:exponent)
    - 7 bits output mapping
    - Whether the pitch starts counting from 0 or 1
+
+   Unimplemented:
+   - Direct Data test mode (pin 7)
 
    Sound quite reasonably already though.
 */
@@ -18,14 +20,29 @@
 #include "driver.h"
 #include "cpuintrf.h"
 
-enum { MAIN_CLOCK = 10000 };
+/*
+standard external clock is 3.12MHz
+the chip provides a 445.7kHz output clock, which is = 3.12MHz / 7
+therefore I expect the clock divider to be a multiple of 7
+Also there are 6 cascading filter stages so I expect the divider to be a multiple of 6.
+
+The SP0250 manual states that the original speech is sampled at 10kHz, so the divider
+should be 312, but 312 = 39*8 so it doesn't look right because a divider by 39 is unlikely.
+
+7*6*8 = 336 gives a 9.286kHz sample rate and matches the samples from the Sega boards.
+*/
+#ifdef PINMAME
+#define CLOCK_DIVIDER 312
+#else
+#define CLOCK_DIVIDER (7*6*8)
+#endif
 
 static struct {
 	INT16 amp;
 	UINT8 pitch;
 	UINT8 repeat;
-	UINT8 pcount, rcount;
-	UINT8 pcounto, rcounto;
+	int pcount, rcount;
+    int playing;
 	UINT32 RNG;
 	int stream;
 	int voiced;
@@ -70,6 +87,8 @@ static INT16 sp0250_gc(UINT8 v)
 
 static void sp0250_load_values(void)
 {
+    int f;
+
 	sp0250.filter[0].B = sp0250_gc(sp0250.fifo[ 0]);
 	sp0250.filter[0].F = sp0250_gc(sp0250.fifo[ 1]);
 	sp0250.amp         = sp0250_ga(sp0250.fifo[ 2]);
@@ -88,47 +107,31 @@ static void sp0250_load_values(void)
 	sp0250.filter[5].F = sp0250_gc(sp0250.fifo[14]);
 	sp0250.fifo_pos = 0;
 	sp0250.drq(ASSERT_LINE);
+
+    sp0250.pcount = 0;
+    sp0250.rcount = 0;
+
+    for (f = 0; f < 6; f++)
+        sp0250.filter[f].z1 = sp0250.filter[f].z2 = 0;
+
+    sp0250.playing = 1;
 }
 
 static void sp0250_timer_tick(int param)
 {
-	sp0250.pcount++;
-	if(sp0250.pcount >= sp0250.pitch) {
-		sp0250.pcount = 0;
-		sp0250.rcount++;
-		if(sp0250.rcount >= sp0250.repeat) {
-			sp0250.rcount = 0;
-			stream_update(sp0250.stream, 0);
-
-			// The synchronisation between the update callback and the
-			// timer tick is crap.  Specifically, the timer tick goes
-			// a little faster.  So compensate.
-
-			sp0250.pcount = sp0250.pcounto;
-			sp0250.rcount = sp0250.rcounto;
-			if(sp0250.pcount || sp0250.rcount)
-				return;
-
-			if(sp0250.fifo_pos == 15)
-				sp0250_load_values();
-			else {
-				sp0250.amp = 0;
-				sp0250.pitch = 0;
-				sp0250.repeat = 0;
-			}
-		}
-	}
+    stream_update(sp0250.stream, 0);
 }
 
 static void sp0250_update(int num, INT16 *output, int length)
 {
 	int i;
 	for(i=0; i<length; i++) {
+      if (sp0250.playing) {
 		INT16 z0 = 0;
 		int f;
 
 		if(sp0250.voiced)
-			if(!sp0250.pcounto)
+			if(!sp0250.pcount)
 				z0 = sp0250.amp;
 			else
 				z0 = 0;
@@ -150,18 +153,26 @@ static void sp0250_update(int num, INT16 *output, int length)
 		}
 
 		// Physical resolution is only 7 bits, but heh
-#ifdef PINMAME
-		z0 <<= 3;
-#endif
-		output[i] = z0;
 
-		sp0250.pcounto++;
-		if(sp0250.pcounto >= sp0250.pitch) {
-			sp0250.pcounto = 0;
-			sp0250.rcounto++;
-			if(sp0250.rcounto >= sp0250.repeat)
-				sp0250.rcounto = 0;
+        // max amplitude is 0x0f80 so we have margin to push up the output
+        output[i] = z0 << 3;
+
+		sp0250.pcount++;
+		if(sp0250.pcount >= sp0250.pitch) {
+			sp0250.pcount = 0;
+			sp0250.rcount++;
+			if(sp0250.rcount >= sp0250.repeat)
+				sp0250.playing = 0;
 		}
+      }
+      else
+        output[i] = 0;
+
+      if (!sp0250.playing)
+      {
+        if(sp0250.fifo_pos == 15)
+          sp0250_load_values();
+      }
 	}
 }
 
@@ -173,9 +184,9 @@ int sp0250_sh_start( const struct MachineSound *msound )
 	sp0250.RNG = 1;
 	sp0250.drq = intf->drq_callback;
 	sp0250.drq(ASSERT_LINE);
-	timer_pulse(TIME_IN_HZ(MAIN_CLOCK), 0, sp0250_timer_tick);
+	timer_pulse(TIME_IN_HZ(3120000 / CLOCK_DIVIDER), 0, sp0250_timer_tick);
 
-	sp0250.stream = stream_init("SP0250", intf->volume, MAIN_CLOCK, 0, sp0250_update);
+    sp0250.stream = stream_init("SP0250", intf->volume, 3120000 / CLOCK_DIVIDER, 0, sp0250_update);
 
 	return 0;
 }
