@@ -1300,7 +1300,7 @@ const char *set_ea_info( int what, unsigned value, int size, int access )
 	case EA_ZPG_WR:
 	case EA_ZPG_RDWR:
 		result &= 0xff;
-		width = 2;
+		width = (ABITS + 3) / 4;	// even display zero page addresses in their correct length
 		break;
 
 	case EA_ABS_PC: /* Absolute program counter change */
