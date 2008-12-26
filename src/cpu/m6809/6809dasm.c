@@ -98,8 +98,8 @@ static opcodeinfo pg1opcodes[NUMPG1OPS] =
 	{ 22,2,"LBRA",    LREL,EA_INT16, EA_REL_PC,    5},
 	{ 23,2,"LBSR",    LREL,EA_INT16, EA_REL_PC,    9},
 	{ 25,0,"DAA",     INH, 0,        0,            2},
-	{ 26,1,"ORCC",    IMM, 0,        0,            3},
-	{ 28,1,"ANDCC",   IMM, 0,        0,            3},
+	{ 26,1,"ORCC",    IMM, EA_UINT8, EA_VALUE,     3},
+	{ 28,1,"ANDCC",   IMM, EA_UINT8, EA_VALUE,     3},
 	{ 29,0,"SEX",     INH, 0,        0,            2},
 	{ 30,1,"EXG",     IMM, 0,        0,            8},
 	{ 31,1,"TFR",     IMM, 0,        0,            6},
@@ -471,13 +471,13 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 	{
 	case REL:	  /* 8-bit relative */
 		rel = operandarray[0];
-		sym1 = set_ea_info(0, pc, (INT8)rel, access);
+		sym1 = set_ea_info(EA_DST,pc, (INT8)rel, access);
 		buffer += sprintf (buffer, "%s", sym1);
 		break;
 
 	case LREL:	  /* 16-bit long relative */
 		rel = (operandarray[0] << 8) + operandarray[1];
-		sym1 = set_ea_info(0, pc, (INT16)rel, access);
+		sym1 = set_ea_info(EA_DST,pc, (INT16)rel, access);
 		buffer += sprintf (buffer, "%s", sym1);
 		break;
 
@@ -495,13 +495,13 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			if( (pb & 0x90) == 0x90 ) buffer += sprintf (buffer, "[");
 			if( pb == 0x8c )
 			{
-				sym1 = set_ea_info(1, pc, (INT8)offset, EA_REL_PC);
+				sym1 = set_ea_info(EA_SRC, pc, (INT8)offset, EA_REL_PC);
 				ea = (pc + (INT8)offset + activecpu_get_reg(regid_6809[reg])) & 0xffff;
 				buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
 			else
 			{
-				sym1 = set_ea_info(1, offset, EA_INT8, EA_VALUE);
+				sym1 = set_ea_info(EA_SRC, offset, EA_INT8, EA_VALUE);
 				ea = (activecpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
 				buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
@@ -523,19 +523,19 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 				buffer += sprintf(buffer, "[");
 			if( pb == 0x8d )
 			{
-				sym1 = set_ea_info(1, pc, (INT16)offset, EA_REL_PC);
+				sym1 = set_ea_info(EA_SRC, pc, (INT16)offset, EA_REL_PC);
                 buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
 			else
 			if( pb2 == 0x8f )
 			{
-				sym1 = set_ea_info(1, offset, EA_UINT16, EA_VALUE);
+				sym1 = set_ea_info(EA_SRC, offset, EA_UINT16, EA_VALUE);
 				ea = offset;
                 buffer += sprintf (buffer, "%s", sym1);
 			}
 			else
 			{
-				sym1 = set_ea_info(1, offset, EA_INT16, EA_VALUE);
+				sym1 = set_ea_info(EA_SRC, offset, EA_INT16, EA_VALUE);
 				ea = (activecpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
                 buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
@@ -596,7 +596,7 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			ea = ( cpu_readmem16( ea ) << 8 ) + cpu_readmem16( (ea+1) & 0xffff );
             buffer += sprintf (buffer, "]");
 		}
-		sym2 = set_ea_info(0, ea, size, access);
+		sym2 = set_ea_info(EA_DST,ea, size, access);
         break;
 
 	default:
@@ -704,14 +704,14 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			if( numoperands == 2 )
 			{
 				ea = (operandarray[0] << 8) + operandarray[1];
-				sym1 = set_ea_info(0, ea, size, access );
+				sym1 = set_ea_info(EA_DST,ea, size, access );
 				buffer += sprintf (buffer, "%s", sym1 );
 			}
 			else
 			if( numoperands == 1 )
 			{
 				ea = operandarray[0];
-				sym1 = set_ea_info(0, ea, size, access );
+				sym1 = set_ea_info(EA_DST, ea, size, access );
                 buffer += sprintf (buffer, "%s", sym1 );
 			}
 		}
