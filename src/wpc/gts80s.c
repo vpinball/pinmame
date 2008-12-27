@@ -587,7 +587,7 @@ static struct {
   UINT8  dac_data, dac2_data;
   UINT8  speechboard_drq;	// Gen 1 Only
   UINT8  sp0250_latch;		// Gen 1 Only
-
+  int firstCmd;
   int u2_latch;				// GTS3 - Store U2 data
   int enable_cs;			// GTS3 - OKI6295 ~CS pin
   int u3_latch;				// GTS3 - Latch U3
@@ -829,6 +829,8 @@ static WRITE_HANDLER( s80bs_dac2_data_w )
 //Process command from Main CPU
 WRITE_HANDLER(gts80b_data_w)
 {
+    // ignore the first byte (probably comes in too early)
+    if (!GTS80BS_locals.firstCmd) { GTS80BS_locals.firstCmd = 1; return; }
 	data ^= 0xff;	/*Data is inverted from main cpu*/
 	s80bs_sh_w(0,data);
 //	snd_cmd_log(data);
@@ -1185,13 +1187,14 @@ static struct OKIM6295interface GTS3_okim6295_interface = {
 
 // Init
 void gts80b_init(struct sndbrdData *brdData) {
+    int drq = GTS80BS_locals.speechboard_drq;
 	//GTS80BS_locals.nmi_timer = NULL;
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
 	GTS80BS_locals.cpuNo = brdData->cpuNo;
 	//Start the programmable timer circuit
 	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
-	//Must be 1 to start or speechboard will never work
-	GTS80BS_locals.speechboard_drq = 1;
+	//Must not be cleared here because it's set by the sp0250 chip earlier
+	GTS80BS_locals.speechboard_drq = drq;
 }
 
 // Cleanup
