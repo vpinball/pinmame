@@ -877,6 +877,7 @@ MEMORY_END
 /*********/
 MEMORY_READ_START(GTS80BS2_readmem)
 { 0x0000, 0x07ff, MRA_RAM },
+{ 0x4000, 0x4000, s80bs1_sound_input_r }, // at least Victory is using the test dip switch!
 { 0x6800, 0x6800, soundlatch_r},
 { 0x7000, 0x7000, s80bs_cause_dac_nmi_r},
 { 0x8000, 0xffff, MRA_ROM },
