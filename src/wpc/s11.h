@@ -220,6 +220,7 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define S11_PRINTERLINE  0x04 // Got printer lines
 #define S11_RKMUX        0x08 // Road Kings muxes different solenoids
 #define S11_MUXDELAY     0x10 // Delay mux solenoid by one IRQ
+#define S11_SNDDELAY     0x20 // Sound delay for Pool Sharks
 
 #if 0
 GEN_S9      BCDDISP

@@ -8,6 +8,7 @@
 #include "sound/dac.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "s11.h"
 #include "wpc.h"
 #include "wmssnd.h"
 
@@ -330,15 +331,22 @@ static WRITE_HANDLER(s11cs_rombank_w);
 static WRITE_HANDLER(s11cs_manCmd_w);
 static void s11cs_init(struct sndbrdData *brdData);
 
-const struct sndbrdIntf s11csIntf = {
-  "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w,
-  soundlatch2_w, NULL,
-  CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
-};
-
 static struct {
   struct sndbrdData brdData;
+  int ignore;
 } s11clocals;
+
+static WRITE_HANDLER(cslatch2_w) {
+  if (!s11clocals.ignore)
+    soundlatch2_w(offset, data);
+  else s11clocals.ignore--;
+}
+
+const struct sndbrdIntf s11csIntf = {
+  "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w,
+  cslatch2_w, NULL,
+  CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
+};
 
 static MEMORY_READ_START(s11cs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
@@ -396,11 +404,12 @@ static WRITE_HANDLER(s11cs_rombank_w) {
 }
 static void s11cs_init(struct sndbrdData *brdData) {
   s11clocals.brdData = *brdData;
+  s11clocals.ignore = core_gameData->hw.gameSpecific1 & S11_SNDDELAY ? 7 : 0;
   pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
   cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
 }
 static WRITE_HANDLER(s11cs_manCmd_w) {
-  soundlatch2_w(0, data); pia_set_input_cb1(S11CS_PIA0, 1); pia_set_input_cb1(S11CS_PIA0, 0);
+  cslatch2_w(0, data); pia_set_input_cb1(S11CS_PIA0, 1); pia_set_input_cb1(S11CS_PIA0, 0);
 }
 
 static WRITE_HANDLER(s11cs_pia0ca2_w) { if (!data) YM2151_sh_reset(); }
@@ -432,7 +441,7 @@ static struct {
   int ignore;
 } s11jlocals;
 
-static WRITE_HANDLER(latch2_w) {
+static WRITE_HANDLER(jlatch2_w) {
   if (!s11jlocals.ignore)
     soundlatch2_w(offset, data);
   else s11jlocals.ignore--;
@@ -440,21 +449,20 @@ static WRITE_HANDLER(latch2_w) {
 
 const struct sndbrdIntf s11jsIntf = {
   "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w,
-  latch2_w, soundlatch3_r,
+  jlatch2_w, soundlatch3_r,
   s11js_ctrl_w, NULL, 0
 };
 
 static WRITE_HANDLER(s11js_odd_w) {
   logerror("%04x: Jokerz ROM write to 0xf8%02x = %02x\n", activecpu_get_previouspc(), offset, data);
 }
-static WRITE_HANDLER(dac_w) {
+static WRITE_HANDLER(s11js_dac_w) {
   logerror("%04x: Jokerz DAC write = %02x\n", activecpu_get_previouspc(), data);
 }
-static WRITE_HANDLER(sync_w) {
+static WRITE_HANDLER(s11js_sync_w) {
   logerror("%04x: Jokerz SYNC write = %02x\n", activecpu_get_previouspc(), data);
 }
-
-static READ_HANDLER(port_r) {
+static READ_HANDLER(s11js_port_r) {
   s11jlocals.irqen = 0;
   cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
   return soundlatch2_r(offset);
@@ -463,7 +471,7 @@ static READ_HANDLER(port_r) {
 static MEMORY_READ_START(s11js_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
-  { 0x3400, 0x3400, port_r },
+  { 0x3400, 0x3400, s11js_port_r },
   { 0x4000, 0xbfff, MRA_BANKNO(S11JS_BANK0) },
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -473,9 +481,9 @@ static MEMORY_WRITE_START(s11js_writemem)
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
   { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
   { 0x2800, 0x2800, s11js_reply_w },
-  { 0x3000, 0x3000, dac_w },
+  { 0x3000, 0x3000, s11js_dac_w },
   { 0x3800, 0x3800, s11js_rombank_w },
-  { 0x3c00, 0x3c00, sync_w },
+  { 0x3c00, 0x3c00, s11js_sync_w },
   { 0xf800, 0xf8ff, s11js_odd_w },
 MEMORY_END
 
@@ -514,7 +522,7 @@ static WRITE_HANDLER(s11js_reply_w) {
 }
 static WRITE_HANDLER(s11js_manCmd_w) {
 //printf("m:%02x ", data); // the manual commands are not passed through, why???
-  latch2_w(0, data); s11js_ctrl_w(0,0);
+  jlatch2_w(0, data); s11js_ctrl_w(0,0);
 }
 static void s11js_ym2151IRQ(int state) {
   cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);

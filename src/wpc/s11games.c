@@ -768,7 +768,7 @@ CORE_CLONEDEF(rollr,g3,l2, "Rollergames (LG-3) Germany", 1990, "Williams", s11_m
 /*--------------------
 / Pool Sharks 6/90
 /--------------------*/
-INITGAME(pool ,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(pool ,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2|S11_SNDDELAY)
 S11_ROMSTART48(pool ,l7,"pool_u26.l7", CRC(cee98aed) SHA1(5b652684c10ab4945783089d848b2f663d3b2547),
                         "pool_u27.l7", CRC(356d9a89) SHA1(ce795c535d03a14d28fb3f2071cae48ccdb1a856))
 S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
@@ -776,7 +776,7 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
 #define input_ports_pool input_ports_s11
-CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11c_one,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Diner 8/90
