@@ -156,6 +156,7 @@ MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
 static struct DACinterface      s11xs_dacInt2     = { 2, { 50,50 }};
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 80 }};
 static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 80,80 }};
 static struct YM2151interface   s11cs_ym2151Int  = {
   1, 3579545, /* Hz */
@@ -190,7 +191,7 @@ MACHINE_DRIVER_START(wmssnd_s11b2s)
   MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("dac", DAC,    s11xs_dacInt2)
-  MDRV_SOUND_ADD(           HC55516,s11xs_hc55516Int2)
+  MDRV_SOUND_ADD_TAG("cvsd",HC55516,s11b2s_hc55516Int)
 MACHINE_DRIVER_END
 
 static void s11s_piaIrq(int state);
@@ -424,15 +425,24 @@ static WRITE_HANDLER(s11js_reply_w);
 static WRITE_HANDLER(s11js_rombank_w);
 static WRITE_HANDLER(s11js_ctrl_w);
 static WRITE_HANDLER(s11js_manCmd_w);
-const struct sndbrdIntf s11jsIntf = {
-  "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w,
-  soundlatch2_w, soundlatch3_r,
-  s11js_ctrl_w, NULL, 0
-};
 
 static struct {
   struct sndbrdData brdData;
+  int irqen;
+  int ignore;
 } s11jlocals;
+
+static WRITE_HANDLER(latch2_w) {
+  if (!s11jlocals.ignore)
+    soundlatch2_w(offset, data);
+  else s11jlocals.ignore--;
+}
+
+const struct sndbrdIntf s11jsIntf = {
+  "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w,
+  latch2_w, soundlatch3_r,
+  s11js_ctrl_w, NULL, 0
+};
 
 static WRITE_HANDLER(s11js_odd_w) {
   logerror("%04x: Jokerz ROM write to 0xf8%02x = %02x\n", activecpu_get_previouspc(), offset, data);
@@ -440,11 +450,20 @@ static WRITE_HANDLER(s11js_odd_w) {
 static WRITE_HANDLER(dac_w) {
   logerror("%04x: Jokerz DAC write = %02x\n", activecpu_get_previouspc(), data);
 }
+static WRITE_HANDLER(sync_w) {
+  logerror("%04x: Jokerz SYNC write = %02x\n", activecpu_get_previouspc(), data);
+}
+
+static READ_HANDLER(port_r) {
+  s11jlocals.irqen = 0;
+  cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+  return soundlatch2_r(offset);
+}
 
 static MEMORY_READ_START(s11js_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
-  { 0x3400, 0x3400, soundlatch2_r },
+  { 0x3400, 0x3400, port_r },
   { 0x4000, 0xbfff, MRA_BANKNO(S11JS_BANK0) },
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -456,6 +475,7 @@ static MEMORY_WRITE_START(s11js_writemem)
   { 0x2800, 0x2800, s11js_reply_w },
   { 0x3000, 0x3000, dac_w },
   { 0x3800, 0x3800, s11js_rombank_w },
+  { 0x3c00, 0x3c00, sync_w },
   { 0xf800, 0xf8ff, s11js_odd_w },
 MEMORY_END
 
@@ -470,7 +490,6 @@ MACHINE_DRIVER_START(wmssnd_s11js)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s11js_readmem, s11js_writemem)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
-  MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(           YM2151, s11js_ym2151Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
@@ -480,19 +499,22 @@ static WRITE_HANDLER(s11js_rombank_w) {
 }
 static void s11js_init(struct sndbrdData *brdData) {
   s11jlocals.brdData = *brdData;
-  memcpy(memory_region(REGION_CPU1+s11jlocals.brdData.cpuNo) + 0x00c000, s11jlocals.brdData.romRegion + 0x0c000, 0x4000);
-  cpu_setbank(S11JS_BANK0, s11jlocals.brdData.romRegion);
+  s11jlocals.ignore = 10;
+//  cpu_setbank(S11JS_BANK0, s11jlocals.brdData.romRegion);
 }
 static WRITE_HANDLER(s11js_ctrl_w) {
-//  cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, data ? ASSERT_LINE : CLEAR_LINE);
-  if (!data) cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
+  if (!s11jlocals.ignore) {
+    if (!data) s11jlocals.irqen++;
+    if (s11jlocals.irqen) cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, ASSERT_LINE);
+  }
 }
 static WRITE_HANDLER(s11js_reply_w) {
   soundlatch3_w(0,data);
   sndbrd_data_cb(s11jlocals.brdData.boardNo, 0); sndbrd_data_cb(s11jlocals.brdData.boardNo, 1);
 }
 static WRITE_HANDLER(s11js_manCmd_w) {
-  soundlatch2_w(0, data); s11js_ctrl_w(0,0);
+//printf("m:%02x ", data); // the manual commands are not passed through, why???
+  latch2_w(0, data); s11js_ctrl_w(0,0);
 }
 static void s11js_ym2151IRQ(int state) {
   cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
