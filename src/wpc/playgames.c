@@ -11,12 +11,19 @@
 #define GAME_STATUS GAME_NOT_WORKING|GAME_NO_SOUND
 #endif
 
+#define INITGAME1(name, disptype, balls) \
+    PLAYMATIC1_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,-1}}; \
+    static void init_##name(void) { \
+        core_gameData = &name##GameData; \
+    }
+
 #define INITGAME(name, disptype, balls) \
-	PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,8}}; \
-	static void init_##name(void) { \
-		core_gameData = &name##GameData; \
-	}
+    PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,8}}; \
+    static void init_##name(void) { \
+        core_gameData = &name##GameData; \
+    }
 
 #define INITGAME3(name, disptype, balls) \
 	PLAYMATIC3_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
@@ -31,6 +38,13 @@
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
+
+core_tLCDLayout play_dispOld[] = {
+  { 0, 0, 0,6,CORE_SEG7 }, { 0,14, 6,4,CORE_SEG7 }, { 0,22, 4,2,CORE_SEG7 },
+  { 2, 0,10,4,CORE_SEG7 }, { 2, 8, 4,2,CORE_SEG7 }, { 2,14,14,4,CORE_SEG7 }, { 2,22, 4,2,CORE_SEG7 },
+  { 4, 8,18,2,CORE_SEG7 }, { 4,14,20,3,CORE_SEG7 },
+  {0}
+};
 
 core_tLCDLayout play_disp6[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
@@ -53,11 +67,11 @@ core_tLCDLayout play_disp7[] = {
 /*-------------------------------------------------------------------
 / Last Lap (1978)
 /-------------------------------------------------------------------*/
-INITGAME(lastlap, play_disp6, 1)
+INITGAME1(lastlap, play_dispOld, 1)
 PLAYMATIC_ROMSTART88(lastlap,	"lastlapa.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
 						"lastlapb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC,GAME_STATUS)
+CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC,0)
 
 /*-------------------------------------------------------------------
 / Antar (1979)
