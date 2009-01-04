@@ -80,7 +80,16 @@ static void PLAYMATIC_zeroCross2(int data) {
 /*-------------------------------
 /  copy local data to interface
 /--------------------------------*/
-static INTERRUPT_GEN(PLAYMATIC_vblank) {
+static INTERRUPT_GEN(PLAYMATIC_vblank1) {
+  /*-- lamps --*/
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  /*-- solenoids --*/
+  coreGlobals.solenoids = locals.solenoids;
+
+  core_updateSw(core_getSol(17));
+}
+
+static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   locals.vblankCount++;
 
   /*-- lamps --*/
@@ -88,7 +97,7 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % PLAYMATIC_SOLSMOOTH) == 0)
-  	locals.solenoids = 0;
+    locals.solenoids = 0;
 
   core_updateSw(TRUE);
 }
@@ -151,26 +160,27 @@ static WRITE_HANDLER(out1_n) {
       } else if (locals.digitSel) { // sound & player up lights
         if (n2data & 0x0f) {
           locals.volume = 100;
-          discrete_sound_w(1, n2data & 0x01);
-          discrete_sound_w(2, n2data & 0x02);
-          discrete_sound_w(4, n2data & 0x04);
-          discrete_sound_w(8, n2data & 0x08);
+          discrete_sound_w(8, n2data & 0x01);
+          discrete_sound_w(4, n2data & 0x02);
+          discrete_sound_w(2, n2data & 0x04);
+          discrete_sound_w(1, n2data & 0x08);
           if (n2data & 0x10) {
             timer_adjust(locals.sndtimer, 0.002, 0, 0.002);
             timer_on = 1;
           } else {
             timer_adjust(locals.sndtimer, TIME_NEVER, 0, 0);
             timer_on = 0;
+            mixer_set_volume(0, locals.volume);
           }
         } else if (!timer_on) {
-          discrete_sound_w(1, 0);
-          discrete_sound_w(2, 0);
-          discrete_sound_w(4, 0);
           discrete_sound_w(8, 0);
+          discrete_sound_w(4, 0);
+          discrete_sound_w(2, 0);
+          discrete_sound_w(1, 0);
         }
         coreGlobals.tmpLampMatrix[6] = (1 << (n2data >> 5)) >> 1;
       } else { // solenoids
-        locals.solenoids = (1 << (n2data & 0x0f)) | (1 << (n2data >> 4));
+        coreGlobals.solenoids = locals.solenoids = n2data | (locals.q << 16);
       }
       break;
     case 4:
@@ -384,7 +394,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_CPU_PORTS(PLAYMATIC_readport1, PLAYMATIC_writeport1)
   MDRV_CPU_CONFIG(play1802_config)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq1, 100)
-  MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
+  MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank1, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
@@ -403,7 +413,7 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_CPU_CONFIG(play1802_config)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/8192.0)
   MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
-  MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
+  MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank2, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC2)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
