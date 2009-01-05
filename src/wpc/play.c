@@ -54,10 +54,10 @@ static struct {
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
-  static int irqLine = 0;
-  irqLine = !irqLine;
-  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, irqLine ? ASSERT_LINE : CLEAR_LINE);
-  if (irqLine) locals.ef[1] = !locals.ef[1];
+  static int irqLine;
+  irqLine = (irqLine + 1) % 8;
+  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, !irqLine ? ASSERT_LINE : CLEAR_LINE);
+  if (!irqLine) locals.ef[1] = !locals.ef[1];
 }
 
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
@@ -84,7 +84,7 @@ static INTERRUPT_GEN(PLAYMATIC_vblank1) {
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | (locals.q << 16);
 
   core_updateSw(core_getSol(17));
 }
@@ -139,7 +139,7 @@ static int bitColToNum(int tmp)
 }
 
 static WRITE_HANDLER(out1_n) {
-  static UINT8 n2data;
+  static UINT8 n2data, oldn2data;
   static int timer_on;
   int p = locals.ef[1];
   switch (offset) {
@@ -159,20 +159,21 @@ static WRITE_HANDLER(out1_n) {
         coreGlobals.segments[(locals.digitSel-2)*2 + 1].w = core_bcd2seg7[n2data & 0x0f];
       } else if (locals.digitSel) { // sound & player up lights
         if (n2data & 0x0f) {
-          locals.volume = 100;
+          if (oldn2data != n2data) locals.volume = 100;
+          oldn2data = n2data;
           discrete_sound_w(8, n2data & 0x01);
           discrete_sound_w(4, n2data & 0x02);
           discrete_sound_w(2, n2data & 0x04);
           discrete_sound_w(1, n2data & 0x08);
-          if (n2data & 0x10) {
-            timer_adjust(locals.sndtimer, 0.002, 0, 0.002);
+          if (~n2data & 0x10) { // start fading
+            timer_adjust(locals.sndtimer, 0.02, 0, 0.02);
             timer_on = 1;
-          } else {
+          } else { // no fading used
             timer_adjust(locals.sndtimer, TIME_NEVER, 0, 0);
             timer_on = 0;
             mixer_set_volume(0, locals.volume);
           }
-        } else if (!timer_on) {
+        } else if (!timer_on) { // no fading going on, so stop sound
           discrete_sound_w(8, 0);
           discrete_sound_w(4, 0);
           discrete_sound_w(2, 0);
@@ -180,7 +181,7 @@ static WRITE_HANDLER(out1_n) {
         }
         coreGlobals.tmpLampMatrix[6] = (1 << (n2data >> 5)) >> 1;
       } else { // solenoids
-        coreGlobals.solenoids = locals.solenoids = n2data | (locals.q << 16);
+        coreGlobals.solenoids = (coreGlobals.solenoids & 0x10000) | n2data;
       }
       break;
     case 4:
@@ -374,14 +375,14 @@ DISCRETE_SOUND_START(play_tones)
 	DISCRETE_INPUT(NODE_04,4,0x000f,0)
 	DISCRETE_INPUT(NODE_08,8,0x000f,0)
 
-	DISCRETE_SAWTOOTHWAVE(NODE_10,NODE_01,523,50000,10000,0,0) // C' note
-	DISCRETE_SAWTOOTHWAVE(NODE_20,NODE_02,659,50000,10000,0,0) // E' note
-	DISCRETE_SAWTOOTHWAVE(NODE_30,NODE_04,784,50000,10000,0,0) // G' note
-	DISCRETE_SAWTOOTHWAVE(NODE_40,NODE_08,988,50000,10000,0,0) // H' note
+	DISCRETE_TRIANGLEWAVE(NODE_10,NODE_01,523,50000,10000,0) // C' note
+	DISCRETE_TRIANGLEWAVE(NODE_20,NODE_02,659,50000,10000,0) // E' note
+	DISCRETE_TRIANGLEWAVE(NODE_30,NODE_04,784,50000,10000,0) // G' note
+	DISCRETE_TRIANGLEWAVE(NODE_40,NODE_08,988,50000,10000,0) // H' note
 
 	DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40) // Mix all four sound sources
 
-	DISCRETE_OUTPUT(NODE_50, 50)                               // Take the output from the mixer
+	DISCRETE_OUTPUT(NODE_50, 75)                               // Take the output from the mixer
 DISCRETE_SOUND_END
 
 static int play_sw2m(int no) { return 8+(no/10)*8+(no%10-1); }
@@ -393,7 +394,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem1, PLAYMATIC_writemem1)
   MDRV_CPU_PORTS(PLAYMATIC_readport1, PLAYMATIC_writeport1)
   MDRV_CPU_CONFIG(play1802_config)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq1, 100)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq1, 800)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank1, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
