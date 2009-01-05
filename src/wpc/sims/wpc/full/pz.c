@@ -544,12 +544,21 @@ WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a444795
                  "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
 WPC_ROMEND
 
+WPC_ROMSTART(pz,l3,"pzonel_3.rom",0x40000,CRC(156f158f) SHA1(73a31deee6b299e5f5479b43210a822009e116d0))
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
+                 "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
+                 "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
+WPC_ROMEND
+
+
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(pz,f4,"Party Zone (F-4)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l1,f4,"Party Zone (L-1)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l2,f4,"Party Zone (L-2)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,l3,f4,"Party Zone (L-3)",1991,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
