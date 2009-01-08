@@ -95,6 +95,20 @@ INDER_ROMEND
 CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,0)
 
 /*-------------------------------------------------------------------
+/ Atleta (1991)
+/-------------------------------------------------------------------*/
+INITGAME(atleta, inderDisp7a, 1, 0,0,0,0,0x10)
+INDER_ROMSTART2(atleta,"atleta0.cpu", CRC(5f27240f) SHA1(8b77862fa311d703b3af8a1db17e13b17dca7ec6),
+						"atleta1.cpu", CRC(12bef582) SHA1(45e1da318141d9228bc91a4e09fff6bf6f194235))
+INDER_SNDROM4(			"atletaa.snd", CRC(051c5329) SHA1(339115af4a2e3f1f2c31073cbed1842518d5916e),
+						"atletab.snd", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
+						"atletac.snd", CRC(20456363) SHA1(b226400dac35dedc039a7e03cb525c6033b24ebc),
+						"atletad.snd", CRC(6518e3a4) SHA1(6b1d852005dabb76c7c65b87ecc9ee1422f16737),
+						"atletae.snd", CRC(1ef7b099) SHA1(08400db3e238baf1673a2da604c999db6be30ffe))
+INDER_ROMEND
+CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS,0)
+
+/*-------------------------------------------------------------------
 / 250 CC (1992)
 /-------------------------------------------------------------------*/
 INITGAME(ind250cc, inderDisp7a, 1, 0,0,0,0,0)

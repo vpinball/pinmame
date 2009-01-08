@@ -131,6 +131,12 @@
      NORMALREGION(0x10000, INDER_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x2000, chk1)
 
+#define INDER_ROMSTART2(name, n1, chk1, n2, chk2) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, INDER_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
+
 /*-- SOUND ROMS --*/
 #define INDER_SNDROM(n1, chk1) \
   NORMALREGION(0x10000, INDER_MEMREG_SND) \

@@ -37,7 +37,7 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments;
   UINT32 dispData;
-  int    swCol;
+  int    swCol, lampCol;
 } locals;
 
 static INTERRUPT_GEN(JP_irq) {
@@ -268,6 +268,62 @@ MACHINE_DRIVER_START(JP)
   MDRV_SOUND_ADD(AY8910, JP_ay8910Int)
 MACHINE_DRIVER_END
 
+// petaco: different hardware generation
+
+static MEMORY_READ_START(JP2_readmem)
+  {0x0000,0x3fff, MRA_ROM},
+  {0x6000,0x67ff, MRA_RAM},
+  {0x8000,0x8000, ay8910_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(JP2_writemem)
+  {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x8000,0x8000, ay8910_ctrl_w},
+  {0x8001,0x8001, ay8910_data_w},
+MEMORY_END
+
+static READ_HANDLER(dip_r) {
+  return ~core_getDip(offset);
+}
+
+static READ_HANDLER(sw_r) {
+  return ~coreGlobals.swMatrix[core_BitColToNum(locals.swCol)];
+}
+
+static PORT_READ_START(JP2_readport)
+  {0x08,0x0a, dip_r},
+  {0x0d,0x0d, sw_r},
+MEMORY_END
+
+static WRITE_HANDLER(lampcol_w) {
+	locals.lampCol = data;
+}
+
+static WRITE_HANDLER(swcol_w) {
+	locals.swCol = data;
+}
+
+static WRITE_HANDLER(lampdata_w) {
+	coreGlobals.tmpLampMatrix[locals.lampCol] = data;
+}
+
+static PORT_WRITE_START(JP2_writeport)
+  {0x0c,0x0c, lampcol_w},
+  {0x0e,0x0e, lampdata_w},
+//  {0x10,0x10, col3_w},
+//  {0x12,0x12, data3_w},
+  {0x14,0x14, swcol_w},
+//  {0x18,0x18, data2_w},
+MEMORY_END
+
+MACHINE_DRIVER_START(JP2)
+  MDRV_IMPORT_FROM(JP)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(JP2_readmem, JP2_writemem)
+  MDRV_CPU_PORTS(JP2_readport, JP2_writeport)
+  MDRV_DIPS(24)
+MACHINE_DRIVER_END
+
 
 // external sound board section
 
@@ -302,7 +358,7 @@ static struct MSM5205interface JP_msm5205Int = {
 
 static WRITE_HANDLER(bank_w) {
 //logerror("bank_w: %02x\n", data);
-  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * (data & 7));
+  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * (data & 0x0f));
 }
 
 static WRITE_HANDLER(snd_w) {

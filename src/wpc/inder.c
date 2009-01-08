@@ -290,7 +290,7 @@ static ppi8255_interface ppi8255_intf =
 };
 
 static MEMORY_READ_START(INDER_readmem)
-  {0x0000,0x1fff, MRA_ROM},
+  {0x0000,0x3fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
   {0x4400,0x44ff, INDER_CMOS_r},
   {0x6000,0x6003, ppi8255_0_r},

@@ -129,11 +129,33 @@
     ROM_LOAD(n7, 0x28000, 0x8000, chk7) \
     ROM_LOAD(n8, 0x30000, 0x8000, chk8)
 
+/*-- SOUND ROMS --*/
+#define JP_SNDROM15(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7, n8, chk8, n9, chk9, n10, chk10, n11, chk11, n12, chk12, n13, chk13, n14, chk14, n15, chk15) \
+  NORMALREGION(0x10000, JP_MEMREG_SND) \
+    ROM_LOAD(n1, 0x00000, 0x4000, chk1) \
+  NORMALREGION(0x80000, REGION_SOUND1) \
+    ROM_LOAD(n2, 0x0000, 0x8000, chk2) \
+    ROM_LOAD(n3, 0x8000, 0x8000, chk3) \
+    ROM_LOAD(n4, 0x10000, 0x8000, chk4) \
+    ROM_LOAD(n5, 0x18000, 0x8000, chk5) \
+    ROM_LOAD(n6, 0x20000, 0x8000, chk6) \
+    ROM_LOAD(n7, 0x28000, 0x8000, chk7) \
+    ROM_LOAD(n8, 0x30000, 0x8000, chk8) \
+    ROM_LOAD(n9, 0x38000, 0x8000, chk9) \
+    ROM_LOAD(n10,0x40000, 0x8000, chk10) \
+    ROM_LOAD(n11,0x48000, 0x8000, chk11) \
+    ROM_LOAD(n12,0x50000, 0x8000, chk12) \
+    ROM_LOAD(n13,0x58000, 0x8000, chk13) \
+    ROM_LOAD(n14,0x60000, 0x8000, chk14) \
+    ROM_LOAD(n15,0x68000, 0x8000, chk15)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(JP);
+extern MACHINE_DRIVER_EXTERN(JP2);
 extern MACHINE_DRIVER_EXTERN(JPS);
 
 #define gl_mJP		JP
+#define gl_mJP2		JP2
 #define gl_mJPS		JPS
 
 #endif /* INC_JP */
