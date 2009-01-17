@@ -2548,6 +2548,10 @@ SOURCE=.\src\wpc\techno.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\vd.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File

@@ -2785,6 +2785,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					RelativePath="src\wpc\techno.c">
 				</File>
 				<File
+					RelativePath="src\wpc\vd.c">
+				</File>
+				<File
 					RelativePath="src\wpc\vpintf.c">
 				</File>
 				<File
