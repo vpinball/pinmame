@@ -104,8 +104,8 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
 
 static SWITCH_UPDATE(PLAYMATIC1) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xe0, 5);
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x03, 6);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xe0, 6);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x3f, 7);
   }
   locals.ef[2] = core_getDip(0) & 1;
   locals.ef[3] = (core_getDip(0) >> 1) & 1;
@@ -198,9 +198,8 @@ static WRITE_HANDLER(out1_n) {
 }
 
 static READ_HANDLER(in1_n) {
-  UINT8 data = coreGlobals.swMatrix[offset-(offset > 5 ? 1 : 0)];
+  UINT8 data = coreGlobals.swMatrix[offset];
   logerror("in: %d\n", offset);
-  if (offset == 5) return (core_getDip(0) & 0x08) ? 0xff : 0; // what's this?
   return offset > 5 ? ~data : data;
 }
 
@@ -399,7 +398,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
-  MDRV_DIPS(4)
+  MDRV_DIPS(3)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
 

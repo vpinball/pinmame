@@ -132,9 +132,13 @@
     COREPORT_BIT(   0x2000, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x4000, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x8000, "Coin 3",      KEYCODE_5) \
-    /* Switch Column 6 */ \
+    /* Switch Column 7 */ \
     COREPORT_BIT(   0x0001, "Test",        KEYCODE_7) \
-    COREPORT_BIT(   0x0002, "Reset",       KEYCODE_8) \
+    COREPORT_BIT(   0x0002, "Reset",       KEYCODE_6) \
+    COREPORT_BIT(   0x0004, "(Re)set HSTD",KEYCODE_END) \
+    COREPORT_BIT(   0x0008, "Set Replay #1",KEYCODE_8) \
+    COREPORT_BIT(   0x0010, "Set Replay #2",KEYCODE_9) \
+    COREPORT_BIT(   0x0020, "Set Replay #3",KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "HSTD award") \
       COREPORT_DIPSET(0x0000, "3 games" ) \
@@ -144,10 +148,7 @@
       COREPORT_DIPSET(0x0002, "5" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "Special award") \
       COREPORT_DIPSET(0x0000, "Replay" ) \
-      COREPORT_DIPSET(0x0004, "Extra ball" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, DEF_STR(Unknown)) \
-      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
-      COREPORT_DIPSET(0x0008, DEF_STR(On) )
+      COREPORT_DIPSET(0x0004, "Extra ball" )
 
 #define PLAYMATIC_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
