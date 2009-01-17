@@ -144,6 +144,7 @@ DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
+DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
@@ -1087,6 +1088,7 @@ DRIVER(bdk,201)         //S.A.M: 08/08 Batman The Dark Knight - V2.01
 DRIVER(bdk,202)         //S.A.M: 08/08 Batman The Dark Knight - V2.02
 DRIVER(csi,102)         //S.A.M: 11/08 C.S.I. - V1.02
 DRIVER(csi,200)         //S.A.M: 12/08 C.S.I. - V2.0
+DRIVER(csi,210)         //S.A.M: 01/09 C.S.I. - V2.1
 #endif
 
 // ---------------
@@ -1146,6 +1148,12 @@ DRIVERNV(xforce)        //??/87 X Force
 // UNITED GAMES
 // ----------------
 DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
+
+// -----------------------------------
+// VIDEODENS GAMES
+// -----------------------------------
+//                      //??/86 Papillon
+DRIVERNV(break)         //??/86 Break
 
 // -----------------------------------
 // WICO GAMES

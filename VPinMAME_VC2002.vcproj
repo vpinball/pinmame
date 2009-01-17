@@ -2795,6 +2795,9 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 					RelativePath="src\wpc\techno.c">
 				</File>
 				<File
+					RelativePath="src\wpc\vd.c">
+				</File>
+				<File
 					RelativePath="src\wpc\vpintf.c">
 				</File>
 				<File

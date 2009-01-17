@@ -222,7 +222,8 @@ static WRITE_HANDLER(by68701_m0800_w) {
     { 0, 0, 0, 0 },
   };
   static int digit;
-  if (offset == 1 && (data & 0xf0) == 0xf0) {
+  static UINT8 lastSol;
+  if (offset == 1) {
     if (data & 0x08) digit = (1 + (data & 0x07)) % 8;
     else locals.swCol = data & 0x07;
   }
@@ -235,10 +236,13 @@ static WRITE_HANDLER(by68701_m0800_w) {
     coreGlobals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
   }
   else if (offset == 2) {
-    if (data != 0xff && (data >> 4) == (locals.solCol >> 4)) {
+    if (lastSol == 0xf0) {
       int solNum = reorder[core_BitColToNum((locals.solCol & 0x0f) ^ 0x0f)][core_BitColToNum((data >> 4) ^ 0x0f)];
+printf("%04x: m08%02x write: %02x:%02x\n", activecpu_get_previouspc(), offset, locals.solCol, data);
+printf("%x:%x\n", core_BitColToNum((locals.solCol & 0x0f) ^ 0x0f), core_BitColToNum((data >> 4) ^ 0x0f));
       if (solNum) locals.solenoids = (locals.solenoids & 0xfffff800) | (1 << (solNum-1));
     }
+    lastSol = data;
   }
   else if (offset == 3) { // TODO find correct sound byte
     if (!data || data == 0x07) {
@@ -265,31 +269,37 @@ static PORT_WRITE_START( by68701_writeport )
 PORT_END
 
 static MEMORY_READ_START(by68701_readmem)
+/*
   { 0x0004, 0x0004, MRA_NOP },
   { 0x0006, 0x0006, MRA_NOP },
   { 0x000f, 0x000f, MRA_NOP },
+*/
   { 0x0000, 0x001f, m6803_internal_registers_r },
   { 0x0020, 0x0023, pia_r(BY68701_PIA0) },
   { 0x0040, 0x0043, pia_r(BY68701_PIA1) },
+  { 0x0044, 0x0047, pia_r(BY68701_PIA0) },
+  { 0x0048, 0x004b, pia_r(BY68701_PIA1) },
   { 0x0080, 0x00ff, MRA_RAM },  /*Internal 128B RAM*/
   { 0x0400, 0x04ff, MRA_RAM },  /*NVRAM*/
-  { 0x0500, 0x05ff, MRA_RAM },  /*External RAM*/
-  { 0x0780, 0x07ff, MRA_RAM },  /*External RAM*/
+  { 0x0500, 0x07ff, MRA_RAM },  /*External RAM*/
   { 0x3000, 0x301f, by68701_m3000_r },
   { 0x7000, 0xffff, MRA_ROM },  /*ROM */
 MEMORY_END
 
 static MEMORY_WRITE_START(by68701_writemem)
+/*
   { 0x0004, 0x0004, MWA_NOP },
   { 0x0006, 0x0006, MWA_NOP },
   { 0x000f, 0x000f, MWA_NOP },
+*/
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0020, 0x0023, pia_w(BY68701_PIA0) },
   { 0x0040, 0x0043, pia_w(BY68701_PIA1) },
+  { 0x0044, 0x0047, pia_w(BY68701_PIA0) },
+  { 0x0048, 0x004b, pia_w(BY68701_PIA1) },
   { 0x0080, 0x00ff, MWA_RAM },  /*Internal 128B RAM*/
   { 0x0400, 0x04ff, MWA_RAM, &generic_nvram, &generic_nvram_size }, /*NVRAM*/
-  { 0x0500, 0x05ff, MWA_RAM },  /*External RAM*/
-  { 0x0780, 0x07ff, MWA_RAM },  /*External RAM*/
+  { 0x0500, 0x07ff, MWA_RAM },  /*External RAM*/
   { 0x0800, 0x080f, by68701_m0800_w },
 MEMORY_END
 
@@ -445,7 +455,18 @@ BY68701_ROMSTART_CA8(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae401
 BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 ROM_END
-CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by68701_61S,SOUNDFLAG)
+CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype rev. 1)",1981,"Bally",by68701_61S,GAME_NOT_WORKING|SOUNDFLAG)
+
+#define init_flashgp2 init_flashgdp
+#define input_ports_flashgp2 input_ports_flashgdp
+BY68701_ROMSTART_CA8(flashgp2,"fg6801.bin",CRC(8af7bf77) SHA1(fd65578b2340eb207b2e197765e6721473340565) BAD_DUMP,
+                            "xxx-xx.u10",CRC(0fff825c) SHA1(3c567aa8ec04a8ff9a09b530b6d324fdbe363ab6),
+                            "xxx-xx.u11",CRC(e34b113a) SHA1(b2860d284995db0ec59b22b434ccb9f6721e7d9d),
+                            "xxx-xx.u12",CRC(12bf4e19) SHA1(b0acf069d86f7472728610834ef3ab6da83b4b67))
+BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
+                          "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
+ROM_END
+CORE_CLONEDEFNV(flashgp2,flashgdn,"Flash Gordon (prototype rev. 2)",1981,"Bally",by68701_61S,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*------------------
 / Eight Ball Deluxe
