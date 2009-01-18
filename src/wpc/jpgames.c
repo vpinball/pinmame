@@ -13,6 +13,14 @@
 		core_gameData = &name##GameData; \
 	}
 
+static core_tLCDLayout jpDisp6[] = {
+  {0, 0, 0, 6,CORE_SEG7}, {3, 0, 6, 6,CORE_SEG7},
+  {0,22,12, 6,CORE_SEG7}, {3,22,18, 6,CORE_SEG7},
+  {1,17,24, 2,CORE_SEG7S},{1,23,26, 1,CORE_SEG7S},{1,26,27, 1,CORE_SEG7S},
+  {3,14,28, 1,CORE_SEG7}, {3,18,29, 1,CORE_SEG7},
+  {0}
+};
+
 static core_tLCDLayout jpDisp7[] = {
   {0, 0, 0, 7,CORE_SEG87}, {3, 0, 7, 7,CORE_SEG87},
   {0,24,14, 7,CORE_SEG87}, {3,24,21, 7,CORE_SEG87},
@@ -24,7 +32,47 @@ static core_tLCDLayout jpDisp7[] = {
 /*-------------------------------------------------------------------
 / Petaco
 /-------------------------------------------------------------------*/
-INITGAME(petaco, jpDisp7, 1)
+INPUT_PORTS_START(petaco) \
+  CORE_PORTS \
+  SIM_PORTS(1) \
+  PORT_START /* 0 */ \
+    /* Switch Column 4 */ \
+    COREPORT_BITDEF(  0x8000, IPT_START1,         IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BIT(     0x0400, "Pendulum Tilt",    KEYCODE_INSERT) \
+    COREPORT_BIT(     0x4000, "Slam Tilt",        KEYCODE_HOME) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+INPUT_PORTS_END
+static core_tGameData petacoGameData = {GEN_JP,jpDisp6,{FLIP_SW(FLIP_L), 0,-2,0, SNDBRD_NONE}}; \
+static void init_petaco(void) { \
+  core_gameData = &petacoGameData; \
+}
 JP_ROMSTART2(petaco,	"petaco1.cpu", CRC(f4e09939) SHA1(dcc4220b269d271eb0b6ad0a5d3c1a240587a01b),
 						"petaco2.cpu", CRC(d29a59ea) SHA1(bb7891e9597bbf5ae6a3276abf2b1247e082d828))
 JP_ROMEND
