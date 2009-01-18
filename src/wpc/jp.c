@@ -37,7 +37,10 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments;
   UINT32 dispData;
-  int    swCol, lampCol;
+  int    swCol;
+  int    i8279cmd;
+  int    i8279reg;
+  UINT8  i8279ram[16];
 } locals;
 
 static INTERRUPT_GEN(JP_irq) {
@@ -268,62 +271,6 @@ MACHINE_DRIVER_START(JP)
   MDRV_SOUND_ADD(AY8910, JP_ay8910Int)
 MACHINE_DRIVER_END
 
-// petaco: different hardware generation
-
-static MEMORY_READ_START(JP2_readmem)
-  {0x0000,0x3fff, MRA_ROM},
-  {0x6000,0x67ff, MRA_RAM},
-  {0x8000,0x8000, ay8910_r},
-MEMORY_END
-
-static MEMORY_WRITE_START(JP2_writemem)
-  {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  {0x8000,0x8000, ay8910_ctrl_w},
-  {0x8001,0x8001, ay8910_data_w},
-MEMORY_END
-
-static READ_HANDLER(dip_r) {
-  return ~core_getDip(offset);
-}
-
-static READ_HANDLER(sw_r) {
-  return ~coreGlobals.swMatrix[core_BitColToNum(locals.swCol)];
-}
-
-static PORT_READ_START(JP2_readport)
-  {0x08,0x0a, dip_r},
-  {0x0d,0x0d, sw_r},
-MEMORY_END
-
-static WRITE_HANDLER(lampcol_w) {
-	locals.lampCol = data;
-}
-
-static WRITE_HANDLER(swcol_w) {
-	locals.swCol = data;
-}
-
-static WRITE_HANDLER(lampdata_w) {
-	coreGlobals.tmpLampMatrix[locals.lampCol] = data;
-}
-
-static PORT_WRITE_START(JP2_writeport)
-  {0x0c,0x0c, lampcol_w},
-  {0x0e,0x0e, lampdata_w},
-//  {0x10,0x10, col3_w},
-//  {0x12,0x12, data3_w},
-  {0x14,0x14, swcol_w},
-//  {0x18,0x18, data2_w},
-MEMORY_END
-
-MACHINE_DRIVER_START(JP2)
-  MDRV_IMPORT_FROM(JP)
-  MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(JP2_readmem, JP2_writemem)
-  MDRV_CPU_PORTS(JP2_readport, JP2_writeport)
-  MDRV_DIPS(24)
-MACHINE_DRIVER_END
-
 
 // external sound board section
 
@@ -394,4 +341,146 @@ MACHINE_DRIVER_START(JPS)
   MDRV_CORE_INIT_RESET_STOP(JPS,NULL,JPS)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, JP_msm5205Int)
+MACHINE_DRIVER_END
+
+
+// petaco: totally different hardware setup with Intel 8279 KDI chip and CPU port access!
+
+static INTERRUPT_GEN(JP2_vblank) {
+
+  /*-- lamps --*/
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  /*-- solenoids --*/
+  coreGlobals.solenoids = locals.solenoids;
+  /*-- display --*/
+  memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
+
+  core_updateSw(core_getSol(12));
+}
+
+static SWITCH_UPDATE(JP2) {
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x0e, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>4, 0x40, 5);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xc0, 6);
+  }
+}
+
+static WRITE_HANDLER (ay8910_0_portA_w) {
+  coreGlobals.tmpLampMatrix[0] = data;
+}
+static WRITE_HANDLER (ay8910_0_portB_w) {
+  coreGlobals.tmpLampMatrix[1] = data;
+}
+static WRITE_HANDLER (ay8910_1_portA_w) {
+  coreGlobals.tmpLampMatrix[2] = data;
+}
+static WRITE_HANDLER (ay8910_1_portB_w) {
+  coreGlobals.tmpLampMatrix[3] = data;
+}
+struct AY8910interface JP2_ay8910Int2 = {
+    2,              /* 2 chips */
+    2000000,        /* 2 MHz ? */
+    { 30, 30 },     /* Volume */
+    { NULL },
+    { NULL },
+    { ay8910_0_portA_w, ay8910_1_portA_w },
+    { ay8910_0_portB_w, ay8910_1_portB_w },
+};
+
+// handles the 8279 keyboard / display interface chip
+static READ_HANDLER(i8279_r) {
+  static UINT8 lastData;
+  if ((locals.i8279cmd & 0xe0) == 0x40) lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches
+  else if ((locals.i8279cmd & 0xe0) == 0x60) lastData = locals.i8279ram[locals.i8279reg]; // read display ram
+  else logerror("i8279 r:%02x\n", locals.i8279cmd);
+  if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
+  return lastData;
+}
+static WRITE_HANDLER(i8279_w) {
+  static int pos[32] = { 26, 24, 27, 25,  5, 23,  4, 22,  3, 21,  2, 20,  1, 19,  0, 18,
+                         28, 30, 29, 31, 11, 17, 10, 16,  9, 15,  8, 14,  7, 13,  6, 12 };
+  if (offset) { // command
+    locals.i8279cmd = data;
+    if ((locals.i8279cmd & 0xe0) == 0x40)
+      logerror("I8279 read switches: %x\n", data & 0x07);
+    else if ((locals.i8279cmd & 0xe0) == 0x80)
+      logerror("I8279 write display: %x\n", data & 0x0f);
+    else if ((locals.i8279cmd & 0xe0) == 0x60)
+      logerror("I8279 read display: %x\n", data & 0x0f);
+    else if ((locals.i8279cmd & 0xe0) == 0x20)
+      logerror("I8279 scan rate: %02x\n", data & 0x1f);
+    else if ((locals.i8279cmd & 0xe0) == 0)
+      logerror("I8279 set modes: display %x, keyboard %x\n", (data >> 3) & 0x03, data & 0x07);
+    else logerror("i8279 w1:%d:%02x ", offset, data);
+    if (locals.i8279cmd & 0x10) locals.i8279reg = 0; // reset data for auto-increment
+  } else { // data
+    if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
+      locals.i8279ram[locals.i8279reg] = data;
+      if (locals.i8279reg % 8 == 2) { // single zeroes, always on, but they also contain the player up lamps
+        locals.segments[pos[locals.i8279reg*2]].w = core_bcd2seg7[0];
+        locals.segments[pos[locals.i8279reg*2 + 1]].w = core_bcd2seg7[0];
+        coreGlobals.tmpLampMatrix[4 + locals.i8279reg / 8] = data;
+      } else {
+        locals.segments[pos[locals.i8279reg*2]].w = core_bcd2seg7[data >> 4];
+        locals.segments[pos[locals.i8279reg*2 + 1]].w = core_bcd2seg7[data & 0x0f];
+      }
+    } else logerror("i8279 w0:%d:%02x\n", offset, data);
+    if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
+  }
+}
+
+static MEMORY_READ_START(JP2_readmem)
+  {0x0000,0x3fff, MRA_ROM},
+  {0x6000,0x67ff, MRA_RAM},
+  {0x8000,0x8000, i8279_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(JP2_writemem)
+  {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x8000,0x8001, i8279_w},
+MEMORY_END
+
+static READ_HANDLER(sw2_r) {
+  return offset < 2 ? ~coreGlobals.swMatrix[5+offset] : 0;
+}
+
+static READ_HANDLER(dip_r) {
+  return ~core_getDip(0);
+}
+
+static PORT_READ_START(JP2_readport)
+  {0x08,0x09, sw2_r},
+  {0x0a,0x0a, dip_r},
+  {0x0d,0x0d, AY8910_read_port_0_r},
+MEMORY_END
+
+static WRITE_HANDLER(sol1_w) {
+  locals.solenoids = (locals.solenoids & 0xffffff00) | data;
+}
+
+static WRITE_HANDLER(sol2_w) {
+  locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+}
+
+static PORT_WRITE_START(JP2_writeport)
+  {0x0c,0x0c, AY8910_control_port_0_w},
+  {0x0e,0x0e, AY8910_write_port_0_w},
+  {0x10,0x10, AY8910_control_port_1_w},
+  {0x12,0x12, AY8910_write_port_1_w},
+  {0x14,0x14, sol1_w},
+  {0x18,0x18, sol2_w},
+MEMORY_END
+
+MACHINE_DRIVER_START(JP2)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 5000000) // taken from schematics
+  MDRV_CPU_MEMORY(JP2_readmem, JP2_writemem)
+  MDRV_CPU_PORTS(JP2_readport, JP2_writeport)
+  MDRV_CPU_VBLANK_INT(JP2_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(JP_irq, 400) // guessed, schematics show IRQ not connected?
+  MDRV_CORE_INIT_RESET_STOP(JP,NULL,NULL)
+  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_SWITCH_UPDATE(JP2)
+  MDRV_SOUND_ADD(AY8910, JP2_ay8910Int2)
 MACHINE_DRIVER_END
