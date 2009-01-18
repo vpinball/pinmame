@@ -381,7 +381,7 @@ static WRITE_HANDLER (ay8910_1_portB_w) {
 struct AY8910interface JP2_ay8910Int2 = {
     2,              /* 2 chips */
     2000000,        /* 2 MHz ? */
-    { 30, 30 },     /* Volume */
+    { MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },     /* Volume */
     { NULL },
     { NULL },
     { ay8910_0_portA_w, ay8910_1_portA_w },
@@ -421,6 +421,12 @@ static WRITE_HANDLER(i8279_w) {
         locals.segments[pos[locals.i8279reg*2]].w = core_bcd2seg7[0];
         locals.segments[pos[locals.i8279reg*2 + 1]].w = core_bcd2seg7[0];
         coreGlobals.tmpLampMatrix[4 + locals.i8279reg / 8] = data;
+      } else if (locals.i8279reg == 8) {
+        coreGlobals.tmpLampMatrix[6] = (1 << ((data >> 4) & 7)) | (data & 0x80);
+      } else if (locals.i8279reg == 9) {
+        UINT16 d = 1 << (data >> 4);
+        coreGlobals.tmpLampMatrix[7] = d & 0xff;
+        coreGlobals.tmpLampMatrix[8] = d >> 8;
       } else {
         locals.segments[pos[locals.i8279reg*2]].w = core_bcd2seg7[data >> 4];
         locals.segments[pos[locals.i8279reg*2 + 1]].w = core_bcd2seg7[data & 0x0f];
@@ -442,16 +448,15 @@ static MEMORY_WRITE_START(JP2_writemem)
 MEMORY_END
 
 static READ_HANDLER(sw2_r) {
-  return offset < 2 ? ~coreGlobals.swMatrix[5+offset] : 0;
-}
-
-static READ_HANDLER(dip_r) {
-  return ~core_getDip(0);
+  switch (offset) {
+    case 0: return (~coreGlobals.swMatrix[5] & 0x40) | (~core_getDip(0) & 0xbf);
+    case 1: return (~coreGlobals.swMatrix[6] & 0xc0) | (~core_getDip(1) & 0x3f);
+    default: return ~core_getDip(offset);
+  }
 }
 
 static PORT_READ_START(JP2_readport)
-  {0x08,0x09, sw2_r},
-  {0x0a,0x0a, dip_r},
+  {0x08,0x0a, sw2_r},
   {0x0d,0x0d, AY8910_read_port_0_r},
 MEMORY_END
 
@@ -482,5 +487,7 @@ MACHINE_DRIVER_START(JP2)
   MDRV_CORE_INIT_RESET_STOP(JP,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JP2)
+  MDRV_DIPS(24)
   MDRV_SOUND_ADD(AY8910, JP2_ay8910Int2)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
