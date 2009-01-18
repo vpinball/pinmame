@@ -16,8 +16,7 @@
 static core_tLCDLayout jpDisp6[] = {
   {0, 0, 0, 6,CORE_SEG7}, {3, 0, 6, 6,CORE_SEG7},
   {0,22,12, 6,CORE_SEG7}, {3,22,18, 6,CORE_SEG7},
-  {1,17,24, 2,CORE_SEG7S},{1,23,26, 1,CORE_SEG7S},{1,26,27, 1,CORE_SEG7S},
-  {3,14,28, 1,CORE_SEG7}, {3,18,29, 1,CORE_SEG7},
+  {2,17,24, 2,CORE_SEG7S},{2,23,26, 1,CORE_SEG7S},{2,26,27, 1,CORE_SEG7S},
   {0}
 };
 
@@ -36,7 +35,6 @@ INPUT_PORTS_START(petaco) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
-    /* Switch Column 4 */ \
     COREPORT_BITDEF(  0x8000, IPT_START1,         IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0004, IPT_COIN2,          KEYCODE_3) \
@@ -44,39 +42,74 @@ INPUT_PORTS_START(petaco) \
     COREPORT_BIT(     0x0400, "Pendulum Tilt",    KEYCODE_INSERT) \
     COREPORT_BIT(     0x4000, "Slam Tilt",        KEYCODE_HOME) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+    COREPORT_DIPNAME( 0x0001, 0x0000, DEF_STR(Unknown)) \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "Display played games") \
+      COREPORT_DIPSET(0x0000, DEF_STR(No)) \
+      COREPORT_DIPSET(0x0002, DEF_STR(Yes)) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Display inserted coins") \
+      COREPORT_DIPSET(0x0000, DEF_STR(No)) \
+      COREPORT_DIPSET(0x0004, DEF_STR(Yes)) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "Display running hours") \
+      COREPORT_DIPSET(0x0000, DEF_STR(No)) \
+      COREPORT_DIPSET(0x0008, DEF_STR(Yes)) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "Match feature") \
+      COREPORT_DIPSET(0x0010, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0000, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "Attract tune") \
+      COREPORT_DIPSET(0x0020, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0000, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0300, 0x0200, "Free games") \
+      COREPORT_DIPSET(0x0000, "Low" ) \
+      COREPORT_DIPSET(0x0100, "Medium" ) \
+      COREPORT_DIPSET(0x0200, "High" ) \
+      COREPORT_DIPSET(0x0300, "Maximum" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0400, "Balls per game") \
+      COREPORT_DIPSET(0x0400, "3" ) \
+      COREPORT_DIPSET(0x0000, "5" ) \
+    COREPORT_DIPNAME( 0x1800, 0x1000, "Games per coin") \
+      COREPORT_DIPSET(0x0000, "Setting #1" ) \
+      COREPORT_DIPSET(0x0800, "Setting #2" ) \
+      COREPORT_DIPSET(0x1000, "Setting #3" ) \
+      COREPORT_DIPSET(0x1800, "Setting #4" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "Extra balls") \
+      COREPORT_DIPSET(0x2000, DEF_STR(No)) \
+      COREPORT_DIPSET(0x0000, DEF_STR(Yes)) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S20") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
 INPUT_PORTS_END
-static core_tGameData petacoGameData = {GEN_JP,jpDisp6,{FLIP_SW(FLIP_L), 0,-2,0, SNDBRD_NONE}}; \
+static core_tGameData petacoGameData = {GEN_JP,jpDisp6,{FLIP_SW(FLIP_L), 0,1,0, SNDBRD_NONE}}; \
 static void init_petaco(void) { \
   core_gameData = &petacoGameData; \
 }
 JP_ROMSTART2(petaco,	"petaco1.cpu", CRC(f4e09939) SHA1(dcc4220b269d271eb0b6ad0a5d3c1a240587a01b),
 						"petaco2.cpu", CRC(d29a59ea) SHA1(bb7891e9597bbf5ae6a3276abf2b1247e082d828))
 JP_ROMEND
-CORE_GAMEDEFNV(petaco,"Petaco",1984,"Juegos Populares",gl_mJP2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(petaco,"Petaco",1984,"Juegos Populares",gl_mJP2,0)
 
 /*-------------------------------------------------------------------
 / Faeton
