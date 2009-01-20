@@ -5,7 +5,7 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 4? MHz
-			INT: IRQ @ 500 Hz (Uptime counter in RAM seems to run accurate then)
+			INT: IRQ @ 484 Hz (Uptime counter in RAM seems to run accurate then)
 		IO:      CPU ports
 		DISPLAY: 7-digit 8-segment panels, direct segment access
 		SOUND:	 2 x AY-8910
@@ -17,7 +17,7 @@
 #include "sound/ay8910.h"
 #include "sndbrd.h"
 
-#define JP_IRQFREQ 500 /* IRQ frequency */
+#define JP_IRQFREQ 484 /* IRQ frequency */
 #define JP_CPUFREQ 4000000 /* CPU clock frequency */
 
 /*----------------
@@ -77,6 +77,7 @@ static READ_HANDLER(sw0_r) {
 static WRITE_HANDLER(col_w) {
   if ((data & 0x0f) < 0x08) locals.col = data & 0x07;
   else locals.solenoids = (locals.solenoids & 0xffff) | ((data & 0xe0) << 11);
+  coreGlobals.diagnosticLed = (data >> 4) & 1;
 }
 
 static WRITE_HANDLER(lamp_w) {
@@ -150,6 +151,7 @@ MACHINE_DRIVER_START(VD)
   MDRV_CORE_INIT_RESET_STOP(VD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(VD)
+  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_ADD(AY8910, VD_ay8910Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
