@@ -52,7 +52,7 @@ static INTERRUPT_GEN(VD_vblank) {
 
 static SWITCH_UPDATE(VD) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x07, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xc0, 1);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>4, 0x01, 2);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>5, 0x01, 3);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>6, 0x01, 4);
@@ -71,7 +71,7 @@ static READ_HANDLER(sw_r) {
 }
 
 static READ_HANDLER(sw0_r) {
-  return ~coreGlobals.swMatrix[0];
+  return ~core_getDip(0);
 }
 
 static WRITE_HANDLER(col_w) {
@@ -137,9 +137,32 @@ static MACHINE_INIT(VD) {
     COREPORT_BITDEF(0x0040, IPT_COIN1,       IP_KEY_DEFAULT) \
     COREPORT_BITDEF(0x0080, IPT_COIN2,       IP_KEY_DEFAULT) \
     COREPORT_BIT(   0x0020, "Ball Tilt",     KEYCODE_INSERT) \
-    COREPORT_BIT(   0x0001, "Accounting #1", KEYCODE_7)  \
-    COREPORT_BIT(   0x0002, "Accounting #2", KEYCODE_8)  \
-    COREPORT_BIT(   0x0004, "Accounting #3", KEYCODE_9)
+    COREPORT_BIT(   0x4000, "Reset",         KEYCODE_7) \
+    COREPORT_BITTOG(0x8000, DEF_STR(Unknown),KEYCODE_END) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Accounting #1") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0001, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "Accounting #2") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0002, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Accounting #3") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0004, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0018, 0x0000, "Credits per coin (chute #1/#2)") \
+      COREPORT_DIPSET(0x0018, "0.5/3" ) \
+      COREPORT_DIPSET(0x0000, "1/5" ) \
+      COREPORT_DIPSET(0x0008, "1/6" ) \
+      COREPORT_DIPSET(0x0010, "2/8" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Match feature") \
+      COREPORT_DIPSET(0x0040, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0000, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" )
 
 MACHINE_DRIVER_START(VD)
   MDRV_IMPORT_FROM(PinMAME)
