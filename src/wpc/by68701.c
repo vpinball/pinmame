@@ -43,7 +43,7 @@
 #define BY68701_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 
 static struct {
-  int swCol, lampCol, solCol, strobe, commas;
+  int swCol, lampCol, strobe, commas;
   UINT32 solenoids;
   core_tSeg segments;
   int diagnosticLed;
@@ -124,6 +124,7 @@ static WRITE_HANDLER(pp0_ca2_w) { // goes lo then hi with every zc transition
   locals.zcSanity = data;
 }
 static WRITE_HANDLER(pp0_cb2_w) { // alternates with every irq pulse
+  locals.strobe = 0;
   locals.dispSanity = data;
 }
 
@@ -134,8 +135,8 @@ static WRITE_HANDLER(pp1_b_w) { // periphal data
   static int solOrder[2][4][4] = {{
     { 2, 3, 4, 5},
     { 8, 9, 1, 0},
-    {10,21, 6, 7},
-    {22,23,24,25},
+    {10,20, 6, 7},
+    {21,22,23,24},
   },{
     { 0, 2, 5, 1},
     { 9, 3, 7,16},
@@ -143,20 +144,13 @@ static WRITE_HANDLER(pp1_b_w) { // periphal data
     { 8,12, 4, 6}
   }};
   static int lampRows[15] = { 4, 8, 9, 10, 11, 12, 13, 14, 5, 0, 6, 7, 1, 2, 3 };
-  static int solEnable;
   if (locals.lampCol != 0x0f) {
     UINT8 lampdata = locals.zc ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f;
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
-  } else if (locals.strobe == 2) { // solenoids
-    if (locals.solCol) {
-      if (solEnable) {
-        UINT8 solData = ~data;
-        locals.solenoids |= 1 << solOrder[core_gameData->hw.gameSpecific1][core_BitColToNum(solData & 0x0f)][core_BitColToNum(solData >> 4)];
-        locals.solCol = 0;
-      }
-      solEnable = locals.solCol == (data & 0x0f);
-    }
-  } else if (locals.strobe == 3 && !(data >> 4)) {
+  } else if (locals.strobe == 2 && (data & 0xf0) != 0xf0 && (data & 0x0f) != 0x0f) { // solenoids
+    UINT8 solData = ~data;
+    locals.solenoids |= 1 << solOrder[core_gameData->hw.gameSpecific1][core_BitColToNum(solData & 0x0f)][core_BitColToNum(solData >> 4)];
+  } else if (locals.strobe == 3 && !(data >> 4)) { // sound #2
     sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
   } else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
@@ -244,10 +238,9 @@ static WRITE_HANDLER(by68701_m0800_w) {
   else if (offset == 10) {
     coreGlobals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
   }
-  else if (offset == 2) {
-    locals.solCol = data != 0xff ? data >> 4 : 0;
+  else if (offset == 2) { // solenoids, handled completely in PIA write for lack of a better method
   }
-  else if (offset == 3) {
+  else if (offset == 3) { // sound #1
     sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
   }
   else if (!offset) {
