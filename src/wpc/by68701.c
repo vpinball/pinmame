@@ -332,7 +332,7 @@ MACHINE_DRIVER_START(by68701_61S)
   MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
   MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
   MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by68701_irq, 3100)
+  MDRV_CPU_PERIODIC_INT(by68701_irq, 4000)
   MDRV_TIMER_ADD(by68701_zeroCross, 120)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(by68701)
@@ -422,35 +422,45 @@ static INTERRUPT_GEN(by8035_irq) {
   cpu_set_irq_line(0, 0, (irq = !irq) ? ASSERT_LINE : CLEAR_LINE);
 }
 
+static int ram_bank;
 static READ_HANDLER(by8035_ram_r) {
-  UINT8 *ram = memory_region(REGION_CPU1);
-  return ram[0x3000 + offset];
+  UINT8 *ram = memory_region(REGION_CPU1) + 0x5000 + 0x100 * ram_bank;
+  if (ram_bank > 7) logerror("%04x: ram %03x read\n", activecpu_get_previouspc(), 0x100 * ram_bank + offset);
+  if (offset == 2) return 0x55;
+//  if (ram_bank == 0x0a) return ppi8255_0_r(offset & 3);
+  return ram[offset];
 }
 
 static READ_HANDLER(by8035_port_r) {
-  logerror("8035 port %d read\n", offset);
-  if (offset == 2) return ~coreGlobals.swMatrix[1+locals.lampCol];
+  logerror("%04x: 8035 port %d read\n", activecpu_get_previouspc(), offset);
+  if (offset == 2) return ~coreGlobals.swMatrix[1];
   return 0;
 }
 
 static WRITE_HANDLER(by8035_ram_w) {
-  UINT8 *ram = memory_region(REGION_CPU1);
-  ram[0x3000 + offset] = data;
-  if (offset == 1 && data) { locals.lampCol = core_BitColToNum(data); locals.strobe = 0; }
+  UINT8 *ram = memory_region(REGION_CPU1) + 0x5000 + 0x100 * ram_bank;
+  ram[offset] = data;
+  if (ram_bank == 0x0b) locals.segments[offset].w = (~data & 0x7f) | ((~data & 0x80) << 1) | ((~data & 0x80) << 2);
+  if (ram_bank > 7) logerror("%04x: ram %03x write: %02x\n", activecpu_get_previouspc(), 0x100 * ram_bank + offset, data);
+//  if (ram_bank == 0x0a) ppi8255_0_w(offset & 3, data);
 }
 
 static WRITE_HANDLER(by8035_port_w) {
-  if (offset == 2) locals.segments[locals.lampCol*8 + (locals.strobe++)].w = data ^ 0x0f;
-  logerror("8035 port %d write = %02x\n", offset, data);
+  if (offset == 2) cpu_setbank(1, memory_region(REGION_CPU1) + 0x1000 + 0x100 * (data & 0x30));
+  if (offset == 2) ram_bank = data & 0x0f;
+  logerror("%04x: 8035 port %d write = %02x\n", activecpu_get_previouspc(), offset, data);
 }
 
 static MEMORY_READ_START(by8035_readmem)
-  { 0x0000, 0x2fff, MRA_ROM },
-  { 0x3000, 0x30ff, MRA_RAM },
+  { 0x0000, 0x0fff, MRA_BANKNO(1) },
+  { 0x1000, 0x4fff, MRA_ROM },
+  { 0x5000, 0x5fff, MRA_RAM },
 MEMORY_END
 
 static MEMORY_WRITE_START(by8035_writemem)
-  { 0x3000, 0x30ff, MWA_RAM },
+  { 0x0000, 0x0fff, MWA_BANKNO(1) },
+  { 0x1000, 0x4fff, MWA_ROM },
+  { 0x5000, 0x5fff, MWA_RAM },
 MEMORY_END
 
 static PORT_READ_START(by8035_readport)
@@ -463,12 +473,12 @@ static PORT_WRITE_START(by8035_writeport)
   { 0x100, 0x107, by8035_port_w },
 MEMORY_END
 
-static READ_HANDLER(u8_porta_r) { logerror("8255 A read\n"); return 0; }
-static READ_HANDLER(u8_portb_r) { logerror("8255 B read\n"); return 0; }
-static READ_HANDLER(u8_portc_r) { logerror("8255 C read\n"); return 0; }
-static WRITE_HANDLER(u8_porta_w) { logerror("8255 A write: %02x\n", data); }
-static WRITE_HANDLER(u8_portb_w) { logerror("8255 B write: %02x\n", data); }
-static WRITE_HANDLER(u8_portc_w) { logerror("8255 C write: %02x\n", data); }
+static READ_HANDLER(u8_porta_r) { logerror("%04x: 8255 A read\n", activecpu_get_previouspc()); return 0; }
+static READ_HANDLER(u8_portb_r) { logerror("%04x: 8255 B read\n", activecpu_get_previouspc()); return 0; }
+static READ_HANDLER(u8_portc_r) { logerror("%04x: 8255 C read\n", activecpu_get_previouspc()); return 0; }
+static WRITE_HANDLER(u8_porta_w) { logerror("%04x: 8255 A write: %02x\n", activecpu_get_previouspc(), data); }
+static WRITE_HANDLER(u8_portb_w) { logerror("%04x: 8255 B write: %02x\n", activecpu_get_previouspc(), data); }
+static WRITE_HANDLER(u8_portc_w) { logerror("%04x: 8255 C write: %02x\n", activecpu_get_previouspc(), data); }
 
 static ppi8255_interface kiss8355_intf =
 {
@@ -494,22 +504,24 @@ static MACHINE_INIT(by8035) {
 
 MACHINE_DRIVER_START(by8035)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", I8035, 500000)
+  MDRV_CPU_ADD_TAG("mcpu", I8035, 6000000/15)
   MDRV_CPU_MEMORY(by8035_readmem, by8035_writemem)
   MDRV_CPU_PORTS(by8035_readport, by8035_writeport)
   MDRV_CORE_INIT_RESET_STOP(by8035,NULL,NULL)
   MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by8035_irq, 250)
+  MDRV_CPU_PERIODIC_INT(by8035_irq, 60)
   MDRV_SOUND_ADD(AY8910, kiss_ay8910Int)
 MACHINE_DRIVER_END
 
 #define BY8035_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
   ROM_START(name) \
     NORMALREGION(0x10000, REGION_CPU1) \
-      ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
-      ROM_LOAD( n2, 0x0800, 0x1000, chk2) \
-      ROM_LOAD( n3, 0x1800, 0x1000, chk3) \
-      ROM_LOAD( n4, 0x2800, 0x0800, chk4)
+      ROM_LOAD( n1, 0x4000, 0x0800, chk1) \
+        ROM_RELOAD( 0x0000, 0x0800) \
+      ROM_LOAD( n2, 0x1000, 0x1000, chk2) \
+      ROM_LOAD( n3, 0x2000, 0x1000, chk3) \
+      ROM_LOAD( n4, 0x3000, 0x0800, chk4) \
+        ROM_RELOAD( 0x4800, 0x0800)
 
 static const core_tLCDLayout dispBy6p[] = {
   {0, 0, 0,16,CORE_SEG10},
@@ -598,7 +610,7 @@ BY68701_ROMSTART_DC7A(eballdp3,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8
                            "720-xx.u10",CRC(6da34581) SHA1(6e005ceda9a4a23603d5243dfca85ccd3f0e425a),
                            "720-xx.u14",CRC(7079648a) SHA1(9d91cd18fb68f165498de8ac51c1bc2a35bd9468),
                            "xxx-xx.u13",CRC(bda2c78b) SHA1(d5e7d0dd3d44d63b9d4b43bf5f63917b80a7ce23),
-                           "838-13.u12",CRC(fd7615da) SHA1(f3c73f055c3f403da68b7981feb9b87beb82a168))
+                           "838-18.u12",CRC(20fa35e5) SHA1(d8808aa357d2a20fc235da7c80f78c8e5d805ac3))
 BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
