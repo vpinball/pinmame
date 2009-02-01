@@ -69,7 +69,11 @@ static volatile UINT8 profiler_thread_exit;
 #endif
 
 #ifndef MESS
+#ifdef PINMAME
+static const char helpfile[] = "pinmame.txt";
+#else
 static const char helpfile[] = "docs\\windows.txt";
+#endif /* PINMAME */
 #else
 static const char helpfile[] = "mess.chm";
 #endif
@@ -122,7 +126,14 @@ int main(int argc, char **argv)
 		int button;
 		FILE* fp;
 
-  #ifndef MESS
+#ifndef MESS
+#ifdef PINMAME
+        sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
+                              "\n"
+                              "Please consult the documentation for more information.\n"
+                              "\n"
+                              "Would you like to open the documentation now?");
+#else
 		sprintf(message_text, APPLONGNAME " v%s - Multiple Arcade Machine Emulator\n"
 							  "Copyright (C) 1997-2003 by Nicola Salmoria and the MAME Team\n"
 							  "\n"
@@ -140,13 +151,14 @@ int main(int argc, char **argv)
 							  "\n"
 							  "Would you like to open the documentation now?"
 							  , build_version);
-  #else
+#endif /* PINMAME */
+#else
 		sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
 							  "\n"
 							  "Please consult the documentation for more information.\n"
 							  "\n"
 							  "Would you like to open the documentation now?");
-  #endif
+#endif
 
 		// pop up a messagebox with some information
 		button = MessageBox(NULL, message_text, APPLONGNAME " usage information...", MB_YESNO | MB_ICONASTERISK);
