@@ -24,12 +24,12 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /*----------------------------------
 / Black Sheep Squadron (Astro game)
 /---------------------------------*/
-INITGAME(blkshpsq,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
-BY17_ROMSTARTx88(blkshpsq,"cpu_u2.716",CRC(272ad984) SHA1(3a6574762bd1db0a64da1de3bc875f3a3f1dfff6),
-                          "cpu_u6.716",NO_DUMP)
-BY35_ROMEND
+INITGAME(blkshpsq,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+ASTRO_ROMSTART88(blkshpsq,"cpu_u2.716",CRC(23d6cd54) SHA1(301ba10f3f333109630dd8abd13a6b4063f805a9),
+                          "cpu_u6.716",CRC(ea68b9f7) SHA1(ebb69f4faadf457454939e47d8ae6e79eb0e1a11))
+BY17_ROMEND
 #define input_ports_blkshpsq input_ports_st
-CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mST100s,0)
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1978,"Astro",by35_mST100,GAME_USES_CHIMES)
 
 /*----------------------------------
 / Unknown game and manufacturer
