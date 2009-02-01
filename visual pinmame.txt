@@ -1,7 +1,7 @@
 **************************************************************************************
                     Visual PinMAME
-                     Version 2.0.1
-                   (August 2, 2008)
+                      Version 2.1
+                  (February 1, 2009)
                 http://www.pinmame.com
 **************************************************************************************
 
@@ -69,7 +69,7 @@ Known Bugs
 The Visual PinMAME Development Team
 -----------------------------------
 
-Steve Ellenoff     (sellenoff at hotmail.com)
+Steve Ellenoff     (sellenoff at comcast.net)
 Tom Haukap         (Tom.Haukap at t-online.de)
 Martin Adrian      (wpcmame at hotmail.com)
 Gerrit Volkenborn  (gaston at pinmame.de)

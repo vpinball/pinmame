@@ -1,3 +1,63 @@
+Version 2.1 (February 1, 2009) - "Keep 'em coming!"
+------------------------------------------------------------------------------
+OK, so six months have passed yet again - amazing how time flies.
+Despite the fact that all major manufaturers are emulated by now, there's
+still enough to do to iron out all of the bugs and inaccuracies.
+
+From time to time a few new games show up unexpectedly, like the new batch
+coming in from tecnopinball.org in January: three new Juegos Populares games,
+also Inder Atleta, and another oddball: Videodens "Break".
+Some special greetings go to the makers of that invaluable resource site! :)
+
+Despite the fact there is NO manual or schematics drawing to work with yet,
+we managed to get Break working somehow - Spanish manufacturers were pretty
+much fixated on the Z80 cpu and the AY-8910 sound chip, so it wasn't
+all that hard really...
+
+Jac van Ham, a rare Dutch manufacturer, joins the club with a game called
+"Escape", adding a new CPU (TMS9980-A) to our core at the same time.
+
+Some people contributed by providing new dumps for known bad roms as well:
+David Seidman finally managed to get good reads off Black Sheep Squadron.
+Jerry Clause re-read the U6 speech rom on Flash Gordon's vocalizer set, so
+the hissing and stuttering is gone now.
+
+Thanks to all our contributors, especially to Inkochnito for locating some
+very hard to find roms over and over again all those years! What would we
+do without you? -- Hmm, a lot more vacation, I guess (just kidding)! ;)
+
+On the emulation side of it, sound was improved for Bally games using the
+old "Sounds Plus" sound board, so it plays a few more sounds now.
+Also, Gottlieb System 80B had another issue with melody playing at game start
+which wasn't supposed to happen at all.
+In the same vein, Jokerz, Pool Sharks, and Blackwater 100 had their sound
+startup issues corrected, meaning that BW100's sound is finally working BTW.
+
+Well, that's basically it. So enjoy our latest feat, and "keep 'em coming!"
+
+Changes:
+
+*** CORE/CPU ***
+Fixed a bug for Bally-51 Sounds Plus
+Fixed sound issues on Gottlieb System 80B
+Fixed Blackwater 100 sound startup
+Fixed startup sound for Jokerz / Pool Sharks
+Corrected Playmatic Last Lap, game works now
+Better working Bally 68701 prototype games
+Added TMS9980-A cpu support
+
+*** ROM SUPPORT ***
+Added Bally Party Zone L-3  [ipdb.org]
+Added WMS Banzai Run G-3 (German)  [ipdb.org]
+Added Juegos Populares: Featon, Petaco, Aqualand  [tecnopinball.org]
+Added Jac van Ham Escape  [Inkochnito / Ronald Knor]
+Added Videodens Break (NVRAM not working yet)  [tecnopinball.org]
+Added Inder Atleta  [tecnopinball.org]
+Added Flash Gordon Prototype rev. 2 (working)  [pinballjail]
+Corrected checksums for Bally Flash Gordon (vocalizer sound)  [Jerry Clause]
+Corrected checksums for Astro Black Sheep Squadron  [David Seidman]
+
+
 Version 2.0 (August 1, 2008) - "Free Play Only!"
 ------------------------------------------------------------------------------
 This major version number change has nothing to do with new functionality for

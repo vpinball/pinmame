@@ -38,4 +38,6 @@ copy harley.zip harl_a10.zip > nul
 copy swtril.zip swtril43.zip > nul
 copy jplstwld.zip jplstw22.zip > nul
 
+copy bnzai_p1.zip bnzai_pa.zip > nul
+
 cd ..
