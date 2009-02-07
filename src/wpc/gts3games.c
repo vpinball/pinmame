@@ -62,7 +62,24 @@ static struct core_dispLayout GTS3_dispAlphaLED[] = {
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
-// some games produced by Premier for International Concepts
+/*-------------------------------------------------------------------
+/ Unnamed game? by Toptronic HGmbH, Germany
+/-------------------------------------------------------------------*/
+/* 2 X 20 AlphaNumeric Rows, 4 X 3 7-seg displays */
+static struct core_dispLayout dispToptronic[] = {
+  DISP_SEG_IMPORT(GTS3_dispAlpha),
+  {5,12,40,8,CORE_SEG7}, {0}
+};
+INITGAME_IC(tt_game, dispToptronic, FLIP67, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(tt_game,   "gprom.bin",CRC(e7944b75) SHA1(b73f2e0004556c8aa88baef0cddcdefb5b905b8d))
+GTS3SOUND32128(         "yrom1.bin",NO_DUMP,
+                        "drom1.bin",NO_DUMP,
+                        "arom1.bin",CRC(b0983d90) SHA1(72e6a71f20fd5849543ca13813f062a3fc1d7dcf),
+                        "arom2.bin",CRC(3e31ce58) SHA1(a2ef72d7b2bb821d1f62dce7212e31a1df3e7791))
+GTS3_ROMEND
+CORE_GAMEDEFNV(tt_game,"Unnamed game",19??,"Toptronic",mGTS3S,GAME_NOT_WORKING)
+
+// Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
 / Caribbean Cruise (#C102)
 /-------------------------------------------------------------------*/
@@ -70,8 +87,8 @@ INITGAME_IC(ccruise, ALPHA, FLIP67, 2, SNDBRD_GTS3, 4)
 GTS3ROMSTART(ccruise,	"gprom.bin",CRC(668b5757) SHA1(8ff955e8598ffdc68eab7fd69c6a67c4eed13f0f))
 GTS3SOUND32128(			"yrom1.bin",CRC(6e424e53) SHA1(90a9bf5ce84680972f9d12eb386215494c584b9b),
 						"drom1.bin",CRC(4480257e) SHA1(50b93d4496816ef7cdf007ac75c72c6aaa956aba),
- 						"arom1.bin",NO_DUMP,
-						"arom2.bin",NO_DUMP)
+                        "arom1.bin",NO_DUMP,
+                        "arom2.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3SNO,0)
 
@@ -395,7 +412,7 @@ GTS3SOUND32256(			"yrom1.bin",CRC(f08e6d7f) SHA1(284214ac80735ddd36933ecd60debc7
 						"arom1.bin",CRC(cccdf23a) SHA1(1b1e31f04cd60d64f0b9b8ab2c6169dacd0bce69),
 						"arom2.bin",CRC(d4cc44a1) SHA1(c68264f00efa9f219fc257061ed39cd789e94126))
 GTS3_ROMEND
-CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMDSA, 0)
+CORE_GAMEDEFNV(wipeout,"Wipeout (rev.2)",1993,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Gladiators
@@ -421,7 +438,17 @@ GTS3SOUND32256(			"yrom1.bin",CRC(8b2795b0) SHA1(b838d4e410c815421099c65b0d3b222
 						"arom1.bin",CRC(ece4eebf) SHA1(78f882668967194bd547ace5d22083faeb29ef5e),
 						"arom2.bin",CRC(4e466500) SHA1(78c4b41a174d82a7e0e7775713c76e679c8a7e89))
 GTS3_ROMEND
-CORE_GAMEDEFNV(wcsoccer,"World Challenge Soccer",1994,"Gottlieb",mGTS3DMDS, 0)
+CORE_GAMEDEFNV(wcsoccer,"World Challenge Soccer (rev.1)",1994,"Gottlieb",mGTS3DMDS, 0)
+
+INITGAME2(wcsoccd2, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
+GTS3ROMSTART(wcsoccd2,  "gprom.bin", CRC(6382c32e) SHA1(e212f4a9a77d1cf089acb226a8079ac4cae8a96d))
+GTS3_DMD512_ROMSTART(   "dsprom2.bin",CRC(4c8ea71d) SHA1(ce751b84e2033e4de2f2c57490867ecafd423aaa))
+GTS3SOUND32256(         "yrom1.bin",CRC(8b2795b0) SHA1(b838d4e410c815421099c65b0d3b22227dae17c6),
+                        "drom1.bin",CRC(18d5edf3) SHA1(7d0d46506cf9d4b96b9b93139e3c65643e120c28),
+                        "arom1.bin",CRC(ece4eebf) SHA1(78f882668967194bd547ace5d22083faeb29ef5e),
+                        "arom2.bin",CRC(4e466500) SHA1(78c4b41a174d82a7e0e7775713c76e679c8a7e89))
+GTS3_ROMEND
+CORE_CLONEDEFNV(wcsoccd2,wcsoccer,"World Challenge Soccer (disp.rev.2)",1994,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Rescue 911
@@ -434,7 +461,7 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(14f86b56) SHA1(2364c284412eba719f88d50dcf47d
 						"arom1.bin",CRC(f6daa16c) SHA1(be132072b27a94f61653de0a22eecc8b90db3077),
 						"arom2.bin",CRC(59374104) SHA1(8ad7f5f0109771dd5cebe13e80f8e1a9420f4447))
 GTS3_ROMEND
-CORE_GAMEDEFNV(rescu911,"Rescue 911",1994,"Gottlieb",mGTS3DMDS, 0)
+CORE_GAMEDEFNV(rescu911,"Rescue 911 (rev.1)",1994,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Freddy: A Nightmare on Elm Street
@@ -447,7 +474,7 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(4a748665) SHA1(9f08b6d0731390c306194808226d2
 						"arom1.bin",CRC(6bec0567) SHA1(510c0e5a5af7573761a69bad5ab36f0019767c48),
 						"arom2.bin",CRC(f0e9284d) SHA1(6ffe8286e27b0eecab9620ca613e3d72bb7f77ce))
 GTS3_ROMEND
-CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3DMDSA, 0)
+CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street (rev.3)",1994,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Shaq Attaq
@@ -539,7 +566,7 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(c58941ed) SHA1(3b3545b1e8986b06238576a0cef69
 						"arom1.bin",CRC(b3def376) SHA1(94553052cfe80774affebd5b0f99512055552786),
 						"arom2.bin",CRC(59789e66) SHA1(08b7f82f83c53f15cafefb009ab9833457c088cc))
 GTS3_ROMEND
-CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, 0)
+CORE_GAMEDEFNV(bighurt,"Big Hurt (rev.3)",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Waterworld
@@ -581,6 +608,16 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(4ffb15b0) SHA1(de4e9b2ccca865deb2595320015a1
 GTS3_ROMEND
 CORE_GAMEDEFNV(andretti,"Mario Andretti",1995,"Gottlieb",mGTS3DMDS, 0)
 
+INITGAME2(andrett4, dispAndretti, FLIP8283, 4, SNDBRD_GTS3, 4)
+GTS3ROMSTART(andrett4,  "gpromt4.bin", CRC(c6f6a23b) SHA1(01ea23a830be1e86f5ecd27d6d56c1c6d5ff3176))
+GTS3_DMD512_ROMSTART(   "dsprom.bin",CRC(1f70baae) SHA1(cf07bb057093b2bd18e6ee45009245ea62094e53))
+GTS3SOUND32512256(      "yrom1.bin",CRC(4ffb15b0) SHA1(de4e9b2ccca865deb2595320015a149246795260),
+                        "drom1.bin",CRC(d472210c) SHA1(4607e6f928cb9a5f41175210ba0427b6cd50fb83),
+                        "arom1.bin",CRC(918c3270) SHA1(aa57d3bfba01e701b02ca7e4f0946144cfb7d4b1),
+                        "arom2.bin",CRC(3c61a2f7) SHA1(65cfb5d1261a1b0c219e1786b6635d7b0a188040))
+GTS3_ROMEND
+CORE_CLONEDEFNV(andrett4,andretti,"Mario Andretti (rev.T4)",1995,"Gottlieb",mGTS3DMDS, 0)
+
 /*-------------------------------------------------------------------
 / Barb Wire
 /-------------------------------------------------------------------*/
@@ -599,13 +636,13 @@ CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, 0)
 /-------------------------------------------------------------------*/
 INITGAME2(brooks, DMD, FLIP4243, 4/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(brooks,	"gprom.bin", CRC(26cebf07) SHA1(14741e2d216528f176dc35ade856baffab0f99a0))
-GTS3_DMD_ROMSTARTX(		"dsprom.bin",NO_DUMP)
-GTS3SOUNDX(				"yrom1.bin",NO_DUMP,
+GTS3_DMD512_ROMSTART(   "dsprom.bin",NO_DUMP)
+GTS3SOUND32512256(      "yrom1.bin",NO_DUMP,
 						"drom1.bin",NO_DUMP,
 						"arom1.bin",NO_DUMP,
 						"arom2.bin",NO_DUMP)
 GTS3_ROMEND
-CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDSA, GAME_NO_SOUND)
+CORE_GAMEDEFNV(brooks,"Brooks & Dunn (rev.T1)",1996,"Gottlieb",mGTS3DMDSA, 0)
 
 // other manufacturers
 

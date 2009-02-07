@@ -495,9 +495,10 @@ DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
 DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
+DRIVERNV(nmoves)        //          ??/89 Night Moves (for International Concepts)
 //System 3 Alphanumeric
+DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
-DRIVERNV(nmoves)        //C-103?    ??/89 Night Moves (for International Concepts)
 DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action
 DRIVERNV(lca2)          //                Lights, Camera, Action (rev.2)
 DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger
@@ -526,11 +527,12 @@ DRIVERNV(sfight2b)      //                Street Fighter II (rev.2)
 DRIVERNV(teedoff)       //S3-736:   05/93 Tee'd Off
 DRIVERNV(teedoff1)      //                Tee'd Off (rev.1)
 DRIVERNV(teedoff3)      //                Tee'd Off (rev.3)
-DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out
+DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out (rev.2)
 DRIVERNV(gladiatr)      //S3-737:   11/93 Gladiators
-DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer
-DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911
-DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street
+DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer (rev.1)
+DRIVERNV(wcsoccd2)      //                World Challenge Soccer (disp.rev.2)
+DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911 (rev.1)
+DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.3)
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
 DRIVERNV(shaqatt2)      //                Shaq Attaq (rev.2)
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
@@ -538,13 +540,15 @@ DRIVERNV(stargat1)      //                Stargate (rev.1)
 DRIVERNV(stargat2)      //                Stargate (rev.2)
 DRIVERNV(stargat3)      //                Stargate (rev.3)
 DRIVERNV(stargat4)      //                Stargate (rev.4)
-DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt
-DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares
+DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt (rev.3)
+DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares (rev.6)
+DRIVERNV(snspare1)      //                Strikes 'N Spares (rev.1)
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
 DRIVERNV(waterwl2)      //                Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
+DRIVERNV(andrett4)      //                Mario Andretti (rev.T4)
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
-DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
+DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (rev.T1, never produced)
 
 // --------------------
 // GRAND PRODUCTS, INC.
