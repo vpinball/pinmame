@@ -876,9 +876,14 @@ void core_updateSw(int flipEn) {
     /*-- simulator keys disabled, use row+column keys --*/
     static int lastRow = 0, lastCol = 0;
     int row = 0, col = 0;
-
-    if (((inports[CORE_MANSWINPORT] & CORE_MANSWCOLUMNS) == 0) ||
-        ((inports[CORE_MANSWINPORT] & CORE_MANSWROWS) == 0))
+#ifdef MAME_DEBUG
+    if (keyboard_pressed(KEYCODE_Z)) col = 9;
+    if (keyboard_pressed(KEYCODE_X)) col = 10;
+    if (keyboard_pressed(KEYCODE_C)) col = 11;
+    if (keyboard_pressed(KEYCODE_V)) col = 12;
+#endif
+    if (!col && (((inports[CORE_MANSWINPORT] & CORE_MANSWCOLUMNS) == 0) ||
+        ((inports[CORE_MANSWINPORT] & CORE_MANSWROWS) == 0)))
       lastRow = lastCol = 0;
     else {
       int bit = 0x0101;
