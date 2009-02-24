@@ -2617,6 +2617,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					RelativePath="src\wpc\jvh.c">
 				</File>
 				<File
+					RelativePath="src\wpc\kissproto.c">
+				</File>
+				<File
 					RelativePath="src\wpc\ltd.c">
 				</File>
 				<File

@@ -2340,6 +2340,10 @@ SOURCE=.\src\wpc\jvh.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\kissproto.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\ltd.c
 # End Source File
 # Begin Source File
