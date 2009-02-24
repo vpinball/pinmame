@@ -10,37 +10,66 @@
 
    (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
-   Chips: (1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
+   Chips:       (1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
 
    (Granny & Gators Only):
    VIDIOT DELUXE:Handles Video/Joystick and Communication to Cheap Squeak board
-   Chips: (2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
+   Chips:       (2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
    Cheap Squeak Sound Board
 
    *EMULATION ISSUES*
-   Baby Pac: Start up sounds during test flashes is wrong.should play pac tune?
-
+   Baby Pac: working fine
    G & G: Color blending is not accurately emulated, but transparency is simulated
 
    Interesting Tech Note:
 
-   The sound board integrated into the vidiot, appears to be
+   The sound board integrated into the vidiot is
    identical to what later became the separate Cheap Squeak board used on later model
-   bally MPU-35 games, as well as Granny & Gators!
+   bally MPU-35 and early 6803 games!
 
    Note from RGP:
-   Bally video pins use an AS-2518-133 mpu.
-   I believe that some late games such as Grand Slam
-   may have also used the AS-2518-133 mpu.
 
-   This is the same as an  AS-2518-35  mpu except that
-   R113 which is fed from J4 by +43v is now CR52 a 1N4148
-   diode fed by 6.3vac from General Illumination.
-   To use the -133 as a -35 change CR52 to be
-   a 2k ohm 1/4 watt resistor or to use a -35 as a -133
-   change R113 from a resistor to a 1N4148 diode.
-   The cathode (ie: stripe end ) connects to capacitor C1
-   (it is the end away from J4).
+        Bally video pins use an AS-2518-133 mpu.
+        I believe that some late games such as Grand Slam
+        may have also used the AS-2518-133 mpu.
+
+        This is the same as an  AS-2518-35  mpu except that
+        R113 which is fed from J4 by +43v is now CR52 a 1N4148
+        diode fed by 6.3vac from General Illumination.
+        To use the -133 as a -35 change CR52 to be
+        a 2k ohm 1/4 watt resistor or to use a -35 as a -133
+        change R113 from a resistor to a 1N4148 diode.
+        The cathode (ie: stripe end ) connects to capacitor C1
+        (it is the end away from J4).
+
+  *All addresses are shown for baby pac
+  -------------------------------------
+  6800 vectors:
+  RES:  597d
+  NMI:  5950
+  SWI?: 597d
+  IRQ:  5955
+  FIRQ: 1f87
+
+  6809 vectors:
+  RES:  FFFE-F (E016)
+  NMI:  FFFC-D (E17C) Used - Test Switch
+  SWI:  FFFA-B (801F) Not Used
+  IRQ:  FFF8-9 (801C) Used - VDP Triggered
+  FIRQ: FFF6-7 (8019) Used - PIA Triggered
+  SWI2: FFF4-5 (8016) Not Used
+  SWI3: FFF2-3 (8013) *Valid Code?
+  Rsvd: FFF0-1 (8010) *Valid Code?
+
+  6803 vectors:
+  RES: FFFE-F
+  SWI: FFFA-B Software Interrupt (Not Used)
+  NMI: FFFC-D (Used)
+  IRQ: FFF8-9 (Not Used)
+  ICF: FFF6-7 (Input Capture)~IRQ2 (FA6F)
+  OCF: FFF4-5 (Output Compare)~IRQ2 (Not Used)
+  TOF: FFF2-3 (Timer Overflow)~IRQ2 (Not Used)
+  SCI: FFF0-1 (Input Capture)~IRQ2  (Not Used)
 */
 #include <stdarg.h>
 #include <time.h>
@@ -281,6 +310,65 @@ static SWITCH_UPDATE(byVP) {
   pia_set_input_ca1(BYVP_PIA0, !core_getSw(BYVP_SWSELFTEST));
 }
 
+/*PIA 0*/
+/*PIA U10:
+(in)  PB0-1: Vidiot Status Bits 0,1 INVERTED - (When Status Data Enabled Flag is Set)
+(in)  PB0-7: Vidiot Output Data (When Enable Output Flag is Set)
+(in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows
+(in)  PB0-7: Dip Returns
+(in)  CA1:   Self Test Switch
+(in)  CB1:   Zero Cross Detection
+(in)  CA2:   N/A
+(out) PA0-1: Cabinet Switches Strobe (shared below)
+(out) PA0-3: Lamp Address (Shared with Switch Strobe)
+(out) PA0-4: Switch Strobe(Columns)
+(out) PA4-7: BCD Lamp Data
+(out) PA5:   S01-S08 Dip Enable
+(out) PA6:   S09-S16 Dip Enable
+(out) PA7:   S17-S24 Dip Enable
+(out) PA0-7: Vidiot Input Data (When Latch Input Flag is set?)
+(out) CA2:   NA
+(out) CB2:   S25-S32 Dip Enable (shared with Lamp Strobe?)
+(out) CB2:   Lamp Strobe
+      IRQ:   Wired to Main 6800 CPU IRQ.*/
+
+/*PIA 1*/
+/*PIA U11:
+(in)  PA0-7  N/A
+(in)  PB0-7  N/A
+(in)  CA1:   Display Interrupt Generator
+(in)  CB1:   J5 - Pin 32 (Marked as Test Connector)
+(in)  CA2:   N/A
+(in)  CB2:   N/A
+(out) PA0:   N/A
+(out) PA1:   Video Enable Output
+(out) PA2:   Video Latch Input Data
+(out) PA3:   Video Status Enable
+(out) PA4-7: N/A
+(out) PB0-3: Momentary Solenoid
+(out) PB4-7: Continuous Solenoid
+(out) CA2:   Diag LED
+(out) CB2:   Solenoid Bank Select
+      IRQ:   Wired to Main 6800 CPU IRQ.*/
+
+/*---VIDIOT BOARD---*/
+
+/*PIA 2*/
+/*PIA U7:
+(in)  PA0-7  N/A
+(in)  PB0-7  Video Switch Returns (Bits 5-7 not connected)
+(in)  PB0-3  ?? Input from 6803 CPU?
+(in)  CA1:   Enable Data Output to Main CPU
+(in)  CB1:   N/A
+(in)  CA2:   Main CPU Latch Data Input
+(in)  CB2:   J2-1 = N/A?
+(out) PA0-3: Status Data (Only Bits 0 & 1 Used however) - Inverted before reaching MPU
+(out) PA4-7: Video Switch Strobes (Only Bit 7 is used however)
+(out) PB0-3: Output to 6803 CPU
+(out) PB4-7: N/A
+(out) CA2:   N/A
+(out) CB2:   6803 Data Strobe & LED
+      IRQ:   Wired to Video 6809 CPU FIRQ*/
 static struct pia6821_interface piaIntf[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, 0,0, 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, 0 ,pia0cb2_w,
@@ -309,9 +397,9 @@ static WRITE_HANDLER(byVP_soundCmd) {
   }
 }
 
-/*- toggle zero/detection circuit-*/
+/* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {
-//  if (locals.vblankCount > 730)
+  /*- toggle zero/detection circuit-*/
   pia_set_input_cb1(BYVP_PIA0,locals.phase_a = !locals.phase_a);
 //  logerror("zerocross: count %d \n",locals.vblankCount);
 }
