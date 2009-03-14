@@ -48,11 +48,15 @@ Step 1: Downloads
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
      Get them from http://sourceforge.net/project/showfiles.php?group_id=2435
+               and http://sourceforge.jp/projects/mingw/releases/?fulllist=1
+               and http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
 
 - Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
   Binary package:
   * gcc-3.2.3-20030504-1
   Get it from http://sourceforge.net/project/showfiles.php?group_id=2435&package_id=82722&release_id=158810
+           or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
+           or http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
   Warning: GCC 3.4 works too, but due to stricter checks more warnings are
            found, so PinMAME only compiles if you remove "-Werror" from the
            makefile. Removing "-Werror" is not recommended!!!
