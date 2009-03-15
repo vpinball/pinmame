@@ -41,15 +41,25 @@ Step 1: Downloads
 
   b) More recent MinGW setup
      Download the following binary packages to your c:\mingw-setup directory.
-     The packages carry the version numbers as of May 2008, but newer packages
-     should work too:
+     The packages carry the version numbers as of the date of testing, but newer
+     packages should work too:
+
+     (MinGW 5 tested in March 2009)
+     * mingwrt-3.15.2-mingw32-dll
+     * mingwrt-3.15.2-mingw32-dev
+     * binutils-2.19.1-mingw32-bin
+     * mingw32-make-3.81-20080326-3
+     * w32api-3.13-src
+     * w32api-3.13-dev
+
+     (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
+
      Get them from http://sourceforge.net/project/showfiles.php?group_id=2435
-               and http://sourceforge.jp/projects/mingw/releases/?fulllist=1
-               and http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
+            and/or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
 
 - Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
   Binary package:
@@ -100,15 +110,15 @@ Step 2: Setup
      Create a directory to hold your MinGW installation; for example, c:\mingw
      Extract all binary packages of MinGW to your c:\mingw directory.
 
-     (tested in 2009)
+     (MinGW 5 tested in March 2009)
      * mingwrt-3.15.2-mingw32-dll (for the DLL itself)
      * mingwrt-3.15.2-mingw32-dev (for includes and libs)
      * binutils-2.19.1-mingw32-bin
      * mingw32-make-3.81-20080326-3
      * w32api-3.13-src (Warning! Creates an extra subfolder, so files have to be moved up)
-     * w32api-3.13-dev (Warning! Creates an extra subfolder, so files have to be moved up)
+     * w32api-3.13-dev
 
-     (tested in 2008)
+     (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
