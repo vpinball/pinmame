@@ -99,6 +99,16 @@ Step 2: Setup
   b) More recent MinGW setup
      Create a directory to hold your MinGW installation; for example, c:\mingw
      Extract all binary packages of MinGW to your c:\mingw directory.
+
+     (tested in 2009)
+     * mingwrt-3.15.2-mingw32-dll (for the DLL itself)
+     * mingwrt-3.15.2-mingw32-dev (for includes and libs)
+     * binutils-2.19.1-mingw32-bin
+     * mingw32-make-3.81-20080326-3
+     * w32api-3.13-src (Warning! Creates an extra subfolder, so files have to be moved up)
+     * w32api-3.13-dev (Warning! Creates an extra subfolder, so files have to be moved up)
+
+     (tested in 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
@@ -138,7 +148,7 @@ Step 3: Libraries
 -----------------
 - Extract the ZLib source into a temporary directory.
   Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
-  Type "mingw32-make test -f win32\Makefile.gcc" to check its functionality.
+  Type "mingw32-make test -f nt\Makefile.gcc" to check its functionality.
   Copy the resulting libz.a to the lib directory in your c:\mingw directory
   Copy zlib.h and zconf.h to the include directory in your c:\mingw directory
 
