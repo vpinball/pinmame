@@ -168,4 +168,3 @@ Step 4: Compilation
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
 - To compile a debug build of these, which also includes the MAME debugger, just
   add "DEBUG=1"
-X
