@@ -10,16 +10,17 @@ static const core_tLCDLayout dispTaito[] = {
   { 3, 0,  6, 6, CORE_SEG7 },
   { 6, 0, 12, 6, CORE_SEG7 },
   { 9, 0, 18, 6, CORE_SEG7 },
-  {13,10, 24, 1, CORE_SEG7 }, {13, 0, 25, 1, CORE_SEG7 },
+  {12,10, 24, 1, CORE_SEG7 }, {12, 0, 25, 1, CORE_SEG7 },
   {0}
 };
 
 static const core_tLCDLayout dispTaito2[] = {
-  { 0, 0,  0, 6, CORE_SEG7 },
-  { 3, 0,  6, 6, CORE_SEG7 },
-  { 6, 0, 12, 6, CORE_SEG7 },
-  { 9, 0, 18, 6, CORE_SEG7 },
-  {13,10, 24, 1, CORE_SEG7 }, {13, 0, 27, 1, CORE_SEG7 },
+  { 3, 0,  0, 6, CORE_SEG7 },
+  { 6, 0,  6, 6, CORE_SEG7 },
+  { 9, 0, 12, 6, CORE_SEG7 },
+  {12, 0, 18, 6, CORE_SEG7 },
+  {15,10, 24, 1, CORE_SEG7 }, { 0,10, 27, 1, CORE_SEG7 },
+  {15, 0, 25, 1, CORE_SEG7 }, { 0, 0, 26, 1, CORE_SEG7 },
   {0}
 };
 
