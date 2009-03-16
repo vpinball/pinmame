@@ -167,7 +167,7 @@ static WRITE_HANDLER(dma_display)
 
 		case 14:
 			// match
-			TAITOlocals.segments[2*13+segMap[13]].w = core_bcd2seg7e[data&0x0f];
+			TAITOlocals.segments[2*13+segMap[13]].w = (TAITOlocals.lampMatrix[7] & 0x80) ? core_bcd2seg7e[data&0x0f] : 0;
 			break;
 
 		case 15:
