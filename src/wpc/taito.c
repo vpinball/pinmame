@@ -269,7 +269,7 @@ static int TAITO_m2sw(int col, int row) {
 static MEMORY_READ_START(taito_readmem)
   { 0x0000, 0x27ff, MRA_ROM },
   { 0x2800, 0x2808, switches_r }, /* some games use different locations */
-  { 0x2880, 0x2887, switches_r }, /* -"- */
+  { 0x2880, 0x2888, switches_r }, /* -"- */
   { 0x28d8, 0x28df, switches_r }, /* -"- */
   { 0x3e00, 0x3fff, MRA_RAM },
   { 0x4000, 0x40ff, MRA_RAM },
