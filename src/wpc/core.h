@@ -184,6 +184,7 @@
 #define CORE_SEGHIBIT 0x20
 #define CORE_SEGREV   0x40
 #define CORE_DMDNOAA  0x80
+#define CORE_NODISP   0x100
 #define CORE_SEGMASK  0x1f // Note that CORE_IMPORT must be part of the segmask as well!
 
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)

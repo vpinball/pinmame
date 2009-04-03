@@ -109,6 +109,7 @@ static struct {
   int greset;
   int pulse;
   int first_sound_reset;
+  UINT8 lamps[16*8];
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -392,10 +393,19 @@ static READ16_HANDLER(io_r) {
   return data;
 }
 
+static int brt(int a) {
+  int offset = (255-a)/4;
+  if (offset < 32) offset = 32;
+  a += offset;
+  if (a > 255) a = 255;
+  return a;
+}
+
 /*************/
 /* I/O WRITE */
 /*************/
 static WRITE16_HANDLER(io_w) {
+  int i, j;
   UINT16 soldata;
   //DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 
@@ -416,27 +426,31 @@ static WRITE16_HANDLER(io_w) {
       if (!core_gameData->hw.lampCol)
         locals.swCol = data;
       else if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] |= (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] |= (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] |= (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] |= (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] |= (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] |= (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] |= (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] |= (~data & 0xff);
+        for (i = 0; i < 8; i++) {
+          if (data & (0x0100 << i)) coreGlobals.tmpLampMatrix[i] |= ~data & 0xff;
+          for (j = 0; j < 8; j++) {
+            if ((data & (0x0100 << i)) && (~data & (1 << j))) {
+              locals.lamps[i*8 + j] = brt(locals.lamps[i*8 + j]);
+            } else if (locals.lamps[i*8 + j]) {
+              locals.lamps[i*8 + j]--;
+            }
+          }
+        }
       }
       break;
     //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
     case 0x0000000d:
       if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol] |= (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+1] |= (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+2] |= (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+3] |= (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+4] |= (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+5] |= (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+6] |= (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+7] |= (~data & 0xff);
+        for (i = 0; i < 8; i++) {
+          if (data & (0x0100 << i)) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+i] |= ~data & 0xff;
+          for (j = 0; j < 8; j++) {
+            if ((data & (0x0100 << i)) && (~data & (1 << j))) {
+              locals.lamps[(core_gameData->hw.lampCol+i)*8 + j] = brt(locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]);
+            } else if (locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]) {
+              locals.lamps[(core_gameData->hw.lampCol+i)*8 + j]--;
+            }
+          }
+        }
       }
       break;
 
@@ -747,6 +761,29 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 		RAM+=1;
 	  }
 	RAM+=16;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+
+/********************************/
+/*** Shaded lamps update code ***/
+/********************************/
+PINMAME_VIDEO_UPDATE(cc_lamp16x8) {
+  UINT16 *seg = &coreGlobals.drawSeg[0];
+  tDMDDot dotCol;
+  int ii, jj;
+
+  for (ii = 0; ii < 8; ii++) {
+    for (jj = 0; jj < 16; jj++) {
+      UINT8 *line = &dotCol[1+ii][jj];
+      *line = 63+locals.lamps[jj*8+ii]/16;
+    }
+  }
+  for (jj = 0; jj < 16; jj++) {
+    for (ii = 0; ii < 8; ii+=4) {
+      *seg++ = (dotCol[1+ii][jj]-63) | ((dotCol[2+ii][jj]-63)<<4) | ((dotCol[3+ii][jj]-63)<<8) | ((dotCol[4+ii][jj]-63)<<12);
+    }
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
