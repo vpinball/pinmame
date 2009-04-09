@@ -1093,6 +1093,8 @@ DRIVER(bdk,202)         //S.A.M: 08/08 Batman The Dark Knight - V2.02
 DRIVER(csi,102)         //S.A.M: 11/08 C.S.I. - V1.02
 DRIVER(csi,200)         //S.A.M: 12/08 C.S.I. - V2.0
 DRIVER(csi,210)         //S.A.M: 01/09 C.S.I. - V2.1
+DRIVER(twenty4,130)     //S.A.M: 03/09 24 - V1.3
+DRIVER(twenty4,140)     //S.A.M: 03/09 24 - V1.4
 #endif
 
 // ---------------
@@ -1532,8 +1534,9 @@ DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
 DRIVER(cv,11)           //WPC-562:  10/97 B Cirqus Voltaire (1.1)
 DRIVER(cv,13)           //WPC-562:  10/97 B Cirqus Voltaire (1.3)
 DRIVER(cv,20h)                            // Home version
-DRIVER(ngg,13)          //WPC-561:  12/97 W No Good Gofers
-DRIVER(ngg,p06)                           // Prototype
+DRIVER(ngg,p06)         //WPC-561:  10/97 W No Good Gofers (Prototype 0.6)
+DRIVER(ngg,10)          //WPC-561:  12/97 W No Good Gofers (1.0)
+DRIVER(ngg,13)          //WPC-561:  04/98 W No Good Gofers (1.3)
 DRIVER(cp,16)           //WPC-563:  04/98 B The Champion Pub (1.6)
 DRIVER(cp,15)           //WPC-563:  04/98 B The Champion Pub (1.5)
 DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash

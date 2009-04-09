@@ -34,7 +34,7 @@ BYVP_ROMSTARTx00(babypacn,"pacmann.u2", CRC(734710cb) SHA1(040943be6e1f3a750f3b2
 BYVP_ROMEND
 #define init_babypacn init_babypac
 #define input_ports_babypacn input_ports_babypac
-GAMEX(2008,babypacn,babypac,byVP1,babypac,babypac,ROT90,"Bally / Oliver","Baby Pacman (Video/Pinball Combo, home roms)",0)
+GAMEX(2006,babypacn,babypac,byVP1,babypac,babypac,ROT90,"Bally / Oliver","Baby Pacman (Video/Pinball Combo, home roms)",0)
 
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)

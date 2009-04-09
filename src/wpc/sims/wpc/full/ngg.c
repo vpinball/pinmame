@@ -558,6 +558,14 @@ DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d) SHA1(c72a2f176aa24e91ecafe1704affd
                 "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
                 "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
 WPC_ROMEND
+
+WPC_ROMSTART(ngg,10,"ngg_10.rom",0x80000,CRC(6680f6c1) SHA1(8ac37e3ea427c998f84a0c9c55e3f1e1da395870))
+DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d) SHA1(c72a2f176aa24e91ecafe1704affd16b86d671e2),
+                "nggsndl1.s3",	CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
+                "nggsndl1.s4",	CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
+                "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
+                "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
+WPC_ROMEND
 // No Good Gofers prototype roms
 // s2 v0.2 rom is identical to l1 rom except for version string
 // even the checksum (non CRC32) is the same!
@@ -575,6 +583,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(ngg,13,"No Good Gofers (1.3)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(ngg,p06,13,"No Good Gofers (p0.6)",1997,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(ngg,10,13,"No Good Gofers (1.0)",1997,"Williams",wpc_m95S,0)
 
 
 /*-----------------------
