@@ -1271,9 +1271,9 @@ CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mS
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 5, CORE_DMD, (void *)seminidmd1a_update},
-  {34,18, 7, 5, CORE_DMD, (void *)seminidmd1b_update},
-  {34,26, 7, 5, CORE_DMD, (void *)seminidmd1c_update}, {0}
+  {34,10, 7, 5, CORE_DMD, (void *)seminidmd1s_update},
+  {34,18, 7, 5, CORE_DMD, (void *)seminidmd1s_update},
+  {34,26, 7, 5, CORE_DMD, (void *)seminidmd1s_update}, {0}
 };
 INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
 SE128_ROMSTART(ripleys, "ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))

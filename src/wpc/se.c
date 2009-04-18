@@ -442,58 +442,17 @@ if (!pmoptions.dmd_only)
   return 0;
 }
 // MINI DMD Type 1 (Ripley's) (3 x 5x7)
-PINMAME_VIDEO_UPDATE(seminidmd1a_update) {
+PINMAME_VIDEO_UPDATE(seminidmd1s_update) {
   tDMDDot dotCol;
   int ii,kk,bits;
-  UINT16 *seg = &coreGlobals.drawSeg[0];
+  int jj = 2-(layout->left-10)/8;
+  UINT16 *seg = &coreGlobals.drawSeg[5*(2-jj)];
 
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
     UINT8 *line = &dotCol[ii+1][0];
     for (kk = 0; kk < 5; kk++)
-      *line++ = ((selocals.minidmd[0][2][kk] & bits) + (selocals.minidmd[1][2][kk] & bits) +
-                 (selocals.minidmd[2][2][kk] & bits))/bits;
-  }
-  for (ii = 0; ii < 5; ii++) {
-    bits = 0;
-    for (kk = 0; kk < 7; kk++)
-      bits = (bits<<2) | dotCol[kk+1][ii];
-    *seg++ = bits;
-  }
-if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, dotCol, layout);
-  return 0;
-}
-PINMAME_VIDEO_UPDATE(seminidmd1b_update) {
-  tDMDDot dotCol;
-  int ii,kk,bits;
-  UINT16 *seg = &coreGlobals.drawSeg[5];
-
-  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &dotCol[ii+1][0];
-    for (kk = 0; kk < 5; kk++)
-      *line++ = ((selocals.minidmd[0][1][kk] & bits) + (selocals.minidmd[1][1][kk] & bits) +
-                 (selocals.minidmd[2][1][kk] & bits))/bits;
-  }
-  for (ii = 0; ii < 5; ii++) {
-    bits = 0;
-    for (kk = 0; kk < 7; kk++)
-      bits = (bits<<2) | dotCol[kk+1][ii];
-    *seg++ = bits;
-  }
-if (!pmoptions.dmd_only)
-    video_update_core_dmd(bitmap, cliprect, dotCol, layout);
-  return 0;
-}
-PINMAME_VIDEO_UPDATE(seminidmd1c_update) {
-  tDMDDot dotCol;
-  int ii,kk,bits;
-  UINT16 *seg = &coreGlobals.drawSeg[10];
-
-  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
-    UINT8 *line = &dotCol[ii+1][0];
-    for (kk = 0; kk < 5; kk++)
-      *line++ = ((selocals.minidmd[0][0][kk] & bits) + (selocals.minidmd[1][0][kk] & bits) +
-                 (selocals.minidmd[2][0][kk] & bits))/bits;
+      *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
+                 (selocals.minidmd[2][jj][kk] & bits))/bits;
   }
   for (ii = 0; ii < 5; ii++) {
     bits = 0;
