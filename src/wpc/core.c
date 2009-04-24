@@ -657,7 +657,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
-        if (locals.displaySize > 1)
+        if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
     }
@@ -667,7 +667,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       for (jj = 0; jj < layout->length; jj++) {
         int col2 = dotCol[ii][jj+1] + dotCol[ii+1][jj+1];
         *line++ = noaa ? 0 : aaColor[col1];
-        *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
+        if (jj < layout->length-1)
+          *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
         col1 = col2;
       }
     }
