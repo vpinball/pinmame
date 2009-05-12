@@ -64,7 +64,11 @@ const int core_bcd2seg7e[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,
 /* A    B    C    D    E */
+#ifdef MAME_DEBUG
+  0x77,0x7c,0x39,0x5e,0x79
+#else /* display legible characters in debug mode only */
   0x58,0x4c,0x62,0x69,0x78
+#endif /* MAME_DEBUG */
 };
 // missing top line for 6 and bottom line for 9 numbers (e.g. Atari)
 const int core_bcd2seg7a[16] = {
@@ -88,7 +92,11 @@ const int core_bcd2seg9a[16] = {
 /* 0     1     2    3    4    5    6    7    8    9  */
   0x3f,0x100,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67,
 /* A    B    C    D    E */
+#ifdef MAME_DEBUG
+  0x77,0x7c,0x39,0x5e,0x79
+#else /* display legible characters in debug mode only */
   0x58,0x4c,0x62,0x69,0x78
+#endif /* MAME_DEBUG */
 };
 
 /* makes it easier to swap bits */
