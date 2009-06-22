@@ -45,6 +45,7 @@ static struct {
   UINT8  sndCmd;
   int    ef[5];
   int    q;
+  int    snd_sc;
   int    lampCol;
   int    digitSel;
   int    panelSel;
@@ -157,6 +158,10 @@ static WRITE_HANDLER(out1_n) {
       if (locals.digitSel > 1) { // score displays
         coreGlobals.segments[(locals.digitSel-2)*2].w = core_bcd2seg7[n2data >> 4];
         coreGlobals.segments[(locals.digitSel-2)*2 + 1].w = core_bcd2seg7[n2data & 0x0f];
+        coreGlobals.segments[2].w |= 0x80;
+        coreGlobals.segments[8].w |= 0x80;
+        coreGlobals.segments[12].w |= 0x80;
+        coreGlobals.segments[16].w |= 0x80;
       } else if (locals.digitSel) { // sound & player up lights
         if (n2data & 0x0f) {
           if (oldn2data != n2data) locals.volume = 100;
@@ -218,7 +223,7 @@ static WRITE_HANDLER(out2_n) {
         locals.panelSel = 0;
       else
         locals.digitSel = bitColToNum(data & 0x7f);
-      coreGlobals.diagnosticLed = data >> 7;
+      discrete_sound_w(1, data >> 7);
       break;
     case DISPLAY:
       disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
@@ -444,8 +449,12 @@ static WRITE_HANDLER(ay1_w) {
 	AY8910Write(1,offset % 2,data);
 }
 
+static WRITE_HANDLER(clk_snd) {
+  printf("snd clk: %x\n", data);
+}
+
 static WRITE_HANDLER(out_snd) {
-  logerror("snd out %d: %02x\n", offset, data);
+  printf("snd out: %x\n", data);
   cpu_set_irq_line(PLAYMATIC_SCPU, 0, data ? ASSERT_LINE : CLEAR_LINE);
 }
 
@@ -463,26 +472,29 @@ static MEMORY_WRITE_START(playsound_writemem)
   {0x8000,0x80ff, MWA_RAM},
 MEMORY_END
 
-static PORT_READ_START(playsound_readport)
-MEMORY_END
-
 static PORT_WRITE_START(playsound_writeport)
-  {0x00,0x01, out_snd},
+  {0x00, 0x00, clk_snd},
+  {0x01, 0x01, out_snd},
 MEMORY_END
 
 static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
 
 static UINT8 snd_ef(void) {
-  int cmd = locals.sndCmd & 1;
-  locals.sndCmd >>= 1;
-  return cmd;
+//  int cmd = locals.sndCmd & 1;
+//  locals.sndCmd >>= 1;
+return 0x05;
+//  return cmd;
+}
+
+static void snd_sc(int data) {
+	locals.snd_sc = data;
 }
 
 static CDP1802_CONFIG play1802_snd_config =
 {
 	snd_mode,	// MODE
 	snd_ef,		// EF
-	NULL,		// SC
+	snd_sc,		// SC
 	NULL,		// Q
 	NULL,		// DMA read
 	NULL		// DMA write
@@ -495,7 +507,7 @@ MACHINE_DRIVER_START(PLAYMATIC2S)
   MDRV_CPU_CONFIG(play1802_snd_config)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
-  MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
+//  MDRV_CPU_PORTS(NULL, playsound_writeport)
   MDRV_SOUND_ADD(AY8910, play_ay8910)
 MACHINE_DRIVER_END
 
