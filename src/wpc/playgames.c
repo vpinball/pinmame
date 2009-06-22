@@ -40,9 +40,11 @@
 	}
 
 core_tLCDLayout play_dispOld[] = {
-  { 0, 0, 0,6,CORE_SEG7 }, { 0,14, 6,4,CORE_SEG7 }, { 0,22, 4,2,CORE_SEG7 },
-  { 2, 0,10,4,CORE_SEG7 }, { 2, 8, 4,2,CORE_SEG7 }, { 2,14,14,4,CORE_SEG7 }, { 2,22, 4,2,CORE_SEG7 },
-  { 4, 8,18,2,CORE_SEG7 }, { 4,14,20,3,CORE_SEG7 },
+  { 0, 0, 0,2,CORE_SEG7 }, { 0, 4, 2,1,CORE_SEG8D}, { 0, 6, 3,3,CORE_SEG7 },
+  { 3, 0, 6,2,CORE_SEG7 }, { 3, 4, 8,1,CORE_SEG8D}, { 3, 6, 9,1,CORE_SEG7 }, { 3, 8, 4,2,CORE_SEG7 },
+  { 6, 0,10,2,CORE_SEG7 }, { 6, 4,12,1,CORE_SEG8D}, { 6, 6,13,1,CORE_SEG7 }, { 6, 8, 4,2,CORE_SEG7 },
+  { 9, 0,14,2,CORE_SEG7 }, { 9, 4,16,1,CORE_SEG8D}, { 9, 6,17,1,CORE_SEG7 }, { 9, 8, 4,2,CORE_SEG7 },
+  { 6,25,18,2,CORE_SEG7S}, { 4,24,20,3,CORE_SEG7S},
   {0}
 };
 
