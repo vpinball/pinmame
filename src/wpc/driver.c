@@ -750,6 +750,7 @@ DRIVER  (harl,f13)      //Whitestar: 10/99 Harley Davidson (1.03 France)
 DRIVER  (harl,g13)      //Whitestar: 10/99 Harley Davidson (1.03 Germany)
 DRIVER  (harl,i13)      //Whitestar: 10/99 Harley Davidson (1.03 Italy)
 DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
+DRIVERNV(wackadoo)      //Whitestar: ??/9? Wack-A-Doodle-Doo (Redemption)
 
 // ----------------
 // SLEIC
