@@ -737,6 +737,7 @@ DRIVERNV(jplstw22)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.02)
 DRIVERNV(jplstw20)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.00)
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
+DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
@@ -750,7 +751,6 @@ DRIVER  (harl,f13)      //Whitestar: 10/99 Harley Davidson (1.03 France)
 DRIVER  (harl,g13)      //Whitestar: 10/99 Harley Davidson (1.03 Germany)
 DRIVER  (harl,i13)      //Whitestar: 10/99 Harley Davidson (1.03 Italy)
 DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
-DRIVERNV(wackadoo)      //Whitestar: ??/9? Wack-A-Doodle-Doo (Redemption)
 
 // ----------------
 // SLEIC
