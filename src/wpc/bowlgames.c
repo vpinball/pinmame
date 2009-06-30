@@ -439,7 +439,7 @@ WPC_INPUT_PORTS_START(lc, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptronS,0)
 
 /*-------------------------------------------------------------------
-/ Whack-A-Doodle-Doo (Redemption)
+/ Wack-A-Doodle-Doo (Redemption)
 /-------------------------------------------------------------------*/
 static core_tGameData wackGameData = {
   GEN_WS, se_dmd128x32
@@ -452,7 +452,7 @@ DE2S_SOUNDROM144("wacku7.bin",  CRC(99df3022) SHA1(5a38cf0816b95ea399d659d724b32
                  "wacku21.bin", CRC(a3207296) SHA1(19af8ebab298a353fe42fc297b61182d8f772347))
 SE_ROMEND
 SE_INPUT_PORTS_START(wackadoo, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(wackadoo,"Wack-A-Doodle-Doo (Redemption)",199?,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(wackadoo,"Wack-A-Doodle-Doo (Redemption)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Titanic (Coin dropper)
