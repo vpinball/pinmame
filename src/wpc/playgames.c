@@ -73,7 +73,17 @@ INITGAME1(lastlap, play_dispOld, 1)
 PLAYMATIC_ROMSTART88(lastlap,	"lastlapa.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
 						"lastlapb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC,0)
+CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC1,0)
+
+/*-------------------------------------------------------------------
+/ Chance (1978)
+/-------------------------------------------------------------------*/
+INITGAME1(chance, play_dispOld, 1)
+PLAYMATIC_ROMSTART884(chance,	"chance_a.bin", CRC(3cd9d5a6) SHA1(c1d9488495a67198f7f60f70a889a9a3062c71d7),
+						"chance_b.bin", CRC(a281b0f1) SHA1(1d2d26ce5f50294d5a95f688c82c3bdcec75de95),
+						"chance_c.bin", CRC(369afee3) SHA1(7fa46c7f255a5ef21b0d1cc018056bc4889d68b8))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(chance,"Chance",1978,"Playmatic",gl_mPLAYMATIC1A,0)
 
 /*-------------------------------------------------------------------
 / Antar (1979)

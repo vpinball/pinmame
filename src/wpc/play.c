@@ -345,11 +345,24 @@ MEMORY_END
 
 static MEMORY_READ_START(PLAYMATIC_readmem1)
   {0x0000,0x07ff, MRA_ROM},
-  {0x0800,0x0fff, MRA_RAM},
+  {0x0800,0x081f, MRA_RAM},
+  {0x0c00,0x0c1f, MRA_RAM},
 MEMORY_END
 
 static MEMORY_WRITE_START(PLAYMATIC_writemem1)
-  {0x0800,0x0fff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x0800,0x081f, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x0c00,0x0c1f, MWA_RAM},
+MEMORY_END
+
+static MEMORY_READ_START(PLAYMATIC_readmem1a)
+  {0x0000,0x09ff, MRA_ROM},
+  {0x0c00,0x0c1f, MRA_RAM},
+  {0x0e00,0x0e1f, MRA_RAM},
+MEMORY_END
+
+static MEMORY_WRITE_START(PLAYMATIC_writemem1a)
+  {0x0c00,0x0c1f, MWA_RAM},
+  {0x0e00,0x0e1f, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
 static MEMORY_READ_START(PLAYMATIC_readmem2)
@@ -392,7 +405,7 @@ DISCRETE_SOUND_END
 static int play_sw2m(int no) { return 8+(no/10)*8+(no%10-1); }
 static int play_m2sw(int col, int row) { return (col-1)*10+row+1; }
 
-MACHINE_DRIVER_START(PLAYMATIC)
+MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 400000)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem1, PLAYMATIC_writemem1)
@@ -408,6 +421,12 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
   MDRV_SOUND_ADD(DISCRETE, play_tones)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PLAYMATIC1A)
+  MDRV_IMPORT_FROM(PLAYMATIC1)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(PLAYMATIC_readmem1a, PLAYMATIC_writemem1a)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC2)
