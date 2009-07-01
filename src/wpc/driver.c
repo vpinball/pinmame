@@ -664,7 +664,7 @@ DRIVERNV(odisea)		// Odisea Paris-Dakar (1987)
 // PLAYMATIC
 // ----------------
 DRIVERNV(lastlap)		//Last Lap (1978)
-						//Chance (1978)
+DRIVERNV(chance)		//Chance (1978)
 						//Space Gambler (1978)
 						//Attack (1979)
 						//Big Town (1979)
