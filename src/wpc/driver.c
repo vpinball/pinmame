@@ -1263,7 +1263,9 @@ DRIVER(pb,l2)           //S11-549:  10/86 W Pin-bot (L-2)
 DRIVER(pb,l3)           //S11-549:  10/86 W Pin-bot (L-3)
                         //S11:      10/86 W Strike Force
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
-DRIVER(f14,l1)          //S11-554:  03/87 W F-14 Tomcat
+DRIVER(f14,l1)          //S11-554:  03/87 W F-14 Tomcat (L-1)
+DRIVER(f14,l3)          //S11-554:  03/87 W F-14 Tomcat (L-3)
+DRIVER(f14,l4)          //S11-554:  03/87 W F-14 Tomcat (L-4)
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire!
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1)
 DRIVER(bguns,la)        //S11-557:  10/87 W Big Guns (L-A)
