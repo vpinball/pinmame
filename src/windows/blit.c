@@ -174,8 +174,8 @@ UINT32 asmblit_rgbmask[MAX_VIDEO_HEIGHT * 2 * 16];
 //============================================================
 
 // blitter cache
-static UINT8				active_fast_blitter[MAX_BLITTER_SIZE];
-static UINT8				active_update_blitter[MAX_BLITTER_SIZE];
+static UINT8				*active_fast_blitter = NULL;
+static UINT8				*active_update_blitter = NULL;
 
 // current parameters
 static struct win_blit_params	active_blitter_params;
@@ -468,6 +468,7 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 	struct rectangle temprect;
 	blitter_func blitter;
 	int srcx, srcy;
+	DWORD dw;
 
 	// if we have a vector dirty array, alter the plan
 	if (blit->vecdirty && !update)
@@ -517,7 +518,18 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 		blit->flipy != active_blitter_params.flipy ||
 		blit->swapxy != active_blitter_params.swapxy)
 	{
+		// allocate memory for the blitter code and mark it as executable to avoid an access violation
+		if (active_fast_blitter == NULL) active_fast_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		else VirtualProtect(active_fast_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE_READWRITE, &dw);
+		if (active_update_blitter == NULL) active_update_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		else VirtualProtect(active_update_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE_READWRITE, &dw);
+
 		generate_blitter(blit);
+
+		// protect memory from external undesired changes
+		VirtualProtect(active_fast_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE, &dw);
+		VirtualProtect(active_update_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE, &dw);
+		
 		active_blitter_params = *blit;
 	}
 
