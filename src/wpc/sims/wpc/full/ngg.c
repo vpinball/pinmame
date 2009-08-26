@@ -626,8 +626,8 @@ static WRITE_HANDLER(ngg_wpc_w) {
   static int lastFlip, lastWheel = 0;
 // writes to the flippers have to be delayed 1 cycle to not interfere with the flashers.
 // also, an intermittent 0 byte write has to be avoided.
-  if (!(data & 0xc0) && offset == WPC_FLIPPERCOIL95) {
-    if (lastFlip & data & 0x3f) wpc_w(WPC_FLIPPERCOIL95, data);
+  if (offset == WPC_FLIPPERCOIL95) {
+    if (lastFlip & data) wpc_w(WPC_FLIPPERCOIL95, data);
     if (!lastFlip & !data) wpc_w(WPC_FLIPPERCOIL95, 0);
     lastFlip = data;
   } else
