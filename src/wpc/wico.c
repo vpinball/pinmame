@@ -26,15 +26,29 @@ static struct {
   UINT8  sndCmd;
   UINT8  swCol;
   UINT8  lampCol;
+  UINT8	 zcEnable;
 } locals;
 
-static INTERRUPT_GEN(WICO_irq_0) {
-  cpu_set_irq_line(0, M6809_IRQ_LINE, PULSE_LINE);
-}
+static int wico_data2seg[16] = {
+// 0     1      2     3     4      5     6     7     8      9    A     B      C     D      E     F
+  0x3f, 0x300, 0x5b, 0x4f, 0x360, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x34f, 0x39, 0x30f, 0x79, 0x71
+};
 
 static void WICO_firq_0(int data) {
-  static int last;
-  cpu_set_irq_line(0, M6809_FIRQ_LINE, (last = !last) ? ASSERT_LINE : CLEAR_LINE);
+	static int last;
+	cpu_set_irq_line(0, M6809_FIRQ_LINE, (last = !last) ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static INTERRUPT_GEN(WICO_irq_0) {
+  static int firqtimer = 0;
+  if (locals.zcEnable != 0x00) cpu_set_irq_line(0, M6809_IRQ_LINE, PULSE_LINE);
+  
+  // firq kicks every 4 zero crossings
+  firqtimer++;
+  if (firqtimer > 4) {
+    WICO_firq_0(0);
+	firqtimer = 0;
+  }
 }
 
 static INTERRUPT_GEN(WICO_irq_1) {
@@ -72,8 +86,19 @@ static SWITCH_UPDATE(WICO) {
 
 static WRITE_HANDLER(io0_w) {
   switch (offset) {
-    case 0xe0: case 0xe1: case 0xe2: case 0xe3: case 0xe4: case 0xe5: case 0xe6: case 0xe7: case 0xe8: case 0xe9:
-      coreGlobals.tmpLampMatrix[offset - 0xe0] = data; break;
+/*	case 0xe0: // not sure yet, but probably a write enable to the shared ram
+		break;*/
+	case 0xe2:
+		coreGlobals.segments[data & 0x0f].w = wico_data2seg[data >> 4];
+		break;
+
+	case 0xe7: // zero crossing interrupt
+		locals.zcEnable = data; // enable/disable zero crossing interrupt
+		break;
+
+/*    case 0xe6:
+      coreGlobals.tmpLampMatrix[offset - 0xe0] = data; break;*/
+
     default:
       logerror("io0_w: offset %x, data %02x\n", offset, data);
   }
@@ -81,33 +106,49 @@ static WRITE_HANDLER(io0_w) {
 static READ_HANDLER(io0_r) {
   UINT8 ret = 0;
   switch (offset) {
-    case 0xeb: case 0xec: case 0xed: case 0xee: case 0xef:
-      ret = coreGlobals.swMatrix[offset - 0xea]; break;
+/*    case 0xeb: case 0xec: case 0xed: case 0xee: case 0xef:
+      ret = coreGlobals.swMatrix[offset - 0xea]; break;*/
     default:
       logerror("io0_r: offset %x\n", offset);
   }
   return ret;
 }
-
+static UINT8 *io1_shadow;
 static WRITE_HANDLER(io1_w) {
   switch (offset) {
-    case 0xe0:
+	case 0xe2: // segment display digit
+		coreGlobals.segments[data & 0x0f].w = wico_data2seg[data >> 4];
+		break;
+
+	case 0xe6: // watchdog housekeeping cpu reset line
+	  if (data == 0xff) cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
+	  else logerror("io1_w: offset %x, data %02x not handled\n", offset, data);
+	  break;
+
+/*    case 0xe0:
       locals.solenoids = (locals.solenoids & 0xffffff00) | data; break;
     case 0xe1:
       locals.solenoids = (locals.solenoids & 0xff0ff0ff) | (data << 8); break;
     case 0xe2:
       locals.solenoids = (locals.solenoids & 0xff00ffff) | (data << 16); break;
     case 0xe6:
-      locals.solenoids = (locals.solenoids & 0x00ffffff) | (data << 24); break;
+  	  locals.solenoids = (locals.solenoids & 0x00ffffff) | (data << 24); break;
+	case 0xe9:
+	  cpunum_set_reset_line(0, CLEAR_LINE);
+	  //coreGlobals.segments[0].w = data; break;
+*/
     default:
       logerror("io1_w: offset %x, data %02x\n", offset, data);
   }
+
+  io1_shadow[offset] = data;
 }
 static READ_HANDLER(io1_r) {
-  switch (offset) {
+	switch (offset) {
     default:
       logerror("io1_r: offset %x\n", offset); return 0;
   }
+  return io1_shadow[offset];
 }
 
 static UINT8 *ram_01;
@@ -119,7 +160,7 @@ static WRITE_HANDLER(ram_01_w) {
 }
 
 static UINT8 *nvram;
-// nvram uses lower nybble only
+// nvram uses lower nibble only
 static READ_HANDLER(nvram_r) {
   return nvram[offset];
 }
@@ -141,19 +182,20 @@ MEMORY_END
 static MEMORY_READ_START(WICO_1_readmem)
   {0x0000,0x07ff, ram_01_r},
   {0x8000,0x9fff, MRA_ROM},
-  {0xc000,0xffff, MRA_ROM},
+  {0xe000,0xffff, MRA_ROM},
   {0x1f00,0x1fff, io1_r},
   {0x4000,0x40ff, nvram_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_1_writemem)
   {0x0000,0x07ff, ram_01_w},
-  {0x1f00,0x1fff, io1_w},
+  {0x1f00,0x1fff, io1_w, &io1_shadow},
   {0x4000,0x40ff, nvram_w, &nvram},
 MEMORY_END
 
 static MACHINE_INIT(WICO) {
-  memset(&locals, 0, sizeof locals);
+  memset(&locals, 0, sizeof locals);  
+  cpunum_set_reset_line(0, ASSERT_LINE);
 }
 
 struct SN76496interface WICO_sn76494Int = {
@@ -162,6 +204,7 @@ struct SN76496interface WICO_sn76494Int = {
 	{ 75 }	/* volume */
 };
 
+
 MACHINE_DRIVER_START(aftor)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(WICO,NULL,NULL)
@@ -169,18 +212,19 @@ MACHINE_DRIVER_START(aftor)
   MDRV_DIPS(16)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
-  MDRV_CPU_ADD_TAG("mcpu", M6809, 1500000)
-  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
-  MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)
-  MDRV_CPU_PERIODIC_INT(WICO_irq_0, 120)
-//  MDRV_TIMER_ADD(WICO_firq_0, 60)
+  MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, 1500000)
+//  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
+  MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
+  MDRV_CPU_PERIODIC_INT(WICO_irq_0, 120) // zero crossing  
+//  MDRV_TIMER_ADD(WICO_firq_0, 30)
 
   // game & sound section
-  MDRV_CPU_ADD_TAG("scpu", M6809, 1500000)
+  MDRV_CPU_ADD_TAG("scpu command", M6809, 1500000)
+  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
-  MDRV_CPU_PERIODIC_INT(WICO_irq_1, 120)
+  MDRV_CPU_PERIODIC_INT(WICO_irq_1, 30) // time generator
   MDRV_SOUND_ADD(SN76496, WICO_sn76494Int)
-//  MDRV_TIMER_ADD(WICO_firq_1, 60)
+//  MDRV_TIMER_ADD(WICO_firq_1, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(aftor) \
