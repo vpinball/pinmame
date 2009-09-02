@@ -4,7 +4,7 @@
 
    Hardware:
    ---------
-		CPU:	 2 x 6809 for game and sound, they seem to share one RAM chip!?
+		CPU:	 2 x 6809 for game and sound, they share one RAM chip!
 			INT: IRQ @ ZC-speed for 1st CPU,
 			     NE555 chip for 2nd CPU
 		DISPLAY: 9-segment LCD
@@ -17,6 +17,8 @@
 #include "gen.h"
 #include "cpu/m6809/m6809.h"
 #include "sound/sn76496.h"
+
+#define WICO_CLOCK_FREQ	10000000
 
 /*----------------
 /  Local variables
@@ -32,14 +34,19 @@ static struct {
   UINT8	 diagnosticLed;
 } locals;
 
-static int wico_data2seg[16] = {
-// 0     1      2     3     4      5     6     7     8      9    A     B      C     D      E     F
-  0x3f, 0x300, 0x5b, 0x4f, 0x360, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x34f, 0x39, 0x30f, 0x79, 0x71
+static int wico_data2seg[0x60] = {
+// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
+  0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71, // 0
+  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    // 1
+  0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
+  0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
+  0,     0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71,  0x3d,  0x76,  0x309, 0x1e,  0x374, 0x38,  0x337, 0x37,  0x3f, // 4  ABCDEFGHIJKLMNO
+  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x362, 0x5b,  0x39,  0x64,  0x0f,  0x23,  0x08  // 5 PQRSTUVWXYZ[\]^_
 };
 
-static void WICO_firq_0(int data) {
-	static int last;
-	cpu_set_irq_line(0, M6809_FIRQ_LINE, (last = !last) ? ASSERT_LINE : CLEAR_LINE);
+static void WICO_firq_0(void) {
+	cpu_set_irq_line(0, M6809_FIRQ_LINE, ASSERT_LINE);
+	cpu_set_irq_line(0, M6809_FIRQ_LINE, CLEAR_LINE);
 }
 
 static INTERRUPT_GEN(WICO_irq_0) {
@@ -56,7 +63,7 @@ static INTERRUPT_GEN(WICO_irq_1) {
 	  // firq of CPU 0 kicks in every 4 interrupts of the general timer
 	  firqtimer++;
 	  if (firqtimer > 4) {
-		  WICO_firq_0(0);
+		  WICO_firq_0();
 		  firqtimer = 0;
 	  }
   }
@@ -98,7 +105,7 @@ static WRITE_HANDLER(io0_w) {
 		break;
 
 	case 0xe2: // segment display
-		coreGlobals.segments[6 - (data & 0x0f)].w = wico_data2seg[data >> 4];
+		coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
 		if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
 		break;
 
@@ -120,15 +127,14 @@ static WRITE_HANDLER(io0_w) {
 
 static READ_HANDLER(io0_r) {
   UINT8 ret = 0;
-  static int r=0;
 
   switch (offset) {
-	case 0xeb: 
-		ret = coreGlobals.swMatrix[ram_01[0x0096] + 1]; //break;
-		break;
-	case 0xef:	
-		ret = coreGlobals.swMatrix[ram_01[0x0095] + 1]; break;
-	  break;
+    case 0xeb: case 0xec: case 0xed: case 0xee:
+      ret = core_getDip(offset - 0xeb);
+      break;
+    case 0xef:
+      ret = coreGlobals.swMatrix[0];
+      break;
     default:
       //logerror("io0_r: offset %x\n", offset);
 	  logerror("io0_r: PC=%X offset %x ret %02x RAM VAL %02x\n", cpunum_get_pc(0), offset, ret, ram_01[0x0096]);
@@ -140,14 +146,18 @@ static READ_HANDLER(io0_r) {
 static WRITE_HANDLER(io1_w) {
   switch (offset) {
 	case 0xe2: // segment display digit
-		coreGlobals.segments[6 - (data & 0x0f)].w = wico_data2seg[data >> 4];
+		coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
 		if ((data >> 4) == 0x0c) logerror("CPU1 SELF TEST DONE -------------------\n");
 		break;
-
-/*	case 0xe5: // don't know
-		coreGlobals.tmpLampMatrix[offset - 0xe0] = data; break;
-		break;*/
-
+	case 0xe3: // solenoids
+		locals.solenoids = (locals.solenoids & 0xffffff00) | data;
+		break;
+	case 0xe4: // more solenoids
+		locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+		break;
+	case 0xe5: // sound
+		SN76496_0_w(0, data);
+		break;
 	case 0xe6: // watchdog housekeeping cpu reset line
 		if (data == 0xff) cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
 		else 
@@ -156,25 +166,11 @@ static WRITE_HANDLER(io1_w) {
 			logerror("watchdog assert line\n");
 		}
 	  break;
-
 	case 0xe9: // enable/disable general timing interrupt
 		locals.gtIRQEnable = data;
 		logerror("io1_w: INFO GT IRQ offset %x, data %02x\n", offset, data);
 	  break;
-
-/*    case 0xe0:
-      locals.solenoids = (locals.solenoids & 0xffffff00) | data; break;
-    case 0xe1:
-      locals.solenoids = (locals.solenoids & 0xff0ff0ff) | (data << 8); break;
-    case 0xe2:
-      locals.solenoids = (locals.solenoids & 0xff00ffff) | (data << 16); break;
-    case 0xe6:
-  	  locals.solenoids = (locals.solenoids & 0x00ffffff) | (data << 24); break;
-	case 0xe9:
-	  cpunum_set_reset_line(0, CLEAR_LINE);
-	  //coreGlobals.segments[0].w = data; break;
-*/
-    default:
+  default:
       logerror("io1_w: PC=%X offset %x, data %02x\n", cpunum_get_pc(1), offset, data);
   }
 }
@@ -190,6 +186,9 @@ static READ_HANDLER(ram_01_r) {
 }
 static WRITE_HANDLER(ram_01_w) {
   ram_01[offset] = data;
+  if (offset > 0x09 && offset < 0x2e) {
+    coreGlobals.segments[offset - 0x0a].w = wico_data2seg[data];
+  }
 }
 
 static UINT8 *nvram;
@@ -235,7 +234,7 @@ static MACHINE_INIT(WICO) {
 
 struct SN76496interface WICO_sn76494Int = {
 	1,	/* total number of chips in the machine */
-	{ 1000000 },	/* base clock */
+	{ WICO_CLOCK_FREQ/8 },	/* base clock */
 	{ 75 }	/* volume */
 };
 
@@ -248,17 +247,17 @@ MACHINE_DRIVER_START(aftor)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIAGNOSTIC_LEDH(2)
 
-  MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, 1500000)
+  MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
 //  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
   MDRV_CPU_PERIODIC_INT(WICO_irq_0, 120) // zero crossing  
 //  MDRV_TIMER_ADD(WICO_firq_0, 30)
 
   // game & sound section
-  MDRV_CPU_ADD_TAG("scpu command", M6809, 1500000)
+  MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8)
   MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
-  MDRV_CPU_PERIODIC_INT(WICO_irq_1, 30) // time generator
+  MDRV_CPU_PERIODIC_INT(WICO_irq_1, 1500) // time generator
   MDRV_SOUND_ADD(SN76496, WICO_sn76494Int)
 //  MDRV_TIMER_ADD(WICO_firq_1, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
@@ -267,7 +266,7 @@ INPUT_PORTS_START(aftor) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
-    COREPORT_BIT(     0x0001, "Test 1", KEYCODE_1) \
+  COREPORT_BIT(     0x0001, "Test 1", KEYCODE_1) \
 	COREPORT_BIT(     0x0002, "Test 2", KEYCODE_2) \
 	COREPORT_BIT(     0x0004, "Test 3", KEYCODE_3) \
 	COREPORT_BIT(     0x0008, "Test 4", KEYCODE_4) \
@@ -336,12 +335,13 @@ ROM_START(aftor) \
 ROM_END
 
 static core_tLCDLayout dispAftor[] = {
-  {0, 0, 0,7,CORE_SEG10},
-  {0,16, 7,7,CORE_SEG10},
-  {2, 0,14,7,CORE_SEG10},
-  {2,16,21,7,CORE_SEG10},
-  {4,10,28,2,CORE_SEG7},
-  {4,16,30,2,CORE_SEG7},
+  {0, 0, 1,7,CORE_SEG9},
+  {0,16, 9,7,CORE_SEG9},
+  {2, 0,17,7,CORE_SEG9},
+  {2,16,25,7,CORE_SEG9},
+  {4,10,32,2,CORE_SEG9},
+  {4,16,34,2,CORE_SEG9},
+  {4,26,36,2,CORE_SEG9},
   {0}
 };
 static core_tGameData aftorGameData = {GEN_ALVG,dispAftor,{FLIP_SW(FLIP_L),0,2}};
