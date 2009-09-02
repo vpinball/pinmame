@@ -91,6 +91,7 @@ static INTERRUPT_GEN(WICO_vblank) {
 static SWITCH_UPDATE(WICO) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xff, 15);
   }
 //  cpu_set_nmi_line(0, coreGlobals.swMatrix[0] & 1 ? ASSERT_LINE : CLEAR_LINE);
 //  if (coreGlobals.swMatrix[0] & 2) WICO_firq_0(0);
@@ -127,13 +128,18 @@ static WRITE_HANDLER(io0_w) {
 
 static READ_HANDLER(io0_r) {
   UINT8 ret = 0;
-
+  UINT8 col;
   switch (offset) {
-    case 0xeb: case 0xec: case 0xed: case 0xee:
-      ret = core_getDip(offset - 0xeb);
-      break;
     case 0xef:
-      ret = coreGlobals.swMatrix[ram_01[0x0095]];
+      col = ram_01[0x0095];
+      if (col > 11) {
+        ret = core_getDip(col - 12);
+        if (col == 15) {
+          ret |= coreGlobals.swMatrix[15] & 0x80; // include self test button (same input line as dip #32)
+        }
+      } else {
+        ret = coreGlobals.swMatrix[col];
+      }
       break;
     default:
       //logerror("io0_r: offset %x\n", offset);
@@ -193,6 +199,9 @@ static WRITE_HANDLER(ram_01_w) {
 
 static UINT8 *nvram;
 // nvram uses lower nibble only
+static NVRAM_HANDLER(WICO) {
+  core_nvram(file, read_or_write, nvram, 0x100, 0);
+}
 static READ_HANDLER(nvram_r) {
   return nvram[offset];
 }
@@ -228,8 +237,6 @@ MEMORY_END
 static MACHINE_INIT(WICO) {
   memset(&locals, 0, sizeof locals);  
   cpunum_set_reset_line(0, ASSERT_LINE);
-
-//  coreGlobals.swMatrix[16] = 0x80; // DEBUG SELF-TEST
 }
 
 struct SN76496interface WICO_sn76494Int = {
@@ -238,13 +245,12 @@ struct SN76496interface WICO_sn76494Int = {
 	{ 75 }	/* volume */
 };
 
-
 MACHINE_DRIVER_START(aftor)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(WICO,NULL,NULL)
   MDRV_SWITCH_UPDATE(WICO)
-  MDRV_DIPS(16)
-  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_DIPS(32)
+  MDRV_NVRAM_HANDLER(WICO)
   MDRV_DIAGNOSTIC_LEDH(2)
 
   MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
@@ -266,14 +272,15 @@ INPUT_PORTS_START(aftor) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
-  COREPORT_BIT(     0x0001, "Test 1", KEYCODE_1) \
-	COREPORT_BIT(     0x0002, "Test 2", KEYCODE_2) \
-	COREPORT_BIT(     0x0004, "Test 3", KEYCODE_3) \
-	COREPORT_BIT(     0x0008, "Test 4", KEYCODE_4) \
-	COREPORT_BIT(     0x0010, "Test 5", KEYCODE_5) \
-	COREPORT_BIT(     0x0020, "Test 6", KEYCODE_6) \
-	COREPORT_BIT(     0x0040, "Test 7", KEYCODE_7) \
-	COREPORT_BIT(     0x0080, "Test 8", KEYCODE_8) \
+  COREPORT_BITDEF(0x0008, IPT_START1, IP_KEY_DEFAULT) \
+  COREPORT_BITDEF(0x0001, IPT_COIN1, IP_KEY_DEFAULT) \
+  COREPORT_BITDEF(0x0002, IPT_COIN2, IP_KEY_DEFAULT) \
+  COREPORT_BIT(   0x0004, "Unknown 1", KEYCODE_2) \
+  COREPORT_BIT(   0x0010, "Unknown 2", KEYCODE_3) \
+  COREPORT_BIT(   0x0020, "Unknown 3", KEYCODE_4) \
+  COREPORT_BIT(   0x0040, "Unknown 4", KEYCODE_7) \
+  COREPORT_BIT(   0x0080, "Unknown 5", KEYCODE_8) \
+  COREPORT_BITTOG(0x8000, "Service", KEYCODE_9) \
 
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
@@ -324,6 +331,55 @@ INPUT_PORTS_START(aftor) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S20") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S25") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S26") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S27") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S28") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S29") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "S30") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "S31") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
 
 ROM_START(aftor) \
