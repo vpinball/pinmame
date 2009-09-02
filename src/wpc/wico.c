@@ -133,7 +133,7 @@ static READ_HANDLER(io0_r) {
       ret = core_getDip(offset - 0xeb);
       break;
     case 0xef:
-      ret = coreGlobals.swMatrix[0];
+      ret = coreGlobals.swMatrix[ram_01[0x0095]];
       break;
     default:
       //logerror("io0_r: offset %x\n", offset);
