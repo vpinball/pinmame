@@ -28,6 +28,7 @@ static struct {
   int    firqtimer;
   UINT32 solenoids;
   UINT8  swCol;
+  UINT8  lampCol;
   UINT8	 zcIRQEnable;
   UINT8	 gtIRQEnable;
   UINT8	 diagnosticLed;
@@ -95,16 +96,8 @@ static UINT8 *ram_01;
 static READ_HANDLER(io_r) {
   UINT8 ret = 0;
   switch (offset) {
-    case 0x0b: // the contents of 0x0096 obviously affect the lamp column. But how!?
-      locals.swCol = ram_01[0x0096] % 16;
-      if (locals.swCol > 11) {
-        ret = core_getDip(locals.swCol - 12);
-        if (locals.swCol == 15) {
-          ret |= coreGlobals.swMatrix[15] & 0x80; // include self test button (same input line as dip #32)
-        }
-      } else {
-        ret = coreGlobals.swMatrix[locals.swCol];
-      }
+    case 0x0b:
+      locals.lampCol = ram_01[0x0095] % 16;
       break;
     case 0x0f:
       locals.swCol = ram_01[0x0095] % 16;
@@ -128,7 +121,7 @@ static WRITE_HANDLER(io_w) {
       cpu_set_nmi_line(1, PULSE_LINE);
       break;
     case 1: // lamps?
-      coreGlobals.tmpLampMatrix[locals.swCol] = data;
+      coreGlobals.tmpLampMatrix[locals.lampCol] = data;
       break;
     case 2: // segment display
       coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
