@@ -92,37 +92,21 @@ static SWITCH_UPDATE(WICO) {
 }
 
 static UINT8 *ram_01;
-static WRITE_HANDLER(io0_w) {
-  switch (offset) {
-    case 0xe0: // fire NMI? enables output 0xe1 on cpu #1
-      cpu_set_nmi_line(1, PULSE_LINE);
-      break;
-
-    case 0xe2: // segment display
-      coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
-      if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
-      break;
-
-    case 0xe6: // watchdog keep alive??? 
-      if (data) logerror("io0_w: offset %x, data %02x not handled\n", offset, data);
-      locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
-      // cpu_set_irq_line(1, M6809_FIRQ_LINE, ASSERT_LINE);
-      break;
-
-    case 0xe7: // zero crossing interrupt
-      locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
-      logerror("io0_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
-      break;
-
-    default:
-      logerror("io0_w: PC=%X offset %x, data %02x\n", cpunum_get_pc(0), offset, data);
-  }
-}
-
-static READ_HANDLER(io0_r) {
+static READ_HANDLER(io_r) {
   UINT8 ret = 0;
   switch (offset) {
-    case 0xef:
+    case 0x0b: // the contents of 0x0096 obviously affect the lamp column. But how!?
+      locals.swCol = ram_01[0x0096] % 16;
+      if (locals.swCol > 11) {
+        ret = core_getDip(locals.swCol - 12);
+        if (locals.swCol == 15) {
+          ret |= coreGlobals.swMatrix[15] & 0x80; // include self test button (same input line as dip #32)
+        }
+      } else {
+        ret = coreGlobals.swMatrix[locals.swCol];
+      }
+      break;
+    case 0x0f:
       locals.swCol = ram_01[0x0095] % 16;
       if (locals.swCol > 11) {
         ret = core_getDip(locals.swCol - 12);
@@ -133,55 +117,52 @@ static READ_HANDLER(io0_r) {
         ret = coreGlobals.swMatrix[locals.swCol];
       }
       break;
-    default:
-      //logerror("io0_r: offset %x\n", offset);
-	  logerror("io0_r: PC=%X offset %x ret %02x RAM VAL %02x\n", cpunum_get_pc(0), offset, ret, ram_01[0x0096]);
-
   }
-
+  logerror("io_r: CPU %d PC=%04X offset %x ret %02x RAM VAL %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, ret, ram_01[0x0096]);
   return ret;
 }
-static WRITE_HANDLER(io1_w) {
+
+static WRITE_HANDLER(io_w) {
   switch (offset) {
-    case 0xe1: // lamps?
+    case 0: // fire NMI? enables write to 0x1fe1 on cpu #1
+      cpu_set_nmi_line(1, PULSE_LINE);
+      break;
+    case 1: // lamps?
       coreGlobals.tmpLampMatrix[locals.swCol] = data;
       break;
-    case 0xe2: // segment display digit
+    case 2: // segment display
       coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
-      if ((data >> 4) == 0x0c) logerror("CPU1 SELF TEST DONE -------------------\n");
+      if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
       break;
-    case 0xe3: // solenoids
+    case 3: // solenoids
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
       break;
-    case 0xe4: // more solenoids
+    case 4: // more solenoids
       locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
       break;
-    case 0xe5: // sound
+    case 5: // sound
       SN76496_0_w(0, data);
       break;
-    case 0xe6: // watchdog housekeeping cpu reset line
+    case 6: // watchdog housekeeping cpu reset line
       if (data == 0xff) {
         cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
       } else {
-        cpunum_set_reset_line(0, ASSERT_LINE);
-        logerror("watchdog assert line\n");
+        if (data) logerror("io0_w: offset %x, data %02x not handled\n", offset, data);
+        locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
+        // cpu_set_irq_line(1, M6809_FIRQ_LINE, ASSERT_LINE);
       }
       break;
-    case 0xe9: // enable/disable general timing interrupt
+    case 7: // zero crossing interrupt
+      locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
+      logerror("io_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
+      break;
+    case 9: // enable/disable general timing interrupt
       locals.gtIRQEnable = data;
-      logerror("io1_w: INFO GT IRQ offset %x, data %02x\n", offset, data);
+      logerror("io_w: INFO GT IRQ   offset %x, data %02x\n", offset, data);
       break;
     default:
-      logerror("io1_w: PC=%X offset %x, data %02x\n", cpunum_get_pc(1), offset, data);
+      logerror("io_w: CPU %d PC=%04X offset %x, data %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, data);
   }
-}
-static READ_HANDLER(io1_r) {
-  UINT8 ret = 0;
-  switch (offset) {
-    default:
-      logerror("io1_r: PC=%X offset %x\n", cpunum_get_pc(1), offset);
-  }
-  return ret;
 }
 
 static READ_HANDLER(ram_01_r) {
@@ -209,25 +190,25 @@ static WRITE_HANDLER(nvram_w) {
 static MEMORY_READ_START(WICO_0_readmem)
   {0x0000,0x07ff, ram_01_r},
   {0xf000,0xffff, MRA_ROM},
-  {0x1f00,0x1fff, io0_r},
+  {0x1fe0,0x1fef, io_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_0_writemem)
   {0x0000,0x07ff, ram_01_w, &ram_01},
-  {0x1f00,0x1fff, io0_w},
+  {0x1fe0,0x1fef, io_w},
 MEMORY_END
 
 static MEMORY_READ_START(WICO_1_readmem)
   {0x0000,0x07ff, ram_01_r},
   {0x8000,0x9fff, MRA_ROM},
   {0xe000,0xffff, MRA_ROM},
-  {0x1f00,0x1fff, io1_r},
+  {0x1fe0,0x1fef, io_r},
   {0x4000,0x40ff, nvram_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_1_writemem)
   {0x0000,0x07ff, ram_01_w},
-  {0x1f00,0x1fff, io1_w},
+  {0x1fe0,0x1fef, io_w},
   {0x4000,0x40ff, nvram_w, &nvram},
 MEMORY_END
 
