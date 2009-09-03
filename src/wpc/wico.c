@@ -25,10 +25,9 @@
 /-----------------*/
 static struct {
   int    vblankCount;
+  int    firqtimer;
   UINT32 solenoids;
-  UINT8  sndCmd;
   UINT8  swCol;
-  UINT8  lampCol;
   UINT8	 zcIRQEnable;
   UINT8	 gtIRQEnable;
   UINT8	 diagnosticLed;
@@ -36,7 +35,7 @@ static struct {
 
 static int wico_data2seg[0x60] = {
 // 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-  0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71, // 0
+  0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0x77,  0x34f, 0x39,  0x30f, 0x79,  0x00, // 0 0123456789ABCDE
   0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    // 1
   0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
   0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
@@ -44,34 +43,29 @@ static int wico_data2seg[0x60] = {
   0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x362, 0x5b,  0x39,  0x64,  0x0f,  0x23,  0x08  // 5 PQRSTUVWXYZ[\]^_
 };
 
-static void WICO_firq_0(void) {
-	cpu_set_irq_line(0, M6809_FIRQ_LINE, ASSERT_LINE);
-	cpu_set_irq_line(0, M6809_FIRQ_LINE, CLEAR_LINE);
-}
-
 static INTERRUPT_GEN(WICO_irq_0) {
   if (locals.zcIRQEnable) cpu_set_irq_line(0, M6809_IRQ_LINE, PULSE_LINE); 
 }
 
-static INTERRUPT_GEN(WICO_irq_1) {
-  static int firqtimer = 0;
+static void WICO_firq_0(void) {
+  cpu_set_irq_line(0, M6809_FIRQ_LINE, PULSE_LINE);
+}
 
-  if (!locals.gtIRQEnable)
-  {
-	  cpu_set_irq_line(1, M6809_IRQ_LINE, PULSE_LINE);
-	  
-	  // firq of CPU 0 kicks in every 4 interrupts of the general timer
-	  firqtimer++;
-	  if (firqtimer > 4) {
-		  WICO_firq_0();
-		  firqtimer = 0;
-	  }
+static INTERRUPT_GEN(WICO_irq_1) {
+  if (!locals.gtIRQEnable) {
+    cpu_set_irq_line(1, M6809_IRQ_LINE, PULSE_LINE);
+    
+    // firq of CPU 0 kicks in every 4 interrupts of the general timer
+    locals.firqtimer++;
+    if (locals.firqtimer > 4) {
+      WICO_firq_0();
+      locals.firqtimer = 0;
+    }
   }
 }
 
 static void WICO_firq_1(int data) {
-  static int last;
-  cpu_set_irq_line(1, M6809_FIRQ_LINE, (last = !last) ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(1, M6809_FIRQ_LINE, PULSE_LINE);
 }
 
 /*-------------------------------
@@ -84,6 +78,8 @@ static INTERRUPT_GEN(WICO_vblank) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
+  /*-- diag. LED --*/
+  coreGlobals.diagnosticLed = locals.diagnosticLed;
 
   core_updateSw(TRUE);
 }
@@ -93,34 +89,31 @@ static SWITCH_UPDATE(WICO) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xff, 15);
   }
-//  cpu_set_nmi_line(0, coreGlobals.swMatrix[0] & 1 ? ASSERT_LINE : CLEAR_LINE);
-//  if (coreGlobals.swMatrix[0] & 2) WICO_firq_0(0);
-//  cpu_set_nmi_line(1, coreGlobals.swMatrix[0] & 4 ? ASSERT_LINE : CLEAR_LINE);
-//  if (coreGlobals.swMatrix[0] & 8) WICO_firq_1(0);
 }
 
 static UINT8 *ram_01;
 static WRITE_HANDLER(io0_w) {
   switch (offset) {
-	case 0xe0: // matrix scan begin???
-		break;
+    case 0xe0: // fire NMI? enables output 0xe1 on cpu #1
+      cpu_set_nmi_line(1, PULSE_LINE);
+      break;
 
-	case 0xe2: // segment display
-		coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
-		if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
-		break;
+    case 0xe2: // segment display
+      coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
+      if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
+      break;
 
-	case 0xe6: // watchdog keep alive??? 
-		if (data == 0x00) coreGlobals.diagnosticLed = locals.diagnosticLed & 0x01;
-		else logerror("io0_w: offset %x, data %02x not handled\n", offset, data);
-		locals.diagnosticLed = ~locals.diagnosticLed; 
-		break;
+    case 0xe6: // watchdog keep alive??? 
+      if (data) logerror("io0_w: offset %x, data %02x not handled\n", offset, data);
+      locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
+      // cpu_set_irq_line(1, M6809_FIRQ_LINE, ASSERT_LINE);
+      break;
 
-	case 0xe7: // zero crossing interrupt
-		locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
-		logerror("io0_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
-		break;
-	
+    case 0xe7: // zero crossing interrupt
+      locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
+      logerror("io0_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
+      break;
+
     default:
       logerror("io0_w: PC=%X offset %x, data %02x\n", cpunum_get_pc(0), offset, data);
   }
@@ -128,17 +121,16 @@ static WRITE_HANDLER(io0_w) {
 
 static READ_HANDLER(io0_r) {
   UINT8 ret = 0;
-  UINT8 col;
   switch (offset) {
     case 0xef:
-      col = ram_01[0x0095];
-      if (col > 11) {
-        ret = core_getDip(col - 12);
-        if (col == 15) {
+      locals.swCol = ram_01[0x0095] % 16;
+      if (locals.swCol > 11) {
+        ret = core_getDip(locals.swCol - 12);
+        if (locals.swCol == 15) {
           ret |= coreGlobals.swMatrix[15] & 0x80; // include self test button (same input line as dip #32)
         }
       } else {
-        ret = coreGlobals.swMatrix[col];
+        ret = coreGlobals.swMatrix[locals.swCol];
       }
       break;
     default:
@@ -151,40 +143,45 @@ static READ_HANDLER(io0_r) {
 }
 static WRITE_HANDLER(io1_w) {
   switch (offset) {
-	case 0xe2: // segment display digit
-		coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
-		if ((data >> 4) == 0x0c) logerror("CPU1 SELF TEST DONE -------------------\n");
-		break;
-	case 0xe3: // solenoids
-		locals.solenoids = (locals.solenoids & 0xffffff00) | data;
-		break;
-	case 0xe4: // more solenoids
-		locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
-		break;
-	case 0xe5: // sound
-		SN76496_0_w(0, data);
-		break;
-	case 0xe6: // watchdog housekeeping cpu reset line
-		if (data == 0xff) cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
-		else 
-		{
-			cpunum_set_reset_line(0, ASSERT_LINE);
-			logerror("watchdog assert line\n");
-		}
-	  break;
-	case 0xe9: // enable/disable general timing interrupt
-		locals.gtIRQEnable = data;
-		logerror("io1_w: INFO GT IRQ offset %x, data %02x\n", offset, data);
-	  break;
-  default:
+    case 0xe1: // lamps?
+      coreGlobals.tmpLampMatrix[locals.swCol] = data;
+      break;
+    case 0xe2: // segment display digit
+      coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
+      if ((data >> 4) == 0x0c) logerror("CPU1 SELF TEST DONE -------------------\n");
+      break;
+    case 0xe3: // solenoids
+      locals.solenoids = (locals.solenoids & 0xffffff00) | data;
+      break;
+    case 0xe4: // more solenoids
+      locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+      break;
+    case 0xe5: // sound
+      SN76496_0_w(0, data);
+      break;
+    case 0xe6: // watchdog housekeeping cpu reset line
+      if (data == 0xff) {
+        cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
+      } else {
+        cpunum_set_reset_line(0, ASSERT_LINE);
+        logerror("watchdog assert line\n");
+      }
+      break;
+    case 0xe9: // enable/disable general timing interrupt
+      locals.gtIRQEnable = data;
+      logerror("io1_w: INFO GT IRQ offset %x, data %02x\n", offset, data);
+      break;
+    default:
       logerror("io1_w: PC=%X offset %x, data %02x\n", cpunum_get_pc(1), offset, data);
   }
 }
 static READ_HANDLER(io1_r) {
-	switch (offset) {
+  UINT8 ret = 0;
+  switch (offset) {
     default:
-      logerror("io1_r: PC=%X offset %x\n", cpunum_get_pc(1), offset); return 0;
+      logerror("io1_r: PC=%X offset %x\n", cpunum_get_pc(1), offset);
   }
+  return ret;
 }
 
 static READ_HANDLER(ram_01_r) {
@@ -239,32 +236,38 @@ static MACHINE_INIT(WICO) {
   cpunum_set_reset_line(0, ASSERT_LINE);
 }
 
+static MACHINE_RESET(WICO) {
+  memset(&locals, 0, sizeof locals);  
+  memset(ram_01, 0, 0x800);  
+  cpunum_set_reset_line(0, ASSERT_LINE);
+}
+
 struct SN76496interface WICO_sn76494Int = {
-	1,	/* total number of chips in the machine */
-	{ WICO_CLOCK_FREQ/8 },	/* base clock */
-	{ 75 }	/* volume */
+  1, /* total number of chips in the machine */
+  { WICO_CLOCK_FREQ/8 }, /* base clock */
+  { 75 } /* volume */
 };
 
 MACHINE_DRIVER_START(aftor)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(WICO,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(WICO,WICO,NULL)
   MDRV_SWITCH_UPDATE(WICO)
   MDRV_DIPS(32)
   MDRV_NVRAM_HANDLER(WICO)
   MDRV_DIAGNOSTIC_LEDH(2)
 
+  // housekeeping cpu: displays, switches
   MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
-//  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
   MDRV_CPU_PERIODIC_INT(WICO_irq_0, 120) // zero crossing  
-//  MDRV_TIMER_ADD(WICO_firq_0, 30)
 
-  // game & sound section
+  // command cpu: sound, solenoids
   MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8)
-  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
   MDRV_CPU_PERIODIC_INT(WICO_irq_1, 1500) // time generator
+  MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_SOUND_ADD(SN76496, WICO_sn76494Int)
+
 //  MDRV_TIMER_ADD(WICO_firq_1, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
 
@@ -400,7 +403,7 @@ static core_tLCDLayout dispAftor[] = {
   {4,26,36,2,CORE_SEG9},
   {0}
 };
-static core_tGameData aftorGameData = {GEN_ALVG,dispAftor,{FLIP_SW(FLIP_L),0,2}};
+static core_tGameData aftorGameData = {GEN_ALVG,dispAftor,{FLIP_SW(FLIP_L),0,8}};
 static void init_aftor(void) { core_gameData = &aftorGameData; }
 
 CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_NOT_WORKING)
