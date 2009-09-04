@@ -45,7 +45,7 @@ static int wico_data2seg[0x60] = {
 };
 
 static INTERRUPT_GEN(WICO_irq_0) {
-  if (locals.zcIRQEnable) cpu_set_irq_line(0, M6809_IRQ_LINE, PULSE_LINE); 
+  cpu_set_irq_line(0, M6809_IRQ_LINE, locals.zcIRQEnable ? PULSE_LINE : CLEAR_LINE);
 }
 
 static void WICO_firq_0(void) {
@@ -117,20 +117,20 @@ static READ_HANDLER(io_r) {
 
 static WRITE_HANDLER(io_w) {
   switch (offset) {
-    case 0: // fire NMI? enables write to 0x1fe1 on cpu #1
+    case 0: // fire NMI? marked MUXLD, enables write to 0x1fe1 on cpu #1
       cpu_set_nmi_line(1, PULSE_LINE);
       break;
-    case 1: // lamps?
+    case 1: // lamps? marked STORE
       coreGlobals.tmpLampMatrix[locals.lampCol] = data;
       break;
-    case 2: // segment display
-      coreGlobals.segments[36 + (data & 0x0f)].w = wico_data2seg[data >> 4];
+    case 2: // diagnostic 7-seg digit
+      locals.diagnosticLed = core_bcd2seg7[data >> 4];
       if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
       break;
-    case 3: // solenoids
+    case 3: // continuous solenoids
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
       break;
-    case 4: // more solenoids
+    case 4: // momentary solenoids
       locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
       break;
     case 5: // sound
@@ -140,13 +140,14 @@ static WRITE_HANDLER(io_w) {
       if (data == 0xff) {
         cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
       } else {
-        if (data) logerror("io0_w: offset %x, data %02x not handled\n", offset, data);
-        locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
+        if (data) logerror("io_w: offset %x, data %02x not handled\n", offset, data);
+//        locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
         // cpu_set_irq_line(1, M6809_FIRQ_LINE, ASSERT_LINE);
       }
       break;
-    case 7: // zero crossing interrupt
+    case 7: // zero crossing interrupt reset
       locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
+      if (!locals.zcIRQEnable) cpu_set_irq_line(0, M6809_IRQ_LINE, CLEAR_LINE);
       logerror("io_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
       break;
     case 9: // enable/disable general timing interrupt
@@ -182,8 +183,8 @@ static WRITE_HANDLER(nvram_w) {
 
 static MEMORY_READ_START(WICO_0_readmem)
   {0x0000,0x07ff, ram_01_r},
-  {0xf000,0xffff, MRA_ROM},
   {0x1fe0,0x1fef, io_r},
+  {0xf000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_0_writemem)
@@ -193,10 +194,10 @@ MEMORY_END
 
 static MEMORY_READ_START(WICO_1_readmem)
   {0x0000,0x07ff, ram_01_r},
-  {0x8000,0x9fff, MRA_ROM},
-  {0xe000,0xffff, MRA_ROM},
   {0x1fe0,0x1fef, io_r},
   {0x4000,0x40ff, nvram_r},
+  {0x8000,0x9fff, MRA_ROM},
+  {0xe000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_1_writemem)
@@ -207,12 +208,13 @@ MEMORY_END
 
 static MACHINE_INIT(WICO) {
   memset(&locals, 0, sizeof locals);  
+  memset(ram_01, 0x12, 0x800);  
   cpunum_set_reset_line(0, ASSERT_LINE);
 }
 
 static MACHINE_RESET(WICO) {
   memset(&locals, 0, sizeof locals);  
-  memset(ram_01, 0, 0x800);  
+  memset(ram_01, 0x12, 0x800);  
   cpunum_set_reset_line(0, ASSERT_LINE);
 }
 
@@ -228,7 +230,7 @@ MACHINE_DRIVER_START(aftor)
   MDRV_SWITCH_UPDATE(WICO)
   MDRV_DIPS(32)
   MDRV_NVRAM_HANDLER(WICO)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LED7
 
   // housekeeping cpu: displays, switches
   MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
@@ -374,7 +376,6 @@ static core_tLCDLayout dispAftor[] = {
   {2,16,25,7,CORE_SEG9},
   {4,10,32,2,CORE_SEG9},
   {4,16,34,2,CORE_SEG9},
-  {4,26,36,2,CORE_SEG9},
   {0}
 };
 static core_tGameData aftorGameData = {GEN_ALVG,dispAftor,{FLIP_SW(FLIP_L),0,8}};
