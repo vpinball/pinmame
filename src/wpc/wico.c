@@ -19,6 +19,8 @@
 #include "sound/sn76496.h"
 
 #define WICO_CLOCK_FREQ	10000000
+#define HOUSEKEEPING 0
+#define COMMAND 1
 
 /*----------------
 /  Local variables
@@ -44,29 +46,28 @@ static int wico_data2seg[0x60] = {
   0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x362, 0x5b,  0x39,  0x64,  0x0f,  0x23,  0x08  // 5 PQRSTUVWXYZ[\]^_
 };
 
-static INTERRUPT_GEN(WICO_irq_0) {
-  cpu_set_irq_line(0, M6809_IRQ_LINE, locals.zcIRQEnable ? PULSE_LINE : CLEAR_LINE);
+static INTERRUPT_GEN(WICO_irq_housekeeping) {
+  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, locals.zcIRQEnable ? PULSE_LINE : CLEAR_LINE);
 }
 
-static void WICO_firq_0(void) {
-  cpu_set_irq_line(0, M6809_FIRQ_LINE, PULSE_LINE);
-}
+static void WICO_firq_housekeeping(int data) {
+  if (!locals.gtIRQEnable)
+    cpu_set_irq_line(HOUSEKEEPING, M6809_FIRQ_LINE, PULSE_LINE);
 
-static INTERRUPT_GEN(WICO_irq_1) {
-  if (!locals.gtIRQEnable) {
-    cpu_set_irq_line(1, M6809_IRQ_LINE, PULSE_LINE);
-    
-    // firq of CPU 0 kicks in every 4 interrupts of the general timer
-    locals.firqtimer++;
-    if (locals.firqtimer > 4) {
-      WICO_firq_0();
-      locals.firqtimer = 0;
-    }
+  // Gen. timer irq of command CPU kicks in every 4 interrupts of this timer
+  locals.firqtimer++;
+  if (locals.firqtimer > 4) {
+    cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, PULSE_LINE);
+    locals.firqtimer = 0;
   }
 }
 
-static void WICO_firq_1(int data) {
-  cpu_set_irq_line(1, M6809_FIRQ_LINE, PULSE_LINE);
+static INTERRUPT_GEN(WICO_irq_command) {
+  cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, PULSE_LINE);
+}
+
+static void WICO_firq_command(int data) {
+  cpu_set_irq_line(COMMAND, M6809_FIRQ_LINE, PULSE_LINE);
 }
 
 /*-------------------------------
@@ -92,15 +93,16 @@ static SWITCH_UPDATE(WICO) {
   }
 }
 
-static UINT8 *ram_01;
+static UINT8 *shared_ram;
+
 static READ_HANDLER(io_r) {
   UINT8 ret = 0;
   switch (offset) {
     case 0x0b:
-      locals.lampCol = ram_01[0x0095] % 16;
+      locals.lampCol = shared_ram[0x0095] % 16;
       break;
     case 0x0f:
-      locals.swCol = ram_01[0x0095] % 16;
+      locals.swCol = shared_ram[0x0095] % 16;
       if (locals.swCol > 11) {
         ret = core_getDip(locals.swCol - 12);
         if (locals.swCol == 15) {
@@ -111,17 +113,18 @@ static READ_HANDLER(io_r) {
       }
       break;
   }
-  logerror("io_r: CPU %d PC=%04X offset %x ret %02x RAM VAL %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, ret, ram_01[0x0096]);
+  logerror("io_r: CPU %d PC=%04X offset %x ret %02x RAM VAL %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, ret, shared_ram[0x0096]);
   return ret;
 }
 
 static WRITE_HANDLER(io_w) {
+  static int lampCol;
   switch (offset) {
     case 0: // fire NMI? marked MUXLD, enables write to 0x1fe1 on cpu #1
-      cpu_set_nmi_line(1, PULSE_LINE);
+      cpu_set_nmi_line(COMMAND, PULSE_LINE);
       break;
     case 1: // lamps? marked STORE
-      coreGlobals.tmpLampMatrix[locals.lampCol] = data;
+      coreGlobals.tmpLampMatrix[lampCol = ((lampCol+1) % 5)] = data;
       break;
     case 2: // diagnostic 7-seg digit
       locals.diagnosticLed = core_bcd2seg7[data >> 4];
@@ -138,7 +141,7 @@ static WRITE_HANDLER(io_w) {
       break;
     case 6: // watchdog housekeeping cpu reset line
       if (data == 0xff) {
-        cpunum_set_reset_line(0, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
+        cpunum_set_reset_line(HOUSEKEEPING, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
       } else {
         if (data) logerror("io_w: offset %x, data %02x not handled\n", offset, data);
 //        locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
@@ -154,16 +157,15 @@ static WRITE_HANDLER(io_w) {
       locals.gtIRQEnable = data;
       logerror("io_w: INFO GT IRQ   offset %x, data %02x\n", offset, data);
       break;
-    default:
-      logerror("io_w: CPU %d PC=%04X offset %x, data %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, data);
   }
+  if (offset != 6) logerror("io_w: CPU %d PC=%04X offset %x, data %02x\n", cpu_getactivecpu(), activecpu_get_previouspc(), offset, data);
 }
 
-static READ_HANDLER(ram_01_r) {
-  return ram_01[offset];
+static READ_HANDLER(shared_ram_r) {
+  return shared_ram[offset];
 }
-static WRITE_HANDLER(ram_01_w) {
-  ram_01[offset] = data;
+static WRITE_HANDLER(shared_ram_w) {
+  shared_ram[offset] = data;
   if (offset > 0x09 && offset < 0x2e) {
     coreGlobals.segments[offset - 0x0a].w = wico_data2seg[data];
   }
@@ -182,18 +184,18 @@ static WRITE_HANDLER(nvram_w) {
 }
 
 static MEMORY_READ_START(WICO_0_readmem)
-  {0x0000,0x07ff, ram_01_r},
+  {0x0000,0x07ff, shared_ram_r},
   {0x1fe0,0x1fef, io_r},
   {0xf000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_0_writemem)
-  {0x0000,0x07ff, ram_01_w, &ram_01},
+  {0x0000,0x07ff, shared_ram_w, &shared_ram},
   {0x1fe0,0x1fef, io_w},
 MEMORY_END
 
 static MEMORY_READ_START(WICO_1_readmem)
-  {0x0000,0x07ff, ram_01_r},
+  {0x0000,0x07ff, shared_ram_r},
   {0x1fe0,0x1fef, io_r},
   {0x4000,0x40ff, nvram_r},
   {0x8000,0x9fff, MRA_ROM},
@@ -201,21 +203,21 @@ static MEMORY_READ_START(WICO_1_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(WICO_1_writemem)
-  {0x0000,0x07ff, ram_01_w},
+  {0x0000,0x07ff, shared_ram_w},
   {0x1fe0,0x1fef, io_w},
   {0x4000,0x40ff, nvram_w, &nvram},
 MEMORY_END
 
 static MACHINE_INIT(WICO) {
   memset(&locals, 0, sizeof locals);  
-  memset(ram_01, 0x12, 0x800);  
-  cpunum_set_reset_line(0, ASSERT_LINE);
+  memset(shared_ram, 0x12, 0x800);  
+  cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
 }
 
 static MACHINE_RESET(WICO) {
   memset(&locals, 0, sizeof locals);  
-  memset(ram_01, 0x12, 0x800);  
-  cpunum_set_reset_line(0, ASSERT_LINE);
+  memset(shared_ram, 0x12, 0x800);  
+  cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
 }
 
 struct SN76496interface WICO_sn76494Int = {
@@ -235,16 +237,16 @@ MACHINE_DRIVER_START(aftor)
   // housekeeping cpu: displays, switches
   MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
   MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
-  MDRV_CPU_PERIODIC_INT(WICO_irq_0, 120) // zero crossing  
+  MDRV_CPU_PERIODIC_INT(WICO_irq_housekeeping, 120) // zero crossing  
+  MDRV_TIMER_ADD(WICO_firq_housekeeping, 750) // time generator
 
   // command cpu: sound, solenoids
   MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
-  MDRV_CPU_PERIODIC_INT(WICO_irq_1, 1500) // time generator
   MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_SOUND_ADD(SN76496, WICO_sn76494Int)
 
-//  MDRV_TIMER_ADD(WICO_firq_1, 1) // watchdog reset trigger
+//  MDRV_TIMER_ADD(WICO_firq_command, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(aftor) \
