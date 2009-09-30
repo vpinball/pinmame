@@ -456,6 +456,7 @@ WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,CRC(773e1488) SHA1(36e8957b3903b99844
 WPC_ROMSTART(bop,l6,"tmbopl_6.rom",0x20000,CRC(96b844d6) SHA1(981194c249a8fc2534e24ef672380d751a5dc5fd)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l5,"tmbopl_5.rom",0x20000,CRC(fd5c426d) SHA1(e006f8e39cf382249db0b969cf966fd8deaa344a)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l4,"tmbopl_4.rom",0x20000,CRC(eea14ecd) SHA1(afd670bdc3680f12360561a1a5e5854718c099f7)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,l3,"bop_l3.u6",   0x20000,CRC(cd4d219d) SHA1(4e73dca186867ebee07682deab058a45cee53be1)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l2,"bop_l2.u6",   0x20000,CRC(17ee1f56) SHA1(bee68ed5680455f23dc33e889acec83cba68b1dc)) BOP_SOUND WPC_ROMEND
 
 /*--------------
@@ -465,6 +466,7 @@ CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1992,"Williams",wpc_mAl
 CORE_CLONEDEF(bop,l6,l7,"The Machine: Bride of Pinbot (L-6)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l5,l7,"The Machine: Bride of Pinbot (L-5)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l4,l7,"The Machine: Bride of Pinbot (L-4)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l3,l7,"The Machine: Bride of Pinbot (L-3)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l2,l7,"The Machine: Bride of Pinbot (L-2)",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------

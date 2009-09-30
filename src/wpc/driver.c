@@ -1094,8 +1094,10 @@ DRIVER(bdk,202)         //S.A.M: 08/08 Batman The Dark Knight - V2.02
 DRIVER(csi,102)         //S.A.M: 11/08 C.S.I. - V1.02
 DRIVER(csi,200)         //S.A.M: 12/08 C.S.I. - V2.0
 DRIVER(csi,210)         //S.A.M: 01/09 C.S.I. - V2.1
+DRIVER(csi,230)         //S.A.M: 08/09 C.S.I. - V2.3
 DRIVER(twenty4,130)     //S.A.M: 03/09 24 - V1.3
 DRIVER(twenty4,140)     //S.A.M: 03/09 24 - V1.4
+DRIVER(nba,700)         //S.A.M: 06/09 NBA - V7.0
 #endif
 
 // ---------------
@@ -1350,6 +1352,7 @@ DRIVER(fh,l9b)                            // bootleg with correct German transla
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) European
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
+DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
 DRIVER(bop,l4)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-4)
 DRIVER(bop,l5)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-5)
 DRIVER(bop,l6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-6)
