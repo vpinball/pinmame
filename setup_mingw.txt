@@ -58,15 +58,13 @@ Step 1: Downloads
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
 
-     Get them from http://sourceforge.net/project/showfiles.php?group_id=2435
+     Get them from http://sourceforge.net/projects/mingw/files/
             and/or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
 
 - Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
   Binary package:
   * gcc-3.2.3-20030504-1
-  Get it from http://sourceforge.net/project/showfiles.php?group_id=2435&package_id=82722&release_id=158810
-           or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
-           or http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
+  Get it from http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
   Warning: GCC 3.4 works too, but due to stricter checks more warnings are
            found, so PinMAME only compiles if you remove "-Werror" from the
            makefile. Removing "-Werror" is not recommended!!!
@@ -85,14 +83,14 @@ Step 1: Downloads
 - Download the assembler compiler NASM to your c:\mingw-setup directory.
   Binary package:
   * NASM 0.98.39 (Win32)
-  Get it from http://sourceforge.net/project/showfiles.php?group_id=6208&package_id=47034
+  Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/0.98.39/
   Note: Newer Win32 packages of NASM work too, but you have to rename the
         executable to "nasmw.exe".
 
 - Download the source code of the library ZLib to your c:\mingw-setup directory.
   Package:
   * zlib-1.1.4.tar.gz
-  Get it from http://sourceforge.net/project/showfiles.php?group_id=5624&package_id=14274
+  Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
   Note: Newer versions of ZLib work too (currently 1.2.3).
 
 

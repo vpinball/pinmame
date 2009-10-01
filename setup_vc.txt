@@ -9,7 +9,7 @@ The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
   Old versions are listed at http://msdn.microsoft.com/visualc/aa336447.aspx
   Information about the VC++ macro _MSC_VER is available at
     http://support.microsoft.com/kb/65472
-    http://msdn2.microsoft.com/library/b0084kay(VS.71).aspx
+    http://msdn.microsoft.com/library/b0084kay(VS.71).aspx
   TechNet Security Updates are available at http://www.microsoft.com/technet/security/current.aspx
 The Visual Studio documentation is available at http://msdn.microsoft.com/library/aa187916.aspx
   VS6 documentation is only available in english languages (as of 2008-07)
@@ -27,12 +27,14 @@ To use a Visual C++ version for compiling the following is necessary:
 - Compatible DirectX SDK (with DirectInput 7)
 - Optionally a compatible MSDN Library
 
+Unfortunately Microsoft removed several files for Visual Studio 6.0 in 2009.
+
 Additionally the following is necessary:
 - NASM compiler for the assembler parts
   a) Download the assembler compiler NASM to a download directory.
      Binary package:
      * NASM 0.98.39 (Win32)
-     Get it from http://sourceforge.net/project/showfiles.php?group_id=6208&package_id=47034
+     Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/0.98.39/
      Note: Newer Win32 packages of NASM work too, but the executable has to be
            renamed to "nasmw.exe".
   b) Extract NASM into a separate directory, for example c:\nasm
@@ -62,8 +64,9 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   Processor Pack for getting MASM and Service Pack 6 for the latest updates of
   Visual C++ and Visual Basic.
   a) Download SP5, the Processor Pack and SP6
-     Update Homepage: http://msdn.microsoft.com/visualc/aa336441.aspx
-     6.0 SP5: http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
+     Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
+  !  6.0 SP5: (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
+              (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
      6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
              http://www.infinitefactors.org/jonk/pctools.html
      6.0 SP6: http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
@@ -79,7 +82,8 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   issue with newer versions: http://support.microsoft.com/kb/243298/en-us
 - DirectX SDK Summer 2003 Edition
   (folders: utilities, include, lib)
-  http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
+  ! (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
+  (seems that Microsoft has removed it for whatever reason)
 - Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
 - Project Files (.dsp) are maintained in the repository
 
@@ -116,10 +120,10 @@ Visual C++ 2005 (8.0, _MSC_VER = 1400)
 Visual C++ 2008 (9.0, _MSC_VER = 1500)
 ---------------
 - Service Packs
-  2005 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2005+SP&sortCriteria=date
+  2005 SP1 (not Foundation): http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2005+SP&sortCriteria=date
   2008 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2008+service+pack&sortCriteria=date
   Slipstreaming VS service packs: http://blogs.msdn.com/heaths/archive/2006/12/16/slipstreaming-visual-studio-2005-service-pack-1.aspx
-- Windows Platform SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
+- Windows [Platform] SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
   (folders: bin, include, include\gl, lib)
   http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
   http://www.microsoft.com/downloads/results.aspx?freetext=Windows+Platform+SDK&sortCriteria=date
@@ -139,7 +143,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 - Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
 - Info about new security enhancments and possible optimisations:
   http://msdn.microsoft.com/library/8ef0s5kh.aspx
-  http://www.themssforum.com/VC/optimization-Express/
+  (non-functional) http://www.themssforum.com/VC/optimization-Express/
 
 Additional notes on Express Editions:
 - Both (2005 & 2008) work fine without any changes and can compile PinMAME and PinMAME32
@@ -196,7 +200,7 @@ Addendum: Libraries
   If you want to compile it yourself then get the following package:
   a) ZLib source code
      * zlib-1.1.4.tar.gz
-     Get it from http://sourceforge.net/project/showfiles.php?group_id=5624&package_id=14274
+     Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
      Note: Newer versions of ZLib work too (currently 1.2.3).
   b) If you want to test the assembler optimised version you also need MASM from
      Microsoft. You can use it for free, but not for commercial use.
