@@ -133,6 +133,7 @@ else
 #LDFLAGS = -s -Wl,--warn-common
 LDFLAGS = -s
 endif
+LDFLAGS += -static
 
 ifdef MAP
 MAPFLAGS = -Wl,-M >$(NAME).map
@@ -287,5 +288,3 @@ check: $(EMULATOR) xml2info$(EXE)
 	./$(EMULATOR) -listxml > $(NAME).xml
 	./xml2info < $(NAME).xml > $(NAME).lst
 	./xmllint --valid --noout $(NAME).xml
-
-
