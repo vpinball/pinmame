@@ -101,8 +101,8 @@ struct TMS320AV120Chip
  UINT8  framebuff[MPG_FRAMESIZE];		//Holds raw mpg data for 1 frame (also used as header input buffer)
  UINT8	fb_pos;							//Current frame buffer position
  INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];	//Decoded PCM data buffer
- UINT16 pcm_pos;						//Position of next data to be input into the pcm buffer
- UINT16 sOut;							//Position of next sample to read out of the pcm buffer
+ UINT32 pcm_pos;						//Position of next data to be input into the pcm buffer
+ UINT32 sOut;							//Position of next sample to read out of the pcm buffer
  int    stream;							//Holds stream channel assignment
  int    bitsRemaining;					//Keep track of # of bits we've read from frame buffer
  long *_V[16];							//Synthesis window for single channel

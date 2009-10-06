@@ -63,7 +63,7 @@ static void (*opfn[0x100])(void) = {
 /* 0xDX */  mov_a2r, mov_b2r, dec_r,   inc_r,   inv_r,   clr_r,   xchb_r,  swap_r,
             push_r,  pop_r,   djnz_r,  decd_r,  rr_r,    rrc_r,   rl_r,    rlc_r,
 
-/* 0xEX */  jmp,     jn,      jeq,     jc,      jp,      jpz,     jne,     jl,
+/* 0xEX */  jmp,     tms70_jn,jeq,     jc,      jp,      jpz,     jne,     jl,
             trap_23, trap_22, trap_21, trap_20, trap_19, trap_18, trap_17, trap_16,
 
 /* 0xFX */  trap_15, trap_14, trap_13, trap_12, trap_11, trap_10, trap_9,  trap_8,

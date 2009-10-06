@@ -57,7 +57,7 @@ const char *mameinfo_filename = NULL;
  ****************************************************************************/
 static mame_file *fp;                                       /* Our file pointer */
 static long dwFilePos;                                          /* file position */
-static UINT8 bToken[MAX_TOKEN_LENGTH];          /* Our current token */
+static char bToken[MAX_TOKEN_LENGTH];          /* Our current token */
 
 /* an array of driver name/drivers array index sorted by driver name
    for fast look up by name */
@@ -130,12 +130,12 @@ static int GetGameNameIndex(const char *name)
  *
  *      Returns token, or TOKEN_INVALID if at end of file
  ****************************************************************************/
-static UINT32 GetNextToken(UINT8 **ppszTokenText, long *pdwPosition)
+static UINT32 GetNextToken(char **ppszTokenText, long *pdwPosition)
 {
         UINT32 dwLength;                                                /* Length of symbol */
         long dwPos;                                                             /* Temporary position */
-        UINT8 *pbTokenPtr = bToken;                             /* Point to the beginning */
-        UINT8 bData;                                                    /* Temporary data byte */
+        char *pbTokenPtr = bToken;                             /* Point to the beginning */
+        char bData;                                                    /* Temporary data byte */
 
         while (1)
         {
@@ -378,6 +378,7 @@ static UINT8 ParseSeek(long offset, int whence)
  *
  *      Returns zero if s1 and s2 are equal, ignoring case
  **************************************************************************/
+#ifndef PINMAME
 static int ci_strcmp (const char *s1, const char *s2)
 {
         int c1, c2;
@@ -393,6 +394,7 @@ static int ci_strcmp (const char *s1, const char *s2)
 
         return (c1 - c2);
 }
+#endif
 
 
 /**************************************************************************
@@ -445,18 +447,18 @@ static int index_datafile (struct tDatafileIndex **_index)
                 long tell;
                 char *s;
 
-                token = GetNextToken ((UINT8 **)&s, &tell);
+                token = GetNextToken ((char **)&s, &tell);
                 if (TOKEN_SYMBOL != token) continue;
 
                 /* DATAFILE_TAG_KEY identifies the driver */
                 if (!ci_strncmp (DATAFILE_TAG_KEY, s, strlen (DATAFILE_TAG_KEY)))
                 {
-                        token = GetNextToken ((UINT8 **)&s, &tell);
+                        token = GetNextToken ((char **)&s, &tell);
                         if (TOKEN_EQUALS == token)
                         {
                                 int done = 0;
 
-                                token = GetNextToken ((UINT8 **)&s, &tell);
+                                token = GetNextToken ((char **)&s, &tell);
                                 while (!done && TOKEN_SYMBOL == token)
                                 {
 									int game_index;
@@ -476,10 +478,10 @@ static int index_datafile (struct tDatafileIndex **_index)
 									}
 									if (!done)
 									{
-										token = GetNextToken ((UINT8 **)&s, &tell);
+										token = GetNextToken ((char **)&s, &tell);
 
 										if (TOKEN_COMMA == token)
-											token = GetNextToken ((UINT8 **)&s, &tell);
+											token = GetNextToken ((char **)&s, &tell);
 										else
 											done = 1; /* end of key field */
 									}
@@ -534,7 +536,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
                 int len;
                 long tell;
 
-                token = GetNextToken ((UINT8 **)&s, &tell);
+                token = GetNextToken ((char **)&s, &tell);
                 if (TOKEN_INVALID == token) continue;
 
                 if (found)

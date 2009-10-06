@@ -70,7 +70,7 @@
 #define HANDLER_IS_STATIC(h)	((FPTR)(h) < STATIC_COUNT)
 
 #define HANDLER_TO_BANK(h)		((FPTR)(h))
-#define BANK_TO_HANDLER(b)		((void *)(b))
+#define BANK_TO_HANDLER(b)		((genf *)(b))
 
 
 /*-------------------------------------------------
@@ -88,7 +88,7 @@ struct bank_data
 
 struct handler_data
 {
-	void *				handler;			/* function pointer for handler */
+	genf *				handler;			/* function pointer for handler */
 	offs_t				offset;				/* base offset for handler */
 	offs_t				top;				/* maximum offset for handler */
 };
@@ -196,12 +196,12 @@ offs_t encrypted_opcode_start[MAX_CPU],encrypted_opcode_end[MAX_CPU];
 -------------------------------------------------*/
 
 static int CLIB_DECL fatalerror(const char *string, ...);
-static UINT8 get_handler_index(struct handler_data *table, void *handler, offs_t start);
+static UINT8 get_handler_index(struct handler_data *table, genf *handler, offs_t start);
 static UINT8 alloc_new_subtable(const struct memport_data *memport, struct table_data *tabledata, UINT8 previous_value);
 static void populate_table(struct memport_data *memport, int iswrite, offs_t start, offs_t stop, UINT8 handler);
-static void *assign_dynamic_bank(int cpunum, offs_t start);
-static void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, void *handler);
-static void install_port_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, void *handler);
+static genf *assign_dynamic_bank(int cpunum, offs_t start);
+static void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, genf *handler);
+static void install_port_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, genf *handler);
 static void set_static_handler(int idx,
 		read8_handler r8handler, read16_handler r16handler, read32_handler r32handler,
 		write8_handler w8handler, write16_handler w16handler, write32_handler w32handler);
@@ -405,7 +405,7 @@ void memory_set_bankhandler_r(int bank, offs_t offset, mem_read_handler handler)
 	/* set the new handler */
 	if (HANDLER_IS_STATIC(handler))
 		handler = rmemhandler8s[(FPTR)handler];
-	rmemhandler8[bank].handler = (void *)handler;
+	rmemhandler8[bank].handler = (genf *)handler;
 }
 
 
@@ -427,7 +427,7 @@ void memory_set_bankhandler_w(int bank, offs_t offset, mem_write_handler handler
 	/* set the new handler */
 	if (HANDLER_IS_STATIC(handler))
 		handler = wmemhandler8s[(FPTR)handler];
-	wmemhandler8[bank].handler = (void *)handler;
+	wmemhandler8[bank].handler = (genf *)handler;
 }
 
 
@@ -461,7 +461,7 @@ data8_t *install_mem_read_handler(int cpunum, offs_t start, offs_t end, mem_read
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -485,7 +485,7 @@ data16_t *install_mem_read16_handler(int cpunum, offs_t start, offs_t end, mem_r
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -509,7 +509,7 @@ data32_t *install_mem_read32_handler(int cpunum, offs_t start, offs_t end, mem_r
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -533,7 +533,7 @@ data8_t *install_mem_write_handler(int cpunum, offs_t start, offs_t end, mem_wri
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -557,7 +557,7 @@ data16_t *install_mem_write16_handler(int cpunum, offs_t start, offs_t end, mem_
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -581,7 +581,7 @@ data32_t *install_mem_write32_handler(int cpunum, offs_t start, offs_t end, mem_
 	}
 
 	/* install the handler */
-	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (void *)handler);
+	install_mem_handler(&cpudata[cpunum].mem, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -605,7 +605,7 @@ void install_port_read_handler(int cpunum, offs_t start, offs_t end, port_read_h
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 0, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -628,7 +628,7 @@ void install_port_read16_handler(int cpunum, offs_t start, offs_t end, port_read
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 0, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -651,7 +651,7 @@ void install_port_read32_handler(int cpunum, offs_t start, offs_t end, port_read
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 0, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 0, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -674,7 +674,7 @@ void install_port_write_handler(int cpunum, offs_t start, offs_t end, port_write
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 1, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -697,7 +697,7 @@ void install_port_write16_handler(int cpunum, offs_t start, offs_t end, port_wri
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 1, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -720,7 +720,7 @@ void install_port_write32_handler(int cpunum, offs_t start, offs_t end, port_wri
 	}
 
 	/* install the handler */
-	install_port_handler(&cpudata[cpunum].port, 1, start, end, (void *)handler);
+	install_port_handler(&cpudata[cpunum].port, 1, start, end, (genf *)handler);
 #ifdef MEM_DUMP
 	/* dump the new memory configuration */
 	mem_dump();
@@ -830,7 +830,7 @@ void *memory_get_write_ptr(int cpunum, offs_t offset)
 	handler, or allocates a new one as necessary
 -------------------------------------------------*/
 
-UINT8 get_handler_index(struct handler_data *table, void *handler, offs_t start)
+UINT8 get_handler_index(struct handler_data *table, genf *handler, offs_t start)
 {
 	int i;
 
@@ -972,14 +972,14 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 	matching bank
 -------------------------------------------------*/
 
-void *assign_dynamic_bank(int cpunum, offs_t start)
+genf *assign_dynamic_bank(int cpunum, offs_t start)
 {
 	int bank;
 
 	/* special case: never assign a dynamic bank to an offset that */
 	/* intersects the CPU's region; always use RAM for that */
 	if (start < memory_region_length(REGION_CPU1 + cpunum))
-		return (void *)STATIC_RAM;
+		return (genf *)STATIC_RAM;
 
 	/* loop over banks, searching for an exact match or an empty */
 	for (bank = 1; bank <= MAX_BANKS; bank++)
@@ -1002,7 +1002,7 @@ void *assign_dynamic_bank(int cpunum, offs_t start)
 	memory operatinos
 -------------------------------------------------*/
 
-void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, void *handler)
+void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, genf *handler)
 {
 	struct table_data *tabledata = iswrite ? &memport->write : &memport->read;
 	UINT8 idx;
@@ -1010,11 +1010,11 @@ void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start
 	/* translate ROM and RAMROM to RAM here for read cases */
 	if (!iswrite)
 		if (HANDLER_IS_ROM(handler) || HANDLER_IS_RAMROM(handler))
-			handler = (void *)MRA_RAM;
+			handler = (genf *)MRA_RAM;
 
 	/* assign banks for sparse memory spaces */
 	if (IS_SPARSE(memport->abits) && HANDLER_IS_RAM(handler))
-		handler = (void *)assign_dynamic_bank(memport->cpunum, start);
+		handler = (genf *)assign_dynamic_bank(memport->cpunum, start);
 
 	/* set the handler */
 	idx = get_handler_index(tabledata->handlers, handler, start);
@@ -1037,7 +1037,7 @@ void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start
 	port operatinos
 -------------------------------------------------*/
 
-void install_port_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, void *handler)
+void install_port_handler(struct memport_data *memport, int iswrite, offs_t start, offs_t end, genf *handler)
 {
 	struct table_data *tabledata = iswrite ? &memport->write : &memport->read;
 	UINT8 idx = get_handler_index(tabledata->handlers, handler, start);
@@ -1057,19 +1057,19 @@ static void set_static_handler(int idx,
 	rmemhandler8s[idx] = r8handler;
 	wmemhandler8s[idx] = w8handler;
 
-	rmemhandler8[idx].handler = (void *)r8handler;
-	rmemhandler16[idx].handler = (void *)r16handler;
-	rmemhandler32[idx].handler = (void *)r32handler;
-	wmemhandler8[idx].handler = (void *)w8handler;
-	wmemhandler16[idx].handler = (void *)w16handler;
-	wmemhandler32[idx].handler = (void *)w32handler;
+	rmemhandler8[idx].handler = (genf *)r8handler;
+	rmemhandler16[idx].handler = (genf *)r16handler;
+	rmemhandler32[idx].handler = (genf *)r32handler;
+	wmemhandler8[idx].handler = (genf *)w8handler;
+	wmemhandler16[idx].handler = (genf *)w16handler;
+	wmemhandler32[idx].handler = (genf *)w32handler;
 
-	rporthandler8[idx].handler = (void *)r8handler;
-	rporthandler16[idx].handler = (void *)r16handler;
-	rporthandler32[idx].handler = (void *)r32handler;
-	wporthandler8[idx].handler = (void *)w8handler;
-	wporthandler16[idx].handler = (void *)w16handler;
-	wporthandler32[idx].handler = (void *)w32handler;
+	rporthandler8[idx].handler = (genf *)r8handler;
+	rporthandler16[idx].handler = (genf *)r16handler;
+	rporthandler32[idx].handler = (genf *)r32handler;
+	wporthandler8[idx].handler = (genf *)w8handler;
+	wporthandler16[idx].handler = (genf *)w16handler;
+	wporthandler32[idx].handler = (genf *)w32handler;
 }
 
 
@@ -1320,7 +1320,7 @@ static int verify_ports(void)
 	of memory needs RAM backing it
 -------------------------------------------------*/
 
-static int needs_ram(int cpunum, void *handler)
+static int needs_ram(int cpunum, genf *handler)
 {
 	/* RAM, ROM, and banks always need RAM */
 	if (HANDLER_IS_RAM(handler) || HANDLER_IS_ROM(handler) || HANDLER_IS_RAMROM(handler) || HANDLER_IS_BANK(handler))
@@ -1369,12 +1369,12 @@ static int allocate_memory(void)
 			/* find the base of the lowest memory region that extends past the end */
 			for (mra = Machine->drv->cpu[cpunum].memory_read; !IS_MEMPORT_END(mra); mra++)
 				if (!IS_MEMPORT_MARKER(mra))
-					if (mra->end >= size && mra->start < lowest && needs_ram(cpunum, (void *)mra->handler))
+					if (mra->end >= size && mra->start < lowest && needs_ram(cpunum, (genf *)mra->handler))
 						lowest = mra->start;
 
 			for (mwa = Machine->drv->cpu[cpunum].memory_write; !IS_MEMPORT_END(mwa); mwa++)
 				if (!IS_MEMPORT_MARKER(mwa))
-					if (mwa->end >= size && mwa->start < lowest && (mwa->base || needs_ram(cpunum, (void *)mwa->handler)))
+					if (mwa->end >= size && mwa->start < lowest && (mwa->base || needs_ram(cpunum, (genf *)mwa->handler)))
 						lowest = mwa->start;
 
 			/* done if nothing found */
@@ -1391,12 +1391,12 @@ static int allocate_memory(void)
 				/* find the end of the contiguous block of memory */
 				for (mra = Machine->drv->cpu[cpunum].memory_read; !IS_MEMPORT_END(mra); mra++)
 					if (!IS_MEMPORT_MARKER(mra))
-						if (mra->start <= end+1 && mra->end > end && needs_ram(cpunum, (void *)mra->handler))
+						if (mra->start <= end+1 && mra->end > end && needs_ram(cpunum, (genf *)mra->handler))
 							end = mra->end;
 
 				for (mwa = Machine->drv->cpu[cpunum].memory_write; !IS_MEMPORT_END(mwa); mwa++)
 					if (!IS_MEMPORT_MARKER(mwa))
-						if (mwa->start <= end+1 && mwa->end > end && (mwa->base || needs_ram(cpunum, (void *)mwa->handler)))
+						if (mwa->start <= end+1 && mwa->end > end && (mwa->base || needs_ram(cpunum, (genf *)mwa->handler)))
 							end = mwa->end;
 			}
 
@@ -1458,7 +1458,7 @@ static int populate_memory(void)
 			/* then work backwards */
 			for (mra--; mra >= mra_start; mra--)
 				if (!IS_MEMPORT_MARKER(mra))
-					install_mem_handler(&cpudata[cpunum].mem, 0, mra->start, mra->end, (void *)mra->handler);
+					install_mem_handler(&cpudata[cpunum].mem, 0, mra->start, mra->end, (genf *)mra->handler);
 		}
 
 		/* install the write handlers */
@@ -1473,7 +1473,7 @@ static int populate_memory(void)
 			for (mwa--; mwa >= mwa_start; mwa--)
 				if (!IS_MEMPORT_MARKER(mwa))
 				{
-					install_mem_handler(&cpudata[cpunum].mem, 1, mwa->start, mwa->end, (void *)mwa->handler);
+					install_mem_handler(&cpudata[cpunum].mem, 1, mwa->start, mwa->end, (genf *)mwa->handler);
 					if (mwa->base) *mwa->base = memory_find_base(cpunum, mwa->start);
 					if (mwa->size) *mwa->size = mwa->end - mwa->start + 1;
 				}
@@ -1509,7 +1509,7 @@ static int populate_ports(void)
 			/* then work backwards */
 			for (mra--; mra != mra_start; mra--)
 				if (!IS_MEMPORT_MARKER(mra))
-					install_port_handler(&cpudata[cpunum].port, 0, mra->start, mra->end, (void *)mra->handler);
+					install_port_handler(&cpudata[cpunum].port, 0, mra->start, mra->end, (genf *)mra->handler);
 		}
 
 		/* install the write handlers */
@@ -1523,7 +1523,7 @@ static int populate_ports(void)
 			/* then work backwards */
 			for (mwa--; mwa != mwa_start; mwa--)
 				if (!IS_MEMPORT_MARKER(mwa))
-					install_port_handler(&cpudata[cpunum].port, 1, mwa->start, mwa->end, (void *)mwa->handler);
+					install_port_handler(&cpudata[cpunum].port, 1, mwa->start, mwa->end, (genf *)mwa->handler);
 		}
 	}
 	return 1;
@@ -2789,12 +2789,12 @@ static int init_static(void)
 	set_static_handler(STATIC_RAMROM, NULL,        NULL,         NULL,         mwh8_ramrom, mwh16_ramrom, mwh32_ramrom);
 
 	/* override port unmapped handlers */
-	rporthandler8 [STATIC_UNMAP].handler = (void *)prh8_bad;
-	rporthandler16[STATIC_UNMAP].handler = (void *)prh16_bad;
-	rporthandler32[STATIC_UNMAP].handler = (void *)prh32_bad;
-	wporthandler8 [STATIC_UNMAP].handler = (void *)pwh8_bad;
-	wporthandler16[STATIC_UNMAP].handler = (void *)pwh16_bad;
-	wporthandler32[STATIC_UNMAP].handler = (void *)pwh32_bad;
+	rporthandler8 [STATIC_UNMAP].handler = (genf *)prh8_bad;
+	rporthandler16[STATIC_UNMAP].handler = (genf *)prh16_bad;
+	rporthandler32[STATIC_UNMAP].handler = (genf *)prh32_bad;
+	wporthandler8 [STATIC_UNMAP].handler = (genf *)pwh8_bad;
+	wporthandler16[STATIC_UNMAP].handler = (genf *)pwh16_bad;
+	wporthandler32[STATIC_UNMAP].handler = (genf *)pwh32_bad;
 
 	return 1;
 }

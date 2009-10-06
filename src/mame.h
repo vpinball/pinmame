@@ -21,6 +21,8 @@
 extern char build_version[];
 extern int gbPriorityBitmapIsDirty;
 
+/* ----- for generic function pointers ----- */
+typedef void genf(void);
 
 
 /***************************************************************************

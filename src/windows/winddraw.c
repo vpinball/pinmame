@@ -210,6 +210,7 @@ int win_ddraw_init(int width, int height, int depth, int attributes, const struc
 {
 	HRESULT result;
 	DDCAPS hel_caps;
+	LPDIRECTDRAW4 *ddraw4addr = &ddraw4;
 
 	// set the graphics mode width/height to the window size
 	if (width && height && depth)
@@ -235,7 +236,7 @@ int win_ddraw_init(int width, int height, int depth, int attributes, const struc
 	}
 
 	// see if we can get a DDraw4 object
-	result = IDirectDraw_QueryInterface(ddraw, &IID_IDirectDraw4, (void **)&ddraw4);
+	result = IDirectDraw_QueryInterface(ddraw, &IID_IDirectDraw4, (void **)ddraw4addr);
 	if (result != DD_OK)
 		ddraw4 = NULL;
 
@@ -771,9 +772,10 @@ cant_create_blit:
 static void set_brightness(void)
 {
 	HRESULT result;
+	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
 	// see if we can get a GammaControl object
-	result = IDirectDrawSurface_QueryInterface(primary_surface, &IID_IDirectDrawGammaControl, (void **)&gamma_control);
+	result = IDirectDrawSurface_QueryInterface(primary_surface, &IID_IDirectDrawGammaControl, (void **)gamma_controladdr);
 	if (result != DD_OK)
 	{
 		if (verbose)
@@ -1132,10 +1134,12 @@ tryagain:
 	// window mode
 	if (win_window_mode)
 	{
+		RECT *dstaddr = &dst;
+
 		// just convert the client area to screen coords
 		GetClientRect(win_video_window, &dst);
-		ClientToScreen(win_video_window, &((LPPOINT)&dst)[0]);
-		ClientToScreen(win_video_window, &((LPPOINT)&dst)[1]);
+		ClientToScreen(win_video_window, (LPPOINT)dstaddr);
+		ClientToScreen(win_video_window, (LPPOINT)dstaddr+1);
 
 		// target surface is the primary
 		target_surface = primary_surface;
@@ -1296,10 +1300,12 @@ tryagain:
 	// window mode
 	if (win_window_mode)
 	{
+		RECT *outeraddr = &outer;
+
 		// just convert the client area to screen coords
 		GetClientRect(win_video_window, &outer);
-		ClientToScreen(win_video_window, &((LPPOINT)&outer)[0]);
-		ClientToScreen(win_video_window, &((LPPOINT)&outer)[1]);
+		ClientToScreen(win_video_window, (LPPOINT)outeraddr);
+		ClientToScreen(win_video_window, (LPPOINT)outeraddr+1);
 		inner = outer;
 
 		// target surface is the primary

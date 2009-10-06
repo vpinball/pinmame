@@ -1501,6 +1501,7 @@ int num_ik = sizeof(input_keywords)/sizeof(struct ik);
 /***************************************************************************/
 /* Generic IO */
 
+#ifndef PINMAME
 static int readint(mame_file *f,UINT32 *num)
 {
 	unsigned i;
@@ -1519,7 +1520,9 @@ static int readint(mame_file *f,UINT32 *num)
 
 	return 0;
 }
+#endif
 
+#ifndef PINMAME
 static void writeint(mame_file *f,UINT32 num)
 {
 	unsigned i;
@@ -1534,6 +1537,7 @@ static void writeint(mame_file *f,UINT32 num)
 		num <<= 8;
 	}
 }
+#endif
 
 static int readword(mame_file *f,UINT16 *num)
 {
