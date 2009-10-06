@@ -44,12 +44,19 @@ Step 1: Downloads
      The packages carry the version numbers as of the date of testing, but newer
      packages should work too:
 
+     (MinGW 5 tested in October 2009)
+     * mingwrt-3.16-mingw32-dll
+     * mingwrt-3.16-mingw32-dev
+     * binutils-2.19.1-mingw32-bin
+     * make-3.81-20090914-mingw32-bin
+     * w32api-3.13-mingw32-dev
+     * libz-1.2.3-1-mingw32-dev
+
      (MinGW 5 tested in March 2009)
      * mingwrt-3.15.2-mingw32-dll
      * mingwrt-3.15.2-mingw32-dev
      * binutils-2.19.1-mingw32-bin
      * mingw32-make-3.81-20080326-3
-     * w32api-3.13-src
      * w32api-3.13-dev
 
      (MinGW 5 tested in May 2008)
@@ -87,7 +94,8 @@ Step 1: Downloads
   Note: Newer Win32 packages of NASM work too, but you have to rename the
         executable to "nasmw.exe".
 
-- Download the source code of the library ZLib to your c:\mingw-setup directory.
+- If you are not using the MinGW release of the zlib library (libz), then
+  download the source code of the library ZLib to your c:\mingw-setup directory.
   Package:
   * zlib-1.1.4.tar.gz
   Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
@@ -107,6 +115,14 @@ Step 2: Setup
   b) More recent MinGW setup
      Create a directory to hold your MinGW installation; for example, c:\mingw
      Extract all binary packages of MinGW to your c:\mingw directory.
+
+     (MinGW 5 tested in October 2009)
+     * mingwrt-3.16-mingw32-dll
+     * mingwrt-3.16-mingw32-dev
+     * binutils-2.19.1-mingw32-bin
+     * make-3.81-20090914-mingw32-bin
+     * w32api-3.13-mingw32-dev
+     * libz-1.2.3-1-mingw32-dev
 
      (MinGW 5 tested in March 2009)
      * mingwrt-3.15.2-mingw32-dll (for the DLL itself)
@@ -154,6 +170,9 @@ Step 2: Setup
 -----------------
 Step 3: Libraries
 -----------------
+- This step is only necessary if you are not using the MinGW release of the zlib
+  library (libz).
+
 - Extract the ZLib source into a temporary directory.
   Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
   Type "mingw32-make test -f nt\Makefile.gcc" to check its functionality.
