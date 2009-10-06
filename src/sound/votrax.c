@@ -473,6 +473,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 #endif
 }
 
+#ifndef PINMAME
 static void VOTRAXSC01_sh_start_timeout(int which)
 {
 #ifdef REAL_DEVICE
@@ -493,6 +494,7 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 	}
 #endif
 }
+#endif
 
 int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 {

@@ -2067,8 +2067,8 @@ void jmp( void )
 	tms7000_icount -= 7;
 }
 
-void jn( void );
-void jn( void )
+void tms70_jn( void );	// jn is built-in of gcc/libc
+void tms70_jn( void )
 {
 	if( pSR & SR_N )
 	{

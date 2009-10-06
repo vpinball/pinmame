@@ -560,6 +560,8 @@ int win_d3d_init(int width, int height, int depth, int attributes, double aspect
 	DDSURFACEDESC2 currmode = { sizeof(DDSURFACEDESC2) };
 	D3DVIEWPORT7 viewport;
 	HRESULT result;
+	LPDIRECTDRAW7 *ddraw7addr = &ddraw7;
+	LPDIRECT3D7 *d3d7addr = &d3d7;
 
 	// since we can't count on DirectX7 being present, load the dll
 	ddraw_dll7 = LoadLibrary("ddraw.dll");
@@ -576,14 +578,14 @@ int win_d3d_init(int width, int height, int depth, int attributes, double aspect
 		goto error_handling;
 	}
 
-	result = fn_directdraw_create_ex(screen_guid_ptr, (void **)&ddraw7, &IID_IDirectDraw7, NULL);
+	result = fn_directdraw_create_ex(screen_guid_ptr, (void **)ddraw7addr, &IID_IDirectDraw7, NULL);
 	if (result != DD_OK)
 	{
 		fprintf(stderr, "Error creating DirectDraw7: %08x\n", (UINT32)result);
 		goto error_handling;
 	}
 
-	result = IDirectDraw7_QueryInterface(ddraw7, &IID_IDirect3D7, (void **)&d3d7);
+	result = IDirectDraw7_QueryInterface(ddraw7, &IID_IDirect3D7, (void **)d3d7addr);
 	if (result != DD_OK)
 	{
 		fprintf(stderr, "Error creating Direct3D7: %08x\n", (UINT32)result);
@@ -1531,9 +1533,10 @@ error_handling:
 static void set_brightness(void)
 {
 	HRESULT result;
+	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
 	// see if we can get a GammaControl object
-	result = IDirectDrawSurface7_QueryInterface(primary_surface, &IID_IDirectDrawGammaControl, (void **)&gamma_control);
+	result = IDirectDrawSurface7_QueryInterface(primary_surface, &IID_IDirectDrawGammaControl, (void **)gamma_controladdr);
 	if (result != DD_OK)
 	{
 		if (verbose)
@@ -2029,10 +2032,12 @@ tryagain:
 	// window mode
 	if (win_window_mode)
 	{
+		RECT *dstaddr = &dst;
+
 		// just convert the client area to screen coords
 		GetClientRect(win_video_window, &dst);
-		ClientToScreen(win_video_window, &((LPPOINT)&dst)[0]);
-		ClientToScreen(win_video_window, &((LPPOINT)&dst)[1]);
+		ClientToScreen(win_video_window, &((LPPOINT)dstaddr)[0]);
+		ClientToScreen(win_video_window, &((LPPOINT)dstaddr)[1]);
 	}
 
 	// full screen mode

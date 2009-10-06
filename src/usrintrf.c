@@ -1110,7 +1110,7 @@ void ui_displaymessagewindow(struct mame_bitmap *bitmap,const char *text)
 }
 
 
-
+#ifndef PINMAME
 static void showcharset(struct mame_bitmap *bitmap)
 {
 	int i;
@@ -1521,7 +1521,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 
 	schedule_full_refresh();
 }
-
+#endif
 
 
 static int switchmenu(struct mame_bitmap *bitmap, int selected, UINT32 switch_name, UINT32 switch_setting)

@@ -177,6 +177,7 @@ static void WM(UINT32 a, UINT8 v)
 	cpu_writemem16(a, v);
 }
 
+#ifndef PINMAME
 static	void illegal(void)
 {
 #if VERBOSE
@@ -184,6 +185,7 @@ static	void illegal(void)
 	LOG(("i8085 illegal instruction %04X $%02X\n", pc, cpu_readop(pc)));
 #endif
 }
+#endif
 
 INLINE void execute_one(int opcode)
 {
