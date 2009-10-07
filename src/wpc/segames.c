@@ -227,7 +227,17 @@ DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c5
                   "xfsndu21.c40",CRC(b56a5ca6) SHA1(5fa23a8bb57e45aca159882226e603d9a6be078b))
 SE_ROMEND
 #define input_ports_xfiles input_ports_se
-CORE_GAMEDEFNV(xfiles,"X-Files",1997,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(xfiles,"X-Files (3.03)",1997,"Sega",de_mSES1,0)
+
+INITGAME(xfiles2,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(xfiles2,"xfcpu.204",CRC(a4913128) SHA1(1fe348725e13fd5dc56b6b2dbd173d0b49953483))
+DE_DMD32ROM8x(   "xfildspa.201",CRC(bb015f24) SHA1(ca539d978ef0b8244227ea0c60087da5e7f0ee9e))
+DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c58cd5973ff11b),
+                  "xfsndu17.c40",CRC(40bfc835) SHA1(2d6ac82acbbf9645bcb84fab7f285f2373e516a8),
+                  "xfsndu21.c40",CRC(b56a5ca6) SHA1(5fa23a8bb57e45aca159882226e603d9a6be078b))
+SE_ROMEND
+#define input_ports_xfiles2 input_ports_xfiles
+CORE_CLONEDEFNV(xfiles2,xfiles,"X-Files (2.04)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Starship Troopers

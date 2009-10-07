@@ -735,7 +735,8 @@ DRIVERNV(swtril43)      //Whitestar: 02/97 Star Wars Trilogy (4.03)
 DRIVERNV(swtril41)      //Whitestar: 02/97 Star Wars Trilogy (4.01)
 DRIVERNV(jplstw22)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.02)
 DRIVERNV(jplstw20)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.00)
-DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
+DRIVERNV(xfiles2)       //Whitestar: 08/97 X-Files (2.04)
+DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files (3.03)
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
