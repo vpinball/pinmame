@@ -65,8 +65,9 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   Visual C++ and Visual Basic.
   a) Download SP5, the Processor Pack and SP6
      Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
-  !  6.0 SP5: (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
+     6.0 SP5: (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
               (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
+              http://ftp.maddes.net/vc6/
      6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
              http://www.infinitefactors.org/jonk/pctools.html
      6.0 SP6: http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
@@ -82,8 +83,9 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   issue with newer versions: http://support.microsoft.com/kb/243298/en-us
 - DirectX SDK Summer 2003 Edition
   (folders: utilities, include, lib)
-  ! (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
+  (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
   (seems that Microsoft has removed it for whatever reason)
+  http://ftp.maddes.net/dxsdk/summer2003/dx90updatesdk.exe
 - Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
 - Project Files (.dsp) are maintained in the repository
 
@@ -153,13 +155,13 @@ Additional notes on Express Editions:
   therefore not compilable with a normal Express Edition setup.
   http://msdn.microsoft.com/library/hs24szh9.aspx
 - Through investigations we found out that it is possible to compile VPinMAME
-  with the Visual C++ 2008 Express Edition and using a "trick":
+  with the Visual C++ 2008 Express Edition by using a "trick":
   Install the 90-day Trial Version of Visual C++ 2008 *and* the Express Edition.
   With the trial version you get all the ATL and MFC includes plus libraries.
-  The Express Edition still contains all the configurations settings to use these.
+  The Express Edition still contains all the configuration settings to use these.
   This way you can compile existing ATL and MFC projects, but you can not create
   a new ATL or MFC project as the corresponding wizard definitions are missing
-  for the Express Edition.
+  in the Express Edition.
   Btw this "trick" failed with the Express Edition of VisualC++ 2005.
   http://msdn.microsoft.com/evalcenter/
   http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
@@ -181,8 +183,8 @@ Virtual Machines (or placing intermediate files somewhere else)
 ----------------
 The project files for VC++ 2002 (and later) allow to place the intermediate
 files into a separate location. This can be very useful if you get the error
-"fatal error C1090: PDB API call failed, error code '23'", which happens quite a
-lot in virtual machines with shared folders.
+"fatal error C1090: PDB API call failed, error code '23'", which can happen
+quite a lot in virtual machines with shared folders.
 
 To use a different location just set the environment variable VS_OUTPUT to the
 desired location plus a backslash. A trailing backslash is MANDATORY if you use it!!!
@@ -208,8 +210,8 @@ Addendum: Libraries
      * http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
      * http://www.infinitefactors.org/jonk/pctools.html
      Extract it to a temporary directory, for example c:\masm, copy the
-     following files into a separate directory and it to the bin directories of
-     Visual C++:
+     following files into a separate directory and add it to the bin directories
+     of Visual C++:
      * H2INC.ERR
      * H2INC.EXE
      * ML.ERR
