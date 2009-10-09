@@ -473,10 +473,9 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 #endif
 }
 
-#ifndef PINMAME
+#ifdef REAL_DEVICE
 static void VOTRAXSC01_sh_start_timeout(int which)
 {
-#ifdef REAL_DEVICE
 	int help;
 
 	if ( !votraxsc01_locals.strobe ) {
@@ -492,7 +491,6 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 		if ( votraxsc01_locals.intf->BusyCallback[0] )
 			(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
 	}
-#endif
 }
 #endif
 

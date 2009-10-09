@@ -378,7 +378,7 @@ static UINT8 ParseSeek(long offset, int whence)
  *
  *      Returns zero if s1 and s2 are equal, ignoring case
  **************************************************************************/
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int ci_strcmp (const char *s1, const char *s2)
 {
         int c1, c2;
