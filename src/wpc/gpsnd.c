@@ -562,7 +562,6 @@ static void playsam3(int param){
 
 
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void m6840_pulse (int param) {
 // param = 0x02 -> internal 6840 clock
 // decrase timers and update interface
@@ -612,7 +611,6 @@ static void m6840_pulse (int param) {
   }
 
 }
-#endif
 
 
 

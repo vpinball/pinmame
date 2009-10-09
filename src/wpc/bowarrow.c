@@ -63,7 +63,6 @@ static void by35_dispStrobe(int mask) {
   }
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void by35_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
     int lampdata = (locals.a0>>4)^0x0f;
@@ -76,7 +75,6 @@ static void by35_lampStrobe(int board, int lampadr) {
     }
   }
 }
-#endif
 
 static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------

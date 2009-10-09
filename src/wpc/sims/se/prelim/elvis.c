@@ -36,9 +36,7 @@ static void elvis_drawStatic(BMTYPE **line);
 static void init_elvis(void);
 static void elvis_drawMech(BMTYPE **line);
 static int  elvis_getMech(int mech);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void elvis_handleMech(int mech);
-#endif
 
 /*-----------------------
   local static variables
@@ -417,10 +415,8 @@ static void elvis_drawMech(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"position: %3d", elvis_getMech(3));
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void elvis_handleMech(int mech) {
 }
-#endif
 
 static int elvis_getMech(int mechNo){
   if (0 == mechNo) return locals.direction;

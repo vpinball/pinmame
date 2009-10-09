@@ -144,13 +144,11 @@ static READ_HANDLER(read_0) {
 static READ_HANDLER(read_1) {
   return 1;
 }
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(read_toggle) {
   static int toggle = 1;
   toggle = !toggle;
   return toggle;
 }
-#endif
 static READ_HANDLER(read_zc) {
   return locals.zc ? 1 : 0;
 }

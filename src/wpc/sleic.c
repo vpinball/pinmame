@@ -39,11 +39,9 @@ static struct {
 static int SLEIC_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
 static int SLEIC_m2sw(int col, int row) { return 40 + col*10 + row; }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(SLEIC_irq_i80188) {
   cpu_set_irq_line(SLEIC_MAIN_CPU, 0, PULSE_LINE);
 }
-#endif
 
 static INTERRUPT_GEN(SLEIC_irq_i8039) {
   cpu_set_irq_line(SLEIC_DISPLAY_CPU, 0, PULSE_LINE);

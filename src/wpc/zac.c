@@ -19,9 +19,7 @@
 #define ZAC_SOLSMOOTH      2
 #define ZAC_DISPLAYSMOOTH  2
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(ZAC_soundCmd) { }
-#endif
 static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);

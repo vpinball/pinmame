@@ -350,24 +350,20 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 }
 
 //Should be not used!
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER( xvia_1_ca1_w )
 {
 	logerror1("NOT USED!: via_1_ca1_w %x\n",data);
 }
-#endif
 //CPU LED
 static WRITE_HANDLER( xvia_1_ca2_w )
 {
 	GTS3locals.diagnosticLed = data;
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER( xvia_1_cb1_w ) {
 	logerror1("CX1: via_1_cb1_w %x\n",data);
 	GTS3locals.cx1 = data;
 }
-#endif
 
 static WRITE_HANDLER( xvia_1_cb2_w ) {
 	logerror1("CX2: via_1_cb2_w %x\n",data);
