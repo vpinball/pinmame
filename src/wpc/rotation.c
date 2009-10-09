@@ -41,17 +41,13 @@ static struct {
   core_tSeg segments, pseg;
 } locals;
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int MIDWAY_sw2m(int no) {
   return no + 8;
 }
-#endif
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int MIDWAY_m2sw(int col, int row) {
   return col*8 + row - 8;
 }
-#endif
 
 /*-----------------------------------------------
 / Load/Save static ram

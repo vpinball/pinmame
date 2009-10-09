@@ -539,7 +539,6 @@ static void startcm3374b(int param)	{
   }
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void synccm3374a(int param)	{
   int work = snslocals.freqa;
   if (snslocals.freqa) {
@@ -548,8 +547,6 @@ static void synccm3374a(int param)	{
 	startcm3374a(0);
   }
 }
-#endif
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void synccm3374b(int param)	{
   int work = snslocals.freqb;
   if (snslocals.freqb) {
@@ -558,7 +555,6 @@ static void synccm3374b(int param)	{
 	startcm3374b(1);
   }
 }
-#endif
 
 static void sns_init(struct sndbrdData *brdData) {
   UINT8 i = 0;

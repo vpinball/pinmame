@@ -32,9 +32,7 @@
 
 #define GP_ZCFREQ   120
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(GP_soundCmd)  { }
-#endif
 
 static struct {
   int p0_a;

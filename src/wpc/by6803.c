@@ -289,12 +289,10 @@ static WRITE_HANDLER(pia0cb2_w) {
   locals.p0_cb2 = data;
 }
 /* PIA1:CA2-W Diagnostic LED (earlier games) */
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(pia1ca2_w) {
   //DBGLOG(("PIA1:CA2=%d\n",data));
   coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | data;
 }
-#endif
 
 /* PIA0:CA2-W Display Blanking/Select */
 static WRITE_HANDLER(pia0ca2_w) {
@@ -438,11 +436,9 @@ static INTERRUPT_GEN(by6803_irq) {
   pia_set_input_ca1(BY6803_PIA1, last = !last);
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(by6803_soundCmd) {
   sndbrd_0_data_w(0,data);  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 }
-#endif
 
 
 static void by6803_zeroCross(int data) {

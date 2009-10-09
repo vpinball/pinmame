@@ -296,7 +296,6 @@ static void de2s_init(struct sndbrdData *brdData) {
   de2slocals.brdData = *brdData;
 }
 
-#if 0
 static char tmp[100];
 static char *rtos( int n )
 {
@@ -338,7 +337,6 @@ static char *rtos( int n )
 	}
 	return tmp;
 }
-#endif
 
 static WRITE_HANDLER(de2s_bsmtcmdHi_w) {
 	de2slocals.bsmtData = data;

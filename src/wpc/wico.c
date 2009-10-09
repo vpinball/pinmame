@@ -62,17 +62,13 @@ static void WICO_firq_housekeeping(int data) {
   }
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(WICO_irq_command) {
   cpu_set_irq_line(COMMAND, M6809_IRQ_LINE, PULSE_LINE);
 }
-#endif
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void WICO_firq_command(int data) {
   cpu_set_irq_line(COMMAND, M6809_FIRQ_LINE, PULSE_LINE);
 }
-#endif
 
 /*-------------------------------
 /  copy local data to interface

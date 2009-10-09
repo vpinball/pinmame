@@ -37,9 +37,7 @@ static void monopoly_drawStatic(BMTYPE **line);
 static void init_monopoly(void);
 static void monopoly_drawMech(BMTYPE **line);
 static int  monopoly_getMech(int mech);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void monopoly_handleMech(int mech);
-#endif
 
 // The last used selocals variable is "flipsolPulse", so we can forget about the rest.
 extern struct {
@@ -436,10 +434,8 @@ static void monopoly_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"pos:%4d, speed:%4d", monopoly_getMech(0), monopoly_getMech(1));
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void monopoly_handleMech(int mech) {
 }
-#endif
 
 static int monopoly_getMech(int mechNo){
   static int speedCnt;
