@@ -129,7 +129,9 @@ DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7
                   "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
 SE_ROMEND
 #define input_ports_spacejmg input_ports_se
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 #define init_spacejmg init_spacejam
+#endif
 CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (Germany)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
@@ -144,7 +146,9 @@ DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7
                   "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
 SE_ROMEND
 #define input_ports_spacejmf input_ports_se
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 #define init_spacejmf init_spacejam
+#endif
 CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (France)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
@@ -159,7 +163,9 @@ DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7
                   "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
 SE_ROMEND
 #define input_ports_spacejmi input_ports_se
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 #define init_spacejmi init_spacejam
+#endif
 CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (Italy)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
@@ -186,7 +192,9 @@ DE2S_SOUNDROM144("sw0219.u7" ,CRC(cd7c84d9) SHA1(55b0208089933e4a30f0eb87b123dd1
                  "sw0211.u21",CRC(6be68450) SHA1(d24652f74b109e47eb5d3d02e04f63c99e92c590))
 SE_ROMEND
 #define input_ports_swtril41 input_ports_se
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 #define init_swtril41 init_swtril43
+#endif
 CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy (4.01)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
@@ -213,7 +221,9 @@ DE2S_SOUNDROM144("jp2_u7.bin" ,CRC(73b74c96) SHA1(ffa47cbf1491ed4fbadc984189abbf
                  "jp2_u21.bin",CRC(c670a997) SHA1(1576e11ec3669f61ff16188de31b9ef3a067c473))
 SE_ROMEND
 #define input_ports_jplstw20 input_ports_se
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 #define init_jplstw20 init_jplstw22
+#endif
 CORE_CLONEDEFNV(jplstw20,jplstw22,"Lost World: Jurassic Park, The (2.00)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------

@@ -57,12 +57,16 @@ static struct {
 static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
 static WRITE_HANDLER(ay8910_0_reset)  { AY8910_reset(0); }
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER (ay8910_0_r)      { return AY8910Read(0); }
+#endif
 
 static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
 static WRITE_HANDLER(ay8910_1_reset)  { AY8910_reset(1); }
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER (ay8910_1_r)      { return AY8910Read(1); }
+#endif
 
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
@@ -160,9 +164,11 @@ static WRITE_HANDLER(auxlamp6_w) {
   coreGlobals.tmpLampMatrix[13] = data;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(auxlamp7_w) {
   coreGlobals.tmpLampMatrix[7] = data;
 }
+#endif
 
 static WRITE_HANDLER(ram_w) {
   generic_nvram[offset] = data;
