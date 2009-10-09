@@ -389,6 +389,7 @@ static INTERRUPT_GEN(byVP_irq) {
 }
 
 //Send a command manually
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(byVP_soundCmd) {
   if (data) {
 //    locals.snddata = data;
@@ -396,6 +397,7 @@ static WRITE_HANDLER(byVP_soundCmd) {
 //    snd_cmd_log(data);
   }
 }
+#endif
 
 /* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {

@@ -295,10 +295,12 @@ static MEMORY_WRITE_START(sp_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(sp555_timer) {
   static int cb1;
   pia_set_input_cb1(SP_PIA0, cb1 = !cb1);
 }
+#endif
 
 MACHINE_DRIVER_START(by51)
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
@@ -566,7 +568,9 @@ static void cs_diag(int button);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
 static READ_HANDLER(cs_port1_r);
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(cs_port2_r);
+#endif
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
@@ -649,11 +653,13 @@ static READ_HANDLER(cs_port1_r) {
 
 static int port2 = 0;
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(cs_port2_r) {
 	int data = port2;
 	printf("reading cs_port2_r data = %x\n",data);
 	return data;
 }
+#endif
 static WRITE_HANDLER(cs_port2_w) {
 	port2 = data;
 	//printf("MPU: port write = %x\n",data);
