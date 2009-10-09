@@ -246,7 +246,7 @@ INLINE void cpx_di(void);
 INLINE void cpx_ex(void);
 INLINE void cpx_im(void);
 INLINE void cpx_ix(void);
-#ifndef PINMAME
+#if (HAS_HD63701)
 //INLINE void trap(void);
 static void trap(void);
 #endif

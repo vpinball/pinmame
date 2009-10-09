@@ -9,6 +9,8 @@ CFLAGS += -Isrc/$(PINMAMESRC)
 DEFS += -DPINMAME=1 -DMAMEVER=$(MAMEVER)
 # Used in GUI version (PinMAME32)
 DEFS += -DMAME32NAME=\"PINMAME32\" -DMAMENAME=\"PINMAME\"
+# do not compile currently unused function (GCC 3.4)
+DEFS += -DPINMAME_NO_UNUSED=1
 TOOLS=
 
 #

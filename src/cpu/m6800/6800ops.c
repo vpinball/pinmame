@@ -20,7 +20,7 @@ static void illegal( void )
 }
 
 /* HD63701 only */
-#ifndef PINMAME
+#if (HAS_HD63701)
 //INLINE void trap( void )
 static void trap( void )
 {

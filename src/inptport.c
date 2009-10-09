@@ -1501,7 +1501,7 @@ int num_ik = sizeof(input_keywords)/sizeof(struct ik);
 /***************************************************************************/
 /* Generic IO */
 
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int readint(mame_file *f,UINT32 *num)
 {
 	unsigned i;
@@ -1522,7 +1522,7 @@ static int readint(mame_file *f,UINT32 *num)
 }
 #endif
 
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void writeint(mame_file *f,UINT32 num)
 {
 	unsigned i;

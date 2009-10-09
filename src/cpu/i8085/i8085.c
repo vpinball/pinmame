@@ -177,7 +177,7 @@ static void WM(UINT32 a, UINT8 v)
 	cpu_writemem16(a, v);
 }
 
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static	void illegal(void)
 {
 #if VERBOSE

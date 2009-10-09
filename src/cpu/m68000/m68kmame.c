@@ -1326,7 +1326,7 @@ static void m68306_duart_check_int(void);					//Check for a DUART interrupt
 static void duart_start_timer(void);						//Duart Start Timer
 static void duart_timer_callback (int param);				//Duart Timer Callback
 static void m68306_rx_cause_int(int which,int data);		//Generate a Receiver Interrupt
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void m68306_rx_cause_int_channel_a(int data);		//Callback (internal) to fire an Receiver Interrupt
 #endif
 static void m68306_rx_cause_int_channel_b(int data);		//Callback (internal) to fire an Receiver Interrupt
@@ -1784,7 +1784,7 @@ void send_data_to_68306(int data)
 }
 
 //Callback to generate an Receiver Interrupt
-#ifndef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void m68306_rx_cause_int_channel_a(int data) { m68306_rx_cause_int(0,data); }
 #endif
 static void m68306_rx_cause_int_channel_b(int data) { m68306_rx_cause_int(1,data); }
