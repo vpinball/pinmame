@@ -25,10 +25,12 @@ static INTERRUPT_GEN(vblank) {
 }
 
 //Generate the IRQ
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(irq) {
   logerror("%04x: IRQ\n",activecpu_get_previouspc());
   cpu_set_irq_line(0, 0, ASSERT_LINE);
 }
+#endif
 
 static int irq_callback(int int_level) {
   cpu_set_irq_line(0, 0, CLEAR_LINE);
@@ -193,9 +195,11 @@ static SWITCH_UPDATE(splin) {
   }
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(sw_r) {
   return coreGlobals.swMatrix[1+offset];
 }
+#endif
 
 static MEMORY_READ_START(readmem16)
   { 0x00000, 0x0bfff, MRA_RAM },

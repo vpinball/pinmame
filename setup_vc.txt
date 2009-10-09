@@ -67,7 +67,7 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
      Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
      6.0 SP5: (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
               (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
-              http://ftp.maddes.net/vc6/
+              http://ftp.maddes.net/vs6/
      6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
              http://www.infinitefactors.org/jonk/pctools.html
      6.0 SP6: http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713

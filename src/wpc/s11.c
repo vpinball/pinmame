@@ -370,6 +370,7 @@ static WRITE_HANDLER(pia5ca2_w) { /*
     s11cs_reset();
   } */
 }
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(s11_sndCmd_w) {
   static int soundSys = -1; /* 0 = CPU board sound, 1 = Sound board */
   if (soundSys < 0)
@@ -379,10 +380,13 @@ static WRITE_HANDLER(s11_sndCmd_w) {
     soundSys = -1;
   }
 }
+#endif
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(de_sndCmd_w) {
     sndbrd_data_w(1, data); sndbrd_ctrl_w(1,1); sndbrd_ctrl_w(1,0);
 }
+#endif
 
 //NOTE: Not used for Data East
 static WRITE_HANDLER(pia0ca2_w) { sndbrd_0_ctrl_w(0,data); }
@@ -489,8 +493,12 @@ static SWITCH_UPDATE(s11) {
 // S11 is 1-64
 // convert to 0-64 (+8)
 // i.e. 1=8, 2=9...
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int s11_sw2m(int no) { return no+7; }
+#endif
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static int s11_m2sw(int col, int row) { return col*8+row-7; }
+#endif
 
 static MACHINE_INIT(s11) {
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
