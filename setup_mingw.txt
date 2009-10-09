@@ -37,7 +37,7 @@ Step 1: Downloads
      Download MinGW-2.0.0-3.exe to your c:\mingw-setup directory.
      Unfortunately it is not available at the official project homepage anymore.
      Get it from http://www.pinmame.com/downloads.html
-     or from http://ftp.maddes.net/pinball/
+     or from http://ftp.maddes.net/mingw/
 
   b) More recent MinGW setup
      Download the following binary packages to your c:\mingw-setup directory.
@@ -71,7 +71,7 @@ Step 1: Downloads
 - Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
   Binary package:
   * gcc-3.2.3-20030504-1
-  Get it from http://ftp.maddes.net/pinball/gcc-3.2.3-20030504-1.tar.gz
+  Get it from http://ftp.maddes.net/mingw/gcc-3.2.3-20030504-1.tar.gz
   Warning: GCC 3.4 works too, but due to stricter checks more warnings are
            found, so PinMAME only compiles if you remove "-Werror" from the
            makefile. Removing "-Werror" is not recommended!!!
