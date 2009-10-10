@@ -453,7 +453,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 {
 	DWORD disposition = 0, access = 0, sharemode = 0;
 	TCHAR fullpath[1024];
-	LONG upperPos = 0;
+	DWORD upperPos = 0;	// adopted from MAME 0.105
 	osd_file *file;
 	int i;
 
