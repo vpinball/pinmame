@@ -879,7 +879,7 @@ static void emit_reduce_brightness(int count, const UINT8 *reglist, const struct
 
 static void emit_reduce_brightness_mmx(int count, const UINT8 *reglist, const struct win_blit_params *blit, UINT8 **dest)
 {
-	int freelist[16], tempfree[16];
+	int freelist[16] = { 0 }, tempfree[16];
 	int regsize[16] = { 0 };
 	int i, j, shift;
 	UINT32 mask;
