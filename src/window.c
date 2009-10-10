@@ -739,6 +739,12 @@ void win_exit_engine(void)
 {
 	UINT32 x, y, i;
 
+	void *pconv_windows = (void *)p_windows;
+	void *pconv_prio_map = (void *)p_prio_map;
+	void *pconv_shadow_map = (void *)p_shadow_map;
+	void *pconv_text = (void *)p_text;
+	void *pconv_attr = (void *)p_attr;
+
 	/* Clear the screen. This *MUST* be before the shadow map is freed! */
 
 	if( p_windows )
@@ -760,15 +766,15 @@ void win_exit_engine(void)
 	}
 
 	if( p_windows )
-		MyFree((void **) &p_windows, "InitWindowEngine()");
+		MyFree((void **) &pconv_windows, "InitWindowEngine()");
 	if(  p_prio_map )
-		MyFree((void **) &p_prio_map, "InitWindowEngine()");
+		MyFree((void **) &pconv_prio_map, "InitWindowEngine()");
 	if( p_shadow_map )
-		MyFree((void **) &p_shadow_map, "InitWindowEngine()");
+		MyFree((void **) &pconv_shadow_map, "InitWindowEngine()");
 	if( p_text )
-		MyFree((void **) &p_text, "InitWindowEngine()");
+		MyFree((void **) &pconv_text, "InitWindowEngine()");
 	if( p_attr )
-		MyFree((void **) &p_attr, "InitWindowEngine()");
+		MyFree((void **) &pconv_attr, "InitWindowEngine()");
 }
 
 /************************************************************************
