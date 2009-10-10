@@ -482,7 +482,7 @@ int AuditSampleSet (int game, tMissingSample **audit)
 
 	samplenames = NULL;
 #if (HAS_SAMPLES || HAS_VLM5030)
-	for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
+	for( j = 0; j < MAX_SOUND && drv.sound[j].sound_type ; j++ )
 	{
 #if (HAS_SAMPLES)
 		if( drv.sound[j].sound_type == SOUND_SAMPLES )

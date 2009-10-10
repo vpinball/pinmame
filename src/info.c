@@ -574,7 +574,7 @@ static void print_game_sampleof(int OUTPUT_XML, FILE* out, const struct GameDriv
 
 	expand_machine_driver(game->drv, &drv);
 
-	for( i = 0; drv.sound[i].sound_type && i < MAX_SOUND; i++ )
+	for( i = 0; i < MAX_SOUND && drv.sound[i].sound_type; i++ )
 	{
 		const char **samplenames = NULL;
 		if( drv.sound[i].sound_type == SOUND_SAMPLES )
