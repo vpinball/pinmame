@@ -272,7 +272,7 @@ void identify_file(const char* name)
 {
 	FILE *f;
 	int length;
-	char* data;
+	unsigned char* data;	// adopted from MAME 0.105
 	char hash[HASH_BUF_SIZE];
 
 	f = fopen(name,"rb");
@@ -299,7 +299,7 @@ void identify_file(const char* name)
 	}
 
 	/* allocate space for entire file */
-	data = (char*)malloc(length);
+	data = (unsigned char*)malloc(length);	// adopted from MAME 0.105
 	if (!data) {
 		fclose(f);
 		return;
@@ -360,7 +360,7 @@ void identify_zip(const char* zipname)
 			if (!options.crc_only)
 			{
 				UINT8* data =  (UINT8*)malloc(ent->uncompressed_size);
-				readuncompresszip(zip, ent, data);
+				readuncompresszip(zip, ent, (char *)data);
 				hash_compute(hash, data, ent->uncompressed_size, HASH_SHA1);
 				free(data);
 			}
