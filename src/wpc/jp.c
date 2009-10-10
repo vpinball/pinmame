@@ -117,7 +117,7 @@ static void dispStrobe(void) {
   case 7:
     // all comma segments
     for (i=0; i < 32; i++)
-      if (!locals.dispData & (1 << i)) locals.segments[pos[i]].w &= ~0x80;
+      if (!(locals.dispData & (1 << i))) locals.segments[pos[i]].w &= ~0x80;
     break;
   default:
     // all player scores, match & credits displays
