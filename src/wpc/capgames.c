@@ -8,14 +8,14 @@
 
 /*-- DMD 128 X 32 --*/
 const core_tLCDLayout cc_dispDMD128x32[] = {
-  {0,0,32,128,CORE_DMD,(void *)cc_dmd128x32},
-  {33,0,8,16,CORE_DMD|CORE_DMDNOAA|CORE_NODISP,(void *)cc_lamp16x8}, {0}
+  {0,0,32,128,CORE_DMD,(genf *)cc_dmd128x32,NULL},
+  {33,0,8,16,CORE_DMD|CORE_DMDNOAA|CORE_NODISP,(genf *)cc_lamp16x8,NULL}, {0}
 };
 
 /*-- DMD 256 X 64 --*/
 const core_tLCDLayout cc_dispDMD256x64[] = {
-  {0,0,64,256,CORE_DMD,(void *)cc_dmd256x64},
-  {65,0,8,16,CORE_DMD|CORE_DMDNOAA|CORE_NODISP,(void *)cc_lamp16x8}, {0}
+  {0,0,64,256,CORE_DMD,(genf *)cc_dmd256x64,NULL},
+  {65,0,8,16,CORE_DMD|CORE_DMDNOAA|CORE_NODISP,(genf *)cc_lamp16x8,NULL}, {0}
 };
 
 // inverted switches for each game (by game number)

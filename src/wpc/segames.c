@@ -11,7 +11,7 @@ static PINMAME_VIDEO_UPDATE(led_update) {
 }
 
 static struct core_dispLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
+  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
 };
 
 #define INITGAME(name, gen, disp, hw) \
@@ -29,8 +29,8 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 / Apollo 13
 /-------------------------------------------------------------------*/
 static struct core_dispLayout se_apollo[] = {
-  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update},
-  {7,0,  0,  1, CORE_SEG7, (void *)led_update},
+  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL},
+  {7,0,  0,  1, CORE_SEG7, (genf *)led_update, NULL},
   {0}
 };
 INITGAME(apollo13,GEN_WS,se_apollo,SE_DIGIT)
@@ -627,7 +627,7 @@ CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_m
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispHRC[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 15, CORE_DMD, (void *)seminidmd1_update}, {0}
+  {34,10, 7, 15, CORE_DMD, (genf *)seminidmd1_update, NULL}, {0}
 };
 INITGAME(hirolcas,GEN_WS,dispHRC,SE_MINIDMD)
 SE128_ROMSTART(hirolcas,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
@@ -927,7 +927,7 @@ CORE_CLONEDEFNV(playboyl,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,0)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd3_update}, {0}
+  {34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (genf *)seminidmd3_update, NULL}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3)
 SE128_ROMSTART(rctycn, "rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
@@ -1020,7 +1020,7 @@ CORE_CLONEDEFNV(rctycnl,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_m
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10,10,14, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd4_update}, {0}
+  {34,10,10,14, CORE_DMD|CORE_DMDNOAA, (genf *)seminidmd4_update, NULL}, {0}
 };
 static core_tGameData simpprtyGameData = { \
   GEN_WS, dispSPP, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 4, 0, 0, SE_MINIDMD2}}; \
@@ -1291,9 +1291,9 @@ CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mS
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 5, CORE_DMD, (void *)seminidmd1s_update},
-  {34,18, 7, 5, CORE_DMD, (void *)seminidmd1s_update},
-  {34,26, 7, 5, CORE_DMD, (void *)seminidmd1s_update}, {0}
+  {34,10, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL},
+  {34,18, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL},
+  {34,26, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL}, {0}
 };
 INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
 SE128_ROMSTART(ripleys, "ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
