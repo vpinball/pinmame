@@ -295,7 +295,7 @@ static void update_sample_adjustment(int buffered)
 //	copy_sample_data
 //============================================================
 
-static void copy_sample_data(UINT16 *data, int bytes_to_copy)
+static void copy_sample_data(INT16 *data, int bytes_to_copy)	// adopted from MAME 0.105
 {
 	void *buffer1, *buffer2;
 	DWORD length1, length2;
@@ -319,7 +319,7 @@ static void copy_sample_data(UINT16 *data, int bytes_to_copy)
 
 	// adjust for the number of bytes
 	bytes_to_copy -= cur_bytes;
-	data = (UINT16 *)((UINT8 *)data + cur_bytes);
+	data = (INT16 *)((UINT8 *)data + cur_bytes);	// adopted from MAME 0.105
 
 	// copy the second chunk
 	if (bytes_to_copy != 0)
