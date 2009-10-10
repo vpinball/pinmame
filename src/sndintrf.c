@@ -1265,7 +1265,7 @@ logerror("Sound #%d wrong ID %d: check enum SOUND_... in src/sndintrf.h!\n",i,sn
 	if (streams_sh_start() != 0)
 		return 1;
 
-	while (Machine->drv->sound[totalsound].sound_type != 0 && totalsound < MAX_SOUND)
+	while (totalsound < MAX_SOUND && Machine->drv->sound[totalsound].sound_type != 0)
 	{
 		if ((*sndintf[Machine->drv->sound[totalsound].sound_type].start)(&Machine->drv->sound[totalsound]) != 0)
 			goto getout;
@@ -1288,7 +1288,7 @@ void sound_stop(void)
 	int totalsound = 0;
 
 
-	while (Machine->drv->sound[totalsound].sound_type != 0 && totalsound < MAX_SOUND)
+	while (totalsound < MAX_SOUND && Machine->drv->sound[totalsound].sound_type != 0)
 	{
 		if (sndintf[Machine->drv->sound[totalsound].sound_type].stop)
 			(*sndintf[Machine->drv->sound[totalsound].sound_type].stop)();
@@ -1312,7 +1312,7 @@ void sound_update(void)
 
 	profiler_mark(PROFILER_SOUND);
 
-	while (Machine->drv->sound[totalsound].sound_type != 0 && totalsound < MAX_SOUND)
+	while (totalsound < MAX_SOUND && Machine->drv->sound[totalsound].sound_type != 0)
 	{
 		if (sndintf[Machine->drv->sound[totalsound].sound_type].update)
 			(*sndintf[Machine->drv->sound[totalsound].sound_type].update)();
@@ -1334,7 +1334,7 @@ void sound_reset(void)
 	int totalsound = 0;
 
 
-	while (Machine->drv->sound[totalsound].sound_type != 0 && totalsound < MAX_SOUND)
+	while (totalsound < MAX_SOUND && Machine->drv->sound[totalsound].sound_type != 0)
 	{
 		if (sndintf[Machine->drv->sound[totalsound].sound_type].reset)
 			(*sndintf[Machine->drv->sound[totalsound].sound_type].reset)();
