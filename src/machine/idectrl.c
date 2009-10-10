@@ -494,9 +494,10 @@ static void swap_strncpy(UINT8 *dst, const char *src, int field_size_in_words)
 {
 	int i;
 
-	for (i = 0; i < field_size_in_words * 2 && src[i]; i++)
+	// adopted from MAME 0.134
+	for (i = 0; i < strlen(src); i++)
 		dst[i ^ 1] = src[i];
-	for ( ; i < field_size_in_words; i++)
+	for ( ; i < field_size_in_words * 2; i++)
 		dst[i ^ 1] = ' ';
 }
 
