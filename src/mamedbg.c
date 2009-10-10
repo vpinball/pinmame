@@ -1839,8 +1839,8 @@ static int hit_brk_data(void)
 
 	if( DBG.brk_data == INVALID ) return 0;
 
-//Make WP work if viewing internal data
 #ifdef PINMAME
+//Make WP work if viewing internal data
 		if( DBGMEM->internal )
 			data = RDINT( DBG.brk_data );
 		else
@@ -2957,7 +2957,7 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 #ifdef PINMAME
 		//COLOR where STACK currently points!
 		if(activecpu_get_sp()==DBGMEM[which].address)
-			color = cur_col[COLOR_PROMPT*16];
+			color = cur_col[COLOR_PROMPT];	// was [COLOR_PROMPT*16]; there's only 0-15; ToDo: mistake or "special feature"?
 #endif
 
 		win_set_color( win, color );
@@ -4546,7 +4546,7 @@ static void cmd_search_memory(void)
 
 		start = (DBGMEM[which].base + DBGMEM[which].offset) & AMASK;
 
-		for( addr = start + 1; addr != start; addr = ++addr & AMASK )
+		for( addr = start + 1; addr != start; addr = (addr + 1) & AMASK )	// adopted from MAME 0.89
 		{
 			if( (addr & (AMASK >> 8)) == 0 )
 			{
