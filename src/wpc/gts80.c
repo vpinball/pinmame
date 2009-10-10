@@ -680,7 +680,7 @@ core_tLCDLayout GTS80_dispCaveman[] = {
   {0, 0, 2, 7,CORE_SEG98F}, {0,16, 9, 7,CORE_SEG98F},
   {4, 0,22, 7,CORE_SEG98F}, {4,16,29, 7,CORE_SEG98F},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
-  {70,0,240,256,CORE_VIDEO,(void *)caveman_update},{0}
+  {70,0,240,256,CORE_VIDEO,(genf *)caveman_update,NULL},{0}
 };
 
 MACHINE_DRIVER_START(gts80vid)

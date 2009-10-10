@@ -204,14 +204,15 @@ typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
 #define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
-#define DISP_SEG_IMPORT(x) {0,0,0,1,CORE_IMPORT,x}
+#define DISP_SEG_IMPORT(x) {0,0,0,1,CORE_IMPORT,NULL,x}
 /* display layout structure */
 /* Don't know how the LCD got in there. Should have been LED but now it
    handles all kinds of displays so we call it dispLayout.
    Keep the typedef of core_tLCDLayout for some time. */
 struct core_dispLayout {
   UINT16 top, left, start, length, type;
-  void *ptr;
+  genf *fptr;
+  const struct core_dispLayout *lptr;	// for DISP_SEG_IMPORT(x) with flag CORE_IMPORT
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 

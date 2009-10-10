@@ -102,15 +102,15 @@ static struct core_dispLayout de_dispAlpha3[] = { /* 2 X 16 AlphaNumeric Rows */
 };
 
 static struct core_dispLayout de_128x16DMD[] = { /* 128x16 DMD OUTPUT */
-  {0,0,16,128,CORE_DMD,(void *)dedmd16_update}, {0}
+  {0,0,16,128,CORE_DMD,(genf *)dedmd16_update,NULL}, {0}
 };
 
 static struct core_dispLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
-  {0,0,32,128,CORE_DMD,(void *)dedmd32_update}, {0}
+  {0,0,32,128,CORE_DMD,(genf *)dedmd32_update,NULL}, {0}
 };
 
 static struct core_dispLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */
-  {0,0,64,192,CORE_DMD,(void *)dedmd64_update}, {0}
+  {0,0,64,192,CORE_DMD,(genf *)dedmd64_update,NULL}, {0}
 };
 /***************************************************/
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */

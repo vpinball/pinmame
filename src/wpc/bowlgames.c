@@ -51,7 +51,7 @@ static const core_tLCDLayout dispBowl[] = {
 };
 
 static struct core_dispLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
+  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
 };
 
 /*----------------------------
@@ -393,8 +393,8 @@ CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper, L-4)",1993,"Williams",w
 / Strikes n' Spares (#N111)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32},
-  {34,0,32,128,CORE_DMD,(void *)gts3_dmd128x32a},
+  {0,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32,NULL},
+  {34,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32a,NULL},
   {0}
 };
 static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};

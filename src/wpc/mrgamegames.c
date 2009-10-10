@@ -9,12 +9,12 @@
 
 /* 10' Color Video Monitor - Generation #1*/
 core_tLCDLayout mrgame_disp_g1[] = {
-  {0,0,248,256,CORE_VIDEO,(void *)mrgame_update_g1},{0}
+  {0,0,248,256,CORE_VIDEO,(genf *)mrgame_update_g1,NULL},{0}
 };
 
 /* 10' Color Video Monitor - Generation #2*/
 core_tLCDLayout mrgame_disp_g2[] = {
-  {0,0,248,256,CORE_VIDEO,(void *)mrgame_update_g2},{0}
+  {0,0,248,256,CORE_VIDEO,(genf *)mrgame_update_g2,NULL},{0}
 };
 
 

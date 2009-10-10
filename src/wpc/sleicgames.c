@@ -14,7 +14,7 @@
 
 /* Dot-Matrix display (128 x 32) */
 static struct core_dispLayout sleic_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)sleic_dmd_update}, {0}
+  {0,0,32,128,CORE_DMD,(genf *)sleic_dmd_update,NULL}, {0}
 };
 
 /*-------------------------------------------------------------------

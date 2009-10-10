@@ -702,9 +702,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
   for (; layout->length; layout += 1) {
     if (layout->type == CORE_IMPORT)
-      { updateDisplay(bitmap, cliprect, (const struct core_dispLayout *)layout->ptr, pos); continue; }
-    if (layout->ptr)
-      if (((ptPinMAMEvidUpdate)(layout->ptr))(bitmap,cliprect,layout) == 0) continue;
+      { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
+    if (layout->fptr)
+      if (((ptPinMAMEvidUpdate)(layout->fptr))(bitmap,cliprect,layout) == 0) continue;
     {
       int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols+1) / 2;
       int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
@@ -747,7 +747,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-          if (!pmoptions.dmd_only || !layout->ptr)
+          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
@@ -1398,7 +1398,7 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
       if (layout->type & CORE_NODISP) continue;
 #endif
       if (type == CORE_IMPORT)
-        { core_findSize(layout->ptr, maxX, maxY); continue; }
+        { core_findSize(layout->lptr, maxX, maxY); continue; }
       if (type >= CORE_DMD) {
         tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
         tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;

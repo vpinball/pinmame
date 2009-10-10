@@ -74,7 +74,7 @@ const struct core_dispLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16R),DISP_SEG_16(1,CORE_SEG16R),{0}
 };
 const struct core_dispLayout wpc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)wpcdmd_update}, {0}
+  {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update,NULL}, {0}
 };
 
 /*------------------
