@@ -1931,6 +1931,16 @@ static long WINAPI MameWindowProc(HWND hWnd, UINT message, UINT wParam, LONG lPa
 {
 	MINMAXINFO	*mminfo;
 	int 		i;
+#if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
+	POINTS		p;
+#endif
+
+#if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
+	p.x = LOWORD(lParam);
+	p.y = HIWORD(lParam);
+#else
+	p = MAKEPOINTS(lParam);
+#endif
 
 	switch (message)
 	{
@@ -2100,7 +2110,7 @@ static long WINAPI MameWindowProc(HWND hWnd, UINT message, UINT wParam, LONG lPa
 		return 0;
 
 	case WM_LBUTTONDOWN:
-		OnLButtonDown(hWnd, (UINT)wParam, MAKEPOINTS(lParam));
+		OnLButtonDown(hWnd, (UINT)wParam, p);
 		break;
 
 		/*
@@ -2124,19 +2134,19 @@ static long WINAPI MameWindowProc(HWND hWnd, UINT message, UINT wParam, LONG lPa
 			ShowCursor(TRUE);
 
 	    if (g_listview_dragging)
-		   MouseMoveListViewDrag(MAKEPOINTS(lParam));
+		   MouseMoveListViewDrag(p);
 		else
 		   /* for splitters */
-		   OnMouseMove(hWnd, (UINT)wParam, MAKEPOINTS(lParam));
+		   OnMouseMove(hWnd, (UINT)wParam, p);
 		break;
 	}
 
 	case WM_LBUTTONUP:
 	    if (g_listview_dragging)
-		    ButtonUpListViewDrag(MAKEPOINTS(lParam));
+		    ButtonUpListViewDrag(p);
 		else
 		   /* for splitters */
-		   OnLButtonUp(hWnd, (UINT)wParam, MAKEPOINTS(lParam));
+		   OnLButtonUp(hWnd, (UINT)wParam, p);
 		break;
 
 	case WM_NOTIFY:
@@ -2209,6 +2219,7 @@ static BOOL PumpAndReturnMessage(MSG *pmsg)
 	return TRUE;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void EmptyQueue(void)
 {
 	MSG msg;
@@ -2219,6 +2230,7 @@ static void EmptyQueue(void)
 			ExitProcess(0);
 	}
 }
+#endif
 
 static void SortListView(void)
 {
@@ -2233,6 +2245,7 @@ static void SortListView(void)
 	ListView_EnsureVisible(hwndList, ListView_FindItem(hwndList, -1, &lvfi), FALSE);
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static BOOL IsGameRomless(int iGame)
 {
 	const struct RomModule *region, *rom;
@@ -2244,6 +2257,7 @@ static BOOL IsGameRomless(int iGame)
 
 	return TRUE;
 }
+#endif
 
 static BOOL GameCheck(void)
 {
@@ -2817,7 +2831,12 @@ static BOOL PickerHitTest(HWND hWnd)
 	LVHITTESTINFO	htInfo;
 
     ZeroMemory(&htInfo,sizeof(LVHITTESTINFO));
+#if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
+	p.x = LOWORD(res);
+	p.y = HIWORD(res);
+#else
 	p = MAKEPOINTS(res);
+#endif
 	GetWindowRect(hWnd, &rect);
 	htInfo.pt.x = p.x - rect.left;
 	htInfo.pt.y = p.y - rect.top;
@@ -4276,6 +4295,7 @@ static void CreateIcons(void)
 	HICON hIcon;
 	int icon_count;
 	DWORD dwStyle;
+	HIMAGELIST hList;
 
 	icon_count = 0;
 	while(g_iconData[icon_count].icon_name)
@@ -4300,8 +4320,8 @@ static void CreateIcons(void)
 	ReloadIcons();
 
 	// Associate the image lists with the list view control.
-	ListView_SetImageList(hwndList, hSmall, LVSIL_SMALL);
-	ListView_SetImageList(hwndList, hLarge, LVSIL_NORMAL);
+	hList = ListView_SetImageList(hwndList, hSmall, LVSIL_SMALL);
+	hList = ListView_SetImageList(hwndList, hLarge, LVSIL_NORMAL);
 
 	// restore our view
 	SetWindowLong(hwndList,GWL_STYLE,dwStyle);
@@ -4313,7 +4333,7 @@ static void CreateIcons(void)
 	ImageList_AddIcon(hHeaderImages,hIcon);
 
 	header = ListView_GetHeader(hwndList);
-	Header_SetImageList(header,hHeaderImages);
+	hList = Header_SetImageList(header,hHeaderImages);
 
 }
 
@@ -5068,6 +5088,7 @@ static BOOL HandleTreeContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	HMENU hMenu;
 	TVHITTESTINFO hti;
 	POINT pt;
+	HTREEITEM hTreeItem;
 
 	if ((HWND)wParam != GetDlgItem(hWnd, IDC_TREE))
 		return FALSE;
@@ -5080,7 +5101,7 @@ static BOOL HandleTreeContextMenu(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	/* select the item that was right clicked or shift-F10'ed */
 	hti.pt = pt;
 	ScreenToClient(hTreeView,&hti.pt);
-	TreeView_HitTest(hTreeView,&hti);
+	hTreeItem = TreeView_HitTest(hTreeView,&hti);
 	if ((hti.flags & TVHT_ONITEM) != 0)
 		TreeView_SelectItem(hTreeView,hti.hItem);
 
@@ -5540,6 +5561,10 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	int         order[COLUMN_MAX];
 	BOOL draw_as_clone;
 	int indent_space;
+	WPARAM		rcAllLabelsaddr = (WPARAM)(&rcAllLabels);
+	WPARAM		rcLabeladdr = (WPARAM)(&rcLabel);
+	WPARAM		rcIconaddr = (WPARAM)(&rcIcon);
+	WPARAM		rcItemaddr = (WPARAM)(&rcItem);
 
 	nColumnMax = GetNumColumns(hwndList);
 
@@ -5586,9 +5611,9 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	/* figure out if we indent and draw grayed */
 	draw_as_clone = (GetViewMode() == VIEW_GROUPED && DriverIsClone(lvi.lParam));
 
-	ListView_GetItemRect(hwndList, nItem, &rcAllLabels, LVIR_BOUNDS);
+	ListView_GetItemRect(hwndList, nItem, rcAllLabelsaddr, LVIR_BOUNDS);
 
-	ListView_GetItemRect(hwndList, nItem, &rcLabel, LVIR_LABEL);
+	ListView_GetItemRect(hwndList, nItem, rcLabeladdr, LVIR_LABEL);
 	rcAllLabels.left = rcLabel.left;
 
 	if (hBackground != NULL)
@@ -5600,6 +5625,7 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		HPALETTE	hPAL;
 		HDC 		htempDC;
 		HBITMAP 	oldBitmap;
+		WPARAM		rcFirstItemaddr = (WPARAM)(&rcFirstItem);
 
 		htempDC = CreateCompatibleDC(hDC);
 
@@ -5626,7 +5652,7 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			RealizePalette(htempDC);
 		}
 
-		ListView_GetItemRect(hwndList, 0, &rcFirstItem, LVIR_BOUNDS);
+		ListView_GetItemRect(hwndList, 0, rcFirstItemaddr, LVIR_BOUNDS);
 
 		for (i = rcFirstItem.left; i < rcClient.right; i += bmDesc.bmWidth)
 			for (j = rcFirstItem.top; j < rcClient.bottom; j += bmDesc.bmHeight)
@@ -5646,8 +5672,10 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	if (draw_as_clone)
 	{
-		RECT rect;
-		ListView_GetItemRect(hwndList, nItem, &rect, LVIR_ICON);
+		RECT	rect;
+		WPARAM	rectaddr = (WPARAM)(&rect);
+
+		ListView_GetItemRect(hwndList, nItem, rectaddr, LVIR_ICON);
 
 		/* indent width of icon + the space between the icon and text
 		 * so left of clone icon starts at text of parent
@@ -5726,11 +5754,11 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 			ImageList_Draw(hImageList, nImage, hDC, rcItem.left, rcItem.top, ILD_TRANSPARENT);
 	}
 
-	ListView_GetItemRect(hwndList, nItem, &rcIcon, LVIR_ICON);
+	ListView_GetItemRect(hwndList, nItem, rcIconaddr, LVIR_ICON);
 
 	rcIcon.left += indent_space;
 
-	ListView_GetItemRect(hwndList, nItem, &rcItem, LVIR_LABEL);
+	ListView_GetItemRect(hwndList, nItem, rcItemaddr, LVIR_LABEL);
 
 	hImageList = ListView_GetImageList(hwndList, LVSIL_SMALL);
 	if (hImageList)
@@ -5743,7 +5771,7 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		}
 	}
 
-	ListView_GetItemRect(hwndList, nItem, &rcItem, LVIR_LABEL);
+	ListView_GetItemRect(hwndList, nItem, rcItemaddr, LVIR_LABEL);
 
 	pszText = MakeShortString(hDC, szBuff, rcItem.right - rcItem.left, 2*offset + indent_space);
 
