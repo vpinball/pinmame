@@ -34,7 +34,7 @@ INIT_S1(gts1, sys1_disp) GTS1_ROMEND
 GAMEX(1977,gts1,0,GTS1C,gts1,gts1,ROT0,"Gottlieb","System 1",NOT_A_DRIVER)
 
 INIT_S1S(gts1s, sys1_disp) GTS1_ROMEND
-GAMEX(1979,gts1s,gts1,GTS1S80,gts1,gts1,ROT0,"Gottlieb","System 1 with sound board",NOT_A_DRIVER)
+GAMEX(1979,gts1s,gts1,GTS1S80,gts1s,gts1s,ROT0,"Gottlieb","System 1 with sound board",NOT_A_DRIVER)
 
 /*-------------------------------------------------------------------
 / Cleopatra (11/1977)
