@@ -8,8 +8,11 @@ The file "src\windows\setup.txt" is the original text delivered by MAME and is
 out of date. Please ignore it.
 
 PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
-It has been maintained to compile with more recent MinGW packages too, but
-GCC 3.2 is still mandatory.
+It has been maintained to compile with more recent MinGW packages too, and has
+been tested to work well with GCC 4.4.
+Note that other GCC versions are not tested and may throw some warnings or
+errors which stop the build process, hence it is recommended to either use
+either 3.2 or 4.4.
 
 This guide will show you how to setup MinGW in version 2.0 and a setup with more
 recent MinGW packages, so you can compile PinMAME and PinMAME32.
@@ -25,6 +28,7 @@ The ZLib homepage is available at http://www.zlib.net/
 The NASM homepage is available at http://nasm.sourceforge.net/
 The GCC manuals are available at http://gcc.gnu.org/onlinedocs/
 The Make manual is available at http://www.gnu.org/software/make/manual/
+The 7-Zip homepage is available at http://www.7-zip.org/
 
 
 -----------------
@@ -39,6 +43,12 @@ Step 1: Downloads
      Get it from http://www.pinmame.com/downloads.html
      or from http://ftp.maddes.net/mingw/
 
+     For a real original MinGW 2.0 setup download the latest version of GCC 3.2
+     for MinGW to your c:\mingw-setup directory.
+     Binary package:
+     * gcc-3.2.3-20030504-1
+     Get it from http://ftp.maddes.net/mingw/gcc-3.2.3-20030504-1.tar.gz
+
   b) More recent MinGW setup
      Download the following binary packages to your c:\mingw-setup directory.
      The packages carry the version numbers as of the date of testing, but newer
@@ -51,30 +61,17 @@ Step 1: Downloads
      * make-3.81-20090914-mingw32-bin
      * w32api-3.13-mingw32-dev
      * libz-1.2.3-1-mingw32-dev
-
-     (MinGW 5 tested in March 2009)
-     * mingwrt-3.15.2-mingw32-dll
-     * mingwrt-3.15.2-mingw32-dev
-     * binutils-2.19.1-mingw32-bin
-     * mingw32-make-3.81-20080326-3
-     * w32api-3.13-dev
+     * gcc-full-4.4.0-mingw32-bin-2
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
+     * (plus gcc-3.2.3-20030504-1 from MinGW 2.0 setup above)
 
      Get them from http://sourceforge.net/projects/mingw/files/
             and/or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
-
-- Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
-  Binary package:
-  * gcc-3.2.3-20030504-1
-  Get it from http://ftp.maddes.net/mingw/gcc-3.2.3-20030504-1.tar.gz
-  Warning: GCC 3.4 works too, but due to stricter checks more warnings are
-           found, so PinMAME only compiles if you remove "-Werror" from the
-           makefile. Removing "-Werror" is not recommended!!!
 
 - Download the latest version of Allegro's DirectX includes for MinGW to your c:\mingw-setup directory.
   Package:
@@ -112,9 +109,13 @@ Step 2: Setup
   a) MinGW 2.0
      Run the MinGW installer; install to a logical path, for example c:\mingw
 
+     Extract the GCC 3.2 binary package to your to c:\mingw directory.
+     Some files must be overwritten (e.g. "bin\c++filt.exe")
+
   b) More recent MinGW setup
      Create a directory to hold your MinGW installation; for example, c:\mingw
      Extract all binary packages of MinGW to your c:\mingw directory.
+     Use 7-Zip to unpack any lzma archive first.
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll
@@ -123,23 +124,14 @@ Step 2: Setup
      * make-3.81-20090914-mingw32-bin
      * w32api-3.13-mingw32-dev
      * libz-1.2.3-1-mingw32-dev
-
-     (MinGW 5 tested in March 2009)
-     * mingwrt-3.15.2-mingw32-dll (for the DLL itself)
-     * mingwrt-3.15.2-mingw32-dev (for includes and libs)
-     * binutils-2.19.1-mingw32-bin
-     * mingw32-make-3.81-20080326-3
-     * w32api-3.13-src (Warning! Creates an extra subfolder, so files have to be moved up)
-     * w32api-3.13-dev
+     * gcc-full-4.4.0-mingw32-bin-2
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
-
-- Extract the GCC 3.2 binary package to your to c:\mingw directory.
-  Some files must be overwritten (e.g. "bin\c++filt.exe")
+     * (plus gcc-3.2.3-20030504-1 from MinGW 2.0 setup above)
 
 - Extract Allegro's DirectX includes to your to c:\mingw directory.
 
