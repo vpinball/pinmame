@@ -89,12 +89,12 @@ ROM_START(name) \
 INIT_S80(gts80, dispNumeric1, SNDBRD_GTS80SS) GTS80_ROMEND
 GAMEX(1981,gts80,0,gts80ss,gts80,gts80,ROT0,"Gottlieb","System 80 with speech board",NOT_A_DRIVER)
 INIT_S80(gts80s, dispNumeric1, SNDBRD_GTS80S) GTS80_ROMEND
-GAMEX(1980,gts80s,gts80,gts80s,gts80,gts80,ROT0,"Gottlieb","System 80",NOT_A_DRIVER)
+GAMEX(1980,gts80s,gts80,gts80s,gts80,gts80s,ROT0,"Gottlieb","System 80",NOT_A_DRIVER)
 
 INIT_S80A(gts80a, dispNumeric3, SNDBRD_GTS80SS, 0) GTS80_ROMEND
-GAMEX(1981,gts80a,0,gts80ss,gts80,gts80,ROT0,"Gottlieb","System 80A with speech board",NOT_A_DRIVER)
+GAMEX(1981,gts80a,0,gts80ss,gts80,gts80a,ROT0,"Gottlieb","System 80A with speech board",NOT_A_DRIVER)
 INIT_S80A(gts80as, dispNumeric3, SNDBRD_GTS80S, 0) GTS80_ROMEND
-GAMEX(1981,gts80as,gts80a,gts80s,gts80,gts80,ROT0,"Gottlieb","System 80A",NOT_A_DRIVER)
+GAMEX(1981,gts80as,gts80a,gts80s,gts80,gts80as,ROT0,"Gottlieb","System 80A",NOT_A_DRIVER)
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
