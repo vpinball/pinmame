@@ -122,7 +122,9 @@ static const char * FixString(const char *s);
 static const char * LicenseManufacturer(const char *s);
 static void CreateAllChildFolders(void);
 static BOOL         AddFolder(LPTREEFOLDER lpFolder);
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static BOOL         RemoveFolder(LPTREEFOLDER lpFolder);
+#endif
 static LPTREEFOLDER NewFolder(const char *lpTitle,
                               UINT nFolderId, int nParent, UINT nIconId,
                               DWORD dwFlags);
@@ -816,6 +818,7 @@ static BOOL AddFolder(LPTREEFOLDER lpFolder)
 	return TRUE;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 /* Remove a folder from the list, but do NOT delete it */
 static BOOL RemoveFolder(LPTREEFOLDER lpFolder)
 {
@@ -841,6 +844,7 @@ static BOOL RemoveFolder(LPTREEFOLDER lpFolder)
 	}
 	return (found != -1) ? TRUE : FALSE;
 }
+#endif
 
 /* Allocate and initialize a NEW TREEFOLDER */
 static LPTREEFOLDER NewFolder(const char *lpTitle,
@@ -1030,6 +1034,7 @@ static BOOL CreateTreeIcons()
 	HICON	hIcon;
 	INT 	i;
 	HINSTANCE hInst = GetModuleHandle(0);
+	HIMAGELIST hList;
 
 	int numIcons = ICON_MAX + numExtraIcons;
 
@@ -1080,7 +1085,7 @@ static BOOL CreateTreeIcons()
 	}
 
 	// Associate the image lists with the list view control.
-	TreeView_SetImageList(GetTreeView(), hTreeSmall, TVSIL_NORMAL);
+	hList = TreeView_SetImageList(GetTreeView(), hTreeSmall, TVSIL_NORMAL);
 
 	return TRUE;
 }
@@ -1127,6 +1132,7 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HBITMAP hOldHBitmap;
 		int i, j;
 		RECT rcRoot;
+		WPARAM rcRootaddr = (WPARAM)(&rcRoot);
 
 		// Now create a mask
 		maskDC = CreateCompatibleDC(hDC);	
@@ -1165,7 +1171,7 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		
 		// Get x and y offset
-		TreeView_GetItemRect(hWnd, TreeView_GetRoot(hWnd), &rcRoot, FALSE);
+		TreeView_GetItemRect(hWnd, TreeView_GetRoot(hWnd), rcRootaddr, FALSE);
 		rcRoot.left = -GetScrollPos(hWnd, SB_HORZ);
 
 		// Draw bitmap in tiled manner to imageDC
