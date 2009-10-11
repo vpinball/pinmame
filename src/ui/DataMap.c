@@ -75,6 +75,8 @@ void PopulateControls(HWND hWnd)
 
 	for (i = 0; i < numCtrls; i++)
 	{
+		int idx;
+
 		lpDmap = &dataMap[i];
 		hCtrl = GetDlgItem(hWnd, lpDmap->dwCtrlId);
 		if (hCtrl == 0)
@@ -87,7 +89,7 @@ void PopulateControls(HWND hWnd)
 			break;
 
 		case CT_COMBOBOX:
-			ComboBox_SetCurSel(hCtrl, lpDmap->nValue);
+			idx = ComboBox_SetCurSel(hCtrl, lpDmap->nValue);
 			break;
 
 		case CT_SLIDER:
@@ -196,11 +198,13 @@ static BOOL validate(HWND hCtrl, DATA_MAP *lpDmap)
 		{
 			if (lpDmap->nValue < lpDmap->nMin && lpDmap->nValue > lpDmap->nMax)
 			{
+				int idx;
+
 				lpDmap->nValue = *lpDmap->nVar;
 				switch (lpDmap->cType)
 				{
 				case CT_COMBOBOX:
-					ComboBox_SetCurSel(hCtrl, lpDmap->nValue);
+					idx = ComboBox_SetCurSel(hCtrl, lpDmap->nValue);
 					break;
 
 				case CT_SLIDER:

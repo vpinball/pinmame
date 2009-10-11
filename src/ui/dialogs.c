@@ -372,11 +372,12 @@ INT_PTR CALLBACK AddCustomFileDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPA
 		TVITEM tvi;
 		BOOL first_entry = TRUE;
 		HIMAGELIST treeview_icons = GetTreeViewIconList();
+		HIMAGELIST hList;
 
 		// current game passed in using DialogBoxParam()
 		driver_index = lParam;
 
-		TreeView_SetImageList(GetDlgItem(hDlg,IDC_CUSTOM_TREE), treeview_icons, LVSIL_NORMAL);
+		hList = TreeView_SetImageList(GetDlgItem(hDlg,IDC_CUSTOM_TREE), treeview_icons, LVSIL_NORMAL);
 
 		GetFolders(&folders,&num_folders);
 

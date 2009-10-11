@@ -279,10 +279,12 @@ static BOOL Directories_OnInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam)
 
 	for (i = nDirInfoCount - 1; i >= 0; i--)
 	{
-		ComboBox_InsertString(GetDlgItem(hDlg, IDC_DIR_COMBO), 0, g_directoryInfo[i].lpName);
+		int idx;
+
+		idx = ComboBox_InsertString(GetDlgItem(hDlg, IDC_DIR_COMBO), 0, g_directoryInfo[i].lpName);
 	}
 
-	ComboBox_SetCurSel(GetDlgItem(hDlg, IDC_DIR_COMBO), 0);
+	i = ComboBox_SetCurSel(GetDlgItem(hDlg, IDC_DIR_COMBO), 0);
 
 	GetClientRect(GetDlgItem(hDlg, IDC_DIR_LIST), &rectClient);
 
