@@ -610,7 +610,7 @@ int frontend_help (const char *gamename)
 				{
 					expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
-					for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
+					for( j = 0; j < MAX_SOUND && drv.sound[j].sound_type; j++ )
 					{
 						const char **samplenames = NULL;
 #if (HAS_SAMPLES)
@@ -649,7 +649,7 @@ int frontend_help (const char *gamename)
 #if (HAS_SAMPLES || HAS_VLM5030)
 				int k;
 				expand_machine_driver(gamedrv->drv, &drv);
-				for( k = 0; drv.sound[k].sound_type && k < MAX_SOUND; k++ )
+				for( k = 0; k < MAX_SOUND && drv.sound[k].sound_type; k++ )
 				{
 					const char **samplenames = NULL;
 #if (HAS_SAMPLES)
@@ -898,7 +898,7 @@ int frontend_help (const char *gamename)
 						const char **samplenames = NULL;
 						expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
-						for (j = 0;drv.sound[j].sound_type && j < MAX_SOUND; j++)
+						for (j = 0;j < MAX_SOUND && drv.sound[j].sound_type; j++)
 						{
 #if (HAS_SAMPLES)
 							if (drv.sound[j].sound_type == SOUND_SAMPLES)
@@ -1684,7 +1684,7 @@ j = 0;	// count only the main cpu
 				const char **samplenames = NULL;
 				expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
- 				for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
+ 				for( j = 0; j < MAX_SOUND && drv.sound[j].sound_type; j++ )
 				{
 #if (HAS_SAMPLES)
  					if( drv.sound[j].sound_type == SOUND_SAMPLES )

@@ -347,7 +347,7 @@ BOOL DriverUsesSamples(int driver_index)
 
 	expand_machine_driver(drivers[driver_index]->drv,&drv);
 
-	for (i = 0; drv.sound[i].sound_type && i < MAX_SOUND; i++)
+	for (i = 0; i < MAX_SOUND && drv.sound[i].sound_type ; i++)
 	{
 		const char **samplenames = NULL;
 
