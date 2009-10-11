@@ -39,7 +39,9 @@
     function prototypes
 ***************************************************************************/
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static BOOL     DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal);
+#endif
 
 static BOOL     AllocatePNG(struct png_info *p, HGLOBAL *phDIB, HPALETTE* pPal);
 
@@ -73,6 +75,7 @@ BOOL ScreenShotLoaded(void)
 	return m_hDDB != NULL;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 /* Draw a DIB on the screen. It will scale the bitmap
  * to the area associated with the passed in HWND handle.
  * Returns TRUE for success
@@ -131,7 +134,7 @@ static BOOL DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal)
 
 	return (nResults) ? TRUE : FALSE;
 }
-
+#endif
 
 
 #ifdef MESS
