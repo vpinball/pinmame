@@ -1931,9 +1931,7 @@ static long WINAPI MameWindowProc(HWND hWnd, UINT message, UINT wParam, LONG lPa
 {
 	MINMAXINFO	*mminfo;
 	int 		i;
-#if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
 	POINTS		p;
-#endif
 
 #if defined(__GNUC__)	// MAKEPOINTS macro workaround (gcc 4.4.0)
 	p.x = LOWORD(lParam);
