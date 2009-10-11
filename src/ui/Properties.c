@@ -132,7 +132,9 @@ static void DMDANTIALIASSelectionChange(HWND hwnd);
 static void BuildDataMap(void);
 static void ResetDataMap(void);
 
+#ifdef RED_TEST
 static BOOL IsControlDefaultValue(HWND hDlg,HWND hwnd_ctrl);
+#endif
 
 /**************************************************************
  * Local private variables
@@ -316,10 +318,12 @@ DWORD GetHelpIDs(void)
 	return (DWORD) (LPSTR) dwHelpIDs;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
 {
 	// throw it away
 }
+#endif
 
 static PROPSHEETPAGE *CreatePropSheetPages(HINSTANCE hInst, BOOL bOnlyDefault,
 	const struct GameDriver *gamedrv, UINT *pnMaxPropSheets)
@@ -703,6 +707,7 @@ INT_PTR CALLBACK GamePropertiesDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LP
     return 0;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static BOOL ReadSkipCtrl(HWND hWnd, UINT nCtrlID, int *value)
 {
 	HWND hCtrl;
@@ -720,6 +725,7 @@ static BOOL ReadSkipCtrl(HWND hWnd, UINT nCtrlID, int *value)
 
 	return (nValue == *value) ? FALSE : TRUE;
 }
+#endif
 
 /* Handle all options property pages */
 INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -1126,6 +1132,8 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 	int  w = 0;
 	int  n = 0;
 	int  d = 0;
+	int  result;
+	int  count;
 
 	g_bInternalSet = TRUE;
 
@@ -1152,7 +1160,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		if (w == 0 && h == 0)
 		{
 			/* default to auto */
-			ComboBox_SetCurSel(hCtrl, 0);
+			result = ComboBox_SetCurSel(hCtrl, 0);
 		}
 		else
 		{
@@ -1168,7 +1176,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 				int nWidth, nHeight;
 
 				/* Get the screen size */
-				ComboBox_GetLBText(hCtrl, nCount, buf);
+				count = ComboBox_GetLBText(hCtrl, nCount, buf);
 
 				if (sscanf(buf, "%d x %d", &nWidth, &nHeight) == 2)
 				{
@@ -1181,7 +1189,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 					}
 				}
 			}
-			ComboBox_SetCurSel(hCtrl, nSelection);
+			result = ComboBox_SetCurSel(hCtrl, nSelection);
 		}
 	}
 
@@ -1192,7 +1200,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		if (d == 0)
 		{
 			/* default to auto */
-			ComboBox_SetCurSel(hCtrl, 0);
+			result = ComboBox_SetCurSel(hCtrl, 0);
 		}
 		else
 		{
@@ -1217,7 +1225,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 					break;
 				}
 			}
-			ComboBox_SetCurSel(hCtrl, nSelection);
+			result = ComboBox_SetCurSel(hCtrl, nSelection);
 		}
 	}
 
@@ -1228,7 +1236,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		if (o->gfx_refresh == 0)
 		{
 			/* default to auto */
-			ComboBox_SetCurSel(hCtrl, 0);
+			result = ComboBox_SetCurSel(hCtrl, 0);
 		}
 		else
 		{
@@ -1253,7 +1261,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 					break;
 				}
 			}
-			ComboBox_SetCurSel(hCtrl, nSelection);
+			result = ComboBox_SetCurSel(hCtrl, nSelection);
 		}
 	}
 
@@ -1367,7 +1375,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 
 		while (0 < nCount--)
 		{
-			ComboBox_GetLBText(hCtrl, nCount, buf);
+			count = ComboBox_GetLBText(hCtrl, nCount, buf);
 
 			if (_stricmp (buf,o->ctrlr) == 0)
 			{
@@ -1375,7 +1383,7 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 			}
 		}
 
-		ComboBox_SetCurSel(hCtrl, g_nInputIndex);
+		result = ComboBox_SetCurSel(hCtrl, g_nInputIndex);
 	}
 
 #ifdef MESS
@@ -1646,6 +1654,7 @@ static void AssignRotate(HWND hWnd)
 static void AssignInput(HWND hWnd)
 {
 	int new_length;
+	int count;
 
 	FreeIfAllocated(&pGameOpts->ctrlr);
 
@@ -1656,7 +1665,7 @@ static void AssignInput(HWND hWnd)
 		return;
 	}
 	pGameOpts->ctrlr = (char *)malloc(new_length + 1);
-	ComboBox_GetLBText(hWnd, g_nInputIndex, pGameOpts->ctrlr);
+	count = ComboBox_GetLBText(hWnd, g_nInputIndex, pGameOpts->ctrlr);
 }
 
 static void AssignEffect(HWND hWnd)
@@ -1669,6 +1678,7 @@ static void AssignEffect(HWND hWnd)
 }
 
 #ifdef PINMAME
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static void AssignDMDRed(HWND hWnd)
 {
 	pGameOpts->dmd_red = g_nDMDRedIndex;
@@ -1697,6 +1707,7 @@ static void AssignDMDAntialias(HWND hWnd)
 {
 	pGameOpts->dmd_antialias = g_nDMDAntialiasIndex;
 }
+#endif
 #endif /* PINMAME */
 
 /************************************************************
@@ -1886,6 +1897,7 @@ static void BuildDataMap(void)
 
 }
 
+#ifdef RED_TEST
 BOOL IsControlDefaultValue(HWND hDlg,HWND hwnd_ctrl)
 {
 	int control_id = GetControlID(hDlg,hwnd_ctrl);
@@ -1954,6 +1966,7 @@ BOOL IsControlDefaultValue(HWND hDlg,HWND hwnd_ctrl)
 
 	return TRUE;
 }
+#endif
 
 static void SetStereoEnabled(HWND hWnd, int nIndex)
 {
@@ -2601,6 +2614,8 @@ static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh)
 	int                   nSelection = 0;
 	DWORD                 w = 0, h = 0;
 	HWND                  hCtrl = GetDlgItem(hwnd, IDC_SIZES);
+	int                   result;
+	int                   idx;
 
 	if (!hCtrl)
 		return;
@@ -2618,9 +2633,9 @@ static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh)
 	}
 
 	/* Remove all items in the list. */
-	ComboBox_ResetContent(hCtrl);
+	result = ComboBox_ResetContent(hCtrl);
 
-	ComboBox_AddString(hCtrl, "Auto");
+	idx = ComboBox_AddString(hCtrl, "Auto");
 
 	pDisplayModes = DirectDraw_GetDisplayModes();
 
@@ -2634,7 +2649,7 @@ static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh)
 
 			if (ComboBox_FindString(hCtrl, 0, buf) == CB_ERR)
 			{
-				ComboBox_AddString(hCtrl, buf);
+				idx = ComboBox_AddString(hCtrl, buf);
 				nCount++;
 
 				if (w == pDisplayModes->m_Modes[i].m_dwWidth
@@ -2644,7 +2659,7 @@ static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh)
 		}
 	}
 
-	ComboBox_SetCurSel(hCtrl, nSelection);
+	result = ComboBox_SetCurSel(hCtrl, nSelection);
 }
 
 /* Initialize the Display options to auto mode */
@@ -2657,14 +2672,16 @@ static void InitializeDisplayModeUI(HWND hwnd)
 static void InitializeSoundUI(HWND hwnd)
 {
 	HWND    hCtrl;
+	int     idx;
+	int     result;
 
 	hCtrl = GetDlgItem(hwnd, IDC_SAMPLERATE);
 	if (hCtrl)
 	{
-		ComboBox_AddString(hCtrl, "11025");
-		ComboBox_AddString(hCtrl, "22050");
-		ComboBox_AddString(hCtrl, "44100");
-		ComboBox_SetCurSel(hCtrl, 1);
+		idx = ComboBox_AddString(hCtrl, "11025");
+		idx = ComboBox_AddString(hCtrl, "22050");
+		idx = ComboBox_AddString(hCtrl, "44100");
+		result = ComboBox_SetCurSel(hCtrl, 1);
 	}
 }
 
@@ -2672,21 +2689,22 @@ static void InitializeSoundUI(HWND hwnd)
 static void InitializeSkippingUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_FRAMESKIP);
+	int  idx;
 
 	if (hCtrl)
 	{
-		ComboBox_AddString(hCtrl, "Draw every frame");
-		ComboBox_AddString(hCtrl, "Skip 1 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 2 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 3 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 4 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 5 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 6 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 7 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 8 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 9 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 10 of 12 frames");
-		ComboBox_AddString(hCtrl, "Skip 11 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Draw every frame");
+		idx = ComboBox_AddString(hCtrl, "Skip 1 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 2 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 3 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 4 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 5 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 6 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 7 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 8 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 9 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 10 of 12 frames");
+		idx = ComboBox_AddString(hCtrl, "Skip 11 of 12 frames");
 	}
 }
 
@@ -2694,15 +2712,16 @@ static void InitializeSkippingUI(HWND hwnd)
 static void InitializeRotateUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_ROTATE);
+	int  idx;
 
 	if (hCtrl)
 	{
-		ComboBox_AddString(hCtrl, "Default");             // 0
-		ComboBox_AddString(hCtrl, "Clockwise");           // 1
-		ComboBox_AddString(hCtrl, "Anti-clockwise");      // 2
-		ComboBox_AddString(hCtrl, "None");                // 3
-		ComboBox_AddString(hCtrl, "Auto clockwise");      // 4
-		ComboBox_AddString(hCtrl, "Auto anti-clockwise"); // 5
+		idx = ComboBox_AddString(hCtrl, "Default");             // 0
+		idx = ComboBox_AddString(hCtrl, "Clockwise");           // 1
+		idx = ComboBox_AddString(hCtrl, "Anti-clockwise");      // 2
+		idx = ComboBox_AddString(hCtrl, "None");                // 3
+		idx = ComboBox_AddString(hCtrl, "Auto clockwise");      // 4
+		idx = ComboBox_AddString(hCtrl, "Auto anti-clockwise"); // 5
 	}
 }
 
@@ -2710,6 +2729,8 @@ static void InitializeRotateUI(HWND hwnd)
 static void InitializeResDepthUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_RESDEPTH);
+	int  result;
+	int  idx;
 
 	if (hCtrl)
 	{
@@ -2718,10 +2739,10 @@ static void InitializeResDepthUI(HWND hwnd)
 		int i;
 
 		/* Remove all items in the list. */
-		ComboBox_ResetContent(hCtrl);
+		result = ComboBox_ResetContent(hCtrl);
 
-		ComboBox_AddString(hCtrl, "Auto");
-		ComboBox_SetItemData(hCtrl, nCount++, 0);
+		idx = ComboBox_AddString(hCtrl, "Auto");
+		result = ComboBox_SetItemData(hCtrl, nCount++, 0);
 
 		pDisplayModes = DirectDraw_GetDisplayModes();
 
@@ -2737,8 +2758,8 @@ static void InitializeResDepthUI(HWND hwnd)
 
 				if (ComboBox_FindString(hCtrl, 0, buf) == CB_ERR)
 				{
-					ComboBox_InsertString(hCtrl, nCount, buf);
-					ComboBox_SetItemData(hCtrl, nCount++, pDisplayModes->m_Modes[i].m_dwBPP);
+					idx = ComboBox_InsertString(hCtrl, nCount, buf);
+					result = ComboBox_SetItemData(hCtrl, nCount++, pDisplayModes->m_Modes[i].m_dwBPP);
 				}
 			}
 		}
@@ -2749,6 +2770,8 @@ static void InitializeResDepthUI(HWND hwnd)
 static void InitializeRefreshUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_REFRESH);
+	int  result;
+	int  idx;
 
 	if (hCtrl)
 	{
@@ -2757,10 +2780,10 @@ static void InitializeRefreshUI(HWND hwnd)
 		int i;
 
 		/* Remove all items in the list. */
-		ComboBox_ResetContent(hCtrl);
+		result = ComboBox_ResetContent(hCtrl);
 
-		ComboBox_AddString(hCtrl, "Auto");
-		ComboBox_SetItemData(hCtrl, nCount++, 0);
+		idx = ComboBox_AddString(hCtrl, "Auto");
+		result = ComboBox_SetItemData(hCtrl, nCount++, 0);
 
 		pDisplayModes = DirectDraw_GetDisplayModes();
 
@@ -2774,8 +2797,8 @@ static void InitializeRefreshUI(HWND hwnd)
 
 				if (ComboBox_FindString(hCtrl, 0, buf) == CB_ERR)
 				{
-					ComboBox_InsertString(hCtrl, nCount, buf);
-					ComboBox_SetItemData(hCtrl, nCount++, pDisplayModes->m_Modes[i].m_dwRefresh);
+					idx = ComboBox_InsertString(hCtrl, nCount, buf);
+					result = ComboBox_SetItemData(hCtrl, nCount++, pDisplayModes->m_Modes[i].m_dwRefresh);
 				}
 			}
 		}
@@ -2793,10 +2816,11 @@ static void InitializeDefaultInputUI(HWND hwnd)
 	int isZipFile;
 	char root[256];
 	char path[256];
+	int idx;
 
 	if (hCtrl)
 	{
-		ComboBox_AddString(hCtrl, "Standard");
+		idx = ComboBox_AddString(hCtrl, "Standard");
 
 		sprintf (path, "%s\\*.*", GetCtrlrDir());
 
@@ -2831,7 +2855,7 @@ static void InitializeDefaultInputUI(HWND hwnd)
 
 					if ((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || isZipFile)
 					{
-						ComboBox_AddString(hCtrl, root);
+						idx = ComboBox_AddString(hCtrl, root);
 					}
 				}
 			}
@@ -2845,14 +2869,16 @@ static void InitializeDefaultInputUI(HWND hwnd)
 static void InitializeEffectUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_EFFECT);
+	int  idx;
+	int  result;
 
 	if (hCtrl)
 	{
 		int i;
 		for (i = 0; i < NUMEFFECTS; i++)
 		{
-			ComboBox_InsertString(hCtrl, i, g_ComboBoxEffect[i].m_pText);
-			ComboBox_SetItemData( hCtrl, i, g_ComboBoxEffect[i].m_pData);
+			idx = ComboBox_InsertString(hCtrl, i, g_ComboBoxEffect[i].m_pText);
+			result = ComboBox_SetItemData( hCtrl, i, g_ComboBoxEffect[i].m_pData);
 		}
 	}
 }
@@ -2861,57 +2887,62 @@ static void InitializeEffectUI(HWND hwnd)
 static void InitializeArtresUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd, IDC_ARTRES);
+	int  idx;
 
 	if (hCtrl)
 	{
-		ComboBox_AddString(hCtrl, "Auto");		/* 0 */
-		ComboBox_AddString(hCtrl, "Standard");  /* 1 */
-		ComboBox_AddString(hCtrl, "High");		/* 2 */
+		idx = ComboBox_AddString(hCtrl, "Auto");		/* 0 */
+		idx = ComboBox_AddString(hCtrl, "Standard");  /* 1 */
+		idx = ComboBox_AddString(hCtrl, "High");		/* 2 */
 	}
 }
 
 static void InitializeD3DFilterUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd,IDC_D3D_FILTER);
+	int  idx;
 
 	if (hCtrl)
 	{
 		int i;
 
 		for (i=0;i<MAX_D3D_FILTERS;i++)
-			ComboBox_AddString(hCtrl,GetD3DFilterLongName(i));
+			idx = ComboBox_AddString(hCtrl,GetD3DFilterLongName(i));
 	}
 }
 
 static void InitializeD3DEffectUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd,IDC_D3D_EFFECT);
+	int  idx;
 
 	if (hCtrl)
 	{
 		int i;
 
 		for (i=0;i<MAX_D3D_EFFECTS;i++)
-			ComboBox_AddString(hCtrl,GetD3DEffectLongName(i));
+			idx = ComboBox_AddString(hCtrl,GetD3DEffectLongName(i));
 	}
 }
 
 static void InitializeD3DPrescaleUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd,IDC_D3D_PRESCALE);
+	int  idx;
 
 	if (hCtrl)
 	{
 		int i;
 
 		for (i=0;i<MAX_D3D_PRESCALE;i++)
-			ComboBox_AddString(hCtrl,GetD3DPrescaleLongName(i));
+			idx = ComboBox_AddString(hCtrl,GetD3DPrescaleLongName(i));
 	}
 }
 
 static void InitializeBIOSUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd,IDC_BIOS);
+	int  idx;
 
 	if (hCtrl)
 	{
@@ -2920,19 +2951,19 @@ static void InitializeBIOSUI(HWND hwnd)
 		
 		if (g_nGame == -1)
 		{
-			ComboBox_AddString(hCtrl,"0");
-			ComboBox_AddString(hCtrl,"1");
-			ComboBox_AddString(hCtrl,"2");
-			ComboBox_AddString(hCtrl,"3");
-			ComboBox_AddString(hCtrl,"4");
-			ComboBox_AddString(hCtrl,"5");
-			ComboBox_AddString(hCtrl,"6");
+			idx = ComboBox_AddString(hCtrl,"0");
+			idx = ComboBox_AddString(hCtrl,"1");
+			idx = ComboBox_AddString(hCtrl,"2");
+			idx = ComboBox_AddString(hCtrl,"3");
+			idx = ComboBox_AddString(hCtrl,"4");
+			idx = ComboBox_AddString(hCtrl,"5");
+			idx = ComboBox_AddString(hCtrl,"6");
 
 			return;
 		}
 		if (DriverHasOptionalBIOS(g_nGame) == FALSE)
 		{
-			ComboBox_AddString(hCtrl,"None");
+			idx = ComboBox_AddString(hCtrl,"None");
 			return;
 		}
 
@@ -2940,7 +2971,7 @@ static void InitializeBIOSUI(HWND hwnd)
 
 		while (!BIOSENTRY_ISEND(thisbios))
 		{
-			ComboBox_AddString(hCtrl,thisbios->_description);
+			idx = ComboBox_AddString(hCtrl,thisbios->_description);
 			thisbios++;
 		}
 
@@ -2950,13 +2981,14 @@ static void InitializeBIOSUI(HWND hwnd)
 static void InitializeCleanStretchUI(HWND hwnd)
 {
 	HWND hCtrl = GetDlgItem(hwnd,IDC_CLEAN_STRETCH);
+	int  idx;
 
 	if (hCtrl)
 	{
 		int i;
 
 		for (i=0;i<MAX_CLEAN_STRETCH;i++)
-			ComboBox_AddString(hCtrl,GetCleanStretchLongName(i));
+			idx = ComboBox_AddString(hCtrl,GetCleanStretchLongName(i));
 	}
 }
 
