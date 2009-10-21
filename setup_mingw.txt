@@ -26,8 +26,9 @@ The MinGW homepage is available at http://www.mingw.org/
 The Allegro homepage is available at http://alleg.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
 The NASM homepage is available at http://nasm.sourceforge.net/
-The GCC manuals are available at http://gcc.gnu.org/onlinedocs/
-The Make manual is available at http://www.gnu.org/software/make/manual/
+The GCC homepage is available at http://gcc.gnu.org/
+The GDB homepage is available at http://www.gnu.org/software/gdb/
+The Make homepage is available at http://www.gnu.org/software/make/
 The 7-Zip homepage is available at http://www.7-zip.org/
 
 
@@ -62,6 +63,7 @@ Step 1: Downloads
      * w32api-3.13-mingw32-dev
      * libz-1.2.3-1-mingw32-dev
      * gcc-full-4.4.0-mingw32-bin-2
+     * gdb-5.2.1-1
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
@@ -125,6 +127,7 @@ Step 2: Setup
      * w32api-3.13-mingw32-dev
      * libz-1.2.3-1-mingw32-dev
      * gcc-full-4.4.0-mingw32-bin-2
+     * gdb-5.2.1-1
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
@@ -185,5 +188,17 @@ Step 4: Compilation
 - Change to the PinMAME source directory
 - To compile PinMAME type "mingw32-make"
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
-- To compile a debug build of these, which also includes the MAME debugger, just
-  add "DEBUG=1"
+- To add the MAME debugger to a build, just define "DEBUG=1"
+- To compile an unoptimized debug build for gdb, just add "SYMBOLS=1"
+
+
+-----------------
+Step 5: Debugging
+-----------------
+If you want to debug PinMAME itself (not the ROM via the MAME debugger), then
+check out the following infos to get started:
+* GDB manual: http://sourceware.org/gdb/onlinedocs/gdb_5.html
+* Tutorial: http://www.dirac.org/linux/gdb/
+* Tutorial: http://betterexplained.com/articles/debugging-with-gdb/
+* Tutorial: http://pixwiki.bafsoft.com/mags/9/articles/gdb/article.html
+* GCC manual: http://gcc.gnu.org/onlinedocs/gcc-4.3.3/gcc/Debugging-Options.html
