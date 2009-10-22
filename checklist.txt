@@ -36,7 +36,7 @@ If it worked out ok, however, do a release!
 
 Revision tests for compilation:
 * MinGW 2.0
-* MinGW with recent packages and GCC 3.2 (Maddes)
+* MinGW with recent packages and GCC 4.4 (Maddes)
 * Visual C++ 6.0
 * Visual C++ 2002 .NET (RELEASE!!!)
 * Visual C++ 2008 (Maddes)
