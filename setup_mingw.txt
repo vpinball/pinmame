@@ -42,13 +42,13 @@ Step 1: Downloads
      Download MinGW-2.0.0-3.exe to your c:\mingw-setup directory.
      Unfortunately it is not available at the official project homepage anymore.
      Get it from http://www.pinmame.com/downloads.html
-     or from http://ftp.maddes.net/mingw/
+     or from https://sourceforge.net/projects/pinmame/files/mingw/
 
      For a real original MinGW 2.0 setup download the latest version of GCC 3.2
      for MinGW to your c:\mingw-setup directory.
      Binary package:
      * gcc-3.2.3-20030504-1
-     Get it from http://ftp.maddes.net/mingw/gcc-3.2.3-20030504-1.tar.gz
+     Get it from https://sourceforge.net/projects/pinmame/files/mingw/
 
   b) More recent MinGW setup
      Download the following binary packages to your c:\mingw-setup directory.
