@@ -78,8 +78,15 @@ PEYPER_ROMEND
 CORE_GAMEDEFNV(odin_dlx,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER,0)
 
 // Gamatron (1986)
-// Solar Wars (1986)
-// Star Wars (1987)
+
+/*-------------------------------------------------------------------
+/ Solar Wars (1986)
+/-------------------------------------------------------------------*/
+INITGAME(solarwar, sonicDisp7, 1, 4)
+PEYPER_ROMSTART2(solarwar, "solarw1c.bin", CRC(aa6bf0cd) SHA1(7332a4b1679841283d846f3e4f1792cb8e9529bf),
+						  "solarw2.bin", CRC(95e2cbb1) SHA1(f9ab3222ca0b9e0796030a7a618847a4e8f77957))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(solarwar,"Solar Wars (Sonic)",1986,"Sonic (Spain)",gl_mPEYPER,0)
 
 /*-------------------------------------------------------------------
 / Pole Position (1987)
