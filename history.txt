@@ -252,6 +252,6 @@ Milestone: Added Gottlieb System 1 Support (Working!) - bug in bonus count still
 Milestone Date 08/1/2008
 Milestone: Visual PinMAME now completely open source, expiry date removed
 
-Milestone Date 11/10/2009
+Milestone Date 10/11/2009
 Milestone: PinMAME/32 compiles with GCC 4.4.0
 Contributors: Zachary A. Clifford
