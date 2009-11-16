@@ -256,8 +256,3 @@ cleanpinmame:
 	$(RM) -r $(PINOBJ)
 	@echo Deleting $(EMULATOR)...
 	$(RM) $(EMULATOR)
-
-ifdef DEBUG
-LDFLAGS+= -Xlinker -Map -Xlinker $(TARGET).map -Xlinker --cref
-endif
-
