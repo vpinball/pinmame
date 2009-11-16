@@ -1,3 +1,30 @@
+###########################################################################
+#
+#   makefile
+#
+#   Core makefile for building MAME and derivatives
+#
+#   Copyright (c) Nicola Salmoria and the MAME Team.
+#   Visit http://mamedev.org for licensing and usage restrictions.
+#
+#   Adopted for PinMAME, which is based on MAME 0.76, so several parts of
+#   this makefile are still like in MAME 0.76
+#
+###########################################################################
+
+
+
+###########################################################################
+#################   BEGIN USER-CONFIGURABLE OPTIONS   #####################
+###########################################################################
+
+
+#-------------------------------------------------
+# specify core target: mame, mess, etc.
+# build rules will be included from
+# src/$(TARGET).mak
+#-------------------------------------------------
+
 # set this to mame, mess or the destination you want to build
 # TARGET = mame
 # TARGET = mess
@@ -7,21 +34,95 @@
 # TARGET = mmsnd
 # example for a tiny compile
 # TARGET = tiny
-ifeq ($(TARGET),)
+ifndef TARGET
+# [PinMAME] default to building PinMAME
+#TARGET = mame
 TARGET = pinmame
 endif
 
-# uncomment next line to include running older stern whitestar games in new at91 cpu board for testing
+
+
+#-------------------------------------------------
+# specify OS target, which further differentiates
+# the underlying OS;
+#-------------------------------------------------
+
+# set this to the operating system you're building for
+# MAMEOS = msdos
+# MAMEOS = windows
+ifeq ($(MAMEOS),)
+MAMEOS = windows
+endif
+
+
+
+#-------------------------------------------------
+# configure name of final executable
+#-------------------------------------------------
+
+# uncomment and specify prefix to be added to the name
+# PREFIX =
+
+# uncomment and specify suffix to be added to the name
+# SUFFIX =
+
+
+
+#-------------------------------------------------
+# specify architecture-specific optimizations
+#-------------------------------------------------
+
+# uncomment and specify architecture-specific optimizations here
+# some examples:
+#   optimize for I686:   ARCHOPTS = -march=pentiumpro
+#   optimize for Core 2: ARCHOPTS = -march=pentium-m -msse3
+#   optimize for G4:     ARCHOPTS = -mcpu=G4
+# note that we leave this commented by default so that you can
+# configure this in your environment and never have to think about it
+# ARCHOPTS =
+
+
+
+#-------------------------------------------------
+# specify PinMAME options; see each option below
+# for details
+#-------------------------------------------------
+
+# [PinMAME] uncomment next line to include running older stern whitestar games in new at91 cpu board for testing
 # TEST_NEW_SOUND = 1
 
-# uncomment next line to include the debugger
+
+
+#-------------------------------------------------
+# specify program options; see each option below
+# for details
+#-------------------------------------------------
+
+# uncomment next line to include the MAME ROM debugger
 # DEBUG = 1
 
-# uncomment next line to include the symbols for symify
-# SYMBOLS = 1
+
+
+#-------------------------------------------------
+# specify build options; see each option below
+# for details
+#-------------------------------------------------
+
+# uncomment next line to include the symbols (for debugging)
+# [PinMAME] always create symbols file (separated from executable)
+SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
-# MAP = 1
+# [PinMAME] always create map file
+MAP = 1
+
+# uncomment next line to generate verbose build information
+# VERBOSE = 1
+
+# specify optimization level or leave commented to use the default
+# (default is OPTIMIZE = 3 normally, or OPTIMIZE = 0 with symbols)
+# [PinMAME] always defaults to 3
+# OPTIMIZE = 3
 
 # uncomment next line to use Assembler 68000 engine
 # X86_ASM_68000 = 1
@@ -33,21 +134,46 @@ endif
 X86_MIPS3_DRC = 1
 
 # uncomment next line to use cygwin compiler
-# COMPILESYSTEM_CYGWIN	= 1
+# COMPILESYSTEM_CYGWIN = 1
 
 
-# set this the operating system you're building for
-# MAMEOS = msdos
-# MAMEOS = windows
-ifeq ($(MAMEOS),)
-MAMEOS = windows
+###########################################################################
+##################   END USER-CONFIGURABLE OPTIONS   ######################
+###########################################################################
+
+
+#-------------------------------------------------
+# sanity check the configuration
+#-------------------------------------------------
+
+# specify a default optimization level if none explicitly stated
+ifndef OPTIMIZE
+# [PinMAME] always defaults to 3
+#ifndef SYMBOLS
+OPTIMIZE = 3
+#else
+#OPTIMIZE = 0
+#endif
 endif
 
-# extension for executables
-EXE = .exe
 
-# CPU core include paths
-VPATH=src $(wildcard src/cpu/*)
+#-------------------------------------------------
+# platform-specific definitions
+#-------------------------------------------------
+
+# extension for executables
+EXE =
+
+ifeq ($(MAMEOS),windows)
+EXE = .exe
+endif
+ifeq ($(MAMEOS),os2)
+EXE = .exe
+endif
+
+ifndef BUILD_EXE
+BUILD_EXE = $(EXE)
+endif
 
 # compiler, linker and utilities
 AR = @ar
@@ -55,59 +181,119 @@ CC = @gcc
 LD = @gcc
 ASM = @nasm
 ASMFLAGS = -f coff
-MD = -mkdir
+MD = -mkdir$(EXE)
 RM = @rm -f
 #PERL = @perl -w
 
 
-ifeq ($(MAMEOS),msdos)
-PREFIX = d
-else
-PREFIX =
+
+#-------------------------------------------------
+# form the name of the executable
+#-------------------------------------------------
+
+# debug builds just get the 'd' suffix and nothing more
+ifdef DEBUG
+DEBUGSUFFIX = d
 endif
 
-ifdef DEBUG
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)d
-else
-ifdef ATHLON
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)at
-ARCH = -march=athlon
-else
-ifdef K6
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)k6
-ARCH = -march=k6
-else
-ifdef I686
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)pp
-ARCH = -march=pentiumpro
-else
-ifdef P4
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)p4
-ARCH = -march=pentium4
-else
-NAME = $(PREFIX)$(TARGET)$(SUFFIX)
-ARCH = -march=pentium
-endif
-endif
-endif
-endif
-endif
+# the main name is just 'target'
+NAME = $(TARGET)
+
+# fullname is prefix+name+suffix+debugsuffix
+FULLNAME = $(PREFIX)$(NAME)$(SUFFIX)$(DEBUGSUFFIX)
+
+# add an EXE suffix to get the final emulator name
+EMULATOR = $(FULLNAME)$(EXE)
+
+
+
+#-------------------------------------------------
+# source and object locations
+#-------------------------------------------------
+
+# CPU core include paths
+VPATH = src $(wildcard src/cpu/*)
 
 # build the targets in different object dirs, since mess changes
 # some structures and thus they can't be linked against each other.
-OBJ = obj/gcc/$(NAME)
+OBJ = obj/gcc/${MAMEOS}/$(FULLNAME)
 
-EMULATOR = $(NAME)$(EXE)
 
-DEFS = -DX86_ASM -DLSB_FIRST -DINLINE="static __inline__" -Dasm=__asm__
 
-CFLAGS = -std=gnu99 -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000
+#-------------------------------------------------
+# compile-time definitions
+#-------------------------------------------------
 
-ifdef SYMBOLS
-CFLAGS += -O0 -Wall -Werror -Wno-unused -g
+# CR/LF setup: use both on win32/os2, CR only on everything else
+DEFS = -DCRLF=2
+
+ifeq ($(MAMEOS),windows)
+DEFS = -DCRLF=3
+endif
+ifeq ($(MAMEOS),os2)
+DEFS = -DCRLF=3
+endif
+
+# map the INLINE to something digestible by GCC
+DEFS += -DINLINE="static __inline__"
+
+# define LSB_FIRST if we are a little-endian target
+ifndef BIGENDIAN
+DEFS += -DLSB_FIRST
+endif
+
+# define MAME_DEBUG if we are a debugging build
+ifdef DEBUG
+DEFS += -DMAME_DEBUG
+endif
+
+# define DEBUG if we are a non-optimized build
+ifeq ($(OPTIMIZE),0)
+DEFS += -DDEBUG -D_DEBUG
 else
-CFLAGS += -DNDEBUG \
-	$(ARCH) -O3 -fomit-frame-pointer -fstrict-aliasing \
+DEFS += -DNDEBUG
+endif
+
+DEFS += -DX86_ASM -Dasm=__asm__
+
+# [PinMAME] running older stern whitestar games in new at91 cpu board for testing
+ifdef TEST_NEW_SOUND
+DBGDEFS += -DTEST_NEW_SOUND
+endif
+
+
+
+#-------------------------------------------------
+# compile flags
+#-------------------------------------------------
+
+CFLAGS =
+
+CFLAGS += -std=gnu99
+
+# add -g if we need symbols, and ensure we have frame pointers
+# [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
+ifdef SYMBOLS
+CFLAGS += -g
+endif
+CFLAGS += -fno-omit-frame-pointer
+
+# add -v if we need verbose build information
+ifdef VERBOSE
+CFLAGS += -v
+endif
+
+# add the optimization flag
+CFLAGS += -O$(OPTIMIZE)
+
+# if we are optimizing, include optimization options
+ifneq ($(OPTIMIZE),0)
+CFLAGS += $(ARCHOPTS)
+endif
+
+# add MAME 0.76 basic set of warnings
+CFLAGS += \
+	-fstrict-aliasing \
 	-Werror -Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wbad-function-cast -Wcast-align -Waggregate-return \
 	-Wshadow -Wstrict-prototypes -Wundef \
@@ -117,35 +303,66 @@ CFLAGS += -DNDEBUG \
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
 #	-W had to remove because of the "missing initializer" warning
-#	-Wlarger-than-262144  \
+#	-Wlarger-than-262144 \
 #	-Wcast-qual \
 #	-Wwrite-strings \
 #	-Wconversion \
 #	-Wmissing-prototypes \
 #	-Wmissing-declarations
-endif
 
 CFLAGSPEDANTIC = $(CFLAGS) -pedantic
 
-ifdef SYMBOLS
+
+#-------------------------------------------------
+# include paths
+#-------------------------------------------------
+
+CFLAGS += \
+	-Isrc \
+	-Isrc/includes \
+	-Isrc/$(MAMEOS) \
+	-I$(OBJ)/cpu/m68000 \
+	-Isrc/cpu/m68000
+
+
+
+#-------------------------------------------------
+# linking flags
+#-------------------------------------------------
+
+# general
+# [PinMAME] avoid GCC 4.4 warnings (ToDo: real fix better than disabling warning)
+#LDFLAGS = -Wl,--warn-common
 LDFLAGS =
-else
-#LDFLAGS = -s -Wl,--warn-common
-LDFLAGS = -s
-endif
-LDFLAGS += -static
-
-ifdef MAP
-MAPFLAGS = -Wl,-M >$(NAME).map
-else
 MAPFLAGS =
+
+# strip symbols and other metadata in non-symbols builds
+ifndef SYMBOLS
+LDFLAGS += -s
 endif
 
-# platform .mak files will want to add to this
-LIBS = -lz
+# output a map file
+ifdef MAP
+# [PinMAME] include cross reference
+MAPFLAGS += -Wl,-Map,$(FULLNAME).map,--cref
+endif
 
-OBJDIRS = obj obj/gcc $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
+# [PinMAME] avoid dynamic dependencies on Windows, so link statically
+ifeq ($(MAMEOS),windows)
+LDFLAGS += -static
+endif
+
+
+
+#-------------------------------------------------
+# define the standard object directory; other
+# projects can add their object directories to
+# this variable
+#-------------------------------------------------
+
+OBJDIRS = $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
 	$(OBJ)/machine $(OBJ)/vidhrdw
+# [PinMANE] some dirs are not necessary for PinMAME
 ifneq ($(TARGET),pinmame)
 OBJDIRS += $(OBJ)/drivers $(OBJ)/sndhrdw
 endif
@@ -158,34 +375,51 @@ ifeq ($(TARGET),mmsnd)
 OBJDIRS	+= $(OBJ)/mmsnd $(OBJ)/mmsnd/machine $(OBJ)/mmsnd/drivers $(OBJ)/mmsnd/sndhrdw
 endif
 
-all:	maketree $(EMULATOR) extra
 
+
+#-------------------------------------------------
+# either build or link against the included
+# libraries
+#-------------------------------------------------
+
+# platform .mak files will want to add to this
+LIBS = -lz
+
+
+
+#-------------------------------------------------
+# 'all' target needs to go here, before the
+# include files which define additional targets
+#-------------------------------------------------
+
+all: maketree $(EMULATOR) extra
+
+
+
+#-------------------------------------------------
 # include the various .mak files
+#-------------------------------------------------
+
 include src/core.mak
 include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
 
-ifdef DEBUG
-DBGDEFS = -DMAME_DEBUG
-else
-DBGDEFS =
+# if the MAME ROM debugger is not included, then remove objects for it
+ifndef DEBUG
 DBGOBJS =
 endif
 
-ifdef TEST_NEW_SOUND
-DBGDEFS += -DTEST_NEW_SOUND
-endif
-
-ifdef COMPILESYSTEM_CYGWIN
-CFLAGS	+= -mno-cygwin
-LDFLAGS	+= -mno-cygwin
-endif
-
-extra:	$(TOOLS) $(TEXTS)
-
 # combine the various definitions to one
 CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS) $(DBGDEFS)
+
+
+
+#-------------------------------------------------
+# primary targets
+#-------------------------------------------------
+
+extra:	$(TOOLS) $(TEXTS)
 
 # primary target
 $(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
@@ -193,6 +427,15 @@ $(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) -o $@ $(MAPFLAGS)
+# [PinMAME] extract debug information into separate file, then strip executable and add a debug link to it
+#           see http://sourceware.org/gdb/current/onlinedocs/gdb_19.html#SEC170
+#               http://stackoverflow.com/questions/866721/
+ifdef SYMBOLS
+	@echo Extracting debug symbols and stripping all symbols from $@...
+	@objcopy -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
+	@strip -p -s "$(EMULATOR)"
+	@objcopy -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR)"
+endif
 
 romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
 	@echo Linking $@...
@@ -238,24 +481,24 @@ $(OBJ)/cpu/m68000/m68kmake$(EXE): src/cpu/m68000/m68kmake.c
 	$(OBJ)/cpu/m68000/m68kmake$(EXE) $(OBJ)/cpu/m68000 src/cpu/m68000/m68k_in.c
 
 # generate asm source files for the 68000/68020 emulators
-$(OBJ)/cpu/m68000/68000.asm:  src/cpu/m68000/make68k.c
+$(OBJ)/cpu/m68000/68000.asm: src/cpu/m68000/make68k.c
 	@echo Compiling $<...
 	$(CC) $(CDEFS) $(CFLAGSPEDANTIC) -O0 -DDOS -o $(OBJ)/cpu/m68000/make68k$(EXE) $<
 	@echo Generating $@...
 	@$(OBJ)/cpu/m68000/make68k$(EXE) $@ $(OBJ)/cpu/m68000/68000tab.asm 00
 
-$(OBJ)/cpu/m68000/68020.asm:  src/cpu/m68000/make68k.c
+$(OBJ)/cpu/m68000/68020.asm: src/cpu/m68000/make68k.c
 	@echo Compiling $<...
 	$(CC) $(CDEFS) $(CFLAGSPEDANTIC) -O0 -DDOS -o $(OBJ)/cpu/m68000/make68k$(EXE) $<
 	@echo Generating $@...
 	@$(OBJ)/cpu/m68000/make68k$(EXE) $@ $(OBJ)/cpu/m68000/68020tab.asm 20
 
 # generated asm files for the 68000 emulator
-$(OBJ)/cpu/m68000/68000.o:  $(OBJ)/cpu/m68000/68000.asm
+$(OBJ)/cpu/m68000/68000.o: $(OBJ)/cpu/m68000/68000.asm
 	@echo Assembling $<...
 	$(ASM) -o $@ $(ASMFLAGS) $(subst -D,-d,$(ASMDEFS)) $<
 
-$(OBJ)/cpu/m68000/68020.o:  $(OBJ)/cpu/m68000/68020.asm
+$(OBJ)/cpu/m68000/68020.o: $(OBJ)/cpu/m68000/68020.asm
 	@echo Assembling $<...
 	$(ASM) -o $@ $(ASMFLAGS) $(subst -D,-d,$(ASMDEFS)) $<
 
@@ -268,7 +511,7 @@ makedir:
 	@echo make makedir is no longer necessary, just type make
 
 $(sort $(OBJDIRS)):
-	$(MD) $@
+	$(MD) -p $@
 
 maketree: $(sort $(OBJDIRS))
 
@@ -277,6 +520,10 @@ clean:
 	$(RM) -r $(OBJ)
 	@echo Deleting $(EMULATOR)...
 	$(RM) $(EMULATOR)
+	@echo Deleting $(EMULATOR).debug...
+	$(RM) $(EMULATOR).debug
+	@echo Deleting $(FULLNAME).map...
+	$(RM) $(FULLNAME).map
 
 clean68k:
 	@echo Deleting 68k files...
@@ -285,6 +532,6 @@ clean68k:
 	$(RM) -r $(OBJ)/cpu/m68000
 
 check: $(EMULATOR) xml2info$(EXE)
-	./$(EMULATOR) -listxml > $(NAME).xml
-	./xml2info < $(NAME).xml > $(NAME).lst
-	./xmllint --valid --noout $(NAME).xml
+	./$(EMULATOR) -listxml > $(FULLNAME).xml
+	./xml2info < $(FULLNAME).xml > $(FULLNAME).lst
+	./xmllint --valid --noout $(FULLNAME).xml

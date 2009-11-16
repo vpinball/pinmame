@@ -1,6 +1,3 @@
-# nasm for Windows has a "w" at the end
-ASM = @nasmw
-
 # only Windows specific output files and rules
 # the first two targets generate the prefix.h header
 # note this requires that OSOBJS be the first target

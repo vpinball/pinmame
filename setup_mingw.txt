@@ -11,11 +11,11 @@ PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
 It has been maintained to compile with more recent MinGW packages too, and has
 been tested to work well with GCC 4.4.
 Note that other GCC versions are not tested and may throw some warnings or
-errors which stop the build process, hence it is recommended to either use
-either 3.2 or 4.4.
+errors which stop the build process, hence it is recommended to use either 3.2
+or 4.4.
 
-This guide will show you how to setup MinGW in version 2.0 and a setup with more
-recent MinGW packages, so you can compile PinMAME and PinMAME32.
+This guide shows how to setup MinGW in version 2.0 and a setup with more recent
+MinGW packages, so PinMAME and PinMAME32 can be compiled with it.
 
 
 ----------
@@ -35,25 +35,30 @@ The 7-Zip homepage is available at http://www.7-zip.org/
 -----------------
 Step 1: Downloads
 -----------------
-- Create a directory to hold all your downloads; for example, c:\mingw-setup
+- Create a directory to hold all downloads, for example c:\mingw-setup.
 
-- Decide if you want to use a MinGW 2.0 setup or a more recent one:
+- Choose between a MinGW 2.0 setup or a more recent one:
   a) MinGW 2.0
-     Download MinGW-2.0.0-3.exe to your c:\mingw-setup directory.
-     Unfortunately it is not available at the official project homepage anymore.
-     Get it from http://www.pinmame.com/downloads.html
-     or from https://sourceforge.net/projects/pinmame/files/mingw/
+     Download MinGW-2.0.0-3.exe to the downloads directory.
+     Unfortunately it is nomore available at the official MinGW project homepage.
+     Get it from http://sourceforge.net/projects/pinmame/files/mingw/
 
-     For a real original MinGW 2.0 setup download the latest version of GCC 3.2
-     for MinGW to your c:\mingw-setup directory.
-     Binary package:
+     Mandatory update: newer objcopy and strip executables.
+     * binutils-2.19.1-mingw32-bin (later versions should work too)
+     Get it from http://sourceforge.net/projects/mingw/files/GNU%20Binutils/
+
+     Recommended updates: Download latest versions of GCC 3.2 and GDB 5 for MinGW.
+     Unfortunately the GCC 3.2 update is nomore available at the official MinGW
+     project homepage.
      * gcc-3.2.3-20030504-1
-     Get it from https://sourceforge.net/projects/pinmame/files/mingw/
+     * gdb-5.2.1-1.exe
+     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
+               and http://sourceforge.net/projects/mingw/files/GNU%20Source-Level%20Debugger/
 
   b) More recent MinGW setup
-     Download the following binary packages to your c:\mingw-setup directory.
-     The packages carry the version numbers as of the date of testing, but newer
-     packages should work too:
+     Download the following binary packages to the downloads directory.
+     The packages carry the version numbers as of the last testing, but newer
+     packages should work too.
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll
@@ -61,63 +66,69 @@ Step 1: Downloads
      * binutils-2.19.1-mingw32-bin
      * make-3.81-20090914-mingw32-bin
      * w32api-3.13-mingw32-dev
-     * libz-1.2.3-1-mingw32-dev
      * gcc-full-4.4.0-mingw32-bin-2
-     * gdb-5.2.1-1
+     * gdb-6.3-1.exe (also gdb-7.0-2-mingw32-bin was tested)
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
-     * (plus gcc-3.2.3-20030504-1 from MinGW 2.0 setup above)
+     * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
 
      Get them from http://sourceforge.net/projects/mingw/files/
-            and/or http://sourceforge.jp/projects/mingw/releases/?fulllist=1
 
-- Download the latest version of Allegro's DirectX includes for MinGW to your c:\mingw-setup directory.
-  Package:
+- Download the ZLib library (libz) to the downloads directory.
+  * libz-1.2.3-1-mingw32-dev
+  Get it from http://sourceforge.net/projects/mingw/files/MinGW%20zlib/
+
+  For a real MinGW 2.0 setup use ZLib 1.1.4. This has to be compiled (explained
+  later in step 3), so download the ZLib source code to the downloads directory.
+  * zlib-1.1.4.tar.gz
+  Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
+
+- Download the latest version of Allegro's DirectX includes for MinGW to the
+  downloads directory.
   * dx70_mgw.zip
   Get it from http://alleg.sourceforge.net/
   Note: Newer versions of Allegro's DirectX includes work too (currently dx80_mgw.zip).
 
-- Download some GNU tools for MAME to your c:\mingw-setup directory.
-  Binary package:
+- Download the GNU-like tools from MAME to the downloads directory.
   * mame-gnulike.exe
   Get it from http://www.mamedev.org/tools/#hard
 
-- Download the assembler compiler NASM to your c:\mingw-setup directory.
-  Binary package:
-  * NASM 0.98.39 (Win32)
-  Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/0.98.39/
-  Note: Newer Win32 packages of NASM work too, but you have to rename the
-        executable to "nasmw.exe".
-
-- If you are not using the MinGW release of the zlib library (libz), then
-  download the source code of the library ZLib to your c:\mingw-setup directory.
-  Package:
-  * zlib-1.1.4.tar.gz
-  Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
-  Note: Newer versions of ZLib work too (currently 1.2.3).
+- Download the assembler compiler NASM 2.0 for Win32 to the downloads directory.
+  * nasm-2.02-win32 (later versions should work too)
+  Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/
 
 
 -------------
 Step 2: Setup
 -------------
-- Attention!!! Whenever you extract a .tar.gz or .zip file then always extract
-               it including its directory structure, otherwise it won't work.
+- Attention!!! Whenever extracting an archive then always extract it including
+               its directory structure, otherwise it won't work.
+               Use 7-Zip to unpack a lzma archive.
 
-- Depending if you want to use a MinGW 2.0 setup or a more recent one:
+- Depending if it is a MinGW 2.0 setup or a more recent one:
   a) MinGW 2.0
-     Run the MinGW installer; install to a logical path, for example c:\mingw
+     Run the MinGW installer; install to a reasoned path, for example c:\mingw2.
+     It contains GCC 3.2, GDB 5.1.1, mingw32-make, w32api, etc.
 
-     Extract the GCC 3.2 binary package to your to c:\mingw directory.
-     Some files must be overwritten (e.g. "bin\c++filt.exe")
+     Extract the objcopy and strip executables to the bin folder of the
+     installation, e.g. c:\mingw2\bin.
+     * binutils-2.19.1-mingw32-bin
+
+     Extract the recommended update for GCC to the installation directory.
+     Some files must be overwritten ("bin/*.exe", "lib/*.a").
+     * gcc-3.2.3-20030504-1
+
+     Install the recommended update for GDB by running its installer; install to
+     the installation directory.
+     * gdb-5.2.1-1.exe
 
   b) More recent MinGW setup
-     Create a directory to hold your MinGW installation; for example, c:\mingw
-     Extract all binary packages of MinGW to your c:\mingw directory.
-     Use 7-Zip to unpack any lzma archive first.
+     Create a directory to hold the MinGW installation, for example c:\mingw5.
+     Extract all binary packages of MinGW to the installation directory.
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll
@@ -125,78 +136,104 @@ Step 2: Setup
      * binutils-2.19.1-mingw32-bin
      * make-3.81-20090914-mingw32-bin
      * w32api-3.13-mingw32-dev
-     * libz-1.2.3-1-mingw32-dev
      * gcc-full-4.4.0-mingw32-bin-2
-     * gdb-5.2.1-1
+     * gdb-6.3-1.exe (or gdb-7.0-2-mingw32-bin)
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14
      * binutils-2.17.50-20060824-1
      * mingw32-make-3.81-20080326-2
      * w32api-3.11
-     * (plus gcc-3.2.3-20030504-1 from MinGW 2.0 setup above)
+     * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
 
-- Extract Allegro's DirectX includes to your to c:\mingw directory.
+- If the MinGW release of the ZLib library (libz) is used, then extract it to
+  the installation directory.
+  * libz-1.2.3-1-mingw32-dev
 
-- Run the MAME GNU tools installer; install to the bin folder of your c:\mingw directory, e.g. c:\mingw\bin
+  Otherwise follow the instructions later in step 3.
 
-- Extract NASM into a temporary directory, for example c:\mingw-setup\nasm
-  Copy these files into your c:\mingw\bin directory:
-    - c:\mingw-setup\nasm\nasmw.exe
-    - c:\mingw-setup\nasm\ndisasmw.exe
-  Note: Another way is to use a separate folder for NASM and add it as a path, e.g. c:\nasm
+- Extract Allegro's DirectX package to the installation directory.
+  Some files are already present ("lib/libd*.a", "include/d*.h") and are
+  normally overwritten.
+  * dx70_mgw.zip
+  Note: Newer versions of Allegro's DirectX package work too (currently dx80_mgw.zip).
 
-  Note: If you use a newer Win32 packages, then you have to rename the
-        executables to "n[dis]asmw.exe".
+- Add the bin folder of the installation directory, e.g. c:\mingw5\bin, to the
+  system's path.
 
-- Change your environment variables to add c:\mingw\bin as a path
-  If you used a separate folder for NASM, then also add it as a path.
+  If multiple MinGW installations are used, then it is recommended to use batch
+  files to set the system's path temporary instead of changing it permanently.
+    Example "mingw2.bat":
+      path c:\mingw2\bin;%path%
+    Example "mingw5.bat":
+      path c:\mingw5\bin;%path%
+  Call the corresponding batch file for the needed MinGW version.
 
-  Note: If you want to use different MinGW versions, then it is recommended to
-        use batch files to set the pathes instead of changing the environment
-        variables permanently.
-        Example "mingw2.bat":
-          - path c:\mingw2\bin;%path%
-        Example "mingw_gcc32.bat":
-          - path c:\mingw_gcc32\bin;%path%
-        Call the batch files depending on the MinGW version you want to use.
+
+The other (non-MinGW) tools can be placed into separate installation directories
+and added to the system's path separately (or also placed in the above mentioned
+MinGW batch files).
+
+- Run the MAME GNU-like tools installer; install to a separate installation
+  directory, e.g. c:\mame-gnu-like.
+  It contains Windows replacements for some typical GNU/Linux tools (rm, diff/patch, etc.).
+  * mame-gnulike.exe
+
+  Add the installation directory to the system's path (or add it to the relevant
+  MinGW batch files).
+
+- Extract NASM into a separate installation directory, e.g. c:\nasm2.
+  * nasm-2.02-win32
+
+  Add the installation directory to the system's path (or add it to the relevant
+  MinGW batch files).
+
+  Note: If an older NASM Win32 package is used (<0.99.4), then rename the
+        executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
 
 
 -----------------
 Step 3: Libraries
 -----------------
-- This step is only necessary if you are not using the MinGW release of the zlib
-  library (libz).
+- This step is only necessary if the MinGW release of the ZLib library (libz) is
+  *not* used.
 
-- Extract the ZLib source into a temporary directory.
+- Extract the ZLib source code into a temporary directory.
   Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
-  Type "mingw32-make test -f nt\Makefile.gcc" to check its functionality.
-  Copy the resulting libz.a to the lib directory in your c:\mingw directory
-  Copy zlib.h and zconf.h to the include directory in your c:\mingw directory
+  Type "mingw32-make -f nt\Makefile.gcc test" to check its functionality.
+  Copy the resulting libz.a to the lib folder of the installation, e.g.
+  c:\mingw\lib, and also zlib.h and zconf.h to the include folder of the
+  installation, e.g. c:\mingw\include.
 
   Notes for ZLib 1.2.3:
-  - The makefile is "win32\makefile.gcc"
-  - The test may fail due to normal slashes in the makefile.
-    Just replace "./" with ".\" in it and it will work.
-  - Copy libzdll.a to MinGW's lib directory too.
+  - The makefile is "win32\makefile.gcc".
+  - The test may fail due to normal slashes inside the makefile.
+    Just replace "./" with ".\" inside of it and it will work.
+  - Copy libzdll.a to the lib folder of the installation, e.g. c:\mingw\lib.
     (not necessary for PinMAME, but for the sake of completeness)
 
 
 -------------------
 Step 4: Compilation
 -------------------
-- Change to the PinMAME source directory
-- To compile PinMAME type "mingw32-make"
-- To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
-- To add the MAME debugger to a build, just define "DEBUG=1"
-- To compile an unoptimized debug build for gdb, just add "SYMBOLS=1"
+- Change to the PinMAME source code directory.
+- If the pathes to MinGW and other tools are not set permanently, then call a
+  MinGW batch file to set them.
+- To compile PinMAME type "mingw32-make".
+- To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32".
+- To add the MAME ROM debugger into a build, just define "DEBUG=1".
+- A symbols file ("SYMBOLS=1") and map file ("MAP=1") are always created.
+- To change the optimization level (default is 3), define "OPTIMIZE=<level>".
+- To get verbose info during compilation, define "VERBOSE=1".
 
 
 -----------------
 Step 5: Debugging
 -----------------
-If you want to debug PinMAME itself (not the ROM via the MAME debugger), then
-check out the following infos to get started:
+Load PinMAME in GDB first, then add the symbols via "symbol-file <pinmame exe>.debug".
+Note that GDB 5.x versions can not handle symbols files from GCC 4.4, only up to GCC 3.2.
+
+Check out the following info to get started with debugging via GDB:
 * GDB manual: http://sourceware.org/gdb/onlinedocs/gdb_5.html
 * Tutorial: http://www.dirac.org/linux/gdb/
 * Tutorial: http://betterexplained.com/articles/debugging-with-gdb/
