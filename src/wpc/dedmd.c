@@ -27,7 +27,7 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ 70
+#define DMD32_FIRQFREQ 80
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
@@ -65,7 +65,7 @@ static MEMORY_WRITE_START(dmd32_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(de_dmd32)
-  MDRV_CPU_ADD(M6809, 4000000)
+  MDRV_CPU_ADD(M6809, 2000000)
   MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
