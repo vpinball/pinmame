@@ -31,14 +31,14 @@ Unfortunately Microsoft removed several files for Visual Studio 6.0 in 2009.
 
 Additionally the following is necessary:
 - NASM compiler for the assembler parts
-  a) Download the assembler compiler NASM to a download directory.
+  a) Download the assembler compiler NASM 2.0 for Win32 to a download directory.
      Binary package:
-     * NASM 0.98.39 (Win32)
-     Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/0.98.39/
-     Note: Newer Win32 packages of NASM work too, but the executable has to be
-           renamed to "nasmw.exe".
+     * nasm-2.02-win32 (later versions should work too)
+     Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/
   b) Extract NASM into a separate directory, for example c:\nasm
-     Add this directory to the bin directories of Visual C++.
+     Note: If an older NASM Win32 package is used (<0.99.4), then rename the
+           executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
+  c) Add this directory to the bin directories of Visual C++.
 
 
 --------------

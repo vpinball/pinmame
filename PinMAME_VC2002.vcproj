@@ -1779,7 +1779,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1788,7 +1788,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1797,7 +1797,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1806,7 +1806,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1818,7 +1818,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1827,7 +1827,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1836,7 +1836,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1845,7 +1845,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
