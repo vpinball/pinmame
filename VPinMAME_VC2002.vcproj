@@ -1820,7 +1820,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1829,7 +1829,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1838,7 +1838,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1847,7 +1847,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1859,7 +1859,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1868,7 +1868,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1877,7 +1877,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
@@ -1886,7 +1886,7 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						<Tool
 							Name="VCCustomBuildTool"
 							Description="Assembling $(InputFileName)..."
-							CommandLine="nasmw -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
+							CommandLine="nasm -f coff -o &quot;$(IntDir)\Windows\$(InputName).obj&quot; &quot;$(InputPath)&quot;
 "
 							Outputs="$(IntDir)\Windows\$(InputName).obj"/>
 					</FileConfiguration>
