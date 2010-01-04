@@ -1,7 +1,7 @@
 **************************************************************************************
                     Visual PinMAME
-                      Version 2.1
-                  (February 1, 2009)
+                      Version 2.2
+                  (January 11, 2010)
                 http://www.pinmame.com
 **************************************************************************************
 
@@ -12,41 +12,41 @@ Latest Info
 What is it?
 -----------
 
-Visual PinMAME is a totally new emulation project which is based on the current 
+Visual PinMAME is a totally new emulation project which is based on the current
 PinMAME source code. If you're new to PinMAME, check out the included pinmame.txt file.
 
-Visual PinMAME is a Windows COM object which can be controlled by scripting languages 
-such as Visual Basic Script. This allows other programs to 'control' Visual PinMAME. 
+Visual PinMAME is a Windows COM object which can be controlled by scripting languages
+such as Visual Basic Script. This allows other programs to 'control' Visual PinMAME.
 
-As an example, users can program their own front end for it, using Visual Basic, 
-or even an HTML front end. 
+As an example, users can program their own front end for it, using Visual Basic,
+or even an HTML front end.
 
-Any software that has VBS support and can create COM objects can interact and control 
-Visual PinMAME. 
+Any software that has VBS support and can create COM objects can interact and control
+Visual PinMAME.
 
-Control of Visual PinMAME includes setting which game to play, 
-setting options for controlling gameplay, setting & reading the state of switches 
-programmatically during gameplay, receiving programmatic information regarding the 
+Control of Visual PinMAME includes setting which game to play,
+setting options for controlling gameplay, setting & reading the state of switches
+programmatically during gameplay, receiving programmatic information regarding the
 state of the lamp matrix and the solenoid matrix during gameplay.
 
 
 What does it do?
 ----------------
- It allows programmers to control PinMAME emulation. Essentially PinMAME is entirely 
-encapsulated into the Visual PinMAME object. Practically anything PinMAME can do, 
+ It allows programmers to control PinMAME emulation. Essentially PinMAME is entirely
+encapsulated into the Visual PinMAME object. Practically anything PinMAME can do,
 Visual PinMAME can do, only programmatically so the user has control over how certain
 things work.
 
 
 Installation:
 -------------
- 
+
  See the Installation Guide.html file for step by step instructions on how to install Visual PinMAME.
 
 
 How to Program Visual PinMAME
 -----------------------------
-We've included a file called interface.html which describes all the properties and methods 
+We've included a file called interface.html which describes all the properties and methods
 that are available from Visual PinMAME to scripting languages. We've also included some
 samples to help demonstrate possible ways to use Visual PinMAME.
 
