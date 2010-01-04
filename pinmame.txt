@@ -317,7 +317,7 @@ Recording Sounds to a Wave File
   PinMAME can record the sound output to a wave file for you to play back
   anytime you want. Hit the F5 key to begin recording, and hit F5 again,
   to stop recording.
-  The files are created in the wavefile directory. They begin with the name
+  The files are created in the wave directory. They begin with the name
   of the game, plus a #, just like screenshots work.
 
   If you're having trouble make sure your .cfg file points to a valid directory,

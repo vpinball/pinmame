@@ -1862,7 +1862,7 @@ New/Updated Sound Sample Support
   pre-dcs games yet)
   [Steve Ellenoff]
 
-- Record Sound output to a Wav file (files go to your wavefile directory.. works similar to
+- Record Sound output to a Wav file (files go to your wave directory.. works similar to
   screen shots, aka, files are named with a number after them!)
   [Jarek Parchanski]
   [Steve Ellenoff]
