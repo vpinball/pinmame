@@ -1,3 +1,24 @@
+Version 2.2 (January 11, 2010) - "Birthday present!"
+------------------------------------------------------------------------------
+Happy Birthday Gaston!!!
+
+Another year slipped bye and we are curious what the year 2010 will bring.
+So at the start of 2010 we finally bring you a new release. With Brian now
+working hard on Visual Pinball and putting out lots of new VP versions the
+release schedule of PinMAME looks really slow, but let us say it is just
+because PinMAME is rock solid.
+
+Changes:
+
+*** CORE/CPU ***
+Added support to compile PinMAME with GCC 4.0, hopefully this will create
+  interest for someone to build a Linux version
+
+
+*** ROM SUPPORT ***
+
+
+
 Version 2.1 (February 1, 2009) - "Keep 'em coming!"
 ------------------------------------------------------------------------------
 OK, so six months have passed yet again - amazing how time flies.
