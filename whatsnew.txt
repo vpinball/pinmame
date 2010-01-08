@@ -1,8 +1,8 @@
-Version 2.2 (January 11, 2010) - "Birthday present!"
+Version 2.2 (January 11, 2010) - "As time goes by"
 ------------------------------------------------------------------------------
-Happy Birthday Gaston!!!
+At first: Happy Birthday Gaston!!!
 
-Another year slipped bye and we are curious what the year 2010 will bring.
+Another year slipped by and we are curious what the year 2010 will bring.
 So at the start of 2010 we finally bring you a new release. With Brian now
 working hard on Visual Pinball and putting out lots of new VP versions the
 release schedule of PinMAME looks really slow, but let us say it is just
@@ -11,18 +11,39 @@ because PinMAME is rock solid.
 Changes:
 
 *** CORE/CPU ***
+Support for Capcom shaded lamps (using ChangedDMD array)
+Reduced DE DMD clock to 2 MHz, making games & sounds sync better
+Reversed EOS switches for F14 Tomcat
+Corrections for shallow Gottlieb driver prototypes
+Kiss prototype moved to own source file kissp.c
+Re-added comments to byvidpin.c
+Gottlieb 9-segment digits replaced with legible alphanumerics (in DEBUG
+mode
+only)
+Added four more key columns (triggered by Q-Z through R-V combinations,
+DEBUG only)
 Added support to compile PinMAME with GCC 4.0, hopefully this will create
   interest for someone to build a Linux version
-
+Replaced void* by genf* for GCC 4.0
 
 *** ROM SUPPORT ***
-
+Gottlieb Strikes n' Spares (rev. 1)
+Gottlieb World Challenge Soccer (disp. rev. 2)
+Gottlieb Mario Andretti (prototype rev. 4)
+Sega Wack-a-Doodle-Doo
+Williams F-14 Tomcat (P-3, P-4)
+Toptronic unknown game on Gottlieb System 3 hardware (not working?)
+Sonic Solar Wars [tecnopinball.org]
+Playmatic Chance [pinball-dreams.com]
+Williams The Machine: Bride of PinBot (L-3), thanks to Inkochnito
+Sega X-Files (rev. 2.04), thanks to Inkochnito
+WMS No Good Gofers (rev. 1.0), thanks to Steve Ellenoff
 
 
 Version 2.1 (February 1, 2009) - "Keep 'em coming!"
 ------------------------------------------------------------------------------
 OK, so six months have passed yet again - amazing how time flies.
-Despite the fact that all major manufaturers are emulated by now, there's
+Despite the fact that all major manufacturers are emulated by now, there's
 still enough to do to iron out all of the bugs and inaccuracies.
 
 From time to time a few new games show up unexpectedly, like the new batch
