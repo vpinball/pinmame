@@ -1,4 +1,8 @@
-* (Maddes) Convert CVS repository to SVN repository
+* (Maddes) Convert CVS repository to SVN repository (checked and works, need to find date for conversion)
+* (Maddes) Incorporate XMAME patch found by FreeWPC, waiting for svn repo to use a branch then
+* (Maddes) VPinMAME: Reduce times NO_DUMP and BAD_DUMP messages appear, it's a pain on cabinets without mouse
+                     suggestions: only once like the "legally entitled" question, or every X time (e.g. 10, 100)
 * (Maddes) PinMAME32/VPinMAME: option for MAME debugger, like "debug 1" in ROM ini
 * (Maddes) VC++: check how MAME solved the source code creation for VC++, like gcc does for M68000
 * (Maddes) Enhance simulator to play back a recorded "game play"
+* (Maddes) VC++ 2010: Check vcproj files when final is released, plus express version with/without trial for VPM build (ATL)
