@@ -359,11 +359,11 @@ static WRITE_HANDLER(audiog1_w) {
 // Gen 2
 static WRITE_HANDLER(sound0_w) {
 	locals.diagnosticLed = data & 0x0f; /* coupled with waveform select */
-	sndbrd_0_ctrl_w(1, data);
+	sndbrd_ctrl_w(0, data);
 }
 
 static WRITE_HANDLER(sound1_w) {
-	sndbrd_0_data_w(0, data);
+	sndbrd_data_w(0, data);
 }
 
 /*-----------------------------------------
@@ -497,7 +497,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ATARI2)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 833333)
   MDRV_CPU_MEMORY(ATARI2_readmem, ATARI2_writemem)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
