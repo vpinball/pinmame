@@ -84,13 +84,12 @@ CORE_GAMEDEFNV(tt_game,"Unnamed game",19??,"Toptronic",mGTS3S,GAME_NOT_WORKING)
 / Caribbean Cruise (#C102)
 /-------------------------------------------------------------------*/
 INITGAME_IC(ccruise, ALPHA, FLIP67, 2, SNDBRD_GTS3, 4)
-GTS3ROMSTART(ccruise,	"gprom.bin",CRC(668b5757) SHA1(8ff955e8598ffdc68eab7fd69c6a67c4eed13f0f))
-GTS3SOUND32128(			"yrom1.bin",CRC(6e424e53) SHA1(90a9bf5ce84680972f9d12eb386215494c584b9b),
-						"drom1.bin",CRC(4480257e) SHA1(50b93d4496816ef7cdf007ac75c72c6aaa956aba),
-                        "arom1.bin",NO_DUMP,
-                        "arom2.bin",NO_DUMP)
+GTS3ROMSTART(ccruise, "gprom.bin",CRC(668b5757) SHA1(8ff955e8598ffdc68eab7fd69c6a67c4eed13f0f))
+GTS3SOUND32256IC(     "yrom1.bin",CRC(6e424e53) SHA1(90a9bf5ce84680972f9d12eb386215494c584b9b),
+                      "drom1.bin",CRC(4480257e) SHA1(50b93d4496816ef7cdf007ac75c72c6aaa956aba),
+                      "arom1.bin",CRC(f8cec60c) SHA1(e52f3a5890a3bb5eb6c932c3d0ed471ed76909c9))
 GTS3_ROMEND
-CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3SNO,0)
+CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0)
 
 // Premier games below
 /*-------------------------------------------------------------------
