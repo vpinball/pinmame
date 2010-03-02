@@ -147,6 +147,16 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, REGION_CPU2) \
 	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
+/*-- 2 x 32K Sound CPU Roms, 1 x 256K Voice Rom --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32256IC(n2,chk2,n1,chk1,n3,chk3) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
+    GTS3S_ROMLOAD2(0x00000, n3, chk3) \
+  SOUNDREGION(0x10000, REGION_CPU2) \
+    ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
 /*-- 2 x 32K Sound CPU Roms, 2 x 256K Voice Roms --*/
 //Purposely load in n2 first!
 #define GTS3SOUND32256A(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
