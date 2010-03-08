@@ -1,0 +1,687 @@
+<HTML>
+<BODY>
+<TABLE WIDTH="100%" ALIGN="center">
+<TR>
+<TH><H2>VISUAL PINMAME COM OBJECT PROPERTY/METHOD REFERENCE</H2></TH>
+<TR><TD Align="middle"><H4>Version 1.33</H4></TD></TR>
+<TR><TD Align="middle">The following is a list of all properties and methods made accessible by VPinMAME's COM 
+interface, with details below.</TD></TR>
+</TABLE>
+
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH>Summary</TH></TR></TABLE>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TH WIDTH="50%" BGCOLOR="#f0f0ff"><I>Properties</I></TH>
+        <TH WIDTH="50%" BGCOLOR="#f0f0ff"><I>Methods</I></TH></TR>
+    <TR><TD VALIGN=top><TABLE WIDTH="100%" BORDER=0>
+            <TR><TD WIDTH="50%">GameName</TD><TD WIDTH="50%">Running</TD></TR>
+            <TR><TD WIDTH="50%">Pause</TD><TD WIDTH="50%">Dip</TD></TR>
+            <TR><TD WIDTH="50%">HandleMechanics</TD><TD WIDTH="50%">WPCNumbering</TD></TR>
+            <TR><TD WIDTH="50%">Lamp</TD><TD WIDTH="50%">Solenoid</TD></TR>
+            <TR><TD WIDTH="50%">Switch</TD><TD WIDTH="50%">GIString</TD></TR>
+            <TR><TD WIDTH="50%">ChangedLamps</TD><TD WIDTH="50%">ChangedSolenoids</TD></TR>
+            <TR><TD WIDTH="50%">ChangedGI</TD><TD WIDTH="50%">DoubleSize</TD></TR>
+            <TR><TD WIDTH="50%">SplashInfoLine</TD><TD WIDTH="50%">ShowFrame</TD></TR>
+            <TR><TD WIDTH="50%">BorderSizeX</TD><TD WIDTH="50%">BorderSizeY</TD></TR>
+            <TR><TD WIDTH="50%">WindowPosX</TD><TD WIDTH="50%">WindowPosY</TD></TR>
+            <TR><TD WIDTH="50%">ShowTitle</TD><TD WIDTH="50%">HandleKeyboard</TD></TR>
+            <TR><TD WIDTH="50%">ShowDMDOnly</TD><TD WIDTH="50%">SampleRate</TD></TR>
+            <TR><TD WIDTH="50%">Antialias</TD><TD WIDTH="50%">LockDisplay</TD></TR>
+            <TR><TD WIDTH="50%">Version</TD><TD WIDTH="50%">ChangedLEDs</TD></TR>
+            <TR><TD WIDTH="50%">Hidden</TD><TD WIDTH="50%">&nbsp;</TD></TR>
+            </TABLE>
+        </TD>
+        <TD VALIGN=top><TABLE WIDTH="100%" BORDER=0>
+            <TR><TD WIDTH="50%">Run</TD><TD WIDTH="50%">Stop</TD></TR>
+            <TR><TD WIDTH="50%">ShowOptsDialog</TD><TD WIDTH="50%">ShowAboutDialog</TD></TR>
+            <TR><TD WIDTH="50%">ShowPathesDialog</TD><TD WIDTH="50%">CheckROMS</TD></TR>
+            <TR><TD WIDTH="50%">SetDisplayPosition</TD><TD WIDTH="50%"></TD></TR>
+            </TABLE></TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH>Details</TH></TR></TABLE>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Visual PinMAME Control</I></FONT><TH></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>GameName</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Initializes VPinMAME for game "gameName".<BR>
+        gameName: PinMAME short name (e.g. "tz_94h")<BR>
+	(See gamelist.txt for all gamenames supported in PinMAME!)
+	<BR><BR>
+  	Example:<BR>
+    	Controller.GameName = "tz_94h"<BR>
+        If Controller.GameName =
+         "tz_94h"  Then ...
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Running</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Returns True if the emulation is running, False otherwise.
+	<BR><BR>
+  	Example:<BR>
+        If 
+            Controller.Running Then ...
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Pause</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Setting this property to True will "Pause" the current emulation. <BR>
+        Setting it to false will "Resume" a paused emulation.
+	<BR><BR>
+  	Example:<BR>
+        Controller.Pause = True<BR>
+        If Controller.Pause Then 
+...
+        </TD>
+    </TR>
+    </TABLE>
+
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Version</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+            <p>Returns the version number of Visual PinMAME as an 8-digit string
+            "vvmmbbrr":<BR><BR>
+        vv = Major version<BR>
+        mm = Minor version<BR>
+        bb = Beta version<BR>
+        rr = Revision<BR><BR>
+  	Example:<BR>
+  		A result of "00990201" signifies "Version 0.99 Beta 2 Rev A<BR><BR>
+  		If (Controller.Version&lt;"00990201") Then MsgBox "You need a newer
+version of VPinMAME." : Exit Sub
+        </TD>
+    </TR>
+    </TABLE>
+
+
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD><B>Run(parentWindow, minVersion)</B></TH>
+    <TR><TD VALIGN=top>
+        Starts Visual PinMAME emulation of game specified with .GameName property<BR><BR>
+          parentWindow: handler of window to put outputin. (Default= 0 -&gt; no parent window) <BR><BR>
+        minVersion:   Minimum version of Visual PinMAME (e.g. 100 for 1.00) required to run this game! (Default=any version) <BR><BR>
+	Example:<BR>
+	Controller.Run 
+            0,110 ' VPinMAME 1.1 or higher required
+        </TD>
+    </TR>
+    <TR><TD><B>Stop</B></TH>
+    <TR><TD VALIGN=top>
+        Stops Visual PinMAME emulation.
+        <BR><BR>
+	Example:<BR>
+	Controller.Stop
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Game Settings</I></FONT><TH></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Dip (Dip Bank Number)</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Sets/Gets the Dip switch settings for the current game.<BR>
+        Dip Bank Number: dip 1-8 = bank 0, dip 9-16 = bank 1 ...<BR>
+        value: binary value to set the dips 1=On, 0=Off
+	<BR><BR>
+  	Example:<BR>
+    	Controller.Dip(0) = &amp;H55 <BR>
+	Controller.Dip(1) = 
+&amp;Haa
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>HandleMechanics</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	If the game has a PinMAME simulator it can be used to simulate hardware "toys".<BR>
+  	value: # of which Mechanics VPinMAME should handle. <BR>
+        Look at the PinMAME simulator source for each specific game to determine the #.
+	<BR><BR>
+  	Example:<BR>
+        ' For TZ: 1=Clock, 2=Gumball Machine<BR>
+        Controller.HandleMechanics = 1+2 ' Handle both 
+            Clock and gumball machine
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>WPCNumbering</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Determine if game uses WPC Numbering of Switches and Lamps<BR>
+        WPCNumbering = Column*10 + Row (11,12,13,14,15,16,17,18,21,22...)<BR>
+        non WPCnumbering = 1,2,3,4,...
+	<BR><BR>
+  	Example:<BR>
+        If WPCNumbering Then firstSwitch = 1 Else firstSwitch = 11
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>SampleRate</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Sets/Gets the sample rate
+	<BR><BR>
+  	Example:<BR>
+        Controller.SampleRate = 22050
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	None
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Customization</I></FONT><TH></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>SplashInfoLine</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	 Game credits to display in startup splash screen.
+	<BR><BR>
+  	Example:<BR>
+        Controller.SplashInfoLine = "Game design by ..."
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ShowFrame</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Enabled/Disables the window border<BR>
+        Only works if ShowTitle is set to False!
+	<BR><BR>
+	Example:<BR>
+	    Controller.ShowFrame = True	     'Show a frame around the VPinMAME window
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>DoubleSize</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Sets Visual PinMAME window to Double Size or Normal Size.<BR>
+	Returns whether Window is Double Size or not.
+	<BR><BR>
+	Example:<BR>
+	    Controller.DoubleSize = True 'Make Visual PinMAME Window Double Sized!
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Antialias</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	Enables/disables scan lines/coumns between the dots of the DMD. Default value 
+	is True.
+	Returns whether the scanlines are enabled or not.<BR>
+	Set this property before the emulation starts.
+	<BR><BR>
+	Example:<BR>
+	    Controller.Antialias = True 'Enable the scanlines
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>BorderSizeX</B><BR><B>BorderSizeY</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Sets &amp; Gets the size of an empty area around the DMD Display<BR>
+         Default value is&nbsp;4 Pixels
+	<BR><BR>
+	 Example:<BR>
+	    Controller.BorderSizeX = 20		'20 Pixels of space On Left &amp; Right sides of DMD<BR>
+	    Controller.BorderSizeY = 20		'20 Pixels of space On Top &amp; Bottom sides of DMD
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>WindowPosX</B><BR><B>WindowPosY</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Sets &amp; Gets the position of the Display Window
+	<BR><BR>
+	 Example:<BR>
+	    Controller.WindowPosX = 100		'Set X Position of Window to 100
+	    Controller.WindowPosY = 100		'Set Y Position of Window to 100
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>LockDisplay</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Sets/Gets the lock state of the display<BR>
+        If the display is locked no keyboard events are handled and the display can't be the active window!
+        <BR><BR>
+	Example:<BR>
+	    Controller.LockDisplay = True
+        </TD>
+    </TR>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Hidden</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write, VPM 1.32 or higher</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+        Sets or gets the hidden state of the display.<BR>
+        Setting Hidden=True makes the VPM display invisible until it is turned back
+        on with Hidden=False or VPM is restarted.<BR>
+        This is useful for applications that want to do the display drawing on their own.
+        <BR><BR>
+	Example:<BR>
+	    Controller.Hidden = True
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD><B>SetDisplayPosition(x,y,hWnd)</B></TH>
+    <TR><TD VALIGN=top>
+         Sets the position of the display to x and y; if&nbsp;hWnd is a valid window
+        handle, x and y are assumed to be relative to the window, so this function
+        calculates the proper screen position of the display
+        <BR><BR>
+	Example:<BR>
+	    Controller.SetDisplayPosition(100,100,hWnd) 
+ 
+	    'hWnd =  Handle of a
+	    Window.
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD><B>ShowOptsDialog(hWnd)</B></TH>
+    <TR><TD VALIGN=top>
+         Shows the options dialog for the current game or set default options if no game name is set.
+         The hWnd is the handle of the parent window, default is 0 (no parent window).
+        <BR><BR>
+	Example:<
+	    BR >
+	         
+	    Controller.ShowOptsDialog
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD><B>ShowPathesDialog(hWnd)</B></TH>
+    <TR><TD VALIGN=top>
+         Shows the pathes dialog where the user can set the diffrent pathes (ROMS, Cfg, Screenshots).
+         The hWnd is the handle of the parent window, default is 0 (no parent window).
+        <BR><BR>
+	Example:<
+	    BR >
+	         
+	    Controller.ShowPathesDialog
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD><B>ShowAboutDialog(hWnd)</B></TH>
+    <TR><TD VALIGN=top>
+         Displays the About dialog of Visual PinMAME.
+         The hWnd is the handle of the parent window, default is 0 (no parent window).
+        <BR><BR>
+	Example:<
+	    BR >    
+	    Controller.ShowAboutDialog
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD><B>CheckROMS(nShowOptions,hWnd)</B></TH>
+    <TR><TD VALIGN=top>
+		Checks the rom set for the current game and displays the results.<BR><BR>
+		nShowOptions:<BR>
+		0 = Allways displays the results<BR>
+		1 = Only displays the results if there are errors found<BR>
+		2 = Never displays the results<BR><BR>
+		Return value is true if the roms are good.<BR>
+		The hWnd is the handle for the parent window, default is 0 (no parent window)
+		<BR><BR>
+	Example:<BR>
+	    Controller.CheckROMS(0,hWnd) : Displays 
+                  the results of the ROM check
+	    (hWnd =     
+                       Handle of a 
+                  Window)
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Aggregate Polling Functions</I></FONT><TH></TR>
+<TR><TD> These properties return a matrix with everything that has
+         changed since the last call. <BR>
+         The array  contains the following info<BR>
+         Matrix(0,0) Number of first changed item<BR>
+         Matrix(0,1) New status of first item<BR>
+         Matrix(1,0) Number of second changed item
+</TD></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ChangedLamps</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Returns which lamps have changed since last call to this property!
+	<BR><BR>
+  	Example:<BR>
+    	chg = Controller.ChangedLamps <BR>
+        count = UBound(chg) <BR>
+        If
+        count &gt;  0 Then <BR>
+        &nbsp;For ii = 0 To count <BR>&nbsp;&nbsp;&nbsp;Text = "Lamp " &amp; chg(ii,0) &amp; "=" &amp; chg(ii,1) <BR>
+        &nbsp;Next <BR>
+        End 
+                  if
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ChangedSolenoids</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	 Same as ChangedLamps but for solenoids
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ChangedGI</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	 Same as ChangedLamps but for GI strings	
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ChangedLEDs</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read Only, VPM 1.20 or higher</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	Returns changed display digit segments since last call to this property.<BR>
+	<BR>
+	Two parameters specify which digits are to be examined. Digits are
+	numbered from 0 up to the highest digit present on the game display.
+	The numbering scheme varies with game model family.
+	
+	Depending on the game model, each digit contains 7 or more segments. The
+	states of the segments are returned as a bit pattern where a 1 denotes a
+	lit segment. Which bit corresponds to which segment is game model
+	dependant.<BR>
+	<BR>
+	<B>chg = Controller.ChangedLEDs ( mask2, mask1 )</B><BR>
+	<BR>
+	<B>mask1</B> is a 32-bit mask for digits 0 to 31.
+	For each bit set in this mask, information about the
+	corresponding digit is returned if it has changed since the last
+	call. The lowest bit denotes digit 0. Bits for nonexisting digits are ignored.<BR>
+	<BR>
+	<B>mask2</B> like mask1 but for digits 32 to 63.<BR>
+	<BR>
+	<B>chg</B> is the returned array with three values for each changed digit.
+	The IsEmpty(chg) function can be used to test for an empty array
+	in case no segments have changed. Otherwise array indices 0 to
+	Ubound(chg) contain the following information:<BR>
+	chg(x,0): digit number 0 to 63<BR>
+	chg(x,1): changed segments of this digit<BR>
+	chg(x,2): currently lit segments of this digit<BR>
+	<BR>
+	<B>Example:</B><BR>
+	<BR>
+	Williams system 6 games use the digit numbering:<BR>
+	digit  0 to  5 = Player 1 display 100,000 to 1<BR>
+	digit  6 to 11 = Player 2 display 100,000 to 1<BR>
+	digit 12 to 17 = Player 3 display 100,000 to 1<BR>
+	digit 18 to 23 = Player 4 display 100,000 to 1<BR>
+	digit 24 to 25 = Credit   display 10s and 1s<BR>
+	digit 26 to 27 = Match    display 10s and 1s<BR>
+	digit 28 to 63 = not used<BR>
+	<BR>
+	and segments bits " "=&h00, "0"=&h3f, "1"=&h06, "2"=&h5b, "3"=&h4f,
+	"4"=&h66, "5"=&h6d, "6"=&h7d, "7"=&h07, "8"=&h7f and "9"=&h6f<BR>
+	<BR>
+	A credit display changing from "01" to "02" will be reported by<BR>
+	chg = Controller.ChangedLEDs ( 0, &H03000000 )<BR>
+	as<BR>
+	IsEmpty(chg) : False ' changed segments have been detected<BR>
+	Ubound(chg)  : 0     ' array contains only one entry because the 10s digit didn't change<BR>
+	chg(0,0)     : 25    ' digit number of the credit 1s digit<BR>
+	chg(0,1)     : &h5d  ' segments changed by switching from "1" to "2"<BR>
+	chg(0,2)     : &h5b  ' segments lit showing "2"<BR>
+	<BR>
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	None
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Game Input/Output</I></FONT><TH></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Lamp(number)</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Get status of a single lamp<BR>
+        number: lamp #<BR>
+        return: True = Lamp on, False = Lamp off
+	<BR><BR>
+  	Example:<BR>
+	If Controller.Lamp(32) = True Then<BR>
+	&nbsp;&nbsp;&nbsp;'Light #32 is on..<BR>
+	Else<BR>
+	&nbsp;&nbsp;&nbsp;'Light #32 is off..<BR>
+	End If
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Solenoid(number)</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Get status of a single solenoid<BR>
+        number: solenoid #<BR>
+        return: True = Solenoid
+        on, False = 
+           
+               Solenoid off
+	<BR><BR>
+  	Example:<BR>
+	If Controller.Solenoid(5) = True Then<BR>
+	&nbsp;&nbsp;&nbsp;'Solenoid #5 is on..<BR>
+	Else<BR>
+	&nbsp;&nbsp;&nbsp;'Solenoid #5 is off..<BR>End If
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>GIString(number)</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read 
+                Only</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Get status of a single GI String (Note: Works only for WPC Game!)<BR>
+        number: GI String #<BR>
+        return: True = GI String on, False = GI String off
+	<BR><BR>
+  	Example:<BR>
+	If Controller.GIString(5) = True Then<BR>
+	&nbsp;&nbsp;&nbsp;'GI String #5 is on..<BR>>
+	Else<BR>
+	&nbsp;&nbsp;&nbsp;'GI String #5 is off..<BR>End If
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>Switch(number)</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Get Or Set the status of a single switch<BR>
+        number: Switch #<BR>
+        setting/returning: True =
+          
+          
+           Switch On, False = Switch Off
+	<BR><BR>
+  	Example:<BR>
+	(SETTING)<BR>
+        Controller.Switch(25) = True 'Turn Switch 25 on..<BR>
+        (GETTING)<BR>
+        If Controller.Switch(25) = True Then <BR>
+	&nbsp;&nbsp;&nbsp;'Switch #25 is on..<BR>
+	Else<BR>
+	&nbsp;&nbsp;&nbsp;'Switch #25 is off..<BR>
+	End If
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	None
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Debugging</I></FONT><TH></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Properties</B></TH></TD></TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ShowDMDOnly</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+  	Enable/disable VPinMAME status matrices.<BR>
+	Set this property before the emulation starts.
+	<BR><BR>
+  	Example:<BR>
+    	Controller.ShowDMDOnly = False  'Do NOT Display lamp,switch and solenoid matrix
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>HandleKeyboard</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	 If set to True, VPinMAME will process the keyboard.
+	 Standard MAME keys can be used in VPinMAME output window. Also the internal ball simulator
+	 is enabled.<BR>
+  	 If set to False, the scripting language will process the keyboard.<BR>
+	 Set this property before the emulation starts.
+	 <BR><BR>
+	 Example:<BR>
+	    Controller.HandleKeyboard = True	'Let VPinMAME handle Keyboard input
+    </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="50%"><B>ShowTitle</B></TH>
+        <TD WIDTH="50%" ALIGN="right">Read/Write</TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	 Show title bar on VPinMAME output window (to move it around)
+	 <BR><BR>
+	 Example:<BR>
+	    Controller.ShowTitle = True		'Display the Title Bar
+        </TD>
+    </TR>
+    </TABLE>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD WIDTH="100%" BGCOLOR="#f0f0ff" ALIGN="middle"><B>Methods</B></TH></TD>
+    <TR><TD VALIGN=top COLSPAN=2>
+	None
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE>
+<BR>
+<TABLE WIDTH="100%" ALIGN="center" BORDER=0>
+<TR><TH BGCOLOR="#8080ff"><FONT SIZE=5><I>Events</I></FONT><TH></TR>
+<TR><TD> May not be supported in all scripting environments!</TD></TR>
+<TR><TD>
+    <TABLE WIDTH="100%" BORDER = 1>
+    <TR><TD VALIGN=top COLSPAN=2>
+	<B>OnSolenoid(solenoidNo, isActive)</B>
+        </TD>
+    </TR>
+    <TR><TD VALIGN=top COLSPAN=2>
+	Called whenever a solenoid changes state
+        </TD>
+    </TR>
+    <TR><TD VALIGN=top COLSPAN=2>
+	<B>OnStateChange(newState)</B>
+        </TD>
+    </TR>
+    <TR><TD VALIGN=top COLSPAN=2>
+	Called whenever 
+                  the emulation is started or stopped
+        (not called on Pause)
+        </TD>
+    </TR>
+    </TABLE>
+</TD></TR>
+</TABLE></TD></TR></TABLE>
+</BODY>
+</HTML>
