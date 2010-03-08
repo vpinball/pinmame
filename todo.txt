@@ -1,4 +1,3 @@
-* (Maddes) Convert CVS repository to SVN repository (checked and works, need to find date for conversion)
 * (Maddes) Incorporate XMAME patch found by FreeWPC, waiting for svn repo to use a branch then
 * (Maddes) VPinMAME: Reduce times NO_DUMP and BAD_DUMP messages appear, it's a pain on cabinets without mouse
                      suggestions: only once like the "legally entitled" question, or every X time (e.g. 10, 100)
