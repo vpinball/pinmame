@@ -1,0 +1,62 @@
+Table of Contents
+=================
+1.  Introduction to Subversion
+1.1 General repository handling
+2.  Subversion guidelines for this project
+
+
+1.  Introduction to Subversion
+==============================
+
+ Subversion is available at http://subversion.apache.org/
+
+ It is recommended to read chapters 1-4 of the free eBook "Version Control with
+ Subversion" at http://svnbook.red-bean.com/
+
+1.1 General repository handling
+
+ The trunk is always the current development and should have the complete
+ history from the very first start to the latest edition.
+ If the developers decide that the current development is ready for release,
+ then there are normally two options:
+
+ a) No testing period needed, so just "tag" the current trunk as the new release
+    by copying trunk to the tags folder.
+    Developers immediately continue to develop new features in trunk.
+    The tag folder can be checked out to get exactly the code source of that
+    release.
+
+ b) Longer testing period necessary, so copy the current trunk to the branches
+    folder.
+    Developers immediately continue to develop new features in trunk.
+    Meanwhile using the branch copy for testing the upcoming release. If the
+    branch (=release) is stable it gets "tagged" by being copied to the tags
+    folder. Changes can be merged back and forth from the trunk.
+
+ trunk    = normal development
+ tags     = "fixed" versions
+ branches = separate development from trunk
+            (like fixing new release or heavy code re-structuring)
+
+
+2.  Subversion guidelines for this project
+==========================================
+
+ a) First maintain the global-ignores list in your svn config file on your
+    computer.
+    This is to avoid accidentally commiting temporary files from you or your
+    tools. As a good template the file "svn_client_config.txt" can be used.
+
+    See also:
+    http://svnbook.red-bean.com/nightly/en/svn.advanced.confarea.html#svn.advanced.confarea.opts.config
+    http://tortoisesvn.net/node/64
+
+ b) If you create new directories in the repository, then please use the file
+    "svn_dir_ignore_list.txt" as a template for initialising their svn-ignore
+    property.
+
+    Command: "svn propset svn:ignore --file svn_dir_ignore_list.txt path/to/folder"
+
+ c) Before doing bigger changes, especially re-arranging files and directories,
+    talk to the project maintainers and contributors first.
+    Using the developer mailing list for this is recommended.
