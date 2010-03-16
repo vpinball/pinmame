@@ -217,6 +217,17 @@ static core_tLCDLayout dispAlpha[] = {
 };
 
 /*--------------------------------
+/ Super Bowl (X's & O's Clone)
+/-------------------------------*/
+INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+BY35_ROMSTARTx00(suprbowl,"sbowlu2.732",CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
+                          "sbowlu6.732",CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
+BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(suprbowl,xsandos,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
 / Tiger Rag (Kings Of Steel Clone)
 /-------------------------------*/
 ROM_START(tigerrag)
