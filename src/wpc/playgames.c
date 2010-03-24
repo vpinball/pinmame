@@ -66,8 +66,11 @@ core_tLCDLayout play_disp7[] = {
   {0}
 };
 
+// 03/78 Space Gambler
+// 04/78 Big Town
+
 /*-------------------------------------------------------------------
-/ Last Lap (1978)
+/ 09/78 Last Lap
 /-------------------------------------------------------------------*/
 INITGAME1(lastlap, play_dispOld, 1)
 PLAYMATIC_ROMSTART88(lastlap,	"lastlapa.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
@@ -76,7 +79,7 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
-/ Chance (1978)
+/ 09/78 Chance
 /-------------------------------------------------------------------*/
 INITGAME1(chance, play_dispOld, 1)
 PLAYMATIC_ROMSTART884(chance,	"chance_a.bin", CRC(3cd9d5a6) SHA1(c1d9488495a67198f7f60f70a889a9a3062c71d7),
@@ -85,8 +88,10 @@ PLAYMATIC_ROMSTART884(chance,	"chance_a.bin", CRC(3cd9d5a6) SHA1(c1d9488495a6719
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(chance,"Chance",1978,"Playmatic",gl_mPLAYMATIC1A,0)
 
+// 05/79 Party
+
 /*-------------------------------------------------------------------
-/ Antar (1979)
+/ 11/79 Antar
 /-------------------------------------------------------------------*/
 INITGAME(antar, play_disp6, 1)
 PLAYMATIC_ROMSTART8888(antar,	"antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457bd0ce8638e9c477f16e65763),
@@ -96,8 +101,16 @@ PLAYMATIC_ROMSTART8888(antar,	"antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(antar,"Antar",1979,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
 
+INITGAME(antar2, play_disp6, 1)
+PLAYMATIC_ROMSTART8888(antar2,	"antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457bd0ce8638e9c477f16e65763),
+						"antar09.bin", CRC(2c954f1a) SHA1(fa83a5f1c269ea28d4eeff181f493cbb4dc9bc47),
+						"antar10a.bin", CRC(520eb401) SHA1(1d5e3f829a7e7f38c7c519c488e6b7e1a4d34321),
+						"antar11a.bin", CRC(17ad38bf) SHA1(e2c9472ed8fbe9d5965a5c79515a1b7ea9edaa79))
+PLAYMATIC_ROMEND
+CORE_CLONEDEFNV(antar2,antar,"Antar (alternate set)",1979,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+
 /*-------------------------------------------------------------------
-/ Evil Fight (1980)
+/ 03/80 Evil Fight
 /-------------------------------------------------------------------*/
 INITGAME(evlfight, play_disp6, 1)
 PLAYMATIC_ROMSTART8888(evlfight,	"evfg08.bin", CRC(2cc2e79a) SHA1(17440512c419b3bb2012539666a5f052f3cd8c1d),
@@ -108,7 +121,44 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
 
 /*-------------------------------------------------------------------
-/ Mad Race (1982)
+/ 10/80 Attack
+/-------------------------------------------------------------------*/
+INITGAME(attack, play_disp6, 1)
+PLAYMATIC_ROMSTART8888(attack,	"attack8.bin", CRC(a5204b58) SHA1(afb4b81720f8d56e88f47fc842b23313824a1085),
+						"attack9.bin", CRC(bbd086b4) SHA1(6fc94b94beea482d8c8f5b3c69d3f218e2b2dfc4),
+						"attack10.bin", CRC(764925e4) SHA1(2f207ef87786d27d0d856c5816a570a59d89b718),
+						"attack11.bin", CRC(972157b4) SHA1(23c90f23a34b34acfe445496a133b6022a749ccc))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(attack,"Attack",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ 12/80 Black Fever
+/-------------------------------------------------------------------*/
+INITGAME(blkfever, play_disp6, 1)
+PLAYMATIC_ROMSTART8888(blkfever,	"blackf8.bin", NO_DUMP,
+						"blackf9.bin", CRC(ecb72fdc) SHA1(d3598031b7170fab39727b3402b7053d4f9e1ca7),
+						"blackf10.bin", CRC(b3fae788) SHA1(e14e09cc7da1098abf2f60f26a8ec507e123ff7c),
+						"blackf11.bin", CRC(5a97c1b4) SHA1(b9d7eb0dd55ef6d959c0fab48f710e4b1c8d8003))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(blkfever,"Black Fever",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+
+// ??/80 Zira
+
+/*-------------------------------------------------------------------
+/ 03/82 Cerberus
+/-------------------------------------------------------------------*/
+INITGAME(cerberus, play_disp6, 1)
+PLAYMATIC_ROMSTART000(cerberus,	"cerb8.cpu", CRC(021d0452) SHA1(496010e6892311b1cabcdac62296cd6aa0782c5d),
+								"cerb9.cpu", CRC(0fd41156) SHA1(95d1bf42c82f480825e3d907ae3c87b5f994fd2a),
+								"cerb10.cpu", CRC(785602e0) SHA1(f38df3156cd14ab21752dbc849c654802079eb33))
+PLAYMATIC_SOUNDROM64("cerb.snd", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
+
+// 10/82 Spain 82
+
+/*-------------------------------------------------------------------
+/ Mad Race
 /-------------------------------------------------------------------*/
 INITGAME(madrace, play_disp6, 1)
 PLAYMATIC_ROMSTART000(madrace,	"madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
@@ -117,20 +167,20 @@ PLAYMATIC_ROMSTART000(madrace,	"madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d9
 PLAYMATIC_SOUNDROM6416(	"madrace1.snd", CRC(49e956a5) SHA1(8790cc27a0fda7b8e07bee65109874140b4018a2),
 						"madrace2.snd", CRC(c19283d3) SHA1(42f9770c46030ef20a80cc94fdbe6548772aa525))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(madrace,"Mad Race",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
+CORE_GAMEDEFNV(madrace,"Mad Race",198?,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 
 /*-------------------------------------------------------------------
-/ Meg-Aaton (1983)
+/ 04/84 Meg-Aaton
 /-------------------------------------------------------------------*/
 INITGAME3(megaaton, play_disp7, 1)
 PLAYMATIC_ROMSTART64(megaaton,	"cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
 PLAYMATIC_SOUNDROM6432(	"smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
 						"smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1983,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS)
+CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1984,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS)
 
 /*-------------------------------------------------------------------
-/ KZ-26 (1984)
+/ ??/84 KZ-26
 /-------------------------------------------------------------------*/
 INITGAME4(kz26, play_disp7, 1)
 PLAYMATIC_ROMSTART64(kz26,	"kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
@@ -138,3 +188,14 @@ PLAYMATIC_SOUNDROM6432(	"sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09
 						"sound2.su4", CRC(b66100d3) SHA1(85f5a319715f99d1b7afeca0d01c81aa615d416a))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(kz26,"KZ-26",1984,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+
+// ??/84 Nautilus
+// ??/84 The Raid
+// 11/84 UFO-X
+// ??/85 Rock 2500
+// ??/85 Star Fire
+// ??/85 Stop Ship
+// ??/85 Trailer
+// ??/86 Flash Dragon
+// ??/87 Phantom Ship
+// ??/87 Skill Flight

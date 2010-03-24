@@ -663,31 +663,32 @@ DRIVERNV(odisea)    // Odisea Paris-Dakar (1987)
 // ----------------
 // PLAYMATIC
 // ----------------
-DRIVERNV(lastlap)   //Last Lap (1978)
-DRIVERNV(chance)    //Chance (1978)
-            //Space Gambler (1978)
-            //Attack (1979)
-            //Big Town (1979)
-DRIVERNV(antar)     //Antar (1979)
-            //Party (1979)
-            //Black Fever (1980)
-DRIVERNV(evlfight)    //Evil Fight (1980)
-            //Zira (1980)
-            //Cerberus (1981)
-            //Spain 82 (1982)
-DRIVERNV(kz26)      //KZ-26 (1984)
-            //The Raid (1984)
-            //UFO-X (1984)
-            //Nautilus (1984)
-DRIVERNV(megaaton)    //Meg-Aaton (1985)
-            //Trailer (1985)
-DRIVERNV(madrace)   //Mad Race (1985)
-            //Flash Dragon (1986)
-            //Star Fire (1986)
-            //Pinball Champ (1986)
-            //Rock 2500 (1986)
-            //Phantom Ship (1987)
-            //Skill Flight (1987)
+                   // 03/78 Space Gambler
+                   // 04/78 Big Town
+DRIVERNV(lastlap)  // 09/78 Last Lap
+DRIVERNV(chance)   // 09/78 Chance
+                   // 05/79 Party
+DRIVERNV(antar)    // 11/79 Antar
+DRIVERNV(antar2)   // 11/79 Antar (alternate set)
+DRIVERNV(evlfight) // 03/80 Evil Fight
+DRIVERNV(attack)   // 10/80 Attack
+DRIVERNV(blkfever) // 12/80 Black Fever
+                   // ??/80 Zira
+DRIVERNV(cerberus) // 03/82 Cerberus
+                   // 10/82 Spain 82
+DRIVERNV(madrace)  // ??/8? Mad Race
+DRIVERNV(megaaton) // 04/84 Meg-Aaton
+DRIVERNV(kz26)     // ??/84 KZ-26
+                   // ??/84 Nautilus
+                   // ??/84 The Raid
+                   // 11/84 UFO-X
+                   // ??/85 Rock 2500
+                   // ??/85 Star Fire
+                   // ??/85 Stop Ship
+                   // ??/85 Trailer
+                   // ??/86 Flash Dragon
+                   // ??/87 Phantom Ship
+                   // ??/87 Skill Flight
 
 // ----------------
 // ROWAMET
@@ -1089,11 +1090,11 @@ DRIVER(ij4,116f)        //S.A.M: 09/08 Indiana Jones - V1.16 (French)
 DRIVER(ij4,116g)        //S.A.M: 09/08 Indiana Jones - V1.16 (German)
 DRIVER(ij4,116i)        //S.A.M: 09/08 Indiana Jones - V1.16 (Italian)
 DRIVER(ij4,116l)        //S.A.M: 09/08 Indiana Jones - V1.16 (Spanish)
-DRIVER(bdk,130)         //S.A.M: 07/08 Batman The Dark Knight - V1.3
-DRIVER(bdk,200)         //S.A.M: 08/08 Batman The Dark Knight - V2.0
-DRIVER(bdk,201)         //S.A.M: 08/08 Batman The Dark Knight - V2.01
-DRIVER(bdk,202)         //S.A.M: 08/08 Batman The Dark Knight - V2.02
-DRIVER(bdk,204)         //S.A.M: 11/09 Batman The Dark Knight - V2.04
+DRIVER(bdk,130)         //S.A.M: 07/08 Batman - The Dark Knight - V1.3
+DRIVER(bdk,200)         //S.A.M: 08/08 Batman - The Dark Knight - V2.0
+DRIVER(bdk,201)         //S.A.M: 08/08 Batman - The Dark Knight - V2.01
+DRIVER(bdk,202)         //S.A.M: 08/08 Batman - The Dark Knight - V2.02
+DRIVER(bdk,240)         //S.A.M: 11/09 Batman - The Dark Knight - V2.4
 DRIVER(csi,102)         //S.A.M: 11/08 C.S.I. - V1.02
 DRIVER(csi,200)         //S.A.M: 12/08 C.S.I. - V2.0
 DRIVER(csi,210)         //S.A.M: 01/09 C.S.I. - V2.1
@@ -1102,10 +1103,12 @@ DRIVER(csi,240)         //S.A.M: 08/09 C.S.I. - V2.4
 DRIVER(twenty4,130)     //S.A.M: 03/09 24 - V1.3
 DRIVER(twenty4,140)     //S.A.M: 03/09 24 - V1.4
 DRIVER(twenty4,144)     //S.A.M: 09/09 24 - V1.44
+DRIVER(nba,600)         //S.A.M: 06/09 NBA - V6.0
 DRIVER(nba,700)         //S.A.M: 06/09 NBA - V7.0
 DRIVER(nba,801)         //S.A.M: 08/09 NBA - V8.01
 DRIVER(nba,802)         //S.A.M: 11/09 NBA - V8.02
-DRIVER(bbh,150)         //S.A.M: 02/10 Big Buck Hunter - V1.50
+DRIVER(bbh,140)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.4
+DRIVER(bbh,150)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.5
 #endif
 
 // ---------------
