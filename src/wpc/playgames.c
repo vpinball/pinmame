@@ -135,7 +135,7 @@ CORE_GAMEDEFNV(attack,"Attack",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
 / 12/80 Black Fever
 /-------------------------------------------------------------------*/
 INITGAME(blkfever, play_disp6, 1)
-PLAYMATIC_ROMSTART8888(blkfever,	"blackf8.bin", NO_DUMP,
+PLAYMATIC_ROMSTART8888(blkfever,	"blackf8.bin", CRC(916b8ed8) SHA1(ddc7e09b68e3e1a033af5dc5ec32ab5b0922a833),
 						"blackf9.bin", CRC(ecb72fdc) SHA1(d3598031b7170fab39727b3402b7053d4f9e1ca7),
 						"blackf10.bin", CRC(b3fae788) SHA1(e14e09cc7da1098abf2f60f26a8ec507e123ff7c),
 						"blackf11.bin", CRC(5a97c1b4) SHA1(b9d7eb0dd55ef6d959c0fab48f710e4b1c8d8003))
