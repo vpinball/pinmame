@@ -118,8 +118,8 @@
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BIT(   0x0010, "Key 7",       KEYCODE_7) \
-    COREPORT_BIT(   0x0020, "Key 8",       KEYCODE_8) \
+    COREPORT_BIT(   0x0008, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0010, "Ball Tilt / Advance Step", KEYCODE_8) \
     COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
 
 /*-- Standard input ports --*/
@@ -174,7 +174,6 @@
 
 #define PLAYMATIC_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define PLAYMATIC_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
-#define PLAYMATIC_SOLSMOOTH       6 /* Smooth the Solenoids over this number of VBLANKS */
 
 /*-- Memory regions --*/
 #define PLAYMATIC_MEMREG_CPU      REGION_CPU1

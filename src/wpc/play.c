@@ -97,8 +97,6 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
-  if ((locals.vblankCount % PLAYMATIC_SOLSMOOTH) == 0)
-    locals.solenoids = 0;
 
   core_updateSw(TRUE);
 }
@@ -115,7 +113,7 @@ static SWITCH_UPDATE(PLAYMATIC1) {
 
 static SWITCH_UPDATE(PLAYMATIC2) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : 0xf7, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : (locals.cpuType < 3 ? 0xf7 : 0xdf), 1);
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x01, 0);
   }
   locals.ef[4] = !(coreGlobals.swMatrix[0] & 1);
@@ -209,6 +207,7 @@ static READ_HANDLER(in1_n) {
 }
 
 static WRITE_HANDLER(out2_n) {
+  UINT32 sols = 0;
   int i;
   static int outports[4][8] =
     {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
@@ -256,10 +255,10 @@ static WRITE_HANDLER(out2_n) {
       locals.vblankCount = 5;
       if (locals.cpuType == 2) locals.vblankCount = 4;
       for (i=0; i < 8; i++) {
-        locals.solenoids |= (coreGlobals.tmpLampMatrix[8 + i] & 1) << i;
-        locals.solenoids |= (coreGlobals.tmpLampMatrix[8 + i] & 2) << (7 + i);
+        sols |= (coreGlobals.tmpLampMatrix[8 + i] & 1) << i;
+        sols |= (coreGlobals.tmpLampMatrix[8 + i] & 2) << (7 + i);
       }
-      locals.solenoids |= (coreGlobals.tmpLampMatrix[8] & 4) << 14;
+      locals.solenoids = sols | (coreGlobals.tmpLampMatrix[8] & 4) << 14;
       break;
     case UNKNOWN:
       logerror("unkown out_n write: %02x\n", data);

@@ -681,9 +681,9 @@ DRIVERNV(megaaton) // 04/84 Meg-Aaton
 DRIVERNV(kz26)     // ??/84 KZ-26
                    // ??/84 Nautilus
                    // ??/84 The Raid
-                   // 11/84 UFO-X
-                   // ??/85 Rock 2500
-                   // ??/85 Star Fire
+DRIVERNV(ufo_x)    // 11/84 UFO-X
+DRIVERNV(rock2500) // ??/85 Rock 2500
+DRIVERNV(starfire) // ??/85 Star Fire
                    // ??/85 Stop Ship
                    // ??/85 Trailer
                    // ??/86 Flash Dragon
