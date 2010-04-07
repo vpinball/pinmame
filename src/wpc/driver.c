@@ -678,14 +678,14 @@ DRIVERNV(cerberus) // 03/82 Cerberus
                    // 10/82 Spain 82
 DRIVERNV(madrace)  // ??/8? Mad Race
 DRIVERNV(megaaton) // 04/84 Meg-Aaton
-DRIVERNV(kz26)     // ??/84 KZ-26
                    // ??/84 Nautilus
                    // ??/84 The Raid
 DRIVERNV(ufo_x)    // 11/84 UFO-X
+DRIVERNV(kz26)     // ??/85 KZ-26
 DRIVERNV(rock2500) // ??/85 Rock 2500
 DRIVERNV(starfire) // ??/85 Star Fire
+DRIVERNV(trailer)  // ??/85 Trailer
                    // ??/85 Stop Ship
-                   // ??/85 Trailer
                    // ??/86 Flash Dragon
                    // ??/87 Phantom Ship
                    // ??/87 Skill Flight
