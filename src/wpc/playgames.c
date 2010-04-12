@@ -155,8 +155,6 @@ PLAYMATIC_SOUNDROM64("cerb.snd", NO_DUMP)
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 
-// 10/82 Spain 82
-
 /*-------------------------------------------------------------------
 / Mad Race
 /-------------------------------------------------------------------*/
@@ -168,6 +166,16 @@ PLAYMATIC_SOUNDROM6416( "madrace1.snd", CRC(49e956a5) SHA1(8790cc27a0fda7b8e07be
             "madrace2.snd", CRC(c19283d3) SHA1(42f9770c46030ef20a80cc94fdbe6548772aa525))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(madrace,"Mad Race",198?,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ 10/82 Spain '82
+/-------------------------------------------------------------------*/
+INITGAME3(spain82, play_disp6, 1)
+PLAYMATIC_ROMSTART320(spain82,  "spaic12.bin", CRC(cd37ecdc) SHA1(ff2d406b6ac150daef868121e5857a956aabf005),
+                "spaic11.bin", CRC(c86c0801) SHA1(1b52539538dae883f9c8fe5bc6454f9224780d11))
+PLAYMATIC_SOUNDROM64("spasnd.bin", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(spain82,"Spain '82",1982,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / 04/84 Meg-Aaton
@@ -207,7 +215,7 @@ CORE_GAMEDEFNV(kz26,"KZ-26",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
 /-------------------------------------------------------------------*/
 INITGAME4(rock2500, play_disp7, 1)
 PLAYMATIC_ROMSTART64(rock2500,"r2500cpu.rom", CRC(9c07e373) SHA1(5bd4e69d11e69fdb911a6e65b3d0a7192075abc8))
-PLAYMATIC_SOUNDROM64("r2500snd.rom", CRC(3936a62f) SHA1(6bafc8434c86e5ac41c1b8cee0c4c136fb4f3962))
+PLAYMATIC_SOUNDROM64("r2500snd.rom", CRC(24fbaeae) SHA1(20ff35ed689291f321e483287a977c02e84d4524))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(rock2500,"Rock 2500",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
 
