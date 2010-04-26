@@ -41,8 +41,14 @@ enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN };
 /-----------------*/
 static struct {
   int    vblankCount;
+  int    lastSolCount;
   UINT32 solenoids;
   UINT8  sndCmd;
+  int    sndBits;
+  int    enRl; // Out 3 Bit 4
+  int    enDy; // Out 3 Bit 5
+  int    enSn; // Out 3 Bit 6
+  int    enX; // Out 3 Bit 7
   int    ef[5];
   int    q;
   int    snd_sc;
@@ -97,6 +103,7 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
+  if (!((locals.vblankCount - locals.lastSolCount) % 4)) locals.solenoids = 0;
 
   core_updateSw(TRUE);
 }
@@ -202,63 +209,64 @@ static WRITE_HANDLER(out1_n) {
 
 static READ_HANDLER(in1_n) {
   UINT8 data = coreGlobals.swMatrix[offset];
-  logerror("in: %d\n", offset);
   return offset > 5 ? ~data : data;
 }
 
 static WRITE_HANDLER(out2_n) {
-  UINT32 sols = 0;
-  int i;
+	UINT8 abcData, lampData;
   static int outports[4][8] =
     {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
      { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
      { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
      { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
   const int out = outports[locals.cpuType][offset-1];
-  logerror("out: %d:%02x\n", out, data);
   switch (out) {
     case DISPCOL:
       if (!(data & 0x7f))
         locals.panelSel = 0;
       else
         locals.digitSel = bitColToNum(data & 0x7f);
-      discrete_sound_w(1, data >> 7);
       break;
     case DISPLAY:
       disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
       break;
     case SOUND:
-      if (cpu_gettotalcpu() > 1) {
-	    locals.sndCmd = data;
-      }
       break;
     case LAMPCOL:
       locals.lampCol = data;
       break;
     case LAMP:
+      abcData = locals.lampCol & 0x07;
+      locals.enRl = (data >> 4) & 1;
+      locals.enDy = (data >> 5) & 1;
+      locals.enSn = (data >> 6) & 1;
+      locals.enX = (data >> 7) & 1;
+      lampData = (data & 0x0f) ^ 0x0f;
       if (locals.cpuType < 2) {
-        if (!(data & 0x80)) {
+        if (!locals.enX) { // why is this needed?
           if (locals.ef[3])
-            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0xf0) | ((data & 0x0f) ^ 0x0f);
+            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
           else
-            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
+            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
         }
       } else {
-        if (!(data & 0x10)) {
+        if (!locals.enRl) { // why is this needed?
           if (!locals.ef[3])
-            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0xf0) | ((data & 0x0f) ^ 0x0f);
+            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
           else
-            coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] = (coreGlobals.tmpLampMatrix[locals.lampCol & 0x07] & 0x0f) | (((data & 0x0f) ^ 0x0f) << 4);
+            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
         }
       }
-      coreGlobals.tmpLampMatrix[8 + (locals.lampCol & 0x07)] = locals.lampCol >> 3;
-      locals.vblankCount = 5;
-      if (locals.cpuType == 2) locals.vblankCount = 4;
-      for (i=0; i < 8; i++) {
-        sols |= (coreGlobals.tmpLampMatrix[8 + i] & 1) << i;
-        sols |= (coreGlobals.tmpLampMatrix[8 + i] & 2) << (7 + i);
+      if (!core_gameData->hw.gameSpecific1 || !locals.enRl) { // if the game uses "en" flags, only activate if flag is low
+        if ((locals.lampCol & 0x08)) locals.solenoids |= 1 << abcData;
+        if ((locals.lampCol & 0x10)) locals.solenoids |= 0x100 << abcData;
+        if (core_gameData->hw.gameSpecific1)
+          locals.lastSolCount = locals.vblankCount + 2;
       }
-      locals.solenoids = sols | (coreGlobals.tmpLampMatrix[8] & 4) << 14;
+      if (!core_gameData->hw.gameSpecific1 || !locals.enSn) { // if the game uses "en" flags, only activate if flag is low
+        locals.sndCmd = locals.lampCol;
+        locals.sndBits = 8;
+      }
       break;
     case UNKNOWN:
       logerror("unkown out_n write: %02x\n", data);
@@ -469,11 +477,16 @@ static WRITE_HANDLER(ay1_w) {
 
 static WRITE_HANDLER(clk_snd) {
   printf("snd clk: %x\n", data);
+  locals.sndCmd >>= 1;
+}
+
+static INTERRUPT_GEN(PLAYMATIC_sndirq) {
+  static int irqLine = 0;
+  irqLine = !irqLine;
 }
 
 static WRITE_HANDLER(out_snd) {
   printf("snd out: %x\n", data);
-  cpu_set_irq_line(PLAYMATIC_SCPU, 0, data ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static MEMORY_READ_START(playsound_readmem)
@@ -498,14 +511,16 @@ MEMORY_END
 static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
 
 static UINT8 snd_ef(void) {
-//  int cmd = locals.sndCmd & 1;
-//  locals.sndCmd >>= 1;
-return 0x05;
-//  return cmd;
+  if (locals.sndBits > 0) {
+    locals.sndBits--;
+  }
+  return locals.sndCmd & 1;
 }
 
 static void snd_sc(int data) {
-	locals.snd_sc = data;
+	if (data == 1) {
+    cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, locals.sndCmd & 1 ? ASSERT_LINE : CLEAR_LINE);
+  }
 }
 
 static CDP1802_CONFIG play1802_snd_config =
@@ -525,7 +540,7 @@ MACHINE_DRIVER_START(PLAYMATIC2S)
   MDRV_CPU_CONFIG(play1802_snd_config)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
-//  MDRV_CPU_PORTS(NULL, playsound_writeport)
+  MDRV_CPU_PORTS(NULL, playsound_writeport)
   MDRV_SOUND_ADD(AY8910, play_ay8910)
 MACHINE_DRIVER_END
 
