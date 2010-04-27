@@ -41,10 +41,8 @@ enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN };
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    lastSolCount;
   UINT32 solenoids;
   UINT8  sndCmd;
-  int    sndBits;
   int    enRl; // Out 3 Bit 4
   int    enDy; // Out 3 Bit 5
   int    enSn; // Out 3 Bit 6
@@ -103,7 +101,6 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
-  if (!((locals.vblankCount - locals.lastSolCount) % 4)) locals.solenoids = 0;
 
   core_updateSw(TRUE);
 }
@@ -213,13 +210,14 @@ static READ_HANDLER(in1_n) {
 }
 
 static WRITE_HANDLER(out2_n) {
-	UINT8 abcData, lampData;
   static int outports[4][8] =
     {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
      { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
      { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
      { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
   const int out = outports[locals.cpuType][offset-1];
+  UINT8 abcData, lampData;
+  int enable;
   switch (out) {
     case DISPCOL:
       if (!(data & 0x7f))
@@ -242,30 +240,25 @@ static WRITE_HANDLER(out2_n) {
       locals.enSn = (data >> 6) & 1;
       locals.enX = (data >> 7) & 1;
       lampData = (data & 0x0f) ^ 0x0f;
-      if (locals.cpuType < 2) {
-        if (!locals.enX) { // why is this needed?
-          if (locals.ef[3])
-            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
-          else
-            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
-        }
-      } else {
-        if (!locals.enRl) { // why is this needed?
-          if (!locals.ef[3])
-            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
-          else
-            coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
-        }
+      enable = locals.cpuType < 2 ? !locals.enX : !locals.enRl;
+      if (enable) {
+        if (locals.ef[3])
+          coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
+        else
+          coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
+        if ((locals.lampCol & 0x08))
+          locals.solenoids |= 1 << abcData;
+        else
+          locals.solenoids &= ~(1 << abcData);
+        if ((locals.lampCol & 0x10))
+          locals.solenoids |= 0x100 << abcData;
+        else
+          locals.solenoids &= ~(0x100 << abcData);
       }
-      if (!core_gameData->hw.gameSpecific1 || !locals.enRl) { // if the game uses "en" flags, only activate if flag is low
-        if ((locals.lampCol & 0x08)) locals.solenoids |= 1 << abcData;
-        if ((locals.lampCol & 0x10)) locals.solenoids |= 0x100 << abcData;
-        if (core_gameData->hw.gameSpecific1)
-          locals.lastSolCount = locals.vblankCount + 2;
-      }
-      if (!core_gameData->hw.gameSpecific1 || !locals.enSn) { // if the game uses "en" flags, only activate if flag is low
+      // if the game uses "en" flags, only enable sound if the !ENSN signal is low
+      if (!core_gameData->hw.gameSpecific1 || !locals.enSn) {
         locals.sndCmd = locals.lampCol;
-        locals.sndBits = 8;
+        logerror("snd cmd: %02x\n", locals.sndCmd);
       }
       break;
     case UNKNOWN:
@@ -476,7 +469,7 @@ static WRITE_HANDLER(ay1_w) {
 }
 
 static WRITE_HANDLER(clk_snd) {
-  printf("snd clk: %x\n", data);
+  logerror("snd clk: %x\n", data);
   locals.sndCmd >>= 1;
 }
 
@@ -486,7 +479,7 @@ static INTERRUPT_GEN(PLAYMATIC_sndirq) {
 }
 
 static WRITE_HANDLER(out_snd) {
-  printf("snd out: %x\n", data);
+  logerror("snd out: %x\n", data);
 }
 
 static MEMORY_READ_START(playsound_readmem)
@@ -511,10 +504,7 @@ MEMORY_END
 static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
 
 static UINT8 snd_ef(void) {
-  if (locals.sndBits > 0) {
-    locals.sndBits--;
-  }
-  return locals.sndCmd & 1;
+  return locals.enSn;
 }
 
 static void snd_sc(int data) {

@@ -675,7 +675,7 @@ DRIVERNV(attack)   // 10/80 Attack
 DRIVERNV(blkfever) // 12/80 Black Fever
                    // ??/80 Zira
 DRIVERNV(cerberus) // 03/82 Cerberus
-                   // 10/82 Spain 82
+DRIVERNV(spain82)  // 10/82 Spain 82
 DRIVERNV(madrace)  // ??/8? Mad Race
 DRIVERNV(megaaton) // 04/84 Meg-Aaton
                    // ??/84 Nautilus
@@ -1090,6 +1090,8 @@ DRIVER(ij4,116f)        //S.A.M: 09/08 Indiana Jones - V1.16 (French)
 DRIVER(ij4,116g)        //S.A.M: 09/08 Indiana Jones - V1.16 (German)
 DRIVER(ij4,116i)        //S.A.M: 09/08 Indiana Jones - V1.16 (Italian)
 DRIVER(ij4,116l)        //S.A.M: 09/08 Indiana Jones - V1.16 (Spanish)
+DRIVER(ij4,210)         //S.A.M: ??/09 Indiana Jones - V2.1
+DRIVER(ij4,210f)        //S.A.M: ??/09 Indiana Jones - V2.1 (French)
 DRIVER(bdk,130)         //S.A.M: 07/08 Batman - The Dark Knight - V1.3
 DRIVER(bdk,200)         //S.A.M: 08/08 Batman - The Dark Knight - V2.0
 DRIVER(bdk,201)         //S.A.M: 08/08 Batman - The Dark Knight - V2.01
@@ -1109,6 +1111,8 @@ DRIVER(nba,801)         //S.A.M: 08/09 NBA - V8.01
 DRIVER(nba,802)         //S.A.M: 11/09 NBA - V8.02
 DRIVER(bbh,140)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.4
 DRIVER(bbh,150)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.5
+DRIVER(im2,100)         //S.A.M: 04/10 Iron Man 2 - V1.0
+DRIVER(im2,110)         //S.A.M: 04/10 Iron Man 2 - V1.1
 #endif
 
 // ---------------
