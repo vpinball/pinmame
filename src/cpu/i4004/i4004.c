@@ -744,13 +744,9 @@ INLINE void execute_one(int opcode)
 			I.carry = 0;
 			break;
 		case 0xf8: /* DAC */
-			if (I.accu == 0) {
-				I.accu = 0x0f;
-				I.carry = 1;
-			} else {
-				I.accu--;
-				I.carry = 0;
-			}
+			I.accu += 0x0f;
+			I.carry = I.accu >> 4;
+			I.accu &= 0x0f;
 			break;
 		case 0xf9: /* TCS */
 			I.accu = 9 + I.carry;
@@ -762,7 +758,9 @@ INLINE void execute_one(int opcode)
 		case 0xfb: /* DAA */
 			if (I.accu > 9 || I.carry) {
 				I.accu += 6;
-				if (I.accu & ~0x0f) I.carry = 1 - I.carry;
+			}
+			if (I.accu > 0x0f) {
+				I.carry = 1;
 			}
 			I.accu &= 0x0f;
 			break;
