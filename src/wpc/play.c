@@ -255,8 +255,7 @@ static WRITE_HANDLER(out2_n) {
         else
           locals.solenoids &= ~(0x100 << abcData);
       }
-      // if the game uses "en" flags, only enable sound if the !ENSN signal is low
-      if (!core_gameData->hw.gameSpecific1 || !locals.enSn) {
+      if (!(core_gameData->hw.gameSpecific1 ^ locals.enSn)) {
         locals.sndCmd = locals.lampCol;
         logerror("snd cmd: %02x\n", locals.sndCmd);
       }
@@ -478,22 +477,31 @@ static INTERRUPT_GEN(PLAYMATIC_sndirq) {
   irqLine = !irqLine;
 }
 
+static READ_HANDLER(in_snd) {
+  return locals.sndCmd;
+}
+
 static WRITE_HANDLER(out_snd) {
   logerror("snd out: %x\n", data);
 }
 
 static MEMORY_READ_START(playsound_readmem)
   {0x0000,0x1fff, MRA_ROM},
-  {0x2000,0x2fff, MRA_ROM},
+  {0x2000,0x201f, MRA_RAM},
   {0x8000,0x80ff, MRA_RAM},
   {0xa000,0xbfff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(playsound_writemem)
   {0x0000,0x00ff, MWA_NOP},
+  {0x2000,0x201f, MWA_RAM},
   {0x4000,0x4fff, ay0_w},
   {0x6000,0x6fff, ay1_w},
   {0x8000,0x80ff, MWA_RAM},
+MEMORY_END
+
+static PORT_READ_START(playsound_readport)
+  {0x02, 0x02, in_snd},
 MEMORY_END
 
 static PORT_WRITE_START(playsound_writeport)
@@ -530,7 +538,7 @@ MACHINE_DRIVER_START(PLAYMATIC2S)
   MDRV_CPU_CONFIG(play1802_snd_config)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
-  MDRV_CPU_PORTS(NULL, playsound_writeport)
+  MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
   MDRV_SOUND_ADD(AY8910, play_ay8910)
 MACHINE_DRIVER_END
 
