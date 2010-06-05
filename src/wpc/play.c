@@ -472,10 +472,12 @@ static WRITE_HANDLER(clk_snd) {
   locals.sndCmd >>= 1;
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(PLAYMATIC_sndirq) {
   static int irqLine = 0;
   irqLine = !irqLine;
 }
+#endif
 
 static READ_HANDLER(in_snd) {
   return locals.sndCmd;
