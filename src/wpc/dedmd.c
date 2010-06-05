@@ -412,7 +412,7 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
   if (~data & dmdlocals.ctrl & 0x02) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = 0);
     dmd16_setbank(0x07, 0x07); dmd16_setbusy(BUSY_SET, 0);
-    dmdlocals.rowdata = dmdlocals.rowdata = dmdlocals.blnk = 0;
+    dmdlocals.rowdata = dmdlocals.blnk = 0;
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
     dmdlocals.hv5408 = dmdlocals.hv5408s = dmdlocals.hv5308 = dmdlocals.hv5308s =
     dmdlocals.hv5222 = dmdlocals.lasthv5222 = dmdlocals.rowclk = dmdlocals.frame = 0;
