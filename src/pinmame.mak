@@ -249,7 +249,7 @@ TEXTS += gamelist.txt
 
 gamelist.txt: $(EMULATOR)
 	@echo Generating $@...
-	@$(CURPATH)$(EMULATOR) -gamelist -noclones -sortname > gamelist.txt
+	@"$(CURPATH)$(EMULATOR)" -gamelist -noclones -sortname > gamelist.txt
 
 cleanpinmame:
 	@echo Deleting $(target) object tree $(PINOBJ)...
