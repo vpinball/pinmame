@@ -45,7 +45,7 @@ Step 1: Downloads
 
      Mandatory update: newer objcopy and strip executables.
      * binutils-2.19.1-mingw32-bin (later versions should work too)
-     Get it from http://sourceforge.net/projects/mingw/files/GNU%20Binutils/
+     Get it from http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GNU-Binutils/
 
      Recommended updates: Download latest versions of GCC 3.2 and GDB 5 for MinGW.
      Unfortunately the GCC 3.2 update is nomore available at the official MinGW
@@ -53,34 +53,48 @@ Step 1: Downloads
      * gcc-3.2.3-20030504-1
      * gdb-5.2.1-1.exe
      Get them from http://sourceforge.net/projects/pinmame/files/mingw/
-               and http://sourceforge.net/projects/mingw/files/GNU%20Source-Level%20Debugger/
+               and http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GDB/
 
   b) More recent MinGW setup
      Download the following binary packages to the downloads directory.
      The packages carry the version numbers as of the last testing, but newer
      packages should work too.
 
-     (MinGW 5 tested in October 2009)
-     * mingwrt-3.16-mingw32-dll
-     * mingwrt-3.16-mingw32-dev
-     * binutils-2.19.1-mingw32-bin
+     (MinGW 5 tested in June 2010)
+     * mingwrt-3.18-mingw32-dll        (part of the Base System)
+     * mingwrt-3.18-mingw32-dev        (part of the Base System)
+     * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
+     * w32api-3.14-mingw32-dev         (part of the Base System)
+     * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       with libgmp: libgmp-5.0.1-1-mingw32-dll-10
+               mpc: libmpc-0.8.1-1-mingw32-dll-2
+              mpfr: libmpfr-2.4.1-1-mingw32-dll-1
+     * gdb-7.1-2-mingw32-bin           (part of the Base System)
+       with expat: libexpat-2.0.1-1-mingw32-dll-1
      * make-3.81-20090914-mingw32-bin
-     * w32api-3.13-mingw32-dev
-     * gcc-full-4.4.0-mingw32-bin-2
-     * gdb-6.3-1.exe (also gdb-7.0-2-mingw32-bin was tested)
+
+     (MinGW 5 tested in October 2009)
+     * mingwrt-3.16-mingw32-dll        (part of the Base System)
+     * mingwrt-3.16-mingw32-dev        (part of the Base System)
+     * binutils-2.19.1-mingw32-bin     (part of the Base System)
+     * w32api-3.13-mingw32-dev         (part of the Base System)
+     * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
+     * gdb-6.3-1.exe                   (part of the Base System)
+       (also gdb-7.0-2-mingw32-bin was tested)
+     * make-3.81-20090914-mingw32-bin
 
      (MinGW 5 tested in May 2008)
-     * mingw-runtime-3.14
-     * binutils-2.17.50-20060824-1
+     * mingw-runtime-3.14              (part of the Base System)
+     * binutils-2.17.50-20060824-1     (part of the Base System)
+     * w32api-3.11                     (part of the Base System)
      * mingw32-make-3.81-20080326-2
-     * w32api-3.11
      * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
 
-     Get them from http://sourceforge.net/projects/mingw/files/
+     Get them from http://sourceforge.net/downloads/mingw/MinGW/
 
 - Download the ZLib library (libz) to the downloads directory.
   * libz-1.2.3-1-mingw32-dev
-  Get it from http://sourceforge.net/projects/mingw/files/MinGW%20zlib/
+  Get it from http://sourceforge.net/downloads/mingw/MinGW/zlib/
 
   For a real MinGW 2.0 setup use ZLib 1.1.4. This has to be compiled (explained
   later in step 3), so download the ZLib source code to the downloads directory.
@@ -129,6 +143,23 @@ Step 2: Setup
   b) More recent MinGW setup
      Create a directory to hold the MinGW installation, for example c:\mingw5.
      Extract all binary packages of MinGW to the installation directory.
+
+     (MinGW 5 tested in June 2010)
+     * mingwrt-3.18-mingw32-dll        (part of the Base System)
+     * mingwrt-3.18-mingw32-dev        (part of the Base System)
+     * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
+     * w32api-3.14-mingw32-dev         (part of the Base System)
+     * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       with libgmp: libgmp-5.0.1-1-mingw32-dll-10
+               mpc: libmpc-0.8.1-1-mingw32-dll-2
+              mpfr: libmpfr-2.4.1-1-mingw32-dll-1
+     * gdb-7.1-2-mingw32-bin           (part of the Base System)
+       with expat: libexpat-2.0.1-1-mingw32-dll-1
+     * make-3.81-20090914-mingw32-bin
+     * libz-1.2.3-1-mingw32-dev
+     * Allegro DirectX 8.0 Header
+     * NASM 2.07
+     * MAME GNU-like 20100102
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll
