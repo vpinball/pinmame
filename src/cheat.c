@@ -1,4 +1,4 @@
-/***************************************************************************** 
+/*****************************************************************************
  *
  *	cheat.c
  *	by Ian Patterson [ianpatt at pacbell dot net]
@@ -2780,7 +2780,7 @@ static int EnableDisableCheatMenu(struct mame_bitmap * bitmap, int selection, in
 	{
 		schedule_full_refresh();
 	}
-	
+
 	return sel + 1;
 }
 
@@ -2795,7 +2795,7 @@ static int EditCheatMenu(struct mame_bitmap * bitmap, CheatEntry * entry, int se
 		"Comment",
 		"Select"
 	};
-	
+
 	const char *	kNumbersTable[] =
 	{
 		"0",	"1",	"2",	"3",	"4",	"5",	"6",	"7",
@@ -8008,16 +8008,19 @@ static void SetSearchRegionDefaultName(SearchRegion * region)
 					sprintf(desc, "BANK%.2d", (handlerAddress - ((UINT32)MWA_BANK1)) + 1);
 				}
 				else
-				{
-					switch(handlerAddress)
-					{
-						case (UINT32)MWA_NOP:		strcpy(desc, "NOP   ");	break;
-						case (UINT32)MWA_RAM:		strcpy(desc, "RAM   ");	break;
-						case (UINT32)MWA_ROM:		strcpy(desc, "ROM   ");	break;
-						case (UINT32)MWA_RAMROM:	strcpy(desc, "RAMROM");	break;
-						default:					strcpy(desc, "CUSTOM");	break;
-					}
-				}
+					if(handlerAddress == (UINT32)MWA_NOP)
+						strcpy(desc, "NOP   ");
+					else
+					if(handlerAddress == (UINT32)MWA_RAM)
+						strcpy(desc, "RAM   ");
+					else
+					if(handlerAddress == (UINT32)MWA_ROM)
+						strcpy(desc, "ROM   ");
+					else
+					if(handlerAddress == (UINT32)MWA_RAMROM)
+						strcpy(desc, "RAMROM");
+					else
+						strcpy(desc, "CUSTOM");
 			}
 			else
 			{

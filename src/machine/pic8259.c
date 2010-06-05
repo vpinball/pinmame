@@ -176,7 +176,7 @@ static void pic8259_w(PIC8259 *this, offs_t offset, data8_t data ) {
             break;
           case 0x80:
             DBG_LOG(1,0,(" OCW2 rotate auto EOI set\n"));
-            this->prio = ++this->prio & 7;
+            this->prio = (this->prio + 1) & 7;
             break;
           case 0xa0:
             DBG_LOG(1,0,(" OCW2 rotate on nonspecific EOI\n"));
@@ -184,7 +184,7 @@ static void pic8259_w(PIC8259 *this, offs_t offset, data8_t data ) {
               if (this->in_service & mask) {
                 this->in_service &= ~mask;
                 this->pending &= ~mask;
-                this->prio = ++this->prio & 7;
+                this->prio = (this->prio + 1) & 7;
                 break;
               }
             }
@@ -198,7 +198,7 @@ static void pic8259_w(PIC8259 *this, offs_t offset, data8_t data ) {
             if (this->in_service & mask) {
               this->in_service &= ~mask;
               this->pending &= ~mask;
-              this->prio = ++this->prio & 7;
+              this->prio = (this->prio + 1) & 7;
             }
             break;
         } // switch

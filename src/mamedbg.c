@@ -2034,29 +2034,36 @@ static const char *name_rdmem( unsigned base )
 					sprintf(dst, "sprite+%04X", lshift(offset) );
 				else
 #endif
-				switch( (FPTR)mr->handler )
-				{
-				case (FPTR)MRA_RAM:
+				if( (FPTR)mr->handler == (FPTR)MRA_RAM )
 					sprintf(dst, "RAM%d+%04X", ram_cnt, lshift(offset) );
-					break;
-				case (FPTR)MRA_ROM:
+				else
+				if( (FPTR)mr->handler == (FPTR)MRA_ROM )
+				{
 					name = name_rom("ROM", REGION_CPU1+active_cpu, &base, mr->start );
 					sprintf(dst, "%s+%04X", name, lshift(base) );
-					break;
-				case (FPTR)MRA_BANK1: case (FPTR)MRA_BANK2:
-				case (FPTR)MRA_BANK3: case (FPTR)MRA_BANK4:
-				case (FPTR)MRA_BANK5: case (FPTR)MRA_BANK6:
-				case (FPTR)MRA_BANK7: case (FPTR)MRA_BANK8:
-				case (FPTR)MRA_BANK9: case (FPTR)MRA_BANK10:
-				case (FPTR)MRA_BANK11: case (FPTR)MRA_BANK12:
-				case (FPTR)MRA_BANK13: case (FPTR)MRA_BANK14:
-				case (FPTR)MRA_BANK15: case (FPTR)MRA_BANK16:
+				}
+				else
+				if( (FPTR)mr->handler == (FPTR)MRA_BANK1
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK2
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK3
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK4
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK5
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK6
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK7
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK8
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK9
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK10
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK11
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK12
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK13
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK14
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK15
+				||  (FPTR)mr->handler == (FPTR)MRA_BANK16 )
 					sprintf(dst, "BANK%d+%04X", 1 + (int)(MRA_BANK1) - (int)(mr->handler), lshift(offset) );
-					break;
-				case (FPTR)MRA_NOP:
+				else
+				if( (FPTR)mr->handler == (FPTR)MRA_NOP )
 					sprintf(dst, "NOP%d+%04X", nop_cnt, lshift(offset) );
-					break;
-				default:
+				else
 					if( (FPTR)mr->handler == (FPTR)input_port_0_r )
 						sprintf(dst, "input_port_0+%04X", lshift(offset) );
 					else
@@ -2104,13 +2111,12 @@ static const char *name_rdmem( unsigned base )
 					else
 					if( (FPTR)mr->handler == (FPTR)input_port_15_r )
 						sprintf(dst, "input_port_15+%04X", lshift(offset) );
-				}
 			}
-			switch( (FPTR)mr->handler )
-			{
-			case (FPTR)MRA_RAM: ram_cnt++; break;
-			case (FPTR)MRA_NOP: nop_cnt++; break;
-			}
+			if( (FPTR)mr->handler == (FPTR)MRA_RAM )
+				ram_cnt++;
+			else
+			if( (FPTR)mr->handler == (FPTR)MRA_NOP )
+				nop_cnt++;
 		}
 		mr++;
 	}
@@ -2160,39 +2166,47 @@ static const char *name_wrmem( unsigned base )
 					sprintf(dst, "sprite+%04X", lshift(base - mw->start) );
 				else
 #endif
-				switch( (FPTR)mw->handler )
-				{
-				case (FPTR)MWA_RAM:
+				if( (FPTR)mw->handler == (FPTR)MWA_RAM )
 					sprintf(dst, "RAM%d+%04X", ram_cnt, lshift(base - mw->start) );
-					break;
-				case (FPTR)MWA_ROM:
+				else
+				if( (FPTR)mw->handler == (FPTR)MWA_ROM )
+				{
 					name = name_rom("ROM", REGION_CPU1+active_cpu, &base, mw->start );
 					sprintf(dst, "%s+%04X", name, lshift(base) );
-					break;
-				case (FPTR)MWA_RAMROM:
+				}
+				else
+				if( (FPTR)mw->handler == (FPTR)MWA_RAMROM )
+				{
 					name = name_rom("RAMROM", REGION_CPU1+active_cpu, &base, mw->start);
 					sprintf(dst, "%s+%04X", name, lshift(base) );
-					break;
-				case (FPTR)MWA_BANK1: case (FPTR)MWA_BANK2:
-				case (FPTR)MWA_BANK3: case (FPTR)MWA_BANK4:
-				case (FPTR)MWA_BANK5: case (FPTR)MWA_BANK6:
-				case (FPTR)MWA_BANK7: case (FPTR)MWA_BANK8:
-				case (FPTR)MWA_BANK9: case (FPTR)MWA_BANK10:
-				case (FPTR)MWA_BANK11: case (FPTR)MWA_BANK12:
-				case (FPTR)MWA_BANK13: case (FPTR)MWA_BANK14:
-				case (FPTR)MWA_BANK15: case (FPTR)MWA_BANK16:
-					sprintf(dst, "BANK%d+%04X", 1 + (int)(MWA_BANK1) - (int)(mw->handler), lshift(base - mw->start) );
-					break;
-				case (FPTR)MWA_NOP:
-					sprintf(dst, "NOP%d+%04X", nop_cnt, lshift(base - mw->start) );
-					break;
 				}
+				else
+				if( (FPTR)mw->handler == (FPTR)MWA_BANK1
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK2
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK3
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK4
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK5
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK6
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK7
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK8
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK9
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK10
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK11
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK12
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK13
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK14
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK15
+				||  (FPTR)mw->handler == (FPTR)MWA_BANK16 )
+					sprintf(dst, "BANK%d+%04X", 1 + (int)(MWA_BANK1) - (int)(mw->handler), lshift(base - mw->start) );
+				else
+				if( (FPTR)mw->handler == (FPTR)MWA_NOP )
+					sprintf(dst, "NOP%d+%04X", nop_cnt, lshift(base - mw->start) );
 			}
-			switch( (FPTR)mw->handler )
-			{
-			case (FPTR)MRA_RAM: ram_cnt++; break;
-			case (FPTR)MRA_NOP: nop_cnt++; break;
-			}
+			if( (FPTR)mw->handler == (FPTR)MRA_RAM )
+				ram_cnt++;
+			else
+			if( (FPTR)mw->handler == (FPTR)MRA_NOP )
+				nop_cnt++;
 		}
 		mw++;
 	}
@@ -3351,12 +3365,12 @@ static void edit_mem( int which )
 		break;
 
 	case KEYCODE_H:
-		DBGMEM[which].ascii = ++(DBGMEM[which].ascii) % MODE_CHR_COUNT;
+		DBGMEM[which].ascii = (DBGMEM[which].ascii + 1) % MODE_CHR_COUNT;
 		update_window = 1;
 		break;
 
 	case KEYCODE_M: /* display mode */
-		DBGMEM[which].mode = ++(DBGMEM[which].mode) % MODE_HEX_COUNT;
+		DBGMEM[which].mode = (DBGMEM[which].mode + 1) % MODE_HEX_COUNT;
 		/* Reset cursor coordinates and sizes of the edit info */
 		memset( DBGMEM[which].edit, 0, sizeof(DBGMEM[which].edit) );
 		update_window = 1;
@@ -5270,9 +5284,9 @@ static void cmd_step_over( void )
 static void cmd_switch_window( void )
 {
 	if( keyboard_pressed(KEYCODE_LSHIFT) || keyboard_pressed(KEYCODE_RSHIFT) )
-		DBG.window = --DBG.window % DBG_WINDOWS;
+		DBG.window = (DBG.window - 1) % DBG_WINDOWS;
 	else
-		DBG.window = ++DBG.window % DBG_WINDOWS;
+		DBG.window = (DBG.window + 1) % DBG_WINDOWS;
 }
 
 /**************************************************************************
