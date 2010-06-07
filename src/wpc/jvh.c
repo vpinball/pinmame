@@ -3,13 +3,13 @@
  -------------------------------
  Rare Dutch manufacturer.
  The TMS9980 emulation in MAME 0.76 is a bit complicated.
- However, the game works fine, according to all sources. :)
+ However, the games work fine, according to all sources. :)
 
  Hardware:
  ---------
  CPU:   TMS9980A
  IO:    CPU ports
- SOUND:	M6802 CPU, AY8912, 6522 VIA
+ SOUND: M6802 CPU, AY8912, 6522 VIA
 ************************************************************************************************/
 #include "driver.h"
 #include "core.h"
@@ -126,7 +126,45 @@ static WRITE_HANDLER(out6b_w) {
 static WRITE_HANDLER(out7a_w) {
   coreGlobals.tmpLampMatrix[7] = (coreGlobals.tmpLampMatrix[7] & ~(1 << offset)) | ((data & 1) << offset);
 }
-static WRITE_HANDLER(out7b_w) {
+
+static WRITE_HANDLER(out0a2_w) {
+  coreGlobals.tmpLampMatrix[0] = (coreGlobals.tmpLampMatrix[0] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out0b2_w) {
+  coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out1a2_w) {
+  coreGlobals.tmpLampMatrix[2] = (coreGlobals.tmpLampMatrix[2] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out1b2_w) {
+  coreGlobals.tmpLampMatrix[3] = (coreGlobals.tmpLampMatrix[3] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out2a2_w) {
+  coreGlobals.tmpLampMatrix[4] = (coreGlobals.tmpLampMatrix[4] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out2b2_w) {
+  coreGlobals.tmpLampMatrix[5] = (coreGlobals.tmpLampMatrix[5] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out3a2_w) {
+  coreGlobals.tmpLampMatrix[7] = (coreGlobals.tmpLampMatrix[7] & 0xf7) | ((data & 1) << 3);
+}
+static WRITE_HANDLER(out4a2_w) {
+  coreGlobals.tmpLampMatrix[6] = (coreGlobals.tmpLampMatrix[6] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out4b2_w) {
+  coreGlobals.tmpLampMatrix[7] = (coreGlobals.tmpLampMatrix[7] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out4c2_w) {
+  coreGlobals.tmpLampMatrix[7] = (coreGlobals.tmpLampMatrix[7] & ~(1 << (offset+4))) | ((data & 1) << (offset+4));
+}
+static WRITE_HANDLER(out6b2_w) {
+  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & ~(1 << offset)) | ((data & 1) << offset);
+}
+static WRITE_HANDLER(out7a2_w) {
+  coreGlobals.tmpLampMatrix[9] = (coreGlobals.tmpLampMatrix[9] & ~(1 << offset)) | ((data & 1) << offset);
+}
+
+static WRITE_HANDLER(sol_w) {
   coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << offset)) | ((data & 1) << offset);
 }
 
@@ -168,13 +206,39 @@ static PORT_WRITE_START(writeport)
   { 0x60, 0x67, out6a_w },
   { 0x68, 0x6f, out6b_w },
   { 0x70, 0x74, out7a_w },
-  { 0x75, 0x7f, out7b_w },
+  { 0x75, 0x7f, sol_w },
+PORT_END
+
+static PORT_WRITE_START(writeport2)
+  { 0x00, 0x07, out0a2_w },
+  { 0x08, 0x0f, out0b2_w },
+  { 0x10, 0x17, out1a2_w },
+  { 0x18, 0x1f, out1b2_w },
+  { 0x20, 0x27, out2a2_w },
+  { 0x28, 0x2f, out2b2_w },
+  { 0x30, 0x30, out3a2_w },
+  { 0x31, 0x36, snd_w },
+  { 0x37, 0x37, latch_w },
+  { 0x3e, 0x3e, irq_enable },
+  { 0x3f, 0x3f, zc_enable },
+  { 0x40, 0x47, out4a2_w },
+  { 0x48, 0x4a, out4b2_w },
+  { 0x4b, 0x4b, enable_w },
+  { 0x4c, 0x4f, out4c2_w },
+  { 0x50, 0x55, col_w },
+  { 0x57, 0x5a, bcd_w },
+  { 0x5b, 0x5f, panel_w },
+  { 0x60, 0x67, digit_w },
+  { 0x68, 0x6f, out6b2_w },
+  { 0x70, 0x74, out7a2_w },
+  { 0x75, 0x7f, sol_w },
 PORT_END
 
 static PORT_READ_START(readport)
   { 0x01, 0x02, sw1_r },
   { 0x03, 0x05, dip_r },
-  { 0x06, 0x07, sw6_r },
+  { 0x06, 0x07, sw6_r }, // Escape
+  { 0x08, 0x09, sw6_r }, // Movie Masters
 PORT_END
 
 static MACHINE_INIT(jvh) {
@@ -290,20 +354,31 @@ MACHINE_DRIVER_START(jvh)
   MDRV_SOUND_ADD(AY8910, jvh_ay8912Int)
 MACHINE_DRIVER_END
 
-
-// Escape (10/87)
+MACHINE_DRIVER_START(jvh2)
+  MDRV_IMPORT_FROM(jvh)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PORTS(readport, writeport2)
+MACHINE_DRIVER_END
 
 static core_tLCDLayout dispJVH[] = {
   {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,18,15,1,CORE_SEG7}, {0,20, 8,7,CORE_SEG7},
   {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,18,31,1,CORE_SEG7}, {3,20,24,7,CORE_SEG7},
   {6,12,33,2,CORE_SEG7}, {6,18,35,2,CORE_SEG7}, {0}
 };
-static core_tGameData jvhGameData = {GEN_ZAC1, dispJVH, {FLIP_SW(FLIP_L), 0, 0, 0, SNDBRD_JVH}};
-static void init_jvh(void) {
-  core_gameData = &jvhGameData;
+
+static core_tLCDLayout dispJVH2[] = {
+  {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,18,15,1,CORE_SEG7}, {0,20, 8,7,CORE_SEG7},
+  {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,18,31,1,CORE_SEG7}, {3,20,24,7,CORE_SEG7},
+  {6,12,34,2,CORE_SEG7}, {6,18,37,2,CORE_SEG7}, {0}
+};
+
+#define INITGAME_JVH(name, lamps, disp) \
+static core_tGameData name##GameData = {GEN_ZAC1, disp, {FLIP_SW(FLIP_L), 0, lamps, 0, SNDBRD_JVH}}; \
+static void init_##name(void) { \
+  core_gameData = &name##GameData; \
 }
 
-INPUT_PORTS_START(escape) \
+INPUT_PORTS_START(jvh) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
@@ -441,6 +516,7 @@ INPUT_PORTS_START(escape) \
       COREPORT_DIPSET(0x0080, DEF_STR(Yes) ) \
 INPUT_PORTS_END
 
+INITGAME_JVH(escape, 0, dispJVH)
 ROM_START(escape) \
   NORMALREGION(0x10000, REGION_CPU1) \
     ROM_LOAD("cpu_ic1.bin", 0x0000, 0x2000, CRC(fadb8f9a) SHA1(b7e7ea8e33847c14a3414f5e367e304f12c0bc00)) \
@@ -449,5 +525,17 @@ ROM_START(escape) \
     ROM_LOAD("snd.bin",     0xc000, 0x2000, CRC(2477bbe2) SHA1(f636952822153f43e9d09f8211edde1057249203)) \
     ROM_RELOAD(0xe000, 0x2000) \
 ROM_END
-#define init_escape init_jvh
+#define input_ports_escape input_ports_jvh
 CORE_GAMEDEFNV(escape,"Escape",1987,"Jac Van Ham (Royal)",jvh,0)
+
+INITGAME_JVH(movmastr, 2, dispJVH2)
+ROM_START(movmastr) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("mm_ic1.764", 0x0000, 0x2000, CRC(fb59920d) SHA1(05536c4c036a8d73516766e14f4449665b2ec180)) \
+    ROM_LOAD("mm_ic7.764", 0x2000, 0x2000, CRC(9b47af41) SHA1(ae795c22aa437d6c71312d93de8a87f43ee500fb)) \
+  NORMALREGION(0x10000, REGION_CPU2) \
+    ROM_LOAD("snd.bin",    0xc000, 0x2000, NO_DUMP) \
+    ROM_RELOAD(0xe000, 0x2000) \
+ROM_END
+#define input_ports_movmastr input_ports_jvh
+CORE_GAMEDEFNV(movmastr,"Movie Masters",19??,"Jac Van Ham (Royal)",jvh2,0)
