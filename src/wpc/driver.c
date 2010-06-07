@@ -579,6 +579,7 @@ DRIVERNV(ind250cc)      //250 CC (1992)
 // JAC VAN HAM
 // ----------------
 DRIVERNV(escape)        //Escape (10/1987)
+DRIVERNV(movmastr)      //Movie Masters (??/19??)
 
 // ----------------
 // JUEGOS POPULARES
