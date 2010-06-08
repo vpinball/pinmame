@@ -484,6 +484,7 @@ DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(goldwing)      //S80b-707: 10/86 Gold Wings
 DRIVERNV(mntecrlo)      //S80b-708: 02/87 Monte Carlo
 DRIVERNV(sprbreak)      //S80b-706: 04/87 Spring Break
+DRIVERNV(sprbrks)       //                Spring Break (single ball game)
                         //S80b-???: 05/87 Amazon Hunt II
 DRIVERNV(arena)         //S80b-709: 06/87 Arena
 DRIVERNV(victory)       //S80b-710: 10/87 Victory
@@ -495,7 +496,7 @@ DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
 DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
-DRIVERNV(nmoves)        //          ??/89 Night Moves (for International Concepts)
+DRIVERNV(nmoves)        //C-103:    11/89 Night Moves (for International Concepts)
 //System 3 Alphanumeric
 DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
@@ -505,8 +506,8 @@ DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger
 DRIVERNV(vegas)         //S3-723:   07/90 Vegas
 DRIVERNV(deadweap)      //S3-724:   09/90 Deadly Weapon
 DRIVERNV(tfight)        //S3-726:   10/90 Title Fight
-DRIVERNV(bellring)      //S3-???:   12/90 Bell Ringer
-DRIVERNV(nudgeit)       //S3-???:   12/90 Nudge It
+DRIVERNV(bellring)      //S3-N103:  12/90 Bell Ringer
+DRIVERNV(nudgeit)       //S3-N102:  12/90 Nudge It
                         //??-???:   ??/91 Amazon Hunt III
 DRIVERNV(carhop)        //S3-725:   01/91 Car Hop
 DRIVERNV(hoops)         //S3-727:   02/91 Hoops
@@ -531,6 +532,7 @@ DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out (rev.2)
 DRIVERNV(gladiatr)      //S3-737:   11/93 Gladiators
 DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer (rev.1)
 DRIVERNV(wcsoccd2)      //                World Challenge Soccer (disp.rev.2)
+                        //S3-N???:  04/94 Bullseye (redemption game)
 DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911 (rev.1)
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.3)
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
@@ -1098,6 +1100,8 @@ DRIVER(bdk,200)         //S.A.M: 08/08 Batman - The Dark Knight - V2.0
 DRIVER(bdk,201)         //S.A.M: 08/08 Batman - The Dark Knight - V2.01
 DRIVER(bdk,202)         //S.A.M: 08/08 Batman - The Dark Knight - V2.02
 DRIVER(bdk,240)         //S.A.M: 11/09 Batman - The Dark Knight - V2.4
+DRIVER(bdk,290)         //S.A.M: 05/10 Batman - The Dark Knight - V2.9
+DRIVER(bdk,294)         //S.A.M: 05/10 Batman - The Dark Knight - V2.94
 DRIVER(csi,102)         //S.A.M: 11/08 C.S.I. - V1.02
 DRIVER(csi,200)         //S.A.M: 12/08 C.S.I. - V2.0
 DRIVER(csi,210)         //S.A.M: 01/09 C.S.I. - V2.1
@@ -1106,14 +1110,18 @@ DRIVER(csi,240)         //S.A.M: 08/09 C.S.I. - V2.4
 DRIVER(twenty4,130)     //S.A.M: 03/09 24 - V1.3
 DRIVER(twenty4,140)     //S.A.M: 03/09 24 - V1.4
 DRIVER(twenty4,144)     //S.A.M: 09/09 24 - V1.44
+DRIVER(twenty4,150)     //S.A.M: 05/10 24 - V1.5
 DRIVER(nba,600)         //S.A.M: 06/09 NBA - V6.0
 DRIVER(nba,700)         //S.A.M: 06/09 NBA - V7.0
 DRIVER(nba,801)         //S.A.M: 08/09 NBA - V8.01
 DRIVER(nba,802)         //S.A.M: 11/09 NBA - V8.02
 DRIVER(bbh,140)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.4
 DRIVER(bbh,150)         //S.A.M: 02/10 Big Buck Hunter Pro - V1.5
+DRIVER(bbh,160)         //S.A.M: 05/10 Big Buck Hunter Pro - V1.6
 DRIVER(im2,100)         //S.A.M: 04/10 Iron Man 2 - V1.0
 DRIVER(im2,110)         //S.A.M: 04/10 Iron Man 2 - V1.1
+DRIVER(im2,120)         //S.A.M: 04/10 Iron Man 2 - V1.2
+DRIVER(im2,140)         //S.A.M: 04/10 Iron Man 2 - V1.4
 #endif
 
 // ---------------
