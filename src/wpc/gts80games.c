@@ -818,7 +818,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(rock, "Rock",1985,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
-/ Raven
+/ Raven (#702)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
 INITGAME(raven, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
@@ -843,7 +843,7 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(rock_enc, rock, "Rock Encore",1986,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
-/ Hollywood Heat
+/ Hollywood Heat (#703)
 /-------------------------------------------------------------------*/
 INITGAME(hlywoodh, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(hlywoodh, "prom2.cpu", CRC(a465e5f3) SHA1(56afa2f67aebcd17345bba76ecb814653719ee7b),
@@ -882,7 +882,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
-/ Monte Carlo
+/ Monte Carlo (#708)
 /-------------------------------------------------------------------*/
 INITGAME(mntecrlo, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(mntecrlo, "prom2.cpu", CRC(6860e315) SHA1(cecb1815334506dfebf29efe3e4e2a838010e8db),
@@ -895,7 +895,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
-/ Spring Break
+/ Spring Break (#706)
 /-------------------------------------------------------------------*/
 INITGAME(sprbreak, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(sprbreak, "prom2.cpu", CRC(47171062) SHA1(0d2e7777f695ab22170be861019c05ddeade5f85),
@@ -907,8 +907,18 @@ GTS80_ROMEND
 #define input_ports_sprbreak input_ports_gts80
 CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mGTS80BS1,0)
 
+GTS80B_2K_ROMSTART(sprbrks,  "prom2.rv2", CRC(911cd14f) SHA1(2bc3ff6a3889da69b97f8ec318f93208e3d42cfe),
+                             "prom1.rv2", CRC(d67d9d2f) SHA1(ebb82f0a1b7d6a2ec2607d4000e58fb6bfa73fe7))
+GTS80BSSOUND888(             "drom1.snd", CRC(97d3f9ba) SHA1(1b34c7e51373c26d29d757c57a2b0333fe38d19e),
+                             "yrom1.snd", CRC(5ea89df9) SHA1(98ce7661a4d862fd02c77e69b0f6e9372c3ade2b),
+                             "yrom2.snd", CRC(0fb0128e) SHA1(3bdc5ed11b8e062f71f2a78b955830bd985e80a3))
+GTS80_ROMEND
+#define init_sprbrks init_sprbreak
+#define input_ports_sprbrks input_ports_sprbreak
+CORE_CLONEDEFNV(sprbrks, sprbreak, "Spring Break (single ball game)",19??,"Gottlieb",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
-/ Arena
+/ Arena (#709)
 /-------------------------------------------------------------------*/
 INITGAME(arena, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(arena, "prom2.cpu", CRC(4783b689) SHA1(d10d4cbf8d00c9d0db57cdac32ef96498275eea6),
@@ -925,7 +935,7 @@ CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mGTS80BS1,0)
 /****************************************/
 
 /*-------------------------------------------------------------------
-/ Victory
+/ Victory (#710)
 /-------------------------------------------------------------------*/
 INITGAME(victory, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(victory, "prom2.cpu", CRC(6a42eaf4) SHA1(3e28b01473266db463986a4283e1be85f2410fb1),
@@ -937,7 +947,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(victory, "Victory",1987,"Gottlieb",gl_mGTS80BS2,0)
 
 /*-------------------------------------------------------------------
-/ Diamond Lady
+/ Diamond Lady (#711)
 /-------------------------------------------------------------------*/
 INITGAME(diamond, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(diamond, "prom2.cpu", CRC(862951dc) SHA1(b15899ecf7ec869e3722cef3f5c16b0dadd2514e),
@@ -949,7 +959,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(diamond, "Diamond Lady",1988,"Gottlieb",gl_mGTS80BS2,0)
 
 /*-------------------------------------------------------------------
-/ TX-Sector
+/ TX-Sector (#712)
 /-------------------------------------------------------------------*/
 INITGAME(txsector, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(txsector, "prom2.cpu", CRC(f12514e6) SHA1(80bca17c33df99ed1a7acc21f7f70ea90e7c0463),
@@ -961,7 +971,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(txsector, "TX-Sector",1988,"Gottlieb",gl_mGTS80BS2,0)
 
 /*-------------------------------------------------------------------
-/ Robo-War
+/ Robo-War (#714)
 /-------------------------------------------------------------------*/
 INITGAME(robowars, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(robowars, "prom2.cpu", CRC(893177ed) SHA1(791540a64d498979e5b0c8baf4ceb2fd5ff7f047),
@@ -977,7 +987,7 @@ CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mGTS80BS2,0)
 /****************************************/
 
 /*-------------------------------------------------------------------
-/ Excalibur
+/ Excalibur (#715)
 /-------------------------------------------------------------------*/
 INITGAME(excalibr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_4K_ROMSTART(excalibr, "prom2.cpu", CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
@@ -989,7 +999,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
-/ Bad Girls
+/ Bad Girls (#717)
 /-------------------------------------------------------------------*/
 INITGAME(badgirls, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(badgirls, "prom2.cpu", CRC(583933ec) SHA1(89da6750d779d68db578715b058f9321695b79b0),
@@ -1001,7 +1011,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(badgirls, "Bad Girls",1988,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
-/ Big House
+/ Big House (#713)
 /-------------------------------------------------------------------*/
 INITGAME(bighouse, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(bighouse, "prom2.cpu", CRC(047c8ef5) SHA1(3afa2a0011b724836b69b2ef386597e0953dfadf),
@@ -1013,7 +1023,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(bighouse, "Big House",1989,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
-/ Hot Shots
+/ Hot Shots (#718)
 /-------------------------------------------------------------------*/
 INITGAME(hotshots, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(hotshots, "prom2.cpu", CRC(7695c7db) SHA1(90188ff83b888262ba849e5af9d99145c5bc1c30),
@@ -1025,7 +1035,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(hotshots, "Hot Shots",1989,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
-/ Bone Busters Inc.
+/ Bone Busters Inc. (#719)
 /-------------------------------------------------------------------*/
 INITGAME(bonebstr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(bonebstr, "prom2.cpu", CRC(681643df) SHA1(76af6951e4403b4951298d35a9058bcebfa6bc43),
@@ -1039,7 +1049,7 @@ CORE_GAMEDEFNV(bonebstr, "Bone Busters Inc.",1989,"Gottlieb",gl_mGTS80BS3A,0)
 
 
 /*-------------------------------------------------------------------
-/ Night Moves C-103
+/ Night Moves (C-103)
 /-------------------------------------------------------------------*/
 INITGAME(nmoves, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732", CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
