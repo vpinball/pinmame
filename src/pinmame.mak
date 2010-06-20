@@ -67,6 +67,7 @@ DRVLIBS += $(PINOBJ)/allied.o
 DRVLIBS += $(PINOBJ)/jvh.o
 DRVLIBS += $(PINOBJ)/vd.o
 DRVLIBS += $(PINOBJ)/kissproto.o
+DRVLIBS += $(PINOBJ)/icecoldbeer.o
 #
 # Games
 #

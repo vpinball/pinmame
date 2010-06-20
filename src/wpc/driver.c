@@ -1161,6 +1161,7 @@ DRIVERNV(snake   )      //??/82 Snake Machine
 DRIVERNV(gork    )      //??/82 Gork
 DRIVERNV(voleybal)      //??/?? Voley Ball
                         //??/8? Ogar
+DRIVERNV(icecold)       //??/83 Ice Cold Beer (Redemption)
 DRIVERNV(mrblack )    //??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(mrblack1)    //??/84 Mr. Black alternate set
 DRIVERNV(mrblkz80)    //??/8? Mr. Black (Z-80 CPU)

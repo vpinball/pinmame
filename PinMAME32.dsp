@@ -2312,6 +2312,10 @@ SOURCE=.\src\wpc\hnks.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\icecoldbeer.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\inder.c
 # End Source File
 # Begin Source File
