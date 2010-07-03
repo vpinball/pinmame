@@ -535,6 +535,7 @@ DRIVERNV(wcsoccd2)      //                World Challenge Soccer (disp.rev.2)
                         //S3-N???:  04/94 Bullseye (redemption game)
 DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911 (rev.1)
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.3)
+DRIVERNV(freddy4)       //S3-744:   10/94 Freddy: A Nightmare on Elm Street (rev.4)
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
 DRIVERNV(shaqatt2)      //                Shaq Attaq (rev.2)
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
