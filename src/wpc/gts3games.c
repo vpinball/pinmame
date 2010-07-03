@@ -475,6 +475,16 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(4a748665) SHA1(9f08b6d0731390c306194808226d2
 GTS3_ROMEND
 CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street (rev.3)",1994,"Gottlieb",mGTS3DMDSA, 0)
 
+INITGAME2(freddy4, DMD, FLIP8182, 4, SNDBRD_GTS3, 4)
+GTS3ROMSTART(freddy4,	"gprom.bin", CRC(cd8b46ea) SHA1(3151a9f7b514314dc4989232e1eda444555242c0))
+GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(d78d0fa3) SHA1(132c05e71cf5ad53184f044873fb3dd71f6da15f))
+GTS3SOUND32512256(		"yrom1.bin",CRC(4a748665) SHA1(9f08b6d0731390c306194808226d2e99fbe9122d),
+						"drom1.bin",CRC(d472210c) SHA1(4607e6f928cb9a5f41175210ba0427b6cd50fb83),
+						"arom1.bin",CRC(6bec0567) SHA1(510c0e5a5af7573761a69bad5ab36f0019767c48),
+						"arom2.bin",CRC(f0e9284d) SHA1(6ffe8286e27b0eecab9620ca613e3d72bb7f77ce))
+GTS3_ROMEND
+CORE_CLONEDEFNV(freddy4,freddy,"Freddy: A Nightmare on Elm Street (rev.4)",1994,"Gottlieb",mGTS3DMDSA, 0)
+
 /*-------------------------------------------------------------------
 / Shaq Attaq
 /-------------------------------------------------------------------*/
