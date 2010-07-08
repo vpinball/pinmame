@@ -14,7 +14,7 @@
 /*                                                                      */
 /************************************************************************/
 
-#define DSS_INPUT_SPACE	0x1000
+#define DSS_INPUT_SPACE	0x10000
 
 static struct node_description **dss_input_map=NULL;
 

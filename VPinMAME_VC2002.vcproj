@@ -3500,6 +3500,10 @@
 					RelativePath="src\wpc\mech.h"
 					>
 				</File>
+        <File
+          RelativePath="src\wpc\micropin.c"
+          >
+        </File>
 				<File
 					RelativePath="src\wpc\mrgame.c"
 					>

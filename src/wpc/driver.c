@@ -628,6 +628,12 @@ DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game
                         //Viking King
 
 // ----------------
+// MICROPIN GAMES
+// ----------------
+DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
+DRIVERNV(pentacp2)      //Pentacup (rev. 2, 1980)
+
+// ----------------
 // MIDWAY GAMES
 // ----------------
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
