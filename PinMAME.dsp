@@ -2367,6 +2367,10 @@ SOURCE=.\src\wpc\mech.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\micropin.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\mrgame.c
 # End Source File
 # Begin Source File
