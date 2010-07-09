@@ -138,12 +138,7 @@ static READ_HANDLER(m510x_r) {
   UINT8 val = locals.m510x[offset];
   logerror("m510%d_r: %02x\n", offset, locals.m510x[offset]);
   if (offset == 2) {
-    if (locals.m510x[2] == 0xf0) {
-      val = 0x50 | (coreGlobals.swMatrix[1] & 0x20);
-    } else {
-      val = coreGlobals.swMatrix[0] ^ 0x80;
-    }
-    locals.m510x[2] = val;
+		val = coreGlobals.swMatrix[0] ^ 0x70;  //vol down, vol up, and credit buttons are active low
   }
   return val;
 }
