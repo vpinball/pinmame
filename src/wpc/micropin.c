@@ -47,9 +47,17 @@ static WRITE_HANDLER(mp_pia0ca2_w) {
 
 static READ_HANDLER(mp_pia1b_r) {
   printf("PIA #1 B READ\n");
-  return 0;
+  return (coreGlobals.swMatrix[0] ^ 0x70);
 }
 static WRITE_HANDLER(mp_pia1a_w) {
+  mixer_set_volume(0, locals.vol = (int)((float)(((data ^ 0Xff) >> 4) + 1) / 16.0 * 100.0));
+  if (locals.snd > -1) {
+    logerror("stop snd 1:%x\n", locals.snd);
+    discrete_sound_w(1 << locals.snd, 0);
+  }
+  locals.snd = (data ^ 0xff) & 0x0f;
+  discrete_sound_w(1 << locals.snd, 1);
+  timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
   printf("PIA #1 A: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1b_w) {
@@ -60,7 +68,7 @@ static WRITE_HANDLER(mp_pia1ca2_w) {
   printf("PIA #1 CA2: %d\n", data);
 }
 static WRITE_HANDLER(mp_pia1cb2_w) {
-  cpu_set_nmi_line(0, PULSE_LINE);
+  //cpu_set_nmi_line(0, PULSE_LINE);
   printf("PIA #1 CB2: %d\n", data);
 }
 static void mp_pia1irq(int data) {
@@ -114,33 +122,13 @@ static WRITE_HANDLER(m520x_w) {
 }
 
 /* The chip at 510x is a PIA 6821 according to the schematics
- * but it doesn't look like it's used correctly.
- * Until this issue is resolved, here's a hack for sound & button inputs.
- */  
+ * but the data bus is inverted */
 static WRITE_HANDLER(m510x_w) {
-//  pia_1_w(offset, data);
-  logerror("m510%d_w: %02x\n", offset, data);
-  if (!offset) {
-    mixer_set_volume(0, locals.vol = (int)((float)((data >> 4) + 1) / 16.0 * 100.0));
-    if (locals.snd > -1) {
-      logerror("stop snd 1:%x\n", locals.snd);
-      discrete_sound_w(1 << locals.snd, 0);
-    }
-    locals.snd = data & 0x0f;
-    discrete_sound_w(1 << locals.snd, 1);
-    timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
-  }
-  locals.m510x[offset] = data;
+  pia_1_w(offset, data ^ 0xff);
 }
 
 static READ_HANDLER(m510x_r) {
-//  pia_1_r(offset);
-  UINT8 val = locals.m510x[offset];
-  logerror("m510%d_r: %02x\n", offset, locals.m510x[offset]);
-  if (offset == 2) {
-		val = coreGlobals.swMatrix[0] ^ 0x70;  //vol down, vol up, and credit buttons are active low
-  }
-  return val;
+  return (pia_1_r(offset) ^ 0xff);
 }
 
 static void snd_timer(int n) {
