@@ -52,7 +52,8 @@ static READ_HANDLER(mp_pia1b_r) {
   return (coreGlobals.swMatrix[0] ^ 0x70);
 }
 static WRITE_HANDLER(mp_pia1a_w) {
-  mixer_set_volume(0, locals.vol = (locals.vol_on ? (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0) : 100/16));
+	locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0);
+  mixer_set_volume(0, locals.vol_on ? locals.vol  : 100/16);
   if (locals.snd > -1) {
     logerror("stop snd 1:%x\n", locals.snd);
     discrete_sound_w(1 << locals.snd, 0);
@@ -68,6 +69,7 @@ static WRITE_HANDLER(mp_pia1b_w) {
 }
 static WRITE_HANDLER(mp_pia1ca2_w) {
 	locals.vol_on = data;
+  mixer_set_volume(0, locals.vol_on ? locals.vol  : 100/16);
   printf("PIA #1 CA2: %d\n", data);
 }
 static WRITE_HANDLER(mp_pia1cb2_w) {
