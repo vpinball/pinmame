@@ -21,7 +21,9 @@ static struct {
   int col;
   int store;
   int snd;
-  int vol;
+  int vol, vol_on;
+	int decay;
+	int restart_flg;
   UINT8 m510x[4];
   mame_timer *sndTimer;
 } locals;
@@ -50,25 +52,27 @@ static READ_HANDLER(mp_pia1b_r) {
   return (coreGlobals.swMatrix[0] ^ 0x70);
 }
 static WRITE_HANDLER(mp_pia1a_w) {
-  mixer_set_volume(0, locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0));
+  mixer_set_volume(0, locals.vol = (locals.vol_on ? (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0) : 100/16));
   if (locals.snd > -1) {
     logerror("stop snd 1:%x\n", locals.snd);
     discrete_sound_w(1 << locals.snd, 0);
   }
   locals.snd = (data ^ 0xff) & 0x0f;
   discrete_sound_w(1 << locals.snd, 1);
-  timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
   printf("PIA #1 A: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1b_w) {
+	locals.decay = (data ^ 0xff) & 0x0f;
+  timer_adjust(locals.sndTimer, TIME_IN_MSEC((locals.decay & 0x8) ? 2700*((locals.decay & 0x7)+1)/8 : 100), 0, TIME_NEVER);
   printf("PIA #1 B: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1ca2_w) {
-  mixer_set_volume(0, data ? locals.vol : 0);
+	locals.vol_on = data;
   printf("PIA #1 CA2: %d\n", data);
 }
 static WRITE_HANDLER(mp_pia1cb2_w) {
   //cpu_set_nmi_line(0, PULSE_LINE);
+	locals.restart_flg = data;
   printf("PIA #1 CB2: %d\n", data);
 }
 static void mp_pia1irq(int data) {
