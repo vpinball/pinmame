@@ -31,6 +31,36 @@ static struct {
 
 /* 1978 version */
 
+static void mp_adjust_volume() {
+	static int volume;
+	double expdecay;
+
+	if (locals.decay & 0x8) {
+		switch (locals.decay & 0x7) {										// exp(-100 / (6.8 * 80*((decay) & 0x7 + 1)/8));
+				case 0:  expdecay = 0.23; break;
+				case 1:  expdecay = 0.47; break;
+				case 2:  expdecay = 0.61; break;
+				case 3:  expdecay = 0.69; break;
+				case 4:  expdecay = 0.75; break;
+				case 5:  expdecay = 0.78; break;
+				case 6:  expdecay = 0.81; break;
+				case 7:  expdecay = 0.83; break;
+			}
+			if (locals.vol_on)
+				volume = (int) (volume - locals.vol)*expdecay + locals.vol; 
+			else	
+				volume = (int) volume*expdecay; 
+			timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
+	}
+	else
+		if (locals.vol_on)
+			volume = locals.vol;
+		else
+			volume = 0;
+	
+	mixer_set_volume(0, volume);
+}
+
 static WRITE_HANDLER(mp_pia0a_w) {
   if (locals.col >= 0) {
     coreGlobals.segments[15-locals.col].w = core_bcd2seg7[data & 0x0f];
@@ -52,30 +82,32 @@ static READ_HANDLER(mp_pia1b_r) {
   return (coreGlobals.swMatrix[0] ^ 0x70);
 }
 static WRITE_HANDLER(mp_pia1a_w) {
-	locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0);
-  mixer_set_volume(0, locals.vol_on ? locals.vol  : 100/16);
-  if (locals.snd > -1) {
-    logerror("stop snd 1:%x\n", locals.snd);
-    discrete_sound_w(1 << locals.snd, 0);
-  }
-  locals.snd = (data ^ 0xff) & 0x0f;
+	if (locals.snd > -1) {
+		logerror("stop snd 1:%x\n", locals.snd);
+		discrete_sound_w(1 << locals.snd, 0);
+	}
+	locals.snd = (data & 0x0f) ^ 0x0f;	
   discrete_sound_w(1 << locals.snd, 1);
-  printf("PIA #1 A: %02x\n", data);
+
+	locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0);
+	mp_adjust_volume();
+
+	printf("PIA #1 A: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1b_w) {
-	locals.decay = (data ^ 0xff) & 0x0f;
-  timer_adjust(locals.sndTimer, TIME_IN_MSEC((locals.decay & 0x8) ? 2700*((locals.decay & 0x7)+1)/8 : 100), 0, TIME_NEVER);
-  printf("PIA #1 B: %02x\n", data);
+	locals.decay = (data & 0xf) ^ 0x7;
+	mp_adjust_volume();
+	printf("PIA #1 B: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1ca2_w) {
-	locals.vol_on = data;
-  mixer_set_volume(0, locals.vol_on ? locals.vol  : 100/16);
-  printf("PIA #1 CA2: %d\n", data);
+	locals.vol_on = data & 0x1;
+	mp_adjust_volume();
+	printf("PIA #1 CA2: %d\n", data);
 }
 static WRITE_HANDLER(mp_pia1cb2_w) {
-  //cpu_set_nmi_line(0, PULSE_LINE);
-	locals.restart_flg = data;
-  printf("PIA #1 CB2: %d\n", data);
+	//cpu_set_nmi_line(0, PULSE_LINE);
+	locals.restart_flg = (data & 0x1);
+	printf("PIA #1 CB2: %d\n", data);
 }
 static void mp_pia1irq(int data) {
   printf("PIA #1 IRQ\n");
@@ -107,7 +139,7 @@ static READ_HANDLER(m400x_r) {
   UINT8 val = coreGlobals.swMatrix[offset + 1];
   if (!offset) val ^= 0x40; // invert tilt switch
   locals.col = -1;
-  return val;
+	return val;
 }
 
 static WRITE_HANDLER(m520x_w) {
@@ -138,11 +170,7 @@ static READ_HANDLER(m510x_r) {
 }
 
 static void snd_timer(int n) {
-  if (locals.snd > -1) {
-    logerror("stop snd 2:%x\n", locals.snd);
-    discrete_sound_w(1 << locals.snd, 0);
-    locals.snd = -1;
-  }
+	mp_adjust_volume();
 }
 
 /*-----------------------------------------------
@@ -190,7 +218,6 @@ static MACHINE_INIT(MICROPIN) {
 static MACHINE_RESET(MICROPIN) {
   memset(&locals, 0, sizeof(locals));
   locals.sndTimer = timer_alloc(snd_timer);
-  locals.snd = -1;
 }
 
 static SWITCH_UPDATE(MICROPIN) {
