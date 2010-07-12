@@ -22,43 +22,41 @@ static struct {
   int store;
   int snd;
   int vol, vol_on;
-	int decay;
-	int restart_flg;
-  UINT8 m510x[4];
+  int decay;
+  int restart_flg;
   mame_timer *sndTimer;
 } locals;
 
 
 /* 1978 version */
 
-static void mp_adjust_volume() {
-	static int volume;
-	double expdecay;
+static void mp_adjust_volume(void) {
+  static int volume;
+  double expdecay = 0;
 
-	if (locals.decay & 0x8) {
-		switch (locals.decay & 0x7) {										// exp(-100 / (6.8 * 80*((decay) & 0x7 + 1)/8));
-				case 0:  expdecay = 0.23; break;
-				case 1:  expdecay = 0.47; break;
-				case 2:  expdecay = 0.61; break;
-				case 3:  expdecay = 0.69; break;
-				case 4:  expdecay = 0.75; break;
-				case 5:  expdecay = 0.78; break;
-				case 6:  expdecay = 0.81; break;
-				case 7:  expdecay = 0.83; break;
-			}
-			if (locals.vol_on)
-				volume = (int) (volume - locals.vol)*expdecay + locals.vol; 
-			else	
-				volume = (int) volume*expdecay; 
-			timer_adjust(locals.sndTimer, TIME_IN_MSEC(100), 0, TIME_NEVER);
-	}
-	else
-		if (locals.vol_on)
-			volume = locals.vol;
-		else
-			volume = 0;
-	
-	mixer_set_volume(0, volume);
+  if (locals.decay & 0x8) {
+    switch (locals.decay & 0x7) {                   // exp(-100 / (6.8 * 80*((decay) & 0x7 + 1)/8));
+      case 0:  expdecay = 0.23; break;
+      case 1:  expdecay = 0.47; break;
+      case 2:  expdecay = 0.61; break;
+      case 3:  expdecay = 0.69; break;
+      case 4:  expdecay = 0.75; break;
+      case 5:  expdecay = 0.78; break;
+      case 6:  expdecay = 0.81; break;
+      case 7:  expdecay = 0.83; break;
+    }
+    if (locals.vol_on)
+      volume = (int) (volume - locals.vol)*expdecay + locals.vol; 
+    else  
+      volume = (int) volume*expdecay; 
+  }
+  else
+    if (locals.vol_on)
+      volume = locals.vol;
+    else
+      volume = 0;
+  
+  mixer_set_volume(0, volume);
 }
 
 static WRITE_HANDLER(mp_pia0a_w) {
@@ -78,46 +76,46 @@ static WRITE_HANDLER(mp_pia0ca2_w) {
 }
 
 static READ_HANDLER(mp_pia1b_r) {
-  printf("PIA #1 B READ\n");
+  logerror("PIA #1 B READ\n");
   return (coreGlobals.swMatrix[0] ^ 0x70);
 }
 static WRITE_HANDLER(mp_pia1a_w) {
-	if (locals.snd > -1) {
-		logerror("stop snd 1:%x\n", locals.snd);
-		discrete_sound_w(1 << locals.snd, 0);
-	}
-	locals.snd = (data & 0x0f) ^ 0x0f;	
+  if (locals.snd > -1) {
+    logerror("stop snd 1:%x\n", locals.snd);
+    discrete_sound_w(1 << locals.snd, 0);
+  }
+  locals.snd = (data & 0x0f) ^ 0x0f;
   discrete_sound_w(1 << locals.snd, 1);
+  timer_adjust(locals.sndTimer, TIME_IN_MSEC(200), 0, TIME_NEVER);
 
-	locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0);
-	mp_adjust_volume();
-
-	printf("PIA #1 A: %02x\n", data);
+  locals.vol = (int)((float)(((data ^ 0xff) >> 4) + 1) / 16.0 * 100.0);
+  mp_adjust_volume();
+  logerror("PIA #1 A: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1b_w) {
-	locals.decay = (data & 0xf) ^ 0x7;
-	mp_adjust_volume();
-	printf("PIA #1 B: %02x\n", data);
+  locals.decay = (data & 0xf) ^ 0x7;
+  mp_adjust_volume();
+  logerror("PIA #1 B: %02x\n", data);
 }
 static WRITE_HANDLER(mp_pia1ca2_w) {
-	locals.vol_on = data & 0x1;
-	mp_adjust_volume();
-	printf("PIA #1 CA2: %d\n", data);
+  locals.vol_on = data;
+  mp_adjust_volume();
+  logerror("PIA #1 CA2: %d\n", data);
 }
 static WRITE_HANDLER(mp_pia1cb2_w) {
-	//cpu_set_nmi_line(0, PULSE_LINE);
-	locals.restart_flg = (data & 0x1);
-	printf("PIA #1 CB2: %d\n", data);
+  //cpu_set_nmi_line(0, PULSE_LINE);
+  locals.restart_flg = data;
+  logerror("PIA #1 CB2: %d\n", data);
 }
 static void mp_pia1irq(int data) {
-  printf("PIA #1 IRQ\n");
+  logerror("PIA #1 IRQ\n");
 }
 
 static const struct pia6821_interface mp_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ mp_pia0a_w, mp_pia0b_w, mp_pia0ca2_w, 0
 },{
-  /*i: A/B,CA/B1,CA/B2 */ 0, mp_pia1b_r, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, mp_pia1b_r, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), 0, 0,
   /*o: A/B,CA/B2       */ mp_pia1a_w, mp_pia1b_w, mp_pia1ca2_w, mp_pia1cb2_w,
   /*irq: A/B           */ mp_pia1irq, mp_pia1irq
 }};
@@ -139,7 +137,17 @@ static READ_HANDLER(m400x_r) {
   UINT8 val = coreGlobals.swMatrix[offset + 1];
   if (!offset) val ^= 0x40; // invert tilt switch
   locals.col = -1;
-	return val;
+  return val;
+}
+
+/* The chip at 510x is a PIA 6821 according to the schematics
+ * but the data bus is inverted */
+static WRITE_HANDLER(m510x_w) {
+  pia_1_w(offset, data ^ 0xff);
+}
+
+static READ_HANDLER(m510x_r) {
+  return (pia_1_r(offset) ^ 0xff);
 }
 
 static WRITE_HANDLER(m520x_w) {
@@ -159,18 +167,12 @@ static WRITE_HANDLER(m520x_w) {
   }
 }
 
-/* The chip at 510x is a PIA 6821 according to the schematics
- * but the data bus is inverted */
-static WRITE_HANDLER(m510x_w) {
-  pia_1_w(offset, data ^ 0xff);
-}
-
-static READ_HANDLER(m510x_r) {
-  return (pia_1_r(offset) ^ 0xff);
-}
-
 static void snd_timer(int n) {
-	mp_adjust_volume();
+  if (locals.snd > -1) {
+    logerror("stop snd 2:%x\n", locals.snd);
+    discrete_sound_w(1 << locals.snd, 0);
+    locals.snd = -1;
+  }
 }
 
 /*-----------------------------------------------
@@ -194,7 +196,6 @@ static MEMORY_WRITE_START(mp_writemem)
   { 0x0000, 0x01ff, mp_CMOS_w, &mp_CMOS },
   { 0x4000, 0x4005, m400x_w },
   { 0x5000, 0x5003, pia_0_w },
-//  { 0x5100, 0x5103, pia_1_w },
   { 0x5100, 0x5103, m510x_w },
   { 0x5200, 0x5203, m520x_w },
 MEMORY_END
@@ -203,7 +204,6 @@ static MEMORY_READ_START(mp_readmem)
   { 0x0000, 0x01ff, MRA_RAM },
   { 0x4000, 0x4004, m400x_r },
   { 0x5000, 0x5003, pia_0_r },
-//  { 0x5100, 0x5103, pia_1_r },
   { 0x5100, 0x5103, m510x_r },
   { 0x6000, 0x7fff, MRA_ROM },
   { 0xfc00, 0xffff, MRA_ROM },
@@ -218,6 +218,8 @@ static MACHINE_INIT(MICROPIN) {
 static MACHINE_RESET(MICROPIN) {
   memset(&locals, 0, sizeof(locals));
   locals.sndTimer = timer_alloc(snd_timer);
+  locals.snd = -1;
+  locals.vol_on = 1;
 }
 
 static SWITCH_UPDATE(MICROPIN) {
@@ -238,47 +240,47 @@ static void mp_nmi(int data) {
 }
 
 DISCRETE_SOUND_START(mp_discInt)
-	DISCRETE_INPUT(NODE_01,0x0001,0xffff,0)
-	DISCRETE_INPUT(NODE_02,0x0002,0xffff,0)
-	DISCRETE_INPUT(NODE_03,0x0004,0xffff,0)
-	DISCRETE_INPUT(NODE_04,0x0008,0xffff,0)
-	DISCRETE_INPUT(NODE_05,0x0010,0xffff,0)
-	DISCRETE_INPUT(NODE_06,0x0020,0xffff,0)
-	DISCRETE_INPUT(NODE_07,0x0040,0xffff,0)
-	DISCRETE_INPUT(NODE_08,0x0080,0xffff,0)
-	DISCRETE_INPUT(NODE_09,0x0100,0xffff,0)
-	DISCRETE_INPUT(NODE_10,0x0200,0xffff,0)
-	DISCRETE_INPUT(NODE_11,0x0400,0xffff,0)
-	DISCRETE_INPUT(NODE_12,0x0800,0xffff,0)
-	DISCRETE_INPUT(NODE_13,0x1000,0xffff,0)
-	DISCRETE_INPUT(NODE_14,0x2000,0xffff,0)
-	DISCRETE_INPUT(NODE_15,0x4000,0xffff,0)
-	DISCRETE_INPUT(NODE_16,0x8000,0xffff,0)
+  DISCRETE_INPUT(NODE_01,0x0001,0xffff,0)
+  DISCRETE_INPUT(NODE_02,0x0002,0xffff,0)
+  DISCRETE_INPUT(NODE_03,0x0004,0xffff,0)
+  DISCRETE_INPUT(NODE_04,0x0008,0xffff,0)
+  DISCRETE_INPUT(NODE_05,0x0010,0xffff,0)
+  DISCRETE_INPUT(NODE_06,0x0020,0xffff,0)
+  DISCRETE_INPUT(NODE_07,0x0040,0xffff,0)
+  DISCRETE_INPUT(NODE_08,0x0080,0xffff,0)
+  DISCRETE_INPUT(NODE_09,0x0100,0xffff,0)
+  DISCRETE_INPUT(NODE_10,0x0200,0xffff,0)
+  DISCRETE_INPUT(NODE_11,0x0400,0xffff,0)
+  DISCRETE_INPUT(NODE_12,0x0800,0xffff,0)
+  DISCRETE_INPUT(NODE_13,0x1000,0xffff,0)
+  DISCRETE_INPUT(NODE_14,0x2000,0xffff,0)
+  DISCRETE_INPUT(NODE_15,0x4000,0xffff,0)
+  DISCRETE_INPUT(NODE_16,0x8000,0xffff,0)
  
-	DISCRETE_SQUAREWFIX(NODE_21,NODE_01,387, 50000,50,0,0) // G4 note
-	DISCRETE_SQUAREWFIX(NODE_22,NODE_02,435, 50000,50,0,0) // A4 note
-	DISCRETE_SQUAREWFIX(NODE_23,NODE_03,488, 50000,50,0,0) // B4 note
-	DISCRETE_SQUAREWFIX(NODE_24,NODE_04,517, 50000,50,0,0) // C5 note
-	DISCRETE_SQUAREWFIX(NODE_25,NODE_05,581, 50000,50,0,0) // D5 note
-	DISCRETE_SQUAREWFIX(NODE_26,NODE_06,652, 50000,50,0,0) // E5 note
-	DISCRETE_SQUAREWFIX(NODE_27,NODE_07,691, 50000,50,0,0) // F5 note
-	DISCRETE_SQUAREWFIX(NODE_28,NODE_08,775, 50000,50,0,0) // G5 note
-	DISCRETE_SQUAREWFIX(NODE_29,NODE_09,870, 50000,50,0,0) // A5 note
-	DISCRETE_SQUAREWFIX(NODE_30,NODE_10,977, 50000,50,0,0) // B5 note
-	DISCRETE_SQUAREWFIX(NODE_31,NODE_11,1035,50000,50,0,0) // C6 note
-	DISCRETE_SQUAREWFIX(NODE_32,NODE_12,1161,50000,50,0,0) // D6 note
-	DISCRETE_SQUAREWFIX(NODE_33,NODE_13,1304,50000,50,0,0) // E6 note
-	DISCRETE_SQUAREWFIX(NODE_34,NODE_14,1381,50000,50,0,0) // F6 note
-	DISCRETE_SQUAREWFIX(NODE_35,NODE_15,1550,50000,50,0,0) // G6 note
-	DISCRETE_SQUAREWFIX(NODE_36,NODE_16,1740,50000,50,0,0) // A6 note
-	
-	DISCRETE_ADDER4(NODE_41,1,NODE_21,NODE_22,NODE_23,NODE_24)
-	DISCRETE_ADDER4(NODE_42,1,NODE_25,NODE_26,NODE_27,NODE_28)
-	DISCRETE_ADDER4(NODE_43,1,NODE_29,NODE_30,NODE_31,NODE_32)
-	DISCRETE_ADDER4(NODE_44,1,NODE_33,NODE_34,NODE_35,NODE_36)
-	DISCRETE_ADDER4(NODE_50,1,NODE_41,NODE_42,NODE_43,NODE_44)
+  DISCRETE_SQUAREWFIX(NODE_21,NODE_01,387, 50000,50,0,0) // G4 note
+  DISCRETE_SQUAREWFIX(NODE_22,NODE_02,435, 50000,50,0,0) // A4 note
+  DISCRETE_SQUAREWFIX(NODE_23,NODE_03,488, 50000,50,0,0) // B4 note
+  DISCRETE_SQUAREWFIX(NODE_24,NODE_04,517, 50000,50,0,0) // C5 note
+  DISCRETE_SQUAREWFIX(NODE_25,NODE_05,581, 50000,50,0,0) // D5 note
+  DISCRETE_SQUAREWFIX(NODE_26,NODE_06,652, 50000,50,0,0) // E5 note
+  DISCRETE_SQUAREWFIX(NODE_27,NODE_07,691, 50000,50,0,0) // F5 note
+  DISCRETE_SQUAREWFIX(NODE_28,NODE_08,775, 50000,50,0,0) // G5 note
+  DISCRETE_SQUAREWFIX(NODE_29,NODE_09,870, 50000,50,0,0) // A5 note
+  DISCRETE_SQUAREWFIX(NODE_30,NODE_10,977, 50000,50,0,0) // B5 note
+  DISCRETE_SQUAREWFIX(NODE_31,NODE_11,1035,50000,50,0,0) // C6 note
+  DISCRETE_SQUAREWFIX(NODE_32,NODE_12,1161,50000,50,0,0) // D6 note
+  DISCRETE_SQUAREWFIX(NODE_33,NODE_13,1304,50000,50,0,0) // E6 note
+  DISCRETE_SQUAREWFIX(NODE_34,NODE_14,1381,50000,50,0,0) // F6 note
+  DISCRETE_SQUAREWFIX(NODE_35,NODE_15,1550,50000,50,0,0) // G6 note
+  DISCRETE_SQUAREWFIX(NODE_36,NODE_16,1740,50000,50,0,0) // A6 note
+  
+  DISCRETE_ADDER4(NODE_41,1,NODE_21,NODE_22,NODE_23,NODE_24)
+  DISCRETE_ADDER4(NODE_42,1,NODE_25,NODE_26,NODE_27,NODE_28)
+  DISCRETE_ADDER4(NODE_43,1,NODE_29,NODE_30,NODE_31,NODE_32)
+  DISCRETE_ADDER4(NODE_44,1,NODE_33,NODE_34,NODE_35,NODE_36)
+  DISCRETE_ADDER4(NODE_50,1,NODE_41,NODE_42,NODE_43,NODE_44)
 
-	DISCRETE_OUTPUT(NODE_50, 70)
+  DISCRETE_OUTPUT(NODE_50, 70)
 DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(pentacup)
