@@ -67,7 +67,18 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(87864071) SHA1(d03c71efc0431f30a07c819
                        "v_ic6.532" ,  CRC(0104e5c4) SHA1(c073cb4bdea189085ae074e9c16872752b6ffba0))
 S6_ROMEND
 #define input_ports_blkou input_ports_s6
-CORE_GAMEDEF(blkou,l1,"Blackout (L-1)",1979,"Williams",s6_mS6S,0)
+CORE_GAMEDEF(blkou,l1,"Blackout (L-1)",1980,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(blkou,f1,  "gamerom.716", CRC(4b407ae2) SHA1(46a2afcfc2d969c5acae18b57a678265257a6102),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SPEECHROMS0000(   "speech7f.532",CRC(bdc1b0b1) SHA1(c78f8653dfe3ec58722a8a17da7924e4a76cf692),
+                       "speech6f.532",CRC(9b7e4ae9) SHA1(137b5ec871162329cb7ca3a62da3193382223d8a),
+                       "speech5f.532",CRC(9040f34a) SHA1(529eae0b58f3300f2b9bdf40c5ca7f4b29425dff),
+                       "speech4f.532",CRC(29c4abde) SHA1(b3af7b8d0c2548f5c0bb240aa1dc5cc59bb2af9a))
+S6_ROMEND
+CORE_CLONEDEF(blkou,f1,l1,"Blackout (L-1, French Speech)",1980,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(blkou,t1,  "gamerom.716", CRC(4b407ae2) SHA1(46a2afcfc2d969c5acae18b57a678265257a6102),
                        "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
@@ -77,8 +88,7 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(87864071) SHA1(d03c71efc0431f30a07c819
                        "v_ic5.532" ,  CRC(046a96d8) SHA1(879127a88b3640bbb202c64cbf8678869c964177),
                        "v_ic6.532" ,  CRC(0104e5c4) SHA1(c073cb4bdea189085ae074e9c16872752b6ffba0))
 S6_ROMEND
-#define input_ports_blkou_t1 input_ports_s6
-CORE_CLONEDEF(blkou,t1,l1,"Blackout (T-1) Ted Estes",1979,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(blkou,t1,l1,"Blackout (T-1) Ted Estes",1980,"Williams",s6_mS6S,0)
 
 /*--------------------------
 / Gorgar - Sys.6 (Game #496)
