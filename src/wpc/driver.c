@@ -1239,6 +1239,7 @@ DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Este
 DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
 DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
+DRIVER(blkou,f1)        //          06/80 W Blackout, French speech
 DRIVER(blkou,t1)        //S6-495:   06/80 W Blackout /10 Scoring Ted Estes
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
 DRIVER(scrpn,t1)        //S6-494:   07/80 W Scorpion /10 Scoring Ted Estes
