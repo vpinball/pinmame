@@ -65,14 +65,14 @@ static void mp_adjust_volume(void) {
 
 static WRITE_HANDLER(mp_pia0a_w) {
   if (locals.col >= 0) {
-    coreGlobals.segments[15-locals.col].w = core_bcd2seg7[data & 0x0f];
-    coreGlobals.segments[31-locals.col].w = core_bcd2seg7[data >> 4];
+    coreGlobals.segments[15-locals.col].w = core_bcd2seg7a[data & 0x0f];
+    coreGlobals.segments[31-locals.col].w = core_bcd2seg7a[data >> 4];
   }
 }
 static WRITE_HANDLER(mp_pia0b_w) {
   if (locals.col >= 0) {
-    coreGlobals.segments[47-locals.col].w = core_bcd2seg7[data & 0x0f];
-    coreGlobals.segments[63-locals.col].w = core_bcd2seg7[data >> 4];
+    coreGlobals.segments[47-locals.col].w = core_bcd2seg7a[data & 0x0f];
+    coreGlobals.segments[63-locals.col].w = core_bcd2seg7a[data >> 4];
   }
 }
 static WRITE_HANDLER(mp_pia0ca2_w) {
