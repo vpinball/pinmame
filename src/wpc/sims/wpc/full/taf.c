@@ -421,6 +421,10 @@ WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564) SHA1(d643506db1b3ba1e
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
+WPC_ROMSTART(taf,ld5,  "taf_ld5.rom",0x80000,CRC(d500eb6e) SHA1(1898214886de95c4862dec69962da018586a0f6d))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
 WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65) SHA1(ce6f9cc45df08f50f5ece2a4c9376ecf67b0466a))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
@@ -452,6 +456,7 @@ WPC_ROMEND
 #define init_tafg        init_taf
 
 CORE_GAMEDEF(taf,l5,        "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,ld5,l5,    "The Addams Family (LD-5) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p2,l5,    "The Addams Family (Prototype) (P-2)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l1,l5,    "The Addams Family (L-1)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l2,l5,    "The Addams Family (L-2)",1992,"Bally",wpc_mFliptronS,0)
