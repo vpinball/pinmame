@@ -1417,6 +1417,7 @@ DRIVER(taf,l3)          //          05/92 B The Addams Family (L-3)
 DRIVER(taf,l4)          //          05/92 B The Addams Family (L-4)
 DRIVER(taf,l7)          //          10/92 B The Addams Family (L-7) (Prototype L-5)
 DRIVER(taf,l5)          //          12/92 B The Addams Family (L-5)
+DRIVER(taf,ld5)         //	    12/92 B The Addams Family (LD-5) LED Ghost Fix
 DRIVER(taf,l6)          //          03/93 B The Addams Family (L-6)
 DRIVER(taf,h4)          //          05/94 B The Addams Family (H-4)
 DRIVER(gw,pc)           //WPC-504:  03/92 W The Getaway: High Speed II (P-C)
