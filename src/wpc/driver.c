@@ -1519,7 +1519,8 @@ DRIVER(ts,la4)          //          02/95 B The Shadow (LA-4)
 DRIVER(ts,lx4)          //          02/95 B The Shadow (LX-4)
 DRIVER(ts,lx5)          //          05/95 B The Shadow (LX-5)
 DRIVER(ts,lh6)          //          05/95 B The Shadow (LH-6, Home version)
-DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry
+DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
+DRIVER(dh,dx2)          //WPC-530:  03/95 W Dirty Harry (DX-2) LED Ghost Fix
 DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A)
 DRIVER(tom,12)          //          04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
