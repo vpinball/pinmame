@@ -453,21 +453,33 @@ WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf5
                  "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15)) \
 
 WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,CRC(773e1488) SHA1(36e8957b3903b99844a76bf15ba393b17db0db59)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d7,"tmbopd_7.rom",0x40000,CRC(43e69417) SHA1(3881a04e409b18319ad33874d742a611cc783feb)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l6,"tmbopl_6.rom",0x20000,CRC(96b844d6) SHA1(981194c249a8fc2534e24ef672380d751a5dc5fd)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d6,"tmbopd_6.rom",0x20000,CRC(6d5d3df8) SHA1(37fe8bc12321d97e4f368392c8c29c539d8aaedf)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l5,"tmbopl_5.rom",0x20000,CRC(fd5c426d) SHA1(e006f8e39cf382249db0b969cf966fd8deaa344a)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d5,"tmbopd_5.rom",0x20000,CRC(cfe43a8c) SHA1(6f5c1ddfc4f5ec40851612653924c77abc8309ee)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l4,"tmbopl_4.rom",0x20000,CRC(eea14ecd) SHA1(afd670bdc3680f12360561a1a5e5854718c099f7)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d4,"tmbopd_4.rom",0x20000,CRC(20295f41) SHA1(20f98b15bb15b6f534b2ea6fa13cbadc4501ff1f)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l3,"bop_l3.u6",   0x20000,CRC(cd4d219d) SHA1(4e73dca186867ebee07682deab058a45cee53be1)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d3,"bop_d3.u6",   0x20000,CRC(8e00fcba) SHA1(b8f9cb7f9715e45d43f47654ef553868c856235a)) BOP_SOUND WPC_ROMEND
 WPC_ROMSTART(bop,l2,"bop_l2.u6",   0x20000,CRC(17ee1f56) SHA1(bee68ed5680455f23dc33e889acec83cba68b1dc)) BOP_SOUND WPC_ROMEND
+WPC_ROMSTART(bop,d2,"bop_d2.u6",   0x20000,CRC(c362eb30) SHA1(93704d1634f170e10c7c6850e7f24be69aefd89e)) BOP_SOUND WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d7,l7,"The Machine: Bride of Pinbot (D-7) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l6,l7,"The Machine: Bride of Pinbot (L-6)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d6,l7,"The Machine: Bride of Pinbot (D-6) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l5,l7,"The Machine: Bride of Pinbot (L-5)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d5,l7,"The Machine: Bride of Pinbot (D-5) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l4,l7,"The Machine: Bride of Pinbot (L-4)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d4,l7,"The Machine: Bride of Pinbot (D-4) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l3,l7,"The Machine: Bride of Pinbot (L-3)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d3,l7,"The Machine: Bride of Pinbot (D-3) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l2,l7,"The Machine: Bride of Pinbot (L-2)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d2,l7,"The Machine: Bride of Pinbot (D-2) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
