@@ -356,7 +356,17 @@ WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb
 		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
 
+WPC_ROMSTART(hd,d3,"harly_d3.rom",0x020000,CRC(ecf9da82) SHA1(f86214cd4a2823085445bcbd3fcd37761bc111ab))
+WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0) SHA1(8080cbbe0f346020b2b2b8e97015dbb615dbadb3),
+		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+WPC_ROMEND
+
 WPC_ROMSTART(hd,l1,"u6-l1.rom",0x020000,CRC(a0bdcfbf) SHA1(f906ffa2d4d04e87225bf711a07dd3bee1655a40))
+WPCS_SOUNDROM22x("u18-sp1.rom",CRC(708aa419) SHA1(cfc2692fb3bcbacceb85021e282bfbc8dcdf8fcc),
+		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
+WPC_ROMEND
+
+WPC_ROMSTART(hd,d1,"u6-d1.rom",0x020000,CRC(b4f6169e) SHA1(750fe0a5ab7cc6ee9f07aae2301140a1c8c38a64))
 WPCS_SOUNDROM22x("u18-sp1.rom",CRC(708aa419) SHA1(cfc2692fb3bcbacceb85021e282bfbc8dcdf8fcc),
 		 "hd_u15.rom",CRC(e7870938) SHA1(b4f28146a5e7baa8522db65b41311afaf49604c6))
 WPC_ROMEND
@@ -371,7 +381,9 @@ static MACHINE_DRIVER_START(hd)
 MACHINE_DRIVER_END
 
 CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d3,l3,"Harley Davidson (D-3) LED Ghost Fix",1991,"Bally", hd, 0)
 CORE_CLONEDEF(hd,l1,l3,"Harley Davidson (L-1)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d1,l3,"Harley Davidson (D-1) LED Ghost Fix",1991,"Bally", hd, 0)
 
 /*-----------------------
 / Simulation Definitions
