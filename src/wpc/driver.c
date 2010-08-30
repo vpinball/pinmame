@@ -1386,16 +1386,23 @@ DRIVER(fh,l5)           //          02/91 W Funhouse (L-5)
 DRIVER(fh,l9)           //          12/92 W Funhouse (L-9)
 DRIVER(fh,l9b)          //          12/92 W Funhouse (bootleg with correct German translation)
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
-DRIVER(bop,l3)          //          04/91 W The Machine: Bride of Pinbot (L-3)
-DRIVER(bop,l4)          //          04/91 W The Machine: Bride of Pinbot (L-4)
-DRIVER(bop,l5)          //          05/91 W The Machine: Bride of Pinbot (L-5)
-DRIVER(bop,l6)          //          05/91 W The Machine: Bride of Pinbot (L-6)
-DRIVER(bop,l7)          //          12/92 W The Machine: Bride of Pinbot (L-7)
+DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
+DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
+DRIVER(bop,d3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-3) LED Ghost Fix
+DRIVER(bop,l4)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-4)
+DRIVER(bop,d4)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-4) LED Ghost Fix
+DRIVER(bop,l5)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-5)
+DRIVER(bop,d5)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (D-5) LED Ghost Fix
+DRIVER(bop,l6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-6)
+DRIVER(bop,d6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (D-6) LED Ghost Fix
+DRIVER(bop,l7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (L-7)
+DRIVER(bop,d7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (D-7) LED Ghost Fix
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,d1)           //WPC:      02/91 B Harley Davidson (D-1) LED Ghost Fix
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
 DRIVER(hd,d3)           //WPC:      02/91 B Harley Davidson (D-3) LED Ghost Fix
-DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
+DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
+DRIVER(sf,d1)           //WPC-601:  03/91 W SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(hurr,d2)         //WPC-512:  08/91 W Hurricane (D-2) LED Ghost Fix
 DRIVER(t2,l2)           //WPC-513:  07/91 W Terminator 2: Judgement Day (L-2)
@@ -1478,6 +1485,7 @@ DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,l6)           //          10/93 B Judge Dredd (L-6)
 DRIVER(jd,l7)           //          12/93 B Judge Dredd (L-7)
 DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
+DRIVER(afv,d4)          //WPC-622:  ??/93 W Addams Family Values (D-4 Redemption) LED Ghost Fix
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,l1)        //          11/93 W Star Trek: The Next Generation (LX-1)
 DRIVER(sttng,l2)        //          12/93 W Star Trek: The Next Generation (LX-2)

@@ -280,8 +280,14 @@ WPCS_SOUNDROM222("sf_u18.l1",CRC(78092c83) SHA1(7c922dfd8be4bb5e23d4c86b6eb18a29
                  "sf_u15.l1",CRC(adcaeaa1) SHA1(27aa9526c628634c395161f4966d9943bdf1f120),
                  "sf_u14.l1",CRC(b830b419) SHA1(c59980a78d8cb1d979de21dfc5ad3d671d8486e7))
 WPC_ROMEND
+WPC_ROMSTART(sf,d1,"sf_u6.d1",0x40000,CRC(9cf39b6a) SHA1(213edb85f9f71852824e480fd3673ede97705b21))
+WPCS_SOUNDROM222("sf_u18.l1",CRC(78092c83) SHA1(7c922dfd8be4bb5e23d4c86b6eb18a29cc034338),
+                 "sf_u15.l1",CRC(adcaeaa1) SHA1(27aa9526c628634c395161f4966d9943bdf1f120),
+                 "sf_u14.l1",CRC(b830b419) SHA1(c59980a78d8cb1d979de21dfc5ad3d671d8486e7))
+WPC_ROMEND
 WPC_INPUT_PORTS_START(sf, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(sf,l1,"Slugfest (L-1)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(sf,d1,l1,"Slugfest (D-1) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 
 /*-------------------
 / Strike Master
@@ -352,6 +358,10 @@ static void init_afv(void) { core_gameData = &afvGameData; }
 WPC_ROMSTART(afv,l4,"afv_u6.l4",0x80000,CRC(37369339) SHA1(e44a91faca80ffa00d6db78e2df7aa9bf14e957c))
 DCS_SOUNDROM1x("afv_su2.l1",CRC(1aa878fc) SHA1(59a89071001b5da6ab56d691721a015773f5f0b5))
 WPC_ROMEND
+WPC_ROMSTART(afv,d4,"afv_u6.d4",0x80000,CRC(0b6c7c3c) SHA1(e389ab1f3aaecebc852b4cca74870ee939566f8c))
+DCS_SOUNDROM1x("afv_su2.l1",CRC(1aa878fc) SHA1(59a89071001b5da6ab56d691721a015773f5f0b5))
+WPC_ROMEND
+
 INPUT_PORTS_START(afv)
   CORE_PORTS
   SIM_PORTS(1)
@@ -394,6 +404,7 @@ INPUT_PORTS_START(afv)
       COREPORT_DIPSET(0x0080, "1" ) \
 INPUT_PORTS_END
 CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper, L-4)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper, D-4) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
 
 /*-------------------------------------------------------------------
 / Strikes n' Spares (#N111)
