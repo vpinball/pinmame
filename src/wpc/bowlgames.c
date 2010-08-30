@@ -327,6 +327,12 @@ WPC_ROMEND
 WPC_INPUT_PORTS_START(hshot, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8)",1992,"Midway",wpc_mFliptronS,0)
 
+WPC_ROMSTART(hshot,p9,"hshot_p9.u6",0x80000,CRC(fa4d05df) SHA1(235aa096f2983f77ade6b257fd8544d91b5f6b28))
+WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb),
+                 "hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f))
+WPC_ROMEND
+CORE_CLONEDEF(hshot,p9,p8,"Hot Shot Basketball (P-9) LED Ghost Fix",1992,"Midway",wpc_mFliptronS,0)
+
 /*-------------
 / Addams Family Values
 /--------------*/
