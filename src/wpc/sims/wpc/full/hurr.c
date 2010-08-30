@@ -327,10 +327,17 @@ WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d0172
                  "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
 WPC_ROMEND
 
+WPC_ROMSTART(hurr,d2,"hurcnd_2.rom",0x40000,CRC(bd899f8a) SHA1(06b698e48f62dbbfa6e40876dc7d9dfa1bac5990))
+WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d017271c04),
+                 "u15.pp",CRC(93d02c62) SHA1(203cd6b933822d6d3f70c63e051237e3587568f1),
+                 "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(hurr,l2,"Hurricane (L-2)",1991, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(hurr,d2,l2,"Hurricane (D-2) LED Ghost Fix",1991, "Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
