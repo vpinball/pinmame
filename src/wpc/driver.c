@@ -1394,7 +1394,8 @@ DRIVER(bop,l7)          //          12/92 W The Machine: Bride of Pinbot (L-7)
 DRIVER(hd,l1)           //WPC-201:  02/91 B Harley Davidson (L-1)
 DRIVER(hd,l3)           //          02/91 B Harley Davidson (L-3)
 DRIVER(sf,l1)           //WPC-601:  05/91 W SlugFest
-DRIVER(hurr,l2)         //WPC-512:  02/92 W Hurricane
+DRIVER(hurr,d2)         //WPC-512:  08/91 W Hurricane (D-2) LED Ghost Fix
+DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(t2,l2)           //WPC-513:  07/91 W Terminator 2: Judgement Day (L-2)
 DRIVER(t2,l3)           //          09/91 W Terminator 2: Judgement Day (L-3)
 DRIVER(t2,l4)           //          09/91 W Terminator 2: Judgement Day (L-4)
