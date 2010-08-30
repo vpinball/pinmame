@@ -1503,8 +1503,10 @@ DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
 DRIVER(fs,sp2)          //          07/94 W The Flintstones (SP-2)
 DRIVER(fs,lx4)          //          09/94 W The Flintstones (LX-4)
 DRIVER(fs,lx5)          //          11/94 W The Flintstones (LX-5)
-DRIVER(corv,px4)        //WPC-536:  09/94 B Corvette (PX4)
+DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
+DRIVER(corv,px5)        //WPC-536:  08/94 B Corvette (PX5) LED Ghost Fix
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX1)
+DRIVER(corv,dx1)        //WPC-536:  08/94 B Corvette (DX1) LED Ghost Fix
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx-2)
 DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (Lx-3)
