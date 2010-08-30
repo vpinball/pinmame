@@ -1438,9 +1438,11 @@ DRIVER(dw,p5)           //WPC-206:  10/92 B Doctor Who (P-5)
 DRIVER(dw,l1)           //          10/92 B Doctor Who (L-1)
 DRIVER(dw,l2)           //          11/92 B Doctor Who (L-2)
 DRIVER(cftbl,l3)        //WPC-218:  01/93 B Creature from the Black Lagoon (L-3, Sound P-1)
+DRIVER(cftbl,d3)        //WPC:      01/93 B Creature from the Black Lagoon (D-3, Sound P-1) LED Ghost Fix
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //WPC:      02/93 B Creature from the Black Lagoon (D-4) LED Ghost Fix
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
+DRIVER(hshot,p9)        //WPC-617:  11/92 M Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
 DRIVER(ww,p8)           //          11/92 W White Water (P-8, P-2 sound)
 DRIVER(ww,l2)           //          12/92 W White Water (L-2)
