@@ -392,12 +392,18 @@ WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
+WPC_ROMSTART(cftbl,d3,"cftbl_d3.u6",0x80000,CRC(acbe8c59) SHA1(157c8f59bce9c77f1478c97329deb77cdc61c976))
+WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e87acadeda4),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
+WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3,SP-1)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3,SP-1) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
