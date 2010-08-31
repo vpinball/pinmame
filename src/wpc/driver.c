@@ -1405,20 +1405,33 @@ DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //WPC-601:  03/91 W SlugFest (D-1) LED Ghost Fix
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane (L-2)
 DRIVER(hurr,d2)         //WPC-512:  08/91 W Hurricane (D-2) LED Ghost Fix
-DRIVER(t2,l2)           //WPC-513:  07/91 W Terminator 2: Judgement Day (L-2)
-DRIVER(t2,l3)           //          09/91 W Terminator 2: Judgement Day (L-3)
-DRIVER(t2,l4)           //          09/91 W Terminator 2: Judgement Day (L-4)
-DRIVER(t2,l6)           //          10/91 W Terminator 2: Judgement Day (L-6)
-DRIVER(t2,l8)           //          12/91 W Terminator 2: Judgement Day (L-8)
+DRIVER(t2,l2)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-2)
+DRIVER(t2,d2)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-2) LED Ghost Fix
+DRIVER(t2,l3)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-3)
+DRIVER(t2,d3)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-3) LED Ghost Fix
+DRIVER(t2,l4)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-4)
+DRIVER(t2,d4)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-4) LED Ghost Fix
+DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
+DRIVER(t2,d6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-6) LED Ghost Fix
+DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
+DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
-DRIVER(gi,l4)           //          07/91 B Gilligan's Island (L-4)
-DRIVER(gi,l6)           //          08/91 B Gilligan's Island (L-6)
-DRIVER(gi,l9)           //          12/92 B Gilligan's Island (L-9)
+DRIVER(gi,d3)           //WPC-203:  07/91 B Gilligan's Island (D-3) LED Ghost Fix
+DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
+DRIVER(gi,d4)           //WPC-203:  07/91 B Gilligan's Island (D-4) LED Ghost Fix
+DRIVER(gi,l6)           //WPC-203:  08/91 B Gilligan's Island (L-6)
+DRIVER(gi,d6)           //WPC-203:  08/91 B Gilligan's Island (D-6) LED Ghost Fix
+DRIVER(gi,l9)           //WPC-203:  12/92 B Gilligan's Island (L-9)
+DRIVER(gi,d9)           //WPC-203:  12/92 B Gilligan's Island (D-9) LED Ghost Fix
 DRIVER(pz,l1)           //WPC-204:  10/91 B Party Zone (L-1)
-DRIVER(pz,l2)           //          10/91 B Party Zone (L-2)
-DRIVER(pz,l3)           //          10/91 B Party Zone (L-3)
-DRIVER(pz,f4)           //          10/91 B Party Zone (F-4)
+DRIVER(pz,d1)           //WPC-204:  10/91 B Party Zone (D-1) LED Ghost Fix
+DRIVER(pz,l2)           //WPC-204:  10/91 B Party Zone (L-2)
+DRIVER(pz,d2)           //WPC-204:  10/91 B Party Zone (D-2) LED Ghost Fix
+DRIVER(pz,l3)           //WPC-204:  10/91 B Party Zone (L-3)
+DRIVER(pz,d3)           //WPC-204:  10/91 B Party Zone (D-3) LED Ghost Fix
+DRIVER(pz,f4)           //WPC-204:  10/91 B Party Zone (F-4)
+DRIVER(pz,f5)           //WPC-204:  10/91 B Party Zone (F-5) LED Ghost Fix
 DRIVER(strik,l4)        //WPC-102:  03/92 W Strike Master
 DRIVER(taf,p2)          //WPC-217:  01/92 B The Addams Family (P-2)
 DRIVER(taf,l1)          //          01/92 B The Addams Family (L-1)
@@ -1436,10 +1449,14 @@ DRIVER(gw,l1)           //          04/92 W The Getaway: High Speed II (L-1)
 DRIVER(gw,l2)           //          06/92 W The Getaway: High Speed II (L-2)
 DRIVER(gw,l3)           //          06/92 W The Getaway: High Speed II (L-3)
 DRIVER(gw,l5)           //          12/92 W The Getaway: High Speed II (L-5)
-DRIVER(br,p17)          //WPC-213:  05/92 B Black Rose (P-17)
-DRIVER(br,l1)           //          08/92 B Black Rose (L-1)
-DRIVER(br,l3)           //          01/93 B Black Rose (L-3)
-DRIVER(br,l4)           //          11/93 B Black Rose (L-4)
+DRIVER(br,p17)          //WPC:      05/92 B Black Rose (P-17)
+DRIVER(br,p18)          //WPC:      05/92 B Black Rose (P-18) LED Ghost Fix
+DRIVER(br,l1)           //WPC:      08/92 B Black Rose (L-1)
+DRIVER(br,d1)           //WPC:      08/92 B Black Rose (D-1) LED Ghost Fix
+DRIVER(br,l3)           //WPC:      01/93 B Black Rose (L-3)
+DRIVER(br,d3)           //WPC:      01/93 B Black Rose (D-3) LED Ghost Fix
+DRIVER(br,l4)           //WPC:      11/93 B Black Rose (L-4)
+DRIVER(br,d4)           //WPC:      11/93 B Black Rose (D-4) LED Ghost Fix
 DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
 DRIVER(ft,l3)           //          09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //          09/92 W Fish Tales (L-4)
@@ -1462,7 +1479,9 @@ DRIVER(ww,l5)           //          05/93 W White Water (L-5)
 DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
 DRIVER(ww,lh6)          //          10/00 W White Water (LH-6)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
-DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula
+DRIVER(drac,p12)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-12) LED Ghost Fix
+DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula (L-1)
+DRIVER(drac,d1)         //WPC-501:  02/93 W Bram Stoker's Dracula (D-1) LED Ghost Fix
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
 DRIVER(tz,p4)           //          04/93 B Twilight Zone (P-4)
 DRIVER(tz,l1)           //          04/93 B Twilight Zone (L-1)
@@ -1476,14 +1495,23 @@ DRIVER(tz,92)           //          01/95 B Twilight Zone (9.2)
 DRIVER(tz,94h)          //          10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(tz,94ch)         //          10/98 B Twilight Zone (9.4CH - Home Coin version)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
-DRIVER(ij,l4)           //          08/93 W Indiana Jones (L-4)
-DRIVER(ij,l5)           //          09/93 W Indiana Jones (L-5)
-DRIVER(ij,l6)           //          10/93 W Indiana Jones (L-6)
-DRIVER(ij,l7)           //          11/93 W Indiana Jones (L-7)
-DRIVER(ij,lg7)          //          11/93 W Indiana Jones (LG-7)
+DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
+DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
+DRIVER(ij,d4)           //WPC-517:  08/93 W Indiana Jones (D-4) LED Ghost Fix
+DRIVER(ij,l5)           //WPC-517:  09/93 W Indiana Jones (L-5)
+DRIVER(ij,d5)           //WPC-517:  09/93 W Indiana Jones (D-5) LED Ghost Fix
+DRIVER(ij,l6)           //WPC-517:  10/93 W Indiana Jones (L-6)
+DRIVER(ij,d6)           //WPC-517:  10/93 W Indiana Jones (D-6) LED Ghost Fix
+DRIVER(ij,l7)           //WPC-517:  11/93 W Indiana Jones (L-7)
+DRIVER(ij,d7)           //WPC-517:  11/93 W Indiana Jones (D-7) LED Ghost Fix
+DRIVER(ij,lg7)          //WPC-517:  11/93 W Indiana Jones (LG-7)
+DRIVER(ij,dg7)          //WPC-517:  11/93 W Indiana Jones (DG-7) LED Ghost Fix
 DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
-DRIVER(jd,l6)           //          10/93 B Judge Dredd (L-6)
-DRIVER(jd,l7)           //          12/93 B Judge Dredd (L-7)
+DRIVER(jd,d1)           //WPC-220:  10/93 B Judge Dredd (D-1) LED Ghost Fix
+DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
+DRIVER(jd,d6)           //WPC-220:  10/93 B Judge Dredd (D-6) LED Ghost Fix
+DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
+DRIVER(jd,d7)           //WPC-220:  12/93 B Judge Dredd (D-7) LED Ghost Fix
 DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
 DRIVER(afv,d4)          //WPC-622:  ??/93 W Addams Family Values (D-4 Redemption) LED Ghost Fix
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
@@ -1519,13 +1547,19 @@ DRIVER(corv,px5)        //WPC-536:  08/94 B Corvette (PX5) LED Ghost Fix
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX1)
 DRIVER(corv,dx1)        //WPC-536:  08/94 B Corvette (DX1) LED Ghost Fix
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
-DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx-2)
-DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (Lx-3)
-DRIVER(rs,la4)          //          10/94 W Red & Ted's Road Show (La-4)
-DRIVER(rs,lx4)          //          10/94 W Red & Ted's Road Show (Lx-4)
-DRIVER(rs,la5)          //          12/94 W Red & Ted's Road Show (La-5)
-DRIVER(rs,lx5)          //          12/94 W Red & Ted's Road Show (Lx-5)
-DRIVER(rs,l6)           //          12/94 W Red & Ted's Road Show (L-6)
+DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
+DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
+DRIVER(rs,dx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Dx_2) LED Ghost Fix
+DRIVER(rs,lx3)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_3)
+DRIVER(rs,dx3)          //WPC-524:  10/94 W Red & Ted's Road Show (Dx_3) LED Ghost Fix
+DRIVER(rs,la4)          //WPC-524:  10/94 W Red & Ted's Road Show (La_4)
+DRIVER(rs,da4)          //WPC-524:  10/94 W Red & Ted's Road Show (Da_4) LED Ghost Fix
+DRIVER(rs,lx4)		//WPC-524:  10/94 W Red & Ted's Road Show (Lx-4)
+DRIVER(rs,dx4)		//WPC-524:  10/94 W Red & Ted's Road Show (Dx-4) LED Ghost Fix
+DRIVER(rs,la5)          //WPC-524:  10/94 W Red & Ted's Road Show (La_5)
+DRIVER(rs,da5)          //WPC-524:  10/94 W Red & Ted's Road Show (Da_5) LED Ghost Fix
+DRIVER(rs,lx5)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_5)
+DRIVER(rs,dx5)          //WPC-524:  10/94 W Red & Ted's Road Show (Dx_5) LED Ghost Fix
 DRIVER(ts,pa1)          //WPC-532:  11/94 B The Shadow (PA-1)
 DRIVER(ts,la2)          //          12/94 B The Shadow (LA-2)
 DRIVER(ts,la4)          //          02/95 B The Shadow (LA-4)
