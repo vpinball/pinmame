@@ -416,7 +416,19 @@ WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
 WPC_ROMEND
 
+WPC_ROMSTART(br,d4,"brose_d4.rom",0x80000,CRC(1b2309a4) SHA1(56973dd0550bff5e4b77afbc5128c201b78590ab))
+WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194b0981130),
+                 "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
+                 "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
+WPC_ROMEND
+
 WPC_ROMSTART(br,p17,"u6-p17.rom",0x40000,CRC(c5629f68) SHA1(580b38d57c4297525c5a96719fb886b2b6cfa772))
+WPCS_SOUNDROM224("u18-sp1.rom",CRC(01fb319d) SHA1(881180fbf524823cc3a89efe6dd6a444b40552ee),
+                 "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
+                 "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
+WPC_ROMEND
+
+WPC_ROMSTART(br,p17,"u6-p18.rom",0x40000,CRC(cd46f452) SHA1(d6d995c0d317a17a8a15f3f67f4303ed1835af36))
 WPCS_SOUNDROM224("u18-sp1.rom",CRC(01fb319d) SHA1(881180fbf524823cc3a89efe6dd6a444b40552ee),
                  "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
@@ -428,7 +440,19 @@ WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
 WPC_ROMEND
 
+WPC_ROMSTART(br,d1,"u6-d1.rom",0x80000,CRC(92a312b7) SHA1(f72ab87457552c42bb1373b9ddb5002290f16a4f))
+WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194b0981130),
+                 "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
+                 "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
+WPC_ROMEND
+
 WPC_ROMSTART(br,l3,"u6-l3.rom",0x80000,CRC(d9a47ca7) SHA1(1ef407d06a9bda1f1273289273283b9bd31001c8))
+WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194b0981130),
+                 "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
+                 "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
+WPC_ROMEND
+
+WPC_ROMSTART(br,d3,"u6-d3.rom",0x80000,CRC(06de4b06) SHA1(61478248564a87eadef50e45c15fa79f364ead6f))
 WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194b0981130),
                  "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
@@ -438,9 +462,13 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (br,l4,"Black Rose (L-4)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d4,l4,"Black Rose (D-4) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,p17,l4,"Black Rose (SP-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,p18,l4,"Black Rose (DSP-1) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,l1,l4,"Black Rose (L-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d1,l4,"Black Rose (D-1) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,l3,l4,"Black Rose (L-3)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d3,l4,"Black Rose (D-3) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

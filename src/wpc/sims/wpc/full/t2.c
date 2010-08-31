@@ -520,8 +520,18 @@ WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
+WPC_ROMSTART(t2,d8,"t2_d8.rom",0x80000,CRC(38abe865) SHA1(c3cf7ee7a9bf5e2c1567e0a2b55e125d6914ee9e))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
 
 WPC_ROMSTART(t2,l6,"t2_l6.u6",0x40000,CRC(0d714b35) SHA1(050fd2b3afbecbbd03d58ab206ff6cfac8780a2b))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+WPC_ROMSTART(t2,d6,"t2_d6.u6",0x40000,CRC(8096b73e) SHA1(4816847786235e7eadae9261c175259a4abdbb27))
 WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
@@ -539,12 +549,29 @@ WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
+WPC_ROMSTART(t2,d4,"u6-d4.rom",0x40000,CRC(abcb1c41) SHA1(c741913c04f144e2f690781884cd8d80a515cf12))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+
 WPC_ROMSTART(t2,l3,"u6-l3.rom",0x40000,CRC(7520398a) SHA1(862881481dc7b617f3b14bbb35d48cffb0ce950e))
 WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
+WPC_ROMSTART(t2,d3,"u6-d3.rom",0x40000,CRC(cd753a8d) SHA1(49ddab44d48a1af72a143a63bfa22c68c9d0eb30))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+
 WPC_ROMSTART(t2,l2,"u6-l2.rom",0x40000,CRC(efe49c18) SHA1(9f91081c384990eac6e3c57f318a2639626929f9))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+WPC_ROMSTART(t2,d2,"u6-d2.rom",0x40000,CRC(dd057d60) SHA1(eb413122fbbbd9e2cacefbaddaf29cc5a5cbc949))
 WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
                  "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
@@ -554,11 +581,16 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(t2,l8,"Terminator 2: Judgement Day (L-8)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-8) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-6) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F) Profanity",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgement Day (L-4)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgement Day (D-4) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgement Day (L-3)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d3,l8,"Terminator 2: Judgement Day (D-3) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgement Day (L-2)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,d2,l8,"Terminator 2: Judgement Day (D-2) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions

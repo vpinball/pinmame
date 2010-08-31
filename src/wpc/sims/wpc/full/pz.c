@@ -532,7 +532,19 @@ WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a444795
                  "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
 WPC_ROMEND
 
+WPC_ROMSTART(pz,f5,"pzonef_5.rom",0x40000,CRC(4e344002) SHA1(f6685a3fc56d33c3aa39928208a90be490d5362e))
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
+                 "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
+                 "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
+WPC_ROMEND
+
 WPC_ROMSTART(pz,l1,"u6-l1.rom",0x40000,CRC(48023444) SHA1(0c14f5902c6c0b3466fb4265a2e1fc6a1050f8d7))
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
+                 "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
+                 "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
+WPC_ROMEND
+
+WPC_ROMSTART(pz,d1,"u6-d1.rom",0x40000,CRC(e7816e64) SHA1(4b9ca91f8ace62846a71839145a6b040f40b33d1))
 WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
                  "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
                  "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
@@ -544,21 +556,36 @@ WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a444795
                  "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
 WPC_ROMEND
 
+WPC_ROMSTART(pz,d2,"pz_u6.d2",0x40000,CRC(cac5c975) SHA1(eb245e070ada5221a847775cff741b152724788b))
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
+                 "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
+                 "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
+WPC_ROMEND
+
 WPC_ROMSTART(pz,l3,"pzonel_3.rom",0x40000,CRC(156f158f) SHA1(73a31deee6b299e5f5479b43210a822009e116d0))
 WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
                  "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
                  "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
 WPC_ROMEND
 
+WPC_ROMSTART(pz,d3,"pzoned_3.rom",0x40000,CRC(97ed586a) SHA1(bfd2ee0392e57f67ed16a4f5ed5d0c14bca3d107))
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98) SHA1(6533a1474dd335419331d37d4a4447951171412b),
+                 "pz_u15.l1",CRC(168bcc52) SHA1(0bae89278cd24950b2e247bba48eaa636f7b566c),
+                 "pz_u14.l1",CRC(4d8897ce) SHA1(7a4ac9e849dae93078ddd60adbd34f3930e4cd46))
+WPC_ROMEND
 
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(pz,f4,"Party Zone (F-4)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,f5,f4,"Party Zone (F-5) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l1,f4,"Party Zone (L-1)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d1,f4,"Party Zone (D-1) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l2,f4,"Party Zone (L-2)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d2,f4,"Party Zone (D-2) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l3,f4,"Party Zone (L-3)",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d3,f4,"Party Zone (D-3) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -654,3 +681,4 @@ static void pz_handleMech(int mech) {
 static int pz_getMech(int mechNo) {
   return trick;
 }
+

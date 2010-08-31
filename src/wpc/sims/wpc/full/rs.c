@@ -557,7 +557,25 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
+WPC_ROMSTART(rs,da5,"u6_da5.rom",0x80000,CRC(e16b5334) SHA1(b7fae83f80001518d6b09db4991da1eece1c487d))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
 WPC_ROMSTART(rs,lx5,"u6_lx5.rom",0x80000,CRC(a2de6ee3) SHA1(90fea1100d5f79c885e693d713b9a113d43131bb))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
+WPC_ROMSTART(rs,dx5,"u6_dx5.rom",0x80000,CRC(573d25d4) SHA1(c1b2efd7d7f6e0c14192d1a6ab5414342f7ddeed))
 DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
                "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
@@ -576,7 +594,15 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
-
+WPC_ROMSTART(rs,da4,"u6_da4.rom",0x80000,CRC(e0169462) SHA1(300ca2bf6b09fa50c9eeb139f1ed85dce8091dca))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
 WPC_ROMSTART(rs,lx4,"rshw_lx4.rom",0x80000,CRC(866f16a5) SHA1(09180ca87b1b4a9f8f81d81fc2d08092f357205a))
 DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
@@ -586,6 +612,16 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
+WPC_ROMSTART(rs,dx4,"rshw_dx4.rom",0x80000,CRC(2c8e9569) SHA1(1e8d4515e23d80322b5b7219018cfe2940f7e44b))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
+
 WPC_ROMSTART(rs,lx3,"u6-lx3.rom",0x80000,CRC(5df17d02) SHA1(94b262c91f906d68d2a6ee9432042a202bf04d35))
 DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
@@ -595,7 +631,26 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
+WPC_ROMSTART(rs,dx3,"u6-dx3.rom",0x80000,CRC(ebe4981d) SHA1(4f1345194671ef347b6c511c7593a0a59276624f))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
+
 WPC_ROMSTART(rs,lx2,"rshw_lx2.rom",0x80000,CRC(317210d0) SHA1(38adcf9c72552bd371b096080b172c63d0f843d3))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
+WPC_ROMSTART(rs,dx2,"rshw_dx2.rom",0x80000,CRC(eaf3fe6e) SHA1(4d9817202a837b18e7571ef88f0439e513620731))
 DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
                "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
@@ -610,11 +665,17 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(rs,l6,"Red and Ted's Road Show (L-6)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,la5,l6,"Red and Ted's Road Show (La-5)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,da5,l6,"Red and Ted's Road Show (Da-5) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx5,l6,"Red and Ted's Road Show (Lx-5)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx5,l6,"Red and Ted's Road Show (Dx-5) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,la4,l6,"Red and Ted's Road Show (La-4)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,da4,l6,"Red and Ted's Road Show (Da-4) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx4,l6,"Red and Ted's Road Show (Lx-4)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx4,l6,"Red and Ted's Road Show (Dx-4) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx3,l6,"Red and Ted's Road Show (Lx-3)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx3,l6,"Red and Ted's Road Show (Dx-3) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx2,l6,"Red and Ted's Road Show (Lx-2)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx2,l6,"Red and Ted's Road Show (Dx-2) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
