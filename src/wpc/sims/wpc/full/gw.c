@@ -483,35 +483,60 @@ static void gw_drawStatic(BMTYPE **line) {
 WPC_ROMSTART(gw,l5,"getaw_l5.rom",0x80000,CRC(b97f3d62) SHA1(c87c36a2327561c50b37d587d3bd0782acf8860d))
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
+WPC_ROMSTART(gw,d5,"getaw_d5.rom",0x80000,CRC(76ffc66e) SHA1(9d99b308e110367062ad8153bb703eabafb04d7f))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
+WPC_ROMEND
 
 WPC_ROMSTART(gw,pc,"u6-p-c.rom",0x80000,CRC(2bd887e6) SHA1(fe06307f5c9b19be9a889be7027a4b0f399b505f))
+WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
+WPC_ROMEND
+WPC_ROMSTART(gw,pd,"u6-p-d.rom",0x80000,CRC(a27f252a) SHA1(21a95ec87be49a1dd637868c73962b51f695c7fd))
 WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
 WPC_ROMEND
 
 WPC_ROMSTART(gw,p7,"gwhs2-p7.rom",0x80000,CRC(5bef5cf6) SHA1(48f3e6ae3139eafde9752339d0713321e5a63bb1))
 WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
 WPC_ROMEND
+WPC_ROMSTART(gw,p8,"gwhs2-p8.rom",0x80000,CRC(18972d89) SHA1(1805aab1be722ba67b859c2ec187ac8ab487adf5))
+WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
+WPC_ROMEND
 
 WPC_ROMSTART(gw,l1,"gw_l1.u6",0x80000,CRC(cecf66cf) SHA1(f8286ee08402ce65b034e64fc777ead7bfe2fe13))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
+WPC_ROMEND
+WPC_ROMSTART(gw,d1,"gw_d1.u6",0x80000,CRC(31659541) SHA1(b520491dfe730096a3242370f2c93d125e435e3b))
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
 
 WPC_ROMSTART(gw,l2,"get_l2.u6",0x80000,CRC(9efc0005) SHA1(037ede538fb2c6f18980484528680fe90ccbb355))
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
+WPC_ROMSTART(gw,d2,"get_d2.u6",0x80000,CRC(56373ab3) SHA1(24f5c90b6589cf974453f6101b72870c91fd3ac8))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
+WPC_ROMEND
 
 WPC_ROMSTART(gw,l3,"get_l3.u6",0x80000,CRC(d10aaa44) SHA1(39ba198f9c4ce2419f8dbb8d90508e1beb524b5d))
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
+WPC_ROMSTART(gw,d3,"get_d3.u6",0x80000,CRC(2427c2e2) SHA1(52aef98fac9aee37626c34a254ab209f6bdb4be4))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d5,l5,"The Getaway: High Speed II (D-5) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,pc,l5,"The Getaway: High Speed II (P-C)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,pd,l5,"The Getaway: High Speed II (P-D) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,p7,l5,"The Getaway: High Speed II (P-7)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,p8,l5,"The Getaway: High Speed II (P-8) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,l1,l5,"The Getaway: High Speed II (L-1)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d1,l5,"The Getaway: High Speed II (D-1) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d2,l5,"The Getaway: High Speed II (D-2) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,l3,l5,"The Getaway: High Speed II (L-3)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d3,l5,"The Getaway: High Speed II (D-3) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
