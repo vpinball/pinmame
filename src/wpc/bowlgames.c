@@ -307,8 +307,14 @@ WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79
                  "lc_u15.l1",CRC(25fe0be3) SHA1(a784b99daab1255487d4cb05d008a8aee0c39b30),
                  "lc_u14.l1",CRC(7b6dd395) SHA1(fdb01f70bb5f1a4ada9805770e544c4a191ddf26))
 WPC_ROMEND
+WPC_ROMSTART(strik,d4,"strik_d4.rom",0x40000,CRC(3c93ac35) SHA1(9eff61027a50999c9f2e8c07240c9cc352b3b61b))
+WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79e02494ba),
+                 "lc_u15.l1",CRC(25fe0be3) SHA1(a784b99daab1255487d4cb05d008a8aee0c39b30),
+                 "lc_u14.l1",CRC(7b6dd395) SHA1(fdb01f70bb5f1a4ada9805770e544c4a191ddf26))
+WPC_ROMEND
 WPC_INPUT_PORTS_START(strik, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(strik,d4,l4,"Strike Master (D-4) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 
 /*------------------
 / Hot Shot (#60017)
