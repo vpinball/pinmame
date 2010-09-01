@@ -1440,16 +1440,24 @@ DRIVER(pz,f4)           //WPC-204:  10/91 B Party Zone (F-4)
 DRIVER(pz,f5)           //WPC-204:  10/91 B Party Zone (F-5) LED Ghost Fix
 DRIVER(strik,l4)        //WPC:      05/92 W Strike Master (L-4)
 DRIVER(strik,d4)        //WPC:      05/92 W Strike Master (D-4) LED Ghost Fix
-DRIVER(taf,p2)          //WPC-217:  01/92 B The Addams Family (P-2)
-DRIVER(taf,l1)          //          01/92 B The Addams Family (L-1)
-DRIVER(taf,l2)          //          03/92 B The Addams Family (L-2)
-DRIVER(taf,l3)          //          05/92 B The Addams Family (L-3)
-DRIVER(taf,l4)          //          05/92 B The Addams Family (L-4)
-DRIVER(taf,l5)          //          12/92 B The Addams Family (L-5)
+DRIVER(taf,p2)          //WPC:      01/92 B The Addams Family (P-2)
+DRIVER(taf,p3)          //WPC:      01/92 B The Addams Family (P-3) LED Ghost Fix
+DRIVER(taf,l1)          //WPC:      01/92 B The Addams Family (L-1)
+DRIVER(taf,d1)          //WPC:      01/92 B The Addams Family (D-1) LED Ghost Fix
+DRIVER(taf,l2)          //WPC:      03/92 B The Addams Family (L-2)
+DRIVER(taf,d2)          //WPC:      03/92 B The Addams Family (D-2) LED Ghost Fix
+DRIVER(taf,l3)          //WPC:      05/92 B The Addams Family (L-3)
+DRIVER(taf,d3)          //WPC:      05/92 B The Addams Family (D-3) LED Ghost Fix
+DRIVER(taf,l4)          //WPC:      05/92 B The Addams Family (L-4)
+DRIVER(taf,d4)          //WPC:      05/92 B The Addams Family (D-4) LED Ghost Fix
+DRIVER(taf,l5)          //WPC:      12/92 B The Addams Family (L-5)
 DRIVER(taf,d5)          //WPC:      12/92 B The Addams Family (D-5) LED Ghost Fix
-DRIVER(taf,l6)          //          03/93 B The Addams Family (L-6)
-DRIVER(taf,l7)          //          10/92 B The Addams Family (L-7) (Prototype L-5)
-DRIVER(taf,h4)          //          05/94 B The Addams Family (H-4)
+DRIVER(taf,l6)          //WPC:      03/93 B The Addams Family (L-6)
+DRIVER(taf,d6)          //WPC:      03/93 B The Addams Family (D-6) LED Ghost Fix
+DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L-5)
+DRIVER(taf,d7)          //WPC:      10/92 B The Addams Family (D-7) (Prototype L-5) LED Ghost Fix
+DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
+DRIVER(taf,i4)          //WPC:      05/94 B The Addams Family (I-4) LED Ghost Fix
 DRIVER(gw,pc)           //WPC-504:  03/92 W The Getaway: High Speed II (P-C)
 DRIVER(gw,pd)           //WPC-504:  03/92 W The Getaway: High Speed II (P-D) LED Ghost Fix
 DRIVER(gw,p7)           //WPC-504:  03/92 W The Getaway: High Speed II (P-7)
@@ -1507,17 +1515,27 @@ DRIVER(drac,p12)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-12) LED Gho
 DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula (L-1)
 DRIVER(drac,d1)         //WPC-501:  02/93 W Bram Stoker's Dracula (D-1) LED Ghost Fix
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
-DRIVER(tz,p4)           //          04/93 B Twilight Zone (P-4)
-DRIVER(tz,l1)           //          04/93 B Twilight Zone (L-1)
-DRIVER(tz,l2)           //          05/93 B Twilight Zone (L-2)
-DRIVER(tz,l3)           //          05/93 B Twilight Zone (L-3)
-DRIVER(tz,ifpa)         //          05/93 B Twilight Zone (IFPA)
-DRIVER(tz,l4)           //          06/93 B Twilight Zone (L-4)
-DRIVER(tz,h7)           //          10/94 B Twilight Zone (H-7)
-DRIVER(tz,h8)           //          11/94 B Twilight Zone (H-8)
-DRIVER(tz,92)           //          01/95 B Twilight Zone (9.2)
-DRIVER(tz,94h)          //          10/98 B Twilight Zone (9.4H - Home version)
-DRIVER(tz,94ch)         //          10/98 B Twilight Zone (9.4CH - Home Coin version)
+DRIVER(tz,pa2)          //WPC-520:  03/93 B Twilight Zone (PA-2) LED Ghost Fix
+DRIVER(tz,p4)           //WPC-520:  04/93 B Twilight Zone (P-4)
+DRIVER(tz,p5)           //WPC-520:  04/93 B Twilight Zone (P-5) LED Ghost Fix
+DRIVER(tz,l1)           //WPC-520:  04/93 B Twilight Zone (L-1)
+DRIVER(tz,d1)           //WPC-520:  04/93 B Twilight Zone (D-1) LED Ghost Fix
+DRIVER(tz,l2)           //WPC-520:  05/93 B Twilight Zone (L-2)
+DRIVER(tz,d2)           //WPC-520:  05/93 B Twilight Zone (D-2) LED Ghost Fix
+DRIVER(tz,l3)           //WPC-520:  05/93 B Twilight Zone (L-3)
+DRIVER(tz,d3)           //WPC-520:  05/93 B Twilight Zone (D-3) LED Ghost Fix
+DRIVER(tz,ifpa)         //WPC-520:  05/93 B Twilight Zone (IFPA)
+DRIVER(tz,ifpa2)        //WPC-520:  05/93 B Twilight Zone (IFPA) LED Ghost Fix
+DRIVER(tz,l4)           //WPC-520:  06/93 B Twilight Zone (L-4)
+DRIVER(tz,d4)           //WPC-520:  06/93 B Twilight Zone (D-4) LED Ghost Fix
+DRIVER(tz,h7)           //WPC-520:  10/94 B Twilight Zone (H-7)
+DRIVER(tz,i7)           //WPC-520:  10/94 B Twilight Zone (I-7) LED Ghost Fix
+DRIVER(tz,h8)           //WPC-520:  11/94 B Twilight Zone (H-8)
+DRIVER(tz,i8)           //WPC-520:  11/94 B Twilight Zone (I-8) LED Ghost Fix
+DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
+DRIVER(tz,93)           //WPC-520:  01/95 B Twilight Zone (9.3) LED Ghost Fix
+DRIVER(tz,94h)			//WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
+DRIVER(tz,94ch)			//WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
@@ -1569,10 +1587,14 @@ DRIVER(dm,dx4)          //WPC-528:  05/94 W Demolition Man (DX-4) LED Ghost Fix
 DRIVER(dm,h5)           //WPC-528:  02/95 W Demolition Man (H-5) with rude speech
 DRIVER(dm,dh5)          //WPC-528:  02/95 W Demolition Man (DH-5) with rude speech LED Ghost Fix
 DRIVER(dm,h6)           //WPC-528:  02/95 W Demolition Man (H-6) with rude speech
-DRIVER(tafg,la2)        //WPC-538:  04/94 B The Addams Family Special Collectors Edition (LA-2)
-DRIVER(tafg,la3)        //          08/94 B The Addams Family Special Collectors Edition (LA-3)
-DRIVER(tafg,lx3)        //          08/94 B The Addams Family Special Collectors Edition (LX-3)
-DRIVER(tafg,h3)         //          08/94 B The Addams Family Special Collectors Edition (Home version)
+DRIVER(tafg,lx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LX-3)
+DRIVER(tafg,dx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DX-3) LED Ghost Fix
+DRIVER(tafg,la2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-2)
+DRIVER(tafg,da2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DA-2) LED Ghost Fix
+DRIVER(tafg,la3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-3)
+DRIVER(tafg,da3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DA-3) LED Ghost Fix
+DRIVER(tafg,h3)							  // Home version
+DRIVER(tafg,i3)							  // Home version LED Ghost Fix
 DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,d2)          //WPC-531:  05/94 B World Cup Soccer (Dx-2) LED Ghost Fix
 DRIVER(wcs,p2)                            // (Pa-2)
