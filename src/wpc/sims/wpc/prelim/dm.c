@@ -277,7 +277,10 @@ DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f
                "dm.9",CRC(4c1a34e8) SHA1(3eacc3c63b2d9db57fc86447f1408635b987ef69))
 
 WPC_ROMSTART(dm,pa2,"u6-pa2.rom",  0x80000,CRC(862be56a) SHA1(95e1f899963762cb1a9de4eb5d6d57183ed1da38)) DM_SOUND_P4 WPC_ROMEND
+WPC_ROMSTART(dm,pa3,"u6-pa3.rom",  0x80000,CRC(deaa034e) SHA1(ebb13368e76c3ff9b1a0cad5502fa3db8e7cc864)) DM_SOUND_P4 WPC_ROMEND
 WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371) SHA1(77570902c1ca13956fa65214184bce79bcc67173)) DM_SOUND_P4 WPC_ROMEND
+WPC_ROMSTART(dm,px6,"dman_px6.rom",0x80000,CRC(d9c31096) SHA1(7146a3693287f3f2d6bc9bbf5c8f5270d2aa10e6)) DM_SOUND_P4 WPC_ROMEND
+
 WPC_ROMSTART(dm,la1,"dman_la1.rom",0x80000,CRC(be7c1965) SHA1(ed3b1016febc819b8c9f34953067bf0cdf3f33e6))
 DCS_SOUNDROM6x("dm_u2_s.l1",CRC(f72dc72e) SHA1(a1267c32f70b4bfe6058d7e28d82006541fe3d6c),
                "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
@@ -286,20 +289,38 @@ DCS_SOUNDROM6x("dm_u2_s.l1",CRC(f72dc72e) SHA1(a1267c32f70b4bfe6058d7e28d8200654
                "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
                "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
 WPC_ROMEND
+WPC_ROMSTART(dm,da1,"dman_da1.rom",0x80000,CRC(365487ef) SHA1(e1be907cb96697f4ec43d6db58d67e6cf87f23e4))
+DCS_SOUNDROM6x("dm_u2_s.l1",CRC(f72dc72e) SHA1(a1267c32f70b4bfe6058d7e28d82006541fe3d6c),
+               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
+               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866),
+               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13),
+               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
+WPC_ROMEND
+
 WPC_ROMSTART(dm,lx3,"dman_lx3.rom",0x80000,CRC(5aa57674) SHA1(e02d91a705799866bd741b998d93413ec5bced25)) DM_SOUND_L2 WPC_ROMEND
+WPC_ROMSTART(dm,dx3,"dman_dx3.rom",0x80000,CRC(aede7ca6) SHA1(874aca191ca7bbee108f2f0204a060966b66623e)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1)) DM_SOUND_L2 WPC_ROMEND
+WPC_ROMSTART(dm,dx4,"dman_dx4.rom",0x80000,CRC(6974789d) SHA1(9cf2c49f879fa1f2547e1e7c853e12dc4a35b97d)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,h5, "dman_h5.rom", 0x80000,CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,dh5, "dman_dh5.rom", 0x80000,CRC(91388e13) SHA1(b09a628afd921e34b99d0db3005ab12bbec189b5)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9)) DM_SOUND_H1 WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (dm,lx4,    "Demolition Man (LX-4)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dx4,lx4,"Demolition Man (DX-4) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,pa2,lx4,"Demolition Man (PA-2)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,pa3,lx4,"Demolition Man (PA-3) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,px5,lx4,"Demolition Man (PX-5)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,px6,lx4,"Demolition Man (PX-6) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,la1,lx4,"Demolition Man (LA-1)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,da1,lx4,"Demolition Man (DA-1) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,lx3,lx4,"Demolition Man (LX-3)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dx3,lx4,"Demolition Man (DX-3) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5,lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dh5,lx4, "Demolition Man (DH-5) LED Ghost Fix", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6,lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
