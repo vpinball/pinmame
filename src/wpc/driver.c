@@ -1438,7 +1438,8 @@ DRIVER(pz,l3)           //WPC-204:  10/91 B Party Zone (L-3)
 DRIVER(pz,d3)           //WPC-204:  10/91 B Party Zone (D-3) LED Ghost Fix
 DRIVER(pz,f4)           //WPC-204:  10/91 B Party Zone (F-4)
 DRIVER(pz,f5)           //WPC-204:  10/91 B Party Zone (F-5) LED Ghost Fix
-DRIVER(strik,l4)        //WPC-102:  03/92 W Strike Master
+DRIVER(strik,l4)        //WPC:      05/92 W Strike Master (L-4)
+DRIVER(strik,d4)        //WPC:      05/92 W Strike Master (D-4) LED Ghost Fix
 DRIVER(taf,p2)          //WPC-217:  01/92 B The Addams Family (P-2)
 DRIVER(taf,l1)          //          01/92 B The Addams Family (L-1)
 DRIVER(taf,l2)          //          03/92 B The Addams Family (L-2)
