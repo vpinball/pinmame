@@ -304,8 +304,18 @@ WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd
                  "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
                  "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
 WPC_ROMEND
+WPC_ROMSTART(dw,d2,"drwho_d2.rom",0x80000,CRC(7d00b039) SHA1(2dcd1afbdf88dd9ebf974f62c8a82603c7256e40))
+WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
+WPC_ROMEND
 
 WPC_ROMSTART(dw,l1,"dw_l1.u6",0x80000,CRC(af8279af) SHA1(89651689156c0bf4abe35a538dc35c69f6575d4a))
+WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
+WPC_ROMEND
+WPC_ROMSTART(dw,d1,"dw_d1.u6",0x80000,CRC(1010a09f) SHA1(7ac94cfae0dcec4387bf2ce8fd35e892e425f948))
 WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
                  "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
                  "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
@@ -316,12 +326,21 @@ WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd
                  "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
                  "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
 WPC_ROMEND
+WPC_ROMSTART(dw,p6,"dw_p6.u6",0x80000,CRC(de94b79a) SHA1(3225f4b5e4fe822c403269f0f66f244f0dec1f96))
+WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(dw,l2,"Dr. Who (L-2)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,d2,l2,"Dr. Who (D-2) LED Ghost Fix",1992, "Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(dw,l1,l2,"Dr. Who (L-1)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,d1,l2,"Dr. Who (D-1) LED Ghost Fix",1992, "Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(dw,p5,l2,"Dr. Who (P-5)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,p6,l2,"Dr. Who (P-6) LED Ghost Fix",1992, "Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

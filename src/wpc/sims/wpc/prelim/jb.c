@@ -258,7 +258,22 @@ DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f) SHA1(c87c82d7fa4ca40d337fb59476b0b1
                 "jbsnd_u5.rom",CRC(0957e2ad) SHA1(0fb4e3fdb949b0979721064162a41cfba84d0013),
 				"jbsnd_u6.rom",CRC(7a1e2c3d) SHA1(0c6ccb937328509cb0a87e4c557a64c13bbed2db))
 WPC_ROMEND
+WPC_ROMSTART(jb,101r,"jack1_1r.rom",0x80000,CRC(924aeb8e) SHA1(831d5e9776056b26dc693acaa8b6654f7c4f7e18))
+DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f) SHA1(c87c82d7fa4ca40d337fb59476b0b1c90dff86f0),
+                "jbsnd_u3.rom",CRC(76ad3aad) SHA1(012b44c48d1cbb282eb763e40db40b141397f426),
+                "jbsnd_u4.rom",CRC(038b1309) SHA1(a6e337476902ed9ec5123fe4e088a0608c0d5f48),
+                "jbsnd_u5.rom",CRC(0957e2ad) SHA1(0fb4e3fdb949b0979721064162a41cfba84d0013),
+				"jbsnd_u6.rom",CRC(7a1e2c3d) SHA1(0c6ccb937328509cb0a87e4c557a64c13bbed2db))
+WPC_ROMEND
+
 WPC_ROMSTART(jb,10b,"jack1_0b.rom",0x80000,CRC(da3b2735) SHA1(f895b1548107052f469d8e3fa205bce6113962d9))
+DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f) SHA1(c87c82d7fa4ca40d337fb59476b0b1c90dff86f0),
+                "jbsnd_u3.rom",CRC(76ad3aad) SHA1(012b44c48d1cbb282eb763e40db40b141397f426),
+                "jbsnd_u4.rom",CRC(038b1309) SHA1(a6e337476902ed9ec5123fe4e088a0608c0d5f48),
+                "jbsnd_u5.rom",CRC(0957e2ad) SHA1(0fb4e3fdb949b0979721064162a41cfba84d0013),
+				"jbsnd_u6.rom",CRC(7a1e2c3d) SHA1(0c6ccb937328509cb0a87e4c557a64c13bbed2db))
+WPC_ROMEND
+WPC_ROMSTART(jb,101b,"jack1_1b.rom",0x80000,CRC(139dadf4) SHA1(a32f44d9b4901c71200dcbb264764cd6d5614759))
 DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f) SHA1(c87c82d7fa4ca40d337fb59476b0b1c90dff86f0),
                 "jbsnd_u3.rom",CRC(76ad3aad) SHA1(012b44c48d1cbb282eb763e40db40b141397f426),
                 "jbsnd_u4.rom",CRC(038b1309) SHA1(a6e337476902ed9ec5123fe4e088a0608c0d5f48),
@@ -270,7 +285,9 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jb,10r,"Jack*Bot (1.0R)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF(jb,101r,10r,"Jack*Bot (1.01R) LED Ghost Fix",1995,"Williams",wpc_m95DCSS,0)
 CORE_CLONEDEF(jb,10b,10r,"Jack*Bot (1.0B) (Belgium/Canada)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF(jb,101b,10r,"Jack*Bot (1.01B) (Belgium/Canada) LED Ghost Fix",1995,"Williams",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions
