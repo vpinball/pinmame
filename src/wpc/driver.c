@@ -1380,11 +1380,16 @@ DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2) Eu
 //WPC
 DRIVER(dd,p06)          //WPC:      08/90 B Dr. Dude (P-6 WPC)
 DRIVER(dd,p7)           //WPC:      09/90 B Dr. Dude (P-7 WPC)
+DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse (L-9)
+DRIVER(fh,d9)           //WPC-503:  12/90 W Funhouse (D-9) LED Ghost Fix
 DRIVER(fh,l3)           //WPC-503:  12/90 W Funhouse (L-3)
-DRIVER(fh,l4)           //          01/91 W Funhouse (L-4)
-DRIVER(fh,l5)           //          02/91 W Funhouse (L-5)
-DRIVER(fh,l9)           //          12/92 W Funhouse (L-9)
-DRIVER(fh,l9b)          //          12/92 W Funhouse (bootleg with correct German translation)
+DRIVER(fh,d3)           //WPC-503:  12/90 W Funhouse (D-3) LED Ghost Fix
+DRIVER(fh,l4)           //WPC-503:  12/90 W Funhouse (L-4)
+DRIVER(fh,d4)           //WPC-503:  12/90 W Funhouse (D-4) LED Ghost Fix
+DRIVER(fh,l5)           //WPC-503:  12/90 W Funhouse (L-5)
+DRIVER(fh,d5)           //WPC-503:  12/90 W Funhouse (D-5) LED Ghost Fix
+DRIVER(fh,l9b)                            // bootleg with correct German translation
+DRIVER(fh,d9b)                            // bootleg with correct German translation LED Ghost Fix
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
 DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
@@ -1483,13 +1488,19 @@ DRIVER(cftbl,d4)        //WPC:      02/93 B Creature from the Black Lagoon (D-4)
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //WPC-617:  11/92 M Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
-DRIVER(ww,p8)           //          11/92 W White Water (P-8, P-2 sound)
-DRIVER(ww,l2)           //          12/92 W White Water (L-2)
-DRIVER(ww,l3)           //          01/93 W White Water (L-3)
-DRIVER(ww,l4)           //          02/93 W White Water (L-4)
-DRIVER(ww,l5)           //          05/93 W White Water (L-5)
-DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
-DRIVER(ww,lh6)          //          10/00 W White Water (LH-6)
+DRIVER(ww,p2)           //WPC-518:  11/92 W White Water (P-9, P-1 sound) LED Ghost Fix
+DRIVER(ww,p8)           //WPC-518:  11/92 W White Water (P-8, P-2 sound)
+DRIVER(ww,p9)           //WPC-518:  11/92 W White Water (P-9, P-2 sound) LED Ghost Fix
+DRIVER(ww,l2)           //WPC-518:  12/92 W White Water (L-2)
+DRIVER(ww,d2)           //WPC-518:  12/92 W White Water (D-2) LED Ghost Fix
+DRIVER(ww,l3)           //WPC-518:  01/93 W White Water (L-3)
+DRIVER(ww,d3)           //WPC-518:  01/93 W White Water (D-3) LED Ghost Fix
+DRIVER(ww,l4)           //WPC-518:  02/93 W White Water (L-4)
+DRIVER(ww,d4)           //WPC-518:  02/93 W White Water (D-4) LED Ghost Fix
+DRIVER(ww,l5)           //WPC-518:  05/93 W White Water (L-5)
+DRIVER(ww,d5)           //WPC-518:  05/93 W White Water (D-5) LED Ghost Fix
+DRIVER(ww,lh5)          //WPC-518:  10/00 W White Water (LH-5)
+DRIVER(ww,lh6)          //WPC-518:  10/00 W White Water (LH-6)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula (L-1)
@@ -1545,12 +1556,18 @@ DRIVER(pop,pa4)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-4) LED Gh
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth (LX-5)
 DRIVER(pop,dx5)         //WPC:      02/94 B Popeye Saves the Earth (DX-5) LED Ghost Fix
 DRIVER(dm,pa2)          //WPC-528:  03/94 W Demolition Man (PA-2)
-DRIVER(dm,px5)          //          04/94 W Demolition Man (PX-5)
-DRIVER(dm,la1)          //          04/94 W Demolition Man (LA-1)
-DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
-DRIVER(dm,lx4)          //          05/94 W Demolition Man (LX-4)
-DRIVER(dm,h5)           //          02/95 W Demolition Man (H-5) with rude speech
-DRIVER(dm,h6)           //          02/95 W Demolition Man (H-6) with rude speech
+DRIVER(dm,pa3)          //WPC-528:  03/94 W Demolition Man (PA-3) LED Ghost Fix
+DRIVER(dm,px5)          //WPC-528:  04/94 W Demolition Man (PX-5)
+DRIVER(dm,px6)          //WPC-528:  04/94 W Demolition Man (PX-6) LED Ghost Fix
+DRIVER(dm,la1)          //WPC-528:  04/94 W Demolition Man (LA-1)
+DRIVER(dm,da1)          //WPC-528:  04/94 W Demolition Man (DA-1) LED Ghost Fix
+DRIVER(dm,lx3)          //WPC-528:  04/94 W Demolition Man (LX-3)
+DRIVER(dm,dx3)          //WPC-528:  04/94 W Demolition Man (DX-3) LED Ghost Fix
+DRIVER(dm,lx4)          //WPC-528:  05/94 W Demolition Man (LX-4)
+DRIVER(dm,dx4)          //WPC-528:  05/94 W Demolition Man (DX-4) LED Ghost Fix
+DRIVER(dm,h5)           //WPC-528:  02/95 W Demolition Man (H-5) with rude speech
+DRIVER(dm,dh5)          //WPC-528:  02/95 W Demolition Man (DH-5) with rude speech LED Ghost Fix
+DRIVER(dm,h6)           //WPC-528:  02/95 W Demolition Man (H-6) with rude speech
 DRIVER(tafg,la2)        //WPC-538:  04/94 B The Addams Family Special Collectors Edition (LA-2)
 DRIVER(tafg,la3)        //          08/94 B The Addams Family Special Collectors Edition (LA-3)
 DRIVER(tafg,lx3)        //          08/94 B The Addams Family Special Collectors Edition (LX-3)
