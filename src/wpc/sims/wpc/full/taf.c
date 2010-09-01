@@ -402,33 +402,64 @@ static void taf_drawStatic(BMTYPE **line) {
 WPC_ROMSTART(taf,p2,  "addam_p2.rom", 0x40000, CRC(eabf0e72) SHA1(5b84d0315702b39b90beb6a92fb7ad9aba7e620c))
 WPCS_SOUNDROM8xx("afsnd_p2.rom" , CRC(73d19698) SHA1(d14a6ea36a93db185a599a7810dfbef2deb0adc0))
 WPC_ROMEND
+WPC_ROMSTART(taf,p3,  "addam_p3.rom", 0x40000, CRC(760ba6a2) SHA1(0d45df6a88f5ca5ae97d9aaaef14a390c9ceca38))
+WPCS_SOUNDROM8xx("afsnd_p2.rom" , CRC(73d19698) SHA1(d14a6ea36a93db185a599a7810dfbef2deb0adc0))
+WPC_ROMEND
+
 WPC_ROMSTART(taf,l1,  "addam_l1.rom", 0x40000, CRC(db287bf7) SHA1(51574c7c04d85aa816a0bc6e9db74f2d2b407525))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
-WPC_ROMSTART(taf,l2,  "addam_l2.rom", 0x40000, CRC(952bfc92) SHA1(d95b4b9e6c496a9ce4ceb1aa368c862b2beeffd9))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
-WPC_ROMEND
-WPC_ROMSTART(taf,l3,  "addam_l3.rom", 0x40000, CRC(d428a760) SHA1(29afee7b1ae64d7a41faf813cdfa1ab7cef1f247))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
-WPC_ROMEND
-WPC_ROMSTART(taf,l4,  "addam_l4.rom", 0x40000, CRC(ea29935f) SHA1(9f711396728026546c8bd1f69a0833d15e02c192))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
-WPC_ROMEND
-WPC_ROMSTART(taf,l7,  "addam_l7.rom", 0x80000, CRC(4401b43a) SHA1(64e9678334cc900d1f44b95d25bb90c1fff566f8))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
-WPC_ROMEND
-WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564) SHA1(d643506db1b3ba1ea20f34ddb38837df379fb5ab))
+WPC_ROMSTART(taf,d1,  "addam_d1.rom", 0x40000, CRC(43fec665) SHA1(96224cdd384a994bc6929c1ca208a48c3676d22a))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
-WPC_ROMSTART(taf,d5,  "taf_ld5.rom",0x80000,CRC(10136ffa) SHA1(15ff1fd6528422c194f5027ccb798276f1b37229))
+WPC_ROMSTART(taf,l2,  "addam_l2.rom", 0x40000, CRC(952bfc92) SHA1(d95b4b9e6c496a9ce4ceb1aa368c862b2beeffd9))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,d2,  "addam_d2.rom", 0x40000, CRC(d9ddffbd) SHA1(fba913ef2d5b18e800e51505d4a5feca4c5d4f25))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
+WPC_ROMSTART(taf,l3,  "addam_l3.rom", 0x40000, CRC(d428a760) SHA1(29afee7b1ae64d7a41faf813cdfa1ab7cef1f247))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,d3,  "addam_d3.rom", 0x40000, CRC(fdfbdb0f) SHA1(51fc468e26efa5f75e08fa5ec2c72c5f3540ed4a))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
+WPC_ROMSTART(taf,l4,  "addam_l4.rom", 0x40000, CRC(ea29935f) SHA1(9f711396728026546c8bd1f69a0833d15e02c192))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,d4,  "addam_d4.rom", 0x40000, CRC(8d5a1151) SHA1(13d860d1db466717ad93187c86e9723ca5036200))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
+WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564) SHA1(d643506db1b3ba1ea20f34ddb38837df379fb5ab))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,d5,  "taf_d5.rom",0x80000,CRC(10136ffa) SHA1(15ff1fd6528422c194f5027ccb798276f1b37229))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
 WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65) SHA1(ce6f9cc45df08f50f5ece2a4c9376ecf67b0466a))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
+WPC_ROMSTART(taf,d6,  "taf_d6.u6",0x80000,CRC(a9fbf8d4) SHA1(0a0b208485bffaf8f4907465fd52f13d2ca66229))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
+WPC_ROMSTART(taf,l7,  "addam_l7.rom", 0x80000, CRC(4401b43a) SHA1(64e9678334cc900d1f44b95d25bb90c1fff566f8))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,d7,  "addam_d7.rom", 0x80000, CRC(a5c77254) SHA1(ed777c27aed06bf38cc8670c4d01166ed8f5639f))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+
+
 WPC_ROMSTART(taf,h4,  "addam_h4.rom",0x80000, CRC(d0bbd679) SHA1(ebd8c4981dd68a4f8e2dea90144486cb3cbd6b84))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,i4,  "addam_i4.rom",0x80000, CRC(687f04eb) SHA1(08fb6bd7a4743c6b506c77a40291918e2cca9492))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
@@ -436,15 +467,34 @@ WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,CRC(0cc62fa5) SHA1(295bd8c483132c8f
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
+WPC_ROMSTART(tafg,dx3,"afglddx3.rom",0x80000,CRC(25590930) SHA1(093b1d6fa68b40174d435412b72f237698034b80))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,CRC(2fe97098) SHA1(59767fce189385af16064abf0d640ef74a3450f8))
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
+WPC_ROMSTART(tafg,i3,"cpu-u6i3.rom",0x80000,CRC(0a67c337) SHA1(d038de8b2a0eca04c812d46ba4873b2064fb5fdb))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,la2,"u6-la2.rom",0x80000,CRC(a9a42bff) SHA1(40bb8e2767219582e7e532d2154213748808c62b))
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
+WPC_ROMSTART(tafg,da2,"u6-da2.rom",0x80000,CRC(c2d6ce67) SHA1(21167b4dbfa413c69caf50748b082f07354167d4))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,la3,"u6-la3.rom",0x80000,CRC(dbe4d791) SHA1(6906e9c2158e86ab05b6783567b42a245239fed9))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+WPC_ROMSTART(tafg,da3,"u6-da3.rom",0x80000,CRC(46ace173) SHA1(7050c8c547e0caefd443c5c3ab5b21897752bd64))
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
@@ -458,17 +508,29 @@ WPC_ROMEND
 CORE_GAMEDEF(taf,l5,        "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,d5,l5,    "The Addams Family (D-5) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p2,l5,    "The Addams Family (Prototype) (P-2)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,p3,l5,    "The Addams Family (Prototype) (P-3) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l1,l5,    "The Addams Family (L-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d1,l5,    "The Addams Family (D-1) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l2,l5,    "The Addams Family (L-2)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d2,l5,    "The Addams Family (D-2) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l3,l5,    "The Addams Family (L-3)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d3,l5,    "The Addams Family (D-3) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l4,l5,    "The Addams Family (L-4)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d4,l5,    "The Addams Family (D-4) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l7,l5,    "The Addams Family (Prototype L-5) (L-7)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d7,l5,    "The Addams Family (Prototype L-5) (D-7) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l6,l5,    "The Addams Family (L-6)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,d6,l5,    "The Addams Family (D-6) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,h4,l5,    "The Addams Family (H-4)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,i4,l5,    "The Addams Family (I-4) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
 CORE_GAMEDEF(tafg,lx3,     "The Addams Family Special Collectors Edition Gold (LX-3)", 1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,dx3,lx3,"The Addams Family Special Collectors Edition (DX-3) LED Ghost Fix",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3,"The Addams Family Special Collectors Edition (H-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,i3,lx3,"The Addams Family Special Collectors Edition (I-3) LED Ghost Fix",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,la2,lx3,"The Addams Family Special Collectors Edition (LA-2)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da2,lx3,"The Addams Family Special Collectors Edition (DA-2) LED Ghost Fix",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,la3,lx3,"The Addams Family Special Collectors Edition (LA-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,da3,lx3,"The Addams Family Special Collectors Edition (DA-3) LED Ghost Fix",1994,"Bally",wpc_mFliptronS,0)
 
 /*----------
 / Game Data
