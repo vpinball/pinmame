@@ -628,6 +628,11 @@ WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc516
                  "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
+WPC_ROMSTART(fh,d9,"funh_d9.rom",0x040000,CRC(983fbaf7) SHA1(50c0c904af3dccf95e16c41e6c7a14510ece4614))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
 // Found this on the stormaster site
 // It is an updated L9 rom where the German text translation is corrected
 // Author is unknown but it is definetly not from WMS
@@ -638,8 +643,18 @@ WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc516
                  "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
+WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522443b80368f3d78ea3ea2f55))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
 
 WPC_ROMSTART(fh,l3,"u6-l3.rom",0x020000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
+WPC_ROMSTART(fh,d3,"u6-d3.rom",0x020000,CRC(fa32b241) SHA1(330fd1403199fcfa7bc018b488ea5f1a51ee4820))
 WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
                  "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
@@ -650,8 +665,18 @@ WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc516
                  "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
+WPC_ROMSTART(fh,d4,"u6-d4.rom",0x020000,CRC(b7683195) SHA1(1022598113d32dbca057854907d3b3fb99abfefe))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
 
 WPC_ROMSTART(fh,l5,"u6-l5.rom",0x020000,CRC(e2b25da4) SHA1(87129e18c60a65035ade2f4766c154d5d333696b))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
+WPC_ROMSTART(fh,d5,"u6-d5.rom",0x020000,CRC(11bc9542) SHA1(2728b55f07cc0dab0ce2048de7d537047ae20913))
 WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
                  "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
@@ -662,10 +687,15 @@ WPC_ROMEND
 /---------------*/
 
 CORE_GAMEDEF(fh,l9,"Funhouse L-9 (SL-2m)",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9,l9,"Funhouse D-9 (SL-2m) LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-2m) Bootleg Improved German translation",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9b,l9,"Funhouse D-9 (SL-2m) German LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse L-3",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d3,l9,"Funhouse D-3 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l4,l9,"Funhouse L-4",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d4,l9,"Funhouse D-4 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l5,l9,"Funhouse L-5",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d5,l9,"Funhouse D-5 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
