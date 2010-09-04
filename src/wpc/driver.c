@@ -1678,6 +1678,7 @@ DRIVER(sc,17n)          //          11/96 B Safe Cracker (1.7, alternate version
 DRIVER(sc,18)           //          04/98 B Safe Cracker (1.8)
 DRIVER(sc,18n)          //          04/98 B Safe Cracker (1.8, alternate version)
 DRIVER(sc,18s2)         //          04/98 B Safe Cracker (1.8, alternate sound)
+DRIVER(totan,04)        //WPC-547:  05/96 W Tales of the Arabian Nights (0.4)
 DRIVER(totan,12)        //WPC-547:  06/96 W Tales of the Arabian Nights (1.2)
 DRIVER(totan,13)        //          07/96 W Tales of the Arabian Nights (1.3)
 DRIVER(totan,14)        //          10/96 W Tales of the Arabian Nights (1.4)
