@@ -474,6 +474,17 @@ WPCS_SOUNDROM888("u18-sp1.040", CRC(1632951e) SHA1(041396411dc5343fe7e5147d26e03
                  "u14-sp1.040", CRC(ad7cb98b) SHA1(a84bf157cb535acaf811e93ad22a505e1dd08dad))
 WPC_ROMEND
 
+WPC_ROMSTART(tz,p3,"tz_p3.bin", 0x80000,CRC(f3b1fd9f) SHA1(aa551fc6638e79edf10fbe89127c55372cc3cb58))
+WPCS_SOUNDROM888("tzu18_p3.rom",CRC(1f750672) SHA1(033c6e261201a17667110069b7570fe90490286b),
+                 "u15-sp1.040", CRC(0f17c9e9) SHA1(fcaa6f87ebd03222e3a40be08eb5aa6a5e002a8b),
+                 "u14-sp1.040", CRC(ad7cb98b) SHA1(a84bf157cb535acaf811e93ad22a505e1dd08dad))
+WPC_ROMEND
+WPC_ROMSTART(tz,p3d,"tz_p3d.bin", 0x80000,CRC(705bde23) SHA1(4f3fbc7d81d6bb9f3787c6e4ceca82e2778f9deb))
+WPCS_SOUNDROM888("tzu18_p3.rom",CRC(1f750672) SHA1(033c6e261201a17667110069b7570fe90490286b),
+                 "u15-sp1.040", CRC(0f17c9e9) SHA1(fcaa6f87ebd03222e3a40be08eb5aa6a5e002a8b),
+                 "u14-sp1.040", CRC(ad7cb98b) SHA1(a84bf157cb535acaf811e93ad22a505e1dd08dad))
+WPC_ROMEND
+
 WPC_ROMSTART(tz,p4,"tz_p4.rom", 0x80000,CRC(5a662df5) SHA1(0f609ff59549225d56b913c3bf928b58f7bf1ca5))
 WPCS_SOUNDROM888("tzu18_p3.rom",CRC(1f750672) SHA1(033c6e261201a17667110069b7570fe90490286b),
                  "u15-sp1.040", CRC(0f17c9e9) SHA1(fcaa6f87ebd03222e3a40be08eb5aa6a5e002a8b),
@@ -494,6 +505,8 @@ CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)",1998,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,94ch, 92,"Twilight Zone (9.4CH)",1998,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,pa2, 92,"Twilight Zone (PA-2) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,p3,  92,"Twilight Zone (P-3)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,p3d,  92,"Twilight Zone (P-3) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p4,  92,"Twilight Zone (P-4)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p5,  92,"Twilight Zone (P-5) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l1,  92,"Twilight Zone (L-1)", 1993,"Bally",wpc_mFliptronS,0)

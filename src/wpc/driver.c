@@ -1516,6 +1516,8 @@ DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula (L-1)
 DRIVER(drac,d1)         //WPC-501:  02/93 W Bram Stoker's Dracula (D-1) LED Ghost Fix
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
 DRIVER(tz,pa2)          //WPC-520:  03/93 B Twilight Zone (PA-2) LED Ghost Fix
+DRIVER(tz,p3)           //WPC-520:  04/93 B Twilight Zone (P-3)
+DRIVER(tz,p3d)          //WPC-520:  04/93 B Twilight Zone (P-3) LED Ghost Fix
 DRIVER(tz,p4)           //WPC-520:  04/93 B Twilight Zone (P-4)
 DRIVER(tz,p5)           //WPC-520:  04/93 B Twilight Zone (P-5) LED Ghost Fix
 DRIVER(tz,l1)           //WPC-520:  04/93 B Twilight Zone (L-1)
