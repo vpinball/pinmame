@@ -1640,6 +1640,12 @@ DRIVER(ts,lx5)          //WPC-532:  05/95 B The Shadow (LX-5)
 DRIVER(ts,dx5)          //WPC-532:  05/95 B The Shadow (DX-5) LED Ghost Fix
 DRIVER(ts,lh6)          //WPC-532:  05/95 B The Shadow (LH-6, Home version)
 DRIVER(ts,dh6)          //WPC-532:  05/95 B The Shadow (DH-6, Home version) LED Ghost Fix
+DRIVER(ts,la6)          //WPC-532:  05/95 B The Shadow (LA-6) North America 
+DRIVER(ts,da6)          //WPC-532:  05/95 B The Shadow (DA-6) North America LED Ghost Fix
+DRIVER(ts,lf6)          //WPC-532:  05/95 B The Shadow (LF-6) French
+DRIVER(ts,df6)          //WPC-532:  05/95 B The Shadow (DF-6) French LED Ghost Fix
+DRIVER(ts,lm6)          //WPC-532:  05/95 B The Shadow (LM-6) Mild
+DRIVER(ts,dm6)          //WPC-532:  05/95 B The Shadow (DM-6) Mild LED Ghost Fix
 DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
 DRIVER(dh,dx2)          //WPC-530:  03/95 W Dirty Harry (DX-2) LED Ghost Fix
 DRIVER(tom,06)		//WPC-539:  03/95 B Theatre of Magic (0.6A)
