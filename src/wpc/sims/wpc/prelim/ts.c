@@ -251,8 +251,6 @@ DCS_SOUNDROM6x("ts_u2_s.l1",CRC(f1486cfb) SHA1(a916917cb4e46b5d1e04eb4dd52b4193e
 
 WPC_ROMSTART(ts,lh6,"shad_h6.rom", 0x080000,CRC(0a72268d) SHA1(97836afc23c4160bca462f14c115b17e58fe5a48)) SHADOW_SOUND WPC_ROMEND
 WPC_ROMSTART(ts,dh6,"shad_dh6.rom", 0x080000,CRC(ce8d6c9d) SHA1(a7ccd3f7d308b7780d46f378cc43c8810df758ab)) SHADOW_SOUND WPC_ROMEND
-WPC_ROMSTART(ts,la6,"u6-la6.rom",  0x080000,CRC(9dc4e944) SHA1(6d29296d88730c05097da92db5114f7d741d4e25)) SHADOW_SOUND WPC_ROMEND
-WPC_ROMSTART(ts,da6,"u6-da6.rom",  0x080000,CRC(f09b03fe) SHA1(225697e3abd84f059fc2e8901a073fd758283a07)) SHADOW_SOUND WPC_ROMEND
 WPC_ROMSTART(ts,lf6,"u6-lf6.rom",  0x080000,CRC(a1692f1a) SHA1(9df2ecd991a08c661cc22f91dfc6c3dfffcfc3e5)) SHADOW_SOUND WPC_ROMEND
 WPC_ROMSTART(ts,df6,"u6-df6.rom",  0x080000,CRC(326a4df4) SHA1(ab0fc5c809c29a4aaaf2b89fe1846274c7818e33)) SHADOW_SOUND WPC_ROMEND
 WPC_ROMSTART(ts,lm6,"u6-lm6.rom",  0x080000,CRC(56f15859) SHA1(1fd4d64cff8413903474843dbcfcca3d59b33cd8)) SHADOW_SOUND WPC_ROMEND
@@ -290,8 +288,6 @@ CORE_GAMEDEF (ts,lx5,    "The Shadow (LX-5)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,dx5,lx5,"The Shadow (DX-5) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,lh6,lx5,"The Shadow (LH-6)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,dh6,lx5,"The Shadow (DH-6) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(ts,la6,lx5,"The Shadow (LA-6) North America",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(ts,da6,lx5,"The Shadow (DA-6) North America LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,lf6,lx5,"The Shadow (LF-6) French",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,df6,lx5,"The Shadow (DF-6) French LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,lm6,lx5,"The Shadow (LM-6) Mild",1995,"Bally",wpc_mSecurityS,0)
