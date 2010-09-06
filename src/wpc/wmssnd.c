@@ -225,14 +225,12 @@ static struct {
 } s11slocals;
 
 static void s11s_init(struct sndbrdData *brdData) {
-  int i;
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  for (i=0; i < 0x1000; i++) memory_region(S9S_CPUREGION)[i] = 0xff;
   if (core_gameData->hw.gameSpecific2) {
     hc55516_set_gain(0, core_gameData->hw.gameSpecific2);
   }
