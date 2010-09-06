@@ -49,7 +49,7 @@ static core_tLCDLayout dispSshtl[] = { \
 INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
              S11_BCDDIAG|S11_BCDDISP,0,3750, 39, 40, 27, 26, 25, 0)
 S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", CRC(848ad54c) SHA1(4e4ce5fb970da37706472f94a27fd912e1ecb1a0))
-S9S_SOUNDROM4111(      "cpu_u49.128", CRC(20e77990) SHA1(b9ec143526d7d152b653c7119e4d07945b6813eb),
+S9S_SOUNDROM4111(      "cpu_u49.128", CRC(8050ae27) SHA1(e3f5e9398f61b075620ecd075617a8dac3c07d0e),
                        "spch_u4.732", CRC(b0d03c5e) SHA1(46b952f71a7ecc03e22e427875f6e16a9d124067),
                        "spch_u5.732", CRC(13edd4e5) SHA1(46c4052c31ddc20bb87445636f8fe3b6f7bff856),
                        "spch_u6.732", CRC(cf48b2e7) SHA1(fe55419a5d40b3a4e8c02a92746b25a075b8efd3))
@@ -58,25 +58,20 @@ S9_ROMEND
 CORE_GAMEDEF(sshtl, l7, "Space Shuttle (L-7)", 1984, "Williams", s9_mS9S,0)
 
 /*--------------------
-/ Space Shuttle (S9) 12/84
+/ Sorcerer (S9) 03/85
 /--------------------*/
-static core_tLCDLayout dispSshtl[] = { \
-  { 0, 0,21,7, CORE_SEG87},
-  { 2, 0,29,7, CORE_SEG87},
-  { 4, 0, 1,7, CORE_SEG87}, { 4,26, 9,7,CORE_SEG87},
-  { 5,16, 0,1, CORE_SEG7},  { 5,18, 8,1,CORE_SEG7},
-  { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
-};
-INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
-             S11_BCDDIAG|S11_BCDDISP,0,3750, 39, 40, 27, 26, 25, 0)
-S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", CRC(848ad54c) SHA1(4e4ce5fb970da37706472f94a27fd912e1ecb1a0))
-S9S_SOUNDROM4111(      "cpu_u49.128", CRC(8050ae27) SHA1(e3f5e9398f61b075620ecd075617a8dac3c07d0e),
-                       "spch_u4.732", CRC(b0d03c5e) SHA1(46b952f71a7ecc03e22e427875f6e16a9d124067),
-                       "spch_u5.732", CRC(13edd4e5) SHA1(46c4052c31ddc20bb87445636f8fe3b6f7bff856),
-                       "spch_u6.732", CRC(cf48b2e7) SHA1(fe55419a5d40b3a4e8c02a92746b25a075b8efd3))
+INITGAMEFULL(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,44),
+             S11_BCDDIAG|S11_BCDDISP,0,0,32,33,21,22,23,0)
+S9_ROMSTART12(sorcr,l1,"cpu_u19.732", CRC(88b6837d) SHA1(d26b06342741443406a72ba48a70e82df62bb26e),
+                       "cpu_u20.764", CRC(c235b692) SHA1(d3b97fad2d501c894570601b387933c7644f64e6))
+S9S_SOUNDROM41111(     "cpu_u49.128", CRC(a0bae1e4) SHA1(dc5172aa1d59191d4119da20757cb2c2469f8fe3),
+                       "spch_u4.732", CRC(0c81902d) SHA1(6d8f703327e5c73a321fc4aa3a67ce68fff82d70),
+                       "spch_u5.732", CRC(d48c68ad) SHA1(b1391b87519ad47be3dcce7f8581f871e6a3669f),
+                       "spch_u6.732", CRC(a5c54d47) SHA1(4e1206412ecf52ae61c9df2055e0715749a6325d),
+                       "spch_u7.732", CRC(bba9ed18) SHA1(8e37ba8cb6bbc1e0afeef230088beda4513adddb))
 S9_ROMEND
-#define input_ports_sshtl input_ports_s11
-CORE_GAMEDEF(sshtl, l7, "Space Shuttle (L-7)", 1984, "Williams", s9_mS9S,0)
+#define input_ports_sorcr input_ports_s11
+CORE_CLONEDEF(sorcr,l1,l2, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 
 S9_ROMSTART12(sorcr,l2,"cpu_u19.l2", CRC(faf738db) SHA1(a3b3f4160dc837ddf5379e1edb0eafeefcc11e3d),
                        "cpu_u20.l2", CRC(74fc8117) SHA1(c228c76ade670603f77bb324e6794ec6dd358285))
