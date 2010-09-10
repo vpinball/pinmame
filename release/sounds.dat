@@ -27,12 +27,6 @@
 ; Note that DCS requires an even number of bytes in the command.
 ;-----------------------------------------------------------------------
 
-stwr_103:
-:94:Yahoo
-:95:I got him
-:96:This is no cave
-:97:R2-D2 Beeping
-
 kpv106:
 :da0407010112:Trixy Death
 :da0407010178:Take a right loop
@@ -1788,6 +1782,176 @@ wcs_l2:
 :0943:"Kooowwaaahh!"
 :0944:"Towwaaaaahh!"
 :0945:"Koooooooaahhh!"
+
+#######
+esha_la3
+#
+# F/X
+:0001:wind decrease
+:0002:constant repeat beeps
+:0003:echo beeps
+:0004:decreasing scale
+:0005:echo effect decrease
+:0006:heartbeat decrease
+:0007:bounce effect
+:0008:accel repeat
+:0009:accel repeat 2
+:000a:pacman
+:000b:zap
+:000c:bounce
+:000d:dribble
+:000e:decrease
+:000f:decrease 2
+:0010:repeat echo
+:0011:increase
+:0012:bounce 2
+:0013:repeat fast
+:0015:hit (high)
+:0016:hit 2
+:0017:hit 3
+:0018:hit 4
+:0019:hit 5 (low)
+:001a:loud click
+:001b:white noise rise
+:001c:white noise lower
+:001e:bounce decrease
+:001f:dribble 2
+:0020:downscale bounce
+:0021:accel crazy
+:0022:repeat downscale increase
+:0023:wind bell hit
+:0024:wind bell hit
+:0025:wind bell hit
+:0026:bell hit
+:0027:bell hit
+:0028:bell hit
+:0029:bell hit
+:002a:bell hit
+:002b:bell hit
+:002c:bell hit
+:0030:tilt
+:0031:saucer landing
+:0032:pacman fast
+:0033:buzz
+:0034:chunk
+:0035:air pass
+:0038:atari bumper
+:0039:atari bumper 2
+:003a:atari bumper 3
+:003b:atari bumper 4
+:003c:atari bumper 5
+:003d:atari bumper 6
+:003e:pong
+:003f:pong 2
+:0040:pong 3
+:0041:pong 4
+:0042:pong 5
+:0043:pong 6
+:0044:joust
+:0045:joust 2
+:0046:joust 3
+:0047:joust 4
+:0048:joust 5
+:0049:joust 6
+:004a:shoot
+:004b:crash
+:004c:crash 2
+:0050:repeat bounce up
+:0051:repeat air hit
+:0052:repeat air hit 2
+:0053:repeat air pass
+:0054:repeat air dopple
+:0055:repeat air fast
+:0056:thunder away
+:0057:thunder hit
+:0058:fast zap
+:0059:fast zap 2
+:005a:fast zap 3
+#
+# SPEECH
+:0081:Hey, Check out the fault!
+:0082:Earthshaker scream
+:0083:Check out the fault!
+:0084:And now, for more music
+:0085:Million
+:0086:Wow
+:0087:Today
+:0088:Take a scenic fault drive today
+:0089:Ooh, get shelter!
+:008a:Stay locked on with all the hits
+:008c:Head for the shelter
+:008d:It's sunny drive time
+:008e:Ooh!
+:008f:Ooh! Move me!
+:0090:Bitchin'
+:0091:Ooh! Get shelter!
+:0092:Head for the shelter! Ooh! Get Shelter!
+:0093:Ooh! Bitchin!
+:0094:Ooh! Million!
+:0095:Ooh! Jackpot!
+:0096:Jackpot!
+:0097:Check out the fault today
+:0098:Million!
+#
+# EXTRA SOUND F/X
+:0099:Thunder
+:009a:Thunder 2
+:009b:Thunder 3
+:009c:Thunder 4
+:009d:Thunder 5
+:009e:Thunder 6
+:009f:Thunder 7
+:00a0:Thunder 8
+:00a1:Door slam
+:00a2:Door slam 2
+:00a3:Door slam 3
+:00a4:Door slam 4
+:00a5:Door slam 5
+:00a6:Door slam 6
+:00a7:Door slam 7
+:00a8:Door slam 8
+:00c0:air drum
+:00c1:air drum 2
+:00c2:air drum 3
+:00c3:air drum 4
+:00c4:air drum 5
+:00c5:air drum 6
+:00c6:air drum 7
+:00c7:air drum 8
+#
+# MUSIC
+:0100:Stop Music
+:0101:Main Game Music
+:0102:Pre-Multiball music
+:0103:Game over music
+:0104:hurryup music
+:0105:Multiball music
+:0106:music
+:0107:fast music
+:0108:slow happy music
+:0109:hurryup jackpot
+:010a:Shooter lane music
+:010c:lost ball music
+:010d:ding
+:010e:bonus count end
+:010f:completion
+:0110:completion 2
+:0111:shooter lane music 2
+:0112:hurryup jackpot copy109
+#
+# MUSIC DUPLICATED COMMANDS
+:0140:Lost ball music copy010c
+:0141:Main Game Music copy0101
+:0142:Pre-Multiball music copy0102
+:0143:Game over music copy0103
+:0144:hurryup music copy0104
+:0145:Multiball music copy0105
+:0146:music copy0106
+:0147:fast music copy0107
+:0148:hurryup jackpot copy 0109
+:0149:shooter lane music copy010a
+
+
 #######
 # FIREPOWER: some sounds are multilayered
 # 1f is needed to reset the line after each sound.
