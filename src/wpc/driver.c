@@ -1366,7 +1366,10 @@ DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
 DRIVER(rollr,l3)        //          05/90 W Rollergames (L-3) Europe
 DRIVER(rollr,g3)        //          05/90 W Rollergames (L-3) Germany
-DRIVER(pool,l7)         //S11-1848: 01/91 B Pool Shark(s?)
+DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7) Proto
+DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
+DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
+DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
 DRIVER(diner,l1)        //S11-571:  06/90 W Diner (L-1)
 DRIVER(diner,l3)        //          06/90 W Diner (L-3)
 DRIVER(diner,l4)        //          09/90 W Diner (L-4)
@@ -1389,8 +1392,8 @@ DRIVER(fh,l4)           //WPC-503:  12/90 W Funhouse (L-4)
 DRIVER(fh,d4)           //WPC-503:  12/90 W Funhouse (D-4) LED Ghost Fix
 DRIVER(fh,l5)           //WPC-503:  12/90 W Funhouse (L-5)
 DRIVER(fh,d5)           //WPC-503:  12/90 W Funhouse (D-5) LED Ghost Fix
-DRIVER(fh,l9b)                            // bootleg with correct German translation
-DRIVER(fh,d9b)                            // bootleg with correct German translation LED Ghost Fix
+DRIVER(fh,l9b)          //                  bootleg with correct German translation
+DRIVER(fh,d9b)          //                  bootleg with correct German translation LED Ghost Fix
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
 DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
@@ -1537,8 +1540,8 @@ DRIVER(tz,h8)           //WPC-520:  11/94 B Twilight Zone (H-8)
 DRIVER(tz,i8)           //WPC-520:  11/94 B Twilight Zone (I-8) LED Ghost Fix
 DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //WPC-520:  01/95 B Twilight Zone (9.3) LED Ghost Fix
-DRIVER(tz,94h)			//WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
-DRIVER(tz,94ch)			//WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
+DRIVER(tz,94h)          //WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
+DRIVER(tz,94ch)         //WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
@@ -1596,14 +1599,14 @@ DRIVER(tafg,la2)        //WPC:      10/94 B The Addams Family Special Collectors
 DRIVER(tafg,da2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DA-2) LED Ghost Fix
 DRIVER(tafg,la3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-3)
 DRIVER(tafg,da3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DA-3) LED Ghost Fix
-DRIVER(tafg,h3)							  // Home version
-DRIVER(tafg,i3)							  // Home version LED Ghost Fix
+DRIVER(tafg,h3)         //                  Home version
+DRIVER(tafg,i3)         //                  Home version LED Ghost Fix
 DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,d2)          //WPC-531:  05/94 B World Cup Soccer (Dx-2) LED Ghost Fix
-DRIVER(wcs,p2)                            // (Pa-2)
-DRIVER(wcs,p5)                            // (Pa-5) LED Ghost Fix
-DRIVER(wcs,p3)                            // (Px-3)
-DRIVER(wcs,p6)                            // (Px-6) LED Ghost Fix
+DRIVER(wcs,p2)          //                  (Pa-2)
+DRIVER(wcs,p5)          //                  (Pa-5) LED Ghost Fix
+DRIVER(wcs,p3)          //                  (Px-3)
+DRIVER(wcs,p6)          //                  (Px-6) LED Ghost Fix
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
 DRIVER(fs,dx2)          //WPC-529:  07/94 W The Flintstones (DX-2) LED Ghost Fix
@@ -1625,8 +1628,8 @@ DRIVER(rs,lx3)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_3)
 DRIVER(rs,dx3)          //WPC-524:  10/94 W Red & Ted's Road Show (Dx_3) LED Ghost Fix
 DRIVER(rs,la4)          //WPC-524:  10/94 W Red & Ted's Road Show (La_4)
 DRIVER(rs,da4)          //WPC-524:  10/94 W Red & Ted's Road Show (Da_4) LED Ghost Fix
-DRIVER(rs,lx4)		//WPC-524:  10/94 W Red & Ted's Road Show (Lx-4)
-DRIVER(rs,dx4)		//WPC-524:  10/94 W Red & Ted's Road Show (Dx-4) LED Ghost Fix
+DRIVER(rs,lx4)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx-4)
+DRIVER(rs,dx4)          //WPC-524:  10/94 W Red & Ted's Road Show (Dx-4) LED Ghost Fix
 DRIVER(rs,la5)          //WPC-524:  10/94 W Red & Ted's Road Show (La_5)
 DRIVER(rs,da5)          //WPC-524:  10/94 W Red & Ted's Road Show (Da_5) LED Ghost Fix
 DRIVER(rs,lx5)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_5)
@@ -1649,10 +1652,10 @@ DRIVER(ts,lm6)          //WPC-532:  05/95 B The Shadow (LM-6) Mild
 DRIVER(ts,dm6)          //WPC-532:  05/95 B The Shadow (DM-6) Mild LED Ghost Fix
 DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
 DRIVER(dh,dx2)          //WPC-530:  03/95 W Dirty Harry (DX-2) LED Ghost Fix
-DRIVER(tom,06)		//WPC-539:  03/95 B Theatre of Magic (0.6A)
-DRIVER(tom,061)		//WPC-539:  03/95 B Theatre of Magic (0.61A) LED Ghost Fix
-DRIVER(tom,12)		//WPC-539:  04/95 B Theatre of Magic (1.2X)
-DRIVER(tom,121)		//WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost Fix
+DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A)
+DRIVER(tom,061)         //WPC-539:  03/95 B Theatre of Magic (0.61A) LED Ghost Fix
+DRIVER(tom,12)          //WPC-539:  04/95 B Theatre of Magic (1.2X)
+DRIVER(tom,121)         //WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(nf,20)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.0)
@@ -1664,8 +1667,8 @@ DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //          06/95 B Indianapolis 500 (Belgium)
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,101r)         //WPC-551:  10/95 W Jack*Bot LED Ghost Fix
-DRIVER(jb,10b)                            // Belgium/Canada
-DRIVER(jb,101b)                           // Belgium/Canada LED Ghost Fix
+DRIVER(jb,10b)          //                  Belgium/Canada
+DRIVER(jb,101b)         //                  Belgium/Canada LED Ghost Fix
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
 DRIVER(jm,12b)          //WPC-542:  08/95 W Johnny Mnemonic (Belgium)
 DRIVER(wd,03r)          //WPC-544:  09/95 B Who dunnit (0.3 R)
@@ -1681,8 +1684,8 @@ DRIVER(congo,21)        //          10/96 W Congo (2.1)
 DRIVER(afm,10)          //WPC-541:  12/95 B Attack from Mars (1.0)
 DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars (1.1)
 DRIVER(afm,11u)         //WPC-541:  12/95 B Attack from Mars (1.1 Ultrapin)
-DRIVER(afm,113)		//WPC-541:  12/95 B Attack from Mars (1.13 Home version)
-DRIVER(afm,113b)	//WPC-541:  12/95 B Attack from Mars (1.13b Coin Play)
+DRIVER(afm,113)         //WPC-541:  12/95 B Attack from Mars (1.13 Home version)
+DRIVER(afm,113b)        //WPC-541:  12/95 B Attack from Mars (1.13b Coin Play)
 DRIVER(lc,11)           //WPC-107:  03/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,14)           //WPC-903:  06/96 B Safe Cracker (1.4)

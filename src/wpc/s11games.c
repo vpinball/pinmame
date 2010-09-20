@@ -806,7 +806,31 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
 #define input_ports_pool input_ports_s11
-CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11c_one,0)
+CORE_GAMEDEF(pool , l7, "Pool Sharks (LA-7)", 1991, "Bally", s11c_one,0)
+
+S11_ROMSTART48(pool,l6, "pool_u26.la6",CRC(fec70d5a) SHA1(bc155a590f64f2b43b8799c1a6d2336dde45a10c),
+                        "pool_u27.la6",CRC(91fb5231) SHA1(538ddc66a5885e4b7a840d35a1e62b92f73b39ad))
+S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
+                        "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
+                        "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
+S11_ROMEND
+CORE_CLONEDEF(pool,l6,l7,"Pool Sharks (LA-6)", 1990, "Bally", s11c_one,0)
+
+S11_ROMSTART48(pool,le2,"pool_u26.le2",CRC(70526965) SHA1(69c7b74fff8fcc351e8bd9b8fce7655aebf7205c),
+                        "pool_u27.le2",CRC(90911f02) SHA1(ef3d32b3c5bafcd886bbde8b897cb225c0c04464))
+S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
+                        "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
+                        "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
+S11_ROMEND
+CORE_CLONEDEF(pool,le2,l7,"Pool Sharks (LE-2)", 1990, "Bally", s11c_one,0)
+
+S11_ROMSTART48(pool,p7, "pool_u26.pa7",CRC(91d2aae9) SHA1(b3dbc80809bca8b0435c3d8a0ceb504acab4a04a),
+                        "pool_u27.pa7",CRC(eff6b940) SHA1(e0c3858803bbc5cacedefe57681efc2dc339e16d))
+S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
+                        "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
+                        "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
+S11_ROMEND
+CORE_CLONEDEF(pool,p7,l7,"Pool Sharks (PA-7)", 1989, "Bally", s11c_one,0)
 
 /*--------------------
 / Diner 8/90
