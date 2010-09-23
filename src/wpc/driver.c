@@ -1384,16 +1384,18 @@ DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2) Eu
 //WPC
 DRIVER(dd,p06)          //WPC:      08/90 B Dr. Dude (P-6 WPC)
 DRIVER(dd,p7)           //WPC:      09/90 B Dr. Dude (P-7 WPC)
-DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse (L-9)
-DRIVER(fh,d9)           //WPC-503:  12/90 W Funhouse (D-9) LED Ghost Fix
-DRIVER(fh,l3)           //WPC-503:  12/90 W Funhouse (L-3)
-DRIVER(fh,d3)           //WPC-503:  12/90 W Funhouse (D-3) LED Ghost Fix
-DRIVER(fh,l4)           //WPC-503:  12/90 W Funhouse (L-4)
-DRIVER(fh,d4)           //WPC-503:  12/90 W Funhouse (D-4) LED Ghost Fix
-DRIVER(fh,l5)           //WPC-503:  12/90 W Funhouse (L-5)
-DRIVER(fh,d5)           //WPC-503:  12/90 W Funhouse (D-5) LED Ghost Fix
+                        //WPC-503:  11/90 W Funhouse (L-1)
+DRIVER(fh,l3)           //          12/90 W Funhouse (L-3)
+DRIVER(fh,d3)           //                W Funhouse (D-3) LED Ghost Fix
+DRIVER(fh,l4)           //          01/91 W Funhouse (L-4)
+DRIVER(fh,d4)           //                W Funhouse (D-4) LED Ghost Fix
+DRIVER(fh,l5)           //          02/91 W Funhouse (L-5)
+DRIVER(fh,d5)           //                W Funhouse (D-5) LED Ghost Fix
+DRIVER(fh,l9)           //          12/92 W Funhouse (L-9)
+DRIVER(fh,d9)           //                W Funhouse (D-9) LED Ghost Fix
 DRIVER(fh,l9b)          //                  bootleg with correct German translation
 DRIVER(fh,d9b)          //                  bootleg with correct German translation LED Ghost Fix
+DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
 DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
