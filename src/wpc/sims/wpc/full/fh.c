@@ -154,7 +154,7 @@ WPC_INPUT_PORTS_START(fh,3)
     COREPORT_BITIMP(0x0400,"Trap Door Loop",  KEYCODE_T)
     COREPORT_BITIMP(0x0800,"Steps Drop Hole", KEYCODE_E)
     COREPORT_BIT(   0x1000,"Hidden Hall Way", KEYCODE_U)
-    COREPORT_BIT(   0x2000,"Jet 1",	     KEYCODE_H)
+    COREPORT_BIT(   0x2000,"Jet 1",      KEYCODE_H)
     COREPORT_BITIMP(0x4000,"Jet 2",           KEYCODE_J)
     COREPORT_BIT(   0x8000,"Jet 3",           KEYCODE_K)
   PORT_START /* 1 */
@@ -178,94 +178,94 @@ WPC_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swStart      	13
-#define swTilt       	14
-#define swAwardFrenzy 	15
-#define swMRamp		16
-#define swStepS		17
-#define swJet1		18
+#define swStart       13
+#define swTilt        14
+#define swAwardFrenzy   15
+#define swMRamp   16
+#define swStepS   17
+#define swJet1    18
 
-#define swSlamTilt   	21
-#define swCoinDoor   	22
-#define swTicket     	23
-#define swNotUsed	24
-#define swLockR		25
-#define	swAwardEB	26
-#define	swLockC		27
-#define swLockL		28
+#define swSlamTilt    21
+#define swCoinDoor    22
+#define swTicket      23
+#define swNotUsed 24
+#define swLockR   25
+#define swAwardEB 26
+#define swLockC   27
+#define swLockL   28
 
-#define	swStepP		31
-#define	swHotDogU	32
-#define	swGangWayL	33
-#define	swHotDogL	34
-#define	swURampExit	35
-#define	swAwardPTS	36
-#define	swHotDogM	37
-#define	swURampEnt	38
+#define swStepP   31
+#define swHotDogU 32
+#define swGangWayL  33
+#define swHotDogL 34
+#define swURampExit 35
+#define swAwardPTS  36
+#define swHotDogM 37
+#define swURampEnt  38
 
-#define swLSling     	41
-#define swLIn		42
-#define swLOut		43
-#define swWindTunnel	44
-#define swTrapOpen  	45
-#define swRudyHideout	46
-#define swLShooter  	47
-#define swMRampExit	48
+#define swLSling      41
+#define swLIn   42
+#define swLOut    43
+#define swWindTunnel  44
+#define swTrapOpen    45
+#define swRudyHideout 46
+#define swLShooter    47
+#define swMRampExit 48
 
-#define swRudyJaw	51	/*Opto*/
-#define swROut		52
-#define swRSling     	53
-#define swStepT		54
-#define swAwardDog	55	/*Opto*/
-#define swMRampEnt	56
-#define swJetLane	57
-#define swDropKickout	58
+#define swRudyJaw 51  /*Opto*/
+#define swROut    52
+#define swRSling      53
+#define swStepT   54
+#define swAwardDog  55  /*Opto*/
+#define swMRampEnt  56
+#define swJetLane 57
+#define swDropKickout 58
 
-#define swRIn		61
-#define swRShooter    	62
-#define swRTrough    	63
-#define swStepE		64
-#define swDummyEject	65
-#define swGangWayR	66
-#define swDropHole	67
-#define swJet3       	68
+#define swRIn   61
+#define swRShooter      62
+#define swRTrough     63
+#define swStepE   64
+#define swDummyEject  65
+#define swGangWayR  66
+#define swDropHole  67
+#define swJet3        68
 
-#define swRIn2		71
-#define swLTrough    	72
-#define swOuthole    	73
-#define swCTrough    	74
-#define swTrapLoop	75
-#define swTrapClosed	76
-#define swJet2       	77
+#define swRIn2    71
+#define swLTrough     72
+#define swOuthole     73
+#define swCTrough     74
+#define swTrapLoop  75
+#define swTrapClosed  76
+#define swJet2        77
 
 
 /*---------------------
 / Solenoid definitions
 /----------------------*/
-#define sOuthole      	1
-#define sRampDiv      	2
-#define sRudyHideout  	3
-#define sDropKickout	4
-#define sTrapOpen	5
-#define sTrapClosed	6
-#define sKnocker       	7
-#define sLockRelease   	8
-#define sJet1         	9
-#define sJet2        	10
-#define sJet3        	11
-#define sLSling      	12
-#define sRSling      	13
-#define sStepGate	14
-#define sBallRel	15
-#define sDummyEject    	16
+#define sOuthole        1
+#define sRampDiv        2
+#define sRudyHideout    3
+#define sDropKickout  4
+#define sTrapOpen 5
+#define sTrapClosed 6
+#define sKnocker        7
+#define sLockRelease    8
+#define sJet1           9
+#define sJet2         10
+#define sJet3         11
+#define sLSling       12
+#define sRSling       13
+#define sStepGate 14
+#define sBallRel  15
+#define sDummyEject     16
 
-#define sMouthMotor    	21
-#define sUpDownDriver  	22
+#define sMouthMotor     21
+#define sUpDownDriver   22
 
-#define sEyesRight     	25
-#define sEyesOpen      	26
-#define sEyesClosed   	27
-#define sEyesLeft    	28
+#define sEyesRight      25
+#define sEyesOpen       26
+#define sEyesClosed     27
+#define sEyesLeft     28
 
 /*Status of Eyes*/
 enum {EYES_ST=0,EYES_LEFT,EYES_RIGHT,EYES_CLOSED};
@@ -310,12 +310,12 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
    #7) If this solenoid is active go to altstate (below)
    #8) alternative state
    #9) State flags
-	STSWKEEP:        Leave switch on (e.g. drop targets)
-	STSHOOT:         Set ballspeed to plunger speed
-	STIGNORESOL:     Always call statehandler regardless of solenoid state
-	STNOTEXCL:       More than one ball can be in this sate
-	STNOTBALL(type): Specified ball type does not affect switch
-	STSPINNER        Switch is a spinner
+  STSWKEEP:        Leave switch on (e.g. drop targets)
+  STSHOOT:         Set ballspeed to plunger speed
+  STIGNORESOL:     Always call statehandler regardless of solenoid state
+  STNOTEXCL:       More than one ball can be in this sate
+  STNOTBALL(type): Specified ball type does not affect switch
+  STSPINNER        Switch is a spinner
 *******************************************************************************************************/
 static sim_tState fh_stateDef[] = {
   {"Not Installed",    0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
@@ -329,7 +329,7 @@ static sim_tState fh_stateDef[] = {
   {"Drain",            1,0,           0,        stOuthole,   0,0,0,SIM_STNOTEXCL},
 
   {"R. Shooter",       1,swRShooter,   sShooterRel, stRBallLane, 10,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
-  {"R. Ball Lane",     1, 0,  	       0,       0,      	     0,0,0,SIM_STNOTEXCL},
+  {"R. Ball Lane",     1, 0,           0,       0,             0,0,0,SIM_STNOTEXCL},
   {"Not Enough",       1,swRShooter,   0,        stRShooter, 3},
 
   {"Right Outlane",    1,swROut,       0,        stDrain,   20},
@@ -346,7 +346,7 @@ static sim_tState fh_stateDef[] = {
   {"Right Loop",       1,swGangWayR,     0,       stFree,      1},
 
   {"Main Ramp Enter",  1,swMRampEnt,   0,       stMRamp,     2},
-  {"Main Ramp"	    ,  1,swMRamp,      0,       stRampDiv,   5},
+  {"Main Ramp"      ,  1,swMRamp,      0,       stRampDiv,   5},
   {"Main Ramp Exit",   1,swMRampExit,  0,       stLIn,       3},
   {"Ramp Diverter",    1,0,            0,       stMRampExit, 2, sRampDiv, stURampEnt},
 
@@ -354,7 +354,7 @@ static sim_tState fh_stateDef[] = {
   {"Steps Track Exit" ,  1,swURampExit,  0,     stLOut,      2},
 
   {"L. Shooter",       1,swLShooter,   sShooterRel, stLBallLane, 5,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
-  {"L. Ball Lane"  ,   1, 0,  	       0,       0,      	     0,0,0,SIM_STNOTEXCL},
+  {"L. Ball Lane"  ,   1, 0,           0,       0,             0,0,0,SIM_STNOTEXCL},
   {"Not Enough",       1,swLShooter,   0,        stLShooter, 2},
   {"Award Frenzy",     1,swAwardFrenzy, 0,       stFree, 1},
   {"Award Ex.Ball",    1,swAwardEB,     0,       stFree, 3},
@@ -370,17 +370,17 @@ static sim_tState fh_stateDef[] = {
 
   {"Hidden HallWay",   1,0,    0,       stLockR, 10},
   {"Left Lock",        1,swLockL,    sLockRelease,       stFree, 5},
-  {"Center Lock",      1,swLockC,    0,       		 stLockL, 1},
-  {"Right Lock",       1,swLockR,    0,       		 stLockC, 1},
+  {"Center Lock",      1,swLockC,    0,            stLockL, 1},
+  {"Right Lock",       1,swLockR,    0,            stLockC, 1},
 
   {"Rudy Hit",         1,0, 0,  0, 1},
   {"Upper Loop",       1,0,    0,       0, 0},
-  {"Upper Loop Made",	1,swTrapLoop, 0, stFree, 5},
+  {"Upper Loop Made", 1,swTrapLoop, 0, stFree, 5},
   {"Ball in Trap Door", 1,swTrapOpen, 0, stDropKickout, 25},
   {"Rudy's Mouth",      1,swDummyEject, sDummyEject, stFree, 5},
-  {"Left Outlane",	1,0,0,0,0},
-  {"Rudy Jaw",		1,swRudyJaw,0,stFree,5},
-  {"Rudy Jaw",		1,swRudyJaw,0,stRudyGulp,5},
+  {"Left Outlane",  1,0,0,0,0},
+  {"Rudy Jaw",    1,swRudyJaw,0,stFree,5},
+  {"Rudy Jaw",    1,swRudyJaw,0,stRudyGulp,5},
   {"Jet Bumper Lane",   1,swJetLane,0,stRIn2,5},
   {"Jet Bumper 1",        1,swJet1, 0, stJet2, 5},
   {"Jet Bumper 2",        1,swJet2, 0, stJet3, 5},
@@ -390,69 +390,69 @@ static sim_tState fh_stateDef[] = {
 
 static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
-	{
+  {
 
-	/* Ball in RIGHT Shooter Lane */
+  /* Ball in RIGHT Shooter Lane */
         /* Note: Sim supports max of 50 speed for manual plunger */
-    	case stRBallLane:
-		if (ball->speed < 20)
-			return setState(stRNotEnough,3);	/*Ball not plunged hard enough*/
-		if (ball->speed < 25)
-			return setState(stJetLane,10);		/*Ball rolled down Jet Lane*/
-		if (ball->speed < 30)
-			return setState(stDropHole,20);		/*Ball landed in Drop Hole*/
-		if (ball->speed < 35)
+      case stRBallLane:
+    if (ball->speed < 20)
+      return setState(stRNotEnough,3);  /*Ball not plunged hard enough*/
+    if (ball->speed < 25)
+      return setState(stJetLane,10);    /*Ball rolled down Jet Lane*/
+    if (ball->speed < 30)
+      return setState(stDropHole,20);   /*Ball landed in Drop Hole*/
+    if (ball->speed < 35)
                         return setState(stJet1,20);              /*Ball Hit Bumper!*/
-		if (ball->speed < 40)
-			return setState(stRudyHideout,35);	/*Skill Shot - Landed in Rudy Hideout*/
-		if (ball->speed >= 40)
-			return setState(stRLoopUp,30);		/*Shot missed hideout, but triggered Right Loop!*/
-		break;
+    if (ball->speed < 40)
+      return setState(stRudyHideout,35);  /*Skill Shot - Landed in Rudy Hideout*/
+    if (ball->speed >= 40)
+      return setState(stRLoopUp,30);    /*Shot missed hideout, but triggered Right Loop!*/
+    break;
 
-	/* Ball in LEFT Shooter Lane */
+  /* Ball in LEFT Shooter Lane */
         /* Note: Sim supports max of 50 speed for manual plunger */
-    	case stLBallLane:
-		if (ball->speed < 25)
-			return setState(stLNotEnough,3);	/*Ball not plunged hard enough*/
-		if (ball->speed < 30)
-			return setState(stAwardFrenzy,15);	/*Ball landed in Steps Award Frenzy*/
-		if (ball->speed < 35)
-			return setState(stAwardEB,20);		/*Ball landed in Steps Award Extra Ball*/
-		if (ball->speed < 40)
-			return setState(stAwardPTS,25);		/*Ball landed in Steps Award Points*/
-		if (ball->speed >= 40)
-			return setState(stAwardDog,30);		/*Shot Awards Super Dog*/
-		break;
+      case stLBallLane:
+    if (ball->speed < 25)
+      return setState(stLNotEnough,3);  /*Ball not plunged hard enough*/
+    if (ball->speed < 30)
+      return setState(stAwardFrenzy,15);  /*Ball landed in Steps Award Frenzy*/
+    if (ball->speed < 35)
+      return setState(stAwardEB,20);    /*Ball landed in Steps Award Extra Ball*/
+    if (ball->speed < 40)
+      return setState(stAwardPTS,25);   /*Ball landed in Steps Award Points*/
+    if (ball->speed >= 40)
+      return setState(stAwardDog,30);   /*Shot Awards Super Dog*/
+    break;
 
-	/* Rudy Hit */
-    	case stRudyHit:
-		/*Is Rudy's Mouth Open?*/
-		if (locals.rudymouthPos)
-			return setState(stRudyJaw1,10);		/*Yes, ball goes into rudy's mouth*/
-		else
-			return setState(stRudyJaw,10);		/*Ball hits Rudy's Jaw!!*/
-		break;
+  /* Rudy Hit */
+      case stRudyHit:
+    /*Is Rudy's Mouth Open?*/
+    if (locals.rudymouthPos)
+      return setState(stRudyJaw1,10);   /*Yes, ball goes into rudy's mouth*/
+    else
+      return setState(stRudyJaw,10);    /*Ball hits Rudy's Jaw!!*/
+    break;
 
-	/* Trap Door */
-    	case stTrapDoorLoop:
-		/*Is the Trap Door Open?*/
-		if (locals.trapdoorPos)
-			return setState(stBallInTrap,10);	/*Trap Door is Open, Ball Lands in Trap Door!*/
-		else
-			return setState(stUpperLoop,10);	/*Trap Door is Closed, Make Upper Loop Shot!*/
-		break;
+  /* Trap Door */
+      case stTrapDoorLoop:
+    /*Is the Trap Door Open?*/
+    if (locals.trapdoorPos)
+      return setState(stBallInTrap,10); /*Trap Door is Open, Ball Lands in Trap Door!*/
+    else
+      return setState(stUpperLoop,10);  /*Trap Door is Closed, Make Upper Loop Shot!*/
+    break;
 
-	/* Left Outlane - Drain or Go to Left Shooter? */
-	case stLOut2:
-		if (locals.stepgatePos)
-			{
-			ball->speed = -1;
-			return setState(stLShooter,5);
-			}
-		else
-			return setState(stDrain,15);
-		break;
-  	}
+  /* Left Outlane - Drain or Go to Left Shooter? */
+  case stLOut2:
+    if (locals.stepgatePos)
+      {
+      ball->speed = -1;
+      return setState(stLShooter,5);
+      }
+    else
+      return setState(stDrain,15);
+    break;
+    }
   return 0;
 }
 
@@ -623,79 +623,45 @@ static void fh_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(fh,l9,"funh_l9.rom",0x040000,CRC(c8f90ff8) SHA1(8d200ea30a68f5e3ba1ac9232a516c44b765eb45))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
-WPC_ROMSTART(fh,d9,"funh_d9.rom",0x040000,CRC(983fbaf7) SHA1(50c0c904af3dccf95e16c41e6c7a14510ece4614))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+#define FH_SOUND_L3 \
+WPCS_SOUNDROM222("fh_u18.sl3",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab), \
+                 "fh_u15.sl2",CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92), \
+                 "fh_u14.sl2",CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3)) \
+
+#define FH_SOUND_L2 \
+WPCS_SOUNDROM222("fh_u18.sl2",CRC(11c8944a) SHA1(425d8da5a036c41e054d201b99856319fd5ef9e2), \
+                 "fh_u15.sl2",CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92), \
+                 "fh_u14.sl2",CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3)) \
+
+WPC_ROMSTART(fh,l9,"funh_l9.rom",0x040000,CRC(c8f90ff8) SHA1(8d200ea30a68f5e3ba1ac9232a516c44b765eb45)) FH_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(fh,d9,"funh_d9.rom",0x040000,CRC(983fbaf7) SHA1(50c0c904af3dccf95e16c41e6c7a14510ece4614)) FH_SOUND_L3 WPC_ROMEND
 // Found this on the stormaster site
 // It is an updated L9 rom where the German text translation is corrected
 // Author is unknown but it is definetly not from WMS
 // (author didn't know how to calculate the checksum so he
 //  altered some blanks in the credits to match the original checksum)
-WPC_ROMSTART(fh,l9b,"fh_l9ger.rom",0x040000,CRC(e9b32a8f) SHA1(deb77f0d025001ddcc3045b4e49176c54896da3f))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
-WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522443b80368f3d78ea3ea2f55))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+WPC_ROMSTART(fh,l9b,"fh_l9ger.rom",0x040000,CRC(e9b32a8f) SHA1(deb77f0d025001ddcc3045b4e49176c54896da3f)) FH_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522443b80368f3d78ea3ea2f55)) FH_SOUND_L3 WPC_ROMEND
 
-WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b93f0d7736b414ba3a68a4f8))
-WPCS_SOUNDROM422("fh_u18.l3", CRC(6d2d4949) SHA1(4d9dbf7f07f664646694e53111c9ca31d3fccff9),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b93f0d7736b414ba3a68a4f8)) FH_SOUND_L3 WPC_ROMEND
 
-WPC_ROMSTART(fh,l3,"u6-l3.rom",0x020000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
-WPC_ROMSTART(fh,d3,"u6-d3.rom",0x020000,CRC(fa32b241) SHA1(330fd1403199fcfa7bc018b488ea5f1a51ee4820))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+WPC_ROMSTART(fh,l3,"u6-l3.rom",0x020000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141)) FH_SOUND_L2 WPC_ROMEND
+WPC_ROMSTART(fh,d3,"u6-d3.rom",0x020000,CRC(fa32b241) SHA1(330fd1403199fcfa7bc018b488ea5f1a51ee4820)) FH_SOUND_L2 WPC_ROMEND
 
-WPC_ROMSTART(fh,l4,"u6-l4.rom",0x020000,CRC(f438aaca) SHA1(42bf75325a0e85a4334a5a710c2eddf99160ffbf))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
-WPC_ROMSTART(fh,d4,"u6-d4.rom",0x020000,CRC(b7683195) SHA1(1022598113d32dbca057854907d3b3fb99abfefe))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+WPC_ROMSTART(fh,l4,"u6-l4.rom",0x020000,CRC(f438aaca) SHA1(42bf75325a0e85a4334a5a710c2eddf99160ffbf)) FH_SOUND_L2 WPC_ROMEND
+WPC_ROMSTART(fh,d4,"u6-d4.rom",0x020000,CRC(b7683195) SHA1(1022598113d32dbca057854907d3b3fb99abfefe)) FH_SOUND_L2 WPC_ROMEND
 
-WPC_ROMSTART(fh,l5,"u6-l5.rom",0x020000,CRC(e2b25da4) SHA1(87129e18c60a65035ade2f4766c154d5d333696b))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
-WPC_ROMSTART(fh,d5,"u6-d5.rom",0x020000,CRC(11bc9542) SHA1(2728b55f07cc0dab0ce2048de7d537047ae20913))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
-                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
-                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
-WPC_ROMEND
+WPC_ROMSTART(fh,l5,"u6-l5.rom",0x020000,CRC(e2b25da4) SHA1(87129e18c60a65035ade2f4766c154d5d333696b)) FH_SOUND_L2 WPC_ROMEND
+WPC_ROMSTART(fh,d5,"u6-d5.rom",0x020000,CRC(11bc9542) SHA1(2728b55f07cc0dab0ce2048de7d537047ae20913)) FH_SOUND_L2 WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 
-CORE_GAMEDEF(fh,l9,"Funhouse L-9 (SL-2m)",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d9,l9,"Funhouse D-9 (SL-2m) LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-2m) Bootleg Improved German translation",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d9b,l9,"Funhouse D-9 (SL-2m) German LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
+CORE_GAMEDEF(fh,l9,"Funhouse L-9 (SL-3)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9,l9,"Funhouse D-9 (SL-3) LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-3) Bootleg Improved German translation",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9b,l9,"Funhouse D-9 (SL-3) German LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,905h,l9,"Funhouse 9.05H",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse L-3",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d3,l9,"Funhouse D-3 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
@@ -708,15 +674,15 @@ CORE_CLONEDEF(fh,d5,l9,"Funhouse D-5 LED Ghost Fix",1991,"Williams",wpc_mAlpha2S
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData fhSimData = {
-  2,    		/* 2 game specific input ports */
-  fh_stateDef,		/* Definition of all states */
-  fh_inportData,	/* Keyboard Entries */
-  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
-  NULL, 		/* no init */
-  fh_handleBallState,	/*Function to handle ball state changes*/
-  fh_drawStatic,	/*Function to handle mechanical state changes*/
-  TRUE, 		/* simulate manual shooter */
-  NULL  		/* no custom key conditions */
+  2,        /* 2 game specific input ports */
+  fh_stateDef,    /* Definition of all states */
+  fh_inportData,  /* Keyboard Entries */
+  { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },  /*Position where balls start.. Max 7 Balls Allowed*/
+  NULL,     /* no init */
+  fh_handleBallState, /*Function to handle ball state changes*/
+  fh_drawStatic,  /*Function to handle mechanical state changes*/
+  TRUE,     /* simulate manual shooter */
+  NULL      /* no custom key conditions */
 };
 
 /*----------------------
@@ -725,7 +691,7 @@ static sim_tSimData fhSimData = {
 static core_tGameData fhGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha, /* generation */
   {
-    FLIP_SWNO(12,11), 	/* Which switches are the flippers */
+    FLIP_SWNO(12,11),   /* Which switches are the flippers */
     0,0,0,0,0,0,0,
     NULL, fh_handleMech, NULL, fh_drawMech,
     &fh_lampPos, fh_samsolmap
@@ -798,7 +764,7 @@ static void fh_handleMech(int mech) {
   }
 
   /* ----------------------------------
-     --	Open & Close Step Gate       --
+     -- Open & Close Step Gate       --
      ---------------------------------- */
   if (mech & 0x02) {
     /*-- if Step Gate Solenoid fires, keep it open for a timer of 50 seconds! --*/
@@ -808,7 +774,7 @@ static void fh_handleMech(int mech) {
       locals.stepgatePos-= (locals.stepgatePos>0)?1:0; /* -- Count down time till it closes --*/
   }
   /* ----------------------------------
-     --	Open & Close Trap Door       --
+     -- Open & Close Trap Door       --
      ---------------------------------- */
   if (mech & 0x04) {
     /*-- if Trap Door Open Solenoid firing, and TD is closed, open it! --*/
@@ -822,7 +788,7 @@ static void fh_handleMech(int mech) {
   }
 
   /* ----------------------------------
-     --	Open & Close Rudy's Mouth    --
+     -- Open & Close Rudy's Mouth    --
      ---------------------------------- */
   /* -- If open, and Mouth Solenoid fired and !UpDown fired - Close it! -- */
   if (mech & 0x08) {
@@ -863,15 +829,15 @@ static void fh_handleMech(int mech) {
 static const char* showeyepos(void)
 {
 if(locals.rudyeyesOC)
-	return "Closed";
+  return "Closed";
 else
-	{
-	switch(locals.rudyeyesLR)
-		{
-		case EYES_ST: return "Straight";
-		case EYES_LEFT: return "Left";
-		case EYES_RIGHT: return "Right";
-		default: return "?";
-		}
-	}
+  {
+  switch(locals.rudyeyesLR)
+    {
+    case EYES_ST: return "Straight";
+    case EYES_LEFT: return "Left";
+    case EYES_RIGHT: return "Right";
+    default: return "?";
+    }
+  }
 }
