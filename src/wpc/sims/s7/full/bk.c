@@ -254,11 +254,23 @@ S67S_SPEECHROMS0000( "speech7f.532",CRC(01debff6) SHA1(dc02199b63ae3309fdac81998
                      "speech4f.532",CRC(8ee8fc3c) SHA1(ba7c00f16bdbd7413cec025c28f8b7e7bbcb12bb))
 S7_ROMEND
 
+S7_ROMSTART8088(bk,l3,"bkl3_14.bin",   CRC(74c37e4f) SHA1(8946b110901d0660676fba0c204aa2bc78223508),
+                      "ic17.532",      CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                      "ic20.716",      CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                      "bkl3_26.bin",   CRC(6acc34a0) SHA1(3adad61d27e6416630f96554687bb66d3016166a))
+S67S_SOUNDROMS8(      "sound12.716",CRC(6d454c0e) SHA1(21640b9ed3bdbae8bf27629891f355304e467c64))
+S67S_SPEECHROMS0000(  "speech7.532",CRC(c7e229bf) SHA1(3b2ab41031f507963af828639f1690dc350737af),
+                      "speech5.532",CRC(411bc92f) SHA1(6c8d26fd13ed5eeba5cc40886d39c65a64beb377),
+                      "speech6.532",CRC(fc985005) SHA1(9df4ad12cf98a5a92b8f933e6b6788a292c8776b),
+                      "speech4.532",CRC(f36f12e5) SHA1(24fb192ad029cd35c08f4899b76d527776a4895b))
+S7_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(bk,l4,"Black Knight (L-4)",1980,"Williams",s7_mS7S,0)
 CORE_CLONEDEF(bk,f4,l4,"Black Knight (L-4, French speech)",1980,"Williams",s7_mS7S,0)
+CORE_CLONEDEF(bk,l3,l4,"Black Knight (L-3)",1980,"Williams",s7_mS7S,0)
 
 /*-----------------------
 / Simulation Definitions
