@@ -1251,8 +1251,9 @@ DRIVER(alpok,b6)        //          11/06 W Alien Poker Multiball mod
 //System 7
 DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
 DRIVER(frpwr,c7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion, rev. 38)
-DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight
-DRIVER(bk,f4)           //          11/80 W Black Knight, French speech
+DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
+DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight (L-4)
+DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
                         //S7-506:   06/81 W Black Knight Limited Edition
