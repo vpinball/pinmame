@@ -590,6 +590,7 @@ DRIVERNV(movmastr)      //Movie Masters (??/19??)
 DRIVERNV(petaco  )      //Petaco
 DRIVERNV(faeton  )      //Faeton
 DRIVERNV(petaco2 )      //Petaco 2
+DRIVERNV(olympus )      //Olympus
 DRIVERNV(america )      //America 1492
 DRIVERNV(aqualand)      //Aqualand
 DRIVERNV(lortium )      //Lortium
@@ -667,7 +668,8 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
                         // Odin (1985)
                         // Nemesis (1986)
                         // Wolfman (1987)
-DRIVERNV(odisea)    // Odisea Paris-Dakar (1987)
+DRIVERNV(wolfman)       // Wolf Man (1987)
+DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
                         // Sir Lancelot (1994)
 
 // ----------------

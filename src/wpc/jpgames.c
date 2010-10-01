@@ -136,6 +136,22 @@ JP_ROMEND
 CORE_GAMEDEFNV(petaco2,"Petaco 2",1985,"Juegos Populares",gl_mJPS,0)
 
 /*-------------------------------------------------------------------
+/ Olympus
+/-------------------------------------------------------------------*/
+INITGAME(olympus, jpDisp7, 1)
+JP_ROMSTART1(olympus,	"olympus.dat", NO_DUMP)
+JP_SNDROM8( "cs.128", CRC(39b9107a) SHA1(8a11fa0c1558d0b1d309446b8a6f97e761b6559d),
+			"c1.256", CRC(93ceefbf) SHA1(be50b3d4485d4e8291047a52ca60656b55729555),
+			"c2.256", NO_DUMP,
+			"c3.256", CRC(266eb5dd) SHA1(0eb7c098ddb7f257daf625e5209a54c306d365bf),
+			"c4.256", CRC(082a052d) SHA1(f316fbe6ff63433861a8856e297c953ce29a8901),
+			"c5.256", CRC(402a3fb2) SHA1(1c078ca519271bf2bcbe0bc10e33078861085fcf),
+			"c6.256", CRC(d113add1) SHA1(c0258226994af162ef766d5e8d27f809dac4ef7f),
+			"c7.256", CRC(13f5fcad) SHA1(e7a8b76527067f16aa62d0f22eccde5b55eba972))
+JP_ROMEND
+CORE_GAMEDEFNV(olympus,"Olympus",1986,"Juegos Populares",gl_mJPS,0)
+
+/*-------------------------------------------------------------------
 / America 1492
 /-------------------------------------------------------------------*/
 INITGAME(america, jpDisp7, 1)

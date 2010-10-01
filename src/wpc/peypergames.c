@@ -27,7 +27,16 @@ static core_tLCDLayout peyperDisp7[] = {
 // Fantastic World (1985)
 // Odin (1985) - 6 digits (according to manual)
 // Nemesis (1986) - 7 digits
-// Wolfman (1987)
+
+/*-------------------------------------------------------------------
+/ Wolf Man (1987)
+/-------------------------------------------------------------------*/
+INITGAME(wolfman, peyperDisp7, 1, 6)
+PEYPER_ROMSTART(wolfman,	"memoriaa.bin", CRC(1fec83fe) SHA1(5dc887d0fa00129ae31451c03bfe442f87dd2f54),
+						"memoriab.bin", CRC(62a1e3ec) SHA1(dc472c7c9d223820f8f1031c92e36890c1fcba7d),
+						"memoriac.bin", CRC(468f16f0) SHA1(66ce0464d82331cfc0ac1f6fbd871066e4e57262))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(wolfman,"Wolf Man",1987,"Peyper (Spain)",gl_mPEYPER,0)
 
 /*-------------------------------------------------------------------
 / Odisea Paris-Dakar (1987)
