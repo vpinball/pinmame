@@ -1287,6 +1287,21 @@ SE_ROMEND
 CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
+/ The Lord Of The Rings (Limited Edition)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_le, "lotrcpua.a02", CRC(f732aeb1) SHA1(8c28e91d37525b3e356bddf2cf1be42ea44f3629))
+DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
+DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr-u36.100",CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+SE_ROMEND
+#define input_ports_lotr_le input_ports_lotr
+#define init_lotr_le init_lotr
+CORE_CLONEDEFNV(lotr_le,lotr,"Lord Of The Rings, The (10.02 Limited Edition)",2003,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (3.20)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispBION[] = {

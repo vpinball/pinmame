@@ -904,6 +904,7 @@ DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
 DRIVERNV(lotr_fr)       //Whitestar: 11/03 Lord Of The Rings (France)
 DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
+DRIVERNV(lotr_le)       //Whitestar: 11/03 Lord Of The Rings (Limited Edition)
 DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not!
 DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
 DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
