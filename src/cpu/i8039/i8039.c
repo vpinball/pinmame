@@ -993,6 +993,14 @@ unsigned i8039_dasm(char *buffer, unsigned pc)
 #endif
 }
 
+WRITE_HANDLER(i8039_internal_w) {
+  R.RAM[offset] = data;
+}
+
+READ_HANDLER(i8039_internal_r) {
+  return R.RAM[offset];
+}
+
 /**************************************************************************
  * I8035 section
  **************************************************************************/
@@ -1042,6 +1050,14 @@ unsigned i8035_dasm(char *buffer, unsigned pc)
 	sprintf( buffer, "$%02X", cpu_readop(pc) );
 	return 1;
 #endif
+}
+
+WRITE_HANDLER(i8035_internal_w) {
+  i8039_internal_w(offset, data);
+}
+
+READ_HANDLER(i8035_internal_r) {
+  return i8039_internal_r(offset);
 }
 
 #endif
@@ -1096,6 +1112,15 @@ unsigned i8048_dasm(char *buffer, unsigned pc)
 	return 1;
 #endif
 }
+
+WRITE_HANDLER(i8048_internal_w) {
+  i8039_internal_w(offset, data);
+}
+
+READ_HANDLER(i8048_internal_r) {
+  return i8039_internal_r(offset);
+}
+
 #endif
 /**************************************************************************
  * N7751 section
@@ -1147,5 +1172,13 @@ unsigned n7751_dasm(char *buffer, unsigned pc)
 	return 1;
 #endif
 }
-#endif
 
+WRITE_HANDLER(n7751_internal_w) {
+  i8039_internal_w(offset, data);
+}
+
+READ_HANDLER(n7751_internal_r) {
+  return i8039_internal_r(offset);
+}
+
+#endif

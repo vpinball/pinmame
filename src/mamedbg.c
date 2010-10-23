@@ -3260,7 +3260,8 @@ static void edit_mem( int which )
 			DBGMEM[which].address = (DBGMEM[which].base + (DBGMEM[which].offset & ~3) + pedit[DBGMEM[which].offset].n ) & AMASK;
 			break;
 	}
-	win_set_title( win, name_memory(DBGMEM[which].address + DBGMEM[which].pgm_memory_base) );
+	if ( !DBGMEM[which].internal )
+		win_set_title( win, name_memory(DBGMEM[which].address + DBGMEM[which].pgm_memory_base) );
 
 	i = readkey();
 	k = keyboard_name(i);
@@ -3405,7 +3406,7 @@ static void edit_mem( int which )
 	if( update_window )
 	{
 		memcpy( DBGMEM[which].backup, DBGMEM[which].newval, DBGMEM[which].size );
-		dump_mem( which, 0 );
+		dump_mem( which, DBGMEM[which].internal );
 	}
 }
 
