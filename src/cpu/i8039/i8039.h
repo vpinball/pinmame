@@ -35,6 +35,7 @@ enum { I8039_PC=1, I8039_SP, I8039_PSW, I8039_A,  I8039_IRQ_STATE, I8039_TC,
 };
 
 extern int i8039_ICount;						/* T-state count */
+#define i8039_icount			i8039_ICount
 
 extern void i8039_init(void);
 extern void i8039_reset(void *param);			/* Reset processor & registers	*/
@@ -48,6 +49,8 @@ extern void i8039_set_irq_line(int irqline, int state);
 extern void i8039_set_irq_callback(int (*callback)(int irqline));
 extern const char *i8039_info(void *context, int regnum);
 extern unsigned i8039_dasm(char *buffer, unsigned pc);
+extern WRITE_HANDLER(i8039_internal_w);
+extern READ_HANDLER(i8039_internal_r);
 
 /*   This handling of special I/O ports should be better for actual MAME
  *   architecture.  (i.e., define access to ports { I8039_p1, I8039_p1, dkong_out_w })
@@ -87,6 +90,7 @@ extern unsigned i8039_dasm(char *buffer, unsigned pc);
 
 #define I8035_CLOCK_DIVIDER		I8039_CLOCK_DIVIDER
 #define i8035_ICount			i8039_ICount
+#define i8035_icount			i8039_ICount
 
 extern void i8035_init(void);
 extern void i8035_reset(void *param);
@@ -100,6 +104,8 @@ extern void i8035_set_irq_line(int irqline, int state);
 extern void i8035_set_irq_callback(int (*callback)(int irqline));
 extern const char *i8035_info(void *context, int regnum);
 extern unsigned i8035_dasm(char *buffer, unsigned pc);
+extern WRITE_HANDLER(i8035_internal_w);
+extern READ_HANDLER(i8035_internal_r);
 #endif
 
 /**************************************************************************
@@ -125,6 +131,7 @@ extern unsigned i8035_dasm(char *buffer, unsigned pc);
 
 #define I8048_CLOCK_DIVIDER		I8039_CLOCK_DIVIDER
 #define i8048_ICount			i8039_ICount
+#define i8048_icount			i8039_ICount
 
 extern void i8048_init(void);
 extern void i8048_reset(void *param);
@@ -138,6 +145,8 @@ extern void i8048_set_irq_line(int irqline, int state);
 extern void i8048_set_irq_callback(int (*callback)(int irqline));
 const char *i8048_info(void *context, int regnum);
 extern unsigned i8048_dasm(char *buffer, unsigned pc);
+extern WRITE_HANDLER(i8048_internal_w);
+extern READ_HANDLER(i8048_internal_r);
 #endif
 
 /**************************************************************************
@@ -163,6 +172,7 @@ extern unsigned i8048_dasm(char *buffer, unsigned pc);
 
 #define N7751_CLOCK_DIVIDER		I8039_CLOCK_DIVIDER
 #define n7751_ICount			i8039_ICount
+#define n7751_icount			i8039_ICount
 
 extern void n7751_init(void);
 extern void n7751_reset(void *param);
@@ -176,6 +186,8 @@ extern void n7751_set_irq_line(int irqline, int state);
 extern void n7751_set_irq_callback(int (*callback)(int irqline));
 extern const char *n7751_info(void *context, int regnum);
 extern unsigned n7751_dasm(char *buffer, unsigned pc);
+extern WRITE_HANDLER(n7751_internal_w);
+extern READ_HANDLER(n7751_internal_r);
 #endif
 
 #include "memory.h"
