@@ -994,11 +994,13 @@ unsigned i8039_dasm(char *buffer, unsigned pc)
 }
 
 WRITE_HANDLER(i8039_internal_w) {
-  R.RAM[offset] = data;
+  if (offset < 0x80) {
+    R.RAM[offset] = data;
+  }
 }
 
 READ_HANDLER(i8039_internal_r) {
-  return R.RAM[offset];
+  return offset < 0x80 ? R.RAM[offset] : 0;
 }
 
 /**************************************************************************
