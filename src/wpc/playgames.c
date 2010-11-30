@@ -66,8 +66,23 @@ core_tLCDLayout play_disp7[] = {
   {0}
 };
 
-// 03/78 Space Gambler
-// 04/78 Big Town
+/*-------------------------------------------------------------------
+/ 03/78 Space Gambler
+/-------------------------------------------------------------------*/
+INITGAME1(spcgambl, play_dispOld, 1)
+PLAYMATIC_ROMSTART88(spcgambl, "spcgamba.bin", CRC(da312699) SHA1(b1fabfe23d4e5d512623f9b0f3fa8dd38bdbba43),
+            "spcgambb.bin", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(spcgambl,"Space Gambler",1978,"Playmatic",gl_mPLAYMATIC1,0)
+
+/*-------------------------------------------------------------------
+/ 04/78 Big Town
+/-------------------------------------------------------------------*/
+INITGAME1(bigtown, play_dispOld, 1)
+PLAYMATIC_ROMSTART88(bigtown, "bigtowna.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "bigtownb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(bigtown,"Big Town",1978,"Playmatic",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
 / 09/78 Last Lap
@@ -88,7 +103,14 @@ PLAYMATIC_ROMSTART884(chance, "chance_a.bin", CRC(3cd9d5a6) SHA1(c1d9488495a6719
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(chance,"Chance",1978,"Playmatic",gl_mPLAYMATIC1A,0)
 
-// 05/79 Party
+/*-------------------------------------------------------------------
+/ 05/79 Party
+/-------------------------------------------------------------------*/
+INITGAME1(party, play_dispOld, 1)
+PLAYMATIC_ROMSTART88(party, "party_a.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "party_b.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(party,"Party",1979,"Playmatic",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
 / 11/79 Antar

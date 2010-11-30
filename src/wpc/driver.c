@@ -675,11 +675,11 @@ DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
 // ----------------
 // PLAYMATIC
 // ----------------
-                   // 03/78 Space Gambler
-                   // 04/78 Big Town
+DRIVERNV(spcgambl) // 03/78 Space Gambler
+DRIVERNV(bigtown)  // 04/78 Big Town
 DRIVERNV(lastlap)  // 09/78 Last Lap
 DRIVERNV(chance)   // 09/78 Chance
-                   // 05/79 Party
+DRIVERNV(party)    // 05/79 Party
 DRIVERNV(antar)    // 11/79 Antar
 DRIVERNV(antar2)   // 11/79 Antar (alternate set)
 DRIVERNV(evlfight) // 03/80 Evil Fight
