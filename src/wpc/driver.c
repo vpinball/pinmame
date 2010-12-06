@@ -1135,6 +1135,13 @@ DRIVER(im2,140)         //S.A.M: 04/10 Iron Man 2 - V1.4
 #endif
 
 // ---------------
+// TABART GAMES
+// ---------------
+                        //??/84 Sahara Love
+                        //??/85 Le Grand 8
+DRIVERNV(hexagone)      //04/86 L'Hexagone
+
+// ---------------
 // TAITO GAMES
 // ---------------
                         //??/?? Apache!

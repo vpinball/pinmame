@@ -1404,6 +1404,12 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
             RelativePath="src\sound\2151intf.h">
           </File>
           <File
+            RelativePath="src\sound\2203intf.c">
+          </File>
+          <File
+            RelativePath="src\sound\2203intf.h">
+          </File>
+          <File
             RelativePath="src\sound\3812intf.c">
           </File>
           <File
@@ -2774,6 +2780,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
         </File>
         <File
           RelativePath="src\wpc\stsnd.h">
+        </File>
+        <File
+          RelativePath="src\wpc\tabart.c">
         </File>
         <File
           RelativePath="src\wpc\taito.c">

@@ -198,3 +198,23 @@ INIT_S1(sys1test, sys1_disp)
 GTS1_1_ROMSTART(sys1test,"test.cpu", CRC(8b0704bb) SHA1(5f0eb8d5af867b815b6012c9d078927398efe6d8))
 GTS1_ROMEND
 CORE_CLONEDEFNV(sys1test,gts1,"System 1 Test prom",19??,"Gottlieb",gl_mGTS1C,GAME_USES_CHIMES)
+
+// other manufacturers
+
+// Sahara Love (C. Tabart, 1984)
+
+/*-------------------------------------------------------------------
+/ L'Hexagone (04/1986)
+/-------------------------------------------------------------------*/
+GTS1S_INPUT_PORTS_START(hexagone, 1) GTS1_INPUT_PORTS_END
+static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TABART}};
+static void init_hexagone(void) {
+	core_gameData = &hexagoneGameData;
+}
+GTS1_2_ROMSTART(hexagone, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345),
+                          "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_1_ROMSTART(hexagone, "435.cpu",   CRC(7749fd92) SHA1(9cd3e799842392e3939877bf295759c27f199e58))
+SOUNDREGION(0x10000, REGION_CPU2)
+ROM_LOAD("hexagone.bin",  0,  0x4000,  CRC(002b5464) SHA1(e2d971c4e85b4fb6580c2d3945c9946ea0cebc2e))
+GTS1_ROMEND
+CORE_CLONEDEFNV(hexagone,gts1,"L'Hexagone",1986,"Christian Tabart (France)",gl_mGTS1TAB,GAME_IMPERFECT_SOUND)

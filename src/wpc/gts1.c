@@ -20,9 +20,9 @@
 #include "cpu/pps4/pps4.h"
 
 #if 0
-#define TRACE(x) printf x
-#else
 #define TRACE(x) logerror x
+#else
+#define TRACE(x) 
 #endif
 
 /*----------------
@@ -101,7 +101,7 @@ static WRITE_HANDLER(lamp_w) {
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0x0f) | (data << 4);
 	else
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0xf0) | data;
-	if (snd) snd_w(1, 0);
+	snd_w(1, 0);
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -118,14 +118,15 @@ static WRITE_HANDLER(port_w) {
 	locals.accu = data & 0x0f;
 	switch (device) {
 		case 0x02: // U5 RRIO A1752 - Switch matrix
-			logerror("%03x: I/O on U5, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
-			if (ioport < 6 && !enable)
+			TRACE(("%03x: I/O on U5, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable));
+			if (ioport < 6 && !enable) {
 				locals.swStrobe = ioport + 1;
-			else if (!sos && ioport > 7 && locals.swStrobe) {
+			} else if (!sos && ioport > 7 && locals.swStrobe) {
 				locals.accu &= 0x07;
 				locals.accu |= (coreGlobals.swMatrix[locals.swStrobe] & (1 << (ioport - 8))) ? 0: 0x08;
 			} else
 				locals.swStrobe = 0;
+      sndbrd_0_ctrl_w(0, locals.swStrobe); // C. Tabart games read the switch returns for the current strobe
 			break;
 		case 0x03: // U3 GPIO 10696 - Lamps, strobe, dip switches, bits 8 & 9 of PGOL address
 			if (rw) {
@@ -149,10 +150,10 @@ static WRITE_HANDLER(port_w) {
 				if (group & 4) // inputs 9 - 12: special switches
 					locals.accu = 0x08 ^ (coreGlobals.swMatrix[7] >> 4);
 			}
-			logerror("%03x: I/O on U3: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
+			TRACE(("%03x: I/O on U3: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
 			break;
 		case 0x04: // U4 RRIO A1753 - Solenoids, NVRAM R/W & enable
-			logerror("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
+			TRACE(("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable));
 			if (sos) {
 				if (ioport < 0x0c) {
 					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
@@ -183,11 +184,11 @@ static WRITE_HANDLER(port_w) {
 					locals.accu = cpu_readmem16(0x1800 + locals.ramAddr);
 //					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr];
 			}
-			logerror("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
+			TRACE(("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
 			break;
 		case 0x0d: // U6 GPKD 10788 - Display
 			data = PPS4_get_reg(PPS4_DB); // read display address from data bus (that's how the real chip does it!)
-			logerror("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu);
+			TRACE(("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu));
 			switch (data >> 4) {
 				case 0: // switches between buffers
 					if (locals.accu & 0x01)
@@ -228,11 +229,11 @@ static WRITE_HANDLER(port_w) {
 						disp_w(41, locals.accu);
 					break;
 				default:
-					logerror("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu);
+					TRACE(("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu));
 			}
 			break;
 		default:
-			logerror("%03x: Write to unknown periphal chip %x: %02x\n", activecpu_get_pc(), device, data);
+			TRACE(("%03x: Write to unknown periphal chip %x: %02x\n", activecpu_get_pc(), device, data));
 	}
 }
 static READ_HANDLER(port_r) {
@@ -247,7 +248,7 @@ static WRITE_HANDLER(pgol_w) {
 static READ_HANDLER(pgol_r) {
 	UINT8 code = 0x0f & cpu_readmem16(0x2000 + locals.pgolAddress);
 //	UINT8 code = 0x0f & memory_region(GTS1_MEMREG_CPU)[0x2000 + locals.pgolAddress];
-	logerror("%03x: Reading PGOL prom @ %03x: %x\n", activecpu_get_pc(), 0x100 + locals.pgolAddress, code);
+	TRACE(("%03x: Reading PGOL prom @ %03x: %x\n", activecpu_get_pc(), 0x100 + locals.pgolAddress, code));
 	return code;
 }
 
@@ -347,4 +348,11 @@ MACHINE_DRIVER_START(GTS1S80)
 	MDRV_IMPORT_FROM(GTS1NS)
 	MDRV_DIPS(26)
 	MDRV_IMPORT_FROM(gts80s_s)
+MACHINE_DRIVER_END
+
+extern MACHINE_DRIVER_EXTERN(TABART1);
+MACHINE_DRIVER_START(GTS1TAB)
+	MDRV_IMPORT_FROM(GTS1NS)
+	MDRV_DIPS(26)
+	MDRV_IMPORT_FROM(TABART1)
 MACHINE_DRIVER_END
