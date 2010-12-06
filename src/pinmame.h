@@ -84,6 +84,7 @@
 #define HAS_I8035    1
 #define HAS_I8039    1
 #define HAS_I86      1
+#define HAS_I88      1
 #define HAS_I186     1
 #define HAS_I188     1
 #define HAS_4004     1
@@ -123,6 +124,8 @@
 #define HAS_M114S      1
 #define HAS_YM3812     1
 #define HAS_S14001A    1
+#define HAS_YM2203     1
+#define HAS_YM3526     1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

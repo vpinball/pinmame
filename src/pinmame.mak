@@ -69,6 +69,8 @@ DRVLIBS += $(PINOBJ)/vd.o
 DRVLIBS += $(PINOBJ)/kissproto.o
 DRVLIBS += $(PINOBJ)/icecoldbeer.o
 DRVLIBS += $(PINOBJ)/micropin.o
+DRVLIBS += $(PINOBJ)/mephisto.o
+DRVLIBS += $(PINOBJ)/tabart.o
 #
 # Games
 #
@@ -168,6 +170,7 @@ CPUS += ADSP2101@
 endif
 CPUS += Z80@
 CPUS += M6502@
+CPUS += M6510@
 CPUS += M65C02@
 CPUS += M68000@
 CPUS += M68306@
@@ -177,6 +180,7 @@ CPUS += 8085A@
 CPUS += I8035@
 CPUS += I8039@
 CPUS += I86@
+CPUS += I88@
 CPUS += I186@
 CPUS += I188@
 CPUS += 4004@
@@ -218,6 +222,8 @@ SOUNDS += TMS320AV120@
 SOUNDS += M114S@
 SOUNDS += YM3812@
 SOUNDS += S14001A@
+SOUNDS += YM2203@
+SOUNDS += YM3526@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims

@@ -1939,6 +1939,14 @@
 						RelativePath="src\sound\2151intf.h"
 						>
 					</File>
+          <File
+            RelativePath="src\sound\2203intf.c"
+            >
+          </File>
+          <File
+            RelativePath="src\sound\2203intf.h"
+            >
+          </File>
 					<File
 						RelativePath="src\sound\3812intf.c"
 						>
@@ -3684,6 +3692,10 @@
 					RelativePath="src\wpc\stsnd.h"
 					>
 				</File>
+        <File
+          RelativePath="src\wpc\tabart.c"
+          >
+        </File>
 				<File
 					RelativePath="src\wpc\taito.c"
 					>

@@ -891,6 +891,14 @@ SOURCE=.\src\sound\2151intf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\2203intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\2203intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\3812intf.c
 # End Source File
 # Begin Source File
@@ -2533,6 +2541,10 @@ SOURCE=.\src\wpc\stsnd.c
 # Begin Source File
 
 SOURCE=.\src\wpc\stsnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\tabart.c
 # End Source File
 # Begin Source File
 
