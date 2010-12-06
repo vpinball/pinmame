@@ -229,4 +229,5 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(nuova)
   SNDBRDINTF(grand)
   SNDBRDINTF(jvh)
+  SNDBRDINTF(tabart)
 #endif /* SNDBRD_RECURSIVE */
