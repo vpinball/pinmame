@@ -802,6 +802,12 @@ DRIVERNV(goldgame)      //19?? - Golden Game
 DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 
 // ---------------
+// STARGAME GAMES
+// ---------------
+DRIVERNV(mephist1)      //1986 - Mephisto (rev. 1.1)
+DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
+
+// ---------------
 // STERN GAMES
 // ---------------
 // MPU-100 - Chime Sound
