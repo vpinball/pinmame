@@ -1345,6 +1345,10 @@
 							</FileConfiguration>
 						</File>
 						<File
+							RelativePath="src\cpu\i86\i88intf.h"
+							>
+						</File>
+						<File
 							RelativePath="src\cpu\i86\instr186.c"
 							>
 							<FileConfiguration
