@@ -546,6 +546,10 @@ SOURCE=.\src\cpu\i86\i86time.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\i86\i88intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\i86\instr186.c
 # PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
