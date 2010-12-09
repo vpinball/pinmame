@@ -2646,6 +2646,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
         <File
           RelativePath="src\wpc\mech.h">
         </File>
+				<File
+					RelativePath="src\wpc\mephisto.c">
+				</File>
         <File
           RelativePath="src\wpc\micropin.c">
         </File>
