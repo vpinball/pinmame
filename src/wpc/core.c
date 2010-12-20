@@ -658,6 +658,18 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
 
+#define DUMPFRAMES 0 //disabled by default
+#define DETECTSAMEFRAMES 1
+#if DUMPFRAMES
+  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
+  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
+  static UINT8 *currbuffer = buffer1;  
+  static UINT8 *oldbuffer = NULL;
+
+  UINT8 dumpframe = 1;
+  FILE *f;
+#endif
+
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
   memset(&dotCol[0][0], 0, sizeof(dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
@@ -666,6 +678,11 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
+
+#if DUMPFRAMES
+		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
+#endif
+
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
@@ -684,6 +701,41 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   }
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
+
+#if DUMPFRAMES
+#if DETECTSAMEFRAMES
+  if(oldbuffer != NULL) {
+	dumpframe = 0;
+	for(jj = 0; jj < layout->start; jj++)
+		for(ii = 0; ii < layout->length; ii++)
+			if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
+				dumpframe = 1;
+				break;
+			}
+  }
+#endif
+
+  if(dumpframe) {
+	f = fopen("dump.txt","a");
+	if(f) {
+		for(jj = 0; jj < layout->start; jj++) {
+			for(ii = 0; ii < layout->length; ii++)
+				fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+			fprintf(f,"\n");
+		}
+		fprintf(f,"\n");
+		fclose(f);
+
+		if(currbuffer == buffer1) {
+			currbuffer = buffer2;
+			oldbuffer = buffer1;
+		} else {
+			currbuffer = buffer1;
+			oldbuffer = buffer2;
+		}
+	}
+  }
+#endif
 }
 #ifdef VPINMAME
 #  define inRect(r,l,t,w,h) FALSE
