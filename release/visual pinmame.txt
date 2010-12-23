@@ -1,7 +1,7 @@
 **************************************************************************************
                     Visual PinMAME
-                      Version 2.2
-                  (January 11, 2010)
+                      Version 2.3
+                 (December 24, 2010)
                 http://www.pinmame.com
 **************************************************************************************
 
@@ -77,3 +77,5 @@ Brian Smith        (destruk at comcast.net)
 Thomas Behrens     (TomB1709 at gmail.com)
 Oliver Kaegi       (okaegi at freesurf.ch)
 Matthias Buecher   (maddes.b at arcor.de)
+David Redriguez    (netsplits at yahoo.es)
+Randall Perlow     (rperlow at yahoo.com)
