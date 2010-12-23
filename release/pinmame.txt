@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 2.2
-                          (January 11, 2010)
+                             Version 2.3
+                         (December 24, 2010)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -23,7 +23,7 @@ What is it?
   Gottlieb System 1, 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
   Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM, Jac van Ham,
-  Videodens.
+  Videodens, Micropin, Christian Tabart.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -96,6 +96,8 @@ Games supported
   Jac van Ham: Escape (1987)
   Videodens: Break (1986)
   Astro: Black Sheep Squadron (1978)
+  Micropin: Pentacup (1979)
+  Christian Tabart: L'Hexagone (1986)
   Prototype games:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),
@@ -357,6 +359,9 @@ Brian Smith        (destruk at comcast.net)
 Thomas Behrens     (TomB1709 at gmail.com)
 Oliver Kaegi       (okaegi at freesurf.ch)
 Matthias Buecher   (maddes.b at arcor.de)
+David Redriguez    (netsplits at yahoo.es)
+Randall Perlow     (rperlow at yahoo.com)
+
 
 PinMAME Contributors
 --------------------
@@ -379,6 +384,10 @@ Daniel Dietrich    (3d at data-east.de)
 Kelley             (pinballjail at charter.net)
 Hans Balk          (www.flipperwinkel.nl)
 TecnoPinball       (www.tecnopinball.org)
+Peter Hall         (peter.hall at tele2.ch)
+Basilio Garcia     (basi_garcia at hergar.com)
+Paulo Branco       (paulovtec at gmail.com)
+
 
 Note from the PinMAME Dev. team
 -------------------------------

@@ -16,7 +16,7 @@ Bugs in Pinmame that we are aware of:
      The printout will probably not work with other settings.
 
  #4) The name and year for each game were taken from the Internet Pinball Database
-     (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
+     (http://www.ipdb.org), and may not be 100% accurate!
 
  #5) Occasional pops/clicks on Capcom sound
 
