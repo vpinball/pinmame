@@ -27,7 +27,7 @@ Changes:
 
 *** CORE/CPU ***
 Added support for Micropin Pentacup [Randall Perlow]
-Added dumpframes support to export DMD data to text file [Brian Smith]
+Added dumpframes support to export DMD data to text file [Thanks to Toxie and Highrise]
  (disabled by default, change DUMPFRAMES to 1 in core.c and rebuild to enable)
 Added preliminary support for Stargame Mephisto (not working at all right now)
 Added Christian Tabart sound support [Gerrit Volkenborn]
