@@ -1,5 +1,60 @@
 Version 2.3 (December 24, 2010) - "Merry Christmas"
 ------------------------------------------------------------------------------
+And here we are again at the end of another year for PinMAME; time flies!
+
+And it was a good year for pinball and pinball emulation in particular:
+Maddes moved the code repository from CVS to SVN on SourceForge,
+and Randall Perlow joined the crew to work on the Micropin emulation,
+which was perfect because he owns the real thing as well! :)
+
+Also, there are finally some good reads for Astro's "Black Sheep Squadron"
+(thanks to Dave from Alltek Systems), something I didn't believe I'd ever
+see in my lifetime. The game is not that great actually, but we were hunting
+for a good set of ROMs for like 10 years... ;)
+
+Also: Brian got the speech ROM for "Caribbean Cruise" from Steve Young,
+the missing DMD ROM for "Aaron Spelling" from Mike Pacak,
+and built in support for Ed Cheung's WPC "ghosting" patch ROMs, which
+should make for a clearer look in our emulated DMD display too.
+
+Last but not least we found a sound ROM revision for Williams Space Shuttle
+that corrects a bug in the previously known U49 dump which was provided by
+WMS themselves! We're pretty sure that this ROM was patched by WMS themselves,
+and probably used for most production games, only it apparently never made it
+into WMS' official ROM database!
+
+Changes:
+
+*** CORE/CPU ***
+Added support for Micropin Pentacup [Randall Perlow]
+Added dumpframes support to export DMD data to text file [Brian Smith]
+ (disabled by default, change DUMPFRAMES to 1 in core.c and rebuild to enable)
+Added preliminary support for Stargame Mephisto (not working at all right now)
+Added Christian Tabart sound support [Gerrit Volkenborn]
+Added debugger option to access the internal RAM of I8039 CPU family [Gerrit Volkenborn]
+
+*** ROM SUPPORT ***
+Loads of new dumps here and there (see above for examples)
+Williams Funhouse 9.05H and some other WMS clones
+Bell: Super Bowl (based on Bally's X's & O's)
+Taito: Ice Cold Beer (a non-pinball skill game)
+Christian Tabart: L'Hexagone, using Gottlieb "Genie" ROM but adding a modern sound board
+ (thanks to Michel Achille, designer of that very board!)
+Jac Van Ham: Movie Masters (sound ROM not dumped yet)
+Juegos Populares: Olympus (sound ROMs only)
+Micropin: Pentacup
+Peyper: Wolf Man
+Support for more Playmatic games (thanks to Basilio Garcia and Paulo Branco)
+- Big Town / Party (those use the same ROMs as Last Lap)
+- Antar (alternate set)
+- Attack
+- Black Fever
+- Cerberus
+- Rock 2500
+- Spain '82
+- Star Fire
+- Trailer
+- UFO-X
 
 
 Version 2.2 (January 11, 2010) - "As time goes by"
@@ -21,13 +76,9 @@ Reversed EOS switches for F14 Tomcat
 Corrections for shallow Gottlieb driver prototypes
 Kiss prototype moved to own source file kissp.c
 Re-added comments to byvidpin.c
-Gottlieb 9-segment digits replaced with legible alphanumerics (in DEBUG
-mode
-only)
-Added four more key columns (triggered by Q-Z through R-V combinations,
-DEBUG only)
-Added support to compile PinMAME with GCC 4.0, hopefully this will create
-  interest for someone to build a Linux version
+Gottlieb 9-segment digits replaced with legible alphanumerics (in DEBUG mode only)
+Added four more key columns (triggered by Q-Z through R-V combinations, DEBUG only)
+Added support to compile PinMAME with GCC 4.0, hopefully this will create interest for someone to build a Linux version
 Replaced void* by genf* for GCC 4.0
 
 *** ROM SUPPORT ***
@@ -296,7 +347,7 @@ systems and returns Buck Rogers to Earth 500 years later.
 We had begun to think it would take 500 years to emulate Gottlieb System 1...
 but thanks to an anonymous MAACA member, we finally got good reads of the bios
 chips and they are now emulated.
-Get our your cards and backgammon boards, lucky Buck is back!
+Get out your cards and backgammon boards, lucky Buck is back!
 
 1.57 - Changes Twiki says you don't want to know
 Added Stern Harley Davidson (Harley 3.0)
