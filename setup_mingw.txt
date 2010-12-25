@@ -8,11 +8,12 @@ The file "src\windows\setup.txt" is the original text delivered by MAME and is
 out of date. Please ignore it.
 
 PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
-It has been maintained to compile with more recent MinGW packages too, and has
-been tested to work well with GCC 4.4.
+Unfortunately the GCC 3.2 update is nomore available at the official MinGW
+project homepage, so it is hosted on the PinMAME project homepage.
+It has been maintained to compile with more recent MinGW packages too, but
+although it compiles well with GCC 4.4/4.5 there a missing sounds on some ROMs.
 Note that other GCC versions are not tested and may throw some warnings or
-errors which stop the build process, hence it is recommended to use either 3.2
-or 4.4.
+errors which stop the build process, hence it is recommended to use 3.2 for now.
 
 This guide shows how to setup MinGW in version 2.0 and a setup with more recent
 MinGW packages, so PinMAME and PinMAME32 can be compiled with it.
@@ -25,7 +26,7 @@ The MAME development homepage is available at http://www.mamedev.org/
 The MinGW homepage is available at http://www.mingw.org/
 The Allegro homepage is available at http://alleg.sourceforge.net/
 The ZLib homepage is available at http://www.zlib.net/
-The NASM homepage is available at http://nasm.sourceforge.net/
+The NASM homepage is available at http://www.nasm.us/
 The GCC homepage is available at http://gcc.gnu.org/
 The GDB homepage is available at http://www.gnu.org/software/gdb/
 The Make homepage is available at http://www.gnu.org/software/make/
@@ -48,8 +49,6 @@ Step 1: Downloads
      Get it from http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GNU-Binutils/
 
      Recommended updates: Download latest versions of GCC 3.2 and GDB 5 for MinGW.
-     Unfortunately the GCC 3.2 update is nomore available at the official MinGW
-     project homepage.
      * gcc-3.2.3-20030504-1
      * gdb-5.2.1-1.exe
      Get them from http://sourceforge.net/projects/pinmame/files/mingw/
@@ -65,23 +64,29 @@ Step 1: Downloads
      * mingwrt-3.18-mingw32-dev        (part of the Base System)
      * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
      * w32api-3.14-mingw32-dev         (part of the Base System)
+     * gcc-3.2.3-20030504-1
+     * gdb-7.1-2-mingw32-bin           (part of the Base System)
+       with expat: libexpat-2.0.1-1-mingw32-dll-1
+     * make-3.81-20090914-mingw32-bin
+
+     Also possible is GCC 4.5.0 but with missing sounds on some ROMs:
      * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
        with libgmp: libgmp-5.0.1-1-mingw32-dll-10
                mpc: libmpc-0.8.1-1-mingw32-dll-2
               mpfr: libmpfr-2.4.1-1-mingw32-dll-1
-     * gdb-7.1-2-mingw32-bin           (part of the Base System)
-       with expat: libexpat-2.0.1-1-mingw32-dll-1
-     * make-3.81-20090914-mingw32-bin
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll        (part of the Base System)
      * mingwrt-3.16-mingw32-dev        (part of the Base System)
      * binutils-2.19.1-mingw32-bin     (part of the Base System)
      * w32api-3.13-mingw32-dev         (part of the Base System)
-     * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
+     * gcc-3.2.3-20030504-1
      * gdb-6.3-1.exe                   (part of the Base System)
        (also gdb-7.0-2-mingw32-bin was tested)
      * make-3.81-20090914-mingw32-bin
+
+     Also possible is GCC 4.4.0 but with missing sounds on some ROMs:
+     * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14              (part of the Base System)
@@ -89,8 +94,11 @@ Step 1: Downloads
      * w32api-3.11                     (part of the Base System)
      * mingw32-make-3.81-20080326-2
      * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
+     * gcc-3.2.3-20030504-1
+     * gdb-5.2.1-1.exe
 
-     Get them from http://sourceforge.net/downloads/mingw/MinGW/
+     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
+               and http://sourceforge.net/downloads/mingw/MinGW/ (BaseSystem and make)
 
 - Download the ZLib library (libz) to the downloads directory.
   * libz-1.2.3-1-mingw32-dev
@@ -113,7 +121,7 @@ Step 1: Downloads
 
 - Download the assembler compiler NASM 2.0 for Win32 to the downloads directory.
   * nasm-2.02-win32 (later versions should work too)
-  Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/
+  Get it from http://www.nasm.us/pub/nasm/releasebuilds/
 
 
 -------------
@@ -270,3 +278,23 @@ Check out the following info to get started with debugging via GDB:
 * Tutorial: http://betterexplained.com/articles/debugging-with-gdb/
 * Tutorial: http://pixwiki.bafsoft.com/mags/9/articles/gdb/article.html
 * GCC manual: http://gcc.gnu.org/onlinedocs/gcc-4.3.3/gcc/Debugging-Options.html
+
+
+----------
+Build Bugs
+----------
+1) Builds with GCC 4.4/4.5 have missing sounds on some ROMs.
+Known to be affected are WPC-ROMs with pre-DCS sound, that use the CPU M6809 for sound:
+* The Machine: Bride of Pinbot (BOP_L7)
+* Funhouse
+* Terminator 2
+* The Addams Family
+* Creature from the Black Lagoon
+* and more...
+
+According to reports when those ROMs are loaded, then after the self-test sound
+there's a slight popping sound - like the sound is turned off. On working ROMs
+this sound is only heard when PinMAME quits.
+
+This could be a problem of GCC 4.x in general or just the MinGW port of it.
+Disabling optimization does not help.
