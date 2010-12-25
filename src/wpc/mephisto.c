@@ -147,8 +147,10 @@ static INTERRUPT_GEN(mephisto_irq) {
   cpu_set_irq_line(0, 0, (state = !state));
 }
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static WRITE_HANDLER(ay8910_ctrl_w)   { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_data_w)   { AY8910Write(0,1,data); }
+#endif
 static READ_HANDLER(ay8910_porta_r)	  { return coreGlobals.swMatrix[0]; }
 static READ_HANDLER(ay8910_portb_r)   { return coreGlobals.swMatrix[1]; }
 static WRITE_HANDLER(ay8910_porta_w)	{ coreGlobals.tmpLampMatrix[0] = data; }
