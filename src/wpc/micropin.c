@@ -350,9 +350,11 @@ CORE_GAMEDEFNV(pentacup,"Pentacup (rev. 1)",1978,"Micropin",pentacup,0)
 
 /* 1980 Version */
 
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 4.)
 static INTERRUPT_GEN(mp2_irq) {
   cpu_set_irq_line(0, I8085_INTR_LINE, PULSE_LINE);
 }
+#endif
 
 static SWITCH_UPDATE(MICROPIN2) {
   if (inports) {
