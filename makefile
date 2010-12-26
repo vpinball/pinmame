@@ -101,6 +101,10 @@ endif
 # uncomment next line to include the MAME ROM debugger
 # DEBUG = 1
 
+# uncomment next line to include P-ROC support
+# see http://www.pinballcontrollers.com/
+# PROC = 1
+
 
 
 #-------------------------------------------------
@@ -178,7 +182,8 @@ endif
 # compiler, linker and utilities
 AR = @ar
 CC = @gcc
-LD = @gcc
+CPP = @g++
+LD = @g++
 ASM = @nasm
 ASMFLAGS = -f coff
 MD = -mkdir$(EXE)
@@ -268,27 +273,34 @@ endif
 #-------------------------------------------------
 
 CFLAGS =
+CPPFLAGS =
 
 CFLAGS += -std=gnu99
+CPPFLAGS += -std=gnu99
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
 ifdef SYMBOLS
 CFLAGS += -g
+CPPFLAGS += -g
 endif
 CFLAGS += -fno-omit-frame-pointer
+CPPFLAGS += -fno-omit-frame-pointer
 
 # add -v if we need verbose build information
 ifdef VERBOSE
 CFLAGS += -v
+CPPFLAGS += -v
 endif
 
 # add the optimization flag
 CFLAGS += -O$(OPTIMIZE)
+CPPFLAGS += -O$(OPTIMIZE)
 
 # if we are optimizing, include optimization options
 ifneq ($(OPTIMIZE),0)
 CFLAGS += $(ARCHOPTS)
+CPPFLAGS += $(ARCHOPTS)
 endif
 
 # add MAME 0.76 basic set of warnings
@@ -310,7 +322,24 @@ CFLAGS += \
 #	-Wmissing-prototypes \
 #	-Wmissing-declarations
 
+CPPFLAGS += \
+	-fstrict-aliasing \
+	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wpointer-arith -Wcast-align -Waggregate-return \
+	-Wshadow -Wundef \
+	-Wformat-security -Wwrite-strings \
+	-Wdisabled-optimization \
+#	-Wredundant-decls
+#	-Wfloat-equal
+#	-Wunreachable-code -Wpadded
+#	-W had to remove because of the "missing initializer" warning
+#	-Wlarger-than-262144 \
+#	-Wcast-qual \
+#	-Wwrite-strings \
+#	-Wconversion
+
 CFLAGSPEDANTIC = $(CFLAGS) -pedantic
+CPPFLAGSPEDANTIC = $(CFLAGS) -pedantic
 
 
 #-------------------------------------------------
@@ -318,6 +347,13 @@ CFLAGSPEDANTIC = $(CFLAGS) -pedantic
 #-------------------------------------------------
 
 CFLAGS += \
+	-Isrc \
+	-Isrc/includes \
+	-Isrc/$(MAMEOS) \
+	-I$(OBJ)/cpu/m68000 \
+	-Isrc/cpu/m68000
+
+CPPFLAGS += \
 	-Isrc \
 	-Isrc/includes \
 	-Isrc/$(MAMEOS) \
@@ -349,7 +385,7 @@ endif
 
 # [PinMAME] avoid dynamic dependencies on Windows, so link statically
 ifeq ($(MAMEOS),windows)
-LDFLAGS += -static
+LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
 
@@ -404,6 +440,7 @@ include src/core.mak
 include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
+include src/p-roc/p-roc.mak
 
 # if the MAME ROM debugger is not included, then remove objects for it
 ifndef DEBUG
@@ -422,11 +459,11 @@ CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS) $(DBGDEFS)
 extra:	$(TOOLS) $(TEXTS)
 
 # primary target
-$(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
+$(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS) $(PROCOBJS)
 # always recompile the version string
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
-	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) -o $@ $(MAPFLAGS)
+	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) $(PROCOBJS) -o $@ $(MAPFLAGS)
 # [PinMAME] extract debug information into separate file, then strip executable and add a debug link to it
 #           see http://sourceware.org/gdb/current/onlinedocs/gdb_19.html#SEC170
 #               http://stackoverflow.com/questions/866721/
