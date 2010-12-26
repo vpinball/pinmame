@@ -13,7 +13,7 @@ The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
   TechNet Security Updates are available at http://www.microsoft.com/technet/security/current.aspx
 The Visual Studio documentation is available at http://msdn.microsoft.com/library/aa187916.aspx
   VS6 documentation is only available in english languages (as of 2008-07)
-The NASM homepage is available at http://nasm.sourceforge.net/
+The NASM homepage is available at http://www.nasm.us/
 The ZLib homepage is available at http://www.zlib.net/
 Additional DirectX information is available at http://www.toymaker.info/Games/html/directx_9_0c.html
 
@@ -26,6 +26,9 @@ To use a Visual C++ version for compiling the following is necessary:
 - Compatible Windows Platform SDK
 - Compatible DirectX SDK (with DirectInput 7)
 - Optionally a compatible MSDN Library
+  or a free MSDN Lib
+  MSDN Library für Visual Studio 2008 SP1 (April 2009)
+  http://www.microsoft.com/downloads/details.aspx?FamilyID=7bbe5eda-5062-4ebb-83c7-d3c5ff92a373
 
 Unfortunately Microsoft removed several files for Visual Studio 6.0 in 2009.
 
@@ -34,7 +37,7 @@ Additionally the following is necessary:
   a) Download the assembler compiler NASM 2.0 for Win32 to a download directory.
      Binary package:
      * nasm-2.02-win32 (later versions should work too)
-     Get it from http://sourceforge.net/projects/nasm/files/Win32%20binaries/
+     Get it from http://www.nasm.us/pub/nasm/releasebuilds/
   b) Extract NASM into a separate directory, for example c:\nasm
      Note: If an older NASM Win32 package is used (<0.99.4), then rename the
            executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
@@ -65,12 +68,14 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   Visual C++ and Visual Basic.
   a) Download SP5, the Processor Pack and SP6
      Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
-     6.0 SP5: (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
+     6.0 SP5: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718363.aspx
+              (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
               (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
               http://ftp.maddes.net/vs6/
      6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
              http://www.infinitefactors.org/jonk/pctools.html
-     6.0 SP6: http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
+     6.0 SP6: http://msdn.microsoft.com/en-us/vstudio/aa718364.aspx
+              http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
   b) Install SP5, then the Processor Pack and at last SP6
      The Processor Pack only installs on SP5, so it is recommended to apply SP5
      first, then the Processor Pack and finally SP6:
@@ -128,7 +133,7 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 - Windows [Platform] SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
   (folders: bin, include, include\gl, lib)
   http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
-  http://www.microsoft.com/downloads/results.aspx?freetext=Windows+Platform+SDK&sortCriteria=date
+  http://www.microsoft.com/downloads/results.aspx?freetext=Windows+SDK&sortCriteria=date
 - Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
   source code, is August 2007.
   (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
@@ -164,11 +169,33 @@ Additional notes on Express Editions:
   in the Express Edition.
   Btw this "trick" failed with the Express Edition of VisualC++ 2005.
   http://msdn.microsoft.com/evalcenter/
+  http://technet.microsoft.com/evalcenter/
   http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
+  Trial 2008: http://www.microsoft.com/downloads/details.aspx?FamilyID=83c3a1ec-ed72-4a79-8961-25635db0192b
 
 Known Issues:
 - Error when compiling PinMAME32 debug builds with VC++ 2005 or 2008
   "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
+
+
+---------------
+Visual C++ 2010 (10.0, _MSC_VER = 1600)
+---------------
+WIP
+
+Difference between MSDN release and trial ISOs is only the product key in "Setup\setup.sdb", and somtimes depending on the language the DVD name.
+So the trial ISO has the full retail content and can be unlimited with a key.
+(EN/DE) YCFHQ9DWCYDKV88T2TMHG7BHP <-> Q49M2C79JFQP93QWX9GJ6TKKD
+(EN)    dvd name "X16-81637VS2010ProMSDN" <-> "X16-42555VS2010ProTrial"
+
+http://blogs.msdn.com/b/vcblog/archive/2009/05/20/using-the-windows-7-rc-sdk-in-visual-c-2010-beta-1.aspx
+http://blogs.msdn.com/b/chuckw/archive/2010/06/15/windows-sdk-7-1.aspx
+
+Trial 2010: http://www.microsoft.com/downloads/details.aspx?FamilyID=5414e4c0-c1f8-473e-8e9d-a1a7be786141
+
+2010-05-19 / Windows SDK for Windows 7 and .NET Framework 4: http://www.microsoft.com/downloads/details.aspx?FamilyID=35aeda01-421d-4ba5-b44b-543dc8c33a20
+
+2009-08-14 / Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1: http://www.microsoft.com/downloads/details.aspx?familyid=71DEB800-C591-4F97-A900-BEA146E4FAE1
 
 
 -----------
