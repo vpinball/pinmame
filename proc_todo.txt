@@ -1,4 +1,11 @@
-* P-ROC not PROC
+* makefile & src/p-roc/p-roc.mak:
+  - Either P-ROC provides a MinGW package or all external pre-compiled stuff
+    goes to ./p-roc (subfolder gcc for library)
+  - CPPFLAGS += -std=gnu99?
+  - Correct LDFLAGS and LIBS definition in p-roc.mak?
+  - Find all CFLAGS changes and see if these should be added to CPPFLAGS too.
+
+* "P-ROC" not "PROC"
 * "-proc" switch to generally enable P-ROC support
 * YAML file support ./p-roc folder (configurable via ini file)
 * #ifdef P-ROC_SUPPORT correctly
@@ -6,3 +13,7 @@
 * move all of the P-ROC specific functions to p-roc/*.
   So it should be possible to remove the PRHandle from coreGlobals.
   Then we could get rid of library's pinproc.h in core.h.
+
+  FYI - Looks like it should be safe to removed references to coreGlobals.proc.
+  coreGlobals.p_rocEn should be used instead (and is used in most places).  Then
+  pinproc.h can be removed from core.h.
