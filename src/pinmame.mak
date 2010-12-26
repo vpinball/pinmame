@@ -242,6 +242,8 @@ $(OBJ)/allgames.a: $(PINGAMES)
 # Preprocessor Definitions
 #
 
+# ToDo: Should go to src/windows/windows.mak, shouldn't it?
+ifeq ($(MAMEOS),windows)
 DEFS += -DDIRECTSOUND_VERSION=0x0300 \
         -DDIRECTINPUT_VERSION=0x0500 \
         -DDIRECTDRAW_VERSION=0x0300 \
@@ -250,6 +252,7 @@ DEFS += -DDIRECTSOUND_VERSION=0x0300 \
         -D_WIN32_WINNT=0x0400 \
         -DWIN32 \
         -UWINNT
+endif
 
 # generated text files
 TEXTS += gamelist.txt
