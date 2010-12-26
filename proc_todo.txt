@@ -1,0 +1,8 @@
+* P-ROC not PROC
+* "-proc" switch to generally enable P-ROC support
+* YAML file support ./p-roc folder (configurable via ini file)
+* #ifdef P-ROC_SUPPORT correctly
+* changed #define's go to a variable (so they can be set differently when "-proc" switch is set)
+* move all of the P-ROC specific functions to p-roc/*.
+  So it should be possible to remove the PRHandle from coreGlobals.
+  Then we could get rid of library's pinproc.h in core.h.
