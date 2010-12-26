@@ -30,8 +30,9 @@ Important steps to take before a release:
 
 #4 Tag repository
 - Tag the new version
+  svn copy https://pinmame.svn.sourceforge.net/svnroot/pinmame/trunk https://pinmame.svn.sourceforge.net/svnroot/pinmame/tags/release_x_y -m "Tag release X.Y"
 
-#4 Create zip packages
+#5 Create zip packages
 - Pack everything together nicely, using max. compression
 - Make sure all default folders are included in the VPM zip
   (these are: artwork, cfg, hi, ini, inp, memcard, nvram, roms, samples, snap, sta, wave)
@@ -40,7 +41,7 @@ Important steps to take before a release:
 If anything of the above fails, forget about a release and correct the errors first!
 If it worked out ok, however, do a release!
 
-#5 Release
+#6 Release
 - Upload the zips to pinmame.com and sourceforge.net, update the news & download pages.
 - Release it to VPForums' upload page, and tell all the forum people what has happened!
 - Shut down your computer! Go and have a drink. You deserve one now!
