@@ -26,7 +26,7 @@ $(OBJ)/windows/asmtile.o: src/windows/asmtile.asm
 # add our prefix files to the mix
 CFLAGS += -mwindows -include src/$(MAMEOS)/winprefix.h
 
-# add the windows libaries
+# add the windows libraries
 LIBS += -luser32 -lgdi32 -lddraw -ldsound -ldinput -ldxguid -lwinmm
 
 # due to quirks of using /bin/sh, we need to explicitly specify the current path
