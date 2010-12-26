@@ -185,8 +185,6 @@ WIP
 
 Difference between MSDN release and trial ISOs is only the product key in "Setup\setup.sdb", and somtimes depending on the language the DVD name.
 So the trial ISO has the full retail content and can be unlimited with a key.
-(EN/DE) YCFHQ9DWCYDKV88T2TMHG7BHP <-> Q49M2C79JFQP93QWX9GJ6TKKD
-(EN)    dvd name "X16-81637VS2010ProMSDN" <-> "X16-42555VS2010ProTrial"
 
 http://blogs.msdn.com/b/vcblog/archive/2009/05/20/using-the-windows-7-rc-sdk-in-visual-c-2010-beta-1.aspx
 http://blogs.msdn.com/b/chuckw/archive/2010/06/15/windows-sdk-7-1.aspx
