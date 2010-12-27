@@ -49,19 +49,80 @@
 * compilation of libpinproc:
   - General
     * http://www.pinballcontrollers.com/wiki/Windows_build_instructions
-  - libpinproc source
-    * downloaded preble-libpinproc-3ffb3b6.tar.gz from dev branch (=3ffb3b6f5379bdde5ad35ce547461fb145df8b34)
-    * extracted source to D:\Coding\libpinproc
-    * copied inlcude/pinproc.h to [PinMAME]/
+  - CMake
+    * downloaded cmake-2.8.3-win32-x86.zip
+    * extracted to D:\Programme\Coding\cmake\
+    * added D:\Programme\Coding\cmake\bin\ to PATH
+  - libpinproc source preparation
+    * downloaded preble-libpinproc-3ffb3b6.tar.gz from dev branch (=3ffb3b6f5379bdde5ad35ce547461fb145df8b34; December 05, 2010)
+    * extracted source to D:\Coding\libpinproc\
+    * set LIBPINPROC=<libpinproc>
+      Example: set LIBPINPROC=D:\Coding\libpinproc\
+    * set PINMAME=<pinmame>
+      Example: set PINMAME=D:\Coding\PinMAME\branches\proc\
   - FTDI's ftd2xx.lib
-    * downloaded CDM20808.zip from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
-    * extracted static/i386/ftd2xx.lib and /ftd2xx.h
+    * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
+    * extracted i386/ftd2xx.lib and /ftd2xx.h to %LIBPINPROC%/FTDI/lib and %LIBPINPROC%/FTDI/include
+      (does not work with static/i386/ftd2xx.lib)
+  - YAML-CPP
+    * downloaded "yaml-cpp-0.2.5.tar.gz"
+    * extracted to D:\Coding\yaml-cpp-0.2.5\
+    * cd /d D:\Coding\yaml-cpp-0.2.5\
+    * rmdir /s bin
+    * mkdir bin
+    * cd bin
+    * cmake -G "MinGW Makefiles" ..
+    * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
+    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%LIBPINPROC%\YAML_CPP -P cmake_install.cmake
+      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%PINMAME%\YAML_CPP -P cmake_install.cmake
+      - or -
+      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
+      (Note: install dir can not be changed with mingw32-make install )
+      copied lib/libyaml-cpp.dll.a, bin/libyaml-cpp.dll and include/yaml-cpp/*.h
+  - libpinproc
+    * cd /d %LIBPINPROC%
+    * rmdir /s bin
+    * mkdir bin
+    * cd bin
+    * (make sure that %LIBPINPROC% is set)
+      set EXTRA_INC=%LIBPINPROC%\FTDI\include;%LIBPINPROC%\YAML_CPP\include
+      set EXTRA_LINK=%LIBPINPROC%\FTDI\lib;%LIBPINPROC%\YAML_CPP\lib
+      - or -
+      set EXTRA_INC=%LIBPINPROC%\FTDI\include;%MINGW_PATH%\include
+      set EXTRA_LINK=%LIBPINPROC%\FTDI\lib;%MINGW_PATH%\lib
+      (no quotes(!) and separate with semicolon)
+    * cmake -G "MinGW Makefiles" ..
+    * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
+    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%PINMAME%\p-roc -P cmake_install.cmake
+      - or -
+      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
+  - PinMAME integration (as long as libpinproc install function not available)
+    * copy %LIBPINPROC%\include\pinproc.h %PINMAME%\p-roc\include\p-roc\
+    * copy %LIBPINPROC%\bin\libpinproc.a %PINMAME%\p-roc\lib\
+
+Wish list:
+- MinGW makefile generation
+  * cmake -DEXTRA_INC="%LIBPINPROC%\FTDI\include;%LIBPINPROC%\YAML_CPP\include" -DEXTRA_LINK="%LIBPINPROC%\FTDI\lib;%LIBPINPROC%\YAML_CPP\lib" -G "MinGW Makefiles" ..
+    No env var messing.
+- Wiki page update
+  At top of the wiki page I would state, that if the user doesn't want to change anything, that he has to create C:\usr\local\[bin,lib] and use them as indicated on that page.
+  Otherwise he has to handle extra include and lib directories.
+  EXTRA_INC and EXTRA_LIB can not contain directories in quotes. And multiple dirs have to be separated by semicolon.
+  set EXTRA_INC="%LIBPINPROC%\FTDI\include" will result in "../"D:/Coding/libpinproc//FTDI/include""
+  set EXTRA_LINK="%LIBPINPROC%\FTDI\lib" will result in generation error "Policy CMP0015 is not set" (cmake 2.8.3
+  Also these settings take only effect on Makefile generation, not when building.
+  The makefiles have to be re-generated when you switch MinGW versions.
+- CMake enhancements:
+  project (LIBPINPROC)
+  include_directories(${LIBPINPROC_SOURCE_DIR}/include /usr/local/include $ENV{EXTRA_INC})
+    Allows to use #include <pinproc.h> (not .../.../......)
+    Maybe other Makefiles for Unix have to be changed too
 
 * compilation issues:
   * src/wpc/mech.c (workaround remove -Werrror from CFLAGS for now)
 In file included from src/wpc/core.h:8,
                  from src/wpc/mech.c:3:
-p-roc/includes/pinproc.h:88: warning: function declaration isn't a prototype
+p-roc/include/p-roc/pinproc.h:88: warning: function declaration isn't a prototype
 
   * src/wpc/core.c (workaround remove -Werrror from CFLAGS for now)
 In file included from src/wpc/core.c:11:
@@ -70,29 +131,14 @@ src/p-roc/p-roc.h:48: warning: function declaration isn't a prototype
 src/p-roc/p-roc.h:49: warning: function declaration isn't a prototype
 src/p-roc/p-roc.h:50: warning: function declaration isn't a prototype
 
- * src/p-roc/p-roc.cpp... (real ERROR with g++ 3.2.3!!!)
-In file included from src/wpc/core.h:8,
-                 from src/p-roc/p-roc.cpp:5:
-p-roc/includes/pinproc.h:103: warning: comma at end of enumerator list
-src/p-roc/p-roc.cpp:8:19: fstream: No such file or directory
-src/p-roc/p-roc.cpp:9:18: vector: No such file or directory
-src/p-roc/p-roc.cpp:10:27: yaml-cpp/yaml.h: No such file or directory
-src/p-roc/p-roc.cpp:20: syntax error before `:' token
-src/p-roc/p-roc.cpp: In function `PRMachineType procLoadMachineYAML(char*)':
-src/p-roc/p-roc.cpp:33: use of namespace `std' as expression
-src/p-roc/p-roc.cpp:33: parse error before `:' token
-src/p-roc/p-roc.cpp:34: `fin' undeclared (first use this function)
-src/p-roc/p-roc.cpp:34: (Each undeclared identifier is reported only once for
-   each function it appears in.)
-src/p-roc/p-roc.cpp:39: parse error before `:' token
-src/p-roc/p-roc.cpp:41: `parser' undeclared (first use this function)
-src/p-roc/p-roc.cpp:43: `yamlDoc' undeclared (first use this function)
-src/p-roc/p-roc.cpp:45: use of namespace `std' as expression
-src/p-roc/p-roc.cpp:45: parse error before `:' token
-src/p-roc/p-roc.cpp:46: `machineTypeString' undeclared (first use this
-   function)
-src/p-roc/p-roc.cpp:39: warning: label `YAML' defined but not used
-src/p-roc/p-roc.cpp: In function `PRMachineType procSetMachineType(char*)':
-src/p-roc/p-roc.cpp:134: use of namespace `std' as expression
-src/p-roc/p-roc.cpp:134: parse error before `:' token
-mingw32-make: *** [obj/gcc/windows/pinmamep/p-roc/p-roc.o] Error 1
+ * src/p-roc/p-roc.cpp (workaround remove -Werrror from CFLAGS for now)
+p-roc/include/p-roc/pinproc.h:102: warning: comma at end of enumerator list
+
+ * src/p-roc/p-roc.cpp (workaround remove -Werrror from CFLAGS for now; fix: do not use -pedantic)
+In file included from YAML_CPP/include/yaml-cpp/conversion.h:8,
+                 from YAML_CPP/include/yaml-cpp/node.h:7,
+                 from YAML_CPP/include/yaml-cpp/parser.h:7,
+                 from YAML_CPP/include/yaml-cpp/yaml.h:7,
+                 from src/p-roc/gameitems.cpp:5:
+YAML_CPP/include/yaml-cpp/traits.h:20: warning: ISO C++ 1998 does not support 'long long'
+YAML_CPP/include/yaml-cpp/traits.h:21: warning: ISO C++ 1998 does not support 'long long'

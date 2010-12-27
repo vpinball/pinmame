@@ -230,5 +230,9 @@ extern MACHINE_DRIVER_EXTERN(wpc_95S);
 #define wpc_m95DCSS      wpc_dcsS
 #define wpc_m95S         wpc_95S
 
+#ifdef PROC_SUPPORT
+static int wpc_m2sw(int col, int row);
+#endif
+
 #endif /* INC_WPC */
 

@@ -5,7 +5,7 @@
 #include "gen.h"
 #include "sim.h"
 #ifdef PROC_SUPPORT
-#include "pinproc.h"	// library include
+#include <p-roc/pinproc.h>	// library include
 #endif
 
 /*-- some convenience macros --*/
