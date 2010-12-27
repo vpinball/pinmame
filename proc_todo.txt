@@ -44,3 +44,55 @@
   + src\wpc\wpc.c
   - src\wpc\wpc.h
   + src\windows\config.c
+
+
+* compilation of libpinproc:
+  - General
+    * http://www.pinballcontrollers.com/wiki/Windows_build_instructions
+  - libpinproc source
+    * downloaded preble-libpinproc-3ffb3b6.tar.gz from dev branch (=3ffb3b6f5379bdde5ad35ce547461fb145df8b34)
+    * extracted source to D:\Coding\libpinproc
+    * copied inlcude/pinproc.h to [PinMAME]/
+  - FTDI's ftd2xx.lib
+    * downloaded CDM20808.zip from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
+    * extracted static/i386/ftd2xx.lib and /ftd2xx.h
+
+* compilation issues:
+  * src/wpc/mech.c (workaround remove -Werrror from CFLAGS for now)
+In file included from src/wpc/core.h:8,
+                 from src/wpc/mech.c:3:
+p-roc/includes/pinproc.h:88: warning: function declaration isn't a prototype
+
+  * src/wpc/core.c (workaround remove -Werrror from CFLAGS for now)
+In file included from src/wpc/core.c:11:
+src/p-roc/p-roc.h:46: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:48: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:49: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:50: warning: function declaration isn't a prototype
+
+ * src/p-roc/p-roc.cpp... (real ERROR with g++ 3.2.3!!!)
+In file included from src/wpc/core.h:8,
+                 from src/p-roc/p-roc.cpp:5:
+p-roc/includes/pinproc.h:103: warning: comma at end of enumerator list
+src/p-roc/p-roc.cpp:8:19: fstream: No such file or directory
+src/p-roc/p-roc.cpp:9:18: vector: No such file or directory
+src/p-roc/p-roc.cpp:10:27: yaml-cpp/yaml.h: No such file or directory
+src/p-roc/p-roc.cpp:20: syntax error before `:' token
+src/p-roc/p-roc.cpp: In function `PRMachineType procLoadMachineYAML(char*)':
+src/p-roc/p-roc.cpp:33: use of namespace `std' as expression
+src/p-roc/p-roc.cpp:33: parse error before `:' token
+src/p-roc/p-roc.cpp:34: `fin' undeclared (first use this function)
+src/p-roc/p-roc.cpp:34: (Each undeclared identifier is reported only once for
+   each function it appears in.)
+src/p-roc/p-roc.cpp:39: parse error before `:' token
+src/p-roc/p-roc.cpp:41: `parser' undeclared (first use this function)
+src/p-roc/p-roc.cpp:43: `yamlDoc' undeclared (first use this function)
+src/p-roc/p-roc.cpp:45: use of namespace `std' as expression
+src/p-roc/p-roc.cpp:45: parse error before `:' token
+src/p-roc/p-roc.cpp:46: `machineTypeString' undeclared (first use this
+   function)
+src/p-roc/p-roc.cpp:39: warning: label `YAML' defined but not used
+src/p-roc/p-roc.cpp: In function `PRMachineType procSetMachineType(char*)':
+src/p-roc/p-roc.cpp:134: use of namespace `std' as expression
+src/p-roc/p-roc.cpp:134: parse error before `:' token
+mingw32-make: *** [obj/gcc/windows/pinmamep/p-roc/p-roc.o] Error 1
