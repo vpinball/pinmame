@@ -311,11 +311,12 @@ endif
 # add MAME 0.76 basic set of warnings
 CFLAGS += \
 	-fstrict-aliasing \
-	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wbad-function-cast -Wcast-align -Waggregate-return \
 	-Wshadow -Wstrict-prototypes -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
+#	-Werror (before -Wall)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
