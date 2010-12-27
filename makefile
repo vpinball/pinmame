@@ -201,6 +201,11 @@ ifdef DEBUG
 DEBUGSUFFIX = d
 endif
 
+# P-ROC builds just get the 'p' suffix and nothing more
+ifdef PROC
+SUFFIX += p
+endif
+
 # the main name is just 'target'
 NAME = $(TARGET)
 

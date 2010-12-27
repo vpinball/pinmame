@@ -5,6 +5,22 @@
   - Correct LDFLAGS and LIBS definition in p-roc.mak?
   - Find all CFLAGS changes and see if these should be added to CPPFLAGS too.
 
+* src/wpc/core.c:
+  - Use VPINMAME solution for g_fHandleKeyboard/g_fHandleMechanics generally?
+    Values depend on "-proc" switch.
+  - SEG16R array, why this difference?
+
+* src/wpc/se.c
+  - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
+    Values depend on "-proc" switch.
+  + Fixed lamps coding, memcpy/memset where inside "if (coreGlobals.p_rocEn)"
+
+* src/wpc/wpc.c
+  - coreGlobals.solenoids?
+  - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
+    Values depend on "-proc" switch.
+  - Why wpc_m2sw() in wpc.h?
+
 * "P-ROC" not "PROC"
 * "-proc" switch to generally enable P-ROC support
 * YAML file support ./p-roc folder (configurable via ini file)
@@ -17,3 +33,14 @@
   FYI - Looks like it should be safe to removed references to coreGlobals.proc.
   coreGlobals.p_rocEn should be used instead (and is used in most places).  Then
   pinproc.h can be removed from core.h.
+
+
+* changed files
+  + src\driver.h
+  + src\wpc\dedmd.c
+  + src\wpc\core.c
+  + src\wpc\core.h
+  + src\wpc\se.c
+  + src\wpc\wpc.c
+  - src\wpc\wpc.h
+  + src\windows\config.c

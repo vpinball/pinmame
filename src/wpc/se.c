@@ -35,14 +35,24 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #include "cpu/at91/at91.h"
 #include "cpu/arm7/arm7core.h"
 #include "sound/wavwrite.h"
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */
 #define SE_FIRQFREQ       976 /* FIRQ Frequency according to Theory of Operation */
 #define SE_ROMBANK0         1
 
+#ifdef PROC_SUPPORT
+// TODO: Make variables out of these defines. Values depend on "-proc" switch.
+#define SE_SOLSMOOTH       1 /* Don't smooth values on real hardware */
+#define SE_LAMPSMOOTH      1
+#define SE_DISPLAYSMOOTH   1
+#else
 #define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+#endif
 
 #define SUPPORT_TRACERAM 0
 
@@ -76,14 +86,45 @@ struct {
   #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
 } selocals;
 
+#ifdef PROC_SUPPORT
+static int switches_retrieved=0;
+#endif
 static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
   selocals.vblankCount = (selocals.vblankCount+1) % 16;
 
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procTickleWatchdog();
+	}
+#endif
+
   /*-- lamps --*/
   if ((selocals.vblankCount % SE_LAMPSMOOTH) == 0) {
+#ifdef PROC_SUPPORT
+		if (coreGlobals.p_rocEn) {
+			if (!switches_retrieved) {
+				procSetSwitchStates();
+				switches_retrieved = 1;
+			}
+			if (coreGlobals.proc) {
+				int col, row;
+				for(col = 0; col < 10; col++) {
+					UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
+					UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
+					for (row = 0; row < 8; row++) {
+						if (chgLamps & 0x01) {
+							procDriveLamp( 80 + 16*(7-row) + col, tmpLamps & 0x01);
+						}
+						chgLamps >>= 1;
+						tmpLamps >>= 1;
+					}
+				}
+			}
+		}
+#endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, 10);
   }
@@ -92,7 +133,35 @@ static INTERRUPT_GEN(se_vblank) {
   if ((selocals.vblankCount % SE_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = selocals.solenoids;
     selocals.solenoids = coreGlobals.pulsedSolState;
+#ifdef PROC_SUPPORT
+		if (coreGlobals.p_rocEn) {
+			UINT64 allSol = core_getAllSol();
+			if (coreGlobals.proc) {
+				int ii;
+				UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
+				UINT64 tmpSol = allSol;
+
+				/* standard coils */
+				for (ii = 0; ii < 28; ii++) {
+					// TODO: disable LOTR flippers.  Hardcoded now.  Will need to do this dynamically
+					if (chgSol & 0x01) {
+						procDriveCoil(ii + 32, tmpSol & 0x01);
+					}
+					chgSol >>= 1;
+					tmpSol >>= 1;
+				}
+			}
+			procFlush();
+			// TODO: This doesn't seem to be happening in core.c.  Why not?
+			coreGlobals.lastSol = allSol;
+		}
+#endif
   }
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procCheckActiveCoils();
+	}
+#endif
   /*-- display --*/
   if ((selocals.vblankCount % SE_DISPLAYSMOOTH) == 0) {
     coreGlobals.diagnosticLed = selocals.diagnosticLed;
@@ -102,6 +171,12 @@ static INTERRUPT_GEN(se_vblank) {
 }
 
 static SWITCH_UPDATE(se) {
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procGetSwitchEvents();
+	} else {
+		// TODO: Really not necessary for P-ROC?
+#endif
   if (inports) {
    if (core_gameData->hw.display & SE_LED2) {
     /*Switch Col 6 = Dedicated Switches */
@@ -119,6 +194,9 @@ static SWITCH_UPDATE(se) {
     CORE_SETKEYSW(inports[SE_COMINPORT]<<1, 0xe0, 7);
    }
   }
+#ifdef PROC_SUPPORT
+	}
+#endif
 }
 
 static MACHINE_INIT(se3) {

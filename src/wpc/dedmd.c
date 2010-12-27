@@ -5,6 +5,9 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "dedmd.h"
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 
 /*--------- Common DMD stuff ----------*/
 static struct {
@@ -120,6 +123,12 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
   tDMDDot dotCol;
   int ii,jj;
 
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procClearDMD();
+	}
+#endif
+
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
@@ -134,9 +143,27 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
       RAM += 1; RAM2 += 1;
+
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				int iii;
+				for (iii = 0; iii<8; iii++) {
+					if (*(line-(8-iii))) {
+						procDrawDot(jj*8+iii, ii-1, *(line-(8-iii)));
+					}
+				}
+			}
+#endif
     }
     *line = 0;
   }
+
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procUpdateDMD();
+	}
+#endif
+
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
 }
