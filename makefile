@@ -281,7 +281,7 @@ CFLAGS =
 CPPFLAGS =
 
 CFLAGS += -std=gnu99
-CPPFLAGS += -std=gnu99
+CPPFLAGS += -std=gnu++98
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
@@ -330,11 +330,12 @@ CFLAGS += \
 
 CPPFLAGS += \
 	-fstrict-aliasing \
-	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wcast-align -Waggregate-return \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
+#	-Werror (before -Wall)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
@@ -345,7 +346,7 @@ CPPFLAGS += \
 #	-Wconversion
 
 CFLAGSPEDANTIC = $(CFLAGS) -pedantic
-CPPFLAGSPEDANTIC = $(CFLAGS) -pedantic
+CPPFLAGSPEDANTIC = $(CPPFLAGS) -pedantic
 
 
 #-------------------------------------------------

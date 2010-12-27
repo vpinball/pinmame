@@ -1,7 +1,7 @@
 #ifndef INC_PROC
 #define INC_PROC
 
-#include "pinproc.h"
+#include <p-roc/pinproc.h>
 #include "time.h"
 
 #define PROC_NUM_DMD_FRAMES 4

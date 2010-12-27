@@ -7,8 +7,8 @@ extern "C" {
 #include "p-roc.h"
 #include <fstream>
 #include <vector>
-#include "yaml-cpp/yaml.h"
-#include "pinproc.h"
+#include <yaml-cpp/yaml.h>
+#include <p-roc/pinproc.h>
 #include "p-roc_drivers.h"
 
 // se.c/.h does not have a matrix-to-sw mapping function; so define it here.

@@ -2,7 +2,7 @@
 extern "C" {
 #include "../wpc/core.h"
 }
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 #include <fstream>
 #include "../wpc/wpc.h"
 #include "../wpc/se.h"
@@ -356,7 +356,9 @@ void CoilDriver::Drive(int state) {
     }
     else PRDriverStateDisable(&coilState);
     PRDriverUpdateState(coreGlobals.proc, &coilState);
+#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 4.5)
     long int msTime = clock() / CLOCKS_PER_MS;
+#endif
 }
 
 void CoilDriver::Patter(int msOn, int msOff) {
