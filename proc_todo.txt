@@ -58,8 +58,8 @@
     * extracted source to D:\Coding\libpinproc\
     * set LIBPINPROC=<libpinproc>
       Example: set LIBPINPROC=D:\Coding\libpinproc\
-    * set PINMAME=<pinmame>
-      Example: set PINMAME=D:\Coding\PinMAME\branches\proc\
+    * set INSTALLDIR=<temp dir>
+      Example: set INSTALLDIR=E:\TEMP\
   - FTDI's ftd2xx.lib
     * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
     * extracted i386/ftd2xx.lib and /ftd2xx.h to %LIBPINPROC%/FTDI/lib and %LIBPINPROC%/FTDI/include
@@ -71,38 +71,33 @@
     * rmdir /s bin
     * mkdir bin
     * cd bin
+    * CMakeLists.txt: change to SET (LIB_TYPE STATIC)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
-    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%LIBPINPROC%\YAML_CPP -P cmake_install.cmake
-      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%PINMAME%\YAML_CPP -P cmake_install.cmake
+    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\YAML_CPP -P cmake_install.cmake
       - or -
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       (Note: install dir can not be changed with mingw32-make install )
-      copied lib/libyaml-cpp.dll.a, bin/libyaml-cpp.dll and include/yaml-cpp/*.h
+      copies lib/libyaml-cpp.a and include/yaml-cpp/*.h
   - libpinproc
     * cd /d %LIBPINPROC%
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * (make sure that %LIBPINPROC% is set)
-      set EXTRA_INC=%LIBPINPROC%\FTDI\include;%LIBPINPROC%\YAML_CPP\include
-      set EXTRA_LINK=%LIBPINPROC%\FTDI\lib;%LIBPINPROC%\YAML_CPP\lib
-      - or -
-      set EXTRA_INC=%LIBPINPROC%\FTDI\include;%MINGW_PATH%\include
-      set EXTRA_LINK=%LIBPINPROC%\FTDI\lib;%MINGW_PATH%\lib
-      (no quotes(!) and separate with semicolon)
+    * set EXTRA_INC=..\FTDI\include
+      set EXTRA_LINK=..\FTDI\lib
+      (no quotes(!) and separate multiple pathes with semicolon)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
-    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%PINMAME%\p-roc -P cmake_install.cmake
+    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\LIBPINPROC -P cmake_install.cmake
       - or -
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
-  - PinMAME integration (as long as libpinproc install function not available)
-    * copy %LIBPINPROC%\include\pinproc.h %PINMAME%\p-roc\include\p-roc\
-    * copy %LIBPINPROC%\bin\libpinproc.a %PINMAME%\p-roc\lib\
+      (Note: install dir can not be changed with mingw32-make install )
+      copies lib/libpinproc.a and include/p-roc/pinproc.h
 
 Wish list:
 - MinGW makefile generation
-  * cmake -DEXTRA_INC="%LIBPINPROC%\FTDI\include;%LIBPINPROC%\YAML_CPP\include" -DEXTRA_LINK="%LIBPINPROC%\FTDI\lib;%LIBPINPROC%\YAML_CPP\lib" -G "MinGW Makefiles" ..
+  * cmake -DEXTRA_INC="..\FTDI\include" -DEXTRA_LINK="..\FTDI\lib" -G "MinGW Makefiles" ..
     No env var messing.
 - Wiki page update
   At top of the wiki page I would state, that if the user doesn't want to change anything, that he has to create C:\usr\local\[bin,lib] and use them as indicated on that page.

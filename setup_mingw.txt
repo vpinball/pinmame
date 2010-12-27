@@ -71,6 +71,7 @@ Step 1: Downloads
 
      Also possible is GCC 4.5.0 but with missing sounds on some ROMs:
      * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
        with libgmp: libgmp-5.0.1-1-mingw32-dll-10
                mpc: libmpc-0.8.1-1-mingw32-dll-2
               mpfr: libmpfr-2.4.1-1-mingw32-dll-1
@@ -87,6 +88,7 @@ Step 1: Downloads
 
      Also possible is GCC 4.4.0 but with missing sounds on some ROMs:
      * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14              (part of the Base System)
