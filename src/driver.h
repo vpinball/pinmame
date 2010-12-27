@@ -86,6 +86,10 @@ typedef struct {
   int dmd_red, dmd_green, dmd_blue;
   int dmd_perc66, dmd_perc33, dmd_perc0;
   int dmd_only, dmd_compact, dmd_antialias;
+#ifdef PROC_SUPPORT
+	int p_roc;					/* TODO/PROC: explanation */
+	int alpha_on_dmd;			/* Virtual alphanumeric displays on P-ROC DMD */
+#endif
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

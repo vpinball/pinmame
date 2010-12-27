@@ -7,6 +7,9 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 
 /* stuff to test VPINMAME */
 #if 0
@@ -27,8 +30,13 @@ void vp_setDIP(int bank, int value) { }
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
-  #define g_fHandleKeyboard  (TRUE)
-  #define g_fHandleMechanics (0xff)
+  #ifdef PROC_SUPPORT	// TODO/PROC: Use VPINMAME solution generally? Values depend on "-proc" switch.
+    int g_fHandleKeyboard = 0;
+    int g_fHandleMechanics = 0x0;
+  #else
+    int g_fHandleKeyboard = 1;
+    int g_fHandleMechanics = 0xff;
+  #endif
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
@@ -502,7 +510,11 @@ static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but sp
 
 static tSegData segData[2][16] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
-  {20,15,&segSize1C[3][0]},/* SEG16R*/
+#ifdef PROC_SUPPORT	//ToDo: Why this difference?
+  {20,15,&segSize2C[0][0]},/* SEG16R */
+#else
+  {20,15,&segSize1C[3][0]},/* SEG16R */
+#endif
   {20,15,&segSize1C[2][0]},/* SEG10 */
   {20,15,&segSize1[2][0]}, /* SEG9 */
   {20,15,&segSize1C[1][0]},/* SEG8 */
@@ -519,7 +531,7 @@ static tSegData segData[2][16] = {{
   { 1, 1,NULL}             /* VIDEO */
 },{
   {12,11,&segSize2C[0][0]},/* SEG16 */
-  {12,11,&segSize2C[3][0]},/* SEG16R*/
+  {12,11,&segSize2C[3][0]},/* SEG16R */
   {12,11,&segSize2C[2][0]},/* SEG10 */
   {12,11,&segSize2[2][0]}, /* SEG9 */
   {12,11,&segSize2C[1][0]},/* SEG8 */
@@ -765,6 +777,11 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
+#ifdef PROC_SUPPORT
+			static UINT16 proc_top[16];
+			static UINT16 proc_bottom[16];
+#endif
+
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
@@ -799,22 +816,58 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
+          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
+#ifdef PROC_SUPPORT
+					if (coreGlobals.p_rocEn) {
+						if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) &&
+						    (!pmoptions.alpha_on_dmd)) {
+							if (top == 0) {
+								proc_top[left/16] = tmpSeg;
+							} else {
+								proc_bottom[left/16] = tmpSeg;
+							}
+						}
+					}
+#endif
+          }
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
 		(*pos)++;
         left += locals.segData[layout->type & 0x0f].cols+1;
         seg += step; lastSeg += step;
       }
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) &&
+				    (!pmoptions.alpha_on_dmd)) {
+					procUpdateAlphaDisplay(proc_top, proc_bottom);
+				}
+			}
+#endif 
     }
   }
 }
 
 VIDEO_UPDATE(core_gen) {
   int count = 0;
+#ifdef PROC_SUPPORT
+	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2;
+	if (coreGlobals.p_rocEn) {
+		if (pmoptions.alpha_on_dmd && alpha) {
+			procClearDMD();
+		}
+	}
+#endif
   updateDisplay(bitmap, cliprect, core_gameData->lcdLayout, &count);
   memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		if (pmoptions.alpha_on_dmd && alpha) {
+			procUpdateDMD();
+		}
+	}
+#endif
   video_update_core_status(bitmap,cliprect);
 }
 
@@ -1197,7 +1250,15 @@ int core_getSwCol(int colEn) {
 void core_setSw(int swNo, int value) {
   if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ 0) & (1<<(swNo%8));
+	} else {
+#endif
   coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
+#ifdef PROC_SUPPORT
+	}
+#endif
 }
 
 /*-------------------------
@@ -1341,9 +1402,21 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
                     { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming }};
 
   for (kk = 1; bits; kk++, bits >>= 1) {
-    if (bits & 0x01)
+    if (bits & 0x01) {
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				if (pmoptions.alpha_on_dmd) {
+					if (row == 0) {
+						procDrawSegment(col/2, 0, kk-1);
+					} else {
+						procDrawSegment(col/2, 16, kk-1);
+					}
+				}
+			}
+#endif
       for (ll = 0; ll < s->rows; ll++)
         pixel[ll] |= s->segs[ll][kk];
+    }
   }
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
@@ -1379,6 +1452,23 @@ static MACHINE_INIT(core) {
     /*-- init switch matrix --*/
     memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
+
+#ifdef PROC_SUPPORT
+		char * yaml_filename = (char *)pmoptions.p_roc;
+		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
+
+		/*-- initialize P-ROC if enabled --*/
+		if (coreGlobals.p_rocEn) {
+			/*-- If the initialization fails, disable the p-roc support --*/
+			if (!procInitialize(yaml_filename)) {
+				coreGlobals.p_rocEn = 0;
+				fprintf(stderr, "P-ROC initialization failed.  Disabling P-ROC support.\n");
+				g_fHandleKeyboard = 1;
+				g_fHandleMechanics = 0xff;
+			}
+		}
+#endif
+
     /*-- masks bit used by flippers --*/
     {
       const int flip = core_gameData->hw.flippers;
@@ -1439,6 +1529,11 @@ static MACHINE_STOP(core) {
       timer_remove(locals.timers[ii]);
   }
   memset(locals.timers, 0, sizeof(locals.timers));
+#ifdef PROC_SUPPORT
+	if (coreGlobals.proc) {
+		PRDelete(coreGlobals.proc);
+	}
+#endif
   coreData = NULL;
 }
 

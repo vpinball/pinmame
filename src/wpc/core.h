@@ -4,6 +4,9 @@
 #include "wpcsam.h"
 #include "gen.h"
 #include "sim.h"
+#ifdef PROC_SUPPORT
+#include "pinproc.h"	// library include
+#endif
 
 /*-- some convenience macros --*/
 #ifndef FALSE
@@ -255,6 +258,9 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_FIRSTCUSTSOL  51
 #define CORE_FIRSTLFLIPSOL 45
 #define CORE_FIRSTSIMSOL   49
+#ifdef PROC_SUPPORT
+#define CORE_MAXSOL        64
+#endif
 
 #define CORE_SSFLIPENSOL  23
 #define CORE_FIRSTSSSOL   17
@@ -381,7 +387,11 @@ typedef struct {
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+  int    p_rocEn;         /* P-ROC support enable */
   char   segDim[CORE_SEGCOUNT]; /* segments dimming */
+#ifdef PROC_SUPPORT
+	PRHandle proc;
+#endif
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */

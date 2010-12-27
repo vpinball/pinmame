@@ -8,6 +8,9 @@
 #include "sim.h"
 #include "core.h"
 #include "wpc.h"
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 
 #define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes   */
 #define DEBUG_GI		   0 /* debug GI code - more printf stuff basically */
@@ -18,9 +21,16 @@
 #define DMD_FRAMES         3
 
 /*-- Smoothing values --*/
+#ifdef PROC_SUPPORT
+// TODO: Make variables out of these defines. Values depend on "-proc" switch.
+#define WPC_SOLSMOOTH      1 /* Don't smooth values on real hardware */
+#define WPC_LAMPSMOOTH     1
+#define WPC_DISPLAYSMOOTH  1
+#else
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
 #define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
+#endif
 
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ      976 /* IRQ Frequency-Timed by JD*/
@@ -219,6 +229,17 @@ MACHINE_DRIVER_END
 static INTERRUPT_GEN(wpc_vblank) {
   wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
 
+#ifdef PROC_SUPPORT
+static int gi_last[CORE_MAXGI];
+int changed_gi[CORE_MAXGI];
+#endif
+
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procTickleWatchdog();
+	}
+#endif
+
   if (core_gameData->gen & GENWPC_HASDMD) {
     /*-- check if the DMD line matches the requested interrupt line */
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == (wpc_data[DMD_FIRQLINE]*WPC_VBLANKDIV/32))
@@ -226,9 +247,34 @@ static INTERRUPT_GEN(wpc_vblank) {
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) {
       /*-- This is the real VBLANK interrupt --*/
       dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
+				procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
+			}
+#endif
       dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				if (coreGlobals.proc) {
+					if (dmdlocals.nextDMDFrame == 0) {
+						procUpdateDMD();
+					}
+				}
+			}
+#endif
     }
   }
+
+#ifdef PROC_SUPPORT
+// TODO: Is this the right place for this
+	if (coreGlobals.p_rocEn) {
+		// Enable Flippers for WPC-Alphanumeric machines
+		if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) {
+			procDriveLamp(79, 1);
+		}
+	}
+#endif
 
   /*--------------------------------------------------------
   /  Most solonoids don't have a holding coil so the software
@@ -239,10 +285,61 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  during that time.
   /-------------------------------------------------------------*/
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_SOLSMOOTH)) == 0) {
+#ifdef PROC_SUPPORT
+		//TODO/PROC: Check implemenatation
+		UINT64 allSol = core_getAllSol();
+#endif
+
     coreGlobals.solenoids = (wpc_data[WPC_SOLENOID1] << 24) |
                             (wpc_data[WPC_SOLENOID3] << 16) |
                             (wpc_data[WPC_SOLENOID4] <<  8) |
                              wpc_data[WPC_SOLENOID2];
+
+#ifdef PROC_SUPPORT
+		//TODO/PROC: Check implemenatation
+		allSol = (allSol & 0xffffffff00000000) |
+		         (wpc_data[WPC_SOLENOID1] << 24) |
+		         (wpc_data[WPC_SOLENOID3] << 16) |
+		         (wpc_data[WPC_SOLENOID4] <<  8) |
+		          wpc_data[WPC_SOLENOID2];
+		if (coreGlobals.p_rocEn) {
+			int ii;
+			UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
+			UINT64 tmpSol = allSol;
+
+			for (ii=0; ii<40; ii++) {
+				if (chgSol & 0x1) {
+					// Standard Coils
+					if (ii < 32) {
+						procDriveCoil(ii+40, tmpSol & 0x1);
+					} else if (ii < 36) {
+						if (core_gameData->gen & GENWPC_HASWPC95) {
+							procDriveCoil(ii+4, tmpSol & 0x1);
+						}
+					} else if (ii < 40) {
+						if (core_gameData->gen & GENWPC_HASWPC95) {
+							procDriveCoil(ii+8, tmpSol & 0x1);
+						}
+					}
+				}
+				chgSol >>= 1;
+				tmpSol >>= 1;
+			}
+
+			// GI
+			for (ii = 0; ii < CORE_MAXGI; ii++) {
+				changed_gi[ii] = gi_last[ii] != coreGlobals.gi[ii];
+				gi_last[ii] = coreGlobals.gi[ii];
+
+				if (changed_gi[ii]) {
+					procDriveLamp(ii+72, coreGlobals.gi[ii] > 2);
+				}
+			}
+
+			// This doesn't seem to be happening in core.c.  Why not?
+			coreGlobals.lastSol = allSol;
+		}
+#endif
 
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
     wpc_data[WPC_SOLENOID3] = wpc_data[WPC_SOLENOID4] = 0;
@@ -277,6 +374,23 @@ static INTERRUPT_GEN(wpc_vblank) {
   / the lamp code here worked for 9.2 but not in 9.4.
   /-------------------------------------------------------------*/
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_LAMPSMOOTH)) == 0) {
+#ifdef PROC_SUPPORT
+		if (coreGlobals.p_rocEn) {
+			int col, row;
+			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
+				UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
+				UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
+				for (row = 0; row < 8; row++) {
+					if (chgLamps & 0x01) {
+						procDriveLamp(80 + (8 * col) + row, tmpLamps & 0x01);
+					}
+					chgLamps >>= 1;
+					tmpLamps >>= 1;
+				}
+			}
+			procFlush();
+		}
+#endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
@@ -299,6 +413,13 @@ static INTERRUPT_GEN(wpc_vblank) {
 	}
 	#endif
   }
+
+#ifdef PROC_SUPPORT
+	// Check for any coils that need to be disabled due to inactivity.
+	if (coreGlobals.p_rocEn) {
+		procCheckActiveCoils();
+	}
+#endif
 
   /*------------------------------
   /  Update switches every vblank
@@ -673,6 +794,11 @@ static INTERRUPT_GEN(wpc_irq) {
 }
 
 static SWITCH_UPDATE(wpc) {
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procGetSwitchEvents();
+	} else {
+#endif
   if (inports) {
     coreGlobals.swMatrix[CORE_COINDOORSWCOL] = inports[WPC_COMINPORT] & 0xff;
     /*-- check standard keys --*/
@@ -687,6 +813,9 @@ static SWITCH_UPDATE(wpc) {
     if (core_gameData->wpc.comSw.shooter)
       core_setSw(core_gameData->wpc.comSw.shooter,  inports[CORE_SIMINPORT] & SIM_SHOOTERKEY);
   }
+#ifdef PROC_SUPPORT
+	}
+#endif
 }
 
 static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
