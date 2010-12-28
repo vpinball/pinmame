@@ -74,7 +74,7 @@
     * CMakeLists.txt: change to SET (LIB_TYPE STATIC)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
-    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\YAML_CPP -P cmake_install.cmake
+    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\yaml-cpp-0.2.5 -P cmake_install.cmake
       - or -
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       (Note: install dir can not be changed with mingw32-make install )
@@ -84,8 +84,9 @@
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * set EXTRA_INC=..\FTDI\include
-      set EXTRA_LINK=..\FTDI\lib
+    * set EXTRA_INC=FTDI\include
+      set EXTRA_LINK=FTDI\lib
+      rem set EXTRA_LINK=%LIBPINPROC%\FTDI\lib
       (no quotes(!) and separate multiple pathes with semicolon)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
@@ -114,26 +115,20 @@ Wish list:
     Maybe other Makefiles for Unix have to be changed too
 
 * compilation issues:
-  * src/wpc/mech.c (workaround remove -Werrror from CFLAGS for now)
-In file included from src/wpc/core.h:8,
-                 from src/wpc/mech.c:3:
-p-roc/include/p-roc/pinproc.h:88: warning: function declaration isn't a prototype
-
-  * src/wpc/core.c (workaround remove -Werrror from CFLAGS for now)
-In file included from src/wpc/core.c:11:
-src/p-roc/p-roc.h:46: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:48: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:49: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:50: warning: function declaration isn't a prototype
-
- * src/p-roc/p-roc.cpp (workaround remove -Werrror from CFLAGS for now)
-p-roc/include/p-roc/pinproc.h:102: warning: comma at end of enumerator list
-
- * src/p-roc/p-roc.cpp (workaround remove -Werrror from CFLAGS for now; fix: do not use -pedantic)
-In file included from YAML_CPP/include/yaml-cpp/conversion.h:8,
-                 from YAML_CPP/include/yaml-cpp/node.h:7,
-                 from YAML_CPP/include/yaml-cpp/parser.h:7,
-                 from YAML_CPP/include/yaml-cpp/yaml.h:7,
-                 from src/p-roc/gameitems.cpp:5:
-YAML_CPP/include/yaml-cpp/traits.h:20: warning: ISO C++ 1998 does not support 'long long'
-YAML_CPP/include/yaml-cpp/traits.h:21: warning: ISO C++ 1998 does not support 'long long'
+src/p-roc/../wpc/wpc.h:237:12: warning: 'int wpc_sw2m(int)' defined but not used
+src/p-roc/display.cpp:56:11: warning: 'temp_dot' may be used uninitialized in this function
+src/p-roc/gameitems.cpp:143:49: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:143:73: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:178:55: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:178:85: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:202:53: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:202:81: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:386:85: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined
+src/p-roc/gameitems.cpp:393:81: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOn' may be undefined
+src/p-roc/p-roc.cpp:15:12: warning: 'int se_m2sw(int, int)' defined but not used
+src/p-roc/p-roc.h:46:3: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:48:3: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:49:3: warning: function declaration isn't a prototype
+src/p-roc/p-roc.h:50:3: warning: function declaration isn't a prototype
+src/wpc/wpc.h:237:12: warning: 'wpc_sw2m' defined but not used
+src/wpc/wpc.h:238:12: warning: 'wpc_m2sw' defined but not used

@@ -1,11 +1,11 @@
 #include "driver.h"
 extern "C" {
-#include "../wpc/core.h"
+#include <wpc/core.h>
 }
 #include <yaml-cpp/yaml.h>
 #include <fstream>
-#include "../wpc/wpc.h"
-#include "../wpc/se.h"
+#include <wpc/wpc.h>
+#include <wpc/se.h>
 #include "p-roc.h"
 #include "p-roc_drivers.h"
 

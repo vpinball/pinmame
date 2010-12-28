@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "p-roc.h"
 extern "C" {
-#include "../wpc/core.h"
+#include <wpc/core.h>
 }
 
 // Buffer to hold the next full DMD frame to send to the P-ROC

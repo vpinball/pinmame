@@ -157,7 +157,9 @@ MEMORY_END
 // convert to 0-63 (+8)
 // i.e. 11=8,12=9,21=16
 static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
+#ifndef PROC_SUPPORT
 static int wpc_m2sw(int col, int row) { return col*10+row+1; }
+#endif
 
 //Set Zero Cross flag (it's reset when read)
 static void wpc_zc(int data) {
