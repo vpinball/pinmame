@@ -1,8 +1,8 @@
 #include <stdarg.h>
 #include "driver.h"
-#include "../wpc/sim.h"
+#include <wpc/sim.h>
 extern "C" {
-#include "../wpc/core.h"
+#include <wpc/core.h>
 }
 #include "p-roc.h"
 #include <fstream>

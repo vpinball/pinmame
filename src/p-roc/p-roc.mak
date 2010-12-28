@@ -17,7 +17,8 @@ $(OBJ)/p-roc/%.o: src/p-roc/%.cpp
 	$(CPP) $(CDEFS) $(CPPFLAGS) -c $< -o $@
 
 # add libraries for P-ROC
-LIBS += -lpinproc -lyaml-cpp
+#LDFLAGS += -LFTDI/lib
+LIBS += -lpinproc -lyaml-cpp.dll
 # -lftd2xx
 
 endif
