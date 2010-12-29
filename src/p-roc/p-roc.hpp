@@ -31,26 +31,26 @@
 
   // Display functions
   void procDMDInit(void);
-  void procClearDMD (void);
-  void procDrawDot (int x, int y, int color);
-  void procDrawSegment (int x, int y, int seg);
-  void procFillDMDSubFrame( int frameIndex, UINT8 * dotData, int length );
+  void procClearDMD(void);
+  void procDrawDot(int x, int y, int color);
+  void procDrawSegment(int x, int y, int seg);
+  void procFillDMDSubFrame(int frameIndex, UINT8 *dotData, int length);
   void procUpdateDMD(void);
-  void procUpdateAlphaDisplay (UINT16 *top, UINT16 *bottom); 
+  void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom);
 
   // Gameitem functions
-  void procSetSwitchStates (void);
+  void procSetSwitchStates(void);
   void procDriveLamp(int num, int state);
-  void procDriveCoil(int num, int state); 
+  void procDriveCoil(int num, int state);
   void procGetSwitchEvents(void);
-  void procInitializeCoilDrivers();
+  void procInitializeCoilDrivers(void);
   void procCheckActiveCoils(void);
-  void procConfigureDefaultSwitchRules(); 
-  void procConfigureDriverDefaults();
-  void procConfigureSwitchRules();
+  void procConfigureDefaultSwitchRules(void);
+  void procConfigureDriverDefaults(void);
+  void procConfigureSwitchRules(void);
 
   // Generic P-ROC functions.
-  int procInitialize(char * yaml_filename);
+  int procInitialize(char *yaml_filename);
   void procTickleWatchdog(void);
   void procFlush(void);
 #ifdef __cplusplus
@@ -58,4 +58,3 @@
 #endif
 
 #endif /* INC_PROC */
-

@@ -5,7 +5,7 @@ const int PROC_MAX_PATTER_INTERVAL_MS = 100;
 const long int CLOCKS_PER_MS = CLOCKS_PER_SEC / 1000;
 
 class CoilDriver {
-private:
+ private:
   int num;
   clock_t timeLastChanged;
   int numPatterOn;
@@ -20,17 +20,17 @@ private:
   int patterOffTime;
   int useDefaultPatterTimes;
 
-
-  void ResetPatter();
+  void ResetPatter(void);
   void Drive(int state);
   void Patter(int msOn, int msOff);
-public:
-  CoilDriver();
+
+ public:
+  CoilDriver(void);
   void SetNum(int num);
   void SetPulseTime(int ms);
   void SetPatterTimes(int msOn, int msOff);
-  void CheckEndPatter();
+  void CheckEndPatter(void);
   void RequestDrive(int state);
 };
 
-#endif
+#endif /* INC_PROC_DRIVERS */
