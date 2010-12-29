@@ -196,14 +196,14 @@ RM = @rm -f
 # form the name of the executable
 #-------------------------------------------------
 
-# debug builds just get the 'd' suffix and nothing more
-ifdef DEBUG
-DEBUGSUFFIX = d
-endif
-
 # P-ROC builds just get the 'p' suffix and nothing more
 ifdef PROC
 SUFFIX += p
+endif
+
+# debug builds just get the 'd' suffix and nothing more
+ifdef DEBUG
+DEBUGSUFFIX = d
 endif
 
 # the main name is just 'target'
@@ -316,7 +316,7 @@ CFLAGS += \
 	-Wshadow -Wstrict-prototypes -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
-#	-Werror (before -Wall)
+#TODO/PROC: -Werror (before -Wall)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
@@ -335,7 +335,7 @@ CPPFLAGS += \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
-#	-Werror (before -Wall)
+#TODO/PROC: -Werror (before -Wall)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
@@ -470,14 +470,14 @@ $(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS) $(PROCOBJS)
 # always recompile the version string
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
-	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) $(PROCOBJS) -o $@ $(MAPFLAGS)
+	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(PROCOBJS) $(LIBS) $(DRVLIBS) $(PROCLIBS) -o $@ $(MAPFLAGS)
 # [PinMAME] extract debug information into separate file, then strip executable and add a debug link to it
 #           see http://sourceware.org/gdb/current/onlinedocs/gdb_19.html#SEC170
 #               http://stackoverflow.com/questions/866721/
 ifdef SYMBOLS
 	@echo Extracting debug symbols and stripping all symbols from $@...
 	@objcopy -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
-	@strip -p -s "$(EMULATOR)"
+	@strip -s "$(EMULATOR)"
 	@objcopy -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR)"
 endif
 
