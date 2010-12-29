@@ -1,8 +1,10 @@
+Comments / TODO:
+================
+* P-ROC project:
+  should provide MinGW packages of LIBPINPROC and YAML-CPP
+  (example at http://ftp.maddes.net/mingw/)
+
 * makefile & src/p-roc/p-roc.mak:
-  - Either P-ROC provides a MinGW package or all external pre-compiled stuff
-    goes to ./p-roc (subfolder gcc for library)
-  - CPPFLAGS += -std=gnu99?
-  - Correct LDFLAGS and LIBS definition in p-roc.mak?
   - Find all CFLAGS changes and see if these should be added to CPPFLAGS too.
 
 * src/wpc/core.c:
@@ -13,42 +15,46 @@
 * src/wpc/se.c
   - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
     Values depend on "-proc" switch.
-  + Fixed lamps coding, memcpy/memset where inside "if (coreGlobals.p_rocEn)"
+  + Fixed lamps coding as memcpy/memset were inside "if (coreGlobals.p_rocEn)"
 
 * src/wpc/wpc.c
   - coreGlobals.solenoids?
   - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
     Values depend on "-proc" switch.
-  - Why wpc_m2sw() in wpc.h?
+  - Why wpc_m2sw() in wpc.h? Why are these functions static?
 
-* "P-ROC" not "PROC"
-* "-proc" switch to generally enable P-ROC support
-* YAML file support ./p-roc folder (configurable via ini file)
-* #ifdef P-ROC_SUPPORT correctly
-* changed #define's go to a variable (so they can be set differently when "-proc" switch is set)
-* move all of the P-ROC specific functions to p-roc/*.
-  So it should be possible to remove the PRHandle from coreGlobals.
-  Then we could get rid of library's pinproc.h in core.h.
+* General
+  - "P-ROC" not "PROC"
+  - add "-proc" switch to generally enable P-ROC support
+  - YAML file support ./p-roc folder (configurable via ini file)
+  - changed #define's go to a variable (so they can be set differently when "-proc" switch is set)
+  - move all of the P-ROC specific functions to p-roc/*[.cpp|.hpp].
+    So it should be possible to remove the PRHandle from coreGlobals.
+    Then we could get rid of library's pinproc.h in core.h.
+    FYI - Looks like it should be safe to remove references to coreGlobals.proc.
+    coreGlobals.p_rocEn should be used instead (and is used in most places).  Then
+    pinproc.h can be removed from core.h.
 
-  FYI - Looks like it should be safe to removed references to coreGlobals.proc.
-  coreGlobals.p_rocEn should be used instead (and is used in most places).  Then
-  pinproc.h can be removed from core.h.
 
-
-* changed files
+Changed files:
+==============
   + src\driver.h
   + src\wpc\dedmd.c
   + src\wpc\core.c
   + src\wpc\core.h
   + src\wpc\se.c
   + src\wpc\wpc.c
-  - src\wpc\wpc.h
+  + src\wpc\wpc.h
   + src\windows\config.c
 
 
-* compilation of libpinproc:
+Compilation of libraries:
+=========================
   - General
     * http://www.pinballcontrollers.com/wiki/Windows_build_instructions
+    * Builds will be put into MinGW installation folder, so they are accessible by all projects.
+      set MINGW_PATH=<MinGW path>
+      Example: set MINGW_PATH=D:\Programme\Coding\MinGW5
   - CMake
     * downloaded cmake-2.8.3-win32-x86.zip
     * extracted to D:\Programme\Coding\cmake\
@@ -58,77 +64,62 @@
     * extracted source to D:\Coding\libpinproc\
     * set LIBPINPROC=<libpinproc>
       Example: set LIBPINPROC=D:\Coding\libpinproc\
-    * set INSTALLDIR=<temp dir>
-      Example: set INSTALLDIR=E:\TEMP\
   - FTDI's ftd2xx.lib
     * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
-    * extracted i386/ftd2xx.lib and /ftd2xx.h to %LIBPINPROC%/FTDI/lib and %LIBPINPROC%/FTDI/include
+    * extracted i386/ftd2xx.lib to %MINGW_PATH%/lib, and /ftd2xx.h to %MINGW_PATH%/include
       (does not work with static/i386/ftd2xx.lib)
   - YAML-CPP
     * downloaded "yaml-cpp-0.2.5.tar.gz"
     * extracted to D:\Coding\yaml-cpp-0.2.5\
     * cd /d D:\Coding\yaml-cpp-0.2.5\
+    * CMakeLists.txt: change to "SET (LIB_TYPE STATIC)"
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * CMakeLists.txt: change to SET (LIB_TYPE STATIC)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
-    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\yaml-cpp-0.2.5 -P cmake_install.cmake
-      - or -
+    * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
-      (Note: install dir can not be changed with mingw32-make install )
-      copies lib/libyaml-cpp.a and include/yaml-cpp/*.h
+      copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
+      (Note: install dir can not be changed with "mingw32-make install")
   - libpinproc
-    * cd /d %LIBPINPROC%
+    * cd /d <libpinproc>
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * set EXTRA_INC=FTDI\include
-      set EXTRA_LINK=FTDI\lib
-      rem set EXTRA_LINK=%LIBPINPROC%\FTDI\lib
-      (no quotes(!) and separate multiple pathes with semicolon)
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
-    * cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%INSTALLDIR%\LIBPINPROC -P cmake_install.cmake
-      - or -
+    * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
-      (Note: install dir can not be changed with mingw32-make install )
       copies lib/libpinproc.a and include/p-roc/pinproc.h
+      (Note: install dir can not be changed with "mingw32-make install")
 
 Wish list:
-- MinGW makefile generation
-  * cmake -DEXTRA_INC="..\FTDI\include" -DEXTRA_LINK="..\FTDI\lib" -G "MinGW Makefiles" ..
-    No env var messing.
 - Wiki page update
-  At top of the wiki page I would state, that if the user doesn't want to change anything, that he has to create C:\usr\local\[bin,lib] and use them as indicated on that page.
-  Otherwise he has to handle extra include and lib directories.
-  EXTRA_INC and EXTRA_LIB can not contain directories in quotes. And multiple dirs have to be separated by semicolon.
-  set EXTRA_INC="%LIBPINPROC%\FTDI\include" will result in "../"D:/Coding/libpinproc//FTDI/include""
-  set EXTRA_LINK="%LIBPINPROC%\FTDI\lib" will result in generation error "Policy CMP0015 is not set" (cmake 2.8.3
-  Also these settings take only effect on Makefile generation, not when building.
-  The makefiles have to be re-generated when you switch MinGW versions.
-- CMake enhancements:
-  project (LIBPINPROC)
-  include_directories(${LIBPINPROC_SOURCE_DIR}/include /usr/local/include $ENV{EXTRA_INC})
-    Allows to use #include <pinproc.h> (not .../.../......)
-    Maybe other Makefiles for Unix have to be changed too
+  If FTDI stuff and YAML-CPP is installed in MinGW folder, then you do not need EXTRA_INC and EXTRA_LINK :D
+  Also at the top I would remove the comment about putting the FTDI DLL in the Windows System dir, this should be done by installing the driver and not manually
+- Some CMake enhancements (adopting from YAML-CPP and CMake wiki pages)
 
-* compilation issues:
-src/p-roc/../wpc/wpc.h:237:12: warning: 'int wpc_sw2m(int)' defined but not used
-src/p-roc/display.cpp:56:11: warning: 'temp_dot' may be used uninitialized in this function
-src/p-roc/gameitems.cpp:143:49: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:143:73: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:178:55: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:178:85: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:202:53: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:202:81: warning: function call has aggregate value
-src/p-roc/gameitems.cpp:386:85: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined
-src/p-roc/gameitems.cpp:393:81: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOn' may be undefined
-src/p-roc/p-roc.cpp:15:12: warning: 'int se_m2sw(int, int)' defined but not used
-src/p-roc/p-roc.h:46:3: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:48:3: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:49:3: warning: function declaration isn't a prototype
-src/p-roc/p-roc.h:50:3: warning: function declaration isn't a prototype
-src/wpc/wpc.h:237:12: warning: 'wpc_sw2m' defined but not used
-src/wpc/wpc.h:238:12: warning: 'wpc_m2sw' defined but not used
+
+Compilation issues
+==================
+* src/wpc/wpc.h:238:12: warning: 'wpc_m2sw' defined but not used
+  Get this straight by correcting it in wpc.c, and define declaration in wpc.h.
+  Why has this function to be static?
+
+* src/p-roc/display.cpp
+src/p-roc/display.cpp: In function 'void procDrawDot(int, int, int)':
+src/p-roc/display.cpp:53:10: warning: 'temp_dot' may be used uninitialized in this function
+
+* src/p-roc/gameitems.cpp
+src/p-roc/gameitems.cpp: In member function 'void CoilDriver::RequestDrive(int)':
+src/p-roc/gameitems.cpp:393:80: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined
+src/p-roc/gameitems.cpp:401:76: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOn' may be undefined
+src/p-roc/gameitems.cpp: In function 'void procConfigureDriverDefaults()':
+src/p-roc/gameitems.cpp:140:45: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:140:69: warning: function call has aggregate value
+src/p-roc/gameitems.cpp: In function 'void procConfigureSwitchRules()':
+src/p-roc/gameitems.cpp:171:51: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:171:81: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:202:49: warning: function call has aggregate value
+src/p-roc/gameitems.cpp:202:77: warning: function call has aggregate value
