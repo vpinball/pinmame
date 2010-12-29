@@ -31,6 +31,9 @@ The GCC homepage is available at http://gcc.gnu.org/
 The GDB homepage is available at http://www.gnu.org/software/gdb/
 The Make homepage is available at http://www.gnu.org/software/make/
 The 7-Zip homepage is available at http://www.7-zip.org/
+The P-ROC homepage is available at http://www.pinballcontrollers.com/
+The YAML-CPP homepage is available at http://code.google.com/p/yaml-cpp/
+The FTDI homepage is available at http://www.ftdichip.com/
 
 
 -----------------
@@ -125,6 +128,20 @@ Step 1: Downloads
   * nasm-2.02-win32 (later versions should work too)
   Get it from http://www.nasm.us/pub/nasm/releasebuilds/
 
+For P-ROC support additional downloads are necessary:
+
+- Download the P-ROC library (libpinproc) to the downloads directory.
+  * libpinproc_20101205-mingw32-dev.tar.gz
+  Get it from http://ftp.maddes.net/mingw/libpinproc/
+
+- Download the YAML-CPP library (libyaml-cpp) to the downloads directory.
+  * libyaml-cpp-0.2.5-mingw32-dev.tar.gz
+  Get it from http://ftp.maddes.net/mingw/yaml-cpp/
+
+- Download FTDI's ftd2xx library (D2XX Direct Drivers) to the downloads directory.
+  * CDM20808.zip
+  Get it from http://www.ftdichip.com/Drivers/D2XX.htm
+
 
 -------------
 Step 2: Setup
@@ -209,6 +226,20 @@ Step 2: Setup
     Example "mingw5.bat":
       path c:\mingw5\bin;%path%
   Call the corresponding batch file for the needed MinGW version.
+
+For P-ROC support additional MinGW installations are necessary:
+
+- Extract the P-ROC library (libpinproc) package to the installation directory.
+  * libpinproc_20101205-mingw32-dev.tar.gz
+
+- Extract the YAML-CPP library (libyaml-cpp) package to the installation directory.
+  * libyaml-cpp-0.2.5-mingw32-dev.tar.gz
+
+- Extract the following files from FTDI's ftd2xx library (D2XX Direct Drivers)
+  to the installation directory.
+  * CDM20808.zip
+    - i386/ftd2xx.lib to MinGW's lib folder
+    - ftd2xx.h to MinGW's include folder
 
 
 The other (non-MinGW) tools can be placed into separate installation directories
