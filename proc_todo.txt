@@ -4,9 +4,6 @@ Comments / TODO:
   should provide MinGW packages of LIBPINPROC and YAML-CPP
   (example at http://ftp.maddes.net/mingw/)
 
-* makefile & src/p-roc/p-roc.mak:
-  - Find all CFLAGS changes and see if these should be added to CPPFLAGS too.
-
 * src/wpc/core.c:
   - Use VPINMAME solution for g_fHandleKeyboard/g_fHandleMechanics generally?
     Values depend on "-proc" switch.
