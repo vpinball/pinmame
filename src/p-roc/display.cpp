@@ -1,8 +1,8 @@
-#include "driver.h"
-#include "p-roc.hpp"
 extern "C" {
-#include <wpc/core.h>
+#include "driver.h"
+#include "wpc/core.h"
 }
+#include "p-roc.hpp"
 
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
