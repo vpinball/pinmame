@@ -9,9 +9,6 @@ extern "C" {
 #include "p-roc.hpp"
 #include "p-roc_drivers.hpp"
 
-// se.c/.h does not have a matrix-to-sw mapping function; so define it here.
-static int se_m2sw(int col, int row) { return col*8+(7-row)+1; }
-
 bool ignoreCoils[80] = { FALSE };
 std::vector<int> activeCoils;
 CoilDriver coilDrivers [256];

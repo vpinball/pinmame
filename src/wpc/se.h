@@ -111,5 +111,8 @@ extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
 #define SE_MINIDMD3   0x08
 #define SE_DIGIT      0x10
 #define SE_LED2       0x20
+
+int se_m2sw(int col, int row);
+
 #endif /* INC_SE */
 

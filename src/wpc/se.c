@@ -722,6 +722,9 @@ static NVRAM_HANDLER(se) {
   core_nvram(file, read_or_write, memory_region(SE_CPUREGION), 0x2000, 0xff);
 }
 
+// convert switch numbers
+int se_m2sw(int col, int row) { return col*8+(7-row)+1; }
+
 //Stern S.A.M Hardware support
 #ifdef INCLUDE_STERN_SAM
 #include "sam.c"
