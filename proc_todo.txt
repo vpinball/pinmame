@@ -102,10 +102,6 @@ Wish list:
 
 Compilation issues (GCC 4.5.0, minor)
 ==================
-* src/wpc/wpc.h:238:12: warning: 'wpc_m2sw' defined but not used
-  Get this straight by correcting it in wpc.c, and define declaration in wpc.h.
-  Why has this function to be static?
-
 * src/p-roc/display.cpp
 src/p-roc/display.cpp: In function 'void procDrawDot(int, int, int)':
 src/p-roc/display.cpp:53:10: warning: 'temp_dot' may be used uninitialized in this function
