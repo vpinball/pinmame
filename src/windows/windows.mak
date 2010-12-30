@@ -25,6 +25,7 @@ $(OBJ)/windows/asmtile.o: src/windows/asmtile.asm
 
 # add our prefix files to the mix
 CFLAGS += -mwindows -include src/$(MAMEOS)/winprefix.h
+CPPFLAGS += -mwindows -include src/$(MAMEOS)/winprefix.h
 
 # add the windows libraries
 LIBS += -luser32 -lgdi32 -lddraw -ldsound -ldinput -ldxguid -lwinmm
@@ -35,5 +36,6 @@ CURPATH = ./
 # if building with a UI, set the C flags and include the ui.mak
 ifneq ($(WINUI),)
 CFLAGS+= -DWINUI=1
+CPPFLAGS+= -DWINUI=1
 include src/ui/ui.mak
 endif
