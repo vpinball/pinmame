@@ -230,12 +230,6 @@ extern MACHINE_DRIVER_EXTERN(wpc_95S);
 #define wpc_m95DCSS      wpc_dcsS
 #define wpc_m95S         wpc_95S
 
-#ifdef PROC_SUPPORT
-// convert lamp and switch numbers
-// both use column*10+row
-// convert to 0-63 (+8)
-// i.e. 11=8,12=9,21=16
-static int wpc_m2sw(int col, int row) { return col*10+row+1; }
-#endif
+int wpc_m2sw(int col, int row);
 
 #endif /* INC_WPC */
