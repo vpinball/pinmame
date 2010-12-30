@@ -68,16 +68,18 @@ Compilation of libraries:
     * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
     * extracted i386/ftd2xx.lib to %MINGW_PATH%/lib, and /ftd2xx.h to %MINGW_PATH%/include
       (does not work with static/i386/ftd2xx.lib)
-  - YAML-CPP
+  - YAML-CPP (library compiles also with GCC 3.2.3, but throws a lot of "#pragma once" warnings)
     * downloaded "yaml-cpp-0.2.5.tar.gz"
     * extracted to D:\Coding\yaml-cpp-0.2.5\
     * cd /d D:\Coding\yaml-cpp-0.2.5\
-    * CMakeLists.txt: change to "SET (LIB_TYPE STATIC)"
+    * CMakeLists.txt:
+      - always: change to "SET (LIB_TYPE STATIC)"
+      - GCC 3.2.3: remove -Wextra from set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wno-long-long ${CMAKE_CXX_FLAGS}")
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * cmake -G "MinGW Makefiles" ..
-    * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
+    * cmake -DYAML_CPP_BUILD_TOOLS=OFF -G "MinGW Makefiles" ..
+    * mingw32-make
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
