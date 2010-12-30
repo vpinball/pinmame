@@ -1232,6 +1232,7 @@ DRIVER(cntct,l1)        //S3-482:   05/78 W Contact
 DRIVER(wldcp,l1)        //S3-481:   05/78 W World Cup
 DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
 //System 4
+DRIVER(pomp,l1)         //          ??/78 W Pompeii (Shuffle)
 DRIVER(topaz,l1)        //          ??/78 W Topaz (Shuffle)
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
@@ -1239,6 +1240,7 @@ DRIVER(flash,l1)        //S4-486:   01/79 W Flash
 DRIVER(flash,t1)        //          01/79 W Flash /10 Scoring Ted Estes
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
+DRIVER(arist,l1)        //          ??/79 W Aristocrat (Shuffle)
 DRIVER(taurs,l1)        //          ??/79 W Taurus (Shuffle)
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
