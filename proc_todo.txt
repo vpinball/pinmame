@@ -94,17 +94,11 @@ Compilation of libraries:
 
 Wish list:
 - Wiki page update
-  If FTDI stuff and YAML-CPP is installed in MinGW folder, then you do not need EXTRA_INC and EXTRA_LINK :D
-  Also at the top I would remove the comment about putting the FTDI DLL in the Windows System dir, this should be done by installing the driver and not manually
 - Some CMake enhancements (adopting from YAML-CPP and CMake wiki pages)
 
 
 Compilation issues (GCC 4.5.0, minor)
 ==================
-* src/p-roc/display.cpp
-src/p-roc/display.cpp: In function 'void procDrawDot(int, int, int)':
-src/p-roc/display.cpp:53:10: warning: 'temp_dot' may be used uninitialized in this function
-
 * src/p-roc/gameitems.cpp
 src/p-roc/gameitems.cpp: In member function 'void CoilDriver::RequestDrive(int)':
 src/p-roc/gameitems.cpp:393:80: warning: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined

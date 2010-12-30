@@ -281,7 +281,7 @@ CFLAGS =
 CPPFLAGS =
 
 CFLAGS += -std=gnu99
-CPPFLAGS += -std=gnu++98
+#TODO/PROC: CPPFLAGS += -std=gnu++98
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
@@ -311,12 +311,11 @@ endif
 # add MAME 0.76 basic set of warnings
 CFLAGS += \
 	-fstrict-aliasing \
-	-Wall -Wno-sign-compare -Wunused \
+	-Werror -Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wbad-function-cast -Wcast-align -Waggregate-return \
 	-Wshadow -Wstrict-prototypes -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
-#TODO/PROC: -Werror (before -Wall)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded
