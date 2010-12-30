@@ -1,14 +1,16 @@
 #include <stdarg.h>
-#include "driver.h"
-#include <wpc/sim.h>
+
 extern "C" {
-#include <wpc/core.h>
+#include "driver.h"
+#include "wpc/core.h"
+#include "wpc/sim.h"
 }
-#include "p-roc.hpp"
+
 #include <fstream>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include <p-roc/pinproc.h>
+#include "p-roc.hpp"
 #include "p-roc_drivers.hpp"
 
 // Create a global yamlDoc to hold the machine data parsed from the YAML file.

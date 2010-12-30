@@ -18,7 +18,6 @@ Comments / TODO:
   - coreGlobals.solenoids?
   - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
     Values depend on "-proc" switch.
-  - Why wpc_m2sw() in wpc.h? Why are these functions static?
 
 * General
   - "P-ROC" not "PROC"
