@@ -50,8 +50,8 @@ void procClearDMD(void) {
 
 // Fill in a dot.
 void procDrawDot(int x, int y, int color) {
-	uint8_t temp_dot;
-	uint8_t position;
+	uint8_t temp_dot = 0;
+	uint8_t position = 0;
 
 	int i;
 	for (i = 0; i < 4; i++) {
