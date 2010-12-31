@@ -55,6 +55,30 @@ static struct core_dispLayout se_dmd128x32[] = {
 };
 
 /*----------------------------
+/ Pompeii
+/----------------------------*/
+INITGAME(pomp, GEN_S3, dispS5)
+S4_ROMSTART(pomp,l1,"gamerom.716",CRC(0f069ac2) SHA1(d651d49cdb50cf444e420241a1f9ed48c878feee),
+                     "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
+S4_ROMEND
+#define input_ports_pomp input_ports_bowl
+CORE_GAMEDEF(pomp,l1,"Pompeii (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
+
+/*----------------------------
+/ Aristocrat
+/----------------------------*/
+INITGAME(arist, GEN_S3, dispS5)
+S4_ROMSTART(arist,l1,"gamerom.716",CRC(0f069ac2) SHA1(d651d49cdb50cf444e420241a1f9ed48c878feee),
+                     "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
+S4_ROMEND
+#define input_ports_arist input_ports_bowl
+CORE_GAMEDEF(arist,l1,"Aristocrat (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
+
+/*----------------------------
 / Topaz
 /----------------------------*/
 INITGAME(topaz, GEN_S3, dispS5)
