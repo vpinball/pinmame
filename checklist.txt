@@ -1,5 +1,4 @@
 Important steps to take before a release:
-=========================================
 
 #1 Preparation
 - Clean up the repository: Update the pinmame folder, remove sticky tags, commit tested changes.
@@ -51,36 +50,13 @@ If it worked out ok, however, do a release!
 :)
 
 
-
 Revision tests for compilation:
-===============================
-Test MSVC 6.0 and GCC 3.2.3 first, as MSVC 6 gives the most error messages (e.g.
-variable placement at top) and GCC 3.2.3 is quite old.
-At last test MSVC 2002 as this is used for the release build.
-
- * MinGW 2.0 with GCC 3.2.3
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-
- * (Optional) MinGW 5 with recent packages and GCC 4.5.0
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-   > known issues:
-     (2010-12-20) no sound with WPC pre-DCS ROMs
-
- * Visual C++ 6.0
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-
- * Visual C++ 2002 .NET (RELEASE!!!)
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-
- * Visual C++ 2008
-Known Issues:
-   > known issues:
-     (2008) Errors when compiling PinMAME32 VC debug builds
-            "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
-   > last trunk revision tested: 3102 = all builds compiled, except VC debug builds (Maddes)
-
+* MinGW 2.0 with GCC 3.2.3
+* (Optional) MinGW 5 with recent packages and GCC 4.5 (Maddes)
+* Visual C++ 6.0
+* Visual C++ 2002 .NET (RELEASE!!!)
+* Visual C++ 2008 (Maddes)
 
 
 Revision tests for emulated hardware platforms:
-===============================================
 * ...
