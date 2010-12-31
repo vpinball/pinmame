@@ -103,7 +103,7 @@ endif
 
 # uncomment next line to include P-ROC support
 # see http://www.pinballcontrollers.com/
-PROC = 1
+# PROC = 1
 
 
 
