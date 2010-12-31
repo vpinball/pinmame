@@ -379,6 +379,30 @@ SOURCE=.\src\cpu\m6502\t65sc02.c
 # Begin Group "M68000"
 
 # PROP Default_Filter ""
+# Begin Group "generated_by_m68kmake"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\generated_by_m68kmake\m68kopac.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\generated_by_m68kmake\m68kopdm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\generated_by_m68kmake\m68kopnz.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\generated_by_m68kmake\m68kops.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\generated_by_m68kmake\m68kops.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\cpudefs.h
@@ -398,6 +422,8 @@ SOURCE=.\src\cpu\m68000\m68kconf.h
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\m68kcpu.c
+# ADD BASE CPP /I "src\cpu\m68000\generated_by_m68kmake"
+# ADD CPP /I "src\cpu\m68000\generated_by_m68kmake"
 # End Source File
 # Begin Source File
 
@@ -420,26 +446,6 @@ SOURCE=.\src\cpu\m68000\m68kmame.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\m68kmame.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopac.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopdm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopnz.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kops.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kops.h
 # End Source File
 # End Group
 # Begin Group "S2650"
