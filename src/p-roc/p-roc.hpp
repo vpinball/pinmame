@@ -25,49 +25,43 @@
 #define kBumperPulseTime (25) // 25 ms
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
-  // Display functions
-  void procDMDInit(void);
-  void procClearDMD(void);
-  void procDrawDot(int x, int y, int color);
-  void procDrawSegment(int x, int y, int seg);
-  void procFillDMDSubFrame(int frameIndex, UINT8 *dotData, int length);
-  void procReverseSubFrameBytes( int frameIndex );
-  void procUpdateDMD(void);
-  void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom);
+// Display functions
+void procDMDInit(void);
+void procClearDMD(void);
+void procDrawDot(int x, int y, int color);
+void procDrawSegment(int x, int y, int seg);
+void procFillDMDSubFrame(int frameIndex, UINT8 *dotData, int length);
+void procReverseSubFrameBytes(int frameIndex);
+void procUpdateDMD(void);
+void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom);
 
-  // Gameitem functions
-  void procSetSwitchStates(void);
-  void procDriveLamp(int num, int state);
-  void procDriveCoil(int num, int state);
-  void procGetSwitchEvents(void);
-  void procInitializeCoilDrivers(void);
-  void procCheckActiveCoils(void);
-  void procConfigureDefaultSwitchRules(void);
-  void procConfigureDriverDefaults(void);
-  void procConfigureSwitchRules(void);
+// Gameitem functions
+void procSetSwitchStates(void);
+void procDriveLamp(int num, int state);
+void procDriveCoil(int num, int state);
+void procGetSwitchEvents(void);
+void procInitializeCoilDrivers(void);
+void procCheckActiveCoils(void);
+void procConfigureDefaultSwitchRules(void);
+void procConfigureDriverDefaults(void);
+void procConfigureSwitchRules(void);
 
-  // Generic P-ROC functions.
-  int procInitialize(char *yaml_filename);
-  void procDeinitialize(void);
-  void procTickleWatchdog(void);
-  void procFlush(void);
+// Generic P-ROC functions.
+int procInitialize(char *yaml_filename);
+void procDeinitialize(void);
+void procTickleWatchdog(void);
+void procFlush(void);
 
-// The following is a work around for using MinGW with gcc 3.2.3 to compile 
-// the yaml-cpp dependency.  gcc 3.2.3 is missing the definition of 'strtold'
-// in libstdc++, and yaml-cpp makes heavy use of stringstream, which uses
-// strtold internally.  Defining strtold here allows pinmame to link with
-// yaml-cpp, and by using strtod, it will work properly for everything except
-// longs, which shouldn't be used in pinball YAML files anyway.
-
+// Work around for MinGW with gcc 3.2.3
 #if (__MINGW32__) && (__GNUC__) && (__GNUC__ < 4)
-  long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr);
+long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr);
 #endif /* __MINGW32__, __GNUC__, __GNUC__ < 4 */
 
 #ifdef __cplusplus
- }
+}
 #endif
 
 #endif /* INC_PROC */

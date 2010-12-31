@@ -44,7 +44,7 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #define SE_ROMBANK0         1
 
 #ifdef PROC_SUPPORT
-// TODO: Make variables out of these defines. Values depend on "-proc" switch.
+// TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define SE_SOLSMOOTH       1 /* Don't smooth values on real hardware */
 #define SE_LAMPSMOOTH      1
 #define SE_DISPLAYSMOOTH   1
@@ -143,7 +143,7 @@ static INTERRUPT_GEN(se_vblank) {
 
 				/* standard coils */
 				for (ii = 0; ii < 28; ii++) {
-					// TODO: disable LOTR flippers.  Hardcoded now.  Will need to do this dynamically
+					// TODO/PROC: disable LOTR flippers.  Hardcoded now.  Will need to do this dynamically
 					if (chgSol & 0x01) {
 						procDriveCoil(ii + 32, tmpSol & 0x01);
 					}
@@ -152,7 +152,7 @@ static INTERRUPT_GEN(se_vblank) {
 				}
 			}
 			procFlush();
-			// TODO: This doesn't seem to be happening in core.c.  Why not?
+			// TODO/PROC: This doesn't seem to be happening in core.c.  Why not?
 			coreGlobals.lastSol = allSol;
 		}
 #endif
@@ -175,7 +175,7 @@ static SWITCH_UPDATE(se) {
 	if (coreGlobals.p_rocEn) {
 		procGetSwitchEvents();
 	} else {
-		// TODO: Really not necessary for P-ROC?
+		// TODO/PROC: Really not necessary for P-ROC?
 #endif
   if (inports) {
    if (core_gameData->hw.display & SE_LED2) {

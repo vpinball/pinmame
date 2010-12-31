@@ -510,9 +510,8 @@ static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but sp
 
 static tSegData segData[2][16] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
-/* Use segSize2C[0][0] for P-ROC's alpha_on_dmd functionality as
-   it maps better to the DMD. */
-#ifdef PROC_SUPPORT	//ToDo: Why this difference?
+#ifdef PROC_SUPPORT	//TODO/PROC: Will this work in normal PinMAME build too?
+  /* Use segSize2C for P-ROC's alpha_on_dmd functionality as it maps better to the DMD. */
   {20,15,&segSize2C[0][0]},/* SEG16R */
 #else
   {20,15,&segSize1C[3][0]},/* SEG16R */
@@ -1408,7 +1407,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
 				if (pmoptions.alpha_on_dmd) {
-					/* Draw Alphanumeric segements on the DMD */
+					/* Draw alphanumeric segments on the DMD */
 					if (row == 0) {
 						procDrawSegment(col/2, 0, kk-1);
 					} else {
