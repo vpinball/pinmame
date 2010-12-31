@@ -144,7 +144,7 @@ int procInitialize(char *yaml_filename) {
 		coreGlobals.proc = PRCreate(procType);
 		if (coreGlobals.proc == kPRHandleInvalid) {
 			fprintf(stderr, "Error during PRCreate: %s\n", PRGetLastErrorText());
-			fprintf(stderr, "****** Ending P-ROC Initialization ******\n");
+			fprintf(stderr, "\n****** Ending P-ROC Initialization ******\n");
 			return 0;
 		} else {
 // TODO/PROC: Change PinMAME to always have these variables
@@ -164,7 +164,7 @@ int procInitialize(char *yaml_filename) {
 				procDMDInit();
 			}
 
-			fprintf(stderr, "****** P-ROC Initialization COMPLETE ******\n\n");
+			fprintf(stderr, "\n****** P-ROC Initialization COMPLETE ******\n\n");
 		}
 	}
 
@@ -175,3 +175,16 @@ int procInitialize(char *yaml_filename) {
 void procTickleWatchdog(void) {
 	PRDriverWatchdogTickle(coreGlobals.proc);
 }
+
+// The following is a work around for using MinGW with gcc 3.2.3 to compile 
+// the yaml-cpp dependency.  gcc 3.2.3 is missing the definition of 'strtold'
+// in libstdc++, and yaml-cpp makes heavy use of stringstream, which uses
+// strtold internally.  Defining strtold here allows pinmame to link with
+// yaml-cpp, and by using strtod, it will work properly for everything except
+// longs, which shouldn't be used in pinball YAML files anyway.
+
+#if (__MINGW32__) && (__GNUC__) && (__GNUC__ < 4)
+	long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr) {
+		return strtod(nptr, endptr);
+	}
+#endif

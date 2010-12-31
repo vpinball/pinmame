@@ -256,10 +256,8 @@ int changed_gi[CORE_MAXGI];
       dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
-				if (coreGlobals.proc) {
-					if (dmdlocals.nextDMDFrame == 0) {
-						procUpdateDMD();
-					}
+				if (dmdlocals.nextDMDFrame == 0) {
+					procUpdateDMD();
 				}
 			}
 #endif
@@ -270,6 +268,9 @@ int changed_gi[CORE_MAXGI];
 // TODO: Is this the right place for this
 	if (coreGlobals.p_rocEn) {
 		// Enable Flippers for WPC-Alphanumeric machines
+		// This is done here instead of in the init code because the P-ROC's
+		// 1 second watchdog timer expires after the init code runs, leaving
+		// the flippers disabled.
 		if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) {
 			procDriveLamp(79, 1);
 		}
@@ -307,19 +308,33 @@ int changed_gi[CORE_MAXGI];
 			UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
 			UINT64 tmpSol = allSol;
 
-			for (ii=0; ii<40; ii++) {
+			for (ii=0; ii<64; ii++) {
 				if (chgSol & 0x1) {
 					// Standard Coils
 					if (ii < 32) {
 						procDriveCoil(ii+40, tmpSol & 0x1);
 					} else if (ii < 36) {
+						procDriveCoil(ii+4, tmpSol & 0x1);
+					} else if (ii < 44) {
 						if (core_gameData->gen & GENWPC_HASWPC95) {
-							procDriveCoil(ii+4, tmpSol & 0x1);
+							procDriveCoil(ii+32, tmpSol & 0x1);
 						}
-					} else if (ii < 40) {
-						if (core_gameData->gen & GENWPC_HASWPC95) {
-							procDriveCoil(ii+8, tmpSol & 0x1);
+						else {
+							procDriveCoil(ii+108, tmpSol & 0x1);
 						}
+					// TODO: Upper flipper circuits in WPC-95.
+					// They don't appear to be activated
+					// unless there are handlers in the
+					// game's sim code.  Need to figure
+					// out how to handle games both with
+					// and without sim code.
+					//} else if (ii == 51) {
+					//	procDriveCoil(36, tmpSol & 0x1);
+					//} else if (ii == 50) {
+					//	procDriveCoil(37, tmpSol & 0x1);
+					//} else if (ii == 52) {
+					//	procDriveCoil(38, tmpSol & 0x1);
+					//	procDriveCoil(39, tmpSol & 0x1);
 					}
 				}
 				chgSol >>= 1;

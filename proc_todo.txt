@@ -18,6 +18,7 @@ Comments / TODO:
   - coreGlobals.solenoids?
   - Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
     Values depend on "-proc" switch.
+  - Figure out how to handle upper flipper solenoids
 
 * General
   - "P-ROC" not "PROC"
@@ -75,7 +76,7 @@ Compilation of libraries:
     * mkdir bin
     * cd bin
     * cmake -DYAML_CPP_BUILD_TOOLS=OFF -G "MinGW Makefiles" ..
-    * mingw32-make
+    * mingw32-make yaml-cpp (only need to build the library)
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
@@ -86,7 +87,7 @@ Compilation of libraries:
     * mkdir bin
     * cd bin
     * cmake -G "MinGW Makefiles" ..
-    * mingw32-make (needs GCC 4 or later, doesn't compile with GCC 3.2.3)
+    * mingw32-make pinproc (only need to build the library)
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libpinproc.a and include/p-roc/pinproc.h
