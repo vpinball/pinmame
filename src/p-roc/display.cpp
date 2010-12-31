@@ -71,6 +71,24 @@ void procFillDMDSubFrame(int frameIndex, UINT8 *dotData, int length)
 	memcpy(procdmd[frameIndex], dotData, length);
 }
 
+void procReverseSubFrameBytes( int frameIndex )
+{
+	int i;
+	uint8_t byte, new_byte;
+	for (i=0; i<0x200; i++) {
+		byte = procdmd[frameIndex][i];
+		new_byte = ((byte & 0x1) << 7) |
+		           ((byte & 0x2) << 5) |
+		           ((byte & 0x4) << 3) |
+		           ((byte & 0x8) << 1) |
+		           ((byte & 0x10) >> 1) |
+		           ((byte & 0x20) >> 3) |
+		           ((byte & 0x40) >> 5) |
+		           ((byte & 0x80) >> 7);
+		procdmd[frameIndex][i] = new_byte;
+	}
+}
+
 // Turn on the requested alphanumeric segment.
 void procDrawSegment(int x, int y, int seg) {
 	switch (seg) {

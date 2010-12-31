@@ -124,9 +124,28 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
   int ii,jj;
 
 #ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
-		procClearDMD();
-	}
+  if (coreGlobals.p_rocEn) {
+    /* Start with an empty frame buffer */
+    procClearDMD();
+
+    /* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
+       has 4 subframes for up to 16 colors.  Experimentation has showed
+       using P-ROC subframe 2 and 3 provides a pretty good color match. */
+    const int procSubFrame0 = 2;
+    const int procSubFrame1 = 3;
+
+    /* Fill the P-ROC subframes from the video RAM */
+    procFillDMDSubFrame(procSubFrame0, RAM, 0x200);
+    procFillDMDSubFrame(procSubFrame1, RAM2, 0x200);
+
+    /* Each byte is reversed in the video RAM relative to the bit order the P-ROC
+       expects.  So reverse each byte. */
+    procReverseSubFrameBytes(procSubFrame0);
+    procReverseSubFrameBytes(procSubFrame1);
+    
+    /* Tell the P-ROC to display the new frame. */
+    procUpdateDMD();
+  }
 #endif
 
   for (ii = 1; ii <= 32; ii++) {
@@ -143,26 +162,9 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
       RAM += 1; RAM2 += 1;
-
-#ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				int iii;
-				for (iii = 0; iii<8; iii++) {
-					if (*(line-(8-iii))) {
-						procDrawDot(jj*8+iii, ii-1, *(line-(8-iii)));
-					}
-				}
-			}
-#endif
     }
     *line = 0;
   }
-
-#ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
-		procUpdateDMD();
-	}
-#endif
 
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
