@@ -22,7 +22,7 @@
 
 /*-- Smoothing values --*/
 #ifdef PROC_SUPPORT
-// TODO: Make variables out of these defines. Values depend on "-proc" switch.
+// TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
 #define WPC_SOLSMOOTH      1 /* Don't smooth values on real hardware */
 #define WPC_LAMPSMOOTH     1
 #define WPC_DISPLAYSMOOTH  1
@@ -265,7 +265,6 @@ int changed_gi[CORE_MAXGI];
   }
 
 #ifdef PROC_SUPPORT
-// TODO: Is this the right place for this
 	if (coreGlobals.p_rocEn) {
 		// Enable Flippers for WPC-Alphanumeric machines
 		// This is done here instead of in the init code because the P-ROC's
@@ -318,23 +317,26 @@ int changed_gi[CORE_MAXGI];
 					} else if (ii < 44) {
 						if (core_gameData->gen & GENWPC_HASWPC95) {
 							procDriveCoil(ii+32, tmpSol & 0x1);
-						}
-						else {
+						} else {
 							procDriveCoil(ii+108, tmpSol & 0x1);
 						}
-					// TODO: Upper flipper circuits in WPC-95.
+					// TODO/PROC: Upper flipper circuits in WPC-95.
 					// They don't appear to be activated
 					// unless there are handlers in the
 					// game's sim code.  Need to figure
 					// out how to handle games both with
 					// and without sim code.
-					//} else if (ii == 51) {
-					//	procDriveCoil(36, tmpSol & 0x1);
+					//} else if (ii < 50) {
+					//	???
 					//} else if (ii == 50) {
 					//	procDriveCoil(37, tmpSol & 0x1);
+					//} else if (ii == 51) {
+					//	procDriveCoil(36, tmpSol & 0x1);
 					//} else if (ii == 52) {
 					//	procDriveCoil(38, tmpSol & 0x1);
 					//	procDriveCoil(39, tmpSol & 0x1);
+					//} else {
+					//	???
 					}
 				}
 				chgSol >>= 1;

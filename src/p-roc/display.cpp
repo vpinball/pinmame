@@ -74,8 +74,7 @@ void procFillDMDSubFrame(int frameIndex, UINT8 *dotData, int length)
 	memcpy(procdmd[frameIndex], dotData, length);
 }
 
-void procReverseSubFrameBytes( int frameIndex )
-{
+void procReverseSubFrameBytes(int frameIndex) {
 	int i;
 	uint8_t byte, new_byte;
 	for (i=0; i<0x200; i++) {
@@ -95,105 +94,105 @@ void procReverseSubFrameBytes( int frameIndex )
 // Turn on the requested alphanumeric segment.
 void procDrawSegment(int x, int y, int seg) {
 	switch (seg) {
-	 case 0:
-		procDrawDot(x+1, y, 0xf);
-		procDrawDot(x+2, y, 0xf);
-		procDrawDot(x+3, y, 0xf);
-		procDrawDot(x+4, y, 0xf);
-		procDrawDot(x+5, y, 0xf);
-		break;
-	 case 1:
-		procDrawDot(x+6, y+1, 0xf);
-		procDrawDot(x+6, y+2, 0xf);
-		procDrawDot(x+6, y+3, 0xf);
-		procDrawDot(x+6, y+4, 0xf);
-		break;
-	 case 2:
-		procDrawDot(x+6, y+6, 0xf);
-		procDrawDot(x+6, y+7, 0xf);
-		procDrawDot(x+6, y+8, 0xf);
-		procDrawDot(x+6, y+9, 0xf);
-		break;
-	 case 3:
-		procDrawDot(x+1, y+10, 0xf);
-		procDrawDot(x+2, y+10, 0xf);
-		procDrawDot(x+3, y+10, 0xf);
-		procDrawDot(x+4, y+10, 0xf);
-		procDrawDot(x+5, y+10, 0xf);
-		break;
-	 case 4:
-		procDrawDot(x, y+6, 0xf);
-		procDrawDot(x, y+7, 0xf);
-		procDrawDot(x, y+8, 0xf);
-		procDrawDot(x, y+9, 0xf);
-		break;
-	 case 5:
-		procDrawDot(x, y+1, 0xf);
-		procDrawDot(x, y+2, 0xf);
-		procDrawDot(x, y+3, 0xf);
-		procDrawDot(x, y+4, 0xf);
-		break;
-	 case 6:
-		procDrawDot(x+1, y+5, 0xf);
-		procDrawDot(x+2, y+5, 0xf);
-		procDrawDot(x+3, y+5, 0xf);
-		break;
-	 case 7:
-		procDrawDot(x+7, y+10, 0xf);
-		break;
-	 case 8:
-		procDrawDot(x+0, y+0, 0xf);
-		procDrawDot(x+1, y+1, 0xf);
-		procDrawDot(x+1, y+2, 0xf);
-		procDrawDot(x+2, y+3, 0xf);
-		procDrawDot(x+2, y+4, 0xf);
-		procDrawDot(x+3, y+5, 0xf);
-		break;
-	 case 9:
-		procDrawDot(x+3, y+1, 0xf);
-		procDrawDot(x+3, y+2, 0xf);
-		procDrawDot(x+3, y+3, 0xf);
-		procDrawDot(x+3, y+4, 0xf);
-		break;
-	 case 10:
-		procDrawDot(x+6, y+0, 0xf);
-		procDrawDot(x+5, y+1, 0xf);
-		procDrawDot(x+5, y+2, 0xf);
-		procDrawDot(x+4, y+3, 0xf);
-		procDrawDot(x+4, y+4, 0xf);
-		procDrawDot(x+3, y+5, 0xf);
-		break;
-	 case 11:
-		procDrawDot(x+3, y+5, 0xf);
-		procDrawDot(x+4, y+5, 0xf);
-		procDrawDot(x+5, y+5, 0xf);
-		break;
-	 case 12:
-		procDrawDot(x+6, y+10, 0xf);
-		procDrawDot(x+5, y+9, 0xf);
-		procDrawDot(x+5, y+8, 0xf);
-		procDrawDot(x+4, y+7, 0xf);
-		procDrawDot(x+4, y+6, 0xf);
-		procDrawDot(x+3, y+5, 0xf);
-		break;
-	 case 13:
-		procDrawDot(x+3, y+6, 0xf);
-		procDrawDot(x+3, y+7, 0xf);
-		procDrawDot(x+3, y+8, 0xf);
-		procDrawDot(x+3, y+9, 0xf);
-		break;
-	 case 14:
-		procDrawDot(x+0, y+10, 0xf);
-		procDrawDot(x+1, y+9, 0xf);
-		procDrawDot(x+1, y+8, 0xf);
-		procDrawDot(x+2, y+7, 0xf);
-		procDrawDot(x+2, y+6, 0xf);
-		procDrawDot(x+3, y+5, 0xf);
-		break;
-	 case 15:
-		procDrawDot(x+7, y+9, 0xf);
-		procDrawDot(x+6, y+11, 0xf);
-		break;
+		case 0:
+			procDrawDot(x+1, y, 0xf);
+			procDrawDot(x+2, y, 0xf);
+			procDrawDot(x+3, y, 0xf);
+			procDrawDot(x+4, y, 0xf);
+			procDrawDot(x+5, y, 0xf);
+			break;
+		case 1:
+			procDrawDot(x+6, y+1, 0xf);
+			procDrawDot(x+6, y+2, 0xf);
+			procDrawDot(x+6, y+3, 0xf);
+			procDrawDot(x+6, y+4, 0xf);
+			break;
+		case 2:
+			procDrawDot(x+6, y+6, 0xf);
+			procDrawDot(x+6, y+7, 0xf);
+			procDrawDot(x+6, y+8, 0xf);
+			procDrawDot(x+6, y+9, 0xf);
+			break;
+		case 3:
+			procDrawDot(x+1, y+10, 0xf);
+			procDrawDot(x+2, y+10, 0xf);
+			procDrawDot(x+3, y+10, 0xf);
+			procDrawDot(x+4, y+10, 0xf);
+			procDrawDot(x+5, y+10, 0xf);
+			break;
+		case 4:
+			procDrawDot(x, y+6, 0xf);
+			procDrawDot(x, y+7, 0xf);
+			procDrawDot(x, y+8, 0xf);
+			procDrawDot(x, y+9, 0xf);
+			break;
+		case 5:
+			procDrawDot(x, y+1, 0xf);
+			procDrawDot(x, y+2, 0xf);
+			procDrawDot(x, y+3, 0xf);
+			procDrawDot(x, y+4, 0xf);
+			break;
+		case 6:
+			procDrawDot(x+1, y+5, 0xf);
+			procDrawDot(x+2, y+5, 0xf);
+			procDrawDot(x+3, y+5, 0xf);
+			break;
+		case 7:
+			procDrawDot(x+7, y+10, 0xf);
+			break;
+		case 8:
+			procDrawDot(x+0, y+0, 0xf);
+			procDrawDot(x+1, y+1, 0xf);
+			procDrawDot(x+1, y+2, 0xf);
+			procDrawDot(x+2, y+3, 0xf);
+			procDrawDot(x+2, y+4, 0xf);
+			procDrawDot(x+3, y+5, 0xf);
+			break;
+		case 9:
+			procDrawDot(x+3, y+1, 0xf);
+			procDrawDot(x+3, y+2, 0xf);
+			procDrawDot(x+3, y+3, 0xf);
+			procDrawDot(x+3, y+4, 0xf);
+			break;
+		case 10:
+			procDrawDot(x+6, y+0, 0xf);
+			procDrawDot(x+5, y+1, 0xf);
+			procDrawDot(x+5, y+2, 0xf);
+			procDrawDot(x+4, y+3, 0xf);
+			procDrawDot(x+4, y+4, 0xf);
+			procDrawDot(x+3, y+5, 0xf);
+			break;
+		case 11:
+			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+4, y+5, 0xf);
+			procDrawDot(x+5, y+5, 0xf);
+			break;
+		case 12:
+			procDrawDot(x+6, y+10, 0xf);
+			procDrawDot(x+5, y+9, 0xf);
+			procDrawDot(x+5, y+8, 0xf);
+			procDrawDot(x+4, y+7, 0xf);
+			procDrawDot(x+4, y+6, 0xf);
+			procDrawDot(x+3, y+5, 0xf);
+			break;
+		case 13:
+			procDrawDot(x+3, y+6, 0xf);
+			procDrawDot(x+3, y+7, 0xf);
+			procDrawDot(x+3, y+8, 0xf);
+			procDrawDot(x+3, y+9, 0xf);
+			break;
+		case 14:
+			procDrawDot(x+0, y+10, 0xf);
+			procDrawDot(x+1, y+9, 0xf);
+			procDrawDot(x+1, y+8, 0xf);
+			procDrawDot(x+2, y+7, 0xf);
+			procDrawDot(x+2, y+6, 0xf);
+			procDrawDot(x+3, y+5, 0xf);
+			break;
+		case 15:
+			procDrawDot(x+7, y+9, 0xf);
+			procDrawDot(x+6, y+11, 0xf);
+			break;
 	}
 }
 

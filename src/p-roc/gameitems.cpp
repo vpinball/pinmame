@@ -20,49 +20,56 @@ extern YAML::Node yamlDoc;
 
 void set_swState(int value, int type) {
 	switch (type) {
-	 case kPREventTypeSwitchOpenDebounced:
-	 case kPREventTypeSwitchClosedDebounced:
-	 case kPREventTypeSwitchOpenNondebounced:
-	 case kPREventTypeSwitchClosedNondebounced:
-		if (procType == kPRMachineSternWhitestar || procType == kPRMachineSternSAM) {
-			// Flippers need to go to column 12 for some reason
-			if (value < 12) {	// Dedicated Switches
-				int local_value = value;
+		case kPREventTypeSwitchOpenDebounced:
+		case kPREventTypeSwitchClosedDebounced:
+		case kPREventTypeSwitchOpenNondebounced:
+		case kPREventTypeSwitchClosedNondebounced:
+			if (procType == kPRMachineSternWhitestar || procType == kPRMachineSternSAM) {
+				// Flippers need to go to column 12 for some reason
+				if (value < 12) {	// Dedicated Switches
+					int local_value = value;
 
-				// For Whitestar, the flipper switches are used in 
-				// reverse order in pinmame.  Not sure why, but there's 
-				// code in se.c to do the reversing.  So, reverse 
-				// them as they come in so that they'll be corrected by 
-				// the reversing code in se.c
-				switch (value) {
-					case 8: local_value=11; break;
-					case 9: local_value=10; break;
-					case 10: local_value=9; break;
-					case 11: local_value=8; break;
+					// For Whitestar, the flipper switches are used in
+					// reverse order in pinmame.  Not sure why, but there's
+					// code in se.c to do the reversing.  So, reverse
+					// them as they come in so that they'll be corrected by
+					// the reversing code in se.c
+					switch (value) {
+						case 8:
+							local_value=11;
+							break;
+						case 9:
+							local_value=10;
+							break;
+						case 10:
+							local_value=9;
+							break;
+						case 11:
+							local_value=8;
+							break;
+					}
+
+					int temp = (7-(local_value & 0x7));
+					core_setSw(se_m2sw(10, temp), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value < 16) {	// Dedicated Switches
+					// Service switches need to go to column -1 for some reason.
+					core_setSw(se_m2sw(-1, 7-(value & 0x7)), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value >= 32) {	// Matrix Switches
+					core_setSw(se_m2sw(((value - 32) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
 				}
+			} else {
+				if (value < 8) {	// Flipper Switches
+					core_setSw(wpc_m2sw(CORE_FLIPPERSWCOL, value), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value < 16) {	// Dedicated Switches
+					core_setSw(wpc_m2sw(0, value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value >= 32) {	// Matrix Switches
+					core_setSw(wpc_m2sw(((value - 16) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+				}
+			}
+			break;
 
-				int temp = (7-(local_value & 0x7));
-				core_setSw(se_m2sw(10, temp), (type & kPREventTypeSwitchClosedDebounced));
-			}
-			// Service switches need to go to column -1 for some reason.
-			else if (value < 16) {	// Dedicated Switches
-				core_setSw(se_m2sw(-1, 7-(value & 0x7)), (type & kPREventTypeSwitchClosedDebounced));
-			} else if (value >= 32) {	// Matrix Switches
-				core_setSw(se_m2sw(((value - 32) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
-			}
-		} else {
-			if (value < 8) {	// Flipper Switches
-				core_setSw(wpc_m2sw(CORE_FLIPPERSWCOL, value), (type & kPREventTypeSwitchClosedDebounced));
-			} else if (value < 16) {	// Dedicated Switches
-				core_setSw(wpc_m2sw(0, value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
-			} else if (value >= 32) {	// Matrix Switches
-				core_setSw(wpc_m2sw(((value - 16) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
-			}
-		}
-		break;
-
-	 case kPREventTypeDMDFrameDisplayed:
-		break;
+		case kPREventTypeDMDFrameDisplayed:
+			break;
 	}
 }
 

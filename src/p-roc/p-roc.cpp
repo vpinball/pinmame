@@ -73,41 +73,41 @@ PRMachineType procLoadMachineYAML(char *filename) {
 PRMachineType procSetMachineType(char *yaml_filename) {
 	// First set the machine type based on the ROM being run.
 	switch (core_gameData->gen) {
-	 case GEN_WPCALPHA_1:
-	 case GEN_WPCALPHA_2:
-		if (pmoptions.alpha_on_dmd) {
+		case GEN_WPCALPHA_1:
+		case GEN_WPCALPHA_2:
+			if (pmoptions.alpha_on_dmd) {
+				procType = kPRMachineWPC;
+				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
+			} else {
+				procType = kPRMachineWPCAlphanumeric;
+				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
+			}
+			break;
+		case GEN_WPCDMD:
+		case GEN_WPCFLIPTRON:
+		case GEN_WPCDCS:
+		case GEN_WPCSECURITY:
 			procType = kPRMachineWPC;
-			fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
-		} else {
-			procType = kPRMachineWPCAlphanumeric;
-			fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
-		}
-		break;
-	 case GEN_WPCDMD:
-	 case GEN_WPCFLIPTRON:
-	 case GEN_WPCDCS:
-	 case GEN_WPCSECURITY:
-		procType = kPRMachineWPC;
-		fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
-		break;
-	 case GEN_WPC95DCS:
-	 case GEN_WPC95:
-		procType = kPRMachineWPC95;
-		fprintf(stderr, "ROM machine type: kPRMachineWPC95\n");
-		break;
-	 case GEN_WS:
-	 case GEN_WS_1:
-	 case GEN_WS_2:
-		procType = kPRMachineSternWhitestar;
-		fprintf(stderr, "ROM machine type: kPRMachineSternWhitestar\n");
-		break;
-	 case GEN_SAM:
-		procType = kPRMachineSternSAM;
-		fprintf(stderr, "ROM machine type kPRMachineSternSAM\n");
-		break;
-	 default:
-		procType = kPRMachineInvalid;
-		fprintf(stderr, "Unknown ROM machine type in YAML file\n");
+			fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
+			break;
+		case GEN_WPC95DCS:
+		case GEN_WPC95:
+			procType = kPRMachineWPC95;
+			fprintf(stderr, "ROM machine type: kPRMachineWPC95\n");
+			break;
+		case GEN_WS:
+		case GEN_WS_1:
+		case GEN_WS_2:
+			procType = kPRMachineSternWhitestar;
+			fprintf(stderr, "ROM machine type: kPRMachineSternWhitestar\n");
+			break;
+		case GEN_SAM:
+			procType = kPRMachineSternSAM;
+			fprintf(stderr, "ROM machine type kPRMachineSternSAM\n");
+			break;
+		default:
+			procType = kPRMachineInvalid;
+			fprintf(stderr, "Unknown ROM machine type in YAML file\n");
 	}
 
 	// Now get the machine type identified in the YAML file and
@@ -183,7 +183,7 @@ void procTickleWatchdog(void) {
 	PRDriverWatchdogTickle(proc);
 }
 
-// The following is a work around for using MinGW with gcc 3.2.3 to compile 
+// The following is a work around for using MinGW with gcc 3.2.3 to compile
 // the yaml-cpp dependency.  gcc 3.2.3 is missing the definition of 'strtold'
 // in libstdc++, and yaml-cpp makes heavy use of stringstream, which uses
 // strtold internally.  Defining strtold here allows pinmame to link with
@@ -191,7 +191,7 @@ void procTickleWatchdog(void) {
 // longs, which shouldn't be used in pinball YAML files anyway.
 
 #if (__MINGW32__) && (__GNUC__) && (__GNUC__ < 4)
-	long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr) {
-		return strtod(nptr, endptr);
-	}
+long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr) {
+	return strtod(nptr, endptr);
+}
 #endif
