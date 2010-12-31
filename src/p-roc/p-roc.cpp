@@ -13,6 +13,9 @@ extern "C" {
 #include "p-roc.hpp"
 #include "p-roc_drivers.hpp"
 
+// Handle to the P-ROC instance.
+PRHandle proc;
+
 // Create a global yamlDoc to hold the machine data parsed from the YAML file.
 // Other p-roc support files need access to it. No sense passing it around
 // everywhere.
@@ -132,7 +135,11 @@ PRMachineType procSetMachineType(char *yaml_filename) {
 
 // Send all pending commands to the P-ROC.
 void procFlush(void) {
-	PRFlushWriteData(coreGlobals.proc);
+	PRFlushWriteData(proc);
+}
+
+void procDeinitialize() {
+	PRDelete(proc);
 }
 
 // Initialize the P-ROC hardware.
@@ -141,8 +148,8 @@ int procInitialize(char *yaml_filename) {
 
 	procType = procSetMachineType(yaml_filename);
 	if (procType != kPRMachineInvalid) {
-		coreGlobals.proc = PRCreate(procType);
-		if (coreGlobals.proc == kPRHandleInvalid) {
+		proc = PRCreate(procType);
+		if (proc == kPRHandleInvalid) {
 			fprintf(stderr, "Error during PRCreate: %s\n", PRGetLastErrorText());
 			fprintf(stderr, "\n****** Ending P-ROC Initialization ******\n");
 			return 0;
@@ -152,7 +159,7 @@ int procInitialize(char *yaml_filename) {
 			g_fHandleKeyboard = 0;
 			g_fHandleMechanics = 0;
 #endif
-			PRReset(coreGlobals.proc, kPRResetFlagUpdateDevice);
+			PRReset(proc, kPRResetFlagUpdateDevice);
 			procConfigureDefaultSwitchRules();
 
 			procInitializeCoilDrivers();
@@ -173,7 +180,7 @@ int procInitialize(char *yaml_filename) {
 
 // Tickle the P-ROC's watchdog so it doesn't disable driver outputs.
 void procTickleWatchdog(void) {
-	PRDriverWatchdogTickle(coreGlobals.proc);
+	PRDriverWatchdogTickle(proc);
 }
 
 // The following is a work around for using MinGW with gcc 3.2.3 to compile 

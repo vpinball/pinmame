@@ -4,9 +4,6 @@
 #include "wpcsam.h"
 #include "gen.h"
 #include "sim.h"
-#ifdef PROC_SUPPORT
-#include <p-roc/pinproc.h>	// library include
-#endif
 
 /*-- some convenience macros --*/
 #ifndef FALSE
@@ -389,9 +386,6 @@ typedef struct {
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
   int    p_rocEn;         /* P-ROC support enable */
   char   segDim[CORE_SEGCOUNT]; /* segments dimming */
-#ifdef PROC_SUPPORT
-	PRHandle proc;
-#endif
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */

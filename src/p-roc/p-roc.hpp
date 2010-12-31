@@ -51,6 +51,7 @@
 
   // Generic P-ROC functions.
   int procInitialize(char *yaml_filename);
+  void procDeinitialize(void);
   void procTickleWatchdog(void);
   void procFlush(void);
 

@@ -109,7 +109,7 @@ static INTERRUPT_GEN(se_vblank) {
 				procSetSwitchStates();
 				switches_retrieved = 1;
 			}
-			if (coreGlobals.proc) {
+			if (coreGlobals.p_rocEn) {
 				int col, row;
 				for(col = 0; col < 10; col++) {
 					UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
@@ -136,7 +136,7 @@ static INTERRUPT_GEN(se_vblank) {
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
 			UINT64 allSol = core_getAllSol();
-			if (coreGlobals.proc) {
+			if (coreGlobals.p_rocEn) {
 				int ii;
 				UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
 				UINT64 tmpSol = allSol;

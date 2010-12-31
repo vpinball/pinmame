@@ -1533,8 +1533,8 @@ static MACHINE_STOP(core) {
   }
   memset(locals.timers, 0, sizeof(locals.timers));
 #ifdef PROC_SUPPORT
-	if (coreGlobals.proc) {
-		PRDelete(coreGlobals.proc);
+	if (coreGlobals.p_rocEn) {
+		procDeinitialize();
 	}
 #endif
   coreData = NULL;
