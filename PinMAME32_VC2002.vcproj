@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\htmlhelp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\cpu\m68000\generated_by_m68kmake;src\htmlhelp\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME=\&quot;PinMAME32\&quot;;WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0400"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\htmlhelp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\cpu\m68000\generated_by_m68kmake;src\htmlhelp\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME=\&quot;PinMAME32\&quot;;WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0400"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -134,7 +134,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\htmlhelp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\cpu\m68000\generated_by_m68kmake;src\htmlhelp\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME=\&quot;PinMAME32\&quot;;WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0400;MAME_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -189,7 +189,7 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\htmlhelp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\zlib;src\cpu\m68000\generated_by_m68kmake;src\htmlhelp\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME32NAME=\&quot;PinMAME32\&quot;;WINUI=1;SUFFIX=32;_WIN32_IE=0x0500;_WIN32_WINNT=0x0400;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -858,21 +858,25 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						<File
 							RelativePath="src\cpu\m68000\m68kmame.h">
 						</File>
-						<File
-							RelativePath="src\cpu\m68000\m68kopac.c">
-						</File>
-						<File
-							RelativePath="src\cpu\m68000\m68kopdm.c">
-						</File>
-						<File
-							RelativePath="src\cpu\m68000\m68kopnz.c">
-						</File>
-						<File
-							RelativePath="src\cpu\m68000\m68kops.c">
-						</File>
-						<File
-							RelativePath="src\cpu\m68000\m68kops.h">
-						</File>
+						<Filter
+							Name="generated_by_m68kmake"
+							Filter="">
+							<File
+								RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopac.c">
+							</File>
+							<File
+								RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopdm.c">
+							</File>
+							<File
+								RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopnz.c">
+							</File>
+							<File
+								RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kops.c">
+							</File>
+							<File
+								RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kops.h">
+							</File>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="S2650"
