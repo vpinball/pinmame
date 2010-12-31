@@ -330,11 +330,14 @@ CFLAGS += \
 CPPFLAGS += \
 	-fstrict-aliasing \
 	-Wall -Wno-sign-compare -Wunused \
-	-Wpointer-arith -Wcast-align -Waggregate-return \
+	-Wpointer-arith -Wcast-align \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
 #TODO/PROC: -Werror (before -Wall)
+#	-Waggregate-return (removed to eliminate warnings from p-roc and
+#	                    yaml-cpp functions returning structures, which
+#	                    is not a problem.)
 #	-Wredundant-decls
 #	-Wfloat-equal
 #	-Wunreachable-code -Wpadded

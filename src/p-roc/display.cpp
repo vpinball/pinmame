@@ -4,6 +4,9 @@ extern "C" {
 }
 #include "p-roc.hpp"
 
+// Handle to proc instance
+extern PRHandle proc;
+
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
 
@@ -33,7 +36,7 @@ void procDMDInit(void) {
 	dmdConfig.deHighCycles[2] = 50;
 	dmdConfig.deHighCycles[3] = 377;
 
-	PRDMDUpdateConfig(coreGlobals.proc, &dmdConfig);
+	PRDMDUpdateConfig(proc, &dmdConfig);
 
 	for (i = 0; i < PROC_NUM_DMD_FRAMES; i++) {
 		memset(procdmd[i], 0, 0x200);
@@ -196,7 +199,7 @@ void procDrawSegment(int x, int y, int seg) {
 
 // Send the current DMD Frame to the P-ROC
 void procUpdateDMD(void) {
-	PRDMDDraw(coreGlobals.proc, procdmd[0]);
+	PRDMDDraw(proc, procdmd[0]);
 }
 
 // Send the new alphanumeric display commands to the P-ROC's Auxiliary port logic,
@@ -241,10 +244,10 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 	PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 1);
 
 	// Send the commands.
-	PRDriverAuxSendCommands(coreGlobals.proc, auxCommands, cmd_index, 0);
+	PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 
 	cmd_index = 0;
 	// Jump from addr 0 to 1 to begin.
 	PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);
-	PRDriverAuxSendCommands(coreGlobals.proc, auxCommands, cmd_index, 0);
+	PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 }
