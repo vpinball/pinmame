@@ -2040,7 +2040,7 @@ void m68ki_build_opcode_table(void)
 				m68ki_instruction_jump_table[instr] = ostruct->opcode_handler;
 				for(k=0;k<NUM_CPU_TYPES;k++)
 					m68ki_cycles[k][instr] = ostruct->cycles[k];
-// variable k is out of range, removed as in MAME 0.105
+// variable k is out of range, removed as in MAME 0.105 src/cpu/m68000/m68k_in.c
 /*
 				if((instr & 0xf000) == 0xe000 && (!(instr & 0x20)))
 					m68ki_cycles[0][instr] = m68ki_cycles[1][instr] = ostruct->cycles[k] + ((((j-1)&7)+1)<<1);
