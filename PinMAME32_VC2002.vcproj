@@ -859,19 +859,19 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 							RelativePath="src\cpu\m68000\m68kmame.h">
 						</File>
 						<File
-							RelativePath="src\cpu\m68000\m68kopac.c">
+							RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopac.c">
 						</File>
 						<File
-							RelativePath="src\cpu\m68000\m68kopdm.c">
+							RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopdm.c">
 						</File>
 						<File
-							RelativePath="src\cpu\m68000\m68kopnz.c">
+							RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kopnz.c">
 						</File>
 						<File
-							RelativePath="src\cpu\m68000\m68kops.c">
+							RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kops.c">
 						</File>
 						<File
-							RelativePath="src\cpu\m68000\m68kops.h">
+							RelativePath="src\cpu\m68000\generated_by_m68kmake\m68kops.h">
 						</File>
 					</Filter>
 					<Filter
