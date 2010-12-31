@@ -75,7 +75,7 @@ Compilation of libraries:
     * rmdir /s bin
     * mkdir bin
     * cd bin
-    * cmake -DYAML_CPP_BUILD_TOOLS=OFF -G "MinGW Makefiles" ..
+    * cmake -G "MinGW Makefiles" ..
     * mingw32-make yaml-cpp (only need to build the library)
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
