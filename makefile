@@ -329,11 +329,12 @@ CFLAGS += \
 
 CPPFLAGS += \
 	-fstrict-aliasing \
-	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wcast-align \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
+# TODO/PROC: -Werror (before -Wall) - Two warnings left with GCC 4.5.0 in src/p-roc/gameitems.cpp
 #	-Waggregate-return (removed to eliminate warnings from p-roc and
 #	                    yaml-cpp functions returning structures, which
 #	                    is not a problem.)
