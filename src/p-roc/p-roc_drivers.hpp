@@ -7,6 +7,7 @@ const long int CLOCKS_PER_MS = CLOCKS_PER_SEC / 1000;
 class CoilDriver {
  private:
 	int num;
+	int patterDetectionEnable;
 	clock_t timeLastChanged;
 	int numPatterOn;
 	int avgOnTime;
@@ -29,6 +30,8 @@ class CoilDriver {
 	void SetNum(int num);
 	void SetPulseTime(int ms);
 	void SetPatterTimes(int msOn, int msOff);
+	void SetPatterDetectionEnable(int enable);
+	int GetPatterDetectionEnable();
 	void CheckEndPatter(void);
 	void RequestDrive(int state);
 };
