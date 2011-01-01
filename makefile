@@ -281,7 +281,7 @@ CFLAGS =
 CPPFLAGS =
 
 CFLAGS += -std=gnu99
-#TODO/PROC: CPPFLAGS += -std=gnu++98
+#TODO/PROC: (GCC 3.2.3 doesn't like it) CPPFLAGS += -std=gnu++98
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
@@ -329,12 +329,11 @@ CFLAGS += \
 
 CPPFLAGS += \
 	-fstrict-aliasing \
-	-Wall -Wno-sign-compare -Wunused \
+	-Werror -Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wcast-align \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
 	-Wdisabled-optimization \
-#TODO/PROC: -Werror (before -Wall)
 #	-Waggregate-return (removed to eliminate warnings from p-roc and
 #	                    yaml-cpp functions returning structures, which
 #	                    is not a problem.)
