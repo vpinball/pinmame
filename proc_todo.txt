@@ -71,12 +71,17 @@ Compilation of libraries:
     * cd /d D:\Coding\yaml-cpp-0.2.5\
     * CMakeLists.txt:
       - always: change to "SET (LIB_TYPE STATIC)"
-      - GCC 3.2.3: remove -Wextra from set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wno-long-long ${CMAKE_CXX_FLAGS}")
+      - GCC 3.2.3:
+        * remove -Wextra from set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wno-long-long ${CMAKE_CXX_FLAGS}")
+        * you will see lots of "warning: #pragma once is obsolete" during build, which can be ignored
+      - MinGW2 with LIB_TYPE SHARED:
+        * error: libstdc++.a(c++locale.o)(.text+0x38c): undefined reference to `strtold'
     * rmdir /s bin
     * mkdir bin
     * cd bin
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make yaml-cpp (only need to build the library)
+       1>yaml-cpp_compile.log 2>&1
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
@@ -88,6 +93,7 @@ Compilation of libraries:
     * cd bin
     * cmake -G "MinGW Makefiles" ..
     * mingw32-make pinproc (only need to build the library)
+       1>pinproc_compile.log 2>&1
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libpinproc.a and include/p-roc/pinproc.h
