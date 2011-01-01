@@ -68,7 +68,9 @@ Compilation of libraries:
     * extracted to D:\Programme\Coding\cmake\
     * added D:\Programme\Coding\cmake\bin\ to PATH
   - libpinproc source preparation
-    * downloaded preble-libpinproc-3ffb3b6.tar.gz from dev branch (=3ffb3b6f5379bdde5ad35ce547461fb145df8b34; December 05, 2010)
+    * downloaded preble-libpinproc-XXXXXXX.tar.gz from dev branch
+      (XXXXXXX=3ffb3b6 -> commit 3ffb3b6f5379bdde5ad35ce547461fb145df8b34; December 05, 2010)
+      (XXXXXXX=d90bf71 -> commit d90bf717bac20e07ca76b37c394da5f3fd39a939; December 30, 2010)
     * extracted source to D:\Coding\libpinproc\
     * set LIBPINPROC=<libpinproc>
       Example: set LIBPINPROC=D:\Coding\libpinproc\
@@ -76,7 +78,9 @@ Compilation of libraries:
     * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
     * extracted i386/ftd2xx.lib to %MINGW_PATH%/lib, and /ftd2xx.h to %MINGW_PATH%/include
       (does not work with static/i386/ftd2xx.lib)
-  - YAML-CPP (library compiles also with GCC 3.2.3, but throws a lot of "#pragma once" warnings)
+  - YAML-CPP (as of 2010-12-30, version 0.2.5)
+    Static library compiles with all MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
+    Dynamic library compiles only with the following MinGW setups: MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
     * downloaded "yaml-cpp-0.2.5.tar.gz"
     * extracted to D:\Coding\yaml-cpp-0.2.5\
     * cd /d D:\Coding\yaml-cpp-0.2.5\
@@ -97,7 +101,9 @@ Compilation of libraries:
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
       (Note: install dir can not be changed with "mingw32-make install")
-  - libpinproc
+  - libpinproc (as of 2010-12-30, commit d90bf717bac20e07ca76b37c394da5f3fd39a939)
+    Static library compiles only with the following MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC4.5.0
+     It does not compile with MinGW5/GCC3.2.3
     * cd /d <libpinproc>
     * rmdir /s bin
     * mkdir bin
@@ -117,6 +123,7 @@ Wish list:
 Revision tests for compilation:
 ===============================
 Command: mingw32-make PROC=1
+           1>build_pinmamep.log 2>&1
 
  * MinGW 2 with GCC 3.2.3
    libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
@@ -125,9 +132,9 @@ Command: mingw32-make PROC=1
  * MinGW 5 with GCC 3.2.3
    libyaml-cpp 0.2.5 compiled with same setup
    a) libpinproc 2010-12-30 compiled with MinGW 2 / GCC 3.2.3 setup
-   > last P-ROC branch tested: rev? = ok?
-   a) libpinproc 2010-12-30 compiled with MinGW 5 / GCC 4.5.0 setup
-   > last P-ROC branch tested: rev? = ok?
+      > last P-ROC branch tested: 3123 = FAILS; doesn't link due to multiple definition of 'vsnprintf'
+   b) libpinproc 2010-12-30 compiled with MinGW 5 / GCC 4.5.0 setup
+      > last P-ROC branch tested: 3123 = FAILS; doesn't link due to undefined reference to '_Unwind_Resume' and '__gxx_personality_v0'
 
  * MinGW 5 with GCC 4.5.0
    libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
