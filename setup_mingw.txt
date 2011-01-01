@@ -139,11 +139,15 @@ Step 1: Downloads
 For P-ROC support additional downloads are necessary:
 
 - Download the P-ROC library (libpinproc) to the downloads directory.
-  * libpinproc_20101205-mingw32-dev.tar.gz
+  * libpinproc-20101230-mingw2-gcc323-dev
+  - or -
+  * libpinproc-20101230-mingw5-gcc450-dev
   Get it from http://ftp.maddes.net/mingw/libpinproc/
 
 - Download the YAML-CPP library (libyaml-cpp) to the downloads directory.
-  * libyaml-cpp-0.2.5-mingw32-dev.tar.gz
+  * libyaml-cpp-0.2.5-mingw2-gcc323-dev
+  - or -
+  * libyaml-cpp-0.2.5-mingw5-gcc450-dev
   Get it from http://ftp.maddes.net/mingw/yaml-cpp/
 
 - Download FTDI's ftd2xx library (D2XX Direct Drivers) to the downloads directory.
