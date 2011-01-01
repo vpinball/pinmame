@@ -112,3 +112,38 @@ Compilation of libraries:
 
 Wish list:
 - Some CMake enhancements (adopting from YAML-CPP and CMake wiki pages)
+
+
+Revision tests for compilation:
+===============================
+Command: mingw32-make PROC=1
+
+ * MinGW 2 with GCC 3.2.3
+   libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
+   > last P-ROC branch revision tested: 3122 = build compiled (Maddes)
+
+ * MinGW 5 with GCC 3.2.3
+   libyaml-cpp 0.2.5 compiled with same setup
+   a) libpinproc 2010-12-30 compiled with MinGW 2 / GCC 3.2.3 setup
+   > last P-ROC branch tested: rev? = ok?
+   a) libpinproc 2010-12-30 compiled with MinGW 5 / GCC 4.5.0 setup
+   > last P-ROC branch tested: rev? = ok?
+
+ * MinGW 5 with GCC 4.5.0
+   libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
+   > last P-ROC branch tested: 3123 = build compiled (Maddes)
+   > known issues:
+     (2010-12-20) no sound with WPC pre-DCS ROMs
+
+
+Compilation warnings with MinGW5 / GCC 4.5.0:
+=============================================
+Compiling src/p-roc/gameitems.cpp...
+src/p-roc/gameitems.cpp: In member function 'void CoilDriver::RequestDrive(int)':
+src/p-roc/gameitems.cpp:414:80: error: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined
+src/p-roc/gameitems.cpp:422:76: error: operation on '((CoilDriver*)this)->CoilDriver::numPatterOn' may be undefined
+
+
+Compilation warnings with MinGW2 / GCC 3.2.3:
+=============================================
+./.
