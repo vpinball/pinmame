@@ -14,7 +14,7 @@ extern "C" {
 #include "p-roc_drivers.hpp"
 
 // Handle to the P-ROC instance.
-PRHandle proc;
+PRHandle proc = NULL;
 
 // Create a global yamlDoc to hold the machine data parsed from the YAML file.
 // Other p-roc support files need access to it. No sense passing it around
@@ -139,7 +139,7 @@ void procFlush(void) {
 }
 
 void procDeinitialize() {
-	PRDelete(proc);
+	if (proc) PRDelete(proc);
 }
 
 // Initialize the P-ROC hardware.

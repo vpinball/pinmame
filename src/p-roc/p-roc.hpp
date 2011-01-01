@@ -18,6 +18,8 @@
 #define kPulseTimeField "pulseTime"
 #define kPatterOnTimeField "patterOnTime"
 #define kPatterOffTimeField "patterOffTime"
+#define kBusField "bus"
+#define kAuxPortValue "AuxPort"
 
 #define kFlipperPulseTime (34) // 34 ms
 #define kFlipperPatterOnTime (1) // 2 ms

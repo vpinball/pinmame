@@ -178,6 +178,13 @@ void procConfigureDriverDefaults(void)
 				yamlDoc[kCoilsSection][coilName][kPatterOffTimeField] >> patterOffTime;
 				coilDrivers[coilNum].SetPatterTimes(patterOnTime, patterOffTime);
 			}
+			if (yamlDoc[kCoilsSection][coilName].FindValue(kBusField)) {
+				std::string busStr;
+				yamlDoc[kCoilsSection][coilName][kBusField] >> busStr;
+				if (busStr.compare(kAuxPortValue) == 0) {
+					coilDrivers[coilNum].SetPatterDetectionEnable(0);
+				}
+			}
 		}
 	}
 }
@@ -323,6 +330,7 @@ void procGetSwitchEvents(void) {
 
 CoilDriver::CoilDriver(void) {
 	num = 0;
+	patterDetectionEnable = 1;
 	timeLastChanged = 0;
 	numPatterOn = 0;
 	numPatterOff = 0;
@@ -346,6 +354,14 @@ void CoilDriver::SetPatterTimes(int msOn, int msOff) {
 	patterOnTime = msOn;
 	patterOffTime = msOff;
 	useDefaultPatterTimes = 0;
+}
+
+void CoilDriver::SetPatterDetectionEnable(int enable) {
+	patterDetectionEnable = 0;
+}
+
+int CoilDriver::GetPatterDetectionEnable() {
+	return patterDetectionEnable;
 }
 
 void CoilDriver::ResetPatter(void) {
@@ -413,7 +429,7 @@ void CoilDriver::RequestDrive(int state) {
 		if (state) {
 			avgOffTime = ((avgOffTime * numPatterOff) + msSinceChanged) / ++numPatterOff;
 			// If Enough transitions have occurred to indicate a patter, enable patter.
-			if (numPatterOff > 2) {
+			if (patterDetectionEnable && numPatterOff > 2) {
 				Patter(avgOnTime, avgOffTime);
 			} else {	// Otherwise drive as requested.
 				Drive(state);
