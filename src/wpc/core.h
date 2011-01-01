@@ -384,7 +384,9 @@ typedef struct {
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+#ifdef PROC_SUPPORT
   int    p_rocEn;         /* P-ROC support enable */
+#endif
   char   segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
