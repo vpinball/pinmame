@@ -41,7 +41,10 @@ Step 1: Downloads
 -----------------
 - Create a directory to hold all downloads, for example c:\mingw-setup.
 
-- Choose between a MinGW 2.0 setup or a more recent one:
+- Choose between a MinGW 2.0 setup or a more recent one.
+  For P-ROC support either use MinGW2/GCC3.2.3 setup, or MinGW5/GCC 4.5.0 setup
+  but with sounds issues on some ROMs.
+
   a) MinGW 2.0
      Download MinGW-2.0.0-3.exe to the downloads directory.
      Unfortunately it is nomore available at the official MinGW project homepage.
@@ -67,10 +70,12 @@ Step 1: Downloads
      * mingwrt-3.18-mingw32-dev        (part of the Base System)
      * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
      * w32api-3.14-mingw32-dev         (part of the Base System)
-     * gcc-3.2.3-20030504-1
      * gdb-7.1-2-mingw32-bin           (part of the Base System)
        with expat: libexpat-2.0.1-1-mingw32-dll-1
      * make-3.81-20090914-mingw32-bin
+
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
 
      Also possible is GCC 4.5.0 but with missing sounds on some ROMs:
      * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
@@ -79,15 +84,18 @@ Step 1: Downloads
                mpc: libmpc-0.8.1-1-mingw32-dll-2
               mpfr: libmpfr-2.4.1-1-mingw32-dll-1
 
+
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll        (part of the Base System)
      * mingwrt-3.16-mingw32-dev        (part of the Base System)
      * binutils-2.19.1-mingw32-bin     (part of the Base System)
      * w32api-3.13-mingw32-dev         (part of the Base System)
-     * gcc-3.2.3-20030504-1
      * gdb-6.3-1.exe                   (part of the Base System)
        (also gdb-7.0-2-mingw32-bin was tested)
      * make-3.81-20090914-mingw32-bin
+
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
 
      Also possible is GCC 4.4.0 but with missing sounds on some ROMs:
      * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
