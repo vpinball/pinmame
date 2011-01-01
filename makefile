@@ -198,7 +198,7 @@ RM = @rm -f
 
 # P-ROC builds just get the 'p' suffix and nothing more
 ifdef PROC
-SUFFIX += p
+PROCSUFFIX = p
 endif
 
 # debug builds just get the 'd' suffix and nothing more
@@ -210,7 +210,7 @@ endif
 NAME = $(TARGET)
 
 # fullname is prefix+name+suffix+debugsuffix
-FULLNAME = $(PREFIX)$(NAME)$(SUFFIX)$(DEBUGSUFFIX)
+FULLNAME = $(PREFIX)$(NAME)$(SUFFIX)$(PROCSUFFIX)$(DEBUGSUFFIX)
 
 # add an EXE suffix to get the final emulator name
 EMULATOR = $(FULLNAME)$(EXE)
