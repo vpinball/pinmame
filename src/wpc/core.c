@@ -1409,9 +1409,9 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 				if (pmoptions.alpha_on_dmd) {
 					/* Draw alphanumeric segments on the DMD */
 					if (row == 0) {
-						procDrawSegment(col/2, 0, kk-1);
+						procDrawSegment(col/2, 3, kk-1);
 					} else {
-						procDrawSegment(col/2, 16, kk-1);
+						procDrawSegment(col/2, 19, kk-1);
 					}
 				}
 			}
