@@ -378,7 +378,7 @@ void CoilDriver::CheckEndPatter(void) {
 		// If too much time has passed since the last change, disable the patter.
 		if ( ((clock()/CLOCKS_PER_MS) - timeLastChanged) > PROC_MAX_PATTER_INTERVAL_MS) {
 			long int msTime = clock() / CLOCKS_PER_MS;
-			fprintf (stderr, "\nt time: %ld: Ending Patter for Coil %d.", msTime, num);
+			fprintf (stderr, "\nAt time: %ld: Ending Patter for Coil %d.", msTime, num);
 			Drive(reqPatterState);
 			ResetPatter();
 		}
@@ -392,19 +392,26 @@ void CoilDriver::Drive(int state) {
 		if (useDefaultPulseTime) {
 			PRDriverStatePulse(&coilState, PROC_COIL_DRIVE_TIME);
 		} else {
-			PRDriverStatePulse(&coilState, pulseTime);
+			if (useDefaultPatterTimes) {
+				PRDriverStatePulse(&coilState, pulseTime);
+			}
+			else {
+				PRDriverStatePatter(&coilState, patterOnTime, patterOffTime, pulseTime);
+			}
 		}
 	} else {
-		PRDriverStateDisable(&coilState);
+		// Don't disable if the coil only has a defined pulse 
+		// time because it should be allowed to expire naturally.
+		if (!(!(useDefaultPulseTime) && useDefaultPatterTimes)) {
+			PRDriverStateDisable(&coilState);
+		}
 	}
 	PRDriverUpdateState(proc, &coilState);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 4.5)
-	long int msTime = clock() / CLOCKS_PER_MS;
-#endif
 }
 
 void CoilDriver::Patter(int msOn, int msOff) {
-	fprintf(stderr, "\nSetting patter for coil: %d, on:%d, off:%d", num, msOn, msOff);
+	long int msTime = clock() / CLOCKS_PER_MS;
+	fprintf(stderr, "\nAt time: %ld: Setting patter for coil: %d, on:%d, off:%d", msTime, num, msOn, msOff);
 	PRDriverState coilState;
 	PRDriverGetState(proc, num, &coilState);
 	if (useDefaultPatterTimes) {
