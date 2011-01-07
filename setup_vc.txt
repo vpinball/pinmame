@@ -172,6 +172,7 @@ Additional notes on Express Editions:
   http://technet.microsoft.com/evalcenter/
   http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
   Trial 2008: http://www.microsoft.com/downloads/details.aspx?FamilyID=83c3a1ec-ed72-4a79-8961-25635db0192b
+              http://ftp.maddes.net/vs2008/
 
 Known Issues:
 - Error when compiling PinMAME32 debug builds with VC++ 2005 or 2008
