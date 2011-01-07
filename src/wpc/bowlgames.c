@@ -61,7 +61,7 @@ INITGAME(pomp, GEN_S3, dispS5)
 S4_ROMSTART(pomp,l1,"gamerom.716",CRC(0f069ac2) SHA1(d651d49cdb50cf444e420241a1f9ed48c878feee),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
+S67S_SOUNDROMS8("soundx.716", CRC(539d64fb) SHA1(ff0d09c8d7c65e1072691b5b9e4fcaa3f38d67e8))
 S4_ROMEND
 #define input_ports_pomp input_ports_bowl
 CORE_GAMEDEF(pomp,l1,"Pompeii (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
@@ -73,7 +73,7 @@ INITGAME(arist, GEN_S3, dispS5)
 S4_ROMSTART(arist,l1,"gamerom.716",CRC(0f069ac2) SHA1(d651d49cdb50cf444e420241a1f9ed48c878feee),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
+S67S_SOUNDROMS8("soundx.716", CRC(539d64fb) SHA1(ff0d09c8d7c65e1072691b5b9e4fcaa3f38d67e8))
 S4_ROMEND
 #define input_ports_arist input_ports_bowl
 CORE_GAMEDEF(arist,l1,"Aristocrat (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
@@ -85,7 +85,8 @@ INITGAME(topaz, GEN_S3, dispS5)
 S4_ROMSTART(topaz,l1,"gamerom.716",CRC(cb287b10) SHA1(7fb6b6a26237cf85d5e02cf35271231267f90fc1),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8("soundx.716", CRC(539d64fb) SHA1(ff0d09c8d7c65e1072691b5b9e4fcaa3f38d67e8))
+//S67S_SOUNDROMS8("sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_topaz input_ports_bowl
 CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
@@ -97,10 +98,23 @@ INITGAME(taurs, GEN_S4, dispS5)
 S4_ROMSTART(taurs,l1,"gamerom.716",CRC(3246e285) SHA1(4f76784ecb5063a49c24795ae61db043a51e2c89),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8("soundx.716", CRC(539d64fb) SHA1(ff0d09c8d7c65e1072691b5b9e4fcaa3f38d67e8))
+//S67S_SOUNDROMS8("sound1.716", CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_taurs input_ports_bowl
 CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
+
+/*----------------------------
+/ King Tut
+/----------------------------*/
+INITGAME(kingt, GEN_S4, dispS5)
+S4_ROMSTART(kingt,l1,"gamerom.716",CRC(54d3280a) SHA1(ca74636e35d2c3e0b3133f89b1ff1233d5d72a5c),
+                     "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("soundx.716", CRC(539d64fb) SHA1(ff0d09c8d7c65e1072691b5b9e4fcaa3f38d67e8))
+S4_ROMEND
+#define input_ports_kingt input_ports_bowl
+CORE_GAMEDEF(kingt,l1,"King Tut (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
 
 /*----------------------------
 / Omni
