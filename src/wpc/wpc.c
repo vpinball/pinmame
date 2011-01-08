@@ -227,12 +227,12 @@ MACHINE_DRIVER_END
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
-  wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
-
 #ifdef PROC_SUPPORT
-static int gi_last[CORE_MAXGI];
-int changed_gi[CORE_MAXGI];
+	static int gi_last[CORE_MAXGI];
+	int changed_gi[CORE_MAXGI];
 #endif
+
+  wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
 
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {

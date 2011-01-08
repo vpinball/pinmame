@@ -125,14 +125,14 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
-		/* Start with an empty frame buffer */
-		procClearDMD();
-
 		/* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
 		   has 4 subframes for up to 16 colors. Experimentation has showed
 		   using P-ROC subframe 2 and 3 provides a pretty good color match. */
 		const int procSubFrame0 = 2;
 		const int procSubFrame1 = 3;
+
+		/* Start with an empty frame buffer */
+		procClearDMD();
 
 		/* Fill the P-ROC subframes from the video RAM */
 		procFillDMDSubFrame(procSubFrame0, RAM, 0x200);

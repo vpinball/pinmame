@@ -1435,6 +1435,10 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 /  Initialize PinMAME
 /-----------------------*/
 static MACHINE_INIT(core) {
+#ifdef PROC_SUPPORT
+	char * yaml_filename = (char *)pmoptions.p_roc;
+#endif
+
   if (!coreData) { // first time
     /*-- init variables --*/
     memset(&coreGlobals, 0, sizeof(coreGlobals));
@@ -1456,7 +1460,6 @@ static MACHINE_INIT(core) {
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
 #ifdef PROC_SUPPORT
-		char * yaml_filename = (char *)pmoptions.p_roc;
 		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
 
 		/*-- initialize P-ROC if enabled --*/
