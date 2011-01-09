@@ -1,3 +1,5 @@
+#ifdef PROC_SUPPORT
+
 #include <stdarg.h>
 
 extern "C" {
@@ -195,3 +197,5 @@ long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr) {
 	return strtod(nptr, endptr);
 }
 #endif
+
+#endif /* PROC_SUPPORT */
