@@ -93,6 +93,8 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   http://ftp.maddes.net/dxsdk/summer2003/dx90updatesdk.exe
 - Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
 - Project Files (.dsp) are maintained in the repository
+- Setting env vars
+  "%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
 
 
 ---------------
@@ -120,6 +122,9 @@ Visual C++ 2003 (7.1, _MSC_VER = 1310)
   Finally convert them with VC2003.
   A batch file is provided to assist you with the copying.
 - Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
+- Setting env vars
+  2002: "%ProgramFiles%\Microsoft Visual Studio .NET\VC7\bin\vcvars32.bat"
+  2003: "%ProgramFiles%\Microsoft Visual Studio .NET 2003\VC7\bin\vcvars32.bat"
 
 
 ---------------
@@ -151,10 +156,14 @@ Visual C++ 2008 (9.0, _MSC_VER = 1500)
 - Info about new security enhancments and possible optimisations:
   http://msdn.microsoft.com/library/8ef0s5kh.aspx
   (non-functional) http://www.themssforum.com/VC/optimization-Express/
+- Setting env vars
+  2005: "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+  2008: "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
 
 Additional notes on Express Editions:
 - Both (2005 & 2008) work fine without any changes and can compile PinMAME and PinMAME32
   http://www.microsoft.com/express/
+  VS 2008 SP1 Express: http://www.microsoft.com/downloads/en/details.aspx?FamilyID=3254c868-bcb9-412c-95c6-d100c872ec60
 - The Express Editions are lacking the resource editors and also support for ATL
   and MFC projects. VPinMAME is an ATL DLL project (Release = MinDependency) and
   therefore not compilable with a normal Express Edition setup.
@@ -173,6 +182,9 @@ Additional notes on Express Editions:
   http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
   Trial 2008: http://www.microsoft.com/downloads/details.aspx?FamilyID=83c3a1ec-ed72-4a79-8961-25635db0192b
               http://ftp.maddes.net/vs2008/
+- Setting env vars
+  2005: "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+  2008: "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
 
 Known Issues:
 - Error when compiling PinMAME32 debug builds with VC++ 2005 or 2008
