@@ -1,3 +1,5 @@
+#ifdef PROC_SUPPORT
+
 extern "C" {
 #include "driver.h"
 #include "wpc/core.h"
@@ -250,3 +252,5 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 	PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);
 	PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 }
+
+#endif /* PROC_SUPPORT */

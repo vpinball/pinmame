@@ -1,3 +1,5 @@
+#ifdef PROC_SUPPORT
+
 extern "C" {
 #include "driver.h"
 #include "wpc/core.h"
@@ -489,3 +491,5 @@ void procInitializeCoilDrivers(void) {
 		coilDrivers[i].SetNum(i);
 	}
 }
+
+#endif /* PROC_SUPPORT */
