@@ -1,5 +1,8 @@
 #ifndef INC_ALVGSOUND
 #define INC_ALVGSOUND
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 #define ALVGS_CPUNO 1
 #define ALVGS_CPUREGION (REGION_CPU1+ALVGS_CPUNO)

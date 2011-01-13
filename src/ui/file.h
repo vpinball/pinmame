@@ -12,6 +12,9 @@
 
 #ifndef FILE_H
 #define FILE_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 // from windows fileio.c
 extern void set_pathlist(int file_type,const char *new_rawpath);

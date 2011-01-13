@@ -12,6 +12,9 @@
 
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 /* Get title string to display in the top of the property page,
  * Called also in Audit32.c
