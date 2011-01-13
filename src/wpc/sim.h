@@ -1,5 +1,8 @@
 #ifndef INC_SIM
 #define INC_SIM
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 /* 121200  Added SIM_STSWON, SIM_STSWOFF */
 /* 201100  Added new types for manual shooter */

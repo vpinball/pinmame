@@ -157,27 +157,27 @@ enable-auto-props = yes
 *.dll = svn:mime-type=application/octet-stream;svn:needs-lock
 
 ## Console Scripts
-*.bash = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
-*.bat = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.cmd = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.sh = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
+*.bash = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+*.bat = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.cmd = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.sh = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## Windows Scripts
-*.wsf = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
-*.vbs = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
+*.wsf = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+*.vbs = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## Perl
-*.pl = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
+*.pl = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
 *.pm = svn:mime-type=text/plain;svn:eol-style=native
 
 ## Python
-*.py = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
+*.py = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## PHP
-*.php = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date
+*.php = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## Java
-*.java = svn:mime-type=text/x-java-source;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.java = svn:mime-type=text/x-java-source;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.properties = svn:mime-type=text/plain;svn:eol-style=native
 # (generated files, normally ignored)
 *.class = svn:mime-type=application/x-java-class
@@ -185,18 +185,18 @@ enable-auto-props = yes
 
 ## Coding
 # >> General input files for build system (input files, includes, etc.)
-*.in = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.inc = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.in = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.inc = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.manifest = svn:mime-type=text/plain;svn:eol-style=native
 
 # >> Assembler sources
-*.asm = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.asm = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 
 # >> C/C++ sources
-*.c = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.cpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.h = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.hpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.c = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.cpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.h = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.hpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 # (rare ones)
 *.cc = svn:mime-type=text/plain;svn:eol-style=native
 *.cxx = svn:mime-type=text/plain;svn:eol-style=native
@@ -266,13 +266,13 @@ bootstrap = svn:mime-type=text/plain;svn:eol-style=native;svn:executable
 *.patch = svn:mime-type=text/plain;svn:eol-style=native
 
 # >> DASMx symbol files
-*.sym = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Rev Id Date
+*.sym = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## HTML, XML & Co.
 *.css = svn:mime-type=text/css;svn:eol-style=native
 *.htm = svn:mime-type=text/html;svn:eol-style=native
 *.html = svn:mime-type=text/html;svn:eol-style=native
-*.js = svn:mime-type=text/javascript;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.js = svn:mime-type=text/javascript;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.jsp = svn:mime-type=text/plain;svn:eol-style=native
 *.shtm = svn:mime-type=text/html;svn:eol-style=native
 *.shtml = svn:mime-type=text/html;svn:eol-style=native
@@ -292,13 +292,13 @@ bootstrap = svn:mime-type=text/plain;svn:eol-style=native;svn:executable
 *.png = svn:mime-type=image/png;svn:needs-lock
 
 ## Text files
-*.cfg = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.cfg = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.csv = svn:mime-type=text/plain;svn:eol-style=native
-*.ini = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.sql = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.ini = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.sql = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.tex = svn:mime-type=text/plain;svn:eol-style=native
-*.txt = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
-*.md5 = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+*.txt = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.md5 = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 *.asc = svn:mime-type=text/plain;svn:eol-style=native
 *.url = svn:mime-type=text/plain;svn:eol-style=native
 .cvsignore = svn:mime-type=text/plain;svn:eol-style=native
@@ -307,7 +307,7 @@ ChangeLog = svn:mime-type=text/plain;svn:eol-style=native
 INSTALL = svn:mime-type=text/plain;svn:eol-style=native
 NEWS = svn:mime-type=text/plain;svn:eol-style=native
 README = svn:mime-type=text/plain;svn:eol-style=native
-TODO = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date
+TODO = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
 
 ## Known Applications
 *.doc = svn:mime-type=application/msword;svn:needs-lock

@@ -1,5 +1,5 @@
 <job>
-<resource id="scripttitle">Simple Replace v1.10 by Matthias "Maddes" Buecher (c) 2003</resource>
+<resource id="scripttitle">Simple Replace v1.20 by Matthias "Maddes" Buecher (c) 2003-2010</resource>
 
 <comment>
 Developed with Windows Scripting Host (WSH) 5.6 and VBScript 5.6.7426 under Windows XP SP1
@@ -7,12 +7,13 @@ Succesfully tested under Windows 98 SE (which has all MS recommended updates ins
 WSH/VBScript updates and documentation are available for download at http://msdn.microsoft.com/scripting/
 Contact: http://www.maddes.net/
 
-    Copyright (C) 2003  Matthias "Maddes" Buecher
+    Copyright (C) 2003-2011  Matthias "Maddes" Buecher
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
+    http://www.gnu.org/licenses/gpl-2.0.txt
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,6 +38,10 @@ Contact: http://www.maddes.net/
   <named name="dblslash" type="simple" required="false" helpstring="Converts \ to \\ in search and replace phrase" />
   <named name="hex" type="simple" required="false" helpstring="Converts replace phrase in a byte row for registry files" />
 
+  <named name="quotes" type="simple" required="false" helpstring="Converts ^' to a quote in search and replace phrase" />
+  <named name="searchquotes" type="simple" required="false" helpstring="Converts ^' to a quote in search phrase" />
+  <named name="replacequotes" type="simple" required="false" helpstring="Converts ^' to a quote in replace phrase" />
+
   <example>Also check out the included text file with lots of more information</example>
 </runtime>
 
@@ -52,6 +57,7 @@ Dim vSearchString, vReplaceString
 Dim vInFile, vOutFile
 Dim vDblSlash
 Dim vHexConvert, i, vReplaceStringTmp
+Dim vSearchQuotes, vReplaceQuotes
 
 ' ScriptTitle for start information
 vScriptTitle = getResource("scripttitle")
@@ -134,6 +140,16 @@ end if
 vDblSlash = oArgNamed.Exists("dblslash")
 vHexConvert = oArgNamed.Exists("hex")
 
+' Check quotes parameter
+vSearchQuotes = oArgNamed.Exists("searchquotes")
+if not vSearchQuotes then
+  vSearchQuotes = oArgNamed.Exists("quotes")
+end if
+vReplaceQuotes = oArgNamed.Exists("replacequotes")
+if not vReplaceQuotes then
+  vReplaceQuotes = oArgNamed.Exists("quotes")
+end if
+
 ' Missing parameters
 if vInFile = "" then
   vDisplayString = vDisplayString & vbNewLine & "Error: You have to state an input file with /in" & vbNewLine
@@ -160,6 +176,14 @@ if vHexConvert then
     vReplaceStringTmp = vReplaceStringTmp + Hex(Asc(Mid(vReplaceString,i,1)))
   next
   vReplaceString = vReplaceStringTmp
+end if
+
+' Convert search and replace string due to quotes in strings and WSH's quote issue
+if vSearchQuotes then
+  vSearchString = Replace(vSearchString, "^'", """")
+end if
+if vReplaceQuotes then
+  vReplaceString = Replace(vReplaceString, "^'", """")
 end if
 
 if vArgError = 0 then

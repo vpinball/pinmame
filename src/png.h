@@ -1,6 +1,9 @@
 
 #ifndef MAME_PNG_H
 #define MAME_PNG_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 
 #define PNG_Signature       "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"
