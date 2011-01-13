@@ -399,8 +399,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
   INPUT_PORTS_END
 
 static core_tLCDLayout dispAlpha[] = {
-  {0, 0,10,6,CORE_SEG10}, {0,12, 1,1,CORE_SEG10}, {0,16, 2,6,CORE_SEG10}, {0,28, 9,1,CORE_SEG10},
-  {5, 0,26,6,CORE_SEG10}, {5,12,17,1,CORE_SEG10}, {5,16,18,6,CORE_SEG10}, {5,28,25,1,CORE_SEG10},
+  {0, 0,10,1,CORE_SEG10}, {0, 2,11,2,CORE_SEG9}, {0, 6,13,1,CORE_SEG10}, {0, 8,14,2,CORE_SEG9}, {0,12, 1,1,CORE_SEG9},
+  {0,16, 2,1,CORE_SEG10}, {0,18, 3,2,CORE_SEG9}, {0,22, 5,1,CORE_SEG10}, {0,24, 6,2,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
+  {5, 0,26,1,CORE_SEG10}, {5, 2,27,2,CORE_SEG9}, {5, 6,29,1,CORE_SEG10}, {5, 8,30,2,CORE_SEG9}, {5,12,17,1,CORE_SEG9},
+  {5,16,18,1,CORE_SEG10}, {5,18,19,2,CORE_SEG9}, {5,22,21,1,CORE_SEG10}, {5,24,22,2,CORE_SEG9}, {5,28,25,1,CORE_SEG9},
   {3,27,37,2,CORE_SEG7S}, {3,33,39,1,CORE_SEG7S}, {3,35,41,1,CORE_SEG7S},
 #ifdef MAME_DEBUG
   {3,25,36,1,CORE_SEG7S}, // 100's credits is actually stored & displayable!
