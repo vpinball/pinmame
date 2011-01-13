@@ -14,6 +14,9 @@
 
 #ifndef M114S_H
 #define M114S_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 //If set to 1, we mix down the 16 channels into the 4 appropriate output channels
 //If set to 0, we simply output each 16 channel independantly (which is not how the real chip works)

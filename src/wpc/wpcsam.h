@@ -1,5 +1,8 @@
 #ifndef INC_WPCSAM
 #define INC_WPCSAM
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 /*Exported Functions*/
 void wpc_play_sample(int channel, int samplename);
@@ -71,4 +74,4 @@ typedef struct {
 #define SAM_SOLENOID_ON		WPCSAM_SOLENOID_ON	/* sol is hold after activating */
 #define SAM_SOLENOID_OFF	WPCSAM_SOLENOID_OFF	/* sol is deactivated and gets to it's rest position, should be used with WPCSAM_F_ONOFF */
 
-#endif	/*INC_WPCSAM*/
+#endif	/* INC_WPCSAM */

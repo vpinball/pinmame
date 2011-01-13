@@ -9,6 +9,9 @@
 
 #ifndef HC4094_H
 #define HC4094_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 #define MAX_HC4094         16
 #define MAX_CASCADE_HC4094 4	// 4 chips cascaded = 32 bit number
