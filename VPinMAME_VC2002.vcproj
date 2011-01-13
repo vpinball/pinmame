@@ -1464,6 +1464,12 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						RelativePath="src\sound\3812intf.h">
 					</File>
 					<File
+						RelativePath="src\sound\5110intf.c">
+					</File>
+					<File
+						RelativePath="src\sound\5110intf.h">
+					</File>
+					<File
 						RelativePath="src\sound\5220intf.c">
 					</File>
 					<File
@@ -1740,13 +1746,13 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 						RelativePath="src\sound\tms320av120.h">
 					</File>
 					<File
-						RelativePath="src\sound\tms5220.c">
+						RelativePath="src\sound\tms5110.c">
 					</File>
 					<File
-						RelativePath="src\sound\tms5220.h">
+						RelativePath="src\sound\tms5110.h">
 					</File>
 					<File
-						RelativePath="src\sound\tms5220r.c">
+						RelativePath="src\sound\tms5110r.c">
 						<FileConfiguration
 							Name="Release|Win32"
 							ExcludedFromBuild="TRUE">
@@ -1771,6 +1777,39 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 							<Tool
 								Name="VCCLCompilerTool"/>
 						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="src\sound\tms5220.c">
+					</File>
+					<File
+						RelativePath="src\sound\tms5220.h">
+					</File>
+					<File
+						RelativePath="src\sound\tms5220r.c">
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+						<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						ExcludedFromBuild="TRUE">
+						<Tool
+							Name="VCCLCompilerTool"/>
+					</FileConfiguration>
 					</File>
 					<File
 						RelativePath="src\sound\votrax.c">
@@ -2629,6 +2668,9 @@ echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;
 				</File>
 				<File
 					RelativePath="src\wpc\indergames.c">
+				</File>
+				<File
+					RelativePath="src\wpc\jeutel.c">
 				</File>
 				<File
 					RelativePath="src\wpc\jp.c">

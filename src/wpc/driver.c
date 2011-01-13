@@ -585,6 +585,12 @@ DRIVERNV(escape)        //Escape (10/1987)
 DRIVERNV(movmastr)      //Movie Masters (??/19??)
 
 // ----------------
+// JEUTEL OF FRANCE
+// ----------------
+DRIVERNV(leking)        //Le King (??/1983)
+DRIVERNV(olympic)       //Olympic Games (??/1984)
+
+// ----------------
 // JUEGOS POPULARES
 // ----------------
 DRIVERNV(petaco  )      //Petaco

@@ -126,6 +126,7 @@
 #define HAS_S14001A    1
 #define HAS_YM2203     1
 #define HAS_YM3526     1
+#define HAS_TMS5110    1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

@@ -136,4 +136,5 @@ struct sndbrdIntf {
 #define SNDBRD_GRAND   SNDBRD_TYPE(47,0)
 #define SNDBRD_JVH     SNDBRD_TYPE(48,0)
 #define SNDBRD_TABART  SNDBRD_TYPE(49,0)
+#define SNDBRD_JEUTEL  SNDBRD_TYPE(50,0)
 #endif /* INC_SNDBRD */
