@@ -51,7 +51,7 @@ static const core_tLCDLayout dispBowl[] = {
 };
 
 static struct core_dispLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update, NULL}, {0}
+  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
 };
 
 /*----------------------------
@@ -260,8 +260,8 @@ MACHINE_DRIVER_END
 INITGAME_S10(alcat, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
 S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
                        "u27_rev7.rom", CRC(9c7faf8a) SHA1(dc1a561948b9a303f7924d7bebcd972db766827b))
-S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129074f5657447be676),
-                       "acs_u22.bin",CRC(56c1011a) SHA1(c817a3410c643617f3643897b8f529ae78546b0d))
+S11S_SOUNDROM88(       "acs_u21.bin",CRC(d997be0a) SHA1(92350fca809e0a061cb30f51d1fb7ddc0271ed9c),
+                       "acs_u22.bin",CRC(73d8c196) SHA1(b4e37c992c921a986394cd20f6f9e165d8961de4))
 S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s9_mS11S,0)
@@ -293,7 +293,7 @@ CORE_GAMEDEF(tdawg, l1, "Top Dawg (Shuffle) (L-1)", 1987, "Williams", s11_mS11S,
 /--------------------*/
 INITGAME_S10(shfin, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
 S9_ROMSTARTx4(shfin,l1,"u27rom-1.rv1",CRC(40cfb74a) SHA1(8cee4212ea8bb6b360060391df3208e1e129d7e5))
-S11S_SOUNDROM88(       "u21snd-2.rv1",NO_DUMP,
+S11S_SOUNDROM88(       "u21snd-2.rv1",CRC(80ddce05) SHA1(9498260e5ccd2fe0eb03ff321dd34eb945b0213a),
                        "u22snd-2.rv1",CRC(6894abaf) SHA1(2d661765fbfce33a73a20778c41233c0bd9933e9))
 S11_ROMEND
 S11_INPUT_PORTS_START(shfin, 1) S11_INPUT_PORTS_END
@@ -454,8 +454,8 @@ CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper, D-4) LED Ghost Fix"
 / Strikes n' Spares (#N111)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32,NULL},
-  {34,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32a,NULL},
+  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32},
+  {34,0,32,128,CORE_DMD,(void *)gts3_dmd128x32a},
   {0}
 };
 static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};
@@ -529,7 +529,7 @@ DE2S_SOUNDROM144("titau7.101" ,CRC(544fe1ac) SHA1(5c62eef6a42660b13e626d1a6bb8cd
                  "titau21.100",CRC(76ca05f8) SHA1(3e1c56fe37393c345111665fd8ab730d53cb6970))
 SE_ROMEND
 SE_INPUT_PORTS_START(titanic, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,0)
+CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Monopoly (Coin dropper)
@@ -541,4 +541,4 @@ DE2S_SOUNDROM18("monopred.u7" ,CRC(1ca0cf63) SHA1(c4ce78718e3e3f1a8451b134f2869d
                 "monopred.u17",CRC(467dca62) SHA1(c727748b6b0b39ead19ce98bddd89fd05fb62d00))
 SE_ROMEND
 SE_INPUT_PORTS_START(monopred, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,0)
+CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,GAME_NOCRC)
