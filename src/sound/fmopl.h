@@ -1,5 +1,8 @@
 #ifndef __FMOPL_H_
 #define __FMOPL_H_
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 /* --- select emulation chips --- */
 #define BUILD_YM3812 (HAS_YM3812)

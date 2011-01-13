@@ -918,6 +918,14 @@ SOURCE=.\src\sound\3812intf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\5110intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\5110intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\5220intf.c
 # End Source File
 # Begin Source File
@@ -1103,6 +1111,20 @@ SOURCE=.\src\sound\tms320av120.c
 # Begin Source File
 
 SOURCE=.\src\sound\tms320av120.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms5110.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms5110.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms5110r.c
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -2342,6 +2364,10 @@ SOURCE=.\src\wpc\inder.h
 # Begin Source File
 
 SOURCE=.\src\wpc\indergames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\jeutel.c
 # End Source File
 # Begin Source File
 

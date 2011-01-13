@@ -1,5 +1,8 @@
 #ifndef INC_SNDBRD
 #define INC_SNDBRD
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 extern void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data);
 /*-- core interface --*/
@@ -136,4 +139,5 @@ struct sndbrdIntf {
 #define SNDBRD_GRAND   SNDBRD_TYPE(47,0)
 #define SNDBRD_JVH     SNDBRD_TYPE(48,0)
 #define SNDBRD_TABART  SNDBRD_TYPE(49,0)
+#define SNDBRD_JEUTEL  SNDBRD_TYPE(50,0)
 #endif /* INC_SNDBRD */

@@ -585,6 +585,12 @@ DRIVERNV(escape)        //Escape (10/1987)
 DRIVERNV(movmastr)      //Movie Masters (??/19??)
 
 // ----------------
+// JEUTEL OF FRANCE
+// ----------------
+DRIVERNV(leking)        //Le King (??/1983)
+DRIVERNV(olympic)       //Olympic Games (??/1984)
+
+// ----------------
 // JUEGOS POPULARES
 // ----------------
 DRIVERNV(petaco  )      //Petaco
@@ -1242,6 +1248,7 @@ DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
 DRIVER(arist,l1)        //          ??/79 W Aristocrat (Shuffle)
 DRIVER(taurs,l1)        //          ??/79 W Taurus (Shuffle)
+DRIVER(kingt,l1)        //          ??/79 W King Tut (Shuffle)
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(trizn,t1)        //          07/79 W TriZone /10 Scoring Ted Estes
