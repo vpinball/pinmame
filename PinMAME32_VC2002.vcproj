@@ -1425,6 +1425,12 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 						RelativePath="src\sound\3812intf.h">
 					</File>
 					<File
+						RelativePath="src\sound\5110intf.c">
+					</File>
+					<File
+						RelativePath="src\sound\5110intf.h">
+					</File>
+					<File
 						RelativePath="src\sound\5220intf.c">
 					</File>
 					<File
@@ -1699,6 +1705,39 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 					</File>
 					<File
 						RelativePath="src\sound\tms320av120.h">
+					</File>
+					<File
+						RelativePath="src\sound\tms5110.c">
+					</File>
+					<File
+						RelativePath="src\sound\tms5110.h">
+					</File>
+					<File
+						RelativePath="src\sound\tms5110r.c">
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release with MAME Debugger|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug with MAME Debugger|Win32"
+							ExcludedFromBuild="TRUE">
+							<Tool
+								Name="VCCLCompilerTool"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="src\sound\tms5220.c">
@@ -2621,6 +2660,9 @@ copy &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;$(ProjectDir)&quot;
 				</File>
 				<File
 					RelativePath="src\wpc\indergames.c">
+				</File>
+				<File
+					RelativePath="src\wpc\jeutel.c">
 				</File>
 				<File
 					RelativePath="src\wpc\jp.c">
