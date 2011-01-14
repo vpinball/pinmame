@@ -39,8 +39,8 @@ copy /V /-Y "VPinMAME_VC2008.vcproj" "VPinMAME_VC2002.vcproj"
 :manual
 @echo.
 @echo Replace all occurrences of VC2008 in the solution and project files with VC2002.
-@echo Replace all occurrences of Format Version 10.00 in the solution file with 8.00.
-@echo Replace all occurrences of Version="9,00" in the project files with "7.10".
+@echo Replace all occurrences of Format Version 10.00 in the solution file with 7.00.
+@echo Replace all occurrences of Version="9,00" in the project files with "7.00".
 @echo.
 
 :end
