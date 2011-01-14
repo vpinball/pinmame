@@ -306,7 +306,8 @@ Step 4: Compilation
 - To compile PinMAME type "mingw32-make".
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32".
 - To add the MAME ROM debugger into a build, just define "DEBUG=1".
-- To add P-ROC support into a build, just define "PROC=1".
+- To add P-ROC support into a PinMAME build, just define "PROC=1". Not available
+  for PinMAME32.
 - A symbols file ("SYMBOLS=1") and map file ("MAP=1") are always created.
 - To change the optimization level (default is 3), define "OPTIMIZE=<level>".
 - To get verbose info during compilation, define "VERBOSE=1".
