@@ -51,7 +51,7 @@ static const core_tLCDLayout dispBowl[] = {
 };
 
 static struct core_dispLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
+  {0,0, 32,128, CORE_DMD, (genf *)dedmd32_update}, {0}
 };
 
 /*----------------------------
@@ -454,14 +454,14 @@ CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper, D-4) LED Ghost Fix"
 / Strikes n' Spares (#N111)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32},
-  {34,0,32,128,CORE_DMD,(void *)gts3_dmd128x32a},
+  {0,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32},
+  {34,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32a},
   {0}
 };
 static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};
 static void init_snspares(void) { core_gameData = &snsparesGameData; }
-GTS3ROMSTART(snspares,	"gprom.bin", CRC(9e018496) SHA1(a4995f153ba2179198cfc56b7011707328e4ec89))
-GTS3_DMD256_ROMSTART2(	"dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
+GTS3ROMSTART(snspares,  "gprom.bin", CRC(9e018496) SHA1(a4995f153ba2179198cfc56b7011707328e4ec89))
+GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
 NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
