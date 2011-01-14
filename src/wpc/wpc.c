@@ -9,7 +9,7 @@
 #include "core.h"
 #include "wpc.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 #define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes   */

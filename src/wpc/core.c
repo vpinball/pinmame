@@ -8,7 +8,7 @@
 #include "mech.h"
 #include "core.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 /* stuff to test VPINMAME */

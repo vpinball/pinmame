@@ -8,8 +8,8 @@ extern "C" {
 }
 #include <fstream>
 #include <yaml-cpp/yaml.h>
-#include "p-roc.hpp"
-#include "p-roc_drivers.hpp"
+#include "p-roc.h"
+#include "p-roc_drivers.h"
 
 // Handle to proc instance
 extern PRHandle proc;
