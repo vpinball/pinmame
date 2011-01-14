@@ -36,7 +36,7 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #include "cpu/arm7/arm7core.h"
 #include "sound/wavwrite.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */

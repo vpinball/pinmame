@@ -12,8 +12,8 @@ extern "C" {
 #include <vector>
 #include <yaml-cpp/yaml.h>
 #include <p-roc/pinproc.h>
-#include "p-roc.hpp"
-#include "p-roc_drivers.hpp"
+#include "p-roc.h"
+#include "p-roc_drivers.h"
 
 // Handle to the P-ROC instance.
 PRHandle proc = NULL;

@@ -4,7 +4,7 @@ extern "C" {
 #include "driver.h"
 #include "wpc/core.h"
 }
-#include "p-roc.hpp"
+#include "p-roc.h"
 
 // Handle to proc instance
 extern PRHandle proc;

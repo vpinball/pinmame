@@ -6,7 +6,7 @@
 #include "sndbrd.h"
 #include "dedmd.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 /*--------- Common DMD stuff ----------*/
