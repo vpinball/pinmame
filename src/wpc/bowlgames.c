@@ -260,8 +260,8 @@ MACHINE_DRIVER_END
 INITGAME_S10(alcat, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
 S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
                        "u27_rev7.rom", CRC(9c7faf8a) SHA1(dc1a561948b9a303f7924d7bebcd972db766827b))
-S11S_SOUNDROM88(       "acs_u21.bin",CRC(d997be0a) SHA1(92350fca809e0a061cb30f51d1fb7ddc0271ed9c),
-                       "acs_u22.bin",CRC(73d8c196) SHA1(b4e37c992c921a986394cd20f6f9e165d8961de4))
+S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129074f5657447be676),
+                       "acs_u22.bin",CRC(56c1011a) SHA1(c817a3410c643617f3643897b8f529ae78546b0d))
 S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s9_mS11S,0)
