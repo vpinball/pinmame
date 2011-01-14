@@ -449,7 +449,10 @@ include src/core.mak
 include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
+# P-ROC support only for PinMAME, not for PinMAME32
+ifndef WINUI
 include src/p-roc/p-roc.mak
+endif
 
 # if the MAME ROM debugger is not included, then remove objects for it
 ifndef DEBUG
