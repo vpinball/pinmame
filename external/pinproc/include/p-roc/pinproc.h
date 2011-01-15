@@ -50,15 +50,15 @@
 // defined with this macro as being exported.
 #undef PINPROC_API
 
-#ifdef PINPROC_DLL // Using or Building PinPROC DLL (definition defined manually)
-    #if defined(pinproc_EXPORTS) // Building PinPROC DLL (definition created by CMake or defined manually)
+#ifdef PINPROC_DLL	// Using or Building PinPROC DLL (definition defined manually)
+    #ifdef pinproc_EXPORTS	// Building PinPROC DLL (definition created by CMake or defined manually)
         #define PINPROC_API __declspec(dllexport)
     #else
         #define PINPROC_API __declspec(dllimport)
     #endif
 #endif
 // fallback for non-DLL usage and builds
-#if !defined(PINPROC_API)
+#ifndef PINPROC_API
     #define PINPROC_API
 #endif
 
