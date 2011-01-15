@@ -20,8 +20,8 @@ Comments / TODO:
   * Test MinGW, release and also debug builds (debug: check file name, libpinproc[d].a?)
   ? P-ROC project should provide MinGW packages of LIBPINPROC and YAML-CPP
     (example at http://ftp.maddes.net/mingw/)
-  * Special case: create DLL (needs __declspec(dllexport/dllimport))
   * Linux/OSX: -zlazyload for PinMAME or PinPROC
+  + Special case: create DLL (needs __declspec(dllexport/dllimport))
   + Fix VS compilations (library names, different runtime libraries, external lib names)
     (committed in dev, 2011-01-09)
   + issues with MinGW5 / GCC 3.2.3 setup
@@ -158,30 +158,42 @@ a) MinGW
         * you will see lots of "warning: #pragma once is obsolete" during build, which can be ignored
       - MinGW2 with LIB_TYPE SHARED:
         * error: libstdc++.a(c++locale.o)(.text+0x38c): undefined reference to `strtold'
-    * mkdir bin\mingw
-    * cd bin\mingw
+    * set TDIR=mingw & set CMGEN="MinGW Makefiles"
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
     * del /s /q * & rmdir /s /q .
-    * cmake -DBUILD_SHARED_LIBS=OFF -DYAML_CPP_BUILD_TOOLS=OFF -G "MinGW Makefiles" ..\..
-    * mingw32-make yaml-cpp (only need to build the library)
+    * cmake -DBUILD_SHARED_LIBS=OFF
+            -DYAML_CPP_BUILD_TOOLS=OFF
+            -G %CMGEN% ..\..
+    * mingw32-make
+       yaml-cpp  (use if only want to build the library)
        1>yaml-cpp_compile.log 2>&1
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
       (Note: install dir can not be changed with "mingw32-make install")
-  - libpinproc (as of 2010-12-30, commit d90bf717bac20e07ca76b37c394da5f3fd39a939)
+  - pinproc (as of 2010-12-30, commit d90bf717bac20e07ca76b37c394da5f3fd39a939)
     Static library compiles only with the following MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC4.5.0
      It does not compile with MinGW5/GCC3.2.3
     * cd /d <libpinproc>
-    * mkdir bin\mingw
-    * cd bin\mingw
+    * set TDIR=mingw & set CMGEN="MinGW Makefiles"
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
     * del /s /q * & rmdir /s /q .
-    * cmake -DBUILD_SHARED_LIBS=OFF -G "MinGW Makefiles" ..\..
-    * mingw32-make pinproc (only need to build the library)
+    * cmake -DBUILD_SHARED_LIBS=OFF
+            -DPINPROC_BUILD_TOOLS=OFF  (use if YAML-CPP doesn't work for the current MinGW setup)
+            -G %CMGEN% ..\..
+    * mingw32-make
+       pinproc  (use if only want to build the library)
        1>pinproc_compile.log 2>&1
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libpinproc.a and include/p-roc/pinproc.h
       (Note: install dir can not be changed with "mingw32-make install")
+    * Including the FTDI DLL import lib to libpinproc is not possible like with MS VC++.
+      Tried by adding "ftd2xx.lib" to the AR.EXE command line in CMakeFiles\pinproc.dir\link.txt
+      But it is not recognized when using tje resulting static library in PinMAME or other projects.
+
 
 b) Visual C++
 -------------
@@ -189,25 +201,25 @@ b) Visual C++
     * Builds will be put into PinMAME repository, so they are accessible for PinMAME only.
       (alternative %VCINSTALLDIR%)
     * Add all necessary MSVC pathes and variables for CMake
-      > set VC=vc6b & set CMGEN="Visual Studio 6"
+      > set TDIR=vc6 & set CMGEN="Visual Studio 6"
         "%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
 
-      > set VC=vc2002 & set CMGEN="Visual Studio 7"
+      > set TDIR=vc2002 & set CMGEN="Visual Studio 7"
         "%ProgramFiles%\Microsoft Visual Studio .NET\VC7\bin\vcvars32.bat"
 
-      > set VC=vc2003 & set CMGEN="Visual Studio 7 .NET 2003"
+      > set TDIR=vc2003 & set CMGEN="Visual Studio 7 .NET 2003"
         "%ProgramFiles%\Microsoft Visual Studio .NET 2003\VC7\bin\vcvars32.bat"
 
-      > set VC=vc2005 & set CMGEN="Visual Studio 8 2005"
+      > set TDIR=vc2005 & set CMGEN="Visual Studio 8 2005"
         "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
 
-      > set VC=vc2008 & set CMGEN="Visual Studio 9 2008"
+      > set TDIR=vc2008 & set CMGEN="Visual Studio 9 2008"
         "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
 
   - YAML-CPP
     * cd /d C:\Coding\yaml-cpp\yaml-cpp-0.2.5
-    * mkdir bin\%VC%
-    * cd bin\%VC%
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
     * del /s /q * & rmdir /s /q .
     * cmake -DBUILD_SHARED_LIBS=OFF -DMSVC_SHARED_RT=OFF
             -G %CMGEN% ..\..
@@ -229,8 +241,8 @@ b) Visual C++
 // #endif
 
     * cd /d C:\Coding\pinproc\maddes-dev
-    * mkdir bin\%VC%
-    * cd bin\%VC%
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
     * del /s /q * & rmdir /s /q .
     * cmake -DBUILD_SHARED_LIBS=OFF -DMSVC_SHARED_RT=OFF
             -DPINPROC_BUILD_TOOLS=OFF  (use if YAML-CPP doesn't work for the current MSVC)
@@ -248,7 +260,7 @@ b) Visual C++
           * Add to Project Options: /LIBPATH:"\usr\local\lib" ftd2xx.lib
         * !!! DO NOT USE "REBUILD ALL" !!!
           Use only "Build <output>" and "Clean", otherwise CMake will re-run and removes all manual changes.
-      * pinprocfw & pinproctest (do this for each and every configuration)
+      * [optional] pinprocfw & pinproctest (do this for each and every configuration)
         * section "Linker -> Input"
           * Additional Dependencies: remove "ftd2xx.lib"
 
