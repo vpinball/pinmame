@@ -1,0 +1,14 @@
+zlib
+====
+Library version: 1.1.4
+Library type: static
+
+Homepage: http://www.zlib.net/
+
+Reason: Support for zipped ROM packages
+
+
+Visual C++:
+-----------
+Build with: Visual Studio 6.0
+Runtime: /MT
