@@ -27,9 +27,11 @@
  * @brief libpinproc, P-ROC Layer 1 API (Preliminary)
  *
  */
-
-#ifndef _PINPROC_H_
-#define _PINPROC_H_
+#ifndef PINPROC_PINPROC_H
+#define PINPROC_PINPROC_H
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
 
 /*
  * 3rd party "stdint.h" replacement available for Visual C++ before version 2010.
@@ -40,32 +42,35 @@
 #include <stdint.h>
 
 /** @cond */
-#if defined(__WIN32__) || defined(_WIN32)
-    #undef PR_EXPORT
-    #if defined(PR_BUILDING_PR)
-        #define PR_EXPORT __declspec(dllexport) extern
+// The following ifdef block is the standard way of creating macros which make exporting
+// from a DLL simpler. All files within this DLL are compiled with the pinproc_EXPORTS
+// symbol defined on the command line. This symbol should not be defined on any project
+// that uses this DLL. This way any other project whose source files include this file see
+// PINPROC_API functions as being imported from a DLL, whereas this DLL sees symbols
+// defined with this macro as being exported.
+#undef PINPROC_API
+
+#ifdef PINPROC_DLL // Using or Building PinPROC DLL (definition defined manually)
+    #if defined(pinproc_EXPORTS) // Building PinPROC DLL (definition created by CMake or defined manually)
+        #define PINPROC_API __declspec(dllexport)
     #else
-        // TODO: Decide what to do here:
-        //#define PR_EXPORT __declspec(dllimport) extern
-        #define PR_EXPORT
+        #define PINPROC_API __declspec(dllimport)
     #endif
 #endif
-
-#if !defined(PR_EXPORT)
-    #define PR_EXPORT extern
+// fallback for non-DLL usage and builds
+#if !defined(PINPROC_API)
+    #define PINPROC_API
 #endif
 
-#if !defined(PR_EXTERN_C_BEGIN)
-    #if defined(__cplusplus)
-        #define PR_EXTERN_C_BEGIN extern "C" {
-        #define PR_EXTERN_C_END   }
-    #else
-        #define PR_EXTERN_C_BEGIN
-        #define PR_EXTERN_C_END
-    #endif
+#if defined(__cplusplus)
+    #define PINPROC_EXTERN_C_BEGIN extern "C" {
+    #define PINPROC_EXTERN_C_END   }
+#else
+    #define PINPROC_EXTERN_C_BEGIN
+    #define PINPROC_EXTERN_C_END
 #endif
 
-PR_EXTERN_C_BEGIN
+PINPROC_EXTERN_C_BEGIN
 /** @endcond */
 
 // Types
@@ -87,13 +92,13 @@ typedef enum PRLogLevel {
 } PRLogLevel;
 
 typedef void (*PRLogCallback)(PRLogLevel level, const char *text); /**< Function pointer type for a custom logging callback.  See: PRLogSetCallback(). */
-PR_EXPORT void PRLogSetCallback(PRLogCallback callback); /**< Replaces the default logging handler with the given callback function. */
+PINPROC_API void PRLogSetCallback(PRLogCallback callback); /**< Replaces the default logging handler with the given callback function. */
 
-PR_EXPORT void PRLogSetLevel(PRLogLevel level);
+PINPROC_API void PRLogSetLevel(PRLogLevel level);
 
-PR_EXPORT const char *PRGetLastErrorText();
+PINPROC_API const char *PRGetLastErrorText();
 
-/** 
+/**
  * @defgroup device Device Creation & Deletion
  * @{
  */
@@ -110,30 +115,30 @@ typedef enum PRMachineType {
 
 // PRHandle Creation and Deletion
 
-PR_EXPORT PRHandle PRCreate(PRMachineType machineType); /**< Create a new P-ROC device handle.  Only one handle per device may be created. This handle must be destroyed with PRDelete() when it is no longer needed.  Returns #kPRHandleInvalid if an error occurred. */
-PR_EXPORT void PRDelete(PRHandle handle);               /**< Destroys an existing P-ROC device handle. */
+PINPROC_API PRHandle PRCreate(PRMachineType machineType); /**< Create a new P-ROC device handle.  Only one handle per device may be created. This handle must be destroyed with PRDelete() when it is no longer needed.  Returns #kPRHandleInvalid if an error occurred. */
+PINPROC_API void PRDelete(PRHandle handle);               /**< Destroys an existing P-ROC device handle. */
 
 #define kPRResetFlagDefault (0) /**< Only resets state in memory and does not write changes to the device. */
 #define kPRResetFlagUpdateDevice (1) /**< Instructs PRReset() to update the device once it has reset the configuration to its defaults. */
 
 /**
  * @brief Resets internally maintained driver and switch rule structures.
- * @param resetFlags Specify #kPRResetFlagDefault to only reset the configuration in host memory.  #kPRResetFlagUpdateDevice will write the default configuration to the device, effectively disabling all drivers and switch rules. 
+ * @param resetFlags Specify #kPRResetFlagDefault to only reset the configuration in host memory.  #kPRResetFlagUpdateDevice will write the default configuration to the device, effectively disabling all drivers and switch rules.
  */
-PR_EXPORT PRResult PRReset(PRHandle handle, uint32_t resetFlags);
+PINPROC_API PRResult PRReset(PRHandle handle, uint32_t resetFlags);
 
 /** @} */ // End of Device Creation & Deletion
 
 // I/O
 
 /** Flush all pending write data out to the P-ROC. */
-PR_EXPORT PRResult PRFlushWriteData(PRHandle handle);
+PINPROC_API PRResult PRFlushWriteData(PRHandle handle);
 
 /** Write data out to the P-ROC immediately (does not require a call to PRFlushWriteData). */
-PR_EXPORT PRResult PRWriteData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numWriteWords, uint32_t * writeBuffer);
+PINPROC_API PRResult PRWriteData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numWriteWords, uint32_t * writeBuffer);
 
 /** Read data from the P-ROC. */
-PR_EXPORT PRResult PRReadData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numReadWords, uint32_t * readBuffer);
+PINPROC_API PRResult PRReadData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numReadWords, uint32_t * readBuffer);
 
 // Manager
 /** @defgroup Manager
@@ -146,7 +151,7 @@ typedef struct PRManagerConfig {
 } PRManagerConfig;
 
 /** Update Manager configuration */
-PR_EXPORT PRResult PRManagerUpdateConfig(PRHandle handle, PRManagerConfig *managerConfig);
+PINPROC_API PRResult PRManagerUpdateConfig(PRHandle handle, PRManagerConfig *managerConfig);
 
 // Drivers
 /** @defgroup drivers Driver Manipulation
@@ -156,9 +161,9 @@ PR_EXPORT PRResult PRManagerUpdateConfig(PRHandle handle, PRManagerConfig *manag
 #define kPRDriverGroupsMax (26)   /**< Number of available driver groups. */
 #define kPRDriverCount (256)          /**< Total number of drivers */
 
-#define kPRDriverAuxCmdOutput (2)   
-#define kPRDriverAuxCmdDelay  (1)   
-#define kPRDriverAuxCmdJump   (0)   
+#define kPRDriverAuxCmdOutput (2)
+#define kPRDriverAuxCmdDelay  (1)
+#define kPRDriverAuxCmdJump   (0)
 
 typedef struct PRDriverGlobalConfig {
     bool_t enableOutputs; // Formerly enable_direct_outputs
@@ -212,138 +217,138 @@ typedef struct PRDriverAuxCommand {
 } PRDriverAuxCommand;
 
 /** Update registers for the global driver configuration. */
-PR_EXPORT PRResult PRDriverUpdateGlobalConfig(PRHandle handle, PRDriverGlobalConfig *driverGlobalConfig);
+PINPROC_API PRResult PRDriverUpdateGlobalConfig(PRHandle handle, PRDriverGlobalConfig *driverGlobalConfig);
 
-PR_EXPORT PRResult PRDriverGetGroupConfig(PRHandle handle, uint8_t groupNum, PRDriverGroupConfig *driverGroupConfig);
+PINPROC_API PRResult PRDriverGetGroupConfig(PRHandle handle, uint8_t groupNum, PRDriverGroupConfig *driverGroupConfig);
 /** Update registers for the given driver group configuration. */
-PR_EXPORT PRResult PRDriverUpdateGroupConfig(PRHandle handle, PRDriverGroupConfig *driverGroupConfig);
+PINPROC_API PRResult PRDriverUpdateGroupConfig(PRHandle handle, PRDriverGroupConfig *driverGroupConfig);
 
-PR_EXPORT PRResult PRDriverGetState(PRHandle handle, uint8_t driverNum, PRDriverState *driverState);
+PINPROC_API PRResult PRDriverGetState(PRHandle handle, uint8_t driverNum, PRDriverState *driverState);
 /**
  * @brief Sets the state of the given driver (lamp or coil).
  */
-PR_EXPORT PRResult PRDriverUpdateState(PRHandle handle, PRDriverState *driverState);
+PINPROC_API PRResult PRDriverUpdateState(PRHandle handle, PRDriverState *driverState);
 /**
  * @brief Loads the driver defaults for the given machine type.
- * 
+ *
  * PRReset() calls this function internally; this function is useful for basing custom driver settings off of the defaults for a particular machine.
  * @note This function does not update the P-ROC hardware, only the internal data structures.  Use PRDriverGetGlobalConfig() and PRDriverGetGroupConfig() to retrieve the settings.
  */
-PR_EXPORT PRResult PRDriverLoadMachineTypeDefaults(PRHandle handle, PRMachineType machineType);
+PINPROC_API PRResult PRDriverLoadMachineTypeDefaults(PRHandle handle, PRMachineType machineType);
 
 // Driver Group Helper functions:
 
-/** 
- * Disables (turns off) the given driver group. 
+/**
+ * Disables (turns off) the given driver group.
  * This function is provided for convenience.  See PRDriverGroupDisable() for a full description.
  */
-PR_EXPORT PRResult PRDriverGroupDisable(PRHandle handle, uint8_t groupNum);
+PINPROC_API PRResult PRDriverGroupDisable(PRHandle handle, uint8_t groupNum);
 // Driver Helper functions:
 
-/** 
- * Disables (turns off) the given driver. 
+/**
+ * Disables (turns off) the given driver.
  * This function is provided for convenience.  See PRDriverStateDisable() for a full description.
  */
-PR_EXPORT PRResult PRDriverDisable(PRHandle handle, uint8_t driverNum);
-/** 
- * Pulses the given driver for a number of milliseconds. 
+PINPROC_API PRResult PRDriverDisable(PRHandle handle, uint8_t driverNum);
+/**
+ * Pulses the given driver for a number of milliseconds.
  * This function is provided for convenience.  See PRDriverStatePulse() for a full description.
  */
-PR_EXPORT PRResult PRDriverPulse(PRHandle handle, uint8_t driverNum, uint8_t milliseconds);
-/** 
- * Assigns a repeating schedule to the given driver. 
+PINPROC_API PRResult PRDriverPulse(PRHandle handle, uint8_t driverNum, uint8_t milliseconds);
+/**
+ * Assigns a repeating schedule to the given driver.
  * This function is provided for convenience.  See PRDriverStateSchedule() for a full description.
  */
-PR_EXPORT PRResult PRDriverSchedule(PRHandle handle, uint8_t driverNum, uint32_t schedule, uint8_t cycleSeconds, bool_t now);
-/** 
- * Assigns a pitter-patter schedule (repeating on/off) to the given driver. 
+PINPROC_API PRResult PRDriverSchedule(PRHandle handle, uint8_t driverNum, uint32_t schedule, uint8_t cycleSeconds, bool_t now);
+/**
+ * Assigns a pitter-patter schedule (repeating on/off) to the given driver.
  * This function is provided for convenience.  See PRDriverStatePatter() for a full description.
  */
-PR_EXPORT PRResult PRDriverPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
-/** 
- * Assigns a pitter-patter schedule (repeating on/off) to the given driver on for the given duration. 
+PINPROC_API PRResult PRDriverPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+/**
+ * Assigns a pitter-patter schedule (repeating on/off) to the given driver on for the given duration.
  * This function is provided for convenience.  See PRDriverStatePulsedPatter() for a full description.
  */
-PR_EXPORT PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
-/** 
- * Assigns a pitter-patter schedule (repeating on/off) to the given driver for the given duration. 
+PINPROC_API PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+/**
+ * Assigns a pitter-patter schedule (repeating on/off) to the given driver for the given duration.
  * This function is provided for convenience.  See PRDriverStatePatter() for a full description.
  */
-PR_EXPORT PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
-/** 
+PINPROC_API PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+/**
  * Prepares an Aux Command to drive the Aux bus.
- * This function is provided for convenience.  
+ * This function is provided for convenience.
  */
-PR_EXPORT void PRDriverAuxPrepareOutput(PRDriverAuxCommand *auxCommand, uint8_t data, uint8_t extraData, uint8_t enables, bool_t muxEnables, uint16_t delayTime);
-/** 
+PINPROC_API void PRDriverAuxPrepareOutput(PRDriverAuxCommand *auxCommand, uint8_t data, uint8_t extraData, uint8_t enables, bool_t muxEnables, uint16_t delayTime);
+/**
  * Prepares an Aux Command to delay the Aux logic.
- * This function is provided for convenience.  
+ * This function is provided for convenience.
  */
-PR_EXPORT void PRDriverAuxPrepareDelay(PRDriverAuxCommand *auxCommand, uint16_t delayTime);
-/** 
+PINPROC_API void PRDriverAuxPrepareDelay(PRDriverAuxCommand *auxCommand, uint16_t delayTime);
+/**
  * Prepares an Aux Command to have the Aux memory pointer jump to a new address.
- * This function is provided for convenience.  
+ * This function is provided for convenience.
  */
-PR_EXPORT void PRDriverAuxPrepareJump(PRDriverAuxCommand *auxCommand, uint8_t jumpAddr);
-/** 
+PINPROC_API void PRDriverAuxPrepareJump(PRDriverAuxCommand *auxCommand, uint8_t jumpAddr);
+/**
  * Prepares a disabled Aux Command.
- * This function is provided for convenience.  
+ * This function is provided for convenience.
  */
-PR_EXPORT void PRDriverAuxPrepareDisable(PRDriverAuxCommand *auxCommand);
+PINPROC_API void PRDriverAuxPrepareDisable(PRDriverAuxCommand *auxCommand);
 
 /** Tickle the watchdog timer. */
-PR_EXPORT PRResult PRDriverWatchdogTickle(PRHandle handle);
+PINPROC_API PRResult PRDriverWatchdogTickle(PRHandle handle);
 
-/** 
+/**
  * Changes the given #PRDriverGroupConfig to reflect a disabled group.
  * @note The driver group config structure must be applied using PRDriverUpdateGroupConfig() to have any effect.
  */
-PR_EXPORT void PRDriverGroupStateDisable(PRDriverGroupConfig *driverGroup);
-/** 
+PINPROC_API void PRDriverGroupStateDisable(PRDriverGroupConfig *driverGroup);
+/**
  * Changes the given #PRDriverState to reflect a disabled state.
  * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
  */
-PR_EXPORT void PRDriverStateDisable(PRDriverState *driverState);
-/** 
+PINPROC_API void PRDriverStateDisable(PRDriverState *driverState);
+/**
  * Changes the given #PRDriverState to reflect a pulse state.
  * @param milliseconds Number of milliseconds to pulse the driver for.
  * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
  */
-PR_EXPORT void PRDriverStatePulse(PRDriverState *driverState, uint8_t milliseconds);
-/** 
+PINPROC_API void PRDriverStatePulse(PRDriverState *driverState, uint8_t milliseconds);
+/**
  * Changes the given #PRDriverState to reflect a scheduled state.
- * Assigns a repeating schedule to the given driver. 
+ * Assigns a repeating schedule to the given driver.
  * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
  */
-PR_EXPORT void PRDriverStateSchedule(PRDriverState *driverState, uint32_t schedule, uint8_t cycleSeconds, bool_t now);
-/** 
+PINPROC_API void PRDriverStateSchedule(PRDriverState *driverState, uint32_t schedule, uint8_t cycleSeconds, bool_t now);
+/**
  * @brief Changes the given #PRDriverState to reflect a pitter-patter schedule state.
  * Assigns a pitter-patter schedule (repeating on/off) to the given driver.
  * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
- * 
+ *
  * Use originalOnTime to pulse the driver for a number of milliseconds before the pitter-patter schedule begins.
  */
-PR_EXPORT void PRDriverStatePatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+PINPROC_API void PRDriverStatePatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
 
-/** 
+/**
  * @brief Changes the given #PRDriverState to reflect a pitter-patter schedule state.
  * Just like the regular Patter above, but PulsePatter only drives the patter
  * scheduled for the given number of milliseconds before disabling the driver.
  */
-PR_EXPORT void PRDriverStatePulsedPatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t patterTime);
+PINPROC_API void PRDriverStatePulsedPatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t patterTime);
 
-/** 
+/**
  * Write Aux Port commands into the Aux Port command memory.
  */
 
-PR_EXPORT PRResult PRDriverAuxSendCommands(PRHandle handle, PRDriverAuxCommand * commands, uint8_t numCommands, uint8_t startingAddr);
+PINPROC_API PRResult PRDriverAuxSendCommands(PRHandle handle, PRDriverAuxCommand * commands, uint8_t numCommands, uint8_t startingAddr);
 
 /**
  * @brief Converts a coil, lamp, switch, or GI string into a P-ROC driver number.
  * The following formats are accepted: Cxx (coil), Lxx (lamp), Sxx (matrix switch), SFx (flipper grounded switch), or SDx (dedicated grounded switch).
  * If the string does not match this format it will be converted into an integer using atoi().
  */
-PR_EXPORT uint16_t PRDecode(PRMachineType machineType, const char *str);
+PINPROC_API uint16_t PRDecode(PRMachineType machineType, const char *str);
 
 /** @} */ // End of Drivers
 
@@ -371,10 +376,10 @@ typedef struct PREvent {
     uint32_t time;     /**< Time (in milliseconds) that this event occurred. */
 } PREvent;
 
-/** Get all of the available events that have been received. 
+/** Get all of the available events that have been received.
  * \return Number of events returned; -1 if an error occurred.
  */
-PR_EXPORT int PRGetEvents(PRHandle handle, PREvent *eventsOut, int maxEvents);
+PINPROC_API int PRGetEvents(PRHandle handle, PREvent *eventsOut, int maxEvents);
 
 
 #define kPRSwitchPhysicalFirst (0)   /**< Switch number of the first physical switch. */
@@ -402,35 +407,35 @@ typedef struct PRSwitchRule {
 } PRSwitchRule;
 
 /** Update the switch controller configurion registers */
-PR_EXPORT PRResult PRSwitchUpdateConfig(PRHandle handle, PRSwitchConfig *switchConfig);
+PINPROC_API PRResult PRSwitchUpdateConfig(PRHandle handle, PRSwitchConfig *switchConfig);
 
 /**
  * @brief Configures the handling of switch rules within P-ROC.
- * 
+ *
  * P-ROC's switch rule system allows the user to decide which switch events are returned to software,
  * as well as optionally linking one or more driver state changes to rules to create immediate feedback (such as in pop bumpers).
- * 
- * For instance, P-ROC can provide debounced switch events for a flipper button so software can apply lange change behavior.  
+ *
+ * For instance, P-ROC can provide debounced switch events for a flipper button so software can apply lange change behavior.
  * This is accomplished by configuring the P-ROC with a switch rule for the flipper button and then receiving the events via the PRGetEvents() call.
  * The same switch can also be configured with a non-debounced rule to fire a flipper coil.
  * Multiple driver changes can be tied to a single switch state transition to create more complicated effects: a slingshot
  * switch that fires the slingshot coil, a flash lamp, and a score event.
- * 
+ *
  * P-ROC holds four different switch rules for each switch: closed to open and open to closed, each with a debounced and non-debounced versions:
  *  - #kPREventTypeSwitchOpenDebounced
- *  - #kPREventTypeSwitchClosedDebounced 
+ *  - #kPREventTypeSwitchClosedDebounced
  *  - #kPREventTypeSwitchOpenNondebounced
  *  - #kPREventTypeSwitchClosedNondebounced
- * 
+ *
  * @section Examples
- * 
+ *
  * Configuring a basic switch rule to simply notify software via PRGetEvents() without affecting any coil/lamp drivers:
  * @code
  * PRSwitchRule rule;
  * rule.notifyHost = true;
  * PRSwitchUpdateRule(handle, switchNum, kPREventTypeSwitchOpenDebounced, &rule, NULL, 0);
  * @endcode
- * 
+ *
  * Configuring a pop bumper switch to pulse the coil and a flash lamp for 50ms each:
  * @code
  * // Configure a switch rule to fire the coil and flash lamp:
@@ -441,14 +446,14 @@ PR_EXPORT PRResult PRSwitchUpdateConfig(PRHandle handle, PRSwitchConfig *switchC
  * PRDriverGetState(handle, drvFlashLamp1, &drivers[1]);
  * PRDriverStatePulse(&drivers[0], 50);
  * PRDriverStatePulse(&drivers[1], 50);
- * PRSwitchUpdateRule(handle, swPopBumper1, kPREventTypeSwitchClosedNondebounced, 
+ * PRSwitchUpdateRule(handle, swPopBumper1, kPREventTypeSwitchClosedNondebounced,
  *                      &rule, drivers, 2);
  * // Now configure a switch rule to process scoring in software:
  * rule.notifyHost = true;
- * PRSwitchUpdateRule(handle, swPopBumper1, kPREventTypeSwitchClosedDebounced, 
+ * PRSwitchUpdateRule(handle, swPopBumper1, kPREventTypeSwitchClosedDebounced,
  *                      &rule, NULL, 0);
  * @endcode
- * 
+ *
  * @param handle The P-ROC device handle.
  * @param switchNum The index of the switch this configuration affects.
  * @param eventType The switch rule for the specified switchNum to be configured.
@@ -456,10 +461,10 @@ PR_EXPORT PRResult PRSwitchUpdateConfig(PRHandle handle, PRSwitchConfig *switchC
  * @param linkedDrivers An array of #PRDriverState structures describing the driver state changes to be made when this switch rule is triggered.  May be NULL if numDrivers is 0.
  * @param numDrivers Number of elements in the linkedDrivers array.  May be zero or more.
  */
-PR_EXPORT PRResult PRSwitchUpdateRule(PRHandle handle, uint8_t switchNum, PREventType eventType, PRSwitchRule *rule, PRDriverState *linkedDrivers, int numDrivers);
+PINPROC_API PRResult PRSwitchUpdateRule(PRHandle handle, uint8_t switchNum, PREventType eventType, PRSwitchRule *rule, PRDriverState *linkedDrivers, int numDrivers);
 
 /** Returns a list of PREventTypes describing the states of the requested number of switches  */
-PR_EXPORT PRResult PRSwitchGetStates(PRHandle handle, PREventType * switchStates, uint16_t numSwitches);
+PINPROC_API PRResult PRSwitchGetStates(PRHandle handle, PREventType * switchStates, uint16_t numSwitches);
 
 /** @} */ // End of Switches & Events
 
@@ -484,9 +489,9 @@ typedef struct PRDMDConfig {
 } PRDMDConfig;
 
 /** Sets the configuration registers for the DMD driver. */
-PR_EXPORT int32_t PRDMDUpdateConfig(PRHandle handle, PRDMDConfig *dmdConfig);
+PINPROC_API int32_t PRDMDUpdateConfig(PRHandle handle, PRDMDConfig *dmdConfig);
 /** Updates the DMD frame buffer with the given data. */
-PR_EXPORT PRResult PRDMDDraw(PRHandle handle, uint8_t * dots);
+PINPROC_API PRResult PRDMDDraw(PRHandle handle, uint8_t * dots);
 
 /** @} */ // End of DMD
 
@@ -513,26 +518,26 @@ typedef struct PRJTAGOutputs {
 } PRJTAGOutputs;
 
 /** Force JTAG outputs (TCK, TDO, TMS) to specific values. Optionally toggle the clock when driving only TDO and/or TMS.*/
-PR_EXPORT PRResult PRJTAGDriveOutputs(PRHandle handle, PRJTAGOutputs * jtagOutputs, bool_t toggleClk);
+PINPROC_API PRResult PRJTAGDriveOutputs(PRHandle handle, PRJTAGOutputs * jtagOutputs, bool_t toggleClk);
 /** Store data to be shifted out on TDO */
-PR_EXPORT PRResult PRJTAGWriteTDOMemory(PRHandle handle, uint16_t tableOffset, uint16_t numWords, uint32_t * tdoData);
+PINPROC_API PRResult PRJTAGWriteTDOMemory(PRHandle handle, uint16_t tableOffset, uint16_t numWords, uint32_t * tdoData);
 /** Shift stored TDO data onto the TDO pin, toggling TCK on every bit. */
-PR_EXPORT PRResult PRJTAGShiftTDOData(PRHandle handle, uint16_t numBits, bool_t dataBlockComplete);
+PINPROC_API PRResult PRJTAGShiftTDOData(PRHandle handle, uint16_t numBits, bool_t dataBlockComplete);
 /** Get the contents of the TDI memory. */
-PR_EXPORT PRResult PRJTAGReadTDIMemory(PRHandle handle, uint16_t tableOffset, uint16_t numWords, uint32_t * tdiData);
+PINPROC_API PRResult PRJTAGReadTDIMemory(PRHandle handle, uint16_t tableOffset, uint16_t numWords, uint32_t * tdiData);
 /** Read the JTAG status register for the command complete bit and JTAG pin states. */
-PR_EXPORT PRResult PRJTAGGetStatus(PRHandle handle, PRJTAGStatus * status);
+PINPROC_API PRResult PRJTAGGetStatus(PRHandle handle, PRJTAGStatus * status);
 
 /** @} */ // End of DMD
 
 /** @cond */
-PR_EXTERN_C_END
+PINPROC_EXTERN_C_END
 /** @endcond */
 
 /**
  * @mainpage libpinproc API Documentation
- * 
+ *
  * This is the documentation for libpinproc, the P-ROC Layer 1 API.
  */
 
-#endif // _PINPROC_H_
+#endif /* PINPROC_PINPROC_H */
