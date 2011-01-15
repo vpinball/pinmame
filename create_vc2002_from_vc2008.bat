@@ -33,14 +33,23 @@ copy /V /-Y "VPinMAME_VC2008.vcproj" "VPinMAME_VC2002.vcproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'7.00^'" /quotes /in:"VPinMAME_VC2002.vcproj" /out:"VPinMAME_VC2002.vcproj"
 @if errorlevel 1 goto manual
+@REM
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"InstallVPinMAME_VC2002.vcproj" /out:"InstallVPinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"PinMAME_VC2002.vcproj" /out:"PinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"PinMAME32_VC2002.vcproj" /out:"PinMAME32_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"VPinMAME_VC2002.vcproj" /out:"VPinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
 
 @goto end
 
 :manual
 @echo.
 @echo Replace all occurrences of VC2008 in the solution and project files with VC2002.
-@echo Replace all occurrences of Format Version 10.00 in the solution file with 8.00.
-@echo Replace all occurrences of Version="9,00" in the project files with "7.10".
+@echo Replace all occurrences of Format Version 10.00 in the solution file with 7.00.
+@echo Replace all occurrences of Version="9,00" in the project files with "7.00".
 @echo.
 
 :end
