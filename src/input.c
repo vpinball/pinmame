@@ -18,6 +18,7 @@
 #define CODE_TYPE_NONE 0U /* code not assigned */
 #define CODE_TYPE_KEYBOARD 1U /* keyboard code */
 #define CODE_TYPE_JOYSTICK 2U /* joystick code */
+#define CODE_TYPE_PROC 3U /* proc code */
 
 /* Informations for every input code */
 struct code_info {
@@ -26,7 +27,7 @@ struct code_info {
 	unsigned type; /* subtype: CODE_TYPE_KEYBOARD or CODE_TYPE_JOYSTICK */
 };
 
-/* Main code table, generic KEYCODE_*, JOYCODE_* are indexes in this table */
+/* Main code table, generic KEYCODE_*, PROCCODE_* are indexes in this table */
 static struct code_info* code_map;
 
 /* Size of the table */
@@ -37,9 +38,17 @@ int code_init(void)
 {
 	unsigned i;
 
+#ifdef PROC_SUPPORT
 	assert(	__code_key_first == 0
 		&& __code_key_last + 1 == __code_joy_first
-		&& __code_joy_last + 1 == __code_max );
+		&& __code_proc_last + 1 == __code_max 
+	);
+#else
+	assert(	__code_key_first == 0
+		&& __code_key_last + 1 == __code_joy_first
+		&& __code_joy_last + 1 == __code_max 
+	);
+#endif
 
 	/* allocate */
 	code_map = (struct code_info*)malloc( __code_max * sizeof(struct code_info) );
@@ -58,6 +67,10 @@ int code_init(void)
 			code_map[code_mac].type = CODE_TYPE_KEYBOARD;
 		else if (__code_joy_first <= i && i <= __code_joy_last)
 			code_map[code_mac].type = CODE_TYPE_JOYSTICK;
+#ifdef PROC_SUPPORT
+		else if (__code_proc_first <= i && i <= __code_proc_last)
+			code_map[code_mac].type = CODE_TYPE_PROC;
+#endif
 		else {
 			/* never happen */
 			assert(0);
@@ -96,12 +109,30 @@ INLINE const struct JoystickInfo* internal_oscode_find_joystick(unsigned oscode)
 	return 0;
 }
 
+#ifdef PROC_SUPPORT
+INLINE const struct PROCInfo* internal_oscode_find_proc(unsigned oscode)
+{
+	const struct PROCInfo *procinfo;
+	procinfo = osd_get_proc_list();
+	while (procinfo->name)
+	{
+		if (procinfo->code == oscode)
+			return procinfo;
+		++procinfo;
+	}
+	return 0;
+}
+#endif
+
 /* Find a oscode in the table */
 static int internal_oscode_find(unsigned oscode, unsigned type)
 {
 	unsigned i;
 	const struct KeyboardInfo *keyinfo;
 	const struct JoystickInfo *joyinfo;
+#ifdef PROC_SUPPORT
+	const struct PROCInfo *procinfo;
+#endif
 
 	/* Search in the main table for an oscode */
 	for(i=__code_max;i<code_mac;++i)
@@ -121,7 +152,14 @@ static int internal_oscode_find(unsigned oscode, unsigned type)
 			if (joyinfo && joyinfo->standardcode != CODE_OTHER)
 				return joyinfo->standardcode;
 			break;
+#ifdef PROC_SUPPORT
+		case CODE_TYPE_PROC :
+			procinfo = internal_oscode_find_proc(oscode);
+			if (procinfo && procinfo->standardcode != CODE_OTHER)
+				return procinfo->standardcode;
+			break;
 	}
+#endif
 
 	/* oscode not found */
 	return CODE_NONE;
@@ -197,11 +235,43 @@ INLINE const struct JoystickInfo* internal_code_find_joystick(InputCode code)
 	return 0;
 }
 
+#ifdef PROC_SUPPORT
+INLINE const struct PROCInfo* internal_code_find_proc(InputCode code)
+{
+	const struct PROCInfo *procinfo;
+	procinfo = osd_get_proc_list();
+
+	assert( code < code_mac );
+
+	if (code < __code_max)
+	{
+		while (procinfo->name)
+		{
+			if (procinfo->standardcode == code)
+				return procinfo;
+			++procinfo;
+		}
+	} else {
+		while (procinfo->name)
+		{
+			if (procinfo->standardcode == CODE_OTHER && procinfo->code == code_map[code].oscode)
+				return procinfo;
+			++procinfo;
+		}
+	}
+	return 0;
+}
+#endif
+
+
 /* Check if a code is pressed */
 static int internal_code_pressed(InputCode code)
 {
 	const struct KeyboardInfo *keyinfo;
 	const struct JoystickInfo *joyinfo;
+#ifdef PROC_SUPPORT
+	const struct PROCInfo *procinfo;
+#endif
 
 	assert( code < code_mac );
 
@@ -219,7 +289,14 @@ static int internal_code_pressed(InputCode code)
 				if (joyinfo)
 					return osd_is_joy_pressed(joyinfo->code);
 				break;
+#ifdef PROC_SUPPORT
+			case CODE_TYPE_PROC :
+				procinfo = internal_code_find_proc(code);
+				if (procinfo)
+					return osd_is_proc_pressed(procinfo->code);
+				break;
 		}
+#endif
 	} else {
 		switch (code_map[code].type)
 		{
@@ -227,6 +304,10 @@ static int internal_code_pressed(InputCode code)
 				return osd_is_key_pressed(code_map[code].oscode);
 			case CODE_TYPE_JOYSTICK :
 				return osd_is_joy_pressed(code_map[code].oscode);
+#ifdef PROC_SUPPORT
+			case CODE_TYPE_PROC :
+				return osd_is_proc_pressed(code_map[code].oscode);
+#endif
 		}
 	}
 	return 0;
@@ -237,6 +318,9 @@ static const char* internal_code_name(InputCode code)
 {
 	const struct KeyboardInfo *keyinfo;
 	const struct JoystickInfo *joyinfo;
+#ifdef PROC_SUPPORT
+	const struct PROCInfo *procinfo;
+#endif
 
 	assert( code < code_mac );
 
@@ -252,6 +336,13 @@ static const char* internal_code_name(InputCode code)
 			if (joyinfo)
 				return joyinfo->name;
 			break;
+#ifdef PROC_SUPPORT
+		case CODE_TYPE_PROC :
+			procinfo = internal_code_find_proc(code);
+			if (procinfo)
+				return procinfo->name;
+			break;
+#endif
 	}
 	return "n/a";
 }
@@ -261,6 +352,9 @@ static void internal_code_update(void)
 {
 	const struct KeyboardInfo *keyinfo;
 	const struct JoystickInfo *joyinfo;
+#ifdef PROC_SUPPORT
+	const struct PROCInfo *procinfo;
+#endif
 
 	/* add only oscode because all standard codes are already present */
 
@@ -281,6 +375,17 @@ static void internal_code_update(void)
 				internal_oscode_add(joyinfo->code,CODE_TYPE_JOYSTICK);
 		++joyinfo;
 	}
+
+#ifdef PROC_SUPPORT
+	procinfo = osd_get_proc_list();
+	while (joyinfo->name)
+	{
+		if (procinfo->standardcode == CODE_OTHER)
+                        if (internal_oscode_find(procinfo->code,CODE_TYPE_JOYSTICK)==CODE_NONE)
+				internal_oscode_add(procinfo->code,CODE_TYPE_JOYSTICK);
+		++procinfo;
+	}
+#endif
 }
 
 /* Delete the code table */
@@ -305,6 +410,7 @@ void code_close(void)
 #define SAVECODE_FLAGS_TYPE_STANDARD 0x10000000 /* code */
 #define SAVECODE_FLAGS_TYPE_KEYBOARD 0x20000000 /* keyboard oscode */
 #define SAVECODE_FLAGS_TYPE_JOYSTICK 0x30000000 /* joystick oscode */
+#define SAVECODE_FLAGS_TYPE_PROC     0x40000000 /* PROC oscode */
 #define SAVECODE_FLAGS_TYPE_MASK     0xF0000000
 
 /* Convert one key oscode to one standard code */
@@ -333,6 +439,20 @@ InputCode joyoscode_to_code(unsigned oscode)
 	return code;
 }
 
+#ifdef PROC_SUPPORT
+/* Convert one PROC oscode to one code */
+InputCode procoscode_to_code(unsigned oscode)
+{
+	InputCode code = internal_oscode_find(oscode,CODE_TYPE_PROC);
+
+	/* insert if missing */
+	if (code == CODE_NONE)
+		code = internal_oscode_add(oscode,CODE_TYPE_PROC);
+
+	return code;
+}
+#endif
+
 /* Convert one saved code to one code */
 InputCode savecode_to_code(unsigned savecode)
 {
@@ -347,6 +467,10 @@ InputCode savecode_to_code(unsigned savecode)
 			return keyoscode_to_code(code);
 		case SAVECODE_FLAGS_TYPE_JOYSTICK :
 			return joyoscode_to_code(code);
+#ifdef PROC_SUPPORT
+		case SAVECODE_FLAGS_TYPE_PROC :
+			return procoscode_to_code(code);
+#endif
 	}
 
 	/* never happen */
@@ -365,6 +489,9 @@ unsigned code_to_savecode(InputCode code)
 	{
 		case CODE_TYPE_KEYBOARD : return code_map[code].oscode | SAVECODE_FLAGS_TYPE_KEYBOARD;
 		case CODE_TYPE_JOYSTICK : return code_map[code].oscode | SAVECODE_FLAGS_TYPE_JOYSTICK;
+#ifdef PROC_SUPPORT
+		case CODE_TYPE_PROC : return code_map[code].oscode | SAVECODE_FLAGS_TYPE_PROC;
+#endif
 	}
 
 	/* never happen */
@@ -907,3 +1034,4 @@ int return_os_joycode(InputCode code)
 	}
 	return 0;
 }
+

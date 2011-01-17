@@ -143,8 +143,8 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 		procReverseSubFrameBytes(procSubFrame0);
 		procReverseSubFrameBytes(procSubFrame1);
 
-		/* Tell the P-ROC to display the new frame. */
-		procUpdateDMD();
+		/* Don't explicitly update the DMD from here.  The P-ROC code
+		 * will update after the next DMD event. */
 	}
 #endif
 

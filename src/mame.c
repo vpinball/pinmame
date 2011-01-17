@@ -117,7 +117,9 @@
 #include "vidhrdw/vector.h"
 #include "palette.h"
 #include "harddisk.h"
-
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.hpp"
+#endif
 
 /***************************************************************************
 
@@ -356,6 +358,12 @@ static int init_machine(void)
 		logerror("code_init failed\n");
 		goto cant_init_input;
 	}
+
+#ifdef PROC_SUPPORT
+	char * yaml_filename = (char *)pmoptions.p_roc;
+	printf("\nYaml: %s",yaml_filename);
+	procInitialize(yaml_filename);
+#endif
 
 	/* if we have inputs, process them now */
 	if (gamedrv->input_ports)

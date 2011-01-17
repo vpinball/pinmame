@@ -20,6 +20,15 @@ struct JoystickInfo
 	InputCode standardcode;	/* CODE_xxx equivalent from list below, or CODE_OTHER if n/a */
 };
 
+#ifdef PROC_SUPPORT
+struct PROCInfo
+{
+	char *name; /* OS dependant name; 0 terminates the list */
+	unsigned code; /* OS dependant code */
+	InputCode standardcode;	/* CODE_xxx equivalent from list below, or CODE_OTHER if n/a */
+};
+#endif
+
 enum
 {
 	/* key */
@@ -97,8 +106,15 @@ enum
 	JOYCODE_MOUSE_6_BUTTON1,JOYCODE_MOUSE_6_BUTTON2,JOYCODE_MOUSE_6_BUTTON3,
 	JOYCODE_MOUSE_7_BUTTON1,JOYCODE_MOUSE_7_BUTTON2,JOYCODE_MOUSE_7_BUTTON3,
 	JOYCODE_MOUSE_8_BUTTON1,JOYCODE_MOUSE_8_BUTTON2,JOYCODE_MOUSE_8_BUTTON3,
+
 #define __code_joy_first JOYCODE_1_LEFT
 #define __code_joy_last JOYCODE_MOUSE_8_BUTTON3
+
+#ifdef PROC_SUPPORT
+	PROC_FLIPPER_L, PROC_FLIPPER_R, PROC_START, PROC_ESC_SEQ,
+#define __code_proc_first PROC_FLIPPER_L
+#define __code_proc_last PROC_ESC_SEQ
+#endif
 
 	__code_max, /* Temination of standard code */
 
@@ -116,6 +132,8 @@ enum
 #define JOYCODE_OTHER CODE_OTHER
 #define KEYCODE_NONE CODE_NONE
 #define JOYCODE_NONE CODE_NONE
+#define PROCCODE_OTHER CODE_OTHER
+#define PROCCODE_NONE CODE_NONE
 
 /***************************************************************************/
 /* Single code functions */

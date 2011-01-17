@@ -18,19 +18,17 @@ extern "C" {
 // Handle to the P-ROC instance.
 PRHandle proc = NULL;
 
+// Global procType is used in many P-ROC functions to do different things
+// based on the type of machine being used.
+PRMachineType machineType;
+
 // Create a global yamlDoc to hold the machine data parsed from the YAML file.
 // Other p-roc support files need access to it. No sense passing it around
 // everywhere.
 YAML::Node yamlDoc;
 
-// Global procType is used in many P-ROC functions to do different things
-// based on the type of machine being used.
-PRMachineType procType;
-
 // Load/Parse the YAML file.
 PRMachineType procLoadMachineYAML(char *filename) {
-	PRMachineType machineType = kPRMachineInvalid;
-
 	try	{
 		std::ifstream fin(filename);
 		if (fin.is_open() == false) {
@@ -72,16 +70,17 @@ PRMachineType procLoadMachineYAML(char *filename) {
 }
 
 // Set the machine type.
-PRMachineType procSetMachineType(char *yaml_filename) {
+PRMachineType getRomMachineType() {
+
 	// First set the machine type based on the ROM being run.
 	switch (core_gameData->gen) {
 		case GEN_WPCALPHA_1:
 		case GEN_WPCALPHA_2:
 			if (pmoptions.alpha_on_dmd) {
-				procType = kPRMachineWPC;
+				return kPRMachineWPC;
 				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
 			} else {
-				procType = kPRMachineWPCAlphanumeric;
+				return kPRMachineWPCAlphanumeric;
 				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
 			}
 			break;
@@ -89,50 +88,45 @@ PRMachineType procSetMachineType(char *yaml_filename) {
 		case GEN_WPCFLIPTRON:
 		case GEN_WPCDCS:
 		case GEN_WPCSECURITY:
-			procType = kPRMachineWPC;
+			return kPRMachineWPC;
 			fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
 			break;
 		case GEN_WPC95DCS:
 		case GEN_WPC95:
-			procType = kPRMachineWPC95;
+			return kPRMachineWPC95;
 			fprintf(stderr, "ROM machine type: kPRMachineWPC95\n");
 			break;
 		case GEN_WS:
 		case GEN_WS_1:
 		case GEN_WS_2:
-			procType = kPRMachineSternWhitestar;
+			return kPRMachineSternWhitestar;
 			fprintf(stderr, "ROM machine type: kPRMachineSternWhitestar\n");
 			break;
 		case GEN_SAM:
-			procType = kPRMachineSternSAM;
+			return kPRMachineSternSAM;
 			fprintf(stderr, "ROM machine type kPRMachineSternSAM\n");
 			break;
 		default:
-			procType = kPRMachineInvalid;
+			return kPRMachineInvalid;
 			fprintf(stderr, "Unknown ROM machine type in YAML file\n");
 	}
+}
 
-	// Now get the machine type identified in the YAML file and
-	// compare it to the ROM machine type. If not the same, there's
-	// a problem.
-	PRMachineType yamlMachineType = kPRMachineInvalid;
+void setMachineType(char *yaml_filename) {
+
 	if (strcmp(yaml_filename, "None") == 0) {
-		return procType;
+		machineType = kPRMachineInvalid;
 	} else {
 		std::ifstream fin(yaml_filename);
 		if (fin.is_open() == false) {
 			fprintf(stderr, "YAML file not found: %s\n", yaml_filename);
-			return kPRMachineInvalid;
+			machineType = kPRMachineInvalid;
 		} else {
-			yamlMachineType = procLoadMachineYAML(yaml_filename);
-			if (yamlMachineType != procType) {
-				fprintf(stderr, "Machine type in YAML does not match the machine type of the ROM.\n");
-				return kPRMachineInvalid;
-			} else {
-				return procType;
-			}
+			// TODO: Make sure the machineType field exists in file
+			machineType = procLoadMachineYAML(yaml_filename);
 		}
 	}
+
 }
 
 // Send all pending commands to the P-ROC.
@@ -148,28 +142,23 @@ void procDeinitialize() {
 int procInitialize(char *yaml_filename) {
 	fprintf(stderr, "\n\n****** Initializing P-ROC ******\n");
 
-	procType = procSetMachineType(yaml_filename);
-	if (procType != kPRMachineInvalid) {
-		proc = PRCreate(procType);
+	setMachineType(yaml_filename);
+	if (machineType != kPRMachineInvalid) {
+		proc = PRCreate(machineType);
 		if (proc == kPRHandleInvalid) {
 			fprintf(stderr, "Error during PRCreate: %s\n", PRGetLastErrorText());
 			fprintf(stderr, "\n****** Ending P-ROC Initialization ******\n");
 			return 0;
 		} else {
-// TODO/PROC: Change PinMAME to always have these variables
-#ifdef VPINMAME
-			g_fHandleKeyboard = 0;
-			g_fHandleMechanics = 0;
-#endif
 			PRReset(proc, kPRResetFlagUpdateDevice);
 			procConfigureDefaultSwitchRules();
+			procConfigureInputMap();
 
 			procInitializeCoilDrivers();
-			procSetSwitchStates();
 			procConfigureSwitchRules();
 			procConfigureDriverDefaults();
 
-			if (procType != kPRMachineWPCAlphanumeric) {
+			if (machineType != kPRMachineWPCAlphanumeric) {
 				procDMDInit();
 			}
 
@@ -177,7 +166,30 @@ int procInitialize(char *yaml_filename) {
 		}
 	}
 
-	return (procType != kPRMachineInvalid);
+	if (machineType != kPRMachineInvalid) {
+		return 1;
+	}
+	else return 0;
+}
+
+int procIsActive(void) {
+
+	PRMachineType romMachineType = getRomMachineType();
+
+	// Now compare machine types. If not the same, there's
+	// a problem.
+	if (proc) {
+		if (machineType != romMachineType) {
+			fprintf(stderr, "Machine type in YAML does not match the machine type of the ROM.\n");
+			return 0;
+		} else {
+			procSetSwitchStates();
+			return 1;
+		}
+	}
+	else {
+		return 0;
+	}
 }
 
 // Tickle the P-ROC's watchdog so it doesn't disable driver outputs.
