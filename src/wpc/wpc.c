@@ -253,14 +253,9 @@ static INTERRUPT_GEN(wpc_vblank) {
 				procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
 			}
 #endif
+			/* Don't explicitly update the DMD from here.  The P-ROC code
+		 	* will update after the next DMD event. */
       dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
-#ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if (dmdlocals.nextDMDFrame == 0) {
-					procUpdateDMD();
-				}
-			}
-#endif
     }
   }
 
@@ -320,24 +315,11 @@ static INTERRUPT_GEN(wpc_vblank) {
 						} else {
 							procDriveCoil(ii+108, tmpSol & 0x1);
 						}
-					// TODO/PROC: Upper flipper circuits in WPC-95.
-					// They don't appear to be activated
-					// unless there are handlers in the
-					// game's sim code.  Need to figure
-					// out how to handle games both with
-					// and without sim code.
-					//} else if (ii < 50) {
-					//	???
-					//} else if (ii == 50) {
-					//	procDriveCoil(37, tmpSol & 0x1);
-					//} else if (ii == 51) {
-					//	procDriveCoil(36, tmpSol & 0x1);
-					//} else if (ii == 52) {
-					//	procDriveCoil(38, tmpSol & 0x1);
-					//	procDriveCoil(39, tmpSol & 0x1);
-					//} else {
-					//	???
+					} else if (ii < 64) {
+						printf("\nChanging: %d",ii);
 					}
+					// TODO:PROC: Upper flipper circuits in WPC-95.
+					// Some games (AFM) seem to use sim files to activate these coils.  Others (MM) don't ever seem to activate them (Trolls).
 				}
 				chgSol >>= 1;
 				tmpSol >>= 1;

@@ -185,6 +185,9 @@ struct rc_option ctrlr_input_opts2[] =
 static void updatekeyboard(void);
 static void init_keylist(void);
 static void init_joylist(void);
+#ifdef PROC_SUPPORT
+static void init_proclist(void);
+#endif
 
 
 
@@ -696,6 +699,11 @@ int win_init_input(void)
 
 	// init the joystick list
 	init_joylist();
+
+#ifdef PROC_SUPPORT
+	// init the joystick list
+	init_proclist();
+#endif
 
 	// print the results
 	if (verbose)
@@ -1453,7 +1461,6 @@ int osd_is_joystick_axis_code(int joycode)
 	return 0;
 }
 
-
 //============================================================
 //	osd_lightgun_read
 //============================================================
@@ -2128,3 +2135,137 @@ void stop_led(void)
 
 	return;
 }
+
+#ifdef PROC_SUPPORT
+//#define PROCCODE(group, type, index)	((index) | ((type) << 8) | ((group) << 8))
+#define MAX_PROC_INPUTS 256
+#define MAX_INPUT_NAME_LENGTH 64
+#define ELEMENTS(x)			(sizeof(x) / sizeof((x)[0]))
+static struct PROCInfo procInputList[MAX_PROC_INPUTS];
+
+// master translation table
+static int proc_trans_table[][2] =
+{
+	// internal code	MAME code
+	{ 0,			PROC_FLIPPER_L },
+	{ 1,			PROC_FLIPPER_R },
+	{ 2,			PROC_START },
+	{ 3,			PROC_ESC_SEQ },
+};
+
+
+//============================================================
+//	add_procInputList_entry
+//============================================================
+
+static void add_procInputList_entry(const char *name, int code, int *proccount)
+{
+	int standardcode = PROCCODE_OTHER;
+ 	struct ik *temp;
+
+	// copy the name
+	char *namecopy = (char *)(malloc(strlen(name) + 1));
+	if (namecopy)
+	{
+		int entry;
+
+		// find the table entry, if there is one
+		for (entry = 0; entry < ELEMENTS(proc_trans_table); entry++)
+			if (proc_trans_table[entry][0] == code)
+				break;
+
+		// fill in the joy description
+		procInputList[*proccount].name = strcpy(namecopy, name);
+		procInputList[*proccount].code = code;
+		if (entry < ELEMENTS(proc_trans_table))
+			standardcode = proc_trans_table[entry][1];
+		procInputList[*proccount].standardcode = standardcode;
+		*proccount += 1;
+
+		// make sure we have enough room for the new entry and the terminator (2 more)
+		if ((num_osd_ik + 2) > size_osd_ik)
+		{
+			// attempt to allocate 16 more
+			temp = realloc (osd_input_keywords, (size_osd_ik + 16)*sizeof (struct ik));
+
+			// if the realloc was successful
+			if (temp)
+			{
+				// point to the new buffer and increase the size indicator
+				osd_input_keywords =  temp;
+				size_osd_ik += 16;
+			}
+		}
+
+		// if we have enough room for the new entry and the terminator
+		if ((num_osd_ik + 2) <= size_osd_ik)
+		{
+			const char *src;
+			char *dst;
+
+			osd_input_keywords[num_osd_ik].name = malloc (strlen(name) + 1);
+
+			src = name;
+			dst = (char *)osd_input_keywords[num_osd_ik].name;
+
+			// copy name converting all spaces to underscores
+			while (*src != 0)
+			{
+				if (*src == ' ')
+					*dst++ = '_';
+				else
+					*dst++ = *src;
+				src++;
+			}
+			*dst = 0;
+
+			osd_input_keywords[num_osd_ik].type = IKT_OSD_JOY;
+			osd_input_keywords[num_osd_ik].val = code;
+
+			num_osd_ik++;
+
+			// indicate end of list
+			osd_input_keywords[num_osd_ik].name = 0;
+		}
+	}
+}
+
+//============================================================
+//	init_proc_input for Mame's OSD
+//============================================================
+
+static void init_proclist(void)
+{
+	int procInputCount=0;
+	char tempname[MAX_INPUT_NAME_LENGTH];
+
+	sprintf(tempname, "Left Flipper");
+	add_procInputList_entry(tempname, 0, &procInputCount);
+
+	sprintf(tempname, "Right Flipper");
+	add_procInputList_entry(tempname, 1, &procInputCount);
+
+	sprintf(tempname, "Start Button");
+	add_procInputList_entry(tempname, 2, &procInputCount);
+
+	sprintf(tempname, "Quit");
+	add_procInputList_entry(tempname, 3, &procInputCount);
+
+	// terminate array
+	memset(&procInputList[procInputCount], 0, sizeof(procInputList[procInputCount]));
+}
+
+
+
+//============================================================
+//	osd_get_joy_list
+//============================================================
+
+const struct PROCInfo *osd_get_proc_list(void)
+{
+	return procInputList;
+}
+
+#endif
+
+

@@ -5,6 +5,7 @@ extern "C" {
 #include "wpc/core.h"
 #include "wpc/wpc.h"
 #include "wpc/se.h"
+#include "input.h"
 }
 #include <fstream>
 #include <yaml-cpp/yaml.h>
@@ -17,16 +18,28 @@ extern PRHandle proc;
 bool ignoreCoils[80] = { FALSE };
 std::vector<int> activeCoils;
 CoilDriver coilDrivers [256];
-extern PRMachineType procType;
+extern PRMachineType machineType;
 extern YAML::Node yamlDoc;
 
+#define kFlipperLwL          0
+#define kFlipperLwR          1
+#define kStartButton         2
+#define kESQSequence         3
+#define numInputCodes        4
+
+int switchStates[kPRSwitchPhysicalLast + 1] = {0};
+int swMap[numInputCodes];
+
+int switchEventsBeingProcessed = 0;
+
 void set_swState(int value, int type) {
+	switchStates[value] = type;
 	switch (type) {
 		case kPREventTypeSwitchOpenDebounced:
 		case kPREventTypeSwitchClosedDebounced:
 		case kPREventTypeSwitchOpenNondebounced:
 		case kPREventTypeSwitchClosedNondebounced:
-			if (procType == kPRMachineSternWhitestar || procType == kPRMachineSternSAM) {
+			if (machineType == kPRMachineSternWhitestar || machineType == kPRMachineSternSAM) {
 				// Flippers need to go to column 12 for some reason
 				if (value < 12) {	// Dedicated Switches
 					int local_value = value;
@@ -165,7 +178,7 @@ void procConfigureDriverDefaults(void)
 			coilsIt.first() >> coilName;
 			int coilNum, pulseTime, patterOnTime, patterOffTime;
 
-			yamlDoc[kCoilsSection][coilName][kNumberField] >> numStr; coilNum = PRDecode(procType, numStr.c_str());
+			yamlDoc[kCoilsSection][coilName][kNumberField] >> numStr; coilNum = PRDecode(machineType, numStr.c_str());
 
 			// Look for yaml entries defining coil pulse times.
 			if (yamlDoc[kCoilsSection][coilName].FindValue(kPulseTimeField)) {
@@ -179,6 +192,7 @@ void procConfigureDriverDefaults(void)
 				yamlDoc[kCoilsSection][coilName][kPatterOnTimeField] >> patterOnTime;
 				yamlDoc[kCoilsSection][coilName][kPatterOffTimeField] >> patterOffTime;
 				coilDrivers[coilNum].SetPatterTimes(patterOnTime, patterOffTime);
+				printf("\nSetting patter times for coil %d: On: %d, Off: %d", coilNum, patterOnTime, patterOffTime);
 			}
 			if (yamlDoc[kCoilsSection][coilName].FindValue(kBusField)) {
 				std::string busStr;
@@ -203,25 +217,25 @@ void procConfigureSwitchRules(void)
 			std::string flipperName;
 
 			*flippersIt >> flipperName;
-			if (procType == kPRMachineWPC || procType == kPRMachineWPC95) {
+			if (machineType == kPRMachineWPC || machineType == kPRMachineWPC95) {
 				yamlDoc[kSwitchesSection][flipperName][kNumberField] >> numStr;
-				swNum = PRDecode(procType, numStr.c_str());
+				swNum = PRDecode(machineType, numStr.c_str());
 
 				yamlDoc[kCoilsSection][flipperName + "Main"][kNumberField] >> numStr;
-				coilMain = PRDecode(procType, numStr.c_str());
+				coilMain = PRDecode(machineType, numStr.c_str());
 
 				yamlDoc[kCoilsSection][flipperName + "Hold"][kNumberField] >> numStr;
-				coilHold = PRDecode(procType, numStr.c_str());
+				coilHold = PRDecode(machineType, numStr.c_str());
 
 				ConfigureWPCFlipperSwitchRule(swNum, coilMain, coilHold, kFlipperPulseTime);
 				AddIgnoreCoil(coilMain);
 				AddIgnoreCoil(coilHold);
-			} else if (procType == kPRMachineSternWhitestar || procType == kPRMachineSternSAM) {
+			} else if (machineType == kPRMachineSternWhitestar || machineType == kPRMachineSternSAM) {
 				yamlDoc[kSwitchesSection][flipperName][kNumberField] >> numStr;
-				swNum = PRDecode(procType, numStr.c_str());
+				swNum = PRDecode(machineType, numStr.c_str());
 
 				yamlDoc[kCoilsSection][flipperName + "Main"][kNumberField] >> numStr;
-				coilMain = PRDecode(procType, numStr.c_str());
+				coilMain = PRDecode(machineType, numStr.c_str());
 
 				ConfigureSternFlipperSwitchRule(swNum, coilMain, kFlipperPulseTime, kFlipperPatterOnTime, kFlipperPatterOffTime);
 				AddIgnoreCoil(coilMain);
@@ -235,10 +249,10 @@ void procConfigureSwitchRules(void)
 			std::string bumperName;
 			*bumpersIt >> bumperName;
 			yamlDoc[kSwitchesSection][bumperName][kNumberField] >> numStr;
-			swNum = PRDecode(procType, numStr.c_str());
+			swNum = PRDecode(machineType, numStr.c_str());
 
 			yamlDoc[kCoilsSection][bumperName][kNumberField] >> numStr;
-			coilNum = PRDecode(procType, numStr.c_str());
+			coilNum = PRDecode(machineType, numStr.c_str());
 
 			ConfigureBumperRule(swNum, coilNum, kBumperPulseTime);
 			AddIgnoreCoil(coilNum);
@@ -262,7 +276,7 @@ void procSetSwitchStates(void) {
 			}
 			fprintf(stderr, "%d ", procSwitchStates[i]);
 
-			if (procType == kPRMachineSternSAM) {
+			if (machineType == kPRMachineSternSAM) {
 				set_swState(i, procSwitchStates[i]);
 			} else if ((i < 32) || ((i%16) < 8)) {
 				set_swState(i, procSwitchStates[i]);
@@ -278,7 +292,7 @@ void procConfigureDefaultSwitchRules(void) {
 
 	// Configure switch controller registers
 	switchConfig.clear = FALSE;
-	switchConfig.use_column_8 = (procType == kPRMachineWPC);
+	switchConfig.use_column_8 = (machineType == kPRMachineWPC);
 	switchConfig.use_column_9 = FALSE;	// No WPC machines actually use this.
 	switchConfig.hostEventsEnable = TRUE;
 	switchConfig.directMatrixScanLoopTime = 2;	// milliseconds
@@ -292,7 +306,7 @@ void procConfigureDefaultSwitchRules(void) {
 	// Go through the switches array and reset the current status of each switch
 	for (ii = 0; ii <= kPRSwitchPhysicalLast; ii++) {
 		PRSwitchRule swRule;
-		if ((procType == kPRMachineWPC || procType == kPRMachineWPC95) &&
+		if ((machineType == kPRMachineWPC || machineType == kPRMachineWPC95) &&
 		      !((ii < 32) || ((ii % 16) < 8))) {
 			swRule.notifyHost = 0;
 		} else {
@@ -302,6 +316,28 @@ void procConfigureDefaultSwitchRules(void) {
 		PRSwitchUpdateRule(proc, ii, kPREventTypeSwitchOpenNondebounced, &swRule, NULL, 0);
 	}
 }
+
+void procConfigureInputMap(void)
+{
+	if (yamlDoc.size() > 0) {
+
+		std::string numStr;
+
+		yamlDoc[kSwitchesSection]["flipperLwL"][kNumberField] >> numStr;
+		swMap[kFlipperLwL] = PRDecode(machineType, numStr.c_str());
+		printf("\nFlipperLwL: %d", swMap[kFlipperLwL]);
+
+		yamlDoc[kSwitchesSection]["flipperLwR"][kNumberField] >> numStr;
+		swMap[kFlipperLwR] = PRDecode(machineType, numStr.c_str());
+		printf("\nFlipperLwR: %d", swMap[kFlipperLwR]);
+
+		yamlDoc[kSwitchesSection]["startButton"][kNumberField] >> numStr;
+		swMap[kStartButton] = PRDecode(machineType, numStr.c_str());
+		printf("\nstartButton: %d", swMap[kStartButton]);
+	}
+
+}
+
 
 void procDriveLamp(int num, int state) {
 	PRDriverState lampState;
@@ -322,11 +358,30 @@ void procGetSwitchEvents(void) {
 	int i;
 	PREvent eventArray[16];
 
+	switchEventsBeingProcessed = 1;
 	int numEvents = PRGetEvents(proc, eventArray, 16);
 	for (i = 0; i < numEvents; i++) {
 		PREvent *pEvent = &eventArray[i];
-		set_swState(pEvent->value, pEvent->type);
-		//fprintf(stderr, "\nP-ROC switch event: value: %d, type: %d", pEvent->value, pEvent->type);
+		if (pEvent->type == kPREventTypeDMDFrameDisplayed) {
+			if (machineType != kPRMachineWPCAlphanumeric) {
+				procUpdateDMD();
+			}
+		}
+		else {
+			set_swState(pEvent->value, pEvent->type);
+		}
+	}
+}
+
+void procGetSwitchEventsLocal(void) {
+	int i;
+	PREvent eventArray[16];
+
+	int numEvents = PRGetEvents(proc, eventArray, 16);
+	for (i = 0; i < numEvents; i++) {
+		PREvent *pEvent = &eventArray[i];
+		switchStates[pEvent->value] = pEvent->type;
+		//printf("\nEvent: value: %d, type: %d", pEvent->value, pEvent->type);
 	}
 }
 
@@ -381,7 +436,9 @@ void CoilDriver::CheckEndPatter(void) {
 		if ( ((clock()/CLOCKS_PER_MS) - timeLastChanged) > PROC_MAX_PATTER_INTERVAL_MS) {
 			long int msTime = clock() / CLOCKS_PER_MS;
 			fprintf (stderr, "\nAt time: %ld: Ending Patter for Coil %d.", msTime, num);
-			Drive(reqPatterState);
+			//Drive(reqPatterState);
+			Drive(0);
+			
 			ResetPatter();
 		}
 	}
@@ -390,6 +447,10 @@ void CoilDriver::CheckEndPatter(void) {
 void CoilDriver::Drive(int state) {
 	PRDriverState coilState;
 	PRDriverGetState(proc, num, &coilState);
+	//if (num != 68) {
+	//	long int msTime = clock() / CLOCKS_PER_MS;
+	//        printf("\nAt time: %ld, Driving %d: %d", msTime, num, state);
+	//}
 	if (state) {
 		if (useDefaultPulseTime) {
 			PRDriverStatePulse(&coilState, PROC_COIL_DRIVE_TIME);
@@ -485,11 +546,53 @@ void procCheckActiveCoilsUnused(void) {
 	}
 }
 
+static int count;
+
 void procInitializeCoilDrivers(void) {
 	int i;
+	count = 0;
 	for (i=0; i<256; i++) {
 		coilDrivers[i].SetNum(i);
 	}
 }
 
-#endif /* PROC_SUPPORT */
+int isSwitchClosed(int index) {
+	return (switchStates[index] == kPREventTypeSwitchClosedNondebounced ||
+	        switchStates[index] == kPREventTypeSwitchClosedDebounced);
+}
+
+void earlyInputSetup(void) {
+	if (proc && !switchEventsBeingProcessed) {
+		if (machineType == kPRMachineWPCAlphanumeric || pmoptions.alpha_on_dmd) {
+			procDriveLamp(79, 1);
+			procTickleWatchdog();
+		}
+		procGetSwitchEventsLocal();
+		procFlush();
+	}
+
+}
+
+int osd_is_proc_pressed(int code)
+{
+	earlyInputSetup();
+	switch (code) {
+		case (kFlipperLwL): {
+			return (isSwitchClosed(swMap[kFlipperLwL]));
+		}
+		case (kFlipperLwR): {
+			return (isSwitchClosed(swMap[kFlipperLwR]));
+		}
+		case (kStartButton): {
+			return (isSwitchClosed(swMap[kStartButton]));
+		}
+		case (kESQSequence): {
+			return (osd_is_proc_pressed(kFlipperLwL) && 
+			        osd_is_proc_pressed(kFlipperLwR) && 
+			        osd_is_proc_pressed(kStartButton));
+		}
+		default: return 0;
+	}
+}
+
+#endif

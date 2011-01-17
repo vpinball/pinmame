@@ -8,6 +8,7 @@ extern "C" {
 
 // Handle to proc instance
 extern PRHandle proc;
+extern PRMachineType machineType;
 
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
@@ -25,7 +26,7 @@ void procDMDInit(void) {
 	dmdConfig.numSubFrames = 4;
 	dmdConfig.numFrameBuffers = 3;
 	dmdConfig.autoIncBufferWrPtr = TRUE;
-	dmdConfig.enableFrameEvents = FALSE;
+	dmdConfig.enableFrameEvents = TRUE;
 
 	for (i = 0; i < dmdConfig.numSubFrames; i++) {
 		dmdConfig.rclkLowCycles[i] = 15;
@@ -57,16 +58,17 @@ void procClearDMD(void) {
 void procDrawDot(int x, int y, int color) {
 	uint8_t temp_dot = 0;
 	uint8_t position = 0;
+	const int mappedColors[] = {0, 2, 8, 10, 1, 3, 9, 11, 4, 6, 12, 14, 5, 7, 13, 15};
 
 	int i;
 	for (i = 0; i < 4; i++) {
-		if ((color >> i) & 0x1) {
+		if ((mappedColors[color] >> i) & 0x1) {
 			temp_dot = procdmd[i][(((128*y)+x))/8];
 			position = ((128*y)+x)%8;
 			temp_dot = temp_dot | (1<<position);
+			procdmd[i][(((128*y)+x))/8] = temp_dot;
 		}
 
-		procdmd[i][(((128*y)+x))/8] = temp_dot;
 	}
 }
 
@@ -97,111 +99,235 @@ void procReverseSubFrameBytes(int frameIndex) {
 void procDrawSegment(int x, int y, int seg) {
 	switch (seg) {
 		case 0:
+			procDrawDot(x, y, 0x5);
 			procDrawDot(x+1, y, 0xf);
 			procDrawDot(x+2, y, 0xf);
 			procDrawDot(x+3, y, 0xf);
 			procDrawDot(x+4, y, 0xf);
 			procDrawDot(x+5, y, 0xf);
+			procDrawDot(x+6, y, 0x5);
 			break;
 		case 1:
+			procDrawDot(x+6, y, 0x5);
 			procDrawDot(x+6, y+1, 0xf);
 			procDrawDot(x+6, y+2, 0xf);
 			procDrawDot(x+6, y+3, 0xf);
 			procDrawDot(x+6, y+4, 0xf);
+			procDrawDot(x+6, y+5, 0x5);
 			break;
 		case 2:
+			procDrawDot(x+6, y+5, 0x5);
 			procDrawDot(x+6, y+6, 0xf);
 			procDrawDot(x+6, y+7, 0xf);
 			procDrawDot(x+6, y+8, 0xf);
 			procDrawDot(x+6, y+9, 0xf);
+			procDrawDot(x+6, y+10, 0x5);
 			break;
 		case 3:
+			procDrawDot(x, y+10, 0x5);
 			procDrawDot(x+1, y+10, 0xf);
 			procDrawDot(x+2, y+10, 0xf);
 			procDrawDot(x+3, y+10, 0xf);
 			procDrawDot(x+4, y+10, 0xf);
 			procDrawDot(x+5, y+10, 0xf);
+			procDrawDot(x+6, y+10, 0x5);
 			break;
 		case 4:
+			procDrawDot(x, y+5, 0x5);
 			procDrawDot(x, y+6, 0xf);
 			procDrawDot(x, y+7, 0xf);
 			procDrawDot(x, y+8, 0xf);
 			procDrawDot(x, y+9, 0xf);
+			procDrawDot(x, y+10, 0x5);
 			break;
 		case 5:
+			procDrawDot(x, y, 0x5);
 			procDrawDot(x, y+1, 0xf);
 			procDrawDot(x, y+2, 0xf);
 			procDrawDot(x, y+3, 0xf);
 			procDrawDot(x, y+4, 0xf);
+			procDrawDot(x, y+5, 0x5);
 			break;
 		case 6:
+			procDrawDot(x, y+5, 0x5);
 			procDrawDot(x+1, y+5, 0xf);
 			procDrawDot(x+2, y+5, 0xf);
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 7:
 			procDrawDot(x+7, y+10, 0xf);
 			break;
 		case 8:
-			procDrawDot(x+0, y+0, 0xf);
-			procDrawDot(x+1, y+1, 0xf);
-			procDrawDot(x+1, y+2, 0xf);
-			procDrawDot(x+2, y+3, 0xf);
-			procDrawDot(x+2, y+4, 0xf);
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+0, y+0, 0x5);
+			procDrawDot(x+1, y+1, 0x8);
+			procDrawDot(x+1, y+2, 0x8);
+			procDrawDot(x+2, y+2, 0x3);
+			procDrawDot(x+1, y+3, 0x3);
+			procDrawDot(x+2, y+3, 0x8);
+			procDrawDot(x+2, y+4, 0x8);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 9:
 			procDrawDot(x+3, y+1, 0xf);
 			procDrawDot(x+3, y+2, 0xf);
 			procDrawDot(x+3, y+3, 0xf);
 			procDrawDot(x+3, y+4, 0xf);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 10:
-			procDrawDot(x+6, y+0, 0xf);
-			procDrawDot(x+5, y+1, 0xf);
-			procDrawDot(x+5, y+2, 0xf);
-			procDrawDot(x+4, y+3, 0xf);
-			procDrawDot(x+4, y+4, 0xf);
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+6, y+0, 0x5);
+			procDrawDot(x+5, y+1, 0x8);
+			procDrawDot(x+5, y+2, 0x8);
+			procDrawDot(x+4, y+2, 0x3);
+			procDrawDot(x+4, y+3, 0x8);
+			procDrawDot(x+5, y+3, 0x3);
+			procDrawDot(x+4, y+4, 0x8);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 11:
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+3, y+5, 0x5);
 			procDrawDot(x+4, y+5, 0xf);
 			procDrawDot(x+5, y+5, 0xf);
+			procDrawDot(x+6, y+5, 0x5);
 			break;
 		case 12:
-			procDrawDot(x+6, y+10, 0xf);
-			procDrawDot(x+5, y+9, 0xf);
-			procDrawDot(x+5, y+8, 0xf);
-			procDrawDot(x+4, y+7, 0xf);
-			procDrawDot(x+4, y+6, 0xf);
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+6, y+10, 0x5);
+			procDrawDot(x+5, y+9, 0x8);
+			procDrawDot(x+5, y+8, 0x8);
+			procDrawDot(x+4, y+8, 0x3);
+			procDrawDot(x+4, y+7, 0x8);
+			procDrawDot(x+5, y+7, 0x3);
+			procDrawDot(x+4, y+6, 0x8);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 13:
+			procDrawDot(x+3, y+5, 0x5);
 			procDrawDot(x+3, y+6, 0xf);
 			procDrawDot(x+3, y+7, 0xf);
 			procDrawDot(x+3, y+8, 0xf);
 			procDrawDot(x+3, y+9, 0xf);
 			break;
 		case 14:
-			procDrawDot(x+0, y+10, 0xf);
-			procDrawDot(x+1, y+9, 0xf);
-			procDrawDot(x+1, y+8, 0xf);
-			procDrawDot(x+2, y+7, 0xf);
-			procDrawDot(x+2, y+6, 0xf);
-			procDrawDot(x+3, y+5, 0xf);
+			procDrawDot(x+0, y+10, 0x5);
+			procDrawDot(x+1, y+9, 0x8);
+			procDrawDot(x+1, y+8, 0x8);
+			procDrawDot(x+2, y+8, 0x3);
+			procDrawDot(x+2, y+7, 0x8);
+			procDrawDot(x+1, y+7, 0x3);
+			procDrawDot(x+2, y+6, 0x8);
+			procDrawDot(x+3, y+5, 0x5);
 			break;
 		case 15:
 			procDrawDot(x+7, y+9, 0xf);
 			procDrawDot(x+6, y+11, 0xf);
+			procDrawDot(x+7, y+11, 0x5);
 			break;
 	}
 }
 
 // Send the current DMD Frame to the P-ROC
 void procUpdateDMD(void) {
-	PRDMDDraw(proc, procdmd[0]);
+	if (proc) {
+		PRDMDDraw(proc, procdmd[0]);
+	}
 }
+
+void procDisplayText(char * string_1, char * string_2)
+{
+	// Start at ASCII table offset 32: ' ' 
+	const UINT16 asciiSegments[] = {0x0000,  // ' '
+	                                0x0000,  // '!'
+	                                0x0000,  // '"'
+	                                0x0000,  // '#'
+	                                0x0000,  // '$'
+	                                0x0000,  // '%'
+	                                0x0000,  // '&'
+	                                0x0200,  // '''
+	                                0x1400,  // '('
+	                                0x4100,  // ')'
+	                                0x7f40,  // '*'
+	                                0x2a40,  // '+'
+	                                0x8080,  // ','
+	                                0x0840,  // '-'
+	                                0x8000,  // '.'
+	                                0x4400,  // '/'
+	                                
+	                                0x003f,  // '0'
+	                                0x0006,  // '1'
+	                                0x085b,  // '2'
+	                                0x084f,  // '3'
+	                                0x0866,  // '4'
+	                                0x086d,  // '5'
+	                                0x087d,  // '6'
+	                                0x0007,  // '7'
+	                                0x087f,  // '8'
+	                                0x086f,  // '9'
+	                                
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                0x0000,  // '1'
+	                                
+	                                0x0877,  // 'A'
+	                                0x2a4f,  // 'B'
+	                                0x0039,  // 'C'
+	                                0x220f,  // 'D'
+	                                0x0879,  // 'E'
+	                                0x0871,  // 'F'
+	                                0x083d,  // 'G'
+	                                0x0876,  // 'H'
+	                                0x2209,  // 'I'
+	                                0x001e,  // 'J'
+	                                0x1470,  // 'K'
+	                                0x0038,  // 'L'
+	                                0x0536,  // 'M'
+	                                0x1136,  // 'N'
+	                                0x003f,  // 'O'
+	                                0x0873,  // 'P'
+	                                0x103f,  // 'Q'
+	                                0x1873,  // 'R'
+	                                0x086d,  // 'S'
+	                                0x2201,  // 'T'
+	                                0x003e,  // 'U'
+	                                0x4430,  // 'V'
+	                                0x5036,  // 'W'
+	                                0x5500,  // 'X'
+	                                0x2500,  // 'Y'
+	                                0x4409   // 'Z'
+                                	};
+   
+	int i, j;
+	char char_a, char_b; 
+	UINT16 segs_a[16], segs_b[16];
+
+	if (machineType != kPRMachineWPCAlphanumeric) procClearDMD();
+
+	for (i=0; i<16; i++) {
+		char_a = string_1[i]; 
+		char_b = string_2[i]; 
+
+		segs_a[i] = asciiSegments[char_a - 32];
+		segs_b[i] = asciiSegments[char_b - 32];
+
+		if (machineType != kPRMachineWPCAlphanumeric) {
+			for (j=0; j<16; j++) {
+				if ((segs_a[i] >> j) & 0x1) procDrawSegment(i*8, 3, j);
+				if ((segs_b[i] >> j) & 0x1) procDrawSegment(i*8, 19, j);
+			}
+		}
+    	}
+
+	if (machineType != kPRMachineWPCAlphanumeric) {
+		procUpdateDMD();
+	}
+	else {
+		procUpdateAlphaDisplay(segs_a, segs_b);
+	}
+    
+} 
 
 // Send the new alphanumeric display commands to the P-ROC's Auxiliary port logic,
 // which will send them to the alphanumeri displays.
@@ -215,42 +341,45 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 	const int STB_3   = 11;
 	const int STB_4   = 12;
 
-	PRDriverAuxCommand auxCommands[256];
+	if (proc) {
 
-	// Disable the first entry so the Aux logic won't begin immediately.
-	PRDriverAuxPrepareDisable(&auxCommands[cmd_index++]);
-
-	for (i=0; i<16; i++) {
-		// Assert the STB line
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), i, 0, DIS_STB, 0, 0);
-
-		segs_a = top[i];
-		segs_b = bottom[i];
-
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_a & 0xff, 0, STB_1, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_a >> 8) & 0xff, 0, STB_2, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_b & 0xff, 0, STB_3, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_b >> 8) & 0xff, 0, STB_4, 0, 0);
-
-		PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 350);
-
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_1, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_2, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_3, 0, 0);
-		PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_4, 0, 0);
-
-		PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 40);
+		PRDriverAuxCommand auxCommands[256];
+	
+		// Disable the first entry so the Aux logic won't begin immediately.
+		PRDriverAuxPrepareDisable(&auxCommands[cmd_index++]);
+	
+		for (i=0; i<16; i++) {
+			// Assert the STB line
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), i, 0, DIS_STB, 0, 0);
+	
+			segs_a = top[i];
+			segs_b = bottom[i];
+	
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_a & 0xff, 0, STB_1, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_a >> 8) & 0xff, 0, STB_2, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_b & 0xff, 0, STB_3, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_b >> 8) & 0xff, 0, STB_4, 0, 0);
+	
+			PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 350);
+	
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_1, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_2, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_3, 0, 0);
+			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_4, 0, 0);
+	
+			PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 40);
+		}
+	
+		PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 1);
+	
+		// Send the commands.
+		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
+	
+		cmd_index = 0;
+		// Jump from addr 0 to 1 to begin.
+		PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);
+		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 	}
-
-	PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 1);
-
-	// Send the commands.
-	PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
-
-	cmd_index = 0;
-	// Jump from addr 0 to 1 to begin.
-	PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);
-	PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 }
 
 #endif /* PROC_SUPPORT */

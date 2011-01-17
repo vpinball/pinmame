@@ -30,13 +30,8 @@ void vp_setDIP(int bank, int value) { }
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
-  #ifdef PROC_SUPPORT	// TODO/PROC: Use VPINMAME solution generally? Values depend on "-proc" switch.
-    int g_fHandleKeyboard = 0;
-    int g_fHandleMechanics = 0x0;
-  #else
-    int g_fHandleKeyboard = 1;
-    int g_fHandleMechanics = 0xff;
-  #endif
+  int g_fHandleKeyboard = 1;
+  int g_fHandleMechanics = 0xff;
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
@@ -843,6 +838,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) &&
 				    (!pmoptions.alpha_on_dmd)) {
 					procUpdateAlphaDisplay(proc_top, proc_bottom);
+
 				}
 			}
 #endif 
@@ -1460,16 +1456,21 @@ static MACHINE_INIT(core) {
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
 #ifdef PROC_SUPPORT
+		/*-- P-ROC operation requires a YAML.  Disable P-ROC operation
+		 * if no YAML is specified. --*/
 		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
 
-		/*-- initialize P-ROC if enabled --*/
 		if (coreGlobals.p_rocEn) {
+			/*-- Finish P-ROC initialization now that the sim is active. --*/
+			coreGlobals.p_rocEn = procIsActive();
 			/*-- If the initialization fails, disable the p-roc support --*/
-			if (!procInitialize(yaml_filename)) {
-				coreGlobals.p_rocEn = 0;
+			if (!coreGlobals.p_rocEn) {
 				fprintf(stderr, "P-ROC initialization failed.  Disabling P-ROC support.\n");
-				g_fHandleKeyboard = 1;
-				g_fHandleMechanics = 0xff;
+				// TODO: deInit P-ROC here?
+			}
+			else {
+				g_fHandleKeyboard = 0;
+				g_fHandleMechanics = 0x0;
 			}
 		}
 #endif

@@ -20,6 +20,10 @@
 #include "mesintrf.h"
 #endif
 
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.hpp"
+#endif
+
 
 
 /***************************************************************************
@@ -2298,6 +2302,11 @@ static int mame_stats(struct mame_bitmap *bitmap,int selected)
 int showcopyright(struct mame_bitmap *bitmap)
 {
 	int done;
+#ifdef PROC_SUPPORT
+	int displayed=0;
+	char top_text[17];
+	char bottom_text[17];
+#endif
 	char buf[1000];
 	char buf2[256];
 
@@ -2310,6 +2319,12 @@ int showcopyright(struct mame_bitmap *bitmap)
 
 	setup_selected = -1;////
 	done = 0;
+
+#ifdef PROC_SUPPORT
+	sprintf(top_text,"     PRESS      ");
+	sprintf(bottom_text,"  LEFT FLIPPER  ");
+	procDisplayText(top_text, bottom_text);
+#endif
 
 	do
 	{
@@ -2324,9 +2339,23 @@ int showcopyright(struct mame_bitmap *bitmap)
 			return 1;
 		}
 		if (keyboard_pressed_memory(KEYCODE_O) ||
+#ifdef PROC_SUPPORT
+				code_pressed(PROC_FLIPPER_L) || 
+#endif
 				input_ui_pressed(IPT_UI_LEFT))
+#ifdef PROC_SUPPORT
+			if (!displayed) {
+				sprintf(top_text, "   NOW PRESS    ");
+				sprintf(bottom_text," RIGHT FLIPPER  ");
+				procDisplayText(top_text, bottom_text);
+				displayed = 1;
+			}
+#endif
 			done = 1;
 		if (done == 1 && (keyboard_pressed_memory(KEYCODE_K) ||
+#ifdef PROC_SUPPORT
+				code_pressed(PROC_FLIPPER_R) || 
+#endif
 				input_ui_pressed(IPT_UI_RIGHT)))
 			done = 2;
 	} while (done < 2);
@@ -2344,6 +2373,11 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 	char buf[2048];
 	char buf2[32];
 	int sel;
+#ifdef PROC_SUPPORT
+	int displayed=0;
+	char top_text[17];
+	char bottom_text[17];
+#endif
 
 
 	sel = selected - 1;
@@ -2456,7 +2490,15 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 
 	if (sel == -1)
 	{
+#ifdef PROC_SUPPORT
 		/* startup info, print MAME version and ask for any key */
+		if (!displayed) {
+			sprintf(top_text,"    PRESS ANY   ");
+			sprintf(bottom_text,"     BUTTON     ");
+			procDisplayText(top_text, bottom_text);
+			displayed=1;
+		}
+#endif
 
 		sprintf (buf2, "\n\t%s ", ui_getstring (UI_mame));	/* \t means that the line will be centered */
 		strcat(buf, buf2);
@@ -2468,8 +2510,12 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 		ui_displaymessagewindow(bitmap,buf);
 
 		sel = 0;
-		if (code_read_async() != CODE_NONE)
+		if (code_read_async() != CODE_NONE) {
+#ifdef PROC_SUPPORT
+			procClearDMD();
+#endif
 			sel = -1;
+		}
 	}
 	else
 	{
@@ -4017,8 +4063,15 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 	/* if the user pressed ESC, stop the emulation */
 	/* but don't quit if the setup menu is on screen */
-	if (setup_selected == 0 && input_ui_pressed(IPT_UI_CANCEL))
+#ifdef PROC_SUPPORT
+	if (setup_selected == 0 && (input_ui_pressed(IPT_UI_CANCEL)
+				 || code_pressed(PROC_ESC_SEQ))) {
+			procClearDMD();
+#else
+	if (setup_selected == 0 && (input_ui_pressed(IPT_UI_CANCEL))) {
+#endif
 		return 1;
+	}
 
 	if (setup_selected == 0 && input_ui_pressed(IPT_UI_CONFIGURE))
 	{
