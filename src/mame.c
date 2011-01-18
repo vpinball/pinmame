@@ -118,7 +118,7 @@
 #include "palette.h"
 #include "harddisk.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 /***************************************************************************
@@ -361,7 +361,6 @@ static int init_machine(void)
 
 #ifdef PROC_SUPPORT
 	char * yaml_filename = (char *)pmoptions.p_roc;
-	printf("\nYaml: %s",yaml_filename);
 	procInitialize(yaml_filename);
 #endif
 
@@ -2006,7 +2005,6 @@ static int validitychecks(void)
 									printf("%s: %s wrong port read handler start = %08x, end = %08x ALIGN = %d\n",drivers[i]->source_file,drivers[i]->name,pra->start,pra->end,alignunit);
 									error = 1;
 								}
-							
 							}
 							pra++;
 						}
@@ -2062,7 +2060,6 @@ static int validitychecks(void)
 									printf("%s: %s wrong port write handler start = %08x, end = %08x ALIGN = %d\n",drivers[i]->source_file,drivers[i]->name,pwa->start,pwa->end,alignunit);
 									error = 1;
 								}
-						
 							}
 							pwa++;
 						}
