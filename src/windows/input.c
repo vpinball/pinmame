@@ -701,13 +701,13 @@ int win_init_input(void)
 	init_joylist();
 
 #ifdef PROC_SUPPORT
-	// init the joystick list
+	// init the p-roc list
 	init_proclist();
 #endif
 
 	// print the results
 	if (verbose)
-		fprintf(stderr, "Keyboards=%d  Mice=%d  Joysticks=%d Lightguns=%d\n", keyboard_count, mouse_count, joystick_count, lightgun_count);
+		fprintf(stderr, "Keyboards=%d Mice=%d Joysticks=%d Lightguns=%d\n", keyboard_count, mouse_count, joystick_count, lightgun_count);
 	return 0;
 
 cant_init_joystick:
@@ -1083,7 +1083,7 @@ static void init_keylist(void)
 					if (temp)
 					{
 						// point to the new buffer and increase the size indicator
-						osd_input_keywords =  temp;
+						osd_input_keywords = temp;
 						size_osd_ik += 16;
 					}
 				}
@@ -1169,7 +1169,7 @@ static void add_joylist_entry(const char *name, int code, int *joycount)
 			if (temp)
 			{
 				// point to the new buffer and increase the size indicator
-				osd_input_keywords =  temp;
+				osd_input_keywords = temp;
 				size_osd_ik += 16;
 			}
 		}
@@ -1705,7 +1705,7 @@ static int ipdef_custom_rc_func(struct rc_option *option, const char *arg, int p
 
 		// if an input definition was re-defined
 		else if (pinput_keywords->type == IKT_IPT ||
-                 pinput_keywords->type == IKT_IPT_EXT)
+		         pinput_keywords->type == IKT_IPT_EXT)
 		{
 			// loop through all definitions
 			while (idef->type != IPT_END)
@@ -1713,8 +1713,8 @@ static int ipdef_custom_rc_func(struct rc_option *option, const char *arg, int p
 				// if the definition matches
 				if (idef->type == pinput_keywords->val)
 				{
-                    if (pinput_keywords->type == IKT_IPT_EXT)
-                        idef++;
+					if (pinput_keywords->type == IKT_IPT_EXT)
+						idef++;
 					seq_set_string(&idef->seq, arg);
 					// and abort (there shouldn't be duplicate definitions)
 					break;
@@ -1816,12 +1816,12 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 	{
 		if (i < num_ik)
 		{
-	   		ctrlr_input_opts[i].name = input_keywords[i].name;
+			ctrlr_input_opts[i].name = input_keywords[i].name;
 			ctrlr_input_opts[i].dest = (void *)&input_keywords[i];
 		}
 		else
 		{
-	   		ctrlr_input_opts[i].name = osd_input_keywords[i-num_ik].name;
+			ctrlr_input_opts[i].name = osd_input_keywords[i-num_ik].name;
 			ctrlr_input_opts[i].dest = (void *)&osd_input_keywords[i-num_ik];
 		}
 		ctrlr_input_opts[i].shortname = NULL;
@@ -1947,7 +1947,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 
 		fprintf(stderr, "Mouse support %sabled\n",use_mouse ? "en" : "dis");
 		fprintf(stderr, "Joystick support %sabled\n",use_joystick ? "en" : "dis");
-		fprintf(stderr, "Keyboards=%d  Mice=%d  Joysticks=%d\n",
+		fprintf(stderr, "Keyboards=%d Mice=%d Joysticks=%d\n",
 			keyboard_count,
 			use_mouse ? mouse_count : 0,
 			use_joystick ? joystick_count : 0);
@@ -1982,7 +1982,7 @@ int osd_get_leds(void)
 	}
 	else // WinNT/2K/XP, use DeviceIoControl
 	{
-		KEYBOARD_INDICATOR_PARAMETERS OutputBuffer;	  // Output buffer for DeviceIoControl
+		KEYBOARD_INDICATOR_PARAMETERS OutputBuffer;  // Output buffer for DeviceIoControl
 		ULONG				DataLength = sizeof(KEYBOARD_INDICATOR_PARAMETERS);
 		ULONG				ReturnedLength; // Number of bytes returned in output buffer
 
@@ -2032,7 +2032,7 @@ void osd_set_leds(int state)
 	}
 	else // WinNT/2K/XP, use DeviceIoControl
 	{
-		KEYBOARD_INDICATOR_PARAMETERS InputBuffer;	  // Input buffer for DeviceIoControl
+		KEYBOARD_INDICATOR_PARAMETERS InputBuffer;  // Input buffer for DeviceIoControl
 		ULONG				DataLength = sizeof(KEYBOARD_INDICATOR_PARAMETERS);
 		ULONG				ReturnedLength; // Number of bytes returned in output buffer
 		UINT				LedFlags=0;
@@ -2174,7 +2174,7 @@ static void add_procInputList_entry(const char *name, int code, int *proccount)
 			if (proc_trans_table[entry][0] == code)
 				break;
 
-		// fill in the joy description
+		// fill in the p-roc description
 		procInputList[*proccount].name = strcpy(namecopy, name);
 		procInputList[*proccount].code = code;
 		if (entry < ELEMENTS(proc_trans_table))
@@ -2192,7 +2192,7 @@ static void add_procInputList_entry(const char *name, int code, int *proccount)
 			if (temp)
 			{
 				// point to the new buffer and increase the size indicator
-				osd_input_keywords =  temp;
+				osd_input_keywords = temp;
 				size_osd_ik += 16;
 			}
 		}
@@ -2219,7 +2219,7 @@ static void add_procInputList_entry(const char *name, int code, int *proccount)
 			}
 			*dst = 0;
 
-			osd_input_keywords[num_osd_ik].type = IKT_OSD_JOY;
+			osd_input_keywords[num_osd_ik].type = IKT_OSD_JOY;	//TODO/PROC: ???
 			osd_input_keywords[num_osd_ik].val = code;
 
 			num_osd_ik++;
@@ -2258,7 +2258,7 @@ static void init_proclist(void)
 
 
 //============================================================
-//	osd_get_joy_list
+//	osd_get_proc_list
 //============================================================
 
 const struct PROCInfo *osd_get_proc_list(void)
@@ -2267,5 +2267,3 @@ const struct PROCInfo *osd_get_proc_list(void)
 }
 
 #endif
-
-
