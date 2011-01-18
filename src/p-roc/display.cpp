@@ -234,80 +234,80 @@ void procUpdateDMD(void) {
 
 void procDisplayText(char * string_1, char * string_2)
 {
-	// Start at ASCII table offset 32: ' ' 
-	const UINT16 asciiSegments[] = {0x0000,  // ' '
-	                                0x0000,  // '!'
-	                                0x0000,  // '"'
-	                                0x0000,  // '#'
-	                                0x0000,  // '$'
-	                                0x0000,  // '%'
-	                                0x0000,  // '&'
-	                                0x0200,  // '''
-	                                0x1400,  // '('
-	                                0x4100,  // ')'
-	                                0x7f40,  // '*'
-	                                0x2a40,  // '+'
-	                                0x8080,  // ','
-	                                0x0840,  // '-'
-	                                0x8000,  // '.'
-	                                0x4400,  // '/'
-	                                
-	                                0x003f,  // '0'
-	                                0x0006,  // '1'
-	                                0x085b,  // '2'
-	                                0x084f,  // '3'
-	                                0x0866,  // '4'
-	                                0x086d,  // '5'
-	                                0x087d,  // '6'
-	                                0x0007,  // '7'
-	                                0x087f,  // '8'
-	                                0x086f,  // '9'
-	                                
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                0x0000,  // '1'
-	                                
-	                                0x0877,  // 'A'
-	                                0x2a4f,  // 'B'
-	                                0x0039,  // 'C'
-	                                0x220f,  // 'D'
-	                                0x0879,  // 'E'
-	                                0x0871,  // 'F'
-	                                0x083d,  // 'G'
-	                                0x0876,  // 'H'
-	                                0x2209,  // 'I'
-	                                0x001e,  // 'J'
-	                                0x1470,  // 'K'
-	                                0x0038,  // 'L'
-	                                0x0536,  // 'M'
-	                                0x1136,  // 'N'
-	                                0x003f,  // 'O'
-	                                0x0873,  // 'P'
-	                                0x103f,  // 'Q'
-	                                0x1873,  // 'R'
-	                                0x086d,  // 'S'
-	                                0x2201,  // 'T'
-	                                0x003e,  // 'U'
-	                                0x4430,  // 'V'
-	                                0x5036,  // 'W'
-	                                0x5500,  // 'X'
-	                                0x2500,  // 'Y'
-	                                0x4409   // 'Z'
+	// Start at ASCII table offset 32: ' '
+	const UINT16 asciiSegments[] = {0x0000,	// ' '
+	                                0x0000,	// '!'
+	                                0x0000,	// '"'
+	                                0x0000,	// '#'
+	                                0x0000,	// '$'
+	                                0x0000,	// '%'
+	                                0x0000,	// '&'
+	                                0x0200,	// '''
+	                                0x1400,	// '('
+	                                0x4100,	// ')'
+	                                0x7f40,	// '*'
+	                                0x2a40,	// '+'
+	                                0x8080,	// ','
+	                                0x0840,	// '-'
+	                                0x8000,	// '.'
+	                                0x4400,	// '/'
+
+	                                0x003f,	// '0'
+	                                0x0006,	// '1'
+	                                0x085b,	// '2'
+	                                0x084f,	// '3'
+	                                0x0866,	// '4'
+	                                0x086d,	// '5'
+	                                0x087d,	// '6'
+	                                0x0007,	// '7'
+	                                0x087f,	// '8'
+	                                0x086f,	// '9'
+
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+	                                0x0000,	// '1'
+
+	                                0x0877,	// 'A'
+	                                0x2a4f,	// 'B'
+	                                0x0039,	// 'C'
+	                                0x220f,	// 'D'
+	                                0x0879,	// 'E'
+	                                0x0871,	// 'F'
+	                                0x083d,	// 'G'
+	                                0x0876,	// 'H'
+	                                0x2209,	// 'I'
+	                                0x001e,	// 'J'
+	                                0x1470,	// 'K'
+	                                0x0038,	// 'L'
+	                                0x0536,	// 'M'
+	                                0x1136,	// 'N'
+	                                0x003f,	// 'O'
+	                                0x0873,	// 'P'
+	                                0x103f,	// 'Q'
+	                                0x1873,	// 'R'
+	                                0x086d,	// 'S'
+	                                0x2201,	// 'T'
+	                                0x003e,	// 'U'
+	                                0x4430,	// 'V'
+	                                0x5036,	// 'W'
+	                                0x5500,	// 'X'
+	                                0x2500,	// 'Y'
+	                                0x4409 	// 'Z'
                                 	};
-   
+
 	int i, j;
-	char char_a, char_b; 
+	char char_a, char_b;
 	UINT16 segs_a[16], segs_b[16];
 
 	if (machineType != kPRMachineWPCAlphanumeric) procClearDMD();
 
 	for (i=0; i<16; i++) {
-		char_a = string_1[i]; 
-		char_b = string_2[i]; 
+		char_a = string_1[i];
+		char_b = string_2[i];
 
 		segs_a[i] = asciiSegments[char_a - 32];
 		segs_b[i] = asciiSegments[char_b - 32];
@@ -318,16 +318,14 @@ void procDisplayText(char * string_1, char * string_2)
 				if ((segs_b[i] >> j) & 0x1) procDrawSegment(i*8, 19, j);
 			}
 		}
-    	}
+	}
 
 	if (machineType != kPRMachineWPCAlphanumeric) {
 		procUpdateDMD();
-	}
-	else {
+	} else {
 		procUpdateAlphaDisplay(segs_a, segs_b);
 	}
-    
-} 
+}
 
 // Send the new alphanumeric display commands to the P-ROC's Auxiliary port logic,
 // which will send them to the alphanumeri displays.
@@ -344,37 +342,37 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 	if (proc) {
 
 		PRDriverAuxCommand auxCommands[256];
-	
+
 		// Disable the first entry so the Aux logic won't begin immediately.
 		PRDriverAuxPrepareDisable(&auxCommands[cmd_index++]);
-	
+
 		for (i=0; i<16; i++) {
 			// Assert the STB line
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), i, 0, DIS_STB, 0, 0);
-	
+
 			segs_a = top[i];
 			segs_b = bottom[i];
-	
+
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_a & 0xff, 0, STB_1, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_a >> 8) & 0xff, 0, STB_2, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_b & 0xff, 0, STB_3, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_b >> 8) & 0xff, 0, STB_4, 0, 0);
-	
+
 			PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 350);
-	
+
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_1, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_2, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_3, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), 0, 0, STB_4, 0, 0);
-	
+
 			PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 40);
 		}
-	
+
 		PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 1);
-	
+
 		// Send the commands.
 		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
-	
+
 		cmd_index = 0;
 		// Jump from addr 0 to 1 to begin.
 		PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);

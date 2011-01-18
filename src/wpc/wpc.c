@@ -252,9 +252,10 @@ static INTERRUPT_GEN(wpc_vblank) {
 				/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
 				procFillDMDSubFrame(dmdlocals.nextDMDFrame+1, dmdlocals.DMDFrames[dmdlocals.nextDMDFrame], 0x200);
 			}
+
+			/* Don't explicitly update the DMD from here. The P-ROC code
+			   will update after the next DMD event. */
 #endif
-			/* Don't explicitly update the DMD from here.  The P-ROC code
-		 	* will update after the next DMD event. */
       dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
     }
   }

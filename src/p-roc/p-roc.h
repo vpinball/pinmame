@@ -6,9 +6,9 @@
 
 #define PROC_NUM_DMD_FRAMES 4
 
-#define PROC_COIL_DRIVE_TIME 0 // Turn on indefinitely.  Let PinMAME turn off.
+#define PROC_COIL_DRIVE_TIME 0  // Turn on indefinitely. Let PinMAME turn off.
 
-#define PROC_LAMP_DRIVE_TIME 0 // Turn on indefinitely.  Let PinMAME turn off.
+#define PROC_LAMP_DRIVE_TIME 0  // Turn on indefinitely. Let PinMAME turn off.
 
 #define kFlippersSection "PRFlippers"
 #define kBumpersSection "PRBumpers"
@@ -21,10 +21,10 @@
 #define kBusField "bus"
 #define kAuxPortValue "AuxPort"
 
-#define kFlipperPulseTime (34) // 34 ms
-#define kFlipperPatterOnTime (1) // 2 ms
-#define kFlipperPatterOffTime (20) // 2 ms
-#define kBumperPulseTime (25) // 25 ms
+#define kFlipperPulseTime (34)  // 34 ms
+#define kFlipperPatterOnTime (1)  // 2 ms
+#define kFlipperPatterOffTime (20)  // 2 ms
+#define kBumperPulseTime (25)  // 25 ms
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,10 +65,10 @@ int osd_is_proc_pressed(int code);
 // Work around for MinGW with gcc 3.2.3
 #if (__MINGW32__) && (__GNUC__) && (__GNUC__ < 4)
 long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr);
-#endif /* __MINGW32__, __GNUC__, __GNUC__ < 4 */
+#endif  /* __MINGW32__, __GNUC__, __GNUC__ < 4 */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* INC_PROC */
+#endif  /* INC_PROC */
