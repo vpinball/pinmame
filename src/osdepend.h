@@ -221,11 +221,6 @@ const struct JoystickInfo *osd_get_joy_list(void);
 */
 int osd_is_joy_pressed(int joycode);
 
-#ifdef PROC_SUPPORT
-const struct PROCInfo *osd_get_proc_list(void);
-int osd_is_proc_pressed(int joycode);
-#endif
-
 
 /* We support 4 players for each analog control / trackball */
 #define OSD_MAX_JOY_ANALOG	4
@@ -268,6 +263,28 @@ void osd_analogjoy_read(int player,int analog_axis[MAX_ANALOG_AXES], InputCode a
   Scan the list, and change the keys/joysticks you want.
 */
 void osd_customize_inputport_defaults(struct ipd *defaults);
+
+
+
+/******************************************************************************
+
+	P-ROC
+
+******************************************************************************/
+
+#ifdef PROC_SUPPORT
+/*
+  return a list of all available P-ROC inputs (see input.h)
+*/
+const struct PROCInfo *osd_get_proc_list(void);
+
+/*
+  tell whether the specified p-roc button is pressed or not.
+  proccode is the OS dependent code specified in the list returned by
+  osd_get_proc_list().
+*/
+int osd_is_proc_pressed(int joycode);
+#endif
 
 
 
