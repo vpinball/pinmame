@@ -18,16 +18,16 @@
 #define CODE_TYPE_NONE 0U /* code not assigned */
 #define CODE_TYPE_KEYBOARD 1U /* keyboard code */
 #define CODE_TYPE_JOYSTICK 2U /* joystick code */
-#define CODE_TYPE_PROC 3U /* proc code */
+#define CODE_TYPE_PROC 3U /* p-roc code */
 
 /* Informations for every input code */
 struct code_info {
 	int memory; /* boolean memory */
 	unsigned oscode; /* os dependant code */
-	unsigned type; /* subtype: CODE_TYPE_KEYBOARD or CODE_TYPE_JOYSTICK */
+	unsigned type; /* subtype: CODE_TYPE_KEYBOARD, CODE_TYPE_JOYSTICK or CODE_TYPE_PROC */
 };
 
-/* Main code table, generic KEYCODE_*, PROCCODE_* are indexes in this table */
+/* Main code table, generic KEYCODE_*, JOYCODE_*, PROCCODE_* are indexes in this table */
 static struct code_info* code_map;
 
 /* Size of the table */
@@ -41,12 +41,13 @@ int code_init(void)
 #ifdef PROC_SUPPORT
 	assert(	__code_key_first == 0
 		&& __code_key_last + 1 == __code_joy_first
-		&& __code_proc_last + 1 == __code_max 
+		&& __code_joy_last + 1 == __code_proc_first
+		&& __code_proc_last + 1 == __code_max
 	);
 #else
 	assert(	__code_key_first == 0
 		&& __code_key_last + 1 == __code_joy_first
-		&& __code_joy_last + 1 == __code_max 
+		&& __code_joy_last + 1 == __code_max
 	);
 #endif
 
@@ -158,8 +159,8 @@ static int internal_oscode_find(unsigned oscode, unsigned type)
 			if (procinfo && procinfo->standardcode != CODE_OTHER)
 				return procinfo->standardcode;
 			break;
-	}
 #endif
+	}
 
 	/* oscode not found */
 	return CODE_NONE;
@@ -295,8 +296,8 @@ static int internal_code_pressed(InputCode code)
 				if (procinfo)
 					return osd_is_proc_pressed(procinfo->code);
 				break;
-		}
 #endif
+		}
 	} else {
 		switch (code_map[code].type)
 		{
@@ -378,11 +379,11 @@ static void internal_code_update(void)
 
 #ifdef PROC_SUPPORT
 	procinfo = osd_get_proc_list();
-	while (joyinfo->name)
+	while (procinfo->name)
 	{
 		if (procinfo->standardcode == CODE_OTHER)
-                        if (internal_oscode_find(procinfo->code,CODE_TYPE_JOYSTICK)==CODE_NONE)
-				internal_oscode_add(procinfo->code,CODE_TYPE_JOYSTICK);
+                        if (internal_oscode_find(procinfo->code,CODE_TYPE_PROC)==CODE_NONE)
+				internal_oscode_add(procinfo->code,CODE_TYPE_PROC);
 		++procinfo;
 	}
 #endif
@@ -395,7 +396,13 @@ void code_close(void)
 	int i;
 	logerror("List of OS dependant input codes:\n");
 	for(i=__code_max;i<code_mac;++i)
-		logerror("\tcode %d, oscode %d, %s, %s\n",i,code_map[i].oscode,code_map[i].type == CODE_TYPE_KEYBOARD ? "keyboard" : "joystick", internal_code_name(i));
+		logerror("\tcode %d, oscode %d, %s, %s\n",i,code_map[i].oscode,
+		         code_map[i].type == CODE_TYPE_JOYSTICK ? "joystick" :
+#ifdef PROC_SUPPORT
+		                             CODE_TYPE_PROC ? "p-roc" :
+#endif
+		                             "keyboard",
+		         internal_code_name(i));
 #endif
 
 	code_mac = 0;
