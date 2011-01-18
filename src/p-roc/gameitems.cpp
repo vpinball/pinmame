@@ -45,8 +45,8 @@ void set_swState(int value, int type) {
 					int local_value = value;
 
 					// For Whitestar, the flipper switches are used in
-					// reverse order in pinmame.  Not sure why, but there's
-					// code in se.c to do the reversing.  So, reverse
+					// reverse order in pinmame. Not sure why, but there's
+					// code in se.c to do the reversing. So, reverse
 					// them as they come in so that they'll be corrected by
 					// the reversing code in se.c
 					switch (value) {
@@ -320,7 +320,6 @@ void procConfigureDefaultSwitchRules(void) {
 void procConfigureInputMap(void)
 {
 	if (yamlDoc.size() > 0) {
-
 		std::string numStr;
 
 		yamlDoc[kSwitchesSection]["flipperLwL"][kNumberField] >> numStr;
@@ -335,9 +334,7 @@ void procConfigureInputMap(void)
 		swMap[kStartButton] = PRDecode(machineType, numStr.c_str());
 		printf("\nstartButton: %d", swMap[kStartButton]);
 	}
-
 }
-
 
 void procDriveLamp(int num, int state) {
 	PRDriverState lampState;
@@ -381,7 +378,6 @@ void procGetSwitchEventsLocal(void) {
 	for (i = 0; i < numEvents; i++) {
 		PREvent *pEvent = &eventArray[i];
 		switchStates[pEvent->value] = pEvent->type;
-		//printf("\nEvent: value: %d, type: %d", pEvent->value, pEvent->type);
 	}
 }
 
@@ -438,7 +434,7 @@ void CoilDriver::CheckEndPatter(void) {
 			fprintf (stderr, "\nAt time: %ld: Ending Patter for Coil %d.", msTime, num);
 			//Drive(reqPatterState);
 			Drive(0);
-			
+
 			ResetPatter();
 		}
 	}
@@ -447,10 +443,12 @@ void CoilDriver::CheckEndPatter(void) {
 void CoilDriver::Drive(int state) {
 	PRDriverState coilState;
 	PRDriverGetState(proc, num, &coilState);
-	//if (num != 68) {
-	//	long int msTime = clock() / CLOCKS_PER_MS;
-	//        printf("\nAt time: %ld, Driving %d: %d", msTime, num, state);
-	//}
+/*
+	if (num != 68) {
+		long int msTime = clock() / CLOCKS_PER_MS;
+		printf("\nAt time: %ld, Driving %d: %d", msTime, num, state);
+	}
+*/
 	if (state) {
 		if (useDefaultPulseTime) {
 			PRDriverStatePulse(&coilState, PROC_COIL_DRIVE_TIME);
@@ -463,7 +461,7 @@ void CoilDriver::Drive(int state) {
 			}
 		}
 	} else {
-		// Don't disable if the coil only has a defined pulse 
+		// Don't disable if the coil only has a defined pulse
 		// time because it should be allowed to expire naturally.
 		if (!(!(useDefaultPulseTime) && useDefaultPatterTimes)) {
 			PRDriverStateDisable(&coilState);
@@ -577,21 +575,18 @@ int osd_is_proc_pressed(int code)
 {
 	earlyInputSetup();
 	switch (code) {
-		case (kFlipperLwL): {
+		case kFlipperLwL:
 			return (isSwitchClosed(swMap[kFlipperLwL]));
-		}
-		case (kFlipperLwR): {
+		case kFlipperLwR:
 			return (isSwitchClosed(swMap[kFlipperLwR]));
-		}
-		case (kStartButton): {
+		case kStartButton:
 			return (isSwitchClosed(swMap[kStartButton]));
-		}
-		case (kESQSequence): {
-			return (osd_is_proc_pressed(kFlipperLwL) && 
-			        osd_is_proc_pressed(kFlipperLwR) && 
+		case kESQSequence:
+			return (osd_is_proc_pressed(kFlipperLwL) &&
+			        osd_is_proc_pressed(kFlipperLwR) &&
 			        osd_is_proc_pressed(kStartButton));
-		}
-		default: return 0;
+		default:
+			return 0;
 	}
 }
 

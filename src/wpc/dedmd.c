@@ -36,7 +36,7 @@ static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd32Intf = {
-  NULL, dmd32_init, NULL, NULL,NULL, 
+  NULL, dmd32_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -143,8 +143,8 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 		procReverseSubFrameBytes(procSubFrame0);
 		procReverseSubFrameBytes(procSubFrame1);
 
-		/* Don't explicitly update the DMD from here.  The P-ROC code
-		 * will update after the next DMD event. */
+		/* Don't explicitly update the DMD from here. The P-ROC code
+		   will update after the next DMD event. */
 	}
 #endif
 
@@ -179,7 +179,7 @@ static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd64Intf = {
-  NULL, dmd64_init, NULL, NULL,NULL, 
+  NULL, dmd64_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -300,7 +300,7 @@ static WRITE_HANDLER(dmd16_ctrl_w);
 static INTERRUPT_GEN(dmd16_nmi);
 
 const struct sndbrdIntf dedmd16Intf = {
-  NULL, dmd16_init, NULL, NULL,NULL, 
+  NULL, dmd16_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 

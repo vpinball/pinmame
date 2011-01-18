@@ -71,7 +71,6 @@ PRMachineType procLoadMachineYAML(char *filename) {
 
 // Set the machine type.
 PRMachineType getRomMachineType() {
-
 	// First set the machine type based on the ROM being run.
 	switch (core_gameData->gen) {
 		case GEN_WPCALPHA_1:
@@ -113,7 +112,6 @@ PRMachineType getRomMachineType() {
 }
 
 void setMachineType(char *yaml_filename) {
-
 	if (strcmp(yaml_filename, "None") == 0) {
 		machineType = kPRMachineInvalid;
 	} else {
@@ -126,7 +124,6 @@ void setMachineType(char *yaml_filename) {
 			machineType = procLoadMachineYAML(yaml_filename);
 		}
 	}
-
 }
 
 // Send all pending commands to the P-ROC.
@@ -135,7 +132,9 @@ void procFlush(void) {
 }
 
 void procDeinitialize() {
-	if (proc) PRDelete(proc);
+	if (proc) {
+		PRDelete(proc);
+	}
 }
 
 // Initialize the P-ROC hardware.
@@ -168,8 +167,9 @@ int procInitialize(char *yaml_filename) {
 
 	if (machineType != kPRMachineInvalid) {
 		return 1;
+	} else {
+		return 0;
 	}
-	else return 0;
 }
 
 int procIsActive(void) {
@@ -186,8 +186,7 @@ int procIsActive(void) {
 			procSetSwitchStates();
 			return 1;
 		}
-	}
-	else {
+	} else {
 		return 0;
 	}
 }
@@ -198,9 +197,9 @@ void procTickleWatchdog(void) {
 }
 
 // The following is a work around for using MinGW with gcc 3.2.3 to compile
-// the yaml-cpp dependency.  gcc 3.2.3 is missing the definition of 'strtold'
+// the yaml-cpp dependency. gcc 3.2.3 is missing the definition of 'strtold'
 // in libstdc++, and yaml-cpp makes heavy use of stringstream, which uses
-// strtold internally.  Defining strtold here allows pinmame to link with
+// strtold internally. Defining strtold here allows pinmame to link with
 // yaml-cpp, and by using strtod, it will work properly for everything except
 // longs, which shouldn't be used in pinball YAML files anyway.
 
