@@ -21,7 +21,7 @@
 #endif
 
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.hpp"
+#include "p-roc/p-roc.h"
 #endif
 
 
@@ -2340,9 +2340,9 @@ int showcopyright(struct mame_bitmap *bitmap)
 		}
 		if (keyboard_pressed_memory(KEYCODE_O) ||
 #ifdef PROC_SUPPORT
-				code_pressed(PROC_FLIPPER_L) || 
+		    code_pressed(PROC_FLIPPER_L) ||
 #endif
-				input_ui_pressed(IPT_UI_LEFT))
+		    input_ui_pressed(IPT_UI_LEFT))
 #ifdef PROC_SUPPORT
 			if (!displayed) {
 				sprintf(top_text, "   NOW PRESS    ");
@@ -2354,9 +2354,9 @@ int showcopyright(struct mame_bitmap *bitmap)
 			done = 1;
 		if (done == 1 && (keyboard_pressed_memory(KEYCODE_K) ||
 #ifdef PROC_SUPPORT
-				code_pressed(PROC_FLIPPER_R) || 
+		    code_pressed(PROC_FLIPPER_R) ||
 #endif
-				input_ui_pressed(IPT_UI_RIGHT)))
+		    input_ui_pressed(IPT_UI_RIGHT)))
 			done = 2;
 	} while (done < 2);
 
@@ -4063,12 +4063,13 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 	/* if the user pressed ESC, stop the emulation */
 	/* but don't quit if the setup menu is on screen */
-#ifdef PROC_SUPPORT
 	if (setup_selected == 0 && (input_ui_pressed(IPT_UI_CANCEL)
-				 || code_pressed(PROC_ESC_SEQ))) {
-			procClearDMD();
-#else
-	if (setup_selected == 0 && (input_ui_pressed(IPT_UI_CANCEL))) {
+#ifdef PROC_SUPPORT
+	    || code_pressed(PROC_ESC_SEQ)
+#endif
+	   )) {
+#ifdef PROC_SUPPORT
+		procClearDMD();
 #endif
 		return 1;
 	}
