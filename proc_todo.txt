@@ -107,10 +107,16 @@ src\windows\windows.mak
 src\p-roc\p-roc.mak
 
 src\driver.h
+src\input.c
+src\input.h
+src\mame.c
+src\osdepend.h
 src\p-roc\*.cpp
 src\p-roc\*.h
 src\p-roc\*.hpp
+src\usrintrf.c
 src\windows\config.c
+src\windows\input.c
 src\wpc\core.c
 src\wpc\core.h
 src\wpc\dedmd.c
@@ -144,7 +150,7 @@ a) MinGW
   - FTDI's ftd2xx.lib
     * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
     * extracted i386/ftd2xx.lib to %MINGW_PATH%/lib, and /ftd2xx.h to %MINGW_PATH%/include
-      (does not work with static/i386/ftd2xx.lib)
+      (does not work with static/i386/ftd2xx.lib, due to missing support in ftd2xx.h)
   - YAML-CPP (as of 2010-12-30, version 0.2.5)
     Static library compiles with all MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
     Dynamic library compiles only with the following MinGW setups: MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
@@ -164,6 +170,7 @@ a) MinGW
     * del /s /q * & rmdir /s /q .
     * cmake -DBUILD_SHARED_LIBS=OFF
             -DYAML_CPP_BUILD_TOOLS=OFF
+            -DCMAKE_INSTALL_PREFIX:PATH="C:/"  (allows to use DESTDIR corretcly on "[mingw32-]make install")
             -G %CMGEN% ..\..
     * mingw32-make
        yaml-cpp  (use if only want to build the library)
@@ -171,7 +178,7 @@ a) MinGW
     * (make sure MINGW_PATH is set)
       cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
       copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
-      (Note: install dir can not be changed with "mingw32-make install")
+      (Note: install dir can not be changed with "mingw32-make install DESTDIR=xyz")
   - pinproc (as of 2010-12-30, commit d90bf717bac20e07ca76b37c394da5f3fd39a939)
     Static library compiles only with the following MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC4.5.0
      It does not compile with MinGW5/GCC3.2.3
@@ -182,17 +189,21 @@ a) MinGW
     * del /s /q * & rmdir /s /q .
     * cmake -DBUILD_SHARED_LIBS=OFF
             -DPINPROC_BUILD_TOOLS=OFF  (use if YAML-CPP doesn't work for the current MinGW setup)
+            -DVERBOSE=1
             -G %CMGEN% ..\..
     * mingw32-make
        pinproc  (use if only want to build the library)
        1>pinproc_compile.log 2>&1
     * (make sure MINGW_PATH is set)
-      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
+      mingw32-make install DESTDIR="%MINGW_PATH%"
       copies lib/libpinproc.a and include/p-roc/pinproc.h
-      (Note: install dir can not be changed with "mingw32-make install")
     * Including the FTDI DLL import lib to libpinproc is not possible like with MS VC++.
       Tried by adding "ftd2xx.lib" to the AR.EXE command line in CMakeFiles\pinproc.dir\link.txt
       But it is not recognized when using tje resulting static library in PinMAME or other projects.
+      http://groups.google.com/group/comp.unix.programmer/browse_thread/thread/333d41c39afd0ab5
+      http://unix.derkeiler.com/Newsgroups/comp.unix.programmer/2009-06/msg00047.html
+      http://msdn.microsoft.com/en-us/library/889z8z58.aspx
+      FTDI is linked with MSVC
 
 
 b) Visual C++
