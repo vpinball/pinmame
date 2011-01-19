@@ -142,6 +142,9 @@ void code_close(void);
 
 InputCode keyoscode_to_code(unsigned oscode);
 InputCode joyoscode_to_code(unsigned oscode);
+#ifdef PROC_SUPPORT
+InputCode procoscode_to_code(unsigned oscode);
+#endif
 InputCode savecode_to_code(unsigned savecode);
 unsigned code_to_savecode(InputCode code);
 

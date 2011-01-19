@@ -2219,7 +2219,7 @@ static void add_procInputList_entry(const char *name, int code, int *proccount)
 			}
 			*dst = 0;
 
-			osd_input_keywords[num_osd_ik].type = IKT_OSD_JOY;	//TODO/PROC: ???
+			osd_input_keywords[num_osd_ik].type = IKT_OSD_PROC;
 			osd_input_keywords[num_osd_ik].val = code;
 
 			num_osd_ik++;
