@@ -345,6 +345,10 @@ int run_game(int game)
 
 static int init_machine(void)
 {
+#ifdef PROC_SUPPORT
+	char * yaml_filename = (char *)pmoptions.p_roc;
+#endif
+
 	/* load the localization file */
 	if (uistring_init(options.language_file) != 0)
 	{
@@ -360,7 +364,6 @@ static int init_machine(void)
 	}
 
 #ifdef PROC_SUPPORT
-	char * yaml_filename = (char *)pmoptions.p_roc;
 	procInitialize(yaml_filename);
 #endif
 
