@@ -2997,6 +2997,14 @@ void seq_set_string(InputSeq* a, const char *buf)
 							j++;
 							found = 1;
 						break;
+
+#ifdef PROC_SUPPORT
+						case IKT_OSD_PROC:
+							(*a)[j] = procoscode_to_code(pik->val);
+							j++;
+							found = 1;
+						break;
+#endif
 					}
 				}
 				pik++;

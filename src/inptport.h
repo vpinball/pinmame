@@ -377,7 +377,11 @@ enum {
 	STR_TOTAL
 };
 
+#ifdef PROC_SUPPORT
+enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY, IKT_OSD_PROC };
+#else
 enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY };
+#endif
 
 #define DEF_STR(str_num) (ipdn_defaultstrings[STR_##str_num])
 
