@@ -4,6 +4,7 @@
 	Version="9,00"
 	Name="InstallVPinMAME"
 	ProjectGUID="{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}"
+	RootNamespace="InstallVPinMAME"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
