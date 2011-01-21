@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;external\zlib\include;external\pinproc\include;external\yaml-cpp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PROC_SUPPORT"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -74,7 +74,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="external\zlib\lib_vc6;external\pinproc\lib_vc6;external\yaml-cpp\lib_vc2005"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc6;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;external\zlib\include;external\pinproc\include;external\yaml-cpp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PROC_SUPPORT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -163,7 +163,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="external\zlib\lib_vc6;external\pinproc\lib_vc6;external\yaml-cpp\lib_vc2005"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc6;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -225,7 +225,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;external\zlib\include;external\pinproc\include;external\yaml-cpp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -254,7 +254,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008md.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="external\zlib\lib_vc6;external\pinproc\lib_vc6;external\yaml-cpp\lib_vc2005"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc6;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -314,7 +314,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;external\zlib\include;external\pinproc\include;external\yaml-cpp\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -343,7 +343,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcmd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="external\zlib\lib_vc6;external\pinproc\lib_vc6;external\yaml-cpp\lib_vc2005"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc6;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -4156,75 +4156,75 @@
 					Name="yaml-cpp"
 					>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\conversion.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\conversion.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\emitter.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\emitter.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\emittermanip.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\emittermanip.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\exceptions.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\exceptions.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\iterator.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\iterator.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\mark.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\mark.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\node.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\node.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\nodeimpl.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodeimpl.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\nodereadimpl.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodereadimpl.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\nodeutil.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodeutil.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\noncopyable.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\noncopyable.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\null.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\null.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\ostream.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\ostream.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\parser.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\parser.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\stlemitter.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\stlemitter.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\stlnode.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\stlnode.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\traits.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\traits.h"
 						>
 					</File>
 					<File
-						RelativePath=".\external\yaml-cpp\include\yaml-cpp\yaml.h"
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\yaml.h"
 						>
 					</File>
 				</Filter>
@@ -4244,7 +4244,7 @@
 					Name="libpinproc"
 					>
 					<File
-						RelativePath=".\external\pinproc\include\p-roc\pinproc.h"
+						RelativePath=".\ext\pinproc\include\p-roc\pinproc.h"
 						>
 					</File>
 				</Filter>
