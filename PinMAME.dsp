@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "ext\zlib\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /libpath:"ext\zlib\lib_vc6"
 # Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe
@@ -87,7 +87,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "ext\zlib\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -96,7 +96,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60vcd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc6"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME\Win32\Debug
@@ -131,7 +131,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "MAME_DEBUG" /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "ext\zlib\include" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "MAME_DEBUG" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -140,7 +140,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:".\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /libpath:"ext\zlib\lib_vc6"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe
@@ -167,7 +167,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\zlib" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "MAME_DEBUG" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "ext\zlib\include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "LSB_FIRST" /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "MAME_DEBUG" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -176,7 +176,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:".\obj\VC60\PinMAME\Win32\DebugMD\PinMAME_VC60vcmd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc6"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME\Win32\DebugMD
@@ -1818,18 +1818,6 @@ SOURCE=.\src\windows\winprefix.h
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # End Group
-# Begin Group "zlib"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\zlib\zconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\zlib\zlib.h
-# End Source File
-# End Group
 # Begin Group "PinMAME"
 
 # PROP Default_Filter ""
@@ -2709,6 +2697,22 @@ SOURCE=.\src\vc\dirent.h
 
 SOURCE=.\src\vc\unistd.h
 # End Source File
+# End Group
+# Begin Group "external"
+
+# PROP Default_Filter ""
+# Begin Group "zlib"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ext\zlib\include\zconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\zlib\include\zlib.h
+# End Source File
+# End Group
 # End Group
 # End Group
 # End Target
