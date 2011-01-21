@@ -286,10 +286,10 @@ Build Bugs
 1) Builds with GCC 4.4/4.5 have several issues
  a) Missing sounds on some ROMs.
 Known to be affected are WPC-ROMs with pre-DCS sound, that use the CPU M6809 for sound:
-* The Machine: Bride of Pinbot (BOP_L7)
+* The Machine: Bride of Pinbot (bop_L7)
 * Funhouse
 * Terminator 2
-* The Addams Family
+* The Addams Family (taf_l7)
 * Creature from the Black Lagoon
 * and more...
 Also Stern Whitestar was reported to be affected:
@@ -298,6 +298,7 @@ Also Stern Whitestar was reported to be affected:
 According to reports when those ROMs are loaded, then after the self-test sound
 there's a slight popping sound - like the sound is turned off. On working ROMs
 this sound is only heard when PinMAME quits.
+The volume can be changed from -32db to 0db, but nothing is heard regardless of that settings.
 
  b) DMD not updated
 Known to be affected are Stern Whitestar:
@@ -307,5 +308,5 @@ Known to be affected are Stern Whitestar:
 This could be a problem of GCC 4.x in general or just the MinGW port of it.
 Disabling optimization does not help.
 
-As PinMAME build with GCC 4.5.0 on Mac OS X works fine, but not GCC 4.4 on Ubuntu, all hope goes to an upcoming new GCC release for MinGW.
+As PinMAME build with GCC 4.0.1/4.5.0 on Mac OS X works fine, but not GCC 4.4.3 on Ubuntu, all hope goes to an upcoming new GCC release for MinGW.
 http://sourceforge.net/mailarchive/message.php?msg_id=26810757
