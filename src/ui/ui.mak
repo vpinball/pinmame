@@ -56,7 +56,7 @@ DEFS += -DDIRECTSOUND_VERSION=0x0300 \
 	-DCLIB_DECL=__cdecl \
         -DDECL_SPEC= \
         -DZEXTERN=extern \
-        -Isrc/htmlhelp/include
+        -Iext/htmlhelp/include
 
 #####################################################################
 # Resources
@@ -82,7 +82,7 @@ LIBS += -lkernel32 \
         -lhtmlhelp
 
 # use -mconsole for romcmp
-LDFLAGS += -mwindows -Lsrc/htmlhelp/lib
+LDFLAGS += -mwindows -Lext/htmlhelp/lib
 
 #####################################################################
 

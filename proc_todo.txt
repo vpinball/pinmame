@@ -17,6 +17,7 @@ Comments / TODO:
     http://www.mingw.org/wiki/MSVC_and_MinGW_DLLs
 
 * pinproc:
+  * PDB creation/handling of VC6 debug build for PinMAME
   * Test MinGW, release and also debug builds (debug: check file name, libpinproc[d].a?)
   ? P-ROC project should provide MinGW packages of LIBPINPROC and YAML-CPP
     (example at http://ftp.maddes.net/mingw/)
