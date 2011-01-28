@@ -51,7 +51,7 @@ patch -p1 -i pinmame-x.patch
 # not fixing any of the failed hunks)
 file changes:
 * makefile.unix:
-  @92: CC = gcc  (was: CC	= gcc-3.4.6)
+  @92: CC = cc  (was: CC	= gcc-3.4.6)
 fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
 * src/fileio.c
   @1088: vsnprintf (was: _vsnprintf)
@@ -61,10 +61,23 @@ fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
 make -f makefile.unix
 
 * Pinmame setup
+mkdir /usr/local/share/xpinmame
+cd /usr/local/share/xpinmame
+ln -s /media/E_DRIVE/Pinball/PinMAME_data/roms/ roms
+#
 cd ~/pinmame/release_2_2
-mkdir roms
-# copy ij_l7 into new roms folder
 ./xpinmamed.x11 ij_l7
+
+Sound (SDLMAME)
+http://ubuntuforums.org/showthread.php?t=320377
+
+http://linux.die.net/man/6/xmame
+-ldp
+-v volume, -volume volume
+    Specify audio attenuation in dB (-32 (soft) - 0 (loud)). 
+-ad device, -audiodevice device
+    Use an alternative audiodevice. 
+http://ubuntuforums.org/showthread.php?t=115021
 
 
 ========================================
