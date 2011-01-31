@@ -41,6 +41,10 @@ Version 0.3, Februari 2000
 #include "rc.h"
 #include "osdepend.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 #define BUF_SIZE 512
 
 struct rc_struct
@@ -577,7 +581,7 @@ static void rc_real_print_help(struct rc_option *option, FILE *f)
             rc_real_print_help(option[i].dest, f);
             break;
          default:
-            _snprintf(buf, BUF_SIZE, "-%s%s%s%s%s%s",
+            snprintf(buf, BUF_SIZE, "-%s%s%s%s%s%s",
                (option[i].type == rc_bool)? "[no]":"",
                option[i].name,
                (option[i].shortname)? " / -":"",

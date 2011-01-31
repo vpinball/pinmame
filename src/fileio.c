@@ -14,6 +14,10 @@
 #include "image.h"
 #endif
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 
 /***************************************************************************
 	DEBUGGING
@@ -1085,7 +1089,7 @@ int mame_fputs(mame_file *f, const char *s)
 int mame_vfprintf(mame_file *f, const char *fmt, va_list va)
 {
 	char buf[512];
-	_vsnprintf(buf, sizeof(buf), fmt, va);
+	vsnprintf(buf, sizeof(buf), fmt, va);
 	return mame_fputs(f, buf);
 }
 

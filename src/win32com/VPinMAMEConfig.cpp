@@ -6,6 +6,10 @@
 #include "VPinMAMEConfig.h"
 #include "ControllerRegKeys.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 extern "C" {
   #include "driver.h"
   #include "rc.h"
@@ -295,7 +299,7 @@ void CLIB_DECL logerror(const char *text,...) {
   va_start(arg, text);
   if (logfile) {
     char szBuffer[512];
-    _vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
+    vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
     OutputDebugString(szBuffer);
     fprintf(logfile, szBuffer);
   }
@@ -321,7 +325,7 @@ BOOL FindSettingInList(char* pList[], const char* pszName)
 		return FALSE;
 
 	while ( *pList ) {
-		if ( _strcmpi(*pList, pszName)==0 )
+		if ( _stricmp(*pList, pszName)==0 )
 			return TRUE;
 		pList++;
 	}
