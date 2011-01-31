@@ -1,8 +1,6 @@
 Trying to build and run PinMAME 2.2 with Brian Dominy's XPinMAME patch using Ubuntu 10.10 i386 (32-Bit).
 !!! CURRENTLY DOESN'T RUN ON MY SYSTEM !!!
 
-http://gcc.gnu.org/c99status.html
-
 Using a VM on Windows 7 64-Bit:
 ### Easier maintenance: aptitude, ssh access (open SSH port for VM)
 apt-get install aptitude
@@ -54,8 +52,9 @@ patch -p1 -i pinmame-x.patch
 file changes:
 * makefile.unix:
   @92: CC = cc  (was: CC	= gcc-3.4.6)
-gcc , CFLAGS += -std=gnu99
-
+fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
+* src/fileio.c
+  @1088: vsnprintf (was: _vsnprintf)
 * src/mamedbg.c
   @1620: strnicmp (was: _strnicmp)
 
@@ -75,9 +74,9 @@ http://ubuntuforums.org/showthread.php?t=320377
 http://linux.die.net/man/6/xmame
 -ldp
 -v volume, -volume volume
-    Specify audio attenuation in dB (-32 (soft) - 0 (loud)).
+    Specify audio attenuation in dB (-32 (soft) - 0 (loud)). 
 -ad device, -audiodevice device
-    Use an alternative audiodevice.
+    Use an alternative audiodevice. 
 http://ubuntuforums.org/showthread.php?t=115021
 
 
@@ -89,29 +88,23 @@ patching file src/mamedbg.c
 Hunk #1 succeeded at 1760 (offset 54 lines).
 Hunk #2 succeeded at 1779 (offset 54 lines).
 
-patching file src/osdepend.h
-Hunk #1 succeeded at 5 with fuzz 1 (offset 3 lines).
-
 patching file src/pinmame.mak
 Hunk #1 succeeded at 33 (offset 2 lines).
-Hunk #2 FAILED at 231.
-Hunk #3 FAILED at 239.
-Hunk #4 FAILED at 254.
-3 out of 4 hunks FAILED -- saving rejects to file src/pinmame.mak.rej
-
-patching file src/wpc/sim.h
-Hunk #1 succeeded at 4 with fuzz 2 (offset 3 lines).
+Hunk #2 succeeded at 236 (offset 5 lines).
+Hunk #3 succeeded at 245 (offset 5 lines).
+Hunk #4 FAILED at 256.
+1 out of 4 hunks FAILED -- saving rejects to file src/pinmame.mak.rej
 
 patching file src/wpc/wpc.c
 Hunk #4 succeeded at 632 (offset 4 lines).
 Hunk #5 succeeded at 787 (offset 4 lines).
 
 patching file src/wpc/wpc.h
-Hunk #1 succeeded at 150 (offset 12 lines).
-Hunk #2 succeeded at 208 (offset 12 lines).
-
+Hunk #1 succeeded at 148 (offset 10 lines).
+Hunk #2 succeeded at 206 (offset 10 lines).
 
 patching file makefile.unix
+patching file src/osdepend.h
 patching file src/sound/votrax.c
 patching file src/unix/Makefile
 patching file src/unix/arch-defines-used.txt
@@ -411,73 +404,21 @@ patching file src/unix/xmame.6-3
 patching file src/unix/xmame.h
 patching file src/unix/xmamerc-keybinding-notes.txt
 patching file src/wpc/serial.c
+patching file src/wpc/sim.h
 
 
 
 
 ========================================
 
-http://de.narkive.com/2003/10/16/652526-vsnprintf-begrenzt-nicht-wirklich.html
-
-find /usr -name '*.h' -print0 | xargs -0 grep -e "byte"
-
 HAVE_VSNPRINTF
 HAVE_SNPRINTF
-#ifdef _MSC_VER
-#include "msc.h"
-#endif
 
-see http://en.wikipedia.org/wiki/C99
-#if defined(_MSC_VER) && (_MSC_VER < 1400)	// on MSVC before VS2005 or later VS6 = 1200, VS2002 = 1300, VS2003 = 1310
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-#endif
-fileio.obj : error LNK2001: unresolved external symbol _vsnprintf
-config.obj : error LNK2001: unresolved external symbol _vsnprintf
-m32util.obj : error LNK2001: unresolved external symbol _vsnprintf
-D:\CODING\PINMAME\TRUNK\src\fileio.c(1088) : warning C4013: 'vsnprintf' undefined; assuming extern returning int
-D:\CODING\PINMAME\TRUNK\src\ui\m32util.c(101) : warning C4013: 'vsnprintf' undefined; assuming extern returning int
-D:\CODING\PINMAME\TRUNK\src\windows\config.c(845) : warning C4013: 'vsnprintf' undefined; assuming extern returning int
-D:\CODING\PINMAME\TRUNK\src\win32com\VPinMAMEConfig.cpp(298) : error C2065: 'vsnprintf' : undeclared identifier
-mamedbg.obj : error LNK2019: unresolved external symbol _strncasecmp referenced in function _get_register_id
-m32util.obj : error LNK2019: unresolved external symbol _strncmpi referenced in function _MyStrStrI
-
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
- // C99 kompatibler Quellcode.
-#endif
-
-
-+ ISO: vsnprintf
-+ ISO: snprintf
-+ ISO: strcmp, strncmp
-!!!! ISO: _stricmp, _strnicmp (non-standard in C99)
-
+_vsnprintf
+_snprintf
 _stricmp
 _strcmpi
-_strnicmp ! _strncmpi _strcmpni strncasecmp, strnicmp or strncmpi
-
-#if defined(WIN32) || defined(WIN64)
-#define strcasecmp _stricmp
-#endif /* Def WIN32 or Def WIN64 */
-
-#ifdef __GNUC__
-#define stricmp(A,B) strcasecmp((A),(B))
-#define strnicmp(A,B,L) strncasecmp((A),(B),(L))
-#endif
-
-#ifdef WIN32
-#define stricmp(x,y) _stricmp(x,y)
-#define strdup(x) _strdup(x)
-#define fileno _fileno
-#else
-#define stricmp(x,y) strcasecmp(x,y)
-#endif
-
-strnicmp
-
-_strdup
-_strlwr
-
+_strnicmp
 _str
 HAS_vsnprintf
 HAS_snprintf
