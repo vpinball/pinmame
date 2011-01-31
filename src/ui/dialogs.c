@@ -39,6 +39,10 @@
 #include "properties.h"
 #include "dialogs.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 #define FILTERTEXT_LEN 256
 
 static char g_FilterText[FILTERTEXT_LEN];
@@ -257,7 +261,7 @@ INT_PTR CALLBACK FilterDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 			Edit_SetSel(GetDlgItem(hDlg, IDC_FILTER_EDIT), 0, -1);
 
 			// Display current folder name in dialog titlebar
-			_snprintf(tmp,sizeof(tmp),"Filters for %s Folder",folder->m_lpTitle);
+			snprintf(tmp,sizeof(tmp),"Filters for %s Folder",folder->m_lpTitle);
 			SetWindowText(hDlg, tmp);
 
 			// Mask out non filter flags

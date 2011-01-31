@@ -43,6 +43,10 @@
 #include "audit.h"
 #include "options.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 /***************************************************************************
     Internal function prototypes
  ***************************************************************************/
@@ -2073,13 +2077,13 @@ static void ColumnEncodeStringWithCount(void* data, char *str, int count)
 	int  i;
 	char buffer[100];
 
-	_snprintf(buffer,sizeof(buffer),"%d",value[0]);
+	snprintf(buffer,sizeof(buffer),"%d",value[0]);
 	
 	strcpy(str,buffer);
 
     for (i = 1; i < count; i++)
 	{
-		_snprintf(buffer,sizeof(buffer),",%d",value[i]);
+		snprintf(buffer,sizeof(buffer),",%d",value[i]);
 		strcat(str,buffer);
 	}
 }
@@ -2383,7 +2387,7 @@ static void FolderFlagsDecodeString(const char *str,void *data)
 	extern FOLDERDATA g_folderData[];
 	char *token;
 
-	_snprintf(s,sizeof(s),"%s",str);
+	snprintf(s,sizeof(s),"%s",str);
 
 	SetAllBits(*(LPBITS *)data,TRUE);
 
@@ -2432,7 +2436,7 @@ static void TabFlagsDecodeString(const char *str,void *data)
 	char s[2000];
 	char *token;
 
-	_snprintf(s,sizeof(s),"%s",str);
+	snprintf(s,sizeof(s),"%s",str);
 
 	// simple way to set all tab bits "on"
 	*(int *)data = (1 << MAX_TAB_TYPES) - 1;
@@ -2535,7 +2539,7 @@ static BOOL LoadGameVariableOrFolderFilter(char *key,const char *value)
 
 	for (i = 0; i < sizeof(gamevariable_options) / sizeof(gamevariable_options[0]); i++)
 	{
-		_snprintf(fake_option.ini_name, sizeof(fake_option.ini_name), "drivername_%s", gamevariable_options[i].name);
+		snprintf(fake_option.ini_name, sizeof(fake_option.ini_name), "drivername_%s", gamevariable_options[i].name);
 		suffix = strchr(fake_option.ini_name, '_');
 
 		if (StringIsSuffixedBy(key, suffix))
@@ -2691,7 +2695,7 @@ static void LoadOptionsAndSettings(void)
 		fclose(fptr);
 	}
 
-	_snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
+	snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
 	gOpts = global;
 	if (LoadOptions(buffer,&global,TRUE))
 	{
@@ -2705,7 +2709,7 @@ void LoadGameOptions(int driver_index)
 {
 	char buffer[512];
 
-	_snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
+	snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
 	
 	CopyGameOptions(&global,&gOpts);
 	if (LoadOptions(buffer,&game_options[driver_index],FALSE))
@@ -2894,7 +2898,7 @@ void SaveGameOptions(int driver_index)
 		}
 	}
 
-	_snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
+	snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
 	if (options_different)
 	{
 		fptr = fopen(buffer,"wt");
@@ -2931,7 +2935,7 @@ void SaveDefaultOptions(void)
 	FILE *fptr;
 	char buffer[512];
 
-	_snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
+	snprintf(buffer,sizeof(buffer),"%s\\%s",GetIniDir(),DEFAULT_OPTIONS_INI_FILENAME);
 
 	fptr = fopen(buffer,"wt");
 	if (fptr != NULL)

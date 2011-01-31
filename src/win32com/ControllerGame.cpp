@@ -373,7 +373,7 @@ int GetGameNumFromString(char *name)
 {
 	int gamenum = 0;
 	while (drivers[gamenum]) {
-		if ( !_strcmpi(drivers[gamenum]->name, name) )
+		if ( !_stricmp(drivers[gamenum]->name, name) )
 			break;
 		gamenum++;
 	}
