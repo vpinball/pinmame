@@ -1,6 +1,8 @@
 How to setup Visual C++ to compile PinMAME (all flavours)
 =========================================================
 
+ToDo: ISO C99 and C90 issues (msc.h include), VS2008 is currently used by developmen team, but batch scripts and infos are available for older VS versions
+
 ----------
 Info links
 ----------

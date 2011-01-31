@@ -34,11 +34,12 @@ ACK to ACK and STROBE to STROBE.
 
 #include "driver.h"
 #include "votrax.h"
-#include "windows.h"
 #ifdef REAL_DEVICE
 #include "dlportio.h"
 #endif
 #include "math.h"
+
+typedef unsigned char byte;	/* do not use windows.h to keep source OS independent */
 
 static struct {
 	int	baseFrequency;

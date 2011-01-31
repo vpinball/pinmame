@@ -41,6 +41,11 @@ extern struct rc_option video_opts[];
 #ifdef MESS
 #include "configms.h"
 #endif
+
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 #ifdef PINMAME
 struct rc_option core_opts[];
 struct rc_option pinmame_opts[] = {
@@ -847,7 +852,7 @@ void CLIB_DECL logerror(const char *text,...) {
 	{
 		//extern int vsnprintf(char *s, size_t maxlen, const char *fmt, va_list _arg);
 		char buffer[2048];
-		_vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), text, arg);
+		vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), text, arg);
 		OutputDebugString(buffer);
 	}
 	va_end(arg);

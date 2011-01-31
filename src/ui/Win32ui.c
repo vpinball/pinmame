@@ -70,6 +70,10 @@
 #include "options.h"
 #include "dialogs.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 #if defined(__GNUC__)
 
 /* fix warning: cast does not match function type */
@@ -2655,7 +2659,7 @@ static void UpdateStatusBar()
 	}
 
 	/* Show number of games in the current 'View' in the status bar */
-	_snprintf(game_text, sizeof(game_text) / sizeof(game_text[0]), g_szGameCountString, games_shown);
+	snprintf(game_text, sizeof(game_text) / sizeof(game_text[0]), g_szGameCountString, games_shown);
 	SendMessage(hStatusBar, SB_SETTEXT, (WPARAM)2, (LPARAM)game_text);
 
 	i = GetSelectedPickItem();
@@ -2725,7 +2729,7 @@ static void EnableSelection(int nGame)
 	MENUITEMINFO	mmi;
 	HMENU			hMenu = GetMenu(hMain);
 
-	_snprintf(buf, sizeof(buf) / sizeof(buf[0]), g_szPlayGameString, ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
+	snprintf(buf, sizeof(buf) / sizeof(buf[0]), g_szPlayGameString, ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
 	mmi.cbSize	   = sizeof(mmi);
 	mmi.fMask	   = MIIM_TYPE;
 	mmi.fType	   = MFT_STRING;
@@ -5186,7 +5190,7 @@ static void UpdateMenu(HMENU hMenu)
 
 	if (have_selection)
 	{
-		_snprintf(buf, sizeof(buf), g_szPlayGameString,
+		snprintf(buf, sizeof(buf), g_szPlayGameString,
 				 ConvertAmpersandString(ModifyThe(drivers[nGame]->description)));
 
 		mItem.cbSize	 = sizeof(mItem);

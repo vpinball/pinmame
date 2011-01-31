@@ -284,7 +284,7 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 		samples->sample[i] = 0;
 
 #ifdef VPINMAME
-	if ( (!g_fMechSamples) && _strcmpi(*samplenames, "*pinmame")==0 )
+	if ( (!g_fMechSamples) && _stricmp(*samplenames, "*pinmame")==0 )
 		return samples;
 #endif
 
