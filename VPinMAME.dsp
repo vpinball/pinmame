@@ -1688,6 +1688,10 @@ SOURCE=.\src\windows\misc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\msc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\windows\osd_cpu.h
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"

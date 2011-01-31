@@ -2802,6 +2802,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\windows\msc.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\windows\osd_cpu.h"
 					>
 				</File>

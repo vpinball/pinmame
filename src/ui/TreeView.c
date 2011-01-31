@@ -46,9 +46,7 @@
 #include "dialogs.h"
 
 #ifdef _MSC_VER
-#if _MSC_VER > 1200
-#define HAS_DUMMYUNIONNAME
-#endif
+#include "msc.h"
 #endif
 
 #define MAX_EXTRA_FOLDERS 256
@@ -1607,8 +1605,8 @@ BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name)
 	
 	// a parent extra folder was renamed, so rename the file
 
-    _snprintf(new_filename,sizeof(new_filename),"%s\\%s.ini",GetFolderDir(),new_name);
-    _snprintf(filename,sizeof(filename),"%s\\%s.ini",GetFolderDir(),lpFolder->m_lpTitle);
+    snprintf(new_filename,sizeof(new_filename),"%s\\%s.ini",GetFolderDir(),new_name);
+    snprintf(filename,sizeof(filename),"%s\\%s.ini",GetFolderDir(),lpFolder->m_lpTitle);
 
 	retval = MoveFile(filename,new_filename);
 
@@ -1621,7 +1619,7 @@ BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name)
 	else
 	{
 		char buf[500];
-		_snprintf(buf,sizeof(buf),"Error while renaming custom file %s to %s",
+		snprintf(buf,sizeof(buf),"Error while renaming custom file %s to %s",
 				 filename,new_filename);
 		MessageBox(GetMainWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
 	}
@@ -1697,7 +1695,7 @@ BOOL TrySaveExtraFolder(LPTREEFOLDER lpFolder)
 	}
     /* "folder\title.ini" */
 
-    _snprintf( fname, sizeof(fname), "%s\\%s.ini", GetFolderDir(), extra_folder->m_szTitle);
+    snprintf( fname, sizeof(fname), "%s\\%s.ini", GetFolderDir(), extra_folder->m_szTitle);
 
     fp = fopen(fname, "wt");
     if (fp == NULL)
@@ -1763,7 +1761,7 @@ BOOL TrySaveExtraFolder(LPTREEFOLDER lpFolder)
 	if (error)
 	{
 		char buf[500];
-		_snprintf(buf,sizeof(buf),"Error while saving custom file %s",fname);
+		snprintf(buf,sizeof(buf),"Error while saving custom file %s",fname);
 		MessageBox(GetMainWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
 	}
 	return !error;

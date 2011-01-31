@@ -94,8 +94,8 @@ index 0000000..9b43528
 +# possible.
 +
 +#CC	= /usr/i686-pc-linux-gnu/gcc-bin/3.4.6/gcc
-+CC	= gcc-3.4.6
-+# CC    = cc
++# CC   = gcc
++CC	= cc
 +# CC	= icc
 +# CC	= c89
 +
@@ -754,33 +754,6 @@ index 0000000..9b43528
 +# No configurable options below this line.
 +###########################################################################
 +include src/unix/unix.mak
-diff --git a/src/mamedbg.c b/src/mamedbg.c
-index 26d9cd7..42486f4 100644
---- a/src/mamedbg.c
-+++ b/src/mamedbg.c
-@@ -1706,7 +1706,11 @@ static void trace_output( void )
- 		for( i = count = 0; i < MAX_LOOPS; i++ )
- 			if( TRACE.last_pc[i] == pc )
- 				count++;
--		if( count > 1 )
-+#ifdef CONFIG_FOR_FREEWPC
-+		if( count > 32)
-+#else
-+		if( count > 1)
-+#endif
- 		{
- 			TRACE.loops++;
- 		}
-@@ -1721,6 +1725,9 @@ static void trace_output( void )
- 			}
- 			if( TRACE.regs[0] )
- 			{
-+#ifdef CONFIG_FOR_FREEWPC
-+				dst += sprintf (dst, "#%u ", activecpu_gettotalcycles ());
-+#endif
- 				for( i = 0; i < MAX_REGS && TRACE.regs[i]; i++ )
- 					dst += sprintf( dst, "%s ", activecpu_dump_reg(TRACE.regs[i]) );
- 			}
 diff --git a/src/osdepend.h b/src/osdepend.h
 index a615c09..1f7f6f5 100644
 --- a/src/osdepend.h
@@ -799,7 +772,7 @@ diff --git a/src/pinmame.mak b/src/pinmame.mak
 index 5427a4c..d58ba67 100644
 --- a/src/pinmame.mak
 +++ b/src/pinmame.mak
-@@ -31,6 +31,7 @@ DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o $(OBJ)/machine/pic8259.o
+@@ -33,6 +33,7 @@ DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o $(OBJ)/machine/pic8259.o
  #
  DRVLIBS += $(PINOBJ)/s4.o $(PINOBJ)/s6.o $(PINOBJ)/s7.o $(PINOBJ)/s11.o
  DRVLIBS += $(PINOBJ)/wpc.o $(PINOBJ)/wmssnd.o
@@ -807,49 +780,6 @@ index 5427a4c..d58ba67 100644
  DRVLIBS += $(PINOBJ)/dedmd.o $(PINOBJ)/desound.o
  DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o
  DRVLIBS += $(PINOBJ)/se.o
-@@ -230,6 +231,7 @@ $(OBJ)/allgames.a: $(PINGAMES)
- # Preprocessor Definitions
- #
- 
-+ifdef WINDOWS
- DEFS += -DDIRECTSOUND_VERSION=0x0300 \
-         -DDIRECTINPUT_VERSION=0x0500 \
-         -DDIRECTDRAW_VERSION=0x0300 \
-@@ -238,6 +240,7 @@ DEFS += -DDIRECTSOUND_VERSION=0x0300 \
-         -D_WIN32_WINNT=0x0400 \
-         -DWIN32 \
-         -UWINNT
-+endif
- 
- # generated text files
- TEXTS += gamelist.txt
-@@ -253,6 +256,6 @@ cleanpinmame:
- 	$(RM) $(EMULATOR)
- 
- ifdef DEBUG
--LDFLAGS+= -Xlinker -Map -Xlinker $(TARGET).map -Xlinker --cref
-+LDFLAGS+= -Xlinker -Map -Xlinker $(TARGET).map
- endif
- 
-diff --git a/src/sound/votrax.c b/src/sound/votrax.c
-index afcd12b..724382f 100644
---- a/src/sound/votrax.c
-+++ b/src/sound/votrax.c
-@@ -34,12 +34,13 @@ ACK to ACK and STROBE to STROBE.
- 
- #include "driver.h"
- #include "votrax.h"
--#include "windows.h"
- #ifdef REAL_DEVICE
- #include "dlportio.h"
- #endif
- #include "math.h"
- 
-+typedef unsigned char byte;
-+
- static struct {
- 	int	baseFrequency;
- 	int busy;
 diff --git a/src/unix/Makefile b/src/unix/Makefile
 new file mode 100644
 index 0000000..ec49b8f
@@ -2161,7 +2091,7 @@ index 0000000..0241548
 +				/* game is a clone */
 +				if (drivers[i]->clone_of != 0 && !(drivers[i]->clone_of->flags & NOT_A_DRIVER))
 +				{
-+					if ((!drivers[game_index]->flags & GAME_NOT_WORKING) || (drivers[i]->flags & GAME_NOT_WORKING))
++					if ((!(drivers[game_index]->flags & GAME_NOT_WORKING)) || (drivers[i]->flags & GAME_NOT_WORKING))
 +						continue;
 +				}
 +				else continue;
