@@ -2,6 +2,10 @@
 #include ".\displayinfolist.h"
 #include <ddraw.h>
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 static BOOL WINAPI DDEnumCallbackEx(GUID FAR *lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext, HMONITOR  hm)
 {
     // Context is a pointer to a display list
@@ -98,7 +102,7 @@ BOOL CDisplayInfoList::Enumerate()
 		char buff[MAX_PATH];
 
 		// Copy message into buffer
-		_snprintf(buff, MAX_PATH, "Error enumerating displays: %08x\n", (UINT32)result);
+		snprintf(buff, MAX_PATH, "Error enumerating displays: %08x\n", (UINT32)result);
 
 		// Show error
 		MessageBox(NULL, (LPCTSTR)buff, NULL, MB_OK);

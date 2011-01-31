@@ -28,6 +28,10 @@
 #include "MAME32.h"
 #include "M32Util.h"
 
+#ifdef _MSC_VER
+#include "msc.h"
+#endif
+
 /***************************************************************************
 	function prototypes
  ***************************************************************************/
@@ -98,7 +102,7 @@ void __cdecl dprintf(const char* fmt, ...)
 
 	va_start(va, fmt);
 
-	_vsnprintf(buf,sizeof(buf),fmt,va);
+	vsnprintf(buf,sizeof(buf),fmt,va);
 
 	OutputDebugString(buf);
 

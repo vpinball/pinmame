@@ -149,7 +149,7 @@ extern void i8752_set_serial_tx_callback(void (*callback)(int data));
 extern void i8752_set_serial_rx_callback(int (*callback)(void));
 WRITE_HANDLER( i8752_internal_w );
 READ_HANDLER( i8752_internal_r );
-#endif	//(HAS_8752)
+#endif	//(HAS_I8752)
 
 
 #endif /* _I8051_H */
