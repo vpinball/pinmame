@@ -1384,6 +1384,7 @@ DRIVER(mousn,lx)        //          03/90 B Mousin' Around! (L-X)
                         //???:      ??/90 B Ghost Gallery
 DRIVER(whirl,l2)        //S11-574:  01/90 W Whirlwind (L-2)
 DRIVER(whirl,l3)        //          01/90 W Whirlwind (L-3)
+DRIVER(whirl,g3)        //          01/90 W Whirlwind (LG-3)
 DRIVER(gs,l3)           //S11-985:  02/90 B Game Show (L-3)
 DRIVER(gs,l4)           //          02/90 B Game Show (L-4)
 DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)

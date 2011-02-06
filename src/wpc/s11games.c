@@ -717,8 +717,18 @@ S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf
                         "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
 S11_ROMEND
 
+S11_ROMSTART48(whirl,g3,"whir_u26.l3", CRC(066b8fec) SHA1(017ca12ef5ebd9bb70690b0e096064be5144a512),
+                        "whir_u27.lg3", CRC(94c7a45a) SHA1(617f38f14c1cf8d6cbb6a41080e2d66c7c572b7f))
+S11XS_SOUNDROM88(       "whir_u21.l1", CRC(fa3da322) SHA1(732107eace9eecdb97eff4abb4420a2febef7425),
+                        "whir_u22.l1", CRC(fcaf8c4e) SHA1(8e8cab1923a56bcef4671dce28aef1e39303c04a))
+S11CS_SOUNDROM888(      "whir_u4.l1",  CRC(29952d84) SHA1(26479a341b0552c5f9d9bf9dd013855e51a7b857),
+                        "whir_u19.l1", CRC(c63f6fe9) SHA1(947bbccb5eeae414770254d42d0a95425e2dca8c),
+                        "whir_u20.l1", CRC(713007af) SHA1(3ac88bb905ccf8e227bbf3c102c74e3d2446cc88))
+S11_ROMEND
+
 CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(whirl,l2,l3,"Whirlwind (L-2)", 1990, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(whirl,g3,l3,"Whirlwind (LG-3)", 1990, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Game Show 4/90
