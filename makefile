@@ -184,7 +184,7 @@ ASMFLAGS = -f coff
 MD = -mkdir$(EXE)
 RM = @rm -f
 #PERL = @perl -w
-
+OBJCOPY = @objcopy
 
 
 #-------------------------------------------------
@@ -216,7 +216,7 @@ VPATH = src $(wildcard src/cpu/*)
 
 # build the targets in different object dirs, since mess changes
 # some structures and thus they can't be linked against each other.
-OBJ = obj/gcc/${MAMEOS}/$(FULLNAME)
+OBJ = obj/gcc/$(MAMEOS)/$(FULLNAME)
 
 
 
@@ -432,9 +432,14 @@ $(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
 #               http://stackoverflow.com/questions/866721/
 ifdef SYMBOLS
 	@echo Extracting debug symbols and stripping all symbols from $@...
-	@objcopy -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
-	@strip -p -s "$(EMULATOR)"
-	@objcopy -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR)"
+	$(OBJCOPY) -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
+	@echo Stripping unneeded symbols from $@...
+	$(RM) "$(EMULATOR).strip"
+	$(OBJCOPY) -p --strip-unneeded "$(EMULATOR)" "$(EMULATOR).strip"
+	@echo Adding GNU debuglink to $@...
+	$(RM) "$(EMULATOR)"
+	$(OBJCOPY) -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR).strip" "$(EMULATOR)"
+	$(RM) "$(EMULATOR).strip"
 endif
 
 romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
@@ -522,6 +527,7 @@ clean:
 	$(RM) $(EMULATOR)
 	@echo Deleting $(EMULATOR).debug...
 	$(RM) $(EMULATOR).debug
+	$(RM) $(EMULATOR).strip
 	@echo Deleting $(FULLNAME).map...
 	$(RM) $(FULLNAME).map
 
