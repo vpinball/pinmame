@@ -147,6 +147,41 @@ X86_MIPS3_DRC = 1
 
 
 #-------------------------------------------------
+# macros for arithemtics
+# taken from http://www.cmcrossroads.com/ask-mr-make/6504-learning-gnu-make-functions-with-arithmetic
+#-------------------------------------------------
+
+# decode turns a number in x's representation into a integer for human
+# consumption
+decode = $(words $1)
+
+# encode takes an integer and returns the appropriate x's representation
+# of the number by chopping $1 x's from the start of input_int
+16 = x x x x x x x x x x x x x x x x
+max_int := $(foreach a,$(16),$(foreach b,$(16),$(foreach c,$(16),$(16)))))
+encode = $(wordlist 1,$1,$(max_int))
+
+# max returns the maximum of its arguments and min the minimum
+max = $(subst xx,x,$(join $1,$2))
+min = $(subst xx,x,$(filter xx,$(join $1,$2)))
+
+# The following operators return a non-empty string if their result
+# is true:
+#
+# gt   First argument greater than second argument
+# gte  First argument greater than or equal to second argument
+# lt   First argument less than second argument
+# lte  First argument less than or equal to second argument
+# eq   First argument is numerically equal to the second argument
+# ne   First argument is not numerically equal to the second argument
+gt = $(filter-out $(words $2),$(words $(call max,$1,$2)))
+lt = $(filter-out $(words $1),$(words $(call max,$1,$2)))
+eq = $(filter $(words $1),$(words $2))
+ne = $(filter-out $(words $1),$(words $2))
+gte = $(call gt,$1,$2)$(call eq,$1,$2)
+lte = $(call lt,$1,$2)$(call eq,$1,$2)
+
+#-------------------------------------------------
 # sanity check the configuration
 #-------------------------------------------------
 
@@ -190,6 +225,16 @@ MD = -mkdir$(EXE)
 RM = @rm -f
 #PERL = @perl -w
 OBJCOPY = @objcopy
+
+CC_VERSION := $(shell $(subst @,,$(CC)) -dumpversion)
+CC_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
+CC_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
+CC_PATCH := $(word 3,$(subst ., ,$(CC_VERSION)))
+
+CPP_VERSION := $(shell $(subst @,,$(CPP)) -dumpversion)
+CPP_MAJOR := $(word 1,$(subst ., ,$(CPP_VERSION)))
+CPP_MINOR := $(word 2,$(subst ., ,$(CPP_VERSION)))
+CPP_PATCH := $(word 3,$(subst ., ,$(CPP_VERSION)))
 
 
 #-------------------------------------------------
@@ -281,7 +326,18 @@ CFLAGS =
 CPPFLAGS =
 
 CFLAGS += -std=gnu99
-#TODO/PROC: (GCC 3.2.3 doesn't like it) CPPFLAGS += -std=gnu++98
+# gnu++98 is supported since 3.4.0
+#  check for >= 4
+ifeq ($(CPP_MAJOR),$(call gte,$(call encode,$(CPP_MAJOR)),$(call encode,4)))
+ CPPFLAGS += -std=gnu++98
+else
+#  check for >= 3.4
+ ifeq ($(CPP_MAJOR),$(call eq,$(call encode,$(CPP_MAJOR)),$(call encode,3)))
+  ifeq ($(CPP_MINOR),$(call gte,$(call encode,$(CPP_MINOR)),$(call encode,4)))
+   CPPFLAGS += -std=gnu++98
+  endif
+ endif
+endif
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
