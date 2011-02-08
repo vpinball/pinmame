@@ -495,7 +495,9 @@ void CoilDriver::RequestDrive(int state) {
 		reqPatterState = state;
 	} else {
 		if (state) {
-			avgOffTime = ((avgOffTime * numPatterOff) + msSinceChanged) / ++numPatterOff;
+			int numPatterOld;
+			numPatterOld = numPatterOff++;
+			avgOffTime = ((avgOffTime * numPatterOld) + msSinceChanged) / numPatterOff;
 			// If Enough transitions have occurred to indicate a patter, enable patter.
 			if (patterDetectionEnable && numPatterOff > 2) {
 				Patter(avgOnTime, avgOffTime);
@@ -503,7 +505,9 @@ void CoilDriver::RequestDrive(int state) {
 				Drive(state);
 			}
 		} else {
-			avgOnTime = ((avgOnTime * numPatterOn) + msSinceChanged) / ++numPatterOn;
+			int numPatterOld;
+			numPatterOld = numPatterOn++;
+			avgOnTime = ((avgOnTime * numPatterOld) + msSinceChanged) / numPatterOn;
 			// Update patter stats.
 			Drive(state);
 		}
