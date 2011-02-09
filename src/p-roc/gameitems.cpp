@@ -1,4 +1,4 @@
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 
 extern "C" {
 #include "driver.h"
@@ -594,4 +594,4 @@ int osd_is_proc_pressed(int code)
 	}
 }
 
-#endif
+#endif /* PINMAME && PROC_SUPPORT */

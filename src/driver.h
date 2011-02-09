@@ -92,7 +92,7 @@ typedef struct {
 #ifdef PROC_SUPPORT
 	int p_roc;					/* TODO/PROC: explanation */
 	int alpha_on_dmd;			/* Virtual alphanumeric displays on P-ROC DMD */
-#endif
+#endif /* PROC_SUPPORT */
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

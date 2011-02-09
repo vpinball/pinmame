@@ -1,4 +1,4 @@
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 
 extern "C" {
 #include "driver.h"
@@ -380,4 +380,4 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 	}
 }
 
-#endif /* PROC_SUPPORT */
+#endif /* PINMAME && PROC_SUPPORT */

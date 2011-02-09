@@ -272,7 +272,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults);
 
 ******************************************************************************/
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 /*
   return a list of all available P-ROC inputs (see input.h)
 */
@@ -284,7 +284,7 @@ const struct PROCInfo *osd_get_proc_list(void);
   osd_get_proc_list().
 */
 int osd_is_proc_pressed(int joycode);
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 
 

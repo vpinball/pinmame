@@ -20,14 +20,14 @@ struct JoystickInfo
 	InputCode standardcode;	/* CODE_xxx equivalent from list below, or CODE_OTHER if n/a */
 };
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 struct PROCInfo
 {
 	char *name; /* OS dependant name; 0 terminates the list */
 	unsigned code; /* OS dependant code */
 	InputCode standardcode;	/* CODE_xxx equivalent from list below, or CODE_OTHER if n/a */
 };
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 enum
 {
@@ -109,11 +109,11 @@ enum
 #define __code_joy_first JOYCODE_1_LEFT
 #define __code_joy_last JOYCODE_MOUSE_8_BUTTON3
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	PROC_FLIPPER_L, PROC_FLIPPER_R, PROC_START, PROC_ESC_SEQ,
 #define __code_proc_first PROC_FLIPPER_L
 #define __code_proc_last PROC_ESC_SEQ
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 	__code_max, /* Temination of standard code */
 
@@ -142,9 +142,9 @@ void code_close(void);
 
 InputCode keyoscode_to_code(unsigned oscode);
 InputCode joyoscode_to_code(unsigned oscode);
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 InputCode procoscode_to_code(unsigned oscode);
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 InputCode savecode_to_code(unsigned savecode);
 unsigned code_to_savecode(InputCode code);
 

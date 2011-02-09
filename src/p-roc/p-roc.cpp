@@ -1,4 +1,4 @@
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 
 #include <stdarg.h>
 
@@ -209,4 +209,4 @@ long double strtold(const char *__restrict__ nptr, char **__restrict__ endptr) {
 }
 #endif
 
-#endif /* PROC_SUPPORT */
+#endif /* PINMAME && PROC_SUPPORT */
