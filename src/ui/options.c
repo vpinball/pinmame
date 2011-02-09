@@ -9,7 +9,7 @@
   that you have read the license and understand and accept it fully.
 
  ***************************************************************************/
- 
+
  /***************************************************************************
 
   options.c
@@ -256,8 +256,8 @@ static REG_OPTION regGameOpts[] =
 	{ "ctrlr",                  RO_STRING,  &gOpts.ctrlr,             0, 0},
 
 	// core video
-	{ "brightness",             RO_DOUBLE,  &gOpts.f_bright_correct,  0, 0}, 
-	{ "pause_brightness",       RO_DOUBLE,  &gOpts.f_pause_bright    ,0, 0}, 
+	{ "brightness",             RO_DOUBLE,  &gOpts.f_bright_correct,  0, 0},
+	{ "pause_brightness",       RO_DOUBLE,  &gOpts.f_pause_bright    ,0, 0},
 	{ "norotate",               RO_BOOL,    &gOpts.norotate,          0, 0},
 	{ "ror",                    RO_BOOL,    &gOpts.ror,               0, 0},
 	{ "rol",                    RO_BOOL,    &gOpts.rol,               0, 0},
@@ -265,7 +265,7 @@ static REG_OPTION regGameOpts[] =
 	{ "autorol",                RO_BOOL,    &gOpts.auto_rol,          0, 0},
 	{ "flipx",                  RO_BOOL,    &gOpts.flipx,             0, 0},
 	{ "flipy",                  RO_BOOL,    &gOpts.flipy,             0, 0},
-	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0}, 
+	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0},
 	{ "gamma",                  RO_DOUBLE,  &gOpts.f_gamma_correct,   0, 0},
 
 	// vector
@@ -314,7 +314,7 @@ static REG_OPTION regGameOpts[] =
 };
 #define NUM_GAME_OPTIONS (sizeof(regGameOpts) / sizeof(regGameOpts[0]))
 
-// options in mame32.ini that we'll never override with with game-specific options
+// options in mame32.ini that we will never override with game-specific options
 static REG_OPTION global_game_options[] =
 {
 	{"skip_disclaimer",    RO_BOOL,    &settings.skip_disclaimer,  0, 0},
@@ -478,7 +478,7 @@ const char * clean_stretch_long_name[MAX_CLEAN_STRETCH] =
 	"Horizontal",
 	"Vertical",
 };
-	
+
 const char * clean_stretch_short_name[MAX_CLEAN_STRETCH] =
 {
 	"none",
@@ -487,7 +487,7 @@ const char * clean_stretch_short_name[MAX_CLEAN_STRETCH] =
 	"horizontal",
 	"vertical",
 };
-	
+
 
 static int  num_games = 0;
 static BOOL save_gui_settings = TRUE;
@@ -507,7 +507,7 @@ int size_folder_filters;
 int num_folder_filters;
 
 /***************************************************************************
-    External functions  
+    External functions
  ***************************************************************************/
 
 BOOL OptionsInit()
@@ -673,7 +673,7 @@ BOOL OptionsInit()
 
 	settings.list_font_color = (COLORREF)-1;
 	settings.list_clone_color = (COLORREF)-1;
-	
+
 	settings.skip_disclaimer = FALSE;
 	settings.skip_gameinfo = FALSE;
 	settings.high_priority = FALSE;
@@ -795,7 +795,7 @@ BOOL OptionsInit()
 		game_variables[i].play_time = 0;
 		game_variables[i].rom_audit_results = UNKNOWN;
 		game_variables[i].samples_audit_results = UNKNOWN;
-		
+
 		game_variables[i].options_loaded = FALSE;
 		game_variables[i].use_default = TRUE;
 	}
@@ -876,7 +876,7 @@ void FreeGameOptions(options_type *o)
 	{
 		if (regGameOpts[i].m_iType == RO_STRING)
 		{
-			char **string_to_free = 
+			char **string_to_free =
 				(char **)((char *)o + ((char *)regGameOpts[i].m_vpData - (char *)&gOpts));
 			if (*string_to_free  != NULL)
 			{
@@ -900,7 +900,7 @@ void CopyGameOptions(options_type *source,options_type *dest)
 	{
 		if (regGameOpts[i].m_iType == RO_STRING)
 		{
-			char **string_to_copy = 
+			char **string_to_copy =
 				(char **)((char *)dest + ((char *)regGameOpts[i].m_vpData - (char *)&gOpts));
 			if (*string_to_copy != NULL)
 			{
@@ -1429,7 +1429,7 @@ void SetSampleDirs(const char* paths)
 	if (paths != NULL)
 	{
 		settings.sampledirs = _strdup(paths);
-		
+
 		// have our mame core (file code) know about it
 		// this leaks a little, but the win32 file core writes to this string
 		set_pathlist(FILETYPE_SAMPLE,_strdup(settings.sampledirs));
@@ -1748,7 +1748,7 @@ void ResetGameOptions(int driver_index)
 	{
 		FreeGameOptions(&game_options[driver_index]);
 		game_variables[driver_index].use_default = TRUE;
-		
+
 		// this will delete the custom file
 		SaveGameOptions(driver_index);
 	}
@@ -1848,7 +1848,7 @@ void GetTextPlayTime(int driver_index,char *buf)
 int GetUIJoyUp(int joycodeIndex)
 {
 	assert(0 <= joycodeIndex && joycodeIndex < 4);
-	
+
 	return settings.ui_joy_up[joycodeIndex];
 }
 
@@ -1995,7 +1995,7 @@ int GetUIJoyHistoryUp(int joycodeIndex)
 void SetUIJoyHistoryUp(int joycodeIndex, int val)
 {
 	assert(0 <= joycodeIndex && joycodeIndex < 4);
-  
+
 	settings.ui_joy_history_up[joycodeIndex] = val;
 }
 
@@ -2046,7 +2046,7 @@ void SetExecWait(int wait)
 {
 	settings.exec_wait = wait;
 }
- 
+
 BOOL GetHideMouseOnStartup(void)
 {
 	return settings.hide_mouse;
@@ -2078,7 +2078,7 @@ static void ColumnEncodeStringWithCount(void* data, char *str, int count)
 	char buffer[100];
 
 	snprintf(buffer,sizeof(buffer),"%d",value[0]);
-	
+
 	strcpy(str,buffer);
 
     for (i = 1; i < count; i++)
@@ -2100,11 +2100,11 @@ static void ColumnDecodeStringWithCount(const char* str, void* data, int count)
 
 	strcpy(tmpStr, str);
 	p = tmpStr;
-	
+
     for (i = 0; p && i < count; i++)
 	{
 		s = p;
-		
+
 		if ((p = strchr(s,',')) != NULL && *p == ',')
 		{
 			*p = '\0';
@@ -2146,7 +2146,7 @@ static void SplitterEncodeString(void* data, char* str)
 	char tmpStr[100];
 
 	sprintf(tmpStr, "%d", value[0]);
-	
+
 	strcpy(str, tmpStr);
 
 	for (i = 1; i < GetSplitterCount(); i++)
@@ -2168,11 +2168,11 @@ static void SplitterDecodeString(const char* str, void* data)
 
 	strcpy(tmpStr, str);
 	p = tmpStr;
-	
+
 	for (i = 0; p && i < GetSplitterCount(); i++)
 	{
 		s = p;
-		
+
 		if ((p = strchr(s,',')) != NULL && *p == ',')
 		{
 			*p = '\0';
@@ -2211,7 +2211,7 @@ static void FontDecodeString(const char* str, void* data)
 {
 	LOGFONT* f = (LOGFONT*)data;
 	char*	 ptr;
-	
+
 	sscanf(str, "%li,%li,%li,%li,%li,%i,%i,%i,%i,%i,%i,%i,%i",
 		   &f->lfHeight,
 		   &f->lfWidth,
@@ -2527,7 +2527,7 @@ static void LoadOption(REG_OPTION *option,const char *value_str)
 	default:
 		break;
 	}
-	
+
 }
 
 static BOOL LoadGameVariableOrFolderFilter(char *key,const char *value)
@@ -2710,7 +2710,7 @@ void LoadGameOptions(int driver_index)
 	char buffer[512];
 
 	snprintf(buffer,sizeof(buffer),"%s\\%s.ini",GetIniDir(),drivers[driver_index]->name);
-	
+
 	CopyGameOptions(&global,&gOpts);
 	if (LoadOptions(buffer,&game_options[driver_index],FALSE))
 	{
@@ -2739,7 +2739,7 @@ static BOOL LoadOptions(const char *filename,options_type *o,BOOL load_global_ga
 
 		// we're guaranteed that strlen(buffer) >= 1 now
 		buffer[strlen(buffer)-1] = '\0';
-		
+
 		// # starts a comment, but #* is a special MAME32 code
 		// saying it's an option for us, but NOT for the main
 		// MAME
@@ -2760,7 +2760,7 @@ static BOOL LoadOptions(const char *filename,options_type *o,BOOL load_global_ga
 		{
 			if (load_global_game_options)
 				option = GetOption(global_game_options,NUM_GLOBAL_GAME_OPTIONS,key);
-			
+
 			if (option == NULL)
 			{
 				dprintf("load game options found unknown option %s",key);
@@ -2799,7 +2799,7 @@ void SaveOptions(void)
 	{
 		fprintf(fptr,"### " UI_INI_FILENAME " ###\n\n");
 		fprintf(fptr,"### interface ###\n\n");
-		
+
 		if (save_gui_settings)
 		{
 			for (i=0;i<NUM_SETTINGS;i++)
@@ -2808,10 +2808,10 @@ void SaveOptions(void)
 					WriteOptionToFile(fptr,&regSettings[i]);
 			}
 		}
-		
+
 		fprintf(fptr,"\n");
 		fprintf(fptr,"### folder filters ###\n\n");
-		
+
 		for (i=0;i<GetNumFolders();i++)
 		{
 			LPTREEFOLDER lpFolder = GetFolder(i);
@@ -2831,7 +2831,7 @@ void SaveOptions(void)
 			int nValue;
 			const char *pValue;
 			void *pv;
-			int driver_index = GetIndexFromSortedIndex(i); 
+			int driver_index = GetIndexFromSortedIndex(i);
 
 			// need to improve this to not save too many
 			for (j = 0; j < sizeof(gamevariable_options) / sizeof(gamevariable_options[0]); j++)
@@ -2941,11 +2941,11 @@ void SaveDefaultOptions(void)
 	if (fptr != NULL)
 	{
 		fprintf(fptr,"### " DEFAULT_OPTIONS_INI_FILENAME " ###\n\n");
-		
+
 		if (save_gui_settings)
 		{
 			fprintf(fptr,"### global-only options ###\n\n");
-		
+
 			for (i=0;i<NUM_GLOBAL_GAME_OPTIONS;i++)
 			{
 				if (!global_game_options[i].m_bOnlyOnGame)
@@ -3067,7 +3067,7 @@ static void WriteOptionToFile(FILE *fptr,REG_OPTION *regOpt)
 	double* pDouble;
 	const char *key = regOpt->ini_name;
 	char	cTemp[1000];
-	
+
 	switch (regOpt->m_iType)
 	{
 	case RO_DOUBLE:
