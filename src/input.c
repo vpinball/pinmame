@@ -38,15 +38,18 @@ int code_init(void)
 {
 	unsigned i;
 
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	assert(	__code_key_first == 0
 		&& __code_key_last + 1 == __code_joy_first
-#if defined(PINMAME) && defined(PROC_SUPPORT)
 		&& __code_joy_last + 1 == __code_proc_first
 		&& __code_proc_last + 1 == __code_max
-#else /* PINMAME && PROC_SUPPORT */
-		&& __code_joy_last + 1 == __code_max
-#endif /* PINMAME && PROC_SUPPORT */
 	);
+#else /* PINMAME && PROC_SUPPORT */
+	assert(	__code_key_first == 0
+		&& __code_key_last + 1 == __code_joy_first
+		&& __code_joy_last + 1 == __code_max
+	);
+#endif /* PINMAME && PROC_SUPPORT */
 
 	/* allocate */
 	code_map = (struct code_info*)malloc( __code_max * sizeof(struct code_info) );
