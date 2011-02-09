@@ -1,3 +1,6 @@
+-playback / -pb <string>       playback an input file
+-record / -rec <string>        record an input file
+
 Comments / TODO:
 ================
 * yaml-cpp:
@@ -376,3 +379,71 @@ Try rewriting the line where the error is reported, or several lines of code sur
 
 \Coding\yaml-cpp\yaml-cpp-0.2.5\util\parse.cpp(11) : error C2446: ':' : no conversion from 'std::istream' to 'std::ifstream'
         No constructor could take the source type, or constructor overload resolution was ambiguous
+
+
+
+
+================================================================================
+================================================================================
+================================================================================
+
+INI support ("proc_directory" similar to "rompath")
+===========
+FILETYPE_ARTWORK
+-FILETYPE_CHEAT
+FILETYPE_CONFIG
+-FILETYPE_CRC
+FILETYPE_CTRLR
+FILETYPE_end
+FILETYPE_HIGHSCORE
+-FILETYPE_HIGHSCORE_DB
+-FILETYPE_HISTORY
+-FILETYPE_IMAGE  !!!
+FILETYPE_IMAGE_DIFF
+FILETYPE_INI
+FILETYPE_INPUTLOG
+-FILETYPE_LANGUAGE
+FILETYPE_MEMCARD
+FILETYPE_NVRAM
+FILETYPE_PROC
+FILETYPE_PROC_YAML
+-FILETYPE_RAW = 0
+FILETYPE_ROM
+FILETYPE_SAMPLE
+FILETYPE_SCREENSHOT
+FILETYPE_STATE
+FILETYPE_WAVE
+
+DIRDLG_ROMS
+DIRDLG_SAMPLES
+DIRDLG_PROC
+DIRDLG_INI
+
+src/fileio.h
+src/windows/fileio.c
+
+src/fileio.c:
+	{ "rompath", "rp", rc_string, &pathlist[FILETYPE_ROM].rawpath, "roms", 0, 0, NULL, "path to romsets" },
+FILETYPE_CTRLR		/* config files */
+FILETYPE_INI			/* game specific ini files */
+
+
+src/config.c:
+parse_config() * gamedrv != NULL --> parse gamename.ini and all parent.ini's (recursively)
+cli_frontend_init() 
+  parse_config( "debug.ini", NULL))
+  /* handle playback */
+
+
+src/windows/config.c:
+parse_config() * gamedrv != NULL --> parse gamename.ini and all parent.ini's (recursively)
+
+
+src/windows/fileio.c:
+struct rc_option fileio_opts[] = {}
+	{ "rompath", "rp", rc_string, &pathlist[FILETYPE_ROM].rawpath, "roms", 0, 0, NULL, "path to romsets" },
+
+
+src/ui/option.c:
+#define UI_INI_FILENAME MAME32NAME "ui.ini"
+#define DEFAULT_OPTIONS_INI_FILENAME MAME32NAME ".ini"
