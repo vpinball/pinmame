@@ -20,9 +20,9 @@
 #include "mesintrf.h"
 #endif
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 
 
@@ -1525,7 +1525,7 @@ static void showcharset(struct mame_bitmap *bitmap)
 
 	schedule_full_refresh();
 }
-#endif
+#endif /* PINMAME */
 
 
 static int switchmenu(struct mame_bitmap *bitmap, int selected, UINT32 switch_name, UINT32 switch_setting)
@@ -1535,9 +1535,9 @@ static int switchmenu(struct mame_bitmap *bitmap, int selected, UINT32 switch_na
 	struct InputPort *entry[128];
 #ifdef PINMAME
 	char flag[60];
-#else
+#else /* PINMAME */
 	char flag[40];
-#endif //PINMAME
+#endif /* PINMAME */
 	int i,sel;
 	struct InputPort *in;
 	int total;
@@ -2302,11 +2302,11 @@ static int mame_stats(struct mame_bitmap *bitmap,int selected)
 int showcopyright(struct mame_bitmap *bitmap)
 {
 	int done;
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	int displayed=0;
 	char top_text[17];
 	char bottom_text[17];
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 	char buf[1000];
 	char buf2[256];
 
@@ -2320,11 +2320,11 @@ int showcopyright(struct mame_bitmap *bitmap)
 	setup_selected = -1;////
 	done = 0;
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	sprintf(top_text,"     PRESS      ");
 	sprintf(bottom_text,"  LEFT FLIPPER  ");
 	procDisplayText(top_text, bottom_text);
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 	do
 	{
@@ -2339,23 +2339,23 @@ int showcopyright(struct mame_bitmap *bitmap)
 			return 1;
 		}
 		if (keyboard_pressed_memory(KEYCODE_O) ||
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 		    code_pressed(PROC_FLIPPER_L) ||
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 		    input_ui_pressed(IPT_UI_LEFT))
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 			if (!displayed) {
 				sprintf(top_text, "   NOW PRESS    ");
 				sprintf(bottom_text," RIGHT FLIPPER  ");
 				procDisplayText(top_text, bottom_text);
 				displayed = 1;
 			}
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 			done = 1;
 		if (done == 1 && (keyboard_pressed_memory(KEYCODE_K) ||
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 		    code_pressed(PROC_FLIPPER_R) ||
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 		    input_ui_pressed(IPT_UI_RIGHT)))
 			done = 2;
 	} while (done < 2);
@@ -2373,11 +2373,11 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 	char buf[2048];
 	char buf2[32];
 	int sel;
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	int displayed=0;
 	char top_text[17];
 	char bottom_text[17];
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 
 	sel = selected - 1;
@@ -2490,7 +2490,7 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 
 	if (sel == -1)
 	{
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 		/* startup info, print MAME version and ask for any key */
 		if (!displayed) {
 			sprintf(top_text,"    PRESS ANY   ");
@@ -2498,7 +2498,7 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 			procDisplayText(top_text, bottom_text);
 			displayed=1;
 		}
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 		sprintf (buf2, "\n\t%s ", ui_getstring (UI_mame));	/* \t means that the line will be centered */
 		strcat(buf, buf2);
@@ -2511,9 +2511,9 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 
 		sel = 0;
 		if (code_read_async() != CODE_NONE) {
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 			procClearDMD();
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 			sel = -1;
 		}
 	}
@@ -4064,13 +4064,13 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 	/* if the user pressed ESC, stop the emulation */
 	/* but don't quit if the setup menu is on screen */
 	if (setup_selected == 0 && (input_ui_pressed(IPT_UI_CANCEL)
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	    || code_pressed(PROC_ESC_SEQ)
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 	   )) {
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 		procClearDMD();
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 		return 1;
 	}
 
@@ -4165,9 +4165,9 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
   fPause = g_fPause;
   if (fPause) /* pause the game */
-#else
+#else /* VPINMAME */
 	if (single_step || input_ui_pressed(IPT_UI_PAUSE)) /* pause the game */
-#endif
+#endif /* VPINMAME */
 	{
 /*		osd_selected = 0;	   disable on screen display, since we are going   */
 							/* to change parameters affected by it */
@@ -4180,10 +4180,10 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 		while (g_fPause) {
         if (input_ui_pressed(IPT_UI_PAUSE))
           g_fPause = 0;
-#else
+#else /* VPINMAME */
 		while (!input_ui_pressed(IPT_UI_PAUSE))
 		{
-#endif
+#endif /* VPINMAME */
 #ifdef MAME_NET
 			osd_net_sync();
 #endif /* MAME_NET */
@@ -4210,7 +4210,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 			/* if the user pressed F4, show the character set */
 			if (input_ui_pressed(IPT_UI_SHOW_GFX))
 				showcharset(bitmap);
-#endif
+#endif /* PINMAME */
 
 			if (setup_selected == 0 && input_ui_pressed(IPT_UI_CANCEL))
 				return 1;
@@ -4305,7 +4305,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 		osd_sound_enable(1);
 	}
-#endif
+#endif /* PINMAME */
 
 	/* if the user pressed F1 and this is a lightgun game, toggle the crosshair */
 	if (input_ui_pressed(IPT_UI_TOGGLE_CROSSHAIR))

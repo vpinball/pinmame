@@ -117,9 +117,9 @@
 #include "vidhrdw/vector.h"
 #include "palette.h"
 #include "harddisk.h"
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 /***************************************************************************
 
@@ -345,9 +345,9 @@ int run_game(int game)
 
 static int init_machine(void)
 {
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	char * yaml_filename = (char *)pmoptions.p_roc;
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 	/* load the localization file */
 	if (uistring_init(options.language_file) != 0)
@@ -363,9 +363,9 @@ static int init_machine(void)
 		goto cant_init_input;
 	}
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	procInitialize(yaml_filename);
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 	/* if we have inputs, process them now */
 	if (gamedrv->input_ports)

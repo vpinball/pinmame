@@ -314,7 +314,7 @@ static REG_OPTION regGameOpts[] =
 };
 #define NUM_GAME_OPTIONS (sizeof(regGameOpts) / sizeof(regGameOpts[0]))
 
-// options in mame32.ini that we'll never override with with game-specific options
+// options in mame32.ini that we will never override with game-specific options
 static REG_OPTION global_game_options[] =
 {
 	{"skip_disclaimer",    RO_BOOL,    &settings.skip_disclaimer,  0, 0},

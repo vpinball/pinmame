@@ -185,9 +185,9 @@ struct rc_option ctrlr_input_opts2[] =
 static void updatekeyboard(void);
 static void init_keylist(void);
 static void init_joylist(void);
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 static void init_proclist(void);
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 
 
@@ -700,10 +700,10 @@ int win_init_input(void)
 	// init the joystick list
 	init_joylist();
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 	// init the p-roc list
 	init_proclist();
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
 
 	// print the results
 	if (verbose)
@@ -2136,7 +2136,7 @@ void stop_led(void)
 	return;
 }
 
-#ifdef PROC_SUPPORT
+#if defined(PINMAME) && defined(PROC_SUPPORT)
 //#define PROCCODE(group, type, index)	((index) | ((type) << 8) | ((group) << 8))
 #define MAX_PROC_INPUTS 256
 #define MAX_INPUT_NAME_LENGTH 64
@@ -2266,4 +2266,4 @@ const struct PROCInfo *osd_get_proc_list(void)
 	return procInputList;
 }
 
-#endif
+#endif /* PINMAME && PROC_SUPPORT */
