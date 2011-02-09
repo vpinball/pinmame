@@ -619,6 +619,9 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -rompath \"%s\"",            GetRomDirs());
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -samplepath \"%s\"",         GetSampleDirs());
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -procpath \"%s\"",           GetProcDirs());
+#endif /* PINMAME && PROC_SUPPORT */
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -inipath \"%s\"",			GetIniDir());
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -cfg_directory \"%s\"",      GetCfgDir());
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -nvram_directory \"%s\"",    GetNvramDir());
