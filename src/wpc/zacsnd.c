@@ -348,7 +348,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 660000, 80, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579500/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -394,7 +394,7 @@ static MEMORY_WRITE_START(sns3_writemem)
 MEMORY_END
 
 static MACHINE_DRIVER_START(zac1370_nosound)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
 
@@ -415,7 +415,7 @@ MACHINE_DRIVER_START(zac13136)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
@@ -590,7 +590,7 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
     tms5220_reset();
-    tms5220_set_variant(variant_tmc0285);
+    tms5220_set_variant(TMS5220_IS_5200);
   }
 }
 
@@ -997,7 +997,7 @@ static INTERRUPT_GEN(cpu_b_irq) { cpu_set_irq_line(ZACSND_CPUB, 0, PULSE_LINE); 
 static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); }
 
 static MACHINE_DRIVER_START(zac11178_13181_nodac)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
