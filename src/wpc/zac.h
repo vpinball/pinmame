@@ -14,6 +14,7 @@
     /* These are put in switch column 0 */ \
     COREPORT_BIT   (0x1000, "Programming", KEYCODE_8) \
     COREPORT_BIT   (0x2000, "Sound Diag", KEYCODE_9) \
+    COREPORT_BITTOG(0x0100, "Sense Input", KEYCODE_PGDN) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0008, "Start", KEYCODE_1) \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
@@ -95,6 +96,7 @@
   PORT_START /* 0 */ \
     /* These are put in switch column 0 */ \
     COREPORT_BIT   (0x1000, "Sound Diag", KEYCODE_9) \
+    COREPORT_BITTOG(0x0100, "Sense Input", KEYCODE_PGDN) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BIT   (0x0020, "Coin 2", KEYCODE_4) \
