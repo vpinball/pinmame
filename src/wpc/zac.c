@@ -125,10 +125,10 @@ static SWITCH_UPDATE(ZAC1) {
     adjust_timer(10);
 #endif /* MAME_DEBUG */
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x3000) >> 6;
+    coreGlobals.swMatrix[0] = ((inports[ZAC_COMINPORT] & 0x3000) >> 6) | ((inports[ZAC_COMINPORT] & 0x0100) >> 8);
     sndbrd_0_diag(core_getSw(-1));
     coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3f) | ((inports[ZAC_COMINPORT] & 0xcfff) >> 8);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3f) | ((inports[ZAC_COMINPORT] & 0xc000) >> 8);
   }
 }
 
@@ -144,10 +144,10 @@ static SWITCH_UPDATE(ZAC2) {
     adjust_timer(10);
 #endif /* MAME_DEBUG */
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
+    coreGlobals.swMatrix[0] = ((inports[ZAC_COMINPORT] & 0x1000) >> 5) | ((inports[ZAC_COMINPORT] & 0x0100) >> 8);
     sndbrd_0_diag(core_getSw(-1));
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0x7f);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | ((inports[ZAC_COMINPORT] & 0x8600) >> 8);
   }
 }
 
@@ -266,18 +266,18 @@ static READ_HANDLER(data_port_r)
 }
 
 /*
-   SENSE PORT: READ = Read Serial Input (hooked to printer)
+   SENSE READ = Read Serial Input (hooked to printer)
 */
-static READ_HANDLER(sense_port_r)
+static READ_HANDLER(sense_r)
 {
 	static UINT8 byte = 0xff;
 	static int bitno = 7;
 	if (++bitno > 7) {
 		byte++;
 		bitno = 0;
-//		logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),byte);
+//		logerror("%x: Sense Input=%02x\n",activecpu_get_previouspc(),byte);
 	}
-	return (byte >> bitno) & 1;
+	return ((byte >> bitno) & 1) | core_getSw(-8);
 }
 
 /*
@@ -310,12 +310,13 @@ static WRITE_HANDLER(data_port_w)
   //logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
-/*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
-static WRITE_HANDLER(sense_port_w)
+/*   FLAG WRITE = Write Serial Output (hooked to printer) */
+static WRITE_HANDLER(flag_w)
 {
 	static UINT8 printdata[] = {0};
 	static int bitno = 0;
 	static int startbit = 0;
+	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | (data << 2);
 	if (locals.printfile == NULL) {
 	  char filename[13];
 	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
@@ -334,7 +335,7 @@ static WRITE_HANDLER(sense_port_w)
 		bitno = 0;
 		startbit = 0;
 	}
-//	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
+//	logerror("%x: Flag output=%x\n",activecpu_get_previouspc(),data);
 }
 
 static READ_HANDLER(ram_r) {
@@ -513,7 +514,7 @@ MEMORY_END
    CTRL PORT : READ = D0-D7 = Switch Returns 0-7
    DATA PORT : READ = D0-D3 = Dip Switch Read D0-D3 & Program Switch 1 on D3
 					  D4-D7 = ActSnd & ActSpk? Pin 20,19,18,17 of CN?
-   SENSE PORT: READ = Read Serial Input (hooked to printer)
+   SENSE READ = Read Serial Input (hooked to printer)
    ------------------
    CTRL PORT : WRITE =	D0-D3 = Switch Strobes (4-8 Demultiplexed)
 						D4=Pin 5 of CN? & /RUNEN = !D4
@@ -521,18 +522,18 @@ MEMORY_END
 						D6=Pin 15 of CN?
 						D7=Pin 11 of CN?
    DATA PORT : WRITE = Sound Data 0-7
-   SENSE PORT: WRITE = Write Serial Output (hooked to printer)
+   FLAG WRITE = Write Serial Output (hooked to printer)
 */
 static PORT_WRITE_START( ZAC_writeport )
 	{ S2650_CTRL_PORT,  S2650_CTRL_PORT,  ctrl_port_w },
 	{ S2650_DATA_PORT,  S2650_DATA_PORT,  data_port_w },
-	{ S2650_SENSE_PORT, S2650_SENSE_PORT, sense_port_w },
+	{ S2650_SENSE_PORT, S2650_SENSE_PORT, flag_w },
 PORT_END
 
 static PORT_READ_START( ZAC_readport )
 	{ S2650_CTRL_PORT, S2650_CTRL_PORT, ctrl_port_r },
 	{ S2650_DATA_PORT, S2650_DATA_PORT, data_port_r },
-	{ S2650_SENSE_PORT, S2650_SENSE_PORT, sense_port_r },
+	{ S2650_SENSE_PORT, S2650_SENSE_PORT, sense_r },
 PORT_END
 
 MACHINE_DRIVER_START(ZAC)
@@ -545,7 +546,7 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_NVRAM_HANDLER(ZAC1)
   MDRV_DIPS(4+2*8)
   MDRV_SWITCH_UPDATE(ZAC1)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
@@ -592,7 +593,7 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_NVRAM_HANDLER(ZAC2)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC2)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
