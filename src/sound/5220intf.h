@@ -11,6 +11,7 @@ struct TMS5220interface
 								/* usually 800000 for 10000 Hz sample rate.  */
 	int mixing_level;
 	void (*irq)(int state);		/* IRQ callback function */
+	void (*ready)(int state);		/* ready callback function */
 
 	int (*read)(int count);			/* speech ROM read callback */
 	void (*load_address)(int data);	/* speech ROM load address callback */

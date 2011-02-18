@@ -6,6 +6,7 @@
 
 void tms5220_reset(void);
 void tms5220_set_irq(void (*func)(int));
+void tms5220_set_ready(void (*func)(int));
 
 void tms5220_data_write(int data);
 int tms5220_status_read(void);
