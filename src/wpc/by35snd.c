@@ -438,12 +438,13 @@ static WRITE_HANDLER(snt_data_w);
 static WRITE_HANDLER(snt_ctrl_w);
 static WRITE_HANDLER(snt_manCmd_w);
 static void snt_5220Irq(int state);
+static void snt_5220Rdy(int state);
 static READ_HANDLER(snt_8910a_r);
 
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
+static struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq, snt_5220Rdy };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
 static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
 
@@ -486,7 +487,7 @@ static void snt_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b;
+  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca2;
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
@@ -533,12 +534,11 @@ static WRITE_HANDLER(snt_pia1b_w) {
   pia_set_input_ca2(SNT_PIA1, 1);
   sntlocals.pia1b = data;
 }
-
 static READ_HANDLER(snt_pia1ca2_r) {
-  return !tms5220_ready_r();
+  return sntlocals.pia1ca2;
 }
 static READ_HANDLER(snt_pia1cb1_r) {
-  return !tms5220_int_r();
+  return sntlocals.pia1cb1;
 }
 
 static WRITE_HANDLER(snt_data_w) {
@@ -558,7 +558,8 @@ static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,d
 static void snt_irq(int state) {
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
-static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
+static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, (sntlocals.pia1cb1 = !state)); }
+static void snt_5220Rdy(int state) { pia_set_input_ca2(SNT_PIA1, (sntlocals.pia1ca2 = state)); }
 
 /*----------------------------------------
 /    Cheap Squeak  -45
