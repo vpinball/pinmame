@@ -491,7 +491,7 @@ static struct {
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
@@ -504,7 +504,7 @@ static void snt_init(struct sndbrdData *brdData) {
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
-  tms5220_reset();
+//  tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
 }
@@ -527,12 +527,13 @@ static WRITE_HANDLER(snt_pia0b_w) {
 static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a; }
 static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
-  if (~data & 0x02) // write
-    tms5220_data_w(0, sntlocals.pia1a);
-  if (~data & 0x01) // read
+  if (sntlocals.pia1b & ~data & 0x01) { // read, overrides write command!
     sntlocals.pia1a = tms5220_status_r(0);
-  pia_set_input_ca2(SNT_PIA1, 1);
+  } else if (sntlocals.pia1b & ~data & 0x02) { // write
+    tms5220_data_w(0, sntlocals.pia1a);
+  }
   sntlocals.pia1b = data;
+  pia_set_input_ca2(SNT_PIA1, tms5220_ready_r());
 }
 static READ_HANDLER(snt_pia1ca2_r) {
   return sntlocals.pia1ca2;
