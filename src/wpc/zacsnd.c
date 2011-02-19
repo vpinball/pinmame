@@ -314,7 +314,7 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
-#define TMS11178_IRQFREQ 3579500.0/8192.0
+#define TMS11178_IRQFREQ 3579545.0/8192.0
 
 #define SW_TRUE 1
 
@@ -352,8 +352,8 @@ const struct sndbrdIntf zac11178Intf = {
 static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
-static struct AY8910interface  sns_ay8910Int = { 1, 3579500/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
-static struct AY8910interface  sns2_ay8910Int = { 2, 3579500/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns_ay8910Int = { 1, 3579545/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns2_ay8910Int = { 2, 3579545/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
 
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -590,8 +590,8 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_name  (snslocals.channel+3, "CEM 3374 B SA");
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
-    tms5220_reset();
-    tms5220_set_variant(TMS5220_IS_5200);
+//    tms5220_reset();
+    tms5220_set_variant(TMS5220_IS_5220);
   }
 }
 
@@ -647,14 +647,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
       logerror("high impedance state \n");
       snslocals.r500cmd = snslocals.w500cmd = 0;
   } else {
-    if (~data & 0x02)  { // write
-      logerror("write \n");
-      snslocals.w500cmd = 1;
-      snslocals.r500cmd = 0;
-      tms5220_data_w(0, snslocals.pia1a);
-      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
-    }
-    if (~data & 0x01) { // read
+    if (~data & 0x01) { // read, overrides write command!
       logerror("read \n");
       snslocals.w500cmd = 0;
       snslocals.r500cmd = 1;
@@ -664,6 +657,12 @@ static WRITE_HANDLER(sns_pia1b_w) {
 //      snslocals.pia1a = tms5220_status_r(0);
 //      pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
 #endif
+      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
+    } else if (~data & 0x02)  { // write
+      logerror("write \n");
+      snslocals.w500cmd = 1;
+      snslocals.r500cmd = 0;
+      tms5220_data_w(0, snslocals.pia1a);
       pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
     }
   }
