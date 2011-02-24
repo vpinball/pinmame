@@ -763,6 +763,7 @@ DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
+DRIVERNV(ctcheese)      //Whitestar: ??/98 Cut the Cheese Redemption (Coin roller)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)
@@ -879,6 +880,8 @@ DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
 DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
 DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
 DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (v3.03)
+DRIVERNV(monop251)      //Whitestar: 09/01 Monopoly (v2.51)
+DRIVERNV(monop233)      //Whitestar: 09/01 Monopoly (v2.33)
 DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
 DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
