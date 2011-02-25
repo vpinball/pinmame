@@ -811,6 +811,21 @@ SE_ROMEND
 #define init_austini init_austin
 CORE_CLONEDEFNV(austini,austin,"Austin Powers (Italy)",2001,"Stern",de_mSES2,0)
 
+/*-------------------------------------------------------------------
+/ Austin Powers (3.02)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(aust301,"apcpu.301",CRC(868d1f38) SHA1(df08b48437f88e66c4caa80602c28a2223f180b9))
+DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
+DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
+                    "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
+                    "apsndu21.100",CRC(07c3e077) SHA1(d48020f7da400c3682035d537289ce9a30732d74),
+                    "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
+                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
+SE_ROMEND
+#define input_ports_austinf input_ports_se
+#define init_austinf init_austin
+CORE_CLONEDEFNV(aust301,austin,"Austin Powers (3.01)",2001,"Stern",de_mSES2,0)
+
 // Monopoly moved to its own sim file (gv)
 
 /*-------------------------------------------------------------------
