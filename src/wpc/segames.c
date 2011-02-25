@@ -822,8 +822,8 @@ DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a5
                     "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
                     "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
 SE_ROMEND
-#define input_ports_austinf input_ports_se
-#define init_austinf init_austin
+#define input_ports_aust301 input_ports_se
+#define init_aust301 init_austin
 CORE_CLONEDEFNV(aust301,austin,"Austin Powers (3.01)",2001,"Stern",de_mSES2,0)
 
 // Monopoly moved to its own sim file (gv)
