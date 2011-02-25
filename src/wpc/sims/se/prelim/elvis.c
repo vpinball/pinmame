@@ -263,7 +263,7 @@ DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fc
 SE_ROMEND
 
 /*-------------------------------------------------------------------
-/ Elvis (Spain)
+/ Elvis (5.00 Spain)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisl, "elvscpul.500", CRC(d6813d67) SHA1(863a1b5bc62eca218f64d9bae24b205e1a8e2b6c))
 DE_DMD32ROM8x(         "elvsdspl.500", CRC(68946b3b) SHA1(5764a5f6779097acfcf82eb176f6d966f6bb6988))
@@ -277,7 +277,7 @@ SE_ROMEND
 #define init_elvisl init_elvis
 
 /*-------------------------------------------------------------------
-/ Elvis (Germany)
+/ Elvis (5.00 Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisg, "elvscpug.500", CRC(1582dd3a) SHA1(9a5d044dbad03e3ec2358ef16d983195761cb17b))
 DE_DMD32ROM8x(         "elvsdspg.500", CRC(4b6e7d37) SHA1(259a5d0d11392f05504d4477cf03f2a270db670c))
@@ -291,7 +291,7 @@ SE_ROMEND
 #define init_elvisg init_elvis
 
 /*-------------------------------------------------------------------
-/ Elvis (France)
+/ Elvis (5.00 France)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisf, "elvscpuf.500", CRC(e977fdb0) SHA1(aa24b4e6c461188b330bbc01204af8bfb03a9abf))
 DE_DMD32ROM8x(         "elvsdspf.500", CRC(e4ce2da7) SHA1(030d9200844fc47d5ea6c4afeab0851de5b42b23))
@@ -305,7 +305,7 @@ SE_ROMEND
 #define init_elvisf init_elvis
 
 /*-------------------------------------------------------------------
-/ Elvis (Italy)
+/ Elvis (5.00 Italy)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisi, "elvscpui.500", CRC(11bafdbb) SHA1(51036cdf4beda20f2680fff7cd8cae25219406bd))
 DE_DMD32ROM8x(         "elvsdspi.500", CRC(3ecbadb2) SHA1(589cf6de348359944585b718b2289dd70676807a))
@@ -318,14 +318,90 @@ SE_ROMEND
 #define input_ports_elvisi input_ports_elvis
 #define init_elvisi init_elvis
 
+/*-------------------------------------------------------------------
+/ Elvis (3.03)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(elv303, "elvscpua.303", CRC(a0dd77d8) SHA1(2882eed805c2eb3cabadcfe51997a534ddac9050))
+DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
+DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fcb82d9848ad8a6),
+                      "elvis.u17",CRC(ff032897) SHA1(bf347c26a450bc07cdc94fc582dedf3a0cdc2a1b),
+                      "elvis.u21",CRC(c3c19a40) SHA1(97f7f36eed62ca389c770bf5d746721724e17250),
+                      "elvis.u36",CRC(e98f0dc9) SHA1(6dbab09435e993fef97d6a80a73675723bea7c1d),
+                      "elvis.u37",CRC(88ba0966) SHA1(43ea198c9fcdc1c396d4180308042c6c08311829))
+SE_ROMEND
+#define input_ports_elv303 input_ports_elvis
+#define init_elv303 init_elvis
+
+/*-------------------------------------------------------------------
+/ Elvis (3.03 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(elv303sp, "elvscpul.303", CRC(691b9882) SHA1(fd8ceef9dbae6c788964d417ad1c61a4bb8e0d9b))
+DE_DMD32ROM8x(         "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
+DE3SA_SOUNDROM18888(   "elvisl.u7", CRC(f0d70ee6) SHA1(9fa2c9d7b3690ec0c17645be066496d6833da5d1),
+                       "elvisl.u17",CRC(2f86bcda) SHA1(73972fd30e84a2f97478f076cc8771c501440be5),
+                       "elvisl.u21",CRC(400c7174) SHA1(a4fa0d51b7c11e70f6b93068a6bf859cdf3359c3),
+                       "elvisl.u36",CRC(01ebbdbe) SHA1(286fa471b20b6ffcb0114d66239ab6aebe9bca9d),
+                       "elvisl.u37",CRC(bed26746) SHA1(385cb77ec7599b12a4b021c53b42b8e9b9fb08a8))
+SE_ROMEND
+#define input_ports_elv303sp input_ports_elvis
+#define init_elv303sp init_elvis
+
+/*-------------------------------------------------------------------
+/ Elvis (3.03 Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(elv303g, "elvscpug.303", CRC(66b50538) SHA1(2612c0618c1d438632ff56b3b779214cf6534ff8))
+DE_DMD32ROM8x(         "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
+DE3SA_SOUNDROM18888(   "elvisg.u7", CRC(1085bd7c) SHA1(2c34ee7d7c44906b0894c0c01b0fad74cb0d2a32),
+                       "elvisg.u17",CRC(8b888d75) SHA1(b8c654d0fb558c205c338be2b458cbf931b23bac),
+                       "elvisg.u21",CRC(79955b60) SHA1(36ad9e487408c9fd26641d484490b1b3bc8e1194),
+                       "elvisg.u36",CRC(25ba1ad4) SHA1(1e1a846af4ff43bb47f081b0cc179cd732c0bbea),
+                       "elvisg.u37",CRC(f6d7a2a0) SHA1(54c160a298c7ead1fe0404bce51bc16211da82cf))
+SE_ROMEND
+#define input_ports_elv303g input_ports_elvis
+#define init_elv303g init_elvis
+
+/*-------------------------------------------------------------------
+/ Elvis (3.03 France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(elv303f, "elvscpuf.303", CRC(bc5cc2b9) SHA1(f434164384153a3cca358af55ed82c7757e74fd9))
+DE_DMD32ROM8x(         "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
+DE3SA_SOUNDROM18888(   "elvisf.u7", CRC(84a057cd) SHA1(70e626f13a164df184dc5b0c79e8d320eeafb13b),
+                       "elvisf.u17",CRC(9b13e40d) SHA1(7e7eac1be5cbc7bde4296d168a1cc0716bcb293a),
+                       "elvisf.u21",CRC(5b668b6d) SHA1(9b104af5df5cc21c2504760b119f3e6584a1871b),
+                       "elvisf.u36",CRC(03ee0c04) SHA1(45a994589e3d9e6fe971db8722848b5f7432b675),
+                       "elvisf.u37",CRC(aa265440) SHA1(36b13ef0be4203936d9816e521098e72d6b4e4c1))
+SE_ROMEND
+#define input_ports_elv303f input_ports_elvis
+#define init_elv303f init_elvis
+
+/*-------------------------------------------------------------------
+/ Elvis (3.03 Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(elv303i, "elvscpui.303", CRC(11f47b7a) SHA1(4fbe64ed49719408b77ebf6871bb2211e03de394))
+DE_DMD32ROM8x(         "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
+DE3SA_SOUNDROM18888(   "elvisi.u7", CRC(8c270da4) SHA1(6a21332fdd1f2714aa78a1730e0f90159022ad1c),
+                       "elvisi.u17",CRC(bd2e6580) SHA1(dc8c974860498d5766dbb0881cc9d6866c9a98a1),
+                       "elvisi.u21",CRC(1932a22b) SHA1(864d6bc2c60e763431fd19511dc1a946cf131d63),
+                       "elvisi.u36",CRC(df6772d7) SHA1(96e98ff4e93fc0c6fb2d9924da99b97f0c436c44),
+                       "elvisi.u37",CRC(990fd624) SHA1(d5e104485dc8dd7386d8f3e7d99dc6cf7bf91568))
+SE_ROMEND
+#define input_ports_elv303i input_ports_elvis
+#define init_elv303i init_elvis
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEFNV(elvis,"Elvis (5.00)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
-CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
-CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
-CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
-CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elvisl,elvis,"Elvis (5.00 Spain)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elvisg,elvis,"Elvis (5.00 Germany)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elvisf,elvis,"Elvis (5.00 France)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elvisi,elvis,"Elvis (5.00 Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+CORE_CLONEDEFNV(elv303,elvis,"Elvis (3.03)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elv303sp,elvis,"Elvis (3.03 Spain)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elv303g,elvis,"Elvis (3.03 Germany)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elv303f,elvis,"Elvis (3.03 France)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_CLONEDEFNV(elv303i,elvis,"Elvis (3.03 Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-----------------------
 / Simulation Definitions
