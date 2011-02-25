@@ -740,6 +740,7 @@ DRIVERNV(bmf_no)        //DE/Sega MPU: 07/95 Batman Forever (Norway)
 DRIVERNV(bmf_sv)        //DE/Sega MPU: 07/95 Batman Forever (Sweden)
 DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japan)
 DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
+DRIVERNV(ctchees2)      //DE/Sega MPU: ??/98 Cut The Cheese (Redemption, Data East hardware)
 //Whitestar Hardware DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
@@ -764,7 +765,7 @@ DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
-DRIVERNV(ctcheese)      //Whitestar: ??/98 Cut the Cheese Redemption (Coin roller)
+DRIVERNV(ctcheese)	//Whitestar: ??/98 Cut The Cheese (Redemption, Whitestar hardware)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)
