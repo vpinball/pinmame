@@ -1396,9 +1396,9 @@ CORE_CLONEDEFNV(lotr_le,lotr,"Lord Of The Rings, The (10.02 Limited Edition)",20
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL},
-  {34,18, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL},
-  {34,26, 7, 5, CORE_DMD, (genf *)seminidmd1s_update, NULL}, {0}
+  {34,10, 7, 5, CORE_DMD, (void *)seminidmd1a_update},
+  {34,18, 7, 5, CORE_DMD, (void *)seminidmd1b_update},
+  {34,26, 7, 5, CORE_DMD, (void *)seminidmd1c_update}, {0}
 };
 INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
 SE128_ROMSTART(ripleys, "ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
@@ -1413,7 +1413,7 @@ SE_ROMEND
 CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.20)",2004,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ Ripley's Believe It or Not! (France)
+/ Ripley's Believe It or Not! (3.20 France)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(ripleysf,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispf.301",CRC(e5ae9d99) SHA1(74929b324b457d08a925c641430e6a7036c7039d))
@@ -1428,7 +1428,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (France)",2004,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ Ripley's Believe It or Not! (Germany)
+/ Ripley's Believe It or Not! (3.20 Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(ripleysg,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -1443,7 +1443,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (Germany)",2004,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ Ripley's Believe It or Not! (Italy)
+/ Ripley's Believe It or Not! (3.20 Italy)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(ripleysi,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -1458,7 +1458,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (Italy)",2004,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ Ripley's Believe It or Not! (Spain)
+/ Ripley's Believe It or Not! (3.20 Spain)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(ripleysl,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
@@ -1471,6 +1471,81 @@ SE_ROMEND
 #define input_ports_ripleysl input_ports_ripleys
 #define init_ripleysl init_ripleys
 CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.02)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rip302, "ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
+DE3S_SOUNDROM18888(      "ripsnd.u7",CRC(4573a759) SHA1(189c1a2eaf9d92c40a1bc145f59ac428c74a7318),
+                        "ripsnd.u17",CRC(d518f2da) SHA1(e7d75c6b7b45571ae6d39ed7405b1457e475b52a),
+                        "ripsnd.u21",CRC(3d8680d7) SHA1(1368965106094d78be6540eb87a478f853ba774f),
+                        "ripsnd.u36",CRC(b697b5cb) SHA1(b5cb426201287a6d1c40db8c81a58e2c656d1d81),
+                        "ripsnd.u37",CRC(01b9f20e) SHA1(cffb6a0136d7d17ab4450b3bfd97632d8b669d39))
+SE_ROMEND
+#define input_ports_rip302 input_ports_ripleys
+#define init_rip302 init_ripleys
+CORE_CLONEDEFNV(rip302,ripleys,"Ripley's Believe It or Not! (3.02)",2004,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.02 France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rip302f,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispf.301",CRC(e5ae9d99) SHA1(74929b324b457d08a925c641430e6a7036c7039d))
+DE3S_SOUNDROM18888(     "ripsndf.u7",CRC(5808e3fc) SHA1(0c83399e8dc846607c469b7dd95878f3c2b9cb82),
+                       "ripsndf.u17",CRC(a6793b85) SHA1(96058777346be6e9ea7b1340d9aaf945ac3c853a),
+                       "ripsndf.u21",CRC(60c02170) SHA1(900d9de3ccb541019e5f1528e01c57ad96dac262),
+                       "ripsndf.u36",CRC(0a57f2fd) SHA1(9dd057888294ee8abeb582e8f6650fd6e32cc9ff),
+                       "ripsndf.u37",CRC(5c858958) SHA1(f4a9833b8aee033ed381e3bdf9f801b935d6186a))
+SE_ROMEND
+#define input_ports_rip302f input_ports_ripleys
+#define init_rip302f init_ripleys
+CORE_CLONEDEFNV(rip302f,ripleys,"Ripley's Believe It or Not! (3.02 France)",2004,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.02 Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rip302g,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
+DE3S_SOUNDROM18888(     "ripsndg.u7",CRC(400b8a45) SHA1(62101995e632264df3c014b746cc4b2ae72676d4),
+                       "ripsndg.u17",CRC(c387dcf0) SHA1(d4ef65d3f33ab82b63bf2782f335858ab4ad210a),
+                       "ripsndg.u21",CRC(6388ae8d) SHA1(a39c7977194daabf3f5b10d0269dcd4118a939bc),
+                       "ripsndg.u36",CRC(3143f9d3) SHA1(bd4ce64b245b5fcb9b9694bd8f71a9cd98303cae),
+                       "ripsndg.u37",CRC(2167617b) SHA1(62b55a39e2677eec9d56b10e8cc3e5d7c0d3bea5))
+SE_ROMEND
+#define input_ports_rip302g input_ports_ripleys
+#define init_rip302g init_ripleys
+CORE_CLONEDEFNV(rip302g,ripleys,"Ripley's Believe It or Not! (3.02 Germany)",2004,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.02 Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rip302i,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
+DE3S_SOUNDROM18888(     "ripsndi.u7",CRC(86b1b2b2) SHA1(9e2cf7368b31531998d546a1be2af274a9cbbd2f),
+                       "ripsndi.u17",CRC(a2911df4) SHA1(acb7956a6a30142c8da905b04778a074cb335807),
+                       "ripsndi.u21",CRC(1467eaff) SHA1(c6c4ea2abdad4334efbe3a084693e9e4d0dd0fd2),
+                       "ripsndi.u36",CRC(6a124fa6) SHA1(752c3d227b9a98dd859e4778ddd527edaa3cf512),
+                       "ripsndi.u37",CRC(7933c102) SHA1(f736ee86d7c67dab82c634d125d73a2453249706))
+SE_ROMEND
+#define input_ports_rip302i input_ports_ripleys
+#define init_rip302i init_ripleys
+CORE_CLONEDEFNV(rip302i,ripleys,"Ripley's Believe It or Not! (3.02 Italy)",2004,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.02 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rip302sp,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
+DE3S_SOUNDROM18888(     "ripsndl.u7",CRC(25fb729a) SHA1(46b9ca8fd5fb5a692adbdb7495af34a1db89dc37),
+                       "ripsndl.u17",CRC(a98f4514) SHA1(e87ee8f5a87a8ae9ec996473bf9bc745105ea334),
+                       "ripsndl.u21",CRC(141f2b77) SHA1(15bab623beda8ae7ed9908f492ff2baab0a7954e),
+                       "ripsndl.u36",CRC(c5461b63) SHA1(fc574d44ad88ce1db590ea371225092c03fc6f80),
+                       "ripsndl.u37",CRC(2a58f491) SHA1(1c33f419420b3165ef18598560007ef612b24814))
+SE_ROMEND
+#define input_ports_rip302sp input_ports_ripleys
+#define init_rip302sp init_ripleys
+CORE_CLONEDEFNV(rip302sp,ripleys,"Ripley's Believe It or Not! (3.02 Spain)",2004,"Stern",de_mSES3,0)
 
 // Elvis moved to its own sim file (gv)
 
