@@ -542,3 +542,32 @@ DE2S_SOUNDROM18("monopred.u7" ,CRC(1ca0cf63) SHA1(c4ce78718e3e3f1a8451b134f2869d
 SE_ROMEND
 SE_INPUT_PORTS_START(monopred, 1) SE_INPUT_PORTS_END
 CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Cut The Cheese (Redemption)
+/-------------------------------------------------------------------*/
+static core_tGameData ctcGameData = {
+ GEN_WS, se_dmd128x32
+};
+static void init_ctcheese(void) { core_gameData = &ctcGameData; }
+SE128_ROMSTART(ctcheese,"ctcdxcpu.100",CRC(faad6656) SHA1(4d868bc31f35e848424e3bb66cb87efe0cf24eca))
+DE_DMD32ROM8x(   "ctcdxdsp.100",CRC(de61b12e) SHA1(2ef8f02ca995e67d1feebd33306f92e885077101))
+DE2S_SOUNDROM144("ctcu7.bin",   NO_DUMP,
+               "ctcsnd0.bin", CRC(6885734d) SHA1(9ac82c9c8bf4e66d2999fbfd08617ef6c266dfe8),
+               "ctcsnd3.bin", CRC(0c2b3f3c) SHA1(cb730cc6fdd2a2786d25b46b1c45466ee56132d1))
+SE_ROMEND
+SE_INPUT_PORTS_START(ctcheese, 1) SE_INPUT_PORTS_END
+CORE_GAMEDEFNV(ctcheese,"Cut The Cheese (Redemption, Whitestar hardware)",199?,"Sega",de_mSES1,0)
+
+static core_tGameData ctc2GameData = {
+ GEN_DEDMD32, se_dmd128x32, {FLIP_SW(FLIP_L),0,0,0,SNDBRD_DE2S,SNDBRD_DEDMD32}
+};
+static void init_ctchees2(void) { core_gameData = &ctc2GameData; }
+DE_ROMSTARTx0(ctchees2,"ctcc5.bin",CRC(465d41de) SHA1(0e30b527d5b47f8823cbe6f196052b090e69e907))
+DE_DMD32ROM8x(   "ctcdxdsp.100",CRC(de61b12e) SHA1(2ef8f02ca995e67d1feebd33306f92e885077101))
+DE2S_SOUNDROM144("ctcu7.bin",   NO_DUMP,
+               "ctcsnd0.bin", CRC(6885734d) SHA1(9ac82c9c8bf4e66d2999fbfd08617ef6c266dfe8),
+               "ctcsnd3.bin", CRC(0c2b3f3c) SHA1(cb730cc6fdd2a2786d25b46b1c45466ee56132d1))
+SE_ROMEND
+DE_INPUT_PORTS_START(ctchees2, 1) DE_INPUT_PORTS_END
+CORE_CLONEDEFNV(ctchees2,ctcheese,"Cut The Cheese (Redemption, Data East hardware)",199?,"Sega",de_mDEDMD32S2A,GAME_NOT_WORKING)
