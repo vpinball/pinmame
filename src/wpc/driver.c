@@ -718,6 +718,7 @@ DRIVERNV(heavymtl)    //Heavy Metal (198?)
 // --------------
 //Data East Hardare, DMD 192x64
 DRIVERNV(mav_100)       //DE/Sega MPU: 09/94 Maverick 1.00
+DRIVERNV(mav_400)       //DE/Sega MPU: 09/94 Maverick 4.00
 DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
 DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
