@@ -767,7 +767,7 @@ CORE_CLONEDEFNV(austnew,austin,"Austin Powers (ARM7 Sound Board)",2001,"Stern",d
 #endif
 
 /*-------------------------------------------------------------------
-/ Austin Powers (France)
+/ Austin Powers (3.02 France)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(austinf,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-f.300",CRC(1aeaa83e) SHA1(8a749c0fbf7b03441780c2158e63d4a87c8d0702))
@@ -782,7 +782,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(austinf,austin,"Austin Powers (France)",2001,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (Germany)
+/ Austin Powers (3.02 Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(austing,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-g.300",CRC(28b91cc4) SHA1(037628c78955495f10a60cfc329232289417562e))
@@ -797,7 +797,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(austing,austin,"Austin Powers (Germany)",2001,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (Italy)
+/ Austin Powers (3.02 Italy)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(austini,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-i.300",CRC(8b1dd747) SHA1(b29d39a2fb464bd11f4bc5daeb35360126ddf45b))
@@ -812,7 +812,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(austini,austin,"Austin Powers (Italy)",2001,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (3.02)
+/ Austin Powers (3.01)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(aust301,"apcpu.301",CRC(868d1f38) SHA1(df08b48437f88e66c4caa80602c28a2223f180b9))
 DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
@@ -825,6 +825,36 @@ SE_ROMEND
 #define input_ports_aust301 input_ports_se
 #define init_aust301 init_austin
 CORE_CLONEDEFNV(aust301,austin,"Austin Powers (3.01)",2001,"Stern",de_mSES2,0)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (3.00)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(aust300,"apcpu.300",CRC(a06b2b03) SHA1(4c36212b43fdc497773425e586f64c3064e7000c))
+DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
+DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
+                    "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
+                    "apsndu21.100",CRC(07c3e077) SHA1(d48020f7da400c3682035d537289ce9a30732d74),
+                    "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
+                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
+SE_ROMEND
+#define input_ports_aust300 input_ports_se
+#define init_aust300 init_austin
+CORE_CLONEDEFNV(aust300,austin,"Austin Powers (3.00)",2001,"Stern",de_mSES2,0)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (2.01)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(aust201,"apcpu.201",CRC(a4ddcdca) SHA1(c1eb1ae3b9c9b10410d107165f3bddaa514c2113))
+DE_DMD32ROM8x(      "apdsp-a.200",CRC(f3ca7fca) SHA1(b6b702ad7af75b3010a280adb99e4ee484a03242))
+DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
+                    "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
+                    "apsndu21.100",CRC(07c3e077) SHA1(d48020f7da400c3682035d537289ce9a30732d74),
+                    "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
+                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
+SE_ROMEND
+#define input_ports_aust201 input_ports_se
+#define init_aust201 init_austin
+CORE_CLONEDEFNV(aust201,austin,"Austin Powers (2.01)",2001,"Stern",de_mSES2,0)
 
 // Monopoly moved to its own sim file (gv)
 
@@ -1375,6 +1405,21 @@ SE_ROMEND
 #define input_ports_lotr_sp8 input_ports_lotr
 #define init_lotr_sp8 init_lotr
 CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord Of The Rings, The (8.00 Spain)",2003,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
+/ The Lord Of The Rings (4.01 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_sp4, "lotrcpul.401", CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
+DE_DMD32ROM8x(          "lotrdspl.403", CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
+DE3S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
+                         "lotrlu17.100",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
+                         "lotrlu21.100",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
+                         "lotrlu36.100",CRC(502c3d93) SHA1(4ee42d70bccb9253fe1f8f441de6b5018257f107),
+                         "lotrlu37.100",CRC(61f21c6d) SHA1(3e9781b4981bd18cdb8c59c55b9942de6ae286db))
+SE_ROMEND
+#define input_ports_lotr_sp4 input_ports_lotr
+#define init_lotr_sp4 init_lotr
+CORE_CLONEDEFNV(lotr_sp4,lotr,"Lord Of The Rings, The (4.01 Spain)",2003,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Limited Edition)
