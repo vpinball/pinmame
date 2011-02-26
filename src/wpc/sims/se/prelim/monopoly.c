@@ -264,6 +264,58 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
 SE_ROMEND
 
 /*-------------------------------------------------------------------
+/ Monopoly (3.20 France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopolf,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-f.301",CRC(e78b1998) SHA1(bd022dc90b55374baed17360fad7bf0f89e2ee33))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopolf input_ports_monopoly
+#define init_monopolf init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopolg,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-g.301",CRC(aab48728) SHA1(b9ed8574ac463a5fc21dc5f41d090cf0ad3f8362))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopolg input_ports_monopoly
+#define init_monopolg init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopoli,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-i.301",CRC(32431b3c) SHA1(6266e17e705bd50d2358d9f7c0168de51aa13750))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopoli input_ports_monopoly
+#define init_monopoli init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopoll,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-s.301",CRC(9f70dad6) SHA1(bf4b1c579b4bdead51e6b34de81fe65c45b6596a))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopoll input_ports_monopoly
+#define init_monopoll init_monopoly
+
+/*-------------------------------------------------------------------
 / Monopoly (3.03)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
@@ -275,6 +327,19 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
 SE_ROMEND
 #define input_ports_monopole input_ports_monopoly
 #define init_monopole init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.01)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monop301,"moncpu.301",CRC(24978872) SHA1(48ef94fd720cdafc61f8de5efd5c6b6731237b18))
+DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monop301 input_ports_monopoly
+#define init_monop301 init_monopoly
 
 /*-------------------------------------------------------------------
 / Monopoly (2.51)
@@ -318,70 +383,18 @@ SE_ROMEND
 CORE_CLONEDEFNV(mononew,monopoly,"Monopoly (ARM7 Sound Board)",2002,"Stern",de_mSES3,GAME_NOCRC)
 #endif
 
-
-/*-------------------------------------------------------------------
-/ Monopoly (France)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopolf,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-f.301",CRC(e78b1998) SHA1(bd022dc90b55374baed17360fad7bf0f89e2ee33))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopolf input_ports_monopoly
-#define init_monopolf init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Germany)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopolg,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-g.301",CRC(aab48728) SHA1(b9ed8574ac463a5fc21dc5f41d090cf0ad3f8362))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopolg input_ports_monopoly
-#define init_monopolg init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Italy)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopoli,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-i.301",CRC(32431b3c) SHA1(6266e17e705bd50d2358d9f7c0168de51aa13750))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopoli input_ports_monopoly
-#define init_monopoli init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Spain)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopoll,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-s.301",CRC(9f70dad6) SHA1(bf4b1c579b4bdead51e6b34de81fe65c45b6596a))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopoll input_ports_monopoly
-#define init_monopoll init_monopoly
-
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEFNV(monopoly,"Monopoly (3.20)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (3.20 France)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (3.20 Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (3.20 Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (3.20 Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (3.03)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monop301,monopoly,"Monopoly (3.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop251,monopoly,"Monopoly (2.51)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop233,monopoly,"Monopoly (2.33)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-----------------------
 / Simulation Definitions
