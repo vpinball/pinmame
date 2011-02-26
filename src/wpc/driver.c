@@ -883,15 +883,16 @@ DRIVERNV(austing)       //Whitestar: 05/01 Austin Powers (3.02 German display)
 DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (3.02 French display)
 DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (3.02 Italian display)
 DRIVERNV(aust301)       //Whitestar: 05/01 Austin Powers (3.01)
-DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (v3.20)
+DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (v3.20 German display)
+DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (v3.20 Spanish display)
+DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (v3.20 French display)
+DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (v3.20 Italian display)
 DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (v3.03)
+DRIVERNV(monop301)      //Whitestar: 09/01 Monopoly (v3.01)
 DRIVERNV(monop251)      //Whitestar: 09/01 Monopoly (v2.51)
 DRIVERNV(monop233)      //Whitestar: 09/01 Monopoly (v2.33)
-DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
-DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
-DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
-DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
-DRIVERNV(nfl)     //Whitestar: 11/01 NFL
+DRIVERNV(nfl)           //Whitestar: 11/01 NFL
 DRIVERNV(monopred)      //Whitestar: ??/02 Monopoly Redemption (Coin dropper)
 DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
 DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
