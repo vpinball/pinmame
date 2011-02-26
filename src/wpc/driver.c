@@ -89,7 +89,8 @@ DRIVERNV(cntinntl)      //          10/80 Continental (Bingo)
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
-DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
+DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
+DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
@@ -145,8 +146,9 @@ DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
-DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
-DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
+DRIVERNV(eballd14)      //BY35-838: 09/80 Eight Ball Deluxe (rev. 14)
+DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
+DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe (custom rom rev. 29)
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
