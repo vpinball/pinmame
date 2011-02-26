@@ -716,7 +716,7 @@ DRIVERNV(heavymtl)    //Heavy Metal (198?)
 // --------------
 // SEGA GAMES
 // --------------
-//Data East Hardare, DMD 192x64
+//Data East Hardware, DMD 192x64
 DRIVERNV(mav_100)       //DE/Sega MPU: 09/94 Maverick 1.00
 DRIVERNV(mav_400)       //DE/Sega MPU: 09/94 Maverick 4.00
 DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
@@ -740,8 +740,8 @@ DRIVERNV(bmf_no)        //DE/Sega MPU: 07/95 Batman Forever (Norway)
 DRIVERNV(bmf_sv)        //DE/Sega MPU: 07/95 Batman Forever (Sweden)
 DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japan)
 DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
-DRIVERNV(ctchees2)      //DE/Sega MPU: ??/98 Cut The Cheese (Redemption, Data East hardware)
-//Whitestar Hardware DMD 128x32
+DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
+//Whitestar Hardware, DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
@@ -759,13 +759,13 @@ DRIVERNV(jplstw20)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.00)
 DRIVERNV(xfiles2)       //Whitestar: 08/97 X-Files (2.04)
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files (3.03)
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
+DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
+DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
-DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
-DRIVERNV(ctcheese)	//Whitestar: ??/98 Cut The Cheese (Redemption, Whitestar hardware)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)
