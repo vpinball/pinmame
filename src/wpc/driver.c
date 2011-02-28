@@ -1048,10 +1048,15 @@ DRIVERNV(sopr300l)      //Whitestar: 02/05 The Sopranos (3.00 Spain)
 DRIVERNV(sopr300f)      //Whitestar: 02/05 The Sopranos (3.00 France)
 DRIVERNV(sopr300i)      //Whitestar: 02/05 The Sopranos (3.00 Italy)
 DRIVERNV(sopr204)       //Whitestar: 02/05 The Sopranos (2.04)
+DRIVERNV(sopr107l)      //Whitestar: 02/05 The Sopranos (1.07 Spain)
+DRIVERNV(sopr107g)      //Whitestar: 02/05 The Sopranos (1.07 Germany)
+DRIVERNV(sopr107f)      //Whitestar: 02/05 The Sopranos (1.07 France)
+DRIVERNV(sopr107i)      //Whitestar: 02/05 The Sopranos (1.07 Italy)
 DRIVERNV(nascar)        //Whitestar: 07/06 Nascar (4.50)
 DRIVERNV(nascarl)       //Whitestar: 07/06 Nascar (4.50 Spain)
 DRIVERNV(nas400)        //Whitestar: 10/05 Nascar (4.00)
 DRIVERNV(nas400l)       //Whitestar: 10/05 Nascar (4.00 Spain)
+DRIVERNV(nas350)        //Whitestar: 10/05 Nascar (3.50)
 DRIVERNV(nas340)        //Whitestar: 10/05 Nascar (3.40)
 DRIVERNV(nas340l)       //Whitestar: 10/05 Nascar (3.40 Spain)
 DRIVERNV(nas301)        //Whitestar: 09/05 Nascar (3.01)
@@ -1326,6 +1331,11 @@ DRIVERNV(xforce)        //??/87 X Force
 // UNITED GAMES
 // ----------------
 DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
+
+// -----------------------------------
+// VALLEY GAMES
+// -----------------------------------
+DRIVERNV(spectra)       //??/79 Spectra IV
 
 // -----------------------------------
 // VIDEODENS GAMES
