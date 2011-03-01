@@ -857,6 +857,7 @@ DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
 DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
 DRIVERNV(viper)         //MPU-200: 12/81 Viper
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
+DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (bootleg - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
