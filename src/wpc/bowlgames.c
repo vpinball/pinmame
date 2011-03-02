@@ -513,10 +513,11 @@ static void init_ctcheese(void) { core_gameData = &ctcGameData; }
 DE_ROMSTARTx0(ctcheese,"ctcc5.bin",CRC(465d41de) SHA1(0e30b527d5b47f8823cbe6f196052b090e69e907))
 DE_DMD64ROM88("ctcdsp0.bin", CRC(6885734d) SHA1(9ac82c9c8bf4e66d2999fbfd08617ef6c266dfe8),
               "ctcdsp3.bin", CRC(0c2b3f3c) SHA1(cb730cc6fdd2a2786d25b46b1c45466ee56132d1))
-DE2S_SOUNDROM144("ctcu7.bin",  CRC(406b9b9e) SHA1(f3f86c368c92ee0cb47323e6e0ca0fa05b6122bd),
-                 "ctcu17.bin", NO_DUMP,
-                 "ctcu21.bin", NO_DUMP)
+DE2S_SOUNDROM144("ctcsnd.u7", CRC(406b9b9e) SHA1(f3f86c368c92ee0cb47323e6e0ca0fa05b6122bd),
+                 "ctcsnd.u17", CRC(ea125fb3) SHA1(2bc1d2a6138ff77ad19b7bcff784dba73f545883),
+                 "ctcsnd.u21", CRC(1b3af383) SHA1(c6b57f3f0781954f75d164d909093e4ed8da440e))
 SE_ROMEND
+
 DE_INPUT_PORTS_START2(ctcheese, 1) DE_INPUT_PORTS_END
 CORE_GAMEDEFNV(ctcheese,"Cut The Cheese (Redemption)",1996,"Sega",de_mDEDMD64S2A,GAME_NOT_WORKING)
 
@@ -530,9 +531,10 @@ static void init_ctchzdlx(void) { core_gameData = &ctcdlxGameData; }
 SE128_ROMSTART(ctchzdlx,"ctcdxcpu.100",CRC(faad6656) SHA1(4d868bc31f35e848424e3bb66cb87efe0cf24eca))
 DE_DMD32ROM8x(   "ctcdxdsp.100",CRC(de61b12e) SHA1(2ef8f02ca995e67d1feebd33306f92e885077101))
 DE2S_SOUNDROM144("ctcu7d.bin", CRC(92bfe454) SHA1(8182f7ac84addf8bdb7976a85c801edf3424d16b),
-                 "ctcu17.bin", NO_DUMP,
-                 "ctcu21.bin", NO_DUMP)
+                 "ctcu17.bin", CRC(7ee35d17) SHA1(f2c9b70285926fc782a2e1289532395cd8dbf999),
+                 "ctcu21.bin", CRC(84dd40ac) SHA1(c9327b95f1730a3aa741540c28078f214af214b8))
 SE_ROMEND
+
 SE_INPUT_PORTS_START(ctchzdlx, 1) SE_INPUT_PORTS_END
 CORE_CLONEDEFNV(ctchzdlx,ctcheese,"Cut The Cheese Deluxe (Redemption)",1998,"Sega",de_mSES1,0)
 
