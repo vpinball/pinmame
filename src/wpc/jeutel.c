@@ -1,9 +1,12 @@
 /******************************************************************************************
   Jeutel Games
   ------------
+  by G. Volkenborn, 03/03/2011
+
   Jeutel is using two Z80 CPUs, and they are interacting heavily
   with lots of bus signals. I doubt it can be fully handled by MAME
-  but it's close enough to make the games work as it is now.
+  but it's close enough to make the games work as it is now;
+  only thing I can say for sure is they're running way too fast!
 *******************************************************************************************/
 
 #include "driver.h"
@@ -136,8 +139,7 @@ static READ_HANDLER(ppi1_portb_r) {
 static WRITE_HANDLER(ppi1_portb_w) { logerror("8255 #1 port B: %02x\n", data); }
 static WRITE_HANDLER(ppi1_portc_w) {
   coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 0x07) << 16);
-  coreGlobals.diagnosticLed = (data & 0x30) >> 4;
-  logerror("8255 #1 port C: %02x\n", data);
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x04) | ((data & 0x30) >> 4);
 }
 
 // dip strobe, sound control
@@ -151,7 +153,6 @@ static READ_HANDLER(ppi2_portb_r) {
 }
 // sound command
 static WRITE_HANDLER(ppi2_portc_w) {
-  logerror("snd cmd: %02x\n", data);
   sndbrd_data_w(0, data);
 }
 
@@ -186,26 +187,15 @@ static SWITCH_UPDATE(JEUTEL) {
 
 static struct {
   UINT8 sndCmd;
-  UINT16 sndAddr;
+  UINT8 tmsLatch;
+  UINT16 tmsAddr;
+  int tmsBit;
 } sndlocals;
 
 static void jeutel_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0x00, sizeof(sndlocals));
-}
-
-static WRITE_HANDLER(jeutel_manCmd_w) {
-  static UINT8 cmd[3];
-  cmd[2] = cmd[1];
-  cmd[1] = cmd[0];
-  cmd[0] = data;
-  sndlocals.sndCmd = data;
-  cpu_set_nmi_line(2, PULSE_LINE);
-  if (!data) {
-    sndlocals.sndAddr = (cmd[2] << 8) | cmd[1];
-    tms5110_CTL_w(0, TMS5110_CMD_SPEAK);
-    tms5110_PDC_w(0, 1);
-    tms5110_PDC_w(0, 0);
-  }
+  tms5110_reset();
+  AY8910_reset(0);
 }
 
 static WRITE_HANDLER(jeutel_data_w) {
@@ -213,12 +203,23 @@ static WRITE_HANDLER(jeutel_data_w) {
 }
 
 static WRITE_HANDLER(jeutel_ctrl_w) {
+  if (!(data & 0x01)) {
+    logerror(" CPU RESET\n");
+    cpuint_reset_cpu(2);
+    return;
+  }
+  if (data & 0x02) logerror(" CPU NMI\n");
   cpu_set_nmi_line(2, data & 0x02 ? ASSERT_LINE : CLEAR_LINE);
 }
 
+static WRITE_HANDLER(jeutel_manCmd_w) {
+  jeutel_data_w(0, data);
+  jeutel_ctrl_w(0, 3);
+  jeutel_ctrl_w(0, 1);
+}
+
 static WRITE_HANDLER(m8000_w) {
-  logerror("m8000_w: %02x\n", data);
-  sndlocals.sndAddr = (sndlocals.sndAddr << 8) | data;
+  sndlocals.tmsLatch = data;
 }
 
 static MEMORY_READ_START(snd_readmem)
@@ -232,10 +233,6 @@ static MEMORY_WRITE_START(snd_writemem)
   {0x8000, 0x8000, m8000_w},
 MEMORY_END
 
-static READ_HANDLER(snd_cmd_r) {
-  return sndlocals.sndCmd;
-}
-
 static PORT_READ_START(snd_readport)
   {4, 4, AY8910_read_port_0_r},
 PORT_END
@@ -245,48 +242,62 @@ static PORT_WRITE_START(snd_writeport)
   {1, 1, AY8910_write_port_0_w},
 PORT_END
 
-static READ_HANDLER(ay8910_portb_r) {
-  return sndlocals.sndCmd;
-}
+static int emptybits; // EVIL HACK! For some unknown reason, speech will be garbled if the TMS isn't feed some extra zero bits after a reset!?
+
+/*
+ * Bits 0 - 7: NC, NC, J6, LDH, CLR/LDL, CCLK, C1, C0
+ */
 static WRITE_HANDLER(ay8910_porta_w) {
-  logerror("8910 port A: %02x\n", data);
-  if (data == 0xd8) {
-    tms5110_CTL_w(0, TMS5110_CMD_SPEAK);
-    tms5110_PDC_w(0, 1);
-    tms5110_PDC_w(0, 0);
-  } else {
-    sndlocals.sndAddr = 0x6000;
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | (data & 0x04);
+  logerror("8910 port A: %c%c%c%c%c%cxx\n", data & 0x80 ? '0' : ' ', data & 0x40 ? '1' : ' ', data & 0x20 ? 'K' : ' ', data & 0x10 ? ' ' : 'L', data & 0x08 ? ' ' : 'H', data & 0x04 ? 'J' : ' ');
+  if (~data & 0x10) { // load lower byte & reset bit counter
+    sndlocals.tmsBit = 0;
+    sndlocals.tmsAddr = (sndlocals.tmsAddr & 0xff00) | sndlocals.tmsLatch;
+  }
+  if (~data & 0x08) { // load upper byte
+    sndlocals.tmsAddr = (sndlocals.tmsAddr & 0x00ff) | (sndlocals.tmsLatch << 8);
+    logerror(" TMS offset:   %04x\n", sndlocals.tmsAddr);
+  }
+  if ((data & 0xf0) == 0xf0) {
+    emptybits = 6; // EVIL HACK! See above.
     tms5110_CTL_w(0, TMS5110_CMD_RESET);
     tms5110_PDC_w(0, 1);
     tms5110_PDC_w(0, 0);
   }
+  if ((data & 0xf0) == 0xd0) {
+    tms5110_CTL_w(0, TMS5110_CMD_SPEAK);
+    tms5110_PDC_w(0, 1);
+    tms5110_PDC_w(0, 0);
+  }
 }
-static WRITE_HANDLER(ay8910_portb_w) {
-  logerror("8910 port B: %02x\n", data);
-  sndlocals.sndAddr = 0x6000;
-  tms5110_CTL_w(0, TMS5110_CMD_RESET);
-  tms5110_PDC_w(0, 1);
-  tms5110_PDC_w(0, 0);
+static READ_HANDLER(ay8910_portb_r) {
+  logerror("8910 port B read: %02x\n", sndlocals.sndCmd);
+  return sndlocals.sndCmd;
 }
 
 static struct AY8910interface jeutel_8910Int = {
   1,
   2000000,
-  { 30 },
+  { 20 },
   { NULL },
   { ay8910_portb_r },
   { ay8910_porta_w },
-  { ay8910_portb_w },
 };
 
 static void tms5110_irq(int data) {
-  logerror("5110 irq: %d\n", data);
-  cpu_set_irq_line(2, 0, data ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(2, 0, tms5110_status_r(0) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static int tms5110_callback(void) {
-  logerror("5110 callback: %04x\n", sndlocals.sndAddr);
-  return memory_region(REGION_CPU3)[sndlocals.sndAddr++];
+  int value;
+  if (emptybits > 0) { emptybits--; return 0; } // EVIL HACK! See above.
+  value = (memory_region(REGION_SOUND1)[sndlocals.tmsAddr] >> sndlocals.tmsBit) & 1;
+  sndlocals.tmsBit++;
+  if (sndlocals.tmsBit > 7) {
+    sndlocals.tmsAddr++;
+    sndlocals.tmsBit = 0;
+  }
+  return value;
 }
 
 static struct TMS5110interface jeutel_5110Int = {
@@ -294,7 +305,7 @@ static struct TMS5110interface jeutel_5110Int = {
 								/* usually 640000 for 8000 Hz sample rate or */
 								/* usually 800000 for 10000 Hz sample rate.  */
   100,					/* volume */
-  tms5110_irq,		/* IRQ callback function */
+  tms5110_irq,		/* IRQ callback function (not implemented!) */
   tms5110_callback	/* function to be called when chip requests another bit*/
 };
 
@@ -317,12 +328,13 @@ MACHINE_DRIVER_START(jeutel)
   MDRV_CORE_INIT_RESET_STOP(JEUTEL,JEUTEL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LEDH(3)
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_TIMER_ADD(tms5110_irq, 100) // needed so the chip can tell the CPU it's ready
 
   MDRV_SOUND_ADD(AY8910, jeutel_8910Int)
   MDRV_SOUND_ADD(TMS5110, jeutel_5110Int)
@@ -469,12 +481,20 @@ ROM_START(leking)
 
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("sound-v.bin", 0x0000, 0x1000, CRC(36130e7b) SHA1(d9b66d43b55272579b3972005355b8a18ce6b4a9))
-    ROM_LOAD("sound-p.bin", 0x6000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound-p.bin", 0x0000, 0x2000, BAD_DUMP CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
 ROM_END
 
 INITGAME(leking,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(leking, 3)
-CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, GAME_NOT_WORKING)
 
 /*--------------------------------
 / Olympic Games
@@ -487,9 +507,17 @@ ROM_START(olympic)
 
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("sound-j0.bin", 0x0000, 0x1000, CRC(5c70ce72) SHA1(b0b6cc7b6ec3ed9944d738b61a0d144b77b07000))
-    ROM_LOAD("sound-p.bin", 0x6000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound-p.bin", 0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
 ROM_END
 
 INITGAME(olympic,dispAlpha,FLIP_SW(FLIP_L))
 JEUTEL_COMPORTS(olympic, 1)
-CORE_GAMEDEFNV(olympic, "Olympic Games", 1984, "Jeutel", jeutel, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(olympic, "Olympic Games", 1984, "Jeutel", jeutel, GAME_NOT_WORKING)
