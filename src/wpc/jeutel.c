@@ -242,8 +242,6 @@ static PORT_WRITE_START(snd_writeport)
   {1, 1, AY8910_write_port_0_w},
 PORT_END
 
-static int emptybits; // EVIL HACK! For some unknown reason, speech will be garbled if the TMS isn't feed some extra zero bits after a reset!?
-
 /*
  * Bits 0 - 7: NC, NC, J6, LDH, CLR/LDL, CCLK, C1, C0
  */
@@ -259,7 +257,6 @@ static WRITE_HANDLER(ay8910_porta_w) {
     logerror(" TMS offset:   %04x\n", sndlocals.tmsAddr);
   }
   if ((data & 0xf0) == 0xf0) {
-    emptybits = 6; // EVIL HACK! See above.
     tms5110_CTL_w(0, TMS5110_CMD_RESET);
     tms5110_PDC_w(0, 1);
     tms5110_PDC_w(0, 0);
@@ -290,7 +287,6 @@ static void tms5110_irq(int data) {
 
 static int tms5110_callback(void) {
   int value;
-  if (emptybits > 0) { emptybits--; return 0; } // EVIL HACK! See above.
   value = (memory_region(REGION_SOUND1)[sndlocals.tmsAddr] >> sndlocals.tmsBit) & 1;
   sndlocals.tmsBit++;
   if (sndlocals.tmsBit > 7) {
@@ -304,7 +300,7 @@ static struct TMS5110interface jeutel_5110Int = {
   640000,				/* clock rate = 80 * output sample rate,     */
 								/* usually 640000 for 8000 Hz sample rate or */
 								/* usually 800000 for 10000 Hz sample rate.  */
-  100,					/* volume */
+  50,					/* volume */
   tms5110_irq,		/* IRQ callback function (not implemented!) */
   tms5110_callback	/* function to be called when chip requests another bit*/
 };
