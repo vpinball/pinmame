@@ -1014,6 +1014,14 @@ SE_ROMEND
 #define init_rct400f init_rctycn
 CORE_CLONEDEFNV(rct400f,rctycn,"Roller Coaster Tycoon (4.00 France)",2002,"Stern",de_mSES1,0)
 
+SE128_ROMSTART(rct400g, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
+DE_DMD32ROM8x(        "rctdsp-g.400",CRC(c88dc915) SHA1(894c3bb7f5d200448740f021b5b9421f6ee74c5f))
+RCT_SND
+SE_ROMEND
+#define input_ports_rct400g input_ports_rctycn
+#define init_rct400g init_rctycn
+CORE_CLONEDEFNV(rct400g,rctycn,"Roller Coaster Tycoon (4.00 Germany)",2002,"Stern",de_mSES1,0)
+
 SE128_ROMSTART(rct400i, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(        "rctdsp-i.400",CRC(7c1c0adb) SHA1(c9321a64ee4af8d475b441ae2385120bba66ccf9))
 RCT_SND
@@ -1318,7 +1326,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(lotr_gr9,lotr,"Lord Of The Rings, The (9.00 Germany)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
-DE_DMD32ROM8x(          "lotrdspf.900", CRC(9300bfd2) SHA1(707fedaa906020337538dd1e41f2995bfd06f9cb))
+DE_DMD32ROM8x( "lotrdspf.900", CRC(f2d8296e) SHA1(3eb6e1e6ba299b720816bf165b1e20e02f6c0c1e))
 LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr9 input_ports_lotr
@@ -1333,8 +1341,8 @@ SE_ROMEND
 #define init_lotr_it9 init_lotr
 CORE_CLONEDEFNV(lotr_it9,lotr,"Lord Of The Rings, The (9.00 Italy)",2005,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(lotr8, "lotrcpu.800", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
-DE_DMD32ROM8x(          "lotrdspa.800", CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
+SE128_ROMSTART(lotr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
+DE_DMD32ROM8x(          "lotrdspa.800", CRC(2aa1f00d) SHA1(e9df5b61b467c307aacdb5a6980a78af26492e6a))
 LOTR_SND
 SE_ROMEND
 #define input_ports_lotr8 input_ports_lotr
@@ -1585,7 +1593,7 @@ SE_ROMEND
 #define init_rip310l init_ripleys
 CORE_CLONEDEFNV(rip310l,ripleys,"Ripley's Believe It or Not! (3.10 Spain)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(rip302, "ripcpu.302",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(rip302, "ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
 RBION_SND
 SE_ROMEND
@@ -1593,7 +1601,7 @@ SE_ROMEND
 #define init_rip302 init_ripleys
 CORE_CLONEDEFNV(rip302,ripleys,"Ripley's Believe It or Not! (3.02)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(rip302f,"ripcpu.302",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(rip302f,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispf.301",CRC(e5ae9d99) SHA1(74929b324b457d08a925c641430e6a7036c7039d))
 RBION_SND_FR
 SE_ROMEND
@@ -1601,7 +1609,7 @@ SE_ROMEND
 #define init_rip302f init_ripleys
 CORE_CLONEDEFNV(rip302f,ripleys,"Ripley's Believe It or Not! (3.02 France)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(rip302g,"ripcpu.302",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(rip302g,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
 RBION_SND_GR
 SE_ROMEND
@@ -1609,7 +1617,7 @@ SE_ROMEND
 #define init_rip302g init_ripleys
 CORE_CLONEDEFNV(rip302g,ripleys,"Ripley's Believe It or Not! (3.02 Germany)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(rip302i,"ripcpu.302",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(rip302i,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
 RBION_SND_IT
 SE_ROMEND
@@ -1617,7 +1625,7 @@ SE_ROMEND
 #define init_rip302i init_ripleys
 CORE_CLONEDEFNV(rip302i,ripleys,"Ripley's Believe It or Not! (3.02 Italy)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(rip302l,"ripcpu.302",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(rip302l,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
 RBION_SND_SP
 SE_ROMEND
