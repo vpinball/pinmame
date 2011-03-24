@@ -1919,40 +1919,77 @@ DRIVERNV(locomotn)      //09/81 Locomotion
 DRIVERNV(socrking)      //09/82 Soccer Kings
 DRIVERNV(socrkngi)      //      Soccer Kings (Italian speech)
 DRIVERNV(socrkngg)      //      Soccer Kings (German speech)
+DRIVERNV(sockfp)        //09/82 Soccer Kings (Free Play)
+DRIVERNV(sockifp)       //      Soccer Kings (Italian speech Free Play)
+DRIVERNV(sockgfp)       //      Soccer Kings (German speech Free Play)
 DRIVERNV(pinchamp)      //04/83 Pinball Champ
 DRIVERNV(pinchamg)      //      Pinball Champ (German speech)
 DRIVERNV(pinchami)      //      Pinball Champ (Italian speech)
 DRIVERNV(pincham7)      //      Pinball Champ (7 digits)
 DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German speech)
 DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian speech)
+DRIVERNV(pincfp)        //04/83 Pinball Champ (Free Play)
+DRIVERNV(pincgfp)       //      Pinball Champ (German speech Free Play)
+DRIVERNV(pincifp)       //      Pinball Champ (Italian speech Free Play)
+DRIVERNV(pinc7fp)       //      Pinball Champ (7 digits Free Play)
+DRIVERNV(pinc7gfp)      //      Pinball Champ (7 digits, German speech Free Play)
+DRIVERNV(pinc7ifp)      //      Pinball Champ (7 digits, Italian speech Free Play)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(tmacgzac)      //      Time Machine (German speech)
 DRIVERNV(tmacfzac)      //      Time Machine (French speech)
+DRIVERNV(tmachfp)       //04/83 Time Machine (Free Play)
+DRIVERNV(tmacgfp)       //      Time Machine (German speech Free Play)
+DRIVERNV(tmacffp)       //      Time Machine (French speech Free Play)
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //      Farfalla (Italian speech)
 DRIVERNV(farfallg)      //      Farfalla (German speech)
+DRIVERNV(farffp)        //09/83 Farfalla (Free Play)
+DRIVERNV(farfifp)       //      Farfalla (Italian speech Free Play)
+DRIVERNV(farfgfp)       //      Farfalla (German speech Free Play)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
 DRIVERNV(dvlridei)      //      Devil Riders (Italian speech)
 DRIVERNV(dvlrideg)      //      Devil Riders (German speech)
+DRIVERNV(dvlrdfp)       //04/84 Devil Riders (Free Play)
+DRIVERNV(dvlrdifp)      //      Devil Riders (Italian speech Free Play))
+DRIVERNV(dvlrdgfp)      //      Devil Riders (German speech Free Play)
 DRIVERNV(mcastle)       //09/84 Magic Castle
 DRIVERNV(mcastlei)      //      Magic Castle (Italian speech)
 DRIVERNV(mcastleg)      //      Magic Castle (German speech)
 DRIVERNV(mcastlef)      //      Magic Castle (French speech)
+DRIVERNV(mcastfp)       //09/84 Magic Castle (Free Play)
+DRIVERNV(mcastifp)      //      Magic Castle (Italian speech Free Play)
+DRIVERNV(mcastgfp)      //      Magic Castle (German speech Free Play)
+DRIVERNV(mcastffp)      //      Magic Castle (French speech Free Play)
 DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(roboti)        //      Robot (Italian speech)
 DRIVERNV(robotg)        //      Robot (German speech)
 DRIVERNV(robotf)        //      Robot (French speech)
+DRIVERNV(robotfp)       //01/85 Robot (Free Play)
+DRIVERNV(robotifp)      //      Robot (Italian speech Free Play)
+DRIVERNV(robotgfp)      //      Robot (German speech Free Play)
+DRIVERNV(robotffp)      //      Robot (French speech Free Play)
 DRIVERNV(clown)         //07/85 Clown
+DRIVERNV(clownfp)       //07/85 Clown (Free Play)
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(poolchai)      //      Pool Champion (Italian speech)
 DRIVERNV(poolchap)      //      Pool Champion (alternate sound)
+DRIVERNV(poolcfp)       //12/85 Pool Champion (Free Play)
+DRIVERNV(poolcifp)      //      Pool Champion (Italian speech Free Play)
+DRIVERNV(poolcafp)      //      Pool Champion (alternate sound Free Play)
 DRIVERNV(myststar)      //??/86 Mystic Star
 DRIVERNV(bbeltzac)      //03/86 Blackbelt
+DRIVERNV(bbeltzfp)      //03/86 Blackbelt (Free Play)
 DRIVERNV(mexico)        //07/86 Mexico '86
+DRIVERNV(mexicofp)      //07/86 Mexico '86 (Free Play)
 DRIVERNV(zankor)        //12/86 Zankor
+DRIVERNV(zankorfp)      //12/86 Zankor (Free Play)
 DRIVERNV(spooky)        //04/87 Spooky
 DRIVERNV(spookyi)       //      Spooky (Italian speech)
+DRIVERNV(spookyfp)      //04/87 Spooky (Free Play)
+DRIVERNV(spookifp)      //      Spooky (Italian speech Free Play)
 DRIVERNV(strsphnx)      //07/87 Star's Phoenix
+DRIVERNV(strsphfp)      //07/87 Star's Phoenix (Free Play)
 DRIVERNV(nstrphnx)      //08/87 New Star's Phoenix (same roms as strsphnx)
+DRIVERNV(nstrphfp)      //08/87 New Star's Phoenix (same roms as strsphnx Free Play)
 
 #endif /* DRIVER_RECURSIVE */
