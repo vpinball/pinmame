@@ -282,6 +282,24 @@ BY35_ROMEND
 #define input_ports_cheetah input_ports_st
 CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,0)
 
+INITGAME(cheetah1,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cheetah1,"cpu_u1.716",CRC(6a845d94) SHA1(c272d5895edf2270f5f06fc33345bb4911abbee4),
+                           "cpu_u5.716",CRC(fb7e0400) SHA1(81443e93e68d8dfecc3a33d61a1a39e6e9ea34ca),
+                           "cpu_u2.716",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
+                           "cpu_u6.716",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
+BY35_ROMEND
+#define input_ports_cheetah1 input_ports_st
+CORE_CLONEDEFNV(cheetah1,cheetah,"Cheetah (Bonus shot 1/game)",1980,"Stern",by35_mST200,0)
+
+INITGAME(cheetah2,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cheetah2,"cpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
+                           "cpu_u5.716",CRC(d4e4b50d) SHA1(c59f465ade7512d129a0e60519ec7066db2cbde9),
+                           "cpu_u2.716",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
+                           "cpu_u6.716",CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
+BY35_ROMEND
+#define input_ports_cheetah2 input_ports_st
+CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Bonus shot 1/ball)",1980,"Stern",by35_mST200,0)
+
 /*--------------------------------
 / Quicksilver
 /-------------------------------*/

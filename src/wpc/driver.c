@@ -844,6 +844,8 @@ DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
+DRIVERNV(cheetah2)      //MPU-200: 06/80 Cheetah (Bonus shot 1/ball)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
 DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev.9)
