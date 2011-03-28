@@ -34,7 +34,8 @@ extern MACHINE_DRIVER_EXTERN(techno);
     ROM_LOAD(uc, 0xf000, 0x1000, chkc) \
     ROM_LOAD(ue, 0xe000, 0x1000, chke) \
     ROM_LOAD(uf, 0xd000, 0x1000, chkf) \
-    ROM_LOAD(ug, 0xc000, 0x0800, chkg)
+    ROM_LOAD(ug, 0xc000, 0x0800, chkg) \
+      ROM_RELOAD(0xc800, 0x0800)
 
 //Board 1370 configuration (4 x 4K ROMS)
 #define ZAC_SOUNDROM_cefg1(uc,chkc,ue,chke,uf,chkf,ug,chkg) \
