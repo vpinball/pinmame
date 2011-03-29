@@ -1213,7 +1213,15 @@ static INT32 lattice_filter(struct tms5220 *tms)
 	   Kn = tms->current_k[n-1]
 	   bn = tms->x[n-1]
 	 */
+#ifdef PINMAME
+  // adjust the multiplier here to avoid clipping
+  int multiplier = 64;
+  if (tms->excitation_data > 64) multiplier += (64-tms->excitation_data);
+  else if (tms->excitation_data < -64) multiplier += (64+tms->excitation_data);
+	tms->u[10] = matrix_multiply(tms->previous_energy, (tms->excitation_data * multiplier));
+#else
 	tms->u[10] = matrix_multiply(tms->previous_energy, (tms->excitation_data*64));  //Y(11)
+#endif
 	tms->u[9] = tms->u[10] - matrix_multiply(tms->current_k[9], tms->x[9]);
 	tms->u[8] = tms->u[9] - matrix_multiply(tms->current_k[8], tms->x[8]);
 	tms->u[7] = tms->u[8] - matrix_multiply(tms->current_k[7], tms->x[7]);

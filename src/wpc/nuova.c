@@ -161,7 +161,7 @@ static PORT_WRITE_START(snd_writeport)
 PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 50 }};
-static struct TMS5220interface nuova_tms5220Int = { 660000, 80, nuova_5220Irq };
+static struct TMS5220interface nuova_tms5220Int = { 639450, 50, nuova_5220Irq };
 
 /*-------------------
 / exported interface

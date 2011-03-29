@@ -297,7 +297,7 @@ static int tms5110_callback(void) {
 }
 
 static struct TMS5110interface jeutel_5110Int = {
-  640000,				/* clock rate = 80 * output sample rate,     */
+  639450,				/* clock rate = 80 * output sample rate,     */
 								/* usually 640000 for 8000 Hz sample rate or */
 								/* usually 800000 for 10000 Hz sample rate.  */
   50,					/* volume */
@@ -311,16 +311,16 @@ const struct sndbrdIntf jeutelIntf = {
 
 MACHINE_DRIVER_START(jeutel)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpue", Z80, 4000000)
+  MDRV_CPU_ADD_TAG("mcpue", Z80, 2000000) // should be 4 MHz, yet games run way too fast then
   MDRV_CPU_MEMORY(cpu_readmem1, cpu_writemem1)
 
-  MDRV_CPU_ADD_TAG("mcpum", Z80, 4000000)
+  MDRV_CPU_ADD_TAG("mcpum", Z80, 2000000) // should be 4 MHz, yet games run way too fast then
   MDRV_CPU_MEMORY(cpu_readmem2, cpu_writemem2)
 
   MDRV_INTERLEAVE(250)
   MDRV_CPU_VBLANK_INT(jeutel_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(jeutel_irq, 1000)
-  MDRV_TIMER_ADD(jeutel_nmi, 500) // this is not correct; the 2nd CPU should trigger this on BUSAK actually
+  MDRV_CPU_PERIODIC_INT(jeutel_irq, 500)
+  MDRV_TIMER_ADD(jeutel_nmi, 200) // this is not correct; the 2nd CPU should trigger this on BUSAK actually
   MDRV_CORE_INIT_RESET_STOP(JEUTEL,JEUTEL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
