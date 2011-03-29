@@ -1453,6 +1453,8 @@ DRIVER(pb,l2)           //S11-549:  10/86 W Pin-bot (L-2)
 DRIVER(pb,l3)           //          10/86 W Pin-bot (L-3)
 DRIVER(pb,l5)           //          10/86 W Pin-bot (L-5)
                         //S11:      10/86 W Strike Force
+DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
+DRIVER(tts,l2)          //S11-919:  ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
 DRIVER(f14,p3)          //S11-554:  03/87 W F-14 Tomcat (P-3)
 DRIVER(f14,p4)          //          03/87 W F-14 Tomcat (P-4)

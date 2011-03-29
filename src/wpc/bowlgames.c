@@ -271,6 +271,23 @@ S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s9_mS11S,0)
 
 /*--------------------
+/ Tic-Tac-Strike (#919)
+/--------------------*/
+INITGAME_S10(tts, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
+S9_ROMSTARTx4(tts,l2,"u27_l2.128",CRC(edbcab92) SHA1(0f6b2dc01874984f9a17ee873f2fa0b6c9bba5be))
+S11S_SOUNDROM88(       "tts_u21.256", NO_DUMP,
+                       "tts_u22.256", NO_DUMP)
+S11_ROMEND
+S11_INPUT_PORTS_START(tts, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(tts, l2, "Tic-Tac-Strike (Shuffle) (L-2)", 1986, "Williams", s11_mS11S,0)
+
+S9_ROMSTARTx4(tts,l1,"tts_u27.128",CRC(f540c53c) SHA1(1c7a318278ad1afdcbe6aaf81f9b774882b069d6))
+S11S_SOUNDROM88(       "tts_u21.256", NO_DUMP,
+                       "tts_u22.256", NO_DUMP)
+S11_ROMEND
+CORE_CLONEDEF(tts, l1, l2, "Tic-Tac-Strike (Shuffle) (L-1)", 1986, "Williams", s11_mS11S,0)
+
+/*--------------------
 / Gold Mine (#920)
 /--------------------*/
 INITGAME_S10(gmine, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
