@@ -849,30 +849,51 @@ DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 DRIVERNV(princefp)      //MPU-100: 08/79 Cosmic Princess (Free Play)
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
+DRIVERNV(meteorfp)      //MPU-200: 09/79 Meteor (Free Play)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
+DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //MPU-200: ??/04 Galaxy (7-Digit conversion)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
+DRIVERNV(alifp)         //MPU-200: 03/80 Ali (Free Play)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
+DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
+DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Free Play)
 DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
 DRIVERNV(cheetah2)      //MPU-200: 06/80 Cheetah (Bonus shot 1/ball)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
+DRIVERNV(quicksfp)      //MPU-200: 06/80 Quicksilver (Free Play)
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
+DRIVERNV(stargzfp)      //MPU-200: 08/80 Star Gazer (Free Play)
 DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev.9)
 DRIVERNV(flight2k)      //MPU-200: 10/80 Flight 2000
+DRIVERNV(flightfp)      //MPU-200: 10/80 Flight 2000 (Free Play)
 DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
+DRIVERNV(ninebafp)      //MPU-200: 12/80 Nine Ball (Free Play)
 DRIVERNV(ninebalb)      //MPU-200: 01/07 Nine Ball (modified rules rev. 85)
 DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
+DRIVERNV(freefafp)      //MPU-200: 01/81 Freefall (Free Play)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
+DRIVERNV(lightnfp)      //MPU-200: 03/81 Lightning (Free Play)
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
+DRIVERNV(splitsfp)      //MPU-200: 08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
+DRIVERNV(catacofp)      //MPU-200: 10/81 Catacomb (Free Play)
 DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
+DRIVERNV(ironmafp)      //MPU-200: 10/81 Iron Maiden (Free Play)
 DRIVERNV(viper)         //MPU-200: 12/81 Viper
+DRIVERNV(viperfp)       //MPU-200: 12/81 Viper (Free Play)
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
-DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (bootleg - modified to match instruction card/manual)
+DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
+DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
+DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor One (Free Play)
+DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor One (Bootleg)
+DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor One (Bootleg Free Play)
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
