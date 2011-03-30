@@ -538,7 +538,7 @@ BY35_ROMEND
 CORE_GAMEDEFNV(nineball,"Nine Ball",1980,"Stern",by35_mST200,0)
 
 INITGAME(ninebafp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(ninebafp,"cpu_u1.716.716",CRC(fcb58f97) SHA1(6510a6d0b466bd27ade50992260cea716d79fda2),
+ST200_ROMSTART8888(ninebafp,"cpu_u1.716",CRC(fcb58f97) SHA1(6510a6d0b466bd27ade50992260cea716d79fda2),
                             "cpu_u5.716",CRC(c7c62161) SHA1(624eab2fdf7bafbf4af012df521bd09f9b2da8d8),
                             "fp9b_u2.716",CRC(f22c2fb6) SHA1(51b927d01d9d1e0b6a3169677a559c4a2b02c198),
                             "fp9b_u6.716",CRC(d4599ee8) SHA1(0b9cfa48e335dffb427fd02c0f63814350c52aca))
