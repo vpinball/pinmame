@@ -68,6 +68,13 @@ BY35_ROMEND
 #define input_ports_pinball input_ports_st
 CORE_GAMEDEFNV(pinball,"Pinball",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
 
+INITGAME(pinbalfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(pinbalfp,"fppinb_2.716",CRC(380667c1) SHA1(a2363c1795fe9b44064a9959dca2cf5aa08920df),
+                         "fppinb_6.716",CRC(9fd9e2bb) SHA1(092e9b5d35dc59a7999b99998b0f240c93c7ba3c))
+BY35_ROMEND
+#define input_ports_pinbalfp input_ports_st
+CORE_CLONEDEFNV(pinbalfp,pinball,"Pinball (Free Play)",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Stingray
 /-------------------------------*/
@@ -77,6 +84,13 @@ BY17_ROMSTARTx88(stingray,"cpu_u2.716",CRC(1db32a33) SHA1(2f0a3ca36968b81f29373e
 BY35_ROMEND
 #define input_ports_stingray input_ports_st
 CORE_GAMEDEFNV(stingray,"Stingray",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
+
+INITGAME(stingrfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(stingrfp,"fpstry_2.716",CRC(380667c1) SHA1(a2363c1795fe9b44064a9959dca2cf5aa08920df),
+                          "fpstry_6.716",CRC(9fd9e2bb) SHA1(092e9b5d35dc59a7999b99998b0f240c93c7ba3c))
+BY35_ROMEND
+#define input_ports_stingrfp input_ports_st
+CORE_CLONEDEFNV(stingrfp,stingray,"Stingray (Free Play)",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Stars
@@ -88,6 +102,13 @@ BY35_ROMEND
 #define input_ports_stars input_ports_st
 CORE_GAMEDEFNV(stars,"Stars",1978,"Stern",by35_mST100,GAME_USES_CHIMES)
 
+INITGAME(starsfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(starsfp, "fpstars2.716",CRC(4fe7f1aa) SHA1(9da462c0973bd9531ff38a3b6d57f69cb6a2e219),
+                        "fpstars6.716",CRC(c4560fd3) SHA1(1ee8863b57ae781a6dac9ebfc92f467b60e54138))
+BY35_ROMEND
+#define input_ports_starsfp input_ports_st
+CORE_CLONEDEFNV(starsfp,stars,"Stars (Free Play)",1978,"Stern",by35_mST100,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Memory Lane
 /-------------------------------*/
@@ -97,6 +118,13 @@ BY17_ROMSTARTx88(memlane, "cpu_u2.716",CRC(aff1859d) SHA1(5a9801d139bf2477b6d351
 BY35_ROMEND
 #define input_ports_memlane input_ports_st
 CORE_GAMEDEFNV(memlane,"Memory Lane",1978,"Stern",by35_mST100,GAME_USES_CHIMES)
+
+INITGAME(memlanfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(memlanfp, "fpmeml_2.716",CRC(d6df6538) SHA1(b086eb84fbcb39b2e4067f9c939e526685c095d6),
+                          "fpmeml_6.716",CRC(2c3bb145) SHA1(94e7888f8e1653fd4f5f01111f636944a3517ff2))
+BY35_ROMEND
+#define input_ports_memlanfp input_ports_st
+CORE_CLONEDEFNV(memlanfp,memlane,"Memory Lane (Free Play)",1978,"Stern",by35_mST100,GAME_USES_CHIMES)
 
 /* ---------------------------------------------------*/
 /* All games below used MPU-100 - Sound Board: SB-100 */
@@ -112,6 +140,13 @@ BY35_ROMEND
 #define input_ports_lectrono input_ports_st
 CORE_GAMEDEFNV(lectrono,"Lectronamo",1978,"Stern",by35_mST100s,0)
 
+INITGAME(lectrofp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
+BY17_ROMSTARTx88(lectrofp,"fplect_2.716",CRC(c7584530) SHA1(71d9d9081be1358af42d6ac9bfe4bdbae3d59471),
+                          "fplect_6.716",CRC(11393e70) SHA1(d7a99ec82a26f8dadfef58c7d075e8e97a512d64))
+BY35_ROMEND
+#define input_ports_lectrofp input_ports_st
+CORE_CLONEDEFNV(lectrofp,lectrono,"Lectronamo (Free Play)",1978,"Stern",by35_mST100s,0)
+
 /*--------------------------------
 / Wildfyre
 /-------------------------------*/
@@ -122,15 +157,29 @@ BY35_ROMEND
 #define input_ports_wildfyre input_ports_st
 CORE_GAMEDEFNV(wildfyre,"Wildfyre",1978,"Stern",by35_mST100s,0)
 
+INITGAME(wildfyfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
+BY17_ROMSTARTx88(wildfyfp,"fpwldf_2.716",CRC(c53b2f2b) SHA1(e722239167abf160ff1b3dcdd5971ae51d5d5d21),
+                          "fpwldf_6.716",CRC(fa3c8b9a) SHA1(627f569495c86885a2c45c2f8c65bf8c433bab61))
+BY35_ROMEND
+#define input_ports_wildfyfp input_ports_st
+CORE_CLONEDEFNV(wildfyfp,wildfyre,"Wildfyre (Free Play)",1978,"Stern",by35_mST100s,0)
+
 /*--------------------------------
 / Nugent
 /-------------------------------*/
 INITGAME(nugent,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
-BY17_ROMSTARTx88(nugent,"cpu_u2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be593a216905237d32551),
+BY17_ROMSTARTx88(nugent,"cpu_u2.716",CRC(c7584530) SHA1(71d9d9081be1358af42d6ac9bfe4bdbae3d59471),
                         "cpu_u6.716",CRC(7c6e5fb5) SHA1(3aa4e0c1f377ba024e6b34bd431a188ff02d4eaa))
 BY35_ROMEND
 #define input_ports_nugent input_ports_st
 CORE_GAMEDEFNV(nugent,"Nugent",1978,"Stern",by35_mST100s,0)
+
+INITGAME(nugentfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
+BY17_ROMSTARTx88(nugentfp,"fpnugt_2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be593a216905237d32551),
+                        "fpnugt_6.716",CRC(11393e70) SHA1(d7a99ec82a26f8dadfef58c7d075e8e97a512d64))
+BY35_ROMEND
+#define input_ports_nugentfp input_ports_st
+CORE_CLONEDEFNV(nugentfp,nugent,"Nugent (Free Play)",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Dracula
@@ -142,6 +191,13 @@ BY35_ROMEND
 #define input_ports_dracula input_ports_st
 CORE_GAMEDEFNV(dracula,"Dracula",1979,"Stern",by35_mST100s,0)
 
+INITGAME(draculfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
+BY17_ROMSTARTx88(draculfp,"fpdrac_2.716",CRC(c53b2f2b) SHA1(e722239167abf160ff1b3dcdd5971ae51d5d5d21),
+                         "fpdrac_6.716",CRC(fa3c8b9a) SHA1(627f569495c86885a2c45c2f8c65bf8c433bab61))
+BY35_ROMEND
+#define input_ports_draculfp input_ports_st
+CORE_CLONEDEFNV(draculfp,dracula,"Dracula (Free Play)",1979,"Stern",by35_mST100s,0)
+
 /*--------------------------------
 / Trident - uses MPU-200 inports
 /-------------------------------*/
@@ -151,6 +207,13 @@ BY17_ROMSTARTx88(trident,"cpu_u2.716",CRC(934e49dd) SHA1(cbf6ca2759166f522f65182
 BY35_ROMEND
 #define input_ports_trident input_ports_st
 CORE_GAMEDEFNV(trident,"Trident",1979,"Stern",by35_mST100s,0)
+
+INITGAME(tridenfp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY17_ROMSTARTx88(tridenfp,"fptrid_2.716",CRC(985c931b) SHA1(673a2f7aa825b2092c5b68ad1edd36e19f2ded96),
+                         "fptrid_6.716",CRC(944fe5de) SHA1(8b331f03bcb761253b0e4df6a8a20e5ff33bb163))
+BY35_ROMEND
+#define input_ports_tridenfp input_ports_st
+CORE_CLONEDEFNV(tridenfp,trident,"Trident (Free Play)",1979,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Hot Hand - uses MPU-200 inports
@@ -162,6 +225,13 @@ BY35_ROMEND
 #define input_ports_hothand input_ports_st
 CORE_GAMEDEFNV(hothand,"Hot Hand",1979,"Stern",by35_mST100s,0)
 
+INITGAME(hothanfp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY17_ROMSTARTx88(hothanfp,"fphoth_2.716",CRC(8757431b) SHA1(7ea13f2abc2b2322d08e419c66cca8cf22040e7f),
+                         "fphoth_6.716",CRC(709dbde2) SHA1(c8ee72344b098e0edb16d4957627d283b1a34f50))
+BY35_ROMEND
+#define input_ports_hothanfp input_ports_st
+CORE_CLONEDEFNV(hothanfp,hothand,"Hot Hand (Free Play)",1979,"Stern",by35_mST100s,0)
+
 /*--------------------------------
 / Magic - uses MPU-200 inports
 /-------------------------------*/
@@ -172,6 +242,13 @@ BY35_ROMEND
 #define input_ports_magic input_ports_st
 CORE_GAMEDEFNV(magic,"Magic",1979,"Stern",by35_mST100s,0)
 
+INITGAME(magicfp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY17_ROMSTARTx88(magicfp,"fpmagic2.716",CRC(7b770230) SHA1(f3aa59779a1662d3e7accb12786e14e9f344c657),
+                       "fpmagic6.716",CRC(3bc9594a) SHA1(7cd3954b28bac605e7dc08b6144bfdd237d75643))
+BY35_ROMEND
+#define input_ports_magicfp input_ports_st
+CORE_CLONEDEFNV(magicfp,magic,"Magic (Free Play)",1979,"Stern",by35_mST100s,0)
+
 /*-------------------------------------
 / Cosmic Princess - same ROMs as Magic
 /-------------------------------------*/
@@ -181,12 +258,17 @@ BY17_ROMSTARTx88(princess,"cpu_u2.716",CRC(8838091f) SHA1(d2702b5e15076793b4560c
 BY35_ROMEND
 #define input_ports_princess input_ports_st
 CORE_GAMEDEFNV(princess,"Cosmic Princess",1979,"Stern",by35_mST100s,0)
+
+INITGAME(princefp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
+BY17_ROMSTARTx88(princefp,"fpcosp_2.716",CRC(7b770230) SHA1(f3aa59779a1662d3e7accb12786e14e9f344c657),
+                          "fpcosp_6.716",CRC(27e45565) SHA1(55e56b12225ecccecb3c71f9c7134246436eb2d1))
+BY35_ROMEND
+#define input_ports_princefp input_ports_st
+CORE_CLONEDEFNV(princefp,princess,"Cosmic Princess (Free Play)",1979,"Stern",by35_mST100s,0)
+
 /****************************************************/
 /* STERN MPU-200 (almost identical to Bally MPU-35) */
 /****************************************************/
-/* ---------------------------------------------------*/
-/* All games below used MPU-200 - Sound Board: SB-300 */
-/* ---------------------------------------------------*/
 
 /*--------------------------------
 / Meteor

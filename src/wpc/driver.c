@@ -823,18 +823,30 @@ DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
 // ---------------
 // MPU-100 - Chime Sound
 DRIVERNV(stingray)      //MPU-100: 03/77 Stingray
+DRIVERNV(stingrfp)      //MPU-100: 03/77 Stingray (Free Play)
 DRIVERNV(pinball)       //MPU-100: 07/77 Pinball
+DRIVERNV(pinbalfp)      //MPU-100: 07/77 Pinball (Free Play)
 DRIVERNV(stars)         //MPU-100: 03/78 Stars
+DRIVERNV(starsfp)       //MPU-100: 03/78 Stars (Free Play)
 DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
+DRIVERNV(memlanfp)      //MPU-100: 06/78 Memory Lane (Free Play)
 // MPU-100 - Sound Board: SB-100
 DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
+DRIVERNV(lectrofp)      //MPU-100: 08/78 Lectronamo (Free Play)
 DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
+DRIVERNV(wildfyfp)      //MPU-100: 10/78 Wildfyre (Free Play)
 DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
+DRIVERNV(nugentfp)      //MPU-100: 11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
+DRIVERNV(draculfp)      //MPU-100: 01/79 Dracula (Free Play)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
+DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Free Play)
 DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
+DRIVERNV(hothanfp)      //MPU-100: 06/79 Hot Hand (Free Play)
 DRIVERNV(magic)         //MPU-100: 08/79 Magic
+DRIVERNV(magicfp)       //MPU-100: 08/79 Magic (Free Play)
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
+DRIVERNV(princefp)      //MPU-100: 08/79 Cosmic Princess (Free Play)
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
