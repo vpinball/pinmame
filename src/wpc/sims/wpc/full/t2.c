@@ -582,6 +582,12 @@ WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1
                  "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
 
+WPC_ROMSTART(t2,f32,"ft20_32.rom",0x80000,CRC(7e5baa27) SHA1(36e64f2e305a76a6743db1d329b1667aa8ec995f))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -597,6 +603,7 @@ CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgement Day (L-3)",1991,"Williams",wpc_m
 CORE_CLONEDEF(t2,d3,l8,"Terminator 2: Judgement Day (D-3) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgement Day (L-2)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d2,l8,"Terminator 2: Judgement Day (D-2) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,f32,l8,"Terminator 2: Judgement Day (FreeWPC 0.32)",1991,"Williams",wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions

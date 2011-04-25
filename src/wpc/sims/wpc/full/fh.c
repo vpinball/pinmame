@@ -654,6 +654,8 @@ WPC_ROMSTART(fh,d4,"u6-d4.rom",0x020000,CRC(b7683195) SHA1(1022598113d32dbca0578
 WPC_ROMSTART(fh,l5,"u6-l5.rom",0x020000,CRC(e2b25da4) SHA1(87129e18c60a65035ade2f4766c154d5d333696b)) FH_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(fh,d5,"u6-d5.rom",0x020000,CRC(11bc9542) SHA1(2728b55f07cc0dab0ce2048de7d537047ae20913)) FH_SOUND_L2 WPC_ROMEND
 
+WPC_ROMSTART(fh,f91,"ffh0_91.rom",0x040000,CRC(b3224e53) SHA1(f0996209a4490af7ac636a359b52d83308328f57)) FH_SOUND_L3 WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -669,6 +671,7 @@ CORE_CLONEDEF(fh,l4,l9,"Funhouse L-4",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d4,l9,"Funhouse D-4 LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l5,l9,"Funhouse L-5",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d5,l9,"Funhouse D-5 LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,f91,l9,"Funhouse (FreeWPC 0.91)",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
