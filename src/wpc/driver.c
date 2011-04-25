@@ -1587,6 +1587,7 @@ DRIVER(fh,d9)           //                W Funhouse (D-9) LED Ghost Fix
 DRIVER(fh,l9b)          //                  bootleg with correct German translation
 DRIVER(fh,d9b)          //                  bootleg with correct German translation LED Ghost Fix
 DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
+DRIVER(fh,f91)          //WPC-503:  12/90 W Funhouse (FreeWPC 0.91)
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
 DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
@@ -1619,6 +1620,7 @@ DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
+DRIVER(t2,f32)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.32)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
 DRIVER(gi,d3)           //WPC-203:  07/91 B Gilligan's Island (D-3) LED Ghost Fix
 DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
@@ -1735,6 +1737,7 @@ DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //WPC-520:  01/95 B Twilight Zone (9.3) LED Ghost Fix
 DRIVER(tz,94h)          //WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(tz,94ch)         //WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
+DRIVER(tz,f86)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.86)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
@@ -1800,6 +1803,7 @@ DRIVER(wcs,p2)          //                  (Pa-2)
 DRIVER(wcs,p5)          //                  (Pa-5) LED Ghost Fix
 DRIVER(wcs,p3)          //                  (Px-3)
 DRIVER(wcs,p6)          //                  (Px-6) LED Ghost Fix
+DRIVER(wcs,f62)         //                  World Cup Soccer (FreeWPC 0.62)
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
 DRIVER(fs,dx2)          //WPC-529:  07/94 W The Flintstones (DX-2) LED Ghost Fix
@@ -1879,6 +1883,7 @@ DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars (1.1)
 DRIVER(afm,11u)         //WPC-541:  12/95 B Attack from Mars (1.1 Ultrapin)
 DRIVER(afm,113)         //WPC-541:  12/95 B Attack from Mars (1.13 Home version)
 DRIVER(afm,113b)        //WPC-541:  12/95 B Attack from Mars (1.13b Coin Play)
+DRIVER(afm,f32)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.32)
 DRIVER(lc,11)           //WPC-107:  03/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,14)           //WPC-903:  06/96 B Safe Cracker (1.4)
