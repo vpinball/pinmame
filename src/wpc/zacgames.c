@@ -728,7 +728,7 @@ ZAC_ROMSTART1820(clownfp,	"clownfp.ic1",CRC(b1f8743a) SHA1(732d9830d2e9c959c90d9
 ZAC_SOUNDROM_e2f2(		"clown_e.snd",CRC(04a34cc1) SHA1(56fcc07ccab3cac27928f5c5411868bde1769603),
 						"clown_f.snd",CRC(e35a4f72) SHA1(0037c1072f58798ba61af85a1b4b374b85c883ae))
 ZAC_ROMEND
-CORE_CLONEDEFNV(clownfp,clown,"Clown (Free Play)",1985,"Zaccaria",ZAC2XS,0)
+CORE_CLONEDEFNV(clownfp,clown,"Clown (Free Play)",1985,"Zaccaria",ZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Pool Champion (12/85)
