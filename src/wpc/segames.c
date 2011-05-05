@@ -358,56 +358,80 @@ SE_ROMEND
 CORE_CLONEDEF(harl,l13,a13,"Harley Davidson (1.03, Spain)",1999,"Sega",de_mSES1,0)
 
 /********************* STERN GAMES  **********************/
+SE128_ROMSTART(harl_a40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
+DE_DMD32ROM8x("hddispa.400",CRC(e2c98397) SHA1(212ac1a509f608c490dc4dfdc5cc04187ed2fe10)) HARLEY_SOUND
+SE_ROMEND
+CORE_GAMEDEF(harl,a40,"Harley Davidson (4.00)",2004,"Stern",de_mSES1,0)
+
+SE128_ROMSTART(harl_f40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
+DE_DMD32ROM8x("hddispf.400",CRC(d061c238) SHA1(cb29e58970d43c2845c96e149e8fdd0c16e501c9)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,f40,a40,"Harley Davidson (4.00, France)",2004,"Stern",de_mSES1,0)
+
+SE128_ROMSTART(harl_g40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
+DE_DMD32ROM8x("hddispg.400",CRC(4bc89a23) SHA1(fb7dcc61194560845e150bc1c032c098ffd026e8)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,g40,a40,"Harley Davidson (4.00, Germany)",2004,"Stern",de_mSES1,0)
+
+SE128_ROMSTART(harl_i40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
+DE_DMD32ROM8x("hddispi.400",CRC(c4fc4990) SHA1(79d501c3123b604becbb87c12aca9848675811ec)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,i40,a40,"Harley Davidson (4.00, Italy)",2004,"Stern",de_mSES1,0)
+
+SE128_ROMSTART(harl_l40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
+DE_DMD32ROM8x("hddispl.400",CRC(96096e73) SHA1(b22f03ab3f08ff192a55e92ebe85bafa893c6234)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,l40,a40,"Harley Davidson (4.00, Spain)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_a30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
 DE_DMD32ROM8x("hddispa.300",CRC(61b274f8) SHA1(954e4b3527cefcb24376de9f6f7e5f9192ab3304)) HARLEY_SOUND
 SE_ROMEND
-CORE_GAMEDEF(harl,a30,"Harley Davidson (3.00)",2004,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,a30,a40,"Harley Davidson (3.00)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_f30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
 DE_DMD32ROM8x("hddispf.300",CRC(106f7f1f) SHA1(92a8ab7d834439a2211208e0812cdb1199acb21d)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,f30,a30,"Harley Davidson (3.00, France)",2004,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,f30,a40,"Harley Davidson (3.00, France)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_g30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
 DE_DMD32ROM8x("hddispg.300",CRC(8f7da748) SHA1(fee1534b76769517d4e6dbed373583e573fb95b6)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,g30,a30,"Harley Davidson (3.00, Germany)",2004,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,g30,a40,"Harley Davidson (3.00, Germany)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_i30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
 DE_DMD32ROM8x("hddispi.300",CRC(686d3cf6) SHA1(fb27e2e4b39abb56deb1e66f012d151126971474)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,i30,a30,"Harley Davidson (3.00, Italy)",2004,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,i30,a40,"Harley Davidson (3.00, Italy)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_l30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
 DE_DMD32ROM8x("hddispl.300",CRC(4cc7251b) SHA1(7660fca37ac9fb442a059ddbafc2fa13f94dfae1)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,l30,a30,"Harley Davidson (3.00, Spain)",2004,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,l30,a40,"Harley Davidson (3.00, Spain)",2004,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_a18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
 DE_DMD32ROM8x("hddispa.105",CRC(401a7b9f) SHA1(37e99a42738c1147c073585391772ecc55c9a759)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,a18,a30,"Harley Davidson (1.08)",2003,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,a18,a40,"Harley Davidson (1.08)",2003,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_f18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
 DE_DMD32ROM8x("hddispf.105",CRC(31c77078) SHA1(8a0e2dbb698da77dffa1ab01df0f360fecf6c4c7)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,f18,a30,"Harley Davidson (1.08, France)",2003,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,f18,a40,"Harley Davidson (1.08, France)",2003,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_g18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
 DE_DMD32ROM8x("hddispg.105",CRC(aed5a82f) SHA1(4c44b052a9b1fa702ff49c9b2fb7cf48173459d2)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,g18,a30,"Harley Davidson (1.08, Germany)",2003,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,g18,a40,"Harley Davidson (1.08, Germany)",2003,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_i18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
 DE_DMD32ROM8x("hddispi.105",CRC(49c53391) SHA1(98f88eb8a49bbc59f78996d713c72ec495ba806f)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,i18,a30,"Harley Davidson (1.08, Italy)",2003,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,i18,a40,"Harley Davidson (1.08, Italy)",2003,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(harl_l18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
 DE_DMD32ROM8x("hddisps.105",CRC(6d6f2a7c) SHA1(1609c69a1584398c3504bb5a0c46f878e8dd547c)) HARLEY_SOUND
 SE_ROMEND
-CORE_CLONEDEF(harl,l18,a30,"Harley Davidson (1.08, Spain)",2003,"Stern",de_mSES1,0)
+CORE_CLONEDEF(harl,l18,a40,"Harley Davidson (1.08, Spain)",2003,"Stern",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Striker Extreme
