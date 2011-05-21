@@ -1607,6 +1607,8 @@ DRIVER(bop,l6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-6)
 DRIVER(bop,d6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (D-6) LED Ghost Fix
 DRIVER(bop,l7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (L-7)
 DRIVER(bop,d7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (D-7) LED Ghost Fix
+DRIVER(bop,l8)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (L-8) fixes billionaire crash multiplayer bug
+DRIVER(bop,d8)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (D-8) LED Ghost Fix
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,d1)           //WPC:      02/91 B Harley Davidson (D-1) LED Ghost Fix
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
@@ -1940,6 +1942,7 @@ DRIVER(mb,106)          //          06/99 W Monster Bash (Home version)
 DRIVER(mb,106b)         //          06/99 W Monster Bash (1.06b Coin Play)
 DRIVER(cc,12)           //WPC-566:  02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
+DRIVER(cc,13k)		//          04/99 B Cactus Canyon (1.3) with real knocker
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD
