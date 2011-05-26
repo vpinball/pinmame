@@ -1862,6 +1862,8 @@ DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
 DRIVER(dh,dx2)          //WPC-530:  03/95 W Dirty Harry (DX-2) LED Ghost Fix
 DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A)
 DRIVER(tom,061)         //WPC-539:  03/95 B Theatre of Magic (0.61A) LED Ghost Fix
+DRIVER(tom,10f)		//WPC-539:  04/95 B Theatre of Magic (1.0 French)
+DRIVER(tom,101f)	//WPC-539:  04/95 B Theatre of Magic (1.01 French) LED Ghost Fix
 DRIVER(tom,12)          //WPC-539:  04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,121)         //WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
