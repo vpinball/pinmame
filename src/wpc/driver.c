@@ -1765,6 +1765,8 @@ DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,d6)           //WPC-220:  10/93 B Judge Dredd (D-6) LED Ghost Fix
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
 DRIVER(jd,d7)           //WPC-220:  12/93 B Judge Dredd (D-7) LED Ghost Fix
+DRIVER(ij,h1)           //WPC-517:  11/93 W Indiana Jones (HK-1) Family no hate speech version
+DRIVER(ij,i1)           //WPC-517:  11/93 W Indiana Jones (I-1) Family no hate LED Ghost Fix
 DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
 DRIVER(afv,d4)          //WPC-622:  ??/93 W Addams Family Values (D-4 Redemption) LED Ghost Fix
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
