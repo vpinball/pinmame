@@ -69,13 +69,13 @@ SE_INPUT_PORTS_START(monopoly,4)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"",		        KEYCODE_R)
+    COREPORT_BIT(0x0004,"",		        KEYCODE_D)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"Right Ramp",			KEYCODE_W)
-    COREPORT_BIT(0x0080,"Roll n Win Lane",			KEYCODE_E)
-    COREPORT_BIT(0x0100,"Roll n Win Saucer",			KEYCODE_R)
+    COREPORT_BIT(0x0040,"Roll n Win Lane",			KEYCODE_W)
+    COREPORT_BIT(0x0080,"Roll n Win Saucer",			KEYCODE_E)
+    COREPORT_BIT(0x0100,"Right Ramp",			KEYCODE_R)
     COREPORT_BIT(0x0200,"",			KEYCODE_T)
     COREPORT_BIT(0x0400,"",			KEYCODE_Y)
     COREPORT_BIT(0x0800,"",			KEYCODE_U)
@@ -135,7 +135,7 @@ SE_INPUT_PORTS_END
 / Solenoid definitions
 /----------------------*/
 #define sTrough		1
-//#define sLaunch		2
+#define sAutoplunger 2
 #define sLeftSling	17
 #define sRightSling	18
 
@@ -144,7 +144,7 @@ SE_INPUT_PORTS_END
 /  Ball state handling
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
-      stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling,
+      stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling,
 	  stRnWLane,stRnWSaucer,stRightRamp
 	  };
 
@@ -162,19 +162,20 @@ static sim_tState monopoly_stateDef[] = {
   {"Drain",		1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 2*/
-  {"Shooter",		1,swShooter,	 sShooterRel, stFree, 5,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		stFree,		7,	0,	0,	SIM_STNOTEXCL},
+  {"Shooter",			1,swShooter,		0,				0,				0,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
+  {"Ball Lane",			1,0,				0,				0,				2,0,0,SIM_STNOTEXCL},
+  {"No Strength",		1,0,				0,				stShooter,		3},
   {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
   {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
   {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
   {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
   {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
   {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
-  {"Right Ramp",	1,swRightRamp, 0,		stFree,		5},
   {"Roll n Win Lane",	1,swRnWLane,	 0,		stFree,	5},
+  {"Roll n Win Saucer",	1,swRnWSaucer,	 sRnW,		stFree,		5},
+  {"Right Ramp",	1,swRightRamp, 0,		stFree,		5},
 
   /*Line 3*/
-  {"Roll n Win Saucer",	1,swRnWSaucer,	 sRnW,		stFree,		5},
 
   /*Line 4*/
 
@@ -186,11 +187,28 @@ static sim_tState monopoly_stateDef[] = {
 };
 
 static int monopoly_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
-  {
+	switch (ball->state) {
+	case stShooter:
+		if (core_getSol(sAutoplunger)) {		/* Monopoly has both, manual and auto plunger */
+			ball->speed = 50;
+			return setState(stBallLane,1);
+		}
+		if (sim_getSol(sShooterRel)) {
+			return setState(stBallLane,1);
+		}
+		break;
+
+	case stBallLane:
+		if (ball->speed < 25)
+			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
+		//if (ball->speed < 40)
+			//return setState(stSkillHole,10);
+		if (ball->speed < 51)
+			return setState(stFree,51);		/*Ball goes to stFree*/
+		break;
+	}
+    return 0;
   }
-  return 0;
-}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -207,9 +225,9 @@ static sim_tInportData monopoly_inportData[] = {
   {0, 0x0012, stRightSling},
   {0, 0x0021, stLeftInlane},
   {0, 0x0022, stRightInlane},
-  {0, 0x0040, stRightRamp},
-  {0, 0x0080, stRnWLane},
-  {0, 0x0100, stRnWSaucer},
+  {0, 0x0040, stRnWLane},
+  {0, 0x0080, stRnWSaucer},
+  {0, 0x0100, stRightRamp},
 //  {0, 0x0200, st},
 //  {0, 0x0400, st},
 //  {0, 0x0800, st},
@@ -249,9 +267,9 @@ static void monopoly_drawStatic(BMTYPE **line) {
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball");
-  core_textOutf(30,100,BLACK,"W = Roll n Win Saucer");
-  core_textOutf(30,110,BLACK,"E = Right Ramp");
-  core_textOutf(30,120,BLACK,"R = Roll n Win Lane");
+  core_textOutf(30,100,BLACK,"W = Roll n Win Lane");
+  core_textOutf(30,110,BLACK,"E = Roll n Win Saucer");
+  core_textOutf(30,120,BLACK,"R = Right Ramp");
   core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
   core_textOutf(30,140,BLACK,"");
   core_textOutf(30,150,BLACK,"");
