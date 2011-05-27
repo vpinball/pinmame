@@ -100,19 +100,33 @@ DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
+DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
 DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic (EM "Star Ship" release date)
-DRIVERNV(sstb    )      //BY35      05/05 Supersonic (7-digit conversion)
+DRIVERNV(sstb    )      //BY35 	    05/05 Supersonic (7-digit conversion)
+DRIVERNV(sstc    )      //BY35 	    10/08 Supersonic (7-digit Rev3 Free Play)
+DRIVERNV(sstd    )      //BY35 	    10/08 Supersonic (/10 Free Play)
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
+DRIVERNV(smmanb  )      //BY35      05/05 The Six Million Dollar Man (7-digit conversion)
+DRIVERNV(smmanc  )      //BY35      10/08 The Six Million Dollar Man (7-digit Rev3 Free Play)
+DRIVERNV(smmand  )      //BY35      10/08 The Six Million Dollar Man (/10 Free Play)
 DRIVERNV(playboy )      //BY35-743: 09/76 Playboy (release date is wrong!)
-DRIVERNV(playboyb)      //BY35      05/05 Playboy (7-digit conversion)
+DRIVERNV(playboyb)      //BY35 	    05/05 Playboy (7-digit conversion)
+DRIVERNV(playboyc)      //BY35 	    10/08 Playboy (7-digit Rev3 Free Play)
+DRIVERNV(playboyd)      //BY35 	    10/08 Playboy (/10 Free Play)
                         //??        ??/78 Big Foot
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
 DRIVERNV(voltanb )      //BY35      05/05 Voltan Escapes Cosmic Doom (7-digit conversion)
+DRIVERNV(voltanc )      //BY35      10/08 Voltan Escapes Cosmic Doom (7-digit Rev3 Free Play)
+DRIVERNV(voltand )      //BY35      10/08 Voltan Escapes Cosmic Doom (/10 Free Play)
 DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
-DRIVERNV(startreb)      //BY35      05/05 Star Trek
+DRIVERNV(startreb)      //BY35      05/05 Star Trek (7-digit conversion)
+DRIVERNV(startrec)      //BY35      10/08 Star Trek (7-digit Rev3 Free Play)
+DRIVERNV(startred)      //BY35      10/08 Star Trek (/10 Free Play)
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(kissb   )      //BY35      05/05 Kiss (7-digit conversion)
+DRIVERNV(kissc   )      //BY35      10/08 Kiss (7-digit Rev3 Free Play)
+DRIVERNV(kissd   )      //BY35      10/08 Kiss (/10 Free Play)
 DRIVERNV(kissp   )      //BY35      ??/?? Kiss (prototype)
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
 DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
@@ -124,6 +138,8 @@ DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
 DRIVERNV(dollyptb)      //BY35      11/02 Dolly Parton (7-digit conversion)
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(paragonb)      //BY35      05/05 Paragon (7-digit conversion)
+DRIVERNV(paragonc)      //BY35      10/08 Paragon (7-digit Rev3 Free Play)
+DRIVERNV(paragond)      //BY35      10/08 Paragon (/10 Free Play)
 DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
 DRIVERNV(futurspb)      //BY35      11/02 Future Spa (7-digit conversion)
 DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
