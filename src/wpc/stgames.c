@@ -314,6 +314,15 @@ BY35_ROMEND
 #define input_ports_meteorc input_ports_meteor
 CORE_CLONEDEFNV(meteorc,meteor,"Meteor (7-digit conversion Free Play)",2003,"Stern / Oliver",by35_mST200,0)
 
+INITGAME(meteord,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteord,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
+                          "cpu_u5.716",CRC(a0ac4dac) SHA1(05943374cdc9d67a20a00c62213e04f8f72c772c),
+                          "cpu_u2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
+                          "cpu_u6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
+BY35_ROMEND
+#define input_ports_meteord input_ports_meteor
+CORE_CLONEDEFNV(meteord,meteor,"Meteor (/10 Scoring)",2005,"Stern / Oliver",by35_mST200,0)
+
 /*--------------------------------
 / Galaxy
 /-------------------------------*/
