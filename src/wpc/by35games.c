@@ -1094,6 +1094,16 @@ BY35_ROMEND
 #define input_ports_centaura input_ports_centaur
 CORE_CLONEDEFNV(centaura,centaur,"Centaur (Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
+#define init_centaurb init_centaur
+BY35_ROMSTARTx00(centaurb,"cent2un.u2",CRC(047d08c5) SHA1(82e3952f84450a51b0c70129a593065b99d57dc0),
+                        "cent2un.u6",CRC(cfb1ebcc) SHA1(f33b92580962a6fe8fa79c2d3e2ea7470bd8ae7d))
+BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b58e3fa8c285170b1f09a),
+                         "848-02_4.532",CRC(d6dbd0e4) SHA1(62e4c8c1a747c5f6a3a4bf4d0bc80b06a1f70d13),
+                         "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
+BY35_ROMEND
+#define input_ports_centaurb input_ports_centaur
+CORE_CLONEDEFNV(centaurb,centaur,"Centaur (Free Play Rev. 27)",2008,"Bally / Oliver",by35_mBY35_61BS,0)
+
 /*--------------------------------
 / Elektra
 /-------------------------------*/
@@ -1257,6 +1267,14 @@ BY35_ROMEND
 #define input_ports_rapidfir input_ports_by35
 CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 
+#define init_rapidfia init_rapidfir
+BY35_ROMSTARTx00(rapidfia,"869-04_2.732",CRC(26fdf048) SHA1(15787345e7162a530334bff98d877e525d4a1295),
+                          "rapidfun.u6",CRC(954a6e2f) SHA1(41c42b86d1ae8960b5404544aa8f85f7a907a17e))
+BY61_SOUNDROMxxx0(        "869-02_5.532",CRC(5a74cb86) SHA1(4fd09b0bc4257cb7b48cd8087b8b15fe768f7ddf))
+BY35_ROMEND
+#define input_ports_rapidfia input_ports_rapidfir
+CORE_CLONEDEFNV(rapidfia,rapidfir,"Rapid Fire (Free Play)",2005,"Bally / Oliver",by35_mBY35_61BS,0)
+
 /*--------------------------------------
 / Mr. and Mrs. Pacman (BY35-872: 05/82)
 /--------------------------------------*/
@@ -1316,6 +1334,14 @@ BY35_ROMEND
 #define input_ports_granslam input_ports_by35
 CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 
+BY35_ROMSTARTx00(granslaa, "grndslam.u2",CRC(66aea9dc) SHA1(76c017dc83a63b7f1e6035e228370219eb9c0678),
+                           "grandfn.u6",CRC(464aeef2) SHA1(a50690a15f687ad4acf64f121dc92bdcf8cb7c6a))
+BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38) SHA1(376ceb53cb51d250b5bc222001291b0c85e42e8a))
+BY35_ROMEND
+#define init_granslaa init_granslam
+#define input_ports_granslaa input_ports_granslam
+CORE_CLONEDEFNV(granslaa,granslam,"Grand Slam (Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0)
+
 BY35_ROMSTARTx00(gransla4, "gr_slam.u2b",CRC(552d9423) SHA1(16b86d5b7539fd803f458f1633ecc249ef15243d),
                            "grndslam.u6",CRC(9e6ccea1) SHA1(5e158e021e0f3eed063577ae22cf5f1bc9655065))
 BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38) SHA1(376ceb53cb51d250b5bc222001291b0c85e42e8a))
@@ -1323,6 +1349,14 @@ BY35_ROMEND
 #define init_gransla4 init_granslam
 #define input_ports_gransla4 input_ports_granslam
 CORE_CLONEDEFNV(gransla4,granslam,"Grand Slam (4 Players)",1983,"Bally",by35_mBY35_51S,0)
+
+BY35_ROMSTARTx00(gransl4a, "gr_slam.u2b",CRC(552d9423) SHA1(16b86d5b7539fd803f458f1633ecc249ef15243d),
+                           "grandfn.u6",CRC(464aeef2) SHA1(a50690a15f687ad4acf64f121dc92bdcf8cb7c6a))
+BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38) SHA1(376ceb53cb51d250b5bc222001291b0c85e42e8a))
+BY35_ROMEND
+#define init_gransl4a init_granslam
+#define input_ports_gransl4a input_ports_granslam
+CORE_CLONEDEFNV(gransl4a,granslam,"Grand Slam (4 Players Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0)
 
 /*----------------------------------------------------------
 / Gold Ball (BY35-???: 10/83)  - Uses AS2518-51 Sound Board

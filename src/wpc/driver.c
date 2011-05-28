@@ -203,6 +203,7 @@ DRIVERNV(medusaf )      //BY35      02/81 Medusa (6802 board)
 #endif
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
 DRIVERNV(centaura)      //BY35      10/04 Centaur (Free Play)
+DRIVERNV(centaurb)      //BY35      10/08 Centaur (Free Play Rev. 27)
 DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
 DRIVERNV(elektraa)      //BY35      10/04 Elektra (Free Play)
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
@@ -217,6 +218,7 @@ DRIVERNV(speakesa)      //BY35      10/04 Speakeasy (Free Play)
 DRIVERNV(speakes4)      //BY35      08/82 Speakeasy 4 (4 player)
 DRIVERNV(speake4a)      //BY35      10/04 Speakeasy 4 (4 player Free Play)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
+DRIVERNV(rapidfia)      //BY35      09/05 Rapid Fire (Free Play)
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man (Free Play)
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
@@ -225,8 +227,10 @@ DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
+DRIVERNV(granslaa)      //BY35      12/04 Grand Slam (Free Play)
 DRIVERNV(gransla4)      //BY35      01/83 Grand Slam (4 player)
-/*same as cenatur*/     //BY35      06/83 Centaur II
+DRIVERNV(gransl4a)      //BY35      12/04 Grand Slam (4 player Free Play)
+/*same as centaur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
 DRIVERNV(goldbalb)      //BY35      03/04 Gold Ball (7-digit conversion)
 DRIVERNV(goldbalc)      //BY35      03/05 Gold Ball (6/7-digit alternate set rev.10)
