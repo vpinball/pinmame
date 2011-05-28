@@ -650,6 +650,14 @@ BY35_ROMEND
 #define input_ports_hotdoggn input_ports_by35
 CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
 
+INITGAME(hotdogga,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(hotdogga,"hot2un.u2", CRC(65699a74) SHA1(b9894d3ed1f78228139ca630b1a5fd07a2f94bcf),
+                          "hot2un.u6",CRC(5197c298) SHA1(8eb7409830add41e0daab187f4ac8d1c016c78a5))
+BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
+BY35_ROMEND
+#define input_ports_hotdogga input_ports_hotdoggn
+CORE_CLONEDEFNV(hotdogga,hotdoggn,"Hot Doggin (Free Play)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+
 INITGAME(hotdoggb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782dae3007db3e5036003e00),
                           "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
