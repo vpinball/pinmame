@@ -156,15 +156,19 @@ DRIVERNV(rollstob)      //BY35      11/02 Rolling Stones (7-digit conversion)
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
 DRIVERNV(mysticb )      //BY35      11/02 Mystic (7-digit conversion)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
+DRIVERNV(xenona  )      //BY35-811: 10/08 Xenon (Free Play)
 DRIVERNV(xenonf  )      //BY35      11/79 Xenon (French)
+DRIVERNV(xenonfa )      //BY35      10/08 Xenon (French Free Play)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
 DRIVERNV(hotdogga)      //BY35      11/02 Hotdoggin' (Free Play)
 DRIVERNV(hotdoggb)      //BY35      11/02 Hotdoggin' (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(vikingb )      //BY35      11/02 Viking (7-digit conversion)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
+DRIVERNV(skatebla)      //BY35-823: 10/08 Skateball (Free Play)
 DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
+DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)

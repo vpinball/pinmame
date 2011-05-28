@@ -706,6 +706,14 @@ BY35_ROMEND
 #define input_ports_skateblb input_ports_skatebll
 CORE_CLONEDEFNV(skateblb,skatebll,"Skateball (alternate set rev. 3)",2005,"Bally / Oliver",by35_mBY35_51S,0)
 
+INITGAME2(skatebla,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(skatebla,"skat2732.u2",  CRC(448bf439) SHA1(ec3224b166f159f60e252789f6dc84164f537ef2),
+                          "7406fn.u6",  CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
+BY51_SOUNDROM8(           "823-02_4.716",CRC(d1037b20) SHA1(8784728540573be5e8ebb940ec0046b778f9413b))
+BY35_ROMEND
+#define input_ports_skatebla input_ports_skatebll
+CORE_CLONEDEFNV(skatebla,skatebll,"Skateball (Free Play)",2008,"Bally / Oliver",by35_mBY35_51S,0)
+
 /*--------------------------------
 / Frontier
 /-------------------------------*/
@@ -717,6 +725,14 @@ BY51_SOUNDROM8(           "819-09_4.716",CRC(a62059ca) SHA1(75e139ea2573a8c3b666
 BY35_ROMEND
 #define input_ports_frontier input_ports_by35
 CORE_GAMEDEFNV(frontier,"Frontier",1980,"Bally",by35_mBY35_51S,0)
+
+INITGAME2(frontiea,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(frontiea,"frnt2732.u2",  CRC(d866b2da) SHA1(d16cd346886149d7a19d3be8f0a626c34827242a),
+                          "7406fn.u6",  CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
+BY51_SOUNDROM8(           "819-09_4.716",CRC(a62059ca) SHA1(75e139ea2573a8c3b666c9a1024d9308da9875c7))
+BY35_ROMEND
+#define input_ports_frontiea input_ports_frontier
+CORE_CLONEDEFNV(frontiea,frontier,"Frontier (Free Play)",2008,"Bally / Oliver",by35_mBY35_51S,0)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -56 */
@@ -755,6 +771,36 @@ BY57_SOUNDROM(          "811-22_1.532",CRC(c49a968e) SHA1(86680e8cbb82e69c232313
                         "811-32_7.532",CRC(987e6118) SHA1(4cded4ff715494f762d043dbcb0298111f327311))
 BY35_ROMEND
 CORE_CLONEDEFNV(xenonf,xenon,"Xenon (French)",1980,"Bally",by35_mBY35_56S,0)
+
+#define input_ports_xenona input_ports_xenon
+#define init_xenona        init_xenon
+BY35_ROMSTARTx00(xenona,"xeno2732.u2",  CRC(94830cd9) SHA1(489ae80fc3ee110b2b739304faeed88f9124a11b),
+                          "7406fn.u6",  CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
+BY56_SOUNDROM(         "811-35_4.532",CRC(e9caccbb) SHA1(e2e09ac738c48342212bf38687299876b40cecbb))
+BY57_SOUNDROM(         "811-22_1.532",CRC(c49a968e) SHA1(86680e8cbb82e69c232313e5fdd7a0058b7eef13),
+                       "811-23_2.532",CRC(41043996) SHA1(78fa3782ee9f32d14cf41a96a60f708087e97bb9),
+                       "811-24_3.532",CRC(53d65542) SHA1(edb63b6d36524ae17ec40cfc02d5cf9985f0477f),
+                       "811-25_4.532",CRC(2c678631) SHA1(a1f9a732fdb498a71caf61ec8cf3d105cf7e114e),
+                       "811-26_5.532",CRC(b8e7febc) SHA1(e557b1bbbc68a6884edebe779df4529116031e00),
+                       "811-27_6.532",CRC(1e2a2afa) SHA1(3f4d4a562e46c162b80660eec8d9af6efe165dd6),
+                       "811-28_7.532",CRC(cebb4cd8) SHA1(2678ffb5e8e2fcff07f029f14a9e0bf1fb95f7bc))
+BY35_ROMEND
+CORE_CLONEDEFNV(xenona,xenon,"Xenon (Free Play)",2008,"Bally / Oliver",by35_mBY35_56S,0)
+
+#define input_ports_xenonfa input_ports_xenon
+#define init_xenonfa        init_xenon
+BY35_ROMSTARTx00(xenonfa,"xeno2732.u2",  CRC(94830cd9) SHA1(489ae80fc3ee110b2b739304faeed88f9124a11b),
+                          "7406fn.u6",  CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
+BY56_SOUNDROM(          "811-36_4.532",CRC(73156c6e) SHA1(b0b3ecb44428c01849189adf6c86be3e95a99012))
+BY57_SOUNDROM(          "811-22_1.532",CRC(c49a968e) SHA1(86680e8cbb82e69c232313e5fdd7a0058b7eef13),
+                        "811-23_2.532",CRC(41043996) SHA1(78fa3782ee9f32d14cf41a96a60f708087e97bb9),
+                        "811-24_3.532",CRC(53d65542) SHA1(edb63b6d36524ae17ec40cfc02d5cf9985f0477f),
+                        "811-29_4.532",CRC(e586ec31) SHA1(080d43e9a5895e95533ae73cffa4948f747ce510),
+                        "811-30_5.532",CRC(e48d98e3) SHA1(bb32ab96501dcd21525540a61bd5e478a35b1fef),
+                        "811-31_6.532",CRC(0a2336e5) SHA1(28eeb00b03b8d9eb0e6966be00dfbf3a1e13e04c),
+                        "811-32_7.532",CRC(987e6118) SHA1(4cded4ff715494f762d043dbcb0298111f327311))
+BY35_ROMEND
+CORE_CLONEDEFNV(xenonfa,xenon,"Xenon (French Free Play)",2008,"Bally / Oliver",by35_mBY35_56S,0)
 
 /*--------------------------------
 / Flash Gordon (Vocalizer sound)
