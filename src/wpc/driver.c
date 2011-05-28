@@ -1464,9 +1464,12 @@ DRIVER(grgar,t1)        //          11/79 W Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //          12/79 W Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
-DRIVER(frpwr,l6)        //          02/80 W Firepower (L-6)
-DRIVER(frpwr,t6)        //          02/80 W Firepower (L-6) /10 Scoring Ted Estes
-DRIVER(frpwr,b6)        //          12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
+DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Estes
+DRIVER(frpwr,a6)        //S6:       10/05 W Firepower (Sys.6/6-Digit Custom Rev. 31)
+DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(frpwr,c6)        //S6:       12/03 W Firepower (Sys.6/7-Digit Custom Rev. 31)
+DRIVER(frpwr,d6)        //S7:       10/05 W Firepower (Sys.6/6-digit /10 Scoring Rev. 31)
 DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(blkou,f1)        //          06/80 W Blackout, French speech
@@ -1479,8 +1482,11 @@ DRIVER(alpok,l6)        //          10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //          10/80 W Alien Poker L-6, French speech
 DRIVER(alpok,b6)        //          11/06 W Alien Poker Multiball mod
 //System 7
+DRIVER(frpwr,a7)        //S7:       10/05 W Firepower (Sys.7/6-digit Custom Rev. 31)
 DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
-DRIVER(frpwr,c7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion, rev. 38)
+DRIVER(frpwr,c7)        //S7:       11/06 W Firepower (Sys.7/7-digit Custom Rev. 38)
+DRIVER(frpwr,d7)        //S7:       10/05 W Firepower (Sys.7/7-digit Custom Rev. 31)
+DRIVER(frpwr,e7)        //S7:       10/05 W Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
 DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
