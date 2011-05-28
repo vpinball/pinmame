@@ -194,25 +194,36 @@ DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
-DRIVERNV(fathomb )      //BY35      08/04 Fathom (modified rules)
+DRIVERNV(fathoma )      //BY35      10/04 Fathom (Free Play)
+DRIVERNV(fathomb )      //BY35      10/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
+DRIVERNV(medusaa )      //BY35      10/04 Medusa (Free Play)
 #ifdef MAME_DEBUG
 DRIVERNV(medusaf )      //BY35      02/81 Medusa (6802 board)
 #endif
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
+DRIVERNV(centaura)      //BY35      10/04 Centaur (Free Play)
 DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
+DRIVERNV(elektraa)      //BY35      10/04 Elektra (Free Play)
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
-DRIVERNV(vectorb )      //BY35      04/04 Vector (modified rules)
+DRIVERNV(vectora )      //BY35      10/04 Vector (Free Play)
+DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules)
 DRIVERNV(spectrum)      //BY35-868: 04/81 Spectrum
-DRIVERNV(spectru4)      //BY35      04/81 Spectrum (rel 4)
+DRIVERNV(spectrua)      //BY35      10/04 Spectrum (Free Play)
+DRIVERNV(spectru4)      //BY35      04/81 Spectrum (Rev. 4)
+DRIVERNV(spectr4a)      //BY35      10/04 Spectrum (Rev. 4 Free Play)
 DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
+DRIVERNV(speakesa)      //BY35      10/04 Speakeasy (Free Play)
 DRIVERNV(speakes4)      //BY35      08/82 Speakeasy 4 (4 player)
+DRIVERNV(speake4a)      //BY35      10/04 Speakeasy 4 (4 player Free Play)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
+DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man (Free Play)
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
 DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
+DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
 DRIVERNV(gransla4)      //BY35      01/83 Grand Slam (4 player)
 /*same as cenatur*/     //BY35      06/83 Centaur II
@@ -221,15 +232,21 @@ DRIVERNV(goldbalb)      //BY35      03/04 Gold Ball (7-digit conversion)
 DRIVERNV(goldbalc)      //BY35      03/05 Gold Ball (6/7-digit alternate set rev.10)
 DRIVERNV(goldbaln)      //BY35      10/83 Gold Ball (alternate)
 DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
+DRIVERNV(xsandosa)      //BY35      10/04 X's & O's (Free Play)
                         //??        ??/84 Mysterian
 DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
 DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
+DRIVERNV(kosteela)      //BY35      10/04 Kings of Steel (Free Play)
 DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
+DRIVERNV(blakpyrb)      //BY35      10/04 Black Pyramid (Free Play)
 DRIVERNV(mdntmrdr)      //          05/84 Midnight Marauders (gun game)
 DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
+DRIVERNV(spyhunta)      //BY35      10/04 Spy Hunter (Free Play)
                         //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
+DRIVERNV(fbclassa)      //BY35      10/04 Fireball Classic (Free Play)
 DRIVERNV(cybrnaut)      //BY35-0B42 02/85 Cybernaut
+DRIVERNV(cybrnaua)      //BY35      10/04 Cybernaut (Free Play)
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38:09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
