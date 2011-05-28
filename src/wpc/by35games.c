@@ -818,7 +818,22 @@ BY57_SOUNDROM(            "834-03_1.532",CRC(88bef6f4) SHA1(561e0bde04661b700552
                           "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
 BY35_ROMEND
 #define input_ports_flashgdv input_ports_by35
-CORE_CLONEDEFNV(flashgdv,flashgdn,"Flash Gordon (Vocalizer sound)",1981,"Bally",by35_mBY35_56S,0)
+CORE_CLONEDEFNV(flashgdv,flashgdn,"Flash Gordon (Vocalizer Sound)",1981,"Bally",by35_mBY35_56S,0)
+
+INITGAME2(flashgva,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY56,0)
+BY35_ROMSTARTx00(flashgva,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY56_SOUNDROM(            "834-02_4.532",CRC(f1eb0a12) SHA1(a58567665547aacf9a1b2c39295d963527ef8696))
+BY57_SOUNDROM(            "834-03_1.532",CRC(88bef6f4) SHA1(561e0bde04661b700552e4fbb6141c39f2789c99),
+                          "834-04_2.532",CRC(bce91475) SHA1(482b424977d73b36e2014617e3bd3deb51091c28),
+                          "834-05_3.532",CRC(1a4dbd99) SHA1(fa9ae0bde118a40ba9a0e9a085b30298cac0ea93),
+                          "834-06_4.532",CRC(983c9e9d) SHA1(aae323a39b0ec987e6b9b98e5d9b2c58b1eea1a4),
+                          "834-07_5.532",CRC(697f5333) SHA1(39bbff8790e394a20ef5ba3239fb1d9359be0fe5),
+                          "834-08_6.532",CRC(75dd195f) SHA1(fdb6f7a15cd42e1326bf6baf8fa69f6266653cef),
+                          "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
+BY35_ROMEND
+#define input_ports_flashgva input_ports_by35
+CORE_CLONEDEFNV(flashgva,flashgdn,"Flash Gordon (Vocalizer Sound Free Play)",1981,"Bally",by35_mBY35_56S,0)
 
 /* -----------------------------------------------------------*/
 /* All games below use Squalk N Talk -61 (except where noted) */
@@ -835,8 +850,17 @@ BY35_ROMEND
 #define input_ports_flashgdn input_ports_by35
 CORE_GAMEDEFNV(flashgdn,"Flash Gordon",1981,"Bally",by35_mBY35_61S,0)
 
+#define input_ports_flashgda input_ports_flashgdn
+#define init_flashgda        init_flashgdn
+BY35_ROMSTARTx00(flashgda,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY61_SOUNDROM0xx0(        "834-35_2.532",CRC(dff3f711) SHA1(254a5670775ecb6c347f33af8ba7c350e4cfa550),
+                          "834-36_5.532",CRC(18691897) SHA1(3b445e0756c07d80f14c01af5a7f87744474ae15))
+BY35_ROMEND
+CORE_CLONEDEFNV(flashgda,flashgdn,"Flash Gordon (Free Play)",2008,"Bally / Oliver",by35_mBY35_61S,0)
+
 /*--------------------------------
-/ Flash Gordon (french)
+/ Flash Gordon (French)
 /-------------------------------*/
 #define input_ports_flashgdf input_ports_flashgdn
 #define init_flashgdf        init_flashgdn
@@ -846,6 +870,15 @@ BY61_SOUNDROM0xx0(        "834-35_2.532",CRC(dff3f711) SHA1(254a5670775ecb6c347f
                           "834-36_5.532",CRC(18691897) SHA1(3b445e0756c07d80f14c01af5a7f87744474ae15))
 BY35_ROMEND
 CORE_CLONEDEFNV(flashgdf,flashgdn,"Flash Gordon (French)",1981,"Bally",by35_mBY35_61S,0)
+
+#define input_ports_flashgfa input_ports_flashgdn
+#define init_flashgfa        init_flashgdn
+BY35_ROMSTARTx00(flashgfa,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY61_SOUNDROM0xx0(        "834-35_2.532",CRC(dff3f711) SHA1(254a5670775ecb6c347f33af8ba7c350e4cfa550),
+                          "834-36_5.532",CRC(18691897) SHA1(3b445e0756c07d80f14c01af5a7f87744474ae15))
+BY35_ROMEND
+CORE_CLONEDEFNV(flashgfa,flashgdn,"Flash Gordon (French Free Play)",2008,"Bally / Oliver",by35_mBY35_61S,0)
 
 /*--------------------------------
 / Eight Ball Deluxe
@@ -880,6 +913,16 @@ BY35_ROMEND
 #define input_ports_eballdlb input_ports_eballdlx
 CORE_CLONEDEFNV(eballdlb,eballdlx,"Eight Ball Deluxe (modified rules rev. 29)",2007,"Bally / Oliver",by35_mBY35_61S,0)
 
+#define init_eballdla init_eballdlx
+BY35_ROMSTARTx00(eballdla,"838-15_2.732",CRC(68d92acc) SHA1(f37b16d2953677cd779073bc3eac4b586d62fad8),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
+                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
+                          "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
+BY35_ROMEND
+#define input_ports_eballdla input_ports_eballdlx
+CORE_CLONEDEFNV(eballdla,eballdlx,"Eight Ball Deluxe (Free Play)",2008,"Bally / Oliver",by35_mBY35_61S,0)
+
 /*--------------------------------
 / Fireball II
 /-------------------------------*/
@@ -892,6 +935,15 @@ BY35_ROMEND
 #define input_ports_fball_ii input_ports_by35
 CORE_GAMEDEFNV(fball_ii,"Fireball II",1981,"Bally",by35_mBY35_61S,0)
 
+INITGAME2(fball_ia,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
+BY35_ROMSTARTx00(fball_ia,"839-12_2.732",CRC(45e768ad) SHA1(b706cb5f3dcfa2db54d8d15de180fcbf36b3768f),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY61_SOUNDROM0xx0(        "839-01_2.532",CRC(4aa473bd) SHA1(eaa12ded76f9999d33ce0fe6198df1708e007e12),
+                          "839-02_5.532",CRC(8bf904ff) SHA1(de78d08bddd546abac65c2f95f1d52797e716362))
+BY35_ROMEND
+#define input_ports_fball_ia input_ports_fball_ii
+CORE_CLONEDEFNV(fball_ia,fball_ii,"Fireball II (Free Play)",2008,"Bally / Oliver",by35_mBY35_61S,0)
+
 /*--------------------------------
 / Embryon
 /-------------------------------*/
@@ -903,6 +955,15 @@ BY61_SOUNDROMxx80(       "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c65714911
 BY35_ROMEND
 #define input_ports_embryon input_ports_by35
 CORE_GAMEDEFNV(embryon ,"Embryon",1981,"Bally",by35_mBY35_61BS,0)
+
+INITGAME2(embryona,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
+BY35_ROMSTARTx00(embryona,"841-06_2.732",CRC(80ab18e7) SHA1(52e5b1709e6f21919fc9efed67f51934d883dbb7),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491150e346d815005948b68),
+                          "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
+BY35_ROMEND
+#define input_ports_embryona input_ports_embryon
+CORE_CLONEDEFNV(embryona,embryon ,"Embryon (Free Play)",2008,"Bally / Oliver",by35_mBY35_61BS,0)
 
 INITGAME2(embryonb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
 BY35_ROMSTARTx00(embryonb,"embd71u2.bin",CRC(8a25d7e9) SHA1(3f60007fae4f911b88d0642f50604c74dc45bed4),

@@ -170,19 +170,25 @@ DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
+DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
 DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
+DRIVERNV(flashgva)      //BY35      10/08 Flash Gordon (Vocalizer sound Free Play)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
+DRIVERNV(flashgfa)      //BY35      10/08 Flash Gordon (French Free Play)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
 DRIVERNV(eballd14)      //BY35-838: 09/80 Eight Ball Deluxe (rev. 14)
 DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
-DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe (custom rom rev. 29)
+DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
+DRIVERNV(eballdla)      //BY35      10/08 Eight Ball Deluxe (Free Play)
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
 DRIVERNV(eballdp4)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 4)
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
+DRIVERNV(fball_ia)      //BY35      10/08 Fireball II (Free Play)
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
+DRIVERNV(embryona)      //BY35      10/08 Embryon (Free Play)
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
