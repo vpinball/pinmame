@@ -91,13 +91,20 @@ DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
 DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
 DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)
+DRIVERNV(nightrdb)      //BY17-721: 10/08 Night Rider (Free Play)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
+DRIVERNV(evelknib)      //BY17-722: 10/08 Evel Knievel (Free Play)
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
+DRIVERNV(eightblb)      //BY17-723: 10/08 Eight Ball (Free Play)
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
+DRIVERNV(pwerplab)      //BY17-724: 10/08 Power Play (Free Play)
 DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
+DRIVERNV(stk_sprb)      //BY17-740: 10/08 Strikes and Spares (Free Play)
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
 DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
+DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
+DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack  (Free Play)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
@@ -151,6 +158,7 @@ DRIVERNV(mysticb )      //BY35      11/02 Mystic (7-digit conversion)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
 DRIVERNV(xenonf  )      //BY35      11/79 Xenon (French)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
+DRIVERNV(hotdogga)      //BY35      11/02 Hotdoggin' (Free Play)
 DRIVERNV(hotdoggb)      //BY35      11/02 Hotdoggin' (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(vikingb )      //BY35      11/02 Viking (7-digit conversion)
