@@ -386,6 +386,12 @@ DCS_SOUNDROM3m("ss_s2.rom",CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f
                "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 
+WPC_ROMSTART(ss,01b,"ss_g11b.rom",0x80000,CRC(52b96952) SHA1(26ad686e178b2ba5c0a0650db4a9ffa4e615caf1))
+DCS_SOUNDROM3m("ss_s2.rom",CRC(ad079cbc) SHA1(77c7f676fc2f46e22b74b381638725269f7d23f4),
+               "sssnd_s3.21",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_s4.21",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -394,6 +400,7 @@ CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,03,15,"Scared Stiff (0.3)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,01,15,"Scared Stiff (D0.1R with sound rev.25)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D0.1R with sound rev.25 Coin Play)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
