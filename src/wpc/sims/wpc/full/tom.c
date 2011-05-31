@@ -545,6 +545,7 @@ DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba) SHA1(59101f9f4f43c240630dfbdc7fb432a99
 /  ROM definitions  (Take them from Games.c)
 /------------------*/
 WPC_ROMSTART(tom,14h,"1_40h.u6",  0x80000,CRC(4181db9b) SHA1(027ada8518207d5a841ec3cc8c7842c7b3841f70)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,14hb,"1_40hb.u6",  0x80000,CRC(93fc2b7b) SHA1(8b180f7e92ab4f9daabb648ad3e64c6005869083)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c) SHA1(9896f3034bb7a59c9e241d16bf231fefc0ae1fd0)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884) SHA1(2cb74ae5082d8ceaf89b8ef4df86f78cb5ba6463)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,121,"tom1_21.rom",0x80000,CRC(d578ba58) SHA1(cbc195935a0ffad282941e605fd94c1b095d17de)) TOM_SOUND WPC_ROMEND
@@ -558,6 +559,7 @@ WPC_ROMSTART(tom,061,"u6-061.rom", 0x80000,CRC(b4e8045d) SHA1(f53fc7b8616d3a3208
 /---------------*/
 CORE_GAMEDEF(tom,13,"Theatre Of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,14h,13,"Theatre Of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,14hb,13,"Theatre Of Magic (1.4H Coin Play)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,12,13,"Theatre Of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,121,13,"Theatre Of Magic (1.21X) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,10f,13,"Theatre Of Magic (1.0 French)",1995,"Bally",wpc_mSecurityS,0)
