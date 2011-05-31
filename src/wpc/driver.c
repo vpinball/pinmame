@@ -1935,6 +1935,7 @@ DRIVER(tom,12)          //WPC-539:  04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,121)         //WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
+DRIVER(tom,14hb)        //          10/96 B Theatre of Magic (1.4 Home version Coin Play)
 DRIVER(nf,20)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.0)
 DRIVER(nf,22)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.2)
 DRIVER(nf,23)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.3)
