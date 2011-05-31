@@ -304,7 +304,10 @@ WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493) SHA1(26ee970827dd96f3b3
 WPC_ROMSTART(dm,dx4,"dman_dx4.rom",0x80000,CRC(6974789d) SHA1(9cf2c49f879fa1f2547e1e7c853e12dc4a35b97d)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,h5, "dman_h5.rom", 0x80000,CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dh5, "dman_dh5.rom", 0x80000,CRC(91388e13) SHA1(b09a628afd921e34b99d0db3005ab12bbec189b5)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,h5b, "dman_h5b.rom", 0x80000,CRC(134aa8ed) SHA1(3fe1e10be2b65c11967dc5fbef64f658db7387fb)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,dh5b, "dmandh5b.rom", 0x80000,CRC(e9d4776d) SHA1(fa1b16b284d547b1ab211244f5d40db5cca3d6a6)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,h6b, "dman_h6b.rom", 0x80000,CRC(004bde84) SHA1(cf3f44a65e0598bdf257f61939bab4e9c03339a6)) DM_SOUND_H1 WPC_ROMEND
 
 /*--------------
 /  Game drivers
@@ -321,7 +324,10 @@ CORE_CLONEDEF(dm,lx3,lx4,"Demolition Man (LX-3)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dx3,lx4,"Demolition Man (DX-3) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5,lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dh5,lx4, "Demolition Man (DH-5) LED Ghost Fix", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h5b,lx4, "Demolition Man (H-5B) Coin Play", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dh5b,lx4, "Demolition Man (DH-5B) Coin Play LED Ghost Fix", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6,lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h6b,lx4, "Demolition Man (H-6B) Coin Play", 1995,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions
