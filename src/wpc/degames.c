@@ -686,6 +686,14 @@ DE_ROMEND
 #define input_ports_tftc input_ports_des11
 CORE_GAMEDEF(tftc,303,"Tales From the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(tftc_302,"tftccpua.302",CRC(a194fe0f) SHA1(b83e048300f7e072f76672d72cdf43e43fab2e9e))
+DE_DMD32ROM8x(      "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
+DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_ROMEND
+CORE_CLONEDEF(tftc,302,303,"Tales From the Crypt (3.02 Dutch)",1993,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(tftc_300,"tftccpua.300",CRC(3d275152) SHA1(0aa6df629c27d9265cf35ca0724e241d9820e56b))
 DE_DMD32ROM8x(      "tftcdspa.300",CRC(bf5c812b) SHA1(c10390b6cad0ad457fb83241c7ee1d6b109cf5be))
 DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
