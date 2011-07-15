@@ -3,6 +3,8 @@
 #include "wpc.h"
 #include "sim.h"
 
+/* 07-14-2011 Fixed the spinner handling for real! - SJE */
+
 /* 121200  Added SIM_STSWON, SIM_STSWOFF. */
 /*         changes state if switch is activated or deactivated */
 /* 111100  Corrected error in spinner handling */
@@ -275,6 +277,28 @@ static void sim_startSpin(int swNo, int time) {
       idx = ii;
   if (idx < 0)
     { logerror("Only %d spinners supported\n",SIM_MAXSPIN); return; }
+
+  //SJE
+  //convert from the 3 dip values into the array which ( I assume is meant to index seconds for spin time )
+  switch(time)
+  {
+	  //2 seconds
+	  case 0:	
+		time = 2;
+		break;
+	  //4 seconds
+	  case 1:	
+		time = 4;
+		break;
+	  //6 seconds
+	  case 2:	
+		time = 6;
+		break;
+	  //8 secodns
+	  case 3:	
+		time = 8;
+		break;
+  }
 
   locals.spinner[idx].swNo = swNo;
   locals.spinner[idx].spinCount = 0;
