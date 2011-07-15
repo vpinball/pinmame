@@ -1,22 +1,46 @@
 /*******************************************************************************
- Preliminary Harley (Stern, 2001) Pinball Simulator
+ Harley Davidson (Sega/Stern) Pinball Simulator
 
  by Steve Ellenoff and Brian Smith
  Jul 14, 2011
- 
- Read PZ.c or FH.c if you like more help.
 
+ NOTES:
+
+ Thanks to Destruk for sorting out the mess with the clones, since I couldn't
+ manage it... brain too rusty! Haven't written a sim for PinMAME since, what
+ the year, 2000 or so?
+
+ Code was a rush job, so don't judge harshly... 
+ 
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
-  Keys for The Monopoly Simulator:
+  Keys for The Harley Davidson Simulator:
   ------------------------------------
     +I  L/R Inlane
     +O  L/R Outlane
     +-  L/R Slingshot
+	+L	L/R Loop Shots
      Q  SDTM (Drain Ball)
-
-   More to be added...
+	 M  Motorcycle
+	 R  Ramp
+	 T  Traffic Light
+	 N  Next City Hole / Scoop
+	 B  Jet Bumper Area
+	 W  Moto Stand Up #1
+	 E  Moto Stand Up #2
+	 Y  Ramp Stand Up #1
+	 U  Ramp Stand Up #2
+	 A  L Drop Target
+	 S  I Drop Target
+	 D  V Drop Target
+	 F  E Drop Target
+	 G  R Drop Target
+	 H  I Drop Target
+	 J  D Drop Target
+	 K  E Drop Target
+	 X  Spinner
+    
 
 ------------------------------------------------------------------------------*/
 
@@ -36,26 +60,10 @@ static int  harley_handleBallState(sim_tBallStatus *ball, int *inports);
 static void harley_drawStatic(BMTYPE **line);
 static void init_harl(void);
 static void harley_drawMech(BMTYPE **line);
-//static int  harley_getMech(int mech);
 static void harley_handleMech(int mech);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static void harley_handleMech(int mech);
-#endif
 
-// The last used selocals variable is "flipsolPulse", so we can forget about the rest.
-extern struct {
-  int    vblankCount;
-  int    initDone;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  int    diagnosticLed;
-  int    swCol;
-  int	 flipsol, flipsolPulse;
-} selocals;
 
-/*-----------------------
-  local static variables
- ------------------------*/
+//motor cycle tracking
 #define MOTO_UP			50
 #define MOTO_DOWN		0
 enum{
@@ -63,6 +71,10 @@ enum{
 	MOTO_DIR_UP,
 	MOTO_DIR_DOWN
 };
+
+/*-----------------------
+  local static variables
+ ------------------------*/
 static struct {
   int motopos;
   int motodir;
@@ -80,88 +92,47 @@ SE_INPUT_PORTS_START(harl,4)
     COREPORT_BIT(0x0010,"L/R Slingshot",	KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
     COREPORT_BIT(0x0040,"L/R Loop",			KEYCODE_L)
-    COREPORT_BIT(0x0080,"",			KEYCODE_E)
-    COREPORT_BIT(0x0100,"Ramp",		KEYCODE_R)
-    COREPORT_BIT(0x0200,"Traffic Lite",	KEYCODE_T)
-    COREPORT_BIT(0x0400,"",			KEYCODE_Y)
-    COREPORT_BIT(0x0800,"",			KEYCODE_U)
-    COREPORT_BIT(0x1000,"",			KEYCODE_I)
-    COREPORT_BIT(0x2000,"",			KEYCODE_O)
-    COREPORT_BIT(0x4000,"",			KEYCODE_A)
-    COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(0x0080,"Traffic Lite",		KEYCODE_T)
+    COREPORT_BIT(0x0100,"Ramp",				KEYCODE_R)
+	COREPORT_BIT(0x0200,"Moto Target 1",	KEYCODE_W)    
+    COREPORT_BIT(0x0400,"Moto Target 2",	KEYCODE_E)
+    COREPORT_BIT(0x0800,"Ramp Target 1",	KEYCODE_Y)
+    COREPORT_BIT(0x1000,"Ramp Target 2",	KEYCODE_U)
+    COREPORT_BIT(0x2000,"Jets",				KEYCODE_B)
+    COREPORT_BIT(0x4000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(0x8000,"Next City Scoop",	KEYCODE_N)
 
   PORT_START /* 1 */
-    COREPORT_BIT(0x0001,"",			KEYCODE_S)
-    COREPORT_BIT(0x0002,"",			KEYCODE_D)
-    COREPORT_BIT(0x0004,"",			KEYCODE_F)
-    COREPORT_BIT(0x0008,"",			KEYCODE_G)
-    COREPORT_BIT(0x0010,"",			KEYCODE_H)
-    COREPORT_BIT(0x0020,"Jets",		KEYCODE_J)
-    COREPORT_BIT(0x0040,"",			KEYCODE_K)
-    COREPORT_BIT(0x0080,"",			KEYCODE_W)
-    COREPORT_BIT(0x0100,"",			KEYCODE_Z)
-    COREPORT_BIT(0x0200,"",			KEYCODE_X)
-    COREPORT_BIT(0x0400,"",			KEYCODE_C)
-    COREPORT_BIT(0x0800,"",			KEYCODE_V)
-    COREPORT_BIT(0x1000,"",			KEYCODE_B)
-    COREPORT_BIT(0x2000,"Next City Hole",		KEYCODE_N)
-    COREPORT_BIT(0x4000,"Motorcycle",			KEYCODE_M)
-    COREPORT_BIT(0x8000,"",			KEYCODE_COMMA)
+    COREPORT_BIT(0x0001,"L Drop Target",			KEYCODE_A)
+    COREPORT_BIT(0x0002,"I Drop Target",			KEYCODE_S)
+    COREPORT_BIT(0x0004,"V Drop Target",			KEYCODE_D)
+    COREPORT_BIT(0x0008,"E Drop Target",			KEYCODE_F)
+    COREPORT_BIT(0x0010,"R Drop Target",			KEYCODE_G)
+    COREPORT_BIT(0x0020,"I Drop Target",			KEYCODE_H)
+    COREPORT_BIT(0x0040,"D Drop Target",			KEYCODE_J)
+    COREPORT_BIT(0x0080,"E Drop Target",			KEYCODE_K)
+    COREPORT_BIT(0x0100,"Motorcycle",				KEYCODE_M)
+    COREPORT_BIT(0x0200,"Spinner",					KEYCODE_X)
+    COREPORT_BIT(0x0400,"",							KEYCODE_C)
+    COREPORT_BIT(0x0800,"",							KEYCODE_V)
+    COREPORT_BIT(0x1000,"",							KEYCODE_SLASH)
+    COREPORT_BIT(0x2000,"",							KEYCODE_Z)
+    COREPORT_BIT(0x4000,"",							KEYCODE_BACKSPACE)
+    COREPORT_BIT(0x8000,"",							KEYCODE_COMMA)
 SE_INPUT_PORTS_END
-
-/*-------------------
-/ Switch definitions
-/--------------------*/
-/* Standard Switches */
-#define swLaunch    53
-#define swStart		54
-#define swSlamTilt	55
-#define swTilt		56
-
-/* Other switches */
-#define swTrough1	11
-#define swTrough2	12
-#define swTrough3	13
-#define swTrough4	14
-#define swTroughJam	15
-#define swShooter	16
-#define swLeftOutlane	57
-#define swLeftInlane	58
-#define swLeftSling		59
-#define swRightOutlane	60
-#define swRightInlane	61
-#define swRightSling	62
-
-/*---------------------
-/ Solenoid definitions
-/----------------------*/
-#define sTrough		1
-#define sLaunch		2
-#define sLeftSling	17
-#define sRightSling	18
 
 //SPECIFIC SWITCH #
 #define HARLEY_PF_SW_LT_BUTTON			01
-
-//common
-//#define HARLEY_PF_SW_COIN4			02
-//#define HARLEY_PF_SW_COIN6			03
-//#define HARLEY_PF_SW_COIN_RIGHT		04
-//#define HARLEY_PF_SW_COIN_CENTER		05
-//#define HARLEY_PF_SW_COIN_LEFT		06
-//#define HARLEY_PF_SW_COIN6			07
-
 #define HARLEY_PF_SW_RT_BUTTON			08
-
 //#09 - Not Used
 //#10 - Not Used
 
 //common
-//#define HARLEY_PF_SW_TROUGH1		11
-//#define HARLEY_PF_SW_TROUGH2		12
-//#define HARLEY_PF_SW_TROUGH3		13
-//#define HARLEY_PF_SW_TROUGH4		14	// Called VUK Opto
-//#define HARLEY_PF_SW_TROUGH_STACK	15	// Called 4-Ball Stacking Opto
+#define HARLEY_PF_SW_TROUGH1		11
+#define HARLEY_PF_SW_TROUGH2		12
+#define HARLEY_PF_SW_TROUGH3		13
+#define HARLEY_PF_SW_TROUGH4		14	// Called VUK Opto
+#define HARLEY_PF_SW_TROUGH_STACK	15	// Called 4-Ball Stacking Opto
 
 #define HARLEY_PF_SW_SHOOTER_LANE	16
 
@@ -197,7 +168,7 @@ SE_INPUT_PORTS_END
 //Motor
 #define HARLEY_PF_SW_MOTOR_UP		 35
 #define HARLEY_PF_SW_MOTOR_DOWN		 36
-#define HARLEY_PF_SW_OPTO			 37 // Opto?
+#define HARLEY_PF_SW_OPTO			 37 // Motorcycle Hit
 //#38 - Not Used
 //#39 - Not Used
 //#40 - Not Used
@@ -220,9 +191,9 @@ SE_INPUT_PORTS_END
 #define HARLEY_PF_SW_LAUNCH_BUTTON	 53
 
 //Common 
-//#define HARLEY_PF_SW_START_BUTTON	 54
-//#define HARLEY_PF_SW_SLAM_TILT	 55
-//#define HARLEY_PF_SW_TILT			 56
+#define HARLEY_PF_SW_START_BUTTON	 54
+#define HARLEY_PF_SW_SLAM_TILT		 55
+#define HARLEY_PF_SW_TILT			 56
 
 #define HARLEY_PF_SW_LEFT_OUTLANE	 57
 #define HARLEY_PF_SW_LEFT_RETURN	 58
@@ -275,31 +246,31 @@ enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDra
 	  stMotoEntrance, stMotoDown, stMotoUp, stMTrough4, stMTrough3, stMTrough2, stMTrough1,
 	  stRampEnter, stRampMiddle, stRampExit, stTrafficLite, stScoop, stBehindLR, stBehindRL, stBehindTrafficLiteVUK,
 	  stLoopLR, stLoopRL, stLoopL, stLoopR, stJetArea, stJet1, stJet2, stJet3, stJet4,
-	  stSpinner
+	  stSpinner, stSpinner2, stSpinner3
 	  };
 
 static sim_tState harley_stateDef[] = {
-  {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
+  {"Not Installed",		0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",		0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
+  {"Playfield",			0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 1*/
-  {"Trough 1",		1,swTrough1,	0,		stTrough3,	1},
-  {"Trough 2",		1,swTrough2,	0,		stTrough2,	1},
-  {"Trough 3",		1,swTrough3,	0,		stTrough1,	1},
-  {"Trough 4",		1,swTrough4,	sTrough,	stTrough,	1},
-  {"Trough Jam",	1,swTroughJam,  0,		stShooter,	1},
-  {"Drain",		1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
+  {"Trough 1",			1,HARLEY_PF_SW_TROUGH1,	0,		stTrough3,	1},
+  {"Trough 2",			1,HARLEY_PF_SW_TROUGH2,	0,		stTrough2,	1},
+  {"Trough 3",			1,HARLEY_PF_SW_TROUGH3,	0,		stTrough1,	1},
+  {"Trough 4",			1,HARLEY_PF_SW_TROUGH4,	HARLEY_COIL_TROUGH_UP,	stTrough,	1},
+  {"Trough Jam",		1,HARLEY_PF_SW_TROUGH_STACK,  0,		stShooter,	1},
+  {"Drain",				1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 2*/
-  {"Shooter",		1,swShooter,	 sLaunch,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		stLoopRL,		7,	0,	0,	SIM_STNOTEXCL},
-  {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
-  {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
-  {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
-  {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
-  {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
+  {"Shooter",			1,HARLEY_PF_SW_SHOOTER_LANE,	 HARLEY_COIL_AUTO_LAUNCH,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
+  {"Ball Lane",			1,0,		 0,		stLoopRL,		7,	0,	0,	SIM_STNOTEXCL},
+  {"Right Outlane",		1,HARLEY_PF_SW_RIGHT_OUTLANE,0,		stDrain,	15},
+  {"Left Outlane",		1,HARLEY_PF_SW_LEFT_OUTLANE, 0,		stDrain,	15},
+  {"Right Inlane",		1,HARLEY_PF_SW_RIGHT_RETURN, 0,		stFree,		5},
+  {"Left Inlane",		1,HARLEY_PF_SW_LEFT_RETURN,	 0,		stFree,		5},
+  {"Left Slingshot",	1,HARLEY_PF_SW_LEFT_SLING,	 0,		stFree,		1},
+  {"Rt Slingshot",		1,HARLEY_PF_SW_RIGHT_SLING,	 0,		stFree,		1},
 
   /*Line 3*/
   {"Moto-Entrance",		1,0,    0,       0, 0},	// harley_handleBallState handler
@@ -313,27 +284,29 @@ static sim_tState harley_stateDef[] = {
   /*Line 4*/
   {"Ramp Enter",		1,HARLEY_PF_SW_RT_RAMP_ENTER,	0,		stRampMiddle, 5},
   {"Ramp Middle",		1,HARLEY_PF_SW_RT_RAMP_MID,		0,		stRampExit,	  2},
-  {"Ramp Exit",		    1,HARLEY_PF_SW_RT_RAMP_EXIT,	0,		stLeftInlane, 20},
+  {"Ramp Exit",		    1,HARLEY_PF_SW_RT_RAMP_EXIT,	0,		stLeftInlane, 10},
 
   {"Traffic Lite",			1,HARLEY_PF_SW_SUPER_VUK,	HARLEY_COIL_SUPER_VUK,	stRightInlane,	10},
   {"Next City Scoop",		1,HARLEY_PF_SW_SCOOP_EJECT,	HARLEY_COIL_SCOOP,	stFree,	1},
-  {"Behind Traffic L-R",	1,0,	0,	0,	0},
-  {"Behind Traffic R-L",	1,0,	0,	0,	0},
-  {"Behind Traffic Down",	1,HARLEY_PF_SW_BEHIND_VUK,	0,	stTrafficLite,	10},
+  {"Behind Traffic",		1,0,	0,	0,	0},
+  {"Behind Traffic",		1,0,	0,	0,	0},
+  {"Behind VUK",			1,HARLEY_PF_SW_BEHIND_VUK,	0,	stTrafficLite,	10},
 
   /*Line 5*/
-  {"Left Loop (L-R)",	1,HARLEY_PF_SW_LT_ORBIT,	0,		stBehindLR, 10},
-  {"Right Loop(R-L)",	1,HARLEY_PF_SW_RT_ORBIT,	0,		stBehindRL, 10},
+  {"Left Loop",			1,HARLEY_PF_SW_LT_ORBIT,	0,		stSpinner2, 10},
+  {"Right Loop",		1,HARLEY_PF_SW_RT_ORBIT,	0,		stBehindRL, 10},
   {"Left Loop",			1,HARLEY_PF_SW_LT_ORBIT,	0,		stSpinner, 10},
   {"Right Loop",		1,HARLEY_PF_SW_RT_ORBIT,	0,		stFree, 10},
-  {"Jet Area",		1,0,	0,		0, 0},
-  {"Jet 1",			1,HARLEY_PF_SW_LEFT_BUMPER,	0,		stJetArea, 1},
-  {"Jet 2",			1,HARLEY_PF_SW_RIGHT_BUMPER,0,		stJetArea, 2},
-  {"Jet 3",			1,HARLEY_PF_SW_BOTT_BUMPER,	0,		stJetArea, 1},
-  {"Jet 4",			1,HARLEY_PF_SW_TOP_BUMPER,	0,		stJetArea, 2},
+  {"Bumper Jets",		1,0,	0,		0, 0},
+  {"L.Bumper",			1,HARLEY_PF_SW_LEFT_BUMPER,	0,		stJetArea, 1},
+  {"R.Bumper",			1,HARLEY_PF_SW_RIGHT_BUMPER,0,		stJetArea, 2},
+  {"B.Bumper",			1,HARLEY_PF_SW_BOTT_BUMPER,	0,		stJetArea, 1},
+  {"T.Bumper",			1,HARLEY_PF_SW_TOP_BUMPER,	0,		stJetArea, 2},
 
   /*Line 6*/
-  {"Spinner",		1,HARLEY_PF_SW_SPINNER, 0, stJetArea, 3, 0,0,SIM_STSPINNER}
+  {"Spinner",			1,HARLEY_PF_SW_SPINNER, 0, stJetArea, 3, 0,0,SIM_STSPINNER},
+  {"Spinner",			1,HARLEY_PF_SW_SPINNER, 0, stBehindLR, 3, 0,0,SIM_STSPINNER},
+  {"Spinner",			1,HARLEY_PF_SW_SPINNER, 0, stFree, 3, 0,0,SIM_STSPINNER}
 };
 
 static int harley_handleBallState(sim_tBallStatus *ball, int *inports)
@@ -343,26 +316,33 @@ static int harley_handleBallState(sim_tBallStatus *ball, int *inports)
   
   switch (ball->state)
   {
-	  /* Behind Traffic Lite */
+	/* Behind Traffic Lite */
 	case stBehindLR:
 	case stBehindRL:
+		// give time for magnet to activate..
 		if(wait++ > 5)
 		{
+			// Magnet can stop the ball and send to the VUK
 			int coil = core_getSol(HARLEY_COIL_MAGNET);
 			wait = 0;
 
-			// l-r
+			// ball is coming from left -> right
 			if(ball->state == stBehindLR)
 			{
+				// magnet sends to traffic light VUK
 				if(coil)
 					return setState(stBehindTrafficLiteVUK,1);
+				// continue to right loop switch
 				else
 					return setState(stLoopR,5);
 			}
+			// ball is coming from right -> left
 			else
 			{
+				// magnet sends to traffic light VUK
 				if(coil)
 					return setState(stBehindTrafficLiteVUK,1);
+				// continue to left loop switch
 				else
 					return setState(stLoopL,5);
 			}
@@ -371,9 +351,9 @@ static int harley_handleBallState(sim_tBallStatus *ball, int *inports)
 
 	  /* Moto Entrance */
       case stMotoEntrance:
-		// Moto Up
+		// Moto Up? ( Half way at least )
 		if (locals.motopos >= MOTO_UP / 2)
-			return setState(stMotoUp,10);   /*Yes, ball goes into trough*/
+			return setState(stMotoUp,10);		/*Yes, ball goes into trough*/
 		else
 			return setState(stMotoDown,10);    /*No ball goes back to playfield*/
 		break;
@@ -383,10 +363,10 @@ static int harley_handleBallState(sim_tBallStatus *ball, int *inports)
 		//first time to Jet Area?
 		if(bumps == 0)
 		{
-			// 75% we'll hit a bumper
+			// 75% random chance we'll hit a bumper
 			if((rand() % 4 + 1) > 1)
 			{
-				// up to 6 different times..
+				// random # up to 6 different times as to how many hits
 				bumps = rand() % 6 + 1;
 			}
 			// - No bumper this time..
@@ -397,6 +377,7 @@ static int harley_handleBallState(sim_tBallStatus *ball, int *inports)
 		}
 		if(bumps > 0)
 		{
+			// Random bumper will be activated
 			int bumpr = rand() % 4;
 			bumps--;
 			//was this the last one?
@@ -420,7 +401,7 @@ static sim_tInportData harley_inportData[] = {
 /* Port 0 */
 //  {0, 0x0005, st},
 //  {0, 0x0006, st},
-  {0, 0x0004, swLaunch, SIM_STANY},
+  {0, 0x0004, HARLEY_PF_SW_LAUNCH_BUTTON, SIM_STANY},
   {0, 0x0009, stLeftOutlane},
   {0, 0x000a, stRightOutlane},
   {0, 0x0011, stLeftSling},
@@ -429,32 +410,32 @@ static sim_tInportData harley_inportData[] = {
   {0, 0x0022, stRightInlane},
   {0, 0x0041, stLoopLR},
   {0, 0x0042, stLoopRL},
-//  {0, 0x0080, },
+  {0, 0x0080, stTrafficLite},
   {0, 0x0100, stRampEnter},
-  {0, 0x0200, stTrafficLite},
-//  {0, 0x0400, st},
-//  {0, 0x0800, st},
-//  {0, 0x1000, st},
-//  {0, 0x2000, st},
-//  {0, 0x4000, st},
-  {0, 0x8000, stDrain},
+  {0, 0x0200, HARLEY_PF_SW_ST_LT_MCYCLE, SIM_STANY},
+  {0, 0x0400, HARLEY_PF_SW_ST_RT_MCYCLE, SIM_STANY},
+  {0, 0x0800, HARLEY_PF_SW_ST_LT_RTRAMP, SIM_STANY},
+  {0, 0x1000, HARLEY_PF_SW_ST_RT_RTRAMP, SIM_STANY},
+  {0, 0x2000, stJetArea},
+  {0, 0x4000, stDrain},
+  {0, 0x8000, stScoop},
 
 /* Port 1 */
-//  {1, 0x0001, st},
-//  {1, 0x0002, st},
-//  {1, 0x0004, st},
-//  {1, 0x0008, st},
-//  {1, 0x0010, st},
-  {1, 0x0020, stJetArea},
-//  {1, 0x0040, st},
-//  {1, 0x0080, st},
-//  {1, 0x0100, st},
-//  {1, 0x0200, st},
+  {1, 0x0001, HARLEY_PF_SW_LEFT_DT_L_IVE, SIM_STANY},
+  {1, 0x0002, HARLEY_PF_SW_LEFT_DT_LI_VE, SIM_STANY},
+  {1, 0x0004, HARLEY_PF_SW_LEFT_DT_LIV_E, SIM_STANY},
+  {1, 0x0008, HARLEY_PF_SW_LEFT_DT_LIVE_, SIM_STANY},
+  {1, 0x0010, HARLEY_PF_SW_RIGHT_DT_R_IDE, SIM_STANY},
+  {1, 0x0020, HARLEY_PF_SW_RIGHT_DT_RI_DE, SIM_STANY},
+  {1, 0x0040, HARLEY_PF_SW_RIGHT_DT_RID_E, SIM_STANY},
+  {1, 0x0080, HARLEY_PF_SW_RIGHT_DT_RIDE_, SIM_STANY},
+  {1, 0x0100, stMotoEntrance},
+  {1, 0x0200, stSpinner3},
 //  {1, 0x0400, st},
 //  {1, 0x0800, st},
 //  {1, 0x1000, st},
-  {1, 0x2000, stScoop},
-  {1, 0x4000, stMotoEntrance},
+//  {1, 0x2000, st},
+//  {1, 0x4000, st},
 //  {1, 0x8000, st},
   {0}
 };
@@ -469,14 +450,15 @@ static void harley_drawStatic(BMTYPE **line) {
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
-  core_textOutf(30, 90,BLACK,"Q = Drain Ball, M = Motorcylce");
-  core_textOutf(30,100,BLACK,"R = Ramp, T = Traffic Lite");
-  core_textOutf(30,110,BLACK,"N = Next City Hole, J = Jets");
-  core_textOutf(30,120,BLACK,"");
-  core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
-  core_textOutf(30,140,BLACK,"");
-  core_textOutf(30,150,BLACK,"");
-  core_textOutf(30,160,BLACK,"");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+L = L/R Loops");
+  core_textOutf(30,100,BLACK,"Q = Drain Ball, M = Motorcylce");
+  core_textOutf(30,110,BLACK,"R = Ramp, T = Traffic Lite");
+  core_textOutf(30,120,BLACK,"N = Next City Hole, B = Bumpers");
+  core_textOutf(30,130,BLACK,"W/E = Motorcycle Standup Targets");
+  core_textOutf(30,140,BLACK,"Y/U = Ramp Standup Targets");
+  core_textOutf(30,150,BLACK,"A/S/D/F = LIVE Drop Targets");
+  core_textOutf(30,160,BLACK,"G/H/J/K = RIDE Drop Targets");
+  core_textOutf(30,170,BLACK,"X = Spinner");
 }
 
 /*-----------------
@@ -624,40 +606,9 @@ static sim_tSimData harleySimData = {
   NULL  				/* Custom key conditions? */
 };
 
-#define INITGAME(name, gen, disp, hw) \
-
-//SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
-
 /*----------------------
 / Game Data Information
 /----------------------*/
-
-/*-- Solenoids --*/
-static WRITE_HANDLER(harley_w) {
-//  static const int solmaskno[] = { 8, 0, 16, 24 };
-//  UINT32 mask = ~(0xff<<solmaskno[offset]);
-//  UINT32 sols = data<<solmaskno[offset];
-//  if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
-//    selocals.flipsol |= selocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
-//    sols &= 0xffff3fff; /* mask off flipper solenoids */
-//  }
-//  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-//  selocals.solenoids |= sols;
-//  if (offset == 3) {
-//    locals.flipperDir = ((data & 0x04) >> 1) - 1; // so +1 for cw, -1 for ccw
-//	if (data & 0x01) { // increase flipper speed if set
-//      if (locals.flipperSpeed < 4) locals.flipperSpeed++;
-//    } else { // decrease flipper speed if not set
-//      if (locals.flipperSpeed) locals.flipperSpeed--;
-//    }
-//    locals.flipperPos += locals.flipperDir * locals.flipperSpeed;
-//    if (locals.flipperPos < 0) locals.flipperPos += 5000;
-//    if (locals.flipperPos > 4999) locals.flipperPos -= 5000;
-//#ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
-//    core_setSw(30, locals.flipperPos < 100 || locals.flipperPos > 4900);
-//#endif
-//  }
-}
 
 /*---------------
 /  Game handling
@@ -675,14 +626,12 @@ static core_tGameData harlGameData = {
     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /* inverted switches */
     /*Start    Tilt    SlamTilt */
-    { swStart, swTilt, swSlamTilt },
+    { HARLEY_PF_SW_START_BUTTON, HARLEY_PF_SW_TILT, HARLEY_PF_SW_SLAM_TILT },
   }
 };
 
 static void init_harl(void) {
   core_gameData = &harlGameData;
-  //install_mem_write_handler(0, 0x2000, 0x2003, harley_w);
-
   /* initialize random seed: */
   srand ( time(NULL) );
 }
@@ -708,15 +657,8 @@ static void harley_drawMech(BMTYPE **line)
   }
 
   core_textOutf(30, 0,BLACK,"Moto: %-8s",temp);
-  //core_textOutf(30, 10,BLACK,"pos:%4d, speed:%4d", harley_getMech(0), harley_getMech(1));
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static void harley_handleMech(int mech) {
-}
-#endif
-
-//static int harley_getMech(int mechNo){
 static void harley_handleMech(int mech)
 {
   if (mech & 0x01)
@@ -753,5 +695,3 @@ static void harley_handleMech(int mech)
 	}
   }
 }
-
-
