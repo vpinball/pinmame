@@ -363,6 +363,10 @@
        ROM_LOAD(n1, 0x7800, 0x0800, chk1) \
          ROM_RELOAD(0xf800, 0x0800)
 
+#define ATARI_SNDSTART(n1, chk1) \
+     NORMALREGION(0x1000, REGION_SOUND1) \
+       ROM_LOAD(n1, 0x0000, 0x0200, chk1)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(ATARI0);
 extern MACHINE_DRIVER_EXTERN(ATARI1);
