@@ -43,7 +43,7 @@ MACHINE_DRIVER_START(atari2s)
   MDRV_SOUND_ADD(CUSTOM, atari2s_custInt)
 MACHINE_DRIVER_END
 
-#define ATARI_SNDFREQ   62500 /* audio base frequency in Hz */
+#define ATARI_SNDFREQ 50000 /* audio base frequency in Hz */
 
 /* waveform for the audio hardware */
 static UINT8 romWave[32];
