@@ -2085,6 +2085,10 @@ SOURCE=.\src\wpc\sims\se\prelim\elvis.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\sims\se\prelim\harley.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group
