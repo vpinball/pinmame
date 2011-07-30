@@ -826,6 +826,7 @@ DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
+DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)
 DRIVER  (harl,a13)      //Whitestar: 10/99 Harley Davidson (1.03, Display 1.04)
@@ -986,7 +987,6 @@ DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (3.20 German display)
 DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (3.20 Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (3.20 French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (3.20 Italian display)
-//DRIVERNV(monop321)    //Whitestar: 09/01 Monopoly (3.21) Fixed Dice Rolls
 DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (3.03)
 DRIVERNV(monop301)      //Whitestar: 09/01 Monopoly (3.01)
 DRIVERNV(monop251)      //Whitestar: 09/01 Monopoly (2.51)
