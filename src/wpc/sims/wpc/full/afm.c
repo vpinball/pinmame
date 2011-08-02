@@ -361,6 +361,12 @@ DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa
 		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
 
+WPC_ROMSTART(afm,f20, "fafm0_20.rom",  0x100000,CRC(3a9ea1bc) SHA1(86719f55ac586dcefc38d658a8f583f96880a928))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa9943cec),
+		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
+		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
+WPC_ROMEND
+
 WPC_ROMSTART(afm,f32, "fafm0_32.rom",  0x100000,CRC(e1ef2857) SHA1(dfe3c63f9829bbcea19690d74ad90a7e3ed42db4))
 DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa9943cec),
 		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
@@ -375,6 +381,7 @@ CORE_CLONEDEF(afm,113b,113,"Attack From Mars (1.13b)",1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11,113,"Attack From Mars (1.1)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11u,113,"Attack From Mars (1.1 Ultrapin)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,10,113,"Attack From Mars (1.0)", 1995, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,f20,113,"Attack From Mars (FreeWPC 0.20)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,f32,113,"Attack From Mars (FreeWPC 0.32)", 1995, "Bally",wpc_m95S,0)
 
 /*----------
