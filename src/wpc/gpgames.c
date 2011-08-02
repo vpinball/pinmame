@@ -262,6 +262,14 @@ GP_SOUNDROM0("830.snd",NO_DUMP)
 GP_ROMEND
 CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,0)
 
+INITGAME(ldyshot2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+GP_ROMSTART888(ldyshot2,"830a2.716",CRC(2c1f1629) SHA1(9233ce4328d779ff6548cdd5d6819cd368bef313),
+						"830b2.716",CRC(2105a538) SHA1(0360d3e740d8b6f816cfe7fe1fb32ac476251b9f),
+						"830c2.716",CRC(2d96bdde) SHA1(7c03a29a91f03fba9ed5e53a93335113a7cbafb3))
+GP_SOUNDROM0("830.snd",NO_DUMP)
+GP_ROMEND
+CORE_CLONEDEFNV(ldyshot2, ladyshot, "Lady Sharpshooter (alternate set)",1985,"Game Plan",mGP2SM,0)
+
 /*-------------------------------------------------------------------
 / Andromeda (August 1985) - Model #850
 /-------------------------------------------------------------------*/
