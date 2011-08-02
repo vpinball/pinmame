@@ -451,7 +451,17 @@ DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45
                "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
 WPC_ROMEND
 
-WPC_ROMSTART(wcs,f50,"fwcs0_62.rom",0x80000,CRC(a9ed8005) SHA1(c4b5dbe7fa584a0231f43ad0c6bf46a84e03a200))
+WPC_ROMSTART(wcs,f10,"fwcs0_10.rom",0x80000,CRC(4aa3c9a2) SHA1(43eecda4d4752c0aa737ea393a89c7f1486af580))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WPC_ROMEND
+
+WPC_ROMSTART(wcs,f50,"fwcs0_50.rom",0x80000,CRC(a9ed8005) SHA1(c4b5dbe7fa584a0231f43ad0c6bf46a84e03a200))
 DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
                "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
                "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
@@ -477,6 +487,7 @@ CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (Pa-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p5,l2,"World Cup Soccer (Pa-5) LED Ghost Fix",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p3,l2,"World Cup Soccer (Px-3)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p6,l2,"World Cup Soccer (Px-6) LED Ghost Fix",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,f10,l2,"World Cup Soccer (FreeWPC 0.10)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,f50,l2,"World Cup Soccer (FreeWPC 0.50)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,f62,l2,"World Cup Soccer (FreeWPC 0.62)",1994,"Bally",wpc_mSecurityS,0)
 
