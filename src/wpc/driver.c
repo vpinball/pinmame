@@ -1694,6 +1694,7 @@ DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
+DRIVER(t2,f19)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.19)
 DRIVER(t2,f20)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.20)
 DRIVER(t2,f32)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.32)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
@@ -1812,6 +1813,8 @@ DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //WPC-520:  01/95 B Twilight Zone (9.3) LED Ghost Fix
 DRIVER(tz,94h)          //WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(tz,94ch)         //WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
+DRIVER(tz,f10)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.10)
+DRIVER(tz,f19)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.19)
 DRIVER(tz,f50)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.50)
 DRIVER(tz,f86)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.86)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
@@ -1884,6 +1887,7 @@ DRIVER(wcs,p2)          //                  (Pa-2)
 DRIVER(wcs,p5)          //                  (Pa-5) LED Ghost Fix
 DRIVER(wcs,p3)          //                  (Px-3)
 DRIVER(wcs,p6)          //                  (Px-6) LED Ghost Fix
+DRIVER(wcs,f10)         //                  World Cup Soccer (FreeWPC 0.10)
 DRIVER(wcs,f50)         //                  World Cup Soccer (FreeWPC 0.50)
 DRIVER(wcs,f62)         //                  World Cup Soccer (FreeWPC 0.62)
                         //WPC-620:  06/94 W Pinball Circus
@@ -1968,6 +1972,7 @@ DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars (1.1)
 DRIVER(afm,11u)         //WPC-541:  12/95 B Attack from Mars (1.1 Ultrapin)
 DRIVER(afm,113)         //WPC-541:  12/95 B Attack from Mars (1.13 Home version)
 DRIVER(afm,113b)        //WPC-541:  12/95 B Attack from Mars (1.13b Coin Play)
+DRIVER(afm,f10)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.10)
 DRIVER(afm,f20)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.20)
 DRIVER(afm,f32)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.32)
 DRIVER(lc,11)           //WPC-107:  03/96 B League Champ (Shuffle Alley)
