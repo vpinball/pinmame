@@ -136,10 +136,26 @@ JP_ROMEND
 CORE_GAMEDEFNV(petaco2,"Petaco 2",1985,"Juegos Populares",gl_mJPS,0)
 
 /*-------------------------------------------------------------------
+/ Halley Comet
+/-------------------------------------------------------------------*/
+INITGAME(halley, jpDisp7, 1)
+JP_ROMSTART1(halley,	"halley.cpu", CRC(b158a0d7) SHA1(ad071ac3d06a99a8fbd4df461071fe03dc1e1a26))
+JP_SNDROM8( "hcsnd0.dat", NO_DUMP,
+			"hcsnd1.dat", NO_DUMP,
+			"hcsnd2.dat", NO_DUMP,
+			"hcsnd3.dat", NO_DUMP,
+			"hcsnd4.dat", NO_DUMP,
+			"hcsnd5.dat", NO_DUMP,
+			"hcsnd6.dat", NO_DUMP,
+			"hcsnd7.dat", NO_DUMP)
+JP_ROMEND
+CORE_GAMEDEFNV(halley,"Halley Comet",1986,"Juegos Populares",gl_mJPS,0)
+
+/*-------------------------------------------------------------------
 / Olympus
 /-------------------------------------------------------------------*/
 INITGAME(olympus, jpDisp7, 1)
-JP_ROMSTART1(olympus,	"olympus.dat", NO_DUMP)
+JP_ROMSTART1(olympus,	"olympus.dat", CRC(08b021e8) SHA1(9662d37ccef94b6e6bc3c8c81dea0c0a34c8052d))
 JP_SNDROM8( "cs.128", CRC(39b9107a) SHA1(8a11fa0c1558d0b1d309446b8a6f97e761b6559d),
 			"c1.256", CRC(93ceefbf) SHA1(be50b3d4485d4e8291047a52ca60656b55729555),
 			"c2.256", NO_DUMP,

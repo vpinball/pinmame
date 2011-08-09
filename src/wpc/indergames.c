@@ -95,6 +95,19 @@ INDER_ROMEND
 CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,0)
 
 /*-------------------------------------------------------------------
+/ Mundial 90 (1990)
+/-------------------------------------------------------------------*/
+INITGAME(mundial, inderDisp7a, 1, 0,0x10,0,0,0)
+INDER_ROMSTART1(mundial,"mundial.cpu", CRC(b615e69b) SHA1(d129eb6f2943af40ddffd0da1e7a711b58f65b3c))
+INDER_SNDROM4(			"snd11.bin", CRC(2cebc1a5) SHA1(e0dae2b1ce31ff436b55ceb1ec71d39fc56694da),
+						"snd21.bin", CRC(7a8f7402) SHA1(39666ba2634fe9c720c2c9bcc9ccc73874ed85e7),
+						"snd22.bin", CRC(2559f874) SHA1(cbf57f29e394d5dc320e7dcbd2625f6c96412a06),
+						"snd23.bin", CRC(2868ce6f) SHA1(317457763f764be08cbe6a5dd4008ba2257c9d78),
+						"snd24.bin", CRC(603bfc3c) SHA1(8badd9731243270ce5b8003373ed09ec7eac6ca6))
+INDER_ROMEND
+CORE_GAMEDEFNV(mundial,"Mundial 90",1990,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
 / Atleta (1991)
 /-------------------------------------------------------------------*/
 INITGAME(atleta, inderDisp7a, 1, 0,0,0,0,0x10)
