@@ -165,7 +165,7 @@ static WRITE_HANDLER(lamp1_w) {
 
 static WRITE_HANDLER(lamp2_w) {
   // morse code; pulses the NMI of the external sound board CPU a couple of times!
-  if (offset == 5 && (data & 0x02)) {
+  if (cpu_gettotalcpu() > 1 && offset == 5 && (data & 0x02)) {
     cpu_set_nmi_line(1, PULSE_LINE);
   }
   coreGlobals.tmpLampMatrix[6+offset] = data;

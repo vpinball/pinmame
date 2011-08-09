@@ -635,6 +635,7 @@ DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(lapbylap)      //Lap By Lap (1986)
 DRIVERNV(pinclown)      //Pinball Clown (1988)
 DRIVERNV(corsario)      //Corsario (1989)
+DRIVERNV(mundial )      //Mundial 90 (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 
@@ -655,6 +656,7 @@ DRIVERNV(olympic)       //Olympic Games (??/1984)
 // ----------------
 DRIVERNV(petaco  )      //Petaco
 DRIVERNV(faeton  )      //Faeton
+DRIVERNV(halley  )      //Halley Comet
 DRIVERNV(petaco2 )      //Petaco 2
 DRIVERNV(olympus )      //Olympus
 DRIVERNV(america )      //America 1492
