@@ -2572,6 +2572,10 @@ SOURCE=.\src\wpc\sndbrd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\spectra.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\spinb.c
 # End Source File
 # Begin Source File

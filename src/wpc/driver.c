@@ -1441,7 +1441,7 @@ DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
 // -----------------------------------
 // VALLEY GAMES
 // -----------------------------------
-//DRIVERNV(spectra)       //??/79 Spectra IV
+DRIVERNV(spectra)       //??/79 Spectra IV
 
 // -----------------------------------
 // VIDEODENS GAMES

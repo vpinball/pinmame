@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="PinMAME"
 	ProjectGUID="{20DB3784-CEFD-43B8-8B62-E1E10854BF18}"
 	RootNamespace="PinMAME"
@@ -3727,6 +3727,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\sndbrd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\spectra.c"
 					>
 				</File>
 				<File
