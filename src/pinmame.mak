@@ -72,6 +72,7 @@ DRVLIBS += $(PINOBJ)/micropin.o
 DRVLIBS += $(PINOBJ)/mephisto.o
 DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
+DRVLIBS += $(PINOBJ)/spectra.o
 #
 # Games
 #
@@ -112,6 +113,7 @@ PINGAMES += $(PINOBJ)/sims/s11/full/milln.o
 PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/elvis.o
+PINGAMES += $(PINOBJ)/sims/se/prelim/harley.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
