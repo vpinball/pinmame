@@ -122,9 +122,11 @@ static void playSound(void) {
   }
   if (atarilocals.sound & 0x01) { // wave on
     int i;
+    UINT8 byte;
     mixer_set_volume(atarilocals.channel, atarilocals.volume*4);
     for (i=0; i < 32; i++) { // copy in the correct waveform from the sound PROM
-      romWave[i] = 0x80 + (memory_region(REGION_SOUND1)[32 * atarilocals.waveform + i] << 4);
+      byte = memory_region(REGION_SOUND1)[32 * atarilocals.waveform + i] & 0x0f;
+      romWave[i] = 0x80 + (byte | (byte << 4));
     }
     mixer_play_sample(atarilocals.channel, (signed char *)romWave, sizeof(romWave),
       ATARI_SNDFREQ / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
