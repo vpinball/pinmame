@@ -23,13 +23,22 @@ copy /V /-Y "VPinMAME_VC2008.vcproj" "VPinMAME_VC2005.vcproj"
 @if errorlevel 1 goto manual
 
 @REM *** correct project files
-@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8,00^'" /quotes /in:"InstallVPinMAME_VC2005.vcproj" /out:"InstallVPinMAME_VC2005.vcproj"
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8.00^'" /quotes /in:"InstallVPinMAME_VC2005.vcproj" /out:"InstallVPinMAME_VC2005.vcproj"
 @if errorlevel 1 goto manual
-@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8,00^'" /quotes /in:"PinMAME_VC2005.vcproj" /out:"PinMAME_VC2005.vcproj"
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8.00^'" /quotes /in:"PinMAME_VC2005.vcproj" /out:"PinMAME_VC2005.vcproj"
 @if errorlevel 1 goto manual
-@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8,00^'" /quotes /in:"PinMAME32_VC2005.vcproj" /out:"PinMAME32_VC2005.vcproj"
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8.00^'" /quotes /in:"PinMAME32_VC2005.vcproj" /out:"PinMAME32_VC2005.vcproj"
 @if errorlevel 1 goto manual
-@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8,00^'" /quotes /in:"VPinMAME_VC2005.vcproj" /out:"VPinMAME_VC2005.vcproj"
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'8.00^'" /quotes /in:"VPinMAME_VC2005.vcproj" /out:"VPinMAME_VC2005.vcproj"
+@if errorlevel 1 goto manual
+@REM *** second possible format
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'8.00^'" /quotes /in:"InstallVPinMAME_VC2005.vcproj" /out:"InstallVPinMAME_VC2005.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'8.00^'" /quotes /in:"PinMAME_VC2005.vcproj" /out:"PinMAME_VC2005.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'8.00^'" /quotes /in:"PinMAME32_VC2005.vcproj" /out:"PinMAME32_VC2005.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'8.00^'" /quotes /in:"VPinMAME_VC2005.vcproj" /out:"VPinMAME_VC2005.vcproj"
 @if errorlevel 1 goto manual
 
 @goto end
