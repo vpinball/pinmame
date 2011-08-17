@@ -779,7 +779,7 @@ BOOL OptionsInit()
         global.dmd_antialias     = 50;
 #endif /* PINMAME */
 
-	// game_options[x] is valid iff game_variables[i].options_loaded == true
+	// game_options[x] is valid if game_variables[i].options_loaded == true
 	game_options = (options_type *)malloc(num_games * sizeof(options_type));
 	game_variables = (game_variables_type *)malloc(num_games * sizeof(game_variables_type));
 
