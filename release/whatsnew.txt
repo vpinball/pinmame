@@ -1,6 +1,48 @@
-Version 2.4 (August ??, 2011) - "Sommer Time"
+Version 2.4 (August 19, 2011) - "Summertime"
 ------------------------------------------------------------------------------
-TODO
+Eight months is a long time to go without a release, but we wanted to make some significant progress
+with plenty of testing, so it's here now.  I had thought the rom fountain had run dry, but then
+Seymour Shabow mentioned he had worked on free play roms, Micko alerted me to alternate Stern roms,
+David Gersic posted his modified Zaccaria Free Play roms, and Inkochnito told us we were missing a lot
+of roms from Oliver Okaegi... so...a whole lot of typing was required to add support for all of these!
+
+One of our goals is to archive all pinball game code, as well as code that runs on pinball hardware.
+If you think you have code we don't support, please let one of us know.
+
+Changes:
+
+*** CORE/CPU ***
+Atari sound has been improved [Gerrit Volkenborn/Pascal Janin]
+GamePlan Lady Sharpshooter's solenoids now work 100%
+Added support for Jeutel - fully emulated with sound and speech [Gerrit Volkenborn]
+Updated TMS 5220 to latest MAME core code
+Added support for Valley Manufacturing [Gerrit Volkenborn]
+Zaccaria - Added support for SenseInput line and enhanced diagnostic output [Gerrit Volkenborn/David Gersic]
+Improved speech emulation for Bally 35, Nuova Bell, and Zaccaria Generation 2 [Gerrit Volkenborn]
+
+Corrected spinners for PinMAME simulators [Steve Ellenoff]
+Added simulator for Sega Harley Davidson [Steve Ellenoff/Brian Smith]
+Improved simulator for Stern Monopoly [Brian Smith]
+
+*** ROM SUPPORT ***
+Bowlers: Aristocrat, King Tut, Pompeii, Tic-Tac-Strike L-1 and L-2
+         Corrected sound roms for Aristocrat, Pompeii, Shuffle Inn, Taurus, Topaz
+Data East: Tales from the Crypt 3.02 Dutch (thanks Inkochnito!)
+GamePlan: alternate Lady Sharpshooter set
+Inder: Mundial 90
+Juegos Populares: Halley Comet, Olympus (good game rom)
+Sega: South Park 0.96 (thanks Inkochnito!) and Stern Harley Davidson 3rd Edition 4.0 (thanks Steve Ellenoff!)
+     Cut the Cheese and Cut the Cheese Deluxe
+Taito: Zeke's Peak (Ice Cold Beer clone)
+Valley Spectra IV
+
+Added a whole bunch of Stern whitestar revisions (thanks Micko!)
+Added Oliver Okaegi sets that were missing or skipped in previous PinMAME releases
+Added FreeWPC sets that work in PinMAME/Visual PinMAME
+Added Free Play and alternate rules roms for early Stern (thanks Seymour Shabow!)
+Added Free Play roms for Zaccaria (thanks David Gersic!)
+Added a lot of WPC/WPC-95 sets including the real Scared Stiff prototype rom with working kickback! (thanks Pete Haduch!)
+
 
 
 Version 2.3 (December 24, 2010) - "Merry Christmas"
