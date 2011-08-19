@@ -2,7 +2,7 @@
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
                              Version 2.4
-                          (August ??, 2011)
+                          (August 19, 2011)
                         http://www.pinmame.com
 **************************************************************************************
 
