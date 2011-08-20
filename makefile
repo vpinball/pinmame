@@ -433,8 +433,8 @@ ifdef SYMBOLS
 #           see http://sourceware.org/gdb/current/onlinedocs/gdb_19.html#SEC170
 #               http://stackoverflow.com/questions/866721/
 $(EMULATOR).debug: $(EMULATOR).full
-	@echo Extracting debug symbols from $@...
-	$(OBJCOPY) -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
+	@echo Extracting debug symbols to $@...
+	$(OBJCOPY) -p --only-keep-debug "$(EMULATOR).full" "$(EMULATOR).debug"
 
 $(EMULATOR): $(EMULATOR).debug
 	@echo Stripping unneeded symbols from $@...
