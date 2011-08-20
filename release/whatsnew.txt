@@ -1,8 +1,8 @@
 Version 2.4 (August 19, 2011) - "Summertime"
 ------------------------------------------------------------------------------
 Eight months is a long time to go without a release, but we wanted to make some significant progress
-with plenty of testing, so it's here now.  I had thought the rom fountain had run dry, but then
-Seymour Shabow mentioned he had worked on free play roms, Micko alerted me to alternate Stern roms,
+with plenty of testing, so it's here now.  We thought the rom fountain had run dry, but then
+Seymour Shabow mentioned he had worked on free play roms, Micko alerted us to alternate Stern roms,
 David Gersic posted his modified Zaccaria Free Play roms, and Inkochnito told us we were missing a lot
 of roms from Oliver Okaegi... so...a whole lot of typing was required to add support for all of these!
 
