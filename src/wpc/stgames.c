@@ -168,14 +168,14 @@ CORE_CLONEDEFNV(wildfyfp,wildfyre,"Wildfyre (Free Play)",1978,"Stern",by35_mST10
 / Nugent
 /-------------------------------*/
 INITGAME(nugent,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
-BY17_ROMSTARTx88(nugent,"cpu_u2.716",CRC(c7584530) SHA1(71d9d9081be1358af42d6ac9bfe4bdbae3d59471),
+BY17_ROMSTARTx88(nugent,"cpu_u2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be593a216905237d32551),
                         "cpu_u6.716",CRC(7c6e5fb5) SHA1(3aa4e0c1f377ba024e6b34bd431a188ff02d4eaa))
 BY35_ROMEND
 #define input_ports_nugent input_ports_st
 CORE_GAMEDEFNV(nugent,"Nugent",1978,"Stern",by35_mST100s,0)
 
 INITGAME(nugentfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
-BY17_ROMSTARTx88(nugentfp,"fpnugt_2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be593a216905237d32551),
+BY17_ROMSTARTx88(nugentfp,"fpnugt_2.716",CRC(c7584530) SHA1(71d9d9081be1358af42d6ac9bfe4bdbae3d59471),
                         "fpnugt_6.716",CRC(11393e70) SHA1(d7a99ec82a26f8dadfef58c7d075e8e97a512d64))
 BY35_ROMEND
 #define input_ports_nugentfp input_ports_st
