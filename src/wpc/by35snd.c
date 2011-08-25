@@ -438,12 +438,13 @@ static WRITE_HANDLER(snt_data_w);
 static WRITE_HANDLER(snt_ctrl_w);
 static WRITE_HANDLER(snt_manCmd_w);
 static void snt_5220Irq(int state);
+static void snt_5220Rdy(int state);
 static READ_HANDLER(snt_8910a_r);
 
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface snt_tms5220Int = { 660000, 80, snt_5220Irq };
+static struct TMS5220interface snt_tms5220Int = { 639450, 50, snt_5220Irq, snt_5220Rdy };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
 static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
 
@@ -486,11 +487,11 @@ static void snt_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b;
+  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca2;
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
@@ -503,8 +504,8 @@ static void snt_init(struct sndbrdData *brdData) {
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
-  tms5220_reset();
-  tms5220_set_variant(variant_tmc0285);
+//  tms5220_reset();
+  tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
 }
 static void snt_diag(int button) {
@@ -526,19 +527,19 @@ static WRITE_HANDLER(snt_pia0b_w) {
 static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a; }
 static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
-  if (~data & 0x02) // write
-    tms5220_data_w(0, sntlocals.pia1a);
-  if (~data & 0x01) // read
+  if (sntlocals.pia1b & ~data & 0x01) { // read, overrides write command!
     sntlocals.pia1a = tms5220_status_r(0);
-  pia_set_input_ca2(SNT_PIA1, 1);
+  } else if (sntlocals.pia1b & ~data & 0x02) { // write
+    tms5220_data_w(0, sntlocals.pia1a);
+  }
   sntlocals.pia1b = data;
+  pia_set_input_ca2(SNT_PIA1, tms5220_ready_r());
 }
-
 static READ_HANDLER(snt_pia1ca2_r) {
-  return !tms5220_ready_r();
+  return sntlocals.pia1ca2;
 }
 static READ_HANDLER(snt_pia1cb1_r) {
-  return !tms5220_int_r();
+  return sntlocals.pia1cb1;
 }
 
 static WRITE_HANDLER(snt_data_w) {
@@ -558,7 +559,8 @@ static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,d
 static void snt_irq(int state) {
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
-static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
+static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, (sntlocals.pia1cb1 = !state)); }
+static void snt_5220Rdy(int state) { pia_set_input_ca2(SNT_PIA1, (sntlocals.pia1ca2 = state)); }
 
 /*----------------------------------------
 /    Cheap Squeak  -45

@@ -133,7 +133,7 @@ int main(int argc, char **argv)
                               "Please consult the documentation for more information.\n"
                               "\n"
                               "Would you like to open the documentation now?");
-#else
+#else /* PINMAME */
 		sprintf(message_text, APPLONGNAME " v%s - Multiple Arcade Machine Emulator\n"
 							  "Copyright (C) 1997-2003 by Nicola Salmoria and the MAME Team\n"
 							  "\n"
@@ -152,13 +152,13 @@ int main(int argc, char **argv)
 							  "Would you like to open the documentation now?"
 							  , build_version);
 #endif /* PINMAME */
-#else
+#else /* MESS */
 		sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
 							  "\n"
 							  "Please consult the documentation for more information.\n"
 							  "\n"
 							  "Would you like to open the documentation now?");
-#endif
+#endif /* MESS */
 
 		// pop up a messagebox with some information
 		button = MessageBox(NULL, message_text, APPLONGNAME " usage information...", MB_YESNO | MB_ICONASTERISK);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 		}
 		return 1;
 	}
- #endif
+ #endif /* WINUI */
 #endif
 
 	// parse the map file, if present

@@ -33,6 +33,15 @@ copy /V /-Y "VPinMAME_VC2008.vcproj" "VPinMAME_VC2003.vcproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"Version=^'9,00^'" /replace:"Version=^'7.10^'" /quotes /in:"VPinMAME_VC2003.vcproj" /out:"VPinMAME_VC2003.vcproj"
 @if errorlevel 1 goto manual
+@REM *** second possible format
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'7.10^'" /quotes /in:"InstallVPinMAME_VC2003.vcproj" /out:"InstallVPinMAME_VC2003.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'7.10^'" /quotes /in:"PinMAME_VC2003.vcproj" /out:"PinMAME_VC2003.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'7.10^'" /quotes /in:"PinMAME32_VC2003.vcproj" /out:"PinMAME32_VC2003.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'7.10^'" /quotes /in:"VPinMAME_VC2003.vcproj" /out:"VPinMAME_VC2003.vcproj"
+@if errorlevel 1 goto manual
 @REM
 @cscript "simplereplace.wsf" //nologo /search:"lib_vc2005" /replace:"lib_vc2003" /quotes /in:"InstallVPinMAME_VC2003.vcproj" /out:"InstallVPinMAME_VC2003.vcproj"
 @if errorlevel 1 goto manual

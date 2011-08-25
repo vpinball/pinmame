@@ -89,29 +89,51 @@ DRIVERNV(cntinntl)      //          10/80 Continental (Bingo)
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
-DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
+DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
+DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)
+DRIVERNV(nightrdb)      //BY17-721: 10/08 Night Rider (Free Play)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
+DRIVERNV(evelknib)      //BY17-722: 10/08 Evel Knievel (Free Play)
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
+DRIVERNV(eightblb)      //BY17-723: 10/08 Eight Ball (Free Play)
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
+DRIVERNV(pwerplab)      //BY17-724: 10/08 Power Play (Free Play)
 DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
+DRIVERNV(stk_sprb)      //BY17-740: 10/08 Strikes and Spares (Free Play)
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
 DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
+DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
+DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack  (Free Play)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
+DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
 DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic (EM "Star Ship" release date)
-DRIVERNV(sstb    )      //BY35      05/05 Supersonic (7-digit conversion)
+DRIVERNV(sstb    )      //BY35 	    05/05 Supersonic (7-digit conversion)
+DRIVERNV(sstc    )      //BY35 	    10/08 Supersonic (7-digit Rev3 Free Play)
+DRIVERNV(sstd    )      //BY35 	    10/08 Supersonic (/10 Free Play)
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
+DRIVERNV(smmanb  )      //BY35      05/05 The Six Million Dollar Man (7-digit conversion)
+DRIVERNV(smmanc  )      //BY35      10/08 The Six Million Dollar Man (7-digit Rev3 Free Play)
+DRIVERNV(smmand  )      //BY35      10/08 The Six Million Dollar Man (/10 Free Play)
 DRIVERNV(playboy )      //BY35-743: 09/76 Playboy (release date is wrong!)
-DRIVERNV(playboyb)      //BY35      05/05 Playboy (7-digit conversion)
+DRIVERNV(playboyb)      //BY35 	    05/05 Playboy (7-digit conversion)
+DRIVERNV(playboyc)      //BY35 	    10/08 Playboy (7-digit Rev3 Free Play)
+DRIVERNV(playboyd)      //BY35 	    10/08 Playboy (/10 Free Play)
                         //??        ??/78 Big Foot
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
 DRIVERNV(voltanb )      //BY35      05/05 Voltan Escapes Cosmic Doom (7-digit conversion)
+DRIVERNV(voltanc )      //BY35      10/08 Voltan Escapes Cosmic Doom (7-digit Rev3 Free Play)
+DRIVERNV(voltand )      //BY35      10/08 Voltan Escapes Cosmic Doom (/10 Free Play)
 DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
-DRIVERNV(startreb)      //BY35      05/05 Star Trek
+DRIVERNV(startreb)      //BY35      05/05 Star Trek (7-digit conversion)
+DRIVERNV(startrec)      //BY35      10/08 Star Trek (7-digit Rev3 Free Play)
+DRIVERNV(startred)      //BY35      10/08 Star Trek (/10 Free Play)
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(kissb   )      //BY35      05/05 Kiss (7-digit conversion)
+DRIVERNV(kissc   )      //BY35      10/08 Kiss (7-digit Rev3 Free Play)
+DRIVERNV(kissd   )      //BY35      10/08 Kiss (/10 Free Play)
 DRIVERNV(kissp   )      //BY35      ??/?? Kiss (prototype)
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
 DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
@@ -123,6 +145,8 @@ DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
 DRIVERNV(dollyptb)      //BY35      11/02 Dolly Parton (7-digit conversion)
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(paragonb)      //BY35      05/05 Paragon (7-digit conversion)
+DRIVERNV(paragonc)      //BY35      10/08 Paragon (7-digit Rev3 Free Play)
+DRIVERNV(paragond)      //BY35      10/08 Paragon (/10 Free Play)
 DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
 DRIVERNV(futurspb)      //BY35      11/02 Future Spa (7-digit conversion)
 DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
@@ -132,67 +156,101 @@ DRIVERNV(rollstob)      //BY35      11/02 Rolling Stones (7-digit conversion)
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
 DRIVERNV(mysticb )      //BY35      11/02 Mystic (7-digit conversion)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
+DRIVERNV(xenona  )      //BY35-811: 10/08 Xenon (Free Play)
 DRIVERNV(xenonf  )      //BY35      11/79 Xenon (French)
+DRIVERNV(xenonfa )      //BY35      10/08 Xenon (French Free Play)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
+DRIVERNV(hotdogga)      //BY35      11/02 Hotdoggin' (Free Play)
 DRIVERNV(hotdoggb)      //BY35      11/02 Hotdoggin' (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(vikingb )      //BY35      11/02 Viking (7-digit conversion)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
+DRIVERNV(skatebla)      //BY35-823: 10/08 Skateball (Free Play)
 DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
+DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
+DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
 DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
+DRIVERNV(flashgva)      //BY35      10/08 Flash Gordon (Vocalizer sound Free Play)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
+DRIVERNV(flashgfa)      //BY35      10/08 Flash Gordon (French Free Play)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
-DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
-DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
+DRIVERNV(eballd14)      //BY35-838: 09/80 Eight Ball Deluxe (rev. 14)
+DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
+DRIVERNV(eballdla)      //BY35      10/08 Eight Ball Deluxe (Free Play)
+DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe custom rom rev.29
+DRIVERNV(eballdlc)      //BY35      10/07 Eight Ball Deluxe custom rom rev.32
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
 DRIVERNV(eballdp4)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 4)
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
+DRIVERNV(fball_ia)      //BY35      10/08 Fireball II (Free Play)
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
+DRIVERNV(embryona)      //BY35      10/08 Embryon (Free Play)
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
-DRIVERNV(fathomb )      //BY35      08/04 Fathom (modified rules)
+DRIVERNV(fathoma )      //BY35      10/04 Fathom (Free Play)
+DRIVERNV(fathomb )      //BY35      10/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
+DRIVERNV(medusaa )      //BY35      10/04 Medusa (Free Play)
 #ifdef MAME_DEBUG
 DRIVERNV(medusaf )      //BY35      02/81 Medusa (6802 board)
 #endif
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
+DRIVERNV(centaura)      //BY35      10/04 Centaur (Free Play)
+DRIVERNV(centaurb)      //BY35      10/08 Centaur (Free Play Rev. 27)
 DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
+DRIVERNV(elektraa)      //BY35      10/04 Elektra (Free Play)
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
-DRIVERNV(vectorb )      //BY35      04/04 Vector (modified rules)
+DRIVERNV(vectora )      //BY35      10/04 Vector (Free Play)
+DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules)
 DRIVERNV(spectrum)      //BY35-868: 04/81 Spectrum
-DRIVERNV(spectru4)      //BY35      04/81 Spectrum (rel 4)
+DRIVERNV(spectrua)      //BY35      10/04 Spectrum (Free Play)
+DRIVERNV(spectru4)      //BY35      04/81 Spectrum (Rev. 4)
+DRIVERNV(spectr4a)      //BY35      10/04 Spectrum (Rev. 4 Free Play)
 DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
+DRIVERNV(speakesa)      //BY35      10/04 Speakeasy (Free Play)
 DRIVERNV(speakes4)      //BY35      08/82 Speakeasy 4 (4 player)
+DRIVERNV(speake4a)      //BY35      10/04 Speakeasy 4 (4 player Free Play)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
+DRIVERNV(rapidfia)      //BY35      09/05 Rapid Fire (Free Play)
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
+DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man (Free Play)
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
 DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
+DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
+DRIVERNV(granslaa)      //BY35      12/04 Grand Slam (Free Play)
 DRIVERNV(gransla4)      //BY35      01/83 Grand Slam (4 player)
-/*same as cenatur*/     //BY35      06/83 Centaur II
+DRIVERNV(gransl4a)      //BY35      12/04 Grand Slam (4 player Free Play)
+/*same as centaur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
 DRIVERNV(goldbalb)      //BY35      03/04 Gold Ball (7-digit conversion)
 DRIVERNV(goldbalc)      //BY35      03/05 Gold Ball (6/7-digit alternate set rev.10)
 DRIVERNV(goldbaln)      //BY35      10/83 Gold Ball (alternate)
 DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
+DRIVERNV(xsandosa)      //BY35      10/04 X's & O's (Free Play)
                         //??        ??/84 Mysterian
 DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
 DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
+DRIVERNV(kosteela)      //BY35      10/04 Kings of Steel (Free Play)
 DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
+DRIVERNV(blakpyrb)      //BY35      10/04 Black Pyramid (Free Play)
 DRIVERNV(mdntmrdr)      //          05/84 Midnight Marauders (gun game)
 DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
+DRIVERNV(spyhunta)      //BY35      10/04 Spy Hunter (Free Play)
                         //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
+DRIVERNV(fbclassa)      //BY35      10/04 Fireball Classic (Free Play)
 DRIVERNV(cybrnaut)      //BY35-0B42 02/85 Cybernaut
+DRIVERNV(cybrnaua)      //BY35      10/04 Cybernaut (Free Play)
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38:09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
@@ -332,7 +390,8 @@ DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
 DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
 DRIVER(tftc,104)        //Data East MPU: 11/93 Tales From the Crypt (1.04 Spain)
 DRIVER(tftc,200)        //Data East MPU: 11/93 Tales From the Crypt (2.00)
-DRIVER(tftc,300)    //Data East MPU: 11/93 Tales From the Crypt (3.00)
+DRIVER(tftc,300)	//Data East MPU: 11/93 Tales From the Crypt (3.00)
+DRIVER(tftc,302)	//Data East MPU: 11/93 Tales From the Crypt (3.02 Dutch)
 DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt (3.03)
 DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
 DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
@@ -380,6 +439,7 @@ DRIVERNV(attila)        //Attila the Hun (April 1984)
 DRIVERNV(agent777)      //Agents 777 (November 1984)
 DRIVERNV(cpthook)       //Captain Hook (April 1985)
 DRIVERNV(ladyshot)      //Lady Sharpshooter (May 1985)
+DRIVERNV(ldyshot2)      //Lady Sharpshooter (May 1985, alternate set)
 DRIVERNV(andromed)      //Andromeda (August 1985)
 DRIVERNV(andromea)      //Andromeda (alternate set)
 DRIVERNV(cyclopes)      //Cyclopes (November 1985)
@@ -575,6 +635,7 @@ DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(lapbylap)      //Lap By Lap (1986)
 DRIVERNV(pinclown)      //Pinball Clown (1988)
 DRIVERNV(corsario)      //Corsario (1989)
+DRIVERNV(mundial )      //Mundial 90 (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 
@@ -595,6 +656,7 @@ DRIVERNV(olympic)       //Olympic Games (??/1984)
 // ----------------
 DRIVERNV(petaco  )      //Petaco
 DRIVERNV(faeton  )      //Faeton
+DRIVERNV(halley  )      //Halley Comet
 DRIVERNV(petaco2 )      //Petaco 2
 DRIVERNV(olympus )      //Olympus
 DRIVERNV(america )      //America 1492
@@ -716,8 +778,9 @@ DRIVERNV(heavymtl)    //Heavy Metal (198?)
 // --------------
 // SEGA GAMES
 // --------------
-//Data East Hardare, DMD 192x64
+//Data East Hardware, DMD 192x64
 DRIVERNV(mav_100)       //DE/Sega MPU: 09/94 Maverick 1.00
+DRIVERNV(mav_400)       //DE/Sega MPU: 09/94 Maverick 4.00
 DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
 DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
@@ -739,7 +802,8 @@ DRIVERNV(bmf_no)        //DE/Sega MPU: 07/95 Batman Forever (Norway)
 DRIVERNV(bmf_sv)        //DE/Sega MPU: 07/95 Batman Forever (Sweden)
 DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japan)
 DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
-//Whitestar Hardware DMD 128x32
+DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
+//Whitestar Hardware, DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
@@ -757,13 +821,15 @@ DRIVERNV(jplstw20)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.00)
 DRIVERNV(xfiles2)       //Whitestar: 08/97 X-Files (2.04)
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files (3.03)
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
+DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
+DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
-DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
+DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)
 DRIVER  (harl,a13)      //Whitestar: 10/99 Harley Davidson (1.03, Display 1.04)
@@ -818,41 +884,78 @@ DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
 // ---------------
 // MPU-100 - Chime Sound
 DRIVERNV(stingray)      //MPU-100: 03/77 Stingray
+DRIVERNV(stingrfp)      //MPU-100: 03/77 Stingray (Free Play)
 DRIVERNV(pinball)       //MPU-100: 07/77 Pinball
+DRIVERNV(pinbalfp)      //MPU-100: 07/77 Pinball (Free Play)
 DRIVERNV(stars)         //MPU-100: 03/78 Stars
+DRIVERNV(starsfp)       //MPU-100: 03/78 Stars (Free Play)
 DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
+DRIVERNV(memlanfp)      //MPU-100: 06/78 Memory Lane (Free Play)
 // MPU-100 - Sound Board: SB-100
 DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
+DRIVERNV(lectrofp)      //MPU-100: 08/78 Lectronamo (Free Play)
 DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
+DRIVERNV(wildfyfp)      //MPU-100: 10/78 Wildfyre (Free Play)
 DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
+DRIVERNV(nugentfp)      //MPU-100: 11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
+DRIVERNV(draculfp)      //MPU-100: 01/79 Dracula (Free Play)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
+DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Free Play)
 DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
+DRIVERNV(hothanfp)      //MPU-100: 06/79 Hot Hand (Free Play)
 DRIVERNV(magic)         //MPU-100: 08/79 Magic
+DRIVERNV(magicfp)       //MPU-100: 08/79 Magic (Free Play)
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
+DRIVERNV(princefp)      //MPU-100: 08/79 Cosmic Princess (Free Play)
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
+DRIVERNV(meteorfp)      //MPU-200: 09/79 Meteor (Free Play)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
+DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
+DRIVERNV(meteord)       //MPU-200: 05/05 Meteor (/10 Scoring)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //MPU-200: ??/04 Galaxy (7-Digit conversion)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
+DRIVERNV(alifp)         //MPU-200: 03/80 Ali (Free Play)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
+DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
+DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Free Play)
+DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
+DRIVERNV(cheetah2)      //MPU-200: 06/80 Cheetah (Bonus shot 1/ball)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
+DRIVERNV(quicksfp)      //MPU-200: 06/80 Quicksilver (Free Play)
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
+DRIVERNV(stargzfp)      //MPU-200: 08/80 Star Gazer (Free Play)
 DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev.9)
 DRIVERNV(flight2k)      //MPU-200: 10/80 Flight 2000
+DRIVERNV(flightfp)      //MPU-200: 10/80 Flight 2000 (Free Play)
 DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
+DRIVERNV(ninebafp)      //MPU-200: 12/80 Nine Ball (Free Play)
 DRIVERNV(ninebalb)      //MPU-200: 01/07 Nine Ball (modified rules rev. 85)
 DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
+DRIVERNV(freefafp)      //MPU-200: 01/81 Freefall (Free Play)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
+DRIVERNV(lightnfp)      //MPU-200: 03/81 Lightning (Free Play)
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
+DRIVERNV(splitsfp)      //MPU-200: 08/81 Split Second (Free Play)
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
+DRIVERNV(catacofp)      //MPU-200: 10/81 Catacomb (Free Play)
 DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
+DRIVERNV(ironmafp)      //MPU-200: 10/81 Iron Maiden (Free Play)
 DRIVERNV(viper)         //MPU-200: 12/81 Viper
+DRIVERNV(viperfp)       //MPU-200: 12/81 Viper (Free Play)
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
+DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
+DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
+DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor One (Free Play)
+DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor One (Bootleg)
+DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor One (Bootleg Free Play)
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
@@ -864,104 +967,225 @@ DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
 DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
-DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (German display)
-DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (French display)
-DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (Italian display)
-DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.0)
-DRIVERNV(hirolcat)      //Whitestar: 01/01 High Roller Casino (2.90) TEST BUILD 1820
-DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany, 2.10)
-DRIVERNV(hirol_g3)      //Whitestar: 01/01 High Roller Casino (German display)
-DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (French display)
-DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
-DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
-DRIVERNV(austing)       //Whitestar: 05/01 Austin Powers (German display)
-DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
-DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
-DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
-DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (v3.03)
-DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
-DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
-DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
-DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
-DRIVERNV(nfl)     //Whitestar: 11/01 NFL
+DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (2.11 Germany)
+DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (2.11 France)
+DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (2.11 Italy)
+DRIVERNV(shrky207)      //Whitestar: 09/00 Sharkey's Shootout (2.07)
+DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.00)
+DRIVERNV(hirol_g3)      //Whitestar: 01/01 High Roller Casino (3.00 Germany)
+DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (3.00 France)
+DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (3.00 Italy)
+DRIVERNV(hirolcat)      //Whitestar: 01/01 High Roller Casino (2.90 TEST BUILD 1820)
+DRIVERNV(hirol210)      //Whitestar: 01/01 High Roller Casino (2.10)
+DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (2.10 Germany)
+DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.02)
+DRIVERNV(austing)       //Whitestar: 05/01 Austin Powers (3.02 German display)
+DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (3.02 French display)
+DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (3.02 Italian display)
+DRIVERNV(aust301)       //Whitestar: 05/01 Austin Powers (3.01)
+DRIVERNV(aust300)       //Whitestar: 05/01 Austin Powers (3.00)
+DRIVERNV(aust201)       //Whitestar: 05/01 Austin Powers (2.01)
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.20)
+DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (3.20 German display)
+DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (3.20 Spanish display)
+DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (3.20 French display)
+DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (3.20 Italian display)
+DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (3.03)
+DRIVERNV(monop301)      //Whitestar: 09/01 Monopoly (3.01)
+DRIVERNV(monop251)      //Whitestar: 09/01 Monopoly (2.51)
+DRIVERNV(monop233)      //Whitestar: 09/01 Monopoly (2.33)
+DRIVERNV(nfl)           //Whitestar: 11/01 NFL
 DRIVERNV(monopred)      //Whitestar: ??/02 Monopoly Redemption (Coin dropper)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
-DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
-DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
-DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
-DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
-DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
-DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
-DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
-DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
-DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
-DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
-DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
-DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
-DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
-DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
-DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
-DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Germany)
-DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
-DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
-DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (5.00)
+DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (5.00 Germany)
+DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (5.00 Spain)
+DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (5.00 France)
+DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (5.00 Italy)
+DRIVERNV(play401)       //Whitestar: 02/02 Playboy (4.01)
+DRIVERNV(play401g)      //Whitestar: 02/02 Playboy (4.01 Germany)
+DRIVERNV(play401l)      //Whitestar: 02/02 Playboy (4.01 Spain)
+DRIVERNV(play401f)      //Whitestar: 02/02 Playboy (4.01 France)
+DRIVERNV(play401i)      //Whitestar: 02/02 Playboy (4.01 Italy)
+DRIVERNV(play303)       //Whitestar: 02/02 Playboy (3.03)
+DRIVERNV(play303g)      //Whitestar: 02/02 Playboy (3.03 Germany)
+DRIVERNV(play303l)      //Whitestar: 02/02 Playboy (3.03 Spain)
+DRIVERNV(play303f)      //Whitestar: 02/02 Playboy (3.03 France)
+DRIVERNV(play303i)      //Whitestar: 02/02 Playboy (3.03 Italy)
+DRIVERNV(play300)       //Whitestar: 02/02 Playboy (3.00)
+DRIVERNV(play203)       //Whitestar: 02/02 Playboy (2.03)
+DRIVERNV(play203g)      //Whitestar: 02/02 Playboy (2.03 Germany)
+DRIVERNV(play203l)      //Whitestar: 02/02 Playboy (2.03 Spain)
+DRIVERNV(play203f)      //Whitestar: 02/02 Playboy (2.03 France)
+DRIVERNV(play203i)      //Whitestar: 02/02 Playboy (2.03 Italy)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (7.02)
+DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (7.02 Germany)
+DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (7.02 Spain)
+DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (7.02 France)
+DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (7.02 Italy)
+DRIVERNV(rct701)        //Whitestar: 09/02 Roller Coaster Tycoon (7.01)
+DRIVERNV(rct701g)       //Whitestar: 09/02 Roller Coaster Tycoon (7.01 Germany)
+DRIVERNV(rct701l)       //Whitestar: 09/02 Roller Coaster Tycoon (7.01 Spain)
+DRIVERNV(rct701f)       //Whitestar: 09/02 Roller Coaster Tycoon (7.01 France)
+DRIVERNV(rct701i)       //Whitestar: 09/02 Roller Coaster Tycoon (7.01 Italy)
+DRIVERNV(rct600)        //Whitestar: 09/02 Roller Coaster Tycoon (6.00)
+DRIVERNV(rct600l)       //Whitestar: 09/02 Roller Coaster Tycoon (6.00 Spain)
+DRIVERNV(rct600f)       //Whitestar: 09/02 Roller Coaster Tycoon (6.00 France)
+DRIVERNV(rct600i)       //Whitestar: 09/02 Roller Coaster Tycoon (6.00 Italy)
+DRIVERNV(rct400)        //Whitestar: 09/02 Roller Coaster Tycoon (4.00)
+DRIVERNV(rct400l)       //Whitestar: 09/02 Roller Coaster Tycoon (4.00 Spain)
+DRIVERNV(rct400f)       //Whitestar: 09/02 Roller Coaster Tycoon (4.00 France)
+DRIVERNV(rct400g)       //Whitestar: 09/02 Roller Coaster Tycoon (4.00 Germany)
+DRIVERNV(rct400i)       //Whitestar: 09/02 Roller Coaster Tycoon (4.00 Italy)
+DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party (5.00)
+DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (5.00 Germany)
+DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (5.00 Spain)
+DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (5.00 France)
+DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (5.00 Italy)
+DRIVERNV(simp400)       //Whitestar: 01/03 The Simpsons Pinball Party (4.00)
+DRIVERNV(simp400g)      //Whitestar: 01/03 The Simpsons Pinball Party (4.00 Germany)
+DRIVERNV(simp400l)      //Whitestar: 01/03 The Simpsons Pinball Party (4.00 Spain)
+DRIVERNV(simp400f)      //Whitestar: 01/03 The Simpsons Pinball Party (4.00 France)
+DRIVERNV(simp400i)      //Whitestar: 01/03 The Simpsons Pinball Party (4.00 Italy)
+DRIVERNV(simp204)       //Whitestar: 01/03 The Simpsons Pinball Party (2.04)
+DRIVERNV(simp204l)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04 Spain)
+DRIVERNV(simp204f)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04 France)
+DRIVERNV(simp204i)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04 Italy)
+DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines (4.00)
+DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (4.00 Germany)
+DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (4.00 Spain)
+DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (4.00 France)
+DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (4.00 Italy)
+DRIVERNV(term3_2)       //Whitestar: 06/03 Terminator 3: Rise of the Machines (2.05)
+DRIVERNV(term3l_2)      //Whitestar: 06/03 Terminator 3: Rise of the Machines (2.05 Spain)
+DRIVERNV(term3f_2)      //Whitestar: 06/03 Terminator 3: Rise of the Machines (2.05 France)
+DRIVERNV(term3i_2)      //Whitestar: 06/03 Terminator 3: Rise of the Machines (2.05 Italy)
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
 DRIVER  (harl,f18)      //Whitestar: 07/03 Harley Davidson (1.08 France)
 DRIVER  (harl,g18)      //Whitestar: 07/03 Harley Davidson (1.08 Germany)
 DRIVER  (harl,i18)      //Whitestar: 07/03 Harley Davidson (1.08 Italy)
 DRIVER  (harl,l18)      //Whitestar: 07/03 Harley Davidson (1.08 Spain)
 // New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
-DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
-DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
-DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
-DRIVERNV(lotr_fr)       //Whitestar: 11/03 Lord Of The Rings (France)
-DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
-DRIVERNV(lotr_le)       //Whitestar: 11/03 Lord Of The Rings (Limited Edition)
-DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not!
-DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
-DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
-DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
-DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
-DRIVERNV(elvis)         //Whitestar: 08/04 Elvis
-DRIVERNV(elvisg)        //Whitestar: 08/04 Elvis (Germany)
-DRIVERNV(elvisl)        //Whitestar: 08/04 Elvis (Spain)
-DRIVERNV(elvisf)        //Whitestar: 08/04 Elvis (France)
-DRIVERNV(elvisi)        //Whitestar: 08/04 Elvis (Italy)
+DRIVERNV(lotr_le)       //Whitestar: ??/08 Lord Of The Rings (10.02 Limited Edition)
+DRIVERNV(lotr)          //Whitestar: 10/05 Lord Of The Rings (10.00)
+DRIVERNV(lotr_gr)       //Whitestar: 10/05 Lord Of The Rings (10.00 Germany)
+DRIVERNV(lotr_sp)       //Whitestar: 10/05 Lord Of The Rings (10.00 Spain)
+DRIVERNV(lotr_fr)       //Whitestar: 10/05 Lord Of The Rings (10.00 France)
+DRIVERNV(lotr_it)       //Whitestar: 10/05 Lord Of The Rings (10.00 Italy)
+DRIVERNV(lotr9)         //Whitestar: 01/05 Lord Of The Rings (9.00)
+DRIVERNV(lotr_gr9)      //Whitestar: 01/05 Lord Of The Rings (9.00 Germany)
+DRIVERNV(lotr_sp9)      //Whitestar: 01/05 Lord Of The Rings (9.00 Spain)
+DRIVERNV(lotr_fr9)      //Whitestar: 01/05 Lord Of The Rings (9.00 France)
+DRIVERNV(lotr_it9)      //Whitestar: 01/05 Lord Of The Rings (9.00 Italy)
+DRIVERNV(lotr8)         //Whitestar: 07/04 Lord Of The Rings (8.00)
+DRIVERNV(lotr_gr8)      //Whitestar: 07/04 Lord Of The Rings (8.00 Germany)
+DRIVERNV(lotr_sp8)      //Whitestar: 07/04 Lord Of The Rings (8.00 Spain)
+DRIVERNV(lotr_fr8)      //Whitestar: 07/04 Lord Of The Rings (8.00 France)
+DRIVERNV(lotr_it8)      //Whitestar: 07/04 Lord Of The Rings (8.00 Italy)
+DRIVERNV(lotr7)         //Whitestar: 04/04 Lord Of The Rings (7.00)
+DRIVERNV(lotr_gr7)      //Whitestar: 04/04 Lord Of The Rings (7.00 Germany)
+DRIVERNV(lotr_sp7)      //Whitestar: 04/04 Lord Of The Rings (7.00 Spain)
+DRIVERNV(lotr_fr7)      //Whitestar: 04/04 Lord Of The Rings (7.00 France)
+DRIVERNV(lotr_it7)      //Whitestar: 04/04 Lord Of The Rings (7.00 Italy)
+DRIVERNV(lotr4)         //Whitestar: 11/03 Lord Of The Rings (4.01)
+DRIVERNV(lotr_gr4)      //Whitestar: 11/03 Lord Of The Rings (4.01 Germany)
+DRIVERNV(lotr_sp4)      //Whitestar: 11/03 Lord Of The Rings (4.01 Spain)
+DRIVERNV(lotr_fr4)      //Whitestar: 11/03 Lord Of The Rings (4.01 France)
+DRIVERNV(lotr_it4)      //Whitestar: 11/03 Lord Of The Rings (4.01 Italy)
+DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.20)
+DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 Germany)
+DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 Spain)
+DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 France)
+DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 Italy)
+DRIVERNV(rip310)        //Whitestar: 03/04 Ripley's Believe It or Not! (3.10)
+DRIVERNV(rip310g)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.10 Germany)
+DRIVERNV(rip310l)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.10 Spain)
+DRIVERNV(rip310f)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.10 France)
+DRIVERNV(rip310i)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.10 Italy)
+DRIVERNV(rip302)        //Whitestar: 03/04 Ripley's Believe It or Not! (3.02)
+DRIVERNV(rip302g)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.02 Germany)
+DRIVERNV(rip302l)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.02 Spain)
+DRIVERNV(rip302f)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.02 France)
+DRIVERNV(rip302i)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.02 Italy)
+DRIVERNV(rip300)        //Whitestar: 03/04 Ripley's Believe It or Not! (3.00)
+DRIVERNV(rip300g)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.00 Germany)
+DRIVERNV(rip300l)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.00 Spain)
+DRIVERNV(rip300f)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.00 France)
+DRIVERNV(rip300i)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.00 Italy)
+DRIVERNV(elvis)         //Whitestar: 08/04 Elvis (5.00)
+DRIVERNV(elvisg)        //Whitestar: 08/04 Elvis (5.00 Germany)
+DRIVERNV(elvisl)        //Whitestar: 08/04 Elvis (5.00 Spain)
+DRIVERNV(elvisf)        //Whitestar: 08/04 Elvis (5.00 France)
+DRIVERNV(elvisi)        //Whitestar: 08/04 Elvis (5.00 Italy)
+DRIVERNV(elv400)        //Whitestar: 08/04 Elvis (4.00)
+DRIVERNV(elv400g)       //Whitestar: 08/04 Elvis (4.00 Germany)
+DRIVERNV(elv400l)       //Whitestar: 08/04 Elvis (4.00 Spain)
+DRIVERNV(elv400f)       //Whitestar: 08/04 Elvis (4.00 France)
+DRIVERNV(elv400i)       //Whitestar: 08/04 Elvis (4.00 Italy)
+DRIVERNV(elv303)        //Whitestar: 08/04 Elvis (3.03)
+DRIVERNV(elv303g)       //Whitestar: 08/04 Elvis (3.03 Germany)
+DRIVERNV(elv303l)       //Whitestar: 08/04 Elvis (3.03 Spain)
+DRIVERNV(elv303f)       //Whitestar: 08/04 Elvis (3.03 France)
+DRIVERNV(elv303i)       //Whitestar: 08/04 Elvis (3.03 Italy)
+DRIVERNV(elv302)        //Whitestar: 08/04 Elvis (3.02)
+DRIVERNV(elv302g)       //Whitestar: 08/04 Elvis (3.02 Germany)
+DRIVERNV(elv302l)       //Whitestar: 08/04 Elvis (3.02 Spain)
+DRIVERNV(elv302f)       //Whitestar: 08/04 Elvis (3.02 France)
+DRIVERNV(elv302i)       //Whitestar: 08/04 Elvis (3.02 Italy)
+DRIVER  (harl,a40)      //Whitestar: 10/04 Harley Davidson (4.00)
+DRIVER  (harl,f40)      //Whitestar: 10/04 Harley Davidson (4.00 France)
+DRIVER  (harl,g40)      //Whitestar: 10/04 Harley Davidson (4.00 Germany)
+DRIVER  (harl,i40)      //Whitestar: 10/04 Harley Davidson (4.00 Italy)
+DRIVER  (harl,l40)      //Whitestar: 10/04 Harley Davidson (4.00 Spain)
 DRIVER  (harl,a30)      //Whitestar: 10/04 Harley Davidson (3.00)
 DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos
-DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
-DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
-DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
-DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
-DRIVERNV(soprano3)      //Whitestar: 02/05 The Sopranos (v3.00)
-DRIVERNV(nascar)    //Whitestar: 05/05 Nascar
-DRIVERNV(nascarl)   //Whitestar: 05/05 Nascar (Spain)
-DRIVERNV(gprix)     //Whitestar: 05/05 Grand Prix
-DRIVERNV(gprixg)    //Whitestar: 05/05 Grand Prix (Germany)
-DRIVERNV(gprixl)    //Whitestar: 05/05 Grand Prix (Spain)
-DRIVERNV(gprixf)    //Whitestar: 05/05 Grand Prix (France)
-DRIVERNV(gprixi)    //Whitestar: 05/05 Grand Prix (Italy)
+DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos (5.00)
+DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (5.00 Germany)
+DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (5.00 Spain)
+DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (5.00 France)
+DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (5.00 Italy)
+DRIVERNV(sopr300)       //Whitestar: 02/05 The Sopranos (3.00)
+DRIVERNV(sopr300g)      //Whitestar: 02/05 The Sopranos (3.00 Germany)
+DRIVERNV(sopr300l)      //Whitestar: 02/05 The Sopranos (3.00 Spain)
+DRIVERNV(sopr300f)      //Whitestar: 02/05 The Sopranos (3.00 France)
+DRIVERNV(sopr300i)      //Whitestar: 02/05 The Sopranos (3.00 Italy)
+DRIVERNV(sopr204)       //Whitestar: 02/05 The Sopranos (2.04)
+DRIVERNV(sopr107l)      //Whitestar: 02/05 The Sopranos (1.07 Spain)
+DRIVERNV(sopr107g)      //Whitestar: 02/05 The Sopranos (1.07 Germany)
+DRIVERNV(sopr107f)      //Whitestar: 02/05 The Sopranos (1.07 France)
+DRIVERNV(sopr107i)      //Whitestar: 02/05 The Sopranos (1.07 Italy)
+DRIVERNV(nascar)        //Whitestar: 07/06 Nascar (4.50)
+DRIVERNV(nascarl)       //Whitestar: 07/06 Nascar (4.50 Spain)
+DRIVERNV(nas400)        //Whitestar: 10/05 Nascar (4.00)
+DRIVERNV(nas400l)       //Whitestar: 10/05 Nascar (4.00 Spain)
+DRIVERNV(nas350)        //Whitestar: 10/05 Nascar (3.50)
+DRIVERNV(nas340)        //Whitestar: 10/05 Nascar (3.40)
+DRIVERNV(nas340l)       //Whitestar: 10/05 Nascar (3.40 Spain)
+DRIVERNV(nas301)        //Whitestar: 09/05 Nascar (3.01)
+DRIVERNV(nas301l)       //Whitestar: 09/05 Nascar (3.01 Spain)
+DRIVERNV(gprix)         //Whitestar: 07/06 Grand Prix (4.50)
+DRIVERNV(gprixg)        //Whitestar: 07/06 Grand Prix (4.50 Germany)
+DRIVERNV(gprixl)        //Whitestar: 07/06 Grand Prix (4.50 Spain)
+DRIVERNV(gprixf)        //Whitestar: 07/06 Grand Prix (4.50 France)
+DRIVERNV(gprixi)        //Whitestar: 07/06 Grand Prix (4.50 Italy)
+DRIVERNV(gpr400)        //Whitestar: 10/05 Grand Prix (4.00)
+DRIVERNV(gpr400g)       //Whitestar: 10/05 Grand Prix (4.00 Germany)
+DRIVERNV(gpr400l)       //Whitestar: 10/05 Grand Prix (4.00 Spain)
+DRIVERNV(gpr400f)       //Whitestar: 10/05 Grand Prix (4.00 France)
+DRIVERNV(gpr400i)       //Whitestar: 10/05 Grand Prix (4.00 Italy)
+DRIVERNV(gpr340)        //Whitestar: 10/05 Grand Prix (3.40)
+DRIVERNV(gpr340g)       //Whitestar: 10/05 Grand Prix (3.40 Germany)
+DRIVERNV(gpr340l)       //Whitestar: 10/05 Grand Prix (3.40 Spain)
+DRIVERNV(gpr340f)       //Whitestar: 10/05 Grand Prix (3.40 France)
+DRIVERNV(gpr340i)       //Whitestar: 10/05 Grand Prix (3.40 Italy)
+DRIVERNV(gpr301)        //Whitestar: 09/05 Grand Prix (3.01)
+DRIVERNV(gpr301g)       //Whitestar: 09/05 Grand Prix (3.01 Germany)
+DRIVERNV(gpr301l)       //Whitestar: 09/05 Grand Prix (3.01 Spain)
+DRIVERNV(gpr301f)       //Whitestar: 09/05 Grand Prix (3.01 France)
+DRIVERNV(gpr301i)       //Whitestar: 09/05 Grand Prix (3.01 Italy)
                         //Whitestar: ??/06 The Brain (Simpsons Pinball Party conversion)
-
-//The following are all Stern Whitestar games using 8MB Roms running on the new ARM7 sound board for testing the ARM7
-#ifdef TEST_NEW_SOUND
-//DRIVERNV(lotrsnd)   //Test ARM7 cpu/sound core
-//DRIVERNV(seflashb)  //Sound OS Flash Upgrade
-//
-DRIVERNV(strknew)
-DRIVERNV(shrknew)
-DRIVERNV(hironew)
-DRIVERNV(austnew)
-DRIVERNV(mononew)
-DRIVERNV(playnew)
-DRIVERNV(rctnew)
-DRIVERNV(simpnew)
-DRIVERNV(t3new)
-#endif /* TEST_NEW_SOUND */
 
 // Stern S.A.M System
 #ifdef INCLUDE_STERN_SAM
@@ -1191,6 +1415,8 @@ DRIVERNV(gork    )      //??/82 Gork
 DRIVERNV(voleybal)      //??/?? Voley Ball
                         //??/8? Ogar
 DRIVERNV(icecold)       //??/83 Ice Cold Beer (Redemption)
+DRIVERNV(icecoldf)      //??/83 Ice Cold Beer (Redemption Free Play)
+DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
 DRIVERNV(mrblack )    //??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(mrblack1)    //??/84 Mr. Black alternate set
 DRIVERNV(mrblkz80)    //??/8? Mr. Black (Z-80 CPU)
@@ -1211,6 +1437,11 @@ DRIVERNV(xforce)        //??/87 X Force
 // UNITED GAMES
 // ----------------
 DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
+
+// -----------------------------------
+// VALLEY GAMES
+// -----------------------------------
+DRIVERNV(spectra)       //??/79 Spectra IV
 
 // -----------------------------------
 // VIDEODENS GAMES
@@ -1259,9 +1490,12 @@ DRIVER(grgar,t1)        //          11/79 W Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //          12/79 W Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
-DRIVER(frpwr,l6)        //          02/80 W Firepower (L-6)
-DRIVER(frpwr,t6)        //          02/80 W Firepower (L-6) /10 Scoring Ted Estes
-DRIVER(frpwr,b6)        //          12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
+DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Estes
+DRIVER(frpwr,a6)        //S6:       10/05 W Firepower (Sys.6/6-Digit Custom Rev. 31)
+DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(frpwr,c6)        //S6:       12/03 W Firepower (Sys.6/7-Digit Custom Rev. 31)
+DRIVER(frpwr,d6)        //S7:       10/05 W Firepower (Sys.6/6-digit /10 Scoring Rev. 31)
 DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(blkou,f1)        //          06/80 W Blackout, French speech
@@ -1274,8 +1508,11 @@ DRIVER(alpok,l6)        //          10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //          10/80 W Alien Poker L-6, French speech
 DRIVER(alpok,b6)        //          11/06 W Alien Poker Multiball mod
 //System 7
+DRIVER(frpwr,a7)        //S7:       10/05 W Firepower (Sys.7/6-digit Custom Rev. 31)
 DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
-DRIVER(frpwr,c7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion, rev. 38)
+DRIVER(frpwr,c7)        //S7:       11/06 W Firepower (Sys.7/7-digit Custom Rev. 38)
+DRIVER(frpwr,d7)        //S7:       10/05 W Firepower (Sys.7/7-digit Custom Rev. 31)
+DRIVER(frpwr,e7)        //S7:       10/05 W Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
 DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
@@ -1324,6 +1561,8 @@ DRIVER(pb,l2)           //S11-549:  10/86 W Pin-bot (L-2)
 DRIVER(pb,l3)           //          10/86 W Pin-bot (L-3)
 DRIVER(pb,l5)           //          10/86 W Pin-bot (L-5)
                         //S11:      10/86 W Strike Force
+DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
+DRIVER(tts,l2)          //S11-919:  ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
 DRIVER(f14,p3)          //S11-554:  03/87 W F-14 Tomcat (P-3)
 DRIVER(f14,p4)          //          03/87 W F-14 Tomcat (P-4)
@@ -1423,6 +1662,7 @@ DRIVER(fh,d9)           //                W Funhouse (D-9) LED Ghost Fix
 DRIVER(fh,l9b)          //                  bootleg with correct German translation
 DRIVER(fh,d9b)          //                  bootleg with correct German translation LED Ghost Fix
 DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
+DRIVER(fh,f91)          //WPC-503:  12/90 W Funhouse (FreeWPC 0.91)
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
 DRIVER(bop,l3)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-3)
@@ -1435,6 +1675,8 @@ DRIVER(bop,l6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-6)
 DRIVER(bop,d6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (D-6) LED Ghost Fix
 DRIVER(bop,l7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (L-7)
 DRIVER(bop,d7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (D-7) LED Ghost Fix
+DRIVER(bop,l8)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (L-8) fixes billionaire crash multiplayer bug
+DRIVER(bop,d8)          //WPC-502:  12/92 W The Machine: Bride of Pinbot (D-8) LED Ghost Fix
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,d1)           //WPC:      02/91 B Harley Davidson (D-1) LED Ghost Fix
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
@@ -1455,6 +1697,9 @@ DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
+DRIVER(t2,f19)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.19)
+DRIVER(t2,f20)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.20)
+DRIVER(t2,f32)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.32)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
 DRIVER(gi,d3)           //WPC-203:  07/91 B Gilligan's Island (D-3) LED Ghost Fix
 DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
@@ -1571,6 +1816,10 @@ DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //WPC-520:  01/95 B Twilight Zone (9.3) LED Ghost Fix
 DRIVER(tz,94h)          //WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(tz,94ch)         //WPC-520:  10/98 B Twilight Zone (9.4CH - Home Coin version)
+DRIVER(tz,f10)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.10)
+DRIVER(tz,f19)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.19)
+DRIVER(tz,f50)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.50)
+DRIVER(tz,f86)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.86)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
@@ -1589,6 +1838,8 @@ DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,d6)           //WPC-220:  10/93 B Judge Dredd (D-6) LED Ghost Fix
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
 DRIVER(jd,d7)           //WPC-220:  12/93 B Judge Dredd (D-7) LED Ghost Fix
+DRIVER(ij,h1)           //WPC-517:  11/93 W Indiana Jones (HK-1) Family no hate speech version
+DRIVER(ij,i1)           //WPC-517:  11/93 W Indiana Jones (I-1) Family no hate LED Ghost Fix
 DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
 DRIVER(afv,d4)          //WPC-622:  ??/93 W Addams Family Values (D-4 Redemption) LED Ghost Fix
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
@@ -1620,8 +1871,11 @@ DRIVER(dm,dx3)          //WPC-528:  04/94 W Demolition Man (DX-3) LED Ghost Fix
 DRIVER(dm,lx4)          //WPC-528:  05/94 W Demolition Man (LX-4)
 DRIVER(dm,dx4)          //WPC-528:  05/94 W Demolition Man (DX-4) LED Ghost Fix
 DRIVER(dm,h5)           //WPC-528:  02/95 W Demolition Man (H-5) with rude speech
+DRIVER(dm,h5b)          //WPC-528:  02/95 W Demolition Man (H-5) with rude speech (Coin Play)
 DRIVER(dm,dh5)          //WPC-528:  02/95 W Demolition Man (DH-5) with rude speech LED Ghost Fix
+DRIVER(dm,dh5b)         //WPC-528:  02/95 W Demolition Man (DH-5) with rude speech LED Ghost Fix (Coin Play)
 DRIVER(dm,h6)           //WPC-528:  02/95 W Demolition Man (H-6) with rude speech
+DRIVER(dm,h6b)          //WPC-528:  02/95 W Demolition Man (H-6) with rude speech (Coin Play)
 DRIVER(tafg,lx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LX-3)
 DRIVER(tafg,dx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (DX-3) LED Ghost Fix
 DRIVER(tafg,la2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-2)
@@ -1636,6 +1890,9 @@ DRIVER(wcs,p2)          //                  (Pa-2)
 DRIVER(wcs,p5)          //                  (Pa-5) LED Ghost Fix
 DRIVER(wcs,p3)          //                  (Px-3)
 DRIVER(wcs,p6)          //                  (Px-6) LED Ghost Fix
+DRIVER(wcs,f10)         //                  World Cup Soccer (FreeWPC 0.10)
+DRIVER(wcs,f50)         //                  World Cup Soccer (FreeWPC 0.50)
+DRIVER(wcs,f62)         //                  World Cup Soccer (FreeWPC 0.62)
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
 DRIVER(fs,dx2)          //WPC-529:  07/94 W The Flintstones (DX-2) LED Ghost Fix
@@ -1683,10 +1940,13 @@ DRIVER(dh,lx2)          //WPC-530:  01/95 W Dirty Harry (LX-2)
 DRIVER(dh,dx2)          //WPC-530:  03/95 W Dirty Harry (DX-2) LED Ghost Fix
 DRIVER(tom,06)          //WPC-539:  03/95 B Theatre of Magic (0.6A)
 DRIVER(tom,061)         //WPC-539:  03/95 B Theatre of Magic (0.61A) LED Ghost Fix
+DRIVER(tom,10f)		//WPC-539:  04/95 B Theatre of Magic (1.0 French)
+DRIVER(tom,101f)	//WPC-539:  04/95 B Theatre of Magic (1.01 French) LED Ghost Fix
 DRIVER(tom,12)          //WPC-539:  04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,121)         //WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
+DRIVER(tom,14hb)        //          10/96 B Theatre of Magic (1.4 Home version Coin Play)
 DRIVER(nf,20)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.0)
 DRIVER(nf,22)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.2)
 DRIVER(nf,23)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.3)
@@ -1708,6 +1968,7 @@ DRIVER(wd,10f)          //          11/95 B Who dunnit (1.0 French)
 DRIVER(wd,11)           //         ?04/96 B Who dunnit (1.1)
 DRIVER(wd,12)           //         ?05/96 B Who dunnit (1.2)
 DRIVER(wd,12g)          //         ?05/96 B Who dunnit (1.2 German)
+DRIVER(congo,13)        //WPC-550:  11/95 W Congo (1.3)
 DRIVER(congo,20)        //WPC-550:  02/96 W Congo (2.0)
 DRIVER(congo,21)        //          10/96 W Congo (2.1)
 DRIVER(afm,10)          //WPC-541:  12/95 B Attack from Mars (1.0)
@@ -1715,6 +1976,9 @@ DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars (1.1)
 DRIVER(afm,11u)         //WPC-541:  12/95 B Attack from Mars (1.1 Ultrapin)
 DRIVER(afm,113)         //WPC-541:  12/95 B Attack from Mars (1.13 Home version)
 DRIVER(afm,113b)        //WPC-541:  12/95 B Attack from Mars (1.13b Coin Play)
+DRIVER(afm,f10)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.10)
+DRIVER(afm,f20)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.20)
+DRIVER(afm,f32)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.32)
 DRIVER(lc,11)           //WPC-107:  03/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,14)           //WPC-903:  06/96 B Safe Cracker (1.4)
@@ -1727,8 +1991,10 @@ DRIVER(totan,04)        //WPC-547:  05/96 W Tales of the Arabian Nights (0.4)
 DRIVER(totan,12)        //WPC-547:  06/96 W Tales of the Arabian Nights (1.2)
 DRIVER(totan,13)        //          07/96 W Tales of the Arabian Nights (1.3)
 DRIVER(totan,14)        //          10/96 W Tales of the Arabian Nights (1.4)
-DRIVER(ss,03)           //WPC-548:  09/96 B Scared Stiff (0.3)
-DRIVER(ss,12)           //WPC-548:  10/96 B Scared Stiff (1.2)
+DRIVER(ss,01)           //WPC-548:  09/96 B Scared Stiff (D0.1R with sound rev.25)
+DRIVER(ss,01b)          //          09/96 B Scared Stiff (D0.1R with sound rev.25 Coin Play)
+DRIVER(ss,03)           //          09/96 B Scared Stiff (0.3)
+DRIVER(ss,12)           //          10/96 B Scared Stiff (1.2)
 DRIVER(ss,14)           //          11/96 B Scared Stiff (1.4)
 DRIVER(ss,15)           //          02/97 B Scared Stiff (1.5)
 DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
@@ -1764,6 +2030,7 @@ DRIVER(mb,106)          //          06/99 W Monster Bash (Home version)
 DRIVER(mb,106b)         //          06/99 W Monster Bash (1.06b Coin Play)
 DRIVER(cc,12)           //WPC-566:  02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
+DRIVER(cc,13k)		//          04/99 B Cactus Canyon (1.3) with real knocker
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD
@@ -1792,40 +2059,77 @@ DRIVERNV(locomotn)      //09/81 Locomotion
 DRIVERNV(socrking)      //09/82 Soccer Kings
 DRIVERNV(socrkngi)      //      Soccer Kings (Italian speech)
 DRIVERNV(socrkngg)      //      Soccer Kings (German speech)
+DRIVERNV(sockfp)        //09/82 Soccer Kings (Free Play)
+DRIVERNV(sockifp)       //      Soccer Kings (Italian speech Free Play)
+DRIVERNV(sockgfp)       //      Soccer Kings (German speech Free Play)
 DRIVERNV(pinchamp)      //04/83 Pinball Champ
 DRIVERNV(pinchamg)      //      Pinball Champ (German speech)
 DRIVERNV(pinchami)      //      Pinball Champ (Italian speech)
 DRIVERNV(pincham7)      //      Pinball Champ (7 digits)
 DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German speech)
 DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian speech)
+DRIVERNV(pincfp)        //04/83 Pinball Champ (Free Play)
+DRIVERNV(pincgfp)       //      Pinball Champ (German speech Free Play)
+DRIVERNV(pincifp)       //      Pinball Champ (Italian speech Free Play)
+DRIVERNV(pinc7fp)       //      Pinball Champ (7 digits Free Play)
+DRIVERNV(pinc7gfp)      //      Pinball Champ (7 digits, German speech Free Play)
+DRIVERNV(pinc7ifp)      //      Pinball Champ (7 digits, Italian speech Free Play)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(tmacgzac)      //      Time Machine (German speech)
 DRIVERNV(tmacfzac)      //      Time Machine (French speech)
+DRIVERNV(tmachfp)       //04/83 Time Machine (Free Play)
+DRIVERNV(tmacgfp)       //      Time Machine (German speech Free Play)
+DRIVERNV(tmacffp)       //      Time Machine (French speech Free Play)
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //      Farfalla (Italian speech)
 DRIVERNV(farfallg)      //      Farfalla (German speech)
+DRIVERNV(farffp)        //09/83 Farfalla (Free Play)
+DRIVERNV(farfifp)       //      Farfalla (Italian speech Free Play)
+DRIVERNV(farfgfp)       //      Farfalla (German speech Free Play)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
 DRIVERNV(dvlridei)      //      Devil Riders (Italian speech)
 DRIVERNV(dvlrideg)      //      Devil Riders (German speech)
+DRIVERNV(dvlrdfp)       //04/84 Devil Riders (Free Play)
+DRIVERNV(dvlrdifp)      //      Devil Riders (Italian speech Free Play))
+DRIVERNV(dvlrdgfp)      //      Devil Riders (German speech Free Play)
 DRIVERNV(mcastle)       //09/84 Magic Castle
 DRIVERNV(mcastlei)      //      Magic Castle (Italian speech)
 DRIVERNV(mcastleg)      //      Magic Castle (German speech)
 DRIVERNV(mcastlef)      //      Magic Castle (French speech)
+DRIVERNV(mcastfp)       //09/84 Magic Castle (Free Play)
+DRIVERNV(mcastifp)      //      Magic Castle (Italian speech Free Play)
+DRIVERNV(mcastgfp)      //      Magic Castle (German speech Free Play)
+DRIVERNV(mcastffp)      //      Magic Castle (French speech Free Play)
 DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(roboti)        //      Robot (Italian speech)
 DRIVERNV(robotg)        //      Robot (German speech)
 DRIVERNV(robotf)        //      Robot (French speech)
+DRIVERNV(robotfp)       //01/85 Robot (Free Play)
+DRIVERNV(robotifp)      //      Robot (Italian speech Free Play)
+DRIVERNV(robotgfp)      //      Robot (German speech Free Play)
+DRIVERNV(robotffp)      //      Robot (French speech Free Play)
 DRIVERNV(clown)         //07/85 Clown
+DRIVERNV(clownfp)       //07/85 Clown (Free Play)
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(poolchai)      //      Pool Champion (Italian speech)
 DRIVERNV(poolchap)      //      Pool Champion (alternate sound)
+DRIVERNV(poolcfp)       //12/85 Pool Champion (Free Play)
+DRIVERNV(poolcifp)      //      Pool Champion (Italian speech Free Play)
+DRIVERNV(poolcafp)      //      Pool Champion (alternate sound Free Play)
 DRIVERNV(myststar)      //??/86 Mystic Star
 DRIVERNV(bbeltzac)      //03/86 Blackbelt
+DRIVERNV(bbeltzfp)      //03/86 Blackbelt (Free Play)
 DRIVERNV(mexico)        //07/86 Mexico '86
+DRIVERNV(mexicofp)      //07/86 Mexico '86 (Free Play)
 DRIVERNV(zankor)        //12/86 Zankor
+DRIVERNV(zankorfp)      //12/86 Zankor (Free Play)
 DRIVERNV(spooky)        //04/87 Spooky
 DRIVERNV(spookyi)       //      Spooky (Italian speech)
+DRIVERNV(spookyfp)      //04/87 Spooky (Free Play)
+DRIVERNV(spookifp)      //      Spooky (Italian speech Free Play)
 DRIVERNV(strsphnx)      //07/87 Star's Phoenix
+DRIVERNV(strsphfp)      //07/87 Star's Phoenix (Free Play)
 DRIVERNV(nstrphnx)      //08/87 New Star's Phoenix (same roms as strsphnx)
+DRIVERNV(nstrphfp)      //08/87 New Star's Phoenix (same roms as strsphnx Free Play)
 
 #endif /* DRIVER_RECURSIVE */

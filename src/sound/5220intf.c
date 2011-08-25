@@ -50,6 +50,7 @@ int tms5220_sh_start(const struct MachineSound *msound)
     /* reset the 5220 */
     tms5220_reset();
     tms5220_set_irq(intf->irq);
+    tms5220_set_ready(intf->ready);
 
     /* set the initial frequency */
     stream = -1;

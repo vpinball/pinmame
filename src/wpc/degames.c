@@ -686,6 +686,14 @@ DE_ROMEND
 #define input_ports_tftc input_ports_des11
 CORE_GAMEDEF(tftc,303,"Tales From the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(tftc_302,"tftccpua.302",CRC(a194fe0f) SHA1(b83e048300f7e072f76672d72cdf43e43fab2e9e))
+DE_DMD32ROM8x(      "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
+DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_ROMEND
+CORE_CLONEDEF(tftc,302,303,"Tales From the Crypt (3.02 Dutch)",1993,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(tftc_300,"tftccpua.300",CRC(3d275152) SHA1(0aa6df629c27d9265cf35ca0724e241d9820e56b))
 DE_DMD32ROM8x(      "tftcdspa.300",CRC(bf5c812b) SHA1(c10390b6cad0ad457fb83241c7ee1d6b109cf5be))
 DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
@@ -833,6 +841,15 @@ DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca6
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
 CORE_CLONEDEF(mav,401,402,"Maverick (Display Rev. 4.01)",1994,"Sega",de_mDEDMD64S2A,0)
+
+DE_ROMSTARTx0(mav_400, "mavgc5.400",CRC(e2d0a88b) SHA1(d1571edba47aecc871ac0cfdaabca31774f70fa1))
+DE_DMD64ROM88(   "mavdisp0.400",CRC(b6069484) SHA1(2878d9a0151194bd4a0e12e2f75b02a5d7316b68),
+                 "mavdisp3.400",CRC(149f871f) SHA1(e29a8bf149b77bccaeed202786cf76d9a4fd51df))
+DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1),
+                 "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
+                 "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
+DE_ROMEND
+CORE_CLONEDEF(mav,400,402,"Maverick (4.00)",1994,"Sega",de_mDEDMD64S2A,0)
 
 DE_ROMSTARTx0(mav_100, "mavcpu.100",CRC(13fdc959) SHA1(f8155f0fe5d4c3fe55000ab3b57f298fd9229fef))
 DE_DMD64ROM88(   "mavdsp0.100", CRC(3e01f5c8) SHA1(8e40f399c77aa17bebbefe04742ff2ff95508323),
