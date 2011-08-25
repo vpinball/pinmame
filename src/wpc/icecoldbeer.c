@@ -190,6 +190,13 @@ static void ice_firq(int data) {
   if (locals.ca11) cpu_set_irq_line(0, M6809_FIRQ_LINE, PULSE_LINE);
 }
 
+#define INITGAME(name, disptype) \
+	INPUT_PORTS_START(name) INPUT_PORTS_END \
+	static core_tGameData name##GameData = {0,icb_disp,{FLIP_SW(FLIP_L),0,-5}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 MACHINE_DRIVER_START(icecold)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ICE,NULL,NULL)
@@ -286,3 +293,19 @@ ROM_START(icecold)
     ROM_LOAD("icb24.bin",  0xc000, 0x2000, CRC(2d1e7282) SHA1(6f170e24f71d1504195face5f67176b55c933eef))
 ROM_END
 CORE_GAMEDEFNV(icecold,"Ice Cold Beer",1983,"Taito",icecold,GAME_NOT_WORKING)
+
+INITGAME(icecoldf, icb_disp)
+ROM_START(icecoldf)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("icb23b_f.bin", 0xe000, 0x2000, CRC(6fe73c9d) SHA1(24b60da1fc791844601bd9a7628fde195e9e9644))
+    ROM_LOAD("icb24.bin",  0xc000, 0x2000, CRC(2d1e7282) SHA1(6f170e24f71d1504195face5f67176b55c933eef))
+ROM_END
+CORE_CLONEDEFNV(icecoldf,icecold,"Ice Cold Beer (Free Play)",1983,"Taito",icecold,GAME_NOT_WORKING)
+
+INITGAME(zekepeak, icb_disp)
+ROM_START(zekepeak)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("zp23.bin", 0xe000, 0x2000, CRC(ef959586) SHA1(7f8a4787b340bfa34180164806b181b5fb4e5cfa))
+    ROM_LOAD("zp24.bin", 0xc000, 0x2000, CRC(ee90c8f5) SHA1(27a513000e90536e485ccdf43786b415b3c95bd7))
+ROM_END
+CORE_CLONEDEFNV(zekepeak,icecold,"Zeke's Peak",1983,"Taito",icecold,GAME_NOT_WORKING)

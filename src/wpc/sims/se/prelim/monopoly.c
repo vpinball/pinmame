@@ -16,7 +16,7 @@
     +O  L/R Outlane
     +-  L/R Slingshot
      Q  SDTM (Drain Ball)
-
+	
    More to be added...
 
 ------------------------------------------------------------------------------*/
@@ -69,13 +69,13 @@ SE_INPUT_PORTS_START(monopoly,4)
   PORT_START /* 0 */
     COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
     COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"",		        KEYCODE_R)
+    COREPORT_BIT(0x0004,"",		        KEYCODE_D)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"",			KEYCODE_W)
-    COREPORT_BIT(0x0080,"",			KEYCODE_E)
-    COREPORT_BIT(0x0100,"",			KEYCODE_R)
+    COREPORT_BIT(0x0040,"Roll n Win Lane",			KEYCODE_W)
+    COREPORT_BIT(0x0080,"Roll n Win Saucer",			KEYCODE_E)
+    COREPORT_BIT(0x0100,"Right Ramp",			KEYCODE_R)
     COREPORT_BIT(0x0200,"",			KEYCODE_T)
     COREPORT_BIT(0x0400,"",			KEYCODE_Y)
     COREPORT_BIT(0x0800,"",			KEYCODE_U)
@@ -119,6 +119,11 @@ SE_INPUT_PORTS_END
 #define swTrough4	14
 #define swTroughJam	15
 #define swShooter	16
+
+#define swRnWLane       27
+#define swRightRamp     48
+#define swRnWSaucer     52
+
 #define swLeftOutlane	57
 #define swLeftInlane	58
 #define swLeftSling		59
@@ -130,15 +135,17 @@ SE_INPUT_PORTS_END
 / Solenoid definitions
 /----------------------*/
 #define sTrough		1
-#define sLaunch		2
+#define sAutoplunger 2
 #define sLeftSling	17
 #define sRightSling	18
 
+#define sRnW        28
 /*---------------------
 /  Ball state handling
 /----------------------*/
 enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
-      stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling
+      stShooter, stBallLane, stNotEnough, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling,
+	  stRnWLane,stRnWSaucer,stRightRamp
 	  };
 
 static sim_tState monopoly_stateDef[] = {
@@ -155,14 +162,18 @@ static sim_tState monopoly_stateDef[] = {
   {"Drain",		1,0,		0,		stTrough4,	0,	0,	0,	SIM_STNOTEXCL},
 
   /*Line 2*/
-  {"Shooter",		1,swShooter,	 sLaunch,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		stFree,		7,	0,	0,	SIM_STNOTEXCL},
+  {"Shooter",			1,swShooter,		0,				0,				0,0,0,SIM_STNOTEXCL|SIM_STSHOOT},
+  {"Ball Lane",			1,0,				0,				0,				2,0,0,SIM_STNOTEXCL},
+  {"No Strength",		1,0,				0,				stShooter,		3},
   {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
   {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
   {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
   {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
   {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
   {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
+  {"Roll n Win Lane",	1,swRnWLane,	 0,		stFree,	5},
+  {"Roll n Win Saucer",	1,swRnWSaucer,	 sRnW,		stFree,		5},
+  {"Right Ramp",	1,swRightRamp, 0,		stFree,		5},
 
   /*Line 3*/
 
@@ -176,11 +187,28 @@ static sim_tState monopoly_stateDef[] = {
 };
 
 static int monopoly_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
-  {
+	switch (ball->state) {
+	case stShooter:
+		if (core_getSol(sAutoplunger)) {		/* Monopoly has both, manual and auto plunger */
+			ball->speed = 50;
+			return setState(stBallLane,1);
+		}
+		if (sim_getSol(sShooterRel)) {
+			return setState(stBallLane,1);
+		}
+		break;
+
+	case stBallLane:
+		if (ball->speed < 25)
+			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
+		//if (ball->speed < 40)
+			//return setState(stSkillHole,10);
+		if (ball->speed < 51)
+			return setState(stFree,51);		/*Ball goes to stFree*/
+		break;
+	}
+    return 0;
   }
-  return 0;
-}
 
 /*---------------------------
 /  Keyboard conversion table
@@ -197,9 +225,9 @@ static sim_tInportData monopoly_inportData[] = {
   {0, 0x0012, stRightSling},
   {0, 0x0021, stLeftInlane},
   {0, 0x0022, stRightInlane},
-//  {0, 0x0040, },
-//  {0, 0x0080, },
-//  {0, 0x0100, },
+  {0, 0x0040, stRnWLane},
+  {0, 0x0080, stRnWSaucer},
+  {0, 0x0100, stRightRamp},
 //  {0, 0x0200, st},
 //  {0, 0x0400, st},
 //  {0, 0x0800, st},
@@ -239,9 +267,9 @@ static void monopoly_drawStatic(BMTYPE **line) {
   core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball");
-  core_textOutf(30,100,BLACK,"");
-  core_textOutf(30,110,BLACK,"");
-  core_textOutf(30,120,BLACK,"");
+  core_textOutf(30,100,BLACK,"W = Roll n Win Lane");
+  core_textOutf(30,110,BLACK,"E = Roll n Win Saucer");
+  core_textOutf(30,120,BLACK,"R = Right Ramp");
   core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
   core_textOutf(30,140,BLACK,"");
   core_textOutf(30,150,BLACK,"");
@@ -264,6 +292,58 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
 SE_ROMEND
 
 /*-------------------------------------------------------------------
+/ Monopoly (3.20 France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopolf,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-f.301",CRC(e78b1998) SHA1(bd022dc90b55374baed17360fad7bf0f89e2ee33))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopolf input_ports_monopoly
+#define init_monopolf init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopolg,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-g.301",CRC(aab48728) SHA1(b9ed8574ac463a5fc21dc5f41d090cf0ad3f8362))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopolg input_ports_monopoly
+#define init_monopolg init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopoli,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-i.301",CRC(32431b3c) SHA1(6266e17e705bd50d2358d9f7c0168de51aa13750))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopoli input_ports_monopoly
+#define init_monopoli init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.20 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopoll,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
+DE_DMD32ROM8x(        "mondsp-s.301",CRC(9f70dad6) SHA1(bf4b1c579b4bdead51e6b34de81fe65c45b6596a))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopoll input_ports_monopoly
+#define init_monopoll init_monopoly
+
+/*-------------------------------------------------------------------
 / Monopoly (3.03)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
@@ -275,6 +355,45 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
 SE_ROMEND
 #define input_ports_monopole input_ports_monopoly
 #define init_monopole init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (3.01)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monop301,"moncpu.301",CRC(24978872) SHA1(48ef94fd720cdafc61f8de5efd5c6b6731237b18))
+DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monop301 input_ports_monopoly
+#define init_monop301 init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (2.51)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monop251,"moncpu.251",CRC(0645cfae) SHA1(d979234150b7fb62718debbeeeca1466a6c0344f))
+DE_DMD32ROM8x(        "mondsp-a.206",CRC(6df6e158) SHA1(d3a9be2dc189b44b9e4b9f77f5011ed931df5634))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monop251 input_ports_monopoly
+#define init_monop251 init_monopoly
+
+/*-------------------------------------------------------------------
+/ Monopoly (2.33)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monop233,"moncpu.233",CRC(f20a5ca6) SHA1(12ae56bd149aa6635c19f4dd73580db550b26963))
+DE_DMD32ROM8x(        "mondsp-a.203",CRC(6e4678fb) SHA1(c0f41f01e9e20e741f1b13d3bd6e824486ba9a0a))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monop233 input_ports_monopoly
+#define init_monop233 init_monopoly
 
 #ifdef TEST_NEW_SOUND
 /*-------------------------------------------------------------------
@@ -292,68 +411,18 @@ SE_ROMEND
 CORE_CLONEDEFNV(mononew,monopoly,"Monopoly (ARM7 Sound Board)",2002,"Stern",de_mSES3,GAME_NOCRC)
 #endif
 
-
-/*-------------------------------------------------------------------
-/ Monopoly (France)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopolf,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-f.301",CRC(e78b1998) SHA1(bd022dc90b55374baed17360fad7bf0f89e2ee33))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopolf input_ports_monopoly
-#define init_monopolf init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Germany)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopolg,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-g.301",CRC(aab48728) SHA1(b9ed8574ac463a5fc21dc5f41d090cf0ad3f8362))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopolg input_ports_monopoly
-#define init_monopolg init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Italy)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopoli,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-i.301",CRC(32431b3c) SHA1(6266e17e705bd50d2358d9f7c0168de51aa13750))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopoli input_ports_monopoly
-#define init_monopoli init_monopoly
-
-/*-------------------------------------------------------------------
-/ Monopoly (Spain)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(monopoll,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
-DE_DMD32ROM8x(        "mondsp-s.301",CRC(9f70dad6) SHA1(bf4b1c579b4bdead51e6b34de81fe65c45b6596a))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
-                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
-                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
-                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
-SE_ROMEND
-#define input_ports_monopoll input_ports_monopoly
-#define init_monopoll init_monopoly
-
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEFNV(monopoly,"Monopoly (3.20)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (3.20 France)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (3.20 Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (3.20 Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (3.20 Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (3.03)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monop301,monopoly,"Monopoly (3.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monop251,monopoly,"Monopoly (2.51)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monop233,monopoly,"Monopoly (2.33)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-----------------------
 / Simulation Definitions
@@ -366,7 +435,7 @@ static sim_tSimData monopolySimData = {
   NULL, 				/* no init */
   monopoly_handleBallState,	/*Function to handle ball state changes */
   monopoly_drawStatic,	/* Function to handle mechanical state changes */
-  FALSE, 				/* Simulate manual shooter? */
+  TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
 

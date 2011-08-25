@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.4 (August 19, 2011)
+-----------------------------
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
 Version 2.3 (December 24, 2010)
 -------------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes
@@ -71,7 +75,7 @@ Version 1.53, (June 1, 2006)
   not visible VPM will wait until it becomse visible (or a timeout of one second times out). Once the
   parent window is visible it will be set as the active and foreground window
 - selecting the vpm display and pressing escape will cause an error - known issue
-  
+
 Version 1.52 (August 1th, 2005)
 -------------------------------
 - Added an easter egg screen: THANK YOU GUYS!
@@ -160,7 +164,7 @@ Version 1.20 Alpha (August 24, 2002)
 - added 'Game.Settings' property including the "settings"-object you receive
 - added 'Controller.Settings property including the "settings"-object you receive
 - by using Controller.Settings and Game.Settings access to nearly all MAME settings is available
-  ('Settings.Value("name")=value' 
+  ('Settings.Value("name")=value'
 - the emulation thread is running at a slightly higher system priority now
 - the display can be resized to every size you like
 
@@ -243,7 +247,7 @@ Version 0.99 Beta 2 (April 22, 2001)
 -New Dialog for troubleshooting missing roms and bad configurations
 -Rom + Configuation Paths only need to be set once, rather than for each individual rom.
 -New Interface Web Page for easier reading of the interface properties!
--Many New Interface properties for controlling Visual PinMAME: 
+-Many New Interface properties for controlling Visual PinMAME:
   (See interface.html for more info)
   Controller.GetMech
   Controller.SampleRate

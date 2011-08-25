@@ -14,6 +14,7 @@
     /* These are put in switch column 0 */ \
     COREPORT_BIT   (0x1000, "Programming", KEYCODE_8) \
     COREPORT_BIT   (0x2000, "Sound Diag", KEYCODE_9) \
+    COREPORT_BITTOG(0x0100, "Sense Input", KEYCODE_PGDN) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0008, "Start", KEYCODE_1) \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
@@ -95,6 +96,7 @@
   PORT_START /* 0 */ \
     /* These are put in switch column 0 */ \
     COREPORT_BIT   (0x1000, "Sound Diag", KEYCODE_9) \
+    COREPORT_BITTOG(0x0100, "Sense Input", KEYCODE_PGDN) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BIT   (0x0020, "Coin 2", KEYCODE_4) \
@@ -120,7 +122,7 @@
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4 prog enable") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x00f0, 0x0060, "Speech clock speed") \
+    COREPORT_DIPNAME( 0x00f0, 0x0030, "Speech clock speed") \
       COREPORT_DIPSET(0x0000, "620 kHz" ) \
       COREPORT_DIPSET(0x0010, "626 kHz" ) \
       COREPORT_DIPSET(0x0020, "634 kHz" ) \

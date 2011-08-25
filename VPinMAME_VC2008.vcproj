@@ -3730,6 +3730,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\spectra.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\spinb.c"
 					>
 				</File>
@@ -4100,6 +4104,10 @@
 							>
 							<File
 								RelativePath=".\src\wpc\sims\se\prelim\elvis.c"
+								>
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\se\prelim\harley.c"
 								>
 							</File>
 							<File

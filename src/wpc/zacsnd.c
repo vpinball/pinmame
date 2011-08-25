@@ -314,7 +314,7 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
-#define TMS11178_IRQFREQ 3579500.0/8192.0
+#define TMS11178_IRQFREQ 3579545.0/8192.0
 
 #define SW_TRUE 1
 
@@ -322,6 +322,7 @@ static void sns_init(struct sndbrdData *brdData);
 static void sns_diag(int button);
 static WRITE_HANDLER(sns_data_w);
 static void sns_5220Irq(int state);
+static void sns_5220Rdy(int state);
 static READ_HANDLER(sns_8910a_r);
 static WRITE_HANDLER(sns_8910b_w);
 static READ_HANDLER(sns2_8910a_r);
@@ -348,11 +349,11 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 660000, 80, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 639450, 50, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
-static struct AY8910interface  sns_ay8910Int = { 1, 3579500/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
-static struct AY8910interface  sns2_ay8910Int = { 2, 3579500/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns_ay8910Int = { 1, 3579545/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns2_ay8910Int = { 2, 3579545/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
 
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -394,7 +395,7 @@ static MEMORY_WRITE_START(sns3_writemem)
 MEMORY_END
 
 static MACHINE_DRIVER_START(zac1370_nosound)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
 
@@ -415,7 +416,7 @@ MACHINE_DRIVER_START(zac13136)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
@@ -448,7 +449,7 @@ static void sns_irq1b(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia2a, pia2b;
+  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia1ca2, pia2a, pia2b;
   UINT8 lastcmd, daclatch, dacbyte1, dacbyte2;
   int dacMute, sndReturn,dacinp,channel;
   UINT8 snot_ab1, snot_ab2, snot_ab3, snot_ab4; // output from ls139 2d
@@ -589,8 +590,8 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_name  (snslocals.channel+3, "CEM 3374 B SA");
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
-    tms5220_reset();
-    tms5220_set_variant(variant_tmc0285);
+//    tms5220_reset();
+    tms5220_set_variant(TMS5220_IS_5220);
   }
 }
 
@@ -646,14 +647,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
       logerror("high impedance state \n");
       snslocals.r500cmd = snslocals.w500cmd = 0;
   } else {
-    if (~data & 0x02)  { // write
-      logerror("write \n");
-      snslocals.w500cmd = 1;
-      snslocals.r500cmd = 0;
-      tms5220_data_w(0, snslocals.pia1a);
-      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
-    }
-    if (~data & 0x01) { // read
+    if (~data & 0x01) { // read, overrides write command!
       logerror("read \n");
       snslocals.w500cmd = 0;
       snslocals.r500cmd = 1;
@@ -663,6 +657,12 @@ static WRITE_HANDLER(sns_pia1b_w) {
 //      snslocals.pia1a = tms5220_status_r(0);
 //      pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
 #endif
+      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
+    } else if (~data & 0x02)  { // write
+      logerror("write \n");
+      snslocals.w500cmd = 1;
+      snslocals.r500cmd = 0;
+      tms5220_data_w(0, snslocals.pia1a);
       pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
     }
   }
@@ -721,12 +721,12 @@ static WRITE_HANDLER(sns_pia1b_w) {
   }
 }
 static READ_HANDLER(sns_pia1ca2_r) {
-  logerror("sns_pia1ca2_r TMS5220 ready %x\n",tms5220_ready_r());
+  logerror("sns_pia1ca2_r TMS5220 ready %x\n", snslocals.pia1ca2);
 // oliver
   if (snslocals.r500cmd) snslocals.pia1a = tms5220_status_r(0);
 // keeps if
 //  snslocals.pia1a = tms5220_status_r(0);
-  return tms5220_ready_r();
+  return snslocals.pia1ca2;
 }
 static READ_HANDLER(sns_pia1cb1_r) {
   if (core_gameData->hw.soundBoard & 0x02) // true for all 11178
@@ -812,6 +812,11 @@ static void sns_5220Irq(int state) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);
   logerror("sns_5220Irq: state=%x\n",state);
+}
+static void sns_5220Rdy(int state) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
+    pia_set_input_ca2(SNS_PIA1, (snslocals.pia1ca2 = state));
+  logerror("sns_5220Rdy: state=%x\n",state);
 }
 
 // OK: the following addresses are only used by the 11178 sound board variants
@@ -997,7 +1002,7 @@ static INTERRUPT_GEN(cpu_b_irq) { cpu_set_irq_line(ZACSND_CPUB, 0, PULSE_LINE); 
 static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); }
 
 static MACHINE_DRIVER_START(zac11178_13181_nodac)
-  MDRV_CPU_ADD(M6802, 3579500/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)

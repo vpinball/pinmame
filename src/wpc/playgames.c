@@ -70,8 +70,8 @@ core_tLCDLayout play_disp7[] = {
 / 03/78 Space Gambler
 /-------------------------------------------------------------------*/
 INITGAME1(spcgambl, play_dispOld, 1)
-PLAYMATIC_ROMSTART88(spcgambl, "spcgamba.bin", CRC(da312699) SHA1(b1fabfe23d4e5d512623f9b0f3fa8dd38bdbba43),
-            "spcgambb.bin", NO_DUMP)
+PLAYMATIC_ROMSTART88(spcgambl, "spcgamba.bin", CRC(3b6e5287) SHA1(4d2fae779bb4117a99a9311b96ab79799f40067b),
+            "spcgambb.bin", CRC(5c61f25c) SHA1(44b2d74926bf5678146b6d2347b4147e8a29a660))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(spcgambl,"Space Gambler",1978,"Playmatic",gl_mPLAYMATIC1,0)
 
