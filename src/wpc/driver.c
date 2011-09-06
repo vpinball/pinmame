@@ -1662,6 +1662,7 @@ DRIVER(fh,d9)           //                W Funhouse (D-9) LED Ghost Fix
 DRIVER(fh,l9b)          //                  bootleg with correct German translation
 DRIVER(fh,d9b)          //                  bootleg with correct German translation LED Ghost Fix
 DRIVER(fh,905h)         //          04/96 W Funhouse (9.05H)
+DRIVER(fh,906h)         //          04/96 W Funhouse (9.06H Coin Play)
 DRIVER(fh,f91)          //WPC-503:  12/90 W Funhouse (FreeWPC 0.91)
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,d2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (D-2) LED Ghost Fix
