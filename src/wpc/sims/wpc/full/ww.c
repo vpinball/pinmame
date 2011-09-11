@@ -407,6 +407,7 @@ WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,CRC(4eb1d233) SHA1(b4eda04221e11697a7c
 WPC_ROMSTART(ww,d5,"wwatr_d5.rom",0x80000,CRC(ef7bcf15) SHA1(579188d843864c072eb7a6bb1fdc70f27ffd92d4)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,lh5,"ww_lh5.rom",0x100000,CRC(5e03a182) SHA1(0a988d8e1b2b9ed9d6b012634f2b3eede5673600)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,lh6,"ww_lh6.rom",0x100000,CRC(bb1465cf) SHA1(2e554b0d3ceca46c6eb8852534c140916a16069d)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,lh6c,"ww_lh6c.rom",0x100000,CRC(c22f6524) SHA1(755b5e5078ee4810ea8f8e2b83acc4354c8308bd)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l4,"u6-l4.rom",   0x80000,CRC(59c2def3) SHA1(99fe53f228d3e4047958ec263e92926891ea7594)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,d4,"u6-d4.rom",   0x80000,CRC(dc2185d8) SHA1(f75ea3ec03743d4b3a3f0c2de5f15ba9803b8eb2)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l3,"u6-l3.rom",   0x80000,CRC(b8ff04d9) SHA1(a7b16306bf050ee961490abfaf904b1800bfbc3e)) WW_SOUND WPC_ROMEND
@@ -442,6 +443,7 @@ WPC_ROMEND
 CORE_GAMEDEF (ww,l5,   "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,d5,l5,"White Water (D-5) LED Ghost Fix",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh6,l5,"White Water (LH-6)",2000,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,lh6c,l5,"White Water (LH-6 Coin Play)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh5,l5,"White Water (LH-5)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l4,l5,"White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,d4,l5,"White Water (D-4) LED Ghost Fix",1993,"Williams",wpc_mFliptronS,0)
