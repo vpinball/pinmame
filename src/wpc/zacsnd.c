@@ -349,7 +349,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 639450, 50, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 639450, 75, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579545/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -398,19 +398,22 @@ static MACHINE_DRIVER_START(zac1370_nosound)
   MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
-
-  MDRV_INTERLEAVE(500)
-  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac1370)
   MDRV_IMPORT_FROM(zac1370_nosound)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(AY8910,  sns_ay8910Int)
   MDRV_SOUND_ADD(DAC,     sns_dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac13136)
   MDRV_IMPORT_FROM(zac1370_nosound)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(AY8910,  sns2_ay8910Int)
   MDRV_SOUND_ADD(DAC,     sns2_dacInt)
 MACHINE_DRIVER_END
@@ -591,6 +594,10 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
 //    tms5220_reset();
+  }
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370) {
+    tms5220_set_variant(TMS5220_IS_5200);
+  } else {
     tms5220_set_variant(TMS5220_IS_5220);
   }
 }
