@@ -444,7 +444,7 @@ static READ_HANDLER(snt_8910a_r);
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface snt_tms5220Int = { 639450, 50, snt_5220Irq, snt_5220Rdy };
+static struct TMS5220interface snt_tms5220Int = { 639450, 75, snt_5220Irq, snt_5220Rdy };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
 static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
 

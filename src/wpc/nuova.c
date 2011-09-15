@@ -13,6 +13,7 @@
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
+#include "sound/tms5220.h"
 #include "core.h"
 #include "sim.h"
 #include "sndbrd.h"
@@ -81,6 +82,7 @@ static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
   pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia[0]);
+  tms5220_set_variant(TMS5220_IS_5220C);
 }
 
 static void nuova_diag(int button) {
@@ -161,7 +163,7 @@ static PORT_WRITE_START(snd_writeport)
 PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 50 }};
-static struct TMS5220interface nuova_tms5220Int = { 639450, 50, nuova_5220Irq };
+static struct TMS5220interface nuova_tms5220Int = { 639450, 75, nuova_5220Irq };
 
 /*-------------------
 / exported interface
