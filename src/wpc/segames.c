@@ -1551,6 +1551,46 @@ SE_ROMEND
 #define init_rip302l init_ripleys
 CORE_CLONEDEFNV(rip302l,ripleys,"Ripley's Believe It or Not! (3.02 Spain)",2004,"Stern",de_mSES3,0)
 
+SE128_ROMSTART(rip301, "ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
+DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
+RBION_SND
+SE_ROMEND
+#define input_ports_rip301 input_ports_ripleys
+#define init_rip301 init_ripleys
+CORE_CLONEDEFNV(rip301,ripleys,"Ripley's Believe It or Not! (3.01)",2004,"Stern",de_mSES3,0)
+
+SE128_ROMSTART(rip301f,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
+DE_DMD32ROM8x(        "ripdispf.301",CRC(e5ae9d99) SHA1(74929b324b457d08a925c641430e6a7036c7039d))
+RBION_SND_FR
+SE_ROMEND
+#define input_ports_rip301f input_ports_ripleys
+#define init_rip301f init_ripleys
+CORE_CLONEDEFNV(rip301f,ripleys,"Ripley's Believe It or Not! (3.01 France)",2004,"Stern",de_mSES3,0)
+
+SE128_ROMSTART(rip301g,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
+DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
+RBION_SND_GR
+SE_ROMEND
+#define input_ports_rip301g input_ports_ripleys
+#define init_rip301g init_ripleys
+CORE_CLONEDEFNV(rip301g,ripleys,"Ripley's Believe It or Not! (3.01 Germany)",2004,"Stern",de_mSES3,0)
+
+SE128_ROMSTART(rip301i,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
+DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
+RBION_SND_IT
+SE_ROMEND
+#define input_ports_rip301i input_ports_ripleys
+#define init_rip301i init_ripleys
+CORE_CLONEDEFNV(rip301i,ripleys,"Ripley's Believe It or Not! (3.01 Italy)",2004,"Stern",de_mSES3,0)
+
+SE128_ROMSTART(rip301l,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
+DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
+RBION_SND_SP
+SE_ROMEND
+#define input_ports_rip301l input_ports_ripleys
+#define init_rip301l init_ripleys
+CORE_CLONEDEFNV(rip301l,ripleys,"Ripley's Believe It or Not! (3.01 Spain)",2004,"Stern",de_mSES3,0)
+
 SE128_ROMSTART(rip300, "ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
 RBION_SND
@@ -1671,6 +1711,46 @@ SE_ROMEND
 #define init_sopranoi init_sopranos
 CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (5.00 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
+SE128_ROMSTART(sopr400, "sopcpua.400", CRC(68efcf24) SHA1(9ef30808260f96fb19067ee473add0c43dd6180e))
+DE_DMD32ROM8x(      "sopdspa.400", CRC(60d6b9d3) SHA1(925d2c84e486e4a71bd05b542429a0e22a99072f))
+SOP_SND
+SE_ROMEND
+#define input_ports_sopr400 input_ports_sopranos
+#define init_sopr400 init_sopranos
+CORE_CLONEDEFNV(sopr400,sopranos,"Sopranos, The (4.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(sopr400g, "sopcpug.400", CRC(44bd5b83) SHA1(edd11ee10a3bba9055363919f317421dee84cd85))
+DE_DMD32ROM8x(      "sopdspg.400", CRC(2672ef2c) SHA1(8e042b6a98edd8d7b7682d01914d8d021f526b35))
+SOP_SND_GR
+SE_ROMEND
+#define input_ports_sopr400g input_ports_sopranos
+#define init_sopr400g init_sopranos
+CORE_CLONEDEFNV(sopr400g,sopranos,"Sopranos, The (4.00 Germany)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(sopr400f, "sopcpuf.400", CRC(d6f770cd) SHA1(35f35bb91c1444ba42e29542213745b7e90c9b27))
+DE_DMD32ROM8x(      "sopdspf.400", CRC(df451810) SHA1(3c396cac89c57dbacde9b82681dd5600616d6d93))
+SOP_SND_FR
+SE_ROMEND
+#define input_ports_sopr400f input_ports_sopranos
+#define init_sopr400f init_sopranos
+CORE_CLONEDEFNV(sopr400f,sopranos,"Sopranos, The (4.00 France)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(sopr400l, "sopcpul.400", CRC(7fe54359) SHA1(cb00318484ad1e30ab86c3a239fd2ea322aa945e))
+DE_DMD32ROM8x(      "sopdspl.400", CRC(4fbef543) SHA1(3ffb48031451d3b318f88bfab4d92d2903993492))
+SOP_SND_SP
+SE_ROMEND
+#define input_ports_sopr400l input_ports_sopranos
+#define init_sopr400l init_sopranos
+CORE_CLONEDEFNV(sopr400l,sopranos,"Sopranos, The (4.00 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(sopr400i, "sopcpui.400", CRC(9bd48a86) SHA1(16aa55892a295a1486ede60df104520362005155))
+DE_DMD32ROM8x(      "sopdspi.400", CRC(7e58e364) SHA1(1fcf282ae68e3e725e16e43b85f57d1a18b43508))
+SOP_SND_IT
+SE_ROMEND
+#define input_ports_sopr400i input_ports_sopranos
+#define init_sopr400i init_sopranos
+CORE_CLONEDEFNV(sopr400i,sopranos,"Sopranos, The (4.00 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
 SE128_ROMSTART(sopr300, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
 DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
 SOP_SND
@@ -1678,6 +1758,21 @@ SE_ROMEND
 #define input_ports_sopr300 input_ports_sopranos
 #define init_sopr300 init_sopranos
 CORE_CLONEDEFNV(sopr300,sopranos, "Sopranos, The (3.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
+/ The Sopranos (3.00) alternative
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(soprano3, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
+DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
+DE3SC_SOUNDROM18888("sopsnd3.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a8b5bf6579e94e0),
+                    "sopsnda.u17", CRC(21e0cfd2) SHA1(d2ff1242f1f4a206e0b2884c079ef2be5df143ac),
+                    "sopsnd3.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
+                    "sopsnd3.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
+                    "sopsnd3.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
+SE_ROMEND
+#define input_ports_soprano3 input_ports_sopranos
+#define init_soprano3 init_sopranos
+CORE_CLONEDEFNV(soprano3,sopranos, "Sopranos, The (3.00)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300l, "sopcpul.300", CRC(2efd7a45) SHA1(d179605c385c3e3b269bb81295f79a52e0f3f627))
 DE_DMD32ROM8x(      "sopdspl.300", CRC(d6f7a723) SHA1(462c8c82ffb6e386adfc411d3e70c4b25553dc7a))
@@ -1821,6 +1916,22 @@ SE_ROMEND
 #define init_nas400l init_nascar
 CORE_CLONEDEFNV(nas400l,nascar,"Nascar (4.00 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
+SE128_ROMSTART(nas352, "nascpua.352", CRC(65b8132e) SHA1(b42dca3e68d3eff158bae830f6c8cca00e0ed3e2))
+DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
+NASCAR_SND
+SE_ROMEND
+#define input_ports_nas352 input_ports_se
+#define init_nas352 init_nascar
+CORE_CLONEDEFNV(nas352,nascar,"Nascar (3.52)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(nas352l, "nascpul.352", CRC(c78549d8) SHA1(9796c0d413fd2ea7f616ad238b67311c8c29286d))
+DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
+NASCAR_SND_SP
+SE_ROMEND
+#define input_ports_nas352l input_ports_se
+#define init_nas352l init_nascar
+CORE_CLONEDEFNV(nas352l,nascar,"Nascar (3.52 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
 SE128_ROMSTART(nas350, "nascpua.350", CRC(e5b4ed49) SHA1(0d38c0e08862a0a5a200225634c5bf0d0afe5afe))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
 NASCAR_SND
@@ -1828,6 +1939,14 @@ SE_ROMEND
 #define input_ports_nas350 input_ports_se
 #define init_nas350 init_nascar
 CORE_CLONEDEFNV(nas350,nascar,"Nascar (3.50)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(nas350l, "nascpul.350", CRC(ab749309) SHA1(95d35126bda75c68037010f001c28a860b6a6e0c))
+DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
+NASCAR_SND_SP
+SE_ROMEND
+#define input_ports_nas350l input_ports_se
+#define init_nas350l init_nascar
+CORE_CLONEDEFNV(nas350l,nascar,"Nascar (3.50 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
 SE128_ROMSTART(nas340, "nascpua.340", CRC(120dc65a) SHA1(151c1604dacb1c1cf74449291d81629a05fb1b09))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -1978,6 +2097,86 @@ SE_ROMEND
 #define input_ports_gpr400i input_ports_se
 #define init_gpr400i init_gprix
 CORE_CLONEDEFNV(gpr400i,gprix,"Grand Prix (4.00 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr352, "gpcpua.352", CRC(da46b437) SHA1(07cf288d47e1447c015e5bb1fd85df654bde71ef))
+DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
+GP_SND
+SE_ROMEND
+#define input_ports_gpr352 input_ports_se
+#define init_gpr352 init_gprix
+CORE_CLONEDEFNV(gpr352,gprix,"Grand Prix (3.52)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr352g, "gpcpug.352", CRC(b6c15f62) SHA1(b8757e7ef7064d200c7965902b624c8ef947f23d))
+DE_DMD32ROM8x(      "gpdspg.303", CRC(0be9eb1d) SHA1(78c402efcc818e4960ef5ca17e7fa43a028b5c9b))
+GP_SND_GR
+SE_ROMEND
+#define input_ports_gpr352g input_ports_se
+#define init_gpr352g init_gprix
+CORE_CLONEDEFNV(gpr352g,gprix,"Grand Prix (3.52 Germany)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr352l, "gpcpul.352", CRC(cd296661) SHA1(e706525b07e1e1278ab65a896616e63be52e8e73))
+DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
+GP_SND_SP
+SE_ROMEND
+#define input_ports_gpr352l input_ports_se
+#define init_gpr352l init_gprix
+CORE_CLONEDEFNV(gpr352l,gprix,"Grand Prix (3.52 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr352f, "gpcpuf.352", CRC(78140cd3) SHA1(9c7257dede5c3bf78d9a9bbdf89bd01f12180c4f))
+DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
+GP_SND_FR
+SE_ROMEND
+#define input_ports_gpr352f input_ports_se
+#define init_gpr352f init_gprix
+CORE_CLONEDEFNV(gpr352f,gprix,"Grand Prix (3.52 France)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr352i, "gpcpui.352", CRC(941bd2a9) SHA1(11402004c5b57de5ec28ea2f4128b1852c205dac))
+DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
+GP_SND_IT
+SE_ROMEND
+#define input_ports_gpr352i input_ports_se
+#define init_gpr352i init_gprix
+CORE_CLONEDEFNV(gpr352i,gprix,"Grand Prix (3.52 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr350, "gpcpua.350", CRC(bd47be96) SHA1(31b7adc5cec10d18dd551fdba94fbdb8c6eac01b))
+DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
+GP_SND
+SE_ROMEND
+#define input_ports_gpr350 input_ports_se
+#define init_gpr350 init_gprix
+CORE_CLONEDEFNV(gpr350,gprix,"Grand Prix (3.50)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr350g, "gpcpug.350", CRC(8e77c953) SHA1(07d23ce2f0b0a2dc6284b71d1a4a8d1bb5dab6d0))
+DE_DMD32ROM8x(      "gpdspg.303", CRC(0be9eb1d) SHA1(78c402efcc818e4960ef5ca17e7fa43a028b5c9b))
+GP_SND_GR
+SE_ROMEND
+#define input_ports_gpr350g input_ports_se
+#define init_gpr350g init_gprix
+CORE_CLONEDEFNV(gpr350g,gprix,"Grand Prix (3.50 Germany)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr350l, "gpcpul.350", CRC(714f0641) SHA1(c09aa248fe04fc3c569c6786c0db8d396cbd2403))
+DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
+GP_SND_SP
+SE_ROMEND
+#define input_ports_gpr350l input_ports_se
+#define init_gpr350l init_gprix
+CORE_CLONEDEFNV(gpr350l,gprix,"Grand Prix (3.50 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr350f, "gpcpuf.350", CRC(ad4224e9) SHA1(781a76ef14e7abb2b57ae49cd8712ddace8a4fca))
+DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
+GP_SND_FR
+SE_ROMEND
+#define input_ports_gpr350f input_ports_se
+#define init_gpr350f init_gprix
+CORE_CLONEDEFNV(gpr350f,gprix,"Grand Prix (3.50 France)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+
+SE128_ROMSTART(gpr350i, "gpcpui.350", CRC(64bc5f6b) SHA1(fb079323d3548f1915de93d724d3fb76b2e02f27))
+DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
+GP_SND_IT
+SE_ROMEND
+#define input_ports_gpr350i input_ports_se
+#define init_gpr350i init_gprix
+CORE_CLONEDEFNV(gpr350i,gprix,"Grand Prix (3.50 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
 SE128_ROMSTART(gpr340, "gpcpua.340", CRC(798f2ab3) SHA1(046cbbd0115511b2cbd7f132b0755d03edce1e7b))
 DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
