@@ -1424,10 +1424,12 @@ DRIVERNV(hexagone)      //04/86 L'Hexagone
 // TAITO GAMES
 // ---------------
                         //??/?? Apache!
-                        //??/?? Football
+                        //??/?? Football (W World Cup'78, 05/78)
                         //??/79 Hot Ball (B Eight Ball, 01/77)
 DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
+			//??/78 Roman Victory (Redemption)
+			//??/78 Space Patrol
 DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
 DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
 DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
