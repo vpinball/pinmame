@@ -1912,7 +1912,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(sopr300,sopranos, "Sopranos, The (3.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ The Sopranos (3.00) alternative
+/ The Sopranos (3.00) alternative sound
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(soprano3, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
 DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
@@ -1924,7 +1924,7 @@ DE3SC_SOUNDROM18888("sopsnd3.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a
 SE_ROMEND
 #define input_ports_soprano3 input_ports_sopranos
 #define init_soprano3 init_sopranos
-CORE_CLONEDEFNV(soprano3,sopranos, "Sopranos, The (3.00)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(soprano3,sopranos, "Sopranos, The (3.00, alternative sound)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300l, "sopcpul.300", CRC(2efd7a45) SHA1(d179605c385c3e3b269bb81295f79a52e0f3f627))
 DE_DMD32ROM8x(      "sopdspl.300", CRC(d6f7a723) SHA1(462c8c82ffb6e386adfc411d3e70c4b25553dc7a))
