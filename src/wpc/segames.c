@@ -1275,7 +1275,7 @@ SE_ROMEND
 #define init_lotr_sp8 init_lotr
 CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord Of The Rings, The (8.00 Spain)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(lotr_gr8, "lotrcpu.800", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+SE128_ROMSTART(lotr_gr8, "lotrcpu.800", CRC(655e5b3c) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspg.800", CRC(55765c23) SHA1(690a72e8cb1099a6873eb3214e72bb0fea54fa22))
 LOTR_SND
 SE_ROMEND
@@ -1283,7 +1283,7 @@ SE_ROMEND
 #define init_lotr_gr8 init_lotr
 CORE_CLONEDEFNV(lotr_gr8,lotr,"Lord Of The Rings, The (8.00 Germany)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(lotr_fr8, "lotrcpu.800", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+SE128_ROMSTART(lotr_fr8, "lotrcpu.800", CRC(655e5b3c) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspf.800", CRC(e1ccc04b) SHA1(1d5c7ea06f0cb2e1965c968ed01330867aae8e2b))
 LOTR_SND
 SE_ROMEND
@@ -1291,7 +1291,7 @@ SE_ROMEND
 #define init_lotr_fr8 init_lotr
 CORE_CLONEDEFNV(lotr_fr8,lotr,"Lord Of The Rings, The (8.00 France)",2004,"Stern",de_mSES3,0)
 
-SE128_ROMSTART(lotr_it8, "lotrcpu.800", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+SE128_ROMSTART(lotr_it8, "lotrcpu.800", CRC(655e5b3c) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspi.800", CRC(b80730d7) SHA1(552c0bfac1c7a6b246829378a30d58769e695f7e))
 LOTR_SND
 SE_ROMEND
