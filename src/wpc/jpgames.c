@@ -8,7 +8,7 @@
 
 #define INITGAME(name, disptype, balls) \
 	JP_INPUT_PORTS_START(name, balls) JP_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_JP,disptype,{FLIP_SW(FLIP_L), 0,8,0, SNDBRD_SPINB}}; \
+	static core_tGameData name##GameData = {GEN_JP,disptype,{FLIP_SW(FLIP_L), 0,12,0, SNDBRD_SPINB}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -214,3 +214,12 @@ JP_ROMSTART2(lortium,	"cpulort1.dat", NO_DUMP,
 						"cpulort2.dat", CRC(71eebb26) SHA1(9d49c1012555bda24ac7287499bcb93828cbb57f))
 JP_ROMEND
 CORE_GAMEDEFNV(lortium,"Lortium",1987,"Juegos Populares",gl_mJP,0)
+
+/*-------------------------------------------------------------------
+/ Pimbal
+/-------------------------------------------------------------------*/
+INITGAME(pimbal, jpDisp7, 1)
+JP_ROMSTART2(pimbal, "p3000.r1", CRC(57fb5958) SHA1(536d6564c184f214edf821b83a27aa7f75c7ad00),
+						"p3000.r2", CRC(b8aae5ad) SHA1(8639b132aa69281f4460f80e84e0d30a5dc298d0))
+JP_ROMEND
+CORE_GAMEDEFNV(pimbal,"Pimbal (Pinball 3000)",19??,"Juegos Populares",gl_mJP,0)
