@@ -115,9 +115,11 @@ static void dispStrobe(void) {
     coreGlobals.tmpLampMatrix[15] = core_revbyte(~(locals.dispData >> 22)) >> 6;
     break;
   case 7:
-    // all comma segments
-    for (i=0; i < 32; i++)
-      if (!(locals.dispData & (1 << i))) locals.segments[pos[i]].w &= ~0x80;
+    // extra outputs, some blink when HSTD is displayed, no idea what the others are?
+    coreGlobals.tmpLampMatrix[16] = 0xff ^ (locals.dispData & 0x000000ff);
+    coreGlobals.tmpLampMatrix[17] = 0xff ^ ((locals.dispData & 0x0000ff00) >> 8);
+    coreGlobals.tmpLampMatrix[18] = 0xff ^ ((locals.dispData & 0x00ff0000) >> 16);
+    coreGlobals.tmpLampMatrix[19] = 0xff ^ ((locals.dispData & 0xff000000) >> 24);
     break;
   default:
     // all player scores, match & credits displays
@@ -240,6 +242,7 @@ static MEMORY_READ_START(JP_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(JP_writemem)
+  {0x0000,0x3fff, MWA_NOP},
   {0x4000,0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000,0x6000, ay8910_ctrl_w},
   {0x6002,0x6002, ay8910_data_w},

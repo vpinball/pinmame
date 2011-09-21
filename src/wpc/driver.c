@@ -662,6 +662,7 @@ DRIVERNV(olympus )      //Olympus
 DRIVERNV(america )      //America 1492
 DRIVERNV(aqualand)      //Aqualand
 DRIVERNV(lortium )      //Lortium
+DRIVERNV(pimbal  )      //Pimbal (Pinball 3000)
 
 // ----------------
 // LTD
