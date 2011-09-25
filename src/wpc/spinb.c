@@ -182,8 +182,7 @@ SND CPU #2 8255 PPI
 #define SPINB_Z80CPU_FREQ   5000000 /* should be  2500000 2.5 MHz, tweaked for playability */
 #define SPINB_8051CPU_FREQ 24000000 /* should be 16000000  16 MHz, tweaked for playability */
 
-#define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
+//#define SPINB_INTFREQ      210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
 #define INTCYCLES             90 /* keep irq high for this many cycles */
 #define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) (should probably be INTFRQ*8=2000) */
 
@@ -335,7 +334,7 @@ static struct MSM5205interface SPINB_msm6585Int = {
 	{100,75}								//Volume
 };
 /* Sound board */
-const struct sndbrdIntf spinbIntf = {
+struct sndbrdIntf spinbIntf = {
    "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
@@ -867,7 +866,7 @@ static MACHINE_INIT(spinb) {
   SPINBlocals.L16isGameOn =  core_gameData->hw.gameSpecific1        & 0xff;
 
   SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
-  SPINBlocals.irqfreq = SPINB_INTFREQ;
+  SPINBlocals.irqfreq = core_gameData->hw.gameSpecific2;
   timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
 
   /* init PPI */
@@ -1242,7 +1241,7 @@ static MEMORY_WRITE_START(spinbsnd2_writemem)
 MEMORY_END
 
 /* DMD DRIVER */
-MACHINE_DRIVER_START(spinbdmd)
+static MACHINE_DRIVER_START(spinbdmd)
   MDRV_CPU_ADD(I8051, SPINB_8051CPU_FREQ)	/*16 Mhz*/
   MDRV_CPU_MEMORY(spinbdmd_readmem, spinbdmd_writemem)
   MDRV_CPU_PORTS(spinbdmd_readport, spinbdmd_writeport)

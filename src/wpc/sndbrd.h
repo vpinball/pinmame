@@ -1,8 +1,5 @@
 #ifndef INC_SNDBRD
 #define INC_SNDBRD
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
 
 extern void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data);
 /*-- core interface --*/
@@ -18,6 +15,7 @@ extern void sndbrd_ctrl_w(int board, int data);
 extern int sndbrd_ctrl_r(int board);
 extern void sndbrd_ctrl_cb(int board, int data);
 extern void sndbrd_data_cb(int board, int data);
+void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd)));
 void sndbrd_manCmd(int board, int cmd);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
