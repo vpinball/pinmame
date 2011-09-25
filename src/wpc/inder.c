@@ -219,14 +219,14 @@ static WRITE_HANDLER(ci20_porta_w) {
 }
 // (always 00?)
 static WRITE_HANDLER(ci20_portb_w) {
-	locals.solenoids |= data << 8;
+	locals.solenoids |= data << 16;
 }
 // (always ff?)
 static WRITE_HANDLER(ci20_portc_w) {
 	coreGlobals.tmpLampMatrix[7] = data ^ 0xff;
 }
 
-// sols
+// solenoids
 static WRITE_HANDLER(ci21_porta_w) {
 	locals.solenoids |= data ^ 0xee;
 }
@@ -234,9 +234,10 @@ static WRITE_HANDLER(ci21_porta_w) {
 static WRITE_HANDLER(ci21_portb_w) {
 	coreGlobals.tmpLampMatrix[0] = data;
 }
-// lamps
+// lamps and solenoids, heavily mixed between games! Sorry, it won't get any better than this.
 static WRITE_HANDLER(ci21_portc_w) {
 	coreGlobals.tmpLampMatrix[1] = data;
+  locals.solenoids |= ((data & 0xf0) ^ 0xf0) << 4;
 }
 
 // lamps
@@ -278,6 +279,14 @@ static WRITE_HANDLER(snd_w) {
   locals.sndCmd = data;
 }
 
+// extra outputs, map to lamps
+static WRITE_HANDLER(extra_w) {
+	coreGlobals.tmpLampMatrix[8 + offset] = data;
+}
+static WRITE_HANDLER(extra2_w) {
+	coreGlobals.tmpLampMatrix[14] = data;
+}
+
 static ppi8255_interface ppi8255_intf =
 {
 	4+1,					/* 4 chips for CPU board + 1 chip for sound */
@@ -293,6 +302,7 @@ static MEMORY_READ_START(INDER_readmem)
   {0x0000,0x3fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
   {0x4400,0x44ff, INDER_CMOS_r},
+  {0x4500,0x45ff, MRA_RAM},
   {0x6000,0x6003, ppi8255_0_r},
   {0x6400,0x6403, ppi8255_1_r},
   {0x6800,0x6803, ppi8255_2_r},
@@ -302,20 +312,23 @@ MEMORY_END
 static MEMORY_WRITE_START(INDER_writemem)
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
+  {0x4500,0x45ff, MWA_RAM},
+//{0x4900,0x4900, MWA_NOP}, // unknown stuff here
   {0x6000,0x6003, ppi8255_0_w},
   {0x6400,0x6403, ppi8255_1_w},
   {0x6800,0x6803, ppi8255_2_w},
   {0x6c00,0x6c03, ppi8255_3_w},
   {0x6c20,0x6c20, snd_w},
+  {0x6c40,0x6c45, extra_w},
   {0x6c60,0x6c66, disp16_w},
-//{0x6ce0,0x6ce0, ?}, // unknown stuff here
+  {0x6ce0,0x6ce0, extra2_w},
 MEMORY_END
 
 static MACHINE_INIT(INDER) {
   memset(&locals, 0, sizeof locals);
 }
 
-MACHINE_DRIVER_START(INDER)
+static MACHINE_DRIVER_START(INDER)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", Z80, INDER_CPUFREQ)
   MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem)
@@ -340,7 +353,7 @@ static MEMORY_WRITE_START(INDER0_writemem)
   {0x2000,0x20ff, disp_w},
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-//{0x4800,0x4805, ?}, // unknown stuff here
+//{0x4800,0x4805, MWA_NOP}, // unknown stuff here
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
@@ -367,7 +380,7 @@ static MEMORY_WRITE_START(INDER1_writemem)
   {0x2000,0x20ff, disp_w},
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-//{0x4800,0x4805, ?}, // unknown stuff here
+//{0x4800,0x4805, MWA_NOP}, // unknown stuff here
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
@@ -390,12 +403,13 @@ static MEMORY_WRITE_START(INDER2_writemem)
   {0x2000,0x20ff, disp_w},
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-//{0x4800,0x4805, ?}, // unknown stuff here
+//{0x4800,0x4805, MWA_NOP}, // unknown stuff here
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
   {0x4a00,0x4a00, snd2_w},
   {0x4a01,0x4a01, disp2_w},
+//{0x4b00,0x4b05, MWA_NOP}, // unknown stuff here
 MEMORY_END
 
 static MEMORY_READ_START(inder2_snd_readmem)
@@ -413,14 +427,29 @@ static MEMORY_WRITE_START(inder2_snd_writemem)
   {0xa002,0xa002, ay8910_1_data_w},
 MEMORY_END
 
+static MACHINE_INIT(INDER2) {
+	memset(&locals, 0, sizeof locals);
+
+	/* init sound */
+	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(INDER_MEMREG_SND),NULL,NULL);
+	sndbrd_setManCmd(0, snd2_w);
+}
+
+static MACHINE_STOP(INDER2) {
+	sndbrd_0_exit();
+}
+
 MACHINE_DRIVER_START(INDER2)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDER0_readmem, INDER2_writemem)
+  MDRV_CORE_INIT_RESET_STOP(INDER2,NULL,INDER2)
+
   MDRV_CPU_ADD_TAG("scpu", Z80, 2000000)
   MDRV_CPU_PERIODIC_INT(inder2_snd_irq, INDER_IRQFREQ)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(inder2_snd_readmem, inder2_snd_writemem)
+
   MDRV_SOUND_ADD(AY8910, INDER_ay8910Int2)
 MACHINE_DRIVER_END
 
@@ -491,12 +520,10 @@ static MACHINE_INIT(INDERS) {
 
 	/* init PPI */
 	ppi8255_init(&ppi8255_intf);
+
 	/* init sound */
 	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(INDER_MEMREG_SND),NULL,NULL);
-}
-
-static MACHINE_STOP(INDERS) {
-	sndbrd_0_exit();
+	sndbrd_setManCmd(0, snd_w);
 }
 
 static MEMORY_READ_START(indersnd_readmem)
@@ -514,10 +541,312 @@ MEMORY_END
 
 MACHINE_DRIVER_START(INDERS)
   MDRV_IMPORT_FROM(INDER)
+
   MDRV_CPU_ADD_TAG("scpu", Z80, 2500000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CORE_INIT_RESET_STOP(INDERS,NULL,INDERS)
+  MDRV_CORE_INIT_RESET_STOP(INDERS,NULL,INDER2)
   MDRV_CPU_MEMORY(indersnd_readmem, indersnd_writemem)
+
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, INDER_msm5205Int)
+MACHINE_DRIVER_END
+
+
+// two MSM sound boards, just like on Bushido and the Spinball machines
+
+static struct {
+  int    S1_ALO;
+  int    S1_AHI;
+  int    S1_CS0;
+  int    S1_CS1;
+  int    S1_A16;
+  int    S1_A17;
+  int    S1_PC0;
+  int    S1_MSMDATA;
+  int    S1_Reset;
+
+  int    S2_ALO;
+  int    S2_AHI;
+  int    S2_CS0;
+  int    S2_CS1;
+  int    S2_A16;
+  int    S2_A17;
+  int    S2_PC0;
+  int    S2_MSMDATA;
+  int    S2_Reset;
+
+  int    SoundReady;
+} sndlocals2;
+
+static void INDER_S1_msmIrq(int data);
+static void INDER_S2_msmIrq(int data);
+static READ_HANDLER(INDER_S1_MSM5205_READROM);
+static READ_HANDLER(INDER_S2_MSM5205_READROM);
+static WRITE_HANDLER(INDER_S1_MSM5205_w);
+static WRITE_HANDLER(INDER_S2_MSM5205_w);
+
+/* MSM5205 ADPCM CHIP INTERFACE */
+static struct MSM5205interface inder_msm5205Int2 = {
+	2,										//# of chips (effects / music)
+	384000,									//384Khz Clock Frequency
+	{INDER_S1_msmIrq, INDER_S2_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{80,50}								//Volume
+};
+
+// (always ff? ignore it for now)
+static WRITE_HANDLER(ci20_portb_w2) {
+}
+
+// returns the sound ready bit for Metal Man, no idea where it comes from, so always return HI bit
+static READ_HANDLER(ci20_portb_r2) {
+  return 0x02;
+}
+
+// display strobes are reversed on Metal Man
+static WRITE_HANDLER(ci23_portc_w2) {
+  int i;
+  if ((data & 0x0f) < 7) {
+    for (i=0; i < 7; i++)
+      locals.segments[8*i + 7 - (data & 0x07)].w = locals.dispSeg[i];
+  }
+}
+
+/*
+SND CPU #1 8255 PPI
+-------------------
+  Port A:
+  (out) Address 8-15 for DATA ROM		(manual showes this as Port B incorrectly!)
+
+  Port B:
+  (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
+
+  Port C:
+  (out)
+    (IN)(P0)    - Detects nibble feeds to MSM5205
+		(P1-P3) - Not Used?
+		(P4)    - Ready Status to Main CPU
+		(P5)    - S1 Pin on MSM5205 (Sample Rate Select 1)
+		(P6)    - Reset on MSM5205
+		(P7)    - Not Used?
+*/
+static READ_HANDLER(snd1_porta_r) { /* LOGSND(("SND1_PORTA_R\n")); */ return 0; }
+static READ_HANDLER(snd1_portb_r) { /* LOGSND(("SND1_PORTB_R\n")); */ return 0; }
+static READ_HANDLER(snd1_portc_r) {
+	int data = sndlocals2.S1_PC0;
+  //LOGSND(("SND1_PORTC_R = %x\n",data));
+	return data;
+}
+
+static WRITE_HANDLER(snd1_porta_w) { sndlocals2.S1_AHI = data; }
+static WRITE_HANDLER(snd1_portb_w) { sndlocals2.S1_ALO = data; }
+static WRITE_HANDLER(snd1_portc_w) {
+  //LOGSND(("SND1_PORTC_W = %02x\n",data));
+
+	//Set Reset Line on the chip
+	MSM5205_reset_w(0, GET_BIT6);
+
+	//PC0 = 1 on Reset
+	if (GET_BIT6) {
+		sndlocals2.S1_PC0 = 1;
+	} else {
+    //Read Data from ROM & Write Data To MSM Chip
+		int msmdata = INDER_S1_MSM5205_READROM(0);
+		INDER_S1_MSM5205_w(0,msmdata);
+	}
+
+	//Store reset value
+	sndlocals2.S1_Reset = GET_BIT6;
+}
+
+/*
+SND CPU #2 8255 PPI
+-------------------
+  Port A:
+  (out) Address 8-15 for DATA ROM		(manual showes this as Port B incorrectly!)
+
+  Port B:
+  (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
+
+  Port C:
+  (out)
+    (IN)(P0)    - Detects nibble feeds to MSM5205
+		(P1-P3) - Not Used?
+		(P4)    - Not Used?
+		(P5)    - S1 Pin on MSM5205 (Sample Rate Select 1)
+		(P6)    - Reset on MSM5205
+		(P7)    - Not Used?
+*/
+static READ_HANDLER(snd2_porta_r) { /* LOGSND(("SND2_PORTA_R\n")); */ return 0; }
+static READ_HANDLER(snd2_portb_r) { /* LOGSND(("SND2_PORTB_R\n")); */ return 0; }
+static READ_HANDLER(snd2_portc_r) {
+	int data = sndlocals2.S2_PC0;
+	//LOGSND(("SND2_PORTC_R = %x\n",data));
+	return data;
+}
+
+static WRITE_HANDLER(snd2_porta_w) { sndlocals2.S2_AHI = data; }
+static WRITE_HANDLER(snd2_portb_w) { sndlocals2.S2_ALO = data; }
+static WRITE_HANDLER(snd2_portc_w) {
+	//LOGSND(("SND2_PORTC_W = %02x\n",data));
+	sndlocals2.SoundReady = !GET_BIT4;
+
+	//Set Reset Line on the chip
+	MSM5205_reset_w(1, GET_BIT6);
+
+	//PC0 = 1 on Reset
+	if (GET_BIT6) {
+		sndlocals2.S2_PC0 = 1;
+	} else {
+    //Read Data from ROM & Write Data To MSM Chip
+		int msmdata = INDER_S2_MSM5205_READROM(0);
+		INDER_S2_MSM5205_w(0,msmdata);
+	}
+
+	//Store reset value
+	sndlocals2.S2_Reset = GET_BIT6;
+}
+
+//Sound Control - CPU #1 & CPU #2 (identical)
+//FROM MANUAL (AND TOTALLY WRONG!)
+//Bit 0 = Chip Select Data Rom 1
+//Bit 1 = Chip Select Data Rom 2
+//Bit 2 = A16 Select  Data Roms
+//Bit 3 = NC
+//Bit 4 = A17 Select  Data Roms
+//Bit 5 = NC
+//Bit 6 = A18 Select  Data Roms
+//Bit 7 = NC
+
+//GUESSED FROM WATCHING EMULATION
+//Bit 0 = A16 Select  Data Roms
+//Bit 1 = A17 Select  Data Roms? Not used on Metal Man, but maybe on Moon Light?
+//Bit 6 = Chip Select Data Rom 1
+//Bit 7 = Chip Select Data Rom 2
+// all other bits are HI all the time
+
+static WRITE_HANDLER(sndctrl_1_w) {
+	sndlocals2.S1_A16 = GET_BIT0;
+	sndlocals2.S1_CS0 = GET_BIT6;
+	sndlocals2.S1_CS1 = GET_BIT7;
+}
+
+static WRITE_HANDLER(sndctrl_2_w) {
+	sndlocals2.S2_A16 = GET_BIT0;
+	sndlocals2.S2_CS0 = GET_BIT6;
+	sndlocals2.S2_CS1 = GET_BIT7;
+}
+
+static READ_HANDLER(INDER_S1_MSM5205_READROM) {
+	int addr, data;
+	addr = (sndlocals2.S1_CS1 << 18) | (sndlocals2.S1_A17 << 17) | (sndlocals2.S1_A16 << 16)
+	  | (sndlocals2.S1_AHI << 8) | sndlocals2.S1_ALO;
+	data = (UINT8)*(memory_region(REGION_USER1) + addr);
+	return data;
+}
+
+static READ_HANDLER(INDER_S2_MSM5205_READROM) {
+	int addr, data;
+	addr = (sndlocals2.S2_CS1 << 18) | (sndlocals2.S2_A17 << 17) | (sndlocals2.S2_A16 << 16)
+	  | (sndlocals2.S2_AHI << 8) | sndlocals2.S2_ALO;
+	data = (UINT8)*(memory_region(REGION_USER2) + addr);
+	return data;
+}
+
+static WRITE_HANDLER(INDER_S1_MSM5205_w) {
+  sndlocals2.S1_MSMDATA = data;
+}
+static WRITE_HANDLER(INDER_S2_MSM5205_w) {
+  sndlocals2.S2_MSMDATA = data;
+}
+
+/* MSM5205 interrupt callback */
+static void INDER_S1_msmIrq(int data) {
+  //Write data
+  if (!sndlocals2.S1_Reset) {
+    int mdata = sndlocals2.S1_MSMDATA>>(4*sndlocals2.S1_PC0);	//PC0 determines if lo or hi nibble is fed
+    MSM5205_data_w(0, mdata&0x0f);
+  }
+  //Flip it..
+  sndlocals2.S1_PC0 = !sndlocals2.S1_PC0;
+}
+
+/* MSM5205 interrupt callback */
+static void INDER_S2_msmIrq(int data) {
+  //Write data
+  if (!sndlocals2.S2_Reset) {
+    int mdata = sndlocals2.S2_MSMDATA>>(4*sndlocals2.S2_PC0);	//PC0 determines if lo or hi nibble is fed
+    MSM5205_data_w(1, mdata&0x0f);
+  }
+  //Flip it..
+  sndlocals2.S2_PC0 = !sndlocals2.S2_PC0;
+}
+
+static ppi8255_interface ppi8255_intf2 = {
+	6, /* 4 chips for CPU board + 2 chips for sound */
+	{ci20_porta_r, ci23_porta_r, ci22_porta_r, ci21_porta_r, snd1_porta_r, snd2_porta_r},	/* Port A read */
+	{ci20_portb_r2,ci23_portb_r, ci22_portb_r, ci21_portb_r, snd1_portb_r, snd2_portb_r},	/* Port B read */
+	{ci20_portc_r, ci23_portc_r, ci22_portc_r, ci21_portc_r, snd1_portc_r, snd2_portc_r},	/* Port C read */
+	{ci20_porta_w, ci23_porta_w, ci22_porta_w, ci21_porta_w, snd1_porta_w, snd2_porta_w},	/* Port A write */
+	{ci20_portb_w2,ci23_portb_w, ci22_portb_w, ci21_portb_w, snd1_portb_w, snd2_portb_w},	/* Port B write */
+	{ci20_portc_w, ci23_portc_w2,ci22_portc_w, ci21_portc_w ,snd1_portc_w, snd2_portc_w},	/* Port C write */
+};
+
+static MACHINE_INIT(INDERS2) {
+	memset(&locals, 0, sizeof locals);
+	memset(&sndlocals2, 0, sizeof sndlocals2);
+
+	/* init PPI */
+	ppi8255_init(&ppi8255_intf2);
+
+	/* init sound */
+	sndbrd_0_init(core_gameData->hw.soundBoard, 2, memory_region(REGION_CPU2),NULL,NULL);
+	sndbrd_setManCmd(0, snd_w);
+}
+
+//CPU #1 - SOUND EFFECTS SAMPLES
+static MEMORY_READ_START(indersnd1_readmem)
+	{ 0x0000, 0x1fff, MRA_ROM },
+	{ 0x2000, 0x3fff, MRA_RAM },
+	{ 0x4000, 0x4003, ppi8255_4_r},
+	{ 0x8000, 0x8000, sndcmd_r},
+MEMORY_END
+static MEMORY_WRITE_START(indersnd1_writemem)
+	{ 0x0000, 0x1fff, MWA_ROM },
+	{ 0x2000, 0x3fff, MWA_RAM },
+	{ 0x4000, 0x4003, ppi8255_4_w},
+//{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
+	{ 0x6000, 0x6000, sndctrl_1_w},
+MEMORY_END
+
+//CPU #2 - MUSIC SAMPLES
+static MEMORY_READ_START(indersnd2_readmem)
+	{ 0x0000, 0x1fff, MRA_ROM },
+	{ 0x2000, 0x3fff, MRA_RAM },
+	{ 0x4000, 0x4003, ppi8255_5_r},
+	{ 0x8000, 0x8000, sndcmd_r},
+MEMORY_END
+static MEMORY_WRITE_START(indersnd2_writemem)
+	{ 0x0000, 0x1fff, MWA_ROM },
+	{ 0x2000, 0x3fff, MWA_RAM },
+	{ 0x4000, 0x4003, ppi8255_5_w},
+//{ 0x4900, 0x4900, MWA_NOP}, // unknown stuff here
+	{ 0x6000, 0x6000, sndctrl_2_w},
+MEMORY_END
+
+MACHINE_DRIVER_START(INDERS2)
+  MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CORE_INIT_RESET_STOP(INDERS2,NULL,INDER2)
+
+  MDRV_CPU_ADD_TAG("scpu1", Z80, 2500000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(indersnd1_readmem, indersnd1_writemem)
+
+  MDRV_CPU_ADD_TAG("scpu2", Z80, 2500000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(indersnd2_readmem, indersnd2_writemem)
+
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, inder_msm5205Int2)
 MACHINE_DRIVER_END

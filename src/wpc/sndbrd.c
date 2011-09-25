@@ -127,6 +127,10 @@ void sndbrd_manCmd(int board, int cmd) {
     b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;
   }
 }
+void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd))) {
+  struct sndbrdIntf *b = (struct sndbrdIntf *)intf[board].brdIntf;
+  b->manCmd_w = manCmd;
+}
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
   sndbrd_init(0, brdType, cpuNo, romRegion, data_cb, ctrl_cb);
