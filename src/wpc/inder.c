@@ -30,7 +30,6 @@
 #include "sndbrd.h"
 #include "machine/8255ppi.h"
 
-#define INDER_VBLANKFREQ   60 /* VBLANK frequency */
 #define INDER_IRQFREQ     250 /* IRQ frequency */
 #define INDER_CPUFREQ 2500000 /* CPU clock frequency */
 
@@ -727,12 +726,14 @@ static WRITE_HANDLER(snd2_portc_w) {
 
 static WRITE_HANDLER(sndctrl_1_w) {
 	sndlocals2.S1_A16 = GET_BIT0;
+	sndlocals2.S1_A17 = GET_BIT1;
 	sndlocals2.S1_CS0 = GET_BIT6;
 	sndlocals2.S1_CS1 = GET_BIT7;
 }
 
 static WRITE_HANDLER(sndctrl_2_w) {
 	sndlocals2.S2_A16 = GET_BIT0;
+	sndlocals2.S2_A17 = GET_BIT1;
 	sndlocals2.S2_CS0 = GET_BIT6;
 	sndlocals2.S2_CS1 = GET_BIT7;
 }
@@ -838,6 +839,7 @@ MACHINE_DRIVER_START(INDERS2)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CORE_INIT_RESET_STOP(INDERS2,NULL,INDER2)
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 135)
 
   MDRV_CPU_ADD_TAG("scpu1", Z80, 2500000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
