@@ -278,14 +278,6 @@ static WRITE_HANDLER(snd_w) {
   locals.sndCmd = data;
 }
 
-// extra outputs, map to lamps
-static WRITE_HANDLER(extra_w) {
-	coreGlobals.tmpLampMatrix[8 + offset] = data;
-}
-static WRITE_HANDLER(extra2_w) {
-	coreGlobals.tmpLampMatrix[14] = data;
-}
-
 static ppi8255_interface ppi8255_intf =
 {
 	4+1,					/* 4 chips for CPU board + 1 chip for sound */
@@ -318,9 +310,8 @@ static MEMORY_WRITE_START(INDER_writemem)
   {0x6800,0x6803, ppi8255_2_w},
   {0x6c00,0x6c03, ppi8255_3_w},
   {0x6c20,0x6c20, snd_w},
-  {0x6c40,0x6c45, extra_w},
   {0x6c60,0x6c66, disp16_w},
-  {0x6ce0,0x6ce0, extra2_w},
+//{0x6ce0,0x6ce0, MWA_NOP}, // unknown stuff here
 MEMORY_END
 
 static MACHINE_INIT(INDER) {
@@ -805,6 +796,34 @@ static MACHINE_INIT(INDERS2) {
 	sndbrd_setManCmd(0, snd_w);
 }
 
+// extra outputs, map to lamps
+static WRITE_HANDLER(extra_w) {
+	coreGlobals.tmpLampMatrix[8 + offset] = data;
+}
+
+static MEMORY_READ_START(INDERS2_readmem)
+  {0x0000,0x3fff, MRA_ROM},
+  {0x4000,0x45ff, MRA_RAM},
+  {0x6000,0x6003, ppi8255_0_r},
+  {0x6400,0x6403, ppi8255_1_r},
+  {0x6800,0x6803, ppi8255_2_r},
+  {0x6c00,0x6c03, ppi8255_3_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(INDERS2_writemem)
+  {0x4000,0x43ff, MWA_RAM},
+  {0x4400,0x45ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+//{0x4900,0x4900, MWA_NOP}, // unknown stuff here
+  {0x6000,0x6003, ppi8255_0_w},
+  {0x6400,0x6403, ppi8255_1_w},
+  {0x6800,0x6803, ppi8255_2_w},
+  {0x6c00,0x6c03, ppi8255_3_w},
+  {0x6c20,0x6c20, snd_w},
+  {0x6c40,0x6c45, extra_w},
+  {0x6c60,0x6c66, disp16_w},
+//{0x6ce0,0x6ce0, MWA_NOP}, // unknown stuff here
+MEMORY_END
+
 //CPU #1 - SOUND EFFECTS SAMPLES
 static MEMORY_READ_START(indersnd1_readmem)
 	{ 0x0000, 0x1fff, MRA_ROM },
@@ -838,8 +857,10 @@ MEMORY_END
 MACHINE_DRIVER_START(INDERS2)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(INDERS2_readmem, INDERS2_writemem)
   MDRV_CORE_INIT_RESET_STOP(INDERS2,NULL,INDER2)
   MDRV_CPU_PERIODIC_INT(INDER_irq, 135)
+  MDRV_NVRAM_HANDLER(generic_0fill)
 
   MDRV_CPU_ADD_TAG("scpu1", Z80, 2500000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
