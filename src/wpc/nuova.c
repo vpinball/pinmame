@@ -299,6 +299,22 @@ BY35_INPUT_PORTS_START(worlddef, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(worlddef,"World Defender",1985,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
+/ World Defender (Free Play)
+/-------------------------------*/
+ROM_START(worlddfp)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("worlddfp.764", 0xe000, 0x2000, CRC(233ddce8) SHA1(9b0d3906d95407b7ce7a5758381f3f9dbce912cc))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROMx2("wodefsnd.764", CRC(b8d4dc20) SHA1(5aecac4a2deb7ea8e0ff0600ea459ef272dcd5f0))
+ROM_END
+INITGAMENB(worlddfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+BY35_INPUT_PORTS_START(worlddfp, 1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(worlddfp,"World Defender (Free Play)",1985,"Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
 / Space Hawks (Cybernaut Clone)
 /-------------------------------*/
 INITGAMENB(spacehaw,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)

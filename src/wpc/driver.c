@@ -300,7 +300,8 @@ DRIVERNV(newwave)     //BY35      04/85 New Wave (Bally Black Pyramid clone)
 DRIVERNV(saturn2)     //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
             //      ??/?? World Cup / World Championship (redemption game)
 // Nuova Bell Games
-DRIVERNV(worlddef)    //BY35      11/85 World Defender
+DRIVERNV(worlddef)    //BY35      11/85 World Defender (Laser Cue clone)
+DRIVERNV(worlddfp)    //BY35      11/85 World Defender (Free Play)
 DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
 DRIVERNV(darkshad)    //BY35      ??/86 Dark Shadow
 DRIVERNV(skflight)    //BY35      09/86 Skill Flight
