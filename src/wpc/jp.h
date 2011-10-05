@@ -154,10 +154,12 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(JP);
+extern MACHINE_DRIVER_EXTERN(JP1);
 extern MACHINE_DRIVER_EXTERN(JP2);
 extern MACHINE_DRIVER_EXTERN(JPS);
 
 #define gl_mJP		JP
+#define gl_mJP1		JP1
 #define gl_mJP2		JP2
 #define gl_mJPS		JPS
 

@@ -657,15 +657,17 @@ DRIVERNV(olympic)       //Olympic Games (??/1984)
 // ----------------
 // JUEGOS POPULARES
 // ----------------
-DRIVERNV(petaco  )      //Petaco
-DRIVERNV(faeton  )      //Faeton
-DRIVERNV(halley  )      //Halley Comet
-DRIVERNV(petaco2 )      //Petaco 2
-DRIVERNV(olympus )      //Olympus
-DRIVERNV(america )      //America 1492
-DRIVERNV(aqualand)      //Aqualand
-DRIVERNV(lortium )      //Lortium
-DRIVERNV(pimbal  )      //Pimbal (Pinball 3000)
+DRIVERNV(petaco  )      //1101  - Petaco (1984)
+DRIVERNV(petaco2 )      //1102? - Petaco 2 (1985)
+DRIVERNV(faeton  )      //1103  - Faeton (1985)
+DRIVERNV(halley  )      //1104  - Halley Comet (1986)
+DRIVERNV(aqualand)      //1105  - Aqualand (1986)
+DRIVERNV(jpgame  )      //1106  - UNKNOWN (1986, certified because sound ROMs exist!)
+DRIVERNV(america )      //1107  - America 1492 (1986)
+DRIVERNV(olympus )      //1108  - Olympus (1986)
+                        //1109  - UNKNOWN, maybe never produced?
+DRIVERNV(lortium )      //1110  - Lortium (1987)
+DRIVERNV(pimbal  )      //????  - Pimbal (Pinball 3000, 19??)
 
 // ----------------
 // LTD
