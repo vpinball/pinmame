@@ -362,7 +362,7 @@ static MEMORY_READ_START(sns_readmem)
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x1800, 0x1800, sns2_8910a_r }, // 13136 only
   { 0x2000, 0x2000, sns_8910a_r },
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns_writemem)
@@ -380,7 +380,7 @@ static MEMORY_READ_START(sns3_readmem)
   { 0x00b0, 0x00b0, readcmd},
   { 0x00ff, 0x00ff, readlatch },
   { 0x5000, 0x5000, read5000 }, // only to prevent error messages
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns3_writemem)
@@ -578,8 +578,8 @@ static void sns_init(struct sndbrdData *brdData) {
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
     snslocals.pia1a = 0xff;
-    pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   }
+  pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
     UpdateZACSoundLED(1, 1);
 // allocate channels
@@ -814,7 +814,7 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  static int oldSpeed = 6;  // default voice clock set to 660 kHz
+  static int oldSpeed = 6;  // default voice clock set to 640 kHz
   if ((core_getDip(0) >> 4) != oldSpeed) tms5220_set_frequency((93 + (oldSpeed = (core_getDip(0) >> 4))) * 6666.666);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);
