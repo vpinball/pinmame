@@ -119,12 +119,12 @@ JP_ROMEND
 CORE_GAMEDEFNV(petaco,"Petaco",1984,"Juegos Populares",gl_mJP2,0)
 
 /*-------------------------------------------------------------------
-/ Petaco 2 (#1102 most likely)
+/ Unknown game (#1102, using 6 digit displays)
 /-------------------------------------------------------------------*/
-INITGAME(petaco2, jpDisp6a, 1)
-JP_ROMSTART1(petaco2,	"petaco2.dat", CRC(81502083) SHA1(c67a095fb5e868467577e7a86de5d51c59b3a68e))
+INITGAME(jpgame, jpDisp6a, 1)
+JP_ROMSTART1(jpgame,	"jpgame.dat", CRC(81502083) SHA1(c67a095fb5e868467577e7a86de5d51c59b3a68e))
 JP_ROMEND
-CORE_GAMEDEFNV(petaco2,"Petaco 2",1985,"Juegos Populares",gl_mJP1,0)
+CORE_GAMEDEFNV(jpgame,"Unknown game",1985,"Juegos Populares",gl_mJP1,0)
 
 /*-------------------------------------------------------------------
 / Faeton (#1103)
@@ -174,10 +174,10 @@ JP_ROMEND
 CORE_GAMEDEFNV(aqualand,"Aqualand",1986,"Juegos Populares",gl_mJPS,0)
 
 /*-------------------------------------------------------------------
-/ UNKNOWN (#1106)
+/ Petaco 2 (#1106?)
 /-------------------------------------------------------------------*/
-INITGAME(jpgame, jpDisp7, 1)
-JP_ROMSTART1(jpgame,	"jpgame.dat", NO_DUMP)
+INITGAME(petaco2, jpDisp7, 1)
+JP_ROMSTART1(petaco2,	"petaco2.dat", CRC(9a3d6409) SHA1(bca061e254c3214b940080c92d2cf88904f1b81c))
 JP_SNDROM8( "jpsonid0.dat", CRC(1bdbdd60) SHA1(903012e58cdb4041e5546a377f5c9df83dc93737),
 			"jpsonid1.dat", CRC(e39da92a) SHA1(79eb60710bdf6b826349e02ae909426cb81e131e),
 			"jpsonid2.dat", CRC(88456f1e) SHA1(168fe88ae9da5114d0ef6427df0503ca2eea9089),
@@ -187,7 +187,7 @@ JP_SNDROM8( "jpsonid0.dat", CRC(1bdbdd60) SHA1(903012e58cdb4041e5546a377f5c9df83
 			"jpsonid6.dat", CRC(53c3f0b4) SHA1(dcf4c63636e2b7ff5cd2db99d949db9e33b78fc7),
 			"jpsonid7.dat", CRC(ff430b1b) SHA1(423592a40eba174108dfc6817e549c643bb3c80f))
 JP_ROMEND
-CORE_GAMEDEFNV(jpgame,"Unknown game",1986,"Juegos Populares",gl_mJPS,0)
+CORE_GAMEDEFNV(petaco2,"Petaco 2",1986,"Juegos Populares",gl_mJPS,0)
 
 /*-------------------------------------------------------------------
 / America 1492 (#1107)
