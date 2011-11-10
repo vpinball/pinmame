@@ -31,7 +31,7 @@ static core_tLCDLayout peyperDisp7[] = {
 /*-------------------------------------------------------------------
 / Wolf Man (1987)
 /-------------------------------------------------------------------*/
-INITGAME(wolfman, peyperDisp7, 1, 6)
+INITGAME(wolfman, peyperDisp7, 1, 4)
 PEYPER_ROMSTART(wolfman,	"memoriaa.bin", CRC(1fec83fe) SHA1(5dc887d0fa00129ae31451c03bfe442f87dd2f54),
 						"memoriab.bin", CRC(62a1e3ec) SHA1(dc472c7c9d223820f8f1031c92e36890c1fcba7d),
 						"memoriac.bin", CRC(468f16f0) SHA1(66ce0464d82331cfc0ac1f6fbd871066e4e57262))
@@ -41,7 +41,7 @@ CORE_GAMEDEFNV(wolfman,"Wolf Man",1987,"Peyper (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Odisea Paris-Dakar (1987)
 /-------------------------------------------------------------------*/
-INITGAME(odisea, peyperDisp7, 1, 6)
+INITGAME(odisea, peyperDisp7, 1, 4)
 PEYPER_ROMSTART(odisea,	"odiseaa.bin", CRC(29a40242) SHA1(321e8665df424b75112589fc630a438dc6f2f459),
 						"odiseab.bin", CRC(8bdf7c17) SHA1(7202b4770646fce5b2ba9e3b8ca097a993123b14),
 						"odiseac.bin", CRC(832dee5e) SHA1(9b87ffd768ab2610f2352adcf22c4a7880de47ab))
@@ -55,20 +55,20 @@ CORE_GAMEDEFNV(odisea,"Odisea Paris-Dakar",1987,"Peyper (Spain)",gl_mPEYPER,0)
 // Sonic games below - using same hardware
 
 static core_tLCDLayout sonicDisp6f[] = {
-  {0, 0,32,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,2,CORE_SEG7}, {0,12,22,1,CORE_SEG7},
-  {0,22,33,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,2,CORE_SEG7}, {0,34,22,1,CORE_SEG7},
-  {3, 0,34,1,CORE_SEG8D},{3, 2,16,2,CORE_SEG7}, {3, 6,18,1,CORE_SEG8D},{3, 8,19,2,CORE_SEG7}, {3,12,22,1,CORE_SEG7},
-  {3,22,35,1,CORE_SEG8D},{3,24,24,2,CORE_SEG7}, {3,28,26,1,CORE_SEG8D},{3,30,27,2,CORE_SEG7}, {3,34,22,1,CORE_SEG7},
+  {0, 0,32,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
+  {0,22,33,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
+  {3, 0,34,1,CORE_SEG8D},{3, 2,16,2,CORE_SEG7}, {3, 6,18,1,CORE_SEG8D},{3, 8,19,2,CORE_SEG7}, {3,12,36,1,CORE_SEG7},
+  {3,22,35,1,CORE_SEG8D},{3,24,24,2,CORE_SEG7}, {3,28,26,1,CORE_SEG8D},{3,30,27,2,CORE_SEG7}, {3,34,36,1,CORE_SEG7},
   {1,19,31,1,CORE_SEG7S},{1,21,30,1,CORE_SEG7S},{1,24,15,1,CORE_SEG7S},{1,27,14,1,CORE_SEG7S},
   {3,17, 6,1,CORE_SEG7},
   {0}
 };
 
 static core_tLCDLayout sonicDisp7[] = {
-  {0, 0, 8,1,CORE_SEG8D},{0, 2, 9,2,CORE_SEG7}, {0, 6,11,1,CORE_SEG8D},{0, 8,12,2,CORE_SEG7}, {0,12,22,1,CORE_SEG7},
-  {0,22, 0,1,CORE_SEG8D},{0,24, 1,2,CORE_SEG7}, {0,28, 3,1,CORE_SEG8D},{0,30, 4,2,CORE_SEG7}, {0,34,22,1,CORE_SEG7},
-  {3, 0,16,1,CORE_SEG8D},{3, 2,17,2,CORE_SEG7}, {3, 6,19,1,CORE_SEG8D},{3, 8,20,2,CORE_SEG7}, {3,12,22,1,CORE_SEG7},
-  {3,22,24,1,CORE_SEG8D},{3,24,25,2,CORE_SEG7}, {3,28,27,1,CORE_SEG8D},{3,30,28,2,CORE_SEG7}, {3,34,22,1,CORE_SEG7},
+  {0, 0, 8,1,CORE_SEG8D},{0, 2, 9,2,CORE_SEG7}, {0, 6,11,1,CORE_SEG8D},{0, 8,12,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
+  {0,22, 0,1,CORE_SEG8D},{0,24, 1,2,CORE_SEG7}, {0,28, 3,1,CORE_SEG8D},{0,30, 4,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
+  {3, 0,16,1,CORE_SEG8D},{3, 2,17,2,CORE_SEG7}, {3, 6,19,1,CORE_SEG8D},{3, 8,20,2,CORE_SEG7}, {3,12,36,1,CORE_SEG7},
+  {3,22,24,1,CORE_SEG8D},{3,24,25,2,CORE_SEG7}, {3,28,27,1,CORE_SEG8D},{3,30,28,2,CORE_SEG7}, {3,34,36,1,CORE_SEG7},
   {1,19,31,1,CORE_SEG7S},{1,21,30,1,CORE_SEG7S},{1,24,15,1,CORE_SEG7S},{1,27,14,1,CORE_SEG7S},
   {3,17, 6,1,CORE_SEG7},
   {0}
@@ -80,7 +80,7 @@ static core_tLCDLayout sonicDisp7[] = {
 /*-------------------------------------------------------------------
 / Odin De Luxe (1985)
 /-------------------------------------------------------------------*/
-INITGAME(odin_dlx, sonicDisp6f, 1, 6)
+INITGAME(odin_dlx, sonicDisp6f, 1, 4)
 PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
 						   "2a.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
