@@ -3,8 +3,8 @@
  --------------
    Hardware:
    ---------
-		CPU:     Z80 @ 2.5 MHz ?
-			INT: IRQ @ 1800 Hz ?
+		CPU:     Z80 @ 2.5 MHz
+			INT: IRQ @ 2500 Hz
 		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910 @ 2.5 MHz
@@ -16,7 +16,7 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
-#define PEYPER_IRQFREQ    1800 /* IRQ frequency */
+#define PEYPER_IRQFREQ    2500 /* IRQ frequency */
 #define PEYPER_CPUFREQ 2500000 /* CPU clock frequency */
 
 /*----------------
@@ -138,7 +138,10 @@ static WRITE_HANDLER(i8279_w) {
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
-      locals.i8279ram[locals.i8279reg] = data;
+      if (!locals.segments[40 + locals.i8279reg].w) { // load replay values
+        locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
+        locals.segments[36].w = core_bcd2seg7[0];
+      }
       locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];
       locals.segments[31 - locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
       // mapping various lamps (million, player up, game over, tilt) from segments data
@@ -192,7 +195,6 @@ PORT_END
 
 static MACHINE_INIT(PEYPER) {
   memset(&locals, 0, sizeof locals);
-  locals.segments[36].w = core_bcd2seg7[0];
 }
 
 MACHINE_DRIVER_START(PEYPER)
