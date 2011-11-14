@@ -71,7 +71,7 @@ static int PEYPER_m2sw(int col, int row) {
 }
 
 static READ_HANDLER(dip_r) {
-  return core_getDip(offset / 4);
+  return ~core_revbyte(core_getDip(offset / 4));
 }
 
 static READ_HANDLER(sw0_r) {
