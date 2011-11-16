@@ -2,6 +2,7 @@
 #include "gen.h"
 #include "sim.h"
 #include "play.h"
+#include "sndbrd.h"
 
 #define GEN_PLAYMATIC 0
 
@@ -13,28 +14,28 @@
 
 #define INITGAME1(name, disptype, balls) \
     PLAYMATIC1_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,-1}}; \
+    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,-1,0,SNDBRD_PLAY1}}; \
     static void init_##name(void) { \
         core_gameData = &name##GameData; \
     }
 
-#define INITGAME2(name, disptype, balls, sndEn) \
+#define INITGAME2(name, disptype, balls, sb, sndEn) \
     PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,0,0,sndEn}}; \
+    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,sb,0,sndEn}}; \
     static void init_##name(void) { \
         core_gameData = &name##GameData; \
     }
 
 #define INITGAME3(name, disptype, balls, sndEn) \
   PLAYMATIC3_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,0,0,sndEn}}; \
+  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY3,0,sndEn}}; \
   static void init_##name(void) { \
     core_gameData = &name##GameData; \
   }
 
 #define INITGAME4(name, disptype, balls) \
   PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY3}}; \
   static void init_##name(void) { \
     core_gameData = &name##GameData; \
   }
@@ -115,61 +116,61 @@ CORE_GAMEDEFNV(party,"Party",1979,"Playmatic",gl_mPLAYMATIC1,0)
 /*-------------------------------------------------------------------
 / 11/79 Antar
 /-------------------------------------------------------------------*/
-INITGAME2(antar, play_disp6, 1, 0)
+INITGAME2(antar, play_disp6, 1, SNDBRD_PLAY2, 0)
 PLAYMATIC_ROMSTART8888(antar, "antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457bd0ce8638e9c477f16e65763),
             "antar09.bin", CRC(2c954f1a) SHA1(fa83a5f1c269ea28d4eeff181f493cbb4dc9bc47),
             "antar10.bin", CRC(a6ce5667) SHA1(85ecd4fce94dc419e4c210262f867310b0889cd3),
             "antar11.bin", CRC(6474b17f) SHA1(e4325ceff820393b06eb2e8e4a85412b0d01a385))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(antar,"Antar",1979,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+CORE_GAMEDEFNV(antar,"Antar",1979,"Playmatic",gl_mPLAYMATIC2,0)
 
-INITGAME2(antar2, play_disp6, 1, 0)
+INITGAME2(antar2, play_disp6, 1, SNDBRD_PLAY2, 0)
 PLAYMATIC_ROMSTART8888(antar2,  "antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457bd0ce8638e9c477f16e65763),
             "antar09.bin", CRC(2c954f1a) SHA1(fa83a5f1c269ea28d4eeff181f493cbb4dc9bc47),
             "antar10a.bin", CRC(520eb401) SHA1(1d5e3f829a7e7f38c7c519c488e6b7e1a4d34321),
             "antar11a.bin", CRC(17ad38bf) SHA1(e2c9472ed8fbe9d5965a5c79515a1b7ea9edaa79))
 PLAYMATIC_ROMEND
-CORE_CLONEDEFNV(antar2,antar,"Antar (alternate set)",1979,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+CORE_CLONEDEFNV(antar2,antar,"Antar (alternate set)",1979,"Playmatic",gl_mPLAYMATIC2,0)
 
 /*-------------------------------------------------------------------
 / 03/80 Evil Fight
 /-------------------------------------------------------------------*/
-INITGAME2(evlfight, play_disp6, 1, 0)
+INITGAME2(evlfight, play_disp6, 1, SNDBRD_PLAY2, 0)
 PLAYMATIC_ROMSTART8888(evlfight,  "evfg08.bin", CRC(2cc2e79a) SHA1(17440512c419b3bb2012539666a5f052f3cd8c1d),
             "evfg09.bin", CRC(5232dc4c) SHA1(6f95a578e9f09688e6ce8b0a622bcee887936c82),
             "evfg10.bin", CRC(de2f754d) SHA1(0287a9975095bcbf03ddb2b374ff25c080c8020f),
             "evfg11.bin", CRC(5eb8ac02) SHA1(31c80e74a4272becf7014aa96eaf7de555e26cd6))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC2,0)
 
 /*-------------------------------------------------------------------
 / 10/80 Attack
 /-------------------------------------------------------------------*/
-INITGAME2(attack, play_disp6, 1, 0)
+INITGAME2(attack, play_disp6, 1, SNDBRD_PLAY2, 0)
 PLAYMATIC_ROMSTART8888(attack,  "attack8.bin", CRC(a5204b58) SHA1(afb4b81720f8d56e88f47fc842b23313824a1085),
             "attack9.bin", CRC(bbd086b4) SHA1(6fc94b94beea482d8c8f5b3c69d3f218e2b2dfc4),
             "attack10.bin", CRC(764925e4) SHA1(2f207ef87786d27d0d856c5816a570a59d89b718),
             "attack11.bin", CRC(972157b4) SHA1(23c90f23a34b34acfe445496a133b6022a749ccc))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(attack,"Attack",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+CORE_GAMEDEFNV(attack,"Attack",1980,"Playmatic",gl_mPLAYMATIC2,0)
 
 /*-------------------------------------------------------------------
 / 12/80 Black Fever
 /-------------------------------------------------------------------*/
-INITGAME2(blkfever, play_disp6, 1, 0)
+INITGAME2(blkfever, play_disp6, 1, SNDBRD_PLAY2, 0)
 PLAYMATIC_ROMSTART8888(blkfever,  "blackf8.bin", CRC(916b8ed8) SHA1(ddc7e09b68e3e1a033af5dc5ec32ab5b0922a833),
             "blackf9.bin", CRC(ecb72fdc) SHA1(d3598031b7170fab39727b3402b7053d4f9e1ca7),
             "blackf10.bin", CRC(b3fae788) SHA1(e14e09cc7da1098abf2f60f26a8ec507e123ff7c),
             "blackf11.bin", CRC(5a97c1b4) SHA1(b9d7eb0dd55ef6d959c0fab48f710e4b1c8d8003))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(blkfever,"Black Fever",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+CORE_GAMEDEFNV(blkfever,"Black Fever",1980,"Playmatic",gl_mPLAYMATIC2,0)
 
 // ??/80 Zira
 
 /*-------------------------------------------------------------------
 / 03/82 Cerberus
 /-------------------------------------------------------------------*/
-INITGAME2(cerberus, play_disp6, 1, 1)
+INITGAME2(cerberus, play_disp6, 1, SNDBRD_PLAY3, 1)
 PLAYMATIC_ROMSTART000(cerberus, "cerb8.cpu", CRC(021d0452) SHA1(496010e6892311b1cabcdac62296cd6aa0782c5d),
                 "cerb9.cpu", CRC(0fd41156) SHA1(95d1bf42c82f480825e3d907ae3c87b5f994fd2a),
                 "cerb10.cpu", CRC(785602e0) SHA1(f38df3156cd14ab21752dbc849c654802079eb33))
@@ -180,7 +181,7 @@ CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / Mad Race
 /-------------------------------------------------------------------*/
-INITGAME2(madrace, play_disp6, 1, 1)
+INITGAME2(madrace, play_disp6, 1, SNDBRD_PLAY3, 1)
 PLAYMATIC_ROMSTART000(madrace,  "madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
                 "madrace.2b0", CRC(dcb54b39) SHA1(8e2ca7180f5ea3a28feb34b01f3387b523dbfa3b),
                 "madrace.2c0", CRC(b24ea245) SHA1(3f868ccbc4bfb77c40c4cc05dcd8eeca85ecd76f))
