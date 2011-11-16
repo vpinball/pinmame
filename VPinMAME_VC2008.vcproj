@@ -3622,6 +3622,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\playsnd.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\rotation.c"
 					>
 				</File>

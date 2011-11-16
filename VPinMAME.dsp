@@ -2448,6 +2448,10 @@ SOURCE=.\src\wpc\playgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\playsnd.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\rotation.c
 # End Source File
 # Begin Source File

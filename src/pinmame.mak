@@ -58,7 +58,7 @@ DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
 DRVLIBS += $(PINOBJ)/sleic.o
-DRVLIBS += $(PINOBJ)/play.o
+DRVLIBS += $(PINOBJ)/play.o $(PINOBJ)/playsnd.o
 DRVLIBS += $(PINOBJ)/bowarrow.o $(PINOBJ)/flicker.o $(PINOBJ)/rotation.o
 DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
@@ -73,6 +73,7 @@ DRVLIBS += $(PINOBJ)/mephisto.o
 DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
 DRVLIBS += $(PINOBJ)/spectra.o
+DRVLIBS += $(PINOBJ)/barni.o
 #
 # Games
 #
@@ -269,10 +270,4 @@ cleanpinmame:
 	@echo Deleting $(target) object tree $(PINOBJ)...
 	$(RM) -r $(PINOBJ)
 	@echo Deleting $(EMULATOR)...
-	$(RM) $(EMULATOR).full
 	$(RM) $(EMULATOR)
-	@echo Deleting $(EMULATOR).debug...
-	$(RM) $(EMULATOR).debug
-	$(RM) $(EMULATOR).strip
-	@echo Deleting $(FULLNAME).map...
-	$(RM) $(FULLNAME).map

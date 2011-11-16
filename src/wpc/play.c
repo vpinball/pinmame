@@ -28,8 +28,8 @@
 #include "driver.h"
 #include "core.h"
 #include "play.h"
+#include "sndbrd.h"
 #include "cpu/cdp1802/cdp1802.h"
-#include "sound/ay8910.h"
 
 #define PLAYMATIC_VBLANKFREQ   60 /* VBLANK frequency */
 #define NTSC_QUARTZ 3579545.0 /* 3.58 MHz quartz */
@@ -54,8 +54,6 @@ static struct {
   int    digitSel;
   int    panelSel;
   int    cpuType;
-  mame_timer *sndtimer;
-  int    volume;
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
@@ -142,8 +140,7 @@ static int bitColToNum(int tmp)
 }
 
 static WRITE_HANDLER(out1_n) {
-  static UINT8 n2data, oldn2data;
-  static int timer_on;
+  static UINT8 n2data;
   int p = locals.ef[1];
   switch (offset) {
     case 1: // match & credits displays
@@ -165,27 +162,7 @@ static WRITE_HANDLER(out1_n) {
         coreGlobals.segments[12].w |= 0x80;
         coreGlobals.segments[16].w |= 0x80;
       } else if (locals.digitSel) { // sound & player up lights
-        if (n2data & 0x0f) {
-          if (oldn2data != n2data) locals.volume = 100;
-          oldn2data = n2data;
-          discrete_sound_w(8, n2data & 0x01);
-          discrete_sound_w(4, n2data & 0x02);
-          discrete_sound_w(2, n2data & 0x04);
-          discrete_sound_w(1, n2data & 0x08);
-          if (~n2data & 0x10) { // start fading
-            timer_adjust(locals.sndtimer, 0.02, 0, 0.02);
-            timer_on = 1;
-          } else { // no fading used
-            timer_adjust(locals.sndtimer, TIME_NEVER, 0, 0);
-            timer_on = 0;
-            mixer_set_volume(0, locals.volume);
-          }
-        } else if (!timer_on) { // no fading going on, so stop sound
-          discrete_sound_w(8, 0);
-          discrete_sound_w(4, 0);
-          discrete_sound_w(2, 0);
-          discrete_sound_w(1, 0);
-        }
+        sndbrd_0_data_w(0, n2data);
         coreGlobals.tmpLampMatrix[6] = (1 << (n2data >> 5)) >> 1;
       } else { // solenoids
         coreGlobals.solenoids = (coreGlobals.solenoids & 0x10000) | n2data;
@@ -220,6 +197,9 @@ static WRITE_HANDLER(out2_n) {
   int enable;
   switch (out) {
     case DISPCOL:
+      if (core_gameData->hw.soundBoard == 0x3400) { // used for fading out the sound
+        sndbrd_0_ctrl_w(0, data >> 7);
+      }
       if (!(data & 0x7f))
         locals.panelSel = 0;
       else
@@ -229,6 +209,9 @@ static WRITE_HANDLER(out2_n) {
       disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
       break;
     case SOUND:
+      if (core_gameData->hw.soundBoard == 0x3400) {
+        sndbrd_0_data_w(0, data);
+      }
       break;
     case LAMPCOL:
       locals.lampCol = data;
@@ -255,8 +238,10 @@ static WRITE_HANDLER(out2_n) {
         else
           locals.solenoids &= ~(0x100 << abcData);
       }
-      if (!(core_gameData->hw.gameSpecific1 ^ locals.enSn)) {
+      if (core_gameData->hw.soundBoard != 0x3400 && !(core_gameData->hw.gameSpecific1 ^ locals.enSn)) {
         locals.sndCmd = locals.lampCol;
+        sndbrd_0_data_w(0, locals.sndCmd);
+        sndbrd_0_ctrl_w(0, locals.enSn);
         logerror("snd cmd: %02x\n", locals.sndCmd);
       }
       break;
@@ -300,30 +285,31 @@ static CDP1802_CONFIG play1802_config =
 	NULL				// DMA write
 };
 
-static void sndtimer_callback(int n) {
-  if (locals.volume) mixer_set_volume(0, (--locals.volume));
-  else timer_adjust(locals.sndtimer, TIME_NEVER, 0, 0);
-}
-
 static MACHINE_INIT(PLAYMATIC1) {
   memset(&locals, 0, sizeof locals);
-  locals.sndtimer = timer_alloc(sndtimer_callback);
-  locals.volume = 100;
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
 static MACHINE_INIT(PLAYMATIC2) {
   memset(&locals, 0, sizeof locals);
   locals.cpuType = 1;
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
 static MACHINE_INIT(PLAYMATIC3) {
   memset(&locals, 0, sizeof locals);
   locals.cpuType = 2;
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
 static MACHINE_INIT(PLAYMATIC4) {
   memset(&locals, 0, sizeof locals);
   locals.cpuType = 3;
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+}
+
+static MACHINE_STOP(PLAYMATIC) {
+  sndbrd_0_exit();
 }
 
 static PORT_READ_START(PLAYMATIC_readport1)
@@ -385,22 +371,6 @@ static MEMORY_WRITE_START(PLAYMATIC_writemem3)
   {0x8000,0x80ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
-DISCRETE_SOUND_START(play_tones)
-	DISCRETE_INPUT(NODE_01,1,0x000f,0)                         // Input handlers, mostly for enable
-	DISCRETE_INPUT(NODE_02,2,0x000f,0)
-	DISCRETE_INPUT(NODE_04,4,0x000f,0)
-	DISCRETE_INPUT(NODE_08,8,0x000f,0)
-
-	DISCRETE_TRIANGLEWAVE(NODE_10,NODE_01,523,50000,10000,0) // C' note
-	DISCRETE_TRIANGLEWAVE(NODE_20,NODE_02,659,50000,10000,0) // E' note
-	DISCRETE_TRIANGLEWAVE(NODE_30,NODE_04,784,50000,10000,0) // G' note
-	DISCRETE_TRIANGLEWAVE(NODE_40,NODE_08,988,50000,10000,0) // H' note
-
-	DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40) // Mix all four sound sources
-
-	DISCRETE_OUTPUT(NODE_50, 75)                               // Take the output from the mixer
-DISCRETE_SOUND_END
-
 static int play_sw2m(int no) { return 8+(no/10)*8+(no%10-1); }
 static int play_m2sw(int col, int row) { return (col-1)*10+row+1; }
 
@@ -418,8 +388,7 @@ MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_DIPS(3)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
-
-  MDRV_SOUND_ADD(DISCRETE, play_tones)
+  MDRV_IMPORT_FROM(PLAYMATICS1)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC1A)
@@ -428,7 +397,7 @@ MACHINE_DRIVER_START(PLAYMATIC1A)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem1a, PLAYMATIC_writemem1a)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(PLAYMATIC2)
+static MACHINE_DRIVER_START(PLAYMATIC2NS)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000.0)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
@@ -437,123 +406,34 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/8192.0)
   MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank2, 1)
-  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,PLAYMATIC)
   MDRV_SWITCH_UPDATE(PLAYMATIC2)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
   MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
-
-  MDRV_SOUND_ADD(DISCRETE, play_tones)
 MACHINE_DRIVER_END
 
-// electronic sound section
-
-static READ_HANDLER(ay8910_0_porta_r)	{ return 0; }
-static READ_HANDLER(ay8910_1_porta_r)	{ return 0; }
-
-struct AY8910interface play_ay8910 = {
-	2,			/* 2 chips */
-	NTSC_QUARTZ/2,	/* 1.79 MHz */
-	{ 30, 30 },		/* Volume */
-	{ ay8910_0_porta_r, ay8910_1_porta_r }
-};
-
-static WRITE_HANDLER(ay0_w) {
-	AY8910Write(0,offset % 2,data);
-}
-
-static WRITE_HANDLER(ay1_w) {
-	AY8910Write(1,offset % 2,data);
-}
-
-static WRITE_HANDLER(clk_snd) {
-  logerror("snd clk: %x\n", data);
-  locals.sndCmd >>= 1;
-}
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static INTERRUPT_GEN(PLAYMATIC_sndirq) {
-  static int irqLine = 0;
-  irqLine = !irqLine;
-}
-#endif
-
-static READ_HANDLER(in_snd) {
-  return locals.sndCmd;
-}
-
-static WRITE_HANDLER(out_snd) {
-  logerror("snd out: %x\n", data);
-}
-
-static MEMORY_READ_START(playsound_readmem)
-  {0x0000,0x1fff, MRA_ROM},
-  {0x2000,0x201f, MRA_RAM},
-  {0x8000,0x80ff, MRA_RAM},
-  {0xa000,0xbfff, MRA_ROM},
-MEMORY_END
-
-static MEMORY_WRITE_START(playsound_writemem)
-  {0x0000,0x00ff, MWA_NOP},
-  {0x2000,0x201f, MWA_RAM},
-  {0x4000,0x4fff, ay0_w},
-  {0x6000,0x6fff, ay1_w},
-  {0x8000,0x80ff, MWA_RAM},
-MEMORY_END
-
-static PORT_READ_START(playsound_readport)
-  {0x02, 0x02, in_snd},
-MEMORY_END
-
-static PORT_WRITE_START(playsound_writeport)
-  {0x00, 0x00, clk_snd},
-  {0x01, 0x01, out_snd},
-MEMORY_END
-
-static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
-
-static UINT8 snd_ef(void) {
-  return locals.enSn;
-}
-
-static void snd_sc(int data) {
-	if (data == 1) {
-    cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, locals.sndCmd & 1 ? ASSERT_LINE : CLEAR_LINE);
-  }
-}
-
-static CDP1802_CONFIG play1802_snd_config =
-{
-	snd_mode,	// MODE
-	snd_ef,		// EF
-	snd_sc,		// SC
-	NULL,		// Q
-	NULL,		// DMA read
-	NULL		// DMA write
-};
+MACHINE_DRIVER_START(PLAYMATIC2)
+  MDRV_IMPORT_FROM(PLAYMATIC2NS)
+  MDRV_IMPORT_FROM(PLAYMATICS2)
+MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC2S)
-  MDRV_IMPORT_FROM(PLAYMATIC2)
-
-  MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000)
-  MDRV_CPU_CONFIG(play1802_snd_config)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
-  MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
-  MDRV_SOUND_ADD(AY8910, play_ay8910)
+  MDRV_IMPORT_FROM(PLAYMATIC2NS)
+  MDRV_IMPORT_FROM(PLAYMATICS3)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC3S)
   MDRV_IMPORT_FROM(PLAYMATIC2S)
-  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC3,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC3,NULL,PLAYMATIC)
   MDRV_CPU_MODIFY("mcpu");
   MDRV_CPU_MEMORY(PLAYMATIC_readmem3, PLAYMATIC_writemem3)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC4S)
   MDRV_IMPORT_FROM(PLAYMATIC3S)
-  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,PLAYMATIC)
   MDRV_CPU_REPLACE("mcpu", CDP1802, NTSC_QUARTZ)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, NTSC_QUARTZ/8192.0)
 
