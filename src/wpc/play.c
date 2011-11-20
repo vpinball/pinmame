@@ -31,9 +31,6 @@
 #include "sndbrd.h"
 #include "cpu/cdp1802/cdp1802.h"
 
-#define PLAYMATIC_VBLANKFREQ   60 /* VBLANK frequency */
-#define NTSC_QUARTZ 3579545.0 /* 3.58 MHz quartz */
-
 enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN };
 
 /*----------------
@@ -64,20 +61,15 @@ static INTERRUPT_GEN(PLAYMATIC_irq1) {
 }
 
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
-  static int irqLine = 0;
+  static int irqLine;
   irqLine = !irqLine;
-  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, irqLine ? ASSERT_LINE : CLEAR_LINE);
+  if (irqLine) cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
+  locals.ef[2] = !irqLine;
 }
 
 static void PLAYMATIC_zeroCross2(int data) {
-  static int zc = 0;
-  static int state = 0;
+  static int zc;
   locals.ef[3] = (zc = !zc);
-  if (zc) {
-    locals.ef[1] = state;
-    locals.ef[2] = !state;
-    state = !state;
-  }
 }
 
 /*-------------------------------
@@ -244,6 +236,7 @@ static WRITE_HANDLER(out2_n) {
         sndbrd_0_ctrl_w(0, locals.enSn);
         logerror("snd cmd: %02x\n", locals.sndCmd);
       }
+      cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
       break;
     case UNKNOWN:
       logerror("unkown out_n write: %02x\n", data);
@@ -403,7 +396,7 @@ static MACHINE_DRIVER_START(PLAYMATIC2NS)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
   MDRV_CPU_PORTS(PLAYMATIC_readport2, PLAYMATIC_writeport2)
   MDRV_CPU_CONFIG(play1802_config)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/8192.0)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/16384.0)
   MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank2, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,PLAYMATIC)
@@ -434,8 +427,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(PLAYMATIC4S)
   MDRV_IMPORT_FROM(PLAYMATIC3S)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,PLAYMATIC)
-  MDRV_CPU_REPLACE("mcpu", CDP1802, NTSC_QUARTZ)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, NTSC_QUARTZ/8192.0)
-
-  MDRV_CPU_REPLACE("scpu", CDP1802, NTSC_QUARTZ)
+  MDRV_CPU_REPLACE("mcpu", CDP1802, 3579545.0)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 3579545.0/16384.0)
 MACHINE_DRIVER_END

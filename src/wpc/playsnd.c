@@ -83,22 +83,22 @@ static void plays_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(play2s_data_w) {
   if (mixer_is_sample_playing(sndlocals.channel) && sndlocals.volume) {
-    mixer_set_sample_frequency(sndlocals.channel, 10000 + 100 * data);
+    mixer_set_sample_frequency(sndlocals.channel, 2950000.0 / 4 / (data + 1));
   } else if (sndlocals.volume) {
-    mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 10000 + 100 * data, 1);
+    mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000.0 / 4 / (data + 1), 1);
   }
 }
 
 static WRITE_HANDLER(play2s_ctrl_w) {
   sndlocals.enSn = data & 1;
   if (sndlocals.enSn) {
-    sndlocals.volume = 700;
+    sndlocals.volume = 200;
   } else if (sndlocals.volume > 0) {
     sndlocals.volume--;
     if (sndlocals.volume < 1) {
       mixer_stop_sample(sndlocals.channel);
     } else {
-      mixer_set_volume(0, sndlocals.volume/7);
+      mixer_set_volume(0, sndlocals.volume/2);
     }
   }
 }
@@ -244,7 +244,7 @@ MACHINE_DRIVER_START(PLAYMATICS2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATICS3)
-  MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000)
+  MDRV_CPU_ADD_TAG("scpu", CDP1802, 3579545)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_CONFIG(playsound_config)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
