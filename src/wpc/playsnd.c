@@ -82,9 +82,9 @@ static void plays_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(play2s_data_w) {
-  if (mixer_is_sample_playing(sndlocals.channel) && sndlocals.volume) {
+  if (mixer_is_sample_playing(sndlocals.channel)) {
     mixer_set_sample_frequency(sndlocals.channel, 2950000.0 / 4 / (data + 1));
-  } else if (sndlocals.volume) {
+  } else {
     mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000.0 / 4 / (data + 1), 1);
   }
 }
@@ -92,15 +92,11 @@ static WRITE_HANDLER(play2s_data_w) {
 static WRITE_HANDLER(play2s_ctrl_w) {
   sndlocals.enSn = data & 1;
   if (sndlocals.enSn) {
-    sndlocals.volume = 200;
-  } else if (sndlocals.volume > 0) {
+    sndlocals.volume = 150;
+  } else if (sndlocals.volume) {
     sndlocals.volume--;
-    if (sndlocals.volume < 1) {
-      mixer_stop_sample(sndlocals.channel);
-    } else {
-      mixer_set_volume(0, sndlocals.volume/2);
-    }
   }
+  mixer_set_volume(0, sndlocals.volume * 2 / 3);
 }
 
 static WRITE_HANDLER(play2s_man_w) {
