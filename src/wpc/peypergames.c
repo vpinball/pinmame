@@ -26,10 +26,17 @@ static core_tLCDLayout peyperDisp7[] = {
   {0}
 };
 
-// Tally Hoo (19??)
-// Fantastic World (1985)
 // Odin (1985) - 6 digits (according to manual)
-// Nemesis (1986) - 7 digits
+
+/*-------------------------------------------------------------------
+/ Nemesis (1986)
+/-------------------------------------------------------------------*/
+INITGAME(nemesis, peyperDisp7, 1, 4)
+PEYPER_ROMSTART(nemesis,	"nemesisa.bin", CRC(56f13350) SHA1(30907c362f88b48d634e8aaa1e1161852886645c),
+						"nemesisb.bin", CRC(a8f3e6c7) SHA1(c25b2271c4de6f4b57c3c850d28a0878ea081c26),
+						"memoriac.bin", CRC(468f16f0) SHA1(66ce0464d82331cfc0ac1f6fbd871066e4e57262))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(nemesis,"Nemesis",1986,"Peyper (Spain)",gl_mPEYPER,0)
 
 /*-------------------------------------------------------------------
 / Wolf Man (1987)
