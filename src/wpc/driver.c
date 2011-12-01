@@ -737,11 +737,8 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
-                        // Tally Hoo
-                        // Fantastic World (1985)
                         // Odin (1985)
-                        // Nemesis (1986)
-                        // Wolfman (1987)
+DRIVERNV(nemesis)       // Nemesis (1986)
 DRIVERNV(wolfman)       // Wolf Man (1987)
 DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
                         // Sir Lancelot (1994)
