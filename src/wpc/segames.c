@@ -1044,6 +1044,38 @@ SE_ROMEND
 #define init_simp400i init_simpprty
 CORE_CLONEDEFNV(simp400i,simpprty,"Simpsons Pinball Party, The (4.00 Italy)",2003,"Stern",de_mSES2,0)
 
+SE128_ROMSTART(simp300, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
+DE_DMD32ROM8x(           "sppdspa.300",CRC(57c4f297) SHA1(91ae894293b1252213a7137400f89c7ac2c6e877))
+SPP_SND
+SE_ROMEND
+#define input_ports_simp300 input_ports_simpprty
+#define init_simp300 init_simpprty
+CORE_CLONEDEFNV(simp300,simpprty,"Simpsons Pinball Party, The (3.00)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(simp300l, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
+DE_DMD32ROM8x(           "sppdspl.300",CRC(d91ec782) SHA1(a01ebecb03200738b47177b02a689148d822ff0e))
+SPP_SND
+SE_ROMEND
+#define input_ports_simp300l input_ports_simpprty
+#define init_simp300l init_simpprty
+CORE_CLONEDEFNV(simp300l,simpprty,"Simpsons Pinball Party, The (3.00 Spain)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(simp300f, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
+DE_DMD32ROM8x(           "sppdspf.300",CRC(cb848e0d) SHA1(ab9f32d3b693ebcef92fe21e04d760756c8f59c2))
+SPP_SND
+SE_ROMEND
+#define input_ports_simp300f input_ports_simpprty
+#define init_simp300f init_simpprty
+CORE_CLONEDEFNV(simp300f,simpprty,"Simpsons Pinball Party, The (3.00 France)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(simp300i, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
+DE_DMD32ROM8x(           "sppdspi.300",CRC(31acf30a) SHA1(aad2b363bed93d22613b0530fcd2d7f850f8e616))
+SPP_SND
+SE_ROMEND
+#define input_ports_simp300i input_ports_simpprty
+#define init_simp300i init_simpprty
+CORE_CLONEDEFNV(simp300i,simpprty,"Simpsons Pinball Party, The (3.00 Italy)",2003,"Stern",de_mSES2,0)
+
 SE128_ROMSTART(simp204, "spp-cpu.204", CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
 DE_DMD32ROM8x(           "sppdispa.201",CRC(f55505a4) SHA1(5616959caafc836d13db9c1a1e93cb4954f0c321))
 SPP_SND
