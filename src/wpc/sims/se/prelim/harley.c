@@ -471,10 +471,11 @@ DE2S_SOUNDROM18884("hdsnd.u7",CRC(b9accb75) SHA1(9575f1c372ec5603322255778fc0030
                   "hdvc3.u36",CRC(41239811) SHA1(94fceff4dbefd3467ecb8b19e4b8baf24ddd68a3), \
                   "hdvc4.u37",CRC(a1bc39f6) SHA1(25af40cb3d8f774e1e37cbef9166e41753440460))
 
-/*-------------------------------------------------------------------
-/ Harley ( 4.00 )
-/-------------------------------------------------------------------*/
 SE128_ROMSTART(harl_a13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispa.104",CRC(fc7c2924) SHA1(172fceb4d3221608f48a4abe4c4c5f3043834957)) HARLEY_SOUND
+SE_ROMEND
+
+SE128_ROMSTART(harl_u13,"harcpuk.103",CRC(e39130a7) SHA1(7854c885a82f42f35e266e3cb96a68969d49fbad))
 DE_DMD32ROM8x("hddispa.104",CRC(fc7c2924) SHA1(172fceb4d3221608f48a4abe4c4c5f3043834957)) HARLEY_SOUND
 SE_ROMEND
 
@@ -499,6 +500,7 @@ DE_DMD32ROM8x("hddisps.104",CRC(2d26514a) SHA1(f15b22cad6329f29cd5cccfb91a2ba7ca
 SE_ROMEND
 
 CORE_GAMEDEF(harl,a13,"Harley Davidson (1.03)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,u13,a13,"Harley Davidson (1.03 UK)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,a10,a13,"Harley Davidson (1.03, Display rev. 1.00)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,f13,a13,"Harley Davidson (1.03, France)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,g13,a13,"Harley Davidson (1.03, Germany)",1999,"Sega",de_mSES1,0)
@@ -506,6 +508,9 @@ CORE_CLONEDEF(harl,i13,a13,"Harley Davidson (1.03, Italy)",1999,"Sega",de_mSES1,
 CORE_CLONEDEF(harl,l13,a13,"Harley Davidson (1.03, Spain)",1999,"Sega",de_mSES1,0)
 
 /********************* STERN GAMES  **********************/
+/*-------------------------------------------------------------------
+/ Harley ( 4.00 )
+/-------------------------------------------------------------------*/
 SE128_ROMSTART(harl_a40,"harcpu.400",CRC(752ed258) SHA1(aea0ab3c45649178a3b0e17a2eacc516600a2b63))
 DE_DMD32ROM8x("hddispa.400",CRC(e2c98397) SHA1(212ac1a509f608c490dc4dfdc5cc04187ed2fe10)) HARLEY_SOUND
 SE_ROMEND
