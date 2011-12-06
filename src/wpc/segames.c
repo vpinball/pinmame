@@ -1126,6 +1126,46 @@ SE_ROMEND
 #define init_term3i init_term3
 CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (4.00 Italy)",2003,"Stern",de_mSES2,0)
 
+SE128_ROMSTART(term3_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
+DE_DMD32ROM8x(       "t3dispa.300", CRC(79b68a2f) SHA1(cd466c15ffe09666c115f843775e457138bf23bc))
+T3_SND
+SE_ROMEND
+#define input_ports_term3_3 input_ports_se
+#define init_term3_3 init_term3
+CORE_CLONEDEFNV(term3_3,term3,"Terminator 3: Rise of the Machines (3.01)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(term3l_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
+DE_DMD32ROM8x(       "t3displ.300", CRC(2df35b3f) SHA1(5716b46c16cc7c4478f3118c4e6c3959b10624f8))
+T3_SND
+SE_ROMEND
+#define input_ports_term3l_3 input_ports_se
+#define init_term3l_3 init_term3
+CORE_CLONEDEFNV(term3l_3,term3,"Terminator 3: Rise of the Machines (3.01 Spain)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(term3f_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
+DE_DMD32ROM8x(       "t3dispf.300", CRC(d5c68903) SHA1(00ca09f087e5b2a742d0bf6f2ff5706a2b83a295))
+T3_SND
+SE_ROMEND
+#define input_ports_term3f_3 input_ports_se
+#define init_term3f_3 init_term3
+CORE_CLONEDEFNV(term3f_3,term3,"Terminator 3: Rise of the Machines (3.01 France)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(term3g_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
+DE_DMD32ROM8x(       "t3dispg.300", CRC(9115ea52) SHA1(52bd2cbe609363d9904b82704072fc3c398a7c18))
+T3_SND
+SE_ROMEND
+#define input_ports_term3g_3 input_ports_se
+#define init_term3g_3 init_term3
+CORE_CLONEDEFNV(term3g_3,term3,"Terminator 3: Rise of the Machines (3.01 Germany)",2003,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(term3i_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
+DE_DMD32ROM8x(       "t3dispi.300", CRC(30573629) SHA1(85ae7183b42a62f62aa3ba6441717fc7a49dd03a))
+T3_SND
+SE_ROMEND
+#define input_ports_term3i_3 input_ports_se
+#define init_term3i_3 init_term3
+CORE_CLONEDEFNV(term3i_3,term3,"Terminator 3: Rise of the Machines (3.01 Italy)",2003,"Stern",de_mSES2,0)
+
 SE128_ROMSTART(term3_2, "t3cpu.205", CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(       "t3dispa.201", CRC(a314acd1) SHA1(4d5072e65f8041d24c1bab2985ef5b30e1895bf3))
 T3_SND
