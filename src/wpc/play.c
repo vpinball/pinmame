@@ -63,8 +63,11 @@ static INTERRUPT_GEN(PLAYMATIC_irq1) {
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
   static int irqLine;
   irqLine = !irqLine;
-  if (irqLine) cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
-  locals.ef[2] = !irqLine;
+  locals.ef[1] = irqLine;
+  if (!locals.ef[1]) {
+    cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
+    locals.ef[2] = 0;
+  }
 }
 
 static void PLAYMATIC_zeroCross2(int data) {
@@ -237,16 +240,16 @@ static WRITE_HANDLER(out2_n) {
         logerror("snd cmd: %02x\n", locals.sndCmd);
       }
       cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
+      locals.ef[2] = 1;
       break;
     case UNKNOWN:
-      logerror("unkown out_n write: %02x\n", data);
+      logerror("unkown out_%d write: %02x\n", offset, data);
       break;
   }
 }
 
 static READ_HANDLER(in2_n) {
   int diag = keyboard_pressed_memory_repeat(KEYCODE_Z, 0);
-  logerror("in: %d\n", offset);
   switch (offset) {
     case SWITCH:
       if (locals.digitSel < 6)
@@ -258,13 +261,21 @@ static READ_HANDLER(in2_n) {
       if (diag) return 0;
       return coreGlobals.swMatrix[1] ^ (locals.cpuType < 2 ? 0xff : 0x0f);
       break;
+    default:
+      logerror("unknown in_%d read\n", offset);
   }
   return 0;
 }
 
 static UINT8 in_mode(void) { return CDP1802_MODE_RUN; }
 
-static void out_q(int level) { locals.q = level; /* connected to RST1 pin of flip flop U2 */ }
+static void out_q(int level) {
+  locals.q = level;
+  /* connected to RST1 pin of flip flop U2 on cpu types 1 and above */
+  if (locals.cpuType && locals.q) {
+    locals.ef[1] = 0;
+  }
+}
 
 static UINT8 in_ef(void) { return locals.ef[1] | (locals.ef[2] << 1) | (locals.ef[3] << 2) | (locals.ef[4] << 3); }
 
