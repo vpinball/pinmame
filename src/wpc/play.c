@@ -71,8 +71,7 @@ static INTERRUPT_GEN(PLAYMATIC_irq2) {
 }
 
 static void PLAYMATIC_zeroCross2(int data) {
-  static int zc;
-  locals.ef[3] = (zc = !zc);
+  locals.ef[3] = !locals.ef[3];
 }
 
 /*-------------------------------
@@ -111,7 +110,7 @@ static SWITCH_UPDATE(PLAYMATIC1) {
 static SWITCH_UPDATE(PLAYMATIC2) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : (locals.cpuType < 3 ? 0xf7 : 0xdf), 1);
-    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x01, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 0);
   }
   locals.ef[4] = !(coreGlobals.swMatrix[0] & 1);
 }
@@ -220,7 +219,7 @@ static WRITE_HANDLER(out2_n) {
       lampData = (data & 0x0f) ^ 0x0f;
       enable = locals.cpuType < 2 ? !locals.enX : !locals.enRl;
       if (enable) {
-        if (locals.ef[3])
+        if (!locals.ef[3])
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
         else
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
@@ -249,7 +248,6 @@ static WRITE_HANDLER(out2_n) {
 }
 
 static READ_HANDLER(in2_n) {
-  int diag = keyboard_pressed_memory_repeat(KEYCODE_Z, 0);
   switch (offset) {
     case SWITCH:
       if (locals.digitSel < 6)
@@ -258,8 +256,13 @@ static READ_HANDLER(in2_n) {
         printf("digitSel = %d!\n", locals.digitSel);
       break;
     case DIAG:
-      if (diag) return 0;
-      return coreGlobals.swMatrix[1] ^ (locals.cpuType < 2 ? 0xff : 0x0f);
+      if (locals.cpuType > 1) {
+        if (locals.digitSel == 1)
+          return coreGlobals.swMatrix[0] ^ 0x0f;
+        else
+          return coreGlobals.swMatrix[1] ^ 0x0f;
+      } else
+        return ~coreGlobals.swMatrix[1];
       break;
     default:
       logerror("unknown in_%d read\n", offset);
@@ -390,7 +393,6 @@ MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
   MDRV_DIPS(3)
-  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_IMPORT_FROM(PLAYMATICS1)
 MACHINE_DRIVER_END
@@ -413,8 +415,6 @@ static MACHINE_DRIVER_START(PLAYMATIC2NS)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,PLAYMATIC)
   MDRV_SWITCH_UPDATE(PLAYMATIC2)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
-  MDRV_DIPS(24)
-  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END
 

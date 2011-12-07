@@ -193,7 +193,15 @@ CORE_GAMEDEFNV(madrace,"Mad Race",198?,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / 10/82 Spain '82
 /-------------------------------------------------------------------*/
-INITGAME3(spain82, play_disp6, 1, 1)
+INPUT_PORTS_START(spain82)
+  CORE_PORTS
+  SIM_PORTS(1)
+  PLAYMATIC2_COMPORTS
+INPUT_PORTS_END
+static core_tGameData spain82GameData = {GEN_PLAYMATIC,play_disp6,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY3,0,1}};
+static void init_spain82(void) {
+  core_gameData = &spain82GameData;
+}
 PLAYMATIC_ROMSTART320(spain82,  "spaic12.bin", CRC(cd37ecdc) SHA1(ff2d406b6ac150daef868121e5857a956aabf005),
                 "spaic11.bin", CRC(c86c0801) SHA1(1b52539538dae883f9c8fe5bc6454f9224780d11))
 PLAYMATIC_SOUNDROM64("spasnd.bin", CRC(62412e2e) SHA1(9e48dc3295e78e1024f726906be6e8c3fe3e61b1))
