@@ -181,7 +181,7 @@ CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / Mad Race
 /-------------------------------------------------------------------*/
-INITGAME2(madrace, play_disp6, 1, SNDBRD_PLAY3, 1)
+INITGAME2(madrace, play_disp6, 1, SNDBRD_PLAY3, 0)
 PLAYMATIC_ROMSTART000(madrace,  "madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
                 "madrace.2b0", CRC(dcb54b39) SHA1(8e2ca7180f5ea3a28feb34b01f3387b523dbfa3b),
                 "madrace.2c0", CRC(b24ea245) SHA1(3f868ccbc4bfb77c40c4cc05dcd8eeca85ecd76f))
@@ -252,6 +252,13 @@ PLAYMATIC_SOUNDROM6416("starfu3.rom", CRC(5d602d80) SHA1(19d21adbcbd0067c051f303
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(starfire,"Star Fire",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
 
+INITGAME4(starfira, play_disp7, 1)
+PLAYMATIC_ROMSTART64(starfira,"starcpua.rom", CRC(29bac350) SHA1(ab3e3ea4881be954f7fa7278800ffd791c4581da))
+PLAYMATIC_SOUNDROM6416("starfu3.rom", CRC(5d602d80) SHA1(19d21adbcbd0067c051f3033468eda8c5af57be1),
+            "starfu4.rom", CRC(9af8be9a) SHA1(da6db3716db73baf8e1493aba91d4d85c5d613b4))
+PLAYMATIC_ROMEND
+CORE_CLONEDEFNV(starfira,starfire,"Star Fire (alternate set)",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+
 /*-------------------------------------------------------------------
 / ??/85 Trailer
 /-------------------------------------------------------------------*/
@@ -263,6 +270,27 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(trailer,"Trailer",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
 
 // ??/85 Stop Ship
-// ??/86 Flash Dragon
+
+/*-------------------------------------------------------------------
+/ ??/86 Flash Dragon
+/-------------------------------------------------------------------*/
+INITGAME4(fldragon, play_disp7, 1)
+PLAYMATIC_ROMSTART64_2(fldragon,"fldrcpu1.rom", CRC(e513ded0) SHA1(64ed3dcff53311fb93bd50d105a4c1186043fdd7),
+            "fldrcpu2.rom", CRC(6ff2b276) SHA1(040b614f0b0587521ef5550b5587b94a7f3f178b))
+PLAYMATIC_SOUNDROM6416("fdsndu3.rom", NO_DUMP,
+            "fdsndu4.rom", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(fldragon,"Flash Dragon",1986,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+
 // ??/87 Phantom Ship
-// ??/87 Skill Flight
+
+/*-------------------------------------------------------------------
+/ ??/87 Skill Flight
+/-------------------------------------------------------------------*/
+INITGAME4(sklflite, play_disp7, 1)
+PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22b51d1cc401aa8f270aa5cdadabe),
+            "skflcpu2.rom", CRC(ffc497aa) SHA1(3e88539ae1688322b9268f502d8ca41cffb28df3))
+PLAYMATIC_SOUNDROM6416("sfsndu3.rom", NO_DUMP,
+            "sfsndu4.rom", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)

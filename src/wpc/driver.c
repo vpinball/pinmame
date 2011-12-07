@@ -767,11 +767,12 @@ DRIVERNV(ufo_x)    // 11/84 UFO-X
 DRIVERNV(kz26)     // ??/85 KZ-26
 DRIVERNV(rock2500) // ??/85 Rock 2500
 DRIVERNV(starfire) // ??/85 Star Fire
+DRIVERNV(starfira) // ??/85 Star Fire (alternate set)
 DRIVERNV(trailer)  // ??/85 Trailer
                    // ??/85 Stop Ship
-                   // ??/86 Flash Dragon
+DRIVERNV(fldragon) // ??/86 Flash Dragon
                    // ??/87 Phantom Ship
-                   // ??/87 Skill Flight
+DRIVERNV(sklflite) // ??/87 Skill Flight
 
 // ----------------
 // ROWAMET
