@@ -410,11 +410,6 @@ DRIVERNV(royclark)      // 09/77 Roy Clark - The Entertainer
 DRIVERNV(circa33)       // 02/79 Circa 1933
 DRIVERNV(erosone)       // 03/79 Eros One
 
-// ---------------
-// GAMATRON GAMES
-// ---------------
-DRIVERNV(gamatron)      //Pinstar Gamatron (December 85)
-
 // -------------------
 // GAME PLAN GAMES
 // -------------------
@@ -635,7 +630,7 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 DRIVERNV(brvteam )      //Brave Team (1985)
 DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(lapbylap)      //Lap By Lap (1986)
-DRIVERNV(pinclown)      //Pinball Clown (1988)
+DRIVERNV(pinclown)      //Clown (1988)
 DRIVERNV(corsario)      //Corsario (1989)
 DRIVERNV(mundial )      //Mundial 90 (1990)
 DRIVERNV(atleta  )      //Atleta (1991)
@@ -737,11 +732,16 @@ DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
 // ----------------
 // PEYPER
 // ----------------
-                        // Odin (1985)
+DRIVERNV(odin)          // Odin (1985)
 DRIVERNV(nemesis)       // Nemesis (1986)
 DRIVERNV(wolfman)       // Wolf Man (1987)
 DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
                         // Sir Lancelot (1994)
+
+// ---------------
+// PINSTAR GAMES
+// ---------------
+DRIVERNV(gamatron)      //Pinstar Gamatron (December 85)
 
 // ----------------
 // PLAYMATIC
@@ -857,7 +857,7 @@ DRIVERNV(sleicpin)      // Pin-Ball (1993)
             // Night Fever (1979)
             // Storm (1979)
 DRIVERNV(odin_dlx)    // Odin De Luxe (1985)
-            // Gamatron (1986)
+DRIVERNV(gamatros)    // Gamatron (1986)
 DRIVERNV(solarwar)    // Solar Wars (1986)
 DRIVERNV(sonstwar)    // Star Wars (1987)
 DRIVERNV(poleposn)    // Pole Position (1987)
