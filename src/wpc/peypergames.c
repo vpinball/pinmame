@@ -13,6 +13,16 @@
 		core_gameData = &name##GameData; \
 	}
 
+static core_tLCDLayout disp6f[] = {
+  {0, 0,32,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
+  {0,22,33,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
+  {3, 0,34,1,CORE_SEG8D},{3, 2,16,2,CORE_SEG7}, {3, 6,18,1,CORE_SEG8D},{3, 8,19,2,CORE_SEG7}, {3,12,36,1,CORE_SEG7},
+  {3,22,35,1,CORE_SEG8D},{3,24,24,2,CORE_SEG7}, {3,28,26,1,CORE_SEG8D},{3,30,27,2,CORE_SEG7}, {3,34,36,1,CORE_SEG7},
+  {1,19,31,1,CORE_SEG7S},{1,21,30,1,CORE_SEG7S},{1,24,15,1,CORE_SEG7S},{1,27,14,1,CORE_SEG7S},
+  {3,17, 6,1,CORE_SEG7},
+  {0}
+};
+
 static core_tLCDLayout peyperDisp7[] = {
   {0, 0,12,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,1,CORE_SEG7}, {0,10,36,1,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
   {0,22, 4,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,1,CORE_SEG7}, {0,32,36,1,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
@@ -26,7 +36,14 @@ static core_tLCDLayout peyperDisp7[] = {
   {0}
 };
 
-// Odin (1985) - 6 digits (according to manual)
+/*-------------------------------------------------------------------
+/ Odin (1985)
+/-------------------------------------------------------------------*/
+INITGAME(odin, disp6f, 1, 4)
+PEYPER_ROMSTART2(odin, "odin_a.bin", CRC(ac3a7770) SHA1(2409629d3adbae0d7e6e5f9fe6f137c1e5a1bb86),
+						   "odin_b.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(odin,"Odin",1985,"Peyper (Spain)",gl_mPEYPER,0)
 
 /*-------------------------------------------------------------------
 / Nemesis (1986)
@@ -64,16 +81,6 @@ CORE_GAMEDEFNV(odisea,"Odisea Paris-Dakar",1987,"Peyper (Spain)",gl_mPEYPER,0)
 
 // Sonic games below - using same hardware
 
-static core_tLCDLayout sonicDisp6f[] = {
-  {0, 0,32,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
-  {0,22,33,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
-  {3, 0,34,1,CORE_SEG8D},{3, 2,16,2,CORE_SEG7}, {3, 6,18,1,CORE_SEG8D},{3, 8,19,2,CORE_SEG7}, {3,12,36,1,CORE_SEG7},
-  {3,22,35,1,CORE_SEG8D},{3,24,24,2,CORE_SEG7}, {3,28,26,1,CORE_SEG8D},{3,30,27,2,CORE_SEG7}, {3,34,36,1,CORE_SEG7},
-  {1,19,31,1,CORE_SEG7S},{1,21,30,1,CORE_SEG7S},{1,24,15,1,CORE_SEG7S},{1,27,14,1,CORE_SEG7S},
-  {3,17, 6,1,CORE_SEG7},
-  {0}
-};
-
 static core_tLCDLayout sonicDisp7[] = {
   {0, 0, 8,1,CORE_SEG8D},{0, 2, 9,2,CORE_SEG7}, {0, 6,11,1,CORE_SEG8D},{0, 8,12,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
   {0,22, 0,1,CORE_SEG8D},{0,24, 1,2,CORE_SEG7}, {0,28, 3,1,CORE_SEG8D},{0,30, 4,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
@@ -90,13 +97,20 @@ static core_tLCDLayout sonicDisp7[] = {
 /*-------------------------------------------------------------------
 / Odin De Luxe (1985)
 /-------------------------------------------------------------------*/
-INITGAME(odin_dlx, sonicDisp6f, 1, 4)
+INITGAME(odin_dlx, disp6f, 1, 4)
 PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
-						   "2a.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
+						   "odin_b.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
-CORE_GAMEDEFNV(odin_dlx,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER,0)
+CORE_CLONEDEFNV(odin_dlx,odin,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER,0)
 
-// Gamatron (1986)
+/*-------------------------------------------------------------------
+/ Gamatron (1986)
+/-------------------------------------------------------------------*/
+INITGAME(gamatros, sonicDisp7, 1, 4)
+PEYPER_ROMSTART2(gamatros, "gama_a.bin", CRC(1dc2841c) SHA1(27c6a07b1f8bd5e73b425e7dbdcfb1d5233c18b2),
+						  "gama_b.bin", CRC(56125890) SHA1(8b30a2282df264d798df1b031ecade999d135f81))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(gamatros,"Gamatron (Sonic)",1986,"Sonic (Spain)",gl_mPEYPER,0)
 
 /*-------------------------------------------------------------------
 / Solar Wars (1986)
