@@ -258,10 +258,10 @@ struct {
   int    DMDPort2;
   int    DMDRamEnabled;
   int    DMDRom1Enabled;
+  int    DMDRom2Enabled;
   int    DMDA16Enabled;
   int    DMDA17Enabled;
   int    DMDA18Enabled;
-  int    DMDA19Enabled;
   int    DMDPage;
   int    DMDFrame;
   int    DMDRow;
@@ -409,7 +409,7 @@ READ32_HANDLER(dmd_eram_address)
 	UINT32 addr = offset;
 
 	//DMD Command?
-	if(!SPINBlocals.DMDRamEnabled && !SPINBlocals.DMDRom1Enabled)
+	if(!SPINBlocals.DMDRamEnabled && !SPINBlocals.DMDRom1Enabled && !SPINBlocals.DMDRom2Enabled)
 		addr = 0x3fff;		//Fixed location we use
 	else
 	{
@@ -417,12 +417,13 @@ READ32_HANDLER(dmd_eram_address)
 		if(mem_mask < 0x100)
 			addr = offset | (SPINBlocals.DMDPort2<<8);
 
-		//Accessing ROM1+2? Translate to begin @ 0x14000 and add A16 - A19
-		if(SPINBlocals.DMDRom1Enabled) {
+		//Accessing ROM1+2? Translate to begin @ 0x14000 and add A16 - A18
+		if(SPINBlocals.DMDRom1Enabled || SPINBlocals.DMDRom2Enabled) {
 			addr |= (SPINBlocals.DMDA16Enabled<<16)
-        | (SPINBlocals.DMDA17Enabled<<17)
-        | (SPINBlocals.DMDA18Enabled<<18)
-        | (SPINBlocals.DMDA19Enabled<<19);
+        | (SPINBlocals.DMDA17Enabled<<17);
+      if (SPINBlocals.nmiSeries == 2) {
+        addr |= (SPINBlocals.DMDA18Enabled << 18) | (SPINBlocals.DMDRom2Enabled << 19);
+      }
 			addr += 0x4000;
 		}
 	}
@@ -916,16 +917,6 @@ static READ_HANDLER(i8031_port_read)
 	return data;
 }
 
-/*PORT 1:
-    P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram)
-    P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
-    P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
-    P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
-    P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
-    P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu
-    P1.6    (O) = STAT0
-    P1.7    (O) = STAT1 */
-
 enum P1BITS { RAMCE=0, DESP=1, RDATA=2, ROWCK=3, COLATCH=4, READY=5, STAT0=6, STAT1=7 };
 #define GETBIT(value,bitno) (((value) >> (bitno)) & 1)
 
@@ -943,8 +934,14 @@ static void P1_update(int data)
   if (chg)
   {
     // RAM Chip ~Enable
-    if (GETBIT(chg,RAMCE)) {
-      SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
+    if (SPINBlocals.nmiSeries != 2) {
+      if (GETBIT(chg,RAMCE)) {
+        SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
+      }
+    } else {
+      if (chg & 0x21) {
+        SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE) && !GETBIT(data,READY);
+      }
     }
 
     // Data Enable
@@ -975,10 +972,19 @@ static void P1_update(int data)
     }
 
     // DMD Ready (to read next command)
-    if (GETBIT(chg,READY)) {
-      SPINBlocals.DMDReady = (SPINBlocals.nmiSeries == 2) ? !GETBIT(data,READY) : GETBIT(data,READY);
-      if (GETBIT(wlo,READY)) {
-        cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+    if (SPINBlocals.nmiSeries != 2) {
+      if (GETBIT(chg,READY)) {
+        SPINBlocals.DMDReady = GETBIT(data,READY);
+        if (GETBIT(wlo,READY)) {
+          cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+        }
+      }
+    } else {
+      if (chg & 0x21) {
+        SPINBlocals.DMDReady = !GETBIT(data,RAMCE) || !GETBIT(data,READY);
+        SPINBlocals.DMDRom1Enabled = GETBIT(data,RAMCE) && !GETBIT(data,READY);
+        SPINBlocals.DMDRom2Enabled = !GETBIT(data,RAMCE) && GETBIT(data,READY);
+        if (SPINBlocals.DMDReady) cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
       }
     }
 
@@ -1017,6 +1023,15 @@ static WRITE_HANDLER(i8031_port_write)
             SPINBlocals.DMDPort2 = data;
             break;
 
+        /*PORT 1:
+            P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram) / A input of 2-of-4 decoder on VW
+            P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
+            P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
+            P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
+            P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
+            P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu / B input of 2-of-4 decoder on VW
+            P1.6    (O) = STAT0
+            P1.7    (O) = STAT1 */
         case 1:
             P1_update(data);
             break;
@@ -1026,17 +1041,18 @@ static WRITE_HANDLER(i8031_port_write)
             P3.1/TXD (O) = DOTCK
             P3.2/INT0(I) = Command Ready from Main CPU
             P3.3/INT1(O) = A16 to ROM1
-            P3.4/TO  (O) = ROM1 Chip Enable (Active Low)
+            P3.4/TO  (O) = ROM1 Chip Enable (Active Low) / A18 to ROM1 on VW
             P3.5/T1  (O) = A17 to ROM1
             P3.6     (O) = /WR
             P3.7     (O) = /RD*/
         case 3:
-            // no idea how Verne's World ROM is mapped yet...
-            SPINBlocals.DMDRom1Enabled = (SPINBlocals.nmiSeries == 2) ? 0 : !(GET_BIT4);
-            SPINBlocals.DMDA16Enabled = (SPINBlocals.nmiSeries == 2) ? GET_BIT3 : GET_BIT3;
-            SPINBlocals.DMDA17Enabled = (SPINBlocals.nmiSeries == 2) ? !GET_BIT5 : 0;
-            SPINBlocals.DMDA18Enabled = (SPINBlocals.nmiSeries == 2) ? !GET_BIT6 : 0;
-            SPINBlocals.DMDA19Enabled = (SPINBlocals.nmiSeries == 2) ? !GET_BIT7 : 0;
+            if (SPINBlocals.nmiSeries != 2) {
+              SPINBlocals.DMDRom1Enabled = !(GET_BIT4);
+            } else {
+              SPINBlocals.DMDA17Enabled = GET_BIT5;
+              SPINBlocals.DMDA18Enabled = GET_BIT4;
+            }
+            SPINBlocals.DMDA16Enabled = GET_BIT3;
             break;
 
         default:
