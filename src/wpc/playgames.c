@@ -188,7 +188,7 @@ PLAYMATIC_ROMSTART000(madrace,  "madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d
 PLAYMATIC_SOUNDROM6416( "madrace1.snd", CRC(49e956a5) SHA1(8790cc27a0fda7b8e07bee65109874140b4018a2),
             "madrace2.snd", CRC(c19283d3) SHA1(42f9770c46030ef20a80cc94fdbe6548772aa525))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(madrace,"Mad Race",198?,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
+CORE_GAMEDEFNV(madrace,"Mad Race",198?,"Playmatic",gl_mPLAYMATIC2S,0)
 
 /*-------------------------------------------------------------------
 / 10/82 Spain '82
@@ -229,7 +229,7 @@ PLAYMATIC_ROMSTART64(ufo_x,"ufoxcpu.rom", CRC(cf0f7c52) SHA1(ce52da05b310ac84bdd
 PLAYMATIC_SOUNDROM6416("ufoxu3.rom", CRC(6ebd8ee1) SHA1(83522b76a755556fd38d7b292273b4c68bfc0ddf),
             "ufoxu4.rom", CRC(aa54ede6) SHA1(7dd7e2852d42aa0f971936dbb84c7708727ce0e7))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(ufo_x,"UFO-X",1984,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(ufo_x,"UFO-X",1984,"Playmatic",gl_mPLAYMATIC4S,0)
 
 /*-------------------------------------------------------------------
 / ??/85 KZ-26
@@ -248,7 +248,7 @@ INITGAME4(rock2500, play_disp7, 1)
 PLAYMATIC_ROMSTART64(rock2500,"r2500cpu.rom", CRC(9c07e373) SHA1(5bd4e69d11e69fdb911a6e65b3d0a7192075abc8))
 PLAYMATIC_SOUNDROM64("r2500snd.rom", CRC(24fbaeae) SHA1(20ff35ed689291f321e483287a977c02e84d4524))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(rock2500,"Rock 2500",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(rock2500,"Rock 2500",1985,"Playmatic",gl_mPLAYMATIC4S,0)
 
 /*-------------------------------------------------------------------
 / ??/85 Star Fire
@@ -258,14 +258,14 @@ PLAYMATIC_ROMSTART64(starfire,"starfcpu.rom", CRC(450ddf20) SHA1(c63c4e3833ffc1f
 PLAYMATIC_SOUNDROM6416("starfu3.rom", CRC(5d602d80) SHA1(19d21adbcbd0067c051f3033468eda8c5af57be1),
             "starfu4.rom", CRC(9af8be9a) SHA1(da6db3716db73baf8e1493aba91d4d85c5d613b4))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(starfire,"Star Fire",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(starfire,"Star Fire",1985,"Playmatic",gl_mPLAYMATIC4S,0)
 
 INITGAME4(starfira, play_disp7, 1)
 PLAYMATIC_ROMSTART64(starfira,"starcpua.rom", CRC(29bac350) SHA1(ab3e3ea4881be954f7fa7278800ffd791c4581da))
 PLAYMATIC_SOUNDROM6416("starfu3.rom", CRC(5d602d80) SHA1(19d21adbcbd0067c051f3033468eda8c5af57be1),
             "starfu4.rom", CRC(9af8be9a) SHA1(da6db3716db73baf8e1493aba91d4d85c5d613b4))
 PLAYMATIC_ROMEND
-CORE_CLONEDEFNV(starfira,starfire,"Star Fire (alternate set)",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_CLONEDEFNV(starfira,starfire,"Star Fire (alternate set)",1985,"Playmatic",gl_mPLAYMATIC4S,0)
 
 /*-------------------------------------------------------------------
 / ??/85 Trailer
@@ -275,7 +275,7 @@ PLAYMATIC_ROMSTART64(trailer,"trcpu.rom", CRC(cc81f84d) SHA1(7a3282a47de271fde84
 PLAYMATIC_SOUNDROM6416("trsndu3.rom", CRC(05975c29) SHA1(e54d3a5613c3e39fc0338a53dbadc2e91c09ffe3),
             "trsndu4.rom", CRC(bda2a735) SHA1(134b5abb813ed8bf2eeac0861b4c88c7176582d8))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(trailer,"Trailer",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(trailer,"Trailer",1985,"Playmatic",gl_mPLAYMATIC4S,0)
 
 // ??/85 Stop Ship
 
@@ -288,7 +288,7 @@ PLAYMATIC_ROMSTART64_2(fldragon,"fldrcpu1.rom", CRC(e513ded0) SHA1(64ed3dcff5331
 PLAYMATIC_SOUNDROM6416("fdsndu3.rom", NO_DUMP,
             "fdsndu4.rom", NO_DUMP)
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(fldragon,"Flash Dragon",1986,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(fldragon,"Flash Dragon",1986,"Playmatic",gl_mPLAYMATIC4S,0)
 
 // ??/87 Phantom Ship
 
@@ -301,4 +301,4 @@ PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22
 PLAYMATIC_SOUNDROM6416("sfsndu3.rom", NO_DUMP,
             "sfsndu4.rom", NO_DUMP)
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
+CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S,0)

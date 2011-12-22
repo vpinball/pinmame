@@ -81,6 +81,16 @@ static void plays_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0, sizeof sndlocals);
 }
 
+static void play3s_timer_callback(int n) {
+  cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
+}
+
+static void plays3_init(struct sndbrdData *brdData) {
+  memset(&sndlocals, 0, sizeof sndlocals);
+  sndlocals.timer = timer_alloc(play3s_timer_callback);
+  timer_adjust(sndlocals.timer, TIME_IN_HZ(3579545 >> 8), 0, TIME_IN_HZ(3579545 >> 8));
+}
+
 static WRITE_HANDLER(play2s_data_w) {
   if (mixer_is_sample_playing(sndlocals.channel)) {
     mixer_set_sample_frequency(sndlocals.channel, 2950000.0 / 4 / (data + 1));
@@ -110,12 +120,13 @@ static WRITE_HANDLER(play3s_data_w) {
 }
 
 static WRITE_HANDLER(play3s_ctrl_w) {
+  logerror("snd en: %x\n", data);
   sndlocals.enSn = data & 1;
 }
 
 static WRITE_HANDLER(play3s_man_w) {
-  play3s_ctrl_w(0, 1);
   play3s_data_w(0, data);
+  play3s_ctrl_w(0, 0);
 }
 
 /*-------------------
@@ -128,17 +139,42 @@ const struct sndbrdIntf play2sIntf = {
   "PLAY2", plays_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play3sIntf = {
-  "PLAY3", plays_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "PLAY3", plays3_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-static READ_HANDLER(ay8910_0_porta_r)	{ return 0; }
-static READ_HANDLER(ay8910_1_porta_r)	{ return 0; }
-
+static WRITE_HANDLER(ay8910_0_porta_w)	{
+  int divider;
+  if (data & 0x80) {
+    AY8910_set_volume(0, 0, 0);
+    AY8910_set_volume(0, 1, 0);
+    AY8910_set_volume(0, 2, 0);
+  } else {
+    divider = 1 + ((data >> 6) & 1);
+    AY8910_set_volume(0, 0, 100 - 30 * (data & 0x03) / divider);
+    AY8910_set_volume(0, 1, 100 - 30 * ((data >> 2) & 0x03) / divider);
+    AY8910_set_volume(0, 2, 100 - 30 * ((data >> 4) & 0x03) / divider);
+  }
+}
+static WRITE_HANDLER(ay8910_1_porta_w)	{
+  int divider;
+  if (data & 0x80) {
+    AY8910_set_volume(1, 0, 0);
+    AY8910_set_volume(1, 1, 0);
+    AY8910_set_volume(1, 2, 0);
+  } else {
+    divider = 1 + ((data >> 6) & 1);
+    AY8910_set_volume(1, 0, 100 - 30 * (data & 0x03) / divider);
+    AY8910_set_volume(1, 1, 100 - 30 * ((data >> 2) & 0x03) / divider);
+    AY8910_set_volume(1, 2, 100 - 30 * ((data >> 4) & 0x03) / divider);
+  }
+}
 struct AY8910interface play_ay8910 = {
 	2,			/* 2 chips */
 	3579545.0/2,	/* 1.79 MHz */
 	{ 30, 30 },		/* Volume */
-	{ ay8910_0_porta_r, ay8910_1_porta_r }
+	{ 0, 0 },
+	{ 0, 0 },
+	{ ay8910_0_porta_w, ay8910_1_porta_w }
 };
 
 static WRITE_HANDLER(ay0_w) {
@@ -149,39 +185,31 @@ static WRITE_HANDLER(ay1_w) {
 	AY8910Write(1,offset % 2,data);
 }
 
-static WRITE_HANDLER(clk_snd) {
-  logerror("snd clk: %x\n", data);
-  sndlocals.sndCmd >>= 1;
-}
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static INTERRUPT_GEN(PLAYMATIC_sndirq) {
-  static int irqLine = 0;
-  irqLine = !irqLine;
-}
-#endif
-
 static READ_HANDLER(in_snd) {
+  sndlocals.enSn = 1;
   return sndlocals.sndCmd;
 }
 
-static WRITE_HANDLER(out_snd) {
-  logerror("snd out: %x\n", data);
+static WRITE_HANDLER(clk_snd) {
+  logerror("snd clk: %02x\n", data);
+  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 8) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 8) / (data + 1)));
 }
 
 static MEMORY_READ_START(playsound_readmem)
-  {0x0000,0x1fff, MRA_ROM},
-  {0x2000,0x201f, MRA_RAM},
+  {0x0000,0x3fff, MRA_ROM},
+  {0x2000,0x20ff, MRA_RAM},
+  {0x2100,0x7fff, MRA_ROM},
   {0x8000,0x80ff, MRA_RAM},
-  {0xa000,0xbfff, MRA_ROM},
+  {0x8100,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(playsound_writemem)
-  {0x0000,0x00ff, MWA_NOP},
-  {0x2000,0x201f, MWA_RAM},
+  {0x0000,0x1fff, MWA_NOP},
+  {0x2000,0x20ff, MWA_RAM},
   {0x4000,0x4fff, ay0_w},
   {0x6000,0x6fff, ay1_w},
   {0x8000,0x80ff, MWA_RAM},
+  {0x8100,0x8107, MWA_NOP},
 MEMORY_END
 
 static PORT_READ_START(playsound_readport)
@@ -189,8 +217,7 @@ static PORT_READ_START(playsound_readport)
 MEMORY_END
 
 static PORT_WRITE_START(playsound_writeport)
-  {0x00, 0x00, clk_snd},
-  {0x01, 0x01, out_snd},
+  {0x01, 0x01, clk_snd},
 MEMORY_END
 
 static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
@@ -200,8 +227,8 @@ static UINT8 snd_ef(void) {
 }
 
 static void snd_sc(int data) {
-	if (data == 1) {
-    cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, sndlocals.sndCmd & 1 ? ASSERT_LINE : CLEAR_LINE);
+  if (data == 1) {
+    cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
   }
 }
 
