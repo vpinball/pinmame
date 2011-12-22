@@ -77,18 +77,8 @@ static const UINT8 squareWave[] = {
   0x80, 0x80, 0x80, 0x80  //       *******
 };
 
-static void plays_init(struct sndbrdData *brdData) {
+static void play2s_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0, sizeof sndlocals);
-}
-
-static void play3s_timer_callback(int n) {
-  cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
-}
-
-static void plays3_init(struct sndbrdData *brdData) {
-  memset(&sndlocals, 0, sizeof sndlocals);
-  sndlocals.timer = timer_alloc(play3s_timer_callback);
-  timer_adjust(sndlocals.timer, TIME_IN_HZ(3579545 >> 8), 0, TIME_IN_HZ(3579545 >> 8));
 }
 
 static WRITE_HANDLER(play2s_data_w) {
@@ -114,6 +104,17 @@ static WRITE_HANDLER(play2s_man_w) {
   play2s_data_w(0, data);
 }
 
+static void play3s_timer_callback(int n) {
+  cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
+  cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
+}
+
+static void play3s_init(struct sndbrdData *brdData) {
+  memset(&sndlocals, 0, sizeof sndlocals);
+  sndlocals.timer = timer_alloc(play3s_timer_callback);
+  timer_adjust(sndlocals.timer, TIME_IN_HZ(3496), 0, TIME_IN_HZ(3496)); // ought to be correct according to 1863 datasheet
+}
+
 static WRITE_HANDLER(play3s_data_w) {
   logerror("snd data: %02x\n", data);
   sndlocals.sndCmd = data;
@@ -136,10 +137,10 @@ const struct sndbrdIntf play1sIntf = {
   "PLAY1", play1s_init, NULL, NULL, play1s_data_w, play1s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play2sIntf = {
-  "PLAY2", plays_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "PLAY2", play2s_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play3sIntf = {
-  "PLAY3", plays3_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "PLAY3", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
@@ -192,11 +193,11 @@ static READ_HANDLER(in_snd) {
 
 static WRITE_HANDLER(clk_snd) {
   logerror("snd clk: %02x\n", data);
-  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 8) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 8) / (data + 1)));
+  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 7) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 7) / (data + 1))); // too fast? but sounds right!
 }
 
 static MEMORY_READ_START(playsound_readmem)
-  {0x0000,0x3fff, MRA_ROM},
+  {0x0000,0x1fff, MRA_ROM},
   {0x2000,0x20ff, MRA_RAM},
   {0x2100,0x7fff, MRA_ROM},
   {0x8000,0x80ff, MRA_RAM},
@@ -206,10 +207,11 @@ MEMORY_END
 static MEMORY_WRITE_START(playsound_writemem)
   {0x0000,0x1fff, MWA_NOP},
   {0x2000,0x20ff, MWA_RAM},
-  {0x4000,0x4fff, ay0_w},
-  {0x6000,0x6fff, ay1_w},
+  {0x2100,0x3fff, MWA_NOP},
+  {0x4000,0x5fff, ay0_w},
+  {0x6000,0x7fff, ay1_w},
   {0x8000,0x80ff, MWA_RAM},
-  {0x8100,0x8107, MWA_NOP},
+  {0x8100,0xffff, MWA_NOP},
 MEMORY_END
 
 static PORT_READ_START(playsound_readport)
@@ -227,8 +229,11 @@ static UINT8 snd_ef(void) {
 }
 
 static void snd_sc(int data) {
-  if (data == 1) {
+  if (data & 2) {
     cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
+    timer_enable(sndlocals.timer, 0);
+  } else {
+    timer_enable(sndlocals.timer, 1);
   }
 }
 
