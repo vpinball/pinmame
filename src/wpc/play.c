@@ -1,6 +1,7 @@
 /************************************************************************************************
  Playmatic (Spain)
  -----------------
+  (done by Gaston over the course of a lifetime)
 
  Playmatic is a nightmare to maintain! Plain and simple.
 
@@ -12,17 +13,23 @@
  The 3rd generation used the same values, but completely re-wired all output circuits!
  The 4th generation used a generic 3.58 MHz NTSC quartz.
 
+ What's more: the systems are terribly nitpicky about their timing signals!
+ Gen. 1 won't work right unless the distribution of ASSERT and CLEAR IRQ states is correct,
+ gen. 2 and up need the IRQ line unset by a port write and is also interacting there by Q output,
+ and it actually matters whether the EF flags start out with HI or LO levels too!
+ Whenever you think you got it right, another issue pops up somewhere else... :)
+
  Sound started out with 4 simple tones (with fading option), and evolved through a CPU-driven
  oscillator circuit on to a complete sound board with another 1802 CPU.
 
-   Hardware:
-   ---------
-		CPU:	 CDP1802 @ various frequencies (various IRQ freq's as well)
-		DISPLAY: gen.1: six-digit panels, some digits shared between players
-                 gen.2: 5 rows of 7-segment LED panels, direct segment access for alpha digits
-		SOUND:	 gen.1: discrete (4 tones, like Zaccaria's 1311)
-				 gen.2: simple noise and tone genarator with varying frequencies
-				 gen.3: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2 for later games
+ Hardware:
+ ---------
+  CPU:     CDP1802 @ various frequencies (various IRQ freq's as well)
+  DISPLAY: gen.1: six-digit panels, some digits shared between players
+           gen.2: 5 rows of 7-segment LED panels, direct segment access for alpha digits
+  SOUND:   gen.1: discrete (4 tones, like Zaccaria's 1311)
+           gen.2: simple tone generator with frequency divider fed by CPU clock
+           gen.3: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2 for later games
  ************************************************************************************************/
 
 #include "driver.h"
@@ -46,24 +53,21 @@ static struct {
   int    enX; // Out 3 Bit 7
   int    ef[5];
   int    q;
-  int    snd_sc;
   int    lampCol;
   int    digitSel;
   int    panelSel;
   int    cpuType;
+  int    resetDone;
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
-  static int irqLine;
-  irqLine = (irqLine + 1) % 8;
-  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, !irqLine ? ASSERT_LINE : CLEAR_LINE);
-  if (!irqLine) locals.ef[1] = !locals.ef[1];
+  locals.vblankCount = (locals.vblankCount + 1) % 8;
+  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, !locals.vblankCount ? ASSERT_LINE : CLEAR_LINE);
+  if (!locals.vblankCount) locals.ef[1] = !locals.ef[1];
 }
 
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
-  static int irqLine;
-  irqLine = !irqLine;
-  locals.ef[1] = irqLine;
+  locals.ef[1] = !locals.ef[1];
   if (!locals.ef[1]) {
     cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
     locals.ef[2] = 0;
@@ -87,8 +91,6 @@ static INTERRUPT_GEN(PLAYMATIC_vblank1) {
 }
 
 static INTERRUPT_GEN(PLAYMATIC_vblank2) {
-  locals.vblankCount++;
-
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
@@ -113,6 +115,7 @@ static SWITCH_UPDATE(PLAYMATIC2) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 0);
   }
   locals.ef[4] = !(coreGlobals.swMatrix[0] & 1);
+  locals.resetDone = 1;
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -270,7 +273,7 @@ static READ_HANDLER(in2_n) {
   return 0;
 }
 
-static UINT8 in_mode(void) { return CDP1802_MODE_RUN; }
+static UINT8 in_mode(void) { return locals.resetDone ? CDP1802_MODE_RUN : CDP1802_MODE_RESET; }
 
 static void out_q(int level) {
   locals.q = level;
@@ -292,27 +295,27 @@ static CDP1802_CONFIG play1802_config =
 	NULL				// DMA write
 };
 
-static MACHINE_INIT(PLAYMATIC1) {
+static void init_common(int cpuType) {
   memset(&locals, 0, sizeof locals);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  locals.cpuType = cpuType;
+  if (cpuType) locals.ef[3] = 1; else locals.resetDone = 1;
+}
+
+static MACHINE_INIT(PLAYMATIC1) {
+  init_common(0);
 }
 
 static MACHINE_INIT(PLAYMATIC2) {
-  memset(&locals, 0, sizeof locals);
-  locals.cpuType = 1;
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  init_common(1);
 }
 
 static MACHINE_INIT(PLAYMATIC3) {
-  memset(&locals, 0, sizeof locals);
-  locals.cpuType = 2;
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  init_common(2);
 }
 
 static MACHINE_INIT(PLAYMATIC4) {
-  memset(&locals, 0, sizeof locals);
-  locals.cpuType = 3;
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
+  init_common(3);
 }
 
 static MACHINE_STOP(PLAYMATIC) {
@@ -387,9 +390,9 @@ MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem1, PLAYMATIC_writemem1)
   MDRV_CPU_PORTS(PLAYMATIC_readport1, PLAYMATIC_writeport1)
   MDRV_CPU_CONFIG(play1802_config)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq1, 800)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq1, 800) // actually 100 Hz (zc freq.) but needs uneven distribution of HI and LO states!
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank1, 1)
-  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,PLAYMATIC)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
   MDRV_DIPS(3)

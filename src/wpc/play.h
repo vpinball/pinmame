@@ -17,37 +17,39 @@
 #define PLAYMATIC_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
+    COREPORT_BITDEF(0x0008, IPT_START1,    IP_KEY_DEFAULT) \
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BITDEF(0x0008, IPT_START1,    IP_KEY_DEFAULT)  \
+    COREPORT_BIT(   0x0040, "Ball Tilt",   KEYCODE_INSERT) \
     COREPORT_BIT(   0x0020, "Diagnostics", KEYCODE_7) \
     COREPORT_BIT(   0x0080, "Reset",       KEYCODE_8) \
-    COREPORT_BIT(   0x0040, "Ball Tilt",   KEYCODE_INSERT)
+    /* Switch Column 0 */ \
+    COREPORT_BIT(   0x0100, DEF_STR(Unknown), KEYCODE_0)
 
 /*-- Inports for Spain '82 --*/
 #define PLAYMATIC2_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
-    COREPORT_BITDEF(0x0080, IPT_START1,    IP_KEY_DEFAULT)  \
+    COREPORT_BITDEF(0x0080, IPT_START1,    IP_KEY_DEFAULT) \
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BIT(   0x0010, "Tilt", KEYCODE_DEL) \
+    COREPORT_BIT(   0x0010, "Ball Tilt",   KEYCODE_INSERT) \
     /* Switch Column 0 */ \
-    COREPORT_BIT(   0x8000, "Diagnostics",   KEYCODE_7) \
-    COREPORT_BIT(   0x0100, "Reset",   KEYCODE_0)
+    COREPORT_BIT(   0x8000, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
 
 /*-- Inports for series III games --*/
 #define PLAYMATIC3_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
-    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT)  \
-    COREPORT_BIT(   0x0020, "Advance Digit", KEYCODE_2) \
+    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT) \
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
     COREPORT_BIT(   0x0010, "Tilt / Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0020, "Advance Digit", KEYCODE_2) \
     COREPORT_BIT(   0x0080, "Advance Step", KEYCODE_8) \
     /* Switch Column 0 */ \
     COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
@@ -56,13 +58,13 @@
 #define PLAYMATIC4_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
-    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT)  \
-    COREPORT_BIT(   0x0080, "Advance Digit", KEYCODE_2) \
+    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT) \
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BIT(   0x0008, "Diagnostics", KEYCODE_7) \
-    COREPORT_BITTOG(0x0010, "Tilt / Advance / Coin door", KEYCODE_8) \
+    COREPORT_BIT(   0x0808, "Tilt / Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0080, "Advance Digit", KEYCODE_2) \
+    COREPORT_BITTOG(0x0010, "Advance Step / Coin door", KEYCODE_8) \
     /* Switch Column 0 */ \
     COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
 
