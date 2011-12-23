@@ -761,8 +761,8 @@ DRIVERNV(cerberus) // 03/82 Cerberus
 DRIVERNV(spain82)  // 10/82 Spain 82
 DRIVERNV(madrace)  // ??/8? Mad Race
 DRIVERNV(megaaton) // 04/84 Meg-Aaton
-                   // ??/84 Nautilus
-                   // ??/84 The Raid
+DRIVERNV(nautilus) // ??/84 Nautilus
+DRIVERNV(theraid)  // ??/84 The Raid
 DRIVERNV(ufo_x)    // 11/84 UFO-X
 DRIVERNV(kz26)     // ??/85 KZ-26
 DRIVERNV(rock2500) // ??/85 Rock 2500
