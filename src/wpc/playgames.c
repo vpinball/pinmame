@@ -213,13 +213,28 @@ CORE_GAMEDEFNV(spain82,"Spain '82",1982,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS)
 /-------------------------------------------------------------------*/
 INITGAME3(megaaton, play_disp7, 1, 0)
 PLAYMATIC_ROMSTART64(megaaton,  "cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
-PLAYMATIC_SOUNDROM6432( "smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
+PLAYMATIC_SOUNDROM6432( "smogot.bin", NO_DUMP,
             "smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1984,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS)
 
-// ??/84 Nautilus
-// ??/84 The Raid
+/*-------------------------------------------------------------------
+/ ??/84 Nautilus
+/-------------------------------------------------------------------*/
+INITGAME4(nautilus, play_disp7, 1)
+PLAYMATIC_ROMSTART64(nautilus, "nautilus.cpu", CRC(197e5492) SHA1(0f83fc2e742fd0cca0bd162add4bef68c6620067))
+PLAYMATIC_SOUNDROM64("nautilus.snd", CRC(413d110f) SHA1(8360f652296c46339a70861efb34c41e92b25d0e))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(nautilus,"Nautilus",1984,"Playmatic",gl_mPLAYMATIC4S,0)
+
+/*-------------------------------------------------------------------
+/ ??/84 The Raid
+/-------------------------------------------------------------------*/
+INITGAME4(theraid, play_disp7, 1)
+PLAYMATIC_ROMSTART64(theraid, "theraid.cpu", CRC(97aa1489) SHA1(6b691b287138cc78cfc1010f380ff8c66342c39b))
+PLAYMATIC_SOUNDROM64("theraid.snd", CRC(e33f8363) SHA1(e7f251c334b15e12b1eb7e079c2e9a5f64338052))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(theraid,"The Raid",1984,"Playmatic",gl_mPLAYMATIC4S,0)
 
 /*-------------------------------------------------------------------
 / 11/84 UFO-X
@@ -236,7 +251,7 @@ CORE_GAMEDEFNV(ufo_x,"UFO-X",1984,"Playmatic",gl_mPLAYMATIC4S,0)
 /-------------------------------------------------------------------*/
 INITGAME4(kz26, play_disp7, 1)
 PLAYMATIC_ROMSTART64(kz26,  "kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
-PLAYMATIC_SOUNDROM6416( "sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09c6b7d2e8dfc3b4bb2),
+PLAYMATIC_SOUNDROM6416( "sound1.su3", NO_DUMP,
             "sound2.su4", CRC(355dc9ad) SHA1(eac8bc27157afd908f9bc5b5a7c40be5b9427269))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(kz26,"KZ-26",1985,"Playmatic",gl_mPLAYMATIC4S,GAME_STATUS)
