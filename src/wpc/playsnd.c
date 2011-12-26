@@ -149,7 +149,7 @@ const struct sndbrdIntf play4sIntf = {
 struct AY8910interface play_ay8910_1 = {
 	1,			/* 1 chip */
 	2950000.0/2,	/* 1.475 MHz */
-	{ 30 }	/* Volume */
+	{ 50 }	/* Volume */
 };
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
@@ -179,7 +179,7 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
 struct AY8910interface play_ay8910_2 = {
 	2,			/* 2 chips */
 	3579545.0/2,	/* 1.79 MHz */
-	{ MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
+	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
 	{ 0, 0 },
 	{ 0, 0 },
 	{ ay8910_0_porta_w, ay8910_1_porta_w }
@@ -200,7 +200,7 @@ static READ_HANDLER(in_snd) {
 
 static WRITE_HANDLER(clk_snd) {
   logerror("snd clk: %02x\n", data);
-  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 7) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 7) / (data + 1))); // too fast? but sounds right!
+  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 5) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 5) / (data + 1))); // too fast? but sounds right!
 }
 
 static MEMORY_READ_START(playsound_readmem3)
