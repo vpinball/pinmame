@@ -141,4 +141,5 @@ struct sndbrdIntf {
 #define SNDBRD_PLAY1   SNDBRD_TYPE(51,0)
 #define SNDBRD_PLAY2   SNDBRD_TYPE(52,0)
 #define SNDBRD_PLAY3   SNDBRD_TYPE(53,0)
+#define SNDBRD_PLAY4   SNDBRD_TYPE(54,0)
 #endif /* INC_SNDBRD */

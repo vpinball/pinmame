@@ -142,37 +142,44 @@ const struct sndbrdIntf play2sIntf = {
 const struct sndbrdIntf play3sIntf = {
   "PLAY3", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
+const struct sndbrdIntf play4sIntf = {
+  "PLAY4", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
+struct AY8910interface play_ay8910_1 = {
+	1,			/* 1 chip */
+	2950000.0/2,	/* 1.475 MHz */
+	{ 30 }	/* Volume */
+};
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
-  int divider;
-  if (data & 0x80) {
+  if (data & 0x80) { // mute all
     AY8910_set_volume(0, 0, 0);
     AY8910_set_volume(0, 1, 0);
     AY8910_set_volume(0, 2, 0);
   } else {
-    divider = 1 + ((data >> 6) & 1);
-    AY8910_set_volume(0, 0, 100 - 30 * (data & 0x03) / divider);
-    AY8910_set_volume(0, 1, 100 - 30 * ((data >> 2) & 0x03) / divider);
-    AY8910_set_volume(0, 2, 100 - 30 * ((data >> 4) & 0x03) / divider);
+    // TODO bits 1 to 6 control a slight reverb effect!?
+    AY8910_set_volume(0, 0, data & 0x40 ? 60 : 100);
+    AY8910_set_volume(0, 1, data & 0x40 ? 60 : 100);
+    AY8910_set_volume(0, 2, data & 0x40 ? 60 : 100);
   }
 }
 static WRITE_HANDLER(ay8910_1_porta_w)	{
-  int divider;
-  if (data & 0x80) {
+  if (data & 0x80) { // mute all
     AY8910_set_volume(1, 0, 0);
     AY8910_set_volume(1, 1, 0);
     AY8910_set_volume(1, 2, 0);
   } else {
-    divider = 1 + ((data >> 6) & 1);
-    AY8910_set_volume(1, 0, 100 - 30 * (data & 0x03) / divider);
-    AY8910_set_volume(1, 1, 100 - 30 * ((data >> 2) & 0x03) / divider);
-    AY8910_set_volume(1, 2, 100 - 30 * ((data >> 4) & 0x03) / divider);
+    // TODO bits 1 to 6 control a slight reverb effect!?
+    AY8910_set_volume(1, 0, data & 0x40 ? 60 : 100);
+    AY8910_set_volume(1, 1, data & 0x40 ? 60 : 100);
+    AY8910_set_volume(1, 2, data & 0x40 ? 60 : 100);
   }
 }
-struct AY8910interface play_ay8910 = {
+struct AY8910interface play_ay8910_2 = {
 	2,			/* 2 chips */
 	3579545.0/2,	/* 1.79 MHz */
-	{ 30, 30 },		/* Volume */
+	{ MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
 	{ 0, 0 },
 	{ 0, 0 },
 	{ ay8910_0_porta_w, ay8910_1_porta_w }
@@ -196,22 +203,26 @@ static WRITE_HANDLER(clk_snd) {
   timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 7) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 7) / (data + 1))); // too fast? but sounds right!
 }
 
-static MEMORY_READ_START(playsound_readmem)
+static MEMORY_READ_START(playsound_readmem3)
   {0x0000,0x1fff, MRA_ROM},
   {0x2000,0x20ff, MRA_RAM},
-  {0x2100,0x7fff, MRA_ROM},
-  {0x8000,0x80ff, MRA_RAM},
-  {0x8100,0xffff, MRA_ROM},
 MEMORY_END
 
-static MEMORY_WRITE_START(playsound_writemem)
-  {0x0000,0x1fff, MWA_NOP},
+static MEMORY_WRITE_START(playsound_writemem3)
   {0x2000,0x20ff, MWA_RAM},
-  {0x2100,0x3fff, MWA_NOP},
+MEMORY_END
+
+static MEMORY_READ_START(playsound_readmem4)
+  {0x0000,0x3fff, MRA_ROM},
+  {0x4000,0x5fff, AY8910_read_port_0_r},
+  {0x6000,0x7fff, AY8910_read_port_1_r},
+  {0x8000,0x80ff, MRA_RAM},
+MEMORY_END
+
+static MEMORY_WRITE_START(playsound_writemem4)
   {0x4000,0x5fff, ay0_w},
   {0x6000,0x7fff, ay1_w},
   {0x8000,0x80ff, MWA_RAM},
-  {0x8100,0xffff, MWA_NOP},
 MEMORY_END
 
 static PORT_READ_START(playsound_readport)
@@ -272,10 +283,20 @@ MACHINE_DRIVER_START(PLAYMATICS2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATICS3)
+  MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_CONFIG(playsound_config)
+  MDRV_CPU_MEMORY(playsound_readmem3, playsound_writemem3)
+  MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
+  MDRV_SOUND_ADD(AY8910, play_ay8910_1)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PLAYMATICS4)
   MDRV_CPU_ADD_TAG("scpu", CDP1802, 3579545)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_CONFIG(playsound_config)
-  MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
+  MDRV_CPU_MEMORY(playsound_readmem4, playsound_writemem4)
   MDRV_CPU_PORTS(playsound_readport, playsound_writeport)
-  MDRV_SOUND_ADD(AY8910, play_ay8910)
+  MDRV_SOUND_ADD(AY8910, play_ay8910_2)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
