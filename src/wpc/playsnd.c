@@ -190,7 +190,7 @@ static READ_HANDLER(in_snd) {
 
 static WRITE_HANDLER(clk_snd) {
   logerror("snd clk: %02x\n", data);
-  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 5) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 5) / (data + 1))); // too fast? but sounds right!
+  timer_adjust(sndlocals.timer, TIME_IN_HZ((3579545 >> 6) / (data + 1)), 0, TIME_IN_HZ((3579545 >> 6) / (data + 1))); // too fast? but sounds right!
 }
 
 static MEMORY_READ_START(playsound_readmem3)

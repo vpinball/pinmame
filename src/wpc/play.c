@@ -39,7 +39,7 @@
 #include "sndbrd.h"
 #include "cpu/cdp1802/cdp1802.h"
 
-enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN };
+enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP };
 
 /*----------------
 /  Local variables
@@ -54,6 +54,7 @@ static struct {
   int    enX; // Out 3 Bit 7
   int    ef[5];
   int    q;
+  int    sc;
   int    lampCol;
   int    digitSel;
   int    panelSel;
@@ -68,16 +69,16 @@ static INTERRUPT_GEN(PLAYMATIC_irq1) {
 }
 
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
-  locals.ef[1] = !locals.ef[1];
-  if (locals.cpuType < 2 && !locals.ef[1]) {
-    cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
-    locals.ef[2] = 0;
+  if (locals.q) {
+    locals.ef[1]= 0;
+  } else {
+    locals.ef[1] = !locals.ef[1];
   }
 }
 
 static void PLAYMATIC_zeroCross2(int data) {
   locals.ef[3] = !locals.ef[3];
-  if (locals.cpuType > 1 && !locals.ef[1]) {
+  if (!locals.ef[1]) {
     cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
     locals.ef[2] = 0;
   }
@@ -189,11 +190,11 @@ static READ_HANDLER(in1_n) {
 }
 
 static WRITE_HANDLER(out2_n) {
-  static int outports[4][8] =
-    {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
-     { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP, UNKNOWN },
-     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
-     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
+  static int outports[4][7] =
+    {{ DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP },
+     { DISPCOL, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP },
+     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND },
+     { DISPCOL, LAMPCOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND }};
   const int out = outports[locals.cpuType][offset-1];
   UINT8 abcData, lampData;
   int enable;
@@ -208,7 +209,7 @@ static WRITE_HANDLER(out2_n) {
         locals.digitSel = bitColToNum(data & 0x7f);
       break;
     case DISPLAY:
-      disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
+      disp_w(8 * (locals.panelSel++) + locals.digitSel, locals.sc ? data : 0);
       break;
     case SOUND:
       if (core_gameData->hw.soundBoard == 0x3400) {
@@ -244,13 +245,9 @@ static WRITE_HANDLER(out2_n) {
         locals.sndCmd = locals.lampCol;
         sndbrd_0_data_w(0, locals.sndCmd);
         sndbrd_0_ctrl_w(0, locals.enSn);
-        logerror("snd cmd: %02x\n", locals.sndCmd);
       }
       cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
       locals.ef[2] = 1;
-      break;
-    case UNKNOWN:
-      logerror("unkown out_%d write: %02x\n", offset, data);
       break;
   }
 }
@@ -290,11 +287,15 @@ static void out_q(int level) {
 
 static UINT8 in_ef(void) { return locals.ef[1] | (locals.ef[2] << 1) | (locals.ef[3] << 2) | (locals.ef[4] << 3); }
 
+static void out_sc(int data) {
+  locals.sc = data & 1;
+}
+
 static CDP1802_CONFIG play1802_config =
 {
 	in_mode,	// MODE
 	in_ef,		// EF
-	NULL,				// SC
+	out_sc,		// SC
 	out_q,		// Q
 	NULL,				// DMA read
 	NULL				// DMA write
@@ -417,7 +418,7 @@ static MACHINE_DRIVER_START(PLAYMATIC2NS)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
   MDRV_CPU_PORTS(PLAYMATIC_readport2, PLAYMATIC_writeport2)
   MDRV_CPU_CONFIG(play1802_config)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000/16384)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000/8192)
   MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank2, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,PLAYMATIC)
@@ -446,7 +447,6 @@ static MACHINE_DRIVER_START(PLAYMATIC3)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC3,NULL,PLAYMATIC)
   MDRV_CPU_MODIFY("mcpu");
   MDRV_CPU_MEMORY(PLAYMATIC_readmem3, PLAYMATIC_writemem3)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000/8192)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC3S3)
