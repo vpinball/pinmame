@@ -153,28 +153,18 @@ struct AY8910interface play_ay8910_1 = {
 };
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
-  if (data & 0x80) { // mute all
-    AY8910_set_volume(0, 0, 0);
-    AY8910_set_volume(0, 1, 0);
-    AY8910_set_volume(0, 2, 0);
-  } else {
-    // TODO bits 1 to 6 control a slight reverb effect!?
-    AY8910_set_volume(0, 0, data & 0x40 ? 60 : 100);
-    AY8910_set_volume(0, 1, data & 0x40 ? 60 : 100);
-    AY8910_set_volume(0, 2, data & 0x40 ? 60 : 100);
-  }
+  int volume = 100 - 25 * (data >> 6);
+  AY8910_set_volume(0, 0, volume);
+  AY8910_set_volume(0, 1, volume);
+  AY8910_set_volume(0, 2, volume);
+  // TODO bits 1 to 6 control a slight reverb effect!?
 }
 static WRITE_HANDLER(ay8910_1_porta_w)	{
-  if (data & 0x80) { // mute all
-    AY8910_set_volume(1, 0, 0);
-    AY8910_set_volume(1, 1, 0);
-    AY8910_set_volume(1, 2, 0);
-  } else {
-    // TODO bits 1 to 6 control a slight reverb effect!?
-    AY8910_set_volume(1, 0, data & 0x40 ? 60 : 100);
-    AY8910_set_volume(1, 1, data & 0x40 ? 60 : 100);
-    AY8910_set_volume(1, 2, data & 0x40 ? 60 : 100);
-  }
+  int volume = 100 - 25 * (data >> 6);
+  AY8910_set_volume(1, 0, volume);
+  AY8910_set_volume(1, 1, volume);
+  AY8910_set_volume(1, 2, volume);
+  // TODO bits 1 to 6 control a slight reverb effect!?
 }
 struct AY8910interface play_ay8910_2 = {
 	2,			/* 2 chips */
