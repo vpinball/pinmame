@@ -258,12 +258,16 @@ static WRITE_HANDLER(out2_n) {
 }
 
 static READ_HANDLER(in2_n) {
+  static int lastDigit;
   UINT8 sw = 0;
   switch (offset) {
     case SWITCH:
       if (locals.digitSel < 6) {
         sw = locals.swBuffer[locals.digitSel];
-        locals.swBuffer[locals.digitSel] = coreGlobals.swMatrix[locals.digitSel + 2]; // reset buffer
+        if (lastDigit == locals.digitSel) {
+          locals.swBuffer[locals.digitSel] = coreGlobals.swMatrix[locals.digitSel + 2]; // reset buffer after 2 reads
+        }
+        lastDigit = locals.digitSel;
         return sw;
       } else
         printf("digitSel = %d!\n", locals.digitSel);
