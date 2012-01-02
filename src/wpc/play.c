@@ -60,6 +60,7 @@ static struct {
   int    panelSel;
   int    cpuType;
   int    resetDone;
+  UINT8  swBuffer[6];
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq1) {
@@ -116,9 +117,13 @@ static SWITCH_UPDATE(PLAYMATIC1) {
 }
 
 static SWITCH_UPDATE(PLAYMATIC2) {
+  int i;
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : (locals.cpuType < 3 ? 0xf7 : 0xdf), 1);
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 0);
+    for (i = 0; i < 6; i++) { // buffer switches because readout is really slow and might miss some switches otherwise
+      locals.swBuffer[i] |= coreGlobals.swMatrix[i + 2];
+    }
   }
   locals.ef[4] = !(coreGlobals.swMatrix[0] & 1);
   locals.resetDone = 1;
@@ -253,11 +258,14 @@ static WRITE_HANDLER(out2_n) {
 }
 
 static READ_HANDLER(in2_n) {
+  UINT8 sw = 0;
   switch (offset) {
     case SWITCH:
-      if (locals.digitSel < 6)
-        return coreGlobals.swMatrix[locals.digitSel+2];
-      else
+      if (locals.digitSel < 6) {
+        sw = locals.swBuffer[locals.digitSel];
+        locals.swBuffer[locals.digitSel] = coreGlobals.swMatrix[locals.digitSel + 2]; // reset buffer
+        return sw;
+      } else
         printf("digitSel = %d!\n", locals.digitSel);
       break;
     case DIAG:
@@ -272,7 +280,7 @@ static READ_HANDLER(in2_n) {
     default:
       logerror("unknown in_%d read\n", offset);
   }
-  return 0;
+  return sw;
 }
 
 static UINT8 in_mode(void) { return locals.resetDone ? CDP1802_MODE_RUN : CDP1802_MODE_RESET; }
