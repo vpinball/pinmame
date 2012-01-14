@@ -448,6 +448,8 @@ WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,CRC(87b2a5c3) SHA1(e487e9ff78353ee96d5f
 WPC_ROMSTART(jd,d7,"jdrd_d7.rom",0x80000,CRC(75d71d08) SHA1(10e63b8eb57a800fe0eeb89b175d01576d79ee1a)) JD_SOUND WPC_ROMEND
 WPC_ROMSTART(jd,l1,"jd_l1.u6",   0x80000,CRC(09a4b1d8) SHA1(9f941bbeb6e58d918d374694c7ff2a67f1084cc0)) JD_SOUND WPC_ROMEND
 WPC_ROMSTART(jd,d1,"jd_d1.u6",   0x80000,CRC(307fdfa0) SHA1(0ad083cf1e35334caa0854375406e06672bf587d)) JD_SOUND WPC_ROMEND
+WPC_ROMSTART(jd,l4,"jd_l4.u6",   0x80000,CRC(cc6f1068) SHA1(aef2a2eeb9110074eebff91318179ce97aba14ba)) JD_SOUND WPC_ROMEND
+WPC_ROMSTART(jd,d4,"jd_d4.u6",   0x80000,CRC(4b7b350f) SHA1(5c827532ffa1e3b102cc6e2ec9446f2d1fc2ef84)) JD_SOUND WPC_ROMEND
 WPC_ROMSTART(jd,l6,"jd_l6.u6",   0x80000,CRC(0a74cba4) SHA1(1872fd86bbfa772eac9cc2ef2634a90b72b3d5e2)) JD_SOUND WPC_ROMEND
 WPC_ROMSTART(jd,d6,"jd_d6.u6",   0x80000,CRC(fa17dd22) SHA1(e71c9c0f504a793d4e9c76aaad85f71c4e41a15e)) JD_SOUND WPC_ROMEND
 
@@ -458,6 +460,8 @@ CORE_GAMEDEF(jd,l7,"Judge Dredd (L-7)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d7,l7,"Judge Dredd (D-7) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l1,l7,"Judge Dredd (L-1)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d1,l7,"Judge Dredd (D-1) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,l4,l7,"Judge Dredd (L-4)",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d4,l7,"Judge Dredd (D-4) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l6,l7,"Judge Dredd (L-6)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,d6,l7,"Judge Dredd (D-6) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
 

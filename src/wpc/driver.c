@@ -1895,6 +1895,8 @@ DRIVER(ij,lg7)          //WPC-517:  11/93 W Indiana Jones (LG-7)
 DRIVER(ij,dg7)          //WPC-517:  11/93 W Indiana Jones (DG-7) LED Ghost Fix
 DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,d1)           //WPC-220:  10/93 B Judge Dredd (D-1) LED Ghost Fix
+DRIVER(jd,l4)           //WPC-220:  10/93 B Judge Dredd (L-4)
+DRIVER(jd,d4)           //WPC-220:  10/93 B Judge Dredd (D-4) LED Ghost Fix
 DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,d6)           //WPC-220:  10/93 B Judge Dredd (D-6) LED Ghost Fix
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
