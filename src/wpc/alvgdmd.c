@@ -18,12 +18,12 @@
 #define DMD32_FIRQFREQ 481	//no idea on this one, just a wild guess
 
 /*static vars*/
-static int vid_page;
 static UINT8  *dmd32RAM;
 
 static struct {
   struct sndbrdData brdData;
   int cmd, planenable, disenable, setsync;
+  int vid_page;
 } dmdlocals;
 
 /*declarations*/
@@ -135,7 +135,7 @@ static READ_HANDLER(port_r)
 {
 	//Port 1 is read in the wait for interrupt loop.. Not sure why this is done.
 	if(offset == 1)
-		return vid_page;
+		return dmdlocals.vid_page;
 	else
 		LOG(("port read @ %x\n",offset));
 	return 0;
@@ -149,7 +149,7 @@ static WRITE_HANDLER(port_w)
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		case 1:
-			vid_page = (data&0x0f)<<11;
+			dmdlocals.vid_page = data & 0x0f;
 			if(last != data) {
 				last = data;
 				LOG(("port write @ %x, data=%x\n",offset,data));
@@ -265,8 +265,8 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   UINT8 *RAM2;
   tDMDDot dotCol;
   int ii,jj;
-  RAM = RAM + vid_page;
-  RAM2 = RAM + (dmdlocals.planenable*0x200);
+  RAM += dmdlocals.vid_page << 11;
+  RAM2 = RAM + dmdlocals.planenable*0x200;
 
 #ifdef MAME_DEBUG
   core_textOutf(50,20,1,"offset=%08x", offset);
@@ -274,15 +274,15 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 
   if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
-	  offset+=0x0001;
+	  offset+=1;
   if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
-	  offset-=0x0001;
+	  offset-=1;
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
 	  offset=0;
   if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
-	  offset+=0x800;
+	  offset+=0x200;
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	  offset-=0x800;
+	  offset-=0x200;
   if(keyboard_pressed_memory_repeat(KEYCODE_N,2))
 	  //offset=0xb4;
 	  offset=0xc3;
@@ -309,6 +309,75 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
       *line++ = (intens1>>2) & 0x03;
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
+      RAM += 1; RAM2 += 1;
+    }
+    *line = 0;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+
+PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
+  static UINT8 matrix[4][4] = {
+    { 0, 4, 8,12},
+    { 4, 6,10,13},
+    { 8,10,12,14},
+    {12,13,14,15},
+  };
+#ifdef MAME_DEBUG
+  static int offset = 0;
+#endif
+  UINT8 *RAM  = ((UINT8 *)dmd32RAM);
+  UINT8 *RAM2;
+  tDMDDot dotCol;
+  int ii,jj;
+  RAM += dmdlocals.vid_page << 11;
+  RAM2 = RAM + dmdlocals.planenable*0x200;
+
+#ifdef MAME_DEBUG
+  core_textOutf(50,20,1,"offset=%08x", offset);
+  memset(&dotCol,0,sizeof(dotCol));
+
+  if(!debugger_focus) {
+  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+	  offset+=1;
+  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
+	  offset-=1;
+  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
+	  offset=0;
+  if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
+	  offset+=0x200;
+  if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
+	  offset-=0x200;
+  if(keyboard_pressed_memory_repeat(KEYCODE_N,2))
+	  //offset=0xb4;
+	  offset=0xc3;
+  if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
+  {
+	  dmd32_data_w(0,offset);
+	  dmd32_ctrl_w(0,0);
+  }
+  }
+  RAM += offset;
+  RAM2 += offset;
+#endif
+
+  for (ii = 1; ii <= 32; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+    for (jj = 0; jj < (128/8); jj++) {
+      UINT8 intens1a = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
+      UINT8 intens2a = (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
+      UINT8 intens1 = 2*(RAM[0x400] & 0x55) + (RAM2[0x400] & 0x55);
+      UINT8 intens2 = (RAM[0x400] & 0xaa) + (RAM2[0x400] & 0xaa)/2;
+      
+      *line++ = 63+matrix[(intens2>>6) & 0x03][(intens2a>>6) & 0x03];
+      *line++ = 63+matrix[(intens1>>6) & 0x03][(intens1a>>6) & 0x03];
+      *line++ = 63+matrix[(intens2>>4) & 0x03][(intens2a>>4) & 0x03];
+      *line++ = 63+matrix[(intens1>>4) & 0x03][(intens1a>>4) & 0x03];
+      *line++ = 63+matrix[(intens2>>2) & 0x03][(intens2a>>2) & 0x03];
+      *line++ = 63+matrix[(intens1>>2) & 0x03][(intens1a>>2) & 0x03];
+      *line++ = 63+matrix[intens2 & 0x03][intens2a & 0x03];
+      *line++ = 63+matrix[intens1 & 0x03][intens1a & 0x03];
       RAM += 1; RAM2 += 1;
     }
     *line = 0;
