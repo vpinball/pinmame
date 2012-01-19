@@ -19,7 +19,7 @@
 
 /* Dot-Matrix display */
 static struct core_dispLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32,NULL}, {0}
+  {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32,NULL}, {0}
 };
 
 /* 2 X 20 AlphaNumeric Rows */
