@@ -60,6 +60,15 @@ core_tLCDLayout play_disp7[] = {
   {0}
 };
 
+core_tLCDLayout play_disp7a[] = {
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
+  { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 }, { 6,12,51,1,CORE_SEG7 },
+  { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 }, { 0,32,50,1,CORE_SEG7 },
+  { 6,20,13,1,CORE_SEG7 }, { 6,22, 8,5,CORE_SEG7 }, { 6,32,49,1,CORE_SEG7 },
+  { 3,10, 1,2,CORE_SEG7 }, { 3,16, 3,1,CORE_SEG7 }, { 3,20, 4,1,CORE_SEG7 }, { 3,22,48,1,CORE_SEG7 },
+  {0}
+};
+
 /*-------------------------------------------------------------------
 / 03/78 Space Gambler
 /-------------------------------------------------------------------*/
@@ -307,7 +316,7 @@ CORE_GAMEDEFNV(fldragon,"Flash Dragon",1986,"Playmatic",gl_mPLAYMATIC4,0)
 /*-------------------------------------------------------------------
 / ??/87 Skill Flight
 /-------------------------------------------------------------------*/
-INITGAME4(sklflite, play_disp7, 1)
+INITGAME4(sklflite, play_disp7a, 1)
 PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22b51d1cc401aa8f270aa5cdadabe),
             "skflcpu2.rom", CRC(ffc497aa) SHA1(3e88539ae1688322b9268f502d8ca41cffb28df3))
 PLAYMATIC_SOUNDROM6416("sfsndu3.rom", NO_DUMP,
