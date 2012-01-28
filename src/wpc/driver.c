@@ -1626,6 +1626,7 @@ DRIVER(tts,l2)          //S11-919:  ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
 DRIVER(f14,p3)          //S11-554:  03/87 W F-14 Tomcat (P-3)
 DRIVER(f14,p4)          //          03/87 W F-14 Tomcat (P-4)
+DRIVER(f14,p5)          //          03/87 W F-14 Tomcat (P-5)
 DRIVER(f14,l1)          //          05/87 W F-14 Tomcat (L-1)
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire!
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1)
