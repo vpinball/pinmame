@@ -82,11 +82,10 @@ CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
 /*--------------------------------
 / Future World (10/78)
 /-------------------------------*/
-// Game ROMs #2 and #3 have to be swapped!
 INITGAME1(futurwld,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,125)
 ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",CRC(d83b8793) SHA1(3bb04d8395191ecf324b6da0bcddcf7bd8d41867),
-							"futwld_3.lgc",CRC(bdcb7e1d) SHA1(e6c0c7e8188df87937f0b22dbb0639872e03e948),
-							"futwld_2.lgc",CRC(48e3d293) SHA1(0029f30c4a94067e7782e22499b11db86f051934),
+							"futwld_2.lgc",CRC(bdcb7e1d) SHA1(e6c0c7e8188df87937f0b22dbb0639872e03e948),
+							"futwld_3.lgc",CRC(48e3d293) SHA1(0029f30c4a94067e7782e22499b11db86f051934),
 							"futwld_4.lgc",CRC(b1de2120) SHA1(970e1c4eadb7ace1398684accac289a434d13d84),
 							"futwld_5.lgc",CRC(6b7965f2) SHA1(31314bc63f01717004c5c2448b5db7d292145b60))
 ZAC_ROMEND
