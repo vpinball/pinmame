@@ -45,13 +45,19 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 / Goofy Hoops (Romstar game) (??/95)
 /-------------------------------------------------------------------*/
 //Might have different hardware mappings as a quick peek of the code looked different than the pins
-INITGAME(ghv101, 0, cc_dispDMD128x32, 3, 0, 0)
-CC_ROMSTART_4(ghv101,  "u06_v11.bin", CRC(3b6ab802),
-                       "u23_v11.bin", CRC(f6cac3aa),
+INITGAME(ghv101, 0, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
+CC_ROMSTART_4(ghv101, "u17_v10.bin", CRC(b6a39327),
                        "u13_v10.bin", CRC(1712f21f),
-                       "u17_v10.bin", CRC(b6a39327))
+			"u23_v11.bin", CRC(f6cac3aa),
+			"u06_v11.bin", CRC(3b6ab802))
+CAPCOMS_SOUNDROM5a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
+		   "u15_v10.bin", CRC(a77c884c) SHA1(10e7e242876fe197f582f1574ed47c4682b87db5), \
+		   "u19_v10.bin", CRC(550c1c52) SHA1(f97cceb552a6bffe55c85fc01120ad99d3b7f19b), \
+		   "u30_v10.bin", CRC(44a2edb9) SHA1(c14b00e07cc873ef99ec629fbdeda72e9e69ac47), \
+		   "u32_v10.bin", CRC(73ee0ecc) SHA1(48aed6f76c0b506bd39430c7f1ea8735db99b8e3), \
+		   "u34_v10.bin", CRC(cd5ea236) SHA1(dded158bc2f8443d2e69834cde87e81661ca7c53))
 CC_ROMEND
-CORE_GAMEDEFNV(ghv101,"Goofy Hoops",1995,"Romstar",cc,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(ghv101,"Goofy Hoops",1995,"Romstar",cc1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Pinball Magic (10/95)
