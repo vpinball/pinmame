@@ -735,6 +735,46 @@ SE_ROMEND
 #define init_play303i init_playboys
 CORE_CLONEDEFNV(play303i,playboys,"Playboy (3.03 Italy)",2002,"Stern",de_mSES2,0)
 
+SE128_ROMSTART(play302,  "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
+DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
+PLAY_SND
+SE_ROMEND
+#define input_ports_play302 input_ports_playboys
+#define init_play302 init_playboys
+CORE_CLONEDEFNV(play302,playboys,"Playboy (3.02)",2002,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(play302l, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
+DE_DMD32ROM8x(           "pbdispl.300",  CRC(e7697fc3) SHA1(7a9796e7b99af0d3d2079876a8054209a3067e64))
+PLAY_SND
+SE_ROMEND
+#define input_ports_play302l input_ports_playboys
+#define init_play302l init_playboys
+CORE_CLONEDEFNV(play302l,playboys,"Playboy (3.02 Spain)",2002,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(play302g, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
+DE_DMD32ROM8x(           "pbdispg.300",  CRC(ed7b7c62) SHA1(28b0ab490f8abd5f29e8cb0996da9e7200918157))
+PLAY_SND
+SE_ROMEND
+#define input_ports_play302g input_ports_playboys
+#define init_play302g init_playboys
+CORE_CLONEDEFNV(play302g,playboys,"Playboy (3.02 Germany)",2002,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(play302f, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
+DE_DMD32ROM8x(           "pbdispf.300",  CRC(69ab3bb2) SHA1(59d7ad5eca701d1216200cd489d2d07825a0856e))
+PLAY_SND
+SE_ROMEND
+#define input_ports_play302f input_ports_playboys
+#define init_play302f init_playboys
+CORE_CLONEDEFNV(play302f,playboys,"Playboy (3.02 France)",2002,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(play302i, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
+DE_DMD32ROM8x(           "pbdispi.300",  CRC(74c8cedf) SHA1(474ad1939ea0a58852003e549ed85478e239a67c))
+PLAY_SND
+SE_ROMEND
+#define input_ports_play302i input_ports_playboys
+#define init_play302i init_playboys
+CORE_CLONEDEFNV(play302i,playboys,"Playboy (3.02 Italy)",2002,"Stern",de_mSES2,0)
+
 SE128_ROMSTART(play300,  "pbcpu.300",    CRC(d7e5bada) SHA1(e4d5bc015751a559eb95acb6da04246b7418eaf5))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
 PLAY_SND
