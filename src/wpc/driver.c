@@ -1017,6 +1017,11 @@ DRIVERNV(play303g)      //Whitestar: 02/02 Playboy (3.03 Germany)
 DRIVERNV(play303l)      //Whitestar: 02/02 Playboy (3.03 Spain)
 DRIVERNV(play303f)      //Whitestar: 02/02 Playboy (3.03 France)
 DRIVERNV(play303i)      //Whitestar: 02/02 Playboy (3.03 Italy)
+DRIVERNV(play302)       //Whitestar: 02/02 Playboy (3.02)
+DRIVERNV(play302g)      //Whitestar: 02/02 Playboy (3.02 Germany)
+DRIVERNV(play302l)      //Whitestar: 02/02 Playboy (3.02 Spain)
+DRIVERNV(play302f)      //Whitestar: 02/02 Playboy (3.02 France)
+DRIVERNV(play302i)      //Whitestar: 02/02 Playboy (3.02 Italy)
 DRIVERNV(play300)       //Whitestar: 02/02 Playboy (3.00)
 DRIVERNV(play203)       //Whitestar: 02/02 Playboy (2.03)
 DRIVERNV(play203g)      //Whitestar: 02/02 Playboy (2.03 Germany)
@@ -1899,6 +1904,8 @@ DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,d1)           //WPC-220:  10/93 B Judge Dredd (D-1) LED Ghost Fix
 DRIVER(jd,l4)           //WPC-220:  10/93 B Judge Dredd (L-4)
 DRIVER(jd,d4)           //WPC-220:  10/93 B Judge Dredd (D-4) LED Ghost Fix
+DRIVER(jd,l5)           //WPC-220:  10/93 B Judge Dredd (L-5)
+DRIVER(jd,d5)           //WPC-220:  10/93 B Judge Dredd (D-5) LED Ghost Fix
 DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,d6)           //WPC-220:  10/93 B Judge Dredd (D-6) LED Ghost Fix
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
