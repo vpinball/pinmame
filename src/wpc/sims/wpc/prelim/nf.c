@@ -282,6 +282,24 @@ DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c7
                "nfu7s",CRC(61002bdd) SHA1(e623399ff95f59a4ab7efdd7c69b1a1370479398))
 WPC_ROMEND
 
+WPC_ROMSTART(nf,10,"nofe1_0.rom",0x80000,CRC(f8f6521c) SHA1(5c26f4878f257b157c2a1c46995ec8100fa20723))
+DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c77c),
+               "nfu3s",CRC(983e5578) SHA1(374b1397abbdde5fd9257fd45fd8613c94fbd02d),
+               "nfu4s",CRC(9469cd40) SHA1(8a1dd1088f24018f48b114c0b27f0331263d4eea),
+               "nfu5s",CRC(e14d4315) SHA1(63d5ae800cc8a750ea2e3a87c646ab175b60abc7),
+               "nfu6s",CRC(40a58903) SHA1(78f7e99f39efc83f3cf17801a30e6dc6e4864125),
+               "nfu7s",CRC(61002bdd) SHA1(e623399ff95f59a4ab7efdd7c69b1a1370479398))
+WPC_ROMEND
+
+WPC_ROMSTART(nf,101,"nofe1_01.rom",0x80000,CRC(4eeb8add) SHA1(c482ae6f7229696bc0cbfd50638dadc8404a98c8))
+DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c77c),
+               "nfu3s",CRC(983e5578) SHA1(374b1397abbdde5fd9257fd45fd8613c94fbd02d),
+               "nfu4s",CRC(9469cd40) SHA1(8a1dd1088f24018f48b114c0b27f0331263d4eea),
+               "nfu5s",CRC(e14d4315) SHA1(63d5ae800cc8a750ea2e3a87c646ab175b60abc7),
+               "nfu6s",CRC(40a58903) SHA1(78f7e99f39efc83f3cf17801a30e6dc6e4864125),
+               "nfu7s",CRC(61002bdd) SHA1(e623399ff95f59a4ab7efdd7c69b1a1370479398))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -290,6 +308,8 @@ CORE_CLONEDEF(nf,23,23x,"No Fear: Dangerous Sports (2.3)",1995,"Williams",wpc_mS
 CORE_CLONEDEF(nf,23f,23x,"No Fear: Dangerous Sports (2.3F)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,22,23x,"No Fear: Dangerous Sports (2.2)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,10,23x,"No Fear: Dangerous Sports (1.0)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,101,23x,"No Fear: Dangerous Sports (1.01) LED Ghost Fix",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
