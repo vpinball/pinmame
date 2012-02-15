@@ -809,7 +809,8 @@ DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japan)
 DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
 DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
 //Whitestar Hardware, DMD 128x32
-DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
+DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13 (5.01)
+DRIVERNV(apollo1)       //Whitestar: 11/95 Apollo 13 (1.00)
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
 DRIVER  (twst,404)      //Whitestar: 05/96 Twister (4.04)
