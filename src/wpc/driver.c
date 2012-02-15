@@ -2021,6 +2021,8 @@ DRIVER(tom,121)         //WPC-539:  04/95 B Theatre of Magic (1.21X) LED Ghost F
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //          10/96 B Theatre of Magic (1.4 Home version Coin Play)
+DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
+DRIVER(nf,101)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,20)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.0)
 DRIVER(nf,22)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.2)
 DRIVER(nf,23)           //WPC-525:  05/95 W No Fear: Dangerous Sports (2.3)
@@ -2028,10 +2030,10 @@ DRIVER(nf,23f)          //WPC-525:  05/95 W No Fear: Dangerous Sports (2.3F)
 DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (2.3 Export)
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //          06/95 B Indianapolis 500 (Belgium)
-DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
-DRIVER(jb,101r)         //WPC-551:  10/95 W Jack*Bot LED Ghost Fix
-DRIVER(jb,10b)          //                  Belgium/Canada
-DRIVER(jb,101b)         //                  Belgium/Canada LED Ghost Fix
+DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0)
+DRIVER(jb,101r)         //WPC-551:  10/95 W Jack*Bot (1.0) LED Ghost Fix
+DRIVER(jb,10b)          //WPC-551:  10/95 W Jack*Bot (1.0) Belgium/Canada
+DRIVER(jb,101b)         //WPC-551:  10/95 W Jack*Bot (1.0) Belgium/Canada LED Ghost Fix
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
 DRIVER(jm,12b)          //WPC-542:  08/95 W Johnny Mnemonic (Belgium)
 DRIVER(wd,03r)          //WPC-544:  09/95 B Who dunnit (0.3 R)
