@@ -44,6 +44,17 @@ SE_ROMEND
 #define input_ports_apollo13 input_ports_se
 CORE_GAMEDEFNV(apollo13,"Apollo 13",1995,"Sega",de_mSES1,0)
 
+INITGAME(apollo1,GEN_WS,se_apollo,SE_DIGIT)
+SE128_ROMSTART(apollo1,"a13cpu.100",CRC(5971e956) SHA1(89853912fc569480e66bec4cef369d8320c3a07d))
+DE_DMD32ROM8x(   "a13dps.100",CRC(224f6149) SHA1(b2a1786adc358834615989fce8835e0f039abb24))
+DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
+                  "apollo13.u17",CRC(4e863aca) SHA1(264f9176a1abf758b7a894d83883330ef91b7388),
+                  "apollo13.u21",CRC(28169e37) SHA1(df5209d24187b546a4296fc4629c58bf729349d2),
+                  "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
+SE_ROMEND
+#define input_ports_apollo1 input_ports_se
+CORE_GAMEDEFNV(apollo1,"Apollo 13 (v1.00)",1995,"Sega",de_mSES1,0)
+
 /*-------------------------------------------------------------------
 / Goldeneye
 /-------------------------------------------------------------------*/
