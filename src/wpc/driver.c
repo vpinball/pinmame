@@ -1889,6 +1889,7 @@ DRIVER(tz,f10)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.10)
 DRIVER(tz,f19)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.19)
 DRIVER(tz,f50)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.50)
 DRIVER(tz,f86)          //WPC-520:  01/95 B Twilight Zone (FreeWPC 0.86)
+DRIVER(tz,f100)         //WPC-520:  01/95 B Twilight Zone (FreeWPC 1.00)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //WPC-517:  07/93 W Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
