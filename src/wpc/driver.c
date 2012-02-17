@@ -1804,6 +1804,7 @@ DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L
 DRIVER(taf,d7)          //WPC:      10/92 B The Addams Family (D-7) (Prototype L-5) LED Ghost Fix
 DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
 DRIVER(taf,i4)          //WPC:      05/94 B The Addams Family (I-4) LED Ghost Fix
+DRIVER(gw,pb)           //WPC-504:  03/92 W The Getaway: High Speed II (P-B)
 DRIVER(gw,pc)           //WPC-504:  03/92 W The Getaway: High Speed II (P-C)
 DRIVER(gw,pd)           //WPC-504:  03/92 W The Getaway: High Speed II (P-D) LED Ghost Fix
 DRIVER(gw,p7)           //WPC-504:  03/92 W The Getaway: High Speed II (P-7)

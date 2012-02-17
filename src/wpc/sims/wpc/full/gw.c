@@ -487,6 +487,10 @@ WPC_ROMSTART(gw,d5,"getaw_d5.rom",0x80000,CRC(76ffc66e) SHA1(9d99b308e110367062a
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
 
+WPC_ROMSTART(gw,pb,"u6-p-b.rom",0x80000,CRC(c2c76ce7) SHA1(bc5874f8012feaa92230415067b56f56aae109bc))
+WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
+WPC_ROMEND
+
 WPC_ROMSTART(gw,pc,"u6-p-c.rom",0x80000,CRC(2bd887e6) SHA1(fe06307f5c9b19be9a889be7027a4b0f399b505f))
 WPCS_SOUNDROM8xx("u18-sp1.rom",CRC(fc5a5ff6) SHA1(bbe810135e05f81d1399ee0cb490ee93d6f9bb03))
 WPC_ROMEND
@@ -527,6 +531,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,d5,l5,"The Getaway: High Speed II (D-5) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,pb,l5,"The Getaway: High Speed II (P-B)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,pc,l5,"The Getaway: High Speed II (P-C)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,pd,l5,"The Getaway: High Speed II (P-D) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,p7,l5,"The Getaway: High Speed II (P-7)",1992,"Williams",wpc_mFliptronS,0)
