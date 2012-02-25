@@ -2038,8 +2038,9 @@ DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0)
 DRIVER(jb,101r)         //WPC-551:  10/95 W Jack*Bot (1.0) LED Ghost Fix
 DRIVER(jb,10b)          //WPC-551:  10/95 W Jack*Bot (1.0) Belgium/Canada
 DRIVER(jb,101b)         //WPC-551:  10/95 W Jack*Bot (1.0) Belgium/Canada LED Ghost Fix
-DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
-DRIVER(jm,12b)          //WPC-542:  08/95 W Johnny Mnemonic (Belgium)
+DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic (1.2R)
+DRIVER(jm,12b)          //WPC-542:  08/95 W Johnny Mnemonic (1.2 Belgium)
+DRIVER(jm,05r)          //WPC-542:  08/95 W Johnny Mnemonic (0.5R)
 DRIVER(wd,03r)          //WPC-544:  09/95 B Who dunnit (0.3 R)
 DRIVER(wd,048r)         //          10/95 B Who dunnit (0.48 R)
 DRIVER(wd,10r)          //          11/95 B Who dunnit (1.0 R)

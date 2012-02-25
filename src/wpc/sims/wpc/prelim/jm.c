@@ -265,11 +265,23 @@ DCS_SOUNDROM7x("jm_u2_s.1_0",CRC(4aeeff3d) SHA1(861b65b97715182385e2fe076af1fb2e
                "jm_u7_s.1_0",CRC(9d4d9e9d) SHA1(d6e074806eed6fedc169c4849a9dd9ac2beed07e),
                "jm_u8_s.1_0",CRC(fc7af6c0) SHA1(a70dadf86d1af2122b58fdd85e938d50d113305f))
 WPC_ROMEND
+
+WPC_ROMSTART(jm,05r,"john0_5r.rom",0x80000,CRC(57df5654) SHA1(b27c66dac592dd9db84ee86836216581b4cde3b1))
+DCS_SOUNDROM7x("jm_u2_s.038",CRC(3b291732) SHA1(d0ce122b2a8c1ce04fe4ad1bef633514bb0c8f9f),
+               "jm_u3_s.038",CRC(653c2fc5) SHA1(8d462314394f8babed89f7cf70ce2df534cae13e),
+               "jm_u4_s.038",CRC(d0cfd604) SHA1(3844667135645653f1766d12d40752ddac2ec830),
+               "jm_u5_s.038",CRC(58d5276d) SHA1(8b74b9fc87c6df015f32201499e25c0135a65568),
+               "jm_u6_s.038",CRC(534ef536) SHA1(9706ca9f422f10f85e81cea965c31c96c662bc34),
+               "jm_u7_s.038",CRC(ce07e128) SHA1(b65e2bd1263f597320b53300868343ce9b6bd395),
+               "jm_u8_s.038",CRC(f463d70a) SHA1(7fd701dcdd8672d7e4d45f400d507cc0f4db2578))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jm,12r,"Johnny Mnemonic (1.2R)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(jm,12b,12r,"Johnny Mnemonic (1.2B) Belgium",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(jm,05r,12r,"Johnny Mnemonic (0.5R)",1995,"Williams",wpc_mSecurityS,0)
 
 static void jm_handleMech(int mech) {
 	static UINT8 twobits_x, twobits_y;
