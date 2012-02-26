@@ -670,10 +670,10 @@ static int bop_getMech(int mechNo) {
 }
 
 static WRITE_HANDLER(parallel_0_out) {
-  coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
 }
 static WRITE_HANDLER(qspin_0_out) {
   HC4094_data_w(1, data);
@@ -686,11 +686,15 @@ static HC4094interface hc4094bop = {
 };
 
 static WRITE_HANDLER(bop_wpc_w) {
+  static UINT8 lastVal;
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
-    HC4094_data_w (0, GET_BIT0);
-    HC4094_clock_w(0, GET_BIT1);
-    HC4094_clock_w(1, GET_BIT1);
+    HC4094_strobe_w(0, lastVal == (data & 3));
+    HC4094_strobe_w(1, lastVal == (data & 3));
+    HC4094_data_w  (0, GET_BIT0);
+    HC4094_clock_w (0, GET_BIT1);
+    HC4094_clock_w (1, GET_BIT1);
+    lastVal = data & 3;
   }
 }
 
@@ -703,6 +707,4 @@ static void init_bop(void) {
   HC4094_init(&hc4094bop);
   HC4094_oe_w(0, 1);
   HC4094_oe_w(1, 1);
-  HC4094_strobe_w(0, 1);
-  HC4094_strobe_w(1, 1);
 }
