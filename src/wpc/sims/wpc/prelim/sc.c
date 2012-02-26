@@ -26,6 +26,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "machine/4094.h"
 
 /*------------------
 /  Local functions
@@ -33,14 +34,6 @@
 static int  sc_handleBallState(sim_tBallStatus *ball, int *inports);
 static void sc_drawStatic(BMTYPE **line);
 static void init_sc(void);
-
-/*-----------------------
-  local static variables
- ------------------------*/
-/* Uncomment if you wish to use locals. type variables */
-static struct {
-  int auxLast, auxClk;
-} sclocals;
 
 /*--------------------------
 / Game specific input ports
@@ -311,21 +304,75 @@ static core_tGameData scGameData = {
     { swStart, swTilt, swSlamTilt, swCoinDoor, 0},
   }
 };
-static WRITE_HANDLER(sc_auxLamp) {
-  wpc_data[WPC_SOLENOID1] |= data;
-  if (~sclocals.auxLast & data & 0x10) sclocals.auxClk = 0;
-  if (~sclocals.auxLast & data & 0x20) {
-    if (data & 0x40) coreGlobals.tmpLampMatrix[8+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
-    if (data & 0x80) coreGlobals.tmpLampMatrix[11+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
-    sclocals.auxClk += 1;
-  }
-  sclocals.auxLast = data;
+
+static WRITE_HANDLER(parallel_0_out) {
+  coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(data);
 }
+static WRITE_HANDLER(parallel_1_out) {
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
+}
+static WRITE_HANDLER(parallel_2_out) {
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(data);
+}
+static WRITE_HANDLER(parallel_3_out) {
+  coreGlobals.lampMatrix[13] = coreGlobals.tmpLampMatrix[13] = core_revbyte(data);
+}
+static WRITE_HANDLER(parallel_4_out) {
+  coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = core_revbyte(data);
+}
+static WRITE_HANDLER(parallel_5_out) {
+  coreGlobals.lampMatrix[11] = coreGlobals.tmpLampMatrix[11] = core_revbyte(data);
+}
+static WRITE_HANDLER(qspin_0_out) {
+  HC4094_data_w(1, data);
+}
+static WRITE_HANDLER(qspin_1_out) {
+  HC4094_data_w(2, data);
+}
+static WRITE_HANDLER(qspin_3_out) {
+  HC4094_data_w(4, data);
+}
+static WRITE_HANDLER(qspin_4_out) {
+  HC4094_data_w(5, data);
+}
+
+static HC4094interface hc4094sc = {
+  6, // 6 chips
+  { parallel_0_out, parallel_1_out, parallel_2_out, parallel_3_out, parallel_4_out, parallel_5_out },
+  { qspin_0_out, qspin_1_out, NULL, qspin_3_out, qspin_4_out }
+};
+
+static WRITE_HANDLER(sc_wpc_w) {
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+    HC4094_data_w (0, GET_BIT6);
+    HC4094_data_w (3, GET_BIT7);
+    HC4094_clock_w(0, GET_BIT5);
+    HC4094_clock_w(1, GET_BIT5);
+    HC4094_clock_w(2, GET_BIT5);
+    HC4094_clock_w(3, GET_BIT5);
+    HC4094_clock_w(4, GET_BIT5);
+    HC4094_clock_w(5, GET_BIT5);
+    HC4094_strobe_w(0,GET_BIT4);
+    HC4094_strobe_w(1,GET_BIT4);
+    HC4094_strobe_w(2,GET_BIT4);
+    HC4094_strobe_w(3,GET_BIT4);
+    HC4094_strobe_w(4,GET_BIT4);
+    HC4094_strobe_w(5,GET_BIT4);
+  }
+}
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_sc(void) {
   core_gameData = &scGameData;
-  install_mem_write_handler(WPC_CPUNO, WPC_SOLENOID1+WPC_BASE, WPC_SOLENOID1+WPC_BASE,sc_auxLamp);
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, sc_wpc_w);
+  HC4094_init(&hc4094sc);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
+  HC4094_oe_w(2, 1);
+  HC4094_oe_w(3, 1);
+  HC4094_oe_w(4, 1);
+  HC4094_oe_w(5, 1);
 }
-
