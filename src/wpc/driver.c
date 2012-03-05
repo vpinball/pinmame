@@ -1763,6 +1763,7 @@ DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
 DRIVER(t2,d6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-6) LED Ghost Fix
 DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
+DRIVER(t2,l81)          //WPC-513:  12/91 W Terminator 2: Judgement Day (L-81) Attract Sound Fix
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
 DRIVER(t2,f19)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.19)
