@@ -73,7 +73,7 @@ DRVLIBS += $(PINOBJ)/mephisto.o
 DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
 DRVLIBS += $(PINOBJ)/spectra.o
-DRVLIBS += $(PINOBJ)/barni.o
+DRVLIBS += $(PINOBJ)/idsa.o
 #
 # Games
 #
@@ -228,6 +228,7 @@ SOUNDS += S14001A@
 SOUNDS += YM2203@
 SOUNDS += YM3526@
 SOUNDS += TMS5110@
+SOUNDS += SP0256@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims

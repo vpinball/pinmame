@@ -2287,6 +2287,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\sp0256.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\sp0256.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\streams.c"
 						>
 					</File>
@@ -3509,6 +3517,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\icecoldbeer.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\idsa.c"
 					>
 				</File>
 				<File
