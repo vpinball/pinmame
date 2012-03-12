@@ -626,6 +626,12 @@ DRIVERNV(shark)         //Shark
 DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 
 // ----------------
+// IDSA GAMES
+// ----------------
+DRIVERNV(v1)            //V-1 (198?)
+DRIVERNV(bsktball)      //Basket Ball (04/1987)
+
+// ----------------
 // INDER GAMES
 // ----------------
 DRIVERNV(brvteam )      //Brave Team (1985)

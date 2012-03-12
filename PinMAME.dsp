@@ -1098,6 +1098,14 @@ SOURCE=.\src\sound\sp0250.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\sp0256.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sp0256.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\streams.c
 # End Source File
 # Begin Source File
@@ -2348,6 +2356,10 @@ SOURCE=.\src\wpc\hnks.h
 # Begin Source File
 
 SOURCE=.\src\wpc\icecoldbeer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\idsa.c
 # End Source File
 # Begin Source File
 

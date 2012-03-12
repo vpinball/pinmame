@@ -1138,6 +1138,18 @@ struct snd_interface sndintf[] =
 		0
 	},
 #endif
+#if (HAS_SP0256)
+	{
+		SOUND_SP0256,
+		"GI SP0256",
+		0,
+		0,
+		sp0256_sh_start,
+		sp0256_sh_stop,
+		0,
+		0
+	},
+#endif
 #ifdef PINMAME
 #if (HAS_S14001A)
 	{
