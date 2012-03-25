@@ -56,7 +56,7 @@ static WRITE_HANDLER(riot_portb_w) {
 
 static READ_HANDLER(riot_portb_r) {
   logerror("RIOT B READ\n");
-  return 0x0;
+  return core_getDip(0) ? 0x5a : 0;
 }
 
 static struct riot6532_interface riot6532_intf = {
@@ -165,6 +165,7 @@ MACHINE_DRIVER_START(spectra)
   MDRV_NVRAM_HANDLER(SPECTRA)
   MDRV_SWITCH_UPDATE(SPECTRA)
   MDRV_SOUND_ADD(SN76477, spectra_sn76477Int)
+  MDRV_DIPS(1) // added so the NVRAM can be reset
 MACHINE_DRIVER_END
 
 #define INITGAME(name, disp, flip) \
@@ -182,6 +183,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_BITTOG(0x0020, "Test",       KEYCODE_8) \
     COREPORT_BIT   (0x0080, "Tilt",       KEYCODE_INSERT) \
     COREPORT_BIT   (0x0001, "Slam Tilt",  KEYCODE_HOME) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Reset NVRAM") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0001, DEF_STR(On)) \
   INPUT_PORTS_END
 
 static core_tLCDLayout dispAlpha[] = {
@@ -197,7 +202,7 @@ ROM_START(spectra)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("spect_u3.dat", 0x0c00, 0x0400, CRC(9ca7510f) SHA1(a87849f16903836158063d593bb4a2e90c7473c8))
       ROM_RELOAD(0xfc00, 0x0400)
-    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(e6519689) SHA1(06ef3d349ea27a072889b7c379f258d29b7217be) BAD_DUMP)
+    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(b58f1205) SHA1(9578fd89485f3f560789cb0f24c7116e4bc1d0da) BAD_DUMP)
     ROM_LOAD("spect_u5.dat", 0x0400, 0x0400, CRC(49e0759f) SHA1(c3badc90ff834cbc92d8c519780069310c2b1507))
 ROM_END
 
