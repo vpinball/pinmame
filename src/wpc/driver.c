@@ -2123,6 +2123,7 @@ DRIVER(mb,106b)         //          06/99 W Monster Bash (1.06b Coin Play)
 DRIVER(cc,12)           //WPC-566:  02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
 DRIVER(cc,13k)		//          04/99 B Cactus Canyon (1.3) with real knocker
+DRIVER(cc,104)          //          04/99 B Cactus Canyon (1.04 test 0.2 (The Pinball Factory) version)
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD

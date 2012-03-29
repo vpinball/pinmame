@@ -278,12 +278,22 @@ DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce0
 	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
 WPC_ROMEND
 
+WPC_ROMSTART(cc,104,"cc_g11.104",0x100000,CRC(21a7b816) SHA1(0e67da694b8713e15e04bf0c49a48e14f057a737))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cc,13,   "Cactus Canyon (1.3)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,12,13,"Cactus Canyon (1.2)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,13k,13,"Cactus Canyon (1.3) With Real Knocker",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
