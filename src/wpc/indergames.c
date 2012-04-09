@@ -29,8 +29,8 @@ static core_tLCDLayout inderDisp7[] = {
 };
 
 static core_tLCDLayout inderDisp7a[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,22, 9,7,CORE_SEG7},
-  {3, 0,17,7,CORE_SEG7}, {3,22,25,7,CORE_SEG7},
+  {0, 0, 1,7,CORE_SEG7}, {3, 0, 9,7,CORE_SEG7},
+  {0,22,17,7,CORE_SEG7}, {3,22,25,7,CORE_SEG7},
   {1,20,34,2,CORE_SEG7S},{1,25,38,2,CORE_SEG7S},
   {3,20,41,1,CORE_SEG7S},
   {0}
@@ -70,6 +70,19 @@ INDER_ROMEND
 CORE_GAMEDEFNV(lapbylap,"Lap By Lap",1986,"Inder (Spain)",gl_mINDER2,0)
 
 /*-------------------------------------------------------------------
+/ Moon Light (1987)
+/-------------------------------------------------------------------*/
+INITGAME(moonlght, lblDisp, 0, 0,0,0x0c,0,0)
+INDER_ROMSTART1(moonlght,"ci-3.bin", CRC(56b901ae) SHA1(7269d1a100c378b21454f9f80f5bd9fbb736c222))
+INDER_SNDROM4(			"ci-11.bin", NO_DUMP,
+						"ci-24.bin", NO_DUMP,
+						"ci-23.bin", NO_DUMP,
+						"ci-22.bin", NO_DUMP,
+						"ci-21.bin", NO_DUMP)
+INDER_ROMEND
+CORE_GAMEDEFNV(moonlght,"Moon Light",1987,"Inder (Spain)",gl_mINDERS0,0)
+
+/*-------------------------------------------------------------------
 / Clown (1988)
 /-------------------------------------------------------------------*/
 INITGAME(pinclown, inderDisp7, 0, 0,0,0,0,0)
@@ -80,7 +93,7 @@ INDER_SNDROM4(			"clown_b.bin", CRC(81a66302) SHA1(3d1243ae878747f20e54cd3322c5a
 						"clown_e.bin", CRC(98263526) SHA1(509764e65847637824ba93f7e6ce926501c431ce),
 						"clown_f.bin", CRC(5f01b531) SHA1(116b1670ef4d5c054bb09dc55aa7d5d3ca047079))
 INDER_ROMEND
-CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,0)
+CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Corsario (1989)
@@ -93,7 +106,7 @@ INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba48
 						"d-corsar.bin", CRC(10d8b448) SHA1(ed1918e6c55eba07dde31b9755c9403e073cad98),
 						"e-corsar.bin", CRC(918ee349) SHA1(17cded8b5626c91e400d26332a160704f2fd2b55))
 INDER_ROMEND
-CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,0)
+CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Mundial 90 (1990)
@@ -106,7 +119,7 @@ INDER_SNDROM4(			"snd11.bin", CRC(2cebc1a5) SHA1(e0dae2b1ce31ff436b55ceb1ec71d39
 						"snd22.bin", CRC(2559f874) SHA1(cbf57f29e394d5dc320e7dcbd2625f6c96412a06),
 						"snd21.bin", CRC(7a8f7402) SHA1(39666ba2634fe9c720c2c9bcc9ccc73874ed85e7))
 INDER_ROMEND
-CORE_GAMEDEFNV(mundial,"Mundial 90",1990,"Inder (Spain)",gl_mINDERS,0)
+CORE_GAMEDEFNV(mundial,"Mundial 90",1990,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Atleta (1991)
@@ -120,7 +133,7 @@ INDER_SNDROM4(			"atletaa.snd", CRC(051c5329) SHA1(339115af4a2e3f1f2c31073cbed18
 						"atletad.snd", CRC(6518e3a4) SHA1(6b1d852005dabb76c7c65b87ecc9ee1422f16737),
 						"atletae.snd", CRC(1ef7b099) SHA1(08400db3e238baf1673a2da604c999db6be30ffe))
 INDER_ROMEND
-CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS,0)
+CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / 250 CC (1992)
@@ -133,7 +146,7 @@ INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bc
 						"d-250cc.bin", CRC(a0940387) SHA1(0e06483e3e823bf4673d8e0bd120b0a6b802035d),
 						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
 INDER_ROMEND
-CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS,0)
+CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Metal Man (1992)

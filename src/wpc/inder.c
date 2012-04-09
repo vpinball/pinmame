@@ -12,12 +12,12 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 2.5 MHz
-			INT: IRQ @ 250 Hz (4 ms)
+			INT: IRQ @ 250 Hz (4 ms) for the games up to Lap by Lap, slightly less for later games
 		IO:      DMA for earlier games,
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
 		SOUND:	 TI76489 @ 2 or 4 MHz for Brave Team
-				 AY8910 @ 2 MHz for Canasta86,
+				 AY8910 @ 2 MHz for Canasta86, 2x AY8910 on separate Z80 CPU for Lap By Lap,
 		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
 
@@ -29,9 +29,6 @@
 #include "sound/msm5205.h"
 #include "sndbrd.h"
 #include "machine/8255ppi.h"
-
-#define INDER_IRQFREQ     250 /* IRQ frequency */
-#define INDER_CPUFREQ 2500000 /* CPU clock frequency */
 
 static READ_HANDLER(snd_porta_r);
 static READ_HANDLER(snd_portb_r);
@@ -48,7 +45,6 @@ static struct {
   UINT32 solenoids;
   UINT8  dispSeg[7];
   UINT8  swCol[5];
-  core_tSeg segments;
   UINT8  sndCmd;
 } locals;
 
@@ -66,17 +62,10 @@ static INTERRUPT_GEN(INDER_irq) {
 static INTERRUPT_GEN(INDER_vblank) {
   locals.vblankCount++;
 
-  /*-- lamps --*/
-  if ((locals.vblankCount % INDER_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % INDER_SOLSMOOTH) == 0)
   	locals.solenoids = 0;
-  /*-- display --*/
-  if ((locals.vblankCount % INDER_DISPLAYSMOOTH) == 0) {
-    memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
-  }
 
   core_updateSw(core_getSol(5));
 }
@@ -109,12 +98,12 @@ static WRITE_HANDLER(disp_w) {
   int i;
   if (offset < 5) locals.dispSeg[offset] = data;
   else for (i=0; i < 5; i++)
-    locals.segments[8*i + 7-(data >> 3)].w = locals.dispSeg[i];
+    coreGlobals.segments[8*i + 7-(data >> 3)].w = locals.dispSeg[i];
 }
 // secondary display (Lap By Lap and Moon Light)
 static WRITE_HANDLER(disp2_w) {
   if (data & 0xf0) {
-    locals.segments[51 - core_BitColToNum(data >> 4)].w = core_bcd2seg7[data & 0x0f];
+    coreGlobals.segments[51 - core_BitColToNum(data >> 4)].w = core_bcd2seg7[data & 0x0f];
   }
 }
 
@@ -125,7 +114,7 @@ static WRITE_HANDLER(snd2_w) {
 }
 
 static WRITE_HANDLER(lamp_w) {
-  coreGlobals.tmpLampMatrix[offset] = data;
+  coreGlobals.lampMatrix[offset] = data;
 }
 
 // It's hard to draw the line between solenoids and lamps, as they share the outputs...
@@ -222,7 +211,7 @@ static WRITE_HANDLER(ci20_portb_w) {
 }
 // (always ff?)
 static WRITE_HANDLER(ci20_portc_w) {
-	coreGlobals.tmpLampMatrix[7] = data ^ 0xff;
+	coreGlobals.lampMatrix[7] = data ^ 0xff;
 }
 
 // solenoids
@@ -231,41 +220,41 @@ static WRITE_HANDLER(ci21_porta_w) {
 }
 // lamps
 static WRITE_HANDLER(ci21_portb_w) {
-	coreGlobals.tmpLampMatrix[0] = data;
+	coreGlobals.lampMatrix[0] = data;
 }
 // lamps and solenoids, heavily mixed between games! Sorry, it won't get any better than this.
 static WRITE_HANDLER(ci21_portc_w) {
-	coreGlobals.tmpLampMatrix[1] = data;
+	coreGlobals.lampMatrix[1] = data;
   locals.solenoids |= ((data & 0xf0) ^ 0xf0) << 4;
 }
 
 // lamps
 static WRITE_HANDLER(ci22_porta_w) {
-	coreGlobals.tmpLampMatrix[2] = data;
+	coreGlobals.lampMatrix[2] = data;
 }
 // lamps
 static WRITE_HANDLER(ci22_portb_w) {
-	coreGlobals.tmpLampMatrix[6] = data;
+	coreGlobals.lampMatrix[6] = data;
 }
 // lamps
 static WRITE_HANDLER(ci22_portc_w) {
-	coreGlobals.tmpLampMatrix[3] = data;
+	coreGlobals.lampMatrix[3] = data;
 }
 
 // lamps
 static WRITE_HANDLER(ci23_porta_w) {
-	coreGlobals.tmpLampMatrix[4] = data;
+	coreGlobals.lampMatrix[4] = data;
 }
 // lamps
 static WRITE_HANDLER(ci23_portb_w) {
-	coreGlobals.tmpLampMatrix[5] = data;
+	coreGlobals.lampMatrix[5] = data;
 }
 // display strobes
 static WRITE_HANDLER(ci23_portc_w) {
   int i;
   if ((data & 0x0f) < 8)
     for (i=0; i < 7; i++)
-      locals.segments[8*i + (data & 0x07)].w = locals.dispSeg[i];
+      coreGlobals.segments[8*i + (data & 0x07)].w = locals.dispSeg[i];
 }
 
 // display data
@@ -277,8 +266,13 @@ static WRITE_HANDLER(disp16_w) {
 static WRITE_HANDLER(snd_w) {
   locals.sndCmd = data;
 }
+// unknown, 0x21 on game start, 0x20 on game over
+static WRITE_HANDLER(X6ce0_w) {
+  if (data) logerror("Unknown write to 0x6ce0: %02x\n", data);
+  coreGlobals.diagnosticLed = data & 1;
+}
 
-static ppi8255_interface ppi8255_intf =
+static ppi8255_interface ppi8255_intf1 =
 {
 	4+1,					/* 4 chips for CPU board + 1 chip for sound */
 	{ci20_porta_r, ci23_porta_r, ci22_porta_r, ci21_porta_r, snd_porta_r},	/* Port A read */
@@ -293,7 +287,6 @@ static MEMORY_READ_START(INDER_readmem)
   {0x0000,0x3fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
   {0x4400,0x44ff, INDER_CMOS_r},
-  {0x4500,0x45ff, MRA_RAM},
   {0x6000,0x6003, ppi8255_0_r},
   {0x6400,0x6403, ppi8255_1_r},
   {0x6800,0x6803, ppi8255_2_r},
@@ -303,7 +296,6 @@ MEMORY_END
 static MEMORY_WRITE_START(INDER_writemem)
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-  {0x4500,0x45ff, MWA_RAM},
 //{0x4900,0x4900, MWA_NOP}, // unknown stuff here
   {0x6000,0x6003, ppi8255_0_w},
   {0x6400,0x6403, ppi8255_1_w},
@@ -311,7 +303,7 @@ static MEMORY_WRITE_START(INDER_writemem)
   {0x6c00,0x6c03, ppi8255_3_w},
   {0x6c20,0x6c20, snd_w},
   {0x6c60,0x6c66, disp16_w},
-//{0x6ce0,0x6ce0, MWA_NOP}, // unknown stuff here
+  {0x6ce0,0x6ce0, X6ce0_w},
 MEMORY_END
 
 static MACHINE_INIT(INDER) {
@@ -320,15 +312,16 @@ static MACHINE_INIT(INDER) {
 
 static MACHINE_DRIVER_START(INDER)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", Z80, INDER_CPUFREQ)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 2500000)
   MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem)
   MDRV_CPU_VBLANK_INT(INDER_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(INDER_irq, INDER_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 250)
   MDRV_CORE_INIT_RESET_STOP(INDER,NULL,NULL)
   MDRV_NVRAM_HANDLER(INDER)
   MDRV_DIPS(24)
   MDRV_SWITCH_CONV(INDER_sw2m,INDER_m2sw)
   MDRV_SWITCH_UPDATE(INDER)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
 static MEMORY_READ_START(INDER0_readmem)
@@ -399,7 +392,7 @@ static MEMORY_WRITE_START(INDER2_writemem)
   {0x4901,0x4907, lamp_w},
   {0x4a00,0x4a00, snd2_w},
   {0x4a01,0x4a01, disp2_w},
-//{0x4b00,0x4b05, MWA_NOP}, // unknown stuff here
+//{0x4b00,0x4b00, MWA_NOP}, // unknown stuff here
 MEMORY_END
 
 static MEMORY_READ_START(inder2_snd_readmem)
@@ -436,7 +429,7 @@ MACHINE_DRIVER_START(INDER2)
   MDRV_CORE_INIT_RESET_STOP(INDER2,NULL,INDER2)
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 2000000)
-  MDRV_CPU_PERIODIC_INT(inder2_snd_irq, INDER_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(inder2_snd_irq, 250) // not really accurate
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(inder2_snd_readmem, inder2_snd_writemem)
 
@@ -504,16 +497,20 @@ static WRITE_HANDLER(sndctrl_w) {
 	  ((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
 }
 
-static MACHINE_INIT(INDERS) {
+static void init_common(void) {
 	memset(&locals, 0, sizeof locals);
 	memset(&sndlocals, 0, sizeof sndlocals);
-
-	/* init PPI */
-	ppi8255_init(&ppi8255_intf);
 
 	/* init sound */
 	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(INDER_MEMREG_SND),NULL,NULL);
 	sndbrd_setManCmd(0, snd_w);
+}
+
+static MACHINE_INIT(INDERS1) {
+	init_common();
+
+	/* init PPI */
+	ppi8255_init(&ppi8255_intf1);
 }
 
 static MEMORY_READ_START(indersnd_readmem)
@@ -526,19 +523,79 @@ MEMORY_END
 static MEMORY_WRITE_START(indersnd_writemem)
 	{ 0x2000, 0x2fff, MWA_RAM },
 	{ 0x4000, 0x4003, ppi8255_4_w},
+// {0x4900, 0x4900, MWA_NOP}, // unknown stuff here
 	{ 0x6000, 0x6000, sndctrl_w},
 MEMORY_END
 
-MACHINE_DRIVER_START(INDERS)
+MACHINE_DRIVER_START(INDERS1)
   MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 210) // at 250, switch hits are missed!
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 2500000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CORE_INIT_RESET_STOP(INDERS,NULL,INDER2)
+  MDRV_CORE_INIT_RESET_STOP(INDERS1,NULL,INDER2)
   MDRV_CPU_MEMORY(indersnd_readmem, indersnd_writemem)
 
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, INDER_msm5205Int)
+MACHINE_DRIVER_END
+
+
+/* Moon Light has slightly different PIA mappings, and an extra display */
+static WRITE_HANDLER(ci21_porta_w0) {
+  disp2_w(0, data);
+}
+static WRITE_HANDLER(ci21_portb_w0) {
+  coreGlobals.lampMatrix[2] = data;
+}
+static WRITE_HANDLER(ci21_portc_w0) {
+  coreGlobals.lampMatrix[3] = data;
+}
+static WRITE_HANDLER(ci22_porta_w0) {
+  coreGlobals.lampMatrix[5] = ~data;
+}
+static WRITE_HANDLER(ci22_portb_w0) {
+	locals.solenoids |= data ^ 0xee;
+}
+static WRITE_HANDLER(ci22_portc_w0) {
+  coreGlobals.lampMatrix[4] = data ^ 0x0e;
+	locals.solenoids |= (~data & 0x0c) << 6;
+}
+static WRITE_HANDLER(ci23_porta_w0) {
+  coreGlobals.lampMatrix[1] = data ^ 0x80;
+}
+static WRITE_HANDLER(ci23_portb_w0) {
+  coreGlobals.lampMatrix[0] = data;
+}
+static WRITE_HANDLER(ci23_portc_w0) {
+  int i;
+  if ((data & 0x0f) > 8)
+    for (i=0; i < 5; i++)
+      coreGlobals.segments[8*i + (data & 0x07)].w = locals.dispSeg[i];
+}
+
+static ppi8255_interface ppi8255_intf0 =
+{
+	4+1,					/* 4 chips for CPU board + 1 chip for sound */
+	{ci20_porta_r, ci23_porta_r, ci22_porta_r, ci21_porta_r, snd_porta_r},	/* Port A read */
+	{ci20_portb_r, ci23_portb_r, ci22_portb_r, ci21_portb_r, snd_portb_r},	/* Port B read */
+	{ci20_portc_r, ci23_portc_r, ci22_portc_r, ci21_portc_r, snd_portc_r},	/* Port C read */
+	{ci20_porta_w, ci23_porta_w0,ci22_porta_w0,ci21_porta_w0,snd_porta_w},	/* Port A write */
+	{ci20_portb_w, ci23_portb_w0,ci22_portb_w0,ci21_portb_w0,snd_portb_w},	/* Port B write */
+	{ci20_portc_w, ci23_portc_w0,ci22_portc_w0,ci21_portc_w0,snd_portc_w},	/* Port C write */
+};
+
+static MACHINE_INIT(INDERS0) {
+  init_common();
+
+	/* init PPI */
+	ppi8255_init(&ppi8255_intf0);
+}
+
+MACHINE_DRIVER_START(INDERS0)
+  MDRV_IMPORT_FROM(INDERS1)
+  MDRV_CORE_INIT_RESET_STOP(INDERS0,NULL,INDER2)
 MACHINE_DRIVER_END
 
 
@@ -598,7 +655,7 @@ static WRITE_HANDLER(ci23_portc_w2) {
   int i;
   if ((data & 0x0f) < 7) {
     for (i=0; i < 7; i++)
-      locals.segments[8*i + 7 - (data & 0x07)].w = locals.dispSeg[i];
+      coreGlobals.segments[8*i + 7 - (data & 0x07)].w = locals.dispSeg[i];
   }
 }
 
@@ -798,7 +855,7 @@ static MACHINE_INIT(INDERS2) {
 
 // extra outputs, map to lamps
 static WRITE_HANDLER(extra_w) {
-	coreGlobals.tmpLampMatrix[8 + offset] = data;
+	coreGlobals.lampMatrix[8 + offset] = data;
 }
 
 static MEMORY_READ_START(INDERS2_readmem)
@@ -821,7 +878,7 @@ static MEMORY_WRITE_START(INDERS2_writemem)
   {0x6c20,0x6c20, snd_w},
   {0x6c40,0x6c45, extra_w},
   {0x6c60,0x6c66, disp16_w},
-//{0x6ce0,0x6ce0, MWA_NOP}, // unknown stuff here
+  {0x6ce0,0x6ce0, X6ce0_w},
 MEMORY_END
 
 //CPU #1 - SOUND EFFECTS SAMPLES
@@ -858,8 +915,8 @@ MACHINE_DRIVER_START(INDERS2)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDERS2_readmem, INDERS2_writemem)
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 175) // adjustable on real machine
   MDRV_CORE_INIT_RESET_STOP(INDERS2,NULL,INDER2)
-  MDRV_CPU_PERIODIC_INT(INDER_irq, 135)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
   MDRV_CPU_ADD_TAG("scpu1", Z80, 2500000)
