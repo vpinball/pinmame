@@ -94,7 +94,7 @@ CORE_GAMEDEFNV(jolypark,"Jolly Park",1996,"Spinball (Spain)",mSPINBSNMI,0)
 /*-------------------------------------------------------------------
 / Verne's World (1996)
 /-------------------------------------------------------------------*/
-INITGAME(vrnwrld, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3/*?*/, SPINB_GS1(0xff,0xff,0xff,TRUE), 180)
+INITGAME(vrnwrld, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3/*?*/, SPINB_GS1(0xff,0xff,0xff,TRUE), 175)
 SPINB_ROMSTART2(vrnwrld,	"vwcpu0.rom", CRC(89c980e7) SHA1(09eeed0232255875cf119d59143d839ff40e30dd),
 						"vwcpu1.rom", CRC(a4db4e64) SHA1(fc55781295fc723741de24ad60311b7e33551830))
 SPINB_DMDROM3(			"vwdmd0.rom", CRC(40600060) SHA1(7ad619bcb5e5e50325360f4e946b5bfa072caead),

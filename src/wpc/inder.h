@@ -110,8 +110,6 @@
 
 #define INDER_COMINPORT       CORE_COREINPORT
 
-#define INDER_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
-#define INDER_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 #define INDER_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 
 /*-- Memory regions --*/
@@ -158,13 +156,15 @@
 extern MACHINE_DRIVER_EXTERN(INDER0);
 extern MACHINE_DRIVER_EXTERN(INDER1);
 extern MACHINE_DRIVER_EXTERN(INDER2);
-extern MACHINE_DRIVER_EXTERN(INDERS);
+extern MACHINE_DRIVER_EXTERN(INDERS0);
+extern MACHINE_DRIVER_EXTERN(INDERS1);
 extern MACHINE_DRIVER_EXTERN(INDERS2);
 
 #define gl_mINDER0		INDER0
 #define gl_mINDER1		INDER1
 #define gl_mINDER2		INDER2
-#define gl_mINDERS		INDERS
+#define gl_mINDERS0		INDERS0
+#define gl_mINDERS1		INDERS1
 #define gl_mINDERS2		INDERS2
 
 #endif /* INC_INDER */
