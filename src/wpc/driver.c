@@ -1771,6 +1771,7 @@ DRIVER(t2,d6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (D-6) LE
 DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,d8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (D-8) LED Ghost Fix
 DRIVER(t2,l81)          //WPC-513:  12/91 W Terminator 2: Judgement Day (L-81) Attract Sound Fix
+DRIVER(t2,l82)          //WPC-513:  12/91 W Terminator 2: Judgement Day (L-82) Hacked attract routines
 DRIVER(t2,p2f)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version)
 DRIVER(t2,p2g)          //          12/91 W Terminator 2: Judgement Day (Profanity Speech version) LED Ghost Fix
 DRIVER(t2,f19)          //WPC-513:  12/91 W Terminator 2: Judgement Day (FreeWPC 0.19)
@@ -1926,6 +1927,7 @@ DRIVER(ij,h1)           //WPC-517:  11/93 W Indiana Jones (HK-1) Family no hate 
 DRIVER(ij,i1)           //WPC-517:  11/93 W Indiana Jones (I-1) Family no hate LED Ghost Fix
 DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
 DRIVER(afv,d4)          //WPC-622:  ??/93 W Addams Family Values (D-4 Redemption) LED Ghost Fix
+DRIVER(sttng,p4)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-4)
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,p6)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-6) LED Ghost Fix
 DRIVER(sttng,l1)        //WPC-523:  11/93 W Star Trek: The Next Generation (LX-1)
@@ -2123,6 +2125,7 @@ DRIVER(mb,106b)         //          06/99 W Monster Bash (1.06b Coin Play)
 DRIVER(cc,12)           //WPC-566:  02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
 DRIVER(cc,13k)		//          04/99 B Cactus Canyon (1.3) with real knocker
+DRIVER(cc,104)          //          04/99 B Cactus Canyon (1.04 test 0.2 (The Pinball Factory) version)
 //Test Fixtures
 DRIVER(tfa,13)          //WPC-584T: 09/91   Test fixture Alphanumeric
 DRIVER(tfdmd,l3)        //WPC-584T: 09/91   Test fixture DMD
