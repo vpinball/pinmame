@@ -141,4 +141,12 @@ PEYPER_ROMSTART(sonstwar, "sw1.bin", CRC(a2555d92) SHA1(5c82be85bf097e94953d11c0
 PEYPER_ROMEND
 CORE_GAMEDEFNV(sonstwar,"Star Wars (Sonic)",1987,"Sonic (Spain)",gl_mPEYPER,0)
 
+#define init_sonstwr2 init_sonstwar
+#define input_ports_sonstwr2 input_ports_sonstwar
+PEYPER_ROMSTART(sonstwr2, "stw1i.bin", CRC(416e2a0c) SHA1(74ca550ee9eb83d9762ffab0f085dffae569d4a9),
+						  "stw2i.bin", CRC(ccbbec46) SHA1(4fd0e48916e8761a7e70300d3ede166f5f04f8ae),
+						  "sw3.bin", CRC(aee516d9) SHA1(b50e54d4d5db59e3fb71fb000f9bc5e34ff7de9c))
+PEYPER_ROMEND
+CORE_CLONEDEFNV(sonstwr2,sonstwar,"Star Wars (Sonic, alternate set)",1987,"Sonic (Spain)",gl_mPEYPER,0)
+
 // Hang-On (1988)

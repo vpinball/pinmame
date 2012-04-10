@@ -869,6 +869,7 @@ DRIVERNV(odin_dlx)    // Odin De Luxe (1985)
 DRIVERNV(gamatros)    // Gamatron (1986)
 DRIVERNV(solarwar)    // Solar Wars (1986)
 DRIVERNV(sonstwar)    // Star Wars (1987)
+DRIVERNV(sonstwr2)    // Star Wars (1987, alternate set)
 DRIVERNV(poleposn)    // Pole Position (1987)
             // Hang-On (1988)
 
