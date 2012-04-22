@@ -139,7 +139,7 @@ CORE_GAMEDEFNV(faeton,"Faeton",1985,"Juegos Populares",gl_mJP,0)
 /-------------------------------------------------------------------*/
 INITGAME(halley, jpDisp7, 1)
 JP_ROMSTART1(halley,	"halley.cpu", CRC(b158a0d7) SHA1(ad071ac3d06a99a8fbd4df461071fe03dc1e1a26))
-JP_SNDROM17("hc_sh", NO_DUMP,
+JP_SNDROM17("hc_sh", CRC(8af15ded) SHA1(2abc199b612df6180dc116f56ec0027dacf30e77),
 			"hc_s1", CRC(3146b12f) SHA1(9d3974c267e1b2f8d0a8edc78f4013823e4d5e9b),
 			"hc_s2", CRC(8b525f15) SHA1(3ba78a730b11d32fb6ebbcfc52672b9bb5ca5250),
 			"hc_s3", CRC(59a7c53d) SHA1(b1d27f06ff8bd44aa5a4c8fd3b405b67684ae644),
@@ -150,7 +150,7 @@ JP_SNDROM17("hc_sh", NO_DUMP,
 			"hc_da0", CRC(5172993b) SHA1(4ae8adc59c95efefc48fcf7524b3da6e7d65e9c7),
 			"hc_da1", CRC(e9ddc966) SHA1(9fa2bdbafed8b1c1e190f1f99af54ea1d9c81d26),
 			"hc_da2", CRC(2e1a89a6) SHA1(adf34ce979b254b19abaf824ff656f647df601db),
-			"hc_da3", NO_DUMP,
+			"hc_da3", CRC(00bbabb0) SHA1(2d584c53e32fce1a105bb86aaa91c427bf741f2d),
 			"hc_da4", CRC(402358e8) SHA1(8513b0c0bf40363af323577175dfe569bd6b8686),
 			"hc_da5", CRC(a6bd8ccd) SHA1(128acc73ba2009ffa29f65fd570917ad0dec4142),
 			"hc_da6", CRC(9eba3c37) SHA1(a435cdbeb43f5216f58d6e90522e5a25b3bccaef),
@@ -161,7 +161,7 @@ CORE_GAMEDEFNV(halley,"Halley Comet",1986,"Juegos Populares",gl_mJPS,0)
 
 INITGAME(halleya, jpDisp7, 1)
 JP_ROMSTART1(halleya,	"hc_pgm", CRC(dc5eaa8f) SHA1(2f3af60ba5439f67e9c69de543167ac31abc09f1))
-JP_SNDROM17("hc_sh", NO_DUMP,
+JP_SNDROM17("hc_sh", CRC(8af15ded) SHA1(2abc199b612df6180dc116f56ec0027dacf30e77),
 			"hc_s1", CRC(3146b12f) SHA1(9d3974c267e1b2f8d0a8edc78f4013823e4d5e9b),
 			"hc_s2", CRC(8b525f15) SHA1(3ba78a730b11d32fb6ebbcfc52672b9bb5ca5250),
 			"hc_s3", CRC(59a7c53d) SHA1(b1d27f06ff8bd44aa5a4c8fd3b405b67684ae644),
@@ -172,7 +172,7 @@ JP_SNDROM17("hc_sh", NO_DUMP,
 			"hc_da0", CRC(5172993b) SHA1(4ae8adc59c95efefc48fcf7524b3da6e7d65e9c7),
 			"hc_da1", CRC(e9ddc966) SHA1(9fa2bdbafed8b1c1e190f1f99af54ea1d9c81d26),
 			"hc_da2", CRC(2e1a89a6) SHA1(adf34ce979b254b19abaf824ff656f647df601db),
-			"hc_da3", NO_DUMP,
+			"hc_da3", CRC(00bbabb0) SHA1(2d584c53e32fce1a105bb86aaa91c427bf741f2d),
 			"hc_da4", CRC(402358e8) SHA1(8513b0c0bf40363af323577175dfe569bd6b8686),
 			"hc_da5", CRC(a6bd8ccd) SHA1(128acc73ba2009ffa29f65fd570917ad0dec4142),
 			"hc_da6", CRC(9eba3c37) SHA1(a435cdbeb43f5216f58d6e90522e5a25b3bccaef),
