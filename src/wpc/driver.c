@@ -2076,6 +2076,7 @@ DRIVER(afm,f20)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.20)
 DRIVER(afm,f32)         //WPC-541:  12/95 B Attack from Mars (FreeWPC 0.32)
 DRIVER(lc,11)           //WPC-107:  03/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
+DRIVER(sc,091)          //WPC-903:  06/96 B Safe Cracker (0.91)
 DRIVER(sc,14)           //WPC-903:  06/96 B Safe Cracker (1.4)
 DRIVER(sc,17)           //          11/96 B Safe Cracker (1.7)
 DRIVER(sc,17n)          //          11/96 B Safe Cracker (1.7, alternate version)
