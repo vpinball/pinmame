@@ -335,6 +335,14 @@ static struct MSM5205interface SPINB_msm6585Int = {
 	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
 	{100,75}								//Volume
 };
+/* MSM6585 ADPCM CHIP INTERFACE */
+static struct MSM5205interface SPINB_msm6585Int2 = {
+	2,										//# of chips
+	720000,									//720Khz Clock Frequency
+	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{100,75}								//Volume
+};
 /* Sound board */
 struct sndbrdIntf spinbIntf = {
    "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
@@ -1361,10 +1369,22 @@ MACHINE_DRIVER_END
 
 //Main CPU with NMI, DMD, Sound hardware Driver, extended DMD memory
 MACHINE_DRIVER_START(spinbs1n2)
-  MDRV_IMPORT_FROM(spinbs1n)
+  MDRV_IMPORT_FROM(spinb)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(spinb_readmem2, spinb_writemem2)
   MDRV_CORE_INIT_RESET_STOP(spinbnmi2,spinb,spinb)
+  MDRV_CPU_MEMORY(spinb_readmem2, spinb_writemem2)
+  MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
+  MDRV_IMPORT_FROM(spinbdmd)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 5 or 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, SPINB_msm6585Int2)
+  MDRV_SOUND_CMD(spinb_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
 
 /* -------------------- */
