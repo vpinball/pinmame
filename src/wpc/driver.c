@@ -262,6 +262,7 @@ DRIVERNV(motrdome)      //6803-0E14:05/86 MotorDome
 DRIVERNV(blackblt)      //6803-0E52:07/86 Black Belt
 DRIVERNV(specforc)      //6803-0E47:08/86 Special Force
 DRIVERNV(strngsci)      //6803-0E35:10/86 Strange Science
+DRIVERNV(strngscg)      //6803-0E35:10/86 Strange Science (German)
 DRIVERNV(cityslck)      //6803-0E79:03/87 City Slicker
 DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody
 DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
@@ -2125,7 +2126,8 @@ DRIVER(cp,16)           //          07/98 B The Champion Pub (1.6)
 DRIVER(mb,10)           //WPC-565:  08/98 W Monster Bash
 DRIVER(mb,106)          //          06/99 W Monster Bash (Home version)
 DRIVER(mb,106b)         //          06/99 W Monster Bash (1.06b Coin Play)
-DRIVER(cc,12)           //WPC-566:  02/99 B Cactus Canyon (1.2)
+DRIVER(cc,10)           //WPC-566:  10/98 B Cactus Canyon
+DRIVER(cc,12)           //          02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
 DRIVER(cc,13k)		//          04/99 B Cactus Canyon (1.3) with real knocker
 DRIVER(cc,104)          //          04/99 B Cactus Canyon (1.04 test 0.2 (The Pinball Factory) version)
