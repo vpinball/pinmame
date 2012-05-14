@@ -251,6 +251,15 @@ static sim_tInportData cc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
+WPC_ROMSTART(cc,10,"cc_g11.1_0",0x100000,CRC(c4e2e838) SHA1(3223dd03353dead0f41626b04c9f019d6fe1528c))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
+WPC_ROMEND
+
 WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,CRC(17ad9266) SHA1(b18c4e2cc9f4269904c05e5e414675a94f96e955))
 DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
                "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
@@ -292,6 +301,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF (cc,13,   "Cactus Canyon (1.3)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,12,13,"Cactus Canyon (1.2)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,10,13,"Cactus Canyon (1.0)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,13k,13,"Cactus Canyon (1.3) With Real Knocker",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally",wpc_m95S,0)
 
