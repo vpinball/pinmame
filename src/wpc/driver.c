@@ -1522,7 +1522,8 @@ DRIVERNV(spectra)       //??/79 Spectra IV
 // -----------------------------------
 // VIDEODENS GAMES
 // -----------------------------------
-//                      //??/86 Papillon
+DRIVERNV(ator)          //??/?? Ator
+DRIVERNV(papillon)      //??/86 Papillon
 DRIVERNV(break)         //??/86 Break
 
 // -----------------------------------
