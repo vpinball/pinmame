@@ -167,7 +167,15 @@ PLAYMATIC_ROMSTART8888(blkfever,  "blackf8.bin", CRC(916b8ed8) SHA1(ddc7e09b68e3
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(blkfever,"Black Fever",1980,"Playmatic",gl_mPLAYMATIC2,0)
 
-// ??/80 Zira
+/*-------------------------------------------------------------------
+/ ??/80 Zira
+/-------------------------------------------------------------------*/
+INITGAME2(zira, play_disp6, 1, SNDBRD_PLAY3, 0)
+PLAYMATIC_ROMSTART00(zira, "zira_u8.bin", CRC(53f8bf17) SHA1(5eb74f27bc65374a85dd44bbc8f6142488c226a2),
+                "zira_u9.bin", CRC(d50a2419) SHA1(81b157f579a433389506817b1b6e02afaa2cf0d5))
+PLAYMATIC_SOUNDROM64("zira.snd", NO_DUMP)
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(zira,"Zira",1980,"Playmatic",gl_mPLAYMATIC2S3,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / 03/82 Cerberus
@@ -222,7 +230,16 @@ PLAYMATIC_ROMSTART64(megaaton,  "cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6
 PLAYMATIC_SOUNDROM6432( "smogot.bin", CRC(fefc3ab2) SHA1(e748d9b443a69fcdd587f22c87d41818b6c0e436),
             "smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1984,"Playmatic",gl_mPLAYMATIC3S4,0)
+CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1984,"Playmatic",gl_mPLAYMATIC3S4,GAME_NOT_WORKING)
+
+#define init_megaatoa init_megaaton
+#define input_ports_megaatoa input_ports_megaaton
+PLAYMATIC_ROMSTART3232(megaatoa, "mega_u12.bin", CRC(65761b02) SHA1(dd9586eaf70698ef7a80ce1be293322f64829aea),
+                "mega_u11.bin", CRC(513f3683) SHA1(0f080a33426df1ffdb14e9b2e6382304e201e335))
+PLAYMATIC_SOUNDROM6432( "smogot.bin", CRC(fefc3ab2) SHA1(e748d9b443a69fcdd587f22c87d41818b6c0e436),
+            "smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
+PLAYMATIC_ROMEND
+CORE_CLONEDEFNV(megaatoa,megaaton,"Meg-Aaton (alternate set)",1984,"Playmatic",gl_mPLAYMATIC3S4,0)
 
 /*-------------------------------------------------------------------
 / ??/84 Nautilus
