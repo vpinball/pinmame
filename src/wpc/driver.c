@@ -762,22 +762,23 @@ DRIVERNV(lastlap)  // 09/78 Last Lap
 DRIVERNV(chance)   // 09/78 Chance
 DRIVERNV(party)    // 05/79 Party
 DRIVERNV(antar)    // 11/79 Antar
-DRIVERNV(antar2)   // 11/79 Antar (alternate set)
+DRIVERNV(antar2)   //       Antar (alternate set)
 DRIVERNV(evlfight) // 03/80 Evil Fight
 DRIVERNV(attack)   // 10/80 Attack
 DRIVERNV(blkfever) // 12/80 Black Fever
-                   // ??/80 Zira
+DRIVERNV(zira)     // ??/80 Zira
 DRIVERNV(cerberus) // 03/82 Cerberus
 DRIVERNV(spain82)  // 10/82 Spain 82
 DRIVERNV(madrace)  // ??/8? Mad Race
 DRIVERNV(megaaton) // 04/84 Meg-Aaton
+DRIVERNV(megaatoa) //       Meg-Aaton (alternate set)
 DRIVERNV(nautilus) // ??/84 Nautilus
 DRIVERNV(theraid)  // ??/84 The Raid
 DRIVERNV(ufo_x)    // 11/84 UFO-X
 DRIVERNV(kz26)     // ??/85 KZ-26
 DRIVERNV(rock2500) // ??/85 Rock 2500
 DRIVERNV(starfire) // ??/85 Star Fire
-DRIVERNV(starfira) // ??/85 Star Fire (alternate set)
+DRIVERNV(starfira) //       Star Fire (alternate set)
 DRIVERNV(trailer)  // ??/85 Trailer
                    // ??/85 Stop Ship
 DRIVERNV(fldragon) // ??/86 Flash Dragon
