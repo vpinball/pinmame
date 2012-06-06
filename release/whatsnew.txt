@@ -1,3 +1,50 @@
+Version 2.5 (June 5, 2012) - "Playmatics on the loose!"
+------------------------------------------------------------------------------
+A lot of work has been done on Playmatic.  I was happy enough to simply be able to play the games, but then Gerrit went ahead and got the sound working too!  We're still looking for roms for Playmatic Stop Ship and Playmatic Phantom Ship so if you see those, let us know please.
+With help from Matt Elder and Basillo Garcia, we managed to get working roms for Inder Metal Man and Spinball's last game - Verne's World.
+S1500 was kind enough to send us the game code for "White Force" and I hope to see it working soon.  Enjoy!
+
+*** CORE/CPU ***
+Improved segmented displays for WPC alphanumeric games
+Corrected DMD colors for Gottlieb system 3 games
+Improved DMD displays for Alvin G
+Preliminary support for IDSA SP0256 sound chip
+Playmatic System 2 sound now works and games are playable!
+Peyper/Sonic/Juegos Populares Dip Switch Handling has been changed - anyone who used dip menus for those games will need to adjust dip values
+Playmatic Lamp Numbering has changed to match the schematics
+Spectra IV - new U4 for better game operation - if you play this game, grab the new romset from vpforums.org
+
+*** ROM SUPPORT *** at least 55 new romsets!
+Alvin G Mystery Castle - 3 DMD rom "enhanced romset"
+Bally Strange Science (German) - Lee Buck
+Bell Games World Defender (Free Play)
+Funhouse 9.06H, Whitewater LH6C, Cirqus Voltaire 2.0HC (Coin Play Enabled)/T2 L-81/T2 L-82 - thanks MrGlee!
+Apollo 13 1.00
+Alternate versions of Ripleys, Sopranos, Nascar, Grand Prix, LOTR - thanks Micko!
+Alternate Stern Harley Davidson
+Stern Playboy 3.02/Simpsons Party 3.00/Terminator 3 3.01
+FreeWPC Twilight Zone 0.97/1.00/FreeWPC Corvette .61
+Cactus Canyon 1.04/1.00 - Lee Buck
+Congo 1.1, F-14 Tomcat P-5, Secret Service b26 (alternate Sound) - thanks Inkochnito
+Getaway P-B
+Johnny Mnemonic 0.5R/No Fear 1.0 - John Wart Jr.
+Judge Dredd L-4/L-5, Shadow LA-6
+Safecracker 0.91
+STTNG P-4 - Scott Charles
+IDSA V1/Basket Ball
+Inder Metal Man/Moon Light
+Juegos Populares Halley Comet/Petaco 2/Pimbal "Pinball 3000"
+Peyper Nemesis/Odin - Basillo
+Playmatic Flash Dragon, Nautilus, Skill Flight, Star Fire (alternate set), The Raid
+Playmatic Megaaton (alternate set) - Didier
+Playmatic Zira - Lee Buck
+Sonic Gamatron/Sonic Star Wars (alternate set)
+Spinball Verne's World
+Videodens Ator - Basillo
+Videodens Papillon - Lee Buck
+
+
+
 Version 2.4 (August 19, 2011) - "Summertime"
 ------------------------------------------------------------------------------
 Eight months is a long time to go without a release, but we wanted to make some significant progress
