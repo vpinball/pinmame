@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.5 (June 5, 2012)
+-----------------------------
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
 Version 2.4 (August 19, 2011)
 -----------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes

@@ -1,4 +1,4 @@
-******  As of Version Version 2.4 (August 19, 2011) ******
+******  As of Version Version 2.5 (June 5, 2012) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
