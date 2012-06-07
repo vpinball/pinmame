@@ -193,7 +193,7 @@ static const core_tLCDLayout dispVD2[] = {
   { 3, 0, 8, 7, CORE_SEG87 },
   { 6, 0,16, 7, CORE_SEG87 },
   { 9, 0,24, 7, CORE_SEG87 },
-  {12, 4,33, 1, CORE_SEG7S}, {12, 7,34, 1, CORE_SEG7S}, {12,10,35, 2, CORE_SEG7S}, {12,15,37, 1, CORE_SEG7S},
+  {12, 3,33, 2, CORE_SEG7S}, {12, 8,35, 2, CORE_SEG7S}, {12,13,37, 1, CORE_SEG7S},
   {0}
 };
 
