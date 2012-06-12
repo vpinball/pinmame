@@ -231,6 +231,28 @@ static sim_tInportData cc_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
+static core_tLampDisplay cc_lampPos = {
+{ 0, 0 }, /* top left */
+{34, 17}, /* size */
+{
+{1,{{22,5,YELLOW}}},{1,{{21,7,YELLOW}}},{1,{{21,9,YELLOW}}},{1,{{21,11,YELLOW}}},
+{1,{{22,13,YELLOW}}},{1,{{23,9,YELLOW}}},{1,{{1,2,WHITE}}},{1,{{1,4,WHITE}}},
+{1,{{20,14,WHITE}}},{1,{{19,13,WHITE}}},{1,{{18,14,WHITE}}},{1,{{18,12,WHITE}}},
+{1,{{3,11,WHITE}}},{1,{{5,11,YELLOW}}},{1,{{7,7,RED}}},{1,{{9,7,GREEN}}},
+{1,{{10,11,YELLOW}}},{1,{{12,3,YELLOW}}},{1,{{21,2,YELLOW}}},{1,{{19,17,LPURPLE}}},
+{1,{{17,17,LPURPLE}}},{1,{{15,17,LPURPLE}}},{1,{{13,17,RED}}},{1,{{11,17,WHITE}}},
+{1,{{5,13,WHITE}}},{1,{{7,13,RED}}},{1,{{9,13,LBLUE}}},{1,{{11,13,LBLUE}}},
+{1,{{13,13,LBLUE}}},{1,{{25,2,YELLOW}}},{1,{{31,4,WHITE}}},{1,{{27,1,RED}}},
+{1,{{11,15,YELLOW}}},{1,{{20,16,YELLOW}}},{1,{{22,16,YELLOW}}},{1,{{12,9,GREEN}}},
+{1,{{10,9,GREEN}}},{1,{{8,9,GREEN}}},{1,{{6,9,RED}}},{1,{{4,9,WHITE}}},
+{1,{{18,5,LBLUE}}},{1,{{16,5,LBLUE}}},{1,{{14,5,LBLUE}}},{1,{{12,5,RED}}},
+{1,{{10,5,WHITE}}},{1,{{25,16,YELLOW}}},{1,{{27,17,RED}}},{1,{{31,14,WHITE}}},
+{1,{{25,6,YELLOW}}},{1,{{25,12,YELLOW}}},{1,{{29,11,YELLOW}}},{1,{{10,1,WHITE}}},
+{1,{{12,1,RED}}},{1,{{14,1,LPURPLE}}},{1,{{16,1,LPURPLE}}},{1,{{18,1,LPURPLE}}},
+{1,{{26,9,YELLOW}}},{1,{{34,9,RED}}},{1,{{29,7,YELLOW}}},{1,{{12,7,YELLOW}}},
+{1,{{0,0,BLACK}}},{1,{{0,1,BLACK}}},{1,{{0,2,BLACK}}},{1,{{34, 1,YELLOW}}}
+}
+};
 
 /* Help */
   static void cc_drawStatic(BMTYPE **line) {
@@ -327,7 +349,8 @@ static core_tGameData ccGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,0,0,1
+    0,0,0,0,0,1,0,
+    NULL,NULL,NULL,NULL,&cc_lampPos,NULL
   },
   &ccSimData,
   {
