@@ -267,6 +267,7 @@ DRIVERNV(cityslck)      //6803-0E79:03/87 City Slicker
 DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody
 DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01:05/87 Party Animal
+DRIVERNV(prtyanig)      //6803-0H01:05/87 Party Animal (German)
 DRIVERNV(hvymetal)      //6803-0H03:08/87 Heavy Metal Meltdown
 DRIVERNV(dungdrag)      //6803-0H06:10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05:12/87 Escape from the Lost World
