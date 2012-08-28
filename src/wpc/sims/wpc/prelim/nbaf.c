@@ -317,6 +317,7 @@ static PINMAME_VIDEO_UPDATE(led_update) {
 static struct core_dispLayout nbaf_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update,NULL},
   {7,0, 0,  2,CORE_SEG7,(genf *)led_update,NULL},
+  {0}
 };
 
 /*----------------------
