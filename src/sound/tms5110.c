@@ -61,7 +61,7 @@ static UINT8 sample_count;       /* sample number within interp (0-24) */
 static int pitch_count;
 
 static int u[11];
-static int x[10];
+static int x[11];
 
 static INT32 RNG;	/* the random noise generator configuration is: 1 + x + x^3 + x^4 + x^13 */
 
@@ -455,7 +455,7 @@ void tms5110_process(INT16 *buffer, unsigned int size)
        * disabled, forcing all samples beyond 50d to be == 50d
        * (address 50d holds zeroes)
        */
-  
+
   	  /*if (tms->coeff->subtype & (SUBTYPE_TMS5100 | SUBTYPE_M58817))*/
 
    		if (pitch_count > 50)
