@@ -1620,6 +1620,7 @@ DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 
 //System 9
 DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
 DRIVER(pfevr,l2)        //          05/84 W Pennant Fever (pitch & bat)
+DRIVER(scrzy,l1)        //S9-534:   05/84 W Still Crazy (coin dropper)
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
 DRIVER(szone,l2)        //S9-916:   ??/84 W Strike Zone (L-2) (Shuffle)

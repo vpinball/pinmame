@@ -230,6 +230,16 @@ S9_ROMEND
 CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9PS, 0)
 
 /*--------------------
+/ Still Crazy (#534)
+/--------------------*/
+INITGAME_S10(scrzy, GEN_S9, dispPfevr, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0x08)
+S9_ROMSTART12B(scrzy,l1,"scrzy_20.bin", CRC(b0df42e6) SHA1(bb10268d7b820d1de0c20e1b79aba558badd072b))
+S9S_SOUNDROM4("scrzy_49.bin", CRC(bcc8ccc4) SHA1(2312f9cc4f5a2dadfbfa61d13c31bb5838adf152))
+S9_ROMEND
+S11_INPUT_PORTS_START(scrzy, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(scrzy, l1, "Still Crazy (L-1)", 1984, "Williams", s9_mS9PS, GAME_STATUS)
+
+/*--------------------
 / Strike Zone (#916)
 /--------------------*/
 static core_tLCDLayout dispSzone[] = {
