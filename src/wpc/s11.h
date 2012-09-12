@@ -130,9 +130,7 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
 #define S9_ROMSTART12B(name, ver, n1, chk1) \
   ROM_START(name##_##ver) \
     NORMALREGION(0x10000, S11_CPUREGION) \
-      ROM_LOAD(n1, 0x5000, 0x2000, chk1) \
-      ROM_RELOAD(  0xd000, 0x2000) \
-      ROM_RELOAD(  0x6000, 0x2000) \
+      ROM_LOAD(n1, 0x6000, 0x2000, chk1) \
       ROM_RELOAD(  0xe000, 0x2000)
 
 #define S11_ROMSTART48(name, ver, n1, chk1, n2, chk2) \
