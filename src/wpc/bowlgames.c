@@ -22,9 +22,9 @@
 static core_tGameData name##GameData = { gen, disp }; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAME_S10(name, gen, disp, mux, flip, db, inv) \
+#define INITGAME_S10(name, gen, disp, flags, flip, db, inv) \
 static core_tGameData name##GameData = { \
-  gen, disp, {flip,0,0,0,0,db}, NULL, {{0}, {0,0,0,0,inv}}, {mux} }; \
+  gen, disp, {flip,0,0,0,0,db,flags}, NULL, {{0}, {0,0,0,0,inv}}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 S4_INPUT_PORTS_START(bowl, 1) S4_INPUT_PORTS_END
@@ -232,12 +232,15 @@ CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s
 /*--------------------
 / Still Crazy (#534)
 /--------------------*/
-INITGAME_S10(scrzy, GEN_S9, dispPfevr, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0x08)
-S9_ROMSTART12B(scrzy,l1,"scrzy_20.bin", CRC(b0df42e6) SHA1(bb10268d7b820d1de0c20e1b79aba558badd072b))
+static const core_tLCDLayout dispCrzy[] = {
+  {0, 0,21,7,CORE_SEG87}, {0}
+};
+INITGAME_S10(scrzy, GEN_S9, dispCrzy, S9_BREAKPIA, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+S9_ROMSTARTx2(scrzy,l1,"scrzy_20.bin", CRC(b0df42e6) SHA1(bb10268d7b820d1de0c20e1b79aba558badd072b))
 S9S_SOUNDROM4("scrzy_49.bin", CRC(bcc8ccc4) SHA1(2312f9cc4f5a2dadfbfa61d13c31bb5838adf152))
 S9_ROMEND
 S11_INPUT_PORTS_START(scrzy, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(scrzy, l1, "Still Crazy (L-1)", 1984, "Williams", s9_mS9PS, GAME_STATUS)
+CORE_GAMEDEF(scrzy, l1, "Still Crazy (L-1)", 1984, "Williams", s9_mS9S, 0)
 
 /*--------------------
 / Strike Zone (#916)
