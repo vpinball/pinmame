@@ -125,9 +125,18 @@ static MEMORY_READ_START(s9s_readmem)
   { 0x2000, 0x2003, pia_r(S11S_PIA0)},
   { 0x8000, 0xffff, MRA_ROM}, /* U22 */
 MEMORY_END
+
+static WRITE_HANDLER(pia_snd_w) {
+  if (core_gameData->hw.gameSpecific1 & S9_BREAKPIA) { // no idea why but the PIA A port only has 7 bits wired for scrazy!?
+    pia_write(S11S_PIA0, offset, offset ? data : data & 0x7f);
+  } else {
+    pia_write(S11S_PIA0, offset, data);
+  }
+}
+
 static MEMORY_WRITE_START(s9s_writemem)
   { 0x0000, 0x0fff, MWA_RAM },
-  { 0x2000, 0x2003, pia_w(S11S_PIA0)},
+  { 0x2000, 0x2003, pia_snd_w},
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
