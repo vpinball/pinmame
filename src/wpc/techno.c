@@ -161,7 +161,8 @@ static WRITE16_HANDLER(sound_w) {
 
 	//Increment Display Column on if not waiting for transition!
 	if(locals.DispNoWait) {
-		locals.DispCol = (locals.DispCol + 1) % 16;
+//		locals.DispCol = (locals.DispCol + 1) % 16;
+		locals.DispCol++;
 	}
 	if(dclk) {
 		locals.DispNoWait = 1;
@@ -192,11 +193,19 @@ This is now handled by core.c
 
 static WRITE16_HANDLER(disp1_w) {
 	//LOG(("%08x: disp1_w = %04x\n",activecpu_get_pc(),data));
+  if (locals.DispCol > 0x0f) {
+    locals.segments[(locals.DispCol & 0x0f)+32].w = data;
+  } else {
     locals.segments[locals.DispCol].w = data;
+  }
 }
 static WRITE16_HANDLER(disp2_w) {
 	//LOG(("%08x: disp2_w = %04x\n",activecpu_get_pc(),data));
-	locals.segments[locals.DispCol+16].w = data;
+  if (locals.DispCol > 0x0f) {
+    locals.segments[(locals.DispCol & 0x0f)+48].w = data;
+  } else {
+    locals.segments[locals.DispCol+16].w = data;
+  }
 }
 
 //Like rtrg - setout is connected to the same ls74 flip flop - not sure of it's purpose.
@@ -239,7 +248,7 @@ static core_tLCDLayout disp[] = {
   {3, 0,16,16,CORE_SEG16S},
   {0}
 };
-static core_tGameData xforceGameData = {GEN_ZAC2, disp};
+static core_tGameData xforceGameData = {0, disp};
 static void init_xforce(void) {
   core_gameData = &xforceGameData;
 }
@@ -310,3 +319,20 @@ ROM_START(xforce) \
 ROM_END
 
 CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", xforce, GAME_NO_SOUND)
+
+static core_tLCDLayout disp2[] = {
+  {0, 0, 0, 1,CORE_SEG16S}, {0, 2,32,15,CORE_SEG16S},
+  {3, 0,16, 1,CORE_SEG16S}, {3, 2,48,15,CORE_SEG16S},
+  {0}
+};
+static core_tGameData spcteamGameData = {0, disp2};
+static void init_spcteam(void) {
+  core_gameData = &spcteamGameData;
+}
+ROM_START(spcteam) \
+  NORMALREGION(0x1000000, REGION_CPU1) \
+    ROM_LOAD16_BYTE("cpu_top.bin", 0x000001, 0x8000, CRC(b11dcf1f) SHA1(084eb98ee4c9f32d5518897a891ad1a601850d80)) \
+    ROM_LOAD16_BYTE("cpu_bot.bin", 0x000000, 0x8000, CRC(892a5592) SHA1(c30dce37a5aae2834459179787f6c99353aadabb))
+ROM_END
+#define input_ports_spcteam input_ports_xforce
+CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", xforce, GAME_NO_SOUND)
