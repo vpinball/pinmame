@@ -1510,7 +1510,7 @@ DRIVERNV(taitest )      //??/8? Test Fixture
 // ----------------
 DRIVERNV(scram_tp)      //03/87 Scramble
 DRIVERNV(xforce)        //??/87 X Force
-            //??/?? Space Team
+DRIVERNV(spcteam)       //??/88 Space Team
 
 // ----------------
 // UNITED GAMES
