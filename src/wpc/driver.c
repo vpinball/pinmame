@@ -79,7 +79,7 @@ DRIVERNV(hercules)      //Hercules (May 1979)
 DRIVERNV(roadrunr)      //Road Runner (Prototype, 1979)
                         //Monza (Prototype, 1980)
                         //Neutron Star (Prototype, 1981)
-                        //4x4 (Prototype, 1983)
+DRIVERNV(fourx4)        //4x4 (Prototype, 1982)
 
 // ---------------
 // BALLY GAMES
@@ -1570,12 +1570,12 @@ DRIVER(grgar,t1)        //          11/79 W Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //          12/79 W Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
-DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
-DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Estes
-DRIVER(frpwr,a6)        //S6:       10/05 W Firepower (Sys.6/6-Digit Custom Rev. 31)
-DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
-DRIVER(frpwr,c6)        //S6:       12/03 W Firepower (Sys.6/7-Digit Custom Rev. 31)
-DRIVER(frpwr,d6)        //S7:       10/05 W Firepower (Sys.6/6-digit /10 Scoring Rev. 31)
+DRIVER(frpwr,l6)        //          02/80 W Firepower (L-6)
+DRIVER(frpwr,t6)        //          02/80 W Firepower (L-6) /10 Scoring Ted Estes
+DRIVER(frpwr,a6)        //          10/05 W Firepower (Sys.6/6-Digit Custom Rev. 31)
+DRIVER(frpwr,b6)        //          12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(frpwr,c6)        //          12/03 W Firepower (Sys.6/7-Digit Custom Rev. 31)
+DRIVER(frpwr,d6)        //          10/05 W Firepower (Sys.6/6-digit /10 Scoring Rev. 31)
 DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(blkou,f1)        //          06/80 W Blackout, French speech
@@ -1588,13 +1588,13 @@ DRIVER(alpok,l6)        //          10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //          10/80 W Alien Poker L-6, French speech
 DRIVER(alpok,b6)        //          11/06 W Alien Poker Multiball mod
 //System 7
-DRIVER(frpwr,a7)        //S7:       10/05 W Firepower (Sys.7/6-digit Custom Rev. 31)
-DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
-DRIVER(frpwr,c7)        //S7:       11/06 W Firepower (Sys.7/7-digit Custom Rev. 38)
-DRIVER(frpwr,d7)        //S7:       10/05 W Firepower (Sys.7/7-digit Custom Rev. 31)
-DRIVER(frpwr,e7)        //S7:       10/05 W Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
+DRIVER(frpwr,a7)        //S7-497:   10/05 W Firepower (Sys.7/6-digit Custom Rev. 31)
+DRIVER(frpwr,b7)        //          12/03 W Firepower (Sys.7 7-digit conversion)
+DRIVER(frpwr,c7)        //          11/06 W Firepower (Sys.7/7-digit Custom Rev. 38)
+DRIVER(frpwr,d7)        //          10/05 W Firepower (Sys.7/7-digit Custom Rev. 31)
+DRIVER(frpwr,e7)        //          10/05 W Firepower (Sys.7/6-digit /10 Scoring Rev. 31)
 DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
-DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight (L-4)
+DRIVER(bk,l4)           //          11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
@@ -1617,10 +1617,11 @@ DRIVER(bstrk,l1)        //          ??/83 W Big Strike (Bowler)
 DRIVER(tstrk,l1)        //          ??/83 W Triple Strike (Bowler)
 DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
-//System 9
-DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
+//System 8
+DRIVER(pfevr,p3)        //S8-526:   05/84 W Pennant Fever (pitch & bat)
 DRIVER(pfevr,l2)        //          05/84 W Pennant Fever (pitch & bat)
-DRIVER(scrzy,l1)        //S9-534:   05/84 W Still Crazy (coin dropper)
+DRIVER(scrzy,l1)        //S8-543:   ??/84 W Still Crazy
+//System 9
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
 DRIVER(szone,l2)        //S9-916:   ??/84 W Strike Zone (L-2) (Shuffle)
