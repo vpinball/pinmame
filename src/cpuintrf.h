@@ -8,9 +8,6 @@
 
 #ifndef CPUINTRF_H
 #define CPUINTRF_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
 
 #include "osd_cpu.h"
 #include "memory.h"
@@ -45,6 +42,9 @@ enum
 #endif
 #if defined(PINMAME) && (HAS_CDP1802)
 	CPU_CDP1802,
+#endif
+#if defined(PINMAME) && (HAS_COP420)
+	CPU_COP420,
 #endif
 #if (HAS_Z80)
 	CPU_Z80,

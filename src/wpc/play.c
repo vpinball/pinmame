@@ -20,7 +20,7 @@
  Whenever you think you got it right, another issue pops up somewhere else... :)
 
  Sound started out with 4 simple tones (with fading option), and evolved through a CPU-driven
- oscillator circuit on to a complete sound board with another 1802 CPU.
+ oscillator circuit on to complete sound boards with another 1802 CPU.
 
  Hardware:
  ---------
@@ -29,7 +29,8 @@
            gen.2: 5 rows of 7-segment LED panels, direct segment access for alpha digits
   SOUND:   gen.1: discrete (4 tones, like Zaccaria's 1311)
            gen.2: simple tone generator with frequency divider fed by CPU clock
-           gen.3: CDP1802 @ ??? clock with 1 x AY8910 @ ???
+           ZIRA:  like gen.2, plus an additional COP402 @ 2 MHz with 1 x AY8910 sound chip
+           gen.3: like gen.2, plus an additional CDP1802 @ 2.95 MHz with 1 x TMS5220 speech chip
            gen.4: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2
  ************************************************************************************************/
 
@@ -200,7 +201,7 @@ static WRITE_HANDLER(out2_n) {
   int enable;
   switch (out) {
     case DISPCOL:
-      if (core_gameData->hw.soundBoard == 0x3400) { // used for fading out the sound
+      if (core_gameData->hw.soundBoard == SNDBRD_PLAY2) { // used for fading out the sound
         sndbrd_0_ctrl_w(0, data >> 7);
       }
       if (!(data & 0x7f))
@@ -212,7 +213,7 @@ static WRITE_HANDLER(out2_n) {
       disp_w(8 * (locals.panelSel++) + locals.digitSel, locals.sc ? data : 0);
       break;
     case SOUND:
-      if (core_gameData->hw.soundBoard == 0x3400) {
+      if (core_gameData->hw.soundBoard == SNDBRD_PLAY2) {
         sndbrd_0_data_w(0, data);
       }
       break;
@@ -241,7 +242,11 @@ static WRITE_HANDLER(out2_n) {
         else
           locals.solenoids &= ~(0x100 << abcData);
       }
-      if (core_gameData->hw.soundBoard != 0x3400 && !(core_gameData->hw.gameSpecific1 ^ locals.enSn)) {
+      if (core_gameData->hw.soundBoard == SNDBRD_PLAY3 || core_gameData->hw.soundBoard == SNDBRD_PLAYZ) {
+//if (locals.sndCmd != (data & 0x70)) printf("\nc:%02x\n", data & 0x70);
+        locals.sndCmd = data & 0x70;
+        sndbrd_0_ctrl_w(0, locals.sndCmd);
+      } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY4 && !locals.enSn) {
         locals.sndCmd = locals.lampCol;
         sndbrd_0_data_w(0, locals.sndCmd);
         sndbrd_0_ctrl_w(0, locals.enSn);
@@ -430,6 +435,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_IMPORT_FROM(PLAYMATIC2NS)
   MDRV_IMPORT_FROM(PLAYMATICS2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PLAYMATIC2SZ)
+  MDRV_IMPORT_FROM(PLAYMATIC2NS)
+  MDRV_IMPORT_FROM(PLAYMATICSZ)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC2S3)

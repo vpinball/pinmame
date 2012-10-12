@@ -6,7 +6,7 @@ OBJDIRS += $(OBJ)/cpu/z80
 CPUDEFS += -DHAS_Z80=1
 CPUOBJS += $(OBJ)/cpu/z80/z80.o
 DBGOBJS += $(OBJ)/cpu/z80/z80dasm.o
-$(OBJ)/cpu/z80/z80.o: z80.c z80.h z80daa.h
+$(OBJ)/cpu/z80/z80.o: src/cpu/z80/z80.c src/cpu/z80/z80.h src/cpu/z80/z80daa.h
 else
 CPUDEFS += -DHAS_Z80=0
 endif
@@ -28,7 +28,7 @@ OBJDIRS += $(OBJ)/cpu/i8085
 CPUDEFS += -DHAS_8080=1
 CPUOBJS += $(OBJ)/cpu/i8085/i8085.o
 DBGOBJS += $(OBJ)/cpu/i8085/8085dasm.o
-$(OBJ)/cpu/i8085/i8085.o: i8085.c i8085.h i8085cpu.h i8085daa.h
+$(OBJ)/cpu/i8085/i8085.o: src/cpu/i8085/i8085.c src/cpu/i8085/i8085.h src/cpu/i8085/i8085cpu.h src/cpu/i8085/i8085daa.h
 else
 CPUDEFS += -DHAS_8080=0
 endif
@@ -39,7 +39,7 @@ OBJDIRS += $(OBJ)/cpu/i8085
 CPUDEFS += -DHAS_8085A=1
 CPUOBJS += $(OBJ)/cpu/i8085/i8085.o
 DBGOBJS += $(OBJ)/cpu/i8085/8085dasm.o
-$(OBJ)/cpu/i8085/i8085.o: i8085.c i8085.h i8085cpu.h i8085daa.h
+$(OBJ)/cpu/i8085/i8085.o: src/cpu/i8085/i8085.c src/cpu/i8085/i8085.h src/cpu/i8085/i8085cpu.h src/cpu/i8085/i8085daa.h
 else
 CPUDEFS += -DHAS_8085A=0
 endif
@@ -50,7 +50,7 @@ OBJDIRS += $(OBJ)/cpu/m6502
 CPUDEFS += -DHAS_M6502=1
 CPUOBJS += $(OBJ)/cpu/m6502/m6502.o
 DBGOBJS += $(OBJ)/cpu/m6502/6502dasm.o
-$(OBJ)/cpu/m6502/m6502.o: m6502.c m6502.h ops02.h t6502.c t65c02.c t65sc02.c t6510.c
+$(OBJ)/cpu/m6502/m6502.o: src/cpu/m6502/m6502.c src/cpu/m6502/m6502.h src/cpu/m6502/ops02.h src/cpu/m6502/t6502.c src/cpu/m6502/t65c02.c src/cpu/m6502/t65sc02.c src/cpu/m6502/t6510.c
 else
 CPUDEFS += -DHAS_M6502=0
 endif
@@ -61,7 +61,7 @@ OBJDIRS += $(OBJ)/cpu/m6502
 CPUDEFS += -DHAS_M65C02=1
 CPUOBJS += $(OBJ)/cpu/m6502/m6502.o
 DBGOBJS += $(OBJ)/cpu/m6502/6502dasm.o
-$(OBJ)/cpu/m6502/m6502.o: m6502.c m6502.h ops02.h t6502.c t65c02.c t65sc02.c t6510.c
+$(OBJ)/cpu/m6502/m6502.o: src/cpu/m6502/m6502.c src/cpu/m6502/m6502.h src/cpu/m6502/ops02.h src/cpu/m6502/t6502.c src/cpu/m6502/t65c02.c src/cpu/m6502/t65sc02.c src/cpu/m6502/t6510.c
 else
 CPUDEFS += -DHAS_M65C02=0
 endif
@@ -192,7 +192,7 @@ OBJDIRS += $(OBJ)/cpu/i86
 CPUDEFS += -DHAS_I86=1
 CPUOBJS += $(OBJ)/cpu/i86/i86.o
 DBGOBJS += $(OBJ)/cpu/i86/i86dasm.o
-$(OBJ)/cpu/i86/i86.o: i86.c instr86.c i86.h i86intf.h ea.h host.h modrm.h
+$(OBJ)/cpu/i86/i86.o: src/cpu/i86/i86.c src/cpu/i86/instr86.c src/cpu/i86/i86.h src/cpu/i86/i86intf.h src/cpu/i86/ea.h src/cpu/i86/host.h src/cpu/i86/modrm.h
 else
 CPUDEFS += -DHAS_I86=0
 endif
@@ -203,7 +203,7 @@ OBJDIRS += $(OBJ)/cpu/i86
 CPUDEFS += -DHAS_I88=1
 CPUOBJS += $(OBJ)/cpu/i86/i86.o
 DBGOBJS += $(OBJ)/cpu/i86/i86dasm.o
-$(OBJ)/cpu/i86/i86.o: i86.c instr86.c i86.h i86intf.h ea.h host.h modrm.h
+$(OBJ)/cpu/i86/i86.o: src/cpu/i86/i86.c src/cpu/i86/instr86.c src/cpu/i86/i86.h src/cpu/i86/i86intf.h src/cpu/i86/ea.h src/cpu/i86/host.h src/cpu/i86/modrm.h
 else
 CPUDEFS += -DHAS_I88=0
 endif
@@ -214,7 +214,7 @@ OBJDIRS += $(OBJ)/cpu/i86
 CPUDEFS += -DHAS_I186=1
 CPUOBJS += $(OBJ)/cpu/i86/i86.o
 DBGOBJS += $(OBJ)/cpu/i86/i86dasm.o
-$(OBJ)/cpu/i86/i86.o: i86.c instr186.c i86.h i186intf.h ea.h host.h modrm.h
+$(OBJ)/cpu/i86/i86.o: src/cpu/i86/i86.c src/cpu/i86/instr186.c src/cpu/i86/i86.h src/cpu/i86/i186intf.h src/cpu/i86/ea.h src/cpu/i86/host.h src/cpu/i86/modrm.h
 else
 CPUDEFS += -DHAS_I186=0
 endif
@@ -225,7 +225,7 @@ OBJDIRS += $(OBJ)/cpu/i86
 CPUDEFS += -DHAS_I188=1
 CPUOBJS += $(OBJ)/cpu/i86/i86.o
 DBGOBJS += $(OBJ)/cpu/i86/i86dasm.o
-$(OBJ)/cpu/i86/i86.o: i86.c instr186.c i86.h i186intf.h ea.h host.h modrm.h
+$(OBJ)/cpu/i86/i86.o: src/cpu/i86/i86.c src/cpu/i86/instr186.c src/cpu/i86/i86.h src/cpu/i86/i186intf.h src/cpu/i86/ea.h src/cpu/i86/host.h src/cpu/i86/modrm.h
 else
 CPUDEFS += -DHAS_I188=0
 endif
@@ -302,7 +302,7 @@ OBJDIRS += $(OBJ)/cpu/i8039
 CPUDEFS += -DHAS_I8035=1
 CPUOBJS += $(OBJ)/cpu/i8039/i8039.o
 DBGOBJS += $(OBJ)/cpu/i8039/8039dasm.o
-$(OBJ)/cpu/i8039/i8039.o: i8039.c i8039.h
+$(OBJ)/cpu/i8039/i8039.o: src/cpu/i8039/i8039.c src/cpu/i8039/i8039.h
 else
 CPUDEFS += -DHAS_I8035=0
 endif
@@ -313,7 +313,7 @@ OBJDIRS += $(OBJ)/cpu/i8039
 CPUDEFS += -DHAS_I8039=1
 CPUOBJS += $(OBJ)/cpu/i8039/i8039.o
 DBGOBJS += $(OBJ)/cpu/i8039/8039dasm.o
-$(OBJ)/cpu/i8039/i8039.o: i8039.c i8039.h
+$(OBJ)/cpu/i8039/i8039.o: src/cpu/i8039/i8039.c src/cpu/i8039/i8039.h
 else
 CPUDEFS += -DHAS_I8039=0
 endif
@@ -346,7 +346,7 @@ OBJDIRS += $(OBJ)/cpu/i8051
 CPUDEFS += -DHAS_I8051=1
 CPUOBJS += $(OBJ)/cpu/i8051/i8051.o
 DBGOBJS += $(OBJ)/cpu/i8051/8051dasm.o
-$(OBJ)/cpu/i8051/i8051.o: i8051.c i8051.h
+$(OBJ)/cpu/i8051/i8051.o: src/cpu/i8051/i8051.c src/cpu/i8051/i8051.h
 else
 CPUDEFS += -DHAS_I8051=0
 endif
@@ -368,7 +368,7 @@ OBJDIRS += $(OBJ)/cpu/i8051
 CPUDEFS += -DHAS_I8752=1
 CPUOBJS += $(OBJ)/cpu/i8051/i8051.o
 DBGOBJS += $(OBJ)/cpu/i8051/8051dasm.o
-$(OBJ)/cpu/i8051/i8051.o: i8051.c i8051.h
+$(OBJ)/cpu/i8051/i8051.o: src/cpu/i8051/i8051.c src/cpu/i8051/i8051.h
 else
 CPUDEFS += -DHAS_I8752=0
 endif
@@ -390,7 +390,7 @@ OBJDIRS += $(OBJ)/cpu/m6800
 CPUDEFS += -DHAS_M6800=1
 CPUOBJS += $(OBJ)/cpu/m6800/m6800.o
 DBGOBJS += $(OBJ)/cpu/m6800/6800dasm.o
-$(OBJ)/cpu/m6800/m6800.o: m6800.c m6800.h 6800ops.c 6800tbl.c
+$(OBJ)/cpu/m6800/m6800.o: src/cpu/m6800/m6800.c src/cpu/m6800/m6800.h src/cpu/m6800/6800ops.c src/cpu/m6800/6800tbl.c
 else
 CPUDEFS += -DHAS_M6800=0
 endif
@@ -412,7 +412,7 @@ OBJDIRS += $(OBJ)/cpu/m6800
 CPUDEFS += -DHAS_M6802=1
 CPUOBJS += $(OBJ)/cpu/m6800/m6800.o
 DBGOBJS += $(OBJ)/cpu/m6800/6800dasm.o
-$(OBJ)/cpu/m6800/m6800.o: m6800.c m6800.h 6800ops.c 6800tbl.c
+$(OBJ)/cpu/m6800/m6800.o: src/cpu/m6800/m6800.c src/cpu/m6800/m6800.h src/cpu/m6800/6800ops.c src/cpu/m6800/6800tbl.c
 else
 CPUDEFS += -DHAS_M6802=0
 endif
@@ -423,7 +423,7 @@ OBJDIRS += $(OBJ)/cpu/m6800
 CPUDEFS += -DHAS_M6803=1
 CPUOBJS += $(OBJ)/cpu/m6800/m6800.o
 DBGOBJS += $(OBJ)/cpu/m6800/6800dasm.o
-$(OBJ)/cpu/m6800/m6800.o: m6800.c m6800.h 6800ops.c 6800tbl.c
+$(OBJ)/cpu/m6800/m6800.o: src/cpu/m6800/m6800.c src/cpu/m6800/m6800.h src/cpu/m6800/6800ops.c src/cpu/m6800/6800tbl.c
 else
 CPUDEFS += -DHAS_M6803=0
 endif
@@ -434,7 +434,7 @@ OBJDIRS += $(OBJ)/cpu/m6800
 CPUDEFS += -DHAS_M6808=1
 CPUOBJS += $(OBJ)/cpu/m6800/m6800.o
 DBGOBJS += $(OBJ)/cpu/m6800/6800dasm.o
-$(OBJ)/cpu/m6800/m6800.o: m6800.c m6800.h 6800ops.c 6800tbl.c
+$(OBJ)/cpu/m6800/m6800.o: src/cpu/m6800/m6800.c src/cpu/m6800/m6800.h src/cpu/m6800/6800ops.c src/cpu/m6800/6800tbl.c
 else
 CPUDEFS += -DHAS_M6808=0
 endif
@@ -511,7 +511,7 @@ OBJDIRS += $(OBJ)/cpu/m6809
 CPUDEFS += -DHAS_M6809=1
 CPUOBJS += $(OBJ)/cpu/m6809/m6809.o
 DBGOBJS += $(OBJ)/cpu/m6809/6809dasm.o
-$(OBJ)/cpu/m6809/m6809.o: m6809.c m6809.h 6809ops.c 6809tbl.c
+$(OBJ)/cpu/m6809/m6809.o: src/cpu/m6809/m6809.c src/cpu/m6809/m6809.h src/cpu/m6809/6809ops.c src/cpu/m6809/6809tbl.c
 else
 CPUDEFS += -DHAS_M6809=0
 endif
@@ -622,7 +622,7 @@ OBJDIRS += $(OBJ)/cpu/s2650
 CPUDEFS += -DHAS_S2650=1
 CPUOBJS += $(OBJ)/cpu/s2650/s2650.o
 DBGOBJS += $(OBJ)/cpu/s2650/2650dasm.o
-$(OBJ)/cpu/s2650/s2650.o: s2650.c s2650.h s2650cpu.h
+$(OBJ)/cpu/s2650/s2650.o: src/cpu/s2650/s2650.c src/cpu/s2650/s2650.h src/cpu/s2650/s2650cpu.h
 else
 CPUDEFS += -DHAS_S2650=0
 endif
@@ -677,7 +677,7 @@ OBJDIRS += $(OBJ)/cpu/tms9900
 CPUDEFS += -DHAS_TMS9980=1
 CPUOBJS += $(OBJ)/cpu/tms9900/tms9980a.o
 DBGOBJS += $(OBJ)/cpu/tms9900/9900dasm.o
-$(OBJ)/cpu/tms9900/tms9980a.o: tms9980a.c tms9900.h 99xxcore.h 99xxstat.h
+$(OBJ)/cpu/tms9900/tms9980a.o: src/cpu/tms9900/tms9980a.c src/cpu/tms9900/tms9900.h src/cpu/tms9900/99xxcore.h src/cpu/tms9900/99xxstat.h
 else
 CPUDEFS += -DHAS_TMS9980=0
 endif
@@ -710,7 +710,7 @@ OBJDIRS += $(OBJ)/cpu/tms9900
 CPUDEFS += -DHAS_TMS9995=1
 CPUOBJS += $(OBJ)/cpu/tms9900/tms9995.o
 DBGOBJS += $(OBJ)/cpu/tms9900/9900dasm.o
-$(OBJ)/cpu/tms9900/tms9995.o: tms9995.c tms9900.h 99xxcore.h 99xxstat.h
+$(OBJ)/cpu/tms9900/tms9995.o: src/cpu/tms9900/tms9995.c src/cpu/tms9900/tms9900.h src/cpu/tms9900/99xxcore.h src/cpu/tms9900/99xxstat.h
 else
 CPUDEFS += -DHAS_TMS9995=0
 endif
@@ -765,7 +765,7 @@ OBJDIRS += $(OBJ)/cpu/tms7000
 CPUDEFS += -DHAS_TMS7000=1
 CPUOBJS += $(OBJ)/cpu/tms7000/tms7000.o
 DBGOBJS += $(OBJ)/cpu/tms7000/7000dasm.o
-$(OBJ)/cpu/tms7000/tms7000.o: tms7000.c tms7000.h tms70op.c tms70tb.c
+$(OBJ)/cpu/tms7000/tms7000.o: src/cpu/tms7000/tms7000.c src/cpu/tms7000/tms7000.h src/cpu/tms7000/tms70op.c src/cpu/tms7000/tms70tb.c
 else
 CPUDEFS += -DHAS_TMS7000=0
 endif
@@ -831,7 +831,7 @@ OBJDIRS += $(OBJ)/cpu/adsp2100
 CPUDEFS += -DHAS_ADSP2101=1
 CPUOBJS += $(OBJ)/cpu/adsp2100/adsp2100.o
 DBGOBJS += $(OBJ)/cpu/adsp2100/2100dasm.o
-$(OBJ)/cpu/adsp2100/adsp2100.o: adsp2100.c adsp2100.h 2100ops.c
+$(OBJ)/cpu/adsp2100/adsp2100.o: src/cpu/adsp2100/adsp2100.c src/cpu/adsp2100/adsp2100.h src/cpu/adsp2100/2100ops.c
 else
 CPUDEFS += -DHAS_ADSP2101=0
 endif
@@ -842,7 +842,7 @@ OBJDIRS += $(OBJ)/cpu/adsp2100
 CPUDEFS += -DHAS_ADSP2105=1
 CPUOBJS += $(OBJ)/cpu/adsp2100/adsp2100.o
 DBGOBJS += $(OBJ)/cpu/adsp2100/2100dasm.o
-$(OBJ)/cpu/adsp2100/adsp2100.o: adsp2100.c adsp2100.h 2100ops.c
+$(OBJ)/cpu/adsp2100/adsp2100.o: src/cpu/adsp2100/adsp2100.c src/cpu/adsp2100/adsp2100.h src/cpu/adsp2100/2100ops.c
 else
 CPUDEFS += -DHAS_ADSP2105=0
 endif
@@ -1558,7 +1558,7 @@ OBJDIRS += $(OBJ)/cpu/pps4
 CPUDEFS += -DHAS_PPS4=1
 CPUOBJS += $(OBJ)/cpu/pps4/pps4.o
 DBGOBJS += $(OBJ)/cpu/pps4/pps4dasm.o
-$(OBJ)/cpu/pps4/pps4.o: pps4.c pps4.h pps4cpu.h
+$(OBJ)/cpu/pps4/pps4.o: src/cpu/pps4/pps4.c src/cpu/pps4/pps4.h src/cpu/pps4/pps4cpu.h
 else
 CPUDEFS += -DHAS_PPS4=0
 endif
@@ -1569,7 +1569,7 @@ OBJDIRS += $(OBJ)/cpu/i4004
 CPUDEFS += -DHAS_4004=1
 CPUOBJS += $(OBJ)/cpu/i4004/i4004.o
 DBGOBJS += $(OBJ)/cpu/i4004/4004dasm.o
-$(OBJ)/cpu/i4004/i4004.o: i4004.c i4004.h i4004cpu.h
+$(OBJ)/cpu/i4004/i4004.o: src/cpu/i4004/i4004.c src/cpu/i4004/i4004.h src/cpu/i4004/i4004cpu.h
 else
 CPUDEFS += -DHAS_4004=0
 endif
@@ -1580,7 +1580,7 @@ OBJDIRS += $(OBJ)/cpu/scamp
 CPUDEFS += -DHAS_SCAMP=1
 CPUOBJS += $(OBJ)/cpu/scamp/scamp.o
 DBGOBJS += $(OBJ)/cpu/scamp/scampdsm.o
-$(OBJ)/cpu/scamp/scamp.o: scamp.c scamp.h
+$(OBJ)/cpu/scamp/scamp.o: src/cpu/scamp/scamp.c src/cpu/scamp/scamp.h
 else
 CPUDEFS += -DHAS_SCAMP=0
 endif
@@ -1610,7 +1610,7 @@ OBJDIRS += $(OBJ)/cpu/arm7
 CPUDEFS += -DHAS_ARM7=1
 CPUOBJS += $(OBJ)/cpu/arm7/arm7.o
 DBGOBJS += $(OBJ)/cpu/arm7/arm7dasm.o
-$(OBJ)/cpu/arm7/arm7.o: arm7.c arm7.h arm7core.c arm7core.h
+$(OBJ)/cpu/arm7/arm7.o: src/cpu/arm7/arm7.c src/cpu/arm7/arm7.h src/cpu/arm7/arm7core.c src/cpu/arm7/arm7core.h
 else
 CPUDEFS += -DHAS_ARM7=0
 endif
@@ -1621,7 +1621,7 @@ OBJDIRS += $(OBJ)/cpu/at91
 CPUDEFS += -DHAS_AT91=1
 CPUOBJS += $(OBJ)/cpu/at91/at91.o
 DBGOBJS += $(OBJ)/cpu/at91/at91dasm.o
-$(OBJ)/cpu/at91/at91.o: at91.c at91.h
+$(OBJ)/cpu/at91/at91.o: src/cpu/at91/at91.c src/cpu/at91/at91.h
 else
 CPUDEFS += -DHAS_AT91=0
 endif
@@ -1632,9 +1632,20 @@ OBJDIRS += $(OBJ)/cpu/cdp1802
 CPUDEFS += -DHAS_CDP1802=1
 CPUOBJS += $(OBJ)/cpu/cdp1802/cdp1802.o
 DBGOBJS += $(OBJ)/cpu/cdp1802/1802dasm.o
-$(OBJ)/cpu/cdp1802/cdp1802.o: cdp1802.c
+$(OBJ)/cpu/cdp1802/cdp1802.o: src/cpu/cdp1802/cdp1802.c
 else
 CPUDEFS += -DHAS_CDP1802=0
+endif
+
+CPU=$(strip $(findstring COP420@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/cop400
+CPUDEFS += -DHAS_COP420=1
+CPUOBJS += $(OBJ)/cpu/cop400/cop420.o
+DBGOBJS += $(OBJ)/cpu/cop400/cop420ds.o
+$(OBJ)/cpu/cop400/cop420.o: src/cpu/cop400/cop420.c
+else
+CPUDEFS += -DHAS_COP420=0
 endif
 
 SOUND=$(strip $(findstring X1_010@,$(SOUNDS)))

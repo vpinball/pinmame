@@ -1809,6 +1809,30 @@
 						</File>
 					</Filter>
 					<Filter
+						Name="COP400"
+						>
+						<File
+							RelativePath=".\src\cpu\cop400\410ops.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\420ops.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop400.h"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop420.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop420ds.c"
+							>
+						</File>
+					</Filter>
+					<Filter
 						Name="TMS9900"
 						>
 						<File
