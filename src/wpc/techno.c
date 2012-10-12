@@ -158,13 +158,13 @@ static WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulse
 //D11-D15 = AUX 1-5
 //******************************
 static WRITE16_HANDLER(sound_w) {
+	int dclk = (data & 0x400) >> 10;
+	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
+
 	//LOG(("sound_w = %04x\n",data));
 	locals.sndCmd = data & 0xff;
 	if (locals.sndCmd)
 	  LOG(("sndCmd = %02x\n", locals.sndCmd));
-
-	int dclk = (data & 0x400) >> 10;
-	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
 	//Increment Display Column on if not waiting for transition!
 	if(locals.DispNoWait) {
