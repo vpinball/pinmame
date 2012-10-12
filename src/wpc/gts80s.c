@@ -45,7 +45,6 @@
 static struct {
 	struct sndbrdData boardData;
 
-	int    stream;
 	INT16  buffer[GTS80S_BUFFER_SIZE+1];
 	double clock[GTS80S_BUFFER_SIZE+1];
 	int    buf_pos;
@@ -54,6 +53,8 @@ static struct {
 	UINT8* pRIOT6530_0_ram;
 	int	   IRQEnabled;
 } GTS80S_locals;
+
+static int stream;
 
 /* digital sound data output */
 static WRITE_HANDLER(gts80s_riot6530_0a_w) {
@@ -91,12 +92,16 @@ static WRITE_HANDLER(gts80s_riot6530_0_ram_w)
 	data;
 }
 
+static WRITE_HANDLER(riot_w) {
+  riot6530_0_w(offset & 0x0f, data);
+}
+
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80S_readmem)
 { 0x0000, 0x01ff, MRA_RAM},
-{ 0x0200, 0x03ff, riot6530_0_r},
+{ 0x0200, 0x020f, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
 { 0x1000, 0x10ff, MRA_RAM},
 { 0xf800, 0xffff, MRA_ROM},
@@ -104,7 +109,7 @@ MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
 { 0x0000, 0x01ff, gts80s_riot6530_0_ram_w},
-{ 0x0200, 0x03ff, riot6530_0_w},
+{ 0x0200, 0x020f, riot_w},
 { 0x0400, 0x0fff, MWA_ROM},
 { 0x1000, 0x10ff, gts80s_riot6530_0_ram_w},
 { 0xf800, 0xffff, MWA_ROM},
@@ -184,8 +189,10 @@ void gts80s_init(struct sndbrdData *brdData) {
 	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 	riot6530_reset();
 
-	GTS80S_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
-	set_RC_filter(GTS80S_locals.stream, 270000, 15000, 0, 33000);
+	if (!stream) {
+		stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
+		set_RC_filter(stream, 270000, 15000, 0, 33000);
+	}
 }
 
 /*--------------
@@ -258,7 +265,6 @@ static struct {
 	int    dips;
 	UINT8* pRIOT6532_3_ram;
 
-	int    stream;
 	INT16  buffer[GTS80SS_BUFFER_SIZE+1];
 	double clock[GTS80SS_BUFFER_SIZE+1];
 	int	   buf_pos;
@@ -508,8 +514,10 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	for(i = 0; i<8; i++)
 		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
 
-	GTS80SS_locals.stream = stream_init("SND DAC", 50, 11025, 0, GTS80_ss_Update);
-	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
+	if (!stream) {
+		stream = stream_init("SND DAC", 50, 11025, 0, GTS80_ss_Update);
+		set_RC_filter(stream, 270000, 15000, 0, 10000);
+	}
 }
 
 /*--------------
