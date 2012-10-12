@@ -426,10 +426,12 @@ READ_HANDLER(cop420_internal_r) {
   return offset < 64 ? R.R_RAM[offset] : 0;
 }
 
-#ifndef MAME_DEBUG
 unsigned cop420_dasm(char *buffer, unsigned pc)
 {
+#ifdef MAME_DEBUG
+	return DasmCOP420(buffer, pc);
+#else
 	sprintf( buffer, "$%02X", cpu_readop(pc) );
 	return 1;
-}
 #endif
+}
