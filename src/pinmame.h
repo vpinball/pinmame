@@ -101,6 +101,7 @@
 #define HAS_CDP1802	 1
 #define HAS_TMS9980  1
 #define HAS_TMS9995	 1
+#define HAS_COP420	 1
 
 // Sound
 #define HAS_DAC        1

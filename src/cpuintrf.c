@@ -37,6 +37,9 @@
 #if defined(PINMAME) && (HAS_CDP1802)
 #include "cpu/cdp1802/cdp1802.h"
 #endif
+#if defined(PINMAME) && (HAS_COP420)
+#include "cpu/cop400/cop400.h"
+#endif
 #if (HAS_Z80)
 #include "cpu/z80/z80.h"
 #endif
@@ -427,6 +430,9 @@ const struct cpu_interface cpuintrf[] =
 #if defined(PINMAME) && (HAS_CDP1802)
 #define cdp1802_ICount cdp1802_icount
 	CPU0(CDP1802,  cdp1802,  1,  0,1.00, 8, 16,	  0,16,BE,1, 3	),
+#endif
+#if defined(PINMAME) && (HAS_COP420)
+	CPU4(COP420,	 cop420,	 0, 0, 1.00, 8, 16,	  0,16,LE,1, 2	),
 #endif
 #if (HAS_Z80)
 	CPU1(Z80,	   z80, 	 1,255,1.00, 8, 16,	  0,16,LE,1, 4	),

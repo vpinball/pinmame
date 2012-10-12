@@ -761,6 +761,30 @@ SOURCE=.\src\cpu\cdp1802\cdp1802.c
 SOURCE=.\src\cpu\cdp1802\cdp1802.h
 # End Source File
 # End Group
+# Begin Group "COP400"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\cop400\410ops.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cop400\420ops.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cop400\cop400.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cop400\cop420.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cop400\cop420ds.c
+# End Source File
+# End Group
 # Begin Group "TMS9900"
 
 # PROP Default_Filter ""
