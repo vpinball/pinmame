@@ -47,6 +47,8 @@ core_tLCDLayout atari_disp2[] = {
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
+//Triangle (1976?)
+
 /*-------------------------------------------------------------------
 / The Atarians (11/1976)
 /-------------------------------------------------------------------*/
@@ -136,5 +138,22 @@ CORE_GAMEDEFNV(roadrunr,"Road Runner",1979,"Atari",gl_mATARI3,0)
 
 //Monza (1980)
 //Neutron Star (1981)
-//4x4 (1983)
-//Triangle (19??)
+
+/*-------------------------------------------------------------------
+/ 4x4 (10/1982)
+/-------------------------------------------------------------------*/
+core_tLCDLayout atari_disp4[] = {
+  { 0, 0, 0,16, CORE_SEG87 },
+  { 2, 0,16,16, CORE_SEG87 },
+  { 0 }
+};
+ATARI2_INPUT_PORTS_START(fourx4, 3) ATARI_INPUT_PORTS_END
+static core_tGameData fourx4GameData = {0,atari_disp4,{FLIP_SWNO(0,1),0,0,0,SNDBRD_NONE,0}};
+static void init_fourx4(void) {
+  core_gameData = &fourx4GameData;
+}
+ATARI_4x4_ROMSTART(fourx4,	"8000ce65.bin",	CRC(27341155) SHA1(c0da1fbf64f93ab163b2ea6bfbfc7b778cea819f),
+							"a0004c37.bin",	CRC(6f93102f) SHA1(d6520987ed5805b0e6b5da5653fc7cb063e86dda),
+							"c000a70c.bin",	CRC(c31ca8d3) SHA1(53f20eff0084771dc61d19db7ddae52e4423e75e))
+ATARI_ROMEND
+CORE_GAMEDEFNV(fourx4,"4x4",1982,"Atari",gl_mATARI4,GAME_NOT_WROKING)
