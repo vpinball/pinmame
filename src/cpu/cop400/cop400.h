@@ -57,4 +57,30 @@ extern int cop420_ICount;
 int 	DasmCOP420(char *dst, unsigned pc);
 #endif
 
+#define UINT1	UINT8
+#define UINT4	UINT8
+#define UINT6	UINT8
+#define UINT10	UINT16
+
+typedef struct
+{
+	UINT10 	R_PC;
+	UINT10	R_PREVPC;
+	UINT4	R_A;
+	UINT6	R_B;
+	UINT1	R_C;
+	UINT4	R_EN;
+	UINT4	R_G;
+	UINT8	R_Q;
+	UINT10	R_SA, R_SB, R_SC;
+	UINT4	R_SIO;
+	UINT1	R_SKL;
+	UINT8   R_skip, R_skipLBI;
+	UINT1	timerlatch;
+	UINT16	counter;
+	UINT4	R_RAM[64];
+	UINT8	G_mask;
+	UINT8	D_mask;
+} COP420_Regs;
+
 #endif  /* _COP400_H */

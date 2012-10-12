@@ -4,6 +4,11 @@
  *                   Copyright (C) 2006 MAME Team                         *
  **************************************************************************/
 
+#include "driver.h"
+#include "cop400.h"
+
+extern COP420_Regs R;
+
 #define ROM(A)			cpu_readop(A)
 #define RAM(A)			R.R_RAM[A]
 
