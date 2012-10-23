@@ -13,12 +13,13 @@
 			INT: NMI via 8156 timer output
 		IO:      Z80 Ports, 8156 PIA
 		DISPLAY: 5 x 6 Digit 7-Segment panels
-		SOUND:	 integrated analog chip (part no. 0066-117XX, marked as "K3-4" on schematic
+		SOUND:	 Astrocade sound chip (part no. 0066-117XX, marked as "K3-4" on schematic
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/z80/z80.h"
 #include "core.h"
+#include "sound/astrocde.h"
 
 #define MIDWAY_VBLANKFREQ   60 /* VBLANK frequency in HZ */
 #define MIDWAY_NMIFREQ    1350 /* NMI frequency in HZ - at this rate, bumpers seems OK. */
@@ -144,16 +145,6 @@ static WRITE_HANDLER(port_0x_w) {
     locals.solenoids |= (data << ((offset-1) * 8));
 }
 
-/* sound maybe? */
-static WRITE_HANDLER(port_1x_w) {
-  // Deposit the output as solenoids until we know what it's for.
-  // So in case the sounds are just solenoid chimes, we're already done.
-  if (offset == 1)
-    locals.solenoids = (locals.solenoids & 0xff00ffff) | (data << 16);
-  else if (data != 0 && !((offset == 0 && data == 0x47) || (offset == 6 && data == 0x0f)))
-    logerror("Unexpected output on port 1%x = %02x\n", offset, data);
-}
-
 /* display data */
 static WRITE_HANDLER(disp_w) {
   locals.pseg[2*offset].w = core_bcd2seg[data >> 4];
@@ -185,7 +176,7 @@ PORT_END
 PORT_WRITE_START( midway_writeport )
   { 0x00, 0x02, disp_w },
   { 0x03, 0x07, port_0x_w },
-  { 0x10, 0x17, port_1x_w },
+  { 0x10, 0x18, astrocade_sound1_w },
   { 0x20, 0x25, port_2x_w },
 PORT_END
 
@@ -208,6 +199,12 @@ static MEMORY_WRITE_START(MIDWAY_writemem)
   {0xe000,0xe0ff, MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
 MEMORY_END
 
+static struct astrocade_interface sndIntf = {
+  1,
+  14138000/8,
+  { 75 }
+};
+
 MACHINE_DRIVER_START(MIDWAY)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", Z80, 14138000/8)
@@ -219,6 +216,7 @@ MACHINE_DRIVER_START(MIDWAY)
   MDRV_NVRAM_HANDLER(MIDWAY)
   MDRV_DIPS(1) // no dips actually, but needed for extra core inport!
   MDRV_SWITCH_UPDATE(MIDWAY)
+  MDRV_SOUND_ADD(ASTROCADE, sndIntf)
 MACHINE_DRIVER_END
 
 /*-------------------------------------------------------------------
@@ -284,4 +282,4 @@ ROM_START(rotation)
     ROM_LOAD("rot-b117.dat", 0x0800, 0x0800, CRC(538e37b2) SHA1(d283ac4d0024388b92b6494fcde63957b705bf48))
     ROM_LOAD("rot-c117.dat", 0x1000, 0x0800, CRC(3321ff08) SHA1(d6d94fea27ef58ca648b2829b32d62fcec108c9b))
 ROM_END
-CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",MIDWAY,GAME_NO_SOUND)
+CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",MIDWAY,0)

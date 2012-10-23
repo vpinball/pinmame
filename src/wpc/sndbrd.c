@@ -240,4 +240,5 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(play3s)
   SNDBRDINTF(play4s)
   SNDBRDINTF(playzs)
+  SNDBRDINTF(tecnoplay)
 #endif /* SNDBRD_RECURSIVE */
