@@ -2448,6 +2448,14 @@
 						RelativePath=".\src\sound\ym2151.h"
 						>
 					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="VidHrdw"
