@@ -2013,6 +2013,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\astrocde.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\astrocde.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\ay8910.c"
 						>
 					</File>
@@ -2478,6 +2486,14 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\ym2151.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.h"
 						>
 					</File>
 				</Filter>

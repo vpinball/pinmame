@@ -9,14 +9,13 @@
   Clock: 8 Mhz
   Interrupt: Tied to a Fixed System Timer
   I/O: DMA
-  Sound: Unknown TKY-2016 music chip @NTSC quartz, DAC for f/x
+  Sound: TKY-2016 music chip @NTSC quartz (probably a YM3812 variant), DAC for f/x
 
   Issues/Todo:
   #0) Display is going too fast @ 8Mhz cpu
   #1) Not 100% sure of the IRQ timing, although I think it should be correct from the schematics.
   #2) Seems the display might go too fast in places, ie, doesn't scroll enough sometimes
   #3) In relation to #2 - not sure if calculation of the display column is always 100% correct
-  #4) Need info on TKY-2016 chip to continue work on sound emulation
 
   NOTE ON TIMING: The manual claims the "Display Message" will appear every 15 seconds
 ************************************************************************************************/
@@ -25,6 +24,7 @@
 #include "cpu/tms7000/tms7000.h"
 #include "core.h"
 #include "sim.h"
+#include "sndbrd.h"
 
 #define TECNO_SOLSMOOTH 4
 //#define TECNO_CPUFREQ 8000000		//As written in manual
@@ -113,6 +113,8 @@ static MACHINE_INIT(tecno) {
 
   //start count on 1 - because 1st time through 0x89 is the vector done.
   locals.irq_count = 1;
+
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
 //Input Key - Return Switches (uses Lamp Column Strobe)
@@ -159,12 +161,11 @@ static WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulse
 //******************************
 static WRITE16_HANDLER(sound_w) {
 	int dclk = (data & 0x400) >> 10;
-	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
 	//LOG(("sound_w = %04x\n",data));
-	locals.sndCmd = data & 0xff;
-	if (locals.sndCmd)
-	  LOG(("sndCmd = %02x\n", locals.sndCmd));
+	sndbrd_data_w(0, data & 0xff);
+
+	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
 	//Increment Display Column on if not waiting for transition!
 	if(locals.DispNoWait) {
@@ -254,37 +255,31 @@ MEMORY_END
 static int tecno_sw2m(int no) { return no+7+1; }
 static int tecno_m2sw(int col, int row) { return col*8+row-7-1; }
 
-static READ_HANDLER(snd_r) {
-  return locals.sndCmd;
-}
-static WRITE_HANDLER(tky_w) {
-  printf("TKY2016 %d: %02x\n", offset, data);
-}
-static WRITE_HANDLER(m3000_w) {
-  printf("m_3000: %02x\n", data);
-}
 static WRITE_HANDLER(m7000_w) {
-  printf("m_7000: %02x\n", data);
+  LOG(("m_7000: %02x\n", data));
 }
 
 static MEMORY_READ_START(snd_readmem)
-  { 0x8000, 0xffff, MRA_ROM },
-  { 0x3000, 0x3000, snd_r },
+  { 0x3000, 0x3000, Y8950_status_port_0_r },
+  { 0x3001, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
-  { 0x3000, 0x3000, m3000_w },
-  { 0x5800, 0x5801, tky_w },
+  { 0x5800, 0x5800, Y8950_control_port_0_w },
+  { 0x5801, 0x5801, Y8950_write_port_0_w },
   { 0x6800, 0x6800, DAC_0_data_w },
   { 0x7000, 0x7000, m7000_w },
 MEMORY_END
 
 static READ_HANDLER(tms_port_r) {
-  printf("p_in %c\n", 'A' + offset);
-  return 0;
+  LOG(("p_in %c\n", 'A' + offset));
+  return locals.sndCmd;
 }
 static WRITE_HANDLER(tms_port_w) {
-  printf("p_out %c: %02x\n", 'A' + offset, data);
+  LOG(("p_out %c: %02x\n", 'A' + offset, data));
+  if (offset == 1) {
+    locals.sndAck = (data & 2) >> 1;
+  }
 }
 
 static PORT_READ_START(snd_readport)
@@ -295,9 +290,18 @@ static PORT_WRITE_START(snd_writeport)
   { TMS7000_PORTA, TMS7000_PORTD, tms_port_w },
 PORT_END
 
-static INTERRUPT_GEN(snd_irq) {
-  cpu_set_irq_line(1, TMS7000_IRQ3_LINE, PULSE_LINE);
+static void y8950_irq(int data) {
+  cpu_set_irq_line(1, TMS7000_IRQ1_LINE, data ? ASSERT_LINE : CLEAR_LINE);
 }
+
+static struct Y8950interface tecno_y8950Intf =
+{
+	1,						/* 1 chip */
+	3579545,				/* 3.58 MHz */
+	{ 100 },				/* volume */
+	{ y8950_irq },			/* IRQ Callback */
+};
+
 struct DACinterface tecno_dacInt =
 {
 	1,			/* 1 chip */
@@ -317,10 +321,20 @@ MACHINE_DRIVER_START(tecno)
   MDRV_CPU_ADD_TAG("scpu", TMS7000, 4000000)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
-  MDRV_CPU_PERIODIC_INT(snd_irq, 100)
+  MDRV_SOUND_ADD(Y8950, tecno_y8950Intf )
   MDRV_SOUND_ADD(DAC, tecno_dacInt)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
 MACHINE_DRIVER_END
+
+static WRITE_HANDLER(tecsnd_data_w) {
+  if (data) {
+    locals.sndCmd = data;
+    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, ASSERT_LINE);
+  }
+}
+const struct sndbrdIntf tecnoplayIntf = {
+  "TECNOPLAY", NULL, NULL, NULL, tecsnd_data_w, tecsnd_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
 
 INPUT_PORTS_START(tecno) \
   CORE_PORTS \
@@ -371,35 +385,37 @@ static core_tLCDLayout disp[] = {
   {3, 0,16,16,CORE_SEG16S},
   {0}
 };
-static core_tGameData xforceGameData = {0, disp};
+static core_tGameData xforceGameData = {0,disp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TECNOPLAY}};
 static void init_xforce(void) {
   core_gameData = &xforceGameData;
 }
-ROM_START(xforce) \
-  NORMALREGION(0x1000000, REGION_CPU1) \
-    ROM_LOAD16_BYTE("ic15", 0x000001, 0x8000, CRC(fb8d2853) SHA1(0b0004abfe32edfd3ac15d66f90695d264c97eba)) \
-    ROM_LOAD16_BYTE("ic17", 0x000000, 0x8000, CRC(122ef649) SHA1(0b425f81869bc359841377a91c39f44395502bff)) \
-  NORMALREGION(0x10000, REGION_CPU2) \
-    ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP) \
+ROM_START(xforce)
+  NORMALREGION(0x1000000, REGION_CPU1)
+    ROM_LOAD16_BYTE("ic15", 0x000001, 0x8000, CRC(fb8d2853) SHA1(0b0004abfe32edfd3ac15d66f90695d264c97eba))
+    ROM_LOAD16_BYTE("ic17", 0x000000, 0x8000, CRC(122ef649) SHA1(0b425f81869bc359841377a91c39f44395502bff))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP)
+    ROM_RELOAD(0, 0x8000)
 ROM_END
 #define input_ports_xforce input_ports_tecno
-CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_NO_SOUND)
+CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
 
 static core_tLCDLayout disp2[] = {
   {0, 0, 0, 1,CORE_SEG16S}, {0, 2,32,15,CORE_SEG16S},
   {3, 0,16, 1,CORE_SEG16S}, {3, 2,48,15,CORE_SEG16S},
   {0}
 };
-static core_tGameData spcteamGameData = {0, disp2};
+static core_tGameData spcteamGameData = {0,disp2,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TECNOPLAY}};
 static void init_spcteam(void) {
   core_gameData = &spcteamGameData;
 }
-ROM_START(spcteam) \
-  NORMALREGION(0x1000000, REGION_CPU1) \
-    ROM_LOAD16_BYTE("cpu_top.bin", 0x000001, 0x8000, CRC(b11dcf1f) SHA1(084eb98ee4c9f32d5518897a891ad1a601850d80)) \
-    ROM_LOAD16_BYTE("cpu_bot.bin", 0x000000, 0x8000, CRC(892a5592) SHA1(c30dce37a5aae2834459179787f6c99353aadabb)) \
-  NORMALREGION(0x10000, REGION_CPU2) \
-    ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a)) \
+ROM_START(spcteam)
+  NORMALREGION(0x1000000, REGION_CPU1)
+    ROM_LOAD16_BYTE("cpu_top.bin", 0x000001, 0x8000, CRC(b11dcf1f) SHA1(084eb98ee4c9f32d5518897a891ad1a601850d80))
+    ROM_LOAD16_BYTE("cpu_bot.bin", 0x000000, 0x8000, CRC(892a5592) SHA1(c30dce37a5aae2834459179787f6c99353aadabb))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a))
+    ROM_RELOAD(0, 0x8000)
 ROM_END
 #define input_ports_spcteam input_ports_tecno
 CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)

@@ -967,6 +967,14 @@ SOURCE=.\src\sound\adpcm.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\astrocde.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\astrocde.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\ay8910.c
 # End Source File
 # Begin Source File
