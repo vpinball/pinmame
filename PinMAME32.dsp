@@ -1201,6 +1201,14 @@ SOURCE=.\src\sound\ym2151.c
 
 SOURCE=.\src\sound\ym2151.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ymdeltat.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ymdeltat.h
+# End Source File
 # End Group
 # Begin Group "VidHrdw"
 
