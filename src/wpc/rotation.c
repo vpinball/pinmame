@@ -191,12 +191,12 @@ static MEMORY_READ_START(MIDWAY_readmem)
   {0x0000,0x17ff, MRA_ROM},	/* ROM */
   {0x1800,0x1800, mem1800_r},	/* Possible code extension. More roms to come? */
   {0xc000,0xc0ff, MRA_RAM},	/* RAM */
-  {0xe000,0xe0ff, MRA_RAM},	/* NVRAM */
+  {0xe000,0xe01f, MRA_RAM},	/* NVRAM */
 MEMORY_END
 
 static MEMORY_WRITE_START(MIDWAY_writemem)
   {0xc000,0xc0ff, MWA_RAM},	/* RAM */
-  {0xe000,0xe0ff, MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
+  {0xe000,0xe01f, MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
 MEMORY_END
 
 static struct astrocade_interface sndIntf = {
@@ -282,4 +282,22 @@ ROM_START(rotation)
     ROM_LOAD("rot-b117.dat", 0x0800, 0x0800, CRC(538e37b2) SHA1(d283ac4d0024388b92b6494fcde63957b705bf48))
     ROM_LOAD("rot-c117.dat", 0x1000, 0x0800, CRC(3321ff08) SHA1(d6d94fea27ef58ca648b2829b32d62fcec108c9b))
 ROM_END
-CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",MIDWAY,0)
+CORE_GAMEDEFNV(rotation,"Rotation VIII (v. 1.17)",1978,"Midway",MIDWAY,0)
+
+core_tLCDLayout rot_disp2[] = {
+  {0, 0, 1, 6,CORE_SEG7}, {0,16, 8, 6,CORE_SEG7},
+  {2, 0,15, 6,CORE_SEG7}, {2,16,22, 6,CORE_SEG7},
+  {4, 8,36, 6,CORE_SEG7}, {0}
+};
+static core_tGameData rot_115GameData = {0,rot_disp2,{FLIP_SW(FLIP_L),0,-1}};
+static void init_rota_115(void) {
+  core_gameData = &rot_115GameData;
+}
+ROM_START(rota_115)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("v115-a.bin", 0x0000, 0x0800, CRC(474884b3) SHA1(b7919bf2e3a3897c1180373cccf88240c57b5645))
+    ROM_LOAD("v115-b.bin", 0x0800, 0x0800, CRC(8779fc6c) SHA1(df00f58d38b4eca68603247ae69009e13cfa31fb))
+    ROM_LOAD("v115-c.bin", 0x1000, 0x0800, CRC(54b420f9) SHA1(597bb9f8ad0b20babc696175e9fbcecf2d5d799d))
+ROM_END
+#define input_ports_rota_115 input_ports_rotation
+CORE_CLONEDEFNV(rota_115,rotation,"Rotation VIII (v. 1.15)",1978,"Midway",MIDWAY,0)
