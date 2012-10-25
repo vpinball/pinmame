@@ -9,7 +9,7 @@
   Clock: 8 Mhz
   Interrupt: Tied to a Fixed System Timer
   I/O: DMA
-  Sound: TKY-2016 music chip @NTSC quartz (probably a YM3812 variant), DAC for f/x
+  Sound: TKY-2016 music chip @NTSC clock (probably a Y8950), DAC for f/x
 
   Issues/Todo:
   #0) Display is going too fast @ 8Mhz cpu
@@ -256,7 +256,8 @@ static int tecno_sw2m(int no) { return no+7+1; }
 static int tecno_m2sw(int col, int row) { return col*8+row-7-1; }
 
 static WRITE_HANDLER(m7000_w) {
-  LOG(("m_7000: %02x\n", data));
+  coreGlobals.diagnosticLed = data;
+  // bit 2 controls the X2 output, but it's connected nowhere?
 }
 
 static MEMORY_READ_START(snd_readmem)
@@ -273,7 +274,7 @@ MEMORY_END
 
 static READ_HANDLER(tms_port_r) {
   LOG(("p_in %c\n", 'A' + offset));
-  return locals.sndCmd;
+  return offset ? 0 : locals.sndCmd;
 }
 static WRITE_HANDLER(tms_port_w) {
   LOG(("p_out %c: %02x\n", 'A' + offset, data));
@@ -293,13 +294,17 @@ PORT_END
 static void y8950_irq(int data) {
   cpu_set_irq_line(1, TMS7000_IRQ1_LINE, data ? ASSERT_LINE : CLEAR_LINE);
 }
-
+static WRITE_HANDLER(key_w) {
+  LOG(("Y8910 key_w %02x\n", data));
+}
 static struct Y8950interface tecno_y8950Intf =
 {
 	1,						/* 1 chip */
 	3579545,				/* 3.58 MHz */
 	{ 100 },				/* volume */
 	{ y8950_irq },			/* IRQ Callback */
+	{ REGION_USER1 }, /* ROM region */
+	{ NULL }, { key_w },
 };
 
 struct DACinterface tecno_dacInt =
@@ -317,6 +322,7 @@ MACHINE_DRIVER_START(tecno)
   MDRV_SWITCH_UPDATE(tecno)
   MDRV_SWITCH_CONV(tecno_sw2m, tecno_m2sw)
   MDRV_NVRAM_HANDLER(tecno_nvram)
+  MDRV_DIAGNOSTIC_LEDH(2)
 
   MDRV_CPU_ADD_TAG("scpu", TMS7000, 4000000)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
@@ -330,6 +336,8 @@ static WRITE_HANDLER(tecsnd_data_w) {
   if (data) {
     locals.sndCmd = data;
     cpu_set_irq_line(1, TMS7000_IRQ3_LINE, ASSERT_LINE);
+  } else {
+    cpu_set_irq_line(1, TMS7000_IRQ3_LINE, CLEAR_LINE);
   }
 }
 const struct sndbrdIntf tecnoplayIntf = {
@@ -396,6 +404,7 @@ ROM_START(xforce)
   NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, NO_DUMP)
     ROM_RELOAD(0, 0x8000)
+  NORMALREGION(0x40000, REGION_USER1)
 ROM_END
 #define input_ports_xforce input_ports_tecno
 CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
@@ -416,6 +425,7 @@ ROM_START(spcteam)
   NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("sound.bin", 0x8000, 0x8000, CRC(6a87370f) SHA1(51e055dcf23a30e337ff439bba3c40e5c51c490a))
     ROM_RELOAD(0, 0x8000)
+  NORMALREGION(0x40000, REGION_USER1)
 ROM_END
 #define input_ports_spcteam input_ports_tecno
 CORE_GAMEDEFNV(spcteam, "Space Team", 1988, "Tecnoplay", tecno, GAME_IMPERFECT_SOUND)
