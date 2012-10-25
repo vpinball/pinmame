@@ -171,7 +171,7 @@ int astrocade_sh_start(const struct MachineSound *msound)
 		return 0;
 	}
 
-	buffer_len = Machine->sample_rate / Machine->drv->frames_per_second;
+	buffer_len = Machine->sample_rate / Machine->drv->frames_per_second / 2;
 
 	emulation_rate = buffer_len * Machine->drv->frames_per_second;
 	div_by_N_factor = intf->baseclock/emulation_rate;

@@ -25,34 +25,17 @@
 #define MIDWAY_NMIFREQ    1350 /* NMI frequency in HZ - at this rate, bumpers seems OK. */
 
 #define MIDWAY_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
-#define MIDWAY_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
-#define MIDWAY_DISPLAYSMOOTH   3 /* Smooth the display over this number of VBLANKS */
 
 /*----------------
 /  Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    diagnosticLed;
   int    tmpSwCol;
   UINT32 solenoids;
   UINT8  tmpLampData;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
-  core_tSeg segments, pseg;
+  core_tSeg pseg;
 } locals;
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static int MIDWAY_sw2m(int no) {
-  return no + 8;
-}
-#endif
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static int MIDWAY_m2sw(int col, int row) {
-  return col*8 + row - 8;
-}
-#endif
 
 /*-----------------------------------------------
 / Load/Save static ram
@@ -82,19 +65,11 @@ static INTERRUPT_GEN(MIDWAY_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  if ((locals.vblankCount % MIDWAY_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
+  memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
-  if ((locals.vblankCount % MIDWAY_SOLSMOOTH) == 0)
-  	locals.solenoids = 0;
-  /*-- display --*/
-  if ((locals.vblankCount % MIDWAY_DISPLAYSMOOTH) == 0) {
-    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memset(locals.segments, 0x00, sizeof locals.segments);
+  if (!(locals.vblankCount % MIDWAY_SOLSMOOTH)) {
+    locals.solenoids = 0;
   }
-  /*update leds*/
-  coreGlobals.diagnosticLed = locals.diagnosticLed;
 
   core_updateSw(core_getSol(12));
 }
@@ -115,68 +90,84 @@ static READ_HANDLER(mem1800_r) {
   return 0x00; /* 0xc3 */
 }
 
-/* game switches */
-static READ_HANDLER(port_2x_r) {
-  if (!offset)
-    return coreGlobals.swMatrix[locals.tmpSwCol];
-  else // translate keypad to usable switch columns
-    switch (locals.tmpSwCol) {
-      // 3, 2, 1, 0
-      case 1: return ((coreGlobals.swMatrix[8] & 0x07) << 3) | ((coreGlobals.swMatrix[8] & 0x80) >> 1);
-      // 7, 6, 5, 4
-      case 2: return coreGlobals.swMatrix[8] & 0x78;
-       // set, dot, 9, 8
-      case 3: return ((coreGlobals.swMatrix[0] & 0x07) << 3) | ((coreGlobals.swMatrix[0] & 0x80) >> 1);
-      // test 3, test 2, test 1, game
-      case 4: return coreGlobals.swMatrix[0] & 0x78;
-       // test 7, test 6, test 5, test 4
-      case 5: return ((coreGlobals.swMatrix[9] & 0x07) << 3) | ((coreGlobals.swMatrix[9] & 0x80) >> 1);
-      // end, test 10, test 9, test 8
-      case 6: return coreGlobals.swMatrix[9] & 0x78;
-      default: return 0;
-    }
+static READ_HANDLER(matrix_r) {
+  return locals.tmpSwCol < 7 ? coreGlobals.swMatrix[locals.tmpSwCol + 1] : 0;
 }
 
-/* lamps & solenoids */
-static WRITE_HANDLER(port_0x_w) {
-  if (offset == 0)
-    locals.tmpLampData = data; // latch lamp data for strobe_w call
-  else
-    locals.solenoids |= (data << ((offset-1) * 8));
+static READ_HANDLER(keypad_r) {
+  // translate keypad to usable switch columns
+  switch (locals.tmpSwCol) {
+    // 3, 2, 1, 0
+    case 0: return ((coreGlobals.swMatrix[8] & 0x07) << 3) | ((coreGlobals.swMatrix[8] & 0x80) >> 1);
+    // 7, 6, 5, 4
+    case 1: return coreGlobals.swMatrix[8] & 0x78;
+     // set, dot, 9, 8
+    case 2: return ((coreGlobals.swMatrix[0] & 0x07) << 3) | ((coreGlobals.swMatrix[0] & 0x80) >> 1);
+    // test 3, test 2, test 1, game
+    case 3: return coreGlobals.swMatrix[0] & 0x78;
+     // test 7, test 6, test 5, test 4
+    case 4: return ((coreGlobals.swMatrix[9] & 0x07) << 3) | ((coreGlobals.swMatrix[9] & 0x80) >> 1);
+    // end, test 10, test 9, test 8
+    case 5: return coreGlobals.swMatrix[9] & 0x78;
+    default: return 0;
+  }
 }
 
-/* display data */
+static WRITE_HANDLER(lamp_w) {
+  static int oldCol;
+  locals.tmpLampData = data;
+  if (oldCol != locals.tmpSwCol) {
+    coreGlobals.tmpLampMatrix[locals.tmpSwCol] |= data;
+    coreGlobals.lampMatrix[locals.tmpSwCol] = coreGlobals.tmpLampMatrix[locals.tmpSwCol];
+  }
+  oldCol = locals.tmpSwCol;
+}
+
+static WRITE_HANDLER(sol_w) {
+  locals.solenoids |= data << (offset * 8);
+  coreGlobals.solenoids = locals.solenoids;
+}
+
 static WRITE_HANDLER(disp_w) {
-  locals.pseg[2*offset].w = core_bcd2seg[data >> 4];
-  locals.pseg[2*offset + 1].w = core_bcd2seg[data & 0x0f];
+  locals.pseg[2 * offset].w = core_bcd2seg[data >> 4];
+  locals.pseg[2 * offset + 1].w = core_bcd2seg[data & 0x0f];
+  if (locals.tmpSwCol < 7) {
+    int ii;
+    for (ii = 0; ii < 6; ii++) {
+      coreGlobals.segments[ii * 7 + locals.tmpSwCol].w = locals.pseg[ii].w;
+    }
+  }
 }
 
-/* this handler updates lamps, switch columns & displays - all at the same time!!! */
 static WRITE_HANDLER(port_2x_w) {
   switch (offset) {
     case 3:
-      if (data < 7) { // only 7 columns are used
+      locals.tmpSwCol = data;
+      if (data < 7) {
         int ii;
-        for (ii = 0; ii < 6; ii++)
-          locals.segments[ii*7 + data].w = locals.pseg[ii].w;
-        locals.lampMatrix[data] = locals.tmpLampData;
-        locals.tmpSwCol = data + 1;
-      } else
-        logerror("Write to column %x\n", data);
-      break;
+        coreGlobals.tmpLampMatrix[data] |= locals.tmpLampData;
+        coreGlobals.lampMatrix[data] = coreGlobals.tmpLampMatrix[data];
+        for (ii = 0; ii < 6; ii++) {
+          coreGlobals.segments[ii * 7 + locals.tmpSwCol].w = locals.pseg[ii].w;
+        }
+      } else {
+        logerror("strobe column %x\n", data);
+      }
     default:
       logerror("Write to port 2%x = %02x\n", offset, data);
   }
 }
 
 PORT_READ_START( midway_readport )
-  { 0x21, 0x22, port_2x_r },
+  { 0x21, 0x21, matrix_r },
+  { 0x22, 0x22, keypad_r },
 PORT_END
 
 PORT_WRITE_START( midway_writeport )
   { 0x00, 0x02, disp_w },
-  { 0x03, 0x07, port_0x_w },
-  { 0x10, 0x18, astrocade_sound1_w },
+  { 0x03, 0x03, lamp_w },
+  { 0x04, 0x07, sol_w },
+  { 0x10, 0x17, astrocade_sound1_w },
   { 0x20, 0x25, port_2x_w },
 PORT_END
 
@@ -185,7 +176,7 @@ PORT_END
 /------------------------------------------
 0000-17ff  3 x 2K ROM
 c000-c0ff  RAM
-e000-e0ff  NVRAM
+e000-e01f  NVRAM
 */
 static MEMORY_READ_START(MIDWAY_readmem)
   {0x0000,0x17ff, MRA_ROM},	/* ROM */
@@ -284,20 +275,12 @@ ROM_START(rotation)
 ROM_END
 CORE_GAMEDEFNV(rotation,"Rotation VIII (v. 1.17)",1978,"Midway",MIDWAY,0)
 
-core_tLCDLayout rot_disp2[] = {
-  {0, 0, 1, 6,CORE_SEG7}, {0,16, 8, 6,CORE_SEG7},
-  {2, 0,15, 6,CORE_SEG7}, {2,16,22, 6,CORE_SEG7},
-  {4, 8,36, 6,CORE_SEG7}, {0}
-};
-static core_tGameData rot_115GameData = {0,rot_disp2,{FLIP_SW(FLIP_L),0,-1}};
-static void init_rota_115(void) {
-  core_gameData = &rot_115GameData;
-}
 ROM_START(rota_115)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("v115-a.bin", 0x0000, 0x0800, CRC(474884b3) SHA1(b7919bf2e3a3897c1180373cccf88240c57b5645))
     ROM_LOAD("v115-b.bin", 0x0800, 0x0800, CRC(8779fc6c) SHA1(df00f58d38b4eca68603247ae69009e13cfa31fb))
     ROM_LOAD("v115-c.bin", 0x1000, 0x0800, CRC(54b420f9) SHA1(597bb9f8ad0b20babc696175e9fbcecf2d5d799d))
 ROM_END
+#define init_rota_115 init_rotation
 #define input_ports_rota_115 input_ports_rotation
 CORE_CLONEDEFNV(rota_115,rotation,"Rotation VIII (v. 1.15)",1978,"Midway",MIDWAY,0)
