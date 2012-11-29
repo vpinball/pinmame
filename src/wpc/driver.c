@@ -718,7 +718,8 @@ DRIVERNV(pentacp2)      //Pentacup (rev. 2, 1980)
 // MIDWAY GAMES
 // ----------------
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
-DRIVERNV(rota_115)      //Rotation VIII (v. 1.15, September 1978)
+DRIVERNV(rota_101)      //Rotation VIII (v. 1.01, September 1978)
+DRIVERNV(rota_115)      //Rotation VIII (v. 1.15, 1978?)
 DRIVERNV(rotation)      //Rotation VIII (v. 1.17, 1978?)
 
 // ----------------
