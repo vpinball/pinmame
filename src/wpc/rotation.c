@@ -284,3 +284,13 @@ ROM_END
 #define init_rota_115 init_rotation
 #define input_ports_rota_115 input_ports_rotation
 CORE_CLONEDEFNV(rota_115,rotation,"Rotation VIII (v. 1.15)",1978,"Midway",MIDWAY,0)
+
+ROM_START(rota_101)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("v101-a.bin", 0x0000, 0x0800, CRC(e89f3de6) SHA1(0b62220a24e176f2d7838da080b447a3df9ce05d))
+    ROM_LOAD("v101-b.bin", 0x0800, 0x0800, CRC(0690670b) SHA1(6399a7df707d644d0b7fe7b4fea6fb5091a9883d))
+    ROM_LOAD("v101-c.bin", 0x1000, 0x0800, CRC(c7e85638) SHA1(b59805d8b558ab8f5ea5b4b9261e862afca4b9d3))
+ROM_END
+#define init_rota_101 init_rotation
+#define input_ports_rota_101 input_ports_rotation
+CORE_CLONEDEFNV(rota_101,rotation,"Rotation VIII (v. 1.01)",1978,"Midway",MIDWAY,0)
