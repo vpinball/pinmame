@@ -7,4 +7,3 @@
 * (Maddes) VC++: check how MAME solved the source code creation for VC++, like gcc does for M68000
 * (Maddes) Enhance simulator to play back a recorded "game play"
 * (Maddes) VC++ 2010: Check vcproj files when final is released, plus express version with/without trial for VPM build (ATL)
-X
