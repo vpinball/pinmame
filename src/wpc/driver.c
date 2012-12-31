@@ -2007,6 +2007,7 @@ DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
 DRIVER(corv,px5)        //                  Corvette (PX5) LED Ghost Fix
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX1)
 DRIVER(corv,dx1)        //                  Corvette (DX1) LED Ghost Fix
+DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
