@@ -74,7 +74,7 @@ static void playSound(void) {
     }
     mixer_set_volume(atarilocals.noisechannel, atarilocals.volume*4);
     mixer_play_sample(atarilocals.noisechannel, (signed char *)noiseWave, sizeof(noiseWave),
-      32768 / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
+      4000 + 26000 / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
   }
   if (atarilocals.sound & 0x01) { // wave on
     int i;
@@ -86,10 +86,10 @@ static void playSound(void) {
     }
     if (mixer_is_sample_playing(atarilocals.channel)) {
       mixer_set_sample_frequency(atarilocals.channel,
-        32768 / (16-atarilocals.frequency) * (1 << atarilocals.octave));
+        4000 + 26000 / (16-atarilocals.frequency) * (1 << atarilocals.octave));
     } else {
       mixer_play_sample(atarilocals.channel, (signed char *)romWave, sizeof(romWave),
-        32768 / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
+        4000 + 26000 / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
     }
   }
 }
@@ -108,8 +108,8 @@ static int atari_sh_start2(const struct MachineSound *msound) {
     return -1;
   }
 
-  atarilocals.channel = mixer_allocate_channel(60);
-  atarilocals.noisechannel = mixer_allocate_channel(30);
+  atarilocals.channel = mixer_allocate_channel(50);
+  atarilocals.noisechannel = mixer_allocate_channel(25);
   return 0;
 }
 
