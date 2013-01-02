@@ -348,8 +348,13 @@ static WRITE_HANDLER(lamp_w) {
 /* sound */
 // Gen 1
 static WRITE_HANDLER(soundg1_w) {
-	logerror("Play sound %2x\n", data);
-	sndbrd_0_data_w(0, data);
+	logerror("Play sound %2x | %02x | %02x | %02x\n", data, latch[0], latch[1], latch[2]);
+	sndbrd_0_ctrl_w(0, ((latch[1] & 0x0f) << 4) | (latch[0] & 0x0f));
+	switch (core_gameData->hw.gameSpecific1) {
+	  case 1: sndbrd_0_data_w(0, latch[1] & 0x0f); break;
+	  case 2: sndbrd_0_data_w(0, latch[2] & 0x0f); break;
+	  default: sndbrd_0_data_w(0, data);
+  }
 }
 
 static WRITE_HANDLER(audiog1_w) {
