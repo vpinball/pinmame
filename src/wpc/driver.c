@@ -2007,6 +2007,7 @@ DRIVER(fs,lx5)          //          11/94 W The Flintstones (LX-5)
 DRIVER(fs,dx5)          //                  The Flintstones (DX-5) LED Ghost Fix
 DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
 DRIVER(corv,px5)        //                  Corvette (PX5) LED Ghost Fix
+DRIVER(corv,la1)        //WPC-536:  08/94 B Corvette (LA1)
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX1)
 DRIVER(corv,dx1)        //                  Corvette (DX1) LED Ghost Fix
 DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX2)
