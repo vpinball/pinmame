@@ -1962,6 +1962,7 @@ DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7
 DRIVER(sttng,h7)        //                  Star Trek: The Next Generation (HG-7) LED Ghost Fix
 DRIVER(pop,pa3)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-3)
 DRIVER(pop,pa4)         //                  Popeye Saves the Earth (PA-4) LED Ghost Fix
+DRIVER(pop,la4)         //WPC:      02/94 B Popeye Saves the Earth (LA-4)
 DRIVER(pop,lx5)         //          02/94 B Popeye Saves the Earth (LX-5)
 DRIVER(pop,dx5)         //                  Popeye Saves the Earth (DX-5) LED Ghost Fix
 DRIVER(dm,pa2)          //WPC-528:  03/94 W Demolition Man (PA-2)
