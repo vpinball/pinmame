@@ -113,6 +113,16 @@ SE_ROMEND
 #define input_ports_id4 input_ports_se
 CORE_GAMEDEFNV(id4,"ID4: Independence Day",1996,"Sega",de_mSES1,0)
 
+INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
+DE_DMD32ROM8x(    "id4dspa.200",CRC(2d3fbcc4) SHA1(0bd69ebb68ae880ac9aae40916f13e1ff84ecfaa))
+DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
+                  "id4sdu17.400",CRC(89ffeca3) SHA1(b94c60e3a433f797d6c5ea793c3ecff0a3b6ba60),
+                  "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
+SE_ROMEND
+#define input_ports_id4_201 input_ports_se
+CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (v2.01)",1996,"Sega",de_mSES1,0)
+
 /*-------------------------------------------------------------------
 / Space Jam
 /-------------------------------------------------------------------*/

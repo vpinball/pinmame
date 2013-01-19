@@ -830,7 +830,8 @@ DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
 DRIVER  (twst,404)      //Whitestar: 05/96 Twister (4.04)
 DRIVER  (twst,405)      //Whitestar: 05/96 Twister (4.05)
-DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independance Day
+DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independence Day (2.02)
+DRIVERNV(id4_201)       //Whitestar: 07/96 ID4: Independence Day (2.01)
 DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam
 DRIVERNV(spacejmf)      //Whitestar: 08/96 Space Jam (France)
 DRIVERNV(spacejmg)      //Whitestar: 08/96 Space Jam (Germany)
