@@ -102,10 +102,19 @@ BY6803_ROMEND
 #define input_ports_blackblt input_ports_by6803
 CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 
-// 1st Game to use Sounds Deluxe Sound Hardware
+INITGAME6803(blackbl2,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BY61, BY6803_DISPALPHA) //July '86
+BY6803_ROMSTART44(blackbl2,"cpu_u2.cpu",     CRC(b86d16ec) SHA1(2e4601e725261aca67e4d706f310b14eb7578d8b),
+                           "cpu_u3.cpu",     CRC(c63e3e6f) SHA1(cd3f66c3796eaf64c36cabba9d74cc8c690d9d8b))
+BY61_SOUNDROM0000(         "blb_u2.snd",NO_DUMP,
+                           "blb_u3.snd",NO_DUMP,
+                           "blb_u4.snd",NO_DUMP,
+                           "blb_u5.snd",NO_DUMP)
+BY6803_ROMEND
+#define input_ports_blackbl2 input_ports_by6803
+CORE_GAMEDEFNV(blackbl2,"Black Belt (Squawk and Talk)",1986,"Bally",by_mBY6803_61S,0)
 
 /*------------------------------------
-/ Special Force (6803-0E47: 08/86)
+/ Special Force (6803-0E47: 08/86) // 1st Game to use Sounds Deluxe Sound Hardware
 /------------------------------------*/
 INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(specforc,"u2_revc.128",CRC(d042af04) SHA1(0a73ee6d3ce603899fd89de70f90e9efc58b8b42),
