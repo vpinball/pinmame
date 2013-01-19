@@ -845,6 +845,14 @@ S11_ROMEND
 #define input_ports_pool input_ports_s11
 CORE_GAMEDEF(pool , l7, "Pool Sharks (LA-7)", 1991, "Bally", s11c_one,0)
 
+S11_ROMSTART48(pool,l5, "pool_u26.l5",CRC(373d18d9) SHA1(320d72777380971c16fe59cb1ed2314dec76705d),
+                        "pool_u27.l5",CRC(1a2f0717) SHA1(cb8a7a62e0aac721ce68ae0bb1157b92edda62cb))
+S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
+                        "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
+                        "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
+S11_ROMEND
+CORE_CLONEDEF(pool,l5,l7,"Pool Sharks (L-5)", 1989, "Bally", s11c_one,0)
+
 S11_ROMSTART48(pool,l6, "pool_u26.la6",CRC(fec70d5a) SHA1(bc155a590f64f2b43b8799c1a6d2336dde45a10c),
                         "pool_u27.la6",CRC(91fb5231) SHA1(538ddc66a5885e4b7a840d35a1e62b92f73b39ad))
 S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),

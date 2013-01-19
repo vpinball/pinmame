@@ -1725,6 +1725,7 @@ DRIVER(rollr,l3)        //          05/90 W Rollergames (L-3) Europe
 DRIVER(rollr,g3)        //          05/90 W Rollergames (L-3) Germany
 DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7) Proto
 DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
+DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
 DRIVER(diner,l1)        //S11-571:  06/90 W Diner (L-1)
