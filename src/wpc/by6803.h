@@ -1,8 +1,5 @@
 #ifndef INC_BY6803
 #define INC_BY6803
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
 
 /*-- Common Inports for BY6803 Games --*/
 #define BY6803_COMPORTS \
@@ -104,6 +101,7 @@
 #define BY6803_DISPALPHA 1
 
 extern MACHINE_DRIVER_EXTERN(by6803_61S);
+extern MACHINE_DRIVER_EXTERN(by6803_61SA);
 extern MACHINE_DRIVER_EXTERN(by6803_45S);
 extern MACHINE_DRIVER_EXTERN(by6803_TCSS);
 extern MACHINE_DRIVER_EXTERN(by6803_TCS2S);
@@ -111,6 +109,7 @@ extern MACHINE_DRIVER_EXTERN(by6803_SDS);
 extern MACHINE_DRIVER_EXTERN(by6803_S11CS);
 
 #define by_mBY6803_61S   by6803_61S
+#define by_mBY6803_61SA  by6803_61SA
 #define by_mBY6803_45S   by6803_45S
 #define by_mBY6803_TCSS  by6803_TCSS
 #define by_mBY6803_TCS2S by6803_TCS2S
