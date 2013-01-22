@@ -207,7 +207,7 @@ static const core_tLCDLayout dispMM[] = {
   {0, 0, 7,1,CORE_SEG7}, {0, 2, 6,1,CORE_SEG7}, {0, 4, 5,1,CORE_SEG7},
   {0, 6, 4,1,CORE_SEG7}, {0, 8, 3,1,CORE_SEG7}, {0,10, 2,1,CORE_SEG7}, {0}
 };
-static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_PHASE}};
+static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_MARAUDER}};
 static void init_mdntmrdr(void) { core_gameData = &mdntmrdrGameData; }
 BY35_ROMSTARTx00(mdntmrdr, "mdru2.532", CRC(f72668bc) SHA1(25b984e1828905190c73c359ee6c9858ed1b2224),
                            "mdru6.732", CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
