@@ -17,6 +17,7 @@
 #include "desound.h"
 #include "se.h"
 #include "vpintf.h"
+#include "machine/6821pia.h"
 
 #define INITGAME(name, gen, disp) \
 static core_tGameData name##GameData = { gen, disp }; \
@@ -181,17 +182,41 @@ CORE_GAMEDEF(tstrk,l1,"Triple Strike (Shuffle) (L-1)",1983,"Williams",s4_mS4,GAM
 /*------------------------------------------------
 / Midnight Marauders (BY35-???: 05/84) - Gun game
 /-------------------------------------------------*/
-static const core_tLCDLayout dispMM[] = {{ 0,0,0,16,CORE_SEG7 }, {0}};
-static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_PHASE}};
+static SWITCH_UPDATE(marauders) {
+  if (inports) {
+    UINT8 col1 = inports[BY35_COMINPORT] & 0x60;
+    UINT8 col2 = (inports[BY35_COMINPORT] >> 8) & 0x87;
+    if (col1 & 0x20) col1 = (col1 & 0xdf) | 0x01; // move start sw
+    col1 |= (col1 & 0x40) >> 1; // move tilt sw
+    col2 |= (col2 & 0x80) >> 4; // move slam sw
+    CORE_SETKEYSW(inports[BY35_COMINPORT], 0x07, 0);
+    CORE_SETKEYSW(col1, 0x21, 1);
+    CORE_SETKEYSW(col2, 0x0f, 2);
+  }
+  /*-- Diagnostic buttons on CPU board --*/
+  cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+  /*-- coin door switches --*/
+  pia_set_input_ca1(0, !core_getSw(BY35_SWSELFTEST));
+}
+static MACHINE_DRIVER_START(marauders)
+  MDRV_IMPORT_FROM(by35_61S)
+  MDRV_SWITCH_UPDATE(marauders)
+MACHINE_DRIVER_END
+static const core_tLCDLayout dispMM[] = {
+  {0, 0, 7,1,CORE_SEG7}, {0, 2, 6,1,CORE_SEG7}, {0, 4, 5,1,CORE_SEG7},
+  {0, 6, 4,1,CORE_SEG7}, {0, 8, 3,1,CORE_SEG7}, {0,10, 2,1,CORE_SEG7}, {0}
+};
+static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61}};
 static void init_mdntmrdr(void) { core_gameData = &mdntmrdrGameData; }
-BY35_ROMSTARTx00(mdntmrdr,"u2.bin",NO_DUMP,
-                          "u6.bin",CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
+BY35_ROMSTARTx00(mdntmrdr, "mdru2.532", CRC(f72668bc) SHA1(25b984e1828905190c73c359ee6c9858ed1b2224),
+                           "mdru6.732", CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
 SOUNDREGION(0x10000, REGION_CPU2)
   ROM_LOAD("u3.bin", 0xd000, 0x1000, NO_DUMP)
   ROM_LOAD("u5.bin", 0xf000, 0x1000, NO_DUMP)
 BY35_ROMEND
 BY35_INPUT_PORTS_START(mdntmrdr,1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",by35_mBY35_61S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",marauders,0)
 
 /*----------------------------
 / Black Beauty
