@@ -1047,6 +1047,16 @@ GTS80_ROMEND
 #define input_ports_bonebstr input_ports_gts80
 CORE_GAMEDEFNV(bonebstr, "Bone Busters Inc.",1989,"Gottlieb",gl_mGTS80BS3A,0)
 
+INITGAME(bonebstf, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(bonebstf, "prom2f.cpu", CRC(73b6486e) SHA1(1baf17f31b16d564ed5e3bdf9f74b21f83ed76fa),
+                             "prom1f.cpu", CRC(3d334065) SHA1(6d44819cf84bee375a9f62351b00375404f6d3e3))
+GTS80BSSOUND3x32(            "drom2.snd", CRC(d147d78d) SHA1(f8f6d6a1921685b883b224a9ea85ead52a32a4c3),
+                             "drom1.snd", CRC(ec43f4e9) SHA1(77b0988700be7a597dca7e5f06ac5d3c6834ce21),
+                             "yrom1.snd", CRC(a95eedfc) SHA1(5ced2d6869a9895f8ff26d830b21d3c9364b32e7))
+GTS80_ROMEND
+#define input_ports_bonebstf input_ports_bonebstr
+CORE_CLONEDEFNV(bonebstf,bonebstr, "Bone Busters Inc. (French)",1989,"Gottlieb",gl_mGTS80BS3A,0)
+
 
 /*-------------------------------------------------------------------
 / Night Moves (C-103)

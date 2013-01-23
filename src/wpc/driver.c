@@ -558,6 +558,7 @@ DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
 DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
+DRIVERNV(bonebstf)      //S80b-719: 08/89 Bone Busters Inc (French)
 DRIVERNV(nmoves)        //C-103:    11/89 Night Moves (for International Concepts)
 //System 3 Alphanumeric
 DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
