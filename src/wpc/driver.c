@@ -1949,6 +1949,7 @@ DRIVER(afv,d4)          //                  Addams Family Values (D-4 Redemption
 DRIVER(sttng,p4)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-4)
 DRIVER(sttng,p5)        //          11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,p6)        //                  Star Trek: The Next Generation (P-6) LED Ghost Fix
+DRIVER(sttng,p8)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-8)
 DRIVER(sttng,l1)        //          11/93 W Star Trek: The Next Generation (LX-1)
 DRIVER(sttng,d1)        //                  Star Trek: The Next Generation (DX-1) LED Ghost Fix
 DRIVER(sttng,l2)        //          12/93 W Star Trek: The Next Generation (LX-2)
