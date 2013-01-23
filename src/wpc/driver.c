@@ -2066,8 +2066,9 @@ DRIVER(nf,22)           //          05/95 W No Fear: Dangerous Sports (2.2)
 DRIVER(nf,23)           //          05/95 W No Fear: Dangerous Sports (2.3)
 DRIVER(nf,23f)          //          05/95 W No Fear: Dangerous Sports (2.3F)
 DRIVER(nf,23x)          //          05/95 W No Fear: Dangerous Sports (2.3 Export)
-DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
-DRIVER(i500,11b)        //          06/95 B Indianapolis 500 (Belgium)
+DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500 (1.1)
+DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (1.1 Belgium)
+DRIVER(i500,10r)        //WPC-526:  06/95 B Indianapolis 500 (1.0)
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0)
 DRIVER(jb,101r)         //                  Jack*Bot (1.0) LED Ghost Fix
 DRIVER(jb,10b)          //          10/95 W Jack*Bot (1.0) Belgium/Canada
