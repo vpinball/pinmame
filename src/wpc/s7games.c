@@ -143,6 +143,17 @@ S7_ROMEND
 #define input_ports_jngld input_ports_s7
 CORE_GAMEDEF(jngld,l2,"Jungle Lord (L-2)",1981,"Williams",s7_mS7S,0)
 
+S7_ROMSTART8088(jngld,l1, "ic14-l1.716", CRC(0144af0d) SHA1(2e5b6e35613decbac10f9b99c7a8cbe7f63b6b07),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26-l1.716", CRC(df37bb45) SHA1(60a0670e73f2370d6269ef241b581f5b0ade6ea0))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,l1,l2,"Jungle Lord (L-1)",1981,"Williams",s7_mS7S,0)
+
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)
 /--------------------------------*/
@@ -230,6 +241,13 @@ S7_ROMSTART000x(hypbl,l4, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
 CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,0)
+
+S7_ROMSTART000x(hypbl,l2, "ic14-l2.532", CRC(8eb82df4) SHA1(854b3f1fa2112fbdba19f4c843f67989c0572d8c),
+                          "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
+                          "ic20-l2.532", CRC(f5f66cf1) SHA1(885b4961b6ec712b7445001d448d881245be1234))
+S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
+S7_ROMEND
+CORE_CLONEDEF(hypbl,l2,l4,"HyperBall (L-2)",1981,"Williams",s7_mS7S,0)
 
 S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51efeb8be7c20d6465239e),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
@@ -321,6 +339,14 @@ S7_ROMEND
 #define input_ports_jst input_ports_s7
 CORE_GAMEDEF(jst,l2,"Joust (L-2)",1983,"Williams",s7_mS7S,0)
 
+S7_ROMSTART8088(jst,l1, "ic14-l1.716", CRC(9871ebb2) SHA1(75c639a26d3bf7e05de7b5be063742f7448284ac),
+                        "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                        "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                        "ic26-l1.716", CRC(123d8ffc) SHA1(c227a53653525269ea77203d4d1b14132058c073))
+S67S_SOUNDROMS0(        "sound12.532",CRC(3bbc90bf) SHA1(82154e719ceca5c72d1ab034bc4ff5e3ebb36832))
+S7_ROMEND
+#define input_ports_jst input_ports_s7
+CORE_CLONEDEF(jst,l1,l2,"Joust (L-1)",1983,"Williams",s7_mS7S,0)
 
 /*---------------------------
 / Laser Cue - Sys.7 (Game #520)

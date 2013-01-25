@@ -1603,12 +1603,14 @@ DRIVER(frpwr,e7)        //          10/05   Firepower (Sys.7/6-digit /10 Scoring
 DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
 DRIVER(bk,l4)           //          11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
-DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
+DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
+DRIVER(jngld,l2)        //          02/81 W Jungle Lord (l-2)
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
                         //S7-506:   06/81 W Black Knight Limited Edition
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
-DRIVER(hypbl,l4)        //S7-509:   12/81 W HyperBall
+DRIVER(hypbl,l2)        //S7-509:   12/81 W HyperBall (L-2)
+DRIVER(hypbl,l4)        //          12/81 W HyperBall (L-4)
 DRIVER(hypbl,l5)        //          04/98   HyperBall (bootleg w/ high score save)
 DRIVER(hypbl,l6)        //          05/06   HyperBall (bootleg w/ high score save)
 DRIVER(csmic,l1)        //S7-502:   06/82 W Cosmic Gunfight
@@ -1620,7 +1622,8 @@ DRIVER(wrlok,l3)        //S7-516:   10/82 W Warlok
 DRIVER(dfndr,l4)        //S7-517:   12/82 W Defender
 DRIVER(ratrc,l1)        //S7-5??:   01/83 W Rat Race (never produced)
 DRIVER(tmfnt,l5)        //S7-515:   03/83 W Time Fantasy
-DRIVER(jst,l2)          //S7-519:   04/83 W Joust
+DRIVER(jst,l1)          //S7-519:   04/83 W Joust (L-1)
+DRIVER(jst,l2)          //          04/83 W Joust (L-2)
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
 DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
