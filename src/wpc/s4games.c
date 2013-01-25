@@ -30,20 +30,27 @@ CORE_GAMEDEF(phnix,l1,"Phoenix (L-1)",1978,"Williams",s4_mS4S,0)
 / Flash - Sys.4 (Game #486)
 /-------------------------------*/
 INITGAMEFULL(flash,s4_disp,0,0,19,18,20,42,41,0)
+S4_ROMSTART(flash,l2,"gamerom2.716", CRC(b7c2e4c7) SHA1(00ea34900af679b1b7e2698f4aa2fc9703d54cf2),
+                     "yellow1.716", CRC(d251738c) SHA1(65ddbf5c36e429243331a4c5d2339df87a8a7f64),
+                     "yellow2.716", CRC(5049326d) SHA1(3b2f4ea054962bf4ba41d46663b7d3d9a77590ef))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S4_ROMEND
+#define input_ports_flash input_ports_s4
+CORE_GAMEDEF(flash,l2,"Flash (L-2)",1979,"Williams",s4_mS4S,0)
+
 S4_ROMSTART(flash,l1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
                      "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                      "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
 S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
-#define input_ports_flash input_ports_s4
-CORE_GAMEDEF(flash,l1,"Flash (L-1)",1979,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(flash,l1,l2,"Flash (L-1)",1979,"Williams",s4_mS4S,0)
 
 S4_ROMSTART(flash,t1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecadbd9cc8552bd6934),
                      "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
-CORE_CLONEDEF(flash,t1,l1,"Flash (T-1) Ted Estes",1979,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(flash,t1,l2,"Flash (T-1) Ted Estes",1979,"Williams",s4_mS4S,0)
 
 /*--------------------------------
 / Tri Zone - Sys.4 (Game #487)

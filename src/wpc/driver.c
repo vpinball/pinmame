@@ -1557,7 +1557,8 @@ DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
 //System 4
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
-DRIVER(flash,l1)        //S4-486:   01/79 W Flash
+DRIVER(flash,l1)        //S4-486:   01/79 W Flash (L-1, green flipper ROMs)
+DRIVER(flash,l2)        //          01/79 W Flash (L-2, yellow flipper ROMs)
 DRIVER(flash,t1)        //                  Flash /10 Scoring Ted Estes
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
