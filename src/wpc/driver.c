@@ -1611,8 +1611,10 @@ DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
 DRIVER(hypbl,l4)        //S7-509:   12/81 W HyperBall
 DRIVER(hypbl,l5)        //          04/98   HyperBall (bootleg w/ high score save)
 DRIVER(hypbl,l6)        //          05/06   HyperBall (bootleg w/ high score save)
-DRIVER(thund,p1)        //S7-508:   05/82 W Thunderball
 DRIVER(csmic,l1)        //S7-502:   06/82 W Cosmic Gunfight
+DRIVER(thund,p1)        //S7-508:   06/82 W Thunderball (P-1)
+DRIVER(thund,p2)        //          08/82 W Thunderball (P-2)
+DRIVER(thund,p3)        //          09/82 W Thunderball (P-3)
 DRIVER(vrkon,l1)        //S7-512:   09/82 W Varkon
 DRIVER(wrlok,l3)        //S7-516:   10/82 W Warlok
 DRIVER(dfndr,l4)        //S7-517:   12/82 W Defender
