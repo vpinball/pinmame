@@ -497,6 +497,7 @@ DRIVERNV(vlcno_a7)      //          01/08 Volcano (Sound & Speech, 7-digit conve
 DRIVERNV(vlcno_1b)      //                Volcano (Sound Only)
 DRIVERNV(vlcno_b7)      //          01/08 Volcano (Sound Only, 7-digit conversion)
 DRIVERNV(vlcno_1a)      //                Volcano (Sound Only, alternate version)
+DRIVERNV(vlcno_1c)      //                Volcano (Sound Only, alternate version 2)
 DRIVERNV(blckhole)      //S80-668:  10/81 Black Hole (Sound & Speech, Rev 4)
 DRIVERNV(blkhole7)      //          01/08 Black Hole (Sound & Speech, Rev 4, 7-digit conversion)
 DRIVERNV(blkhole2)      //                Black Hole (Sound & Speech, Rev 2)
@@ -524,6 +525,7 @@ DRIVERNV(qbquest)       //S80a-677: 03/83 Q*bert's Quest
 DRIVERNV(sorbit)        //S80a-680: 05/83 Super Orbit
 DRIVERNV(rflshdlx)      //S80a-681: 06/83 Royal Flush Deluxe
 DRIVERNV(amazonh)       //S80a-684: 09/83 Amazon Hunt
+DRIVERNV(amazonha)      //                Amazon Hunt (alternate set)
 DRIVERNV(rackemup)      //S80a-685: 11/83 Rack 'Em Up
 DRIVERNV(raimfire)      //S80a-686: 11/83 Ready Aim Fire
 DRIVERNV(jack2opn)      //S80a-687: 05/84 Jacks to Open
@@ -534,21 +536,26 @@ DRIVERNV(touchdn)       //S80a-688: 10/84 Touchdown
 DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
+DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (alternate set)
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(tagteam)       //S80b-698: 09/85 Tag Team Wrestling
 DRIVERNV(tagteam2)      //                Tag Team Wrestling (rev.2)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
                         //S80b-700: ??/85 Ace High (never produced, playable whitewood exists)
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
+DRIVERNV(ravena)        //                Raven (alternate set)
 DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(goldwing)      //S80b-707: 10/86 Gold Wings
 DRIVERNV(mntecrlo)      //S80b-708: 02/87 Monte Carlo
+DRIVERNV(mntecrla)      //                Monte Carlo (alternate set)
 DRIVERNV(sprbreak)      //S80b-706: 04/87 Spring Break
+DRIVERNV(sprbrka)       //                Spring Break (alternate set)
 DRIVERNV(sprbrks)       //                Spring Break (single ball game)
                         //S80b-???: 05/87 Amazon Hunt II
-DRIVERNV(arena)         //S80b-709: 06/87 Arena
+DRIVERNV(arena)         //S80b-709: 06/87 Arena 
+DRIVERNV(arenaa)        //                Arena (alternate set)
 DRIVERNV(victory)       //S80b-710: 10/87 Victory
 DRIVERNV(diamond)       //S80b-711: 02/88 Diamond Lady
 DRIVERNV(txsector)      //S80b-712: 03/88 TX Sector
