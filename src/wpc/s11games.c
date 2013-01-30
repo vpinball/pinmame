@@ -387,6 +387,15 @@ S11CS_SOUNDROM88(       "cycl_u4.l5",  CRC(d04b663b) SHA1(f54c6df08ec73b733cfeb2
 S11_ROMEND
 CORE_CLONEDEF(cycln, l4, l5, "Cyclone (L-4)", 1988, "Williams", s11_mS11BS,0)
 
+S11_ROMSTART48(cycln,l1,"cycl_u26.l1", CRC(b6b8354e) SHA1(ae07fb74ce340cf5c520ce7faea636c234c6e4db),
+                        "cycl_u27.l1", CRC(81340fcd) SHA1(9ec6754b25f80919f8fe0a2ff9136b37ca8c1aa0))
+S11XS_SOUNDROM88(       "cycl_u21.l1", CRC(d4f69a7c) SHA1(da0ce27d92b22583be54a41fc8083cee803c987a),
+                        "cycl_u22.l1", CRC(28dc8f13) SHA1(bccce3a9b6b2f52da919c6df8db07e5e3de12657))
+S11CS_SOUNDROM88(       "cycl_u4.l5",  CRC(d04b663b) SHA1(f54c6df08ec73b733cfeb2a989e44e5c04da3d9e),
+                        "cycl_u19.l1", CRC(a20f6519) SHA1(63ded5f76133340fa31d4fe65420f4465866fb85))
+S11_ROMEND
+CORE_CLONEDEF(cycln, l1, l5, "Cyclone (L-1)", 1988, "Williams", s11_mS11BS,0)
+
 /*--------------------
 / Banzai Run 7/88
 /--------------------*/

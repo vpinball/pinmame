@@ -1683,6 +1683,7 @@ DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
 DRIVER(gmine,l2)        //S11-920:  ??/87 W Gold Mine (Shuffle)
 DRIVER(tdawg,l1)        //S11-921:  ??/87 W Top Dawg (Shuffle)
 DRIVER(shfin,l1)        //S11-922:  ??/87 W Shuffle Inn (Shuffle)
+DRIVER(cycln,l1)        //S11-564:  02/88 W Cyclone (L-1)
 DRIVER(cycln,l4)        //S11-564:  02/88 W Cyclone (L-4)
 DRIVER(cycln,l5)        //          02/88 W Cyclone (L-5)
 DRIVER(bnzai,pa)        //S11-566:  05/88 W Banzai Run (P-A)
