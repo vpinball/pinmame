@@ -138,7 +138,15 @@ DE_DMD32ROM8x(  "jamdspa.300",CRC(198e5e34) SHA1(e2ba9ff1cea84c5d41f32afc50229cb
 JAM_SND
 SE_ROMEND
 #define input_ports_spacejam input_ports_se
-CORE_GAMEDEFNV(spacejam,"Space Jam",1997,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(spacejam,"Space Jam (3.00)",1997,"Sega",de_mSES1,0)
+
+SE128_ROMSTART(spacejm2,"jamcpu.200",CRC(d80c069b) SHA1(bf6e96100b158f058b5f07f537ad0fa0a0fbe31d))
+DE_DMD32ROM8x(  "jamdspa.200",CRC(4a05ec31) SHA1(eb962f5f2160508e0f81b252e8644d8aa833d7fd))
+JAM_SND
+SE_ROMEND
+#define input_ports_spacejm2 input_ports_spacejam
+#define init_spacejm2 init_spacejam
+CORE_CLONEDEFNV(spacejm2,spacejam,"Space Jam (2.00)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(spacejmg,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
 DE_DMD32ROM8x(  "jamdspg.300",CRC(41f6e188) SHA1(da2247022aadb0ead5a3b1d7b829c13ff1153ec8))
