@@ -81,6 +81,20 @@ ALVG_ROMEND
 #define input_ports_wrldtou2 input_ports_wrldtour
 CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour R02b",1992,"Alvin G",mALVGS2DMD,0)
 
+INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
+ALVGROMSTART(wrldtou3,	"cpu03.512", CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
+ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
+						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
+						"samp_1.c21", CRC(621533c6) SHA1(ca0ed9e89c340cb3b08f9a9002af9997372c1cbf),
+						"samp_2.c21", CRC(454a5cca) SHA1(66b1a5832134365fd762fcba4cf4d666f60ebd65),
+						"samp_3.c21", CRC(1f4928f4) SHA1(9949ab96644984fab8037224f52ec28d7d7cc967))
+ALVGDMD_SPLIT_ROM(		"dot03.512", CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c9ed5c1770ca4),
+						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
+						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
+ALVG_ROMEND
+#define input_ports_wrldtou3 input_ports_wrldtour
+CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On A World Tour R06a",1992,"Alvin G",mALVGS2DMD,0)
+
 /*-------------------------------------------------------------------
 / U.S.A. Football
 /-------------------------------------------------------------------*/
