@@ -57,6 +57,14 @@ S9_ROMEND
 #define input_ports_sshtl input_ports_s11
 CORE_GAMEDEF(sshtl, l7, "Space Shuttle (L-7)", 1984, "Williams", s9_mS9S,0)
 
+S9_ROMSTARTx4(sshtl,l3,"cpu_u20.l3", CRC(dc5f08e0) SHA1(67869c1db4e1f49f38588978d4ed32fe7d62e2d6))
+S9S_SOUNDROM4111(      "cpu_u49.128", CRC(8050ae27) SHA1(e3f5e9398f61b075620ecd075617a8dac3c07d0e),
+                       "spch_u4.732", CRC(b0d03c5e) SHA1(46b952f71a7ecc03e22e427875f6e16a9d124067),
+                       "spch_u5.732", CRC(13edd4e5) SHA1(46c4052c31ddc20bb87445636f8fe3b6f7bff856),
+                       "spch_u6.732", CRC(cf48b2e7) SHA1(fe55419a5d40b3a4e8c02a92746b25a075b8efd3))
+S9_ROMEND
+CORE_CLONEDEF(sshtl, l3, l7, "Space Shuttle (L-3)", 1984, "Williams", s9_mS9S,0)
+
 /*--------------------
 / Sorcerer (S9) 03/85
 /--------------------*/
