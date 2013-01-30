@@ -176,6 +176,14 @@ DE_ROMEND
 #define input_ports_torp input_ports_des11
 CORE_GAMEDEF(torp,e21,"Torpedo Alley (2.1, Europe)",1988,"Data East",de_mDEAS1, 0)
 
+DE_ROMSTART88(torp_a16,"b5.256",CRC(89711a7c) SHA1(b976b32b287d6cbaf4c448697f8aa12452db1f0b),
+                    "c5.256",CRC(3b3d754f) SHA1(c5d4a09f4daf92af78d778148377fa0d2a550761))
+DE1S_SOUNDROM244(   "torpef7.rom",CRC(26f4c33e) SHA1(114f85e93e7b699c4cd6ce1298f95228d439deba),      //F7 on schem (sound)
+                    "torpef6.rom",CRC(b214a7ea) SHA1(d972148395581844e3eaed08f755f3e2217dbbc0),      //F6 on schem (voice1)
+                    "torpef4.rom",CRC(83a4e7f3) SHA1(96deac9251fe68cc0319ac009becd424c4e444c5))      //F4 on schem (voice2)
+DE_ROMEND
+CORE_CLONEDEF(torp,a16,e21,"Torpedo Alley (1.6)",1988,"Data East",de_mDEAS1, 0)
+
 /*--------------------------------------------------------------------------
 / Time Machine - CPU Rev 2 /Alpha Type 2 16/32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------*/
