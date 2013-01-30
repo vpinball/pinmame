@@ -460,10 +460,18 @@ S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343b
 S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
                         "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
 S11_ROMEND
+S11_ROMSTART48(taxi, p5,"taxi_u26.p5", CRC(b02bf136) SHA1(e4ec9f9966be3b68d4bff3e028b03cf5248c0c54),
+                        "taxi_u27.p5", CRC(ea8065d1) SHA1(08cfb8f9d8f634f2719cc1ce00e6a8f8cee5cdbe))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
 #define input_ports_taxi input_ports_s11
 CORE_GAMEDEF(taxi , l4, "Taxi (Lola) (L-4)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marilyn) (L-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (L-1) Germany", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , p5, l4, "Taxi (P-5)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Jokerz 1/89
