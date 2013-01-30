@@ -628,6 +628,7 @@ DRIVERNV(stargat4)      //                Stargate (rev.4)
 DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt (rev.3)
 DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares (rev.6)
 DRIVERNV(snspare1)      //                Strikes 'N Spares (rev.1)
+DRIVERNV(snspare2)      //                Strikes 'N Spares (rev.2)
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
 DRIVERNV(waterwl2)      //                Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
