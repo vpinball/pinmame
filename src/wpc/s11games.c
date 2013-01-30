@@ -456,6 +456,15 @@ S11_ROMEND
 #define input_ports_swrds input_ports_s11
 CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11BS, 0)
 
+S11_ROMSTART48(swrds,l1,"swrd_u26.l1", CRC(e7a54874) SHA1(9f3486a0eed32ab0919805bed771ffd214a78967),
+                        "swrd_u27.l1", CRC(885dc3d6) SHA1(26463efb476c0bbfc3cb49b450167c4a985672bf))
+S11XS_SOUNDROM88(       "swrd_u21.l1", CRC(ee8b0a64) SHA1(c2c52059a9a5f7c0abcfdd76cfc6d5b5451f7d1e),
+                        "swrd_u22.l1", CRC(73dcdbb0) SHA1(66f5b3804442a1742b6fb3cccf539c4df956b3f2))
+S11CS_SOUNDROM88(       "swrd_u4.l1",  CRC(272b509c) SHA1(756d3783f664ca1c41dd1d12032330b74c3f89ea),
+                        "swrd_u19.l1", CRC(a22f84fa) SHA1(1731e86e85cca2d283512d5048c787df3970c9c5))
+S11_ROMEND
+CORE_CLONEDEF(swrds, l1, l2, "Swords of Fury (L-1)", 1988, "Williams", s11_mS11BS, 0)
+
 /*--------------------
 / Taxi 10/88
 /--------------------*/

@@ -1690,7 +1690,8 @@ DRIVER(bnzai,pa)        //S11-566:  05/88 W Banzai Run (P-A)
 DRIVER(bnzai,l1)        //          05/88 W Banzai Run (L-1)
 DRIVER(bnzai,l3)        //          05/88 W Banzai Run (L-3)
 DRIVER(bnzai,g3)        //          05/88 W Banzai Run (L-3 Germany)
-DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
+DRIVER(swrds,l1)        //S11-559:  06/88 W Swords of Fury (L-1)
+DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury (L-2)
 DRIVER(taxi,p5)         //S11-553:  08/88 W Taxi (P-5)
 DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1) Germany
 DRIVER(taxi,l3)         //          08/88 W Taxi (Marilyn)
