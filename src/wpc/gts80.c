@@ -210,15 +210,19 @@ static WRITE_HANDLER(riot6532_1b_w) {
   const int alpha = GTS80locals.alphaData  & 0x7f; // shortcut
   if (data & ~GTS80locals.riot1b & 0x10) { // LD1 (falling edge)
     GTS80locals.segments[GTS80locals.segPos1].w |= (GTS80locals.alphaData & 0x80);
-    if (alpha == 0x01)
+    if (alpha == 0x01) {
       GTS80locals.segPos1 = -2;
+      GTS80locals.segPos2 = 0;
+    }
     else if (GTS80locals.segPos1 >= 0)
       GTS80locals.segments[GTS80locals.segPos1].w |= GTS80locals.pseg[GTS80locals.segPos1].w = core_ascii2seg[alpha];
     if (GTS80locals.segPos1 < 19) GTS80locals.segPos1 = (GTS80locals.segPos1 + 1) % 0x14;
   } else if (data & ~GTS80locals.riot1b & 0x20) { // LD2
     GTS80locals.segments[20+GTS80locals.segPos2].w |= (GTS80locals.alphaData & 0x80);
-    if (alpha == 0x01)
-      GTS80locals.segPos2 = -2;
+    if (alpha == 0x01) {
+      GTS80locals.segPos1 = -2;
+      GTS80locals.segPos2 = 0;
+    }
     else if (GTS80locals.segPos2 >= 0)
       GTS80locals.segments[20+GTS80locals.segPos2].w |= GTS80locals.pseg[20+GTS80locals.segPos2].w = core_ascii2seg[alpha];
     GTS80locals.segPos2 = (GTS80locals.segPos2 + 1) % 0x14;
@@ -432,6 +436,10 @@ static MACHINE_INIT(gts80) {
     riot6532_config(1, &GTS80_riot6532_intf[1]); // BCD Seg
   riot6532_config(2, &GTS80_riot6532_intf[3]); // Lamp + Sol
 
+  riot6532_set_clock(0, 905000);
+  riot6532_set_clock(1, 905000);
+  riot6532_set_clock(2, 905000);
+
   GTS80locals.slamSw = 0x80;
 
   // Interrupt controller
@@ -460,7 +468,7 @@ static NVRAM_HANDLER(gts80) {
 
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD(M6502, 850000)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 3579545/4)
   MDRV_CPU_MEMORY(GTS80_readmem, GTS80_writemem)
   MDRV_CPU_VBLANK_INT(GTS80_vblank, 1)
   MDRV_SWITCH_UPDATE(GTS80)

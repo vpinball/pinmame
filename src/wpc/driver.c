@@ -547,6 +547,7 @@ DRIVERNV(tagteam)       //S80b-698: 09/85 Tag Team Wrestling
 DRIVERNV(tagteam2)      //                Tag Team Wrestling (rev.2)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
                         //S80b-700: ??/85 Ace High (never produced, playable whitewood exists)
+DRIVERNV(s80btest)      //S80B: Text Fixture
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
 DRIVERNV(ravena)        //                Raven (alternate set)
 DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
