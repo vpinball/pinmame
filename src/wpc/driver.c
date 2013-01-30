@@ -344,8 +344,9 @@ DRIVERNV(kpv106)        // 12/96    Kingpin
 DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War (8.3)
 DRIVER(lwar,e90)        //Data East MPU: 05/87 Laser War (9.0 Europe)
 //4 x 2 x 7 (mixed) A/N Display
-DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service
-DRIVER(ssvc,b26)        //Data East MPU: 03/88 Secret Service (alternate sound)
+DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service (2.6)
+DRIVER(ssvc,b26)        //Data East MPU: 03/88 Secret Service (2.6 Alternate Sound)
+DRIVER(ssvc,a42)        //Data East MPU: 03/88 Secret Service (4.2 Alternate Sound)
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley
 DRIVER(tmac,a18)        //Data East MPU: 12/88 Time Machine (1.8)
 DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine (2.4)
