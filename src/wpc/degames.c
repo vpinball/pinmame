@@ -818,6 +818,16 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
 DE_ROMEND
 CORE_CLONEDEF(tomy,h30,400,"Tommy (3.00 Holland)",1994,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(tomy_102,"tomcpua.102", CRC(e470b78e) SHA1(9d358e9d87469cdefb5c373f16c51774bbd390ea))
+DE_DMD32ROM8x(      "tommydva.300",CRC(1f2d0896) SHA1(50c617e30bb843c69a6ca8afeeb751c886f5e6bd))
+DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3ca2dbd6a89385a),
+                    "tommysnd.u17",CRC(11bb2aa7) SHA1(57b4867c109996861f45ead1ceedb7153aff852e),
+                    "tommysnd.u21",CRC(bb4aeec3) SHA1(2ac6cd25b79584fa6ad2c8a36c3cc58ab8ec0206),
+                    "tommysnd.u36",CRC(208d7aeb) SHA1(af8af2094d1a91c7b4ef8ac6d4f594728e97450f),
+                    "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
+DE_ROMEND
+CORE_CLONEDEF(tomy,102,400,"Tommy (1.02)",1994,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
