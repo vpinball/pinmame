@@ -251,6 +251,14 @@ DE_ROMEND
 #define input_ports_robo input_ports_des11
 CORE_GAMEDEF(robo,a34,"Robocop (3.4)",1989,"Data East",de_mDEAS1,0)
 
+DE_ROMSTART88(robo_a30,"b5.256",CRC(6870f3ae) SHA1(f02cace5f1d1922aed52c84efe60a46e5297865c),
+                   "c5.256",CRC(f2de58cf) SHA1(0b5dd14761b4c64c1b01faad923ab671573499c5))
+DE1S_SOUNDROM244(  "robof7.rom",CRC(fa0891bd) SHA1(332d03c7802989abf717564230993b54819ebc0d),       //F7 on schem (sound)
+                   "robof6.rom",CRC(9246e107) SHA1(e8e72c0d099b17ea9e59ea7794011bad4c072c5e),       //F6 on schem (voice1)
+                   "robof4.rom",CRC(27d31df3) SHA1(1611a508ce74eb62a07296d69782ea4fa14503fc))       //F4 on schem (voice2)
+DE_ROMEND
+CORE_CLONEDEF(robo,a30,a34,"Robocop (3.0)",1989,"Data East",de_mDEAS1,0)
+
 /*-------------------------------------------------------------------------------
 / Phantom of the Opera - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /-------------------------------------------------------------------------------*/
