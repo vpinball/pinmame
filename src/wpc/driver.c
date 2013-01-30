@@ -325,6 +325,7 @@ DRIVERNV(abv106)        // 03/96    Airborne
 DRIVERNV(abv106r)       // 03/96    Airborne (Redemption)
 DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
 DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)
+DRIVERNV(bsv102)        // 05/96    Breakshot (1.2)
 DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
 DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
 DRIVERNV(ffv101)        // 10/96    Flipper Football (1.01)
