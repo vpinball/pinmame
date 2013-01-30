@@ -2218,6 +2218,7 @@ DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
                         //04/82 Pinball Champ '82 (using the same roms as the '83 version)
 DRIVERNV(socrking)      //09/82 Soccer Kings
+DRIVERNV(socrkina)      //09/82 Soccer Kings (alternate set)
 DRIVERNV(socrkngi)      //      Soccer Kings (Italian speech)
 DRIVERNV(socrkngg)      //      Soccer Kings (German speech)
 DRIVERNV(sockfp)        //09/82 Soccer Kings (Free Play)
