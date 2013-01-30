@@ -51,7 +51,8 @@ DRIVERNV(dinoeggs)      //Dinosaur Eggs (1993)
 //DRIVERNV(maxbadaz)    //Max Badazz (1993) - 1 Unit
 DRIVERNV(mystcast)      //Mystery Castle (1993)
 DRIVERNV(mystcasa)      //Mystery Castle (alternate set, 199?)
-DRIVERNV(pstlpkr)       //Pistol Poker (1993)
+DRIVERNV(pstlpkr)	//Pistol Poker R02 (1993)
+DRIVERNV(pstlpkr1)	//Pistol Poker R01 (1993)
 DRIVERNV(punchy)        //Punchy the Clown (1993)
                         //A-MAZE-ING Baseball (1994) - any units?
 //DRIVERNV(slamnjam)    //Slam N Jam (1994) - 2 Units
