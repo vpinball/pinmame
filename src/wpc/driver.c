@@ -1709,6 +1709,8 @@ DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1)
 DRIVER(bk2k,lg1)        //          04/89 W Black Knight 2000 (LG-1)
 DRIVER(bk2k,lg3)        //          04/89 W Black Knight 2000 (LG-3)
 DRIVER(bk2k,l4)         //          04/89 W Black Knight 2000 (L-4)
+DRIVER(bk2k,la2)        //S11-563:  04/89 W Black Knight 2000 (LA-2)
+DRIVER(bk2k,pa7)        //S11-563:  04/89 W Black Knight 2000 (PA-7)
                         //S11:      05/89 W Pool
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue
