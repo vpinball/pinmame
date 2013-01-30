@@ -300,6 +300,15 @@ S11_ROMEND
 #define input_ports_fire input_ports_s11
 CORE_GAMEDEF(fire, l3, "Fire! (L-3)", 1987, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(fire,l2,"fire_u26.l2", CRC(05434ea7) SHA1(462808954de18fed25e6df8f4cc66acdd05a3d85),
+                       "fire_u27.l2", CRC(517d0367) SHA1(b31e591cc24fe937124d8c1da69ab654c12bbb65))
+S11XS_SOUNDROM88(      "fire_u21.l2", CRC(2edde0a4) SHA1(de292a340a3a06b0b996fc69fee73eb7bbfbbe64),
+                       "fire_u22.l2", CRC(16145c97) SHA1(523e99df3907a2c843c6e27df4d16799c4136a46))
+S11CS_SOUNDROM8(       "fire_u4.l1",  CRC(0e058918) SHA1(4d6bf2290141119174787f8dd653c47ea4c73693))
+
+S11_ROMEND
+CORE_CLONEDEF(fire, l2, l3, "Fire! (L-2)", 1987, "Williams", s11_mS11AS,0)
+
 /*--------------------
 / Big Guns 10/87
 /--------------------*/
