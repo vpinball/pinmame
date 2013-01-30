@@ -1725,7 +1725,8 @@ DRIVER(eatpm,4u)        //          10/89 B Elvira and the Party Monsters (L-4 E
 DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (L-4 German)
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
-DRIVER(rvrbt,l3)        //S11-1966: 09/90 W Riverboat Gambler
+DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
+DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (L-1)
 DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (L-4)
