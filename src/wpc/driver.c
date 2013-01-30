@@ -1643,7 +1643,8 @@ DRIVER(pfevr,l2)        //          05/84 W Pennant Fever (pitch & bat)
 DRIVER(scrzy,l1)        //S8-543:   ??/84 W Still Crazy
 //System 9
                         //S?-538:   10/84 W Gridiron
-DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
+DRIVER(sshtl,l3)        //S9-535:   12/84 W Space Shuttle (L-3)
+DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle (L-7)
 DRIVER(szone,l2)        //S9-916:   ??/84 W Strike Zone (L-2) (Shuffle)
 DRIVER(szone,l5)        //          ??/84 W Strike Zone (L-5) (Shuffle)
 DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer (L-1)
