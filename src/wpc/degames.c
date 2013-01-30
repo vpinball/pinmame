@@ -1006,6 +1006,20 @@ DE_ROMEND
 CORE_CLONEDEFNV(batmanf3,batmanf,"Batman Forever (3.0)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
+/ Batman Forever (1.02) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+DE_ROMSTARTx0(batmanf1, "batcpua.102", CRC(aafba427) SHA1(485fa3b76569a8c9ed640e9fa8fd714fdd2268b8))
+DE_DMD64ROM88(          "bmfrom0.100",CRC(4d65a45c) SHA1(b4a112f8a70ad887e1a23291bcec1d55bd7277c1),
+                        "bmfrom3.100",CRC(b4b774d1) SHA1(5dacfb5cedc597dbb2d72e83de4979eb19b19d72))
+DE2S_SOUNDROM144(       "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
+                        "bmfu17.bin" ,CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
+                        "bmfu21.bin" ,CRC(e41a516d) SHA1(9c41803a01046e57f8bd8759fe5e62ad6abaa80c))
+DE_ROMEND
+#define input_ports_batmanf1 input_ports_batmanf
+#define init_batmanf1        init_batmanf
+CORE_CLONEDEFNV(batmanf1,batmanf,"Batman Forever (1.02)",1995,"Sega",de_mDEDMD64S2A,0)
+
+/*-------------------------------------------------------------
 / Batman Forever (UK) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 DE_ROMSTARTx0(bmf_uk,"batnove.401",CRC(80f6e4af) SHA1(dd233d2150dcb50b74a70e6ff89c74a3f0d8fae1))

@@ -828,6 +828,7 @@ DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
 DRIVERNV(bay_e400)      //DE/Sega MPU: 03/95 Baywatch (England)
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
 DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
+DRIVERNV(batmanf1)      //DE/Sega MPU: 07/95 Batman Forever (1.02)
 DRIVERNV(bmf_uk)        //DE/Sega MPU: 07/95 Batman Forever (UK)
 DRIVERNV(bmf_at)        //DE/Sega MPU: 07/95 Batman Forever (Austria)
 DRIVERNV(bmf_be)        //DE/Sega MPU: 07/95 Batman Forever (Belgium)
