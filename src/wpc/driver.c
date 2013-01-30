@@ -341,6 +341,7 @@ DRIVERNV(kpv106)        // 12/96    Kingpin
 // DATA EAST GAMES
 // -------------------
 //4 x 2 x 7 (mixed) + credits A/N Display
+DRIVER(lwar,a81)        //Data East MPU: 05/87 Laser War (8.1)
 DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War (8.3)
 DRIVER(lwar,e90)        //Data East MPU: 05/87 Laser War (9.0 Europe)
 //4 x 2 x 7 (mixed) A/N Display
