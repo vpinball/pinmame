@@ -248,7 +248,18 @@ DE2S_SOUNDROM1444("u7_b130.512" ,CRC(f1559e4f) SHA1(82b56f097412052bc1638a3f1c13
                   "u36_95a7.040",CRC(c1e4ca6a) SHA1(487de78ebf1ee8cc721f2ef7b1bd42d2f7b27456))
 SE_ROMEND
 #define input_ports_startrp input_ports_se
-CORE_GAMEDEFNV(startrp,"Starship Troopers",1997,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(startrp,"Starship Troopers (2.01)",1997,"Sega",de_mSES1,0)
+
+INITGAME(startrp2,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(startrp2, "sstcpu.200",CRC(1bd865a5) SHA1(770d87d5108b58e214e551cfdcd4b75a11d6b88b))
+DE_DMD32ROM8x(    "sstdspa.200",CRC(76a0e09e) SHA1(a4103aeee752d824a3811124079e40acc7286271))
+DE2S_SOUNDROM1444("u7_b130.512" ,CRC(f1559e4f) SHA1(82b56f097412052bc1638a3f1c1319009df707f4),
+                  "u17_152a.040",CRC(8caeccdb) SHA1(390f07e48a176a24fe99a202f3fa2b9767d84230),
+                  "u21_0291.040",CRC(0c5321f6) SHA1(4a51daa16d489ab61d462d44f887c8422f863c5c),
+                  "u36_95a7.040",CRC(c1e4ca6a) SHA1(487de78ebf1ee8cc721f2ef7b1bd42d2f7b27456))
+SE_ROMEND
+#define input_ports_startrp2 input_ports_startrp
+CORE_CLONEDEFNV(startrp2,startrp,"Starship Troopers (2.00)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Viper Night Drivin'
