@@ -536,6 +536,15 @@ NORMALREGION(0x100000, REGION_USER3) \
 GTS3_ROMEND
 CORE_CLONEDEFNV(snspare1,snspares,"Strikes n' Spares (rev.1)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
+#define init_snspare2 init_snspares
+#define input_ports_snspare2 input_ports_snspares
+GTS3ROMSTART(snspare2,  "gprom2.bin",CRC(79906dfc) SHA1(1efb68dd391f79e6f8ad5a588145d6ad7b36743c))
+GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
+NORMALREGION(0x100000, REGION_USER3) \
+  GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
+GTS3_ROMEND
+CORE_CLONEDEFNV(snspare2,snspares,"Strikes n' Spares (rev.2)",1995,"Gottlieb",mGTS3DMDS2, 0)
+
 /*-----------------------------
 / League Champ (Shuffle Alley)
 /------------------------------*/
