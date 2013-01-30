@@ -357,7 +357,8 @@ DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
-DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera
+DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
+DRIVER(poto,a29)        //Data East MPU: 01/90 Phantom of the Opera (2.9)
 DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
 DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
 DRIVER(bttf,a27)        //Data East MPU: 12/90 Back to the Future (2.7)
