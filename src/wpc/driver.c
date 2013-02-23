@@ -2100,6 +2100,7 @@ DRIVER(tom,101f)        //                  Theatre of Magic (1.01 French) LED G
 DRIVER(tom,12)          //          04/95 B Theatre of Magic (1.2X)
 DRIVER(tom,121)         //                  Theatre of Magic (1.21X) LED Ghost Fix
 DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
+DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
