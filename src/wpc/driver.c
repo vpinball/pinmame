@@ -875,7 +875,8 @@ DRIVERNV(startrp2)      //Whitestar: 11/97 Starship Troopers (2.00)
 DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
 DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
-DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
+DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin' (2.01)
+DRIVERNV(vipr_102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
