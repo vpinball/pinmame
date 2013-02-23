@@ -292,7 +292,19 @@ DE2S_SOUNDROM14444("vpru7.dat" ,CRC(f21617d7) SHA1(78d1ade400b83c62bb6288bccf386
                   "vpru37.dat",CRC(0bf23e0e) SHA1(b5724ed6cfe791320a8cf208cc20a2d3f0db85c8))
 SE_ROMEND
 #define input_ports_viprsega input_ports_se
-CORE_GAMEDEFNV(viprsega,"Viper Night Drivin'",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(viprsega,"Viper Night Drivin' (2.01)",1998,"Sega",de_mSES1,0)
+
+INITGAME(vipr_102,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(vipr_102, "vipcpu.102",CRC(6046974b) SHA1(56e3de5ccb5a04d6ee5555ee6755835e75e7454f))
+DE_DMD32ROM8x(   "vipdspa.100",CRC(25acf3db) SHA1(3476f2b95cfff9dfb4fe9cf7c5cccae85f23343a))
+DE2S_SOUNDROM14444("vpru7.dat" ,CRC(f21617d7) SHA1(78d1ade400b83c62bb6288bccf386ef34050dd04),
+                  "vpru17.dat",CRC(47b1317c) SHA1(32259965b5a12f63267af96eef8396bf71895a65),
+                  "vpru21.dat",CRC(0e0e2dd6) SHA1(b409c837a52eb399c9a4896ca0c502360c93dcc9),
+                  "vpru36.dat",CRC(7b482876) SHA1(c8960c2d45a77a35d22408c7bb8ba322e7af36f0),
+                  "vpru37.dat",CRC(0bf23e0e) SHA1(b5724ed6cfe791320a8cf208cc20a2d3f0db85c8))
+SE_ROMEND
+#define input_ports_vipr_102 input_ports_viprsega
+CORE_CLONEDEFNV(vipr_102, viprsega,"Viper Night Drivin' (1.02)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Lost in Space
