@@ -167,4 +167,12 @@ BY8035_ROMSTART(kissp,"kiss8755.bin",CRC(894c1052) SHA1(579ce3c8ec374f2cd17928ab
                       "kissprot.u6", CRC(bcdfaf1d) SHA1(d21bebbf702b400eb71f8c88be50a180a5ac260a),
                       "kissprot.u7", CRC(d97da1d3) SHA1(da771a08969a12105c7adc9f9e3cbd1677971e79))
 ROM_END
-CORE_CLONEDEFNV(kissp,kiss,"Kiss (prototype)",1979,"Bally",by8035,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(kissp,"Kiss (prototype)",1979,"Bally",by8035,GAME_NOT_WORKING)
+
+INITGAMEP0(kissp2,FLIP_SW(FLIP_L),0)
+BY8035_ROMSTART(kissp2,"8755u8.dat", CRC(d2d04100) SHA1(fe81f3667cb5802c9780761a359660bad83862c2),
+                      "kissprot.u5", CRC(38a2ef5a) SHA1(4ffdb2e9aa30417d506af3bc4b6835ba1dc80e4f),
+                      "kissprot.u6", CRC(bcdfaf1d) SHA1(d21bebbf702b400eb71f8c88be50a180a5ac260a),
+                      "u7.dat",      CRC(e224a9b0) SHA1(2a0e3afad8c566432ebe690ff1ce6fa92b68816f))
+ROM_END
+CORE_CLONEDEFNV(kissp2,kissp,"Kiss (prototype v.2)",1979,"Bally",by8035,GAME_NOT_WORKING)

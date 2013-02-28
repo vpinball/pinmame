@@ -139,6 +139,7 @@ DRIVERNV(kissb   )      //BY35      05/05 Kiss (7-digit conversion)
 DRIVERNV(kissc   )      //BY35      10/08 Kiss (7-digit Rev3 Free Play)
 DRIVERNV(kissd   )      //BY35      10/08 Kiss (/10 Free Play)
 DRIVERNV(kissp   )      //BY35      ??/?? Kiss (prototype)
+DRIVERNV(kissp2  )      //BY35      ??/?? Kiss (prototype v.2)
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
 DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
