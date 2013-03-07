@@ -212,8 +212,8 @@ static void init_mdntmrdr(void) { core_gameData = &mdntmrdrGameData; }
 BY35_ROMSTARTx00(mdntmrdr, "mdru2.532", CRC(f72668bc) SHA1(25b984e1828905190c73c359ee6c9858ed1b2224),
                            "mdru6.732", CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
 SOUNDREGION(0x10000, REGION_CPU2)
-  ROM_LOAD("u3.bin", 0xd000, 0x1000, NO_DUMP)
-  ROM_LOAD("u5.bin", 0xf000, 0x1000, NO_DUMP)
+  ROM_LOAD("u3.bin", 0xd000, 0x1000, CRC(3ba474e4) SHA1(4ee5c3ad2c9dca49e9394521506e97a95e3d9a17))
+  ROM_LOAD("u5.bin", 0xf000, 0x1000, CRC(3ab40e35) SHA1(63b2ee074e5993a2616e67d3383bc3d3ac51b400))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(mdntmrdr,1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",marauders,0)
