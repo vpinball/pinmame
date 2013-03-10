@@ -973,7 +973,18 @@ DE2S_SOUNDROM144(       "bayw.u7"  ,   CRC(90d6d8a8) SHA1(482c5643453f21a078257a
                         "bayw.u21" ,   CRC(b7598881) SHA1(19d1dde1cb6634a7c7b5cdb4fa01cd09cc7d7777))
 DE_ROMEND
 #define input_ports_baywatch input_ports_des112
-CORE_GAMEDEFNV(baywatch,"Baywatch",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_GAMEDEFNV(baywatch,"Baywatch 4.00",1995,"Sega",de_mDEDMD64S2A,0)
+
+#define init_bay_d400 init_baywatch
+DE_ROMSTARTx0(bay_d400, "baycpud.400", CRC(45019616) SHA1(5a1e04cdfa00f179f010c09fae52d090553cd82e))
+DE_DMD64ROM88(          "bayrom0a.400",CRC(43d615c6) SHA1(7c843b6d5215305b02a55c9fa1d62375ef0766ea),
+                        "bayrom3a.400",CRC(41bcb66b) SHA1(e6f0a9236e14c2e919881ca1ffe3356aaa121730))
+DE2S_SOUNDROM144(       "bayw.u7"  ,   CRC(90d6d8a8) SHA1(482c5643453f21a078257aa13398845ef19cab3c),
+                        "bayw.u17" ,   CRC(b20fde56) SHA1(2f2db49245e4a6a8251cbe896b2437fcec88d42d),
+                        "bayw.u21" ,   CRC(b7598881) SHA1(19d1dde1cb6634a7c7b5cdb4fa01cd09cc7d7777))
+DE_ROMEND
+#define input_ports_bay_d400 input_ports_baywatch
+CORE_CLONEDEFNV(bay_d400,baywatch,"Baywatch 4.00 (Dutch/Holland/Netherlands)",1995,"Sega",de_mDEDMD64S2A,0)
 
 #define init_bay_e400 init_baywatch
 DE_ROMSTARTx0(bay_e400, "baycpua2.400", CRC(07b77fe2) SHA1(4f81a5b3d821907e06d6b547117ad39c238a900c))
@@ -985,7 +996,7 @@ DE2S_SOUNDROM1444(       "bw-u7.bin"  ,   CRC(a5e57557) SHA1(a884c1118331b872450
                         "bw-u36.bin" ,  CRC(1877abc5) SHA1(13ca231a486495a83cc1d9c6dde558a57eb4abe1))
 DE_ROMEND
 #define input_ports_bay_e400 input_ports_baywatch
-CORE_CLONEDEFNV(bay_e400,baywatch,"Baywatch (England)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bay_e400,baywatch,"Baywatch 4.00 (England)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever 4.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom

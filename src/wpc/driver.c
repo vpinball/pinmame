@@ -829,8 +829,9 @@ DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
 DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein (Germany)
-DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
-DRIVERNV(bay_e400)      //DE/Sega MPU: 03/95 Baywatch (England)
+DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch 4.00
+DRIVERNV(bay_d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch/Holland/Netherlands)
+DRIVERNV(bay_e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (England)
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
 DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
 DRIVERNV(batmanf2)      //DE/Sega MPU: 07/95 Batman Forever (2.02)
