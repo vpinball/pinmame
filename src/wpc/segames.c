@@ -52,8 +52,19 @@ DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6
                   "apollo13.u21",CRC(28169e37) SHA1(df5209d24187b546a4296fc4629c58bf729349d2),
                   "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
 SE_ROMEND
-#define input_ports_apollo1 input_ports_se
-CORE_GAMEDEFNV(apollo1,"Apollo 13 (v1.00)",1995,"Sega",de_mSES1,0)
+#define input_ports_apollo1 input_ports_apollo13
+CORE_CLONEDEFNV(apollo1,apollo13,"Apollo 13 (v1.00)",1995,"Sega",de_mSES1,0)
+
+INITGAME(apollo2,GEN_WS,se_apollo,SE_DIGIT)
+SE128_ROMSTART(apollo2,"a13cpu.203",CRC(4af048fc) SHA1(c82459247707a6cf07a10cc884f1391d0ca536a3))
+DE_DMD32ROM8x(   "a13dps.201",CRC(ab97a71c) SHA1(1e01d3c2ac1b9153fb4f3f888fe01fcebbf853d7))
+DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
+                  "apollo13.u17",CRC(4e863aca) SHA1(264f9176a1abf758b7a894d83883330ef91b7388),
+                  "apollo13.u21",CRC(28169e37) SHA1(df5209d24187b546a4296fc4629c58bf729349d2),
+                  "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
+SE_ROMEND
+#define input_ports_apollo2 input_ports_apollo13
+CORE_CLONEDEFNV(apollo2,apollo13,"Apollo 13 (v2.03)",1995,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Goldeneye
