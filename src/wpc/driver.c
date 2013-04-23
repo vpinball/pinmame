@@ -1910,6 +1910,7 @@ DRIVER(dw,l1)           //          10/92 B Doctor Who (L-1)
 DRIVER(dw,d1)           //                  Doctor Who (D-1) LED Ghost Fix
 DRIVER(dw,l2)           //          11/92 B Doctor Who (L-2)
 DRIVER(dw,d2)           //                  Doctor Who (D-2) LED Ghost Fix
+DRIVER(cftbl,p3)        //WPC:      01/93 B Creature from the Black Lagoon (P-3)
 DRIVER(cftbl,l3)        //WPC-218:  01/93 B Creature from the Black Lagoon (L-3, Sound P-1)
 DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3, Sound P-1) LED Ghost Fix
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
