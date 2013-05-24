@@ -1966,6 +1966,7 @@ DRIVER(tz,f50)          //          ??/??   Twilight Zone (FreeWPC 0.50)
 DRIVER(tz,f86)          //          ??/??   Twilight Zone (FreeWPC 0.86)
 DRIVER(tz,f97)          //          05/10   Twilight Zone (FreeWPC 0.97)
 DRIVER(tz,f100)         //          08/11   Twilight Zone (FreeWPC 1.00)
+DRIVER(ij,p2)           //WPC-517:  07/93 W Indiana Jones (P-2)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
 DRIVER(ij,d3)           //                  Indiana Jones (D-3) LED Ghost Fix
 DRIVER(ij,l4)           //          08/93 W Indiana Jones (L-4)
