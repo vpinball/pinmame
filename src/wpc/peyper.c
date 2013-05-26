@@ -42,8 +42,7 @@ static INTERRUPT_GEN(PEYPER_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  if ((locals.vblankCount % PEYPER_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % PEYPER_SOLSMOOTH) == 0)
@@ -138,12 +137,13 @@ static WRITE_HANDLER(i8279_w) {
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
-      if (!locals.segments[40 + locals.i8279reg].w) { // load replay values
+      if ((coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
         locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
         locals.segments[36].w = core_bcd2seg7[0];
+      } else {
+        locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];
+        locals.segments[31 - locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
       }
-      locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];
-      locals.segments[31 - locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
       // mapping various lamps (million, player up, game over, tilt) from segments data
       switch (locals.i8279reg) {
         case  2:
