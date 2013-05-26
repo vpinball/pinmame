@@ -86,7 +86,6 @@
 
 #define PEYPER_COMINPORT       CORE_COREINPORT
 
-#define PEYPER_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define PEYPER_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 #define PEYPER_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 
