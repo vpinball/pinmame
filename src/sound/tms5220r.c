@@ -380,13 +380,18 @@ static const struct tms5100_coeffs tms5200_coeff =
 		{ -190, -133,  -73,  -10,   53,  115,  173,  227 },
 	},
 	/* Chirp table */
-	{   0,  42, -44, 50, -78, 18, 37, 20,
-	    2, -31, -59,  2,  95, 90,  5, 15,
-	   38, -4,  -91,-91, -42,-35,-36, -4,
-	   37, 43,   34, 33,  15, -1, -8,-18,
-	  -19,-17,   -9,-10,  -6,  0,  3,  2,
-	    1,  0,    0,  0,   0,  0,  0,  0,
-	    0,  0,    0,  0 },
+   { 0x00, 0x2a, (char)0xd4, 0x32,
+     (char)0xb2, 0x12, 0x25, 0x14,
+     0x02, (char)0xe1, (char)0xc5, 0x02,
+     0x5f, 0x5a, 0x05, 0x0f,
+     0x26, (char)0xfc, (char)0xa5, (char)0xa5,
+     (char)0xd6, (char)0xdd, (char)0xdc, (char)0xfc,
+     0x25, 0x2b, 0x22, 0x21,
+     0x0f, (char)0xff, (char)0xf8, (char)0xee,
+     (char)0xed, (char)0xef, (char)0xf7, (char)0xf6,
+     (char)0xfa, 0x00, 0x03, 0x02,
+     0x01
+   },
 	/* interpolation coefficients */
 	{ 0, 3, 3, 3, 2, 2, 2, 1 }
 };
@@ -449,13 +454,18 @@ static const struct tms5100_coeffs tms5220_coeff =
 		{ -205, -132,  -59,   14,   87,  160,  234,  307  },
 	},
 	/* Chirp table */
-	{   0,  42, -44, 50, -78, 18, 37, 20,
-	    2, -31, -59,  2,  95, 90,  5, 15,
-	   38, -4,  -91,-91, -42,-35,-36, -4,
-	   37, 43,   34, 33,  15, -1, -8,-18,
-	  -19,-17,   -9,-10,  -6,  0,  3,  2,
-	    1,  0,    0,  0,   0,  0,  0,  0,
-	    0,  0,    0,  0 },
+   { 0x00, 0x2a, (char)0xd4, 0x32,
+     (char)0xb2, 0x12, 0x25, 0x14,
+     0x02, (char)0xe1, (char)0xc5, 0x02,
+     0x5f, 0x5a, 0x05, 0x0f,
+     0x26, (char)0xfc, (char)0xa5, (char)0xa5,
+     (char)0xd6, (char)0xdd, (char)0xdc, (char)0xfc,
+     0x25, 0x2b, 0x22, 0x21,
+     0x0f, (char)0xff, (char)0xf8, (char)0xee,
+     (char)0xed, (char)0xef, (char)0xf7, (char)0xf6,
+     (char)0xfa, 0x00, 0x03, 0x02,
+     0x01
+   },
 	/* interpolation coefficients */
 	{ 0, 3, 3, 3, 2, 2, 2, 1 }
 };
