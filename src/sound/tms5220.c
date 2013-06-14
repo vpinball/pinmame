@@ -294,7 +294,7 @@ device), PES Speech adapter (serial port connection)
 #undef VOICED_ZERO_HACK
 #undef VOICED_PULSE_HACK
 #define VOICED_PULSE_MONOPOLAR_HACK 1
-#define PAMP 0x7f
+#define PAMP 0xaf
 #define PWIDTH 1
 
 /* Other hacks */
@@ -303,7 +303,7 @@ device), PES Speech adapter (serial port connection)
 #define ALLOW_4_LSB 1
 
 /* HACK: if defined, uses impossibly perfect 'straight line' interpolation */
-#define PERFECT_INTERPOLATION_HACK 1
+#define PERFECT_INTERPOLATION_HACK 0
 
 
 /* *****configuration of chip connection stuff***** */
