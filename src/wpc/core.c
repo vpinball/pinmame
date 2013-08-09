@@ -9,8 +9,8 @@
 #include "core.h"
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
+extern int doubleAlpha;
 #endif
-
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
@@ -660,6 +660,12 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout) {
+
+  #ifdef PROC_SUPPORT
+  // If we don't want the DMD displayed on the screen, skip this code
+  if (!pmoptions.virtual_dmd) return;
+  #endif
+
   UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
   UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
@@ -774,8 +780,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #ifdef PROC_SUPPORT
-			static UINT16 proc_top[16];
-			static UINT16 proc_bottom[16];
+		static UINT16 proc_top[16];
+		static UINT16 proc_bottom[16];
 #endif
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
@@ -793,6 +799,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
           switch (tmpType) {
+
           case CORE_SEG87: case CORE_SEG87F:
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
               if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
@@ -814,15 +821,20 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           }
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
-#ifdef PROC_SUPPORT
+#ifdef PROC_SUPPORT 
 					if (coreGlobals.p_rocEn) {
-						if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) &&
+                                                if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
 						    (!pmoptions.alpha_on_dmd)) {
-							if (top == 0) {
-								proc_top[left/16] = tmpSeg;
-							} else {
-								proc_bottom[left/16] = tmpSeg;
-							}
+                                                    switch (top) {
+                                                        case 0: proc_top[left/16 + (doubleAlpha == 0)] = tmpSeg; break;
+                                                        case 21:  // This is the ball/credit display if fitted, so work out which position
+                                                            if (left == 12) proc_bottom[0] = tmpSeg;
+                                                            else if (left == 24) proc_bottom[8] = tmpSeg;
+                                                            else if (left == 48) proc_top[0] = tmpSeg;
+                                                            else proc_top[8] = tmpSeg;
+                                                        break;
+                                                        default: proc_bottom[left/16 + (doubleAlpha == 0)] = tmpSeg; break;
+							} 
 						}
 					}
 #endif
@@ -834,8 +846,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         seg += step; lastSeg += step;
       }
 #ifdef PROC_SUPPORT
-			if (coreGlobals.p_rocEn) {
-				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) &&
+        		if (coreGlobals.p_rocEn) {
+				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
 				    (!pmoptions.alpha_on_dmd)) {
 					procUpdateAlphaDisplay(proc_top, proc_bottom);
 
@@ -849,7 +861,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 VIDEO_UPDATE(core_gen) {
   int count = 0;
 #ifdef PROC_SUPPORT
-	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2;
+  	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2 || core_gameData->gen & GEN_ALLS11;
 	if (coreGlobals.p_rocEn) {
 		if (pmoptions.alpha_on_dmd && alpha) {
 			procClearDMD();
@@ -861,7 +873,7 @@ VIDEO_UPDATE(core_gen) {
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
 		if (pmoptions.alpha_on_dmd && alpha) {
-			procUpdateDMD();
+                    	procUpdateDMD();
 		}
 	}
 #endif
@@ -879,9 +891,11 @@ void core_updateSw(int flipEn) {
   UINT8 swFlip;
   int ii;
 
-  if (g_fHandleKeyboard) {
-    for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
-      inports[ii] = readinputport(ii);
+  if (g_fHandleKeyboard ) {
+  
+   for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
+      inports[ii] = readinputport(ii); 
+      
 
     /*-- buttons --*/
     swFlip = 0;
@@ -903,9 +917,18 @@ void core_updateSw(int flipEn) {
   else
     swFlip = (coreGlobals.swMatrix[flipSwCol] ^ coreGlobals.invSw[flipSwCol]) & (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
 
-  /*-- set switches in matrix for non-fliptronic games --*/
-  if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
-  if (FLIP_SWR(flip)) core_setSw(FLIP_SWR(flip), swFlip & CORE_SWLRFLIPBUTBIT);
+#ifdef PROC_SUPPORT
+  /*-- Only handle flipper switches if we're not in a real game, otherwise they --*/
+  /*-- will get physically activated anyway */
+  if (!coreGlobals.p_rocEn) {
+#endif
+
+    /*-- set switches in matrix for non-fliptronic games --*/
+    if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
+    if (FLIP_SWR(flip)) core_setSw(FLIP_SWR(flip), swFlip & CORE_SWLRFLIPBUTBIT);
+#ifdef PROC_SUPPORT
+  }
+#endif
 
   /*-- fake solenoids if not CPU controlled --*/
   if ((flip & FLIP_SOL(FLIP_L)) == 0) {
@@ -948,7 +971,7 @@ void core_updateSw(int flipEn) {
     if (core_gameData->hw.handleMech) core_gameData->hw.handleMech(g_fHandleMechanics);
   }
   /*-- Run simulator --*/
-  if (coreGlobals.simAvail)
+    if (coreGlobals.simAvail)
     sim_run(inports, CORE_COREINPORT+(coreData->coreDips+31)/16,
             (inports[CORE_SIMINPORT] & SIM_SWITCHKEY) == 0,
             (SIM_BALLS(inports[CORE_SIMINPORT])));
@@ -986,6 +1009,7 @@ void core_updateSw(int flipEn) {
   if (g_fHandleKeyboard &&
       (!coreGlobals.simAvail || inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
     /*-- simulator keys disabled, use row+column keys --*/
+      
     static int lastRow = 0, lastCol = 0;
     int row = 0, col = 0;
 #ifdef MAME_DEBUG
@@ -1245,13 +1269,15 @@ int core_getSwCol(int colEn) {
 /  Set/reset a switch
 /-----------------------*/
 void core_setSw(int swNo, int value) {
-  if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
-  coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
+    if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+    //fprintf(stderr,"\nPinmame switch %d",swNo);
+    coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
 		coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ 0) & (1<<(swNo%8));
 	} else {
 #endif
+            
   coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 #ifdef PROC_SUPPORT
 	}
@@ -1403,11 +1429,25 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
 				if (pmoptions.alpha_on_dmd) {
-					/* Draw alphanumeric segments on the DMD */
-					if (row == 0) {
-						procDrawSegment(col/2, 3, kk-1);
-					} else {
-						procDrawSegment(col/2, 19, kk-1);
+                                    	/* Draw alphanumeric segments on the DMD */
+                                    switch (row) {
+                                        case 0:
+				            procDrawSegment(col/2, 3, kk-1);
+                                            break;
+                                        case 21:
+                                            // This is the ball/credit display on older Sys11
+                                            // Push through an 11 as the row
+                                            // number, the display routine will
+                                            // take care of repositioning
+                                            procDrawSegment(col/2,11,kk-1);
+                                            break;
+                                        case 42:
+                                            procDrawSegment(col/2, 19, kk-1);
+                                                break;
+                                        default:
+                                            break;
+						
+                                        
 					}
 				}
 			}
@@ -1458,8 +1498,8 @@ static MACHINE_INIT(core) {
 #ifdef PROC_SUPPORT
 		/*-- P-ROC operation requires a YAML.  Disable P-ROC operation
 		 * if no YAML is specified. --*/
+                 
 		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
-
 		if (coreGlobals.p_rocEn) {
 			/*-- Finish P-ROC initialization now that the sim is active. --*/
 			coreGlobals.p_rocEn = procIsActive();
@@ -1469,9 +1509,16 @@ static MACHINE_INIT(core) {
 				// TODO: deInit P-ROC here?
 			}
 			else {
-				g_fHandleKeyboard = 0;
-				g_fHandleMechanics = 0x0;
-			}
+                             // If this is a Sys11, need to check whether the extra
+                             // display is wanted or not
+                             if (core_gameData->gen & GEN_ALLS11) procBallCreditDisplay();
+
+                             // Added option to enable keyboard for direct switches to YAML
+                             g_fHandleKeyboard = procKeyboardWanted();
+
+                             // We don't want the PC to make the noises of pop bumpers etc
+                             g_fHandleMechanics= 0;
+                       }
 		}
 #endif
 
@@ -1504,7 +1551,6 @@ static MACHINE_INIT(core) {
     if (g_fHandleKeyboard && core_gameData->simData) {
       int inports[CORE_MAXPORTS];
       int ii;
-
       for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
         inports[ii] = readinputport(ii);
 

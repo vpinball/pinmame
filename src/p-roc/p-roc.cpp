@@ -18,7 +18,7 @@ extern "C" {
 // Handle to the P-ROC instance.
 PRHandle proc = NULL;
 
-// Global procType is used in many P-ROC functions to do different things
+// Global machineType is used in many P-ROC functions to do different things
 // based on the type of machine being used.
 PRMachineType machineType;
 
@@ -26,6 +26,18 @@ PRMachineType machineType;
 // Other p-roc support files need access to it. No sense passing it around
 // everywhere.
 YAML::Node yamlDoc;
+
+// We configure the position of the S11 ball and credit displays from the
+// YAML file.  Rather than read the YAMLDOC for every segment drawn to get
+// the info, create globals for them.  Less CPU cycles.
+// doubleAlpha indicates whether this machine has a lower display of 16
+// alphanumeric positions
+int S11CreditPos=0;
+int S11BallPos=0;
+int doubleAlpha=0;
+
+// Determine whether automatic patter detection is on or off by default
+bool autoPatterDetection = true;
 
 // Load/Parse the YAML file.
 PRMachineType procLoadMachineYAML(char *filename) {
@@ -40,6 +52,7 @@ PRMachineType procLoadMachineYAML(char *filename) {
 		while(parser) {
 				parser.GetNextDocument(yamlDoc);
 		}
+                
 		std::string machineTypeString;
 		yamlDoc["PRGame"]["machineType"] >> machineTypeString;
 		if (machineTypeString == "wpc") {
@@ -82,6 +95,27 @@ PRMachineType getRomMachineType() {
 				return kPRMachineWPCAlphanumeric;
 				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
 			}
+			break;
+                case GEN_DE:
+                
+                case GEN_S11A:
+                    
+                case GEN_S11:
+                case GEN_S11B2:
+                case GEN_S11C:
+
+			if (pmoptions.alpha_on_dmd) {
+				return kPRMachineWPC;
+				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
+			} else {
+				return kPRMachineWPCAlphanumeric;
+                                //return kPRMachineWPC;
+                                fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
+			}
+			break;
+                case GEN_DEDMD32:
+                	return kPRMachineWPC;
+			fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
 			break;
 		case GEN_WPCDMD:
 		case GEN_WPCFLIPTRON:
@@ -137,11 +171,71 @@ void procDeinitialize() {
 	}
 }
 
+// When testing and using pinmame it is useful to be able to run
+// the diagnostic switches from the keyboard instead of the machine
+// as having the door switches work the P-ROC requires additional
+// cabling. A YAML entry controls whether the keyboard is active or not
+int procKeyboardWanted(void) {
+    std::string keyb;
+    try {
+       yamlDoc["PRPinmame"]["keyboard"] >> keyb;
+    }
+    catch (...) {
+        keyb = "off";
+    }
+    if (keyb == "on") return 1;
+    else return 0;
+    }
+
+
+// Check patter detection from YAML
+void setPatterDetection(void) {
+    std::string pat;
+    try {
+        yamlDoc["PRPinmame"]["autoPatterDetection"] >> pat;
+    }
+    catch (...) {
+        pat = "on";
+    }
+    if (pat == "on") autoPatterDetection = true;
+    else autoPatterDetection = false;
+    printf("\nAutomatic patter detection : %s\n",pat.c_str());
+}
+
+// Called to set the credit/ball display positions
+void procBallCreditDisplay(void) {
+
+    try  {
+        yamlDoc["PRPinmame"]["s11CreditDisplay"] >> S11CreditPos;
+    }
+    catch (...)	{
+        // Not defined in YAML or not numeric
+        S11CreditPos=0;
+    }
+
+    try  {
+        yamlDoc["PRPinmame"]["doubleAlpha"] >> doubleAlpha;
+    }
+    catch (...)	{
+        // Not defined in YAML or not numeric
+        doubleAlpha=0;
+    }
+
+    try  {
+        yamlDoc["PRPinmame"]["s11BallDisplay"] >> S11BallPos;
+    }
+    catch (...)	{
+        // Not defined in YAML or not numeric
+        S11BallPos=0;
+    }
+
+}
+
 // Initialize the P-ROC hardware.
 int procInitialize(char *yaml_filename) {
 	fprintf(stderr, "\n\n****** Initializing P-ROC ******\n");
-
-	setMachineType(yaml_filename);
+        setMachineType(yaml_filename);
+        setPatterDetection();
 	if (machineType != kPRMachineInvalid) {
 		proc = PRCreate(machineType);
 		if (proc == kPRHandleInvalid) {
@@ -155,13 +249,14 @@ int procInitialize(char *yaml_filename) {
 
 			procInitializeCoilDrivers();
 			procConfigureSwitchRules();
+
 			procConfigureDriverDefaults();
+                        
 
 			if (machineType != kPRMachineWPCAlphanumeric) {
 				procDMDInit();
 			}
-
-			fprintf(stderr, "\n****** P-ROC Initialization COMPLETE ******\n\n");
+                        fprintf(stderr, "\n****** P-ROC Initialization COMPLETE ******\n\n");
 		}
 	}
 

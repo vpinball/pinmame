@@ -10,6 +10,9 @@ extern "C" {
 extern PRHandle proc;
 extern PRMachineType machineType;
 
+extern int S11CreditPos;
+extern int S11BallPos;
+
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
 
@@ -97,6 +100,69 @@ void procReverseSubFrameBytes(int frameIndex) {
 
 // Turn on the requested alphanumeric segment.
 void procDrawSegment(int x, int y, int seg) {
+    
+    // If y is 11, then this is the ball/credit display.
+    // If so, quit the call if we don't want to put on DMD.
+    if (y==11) {
+        if ( (!S11CreditPos && !S11BallPos) ||
+             (!S11CreditPos && x<=12) ||
+             (!S11BallPos && x>12)
+                ) {return;}
+    }
+
+    // If we're not showing the credit or ball displays, and it's not 2 lines of alphanumeric,
+    // shift over 4 dots to centre things nicely
+    if (!S11CreditPos && !S11BallPos && !doubleAlpha && (core_gameData->gen & GEN_ALLS11)) {
+        x+=4;
+    }
+    if (y==11) {
+        // This is the credit/ball display from an early Sys11
+        // So need to reposition, then draw small digits
+        if (x==6) {x=121;y=S11CreditPos-1;}
+        else if (x==12) {x=125;y=S11CreditPos-1;}
+        else if (x==24) {x=121;y=S11BallPos-1;}
+        else if (x==30) {x=125;y=S11BallPos-1;}
+        switch (seg) {
+		case 0:
+			procDrawDot(x, y, 0xf);
+			procDrawDot(x+1, y, 0xf);
+			procDrawDot(x+2, y, 0xf);
+			break;
+		case 1:
+			procDrawDot(x+2, y, 0xf);
+			procDrawDot(x+2, y+1, 0xf);
+			procDrawDot(x+2, y+2, 0xf);
+			break;
+		case 2:
+			procDrawDot(x+2, y+2, 0xf);
+			procDrawDot(x+2, y+3, 0xf);
+			procDrawDot(x+2, y+4, 0xf);
+			break;
+		case 3:
+			procDrawDot(x, y+4, 0xf);
+			procDrawDot(x+1, y+4, 0xf);
+			procDrawDot(x+2, y+4, 0xf);
+			break;
+		case 4:
+			procDrawDot(x, y+2, 0xf);
+			procDrawDot(x, y+3, 0xf);
+			procDrawDot(x, y+4, 0xf);
+			break;
+		case 5:
+			procDrawDot(x, y, 0xf);
+			procDrawDot(x, y+1, 0xf);
+			procDrawDot(x, y+2, 0xf);
+			break;
+		case 6:
+                        
+			procDrawDot(x, y+2, 0xf);
+                        procDrawDot(x+1, y+2, 0xf);
+                        procDrawDot(x+2, y+2, 0xf);
+                            
+			break;
+        }
+    } else {
+    // Regular segments
 	switch (seg) {
 		case 0:
 			procDrawDot(x, y, 0x5);
@@ -149,10 +215,22 @@ void procDrawSegment(int x, int y, int seg) {
 			procDrawDot(x, y+5, 0x5);
 			break;
 		case 6:
-			procDrawDot(x, y+5, 0x5);
-			procDrawDot(x+1, y+5, 0xf);
-			procDrawDot(x+2, y+5, 0xf);
-			procDrawDot(x+3, y+5, 0x5);
+                        // Segment 6 is different on the bottom line of
+                        // a system 11 display as it's numeric, not alpha
+			if ((core_gameData->gen & GEN_ALLS11) && (y==19)  && !doubleAlpha) {
+                            procDrawDot(x, y+5, 0x5);
+                            procDrawDot(x+1, y+5, 0xf);
+                            procDrawDot(x+2, y+5, 0xf);
+                            procDrawDot(x+3, y+5, 0xf);
+                            procDrawDot(x+4, y+5, 0xf);
+                            procDrawDot(x+5, y+5, 0xf);
+                            procDrawDot(x+6, y+5, 0x5);
+                        } else {
+                            procDrawDot(x, y+5, 0x5);
+                            procDrawDot(x+1, y+5, 0xf);
+                            procDrawDot(x+2, y+5, 0xf);
+                            procDrawDot(x+3, y+5, 0x5);
+                        }
 			break;
 		case 7:
 			procDrawDot(x+7, y+10, 0xf);
@@ -223,6 +301,7 @@ void procDrawSegment(int x, int y, int seg) {
 			procDrawDot(x+7, y+11, 0x5);
 			break;
 	}
+    }
 }
 
 // Send the current DMD Frame to the P-ROC
@@ -256,7 +335,7 @@ void procDisplayText(char * string_1, char * string_2)
 	                                0x0006,	// '1'
 	                                0x085b,	// '2'
 	                                0x084f,	// '3'
-	                                0x0866,	// '4'
+	                                0x0866,	// '4'0
 	                                0x086d,	// '5'
 	                                0x087d,	// '6'
 	                                0x0007,	// '7'
@@ -297,7 +376,7 @@ void procDisplayText(char * string_1, char * string_2)
 	                                0x5500,	// 'X'
 	                                0x2500,	// 'Y'
 	                                0x4409 	// 'Z'
-                                	};
+                                	}; 
 
 	int i, j;
 	char char_a, char_b;
@@ -308,9 +387,8 @@ void procDisplayText(char * string_1, char * string_2)
 	for (i=0; i<16; i++) {
 		char_a = string_1[i];
 		char_b = string_2[i];
-
-		segs_a[i] = asciiSegments[char_a - 32];
-		segs_b[i] = asciiSegments[char_b - 32];
+                segs_a[i] = asciiSegments[char_a - 32];
+		segs_b[i] = asciiSegments[char_b - 32]; 
 
 		if (machineType != kPRMachineWPCAlphanumeric) {
 			for (j=0; j<16; j++) {
@@ -330,30 +408,26 @@ void procDisplayText(char * string_1, char * string_2)
 // Send the new alphanumeric display commands to the P-ROC's Auxiliary port logic,
 // which will send them to the alphanumeri displays.
 void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
-	int i, cmd_index=0;
-	int segs_a, segs_b;
 
+    int i, cmd_index=0;
+	int segs_a, segs_b;
 	const int DIS_STB = 8;
 	const int STB_1   = 9;
 	const int STB_2   = 10;
 	const int STB_3   = 11;
 	const int STB_4   = 12;
-
-	if (proc) {
-
-		PRDriverAuxCommand auxCommands[256];
-
-		// Disable the first entry so the Aux logic won't begin immediately.
-		PRDriverAuxPrepareDisable(&auxCommands[cmd_index++]);
+        if (proc) {
+		PRDriverAuxCommand auxCommands[255];
 
 		for (i=0; i<16; i++) {
 			// Assert the STB line
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), i, 0, DIS_STB, 0, 0);
 
-			segs_a = top[i];
+                        // Very short delay, enough to let the select line settle
+                        PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 1);
+			segs_a = top[i];  
 			segs_b = bottom[i];
-
-			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_a & 0xff, 0, STB_1, 0, 0);
+                        PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_a & 0xff, 0, STB_1, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_a >> 8) & 0xff, 0, STB_2, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), segs_b & 0xff, 0, STB_3, 0, 0);
 			PRDriverAuxPrepareOutput(&(auxCommands[cmd_index++]), (segs_b >> 8) & 0xff, 0, STB_4, 0, 0);
@@ -368,16 +442,12 @@ void procUpdateAlphaDisplay(UINT16 *top, UINT16 *bottom) {
 			PRDriverAuxPrepareDelay(&auxCommands[cmd_index++], 40);
 		}
 
-		PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 1);
+		PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 0);
 
 		// Send the commands.
 		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
 
-		cmd_index = 0;
-		// Jump from addr 0 to 1 to begin.
-		PRDriverAuxPrepareJump(&auxCommands[cmd_index++],1);
-		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
-	}
+                }
 }
 
 #endif /* PINMAME && PROC_SUPPORT */

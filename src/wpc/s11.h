@@ -3,7 +3,7 @@
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
-
+//int s11_m2sw(int col, int row);
 /*-- Common Inports for S11Games --*/
 #define S11_COMPORTS \
   PORT_START /* 0 */ \
@@ -224,7 +224,6 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define S11_RKMUX        0x08 // Road Kings muxes different solenoids
 #define S11_MUXDELAY     0x10 // Delay mux solenoid by one IRQ
 #define S11_SNDDELAY     0x20 // Sound delay for Pool Sharks
-
 #if 0
 GEN_S9      BCDDISP
 GEN_S11

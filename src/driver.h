@@ -92,6 +92,7 @@ typedef struct {
 #ifdef PROC_SUPPORT
 	int p_roc;					/* TODO/PROC: explanation */
 	int alpha_on_dmd;			/* Virtual alphanumeric displays on P-ROC DMD */
+        int virtual_dmd;                     /* If we have no screen, then we can suppress the DMD */
 #endif /* PROC_SUPPORT */
 } tPMoptions;
 extern tPMoptions pmoptions;

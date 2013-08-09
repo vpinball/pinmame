@@ -142,7 +142,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 		   expects. So reverse each byte. */
 		procReverseSubFrameBytes(procSubFrame0);
 		procReverseSubFrameBytes(procSubFrame1);
-
+                procUpdateDMD();
 		/* Don't explicitly update the DMD from here. The P-ROC code
 		   will update after the next DMD event. */
 	}

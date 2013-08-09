@@ -11,13 +11,17 @@
 #define PROC_LAMP_DRIVE_TIME 0  // Turn on indefinitely. Let PinMAME turn off.
 
 #define kFlippersSection "PRFlippers"
+#define kKickbacksSection "PRKickbacks"
 #define kBumpersSection "PRBumpers"
 #define kCoilsSection "PRCoils"
+#define kLampsSection "PRLamps"
 #define kSwitchesSection "PRSwitches"
 #define kNumberField "number"
 #define kPulseTimeField "pulseTime"
 #define kPatterOnTimeField "patterOnTime"
 #define kPatterOffTimeField "patterOffTime"
+#define kKickbackDelayOnField "delayOnTime"
+#define kKickbackDelayOffField "delayOffTime"
 #define kBusField "bus"
 #define kAuxPortValue "AuxPort"
 
@@ -25,6 +29,9 @@
 #define kFlipperPatterOnTime (1)  // 2 ms
 #define kFlipperPatterOffTime (20)  // 2 ms
 #define kBumperPulseTime (25)  // 25 ms
+#define kKickbackPulseTime (25)
+#define kKickbackDelayOnTime (250)
+#define kKickbackDelayOffTime (250)
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,11 +59,14 @@ void procConfigureDefaultSwitchRules(void);
 void procConfigureDriverDefaults(void);
 void procConfigureSwitchRules(void);
 void procConfigureInputMap(void);
+void procKickbackCheck(int num);
 
 // Generic P-ROC functions.
 int procInitialize(char *yaml_filename);
 void procDeinitialize(void);
 int procIsActive(void);
+int procKeyboardWanted(void);
+void procBallCreditDisplay(void);
 void procTickleWatchdog(void);
 void procFlush(void);
 
