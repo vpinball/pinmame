@@ -3,7 +3,9 @@
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
-//int s11_m2sw(int col, int row);
+
+int s11_m2sw(int col, int row);
+
 /*-- Common Inports for S11Games --*/
 #define S11_COMPORTS \
   PORT_START /* 0 */ \
