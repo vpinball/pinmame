@@ -266,7 +266,7 @@ static INTERRUPT_GEN(wpc_vblank) {
 		// This is done here instead of in the init code because the P-ROC's
 		// 1 second watchdog timer expires after the init code runs, leaving
 		// the flippers disabled.
-		if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) {
+		if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) {
 			procDriveLamp(79, 1);
 		}
 	}
@@ -304,21 +304,24 @@ static INTERRUPT_GEN(wpc_vblank) {
 			UINT64 tmpSol = allSol;
 
 			for (ii=0; ii<64; ii++) {
-				if (chgSol & 0x1) {
-					// Standard Coils
-					if (ii < 32) {
-						procDriveCoil(ii+40, tmpSol & 0x1);
-					} else if (ii < 36) {
-						procDriveCoil(ii+4, tmpSol & 0x1);
-					} else if (ii < 44) {
-						if (core_gameData->gen & GENWPC_HASWPC95) {
-							procDriveCoil(ii+32, tmpSol & 0x1);
-						} else {
-							procDriveCoil(ii+108, tmpSol & 0x1);
-						}
-					} else if (ii < 64) {
-						printf("\nChanging: %d",ii);
-					}
+				if ((chgSol & 0x1) && ii != 30) {
+                                //slug    if ((chgSol & 0x1)) {
+
+                                        if (mame_debug) fprintf(stderr,"\nDrive pinmame coil %d",ii);
+                                            // Standard Coils
+                                            if (ii < 32) {
+                                                    procDriveCoil(ii+40, tmpSol & 0x1);
+                                            } else if (ii < 36) {
+                                                    procDriveCoil(ii+4, tmpSol & 0x1);
+                                            } else if (ii < 44) {
+                                                    if (core_gameData->gen & GENWPC_HASWPC95) {
+                                                            procDriveCoil(ii+32, tmpSol & 0x1);
+                                                    } else {
+                                                            procDriveCoil(ii+108, tmpSol & 0x1);
+                                                    }
+                                            } else if (ii < 64) {
+                                                    printf("\nChanging: %d",ii);
+                                            }
 					// TODO:PROC: Upper flipper circuits in WPC-95.
 					// Some games (AFM) seem to use sim files to activate these coils.  Others (MM) don't ever seem to activate them (Trolls).
 				}
@@ -376,14 +379,18 @@ static INTERRUPT_GEN(wpc_vblank) {
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_LAMPSMOOTH)) == 0) {
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
-			int col, row;
+			int col, row, procLamp;
 			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
 				UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
 				UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];
 				for (row = 0; row < 8; row++) {
+                                        procLamp = 80 + (8 * col) + row;
 					if (chgLamps & 0x01) {
-						procDriveLamp(80 + (8 * col) + row, tmpLamps & 0x01);
+						procDriveLamp(procLamp, tmpLamps & 0x01);
 					}
+                                        if (coreGlobals.isKickbackLamp[procLamp]) {
+                                                procKickbackCheck(procLamp);
+                                        }
 					chgLamps >>= 1;
 					tmpLamps >>= 1;
 				}

@@ -5,6 +5,7 @@ extern "C" {
 #include "wpc/core.h"
 #include "wpc/wpc.h"
 #include "wpc/se.h"
+#include "wpc/s11.h"
 #include "input.h"
 }
 #include <fstream>
@@ -16,10 +17,16 @@ extern "C" {
 extern PRHandle proc;
 
 bool ignoreCoils[80] = { FALSE };
+int coilKickback[256] = { 0 };
+int swKickback[256] = { 0 };
+int cyclesSinceTransition[256] = { 0 };
+int kickbackOnDelay[256];
+int kickbackOffDelay[256];
 std::vector<int> activeCoils;
 CoilDriver coilDrivers [256];
 extern PRMachineType machineType;
 extern YAML::Node yamlDoc;
+extern bool autoPatterDetection;
 
 #define kFlipperLwL          0
 #define kFlipperLwR          1
@@ -27,13 +34,16 @@ extern YAML::Node yamlDoc;
 #define kESQSequence         3
 #define numInputCodes        4
 
+#define sign(x) (( x > 0 ) - ( x < 0 ))
+
 int switchStates[kPRSwitchPhysicalLast + 1] = {0};
 int swMap[numInputCodes];
 
 int switchEventsBeingProcessed = 0;
 
 void set_swState(int value, int type) {
-	switchStates[value] = type;
+
+    	switchStates[value] = type;
 	switch (type) {
 		case kPREventTypeSwitchOpenDebounced:
 		case kPREventTypeSwitchClosedDebounced:
@@ -70,15 +80,33 @@ void set_swState(int value, int type) {
 					// Service switches need to go to column -1 for some reason.
 					core_setSw(se_m2sw(-1, 7-(value & 0x7)), (type & kPREventTypeSwitchClosedDebounced));
 				} else if (value >= 32) {	// Matrix Switches
-					core_setSw(se_m2sw(((value - 32) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+                                    	core_setSw(se_m2sw(((value - 32) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+				}
+			} else if (core_gameData->gen & GEN_ALLS11) {
+                                if (mame_debug) fprintf(stderr,"\nS11 PROC switch %d is ",value);
+				if (value < 8) {	// Flipper Switches
+                                        if (mame_debug) fprintf(stderr,"flipper switch");
+					core_setSw(s11_m2sw(CORE_FLIPPERSWCOL, value), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value < 16) {	// Dedicated Switches
+				    if (mame_debug) fprintf(stderr,"direct switch");
+                                    core_setSw(s11_m2sw(0, value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+				} else if (value >= 32) {	// Matrix Switches
+                                        if (mame_debug) fprintf(stderr,"col %d, row %d, event %d",((value - 16) >> 4),(value & 0x7)+1,(type & kPREventTypeSwitchClosedDebounced));
+                                    	core_setSw(s11_m2sw(((value - 16) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
 				}
 			} else {
+                                if (mame_debug) fprintf(stderr,"\nWPC PROC switch %d is ",value);
+                                //slug
+                                //if (value==99 && (type & kPREventTypeSwitchClosedDebounced))
 				if (value < 8) {	// Flipper Switches
+                                        if(mame_debug) fprintf(stderr,"flipper switch");
 					core_setSw(wpc_m2sw(CORE_FLIPPERSWCOL, value), (type & kPREventTypeSwitchClosedDebounced));
 				} else if (value < 16) {	// Dedicated Switches
+                                        if (mame_debug) fprintf(stderr,"direct switch");
 					core_setSw(wpc_m2sw(0, value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
 				} else if (value >= 32) {	// Matrix Switches
-					core_setSw(wpc_m2sw(((value - 16) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
+                                        if (mame_debug) fprintf(stderr,"col %d, row %d, event %d",((value - 16) >> 4),(value & 0x7)+1,(type & kPREventTypeSwitchClosedDebounced));
+                                    	core_setSw(wpc_m2sw(((value - 16) >> 4), value & 0x7), (type & kPREventTypeSwitchClosedDebounced));
 				}
 			}
 			break;
@@ -151,8 +179,7 @@ void ConfigureBumperRule(int swNum, int coilNum, int pulseTime)
 	const int numDriverRules = 1;
 	PRDriverState fldrivers[numDriverRules];
 	PRSwitchRule sw;
-
-	PRDriverGetState(proc, coilNum, &fldrivers[0]);
+        PRDriverGetState(proc, coilNum, &fldrivers[0]);
 	PRDriverStatePulse(&fldrivers[0], pulseTime);	// Pulse coil for 34ms.
 	sw.reloadActive = true;
 	sw.notifyHost = false;
@@ -162,9 +189,78 @@ void ConfigureBumperRule(int swNum, int coilNum, int pulseTime)
 	PRSwitchUpdateRule(proc, swNum, kPREventTypeSwitchClosedDebounced, &sw, NULL, 0);
 }
 
+// In addition to the automatic rules for bumpers (above), we need a slightly different
+// rule to handle kickbacks.  Specifically we don't want the reloadActive option set,
+// since we want to make sure the balls gets hit
+void ConfigureKickerRule(int lampNum, int swNum, int coilNum, int pulseTime)
+{
+	const int numDriverRules = 1;
+	PRDriverState fldrivers[numDriverRules];
+	PRSwitchRule sw;
+        PRDriverGetState(proc, coilNum, &fldrivers[0]);
+	PRDriverStatePulse(&fldrivers[0], pulseTime);	
+	sw.reloadActive = false;
+	sw.notifyHost = true;
+	PRSwitchUpdateRule(proc, swNum, kPREventTypeSwitchClosedNondebounced, &sw, fldrivers, numDriverRules);
+	sw.notifyHost = true;
+	sw.reloadActive = false;
+	PRSwitchUpdateRule(proc, swNum, kPREventTypeSwitchClosedDebounced, &sw, fldrivers, numDriverRules);
+        
+}
+
+// Unlike regular bumper rules, for kickbacks we need to be able to clear the
+// rule.  Called by procKickbackCheck when the related lamp goes off.
+void ClearKickerRule(int lampNum, int swNum)
+{
+        PRSwitchRule sw;
+        sw.notifyHost = true;
+        sw.reloadActive = false;
+        PRSwitchUpdateRule(proc,swNum,kPREventTypeSwitchClosedNondebounced, &sw, NULL, 0);
+        sw.notifyHost = true;
+        sw.reloadActive = false;
+        PRSwitchUpdateRule(proc,swNum,kPREventTypeSwitchClosedDebounced, &sw, NULL, 0);
+}
+
+// This routine is called by the lamp matrix handler (in wpc.c and s11.c) for each
+// lamp associated with a kickback.
+// The general idea is that for each lamp in the matrix which is related to a kickback
+// a counter is held of how many cycles (typically each 1/60 second) it's been since the
+// lamp last went on or off.  If the number is positive, it's the number of cycles since
+// the lamp went on, if negative the number since it went off.
+void procKickbackCheck(int num)
+{
+    // If this is the first time into this routine for a specific lamp, it's possible
+    // that we haven't noted yet if the lamp is currently lit or not.  If so, query the
+    // P-ROC to find out.
+        if (cyclesSinceTransition[num] == 0) {
+            PRDriverState lampState;
+            memset(&lampState, 0, sizeof(lampState));
+            PRDriverGetState(proc, num, &lampState);
+            if (mame_debug) fprintf(stderr,"\nTransition count is zero, need to check P-ROC");
+            if (mame_debug) fprintf(stderr,"\nP-ROC reports that lamp state is %s",lampState.state ? "on" : "off");
+            cyclesSinceTransition[num] = (lampState.state ? 1 : -1);
+        }
+
+        // If we've reached the cycle count required to turn the related kickback off
+        if (cyclesSinceTransition[num] == kickbackOffDelay[num]) {
+            if (mame_debug) fprintf(stderr,"\nDisable kickback");
+            ClearKickerRule(num,swKickback[num]);
+        }
+        // If we've reached the cycle count required to turn the related kickback on
+        else if (cyclesSinceTransition[num] == kickbackOnDelay[num]) {
+            if (mame_debug) fprintf(stderr,"\nEnable kickback with pulse time %d",(coilDrivers[coilKickback[num]].GetPulseTime() == 0 ? kKickbackPulseTime : coilDrivers[coilKickback[num]].GetPulseTime()) );
+
+            ConfigureKickerRule(num,swKickback[num], coilKickback[num], (coilDrivers[coilKickback[num]].GetPulseTime() == 0 ? kKickbackPulseTime : coilDrivers[coilKickback[num]].GetPulseTime()));
+        }
+
+        // Give the cycle counter a step in the appropriate direction.
+        cyclesSinceTransition[num] += (abs(cyclesSinceTransition[num]) < 5000) * sign(cyclesSinceTransition[num]);
+    
+}
 void AddIgnoreCoil(int num) {
 	ignoreCoils[num] = TRUE;
 }
+
 
 void procConfigureDriverDefaults(void)
 {
@@ -210,13 +306,11 @@ void procConfigureSwitchRules(void)
 	if (yamlDoc.size() > 0) {
 		// WPC Flippers
 		std::string numStr;
-		const YAML::Node& flippers = yamlDoc[kFlippersSection];
-
-		for (YAML::Iterator flippersIt = flippers.begin(); flippersIt != flippers.end(); ++flippersIt) {
+                const YAML::Node& flippers = yamlDoc[kFlippersSection];
+                for (YAML::Iterator flippersIt = flippers.begin(); flippersIt != flippers.end(); ++flippersIt) {
 			int swNum, coilMain, coilHold;
 			std::string flipperName;
-
-			*flippersIt >> flipperName;
+                        *flippersIt >> flipperName;
 			if (machineType == kPRMachineWPC || machineType == kPRMachineWPC95) {
 				yamlDoc[kSwitchesSection][flipperName][kNumberField] >> numStr;
 				swNum = PRDecode(machineType, numStr.c_str());
@@ -242,21 +336,65 @@ void procConfigureSwitchRules(void)
 			}
 		}
 
-		const YAML::Node& bumpers = yamlDoc[kBumpersSection];
-		for (YAML::Iterator bumpersIt = bumpers.begin(); bumpersIt != bumpers.end(); ++bumpersIt) {
-			int swNum, coilNum;
-			// WPC Slingshots
-			std::string bumperName;
-			*bumpersIt >> bumperName;
-			yamlDoc[kSwitchesSection][bumperName][kNumberField] >> numStr;
-			swNum = PRDecode(machineType, numStr.c_str());
+                printf("\n\nProcessing bumper entries");
+                if (yamlDoc.FindValue(kBumpersSection)) {
+                    const YAML::Node& bumpers = yamlDoc[kBumpersSection];
+                    for (YAML::Iterator bumpersIt = bumpers.begin(); bumpersIt != bumpers.end(); ++bumpersIt) {
+                            int swNum, coilNum;
+                            // WPC Slingshots
+                            std::string bumperName;
+                            *bumpersIt >> bumperName;
+                            yamlDoc[kSwitchesSection][bumperName][kNumberField] >> numStr;
+                            swNum = PRDecode(machineType, numStr.c_str());
 
-			yamlDoc[kCoilsSection][bumperName][kNumberField] >> numStr;
-			coilNum = PRDecode(machineType, numStr.c_str());
+                            yamlDoc[kCoilsSection][bumperName][kNumberField] >> numStr;
+                            coilNum = PRDecode(machineType, numStr.c_str());
 
-			ConfigureBumperRule(swNum, coilNum, kBumperPulseTime);
-			AddIgnoreCoil(coilNum);
-		}
+                            ConfigureBumperRule(swNum, coilNum, kBumperPulseTime);
+                            AddIgnoreCoil(coilNum);
+                            printf("\n- processed %s",bumperName.c_str());
+                    }
+                }
+                else printf("\n - no entries found");
+
+                // Process kickback entries, if found
+                printf("\n\nProcessing kickback entries");
+                if (yamlDoc.FindValue(kKickbacksSection)) {
+                    const YAML::Node& kickbacks = yamlDoc[kKickbacksSection];
+                    for (YAML::Iterator kickbacksIt = kickbacks.begin(); kickbacksIt != kickbacks.end(); ++kickbacksIt) {
+                        int swNum=0, coilNum=0, lampNum=0, delayOnTime=kKickbackDelayOnTime, delayOffTime=kKickbackDelayOffTime;
+                        std::string kickbackName;
+                        kickbacksIt.first() >> kickbackName;
+
+
+                        // Look for yaml entries defining delay times.
+
+                        if (yamlDoc[kKickbacksSection][kickbackName].FindValue(kKickbackDelayOnField)) {
+                            yamlDoc[kKickbacksSection][kickbackName][kKickbackDelayOnField] >> delayOnTime;
+                        }
+                        if (yamlDoc[kKickbacksSection][kickbackName].FindValue(kKickbackDelayOffField)) {
+                            yamlDoc[kKickbacksSection][kickbackName][kKickbackDelayOffField] >> delayOffTime;
+                        }
+                        yamlDoc[kSwitchesSection][kickbackName][kNumberField] >> numStr;
+                        swNum = PRDecode(machineType, numStr.c_str());
+                        yamlDoc[kCoilsSection][kickbackName][kNumberField] >> numStr;
+                        coilNum = PRDecode(machineType, numStr.c_str());
+                        yamlDoc[kLampsSection][kickbackName][kNumberField] >> numStr;
+                        lampNum = PRDecode(machineType, numStr.c_str());
+
+                        coreGlobals.isKickbackLamp[lampNum] = TRUE;
+                        coilKickback[lampNum] = coilNum;
+                        swKickback[lampNum] = swNum;
+                        kickbackOnDelay[lampNum] = (delayOnTime *60) / 1000;
+                        kickbackOffDelay[lampNum] = ((delayOffTime * 60) / 1000) * -1;
+
+                        // This coil is under P-ROC control, not pinmame, so add it to the ignore list
+                        AddIgnoreCoil(coilNum);
+                        printf("\n- processed %s",kickbackName.c_str());
+                        if (mame_debug) fprintf(stderr,"\nKicker %s is lamp %d, switch %d, coil %d, delay on %d, delay off %d",kickbackName.c_str(),lampNum,swNum,coilNum, delayOnTime, delayOffTime);
+                }
+            }
+                else printf("\n- no entries found");
 	}
 }
 
@@ -269,12 +407,12 @@ void procSetSwitchStates(void) {
 		fprintf(stderr, "Error: Unable to retrieve switch states from P-ROC.\n");
 	} else {
 		// Copy the returning states into the local switches array.
-		fprintf(stderr, "\nInitial switch states:");
+		if (mame_debug) fprintf(stderr, "\nInitial switch states:");
 		for (i = 0; i <= kPRSwitchPhysicalLast; i++) {
 			if (i%16==0) {
-				fprintf(stderr, "\n");
+				if (mame_debug) fprintf(stderr, "\n");
 			}
-			fprintf(stderr, "%d ", procSwitchStates[i]);
+			if (mame_debug) fprintf(stderr, "%d ", procSwitchStates[i]);
 
 			if (machineType == kPRMachineSternSAM) {
 				set_swState(i, procSwitchStates[i]);
@@ -282,7 +420,7 @@ void procSetSwitchStates(void) {
 				set_swState(i, procSwitchStates[i]);
 			}
 		}
-		fprintf(stderr, "\n\n");
+		if (mame_debug) fprintf(stderr, "\n\n");
 	}
 }
 
@@ -293,6 +431,7 @@ void procConfigureDefaultSwitchRules(void) {
 	// Configure switch controller registers
 	switchConfig.clear = FALSE;
 	switchConfig.use_column_8 = (machineType == kPRMachineWPC);
+	//switchConfig.use_column_8 = FALSE;
 	switchConfig.use_column_9 = FALSE;	// No WPC machines actually use this.
 	switchConfig.hostEventsEnable = TRUE;
 	switchConfig.directMatrixScanLoopTime = 2;	// milliseconds
@@ -319,26 +458,30 @@ void procConfigureDefaultSwitchRules(void) {
 
 void procConfigureInputMap(void)
 {
+    printf ("\n\nProcessing control switches");
 	if (yamlDoc.size() > 0) {
-		std::string numStr;
-
-		yamlDoc[kSwitchesSection]["flipperLwL"][kNumberField] >> numStr;
-		swMap[kFlipperLwL] = PRDecode(machineType, numStr.c_str());
-		printf("\nFlipperLwL: %d", swMap[kFlipperLwL]);
-
-		yamlDoc[kSwitchesSection]["flipperLwR"][kNumberField] >> numStr;
-		swMap[kFlipperLwR] = PRDecode(machineType, numStr.c_str());
-		printf("\nFlipperLwR: %d", swMap[kFlipperLwR]);
-
-		yamlDoc[kSwitchesSection]["startButton"][kNumberField] >> numStr;
-		swMap[kStartButton] = PRDecode(machineType, numStr.c_str());
-		printf("\nstartButton: %d", swMap[kStartButton]);
+                std::string numStr;
+                if (yamlDoc[kSwitchesSection].FindValue("flipperLwL")) {
+                    yamlDoc[kSwitchesSection]["flipperLwL"][kNumberField] >> numStr;
+                    swMap[kFlipperLwL] = PRDecode(machineType, numStr.c_str());
+                    printf("\n- FlipperLwL: %d", swMap[kFlipperLwL]);
+                }
+                if (yamlDoc[kSwitchesSection].FindValue("flipperLwR")) {
+                    yamlDoc[kSwitchesSection]["flipperLwR"][kNumberField] >> numStr;
+                    swMap[kFlipperLwR] = PRDecode(machineType, numStr.c_str());
+                    printf("\n- FlipperLwR: %d", swMap[kFlipperLwR]);
+                }
+                if (yamlDoc[kSwitchesSection].FindValue("startButton")) {
+                    yamlDoc[kSwitchesSection]["startButton"][kNumberField] >> numStr;
+                    swMap[kStartButton] = PRDecode(machineType, numStr.c_str());
+                    printf("\n- startButton: %d", swMap[kStartButton]);
+                }
 	}
 }
 
 void procDriveLamp(int num, int state) {
 	PRDriverState lampState;
-	memset(&lampState, 0, sizeof(lampState));
+        memset(&lampState, 0, sizeof(lampState));
 	PRDriverGetState(proc, num, &lampState);
 	lampState.state = state;
 	lampState.outputDriveTime = PROC_LAMP_DRIVE_TIME;
@@ -347,8 +490,10 @@ void procDriveLamp(int num, int state) {
 	lampState.patterOnTime = 0;
 	lampState.patterOffTime = 0;
 	lampState.patterEnable = FALSE;
+        PRDriverUpdateState(proc, &lampState);
 
-	PRDriverUpdateState(proc, &lampState);
+        cyclesSinceTransition[num] = (state ? 1 : -1);
+
 }
 
 void procGetSwitchEvents(void) {
@@ -365,7 +510,7 @@ void procGetSwitchEvents(void) {
 			}
 		}
 		else {
-			set_swState(pEvent->value, pEvent->type);
+                    	set_swState(pEvent->value, pEvent->type);
 		}
 	}
 }
@@ -383,14 +528,14 @@ void procGetSwitchEventsLocal(void) {
 
 CoilDriver::CoilDriver(void) {
 	num = 0;
-	patterDetectionEnable = 1;
+        patterDetectionEnable = 1;
 	timeLastChanged = 0;
 	numPatterOn = 0;
 	numPatterOff = 0;
 	avgOnTime = 0;
 	avgOffTime = 0;
 	patterActive = 0;
-	useDefaultPulseTime = 1;
+        useDefaultPulseTime = 1;
 	useDefaultPatterTimes = 1;
 }
 
@@ -411,6 +556,10 @@ void CoilDriver::SetPatterTimes(int msOn, int msOff) {
 
 void CoilDriver::SetPatterDetectionEnable(int enable) {
 	patterDetectionEnable = 0;
+}
+
+int CoilDriver::GetPulseTime() {
+    return pulseTime;
 }
 
 int CoilDriver::GetPatterDetectionEnable() {
@@ -443,12 +592,12 @@ void CoilDriver::CheckEndPatter(void) {
 void CoilDriver::Drive(int state) {
 	PRDriverState coilState;
 	PRDriverGetState(proc, num, &coilState);
-/*
-	if (num != 68) {
+
+	if (num != 68 && num > 39  && mame_debug) {
 		long int msTime = clock() / CLOCKS_PER_MS;
-		printf("\nAt time: %ld, Driving %d: %d", msTime, num, state);
+		fprintf(stderr,"\nAt time: %ld, Driving %d: %d", msTime, num, state);
 	}
-*/
+
 	if (state) {
 		if (useDefaultPulseTime) {
 			PRDriverStatePulse(&coilState, PROC_COIL_DRIVE_TIME);
@@ -499,7 +648,7 @@ void CoilDriver::RequestDrive(int state) {
 			numPatterOld = numPatterOff++;
 			avgOffTime = ((avgOffTime * numPatterOld) + msSinceChanged) / numPatterOff;
 			// If Enough transitions have occurred to indicate a patter, enable patter.
-			if (patterDetectionEnable && numPatterOff > 2) {
+			if (patterDetectionEnable && numPatterOff > 2 && autoPatterDetection) {
 				Patter(avgOnTime, avgOffTime);
 			} else {	// Otherwise drive as requested.
 				Drive(state);
@@ -515,6 +664,11 @@ void CoilDriver::RequestDrive(int state) {
 }
 
 void procDriveCoil(int num, int state) {
+    if (mame_debug) {
+        if (!((core_gameData->gen & GEN_ALLS11) && num ==63) )
+             fprintf(stderr,"\n -procDriveCoil %d %d",num,state);
+    }
+        
 	if (!ignoreCoils[num]) {
 		coilDrivers[num].RequestDrive(state);
 	}

@@ -2321,8 +2321,8 @@ int showcopyright(struct mame_bitmap *bitmap)
 	done = 0;
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-	sprintf(top_text,"     PRESS      ");
-	sprintf(bottom_text,"  LEFT FLIPPER  ");
+	sprintf(top_text," PRESS   LFT FLP");
+	sprintf(bottom_text,"                ");
 	procDisplayText(top_text, bottom_text);
 #endif /* PINMAME && PROC_SUPPORT */
 
@@ -2345,8 +2345,8 @@ int showcopyright(struct mame_bitmap *bitmap)
 		    input_ui_pressed(IPT_UI_LEFT))
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 			if (!displayed) {
-				sprintf(top_text, "   NOW PRESS    ");
-				sprintf(bottom_text," RIGHT FLIPPER  ");
+				sprintf(top_text, " PRESS   RGT FLP");
+				sprintf(bottom_text,"                ");
 				procDisplayText(top_text, bottom_text);
 				displayed = 1;
 			}
@@ -2493,9 +2493,10 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 		/* startup info, print MAME version and ask for any key */
 		if (!displayed) {
-			sprintf(top_text,"    PRESS ANY   ");
-			sprintf(bottom_text,"     BUTTON     ");
-			procDisplayText(top_text, bottom_text);
+                        sprintf(top_text," PRESS   ANY KEY ");
+			sprintf(bottom_text,"                ");
+			
+                        procDisplayText(top_text, bottom_text);
 			displayed=1;
 		}
 #endif /* PINMAME && PROC_SUPPORT */

@@ -32,6 +32,7 @@ class CoilDriver {
 	void SetPatterTimes(int msOn, int msOff);
 	void SetPatterDetectionEnable(int enable);
 	int GetPatterDetectionEnable();
+        int GetPulseTime();
 	void CheckEndPatter(void);
 	void RequestDrive(int state);
 };
