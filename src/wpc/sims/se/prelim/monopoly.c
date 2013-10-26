@@ -383,6 +383,19 @@ SE_ROMEND
 #define init_monop251 init_monopoly
 
 /*-------------------------------------------------------------------
+/ Monopoly (2.51 Italian display)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monoi251,"moncpu.251",CRC(0645cfae) SHA1(d979234150b7fb62718debbeeeca1466a6c0344f))
+DE_DMD32ROM8x(        "mondsp-i.206",CRC(12f21301) SHA1(8eef3858c2083330e731015b088425aac7201064))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monoi251 input_ports_monopoly
+#define init_monoi251 init_monopoly
+
+/*-------------------------------------------------------------------
 / Monopoly (2.33)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monop233,"moncpu.233",CRC(f20a5ca6) SHA1(12ae56bd149aa6635c19f4dd73580db550b26963))
@@ -422,6 +435,7 @@ CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (3.20 Spain)",2002,"Stern",de_mSES1,
 CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (3.03)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop301,monopoly,"Monopoly (3.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop251,monopoly,"Monopoly (2.51)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monoi251,monopoly,"Monopoly (2.51 Italian display)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop233,monopoly,"Monopoly (2.33)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-----------------------
