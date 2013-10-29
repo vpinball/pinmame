@@ -114,6 +114,9 @@ CORE_CLONEDEF(twst,300,405,"Twister (3.00)",1996,"Sega",de_mSES1,0)
 /*-------------------------------------------------------------------
 / ID4: Independence Day
 /-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------
+/ ID4: Independence Day
+/-------------------------------------------------------------------*/
 INITGAME(id4,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4, "id4cpu.202",CRC(108d88fd) SHA1(8317944201acfb97dadfdd364696c9e81a21d2c5))
 DE_DMD32ROM8x(    "id4dspa.200",CRC(2d3fbcc4) SHA1(0bd69ebb68ae880ac9aae40916f13e1ff84ecfaa))
@@ -122,7 +125,17 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4 input_ports_se
-CORE_GAMEDEFNV(id4,"ID4: Independence Day",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(id4,"ID4: Independence Day (v2.02)",1996,"Sega",de_mSES1,0)
+
+INITGAME(id4f,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(id4f, "id4cpu.202",CRC(108d88fd) SHA1(8317944201acfb97dadfdd364696c9e81a21d2c5))
+DE_DMD32ROM8x(    "id4dspf.200",CRC(4b52676b) SHA1(a881efb28d8bab424d8c12be2c16b8afc7472208))
+DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
+                  "id4sdu17.400",CRC(89ffeca3) SHA1(b94c60e3a433f797d6c5ea793c3ecff0a3b6ba60),
+                  "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
+SE_ROMEND
+#define input_ports_id4f input_ports_se
+CORE_GAMEDEFNV(id4f,"ID4: Independence Day (v2.02 French)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -133,6 +146,16 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
 SE_ROMEND
 #define input_ports_id4_201 input_ports_se
 CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (v2.01)",1996,"Sega",de_mSES1,0)
+
+INITGAME(id4_201f,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(id4_201f, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
+DE_DMD32ROM8x(    "id4dspf.200",CRC(4b52676b) SHA1(a881efb28d8bab424d8c12be2c16b8afc7472208))
+DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5b5fdbb972d5a),
+                  "id4sdu17.400",CRC(89ffeca3) SHA1(b94c60e3a433f797d6c5ea793c3ecff0a3b6ba60),
+                  "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
+SE_ROMEND
+#define input_ports_id4_201f input_ports_se
+CORE_GAMEDEFNV(id4_201f,"ID4: Independence Day (v2.01 French)",1996,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Space Jam
