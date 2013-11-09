@@ -855,6 +855,7 @@ DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13 (5.01)
 DRIVERNV(apollo1)       //Whitestar: 11/95 Apollo 13 (1.00)
 DRIVERNV(apollo2)       //Whitestar: 11/95 Apollo 13 (2.03)
+DRIVERNV(apollo14)      //Whitestar: 11/95 Apollo 13 (Game 5.01, Display 4.01)
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
 DRIVER  (twst,300)      //Whitestar: 05/96 Twister (3.00)
 DRIVER  (twst,404)      //Whitestar: 05/96 Twister (4.04)
