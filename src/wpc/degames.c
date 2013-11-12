@@ -280,6 +280,19 @@ DE1S_SOUNDROM244(  "potof7.rom",CRC(2e60b2e3) SHA1(0be89fc9b2c6548392febb35c1ace
 DE_ROMEND
 CORE_CLONEDEF(poto,a29,a32,"The Phantom of the Opera (2.9)",1990,"Data East",de_mDEAS1,0)
 
+/*-------------------------------------------------------------------------------
+/ King Kong - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
+/-------------------------------------------------------------------------------*/
+INITGAMES11(kiko,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
+DE_ROMSTART48(kiko_a10,"kkcpu_b5.bin",CRC(97b80fd2) SHA1(a704bda771bd44676a0de2f698a713d10feb01f3),
+                   "kkcpu_c5.bin",CRC(d42cab64) SHA1(ca4ceac34384804395b3e3035a430560f194846b))
+DE1S_SOUNDROM244(  "kksnd_f7.bin",CRC(fb1b3e11) SHA1(3c9a6958749d7e4dc5a1a57d6683e3cb3dc34890),       //7f
+                   "kkvoi_f5.bin",CRC(415f814c) SHA1(27e5b6b7f7ce2e5548ee9bf30966fa4f276bdc4d),       //5f
+                   "kkvoi_f4.bin",CRC(bbdc836c) SHA1(825a02b4f058d9dbc387035eb6533547d1766396))       //4f
+DE_ROMEND
+#define input_ports_kiko input_ports_des11
+CORE_GAMEDEF(kiko,a10,"King Kong (1.0)",1990,"Data East",de_mDEAS1,0)
+
 /*--------------------------------------------------------------------------------
 / Back To the Future - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------------*/
