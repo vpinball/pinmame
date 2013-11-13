@@ -886,7 +886,8 @@ DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin' (2.01)
 DRIVERNV(vipr_102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
-DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
+DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla (2.05)
+DRIVERNV(godz_090)      //Whitestar: 09/98 Godzilla (0.90)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)

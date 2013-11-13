@@ -393,7 +393,19 @@ DE2S_SOUNDROM14444("gdzu7.100" ,CRC(a0afe8b7) SHA1(33e4a824b26b58e8f963fa8a525a6
                   "gdzu37.100",CRC(2c1acb14) SHA1(4d710e09f5500da937932b4b01d862abb4a89e5a))
 SE_ROMEND
 #define input_ports_godzilla input_ports_se
-CORE_GAMEDEFNV(godzilla,"Godzilla",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(godzilla,"Godzilla (2.05)",1998,"Sega",de_mSES1,0)
+
+INITGAME(godz_090,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(godz_090,"gdzcpu.090",CRC(54e3b6d7) SHA1(c11cf71140c00c96c7feea569fa04f75061b9af7))
+DE_DMD32ROM8x(  "gzdspa.090",CRC(56dde3a4) SHA1(332f09ade962e07a2979ad7bf743f632ea942440))
+DE2S_SOUNDROM14444("gdzu7.090" ,CRC(076401a9) SHA1(17aa63c2b26e6fc4849a5101ff9704606de3de65),
+                  "gdzu17.090",CRC(b15be745) SHA1(395631df3fef80641c189e57cddfc0ec5dcdbcef),
+                  "gdzu21.090",CRC(019207d5) SHA1(a98d191d686d4a04f7fad90dd0e86e8b48ff3a3b),
+                  "gdzu36.090",CRC(3913ccb9) SHA1(ddce224661894438a12135306484f711d10ce8be),
+                  "gdzu37.090",CRC(1410ae6b) SHA1(28d025403fd60b1bb132cffcc14be21be48d808c))
+SE_ROMEND
+#define input_ports_godz_090 input_ports_se
+CORE_GAMEDEFNV(godz_090,"Godzilla (0.90)",1998,"Sega",de_mSES1,0)
 
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 
