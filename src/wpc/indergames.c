@@ -74,11 +74,11 @@ CORE_GAMEDEFNV(lapbylap,"Lap By Lap",1986,"Inder (Spain)",gl_mINDER2,0)
 /-------------------------------------------------------------------*/
 INITGAME(moonlght, lblDisp, 0, 0,0,0x0c,0,0)
 INDER_ROMSTART1(moonlght,"ci-3.bin", CRC(56b901ae) SHA1(7269d1a100c378b21454f9f80f5bd9fbb736c222))
-INDER_SNDROM4(			"ci-11.bin", NO_DUMP,
-						"ci-24.bin", NO_DUMP,
-						"ci-23.bin", NO_DUMP,
-						"ci-22.bin", NO_DUMP,
-						"ci-21.bin", NO_DUMP)
+INDER_SNDROM4(			"ci-11.bin", CRC(a0732fe4) SHA1(54f62cd81bdb7e1924acb67ddbe43eb3d0a4eab0),
+						"ci-24.bin", CRC(6406bd18) SHA1(ae45ed9e8b1fd278a36a68b780352dbbb6ee781e),
+						"ci-23.bin", CRC(eac346da) SHA1(7c4c26ae089dda0dcd7300fd1ecabf5a91099c41),
+						"ci-22.bin", CRC(379740da) SHA1(83ad13ab7f1f37c78397d8e830bd74c5a7aea758),
+						"ci-21.bin", CRC(0febb4a7) SHA1(e6cc1b26ddfe9cd58da29de2a50a83ce50afe323))
 INDER_ROMEND
 CORE_GAMEDEFNV(moonlght,"Moon Light",1987,"Inder (Spain)",gl_mINDERS0,0)
 
