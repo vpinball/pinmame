@@ -36,6 +36,26 @@ static core_tLCDLayout inderDisp7a[] = {
   {0}
 };
 
+// Hot and Cold (1978)
+// Screech (1978)
+
+/*-------------------------------------------------------------------
+/ Centaur (1979)
+/-------------------------------------------------------------------*/
+INDER_INPUT_PORTS_START(centauri, 1) INDER_INPUT_PORTS_END
+static core_tGameData centauriGameData = {GEN_INDER,inderDisp6,{FLIP_SW(FLIP_L)}};
+static void init_centauri(void) {
+	core_gameData = &centauriGameData;
+}
+INDER_ROMSTARTP(centauri,	"cent2.bin", NO_DUMP,
+						"cent3.bin", CRC(f87abd63) SHA1(c3f48ffd46fad076fd064cbc0fdcc31641f5b1b6),
+						"cent4.bin", CRC(b69e95b6) SHA1(2f053a5848110d084239e1fc960198b247b3b98e))
+INDER_ROMEND
+CORE_GAMEDEFNV(centauri,"Centaur (Inder)",1979,"Inder (Spain)",gl_mINDERP,GAME_NOT_WORKING)
+
+// Topaz (1979)
+// Skate Board (1980)
+
 /*-------------------------------------------------------------------
 / Brave Team (1985)
 /-------------------------------------------------------------------*/
@@ -98,7 +118,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
-INITGAME(corsario, inderDisp7a, 0, 0,0x10,0,0,0)
+INITGAME(corsario, inderDisp7a, 0, 0,0,0,0,0)
 INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),

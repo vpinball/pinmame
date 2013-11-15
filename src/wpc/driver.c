@@ -663,6 +663,11 @@ DRIVERNV(bsktball)      //Basket Ball (04/1987)
 // ----------------
 // INDER GAMES
 // ----------------
+                        // Hot and Cold (1978)
+                        // Screech (1978)
+DRIVERNV(centauri)      //Centaur (1979)
+                        // Topaz (1979)
+                        // Skate Board (1980)
 DRIVERNV(brvteam )      //Brave Team (1985)
 DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(lapbylap)      //Lap By Lap (1986)
