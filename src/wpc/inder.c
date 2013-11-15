@@ -126,6 +126,27 @@ static READ_HANDLER(sndcmd_r) {
   return locals.sndCmd;
 }
 
+// earlier games, 6502 based, WIP (needs more ROM dumps)
+
+static MEMORY_READ_START(INDERP_readmem)
+  {0x0000,0x00ff, MRA_RAM},
+  {0x8000,0xffff, MRA_ROM},
+MEMORY_END
+
+static MEMORY_WRITE_START(INDERP_writemem)
+  {0x0000,0x00ff, MWA_RAM},
+MEMORY_END
+
+MACHINE_DRIVER_START(INDERP)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 1000000)
+  MDRV_CPU_MEMORY(INDERP_readmem, INDERP_writemem)
+  MDRV_CPU_VBLANK_INT(INDER_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 250)
+  MDRV_SWITCH_UPDATE(INDER)
+  MDRV_DIAGNOSTIC_LEDH(1)
+MACHINE_DRIVER_END
+
 /*-------------------------------------------------------
 / Brave Team: Using a TI76489 chip, equivalent to 76496.
 /--------------------------------------------------------*/
@@ -440,18 +461,26 @@ MACHINE_DRIVER_END
 // MSM sound board section
 
 static struct {
-	int ALO;
-	int AHI;
-	int CS;
+	UINT8 ALO;
+	UINT8 AHI;
+	UINT8 CS;
 	int PC0;
-	int MSMDATA;
+	int Reset;
 } sndlocals;
+
+static READ_HANDLER(INDERS_MSM5205_READROM) {
+	UINT32 addr = (sndlocals.CS << 16) | (sndlocals.AHI << 8) | sndlocals.ALO;
+	return *(memory_region(REGION_USER1) + addr);
+}
 
 /* MSM5205 interrupt callback */
 static void INDER_msmIrq(int data) {
 	//Write data
-	int mdata = sndlocals.MSMDATA>>(4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
-	MSM5205_data_w(0, mdata&0x0f);
+	if (!sndlocals.Reset) {
+		//Read Data from ROM & Write Data To MSM Chip
+		UINT8 mdata = INDERS_MSM5205_READROM(0) >> (4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
+		MSM5205_data_w(0, mdata & 0x0f);
+	}
 	//Flip it..
 	sndlocals.PC0 = !sndlocals.PC0;
 }
@@ -488,13 +517,13 @@ static WRITE_HANDLER(snd_portc_w) {
 		sndlocals.PC0 = 1;
 	if (!GET_BIT7)
 		sndlocals.PC0 = 1;
+
+	//Store reset value
+	sndlocals.Reset = GET_BIT6;
 }
 
 static WRITE_HANDLER(sndctrl_w) {
 	sndlocals.CS = core_BitColToNum(data^0xff);
-	//Read Data from ROM & Write Data To MSM Chip
-	sndlocals.MSMDATA = (UINT8)*(memory_region(REGION_USER1) +
-	  ((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
 }
 
 static void init_common(void) {
@@ -522,15 +551,14 @@ MEMORY_END
 
 static MEMORY_WRITE_START(indersnd_writemem)
 	{ 0x2000, 0x2fff, MWA_RAM },
-	{ 0x4000, 0x4003, ppi8255_4_w},
-// {0x4900, 0x4900, MWA_NOP}, // unknown stuff here
+	{ 0x4000, 0x4900, ppi8255_4_w},
 	{ 0x6000, 0x6000, sndctrl_w},
 MEMORY_END
 
 MACHINE_DRIVER_START(INDERS1)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_PERIODIC_INT(INDER_irq, 210) // at 250, switch hits are missed!
+  MDRV_CPU_PERIODIC_INT(INDER_irq, 200) // at 250, switch hits are missed!
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 2500000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -621,8 +649,6 @@ static struct {
   int    S2_PC0;
   int    S2_MSMDATA;
   int    S2_Reset;
-
-  int    SoundReady;
 } sndlocals2;
 
 static void INDER_S1_msmIrq(int data);
@@ -635,9 +661,9 @@ static WRITE_HANDLER(INDER_S2_MSM5205_w);
 /* MSM5205 ADPCM CHIP INTERFACE */
 static struct MSM5205interface inder_msm5205Int2 = {
 	2,										//# of chips (effects / music)
-	384000,									//384Khz Clock Frequency
+	640000,									//384Khz Clock Frequency according to schematic, but speech needs faster clock!
 	{INDER_S1_msmIrq, INDER_S2_msmIrq},		//VCLK Int. Callback
-	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{MSM5205_S64_4B, MSM5205_S96_4B},		//Sample Mode
 	{80,50}								//Volume
 };
 
@@ -672,7 +698,7 @@ SND CPU #1 8255 PPI
   (out)
     (IN)(P0)    - Detects nibble feeds to MSM5205
 		(P1-P3) - Not Used?
-		(P4)    - Ready Status to Main CPU
+		(P4)    - Ready Status to Main CPU?
 		(P5)    - S1 Pin on MSM5205 (Sample Rate Select 1)
 		(P6)    - Reset on MSM5205
 		(P7)    - Not Used?
@@ -719,7 +745,7 @@ SND CPU #2 8255 PPI
   (out)
     (IN)(P0)    - Detects nibble feeds to MSM5205
 		(P1-P3) - Not Used?
-		(P4)    - Not Used?
+		(P4)    - Ready Status to Main CPU?
 		(P5)    - S1 Pin on MSM5205 (Sample Rate Select 1)
 		(P6)    - Reset on MSM5205
 		(P7)    - Not Used?
@@ -736,7 +762,6 @@ static WRITE_HANDLER(snd2_porta_w) { sndlocals2.S2_AHI = data; }
 static WRITE_HANDLER(snd2_portb_w) { sndlocals2.S2_ALO = data; }
 static WRITE_HANDLER(snd2_portc_w) {
 	//LOGSND(("SND2_PORTC_W = %02x\n",data));
-	sndlocals2.SoundReady = !GET_BIT4;
 
 	//Set Reset Line on the chip
 	MSM5205_reset_w(1, GET_BIT6);
@@ -919,11 +944,11 @@ MACHINE_DRIVER_START(INDERS2)
   MDRV_CORE_INIT_RESET_STOP(INDERS2,NULL,INDER2)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
-  MDRV_CPU_ADD_TAG("scpu1", Z80, 2500000)
+  MDRV_CPU_ADD_TAG("scpu1", Z80, 5000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(indersnd1_readmem, indersnd1_writemem)
 
-  MDRV_CPU_ADD_TAG("scpu2", Z80, 2500000)
+  MDRV_CPU_ADD_TAG("scpu2", Z80, 5000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(indersnd2_readmem, indersnd2_writemem)
 
