@@ -466,6 +466,7 @@ static struct {
 	UINT8 CS;
 	int PC0;
 	int Reset;
+	int Strobe;
 } sndlocals;
 
 static READ_HANDLER(INDERS_MSM5205_READROM) {
@@ -481,8 +482,10 @@ static void INDER_msmIrq(int data) {
 		UINT8 mdata = INDERS_MSM5205_READROM(0) >> (4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
 		MSM5205_data_w(0, mdata & 0x0f);
 	}
+
 	//Flip it..
-	sndlocals.PC0 = !sndlocals.PC0;
+	if (!sndlocals.Strobe)
+		sndlocals.PC0 = !sndlocals.PC0;
 }
 
 /* MSM5205 ADPCM CHIP INTERFACE */
@@ -491,14 +494,13 @@ static struct MSM5205interface INDER_msm5205Int = {
 	384000,				//384Khz Clock Frequency?
 	{INDER_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B},	//Sample Mode
-	{80}				//Volume
+	{100}				//Volume
 };
 
 static READ_HANDLER(snd_porta_r) { logerror(("SND1_PORTA_R\n")); return 0; }
 static READ_HANDLER(snd_portb_r) { logerror(("SND1_PORTB_R\n")); return 0; }
 static READ_HANDLER(snd_portc_r) {
-	int data = sndlocals.PC0;
-	return data;
+	return !sndlocals.PC0;
 }
 
 static WRITE_HANDLER(snd_porta_w) {
@@ -512,11 +514,13 @@ static WRITE_HANDLER(snd_portc_w) {
 	//They even used an R/C timer to pulse the reset line to avoid static!
 	if ((data & 0xc0) == 0x40) MSM5205_reset_w(0, 1);
 	if ((data & 0xc0) == 0x80) MSM5205_reset_w(0, 0);
+//	MSM5205_reset_w(0, GET_BIT6);
+	MSM5205_playmode_w(0, GET_BIT5 ? MSM5205_S48_4B : MSM5205_S64_4B);
 
 	if (GET_BIT6)
 		sndlocals.PC0 = 1;
-	if (!GET_BIT7)
-		sndlocals.PC0 = 1;
+
+	sndlocals.Strobe = GET_BIT7;
 
 	//Store reset value
 	sndlocals.Reset = GET_BIT6;
