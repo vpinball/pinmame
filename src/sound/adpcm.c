@@ -185,7 +185,6 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 }
 
 #ifdef PINMAME
-static int max;
 static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 {
 	/* if this voice is active */
@@ -211,7 +210,6 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 				{
 					voice->playing = 0;
 					voice->signal = 0;
-					max = 0;
 					break;
 				}
 				else
@@ -1115,8 +1113,9 @@ WRITE16_HANDLER( OKIM6295_data_2_msb_w )
 	if (ACCESSING_MSB)
 		OKIM6295_data_w(2, data >> 8);
 }
-
+#ifdef PINMAME
 WRITE_HANDLER( OKIM6376_data_0_w )
 {
 	OKIM6376_data_w(0, data);
 }
+#endif
