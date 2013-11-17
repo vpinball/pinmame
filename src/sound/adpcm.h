@@ -1,8 +1,5 @@
 #ifndef ADPCM_H
 #define ADPCM_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
 
 #define MAX_ADPCM		16
 #define MAX_OKIM6295	(MAX_ADPCM/4)	// 4 voices per chip
@@ -68,5 +65,7 @@ WRITE16_HANDLER( OKIM6295_data_2_lsb_w );
 WRITE16_HANDLER( OKIM6295_data_0_msb_w );
 WRITE16_HANDLER( OKIM6295_data_1_msb_w );
 WRITE16_HANDLER( OKIM6295_data_2_msb_w );
-
+#ifdef PINMAME
+WRITE_HANDLER( OKIM6376_data_0_w );
+#endif
 #endif

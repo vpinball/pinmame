@@ -909,7 +909,7 @@ DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
 // ----------------
                         // Bike Race (1992)
 DRIVERNV(sleicpin)      // Pin-Ball (1993)
-                        // Io Moon (1994)
+DRIVERNV(iomoon)        // Io Moon (1994)
                         // Dona Elvira 2 (1996)
 
 // ----------------
