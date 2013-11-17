@@ -11,7 +11,7 @@
 		DISPLAY: DMD
 		SOUND:	 YM3812 @ ???,
 				 DAC,
-		         OKI6376 @ ??? for speech
+		         OKI6376 @ 2 or 4 MHz for speech / FX
  ************************************************************************************************/
 
 #include "driver.h"
@@ -39,11 +39,9 @@ static struct {
 static int SLEIC_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
 static int SLEIC_m2sw(int col, int row) { return 40 + col*10 + row; }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static INTERRUPT_GEN(SLEIC_irq_i80188) {
   cpu_set_irq_line(SLEIC_MAIN_CPU, 0, PULSE_LINE);
 }
-#endif
 
 static INTERRUPT_GEN(SLEIC_irq_i8039) {
   cpu_set_irq_line(SLEIC_DISPLAY_CPU, 0, PULSE_LINE);
@@ -68,10 +66,33 @@ static INTERRUPT_GEN(SLEIC_vblank) {
   core_updateSw(TRUE);
 }
 
+#ifdef MAME_DEBUG
+static void showData(int data) {
+  static char s[2];
+  sprintf(s, "%02x", data);
+  core_textOut(s, 6, 25, 2, 5);
+}
+#endif /* MAME_DEBUG */
+
 static SWITCH_UPDATE(SLEIC) {
+  static UINT8 data = 0;
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
   }
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
+    showData(data -= 16);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
+    showData(--data);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
+    showData(++data);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
+    showData(data += 16);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_SPACE, 2)) {
+	  OKIM6376_data_0_w(0, data);
+	  OKIM6376_data_0_w(0, 0x10);
+	}
+#endif /* MAME_DEBUG */
 }
 
 static WRITE_HANDLER(pic_w) {
@@ -94,18 +115,29 @@ static struct YM3812interface SLEIC_ym3812_intf =
 };
 static struct OKIM6295interface SLEIC_okim6376_intf =
 {
-	1,						/* 1 chip */
-	{ 8000 },				/* 8000Hz playback */
-	{ REGION_USER1 },		/* ROM REGION */
-	{ 50 }					/* Volume */
+	1,					/* 1 chip */
+	{ 15151.51 },		/* sampling frequency at 2MHz chip clock */
+	{ REGION_USER1 },	/* memory region */
+	{ 75 }				/* volume */
+};
+static struct OKIM6295interface SLEIC_okim6376_intf2 =
+{
+	1,					/* 1 chip */
+	{ 30303.03 },		/* sampling frequency at 4MHz chip clock */
+	{ REGION_USER1 },	/* memory region */
+	{ 75 }				/* volume */
 };
 static struct DACinterface SLEIC_dac_intf = { 1, { 25 }};
 
+static READ_HANDLER(read_0) {
+  return 0;
+}
+
 static MEMORY_READ_START(SLEIC_80188_readmem)
   {0x00000,0x01fff, MRA_RAM},
-  {0x10100,0x10900, MRA_RAM},
+  {0x10100,0x10900, read_0 /* MRA_RAM */},
   {0x60410,0x6340f, MRA_RAM},
-  {0xe0000,0xfffff, MRA_ROM},
+  {0x80000,0xfffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(SLEIC_80188_writemem)
@@ -176,8 +208,9 @@ static WRITE_HANDLER(i8039_write_port) {
 
 static READ_HANDLER(z80_read_port) {
   switch (offset) {
+    case 1: return core_getDip(0);
     case 2: return ~coreGlobals.swMatrix[1 + locals.swCol];
-    case 3: return coreGlobals.tmpLampMatrix[locals.lampCol];
+    case 3: return ~coreGlobals.tmpLampMatrix[locals.lampCol];
     case 4: return coreGlobals.swMatrix[0];
     default: logerror("Z80 read port %02x\n", offset);
   }
@@ -192,6 +225,7 @@ static WRITE_HANDLER(z80_write_port) {
     case 4: coreGlobals.tmpLampMatrix[locals.lampCol] = data; break;
     case 5: locals.solenoids = (locals.solenoids & 0xff00ff) | ((data ^ 0xff) << 8); break;
     case 6: locals.solenoids = (locals.solenoids & 0xffff00) | (data ^ 0xff); break;
+    case 7: break;
     default: logerror("Z80 write port %2x = %02x\n", 0x80 + offset, data);
   }
 }
@@ -227,24 +261,31 @@ static MACHINE_INIT(SLEIC) {
   pic8259_0_config(SLEIC_MAIN_CPU, 0);
 }
 
-MACHINE_DRIVER_START(SLEIC)
+static MACHINE_DRIVER_START(SLEIC)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(SLEIC,NULL,NULL)
   MDRV_SWITCH_CONV(SLEIC_sw2m,SLEIC_m2sw)
   MDRV_SWITCH_UPDATE(SLEIC)
-  MDRV_DIPS(2)
+  MDRV_DIPS(8)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
-  MDRV_SOUND_ADD(DAC, SLEIC_okim6376_intf)
-  MDRV_SOUND_ADD(DAC, SLEIC_dac_intf)
 
   // game & sound section
   MDRV_CPU_ADD_TAG("mcpu", I188, 8000000)
   MDRV_CPU_MEMORY(SLEIC_80188_readmem, SLEIC_80188_writemem)
   MDRV_CPU_PORTS(SLEIC_80188_readport, SLEIC_80188_writeport)
   MDRV_CPU_VBLANK_INT(SLEIC_vblank, 1)
-//  MDRV_CPU_PERIODIC_INT(SLEIC_irq_i80188, 250)
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_i80188, 120)
+
+  // I/O section
+  MDRV_CPU_ADD_TAG("icpu", Z80, 2500000)
+  MDRV_CPU_MEMORY(SLEIC_Z80_readmem, SLEIC_Z80_writemem)
+  MDRV_CPU_PORTS(SLEIC_Z80_readport, SLEIC_Z80_writeport)
+  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 2500000/2048)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(SLEIC1)
+  MDRV_IMPORT_FROM(SLEIC)
 
   // display section
   MDRV_CPU_ADD_TAG("dcpu", I8039, 2000000)
@@ -252,11 +293,17 @@ MACHINE_DRIVER_START(SLEIC)
   MDRV_CPU_PORTS(SLEIC_8039_readport, SLEIC_8039_writeport)
   MDRV_CPU_PERIODIC_INT(SLEIC_irq_i8039, 2000000/8192)
 
-  // I/O section
-  MDRV_CPU_ADD_TAG("icpu", Z80, 2500000)
-  MDRV_CPU_MEMORY(SLEIC_Z80_readmem, SLEIC_Z80_writemem)
-  MDRV_CPU_PORTS(SLEIC_Z80_readport, SLEIC_Z80_writeport)
-  MDRV_CPU_PERIODIC_INT(SLEIC_irq_z80, 2500000/2048)
+  MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
+  MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf)
+  MDRV_SOUND_ADD(DAC, SLEIC_dac_intf)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(SLEIC2)
+  MDRV_IMPORT_FROM(SLEIC)
+
+  MDRV_SOUND_ADD(YM3812, SLEIC_ym3812_intf)
+  MDRV_SOUND_ADD(OKIM6295, SLEIC_okim6376_intf2)
+  MDRV_SOUND_ADD(DAC, SLEIC_dac_intf)
 MACHINE_DRIVER_END
 
 PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
