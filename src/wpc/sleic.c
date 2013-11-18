@@ -118,14 +118,14 @@ static struct OKIM6295interface SLEIC_okim6376_intf =
 	1,					/* 1 chip */
 	{ 15151.51 },		/* sampling frequency at 2MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
-	{ 75 }				/* volume */
+	{ 100 }				/* volume */
 };
 static struct OKIM6295interface SLEIC_okim6376_intf2 =
 {
 	1,					/* 1 chip */
 	{ 30303.03 },		/* sampling frequency at 4MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
-	{ 75 }				/* volume */
+	{ 100 }				/* volume */
 };
 static struct DACinterface SLEIC_dac_intf = { 1, { 25 }};
 

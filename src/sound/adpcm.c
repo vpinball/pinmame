@@ -221,29 +221,13 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 
 			/* compute the new amplitude and update the current step */
 			val = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
-			signal += diff_lookup[step * 16 + (val & 15)];
+			signal = diff_lookup[step * 16 + (val & 15)];
 
 			/* clamp to the maximum */
-			if (signal > 2047)
-				signal = 2047;
-			else if (signal < -2048)
-				signal = -2048;
-
-			/* wrap lower values in three steps */
-			if (signal > 1024)
-				signal = 2047 - signal;
-			else if (signal < -1023)
-				signal = -2047 - signal;
-
-			if (signal > 511)
-				signal = 1023 - signal;
-			else if (signal < -511)
-				signal = -1023 - signal;
-
 			if (signal > 255)
-				signal = 511 - signal;
-			else if (signal < -255)
-				signal = -511 - signal;
+				signal = 255;
+			else if (signal < -256)
+				signal = -256;
 
 			/* adjust the step size and clamp */
 			step += index_shift[val & 7];
