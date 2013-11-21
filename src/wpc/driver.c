@@ -2207,9 +2207,10 @@ DRIVER(ngg,12)          //WPC-561:  12/97 W No Good Gofers (1.2)
 DRIVER(ngg,13)          //          04/98 W No Good Gofers (1.3)
 DRIVER(cp,15)           //WPC-563:  07/98 B The Champion Pub (1.5)
 DRIVER(cp,16)           //          07/98 B The Champion Pub (1.6)
-DRIVER(mb,10)           //WPC-565:  08/98 W Monster Bash
-DRIVER(mb,106)          //          06/99 W Monster Bash (Home version)
-DRIVER(mb,106b)         //                  Monster Bash (1.06b Coin Play)
+DRIVER(mb,05)           //WPC-565:  07/98 W Monster Bash (0.5)
+DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash (1.0)
+DRIVER(mb,106)                            // (1.06 Home version)
+DRIVER(mb,106b)                           // (1.06b Coin Play)
 DRIVER(cc,10)           //WPC-566:  10/98 B Cactus Canyon
 DRIVER(cc,12)           //          02/99 B Cactus Canyon (1.2)
 DRIVER(cc,13)           //          04/99 B Cactus Canyon (1.3)
