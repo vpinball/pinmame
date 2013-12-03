@@ -915,7 +915,7 @@ static int dcs_custStart(const struct MachineSound *msound) {
   memset(&dcs_dac,0,sizeof(dcs_dac));
 
   /*-- allocate a DAC stream --*/
-  dcs_dac.stream = stream_init("DCS DAC", 100, 32000, 0, dcs_dacUpdate);
+  dcs_dac.stream = stream_init("DCS DAC", 100, 31250, 0, dcs_dacUpdate);
 
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
