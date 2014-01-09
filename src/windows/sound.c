@@ -442,7 +442,106 @@ void osd_sound_enable(int enable_it)
 	}
 }
 
+// BilboX Functions
 
+// Structure of Audio Device usefull informations
+typedef struct
+{
+	LPGUID guid;
+	char description[1024];
+	char module[1024];
+}AudioDevice;
+
+// maximum number of handled devices
+#define MAX_HANDLED_DEVICES 10
+
+// AudioDevices informations
+AudioDevice audio_devices[MAX_HANDLED_DEVICES];
+
+// Number of enumarated audio devices
+int audio_devices_number = 0;
+
+// Number of current audio device
+int current_audio_device = -1;
+
+// Audio Devices enumeration callback
+BOOL CALLBACK EnumCallBack (LPGUID guid, LPCSTR desc,
+	LPCSTR mod, LPVOID list)
+{
+	AudioDevice *ad = NULL;
+	
+	if(audio_devices_number>=MAX_HANDLED_DEVICES-1)
+		return FALSE;	// Max handled reached (TODO: realloc)
+
+	ad = &(audio_devices[audio_devices_number]);
+	if (guid == NULL)
+		ad->guid = NULL;
+	else{
+		ad->guid = (LPGUID)malloc(sizeof (GUID));
+		memcpy (ad->guid, guid, sizeof (GUID));
+	}
+	
+	strcpy(ad->description,desc);
+	strcpy(ad->module,mod);
+
+	audio_devices_number++;
+	return TRUE;
+}
+
+//============================================================
+//	osd_enum_audio_devices
+//============================================================
+int osd_enum_audio_devices()
+{
+	audio_devices_number = 0;
+	if(DirectSoundEnumerate (EnumCallBack, NULL)!=DS_OK)
+		return 0;
+	return audio_devices_number;
+}
+
+//============================================================
+//	osd_get_audio_devices_count
+//============================================================
+int osd_get_audio_devices_count()
+{
+	return audio_devices_number;
+}
+
+//============================================================
+//	osd_get_audio_device_description
+//============================================================
+char* osd_get_audio_device_description(int num)
+{
+	return audio_devices[num].description;
+}
+
+//============================================================
+//	osd_get_audio_device_module
+//============================================================
+char* osd_get_audio_device_module(int num)
+{
+	return audio_devices[num].module;
+}
+
+//============================================================
+//	osd_set_audio_device
+//============================================================
+int osd_set_audio_device(int num)
+{
+	if(num<0 || num>=audio_devices_number)
+		current_audio_device = -1;
+	else
+		current_audio_device = num;
+	return current_audio_device;
+}
+
+//============================================================
+//	osd_get_current_audio_device
+//============================================================
+int osd_get_current_audio_device()
+{
+	return current_audio_device;
+}
 
 //============================================================
 //	dsound_init
@@ -452,8 +551,16 @@ static int dsound_init(void)
 {
 	HRESULT result;
 
+	LPGUID guid = NULL;	// Default audio device
+
+	osd_enum_audio_devices(); // (Re-)Enumerate devices
+	
+	// Get the guid to the user selected audio device (NULL if no selected)
+	if(current_audio_device>= 0 && current_audio_device<audio_devices_number)
+		guid = audio_devices[current_audio_device].guid;
+
 	// now attempt to create it
-	result = DirectSoundCreate(NULL, &dsound, NULL);
+	result = DirectSoundCreate(guid, &dsound, NULL);
 	if (result != DS_OK)
 	{
 		fprintf(stderr, "Error creating DirectSound: %08x\n", (UINT32)result);
