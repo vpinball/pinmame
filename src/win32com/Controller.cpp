@@ -26,11 +26,14 @@ extern "C" {
 #include "driver.h"
 #include "core.h"
 #include "vpintf.h"
+#include "mame.h"
 
 extern HWND win_video_window;
 extern int g_fPause;
 extern HANDLE g_hEnterThrottle;
 extern int g_iSyncFactor;
+extern struct RunningMachine *Machine;
+extern struct mame_display *Curent_Display;
 }
 #include "alias.h"
 
@@ -455,6 +458,316 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	}
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
+	return S_OK;
+}
+
+/*********************************************************************
+ * IController.DmdWidth property (read-only): get the width of DMD bitmap
+ *********************************************************************/
+STDMETHODIMP CController::get_DmdWidth(int *pVal)
+{
+	*pVal = Curent_Display ? Curent_Display->game_visible_area.max_x-Curent_Display->game_visible_area.min_x : 0;
+	return S_OK;
+}
+
+/*********************************************************************
+ * IController.DmdHeight property (read-only): get the height of DMD bitmap
+ *********************************************************************/
+STDMETHODIMP CController::get_DmdHeight(int *pVal)
+{
+	*pVal = Curent_Display ? Curent_Display->game_visible_area.max_y-Curent_Display->game_visible_area.min_y : 0;
+	return S_OK;
+}
+
+/*********************************************************************
+ * IController.DmdPixel (read-only): read a given pixel of the DMD (slow!)
+ *********************************************************************/
+STDMETHODIMP CController::get_DmdPixel(int x, int y, int *pVal)
+{
+	if(Machine && Machine->scrbitmap)
+		*pVal = Machine->scrbitmap->read(Machine->scrbitmap,x,y);
+	else
+		*pVal = 0;
+	return S_OK;
+}
+
+
+static float* buffer=0;
+/********************************************************************************
+ * updateDmdPixels  (read-only): Copy whole Dmd Bitmap to a user allocated array
+ ********************************************************************************/
+STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+	
+	static float time = 0;
+	time += 0.1;
+	buffer = reinterpret_cast<float*>(buf);
+
+	mame_bitmap * btm = Curent_Display ? Curent_Display->game_bitmap : 0;
+	if(Machine && Curent_Display && btm)
+	{
+		if(width  != Curent_Display->game_visible_area.max_x-Curent_Display->game_visible_area.min_x || 
+		   height != Curent_Display->game_visible_area.max_y-Curent_Display->game_visible_area.min_y  )
+		{
+			*pVal = 0;
+			return S_OK;
+		}
+
+		UINT8 r,g,b;		
+		float *dst = buffer;
+		if (btm->depth == 8)
+		{
+			UINT8 *src;
+			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			{
+				src = (UINT8*)btm->line[j] + sizeof(UINT8) * Curent_Display->game_visible_area.min_x;
+				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				{
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = r/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = 1.0;
+				}
+			}
+		}
+		else if(btm->depth == 15 || btm->depth == 16)
+		{
+			UINT16 *src;
+			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			{
+				src = (UINT16*)btm->line[j] + sizeof(UINT16) * Curent_Display->game_visible_area.min_x;
+				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				{
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = r/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = 1.0;
+				}
+			}
+		}
+		else
+		{
+			UINT32 *src;
+			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			{
+				src = (UINT32*)btm->line[j] + sizeof(UINT32) * Curent_Display->game_visible_area.min_x;
+				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				{
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = r/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = g/255.0;
+					*(dst++) = 1.0;
+				}
+			}
+
+		}
+
+		//*pVal = Machine->scrbitmap->read(Machine->scrbitmap,x,y);
+
+		*pVal = 1;
+	}
+	else
+		*pVal = 0;
+	return S_OK;
+}
+
+/******************************************************************************************
+ * ChangedLampsState (read-only): Copy whole Changed Lamps array to a user allocated array
+ ******************************************************************************************/
+STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+  vp_tChgLamps chgLamps;
+
+  if (!pVal) return S_FALSE;
+
+  if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+    { pVal = 0; return S_OK; }
+
+  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+  else if ( synclevel<0 )
+	  Sleep(-synclevel);
+
+  /*-- Count changes --*/
+  int uCount = vp_getChangedLamps(chgLamps);
+
+  if (uCount == 0)
+    { pVal = 0; return S_OK; }
+
+  /*-- add changed lamps to array --*/
+  int *dst = reinterpret_cast<int*>(buf);
+  for (int i = 0; i < uCount; i++)
+  {
+    *(dst++) = chgLamps[i].lampNo;
+    *(dst++) = chgLamps[i].currStat?1:0;
+  }
+
+  *pVal = uCount;
+
+  return S_OK;
+}
+
+/*****************************************************************************
+ * LampsState (read-only): Copy whole Lamps array to a user allocated array
+ *****************************************************************************/
+STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	if (!pVal) return S_FALSE;
+
+
+	/*-- list lamps states to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+
+	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
+		for (int ix=0; ix<89; ix++)
+			*(dst++) = 0;
+	}
+	else {
+		for (int ix=0; ix<89; ix++)
+			*(dst++) = vp_getLamp(ix)?1:0;
+	}
+
+	*pVal = 89;
+
+	return S_OK;
+}
+
+/***************************************************************************************************
+ * ChangedSolenoidsState (read-only): Copy whole Changed Solenoids array to a user allocated array
+ ***************************************************************************************************/
+STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	vp_tChgSols chgSol;
+
+	if (!pVal) return S_FALSE;
+
+	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+	{ pVal = 0; return S_OK; }
+
+	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+	else if ( synclevel<0 )
+		Sleep(-synclevel);
+
+	/*-- Count changes --*/
+	int uCount = vp_getChangedSolenoids(chgSol);
+
+	if (uCount == 0)
+	{ pVal = 0; return S_OK; }
+
+	/*-- add changed lamps to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+	for (int i = 0; i < uCount; i++)
+	{
+		*(dst++) = chgSol[i].solNo;
+		*(dst++) = chgSol[i].currStat;
+	}
+
+	*pVal = uCount;
+
+	return S_OK;
+}
+
+
+/**********************************************************************************
+ * SolenoidsState (read-only): Copy whole Solenoids array to a user allocated array
+ **********************************************************************************/
+STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	if (!pVal) return S_FALSE;
+
+
+	/*-- list lamps states to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+
+	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
+		for (int ix=0; ix<65; ix++)
+			*(dst++) = 0;
+	}
+	else {
+		for (int ix=0; ix<65; ix++)
+			*(dst++) = vp_getSolenoid(ix);
+	}
+
+	*pVal = 65;
+
+	return S_OK;
+}
+
+/**************************************************************************************
+ * ChangedGIsState (read-only): Copy whole Changed GIs array to a user allocated array
+ **************************************************************************************/
+STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	vp_tChgGIs chgGI;
+
+	if (!pVal) return S_FALSE;
+
+	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+	{ pVal = 0; return S_OK; }
+
+	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+	else if ( synclevel<0 )
+		Sleep(-synclevel);
+
+	/*-- Count changes --*/
+	int uCount = vp_getChangedGI(chgGI);
+
+	if (uCount == 0)
+	{ pVal = 0; return S_OK; }
+
+	/*-- add changed lamps to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+	for (int i = 0; i < uCount; i++)
+	{
+		*(dst++) = chgGI[i].giNo;
+		*(dst++) = chgGI[i].currStat;
+	}
+
+	*pVal = uCount;
+
 	return S_OK;
 }
 
@@ -1765,6 +2078,96 @@ STDMETHODIMP CController::GetClientRect(long hWnd, VARIANT *pVal)
 
 	pVal->vt = VT_ARRAY|VT_VARIANT;
 	pVal->parray = psa;
+
+	return S_OK;
+}
+
+
+/***************************************************************
+ * IController.MasterVolume property: get/set MasterVolume
+ ***************************************************************/
+STDMETHODIMP CController::get_MasterVolume(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_mastervolume();
+	return S_OK;
+}
+
+STDMETHODIMP CController::put_MasterVolume(int newVal)
+{
+	osd_set_mastervolume(newVal);
+
+	return S_OK;
+}
+
+/*************************************************************************************
+ IController.EnumAudioDevices property (read only):
+    Enumerate audio devices using DirectSound and return the number of found devices
+*************************************************************************************/
+STDMETHODIMP CController::get_EnumAudioDevices(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_enum_audio_devices();
+	return S_OK;
+}
+
+/*************************************************************************************
+ IController.AudioDevicesCount property (read only):
+    Return the number of found devices (by previous call EnumAudioDevices)
+*************************************************************************************/
+STDMETHODIMP CController::get_AudioDevicesCount(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_audio_devices_count();
+	return S_OK;
+}
+
+/*************************************************************************************
+ IController.AudioDeviceDescription property (read only):
+   Return the audio device description (null char ended string) of the "num" device
+*************************************************************************************/
+STDMETHODIMP CController::get_AudioDeviceDescription(int num, BSTR *pVal)
+{
+	if ( !pVal )
+		return S_FALSE;
+
+	CComBSTR bstrDescription(osd_get_audio_device_description(num));
+
+	*pVal = bstrDescription.Detach();
+
+	return S_OK;
+}
+
+/*************************************************************************************
+ IController.AudioDeviceModule property (read only):
+ Return the audio device module (null char ended string)of the "num" device
+*************************************************************************************/
+STDMETHODIMP CController::get_AudioDeviceModule(int num, BSTR *pVal)
+{
+	if ( !pVal )
+		return S_FALSE;
+
+	CComBSTR bstrDescription(osd_get_audio_device_module(num));
+
+	*pVal = bstrDescription.Detach();
+
+	return S_OK;
+}
+
+/*************************************************************************************
+ IController.CurrentAudioDevice property):
+    Get/Set the current audio device number
+*************************************************************************************/
+STDMETHODIMP CController::get_CurrentAudioDevice(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_current_audio_device();
+	return S_OK;
+}
+STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
+{
+	if(osd_set_audio_device(newVal)!=newVal)
+		return S_FALSE;
 
 	return S_OK;
 }
