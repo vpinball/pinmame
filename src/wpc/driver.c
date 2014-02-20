@@ -1310,6 +1310,7 @@ DRIVERNV(gpr301g)       //Whitestar: 09/05 Grand Prix (3.01 Germany)
 DRIVERNV(gpr301l)       //Whitestar: 09/05 Grand Prix (3.01 Spain)
 DRIVERNV(gpr301f)       //Whitestar: 09/05 Grand Prix (3.01 France)
 DRIVERNV(gpr301i)       //Whitestar: 09/05 Grand Prix (3.01 Italy)
+DRIVERNV(dalejr)        //Whitestar: 07/06 Dale Jr. (Nascar 5.00)
                         //Whitestar: ??/06 The Brain (Simpsons Pinball Party conversion)
 
 // Stern S.A.M System
