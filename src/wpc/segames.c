@@ -2364,6 +2364,17 @@ SE_ROMEND
 CORE_CLONEDEFNV(nas301l,nascar,"Nascar (3.01 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
+/ Dale Jr. (NASCAR 5.00)
+/-------------------------------------------------------------------*/
+INITGAME(dalejr,GEN_WS,se_dmd128x32,SE_LED)
+SE128_ROMSTART(dalejr, "dalecpu.500", CRC(b723b7db) SHA1(ee5f96599f8ccb0fda0695e5e8af438c3f559df3))
+DE_DMD32ROM8x(      "daledisp.500", CRC(5dad91cd) SHA1(ef9ce5573f580abc720a184625c96672b5337191))
+NASCAR_SND
+SE_ROMEND
+#define input_ports_dalejr input_ports_se
+CORE_GAMEDEFNV(dalejr,"Dale Jr. (5.00)",2006,"Stern",de_mSES3,0)
+
+/*-------------------------------------------------------------------
 / Grand Prix
 /-------------------------------------------------------------------*/
 #define GP_SND \
