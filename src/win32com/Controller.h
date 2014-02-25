@@ -142,7 +142,6 @@ public:
 	STDMETHOD(GetWindowRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(GetClientRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 
-	// BilboX added functions
 	STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(get_DmdHeight)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(get_DmdPixel)(/*[in]*/ int x, /*[in]*/ int y, /*[out, retval]*/ int *pVal);
@@ -161,7 +160,7 @@ public:
 	STDMETHOD(get_CurrentAudioDevice)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_CurrentAudioDevice)(/*[in]*/ int num);
 
-/* depricated methods/properties */
+/* deprecated methods/properties */
 	STDMETHOD(get_NewSoundCommands)(/*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(get_ImgDir)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_ImgDir)(/*[in]*/ BSTR newVal);

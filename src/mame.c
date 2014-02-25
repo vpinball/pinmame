@@ -155,7 +155,7 @@ struct GameOptions options;
 /* the active video display */
 static struct mame_display current_display;
 static UINT8 visible_area_changed;
-struct mame_display *Curent_Display = &current_display;
+struct mame_display *current_display_ptr = &current_display;
 
 /* video updating */
 static UINT8 full_refresh_pending;

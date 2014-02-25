@@ -173,7 +173,7 @@ void osd_sound_enable(int enable);
 
 /******************************************************************************
 
-	Audio device related functions ( BilboX Functions)
+	Audio device related functions
 
 ******************************************************************************/
 
@@ -190,7 +190,7 @@ int osd_get_audio_devices_count();
 */
 char* osd_get_audio_device_description(int num);
 /*
- Return the audio device module (null char ended string)of the "num" device
+ Return the audio device module (null char ended string) of the "num" device
 */
 char* osd_get_audio_device_module(int num);
 /*
