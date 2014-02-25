@@ -31,6 +31,7 @@ extern int			autoframeskip;
 
 // speed throttling
 extern int			throttle;
+extern int			fastfrms;
 
 // palette lookups
 extern UINT8		palette_lookups_invalid;

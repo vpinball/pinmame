@@ -242,6 +242,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 	if ( GameWasNeverStarted(m_szROM) ) {
 		int fFirstTime = GameUsedTheFirstTime(m_szROM);
 
+#ifndef VPINMAME_CABINET
 		CComBSTR sDescription;
 		m_pGame->get_Description(&sDescription);
 		char szDescription[256];
@@ -249,15 +250,18 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 		if ( !ShowDisclaimer(m_hParentWnd, szDescription) )
 			return Error(TEXT("User is not legally entitled to play this game!"));
+#endif
 
 		SetGameWasStarted(m_szROM);
 
+#ifndef VPINMAME_CABINET
 		if ( fFirstTime ) {
 			char szTemp[256];
 			sprintf(szTemp,"This is the first time you use: %s\nPlease specify options for this game by clicking \"OK\"!",drivers[m_nGameNo]->description);
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
 			m_pGameSettings->ShowSettingsDlg(0);
 		}
+#endif
 	}	
 
 #ifndef DEBUG
@@ -278,7 +282,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		char szTemp[256];
 		sprintf(szTemp,"");
 
-		// See if game is flagged as GAME_NO_SOU7ND and show user a message!
+		// See if game is flagged as GAME_NO_SOUND and show user a message!
 		if ( drivers[m_nGameNo]->flags&GAME_NO_SOUND )
 			sprintf(szTemp,"%sPlease be aware that this game does not have sound emulated yet!\n\n",szTemp);
 
@@ -2169,3 +2173,49 @@ STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
 
 	return S_OK;
 }
+
+/***************************************************************
+ * IController.FastFrames property: get/set FastFrames
+ ***************************************************************/
+
+STDMETHODIMP CController::get_FastFrames(int *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("fastframes"), &vValue);
+	*pVal = vValue.lVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_FastFrames(int newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("fastframes"), CComVariant(newVal));
+}
+
+/*************************************************************** 
+ * IController.IgnoreRomCrc property: get/set IgnoreRomCrc
+ ***************************************************************/
+
+STDMETHODIMP CController::get_IgnoreRomCrc(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("ignore_rom_crc"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_IgnoreRomCrc(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant(newVal));
+}		

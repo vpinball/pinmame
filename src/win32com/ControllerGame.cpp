@@ -174,7 +174,21 @@ private:
 				fROMSetOK = true;
 			}
 			else if ( fMaybeOK )
+				{
+				IGameSettings *pGameSettings;		// ignore patched/localization/sound/message rom patches
+				VARIANT vValue;				
+				VariantInit(&vValue);
+
+				pGame->get_Settings((IGameSettings**) &pGameSettings);				
+				
+				pGameSettings->get_Value(CComBSTR("ignore_rom_crc"), &vValue);
+				pGameSettings->Release();
+
+				if(vValue.lVal != NULL)
+					{fROMSetOK = fOK = true;}
+
 				strcpy(szLine, "There are CRC and/or length errors! VPinMAME may or may not successfully be able to use the ROM set.\r\nIf sound roms are missing, sound will be disabled.");
+				}
 			else
 				strcpy(szLine, "ROM set is bad: VPinMAME can't use it.");
 			break;
