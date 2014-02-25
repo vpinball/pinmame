@@ -3,9 +3,6 @@
 #include "mrgame.h"
 #include "sndbrd.h"
 
-//cheap hack to avoid the problem that we've run out of generation flags again
-#define GEN_MRGAME GEN_ALVG
-
 
 /* 10' Color Video Monitor - Generation #1*/
 core_tLCDLayout mrgame_disp_g1[] = {

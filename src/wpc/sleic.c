@@ -75,7 +75,9 @@ static void showData(int data) {
 #endif /* MAME_DEBUG */
 
 static SWITCH_UPDATE(SLEIC) {
+#ifdef MAME_DEBUG
   static UINT8 data = 0;
+#endif
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
   }
