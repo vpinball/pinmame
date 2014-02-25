@@ -442,9 +442,7 @@ void osd_sound_enable(int enable_it)
 	}
 }
 
-// BilboX Functions
-
-// Structure of Audio Device usefull informations
+// Structure of Audio Device informations
 typedef struct
 {
 	LPGUID guid;
@@ -458,7 +456,7 @@ typedef struct
 // AudioDevices informations
 AudioDevice audio_devices[MAX_HANDLED_DEVICES];
 
-// Number of enumarated audio devices
+// Number of enumerated audio devices
 int audio_devices_number = 0;
 
 // Number of current audio device
@@ -471,7 +469,7 @@ BOOL CALLBACK EnumCallBack (LPGUID guid, LPCSTR desc,
 	AudioDevice *ad = NULL;
 	
 	if(audio_devices_number>=MAX_HANDLED_DEVICES-1)
-		return FALSE;	// Max handled reached (TODO: realloc)
+		return FALSE;	// Hardcoded Max reached (TODO: realloc)
 
 	ad = &(audio_devices[audio_devices_number]);
 	if (guid == NULL)

@@ -33,7 +33,7 @@ extern int g_fPause;
 extern HANDLE g_hEnterThrottle;
 extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
-extern struct mame_display *Curent_Display;
+extern struct mame_display *current_display_ptr;
 }
 #include "alias.h"
 
@@ -466,7 +466,7 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
  *********************************************************************/
 STDMETHODIMP CController::get_DmdWidth(int *pVal)
 {
-	*pVal = Curent_Display ? Curent_Display->game_visible_area.max_x-Curent_Display->game_visible_area.min_x : 0;
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x : 0;
 	return S_OK;
 }
 
@@ -475,7 +475,7 @@ STDMETHODIMP CController::get_DmdWidth(int *pVal)
  *********************************************************************/
 STDMETHODIMP CController::get_DmdHeight(int *pVal)
 {
-	*pVal = Curent_Display ? Curent_Display->game_visible_area.max_y-Curent_Display->game_visible_area.min_y : 0;
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y : 0;
 	return S_OK;
 }
 
@@ -503,71 +503,70 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		*pVal = 0;
 		return S_FALSE;
 	}
-	
-	static float time = 0;
-	time += 0.1;
+
 	buffer = reinterpret_cast<float*>(buf);
 
-	mame_bitmap * btm = Curent_Display ? Curent_Display->game_bitmap : 0;
-	if(Machine && Curent_Display && btm)
+	mame_bitmap * btm = current_display_ptr ? current_display_ptr->game_bitmap : 0;
+	if(Machine && current_display_ptr && btm)
 	{
-		if(width  != Curent_Display->game_visible_area.max_x-Curent_Display->game_visible_area.min_x || 
-		   height != Curent_Display->game_visible_area.max_y-Curent_Display->game_visible_area.min_y  )
+		if(width  != current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x || 
+		   height != current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y  )
 		{
 			*pVal = 0;
 			return S_OK;
 		}
 
-		UINT8 r,g,b;		
 		float *dst = buffer;
 		if (btm->depth == 8)
 		{
 			UINT8 *src;
-			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT8*)btm->line[j] + sizeof(UINT8) * Curent_Display->game_visible_area.min_x;
-				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				src = (UINT8*)btm->line[j] + sizeof(UINT8) * current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
 				{
+					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
-					*(dst++) = r/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = 1.0;
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
 				}
 			}
 		}
 		else if(btm->depth == 15 || btm->depth == 16)
 		{
 			UINT16 *src;
-			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT16*)btm->line[j] + sizeof(UINT16) * Curent_Display->game_visible_area.min_x;
-				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				src = (UINT16*)btm->line[j] + sizeof(UINT16) * current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
 				{
+					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
-					*(dst++) = r/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = 1.0;
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
 				}
 			}
 		}
 		else
 		{
 			UINT32 *src;
-			for(int j=Curent_Display->game_visible_area.max_y-1;j>=Curent_Display->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT32*)btm->line[j] + sizeof(UINT32) * Curent_Display->game_visible_area.min_x;
-				for(int i=Curent_Display->game_visible_area.min_x;i<Curent_Display->game_visible_area.max_x;i++)
+				src = (UINT32*)btm->line[j] + sizeof(UINT32) * current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
 				{
+					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
-					*(dst++) = r/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = g/255.0;
-					*(dst++) = 1.0;
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
 				}
 			}
-
 		}
 
 		//*pVal = Machine->scrbitmap->read(Machine->scrbitmap,x,y);
@@ -614,7 +613,7 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   for (int i = 0; i < uCount; i++)
   {
     *(dst++) = chgLamps[i].lampNo;
-    *(dst++) = chgLamps[i].currStat?1:0;
+    *(dst++) = chgLamps[i].currStat ? 1:0;
   }
 
   *pVal = uCount;
@@ -635,7 +634,6 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 
 	if (!pVal) return S_FALSE;
 
-
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
 
@@ -645,7 +643,7 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 	}
 	else {
 		for (int ix=0; ix<89; ix++)
-			*(dst++) = vp_getLamp(ix)?1:0;
+			*(dst++) = vp_getLamp(ix) ? 1:0;
 	}
 
 	*pVal = 89;
@@ -709,7 +707,6 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 	}
 
 	if (!pVal) return S_FALSE;
-
 
 	/*-- list lamps states to array --*/
 	int *dst = reinterpret_cast<int*>(buf);
@@ -2140,7 +2137,7 @@ STDMETHODIMP CController::get_AudioDeviceDescription(int num, BSTR *pVal)
 
 /*************************************************************************************
  IController.AudioDeviceModule property (read only):
- Return the audio device module (null char ended string)of the "num" device
+ Return the audio device module (null char ended string) of the "num" device
 *************************************************************************************/
 STDMETHODIMP CController::get_AudioDeviceModule(int num, BSTR *pVal)
 {
@@ -2164,6 +2161,7 @@ STDMETHODIMP CController::get_CurrentAudioDevice(int *pVal)
 		*pVal = osd_get_current_audio_device();
 	return S_OK;
 }
+
 STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
 {
 	if(osd_set_audio_device(newVal)!=newVal)
