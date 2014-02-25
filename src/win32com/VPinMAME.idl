@@ -261,6 +261,10 @@ import "ocidl.idl";
 		[propget, id(72), helpstring("property AudioDeviceModule")] HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal);
 		[propget, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([out, retval] int *pVal);
 		[propput, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([in] int newVal);
+		[propget, id(74), helpstring("property FastFrames")] HRESULT FastFrames([out, retval] int *pVal);
+		[propput, id(74), helpstring("property FastFrames")] HRESULT FastFrames([in] int newVal);
+		[propget, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal);
+		[propput, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([in] VARIANT_BOOL  newVal);
 	};
 
 	// WSHDlg and related interfaces
