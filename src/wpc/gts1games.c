@@ -14,7 +14,7 @@ static core_tLCDLayout sys1_disp[] = {
 
 #define INIT_S1(name, dsp) \
 GTS1_INPUT_PORTS_START(name, 1) GTS1_INPUT_PORTS_END \
-static core_tGameData name##GameData = {0,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_NONE}}; \
+static core_tGameData name##GameData = {GEN_GTS1,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_NONE}}; \
 static void init_##name(void) { \
 	core_gameData = &name##GameData; \
 } \
@@ -23,7 +23,7 @@ GTS1_2_ROMSTART(name, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203
 
 #define INIT_S1S(name, dsp) \
 GTS1S_INPUT_PORTS_START(name, 1) GTS1_INPUT_PORTS_END \
-static core_tGameData name##GameData = {0,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_GTS80S}}; \
+static core_tGameData name##GameData = {GEN_GTS1,dsp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_GTS80S}}; \
 static void init_##name(void) { \
 	core_gameData = &name##GameData; \
 } \

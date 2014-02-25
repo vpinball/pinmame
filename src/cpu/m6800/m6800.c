@@ -437,6 +437,7 @@ static const UINT8 cycles_6803[] =
 	/*F*/  4, 4, 4, 6, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5
 };
 
+#if (HAS_HD63701)
 static const UINT8 cycles_63701[] =
 {
 		/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
@@ -457,7 +458,9 @@ static const UINT8 cycles_63701[] =
 	/*E*/  4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5,
 	/*F*/  4, 4, 4, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5
 };
+#endif
 
+#if (HAS_NSC8105)
 static const UINT8 cycles_nsc8105[] =
 {
 		/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
@@ -478,6 +481,7 @@ static const UINT8 cycles_nsc8105[] =
 	/*E*/  5, 5, 5, 0, 5, 5, 5, 6, 5, 5, 5, 5, 5, 6, 0, 7,
 	/*F*/  4, 4, 4, 0, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 0, 6
 };
+#endif
 
 INLINE UINT32 RM16( UINT32 Addr )
 {

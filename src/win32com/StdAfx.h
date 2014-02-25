@@ -11,7 +11,13 @@
 
 #define STRICT
 #ifndef _WIN32_WINNT
+#if _MSC_VER >= 1800
+ #define _WIN32_WINNT 0x0500
+#elif _MSC_VER < 1600
 #define _WIN32_WINNT 0x0400
+#else
+#define _WIN32_WINNT 0x0403
+#endif
 #endif
 // #define _ATL_APARTMENT_THREADED
 #define _ATL_FREE_THREADED

@@ -3,8 +3,6 @@
 #include "sim.h"
 #include "sleic.h"
 
-#define GEN_SLEIC GEN_ALVG
-
 #define INITGAME(name, disptype, balls) \
 	SLEIC_INPUT_PORTS_START(name, balls) SLEIC_INPUT_PORTS_END \
 	static core_tGameData name##GameData = {GEN_SLEIC,disptype,{FLIP_SW(FLIP_L)}}; \
