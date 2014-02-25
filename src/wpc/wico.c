@@ -384,7 +384,7 @@ static core_tLCDLayout dispAftor[] = {
   {4,16,34,2,CORE_SEG9},
   {0}
 };
-static core_tGameData aftorGameData = {GEN_ALVG,dispAftor,{FLIP_SW(FLIP_L),0,8}};
+static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),0,8}};
 static void init_aftor(void) { core_gameData = &aftorGameData; }
 
 CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_NOT_WORKING)
