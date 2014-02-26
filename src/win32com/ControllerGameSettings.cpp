@@ -31,6 +31,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtrlColorStatic)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_DOUBLESIZE, OnCheckBox)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_IGNOREROMCRC, OnCheckBox)
+		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_CABINETMODE, OnCheckBox)
 		COMMAND_CODE_RANGE_HANDLER(IDC_SAMPLERATE, IDC_DMDPERC0, EN_CHANGE, OnEditCtrlChanged)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
@@ -96,6 +97,10 @@ private:
 		CheckDlgButton(IDC_IGNOREROMCRC, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 		VariantClear(&vValue);
 
+		pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
+		CheckDlgButton(IDC_CABINETMODE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
+
 		pGameSettings->get_Value(CComBSTR("dmd_red"), &vValue);
 		SetDlgItemInt(IDC_DMDRED, vValue.lVal, FALSE);
 		VariantClear(&vValue);
@@ -140,6 +145,7 @@ private:
 
 		pGameSettings->put_Value(CComBSTR("fastframes"), CComVariant((int) GetDlgItemInt(IDC_FASTFRAMES,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant((BOOL) IsDlgButtonChecked(IDC_IGNOREROMCRC)));
+		pGameSettings->put_Value(CComBSTR("cabinet_mode"), CComVariant((BOOL) IsDlgButtonChecked(IDC_CABINETMODE)));
 
 		pGameSettings->put_Value(CComBSTR("dmd_red"), CComVariant((int) GetDlgItemInt(IDC_DMDRED,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("dmd_green"), CComVariant((int) GetDlgItemInt(IDC_DMDGREEN,NULL,TRUE)));

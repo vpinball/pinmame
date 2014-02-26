@@ -26,6 +26,8 @@ int g_fMechSamples      = TRUE;		// Signal the common library to load the mech s
 HANDLE g_hGameRunning	= INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
 
+BOOL cabinetMode		= FALSE;
+
 int    g_iSyncFactor     = 0;
 HANDLE g_hEnterThrottle  = INVALID_HANDLE_VALUE;
 extern int g_iSyncFactor;
@@ -121,12 +123,11 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 	if (fHasSound.boolVal==VARIANT_FALSE)
 		options.samplerate = 0; // indicates game sound disabled
 
-#ifndef VPINMAME_CABINET
 #ifndef DEBUG
-	// display the splash screen
 	void* pSplashWnd = NULL;
-	CreateSplashWnd(&pSplashWnd, pController->m_szSplashInfoLine);
-#endif
+	if(!cabinetMode)
+		// display the splash screen
+		CreateSplashWnd(&pSplashWnd, pController->m_szSplashInfoLine);
 #endif
 
 	// set the global pointer to Controller
@@ -184,11 +185,10 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 	// reset the global pointer to Controller
 	m_pController = NULL;
 
-#ifndef VPINMAME_CABINET
 #ifndef DEBUG
-	// destroy the splash screensync
-	DestroySplashWnd(&pSplashWnd); 
-#endif
+	if(!cabinetMode)
+		// destroy the splash screensync
+		DestroySplashWnd(&pSplashWnd); 
 #endif
 
 	return 0;
@@ -219,14 +219,15 @@ extern "C" int osd_init(void)
 	RECT windowRect;
 	GetClientRect(win_video_window, &windowRect);
 
-#ifdef VPINMAME_CABINET
-	int maxX = GetSystemMetrics(78/*SM_CXVIRTUALSCREEN*/) - windowRect.right + 40;
-	int maxY = GetSystemMetrics(79/*SM_CYVIRTUALSCREEN*/) - windowRect.bottom + 40;
+	int maxX = GetSystemMetrics(cabinetMode ? 78/*SM_CXVIRTUALSCREEN*/ : SM_CXSCREEN) - windowRect.right;
+	if(cabinetMode)
+		maxX = (maxX+40)*2 + 40;
+	int maxY = GetSystemMetrics(cabinetMode ? 79/*SM_CYVIRTUALSCREEN*/ : SM_CYSCREEN) - windowRect.bottom + (cabinetMode ? 40 : 0);
 
 	if ( dmd_pos_x<0 )
 		dmd_pos_x = 0;
-	else if ( dmd_pos_x>maxX*2 + 40 )
-		dmd_pos_x = maxX*2 + 40;
+	else if ( dmd_pos_x>maxX )
+		dmd_pos_x = maxX;
 
 	CComVariant vValueX(dmd_pos_x);
 	m_pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), vValueX);
@@ -235,23 +236,6 @@ extern "C" int osd_init(void)
 		dmd_pos_y = 0;
 	else if ( dmd_pos_y>maxY )
 		dmd_pos_y = maxY;
-#else
-	int maxX = GetSystemMetrics(SM_CXSCREEN) - windowRect.right;
-	int maxY = GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom;
-
-	if ( dmd_pos_x<0 )
-		dmd_pos_x = 0;
-	else if ( dmd_pos_x>maxX)
-		dmd_pos_x = maxX;
-
-	CComVariant vValueX(dmd_pos_x);
-	m_pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), vValueX);
-
-	if ( dmd_pos_y<0 )
-		dmd_pos_y = 0;
-	else if ( dmd_pos_y>maxY)
-		dmd_pos_y = maxY;
-#endif
 
 	CComVariant vValueY(dmd_pos_y);
 	m_pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_y"), vValueY);
