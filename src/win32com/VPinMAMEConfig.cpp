@@ -39,6 +39,7 @@ int dmd_width = 0;
 int dmd_height = 0;
 extern "C" int fastfrms;
 BOOL ignoreRomCRC = FALSE;
+extern "C" BOOL cabinetMode;
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -60,6 +61,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
 	{ "fastframes",  NULL, rc_int,  &fastfrms,  "-1", -1, 100000, NULL, "Unthrottled frames at game start" },
 	{ "ignore_rom_crc", NULL, rc_bool, &ignoreRomCRC,  "0", -1, 1, NULL, "Ignore ROM CRC Errors" },
+	{ "cabinet_mode", NULL, rc_bool, &cabinetMode,  "0", -1, 1, NULL, "Enables Cabinet Mode" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 

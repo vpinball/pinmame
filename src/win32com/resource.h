@@ -22,6 +22,7 @@
 #define IDC_IMGDIR                      104
 #define IDC_DOUBLESIZE                  104
 #define IDC_IGNOREROMCRC                105
+#define IDC_CABINETMODE                 106
 #define IDC_SAMPLERATE                  110
 #define IDC_ANTIALIAS                   111
 #define IDC_SYNCLEVEL                   112

@@ -265,6 +265,8 @@ import "ocidl.idl";
 		[propput, id(74), helpstring("property FastFrames")] HRESULT FastFrames([in] int newVal);
 		[propget, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal);
 		[propput, id(75), helpstring("property IgnoreRomCrc")] HRESULT IgnoreRomCrc([in] VARIANT_BOOL  newVal);
+		[propget, id(76), helpstring("property CabinetMode")] HRESULT CabinetMode([out, retval] VARIANT_BOOL  *pVal);
+		[propput, id(76), helpstring("property CabinetMode")] HRESULT CabinetMode([in] VARIANT_BOOL  newVal);
 	};
 
 	// WSHDlg and related interfaces

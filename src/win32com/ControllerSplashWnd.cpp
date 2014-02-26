@@ -6,6 +6,8 @@
 #include <atlwin.h>
 #include <time.h>
 
+extern "C" BOOL cabinetMode;
+
 #define CLOSE_TIMER			1
 #define SPLASH_WND_VISIBLE	5000 // ms
 
@@ -182,17 +184,17 @@ void CreateSplashWnd(void **ppData, char* pszCredits)
 	if ( !ppData )
 		return;
 
-#ifdef VPINMAME_CABINET
-	*ppData = NULL;
-#else 
-	// create and display dialog on the desktop
-	CSplashWnd* pSplashWnd = new CSplashWnd;
-	pSplashWnd->Create((HWND) 0, CWindow::rcDefault, NULL, WS_VISIBLE|WS_POPUP, NULL, 0U, pszCredits);
-	*ppData = pSplashWnd;
+	if(cabinetMode)
+		*ppData = NULL;
+	else {
+		// create and display dialog on the desktop
+		CSplashWnd* pSplashWnd = new CSplashWnd;
+		pSplashWnd->Create((HWND) 0, CWindow::rcDefault, NULL, WS_VISIBLE|WS_POPUP, NULL, 0U, pszCredits);
+		*ppData = pSplashWnd;
 
-	/* remove this line if you want to run the game at once */
-	WaitForSplashWndToClose(ppData);
-#endif
+		/* remove this line if you want to run the game at once */
+		WaitForSplashWndToClose(ppData);
+	}
 }
 
 void DestroySplashWnd(void **ppData)
