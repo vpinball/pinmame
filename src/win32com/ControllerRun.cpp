@@ -26,6 +26,9 @@ int g_fMechSamples      = TRUE;		// Signal the common library to load the mech s
 HANDLE g_hGameRunning	= INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
 
+char g_fShowPinDMD		= FALSE;	// pinDMD not active by default
+int g_fDumpFrames		= FALSE;	// pinDMD dump frames
+
 int    g_iSyncFactor     = 0;
 HANDLE g_hEnterThrottle  = INVALID_HANDLE_VALUE;
 extern int g_iSyncFactor;

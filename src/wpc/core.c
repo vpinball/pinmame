@@ -8,6 +8,10 @@
 #include "mech.h"
 #include "core.h"
 
+#ifdef VPINMAME
+ #include "../pindmd/pindmd.h"
+#endif
+
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
@@ -24,6 +28,9 @@ void vp_setDIP(int bank, int value) { }
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
+  extern char g_fShowPinDMD; /* pinDMD */
+  extern int time_to_reset;  /* pinDMD */
+  extern int g_fDumpFrames;  /* pinDMD */
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
@@ -696,16 +703,13 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
 
-#define DUMPFRAMES 0 //disabled by default
-#define DETECTSAMEFRAMES 1
-#if DUMPFRAMES
+#ifdef VPINMAME
   static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
   static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-  static UINT8 *currbuffer = buffer1;  
+  static UINT8 *currbuffer = buffer1;
   static UINT8 *oldbuffer = NULL;
 
   UINT8 dumpframe = 1;
-  FILE *f;
 #endif
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
@@ -716,11 +720,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
-
-#if DUMPFRAMES
+#ifdef VPINMAME
 		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
 #endif
-
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
@@ -740,29 +742,29 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#if DUMPFRAMES
-#if DETECTSAMEFRAMES
-  if(oldbuffer != NULL) {
-	dumpframe = 0;
-	for(jj = 0; jj < layout->start; jj++)
+#ifdef VPINMAME
+  if(g_fShowPinDMD) {
+    if(oldbuffer != NULL) {
+	  dumpframe = 0;
+	  for(jj = 0; jj < layout->start; jj++)
 		for(ii = 0; ii < layout->length; ii++)
-			if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
+		{
+			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&(currbuffer[jj*layout->length + ii]<4)) {
 				dumpframe = 1;
 				break;
 			}
-  }
-#endif
-
-  if(dumpframe) {
-	f = fopen("dump.txt","a");
-	if(f) {
-		for(jj = 0; jj < layout->start; jj++) {
-			for(ii = 0; ii < layout->length; ii++)
-				fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
-			fprintf(f,"\n");
+			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&((core_gameData->gen == GEN_SAM)||(core_gameData->gen == GEN_GTS3))) {
+				dumpframe = 1;
+				break;
+			}
 		}
-		fprintf(f,"\n");
-		fclose(f);
+    }
+
+    if(dumpframe) {
+	    //usb dmd
+	    if(g_fShowPinDMD)
+		  if((layout->length == 128) || (layout->length == 192))
+		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
 
 		if(currbuffer == buffer1) {
 			currbuffer = buffer2;
@@ -771,7 +773,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			currbuffer = buffer1;
 			oldbuffer = buffer2;
 		}
-	}
+    }
+
+    frameClock();
   }
 #endif
 }
@@ -789,7 +793,16 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 /------------------------------------*/
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos) {
+
+	static UINT16 seg_data[50];
+	static UINT8 disp_lens[50];
+	int idx=0;
+	int total_disp=0;
+
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
+
+  memset(seg_data, 0, 50);
+
   for (; layout->length; layout += 1) {
     if (layout->type == CORE_IMPORT)
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
@@ -802,6 +815,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *seg     = &coreGlobals.segments[layout->start].w;
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
+
+	  disp_lens[total_disp] = ii;
+	  total_disp++;
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
@@ -837,6 +853,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
+
+		  seg_data[idx++] = tmpSeg;
+
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
@@ -847,6 +866,12 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       }
     }
   }
+
+#ifdef VPINMAME
+  //alpha frame
+  if(g_fShowPinDMD)
+  	renderAlphanumericFrame(core_gameData->gen, seg_data, total_disp, disp_lens);
+#endif
 }
 
 VIDEO_UPDATE(core_gen) {
@@ -1465,10 +1490,23 @@ static MACHINE_INIT(core) {
 
 /* TOM: this causes to draw the static sim text */
   schedule_full_refresh();
+
+#ifdef VPINMAME
+  // DMD USB Init
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdInit();
+#endif
 }
 
 static MACHINE_STOP(core) {
   int ii;
+
+#ifdef VPINMAME
+  // DMD USB Kill
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdDeInit();
+#endif
+
   mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();

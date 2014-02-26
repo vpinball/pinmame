@@ -4390,6 +4390,34 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="PinDMD"
+				>
+				<File
+					RelativePath=".\src\pindmd\pinddrv.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pinddrv.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pindmd.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pindmd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\usbalphanumeric.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\usbalphanumeric.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
