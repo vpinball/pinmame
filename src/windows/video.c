@@ -39,11 +39,6 @@ extern int verbose;
 // from wind3dfx.c
 extern struct rc_option win_d3d_opts[];
 
-#ifdef VPINMAME
-// from usbdmd.c  /* pinDMD */
-extern char g_fShowPinDMD;
-#endif
-
 //============================================================
 //	PARAMETERS
 //============================================================
@@ -221,13 +216,7 @@ struct rc_option video_opts[] =
 	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow " APPNAME " to give back time to the system when it's not needed" },
 	{ "rdtsc", NULL, rc_bool, &win_force_rdtsc, "0", 0, 0, NULL, "prefer RDTSC over QueryPerformanceCounter for timing" },
 	{ "high_priority", NULL, rc_bool, &win_high_priority, "0", 0, 0, NULL, "increase thread priority" },
-#ifdef VPINMAME
-	/* pinDMD */
-	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "show pindmd display" },
-#endif
 	{ NULL, NULL, rc_link, win_d3d_opts, NULL, 0, 0, NULL, NULL },
-
-
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 

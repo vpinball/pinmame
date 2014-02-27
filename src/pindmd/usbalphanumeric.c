@@ -1,5 +1,4 @@
 #include "usbalphanumeric.h"
-#include <windows.h>
 #include "pindmd.h"
 
 static UINT8 segSizes[7][16] = {
