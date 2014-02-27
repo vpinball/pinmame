@@ -794,14 +794,18 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos) {
 
-	static UINT16 seg_data[50];
-	static UINT8 disp_lens[50];
-	int idx=0;
-	int total_disp=0;
+#ifdef VPINMAME
+  static UINT16 seg_data[50];
+  static UINT8 disp_lens[50];
+  int idx=0;
+  int total_disp=0;
+#endif
 
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
+#ifdef VPINMAME
   memset(seg_data, 0, 50);
+#endif
 
   for (; layout->length; layout += 1) {
     if (layout->type == CORE_IMPORT)
@@ -816,8 +820,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
+#ifdef VPINMAME
 	  disp_lens[total_disp] = ii;
 	  total_disp++;
+#endif
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
@@ -854,8 +860,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             break;
           }
 
+#ifdef VPINMAME
 		  seg_data[idx++] = tmpSeg;
-
+#endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
