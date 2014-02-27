@@ -476,7 +476,7 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
  *********************************************************************/
 STDMETHODIMP CController::get_DmdWidth(int *pVal)
 {
-	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x : 0;
+	*pVal = current_display_ptr ? (current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x)+1 : 0;
 	return S_OK;
 }
 
@@ -485,7 +485,7 @@ STDMETHODIMP CController::get_DmdWidth(int *pVal)
  *********************************************************************/
 STDMETHODIMP CController::get_DmdHeight(int *pVal)
 {
-	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y : 0;
+	*pVal = current_display_ptr ? (current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y)+1 : 0;
 	return S_OK;
 }
 
@@ -519,8 +519,8 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 	mame_bitmap * btm = current_display_ptr ? current_display_ptr->game_bitmap : 0;
 	if(Machine && current_display_ptr && btm)
 	{
-		if(width  != current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x || 
-		   height != current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y  )
+		if(width  != (current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x+1) || 
+		   height != (current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y+1)  )
 		{
 			*pVal = 0;
 			return S_OK;
@@ -530,10 +530,10 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		if (btm->depth == 8)
 		{
 			UINT8 *src;
-			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
 				src = (UINT8*)btm->line[j] + sizeof(UINT8) * current_display_ptr->game_visible_area.min_x;
-				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
@@ -547,10 +547,10 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		else if(btm->depth == 15 || btm->depth == 16)
 		{
 			UINT16 *src;
-			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
 				src = (UINT16*)btm->line[j] + sizeof(UINT16) * current_display_ptr->game_visible_area.min_x;
-				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
@@ -564,10 +564,10 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		else
 		{
 			UINT32 *src;
-			for(int j=current_display_ptr->game_visible_area.max_y-1;j>=current_display_ptr->game_visible_area.min_y;j--)
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
 				src = (UINT32*)btm->line[j] + sizeof(UINT32) * current_display_ptr->game_visible_area.min_x;
-				for(int i=current_display_ptr->game_visible_area.min_x;i<current_display_ptr->game_visible_area.max_x;i++)
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
 					palette_get_color((*src++),&r,&g,&b);
