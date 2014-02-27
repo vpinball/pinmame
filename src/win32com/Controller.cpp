@@ -2181,15 +2181,16 @@ STDMETHODIMP CController::get_ShowPinDMD(VARIANT_BOOL *pVal)
 	if ( !pVal )
 		return E_POINTER;
 
-	if ( g_fShowPinDMD ) 
-		*pVal = VARIANT_TRUE;
+	VARIANT vValue;
+	VariantInit(&vValue);
 
-	return S_OK;
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("showpindmd"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
 }
 
 STDMETHODIMP CController::put_ShowPinDMD(VARIANT_BOOL newVal)
 {
-	g_fShowPinDMD = newVal;
-
-	return S_OK;
+	return m_pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant(newVal));
 }

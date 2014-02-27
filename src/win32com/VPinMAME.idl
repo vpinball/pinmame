@@ -261,8 +261,8 @@ import "ocidl.idl";
 		[propget, id(72), helpstring("property AudioDeviceModule")] HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal);
 		[propget, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([out, retval] int *pVal);
 		[propput, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([in] int newVal);
-		[propget, id(76), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(76), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
+		[propget, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
 	};
 
 	// WSHDlg and related interfaces

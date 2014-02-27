@@ -1,6 +1,6 @@
 #include "driver.h"
 #include <windows.h>
-#include <process.h>
+//#include <process.h>
 #include "pindmd.h"
 
 #define PINDMD2 // define for PinDMD2 support, undefine for PinDMD1 support, latter needs the separate ftd2xx.dll then!
