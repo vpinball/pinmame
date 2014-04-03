@@ -741,6 +741,11 @@ DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game
                         //Viking King
 
 // ----------------
+// MAC GAMES
+// ----------------
+DRIVERNV(spctrain)      //Space Train (1987)
+
+// ----------------
 // MICROPIN GAMES
 // ----------------
 DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
