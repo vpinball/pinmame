@@ -13,7 +13,8 @@ static struct {
   UINT8  i8279ram[16];
   UINT8  i8279data;
   int strobe;
-  int irq;
+  int ed;
+  int el;
   int isCic;
 } locals;
 
@@ -48,10 +49,8 @@ static SWITCH_UPDATE(MAC) {
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xc0, 0);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x7f, 1);
   }
-  if (locals.irq) return;
   for (i = 1; i < 9; i++) {
     if (coreGlobals.swMatrix[i]) {
-      locals.irq = 1;
       cpu_set_irq_line(0, 0, ASSERT_LINE);
       return;
     }
@@ -77,7 +76,11 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
     printf("s %02x=%02x\n", locals.strobe, data);
 }
 static WRITE_HANDLER(ay8910_1_portb_w)	{
-  coreGlobals.lampMatrix[8] = data;
+  if (GET_BIT4) {
+    locals.ed = GET_BIT1;
+    locals.el = GET_BIT2;
+    cpu_set_irq_line(0, 0, ASSERT_LINE);
+  }
 }
 
 struct AY8910interface MAC_ay8910Int = {
@@ -137,13 +140,11 @@ static WRITE_HANDLER(i8279_w) {
       if (data & 0x03) {
         locals.i8279data = 0;
         cpu_set_irq_line(0, 0, CLEAR_LINE);
-        locals.irq = 0;
       }
     } else if ((locals.i8279cmd & 0xe0) == 0xe0) {
       logerror("I8279 end interrupt\n");
       locals.i8279data = 0;
       cpu_set_irq_line(0, 0, CLEAR_LINE);
-      locals.irq = 0;
     } else if ((locals.i8279cmd & 0xe0) == 0)
       logerror("I8279 set modes: display %x, keyboard %x\n", (data >> 3) & 0x03, data & 0x07);
     else printf("i8279 w%d:%02x\n", offset, data);
@@ -151,13 +152,21 @@ static WRITE_HANDLER(i8279_w) {
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
       if (locals.i8279reg < 12) {
-        coreGlobals.segments[locals.i8279reg].w = mac_bcd2seg(data);
-        coreGlobals.segments[16 + locals.i8279reg].w = mac_bcd2seg(data >> 4);
+        if (locals.ed || locals.el)
+          coreGlobals.lampMatrix[8] = data;
+        else {
+          coreGlobals.segments[locals.i8279reg].w = mac_bcd2seg(data);
+          coreGlobals.segments[16 + locals.i8279reg].w = mac_bcd2seg(data >> 4);
+        }
       } else {
-        coreGlobals.segments[locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
-        coreGlobals.segments[16 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
+        if (locals.ed || locals.el)
+          coreGlobals.lampMatrix[9] = data;
+        else {
+          coreGlobals.segments[locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
+          coreGlobals.segments[16 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
+        }
       }
-    } else logerror("i8279 w%d:%02x\n", offset, data);
+    } else printf("i8279 w%d:%02x\n", offset, data);
     if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
   }
 }
@@ -206,7 +215,7 @@ MACHINE_DRIVER_START(cic)
 MACHINE_DRIVER_END
 
 #define INITGAME(name, disp, flip) \
-static core_tGameData name##GameData = {0,disp,{flip,0,2,0,0},NULL,{"",{0,0x80}}}; \
+static core_tGameData name##GameData = {0,disp,{flip,0,2}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 #define MAC_COMPORTS(game, balls) \
