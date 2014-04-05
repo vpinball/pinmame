@@ -13,13 +13,12 @@ static struct {
   UINT8  i8279ram[16];
   UINT8  i8279data;
   int strobe;
-  int ed;
-  int el;
+  int cycle;
   int isCic;
 } locals;
 
 static INTERRUPT_GEN(mac_vblank) {
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(9) && core_getSol(15));
 }
 
 static void mac_nmi(int data) {
@@ -61,7 +60,7 @@ static WRITE_HANDLER(ay8910_0_porta_w)	{
   locals.strobe = data;
 }
 static WRITE_HANDLER(ay8910_0_portb_w)	{
-  coreGlobals.solenoids = data ^ 0xff;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xf700) | (data ^ 0xff);
 }
 
 static READ_HANDLER(ay8910_1_portb_r)   { return coreGlobals.swMatrix[0] & 0x80; }
@@ -77,10 +76,9 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
 }
 static WRITE_HANDLER(ay8910_1_portb_w)	{
   if (GET_BIT4) {
-    locals.ed = GET_BIT1;
-    locals.el = GET_BIT2;
     cpu_set_irq_line(0, 0, ASSERT_LINE);
   }
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xf1ff) | ((data & 0x60) << 4);
 }
 
 struct AY8910interface MAC_ay8910Int = {
@@ -151,21 +149,22 @@ static WRITE_HANDLER(i8279_w) {
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
-      if (locals.i8279reg < 12) {
-        if (locals.ed || locals.el)
+      if (locals.cycle < 16) {
+        if (!locals.i8279reg) {
           coreGlobals.lampMatrix[8] = data;
-        else {
-          coreGlobals.segments[locals.i8279reg].w = mac_bcd2seg(data);
-          coreGlobals.segments[16 + locals.i8279reg].w = mac_bcd2seg(data >> 4);
-        }
-      } else {
-        if (locals.ed || locals.el)
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0xf6ff) | ((~data & 1) << 8);
+        } else if (locals.i8279reg == 1) {
           coreGlobals.lampMatrix[9] = data;
-        else {
-          coreGlobals.segments[locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
-          coreGlobals.segments[16 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0x7ff) | ((~data & 0x70) << 8);
         }
+      } else if (locals.i8279reg < 12) {
+        coreGlobals.segments[locals.i8279reg].w = mac_bcd2seg(data);
+        coreGlobals.segments[16 + locals.i8279reg].w = mac_bcd2seg(data >> 4);
+      } else {
+        coreGlobals.segments[locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
+        coreGlobals.segments[16 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
       }
+      locals.cycle = (locals.cycle + 1) % 32;
     } else printf("i8279 w%d:%02x\n", offset, data);
     if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
   }
@@ -238,7 +237,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
       COREPORT_DIPSET(0x0000, "5" ) \
     COREPORT_DIPNAME( 0x0006, 0x0006, "Credits f. sm. / big coins") \
       COREPORT_DIPSET(0x0000, "1/2 / 3" ) \
-      COREPORT_DIPSET(0x0002, "1/2 / 4" ) \
+      COREPORT_DIPSET(0x0002, "4/6 / 4" ) \
       COREPORT_DIPSET(0x0006, "5/4 / 5" ) \
       COREPORT_DIPSET(0x0004, "3/2 / 6" ) \
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
