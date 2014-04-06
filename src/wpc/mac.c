@@ -84,7 +84,7 @@ static WRITE_HANDLER(ay8910_1_portb_w)	{
 struct AY8910interface MAC_ay8910Int = {
 	2,			/* 1 chip */
 	2000000,	/* 2 MHz */
-	{ 30, 30 },		/* Volume */
+	{ 30, 50 },		/* Volume */
 	{ 0, 0 },
 	{ 0, ay8910_1_portb_r },
 	{ ay8910_0_porta_w, ay8910_1_porta_w },
@@ -235,26 +235,25 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_DIPNAME( 0x0001, 0x0001, "Balls per Game") \
       COREPORT_DIPSET(0x0001, "3" ) \
       COREPORT_DIPSET(0x0000, "5" ) \
-    COREPORT_DIPNAME( 0x0006, 0x0006, "Credits f. sm. / big coins") \
+    COREPORT_DIPNAME( 0x0006, 0x0006, "Credits f. sm. / big Coins") \
       COREPORT_DIPSET(0x0000, "1/2 / 3" ) \
       COREPORT_DIPSET(0x0002, "4/6 / 4" ) \
       COREPORT_DIPSET(0x0006, "5/4 / 5" ) \
       COREPORT_DIPSET(0x0004, "3/2 / 6" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "End game when idle") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "3-Ball Multiball") \
+      COREPORT_DIPSET(0x0008, DEF_STR(Off) ) \
+      COREPORT_DIPSET(0x0000, DEF_STR(On) ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, DEF_STR(Unused)) \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
+      COREPORT_DIPSET(0x0010, DEF_STR(On) ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "In-Game Music") \
+      COREPORT_DIPSET(0x0000, DEF_STR(No) ) \
+      COREPORT_DIPSET(0x0020, DEF_STR(Yes) ) \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "Attract Sound") \
       COREPORT_DIPSET(0x0000, DEF_STR(No) ) \
       COREPORT_DIPSET(0x0040, DEF_STR(Yes) ) \
-    COREPORT_DIPNAME( 0x0080, 0x0080, "Unused, always on") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Unused, always off") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
     COREPORT_DIPNAME( 0x0f00, 0x0600, "Ball/RP1/2/HSTD") \
       COREPORT_DIPSET(0x0000, "300K/450K/630K/1M" ) \
       COREPORT_DIPSET(0x0100, "325K/500K/690K/1.1M" ) \
@@ -275,15 +274,14 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_DIPNAME( 0x1000, 0x0000, "Auto-adjust") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x1000, DEF_STR(On) ) \
-    COREPORT_DIPNAME( 0x2000, 0x0000, "Auto-adjust Ball") \
+    COREPORT_DIPNAME( 0x2000, 0x2000, "Multiple Extra Balls") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x2000, DEF_STR(On) ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "Auto-adjust Replay") \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "Multiple Replays") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x4000, DEF_STR(On) ) \
-    COREPORT_DIPNAME( 0x8000, 0x8000, "Unused, always on") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Unused, always off") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
   INPUT_PORTS_END
 
 static core_tLCDLayout dispMAC[] = {
