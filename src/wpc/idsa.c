@@ -49,6 +49,36 @@ static SWITCH_UPDATE(IDSA) {
   }
 }
 
+// IDSA used small 32x8 6331 color PROMs to decode their 5-bit alphabet; I'd love to see this dumped someday! ;)
+// Letters used by game: "Error", "P(Abc)-F", "FALtA", "1d5A"
+static UINT16 idsa2seg7(UINT8 data) {
+  switch (data & 0x1f) {
+    case 0x0a: return 0x77; // A
+    case 0x0b: return 0x7c; // b
+    case 0x0c: return 0x58; // c
+    case 0x0d: return 0x5e; // d
+    case 0x0e: return 0x79; // E
+    case 0x0f: return 0x71; // F
+    case 0x10: return 0x3d; // G
+    case 0x11: return 0x76; // H
+    case 0x12: return 0x1e; // J
+    case 0x13: return 0x75; // K
+    case 0x14: return 0x38; // L
+    case 0x15: return 0x56; // m? pretty much impossible with 7 segs...
+    case 0x16: return 0x54; // n
+    case 0x17: return 0x55; // n with tilde?
+    case 0x18: return 0x5c; // o
+    case 0x19: return 0x73; // P
+    case 0x1a: return 0x50; // r
+    case 0x1b: return 0x40; // -
+    case 0x1c: return 0x78; // t
+    case 0x1d: return 0x1c; // u / v
+    case 0x1e: return 0x6e; // y
+    case 0x1f: return 0;
+    default: return core_bcd2seg7[data & 0x0f];
+  }
+}
+
 static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
 static READ_HANDLER (ay8910_0_r)      { return AY8910Read(0); }
@@ -73,6 +103,8 @@ static WRITE_HANDLER(ay8910_1_portA_w) {
     coreGlobals.segments[32 + locals.dispCol].w = locals.dispData[0];
     coreGlobals.segments[16 + locals.dispCol].w = locals.dispData[1];
     coreGlobals.segments[locals.dispCol].w = locals.dispData[2];
+    coreGlobals.segments[48].w = idsa2seg7(locals.dispData[3] >> 4);
+    coreGlobals.segments[49].w = idsa2seg7(locals.dispData[3] & 0x0f);
   }
   coreGlobals.lampMatrix[2] = data & 0x0f;
 }
@@ -124,49 +156,29 @@ static MEMORY_WRITE_START(IDSA_writemem)
   {0x8000,0x87ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
-// IDSA used small 32x8 6331 color PROMs to decode their 5-bit alphabet; I'd love to see this dumped someday! ;)
-// Letters used by game: "Error", "P(Abc)-F", "FALtA", "1d5A"
-static UINT16 idsa2seg7(UINT8 data) {
-  switch (data & 0x1f) {
-    case 0x0a: return 0x77; // A
-    case 0x0b: return 0x7c; // b
-    case 0x0c: return 0x58; // c
-    case 0x0d: return 0x5e; // d
-    case 0x0e: return 0x79; // E
-    case 0x0f: return 0x71; // F
-    case 0x10: return 0x3d; // G
-    case 0x11: return 0x76; // H
-    case 0x12: return 0x1e; // J
-    case 0x13: return 0x75; // K
-    case 0x14: return 0x38; // L
-    case 0x15: return 0x56; // m? pretty much impossible with 7 segs...
-    case 0x16: return 0x54; // n
-    case 0x17: return 0x55; // n with tilde?
-    case 0x18: return 0x5c; // o
-    case 0x19: return 0x73; // P
-    case 0x1a: return 0x50; // r
-    case 0x1b: return 0x40; // -
-    case 0x1c: return 0x78; // t
-    case 0x1d: return 0x1c; // u / v
-    case 0x1e: return 0x6e; // y
-    case 0x1f: return 0;
-    default: return core_bcd2seg7[data & 0x0f];
-  }
-}
-
 static WRITE_HANDLER(col_w) {
 //printf("%x:%02x ", offset, data);
 }
 
 static WRITE_HANDLER(disp_w) {
-  locals.dispData[locals.dispRow] = idsa2seg7(data);
+  locals.dispData[locals.dispRow] = locals.dispRow < 3 ? idsa2seg7(data) : data;
   locals.dispRow = (locals.dispRow + 1) % 4;
+}
+
+static READ_HANDLER(port_b3_r) {
+  return 0xf0;
+}
+
+static READ_HANDLER(port_bd_r) {
+  return 0x0f;
 }
 
 static PORT_READ_START(IDSA_readport)
   {0x00,0x50, sw_r},
   {0x60,0x70, dip_r},
   {0xb0,0xb1, sp0256_r},
+  {0xb3,0xb3, port_b3_r},
+  {0xbd,0xbd, port_bd_r},
 MEMORY_END
 
 static PORT_WRITE_START(IDSA_writeport)
@@ -266,7 +278,7 @@ INPUT_PORTS_END
 core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
   {3, 0,16, 7, CORE_SEG7}, {3,16,23, 7, CORE_SEG7},
-  {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7},
+  {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7}, {6,26,48, 2, CORE_SEG7},
   {0}
 };
 
