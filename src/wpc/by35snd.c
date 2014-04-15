@@ -499,6 +499,9 @@ static const struct pia6821_interface snt_pia[] = {{
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 }};
+
+extern void tms5200_set_reverb(int delay, float force);
+
 static void snt_init(struct sndbrdData *brdData) {
   int i;
   sntlocals.brdData = *brdData;
@@ -507,6 +510,9 @@ static void snt_init(struct sndbrdData *brdData) {
 //  tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
+  if (core_gameData->hw.gameSpecific1 & BY35GD_REVERB) {
+    tms5200_set_reverb(1500, core_getDip(4) * 0.05);
+  }
 }
 static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
