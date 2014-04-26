@@ -352,6 +352,7 @@ DRIVER(ssvc,a42)        //Data East MPU: 03/88 Secret Service (4.2 Alternate Sou
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley (2.1 Europe)
 DRIVER(torp,a16)        //Data East MPU: 08/88 Torpedo Alley (1.6)
 DRIVER(tmac,a18)        //Data East MPU: 12/88 Time Machine (1.8)
+DRIVER(tmac,g18)        //Data East MPU: 12/88 Time Machine (1.8 German)
 DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine (2.4)
 DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
