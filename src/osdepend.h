@@ -180,11 +180,11 @@ void osd_sound_enable(int enable);
 /*
   Enumerate audio devices using DirectSound and return the number of found devices
 */
-int osd_enum_audio_devices();
+int osd_enum_audio_devices(void);
 /*
  Return the number of found devices (by previous call to osd_enum_audio_devices())
 */
-int osd_get_audio_devices_count();
+int osd_get_audio_devices_count(void);
 /*
  Return the audio device description (null char ended string) of the "num" device
 */
@@ -200,7 +200,7 @@ int osd_set_audio_device(int num);
 /*
  Get the current audio device number
 */
-int osd_get_current_audio_device();
+int osd_get_current_audio_device(void);
 
 /******************************************************************************
 

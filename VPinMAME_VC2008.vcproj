@@ -3610,6 +3610,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\mac.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\mech.c"
 					>
 				</File>

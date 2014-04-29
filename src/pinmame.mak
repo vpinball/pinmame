@@ -74,6 +74,7 @@ DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
 DRVLIBS += $(PINOBJ)/spectra.o
 DRVLIBS += $(PINOBJ)/idsa.o
+DRVLIBS += $(PINOBJ)/mac.o
 #
 # Games
 #
