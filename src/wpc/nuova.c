@@ -264,8 +264,7 @@ CORE_CLONEDEFNV(cosflash,flashgdn,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61
 INITGAMENB(saturn2,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
 BY35_ROMSTARTx00(saturn2,"spy-2732.u2",CRC(9e930f2d) SHA1(fb48ce0d8d8f8a695827c0eea57510b53daa7c39),
                          "saturn2.u6", CRC(ca72a96b) SHA1(efcd8b41bf0c19ebd7db492632e046b348619460))
-BY45_SOUNDROM11(         "spy_u3.532", CRC(95ffc1b8) SHA1(28f058f74abbbee120dca06f7321bcb588bef3c6),
-                         "spy_u4.532", CRC(a43887d0) SHA1(6bbc55943fa9f0cd97f946767f21652e19d85265))
+BY45_SOUNDROMx2("sat2_snd.764", CRC(6bf15541) SHA1(dcdd4e8f662818584de9b1ed7ae69d57362ebadb))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(saturn2, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(saturn2,spyhuntr,"Saturn 2",1985,"Bell Games",by35_mBY35_45S,0)

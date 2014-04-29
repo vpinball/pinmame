@@ -1074,14 +1074,26 @@ CORE_CLONEDEFNV(medusaf,medusa,"Medusa (6802 board)",2004,"Bally / Oliver",by35_
 /*--------------------------------
 / Centaur
 /-------------------------------*/
-INITGAME2(centaur ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
+static core_tGameData centaurGameData = {GEN_BY35,dispBy7,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61B,0,BY35GD_NOSOUNDE|BY35GD_REVERB}};
+static void init_centaur(void) { core_gameData = &centaurGameData; }
 BY35_ROMSTARTx00(centaur,"848-08_2.732",CRC(8bdcd32b) SHA1(39f64393d3a39a8172b3d80d196253aac1342f40),
                          "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
 BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b58e3fa8c285170b1f09a),
                          "848-02_4.532",CRC(d6dbd0e4) SHA1(62e4c8c1a747c5f6a3a4bf4d0bc80b06a1f70d13),
                          "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
 BY35_ROMEND
-#define input_ports_centaur input_ports_by35
+BY35_INPUT_PORTS_START(centaur, 5) \
+  PORT_START /* 3 */ \
+    COREPORT_DIPNAME( 0x0007, 0x0004, "Reverb Effect") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+      COREPORT_DIPSET(0x0002, "2" ) \
+      COREPORT_DIPSET(0x0003, "3" ) \
+      COREPORT_DIPSET(0x0004, "4" ) \
+      COREPORT_DIPSET(0x0005, "5" ) \
+      COREPORT_DIPSET(0x0006, "6" ) \
+      COREPORT_DIPSET(0x0007, "7" ) \
+INPUT_PORTS_END
 CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_mBY35_61BS,0)
 
 #define init_centaura init_centaur
