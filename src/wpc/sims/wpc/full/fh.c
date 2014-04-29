@@ -646,6 +646,8 @@ WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522
 WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b93f0d7736b414ba3a68a4f8)) FH_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(fh,906h,"fh_906h.rom",0x080000,CRC(2fe830a1) SHA1(f52eeef26ce509a52d7b58783236605dafae47d8)) FH_SOUND_L3 WPC_ROMEND
 
+WPC_ROMSTART(fh,l2,"u6-l2.rom",0x020000,CRC(7a8a3278) SHA1(b35c1149862724ea70cc810f14141e51b365e950)) FH_SOUND_L2 WPC_ROMEND
+
 WPC_ROMSTART(fh,l3,"u6-l3.rom",0x020000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141)) FH_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(fh,d3,"u6-d3.rom",0x020000,CRC(fa32b241) SHA1(330fd1403199fcfa7bc018b488ea5f1a51ee4820)) FH_SOUND_L2 WPC_ROMEND
 
@@ -667,6 +669,7 @@ CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-3) Bootleg Improved German translation
 CORE_CLONEDEF(fh,d9b,l9,"Funhouse D-9 (SL-3) German LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,905h,l9,"Funhouse 9.05H",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,906h,l9,"Funhouse 9.06H (Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l2,l9,"Funhouse L-2",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse L-3",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d3,l9,"Funhouse D-3 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l4,l9,"Funhouse L-4",1991,"Williams",wpc_mAlpha2S,0)
