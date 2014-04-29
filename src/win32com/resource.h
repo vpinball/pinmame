@@ -37,6 +37,16 @@
 #define IDC_DMDSHOW2                    127
 #define IDC_DMDSHOW3                    128
 #define IDC_DMDSHOW4                    129
+#define IDC_DMD_COLORIZE                130
+#define IDC_DMD_STATIC1                 131
+#define IDC_DMD_STATIC2                 132
+#define IDC_DMD_STATIC3                 133
+#define IDC_DMD_STATIC4                 134
+#define IDC_DMD_STATIC5                 135
+#define IDC_DMD_STATIC6                 136
+#define IDC_DMD_STATIC7                 137
+#define IDC_DMD_STATIC8                 138
+#define IDC_DMD_STATIC1A                139
 #define IDRESETTODEFAULT                200
 #define IDB_SPLASH                      200
 #define IDD_GAMESETTINGSDLG             201
