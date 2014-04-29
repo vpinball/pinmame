@@ -352,6 +352,7 @@ DRIVER(ssvc,a42)        //Data East MPU: 03/88 Secret Service (4.2 Alternate Sou
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley (2.1 Europe)
 DRIVER(torp,a16)        //Data East MPU: 08/88 Torpedo Alley (1.6)
 DRIVER(tmac,a18)        //Data East MPU: 12/88 Time Machine (1.8)
+DRIVER(tmac,g18)        //Data East MPU: 12/88 Time Machine (1.8 German)
 DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine (2.4)
 DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
@@ -741,6 +742,11 @@ DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game
                         //Viking King
 
 // ----------------
+// MAC GAMES
+// ----------------
+DRIVERNV(spctrain)      //Space Train (1987)
+
+// ----------------
 // MICROPIN GAMES
 // ----------------
 DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
@@ -838,6 +844,7 @@ DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein (Germany)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch 4.00
 DRIVERNV(bay_d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch/Holland/Netherlands)
 DRIVERNV(bay_e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (England)
+DRIVERNV(bay_d300)      //DE/Sega MPU: 03/95 Baywatch 3.00 (Dutch/Holland/Netherlands)
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
 DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
 DRIVERNV(batmanf2)      //DE/Sega MPU: 07/95 Batman Forever (2.02)
@@ -1801,6 +1808,7 @@ DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2) Eu
 DRIVER(dd,p06)          //WPC-2016: 08/90 B Dr. Dude (P-6 WPC)
 DRIVER(dd,p7)           //          09/90 B Dr. Dude (P-7 WPC)
                         //WPC-503:  11/90 W Funhouse (L-1)
+DRIVER(fh,l2)           //          12/90 W Funhouse (L-2)
 DRIVER(fh,l3)           //          12/90 W Funhouse (L-3)
 DRIVER(fh,d3)           //                  Funhouse (D-3) LED Ghost Fix
 DRIVER(fh,l4)           //          01/91 W Funhouse (L-4)

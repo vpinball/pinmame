@@ -1242,10 +1242,40 @@ empty:
   }
 }
 
-void tms5220_process(INT16 *buffer, unsigned int size) {
-  tms5220_process_chip(&onechip, buffer, size);
+#ifdef PINMAME
+static int reverbPos;
+static int reverbDelay;
+static float reverbForce;
+static INT16 reverbBuffer[5000];
+
+void tms5200_set_reverb(int delay, float force) {
+  reverbPos = 0;
+  reverbDelay = delay;
+  reverbForce = force;
+  memset(&reverbBuffer, 0, sizeof(reverbBuffer));
 }
 
+static void apply_reverb(INT16 *buf, int len) {
+  if (reverbDelay && len) {
+    int i;
+    int newPos = reverbPos - reverbDelay;
+    if (newPos < 0) newPos += 5000;
+    for (i = 0; i < len; i++) {
+    buf[i] = buf[i] * (1.0 - reverbForce) + reverbBuffer[newPos] * reverbForce;
+      reverbBuffer[reverbPos] = buf[i];
+      reverbPos++; if (reverbPos > 5000) reverbPos = 0;
+      newPos++; if (newPos > 5000) newPos = 0;
+    }
+  }
+}
+#endif
+
+void tms5220_process(INT16 *buffer, unsigned int size) {
+  tms5220_process_chip(&onechip, buffer, size);
+#ifdef PINMAME
+  apply_reverb(buffer, size);
+#endif
+}
 
 /**********************************************************************************************
 

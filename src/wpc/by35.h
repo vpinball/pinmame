@@ -382,6 +382,7 @@ extern MACHINE_DRIVER_EXTERN(by6802_61S);
 #define BY35GD_SWVECTOR 0x08 // read switch column 6 like Vector
 #define BY35GD_ALPHA    0x10 // alphanumeric display for Nuova Bell games
 #define BY35GD_MARAUDER 0x20 // flag for Midnight Marauders
+#define BY35GD_REVERB   0x40 // flag for speech reverb (Centaur)
 
 #endif /* INC_BY35 */
 
