@@ -621,6 +621,26 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_DMDON][0]    = rStart;
   tmpPalette[COL_DMDON][1]    = gStart;
   tmpPalette[COL_DMDON][2]    = bStart;
+
+  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+  if (pmoptions.dmd_colorize) { 
+    if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+      tmpPalette[COL_DMDOFF][0]   = pmoptions.dmd_red0;
+      tmpPalette[COL_DMDOFF][1]   = pmoptions.dmd_green0;
+      tmpPalette[COL_DMDOFF][2]   = pmoptions.dmd_blue0;
+    }
+    if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+      tmpPalette[COL_DMD33][0]    = pmoptions.dmd_red33;
+      tmpPalette[COL_DMD33][1]    = pmoptions.dmd_green33;
+      tmpPalette[COL_DMD33][2]    = pmoptions.dmd_blue33;
+    }
+    if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+      tmpPalette[COL_DMD66][0]    = pmoptions.dmd_red66;
+      tmpPalette[COL_DMD66][1]    = pmoptions.dmd_green66;
+      tmpPalette[COL_DMD66][2]    = pmoptions.dmd_blue66;
+    }
+  }
+  
   /*-- segment display antialias colors --*/
   tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
   tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
@@ -718,7 +738,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
         *line++ = dmdColor[dotCol[ii][jj]];
 
 #if DUMPFRAMES
-		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
+                currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
 #endif
 
         if (locals.displaySize > 1 && jj < layout->length-1)
@@ -743,35 +763,35 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 #if DUMPFRAMES
 #if DETECTSAMEFRAMES
   if(oldbuffer != NULL) {
-	dumpframe = 0;
-	for(jj = 0; jj < layout->start; jj++)
-		for(ii = 0; ii < layout->length; ii++)
-			if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
-				dumpframe = 1;
-				break;
-			}
+        dumpframe = 0;
+        for(jj = 0; jj < layout->start; jj++)
+                for(ii = 0; ii < layout->length; ii++)
+                        if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
+                                dumpframe = 1;
+                                break;
+                        }
   }
 #endif
 
   if(dumpframe) {
-	f = fopen("dump.txt","a");
-	if(f) {
-		for(jj = 0; jj < layout->start; jj++) {
-			for(ii = 0; ii < layout->length; ii++)
-				fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
-			fprintf(f,"\n");
-		}
-		fprintf(f,"\n");
-		fclose(f);
+        f = fopen("dump.txt","a");
+        if(f) {
+                for(jj = 0; jj < layout->start; jj++) {
+                        for(ii = 0; ii < layout->length; ii++)
+                                fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+                        fprintf(f,"\n");
+                }
+                fprintf(f,"\n");
+                fclose(f);
 
-		if(currbuffer == buffer1) {
-			currbuffer = buffer2;
-			oldbuffer = buffer1;
-		} else {
-			currbuffer = buffer1;
-			oldbuffer = buffer2;
-		}
-	}
+                if(currbuffer == buffer1) {
+                        currbuffer = buffer2;
+                        oldbuffer = buffer1;
+                } else {
+                        currbuffer = buffer1;
+                        oldbuffer = buffer2;
+                }
+        }
   }
 #endif
 }
@@ -809,8 +829,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         int tmpType = layout->type & CORE_SEGMASK;
 
 #ifdef VPINMAME
-		//SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
-		if(1) {
+                //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
+                if(1) {
 #else
         if ((tmpSeg != *lastSeg) ||
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
@@ -841,7 +861,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
-		(*pos)++;
+                (*pos)++;
         left += locals.segData[layout->type & CORE_SEGALL].cols+1;
         seg += step; lastSeg += step;
       }
@@ -954,7 +974,7 @@ void core_updateSw(int flipEn) {
           if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
               ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
             locals.solLog[locals.solLogCount] = ii;
-	    core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
+            core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
               locals.solLog[(locals.solLogCount+1) & 3],
               locals.solLog[(locals.solLogCount+2) & 3],
               locals.solLog[(locals.solLogCount+3) & 3],
@@ -1073,12 +1093,12 @@ static VIDEO_UPDATE(core_status) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
-	for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
-	  int color = drawData->lamps[num].lamppos[qq].color;
-	  int lampx = drawData->lamps[num].lamppos[qq].x;
-	  int lampy = drawData->lamps[num].lamppos[qq].y;
-	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
-	}
+        for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
+          int color = drawData->lamps[num].lamppos[qq].color;
+          int lampx = drawData->lamps[num].lamppos[qq].x;
+          int lampy = drawData->lamps[num].lamppos[qq].y;
+          line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+        }
         bits >>= 1;
         num++;
       }
@@ -1154,14 +1174,14 @@ static VIDEO_UPDATE(core_status) {
     if (coreData->diagLEDs & DIAGLED_VERTICAL) {
       for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
-	line += 2; bits >>= 1;
+        line += 2; bits >>= 1;
       }
       osd_mark_dirty(thisCol + 3, locals.firstSimRow + startRow, thisCol + 4, locals.firstSimRow + startRow + ii*2);
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
     else { // Draw LEDS Horizontally
       for (ii = 0; ii < coreData->diagLEDs; ii++) {
-	line[0][thisCol + ii*2] = dotColor[bits & 0x01];
+        line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
       }
       osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
@@ -1174,12 +1194,12 @@ static VIDEO_UPDATE(core_status) {
     if (startRow + 2 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol + 5; }
 
     for (ii = 0; ii < CORE_MAXGI; ii++)
-	{
-	  if(coreGlobals.gi[ii]==8)
-		lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
-	  else
-		lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
-	}
+        {
+          if(coreGlobals.gi[ii]==8)
+                lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
+          else
+                lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
+        }
     osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
   }
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
@@ -1433,9 +1453,9 @@ static MACHINE_INIT(core) {
     {
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
       if ((size > Machine->drv->screen_width) && (locals.displaySize > 1)) {
-  	/* force small display */
-  	locals.displaySize = 1;
-  	core_initDisplaySize(core_gameData->lcdLayout);
+        /* force small display */
+        locals.displaySize = 1;
+        core_initDisplaySize(core_gameData->lcdLayout);
       }
     }
     /*-- Sound enabled ? */
