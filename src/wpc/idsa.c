@@ -25,6 +25,7 @@ static struct {
   UINT16 dispData[4];
   int dispCol;
   int dispRow;
+  core_tSeg segments;
 } locals;
 
 static INTERRUPT_GEN(IDSA_irq) {
@@ -39,7 +40,9 @@ static void IDSA_nmi(int data) {
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(IDSA_vblank) {
-  core_updateSw(TRUE);
+  memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+//  memset(locals.segments, 0, sizeof(locals.segments));
+  core_updateSw(core_getSol(10));
 }
 
 static SWITCH_UPDATE(IDSA) {
@@ -50,30 +53,30 @@ static SWITCH_UPDATE(IDSA) {
 }
 
 // IDSA used small 32x8 6331 color PROMs to decode their 5-bit alphabet; I'd love to see this dumped someday! ;)
-// Letters used by game: "Error", "P(Abc)-F", "FALtA", "1d5A"
+// Strings used by game: "Error (123456)", "P(Abc)(12)-F(01)", "FALtA", "1d5A", "Fin"
 static UINT16 idsa2seg7(UINT8 data) {
   switch (data & 0x1f) {
-    case 0x0a: return 0x77; // A
-    case 0x0b: return 0x7c; // b
-    case 0x0c: return 0x58; // c
-    case 0x0d: return 0x5e; // d
-    case 0x0e: return 0x79; // E
-    case 0x0f: return 0x71; // F
-    case 0x10: return 0x3d; // G
-    case 0x11: return 0x76; // H
-    case 0x12: return 0x1e; // J
-    case 0x13: return 0x75; // K
-    case 0x14: return 0x38; // L
-    case 0x15: return 0x56; // m? pretty much impossible with 7 segs...
-    case 0x16: return 0x54; // n
-    case 0x17: return 0x55; // n with tilde?
-    case 0x18: return 0x5c; // o
-    case 0x19: return 0x73; // P
-    case 0x1a: return 0x50; // r
-    case 0x1b: return 0x40; // -
-    case 0x1c: return 0x78; // t
-    case 0x1d: return 0x1c; // u / v
-    case 0x1e: return 0x6e; // y
+    case 0x0a: return 0x77; // A !
+    case 0x0b: return 0x7c; // b !
+    case 0x0c: return 0x58; // c !
+    case 0x0d: return 0x5e; // d !
+    case 0x0e: return 0x79; // E !
+    case 0x0f: return 0x71; // F !
+    case 0x10: return 0x3d; // G ?
+    case 0x11: return 0x76; // H ?
+    case 0x12: return 0x10; // i !
+    case 0x13: return 0x1e; // J / k ?
+    case 0x14: return 0x38; // L !
+    case 0x15: return 0x56; // m ? pretty much impossible with 7 segs...
+    case 0x16: return 0x54; // n !
+    case 0x17: return 0x55; // n with tilde ?
+    case 0x18: return 0x5c; // o !
+    case 0x19: return 0x73; // P !
+    case 0x1a: return 0x50; // r !
+    case 0x1b: return 0x40; // - !
+    case 0x1c: return 0x78; // t !
+    case 0x1d: return 0x1c; // u / v / w / x ?
+    case 0x1e: return 0x6e; // y ?
     case 0x1f: return 0;
     default: return core_bcd2seg7[data & 0x0f];
   }
@@ -81,41 +84,36 @@ static UINT16 idsa2seg7(UINT8 data) {
 
 static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
-static READ_HANDLER (ay8910_0_r)      { return AY8910Read(0); }
 
 static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
-static READ_HANDLER (ay8910_1_r)      { return AY8910Read(1); }
 
 static WRITE_HANDLER(ay8910_0_portA_w) {
-//printf("1:%02x ", data);
-  coreGlobals.lampMatrix[0] = data;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
 }
 static WRITE_HANDLER(ay8910_0_portB_w) {
-//printf("2:%02x ", data);
-  coreGlobals.lampMatrix[1] = data;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00ffff) | ((data ^ 0xff) << 16);
 }
 static WRITE_HANDLER(ay8910_1_portA_w) {
   if ((data >> 4) != 0x0f) {
     locals.dispCol = data >> 4;
   } else {
     locals.dispRow = 0;
-    coreGlobals.segments[32 + locals.dispCol].w = locals.dispData[0];
-    coreGlobals.segments[16 + locals.dispCol].w = locals.dispData[1];
-    coreGlobals.segments[locals.dispCol].w = locals.dispData[2];
-    coreGlobals.segments[48].w = idsa2seg7(locals.dispData[3] >> 4);
-    coreGlobals.segments[49].w = idsa2seg7(locals.dispData[3] & 0x0f);
+    locals.segments[32 + locals.dispCol].w = idsa2seg7(locals.dispData[0]);
+    locals.segments[16 + locals.dispCol].w = idsa2seg7(locals.dispData[1]);
+    locals.segments[locals.dispCol].w = idsa2seg7(locals.dispData[2]);
+    locals.segments[48].w = idsa2seg7(locals.dispData[3] >> 4);
+    locals.segments[49].w = idsa2seg7(locals.dispData[3] & 0x0f);
   }
-  coreGlobals.lampMatrix[2] = data & 0x0f;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | (((data & 0x0f) ^ 0x0f) << 24);
 }
 static WRITE_HANDLER(ay8910_1_portB_w) {
-//printf("4:%02x ", data);
-  coreGlobals.lampMatrix[3] = data;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | ((data ^ 0xff) << 8);
 }
 struct AY8910interface IDSA_ay8910Int = {
 	2,					/* 2 chips */
 	2000000,			/* 2 MHz */
-	{ 30, 30 },				/* Volume */
+	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
 	{ NULL },
 	{ NULL },
 	{ ay8910_0_portA_w, ay8910_1_portA_w },	/* Output Port A callback */
@@ -146,14 +144,30 @@ static READ_HANDLER(dip_r) {
   return ~core_getDip(offset >> 4);
 }
 
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *IDSA_CMOS;
+static NVRAM_HANDLER(IDSA) {
+  core_nvram(file, read_or_write, IDSA_CMOS, 0x800, 0x00);
+}
+static WRITE_HANDLER(IDSA_CMOS_w) {
+  IDSA_CMOS[offset] = data;
+  if (offset > 0xa7 && offset < 0xb2)
+    coreGlobals.lampMatrix[offset - 0xa8] = data;
+}
+static READ_HANDLER(IDSA_CMOS_r) {
+  return IDSA_CMOS[offset];
+}
+
 static MEMORY_READ_START(IDSA_readmem)
   {0x0000,0x7fff, MRA_ROM},
-  {0x8000,0x87ff, MRA_RAM},
+  {0x8000,0x87ff, IDSA_CMOS_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(IDSA_writemem)
   {0x0000,0x7fff, MWA_NOP},
-  {0x8000,0x87ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x8000,0x87ff, IDSA_CMOS_w, &IDSA_CMOS},
 MEMORY_END
 
 static WRITE_HANDLER(col_w) {
@@ -161,8 +175,9 @@ static WRITE_HANDLER(col_w) {
 }
 
 static WRITE_HANDLER(disp_w) {
-  locals.dispData[locals.dispRow] = locals.dispRow < 3 ? idsa2seg7(data) : data;
-  locals.dispRow = (locals.dispRow + 1) % 4;
+  if (locals.dispRow < 4)
+    locals.dispData[locals.dispRow] = data;
+  locals.dispRow++;
 }
 
 static READ_HANDLER(port_b3_r) {
@@ -208,11 +223,12 @@ MACHINE_DRIVER_START(idsa)
   MDRV_CPU_PERIODIC_INT(IDSA_irq, IDSA_CPUFREQ / 4096)
   MDRV_TIMER_ADD(IDSA_nmi, 0)
   MDRV_CORE_INIT_RESET_STOP(IDSA,IDSA,NULL)
-  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_NVRAM_HANDLER(IDSA)
   MDRV_DIPS(16)
   MDRV_SWITCH_UPDATE(IDSA)
   MDRV_SOUND_ADD(AY8910, IDSA_ay8910Int)
   MDRV_SOUND_ADD(SP0256, IDSA_sp0256Int)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(idsa)
@@ -278,11 +294,12 @@ INPUT_PORTS_END
 core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
   {3, 0,16, 7, CORE_SEG7}, {3,16,23, 7, CORE_SEG7},
-  {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7}, {6,26,48, 2, CORE_SEG7},
+  {6, 6,36, 1, CORE_SEG7}, {6,10,38, 2, CORE_SEG7}, {6,16,41, 1, CORE_SEG7}, {6,20,43, 2, CORE_SEG7},
+  {9, 0,48, 2, CORE_SEG7},
   {0}
 };
 
-static core_tGameData v1GameData = {0,idsa_disp,{FLIP_SWNO(28,30)}};
+static core_tGameData v1GameData = {0,idsa_disp,{FLIP_SWNO(28,30),0,2}};
 static void init_v1(void) {
   core_gameData = &v1GameData;
 }
@@ -296,9 +313,9 @@ ROM_START(v1)
   ROM_RELOAD(0x8000, 0x4000)
   ROM_RELOAD(0xc000, 0x4000)
 ROM_END
-CORE_GAMEDEFNV(v1, "V-1", 198?, "IDSA (Spain)", idsa, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(v1, "V.1", 198?, "IDSA (Spain)", idsa, GAME_NOT_WORKING)
 
-static core_tGameData bsktballGameData = {0, idsa_disp,{FLIP_SWNO(28,30)}};
+static core_tGameData bsktballGameData = {0, idsa_disp,{FLIP_SWNO(28,30),0,2}};
 static void init_bsktball(void) {
   core_gameData = &bsktballGameData;
 }
@@ -310,4 +327,4 @@ ROM_START(bsktball)
   ROM_LOAD("bsktball.256", 0x0000, 0x8000, CRC(d474e29b) SHA1(750cbacef34dde0b3dcb6c1e4679db78a73643fd))
   ROM_RELOAD(0x8000, 0x8000)
 ROM_END
-CORE_GAMEDEFNV(bsktball, "Basket Ball", 1987, "IDSA (Spain)", idsa, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(bsktball, "Basket Ball", 1987, "IDSA (Spain)", idsa, GAME_IMPERFECT_SOUND)
