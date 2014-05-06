@@ -418,7 +418,8 @@ DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
 DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
 DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
-DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses
+DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses (3.00)
+DRIVER(gnr,300f)        //Data East MPU: 07/94 Guns N Roses (3.00 French)
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 
