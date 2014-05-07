@@ -904,6 +904,16 @@ DE_ROMEND
 #define input_ports_gnr input_ports_des11
 CORE_GAMEDEF(gnr,300,"Guns N Roses (3.00)",1994,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(gnr_300f,"gnrcpuf.300",CRC(7f9006b2) SHA1(429d90fa27ea39176b94d1293a313ec3d1033dbc))
+DE_DMD32ROM8x(     "gnrdispf.300",CRC(63e9761a) SHA1(05e5a61b66148da7728779d8e5fa14a489e09441))
+DE2S_SOUNDROM14444("gnru7.snd"  ,CRC(3b9de915) SHA1(a901a1f37bf5433c819393c4355f9d13164b32ce),
+                   "gnru17.snd" ,CRC(3d3219d6) SHA1(ac4a6d3eff0cdd02b8c79dddcb8fec2e22faa9b9),
+                   "gnru21.snd" ,CRC(d2ca17ab) SHA1(db7c4f74a2e2c099fe14f38de922fdc851bd4a6b),
+                   "gnru36.snd" ,CRC(5b32396e) SHA1(66462a6a929c869d668968e057fac199d05df267),
+                   "gnru37.snd" ,CRC(4930e1f2) SHA1(1569d0c7fea1af008acbdc492c3677ace7d1897a))
+DE_ROMEND
+#define input_ports_gnrf input_ports_gnr
+CORE_CLONEDEF(gnr,300f,300,"Guns N Roses (3.00 French)",1994,"Data East",de_mDEDMD32S2A,0)
 
 /*****************************************************************************************************************************/
 /* NOTE: SEGA Began Distribution of the following games, although they run on Data East Hardware, so they stay in this file! */
