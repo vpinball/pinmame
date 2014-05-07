@@ -70,14 +70,14 @@ static struct rc_option vpinmame_opts[] = {
 
         { "dmd_colorize", NULL, rc_bool, &dmd_colorize, "0", 0, 0, NULL, "Set DMD intensity levels as independent colors" },
         { "dmd_red66", NULL, rc_int, &dmd_red66, "225", 0, 255, NULL, "Colorized DMD: red level for 66% intensity" },
-        { "dmd_green66", NULL, rc_int, &dmd_red66, "15", 0, 255, NULL, "Colorized DMD: green level for 66% intensity" },
-        { "dmd_blue66", NULL, rc_int, &dmd_red66, "193", 0, 255, NULL, "Colorized DMD: blue level for 66% intensity" },
+        { "dmd_green66", NULL, rc_int, &dmd_green66, "15", 0, 255, NULL, "Colorized DMD: green level for 66% intensity" },
+        { "dmd_blue66", NULL, rc_int, &dmd_blue66, "193", 0, 255, NULL, "Colorized DMD: blue level for 66% intensity" },
         { "dmd_red33", NULL, rc_int, &dmd_red33, "6", 0, 255, NULL, "Colorized DMD: red level for 33% intensity" },
-        { "dmd_green33", NULL, rc_int, &dmd_red33, "0", 0, 255, NULL, "Colorized DMD: green level for 33% intensity" },
-        { "dmd_blue33", NULL, rc_int, &dmd_red33, "214", 0, 255, NULL, "Colorized DMD: blue level for 33% intensity" },
+        { "dmd_green33", NULL, rc_int, &dmd_green33, "0", 0, 255, NULL, "Colorized DMD: green level for 33% intensity" },
+        { "dmd_blue33", NULL, rc_int, &dmd_blue33, "214", 0, 255, NULL, "Colorized DMD: blue level for 33% intensity" },
         { "dmd_red0", NULL, rc_int, &dmd_red0, "0", 0, 255, NULL, "Colorized DMD: red level for 0% intensity" },
-        { "dmd_green0", NULL, rc_int, &dmd_red0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
-        { "dmd_blue0", NULL, rc_int, &dmd_red0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
+        { "dmd_green0", NULL, rc_int, &dmd_green0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
+        { "dmd_blue0", NULL, rc_int, &dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
         
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
