@@ -1,4 +1,4 @@
- Important steps to take before a release:
+Important steps to take before a release:
 =========================================
 
 #1 Preparation
