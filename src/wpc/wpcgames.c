@@ -123,3 +123,27 @@ INITGAME(tfa)
 WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,CRC(bf4a37b5) SHA1(91b8bba6182e818a34252a4b2a0b86a2a44d9c42)) WPC_ROMEND
 #define input_ports_tfa input_ports_wpc
 CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (1.3)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND)
+
+// games by other manufacturers
+
+/*-------------------
+/ Rush (Dave Astill)
+/-------------------*/
+static core_tGameData rushGameData = {
+  GEN_WPCFLIPTRON, wpc_dispDMD,
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L), 0,0,0,0,0,1 },
+  NULL,
+  {
+    "",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x10, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor}
+  }
+};
+INITGAME(rush)
+
+WPC_ROMSTART(rush,10,"rush_10.rom",0x40000,CRC(f4fb0f13) SHA1(fee2f48fa0eba35cbbe6b84d8d24710ed8454d2e))
+WPC_ROMEND
+#define input_ports_rush input_ports_wpc
+CORE_GAMEDEF(rush,10,"Rush (1.0)",20??,"Astill Entertainment",wpc_dmd,GAME_NO_SOUND)

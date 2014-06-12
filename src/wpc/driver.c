@@ -63,6 +63,11 @@ DRIVERNV(punchy3)       //Punchy the Clown R03 (1993)
 #endif
 
 // ---------------
+// ASTILL ENTERTAINMENT
+// ---------------
+DRIVER(rush,10)         //Rush (custom pin, based on WPC fliptronics hardware)
+
+// ---------------
 // ASTRO GAMES
 // ---------------
 DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
