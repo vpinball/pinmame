@@ -206,10 +206,11 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 							pixel=15;	
 						if(pixel==2)
 							pixel=4;
-						if(pixel==1)
-							pixel=1;
+						//if(pixel==1)
+						//	pixel=1;
 					}
-					if((gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
+
+					if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
 					{
 						if(pixel==3)
 							pixel=1;
@@ -217,11 +218,15 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 							pixel=4;
 						if(pixel==9)
 							pixel=4;
-						if(pixel==15)
-							pixel=15;
+						//if(pixel==15)
+						//	pixel=15;
 					}
+					//if(gen == GEN_ALVG_DMD2)
+					//{
+					//  //!! do some magic remapping
+					//}
 				}
-				else if((gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
+				else if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
 				{
 						if(pixel==3)
 							pixel=1;
@@ -231,6 +236,10 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 							pixel=2;
 						if(pixel==15)
 							pixel=3;
+				}
+				else if(gen == GEN_ALVG_DMD2) //!! depends on the mapping in alvgdmd.c
+				{
+						pixel >>= 2; //!! do some magic remapping
 				}
 				bd0 <<= 1;
 				bd1 <<= 1;
@@ -290,7 +299,6 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	// switch to current game tech
 	switch(gen){
 		// williams
-			break;
 		case GEN_S3:
 		case GEN_S3C:
 		case GEN_S4:
