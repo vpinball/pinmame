@@ -34,7 +34,7 @@ void pindmdInit(void)
 	hasExtraData=0;
 	dmdInUse=0;
 
-	memset(seg_data_old,0,50);
+	memset(seg_data_old,0,50*sizeof(UINT16));
 	// clear dmd frame buf
 	memset(frame_buf,0,sizeof(frame_buf));
 	// send dmdlogo.txt to pinDMD
@@ -194,13 +194,13 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 				// pixel colour
 				pixel = currbuffer[(j*((width==128)?128:192)) + (i+v+x)];
 				// Some systems add 63 to pixel hue, lets delete 63 before rendering the frame for those systems
-				if((gen == GEN_SAM) || (gen == GEN_GTS3))
+				if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
 					pixel -= 63;
 				// 16 color mode hue remapping for proper gradient
 				if(do16 == 1)
 				{
 					// For 4 color games, map hues to show proper hue in 16 color mode
-					if((gen != GEN_SAM) && (gen != GEN_GTS3) && (gen != GEN_LOGO))
+					if((gen != GEN_SAM) && (gen != GEN_GTS3) && (gen != GEN_ALVG) && (gen != GEN_LOGO)) //!! GEN_ALVG should be further separated into (LED vs DMD)
 					{
 						if(pixel==3)
 							pixel=15;	
@@ -209,7 +209,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 						if(pixel==1)
 							pixel=1;
 					}
-					if(gen == GEN_GTS3)
+					if((gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
 					{
 						if(pixel==3)
 							pixel=1;
@@ -221,7 +221,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 							pixel=15;
 					}
 				}
-				else if(gen == GEN_GTS3)
+				else if((gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
 				{
 						if(pixel==3)
 							pixel=1;
@@ -268,13 +268,13 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	if((enabled==0) || dmdInUse)
 		return;
 	// dont update dmd if segments have changed
-	if(memcmp(seg_data,seg_data_old,50)==0)
+	if(memcmp(seg_data,seg_data_old,50*sizeof(UINT16))==0)
 		return;
 
 	// Medusa fix
 	if((gen == GEN_BY35) && (disp_lens[0] == 2))
 	{
-		memcpy(extra_seg_data,seg_data,50);
+		memcpy(extra_seg_data,seg_data,50*sizeof(UINT16));
 		hasExtraData = 1;
 		return;
 	}
@@ -421,7 +421,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	}
 
 	pinddrvSendFrame();
-	memcpy(seg_data_old,seg_data,50);
+	memcpy(seg_data_old,seg_data,50*sizeof(UINT16));
 }
 
 //*****************************************************
@@ -519,7 +519,7 @@ void dumpFrames(UINT8 *currbuffer, UINT16 buffersize, UINT8 doDumpFrame, UINT64 
 		int x;
 		for(x = 0; x < buffersize; x++)
 		{
-			if((gen == GEN_SAM) || (gen == GEN_GTS3))
+			if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
 				fprintf(fDumpFrames,"%c",dump_16_map[currbuffer[x]-63]);
 			else
 				fprintf(fDumpFrames,"%c",dump_4_map[currbuffer[x]]);
