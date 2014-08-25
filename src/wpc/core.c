@@ -749,11 +749,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  for(jj = 0; jj < layout->start; jj++)
 		for(ii = 0; ii < layout->length; ii++)
 		{
-			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&(currbuffer[jj*layout->length + ii]<4)) {
-				dumpframe = 1;
-				break;
-			}
-			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&((core_gameData->gen == GEN_SAM)||(core_gameData->gen == GEN_GTS3))) {
+			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
+			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG))) { //!! GEN_ALVG should be further separated into (LED vs DMD)
 				dumpframe = 1;
 				break;
 			}
@@ -804,7 +801,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
 #ifdef VPINMAME
-  memset(seg_data, 0, 50);
+  memset(seg_data, 0, 50*sizeof(UINT16));
 #endif
 
   for (; layout->length; layout += 1) {
