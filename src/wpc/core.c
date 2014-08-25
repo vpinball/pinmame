@@ -750,7 +750,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		for(ii = 0; ii < layout->length; ii++)
 		{
 			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
-			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG))) { //!! GEN_ALVG should be further separated into (LED vs DMD)
+			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
 				dumpframe = 1;
 				break;
 			}
@@ -891,7 +891,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG)) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;

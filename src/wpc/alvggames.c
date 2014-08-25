@@ -39,6 +39,13 @@ static const core_tLCDLayout alvg_alpha1[] = {
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAME2(name, disptype, flippers, balls, sb, db, lamps) \
+	ALVG_INPUT_PORTS_START(name, balls) ALVG_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_ALVG_DMD2,disptype,{flippers,4,4,0,sb,db,lamps}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
@@ -108,7 +115,7 @@ CORE_GAMEDEFNV(usafootb,"U.S.A. Football",1993,"Alvin G",mALVGS1,0)
 /*-------------------------------------------------------------------
 / Mystery Castle
 /-------------------------------------------------------------------*/
-INITGAME(mystcast, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
+INITGAME2(mystcast, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
 ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c3d294a3b9c09),
 						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
@@ -120,7 +127,7 @@ ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396d
 ALVG_ROMEND
 CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2DMD,0)
 
-INITGAME(mystcasa, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
+INITGAME2(mystcasa, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcasa,	"cpu_103.bin", CRC(70ab8ece) SHA1(2bf8cd042450968b7500552419a9af5df2589c13))
 ALVGS_SOUNDROM(			"mcastle.103", CRC(bd4849ac) SHA1(f477ea369539a65c0960be1f1c3b4c5503dd6b75),
 						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
@@ -137,7 +144,7 @@ CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (alternate set)",199?,"Alvin G
 /*-------------------------------------------------------------------
 / Pistol Poker
 /-------------------------------------------------------------------*/
-INITGAME(pstlpkr, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
+INITGAME2(pstlpkr, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr,	"p_peteu2.512", CRC(490a1e2d) SHA1(907dd858ed948681e7366a64a0e7537ebe301d6b))
 ALVGS_SOUNDROM(			"p_pu102.512" , CRC(b8fb806e) SHA1(c2dc19820ea22bbcf5808db2fb4be76a4033d6ea),
 						"p_parom0.c20", CRC(99986af2) SHA1(52fa7d2979f7f2d6d65ab6d4f7bbfbed16303991),
@@ -150,7 +157,7 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 ALVG_ROMEND
 CORE_GAMEDEFNV(pstlpkr,"Pistol Poker R02",1993,"Alvin G",mALVGS2DMD,0)
 
-INITGAME(pstlpkr1, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
+INITGAME2(pstlpkr1, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr1,	"u2-ddff.512", CRC(83fa0595) SHA1(d6ebb0e63fd964ccaee3979a7fc13b6adf7b837c))
 ALVGS_SOUNDROM(			"p_pu102.512" , CRC(b8fb806e) SHA1(c2dc19820ea22bbcf5808db2fb4be76a4033d6ea),
 						"p_parom0.c20", CRC(99986af2) SHA1(52fa7d2979f7f2d6d65ab6d4f7bbfbed16303991),

@@ -61,9 +61,10 @@
 #define GEN_SAM         U64(0x100000000000) /* Stern SAM */
 
 #define GEN_ALVG        U64(0x200000000000) /* Alvin G Hardware */
-#define GEN_MRGAME		U64(0x400000000000) /* Mr.Game Hardware */
-#define GEN_SLEIC		U64(0x800000000000) /* Sleic Hardware */
-#define GEN_WICO		U64(0x1000000000000) /* Wico Hardware */
+#define GEN_ALVG_DMD2   U64(0x400000000000) /* Alvin G Hardware, with more shades */
+#define GEN_MRGAME		U64(0x800000000000) /* Mr.Game Hardware */
+#define GEN_SLEIC		U64(0x1000000000000) /* Sleic Hardware */
+#define GEN_WICO		U64(0x2000000000000) /* Wico Hardware */
 
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0008000ff00)
