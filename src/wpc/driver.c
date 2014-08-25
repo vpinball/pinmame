@@ -63,6 +63,11 @@ DRIVERNV(punchy3)       //Punchy the Clown R03 (1993)
 #endif
 
 // ---------------
+// ASTILL ENTERTAINMENT
+// ---------------
+DRIVER(rush,10)         //Rush (custom pin, based on WPC fliptronics hardware)
+
+// ---------------
 // ASTRO GAMES
 // ---------------
 DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
@@ -900,6 +905,7 @@ DRIVERNV(vipr_102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla (2.05)
+DRIVERNV(godz_100)      //Whitestar: 09/98 Godzilla (1.00)
 DRIVERNV(godz_090)      //Whitestar: 09/98 Godzilla (0.90)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96)
