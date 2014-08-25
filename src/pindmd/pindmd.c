@@ -194,13 +194,13 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 				// pixel colour
 				pixel = currbuffer[(j*((width==128)?128:192)) + (i+v+x)];
 				// Some systems add 63 to pixel hue, lets delete 63 before rendering the frame for those systems
-				if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
+				if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 					pixel -= 63;
 				// 16 color mode hue remapping for proper gradient
 				if(do16 == 1)
 				{
 					// For 4 color games, map hues to show proper hue in 16 color mode
-					if((gen != GEN_SAM) && (gen != GEN_GTS3) && (gen != GEN_ALVG) && (gen != GEN_LOGO)) //!! GEN_ALVG should be further separated into (LED vs DMD)
+					if((gen != GEN_SAM) && (gen != GEN_GTS3) && (gen != GEN_ALVG_DMD2) && (gen != GEN_LOGO))
 					{
 						if(pixel==3)
 							pixel=15;	
@@ -209,7 +209,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 						if(pixel==1)
 							pixel=1;
 					}
-					if((gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
+					if((gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 					{
 						if(pixel==3)
 							pixel=1;
@@ -221,7 +221,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 							pixel=15;
 					}
 				}
-				else if((gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
+				else if((gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 				{
 						if(pixel==3)
 							pixel=1;
@@ -519,7 +519,7 @@ void dumpFrames(UINT8 *currbuffer, UINT16 buffersize, UINT8 doDumpFrame, UINT64 
 		int x;
 		for(x = 0; x < buffersize; x++)
 		{
-			if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG)) //!! GEN_ALVG should be further separated into (LED vs DMD)
+			if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 				fprintf(fDumpFrames,"%c",dump_16_map[currbuffer[x]-63]);
 			else
 				fprintf(fDumpFrames,"%c",dump_4_map[currbuffer[x]]);
