@@ -511,6 +511,7 @@ DRIVERNV(forceii7)      //          01/08 Force II, 7-digit conversion)
 DRIVERNV(pnkpnthr)      //S80-664:  03/81 Pink Panther
 DRIVERNV(pnkpntr7)      //          01/08 Pink Panther, 7-digit conversion)
 DRIVERNV(mars)          //S80-666:  03/81 Mars God of War
+DRIVERNV(marsf)         //S80-666:  03/81 Mars God of War (French speech)
 DRIVERNV(mars7)         //          01/08 Mars God of War, 7-digit conversion)
 DRIVERNV(vlcno_ax)      //S80-667:  09/81 Volcano (Sound & Speech)
 DRIVERNV(vlcno_a7)      //          01/08 Volcano (Sound & Speech, 7-digit conversion)
