@@ -616,7 +616,7 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
 #define input_ports_stwr input_ports_des11
-CORE_GAMEDEF(stwr,104,"Star Wars (1.04)",2013,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(stwr,104,"Star Wars (1.04)",2012,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_103,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
 DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))

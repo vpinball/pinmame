@@ -309,6 +309,7 @@ WPC_ROMSTART(dm,dh5b, "dmandh5b.rom", 0x80000,CRC(e9d4776d) SHA1(fa1b16b284d547b
 WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h6b, "dman_h6b.rom", 0x80000,CRC(004bde84) SHA1(cf3f44a65e0598bdf257f61939bab4e9c03339a6)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dt099, "dm_dt099.rom", 0x100000,CRC(64428b78) SHA1(ac0b0174dcecd1b1cd467c4369cb78c2430e9e4b)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,dt101, "dm_dt101.rom", 0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2bff95d0c7f65e0f80c4c17b8f2)) DM_SOUND_H1 WPC_ROMEND
 
 /*--------------
 /  Game drivers
@@ -330,6 +331,7 @@ CORE_CLONEDEF(dm,dh5b,lx4, "Demolition Man (DH-5B) Coin Play LED Ghost Fix", 199
 CORE_CLONEDEF(dm,h6,lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6b,lx4, "Demolition Man (H-6B) Coin Play", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)", 2014,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 2014,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

@@ -511,6 +511,7 @@ DRIVERNV(forceii7)      //          01/08 Force II, 7-digit conversion)
 DRIVERNV(pnkpnthr)      //S80-664:  03/81 Pink Panther
 DRIVERNV(pnkpntr7)      //          01/08 Pink Panther, 7-digit conversion)
 DRIVERNV(mars)          //S80-666:  03/81 Mars God of War
+DRIVERNV(marsf)         //S80-666:  03/81 Mars God of War (French speech)
 DRIVERNV(mars7)         //          01/08 Mars God of War, 7-digit conversion)
 DRIVERNV(vlcno_ax)      //S80-667:  09/81 Volcano (Sound & Speech)
 DRIVERNV(vlcno_a7)      //          01/08 Volcano (Sound & Speech, 7-digit conversion)
@@ -2059,6 +2060,7 @@ DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude spee
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
+DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  08/94 B The Addams Family Special Collectors Edition (Home version)
 DRIVER(tafg,i3)         //                  The Addams Family Special Collectors Edition (Home version, LED Ghost Fix)
 DRIVER(tafg,lx3)        //          10/94 B The Addams Family Special Collectors Edition (LX-3)

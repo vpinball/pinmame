@@ -323,6 +323,14 @@ GTS80_ROMEND
 #define input_ports_mars input_ports_gts80
 CORE_CLONEDEFNV(mars,gts80,"Mars - God of War",1981,"Gottlieb",gl_mGTS80SS,0)
 
+INIT_S80(marsf, dispNumeric1, SNDBRD_GTS80SS_VOTRAX)
+GTS80_1_ROMSTART  ("666-1.cpu",  CRC(bb7d476a) SHA1(22d5d7f0e52c5180f73a1ca0b3c6bd4b7d0843d6))
+GTS80SS22_ROMSTART("f666-s1.snd", CRC(f9f782c5) SHA1(83438fcf3475bc2cb24c828036d94063c263a031),
+                   "f666-s2.snd", CRC(7bd64d94) SHA1(a52492820e69f2072fd1dffb5cbb48fb960e19ce))
+GTS80_ROMEND
+#define input_ports_marsf input_ports_mars
+CORE_CLONEDEFNV(marsf,mars,"Mars - God of War (French speech)",1981,"Gottlieb",gl_mGTS80SS,0)
+
 INIT_S80D7(mars7, dispNumeric3, SNDBRD_GTS80SS_VOTRAX)
 GTS80_1_ROMSTART  ("666-1.cpu",  CRC(bb7d476a) SHA1(22d5d7f0e52c5180f73a1ca0b3c6bd4b7d0843d6))
 GTS80SS22_ROMSTART("666-s1.snd", CRC(d33dc8a5) SHA1(8d071c392996a74c3cdc2cf5ea3be3c86553ce89),
