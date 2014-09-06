@@ -240,9 +240,14 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		return Error(TEXT("Game ROMS invalid!"));
 	}
 
+	VariantInit(&vValue);
+	m_pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
+	BOOL cabinetMode = (vValue.boolVal==VARIANT_TRUE);
+
 	if ( GameWasNeverStarted(m_szROM) ) {
 		int fFirstTime = GameUsedTheFirstTime(m_szROM);
 
+		if(!cabinetMode) {
 		CComBSTR sDescription;
 		m_pGame->get_Description(&sDescription);
 		char szDescription[256];
@@ -250,18 +255,22 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 		if ( !ShowDisclaimer(m_hParentWnd, szDescription) )
 			return Error(TEXT("User is not legally entitled to play this game!"));
+		}
 
 		SetGameWasStarted(m_szROM);
 
+		if(!cabinetMode) {
 		if ( fFirstTime ) {
 			char szTemp[256];
 			sprintf(szTemp,"This is the first time you use: %s\nPlease specify options for this game by clicking \"OK\"!",drivers[m_nGameNo]->description);
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
 			m_pGameSettings->ShowSettingsDlg(0);
 		}
-	}	
+		}
+	}
 
 #ifndef DEBUG
+	if(!cabinetMode) {
 	// See if game is flagged as GAME_NOT_WORKING and ask user if they wish to continue!!
 	if ( drivers[m_nGameNo]->flags&GAME_NOT_WORKING ) {
 		if(MessageBox(GetActiveWindow(),"This game DOES NOT WORK properly!\n Running it may cause VPinMAME to crash or lock up \n\n Are you sure you would like to continue?","Notice!",MB_YESNO | MB_ICONWARNING) == IDNO)
@@ -273,13 +282,13 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		return Error(TEXT("CRC Errors!! Game cannot be run!"));
 	}
 
-	//Any game messages to display (messages that allow game to continue
+		//Any game messages to display (messages that allow game to continue)
 	if ( drivers[m_nGameNo]->flags )
 	{
 		char szTemp[256];
 		sprintf(szTemp,"");
 
-		// See if game is flagged as GAME_NO_SOU7ND and show user a message!
+			// See if game is flagged as GAME_NO_SOUND and show user a message!
 		if ( drivers[m_nGameNo]->flags&GAME_NO_SOUND )
 			sprintf(szTemp,"%sPlease be aware that this game does not have sound emulated yet!\n\n",szTemp);
 
@@ -293,6 +302,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 		if(strlen(szTemp)>0)
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
+	}
 	}
 #endif
 
@@ -2170,6 +2180,75 @@ STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
 		return S_FALSE;
 
 	return S_OK;
+}
+
+/***************************************************************
+ * IController.FastFrames property: get/set FastFrames
+ ***************************************************************/
+
+STDMETHODIMP CController::get_FastFrames(int *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("fastframes"), &vValue);
+	*pVal = vValue.lVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_FastFrames(int newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("fastframes"), CComVariant(newVal));
+}
+
+/*************************************************************** 
+ * IController.IgnoreRomCrc property: get/set IgnoreRomCrc
+ ***************************************************************/
+
+STDMETHODIMP CController::get_IgnoreRomCrc(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("ignore_rom_crc"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_IgnoreRomCrc(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant(newVal));
+}
+
+/*************************************************************** 
+ * IController.CabinetMode property: get/set CabinetMode
+ ***************************************************************/
+
+STDMETHODIMP CController::get_CabinetMode(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_CabinetMode(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("cabinet_mode"), CComVariant(newVal));
 }
 
 
