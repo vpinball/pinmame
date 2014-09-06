@@ -1,55 +1,55 @@
 /***************************************************************************
 
-	driver.h
+        driver.h
 
-	Include this with all MAME files. Includes all the core system pieces.
+        Include this with all MAME files. Includes all the core system pieces.
 
 ***************************************************************************/
 
 #ifndef DRIVER_H
 #define DRIVER_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)     // GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
 
 
 /***************************************************************************
 
-	Macros for declaring common callbacks
+        Macros for declaring common callbacks
 
 ***************************************************************************/
 
-#define DRIVER_INIT(name)		void init_##name(void)
+#define DRIVER_INIT(name)               void init_##name(void)
 
-#define INTERRUPT_GEN(func)		void func(void)
+#define INTERRUPT_GEN(func)             void func(void)
 
-#define MACHINE_INIT(name)		void machine_init_##name(void)
-#define MACHINE_STOP(name)		void machine_stop_##name(void)
+#define MACHINE_INIT(name)              void machine_init_##name(void)
+#define MACHINE_STOP(name)              void machine_stop_##name(void)
 
-#define NVRAM_HANDLER(name)		void nvram_handler_##name(mame_file *file, int read_or_write)
+#define NVRAM_HANDLER(name)             void nvram_handler_##name(mame_file *file, int read_or_write)
 
-#define PALETTE_INIT(name)		void palette_init_##name(UINT16 *colortable, const UINT8 *color_prom)
+#define PALETTE_INIT(name)              void palette_init_##name(UINT16 *colortable, const UINT8 *color_prom)
 
-#define VIDEO_START(name)		int video_start_##name(void)
-#define VIDEO_STOP(name)		void video_stop_##name(void)
-#define VIDEO_EOF(name)			void video_eof_##name(void)
-#define VIDEO_UPDATE(name)		void video_update_##name(struct mame_bitmap *bitmap, const struct rectangle *cliprect)
+#define VIDEO_START(name)               int video_start_##name(void)
+#define VIDEO_STOP(name)                void video_stop_##name(void)
+#define VIDEO_EOF(name)                 void video_eof_##name(void)
+#define VIDEO_UPDATE(name)              void video_update_##name(struct mame_bitmap *bitmap, const struct rectangle *cliprect)
 
 /* NULL versions */
-#define init_NULL				NULL
-#define machine_init_NULL 		NULL
-#define nvram_handler_NULL 		NULL
-#define palette_init_NULL		NULL
-#define video_start_NULL 		NULL
-#define video_stop_NULL 		NULL
-#define video_eof_NULL 			NULL
-#define video_update_NULL 		NULL
+#define init_NULL                               NULL
+#define machine_init_NULL               NULL
+#define nvram_handler_NULL              NULL
+#define palette_init_NULL               NULL
+#define video_start_NULL                NULL
+#define video_stop_NULL                 NULL
+#define video_eof_NULL                  NULL
+#define video_update_NULL               NULL
 
 
 
 /***************************************************************************
 
-	Core MAME includes
+        Core MAME includes
 
 ***************************************************************************/
 
@@ -89,6 +89,10 @@ typedef struct {
   int dmd_red, dmd_green, dmd_blue;
   int dmd_perc66, dmd_perc33, dmd_perc0;
   int dmd_only, dmd_compact, dmd_antialias;
+  int dmd_colorize;
+  int dmd_red66, dmd_green66, dmd_blue66;
+  int dmd_red33, dmd_green33, dmd_blue33;
+  int dmd_red0, dmd_green0, dmd_blue0;
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {
@@ -108,7 +112,7 @@ struct pinMachine {
   void (*stop)(void);
 };
 extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), int rate);
-#define DIAGLED_VERTICAL	0x100	/* Flag indicated DIAG LEDS are Vertically Positioned */
+#define DIAGLED_VERTICAL        0x100   /* Flag indicated DIAG LEDS are Vertically Positioned */
 #define MDRV_DIPS(no) \
   machine->pinmame.coreDips = (no);
 
@@ -146,183 +150,183 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 
 /***************************************************************************
 
-	Macros for building machine drivers
+        Macros for building machine drivers
 
 ***************************************************************************/
 
 /* use this to declare external references to a machine driver */
-#define MACHINE_DRIVER_EXTERN(game)										\
-	void construct_##game(struct InternalMachineDriver *machine)		\
+#define MACHINE_DRIVER_EXTERN(game)                                                                             \
+        void construct_##game(struct InternalMachineDriver *machine)            \
 
 
 /* start/end tags for the machine driver */
-#define MACHINE_DRIVER_START(game) 										\
-	void construct_##game(struct InternalMachineDriver *machine)		\
-	{																	\
-		struct MachineCPU *cpu = NULL;									\
-		(void)cpu;														\
+#define MACHINE_DRIVER_START(game)                                                                              \
+        void construct_##game(struct InternalMachineDriver *machine)            \
+        {                                                                                                                                       \
+                struct MachineCPU *cpu = NULL;                                                                  \
+                (void)cpu;                                                                                                              \
 
-#define MACHINE_DRIVER_END 												\
-	}																	\
+#define MACHINE_DRIVER_END                                                                                              \
+        }                                                                                                                                       \
 
 
 /* importing data from other machine drivers */
-#define MDRV_IMPORT_FROM(game) 											\
-	construct_##game(machine); 											\
+#define MDRV_IMPORT_FROM(game)                                                                                  \
+        construct_##game(machine);                                                                                      \
 
 
 /* add/modify/remove/replace CPUs */
-#define MDRV_CPU_ADD_TAG(tag, type, clock)								\
-	cpu = machine_add_cpu(machine, (tag), CPU_##type, (clock));			\
+#define MDRV_CPU_ADD_TAG(tag, type, clock)                                                              \
+        cpu = machine_add_cpu(machine, (tag), CPU_##type, (clock));                     \
 
-#define MDRV_CPU_ADD(type, clock)										\
-	MDRV_CPU_ADD_TAG(NULL, type, clock)									\
+#define MDRV_CPU_ADD(type, clock)                                                                               \
+        MDRV_CPU_ADD_TAG(NULL, type, clock)                                                                     \
 
-#define MDRV_CPU_MODIFY(tag)											\
-	cpu = machine_find_cpu(machine, tag);								\
+#define MDRV_CPU_MODIFY(tag)                                                                                    \
+        cpu = machine_find_cpu(machine, tag);                                                           \
 
-#define MDRV_CPU_REMOVE(tag)											\
-	machine_remove_cpu(machine, tag);									\
-	cpu = NULL;															\
+#define MDRV_CPU_REMOVE(tag)                                                                                    \
+        machine_remove_cpu(machine, tag);                                                                       \
+        cpu = NULL;                                                                                                                     \
 
-#define MDRV_CPU_REPLACE(tag, type, clock)								\
-	cpu = machine_find_cpu(machine, tag);								\
-	if (cpu)															\
-	{																	\
-		cpu->cpu_type = (CPU_##type);									\
-		cpu->cpu_clock = (clock);										\
-	}																	\
+#define MDRV_CPU_REPLACE(tag, type, clock)                                                              \
+        cpu = machine_find_cpu(machine, tag);                                                           \
+        if (cpu)                                                                                                                        \
+        {                                                                                                                                       \
+                cpu->cpu_type = (CPU_##type);                                                                   \
+                cpu->cpu_clock = (clock);                                                                               \
+        }                                                                                                                                       \
 
 
 /* CPU parameters */
-#define MDRV_CPU_FLAGS(flags)											\
-	if (cpu)															\
-		cpu->cpu_flags = (flags);										\
+#define MDRV_CPU_FLAGS(flags)                                                                                   \
+        if (cpu)                                                                                                                        \
+                cpu->cpu_flags = (flags);                                                                               \
 
-#define MDRV_CPU_CONFIG(config)											\
-	if (cpu)															\
-		cpu->reset_param = &(config);									\
+#define MDRV_CPU_CONFIG(config)                                                                                 \
+        if (cpu)                                                                                                                        \
+                cpu->reset_param = &(config);                                                                   \
 
-#define MDRV_CPU_MEMORY(readmem, writemem)								\
-	if (cpu)															\
-	{																	\
-		cpu->memory_read = (readmem);									\
-		cpu->memory_write = (writemem);									\
-	}																	\
+#define MDRV_CPU_MEMORY(readmem, writemem)                                                              \
+        if (cpu)                                                                                                                        \
+        {                                                                                                                                       \
+                cpu->memory_read = (readmem);                                                                   \
+                cpu->memory_write = (writemem);                                                                 \
+        }                                                                                                                                       \
 
-#define MDRV_CPU_PORTS(readport, writeport)								\
-	if (cpu)															\
-	{																	\
-		cpu->port_read = (readport);									\
-		cpu->port_write = (writeport);									\
-	}																	\
+#define MDRV_CPU_PORTS(readport, writeport)                                                             \
+        if (cpu)                                                                                                                        \
+        {                                                                                                                                       \
+                cpu->port_read = (readport);                                                                    \
+                cpu->port_write = (writeport);                                                                  \
+        }                                                                                                                                       \
 
-#define MDRV_CPU_VBLANK_INT(func, rate)									\
-	if (cpu)															\
-	{																	\
-		cpu->vblank_interrupt = func;									\
-		cpu->vblank_interrupts_per_frame = (rate);						\
-	}																	\
+#define MDRV_CPU_VBLANK_INT(func, rate)                                                                 \
+        if (cpu)                                                                                                                        \
+        {                                                                                                                                       \
+                cpu->vblank_interrupt = func;                                                                   \
+                cpu->vblank_interrupts_per_frame = (rate);                                              \
+        }                                                                                                                                       \
 
-#define MDRV_CPU_PERIODIC_INT(func, rate)								\
-	if (cpu)															\
-	{																	\
-		cpu->timed_interrupt = func;									\
-		cpu->timed_interrupts_per_second = (rate);						\
-	}																	\
+#define MDRV_CPU_PERIODIC_INT(func, rate)                                                               \
+        if (cpu)                                                                                                                        \
+        {                                                                                                                                       \
+                cpu->timed_interrupt = func;                                                                    \
+                cpu->timed_interrupts_per_second = (rate);                                              \
+        }                                                                                                                                       \
 
 
 /* core parameters */
-#define MDRV_FRAMES_PER_SECOND(rate)									\
-	machine->frames_per_second = (rate);								\
+#define MDRV_FRAMES_PER_SECOND(rate)                                                                    \
+        machine->frames_per_second = (rate);                                                            \
 
-#define MDRV_VBLANK_DURATION(duration)									\
-	machine->vblank_duration = (duration);								\
+#define MDRV_VBLANK_DURATION(duration)                                                                  \
+        machine->vblank_duration = (duration);                                                          \
 
-#define MDRV_INTERLEAVE(interleave)										\
-	machine->cpu_slices_per_frame = (interleave);						\
+#define MDRV_INTERLEAVE(interleave)                                                                             \
+        machine->cpu_slices_per_frame = (interleave);                                           \
 
 
 /* core functions */
-#define MDRV_MACHINE_INIT(name)											\
-	machine->machine_init = machine_init_##name;						\
+#define MDRV_MACHINE_INIT(name)                                                                                 \
+        machine->machine_init = machine_init_##name;                                            \
 
-#define MDRV_MACHINE_STOP(name)											\
-	machine->machine_stop = machine_stop_##name;						\
+#define MDRV_MACHINE_STOP(name)                                                                                 \
+        machine->machine_stop = machine_stop_##name;                                            \
 
-#define MDRV_NVRAM_HANDLER(name)										\
-	machine->nvram_handler = nvram_handler_##name;						\
+#define MDRV_NVRAM_HANDLER(name)                                                                                \
+        machine->nvram_handler = nvram_handler_##name;                                          \
 
 
 /* core video parameters */
-#define MDRV_VIDEO_ATTRIBUTES(flags)									\
-	machine->video_attributes = (flags);								\
+#define MDRV_VIDEO_ATTRIBUTES(flags)                                                                    \
+        machine->video_attributes = (flags);                                                            \
 
-#define MDRV_ASPECT_RATIO(num, den)										\
-	machine->aspect_x = (num);											\
-	machine->aspect_y = (den);											\
+#define MDRV_ASPECT_RATIO(num, den)                                                                             \
+        machine->aspect_x = (num);                                                                                      \
+        machine->aspect_y = (den);                                                                                      \
 
-#define MDRV_SCREEN_SIZE(width, height)									\
-	machine->screen_width = (width);									\
-	machine->screen_height = (height);									\
+#define MDRV_SCREEN_SIZE(width, height)                                                                 \
+        machine->screen_width = (width);                                                                        \
+        machine->screen_height = (height);                                                                      \
 
-#define MDRV_VISIBLE_AREA(minx, maxx, miny, maxy)						\
-	machine->default_visible_area.min_x = (minx);						\
-	machine->default_visible_area.max_x = (maxx);						\
-	machine->default_visible_area.min_y = (miny);						\
-	machine->default_visible_area.max_y = (maxy);						\
+#define MDRV_VISIBLE_AREA(minx, maxx, miny, maxy)                                               \
+        machine->default_visible_area.min_x = (minx);                                           \
+        machine->default_visible_area.max_x = (maxx);                                           \
+        machine->default_visible_area.min_y = (miny);                                           \
+        machine->default_visible_area.max_y = (maxy);                                           \
 
-#define MDRV_GFXDECODE(gfx)												\
-	machine->gfxdecodeinfo = (gfx);										\
+#define MDRV_GFXDECODE(gfx)                                                                                             \
+        machine->gfxdecodeinfo = (gfx);                                                                         \
 
-#define MDRV_PALETTE_LENGTH(length)										\
-	machine->total_colors = (length);									\
+#define MDRV_PALETTE_LENGTH(length)                                                                             \
+        machine->total_colors = (length);                                                                       \
 
-#define MDRV_COLORTABLE_LENGTH(length)									\
-	machine->color_table_len = (length);								\
+#define MDRV_COLORTABLE_LENGTH(length)                                                                  \
+        machine->color_table_len = (length);                                                            \
 
 
 /* core video functions */
-#define MDRV_PALETTE_INIT(name)											\
-	machine->init_palette = palette_init_##name;						\
+#define MDRV_PALETTE_INIT(name)                                                                                 \
+        machine->init_palette = palette_init_##name;                                            \
 
-#define MDRV_VIDEO_START(name)											\
-	machine->video_start = video_start_##name;							\
+#define MDRV_VIDEO_START(name)                                                                                  \
+        machine->video_start = video_start_##name;                                                      \
 
-#define MDRV_VIDEO_STOP(name)											\
-	machine->video_stop = video_stop_##name;							\
+#define MDRV_VIDEO_STOP(name)                                                                                   \
+        machine->video_stop = video_stop_##name;                                                        \
 
-#define MDRV_VIDEO_EOF(name)											\
-	machine->video_eof = video_eof_##name;								\
+#define MDRV_VIDEO_EOF(name)                                                                                    \
+        machine->video_eof = video_eof_##name;                                                          \
 
-#define MDRV_VIDEO_UPDATE(name)											\
-	machine->video_update = video_update_##name;						\
+#define MDRV_VIDEO_UPDATE(name)                                                                                 \
+        machine->video_update = video_update_##name;                                            \
 
 
 /* core sound parameters */
-#define MDRV_SOUND_ATTRIBUTES(flags)									\
-	machine->sound_attributes = (flags);								\
+#define MDRV_SOUND_ATTRIBUTES(flags)                                                                    \
+        machine->sound_attributes = (flags);                                                            \
 
 
 /* add/remove/replace sounds */
-#define MDRV_SOUND_ADD_TAG(tag, type, interface)						\
-	machine_add_sound(machine, (tag), SOUND_##type, &(interface));		\
+#define MDRV_SOUND_ADD_TAG(tag, type, interface)                                                \
+        machine_add_sound(machine, (tag), SOUND_##type, &(interface));          \
 
-#define MDRV_SOUND_ADD(type, interface)									\
-	MDRV_SOUND_ADD_TAG(NULL, type, interface)							\
+#define MDRV_SOUND_ADD(type, interface)                                                                 \
+        MDRV_SOUND_ADD_TAG(NULL, type, interface)                                                       \
 
-#define MDRV_SOUND_REMOVE(tag)											\
-	machine_remove_sound(machine, tag);									\
+#define MDRV_SOUND_REMOVE(tag)                                                                                  \
+        machine_remove_sound(machine, tag);                                                                     \
 
-#define MDRV_SOUND_REPLACE(tag, type, interface)						\
-	{																	\
-		struct MachineSound *sound = machine_find_sound(machine, tag);	\
-		if (sound)														\
-		{																\
-			sound->sound_type = SOUND_##type;							\
-			sound->sound_interface = &(interface);						\
-		}																\
-	}																	\
+#define MDRV_SOUND_REPLACE(tag, type, interface)                                                \
+        {                                                                                                                                       \
+                struct MachineSound *sound = machine_find_sound(machine, tag);  \
+                if (sound)                                                                                                              \
+                {                                                                                                                               \
+                        sound->sound_type = SOUND_##type;                                                       \
+                        sound->sound_interface = &(interface);                                          \
+                }                                                                                                                               \
+        }                                                                                                                                       \
 
 
 struct MachineCPU *machine_add_cpu(struct InternalMachineDriver *machine, const char *tag, int type, int cpuclock);
@@ -337,43 +341,43 @@ void machine_remove_sound(struct InternalMachineDriver *machine, const char *tag
 
 /***************************************************************************
 
-	Internal representation of a machine driver, built from the constructor
+        Internal representation of a machine driver, built from the constructor
 
 ***************************************************************************/
 
-#define MAX_CPU 8	/* MAX_CPU is the maximum number of CPUs which cpuintrf.c */
-					/* can run at the same time. Currently, 8 is enough. */
+#define MAX_CPU 8       /* MAX_CPU is the maximum number of CPUs which cpuintrf.c */
+                                        /* can run at the same time. Currently, 8 is enough. */
 
-#define MAX_SOUND 5	/* MAX_SOUND is the maximum number of sound subsystems */
-					/* which can run at the same time. Currently, 5 is enough. */
+#define MAX_SOUND 5     /* MAX_SOUND is the maximum number of sound subsystems */
+                                        /* which can run at the same time. Currently, 5 is enough. */
 
 struct InternalMachineDriver
 {
-	struct MachineCPU cpu[MAX_CPU];
-	float frames_per_second;
-	int vblank_duration;
-	UINT32 cpu_slices_per_frame;
+        struct MachineCPU cpu[MAX_CPU];
+        float frames_per_second;
+        int vblank_duration;
+        UINT32 cpu_slices_per_frame;
 
-	void (*machine_init)(void);
-	void (*machine_stop)(void);
-	void (*nvram_handler)(mame_file *file, int read_or_write);
+        void (*machine_init)(void);
+        void (*machine_stop)(void);
+        void (*nvram_handler)(mame_file *file, int read_or_write);
 
-	UINT32 video_attributes;
-	UINT32 aspect_x, aspect_y;
-	int screen_width,screen_height;
-	struct rectangle default_visible_area;
-	struct GfxDecodeInfo *gfxdecodeinfo;
-	UINT32 total_colors;
-	UINT32 color_table_len;
+        UINT32 video_attributes;
+        UINT32 aspect_x, aspect_y;
+        int screen_width,screen_height;
+        struct rectangle default_visible_area;
+        struct GfxDecodeInfo *gfxdecodeinfo;
+        UINT32 total_colors;
+        UINT32 color_table_len;
 
-	void (*init_palette)(UINT16 *colortable,const UINT8 *color_prom);
-	int (*video_start)(void);
-	void (*video_stop)(void);
-	void (*video_eof)(void);
-	void (*video_update)(struct mame_bitmap *bitmap,const struct rectangle *cliprect);
+        void (*init_palette)(UINT16 *colortable,const UINT8 *color_prom);
+        int (*video_start)(void);
+        void (*video_stop)(void);
+        void (*video_eof)(void);
+        void (*video_update)(struct mame_bitmap *bitmap,const struct rectangle *cliprect);
 
-	UINT32 sound_attributes;
-	struct MachineSound sound[MAX_SOUND];
+        UINT32 sound_attributes;
+        struct MachineSound sound[MAX_SOUND];
 #ifdef PINMAME
         struct pinMachine pinmame;
 #endif
@@ -383,7 +387,7 @@ struct InternalMachineDriver
 
 /***************************************************************************
 
-	Machine driver constants and flags
+        Machine driver constants and flags
 
 ***************************************************************************/
 
@@ -411,19 +415,19 @@ struct InternalMachineDriver
 /* ----- flags for video_attributes ----- */
 
 /* bit 0 of the video attributes indicates raster or vector video hardware */
-#define	VIDEO_TYPE_RASTER			0x0000
-#define	VIDEO_TYPE_VECTOR			0x0001
+#define VIDEO_TYPE_RASTER                       0x0000
+#define VIDEO_TYPE_VECTOR                       0x0001
 
 /* bit 3 of the video attributes indicates that the game's palette has 6 or more bits */
 /*       per gun, and would therefore require a 24-bit display. This is entirely up to */
 /*       the OS dependant layer, the bitmap will still be 16-bit. */
-#define VIDEO_NEEDS_6BITS_PER_GUN	0x0008
+#define VIDEO_NEEDS_6BITS_PER_GUN       0x0008
 
 /* ASG 980417 - added: */
 /* bit 4 of the video attributes indicates that the driver wants its refresh after */
 /*       the VBLANK instead of before. */
-#define	VIDEO_UPDATE_BEFORE_VBLANK	0x0000
-#define	VIDEO_UPDATE_AFTER_VBLANK	0x0010
+#define VIDEO_UPDATE_BEFORE_VBLANK      0x0000
+#define VIDEO_UPDATE_AFTER_VBLANK       0x0010
 
 /* In most cases we assume pixels are square (1:1 aspect ratio) but some games need */
 /* different proportions, e.g. 1:2 for Blasteroids */
@@ -432,173 +436,173 @@ struct InternalMachineDriver
 #define VIDEO_PIXEL_ASPECT_RATIO_1_2 0x0020
 #define VIDEO_PIXEL_ASPECT_RATIO_2_1 0x0040
 
-#define VIDEO_DUAL_MONITOR			0x0080
+#define VIDEO_DUAL_MONITOR                      0x0080
 
 /* Mish 181099:  See comments in vidhrdw/generic.c for details */
-#define VIDEO_BUFFERS_SPRITERAM		0x0100
+#define VIDEO_BUFFERS_SPRITERAM         0x0100
 
 /* game wants to use a hicolor or truecolor bitmap (e.g. for alpha blending) */
-#define VIDEO_RGB_DIRECT 			0x0200
+#define VIDEO_RGB_DIRECT                        0x0200
 
 /* automatically extend the palette creating a darker copy for shadows */
-#define VIDEO_HAS_SHADOWS			0x0400
+#define VIDEO_HAS_SHADOWS                       0x0400
 
 /* automatically extend the palette creating a brighter copy for highlights */
-#define VIDEO_HAS_HIGHLIGHTS		0x0800
+#define VIDEO_HAS_HIGHLIGHTS            0x0800
 
 
 /* ----- flags for sound_attributes ----- */
-#define	SOUND_SUPPORTS_STEREO		0x0001
+#define SOUND_SUPPORTS_STEREO           0x0001
 
 
 
 /***************************************************************************
 
-	Game driver structure
+        Game driver structure
 
 ***************************************************************************/
 
 struct GameDriver
 {
-	const char *source_file;	/* set this to __FILE__ */
-	const struct GameDriver *clone_of;	/* if this is a clone, point to */
-										/* the main version of the game */
-	const char *name;
-	const struct SystemBios *bios;	/* if this system has alternate bios roms use this */
-									/* structure to list names and ROM_BIOSFLAGS. */
-	const char *description;
-	const char *year;
-	const char *manufacturer;
-	void (*drv)(struct InternalMachineDriver *);
-	const struct InputPortTiny *input_ports;
-	void (*driver_init)(void);	/* optional function to be called during initialization */
-								/* This is called ONCE, unlike Machine->init_machine */
-								/* which is called every time the game is reset. */
+        const char *source_file;        /* set this to __FILE__ */
+        const struct GameDriver *clone_of;      /* if this is a clone, point to */
+                                                                                /* the main version of the game */
+        const char *name;
+        const struct SystemBios *bios;  /* if this system has alternate bios roms use this */
+                                                                        /* structure to list names and ROM_BIOSFLAGS. */
+        const char *description;
+        const char *year;
+        const char *manufacturer;
+        void (*drv)(struct InternalMachineDriver *);
+        const struct InputPortTiny *input_ports;
+        void (*driver_init)(void);      /* optional function to be called during initialization */
+                                                                /* This is called ONCE, unlike Machine->init_machine */
+                                                                /* which is called every time the game is reset. */
 
-	const struct RomModule *rom;
+        const struct RomModule *rom;
 #ifdef MESS
-	void (*sysconfig_ctor)(struct SystemConfigurationParamBlock *cfg);
-	const struct GameDriver *compatible_with;
+        void (*sysconfig_ctor)(struct SystemConfigurationParamBlock *cfg);
+        const struct GameDriver *compatible_with;
 #endif
 
-	UINT32 flags;	/* orientation and other flags; see defines below */
+        UINT32 flags;   /* orientation and other flags; see defines below */
 };
 
 
 
 /***************************************************************************
 
-	Game driver flags
+        Game driver flags
 
 ***************************************************************************/
 
 /* ----- values for the flags field ----- */
 
-#define ORIENTATION_MASK        	0x0007
-#define	ORIENTATION_FLIP_X			0x0001	/* mirror everything in the X direction */
-#define	ORIENTATION_FLIP_Y			0x0002	/* mirror everything in the Y direction */
-#define ORIENTATION_SWAP_XY			0x0004	/* mirror along the top-left/bottom-right diagonal */
+#define ORIENTATION_MASK                0x0007
+#define ORIENTATION_FLIP_X                      0x0001  /* mirror everything in the X direction */
+#define ORIENTATION_FLIP_Y                      0x0002  /* mirror everything in the Y direction */
+#define ORIENTATION_SWAP_XY                     0x0004  /* mirror along the top-left/bottom-right diagonal */
 
-#define GAME_NOT_WORKING			0x0008
-#define GAME_UNEMULATED_PROTECTION	0x0010	/* game's protection not fully emulated */
-#define GAME_WRONG_COLORS			0x0020	/* colors are totally wrong */
-#define GAME_IMPERFECT_COLORS		0x0040	/* colors are not 100% accurate, but close */
-#define GAME_IMPERFECT_GRAPHICS		0x0080	/* graphics are wrong/incomplete */
-#define GAME_NO_COCKTAIL			0x0100	/* screen flip support is missing */
-#define GAME_NO_SOUND				0x0200	/* sound is missing */
-#define GAME_IMPERFECT_SOUND		0x0400	/* sound is known to be wrong */
-#define NOT_A_DRIVER				0x4000	/* set by the fake "root" driver_0 and by "containers" */
-											/* e.g. driver_neogeo. */
+#define GAME_NOT_WORKING                        0x0008
+#define GAME_UNEMULATED_PROTECTION      0x0010  /* game's protection not fully emulated */
+#define GAME_WRONG_COLORS                       0x0020  /* colors are totally wrong */
+#define GAME_IMPERFECT_COLORS           0x0040  /* colors are not 100% accurate, but close */
+#define GAME_IMPERFECT_GRAPHICS         0x0080  /* graphics are wrong/incomplete */
+#define GAME_NO_COCKTAIL                        0x0100  /* screen flip support is missing */
+#define GAME_NO_SOUND                           0x0200  /* sound is missing */
+#define GAME_IMPERFECT_SOUND            0x0400  /* sound is known to be wrong */
+#define NOT_A_DRIVER                            0x4000  /* set by the fake "root" driver_0 and by "containers" */
+                                                                                        /* e.g. driver_neogeo. */
 #ifdef MESS
 #define GAME_COMPUTER               0x8000  /* Driver is a computer (needs full keyboard) */
-#define GAME_COMPUTER_MODIFIED      0x0800	/* Official? Hack */
+#define GAME_COMPUTER_MODIFIED      0x0800      /* Official? Hack */
 #endif
 
 
 
 /***************************************************************************
 
-	Macros for building game drivers
+        Macros for building game drivers
 
 ***************************************************************************/
 
-#define GAME(YEAR,NAME,PARENT,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME)	\
-extern const struct GameDriver driver_##PARENT;	\
-const struct GameDriver driver_##NAME =		\
-{											\
-	__FILE__,								\
-	&driver_##PARENT,						\
-	#NAME,									\
-	system_bios_0,							\
-	FULLNAME,								\
-	#YEAR,									\
-	COMPANY,								\
-	construct_##MACHINE,					\
-	input_ports_##INPUT,					\
-	init_##INIT,							\
-	rom_##NAME,								\
-	MONITOR									\
+#define GAME(YEAR,NAME,PARENT,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME)      \
+extern const struct GameDriver driver_##PARENT; \
+const struct GameDriver driver_##NAME =         \
+{                                                                                       \
+        __FILE__,                                                               \
+        &driver_##PARENT,                                               \
+        #NAME,                                                                  \
+        system_bios_0,                                                  \
+        FULLNAME,                                                               \
+        #YEAR,                                                                  \
+        COMPANY,                                                                \
+        construct_##MACHINE,                                    \
+        input_ports_##INPUT,                                    \
+        init_##INIT,                                                    \
+        rom_##NAME,                                                             \
+        MONITOR                                                                 \
 };
 
-#define GAMEX(YEAR,NAME,PARENT,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME,FLAGS)	\
-extern const struct GameDriver driver_##PARENT;	\
-const struct GameDriver driver_##NAME =		\
-{											\
-	__FILE__,								\
-	&driver_##PARENT,						\
-	#NAME,									\
-	system_bios_0,							\
-	FULLNAME,								\
-	#YEAR,									\
-	COMPANY,								\
-	construct_##MACHINE,					\
-	input_ports_##INPUT,					\
-	init_##INIT,							\
-	rom_##NAME,								\
-	(MONITOR)|(FLAGS)						\
+#define GAMEX(YEAR,NAME,PARENT,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME,FLAGS)       \
+extern const struct GameDriver driver_##PARENT; \
+const struct GameDriver driver_##NAME =         \
+{                                                                                       \
+        __FILE__,                                                               \
+        &driver_##PARENT,                                               \
+        #NAME,                                                                  \
+        system_bios_0,                                                  \
+        FULLNAME,                                                               \
+        #YEAR,                                                                  \
+        COMPANY,                                                                \
+        construct_##MACHINE,                                    \
+        input_ports_##INPUT,                                    \
+        init_##INIT,                                                    \
+        rom_##NAME,                                                             \
+        (MONITOR)|(FLAGS)                                               \
 };
 
-#define GAMEB(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME)	\
-extern const struct GameDriver driver_##PARENT;	\
-const struct GameDriver driver_##NAME =		\
-{											\
-	__FILE__,								\
-	&driver_##PARENT,						\
-	#NAME,									\
-	system_bios_##BIOS,						\
-	FULLNAME,								\
-	#YEAR,									\
-	COMPANY,								\
-	construct_##MACHINE,					\
-	input_ports_##INPUT,					\
-	init_##INIT,							\
-	rom_##NAME,								\
-	MONITOR									\
+#define GAMEB(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME)        \
+extern const struct GameDriver driver_##PARENT; \
+const struct GameDriver driver_##NAME =         \
+{                                                                                       \
+        __FILE__,                                                               \
+        &driver_##PARENT,                                               \
+        #NAME,                                                                  \
+        system_bios_##BIOS,                                             \
+        FULLNAME,                                                               \
+        #YEAR,                                                                  \
+        COMPANY,                                                                \
+        construct_##MACHINE,                                    \
+        input_ports_##INPUT,                                    \
+        init_##INIT,                                                    \
+        rom_##NAME,                                                             \
+        MONITOR                                                                 \
 };
 
-#define GAMEBX(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME,FLAGS)	\
-extern const struct GameDriver driver_##PARENT;	\
-const struct GameDriver driver_##NAME =		\
-{											\
-	__FILE__,								\
-	&driver_##PARENT,						\
-	#NAME,									\
-	system_bios_##BIOS,						\
-	FULLNAME,								\
-	#YEAR,									\
-	COMPANY,								\
-	construct_##MACHINE,					\
-	input_ports_##INPUT,					\
-	init_##INIT,							\
-	rom_##NAME,								\
-	(MONITOR)|(FLAGS)						\
+#define GAMEBX(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME,FLAGS) \
+extern const struct GameDriver driver_##PARENT; \
+const struct GameDriver driver_##NAME =         \
+{                                                                                       \
+        __FILE__,                                                               \
+        &driver_##PARENT,                                               \
+        #NAME,                                                                  \
+        system_bios_##BIOS,                                             \
+        FULLNAME,                                                               \
+        #YEAR,                                                                  \
+        COMPANY,                                                                \
+        construct_##MACHINE,                                    \
+        input_ports_##INPUT,                                    \
+        init_##INIT,                                                    \
+        rom_##NAME,                                                             \
+        (MONITOR)|(FLAGS)                                               \
 };
 
 /* monitor parameters to be used with the GAME() macro */
-#define	ROT0	0
-#define	ROT90	(ORIENTATION_SWAP_XY|ORIENTATION_FLIP_X)	/* rotate clockwise 90 degrees */
-#define	ROT180	(ORIENTATION_FLIP_X|ORIENTATION_FLIP_Y)		/* rotate 180 degrees */
-#define	ROT270	(ORIENTATION_SWAP_XY|ORIENTATION_FLIP_Y)	/* rotate counter-clockwise 90 degrees */
+#define ROT0    0
+#define ROT90   (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_X)        /* rotate clockwise 90 degrees */
+#define ROT180  (ORIENTATION_FLIP_X|ORIENTATION_FLIP_Y)         /* rotate 180 degrees */
+#define ROT270  (ORIENTATION_SWAP_XY|ORIENTATION_FLIP_Y)        /* rotate counter-clockwise 90 degrees */
 
 /* this allows to leave the INIT field empty in the GAME() macro call */
 #define init_0 0
@@ -609,7 +613,7 @@ const struct GameDriver driver_##NAME =		\
 
 /***************************************************************************
 
-	Global variables
+        Global variables
 
 ***************************************************************************/
 
@@ -619,13 +623,13 @@ extern const struct GameDriver *test_drivers[];
 #ifdef PINMAME
 //Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
 #ifdef VPINMAME
-	#ifdef TEST_NEW_STERN
-		#define INCLUDE_NEW_STERN 1
-//		#define INCLUDE_STERN_SAM 1
-	#endif
+        #ifdef TEST_NEW_STERN
+                #define INCLUDE_NEW_STERN 1
+//              #define INCLUDE_STERN_SAM 1
+        #endif
 #else
-	#define INCLUDE_NEW_STERN 1
-//	#define INCLUDE_STERN_SAM 1
+        #define INCLUDE_NEW_STERN 1
+//      #define INCLUDE_STERN_SAM 1
 #endif
 #endif
 #endif

@@ -202,6 +202,12 @@ public:
 	STDMETHOD(get_RomDirs)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_RomDirs)(/*[in]*/ BSTR newVal);
 	STDMETHOD(ShowOptsDialog)(/*[in]*/ long hParentWnd=0);
+	STDMETHOD(get_FastFrames)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_FastFrames)(/*[in]*/ int newVal);
+	STDMETHOD(get_IgnoreRomCrc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_IgnoreRomCrc)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_CabinetMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_CabinetMode)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_)
