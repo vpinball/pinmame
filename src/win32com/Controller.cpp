@@ -34,6 +34,7 @@ extern HANDLE g_hEnterThrottle;
 extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
+extern char g_fShowPinDMD;
 }
 #include "alias.h"
 
@@ -1028,9 +1029,10 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   return S_OK;
 }
 
-STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, VARIANT *pVal)
+STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int nnLow, VARIANT *pVal)
 {
   UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+  UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
   vp_tChgLED chgLED;
 
   if (!pVal) return S_FALSE;
@@ -1039,7 +1041,7 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Count changes --*/
-  int uCount = vp_getChangedLEDs(chgLED, mask);
+  int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
 
   if (uCount == 0)
     { pVal->vt = 0; return S_OK; }
@@ -2168,4 +2170,27 @@ STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
 		return S_FALSE;
 
 	return S_OK;
+}
+
+
+/****************************************************************************
+ * IController.ShowPinDMD property: activate/deactivate pinDMD board
+ ****************************************************************************/
+STDMETHODIMP CController::get_ShowPinDMD(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("showpindmd"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_ShowPinDMD(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant(newVal));
 }

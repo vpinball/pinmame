@@ -159,7 +159,7 @@ struct cpuinfo
 
 static struct cpuinfo cpu[MAX_CPU];
 
-static int time_to_reset;
+int time_to_reset;
 static int time_to_quit;
 
 static int vblank;

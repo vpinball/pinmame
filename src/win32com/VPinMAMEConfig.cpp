@@ -26,6 +26,8 @@ extern "C" {
   // Global options
   int verbose	= 0;
   char *rompath_extra;
+  // from usbdmd.c  /* pinDMD */
+  extern char g_fShowPinDMD;
 }
 
 int fAllowWriteAccess = 1;
@@ -56,6 +58,8 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
 	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
+	/* pinDMD */
+	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 

@@ -236,7 +236,7 @@ import "ocidl.idl";
 /* ! */	[propget, id(50), helpstring("property NewSoundCommands")] HRESULT NewSoundCommands([out, retval] VARIANT *pVal);
 		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
 		[propget, id(52), helpstring("property Settings")] HRESULT Settings([out, retval] IControllerSettings * *pVal);
-		[propget, id(53), helpstring("property ChangedLEDs")] HRESULT ChangedLEDs([in] int nHigh, [in] int nLow, [out, retval] VARIANT *pVal);
+		[propget, id(53), helpstring("property ChangedLEDs")] HRESULT ChangedLEDs([in] int nHigh, [in] int nLow, [in,defaultvalue(0)] int nnHigh, [in,defaultvalue(0)] int nnLow, [out, retval] VARIANT *pVal);
 		[propget, id(54), helpstring("property Hidden")] HRESULT Hidden([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(54), helpstring("property Hidden")] HRESULT Hidden([in] VARIANT_BOOL newVal);
 		[propget, id(55), helpstring("property Game")] HRESULT Game([out, retval] IGame * *pVal);
@@ -245,8 +245,8 @@ import "ocidl.idl";
 		[id(57), helpstring("method GetWindowRect")] HRESULT GetWindowRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
 		[id(58), helpstring("method GetClientRect")] HRESULT GetClientRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
 		[propget, id(59), helpstring("property DmdWidth")] HRESULT DmdWidth([out, retval] int *pVal);
-		[propget, id(60), helpstring("property DmdHeight")] HRESULT DmdHeight([out, retval] int *pVal);
-		[propget, id(61), helpstring("property DmdPixel")] HRESULT DmdPixel([in] int width, [in] int height, [out, retval] int *pVal);
+		[propget, id(60), helpstring("property DmdHeight")] HRESULT DmdHeight([out, retval] int *pVal);		
+		[propget, id(61), helpstring("property DmdPixel")] HRESULT DmdPixel([in] int width, [in] int height, [out, retval] int *pVal);		
 		[propget, id(62), helpstring("property updateDmdPixels")] HRESULT updateDmdPixels([in] int **buf, [in] int width, [in] int height, [out, retval] int *pVal);
 		[propget, id(63), helpstring("property ChangedLampsState")] HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal);
 		[propget, id(64), helpstring("property LampsState")] HRESULT LampsState([in] int **buf, [out, retval] int *pVal);
@@ -261,6 +261,8 @@ import "ocidl.idl";
 		[propget, id(72), helpstring("property AudioDeviceModule")] HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal);
 		[propget, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([out, retval] int *pVal);
 		[propput, id(73), helpstring("property CurrentAudioDevice")] HRESULT CurrentAudioDevice([in] int newVal);
+		[propget, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
 	};
 
 	// WSHDlg and related interfaces
