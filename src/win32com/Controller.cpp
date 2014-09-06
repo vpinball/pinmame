@@ -267,7 +267,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 			m_pGameSettings->ShowSettingsDlg(0);
 		}
 		}
-	}
+	}	
 
 #ifndef DEBUG
 	if(!cabinetMode) {
@@ -288,7 +288,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		char szTemp[256];
 		sprintf(szTemp,"");
 
-			// See if game is flagged as GAME_NO_SOUND and show user a message!
+		// See if game is flagged as GAME_NO_SOUND and show user a message!
 		if ( drivers[m_nGameNo]->flags&GAME_NO_SOUND )
 			sprintf(szTemp,"%sPlease be aware that this game does not have sound emulated yet!\n\n",szTemp);
 
@@ -474,25 +474,25 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 
 /*********************************************************************
  * IController.DmdWidth property (read-only): get the width of DMD bitmap
- *********************************************************************/
+ ************************************************************************/
 STDMETHODIMP CController::get_DmdWidth(int *pVal)
 {
-	*pVal = current_display_ptr ? (current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x)+1 : 0;
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x+1 : 0;
 	return S_OK;
 }
 
-/*********************************************************************
+/**************************************************************************
  * IController.DmdHeight property (read-only): get the height of DMD bitmap
- *********************************************************************/
+ **************************************************************************/
 STDMETHODIMP CController::get_DmdHeight(int *pVal)
 {
-	*pVal = current_display_ptr ? (current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y)+1 : 0;
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y+1 : 0;
 	return S_OK;
 }
 
-/*********************************************************************
+/*************************************************************************
  * IController.DmdPixel (read-only): read a given pixel of the DMD (slow!)
- *********************************************************************/
+ *************************************************************************/
 STDMETHODIMP CController::get_DmdPixel(int x, int y, int *pVal)
 {
 	if(Machine && Machine->scrbitmap)
@@ -502,11 +502,9 @@ STDMETHODIMP CController::get_DmdPixel(int x, int y, int *pVal)
 	return S_OK;
 }
 
-
-static float* buffer=0;
-/********************************************************************************
+/*******************************************************************************
  * updateDmdPixels  (read-only): Copy whole Dmd Bitmap to a user allocated array
- ********************************************************************************/
+ *******************************************************************************/
 STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, int *pVal)
 {
 	if(!buf)
@@ -514,8 +512,6 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		*pVal = 0;
 		return S_FALSE;
 	}
-
-	buffer = reinterpret_cast<float*>(buf);
 
 	mame_bitmap * btm = current_display_ptr ? current_display_ptr->game_bitmap : 0;
 	if(Machine && current_display_ptr && btm)
@@ -527,13 +523,12 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 			return S_OK;
 		}
 
-		float *dst = buffer;
+		float *dst = reinterpret_cast<float*>(buf);
 		if (btm->depth == 8)
 		{
-			UINT8 *src;
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT8*)btm->line[j] + sizeof(UINT8) * current_display_ptr->game_visible_area.min_x;
+				UINT8 *src = (UINT8*)btm->line[j] + sizeof(UINT8) * current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -547,10 +542,9 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		}
 		else if(btm->depth == 15 || btm->depth == 16)
 		{
-			UINT16 *src;
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT16*)btm->line[j] + sizeof(UINT16) * current_display_ptr->game_visible_area.min_x;
+				UINT16 *src = (UINT16*)btm->line[j] + sizeof(UINT16) * current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -564,10 +558,9 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		}
 		else
 		{
-			UINT32 *src;
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				src = (UINT32*)btm->line[j] + sizeof(UINT32) * current_display_ptr->game_visible_area.min_x;
+				UINT32 *src = (UINT32*)btm->line[j] + sizeof(UINT32) * current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -589,9 +582,9 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 	return S_OK;
 }
 
-/******************************************************************************************
+/*****************************************************************************************
  * ChangedLampsState (read-only): Copy whole Changed Lamps array to a user allocated array
- ******************************************************************************************/
+ *****************************************************************************************/
 STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
 {
 	if(!buf)
@@ -632,9 +625,9 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   return S_OK;
 }
 
-/*****************************************************************************
+/**************************************************************************
  * LampsState (read-only): Copy whole Lamps array to a user allocated array
- *****************************************************************************/
+ **************************************************************************/
 STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 {
 	if(!buf)
@@ -662,9 +655,9 @@ STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
 	return S_OK;
 }
 
-/***************************************************************************************************
+/*************************************************************************************************
  * ChangedSolenoidsState (read-only): Copy whole Changed Solenoids array to a user allocated array
- ***************************************************************************************************/
+ *************************************************************************************************/
 STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 {
 	if(!buf)
@@ -736,9 +729,9 @@ STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
 	return S_OK;
 }
 
-/**************************************************************************************
+/*************************************************************************************
  * ChangedGIsState (read-only): Copy whole Changed GIs array to a user allocated array
- **************************************************************************************/
+ *************************************************************************************/
 STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 {
 	if(!buf)
@@ -1436,14 +1429,14 @@ STDMETHODIMP CController::get_Settings(IControllerSettings **pVal)
 }
 
 /* ---------------------------------------------------------------------------------------------*/
-/* ------------------ depricated properties and methods ----------------------------------------*/
+/* ------------------ deprecated properties and methods ----------------------------------------*/
 /* ---------------------------------------------------------------------------------------------*/
 
 /**************************************************************************
  * IController.BorderSizeX: gets/sets the x value of the space between the
  * window border and the display inself
  *
- * Depricated:
+ * Deprecated:
  * Will be deleted in the next version, actually it does nothing anymore
  **************************************************************************/
 STDMETHODIMP CController::get_BorderSizeX(int *pVal)
@@ -1465,7 +1458,7 @@ STDMETHODIMP CController::put_BorderSizeX(int newVal)
  * IController.BorderSizeY: gets/sets the y value of the space between the
  * window border and the display inself
  *
- * Depricated:
+ * Deprecated:
  * Will be deleted in the next version, actually it does nothing anymore
  **************************************************************************/
 STDMETHODIMP CController::get_BorderSizeY(int *pVal)
@@ -1487,7 +1480,7 @@ STDMETHODIMP CController::put_BorderSizeY(int newVal)
  * IController.WindowPosX property: gets/sets the x position of the 
  * video window
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayPosX(hwnd) instead
  ********************************************************************/
 STDMETHODIMP CController::get_WindowPosX(int *pVal)
@@ -1513,7 +1506,7 @@ STDMETHODIMP CController::put_WindowPosX(int newVal)
  * IController.WindowPosY property: gets/sets the y position of the 
  * video window
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayPosY(hwnd) instead
  ********************************************************************/
 STDMETHODIMP CController::get_WindowPosY(int *pVal)
@@ -1539,7 +1532,7 @@ STDMETHODIMP CController::put_WindowPosY(int newVal)
  * IController.NewSoundCommands property (read-only): returns a list of 
  * latest sound commands for the sound board
  *
- * Depricated:
+ * Deprecated:
  * will be deleted in the next version
  *************************************************************************/
 STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
@@ -1581,7 +1574,7 @@ STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
 /*******************************************************
  * IController.InstallDir property: gets the install dir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.InstallDir instead
  *******************************************************/
 STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
@@ -1593,7 +1586,7 @@ STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
  * IController:SetDisplayPosition: The set position of the video
  * window relative to the client area of the parent window
  *
- * Depricated:
+ * Deprecated:
  * use 
  *   Controller.Games("name").Settings.SetDisplayPosition(x,y,hwnd)
  * instead
@@ -1618,7 +1611,7 @@ STDMETHODIMP CController::SetDisplayPosition(int x, int y, long hParentWindow)
 /************************************************
  * IController.RomDirs property: get/set ROM dirs
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.RomPath instead
  ************************************************/
 STDMETHODIMP CController::get_RomDirs(BSTR *pVal)
@@ -1640,7 +1633,7 @@ STDMETHODIMP CController::put_RomDirs(BSTR newVal)
 /*********************************************
  * IController.CfgDir property: get/set CfgDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.CfgPath instead
  *********************************************/
 STDMETHODIMP CController::get_CfgDir(BSTR *pVal)
@@ -1662,7 +1655,7 @@ STDMETHODIMP CController::put_CfgDir(BSTR newVal)
 /****************************************************
  * IController.NVRamDirs property: get/set NVRAM dirs
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.NVRamPath instead
  ****************************************************/
 STDMETHODIMP CController::get_NVRamDir(BSTR *pVal)
@@ -1684,7 +1677,7 @@ STDMETHODIMP CController::put_NVRamDir(BSTR newVal)
 /*****************************************************
  * IController.SamplesDir property: get/set SamplesDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.SamplesPath instead
  *****************************************************/
 STDMETHODIMP CController::get_SamplesDir(BSTR *pVal)
@@ -1706,7 +1699,7 @@ STDMETHODIMP CController::put_SamplesDir(BSTR newVal)
 /*********************************************
  * IController.ImgDir property: get/set ImgDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.SnapshotPath instead
  *********************************************/
 STDMETHODIMP CController::get_ImgDir(BSTR *pVal)
@@ -1728,7 +1721,7 @@ STDMETHODIMP CController::put_ImgDir(BSTR newVal)
 /*****************************************************************
  * IController.ShowOptsDialog: shows the options dialog
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.ShowSettingsDlg instead
  *****************************************************************/
 STDMETHODIMP CController::ShowOptsDialog(long hParentWnd)
@@ -1739,7 +1732,7 @@ STDMETHODIMP CController::ShowOptsDialog(long hParentWnd)
 /************************************************************
  * IController.ShowDMDOnly property: get/set UseLamps
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayOnly instead
  ************************************************************/
 STDMETHODIMP CController::get_ShowDMDOnly(VARIANT_BOOL *pVal)
@@ -1765,7 +1758,7 @@ STDMETHODIMP CController::put_ShowDMDOnly(VARIANT_BOOL newVal)
 /***********************************************************
  * IController.UseSamples property: get/set UseSamples
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.UseSamples instead
  ***********************************************************/
 STDMETHODIMP CController::get_UseSamples(VARIANT_BOOL *pVal)
@@ -1790,7 +1783,7 @@ STDMETHODIMP CController::put_UseSamples(VARIANT_BOOL newVal)
 /******************************************************
  * IController.ShowTitle property: get/set ShowTitle
  *
- * Depricated: 
+ * Deprecated: 
  * use Controller.Games("name").Settings.Title instead
  ******************************************************/
 STDMETHODIMP CController::get_ShowTitle(VARIANT_BOOL *pVal)
@@ -1815,7 +1808,7 @@ STDMETHODIMP CController::put_ShowTitle(VARIANT_BOOL newVal)
 /*******************************************************
  * IController.ShowFrame property: get/set the border
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.Border instead
  *******************************************************/
 STDMETHODIMP CController::get_ShowFrame(VARIANT_BOOL *pVal)
@@ -1840,7 +1833,7 @@ STDMETHODIMP CController::put_ShowFrame(VARIANT_BOOL newVal)
 /***********************************************************
  * IController.SampleRate property: get/set the sample rate
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.SampleRate instead
  ************************************************************/
 STDMETHODIMP CController::get_SampleRate(int *pVal)
@@ -1866,7 +1859,7 @@ STDMETHODIMP CController::put_SampleRate(int newVal)
  * IController.DoubleSize property: display the video window
  * double sized or not
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DoubleSize instead
  ************************************************************/
 STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
@@ -1892,7 +1885,7 @@ STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
  * IController.DoubleSize property: display the video window
  * in compact size or not
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.CompactDisplay instead
  ************************************************************/
 STDMETHODIMP CController::get_Antialias(VARIANT_BOOL *pVal)
@@ -1917,7 +1910,7 @@ STDMETHODIMP CController::put_Antialias(VARIANT_BOOL newVal)
 /*********************************************************************
  * IController.CheckROMS: returns TRUE if ROMS are ok
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").ShowInfoDlg instead
  *********************************************************************/
 STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ long hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
@@ -1936,7 +1929,7 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
 /****************************************************************************
  * IController:ShowPathesDialog: Display a dialog to set up the paths
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.ShowSettingsDlg instead
  ****************************************************************************/
 STDMETHODIMP CController::ShowPathesDialog(long hParentWnd)
@@ -2092,9 +2085,9 @@ STDMETHODIMP CController::GetClientRect(long hWnd, VARIANT *pVal)
 }
 
 
-/***************************************************************
+/*********************************************************
  * IController.MasterVolume property: get/set MasterVolume
- ***************************************************************/
+ *********************************************************/
 STDMETHODIMP CController::get_MasterVolume(int *pVal)
 {
 	if (pVal)
@@ -2109,10 +2102,10 @@ STDMETHODIMP CController::put_MasterVolume(int newVal)
 	return S_OK;
 }
 
-/*************************************************************************************
+/***********************************************************************************
  IController.EnumAudioDevices property (read only):
     Enumerate audio devices using DirectSound and return the number of found devices
-*************************************************************************************/
+************************************************************************************/
 STDMETHODIMP CController::get_EnumAudioDevices(int *pVal)
 {
 	if (pVal)
@@ -2120,10 +2113,10 @@ STDMETHODIMP CController::get_EnumAudioDevices(int *pVal)
 	return S_OK;
 }
 
-/*************************************************************************************
+/*************************************************************************
  IController.AudioDevicesCount property (read only):
     Return the number of found devices (by previous call EnumAudioDevices)
-*************************************************************************************/
+**************************************************************************/
 STDMETHODIMP CController::get_AudioDevicesCount(int *pVal)
 {
 	if (pVal)
@@ -2131,10 +2124,10 @@ STDMETHODIMP CController::get_AudioDevicesCount(int *pVal)
 	return S_OK;
 }
 
-/*************************************************************************************
+/**********************************************************************************
  IController.AudioDeviceDescription property (read only):
    Return the audio device description (null char ended string) of the "num" device
-*************************************************************************************/
+***********************************************************************************/
 STDMETHODIMP CController::get_AudioDeviceDescription(int num, BSTR *pVal)
 {
 	if ( !pVal )
@@ -2147,10 +2140,10 @@ STDMETHODIMP CController::get_AudioDeviceDescription(int num, BSTR *pVal)
 	return S_OK;
 }
 
-/*************************************************************************************
+/***************************************************************************
  IController.AudioDeviceModule property (read only):
  Return the audio device module (null char ended string) of the "num" device
-*************************************************************************************/
+****************************************************************************/
 STDMETHODIMP CController::get_AudioDeviceModule(int num, BSTR *pVal)
 {
 	if ( !pVal )
@@ -2163,10 +2156,10 @@ STDMETHODIMP CController::get_AudioDeviceModule(int num, BSTR *pVal)
 	return S_OK;
 }
 
-/*************************************************************************************
+/******************************************
  IController.CurrentAudioDevice property):
     Get/Set the current audio device number
-*************************************************************************************/
+*******************************************/
 STDMETHODIMP CController::get_CurrentAudioDevice(int *pVal)
 {
 	if (pVal)
@@ -2178,8 +2171,8 @@ STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
 {
 	if(osd_set_audio_device(newVal)!=newVal)
 		return S_FALSE;
-
-	return S_OK;
+	else
+		return S_OK;
 }
 
 /***************************************************************
