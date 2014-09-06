@@ -126,6 +126,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,47,73,10
     CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,57,54,10
+    CONTROL         "Use &PinDMD",IDC_PINDMD,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,67,88,10
     RTEXT           "Sample&rate:",IDC_STATIC,127,18,38,8
     EDITTEXT        IDC_SAMPLERATE,171,18,49,12,ES_AUTOHSCROLL
     RTEXT           "&Antialias %:",IDC_STATIC,127,33,38,8

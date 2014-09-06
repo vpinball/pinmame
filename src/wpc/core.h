@@ -368,7 +368,7 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
-#define CORE_SEGCOUNT 64
+#define CORE_SEGCOUNT 128
 #ifdef LSB_FIRST
 typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #else /* LSB_FIRST */

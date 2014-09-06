@@ -24,6 +24,7 @@
 #define IDC_SAMPLERATE                  110
 #define IDC_ANTIALIAS                   111
 #define IDC_SYNCLEVEL                   112
+#define IDC_PINDMD                      114
 #define IDC_DMDRED                      120
 #define IDC_DMDGREEN                    121
 #define IDC_DMDBLUE                     122
