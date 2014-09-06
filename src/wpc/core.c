@@ -628,6 +628,26 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_DMDON][0]    = rStart;
   tmpPalette[COL_DMDON][1]    = gStart;
   tmpPalette[COL_DMDON][2]    = bStart;
+
+  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+  if (pmoptions.dmd_colorize) { 
+    if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+      tmpPalette[COL_DMDOFF][0]   = pmoptions.dmd_red0;
+      tmpPalette[COL_DMDOFF][1]   = pmoptions.dmd_green0;
+      tmpPalette[COL_DMDOFF][2]   = pmoptions.dmd_blue0;
+    }
+    if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+      tmpPalette[COL_DMD33][0]    = pmoptions.dmd_red33;
+      tmpPalette[COL_DMD33][1]    = pmoptions.dmd_green33;
+      tmpPalette[COL_DMD33][2]    = pmoptions.dmd_blue33;
+    }
+    if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+      tmpPalette[COL_DMD66][0]    = pmoptions.dmd_red66;
+      tmpPalette[COL_DMD66][1]    = pmoptions.dmd_green66;
+      tmpPalette[COL_DMD66][2]    = pmoptions.dmd_blue66;
+    }
+  }
+  
   /*-- segment display antialias colors --*/
   tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
   tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;

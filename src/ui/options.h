@@ -217,6 +217,9 @@ typedef struct
         int dmd_red,    dmd_green,   dmd_blue;
         int dmd_perc66, dmd_perc33,  dmd_perc0;
         int dmd_only,   dmd_compact, dmd_antialias;
+
+		int dmd_colorize;
+		int dmd_red0, dmd_green0, dmd_blue0, dmd_red33, dmd_green33, dmd_blue33, dmd_red66, dmd_green66, dmd_blue66; 
 #endif /* PINMAME */
 
 } options_type;
