@@ -116,6 +116,6 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound);
 /*-------------------------------------------------
 / get alpha digit value
 /-------------------------------------------------*/
-int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask);
+int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask, UINT64 mask2);
 
 #endif /* INC_VPINTF */

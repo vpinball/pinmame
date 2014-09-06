@@ -26,6 +26,9 @@ int g_fMechSamples      = TRUE;		// Signal the common library to load the mech s
 HANDLE g_hGameRunning	= INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
 
+char g_fShowPinDMD		= FALSE;	// pinDMD not active by default
+int g_fDumpFrames		= FALSE;	// pinDMD dump frames
+
 BOOL cabinetMode		= FALSE;
 
 int    g_iSyncFactor     = 0;
@@ -126,8 +129,8 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 #ifndef DEBUG
 	void* pSplashWnd = NULL;
 	if(!cabinetMode)
-		// display the splash screen
-		CreateSplashWnd(&pSplashWnd, pController->m_szSplashInfoLine);
+	// display the splash screen
+	CreateSplashWnd(&pSplashWnd, pController->m_szSplashInfoLine);
 #endif
 
 	// set the global pointer to Controller
@@ -187,7 +190,7 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 
 #ifndef DEBUG
 	if(!cabinetMode)
-		// destroy the splash screensync
+	// destroy the splash screensync
 		DestroySplashWnd(&pSplashWnd); 
 #endif
 

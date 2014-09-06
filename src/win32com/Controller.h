@@ -93,7 +93,7 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 // IController
 public:
-	STDMETHOD(get_ChangedLEDs)(/*[in]*/ int nHigh, int nLow, /*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(get_ChangedLEDs)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(get_Settings)(/*[out, retval]*/ IControllerSettings * *pVal);
 	STDMETHOD(get_Games)(/*[out, retval]*/ IGames* *pVal);
 	STDMETHOD(get_Version)(/*[out, retval]*/ BSTR *pVal);
@@ -159,6 +159,9 @@ public:
 	STDMETHOD(get_AudioDeviceModule)(/*[in]*/ int num, /*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_CurrentAudioDevice)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_CurrentAudioDevice)(/*[in]*/ int num);
+
+	STDMETHOD(get_ShowPinDMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowPinDMD)(/*[in]*/ VARIANT_BOOL newVal);
 
 /* deprecated methods/properties */
 	STDMETHOD(get_NewSoundCommands)(/*[out, retval]*/ VARIANT *pVal);

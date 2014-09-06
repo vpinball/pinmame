@@ -8,6 +8,10 @@
 #include "mech.h"
 #include "core.h"
 
+#ifdef VPINMAME
+ #include "../pindmd/pindmd.h"
+#endif
+
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
@@ -24,6 +28,9 @@ void vp_setDIP(int bank, int value) { }
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
+  extern char g_fShowPinDMD; /* pinDMD */
+  extern int time_to_reset;  /* pinDMD */
+  extern int g_fDumpFrames;  /* pinDMD */
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
@@ -716,16 +723,13 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
 
-#define DUMPFRAMES 0 //disabled by default
-#define DETECTSAMEFRAMES 1
-#if DUMPFRAMES
+#ifdef VPINMAME
   static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
   static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-  static UINT8 *currbuffer = buffer1;  
+  static UINT8 *currbuffer = buffer1;
   static UINT8 *oldbuffer = NULL;
 
   UINT8 dumpframe = 1;
-  FILE *f;
 #endif
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
@@ -736,11 +740,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
-
-#if DUMPFRAMES
-                currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
+#ifdef VPINMAME
+		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
 #endif
-
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
@@ -760,38 +762,37 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#if DUMPFRAMES
-#if DETECTSAMEFRAMES
-  if(oldbuffer != NULL) {
-        dumpframe = 0;
-        for(jj = 0; jj < layout->start; jj++)
-                for(ii = 0; ii < layout->length; ii++)
-                        if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
-                                dumpframe = 1;
-                                break;
-                        }
-  }
-#endif
+#ifdef VPINMAME
+  if(g_fShowPinDMD) {
+    if(oldbuffer != NULL) {
+	  dumpframe = 0;
+	  for(jj = 0; jj < layout->start; jj++)
+		for(ii = 0; ii < layout->length; ii++)
+		{
+			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
+			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
+				dumpframe = 1;
+				break;
+			}
+		}
+    }
 
-  if(dumpframe) {
-        f = fopen("dump.txt","a");
-        if(f) {
-                for(jj = 0; jj < layout->start; jj++) {
-                        for(ii = 0; ii < layout->length; ii++)
-                                fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
-                        fprintf(f,"\n");
-                }
-                fprintf(f,"\n");
-                fclose(f);
+    if(dumpframe) {
+	    //usb dmd
+	    if(g_fShowPinDMD)
+		  if((layout->length == 128) || (layout->length == 192))
+		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
 
-                if(currbuffer == buffer1) {
-                        currbuffer = buffer2;
-                        oldbuffer = buffer1;
-                } else {
-                        currbuffer = buffer1;
-                        oldbuffer = buffer2;
-                }
-        }
+		if(currbuffer == buffer1) {
+			currbuffer = buffer2;
+			oldbuffer = buffer1;
+		} else {
+			currbuffer = buffer1;
+			oldbuffer = buffer2;
+		}
+    }
+
+    frameClock();
   }
 #endif
 }
@@ -809,7 +810,20 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 /------------------------------------*/
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos) {
+
+#ifdef VPINMAME
+  static UINT16 seg_data[50];
+  static UINT8 disp_lens[50];
+  int idx=0;
+  int total_disp=0;
+#endif
+
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
+
+#ifdef VPINMAME
+  memset(seg_data, 0, 50*sizeof(UINT16));
+#endif
+
   for (; layout->length; layout += 1) {
     if (layout->type == CORE_IMPORT)
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
@@ -823,14 +837,19 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
+#ifdef VPINMAME
+	  disp_lens[total_disp] = ii;
+	  total_disp++;
+#endif
+
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
         int tmpType = layout->type & CORE_SEGMASK;
 
 #ifdef VPINMAME
-                //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
-                if(1) {
+		//SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
+		if(1) {
 #else
         if ((tmpSeg != *lastSeg) ||
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
@@ -857,16 +876,26 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
+
+#ifdef VPINMAME
+		  seg_data[idx++] = tmpSeg;
+#endif
           if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
-                (*pos)++;
+		(*pos)++;
         left += locals.segData[layout->type & CORE_SEGALL].cols+1;
         seg += step; lastSeg += step;
       }
     }
   }
+
+#ifdef VPINMAME
+  //alpha frame
+  if(g_fShowPinDMD)
+  	renderAlphanumericFrame(core_gameData->gen, seg_data, total_disp, disp_lens);
+#endif
 }
 
 VIDEO_UPDATE(core_gen) {
@@ -882,7 +911,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG)) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;
@@ -974,7 +1003,7 @@ void core_updateSw(int flipEn) {
           if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
               ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
             locals.solLog[locals.solLogCount] = ii;
-            core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
+	    core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
               locals.solLog[(locals.solLogCount+1) & 3],
               locals.solLog[(locals.solLogCount+2) & 3],
               locals.solLog[(locals.solLogCount+3) & 3],
@@ -1093,12 +1122,12 @@ static VIDEO_UPDATE(core_status) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
-        for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
-          int color = drawData->lamps[num].lamppos[qq].color;
-          int lampx = drawData->lamps[num].lamppos[qq].x;
-          int lampy = drawData->lamps[num].lamppos[qq].y;
-          line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
-        }
+	for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
+	  int color = drawData->lamps[num].lamppos[qq].color;
+	  int lampx = drawData->lamps[num].lamppos[qq].x;
+	  int lampy = drawData->lamps[num].lamppos[qq].y;
+	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+	}
         bits >>= 1;
         num++;
       }
@@ -1174,14 +1203,14 @@ static VIDEO_UPDATE(core_status) {
     if (coreData->diagLEDs & DIAGLED_VERTICAL) {
       for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
         line[0][thisCol + 3] = dotColor[bits & 0x01];
-        line += 2; bits >>= 1;
+	line += 2; bits >>= 1;
       }
       osd_mark_dirty(thisCol + 3, locals.firstSimRow + startRow, thisCol + 4, locals.firstSimRow + startRow + ii*2);
       startRow += ii*2; if (thisCol + 4 > nextCol) nextCol = thisCol + 4;
     }
     else { // Draw LEDS Horizontally
       for (ii = 0; ii < coreData->diagLEDs; ii++) {
-        line[0][thisCol + ii*2] = dotColor[bits & 0x01];
+	line[0][thisCol + ii*2] = dotColor[bits & 0x01];
         bits >>= 1;
       }
       osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
@@ -1194,12 +1223,12 @@ static VIDEO_UPDATE(core_status) {
     if (startRow + 2 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol + 5; }
 
     for (ii = 0; ii < CORE_MAXGI; ii++)
-        {
-          if(coreGlobals.gi[ii]==8)
-                lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
-          else
-                lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
-        }
+	{
+	  if(coreGlobals.gi[ii]==8)
+		lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
+	  else
+		lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
+	}
     osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
   }
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
@@ -1453,9 +1482,9 @@ static MACHINE_INIT(core) {
     {
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
       if ((size > Machine->drv->screen_width) && (locals.displaySize > 1)) {
-        /* force small display */
-        locals.displaySize = 1;
-        core_initDisplaySize(core_gameData->lcdLayout);
+  	/* force small display */
+  	locals.displaySize = 1;
+  	core_initDisplaySize(core_gameData->lcdLayout);
       }
     }
     /*-- Sound enabled ? */
@@ -1485,10 +1514,23 @@ static MACHINE_INIT(core) {
 
 /* TOM: this causes to draw the static sim text */
   schedule_full_refresh();
+
+#ifdef VPINMAME
+  // DMD USB Init
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdInit();
+#endif
 }
 
 static MACHINE_STOP(core) {
   int ii;
+
+#ifdef VPINMAME
+  // DMD USB Kill
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdDeInit();
+#endif
+
   mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();
