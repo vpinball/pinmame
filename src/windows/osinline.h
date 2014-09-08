@@ -38,6 +38,7 @@ void osd_pdt16np( UINT16 *dest, const UINT16 *source, const UINT8 *pMask, int ma
 
 #ifdef _MSC_VER
 
+#ifndef __LP64__
 #define vec_mult _vec_mult
 INLINE int _vec_mult(int x, int y)
 {
@@ -51,6 +52,7 @@ INLINE int _vec_mult(int x, int y)
 
     return result;
 }
+#endif
 
 #else
 
