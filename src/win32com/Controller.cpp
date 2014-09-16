@@ -35,6 +35,10 @@ extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
 extern char g_fShowPinDMD;
+
+extern UINT8 g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT32 g_raw_dmdx;
+extern UINT32 g_raw_dmdy;
 }
 #include "alias.h"
 
@@ -472,7 +476,53 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	return S_OK;
 }
 
-/*********************************************************************
+/************************************************************************
+ * IController.RawDmdWidth property (read-only): get the width of the DMD
+ ************************************************************************/
+STDMETHODIMP CController::get_RawDmdWidth(int *pVal)
+{
+	*pVal = g_raw_dmdx;
+	return S_OK;
+}
+
+/**************************************************************************
+ * IController.RawDmdHeight property (read-only): get the height of the DMD
+ **************************************************************************/
+STDMETHODIMP CController::get_RawDmdHeight(int *pVal)
+{
+	*pVal = g_raw_dmdy;
+	return S_OK;
+}
+
+/************************************************************************************************
+ * IController.RawDmdPixels (read-only): Copy whole DMD to a self allocated array (values 0..100)
+ ************************************************************************************************/
+STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
+{
+	if(Machine && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
+	{
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI8;
+	
+		LONG ofs = 0;
+		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
+		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
+		{
+			DMDState.uintVal = g_raw_dmdbuffer[ofs];
+			SafeArrayPutElement(psa, &ofs, &DMDState);
+		}
+
+		pVal->vt = VT_ARRAY|VT_VARIANT;
+		pVal->parray = psa;
+		return S_OK;
+	}
+	else
+		return S_FALSE;
+}
+
+/************************************************************************
  * IController.DmdWidth property (read-only): get the width of DMD bitmap
  ************************************************************************/
 STDMETHODIMP CController::get_DmdWidth(int *pVal)

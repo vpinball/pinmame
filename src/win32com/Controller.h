@@ -142,6 +142,10 @@ public:
 	STDMETHOD(GetWindowRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(GetClientRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 
+	STDMETHOD(get_RawDmdWidth)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_RawDmdHeight)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_RawDmdPixels)(/*[out, retval]*/ VARIANT *pVal);
+
 	STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(get_DmdHeight)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(get_DmdPixel)(/*[in]*/ int x, /*[in]*/ int y, /*[out, retval]*/ int *pVal);

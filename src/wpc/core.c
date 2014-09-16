@@ -10,6 +10,10 @@
 
 #ifdef VPINMAME
  #include "../pindmd/pindmd.h"
+
+ UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+ UINT32 g_raw_dmdx = ~0u;
+ UINT32 g_raw_dmdy = ~0u;
 #endif
 
 /* stuff to test VPINMAME */
@@ -730,6 +734,25 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   static UINT8 *oldbuffer = NULL;
 
   UINT8 dumpframe = 1;
+
+  const UINT8 perc0 = pmoptions.dmd_perc0;
+  const UINT8 perc1 = pmoptions.dmd_perc33;
+  const UINT8 perc2 = pmoptions.dmd_perc66;
+  const UINT8 perc3 = 100;
+
+  static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
+  static const int levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
+  
+  const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
+
+  const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
+  const UINT16 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+
+  if(layout->length >= 128) // Capcom hack
+  {
+      g_raw_dmdx = layout->length;
+      g_raw_dmdy = layout->start;
+  }
 #endif
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
@@ -739,10 +762,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
-        *line++ = dmdColor[dotCol[ii][jj]];
 #ifdef VPINMAME
 		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
+ 	    if(layout->length >= 128) // Capcom hack
+			g_raw_dmdbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj] >= 63 ? rawg[dotCol[ii][jj]-63] : raws[dotCol[ii][jj]];
 #endif
+        *line++ = dmdColor[dotCol[ii][jj]];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
@@ -764,9 +789,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
 #ifdef VPINMAME
   if(g_fShowPinDMD) {
-    if(oldbuffer != NULL) {
-	  dumpframe = 0;
-	  for(jj = 0; jj < layout->start; jj++)
+  if(oldbuffer != NULL) {
+	dumpframe = 0;
+	for(jj = 0; jj < layout->start; jj++)
 		for(ii = 0; ii < layout->length; ii++)
 		{
 			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
@@ -774,10 +799,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				dumpframe = 1;
 				break;
 			}
-		}
+  }
     }
 
-    if(dumpframe) {
+  if(dumpframe) {
 	    //usb dmd
 	    if(g_fShowPinDMD)
 		  if((layout->length == 128) || (layout->length == 192))
@@ -790,7 +815,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			currbuffer = buffer1;
 			oldbuffer = buffer2;
 		}
-    }
+	}
 
     frameClock();
   }
@@ -838,8 +863,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #ifdef VPINMAME
-	  disp_lens[total_disp] = ii;
-	  total_disp++;
+  	  disp_lens[total_disp++] = ii;
 #endif
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
@@ -878,9 +902,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           }
 
 #ifdef VPINMAME
-		  seg_data[idx++] = tmpSeg;
+  		  seg_data[idx++] = tmpSeg;
 #endif
-          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
+		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
