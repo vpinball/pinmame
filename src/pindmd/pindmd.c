@@ -1,5 +1,5 @@
 #include <windows.h>
-//#include <time.h>
+#include <time.h>
 #include "pindmd.h"
 #include "usbalphanumeric.h"
 #include "driver.h"
