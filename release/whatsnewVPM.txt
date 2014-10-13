@@ -1,6 +1,51 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.6 (X X, 2014)
+-----------------------------
+- New specialized options for Cabinet support, PinDMD2 handling and 4-Color support for DMDs,
+  so please setup the default options again after installation!
+
+- New methods for the controller object:
+	HRESULT DmdWidth([out, retval] int *pVal); - Get Width of Window (as rendered by VPM)
+	HRESULT DmdHeight([out, retval] int *pVal); - Get Height of Window (as rendered by VPM)
+	HRESULT DmdPixel([in] int x, [in] int y, [out, retval] int *pVal); - Get Pixel at Position (x,y) (as rendered by VPM)
+	HRESULT updateDmdPixels([in] int **buf, [in] int width, [in] int height, [out, retval] int *pVal); - Get all Pixels (as rendered by VPM) (user-allocated)
+
+	HRESULT RawDmdWidth([out, retval] int *pVal); - Get Width of Window (Raw, equal to the original DMD resolution)
+	HRESULT RawDmdHeight([out, retval] int *pVal); - Get Height of Window (Raw, equal to the original DMD resolution)
+	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution) (NOT user-allocated)
+
+	HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal); - Copy all changed lamps (user-allocated)
+	HRESULT LampsState([in] int **buf, [out, retval] int *pVal); - Copy all lamps (user-allocated)
+
+	HRESULT ChangedSolenoidsState([in] int **buf, [out, retval] int *pVal); - Copy all changed solenoids (user-allocated)
+	HRESULT SolenoidsState([in] int **buf, [out, retval] int *pVal); - Copy all solenoids (user-allocated)
+
+	HRESULT ChangedGIsState([in] int **buf, [out, retval] int *pVal); - Copy all changed GI lamps (user-allocated)
+
+	HRESULT MasterVolume([out, retval] int *pVal); - Get Master Volume
+	HRESULT MasterVolume([in] int newVal); - Set Master Volume
+	HRESULT EnumAudioDevices([out, retval] int *pVal); - Enumerate audio devices using DirectSound and return the number of found devices
+	HRESULT AudioDevicesCount([out, retval] int *pVal); - Return the number of found devices (by previous call to EnumAudioDevices)
+	HRESULT AudioDeviceDescription([in] int num,[out, retval] BSTR *pVal); - Return the audio device description (null char ended string) of "num" device
+	HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal); - Return the audio device module (null char ended string) of "num" device
+	HRESULT CurrentAudioDevice([out, retval] int *pVal); - Get the current audio device number
+	HRESULT CurrentAudioDevice([in] int newVal); - Set the current audio device number
+
+- New methods for Game.Settings:
+	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in a bunch of external libraries)
+	HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of PinDMD display
+	HRESULT ShowPinDMD([in] VARIANT_BOOL newVal); - En/Disable PinDMD display
+
+	- Enhanced Cabinet Support
+	HRESULT FastFrames([out, retval] int *pVal); - Get Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize) 
+	HRESULT FastFrames([in] int newVal); - Set Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize)
+	HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal); - Get Flag Ignore wrong CRCs of Romsets
+	HRESULT IgnoreRomCrc([in] VARIANT_BOOL  newVal); - Set Flag Ignore wrong CRCs of Romsets
+	HRESULT CabinetMode([out, retval] VARIANT_BOOL  *pVal); - Get Flag Special Cabinet Mode that disables splash screen, window on main monitor check, etc
+	HRESULT CabinetMode([in] VARIANT_BOOL  newVal); - Set Flag Special Cabinet Mode that disables splash screen, window on main monitor check, etc
+
 Version 2.5 (June 5, 2012)
 -----------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes

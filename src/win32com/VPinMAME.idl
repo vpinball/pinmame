@@ -249,7 +249,7 @@ import "ocidl.idl";
 		[propget, id(80), helpstring("property RawDmdPixels")] HRESULT RawDmdPixels([out, retval] VARIANT *pVal);
 		[propget, id(59), helpstring("property DmdWidth")] HRESULT DmdWidth([out, retval] int *pVal);
 		[propget, id(60), helpstring("property DmdHeight")] HRESULT DmdHeight([out, retval] int *pVal);		
-		[propget, id(61), helpstring("property DmdPixel")] HRESULT DmdPixel([in] int width, [in] int height, [out, retval] int *pVal);		
+		[propget, id(61), helpstring("property DmdPixel")] HRESULT DmdPixel([in] int x, [in] int y, [out, retval] int *pVal);		
 		[propget, id(62), helpstring("property updateDmdPixels")] HRESULT updateDmdPixels([in] int **buf, [in] int width, [in] int height, [out, retval] int *pVal);
 		[propget, id(63), helpstring("property ChangedLampsState")] HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal);
 		[propget, id(64), helpstring("property LampsState")] HRESULT LampsState([in] int **buf, [out, retval] int *pVal);
