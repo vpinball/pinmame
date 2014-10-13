@@ -34,7 +34,7 @@ Version 2.6 (X X, 2014)
 	HRESULT CurrentAudioDevice([in] int newVal); - Set the current audio device number
 
 - New methods for Game.Settings:
-	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in a bunch of external libraries)
+	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in a bunch of external libraries and needs the ftd2xx.dll)
 	HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of PinDMD display
 	HRESULT ShowPinDMD([in] VARIANT_BOOL newVal); - En/Disable PinDMD display
 
