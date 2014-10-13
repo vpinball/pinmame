@@ -1,3 +1,111 @@
+Version 2.6 (X X, 2014) - "We're not dead (yet)"
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
+(Optional) Separate RGB-Color selection for the 4 DMD shades
+Added driver for MAC / CICPlay games
+Correct display outputs on IDSA
+Slight digits correction for Papillon
+Different display handling for Tecnoplay "Space Team"
+Added Y8950 sound for Tecnoplay games and Astrocade sound for Midway's Rotation VIII
+Corrected Atari gen.1 & gen.2 sound
+Fixed display width for Black Belt (Squawk and Talk)
+Some fixes for Midnight Marauders
+Corrected CPU clock, RIOT speed, displays for GTS80B
+Corrected GTS80 SS sound clock
+Cured scratchy GTS80 sound after reset
+Corrected DMD for Strikes n' Spares
+Added new chirp table & reverb for TMS5200 (Bally Centaur, etc)
+Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
+
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, PinKitty & Tim Polzin
+New:
+4x4 (Atari)
+Basket Ball (IDSA)
+Centaur (Inder) (also used as Hot and Cold, Screech, Skate Board, Topaz)
+Dale Jr. (Nascar 5.00)
+Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
+Galaxy Play 2 (CICPlay)
+Io Moon (Sleic)
+King Kong 1.0 (Data East)
+Rush Pinball (custom MOD)
+Space Train (MAC)
+
+Kinda new:
+Star Wars 1.04 (20th anniversary)
+
+Clones:
+Al's Garage Band Goes On A World Tour R06a
+Amazon Hunt (alternate set)
+Apollo 13 2.03 & 5.01/Display 4.01
+Arena (alternate set)
+Black Knight 2000 LA-2 & PA-7
+Batman Forever 1.02 & 2.02
+Baywatch 3.00 Dutch & 4.00 England & 4.00 Dutch
+Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
+Bone Busters (French)
+Breakshot 1.2
+Chicago Cubs Triple Play (alternate set)
+Corrected display rom for sprk_090
+Corvette LX-2 & LA-1
+Creature from the Black Lagoon P-3
+Cue Ball Wizard rev.2 & rev.3
+Cyclone L-1
+Fire L-2
+Flash L-2 (yellow flipper ROMs)
+Funhouse L-2
+Godzilla 0.90 & 1.00
+Guns n Roses 3.00 French
+Hyperball L-2
+Independence Day 2.01 & French/Display 2.00
+Indiana Jones P-2
+Indy 500 1.0R
+Joust L-1
+Jungle Lord L-1
+Kiss prototype v.2
+Laser War 8.1
+Mars - God of War French
+Monopoly 2.51 (Italian display)
+Monster Bash 0.5
+Monte Carlo (alternate set)
+No Fear 1.1X
+No Good Gofers 1.2
+Party Animal (German)
+Phantom of the Opera 2.9
+Pinbot P-4 & L-5 mod
+Pistol Poker R01
+Pool Sharks LA-5
+Popeye LA-4
+Punchy the Clown R03
+Raven (alternate set)
+Riverboat Gambler PA-7
+Robocop 3.0
+Rotation VIII v.1.01 & 1.15
+STTNG P-8 & L-3
+Secret Service 4.2 (alternate sound)
+Soccer Kings (alternate set)
+Space Jam 2.00
+Space Shuttle L-3
+Spring Break (alternate set)
+Star Trek 25th Anniversary 1.17
+Starship Troopers 2.00
+Still Crazy L-1
+Strikes n' Spares rev.2
+Swords of Fury L-1
+Taxi P-5
+Theatre of Magic 1.3 (French)
+Thunderball P-1 & P-2 & P-3
+Time Machine 1.8 German
+Tommy 1.02
+Torpedo Alley 1.6
+Viper Night Drivin' v1.02
+Volcano (Sound Only, alternate version 2)
+World Cup Soccer '94 LA-2
+X-Files 2.00
+
+
+
 Version 2.5 (June 5, 2012) - "Playmatics on the loose!"
 ------------------------------------------------------------------------------
 A lot of work has been done on Playmatic.  I was happy enough to simply be able to play the games, but then Gerrit went ahead and got the sound working too!  We're still looking for roms for Playmatic Stop Ship and Playmatic Phantom Ship so if you see those, let us know please.
