@@ -38,12 +38,14 @@ FT_STATUS ftStatus;
 FT_HANDLE ftHandle;
 #endif
 
-UINT8			enabled;
+UINT8			enabled = 0;
 UINT8			do16;
+#ifndef PINDMD2
 UINT8			doOther;
 UINT8			slowUSB = 0;
 UINT8			sendFrameCount;
-UINT8			pinDMD_Version = 1;
+#endif
+//UINT8			pinDMD_Version = 1;
 //FILE			*f;
 
 void sendFrame(void);
@@ -72,28 +74,36 @@ void pinddrvInit(void)
 	usb_find_devices();
 
 	//try to open our device
-	if( !( device = open_dev() ) ){
+	if( !( device = open_dev() ) ) {
 		//if not successfull, print error message
+		MessageBox(NULL, "PinDMD not found", "Error", MB_ICONERROR);
 		enabled = 0;
+		return;
 	}
 	//set configuration
-	if( usb_set_configuration( device, MY_CONFIG ) < 0 ){
+	if( usb_set_configuration( device, MY_CONFIG ) < 0 ) {
+		MessageBox(NULL, "PinDMD cannot configure", "Error", MB_ICONERROR);
 		enabled = 0;
 		usb_close( device );
+		return;
 	}
 	//try to claim interface for use
-	if( usb_claim_interface( device, MY_INTF ) < 0 ){
+	if( usb_claim_interface( device, MY_INTF ) < 0 ) {
+		MessageBox(NULL, "PinDMD cannot claim interface", "Error", MB_ICONERROR);
 		enabled = 0;
 		usb_close( device );
+		return;
 	}
 	// SETUP async
 	ret = usb_bulk_setup_async( device, &asyncWriteContext, EP_OUT );
-	if( ret < 0 ){
+	if( ret < 0 ) {
+		MessageBox(NULL, "PinDMD cannot setup async", "Error", MB_ICONERROR);
+		enabled = 0;
 		//relese interface
 		usb_release_interface( device, MY_INTF );
 		//close device and exit
 		usb_close( device );
-		enabled = 0;
+		return;
 	}
 	//if(f)
 	//	fprintf(f,"all ok:%d \n",enabled);
@@ -132,14 +142,17 @@ void pinddrvInit(void)
 					slowUSB = 1;
 			}
 		}
-	} else
+	} else {
 		enabled=0;
+		return;
+	}
 
 	// get handle on device
 	ftStatus = FT_Open(deviceId, &ftHandle);
 	if(ftStatus != FT_OK){
 		// FT_Open failed return;
 		enabled=0;
+		return;
 	}
 	
 	// check pinDMD firmware to see if its 16 colour (bit4=true)
@@ -147,7 +160,7 @@ void pinddrvInit(void)
 	ftStatus = FT_GetBitMode(ftHandle, &BitMode);
 	if (ftStatus == FT_OK) {
 		// BitMode contains current value
-		do16		= ((BitMode&0x08)==0x08);
+		do16	= ((BitMode&0x08)==0x08);
 		doOther = ((BitMode&0x04)==0x04);
 	}
 
@@ -180,14 +193,17 @@ void pinddrvInit(void)
 //*****************************************************
 void pinddrvDeInit(void)
 {
+	if(enabled)
+	{
 #ifdef PINDMD2
-	usb_release_interface( device, MY_INTF );
-	usb_close( device );
+		usb_release_interface( device, MY_INTF );
+		usb_close( device );
 #else
-	// have to reset bitbangmode or the ftdi chip will flood the serial with '[00]'
-	FT_SetBitMode(ftHandle, 0x00, 0x0);
-	FT_Close(ftHandle);
+		// have to reset bitbangmode or the ftdi chip will flood the serial with '[00]'
+		FT_SetBitMode(ftHandle, 0x00, 0x0);
+		FT_Close(ftHandle);
 #endif
+	}
 }
 	
 //*****************************************************
@@ -198,29 +214,32 @@ void pinddrvDeInit(void)
 //*****************************************************
 void pinddrvSendFrame(void)
 {
+	if(enabled)
+	{
 #ifdef PINDMD2
-	sendFrame();
+		sendFrame();
 #else
-	if(sendFrameCount < 3)
-		_beginthread(sendFrame,0,NULL);
+		if(sendFrameCount < 3)
+			_beginthread(sendFrame,0,NULL);
 #endif
+	}
 }
 
 void sendFrame(void)
 {
-	DWORD bytes;
-	if(enabled==0)
-		return;
-
+	if(enabled)
+	{
 #ifdef PINDMD2
-	usb_submit_async( asyncWriteContext, frame_buf, 2052 );
-	usb_reap_async( asyncWriteContext, 5000 );
+		usb_submit_async( asyncWriteContext, frame_buf, 2052 );
+		usb_reap_async( asyncWriteContext, 5000 );
 #else
-	sendFrameCount++;
-	// send dmd frame buffer to pindmd board
-	ftStatus = FT_Write(ftHandle, &frame_buf, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);
-	sendFrameCount--;
+		DWORD bytes;
+		sendFrameCount++;
+		// send dmd frame buffer to pindmd board
+		ftStatus = FT_Write(ftHandle, &frame_buf, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);
+		sendFrameCount--;
 #endif
+	}
 }
 
 #ifdef PINDMD2

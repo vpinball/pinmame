@@ -62,83 +62,86 @@ void pindmdDeInit(void)
 //*****************************************************                             
 void sendLogo(void)
 {
-	FILE *fLogo;
-	UINT8 i,j;
+	if(enabled)
+	{
+		FILE *fLogo;
+		UINT8 i,j;
 
-	// display dmd logo from text file if it exists
-	fLogo = fopen("dmdlogo.txt","r");
-	if(fLogo){
-		for(i=0; i<32; i++){
-			for(j=0; j<128; j++)
-			{
-				UINT8 fileChar = getc(fLogo);
-				//Read next char after enter (beginning of next line)
-				while(fileChar == 10)
-					fileChar = getc(fLogo);
-				if(do16 == 0)
+		// display dmd logo from text file if it exists
+		fLogo = fopen("dmdlogo.txt","r");
+		if(fLogo){
+			for(i=0; i<32; i++){
+				for(j=0; j<128; j++)
 				{
-					logobuf[i][j] = fileChar - '0';
-					if(logobuf[i][j] > 3)
-						logobuf[i][j] = 0;
-				}
-				if(do16 == 1)
-					switch(fileChar)
+					UINT8 fileChar = getc(fLogo);
+					//Read next char after enter (beginning of next line)
+					while(fileChar == 10)
+						fileChar = getc(fLogo);
+					if(do16 == 0)
 					{
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9':
-							logobuf[i][j] = fileChar - '0';
-							break;
-
-						case 'a':
-						case 'A':
-							logobuf[i][j] = 10;
-							break;
-						
-						case 'b':
-						case 'B':
-							logobuf[i][j] = 11;
-							break;
-
-						case 'c':
-						case 'C':
-							logobuf[i][j] = 12;
-							break;
-
-						case 'd':
-						case 'D':
-							logobuf[i][j] = 13;
-							break;
-
-						case 'e':
-						case 'E':
-							logobuf[i][j] = 14;
-							break;
-
-						case 'f':
-						case 'F':
-							logobuf[i][j] = 15;
-							break;
-
-						default:
+						logobuf[i][j] = fileChar - '0';
+						if(logobuf[i][j] > 3)
 							logobuf[i][j] = 0;
-							break;
+					}
+					if(do16 == 1)
+						switch(fileChar)
+						{
+							case '0':
+							case '1':
+							case '2':
+							case '3':
+							case '4':
+							case '5':
+							case '6':
+							case '7':
+							case '8':
+							case '9':
+								logobuf[i][j] = fileChar - '0';
+								break;
+
+							case 'a':
+							case 'A':
+								logobuf[i][j] = 10;
+								break;
+						
+							case 'b':
+							case 'B':
+								logobuf[i][j] = 11;
+								break;
+
+							case 'c':
+							case 'C':
+								logobuf[i][j] = 12;
+								break;
+
+							case 'd':
+							case 'D':
+								logobuf[i][j] = 13;
+								break;
+
+							case 'e':
+							case 'E':
+								logobuf[i][j] = 14;
+								break;
+
+							case 'f':
+							case 'F':
+								logobuf[i][j] = 15;
+								break;
+
+							default:
+								logobuf[i][j] = 0;
+								break;
+					}
 				}
 			}
-		}
-		dmdInUse=0;
-		fclose(fLogo);
-	} else 
-		memset(logobuf,0,4096);
+			dmdInUse=0;
+			fclose(fLogo);
+		} else 
+			memset(logobuf,0,4096);
 
-	renderDMDFrame(GEN_LOGO,128,32,*logobuf,0);
+		renderDMDFrame(GEN_LOGO,128,32,*logobuf,0);
+	}
 }
 	
 //*****************************************************
@@ -276,6 +279,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 {
 	if((enabled==0) || dmdInUse)
 		return;
+
 	// dont update dmd if segments have changed
 	if(memcmp(seg_data,seg_data_old,50*sizeof(UINT16))==0)
 		return;
