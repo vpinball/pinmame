@@ -19,21 +19,21 @@ Corrected DMD for Strikes n' Spares
 Added new chirp table & reverb for TMS5200 (Bally Centaur, etc)
 Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
 
-*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, PinKitty & Tim Polzin
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
 New:
-4x4 (Atari)
-Basket Ball (IDSA)
-Centaur (Inder) (also used as Hot and Cold, Screech, Skate Board, Topaz)
-Dale Jr. (Nascar 5.00)
-Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
-Galaxy Play 2 (CICPlay)
-Io Moon (Sleic)
-King Kong 1.0 (Data East)
-Rush Pinball (custom MOD)
-Space Train (MAC)
+Atari: 4x4 (not working yet)
+CICPlay: Galaxy Play
+Data East: King Kong 1.0
+IDSA: Basket Ball, V-1 (speech not working yet)
+Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
+MAC: Space Train, Space Panther, NBA MAC, and a yet unknown game
+Sega: Dale Jr. (Nascar 5.00)
+Sleic: Io Moon (not working yet)
+WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
+     Rush Pinball (custom MOD, no sound)
 
 Kinda new:
-Star Wars 1.04 (20th anniversary)
+Star Wars 20th Anniversary 1.04
 
 Clones:
 Al's Garage Band Goes On A World Tour R06a
@@ -63,7 +63,7 @@ Indiana Jones P-2
 Indy 500 1.0R
 Joust L-1
 Jungle Lord L-1
-Kiss prototype v.2
+Kiss prototype v.2 (not working yet)
 Laser War 8.1
 Mars - God of War French
 Monopoly 2.51 (Italian display)
