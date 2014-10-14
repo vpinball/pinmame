@@ -343,6 +343,12 @@ DRIVERNV(bbb108)        // 11/96    Big Bang Bar (Beta, 1.8)
 DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
 DRIVERNV(kpv106)        // 12/96    Kingpin
 
+// ----------------
+// CICPLAY GAMES
+// ----------------
+DRIVERNV(glxplay)       //Galaxy Play (1987)
+DRIVERNV(glxplay2)      //Galaxy Play 2 (1988)
+
 // -------------------
 // DATA EAST GAMES
 // -------------------
@@ -751,7 +757,13 @@ DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game
 // ----------------
 // MAC GAMES
 // ----------------
+//DRIVERNV(macgalxy)    //MAC Galaxy (1986)
 DRIVERNV(spctrain)      //Space Train (1987)
+//DRIVERNV(macjungl)    //MAC Jungle (1987)
+DRIVERNV(spcpnthr)      //Space Panther (1988)
+DRIVERNV(mac_1808)      //Unknown MAC game #1808 (19??)
+//DRIVERNV(macjungn)    //New MAC Jungle (1995)
+DRIVERNV(nbamac)        //MBA MAC (1996)
 
 // ----------------
 // MICROPIN GAMES
