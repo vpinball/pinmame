@@ -27,7 +27,7 @@ Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
 MAC: Space Train, Space Panther, NBA MAC, and a yet unknown game
-Sega: Dale Jr. (Nascar 5.00)
+Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)
 WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
      Rush Pinball (custom MOD, no sound)
@@ -47,7 +47,6 @@ Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
 Bone Busters (French)
 Breakshot 1.2
 Chicago Cubs Triple Play (alternate set)
-Corrected display rom for sprk_090
 Corvette LX-2 & LA-1
 Creature from the Black Lagoon P-3
 Cue Ball Wizard rev.2 & rev.3
@@ -85,6 +84,7 @@ Rotation VIII v.1.01 & 1.15
 STTNG P-8 & L-3
 Secret Service 4.2 (alternate sound)
 Soccer Kings (alternate set)
+Corrected display rom for South Park 0.90
 Space Jam 2.00
 Space Shuttle L-3
 Spring Break (alternate set)
