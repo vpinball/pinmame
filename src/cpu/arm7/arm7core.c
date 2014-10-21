@@ -271,9 +271,8 @@ static data32_t decodeShift( data32_t insn, data32_t *pCarry)
 	data32_t t	= (insn & INSN_OP2_SHIFT_TYPE) >> INSN_OP2_SHIFT_TYPE_SHIFT;
 
 	if ((insn & INSN_OP2_RM)==0xf) {
-		/* If hardwired shift, then PC is 8 bytes ahead, else if register shift
-		is used, then 12 bytes - TODO?? */
-		rm+=8;
+		// "If a register is used to specify the shift amount the PC will be 12 bytes ahead." (instead of 8)
+		rm += t & 1 ? 12 : 8;
 	}
 
 	/* All shift types ending in 1 are Rk, not #k */
@@ -358,13 +357,17 @@ static data32_t decodeShift( data32_t insn, data32_t *pCarry)
 	case 3:						/* ROR and RRX */
 		if (k)
 		{
-			while (k > 32) k -= 32;
-			if (pCarry) *pCarry = rm & SIGN_BIT;
+			while (k > 32)
+				k -= 32;
+			if (pCarry)
+				*pCarry = rm & (1 << (k - 1));
 			return ROR(rm, k);
 		}
 		else
 		{
-			if (pCarry) *pCarry = (rm & 1);
+			/* RRX */
+			if (pCarry)
+				*pCarry = (rm & 1);
 			return LSR(rm, 1) | ((GET_CPSR & C_MASK) << 2);
 		}
 		break;
@@ -377,20 +380,23 @@ static data32_t decodeShift( data32_t insn, data32_t *pCarry)
 
 static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 {
-	int i,result;
+	int i, result;
+	UINT32 data;
 
 	result = 0;
-	for( i=0; i<16; i++ )
+	rbv &= ~3;
+	for (i = 0; i < 16; i++)
 	{
-		if( (pat>>i)&1 )
+		if ((pat >> i) & 1)
 		{
-			if (i==15) {
+			data = READ32(rbv += 4);
+			if (i == 15) {
 				if (s) /* Pull full contents from stack */
-					SET_REGISTER( 15, READ32(rbv+=4) );
+					SET_REGISTER( 15, data );
 				else /* Pull only address, preserve mode & status flags */
-					SET_REGISTER( 15, READ32(rbv+=4) );
+					SET_REGISTER( 15, data );
 			} else
-				SET_REGISTER( i, READ32(rbv+=4) );
+				SET_REGISTER( i, data );
 
 			result++;
 		}
@@ -400,21 +406,24 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 
 static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 {
-	int i,result;
+	int i, result;
+	UINT32 data;
 
 	result = 0;
-	for( i=15; i>=0; i-- )
+	rbv &= ~3;
+	for (i = 15; i >= 0; i--)
 	{
-		if( (pat>>i)&1 )
+		if ((pat >> i) & 1)
 		{
-			if (i==15) {
+			data = READ32(rbv -= 4);
+			if (i == 15) {
 				if (s) /* Pull full contents from stack */
-					SET_REGISTER( 15, READ32(rbv-=4) );
+					SET_REGISTER( 15, data );
 				else /* Pull only address, preserve mode & status flags */
-					SET_REGISTER( 15, READ32(rbv-=4) );
+					SET_REGISTER( 15, data );
 			}
 			else
-				SET_REGISTER( i, READ32(rbv -=4) );
+				SET_REGISTER( i, data );
 			result++;
 		}
 	}
@@ -1291,11 +1300,19 @@ static void HandleALU( data32_t insn )
 
 static void HandleMul( data32_t insn)
 {
-	data32_t r;
+	UINT32 r, rm, rs;
+
+	// MUL takes 1S + mI and MLA 1S + (m+1)I cycles to execute, where S and I are as
+	// defined in 6.2 Cycle Types on page 6-2.
+	// m is the number of 8 bit multiplier array cycles required to complete the
+	// multiply, which is controlled by the value of the multiplier operand
+	// specified by Rs.
+
+	rm = GET_REGISTER(insn & INSN_MUL_RM);
+	rs = GET_REGISTER((insn & INSN_MUL_RS) >> INSN_MUL_RS_SHIFT);
 
 	/* Do the basic multiply of Rm and Rs */
-	r =	GET_REGISTER( insn&INSN_MUL_RM ) *
-	  	GET_REGISTER( (insn&INSN_MUL_RS)>>INSN_MUL_RS_SHIFT );
+	r = rm * rs;
 
 	#if ARM7_DEBUG_CORE
 	if( 
@@ -1309,7 +1326,9 @@ static void HandleMul( data32_t insn)
 	/* Add on Rn if this is a MLA */
 	if (insn & INSN_MUL_A)
 	{
-		r += GET_REGISTER((insn&INSN_MUL_RN)>>INSN_MUL_RN_SHIFT);
+		r += GET_REGISTER((insn & INSN_MUL_RN) >> INSN_MUL_RN_SHIFT);
+		// extra cycle for MLA
+		ARM7_ICOUNT -= 1;
 	}
 
 	/* Write the result */
@@ -1320,6 +1339,14 @@ static void HandleMul( data32_t insn)
 	{
 		SET_CPSR ( (GET_CPSR &~ (N_MASK | Z_MASK)) | HandleALUNZFlags(r));
 	}
+
+	if (rs & SIGN_BIT) rs = -rs;
+	if (rs < 0x00000100) ARM7_ICOUNT -= 1 + 1;
+	else if (rs < 0x00010000) ARM7_ICOUNT -= 1 + 2;
+	else if (rs < 0x01000000) ARM7_ICOUNT -= 1 + 3;
+	else ARM7_ICOUNT -= 1 + 4;
+
+	ARM7_ICOUNT += 3;
 }
 
 //todo: add proper cycle counts
@@ -1347,6 +1374,8 @@ static void HandleSMulLong( data32_t insn)
 	{
 		INT64 acum = (INT64)((((INT64)(rhi))<<32) | rlo);
 		res += acum;
+		// extra cycle for MLA
+		ARM7_ICOUNT -= 1;
 	}
 
 	/* Write the result (upper dword goes to RHi, lower to RLo) */
@@ -1358,6 +1387,14 @@ static void HandleSMulLong( data32_t insn)
 	{
 		SET_CPSR ( (GET_CPSR &~ (N_MASK | Z_MASK)) | HandleLongALUNZFlags(res));
 	}
+
+	if (rs < 0) rs = -rs;
+	if (rs < 0x00000100) ARM7_ICOUNT -= 1 + 1 + 1;
+	else if (rs < 0x00010000) ARM7_ICOUNT -= 1 + 2 + 1;
+	else if (rs < 0x01000000) ARM7_ICOUNT -= 1 + 3 + 1;
+	else ARM7_ICOUNT -= 1 + 4 + 1;
+
+	ARM7_ICOUNT += 3;
 }
 
 //todo: add proper cycle counts
@@ -1385,6 +1422,8 @@ static void HandleUMulLong( data32_t insn)
 	{
 		UINT64 acum = (UINT64)((((UINT64)(rhi))<<32) | rlo);
 		res += acum;
+		// extra cycle for MLA
+		ARM7_ICOUNT -= 1;
 	}
 
 	/* Write the result (upper dword goes to RHi, lower to RLo) */
@@ -1396,6 +1435,13 @@ static void HandleUMulLong( data32_t insn)
 	{
 		SET_CPSR ( (GET_CPSR &~ (N_MASK | Z_MASK)) | HandleLongALUNZFlags(res));
 	}
+
+	if (rs < 0x00000100) ARM7_ICOUNT -= 1 + 1 + 1;
+	else if (rs < 0x00010000) ARM7_ICOUNT -= 1 + 2 + 1;
+	else if (rs < 0x01000000) ARM7_ICOUNT -= 1 + 3 + 1;
+	else ARM7_ICOUNT -= 1 + 4 + 1;
+
+	ARM7_ICOUNT += 3;
 }
 
 static void HandleMemBlock( data32_t insn)
@@ -1409,8 +1455,10 @@ static void HandleMemBlock( data32_t insn)
 		LOG(("%08x: Unaligned Mem Transfer @ %08x\n",R15,rbp));
 #endif
 
-	//We will specify the cycle count for each case, so remove the -3 that occurs at the end
-	ARM7_ICOUNT +=3;
+	// Normal LDM instructions take nS + 1N + 1I and LDM PC takes (n+1)S + 2N + 1I
+	// incremental cycles, where S,N and I are as defined in 6.2 Cycle Types on page 6-2.
+	// STM instructions take (n-1)S + 2N incremental cycles to execute, where n is the
+	// number of words transferred.
 
 	if (insn & INSN_BDT_L)
 	{
@@ -1455,8 +1503,8 @@ static void HandleMemBlock( data32_t insn)
 					SwitchMode(GET_MODE);
 				}
 			}
-			//LDM PC - takes 1 extra cycle
-			ARM7_ICOUNT -=1;
+			//LDM PC - takes 2 extra cycles
+			ARM7_ICOUNT -=2;
 		}
 		else
 		{
@@ -1495,8 +1543,8 @@ static void HandleMemBlock( data32_t insn)
 					SET_CPSR(GET_REGISTER(SPSR));
 					SwitchMode(GET_MODE);
 				}
-				//LDM PC - takes 1 extra cycle
-				ARM7_ICOUNT -=1;
+				//LDM PC - takes 2 extra cycles
+				ARM7_ICOUNT -=2;
 			}
 
 			//LDM (NO PC) takes nS + 1n + 1I cycles (n = # of register transfers)
@@ -1573,9 +1621,13 @@ static void HandleMemBlock( data32_t insn)
 		if( insn & (1<<eR15) )
 			R15 -= 12; //SJE: We added 12 for storing, but put it back as it was for executing
 
-		//STM takes (n+1)S+2N+1I cycles (n = # of register transfers)
-		ARM7_ICOUNT -= ((result+1)+2+1);
+		// STM takes (n-1)S + 2N cycles (n = # of register transfers)
+		ARM7_ICOUNT -= (result - 1) + 2;
 	}
+
+	// We will specify the cycle count for each case, so remove the -3 that occurs at the end
+	ARM7_ICOUNT += 3;
+
 } /* HandleMemBlock */
 
 
