@@ -28,13 +28,13 @@ typedef struct deltat_adpcm_state {     /* AT: rearranged and tigntened structur
 	INT32	adpcml;			/* current value		*/
 	INT32	prev_acc;		/* leveling value		*/
 	UINT8	now_data;		/* current rom data		*/
+	UINT8   CPU_data;       /* current data from reg 08 */
 	UINT8	portstate;		/* port status			*/
 	UINT8	control2;		/* control reg: SAMPLE, DA/AD, RAM TYPE (x8bit / x1bit), ROM/RAM */
 	UINT8	portshift;		/* address bits shift-left:
 							** 8 for YM2610,
-							** 5 for ROM for Y8950 and YM2608,
-							** 5 for x8bit DRAMs for Y8950 and YM2608,
-							** 2 for x1bit DRAMs for Y8950 and YM2608 */
+                            ** 5 for Y8950 and YM2608 */
+
 	UINT8	DRAMportshift;	/* address bits shift-right:
 							** 0 for ROM and x8bit DRAMs,
 							** 3 for x1 DRAMs */

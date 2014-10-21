@@ -58,6 +58,7 @@
 #include "state.h"
 #include "ymdeltat.h"
 
+static UINT8 dram_rightshift[4]={3,0,0,0};
 
 /* Forecast to next Forecast (rate = *8) */
 /* 1/8 , 3/8 , 5/8 , 7/8 , 9/8 , 11/8 , 13/8 , 15/8 */
@@ -78,9 +79,13 @@ UINT8 YM_DELTAT_ADPCM_Read(YM_DELTAT *DELTAT)
 {
 	UINT8 v = 0;
 
+	/* external memory read */
+	if ( (DELTAT->portstate & 0xe0)==0x20 )
+	{
 	/* two dummy reads */
 	if (DELTAT->memread)
 	{ 
+			DELTAT->now_addr = DELTAT->start << 1;
 		DELTAT->memread--;
 		return 0;
 	}
@@ -90,8 +95,19 @@ UINT8 YM_DELTAT_ADPCM_Read(YM_DELTAT *DELTAT)
 	{
 		v = DELTAT->memory[DELTAT->now_addr>>1];
 
+			/*logerror("YM Delta-T memory read  $%08x, v=$%02x\n", DELTAT->now_addr >> 1, v);*/
+
 		DELTAT->now_addr+=2; /* two nibbles at a time */
 
+			/* reset BRDY bit in status register, which means we are reading the memory now */
+			if(DELTAT->status_reset_handler)
+				if(DELTAT->status_change_BRDY_bit)
+					(DELTAT->status_reset_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);
+
+	/* setup a timer that will callback us in 10 master clock cycles for Y8950
+	* in the callback set the BRDY flag to 1 , which means we have another data ready.
+	* For now, we don't really do this; we simply reset and set the flag in zero time, so that the IRQ will work.
+	*/
 		/* set BRDY bit in status register */
 		if(DELTAT->status_set_handler)
 			if(DELTAT->status_change_BRDY_bit)
@@ -103,6 +119,7 @@ UINT8 YM_DELTAT_ADPCM_Read(YM_DELTAT *DELTAT)
 		if(DELTAT->status_set_handler)
 			if(DELTAT->status_change_EOS_bit)
 				(DELTAT->status_set_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_EOS_bit);
+	}
 	}
 
 	return v;
@@ -151,7 +168,7 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
   20     0      0    1       0       0      0 0 0       External memory read via ADPCM data register $08
 
 */
-		DELTAT->portstate = v & (0x80|0x40|0x20|0x10); /* start, rec, memory mode, repeat flag copy */
+		DELTAT->portstate = v & (0x80|0x40|0x20|0x10|0x01); /* start, rec, memory mode, repeat flag copy, reset(bit0) */
 
 		if( DELTAT->portstate&0x80 )/* START,REC,MEMDATA,REPEAT,SPOFF,--,--,RESET */
 		{
@@ -164,6 +181,7 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 			DELTAT->prev_acc = 0;
 			DELTAT->adpcml   = 0;
 			DELTAT->adpcmd   = YM_DELTAT_DELTA_DEF;
+			DELTAT->now_data = 0;
 
 		}
 
@@ -206,17 +224,28 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 			/* clear PCM BUSY bit (in status register) */
 			DELTAT->PCM_BSY = 0;
 
-			/* should we set EOS here too ? */
+			/* set BRDY flag */
+			if(DELTAT->status_set_handler)
+				if(DELTAT->status_change_BRDY_bit)
+					(DELTAT->status_set_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);
 		}
 		break;
 	case 0x01:	/* L,R,-,-,SAMPLE,DA/AD,RAMTYPE,ROM */
 		DELTAT->pan = &DELTAT->output_pointer[(v>>6)&0x03];
 		if ((DELTAT->control2 & 3) != (v & 3))
 		{
-			static UINT8 dram_rightshift[4]={3,0,0,0};
 			/*0-DRAM x1, 1-ROM, 2-DRAM x8, 3-ROM (3 is bad setting - not allowed by the manual) */
 			if (DELTAT->DRAMportshift != dram_rightshift[v&3])
 			{
+				DELTAT->DRAMportshift = dram_rightshift[v&3];
+
+				/* final shift value depends on chip type and memory type selected:
+				        8 for YM2610 (ROM only),
+				        5 for ROM for Y8950 and YM2608,
+				        5 for x8bit DRAMs for Y8950 and YM2608,
+				        2 for x1bit DRAMs for Y8950 and YM2608.
+				*/
+
 				/* refresh addresses */
 				DELTAT->start  = (DELTAT->reg[0x3]*0x0100 | DELTAT->reg[0x2]) << (DELTAT->portshift - DELTAT->DRAMportshift);
 				DELTAT->end    = (DELTAT->reg[0x5]*0x0100 | DELTAT->reg[0x4]) << (DELTAT->portshift - DELTAT->DRAMportshift);
@@ -258,10 +287,28 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 		/* external memory write */
 		if ( (DELTAT->portstate & 0xe0)==0x60 )
 		{
+			if (DELTAT->memread)
+			{
+				DELTAT->now_addr = DELTAT->start << 1;
+				DELTAT->memread = 0;
+			}
+
+			/*logerror("YM Delta-T memory write $%08x, v=$%02x\n", DELTAT->now_addr >> 1, v);*/
+
 			if ( DELTAT->now_addr != (DELTAT->end<<1) )
 			{
 				DELTAT->memory[DELTAT->now_addr>>1] = v;
 			 	DELTAT->now_addr+=2; /* two nibbles at a time */
+
+				/* reset BRDY bit in status register, which means we are processing the write */
+				if(DELTAT->status_reset_handler)
+					if(DELTAT->status_change_BRDY_bit)
+						(DELTAT->status_reset_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);
+
+	/* setup a timer that will callback us in 10 master clock cycles for Y8950
+	* in the callback set the BRDY flag to 1 , which means we have written the data.
+	* For now, we don't really do this; we simply reset and set the flag in zero time, so that the IRQ will work.
+	*/
 				/* set BRDY bit in status register */
 				if(DELTAT->status_set_handler)
 					if(DELTAT->status_change_BRDY_bit)
@@ -281,7 +328,12 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 		/* ADPCM synthesis from CPU */
 		if ( (DELTAT->portstate & 0xe0)==0x80 )
 		{
-			DELTAT->now_data = v;
+			DELTAT->CPU_data = v;
+
+			/* Reset BRDY bit in status register, which means we are full of data */
+			if(DELTAT->status_reset_handler)
+				if(DELTAT->status_change_BRDY_bit)
+					(DELTAT->status_reset_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);
 			return;
 		}
 
@@ -332,6 +384,16 @@ void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan)
 	DELTAT->adpcmd    = 127;
 	DELTAT->adpcml    = 0;
 	DELTAT->portstate = 0;
+	DELTAT->control2  = 0; /* default setting depends on the emulation mode. MSX demo called "facdemo_4" doesn't setup control2 register at all and still works */
+	DELTAT->DRAMportshift = dram_rightshift[DELTAT->control2 & 3];
+
+	/* The flag mask register disables the BRDY after the reset, however
+	** as soon as the mask is enabled the flag needs to be set. */
+
+	/* set BRDY bit in status register */
+	if(DELTAT->status_set_handler)
+		if(DELTAT->status_change_BRDY_bit)
+			(DELTAT->status_set_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);
 }
 
 void YM_DELTAT_postload(YM_DELTAT *DELTAT,UINT8 *regs)
@@ -345,6 +407,7 @@ void YM_DELTAT_postload(YM_DELTAT *DELTAT,UINT8 *regs)
 		YM_DELTAT_ADPCM_Write(DELTAT,r,regs[r]);
 	DELTAT->reg[0] = regs[0];
 	/* current rom data */
+	if (DELTAT->memory)
 	DELTAT->now_data = *(DELTAT->memory + (DELTAT->now_addr>>1) );
 
 }
@@ -478,7 +541,10 @@ INLINE void YM_DELTAT_synthesis_from_CPU_memory(YM_DELTAT *DELTAT)
 			{
 				data = DELTAT->now_data & 0x0f;
 
-				/* set BRDY bit in status register */
+				DELTAT->now_data = DELTAT->CPU_data;
+
+				/* after we used CPU_data, we set BRDY bit in status register,
+				* which means we are ready to accept another byte of data */
 				if(DELTAT->status_set_handler)
 					if(DELTAT->status_change_BRDY_bit)
 						(DELTAT->status_set_handler)(DELTAT->status_change_which_chip, DELTAT->status_change_BRDY_bit);

@@ -16,13 +16,14 @@
      TMS5220C multi-rate feature added by Lord Nightmare
      Massive rewrite and reorganization by Lord Nightmare
      Additional IP, PC, subcycle timing rewrite by Lord Nightmare
+     Updated based on the chip decaps done by digshadow
 
-     Much information regarding these lpc encoding comes from US patent 4,209,844
+     Much information regarding the lpc encoding used here comes from US patent 4,209,844
      US patent 4,331,836 describes the complete 51xx chip
      US patent 4,335,277 describes the complete 52xx chip
      Special Thanks to Larry Brantingham for answering questions regarding the chip details
 
-   TMS5200/TMS5220/TMS5220C:
+   TMS5200/TMS5220/TMS5220C/CD2501E/CD2501ECD:
 
                  +-----------------+
         D7(d0)   |  1           28 |  /RS
@@ -89,9 +90,9 @@ Patent notes (important timing info for interpolation):
   ...
   11 = K10
   12 = nothing
-    Every PC full count (i.e. overflow from 12 to 0), IP (aka interp_period)
+    Every PC full count (i.e. overflow from 12 to 0), IP (aka "Interpolation Period")
     is incremented.
-* IP (aka interp_period) ranges from 0 to 7, and corresponds with the amount
+* IP (aka "Interpolation Period") ranges from 0 to 7, and corresponds with the amount
   of rightshift that the difference between current and target for a given
   parameter will have applied to it, before being added to the current
   parameter. Note that when interpolation is inhibited, only IP=0 will
@@ -119,6 +120,7 @@ Patent notes (important timing info for interpolation):
     01      7 0#3 4 5 6 7 0#3 4 5 6 7 0#3 4 5
     10      7 0#5 6 7 0#5 6 7 0#5 6 7 0#5 6 7
     11      7 0#7 0#7 0#7 0#7 0#7 0#7 0#7 0#7
+    Based on the behavior tested on the CD2501ECD this is assumed to be the same for that chip as well.
 
 Most of the following is based on figure 8c of 4,331,836, which is the
   TMS5100/TMC0280 patent, but the same information applies to the TMS52xx
@@ -127,33 +129,34 @@ Most of the following is based on figure 8c of 4,331,836, which is the
 OLDP is a status flag which controls whether unvoiced or voiced excitation is
   being generated. It is latched from "P=0" at IP=7 PC=12 T=16.
   (This means that, during normal operation, between IP=7 PC=12 T16 and
-  IP=0 PC=1 T=?, OLDP and P=0 are the same)
+  IP=0 PC=1 T17, OLDP and P=0 are the same)
 "P=0" is a status flag which is set if the index value for pitch for the new
   frame being parsed (which will become the new target frame) is zero.
   It is used for determining whether interpolation of the next frame is
-  inhibited or not. It is updated at IP=0 PC=1 T=?. See next section.
+  inhibited or not. It is updated at IP=0 PC=1 T17. See next section.
 OLDE is a status flag which is only used for determining whether
   interpolation is inhibited or not.
   It is latched from "E=0" at IP=7 PC=12 T=16.
   (This means that, during normal operation, between IP=7 PC=12 T16 and
-  IP=0 PC=0 T=16, OLDE and E=0 are the same)
+  IP=0 PC=0 T17, OLDE and E=0 are the same)
 "E=0" is a status flag which is set if the index value for energy for the new
   frame being parsed (which will become the new target frame) is zero.
   It is used for determining whether interpolation of the next frame is
-  inhibited or not. It is updated at IP=0 PC=0 T=16. See next section.
+  inhibited or not. It is updated at IP=0 PC=0 T17. See next section.
 
 Interpolation is inhibited (i.e. interpolation at IP frames will not happen
   except for IP=0) under the following circumstances:
   "P=0" != "OLDP" ("P=0" = 1, and OLDP = 0; OR "P=0" = 0, and OLDP = 1)
     This means the new frame is unvoiced and the old one was voiced, or vice
     versa.
+* TODO the 5100 and 5200 patents are inconsistent about the above. Trace the decaps!
   "OLDE" = 1 and "E=0" = 0
     This means the new frame is not silent, and the old frame was silent.
 
 
 
 ****Documentation of chip commands:***
-    x0x0xbcc : on 5200/5220: NOP (does nothing); on 5220C: Select frame length by cc, and b selects whether every frame is preceeded by 2 bits to select the frame length (instead of using the value set by cc); the default (and after a reset command) is as if '0x00' was written, i.e. for frame length (200 samples) and 0 for whether the preceeding 2 bits are enabled (off)
+    x0x0xbcc : on 5200/5220: NOP (does nothing); on 5220C and CD2501ECD: Select frame length by cc, and b selects whether every frame is preceded by 2 bits to select the frame length (instead of using the value set by cc); the default (and after a reset command) is as if '0x00' was written, i.e. for frame length (200 samples) and 0 for whether the preceding 2 bits are enabled (off)
 
     x001xxxx: READ BYTE (RDBY) Sends eight read bit commands (M0 high M1 low) to VSM and reads the resulting bits serially into a temporary register, which becomes readable as the next byte read from the tms52xx once ready goes active. Note the bit order of the byte read from the TMS52xx is BACKWARDS as compared to the actual data order as in the rom on the VSM chips; the read byte command of the tms5100 reads the bits in the 'correct' order. This was IMHO a rather silly design decision of TI. (I (LN) asked Larry Brantingham about this but he wasn't involved with the TMS52xx chips, just the 5100); There's ASCII data in the TI 99/4 speech module VSMs which has the bit order reversed on purpose because of this!
     TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP.
@@ -167,22 +170,16 @@ Interpolation is inhibited (i.e. interpolation at IP frames will not happen
     x101xxxx: SPEAK (SPK) Begins speaking, pulling spech data from the current address pointer location of the VSM modules.
 
     x110xxxx: SPEAK EXTERNAL (SPKEXT) Clears the FIFO using SPKEE line, then sets TALKD (TALKST remains zero) until 8 bytes have been written to the FIFO, at which point it begins speaking, pulling data from the 16 byte fifo.
-    TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP.
+    The patent implies TALK STATUS must be CLEAR for this command to work; otherwise it is treated as a NOP, but the decap shows that this is not true, and is an error on the patent diagram.
 
     x111xxxx: RESET (RST) Resets the speech synthesis core immediately, and clears the FIFO.
 
 
     Other chip differences:
-    The 5220 is 'noisier' when playing unvoiced frames than the 5220C is; I (LN) think the 5220C may use a different energy table (or use one value lower in the normal energy table) than the 5220 does, possibly only when playing unvoiced frames, but I can't prove this without a decap; the 5220C's PROMOUT pin (for dumping the lpc tables as played) is non-functional due to a changed design or a die bug (or may need special timing to know exactly when to read it, different than the 5200 and 5220 which are both easily readable).
-    In addition, the NOP commands on the FIFO interface have been changed on the 5220C and data passed in the low bits has a meaning regarding frame length, see above.
-
-    It is also possible but inconclusive that the chirp table was changed; The LPC tables between the 5220 and 5220C are MOSTLY the same of not completely so, but as mentioned above the energy table has some sort of difference.
+    The 5220C (and CD2501ECD maybe?) are quieter due to a better dac arrangement on die which allows less crossover between bits, based on the decap differences.
 
 
 ***MAME Driver specific notes:***
-
-    Looping has the tms5220 hooked up directly to the cpu. However currently the
-    tms9900 cpu core does not support a ready line.
 
     Victory's initial audio selftest is pretty brutal to the FIFO: it sends a
     sequence of bytes to the FIFO and checks the status bits after each one; if
@@ -210,7 +207,7 @@ dotron and midwayfb(mcr.c): uses old interface
 
 As for which games used which chips:
 
-TMS5200 AKA TMC0285: (1980 to 1983)
+TMS5200 AKA TMC0285 AKA CD2501E: (1980 to 1983)
     Arcade: Zaccaria's 'money money' and 'jack rabbit'; Bally/Midway's
 'Discs of Tron' (all environmental cabs and a few upright cabs; the code
 exists on all versions for the speech though, and upright cabs can be
@@ -221,13 +218,16 @@ upgraded to add it by hacking on a 'Squawk & Talk' pinball speech board
 serial chips); Street Electronics Corp.'s Apple II 'Echo 2' Speech
 synthesizer (early cards only)
 
+CD2501ECD: (1983)
+    Home computer: TI 99/8 (prototypes only)
+
 TMS5220: (mostly on things made between 1981 and 1984-1985)
     Arcade: Bally/Midway's 'NFL Football'; Atari's 'Star Wars',
 'Firefox', 'Return of the Jedi', 'Road Runner', 'The Empire Strikes
 Back' (all verified with schematics); Venture Line's 'Looping' and 'Sky
 Bumper' (need verify for both); Olympia's 'Portraits' (need verify);
 Exidy's 'Victory' and 'Victor Banana' (need verify for both)
-    Pinball: Several (don't know names offhand, have not checked schematics)
+    Pinball: Several (don't know names offhand, have not checked schematics; likely Zaccaria's 'Farfalla')
     Home computer: Street Electronics Corp.'s Apple II 'Echo 2' Speech
 synthesizer (later cards only); Texas Instruments' 'Speak and Learn'
 scanner wand unit.
@@ -242,6 +242,10 @@ this), mostly on later pinballs with LPC speech)
     Home computer: Street Electronics Corp.'s 'ECHO' parallel/hobbyist
 module (6511 based), IBM PS/2 Speech adapter (parallel port connection
 device), PES Speech adapter (serial port connection)
+
+Street electronics had a later 1989-era ECHO appleII card which is TSP50c0x/1x
+MCU based speech and not tms5xxx based (though it is likely emulating the tms5220
+in MCU code). Look for a 16-pin chip at U6 labeled "ECHO-3 SN".
 
 ***********************************************************************************************/
 
@@ -298,12 +302,9 @@ device), PES Speech adapter (serial port connection)
 #define PWIDTH 1
 
 /* Other hacks */
-/* HACK: if defined, outputs the low 4 bits of the lattice filter to the i/o
- * or clip logic, even though the real hardware doesn't do this */
-#define ALLOW_4_LSB 1
-
-/* HACK: if defined, uses impossibly perfect 'straight line' interpolation */
-#define PERFECT_INTERPOLATION_HACK 0
+/* HACK?: if defined, outputs the low 4 bits of the lattice filter to the i/o
+ * or clip logic, even though the real hardware doesn't do this, partially verified by decap */
+#undef ALLOW_4_LSB
 
 
 /* *****configuration of chip connection stuff***** */
@@ -729,7 +730,7 @@ void tms5220_data_write(int data) {
         bit D2(bit 5) = BE - Buffer Empty is active (high) when the FIFO buffer has run out of data
                 while executing a Speak External command. Buffer Empty is set when the last bit
                 of the "Last-In" byte is shifted out to the Synthesis Section. This causes
-                Talk Status to be cleared. Speed is terminated at some abnormal point and the
+                Talk Status to be cleared. Speech is terminated at some abnormal point and the
                 Speak External command execution is terminated.
 
 ***********************************************************************************************/
@@ -865,13 +866,12 @@ int tms5220_cycles_to_ready_chip(void *chip)
       val = (tms->fifo[tms->fifo_head] >> tms->fifo_bits_taken) & 0xf;
       if (val == 0)
         /* 0 -> silence frame: we will only read 4 bits, and we will
-                therefore need to read another frame before the FIFO is not
-                full any more */
-        answer += 200;
+				 * therefore need to read another frame before the FIFO is not
+				 * full any more */
+				answer += tms->subc_reload?200:304;
       /* 15 -> stop frame, we will only read 4 bits, but the FIFO will
-            we cleared */
-      /* otherwise, we need to parse the repeat flag (1 bit) and the
-            pitch (6 bits), so everything will be OK. */
+			 * we cleared; otherwise, we need to parse the repeat flag (1 bit)
+			 * and the pitch (6 bits), so everything will be OK. */
     }
   }
 
@@ -1333,7 +1333,7 @@ static INT32 matrix_multiply(INT32 a, INT32 b)
   while (a<-512) { a+=1024; }
   while (b>16383) { b-=32768; }
   while (b<-16384) { b+=32768; }
-  result = ((a*b)>>9)|1;
+	result = ((a*b)>>9)|1;//&(~1);
 #ifdef VERBOSE
   if (result>16383) fprintf(stderr,"matrix multiplier overflowed! a: %x, b: %x, result: %x", a, b, result);
   if (result<-16384) fprintf(stderr,"matrix multiplier underflowed! a: %x, b: %x, result: %x", a, b, result);
