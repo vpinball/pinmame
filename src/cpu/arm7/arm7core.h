@@ -180,6 +180,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_BIT	30
 #define C_BIT	29
 #define V_BIT	28
+#define Q_BIT   27
 #define I_BIT	7
 #define F_BIT	6
 #define T_BIT	5	//Thumb mode
@@ -188,6 +189,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_MASK	((data32_t)(1<<Z_BIT)) /* Zero flag */
 #define C_MASK	((data32_t)(1<<C_BIT)) /* Carry flag */
 #define V_MASK	((data32_t)(1<<V_BIT)) /* oVerflow flag */
+#define Q_MASK  ((data32_t)(1<<Q_BIT)) /* signed overflow for QADD, MAC */
 #define I_MASK	((data32_t)(1<<I_BIT)) /* Interrupt request disable */
 #define F_MASK	((data32_t)(1<<F_BIT)) /* Fast interrupt request disable */
 #define T_MASK	((data32_t)(1<<T_BIT)) /* Thumb Mode flag */
@@ -196,6 +198,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_IS_SET(pc)	((pc) & Z_MASK)
 #define C_IS_SET(pc)	((pc) & C_MASK)
 #define V_IS_SET(pc)	((pc) & V_MASK)
+#define Q_IS_SET(pc)    ((pc) & Q_MASK)
 #define I_IS_SET(pc)	((pc) & I_MASK)
 #define F_IS_SET(pc)	((pc) & F_MASK)
 
@@ -203,98 +206,111 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_IS_CLEAR(pc)	(!Z_IS_SET(pc))
 #define C_IS_CLEAR(pc)	(!C_IS_SET(pc))
 #define V_IS_CLEAR(pc)	(!V_IS_SET(pc))
+#define Q_IS_CLEAR(pc)  (!Q_IS_SET(pc))
 #define I_IS_CLEAR(pc)	(!I_IS_SET(pc))
 #define F_IS_CLEAR(pc)	(!F_IS_SET(pc))
 
 /* Deconstructing an instruction */
 //todo: use these in all places (including dasm file)
-#define INSN_COND			((data32_t) 0xf0000000u)
-#define INSN_SDT_L			((data32_t) 0x00100000u)
-#define INSN_SDT_W			((data32_t) 0x00200000u)
-#define INSN_SDT_B			((data32_t) 0x00400000u)
-#define INSN_SDT_U			((data32_t) 0x00800000u)
-#define INSN_SDT_P			((data32_t) 0x01000000u)
-#define INSN_BDT_L			((data32_t) 0x00100000u)
-#define INSN_BDT_W			((data32_t) 0x00200000u)
-#define INSN_BDT_S			((data32_t) 0x00400000u)
-#define INSN_BDT_U			((data32_t) 0x00800000u)
-#define INSN_BDT_P			((data32_t) 0x01000000u)
-#define INSN_BDT_REGS		((data32_t) 0x0000ffffu)
-#define INSN_SDT_IMM		((data32_t) 0x00000fffu)
-#define INSN_MUL_A			((data32_t) 0x00200000u)
-#define INSN_MUL_RM			((data32_t) 0x0000000fu)
-#define INSN_MUL_RS			((data32_t) 0x00000f00u)
-#define INSN_MUL_RN			((data32_t) 0x0000f000u)
-#define INSN_MUL_RD			((data32_t) 0x000f0000u)
-#define INSN_I				((data32_t) 0x02000000u)
-#define INSN_OPCODE			((data32_t) 0x01e00000u)
-#define INSN_S				((data32_t) 0x00100000u)
-#define INSN_BL				((data32_t) 0x01000000u)
-#define INSN_BRANCH			((data32_t) 0x00ffffffu)
-#define INSN_SWI			((data32_t) 0x00ffffffu)
-#define INSN_RN				((data32_t) 0x000f0000u)
-#define INSN_RD				((data32_t) 0x0000f000u)
-#define INSN_OP2			((data32_t) 0x00000fffu)
-#define INSN_OP2_SHIFT		((data32_t) 0x00000f80u)
-#define INSN_OP2_SHIFT_TYPE	((data32_t) 0x00000070u)
-#define INSN_OP2_RM			((data32_t) 0x0000000fu)
-#define INSN_OP2_ROTATE		((data32_t) 0x00000f00u)
-#define INSN_OP2_IMM		((data32_t) 0x000000ffu)
-#define INSN_OP2_SHIFT_TYPE_SHIFT	4
-#define INSN_OP2_SHIFT_SHIFT		7
-#define INSN_OP2_ROTATE_SHIFT		8
-#define INSN_MUL_RS_SHIFT			8
-#define INSN_MUL_RN_SHIFT			12
-#define INSN_MUL_RD_SHIFT			16
-#define INSN_OPCODE_SHIFT			21
-#define INSN_RN_SHIFT				16
-#define INSN_RD_SHIFT				12
-#define INSN_COND_SHIFT				28
+#define INSN_COND           ((data32_t)0xf0000000u)
+#define INSN_SDT_L          ((data32_t)0x00100000u)
+#define INSN_SDT_W          ((data32_t)0x00200000u)
+#define INSN_SDT_B          ((data32_t)0x00400000u)
+#define INSN_SDT_U          ((data32_t)0x00800000u)
+#define INSN_SDT_P          ((data32_t)0x01000000u)
+#define INSN_BDT_L          ((data32_t)0x00100000u)
+#define INSN_BDT_W          ((data32_t)0x00200000u)
+#define INSN_BDT_S          ((data32_t)0x00400000u)
+#define INSN_BDT_U          ((data32_t)0x00800000u)
+#define INSN_BDT_P          ((data32_t)0x01000000u)
+#define INSN_BDT_REGS       ((data32_t)0x0000ffffu)
+#define INSN_SDT_IMM        ((data32_t)0x00000fffu)
+#define INSN_MUL_A          ((data32_t)0x00200000u)
+#define INSN_MUL_RM         ((data32_t)0x0000000fu)
+#define INSN_MUL_RS         ((data32_t)0x00000f00u)
+#define INSN_MUL_RN         ((data32_t)0x0000f000u)
+#define INSN_MUL_RD         ((data32_t)0x000f0000u)
+#define INSN_I              ((data32_t)0x02000000u)
+#define INSN_OPCODE         ((data32_t)0x01e00000u)
+#define INSN_S              ((data32_t)0x00100000u)
+#define INSN_BL             ((data32_t)0x01000000u)
+#define INSN_BRANCH         ((data32_t)0x00ffffffu)
+#define INSN_SWI            ((data32_t)0x00ffffffu)
+#define INSN_RN             ((data32_t)0x000f0000u)
+#define INSN_RD             ((data32_t)0x0000f000u)
+#define INSN_OP2            ((data32_t)0x00000fffu)
+#define INSN_OP2_SHIFT      ((data32_t)0x00000f80u)
+#define INSN_OP2_SHIFT_TYPE ((data32_t)0x00000070u)
+#define INSN_OP2_RM         ((data32_t)0x0000000fu)
+#define INSN_OP2_ROTATE     ((data32_t)0x00000f00u)
+#define INSN_OP2_IMM        ((data32_t)0x000000ffu)
+#define INSN_OP2_SHIFT_TYPE_SHIFT   4
+#define INSN_OP2_SHIFT_SHIFT        7
+#define INSN_OP2_ROTATE_SHIFT       8
+#define INSN_MUL_RS_SHIFT           8
+#define INSN_MUL_RN_SHIFT           12
+#define INSN_MUL_RD_SHIFT           16
+#define INSN_OPCODE_SHIFT           21
+#define INSN_RN_SHIFT               16
+#define INSN_RD_SHIFT               12
+#define INSN_COND_SHIFT             28
+
+#define INSN_COPRO_N        ((data32_t) 0x00100000u)
+#define INSN_COPRO_CREG     ((data32_t) 0x000f0000u)
+#define INSN_COPRO_AREG     ((data32_t) 0x0000f000u)
+#define INSN_COPRO_CPNUM    ((data32_t) 0x00000f00u)
+#define INSN_COPRO_OP2      ((data32_t) 0x000000e0u)
+#define INSN_COPRO_OP3      ((data32_t) 0x0000000fu)
+#define INSN_COPRO_N_SHIFT          20
+#define INSN_COPRO_CREG_SHIFT       16
+#define INSN_COPRO_AREG_SHIFT       12
+#define INSN_COPRO_CPNUM_SHIFT      8
+#define INSN_COPRO_OP2_SHIFT        5
 
 enum
 {
-	OPCODE_AND,	/* 0000 */
-	OPCODE_EOR,	/* 0001 */
-	OPCODE_SUB,	/* 0010 */
-	OPCODE_RSB,	/* 0011 */
-	OPCODE_ADD,	/* 0100 */
-	OPCODE_ADC,	/* 0101 */
-	OPCODE_SBC,	/* 0110 */
-	OPCODE_RSC,	/* 0111 */
-	OPCODE_TST,	/* 1000 */
-	OPCODE_TEQ,	/* 1001 */
-	OPCODE_CMP,	/* 1010 */
-	OPCODE_CMN,	/* 1011 */
-	OPCODE_ORR,	/* 1100 */
-	OPCODE_MOV,	/* 1101 */
-	OPCODE_BIC,	/* 1110 */
-	OPCODE_MVN	/* 1111 */
+	OPCODE_AND, /* 0000 */
+	OPCODE_EOR, /* 0001 */
+	OPCODE_SUB, /* 0010 */
+	OPCODE_RSB, /* 0011 */
+	OPCODE_ADD, /* 0100 */
+	OPCODE_ADC, /* 0101 */
+	OPCODE_SBC, /* 0110 */
+	OPCODE_RSC, /* 0111 */
+	OPCODE_TST, /* 1000 */
+	OPCODE_TEQ, /* 1001 */
+	OPCODE_CMP, /* 1010 */
+	OPCODE_CMN, /* 1011 */
+	OPCODE_ORR, /* 1100 */
+	OPCODE_MOV, /* 1101 */
+	OPCODE_BIC, /* 1110 */
+	OPCODE_MVN  /* 1111 */
 };
 
 enum
 {
-	COND_EQ = 0,	/* Z: equal */
-	COND_NE,		/* ~Z: not equal */
-	COND_CS, COND_HS = 2,	/* C: unsigned higher or same */
-	COND_CC, COND_LO = 3,	/* ~C: unsigned lower */
-	COND_MI,		/* N: negative */
-	COND_PL,		/* ~N: positive or zero */
-	COND_VS,		/* V: overflow */
-	COND_VC,		/* ~V: no overflow */
-	COND_HI,		/* C && ~Z: unsigned higher */
-	COND_LS,		/* ~C || Z: unsigned lower or same */
-	COND_GE,		/* N == V: greater or equal */
-	COND_LT,		/* N != V: less than */
-	COND_GT,		/* ~Z && (N == V): greater than */
-	COND_LE,		/* Z || (N != V): less than or equal */
-	COND_AL,		/* always */
-	COND_NV			/* never */
+	COND_EQ = 0,          /*  Z           equal                   */
+	COND_NE,              /* ~Z           not equal               */
+	COND_CS, COND_HS = 2, /*  C           unsigned higher or same */
+	COND_CC, COND_LO = 3, /* ~C           unsigned lower          */
+	COND_MI,              /*  N           negative                */
+	COND_PL,              /* ~N           positive or zero        */
+	COND_VS,              /*  V           overflow                */
+	COND_VC,              /* ~V           no overflow             */
+	COND_HI,              /*  C && ~Z     unsigned higher         */
+	COND_LS,              /* ~C ||  Z     unsigned lower or same  */
+	COND_GE,              /*  N == V      greater or equal        */
+	COND_LT,              /*  N != V      less than               */
+	COND_GT,              /* ~Z && N == V greater than            */
+	COND_LE,              /*  Z || N != V less than or equal      */
+	COND_AL,              /*  1           always                  */
+	COND_NV               /*  0           never                   */
 };
 
-#define LSL(v,s) ((v) << (s))
-#define LSR(v,s) ((v) >> (s))
-#define ROL(v,s) (LSL((v),(s)) | (LSR((v),32u - (s))))
-#define ROR(v,s) (LSR((v),(s)) | (LSL((v),32u - (s))))
+#define LSL(v, s) ((v) << (s))
+#define LSR(v, s) ((v) >> (s))
+#define ROL(v, s) (LSL((v), (s)) | (LSR((v), 32u - (s))))
+#define ROR(v, s) (LSR((v), (s)) | (LSL((v), 32u - (s))))
 
 /* Convenience Macros */
 #define R15						ARMREG(eR15)
@@ -309,6 +325,8 @@ enum
 /* At one point I thought these needed to be cpu implementation specific, but they don't.. */
 #define GET_REGISTER(reg)		GetRegister(reg)
 #define SET_REGISTER(reg,val)	SetRegister(reg,val)
+#define GET_MODE_REGISTER(mode, reg)       GetModeRegister(mode, reg)
+#define SET_MODE_REGISTER(mode, reg, val)  SetModeRegister(mode, reg, val)
 #define ARM7_CHECKIRQ			arm7_check_irq_state()
 
 /* Static Vars */
