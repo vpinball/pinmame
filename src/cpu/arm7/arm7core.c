@@ -395,10 +395,10 @@ static int loadInc ( data32_t pat, data32_t rbv, data32_t s)
 			if (ARM7.pendingAbtD == 0) {
 				data = READ32(rbv += 4);
 				if (i == 15) {
-					if (s) /* Pull full contents from stack */
+					//if (s) /* Pull full contents from stack */
 						SET_REGISTER( 15, data );
-					else /* Pull only address, preserve mode & status flags */
-						SET_REGISTER( 15, data );
+					//else /* Pull only address, preserve mode & status flags */
+					//	SET_REGISTER( 15, data );
 				} else
 					SET_REGISTER( i, data );
 			}
@@ -424,10 +424,10 @@ static int loadIncMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			{
 			data = READ32(rbv += 4);
 			if (i == 15) {
-				if (s) /* Pull full contents from stack */
+				//if (s) /* Pull full contents from stack */
 					SET_MODE_REGISTER(mode, 15, data);
-				else /* Pull only address, preserve mode & status flags */
-					SET_MODE_REGISTER(mode, 15, data);
+				//else /* Pull only address, preserve mode & status flags */
+				//	SET_MODE_REGISTER(mode, 15, data);
 			} else
 				SET_MODE_REGISTER(mode, i, data);
 			}
@@ -451,10 +451,10 @@ static int loadDec( data32_t pat, data32_t rbv, data32_t s)
 			if (ARM7.pendingAbtD == 0) {
 				data = READ32(rbv -= 4);
 				if (i == 15) {
-					if (s) /* Pull full contents from stack */
+					//if (s) /* Pull full contents from stack */
 						SET_REGISTER( 15, data );
-					else /* Pull only address, preserve mode & status flags */
-						SET_REGISTER( 15, data );
+					//else /* Pull only address, preserve mode & status flags */
+					//	SET_REGISTER( 15, data );
 				}
 				else
 					SET_REGISTER( i, data );
@@ -480,10 +480,10 @@ static int loadDecMode(data32_t pat, data32_t rbv, data32_t s, int mode)
 			{
 			data = READ32(rbv -= 4);
 			if (i == 15) {
-				if (s) /* Pull full contents from stack */
+				//if (s) /* Pull full contents from stack */
 					SET_MODE_REGISTER(mode, 15, data);
-				else /* Pull only address, preserve mode & status flags */
-					SET_MODE_REGISTER(mode, 15, data);
+				//else /* Pull only address, preserve mode & status flags */
+				//	SET_MODE_REGISTER(mode, 15, data);
 			}
 			else
 				SET_MODE_REGISTER(mode, i, data);
@@ -1244,7 +1244,7 @@ static void HandleSwap(data32_t insn)
 	//Process: Read original data from address pointed by Rn then store data from address
 	//         pointed by Rm to Rn address, and store original data from Rn to Rd.
 	// Todo: I have no valid source to verify this function works.. so it needs to be tested
-	data32_t rn,rnv,rm,rmv,rd,tmp;
+	data32_t rn,rm,rd,tmp;
 
 	LOG(("%08x: HandleSwap called!\n",R15));
 
