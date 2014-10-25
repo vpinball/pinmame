@@ -68,9 +68,50 @@ static int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 static int diff_lookup[49*16];
 
 /* volume lookup table */
-static UINT32 volume_table[16];
+//static UINT32 volume_table[16];
 
+// volume lookup table. The manual lists only 9 steps, ~3dB per step. Given the dB values,
+// that seems to map to a 5-bit volume control. Any volume parameter beyond the 9th index
+// results in silent playback.
+const UINT8 okim6295_volume_table[16] =
+{
+	0x20,   //   0 dB
+	0x16,   //  -3.2 dB
+	0x10,   //  -6.0 dB
+	0x0b,   //  -9.2 dB
+	0x08,   // -12.0 dB
+	0x06,   // -14.5 dB
+	0x04,   // -18.0 dB
+	0x03,   // -20.5 dB
+	0x02,   // -24.0 dB
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+};
 
+static const int okim6376_volume_table[16] =
+{
+	0x20,   //   0 dB
+	0x10,   //  -6.0 dB
+	0x08,   // -12.0 dB
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+};
 
 /**********************************************************************************************
 
@@ -109,16 +150,16 @@ static void compute_tables(void)
 	}
 
 	/* generate the OKI6295 volume table */
-	for (step = 0; step < 16; step++)
-	{
-		double out = 256.0;
-		int vol = step;
-
-		/* 3dB per step */
-		while (vol-- > 0)
-			out /= 1.412537545;	/* = 10 ^ (3/20) = 3dB */
-		volume_table[step] = (UINT32)out;
-	}
+	//for (step = 0; step < 16; step++)
+	//{
+	//	double out = 256.0;
+	//	int vol = step;
+	//
+	//	/* 3dB per step */
+	//	while (vol-- > 0)
+	//		out /= 1.412537545;	/* = 10 ^ (3/20) = 3dB */
+	//	volume_table[step] = (UINT32)out;
+	//}
 }
 
 
@@ -162,7 +203,7 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 				step = 0;
 
 			/* output to the buffer, scaling by the volume */
-			*buffer++ = signal * voice->volume / 16;
+			*buffer++ = signal * voice->volume / 2;
 			samples--;
 
 			/* next! */
@@ -221,13 +262,13 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 
 			/* compute the new amplitude and update the current step */
 			val = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
-			signal = diff_lookup[step * 16 + (val & 15)];
+			signal += diff_lookup[step * 16 + (val & 15)];
 
 			/* clamp to the maximum */
-			if (signal > 255)
-				signal = 255;
-			else if (signal < -256)
-				signal = -256;
+			if (signal > 2047)
+				signal = 2047;
+			else if (signal < -2048)
+				signal = -2048;
 
 			/* adjust the step size and clamp */
 			step += index_shift[val & 7];
@@ -582,19 +623,22 @@ int ADPCM_playing(int num)
 
 /**********************************************************************************************
  *
- *	OKIM 6295 ADPCM chip:
- *
- *	Command bytes are sent:
- *
- *		1xxx xxxx = start of 2-byte command sequence, xxxxxxx is the sample number to trigger
- *		abcd vvvv = second half of command; one of the abcd bits is set to indicate which voice
- *		            the v bits seem to be volumed
- *
- *		0abc d000 = stop playing; one or more of the abcd bits is set to indicate which voice(s)
- *
- *	Status is read:
- *
- *		???? abcd = one bit per voice, set to 0 if nothing is playing, or 1 if it is active
+    OKIM 6295 ADPCM chip:
+
+    Command bytes are sent:
+
+        1xxx xxxx = start of 2-byte command sequence, xxxxxxx is the sample
+                    number to trigger
+        abcd vvvv = second half of command; one of the abcd bits is set to
+                    indicate which voice the v bits seem to be volumed
+
+        0abc d000 = stop playing; one or more of the abcd bits is set to
+                    indicate which voice(s)
+
+    Status is read:
+
+        ???? abcd = one bit per voice, set to 0 if nothing is playing, or
+                    1 if it is active
  *
 ***********************************************************************************************/
 
@@ -843,7 +887,7 @@ static void OKIM6295_data_w(int num, int data)
 						/* also reset the ADPCM parameters */
 						voice->signal = -2;
 						voice->step = 0;
-						voice->volume = volume_table[data & 0x0f];
+						voice->volume = okim6295_volume_table[data & 0x0f];
 					}
 					else
 					{
@@ -945,7 +989,12 @@ static void OKIM6376_data_w(int num, int data)
 						/* also reset the ADPCM parameters */
 						voice->signal = -2;
 						voice->step = 0;
-						voice->volume = volume_table[data & 0x0f];
+						//voice->volume = okim6376_volume_table[data & 0x0f];
+						//if (channel == 0)
+						//{
+							/* We set channel 2's audio separately */
+							voice->volume = okim6376_volume_table[0];
+						//}
 					}
 					else
 					{

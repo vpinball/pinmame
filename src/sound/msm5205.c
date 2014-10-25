@@ -8,7 +8,7 @@
  *
  *	 HJB 08/31/98
  *	 modified to use an automatically selected oversampling factor
- *	 for the current Machine->sample_rate
+ *   for the current sample rate
  *
  *	 01/06/99
  *	separate MSM5205 emulator form adpcm.c and some fix
@@ -17,6 +17,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+/*
+
+    MSM 5205 ADPCM chip:
+
+    Data is streamed from a CPU by means of a clock generated on the chip.
+
+    A reset signal is set high or low to determine whether playback (and interrupts) are occuring.
+
+  MSM6585: is an upgraded MSM5205 voice synth IC.
+   Improvements:
+    More precise internal DA converter
+    Built in low-pass filter
+    Expanded sampling frequency
+
+   Differences between MSM6585 & MSM5205:
+
+                              MSM6586          MSM5205
+    Master clock frequency    640kHz           384kHz
+    Sampling frequency        4k/8k/16k/32kHz  4k/6k/8kHz
+    ADPCM bit length          4-bit            3-bit/4-bit
+    DA converter              12-bit           10-bit
+    Low-pass filter           -40dB/oct        N/A
+    Overflow prevent circuit  Included         N/A
+
+    Timer callback at VCLK low edge on MSM5205 (at rising edge on MSM6585)
+
+   TODO:
+   - lowpass filter for MSM6585
+
+ */
 
 #include "driver.h"
 #include "msm5205.h"
@@ -38,7 +69,7 @@ static int diff_lookup[49*16];
 static void ComputeTables (void)
 {
 	/* nibble to bit map */
-	static int nbl2bit[16][4] =
+	static const int nbl2bit[16][4] =
 	{
 		{ 1, 0, 0, 0}, { 1, 0, 0, 1}, { 1, 0, 1, 0}, { 1, 0, 1, 1},
 		{ 1, 1, 0, 0}, { 1, 1, 0, 1}, { 1, 1, 1, 0}, { 1, 1, 1, 1},
@@ -275,14 +306,18 @@ void MSM5205_data_w (int num, int data)
 }
 
 /*
- *    Handle an change of the selector
+ *    Handle a change of the selector
  */
 
 void MSM5205_playmode_w(int num,int select)
 {
 	struct MSM5205Voice *voice = &msm5205[num];
-	static int prescaler_table[4] = {96,48,64,0};
-	int prescaler = prescaler_table[select & 3];
+	static const int prescaler_table[2][4] =
+	{
+		{ 96, 48, 64,  0},
+		{160, 40, 80, 20}
+	};
+	int prescaler = prescaler_table[select >> 3 & 1][select & 3];
 	int bitwidth = (select & 4) ? 4 : 3;
 
 
