@@ -185,26 +185,25 @@ INLINE data8_t arm7_cpu_read8( offs_t addr )
  * helper funcs
  ***************/
 
-/* Set NZCV flags for ADDS / SUBS */
-#define HandleALUAddFlags(rd, rn, op2) \
-  if (insn & INSN_S) \
-    SET_CPSR( \
-      ((GET_CPSR &~ (N_MASK | Z_MASK | V_MASK | C_MASK)) \
-      | (((!SIGN_BITS_DIFFER(rn, op2)) && SIGN_BITS_DIFFER(rn, rd)) \
-          << V_BIT) \
-      | (((~(rn)) < (op2)) << C_BIT) \
-      | HandleALUNZFlags(rd))); \
-  R15 += 4;
+#define IsNeg(i) ((i) >> 31)
+#define IsPos(i) ((~(i)) >> 31)
 
-#define HandleALUSubFlags(rd, rn, op2) \
-  if (insn & INSN_S) \
-    SET_CPSR( \
-      ((GET_CPSR &~ (N_MASK | Z_MASK | V_MASK | C_MASK)) \
-      | ((SIGN_BITS_DIFFER(rn, op2) && SIGN_BITS_DIFFER(rn, rd)) \
-          << V_BIT) \
-      | (((op2) <= (rn)) << C_BIT) \
-      | HandleALUNZFlags(rd))); \
-  R15 += 4;
+/* Set NZCV flags for ADDS / SUBS */
+#define HandleALUAddFlags(rd, rn, op2)                                                \
+	if (insn & INSN_S)                                                                  \
+	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                       \
+				| (((!SIGN_BITS_DIFFER(rn, op2)) && SIGN_BITS_DIFFER(rn, rd)) << V_BIT) \
+				| (((IsNeg(rn) & IsNeg(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsNeg(op2) & IsPos(rd))) ? C_MASK : 0) \
+				| HandleALUNZFlags(rd)));                                               \
+	R15 += 4;
+
+#define HandleALUSubFlags(rd, rn, op2)                                                                         \
+	if (insn & INSN_S)                                                                                           \
+	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                                                \
+				| ((SIGN_BITS_DIFFER(rn, op2) && SIGN_BITS_DIFFER(rn, rd)) << V_BIT)                             \
+				| (((IsNeg(rn) & IsPos(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsPos(op2) & IsPos(rd))) ? C_MASK : 0) \
+				| HandleALUNZFlags(rd)));                                                                        \
+	R15 += 4;
 
 /* Set NZC flags for logical operations. */
 
@@ -980,15 +979,15 @@ static void HandleMemSingle( data32_t insn )
 		ARM7_ICOUNT += 1;
 	}
 
-	/*if (ARM7.pendingAbtD == 0)
+	/*if (ARM7.pendingAbtD == 0) // MAME has this enabled, but no boot-up on some SAMs due to this
 	{
 		if ((insn & INSN_SDT_P) && (insn & INSN_SDT_W))
 		{
 			SET_REGISTER(rn, rnv_old);
 		}
 	}
-	else*/
-	{
+	else
+	{*/
 	/* Do post-indexing writeback */
 	if (!(insn & INSN_SDT_P)/* && (insn&INSN_SDT_W)*/)
 	{
@@ -1023,7 +1022,7 @@ static void HandleMemSingle( data32_t insn )
 			}
 		}
 	}
-	}
+	//}
 
 //	ARM7_CHECKIRQ
 
@@ -1520,7 +1519,7 @@ static void HandleALU( data32_t insn )
 			R15 = rd;
 
 			// extra cycles (PC written)
-			//ARM7_ICOUNT -= 2;
+			//ARM7_ICOUNT -= 2; // MAME has this, but screws with country detection in SAM
 		}
 		else
 		{
@@ -1541,7 +1540,7 @@ static void HandleALU( data32_t insn )
 				R15 = rd;
 				
 				// extra cycles (PC written)
-				//ARM7_ICOUNT -= 2;
+				//ARM7_ICOUNT -= 2; // MAME has this, but screws with country detection in SAM
 
 				/* IRQ masks may have changed in this instruction */
 //				ARM7_CHECKIRQ;
@@ -1572,11 +1571,11 @@ static void HandleALU( data32_t insn )
 		}
 		
 		// extra cycles (PC written)
-		//ARM7_ICOUNT -= 2;
+		//ARM7_ICOUNT -= 2; // MAME has this, but screws with country detection in SAM
 	}
 	
 	// compensate for the -3 at the end
-	//ARM7_ICOUNT += 2;
+	//ARM7_ICOUNT += 2; // MAME has this, but screws with country detection in SAM
 }
 
 static void HandleMul( data32_t insn)
