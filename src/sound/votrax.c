@@ -285,7 +285,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeOut = 1.0;
 
 			if ( !doMix )
-				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*3.1415/2);
+				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*(M_PI/2));
 
 			if ( !votraxsc01_locals.iRemainingSamples ) {
 				votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation];
