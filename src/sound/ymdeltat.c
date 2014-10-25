@@ -181,10 +181,10 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 
 */
 		/* handle emulation mode */
-		//if(DELTAT->emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610)
-		//{
-		//	v |= 0x20;      /*  YM2610 always uses external memory and doesn't even have memory flag bit. */
-		//}
+		if(DELTAT->emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610)
+		{
+			v |= 0x20;      /*  YM2610 always uses external memory and doesn't even have memory flag bit. */
+		}
 
 		DELTAT->portstate = v & (0x80|0x40|0x20|0x10|0x01); /* start, rec, memory mode, repeat flag copy, reset(bit0) */
 
@@ -250,10 +250,10 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 		break;
 	case 0x01:  /* L,R,-,-,SAMPLE,DA/AD,RAMTYPE,ROM */
 		/* handle emulation mode */
-		//if(DELTAT->emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610)
-		//{
-		//	v |= 0x01;      /*  YM2610 always uses ROM as an external memory and doesn't have ROM/RAM memory flag bit. */
-		//}
+		if(DELTAT->emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610)
+		{
+			v |= 0x01;      /*  YM2610 always uses ROM as an external memory and doesn't have ROM/RAM memory flag bit. */
+		}
 
 		DELTAT->pan = &DELTAT->output_pointer[(v>>6)&0x03];
 		if ((DELTAT->control2 & 3) != (v & 3))
@@ -394,7 +394,7 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 	}
 }
 
-void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan/*,int emulation_mode*/)
+void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan,int emulation_mode)
 {
 	DELTAT->now_addr  = 0;
 	DELTAT->now_step  = 0;
@@ -408,9 +408,9 @@ void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan/*,int emulation_mode*/)
 	DELTAT->prev_acc  = 0;
 	DELTAT->adpcmd    = 127;
 	DELTAT->adpcml    = 0;
-	//DELTAT->emulation_mode = (UINT8)emulation_mode;
-	DELTAT->portstate = /*(emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610) ? 0x20 :*/ 0;
-	DELTAT->control2  = /*(emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610) ? 0x01 :*/ 0; /* default setting depends on the emulation mode. MSX demo called "facdemo_4" doesn't setup control2 register at all and still works */
+	DELTAT->emulation_mode = (UINT8)emulation_mode;
+	DELTAT->portstate = (emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610) ? 0x20 : 0;
+	DELTAT->control2  = (emulation_mode == YM_DELTAT_EMULATION_MODE_YM2610) ? 0x01 : 0; /* default setting depends on the emulation mode. MSX demo called "facdemo_4" doesn't setup control2 register at all and still works */
 	DELTAT->DRAMportshift = dram_rightshift[DELTAT->control2 & 3];
 
 	/* The flag mask register disables the BRDY after the reset, however

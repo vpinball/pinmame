@@ -1808,7 +1808,7 @@ static void OPLResetChip(FM_OPL *OPL)
 		DELTAT->output_pointer = &output_deltat[0];
 		DELTAT->portshift = 5;
 		DELTAT->output_range = 1<<23;
-		YM_DELTAT_ADPCM_Reset(DELTAT,0);
+		YM_DELTAT_ADPCM_Reset(DELTAT,0,YM_DELTAT_EMULATION_MODE_NORMAL);
 	}
 #endif
 }
