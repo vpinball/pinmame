@@ -3,6 +3,8 @@
 
 #define YM_DELTAT_SHIFT    (16)
 
+#define YM_DELTAT_EMULATION_MODE_NORMAL 0
+#define YM_DELTAT_EMULATION_MODE_YM2610 1
 
 typedef void (*STATUS_CHANGE_HANDLER)(UINT8 which_chip, UINT8 status_bits);
 
@@ -60,13 +62,13 @@ typedef struct deltat_adpcm_state {     /* AT: rearranged and tigntened structur
 	UINT8	PCM_BSY;		/* 1 when ADPCM is playing; Y8950/YM2608 only */
 
 	UINT8	reg[16];		/* adpcm registers		*/
-	//UINT8   emulation_mode; /* which chip we're emulating */
+	UINT8   emulation_mode; /* which chip we're emulating */
 }YM_DELTAT;
 
 
 UINT8 YM_DELTAT_ADPCM_Read(YM_DELTAT *DELTAT);
 void YM_DELTAT_ADPCM_Write(YM_DELTAT *DELTAT,int r,int v);
-void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan/*,int emulation_mode*/);
+void YM_DELTAT_ADPCM_Reset(YM_DELTAT *DELTAT,int pan,int emulation_mode);
 
 void YM_DELTAT_postload(YM_DELTAT *DELTAT,UINT8 *regs);
 void YM_DELTAT_savestate(const char *statename,int num,YM_DELTAT *DELTAT);
