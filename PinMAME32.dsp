@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe" /libpath:"ext\zlib\lib_vc6" /libpath:"ext\htmlhelp\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe" /libpath:"ext\zlib\lib_vc9" /libpath:"ext\htmlhelp\lib"
 # Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME32\Win32\Release\PinMAME32_VC60.exe
@@ -97,7 +97,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Debug\PinMAME32_VC60vcd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc6" /libpath:"ext\htmlhelp\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\Debug\PinMAME32_VC60vcd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc9" /libpath:"ext\htmlhelp\lib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME32\Win32\Debug
@@ -141,7 +141,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe" /libpath:"ext\zlib\lib_vc6" /libpath:"ext\htmlhelp\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe" /libpath:"ext\zlib\lib_vc9" /libpath:"ext\htmlhelp\lib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetPath=.\obj\VC60\PinMAME32\Win32\ReleaseMD\PinMAME32_VC60md.exe
@@ -177,7 +177,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\DebugMD\PinMAME32_VC60vcmd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc6" /libpath:"ext\htmlhelp\lib"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib comctl32.lib htmlhelp.lib /nologo /subsystem:windows /debug /machine:I386 /out:".\obj\VC60\PinMAME32\Win32\DebugMD\PinMAME32_VC60vcmd.exe" /pdbtype:sept /libpath:"ext\zlib\lib_vc9" /libpath:"ext\htmlhelp\lib"
 # Begin Custom Build - Copying to root...
 ProjDir=.
 TargetDir=.\obj\VC60\PinMAME32\Win32\DebugMD
