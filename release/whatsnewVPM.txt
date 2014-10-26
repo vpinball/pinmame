@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 
 Version 2.6 (X X, 2014)
 -----------------------------
-- New specialized options for Cabinet support, PinDMD2 handling and 4-Color support for DMDs,
+- New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
   so please setup the default options again after installation!
 
 - New methods for the controller object:
@@ -34,7 +34,7 @@ Version 2.6 (X X, 2014)
 	HRESULT CurrentAudioDevice([in] int newVal); - Set the current audio device number
 
 - New methods for Game.Settings:
-	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in a bunch of external libraries and needs the ftd2xx.dll)
+	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in an external library and needs the ext\ftdi\i386\ftd2xx.dll during runtime)
 	HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of PinDMD display
 	HRESULT ShowPinDMD([in] VARIANT_BOOL newVal); - En/Disable PinDMD display
 
