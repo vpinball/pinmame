@@ -1575,20 +1575,23 @@ DRIVER(trn,150)         //S.A.M: 05/11 Tron - V1.50
 DRIVER(trn,160)         //S.A.M: 05/11 Tron - V1.60
 DRIVER(trn,170)         //S.A.M: 05/11 Tron - V1.70
 DRIVER(trn,174)         //S.A.M: 05/11 Tron - V1.74
+DRIVER(trn,17402)       //S.A.M: XX/14 Tron - V1.7402 (New CPU)
 DRIVER(trn,100h)        //S.A.M: 05/11 Tron Limited Edition - V1.00
 DRIVER(trn,110h)        //S.A.M: 05/11 Tron Limited Edition - V1.10
 DRIVER(trn,130h)        //S.A.M: 05/11 Tron Limited Edition - V1.30  (Stern skipped over Tron LE 1.20)
 DRIVER(trn,140h)        //S.A.M: 05/11 Tron Limited Edition - V1.40
 DRIVER(trn,174h)        //S.A.M: 05/11 Tron Limited Edition - V1.74
-DRIVER(tf,120)          //S.A.M: 10/11 Transformers - V1.20
-DRIVER(tf,140)          //S.A.M: 10/11 Transformers - V1.40
-DRIVER(tf,150)          //S.A.M: 10/11 Transformers - V1.50
+DRIVER(tf,088h)         //S.A.M: 10/11 Transformers - V0.88 Limited Edition
 DRIVER(tf,160)          //S.A.M: 10/11 Transformers - V1.60
 DRIVER(tf,100h)         //S.A.M: 10/11 Transformers - V1.00 Limited Edition
+DRIVER(tf,120)          //S.A.M: 10/11 Transformers - V1.20
 DRIVER(tf,120h)         //S.A.M: 10/11 Transformers - V1.20 Limited Edition
 DRIVER(tf,130h)         //S.A.M: 10/11 Transformers - V1.30 Limited Edition
+DRIVER(tf,140)          //S.A.M: 10/11 Transformers - V1.40
 DRIVER(tf,140h)         //S.A.M: 10/11 Transformers - V1.40 Limited Edition
+DRIVER(tf,150)          //S.A.M: 10/11 Transformers - V1.50
 DRIVER(tf,150h)
+DRIVER(tf,160)
 DRIVER(tf,170)
 DRIVER(tf,180)
 DRIVER(tf,180h)
@@ -1596,6 +1599,7 @@ DRIVER(avr,106)         //S.A.M: 10/10 Avatar - V1.06
 DRIVER(avr,110)         //S.A.M: 10/10 Avatar - V1.10
 DRIVER(avr,101h)        //S.A.M: 10/10 Avatar - V1.01 Limited Edition
 DRIVER(avr,120h)        //S.A.M: 10/10 Avatar - V1.20 Limited Edition
+DRIVER(avr,200)         //S.A.M: XX/14 Avatar - V2.00 (New CPU)
 DRIVER(rsn,103)         //S.A.M: 02/11 Rolling Stones - V1.03
 DRIVER(rsn,105)         //S.A.M: 02/11 Rolling Stones - V1.05
 DRIVER(rsn,110)         //S.A.M: 02/11 Rolling Stones - V1.10
@@ -1605,6 +1609,8 @@ DRIVER(acd,121)         //S.A.M: 2/12 AC/DC - V1.21
 DRIVER(acd,125)         //S.A.M: 2/12 AC/DC - V1.25
 DRIVER(acd,130)         //S.A.M: 2/12 AC/DC - V1.30
 DRIVER(acd,140)
+DRIVER(acd,150)
+DRIVER(acd,150h)
 DRIVER(acd,152)
 DRIVER(acd,152h)
 DRIVER(acd,160)
@@ -1616,14 +1622,18 @@ DRIVER(acd,163h)
 DRIVER(acd,165)
 DRIVER(acd,165h)
 DRIVER(acd,168)
+DRIVER(acd,168h)
 DRIVER(xmn,102)
 DRIVER(xmn,104)
 DRIVER(xmn,105)
+DRIVER(xmn,120h)
 DRIVER(xmn,121h)
+DRIVER(xmn,122h)
 DRIVER(xmn,123h)
 DRIVER(xmn,124h)
 DRIVER(xmn,130)
 DRIVER(xmn,130h)
+DRIVER(xmn,150)
 DRIVER(xmn,150h)
 DRIVER(xmn,151)
 DRIVER(xmn,151h)
@@ -1639,22 +1649,32 @@ DRIVER(mtl,113)
 DRIVER(mtl,113h)
 DRIVER(mtl,116)
 DRIVER(mtl,116h)
+DRIVER(mtl,120)
 DRIVER(mtl,122)
+DRIVER(mtl,120h)
 DRIVER(mtl,122h)
+DRIVER(mtl,150)
 DRIVER(mtl,150h)
 DRIVER(mtl,151)
 DRIVER(mtl,151h)
 DRIVER(mtl,160)
+DRIVER(mtl,160h)
 DRIVER(mtl,163)
+DRIVER(mtl,163d)
+DRIVER(mtl,163h)
 DRIVER(st,120)
 DRIVER(st,130)
 DRIVER(st,140)
 DRIVER(st,140h)
+DRIVER(st,141h)
 DRIVER(st,142h)
 DRIVER(st,150)
+DRIVER(st,150h)
 DRIVER(mt,120)
 DRIVER(mt,130)
+DRIVER(mt,130h)
 DRIVER(mt,140)
+DRIVER(twd,105)
 #endif
 
 // ---------------
