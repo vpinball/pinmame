@@ -93,26 +93,6 @@ const UINT8 okim6295_volume_table[16] =
 	0x00,
 };
 
-static const int okim6376_volume_table[16] =
-{
-	0x20,   //   0 dB
-	0x10,   //  -6.0 dB
-	0x08,   // -12.0 dB
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-	0x00,
-};
-
 /**********************************************************************************************
 
      compute_tables -- compute the difference tables
@@ -162,7 +142,37 @@ static void compute_tables(void)
 	//}
 }
 
+/**********************************************************************************************
 
+     clock_adpcm -- clock the next ADPCM byte
+
+***********************************************************************************************/
+
+static INT16 clock_adpcm(struct ADPCMVoice *voice, UINT8 nibble)
+{
+	int signal = voice->signal;
+	int step = voice->step;
+
+	signal += diff_lookup[step * 16 + (nibble & 15)];
+
+	/* clamp to the maximum 12bit */
+	if (signal > 2047)
+		signal = 2047;
+	else if (signal < -2048)
+		signal = -2048;
+
+	/* adjust the step size and clamp */
+	step += index_shift[nibble & 7];
+	if (step > 48)
+		step = 48;
+	else if (step < 0)
+		step = 0;
+
+	voice->signal = signal;
+	voice->step = step;
+
+	return signal;
+}
 
 /**********************************************************************************************
 
@@ -177,33 +187,16 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 	{
 		UINT8 *base = voice->base;
 		int sample = voice->sample;
-		int signal = voice->signal;
 		int count = voice->count;
-		int step = voice->step;
-		int val;
 
 		/* loop while we still have samples to generate */
 		while (samples)
 		{
 			/* compute the new amplitude and update the current step */
-			val = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
-			signal += diff_lookup[step * 16 + (val & 15)];
-
-			/* clamp to the maximum */
-			if (signal > 2047)
-				signal = 2047;
-			else if (signal < -2048)
-				signal = -2048;
-
-			/* adjust the step size and clamp */
-			step += index_shift[val & 7];
-			if (step > 48)
-				step = 48;
-			else if (step < 0)
-				step = 0;
+			int nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
 
 			/* output to the buffer, scaling by the volume */
-			*buffer++ = signal * voice->volume / 2;
+			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
 			samples--;
 
 			/* next! */
@@ -216,8 +209,6 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 
 		/* update the parameters */
 		voice->sample = sample;
-		voice->signal = signal;
-		voice->step = step;
 	}
 
 	/* fill the rest with silence */
@@ -233,14 +224,13 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 	{
 		UINT8 *base = voice->base;
 		int sample = voice->sample;
-		int signal = voice->signal;
 		int count = voice->count;
-		int step = voice->step;
-		int val;
 
 		/* loop while we still have samples to generate */
 		while (samples)
 		{
+			int nibble;
+
 			if (count == 0)
 			{
 				/* get the number of samples to play */
@@ -250,7 +240,6 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 				if (count == 0)
 				{
 					voice->playing = 0;
-					voice->signal = 0;
 					break;
 				}
 				else
@@ -261,24 +250,11 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 			}
 
 			/* compute the new amplitude and update the current step */
-			val = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
-			signal += diff_lookup[step * 16 + (val & 15)];
-
-			/* clamp to the maximum */
-			if (signal > 2047)
-				signal = 2047;
-			else if (signal < -2048)
-				signal = -2048;
-
-			/* adjust the step size and clamp */
-			step += index_shift[val & 7];
-			if (step > 48)
-				step = 48;
-			else if (step < 0)
-				step = 0;
+			nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
 
 			/* output to the buffer, scaling by the volume */
-			*buffer++ = signal * voice->volume / 2;
+			/* signal in range -4096..4095, volume in range 2..16 => signal * volume / 2 in range -32768..32767 */
+			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
 
 			++sample;
 			--count;
@@ -642,10 +618,17 @@ int ADPCM_playing(int num)
  *
 ***********************************************************************************************/
 
+#ifdef PINMAME
+static int OKIM6295_VOICES = 4;
+
+static INT32 okim6295_command[MAX_OKIM6295];
+static INT32 okim6295_base[MAX_OKIM6295][2];
+#else
 #define OKIM6295_VOICES		4
 
 static INT32 okim6295_command[MAX_OKIM6295];
 static INT32 okim6295_base[MAX_OKIM6295][OKIM6295_VOICES];
+#endif
 
 
 /**********************************************************************************************
@@ -691,6 +674,9 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 	int i;
 
 	/* reset the ADPCM system */
+#ifdef PINMAME // OKI6376 has only 2 voices per chip, activated by num <= 0!
+  if (intf->num < 1) { OKIM6295_VOICES = 2; num_voices = 2; } else
+#endif
 	num_voices = intf->num * OKIM6295_VOICES;
 	compute_tables();
 
@@ -706,6 +692,9 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		okim6295_base[chip][voice] = 0;
 
 		/* generate the name and create the stream */
+#ifdef PINMAME
+		if (intf->num < 1) sprintf(stream_name, "MSM6374 #%d (voice %d)", chip, voice); else
+#endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
 		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], Machine->sample_rate, i, adpcm_update);
 		if (adpcm[i].stream == -1)
@@ -989,12 +978,7 @@ static void OKIM6376_data_w(int num, int data)
 						/* also reset the ADPCM parameters */
 						voice->signal = -2;
 						voice->step = 0;
-						//voice->volume = okim6376_volume_table[data & 0x0f];
-						//if (channel == 0)
-						//{
-							/* We set channel 2's audio separately */
-							voice->volume = okim6376_volume_table[0];
-						//}
+						voice->volume = 0x20;
 					}
 					else
 					{
