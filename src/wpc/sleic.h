@@ -99,13 +99,30 @@ ROM_START(name) \
   NORMALREGION(0x100000, REGION_USER2) \
     ROM_LOAD(n2, 0x00000, 0x80000, chk2)
 
+#define SLEIC_ROMSTART7(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
+ROM_START(name) \
+  NORMALREGION(0x100000, SLEIC_MEMREG_CPU) \
+    ROM_LOAD(n4, 0xe0000, 0x20000, chk4) \
+  NORMALREGION(0x10000, SLEIC_MEMREG_IO) \
+    ROM_LOAD(n7, 0x0000, 0x8000, chk7) \
+  NORMALREGION(0x10000, SLEIC_MEMREG_DISPLAY) \
+    ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
+  NORMALREGION(0x100000, REGION_USER1) \
+    ROM_LOAD(n2, 0x00000, 0x80000, chk2) \
+    ROM_LOAD(n3, 0x80000, 0x80000, chk3) \
+  NORMALREGION(0x100000, REGION_USER2) \
+    ROM_LOAD(n5, 0x00000, 0x20000, chk5) \
+    ROM_LOAD(n6, 0x20000, 0x20000, chk6)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern PINMAME_VIDEO_UPDATE(sleic_dmd_update);
 
 extern MACHINE_DRIVER_EXTERN(SLEIC1);
 extern MACHINE_DRIVER_EXTERN(SLEIC2);
+extern MACHINE_DRIVER_EXTERN(SLEIC3);
 
 #define gl_mSLEIC1      SLEIC1
 #define gl_mSLEIC2      SLEIC2
+#define gl_mSLEIC3      SLEIC3
 
 #endif /* INC_SLEIC */
