@@ -30,6 +30,7 @@ Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomple
 MAC: Space Train, Space Panther, NBA MAC, and a yet unknown game
 Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)
+       Bike Race (not working yet)
 WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
      Rush Pinball (custom MOD, no sound)
 

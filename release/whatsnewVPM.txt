@@ -6,7 +6,7 @@ Version 2.6 (X X, 2014)
 - New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
   so please setup the default options again after installation!
 
-- New methods for the controller object:
+- New methods for the Controller object:
 	HRESULT DmdWidth([out, retval] int *pVal); - Get Width of Window (as rendered by VPM)
 	HRESULT DmdHeight([out, retval] int *pVal); - Get Height of Window (as rendered by VPM)
 	HRESULT DmdPixel([in] int x, [in] int y, [out, retval] int *pVal); - Get Pixel at Position (x,y) (as rendered by VPM)
