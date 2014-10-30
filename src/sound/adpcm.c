@@ -622,7 +622,7 @@ int ADPCM_playing(int num)
 static int OKIM6295_VOICES = 4;
 
 static INT32 okim6295_command[MAX_OKIM6295];
-static INT32 okim6295_base[MAX_OKIM6295][2];
+static INT32 okim6295_base[MAX_OKIM6295][4];
 #else
 #define OKIM6295_VOICES		4
 
@@ -693,7 +693,8 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 
 		/* generate the name and create the stream */
 #ifdef PINMAME
-		if (intf->num < 1) sprintf(stream_name, "MSM6374 #%d (voice %d)", chip, voice); else
+		if (intf->num < 1) adpcm[i].is6376 = 1;
+		if (intf->num < 1) sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice); else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
 		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], Machine->sample_rate, i, adpcm_update);
@@ -950,7 +951,6 @@ static void OKIM6376_data_w(int num, int data)
 			if (temp & 1)
 			{
 				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
-				voice->is6376 = 1;
 
 				/* update the stream */
 				stream_update(voice->stream, 0);

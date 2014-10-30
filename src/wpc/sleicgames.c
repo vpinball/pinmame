@@ -27,7 +27,7 @@ SLEIC_ROMSTART7(bikerace,	"bkdsp01.bin", CRC(9b220fcb) SHA1(54e82705d8ce8a26d9e1
 						"bkcpu06.bin", CRC(9db436d4) SHA1(3869524c0490e0a019d2f8ab46546ff42727665e),
 						"bkio07.bin",  CRC(b52a9d4f) SHA1(726a4d9b354729d7390d2a4f877dc480701ec795))
 SLEIC_ROMEND
-CORE_GAMEDEFNV(bikerace,"Bike Race",1992,"Sleic (Spain)",gl_mSLEIC2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(bikerace,"Bike Race",1992,"Sleic (Spain)",gl_mSLEIC3,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Pin-Ball (1993)
