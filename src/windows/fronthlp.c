@@ -42,10 +42,10 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, L
 
 #ifndef MESS
 #define YEAR_BEGIN 1974
-#define YEAR_END   2010
+#define YEAR_END   2014
 #else
 #define YEAR_BEGIN 1950
-#define YEAR_END   2010
+#define YEAR_END   2014
 #endif
 
 static int list = 0;
@@ -1321,7 +1321,7 @@ int frontend_help (const char *gamename)
 			{
 				int year;
 
-				for (year = 1975;year <= 2000;year++)
+				for (year = YEAR_BEGIN;year <= YEAR_END;year++)
 				{
 					int gamestotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
 
@@ -1517,7 +1517,7 @@ j = 0;	// count only the main cpu
 			{
 				int year;
 
-				for (year = 1975;year <= 2000;year++)
+				for (year = YEAR_BEGIN;year <= YEAR_END;year++)
 				{
 					int games=0,nosound=0;
 
@@ -1597,7 +1597,7 @@ j = 0;	// count only the main cpu
 			{
 				int year;
 
-				for (year = 1975;year <= 2000;year++)
+				for (year = YEAR_BEGIN;year <= YEAR_END;year++)
 				{
 					int games=0,nvram=0;
 

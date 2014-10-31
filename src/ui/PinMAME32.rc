@@ -255,12 +255,12 @@ BEGIN
             VALUE "Comments", "Based on MAME32 by Christopher Kirmse and Michael Soderstrom"
             VALUE "CompanyName", "PinMAME Team"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
-            VALUE "FileVersion", "2, 5, 0, 0"
+            VALUE "FileVersion", "2, 6, 0, 0"
             VALUE "InternalName", "PinMAME32"
             VALUE "LegalCopyright", "Copyright 2001-2014 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
-            VALUE "ProductVersion", "2.5"
+            VALUE "ProductVersion", "2.6"
         END
     END
     BLOCK "VarFileInfo"
