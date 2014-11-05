@@ -150,12 +150,14 @@ void sendLogo(void)
 //* In:
 //* Out:
 //*****************************************************
-void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UINT8 doDumpFrame)
+void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer_in, UINT8 doDumpFrame)
 {
 	int byteIdx=4;
 	int bd0,bd1,bd2,bd3;
 	int pixel;
 	int i,j,v;
+	UINT8 tempbuffer[128*32]; // for rescale
+	UINT8 *currbuffer = tempbuffer;
 
 	if(enabled==0)
 		return;
@@ -164,7 +166,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 	//	return;
 
 	// dont update dmd if segments have changed
-	//if(memcmp(currbuffer, oldbuffer, 4096)==0)
+	//if(memcmp(currbuffer_in, oldbuffer, 4096)==0)
 	//	return;
 	
 	// clear dmd frame buf first time
@@ -178,27 +180,44 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 	frame_buf[2] = 0xE7;
 	frame_buf[3] = 0x0;		// command byte
 
+	if(width == 192 && height == 64)
+	{
+		for(j = 0; j < 32; ++j)
+			for(i = 0; i < 128; ++i) if((i&1) == 1)
+				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*192+i*3/2] + (int)currbuffer_in[(j*2+1)*192+i*3/2] + (int)currbuffer_in[(j*2)*192+i*3/2+1] + (int)currbuffer_in[(j*2+1)*192+i*3/2+1])/4);
+			else
+				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*192+i*3/2] + (int)currbuffer_in[(j*2+1)*192+i*3/2])/2);
+	}
+	else if(width == 256 && height == 64)
+	{
+		for(j = 0; j < 32; ++j)
+			for(i = 0; i < 128; ++i)
+				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*256+i*2] + (int)currbuffer_in[(j*2+1)*256+i*2] + (int)currbuffer_in[(j*2)*256+i*2+1] + (int)currbuffer_in[(j*2+1)*256+i*2+1])/4);
+	}
+	else
+		currbuffer = currbuffer_in;
+
 	// 128x16 = display centered vert
 	// 128x32 = no change
-	// 192x64 = display vert scaled 50%, display horz centered
+	// 192x64 = rescaled
+	// 256x64 = rescaled
 
 	// dmd height
-	for(j = 0; j < height; j+=((height==64)?2:1)) {
+	for(j = 0; j < height; ++j) {
 		// dmd width
-		for(i = 0; i < width; i+=((width==192)?12:8)) {
+		for(i = 0; i < width; i+=8) {
 			bd0 = 0;
 			bd1 = 0;
 			bd2 = 0;
 			bd3 = 0;
 			for (v = 7; v >= 0; v--) {
-				UINT8 x = 0;
-				if(width == 192)
-					x = (v+1)/2;
 				// pixel colour
-				pixel = currbuffer[(j*((width==128)?128:192)) + (i+v+x)];
+				pixel = currbuffer[j*128 + i+v];
+
 				// Some systems add 63 to pixel hue, lets delete 63 before rendering the frame for those systems
 				if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 					pixel -= 63;
+
 				// 16 color mode hue remapping for proper gradient
 				if(do16 == 1)
 				{
@@ -212,8 +231,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 						//if(pixel==1)
 						//	pixel=1;
 					}
-
-					if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
+					else if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
 					{
 						if(pixel==3)
 							pixel=1;
@@ -224,7 +242,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 						//if(pixel==15)
 						//	pixel=15;
 					}
-					//if(gen == GEN_ALVG_DMD2)
+					//else if(gen == GEN_ALVG_DMD2)
 					//{
 					//  //!! do some magic remapping
 					//}
@@ -244,6 +262,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 				{
 						pixel >>= 2; //!! do some magic remapping
 				}
+
 				bd0 <<= 1;
 				bd1 <<= 1;
 				bd2 <<= 1;
@@ -257,8 +276,9 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 				if(pixel & 8)
 					bd3 |= 1;
 			}
-			frame_buf[byteIdx+((height==16)?128:0)] = bd0;
-			frame_buf[byteIdx+512+((height==16)?128:0)] = bd1;
+
+			frame_buf[byteIdx     +((height==16)?128:0)] = bd0;
+			frame_buf[byteIdx+ 512+((height==16)?128:0)] = bd1;
 			frame_buf[byteIdx+1024+((height==16)?128:0)] = bd2;
 			frame_buf[byteIdx+1536+((height==16)?128:0)] = bd3;
 			byteIdx++;
@@ -266,7 +286,7 @@ void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UI
 	}
 
 	pinddrvSendFrame();
-	dumpFrames(currbuffer, width*height, doDumpFrame, gen);
+	dumpFrames(currbuffer_in, width*height, doDumpFrame, gen);
 }
 
 //*****************************************************
