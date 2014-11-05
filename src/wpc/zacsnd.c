@@ -595,7 +595,7 @@ static void sns_init(struct sndbrdData *brdData) {
 // reset tms5220
 //    tms5220_reset();
   }
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
     tms5220_set_variant(TMS5220_IS_5220);

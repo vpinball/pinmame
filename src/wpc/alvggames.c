@@ -85,7 +85,6 @@ ALVGDMD_SPLIT_ROM(		"dot02b.512", CRC(50e3d59d) SHA1(db6df3482fc485af6bde341750b
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-#define input_ports_wrldtou2 input_ports_wrldtour
 CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour R02b",1992,"Alvin G",mALVGS2DMD,0)
 
 INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
@@ -99,7 +98,6 @@ ALVGDMD_SPLIT_ROM(		"dot03.512", CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-#define input_ports_wrldtou3 input_ports_wrldtour
 CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On A World Tour R06a",1992,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
@@ -138,7 +136,6 @@ ALVGDMD_ROM("u4.bin", CRC(a6969efc) SHA1(82da976cb3d30d6fb1576e4c67febd7235f73f5
 						"u5.bin", CRC(e5126980) SHA1(2c6d412c87bf27098dae4351958d84e8f9348423),
 						"u6.bin", CRC(eb241633) SHA1(8e5db75b32ed2ea74088615bbe1403d4c8feafbd))
 ALVG_ROMEND
-#define input_ports_mystcasa input_ports_mystcast
 CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (alternate set)",199?,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
@@ -168,7 +165,6 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
-#define input_ports_pstlpkr1 input_ports_pstlpkr
 CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker R01",1993,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
@@ -186,7 +182,6 @@ ALVGROMSTART(punchy3,	"epc061.r03", CRC(8e91131c) SHA1(1bf1408e4e512b764048f4847
 ALVGS_SOUNDROM11(		"eps061.r02", CRC(cfde1b9a) SHA1(cbf9e67df6a6762843272493c2caa1413f70fb27),
 						"eps062.r02", CRC(7462a5cd) SHA1(05141bcc91b1a786444bff7fa8ba2a785dc0d376))
 ALVG_ROMEND
-#define input_ports_punchy3 input_ports_punchy
 CORE_CLONEDEFNV(punchy3,punchy,"Punchy The Clown (R03)",1993,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
