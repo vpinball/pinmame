@@ -1519,7 +1519,7 @@ static void HandleALU( data32_t insn )
 			R15 = rd;
 
 			// extra cycles (PC written)
-			ARM7_ICOUNT -= 2; // this requires correct SAM frequency to not screw up country detection
+			ARM7_ICOUNT -= 2;
 		}
 		else
 		{
@@ -1540,7 +1540,7 @@ static void HandleALU( data32_t insn )
 				R15 = rd;
 				
 				// extra cycles (PC written)
-				ARM7_ICOUNT -= 2; // this requires correct SAM frequency to not screw up country detection
+				ARM7_ICOUNT -= 2;
 
 				/* IRQ masks may have changed in this instruction */
 //				ARM7_CHECKIRQ;
@@ -1571,11 +1571,11 @@ static void HandleALU( data32_t insn )
 		}
 		
 		// extra cycles (PC written)
-		ARM7_ICOUNT -= 2; // this requires correct SAM frequency to not screw up country detection
+		ARM7_ICOUNT -= 2;
 	}
 	
 	// compensate for the -3 at the end
-	ARM7_ICOUNT += 2; // this requires correct SAM frequency to not screw up country detection
+	ARM7_ICOUNT += 2;
 }
 
 static void HandleMul( data32_t insn)
