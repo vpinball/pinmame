@@ -150,7 +150,7 @@ void sendLogo(void)
 //* In:
 //* Out:
 //*****************************************************
-void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer_in, UINT8 doDumpFrame)
+void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_in, UINT8 doDumpFrame)
 {
 	int byteIdx=4;
 	int bd0,bd1,bd2,bd3;
