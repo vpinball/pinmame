@@ -8,7 +8,7 @@
 
 UINT8			dmdHeight;
 UINT8			dmdWidth;
-UINT8			frame_buf[3072];
+UINT8			frame_buf[3072]; //should be 2052?!
 UINT16			seg_data_old[50];
 UINT16			extra_seg_data[50];
 UINT8			hasExtraData;
