@@ -5,7 +5,7 @@ Important steps to take before a release:
 - Clean up the repository: Update the pinmame folder, remove sticky tags, commit tested changes.
 - check "whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on.
 - check the date, year and version in all .txt files!
-  (bugs.txt, pinmame.text, visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
+  (bugs.txt, pinmame.txt, visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
 - remove the DEBUG define in the makefile (which is probably not there anyway)!
 - edit "src/version.c" for the correct version number
 - edit "src/ui/PinMAME32.rc" for the correct version number and copyright years
