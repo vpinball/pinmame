@@ -6,6 +6,8 @@ Version 2.6 (X X, 2014)
 - New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
   so please setup the default options again after installation!
 
+- Improved support for PinDMD over the last 'official' PinDMD build by russdx: better 192x64 rescale, support for 256x64 and better support for AlvinG.
+
 - New methods for the Controller object:
 	HRESULT DmdWidth([out, retval] int *pVal); - Get Width of Window (as rendered by VPM)
 	HRESULT DmdHeight([out, retval] int *pVal); - Get Height of Window (as rendered by VPM)
