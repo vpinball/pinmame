@@ -153,8 +153,6 @@ void sendLogo(void)
 void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_in, UINT8 doDumpFrame)
 {
 	int byteIdx=4;
-	int bd0,bd1,bd2,bd3;
-	int pixel;
 	int i,j,v;
 	UINT8 tempbuffer[128*32]; // for rescale
 	UINT8 *currbuffer = tempbuffer;
@@ -173,50 +171,72 @@ void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_i
 	if(dmdInUse == 0)
 		memset(frame_buf,0,sizeof(frame_buf));
 
-	dmdInUse=1;
+	dmdInUse = 1;
 
 	frame_buf[0] = 0x81;	// frame sync bytes
 	frame_buf[1] = 0xC3;
 	frame_buf[2] = 0xE7;
 	frame_buf[3] = 0x0;		// command byte
 
-	if(width == 192 && height == 64)
-	{
-		for(j = 0; j < 32; ++j)
-			for(i = 0; i < 128; ++i) if((i&1) == 1)
-				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*192+i*3/2] + (int)currbuffer_in[(j*2+1)*192+i*3/2] + (int)currbuffer_in[(j*2)*192+i*3/2+1] + (int)currbuffer_in[(j*2+1)*192+i*3/2+1])/4);
-			else
-				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*192+i*3/2] + (int)currbuffer_in[(j*2+1)*192+i*3/2])/2);
-	}
-	else if(width == 256 && height == 64)
-	{
-		for(j = 0; j < 32; ++j)
-			for(i = 0; i < 128; ++i)
-				tempbuffer[j*128 + i] = (UINT8)(((int)currbuffer_in[(j*2)*256+i*2] + (int)currbuffer_in[(j*2+1)*256+i*2] + (int)currbuffer_in[(j*2)*256+i*2+1] + (int)currbuffer_in[(j*2+1)*256+i*2+1])/4);
-	}
-	else
-		currbuffer = currbuffer_in;
-
 	// 128x16 = display centered vert
 	// 128x32 = no change
 	// 192x64 = rescaled
 	// 256x64 = rescaled
 
+	if(width == 192 && height == 64)
+	{
+		UINT32 o = 0;
+		for(j = 0; j < 32; ++j)
+			for(i = 0; i < 128; ++i,++o)
+			{
+				const UINT32 offs = j*(2*192)+i*3/2;
+				if((i&1) == 1) // filter only each 2nd pixel, could do better than this
+					tempbuffer[o] = (UINT8)(((int)currbuffer_in[offs] + (int)currbuffer_in[offs+192] + (int)currbuffer_in[offs+1] + (int)currbuffer_in[offs+193])/4);
+				else
+					tempbuffer[o] = (UINT8)(((int)currbuffer_in[offs] + (int)currbuffer_in[offs+192])/2);
+			}
+	}
+	else if(width == 256 && height == 64)
+	{
+		UINT32 o = 0;
+		for(j = 0; j < 32; ++j)
+			for(i = 0; i < 128; ++i,++o)
+			{
+				const UINT32 offs = j*(2*256)+i*2;
+				tempbuffer[o] = (UINT8)(((int)currbuffer_in[offs] + (int)currbuffer_in[offs+256] + (int)currbuffer_in[offs+1] + (int)currbuffer_in[offs+257])/4);
+			}
+	}
+	else
+		currbuffer = currbuffer_in;
+
 	// dmd height
-	for(j = 0; j < height; ++j) {
+	for(j = 0; j < ((height==16)?16:32); ++j)
+	{
 		// dmd width
-		for(i = 0; i < width; i+=8) {
+		for(i = 0; i < 128; i+=8)
+		{
+			int bd0,bd1,bd2,bd3;
 			bd0 = 0;
 			bd1 = 0;
 			bd2 = 0;
 			bd3 = 0;
-			for (v = 7; v >= 0; v--) {
+			for (v = 7; v >= 0; v--)
+			{
 				// pixel colour
-				pixel = currbuffer[j*128 + i+v];
+				int pixel = currbuffer[j*128 + i+v];
+
+				bd0 <<= 1;
+				bd1 <<= 1;
+				bd2 <<= 1;
+				bd3 <<= 1;
 
 				// Some systems add 63 to pixel hue, lets delete 63 before rendering the frame for those systems
 				if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2))
 					pixel -= 63;
+
+				// Nothing to do for black
+				if(pixel == 0)
+					continue;
 
 				// 16 color mode hue remapping for proper gradient
 				if(do16 == 1)
@@ -226,47 +246,43 @@ void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_i
 					{
 						if(pixel==3)
 							pixel=15;	
-						if(pixel==2)
+						else if(pixel==2)
 							pixel=4;
-						//if(pixel==1)
+						//else if(pixel==1)
 						//	pixel=1;
 					}
-					else if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
+					else if(gen == GEN_GTS3) // also depends on the mapping in gts3dmd.c
 					{
-						if(pixel==3)
+						if(pixel<=3)
 							pixel=1;
-						if(pixel==6)
+						else if(pixel<=6)
 							pixel=4;
-						if(pixel==9)
+						else if(pixel<=9)
 							pixel=4;
-						//if(pixel==15)
-						//	pixel=15;
+						else //if(pixel<=15)
+							pixel=15;
 					}
 					//else if(gen == GEN_ALVG_DMD2)
 					//{
 					//  //!! do some magic remapping
 					//}
 				}
-				else if(gen == GEN_GTS3) //!! depends on the mapping in gts3dmd.c
+				else if(gen == GEN_GTS3) // also depends on the mapping in gts3dmd.c
 				{
-						if(pixel==3)
-							pixel=1;
-						if(pixel==6)
-							pixel=2;
-						if(pixel==9)
-							pixel=2;
-						if(pixel==15)
-							pixel=3;
+					if(pixel<=3)
+						pixel=1;
+					else if(pixel<=6)
+						pixel=2;
+					else if(pixel<=9)
+						pixel=2;
+					else if(pixel<=15)
+						pixel=3;
 				}
-				else if(gen == GEN_ALVG_DMD2) //!! depends on the mapping in alvgdmd.c
+				else if(gen == GEN_ALVG_DMD2) // also depends on the mapping in alvgdmd.c
 				{
-						pixel >>= 2; //!! do some magic remapping
+					pixel >>= 2; //!! do some better magic remapping?
 				}
 
-				bd0 <<= 1;
-				bd1 <<= 1;
-				bd2 <<= 1;
-				bd3 <<= 1;
 				if(pixel & 1)
 					bd0 |= 1;
 				if(pixel & 2)
