@@ -805,7 +805,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   if(dumpframe) {
 	    //usb dmd
 	    if(g_fShowPinDMD)
-		  if((layout->length == 128) || (layout->length == 192))
+		  if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
 
 		if(currbuffer == buffer1) {
