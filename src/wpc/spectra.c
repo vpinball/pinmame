@@ -41,13 +41,10 @@ static READ_HANDLER(riot_porta_r) {
 }
 
 static WRITE_HANDLER(riot_portb_w) {
-  float vco = 5.0;
-  logerror("RIOT B WRITE %02x\n", data);
-  if (data & 0x01) vco -= 0.3125;
-  if (data & 0x02) vco -= 0.625;
-  if (data & 0x04) vco -= 1.25;
-  if (data & 0x08) vco -= 2.5;
-  SN76477_set_vco_voltage(0, 5.4 - vco);
+  float vco = 5.5 - (core_getDip(0) >> 4) / 6.0;
+  vco -= ((data & 8) ? vco / 2.0 : 0) + ((data & 4) ? vco / 4.0 : 0)+ ((data & 2) ? vco / 8.0 : 0)+ ((data & 1) ? vco / 16.0 : 0);
+  logerror("RIOT B WRITE %02x, vco: %0f\n", data, vco);
+  SN76477_set_vco_voltage(0, 5.5 - vco);
   SN76477_enable_w(0, data & 0x10 ? 0 : 1); // strobe: toggles enable
   SN76477_envelope_w(0, data & 0x20 ? 0 : 1); //decay: toggles envelope
   SN76477_vco_w(0, data & 0x40 ? 1 : 0); // "phaser" sound: VCO toggled
@@ -56,7 +53,7 @@ static WRITE_HANDLER(riot_portb_w) {
 
 static READ_HANDLER(riot_portb_r) {
   logerror("RIOT B READ\n");
-  return core_getDip(0) ? 0x5a : 0;
+  return (core_getDip(1) & 1) ? 0x5a : 0;
 }
 
 static struct riot6532_interface riot6532_intf = {
@@ -137,12 +134,12 @@ static MEMORY_WRITE_START(cpu_writemem)
 MEMORY_END
 
 static struct SN76477interface spectra_sn76477Int = { 1, { 50 }, /* mixing level */
-/*						   pin description		*/
-	{ RES_M(1000) },	/*	4  noise_res		*/
-	{ RES_M(1000) },	/*	5  filter_res		*/
-	{ CAP_N(0)    },	/*	6  filter_cap		*/
-	{ RES_K(470)  },	/*	7  decay_res		*/
-	{ CAP_N(1)    },	/*	8  attack_decay_cap */
+	                	/* pin description		*/
+	{ RES_M(1000) },	/*  4  noise_res		*/
+	{ RES_M(1000) },	/*  5  filter_res		*/
+	{ CAP_N(0)    },	/*  6  filter_cap		*/
+	{ RES_K(470)  },	/*  7  decay_res		*/
+	{ CAP_N(1)    },	/*  8  attack_decay_cap */
 	{ RES_K(22)   },	/* 10  attack_res		*/
 	{ RES_K(100)  },	/* 11  amplitude_res	*/
 	{ RES_K(52)   },	/* 12  feedback_res 	*/
@@ -166,7 +163,7 @@ MACHINE_DRIVER_START(spectra)
   MDRV_NVRAM_HANDLER(SPECTRA)
   MDRV_SWITCH_UPDATE(SPECTRA)
   MDRV_SOUND_ADD(SN76477, spectra_sn76477Int)
-  MDRV_DIPS(1) // added so the NVRAM can be reset
+  MDRV_DIPS(8) // added so the NVRAM can be reset, and for tone pitch
 MACHINE_DRIVER_END
 
 #define INITGAME(name, disp, flip) \
@@ -188,6 +185,17 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_DIPNAME( 0x0001, 0x0000, "Reset NVRAM") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
       COREPORT_DIPSET(0x0001, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x00f0, 0x0020, "Tone pitch") \
+      COREPORT_DIPSET(0x0000, "0") \
+      COREPORT_DIPSET(0x0010, "1") \
+      COREPORT_DIPSET(0x0020, "2") \
+      COREPORT_DIPSET(0x0030, "3") \
+      COREPORT_DIPSET(0x0040, "4") \
+      COREPORT_DIPSET(0x0050, "5") \
+      COREPORT_DIPSET(0x0060, "6") \
+      COREPORT_DIPSET(0x0070, "7") \
+      COREPORT_DIPSET(0x0080, "8") \
+      COREPORT_DIPSET(0x0090, "9") \
   INPUT_PORTS_END
 
 static core_tLCDLayout dispAlpha[] = {
