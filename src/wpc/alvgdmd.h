@@ -6,7 +6,10 @@
 #define ALVGDMD_CPUREGION (REGION_CPU1 + ALVGDMD_CPUNO)
 #define ALVGDMD_ROMREGION (REGION_GFX1 + ALVGDMD_CPUNO)
 
-extern MACHINE_DRIVER_EXTERN(alvgdmd);
+extern MACHINE_DRIVER_EXTERN(alvgdmd1);
+#ifdef MYSTERY_CASTLE_HACK
+extern MACHINE_DRIVER_EXTERN(alvgdmd2);
+#endif
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG

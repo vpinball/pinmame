@@ -209,13 +209,23 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
-MACHINE_DRIVER_START(alvgdmd)
+MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
+
+#ifdef MYSTERY_CASTLE_HACK
+MACHINE_DRIVER_START(alvgdmd2)
+  MDRV_CPU_ADD(I8051, 24000000)	/*24 Mhz*/ // tweak? 24MHz for mystery castle only
+  MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
+  MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
+  MDRV_INTERLEAVE(50)
+MACHINE_DRIVER_END
+#endif
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
