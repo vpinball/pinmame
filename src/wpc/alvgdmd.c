@@ -319,10 +319,10 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
   static UINT8 matrix[4][4] = {
-    { 0, 4, 8,12},
-    { 4, 6,10,13},
-    { 8,10,12,14},
-    {12,13,14,15},
+    { 0, 3, 6, 9},
+    { 3, 5, 8,11},
+    { 6, 8,10,13},
+    { 9,11,13,15}
   };
 #ifdef MAME_DEBUG
   static int offset = 0;

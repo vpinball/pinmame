@@ -484,24 +484,24 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #define R_ACC	i8051.acc
 #define R_B		i8051.b
 
-/* # of oscilations each opcode requires*/
+/* # of oscilations each opcode requires, tweaked based on pdf at http://www.oreganosystems.at/?page_id=96 (v1.6) */
 static UINT8 i8051_cycles[] = {
-	12,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,24,12,24,12,12,24,24,24,24,24,24,24,24,
-	24,24,24,24,48,24,24,24,24,24,24,24,24,24,24,24,
-	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,12,24,48,12,24,24,12,12,12,12,12,12,12,12,
-	24,24,12,12,24,24,24,24,24,24,24,24,24,24,24,24,
-	24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,12,12,12,24,12,12,24,24,24,24,24,24,24,24,
-	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12
+        12,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,24,24,12,24,12,12,12,12,12,12,12,12,12,12,
+        24,24,24,24,48,24,24,24,24,24,24,24,24,24,24,24,
+        24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,24,48,12/*?*/,24,24,24,24,24,24,24,24,24,24,
+        24,24,12,12,24,24,24,24,24,24,24,24,24,24,24,24,
+        24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,12,12,24,12,12,24,24,24,24,24,24,24,24,
+        24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
+        24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,12
 };
 
 /* Include Opcode functions */
@@ -643,38 +643,38 @@ int i8051_execute(int cycles)
 
 		switch( op )
 		{
-			//NOP
+			//NOP 12
 			case 0x00:						/* 1: 0000 0000 */
 				nop();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0x01:
 				ajmp();
 				break;
-			//LJMP code addr
+			//LJMP code addr 24
 			case 0x02:						/* 1: 0000 0010 */
 				ljmp();
 				break;
-			//RR A
+			//RR A 12
 			case 0x03:						/* 1: 0000 0011 */
 				rr_a();
 				break;
-			//INC A
+			//INC A 12
 			case 0x04:						/* 1: 0000 0100 */
 				inc_a();
 				break;
-			//INC data addr
+			//INC data addr 12
 			case 0x05:						/* 1: 0000 0101 */
 				RWM=1;
 				inc_mem();
 				RWM=0;
 			break;
-			//INC @R0/@R1					/* 1: 0000 011i */
+			//INC @R0/@R1 12				/* 1: 0000 011i */
 			case 0x06:
 			case 0x07:
 				inc_ir(op&1);
 				break;
-			//INC R0 to R7					/* 1: 0000 1rrr */
+			//INC R0 to R7	12				/* 1: 0000 1rrr */
 			case 0x08:
 			case 0x09:
 			case 0x0a:
@@ -685,40 +685,40 @@ int i8051_execute(int cycles)
 			case 0x0f:
 				inc_r(op&7);
 				break;
-			//JBC bit addr, code addr
+			//JBC bit addr, code addr 24
 			case 0x10:						/* 1: 0001 0000 */
 				RWM=1;
 				jbc();
 				RWM=0;
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0x11:
 				acall();
 				break;
-			//LCALL code addr
+			//LCALL code addr 24
 			case 0x12:						/* 1: 0001 0010 */
 				lcall();
 				break;
-			//RRC A
+			//RRC A 12
 			case 0x13:						/* 1: 0001 0011 */
 				rrc_a();
 				break;
-			//DEC A
+			//DEC A 12
 			case 0x14:						/* 1: 0001 0100 */
 				dec_a();
 				break;
-			//DEC data addr
+			//DEC data addr 12
 			case 0x15:						/* 1: 0001 0101 */
 				RWM=1;
 				dec_mem();
 				RWM=0;
 				break;
-			//DEC @R0/@R1					/* 1: 0001 011i */
+			//DEC @R0/@R1 12					/* 1: 0001 011i */
 			case 0x16:
 			case 0x17:
 				dec_ir(op&1);
 				break;
-			//DEC R0 to R7					/* 1: 0001 1rrr */
+			//DEC R0 to R7 12					/* 1: 0001 1rrr */
 			case 0x18:
 			case 0x19:
 			case 0x1a:
@@ -729,36 +729,36 @@ int i8051_execute(int cycles)
 			case 0x1f:
 				dec_r(op&7);
 				break;
-			//JB  bit addr, code addr
+			//JB  bit addr, code addr 24
 			case 0x20:						/* 1: 0010 0000 */
 				jb();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0x21:
 				ajmp();
 				break;
-			//RET
+			//RET 24
 			case 0x22:						/* 1: 0010 0010 */
 				ret();
 				break;
-			//RL A
+			//RL A 12
 			case 0x23:						/* 1: 0010 0011 */
 				rl_a();
 				break;
-			//ADD A, #data
+			//ADD A, #data 12
 			case 0x24:						/* 1: 0010 0100 */
 				add_a_byte();
 				break;
-			//ADD A, data addr
+			//ADD A, data addr 12
 			case 0x25:						/* 1: 0010 0101 */
 				add_a_mem();
 				break;
-			//ADD A, @R0/@R1				/* 1: 0010 011i */
+			//ADD A, @R0/@R1 12	 			/* 1: 0010 011i */
 			case 0x26:
 			case 0x27:
 				add_a_ir(op&1);
 				break;
-			//ADD A, R0 to R7				/* 1: 0010 1rrr */
+			//ADD A, R0 to R7 12				/* 1: 0010 1rrr */
 			case 0x28:
 			case 0x29:
 			case 0x2a:
@@ -769,36 +769,36 @@ int i8051_execute(int cycles)
 			case 0x2f:
 				add_a_r(op&7);
 				break;
-			//JNB bit addr, code addr
+			//JNB bit addr, code addr 24
 			case 0x30:						/* 1: 0011 0000 */
 				jnb();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0x31:
 				acall();
 				break;
-			//RETI
+			//RETI 24
 			case 0x32:						/* 1: 0011 0010 */
 				reti();
 				break;
-			//RLC A
+			//RLC A 12
 			case 0x33:						/* 1: 0011 0011 */
 				rlc_a();
 				break;
-			//ADDC A, #data
+			//ADDC A, #data 12
 			case 0x34:						/* 1: 0011 0100 */
 				addc_a_byte();
 				break;
-			//ADDC A, data addr
+			//ADDC A, data addr 12
 			case 0x35:						/* 1: 0011 0101 */
 				addc_a_mem();
 				break;
-			//ADDC A, @R0/@R1				/* 1: 0011 011i */
+			//ADDC A, @R0/@R1 12				/* 1: 0011 011i */
 			case 0x36:
 			case 0x37:
 				addc_a_ir(op&1);
 				break;
-			//ADDC A, R0 to R7				/* 1: 0011 1rrr */
+			//ADDC A, R0 to R7 12				/* 1: 0011 1rrr */
 			case 0x38:
 			case 0x39:
 			case 0x3a:
@@ -809,40 +809,40 @@ int i8051_execute(int cycles)
 			case 0x3f:
 				addc_a_r(op&7);
 				break;
-			//JC code addr
+			//JC code addr 24
 			case 0x40:						/* 1: 0100 0000 */
 				jc();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0x41:
 				ajmp();
 				break;
-			//ORL data addr, A
+			//ORL data addr, A 12
 			case 0x42:						/* 1: 0100 0010 */
 				RWM=1;
 				orl_mem_a();
 				RWM=0;
 				break;
-			//ORL data addr, #data
+			//ORL data addr, #data 24
 			case 0x43:						/* 1: 0100 0011 */
 				RWM=1;
 				orl_mem_byte();
 				RWM=0;
 				break;
-			//ORL A, #data
+			//ORL A, #data 12
 			case 0x44:						/* 1: 0100 0100 */
 				orl_a_byte();
 				break;
-			//ORL A, data addr
+			//ORL A, data addr 12
 			case 0x45:						/* 1: 0100 0101 */
 				orl_a_mem();
 				break;
-			//ORL A, @RO/@R1				/* 1: 0100 011i */
+			//ORL A, @RO/@R1 12				/* 1: 0100 011i */
 			case 0x46:
 			case 0x47:
 				orl_a_ir(op&1);
 				break;
-			//ORL A, RO to R7				/* 1: 0100 1rrr */
+			//ORL A, RO to R7 12				/* 1: 0100 1rrr */
 			case 0x48:
 			case 0x49:
 			case 0x4a:
@@ -853,11 +853,11 @@ int i8051_execute(int cycles)
 			case 0x4f:
 				orl_a_r(op&7);
 				break;
-			//JNC code addr
+			//JNC code addr 24
 			case 0x50:						/* 1: 0101 0000 */
 				jnc();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0x51:
 				acall();
 				break;
@@ -867,26 +867,26 @@ int i8051_execute(int cycles)
 				anl_mem_a();
 				RWM=0;
 				break;
-			//ANL data addr, #data
+			//ANL data addr, #data 24
 			case 0x53:						/* 1: 0101 0011 */
 				RWM=1;
 				anl_mem_byte();
 				RWM=0;
 				break;
-			//ANL A, #data
+			//ANL A, #data 12
 			case 0x54:						/* 1: 0101 0100 */
 				anl_a_byte();
 				break;
-			//ANL A, data addr
+			//ANL A, data addr 12
 			case 0x55:						/* 1: 0101 0101 */
 				anl_a_mem();
 				break;
-			//ANL A, @RO/@R1				/* 1: 0101 011i */
+			//ANL A, @RO/@R1 12	 			/* 1: 0101 011i */
 			case 0x56:
 			case 0x57:
 				anl_a_ir(op&1);
 				break;
-			//ANL A, RO to R7				/* 1: 0101 1rrr */
+			//ANL A, RO to R7 12				/* 1: 0101 1rrr */
 			case 0x58:
 			case 0x59:
 			case 0x5a:
@@ -897,40 +897,40 @@ int i8051_execute(int cycles)
 			case 0x5f:
 				anl_a_r(op&7);
 				break;
-			//JZ code addr
+			//JZ code addr 24
 			case 0x60:						/* 1: 0110 0000 */
 				jz();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0x61:
 				ajmp();
 				break;
-			//XRL data addr, A
+			//XRL data addr, A 12
 			case 0x62:						/* 1: 0110 0010 */
 				RWM=1;
 				xrl_mem_a();
 				RWM=0;
 				break;
-			//XRL data addr, #data
+			//XRL data addr, #data 24
 			case 0x63:						/* 1: 0110 0011 */
 				RWM=1;
 				xrl_mem_byte();
 				RWM=0;
 				break;
-			//XRL A, #data
+			//XRL A, #data 12
 			case 0x64:						/* 1: 0110 0100 */
 				xrl_a_byte();
 				break;
-			//XRL A, data addr
+			//XRL A, data addr 12
 			case 0x65:						/* 1: 0110 0101 */
 				xrl_a_mem();
 				break;
-			//XRL A, @R0/@R1				/* 1: 0110 011i */
+			//XRL A, @R0/@R1 12				/* 1: 0110 011i */
 			case 0x66:
 			case 0x67:
 				xrl_a_ir(op&1);
 				break;
-			//XRL A, R0 to R7				/* 1: 0110 1rrr */
+			//XRL A, R0 to R7 12				/* 1: 0110 1rrr */
 			case 0x68:
 			case 0x69:
 			case 0x6a:
@@ -941,36 +941,36 @@ int i8051_execute(int cycles)
 			case 0x6f:
 				xrl_a_r(op&7);
 				break;
-			//JNZ code addr
+			//JNZ code addr 24
 			case 0x70:						/* 1: 0111 0000 */
 				jnz();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0x71:
 				acall();
 				break;
-			//ORL C, bit addr
+			//ORL C, bit addr 24
 			case 0x72:						/* 1: 0111 0010 */
 				orl_c_bitaddr();
 				break;
-			//JMP @A+DPTR
+			//JMP @A+DPTR 24
 			case 0x73:						/* 1: 0111 0011 */
 				jmp_iadptr();
 				break;
-			//MOV A, #data
+			//MOV A, #data 12
 			case 0x74:						/* 1: 0111 0100 */
 				mov_a_byte();
 				break;
-			//MOV data addr, #data
+			//MOV data addr, #data 24
 			case 0x75:						/* 1: 0111 0101 */
 				mov_mem_byte();
 				break;
-			//MOV @R0/@R1, #data			/* 1: 0111 011i */
+			//MOV @R0/@R1, #data 12			/* 1: 0111 011i */
 			case 0x76:
 			case 0x77:
 				mov_ir_byte(op&1);
 				break;
-			//MOV R0 to R7, #data			/* 1: 0111 1rrr */
+			//MOV R0 to R7, #data	12		/* 1: 0111 1rrr */
 			case 0x78:
 			case 0x79:
 			case 0x7a:
@@ -981,36 +981,36 @@ int i8051_execute(int cycles)
 			case 0x7f:
 				mov_r_byte(op&7);
 				break;
-			//SJMP code addr
+			//SJMP code addr 24
 			case 0x80:						/* 1: 1000 0000 */
 				sjmp();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0x81:
 				ajmp();
 				break;
-			//ANL C, bit addr
+			//ANL C, bit addr 24
 			case 0x82:						/* 1: 1000 0010 */
 				anl_c_bitaddr();
 				break;
-			//MOVC A, @A + PC
+			//MOVC A, @A + PC 24
 			case 0x83:						/* 1: 1000 0011 */
 				movc_a_iapc();
 				break;
-			//DIV AB
+			//DIV AB 48
 			case 0x84:						/* 1: 1000 0100 */
 				div_ab();
 				break;
-			//MOV data addr, data addr
+			//MOV data addr, data addr 24
 			case 0x85:						/* 1: 1000 0101 */
 				mov_mem_mem();
 				break;
-			//MOV data addr, @R0/@R1		/* 1: 1000 011i */
+			//MOV data addr, @R0/@R1 24		/* 1: 1000 011i */
 			case 0x86:
 			case 0x87:
 				mov_mem_ir(op&1);
 				break;
-			//MOV data addr,R0 to R7		/* 1: 1000 1rrr */
+			//MOV data addr,R0 to R7 24		/* 1: 1000 1rrr */
 			case 0x88:
 			case 0x89:
 			case 0x8a:
@@ -1021,38 +1021,38 @@ int i8051_execute(int cycles)
 			case 0x8f:
 				mov_mem_r(op&7);
 				break;
-			//MOV DPTR, #data
+			//MOV DPTR, #data 24
 			case 0x90:						/* 1: 1001 0000 */
 				mov_dptr_byte();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0x91:
 				acall();
 				break;
-			//MOV bit addr, C
+			//MOV bit addr, C 24
 			case 0x92:						/* 1: 1001 0010 */
 				RWM = 1;
 				mov_bitaddr_c();
 				RWM = 0;
 				break;
-			//MOVC A, @A + DPTR
+			//MOVC A, @A + DPTR 24
 			case 0x93:						/* 1: 1001 0011 */
 				movc_a_iadptr();
 				break;
-			//SUBB A, #data
+			//SUBB A, #data 12
 			case 0x94:						/* 1: 1001 0100 */
 				subb_a_byte();
 				break;
-			//SUBB A, data addr
+			//SUBB A, data addr 12
 			case 0x95:						/* 1: 1001 0101 */
 				subb_a_mem();
 				break;
-			//SUBB A, @R0/@R1				/* 1: 1001 011i */
+			//SUBB A, @R0/@R1 12				/* 1: 1001 011i */
 			case 0x96:
 			case 0x97:
 				subb_a_ir(op&1);
 				break;
-			//SUBB A, R0 to R7				/* 1: 1001 1rrr */
+			//SUBB A, R0 to R7 12				/* 1: 1001 1rrr */
 			case 0x98:
 			case 0x99:
 			case 0x9a:
@@ -1063,23 +1063,23 @@ int i8051_execute(int cycles)
 			case 0x9f:
 				subb_a_r(op&7);
 				break;
-			//ORL C, /bit addr
+			//ORL C, /bit addr 24
 			case 0xa0:						/* 1: 1010 0000 */
 				orl_c_nbitaddr();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0xa1:
 				ajmp();
 				break;
-			//MOV C, bit addr
+			//MOV C, bit addr 12
 			case 0xa2:						/* 1: 1010 0010 */
 				mov_c_bitaddr();
 				break;
-			//INC DPTR
+			//INC DPTR 24
 			case 0xa3:						/* 1: 1010 0011 */
 				inc_dptr();
 				break;
-			//MUL AB
+			//MUL AB 48
 			case 0xa4:						/* 1: 1010 0100 */
 				mul_ab();
 				break;
@@ -1087,12 +1087,12 @@ int i8051_execute(int cycles)
 			case 0xa5:						/* 1: 1010 0101 */
 				illegal();
 				break;
-			//MOV @R0/@R1, data addr		/* 1: 1010 011i */
+			//MOV @R0/@R1, data addr 24		/* 1: 1010 011i */
 			case 0xa6:
 			case 0xa7:
 				mov_ir_mem(op&1);
 				break;
-			//MOV R0 to R7, data addr		/* 1: 1010 1rrr */
+			//MOV R0 to R7, data addr 24		/* 1: 1010 1rrr */
 			case 0xa8:
 			case 0xa9:
 			case 0xaa:
@@ -1103,38 +1103,38 @@ int i8051_execute(int cycles)
 			case 0xaf:
 				mov_r_mem(op&7);
 				break;
-			//ANL C,/bit addr
+			//ANL C,/bit addr 24
 			case 0xb0:						/* 1: 1011 0000 */
 				anl_c_nbitaddr();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr	 24			/* 1: aaa1 0001 */
 			case 0xb1:
 				acall();
 				break;
-			//CPL bit addr
+			//CPL bit addr 12
 			case 0xb2:						/* 1: 1011 0010 */
 				RWM=1;
 				cpl_bitaddr();
 				RWM=0;
 				break;
-			//CPL C
+			//CPL C 12
 			case 0xb3:						/* 1: 1011 0011 */
 				cpl_c();
 				break;
-			//CJNE A, #data, code addr
+			//CJNE A, #data, code addr 24
 			case 0xb4:						/* 1: 1011 0100 */
 				cjne_a_byte();
 				break;
-			//CJNE A, data addr, code addr
+			//CJNE A, data addr, code addr 24
 			case 0xb5:						/* 1: 1011 0101 */
 				cjne_a_mem();
 				break;
-			//CJNE @R0/@R1, #data, code addr /* 1: 1011 011i */
+			//CJNE @R0/@R1, #data, code addr 24 /* 1: 1011 011i */
 			case 0xb6:
 			case 0xb7:
 				cjne_ir_byte(op&1);
 				break;
-			//CJNE R0 to R7, #data, code addr/* 1: 1011 1rrr */
+			//CJNE R0 to R7, #data, code addr 24 /* 1: 1011 1rrr */
 			case 0xb8:
 			case 0xb9:
 			case 0xba:
@@ -1145,38 +1145,38 @@ int i8051_execute(int cycles)
 			case 0xbf:
 				cjne_r_byte(op&7);
 				break;
-			//PUSH data addr
+			//PUSH data addr 24
 			case 0xc0:						/* 1: 1100 0000 */
 				push();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0xc1:
 				ajmp();
 				break;
-			//CLR bit addr
+			//CLR bit addr 12
 			case 0xc2:						/* 1: 1100 0010 */
 				RWM=1;
 				clr_bitaddr();
 				RWM=0;
 				break;
-			//CLR C
+			//CLR C 12
 			case 0xc3:						/* 1: 1100 0011 */
 				clr_c();
 				break;
-			//SWAP A
+			//SWAP A 12
 			case 0xc4:						/* 1: 1100 0100 */
 				swap_a();
 				break;
-			//XCH A, data addr
+			//XCH A, data addr 12
 			case 0xc5:						/* 1: 1100 0101 */
 				xch_a_mem();
 				break;
-			//XCH A, @RO/@R1				/* 1: 1100 011i */
+			//XCH A, @RO/@R1 12				/* 1: 1100 011i */
 			case 0xc6:
 			case 0xc7:
 				xch_a_ir(op&1);
 				break;
-			//XCH A, RO to R7				/* 1: 1100 1rrr */
+			//XCH A, RO to R7 12				/* 1: 1100 1rrr */
 			case 0xc8:
 			case 0xc9:
 			case 0xca:
@@ -1187,40 +1187,40 @@ int i8051_execute(int cycles)
 			case 0xcf:
 				xch_a_r(op&7);
 				break;
-			//POP data addr
+			//POP data addr 24
 			case 0xd0:						/* 1: 1101 0000 */
 				pop();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0xd1:
 				acall();
 				break;
-			//SETB bit addr
+			//SETB bit addr 12
 			case 0xd2:						/* 1: 1101 0010 */
 				RWM=1;
 				setb_bitaddr();
 				RWM=0;
 				break;
-			//SETB C
+			//SETB C 12
 			case 0xd3:						/* 1: 1101 0011 */
 				setb_c();
 				break;
-			//DA A
+			//DA A 12
 			case 0xd4:						/* 1: 1101 0100 */
 				da_a();
 				break;
-			//DJNZ data addr, code addr
+			//DJNZ data addr, code addr 24
 			case 0xd5:						/* 1: 1101 0101 */
 				RWM=1;
 				djnz_mem();
 				RWM=0;
 				break;
-			//XCHD A, @R0/@R1				/* 1: 1101 011i */
+			//XCHD A, @R0/@R1 12				/* 1: 1101 011i */
 			case 0xd6:
 			case 0xd7:
 				xchd_a_ir(op&1);
 				break;
-			//DJNZ R0 to R7,code addr		/* 1: 1101 1rrr */
+			//DJNZ R0 to R7,code addr 24		/* 1: 1101 1rrr */
 			case 0xd8:
 			case 0xd9:
 			case 0xda:
@@ -1231,33 +1231,33 @@ int i8051_execute(int cycles)
 			case 0xdf:
 				djnz_r(op&7);
 				break;
-			//MOVX A,@DPTR
+			//MOVX A,@DPTR 24
 			case 0xe0:						/* 1: 1110 0000 */
 				movx_a_idptr();
 				break;
-			//AJMP code addr				/* 1: aaa0 0001 */
+			//AJMP code addr 24				/* 1: aaa0 0001 */
 			case 0xe1:
 				ajmp();
 				break;
-			//MOVX A, @R0/@R1				/* 1: 1110 001i */
+			//MOVX A, @R0/@R1 24				/* 1: 1110 001i */
 			case 0xe2:
 			case 0xe3:
 				movx_a_ir(op&1);
 				break;
-			//CLR A
+			//CLR A 12
 			case 0xe4:						/* 1: 1110 0100 */
 				clr_a();
 				break;
-			//MOV A, data addr
+			//MOV A, data addr 12
 			case 0xe5:						/* 1: 1110 0101 */
 				mov_a_mem();
 				break;
-			//MOV A,@RO/@R1					/* 1: 1110 011i */
+			//MOV A,@RO/@R1	 12				/* 1: 1110 011i */
 			case 0xe6:
 			case 0xe7:
 				mov_a_ir(op&1);
 				break;
-			//MOV A,R0 to R7				/* 1: 1110 1rrr */
+			//MOV A,R0 to R7 12				/* 1: 1110 1rrr */
 			case 0xe8:
 			case 0xe9:
 			case 0xea:
@@ -1268,33 +1268,33 @@ int i8051_execute(int cycles)
 			case 0xef:
 				mov_a_r(op&7);
 				break;
-			//MOVX @DPTR,A
+			//MOVX @DPTR,A 24
 			case 0xf0:						/* 1: 1111 0000 */
 				movx_idptr_a();
 				break;
-			//ACALL code addr				/* 1: aaa1 0001 */
+			//ACALL code addr 24				/* 1: aaa1 0001 */
 			case 0xf1:
 				acall();
 				break;
-			//MOVX @R0/@R1,A				/* 1: 1111 001i */
+			//MOVX @R0/@R1,A 12				/* 1: 1111 001i */
 			case 0xf2:
 			case 0xf3:
 				movx_ir_a(op&1);
 				break;
-			//CPL A
+			//CPL A 12
 			case 0xf4:						/* 1: 1111 0100 */
 				cpl_a();
 				break;
-			//MOV data addr, A
+			//MOV data addr, A 12
 			case 0xf5:						/* 1: 1111 0101 */
 				mov_mem_a();
 				break;
-			//MOV @R0/@R1, A				/* 1: 1111 011i */
+			//MOV @R0/@R1, A 12				/* 1: 1111 011i */
 			case 0xf6:
 			case 0xf7:
 				mov_ir_a(op&1);
 				break;
-			//MOV R0 to R7, A				/* 1: 1111 1rrr */
+			//MOV R0 to R7, A 12				/* 1: 1111 1rrr */
 			case 0xf8:
 			case 0xf9:
 			case 0xfa:
