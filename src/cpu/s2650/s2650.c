@@ -4,11 +4,10 @@
  *
  *		Written by Juergen Buchmueller for use with MAME
  *
- *  Version 1.1b
+ *  Version 1.2
  *  - changed to clock cycle counts from machine cycles
  *  - replaced cycle table with inline code (M_RET conditional case)
  *  - removed wrong distinct add/sub CC and OVF handling
- *  - still correcting some sense/read flag bits MAME omissed so far
  *  - cosmetics, readability
  *
  *************************************************************************/
@@ -20,6 +19,8 @@
 #include "mamedbg.h"
 #include "s2650.h"
 #include "s2650cpu.h"
+
+#define S2650_SENSE_LINE INPUT_LINE_IRQ1
 
 /* define this to have some interrupt information logged */
 #define VERBOSE 0
@@ -137,6 +138,36 @@ static const UINT8 ccc[0x200] = {
 	0x84,0x84,0x84,0x84,0x84,0x84,0x84,0x84
 };
 
+/***************************************************************
+ * handy table to build PC relative offsets
+ * from HR (holding register)
+ ***************************************************************/
+static const int S2650_relative[0x100] =
+{
+	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+	 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+	 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+	 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+	-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,
+	-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,
+	-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,
+	-16,-15,-14,-13,-12,-11,-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
+	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+	 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+	 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+	 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+	-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,
+	-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,
+	-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,
+	-16,-15,-14,-13,-12,-11,-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
+};
+
+/***************************************************************
+ * RDMEM
+ * read memory byte from addr
+ ***************************************************************/
+#define RDMEM(addr) cpu_readmem16(addr)
+
 #define CHECK_IRQ_LINE											\
 	if (S.irq_state != CLEAR_LINE)								\
 	{															\
@@ -154,7 +185,7 @@ static const UINT8 ccc[0x200] = {
 			if (vector & 0x80)		/* indirect bit set ? */	\
 			{													\
 				int addr = S.ea;								\
-				s2650_ICount -= 2;								\
+				s2650_ICount -= 6;								\
 				/* build indirect 32K address */				\
 				S.ea = RDMEM(addr) << 8;						\
 				if (!(++addr & PMSK)) addr -= PLEN; 			\
@@ -180,11 +211,11 @@ static const UINT8 ccc[0x200] = {
  * set condition code (zero,plus,minus) and overflow
  ***************************************************************/
 #define SET_CC_OVF(result,value)                                \
-	S.psl = (S.psl & ~(OVF+CC)) |								\
-		ccc[result + ( ( (result^value) << 1) & 256 )]
+	S.psl = (S.psl & ~(OVF+CC)) |                               \
+		ccc[result + (((value) & 0x80) << 1)]
 
-#define SET_CC_OVF_ADD(result,value1,value2) SET_CC_OVF(result,value1)
-#define SET_CC_OVF_SUB(result,value1,value2) SET_CC_OVF(result,value1)
+#define SET_CC_OVF_ADD(result,value1,value2) SET_CC_OVF(result,~((value1) ^ (value2)) & ((value1) ^ (result)))
+#define SET_CC_OVF_SUB(result,value1,value2) SET_CC_OVF(result,~((value1) ^ (value2)) & ((value1) ^ (result)))
 
 /***************************************************************
  * ROP
@@ -209,36 +240,6 @@ INLINE UINT8 ARG(void)
 }
 
 /***************************************************************
- * RDMEM
- * read memory byte from addr
- ***************************************************************/
-#define RDMEM(addr) cpu_readmem16(addr)
-
-/***************************************************************
- * handy table to build PC relative offsets
- * from HR (holding register)
- ***************************************************************/
-static	int 	S2650_relative[0x100] =
-{
-	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-	 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-	 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-	 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
-	-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,
-	-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,
-	-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,
-	-16,-15,-14,-13,-12,-11,-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
-	  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-	 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-	 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-	 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
-	-64,-63,-62,-61,-60,-59,-58,-57,-56,-55,-54,-53,-52,-51,-50,-49,
-	-48,-47,-46,-45,-44,-43,-42,-41,-40,-39,-38,-37,-36,-35,-34,-33,
-	-32,-31,-30,-29,-28,-27,-26,-25,-24,-23,-22,-21,-20,-19,-18,-17,
-	-16,-15,-14,-13,-12,-11,-10, -9, -8, -7, -6, -5, -4, -3, -2, -1,
-};
-
-/***************************************************************
  * _REL_EA
  * build effective address with relative addressing
  ***************************************************************/
@@ -249,7 +250,7 @@ static	int 	S2650_relative[0x100] =
 	S.ea = page + ((S.iar + S2650_relative[hr]) & PMSK);		\
 	if (hr & 0x80) { /* indirect bit set ? */					\
 		int addr = S.ea;										\
-		s2650_ICount -= 2;										\
+		s2650_ICount -= 6;										\
 		/* build indirect 32K address */						\
 		S.ea = RDMEM(addr) << 8;								\
 		if( (++addr & PMSK) == 0 ) addr -= PLEN; /* page wrap */\
@@ -268,7 +269,7 @@ static	int 	S2650_relative[0x100] =
 	S.ea = (S2650_relative[hr] & PMSK);							\
 	if (hr & 0x80) { /* indirect bit set ? */					\
 		int addr = S.ea;										\
-		s2650_ICount -= 2;										\
+		s2650_ICount -= 6;										\
 		/* build indirect 32K address */						\
 		S.ea = RDMEM(addr) << 8;								\
 		if( (++addr & PMSK) == 0 ) addr -= PLEN; /* page wrap */\
@@ -290,7 +291,7 @@ static	int 	S2650_relative[0x100] =
 	/* indirect addressing ? */ 								\
 	if (hr & 0x80) {											\
 		int addr = S.ea;										\
-		s2650_ICount -= 2;										\
+		s2650_ICount -= 6;										\
 		/* build indirect 32K address */						\
 		/* build indirect 32K address */						\
 		S.ea = RDMEM(addr) << 8;								\
@@ -332,7 +333,7 @@ static	int 	S2650_relative[0x100] =
 	/* indirect addressing ? */ 								\
 	if (hr & 0x80) {											\
 		int addr = S.ea;										\
-		s2650_ICount -= 2;										\
+		s2650_ICount -= 6;										\
 		/* build indirect 32K address */						\
 		S.ea = RDMEM(addr) << 8;								\
 		if( (++addr & PMSK) == 0 ) addr -= PLEN; /* page wrap */\
@@ -485,7 +486,7 @@ static	int 	S2650_relative[0x100] =
 {																\
 	if( cond )													\
 	{															\
-		s2650_ICount -= 2;										\
+		s2650_ICount -= 6;										\
 		S.ea = S.ras[S.psu & SP];								\
 		S.psu = (S.psu & ~SP) | ((S.psu - 1) & SP); 			\
 		S.page = S.ea & PAGE;									\
@@ -640,7 +641,8 @@ static	int 	S2650_relative[0x100] =
 	{															\
 		dest = (before << 1) | (before >> 7);					\
 	}															\
-	SET_CC_OVF(dest,before);									\
+	SET_CC(dest);									\
+	S.psl = (S.psl & ~OVF) | (((dest ^ before) >> 5) & OVF);    \
 }
 
 /***************************************************************
@@ -658,8 +660,11 @@ static	int 	S2650_relative[0x100] =
 		dest = (before >> 1) | (c << 7);						\
 		S.psl |= (before & C) + (dest & IDC);					\
 	} else	dest = (before >> 1) | (before << 7);				\
-	SET_CC_OVF(dest,before);									\
+	SET_CC(dest);									\
+	S.psl = (S.psl & ~OVF) | (((dest ^ before) >> 5) & OVF);    \
 }
+
+// bxd() not necessary
 
 /***************************************************************
  * M_SPSU
@@ -668,7 +673,7 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_SPSU()												\
 {																\
-	R0 = (S.psu & ~SI)|(cpu_readport16(S2650_SENSE_PORT)?SI:0);	\
+	R0 = (S.psu & ~PSU34)|(cpu_readport16(S2650_SENSE_PORT)?SI:0);	\
 	SET_CC(R0); 												\
 }
 
@@ -688,7 +693,7 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_CPSU()												\
 {																\
-	UINT8 cpsu = ARG() & ~PSU34; 								\
+	UINT8 cpsu = ARG(); 								\
 	S.psu = S.psu & ~cpsu;										\
 	cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);		\
 	CHECK_IRQ_LINE; 											\
@@ -711,11 +716,11 @@ static	int 	S2650_relative[0x100] =
 /***************************************************************
  * M_PPSU
  * Preset processor status upper (PSU), selective
- * Unused bits 3 and 4 can't be set?
+ * Unused bits 3 and 4 can't be set
  ***************************************************************/
 #define M_PPSU()												\
 {																\
-	UINT8 ppsu = ARG() & ~PSU34;								\
+	UINT8 ppsu = (ARG() & ~PSU34) & ~SI;						\
 	S.psu = S.psu | ppsu;										\
 	cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);		\
 }
@@ -740,7 +745,7 @@ static	int 	S2650_relative[0x100] =
 #define M_TPSU()												\
 {																\
 	UINT8 tpsu = ARG(); 										\
-    UINT8 rpsu = (S.psu & ~SI)|(cpu_readport16(S2650_SENSE_PORT)?SI:0);\
+    UINT8 rpsu = (S.psu | (cpu_readport16(S2650_SENSE_PORT)?SI:0));\
 	S.psl &= ~CC;												\
 	if( (rpsu & tpsu) != tpsu )									\
 		S.psl |= 0x80;											\
@@ -944,7 +949,7 @@ int s2650_execute(int cycles)
 			case 0x01:		/* LODZ,1 */
 			case 0x02:		/* LODZ,2 */
 			case 0x03:		/* LODZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_LOD( R0, S.reg[S.r] );
 				break;
 
@@ -952,7 +957,7 @@ int s2650_execute(int cycles)
 			case 0x05:		/* LODI,1 v */
 			case 0x06:		/* LODI,2 v */
 			case 0x07:		/* LODI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_LOD( S.reg[S.r], ARG() );
 				break;
 
@@ -960,7 +965,7 @@ int s2650_execute(int cycles)
 			case 0x09:		/* LODR,1 (*)a */
 			case 0x0a:		/* LODR,2 (*)a */
 			case 0x0b:		/* LODR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA( S.page );
 				M_LOD( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -969,7 +974,7 @@ int s2650_execute(int cycles)
 			case 0x0d:		/* LODA,1 (*)a(,X) */
 			case 0x0e:		/* LODA,2 (*)a(,X) */
 			case 0x0f:		/* LODA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_LOD( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -979,44 +984,44 @@ int s2650_execute(int cycles)
 				s2650_ICount -= 7;
 				break;
 			case 0x12:		/* SPSU */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_SPSU();
 				break;
 			case 0x13:		/* SPSL */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_SPSL();
 				break;
 
 			case 0x14:		/* RETC,0	(zero)	*/
 			case 0x15:		/* RETC,1	(plus)	*/
 			case 0x16:		/* RETC,2	(minus) */
-				s2650_ICount -= 5;	/* +2 cycles if condition is true */
+				s2650_ICount -= 9;	/* +2 cycles if condition is true */
 				M_RET( (S.psl >> 6) == S.r );
 				break;
 			case 0x17:		/* RETC,3	(always) */
-				s2650_ICount -= 5;	/* +2 cycles if condition is true */
+				s2650_ICount -= 9;	/* +2 cycles if condition is true */
 				M_RET( 1 );
 				break;
 
 			case 0x18:		/* BCTR,0  (*)a */
 			case 0x19:		/* BCTR,1  (*)a */
 			case 0x1a:		/* BCTR,2  (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( (S.psl >> 6) == S.r );
 				break;
 			case 0x1b:		/* BCTR,3  (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( 1 );
 				break;
 
 			case 0x1c:		/* BCTA,0  (*)a */
 			case 0x1d:		/* BCTA,1  (*)a */
 			case 0x1e:		/* BCTA,2  (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( (S.psl >> 6) == S.r );
 				break;
 			case 0x1f:		/* BCTA,3  (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( 1 );
 				break;
 
@@ -1024,7 +1029,7 @@ int s2650_execute(int cycles)
 			case 0x21:		/* EORZ,1 */
 			case 0x22:		/* EORZ,2 */
 			case 0x23:		/* EORZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_EOR( R0, S.reg[S.r] );
 				break;
 
@@ -1032,7 +1037,7 @@ int s2650_execute(int cycles)
 			case 0x25:		/* EORI,1 v */
 			case 0x26:		/* EORI,2 v */
 			case 0x27:		/* EORI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_EOR( S.reg[S.r], ARG() );
 				break;
 
@@ -1040,7 +1045,7 @@ int s2650_execute(int cycles)
 			case 0x29:		/* EORR,1 (*)a */
 			case 0x2a:		/* EORR,2 (*)a */
 			case 0x2b:		/* EORR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA( S.page );
 				M_EOR( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1049,7 +1054,7 @@ int s2650_execute(int cycles)
 			case 0x2d:		/* EORA,1 (*)a(,X) */
 			case 0x2e:		/* EORA,2 (*)a(,X) */
 			case 0x2f:		/* EORA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_EOR( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1058,7 +1063,7 @@ int s2650_execute(int cycles)
 			case 0x31:		/* REDC,1 */
 			case 0x32:		/* REDC,2 */
 			case 0x33:		/* REDC,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				S.reg[S.r] = cpu_readport16(S2650_CTRL_PORT);
 				SET_CC( S.reg[S.r] );
 				break;
@@ -1066,38 +1071,38 @@ int s2650_execute(int cycles)
 			case 0x34:		/* RETE,0 */
 			case 0x35:		/* RETE,1 */
 			case 0x36:		/* RETE,2 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_RETE( (S.psl >> 6) == S.r );
 				break;
 			case 0x37:		/* RETE,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_RETE( 1 );
 				break;
 
 			case 0x38:		/* BSTR,0 (*)a */
 			case 0x39:		/* BSTR,1 (*)a */
 			case 0x3a:		/* BSTR,2 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BSR( (S.psl >> 6) == S.r );
 				break;
 			case 0x3b:		/* BSTR,R3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BSR( 1 );
 				break;
 
 			case 0x3c:		/* BSTA,0 (*)a */
 			case 0x3d:		/* BSTA,1 (*)a */
 			case 0x3e:		/* BSTA,2 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BSA( (S.psl >> 6) == S.r );
 				break;
 			case 0x3f:		/* BSTA,3 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BSA( 1 );
 				break;
 
 			case 0x40:		/* HALT */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				S.iar = (S.iar - 1) & PMSK;
 				S.halt = 1;
 				if (s2650_ICount > 0)
@@ -1106,7 +1111,7 @@ int s2650_execute(int cycles)
 			case 0x41:		/* ANDZ,1 */
 			case 0x42:		/* ANDZ,2 */
 			case 0x43:		/* ANDZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_AND( R0, S.reg[S.r] );
 				break;
 
@@ -1114,7 +1119,7 @@ int s2650_execute(int cycles)
 			case 0x45:		/* ANDI,1 v */
 			case 0x46:		/* ANDI,2 v */
 			case 0x47:		/* ANDI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_AND( S.reg[S.r], ARG() );
 				break;
 
@@ -1122,7 +1127,7 @@ int s2650_execute(int cycles)
 			case 0x49:		/* ANDR,1 (*)a */
 			case 0x4a:		/* ANDR,2 (*)a */
 			case 0x4b:		/* ANDR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA( S.page );
 				M_AND( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1131,7 +1136,7 @@ int s2650_execute(int cycles)
 			case 0x4d:		/* ANDA,1 (*)a(,X) */
 			case 0x4e:		/* ANDA,2 (*)a(,X) */
 			case 0x4f:		/* ANDA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_AND( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1140,7 +1145,7 @@ int s2650_execute(int cycles)
 			case 0x51:		/* RRR,1 */
 			case 0x52:		/* RRR,2 */
 			case 0x53:		/* RRR,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_RRR( S.reg[S.r] );
 				break;
 
@@ -1148,7 +1153,7 @@ int s2650_execute(int cycles)
 			case 0x55:		/* REDE,1 v */
 			case 0x56:		/* REDE,2 v */
 			case 0x57:		/* REDE,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 9;
 				S.reg[S.r] = cpu_readport16( ARG() );
 				SET_CC(S.reg[S.r]);
 				break;
@@ -1157,7 +1162,7 @@ int s2650_execute(int cycles)
 			case 0x59:		/* BRNR,1 (*)a */
 			case 0x5a:		/* BRNR,2 (*)a */
 			case 0x5b:		/* BRNR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( S.reg[S.r] );
 				break;
 
@@ -1165,7 +1170,7 @@ int s2650_execute(int cycles)
 			case 0x5d:		/* BRNA,1 (*)a */
 			case 0x5e:		/* BRNA,2 (*)a */
 			case 0x5f:		/* BRNA,3 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( S.reg[S.r] );
 				break;
 
@@ -1173,7 +1178,7 @@ int s2650_execute(int cycles)
 			case 0x61:		/* IORZ,1 */
 			case 0x62:		/* IORZ,2 */
 			case 0x63:		/* IORZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_IOR( R0, S.reg[S.r] );
 				break;
 
@@ -1181,7 +1186,7 @@ int s2650_execute(int cycles)
 			case 0x65:		/* IORI,1 v */
 			case 0x66:		/* IORI,2 v */
 			case 0x67:		/* IORI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_IOR( S.reg[S.r], ARG() );
 				break;
 
@@ -1189,7 +1194,7 @@ int s2650_execute(int cycles)
 			case 0x69:		/* IORR,1 (*)a */
 			case 0x6a:		/* IORR,2 (*)a */
 			case 0x6b:		/* IORR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA( S.page );
 				M_IOR( S.reg[S. r],RDMEM(S.ea) );
 				break;
@@ -1198,7 +1203,7 @@ int s2650_execute(int cycles)
 			case 0x6d:		/* IORA,1 (*)a(,X) */
 			case 0x6e:		/* IORA,2 (*)a(,X) */
 			case 0x6f:		/* IORA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_IOR( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1207,25 +1212,25 @@ int s2650_execute(int cycles)
 			case 0x71:		/* REDD,1 */
 			case 0x72:		/* REDD,2 */
 			case 0x73:		/* REDD,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				S.reg[S.r] = cpu_readport16(S2650_DATA_PORT);
 				SET_CC(S.reg[S.r]);
 				break;
 
 			case 0x74:		/* CPSU */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_CPSU();
 				break;
 			case 0x75:		/* CPSL */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_CPSL();
 				break;
 			case 0x76:		/* PPSU */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_PPSU();
 				break;
 			case 0x77:		/* PPSL */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_PPSL();
 				break;
 
@@ -1233,7 +1238,7 @@ int s2650_execute(int cycles)
 			case 0x79:		/* BSNR,1 (*)a */
 			case 0x7a:		/* BSNR,2 (*)a */
 			case 0x7b:		/* BSNR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BSR( S.reg[S.r] );
 				break;
 
@@ -1241,7 +1246,7 @@ int s2650_execute(int cycles)
 			case 0x7d:		/* BSNA,1 (*)a */
 			case 0x7e:		/* BSNA,2 (*)a */
 			case 0x7f:		/* BSNA,3 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BSA( S.reg[S.r] );
 				break;
 
@@ -1249,7 +1254,7 @@ int s2650_execute(int cycles)
 			case 0x81:		/* ADDZ,1 */
 			case 0x82:		/* ADDZ,2 */
 			case 0x83:		/* ADDZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_ADD( R0,S.reg[S.r] );
 				break;
 
@@ -1257,7 +1262,7 @@ int s2650_execute(int cycles)
 			case 0x85:		/* ADDI,1 v */
 			case 0x86:		/* ADDI,2 v */
 			case 0x87:		/* ADDI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_ADD( S.reg[S.r], ARG() );
 				break;
 
@@ -1265,7 +1270,7 @@ int s2650_execute(int cycles)
 			case 0x89:		/* ADDR,1 (*)a */
 			case 0x8a:		/* ADDR,2 (*)a */
 			case 0x8b:		/* ADDR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA(S.page);
 				M_ADD( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1274,7 +1279,7 @@ int s2650_execute(int cycles)
 			case 0x8d:		/* ADDA,1 (*)a(,X) */
 			case 0x8e:		/* ADDA,2 (*)a(,X) */
 			case 0x8f:		/* ADDA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_ADD( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1284,12 +1289,12 @@ int s2650_execute(int cycles)
 				s2650_ICount -= 7;
 				break;
 			case 0x92:		/* LPSU */
-				s2650_ICount -= 7;
-				S.psu = R0 & ~PSU34;
+				s2650_ICount -= 6;
+				S.psu = (R0 & ~PSU34) & ~SI;
 				cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);
 				break;
 			case 0x93:		/* LPSL */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				/* change register set ? */
 				if ((S.psl ^ R0) & RS)
 					SWAP_REGS;
@@ -1300,29 +1305,29 @@ int s2650_execute(int cycles)
 			case 0x95:		/* DAR,1 */
 			case 0x96:		/* DAR,2 */
 			case 0x97:		/* DAR,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_DAR( S.reg[S.r] );
 				break;
 
 			case 0x98:		/* BCFR,0 (*)a */
 			case 0x99:		/* BCFR,1 (*)a */
 			case 0x9a:		/* BCFR,2 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( (S.psl >> 6) != S.r );
 				break;
 			case 0x9b:		/* ZBRR    (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_ZBRR();
 				break;
 
 			case 0x9c:		/* BCFA,0 (*)a */
 			case 0x9d:		/* BCFA,1 (*)a */
 			case 0x9e:		/* BCFA,2 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( (S.psl >> 6) != S.r );
 				break;
 			case 0x9f:		/* BXA	   (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BXA();
 				break;
 
@@ -1330,7 +1335,7 @@ int s2650_execute(int cycles)
 			case 0xa1:		/* SUBZ,1 */
 			case 0xa2:		/* SUBZ,2 */
 			case 0xa3:		/* SUBZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_SUB( R0, S.reg[S.r] );
 				break;
 
@@ -1338,7 +1343,7 @@ int s2650_execute(int cycles)
 			case 0xa5:		/* SUBI,1 v */
 			case 0xa6:		/* SUBI,2 v */
 			case 0xa7:		/* SUBI,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 6;
 				M_SUB( S.reg[S.r], ARG() );
 				break;
 
@@ -1346,7 +1351,7 @@ int s2650_execute(int cycles)
 			case 0xa9:		/* SUBR,1 (*)a */
 			case 0xaa:		/* SUBR,2 (*)a */
 			case 0xab:		/* SUBR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA(S.page);
 				M_SUB( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1355,7 +1360,7 @@ int s2650_execute(int cycles)
 			case 0xad:		/* SUBA,1 (*)a(,X) */
 			case 0xae:		/* SUBA,2 (*)a(,X) */
 			case 0xaf:		/* SUBA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_SUB( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1364,16 +1369,16 @@ int s2650_execute(int cycles)
 			case 0xb1:		/* WRTC,1 */
 			case 0xb2:		/* WRTC,2 */
 			case 0xb3:		/* WRTC,3 */
-				s2650_ICount -= 5;
+				s2650_ICount -= 6;
 				cpu_writeport16(S2650_CTRL_PORT,S.reg[S.r]);
 				break;
 
 			case 0xb4:		/* TPSU */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_TPSU();
 				break;
 			case 0xb5:		/* TPSL */
-				s2650_ICount -= 7;
+				s2650_ICount -= 9;
 				M_TPSL();
 				break;
 			case 0xb6:		/* illegal */
@@ -1384,32 +1389,32 @@ int s2650_execute(int cycles)
 			case 0xb8:		/* BSFR,0 (*)a */
 			case 0xb9:		/* BSFR,1 (*)a */
 			case 0xba:		/* BSFR,2 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BSR( (S.psl >> 6) != S.r );
 				break;
 			case 0xbb:		/* ZBSR    (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_ZBSR();
 				break;
 
 			case 0xbc:		/* BSFA,0 (*)a */
 			case 0xbd:		/* BSFA,1 (*)a */
 			case 0xbe:		/* BSFA,2 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BSA( (S.psl >> 6) != S.r );
 				break;
 			case 0xbf:		/* BSXA    (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BSXA();
 				break;
 
 			case 0xc0:		/* NOP */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				break;
 			case 0xc1:		/* STRZ,1 */
 			case 0xc2:		/* STRZ,2 */
 			case 0xc3:		/* STRZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_LOD( S.reg[S.r], R0 );
 				break;
 
@@ -1424,7 +1429,7 @@ int s2650_execute(int cycles)
 			case 0xc9:		/* STRR,1 (*)a */
 			case 0xca:		/* STRR,2 (*)a */
 			case 0xcb:		/* STRR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA(S.page);
 				M_STR( S.ea, S.reg[S.r] );
 				break;
@@ -1433,7 +1438,7 @@ int s2650_execute(int cycles)
 			case 0xcd:		/* STRA,1 (*)a(,X) */
 			case 0xce:		/* STRA,2 (*)a(,X) */
 			case 0xcf:		/* STRA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_STR( S.ea, S.reg[S.r] );
 				break;
@@ -1442,7 +1447,7 @@ int s2650_execute(int cycles)
 			case 0xd1:		/* RRL,1 */
 			case 0xd2:		/* RRL,2 */
 			case 0xd3:		/* RRL,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_RRL( S.reg[S.r] );
 				break;
 
@@ -1450,7 +1455,7 @@ int s2650_execute(int cycles)
 			case 0xd5:		/* WRTE,1 v */
 			case 0xd6:		/* WRTE,2 v */
 			case 0xd7:		/* WRTE,3 v */
-				s2650_ICount -= 10;
+				s2650_ICount -= 9;
 				cpu_writeport16( ARG(), S.reg[S.r] );
 				break;
 
@@ -1458,7 +1463,7 @@ int s2650_execute(int cycles)
 			case 0xd9:		/* BIRR,1 (*)a */
 			case 0xda:		/* BIRR,2 (*)a */
 			case 0xdb:		/* BIRR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( ++S.reg[S.r] );
 				break;
 
@@ -1466,7 +1471,7 @@ int s2650_execute(int cycles)
 			case 0xdd:		/* BIRA,1 (*)a */
 			case 0xde:		/* BIRA,2 (*)a */
 			case 0xdf:		/* BIRA,3 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( ++S.reg[S.r] );
 				break;
 
@@ -1474,7 +1479,7 @@ int s2650_execute(int cycles)
 			case 0xe1:		/* COMZ,1 */
 			case 0xe2:		/* COMZ,2 */
 			case 0xe3:		/* COMZ,3 */
-				s2650_ICount -= 7;
+				s2650_ICount -= 6;
 				M_COM( R0, S.reg[S.r] );
 				break;
 
@@ -1482,7 +1487,7 @@ int s2650_execute(int cycles)
 			case 0xe5:		/* COMI,1 v */
 			case 0xe6:		/* COMI,2 v */
 			case 0xe7:		/* COMI,3 v */
-				s2650_ICount -= 9;
+				s2650_ICount -= 6;
 				M_COM( S.reg[S.r], ARG() );
 				break;
 
@@ -1490,7 +1495,7 @@ int s2650_execute(int cycles)
 			case 0xe9:		/* COMR,1 (*)a */
 			case 0xea:		/* COMR,2 (*)a */
 			case 0xeb:		/* COMR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				REL_EA(S.page);
 				M_COM( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1499,7 +1504,7 @@ int s2650_execute(int cycles)
 			case 0xed:		/* COMA,1 (*)a(,X) */
 			case 0xee:		/* COMA,2 (*)a(,X) */
 			case 0xef:		/* COMA,3 (*)a(,X) */
-				s2650_ICount -= 11;
+				s2650_ICount -= 12;
 				ABS_EA();
 				M_COM( S.reg[S.r], RDMEM(S.ea) );
 				break;
@@ -1508,7 +1513,7 @@ int s2650_execute(int cycles)
 			case 0xf1:		/* WRTD,1 */
 			case 0xf2:		/* WRTD,2 */
 			case 0xf3:		/* WRTD,3 */
-				s2650_ICount -= 5;
+				s2650_ICount -= 6;
 				cpu_writeport16(S2650_DATA_PORT, S.reg[S.r]);
 				break;
 
@@ -1524,7 +1529,7 @@ int s2650_execute(int cycles)
 			case 0xf9:		/* BDRR,1 (*)a */
 			case 0xfa:		/* BDRR,2 (*)a */
 			case 0xfb:		/* BDRR,3 (*)a */
-				s2650_ICount -= 8;
+				s2650_ICount -= 9;
 				M_BRR( --S.reg[S.r] );
 				break;
 
@@ -1532,7 +1537,7 @@ int s2650_execute(int cycles)
 			case 0xfd:		/* BDRA,1 (*)a */
 			case 0xfe:		/* BDRA,2 (*)a */
 			case 0xff:		/* BDRA,3 (*)a */
-				s2650_ICount -= 11;
+				s2650_ICount -= 9;
 				M_BRA( --S.reg[S.r] );
 				break;
 		}
