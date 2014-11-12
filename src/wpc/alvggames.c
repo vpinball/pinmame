@@ -160,7 +160,11 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
+#ifdef MYSTERY_CASTLE_HACK
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker R02",1993,"Alvin G",mALVGS2DMD2,0)
+#else
 CORE_GAMEDEFNV(pstlpkr,"Pistol Poker R02",1993,"Alvin G",mALVGS2DMD1,0)
+#endif
 
 INITGAME2(pstlpkr1, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr1,	"u2-ddff.512", CRC(83fa0595) SHA1(d6ebb0e63fd964ccaee3979a7fc13b6adf7b837c))
@@ -173,7 +177,11 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
+#ifdef MYSTERY_CASTLE_HACK
+CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker R01",1993,"Alvin G",mALVGS2DMD2,0)
+#else
 CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker R01",1993,"Alvin G",mALVGS2DMD1,0)
+#endif
 
 /*-------------------------------------------------------------------
 / Punchy The Clown
