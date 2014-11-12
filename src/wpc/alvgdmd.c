@@ -279,28 +279,26 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   RAM2 = RAM + dmdlocals.planenable*0x200;
 
 #ifdef MAME_DEBUG
-  core_textOutf(50,20,1,"offset=%08x", offset);
-  memset(&dotCol,0,sizeof(dotCol));
+//  core_textOutf(50,20,1,"offset=%08x", offset);
+//  memset(&dotCol,0,sizeof(dotCol));
 
-  if(!debugger_focus) {
-  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
-	  offset+=1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
-	  offset-=1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
-	  offset=0;
-  if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
-	  offset+=0x200;
-  if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	  offset-=0x200;
-  if(keyboard_pressed_memory_repeat(KEYCODE_N,2))
-	  //offset=0xb4;
-	  offset=0xc3;
-  if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
-  {
-	  dmd32_data_w(0,offset);
-	  dmd32_ctrl_w(0,0);
-  }
+  if (!debugger_focus) {
+//  if (keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+//    offset+=1;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_X,2))
+//    offset-=1;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_C,2))
+//    offset=0;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_V,2))
+//    offset+=0x200;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_B,2))
+//    offset-=0x200;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_N,2))
+//    offset=0xc3;
+    if (keyboard_pressed_memory_repeat(KEYCODE_M,2)) {
+      dmd32_data_w(0,offset);
+      dmd32_ctrl_w(0,0);
+    }
   }
   RAM += offset;
   RAM2 += offset;
@@ -345,28 +343,26 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
   RAM2 = RAM + dmdlocals.planenable*0x200;
 
 #ifdef MAME_DEBUG
-  core_textOutf(50,20,1,"offset=%08x", offset);
-  memset(&dotCol,0,sizeof(dotCol));
+//  core_textOutf(50,20,1,"offset=%08x", offset);
+//  memset(&dotCol,0,sizeof(dotCol));
 
-  if(!debugger_focus) {
-  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
-	  offset+=1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
-	  offset-=1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
-	  offset=0;
-  if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
-	  offset+=0x200;
-  if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	  offset-=0x200;
-  if(keyboard_pressed_memory_repeat(KEYCODE_N,2))
-	  //offset=0xb4;
-	  offset=0xc3;
-  if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
-  {
-	  dmd32_data_w(0,offset);
-	  dmd32_ctrl_w(0,0);
-  }
+  if (!debugger_focus) {
+//  if (keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+//    offset+=1;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_X,2))
+//    offset-=1;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_C,2))
+//    offset=0;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_V,2))
+//    offset+=0x200;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_B,2))
+//    offset-=0x200;
+//  if (keyboard_pressed_memory_repeat(KEYCODE_N,2))
+//    offset=0xc3;
+    if (keyboard_pressed_memory_repeat(KEYCODE_M,2)) {
+      dmd32_data_w(0,offset);
+      dmd32_ctrl_w(0,0);
+    }
   }
   RAM += offset;
   RAM2 += offset;
