@@ -15,7 +15,7 @@
 typedef struct { int lampNo, currStat; } vp_tChgLamps[CORE_MAXLAMPCOL*8];
 typedef struct { int solNo,  currStat; } vp_tChgSols[64];
 typedef struct { int giNo,   currStat; } vp_tChgGIs[CORE_MAXGI];
-typedef struct { int ledNo,  chgSeg, currStat; } vp_tChgLED[60];
+typedef struct { int ledNo,  chgSeg, currStat; } vp_tChgLED[128];
 typedef struct { int sndNo; } vp_tChgSound[MAX_CMD_LOG];
 
 #define VP_MAXDIPBANKS 10
