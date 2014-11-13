@@ -1613,11 +1613,9 @@ void process_ctrlr_file(struct rc_struct *iptrc, const char *ctype, const char *
 					fprintf (stderr, "problem parsing ctrlr file %s.ini\n", filename);
 			}
 		}
-	}
 
-	// close the file
-	if (f)
 		mame_fclose (f);
+	}
 }
 
 void process_ctrlr_game(struct rc_struct *iptrc, const char *ctype, const struct GameDriver *drv)

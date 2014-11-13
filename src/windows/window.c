@@ -587,8 +587,6 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 	// copy that same data into the debug DIB info
 	memcpy(debug_dib_info_data, video_dib_info_data, sizeof(debug_dib_info_data));
 
-	win_default_constraints = 0;
-
 	// Determine which DirectX components to use
 	if (win_use_d3d)
 		win_use_directx = USE_D3D;

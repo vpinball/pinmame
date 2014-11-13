@@ -20,7 +20,7 @@ unsigned DasmScamp(char *buff, unsigned pc)
 	char s[7];
 
 	op = OP(pc);
-	if (op > 0x8f && op <= 0xff) {
+	if (op > 0x8f /*&& op <= 0xff*/) {
 		arg = ARG(++pc);
 		if ((op & 0xf3) == 0x90) {
 			sprintf(s, "$%04x", (PC + (INT8)arg + 1) & 0xffff);

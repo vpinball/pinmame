@@ -743,8 +743,7 @@ static MACHINE_INIT(wpc) {
   coreGlobals.swMatrix[2] |= 0x08; /* Always closed switch */
 
   /*-- init security chip (if present) --*/
-  if ((core_gameData->gen & GENWPC_HASPIC) &&
-      (core_gameData->wpc.serialNo))
+  if (core_gameData->gen & GENWPC_HASPIC)
     wpc_serialCnv(core_gameData->wpc.serialNo, wpclocals.pic.sData,
                   wpclocals.pic.codeNo);
   /* check flippers we have */

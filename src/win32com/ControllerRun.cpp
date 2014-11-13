@@ -376,11 +376,10 @@ void SaveWindowPosition(HWND hWnd, CController *pController)
 	pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_y"), vValueY);
 
 	GetClientRect(hWnd, &Rect);
-	if ( dmd_doublesize )
+	if ( dmd_doublesize ) {
 		Rect.right /= 2;
-
-	if ( dmd_doublesize )
 		Rect.bottom /= 2;
+	}
 
 	vValueX = Rect.right;
 	pController->m_pGameSettings->put_Value(CComBSTR("dmd_width"), vValueX);

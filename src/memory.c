@@ -186,7 +186,7 @@ static read8_handler 		rmemhandler8s[STATIC_COUNT];	/* copy of 8-bit static read
 static write8_handler 		wmemhandler8s[STATIC_COUNT];	/* copy of 8-bit static write memory handlers */
 
 static struct cpu_data 		cpudata[MAX_CPU];				/* data gathered for each CPU */
-static struct bank_data 	bankdata[MAX_BANKS];			/* data gathered for each bank */
+static struct bank_data 	bankdata[MAX_BANKS+1];			/* data gathered for each bank */ // +1 because various checks allow to set/check MAX_BANKS
 
 offs_t encrypted_opcode_start[MAX_CPU],encrypted_opcode_end[MAX_CPU];
 
@@ -362,7 +362,7 @@ void memory_set_context(int activecpu)
 	OP_ROM = cpudata[activecpu].op_rom;
 	OP_MEM_MIN = cpudata[activecpu].op_mem_min;
 	OP_MEM_MAX = cpudata[activecpu].op_mem_max;
-	opcode_entry = opcode_entry;
+	//opcode_entry = opcode_entry;
 
 	readmem_lookup = cpudata[activecpu].mem.read.table;
 	writemem_lookup = cpudata[activecpu].mem.write.table;

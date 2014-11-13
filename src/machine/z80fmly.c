@@ -666,7 +666,8 @@ int z80pio_interrupt( int which )
 	if( pio->int_state[0] == Z80_INT_REQ )
 	{
 		pio->int_state[0] |= Z80_INT_IEO;
-	} if( pio->int_state[0] == 0 )
+	}
+	else if( pio->int_state[0] == 0 )
 	{
 		/* port B */
 		ch = 1;

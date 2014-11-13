@@ -314,7 +314,7 @@ static void softreset (int param) {
 	snddatst300.timer3 = st300loc.timlat3;
 	st300loc.timp1 = 0;
 	st300loc.timp2 = 0;
-	st300loc.timp2 = 0;
+	st300loc.timp3 = 0;
 	mixer_stop_sample(st300loc.channel);
 	logerror ("Playsam Q2 off ");
 	mixer_stop_sample(st300loc.channel+1);
