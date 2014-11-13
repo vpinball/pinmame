@@ -784,7 +784,7 @@ INLINE UINT32 ARG16(void)
 	LOG(("Z80 #%d RETN IFF1:%d IFF2:%d\n", cpu_getactivecpu(), _IFF1, _IFF2)); \
 	POP(PC);													\
 	change_pc16(_PCD);											\
-	if( _IFF1 == 0 && _IFF2 == 1 )								\ // DE128x16 needs this if, otherwise DMD stuck
+	if( _IFF1 == 0 && _IFF2 == 1 ) /* DE128x16 needs this if, otherwise DMD stuck */ \
 	{															\
 		_IFF1 = 1;												\
 		if( Z80.irq_state != CLEAR_LINE ||						\
@@ -795,7 +795,7 @@ INLINE UINT32 ARG16(void)
 			take_interrupt();									\
 		}														\
 	}															\
-	else _IFF1 = _IFF2; 										\ // MESS only has the else case
+	else _IFF1 = _IFF2;  /* MESS only has the else case */		\
 }
 
 /***************************************************************
