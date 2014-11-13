@@ -784,7 +784,18 @@ INLINE UINT32 ARG16(void)
 	LOG(("Z80 #%d RETN IFF1:%d IFF2:%d\n", cpu_getactivecpu(), _IFF1, _IFF2)); \
 	POP(PC);													\
 	change_pc16(_PCD);											\
-	_IFF1 = _IFF2; 										\
+	if( _IFF1 == 0 && _IFF2 == 1 )								\ // DE128x16 needs this if, otherwise DMD stuck
+	{															\
+		_IFF1 = 1;												\
+		if( Z80.irq_state != CLEAR_LINE ||						\
+			Z80.request_irq >= 0 )								\
+		{														\
+			LOG(("Z80 #%d RETN takes IRQ\n",                    \
+				cpu_getactivecpu()));							\
+			take_interrupt();									\
+		}														\
+	}															\
+	else _IFF1 = _IFF2; 										\ // MESS only has the else case
 }
 
 /***************************************************************
@@ -1433,9 +1444,41 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 /***************************************************************
  * EI
  ***************************************************************/
+// MESS only has:
+// 	after_EI = 1;	/* avoid cycle skip hacks */		\
+//	_IFF1 = _IFF2 = 1;											\
+// but then Gameplan games don't work
 #define EI {													\
-	after_EI = 1;	/* avoid cycle skip hacks */		\
-	_IFF1 = _IFF2 = 1;											\
+	/* If interrupts were disabled, execute one more			\
+	 * instruction and check the IRQ line.						\
+	 * If not, simply set interrupt flip-flop 2 				\
+	 */ 														\
+	if( _IFF1 == 0 )											\
+	{															\
+		_IFF1 = _IFF2 = 1;										\
+		_PPC = _PCD;											\
+		CALL_MAME_DEBUG;										\
+		_R++;													\
+		while( cpu_readop(_PCD) == 0xfb ) /* more EIs? */		\
+		{														\
+			LOG(("Z80 #%d multiple EI opcodes at %04X\n",       \
+				cpu_getactivecpu(), _PC));						\
+			CC(op,0xfb);										\
+			_PPC =_PCD; 										\
+			CALL_MAME_DEBUG;									\
+			_PC++;												\
+			_R++;												\
+		}														\
+		if( Z80.irq_state != CLEAR_LINE ||						\
+			Z80.request_irq >= 0 )								\
+		{														\
+			after_EI = 1;	/* avoid cycle skip hacks */		\
+			EXEC(op,ROP()); 									\
+			after_EI = 0;										\
+			LOG(("Z80 #%d EI takes irq\n", cpu_getactivecpu())); \
+			take_interrupt();									\
+		} else EXEC(op,ROP());									\
+	} else _IFF2 = 1;											\
 }
 
 /**********************************************************
