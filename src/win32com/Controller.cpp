@@ -578,7 +578,7 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		{
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				UINT8 *src = (UINT8*)btm->line[j] + sizeof(UINT8) * current_display_ptr->game_visible_area.min_x;
+				UINT8 *src = (UINT8*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -594,7 +594,7 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		{
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				UINT16 *src = (UINT16*)btm->line[j] + sizeof(UINT16) * current_display_ptr->game_visible_area.min_x;
+				UINT16 *src = (UINT16*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -610,7 +610,7 @@ STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, 
 		{
 			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
 			{
-				UINT32 *src = (UINT32*)btm->line[j] + sizeof(UINT32) * current_display_ptr->game_visible_area.min_x;
+				UINT32 *src = (UINT32*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
 				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
 				{
 					UINT8 r,g,b;
@@ -1971,7 +1971,7 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
 	int fResult;
 	HRESULT hr = m_pGame->ShowInfoDlg(nShowOptions, hParentWnd, &fResult);
 
-	*pVal = (fResult=IDOK)?VARIANT_TRUE:VARIANT_FALSE;
+	*pVal = (fResult==IDOK)?VARIANT_TRUE:VARIANT_FALSE;
 
 	return hr;
 }

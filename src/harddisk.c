@@ -306,7 +306,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	}
 
 	/* then write a special end-of-list cookie */
-	memcpy(&blank_entries[0], END_OF_LIST_COOKIE, sizeof(blank_entries[0]));
+	memcpy(&blank_entries[0], END_OF_LIST_COOKIE, sizeof(END_OF_LIST_COOKIE));
 	count = (*interface.write)(file, fileoffset, sizeof(blank_entries[0]), blank_entries);
 	if (count != sizeof(blank_entries[0]))
 		SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);

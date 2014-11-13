@@ -2082,12 +2082,13 @@ INLINE void update_timer(int cyc)
 		UINT16 count = 0;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
-				count = ((R_TH0<<8) | R_TL0);
-				overflow = 0x3fff;
-				//Todo - really, we update HI counter when LO counter hits 0x20
 			case 1:			//16 Bit Timer Mode
 				count = ((R_TH0<<8) | R_TL0);
-				overflow = 0xffff;
+				if(mode == 0)
+					overflow = 0x3fff;
+					//Todo - really, we update HI counter when LO counter hits 0x20
+				else
+					overflow = 0xffff;
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
 					//Any overflow from cycles?
@@ -2142,12 +2143,13 @@ INLINE void update_timer(int cyc)
 		UINT16 count = 0;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
-				count = ((R_TH1<<8) | R_TL1);
-				overflow = 0x3fff;
-				//Todo - really, we update HI counter when LO counter hits 0x20
 			case 1:			//16 Bit Timer Mode
 				count = ((R_TH1<<8) | R_TL1);
-				overflow = 0xffff;
+				if(mode == 0)
+					overflow = 0x3fff;
+					//Todo - really, we update HI counter when LO counter hits 0x20
+				else			
+					overflow = 0xffff;
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
 
@@ -2423,12 +2425,12 @@ READ_HANDLER(i8752_internal_r)
 	if(offset < 0x100)
 		return IRAM_IR(offset);
 	else
-	//MAP SFR registers starting at 256 (they are only 128 bytes in size)
-	if(offset < 0x100+0x80)
-		return SFR_R(offset-0x80);
-	else
-	//Everything else is 0 (and invalid)
-		return 0;
+		//MAP SFR registers starting at 256 (they are only 128 bytes in size)
+		if(offset < 0x100+0x80)
+			return SFR_R(offset-0x80);
+		else
+		//Everything else is 0 (and invalid)
+			return 0;
 }
 WRITE_HANDLER(i8752_internal_w)
 {

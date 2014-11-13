@@ -68,8 +68,11 @@ static WRITE_HANDLER(by8035_ram_w) {
 }
 
 static WRITE_HANDLER(by8035_port_w) {
-  if (offset == 2) cpu_setbank(1, memory_region(REGION_CPU1) + 0x1000 + 0x100 * (data & 0x30));
-  if (offset == 2) locals.ramBank = data & 0x0f;
+  if (offset == 2) 
+  {
+    cpu_setbank(1, memory_region(REGION_CPU1) + 0x1000 + 0x100 * (data & 0x30));
+    locals.ramBank = data & 0x0f;
+  }
   logerror("%04x: 8035 port %d write = %02x\n", activecpu_get_previouspc(), offset, data);
 }
 

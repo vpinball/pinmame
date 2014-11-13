@@ -170,11 +170,12 @@ void gts80s_init(struct sndbrdData *brdData) {
 	if ( GTS80S_locals.boardData.subType==0 ) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */
 		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
-		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
+		UINT8* mr = memory_region(GTS80S_locals.boardData.cpuNo);
+		pMem = mr+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
 			*pMem++ &= 0x0f;
 
-		memcpy(memory_region(GTS80S_locals.boardData.cpuNo)+0x1000, memory_region(GTS80S_locals.boardData.cpuNo)+0x0700, 0x100);
+		memcpy(mr+0x1000, mr+0x0700, 0x100);
 	}
 
 
@@ -455,8 +456,8 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 	dActClock = timer_get_time();
 	dInterval = (dActClock-GTS80SS_locals.clock[0]) / length;
 
-	if ( GTS80SS_locals.buf_pos>1 )
-		GTS80SS_locals.buf_pos = GTS80SS_locals.buf_pos;
+	//if ( GTS80SS_locals.buf_pos>1 )
+	//	GTS80SS_locals.buf_pos = GTS80SS_locals.buf_pos;
 
 	i = 0;
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = 9e99;
@@ -514,8 +515,11 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	GTS80SS_locals.buffer[0] = 0;
 	GTS80SS_locals.buf_pos   = 1;
 
+	{
+	UINT8 *mr = memory_region(GTS80SS_locals.boardData.cpuNo);
 	for(i = 0; i<8; i++)
-		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
+		memcpy(mr+0x8000+0x1000*i, mr+0x7000, 0x1000);
+	}
 
 	if (stream_locals.stream) {
 	  stream_free(stream_locals.stream);

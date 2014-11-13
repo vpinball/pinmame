@@ -545,7 +545,7 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 			{
 				tms7000_starttimer1();
 			}
-			else if( ((data & 0x80) == 0x80 ) && ((tms7000.pf[0x03] & 0x80) == 0) )   /* Timer Stopped? */
+			else if( ((data & 0x80) == 0 ) && ((tms7000.pf[0x03] & 0x80) == 0x80) )   /* Timer Stopped? */
 			{
 				timer_adjust( tms7000.timer1, TIME_NEVER, 0, TIME_NEVER );
 			}

@@ -2082,7 +2082,7 @@ void update_analog_port(int port)
 
 	current = input_analog_current_value[port];
 
-	delta = 0;
+	//delta = 0;
 
 	player = IP_GET_PLAYER(in);
 

@@ -769,7 +769,7 @@ void OKIM6295_set_bank_base(int which, int base)
 
 ***********************************************************************************************/
 
-void OKIM6295_set_frequency(int which, int frequency)
+void OKIM6295_set_frequency(int which, double frequency)
 {
 	int channel;
 
@@ -780,7 +780,7 @@ void OKIM6295_set_frequency(int which, int frequency)
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
 		if (Machine->sample_rate)
-			voice->source_step = (UINT32)((double)frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
+			voice->source_step = (UINT32)(frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
 	}
 }
 
