@@ -1445,14 +1445,13 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
  * EI
  ***************************************************************/
 // MESS only has:
-// 	after_EI = 1;	/* avoid cycle skip hacks */		\
-//	_IFF1 = _IFF2 = 1;											\
+// 	after_EI = 1;	/* avoid cycle skip hacks */
+//	_IFF1 = _IFF2 = 1;
 // but then Gameplan games don't work
 #define EI {													\
-	/* If interrupts were disabled, execute one more			\
-	 * instruction and check the IRQ line.						\
-	 * If not, simply set interrupt flip-flop 2 				\
-	 */ 														\
+	/* If interrupts were disabled, execute one more */ 			\
+	/* instruction and check the IRQ line. */						\
+	/* If not, simply set interrupt flip-flop 2 */ 				\
 	if( _IFF1 == 0 )											\
 	{															\
 		_IFF1 = _IFF2 = 1;										\

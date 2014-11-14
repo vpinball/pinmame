@@ -6,7 +6,7 @@ OBJDIRS += $(OBJ)/cpu/z80
 CPUDEFS += -DHAS_Z80=1
 CPUOBJS += $(OBJ)/cpu/z80/z80.o
 DBGOBJS += $(OBJ)/cpu/z80/z80dasm.o
-$(OBJ)/cpu/z80/z80.o: src/cpu/z80/z80.c src/cpu/z80/z80.h src/cpu/z80/z80daa.h
+$(OBJ)/cpu/z80/z80.o: src/cpu/z80/z80.c src/cpu/z80/z80.h
 else
 CPUDEFS += -DHAS_Z80=0
 endif
