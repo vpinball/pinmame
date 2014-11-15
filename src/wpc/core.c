@@ -746,7 +746,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
 
   const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
-  const UINT16 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+  const UINT8 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
 
   if(layout->length >= 128) // Capcom hack
   {
