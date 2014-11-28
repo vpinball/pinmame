@@ -119,7 +119,15 @@ JP_ROMEND
 CORE_GAMEDEFNV(petaco,"Petaco",1984,"Juegos Populares",gl_mJP2,0)
 
 /*-------------------------------------------------------------------
-/ Unknown game (#1102, using 6 digit displays)
+/ Petaco (using the new hardware)
+/-------------------------------------------------------------------*/
+INITGAME(petacon, jpDisp6a, 1)
+JP_ROMSTART1(petacon,	"petaco-n.dat", CRC(9e4d6944) SHA1(54b39e28152d481bd485433b4a7bf46174a78dbb))
+JP_ROMEND
+CORE_GAMEDEFNV(petacon,"Petaco (new hardware)",1985,"Juegos Populares",gl_mJP1,0)
+
+/*-------------------------------------------------------------------
+/ Unknown game (#1102?, using 6 digit displays)
 /-------------------------------------------------------------------*/
 INITGAME(jpgame, jpDisp6a, 1)
 JP_ROMSTART1(jpgame,	"jpgame.dat", CRC(81502083) SHA1(c67a095fb5e868467577e7a86de5d51c59b3a68e))

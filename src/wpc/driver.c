@@ -709,15 +709,16 @@ DRIVERNV(olympic)       //Olympic Games (??/1984)
 // JUEGOS POPULARES
 // ----------------
 DRIVERNV(petaco  )      //1101  - Petaco (1984)
-DRIVERNV(petaco2 )      //1102? - Petaco 2 (1985)
+DRIVERNV(petacon )      //        Petaco (1985, using the new hardware)
+DRIVERNV(jpgame  )      //1102? - Unknown 6-digit game, maybe an alternative version of Petaco?
 DRIVERNV(faeton  )      //1103  - Faeton (1985)
 DRIVERNV(halley  )      //1104  - Halley Comet (1986)
 DRIVERNV(halleya )      //        Halley Comet (alternate version)
 DRIVERNV(aqualand)      //1105  - Aqualand (1986)
-DRIVERNV(jpgame  )      //1106  - UNKNOWN (1986, certified because sound ROMs exist!)
+DRIVERNV(petaco2 )      //1106  - Petaco 2 (1986)
 DRIVERNV(america )      //1107  - America 1492 (1986)
 DRIVERNV(olympus )      //1108  - Olympus (1986)
-                        //1109  - UNKNOWN, maybe never produced?
+                        //1109  - Unknown game, maybe never produced?
 DRIVERNV(lortium )      //1110  - Lortium (1987)
 DRIVERNV(pimbal  )      //????  - Pimbal (Pinball 3000, 19??)
 
@@ -757,7 +758,7 @@ DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game
 // ----------------
 // MAC GAMES
 // ----------------
-//DRIVERNV(macgalxy)    //MAC Galaxy (1986)
+DRIVERNV(macgalxy)      //MAC Galaxy (1986)
 DRIVERNV(spctrain)      //Space Train (1987)
 //DRIVERNV(macjungl)    //MAC Jungle (1987)
 DRIVERNV(spcpnthr)      //Space Panther (1988)

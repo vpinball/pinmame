@@ -52,19 +52,21 @@ static SWITCH_UPDATE(MAC) {
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
   locals.strobe = data;
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | (((data >> 4) ^ 0x0f) << 16);
 }
 static WRITE_HANDLER(ay8910_0_portb_w)	{
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00) | (data ^ 0xff);
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xfff00) | (data ^ 0xff);
 }
 
 static READ_HANDLER(ay8910_1_portb_r)   { return coreGlobals.swMatrix[0] & 0x80; }
 static WRITE_HANDLER(ay8910_1_porta_w)	{
-  if (locals.strobe == 0xfd)
+  UINT8 col = locals.strobe & 0x0f;
+  if (col == 0x0e)
+    coreGlobals.lampMatrix[7] = data;
+  else if (col == 0x0f)
     coreGlobals.lampMatrix[0] = data;
-  else if (locals.strobe > 0xfd)
-    coreGlobals.lampMatrix[6 + locals.strobe - 0xfe] = data;
-  else if (locals.strobe > 0xf7)
-    coreGlobals.lampMatrix[1 + locals.strobe - 0xf8] = data;
+  else if (col > 7)
+    coreGlobals.lampMatrix[1 + col - 8] = data;
   else if (data)
     printf("s %02x=%02x\n", locals.strobe, data);
 }
@@ -72,7 +74,7 @@ static WRITE_HANDLER(ay8910_1_portb_w)	{
   if (GET_BIT4) {
     cpu_set_irq_line(0, 0, ASSERT_LINE);
   }
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xf9ff) | ((data & 0x60) << 4);
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0xff9ff) | ((data & 0x60) << 4);
 }
 
 struct AY8910interface MAC_ay8910Int = {
@@ -167,10 +169,10 @@ static WRITE_HANDLER(i8279_w) {
       if (locals.cycle < 16) {
         if (!locals.i8279reg) {
           coreGlobals.lampMatrix[8] = data;
-          coreGlobals.solenoids = (coreGlobals.solenoids & 0xfeff) | ((~data & 1) << 8);
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0xffeff) | ((~data & 1) << 8);
         } else if (locals.i8279reg == 1) {
           coreGlobals.lampMatrix[9] = data;
-          coreGlobals.solenoids = (coreGlobals.solenoids & 0xfff) | ((~data & 0x70) << 8);
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0xf0fff) | ((~data & 0x70) << 8);
         }
       } else if (locals.i8279reg < 12) {
         coreGlobals.segments[locals.i8279reg].w = mac_bcd2seg(data);
@@ -232,6 +234,37 @@ static MACHINE_DRIVER_START(mac)
   MDRV_SWITCH_UPDATE(MAC)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SOUND_ADD(AY8910, MAC_ay8910Int)
+MACHINE_DRIVER_END
+
+static MEMORY_READ_START(mac0_readmem)
+  {0x0000, 0x3fff, MRA_ROM},
+  {0x4000, 0x47ff, MRA_RAM},
+  {0x6000, 0x6000, i8279_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(mac0_writemem)
+  {0x0000, 0x3fff, MWA_NOP},
+  {0x4000, 0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x6000, 0x6001, i8279_w},
+MEMORY_END
+
+static PORT_READ_START(mac0_readport)
+  {0x09,0x09, ay8910_0_r},
+  {0x19,0x19, ay8910_1_r},
+PORT_END
+
+static PORT_WRITE_START(mac0_writeport)
+  {0x08,0x08, ay8910_0_ctrl_w},
+  {0x0a,0x0a, ay8910_0_data_w},
+  {0x18,0x18, ay8910_1_ctrl_w},
+  {0x1a,0x1a, ay8910_1_data_w},
+PORT_END
+
+MACHINE_DRIVER_START(mac0)
+  MDRV_IMPORT_FROM(mac)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(mac0_readmem, mac0_writemem)
+  MDRV_CPU_PORTS(mac0_readport, mac0_writeport)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(macmsm)
@@ -320,6 +353,15 @@ static core_tLCDLayout dispMAC[] = {
   {6, 2,32,1,CORE_SEG8}, {6, 6,32,1,CORE_SEG8},
   {0}
 };
+
+ROM_START(macgalxy)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("galaxy1.bin", 0x0000, 0x2000, CRC(00c71e67) SHA1(c1ad1dacae2b90f516c732bfdf8244908f67e15a))
+    ROM_LOAD("galaxy2.bin", 0x2000, 0x2000, CRC(f0efb723) SHA1(697b3c9f3ebedca1087354eda5dfe9719d497045))
+ROM_END
+INITGAME(macgalxy,dispMAC,FLIP_SW(FLIP_L),2)
+MAC_COMPORTS(macgalxy, 1)
+CORE_GAMEDEFNV(macgalxy, "MAC Galaxy", 1986, "MAC S.A.", mac0, 0)
 
 ROM_START(spctrain)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -416,9 +458,9 @@ static WRITE_HANDLER(i8279_w_cic) {
         coreGlobals.lampMatrix[10] = (coreGlobals.lampMatrix[10] & 0xf0) | (data & 0x0f);
       } else if (locals.i8279reg == 14) {
         coreGlobals.lampMatrix[10] = (coreGlobals.lampMatrix[10] & 0x0f) | ((data & 0x0f) << 4);
-        coreGlobals.solenoids = (coreGlobals.solenoids & 0xfeff) | (data & 0x03 ? 0 : 0x100);
+        coreGlobals.solenoids = (coreGlobals.solenoids & 0xffeff) | (data & 0x03 ? 0 : 0x100);
       } else if (locals.i8279reg == 13) {
-        coreGlobals.solenoids = (coreGlobals.solenoids & 0x0fff) | ((data & 0x0f) << 12);
+        coreGlobals.solenoids = (coreGlobals.solenoids & 0xf0fff) | ((data & 0x0f) << 12);
       }
     } else printf("i8279 w%d:%02x\n", offset, data);
     if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
