@@ -344,10 +344,8 @@ static void init_##name(void) { core_gameData = &name##GameData; }
   INPUT_PORTS_END
 
 static core_tLCDLayout dispMAC[] = {
-  {0, 0, 0,6,CORE_SEG8},
-  {0,16, 6,6,CORE_SEG8},
-  {3, 0,16,6,CORE_SEG8},
-  {3,16,22,6,CORE_SEG8},
+  {0, 0, 0,6,CORE_SEG8}, {0,16,16,6,CORE_SEG8},
+  {3, 0, 6,6,CORE_SEG8}, {3,16,22,6,CORE_SEG8},
   {6, 0,15,1,CORE_SEG8}, {6, 4,14,1,CORE_SEG8}, {6, 8,13,1,CORE_SEG8}, {6,10,12,1,CORE_SEG8},
   {6,16,28,4,CORE_SEG8}, {6,24,31,1,CORE_SEG8}, {6,26,31,1,CORE_SEG8},
   {6, 2,32,1,CORE_SEG8}, {6, 6,32,1,CORE_SEG8},
@@ -361,7 +359,7 @@ ROM_START(macgalxy)
 ROM_END
 INITGAME(macgalxy,dispMAC,FLIP_SW(FLIP_L),2)
 MAC_COMPORTS(macgalxy, 1)
-CORE_GAMEDEFNV(macgalxy, "MAC Galaxy", 1986, "MAC S.A.", mac0, 0)
+CORE_GAMEDEFNV(macgalxy, "MAC's Galaxy", 1986, "MAC S.A.", mac0, 0)
 
 ROM_START(spctrain)
   NORMALREGION(0x10000, REGION_CPU1)
