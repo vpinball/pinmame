@@ -23,7 +23,6 @@
 #include "core.h"
 #include "jp.h"
 #include "sound/ay8910.h"
-#include "sndbrd.h"
 #include "machine/4094.h"
 
 #define JP_VBLANKFREQ   60 /* VBLANK frequency */
@@ -296,17 +295,11 @@ MACHINE_DRIVER_END
 
 static MACHINE_INIT(JPS) {
   machine_init_JP();
-  /* init sound */
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(JP_MEMREG_SND),NULL,NULL);
 }
 
 static MACHINE_INIT(JP1) {
   machine_init_JP();
   locals.sixColumns = 1;
-}
-
-static MACHINE_STOP(JPS) {
-  sndbrd_0_exit();
 }
 
 static INTERRUPT_GEN(JPS_irq) {
@@ -363,14 +356,14 @@ MACHINE_DRIVER_START(JPS)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(jpsnd_readmem, jpsnd_writemem)
   MDRV_CPU_PERIODIC_INT(JPS_irq, 4000)
-  MDRV_CORE_INIT_RESET_STOP(JPS,NULL,JPS)
+  MDRV_CORE_INIT_RESET_STOP(JPS,NULL,NULL)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, JP_msm5205Int)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(JP1)
   MDRV_IMPORT_FROM(JP)
-  MDRV_CORE_INIT_RESET_STOP(JP1,NULL,JPS)
+  MDRV_CORE_INIT_RESET_STOP(JP1,NULL,NULL)
 MACHINE_DRIVER_END
 
 
