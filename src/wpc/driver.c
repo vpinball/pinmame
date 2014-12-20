@@ -419,10 +419,11 @@ DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spain)
 DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spain)
 DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
 DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
+DRIVER(lah,113)         //Data East MPU: 11/14 Last Action Hero (1.13 unofficial MOD)
 DRIVER(tftc,104)        //Data East MPU: 11/93 Tales From the Crypt (1.04 Spain)
 DRIVER(tftc,200)        //Data East MPU: 11/93 Tales From the Crypt (2.00)
-DRIVER(tftc,300)	//Data East MPU: 11/93 Tales From the Crypt (3.00)
-DRIVER(tftc,302)	//Data East MPU: 11/93 Tales From the Crypt (3.02 Dutch)
+DRIVER(tftc,300)		//Data East MPU: 11/93 Tales From the Crypt (3.00)
+DRIVER(tftc,302)		//Data East MPU: 11/93 Tales From the Crypt (3.02 Dutch)
 DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt (3.03)
 DRIVER(tomy,102)        //Data East MPU: 02/94 Tommy (1.02)
 DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
@@ -1421,7 +1422,7 @@ DRIVER(potc,300al)      //S.A.M: ??/07 Pirates of the Caribbean - V3.0  (English
 DRIVER(potc,300gf)      //S.A.M: ??/07 Pirates of the Caribbean - V3.0  (German, French)
 DRIVER(potc,400af)      //S.A.M: 04/07 Pirates of the Caribbean - V4.0  (English, French)
 DRIVER(potc,400ai)      //S.A.M: 04/07 Pirates of the Caribbean - V4.0  (English, Italian)
-DRIVER(potc,400al)      //S.A.M: 04/07 Pirates of the Caribbean - V4.0  (English, Spanish)
+DRIVER(potc,400al)      //S.A.M: 04/07 Pirates of the Caribbean - V4.0 (English, Spanish)
 DRIVER(potc,400gf)      //S.A.M: 04/07 Pirates of the Caribbean - V4.0  (German, French)
 DRIVER(potc,600af)      //S.A.M: 01/08 Pirates of the Caribbean - V6.0  (English, French)
 DRIVER(potc,600ai)      //S.A.M: 01/08 Pirates of the Caribbean - V6.0  (English, Italian)
@@ -1429,10 +1430,10 @@ DRIVER(potc,600as)      //S.A.M: 01/08 Pirates of the Caribbean - V6.0  (English
 DRIVER(potc,600gf)      //S.A.M: 01/08 Pirates of the Caribbean - V6.0  (German, French)
 DRIVER(fg,200a)         //S.A.M: 02/07 Family Guy - V2.00  (English)
 DRIVER(fg,300ai)        //S.A.M: 02/07 Family Guy - V3.00  (English, Italian)
-DRIVER(fg,400a)         //S.A.M: 02/07 Family Guy - V4.00  (English)
-DRIVER(fg,400ag)        //S.A.M: 02/07 Family Guy - V4.00  (English, German)
-DRIVER(fg,700af)        //S.A.M: 03/07 Family Guy - V7.00  (English, French)
-DRIVER(fg,700al)        //S.A.M: 03/07 Family Guy - V7.00  (English, Spanish)
+DRIVER(fg,400a)			//S.A.M: 02/07 Family Guy - V4.00  (English)
+DRIVER(fg,400ag)		//S.A.M: 02/07 Family Guy - V4.00  (English, German)
+DRIVER(fg,700af)		//S.A.M: 03/07 Family Guy - V7.00  (English, French)
+DRIVER(fg,700al)		//S.A.M: 03/07 Family Guy - V7.00  (English, Spanish)
 DRIVER(fg,800al)        //S.A.M: 03/07 Family Guy - V8.00  (English, Spanish)
 DRIVER(fg,1000af)       //S.A.M: 03/07 Family Guy - V10.00 (English, French)
 DRIVER(fg,1000ag)       //S.A.M: 03/07 Family Guy - V10.00 (English, German)
@@ -1470,7 +1471,7 @@ DRIVER(sman,170gf)      //S.A.M: ??/07 Spider-Man - V1.70 (German, French)
 DRIVER(sman,190)        //S.A.M: 11/07 Spider-Man - V1.90
 DRIVER(sman,190af)      //S.A.M: 11/07 Spider-Man - V1.90 (English, French)
 DRIVER(sman,190ai)      //S.A.M: 11/07 Spider-Man - V1.90 (English, Italian)
-DRIVER(sman,190al)      //S.A.M: 11/07 Spider-Man - V1.90 (English, Spanish)
+DRIVER(sman,190al)      //S.A.M: 11/07 Spider-Man - V1.90  (English, Spanish)
 DRIVER(sman,190gf)      //S.A.M: 11/07 Spider-Man - V1.90 (German, French)
 DRIVER(sman,192)        //S.A.M: 01/08 Spider-Man - V1.92
 DRIVER(sman,192af)      //S.A.M: 01/08 Spider-Man - V1.92 (English, French)
@@ -1487,10 +1488,10 @@ DRIVER(sman,220)        //S.A.M: ??/0? Spider-Man - V2.2
 DRIVER(sman,230)        //S.A.M: ??/0? Spider-Man - V2.3
 DRIVER(sman,240)        //S.A.M: 11/09 Spider-Man - V2.4
 DRIVER(sman,250)        //S.A.M: ??/?? Spider-Man - V2.5
-DRIVER(sman,260)        //S.A.M: 11/10 Spider-Man - V2.6
-DRIVER(sman,261)        //S.A.M: ??/1? Spider-Man - V2.61
-DRIVER(sman,261x)       //S.A.M: ??/1? Spider-Man - V2.61x (hacked plunger lane music)
-DRIVER(sman,262x)       //S.A.M: ??/1? Spider-Man - V2.62x (hacked music)
+DRIVER(sman,260)		//S.A.M: 11/10 Spider-Man - V2.6
+DRIVER(sman,261)		//S.A.M: ??/1? Spider-Man - V2.61
+DRIVER(sman,261x)       //S.A.M: ??/1? Spider-Man - V2.61x (hacked 2.60 plunger lane music)
+DRIVER(sman,262x)       //S.A.M: ??/1? Spider-Man - V2.62x (hacked 2.60 music)
 DRIVER(wof,100)         //S.A.M: 11/07 Wheel of Fortune - V1.0
 DRIVER(wof,200)         //S.A.M: 11/07 Wheel of Fortune - V2.0
 DRIVER(wof,200f)        //S.A.M: 11/07 Wheel of Fortune - V2.0 (French)
@@ -1674,7 +1675,12 @@ DRIVER(mt,120)          //S.A.M: ??/14 Mustang
 DRIVER(mt,130)
 DRIVER(mt,130h)
 DRIVER(mt,140)
-DRIVER(twd,105)         //S.A.M: ??/14 The Walking Dead
+DRIVER(mt,140h)
+DRIVER(twd,105)         //S.A.M: ??/14 The Walking Dead - V1.05
+DRIVER(twd,111)         //S.A.M: 10/14 The Walking Dead - V1.11
+DRIVER(twd,111h)        //S.A.M: 10/14 The Walking Dead - V1.11 Limited Edition
+DRIVER(twd,119)         //S.A.M: 11/14 The Walking Dead - V1.19
+DRIVER(twd,119h)        //S.A.M: 11/14 The Walking Dead - V1.19 Limited Edition
 #endif
 
 // ---------------

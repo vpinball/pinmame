@@ -18,6 +18,7 @@ Cured scratchy GTS80 sound after reset
 Corrected DMD for Strikes n' Spares
 Added new chirp table & reverb for TMS5200 (Bally Centaur, etc)
 Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
+Tweak CPU clock for Mystery Castle to make it look more correct
 Updated to zlib 1.2.8
 
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
@@ -27,7 +28,8 @@ CICPlay: Galaxy Play
 Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
-MAC: Space Train, Space Panther, NBA MAC, and a yet unknown game
+JP: Add missing ROM for Olympus
+MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
 Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)
        Bike Race (not working yet)
@@ -36,6 +38,7 @@ WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
 
 Kinda new:
 Star Wars 20th Anniversary 1.04
+Last Action Hero 1.13 (unofficial MOD)
 
 Clones:
 Al's Garage Band Goes On A World Tour R06a

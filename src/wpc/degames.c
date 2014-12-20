@@ -756,6 +756,14 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
 DE_ROMEND
 CORE_CLONEDEF(lah,110,112,"Last Action Hero (1.10)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lah_113,"lahcpua.113",CRC(d05fd307) SHA1(49c9e5ac509498a521f5dae062df5442d4e954ac))
+DE_DMD32ROM8x(      "lahdispa.106",CRC(ca6cfec5) SHA1(5e2081387d76bed17c14120cd347d6aaf435276b))
+DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
+                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
+                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
+DE_ROMEND
+CORE_CLONEDEF(lah,113,112,"Last Action Hero (1.13 unofficial MOD)",2014,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / Tales From the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
