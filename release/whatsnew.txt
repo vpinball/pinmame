@@ -9,7 +9,7 @@ Correct display outputs on IDSA
 Slight digits correction for Papillon
 Different display handling for Tecnoplay "Space Team"
 Added Y8950 sound for Tecnoplay games and Astrocade sound for Midway's Rotation VIII
-Corrected Atari gen.1 & gen.2 sound
+Corrected Atari gen.1 & gen.2 sound (so make sure you have the 82s130.bin in the ROM set)
 Fixed display width for Black Belt (Squawk and Talk)
 Some fixes for Midnight Marauders
 Corrected CPU clock, RIOT speed, displays for GTS80B
