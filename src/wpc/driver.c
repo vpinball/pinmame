@@ -1973,9 +1973,10 @@ DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
 DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
-DRIVER(diner,l1)        //S11-571:  06/90 W Diner (L-1)
-DRIVER(diner,l3)        //          06/90 W Diner (L-3)
-DRIVER(diner,l4)        //          09/90 W Diner (L-4)
+DRIVER(diner,l1)        //S11-571:  06/90 W Diner (LU-1)
+DRIVER(diner,l2)        //          06/90 W Diner (LU-2)
+DRIVER(diner,l3)        //          06/90 W Diner (LA-3)
+DRIVER(diner,l4)        //          09/90 W Diner (LA-4)
 DRIVER(radcl,p3)        //S11-1904: 06/90 B Radical! (P-3)
 DRIVER(radcl,l1)        //          06/90 B Radical!
 DRIVER(radcl,g1)        //          06/90 B Radical! (G-1)
