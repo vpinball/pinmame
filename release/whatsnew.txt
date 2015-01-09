@@ -16,7 +16,7 @@ Corrected CPU clock, RIOT speed, displays for GTS80B
 Corrected GTS80 SS sound clock
 Cured scratchy GTS80 sound after reset
 Corrected DMD for Strikes n' Spares
-Added new chirp table & reverb for TMS5200 (Bally Centaur, etc)
+Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
 Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
 Tweak CPU clock for Mystery Castle to make it look more correct
 Updated to zlib 1.2.8
@@ -56,6 +56,7 @@ Corvette LX-2 & LA-1
 Creature from the Black Lagoon P-3
 Cue Ball Wizard rev.2 & rev.3
 Cyclone L-1
+Diner LU-2
 Fire L-2
 Flash L-2 (yellow flipper ROMs)
 Funhouse L-2
