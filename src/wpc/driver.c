@@ -1835,7 +1835,8 @@ DRIVER(bk,l3)           //S7-500:   11/80 W Black Knight (L-3)
 DRIVER(bk,l4)           //          11/80 W Black Knight (L-4)
 DRIVER(bk,f4)           //          11/80 W Black Knight (L-4) French speech
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
-DRIVER(jngld,l2)        //          02/81 W Jungle Lord (l-2)
+DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
+DRIVER(jngld,nt)        //          09/13 W Jungle Lord New Tricks
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
                         //S7-506:   06/81 W Black Knight Limited Edition
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire

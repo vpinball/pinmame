@@ -154,6 +154,17 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
 S7_ROMEND
 CORE_CLONEDEF(jngld,l1,l2,"Jungle Lord (L-1)",1981,"Williams",s7_mS7S,0)
 
+S7_ROMSTART8088(jngld,nt, "ic14.bin",   CRC(714bfdaa) SHA1(6d566578d1f6e445bf66e917699c99e91f4f9aca),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26.bin",   CRC(6bcb8a17) SHA1(91778503a9402b073b4066c386b00dd447a3e740))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,nt,l2,"Jungle Lord New Tricks",2013,"A.M. Thurnherr",s7_mS7S,0)
+
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)
 /--------------------------------*/
