@@ -1,4 +1,4 @@
-Version 2.6 (X X, 2014) - "We're not dead (yet)"
+Version 2.6 (X X, 2015) - "We're not dead (yet)"
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***
@@ -67,7 +67,7 @@ Independence Day 2.01 & French/Display 2.00
 Indiana Jones P-2
 Indy 500 1.0R
 Joust L-1
-Jungle Lord L-1
+Jungle Lord L-1 & New Tricks Home ROMs by A.M. Thurnherr
 Kiss prototype v.2 (not working yet)
 Laser War 8.1
 Mars - God of War French
