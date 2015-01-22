@@ -266,7 +266,7 @@ CORE_GAMEDEFNV(olympus,"Olympus",1986,"Juegos Populares",gl_mJPS,0)
 / Lortium (#1110)
 /-------------------------------------------------------------------*/
 INITGAME(lortium, jpDisp7, 1)
-JP_ROMSTART2(lortium,	"cpulort1.dat", NO_DUMP,
+JP_ROMSTART2(lortium,	"cpulort1.dat", CRC(4943e31f) SHA1(2cbc0a1feb711b5540e9288b9b59527cc85361fc),
 						"cpulort2.dat", CRC(71eebb26) SHA1(9d49c1012555bda24ac7287499bcb93828cbb57f))
 JP_ROMEND
 CORE_GAMEDEFNV(lortium,"Lortium",1987,"Juegos Populares",gl_mJP,0)
