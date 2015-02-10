@@ -45,10 +45,6 @@
 
 #define SET_ERROR_AND_CLEANUP(err) do { last_error = (err); goto cleanup; } while (0)
 
-#ifdef _MSC_VER
-#define interface interface_
-#endif
-
 /*************************************
  *
  *	Type definitions
@@ -92,7 +88,7 @@ struct zlib_codec_data
  *
  *************************************/
 
-static struct hard_disk_interface interface;
+static struct hard_disk_interface _interface;
 static struct hard_disk_info *first_disk;
 static int last_error;
 
@@ -188,9 +184,9 @@ INLINE void put_bigendian_uint32(UINT8 *base, UINT32 value)
 void hard_disk_set_interface(struct hard_disk_interface *new_interface)
 {
 	if (new_interface)
-		interface = *new_interface;
+		_interface = *new_interface;
 	else
-		memset(&interface, 0, sizeof(interface));
+		memset(&_interface, 0, sizeof(_interface));
 }
 
 
@@ -203,7 +199,7 @@ void hard_disk_set_interface(struct hard_disk_interface *new_interface)
 
 void hard_disk_save_interface(struct hard_disk_interface *interface_save)
 {
-	*interface_save = interface;
+	*interface_save = _interface;
 }
 
 
@@ -227,7 +223,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	last_error = HDERR_NONE;
 
 	/* punt if no interface */
-	if (!interface.open)
+	if (!_interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
@@ -272,7 +268,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	header.totalblocks = ((header.cylinders * header.sectors * header.heads) + header.blocksize - 1) / header.blocksize;
 
 	/* attempt to create the file */
-	file = (*interface.open)(filename, "wb");
+	file = (*_interface.open)(filename, "wb");
 	if (!file)
 		SET_ERROR_AND_CLEANUP(HDERR_CANT_CREATE_FILE);
 
@@ -290,7 +286,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	/* first write full chunks of blank entries */
 	for (i = 0; i < fullchunks; i++)
 	{
-		count = (*interface.write)(file, fileoffset, sizeof(blank_entries), blank_entries);
+		count = (*_interface.write)(file, fileoffset, sizeof(blank_entries), blank_entries);
 		if (count != sizeof(blank_entries))
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 		fileoffset += sizeof(blank_entries);
@@ -299,7 +295,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	/* then write the remainder */
 	if (remainder)
 	{
-		count = (*interface.write)(file, fileoffset, remainder * sizeof(blank_entries[0]), blank_entries);
+		count = (*_interface.write)(file, fileoffset, remainder * sizeof(blank_entries[0]), blank_entries);
 		if (count != remainder * sizeof(blank_entries[0]))
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 		fileoffset += remainder * sizeof(blank_entries[0]);
@@ -307,17 +303,17 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 
 	/* then write a special end-of-list cookie */
 	memcpy(&blank_entries[0], END_OF_LIST_COOKIE, sizeof(END_OF_LIST_COOKIE));
-	count = (*interface.write)(file, fileoffset, sizeof(blank_entries[0]), blank_entries);
+	count = (*_interface.write)(file, fileoffset, sizeof(blank_entries[0]), blank_entries);
 	if (count != sizeof(blank_entries[0]))
 		SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 
 	/* all done */
-	(*interface.close)(file);
+	(*_interface.close)(file);
 	return HDERR_NONE;
 
 cleanup:
 	if (file)
-		(*interface.close)(file);
+		(*_interface.close)(file);
 	return last_error;
 }
 
@@ -338,7 +334,7 @@ void *hard_disk_open(const char *filename, int writeable, void *parent)
 	last_error = HDERR_NONE;
 
 	/* punt if no interface */
-	if (!interface.open)
+	if (!_interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
@@ -351,7 +347,7 @@ void *hard_disk_open(const char *filename, int writeable, void *parent)
 		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* first attempt to open the file */
-	info.file = (*interface.open)(filename, writeable ? "rb+" : "rb");
+	info.file = (*_interface.open)(filename, writeable ? "rb+" : "rb");
 	if (!info.file)
 		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
@@ -413,7 +409,7 @@ cleanup:
 	if (info.map)
 		free(info.map);
 	if (info.file)
-		(*interface.close)(info.file);
+		(*_interface.close)(info.file);
 	return NULL;
 }
 
@@ -452,7 +448,7 @@ void hard_disk_close(void *disk)
 
 	/* close the file */
 	if (info->file)
-		(*interface.close)(info->file);
+		(*_interface.close)(info->file);
 
 	/* unlink ourselves */
 	for (prev = NULL, curr = first_disk; curr; prev = curr, curr = curr->next)
@@ -585,7 +581,7 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 	if (fileoffset != 0 && info->header.compression == HDCOMPRESSION_NONE)
 	{
 		/* do the write */
-		count = (*interface.write)(info->file, fileoffset + offset * info->header.seclen, info->header.seclen, buffer);
+		count = (*_interface.write)(info->file, fileoffset + offset * info->header.seclen, info->header.seclen, buffer);
 		if (count != info->header.seclen)
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 
@@ -667,7 +663,7 @@ int hard_disk_set_header(const char *filename, const struct hard_disk_header *he
 	int err;
 
 	/* punt if no interface */
-	if (!interface.open)
+	if (!_interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* punt if NULL or invalid */
@@ -675,7 +671,7 @@ int hard_disk_set_header(const char *filename, const struct hard_disk_header *he
 		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* first attempt to open the file */
-	file = (*interface.open)(filename, "rb+");
+	file = (*_interface.open)(filename, "rb+");
 	if (!file)
 		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
@@ -685,12 +681,12 @@ int hard_disk_set_header(const char *filename, const struct hard_disk_header *he
 		SET_ERROR_AND_CLEANUP(err);
 
 	/* close the file and return */
-	(*interface.close)(file);
+	(*_interface.close)(file);
 	return HDERR_NONE;
 
 cleanup:
 	if (file)
-		(*interface.close)(file);
+		(*_interface.close)(file);
 	return last_error;
 }
 
@@ -778,13 +774,13 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 /* END DUPE BLOCK */
 
 	/* punt if no interface */
-	if (!interface.open) SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
+	if (!_interface.open) SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
 	if (!rawfile || !newfile || !header) SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* open the raw file */
-	sourcefile = (*interface.open)(rawfile, "rb");
+	sourcefile = (*_interface.open)(rawfile, "rb");
 	if (!sourcefile) SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
 	/* open the diff file */
@@ -836,7 +832,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 		int bytestomd5;
 
 		/* read the data */
-		(*interface.read)(sourcefile, sourceoffset, blocksizebytes, destfile->cache);
+		(*_interface.read)(sourcefile, sourceoffset, blocksizebytes, destfile->cache);
 
 		/* progress */
 		if (curtime - lastupdate > CLOCKS_PER_SEC / 2)
@@ -910,7 +906,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 				{
 					/* the hash has been found. check it */
 					memset(temp_cache, 0, blocksizebytes);
-					(*interface.read)(sourcefile, unique_blocks[duplicate_block].ptr * blocksizebytes, blocksizebytes, temp_cache);
+					(*_interface.read)(sourcefile, unique_blocks[duplicate_block].ptr * blocksizebytes, blocksizebytes, temp_cache);
 					if (memcmp(temp_cache, destfile->cache, blocksizebytes)==0) current_is_good=1;
 					else duplicate_block++;
 				} while (current_is_good==0 && memcmp(unique_blocks[duplicate_block].hash,unique_blocks[duplicate_block+1].hash,16)==0 && duplicate_block < last_crc);
@@ -938,7 +934,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 				/* update the map on disk */
 				entry = destfile->map[block];
 				byteswap_mapentry(&entry);
-				bytes = (*interface.write)(destfile->file, destfile->header.length + block * sizeof(destfile->map[0]), sizeof(entry), &entry);
+				bytes = (*_interface.write)(destfile->file, destfile->header.length + block * sizeof(destfile->map[0]), sizeof(entry), &entry);
 				if (bytes != sizeof(entry)) return HDERR_WRITE_ERROR;
 				write_this_block = 0;
 			}
@@ -987,7 +983,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	hard_disk_close(destfile);
 	if (comparefile)
 		hard_disk_close(comparefile);
-	(*interface.close)(sourcefile);
+	(*_interface.close)(sourcefile);
 
 /* DUPE BLOCK */
 /* kill our arrays */
@@ -1005,7 +1001,7 @@ cleanup:
 	if (comparefile)
 		hard_disk_close(comparefile);
 	if (sourcefile)
-		(*interface.close)(sourcefile);
+		(*_interface.close)(sourcefile);
 	return last_error;
 }
 
@@ -1027,7 +1023,7 @@ int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UI
 	clock_t lastupdate;
 
 	/* punt if no interface */
-	if (!interface.open)
+	if (!_interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
@@ -1121,7 +1117,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 	/* if the data is uncompressed, just read it directly into the cache */
 	if (length == info->header.blocksize * info->header.seclen)
 	{
-		bytes = (*interface.read)(info->file, fileoffset, length, info->cache);
+		bytes = (*_interface.read)(info->file, fileoffset, length, info->cache);
 		if (bytes != length)
 			return HDERR_READ_ERROR;
 		info->cacheblock = block;
@@ -1129,7 +1125,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 	}
 
 	/* otherwise, read it into the decompression buffer */
-	bytes = (*interface.read)(info->file, fileoffset, length, info->compressed);
+	bytes = (*_interface.read)(info->file, fileoffset, length, info->compressed);
 	if (bytes != length)
 		return HDERR_READ_ERROR;
 
@@ -1222,7 +1218,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 	}
 
 	/* write the data */
-	bytes = (*interface.write)(info->file, fileoffset, datalength, data);
+	bytes = (*_interface.write)(info->file, fileoffset, datalength, data);
 	if (bytes != datalength)
 		return HDERR_WRITE_ERROR;
 
@@ -1232,7 +1228,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 	/* update the map on disk */
 	entry = info->map[block];
 	byteswap_mapentry(&entry);
-	bytes = (*interface.write)(info->file, info->header.length + block * sizeof(info->map[0]), sizeof(entry), &entry);
+	bytes = (*_interface.write)(info->file, info->header.length + block * sizeof(info->map[0]), sizeof(entry), &entry);
 	if (bytes != sizeof(entry))
 		return HDERR_WRITE_ERROR;
 
@@ -1261,11 +1257,11 @@ static int read_header(void *file, struct hard_disk_header *header)
 		return HDERR_INVALID_FILE;
 
 	/* punt if no interface */
-	if (!interface.read)
+	if (!_interface.read)
 		return HDERR_NO_INTERFACE;
 
 	/* seek and read */
-	count = (*interface.read)(file, 0, sizeof(rawheader), rawheader);
+	count = (*_interface.read)(file, 0, sizeof(rawheader), rawheader);
 	if (count != sizeof(rawheader))
 		return HDERR_READ_ERROR;
 
@@ -1320,7 +1316,7 @@ static int write_header(void *file, const struct hard_disk_header *header)
 		return HDERR_INVALID_FILE;
 
 	/* punt if no interface */
-	if (!interface.write)
+	if (!_interface.write)
 		return HDERR_NO_INTERFACE;
 
 	/* assemble the data */
@@ -1347,7 +1343,7 @@ static int write_header(void *file, const struct hard_disk_header *header)
 		put_bigendian_uint32(&rawheader[76], header->seclen);
 
 	/* seek and write */
-	count = (*interface.write)(file, 0, length, rawheader);
+	count = (*_interface.write)(file, 0, length, rawheader);
 	if (count != length)
 		return HDERR_WRITE_ERROR;
 
@@ -1374,7 +1370,7 @@ static int read_sector_map(struct hard_disk_info *info)
 		return HDERR_OUT_OF_MEMORY;
 
 	/* read the entire sector map */
-	count = (*interface.read)(info->file, info->header.length, sizeof(info->map[0]) * info->header.totalblocks, info->map);
+	count = (*_interface.read)(info->file, info->header.length, sizeof(info->map[0]) * info->header.totalblocks, info->map);
 	if (count != sizeof(info->map[0]) * info->header.totalblocks)
 	{
 		err = HDERR_READ_ERROR;
@@ -1382,7 +1378,7 @@ static int read_sector_map(struct hard_disk_info *info)
 	}
 
 	/* verify the cookie */
-	count = (*interface.read)(info->file, info->header.length + sizeof(info->map[0]) * info->header.totalblocks, sizeof(cookie), &cookie);
+	count = (*_interface.read)(info->file, info->header.length + sizeof(info->map[0]) * info->header.totalblocks, sizeof(cookie), &cookie);
 	if (count != sizeof(cookie) || memcmp(&cookie, END_OF_LIST_COOKIE, sizeof(cookie)))
 	{
 		err = HDERR_INVALID_FILE;
