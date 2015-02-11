@@ -1,5 +1,12 @@
 // ControllerSettings.cpp : Implementation of CControllerSettings
 #include "stdafx.h"
+
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 #include "VPinMAME_h.h"
 #include "ControllerSettings.h"
 #include "VPinMAMEConfig.h"
