@@ -100,6 +100,8 @@ void tms5110_reset(void)
     /* initialize the sample generators */
     interp_count = sample_count = pitch_count = 0;
 		RNG = 0x1fff;
+    PDC = 0;
+    
     memset(u, 0, sizeof(u));
     memset(x, 0, sizeof(x));
 }
