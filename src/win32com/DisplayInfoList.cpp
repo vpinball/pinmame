@@ -1,4 +1,11 @@
 #include "StdAfx.h"
+
+#if _MSC_VER >= 1700
+ #ifdef inline
+  #undef inline
+ #endif
+#endif
+
 #include ".\displayinfolist.h"
 #include <ddraw.h>
 
