@@ -16,11 +16,19 @@ copy /V /-Y "VPinMAME_VC2012.vcxproj.filters" "VPinMAME_VC2015.vcxproj.filters"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2015" /in:"InstallVPinMAME_VC2015.vcxproj" /out:"InstallVPinMAME_VC2015.vcxproj"
 @if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v130" /in:"InstallVPinMAME_VC2015.vcxproj" /out:"InstallVPinMAME_VC2015.vcxproj"
+@if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2015" /in:"PinMAME_VC2015.vcxproj" /out:"PinMAME_VC2015.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v130" /in:"PinMAME_VC2015.vcxproj" /out:"PinMAME_VC2015.vcxproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2015" /in:"PinMAME32_VC2015.vcxproj" /out:"PinMAME32_VC2015.vcxproj"
 @if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v130" /in:"PinMAME32_VC2015.vcxproj" /out:"PinMAME32_VC2015.vcxproj"
+@if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2015" /in:"VPinMAME_VC2015.vcxproj" /out:"VPinMAME_VC2015.vcxproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:"v110" /replace:"v130" /in:"VPinMAME_VC2015.vcxproj" /out:"VPinMAME_VC2015.vcxproj"
 @if errorlevel 1 goto manual
 
 @goto end
