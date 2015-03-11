@@ -1324,4 +1324,3 @@ void mixer_sound_enable_global_w(int enable)
 
 	mixer_sound_enabled = enable;
 }
-

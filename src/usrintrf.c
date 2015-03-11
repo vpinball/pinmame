@@ -4105,13 +4105,13 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 #ifdef VPINMAME
 { extern int g_fPause;
-  /* pinDMD dump frames */
   extern int g_fDumpFrames;
+  
   int fPause;
   if (single_step || input_ui_pressed(IPT_UI_PAUSE))
     g_fPause = 1;
 
-  /* pinDMD Dump Frames */
+  /* Dump Frames */
   if (input_ui_pressed(IPT_UI_DUMPFRAME))
     g_fDumpFrames = !g_fDumpFrames;
 

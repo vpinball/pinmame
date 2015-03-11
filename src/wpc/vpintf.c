@@ -184,6 +184,7 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound) {
     chgSound[ii].sndNo = cmds[ii];
   return numcmd;
 }
+
 /*-------------------------------------------------
 /  get all changed segments since last call
 /------------------------------------------------*/
