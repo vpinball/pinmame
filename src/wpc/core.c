@@ -34,7 +34,7 @@ void vp_setDIP(int bank, int value) { }
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern char g_fShowPinDMD; /* pinDMD */
   extern int time_to_reset;  /* pinDMD */
-  extern int g_fDumpFrames;  /* pinDMD */
+  extern int g_fDumpFrames;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
@@ -788,7 +788,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
-  if(g_fShowPinDMD) {
+  if(g_fShowPinDMD || g_fDumpFrames) {
   if(oldbuffer != NULL) {
 	dumpframe = 0;
 	for(jj = 0; jj < layout->start; jj++)
@@ -799,14 +799,30 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				dumpframe = 1;
 				break;
 			}
+		}
   }
-    }
 
   if(dumpframe) {
 	    //usb dmd
-	    if(g_fShowPinDMD)
-		  if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
+	    if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
+		{
+	      if(g_fShowPinDMD)
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
+		  else
+		  {
+		    FILE *f;
+			f = fopen("dump.txt","a");
+			if(f) {
+				for(jj = 0; jj < layout->start; jj++) {
+					for(ii = 0; ii < layout->length; ii++)
+						fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+					fprintf(f,"\n");
+				}
+				fprintf(f,"\n");
+				fclose(f);
+			}
+		  }
+		}
 
 		if(currbuffer == buffer1) {
 			currbuffer = buffer2;
@@ -817,7 +833,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		}
 	}
 
-    frameClock();
+	if(g_fShowPinDMD)
+	    frameClock();
   }
 #endif
 }
