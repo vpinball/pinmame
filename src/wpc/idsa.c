@@ -44,7 +44,7 @@ static void IDSA_nmi(int data) {
 static INTERRUPT_GEN(IDSA_vblank) {
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 //  memset(locals.segments, 0, sizeof(locals.segments));
-  core_updateSw(core_getSol(locals.isV1 ? 2 : 10));
+  core_updateSw(core_getSol(10));
 }
 
 static SWITCH_UPDATE(IDSA) {
@@ -86,16 +86,20 @@ static UINT16 idsa2seg7(UINT8 data) {
 }
 
 static WRITE_HANDLER(ay8910_0_portA_w) {
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
-  if (locals.isV1) coreGlobals.lampMatrix[0] = ~data;
+  if (locals.isV1) {
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xfffffcff) | ((~data & 3) << 8);
+    coreGlobals.lampMatrix[0] = ~data;
+  } else
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
 }
 static WRITE_HANDLER(ay8910_0_portB_w) {
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00ffff) | ((data ^ 0xff) << 16);
-  if (locals.isV1) coreGlobals.lampMatrix[2] = ~data;
+  if (locals.isV1)
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffff00) | (data ^ 0xff);
+  else
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00ffff) | ((data ^ 0xff) << 16);
 }
 static WRITE_HANDLER(ay8910_1_portA_w) {
   if (locals.isV1) {
-    coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | ((data ^ 0xff) << 24);
     coreGlobals.lampMatrix[3] = ~data;
     return;
   }
@@ -112,8 +116,10 @@ static WRITE_HANDLER(ay8910_1_portA_w) {
   coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | (((data & 0x0f) ^ 0x0f) << 24);
 }
 static WRITE_HANDLER(ay8910_1_portB_w) {
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | ((data ^ 0xff) << 8);
-  if (locals.isV1) coreGlobals.lampMatrix[1] = ~data;
+  if (locals.isV1)
+    coreGlobals.lampMatrix[1] = ~data;
+  else
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xffff00ff) | ((data ^ 0xff) << 8);
 }
 struct AY8910interface IDSA_ay8910Int = {
 	2,					/* 2 chips */
@@ -125,6 +131,10 @@ struct AY8910interface IDSA_ay8910Int = {
 	{ ay8910_0_portB_w, ay8910_1_portB_w },	/* Output Port B callback */
 };
 
+static WRITE_HANDLER(sp0256_w) {
+//  printf("%02x ", data);
+  sp0256_ALD_w(0, data);
+}
 static READ_HANDLER(sp0256_r) {
   UINT16 data = spb640_r(offset / 2, 0);
   return offset % 2 ? (UINT8)(data >> 8) : (UINT8)(data & 0xff);
@@ -166,12 +176,34 @@ static NVRAM_HANDLER(IDSA) {
   core_nvram(file, read_or_write, IDSA_CMOS, 0x800, 0x00);
 }
 static WRITE_HANDLER(IDSA_CMOS_w) {
+  UINT16 val16;
   IDSA_CMOS[offset] = data;
   if (locals.isV1) {
     if (offset > 0x0c && offset < 0x27)
       locals.segments[0x26 - offset].w = core_bcd2seg7e[data & 0x0f];
-    else if (offset > 0x81 && offset < 0x86)
-      locals.segments[6 * (3-(offset - 0x82)) + 7].w = core_bcd2seg7e[data & 0x0f];
+    else if (offset == 0x2e) { // lottery / space ship lamps
+      val16 = 1 << (data & 0x0f);
+      coreGlobals.lampMatrix[8] = val16 & 0xff;
+      coreGlobals.lampMatrix[9] = val16 >> 8;
+      val16 = 1 << (data >> 4);
+      coreGlobals.lampMatrix[10] = val16 & 0xff;
+      coreGlobals.lampMatrix[11] = val16 >> 8;
+    } else if (offset == 0x2f) // ball in play / game over lamp!
+      coreGlobals.lampMatrix[2] = data & 0xe0 ? data & 0xe0 : 1 << (data & 7);
+    else if (offset == 0x30) { // bonus lamps
+      val16 = 1 << (data & 0x0f);
+      coreGlobals.lampMatrix[4] = val16 & 0xff;
+      coreGlobals.lampMatrix[5] = val16 >> 8;
+      val16 = 1 << (data >> 4);
+      coreGlobals.lampMatrix[6] = val16 & 0xff;
+      coreGlobals.lampMatrix[7] = val16 >> 8;
+    } else if (offset > 0x81 && offset < 0x86) { // player up
+      if (locals.segments[6 * (3-(offset - 0x82)) + 6].w)
+        locals.segments[6 * (3-(offset - 0x82)) + 7].w = core_bcd2seg7e[data & 0x0f];
+    } else if (offset == 0x107) { // game over does not update after game over
+      if (data & 0xe0)
+        coreGlobals.lampMatrix[2] = data & 0xe0;
+    }
   } else if (offset > 0xa7 && offset < 0xb2)
     coreGlobals.lampMatrix[offset - 0xa8] = data;
 }
@@ -199,7 +231,7 @@ MEMORY_END
 static PORT_WRITE_START(IDSA_writeport)
   {0x80,0x8f, row_w},
   {0x90,0x90, disp_w},
-  {0xd0,0xd0, sp0256_ALD_w},
+  {0xd0,0xd0, sp0256_w},
   {0xe0,0xe0, AY8910_control_port_0_w},
   {0xe1,0xe1, AY8910_write_port_0_w},
   {0xf0,0xf0, AY8910_control_port_1_w},
@@ -313,7 +345,7 @@ core_tLCDLayout v1_disp[] = {
   {0}
 };
 
-static core_tGameData v1GameData = {0,v1_disp,{FLIP_SW(FLIP_L),0,0}};
+static core_tGameData v1GameData = {0,v1_disp,{FLIP_SW(FLIP_L),0,4}};
 static void init_v1(void) {
   core_gameData = &v1GameData;
 }
@@ -327,7 +359,7 @@ ROM_START(v1)
   ROM_RELOAD(0x8000, 0x4000)
   ROM_RELOAD(0xc000, 0x4000)
 ROM_END
-CORE_GAMEDEFNV(v1, "V.1", 198?, "IDSA (Spain)", v1, GAME_NOT_WORKING)
+CORE_GAMEDEFNV(v1, "V.1", 1985, "IDSA (Spain)", v1, GAME_IMPERFECT_SOUND)
 
 core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
