@@ -179,7 +179,7 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
         /* provide errorlog from here on */
         if (errorlog && !logfile)
         {
-                logfile = fopen("error.log","wa");
+                logfile = fopen("error.log","a");
                 curlogsize = 0;
                 if (!logfile)
                 {
