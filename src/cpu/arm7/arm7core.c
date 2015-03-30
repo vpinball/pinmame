@@ -533,21 +533,34 @@ static int storeIncMode(data32_t pat, data32_t rbv, int mode)
 	return result;
 } /* storeInc */
 
+// classic CV: 3005aa0 does the DMA thing
 static int storeDec( data32_t pat, data32_t rbv)
 {
-	int i,result;
+        int i, result = 0, cnt;
 
-	result = 0;
-	for( i=15; i>=0; i-- )
+	// pre-count the # of registers doing DMA
+	for (i = 15; i >= 0; i--)
 	{
-		if( (pat>>i)&1 )
+		if ((pat >> i) & 1)
 		{
-			#if ARM7_DEBUG_CORE
-				if(i==15) /* R15 is plus 12 from address of STM */
-					LOG(("%08x: StoreDec on R15\n",R15));
-			#endif
-			WRITE32( rbv -= 4, GET_REGISTER(i) );
 			result++;
+
+			// starting address
+			rbv -= 4;
+		}
+	}
+
+	cnt = 0;
+	for (i = 0; i <= 15; i++)
+	{
+		if ((pat >> i) & 1)
+		{
+#if ARM7_DEBUG_CORE
+			if (i == 15) /* R15 is plus 12 from address of STM */
+				LOG(("%08x: StoreDec on R15\n", R15));
+#endif
+			WRITE32(rbv + (cnt * 4), GET_REGISTER(i));
+			cnt++;
 		}
 	}
 	return result;
@@ -1850,7 +1863,7 @@ static void HandleMemBlock( data32_t insn)
 	} /* Loading */
 	else
 	{
-		/* Storing */
+		/* Storing - STM*/
 		if (insn & (1<<eR15))
 		{
 			#if ARM7_DEBUG_CORE
@@ -1890,7 +1903,7 @@ static void HandleMemBlock( data32_t insn)
 		}
 		else
 		{
-			/* Decrementing */
+			/* Decrementing - but real CPU writes in incrementing order */
 			if (!(insn & INSN_BDT_P))
 			{
 				rbp = rbp - (- 4);
