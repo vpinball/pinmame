@@ -34,11 +34,12 @@ extern HANDLE g_hEnterThrottle;
 extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
-extern char g_fShowPinDMD;
 
 extern UINT8 g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
+
+extern char g_fShowWinDMD;
 }
 #include "alias.h"
 
@@ -923,7 +924,7 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 		return Error(TEXT("Game name not found!"));
 
 	// reset visibility of the controller window to visible
-	m_fWindowHidden = false;
+	m_fWindowHidden = !g_fShowWinDMD;
 
 	// reset set use of mechanical samples to false
 	m_fMechSamples = false;
@@ -2005,14 +2006,14 @@ STDMETHODIMP CController::ShowPathesDialog(long hParentWnd)
 }
 
 /****************************************************************************
- * IController.Hidden property: Hiddes/Shows the display to the user
+ * IController.Hidden property: Hides/Shows the display to the user
  ****************************************************************************/
 STDMETHODIMP CController::get_Hidden(VARIANT_BOOL *pVal)
 {
 	if ( !pVal )
 		return E_POINTER;
 
-	if ( m_fWindowHidden ) 
+	if ( m_fWindowHidden || !g_fShowWinDMD) 
 		*pVal = VARIANT_TRUE;
 
 	return S_OK;
@@ -2023,7 +2024,7 @@ STDMETHODIMP CController::put_Hidden(VARIANT_BOOL newVal)
 	m_fWindowHidden = newVal;
 
 	if ( IsWindow(win_video_window) ) 
-		ShowWindow(win_video_window, newVal?SW_HIDE:SW_SHOW);
+		ShowWindow(win_video_window, newVal || !g_fShowWinDMD ?SW_HIDE:SW_SHOW);
 
 	return S_OK;
 }
@@ -2315,4 +2316,26 @@ STDMETHODIMP CController::get_ShowPinDMD(VARIANT_BOOL *pVal)
 STDMETHODIMP CController::put_ShowPinDMD(VARIANT_BOOL newVal)
 {
 	return m_pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant(newVal));
+}
+
+/****************************************************************************
+ * IController.ShowWinDMD property: activate/deactivate windows DMD
+ ****************************************************************************/
+STDMETHODIMP CController::get_ShowWinDMD(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("showwindmd"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_ShowWinDMD(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("showwindmd"), CComVariant(newVal));
 }

@@ -167,6 +167,9 @@ public:
 	STDMETHOD(get_ShowPinDMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_ShowPinDMD)(/*[in]*/ VARIANT_BOOL newVal);
 
+	STDMETHOD(get_ShowWinDMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowWinDMD)(/*[in]*/ VARIANT_BOOL newVal);
+
 /* deprecated methods/properties */
 	STDMETHOD(get_NewSoundCommands)(/*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(get_ImgDir)(/*[out, retval]*/ BSTR *pVal);

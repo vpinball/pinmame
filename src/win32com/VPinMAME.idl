@@ -272,6 +272,8 @@ import "ocidl.idl";
 		[propput, id(76), helpstring("property CabinetMode")] HRESULT CabinetMode([in] VARIANT_BOOL  newVal);
 		[propget, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
+		[propget, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([in] VARIANT_BOOL newVal);
 	};
 
 	// WSHDlg and related interfaces

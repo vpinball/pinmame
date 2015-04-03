@@ -35,6 +35,7 @@ public:
                 MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLeftButtonDown)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_DOUBLESIZE, OnCheckBox)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_PINDMD, OnCheckBox)
+		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_WINDMD, OnCheckBox)
                 COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_IGNOREROMCRC, OnCheckBox)
                 COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_CABINETMODE, OnCheckBox)
                 COMMAND_ID_HANDLER(IDC_DMD_COLORIZE, OnDmdColorize)
@@ -100,6 +101,10 @@ private:
 
 		pGameSettings->get_Value(CComBSTR("showpindmd"), &vValue);
 		CheckDlgButton(IDC_PINDMD, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
+
+		pGameSettings->get_Value(CComBSTR("showwindmd"), &vValue);
+		CheckDlgButton(IDC_WINDMD, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 		VariantClear(&vValue);
 
                 pGameSettings->get_Value(CComBSTR("fastframes"), &vValue);
@@ -183,6 +188,7 @@ private:
 		pGameSettings->put_Value(CComBSTR("synclevel"), CComVariant((int) GetDlgItemInt(IDC_SYNCLEVEL,NULL,TRUE)));
 
 		pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_PINDMD)));
+		pGameSettings->put_Value(CComBSTR("showwindmd"), CComVariant((BOOL) IsDlgButtonChecked(IDC_WINDMD)));
 
                 pGameSettings->put_Value(CComBSTR("fastframes"), CComVariant((int) GetDlgItemInt(IDC_FASTFRAMES,NULL,TRUE)));
                 pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant((BOOL) IsDlgButtonChecked(IDC_IGNOREROMCRC)));

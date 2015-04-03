@@ -29,6 +29,8 @@ int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
 char g_fShowPinDMD		= FALSE;	// pinDMD not active by default
 int g_fDumpFrames		= FALSE;	// pinDMD dump frames
 
+char g_fShowWinDMD		= TRUE;	// DMD active by default
+
 BOOL cabinetMode		= FALSE;
 
 int    g_iSyncFactor     = 0;
@@ -352,7 +354,7 @@ void AdjustWindowPosition(HWND hWnd, CController *pController)
 	xpos = dmd_pos_x;
 	ypos = dmd_pos_y;
 
-	if ( pController->m_fWindowHidden )
+	if ( pController->m_fWindowHidden || !g_fShowWinDMD)
 		SetWindowPos(hWnd, 0, xpos, ypos, 0, 0, SWP_NOSIZE|SWP_HIDEWINDOW);
 	else
 		SetWindowPos(hWnd, HWND_TOPMOST, xpos, ypos, 0, 0, SWP_NOSIZE|SWP_NOACTIVATE);
@@ -452,7 +454,7 @@ void SetWindowStyle(HWND hWnd, int iWindowStyle)
 	UpdateWindow(hWnd);
 
 	// is that really necessary?
-	if ( m_pController->m_fWindowHidden )
+	if ( m_pController->m_fWindowHidden || !g_fShowWinDMD)
 		ShowWindow(hWnd, SW_HIDE);
 }
 
@@ -681,7 +683,7 @@ extern "C" void VPM_ShowVideoWindow()
 	if ( IsWindow(m_pController->m_hParentWnd) )
 		SetForegroundWindow(m_pController->m_hParentWnd);
 
-	if ( !m_pController->m_fWindowHidden )
+	if ( !m_pController->m_fWindowHidden && g_fShowWinDMD)
 		ShowWindow(win_video_window, SW_SHOWNOACTIVATE);
 	else
 		ShowWindow(win_video_window, SW_HIDE);
