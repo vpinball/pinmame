@@ -130,6 +130,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,67,88,10
     CONTROL         "Cabinet &Mode",IDC_CABINETMODE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,77,88,10
+    CONTROL         "Use &DMD",IDC_WINDMD,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,100,77,54,10
     CONTROL         "Use &PinDMD",IDC_PINDMD,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,165,77,54,10
     RTEXT           "Sample&rate:",IDC_STATIC,127,18,38,8

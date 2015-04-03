@@ -44,6 +44,8 @@ Version 2.6 (X X, 2015)
 	HRESULT ShowPinDMD([in] VARIANT_BOOL newVal); - En/Disable PinDMD display
 
 	- Enhanced Cabinet Support
+	HRESULT ShowWinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of DMD display
+	HRESULT ShowWinDMD([in] VARIANT_BOOL newVal); - En/Disable DMD display
 	HRESULT FastFrames([out, retval] int *pVal); - Get Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize) 
 	HRESULT FastFrames([in] int newVal); - Set Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize)
 	HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal); - Get Flag Ignore wrong CRCs of Romsets

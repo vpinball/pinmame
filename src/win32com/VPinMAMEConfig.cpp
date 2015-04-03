@@ -26,8 +26,9 @@ extern "C" {
   // Global options
   int verbose	= 0;
   char *rompath_extra;
-  // from usbdmd.c  /* pinDMD */
+  /* pinDMD */
   extern char g_fShowPinDMD;
+  extern char g_fShowWinDMD;
 }
 
 int fAllowWriteAccess = 1;
@@ -83,6 +84,7 @@ static struct rc_option vpinmame_opts[] = {
         
 	/* pinDMD */
 	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
+	{ "showwindmd", NULL, rc_bool, &g_fShowWinDMD, "1", 0, 0, NULL, "Show DMD display" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
