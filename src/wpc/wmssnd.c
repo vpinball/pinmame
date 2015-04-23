@@ -1216,7 +1216,33 @@ static void adsp_txCallback(int port, INT32 data) {
 }
 
 #ifdef WPCDCSSPEEDUP
-
+/*
+ *   Speedup for DCS games from 1994 and later.
+ *   
+ *   This is a hand-written C re-implementation of the core audio decoding
+ *   loop contained in the ADSP-2100 ROM programs for Williams DCS machines
+ *   built from 1994 onward.  The machines in this group share a nearly
+ *   identical implementation of the decoding algorithm.  This native C
+ *   implementation runs much faster than emulating the opcodes directly in
+ *   the general-purpose emulation loop.
+ *   
+ *   The emulator *can* run the original code, but not quite fast enough.
+ *   With current Intel hardware (fourth generation i5/i7) and the current
+ *   ADSP-2100 emulator code, the emulated version can't consistently feed
+ *   samples to the DAC at a real-time pace.  This causes audible playback
+ *   artifacts (e.g., pitch errors, static, and distortion).  The native code
+ *   version is about 50-100x faster than the emulated code; that's more than
+ *   fast enough to keep up with real time, which eliminates the artifacts
+ *   and greatly improves the audio quality.  It also takes a lot of load off
+ *   the real CPU.
+ *   
+ *   This implementation appears to work with all DCS games except the three
+ *   released in 1993: Star Trek: The Next Generation, Indiana Jones: The
+ *   Pinball Adventure, and Judge Dredd.  Those three use a slightly
+ *   different version of the decoding algorithm that's not easy to fold into
+ *   a common version, so we broke it out into a separate routine - see
+ *   dcs_speedup_1993() below.
+ */
 UINT32 dcs_speedup(UINT32 pc) {
   UINT16 *ram1source, *ram2source, volume;
   int ii;
@@ -1409,6 +1435,344 @@ UINT32 dcs_speedup(UINT32 pc) {
   return 0; /* execute a NOP */
 }
 
+
+/*static UINT16 reverse_bits(UINT16 b)
+{
+    return ((b >> 13) & 0x0001)
+        | ((b >> 11) & 0x0002)
+        | ((b >> 9)  & 0x0004)
+        | ((b >> 7)  & 0x0008)
+        | ((b >> 5)  & 0x0010)
+        | ((b >> 3)  & 0x0020)
+        | ((b >> 1)  & 0x0040)
+        | ((b << 1)  & 0x0080)
+        | ((b << 3)  & 0x0100)
+        | ((b << 5)  & 0x0200)
+        | ((b << 7)  & 0x0400)
+        | ((b << 9)  & 0x0800)
+        | ((b << 11) & 0x1000)
+        | ((b << 13) & 0x2000);
+}*/
+
+static UINT16 reverse_bits(UINT16 b)
+{
+	b = (((~0x5555) & b) >> 1) | ((0x5555 & b) << 1);
+	b = (((~0x3333) & b) >> 2) | ((0x3333 & b) << 2);
+	b = (((~0x0F0F) & b) >> 4) | ((0x0F0F & b) << 4);
+	return (((~0x00FF) & b) >> 8) | ((0x00FF & b) << 8);
+}
+
+/*
+ *   Speedup for DCS games from 1993.  This is a special version of the
+ *   speedup code just for Star Trek: The Next Generation, Indiana Jones: The
+ *   Pinball Adventure, and Judge Dredd.  These games appear to use a
+ *   slightly different version of the DCS format from the 1994+ games, with
+ *   a slightly different decoding algorithm.  The algorithm is different
+ *   enough that it's hard to fold both versions into a common native
+ *   implementation, so we broke it out into this separate function.
+ *   
+ *   Note that the core triple loop in this version is almost identical to
+ *   the 1994+ version, but it makes an extra pass through its outermost loop
+ *   with different starting parameters.  Note also that the volume scaling
+ *   portion is substantially different - it uses the ADSP-2100's rather odd
+ *   "bit reverse" addressing mode to shuffle the word order of the results.
+ *   The 1994+ algorithm doesn't do that in the volume loop, but appears to
+ *   do the same shuffle in the setup code that leads in to the decoding
+ *   loop; that's not visible in the 1994+ speedup routine because it's left
+ *   in emulation.
+ */
+UINT32 dcs_speedup_1993(UINT32 pc)
+{
+    int ii;
+    UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x0135-0x00e8)<<2)];
+    UINT16 *ram = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET);
+    UINT16 volume = ram[((volumeOP>>4)&0x3fff)];
+    /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
+
+    {
+        UINT16 *i0, *i1, *i2, *i3;
+
+        /* 
+         *   NB: Opcode addresses are for the ST:TNG ROMs.  These are for
+         *   reference only; the other games that use the same code have it
+         *   at different addresses.
+         */
+        
+        /* 00E8     I0 = $3800 */
+        i0 = &ram[0x3800];
+
+        /* 00E9     I1 = $38fe */
+        i1 = &ram[0x38fe];
+
+        /* 00EA     I2 = $3900 */
+        i2 = &ram[0x3900];
+
+        /* 00EB     I3 = $39fe */
+        i3 = &ram[0x39fe];
+
+        /* 00EE     AR = *I0++ */
+        /* 00F0     *I2++ = AR */
+        *i2++ = *i0++;
+
+        /* 00EF     *I0++ = 0 */
+        *i0++ = 0;
+
+        /* 00F1     *I2++ = 0 */
+        *i2++ = 0;
+
+        /* 00EC     M2 = -1 */
+        /* 00ED     M3 = -3 */
+        /* 00F2     CNTR = $0040 */
+        /* 00F3     DO $00FF UNTIL CE (loop $0040 times) */
+        for (ii = 0 ; ii < 0x0040 ; ++ii)
+        {
+            INT16 ax0, ay0, ax1, ay1, ar;
+
+            /* 00F4      AX0 = DM(I0,M1) */
+            ax0 = *i0++;
+            
+            /* 00F5      AY0 = DM(I1,M1) */
+            ay0 = *i1++;
+
+            /* 00F6      AR = AX0 + AY0, AX1 = DM(I0,M2) */
+            ar = ax0 + ay0;
+            ax1 = *i0--;
+            
+            /* 00F7      DM(I0,M1) = AR */
+            *i0++ = ar;
+
+            /* 00F8      AY1 = DM(I1,M2) */
+            ay1 = *i1--;
+
+            /* 00F9      DM(I1,M1) = AR, AR = AX0 - AY0 */
+            *i1++ = ar;
+            ar = ax0 - ay0;
+
+            /* 00FA      DM(I2,M1) = AR, AR = AY0 - AX0 */
+            *i2++ = ar;
+            ar = ay0 - ax0;
+
+            /* 00FB      DM(I3,M1) = AR, AR = AX1 + AY1 */
+            *i3++ = ar;
+            ar = ax1 + ay1;
+
+            /* 00FC      DM(I2,M1) = AR */
+            *i2++ = ar;
+
+            /* 00FD      DM(I3,M3) = AR, AR = AX1 - AY1 */
+            *i3 = ar; i3 -= 3;
+            ar = ax1 - ay1;
+
+            /* 00FE      DM(I0,M1) = AR, AR = AY1 - AX1 */
+            *i0++ = ar;
+            ar = ay1 - ax1;
+
+            /* 00FF      DM(I1,M3) = AR */
+            *i1 = ar;
+            i1 -= 3;
+        }
+    }
+    {
+        int mem621, mem622, mem623;
+        int jj,kk;
+
+        /* 
+         *   Note that these three data words ($621, $622, $623) are used in
+         *   the ROM code as scratch locations that are only accessed within
+         *   this loop, so it's not necessary to save them back to real
+         *   memory.  And we don't care about any pre-existing values, as the
+         *   first thing we do here is initialize them.  We refer to them
+         *   here as "memXXX" locations only for ease of reference back to
+         *   the original ROM code.
+         */
+        
+        /* 0101     AR = $0002 */
+        /* 0102     WORD PTR [$621] = AR */
+        mem621 = 2;
+
+        /* 0103     SI = $0080 */
+        /* 0104     WORD PTR [$622] = SI */
+        mem622 = 0x80;
+
+        /* 0105     SR = SI >> 1 */
+        /* 0106     WORD PTR [$623] = SR */
+        mem623 = 0x40;
+
+        /* 0107     M0 = -1 */
+        /* 0108     CNTR = 7 */
+        /* 0109     DO $12D UNTIL CE (loop 7 times) */
+        for (ii = 0 ; ii < 7 ; ++ii)
+        {
+            UINT16 *i0, *i1, *i2;
+            UINT32 *i4, *i5;
+            INT16 m2, m3;
+
+            /* 
+             *   NB: I4 and I5 are used to access PROGRAM ROM, not data
+             *   memory.  These appear to be fixed tables stored in program
+             *   ROM.  Note that these are 32-bit opcode locations addressed
+             *   as 16-bit memory locations; when we read these, we have to
+             *   shift the results right by 8 bits and then truncate to 16
+             *   bits to extract the data values.  Don't ask me what the
+             *   logic is behind this; that's just the way the ADSP-2100
+             *   works when this addressing mode is used.  We could be tricky
+             *   here and bump the byte addresses up by one to skip the
+             *   right-shift step, but that would cause non-dword aligned
+             *   memory reads, which is probably slower than executing the
+             *   extra right-shift instruction (as it requires two bus cycles
+             *   to physical memory).
+             */
+            
+            /* 010A   I4 = PGM WORD PTR [$1780] */
+            i4 = (UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + (0x1780<<2)];
+
+            /* 010B   I5 = PGM WORD PTR [$1700] */
+            i5 = (UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + (0x1700<<2)];
+
+            /* 010C   I0 = $3800 */
+            i0 = &ram[0x3800];
+
+            /* 010D   I1 = $3800 */
+            i1 = &ram[0x3800];
+            
+            /* 010E   AY0 = WORD PTR [$622] */
+            /* 010F   M2 = AY0 */
+            m2 = mem622;
+
+            /* 0110   MODIFY(I1,M2) */
+            i1 += m2;
+
+            /* 0111   I2 = I1 */
+            i2 = i1;
+
+            /* 0112   AR = AY0 - 1 */
+            /* 0113   M3 = AR */
+            m3 = mem622 - 1;
+
+            /* 0114   CNTR = WORD PTR [$621] */
+            /* 0115   DO $126 UNTIL CE (loop WORD PTR [$621] times) */
+            for (jj = 0 ; jj < mem621 ; ++jj)
+            {
+                INT16 mx0, mx1, my0, my1;
+
+                /* 0117   MY0 = DM(I4,M5) (program ROM location -> shift right by 8 for data) */
+                my0 = (*i4++) >> 8;
+
+                /* 0118   MY1 = DM(I5,M5) (program ROM location -> shift right by 8 for data) */
+                my1 = (*i5++) >> 8;
+
+                /* 0119   MX0 = DM(I1,M1) */
+                mx0 = *i1++;
+
+                /* 0116   CNTR = WORD PTR [$623] */
+                /* 011A   DO $123 UNTIL CE (loop WORD PTR [$623] times) */
+                for (kk = 0 ; kk < mem623 ; ++kk)
+                {
+                    INT16 ax0, ay0, ay1, ar;
+                    INT32 tmp, mr;
+                    
+                    /* 011B   MR = (MX0 * MY0) << 1, MX1 = DM(I1,M1) */
+                    mx1 = *i1++;
+                    mr = ((INT32)mx0 * my0) << 1;
+
+                    /* 011C   MR -= (MX1 * MY1) << 1 (RND), AY0 = DM(I0,M1) */
+                    ay0 = *i0++;
+                    tmp = ((INT32)mx1 * my1) << 1;
+                    mr = (mr - tmp + 0x8000) & (((tmp & 0xffff) == 0x8000) ? 0xfffeffff : 0xffffffff);
+
+                    /* 011D   MR = (MX1 * MY0) << 1 (SS), AX0 = MR1 */
+                    ax0 = mr >> 16;
+                    mr = ((INT32)mx1 * my0) << 1;
+                    
+                    /* 011E   MR += (MX0 * MY1) << 1 (RND), AY1 = DM(I0,M0) */
+                    ay1 = *i0--;
+                    tmp = (((INT32)mx0 * my1)<<1);
+                    mr = (mr + tmp + 0x8000) & (((tmp & 0xffff) == 0x8000) ? 0xfffeffff : 0xffffffff);
+
+                    /* 011F   MX0 = DM(I1,M1), AR = AY0 - AX0 */
+                    mx0 = *i1++;
+                    ar = ay0 - ax0;
+
+                    /* 0120   AR = AX0 + AY0, DM(I0,M1) = AR */
+                    *i0++ = ar;
+                    ar = ax0 + ay0;
+                    
+                    /* 0121   AR = AY1 - MR1, DM(I2,M1) = AR */
+                    *i2++ = ar;
+                    ar = ay1 - (mr >> 16);
+
+                    /* 0122   AR = MR1 + AY1, DM(I0,M1) = AR */
+                    *i0++ = ar;
+                    ar = (mr >> 16) + ay1;
+                    
+                    /* 0123   DM(I2,M1) = AR */
+                    *i2++ = ar;
+                }
+
+                /* 0124   MODIFY (I2,M2) */
+                i2 += m2;
+
+                /* 0125   MODIFY (I1,M3) */
+                i1 += m3;
+                
+                /* 0126   MODIFY (I0,M2) */
+                i0 += m2;
+            }
+
+            /* 0127   SI = WORD PTR [$621] */
+            /* 0128   SR = SI << 1 */
+            /* 0129   WORD PTR [$621] = SR */
+            mem621 <<= 1;
+
+            /* 012A   SI = WORD PTR [$623] */
+            /* 012B   WORD PTR [$622] = SI */
+            mem622 = mem623;
+
+            /* 012C   SR = SI >> 1 */
+            /* 012D   WORD PTR [$623] = SR0 */
+            mem623 >>= 1;
+        }
+    }
+    {                                                     /* Volume scaling */
+        UINT16 *i4;
+        UINT16 i1;
+        INT16 mx0;
+        UINT16 my0;
+        UINT32 mr;
+
+        /* 012E   M0 = 0 */
+        /* 0130   M2 = $0020 */
+        /* 0132   M6 = 2 */
+        /* 0134   MODE CONTROL(REVERSE BIT ADDRESSING DAG1) */
+        /* 012F   I1 = $7 */
+        i1 = 7;
+
+        /* 0131   I4 = $3801 */
+        i4 = &ram[0x3801];
+
+        /* 0135   MY0 = WORD PTR [$3aa] - current volume level */
+        my0 = volume;
+
+        /* 0136   MX0 = DM(reverse i1, m2) */
+        mx0 = ram[reverse_bits(i1)];
+        i1 += 0x20;
+
+        /* 0133   CNTR = $100 */
+        /* 0137   DO $13A UNTIL CE (loop 0x100 times) */
+        for (ii = 0 ; ii < 0x100 ; ii++)
+        {
+            /* 0138   MR = (MX0 * MY0) << 1, MX0 = DM(reverse i1,m2) */
+            mr = ((INT32)mx0 * my0) << 1;
+            mx0 = ram[reverse_bits(i1)];
+            i1 += 0x20;
+
+            /* 0139  SATURATE MR (effectively NOP) */
+            /* 013A  DM(I4,M6) = MR1 */
+            *i4 = mr >> 16;
+            i4 += 2;
+        }
+    }
+    activecpu_set_reg(ADSP2100_PC, pc + (0x13a - 0x00e8));
+    return 0;                                              /* execute a NOP */
+}
 #endif /* WPCDCSSPEEDUP */
-
-
