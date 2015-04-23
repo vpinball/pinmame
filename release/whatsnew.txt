@@ -3,6 +3,7 @@ Version 2.6 (X X, 2015) - "We're not dead (yet)"
 
 *** CORE/CPU ***
 Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
+Optimization to DCS sound decoding for 1993-era games (STTNG, IJ, JD)
 (Optional) Separate RGB-Color selection for the 4 DMD shades
 Added driver for MAC / CICPlay games
 Correct display outputs on IDSA
