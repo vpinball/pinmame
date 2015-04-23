@@ -712,7 +712,7 @@ int adsp2100_execute(int cycles)
     icount += 1;
 }
 {
-  /* The decompression starts after the following sequence */
+  /* The decompression for the 1994+ games starts after the following sequence: */
   /* 000000 NOP */
   /* 0c0080 DIS */
   /* 0c2000 DIS */
@@ -730,6 +730,7 @@ int adsp2100_execute(int cycles)
     adsp2100_icount -= 5233; /* amount of instructions replaced by speedup */
   }
 }
+resume_from_speedup:
 #endif /* WPCDCSSPEEDUP */
 
 		/* advance to the next instruction */
@@ -1040,7 +1041,33 @@ int adsp2100_execute(int cycles)
 				/* 001100xx xxxxxxxx xxxxxxxx  load non-data register immediate (group 0) */
 				WRITE_REG(0, op & 15, (INT32)(op << 14) >> 18);
 				break;
-			case 0x34: case 0x35: case 0x36: case 0x37:
+			case 0x37:
+#if WPCDCSSPEEDUP
+				/*
+				 *   Speedup for 1993 DCS games: Star Trek: The Next Generation, Indiana
+				 *   Jones: The Pinball Adventure, and Judge Dredd.  These games use a
+				 *   slightly different format from later games, requiring a different
+				 *   version of the native decoder routine.
+				 */
+				if (op == 0x378000)
+				{
+					static unsigned char signature[] = {
+						0xe1, 0x8f, 0x37, 0x00,
+						0x02, 0x90, 0x37, 0x00,
+						0xe3, 0x9f, 0x37, 0x00
+					};
+					if (memcmp(&OP_ROM[ADSP2100_PGM_OFFSET + ((adsp2100.pc) << 2)],
+						signature, sizeof(signature)) == 0)
+					{
+						extern UINT32 dcs_speedup_1993(UINT32 pc);
+						op = dcs_speedup_1993(adsp2100.pc - 1);
+						adsp2100_icount -= 11797;
+						goto resume_from_speedup;
+					}
+				}
+				/* otherwise fall through to standard handling */
+#endif
+			case 0x34: case 0x35: case 0x36:
 				/* 001101xx xxxxxxxx xxxxxxxx  load non-data register immediate (group 1) */
 				WRITE_REG(1, op & 15, (INT32)(op << 14) >> 18);
 				break;
