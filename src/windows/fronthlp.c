@@ -42,10 +42,10 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, L
 
 #ifndef MESS
 #define YEAR_BEGIN 1974
-#define YEAR_END   2014
+#define YEAR_END   2015
 #else
 #define YEAR_BEGIN 1950
-#define YEAR_END   2014
+#define YEAR_END   2015
 #endif
 
 static int list = 0;
