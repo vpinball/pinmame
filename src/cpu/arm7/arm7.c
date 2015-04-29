@@ -40,7 +40,7 @@
 #include "arm7core.h"	//include arm7 core
 
 /* Example for showing how Co-Proc functions work */
-#define TEST_COPROC_FUNCS 1
+#define TEST_COPROC_FUNCS 0
 
 /*prototypes*/
 #if TEST_COPROC_FUNCS

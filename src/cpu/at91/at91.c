@@ -54,20 +54,20 @@ extern int activecpu;
 #define	USE_MAME_TIMERS	1			//Set to 1 for performance but possibly less accurate timing, to 0 for more accuracy but huge performance penalty
 
 //Flags for Logging
-#define LOG_AT91 1					//Turn on/off logging of all AT91 debugging info
+#define LOG_AT91 0					//Turn on/off logging of all AT91 debugging info
 #define LOG_TOSCREEN 0				//Send Log data to screen, otherwise will go to log file
 
 //Flags for specific Logging
-#define LOG_TIMERS 1				//Turn on/off logging of Timer Info
+#define LOG_TIMERS 0				//Turn on/off logging of Timer Info
 #define LOG_TIMER_STAT_READ 0		//Turn on/off logging of Timer Status Read
 #define LOG_TIMER_START 0			//Turn on/off logging of Timer Trigger Start
 #define LOG_TIMER_ENABLE 0			//Turn on/off logging of Timer Enable Event
 #define LOG_TIMER_DISABLE 0			//Turn on/off logging of Timer Disable Event
-#define LOG_PIO 1					//Turn on/off logging of PIO Info
+#define LOG_PIO 0					//Turn on/off logging of PIO Info
 #define LOG_PIO_READ 0				//Turn on/off logging of PIO Read
-#define LOG_PIO_WRITE 1				//Turn on/off logging of PIO Write
+#define LOG_PIO_WRITE 0				//Turn on/off logging of PIO Write
 #define LOG_POWER 0					//Turn on/off logging of Power Saver Info
-#define LOG_AIC 1					//Turn on/off logging of AIC Info
+#define LOG_AIC 0					//Turn on/off logging of AIC Info
 #define LOG_AIC_IVW 0				//Turn on/off logging of AIC - Interrupt Vector Write Command
 #define LOG_AIC_EOI 0				//Turn on/off logging of AIC - End of Interrupt Command
 #define LOG_AIC_VECTOR_READ 0		//Turn on/off logging of AIC - Vector Address Read
