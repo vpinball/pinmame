@@ -151,7 +151,8 @@ static WRITE_HANDLER(i8279_w) {
           locals.segments[32].w = data & 0x40 ? core_bcd2seg7[1] : 0;
           locals.segments[35].w = data & 0x04 ? core_bcd2seg7[1] : 0;
           break;
-        case  3: locals.segments[36].w = data ? core_bcd2seg7[0] : 0; break;
+        case  6: if (!locals.segments[36].w) locals.segments[36].w = core_bcd2seg7[0]; break; // odin(dlx)
+        case  7: if (!locals.segments[36].w) locals.segments[36].w = core_bcd2seg7[0]; break; // others
         case  8: coreGlobals.tmpLampMatrix[9] = data; break;
         case  9: coreGlobals.tmpLampMatrix[10] = data; break;
         case 10:
