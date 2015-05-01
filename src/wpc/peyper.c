@@ -4,7 +4,7 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 2.5 MHz
-			INT: IRQ @ 2500 Hz
+			INT: IRQ @ ~1800 Hz (R/C timer, needs to be measured on real machine)
 		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910 @ 2.5 MHz
@@ -16,7 +16,7 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
-#define PEYPER_IRQFREQ    2500 /* IRQ frequency */
+#define PEYPER_IRQFREQ    1800 /* IRQ frequency */
 #define PEYPER_CPUFREQ 2500000 /* CPU clock frequency */
 
 /*----------------
@@ -139,7 +139,6 @@ static WRITE_HANDLER(i8279_w) {
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
       if ((coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
         locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
-        locals.segments[36].w = core_bcd2seg7[0];
       } else {
         locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];
         locals.segments[31 - locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
@@ -152,6 +151,7 @@ static WRITE_HANDLER(i8279_w) {
           locals.segments[32].w = data & 0x40 ? core_bcd2seg7[1] : 0;
           locals.segments[35].w = data & 0x04 ? core_bcd2seg7[1] : 0;
           break;
+        case  3: locals.segments[36].w = data ? core_bcd2seg7[0] : 0; break;
         case  8: coreGlobals.tmpLampMatrix[9] = data; break;
         case  9: coreGlobals.tmpLampMatrix[10] = data; break;
         case 10:
