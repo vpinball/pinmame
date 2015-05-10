@@ -1060,7 +1060,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -1101,7 +1101,7 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {3,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {3,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -1220,7 +1220,7 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT GIState;
@@ -1264,7 +1264,7 @@ STDMETHODIMP CController::get_ChangedSolenoids(VARIANT *pVal)
 	{ pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -1601,7 +1601,7 @@ STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT SoundsState;
