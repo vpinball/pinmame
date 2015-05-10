@@ -20,6 +20,7 @@ Corrected DMD for Strikes n' Spares
 Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
 Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
 Tweak CPU clock for Mystery Castle to make it look more correct
+Fixed single zero digit on Odin & Odin Deluxe
 Updated to zlib 1.2.8
 
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
