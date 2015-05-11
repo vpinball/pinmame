@@ -85,7 +85,7 @@ ALVGDMD_SPLIT_ROM(		"dot02b.512", CRC(50e3d59d) SHA1(db6df3482fc485af6bde341750b
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour R02b",1992,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour (R02b)",1992,"Alvin G",mALVGS2DMD1,0)
 
 INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou3,	"cpu03.512", CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
@@ -98,7 +98,7 @@ ALVGDMD_SPLIT_ROM(		"dot03.512", CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On A World Tour R06a",1992,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On A World Tour (R06a)",1992,"Alvin G",mALVGS2DMD1,0)
 
 /*-------------------------------------------------------------------
 / U.S.A. Football
@@ -124,9 +124,9 @@ ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396d
 						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
 #ifdef MYSTERY_CASTLE_HACK
-CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2DMD2,0)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle (R02)",1993,"Alvin G",mALVGS2DMD2,0)
 #else
-CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle (R02)",1993,"Alvin G",mALVGS2DMD1,0)
 #endif
 
 INITGAME2(mystcasa, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
@@ -141,9 +141,9 @@ ALVGDMD_ROM("u4.bin", CRC(a6969efc) SHA1(82da976cb3d30d6fb1576e4c67febd7235f73f5
 						"u6.bin", CRC(eb241633) SHA1(8e5db75b32ed2ea74088615bbe1403d4c8feafbd))
 ALVG_ROMEND
 #ifdef MYSTERY_CASTLE_HACK
-CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (alternate set)",199?,"Alvin G",mALVGS2DMD2,0)
+CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (R03)",199?,"Alvin G",mALVGS2DMD2,0)
 #else
-CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (alternate set)",199?,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(mystcasa,mystcast,"Mystery Castle (R03)",199?,"Alvin G",mALVGS2DMD1,0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -161,9 +161,9 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
 #ifdef MYSTERY_CASTLE_HACK
-CORE_GAMEDEFNV(pstlpkr,"Pistol Poker R02",1993,"Alvin G",mALVGS2DMD2,0)
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker (R02)",1993,"Alvin G",mALVGS2DMD2,0)
 #else
-CORE_GAMEDEFNV(pstlpkr,"Pistol Poker R02",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker (R02)",1993,"Alvin G",mALVGS2DMD1,0)
 #endif
 
 INITGAME2(pstlpkr1, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
@@ -178,9 +178,9 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
 #ifdef MYSTERY_CASTLE_HACK
-CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker R01",1993,"Alvin G",mALVGS2DMD2,0)
+CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker (R01)",1993,"Alvin G",mALVGS2DMD2,0)
 #else
-CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker R01",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(pstlpkr1,pstlpkr,"Pistol Poker (R01)",1993,"Alvin G",mALVGS2DMD1,0)
 #endif
 
 /*-------------------------------------------------------------------
