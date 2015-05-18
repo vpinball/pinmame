@@ -694,7 +694,7 @@ static void update_system_menu(void)
 	HMENU menu;
 
 	// revert the system menu
-	GetSystemMenu(win_video_window, TRUE);
+	menu = GetSystemMenu(win_video_window, TRUE);
 
 	// add to the system menu
 	menu = GetSystemMenu(win_video_window, FALSE);
