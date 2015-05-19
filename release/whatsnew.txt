@@ -28,6 +28,7 @@ New:
 Atari: 4x4 (not working yet)
 CICPlay: Galaxy Play
 Data East: King Kong 1.0
+Gameplan: Mike Bossy (CPU dumped now)
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
 JP: Add missing ROM for Olympus

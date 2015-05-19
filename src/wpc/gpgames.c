@@ -178,7 +178,7 @@ INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
 GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428) SHA1(7a9029e4fd4c4c00da3256ed06464c0bd8022168),
 						"240b.716",CRC(a54eb15d) SHA1(b9235bd188c1251eb213789800b7686b5e3c557f),
 						"240c.716",CRC(60d115a8) SHA1(e970fdd7cbbb2c81ab8c8209edfb681798c683b9))
-GP_SOUNDROM88("gw240bot.rom", CRC(3245a206) SHA1(b321b2d276fbd74199eff2d8c0d1b8a2f5c93604),
+GP_SOUNDROM88("gw240bot.rom",CRC(3245a206) SHA1(b321b2d276fbd74199eff2d8c0d1b8a2f5c93604),
               "gw240top.rom",CRC(faaf3de1) SHA1(9c984d1ac696eb16f7bf35463a69a470344314a7))
 GP_ROMEND
 CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,0)
@@ -187,9 +187,9 @@ CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,0)
 / Mike Bossy (January 1982) - Model #???
 /-------------------------------------------------------------------*/
 INITGAME(mbossy, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
-GP_ROMSTART888(mbossy,	"mb_a.716",NO_DUMP,
-						"mb_b.716",NO_DUMP,
-						"mb_c.716",NO_DUMP)
+GP_ROMSTART888(mbossy,	"mb_a.716",CRC(a811f936) SHA1(f44fed7acd26a621f105925d52405e985d0b5e5d),
+						"mb_b.716",CRC(75ec7247) SHA1(10fa1e3ac2adbd7b24744a4fb0149bcc74df6b4c),
+						"mb_c.716",CRC(75dc73c4) SHA1(79fadec7650a1419f47b22875dee6f678114b439))
 GP_SOUNDROM88("mb.u9", CRC(dfa98db5) SHA1(65361630f530383e67837c428050bcdb15373c0b),
               "mb.u10",CRC(2d3c91f9) SHA1(7e1f067af29d9e484da234382d7dc821ca07b6c4))
 GP_ROMEND
