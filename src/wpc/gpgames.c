@@ -187,9 +187,9 @@ CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,0)
 / Mike Bossy (January 1982) - Model #???
 /-------------------------------------------------------------------*/
 INITGAME(mbossy, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
-GP_ROMSTART888(mbossy,	"mb_a.716",CRC(a811f936) SHA1(f44fed7acd26a621f105925d52405e985d0b5e5d),
-						"mb_b.716",CRC(75ec7247) SHA1(10fa1e3ac2adbd7b24744a4fb0149bcc74df6b4c),
-						"mb_c.716",CRC(75dc73c4) SHA1(79fadec7650a1419f47b22875dee6f678114b439))
+GP_ROMSTART888(mbossy,	"mb_a.716",NO_DUMP,
+						"mb_b.716",NO_DUMP,
+						"mb_c.716",NO_DUMP)
 GP_SOUNDROM88("mb.u9", CRC(dfa98db5) SHA1(65361630f530383e67837c428050bcdb15373c0b),
               "mb.u10",CRC(2d3c91f9) SHA1(7e1f067af29d9e484da234382d7dc821ca07b6c4))
 GP_ROMEND
