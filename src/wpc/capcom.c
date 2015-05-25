@@ -82,7 +82,7 @@
 #define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
-#define CC_IRQ4FREQ		TIME_IN_CYCLES(8000,0)	//Seems to work well for both KP & FF
+#define CC_IRQ4FREQ		TIME_IN_CYCLES(4000,0)	//Seems to work well for both KP & FF //was 8000 before, but experiments showed that 4000 works better (no lamp flicker and quicker lamp response on KP)
 
 static data16_t *rom_base;
 static data16_t *ramptr;
