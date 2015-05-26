@@ -39,6 +39,9 @@ extern int verbose;
 // from wind3dfx.c
 extern struct rc_option win_d3d_opts[];
 
+// from ticker.c
+extern void uSleep(const unsigned long long u);
+
 //============================================================
 //	PARAMETERS
 //============================================================
@@ -721,7 +724,10 @@ static void throttle_speed(void)
 		while (curr - target < 0)
 		{
 #ifdef VPINMAME
-			Sleep((target-curr)/ticks_per_sleep_msec);
+			//if((long long)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below
+			//	uSleep((unsigned long long)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
+			
+			uSleep((target-curr)*1000/ticks_per_sleep_msec);
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind
@@ -731,7 +737,7 @@ static void throttle_speed(void)
 				cycles_t next;
 
 				// keep track of how long we actually slept
-				Sleep(1);
+				uSleep(100); //1000?
 				next = osd_cycles();
 				ticks_per_sleep_msec = (ticks_per_sleep_msec * 0.90) + ((double)(next - curr) * 0.10);
 				curr = next;
@@ -743,6 +749,16 @@ static void throttle_speed(void)
 				curr = osd_cycles();
 			}
 		}
+	}
+	else
+	{
+		// We're behind schedule!  Something must have taken longer than
+		// it should have (e.g., a CPU emulator time slice must have gone
+		// on too long).  We don't have a time machine, so we can't go back
+		// and sync this frame to a time in the past.  But we can fix things 
+		// up for future frames, by refiguring the time projection base 
+		// time to conform to the new reality.
+		this_frame_base += curr - target;
 	}
 
 	// idle time done
