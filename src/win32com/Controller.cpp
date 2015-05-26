@@ -40,6 +40,9 @@ extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
 
 extern char g_fShowWinDMD;
+
+// from ticker.c
+extern void uSleep(const unsigned long long u);
 }
 #include "alias.h"
 
@@ -655,7 +658,7 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
   else if ( synclevel<0 )
-	  Sleep(-synclevel);
+	  uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);
@@ -728,7 +731,7 @@ STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
 	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
 	else if ( synclevel<0 )
-		Sleep(-synclevel);
+		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
 	int uCount = vp_getChangedSolenoids(chgSol);
@@ -802,7 +805,7 @@ STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
 	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
 	else if ( synclevel<0 )
-		Sleep(-synclevel);
+		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
 	int uCount = vp_getChangedGI(chgGI);
@@ -1051,7 +1054,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
   else if ( synclevel<0 )
-	  Sleep(-synclevel);
+	  uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);

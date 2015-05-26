@@ -326,3 +326,35 @@ void win_timer_enable(int enabled)
 	}
 }
 
+//
+
+static unsigned int sTimerInit = 0;
+static LARGE_INTEGER TimerFreq;
+static LARGE_INTEGER sTimerStart;
+
+static void wintimer_init()
+{
+	sTimerInit = 1;
+
+	QueryPerformanceFrequency(&TimerFreq);
+	QueryPerformanceCounter(&sTimerStart);
+}
+
+void uSleep(const unsigned long long u)
+{
+	LARGE_INTEGER TimerEnd;
+	LARGE_INTEGER TimerNow;
+
+	if (sTimerInit == 0)
+		wintimer_init();
+
+	QueryPerformanceCounter(&TimerEnd);
+	TimerEnd.QuadPart += (u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart;
+
+	do
+	{
+		SwitchToThread();
+
+		QueryPerformanceCounter(&TimerNow);
+	} while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
+}
