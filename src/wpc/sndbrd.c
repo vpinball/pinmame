@@ -69,8 +69,8 @@ void sndbrd_diag(int board, int button) {
 
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
-    if(b && (b->flags & SNDBRD_NOTSOUND)==0)
-		snd_cmd_log(board, data);
+  if(b && (b->flags & SNDBRD_NOTSOUND)==0)
+	snd_cmd_log(board, data);
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
 #if 0
     if((b->flags & SNDBRD_NOTSOUND)==0)
