@@ -7,6 +7,7 @@
   with lots of bus signals. I doubt it can be fully handled by MAME
   but it's close enough to make the games work as it is now;
   only thing I can say for sure is they're running way too fast!
+  For sound this is using a TMS5110A speak n spell
 *******************************************************************************************/
 
 #include "driver.h"
