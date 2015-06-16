@@ -5,7 +5,7 @@
 #include "cpu/i8039/i8039.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
-#include "sound/tms5220.h"
+#include "sound/tms5220.h" // TMS5200 & TMS5220CNL
 #include "core.h"
 #include "sndbrd.h"
 #include "zacsnd.h"
