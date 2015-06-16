@@ -8,7 +8,7 @@
   A few games use alpha displays, this is implemented in by35.c
 
   Issues/Todo:
-  Sound Board with 6803 CPU and DAC, some games also use an additional TMS5220 speech chip.
+  Sound Board with 6803 CPU and DAC, some games also use an additional TMS5220C speech chip.
 *******************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
