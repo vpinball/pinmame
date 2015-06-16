@@ -3,7 +3,7 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/m68000/m68000.h"
 #include "cpu/m6809/m6809.h"
-#include "sound/tms5220.h"
+#include "sound/tms5220.h" // uses TMS5200
 #include "core.h"
 #include "sndbrd.h"
 #include "by35.h"
