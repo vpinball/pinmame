@@ -43,6 +43,7 @@
 #define SUBTYPE_TMS5220			16
 #define SUBTYPE_TMS5220C		32
 #define SUBTYPE_PAT4335277		64
+#define SUBTYPE_2501E                   128
 
 /* coefficient defines */
 #define MAX_K					10
@@ -438,6 +439,7 @@ The TMS5220CNL was decapped and imaged by digshadow in April, 2013.
 The LPC table table is verified to match the decap and exactly matches TMS5220NL.
 The chirp table is verified to match the decap. (sum = 0x3da)
 */
+#if 0
 static const struct tms5100_coeffs tms5220_coeff =
 {
 	/* subtype */
@@ -502,6 +504,95 @@ static const struct tms5100_coeffs tms5220_coeff =
 	/* interpolation coefficients */
 	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
+#else
+#define TI_0285_LATER_ENERGY \
+		/* E  */\
+		{   0,  1,  2,  3,  4,  6,  8, 11, \
+			16, 23, 33, 47, 63, 85,114, 0 },
+        
+#define TI_5220_PITCH \
+	/* P */\
+	{   0,  15,  16,  17,  18,  19,  20,  21,  \
+		22,  23,  24,  25,  26,  27,  28,  29,  \
+		30,  31,  32,  33,  34,  35,  36,  37,  \
+		38,  39,  40,  41,  42,  44,  46,  48,  \
+		50,  52,  53,  56,  58,  60,  62,  65,  \
+		68,  70,  72,  76,  78,  80,  84,  86,  \
+		91,  94,  98, 101, 105, 109, 114, 118, \
+		122, 127, 132, 137, 142, 148, 153, 159},
+                
+#define TI_5110_5220_LPC \
+		/* K1  */\
+		{ -501, -498, -497, -495, -493, -491, -488, -482,\
+		  -478, -474, -469, -464, -459, -452, -445, -437,\
+		  -412, -380, -339, -288, -227, -158,  -81,   -1,\
+			80,  157,  226,  287,  337,  379,  411,  436 },\
+		/* K2  */\
+		{ -328, -303, -274, -244, -211, -175, -138,  -99,\
+		   -59,  -18,   24,   64,  105,  143,  180,  215,\
+		   248,  278,  306,  331,  354,  374,  392,  408,\
+		   422,  435,  445,  455,  463,  470,  476,  506 },\
+		/* K3  */\
+		{ -441, -387, -333, -279, -225, -171, -117,  -63,\
+			-9,   45,   98,  152,  206,  260,  314,  368  },\
+		/* K4  */\
+		{ -328, -273, -217, -161, -106,  -50,    5,   61,\
+		   116,  172,  228,  283,  339,  394,  450,  506  },\
+		/* K5  */\
+		{ -328, -282, -235, -189, -142,  -96,  -50,   -3,\
+			43,   90,  136,  182,  229,  275,  322,  368  },\
+		/* K6  */\
+		{ -256, -212, -168, -123,  -79,  -35,   10,   54,\
+			98,  143,  187,  232,  276,  320,  365,  409  },\
+		/* K7  */\
+		{ -308, -260, -212, -164, -117,  -69,  -21,   27,\
+			75,  122,  170,  218,  266,  314,  361,  409  },\
+		/* K8  */\
+		{ -256, -161,  -66,   29,  124,  219,  314,  409  },\
+		/* K9  */\
+		{ -256, -176,  -96,  -15,   65,  146,  226,  307  },\
+		/* K10 */\
+		{ -205, -132,  -59,   14,   87,  160,  234,  307  },
+                
+#define TI_LATER_CHIRP \
+	/* Chirp table */\
+	{   0x00, 0x03, 0x0f, 0x28, 0x4c, 0x6c, 0x71, 0x50,\
+		0x25, 0x26, 0x4c, 0x44, 0x1a, 0x32, 0x3b, 0x13,\
+		0x37, 0x1a, 0x25, 0x1f, 0x1d, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00 },
+                
+/* TMS5220/5220C:
+(1983 era for 5220, 1986-1992 era for 5220C; 5220C may also be called TSP5220C)
+The TMS5220NL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap.
+The chirp table is verified to match the decap. (sum = 0x3da)
+Note that all the LPC K* values match the TMS5110a table (as read via PROMOUT)
+exactly.
+The TMS5220CNL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap and exactly matches TMS5220NL.
+The chirp table is verified to match the decap. (sum = 0x3da)
+*/
+static const struct tms5100_coeffs tms5220_coeff =
+{
+	/* subtype */
+	SUBTYPE_TMS5220,
+	10,
+	4,
+	6,
+	{ 5, 5, 4, 4, 4, 4, 4, 3, 3, 3 },
+	TI_0285_LATER_ENERGY
+	TI_5220_PITCH
+	{
+	TI_5110_5220_LPC
+	},
+	TI_LATER_CHIRP
+	/* interpolation coefficients */
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
+};        
+#endif
 
 /* The following TMS5220C coefficients come from the tables in QBOXPRO, a program written at least in part by George "Larry" Brantingham of Quadravox, formerly of Texas Instruments, who had laid out the silicon for the TMS5100/TMC0280/CD2801. It is the same as the TMS5220 but has a change in the energy table (is this actually correct? or is this one correct for both 5220s? or is this the wrong table and the TMS5220 one correct for both?)
 Note: the energy table in QV5220.COD is also in RMS and was not used (it also may well be incorrect; the values in QV5220.COD have an offset by one index which looks wrong), instead the table from the 5200/5220 is used here.
@@ -574,4 +665,66 @@ static const struct tms5100_coeffs tms5220c_coeff =
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
 	{ 0, 3, 3, 3, 2, 2, 2, 1 }
+};
+
+#define TI_2501E_PITCH \
+	/* P */\
+	{   0,  14,  15,  16,  17,  18,  19,  20,  \
+		21,  22,  23,  24,  25,  26,  27,  28,  \
+		29,  30,  31,  32,  34,  36,  38,  40,  \
+		41,  43,  45,  48,  49,  51,  54,  55,  \
+		57,  60,  62,  64,  68,  72,  74,  76,  \
+		81,  85,  87,  90,  96,  99, 103, 107, \
+		112, 117, 122, 127, 133, 139, 145, 151, \
+		157, 164, 171, 178, 186, 194, 202, 211},                        
+
+#define TI_2801_2501E_LPC \
+		/* K1  */\
+		{ -501, -498, -495, -490, -485, -478, -469, -459,\
+		  -446, -431, -412, -389, -362, -331, -295, -253,\
+		  -207, -156, -102,  -45,   13,   70,  126,  179,\
+		   228,  272,  311,  345,  374,  399,  420,  437 },\
+		/* K2  */\
+		{ -376, -357, -335, -312, -286, -258, -227, -195,\
+		  -161, -124,  -87,  -49,  -10,   29,   68,  106,\
+		   143,  178,  212,  243,  272,  299,  324,  346,\
+		   366,  384,  400,  414,  427,  438,  448,  506 },\
+		/* K3  */\
+		{ -407, -381, -349, -311, -268, -218, -162, -102,\
+		   -39,   25,   89,  149,  206,  257,  302,  341 },\
+		/* K4  */\
+		{ -290, -252, -209, -163, -114,  -62,   -9,   44,\
+			97,  147,  194,  238,  278,  313,  344,  371 },\
+		/* K5  */\
+		{ -318, -283, -245, -202, -156, -107,  -56,   -3,\
+			49,  101,  150,  196,  239,  278,  313,  344 },\
+		/* K6  */\
+		{ -193, -152, -109,  -65,  -20,   26,   71,  115,\
+		   158,  198,  235,  270,  301,  330,  355,  377 },\
+		/* K7  */\
+		{ -254, -218, -180, -140,  -97,  -53,   -8,   36,\
+			81,  124,  165,  204,  240,  274,  304,  332 },\
+		/* K8  */\
+		{ -205, -112,  -10,   92,  187,  269,  336,  387 },\
+		/* K9  */\
+		{ -249, -183, -110,  -32,   48,  126,  198,  261 }, /* on patents 4,403,965 and 4,946,391 the 4th entry is 0x3ED (-19) which is a typo of the correct value of 0x3E0 (-32)*/\
+		/* K10 */\
+		{ -190, -133,  -73,  -10,   53,  115,  173,  227 },
+                
+static const struct tms5100_coeffs T0285_2501E_coeff =
+{
+	/* subtype */
+	SUBTYPE_2501E,
+	10,
+	4,
+	6,
+	{ 5, 5, 4, 4, 4, 4, 4, 3, 3, 3 },
+	TI_0285_LATER_ENERGY
+	TI_2501E_PITCH
+	{
+	TI_2801_2501E_LPC
+	},
+	TI_LATER_CHIRP
+	/* interpolation coefficients */
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };

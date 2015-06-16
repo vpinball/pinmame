@@ -500,7 +500,7 @@ void tms5220_reset_chip(void *chip)
   tms->old_frame_energy_idx = tms->old_frame_pitch_idx = 0;
   memset(tms->old_frame_k_idx, 0, sizeof(tms->old_frame_k_idx));
 #endif
-  tms->new_frame_energy_idx = tms->current_energy = tms->target_energy = 0;
+  tms->new_frame_energy_idx = tms->current_energy = tms->target_energy = tms->previous_energy = 0;
   tms->new_frame_pitch_idx = tms->current_pitch = tms->target_pitch = 0;
   memset(tms->new_frame_k_idx, 0, sizeof(tms->new_frame_k_idx));
   memset(tms->current_k, 0, sizeof(tms->current_k));
@@ -515,6 +515,7 @@ void tms5220_reset_chip(void *chip)
     tms->RNG = 0x1FFF;
   memset(tms->u, 0, sizeof(tms->u));
   memset(tms->x, 0, sizeof(tms->x));
+  tms->schedule_dummy_read = 0;
 
   if (tms->load_address_callback)
     (*tms->load_address_callback)(0);
@@ -624,13 +625,11 @@ static void tms5220_set_variant_chip(void *chip, int variant)
   struct tms5220 *tms = chip;
   switch (variant)
   {
-    case TMS5220_IS_5220C:
-      tms->coeff = &tms5220c_coeff;
-      break;
     case TMS5220_IS_5200:
-      tms->coeff = &tms5200_coeff;
+      tms->coeff = &T0285_2501E_coeff;
       //tms->coeff = &pat4335277_coeff;
       break;
+    case TMS5220_IS_5220C:
     case TMS5220_IS_5220:
       tms->coeff = &tms5220_coeff;
       break;
@@ -1103,16 +1102,16 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
        * (address 51d holds zeroes, which may or may not be inverted to -1)
        */
       if (tms->pitch_count >= 51) {
-        tms->excitation_data = tms->coeff->chirptable[51];
+        tms->excitation_data = (INT8)tms->coeff->chirptable[51];
       } else { /* tms->pitch_count < 51 */
-        tms->excitation_data = tms->coeff->chirptable[tms->pitch_count];
+        tms->excitation_data = (INT8)tms->coeff->chirptable[tms->pitch_count];
       }
 #ifdef VOICED_INV_HACK
       // invert waveform
       if (tms->pitch_count >= 51) {
-        tms->excitation_data = ~tms->coeff->chirptable[51];
+        tms->excitation_data = ~((INT8)tms->coeff->chirptable[51]);
       } else { /* tms->pitch_count < 51 */
-        tms->excitation_data = ~tms->coeff->chirptable[tms->pitch_count];
+        tms->excitation_data = ~((INT8)tms->coeff->chirptable[tms->pitch_count]);
       }
 #endif
 #ifdef VOICED_ZERO_HACK
@@ -1120,7 +1119,7 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
       if ((tms->pitch_count == 0) || (tms->pitch_count >= 51)) {
         tms->excitation_data = -128;
       } else { /* tms->pitch_count < 51 && > 0 */
-        tms->excitation_data = tms->coeff->chirptable[tms->pitch_count];
+        tms->excitation_data = (INT8)tms->coeff->chirptable[tms->pitch_count];
       }
 #endif
 #ifdef VOICED_PULSE_HACK
