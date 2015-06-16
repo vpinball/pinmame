@@ -114,7 +114,7 @@ static WRITE_HANDLER(play2s_man_w) {
 static void play3s_init(struct sndbrdData *brdData) {
   play2s_init(brdData);
   tms5220_reset();
-  tms5220_set_variant(TMS5220_IS_5200);
+  tms5220_set_variant(TMS5220_IS_5220);
   cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
   sndlocals.ef[3] = sndlocals.ef[4] = 1;
 }
