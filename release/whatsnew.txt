@@ -22,6 +22,7 @@ Made some Inder games sound a lot nicer then before and adjusted music / speech 
 Tweak CPU clock for Mystery Castle to make it look more correct
 Fixed single zero digit on Odin & Odin Deluxe
 Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
+Improve Speech on Nuova Bell and Jeutel games
 Fix some/most of the general sound stutter issues by improving the throttle code
 Updated to zlib 1.2.8
 
