@@ -25,7 +25,7 @@
   Squalk N Talk -61
   -------------
   M6809 CPU
-  TMS5220 Speach Generator
+  TMS5200 Speech Generator
   AY8910 Sound Generator
   DAC
 
