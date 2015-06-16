@@ -67,7 +67,6 @@ static void SN76496Write(int chip,int data)
 {
 	struct SN76496 *R = &sn[chip];
 
-
 	/* update the output buffer before changing the registers */
 	stream_update(R->Channel,0);
 
@@ -83,8 +82,10 @@ static void SN76496Write(int chip,int data)
 			case 0:	/* tone 0 : frequency */
 			case 2:	/* tone 1 : frequency */
 			case 4:	/* tone 2 : frequency */
-				R->Period[c] = R->UpdateStep * R->Register[r];
-				if (R->Period[c] == 0) R->Period[c] = R->UpdateStep;
+                if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
+                if ((R->Register[r] != 0) /*|| (!m_freq0_is_max)*/) R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_freq0_is_max always true/false?
+                    else R->Period[c] = R->UpdateStep * 0x400;
+
 				if (r == 4)
 				{
 					/* update noise shift frequency */
@@ -97,10 +98,14 @@ static void SN76496Write(int chip,int data)
 			case 5:	/* tone 2 : volume */
 			case 7:	/* noise  : volume */
 				R->Volume[c] = R->VolTable[data & 0x0f];
+                if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x3f0) | (data & 0x0f);
 				break;
 			case 6:	/* noise  : frequency, mode */
 				{
-					int n = R->Register[6];
+					//if ((data & 0x80) == 0) logerror("sn76496_base_device: write to reg 6 with bit 7 clear; data was %03x, new write is %02x! report this to LN!\n", R->Register[6], data);
+                    if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x3f0) | (data & 0x0f);
+                                        
+                    int n = R->Register[6];
 					R->NoiseFB = (n & 4) ? FB_WNOISE : FB_PNOISE;
 					n &= 3;
 					/* N/512,N/1024,N/2048,Tone #3 output */
@@ -123,9 +128,10 @@ static void SN76496Write(int chip,int data)
 			case 0:	/* tone 0 : frequency */
 			case 2:	/* tone 1 : frequency */
 			case 4:	/* tone 2 : frequency */
-				R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
-				R->Period[c] = R->UpdateStep * R->Register[r];
-				if (R->Period[c] == 0) R->Period[c] = R->UpdateStep;
+				if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
+                if ((R->Register[r] != 0) /*|| (!m_freq0_is_max)*/) R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_freq0_is_max always true/false?
+                    else R->Period[c] = R->UpdateStep * 0x400;
+
 				if (r == 4)
 				{
 					/* update noise shift frequency */
@@ -149,7 +155,6 @@ static void SN76496Update(int chip,INT16 *buffer,int length)
 {
 	int i;
 	struct SN76496 *R = &sn[chip];
-
 
 	/* If the volume is 0, increase the counter */
 	for (i = 0;i < 4;i++)
