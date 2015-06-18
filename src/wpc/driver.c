@@ -432,6 +432,7 @@ DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
 DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
 DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses (3.00)
 DRIVER(gnr,300f)        //Data East MPU: 07/94 Guns N Roses (3.00 French)
+DRIVER(gnr,300d)        //Data East MPU: 07/94 Guns N Roses (3.00 Dutch)
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 
@@ -1593,6 +1594,7 @@ DRIVER(trn,170)         //S.A.M: 11/11 Tron - V1.70
 DRIVER(trn,174)         //S.A.M: ??/1? Tron - V1.74
 DRIVER(trn,174h)        //S.A.M: ??/1? Tron Limited Edition - V1.74
 DRIVER(trn,17402)       //S.A.M: ??/14 Tron - V1.7402 (New CPU)
+DRIVER(trn,1741h)       //S.A.M: ??/1? Tron Limited Edition - V1.741 (hacked 1.74 music)
 DRIVER(tf,088h)         //S.A.M: ??/11 Transformers - V0.88 Limited Edition
 DRIVER(tf,100h)         //S.A.M: ??/11 Transformers - V1.00 Limited Edition
 DRIVER(tf,120)          //S.A.M: 10/11 Transformers - V1.20
@@ -1624,6 +1626,7 @@ DRIVER(acd,165)
 DRIVER(acd,165h)
 DRIVER(acd,168)
 DRIVER(acd,168h)
+DRIVER(xmn,100)         //S.A.M: ??/12 X-Men
 DRIVER(xmn,102)         //S.A.M: ??/12 X-Men
 DRIVER(xmn,104)
 DRIVER(xmn,105)
@@ -1671,6 +1674,12 @@ DRIVER(st,141h)
 DRIVER(st,142h)
 DRIVER(st,150)
 DRIVER(st,150h)
+DRIVER(st,160)
+DRIVER(st,160h)
+DRIVER(st,161)
+DRIVER(st,161h)
+DRIVER(st,162)          // (hacked 1.61 music)
+DRIVER(st,163)          // (hacked 1.61 music)
 DRIVER(mt,120)          //S.A.M: ??/14 Mustang
 DRIVER(mt,130)
 DRIVER(mt,130h)
@@ -1681,6 +1690,11 @@ DRIVER(twd,111)         //S.A.M: 10/14 The Walking Dead - V1.11
 DRIVER(twd,111h)        //S.A.M: 10/14 The Walking Dead - V1.11 Limited Edition
 DRIVER(twd,119)         //S.A.M: 11/14 The Walking Dead - V1.19
 DRIVER(twd,119h)        //S.A.M: 11/14 The Walking Dead - V1.19 Limited Edition
+DRIVER(twd,1191)        //S.A.M: 11/14 The Walking Dead - V1.191 (hacked 1.91 music)
+DRIVER(twd,124)         //S.A.M: 05/15 The Walking Dead - V1.24
+DRIVER(twd,124h)        //S.A.M: 05/15 The Walking Dead - V1.24 Limited Edition
+DRIVER(twd,125)         //S.A.M: 05/15 The Walking Dead - V1.25
+DRIVER(twd,125h)        //S.A.M: 05/15 The Walking Dead - V1.25 Limited Edition
 #endif
 
 // ---------------
