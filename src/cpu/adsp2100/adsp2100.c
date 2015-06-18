@@ -1446,6 +1446,15 @@ resume_from_speedup:
 	adsp2100_icount -= adsp2100.interrupt_cycles;
 	adsp2100.interrupt_cycles = 0;
 
+	// The speedups execute lots of simulated cycles without interruption.  If we overshot,
+	// only claim the number of cycles that we were asked to run.  Reporting an excess can
+	// confuse the interrupt timing.  (adsp2100_icount is our budget of cycles remaining,
+	// so a negative number means we consumed more than we were asked to.)
+	if (adsp2100_icount < 0)
+		adsp2100_icount = 0;
+
+	// Return the number of cycles we executed, which we can figure as the original budget
+	// we were given minus the number of cycles still remaining in our working budget.
 	return cycles - adsp2100_icount;
 }
 
