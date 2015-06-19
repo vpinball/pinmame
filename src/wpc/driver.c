@@ -2119,6 +2119,7 @@ DRIVER(ft,p5)           //                  Fish Tales (P-5) LED Ghost Fix
 DRIVER(ft,l3)           //          09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //          09/92 W Fish Tales (L-4)
 DRIVER(ft,l5)           //          12/92 W Fish Tales (L-5)
+DRIVER(ft,l5p)          //          12/92 W Fish Tales (L-5) with text size patch bugfix
 DRIVER(ft,d5)           //                  Fish Tales (D-5) LED Ghost Fix
 DRIVER(dw,p5)           //WPC-206:  10/92 B Doctor Who (P-5)
 DRIVER(dw,p6)           //                  Doctor Who (P-6) LED Ghost Fix
@@ -2310,7 +2311,7 @@ DRIVER(ts,dx5)          //                  The Shadow (DX-5) LED Ghost Fix
 DRIVER(ts,la6)          //          05/95 B The Shadow (LA-6)
 DRIVER(ts,da6)          //                  The Shadow (DA-6) LED Ghost Fix
 DRIVER(ts,lh6)          //          05/95 B The Shadow (LH-6, Home version)
-DRIVER(ts,lh6p)         //          05/95 B The Shadow (LH-6, Home version, wrong text index bugfix patch)
+DRIVER(ts,lh6p)         //          05/95 B The Shadow (LH-6, Home version) wrong text index bugfix patch
 DRIVER(ts,dh6)          //                  The Shadow (DH-6, Home version) LED Ghost Fix
 DRIVER(ts,lf6)          //          05/95 B The Shadow (LF-6) French
 DRIVER(ts,df6)          //                  The Shadow (DF-6) French LED Ghost Fix
