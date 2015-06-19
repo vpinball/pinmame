@@ -973,7 +973,7 @@ static WRITE_HANDLER(dcs_ctrl_w) {
 #endif /* WPCDCSSPEEDUP */
     // Reset is triggered on write so just pulse the line
     cpunum_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
-	adsp_boot(0);
+    adsp_boot(0);
   }
 }
 
@@ -2083,12 +2083,11 @@ UINT32 dcs_speedup_1993(UINT32 pc)
 	}
 
 	/* 0100     MSTAT = $0000 - MAC result placement = fractional */
-	// This sets the multiplication mode to fractional: all MAC results are
+	// This sets the multiplication mode to "fractional":  MAC results are
 	// shifted left by one.  We take this into account in our C translation
-	// for our own calculations below, but we still have to set the register
-	// because the setting affects calculations in the emulated code that
-	// immediately follows the end of the speedup code.
-	// activecpu_set_reg(ADSP2100_MSTAT, 0x0000);
+	// for our own calculations below, but also set the emulator register,
+	// since it affects calculations in the emulated code after we return.
+	activecpu_set_reg(ADSP2100_MSTAT, 0x0000);
 
     {
         int mem621, mem622, mem623;
@@ -2301,7 +2300,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
             i4 += 2;
         }
 	}
-	activecpu_set_reg(ADSP2100_PC, pc + (0x13a - 0x00e8));
+    activecpu_set_reg(ADSP2100_PC, pc + (0x13a - 0x00e8));
     return 0;                                              /* execute a NOP */
 }
 #endif /* WPCDCSSPEEDUP */
