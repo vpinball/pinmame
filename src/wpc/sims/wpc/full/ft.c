@@ -449,6 +449,11 @@ static void ft_drawStatic(BMTYPE **line) {
 WPC_ROMSTART(ft,l5,"fshtl_5.rom",0x80000,CRC(88847775) SHA1(ab323980b914678e1e3c9e2e4d92956e97dc32fa))
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
+
+WPC_ROMSTART(ft,l5p,"fshtd_5p.rom",0x80000,CRC(177d2b0b) SHA1(d5a1397c4e8c5acb8656a80ee6b22116c504f8c8))
+WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
+WPC_ROMEND
+
 WPC_ROMSTART(ft,d5,"fshtd_5.rom",0x80000,CRC(67f5def4) SHA1(7ce676bc305e8d2adf43f00e98aa9ea32b85922f))
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
@@ -472,6 +477,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ft,l5,"Fish Tales (L-5)",1992, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ft,l5p,l5,"Fish Tales (L-5) Wrong text size patch",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,d5,l5,"Fish Tales (D-5) LED Ghost Fix",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,l3,l5,"Fish Tales (L-3)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,l4,l5,"Fish Tales (L-4)",1992, "Williams",wpc_mFliptronS,0)

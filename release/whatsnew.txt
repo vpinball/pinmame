@@ -63,6 +63,7 @@ Cue Ball Wizard rev.2 & rev.3
 Cyclone L-1
 Diner LU-2
 Fire L-2
+Fish Tales L-5 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) 
 Flash L-2 (yellow flipper ROMs)
 Funhouse L-2
 Godzilla 0.90 & 1.00
@@ -107,7 +108,7 @@ Strikes n' Spares rev.2
 Swords of Fury L-1
 Taxi P-5
 Theatre of Magic 1.3 (French)
-The Shadow LH6 with wrong text index patch (0x520AA changed from 0x69 to 0x68)
+The Shadow LH-6 with wrong text index patch (0x520AA changed from 0x69 to 0x68)
 Thunderball P-1 & P-2 & P-3
 Time Machine 1.8 German
 Tommy 1.02
