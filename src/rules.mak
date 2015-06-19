@@ -1610,7 +1610,7 @@ OBJDIRS += $(OBJ)/cpu/arm7
 CPUDEFS += -DHAS_ARM7=1
 CPUOBJS += $(OBJ)/cpu/arm7/arm7.o
 DBGOBJS += $(OBJ)/cpu/arm7/arm7dasm.o
-$(OBJ)/cpu/arm7/arm7.o: src/cpu/arm7/arm7.c src/cpu/arm7/arm7.h src/cpu/arm7/arm7core.c src/cpu/arm7/arm7core.h
+$(OBJ)/cpu/arm7/arm7.o: src/cpu/arm7/arm7.c src/cpu/arm7/arm7.h src/cpu/arm7/arm7core.c src/cpu/arm7/arm7core.h src/cpu/arm7/arm7jit.c src/cpu/arm7/arm7jit.h
 else
 CPUDEFS += -DHAS_ARM7=0
 endif

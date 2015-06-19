@@ -536,6 +536,22 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\jit.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\jit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\jitemit.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\jitemit.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\legacy.h"
 					>
 				</File>
@@ -1752,6 +1768,46 @@
 									Name="VCCLCompilerTool"
 								/>
 							</FileConfiguration>
+						</File>
+						<File
+							RelativePath=".\src\cpu\arm7\arm7jit.c"
+							>
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath=".\src\cpu\arm7\arm7jit.h"
+							>
 						</File>
 					</Filter>
 					<Filter

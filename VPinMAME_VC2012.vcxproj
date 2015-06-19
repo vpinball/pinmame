@@ -482,6 +482,12 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7jit.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\cpu\cdp1802\1802dasm.c" />
     <ClCompile Include="src\cpu\cdp1802\cdp1802.c" />
     <ClCompile Include="src\cpu\cop400\410ops.c" />
@@ -627,6 +633,26 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ClCompile Include="src\windows\input.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ClCompile Include="src\windows\jit.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
+      <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ClCompile Include="src\windows\arm7jit.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
@@ -1013,6 +1039,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\cpu\at91\at91.h" />
     <ClInclude Include="src\cpu\arm7\arm7.h" />
     <ClInclude Include="src\cpu\arm7\arm7core.h" />
+    <ClInclude Include="src\cpu\arm7\arm7jit.h" />
     <ClInclude Include="src\cpu\cdp1802\cdp1802.h" />
     <ClInclude Include="src\cpu\cop400\cop400.h" />
     <ClInclude Include="src\cpu\tms9900\9900stat.h" />
@@ -1068,6 +1095,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\windows\blit.h" />
     <ClInclude Include="src\windows\d3d_extra.h" />
     <ClInclude Include="src\windows\dirty.h" />
+    <ClInclude Include="src\windows\jit.h" />
+    <ClInclude Include="src\windows\jitemit.h" />
     <ClInclude Include="src\windows\misc.h" />
     <ClInclude Include="src\windows\msc.h" />
     <ClInclude Include="src\windows\osd_cpu.h" />

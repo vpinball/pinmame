@@ -108,7 +108,7 @@ INLINE void arm7_cpu_write16( int addr, data16_t data );
 INLINE void arm7_cpu_write8( int addr, data8_t data );
 INLINE data32_t arm7_cpu_read32( int addr );
 INLINE data16_t arm7_cpu_read16( int addr );
-INLINE data8_t arm7_cpu_read8( offs_t addr );
+INLINE data8_t arm7_cpu_read8( int addr );
 
 /***************************************************************************
  * Default Memory Handlers 
@@ -177,7 +177,7 @@ INLINE data16_t arm7_cpu_read16( int addr )
 	return cpu_readmem32ledw_word(addr);
 }
 
-INLINE data8_t arm7_cpu_read8( offs_t addr )
+INLINE data8_t arm7_cpu_read8( int addr )
 {
 	//Handle through normal 8 bit handler ( for 32 bit cpu )
 	return cpu_readmem32ledw(addr);
@@ -236,17 +236,59 @@ static const char* GetModeText( int cpsr )
 	return modetext[cpsr & MODE_FLAG];
 }
 
-#define GetRegister(rIndex) ARMREG(sRegisterTable[GET_MODE][rIndex])
-#define SetRegister(rIndex,value) ARMREG(sRegisterTable[GET_MODE][rIndex]) = value
+// Old register access macros: these accessed registers in the bank for the current
+// mode.  For clarity, we've removed these so that all access is explicitly to the
+// active set, a saved bank, or a mode-specific set.
+//#define GetRegister(rIndex) ARMREG(sRegisterTable[GET_MODE][rIndex])
+//#define SetRegister(rIndex,value) ARMREG(sRegisterTable[GET_MODE][rIndex]) = value
 
-#define GetModeRegister(mode, rIndex)        ARMREG(sRegisterTable[mode][rIndex])
-#define SetModeRegister(mode, rIndex, value) ARMREG(sRegisterTable[mode][rIndex]) = value
+// Active register access: read/write a register in the active bank.  These registers
+// are always in the same memory locations, shared among all modes.  When we switch
+// modes, we copy the active registers to the outgoing mode's banked registers, and
+// copy the incoming mode's banked registers to the active registers.
+#define GetActiveRegister(rIndex) ARMREG(rIndex)
+#define SetActiveRegister(rIndex,value) (ARMREG(rIndex) = value)
 
-//I could prob. convert to macro, but Switchmode shouldn't occur that often in emulated code..
+// Saved mode register access: read/write a register in the saved bank for the given
+// mode.  These access the saved copies of registers for the various modes.
+// Important!  These read/write the saved bank for the mode even if the mode is
+// currently active.  Use Get/SetModeRegister to access the current or saved bank
+// according to the active mode.
+#define GetSavedRegister(mode, rIndex)  ARMREG(sRegisterTable[mode][rIndex])
+#define SetSavedRegister(mode, rIndex, value) (ARMREG(sRegisterTable[mode][rIndex]) = value)
+
+// Mode register access: read/write a register in the bank for the given mode.  If the
+// given mode is the current mode, these read/write the active registers.  Otherwise,
+// these read/write the saved bank for the given mode.
+#define GetModeRegister(mode, rIndex)  ((mode) == GET_MODE ? GetActiveRegister(rIndex) : GetSavedRegister(mode, rIndex))
+#define SetModeRegister(mode, rIndex, value)  ((mode) == GET_MODE ? SetActiveRegister(rIndex, value) : SetSavedRegister(mode, rIndex, value))
+
 INLINE void SwitchMode (int cpsr_mode_val)
 {
+	static old_mode = 0;
+	
+	// set the new mode
 	data32_t cspr = GET_CPSR & ~MODE_FLAG;
 	SET_CPSR(cspr | cpsr_mode_val);
+
+	// swap banked registers if changing modes
+	if (old_mode != cpsr_mode_val)
+	{
+		int i;
+		
+		// swap out the banked registers (R8-R14 and SPSR)
+		SetSavedRegister(old_mode, SPSR, GetActiveRegister(SPSR));
+		for (i = 8 ; i <= 14 ; ++i)
+			SetSavedRegister(old_mode, i, GetActiveRegister(i));
+
+		// swap in the banked registers
+		SetActiveRegister(SPSR, GetSavedRegister(cpsr_mode_val, SPSR));
+		for (i = 8 ; i <= 14 ; ++i)
+			SetActiveRegister(i, GetSavedRegister(cpsr_mode_val, i));
+
+		// remember the new mode
+		old_mode = cpsr_mode_val;
+	}
 }
 
 
@@ -609,12 +651,37 @@ static void arm7_core_init(const char *cpuname)
 	state_save_register_UINT8(cpuname, cpu, "ABTP", &ARM7.pendingAbtP, 1);
 	state_save_register_UINT8(cpuname, cpu, "UND", &ARM7.pendingUnd, 1);
 	state_save_register_UINT8(cpuname, cpu, "SWI", &ARM7.pendingSwi, 1);
+
+	// create the JIT translator
+	ARM7.jit = jit_create(&ARM7_ICOUNT);
+	jit_set_mem_callbacks(
+		ARM7.jit,
+		PTR_READ8, PTR_READ16, PTR_READ32,
+		PTR_WRITE8, PTR_WRITE16, PTR_WRITE32);
+}
+
+//CPU EXIT
+static void arm7_core_exit(void)
+{
+	jit_delete(&ARM7.jit);
 }
 
 //CPU RESET
 static void arm7_core_reset(void *param)
 {
+	/* save the JIT object, so that we don't lose it when clearing the registers */
+	struct jit_ctl *jit = ARM7.jit;
+
+	/* reset the machine registers */
 	memset(&ARM7, 0, sizeof(ARM7));
+
+	/* 
+	 *   Reset the JIT and restore our context pointer to it.  We have to
+	 *   reset the JIT because resetting the ARM emulation restores the boot
+	 *   RAM, which invalidates any translated code. 
+	 */
+	jit_reset(jit);
+	ARM7.jit = jit;
 
 	/* start up in SVC mode with interrupts disabled. */
 	SwitchMode(eARM7_MODE_SVC);
@@ -928,8 +995,7 @@ static void HandleMemSingle( data32_t insn )
 		{
 		    rnv_old = GET_REGISTER(rn);
 			SET_REGISTER(rn,rnv);
-
-	//check writeback???
+			//check writeback???
 		}
 		else if (rn == eR15)
 		{
@@ -949,6 +1015,15 @@ static void HandleMemSingle( data32_t insn )
 		}
 	}
 
+	// TODO: Post-Index + Write-Back (P=0 + W=1) mode is special: it means that
+	// the memory access is non-privileged regardless of processor mode.  This
+	// tells the external memory manager hardware to use a user-mode address
+	// even if the processor is in a privileged mode.  This isn't currently
+	// implemented, and no physical hardware that MAME currently emulates uses
+	// this capability of the CPU.  This would only be needed to emulate a
+	// system that has a hardware memory manager that distinguishes user-mode
+	// and privileged memory accesses.
+
 	/* Do the transfer */
 	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
 	if (insn & INSN_SDT_L)
@@ -967,16 +1042,16 @@ static void HandleMemSingle( data32_t insn )
 			data32_t data = READ32(rnv);
 			if (ARM7.pendingAbtD == 0)
 			{
-			if (rd == eR15)
-			{
-				R15 = data - 4;
-				//LDR, PC takes 2S + 2N + 1I (5 total cycles)
-				ARM7_ICOUNT -= 2;
-			}
-			else
-			{
-				SET_REGISTER(rd,data);
-			}
+				if (rd == eR15)
+				{
+					R15 = data - 4;
+					//LDR, PC takes 2S + 2N + 1I (5 total cycles)
+					ARM7_ICOUNT -= 2;
+				}
+				else
+				{
+					SET_REGISTER(rd,data);
+				}
 			}
 		}
 	}
@@ -1006,18 +1081,28 @@ static void HandleMemSingle( data32_t insn )
 		ARM7_ICOUNT += 1;
 	}
 
-	/*if (ARM7.pendingAbtD == 0) // MAME has this enabled, but no boot-up on some SAMs due to this
+	// If ABORT is asserted, undo the index register write-back that we did earlier - the index
+	// write-back doesn't happen in the hardware version if the memory access triggers an ABORT.
+	// (The write-back we're undoing only happened if in pre-indexing mode (P flag set) and
+	// write-back mode (W flag set).
+	//
+	// If ABORT isn't asserted, and we're in post-indexing mode, write back the register.  Note
+	// that write-back occurs in post-indexing mode whether or not the W flag is set.  (W+P has
+	// the special meaning of "non-privileged address mode", which signals the external memory
+	// manager hardware that a user-mode address should be used when the processor is in a
+	// privileged mode.)
+	if (ARM7.pendingAbtD != 0)
 	{
+		// ABORT asserted - undo the pre-indexing write-back we did earlier, if we did it at all
 		if ((insn & INSN_SDT_P) && (insn & INSN_SDT_W))
 		{
 			SET_REGISTER(rn, rnv_old);
 		}
 	}
-	else
-	{*/
-	/* Do post-indexing writeback */
-	if (!(insn & INSN_SDT_P)/* && (insn&INSN_SDT_W)*/)
+	else if (!(insn & INSN_SDT_P))
 	{
+		// No ABORT, and post-indexing mode - write back the index register.  Note that write-back
+		// is implied by post-index mode whether or not the W flag is set.
 		if (insn & INSN_SDT_U)
 		{
 			/* Writeback is applied in pipeline, before value is read from mem,
@@ -1053,9 +1138,8 @@ static void HandleMemSingle( data32_t insn )
 			}
 		}
 	}
-	//}
 
-//	ARM7_CHECKIRQ
+	//	ARM7_CHECKIRQ
 
 } /* HandleMemSingle */
 
@@ -1116,6 +1200,17 @@ static void HandleHalfWordDT(data32_t insn)
 	/* Do the transfer */
 	rd = (insn & INSN_RD) >> INSN_RD_SHIFT;
 
+	// TODO: Determine if post-index + write-back (P=0 + W=1) mode triggers the
+	// same special user-mode memory access as in LDR/STR.  In LDR/STR, P=0 W=1
+	// tells the external hardware memory manager to use user-mode addressing
+	// even if the process is in privileged mode.  This isn't currently implemented
+	// for ANY instructions, as we don't have any notion of user vs privileged
+	// access modes for memory.  If we ever add such a feature, we *might* have
+	// to include it here.  It's not clear from the ARM7 docs if this function
+	// applies to the half-word instructions, but it seems possible because
+	// they have the same special rule as LDR/STR that P=0 implies write-back
+	// mode even if W=0.
+
 	/* Load */
 	if (insn & INSN_SDT_L)
 	{
@@ -1145,7 +1240,12 @@ static void HandleHalfWordDT(data32_t insn)
 			//PC?
 			if(rd == eR15)
 			{
-				R15 = newval + 8;
+				// MJR - this was newval+8, but I think that was a bug.  R15 is 8 bytes ahead
+				// when used as the source register in a STORE (actually +12 with a halfword
+				// store, so this was apprently doubly buggy), but this doesn't apply when it's
+				// the destination of a LOAD.
+				R15 = newval;
+				
 				//LDR(H,SH,SB) PC takes 2S + 2N + 1I (5 total cycles)
 				ARM7_ICOUNT -= 2;
 
@@ -1171,7 +1271,12 @@ static void HandleHalfWordDT(data32_t insn)
 			{
 			if (rd == eR15)
 			{
-				R15 = newval + 8;
+				// MJR - this was newval+8, but I think that was a bug.  R15 is 8 bytes ahead
+				// when used as the source register in a STORE (actually +12 with a halfword
+				// store, so this was apprently doubly buggy), but this doesn't apply when it's
+				// the destination of a LOAD.
+				R15 = newval;
+				
 				// extra cycles for LDR(H,SH,SB) PC (5 total cycles)
 				ARM7_ICOUNT -= 2;
 			}
@@ -1192,33 +1297,38 @@ static void HandleHalfWordDT(data32_t insn)
 	else
 	{
 		if ((insn & 0x60) == 0x40)  // LDRD
-	{
-		SET_REGISTER(rd, READ32(rnv));
-		SET_REGISTER(rd+1, READ32(rnv+4));
-				R15 += 4;
-	}
-		else if ((insn & 0x60) == 0x60) // STRD
-	{
-		WRITE32(rnv, GET_REGISTER(rd));
-		WRITE32(rnv+4, GET_REGISTER(rd+1));
-				R15 += 4;
-	}
-	/* Store */
-	else
-	{
-		//WRITE16(rnv, rd == eR15 ? R15 + 8 : GET_REGISTER(rd));
-		WRITE16(rnv, rd == eR15 ? R15 + 8 + 4 : GET_REGISTER(rd)); //manual says STR RD=PC, +12 of address
-
-// if R15 is not increased then e.g. "STRH R10, [R15,#$10]" will be executed over and over again
-#if 0
-		if(rn != eR15)
-#endif
+		{
+			SET_REGISTER(rd, READ32(rnv));
+			SET_REGISTER(rd+1, READ32(rnv+4));
 			R15 += 4;
-		//STRH takes 2 cycles, so we add + 1
-		ARM7_ICOUNT += 1;
-	}
+		}
+		else if ((insn & 0x60) == 0x60) // STRD
+		{
+			WRITE32(rnv, GET_REGISTER(rd));
+			WRITE32(rnv+4, GET_REGISTER(rd+1));
+			R15 += 4;
+		}
+		/* Store */
+		else
+		{
+			//WRITE16(rnv, rd == eR15 ? R15 + 8 : GET_REGISTER(rd));
+			WRITE16(rnv, rd == eR15 ? R15 + 8 + 4 : GET_REGISTER(rd)); //manual says STR RD=PC, +12 of address
+			
+			// if R15 is not increased then e.g. "STRH R10, [R15,#$10]" will be executed over and over again
+#if 0
+			if(rn != eR15)
+#endif
+				R15 += 4;
+			//STRH takes 2 cycles, so we add + 1
+			ARM7_ICOUNT += 1;
+		}
 	}
 
+	// If the ABORT flag is set, UNDO any previous write-back we did to the index register.
+	//
+	// If the ABORT flag isn't set, and we're in post-indexing mode, do the write-back to
+	// the index register.  NB: Write-back is implied by post-indexing mode, regardless
+	// of the W bit setting.
 	if (ARM7.pendingAbtD != 0)
 	{
 		if ((insn & INSN_SDT_P) && (insn & INSN_SDT_W))
@@ -1226,13 +1336,10 @@ static void HandleHalfWordDT(data32_t insn)
 			SET_REGISTER(rn, rnv_old);
 		}
 	}
-	else
+	else if (!(insn & INSN_SDT_P))
 	{
-	//SJE: No idea if this writeback code works or makes sense here..
-
-	/* Do post-indexing writeback */
-	if (!(insn & INSN_SDT_P)/* && (insn&INSN_SDT_W)*/)
-	{
+		// Post-indexing mode and no ABORT - write back the updated index register.
+		// This always happens in post-index mode regardless of the W flag.
 		if (insn & INSN_SDT_U)
 		{
 			/* Writeback is applied in pipeline, before value is read from mem,
@@ -1267,8 +1374,6 @@ static void HandleHalfWordDT(data32_t insn)
 			#endif
 			}
 		}
-	}
-	
 	}
 }
 
@@ -1312,110 +1417,120 @@ static void HandleSwap(data32_t insn)
 	ARM7_ICOUNT -=1;
 }
 
-static void HandlePSRTransfer( data32_t insn )
+// MSR: store val in CPSR or SPSR, masking bits according to privileges for current CPU mode.
+// 'fields' is the bit mask from bits 16-19 of the instruction, specifying which bits of
+// the register to set.  It's okay to just pass the whole instruction dword for this.
+static void HandleMSR(int spsr, data32_t val, data32_t fields)
 {
-	int reg = (insn & 0x400000)?SPSR:eCPSR;	//Either CPSR or SPSR
-	data32_t newval, val = 0;
 	int oldmode = GET_CPSR & MODE_FLAG;
+	int reg = (spsr && oldmode != eARM7_MODE_USER) ? SPSR : eCPSR;        //Either CPSR or SPSR
+	data32_t newval;
 
-	// get old value of CPSR/SPSR
+	// get current value of CPSR/SPSR - we'll use this as the basis for
+	// any bits not affected by the MSR
 	newval = GET_REGISTER(reg);
 	
-	//MSR ( bit 21 set ) - Copy value to CPSR/SPSR
-	if( (insn & 0x00200000) ) {
-
-		/*//MSR (register transfer)?
-		if(insn & 0x10000)
+	// apply field code bits
+	if (reg == eCPSR)
+	{
+		if (oldmode != eARM7_MODE_USER)
 		{
-			val = GET_REGISTER(insn & 0x0f);
-
-			//If in non-privelge mode -> only condition codes (top 4 bits) can be changed!
-			if( (GET_MODE==eARM7_MODE_USER))
-				val = (val & 0xF0000000);
+			if (fields & 0x00010000)
+			{
+				newval = (newval & 0xffffff00) | (val & 0x000000ff);
+			}
+			if (fields & 0x00020000)
+			{
+				newval = (newval & 0xffff00ff) | (val & 0x0000ff00);
+			}
+			if (fields & 0x00040000)
+			{
+				newval = (newval & 0xff00ffff) | (val & 0x00ff0000);
+			}
 		}
-		//MSR (register or immediate transfer - flag bits only)
-		else
-		{*/
-			//Immediate Value?
-			if(insn & INSN_I) {
-				//Value can be specified for a Right Rotate, 2x the value specified.
-				int by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
-				if (by)
-					val = ROR(insn & INSN_OP2_IMM, by << 1);
-				else
-					val = insn & INSN_OP2_IMM;
-			}
-			//Value from Register
-			else {
-				val = GET_REGISTER(insn & 0x0f);
-			}
-			
-			// apply field code bits
-			if (reg == eCPSR)
+		// status flags can be modified regardless of mode
+		if (fields & 0x00080000)
+		{
+			// TODO for non ARMv5E mask should be 0xf0000000 (ie mask Q bit)
+			newval = (newval & 0x00ffffff) | (val & 0xf8000000);
+		}
+	}
+	else    // SPSR has stricter requirements
+	{
+		if (((GET_CPSR & 0x1f) > 0x10) && ((GET_CPSR & 0x1f) < 0x1f))
+		{
+			if (fields & 0x00010000)
 			{
-			if (oldmode != eARM7_MODE_USER)
-			{
-				if (insn & 0x00010000)
-				{
-					newval = (newval & 0xffffff00) | (val & 0x000000ff);
-				}
-				if (insn & 0x00020000)
-				{
-					newval = (newval & 0xffff00ff) | (val & 0x0000ff00);
-				}
-				if (insn & 0x00040000)
-				{
-					newval = (newval & 0xff00ffff) | (val & 0x00ff0000);
-				}
+				newval = (newval & 0xffffff00) | (val & 0xff);
 			}
-			// status flags can be modified regardless of mode
-			if (insn & 0x00080000)
+			if (fields & 0x00020000)
+			{
+				newval = (newval & 0xffff00ff) | (val & 0xff00);
+			}
+			if (fields & 0x00040000)
+			{
+				newval = (newval & 0xff00ffff) | (val & 0xff0000);
+			}
+			if (fields & 0x00080000)
 			{
 				// TODO for non ARMv5E mask should be 0xf0000000 (ie mask Q bit)
 				newval = (newval & 0x00ffffff) | (val & 0xf8000000);
 			}
-			}
-			else    // SPSR has stricter requirements
-			{
-			if (((GET_CPSR & 0x1f) > 0x10) && ((GET_CPSR & 0x1f) < 0x1f))
-			{
-				if (insn & 0x00010000)
-				{
-					newval = (newval & 0xffffff00) | (val & 0xff);
-				}
-				if (insn & 0x00020000)
-				{
-					newval = (newval & 0xffff00ff) | (val & 0xff00);
-				}
-				if (insn & 0x00040000)
-				{
-					newval = (newval & 0xff00ffff) | (val & 0xff0000);
-				}
-				if (insn & 0x00080000)
-				{
-					// TODO for non ARMv5E mask should be 0xf0000000 (ie mask Q bit)
-					newval = (newval & 0x00ffffff) | (val & 0xf8000000);
-				}
-			}
-			}
-			
-#if 0
-			// force valid mode
-			newval |= 0x10;
-#endif
-			// Update the Register
-			if (reg == eCPSR)
-				SET_CPSR(newval);
-			else
-				SET_REGISTER(reg, newval);
+		}
+	}
 
-			// Switch to new mode if changed
-			if ((newval & MODE_FLAG) != oldmode)
-				SwitchMode(GET_MODE);
+#if 0
+	// force valid mode
+	newval |= 0x10;
+#endif
+	// Update the Register
+	if (reg == eCPSR)
+		SET_CPSR(newval);
+	else
+		SET_REGISTER(reg, newval);
+	
+	// Switch to new mode if changed
+	if ((newval & MODE_FLAG) != oldmode)
+		SwitchMode(GET_MODE);
+}
+
+// MRS: store current CPSR or SPSR value in register Rd
+static void HandleMRS(int rd, int spsr)
+{
+	int reg = (spsr && GET_MODE != eARM7_MODE_USER) ? SPSR : eCPSR;        //Either CPSR or SPSR
+	SET_REGISTER(rd, GET_REGISTER(reg));
+}
+
+static void HandlePSRTransfer( data32_t insn )
+{
+	int spsr = (insn & 0x400000);
+
+	//MSR ( bit 21 set ) - Copy value to CPSR/SPSR
+	if( (insn & 0x00200000) )
+	{
+		data32_t val = 0;
+
+		//Immediate Value?
+		if(insn & INSN_I) {
+			//Value can be specified for a Right Rotate, 2x the value specified.
+			int by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
+			if (by)
+				val = ROR(insn & INSN_OP2_IMM, by << 1);
+			else
+				val = insn & INSN_OP2_IMM;
+		}
+		//Value from Register
+		else {
+			val = GET_REGISTER(insn & 0x0f);
+		}
+		
+		// apply the update
+		HandleMSR(spsr, val, insn);
 	}
 	//MRS ( bit 21 clear ) - Copy CPSR or SPSR to specified Register
-	else {
-		SET_REGISTER( (insn>>12)& 0x0f ,GET_REGISTER(reg));
+	else
+	{
+		HandleMRS((insn>>12)& 0x0f, spsr);
 	}
 }
 
@@ -1769,6 +1884,20 @@ static void HandleUMulLong( data32_t insn)
 	ARM7_ICOUNT += 3;
 }
 
+// LDMS Mode Change.  An LDM instruction with the S bit set and R15 in the
+// transfer list triggers a mode change by loading SPSR_<mode> into CPSR at
+// the same time that R15 is loaded.  This handles the operation.  Note
+// that we ignore this if in user mode.  This isn't allowed by privilege
+// rules, and it's non-sensical in that no SPSR exists in user mode.
+static void HandleLDMS_ModeChange()
+{
+	if (GET_MODE != eARM7_MODE_USER)
+	{
+		SET_CPSR(GET_REGISTER(SPSR));
+		SwitchMode(GET_MODE);
+	}
+}
+
 static void HandleMemBlock( data32_t insn)
 {
 	data32_t rb = (insn & INSN_RN) >> INSN_RN_SHIFT;
@@ -1830,11 +1959,10 @@ static void HandleMemBlock( data32_t insn)
 			//R15 included? (NOTE: CPSR restore must occur LAST otherwise wrong registers restored!)
 			if ((insn & 0x8000) && (ARM7.pendingAbtD == 0)) {
 				R15-=4;		//SJE: Remove 4, since we're adding +4 after this code executes
-				//S - Flag Set? Signals transfer of current mode SPSR->CPSR
-				if(insn & INSN_BDT_S) {
-					SET_CPSR(GET_REGISTER(SPSR));
-					SwitchMode(GET_MODE);
-				}
+				// S - Flag Set? Signals transfer of current mode SPSR->CPSR
+				if((insn & INSN_BDT_S) && GET_MODE != eARM7_MODE_USER)
+					HandleLDMS_ModeChange();
+
 				//LDM PC - takes 2 extra cycles
 				ARM7_ICOUNT -=2;
 			}			
@@ -1880,10 +2008,9 @@ static void HandleMemBlock( data32_t insn)
 			if ((insn & 0x8000) && (ARM7.pendingAbtD == 0)) {
 				R15-=4;		//SJE: Remove 4, since we're adding +4 after this code executes
 				//S - Flag Set? Signals transfer of current mode SPSR->CPSR
-				if(insn & INSN_BDT_S) {
-					SET_CPSR(GET_REGISTER(SPSR));
-					SwitchMode(GET_MODE);
-				}
+				if(insn & INSN_BDT_S)
+					HandleLDMS_ModeChange();
+
 				//LDM PC - takes 2 extra cycles
 				ARM7_ICOUNT -=2;
 			}
@@ -1973,5 +2100,3 @@ static void HandleMemBlock( data32_t insn)
 	ARM7_ICOUNT += 3;
 
 } /* HandleMemBlock */
-
-

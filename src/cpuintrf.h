@@ -469,7 +469,7 @@ enum
 
 struct cpu_interface
 {
-	/* index (used to make sure we mach the enum above */
+	/* index (used to make sure we match the enum above) */
 	unsigned	cpu_num;
 
 	/* table of core functions */

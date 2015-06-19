@@ -66,6 +66,10 @@ char *Spec_DO( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0);
 #define WRITE32(addr,data)	arm7_cpu_write32(addr,data)
 #define PTR_READ32			&arm7_cpu_read32
 #define PTR_WRITE32			&arm7_cpu_write32
+#define PTR_READ16          &arm7_cpu_read16
+#define PTR_WRITE16         &arm7_cpu_write16
+#define PTR_READ8           &arm7_cpu_read8
+#define PTR_WRITE8          &arm7_cpu_write8
 
 /* Macros that need to be defined according to the cpu implementation specific need */
 #define ARMREG(reg)			arm7.sArmRegister[reg]
@@ -246,6 +250,8 @@ void arm7_set_irq_callback(int (*callback)(int irqline))
 {
 }
 
+
+
 static const data8_t arm7_reg_layout[] =
 {
 	-1,
@@ -389,6 +395,11 @@ void arm7_init(void)
 
 	return;
 }
+
+//
+// Include the ARM7 JIT
+//
+#include "../arm7/arm7jit.c"
 
 
 //*TEST COPROC CALLBACK HANDLERS - Used for example on how to implement only *//

@@ -70,8 +70,6 @@ extern unsigned at91_get_pc(void);
 extern void at91_set_pc(unsigned val);
 extern unsigned at91_get_sp(void);
 extern void at91_set_sp(unsigned val);
-extern unsigned at91_get_reg(int regnum);
-extern void at91_set_reg(int regnum, unsigned val);
 extern void at91_interrupt( int type );
 extern void at91_set_nmi_line(int state);
 extern void at91_set_irq_line(int irqline, int state);
@@ -79,8 +77,16 @@ extern void at91_set_irq_callback(int (*callback)(int irqline));
 extern const char *at91_info(void *context, int regnum);
 extern unsigned at91_dasm(char *buffer, unsigned pc);
 
+// Get/set INTERNAL register.  The register number here is from the internal
+// register file, as listed in the enum in arm7core.h (eR0, eR8_FIQ, eR13_IRQ,
+// etc).  These are NOT the nominal Rn machine register numbers for the current
+// mode.
+extern unsigned at91_get_reg(int regnum); 
+extern void at91_set_reg(int regnum, unsigned val);
+
 //interfaces to the drivers using the chip
 extern void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_ptr);
+extern void at91_init_jit(int min_addr, int max_addr);
 extern void at91_cs_callback_r(offs_t start, offs_t end, READ32_HANDLER((*callback)));
 extern void at91_cs_callback_w(offs_t start, offs_t end, WRITE32_HANDLER((*callback)));
 extern void at91_ready_irq_callback_w(WRITE32_HANDLER((*callback)));
