@@ -325,9 +325,9 @@ void alt_sound_handle(int boardNo, int cmd)
 				(core_gameData->gen == GEN_WPC95DCS) ||
 				(core_gameData->gen == GEN_WPC95))
 			{
-				if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0xFF))
+				if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) /*&& (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0xFF)*/) // change volume (following first byte = volume, second = ~volume, if these don't match: ignore)
 					||
-					((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00)))
+					((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
 				{
 					cmd_counter = 0;
 					cmd_filter = 1;
