@@ -750,14 +750,28 @@ static void throttle_speed(void)
 			}
 		}
 	}
-	else
+	else if (curr - target >= (int)(cps/video_fps))
 	{
-		// We're behind schedule!  Something must have taken longer than
-		// it should have (e.g., a CPU emulator time slice must have gone
-		// on too long).  We don't have a time machine, so we can't go back
-		// and sync this frame to a time in the past.  But we can fix things 
-		// up for future frames, by refiguring the time projection base 
-		// time to conform to the new reality.
+		// We're behind schedule by a frame or more.  Something must
+		// have taken longer than it should have (e.g., a CPU emulator
+		// time slice must have gone on too long).  We don't have a
+		// time machine, so we can't go back and sync this frame to a
+		// time in the past, but we can at least sync up the current
+		// frame with the current real time.
+		//
+		// Note that the 12-frame "skip" cycle would eventually get
+		// things back in sync even without this adjustment, but it
+		// can cause audio glitching if we wait until then.  The skip
+		// cycle will try to make up for the lost time by giving shorter
+		// time slices to the next batch of 12 frames, but the way it
+		// does its calculation, the time taken out of those short
+		// frames will pile up in the *next next* skip cycle, causing
+		// a long (order of 100ms) pause that can manifset as an audio
+		// glitch and/or video hiccup.
+		//
+		// The adjustment here is simply the amount of real time by
+		// which we're behind schedule.  Add this to the base time,
+		// since the real time for this frame is later than we expected.
 		this_frame_base += curr - target;
 	}
 

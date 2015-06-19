@@ -192,6 +192,12 @@
     <ClCompile Include="src\input.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\jit.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\jitemit.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\mame.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
@@ -412,6 +418,9 @@
       <Filter>Source Files\MAME\CPU\ARM7</Filter>
     </ClCompile>
     <ClCompile Include="src\cpu\arm7\arm7exec.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7jit.c">
       <Filter>Source Files\MAME\CPU\ARM7</Filter>
     </ClCompile>
     <ClCompile Include="src\cpu\cdp1802\1802dasm.c">
@@ -1463,6 +1472,9 @@
     <ClInclude Include="src\cpu\arm7\arm7core.h">
       <Filter>Source Files\MAME\CPU\ARM7</Filter>
     </ClInclude>
+    <ClInclude Include="src\cpu\arm7\arm7jit.h">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClInclude>
     <ClInclude Include="src\cpu\cdp1802\cdp1802.h">
       <Filter>Source Files\MAME\CPU\CDP1802</Filter>
     </ClInclude>
@@ -1626,6 +1638,12 @@
       <Filter>Source Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\dirty.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jit.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jitemit.h">
       <Filter>Source Files\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\windows\misc.h">

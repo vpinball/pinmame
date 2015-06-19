@@ -85,7 +85,7 @@ INLINE void at91_cpu_write16( int addr, data16_t data );
 INLINE void at91_cpu_write8( int addr, data8_t data );
 INLINE data32_t at91_cpu_read32( int addr );
 INLINE data16_t at91_cpu_read16( int addr );
-INLINE data8_t at91_cpu_read8( offs_t addr );
+INLINE data8_t at91_cpu_read8( int addr );
 #if !USE_MAME_TIMERS
 INLINE BeforeOpCodeHook(void);
 INLINE AfterOpCodeHook(void);
@@ -103,6 +103,10 @@ static void timer_trigger_event(int timer_num);
 #define WRITE32(addr,data)	at91_cpu_write32(addr,data)
 #define PTR_READ32			&at91_cpu_read32
 #define PTR_WRITE32			&at91_cpu_write32
+#define PTR_READ16          &arm7_cpu_read16
+#define PTR_WRITE16         &arm7_cpu_write16
+#define PTR_READ8           &arm7_cpu_read8
+#define PTR_WRITE8          &arm7_cpu_write8
 
 /* Macros that need to be defined according to the cpu implementation specific need */
 #define ARMREG(reg)			at91.sArmRegister[reg]
@@ -210,6 +214,11 @@ void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_ptr)
 {
 	at91rs.page0_ram_ptr = page0_ram_ptr;
 	at91rs.reset_ram_ptr = reset_ram_ptr;
+}
+
+void at91_init_jit(int min_addr, int max_addr)
+{
+	jit_create_map(at91.jit, min_addr, max_addr);
 }
 
 //used for debugging
@@ -403,6 +412,9 @@ INLINE void internal_write (int addr, data32_t data)
 								memcpy(at91rs.page0_ram_ptr, at91rs.reset_ram_ptr, 0x100000);
 								at91.remap = 1;
 								LOG(("%08x: AT91-EBI_RCR = 1 (RAM @ 0x300000 remapped to 0x0)!\n",activecpu_get_pc()));
+
+								//the final program is now loaded - enable JIT translation
+								jit_enable(at91.jit);
 							}
 						else
 							LOG(("%08x: AT91-EBI_RCR = 0 (no effect)!\n",activecpu_get_pc()));
@@ -1177,7 +1189,7 @@ INLINE data16_t at91_cpu_read16( int addr )
 	return cpu_readmem32ledw_word(addr);
 }
 
-INLINE data8_t at91_cpu_read8( offs_t addr )
+INLINE data8_t at91_cpu_read8( int addr )
 {
 	//Atmel AT91 CPU On Chip Periperhals Mapped here
 	if(addr >= 0xFFC00000)
@@ -1223,6 +1235,9 @@ void at91_exit(void)
 		if(at91rs.timer[i])
 			timer_remove(at91rs.timer[i]);
 	}
+
+	//core cleanup
+	arm7_core_exit();
 }
 
 int at91_execute( int cycles )
@@ -1637,3 +1652,9 @@ INLINE AfterOpCodeHook(void)
 
 }
 #endif
+
+//
+// Include the ARM7 JIT
+//
+#include "../arm7/arm7jit.c"
+

@@ -58,8 +58,9 @@ extern unsigned at91_get_reg(int regnum);
 			MAME_Debug();
 #endif
 
-		/* load 32 bit instruction */
+		/* load 32 bit instruction, trying the JIT first */
 		pc = R15;
+		JIT_FETCH(ARM7.jit, pc);
 		insn = cpu_readop32(pc);
 
 		/* process condition codes for this instruction */
@@ -271,8 +272,81 @@ extern unsigned at91_get_reg(int regnum);
 		/* Hook for Post-Opcode Processing */
 		AFTER_OPCODE_EXEC_HOOK
 
+#if JIT_ENABLED
+	resume_from_jit: ;
+#endif
+
 	} while( ARM7_ICOUNT > 0 );
 
 	return cycles - ARM7_ICOUNT;
+
+
+// --------------------------------------------------------------------------
+//
+// Windows/Intel JIT 
+//
+#if JIT_ENABLED
+
+	// call native code translated by the JIT
+jit_go_native:
+	{
+		// get the native code pointer and cycle counter into stack variables
+		data32_t tmp1 = (data32_t)JIT_NATIVE(ARM7.jit, pc);
+		data32_t tmp2 = ARM7_ICOUNT;
+		
+		__asm {
+			// Allocate space for temporary variables we'll need on return from the
+			// native code (see 'IMPORTANT' note below).  1 stack DWORD == 4 bytes.
+			SUB ESP, 4;
+
+			// save registers that the generated code uses and that the C caller
+			// might expect to be preserved across function calls
+			PUSH EBX;
+			PUSH ECX;
+			PUSH EDX;
+			PUSH ESI;
+			PUSH EDI;
+			
+			// get the native code address, and move the cycle counter into EDI for
+			// use in the translated code
+			MOV  EAX, tmp1;
+			MOV  EDI, tmp2;
+
+			// IMPORTANT: don't access any C local variables (tmp1, tmp2, etc) from
+			// here until after the POPs below.  At least one VC optimization mode uses
+			// EBX as the frame pointer, and it's possible that other modes or other
+			// compilers use other registers.  C local access will be safe again
+			// after the POPs below, which will recover the pre-call register values.
+			// In the meantime, anything we need to store temporarily must be saved
+			// explicitly in stack slots allocated with the SUB ESP, n above, and
+			// addressed explicitly in terms of [ESP+n] addresses.  These are safe
+			// because we control the stack layout in this section of code.
+
+			// call the native code
+			CALL EAX;
+
+			// save the new cycle counter from EDI into a stack temp (before we restore
+			// the pre-call EDI)
+			MOV  [ESP+20], EDI;
+			
+			// restore saved registers
+			POP  EDI;
+			POP  ESI;
+			POP  EDX;
+			POP  ECX;
+			POP  EBX;
+
+			// recover the new PC and cycle count
+			MOV  tmp1, EAX;
+		    POP  tmp2;
+		}
+		R15 = tmp1;
+		ARM7_ICOUNT = tmp2;
+	}
+	
+	// resume emulation
+	goto resume_from_jit;
+
+#endif /* JIT_ENABLED */
 }
 

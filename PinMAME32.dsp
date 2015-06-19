@@ -1734,6 +1734,18 @@ SOURCE=.\src\windows\input.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\jit.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\jitemit.c
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\windows\misc.c
 # PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
