@@ -43,7 +43,7 @@
 #define SUBTYPE_TMS5220			16
 #define SUBTYPE_TMS5220C		32
 #define SUBTYPE_PAT4335277		64
-#define SUBTYPE_2501E                   128
+#define SUBTYPE_2501E          128
 
 /* coefficient defines */
 #define MAX_K					10

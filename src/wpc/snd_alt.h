@@ -2,10 +2,12 @@
 #include <unistd.h>
 #include "..\ext\bass\bass.h"
 
+//#define ALT_LOG
+
 struct pin_samples { // holds data for all sound files found
 	char ** files_with_subpath;
-	char *  gain;
-	char *  ducking;
+	float * gain;
+	signed char * ducking;
 	unsigned int num_files;
 };
 
@@ -17,6 +19,16 @@ const char* path_single = "single\\";
 const char* path_voice = "voice\\";
 
 static char* cached_machine_name = 0;
+
+float alt_sound_gain(const int gain) //!! which one?
+{
+/*#define DSBVOLUME_MIN               -10000
+#define DSBVOLUME_MAX               0
+	const float MusicVolumef = (float)(max(min(gain, 20), 0)*5);
+	const int volume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
+	return (float)(volume - DSBVOLUME_MIN)*(float)(1.0 / (DSBVOLUME_MAX - DSBVOLUME_MIN));*/
+	return (float)gain / 20.f;
+}
 
 void alt_sound_handle(int boardNo, int cmd)
 {
@@ -36,6 +48,11 @@ void alt_sound_handle(int boardNo, int cmd)
 #define ALT_MAX_VOICES 16
 		static HSTREAM voice_stream[ALT_MAX_VOICES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
 
+		static float global_vol = 1.0f;
+		static float music_vol = 1.0f;
+		static signed char jingle_ducking = -1;
+		static signed char voice_ducking[ALT_MAX_VOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+
 		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0)
 		{
 			cmd_counter = 0;
@@ -52,6 +69,12 @@ void alt_sound_handle(int boardNo, int cmd)
 			music_stream = 0;
 			for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i)
 				voice_stream[i] = 0;
+
+			global_vol = 1.0f;
+			music_vol = 1.0f;
+			jingle_ducking = -1;
+			for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i)
+				voice_ducking[i] = -1;
 
 			BASS_Free();
 
@@ -152,8 +175,8 @@ void alt_sound_handle(int boardNo, int cmd)
 			if (psd.num_files > 0)
 			{
 				psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
-				psd.gain = (char*)malloc(psd.num_files*sizeof(char));
-				psd.ducking = (char*)malloc(psd.num_files*sizeof(char));
+				psd.gain = (float*)malloc(psd.num_files*sizeof(float));
+				psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
 				psd.num_files = 0;
 			}
 			else
@@ -179,7 +202,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				}
 
 				unsigned int default_gain = 10;
-				unsigned int default_ducking = 0;
+				int default_ducking = -1; //!! default depends on type??
 
 				{
 					const unsigned int PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
@@ -194,19 +217,19 @@ void alt_sound_handle(int boardNo, int cmd)
 					}
 					free(PATHG);
 				}
-			  {
-				  const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
-				  char* PATHG = (char*)malloc(PATHGl);
-				  strcpy_s(PATHG, PATHGl, PATH);
-				  strcat_s(PATHG, PATHGl, "ducking.txt");
-				  FILE *f = fopen(PATHG, "r");
-				  if (f)
-				  {
-					  fscanf(f, "%u", &default_ducking);
-					  fclose(f);
-				  }
-				  free(PATHG);
-			  }
+				{
+					const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
+					char* PATHG = (char*)malloc(PATHGl);
+					strcpy_s(PATHG, PATHGl, PATH);
+					strcat_s(PATHG, PATHGl, "ducking.txt");
+					FILE *f = fopen(PATHG, "r");
+					if (f)
+					{
+						fscanf(f, "%u", &default_ducking);
+						fclose(f);
+					}
+					free(PATHG);
+				}
 
 			  struct dirent *entry = readdir(dir);
 			  while (entry != NULL)
@@ -222,7 +245,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					  strcat_s(PATH2, PATH2l, entry->d_name);
 
 					  unsigned int gain = default_gain;
-					  unsigned int ducking = default_ducking;
+					  int ducking = default_ducking;
 
 					  {
 						  const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
@@ -266,8 +289,8 @@ void alt_sound_handle(int boardNo, int cmd)
 							  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, "\\");
 							  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, entry2->d_name);
 
-							  psd.gain[psd.num_files] = min(gain, 20);
-							  psd.ducking[psd.num_files] = min(ducking, 100);
+							  psd.gain[psd.num_files] = alt_sound_gain(gain);
+							  psd.ducking[psd.num_files] = min(ducking, (int)100);
 
 							  psd.num_files++;
 						  }
@@ -286,7 +309,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			}
 
 #ifdef ALT_LOG
-			FILE* f = fopen("C:\\Pinmame\\bla.txt", "a");
+			FILE* f = fopen("C:\\Pinmame\\altsound_files.txt", "a");
 			for (unsigned int i = 0; i < psd.num_files; ++i)
 			    fprintf(f, "%s\n", psd.files_with_subpath[i]);
 			fclose(f);
@@ -320,15 +343,35 @@ void alt_sound_handle(int boardNo, int cmd)
 				cmd_buffer[i] = cmd_buffer[i - 1];
 			cmd_buffer[0] = cmd;
 
+#ifdef ALT_LOG
+			FILE* f = fopen("C:\\Pinmame\\altsound_commands.txt", "a");
+#endif
+
 			if ((core_gameData->gen == GEN_WPCDCS) ||
 				(core_gameData->gen == GEN_WPCSECURITY) ||
 				(core_gameData->gen == GEN_WPC95DCS) ||
 				(core_gameData->gen == GEN_WPC95))
 			{
-				if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) /*&& (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0xFF)*/) // change volume (following first byte = volume, second = ~volume, if these don't match: ignore)
+				if (((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA)) // change volume?
 					||
 					((cmd_buffer[2] == 0x00) && (cmd_buffer[1] == 0x00) && (cmd_buffer[0] == 0x00))) // glitch in command buffer?
 				{
+					if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) && (cmd_buffer[1] == (cmd_buffer[0]^0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
+					{
+						global_vol = min((float)cmd_buffer[1] / 127.f, 1.0f);
+						if (music_stream != 0)
+							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, music_vol * global_vol);
+#ifdef ALT_LOG
+						fprintf(f, "change volume %.2f\n", global_vol);
+#endif
+					}
+#ifdef ALT_LOG
+					else
+						fprintf(f, "filtered command %02X %02X %02X %02X\n", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
+#endif
+					for (unsigned int i = 0; i < ALT_MAX_CMDS; ++i)
+						cmd_buffer[i] = ~0;
+
 					cmd_counter = 0;
 					cmd_filter = 1;
 				}
@@ -412,30 +455,36 @@ void alt_sound_handle(int boardNo, int cmd)
 						idx = i + rand() % rnd;
 						break;
 					}
-#ifdef ALT_LOG
-				FILE* f = fopen("C:\\Pinmame\\bla_names.txt", "a");
-#endif
+
 				if (idx != -1)
 				{
 					if ((strstr(psd.files_with_subpath[idx], path_jingle) != 0) || (strstr(psd.files_with_subpath[idx], path_single) != 0))
 					{
 #ifdef ALT_LOG
 						if ((strstr(psd.files_with_subpath[idx], path_jingle) != 0))
-							fprintf(f, "%04X %s jingle %u %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
+							fprintf(f, "%04X %s jingle %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
 						else
-							fprintf(f, "%04X %s single %u %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
+							fprintf(f, "%04X %s single %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
 #endif
 						//
 
+						jingle_ducking = -1;
+
 						if (music_stream != 0)
 						{
-							if ((strstr(psd.files_with_subpath[idx], path_jingle) != 0))
-								BASS_ChannelPause(music_stream);
+							if (strstr(psd.files_with_subpath[idx], path_jingle) != 0)
+							{
+								if (psd.ducking[idx] < 0)
+									BASS_ChannelPause(music_stream);
+								else
+									jingle_ducking = psd.ducking[idx];
+							}
 							else
 							{
 								BASS_ChannelStop(music_stream);
 								BASS_StreamFree(music_stream);
 								music_stream = 0;
+								music_vol = 1.0f;
 							}
 						}
 
@@ -454,8 +503,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
 
-						const float volf = (float)(psd.gain[idx] - 0)*(float)(1.0 / (20 - 0)); //!!
-						BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, volf);
+						BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
 
 						BASS_ChannelPlay(jingle_stream, 0);
 					}
@@ -463,7 +511,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					if (strstr(psd.files_with_subpath[idx], path_music) != 0)
 					{
 #ifdef ALT_LOG
-						fprintf(f, "%04X %s music %u %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
+						fprintf(f, "%04X %s music %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
 #endif
 						//
 
@@ -472,6 +520,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							BASS_ChannelStop(music_stream);
 							BASS_StreamFree(music_stream);
 							music_stream = 0;
+							music_vol = 1.0f;
 						}
 
 						music_stream = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, BASS_SAMPLE_LOOP);
@@ -480,8 +529,8 @@ void alt_sound_handle(int boardNo, int cmd)
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
 
-						const float volf = (float)(psd.gain[idx] - 0)*(float)(1.0 / (20 - 0)); //!!
-						BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, volf);
+						music_vol = psd.gain[idx];
+						BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
 
 						BASS_ChannelPlay(music_stream, 0);
 					}
@@ -490,9 +539,9 @@ void alt_sound_handle(int boardNo, int cmd)
 					{
 #ifdef ALT_LOG
 						if (strstr(psd.files_with_subpath[idx], path_voice) != 0)
-							fprintf(f, "%04X %s voice %u %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
+							fprintf(f, "%04X %s voice %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
 						else
-							fprintf(f, "%04X %s sfx %u %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
+							fprintf(f, "%04X %s sfx %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
 #endif
 						//
 
@@ -530,27 +579,27 @@ void alt_sound_handle(int boardNo, int cmd)
 
 						if (voice_idx != -1)
 						{
+							voice_ducking[voice_idx] = psd.ducking[idx];
+
 							voice_stream[voice_idx] = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, 0);
 							if (voice_stream[voice_idx] == 0)
 							{
 								//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 							}
 
-							const float volf = (float)(psd.gain[idx] - 0)*(float)(1.0 / (20 - 0)); //!!
-							BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, volf);
+							BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
 
 							BASS_ChannelPlay(voice_stream[voice_idx], 0);
 						}
 					}
 				}
 
-				//!! implement ducking!
 				//!! gain=10 is normallevel not gain=20 (but then it would also be clipped, so meh)
 
 				{
 #ifdef ALT_LOG
 					if (idx == -1)
-						fprintf(f, "%04X unknown %u %u\n", cmd_combined, locals.boards, boardNo);
+						fprintf(f, "%04X unknown %u\n", cmd_combined, boardNo);
 #endif
 					if ((core_gameData->gen == GEN_WPCDCS) ||
 						(core_gameData->gen == GEN_WPCSECURITY) ||
@@ -562,6 +611,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							BASS_ChannelStop(music_stream);
 							BASS_StreamFree(music_stream);
 							music_stream = 0;
+							music_vol = 1.0f;
 						}
 					}
 
@@ -574,14 +624,20 @@ void alt_sound_handle(int boardNo, int cmd)
 							BASS_ChannelStop(music_stream);
 							BASS_StreamFree(music_stream);
 							music_stream = 0;
+							music_vol = 1.0f;
 						}
 					}
+
+					//
+					//
+					//
 
 					for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i) // clean up already finished voices
 						if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) != BASS_ACTIVE_PLAYING)
 						{
 							BASS_StreamFree(voice_stream[i]);
 							voice_stream[i] = 0;
+							voice_ducking[i] = -1;
 						}
 
 					// if jingle stopped, continue with music
@@ -589,10 +645,27 @@ void alt_sound_handle(int boardNo, int cmd)
 					{
 						BASS_StreamFree(jingle_stream);
 						jingle_stream = 0;
+						jingle_ducking = -1;
 
 						if (music_stream != 0)
 							BASS_ChannelPlay(music_stream, 0);
 					}
+
+#if 0 // needs callback/timer to function properly!
+					if (music_stream != 0)
+					{
+						signed char min_ducking = 100;
+						if (jingle_stream != 0 && jingle_ducking >= 0 && jingle_ducking < min_ducking)
+							min_ducking = jingle_ducking;
+						for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i)
+							if (voice_stream != 0 && voice_ducking[i] >= 0 && voice_ducking[i] < min_ducking)
+								min_ducking = voice_ducking[i];
+
+						float new_val = music_vol*((double)min_ducking / 100.);
+						if (music_vol != new_val)
+							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, new_val);
+					}
+#endif
 				}
 
 #ifdef ALT_LOG
