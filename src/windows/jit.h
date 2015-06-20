@@ -216,12 +216,12 @@
  *   register at this point.  These conventions are up to you to define; the
  *   JIT framework imposes no assumptions of its own here.
  *   
- *   Once you establish the native register and stack environment, use the
- *   JIT_CALL_NATIVE macro to invoke the previously translated native code.
- *   That macro will act like a subroutine call.  When the native code
- *   reaches a point where it decides to return to the emulator, it will
- *   execute a native RETN instruction.  This will return control to the C
- *   statement following the JIT_GO_NATIVE macro.
+ *   Once you establish the native register and stack environment, make an
+ *   assembly language CALL to the JIT_NATIVE address.  Refer to the model
+ *   code in the comments at JIT_CALL_NATIVE below.  When the native code
+ *   reaches a point where it decides to resume emulation, it will execute a
+ *   native RETN instruction.  This will return control to the C statement
+ *   following your assembly language CALL instruction.
  *   
  *   IMPORTANT: Before returning, generated code always loads EAX with the
  *   new instruction pointer where emulation should resume.  The code you
@@ -508,37 +508,190 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr);
 	}
 
 /*
- *   Invoke native code.  This is used in the "jit_go_native:" block of code.
- *   First, set up the native register and stack environment per the
- *   conventions that you define in your code generation (your CPU-specific
- *   xxx_jit_xlat() function.  Then call JIT_CALL_NATIVE().  Finally, undo
- *   the native register and stack setup, and use a "goto" to go back to the
- *   top of the emulator loop.
+ *   JIT_CALL_NATIVE - comments on how to invoke the native code.
  *   
- *   The _BP version establishes a new local variable frame on the stack for
- *   the native code: it saves BP, and sets BP to point to the saved BP on
- *   the stack.  This allows the generated native code to refer to
- *   "arguments" that the invoker pushed using BP-relative addressing, as
- *   though they were function call arguments.
+ *   We originally provided a macro here called JIT_CALL_NATIVE() to invoke
+ *   the native code, but that didn't seem flexible enough.  Instead, we
+ *   provide some model code that you can customize as needed.  This process
+ *   is a little tricky, but there are well-defined rules - you can make the
+ *   code robust and reliable if you understand what's going on.  Here we try
+ *   to explain not just what you need to do but also why, to help make the
+ *   code adaptable to different cases.
  *   
- *   The plain version just calls the function directly, without establishing
- *   a new stack frame.
+ *   Here are the steps involved.
+ *   
+ *   - If there are any C expressions that you will need to evaluate after
+ *   this point that are more complex than accessing local or static
+ *   variables, evaluate those expressions now and store them in C local
+ *   variables.  You musn't evaluate any C expressions once you enter
+ *   assembly language in the next step.  For one thing, __asm mode won't let
+ *   you.  But also don't give in to the temptation to exit __asm briefly to
+ *   evaluate a C expression, because C expression evaluation will use the
+ *   Intel CPU registers in unpredictable ways that could corrupt the
+ *   environment setup that we're attempting.  It's best to keep everything
+ *   explicitly in __asm once we get going, so that we have everything
+ *   completely under our control, with no meddling by the compiler.
+ *   
+ *   One expression that you'll definitely need to save here is
+ *   JIT_NATIVE(jit, pc), where pc is the emulator instruction pointer for
+ *   the native code that we're about to invoke.  JIT_NATIVE() gives us a
+ *   pointer to that native code.  We'll need that later to make the call to
+ *   the native code, which is after all the entire point of this exercise.
+ *   
+ *   - Enter an assembly language block with __asm { }.
+ *   
+ *   - If you need any temporary stack slots, allocate them now using "SUB
+ *   ESP, n", where n is the number of bytes you need (this is usually 4x the
+ *   number of int or pointer variables you need to store).
+ *   
+ *   - Save the (real) CPU registers that the C compiler might use in
+ *   generated code, by pushing them onto the stack.  It's best not to make
+ *   assumptions based on your particular build settings, because there's
+ *   more than one way for the compiler to use registers.  The actual usage
+ *   will depend upon the choice of compiler and optimization settings.  To
+ *   make the code robust for future changes in the overall VPinMAME build,
+ *   you should save EBX, ECX, EDX, ESI, EDI, and EBP, except that you don't
+ *   have to save any of these that your generated translation code won't
+ *   directly modify.  (You only have to consider the code you directly
+ *   generate; code you call as subroutines should be safe because the
+ *   compiler will presumably apply its own register usage conventions
+ *   consistently across the whole build, and will thus save any registers
+ *   that need to be saved according to its own conventions when entering
+ *   subroutines that you call from generated code.)
+ *   
+ *   - If you need to access any C local variables, it's time to move them
+ *   into registers or into the stack.  The only truly safe register to
+ *   modify during this process is EAX, because all known Intel calling
+ *   conventions use that as a free register for return values and
+ *   intermediate expression results.  Any other register (particularly EBP
+ *   and EBX) could be the compiler's frame pointer register, which means
+ *   that you will lose access to C locals as soon as you modify it.  Since
+ *   we want this code to be robust against changes in optimization settings,
+ *   we don't want to make assumptions about which registers are safe here.
+ *   If you need to access only one C local, you can move it into any
+ *   register, since even if this turns out to be the frame pointer, it won't
+ *   be overwritten until after the C local has already been read.  If you
+ *   need to access two C locals, you can load the first into EAX and the
+ *   second into any other register, by the same logic.  If you need to
+ *   access three or more, you will have to move them into stack temp slots
+ *   that you allocated above, before saving registers.  Address the temp
+ *   slots using [ESP+n].
+ *   
+ *   - Get the JIT_NATIVE value that you saved earlier into a register (e.g.,
+ *   EAX), and CALL that register.  This will transfer control to the native
+ *   generated code.  When that code wants to return to emulation, it will
+ *   execute a RETN instruction, which will return control to the next
+ *   instruction here.
+ *   
+ *   - Now we basically need to reverse the steps above.  Start by saving any
+ *   registers that you need to copy back from the native environment to the
+ *   emulator environment.  The place to save a register is in one of the
+ *   stack temp slots you allocated earlier, using [ESP+n] addressing again.
+ *   
+ *   - Restore the C compiler's saved registers by POPping them off the
+ *   stack.  This will restore the compiler's frame pointer, making it safe
+ *   to access C local variables once again.  Sigh of relief - things are
+ *   almost back to normal!
+ *   
+ *   - At this point, we can access both the C local variables and the stack
+ *   temp slots you allocated.  If you stashed anything important in one of
+ *   these stack temp slots that you want to restore to the emulated
+ *   environment, move it from the stack temp into a C local variable.  (You
+ *   will have to do this with two MOV instructions: MOV EAX, [ESP+n], then
+ *   MOV c_local, EAX).
+ *   
+ *   - Discard the stack temp slots with an ADD ESP, n, where n is the same
+ *   number of bytes you used in the SUB ESP, n earlier.
+ *   
+ *   - Exit the assembly block.  You can now evaluate any complex C
+ *   expressions that you need to move updated values from C locals into the
+ *   normal emulator environment.
+ *   
+ *   - Jump back to the appropriate point in the emulator loop with a C
+ *   'goto'.
  */
-#define JIT_CALL_NATIVE(jit, pc) \
-	{ \
-		byte *tmp = JIT_NATIVE(jit, pc); \
-		__asm { mov eax, tmp } \
-		__asm { call eax } \
-	}
-#define JIT_CALL_NATIVE_BP(jit, pc) \
-	{ \
-		byte *tmp = JIT_NATIVE(jit, pc); \
-		__asm { mov eax, tmp } \
-		__asm { push ebp } \
-		__asm { mov ebp, esp } \
-		__asm { call eax }  \
-		__asm { pop ebp } \
-	}
+// Sample code illustrating the process described above (from arm7exec.c):
+//
+// jit_go_native:
+// {
+// 	// Get the native code pointer and cycle counter into C local variables.  We
+//  // do this here because these are complex C expressions that might modify CPU
+//  // registers in unpredictable ways.  Locals can be accessed from assembler
+//  // directly without modifying any registers, so these act as a bridge between
+//  // the current C environment and the assembler environment we're about to
+//  // establish.
+// 	data32_t tmp1 = (data32_t)JIT_NATIVE(ARM7.jit, pc);
+// 	data32_t tmp2 = ARM7_ICOUNT;
+// 
+// 	__asm {
+// 		// Allocate space for temporary variables we'll need while transitioning
+//      // between C and assembler (and back).  See the 'IMPORTANT' note below.
+// 		// 1 stack DWORD == 4 bytes.
+// 		SUB ESP, 4;
+// 
+// 		// Save registers that the generated code uses and that the C caller
+// 		// might expect to be preserved across function calls.  To be robust
+//      // across different optimization modes and compiler versions, we will
+//      // push all registers that our generated code modifies, except for EAX,
+//      // which is fairly certain to be a safe scratch variable for any
+//      // compiler using any optimization mode.
+// 		PUSH EBX;
+// 		PUSH ECX;
+// 		PUSH EDX;
+// 		PUSH ESI;
+// 		PUSH EDI;
+// 		
+// 		// Get the native code address, and move the cycle counter into EDI for
+// 		// use in the translated code.  Note that any register update here could
+//      // cause us to lose the C frame pointer and thus lose access to our C
+//      // local variables (tmp1, tmp2, etc), except that EAX is safe.  We
+//      // deliberately modify EDI last just in case it's the frame pointer.
+//      // If we needed to access more than two C locals here, we'd have to move
+//      // them all into temp stack slots ([ESP+n] slots) for safe keeping before
+//      // moving any of them into registers, to ensure that we don't modify any
+//      // registers until all the C locals are safely tucked away somewhere that
+//      // we can get to after losing the C frame pointer.
+// 		MOV  EAX, tmp1;
+// 		MOV  EDI, tmp2;
+// 		
+// 		// IMPORTANT: don't access any C local variables (tmp1, tmp2, etc) from
+// 		// here until after the POPs below.  At least one VC optimization mode uses
+// 		// EBX as the frame pointer, and it's possible that other modes or other
+// 		// compilers use other registers.  C local access will be safe again
+// 		// after the POPs below, which will recover the pre-call register values.
+// 		// In the meantime, anything we need to store temporarily must be saved
+// 		// explicitly in stack slots allocated with the 'SUB ESP, n' above, and
+// 		// addressed explicitly in terms of [ESP+n] addresses.  These are safe
+// 		// because we control the stack layout in this section of code.
+// 		
+// 		// call the native code
+// 		CALL EAX;
+// 		
+// 		// save the new cycle counter from EDI into a stack temp (before we restore
+// 		// the pre-call EDI)
+// 		MOV  [ESP+20], EDI;
+// 		
+// 		// restore saved registers - C locals are safe to access again after these
+//      // POPs, because the frame pointer will be restored if it was one of these
+//      // (and will never have been lost if it wasn't)
+// 		POP  EDI;
+// 		POP  ESI;
+// 		POP  EDX;
+// 		POP  ECX;
+// 		POP  EBX;
+// 		
+// 		// move the new PC and cycle count into C locals, so that we can move them
+//      // into their real locations below (those might involve C expressions that
+//      // could modify registers, so we want them in simple C locals first so
+//      // that we can stop caring about any of the registers)
+// 		MOV  tmp1, EAX;
+// 		POP  tmp2;
+// 	}
+// 	R15 = tmp1;
+// 	ARM7_ICOUNT = tmp2;
+// }
+// resume emulation
+// goto resume_from_jit;
 
 /*
  *   The JIT translator function.  This must be implemented per emulated CPU.
