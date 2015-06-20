@@ -652,7 +652,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\</ObjectFileName>
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
     </ClCompile>
-    <ClCompile Include="src\windows\arm7jit.c">
+    <ClCompile Include="src\windows\jitemit.c">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\</ObjectFileName>
       <ProgramDataBaseFileName Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">$(IntDir)Windows\$(TargetName).pdb</ProgramDataBaseFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)Windows\</ObjectFileName>
