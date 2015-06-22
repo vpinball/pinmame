@@ -644,7 +644,7 @@ BOOL OptionsInit()
 
         settings.romdirs           = _strdup("roms");
         settings.sampledirs        = _strdup("samples");
-        settings.inidir                    = _strdup("ini");
+        settings.inidir            = _strdup("ini");
         settings.cfgdir            = _strdup("cfg");
         settings.nvramdir          = _strdup("nvram");
         settings.memcarddir        = _strdup("memcard");
