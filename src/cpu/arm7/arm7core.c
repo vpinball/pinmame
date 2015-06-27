@@ -265,7 +265,7 @@ static const char* GetModeText( int cpsr )
 
 INLINE void SwitchMode (int cpsr_mode_val)
 {
-	static old_mode = 0;
+	static int old_mode = 0;
 	
 	// set the new mode
 	data32_t cspr = GET_CPSR & ~MODE_FLAG;
@@ -1889,7 +1889,7 @@ static void HandleUMulLong( data32_t insn)
 // the same time that R15 is loaded.  This handles the operation.  Note
 // that we ignore this if in user mode.  This isn't allowed by privilege
 // rules, and it's non-sensical in that no SPSR exists in user mode.
-static void HandleLDMS_ModeChange()
+static void HandleLDMS_ModeChange(void)
 {
 	if (GET_MODE != eARM7_MODE_USER)
 	{

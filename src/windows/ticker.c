@@ -332,7 +332,7 @@ static unsigned int sTimerInit = 0;
 static LARGE_INTEGER TimerFreq;
 static LARGE_INTEGER sTimerStart;
 
-static void wintimer_init()
+static void wintimer_init(void)
 {
 	sTimerInit = 1;
 
