@@ -253,7 +253,12 @@
 
 typedef unsigned char byte;
 
+#ifdef VPINMAME
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
+#else
+#define JIT_ENABLED  0
+#endif
+
 #define JIT_DEBUG    0   // enable additional debugging code in the JIT
 
 #if JIT_ENABLED
@@ -273,8 +278,6 @@ typedef unsigned char byte;
 #else
 # error Invalid JIT_OPALIGN value - must be 8, 16, 32, or 64
 #endif
-
-typedef unsigned char byte;
 
 /*
  *   JIT control structure.  This contains internal information that the JIT
