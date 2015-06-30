@@ -17,11 +17,18 @@
 extern "C" {
 #endif  // __cplusplus
 
+#ifdef _MSC_VER
 #if _MSC_VER < 1200
 // Defines for Win64
 #ifndef _WIN64
 #define DWORD_PTR DWORD
 #endif
+#endif
+#endif
+
+#ifndef __in
+#define __in
+#define __in_opt
 #endif
 
 // Commands to pass to HtmlHelp()
