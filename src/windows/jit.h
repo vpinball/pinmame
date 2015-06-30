@@ -253,7 +253,7 @@
 
 typedef unsigned char byte;
 
-#ifdef VPINMAME
+#ifdef _MSC_VER
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
 #else
 #define JIT_ENABLED  0
