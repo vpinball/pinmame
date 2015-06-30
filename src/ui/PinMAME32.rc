@@ -1236,7 +1236,7 @@ IDC_CURSOR_HSPLIT       CURSOR                  "Res\\Splith.cur"
 // RT_MANIFEST
 //
 
-1                       RT_MANIFEST             "res\\pinmame32.manifest"
+//1                       RT_MANIFEST             "res\\pinmame32.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1246,7 +1246,7 @@ IDC_CURSOR_HSPLIT       CURSOR                  "Res\\Splith.cur"
 STRINGTABLE
 BEGIN
     IDS_UI_FILE             "Contains commands for working with the selected items"
-    IDS_UI_VIEW             "Contains commands for manupulating the view"
+    IDS_UI_VIEW             "Contains commands for manipulating the view"
     IDS_UI_OPTIONS          "Contains commands for user interface options"
     IDS_UI_HELP             "Contains commands for displaying help"
 END
