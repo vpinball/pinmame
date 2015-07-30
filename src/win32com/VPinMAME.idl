@@ -274,6 +274,7 @@ import "ocidl.idl";
 		[propput, id(77), helpstring("property ShowPinDMD")] HRESULT ShowPinDMD([in] VARIANT_BOOL newVal);
 		[propget, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(81), helpstring("property ShowWinDMD")] HRESULT ShowWinDMD([in] VARIANT_BOOL newVal);
+		[propget, id(82), helpstring("property ChangedLEDsState")] HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal);
 	};
 
 	// WSHDlg and related interfaces

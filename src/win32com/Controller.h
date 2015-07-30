@@ -94,6 +94,7 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 // IController
 public:
 	STDMETHOD(get_ChangedLEDs)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, /*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(get_ChangedLEDsState)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, int **buf, /*[out, retval]*/ int *pVal);
 	STDMETHOD(get_Settings)(/*[out, retval]*/ IControllerSettings * *pVal);
 	STDMETHOD(get_Games)(/*[out, retval]*/ IGames* *pVal);
 	STDMETHOD(get_Version)(/*[out, retval]*/ BSTR *pVal);
