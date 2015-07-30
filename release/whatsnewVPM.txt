@@ -29,6 +29,8 @@ Version 2.6 (X X, 2015)
 
 	HRESULT ChangedGIsState([in] int **buf, [out, retval] int *pVal); - Copy all changed GI lamps (user-allocated)
 
+        HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal); - Copy all changed LEDs (user-allocated)
+
 	HRESULT MasterVolume([out, retval] int *pVal); - Get Master Volume
 	HRESULT MasterVolume([in] int newVal); - Set Master Volume
 	HRESULT EnumAudioDevices([out, retval] int *pVal); - Enumerate audio devices using DirectSound and return the number of found devices
