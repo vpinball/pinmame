@@ -1130,6 +1130,56 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int n
   return S_OK;
 }
 
+
+/*****************************************************************************************
+ * get_ChangedLEDsState (read-only): Copy whole Changed LEDS digits/Segments array to a user allocated array
+ *****************************************************************************************/
+STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, int nnLow, int **buf, int *pVal)
+{
+	UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+	UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
+	vp_tChgLED chgLED;
+	
+	if (!pVal) return S_FALSE;
+	
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+
+  if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+    { pVal = 0; return S_OK; }
+
+  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+  else if ( synclevel<0 )
+	  uSleep(-synclevel*1000);
+
+  /*-- Count changes --*/
+  int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
+
+  if (uCount == 0)
+    { pVal = 0; return S_OK; }
+
+  long ix[2];
+
+  /*-- add changed LEDs to array --*/
+  int *dst = reinterpret_cast<int*>(buf);
+  for (int i = 0; i < uCount; i++) {
+
+	  *(dst++) = chgLED[i].ledNo;
+	  *(dst++) = chgLED[i].chgSeg;
+	  *(dst++) = chgLED[i].currStat;
+  }
+
+  *pVal = uCount;
+
+  return S_OK;
+}
+
 /******************************************************
  * IController.ShowAboutDialog: shows the About dialog
  ******************************************************/
