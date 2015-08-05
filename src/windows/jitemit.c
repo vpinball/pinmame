@@ -947,7 +947,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 				*(UINT32 *)(&i->b[1]) = lbldelta;
 			}
 			else if (i->len == 6
-					 && (i->effop >= opJO32 && i->op[0] <= opJG32))
+					 && (i->effop >= opJO32 && i->effop <= opJG32))
 			{
 				// 32-bit offset
 				*(UINT32 *)(&i->op[1]) = lbldelta;

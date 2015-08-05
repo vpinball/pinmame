@@ -250,10 +250,8 @@ static byte *emit_lookup_code(struct jit_ctl *jit, int patch)
 	byte addSp8[]  = { 0x83, 0xC4, 0x08 };   // ADD SP,8
 	byte addSp12[] = { 0x83, 0xC4, 0x0C };   // ADD SP,12
 	byte pushEDX[] = { 0x52 };               // PUSH EDX
-	byte pushIm8[] = { 0x5A, 0 };            // PUSH Imm8
 	byte popEDX[]  = { 0x5A };               // POP EDX
 	byte xchgED[]  = { 0x92 };               // XCHG EAX,EDX
-	byte retn[]    = { 0xC3 };               // RETN
 	byte jmpEDX[]  = { 0xFF, 0xE2 };         // JMP EDX
 	byte *code, *p;
 	byte *lookup = (patch ? (byte *)rtlookup_patch : (byte *)rtlookup);
@@ -405,8 +403,6 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr)
 	byte *p = JIT_NATIVE(jit, addr);
 	if (p != jit->pEmulate && p != jit->pPending)
 	{
-		byte mov[5] = { 0xB8, 0, 0, 0, 0 };  // MOV EAX,Imm32
-
 		// Replace the code with MOV EAX,<emulator address>, RETN.
 		// This will return to the emulator and resume emulation at the
 		// replaced code address.
