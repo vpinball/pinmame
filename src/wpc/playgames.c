@@ -340,3 +340,18 @@ PLAYMATIC_SOUNDROM6416("sfsndu3.rom", NO_DUMP,
             "sfsndu4.rom", NO_DUMP)
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4,0)
+
+
+// games by other manufacturers below
+
+/*-------------------------------------------------------------------
+/ ??/87 Iron Balls (Stargame)
+/-------------------------------------------------------------------*/
+INITGAME4(ironball, play_disp7, 1)
+ROM_START(ironball)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("video.bin", 0x0000, 0x2000, CRC(1867ebff) SHA1(485e46c742d914febcbdd58cb5a886f1d773282a))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
+ROM_END
+CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
