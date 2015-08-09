@@ -703,9 +703,6 @@ GTS80_ROMEND
 #define input_ports_amazonha input_ports_amazonh
 CORE_CLONEDEFNV(amazonha, amazonh, "Amazon Hunt (alternate set)",1983,"Gottlieb",gl_mGTS80SS,0)
 
-//Amazon II  (No Roms)
-//Amazon III (No Roms)
-
 /*-------------------------------------------------------------------
 / Rack 'Em Up (#685)
 /-------------------------------------------------------------------*/
@@ -988,6 +985,18 @@ GTS80_ROMEND
 #define init_sprbrks init_sprbreak
 #define input_ports_sprbrks input_ports_sprbreak
 CORE_CLONEDEFNV(sprbrks, sprbreak, "Spring Break (single ball game)",1987,"Gottlieb",gl_mGTS80BS1,0)
+
+/*-------------------------------------------------------------------
+/ Amazon Hunt II (#684C)
+/-------------------------------------------------------------------*/
+INITGAME(amazonh2, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_8K_ROMSTART(amazonh2, "684c-cpu.rom", CRC(0b5040c3) SHA1(104e5a63b4097ea72a5b31df1a7d5198342be5c4))
+GTS80BSSOUND8(               "684c-snd.rom", CRC(182d64e1) SHA1(c0aaa646a3d53cf00aa23e0b8d46bbb70ce46e5c))
+GTS80_ROMEND
+#define input_ports_amazonh2 input_ports_gts80
+CORE_GAMEDEFNV(amazonh2, "Amazon Hunt II (France)", 1987, "Gottlieb", gl_mGTS80BS1, 0)
+
+//Amazon Hunt III (No Roms)
 
 /*-------------------------------------------------------------------
 / Arena (#709)

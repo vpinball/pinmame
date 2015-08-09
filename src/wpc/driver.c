@@ -583,7 +583,7 @@ DRIVERNV(mntecrla)      //                Monte Carlo (alternate set)
 DRIVERNV(sprbreak)      //S80b-706: 04/87 Spring Break
 DRIVERNV(sprbrka)       //                Spring Break (alternate set)
 DRIVERNV(sprbrks)       //                Spring Break (single ball game)
-                        //S80b-???: 05/87 Amazon Hunt II
+DRIVERNV(amazonh2)      //S80b-684C:05/87 Amazon Hunt II
 DRIVERNV(arena)         //S80b-709: 06/87 Arena 
 DRIVERNV(arenaa)        //                Arena (alternate set)
 DRIVERNV(victory)       //S80b-710: 10/87 Victory
@@ -975,6 +975,7 @@ DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 // ---------------
 DRIVERNV(mephist1)      //1986 - Mephisto (rev. 1.1)
 DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
+DRIVERNV(ironball)      //1987 - Iron Balls
 
 // ---------------
 // STERN GAMES
