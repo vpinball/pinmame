@@ -30,12 +30,14 @@ Updated to zlib 1.2.8
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
 New:
 Atari: 4x4 (not working yet)
-CICPlay: Galaxy Play
+CICPlay: Galaxy Play, Galaxy Play 2
 Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
 JP: Add missing ROM for Olympus
 MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
+Premier: Amazon Hunt II
+Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)
        Bike Race (not working yet)
