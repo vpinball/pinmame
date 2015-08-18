@@ -929,10 +929,12 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
   }
   /* loop until the buffer is full or we've stopped speaking */
   while ((size > 0) && tms->speaking_now) {
-    /* if it is the appropriate time to update the old energy/pitch idxes,
+    /* if it is the appropriate time to update the old energy/pitch indices,
      * i.e. when IP=7, PC=12, T=17, subcycle=2, do so. Since IP=7 PC=12 T=17
      * is JUST BEFORE the transition to IP=0 PC=0 T=0 sybcycle=(0 or 1),
-     * which happens 4 T-cycles later), we change on the latter. */
+     * which happens 4 T-cycles later), we change on the latter.
+     * The indices are updated here ~12 PCs before the new frame is applied.
+     */
     if ((tms->interp_period == 0) && (tms->PC == 0) && (tms->subcycle < 2)) {
       tms->OLDE = (tms->new_frame_energy_idx == 0);
       tms->OLDP = (tms->new_frame_pitch_idx == 0);
@@ -962,13 +964,29 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
 #ifdef DEBUG_GENERATION
         fprintf(stderr,"tms5220_process: processing frame: talk status = 0 caused by stop frame or buffer empty, halting speech.\n");
 #endif
-        tms->speaking_now = 0; // finally halt speech
-        goto empty;
+        if (tms->speaking_now == 1) // we're done, set all coeffs to idle state but keep going for a bit...
+        {
+                tms->new_frame_energy_idx = 0;
+                tms->new_frame_pitch_idx = 0;
+                for (i = 0; i < 4; i++)
+                        tms->new_frame_k_idx[i] = 0;
+                for (i = 4; i < 7; i++)
+                        tms->new_frame_k_idx[i] = 0xF;
+                for (i = 7; i < tms->coeff->num_k; i++)
+                        tms->new_frame_k_idx[i] = 0x7;
+				tms->speaking_now = 2; // wait 8 extra interp periods before shutting down so we can interpolate everything to zero state
+        }
+        else // speaking_now == 2 // now we're really done.
+        {
+				tms->speaking_now = 0; // finally halt speech
+                goto empty;
+        }
       }
 
 
-      /* Parse a new frame into the new_target_energy, new_target_pitch and new_target_k[] */
-      parse_frame(tms);
+      /* Parse a new frame into the new_target_energy, new_target_pitch and new_target_k[],
+       * but only if we're not just about to end speech */
+      if (tms->speaking_now == 1) parse_frame(tms);
 #ifdef DEBUG_PARSE_FRAME_DUMP
       fprintf(stderr,"\n");
 #endif
@@ -1193,6 +1211,7 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
 
     tms->subcycle++;
     if ((tms->subcycle == 2) && (tms->PC == 12)) {
+      if ((tms->interp_period == 7)&&(tms->inhibit==1)) tms->pitch_count = 0;
       tms->subcycle = tms->subc_reload;
       tms->PC = 0;
       tms->interp_period++;
@@ -1212,9 +1231,6 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
      */
     tms->pitch_count++;
     if (tms->pitch_count >= tms->current_pitch) {
-      tms->pitch_count = 0;
-    }
-    if ((tms->interp_period == 0) && (tms->inhibit == 1)) {
       tms->pitch_count = 0;
     }
     tms->pitch_count &= 0x1FF;
