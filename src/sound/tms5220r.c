@@ -133,7 +133,7 @@ static const struct tms5100_coeffs pat4209836_coeff =
 	    1,  0,    0,  0,   0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 1, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
 /* The following CD2802 coefficients come from US Patents 4,403,965 and 4,946,391; They have not yet been verified using derivatives. The M58817 seems to work best with these coefficients, so its possible the engineers of that chip copied them from the TI patents.
@@ -197,7 +197,7 @@ static const struct tms5100_coeffs pat4403965_coeff =
 	    1,  0,    0,  0,  0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 1, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
 /* The following TMS5110A LPC coefficients were directly read from an actual
@@ -267,7 +267,7 @@ static const struct tms5100_coeffs tms5110a_coeff =
 		0,  0,  0,  0,  0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 1, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
 /* The following coefficients come from US Patent 4,335,277 and 4,581,757.
@@ -339,7 +339,7 @@ static const struct tms5100_coeffs pat4335277_coeff =
 	    1,  0,    0,  0,   0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 1, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
 /*
