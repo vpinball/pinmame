@@ -42,7 +42,7 @@ DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6
                   "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
 SE_ROMEND
 #define input_ports_apollo13 input_ports_se
-CORE_GAMEDEFNV(apollo13,"Apollo 13",1995,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(apollo13,"Apollo 13 (5.01)",1995,"Sega",de_mSES1,0)
 
 INITGAME(apollo1,GEN_WS,se_apollo,SE_DIGIT)
 SE128_ROMSTART(apollo1,"a13cpu.100",CRC(5971e956) SHA1(89853912fc569480e66bec4cef369d8320c3a07d))
@@ -53,7 +53,7 @@ DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6
                   "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
 SE_ROMEND
 #define input_ports_apollo1 input_ports_apollo13
-CORE_CLONEDEFNV(apollo1,apollo13,"Apollo 13 (v1.00)",1995,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(apollo1,apollo13,"Apollo 13 (1.00)",1995,"Sega",de_mSES1,0)
 
 INITGAME(apollo2,GEN_WS,se_apollo,SE_DIGIT)
 SE128_ROMSTART(apollo2,"a13cpu.203",CRC(4af048fc) SHA1(c82459247707a6cf07a10cc884f1391d0ca536a3))
@@ -64,7 +64,7 @@ DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6
                   "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
 SE_ROMEND
 #define input_ports_apollo2 input_ports_apollo13
-CORE_CLONEDEFNV(apollo2,apollo13,"Apollo 13 (v2.03)",1995,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(apollo2,apollo13,"Apollo 13 (2.03)",1995,"Sega",de_mSES1,0)
 
 INITGAME(apollo14,GEN_WS,se_apollo,SE_DIGIT)
 SE128_ROMSTART(apollo14,"apolcpu.501",CRC(5afb8801) SHA1(65608148817f487c384dd36c221138962f1d9824))
@@ -75,7 +75,7 @@ DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6
                   "apollo13.u36",CRC(cede5e0f) SHA1(fa3b5820ed58e57b3c6185d91e9aea28aebc28d7))
 SE_ROMEND
 #define input_ports_apollo14 input_ports_apollo13
-CORE_CLONEDEFNV(apollo14,apollo13,"Apollo 13 (Game 5.01, Display 4.01)",1995,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(apollo14,apollo13,"Apollo 13 (5.01, Display 4.01)",1995,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Goldeneye
@@ -133,7 +133,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4 input_ports_se
-CORE_GAMEDEFNV(id4,"ID4: Independence Day (v2.02)",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(id4,"ID4: Independence Day (2.02)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4f,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4f, "id4cpu.202",CRC(108d88fd) SHA1(8317944201acfb97dadfdd364696c9e81a21d2c5))
@@ -143,7 +143,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4f input_ports_se
-CORE_GAMEDEFNV(id4f,"ID4: Independence Day (v2.02 French)",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(id4f,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -153,7 +153,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201 input_ports_se
-CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (v2.01)",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201f,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201f, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -163,7 +163,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201f input_ports_se
-CORE_GAMEDEFNV(id4_201f,"ID4: Independence Day (v2.01 French)",1996,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(id4_201f,"ID4: Independence Day (2.01 French)",1996,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Space Jam
@@ -1401,7 +1401,7 @@ CORE_CLONEDEFNV(term3i_2,term3,"Terminator 3: Rise of the Machines (2.05 Italy)"
 // All games below now using a new CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound
 
 /*-------------------------------------------------------------------
-/ The Lord Of The Rings
+/ The Lord of the Rings
 /-------------------------------------------------------------------*/
 #define LOTR_SND \
 DE3S_SOUNDROM18888("lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470), \
@@ -1425,7 +1425,7 @@ DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c
 LOTR_SND
 SE_ROMEND
 #define input_ports_lotr input_ports_se
-CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (10.00)",2005,"Stern",de_mSES3,0)
+CORE_GAMEDEFNV(lotr,"Lord of the Rings, The (10.00)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp, "lotrcpul.a00", CRC(c62aba47) SHA1(2fef599313e5cd9bded3ab00b933631586e2a1e7))
 DE_DMD32ROM8x(          "lotrdspl.a00", CRC(2494a5ee) SHA1(5b95711858d88eeb445503cac8b9b754cf8e9960))
@@ -1433,7 +1433,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
-CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (10.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord of the Rings, The (10.00 Spain)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspg.a00", CRC(6743a910) SHA1(977773515f00af3937aa59426917e8111ec855ab))
@@ -1441,7 +1441,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
-CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (10.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord of the Rings, The (10.00 Germany)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspf.a00", CRC(15c26c2d) SHA1(c8e4b442d717aa5881f3d92f044c44d29a14126c))
@@ -1449,7 +1449,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
-CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (10.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord of the Rings, The (10.00 France)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspi.a00", CRC(6c88f395) SHA1(365d5c6908f5861816b73f287194c85d2300635d))
@@ -1457,7 +1457,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
-CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (10.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord of the Rings, The (10.00 Italy)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspa.900", CRC(2b1debd3) SHA1(eab1ffa7b5111bf224c47688bb6c0f40ee6e12fb))
@@ -1465,7 +1465,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr9 input_ports_lotr
 #define init_lotr9 init_lotr
-CORE_CLONEDEFNV(lotr9,lotr,"Lord Of The Rings, The (9.00)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr9,lotr,"Lord of the Rings, The (9.00)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp9, "lotrcpul.900", CRC(155b5d5b) SHA1(c032e3828ed256240a5155ec4c7820d615a2cbe1))
 DE_DMD32ROM8x(          "lotrdspl.900", CRC(00f98242) SHA1(9a0e7e572e209b20691392a694a524192daa0d2a))
@@ -1473,7 +1473,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp9 input_ports_lotr
 #define init_lotr_sp9 init_lotr
-CORE_CLONEDEFNV(lotr_sp9,lotr,"Lord Of The Rings, The (9.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp9,lotr,"Lord of the Rings, The (9.00 Spain)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspg.900", CRC(f5fdd2c2) SHA1(0c5f1b1efe3d38063e2327e2ccfe40936f3988b8))
@@ -1481,7 +1481,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr9 input_ports_lotr
 #define init_lotr_gr9 init_lotr
-CORE_CLONEDEFNV(lotr_gr9,lotr,"Lord Of The Rings, The (9.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr9,lotr,"Lord of the Rings, The (9.00 Germany)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x( "lotrdspf.900", CRC(f2d8296e) SHA1(3eb6e1e6ba299b720816bf165b1e20e02f6c0c1e))
@@ -1489,7 +1489,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr9 input_ports_lotr
 #define init_lotr_fr9 init_lotr
-CORE_CLONEDEFNV(lotr_fr9,lotr,"Lord Of The Rings, The (9.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr9,lotr,"Lord of the Rings, The (9.00 France)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspi.900", CRC(a09407d7) SHA1(2cdb70ee0bae7f67f4bf12b0dd3e6cf574087e3d))
@@ -1497,7 +1497,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it9 input_ports_lotr
 #define init_lotr_it9 init_lotr
-CORE_CLONEDEFNV(lotr_it9,lotr,"Lord Of The Rings, The (9.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it9,lotr,"Lord of the Rings, The (9.00 Italy)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspa.800", CRC(2aa1f00d) SHA1(e9df5b61b467c307aacdb5a6980a78af26492e6a))
@@ -1505,7 +1505,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr8 input_ports_lotr
 #define init_lotr8 init_lotr
-CORE_CLONEDEFNV(lotr8,lotr,"Lord Of The Rings, The (8.00)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr8,lotr,"Lord of the Rings, The (8.00)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp8, "lotrcpul.800", CRC(38e83068) SHA1(603b1236bf195c72d32e5a1088a2806e77176436))
 DE_DMD32ROM8x(          "lotrdspl.800", CRC(137c1255) SHA1(43d9ffec18ab2aa80f30b195ca5270d4574d7b8d))
@@ -1513,7 +1513,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp8 input_ports_lotr
 #define init_lotr_sp8 init_lotr
-CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord Of The Rings, The (8.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord of the Rings, The (8.00 Spain)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspg.800", CRC(55765c23) SHA1(690a72e8cb1099a6873eb3214e72bb0fea54fa22))
@@ -1521,7 +1521,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr8 input_ports_lotr
 #define init_lotr_gr8 init_lotr
-CORE_CLONEDEFNV(lotr_gr8,lotr,"Lord Of The Rings, The (8.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr8,lotr,"Lord of the Rings, The (8.00 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspf.800", CRC(e1ccc04b) SHA1(1d5c7ea06f0cb2e1965c968ed01330867aae8e2b))
@@ -1529,7 +1529,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr8 input_ports_lotr
 #define init_lotr_fr8 init_lotr
-CORE_CLONEDEFNV(lotr_fr8,lotr,"Lord Of The Rings, The (8.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr8,lotr,"Lord of the Rings, The (8.00 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspi.800", CRC(b80730d7) SHA1(552c0bfac1c7a6b246829378a30d58769e695f7e))
@@ -1537,7 +1537,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it8 input_ports_lotr
 #define init_lotr_it8 init_lotr
-CORE_CLONEDEFNV(lotr_it8,lotr,"Lord Of The Rings, The (8.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it8,lotr,"Lord of the Rings, The (8.00 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspa.700", CRC(233ef0ad) SHA1(1564ae806639dac49add0c464f4499f46b5589ab))
@@ -1545,7 +1545,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr7 input_ports_lotr
 #define init_lotr7 init_lotr
-CORE_CLONEDEFNV(lotr7,lotr,"Lord Of The Rings, The (7.00)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr7,lotr,"Lord of the Rings, The (7.00)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp7, "lotrcpul.700", CRC(58d8611b) SHA1(ff1e1668993c7c31f04efc22f04ae53112219a1d))
 DE_DMD32ROM8x(          "lotrdspl.700", CRC(3be0283d) SHA1(e019c69cd452b67d6427ddda12b5c3f341afb414))
@@ -1553,7 +1553,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp7 input_ports_lotr
 #define init_lotr_sp7 init_lotr
-CORE_CLONEDEFNV(lotr_sp7,lotr,"Lord Of The Rings, The (7.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp7,lotr,"Lord of the Rings, The (7.00 Spain)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspg.700", CRC(137f223c) SHA1(bb06a6f587bf86555aea85bc1c0402e2137e1c76))
@@ -1561,7 +1561,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr7 input_ports_lotr
 #define init_lotr_gr7 init_lotr
-CORE_CLONEDEFNV(lotr_gr7,lotr,"Lord Of The Rings, The (7.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr7,lotr,"Lord of the Rings, The (7.00 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspf.700", CRC(c98aeb30) SHA1(16b0ae41db8b4083121cc5ebf2706320d554dd08))
@@ -1569,7 +1569,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr7 input_ports_lotr
 #define init_lotr_fr7 init_lotr
-CORE_CLONEDEFNV(lotr_fr7,lotr,"Lord Of The Rings, The (7.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr7,lotr,"Lord of the Rings, The (7.00 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspi.700", CRC(6a0d2a6d) SHA1(2b3ca8b26d79919b7102c60515972ab142d1cbf1))
@@ -1577,7 +1577,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it7 input_ports_lotr
 #define init_lotr_it7 init_lotr
-CORE_CLONEDEFNV(lotr_it7,lotr,"Lord Of The Rings, The (7.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it7,lotr,"Lord of the Rings, The (7.00 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspa.600", CRC(d2098cec) SHA1(06c5c0b29e1442f503b4b374537b9d233721b4b6))
@@ -1585,7 +1585,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr6 input_ports_lotr
 #define init_lotr6 init_lotr
-CORE_CLONEDEFNV(lotr6,lotr,"Lord Of The Rings, The (6.00)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr6,lotr,"Lord of the Rings, The (6.00)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp6, "lotrcpul.600", CRC(af06c560) SHA1(0dec564e8e50ca8e05c462517db38ae48e512e79))
 DE_DMD32ROM8x(          "lotrdspl.600", CRC(d664d989) SHA1(575f9dcc7cb8aac4bfdb25575b7b9c00cf6459b9))
@@ -1593,7 +1593,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp6 input_ports_lotr
 #define init_lotr_sp6 init_lotr
-CORE_CLONEDEFNV(lotr_sp6,lotr,"Lord Of The Rings, The (6.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp6,lotr,"Lord of the Rings, The (6.00 Spain)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspg.600", CRC(b0de0827) SHA1(1a0aa25a3b881148aafa5e2fabb7a3c501343524))
@@ -1601,7 +1601,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr6 input_ports_lotr
 #define init_lotr_gr6 init_lotr
-CORE_CLONEDEFNV(lotr_gr6,lotr,"Lord Of The Rings, The (6.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr6,lotr,"Lord of the Rings, The (6.00 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspf.600", CRC(5cf6c0b6) SHA1(d7fde5dda4c48da15b682ed9f52d20d8ea2accc9))
@@ -1609,7 +1609,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr6 input_ports_lotr
 #define init_lotr_fr6 init_lotr
-CORE_CLONEDEFNV(lotr_fr6,lotr,"Lord Of The Rings, The (6.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr6,lotr,"Lord of the Rings, The (6.00 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspi.600", CRC(9d0b9b3d) SHA1(21363ddbb2c2510fcc9386020f2fd3f49e9c49c3))
@@ -1617,7 +1617,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it6 input_ports_lotr
 #define init_lotr_it6 init_lotr
-CORE_CLONEDEFNV(lotr_it6,lotr,"Lord Of The Rings, The (6.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it6,lotr,"Lord of the Rings, The (6.00 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspa.501", CRC(2d555b9f) SHA1(d2d23182dea810624cab010890971d8997f8570c))
@@ -1625,7 +1625,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr51 input_ports_lotr
 #define init_lotr51 init_lotr
-CORE_CLONEDEFNV(lotr51,lotr,"Lord Of The Rings, The (5.01)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr51,lotr,"Lord of the Rings, The (5.01)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_s51, "lotrcpul.501", CRC(4c0c7360) SHA1(f057931eb719a7a6691187fa7ca86cd6e4541d90))
 DE_DMD32ROM8x(          "lotrdspl.501", CRC(7e96c0f8) SHA1(2ef63b1b30fb2680b97a9080f7b9d76b4d2a76d4))
@@ -1633,7 +1633,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_s51 input_ports_lotr
 #define init_lotr_s51 init_lotr
-CORE_CLONEDEFNV(lotr_s51,lotr,"Lord Of The Rings, The (5.01 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_s51,lotr,"Lord of the Rings, The (5.01 Spain)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_g51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspg.501", CRC(16984eaa) SHA1(999254d12402b0866e4a6f5bb2c03dc5c1c59c5f))
@@ -1641,7 +1641,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_g51 input_ports_lotr
 #define init_lotr_g51 init_lotr
-CORE_CLONEDEFNV(lotr_g51,lotr,"Lord Of The Rings, The (5.01 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_g51,lotr,"Lord of the Rings, The (5.01 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_f51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspf.501", CRC(a07596ac) SHA1(99db750971eafc3dba5f5d3e15728de306984ba4))
@@ -1649,7 +1649,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_f51 input_ports_lotr
 #define init_lotr_f51 init_lotr
-CORE_CLONEDEFNV(lotr_f51,lotr,"Lord Of The Rings, The (5.01 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_f51,lotr,"Lord of the Rings, The (5.01 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_i51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspi.501", CRC(440bbba1) SHA1(e85eca9a1b04ba8bc2784414f7003674bcafba9d))
@@ -1657,7 +1657,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_i51 input_ports_lotr
 #define init_lotr_i51 init_lotr
-CORE_CLONEDEFNV(lotr_i51,lotr,"Lord Of The Rings, The (5.01 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_i51,lotr,"Lord of the Rings, The (5.01 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspa.500", CRC(19bda8d2) SHA1(a3d9e60f964d100594f82ed361f86e74c8d69748))
@@ -1665,7 +1665,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr5 input_ports_lotr
 #define init_lotr5 init_lotr
-CORE_CLONEDEFNV(lotr5,lotr,"Lord Of The Rings, The (5.00)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr5,lotr,"Lord of the Rings, The (5.00)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp5, "lotrcpul.500", CRC(298d10bd) SHA1(133990aed459d5fcd191a08462a231bbd3449387))
 DE_DMD32ROM8x(          "lotrdspl.500", CRC(ab538b24) SHA1(039aa8f4286694971cd9a78805bb9f3acabcd692))
@@ -1673,7 +1673,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp5 input_ports_lotr
 #define init_lotr_sp5 init_lotr
-CORE_CLONEDEFNV(lotr_sp5,lotr,"Lord Of The Rings, The (5.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp5,lotr,"Lord of the Rings, The (5.00 Spain)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspg.500", CRC(39177315) SHA1(13bcf2833ff89fe056517d3ea7b58fb31963cbfc))
@@ -1681,7 +1681,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr5 input_ports_lotr
 #define init_lotr_gr5 init_lotr
-CORE_CLONEDEFNV(lotr_gr5,lotr,"Lord Of The Rings, The (5.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr5,lotr,"Lord of the Rings, The (5.00 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspf.500", CRC(ee5768a1) SHA1(05e696bfc4a7630b483f2f9acd39e53fefe937ef))
@@ -1689,7 +1689,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr5 input_ports_lotr
 #define init_lotr_fr5 init_lotr
-CORE_CLONEDEFNV(lotr_fr5,lotr,"Lord Of The Rings, The (5.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr5,lotr,"Lord of the Rings, The (5.00 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspi.500", CRC(ea8d4ac6) SHA1(f46e8c3f344babc67e72f7077880c21df0c42030))
@@ -1697,7 +1697,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it5 input_ports_lotr
 #define init_lotr_it5 init_lotr
-CORE_CLONEDEFNV(lotr_it5,lotr,"Lord Of The Rings, The (5.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it5,lotr,"Lord of the Rings, The (5.00 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspa.404", CRC(1aefcbe7) SHA1(b17fc82425dd5a6ea5a17205d4000294324bb5cc))
@@ -1705,7 +1705,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr41 input_ports_lotr
 #define init_lotr41 init_lotr
-CORE_CLONEDEFNV(lotr41,lotr,"Lord Of The Rings, The (4.10)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr41,lotr,"Lord of the Rings, The (4.10)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_g41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspg.404", CRC(b78975e5) SHA1(33d9f4d29a83ce0f68e654c15973dfdeee4d224d))
@@ -1713,7 +1713,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_g41 input_ports_lotr
 #define init_lotr_g41 init_lotr
-CORE_CLONEDEFNV(lotr_g41,lotr,"Lord Of The Rings, The (4.10 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_g41,lotr,"Lord of the Rings, The (4.10 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_f41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspf.404", CRC(ebf4bb43) SHA1(5e392c3363db3d56b2ec66fcc43a59b5e8cdf944))
@@ -1721,7 +1721,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_f41 input_ports_lotr
 #define init_lotr_f41 init_lotr
-CORE_CLONEDEFNV(lotr_f41,lotr,"Lord Of The Rings, The (4.10 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_f41,lotr,"Lord of the Rings, The (4.10 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_i41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspi.404", CRC(05db2615) SHA1(0146abd3681d351ef6c1160b85be8bed2886fb27))
@@ -1729,7 +1729,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_i41 input_ports_lotr
 #define init_lotr_i41 init_lotr
-CORE_CLONEDEFNV(lotr_i41,lotr,"Lord Of The Rings, The (4.10 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_i41,lotr,"Lord of the Rings, The (4.10 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspa.403", CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
@@ -1737,7 +1737,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr4 input_ports_lotr
 #define init_lotr4 init_lotr
-CORE_CLONEDEFNV(lotr4,lotr,"Lord Of The Rings, The (4.01)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr4,lotr,"Lord of the Rings, The (4.01)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp4, "lotrcpul.401", CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
 DE_DMD32ROM8x(          "lotrdspl.403", CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
@@ -1745,7 +1745,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp4 input_ports_lotr
 #define init_lotr_sp4 init_lotr
-CORE_CLONEDEFNV(lotr_sp4,lotr,"Lord Of The Rings, The (4.01 Spain)",2003,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp4,lotr,"Lord of the Rings, The (4.01 Spain)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspg.403", CRC(74e925cb) SHA1(2edc8666d53f212a053b7a356d2bf6e3180d7bfb))
@@ -1753,7 +1753,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr4 input_ports_lotr
 #define init_lotr_gr4 init_lotr
-CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord Of The Rings, The (4.01 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord of the Rings, The (4.01 Germany)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspf.403", CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
@@ -1761,7 +1761,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr4 input_ports_lotr
 #define init_lotr_fr4 init_lotr
-CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord Of The Rings, The (4.01 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord of the Rings, The (4.01 France)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspi.403", CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
@@ -1769,7 +1769,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it4 input_ports_lotr
 #define init_lotr_it4 init_lotr
-CORE_CLONEDEFNV(lotr_it4,lotr,"Lord Of The Rings, The (4.01 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it4,lotr,"Lord of the Rings, The (4.01 Italy)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_le, "lotrcpua.a02", CRC(f732aeb1) SHA1(8c28e91d37525b3e356bddf2cf1be42ea44f3629))
 DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
@@ -1777,7 +1777,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_le input_ports_lotr
 #define init_lotr_le init_lotr
-CORE_CLONEDEFNV(lotr_le,lotr,"Lord Of The Rings, The (10.02 Limited Edition)",2008,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_le,lotr,"Lord of the Rings, The (10.02 Limited Edition)",2008,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not!

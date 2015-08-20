@@ -257,7 +257,7 @@ INITGAME4(theraid, play_disp7, 1)
 PLAYMATIC_ROMSTART64(theraid, "theraid.cpu", CRC(97aa1489) SHA1(6b691b287138cc78cfc1010f380ff8c66342c39b))
 PLAYMATIC_SOUNDROM64("theraid.snd", CRC(e33f8363) SHA1(e7f251c334b15e12b1eb7e079c2e9a5f64338052))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(theraid,"The Raid",1984,"Playmatic",gl_mPLAYMATIC4,0)
+CORE_GAMEDEFNV(theraid,"Raid, The",1984,"Playmatic",gl_mPLAYMATIC4,0)
 
 /*-------------------------------------------------------------------
 / 11/84 UFO-X

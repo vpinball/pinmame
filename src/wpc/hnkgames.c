@@ -81,7 +81,7 @@ HNK_ROMEND
 CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",by35_mHNK,0)
 
 /*--------------------------------
-/ The Empire Strike Back
+/ The Empire Strikes Back
 /-------------------------------*/
 INITGAME(empsback,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
 HNK_ROMSTART(empsback,  "sw_ic2.mpu",CRC(b47bc2c7) SHA1(42c985d83a9454fcd08b87e572e5563ebea0d052),
@@ -90,4 +90,4 @@ HNK_SOUNDROMS("sw_ic14.snd", CRC(c1eeb53b) SHA1(7a800dd0a8ae392e14639e1819198d42
               "sw_ic3.snd",  CRC(db214f65) SHA1(1a499cf2059a5c0d860d5a4251a89a5735937ef8))
 HNK_ROMEND
 #define input_ports_empsback input_ports_hnk
-CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",by35_mHNK,0)
+CORE_GAMEDEFNV(empsback,"Empire Strikes Back, The",1981,"Hankin",by35_mHNK,0)

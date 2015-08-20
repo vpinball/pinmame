@@ -751,7 +751,7 @@ GTS80_1_ROMSTART ("691.cpu",   CRC(50f620ea) SHA1(2f997a637eba4eb362586d3aa8caac
 GTS80S2K_ROMSTART("691-s.snd", CRC(d7011a31) SHA1(edf5de6cf5ddc1eb577dd1d8dcc9201522df8315))
 GTS80_ROMEND
 #define input_ports_thegames input_ports_gts80
-CORE_CLONEDEFNV(thegames,gts80as,"The Games",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(thegames,gts80as,"Games, The",1984,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Touchdown (#688)

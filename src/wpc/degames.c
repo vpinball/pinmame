@@ -278,7 +278,7 @@ DE1S_SOUNDROM244(  "potof7.rom",CRC(2e60b2e3) SHA1(0be89fc9b2c6548392febb35c1ace
                    "potof5.rom",CRC(5a0537a8) SHA1(26724441d7e2edd7725337b262d95448499151ad))       //4f
 DE_ROMEND
 #define input_ports_poto input_ports_des11
-CORE_GAMEDEF(poto,a32,"The Phantom of the Opera (3.2)",1990,"Data East",de_mDEAS1,0)
+CORE_GAMEDEF(poto,a32,"Phantom of the Opera, The (3.2)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART48(poto_a29,"potob5.2-9",CRC(f01b5510) SHA1(90c632ee74a2dbf877cfe013a69067b1771f1d67),
                    "potoc5.2-9",CRC(c34975b3) SHA1(c9c57126a5da6d78b4066b1d316ffc840660689d))
@@ -286,7 +286,7 @@ DE1S_SOUNDROM244(  "potof7.rom",CRC(2e60b2e3) SHA1(0be89fc9b2c6548392febb35c1ace
                    "potof6.rom",CRC(62b8f74b) SHA1(f82c706b88f49341bab9014bd83371259eb53b47),       //6f
                    "potof5.rom",CRC(5a0537a8) SHA1(26724441d7e2edd7725337b262d95448499151ad))       //4f
 DE_ROMEND
-CORE_CLONEDEF(poto,a29,a32,"The Phantom of the Opera (2.9)",1990,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(poto,a29,a32,"Phantom of the Opera, The (2.9)",1990,"Data East",de_mDEAS1,0)
 
 /*-------------------------------------------------------------------------------
 / King Kong - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
@@ -350,7 +350,7 @@ DE1S_SOUNDROM288(   "simpf7.rom",CRC(a36febbc) SHA1(3b96e05f797dd0dc0d4d52544ed9
                     "simpf5.rom",CRC(bd0671ae) SHA1(b116a23db956a3dd9fc138ec25af250885ba4ef5))       //4f
 DE_ROMEND
 #define input_ports_simp input_ports_des11
-CORE_GAMEDEF(simp,a27,"The Simpsons (2.7)",1990,"Data East",de_mDEAS1,0)
+CORE_GAMEDEF(simp,a27,"Simpsons, The (2.7)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART48(simp_a20,"simpa2-0.b5",CRC(e67038d1) SHA1(f3eae2ed45caca97a1eb53d847366c52ea68bbee),
                    "simpa2-0.c5",CRC(43662bc3) SHA1(d8171a5c083eb8bffa61353b74db6b3ebab96923))
@@ -358,7 +358,7 @@ DE1S_SOUNDROM288(   "simpf7.rom",CRC(a36febbc) SHA1(3b96e05f797dd0dc0d4d52544ed9
                     "simpf6.rom",CRC(2eb32ed0) SHA1(e7bc3291cb88bf70010865f64496a3ca393257e7),       //6f
                     "simpf5.rom",CRC(bd0671ae) SHA1(b116a23db956a3dd9fc138ec25af250885ba4ef5))       //4f
 DE_ROMEND
-CORE_CLONEDEF(simp,a20,a27,"The Simpsons (2.0)",1990,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(simp,a20,a27,"Simpsons, The (2.0)",1990,"Data East",de_mDEAS1,0)
 
 /***********************************************************************/
 /*************** GAMES USING 128X16 DMD DISPLAY ************************/

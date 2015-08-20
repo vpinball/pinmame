@@ -509,7 +509,7 @@ ST200_ROMSTART8888(stargzrb,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40f
                            "cpu_u6b.716",CRC(b68b11c5) SHA1(1af6aca8ecf70d2adf588a1e856f753193c05abd))
 BY35_ROMEND
 #define input_ports_stargzrb input_ports_stargzr
-CORE_CLONEDEFNV(stargzrb,stargzr,"Stargazer (modified rules rev.9)",2006,"Stern / Oliver",by35_mST200,0)
+CORE_CLONEDEFNV(stargzrb,stargzr,"Stargazer (modified rules rev. 9)",2006,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Flight 2000
@@ -747,7 +747,7 @@ ST200_ROMSTART8888(dragfisb,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a330010
                             "cpu_u6.716",CRC(7e8db47b) SHA1(4a42636c1baf39072bbe123855c9cc5f20ca6888))
 BY35_ROMEND
 #define input_ports_dragfisb input_ports_st
-CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (bootleg)",1982,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (Bootleg)",1982,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Orbitor 1

@@ -501,11 +501,11 @@ SE_ROMEND
 
 CORE_GAMEDEF(harl,a13,"Harley Davidson (1.03)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,u13,a13,"Harley Davidson (1.03 UK)",1999,"Sega",de_mSES1,0)
-CORE_CLONEDEF(harl,a10,a13,"Harley Davidson (1.03, Display rev. 1.00)",1999,"Sega",de_mSES1,0)
-CORE_CLONEDEF(harl,f13,a13,"Harley Davidson (1.03, France)",1999,"Sega",de_mSES1,0)
-CORE_CLONEDEF(harl,g13,a13,"Harley Davidson (1.03, Germany)",1999,"Sega",de_mSES1,0)
-CORE_CLONEDEF(harl,i13,a13,"Harley Davidson (1.03, Italy)",1999,"Sega",de_mSES1,0)
-CORE_CLONEDEF(harl,l13,a13,"Harley Davidson (1.03, Spain)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,a10,a13,"Harley Davidson (1.03, Display 1.00)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,f13,a13,"Harley Davidson (1.03 France)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,g13,a13,"Harley Davidson (1.03 Germany)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,i13,a13,"Harley Davidson (1.03 Italy)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(harl,l13,a13,"Harley Davidson (1.03 Spain)",1999,"Sega",de_mSES1,0)
 
 /********************* STERN GAMES  **********************/
 /*-------------------------------------------------------------------

@@ -563,11 +563,11 @@ CORE_CLONEDEF(tom,13f,13,"Theatre Of Magic (1.3 French)",2005,"Bally",wpc_mSecur
 CORE_CLONEDEF(tom,14h,13,"Theatre Of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,14hb,13,"Theatre Of Magic (1.4H Coin Play)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,12,13,"Theatre Of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,121,13,"Theatre Of Magic (1.21X) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,121,13,"Theatre Of Magic (1.21X LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,10f,13,"Theatre Of Magic (1.0 French)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,101f,13,"Theatre Of Magic (1.01 French) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,06,13,"Theatre Of Magic (0.6a)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,061,13,"Theatre Of Magic (0.61a) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,061,13,"Theatre Of Magic (0.61a LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

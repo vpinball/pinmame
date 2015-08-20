@@ -441,20 +441,20 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (ww,l5,   "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d5,l5,"White Water (D-5) LED Ghost Fix",2000,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d5,l5,"White Water (D-5 LED Ghost Fix)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh6,l5,"White Water (LH-6)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh6c,l5,"White Water (LH-6 Coin Play)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh5,l5,"White Water (LH-5)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l4,l5,"White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,d4,l5,"White Water (D-4) LED Ghost Fix",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l3,l5,"White Water (L-3)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d3,l5,"White Water (D-3) LED Ghost Fix",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d3,l5,"White Water (D-3 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l2,l5,"White Water (L-2)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d2,l5,"White Water (D-2) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p8,l5,"White Water (P-8, P-2 sound)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p9,l5,"White Water (P-9, P-2 sound) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p1,l5,"White Water (P-8, P-1 sound)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p2,l5,"White Water (P-9, P-1 sound) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d2,l5,"White Water (D-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p8,l5,"White Water (P-8, Sound P-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p9,l5,"White Water (P-9, Sound P-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p1,l5,"White Water (P-8, Sound P-1)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p2,l5,"White Water (P-9, Sound P-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

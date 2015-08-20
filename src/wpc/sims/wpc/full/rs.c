@@ -665,17 +665,17 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(rs,l6,"Red and Ted's Road Show (L-6)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,la5,l6,"Red and Ted's Road Show (La-5)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,da5,l6,"Red and Ted's Road Show (Da-5) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,da5,l6,"Red and Ted's Road Show (Da-5 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx5,l6,"Red and Ted's Road Show (Lx-5)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,dx5,l6,"Red and Ted's Road Show (Dx-5) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx5,l6,"Red and Ted's Road Show (Dx-5 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,la4,l6,"Red and Ted's Road Show (La-4)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,da4,l6,"Red and Ted's Road Show (Da-4) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,da4,l6,"Red and Ted's Road Show (Da-4 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx4,l6,"Red and Ted's Road Show (Lx-4)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,dx4,l6,"Red and Ted's Road Show (Dx-4) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx4,l6,"Red and Ted's Road Show (Dx-4 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx3,l6,"Red and Ted's Road Show (Lx-3)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,dx3,l6,"Red and Ted's Road Show (Dx-3) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx3,l6,"Red and Ted's Road Show (Dx-3 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx2,l6,"Red and Ted's Road Show (Lx-2)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(rs,dx2,l6,"Red and Ted's Road Show (Dx-2) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,dx2,l6,"Red and Ted's Road Show (Dx-2 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

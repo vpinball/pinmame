@@ -387,9 +387,9 @@ CORE_CLONEDEF(afm,113b,113,"Attack From Mars (1.13b)",1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11,113,"Attack From Mars (1.1)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11u,113,"Attack From Mars (1.1 Ultrapin)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,10,113,"Attack From Mars (1.0)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,f10,113,"Attack From Mars (FreeWPC 0.10)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,f20,113,"Attack From Mars (FreeWPC 0.20)", 1995, "Bally",wpc_m95S,0)
-CORE_CLONEDEF(afm,f32,113,"Attack From Mars (FreeWPC 0.32)", 1995, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,f10,113,"Attack From Mars (FreeWPC 0.10)", 1995, "FreeWPC",wpc_m95S,0)
+CORE_CLONEDEF(afm,f20,113,"Attack From Mars (FreeWPC 0.20)", 1995, "FreeWPC",wpc_m95S,0)
+CORE_CLONEDEF(afm,f32,113,"Attack From Mars (FreeWPC 0.32)", 1995, "FreeWPC",wpc_m95S,0)
 
 /*----------
 / Game Data

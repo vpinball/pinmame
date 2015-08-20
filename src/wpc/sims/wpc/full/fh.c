@@ -663,20 +663,20 @@ WPC_ROMSTART(fh,f91,"ffh0_91.rom",0x040000,CRC(b3224e53) SHA1(f0996209a4490af7ac
 /  Game drivers
 /---------------*/
 
-CORE_GAMEDEF(fh,l9,"Funhouse L-9 (SL-3)",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d9,l9,"Funhouse D-9 (SL-3) LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-3) Bootleg Improved German translation",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d9b,l9,"Funhouse D-9 (SL-3) German LED Ghost Fix",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,905h,l9,"Funhouse 9.05H",1996,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,906h,l9,"Funhouse 9.06H (Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l2,l9,"Funhouse L-2",1990,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l3,l9,"Funhouse L-3",1990,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d3,l9,"Funhouse D-3 LED Ghost Fix",1990,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l4,l9,"Funhouse L-4",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d4,l9,"Funhouse D-4 LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,l5,l9,"Funhouse L-5",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,d5,l9,"Funhouse D-5 LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,f91,l9,"Funhouse (FreeWPC 0.91)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_GAMEDEF(fh,l9,"Funhouse (L-9, SL-3)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9,l9,"Funhouse (D-9, SL-3 LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l9b,l9,"Funhouse (L-9, SL-3 Improved German translation patch)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d9b,l9,"Funhouse (D-9, SL-3 German LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l2,l9,"Funhouse (L-2)",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l3,l9,"Funhouse (L-3)",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d3,l9,"Funhouse (D-3 LED Ghost Fix)",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l4,l9,"Funhouse (L-4)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d4,l9,"Funhouse (D-4 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l5,l9,"Funhouse (L-5)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,d5,l9,"Funhouse (D-5 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,f91,l9,"Funhouse (FreeWPC 0.91)",1991,"FreeWPC",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
