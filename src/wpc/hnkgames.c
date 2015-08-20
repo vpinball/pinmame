@@ -91,4 +91,3 @@ HNK_SOUNDROMS("sw_ic14.snd", CRC(c1eeb53b) SHA1(7a800dd0a8ae392e14639e1819198d42
 HNK_ROMEND
 #define input_ports_empsback input_ports_hnk
 CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",by35_mHNK,0)
-

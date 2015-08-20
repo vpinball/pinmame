@@ -451,7 +451,7 @@ GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723e
                    "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
 GTS80_ROMEND
 #define input_ports_hh input_ports_gts80
-CORE_CLONEDEFNV(hh,gts80,"Haunted House (Rev 2)",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(hh,gts80,"Haunted House (rev. 2)",1982,"Gottlieb",gl_mGTS80SS,0)
 
 INIT_S80D7(hh7, dispNumeric4, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART  ("669-2.cpu",  CRC(f3085f77) SHA1(ebd43588401a735d9c941d06d67ac90183139e90))
@@ -459,7 +459,7 @@ GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723e
                    "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
 GTS80_ROMEND
 #define input_ports_hh7 input_ports_hh
-CORE_CLONEDEFNV(hh7,hh,"Haunted House (Rev 2, 7-digit conversion)",2008,"Oliver",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(hh7,hh,"Haunted House (rev. 2, 7-digit conversion)",2008,"Oliver",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Haunted House up to serial no. 4999
@@ -470,7 +470,7 @@ GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723e
                    "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
 GTS80_ROMEND
 #define input_ports_hh_1 input_ports_hh
-CORE_CLONEDEFNV(hh_1,hh,"Haunted House (Rev 1)",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(hh_1,hh,"Haunted House (rev. 1)",1982,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Eclipse
@@ -831,7 +831,7 @@ GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
 #define input_ports_tagteam2 input_ports_gts80
-CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Wrestling (rev.2)",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Wrestling (rev. 2)",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)

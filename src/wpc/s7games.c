@@ -409,4 +409,3 @@ S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594c
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
-
