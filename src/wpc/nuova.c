@@ -510,7 +510,7 @@ BY35_INPUT_PORTS_START(toppin, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
-/ U-boat 65
+/ U-Boat 65
 /-------------------------------*/
 ROM_START(uboat65)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -537,4 +537,4 @@ ROM_END
 
 INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(uboat65, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(uboat65, "U-boat 65", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", nuova, 0)
