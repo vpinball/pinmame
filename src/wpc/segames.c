@@ -196,7 +196,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmg input_ports_spacejam
 #define init_spacejmg init_spacejam
-CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (Germany)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (3.00 Germany)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(spacejmf,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
 DE_DMD32ROM8x(  "jamdspf.300",CRC(1683909f) SHA1(e14810a5d8704ea052fddcb3b54043bf9d57b296))
@@ -204,7 +204,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmf input_ports_spacejam
 #define init_spacejmf init_spacejam
-CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (France)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (3.00 France)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(spacejmi,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
 DE_DMD32ROM8x(  "jamdspi.300",CRC(eb9b5971) SHA1(0bfac0511d0cd9d56eee59782c199ee0a78abe5e))
@@ -212,7 +212,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmi input_ports_spacejam
 #define init_spacejmi init_spacejam
-CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (Italy)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (3.00 Italy)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Star Wars Trilogy (4.03)
@@ -480,7 +480,7 @@ DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f7
 SE_ROMEND
 #define input_ports_strxt_uk input_ports_strikext
 #define init_strxt_uk init_strikext
-CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (UK)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (1.01 UK)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_gr,"sxcpug.103", CRC(d73b9020) SHA1(491cd9db172db0a35870524ed4f1b15fb67f2e78))
 DE_DMD32ROM8x(     "sxdispg.103",CRC(eb656489) SHA1(476315a5d22b6d8c63e9a592167a00f0c87e86c9))
@@ -492,7 +492,7 @@ DE2S_SOUNDROM18888("sxsndg.u7" ,CRC(b38ec07d) SHA1(239a3a51c049b007d4c16c3bd1e00
 SE_ROMEND
 #define input_ports_strxt_gr input_ports_strikext
 #define init_strxt_gr init_strikext
-CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (Germany)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (1.03 Germany)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", CRC(2804bc9f) SHA1(3c75d8cc4d2833baa163d99c709dcb9475ba0831))
 DE_DMD32ROM8x(     "sxdispf.103",CRC(4b4b5c19) SHA1(d2612a2b8099b45cb67ac9b55c88b5b10519d49b))
@@ -504,7 +504,7 @@ DE2S_SOUNDROM18888("sxsndf.u7" ,CRC(e68b0607) SHA1(cd3a5ff51932914e977fe866f7ab5
 SE_ROMEND
 #define input_ports_strxt_fr input_ports_strikext
 #define init_strxt_fr init_strikext
-CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (France)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 France)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_it,"sxcpui.102", CRC(f955d0ef) SHA1(0f4ee87715bc085e2fb05e9ebdc89403f6bac444))
 DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
@@ -516,7 +516,7 @@ DE2S_SOUNDROM18888("sxsndi.u7" ,CRC(81caf0a7) SHA1(5bb05c5bb49d12417b3ad49398623
 SE_ROMEND
 #define input_ports_strxt_it input_ports_strikext
 #define init_strxt_it init_strikext
-CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (Italy)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (1.02 Italy)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_sp,"sxcpul.102", CRC(6b1e417f) SHA1(b87e8659bc4481384913a28c1cb2d7c96532b8e3))
 DE_DMD32ROM8x(     "sxdispl.103",CRC(3efd4a18) SHA1(64f6998f82947a5bd053ad8dd56682adb239b676))
@@ -528,7 +528,7 @@ DE2S_SOUNDROM18888("sxsndl.u7" ,CRC(a03131cf) SHA1(e50f665eb15cef799fdc0d1d88bc7
 SE_ROMEND
 #define input_ports_strxt_sp input_ports_strikext
 #define init_strxt_sp init_strikext
-CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (Spain)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (1.02 Spain)",1999,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout

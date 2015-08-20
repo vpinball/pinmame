@@ -50,7 +50,7 @@ S4_ROMSTART(flash,t1,"gamerom.716", CRC(287f12d6) SHA1(ede0c5b0ea2586d8bdf71ecad
                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
-CORE_CLONEDEF(flash,t1,l2,"Flash (T-1) Ted Estes",1979,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(flash,t1,l2,"Flash (T-1 Ted Estes)",1979,"Williams",s4_mS4S,0)
 
 /*--------------------------------
 / Tri Zone - Sys.4 (Game #487)
@@ -69,7 +69,7 @@ S4_ROMSTART(trizn,t1,"gamerom.716", CRC(757091c5) SHA1(00dac6c19b08d2528ea293619
                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
-CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1) Ted Estes",1978,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1 Ted Estes)",1978,"Williams",s4_mS4S,0)
 
 /*--------------------------------
 / Pokerino - Sys.4 (Game #488)
@@ -100,7 +100,7 @@ S4_ROMSTART(tmwrp,t2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5
                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
-CORE_CLONEDEF(tmwrp,t2,l2,"Time Warp (T-2) Ted Estes",1979,"Williams",s4_mS4S,0)
+CORE_CLONEDEF(tmwrp,t2,l2,"Time Warp (T-2 Ted Estes)",1979,"Williams",s4_mS4S,0)
 
 /*--------------------------------
 / Stellar Wars - Sys.4 (Game #490)
@@ -113,6 +113,3 @@ S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea
 S4_ROMEND
 #define input_ports_stlwr input_ports_s4
 CORE_GAMEDEF(stlwr,l2,"Stellar Wars (L-2)",1979,"Williams",s4_mS4S,0)
-
-
-

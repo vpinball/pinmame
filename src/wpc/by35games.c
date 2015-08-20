@@ -676,7 +676,7 @@ BY35_ROMSTART888(viking  ,"802-05_1.716",CRC(a5db0574) SHA1(d9836679ed797b649f2c
 BY51_SOUNDROM8(           "802-07-4.716",CRC(62bc5030) SHA1(5a696f784a415d5b16ee23cd72a905264a2bbeac))
 BY35_ROMEND
 #define input_ports_viking input_ports_by35
-CORE_GAMEDEFNV(viking  ,"Viking",1980,"Bally",by35_mBY35_51S,0)
+CORE_GAMEDEFNV(viking,"Viking",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(vikingb ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(vikingb, "vikg2732.u2", CRC(7a5c24e6) SHA1(073b16eb6d77684ba99e3bf340a3bc9dfb537560),
@@ -1098,17 +1098,17 @@ CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_mBY35_61BS,0)
 
 #define init_centaura init_centaur
 BY35_ROMSTARTx00(centaura,"848-08_2.732",CRC(8bdcd32b) SHA1(39f64393d3a39a8172b3d80d196253aac1342f40),
-                        "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
-BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b58e3fa8c285170b1f09a),
-                         "848-02_4.532",CRC(d6dbd0e4) SHA1(62e4c8c1a747c5f6a3a4bf4d0bc80b06a1f70d13),
-                         "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
+                         "7536fn.u6"    ,CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
+BY61_SOUNDROMx008(       "848-01_3.532" ,CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b58e3fa8c285170b1f09a),
+                         "848-02_4.532" ,CRC(d6dbd0e4) SHA1(62e4c8c1a747c5f6a3a4bf4d0bc80b06a1f70d13),
+                         "848-05_5.716" ,CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
 BY35_ROMEND
 #define input_ports_centaura input_ports_centaur
 CORE_CLONEDEFNV(centaura,centaur,"Centaur (Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
 #define init_centaurb init_centaur
-BY35_ROMSTARTx00(centaurb,"cent2un.u2",CRC(047d08c5) SHA1(82e3952f84450a51b0c70129a593065b99d57dc0),
-                        "cent2un.u6",CRC(cfb1ebcc) SHA1(f33b92580962a6fe8fa79c2d3e2ea7470bd8ae7d))
+BY35_ROMSTARTx00(centaurb,"cent2un.u2" ,CRC(047d08c5) SHA1(82e3952f84450a51b0c70129a593065b99d57dc0),
+                         "cent2un.u6"  ,CRC(cfb1ebcc) SHA1(f33b92580962a6fe8fa79c2d3e2ea7470bd8ae7d))
 BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b58e3fa8c285170b1f09a),
                          "848-02_4.532",CRC(d6dbd0e4) SHA1(62e4c8c1a747c5f6a3a4bf4d0bc80b06a1f70d13),
                          "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
@@ -1254,7 +1254,7 @@ BY35_ROMSTARTx00(speakes4,"877-04_2.732",CRC(8926f2bb) SHA1(617c032ce949007d6bcb
                           "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
 BY51_SOUNDROM8(           "877-01_4.716",CRC(6534e826) SHA1(580653636f8d33e758e6631c9ce495f42fe3747a))
 BY35_ROMEND
-CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy (4 Players)",1982,"Bally",by35_mBY35_51S,0)
 
 #define input_ports_speake4a input_ports_speakesy
 #define init_speake4a init_speakesy
@@ -1262,7 +1262,7 @@ BY35_ROMSTARTx00(speake4a,"877-04_2.732",CRC(8926f2bb) SHA1(617c032ce949007d6bcb
                         "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
 BY51_SOUNDROM8(           "877-01_4.716",CRC(6534e826) SHA1(580653636f8d33e758e6631c9ce495f42fe3747a))
 BY35_ROMEND
-CORE_CLONEDEFNV(speake4a,speakesy,"Speakeasy 4 Player (Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(speake4a,speakesy,"Speakeasy (4 Players Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0)
 
 /*--------------------------------
 / Rapid Fire
