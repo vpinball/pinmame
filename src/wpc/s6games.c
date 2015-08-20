@@ -174,7 +174,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_a6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-Digit Custom Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-Digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_d6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_d6, "fir6d614.732", CRC(b9274332) SHA1(53dd65dcda566b2b000928ff32a8256e6054ebb5),
@@ -186,7 +186,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_d6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_d6,frpwr_l6,"Firepower (Sys.6/6-Digit /10 Scoring Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_d6,frpwr_l6,"Firepower (Sys.6/6-Digit /10 Scoring rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 static const struct core_dispLayout fp_7digit_disp[] = {
   // Player 1            Player 2
@@ -218,7 +218,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_c6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-Digit Custom Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-Digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 
@@ -268,7 +268,7 @@ S67S_SPEECHROMS0000(  "5t5014fr.dat",CRC(1d961517) SHA1(c71ee324becfc8cdbecabd1e
                       "5t5016fr.dat",CRC(0ddf91e9) SHA1(48f5fdfc0c5a66dd318fecb7c90e5f5a684a3876),
                       "5t5017fr.dat",CRC(7e546dc1) SHA1(58f8286403978b0d929987189089881d754a9a83))
 S6_ROMEND
-CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French speech)",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French Speech)",1980,"Williams",s6_mS6S,0)
 
 S6_ROMSTARTMOD(alpok_b6,"al32ic14.732",CRC(7e950f6e) SHA1(5f9b7c6bc2b9e6ee7b6d6dc66f0d3608f7b467f3),
                         "al32ic20.716",CRC(0058551c) SHA1(6b4bd2bd329ecac18d7a848ff4614cd61f5b37ad),
