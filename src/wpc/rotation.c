@@ -273,7 +273,7 @@ ROM_START(rotation)
     ROM_LOAD("rot-b117.dat", 0x0800, 0x0800, CRC(538e37b2) SHA1(d283ac4d0024388b92b6494fcde63957b705bf48))
     ROM_LOAD("rot-c117.dat", 0x1000, 0x0800, CRC(3321ff08) SHA1(d6d94fea27ef58ca648b2829b32d62fcec108c9b))
 ROM_END
-CORE_GAMEDEFNV(rotation,"Rotation VIII (v. 1.17)",1978,"Midway",MIDWAY,0)
+CORE_GAMEDEFNV(rotation,"Rotation VIII (1.17)",1978,"Midway",MIDWAY,0)
 
 ROM_START(rota_115)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -283,7 +283,7 @@ ROM_START(rota_115)
 ROM_END
 #define init_rota_115 init_rotation
 #define input_ports_rota_115 input_ports_rotation
-CORE_CLONEDEFNV(rota_115,rotation,"Rotation VIII (v. 1.15)",1978,"Midway",MIDWAY,0)
+CORE_CLONEDEFNV(rota_115,rotation,"Rotation VIII (1.15)",1978,"Midway",MIDWAY,0)
 
 ROM_START(rota_101)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -293,4 +293,4 @@ ROM_START(rota_101)
 ROM_END
 #define init_rota_101 init_rotation
 #define input_ports_rota_101 input_ports_rotation
-CORE_CLONEDEFNV(rota_101,rotation,"Rotation VIII (v. 1.01)",1978,"Midway",MIDWAY,0)
+CORE_CLONEDEFNV(rota_101,rotation,"Rotation VIII (1.01)",1978,"Midway",MIDWAY,0)
