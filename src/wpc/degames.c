@@ -24,7 +24,7 @@
 
 	5) 520-5505 Series: 128X32 DMD - m6809 CPU + separate controller board
 		a) -00 generation: (Lethal Weapon to Last Action Hero)
-		b) -01 generation: (Tales From the Crypt to Guns N Roses)
+		b) -01 generation: (Tales from the Crypt to Guns N Roses)
 
 	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
 	   (Maveric to Batman Forever)
@@ -765,7 +765,7 @@ DE_ROMEND
 CORE_CLONEDEF(lah,113,112,"Last Action Hero (1.13 unofficial MOD)",2014,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
-/ Tales From the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
+/ Tales from the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(tftc,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(tftc_303,"tftccpua.303",CRC(e9bec98e) SHA1(02643805d596017c88d9a534b94b2075bb2ab101))
@@ -775,7 +775,7 @@ DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624
                     "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 #define input_ports_tftc input_ports_des11
-CORE_GAMEDEF(tftc,303,"Tales From the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(tftc,303,"Tales from the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_302,"tftccpua.302",CRC(a194fe0f) SHA1(b83e048300f7e072f76672d72cdf43e43fab2e9e))
 DE_DMD32ROM8x(      "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
@@ -783,7 +783,7 @@ DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624
                     "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
                     "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
-CORE_CLONEDEF(tftc,302,303,"Tales From the Crypt (3.02 Dutch)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tftc,302,303,"Tales from the Crypt (3.02 Dutch)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_300,"tftccpua.300",CRC(3d275152) SHA1(0aa6df629c27d9265cf35ca0724e241d9820e56b))
 DE_DMD32ROM8x(      "tftcdspa.300",CRC(bf5c812b) SHA1(c10390b6cad0ad457fb83241c7ee1d6b109cf5be))
@@ -791,7 +791,7 @@ DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624
                     "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
                     "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
-CORE_CLONEDEF(tftc,300,303,"Tales From the Crypt (3.00)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tftc,300,303,"Tales from the Crypt (3.00)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_200,"tftcgc5.a20",CRC(94b61f83) SHA1(9f36353a06cacb8ad67f70cd8d9d8ac698905ba3))
 DE_DMD32ROM8x(      "tftcdot.a20",CRC(16b3968a) SHA1(6ce91774fc60187e4b0d8874a14ef64e2805eb3f))
@@ -799,7 +799,7 @@ DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624
                     "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
                     "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
-CORE_CLONEDEF(tftc,200,303,"Tales From the Crypt (2.00)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tftc,200,303,"Tales from the Crypt (2.00)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_104,"tftccpua.104",CRC(efb3c0d0) SHA1(df1505947732704171e31dbace4c263723c8342b))
 DE_DMD32ROM8x(         "tftcdspl.103",CRC(98f3b13e) SHA1(909c373b1a27b5aeebad2535ae4fb9bba71e9b5c))
@@ -807,7 +807,7 @@ DE2S_SOUNDROM144(      "sndu7.dat",   CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea6
                        "sndu17.dat" , CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
                        "sndu21.dat" , CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
-CORE_CLONEDEF(tftc,104,303,"Tales From the Crypt (1.04 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tftc,104,303,"Tales from the Crypt (1.04 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
