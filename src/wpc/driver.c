@@ -2120,8 +2120,9 @@ DRIVER(ft,p5)           //                  Fish Tales (P-5) LED Ghost Fix
 DRIVER(ft,l3)           //          09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //          09/92 W Fish Tales (L-4)
 DRIVER(ft,l5)           //          12/92 W Fish Tales (L-5)
-DRIVER(ft,l5p)          //          12/92 W Fish Tales (L-5) with text size patch bugfix
+DRIVER(ft,l5p)          //                  Fish Tales (L-5) with text size patch bugfix
 DRIVER(ft,d5)           //                  Fish Tales (D-5) LED Ghost Fix
+DRIVER(ft,d6)           //          08/15   Fish Tales (D-6) LED Ghost / Extra Ball Fix
 DRIVER(dw,p5)           //WPC-206:  10/92 B Doctor Who (P-5)
 DRIVER(dw,p6)           //                  Doctor Who (P-6) LED Ghost Fix
 DRIVER(dw,l1)           //          10/92 B Doctor Who (L-1)

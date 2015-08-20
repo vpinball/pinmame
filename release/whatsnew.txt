@@ -67,6 +67,7 @@ Cyclone L-1
 Diner LU-2
 Fire L-2
 Fish Tales L-5 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) 
+Fish Tales D-6 (LED Ghost Fix and Extra Ball fix)
 Flash L-2 (yellow flipper ROMs)
 Funhouse L-2
 Godzilla 0.90 & 1.00
@@ -234,7 +235,7 @@ for a good set of ROMs for like 10 years... ;)
 Also: Brian got the speech ROM for "Caribbean Cruise" from Steve Young,
 the missing DMD ROM for "Aaron Spelling" from Mike Pacak,
 and built in support for Ed Cheung's WPC "ghosting" patch ROMs, which
-should make for a clearer look in our emulated DMD display too.
+should make for a clearer look in our emulated version too.
 
 Last but not least we found a sound ROM revision for Williams Space Shuttle
 that corrects a bug in the previously known U49 dump which was provided by
