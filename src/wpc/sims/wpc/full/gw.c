@@ -529,19 +529,19 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,d5,l5,"The Getaway: High Speed II (D-5) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,pb,l5,"The Getaway: High Speed II (P-B)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,pc,l5,"The Getaway: High Speed II (P-C)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,pd,l5,"The Getaway: High Speed II (P-D) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,p7,l5,"The Getaway: High Speed II (P-7)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,p8,l5,"The Getaway: High Speed II (P-8) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,l1,l5,"The Getaway: High Speed II (L-1)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,d1,l5,"The Getaway: High Speed II (D-1) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,d2,l5,"The Getaway: High Speed II (D-2) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,l3,l5,"The Getaway: High Speed II (L-3)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,d3,l5,"The Getaway: High Speed II (D-3) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
+CORE_GAMEDEF(gw,l5,"Getaway: High Speed II, The (L-5)",1992, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d5,l5,"Getaway: High Speed II, The (D-5 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,pb,l5,"Getaway: High Speed II, The (P-B)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,pc,l5,"Getaway: High Speed II, The (P-C)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,pd,l5,"Getaway: High Speed II, The (P-D LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,p7,l5,"Getaway: High Speed II, The (P-7)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,p8,l5,"Getaway: High Speed II, The (P-8 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l1,l5,"Getaway: High Speed II, The (L-1)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d1,l5,"Getaway: High Speed II, The (D-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l2,l5,"Getaway: High Speed II, The (L-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d2,l5,"Getaway: High Speed II, The (D-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l3,l5,"Getaway: High Speed II, The (L-3)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,d3,l5,"Getaway: High Speed II, The (D-3 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

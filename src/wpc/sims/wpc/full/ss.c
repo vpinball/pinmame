@@ -399,8 +399,8 @@ CORE_GAMEDEF(ss,15,"Scared Stiff (1.5)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,03,15,"Scared Stiff (0.3)",1996,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(ss,01,15,"Scared Stiff (D0.1R with sound rev.25)",1996,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D0.1R with sound rev.25 Coin Play)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,01,15,"Scared Stiff (D0.1R, Sound rev. 25)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D0.1R, Sound rev. 25 Coin Play)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

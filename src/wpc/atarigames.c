@@ -57,7 +57,7 @@ ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79ac
 							"atarian.e00",	CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
 ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
 ATARI_ROMEND
-CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / The Atarians (working bootleg)
@@ -67,7 +67,7 @@ ATARI_2_ROMSTART(atarianb,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79ac
 							"atarianb.e00",	CRC(74fc86e4) SHA1(135d75e5c03feae0929fa84caa3c802353cdd94e))
 ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
 ATARI_ROMEND
-CORE_CLONEDEFNV(atarianb,atarians,"The Atarians (working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
+CORE_CLONEDEFNV(atarianb,atarians,"Atarians, The (working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
 
 /*-------------------------------------------------------------------
 / Time 2000 (06/1977)

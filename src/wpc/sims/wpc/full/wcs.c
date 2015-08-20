@@ -492,14 +492,14 @@ WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (Lx-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,la2,l2,"World Cup Soccer (La-2)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (Dx-2) LED Ghost Fix",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (Dx-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (Pa-2)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,p5,l2,"World Cup Soccer (Pa-5) LED Ghost Fix",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,p5,l2,"World Cup Soccer (Pa-5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p3,l2,"World Cup Soccer (Px-3)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,p6,l2,"World Cup Soccer (Px-6) LED Ghost Fix",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,f10,l2,"World Cup Soccer (FreeWPC 0.10)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,f50,l2,"World Cup Soccer (FreeWPC 0.50)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(wcs,f62,l2,"World Cup Soccer (FreeWPC 0.62)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,p6,l2,"World Cup Soccer (Px-6 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,f10,l2,"World Cup Soccer (FreeWPC 0.10)",1994,"FreeWPC",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,f50,l2,"World Cup Soccer (FreeWPC 0.50)",1994,"FreeWPC",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,f62,l2,"World Cup Soccer (FreeWPC 0.62)",1994,"FreeWPC",wpc_mSecurityS,0)
 
 /*----------
 / Game Data

@@ -381,9 +381,9 @@ static MACHINE_DRIVER_START(hd)
 MACHINE_DRIVER_END
 
 CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,d3,l3,"Harley Davidson (D-3) LED Ghost Fix",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d3,l3,"Harley Davidson (D-3 LED Ghost Fix)",1991,"Bally", hd, 0)
 CORE_CLONEDEF(hd,l1,l3,"Harley Davidson (L-1)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,d1,l3,"Harley Davidson (D-1) LED Ghost Fix",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d1,l3,"Harley Davidson (D-1 LED Ghost Fix)",1991,"Bally", hd, 0)
 
 /*-----------------------
 / Simulation Definitions

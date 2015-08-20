@@ -459,15 +459,15 @@ WPC_ROMSTART(jd,d6,"jd_d6.u6",   0x80000,CRC(fa17dd22) SHA1(e71c9c0f504a793d4e9c
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jd,l7,"Judge Dredd (L-7)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(jd,d7,l7,"Judge Dredd (D-7) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d7,l7,"Judge Dredd (D-7 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l1,l7,"Judge Dredd (L-1)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(jd,d1,l7,"Judge Dredd (D-1) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d1,l7,"Judge Dredd (D-1 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l4,l7,"Judge Dredd (L-4)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(jd,d4,l7,"Judge Dredd (D-4) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d4,l7,"Judge Dredd (D-4 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l5,l7,"Judge Dredd (L-5)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(jd,d5,l7,"Judge Dredd (D-5) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d5,l7,"Judge Dredd (D-5 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(jd,l6,l7,"Judge Dredd (L-6)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(jd,d6,l7,"Judge Dredd (D-6) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,d6,l7,"Judge Dredd (D-6 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

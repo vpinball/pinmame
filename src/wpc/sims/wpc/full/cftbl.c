@@ -408,9 +408,9 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3,SP-1)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3,SP-1) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3, SP-1)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3, SP-1 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3)",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------

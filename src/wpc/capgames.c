@@ -193,7 +193,7 @@ CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323
 				   "u30_v101.bin", CRC(f5432518) SHA1(8c26a267335289145f29db822bf7dfcb4730b208), \
 				   "u31_v101.bin", CRC(2b14e032) SHA1(c423ae5ed2fcc582201606bac3e766ec332b395a))
 CC_ROMEND
-CORE_GAMEDEFNV(ffv104,"Flipper Football (v1.04)",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(ffv104,"Flipper Football (1.04)",1996,"Capcom",cc2,0)
 //Version 1.01
 INITGAME(ffv101, 12, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_8(ffv101,  "u1l_v100.bin",CRC(1c0b776f) SHA1(a1cabe9646973a97000a8f42295dfcfbed3691fa),
@@ -210,7 +210,7 @@ CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323
 				   "u30_v100.bin", CRC(a92885a1) SHA1(b06453c710fd86e97567e70ab7558b0c2fd54c72), \
 				   "u31_v100.bin", CRC(358c2727) SHA1(73ac6cc51a6ceb27934607909a0fff369a47ba7d))
 CC_ROMEND
-CORE_CLONEDEFNV(ffv101,ffv104,"Flipper Football (v1.01)",1996,"Capcom",cc2,0)
+CORE_CLONEDEFNV(ffv101,ffv104,"Flipper Football (1.01)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
 / Big Bang Bar - Beta (11/96)
