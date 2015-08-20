@@ -65,7 +65,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_e7 input_ports_s7
-CORE_GAMEDEFNV(frpwr_e7,"Firepower (Sys.7/6-digit /10 Scoring Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_GAMEDEFNV(frpwr_e7,"Firepower (Sys.7/6-digit /10 Scoring rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 6-Digit conversion, rev. 31
@@ -80,7 +80,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_a7 input_ports_s7
-CORE_GAMEDEFNV(frpwr_a7,"Firepower (Sys.7/6-digit Custom Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_GAMEDEFNV(frpwr_a7,"Firepower (Sys.7/6-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 31
@@ -95,7 +95,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_d7 input_ports_s7
-CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 38
@@ -111,7 +111,7 @@ S67S_SPEECHROMS0000(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic4.532",   CRC(8d4ff909) SHA1(b82666fe96bdf174bc4f347d7139da9ab7dadee1))
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
-CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7/7-digit Custom Rev. 38)",2006,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7/7-digit Custom rev. 38)",2006,"Williams / Oliver",s7_mS7S6,0)
 
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)

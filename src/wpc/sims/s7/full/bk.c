@@ -269,7 +269,7 @@ S7_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(bk,l4,"Black Knight (L-4)",1980,"Williams",s7_mS7S,0)
-CORE_CLONEDEF(bk,f4,l4,"Black Knight (L-4, French speech)",1980,"Williams",s7_mS7S,0)
+CORE_CLONEDEF(bk,f4,l4,"Black Knight (L-4, French Speech)",1980,"Williams",s7_mS7S,0)
 CORE_CLONEDEF(bk,l3,l4,"Black Knight (L-3)",1980,"Williams",s7_mS7S,0)
 
 /*-----------------------

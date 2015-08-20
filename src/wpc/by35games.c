@@ -246,7 +246,7 @@ BY35_ROMSTARTx00(smmanc,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d69472
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmanc input_ports_by35
-CORE_CLONEDEFNV(smmanc,smman,"Six Million Dollar Man (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(smmanc,smman,"Six Million Dollar Man (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(smmand,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTARTx00(smmand,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
@@ -282,7 +282,7 @@ BY35_ROMSTARTx00(playboyc,"play2732.u2", CRC(da49e8ce) SHA1(fa2b7731e6ade119b1c1
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_playboyc input_ports_by35
-CORE_CLONEDEFNV(playboyc,playboy, "Playboy (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(playboyc,playboy, "Playboy (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(playboyd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(playboyd,"play2732.u2", CRC(da49e8ce) SHA1(fa2b7731e6ade119b1c18e85e15bdc21ea9e46af),
@@ -318,7 +318,7 @@ BY35_ROMSTARTx00(voltanc, "volt2732.u2", CRC(a4670a54) SHA1(7bb792e388d52bd350e3
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_voltanc input_ports_by35
-CORE_CLONEDEFNV(voltanc,voltan, "Voltan Escapes Cosmic Doom (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(voltanc,voltan, "Voltan Escapes Cosmic Doom (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(voltand,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(voltand, "volt2732.u2", CRC(a4670a54) SHA1(7bb792e388d52bd350e38c02fcde2f8ed9993dc1),
@@ -354,7 +354,7 @@ BY35_ROMSTARTx00(sstc,    "surp2732.u2", CRC(4987f46e) SHA1(a32984f29ba41c8c0388
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_sstc input_ports_by35
-CORE_CLONEDEFNV(sstc,sst, "Supersonic (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(sstc,sst, "Supersonic (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(sstd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0)
 BY35_ROMSTARTx00(sstd,    "surp2732.u2", CRC(4987f46e) SHA1(a32984f29ba41c8c03883cb80797c55b20d1ce42),
@@ -393,7 +393,7 @@ BY35_ROMSTARTx00(startrec,"star2732.u2", CRC(34dd99c3) SHA1(86dd5b46873c19103115
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_startrec input_ports_by35
-CORE_CLONEDEFNV(startrec,startrek, "Star Trek (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(startrec,startrek, "Star Trek (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 INITGAME(startred,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(startred,"star2732.u2", CRC(34dd99c3) SHA1(86dd5b46873c1910311504bdbfcd340317109be6),
@@ -429,7 +429,7 @@ BY35_ROMSTARTx00(paragonc,"para2732.u2", CRC(b3c990a1) SHA1(cb90c5fa52fefc29574a
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_paragonc input_ports_by35
-CORE_CLONEDEFNV(paragonc,paragon, "Paragon (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(paragonc,paragon, "Paragon (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 INITGAME(paragond,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(paragond,"para2732.u2", CRC(b3c990a1) SHA1(cb90c5fa52fefc29574a86d0f39fd29b2a70b8f2),
@@ -505,7 +505,7 @@ BY35_ROMSTARTx00(kissc,   "kiss2732.u2", CRC(716adcfd) SHA1(048e3142cfa307ea4552
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_kissc input_ports_by35
-CORE_CLONEDEFNV(kissc,kiss,"Kiss (7-digit Rev3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(kissc,kiss,"Kiss (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 INITGAME(kissd,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(kissd,   "kiss2732.u2", CRC(716adcfd) SHA1(048e3142cfa307ea4552e6af3812b0d7301b62ad),
@@ -1114,7 +1114,7 @@ BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b5
                          "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
 BY35_ROMEND
 #define input_ports_centaurb input_ports_centaur
-CORE_CLONEDEFNV(centaurb,centaur,"Centaur (Free Play Rev. 27)",2008,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(centaurb,centaur,"Centaur (Free Play rev. 27)",2008,"Bally / Oliver",by35_mBY35_61BS,0)
 
 /*--------------------------------
 / Elektra
@@ -1214,7 +1214,7 @@ BY61_SOUNDROMx008(        "868-01_3.532",CRC(c3a16c66) SHA1(8c0a8b50fac0e218515b
                           "868-03_5.716",CRC(4a5ac3b8) SHA1(288feba40efd65f4eec5c0b2fcf013904e3dc24e))
 BY35_ROMEND
 #define input_ports_spectru4 input_ports_spectrum
-CORE_CLONEDEFNV(spectru4,spectrum,"Spectrum (Rev. 4)",1982,"Bally",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(spectru4,spectrum,"Spectrum (rev. 4)",1982,"Bally",by35_mBY35_61BS,0)
 
 #define init_spectr4a init_spectrum
 BY35_ROMSTARTx00(spectr4a,"868-04_2.732",CRC(b377f5f1) SHA1(adc40204da90ef1a4470a478520b949c6ded07b5),
@@ -1224,7 +1224,7 @@ BY61_SOUNDROMx008(        "868-01_3.532",CRC(c3a16c66) SHA1(8c0a8b50fac0e218515b
                           "868-03_5.716",CRC(4a5ac3b8) SHA1(288feba40efd65f4eec5c0b2fcf013904e3dc24e))
 BY35_ROMEND
 #define input_ports_spectr4a input_ports_spectrum
-CORE_CLONEDEFNV(spectr4a,spectrum,"Spectrum (Rev. 4 Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(spectr4a,spectrum,"Spectrum (rev. 4 Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
 /*--------------------------------------------------
 / Speakeasy 2 Player - Uses AS2518-51 Sound Board

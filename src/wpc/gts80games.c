@@ -421,7 +421,7 @@ GTS80SS22_ROMSTART("668-s1.snd", CRC(23d5045d) SHA1(a20bf02ece97e8238d1dbe8d35ca
                    "668-s2.snd", CRC(d63da498) SHA1(84dd87783f47fbf64b1830284c168501f9b455e2))
 GTS80_ROMEND
 #define input_ports_blkhole2 input_ports_blckhole
-CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (Rev. 2)",1981,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (rev. 2)",1981,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Black Hole (Sound Only)
