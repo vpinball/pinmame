@@ -263,7 +263,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(jplstw20,jplstw22,"Lost World: Jurassic Park, The (2.00)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
-/ X-Files
+/ The X-Files
 /-------------------------------------------------------------------*/
 #define XFIL_SND \
 DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c58cd5973ff11b), \
@@ -276,7 +276,7 @@ DE_DMD32ROM8x(   "xfildspa.300",CRC(03c96af8) SHA1(06a26116f863bb9b2d127e18c5ba5
 XFIL_SND
 SE_ROMEND
 #define input_ports_xfiles input_ports_se
-CORE_GAMEDEFNV(xfiles,"X-Files (3.03)",1997,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(xfiles,"X-Files, The (3.03)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(xfiles2,"xfcpu.204",CRC(a4913128) SHA1(1fe348725e13fd5dc56b6b2dbd173d0b49953483))
 DE_DMD32ROM8x(   "xfildspa.201",CRC(bb015f24) SHA1(ca539d978ef0b8244227ea0c60087da5e7f0ee9e))
@@ -284,7 +284,7 @@ XFIL_SND
 SE_ROMEND
 #define input_ports_xfiles2 input_ports_xfiles
 #define init_xfiles2 init_xfiles
-CORE_CLONEDEFNV(xfiles2,xfiles,"X-Files (2.04)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(xfiles2,xfiles,"X-Files, The (2.04)",1997,"Sega",de_mSES1,0)
 
 INITGAME(xfiles20,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(xfiles20,"xfcpu.200",CRC(fd9e8ae8) SHA1(7f904eaae437bf938f01e9df875b9415167fc4c5))
@@ -294,7 +294,7 @@ DE2S_SOUNDROM144( "xfsndu7.512" ,CRC(01d65239) SHA1(9e680de940a15ef85a5615b789c5
                   "xfsndu21.c40",CRC(b56a5ca6) SHA1(5fa23a8bb57e45aca159882226e603d9a6be078b))
 SE_ROMEND
 #define input_ports_xfiles20 input_ports_xfiles
-CORE_CLONEDEFNV(xfiles20,xfiles,"X-Files (2.00)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(xfiles20,xfiles,"X-Files, The (2.00)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Starship Troopers
