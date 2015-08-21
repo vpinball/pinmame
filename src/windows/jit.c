@@ -333,7 +333,7 @@ static void delete_code_pages(struct jit_ctl *jit)
 
 void jit_create_map(struct jit_ctl *jit, data32_t minAddr, data32_t maxAddr)
 {
-	int i;
+	int i, nBytes, nAddrs;
 	
 	// if there's an existing map, delete it
 	if (jit->native != 0)
@@ -341,12 +341,12 @@ void jit_create_map(struct jit_ctl *jit, data32_t minAddr, data32_t maxAddr)
 
 	// figure the size in bytes of the address space (NB: the range is
 	// exclusive of maxAddr)
-	int nBytes = maxAddr - minAddr;
+	nBytes = maxAddr - minAddr;
 
 	// figure the size in indices of the address space, taking into account
 	// that we only store every other address for 2-byte alignment, every 4th
 	// address for 4-byte alignment, etc
-	int nAddrs = nBytes >> jit->rshift;
+	nAddrs = nBytes >> jit->rshift;
 
 	// store the new range parameters
 	jit->minAddr = minAddr;
@@ -395,12 +395,14 @@ void jit_enable(struct jit_ctl *jit)
 
 void jit_untranslate(struct jit_ctl *jit, data32_t addr)
 {
+	byte *p;
+
 	// if it's not in the JIT covered memory space, there's nothing to do
 	if (addr < jit->minAddr || addr >= jit->maxAddr)
 		return;
 
 	// un-translate only if the existing opcode is translated
-	byte *p = JIT_NATIVE(jit, addr);
+	p = JIT_NATIVE(jit, addr);
 	if (p != jit->pEmulate && p != jit->pPending)
 	{
 		// Replace the code with MOV EAX,<emulator address>, RETN.

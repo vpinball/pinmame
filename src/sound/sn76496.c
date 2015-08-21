@@ -102,10 +102,11 @@ static void SN76496Write(int chip,int data)
 				break;
 			case 6:	/* noise  : frequency, mode */
 				{
+                    int n;
 					//if ((data & 0x80) == 0) logerror("sn76496_base_device: write to reg 6 with bit 7 clear; data was %03x, new write is %02x! report this to LN!\n", R->Register[6], data);
                     if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x3f0) | (data & 0x0f);
                                         
-                    int n = R->Register[6];
+                    n = R->Register[6];
 					R->NoiseFB = (n & 4) ? FB_WNOISE : FB_PNOISE;
 					n &= 3;
 					/* N/512,N/1024,N/2048,Tone #3 output */
