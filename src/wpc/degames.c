@@ -24,7 +24,7 @@
 
 	5) 520-5505 Series: 128X32 DMD - m6809 CPU + separate controller board
 		a) -00 generation: (Lethal Weapon to Last Action Hero)
-		b) -01 generation: (Tales from the Crypt to Guns N Roses)
+		b) -01 generation: (Tales from the Crypt to Guns N' Roses)
 
 	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
 	   (Maveric to Batman Forever)
@@ -337,7 +337,7 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,g27,a27,"Back to the Future (2.7 Germany)",199?,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,g27,a27,"Back to the Future (2.7 German)",199?,"Data East",de_mDEAS1,0)
 
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
@@ -435,7 +435,7 @@ DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e
                     "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
                     "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
 DE_ROMEND
-CORE_CLONEDEF(btmn,g13,103,"Batman (1.03 Germany)",1991,"Data East",de_mDEDMD16S2A,0)
+CORE_CLONEDEF(btmn,g13,103,"Batman (1.03 German)",1991,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTART48(btmn_106,"b5_a106.128",CRC(5aa7fbe3) SHA1(587be4fd18ad730e675e720923e00d1775a4560e),
                     "c5_a106.256",CRC(79e86ccd) SHA1(430ac436bd1c8841950986af80747285a7d25942))
@@ -571,7 +571,7 @@ DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae4
                    "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
                    "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
 DE_ROMEND
-CORE_CLONEDEF(lw3,207,208,"Lethal Weapon 3 (2.07 Canada)",1992,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(lw3,207,208,"Lethal Weapon 3 (2.07 Canadian)",1992,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lw3_205,"lw3gc5.205",CRC(5ad8ff4a) SHA1(6a01a2195543c0c57ce4ce78703c91500835a2da))
 DE_DMD32ROM44(     "lw3dsp1.205",CRC(9dfeffb4) SHA1(f62f2a884da68b4dbfe7da071058dc8cd1766c36),
@@ -651,7 +651,7 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
-CORE_CLONEDEF(stwr,e12,104,"Star Wars (1.02 England)",1992,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(stwr,e12,104,"Star Wars (1.02 English)",1992,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_g11,"starcpug.101",CRC(c74b4576) SHA1(67db9294cd802be8d62102fe756648f750821960))
 DE_DMD32ROM8x(        "swdsp_g.102",CRC(afdfbfc4) SHA1(1c3cd90b9cd4f88ee2b556abef863a0ae9a10056))
@@ -659,10 +659,10 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
-CORE_CLONEDEF(stwr,g11,104,"Star Wars (1.01 Germany)",1992,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(stwr,g11,104,"Star Wars (1.01 German)",1992,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
-/ Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
+/ The Adventures of Rocky and Bullwinkle and Friends - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(rab,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(rab_320,"rabcpua.320",CRC(21a2d518) SHA1(42123dca519034ecb740e5cb493b1b0b6b44e3be))
@@ -672,7 +672,7 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
 #define input_ports_rab input_ports_des11
-CORE_GAMEDEF(rab,320,"Rocky & Bullwinkle (3.20)",1983,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(rab,320,"Adventures of Rocky and Bullwinkle and Friends, The (3.20)",1983,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(rab_130,"rabcpua.130",CRC(f59b1a53) SHA1(046cd0eaee6e646286f3dfa73eeacfd93c2be273))
 DE_DMD32ROM8x(     "rbdspa.130",CRC(b6e2176e) SHA1(9ccbb30dc0f386fcf5e5255c9f80c720e601565f))
@@ -680,7 +680,7 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
                    "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
-CORE_CLONEDEF(rab,130,320,"Rocky & Bullwinkle (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(rab,130,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(rab_103,"rabcpu.103",CRC(d5fe3184) SHA1(dc1ca938f15240d1c15ee5724d29a3538418f8de))
 DE_DMD32ROM8x(     "rabdspsp.103",CRC(02624948) SHA1(069ef69d6ce193d73954935b378230c05b83b8fc))
@@ -688,7 +688,7 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
                    "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
-CORE_CLONEDEF(rab,103,320,"Rocky & Bullwinkle (1.03 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(rab,103,320,"Adventures of Rocky and Bullwinkle and Friends, The (1.03 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Jurassic Park - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -717,7 +717,7 @@ DE2S_SOUNDROM142(      "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2e
                        "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
                        "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
 DE_ROMEND
-CORE_CLONEDEF(jupk,g51,513,"Jurassic Park (5.01 Germany)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(jupk,g51,513,"Jurassic Park (5.01 German)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -738,7 +738,7 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
-CORE_CLONEDEF(lah,l104,112,"Last Action Hero (1.04 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(lah,l104,112,"Last Action Hero (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_l108,"lahcpua.108",CRC(8942794b) SHA1(f023ca040d6d4c6da80b58a162f1d217e571ed81))
 DE_DMD32ROM8x(      "lahdispl.104",CRC(6b1e51a7) SHA1(ad17507b63f2da8aa0651401ccb8d449c15aa46c))
@@ -746,7 +746,7 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
-CORE_CLONEDEF(lah,l108,112,"Last Action Hero (1.08 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(lah,l108,112,"Last Action Hero (1.08 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_110,"lahcpua.110",CRC(d1861dc2) SHA1(288bd06b6ae346d1f6a17a642d5533f1a9a3bf5e))
 DE_DMD32ROM8x(      "lahdispa.106",CRC(ca6cfec5) SHA1(5e2081387d76bed17c14120cd347d6aaf435276b))
@@ -807,7 +807,7 @@ DE2S_SOUNDROM144(      "sndu7.dat",   CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea6
                        "sndu17.dat" , CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
                        "sndu21.dat" , CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
-CORE_CLONEDEF(tftc,104,303,"Tales from the Crypt (1.04 Spain)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(tftc,104,303,"Tales from the Crypt (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -880,7 +880,7 @@ DE_ROMEND
 CORE_CLONEDEF(wwfr,103,106,"WWF Royal Rumble (1.03)",1994,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
-/ Guns N Roses - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
+/ Guns N' Roses - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 #define sLMagnet   CORE_CUSTSOLNO(1) /* 33 */
 #define sTMagnet   CORE_CUSTSOLNO(2) /* 34 */
@@ -909,7 +909,7 @@ DE2S_SOUNDROM14444("gnru7.snd"  ,CRC(3b9de915) SHA1(a901a1f37bf5433c819393c4355f
                    "gnru37.snd" ,CRC(4930e1f2) SHA1(1569d0c7fea1af008acbdc492c3677ace7d1897a))
 DE_ROMEND
 #define input_ports_gnr input_ports_des11
-CORE_GAMEDEF(gnr,300,"Guns N Roses (3.00)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(gnr,300,"Guns N' Roses (3.00)",1994,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(gnr_300f,"gnrcpuf.300",CRC(7f9006b2) SHA1(429d90fa27ea39176b94d1293a313ec3d1033dbc))
 DE_DMD32ROM8x(     "gnrdispf.300",CRC(63e9761a) SHA1(05e5a61b66148da7728779d8e5fa14a489e09441))
@@ -920,7 +920,7 @@ DE2S_SOUNDROM14444("gnru7.snd"  ,CRC(3b9de915) SHA1(a901a1f37bf5433c819393c4355f
                    "gnru37.snd" ,CRC(4930e1f2) SHA1(1569d0c7fea1af008acbdc492c3677ace7d1897a))
 DE_ROMEND
 #define input_ports_gnrf input_ports_gnr
-CORE_CLONEDEF(gnr,300f,300,"Guns N Roses (3.00 French)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(gnr,300f,300,"Guns N' Roses (3.00 French)",1994,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(gnr_300d,"gnrcpud.300",CRC(ae35f830) SHA1(adf853f50ed01c3261d7ce4064c45f834934b5e2))
 DE_DMD32ROM8x(     "gnrdispd.300",CRC(4abf29e3) SHA1(595328e0f92a6e1972d71c56505a5dd07a373ef5))
@@ -931,7 +931,7 @@ DE2S_SOUNDROM14444("gnru7.snd"  ,CRC(3b9de915) SHA1(a901a1f37bf5433c819393c4355f
                    "gnru37.snd" ,CRC(4930e1f2) SHA1(1569d0c7fea1af008acbdc492c3677ace7d1897a))
 DE_ROMEND
 #define input_ports_gnrf input_ports_gnr
-CORE_CLONEDEF(gnr,300d,300,"Guns N Roses (3.00 Dutch)",1994,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(gnr,300d,300,"Guns N' Roses (3.00 Dutch)",1994,"Data East",de_mDEDMD32S2A,0)
 
 /*****************************************************************************************************************************/
 /* NOTE: SEGA Began Distribution of the following games, although they run on Data East Hardware, so they stay in this file! */
@@ -953,7 +953,7 @@ DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca6
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
 #define input_ports_mav input_ports_des11
-CORE_GAMEDEF(mav,402,"Maverick (Display rev. 4.02)",1994,"Sega",de_mDEDMD64S2A,0)
+CORE_GAMEDEF(mav,402,"Maverick (4.04, Display rev. 4.02)",1994,"Sega",de_mDEDMD64S2A,0)
 
 DE_ROMSTARTx0(mav_401, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
 DE_DMD64ROM88(   "mavdsar0.401",CRC(35b811af) SHA1(1e235a0f16ef0eecca5b6ec7a2234ed1dc4e4440),
@@ -962,7 +962,7 @@ DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca6
                  "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
-CORE_CLONEDEF(mav,401,402,"Maverick (Display rev. 4.01)",1994,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEF(mav,401,402,"Maverick (4.04, Display rev. 4.01)",1994,"Sega",de_mDEDMD64S2A,0)
 
 DE_ROMSTARTx0(mav_400, "mavgc5.400",CRC(e2d0a88b) SHA1(d1571edba47aecc871ac0cfdaabca31774f70fa1))
 DE_DMD64ROM88(   "mavdisp0.400",CRC(b6069484) SHA1(2878d9a0151194bd4a0e12e2f75b02a5d7316b68),
@@ -983,7 +983,7 @@ DE_ROMEND
 CORE_CLONEDEF(mav,100,402,"Maverick (1.00)",1994,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
-/ Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/ Mary Shelley's Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(frankst,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
 DE_ROMSTARTx0(frankst,"franka.103",  CRC(a9aba9be) SHA1(1cc22fcbc0f51a17037637c04e606579956c9cba))
@@ -995,7 +995,7 @@ DE2S_SOUNDROM1444(    "frsnd.u7"  ,  CRC(084f856c) SHA1(c91331a32b565c2ed3f96156
                       "frsnd.u36" ,  CRC(9964d721) SHA1(5ea0bc051d1909bee80d3feb6b7350b6307b6dcb))
 DE_ROMEND
 #define input_ports_frankst input_ports_des11
-CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDEDMD64S2A,0)
+CORE_GAMEDEFNV(frankst,"Frankenstein, Mary Shelley's",1994,"Sega",de_mDEDMD64S2A,0)
 
 #define init_frankstg init_frankst
 DE_ROMSTARTx0(frankstg,"franka.103",  CRC(a9aba9be) SHA1(1cc22fcbc0f51a17037637c04e606579956c9cba))
@@ -1007,7 +1007,7 @@ DE2S_SOUNDROM1444(     "frsnd.u7"  ,  CRC(084f856c) SHA1(c91331a32b565c2ed3f9615
                        "frsnd.u36" ,  CRC(9964d721) SHA1(5ea0bc051d1909bee80d3feb6b7350b6307b6dcb))
 DE_ROMEND
 #define input_ports_frankstg input_ports_frankst
-CORE_CLONEDEFNV(frankstg,frankst,"Mary Shelley's Frankenstein (Germany)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(frankstg,frankst,"Frankenstein, Mary Shelley's (German)",1995,"Sega",de_mDEDMD64S2A,0)
 
 //Start of the Portals Diagnostic Menu System
 /*-------------------------------------------------------------
@@ -1039,13 +1039,13 @@ CORE_CLONEDEFNV(bay_d400,baywatch,"Baywatch (4.00 Dutch)",1995,"Sega",de_mDEDMD6
 DE_ROMSTARTx0(bay_e400, "baycpua2.400", CRC(07b77fe2) SHA1(4f81a5b3d821907e06d6b547117ad39c238a900c))
 DE_DMD64ROM88(          "bayrom0a.400",CRC(43d615c6) SHA1(7c843b6d5215305b02a55c9fa1d62375ef0766ea),
                         "bayrom3a.400",CRC(41bcb66b) SHA1(e6f0a9236e14c2e919881ca1ffe3356aaa121730))
-DE2S_SOUNDROM1444(       "bw-u7.bin"  ,   CRC(a5e57557) SHA1(a884c1118331b8724507b0a916127ce5df309fe4),
-                        "bw-u17.bin" ,   CRC(660e7f5d) SHA1(6dde294e728e596a6c455326793b65254139620e),
-                        "bw-u21.bin" ,   CRC(5ec3a889) SHA1(f355f742de137344e6e4b5d3a4b2380a876c8cc3),
-                        "bw-u36.bin" ,  CRC(1877abc5) SHA1(13ca231a486495a83cc1d9c6dde558a57eb4abe1))
+DE2S_SOUNDROM1444(      "bw-u7.bin"  , CRC(a5e57557) SHA1(a884c1118331b8724507b0a916127ce5df309fe4),
+                        "bw-u17.bin" , CRC(660e7f5d) SHA1(6dde294e728e596a6c455326793b65254139620e),
+                        "bw-u21.bin" , CRC(5ec3a889) SHA1(f355f742de137344e6e4b5d3a4b2380a876c8cc3),
+                        "bw-u36.bin" , CRC(1877abc5) SHA1(13ca231a486495a83cc1d9c6dde558a57eb4abe1))
 DE_ROMEND
 #define input_ports_bay_e400 input_ports_baywatch
-CORE_CLONEDEFNV(bay_e400,baywatch,"Baywatch (4.00 England)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bay_e400,baywatch,"Baywatch (4.00 English)",1995,"Sega",de_mDEDMD64S2A,0)
 
 #define init_bay_d300 init_baywatch
 DE_ROMSTARTx0(bay_d300, "baycpud.300", CRC(c160f045) SHA1(d1f75d5ba292b25278539b01e0f4908276d34e34))
@@ -1126,7 +1126,7 @@ DE2S_SOUNDROM144(    "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598
 DE_ROMEND
 #define input_ports_bmf_uk input_ports_batmanf
 #define init_bmf_uk        init_batmanf
-CORE_CLONEDEFNV(bmf_uk,batmanf,"Batman Forever (English)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_uk,batmanf,"Batman Forever (4.0 English)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (CN) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
@@ -1140,7 +1140,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_cn input_ports_batmanf
 #define init_bmf_cn        init_batmanf
-CORE_CLONEDEFNV(bmf_cn,batmanf,"Batman Forever (Canadian)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_cn,batmanf,"Batman Forever (4.0 Canadian)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (NO) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
@@ -1154,7 +1154,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_no input_ports_batmanf
 #define init_bmf_no        init_batmanf
-CORE_CLONEDEFNV(bmf_no,batmanf,"Batman Forever (Norwegian)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_no,batmanf,"Batman Forever (4.0 Norwegian)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (SV) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
@@ -1168,7 +1168,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_sv input_ports_batmanf
 #define init_bmf_sv        init_batmanf
-CORE_CLONEDEFNV(bmf_sv,batmanf,"Batman Forever (Swedish)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_sv,batmanf,"Batman Forever (4.0 Swedish)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (AT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1182,7 +1182,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_at input_ports_batmanf
 #define init_bmf_at        init_batmanf
-CORE_CLONEDEFNV(bmf_at,batmanf,"Batman Forever (Austrian)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_at,batmanf,"Batman Forever (4.0 Austrian)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (CH) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1196,7 +1196,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_ch input_ports_batmanf
 #define init_bmf_ch        init_batmanf
-CORE_CLONEDEFNV(bmf_ch,batmanf,"Batman Forever (Swiss)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_ch,batmanf,"Batman Forever (4.0 Swiss)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (DE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1210,7 +1210,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_de input_ports_batmanf
 #define init_bmf_de        init_batmanf
-CORE_CLONEDEFNV(bmf_de,batmanf,"Batman Forever (German)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_de,batmanf,"Batman Forever (4.0 German)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (BE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1224,7 +1224,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_be input_ports_batmanf
 #define init_bmf_be        init_batmanf
-CORE_CLONEDEFNV(bmf_be,batmanf,"Batman Forever (Belgian)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_be,batmanf,"Batman Forever (4.0 Belgian)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (FR) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1238,7 +1238,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_fr input_ports_batmanf
 #define init_bmf_fr        init_batmanf
-CORE_CLONEDEFNV(bmf_fr,batmanf,"Batman Forever (French)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_fr,batmanf,"Batman Forever (4.0 French)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (NL) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1252,13 +1252,13 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_nl input_ports_batmanf
 #define init_bmf_nl        init_batmanf
-CORE_CLONEDEFNV(bmf_nl,batmanf,"Batman Forever (Dutch)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_nl,batmanf,"Batman Forever (4.0 Dutch)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (IT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 DE_ROMSTARTx0(bmf_it, "batnovi.401",CRC(7053ef9e) SHA1(918ab3e250b5965998ca0a38e1b8ba3cc012083f))
-DE_DMD64ROM88(          "bfdrom0i.401",CRC(23051253) SHA1(155669a3fecd6e67838b10e71a57a6b871c8762a),
+DE_DMD64ROM88(        "bfdrom0i.401",CRC(23051253) SHA1(155669a3fecd6e67838b10e71a57a6b871c8762a),
                       "bfdrom3i.401",CRC(82b61a41) SHA1(818c8fdbf44e29fe0ec5362a34ac948e98002efa))
 DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
                       "bmfu17.bin" ,CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
@@ -1266,7 +1266,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_it input_ports_batmanf
 #define init_bmf_it        init_batmanf
-CORE_CLONEDEFNV(bmf_it,batmanf,"Batman Forever (Italian)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_it,batmanf,"Batman Forever (4.0 Italian)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (SP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1280,7 +1280,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_sp input_ports_batmanf
 #define init_bmf_sp        init_batmanf
-CORE_CLONEDEFNV(bmf_sp,batmanf,"Batman Forever (Spanish)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_sp,batmanf,"Batman Forever (4.0 Spanish)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (JP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -1294,7 +1294,7 @@ DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c15489228259
 DE_ROMEND
 #define input_ports_bmf_jp input_ports_batmanf
 #define init_bmf_jp        init_batmanf
-CORE_CLONEDEFNV(bmf_jp,batmanf,"Batman Forever (Japanese)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_jp,batmanf,"Batman Forever (4.0 Japanese)",1995,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Batman Forever (Timed Version) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
@@ -1308,7 +1308,7 @@ DE2S_SOUNDROM144(       "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282
 DE_ROMEND
 #define input_ports_bmf_time input_ports_batmanf
 #define init_bmf_time        init_batmanf
-CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (Timed Play)",1995,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (4.0 Timed Play)",1995,"Sega",de_mDEDMD64S2A,0)
 
 
 /***********************************************************************/

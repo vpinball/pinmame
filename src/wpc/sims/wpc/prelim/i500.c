@@ -299,7 +299,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(i500,11r,"Indianapolis 500 (1.1R)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(i500,11b,11r,"Indianapolis 500 (1.1 Belgium)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(i500,11b,11r,"Indianapolis 500 (1.1 Belgian)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(i500,10r,11r,"Indianapolis 500 (1.0R)",1995,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------

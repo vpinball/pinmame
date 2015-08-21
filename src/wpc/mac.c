@@ -387,7 +387,7 @@ ROM_START(mac_1808)
 ROM_END
 INITGAME(mac_1808,dispMAC,FLIP_SW(FLIP_L),2)
 MAC_COMPORTS(mac_1808, 1)
-CORE_GAMEDEFNV(mac_1808, "Unknown MAC game #1808", 19??, "MAC S.A.", macmsm, 0)
+CORE_GAMEDEFNV(mac_1808, "Unknown Game (MAC #1808)", 19??, "MAC S.A.", macmsm, 0)
 
 ROM_START(nbamac)
   NORMALREGION(0x10000, REGION_CPU1)

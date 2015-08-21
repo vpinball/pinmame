@@ -325,7 +325,7 @@ CORE_GAMEDEF (cc,13,   "Cactus Canyon (1.3)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,12,13,"Cactus Canyon (1.2)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,10,13,"Cactus Canyon (1.0)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,13k,13,"Cactus Canyon (1.3 Real Knocker patch)",1998,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally / The Pinball Factory",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

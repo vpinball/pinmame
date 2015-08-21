@@ -215,7 +215,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(lostwldb,lostwrld,"Lost World (Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /*--------------------------------
-/ Six Million Dollar Man
+/ The Six Million Dollar Man
 /-------------------------------*/
 static core_tLCDLayout smmanDisp[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
@@ -230,7 +230,7 @@ BY35_ROMSTART888(smman,"742-20_1.716",CRC(33e55a75) SHA1(98fbec07c9d03557654e5b6
 BY32_SOUNDROM(         "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smman input_ports_by35
-CORE_GAMEDEFNV(smman,"Six Million Dollar Man",1978,"Bally",by35_mBY35_32S,0)
+CORE_GAMEDEFNV(smman,"Six Million Dollar Man, The",1978,"Bally",by35_mBY35_32S,0)
 
 INITGAME(smmanb,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTARTx00(smmanb,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
@@ -238,7 +238,7 @@ BY35_ROMSTARTx00(smmanb,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d69472
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmanb input_ports_by35
-CORE_CLONEDEFNV(smmanb,smman,"Six Million Dollar Man (7-digit conversion)",2005,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(smmanb,smman,"Six Million Dollar Man, The (7-digit conversion)",2005,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(smmanc,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTARTx00(smmanc,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
@@ -246,7 +246,7 @@ BY35_ROMSTARTx00(smmanc,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d69472
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmanc input_ports_by35
-CORE_CLONEDEFNV(smmanc,smman,"Six Million Dollar Man (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(smmanc,smman,"Six Million Dollar Man, The (7-digit rev. 3 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 INITGAME(smmand,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTARTx00(smmand,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d694726b785023ceba312f5b),
@@ -254,7 +254,7 @@ BY35_ROMSTARTx00(smmand,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d69472
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmand input_ports_by35
-CORE_CLONEDEFNV(smmand,smman,"Six Million Dollar Man (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(smmand,smman,"Six Million Dollar Man, The (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /*--------------------------------
 / Playboy
@@ -1198,7 +1198,7 @@ CORE_GAMEDEFNV(spectrum,"Spectrum",1982,"Bally",by35_mBY35_61BS,0)
 
 #define init_spectrua init_spectrum
 BY35_ROMSTARTx00(spectrua,"868-00_2.732",NO_DUMP,
-                        "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
+                          "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
 BY61_SOUNDROMx008(        "868-01_3.532",CRC(c3a16c66) SHA1(8c0a8b50fac0e218515b471621e80000ae475296),
                           "868-02_4.532",CRC(6b441399) SHA1(aae9e805f76cd6bc264bf69dd2d57629ee58bfc2),
                           "868-03_5.716",CRC(4a5ac3b8) SHA1(288feba40efd65f4eec5c0b2fcf013904e3dc24e))
@@ -1218,7 +1218,7 @@ CORE_CLONEDEFNV(spectru4,spectrum,"Spectrum (rev. 4)",1982,"Bally",by35_mBY35_61
 
 #define init_spectr4a init_spectrum
 BY35_ROMSTARTx00(spectr4a,"868-04_2.732",CRC(b377f5f1) SHA1(adc40204da90ef1a4470a478520b949c6ded07b5),
-                        "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
+                          "7536fn.u6",CRC(5c892af6) SHA1(a5dedf78de450747627769d03778d5b509930ba6))
 BY61_SOUNDROMx008(        "868-01_3.532",CRC(c3a16c66) SHA1(8c0a8b50fac0e218515b471621e80000ae475296),
                           "868-02_4.532",CRC(6b441399) SHA1(aae9e805f76cd6bc264bf69dd2d57629ee58bfc2),
                           "868-03_5.716",CRC(4a5ac3b8) SHA1(288feba40efd65f4eec5c0b2fcf013904e3dc24e))
@@ -1288,7 +1288,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(rapidfia,rapidfir,"Rapid Fire (Free Play)",2005,"Bally / Oliver",by35_mBY35_61BS,0)
 
 /*--------------------------------------
-/ Mr. and Mrs. Pacman (BY35-872: 05/82)
+/ Mr. & Mrs. Pac-Man Pinball (BY35-872: 05/82)
 /--------------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
   DISP_SEG_IMPORT(dispBy7),
@@ -1301,7 +1301,7 @@ BY61_SOUNDROMxx00(      "872-01_4.532",CRC(d21ce16d) SHA1(3ee6e2629530e7e6e4d7ea
                         "872-03_5.532",CRC(8fcdf853) SHA1(7c6bffcd974d2684e7f2c69d926f6cabb53e2f90))
 BY35_ROMEND
 #define input_ports_m_mpac input_ports_by35
-CORE_GAMEDEFNV(m_mpac,"Mr. and Mrs. PacMan",1982,"Bally",by35_mBY35_61S,0)
+CORE_GAMEDEFNV(m_mpac,"Mr. & Mrs. Pac-Man Pinball",1982,"Bally",by35_mBY35_61S,0)
 
 #define init_m_mpaca init_m_mpac
 BY35_ROMSTARTx00(m_mpaca,"872-04_2.732",CRC(5e542882) SHA1(bec5f56cd5192e0a12ea1226a49a2b7d8eaaa5cf),
@@ -1310,7 +1310,7 @@ BY61_SOUNDROMxx00(      "872-01_4.532",CRC(d21ce16d) SHA1(3ee6e2629530e7e6e4d7ea
                         "872-03_5.532",CRC(8fcdf853) SHA1(7c6bffcd974d2684e7f2c69d926f6cabb53e2f90))
 BY35_ROMEND
 #define input_ports_m_mpaca input_ports_m_mpac
-CORE_CLONEDEFNV(m_mpaca,m_mpac,"Mr. and Mrs. PacMan (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0)
+CORE_CLONEDEFNV(m_mpaca,m_mpac,"Mr. & Mrs. Pac-Man Pinball (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0)
 
 /*---------------------------------------------------
 / BMX (BY35-888: 11/82) - Uses AS2518-51 Sound Board
