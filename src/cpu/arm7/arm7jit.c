@@ -1851,6 +1851,8 @@ static int B(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int 
 // fails.
 static int xlat_recursive(struct jit_ctl *jit, data32_t addr)
 {
+	void *addrp;
+
 	// if it's not a JIT-able address, do nothing
 	if (addr < jit->minAddr || addr >= jit->maxAddr)
 		return 0;
@@ -1858,7 +1860,7 @@ static int xlat_recursive(struct jit_ctl *jit, data32_t addr)
 	// If this opcode has already been marked as untranslatable, return
 	// failure.  If it's already been translated, or it's marked as
 	// currently undergoing translation, return success.
-	void *addrp = JIT_NATIVE(jit, addr);
+	addrp = JIT_NATIVE(jit, addr);
 	if (addrp == jit->pEmulate)
 		return 0;
 	else if (addrp == jit->pWorking)
@@ -1889,6 +1891,10 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 	// we can't translate
 	for (addr = pc, cnt = 0, ok = 1 ; ; addr += 4)
 	{
+		void *pn;
+		// assume there's no conditional label
+		struct jit_label *condLabel = 0, *condLabel2 = 0;
+		
 		// most instructions takes 3 cycles; we'll adjust this as needed
 		// for instructions that have different timing
 		int cycles = 3;
@@ -1905,7 +1911,7 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 		}
 
 		// Only translate this instruction if it's in the "pending" state.
-		void *pn = JIT_NATIVE(jit, addr);
+		pn = JIT_NATIVE(jit, addr);
 		if (pn == jit->pWorking)
 		{
 			// The instruction is already in the process of translation. 
@@ -1933,9 +1939,6 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 		// begin the instruction in the emitter
 		jit_emit_begin_instr(jit, addr);
 
-		// assume there's no conditional label
-		struct jit_label *condLabel = 0, *condLabel2 = 0;
-		
 		// grab the opcode
 		insn = cpu_readop32(addr);
 
