@@ -510,7 +510,7 @@ CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper) (L-4)",1993,"Williams",
 CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper) (D-4 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 
 /*-------------------------------------------------------------------
-/ Strikes n' Spares (#N111)
+/ Strikes N' Spares (#N111)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout GTS3_dispDMD[] = {
   {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32},
@@ -525,7 +525,7 @@ NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
 GTS32_INPUT_PORTS_START(snspares, 4) GTS3_INPUT_PORTS_END
-CORE_GAMEDEFNV(snspares,"Strikes n' Spares (rev. 6)",1995,"Gottlieb",mGTS3DMDS2, 0)
+CORE_GAMEDEFNV(snspares,"Strikes N' Spares (rev. 6)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
 #define init_snspare1 init_snspares
 #define input_ports_snspare1 input_ports_snspares
@@ -534,7 +534,7 @@ GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e9380
 NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
-CORE_CLONEDEFNV(snspare1,snspares,"Strikes n' Spares (rev. 1)",1995,"Gottlieb",mGTS3DMDS2, 0)
+CORE_CLONEDEFNV(snspare1,snspares,"Strikes N' Spares (rev. 1)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
 #define init_snspare2 init_snspares
 #define input_ports_snspare2 input_ports_snspares
@@ -543,7 +543,7 @@ GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e9380
 NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
-CORE_CLONEDEFNV(snspare2,snspares,"Strikes n' Spares (rev. 2)",1995,"Gottlieb",mGTS3DMDS2, 0)
+CORE_CLONEDEFNV(snspare2,snspares,"Strikes N' Spares (rev. 2)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
 /*-----------------------------
 / League Champ (Shuffle Alley)

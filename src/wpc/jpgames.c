@@ -132,7 +132,7 @@ CORE_GAMEDEFNV(petacon,"Petaco (new hardware)",1985,"Juegos Populares",gl_mJP1,0
 INITGAME(jpgame, jpDisp6a, 1)
 JP_ROMSTART1(jpgame,	"jpgame.dat", CRC(81502083) SHA1(c67a095fb5e868467577e7a86de5d51c59b3a68e))
 JP_ROMEND
-CORE_GAMEDEFNV(jpgame,"Unknown game",1985,"Juegos Populares",gl_mJP1,0)
+CORE_GAMEDEFNV(jpgame,"Unknown Game (JP)",1985,"Juegos Populares",gl_mJP1,0)
 
 /*-------------------------------------------------------------------
 / Faeton (#1103)

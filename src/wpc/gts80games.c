@@ -101,7 +101,7 @@ GAMEX(1981,gts80as,gts80a,gts80s,gts80,gts80as,ROT0,"Gottlieb","System 80A",NOT_
 // System80
 
 /*-------------------------------------------------------------------
-/ Spiderman
+/ The Amazing Spider-Man
 /-------------------------------------------------------------------*/
 INIT_S80(spidermn, dispNumeric1, SNDBRD_GTS80S)
 GTS80_2_ROMSTART ("653-1.cpu",    CRC(674ddc58) SHA1(c9be45391b8dd58a0836801807d593d4c7da9904),
@@ -110,7 +110,7 @@ GTS80S1K_ROMSTART("653.snd",      CRC(f5650c46) SHA1(2d0e50fa2f4b3d633daeaa74546
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_spidermn input_ports_gts80
-CORE_CLONEDEFNV(spidermn,gts80s,"Spiderman",1980,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(spidermn,gts80s,"Amazing Spider-Man, The",1980,"Gottlieb",gl_mGTS80S,0)
 
 INIT_S80D7(spiderm7, dispNumeric3, SNDBRD_GTS80S)
 GTS80_2_ROMSTART ("653-1.cpu",    CRC(674ddc58) SHA1(c9be45391b8dd58a0836801807d593d4c7da9904),
@@ -119,7 +119,7 @@ GTS80S1K_ROMSTART("653.snd",      CRC(f5650c46) SHA1(2d0e50fa2f4b3d633daeaa74546
                   "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_spiderm7 input_ports_spidermn
-CORE_CLONEDEFNV(spiderm7,spidermn,"Spiderman (7-digit conversion)",2008,"Oliver",gl_mGTS80S,0)
+CORE_CLONEDEFNV(spiderm7,spidermn,"Amazing Spider-Man, The (7-digit conversion)",2008,"Oliver",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Panthera
@@ -815,7 +815,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
-/ Tag-Team Wrestling (#698)
+/ Tag-Team Pinball (#698)
 /-------------------------------------------------------------------*/
 INITGAME(tagteam, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", CRC(fd1615ce) SHA1(3a6c3525552286b86e5340af2bf196f12adc9b35),
@@ -823,7 +823,7 @@ GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", CRC(fd1615ce) SHA1(3a6c3525552286b86e53
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
 #define input_ports_tagteam input_ports_gts80
-CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(tagteam, "Tag-Team Pinball",1985,"Gottlieb",gl_mGTS80B,0)
 
 INITGAME(tagteam2, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7343307787b4b5daa1623a),
@@ -831,7 +831,7 @@ GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
 #define input_ports_tagteam2 input_ports_gts80
-CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Wrestling (rev. 2)",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Pinball (rev. 2)",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
@@ -993,7 +993,7 @@ GTS80B_8K_ROMSTART(amazonh2, "684c-cpu.rom", CRC(0b5040c3) SHA1(104e5a63b4097ea7
 GTS80BSSOUND8(               "684c-snd.rom", CRC(182d64e1) SHA1(c0aaa646a3d53cf00aa23e0b8d46bbb70ce46e5c))
 GTS80_ROMEND
 #define input_ports_amazonh2 input_ports_gts80
-CORE_GAMEDEFNV(amazonh2, "Amazon Hunt II (France)", 1987, "Gottlieb", gl_mGTS80BS1, 0)
+CORE_GAMEDEFNV(amazonh2, "Amazon Hunt II (French)", 1987, "Gottlieb", gl_mGTS80BS1, 0)
 
 //Amazon Hunt III (#684D, no dumps)
 

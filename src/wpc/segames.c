@@ -196,7 +196,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmg input_ports_spacejam
 #define init_spacejmg init_spacejam
-CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (3.00 Germany)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (3.00 German)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(spacejmf,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
 DE_DMD32ROM8x(  "jamdspf.300",CRC(1683909f) SHA1(e14810a5d8704ea052fddcb3b54043bf9d57b296))
@@ -204,7 +204,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmf input_ports_spacejam
 #define init_spacejmf init_spacejam
-CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (3.00 France)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (3.00 French)",1997,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(spacejmi,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
 DE_DMD32ROM8x(  "jamdspi.300",CRC(eb9b5971) SHA1(0bfac0511d0cd9d56eee59782c199ee0a78abe5e))
@@ -212,7 +212,7 @@ JAM_SND
 SE_ROMEND
 #define input_ports_spacejmi input_ports_spacejam
 #define init_spacejmi init_spacejam
-CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (3.00 Italy)",1997,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (3.00 Italian)",1997,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Star Wars Trilogy (4.03)
@@ -480,7 +480,7 @@ DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f7
 SE_ROMEND
 #define input_ports_strxt_uk input_ports_strikext
 #define init_strxt_uk init_strikext
-CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (1.01 UK)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (1.01 English)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_gr,"sxcpug.103", CRC(d73b9020) SHA1(491cd9db172db0a35870524ed4f1b15fb67f2e78))
 DE_DMD32ROM8x(     "sxdispg.103",CRC(eb656489) SHA1(476315a5d22b6d8c63e9a592167a00f0c87e86c9))
@@ -492,7 +492,7 @@ DE2S_SOUNDROM18888("sxsndg.u7" ,CRC(b38ec07d) SHA1(239a3a51c049b007d4c16c3bd1e00
 SE_ROMEND
 #define input_ports_strxt_gr input_ports_strikext
 #define init_strxt_gr init_strikext
-CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (1.03 Germany)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (1.03 German)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", CRC(2804bc9f) SHA1(3c75d8cc4d2833baa163d99c709dcb9475ba0831))
 DE_DMD32ROM8x(     "sxdispf.103",CRC(4b4b5c19) SHA1(d2612a2b8099b45cb67ac9b55c88b5b10519d49b))
@@ -504,7 +504,7 @@ DE2S_SOUNDROM18888("sxsndf.u7" ,CRC(e68b0607) SHA1(cd3a5ff51932914e977fe866f7ab5
 SE_ROMEND
 #define input_ports_strxt_fr input_ports_strikext
 #define init_strxt_fr init_strikext
-CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 France)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 French)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_it,"sxcpui.102", CRC(f955d0ef) SHA1(0f4ee87715bc085e2fb05e9ebdc89403f6bac444))
 DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
@@ -516,7 +516,7 @@ DE2S_SOUNDROM18888("sxsndi.u7" ,CRC(81caf0a7) SHA1(5bb05c5bb49d12417b3ad49398623
 SE_ROMEND
 #define input_ports_strxt_it input_ports_strikext
 #define init_strxt_it init_strikext
-CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (1.02 Italy)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (1.02 Italian)",1999,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_sp,"sxcpul.102", CRC(6b1e417f) SHA1(b87e8659bc4481384913a28c1cb2d7c96532b8e3))
 DE_DMD32ROM8x(     "sxdispl.103",CRC(3efd4a18) SHA1(64f6998f82947a5bd053ad8dd56682adb239b676))
@@ -528,7 +528,7 @@ DE2S_SOUNDROM18888("sxsndl.u7" ,CRC(a03131cf) SHA1(e50f665eb15cef799fdc0d1d88bc7
 SE_ROMEND
 #define input_ports_strxt_sp input_ports_strikext
 #define init_strxt_sp init_strikext
-CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (1.02 Spain)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (1.02 Spanish)",1999,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout
@@ -553,7 +553,7 @@ SSHOT_SND
 SE_ROMEND
 #define input_ports_shrky_gr input_ports_shrkysht
 #define init_shrky_gr init_shrkysht
-CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (2.11 Germany)",2001,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (2.11 German)",2001,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(shrky_fr,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
 DE_DMD32ROM8x(        "ssdispf.201",CRC(89eaaebf) SHA1(0945a11a8f632cea3b9e9982cc4aed54f12ec55a))
@@ -561,7 +561,7 @@ SSHOT_SND
 SE_ROMEND
 #define input_ports_shrky_fr input_ports_shrkysht
 #define init_shrky_fr init_shrkysht
-CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (2.11 France)",2001,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (2.11 French)",2001,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(shrky_it,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
 DE_DMD32ROM8x(        "ssdispi.201",CRC(fb70641d) SHA1(d152838eeacacc5dfe6fc3bc3f26b4d3e9e4c9cc))
@@ -569,7 +569,7 @@ SSHOT_SND
 SE_ROMEND
 #define input_ports_shrky_it input_ports_shrkysht
 #define init_shrky_it init_shrkysht
-CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (2.11 Italy)",2001,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (2.11 Italian)",2001,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(shrky207,"sscpu.207",CRC(7355d65d) SHA1(d501cf1ff8b4be01970d47997f71f539df57b702))
 DE_DMD32ROM8x(        "ssdispa.201",CRC(3360300b) SHA1(3169651a49bb7168fc04b2ae678b696ec6a21c85))
@@ -615,7 +615,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirol_g3 input_ports_hirolcas
 #define init_hirol_g3 init_hirolcas
-CORE_CLONEDEFNV(hirol_g3,hirolcas,"High Roller Casino (3.00 Germany)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirol_g3,hirolcas,"High Roller Casino (3.00 German)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(hirol_fr,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
 DE_DMD32ROM8x(        "hrcdispf.300",CRC(1fb5046b) SHA1(8b121a9c75a7d9a312b8c03615838b748d149819))
@@ -623,7 +623,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirol_fr input_ports_hirolcas
 #define init_hirol_fr init_hirolcas
-CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (3.00 France)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (3.00 French)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(hirol_it,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
 DE_DMD32ROM8x(        "hrcdispi.300",CRC(2734f746) SHA1(aa924d998b6c3fbd80e9325093c9b3267dfaadef))
@@ -631,7 +631,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirol_it input_ports_hirolcas
 #define init_hirol_it init_hirolcas
-CORE_CLONEDEFNV(hirol_it,hirolcas,"High Roller Casino (3.00 Italy)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirol_it,hirolcas,"High Roller Casino (3.00 Italian)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(hirol210,"hrccpu.210",CRC(2e3c682a) SHA1(d9993ae7a0aad80e1eeff226a635873cb25437ce))
 DE_DMD32ROM8x(        "hrcdispa.200",CRC(642bdce7) SHA1(7cd922a15c1443c6ed7636c9def4bc3ab0b47096))
@@ -647,7 +647,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirol_gr input_ports_hirolcas
 #define init_hirol_gr init_hirolcas
-CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (2.10 Germany)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (2.10 German)",2001,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
 / Austin Powers
@@ -673,7 +673,7 @@ AUSTIN_SND
 SE_ROMEND
 #define input_ports_austinf input_ports_austin
 #define init_austinf init_austin
-CORE_CLONEDEFNV(austinf,austin,"Austin Powers (3.02 France)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(austinf,austin,"Austin Powers (3.02 French)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(austing,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-g.300",CRC(28b91cc4) SHA1(037628c78955495f10a60cfc329232289417562e))
@@ -681,7 +681,7 @@ AUSTIN_SND
 SE_ROMEND
 #define input_ports_austing input_ports_austin
 #define init_austing init_austin
-CORE_CLONEDEFNV(austing,austin,"Austin Powers (3.02 Germany)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(austing,austin,"Austin Powers (3.02 German)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(austini,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-i.300",CRC(8b1dd747) SHA1(b29d39a2fb464bd11f4bc5daeb35360126ddf45b))
@@ -689,7 +689,7 @@ AUSTIN_SND
 SE_ROMEND
 #define input_ports_austini input_ports_austin
 #define init_austini init_austin
-CORE_CLONEDEFNV(austini,austin,"Austin Powers (3.02 Italy)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(austini,austin,"Austin Powers (3.02 Italian)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(aust301,"apcpu.301",CRC(868d1f38) SHA1(df08b48437f88e66c4caa80602c28a2223f180b9))
 DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
@@ -757,7 +757,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyf input_ports_playboys
 #define init_playboyf init_playboys
-CORE_CLONEDEFNV(playboyf,playboys,"Playboy (5.00 France)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyf,playboys,"Playboy (5.00 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyg, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispg.500",  CRC(681392fe) SHA1(23011d538282da144b8ff9cbb7c5655567017e5e))
@@ -765,7 +765,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyg input_ports_playboys
 #define init_playboyg init_playboys
-CORE_CLONEDEFNV(playboyg,playboys,"Playboy (5.00 Germany)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyg,playboys,"Playboy (5.00 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyi, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispi.500",  CRC(d90d7ec6) SHA1(7442160f403a8ccabfc9dc8dc53f8b44f5df26bc))
@@ -773,7 +773,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyi input_ports_playboys
 #define init_playboyi init_playboys
-CORE_CLONEDEFNV(playboyi,playboys,"Playboy (5.00 Italy)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyi,playboys,"Playboy (5.00 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyl, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispl.500",  CRC(b019f0f6) SHA1(184a9905cd3af9d272577e43666aed5e5a8a5281))
@@ -781,7 +781,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyl input_ports_playboys
 #define init_playboyl init_playboys
-CORE_CLONEDEFNV(playboyl,playboys,"Playboy (5.00 Spain)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyl,playboys,"Playboy (5.00 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401,  "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispa.400",  CRC(244e9740) SHA1(1a2de2c53104e1123cbcc9ccc92e0888b4cf4bec))
@@ -797,7 +797,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401l input_ports_playboys
 #define init_play401l init_playboys
-CORE_CLONEDEFNV(play401l,playboys,"Playboy (4.01 Spain)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401l,playboys,"Playboy (4.01 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401g, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispg.400",  CRC(c26a0c73) SHA1(1841ab278e5d3e146cb3b43dfedc208d302dbc17))
@@ -805,7 +805,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401g input_ports_playboys
 #define init_play401g init_playboys
-CORE_CLONEDEFNV(play401g,playboys,"Playboy (4.01 Germany)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401g,playboys,"Playboy (4.01 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401f, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispf.400",  CRC(8ccce5d9) SHA1(28370445d38b065001e96b455d283bc047ed0f21))
@@ -813,7 +813,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401f input_ports_playboys
 #define init_play401f init_playboys
-CORE_CLONEDEFNV(play401f,playboys,"Playboy (4.01 France)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401f,playboys,"Playboy (4.01 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401i, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispi.400",  CRC(90c5afed) SHA1(ea7ab06adb18854c9871b02f39fe616a27293415))
@@ -821,7 +821,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401i input_ports_playboys
 #define init_play401i init_playboys
-CORE_CLONEDEFNV(play401i,playboys,"Playboy (4.01 Italy)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401i,playboys,"Playboy (4.01 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303,  "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -837,7 +837,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303l input_ports_playboys
 #define init_play303l init_playboys
-CORE_CLONEDEFNV(play303l,playboys,"Playboy (3.03 Spain)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303l,playboys,"Playboy (3.03 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303g, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispg.300",  CRC(ed7b7c62) SHA1(28b0ab490f8abd5f29e8cb0996da9e7200918157))
@@ -845,7 +845,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303g input_ports_playboys
 #define init_play303g init_playboys
-CORE_CLONEDEFNV(play303g,playboys,"Playboy (3.03 Germany)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303g,playboys,"Playboy (3.03 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303f, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispf.300",  CRC(69ab3bb2) SHA1(59d7ad5eca701d1216200cd489d2d07825a0856e))
@@ -853,7 +853,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303f input_ports_playboys
 #define init_play303f init_playboys
-CORE_CLONEDEFNV(play303f,playboys,"Playboy (3.03 France)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303f,playboys,"Playboy (3.03 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303i, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispi.300",  CRC(74c8cedf) SHA1(474ad1939ea0a58852003e549ed85478e239a67c))
@@ -861,7 +861,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303i input_ports_playboys
 #define init_play303i init_playboys
-CORE_CLONEDEFNV(play303i,playboys,"Playboy (3.03 Italy)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303i,playboys,"Playboy (3.03 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302,  "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -877,7 +877,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302l input_ports_playboys
 #define init_play302l init_playboys
-CORE_CLONEDEFNV(play302l,playboys,"Playboy (3.02 Spain)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302l,playboys,"Playboy (3.02 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302g, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispg.300",  CRC(ed7b7c62) SHA1(28b0ab490f8abd5f29e8cb0996da9e7200918157))
@@ -885,7 +885,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302g input_ports_playboys
 #define init_play302g init_playboys
-CORE_CLONEDEFNV(play302g,playboys,"Playboy (3.02 Germany)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302g,playboys,"Playboy (3.02 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302f, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispf.300",  CRC(69ab3bb2) SHA1(59d7ad5eca701d1216200cd489d2d07825a0856e))
@@ -893,7 +893,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302f input_ports_playboys
 #define init_play302f init_playboys
-CORE_CLONEDEFNV(play302f,playboys,"Playboy (3.02 France)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302f,playboys,"Playboy (3.02 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302i, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispi.300",  CRC(74c8cedf) SHA1(474ad1939ea0a58852003e549ed85478e239a67c))
@@ -901,7 +901,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302i input_ports_playboys
 #define init_play302i init_playboys
-CORE_CLONEDEFNV(play302i,playboys,"Playboy (3.02 Italy)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302i,playboys,"Playboy (3.02 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play300,  "pbcpu.300",    CRC(d7e5bada) SHA1(e4d5bc015751a559eb95acb6da04246b7418eaf5))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -925,7 +925,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203l input_ports_playboys
 #define init_play203l init_playboys
-CORE_CLONEDEFNV(play203l,playboys,"Playboy (2.03 Spain)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203l,playboys,"Playboy (2.03 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203g, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-g.201", CRC(ff525cc7) SHA1(475578cf8b2262a11f640883b70b706f705d90ff))
@@ -933,7 +933,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203g input_ports_playboys
 #define init_play203g init_playboys
-CORE_CLONEDEFNV(play203g,playboys,"Playboy (2.03 Germany)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203g,playboys,"Playboy (2.03 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203f, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-f.201", CRC(eedea4f4) SHA1(31eb1d4de0a4aee73c424c0f21dd2042e6ad0dca))
@@ -941,7 +941,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203f input_ports_playboys
 #define init_play203f init_playboys
-CORE_CLONEDEFNV(play203f,playboys,"Playboy (2.03 France)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203f,playboys,"Playboy (2.03 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203i, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-i.201", CRC(48f190dc) SHA1(bf5c096f755871b12783a63b55908751f9fa5b07))
@@ -949,11 +949,11 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203i input_ports_playboys
 #define init_play203i init_playboys
-CORE_CLONEDEFNV(play203i,playboys,"Playboy (2.03 Italy)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203i,playboys,"Playboy (2.03 Italian)",2002,"Stern",de_mSES2,0)
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Roller Coaster Tycoon
+/ RollerCoaster Tycoon
 /-------------------------------------------------------------------*/
 #define RCT_SND \
 DE2S_SOUNDROM1888("rcsndu7.100", CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778), \
@@ -971,14 +971,14 @@ DE_DMD32ROM8x(       "rctdispa.701",CRC(0d527f13) SHA1(954116a79578b2a7679c401a2
 RCT_SND
 SE_ROMEND
 #define input_ports_rctycn input_ports_se
-CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon (7.02)",2002,"Stern",de_mSES1,0)
+CORE_GAMEDEFNV(rctycn,"RollerCoaster Tycoon (7.02)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rctycnl,"rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdisps.701",CRC(0efa8208) SHA1(6706ea3e31b478970fc65a8cf9db749db9c0fa39))
 SE_ROMEND
 #define input_ports_rctycnl input_ports_rctycn
 #define init_rctycnl init_rctycn
-CORE_CLONEDEFNV(rctycnl,rctycn,"Roller Coaster Tycoon (7.02 Spain)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rctycnl,rctycn,"RollerCoaster Tycoon (7.02 Spanish)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rctycng,"rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdispg.701",CRC(6c70ab29) SHA1(fa3b713b79c0d724b918fa318795681308a4fce3))
@@ -986,7 +986,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rctycng input_ports_rctycn
 #define init_rctycng init_rctycn
-CORE_CLONEDEFNV(rctycng,rctycn,"Roller Coaster Tycoon (7.02 Germany)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rctycng,rctycn,"RollerCoaster Tycoon (7.02 German)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rctycnf,"rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdispf.701",CRC(4a3bb40c) SHA1(053f494765ac7708401a7816af7186e71083fe8d))
@@ -994,7 +994,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rctycnf input_ports_rctycn
 #define init_rctycnf init_rctycn
-CORE_CLONEDEFNV(rctycnf,rctycn,"Roller Coaster Tycoon (7.02 France)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rctycnf,rctycn,"RollerCoaster Tycoon (7.02 French)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rctycni,"rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdispi.701",CRC(6adc8236) SHA1(bb908c88e47987777c921f2948dfb802ee29c868))
@@ -1002,7 +1002,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rctycni input_ports_rctycn
 #define init_rctycni init_rctycn
-CORE_CLONEDEFNV(rctycni,rctycn,"Roller Coaster Tycoon (7.02 Italy)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rctycni,rctycn,"RollerCoaster Tycoon (7.02 Italian)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct701, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(       "rctdispa.700",CRC(6a8925d7) SHA1(82a6c069f1e8f8e053fec708f56c8ffe56d70fc8))
@@ -1010,7 +1010,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct701 input_ports_rctycn
 #define init_rct701 init_rctycn
-CORE_CLONEDEFNV(rct701,rctycn,"Roller Coaster Tycoon (7.01)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct701,rctycn,"RollerCoaster Tycoon (7.01)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct701l, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(        "rctdisps.700",CRC(6921d8cc) SHA1(1ada415af8e949829ceac75da507982ea2091f4d))
@@ -1018,7 +1018,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct701l input_ports_rctycn
 #define init_rct701l init_rctycn
-CORE_CLONEDEFNV(rct701l,rctycn,"Roller Coaster Tycoon (7.01 Spain)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct701l,rctycn,"RollerCoaster Tycoon (7.01 Spanish)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct701g, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(        "rctdispg.700",CRC(0babf1ed) SHA1(db683aa392968d255d355d4a1b0c9d8d4fb9e799))
@@ -1026,7 +1026,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct701g input_ports_rctycn
 #define init_rct701g init_rctycn
-CORE_CLONEDEFNV(rct701g,rctycn,"Roller Coaster Tycoon (7.01 Germany)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct701g,rctycn,"RollerCoaster Tycoon (7.01 German)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct701f, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(        "rctdispf.700",CRC(2de0eec8) SHA1(5b48eabddc1fb735866767ae008baf58205954db))
@@ -1034,7 +1034,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct701f input_ports_rctycn
 #define init_rct701f init_rctycn
-CORE_CLONEDEFNV(rct701f,rctycn,"Roller Coaster Tycoon (7.01 France)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct701f,rctycn,"RollerCoaster Tycoon (7.01 French)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct701i, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(        "rctdispi.700",CRC(0d07d8f2) SHA1(3ffd8ad7183ba20844c1e5d1933c8002ca4707aa))
@@ -1042,7 +1042,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct701i input_ports_rctycn
 #define init_rct701i init_rctycn
-CORE_CLONEDEFNV(rct701i,rctycn,"Roller Coaster Tycoon (7.01 Italy)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct701i,rctycn,"RollerCoaster Tycoon (7.01 Italian)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct600, "rctcpu.600",CRC(2ada30e5) SHA1(fdcd608af155b16c15ec14c83927004c63e9c513))
 DE_DMD32ROM8x(       "rctdispa.600",CRC(dbd294e1) SHA1(53c540594bfe5544b4a009665a1ca3edb1cb874c))
@@ -1050,7 +1050,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct600 input_ports_rctycn
 #define init_rct600 init_rctycn
-CORE_CLONEDEFNV(rct600,rctycn,"Roller Coaster Tycoon (6.00)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct600,rctycn,"RollerCoaster Tycoon (6.00)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct600l, "rctcpu.600",CRC(2ada30e5) SHA1(fdcd608af155b16c15ec14c83927004c63e9c513))
 DE_DMD32ROM8x(        "rctdisps.600",CRC(84a970a3) SHA1(8e00830ba446c8cef99d8e721b65597d9dd98379))
@@ -1058,7 +1058,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct600l input_ports_rctycn
 #define init_rct600l init_rctycn
-CORE_CLONEDEFNV(rct600l,rctycn,"Roller Coaster Tycoon (6.00 Spain)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct600l,rctycn,"RollerCoaster Tycoon (6.00 Spanish)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct600f, "rctcpu.600",CRC(2ada30e5) SHA1(fdcd608af155b16c15ec14c83927004c63e9c513))
 DE_DMD32ROM8x(        "rctdispf.600",CRC(50aa2f48) SHA1(e7c0fb30ef15861e342bd6fada45885bd2403547))
@@ -1066,7 +1066,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct600f input_ports_rctycn
 #define init_rct600f init_rctycn
-CORE_CLONEDEFNV(rct600f,rctycn,"Roller Coaster Tycoon (6.00 France)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct600f,rctycn,"RollerCoaster Tycoon (6.00 French)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct600i, "rctcpu.600",CRC(2ada30e5) SHA1(fdcd608af155b16c15ec14c83927004c63e9c513))
 DE_DMD32ROM8x(        "rctdispi.600",CRC(a55a86c1) SHA1(b18197063e2e4cc50b04f43de41d870eb672ce68))
@@ -1074,7 +1074,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct600i input_ports_rctycn
 #define init_rct600i init_rctycn
-CORE_CLONEDEFNV(rct600i,rctycn,"Roller Coaster Tycoon (6.00 Italy)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct600i,rctycn,"RollerCoaster Tycoon (6.00 Italian)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct400, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(       "rctdsp-a.400",CRC(d128a8fa) SHA1(8fece3df33d21da020ba06d14d588384d90dd89f))
@@ -1082,7 +1082,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct400 input_ports_rctycn
 #define init_rct400 init_rctycn
-CORE_CLONEDEFNV(rct400,rctycn,"Roller Coaster Tycoon (4.00)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct400,rctycn,"RollerCoaster Tycoon (4.00)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct400l, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(        "rctdsp-s.400",CRC(c06e6669) SHA1(af389ba74e62d7065b3bc7d5f771a3461704cbe3))
@@ -1090,7 +1090,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct400l input_ports_rctycn
 #define init_rct400l init_rctycn
-CORE_CLONEDEFNV(rct400l,rctycn,"Roller Coaster Tycoon (4.00 Spain)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct400l,rctycn,"RollerCoaster Tycoon (4.00 Spanish)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct400f, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(        "rctdsp-f.400",CRC(5b41893b) SHA1(66930d0f5d6542b41f22995df55447ba0e435576))
@@ -1098,7 +1098,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct400f input_ports_rctycn
 #define init_rct400f init_rctycn
-CORE_CLONEDEFNV(rct400f,rctycn,"Roller Coaster Tycoon (4.00 France)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct400f,rctycn,"RollerCoaster Tycoon (4.00 French)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct400g, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(        "rctdsp-g.400",CRC(c88dc915) SHA1(894c3bb7f5d200448740f021b5b9421f6ee74c5f))
@@ -1106,7 +1106,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct400g input_ports_rctycn
 #define init_rct400g init_rctycn
-CORE_CLONEDEFNV(rct400g,rctycn,"Roller Coaster Tycoon (4.00 Germany)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct400g,rctycn,"RollerCoaster Tycoon (4.00 German)",2002,"Stern",de_mSES1,0)
 
 SE128_ROMSTART(rct400i, "rctcpu.400",CRC(4691de23) SHA1(f47fc03f9b030cb7a1201d015bbec5a426176338))
 DE_DMD32ROM8x(        "rctdsp-i.400",CRC(7c1c0adb) SHA1(c9321a64ee4af8d475b441ae2385120bba66ccf9))
@@ -1114,7 +1114,7 @@ RCT_SND
 SE_ROMEND
 #define input_ports_rct400i input_ports_rctycn
 #define init_rct400i init_rctycn
-CORE_CLONEDEFNV(rct400i,rctycn,"Roller Coaster Tycoon (4.00 Italy)",2002,"Stern",de_mSES1,0)
+CORE_CLONEDEFNV(rct400i,rctycn,"RollerCoaster Tycoon (4.00 Italian)",2002,"Stern",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party
@@ -1146,7 +1146,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simpprtg input_ports_simpprty
 #define init_simpprtg init_simpprty
-CORE_CLONEDEFNV(simpprtg,simpprty,"Simpsons Pinball Party, The (5.00 Germany)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simpprtg,simpprty,"Simpsons Pinball Party, The (5.00 German)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simpprtl, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
 DE_DMD32ROM8x(           "sppdispl.500",CRC(0821f182) SHA1(7998ab29dae59d077b1dedd28a30a3477251d107))
@@ -1154,7 +1154,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simpprtl input_ports_simpprty
 #define init_simpprtl init_simpprty
-CORE_CLONEDEFNV(simpprtl,simpprty,"Simpsons Pinball Party, The (5.00 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simpprtl,simpprty,"Simpsons Pinball Party, The (5.00 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simpprtf, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
 DE_DMD32ROM8x(           "sppdispf.500",CRC(8d3383ed) SHA1(a56b1043fe1b0280d11386981fe9c181c9b6f1b7))
@@ -1162,7 +1162,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simpprtf input_ports_simpprty
 #define init_simpprtf init_simpprty
-CORE_CLONEDEFNV(simpprtf,simpprty,"Simpsons Pinball Party, The (5.00 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simpprtf,simpprty,"Simpsons Pinball Party, The (5.00 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simpprti, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
 DE_DMD32ROM8x(           "sppdispi.500",CRC(eefe84db) SHA1(97c60f9182bdfe346ca4981b844a71f57414d470))
@@ -1170,7 +1170,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simpprti input_ports_simpprty
 #define init_simpprti init_simpprty
-CORE_CLONEDEFNV(simpprti,simpprty,"Simpsons Pinball Party, The (5.00 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simpprti,simpprty,"Simpsons Pinball Party, The (5.00 Italian)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp400, "spp-cpu.400", CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
@@ -1186,7 +1186,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp400g input_ports_simpprty
 #define init_simp400g init_simpprty
-CORE_CLONEDEFNV(simp400g,simpprty,"Simpsons Pinball Party, The (4.00 Germany)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp400g,simpprty,"Simpsons Pinball Party, The (4.00 German)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp400l, "spp-cpu.400", CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspl.400",CRC(a0bf567e) SHA1(ce6eb65da6bff15aeb787fd2cdac7cf6b4300108))
@@ -1194,7 +1194,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp400l input_ports_simpprty
 #define init_simp400l init_simpprty
-CORE_CLONEDEFNV(simp400l,simpprty,"Simpsons Pinball Party, The (4.00 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp400l,simpprty,"Simpsons Pinball Party, The (4.00 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp400f, "spp-cpu.400", CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspf.400",CRC(6cc306e2) SHA1(bfe6ef0cd5d0cb5e3b29d85ade1700005e22d81b))
@@ -1202,7 +1202,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp400f input_ports_simpprty
 #define init_simp400f init_simpprty
-CORE_CLONEDEFNV(simp400f,simpprty,"Simpsons Pinball Party, The (4.00 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp400f,simpprty,"Simpsons Pinball Party, The (4.00 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp400i, "spp-cpu.400", CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspi.400",CRC(ebe45dee) SHA1(4cdf0f01b1df1fa35df67f19c67b82a39d887be8))
@@ -1210,7 +1210,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp400i input_ports_simpprty
 #define init_simp400i init_simpprty
-CORE_CLONEDEFNV(simp400i,simpprty,"Simpsons Pinball Party, The (4.00 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp400i,simpprty,"Simpsons Pinball Party, The (4.00 Italian)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp300, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
 DE_DMD32ROM8x(           "sppdspa.300",CRC(57c4f297) SHA1(91ae894293b1252213a7137400f89c7ac2c6e877))
@@ -1226,7 +1226,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp300l input_ports_simpprty
 #define init_simp300l init_simpprty
-CORE_CLONEDEFNV(simp300l,simpprty,"Simpsons Pinball Party, The (3.00 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp300l,simpprty,"Simpsons Pinball Party, The (3.00 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp300f, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
 DE_DMD32ROM8x(           "sppdspf.300",CRC(cb848e0d) SHA1(ab9f32d3b693ebcef92fe21e04d760756c8f59c2))
@@ -1234,7 +1234,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp300f input_ports_simpprty
 #define init_simp300f init_simpprty
-CORE_CLONEDEFNV(simp300f,simpprty,"Simpsons Pinball Party, The (3.00 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp300f,simpprty,"Simpsons Pinball Party, The (3.00 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp300i, "spp-cpu.300", CRC(d9e02665) SHA1(12875c845c12b6676aa0af7c717fdf074156d938))
 DE_DMD32ROM8x(           "sppdspi.300",CRC(31acf30a) SHA1(aad2b363bed93d22613b0530fcd2d7f850f8e616))
@@ -1242,7 +1242,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp300i input_ports_simpprty
 #define init_simp300i init_simpprty
-CORE_CLONEDEFNV(simp300i,simpprty,"Simpsons Pinball Party, The (3.00 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp300i,simpprty,"Simpsons Pinball Party, The (3.00 Italian)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp204, "spp-cpu.204", CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
 DE_DMD32ROM8x(           "sppdispa.201",CRC(f55505a4) SHA1(5616959caafc836d13db9c1a1e93cb4954f0c321))
@@ -1258,7 +1258,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp204l input_ports_simpprty
 #define init_simp204l init_simpprty
-CORE_CLONEDEFNV(simp204l,simpprty,"Simpsons Pinball Party, The (2.04 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp204l,simpprty,"Simpsons Pinball Party, The (2.04 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp204f, "spp-cpu.204", CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
 DE_DMD32ROM8x(           "sppdispf.201",CRC(d1c0c484) SHA1(615e3a8ba62b3f6d0ba53fbaf4b7d9e7fcdc9d82))
@@ -1266,7 +1266,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp204f input_ports_simpprty
 #define init_simp204f init_simpprty
-CORE_CLONEDEFNV(simp204f,simpprty,"Simpsons Pinball Party, The (2.04 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp204f,simpprty,"Simpsons Pinball Party, The (2.04 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(simp204i, "spp-cpu.204", CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
 DE_DMD32ROM8x(           "sppdispi.201",CRC(b4594819) SHA1(4ab83f3b6466eebdec802e57d6542ad4a3cf3fb0))
@@ -1274,7 +1274,7 @@ SPP_SND
 SE_ROMEND
 #define input_ports_simp204i input_ports_simpprty
 #define init_simp204i init_simpprty
-CORE_CLONEDEFNV(simp204i,simpprty,"Simpsons Pinball Party, The (2.04 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(simp204i,simpprty,"Simpsons Pinball Party, The (2.04 Italian)",2003,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines
@@ -1300,7 +1300,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3l input_ports_se
 #define init_term3l init_term3
-CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (4.00 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (4.00 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3g, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
 DE_DMD32ROM8x(       "t3dispg.400", CRC(20da21b2) SHA1(9115aef55d9ac36a49ae5c5fd423f05c669b0335))
@@ -1308,7 +1308,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3g input_ports_se
 #define init_term3g init_term3
-CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (4.00 Germany)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (4.00 German)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3f, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
 DE_DMD32ROM8x(       "t3dispf.400", CRC(0645fe6d) SHA1(1a7dfa160ba6cc1335a59b018289982f2a46a7bb))
@@ -1316,7 +1316,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3f input_ports_se
 #define init_term3f init_term3
-CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (4.00 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (4.00 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3i, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
 DE_DMD32ROM8x(       "t3dispi.400", CRC(e8ea9ab8) SHA1(7b25bb7d3095e6bd2d94342d0e078590cb75074b))
@@ -1324,7 +1324,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3i input_ports_se
 #define init_term3i init_term3
-CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (4.00 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (4.00 Italian)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
 DE_DMD32ROM8x(       "t3dispa.300", CRC(79b68a2f) SHA1(cd466c15ffe09666c115f843775e457138bf23bc))
@@ -1340,7 +1340,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3l_3 input_ports_se
 #define init_term3l_3 init_term3
-CORE_CLONEDEFNV(term3l_3,term3,"Terminator 3: Rise of the Machines (3.01 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3l_3,term3,"Terminator 3: Rise of the Machines (3.01 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3f_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
 DE_DMD32ROM8x(       "t3dispf.300", CRC(d5c68903) SHA1(00ca09f087e5b2a742d0bf6f2ff5706a2b83a295))
@@ -1348,7 +1348,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3f_3 input_ports_se
 #define init_term3f_3 init_term3
-CORE_CLONEDEFNV(term3f_3,term3,"Terminator 3: Rise of the Machines (3.01 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3f_3,term3,"Terminator 3: Rise of the Machines (3.01 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3g_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
 DE_DMD32ROM8x(       "t3dispg.300", CRC(9115ea52) SHA1(52bd2cbe609363d9904b82704072fc3c398a7c18))
@@ -1356,7 +1356,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3g_3 input_ports_se
 #define init_term3g_3 init_term3
-CORE_CLONEDEFNV(term3g_3,term3,"Terminator 3: Rise of the Machines (3.01 Germany)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3g_3,term3,"Terminator 3: Rise of the Machines (3.01 German)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3i_3, "t3cpu.301", CRC(172a0b83) SHA1(68f6a228182040a0ea6b310cb25d3d5bdd2574bf))
 DE_DMD32ROM8x(       "t3dispi.300", CRC(30573629) SHA1(85ae7183b42a62f62aa3ba6441717fc7a49dd03a))
@@ -1364,7 +1364,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3i_3 input_ports_se
 #define init_term3i_3 init_term3
-CORE_CLONEDEFNV(term3i_3,term3,"Terminator 3: Rise of the Machines (3.01 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3i_3,term3,"Terminator 3: Rise of the Machines (3.01 Italian)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3_2, "t3cpu.205", CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(       "t3dispa.201", CRC(a314acd1) SHA1(4d5072e65f8041d24c1bab2985ef5b30e1895bf3))
@@ -1380,7 +1380,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3l_2 input_ports_se
 #define init_term3l_2 init_term3
-CORE_CLONEDEFNV(term3l_2,term3,"Terminator 3: Rise of the Machines (2.05 Spain)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3l_2,term3,"Terminator 3: Rise of the Machines (2.05 Spanish)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3f_2, "t3cpu.205", CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(       "t3dispf.201", CRC(ced87154) SHA1(893c071bb2427429ca45f4d2088b015c5f638207))
@@ -1388,7 +1388,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3f_2 input_ports_se
 #define init_term3f_2 init_term3
-CORE_CLONEDEFNV(term3f_2,term3,"Terminator 3: Rise of the Machines (2.05 France)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3f_2,term3,"Terminator 3: Rise of the Machines (2.05 French)",2003,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(term3i_2, "t3cpu.205", CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(       "t3dispi.201", CRC(c1f3604f) SHA1(8a391e6471ced52662aa69261ac29a279c7b8a7d))
@@ -1396,7 +1396,7 @@ T3_SND
 SE_ROMEND
 #define input_ports_term3i_2 input_ports_se
 #define init_term3i_2 init_term3
-CORE_CLONEDEFNV(term3i_2,term3,"Terminator 3: Rise of the Machines (2.05 Italy)",2003,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(term3i_2,term3,"Terminator 3: Rise of the Machines (2.05 Italian)",2003,"Stern",de_mSES2,0)
 
 // All games below now using a new CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound
 
@@ -1433,7 +1433,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
-CORE_CLONEDEFNV(lotr_sp,lotr,"Lord of the Rings, The (10.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord of the Rings, The (10.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspg.a00", CRC(6743a910) SHA1(977773515f00af3937aa59426917e8111ec855ab))
@@ -1441,7 +1441,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
-CORE_CLONEDEFNV(lotr_gr,lotr,"Lord of the Rings, The (10.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord of the Rings, The (10.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspf.a00", CRC(15c26c2d) SHA1(c8e4b442d717aa5881f3d92f044c44d29a14126c))
@@ -1449,7 +1449,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
-CORE_CLONEDEFNV(lotr_fr,lotr,"Lord of the Rings, The (10.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord of the Rings, The (10.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
 DE_DMD32ROM8x(         "lotrdspi.a00", CRC(6c88f395) SHA1(365d5c6908f5861816b73f287194c85d2300635d))
@@ -1457,7 +1457,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
-CORE_CLONEDEFNV(lotr_it,lotr,"Lord of the Rings, The (10.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord of the Rings, The (10.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspa.900", CRC(2b1debd3) SHA1(eab1ffa7b5111bf224c47688bb6c0f40ee6e12fb))
@@ -1473,7 +1473,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp9 input_ports_lotr
 #define init_lotr_sp9 init_lotr
-CORE_CLONEDEFNV(lotr_sp9,lotr,"Lord of the Rings, The (9.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp9,lotr,"Lord of the Rings, The (9.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspg.900", CRC(f5fdd2c2) SHA1(0c5f1b1efe3d38063e2327e2ccfe40936f3988b8))
@@ -1481,7 +1481,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr9 input_ports_lotr
 #define init_lotr_gr9 init_lotr
-CORE_CLONEDEFNV(lotr_gr9,lotr,"Lord of the Rings, The (9.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr9,lotr,"Lord of the Rings, The (9.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x( "lotrdspf.900", CRC(f2d8296e) SHA1(3eb6e1e6ba299b720816bf165b1e20e02f6c0c1e))
@@ -1489,7 +1489,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr9 input_ports_lotr
 #define init_lotr_fr9 init_lotr
-CORE_CLONEDEFNV(lotr_fr9,lotr,"Lord of the Rings, The (9.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr9,lotr,"Lord of the Rings, The (9.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it9, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
 DE_DMD32ROM8x(          "lotrdspi.900", CRC(a09407d7) SHA1(2cdb70ee0bae7f67f4bf12b0dd3e6cf574087e3d))
@@ -1497,7 +1497,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it9 input_ports_lotr
 #define init_lotr_it9 init_lotr
-CORE_CLONEDEFNV(lotr_it9,lotr,"Lord of the Rings, The (9.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it9,lotr,"Lord of the Rings, The (9.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspa.800", CRC(2aa1f00d) SHA1(e9df5b61b467c307aacdb5a6980a78af26492e6a))
@@ -1513,7 +1513,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp8 input_ports_lotr
 #define init_lotr_sp8 init_lotr
-CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord of the Rings, The (8.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp8,lotr,"Lord of the Rings, The (8.00 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspg.800", CRC(55765c23) SHA1(690a72e8cb1099a6873eb3214e72bb0fea54fa22))
@@ -1521,7 +1521,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr8 input_ports_lotr
 #define init_lotr_gr8 init_lotr
-CORE_CLONEDEFNV(lotr_gr8,lotr,"Lord of the Rings, The (8.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr8,lotr,"Lord of the Rings, The (8.00 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspf.800", CRC(e1ccc04b) SHA1(1d5c7ea06f0cb2e1965c968ed01330867aae8e2b))
@@ -1529,7 +1529,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr8 input_ports_lotr
 #define init_lotr_fr8 init_lotr
-CORE_CLONEDEFNV(lotr_fr8,lotr,"Lord of the Rings, The (8.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr8,lotr,"Lord of the Rings, The (8.00 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it8, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
 DE_DMD32ROM8x(          "lotrdspi.800", CRC(b80730d7) SHA1(552c0bfac1c7a6b246829378a30d58769e695f7e))
@@ -1537,7 +1537,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it8 input_ports_lotr
 #define init_lotr_it8 init_lotr
-CORE_CLONEDEFNV(lotr_it8,lotr,"Lord of the Rings, The (8.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it8,lotr,"Lord of the Rings, The (8.00 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspa.700", CRC(233ef0ad) SHA1(1564ae806639dac49add0c464f4499f46b5589ab))
@@ -1553,7 +1553,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp7 input_ports_lotr
 #define init_lotr_sp7 init_lotr
-CORE_CLONEDEFNV(lotr_sp7,lotr,"Lord of the Rings, The (7.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp7,lotr,"Lord of the Rings, The (7.00 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspg.700", CRC(137f223c) SHA1(bb06a6f587bf86555aea85bc1c0402e2137e1c76))
@@ -1561,7 +1561,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr7 input_ports_lotr
 #define init_lotr_gr7 init_lotr
-CORE_CLONEDEFNV(lotr_gr7,lotr,"Lord of the Rings, The (7.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr7,lotr,"Lord of the Rings, The (7.00 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspf.700", CRC(c98aeb30) SHA1(16b0ae41db8b4083121cc5ebf2706320d554dd08))
@@ -1569,7 +1569,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr7 input_ports_lotr
 #define init_lotr_fr7 init_lotr
-CORE_CLONEDEFNV(lotr_fr7,lotr,"Lord of the Rings, The (7.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr7,lotr,"Lord of the Rings, The (7.00 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it7, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
 DE_DMD32ROM8x(          "lotrdspi.700", CRC(6a0d2a6d) SHA1(2b3ca8b26d79919b7102c60515972ab142d1cbf1))
@@ -1577,7 +1577,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it7 input_ports_lotr
 #define init_lotr_it7 init_lotr
-CORE_CLONEDEFNV(lotr_it7,lotr,"Lord of the Rings, The (7.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it7,lotr,"Lord of the Rings, The (7.00 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspa.600", CRC(d2098cec) SHA1(06c5c0b29e1442f503b4b374537b9d233721b4b6))
@@ -1593,7 +1593,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp6 input_ports_lotr
 #define init_lotr_sp6 init_lotr
-CORE_CLONEDEFNV(lotr_sp6,lotr,"Lord of the Rings, The (6.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp6,lotr,"Lord of the Rings, The (6.00 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspg.600", CRC(b0de0827) SHA1(1a0aa25a3b881148aafa5e2fabb7a3c501343524))
@@ -1601,7 +1601,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr6 input_ports_lotr
 #define init_lotr_gr6 init_lotr
-CORE_CLONEDEFNV(lotr_gr6,lotr,"Lord of the Rings, The (6.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr6,lotr,"Lord of the Rings, The (6.00 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspf.600", CRC(5cf6c0b6) SHA1(d7fde5dda4c48da15b682ed9f52d20d8ea2accc9))
@@ -1609,7 +1609,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr6 input_ports_lotr
 #define init_lotr_fr6 init_lotr
-CORE_CLONEDEFNV(lotr_fr6,lotr,"Lord of the Rings, The (6.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr6,lotr,"Lord of the Rings, The (6.00 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it6, "lotrcpu.600", CRC(02786892) SHA1(6810d5a5eb80f520e611a46921dbd2906fbebf2f))
 DE_DMD32ROM8x(          "lotrdspi.600", CRC(9d0b9b3d) SHA1(21363ddbb2c2510fcc9386020f2fd3f49e9c49c3))
@@ -1617,7 +1617,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it6 input_ports_lotr
 #define init_lotr_it6 init_lotr
-CORE_CLONEDEFNV(lotr_it6,lotr,"Lord of the Rings, The (6.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it6,lotr,"Lord of the Rings, The (6.00 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspa.501", CRC(2d555b9f) SHA1(d2d23182dea810624cab010890971d8997f8570c))
@@ -1633,7 +1633,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_s51 input_ports_lotr
 #define init_lotr_s51 init_lotr
-CORE_CLONEDEFNV(lotr_s51,lotr,"Lord of the Rings, The (5.01 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_s51,lotr,"Lord of the Rings, The (5.01 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_g51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspg.501", CRC(16984eaa) SHA1(999254d12402b0866e4a6f5bb2c03dc5c1c59c5f))
@@ -1641,7 +1641,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_g51 input_ports_lotr
 #define init_lotr_g51 init_lotr
-CORE_CLONEDEFNV(lotr_g51,lotr,"Lord of the Rings, The (5.01 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_g51,lotr,"Lord of the Rings, The (5.01 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_f51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspf.501", CRC(a07596ac) SHA1(99db750971eafc3dba5f5d3e15728de306984ba4))
@@ -1649,7 +1649,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_f51 input_ports_lotr
 #define init_lotr_f51 init_lotr
-CORE_CLONEDEFNV(lotr_f51,lotr,"Lord of the Rings, The (5.01 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_f51,lotr,"Lord of the Rings, The (5.01 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_i51, "lotrcpu.501", CRC(df9fd692) SHA1(2d06c1a763330b1b9429961f3e13574e0eefe7a7))
 DE_DMD32ROM8x(          "lotrdspi.501", CRC(440bbba1) SHA1(e85eca9a1b04ba8bc2784414f7003674bcafba9d))
@@ -1657,7 +1657,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_i51 input_ports_lotr
 #define init_lotr_i51 init_lotr
-CORE_CLONEDEFNV(lotr_i51,lotr,"Lord of the Rings, The (5.01 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_i51,lotr,"Lord of the Rings, The (5.01 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspa.500", CRC(19bda8d2) SHA1(a3d9e60f964d100594f82ed361f86e74c8d69748))
@@ -1673,7 +1673,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp5 input_ports_lotr
 #define init_lotr_sp5 init_lotr
-CORE_CLONEDEFNV(lotr_sp5,lotr,"Lord of the Rings, The (5.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp5,lotr,"Lord of the Rings, The (5.00 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspg.500", CRC(39177315) SHA1(13bcf2833ff89fe056517d3ea7b58fb31963cbfc))
@@ -1681,7 +1681,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr5 input_ports_lotr
 #define init_lotr_gr5 init_lotr
-CORE_CLONEDEFNV(lotr_gr5,lotr,"Lord of the Rings, The (5.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr5,lotr,"Lord of the Rings, The (5.00 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspf.500", CRC(ee5768a1) SHA1(05e696bfc4a7630b483f2f9acd39e53fefe937ef))
@@ -1689,7 +1689,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr5 input_ports_lotr
 #define init_lotr_fr5 init_lotr
-CORE_CLONEDEFNV(lotr_fr5,lotr,"Lord of the Rings, The (5.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr5,lotr,"Lord of the Rings, The (5.00 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it5, "lotrcpu.500", CRC(4b45a543) SHA1(e0be3a4244025abc2c109f58b0d637262711b9db))
 DE_DMD32ROM8x(          "lotrdspi.500", CRC(ea8d4ac6) SHA1(f46e8c3f344babc67e72f7077880c21df0c42030))
@@ -1697,7 +1697,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it5 input_ports_lotr
 #define init_lotr_it5 init_lotr
-CORE_CLONEDEFNV(lotr_it5,lotr,"Lord of the Rings, The (5.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it5,lotr,"Lord of the Rings, The (5.00 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspa.404", CRC(1aefcbe7) SHA1(b17fc82425dd5a6ea5a17205d4000294324bb5cc))
@@ -1713,7 +1713,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_g41 input_ports_lotr
 #define init_lotr_g41 init_lotr
-CORE_CLONEDEFNV(lotr_g41,lotr,"Lord of the Rings, The (4.10 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_g41,lotr,"Lord of the Rings, The (4.10 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_f41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspf.404", CRC(ebf4bb43) SHA1(5e392c3363db3d56b2ec66fcc43a59b5e8cdf944))
@@ -1721,7 +1721,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_f41 input_ports_lotr
 #define init_lotr_f41 init_lotr
-CORE_CLONEDEFNV(lotr_f41,lotr,"Lord of the Rings, The (4.10 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_f41,lotr,"Lord of the Rings, The (4.10 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_i41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspi.404", CRC(05db2615) SHA1(0146abd3681d351ef6c1160b85be8bed2886fb27))
@@ -1729,7 +1729,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_i41 input_ports_lotr
 #define init_lotr_i41 init_lotr
-CORE_CLONEDEFNV(lotr_i41,lotr,"Lord of the Rings, The (4.10 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_i41,lotr,"Lord of the Rings, The (4.10 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspa.403", CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
@@ -1745,7 +1745,7 @@ LOTR_SND_SP
 SE_ROMEND
 #define input_ports_lotr_sp4 input_ports_lotr
 #define init_lotr_sp4 init_lotr
-CORE_CLONEDEFNV(lotr_sp4,lotr,"Lord of the Rings, The (4.01 Spain)",2003,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_sp4,lotr,"Lord of the Rings, The (4.01 Spanish)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_gr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspg.403", CRC(74e925cb) SHA1(2edc8666d53f212a053b7a356d2bf6e3180d7bfb))
@@ -1753,7 +1753,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr4 input_ports_lotr
 #define init_lotr_gr4 init_lotr
-CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord of the Rings, The (4.01 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord of the Rings, The (4.01 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspf.403", CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
@@ -1761,7 +1761,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr4 input_ports_lotr
 #define init_lotr_fr4 init_lotr
-CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord of the Rings, The (4.01 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord of the Rings, The (4.01 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspi.403", CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
@@ -1769,7 +1769,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it4 input_ports_lotr
 #define init_lotr_it4 init_lotr
-CORE_CLONEDEFNV(lotr_it4,lotr,"Lord of the Rings, The (4.01 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it4,lotr,"Lord of the Rings, The (4.01 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_le, "lotrcpua.a02", CRC(f732aeb1) SHA1(8c28e91d37525b3e356bddf2cf1be42ea44f3629))
 DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
@@ -1837,7 +1837,7 @@ RBION_SND_FR
 SE_ROMEND
 #define input_ports_ripleysf input_ports_ripleys
 #define init_ripleysf init_ripleys
-CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (3.20 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (3.20 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(ripleysg,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -1845,7 +1845,7 @@ RBION_SND_GR
 SE_ROMEND
 #define input_ports_ripleysg input_ports_ripleys
 #define init_ripleysg init_ripleys
-CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (3.20 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (3.20 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(ripleysi,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -1853,7 +1853,7 @@ RBION_SND_IT
 SE_ROMEND
 #define input_ports_ripleysi input_ports_ripleys
 #define init_ripleysi init_ripleys
-CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (3.20 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (3.20 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(ripleysl,"ripcpu.320",CRC(aa997826) SHA1(2f9701370e64dd55a9bafe0c65e7eb4b9c5dbdd2))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
@@ -1861,7 +1861,7 @@ RBION_SND_SP
 SE_ROMEND
 #define input_ports_ripleysl input_ports_ripleys
 #define init_ripleysl init_ripleys
-CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (3.20 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (3.20 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip310, "ripcpu.310",CRC(669f87cc) SHA1(0e07bbcf337bf7c289a9093d3db805da617cbfef))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
@@ -1877,7 +1877,7 @@ RBION_SND_FR
 SE_ROMEND
 #define input_ports_rip310f input_ports_ripleys
 #define init_rip310f init_ripleys
-CORE_CLONEDEFNV(rip310f,ripleys,"Ripley's Believe It or Not! (3.10 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip310f,ripleys,"Ripley's Believe It or Not! (3.10 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip310g,"ripcpu.310",CRC(669f87cc) SHA1(0e07bbcf337bf7c289a9093d3db805da617cbfef))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -1885,7 +1885,7 @@ RBION_SND_GR
 SE_ROMEND
 #define input_ports_rip310g input_ports_ripleys
 #define init_rip310g init_ripleys
-CORE_CLONEDEFNV(rip310g,ripleys,"Ripley's Believe It or Not! (3.10 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip310g,ripleys,"Ripley's Believe It or Not! (3.10 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip310i,"ripcpu.310",CRC(669f87cc) SHA1(0e07bbcf337bf7c289a9093d3db805da617cbfef))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -1893,7 +1893,7 @@ RBION_SND_IT
 SE_ROMEND
 #define input_ports_rip310i input_ports_ripleys
 #define init_rip310i init_ripleys
-CORE_CLONEDEFNV(rip310i,ripleys,"Ripley's Believe It or Not! (3.10 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip310i,ripleys,"Ripley's Believe It or Not! (3.10 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip310l,"ripcpu.310",CRC(669f87cc) SHA1(0e07bbcf337bf7c289a9093d3db805da617cbfef))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
@@ -1901,7 +1901,7 @@ RBION_SND_SP
 SE_ROMEND
 #define input_ports_rip310l input_ports_ripleys
 #define init_rip310l init_ripleys
-CORE_CLONEDEFNV(rip310l,ripleys,"Ripley's Believe It or Not! (3.10 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip310l,ripleys,"Ripley's Believe It or Not! (3.10 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip302, "ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
@@ -1917,7 +1917,7 @@ RBION_SND_FR
 SE_ROMEND
 #define input_ports_rip302f input_ports_ripleys
 #define init_rip302f init_ripleys
-CORE_CLONEDEFNV(rip302f,ripleys,"Ripley's Believe It or Not! (3.02 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip302f,ripleys,"Ripley's Believe It or Not! (3.02 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip302g,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -1925,7 +1925,7 @@ RBION_SND_GR
 SE_ROMEND
 #define input_ports_rip302g input_ports_ripleys
 #define init_rip302g init_ripleys
-CORE_CLONEDEFNV(rip302g,ripleys,"Ripley's Believe It or Not! (3.02 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip302g,ripleys,"Ripley's Believe It or Not! (3.02 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip302i,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -1933,7 +1933,7 @@ RBION_SND_IT
 SE_ROMEND
 #define input_ports_rip302i input_ports_ripleys
 #define init_rip302i init_ripleys
-CORE_CLONEDEFNV(rip302i,ripleys,"Ripley's Believe It or Not! (3.02 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip302i,ripleys,"Ripley's Believe It or Not! (3.02 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip302l,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
@@ -1941,7 +1941,7 @@ RBION_SND_SP
 SE_ROMEND
 #define input_ports_rip302l input_ports_ripleys
 #define init_rip302l init_ripleys
-CORE_CLONEDEFNV(rip302l,ripleys,"Ripley's Believe It or Not! (3.02 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip302l,ripleys,"Ripley's Believe It or Not! (3.02 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip301, "ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
@@ -1957,7 +1957,7 @@ RBION_SND_FR
 SE_ROMEND
 #define input_ports_rip301f input_ports_ripleys
 #define init_rip301f init_ripleys
-CORE_CLONEDEFNV(rip301f,ripleys,"Ripley's Believe It or Not! (3.01 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip301f,ripleys,"Ripley's Believe It or Not! (3.01 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip301g,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -1965,7 +1965,7 @@ RBION_SND_GR
 SE_ROMEND
 #define input_ports_rip301g input_ports_ripleys
 #define init_rip301g init_ripleys
-CORE_CLONEDEFNV(rip301g,ripleys,"Ripley's Believe It or Not! (3.01 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip301g,ripleys,"Ripley's Believe It or Not! (3.01 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip301i,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -1973,7 +1973,7 @@ RBION_SND_IT
 SE_ROMEND
 #define input_ports_rip301i input_ports_ripleys
 #define init_rip301i init_ripleys
-CORE_CLONEDEFNV(rip301i,ripleys,"Ripley's Believe It or Not! (3.01 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip301i,ripleys,"Ripley's Believe It or Not! (3.01 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip301l,"ripcpu.301",CRC(a867d1b4) SHA1(dca4ba5c981397d26cac016d8438704f7adea0f3))
 DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
@@ -1981,7 +1981,7 @@ RBION_SND_SP
 SE_ROMEND
 #define input_ports_rip301l input_ports_ripleys
 #define init_rip301l init_ripleys
-CORE_CLONEDEFNV(rip301l,ripleys,"Ripley's Believe It or Not! (3.01 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip301l,ripleys,"Ripley's Believe It or Not! (3.01 Spanish)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip300, "ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
@@ -1997,7 +1997,7 @@ RBION_SND_FR
 SE_ROMEND
 #define input_ports_rip300f input_ports_ripleys
 #define init_rip300f init_ripleys
-CORE_CLONEDEFNV(rip300f,ripleys,"Ripley's Believe It or Not! (3.00 France)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip300f,ripleys,"Ripley's Believe It or Not! (3.00 French)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip300g,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
@@ -2005,7 +2005,7 @@ RBION_SND_GR
 SE_ROMEND
 #define input_ports_rip300g input_ports_ripleys
 #define init_rip300g init_ripleys
-CORE_CLONEDEFNV(rip300g,ripleys,"Ripley's Believe It or Not! (3.00 Germany)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip300g,ripleys,"Ripley's Believe It or Not! (3.00 German)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip300i,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
@@ -2013,7 +2013,7 @@ RBION_SND_IT
 SE_ROMEND
 #define input_ports_rip300i input_ports_ripleys
 #define init_rip300i init_ripleys
-CORE_CLONEDEFNV(rip300i,ripleys,"Ripley's Believe It or Not! (3.00 Italy)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip300i,ripleys,"Ripley's Believe It or Not! (3.00 Italian)",2004,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(rip300l,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
 DE_DMD32ROM8x(        "ripdispl.300",CRC(d2f496bb) SHA1(48622e25171030b83d8d1736735e97a13c5f47c6))
@@ -2021,7 +2021,7 @@ RBION_SND_SP
 SE_ROMEND
 #define input_ports_rip300l input_ports_ripleys
 #define init_rip300l init_ripleys
-CORE_CLONEDEFNV(rip300l,ripleys,"Ripley's Believe It or Not! (3.00 Spain)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(rip300l,ripleys,"Ripley's Believe It or Not! (3.00 Spanish)",2004,"Stern",de_mSES3,0)
 
 // Elvis moved to its own sim file (gv)
 
@@ -2077,7 +2077,7 @@ SOP_SND_GR
 SE_ROMEND
 #define input_ports_sopranog input_ports_sopranos
 #define init_sopranog init_sopranos
-CORE_CLONEDEFNV(sopranog,sopranos,"Sopranos, The (5.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopranog,sopranos,"Sopranos, The (5.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopranof, "sopcpuf.500", CRC(d047d4bd) SHA1(588ba8f6c7af32f6aa94f29e59ad2bcd2bc64968))
 DE_DMD32ROM8x(      "sopdspf.500", CRC(e4252fb5) SHA1(be54181af8f3650023f20cf1bf3b8b0310adb1bb))
@@ -2085,7 +2085,7 @@ SOP_SND_FR
 SE_ROMEND
 #define input_ports_sopranof input_ports_sopranos
 #define init_sopranof init_sopranos
-CORE_CLONEDEFNV(sopranof,sopranos,"Sopranos, The (5.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopranof,sopranos,"Sopranos, The (5.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopranol, "sopcpul.500", CRC(ba978d00) SHA1(afe561cc439d9e51dee0697f423fce103448504c))
 DE_DMD32ROM8x(      "sopdspl.500", CRC(a4100c9e) SHA1(08ea2424ff315f6174d56301c7a8164a32629367))
@@ -2093,7 +2093,7 @@ SOP_SND_SP
 SE_ROMEND
 #define input_ports_sopranol input_ports_sopranos
 #define init_sopranol init_sopranos
-CORE_CLONEDEFNV(sopranol,sopranos,"Sopranos, The (5.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopranol,sopranos,"Sopranos, The (5.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopranoi, "sopcpui.500", CRC(c6b29efb) SHA1(1d7045c06bd8c6fc2304fba150c201e920ae92b4))
 DE_DMD32ROM8x(      "sopdspi.500", CRC(5a3f479b) SHA1(43f36e27549259df172ed4340ae891eca634a594))
@@ -2101,7 +2101,7 @@ SOP_SND_IT
 SE_ROMEND
 #define input_ports_sopranoi input_ports_sopranos
 #define init_sopranoi init_sopranos
-CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (5.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (5.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr400, "sopcpua.400", CRC(68efcf24) SHA1(9ef30808260f96fb19067ee473add0c43dd6180e))
 DE_DMD32ROM8x(      "sopdspa.400", CRC(60d6b9d3) SHA1(925d2c84e486e4a71bd05b542429a0e22a99072f))
@@ -2117,7 +2117,7 @@ SOP_SND_GR
 SE_ROMEND
 #define input_ports_sopr400g input_ports_sopranos
 #define init_sopr400g init_sopranos
-CORE_CLONEDEFNV(sopr400g,sopranos,"Sopranos, The (4.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr400g,sopranos,"Sopranos, The (4.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr400f, "sopcpuf.400", CRC(d6f770cd) SHA1(35f35bb91c1444ba42e29542213745b7e90c9b27))
 DE_DMD32ROM8x(      "sopdspf.400", CRC(df451810) SHA1(3c396cac89c57dbacde9b82681dd5600616d6d93))
@@ -2125,7 +2125,7 @@ SOP_SND_FR
 SE_ROMEND
 #define input_ports_sopr400f input_ports_sopranos
 #define init_sopr400f init_sopranos
-CORE_CLONEDEFNV(sopr400f,sopranos,"Sopranos, The (4.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr400f,sopranos,"Sopranos, The (4.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr400l, "sopcpul.400", CRC(7fe54359) SHA1(cb00318484ad1e30ab86c3a239fd2ea322aa945e))
 DE_DMD32ROM8x(      "sopdspl.400", CRC(4fbef543) SHA1(3ffb48031451d3b318f88bfab4d92d2903993492))
@@ -2133,7 +2133,7 @@ SOP_SND_SP
 SE_ROMEND
 #define input_ports_sopr400l input_ports_sopranos
 #define init_sopr400l init_sopranos
-CORE_CLONEDEFNV(sopr400l,sopranos,"Sopranos, The (4.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr400l,sopranos,"Sopranos, The (4.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr400i, "sopcpui.400", CRC(9bd48a86) SHA1(16aa55892a295a1486ede60df104520362005155))
 DE_DMD32ROM8x(      "sopdspi.400", CRC(7e58e364) SHA1(1fcf282ae68e3e725e16e43b85f57d1a18b43508))
@@ -2141,7 +2141,7 @@ SOP_SND_IT
 SE_ROMEND
 #define input_ports_sopr400i input_ports_sopranos
 #define init_sopr400i init_sopranos
-CORE_CLONEDEFNV(sopr400i,sopranos,"Sopranos, The (4.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr400i,sopranos,"Sopranos, The (4.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
 DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
@@ -2172,7 +2172,7 @@ SOP_SND_SP
 SE_ROMEND
 #define input_ports_sopr300l input_ports_sopranos
 #define init_sopr300l init_sopranos
-CORE_CLONEDEFNV(sopr300l,sopranos, "Sopranos, The (3.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr300l,sopranos, "Sopranos, The (3.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300g, "sopcpug.300", CRC(acfa9c83) SHA1(8a31b1008097ff86930b2c946c2777511efc8f9a))
 DE_DMD32ROM8x(      "sopdspg.300", CRC(9fa4f9d6) SHA1(86af57435d3d33f8686a56ac59e411f2cb69f565))
@@ -2180,7 +2180,7 @@ SOP_SND_GR
 SE_ROMEND
 #define input_ports_sopr300g input_ports_sopranos
 #define init_sopr300g init_sopranos
-CORE_CLONEDEFNV(sopr300g,sopranos, "Sopranos, The (3.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr300g,sopranos, "Sopranos, The (3.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300f, "sopcpuf.300", CRC(0bd0f8c4) SHA1(df32dcf1db996203fc8b50c78e973b784ae58dbd))
 DE_DMD32ROM8x(      "sopdspf.300", CRC(693bd940) SHA1(dd277da4e8239ae5ede3ded37efc8377ba85919a))
@@ -2188,7 +2188,7 @@ SOP_SND_FR
 SE_ROMEND
 #define input_ports_sopr300f input_ports_sopranos
 #define init_sopr300f init_sopranos
-CORE_CLONEDEFNV(sopr300f,sopranos, "Sopranos, The (3.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr300f,sopranos, "Sopranos, The (3.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr300i, "sopcpui.300", CRC(1a2846e6) SHA1(10dd57d5f65f397d67105f7e1d0e8d920753893c))
 DE_DMD32ROM8x(      "sopdspi.300", CRC(d7903ed2) SHA1(ae54952cd3e6f7fb0075e71d484701def764f0d6))
@@ -2196,7 +2196,7 @@ SOP_SND_IT
 SE_ROMEND
 #define input_ports_sopr300i input_ports_sopranos
 #define init_sopr300i init_sopranos
-CORE_CLONEDEFNV(sopr300i,sopranos, "Sopranos, The (3.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr300i,sopranos, "Sopranos, The (3.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr204, "sopcpua.204", CRC(95251d1e) SHA1(c22754647afd07f42bb6b2d0944f696922e68feb))
 DE_DMD32ROM8x(      "sopdspa.200", CRC(e5de9a5d) SHA1(6e18d4bdf2d35c9c0743fa6f91f540686d0a706b))
@@ -2220,7 +2220,7 @@ DE3SC_SOUNDROM18888("sopsndl.u7",  CRC(137110f2) SHA1(9bd911fc74b91e811ada4c66be
 SE_ROMEND
 #define input_ports_sopr107l input_ports_sopranos
 #define init_sopr107l init_sopranos
-CORE_CLONEDEFNV(sopr107l,sopranos, "Sopranos, The (1.07 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr107l,sopranos, "Sopranos, The (1.07 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr107g, "sopcpug.107", CRC(e9c83725) SHA1(958155919cbb347b72784c7da112b188e06c908f))
 DE_DMD32ROM8x(      "sopdspg.100", CRC(38625560) SHA1(c41a6808fe05cafe44ea5026689b2ea6eb195e41))
@@ -2232,7 +2232,7 @@ DE3SC_SOUNDROM18888("sopsndg.u7",  CRC(bb615e03) SHA1(ce5ef766376c060fc071d54aa8
 SE_ROMEND
 #define input_ports_sopr107g input_ports_sopranos
 #define init_sopr107g init_sopranos
-CORE_CLONEDEFNV(sopr107g,sopranos, "Sopranos, The (1.07 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr107g,sopranos, "Sopranos, The (1.07 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr107f, "sopcpuf.107", CRC(1cc86040) SHA1(0b4322eca8a5be7ea92356adf65b6c6c6f4205ca))
 DE_DMD32ROM8x(      "sopdspf.100", CRC(18c36c19) SHA1(2b2e5cb00b92d7c8875de2d2d19b82305d9fb27f))
@@ -2244,7 +2244,7 @@ DE3SC_SOUNDROM18888("sopsndf.u7",  CRC(57426738) SHA1(393e1d654ef09172580ad9a272
 SE_ROMEND
 #define input_ports_sopr107f input_ports_sopranos
 #define init_sopr107f init_sopranos
-CORE_CLONEDEFNV(sopr107f,sopranos, "Sopranos, The (1.07 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr107f,sopranos, "Sopranos, The (1.07 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(sopr107i, "sopcpui.107", CRC(d5cd6b07) SHA1(830de4af7f54c85feeae6fb7f630f84e48fdb98b))
 DE_DMD32ROM8x(      "sopdspi.100", CRC(2a6320c1) SHA1(8cd25c53abb353cbbb88af3e7384c7275d836dbb))
@@ -2256,7 +2256,7 @@ DE3SC_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f
 SE_ROMEND
 #define input_ports_sopr107i input_ports_sopranos
 #define init_sopr107i init_sopranos
-CORE_CLONEDEFNV(sopr107i,sopranos, "Sopranos, The (1.07 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(sopr107i,sopranos, "Sopranos, The (1.07 Italian)",2005,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / Nascar
@@ -2290,7 +2290,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nascarl input_ports_se
 #define init_nascarl init_nascar
-CORE_CLONEDEFNV(nascarl,nascar,"Nascar (4.50 Spain)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nascarl,nascar,"Nascar (4.50 Spanish)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas400, "nascpua.400", CRC(24a72071) SHA1(5bfe473e85e12b30963b15dfc8732f2ef9c299c3))
 DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386f87aa620e31e34))
@@ -2306,7 +2306,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas400l input_ports_se
 #define init_nas400l init_nascar
-CORE_CLONEDEFNV(nas400l,nascar,"Nascar (4.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas400l,nascar,"Nascar (4.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas352, "nascpua.352", CRC(65b8132e) SHA1(b42dca3e68d3eff158bae830f6c8cca00e0ed3e2))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2322,7 +2322,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas352l input_ports_se
 #define init_nas352l init_nascar
-CORE_CLONEDEFNV(nas352l,nascar,"Nascar (3.52 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas352l,nascar,"Nascar (3.52 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas350, "nascpua.350", CRC(e5b4ed49) SHA1(0d38c0e08862a0a5a200225634c5bf0d0afe5afe))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2338,7 +2338,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas350l input_ports_se
 #define init_nas350l init_nascar
-CORE_CLONEDEFNV(nas350l,nascar,"Nascar (3.50 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas350l,nascar,"Nascar (3.50 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas340, "nascpua.340", CRC(120dc65a) SHA1(151c1604dacb1c1cf74449291d81629a05fb1b09))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2354,7 +2354,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas340l input_ports_se
 #define init_nas340l init_nascar
-CORE_CLONEDEFNV(nas340l,nascar,"Nascar (3.40 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas340l,nascar,"Nascar (3.40 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas301, "nascpua.301", CRC(8ede60c2) SHA1(aa49da40f2ed858c5fa260ce5e7dd096b4217544))
 DE_DMD32ROM8x(      "nasdspa.301", CRC(4de3c8d5) SHA1(c2c08ddd0ecc511cf34ba6a6cae9968e903b88ad))
@@ -2370,7 +2370,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas301l input_ports_se
 #define init_nas301l init_nascar
-CORE_CLONEDEFNV(nas301l,nascar,"Nascar (3.01 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas301l,nascar,"Nascar (3.01 Spanish)",2005,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / Dale Jr. (NASCAR 5.00)
@@ -2435,7 +2435,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gprixg input_ports_se
 #define init_gprixg init_gprix
-CORE_CLONEDEFNV(gprixg,gprix,"Grand Prix (4.50 Germany)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gprixg,gprix,"Grand Prix (4.50 German)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gprixl, "gpcpul.450", CRC(816bf4a4) SHA1(d5cca282e58d493be36400a7cd7dc4321d98f2f8))
 DE_DMD32ROM8x(      "gpdspl.400", CRC(74d9aa40) SHA1(802c6fbe4248a516f18e4b69997254b3dcf27706))
@@ -2443,7 +2443,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gprixl input_ports_se
 #define init_gprixl init_gprix
-CORE_CLONEDEFNV(gprixl,gprix,"Grand Prix (4.50 Spain)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gprixl,gprix,"Grand Prix (4.50 Spanish)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gprixf, "gpcpuf.450", CRC(b14f7d20) SHA1(b91097490ee568e00be58f5dac184c8d47196adc))
 DE_DMD32ROM8x(      "gpdspf.400", CRC(f9b1ef9a) SHA1(a7e3c0fc1526cf3632e6b1f22caf7f73749e77a6))
@@ -2451,7 +2451,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gprixf input_ports_se
 #define init_gprixf init_gprix
-CORE_CLONEDEFNV(gprixf,gprix,"Grand Prix (4.50 France)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gprixf,gprix,"Grand Prix (4.50 French)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gprixi, "gpcpui.450", CRC(f18d8375) SHA1(b7e4e311623babc7b3c5d744122c88d45d77a33b))
 DE_DMD32ROM8x(      "gpdspi.400", CRC(88675cdf) SHA1(b305a683350d38b43f2e3c9277af14d5503b3219))
@@ -2459,7 +2459,7 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gprixi input_ports_se
 #define init_gprixi init_gprix
-CORE_CLONEDEFNV(gprixi,gprix,"Grand Prix (4.50 Italy)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gprixi,gprix,"Grand Prix (4.50 Italian)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr400, "gpcpua.400", CRC(c6042517) SHA1(19729a86a3afafb516f000489c38d00379e4f85c))
 DE_DMD32ROM8x(      "gpdspa.400", CRC(ce431306) SHA1(2573049b52b928052f196371dbc3a5236ce8cfc3))
@@ -2475,7 +2475,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gpr400g input_ports_se
 #define init_gpr400g init_gprix
-CORE_CLONEDEFNV(gpr400g,gprix,"Grand Prix (4.00 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr400g,gprix,"Grand Prix (4.00 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr400l, "gpcpul.400", CRC(90f506f0) SHA1(4642fa8bf15955a32b6ae8c6b859d94dcd40c542))
 DE_DMD32ROM8x(      "gpdspl.400", CRC(74d9aa40) SHA1(802c6fbe4248a516f18e4b69997254b3dcf27706))
@@ -2483,7 +2483,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gpr400l input_ports_se
 #define init_gpr400l init_gprix
-CORE_CLONEDEFNV(gpr400l,gprix,"Grand Prix (4.00 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr400l,gprix,"Grand Prix (4.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr400f, "gpcpuf.400", CRC(0e7f8776) SHA1(0731c3a5350445f70dd8bdac68b2554942f12c8d))
 DE_DMD32ROM8x(      "gpdspf.400", CRC(f9b1ef9a) SHA1(a7e3c0fc1526cf3632e6b1f22caf7f73749e77a6))
@@ -2491,7 +2491,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gpr400f input_ports_se
 #define init_gpr400f init_gprix
-CORE_CLONEDEFNV(gpr400f,gprix,"Grand Prix (4.00 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr400f,gprix,"Grand Prix (4.00 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr400i, "gpcpui.400", CRC(49e161b7) SHA1(855e35ddedf35055de384bade4b237810bc5ffec))
 DE_DMD32ROM8x(      "gpdspi.400", CRC(88675cdf) SHA1(b305a683350d38b43f2e3c9277af14d5503b3219))
@@ -2499,7 +2499,7 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gpr400i input_ports_se
 #define init_gpr400i init_gprix
-CORE_CLONEDEFNV(gpr400i,gprix,"Grand Prix (4.00 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr400i,gprix,"Grand Prix (4.00 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr352, "gpcpua.352", CRC(da46b437) SHA1(07cf288d47e1447c015e5bb1fd85df654bde71ef))
 DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
@@ -2515,7 +2515,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gpr352g input_ports_se
 #define init_gpr352g init_gprix
-CORE_CLONEDEFNV(gpr352g,gprix,"Grand Prix (3.52 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr352g,gprix,"Grand Prix (3.52 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr352l, "gpcpul.352", CRC(cd296661) SHA1(e706525b07e1e1278ab65a896616e63be52e8e73))
 DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
@@ -2523,7 +2523,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gpr352l input_ports_se
 #define init_gpr352l init_gprix
-CORE_CLONEDEFNV(gpr352l,gprix,"Grand Prix (3.52 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr352l,gprix,"Grand Prix (3.52 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr352f, "gpcpuf.352", CRC(78140cd3) SHA1(9c7257dede5c3bf78d9a9bbdf89bd01f12180c4f))
 DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
@@ -2531,7 +2531,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gpr352f input_ports_se
 #define init_gpr352f init_gprix
-CORE_CLONEDEFNV(gpr352f,gprix,"Grand Prix (3.52 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr352f,gprix,"Grand Prix (3.52 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr352i, "gpcpui.352", CRC(941bd2a9) SHA1(11402004c5b57de5ec28ea2f4128b1852c205dac))
 DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
@@ -2539,7 +2539,7 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gpr352i input_ports_se
 #define init_gpr352i init_gprix
-CORE_CLONEDEFNV(gpr352i,gprix,"Grand Prix (3.52 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr352i,gprix,"Grand Prix (3.52 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr350, "gpcpua.350", CRC(bd47be96) SHA1(31b7adc5cec10d18dd551fdba94fbdb8c6eac01b))
 DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
@@ -2555,7 +2555,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gpr350g input_ports_se
 #define init_gpr350g init_gprix
-CORE_CLONEDEFNV(gpr350g,gprix,"Grand Prix (3.50 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr350g,gprix,"Grand Prix (3.50 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr350l, "gpcpul.350", CRC(714f0641) SHA1(c09aa248fe04fc3c569c6786c0db8d396cbd2403))
 DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
@@ -2563,7 +2563,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gpr350l input_ports_se
 #define init_gpr350l init_gprix
-CORE_CLONEDEFNV(gpr350l,gprix,"Grand Prix (3.50 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr350l,gprix,"Grand Prix (3.50 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr350f, "gpcpuf.350", CRC(ad4224e9) SHA1(781a76ef14e7abb2b57ae49cd8712ddace8a4fca))
 DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
@@ -2571,7 +2571,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gpr350f input_ports_se
 #define init_gpr350f init_gprix
-CORE_CLONEDEFNV(gpr350f,gprix,"Grand Prix (3.50 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr350f,gprix,"Grand Prix (3.50 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr350i, "gpcpui.350", CRC(64bc5f6b) SHA1(fb079323d3548f1915de93d724d3fb76b2e02f27))
 DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
@@ -2579,7 +2579,7 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gpr350i input_ports_se
 #define init_gpr350i init_gprix
-CORE_CLONEDEFNV(gpr350i,gprix,"Grand Prix (3.50 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr350i,gprix,"Grand Prix (3.50 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr340, "gpcpua.340", CRC(798f2ab3) SHA1(046cbbd0115511b2cbd7f132b0755d03edce1e7b))
 DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
@@ -2595,7 +2595,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gpr340g input_ports_se
 #define init_gpr340g init_gprix
-CORE_CLONEDEFNV(gpr340g,gprix,"Grand Prix (3.40 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr340g,gprix,"Grand Prix (3.40 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr340l, "gpcpul.340", CRC(2cd2f25f) SHA1(ee21a680cf56b6b415b2b9f5d89125062b24f8ae))
 DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
@@ -2603,7 +2603,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gpr340l input_ports_se
 #define init_gpr340l init_gprix
-CORE_CLONEDEFNV(gpr340l,gprix,"Grand Prix (3.40 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr340l,gprix,"Grand Prix (3.40 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr340f, "gpcpuf.340", CRC(cefc30e4) SHA1(2ffdfd09ed8ba00a36a6bf12b79200c562b7dc0d))
 DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
@@ -2611,7 +2611,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gpr340f input_ports_se
 #define init_gpr340f init_gprix
-CORE_CLONEDEFNV(gpr340f,gprix,"Grand Prix (3.40 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr340f,gprix,"Grand Prix (3.40 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr340i, "gpcpui.340", CRC(35f4a870) SHA1(24293fafcec6180ab62ef3298e4b53910e05a937))
 DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
@@ -2619,7 +2619,7 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gpr340i input_ports_se
 #define init_gpr340i init_gprix
-CORE_CLONEDEFNV(gpr340i,gprix,"Grand Prix (3.40 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr340i,gprix,"Grand Prix (3.40 Italian)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr301, "gpcpua.301", CRC(07cdb3eb) SHA1(2246d253dca93ce8c5f6775352611a3145ab8776))
 DE_DMD32ROM8x(      "gpdspa.301", CRC(b11d752d) SHA1(c0e6f5544a3061027bf9addef4363c744aaaf736))
@@ -2635,7 +2635,7 @@ GP_SND_GR
 SE_ROMEND
 #define input_ports_gpr301g input_ports_se
 #define init_gpr301g init_gprix
-CORE_CLONEDEFNV(gpr301g,gprix,"Grand Prix (3.01 Germany)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr301g,gprix,"Grand Prix (3.01 German)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr301l, "gpcpul.301", CRC(ad739825) SHA1(c2fbc25985b83bacd4285b6608366de485f16982))
 DE_DMD32ROM8x(      "gpdspl.301", CRC(2f483f0a) SHA1(42550741bee6af022bccd130626913edff6180a0))
@@ -2643,7 +2643,7 @@ GP_SND_SP
 SE_ROMEND
 #define input_ports_gpr301l input_ports_se
 #define init_gpr301l init_gprix
-CORE_CLONEDEFNV(gpr301l,gprix,"Grand Prix (3.01 Spain)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr301l,gprix,"Grand Prix (3.01 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr301f, "gpcpuf.301", CRC(6f9d34ee) SHA1(a8b60300cc1e07d3beb8d607e24285dbbd871e83))
 DE_DMD32ROM8x(      "gpdspf.301", CRC(b19729cd) SHA1(491fdf356f5a24b9895d2feccfe29d0bf45f4e27))
@@ -2651,7 +2651,7 @@ GP_SND_FR
 SE_ROMEND
 #define input_ports_gpr301f input_ports_se
 #define init_gpr301f init_gprix
-CORE_CLONEDEFNV(gpr301f,gprix,"Grand Prix (3.01 France)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr301f,gprix,"Grand Prix (3.01 French)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(gpr301i, "gpcpui.301", CRC(d9be9fd7) SHA1(3dfc997d8d17d153ee42df0adb7993293bfff7e8))
 DE_DMD32ROM8x(      "gpdspi.301", CRC(1fc478da) SHA1(5307e9b302a7e49eb3460e8ba1e4c22525a1dcfe))
@@ -2659,4 +2659,4 @@ GP_SND_IT
 SE_ROMEND
 #define input_ports_gpr301i input_ports_se
 #define init_gpr301i init_gprix
-CORE_CLONEDEFNV(gpr301i,gprix,"Grand Prix (3.01 Italy)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(gpr301i,gprix,"Grand Prix (3.01 Italian)",2005,"Stern",de_mSES3,0)

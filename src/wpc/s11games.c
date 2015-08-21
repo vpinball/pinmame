@@ -438,7 +438,7 @@ S11CS_SOUNDROM888(      "u4-p7.rom",   CRC(630d1ce9) SHA1(fb7f6004b94bf202812165
 S11_ROMEND
 
 CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (L-3 Germany)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (L-3 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,l1,l3,"Banzai Run (L-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,pa,l3,"Banzai Run (P-A)", 1988, "Williams", s11_mS11BS,0)
 
@@ -505,7 +505,7 @@ S11_ROMEND
 #define input_ports_taxi input_ports_s11
 CORE_GAMEDEF(taxi , l4, "Taxi (Lola) (L-4)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marilyn) (L-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (L-1 Germany)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (L-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , p5, l4, "Taxi (P-5)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
@@ -593,8 +593,8 @@ S11_ROMEND
 CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, ma3, la3, "Earthshaker (Metallica mod) (LA-3)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 Germany)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 Germany)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
@@ -891,7 +891,7 @@ S11CS_SOUNDROM000(      "rolr_u4.l3",  CRC(d366c705) SHA1(76018305b5040b2e5d8c45
                         "rolr_u19.l3", CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
                         "rolr_u20.l3", CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
 S11_ROMEND
-CORE_CLONEDEF(rollr,g3,l2, "Rollergames (LG-3 Germany)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(rollr,g3,l2, "Rollergames (LG-3 German)", 1990, "Williams", s11_mS11CS,0)
 
 /*--------------------
 / Pool Sharks 6/90
@@ -1047,7 +1047,7 @@ S11_ROMEND
 CORE_CLONEDEF(rvrbt, p7, l3, "Riverboat Gambler (PA-7)", 1990, "Williams", s11_mS11CS,0)
 
 /*--------------------
-/ Bugs Bunny Birthday Ball 11/90
+/ Bugs Bunny's Birthday Ball 11/90
 /--------------------*/
 INITGAME(bbnny,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", CRC(b4358920) SHA1(93af1cf5dc2b5442f428a621c0f73b27c197a3df),
@@ -1057,7 +1057,7 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
 #define input_ports_bbnny input_ports_s11
-CORE_GAMEDEF(bbnny, l2, "Bugs Bunny Birthday Ball (L-2)", 1990, "Bally", s11c_one,0)
+CORE_GAMEDEF(bbnny, l2, "Bugs Bunny's Birthday Ball (L-2)", 1990, "Bally", s11c_one,0)
 
 S11_ROMSTART48(bbnny,lu,"bugs_u26.l2", CRC(b4358920) SHA1(93af1cf5dc2b5442f428a621c0f73b27c197a3df),
                         "u27-lu2.rom", CRC(aaa2c82d) SHA1(b279c87cb2ac90a818eeb1afa6115b8cdab1b0df))
@@ -1065,7 +1065,7 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u19.l1", CRC(a2084702) SHA1(ffd749387e7b52bad1e98c6a8939fb87bc67524c),
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
-CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny's Birthday Ball (LU-2 Europe)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Dr. Dude - moved to own simulator
