@@ -1017,7 +1017,7 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
                         "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
 S11_ROMEND
 #define input_ports_strax input_ports_s11
-CORE_GAMEDEF(strax,p7, "Star Trax (domestic prototype)", 1990, "Williams", s11_mS11BS,0)
+CORE_GAMEDEF(strax,p7, "Star Trax (Domestic Prototype)", 1990, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Riverboat Gambler 10/90
