@@ -17,14 +17,15 @@
 #include "desound.h"
 #include "se.h"
 #include "vpintf.h"
+#include "machine/6821pia.h"
 
 #define INITGAME(name, gen, disp) \
 static core_tGameData name##GameData = { gen, disp }; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAME_S10(name, gen, disp, mux, flip, db, inv) \
+#define INITGAME_S10(name, gen, disp, flags, flip, db, inv) \
 static core_tGameData name##GameData = { \
-  gen, disp, {flip,0,0,0,0,db}, NULL, {{0}, {0,0,0,0,inv}}, {mux} }; \
+  gen, disp, {flip,0,0,0,0,db,flags}, NULL, {{0}, {0,0,0,0,inv}}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 S4_INPUT_PORTS_START(bowl, 1) S4_INPUT_PORTS_END
@@ -48,6 +49,10 @@ static const core_tLCDLayout dispBowl[] = {
   { 2, 0,20, 4, CORE_SEG7 }, { 2,12,28, 4, CORE_SEG7 },
   { 4, 0,36, 4, CORE_SEG7 }, { 4,12,44, 4, CORE_SEG7 },
   { 6, 4,54, 2, CORE_SEG7 }, { 6,12,52, 2, CORE_SEG7 }, {0}
+};
+
+static struct core_dispLayout de_dmd192x64[] = {
+  {0,0,64,192,CORE_DMD,(genf *)dedmd64_update}, {0}
 };
 
 static struct core_dispLayout se_dmd128x32[] = {
@@ -177,17 +182,41 @@ CORE_GAMEDEF(tstrk,l1,"Triple Strike (Shuffle) (L-1)",1983,"Williams",s4_mS4,GAM
 /*------------------------------------------------
 / Midnight Marauders (BY35-???: 05/84) - Gun game
 /-------------------------------------------------*/
-static const core_tLCDLayout dispMM[] = {{ 0,0,0,16,CORE_SEG7 }, {0}};
-static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_PHASE}};
+static SWITCH_UPDATE(marauders) {
+  if (inports) {
+    UINT8 col1 = inports[BY35_COMINPORT] & 0x60;
+    UINT8 col2 = (inports[BY35_COMINPORT] >> 8) & 0x87;
+    if (col1 & 0x20) col1 = (col1 & 0xdf) | 0x01; // move start sw
+    col1 |= (col1 & 0x40) >> 1; // move tilt sw
+    col2 |= (col2 & 0x80) >> 4; // move slam sw
+    CORE_SETKEYSW(inports[BY35_COMINPORT], 0x07, 0);
+    CORE_SETKEYSW(col1, 0x21, 1);
+    CORE_SETKEYSW(col2, 0x0f, 2);
+  }
+  /*-- Diagnostic buttons on CPU board --*/
+  cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+  /*-- coin door switches --*/
+  pia_set_input_ca1(0, !core_getSw(BY35_SWSELFTEST));
+}
+static MACHINE_DRIVER_START(marauders)
+  MDRV_IMPORT_FROM(by35_61S)
+  MDRV_SWITCH_UPDATE(marauders)
+MACHINE_DRIVER_END
+static const core_tLCDLayout dispMM[] = {
+  {0, 0, 7,1,CORE_SEG7}, {0, 2, 6,1,CORE_SEG7}, {0, 4, 5,1,CORE_SEG7},
+  {0, 6, 4,1,CORE_SEG7}, {0, 8, 3,1,CORE_SEG7}, {0,10, 2,1,CORE_SEG7}, {0}
+};
+static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_MARAUDER}};
 static void init_mdntmrdr(void) { core_gameData = &mdntmrdrGameData; }
-BY35_ROMSTARTx00(mdntmrdr,"u2.bin",NO_DUMP,
-                          "u6.bin",CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
+BY35_ROMSTARTx00(mdntmrdr, "mdru2.532", CRC(f72668bc) SHA1(25b984e1828905190c73c359ee6c9858ed1b2224),
+                           "mdru6.732", CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
 SOUNDREGION(0x10000, REGION_CPU2)
-  ROM_LOAD("u3.bin", 0xd000, 0x1000, NO_DUMP)
-  ROM_LOAD("u5.bin", 0xf000, 0x1000, NO_DUMP)
+  ROM_LOAD("u3.bin", 0xd000, 0x1000, CRC(3ba474e4) SHA1(4ee5c3ad2c9dca49e9394521506e97a95e3d9a17))
+  ROM_LOAD("u5.bin", 0xf000, 0x1000, CRC(3ab40e35) SHA1(63b2ee074e5993a2616e67d3383bc3d3ac51b400))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(mdntmrdr,1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",by35_mBY35_61S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",marauders,0)
 
 /*----------------------------
 / Black Beauty
@@ -224,6 +253,19 @@ S9_ROMSTART12(pfevr,p3,"cpu_u19.732", CRC(03796c6d) SHA1(38c95fcce9d0f357a74f041
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
 CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9PS, 0)
+
+/*--------------------
+/ Still Crazy (#534)
+/--------------------*/
+static const core_tLCDLayout dispCrzy[] = {
+  {0, 0,21,7,CORE_SEG87}, {0}
+};
+INITGAME_S10(scrzy, GEN_S9, dispCrzy, S9_BREAKPIA, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+S9_ROMSTARTx2(scrzy,l1,"scrzy_20.bin", CRC(b0df42e6) SHA1(bb10268d7b820d1de0c20e1b79aba558badd072b))
+S9S_SOUNDROM4("scrzy_49.bin", CRC(bcc8ccc4) SHA1(2312f9cc4f5a2dadfbfa61d13c31bb5838adf152))
+S9_ROMEND
+S11_INPUT_PORTS_START(scrzy, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(scrzy, l1, "Still Crazy (L-1)", 1984, "Williams", s9_mS9S, 0)
 
 /*--------------------
 / Strike Zone (#916)
@@ -265,6 +307,23 @@ S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129
 S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s9_mS11S,0)
+
+/*--------------------
+/ Tic-Tac-Strike (#919)
+/--------------------*/
+INITGAME_S10(tts, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
+S9_ROMSTARTx4(tts,l2,"u27_l2.128",CRC(edbcab92) SHA1(0f6b2dc01874984f9a17ee873f2fa0b6c9bba5be))
+S11S_SOUNDROM88(       "tts_u21.256", NO_DUMP,
+                       "tts_u22.256", NO_DUMP)
+S11_ROMEND
+S11_INPUT_PORTS_START(tts, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(tts, l2, "Tic-Tac-Strike (Shuffle) (L-2)", 1986, "Williams", s11_mS11S,0)
+
+S9_ROMSTARTx4(tts,l1,"tts_u27.128",CRC(f540c53c) SHA1(1c7a318278ad1afdcbe6aaf81f9b774882b069d6))
+S11S_SOUNDROM88(       "tts_u21.256", NO_DUMP,
+                       "tts_u22.256", NO_DUMP)
+S11_ROMEND
+CORE_CLONEDEF(tts, l1, l2, "Tic-Tac-Strike (Shuffle) (L-1)", 1986, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Gold Mine (#920)
@@ -325,7 +384,7 @@ WPCS_SOUNDROM222("sf_u18.l1",CRC(78092c83) SHA1(7c922dfd8be4bb5e23d4c86b6eb18a29
 WPC_ROMEND
 WPC_INPUT_PORTS_START(sf, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(sf,l1,"Slugfest (L-1)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(sf,d1,l1,"Slugfest (D-1) LED Ghost Fix",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(sf,d1,l1,"Slugfest (D-1 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 
 /*-------------------
 / Strike Master
@@ -352,7 +411,7 @@ WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79
 WPC_ROMEND
 WPC_INPUT_PORTS_START(strik, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(strik,d4,l4,"Strike Master (D-4) LED Ghost Fix",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(strik,d4,l4,"Strike Master (D-4 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
 
 /*------------------
 / Hot Shot (#60017)
@@ -381,7 +440,7 @@ WPC_ROMSTART(hshot,p9,"hshot_p9.u6",0x80000,CRC(fa4d05df) SHA1(235aa096f2983f77a
 WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb),
                  "hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f))
 WPC_ROMEND
-CORE_CLONEDEF(hshot,p9,p8,"Hot Shot Basketball (P-9) LED Ghost Fix",1992,"Midway",wpc_mFliptronS,0)
+CORE_CLONEDEF(hshot,p9,p8,"Hot Shot Basketball (P-9 LED Ghost Fix)",1992,"Midway",wpc_mFliptronS,0)
 
 /*-------------
 / Addams Family Values
@@ -447,15 +506,15 @@ INPUT_PORTS_START(afv)
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
 INPUT_PORTS_END
-CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper, L-4)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper, D-4) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper) (L-4)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(afv,d4,l4,"Addams Family Values (Coin Dropper) (D-4 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 
 /*-------------------------------------------------------------------
-/ Strikes n' Spares (#N111)
+/ Strikes N' Spares (#N111)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout GTS3_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32},
-  {34,0,32,128,CORE_DMD,(genf *)gts3_dmd128x32a},
+  {0,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32},
+  {34,0,32,128,CORE_DMD|CORE_DMDNOAA,(genf *)gts3_dmd128x32a},
   {0}
 };
 static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};
@@ -466,7 +525,7 @@ NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
 GTS32_INPUT_PORTS_START(snspares, 4) GTS3_INPUT_PORTS_END
-CORE_GAMEDEFNV(snspares,"Strikes n' Spares (rev.6)",1995,"Gottlieb",mGTS3DMDS2, 0)
+CORE_GAMEDEFNV(snspares,"Strikes N' Spares (rev. 6)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
 #define init_snspare1 init_snspares
 #define input_ports_snspare1 input_ports_snspares
@@ -475,7 +534,16 @@ GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e9380
 NORMALREGION(0x100000, REGION_USER3) \
   GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
 GTS3_ROMEND
-CORE_CLONEDEFNV(snspare1,snspares,"Strikes n' Spares (rev.1)",1995,"Gottlieb",mGTS3DMDS2, 0)
+CORE_CLONEDEFNV(snspare1,snspares,"Strikes N' Spares (rev. 1)",1995,"Gottlieb",mGTS3DMDS2, 0)
+
+#define init_snspare2 init_snspares
+#define input_ports_snspare2 input_ports_snspares
+GTS3ROMSTART(snspare2,  "gprom2.bin",CRC(79906dfc) SHA1(1efb68dd391f79e6f8ad5a588145d6ad7b36743c))
+GTS3_DMD256_ROMSTART2(  "dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
+NORMALREGION(0x100000, REGION_USER3) \
+  GTS3S_ROMLOAD4(0x00000, "arom1.bin", CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb)) \
+GTS3_ROMEND
+CORE_CLONEDEFNV(snspare2,snspares,"Strikes N' Spares (rev. 2)",1995,"Gottlieb",mGTS3DMDS2, 0)
 
 /*-----------------------------
 / League Champ (Shuffle Alley)
@@ -500,10 +568,45 @@ WPC_INPUT_PORTS_START(lc, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptronS,0)
 
 /*-------------------------------------------------------------------
+/ Cut The Cheese (Redemption, Data East hardware)
+/-------------------------------------------------------------------*/
+static core_tGameData ctcGameData = {
+  GEN_DEDMD64, de_dmd192x64, {0,0,0,0,SNDBRD_DE2S,SNDBRD_DEDMD64}, NULL, {{0}},{10}
+};
+static void init_ctcheese(void) { core_gameData = &ctcGameData; }
+DE_ROMSTARTx0(ctcheese,"ctcc5.bin",CRC(465d41de) SHA1(0e30b527d5b47f8823cbe6f196052b090e69e907))
+DE_DMD64ROM88("ctcdsp0.bin", CRC(6885734d) SHA1(9ac82c9c8bf4e66d2999fbfd08617ef6c266dfe8),
+              "ctcdsp3.bin", CRC(0c2b3f3c) SHA1(cb730cc6fdd2a2786d25b46b1c45466ee56132d1))
+DE2S_SOUNDROM144("ctcsnd.u7", CRC(406b9b9e) SHA1(f3f86c368c92ee0cb47323e6e0ca0fa05b6122bd),
+                 "ctcsnd.u17", CRC(ea125fb3) SHA1(2bc1d2a6138ff77ad19b7bcff784dba73f545883),
+                 "ctcsnd.u21", CRC(1b3af383) SHA1(c6b57f3f0781954f75d164d909093e4ed8da440e))
+SE_ROMEND
+
+DE_INPUT_PORTS_START2(ctcheese, 1) DE_INPUT_PORTS_END
+CORE_GAMEDEFNV(ctcheese,"Cut The Cheese (Redemption)",1996,"Sega",de_mDEDMD64S2A,GAME_NOT_WORKING)
+
+/*-------------------------------------------------------------------
+/ Cut The Cheese Deluxe (Redemption, Whitestar hardware)
+/-------------------------------------------------------------------*/
+static core_tGameData ctcdlxGameData = {
+  GEN_WS, se_dmd128x32, {0,0,2}
+};
+static void init_ctchzdlx(void) { core_gameData = &ctcdlxGameData; }
+SE128_ROMSTART(ctchzdlx,"ctcdxcpu.100",CRC(faad6656) SHA1(4d868bc31f35e848424e3bb66cb87efe0cf24eca))
+DE_DMD32ROM8x(   "ctcdxdsp.100",CRC(de61b12e) SHA1(2ef8f02ca995e67d1feebd33306f92e885077101))
+DE2S_SOUNDROM144("ctcu7d.bin", CRC(92bfe454) SHA1(8182f7ac84addf8bdb7976a85c801edf3424d16b),
+                 "ctcu17.bin", CRC(7ee35d17) SHA1(f2c9b70285926fc782a2e1289532395cd8dbf999),
+                 "ctcu21.bin", CRC(84dd40ac) SHA1(c9327b95f1730a3aa741540c28078f214af214b8))
+SE_ROMEND
+
+SE_INPUT_PORTS_START(ctchzdlx, 1) SE_INPUT_PORTS_END
+CORE_CLONEDEFNV(ctchzdlx,ctcheese,"Cut The Cheese Deluxe (Redemption)",1998,"Sega",de_mSES1,0)
+
+/*-------------------------------------------------------------------
 / Wack-A-Doodle-Doo (Redemption)
 /-------------------------------------------------------------------*/
 static core_tGameData wackGameData = {
-  GEN_WS, se_dmd128x32
+  GEN_WS, se_dmd128x32, {0,0,2}
 };
 static void init_wackadoo(void) { core_gameData = &wackGameData; }
 SE128_ROMSTART(wackadoo,"wackcpu.100",CRC(995e0219) SHA1(57b2352a5a96e71ff48f838fde87a158afbf3701))
@@ -519,7 +622,7 @@ CORE_GAMEDEFNV(wackadoo,"Wack-A-Doodle-Doo (Redemption)",1998,"Sega",de_mSES1,0)
 / Titanic (Coin dropper)
 /-------------------------------------------------------------------*/
 static core_tGameData coinGameData = {
-  GEN_WS, se_dmd128x32, {FLIP_SWNO(81,88), 0, 34, 0, 0, SE_LED2}
+  GEN_WS, se_dmd128x32, {0, 0, 34, 0, 0, SE_LED2}
 };
 static void init_titanic(void) { core_gameData = &coinGameData; }
 SE128_ROMSTART(titanic, "titacpu.101",CRC(4217becf) SHA1(8b7aacbe75717f13623f6ceaa4ba2de61b1b732a))
@@ -529,7 +632,7 @@ DE2S_SOUNDROM144("titau7.101" ,CRC(544fe1ac) SHA1(5c62eef6a42660b13e626d1a6bb8cd
                  "titau21.100",CRC(76ca05f8) SHA1(3e1c56fe37393c345111665fd8ab730d53cb6970))
 SE_ROMEND
 SE_INPUT_PORTS_START(titanic, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,GAME_NOCRC)
+CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,0)
 
 /*-------------------------------------------------------------------
 / Monopoly (Coin dropper)
@@ -541,4 +644,4 @@ DE2S_SOUNDROM18("monopred.u7" ,CRC(1ca0cf63) SHA1(c4ce78718e3e3f1a8451b134f2869d
                 "monopred.u17",CRC(467dca62) SHA1(c727748b6b0b39ead19ce98bddd89fd05fb62d00))
 SE_ROMEND
 SE_INPUT_PORTS_START(monopred, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,0)

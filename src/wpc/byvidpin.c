@@ -1,7 +1,7 @@
 /* Bally Video/Pinball Combination Hardware Emulation
    by Steve Ellenoff (01/16/2002)
 
-   Games: Baby Pacman (1982)
+   Games: Baby Pac-Man (1982)
           Granny & The Gators (1984)
 
    Hardware:

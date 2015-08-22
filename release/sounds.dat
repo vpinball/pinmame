@@ -5116,3 +5116,647 @@ gprix:
 :fef9:horns
 :fefa:slide
 :fefb:drum
+
+; ------------
+; Attack From Mars
+; ------------
+afm_113:
+# ------------
+# Music
+# ------------
+:0001:Music: Prelaunch Loop
+:0002:Music: Launch Fanfare & Main Theme
+:0003:Music: Main Theme
+:0004:Music: Attack Wave 1
+:0005:Music: Destroy The Saucer
+:0006:Music: Attack Wave Short Loop
+:0007:Music: Attack Wave 2
+:0008:Music: Saucer Destroyed
+:0009:Music: Martian Attack 1
+:000a:Music: Martian Attack 2
+:000b:Music: Ball Locked
+:000c:Music: Martian Attack 3
+:000d:Music: Ball Summary Loop
+:000e:Music: Attack Wave 3
+:000f:Music: Attack Wave 4
+:0010:Music: Attack Wave 5
+:0011:Music: Short Loop
+:0012:Music: Short Loop continues
+:0014:Music: Dramatic Loop
+# ------------
+# Sound Effects
+# NOTE: Every sound effect appears twice.
+# ------------
+:0064:SFX: Whack 1
+:0065:SFX: Whack 1 louder
+:0068:SFX: Whack lower
+:0069:SFX: Laser
+:006a:SFX: Laser
+:006b:SFX: Laser
+:006c:SFX: Laser
+:006d:SFX: Laser
+:006e:SFX: Laser
+:006f:SFX: Laser
+:0070:SFX: Ball Locked
+:0071:SFX: Ball Locked
+:0072:SFX: Laser fire
+:0073:SFX: Laser fire
+:0074:SFX: Boom
+:0075:SFX: Boom
+:0076:SFX: Hiss
+:0077:SFX: Hiss
+:0078:SFX: Whoosh
+:0079:SFX: Whoosh
+:007a:SFX: Bash
+:007b:SFX: Bash
+:007c:SFX: Laser hit
+:007d:SFX: Laser hit
+:007e:SFX: Zoom
+:007f:SFX: Zoom
+:0080:SFX: Laser hit
+:0081:SFX: Laser hit
+:0082:SFX: Lane hit
+:0083:SFX: Lane hit
+:0084:SFX: Laser hit
+:0085:SFX: Laser hit
+:0088:SFX: Laser boing
+:0089:SFX: Laser boing
+:008a:SFX: Saucer zoom
+:008b:SFX: Saucer zoom
+:008c:SFX: Laser hit
+:008d:SFX: Laser hit
+:008e:SFX: Bonus Count
+:008f:SFX: Bonus Count
+:0090:SFX: Multiball Whoosh
+:0091:SFX: Multiball Whoosh
+:0092:SFX: Multiball Impact
+:0093:SFX: Multiball Impact
+:0094:Music: Fanfare
+:0095:Music: Fanfare
+:0098:SFX: Multiball jetplane zoom
+:0099:SFX: Multiball jetplane zoom
+:009a:SFX: Bumpers
+:009b:SFX: Bumpers
+:009c:SFX: Laser hit
+:009d:SFX: Laser hit
+:009e:SFX: Laser zoom
+:009f:SFX: Laser zoom
+:00a0:SFX: Boom
+:00a1:SFX: Boom
+:00a2:SFX: Metallic clang
+:00a3:SFX: Metallic clang
+:00a4:SFX: Boom
+:00a5:SFX: Boom
+:00ae:SFX: Martian Unngh
+:00af:SFX: Martian Unngh
+:00b2:SFX: Martian Aough
+:00b3:SFX: Martian Aough
+:00b4:SFX: Martian Aough longer
+:00b5:SFX: Martian Aough longer
+:00b8:SFX: Clank
+:00b9:SFX: Clank
+:00ba:SFX: Explosion
+:00bb:SFX: Explosion
+:00c0:SFX: Lane
+:00c1:SFX: Lane
+:00c4:SFX: Charging up
+:00c5:SFX: Charging up
+:00c8:SFX: Lane Combo
+:00c9:SFX: Lane Combo
+:00cc:SFX: Laser zoing
+:00cd:SFX: Laser zoing
+:00d0:SFX: Impact
+:00d1:SFX: Impact
+:00d2:SFX: Laser & Impact
+:00d3:SFX: Laser & Impact
+:00d4:SFX: Bonus Ding
+:00d5:SFX: Bonus Ding
+:00d6:SFX: Impact
+:00d7:SFX: Impact
+:00e4:SFX: Duck grows
+:00e5:SFX: Duck grows
+:00e6:SFX: Cow grows
+:00e7:SFX: Cow grows
+:00e8:Music: Goal fanfare
+:00e9:Music: Goal fanfare
+:00ea:SFX: Chord
+:00eb:SFX: Chord
+:00ec:SFX: Metallic clang
+:00ed:SFX: Metallic clang
+:00f0:SFX: Clang
+:00f1:SFX: Clang
+:00f2:SFX: Martian ray
+:00f3:SFX: Martian ray
+:00f4:SFX: UFO flies away
+:00f5:SFX: UFO flies away
+:00f6:SFX: Impact
+:00f7:SFX: Impact
+:00fc:SFX: Duck high
+:00fd:SFX: Duck high
+:00fe:SFX: Duck low
+:00ff:SFX: Duck low
+:0100:SFX: Cow high
+:0101:SFX: Cow high
+:0102:SFX: Laser beam
+:0103:SFX: Laser beam
+:0104:SFX: Impact
+:0105:SFX: Impact
+:010c:SFX: Chicken high
+:010d:SFX: Chicken high
+:010e:SFX: Chicken low
+:010f:SFX: Chicken low
+:0110:SFX: Chicken surprised
+:0111:SFX: Chicken surprised
+:0112:SFX: Laser beam
+:0113:SFX: Laser beam
+:0114:SFX: Laser fires
+:0115:SFX: Laser fires
+:0116:SFX: Impact
+:0117:SFX: Impact
+:0118:SFX: Growth ray
+:0119:SFX: Growth ray
+:011c:SFX: Growth effect
+:011d:SFX: Growth effect
+:011e:SFX: Clunk
+:011f:SFX: Clunk
+:0120:SFX: Impact
+:0121:SFX: Impact
+:0122:Music: Extra ball fanfare
+:0123:Music: Extra ball fanfare
+:0124:SFX: Martian growl
+:0125:SFX: Martian growl
+:0126:SFX: Laser fires
+:0127:SFX: Laser fires
+:0128:SFX: Laser charges and hits
+:0129:SFX: Laser charges and hits
+:012a:SFX: Dry impact
+:012b:SFX: Dry impact
+:012c:SFX: Harp hit
+:012d:SFX: Harp hit
+:012e:SFX: Laser pow 1
+:012f:SFX: Laser pow 1
+:0130:SFX: Laser pow 2
+:0131:SFX: Laser pow 2
+:0132:SFX: Laser pow 3
+:0133:SFX: Laser pow 3
+:0134:SFX: Laser pow 4
+:0135:SFX: Laser pow 4
+:0136:SFX: Laser pow 5
+:0137:SFX: Laser pow 5
+:0138:SFX: Impact splat
+:0139:SFX: Impact splat
+:013a:SFX: Drum roll zoom
+:013b:SFX: Drum roll zoom
+:013c:SFX: Saucer ray
+:013d:SFX: Saucer ray
+:013e:SFX: Impact
+:013f:SFX: Impact
+:0142:SFX: Boom
+:0143:SFX: Boom
+:0146:SFX: Tac
+:0147:SFX: Tac
+:0148:SFX: Extra ball fanfare
+:0149:SFX: Extra ball fanfare
+:014a:SFX: Saucer ray
+:014b:SFX: Saucer ray
+:014e:Music: Goal fanfare
+:014f:Music: Goal fanfare
+:0150:SFX: Countdown blip
+:0151:SFX: Countdown blip
+:0152:SFX: Poing
+:0153:SFX: Poing
+:0154:SFX: Outlane
+:0155:SFX: Outlane
+:0156:SFX: Crowd cheer
+:0157:SFX: Crowd cheer
+:0158:SFX: Crowd screams 1
+:0159:SFX: Crowd screams 1
+:015a:SFX: Crowd screams 2
+:015b:SFX: Crowd screams 2
+:015c:SFX: Boing
+:015d:SFX: Boing
+:015e:SFX: Saucer whee
+:015f:SFX: Saucer whee
+:0160:SFX: Boump
+:0161:SFX: Boump
+:0162:SFX: Saucer ray
+:0163:SFX: Saucer ray
+:0164:Music: Fanfare whoo
+:0165:Music: Fanfare whoo
+:0166:SFX: Martian whoo
+:0167:SFX: Martian whoo
+:0168:SFX: Impact dry
+:0169:SFX: Impact dry
+:0176:SFX: Bonus Counter
+:0177:SFX: Bonus Counter
+:0178:SFX: Crowd short
+:0179:SFX: Crowd short
+:017a:SFX: Crowd long
+:017b:SFX: Crowd long
+:017c:SFX: Crowd tails off
+:017d:SFX: Crowd tails off
+:017e:SFX: Crowd cheer long
+:017f:SFX: Crowd cheer long
+:0180:SFX: Multiball missile
+:0181:SFX: Multiball missile
+:0186:SFX: Metallic impact
+# ------------
+# Voice Samples: The General
+# ------------
+:0192:"Watch out men, they've got a big-o-beam!"
+:0193:"Use the atomic blaster - now!"
+:0194:"The fate of the world is in your hands."
+:0196:"Get every available man."
+:0197:"Get the troops ready."
+:019b:"Aaah, I hate martians."
+:019c:"Look out! Martians!"
+:019d:"Look out! More Martians!"
+:019e:"Missiles locked on target."
+:019f:"Missiles on standby."
+:01a0:"Take that, muffinhead!"
+:01a1:"Take that, wrinklehead!"
+:01a5:"Return to battle, soldier!"
+:01a6:"Don't shoot until you see them jump."
+:01a7:"Somebody shoot one of those things."
+:01a8:"Stop them!"
+:01a9:"Total annihilation! Whoohoo!"
+:01ab:"Excellent!"
+:01ae:"Great shot!"
+:01b1:"Well done, soldier!"
+:01b2:"Whoohoo!"
+:01b3:"Wow dang, you some ugly martians!"
+:01b4:"You some ugly martians!"
+:01b5:"Extra ball!"
+:01b6:"Jackpot!"
+:01b8:"Multiball!"
+:01ba:"Let's take their ship and attack mars!"
+:01bc:"We must build an atomic blaster."
+:01bd:"We must finish them off!"
+:01be:"Shoot again!"
+:01bf:"Superjets!"
+:01c0:"Five billion!"
+# ------------
+# Voice Samples: Martian
+# ------------
+:01f9:"Hawhawhawhaw."
+:01fa:"Unngh!"
+:01fb:"Oh no."
+:01fd:"Awwwgh!"
+:01fe:"Aaaawwwgh!"
+:0214:"Attack!"
+:0215:"Run away!"
+:0216:"Greetings, earthling! Haha, aww."
+:0217:"Aaah, women!"
+:0219:"Your cities will be destroyed!"
+:021a:"Earth will be ours!"
+:021c:"You cannot defeat our forcefield!"
+:021d:"Can't we just be friends?"
+:021e:"Had enough?"
+:021f:"We are invincible!"
+:0220:"Hahahaha haww."
+:0222:"Nothing can defeat us."
+:0223:"It will never work."
+:0224:"Oooouch!"
+:0225:"Ouch!"
+:0226:"Hey look, your shoe is untied. Hahahahaha."
+:0227:"Come here, tasty human."
+:0228:"No, no, noooo!"
+# ------------
+# Voice Samples: The General
+# ------------
+:0229:"Jackpot!"
+:022a:"Super Jackpot!"
+# ------------
+# Voice Samples: Martian
+# ------------
+:022b:"Greetings, earthling."
+:022d:"Muahaha ha haaa!"
+:022f:"Wroaaaggghh!"
+:0230:"Hahaha."
+:0231:"More women."
+:0232:"Oh, yes!"
+:0233:"You again?"
+:0234:"Not you again?"
+:0237:"Urgh! I'm so scared!"
+:0238:"Missed me, ha ha!"
+:0239:"Nyanyanyahya! Pfft!"
+:023a:"Puny humans. We have four arms."
+:023b:"Again!"
+:023c:"Oh, baby!"
+:0242:"Harrrgh!"
+:0243:"Martians superior, humans pathetic. Harrgh!"
+:0244:"I hate humans."
+:0245:"Oh no!"
+:0246:"Oh no! Multiball!"
+:0247:"Ha. We will not be defeated so easily."
+:0248:"Multiball!"
+:0249:"You rule the universe!"
+:024a:"But we'll be back."
+:024b:"It won't be that easy."
+:024c:"Not so fast!"
+:024d:"Not so fast, human!"
+:024e:"Replay!"
+:024f:"So you and rule the universe?"
+:0250:"You don't stand a chance!"
+:0251:"Surprise!"
+# ------------
+# Voice Samples: American Female
+# ------------
+:0258:"Get your hands off me!"
+:0259:"Get your hands off me! All four of them!"
+:025a:"Help, oh no! Whee!"
+:025b:"Whee!"
+:025c:"Put me down!"
+:025d:"Ooh!"
+:025e:"You're my hero."
+:025f:"Oh thank you, thank you!"
+:0260:"You're the best."
+:0261:"Look out, Martians!"
+:0262:"Get 'em!"
+:0263:"You know I enjoy killing these martians."
+:0269:"Oh no, they've got our livestock and treasured historical monuments."
+:026a:"Would you look at the size of that cow?"
+:026b:"It's hideous."
+:026d:"It's, it's so big."
+:0271:"Aaa!"
+:0272:"Go for the extra ball!"
+:0273:"Shoot the super jackpot!"
+:0274:"Save me, save me!"
+# ------------
+# Voice Samples: American Male
+# ------------
+:0276:"Get them!"
+:0277:"Hey! They've got our stuff!"
+:0278:"Stop them!"
+:0279:"Hey! That's my car!"
+:027a:"No! Not our hot dogs!"
+# ------------
+# Voice Samples: Frenchman
+# ------------
+:02bc:"We must destroy the stinking martians!"
+:02bd:"You martians will never take France!"
+:02be:"You will remove that saucer from the sky!"
+:02bf:"Sacre bleu! The Martians are destroying the Eiffel Tower!"
+:02c0:"Destroy the saucer!"
+:02c1:"Blow the saucer out of the sky!"
+:02c2:"Go away from France, you Martian from another planet."
+:02c3:"Vive la france!"
+# ------------
+# Voice Samples: Italian Male-a
+# ------------
+:02c6:"Mama mia. Save-a the tower of Pisa."
+:02c7:"You Martians are no good."
+:02ca:"Take-a that, you pasta head!"
+:02cb:"What's the matter, you, you ugly Martian?"
+:02cc:"I bust-a your face, you ugly Martian."
+:02cd:"Italia, Italia!"
+:02ce:"Excellent!"
+:02cf:"Well-a done!"
+# ------------
+# Voice Samples: German Male
+# ------------
+:02d0:"Achtung! Martians!
+:02d1:"We will fight for Germany!"
+:02d2:"Take that, you ugly green Martians!"
+:02d3:"Germany will kill your Martian butt to the moon!"
+:02d4:"The Brandenburger Toor is in danger!"
+:02d5:"Destroy the Martians!"
+:02d6:"Lookout, Martians! Germany coming through."
+:02d7:"Destroy the saucer!"
+:02d8:"Germany is victorious!"
+:02d9:"Der Martian, they'll never take Germany."
+:02da:"We must save the Brandenburger Toor!"
+# ------------
+# Voice Samples: British Female
+# ------------
+:02db:"No time for tea! Blast those Martians!"
+:02dc:"Blimey! London Bridge is falling down, isn't it?"
+:02dd:"Blow the saucer out of the sky!"
+:02de:"Destroy the bleedin' saucer!"
+:02df:"Destroy those lily-livered Martians!"
+:02e5:"Take that, you horrible green Martian!"
+:02e6:"Tataa for now!"
+:02ea:"I say! Good shot."
+:02eb:"Super shot!"
+:02ed:"Well done!"
+# ------------
+# Voice Samples: Misc
+# ------------
+:02f9:"Had your lobsters!" (?)
+:02fa:"This just in, reports are coming in..."
+:02fb:"This is an emergency broadcast. The earth is being invaded..."
+:02fc:"Oh no, Sparky!"
+:02ff:"Woof!"
+:0304:"Take that, you ugly green stinking disgusting Martians!"
+:0307:"You are very skillful, wow."
+:0308:"Oooh lala!"
+:0309:"Outrageous!"
+:030d:"Blow the saucer out of the sky!"
+:030f:"Mama mia. The Martians are straightening the Tower of Pisa."
+:0311:"Take that, Martians!"
+:0312:"And that!"
+:0313:"Blast the saucers!"
+:0314:"Blow the saucer out of the sky!"
+:0315:"We'll blow the snot out of you Martians!"
+:0316:"Destroy the saucer!"
+:0317:"We'll fight for our freedom!"
+:0318:"Get 'em!"
+:0319:"Look out, Martians!"
+:031a:"Nobody messes with the USA!"
+:031b:"We've got to save the Statue of Liberty!"
+# ------------
+# Music & Effects (Duplicates)
+# ------------
+:0320:Music: Fanfare
+:0321:Music: Fanfare
+:0322:SFX: Engine Whoosh
+:0323:SFX: Engine Whoosh
+:0328:SFX: Duck grows
+:0329:SFX: Duck grows
+:032a:SFX: Cow grows
+:032b:SFX: Cow grows
+:0330:SFX: Metallic clang
+:0331:SFX: Metallic clang
+:0332:SFX: Duck high
+:0333:SFX: Duck high
+:0334:SFX: Duck low
+:0335:SFX: Duck low
+:0336:SFX: Cow high
+:0337:SFX: Cow high
+:0338:SFX: Saucer ray
+:0339:SFX: Saucer ray
+:033a:SFX: Metallic impact
+:033b:SFX: Metallic impact
+:033c:SFX: Saucer rapid fire
+:033d:SFX: Saucer rapid fire
+:033e:SFX: Impact
+:033f:SFX: Impact
+:0340:SFX: Chicken high
+:0341:SFX: Chicken high
+:0342:SFX: Chicken low
+:0343:SFX: Chicken low
+:0344:SFX: Chicken surprised
+:0345:SFX: Chicken surprised
+:0346:SFX: Impact
+:0347:SFX: Impact
+:0348:SFX: Saucer tractor ray
+:0349:SFX: Saucer tractor ray
+:034a:SFX: Saucer flies away
+:034b:SFX: Saucer flies away
+:0352:SFX: Impact
+:0353:SFX: Impact
+:0354:SFX: Martian roar
+:0355:SFX: Martian roar
+:0356:SFX: Dry impact
+:0357:SFX: Dry impact
+:0358:SFX: Zoing
+:0359:SFX: Zoing
+:035a:SFX: Saucer tractor ray fades
+:035b:SFX: Saucer tractor ray fades
+:035c:SFX: Dry impact
+:035d:SFX: Dry impact
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:0362:"Hawhawhawhaw."
+:0363:"Hawhawhawhaw."
+:0364:"Unngh!"
+:0365:"Unngh!"
+:0366:"Oh no."
+:0367:"Oh no."
+:0368:"Awwwgh!"
+:0369:"Awwwgh!"
+:036a:"Aaaawwwgh!"
+:036b:"Aaaawwwgh!"
+:036e:"Attack!"
+:036f:"Attack!"
+:0370:"Run away!"
+:0371:"Run away!"
+:0372:"Greetings, earthling! Haha, aww."
+:0373:"Greetings, earthling! Haha, aww."
+:0374:"Aaah, women!"
+:0375:"Aaah, women!"
+:0378:"Your cities will be destroyed!"
+:0379:"Your cities will be destroyed!"
+:037a:"Earth will be ours!"
+:037b:"Earth will be ours!"
+:037e:"You cannot defeat our forcefield!"
+:037f:"You cannot defeat our forcefield!"
+:0380:"Can't we just be friends?"
+:0381:"Can't we just be friends?"
+:0382:"Had enough?"
+:0383:"Had enough?"
+:0384:"We are invincible!"
+:0385:"We are invincible!"
+:0386:"Hahahaha haww."
+:0387:"Hahahaha haww."
+:038a:"Nothing can defeat us."
+:038b:"Nothing can defeat us."
+:038c:"It will never work."
+:038d:"It will never work."
+:038e:"Oooouch!"
+:038f:"Oooouch!"
+:0390:"Ouch!"
+:0391:"Ouch!"
+:0392:"Hey look, your shoe is untied. Hahahahaha."
+:0393:"Hey look, your shoe is untied. Hahahahaha."
+:0394:"Come here, tasty human."
+:0395:"Come here, tasty human."
+:0396:"No, no, noooo!"
+:0397:"No, no, noooo!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:0398:SFX: Metallic ray
+:0399:SFX: Metallic ray
+:039a:SFX: Ray burst
+:039b:SFX: Ray burst
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:039c:"Greetings, earthling!"
+:039d:"Greetings, earthling!"
+:03a0:"Muahaha ha haaa!"
+:03a1:"Muahaha ha haaa!"
+:03a4:"Wroaaaggghh!"
+:03a5:"Wroaaaggghh!"
+:03a6:"Hahaha."
+:03a7:"Hahaha."
+:03a8:"More women."
+:03a9:"More women."
+:03aa:"Oh, yes!"
+:03ab:"Oh, yes!"
+:03ac:"You again?"
+:03ad:"You again?"
+:03ae:"Not you again?"
+:03af:"Not you again?"
+:03b4:"Urgh! I'm so scared!"
+:03b5:"Urgh! I'm so scared!"
+:03b6:"Missed me, ha ha!"
+:03b7:"Missed me, ha ha!"
+:03b8:"Nyanyanyahya! Pfft!"
+:03b9:"Nyanyanyahya! Pfft!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:03ba:SFX: Crowd cheer
+:03bb:SFX: Crowd cheer
+:03bc:SFX: Boing
+:03bd:SFX: Boing
+:03be:SFX: Cow screams low
+:03bf:SFX: Cow screams low
+:03c0:SFX: Cow screams high
+:03c1:SFX: Cow screams high
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:03c2:"Surprise!"
+:03c3:"Surprise!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:03c4:SFX: Missile before impact
+:03c5:SFX: Missile before impact
+:03d4:SFX: Touch tone 1
+:03d5:SFX: Touch tone 2
+:03d6:SFX: Touch tone 3
+:03d7:SFX: Touch tone 4
+:03d8:SFX: Deng
+:03d9:SFX: Touch tone 5
+:03da:SFX: Touch tone 6
+:03db:SFX: Twang
+:03dc:SFX: Ball drains
+:03dd:SFX: Electronic explosion
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:044c:"Puny humans. We have four arms."
+:044d:"Puny humans. We have four arms."
+:044e:"Again!"
+:044f:"Again!"
+:0450:"Oh, baby!"
+:0451:"Oh, baby!"
+:0452:"Harrrgh!"
+:0453:"Harrrgh!"
+:0454:"Martians superior, humans pathetic. Harrgh!"
+:0455:"Martians superior, humans pathetic. Harrgh!"
+:0456:"I hate humans."
+:0457:"I hate humans."
+:0458:"Oh no!"
+:0459:"Oh no!"
+:045a:"Ha. We will not be defeated so easily."
+:045b:"Ha. We will not be defeated so easily."
+:045c:"Multiball!"
+:045d:"Multiball!"
+:045e:"You rule the universe!"
+:045f:"You rule the universe!"
+:0460:"But we'll be back."
+:0461:"But we'll be back."
+:0462:"It won't be that easy."
+:0463:"It won't be that easy."
+:0464:"Not so fast!"
+:0465:"Not so fast!"
+:0466:"Not so fast, human!"
+:0467:"Not so fast, human!"
+:0468:"Replay!"
+:0469:"Replay!"

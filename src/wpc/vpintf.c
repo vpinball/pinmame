@@ -184,15 +184,18 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound) {
     chgSound[ii].sndNo = cmds[ii];
   return numcmd;
 }
+
 /*-------------------------------------------------
 /  get all changed segments since last call
 /------------------------------------------------*/
-int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask) {
+int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask, UINT64 mask2) {
   int idx = 0;
   int ii;
 
   for (ii = 0; ii < CORE_SEGCOUNT; ii++, mask >>= 1) {
     UINT16 chgSeg = coreGlobals.drawSeg[ii] ^ locals.lastSeg[ii];
+	if (ii == 64)
+		mask = mask2;
     if ((mask & 0x01) && chgSeg) {
       chgStat[idx].ledNo = ii;
       chgStat[idx].chgSeg = chgSeg;

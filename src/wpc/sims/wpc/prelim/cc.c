@@ -231,6 +231,28 @@ static sim_tInportData cc_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
+static core_tLampDisplay cc_lampPos = {
+{ 0, 0 }, /* top left */
+{34, 17}, /* size */
+{
+{1,{{22,5,YELLOW}}},{1,{{21,7,YELLOW}}},{1,{{21,9,YELLOW}}},{1,{{21,11,YELLOW}}},
+{1,{{22,13,YELLOW}}},{1,{{23,9,YELLOW}}},{1,{{1,2,WHITE}}},{1,{{1,4,WHITE}}},
+{1,{{20,14,WHITE}}},{1,{{19,13,WHITE}}},{1,{{18,14,WHITE}}},{1,{{18,12,WHITE}}},
+{1,{{3,11,WHITE}}},{1,{{5,11,YELLOW}}},{1,{{7,7,RED}}},{1,{{9,7,GREEN}}},
+{1,{{10,11,YELLOW}}},{1,{{12,3,YELLOW}}},{1,{{21,2,YELLOW}}},{1,{{19,17,LPURPLE}}},
+{1,{{17,17,LPURPLE}}},{1,{{15,17,LPURPLE}}},{1,{{13,17,RED}}},{1,{{11,17,WHITE}}},
+{1,{{5,13,WHITE}}},{1,{{7,13,RED}}},{1,{{9,13,LBLUE}}},{1,{{11,13,LBLUE}}},
+{1,{{13,13,LBLUE}}},{1,{{25,2,YELLOW}}},{1,{{31,4,WHITE}}},{1,{{27,1,RED}}},
+{1,{{11,15,YELLOW}}},{1,{{20,16,YELLOW}}},{1,{{22,16,YELLOW}}},{1,{{12,9,GREEN}}},
+{1,{{10,9,GREEN}}},{1,{{8,9,GREEN}}},{1,{{6,9,RED}}},{1,{{4,9,WHITE}}},
+{1,{{18,5,LBLUE}}},{1,{{16,5,LBLUE}}},{1,{{14,5,LBLUE}}},{1,{{12,5,RED}}},
+{1,{{10,5,WHITE}}},{1,{{25,16,YELLOW}}},{1,{{27,17,RED}}},{1,{{31,14,WHITE}}},
+{1,{{25,6,YELLOW}}},{1,{{25,12,YELLOW}}},{1,{{29,11,YELLOW}}},{1,{{10,1,WHITE}}},
+{1,{{12,1,RED}}},{1,{{14,1,LPURPLE}}},{1,{{16,1,LPURPLE}}},{1,{{18,1,LPURPLE}}},
+{1,{{26,9,YELLOW}}},{1,{{34,9,RED}}},{1,{{29,7,YELLOW}}},{1,{{12,7,YELLOW}}},
+{1,{{0,0,BLACK}}},{1,{{0,1,BLACK}}},{1,{{0,2,BLACK}}},{1,{{34, 1,YELLOW}}}
+}
+};
 
 /* Help */
   static void cc_drawStatic(BMTYPE **line) {
@@ -251,6 +273,15 @@ static sim_tInportData cc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
+WPC_ROMSTART(cc,10,"cc_g11.1_0",0x100000,CRC(c4e2e838) SHA1(3223dd03353dead0f41626b04c9f019d6fe1528c))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
+WPC_ROMEND
+
 WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,CRC(17ad9266) SHA1(b18c4e2cc9f4269904c05e5e414675a94f96e955))
 DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
                "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
@@ -269,11 +300,32 @@ DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce0
 	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
 WPC_ROMEND
 
+WPC_ROMSTART(cc,13k,"cc_g11k.1_3",0x100000,CRC(68a903b1) SHA1(e97e464c92d91cb8868ad905f218c99c57eca398))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
+WPC_ROMEND
+
+WPC_ROMSTART(cc,104,"cc_g11.104",0x100000,CRC(21a7b816) SHA1(0e67da694b8713e15e04bf0c49a48e14f057a737))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cc,13,   "Cactus Canyon (1.3)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cc,12,13,"Cactus Canyon (1.2)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,10,13,"Cactus Canyon (1.0)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,13k,13,"Cactus Canyon (1.3 Real Knocker patch)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cc,104,13,"Cactus Canyon (1.04 Test 0.2)",1998,"Bally / The Pinball Factory",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -297,7 +349,8 @@ static core_tGameData ccGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,0,0,1
+    0,0,0,0,0,1,0,
+    NULL,NULL,NULL,NULL,&cc_lampPos,NULL
   },
   &ccSimData,
   {

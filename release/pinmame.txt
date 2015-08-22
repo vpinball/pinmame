@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 2.3
-                         (December 24, 2010)
+                             Version 2.6
+                             (X X, 2015)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -387,6 +387,7 @@ TecnoPinball       (www.tecnopinball.org)
 Peter Hall         (peter.hall at tele2.ch)
 Basilio Garcia     (basi_garcia at hergar.com)
 Paulo Branco       (paulovtec at gmail.com)
+Carsten            (toxie at ainc.de)
 
 
 Note from the PinMAME Dev. team

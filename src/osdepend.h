@@ -171,7 +171,36 @@ int osd_get_mastervolume(void);
 
 void osd_sound_enable(int enable);
 
+/******************************************************************************
 
+	Audio device related functions
+
+******************************************************************************/
+
+/*
+  Enumerate audio devices using DirectSound and return the number of found devices
+*/
+int osd_enum_audio_devices(void);
+/*
+ Return the number of found devices (by previous call to osd_enum_audio_devices())
+*/
+int osd_get_audio_devices_count(void);
+/*
+ Return the audio device description (null char ended string) of the "num" device
+*/
+char* osd_get_audio_device_description(int num);
+/*
+ Return the audio device module (null char ended string) of the "num" device
+*/
+char* osd_get_audio_device_module(int num);
+/*
+ Set the audio device number to be used for the next call to dsound_init
+*/
+int osd_set_audio_device(int num);
+/*
+ Get the current audio device number
+*/
+int osd_get_current_audio_device(void);
 
 /******************************************************************************
 

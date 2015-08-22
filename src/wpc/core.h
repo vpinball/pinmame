@@ -182,13 +182,17 @@
 #define CORE_SEG16S  13 // 16 segments with split top and bottom line
 #define CORE_DMD     14 // DMD Display
 #define CORE_VIDEO   15 // VIDEO Display
+#define CORE_SEG16N  16 // 16 segments without commas
+#define CORE_SEG16D  17 // 16 segments with periods only
 
-#define CORE_IMPORT   0x10 // Link to another display layout
-#define CORE_SEGHIBIT 0x20
-#define CORE_SEGREV   0x40
-#define CORE_DMDNOAA  0x80
-#define CORE_NODISP   0x100
-#define CORE_SEGMASK  0x1f // Note that CORE_IMPORT must be part of the segmask as well!
+#define CORE_SEGALL   0x1f // maximum segment definition number
+#define CORE_IMPORT   0x20 // Link to another display layout
+#define CORE_SEGMASK  0x3f // Note that CORE_IMPORT must be part of the segmask as well!
+
+#define CORE_SEGHIBIT 0x40
+#define CORE_SEGREV   0x80
+#define CORE_DMDNOAA  0x100
+#define CORE_NODISP   0x200
 
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
@@ -364,7 +368,7 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
-#define CORE_SEGCOUNT 64
+#define CORE_SEGCOUNT 128
 #ifdef LSB_FIRST
 typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #else /* LSB_FIRST */

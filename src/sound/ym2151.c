@@ -236,8 +236,7 @@ static UINT32 d1l_tab[16];
 
 
 #define RATE_STEPS (8)
-static UINT8 eg_inc[19*RATE_STEPS]={
-
+static const UINT8 eg_inc[19*RATE_STEPS]={
 /*cycle:0 1  2 3  4 5  6 7*/
 
 /* 0 */ 0,1, 0,1, 0,1, 0,1, /* rates 00..11 0 (increment by 0 or 1) */
@@ -269,7 +268,7 @@ static UINT8 eg_inc[19*RATE_STEPS]={
 #define O(a) (a*RATE_STEPS)
 
 /*note that there is no O(17) in this table - it's directly in the code */
-static UINT8 eg_rate_select[32+64+32]={	/* Envelope Generator rates (32 + 64 rates + 32 RKS) */
+static const UINT8 eg_rate_select[32+64+32]={   /* Envelope Generator rates (32 + 64 rates + 32 RKS) */
 /* 32 dummy (infinite time) rates */
 O(18),O(18),O(18),O(18),O(18),O(18),O(18),O(18),
 O(18),O(18),O(18),O(18),O(18),O(18),O(18),O(18),
@@ -316,7 +315,7 @@ O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16)
 /*mask  2047, 1023, 511, 255, 127, 63, 31, 15, 7,  3, 1,  0,  0,  0,  0,  0 */
 
 #define O(a) (a*1)
-static UINT8 eg_rate_shift[32+64+32]={	/* Envelope Generator counter shifts (32 + 64 rates + 32 RKS) */
+static const UINT8 eg_rate_shift[32+64+32]={    /* Envelope Generator counter shifts (32 + 64 rates + 32 RKS) */
 /* 32 infinite time rates */
 O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
 O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
@@ -369,14 +368,14 @@ O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0)
 *	DT2=0 DT2=1 DT2=2 DT2=3
 *	0     600   781   950
 */
-static UINT32 dt2_tab[4] = { 0, 384, 500, 608 };
+static const UINT32 dt2_tab[4] = { 0, 384, 500, 608 };
 
 /*	DT1 defines offset in Hertz from base note
 *	This table is converted while initialization...
 *	Detune table shown in YM2151 User's Manual is wrong (verified on the real chip)
 */
 
-static UINT8 dt1_tab[4*32] = { /* 4*32 DT1 values */
+static const UINT8 dt1_tab[4*32] = { /* 4*32 DT1 values */
 /* DT1=0 */
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -394,7 +393,7 @@ static UINT8 dt1_tab[4*32] = { /* 4*32 DT1 values */
   8, 8, 9,10,11,12,13,14,16,17,19,20,22,22,22,22
 };
 
-static UINT16 phaseinc_rom[768]={
+static const UINT16 phaseinc_rom[768]={
 1299,1300,1301,1302,1303,1304,1305,1306,1308,1309,1310,1311,1313,1314,1315,1316,
 1318,1319,1320,1321,1322,1323,1324,1325,1327,1328,1329,1330,1332,1333,1334,1335,
 1337,1338,1339,1340,1341,1342,1343,1344,1346,1347,1348,1349,1351,1352,1353,1354,
@@ -464,7 +463,7 @@ static UINT16 phaseinc_rom[768]={
 		some 0x80 could be 0x81 as well as some 0x00 could be 0x01.
 */
 
-static UINT8 lfo_noise_waveform[256] = {
+static const UINT8 lfo_noise_waveform[256] = {
 0xFF,0xEE,0xD3,0x80,0x58,0xDA,0x7F,0x94,0x9E,0xE3,0xFA,0x00,0x4D,0xFA,0xFF,0x6A,
 0x7A,0xDE,0x49,0xF6,0x00,0x33,0xBB,0x63,0x91,0x60,0x51,0xFF,0x00,0xD8,0x7F,0xDE,
 0xDC,0x73,0x21,0x85,0xB2,0x9C,0x5D,0x24,0xCD,0x91,0x9E,0x76,0x7F,0x20,0xFB,0xF3,
@@ -505,12 +504,6 @@ static signed int mem;		/* one sample delay memory */
 static FILE *sample[9];
 #endif
 
-
-/* own PI definition */
-#ifdef PI
-	#undef PI
-#endif
-#define PI 3.14159265358979323846
 
 
 
@@ -557,14 +550,14 @@ static void init_tables(void)
 	for (i=0; i<SIN_LEN; i++)
 	{
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * PI / SIN_LEN ); /* verified on the real chip */
+		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* verified on the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 
 		if (m>0.0)
-			o = 8*log(1.0/m)/log(2);	/* convert to 'decibels' */
+			o = 8*log(1.0/m)/log(2.0);  /* convert to 'decibels' */
 		else
-			o = 8*log(-1.0/m)/log(2);	/* convert to 'decibels' */
+			o = 8*log(-1.0/m)/log(2.0); /* convert to 'decibels' */
 
 		o = o / (ENV_STEP/4);
 
@@ -1045,7 +1038,8 @@ void YM2151WriteReg(int n, int r, int v)
 #endif
 
 
-	switch(r & 0xe0){
+	switch(r & 0xe0)
+	{
 	case 0x00:
 		switch(r){
 		case 0x01:	/* LFO reset(bit 1), Test Register (other bits) */
@@ -1173,7 +1167,8 @@ void YM2151WriteReg(int n, int r, int v)
 
 	case 0x20:
 		op = &chip->oper[ (r&7) * 4 ];
-		switch(r & 0x18){
+		switch(r & 0x18)
+		{
 		case 0x00:	/* RL enable, Feedback, Connection */
 			op->fb_shift = ((v>>3)&7) ? ((v>>3)&7)+6:0;
 			chip->pan[ (r&7)*2    ] = (v & 0x40) ? ~0 : 0;
@@ -1580,6 +1575,7 @@ void YM2151ResetChip(int num)
 	{
 		memset(&chip->oper[i],'\0',sizeof(YM2151Operator));
 		chip->oper[i].volume = MAX_ATT_INDEX;
+			chip->oper[i].kc_i = 768; /* min kc_i value */
 	}
 
 	chip->eg_timer = 0;
@@ -2110,10 +2106,13 @@ INLINE void advance(void)
 		/* square */
 		/* AM: 255, 0 */
 		/* PM: 128,-128 (LFP = exactly +PMD, -PMD) */
-		if (i<128){
+		if (i<128)
+		{
 			a = 255;
 			p = 128;
-		}else{
+		}
+		else
+		{
 			a = 0;
 			p = -128;
 		}
@@ -2294,7 +2293,8 @@ INLINE signed int acc_calc(signed int value)
 	  {	signed int pom= -(chanout[j] & PSG->pan[j*2]); \
 		if (pom > 32767) pom = 32767; else if (pom < -32768) pom = -32768; \
 		fputc((unsigned short)pom&0xff,sample[j]); \
-		fputc(((unsigned short)pom>>8)&0xff,sample[j]);  }
+		fputc(((unsigned short)pom>>8)&0xff,sample[j]); \
+		}
 	#else
 	  #define SAVE_SINGLE_CHANNEL(j)
 	#endif

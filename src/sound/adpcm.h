@@ -1,6 +1,6 @@
 #ifndef ADPCM_H
 #define ADPCM_H
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4) // GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
 
@@ -48,7 +48,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound);
 void OKIM6295_sh_stop(void);
 void OKIM6295_sh_update(void);
 void OKIM6295_set_bank_base(int which, int base);
-void OKIM6295_set_frequency(int which, int frequency);
+void OKIM6295_set_frequency(int which, double frequency);
 
 READ_HANDLER( OKIM6295_status_0_r );
 READ_HANDLER( OKIM6295_status_1_r );
@@ -68,5 +68,7 @@ WRITE16_HANDLER( OKIM6295_data_2_lsb_w );
 WRITE16_HANDLER( OKIM6295_data_0_msb_w );
 WRITE16_HANDLER( OKIM6295_data_1_msb_w );
 WRITE16_HANDLER( OKIM6295_data_2_msb_w );
-
+#ifdef PINMAME
+WRITE_HANDLER( OKIM6376_data_0_w );
+#endif
 #endif

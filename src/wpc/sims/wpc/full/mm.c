@@ -476,7 +476,7 @@ CORE_GAMEDEF (mm,10,   "Medieval Madness (1.0)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,10u,10,"Medieval Madness (1.0 Ultrapin)", 1999,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)", 1999,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,109b,10,"Medieval Madness (1.09B)", 1999,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(mm,109c,10,"Medieval Madness (1.09C, Profanity)", 1999,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,109c,10,"Medieval Madness (1.09C Profanity)", 1999,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,05,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
 
 /*-----------------------

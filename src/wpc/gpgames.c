@@ -178,7 +178,7 @@ INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
 GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428) SHA1(7a9029e4fd4c4c00da3256ed06464c0bd8022168),
 						"240b.716",CRC(a54eb15d) SHA1(b9235bd188c1251eb213789800b7686b5e3c557f),
 						"240c.716",CRC(60d115a8) SHA1(e970fdd7cbbb2c81ab8c8209edfb681798c683b9))
-GP_SOUNDROM88("gw240bot.rom", CRC(3245a206) SHA1(b321b2d276fbd74199eff2d8c0d1b8a2f5c93604),
+GP_SOUNDROM88("gw240bot.rom",CRC(3245a206) SHA1(b321b2d276fbd74199eff2d8c0d1b8a2f5c93604),
               "gw240top.rom",CRC(faaf3de1) SHA1(9c984d1ac696eb16f7bf35463a69a470344314a7))
 GP_ROMEND
 CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,0)
@@ -261,6 +261,14 @@ GP_ROMSTART888(ladyshot,"830a.716",CRC(c055b993) SHA1(a9a7156e5ec0a32db1ffe36b3c
 GP_SOUNDROM0("830.snd",NO_DUMP)
 GP_ROMEND
 CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,0)
+
+INITGAME(ldyshot2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+GP_ROMSTART888(ldyshot2,"830a2.716",CRC(2c1f1629) SHA1(9233ce4328d779ff6548cdd5d6819cd368bef313),
+						"830b2.716",CRC(2105a538) SHA1(0360d3e740d8b6f816cfe7fe1fb32ac476251b9f),
+						"830c2.716",CRC(2d96bdde) SHA1(7c03a29a91f03fba9ed5e53a93335113a7cbafb3))
+GP_SOUNDROM0("830.snd",NO_DUMP)
+GP_ROMEND
+CORE_CLONEDEFNV(ldyshot2, ladyshot, "Lady Sharpshooter (alternate set)",1985,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Andromeda (August 1985) - Model #850

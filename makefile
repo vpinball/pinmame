@@ -184,7 +184,7 @@ ASMFLAGS = -f coff
 MD = -mkdir$(EXE)
 RM = @rm -f
 #PERL = @perl -w
-
+OBJCOPY = @objcopy
 
 
 #-------------------------------------------------
@@ -216,7 +216,7 @@ VPATH = src $(wildcard src/cpu/*)
 
 # build the targets in different object dirs, since mess changes
 # some structures and thus they can't be linked against each other.
-OBJ = obj/gcc/${MAMEOS}/$(FULLNAME)
+OBJ = obj/gcc/$(MAMEOS)/$(FULLNAME)
 
 
 
@@ -421,20 +421,33 @@ CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS) $(DBGDEFS)
 
 extra:	$(TOOLS) $(TEXTS)
 
-# primary target
-$(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
+# primary target(s)
+$(EMULATOR).full: $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
 # always recompile the version string
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) -o $@ $(MAPFLAGS)
+
+ifdef SYMBOLS
 # [PinMAME] extract debug information into separate file, then strip executable and add a debug link to it
 #           see http://sourceware.org/gdb/current/onlinedocs/gdb_19.html#SEC170
 #               http://stackoverflow.com/questions/866721/
-ifdef SYMBOLS
-	@echo Extracting debug symbols and stripping all symbols from $@...
-	@objcopy -p --only-keep-debug "$(EMULATOR)" "$(EMULATOR).debug"
-	@strip -p -s "$(EMULATOR)"
-	@objcopy -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR)"
+$(EMULATOR).debug: $(EMULATOR).full
+	@echo Extracting debug symbols to $@...
+	$(OBJCOPY) -p --only-keep-debug "$(EMULATOR).full" "$(EMULATOR).debug"
+
+$(EMULATOR): $(EMULATOR).debug
+	@echo Stripping unneeded symbols from $@...
+	$(RM) "$(EMULATOR).strip"
+	$(OBJCOPY) -p --strip-unneeded "$(EMULATOR).full" "$(EMULATOR).strip"
+	@echo Adding GNU debuglink to $@...
+	$(RM) "$(EMULATOR)"
+	$(OBJCOPY) -p --add-gnu-debuglink="$(EMULATOR).debug" "$(EMULATOR).strip" "$(EMULATOR)"
+	$(RM) "$(EMULATOR).strip"
+else
+$(EMULATOR): $(EMULATOR).full
+	@echo Stripping unneeded symbols from $@...
+	$(OBJCOPY) -p --strip-unneeded "$(EMULATOR).full" "$(EMULATOR)"
 endif
 
 romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
@@ -519,9 +532,11 @@ clean:
 	@echo Deleting object tree $(OBJ)...
 	$(RM) -r $(OBJ)
 	@echo Deleting $(EMULATOR)...
+	$(RM) $(EMULATOR).full
 	$(RM) $(EMULATOR)
 	@echo Deleting $(EMULATOR).debug...
 	$(RM) $(EMULATOR).debug
+	$(RM) $(EMULATOR).strip
 	@echo Deleting $(FULLNAME).map...
 	$(RM) $(FULLNAME).map
 

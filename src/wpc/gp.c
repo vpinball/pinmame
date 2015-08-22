@@ -100,6 +100,7 @@ static void GP_UpdateSolenoids (int bank, int data) {
       sols = 1 << soldata;
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
       locals.solenoids |= sols;
+      coreGlobals.solenoids = locals.solenoids;
     } else { // until we find another way to turn the solenoids back off...
 	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1) sndbrd_0_data_w(0, soldata);
       coreGlobals.pulsedSolState &= mask;
@@ -113,6 +114,7 @@ static void GP_UpdateSolenoids (int bank, int data) {
       sols = 0x10000 << soldata;
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
       locals.solenoids |= sols;
+      coreGlobals.solenoids = locals.solenoids;
     } else { // until we find another way to turn the solenoids back off...
       coreGlobals.pulsedSolState &= mask;
       locals.solenoids &= mask;

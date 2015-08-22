@@ -103,9 +103,9 @@ void nvram_handler_93C46(mame_file *file,int read_or_write)
 }
 
 
-void EEPROM_init(struct EEPROM_interface *interface)
+void EEPROM_init(struct EEPROM_interface *_interface)
 {
-	intf = interface;
+	intf = _interface;
 
 	if ((1 << intf->address_bits) * intf->data_bits / 8 > MEMORY_SIZE)
 	{

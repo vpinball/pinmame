@@ -43,9 +43,12 @@
 #define GTS80S_BUFFER_SIZE 8192
 
 static struct {
+	int    stream;
+} stream_locals;
+
+static struct {
 	struct sndbrdData boardData;
 
-	int    stream;
 	INT16  buffer[GTS80S_BUFFER_SIZE+1];
 	double clock[GTS80S_BUFFER_SIZE+1];
 	int    buf_pos;
@@ -91,12 +94,16 @@ static WRITE_HANDLER(gts80s_riot6530_0_ram_w)
 	data;
 }
 
+static WRITE_HANDLER(riot_w) {
+  riot6530_0_w(offset & 0x0f, data);
+}
+
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80S_readmem)
 { 0x0000, 0x01ff, MRA_RAM},
-{ 0x0200, 0x03ff, riot6530_0_r},
+{ 0x0200, 0x020f, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
 { 0x1000, 0x10ff, MRA_RAM},
 { 0xf800, 0xffff, MRA_ROM},
@@ -104,7 +111,7 @@ MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
 { 0x0000, 0x01ff, gts80s_riot6530_0_ram_w},
-{ 0x0200, 0x03ff, riot6530_0_w},
+{ 0x0200, 0x020f, riot_w},
 { 0x0400, 0x0fff, MWA_ROM},
 { 0x1000, 0x10ff, gts80s_riot6530_0_ram_w},
 { 0xf800, 0xffff, MWA_ROM},
@@ -139,6 +146,7 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 /*--------------
 /  init
 /---------------*/
+extern void stream_free(int channel);
 
 void gts80s_init(struct sndbrdData *brdData) {
 	int i = 0;
@@ -162,11 +170,12 @@ void gts80s_init(struct sndbrdData *brdData) {
 	if ( GTS80S_locals.boardData.subType==0 ) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */
 		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
-		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
+		UINT8* mr = memory_region(GTS80S_locals.boardData.cpuNo);
+		pMem = mr+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
 			*pMem++ &= 0x0f;
 
-		memcpy(memory_region(GTS80S_locals.boardData.cpuNo)+0x1000, memory_region(GTS80S_locals.boardData.cpuNo)+0x0700, 0x100);
+		memcpy(mr+0x1000, mr+0x0700, 0x100);
 	}
 
 
@@ -184,8 +193,11 @@ void gts80s_init(struct sndbrdData *brdData) {
 	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 	riot6530_reset();
 
-	GTS80S_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
-	set_RC_filter(GTS80S_locals.stream, 270000, 15000, 0, 33000);
+	if (stream_locals.stream) {
+	  stream_free(stream_locals.stream);
+	}
+	stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
+	set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000);
 }
 
 /*--------------
@@ -258,7 +270,6 @@ static struct {
 	int    dips;
 	UINT8* pRIOT6532_3_ram;
 
-	int    stream;
 	INT16  buffer[GTS80SS_BUFFER_SIZE+1];
 	double clock[GTS80SS_BUFFER_SIZE+1];
 	int	   buf_pos;
@@ -304,7 +315,7 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = timer_get_time();
 	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 
-	//mixer_set_volume(GTS80SS_locals.stream, 100 * data / 255);
+	//mixer_set_volume(stream_locals.stream, 100 * data / 255);
 	GTS80SS_locals.device = 1;
 }
 
@@ -445,8 +456,8 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 	dActClock = timer_get_time();
 	dInterval = (dActClock-GTS80SS_locals.clock[0]) / length;
 
-	if ( GTS80SS_locals.buf_pos>1 )
-		GTS80SS_locals.buf_pos = GTS80SS_locals.buf_pos;
+	//if ( GTS80SS_locals.buf_pos>1 )
+	//	GTS80SS_locals.buf_pos = GTS80SS_locals.buf_pos;
 
 	i = 0;
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = 9e99;
@@ -467,7 +478,6 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 /*--------------
 /  init
 /---------------*/
-
 void gts80ss_init(struct sndbrdData *brdData) {
 	int i;
 
@@ -499,17 +509,23 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	/* init RIOT */
     riot6532_config(3, &GTS80SS_riot6532_intf);
-	riot6532_set_clock(3, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
+    riot6532_set_clock(3, 905000);
 
 	GTS80SS_locals.clock[0]  = 0;
 	GTS80SS_locals.buffer[0] = 0;
 	GTS80SS_locals.buf_pos   = 1;
 
+	{
+	UINT8 *mr = memory_region(GTS80SS_locals.boardData.cpuNo);
 	for(i = 0; i<8; i++)
-		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
+		memcpy(mr+0x8000+0x1000*i, mr+0x7000, 0x1000);
+	}
 
-	GTS80SS_locals.stream = stream_init("SND DAC", 50, 11025, 0, GTS80_ss_Update);
-	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
+	if (stream_locals.stream) {
+	  stream_free(stream_locals.stream);
+	}
+	stream_locals.stream = stream_init("SND DAC", 50, 11025, 0, GTS80_ss_Update);
+	set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000);
 }
 
 /*--------------
@@ -561,7 +577,7 @@ const struct sndbrdIntf gts80ssIntf = {
 };
 
 MACHINE_DRIVER_START(gts80s_ss)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 1000000)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
   MDRV_INTERLEAVE(50)

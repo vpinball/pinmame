@@ -16,14 +16,13 @@
 		         Z80 CPU with ADPCM chip (probably an MSM5205 @ 384 kHz) on separate board.
  ************************************************************************************************/
 //Games: America 1492 1986, Aqualand 1986, Faeton 1985, Halley Comet 1986,
-//       Lortium 1987, Olympus 1986, Petaco 1984
+//       Lortium 1987, Olympus 1986, Petaco 1984, Petaco2 1985
 
 #include "driver.h"
 #include "cpu/z80/z80.h"
 #include "core.h"
 #include "jp.h"
 #include "sound/ay8910.h"
-#include "sndbrd.h"
 #include "machine/4094.h"
 
 #define JP_VBLANKFREQ   60 /* VBLANK frequency */
@@ -41,6 +40,7 @@ static struct {
   int    i8279cmd;
   int    i8279reg;
   UINT8  i8279ram[16];
+  int    sixColumns;
 } locals;
 
 static INTERRUPT_GEN(JP_irq) {
@@ -76,19 +76,21 @@ static SWITCH_UPDATE(JP) {
   static char s[4];
   static int sndcmd = 3;
   int i;
-  if (keyboard_pressed_memory_repeat(KEYCODE_Z, 4) && sndcmd > 3) {
-    sndcmd--;
-    sprintf(s, "%2d", sndcmd);
-    core_textOut(s, 2, 35, 5, 5);
-    for (i=0; i < sndcmd; i++) {
-      cpu_set_nmi_line(1, PULSE_LINE);
-    }
-  } else if (keyboard_pressed_memory_repeat(KEYCODE_X, 4) && sndcmd < 0x20) {
-    sndcmd++;
-    sprintf(s, "%2d", sndcmd);
-    core_textOut(s, 2, 35, 5, 5);
-    for (i=0; i < sndcmd; i++) {
-      cpu_set_nmi_line(1, PULSE_LINE);
+  if (cpu_gettotalcpu() > 1) {
+    if (keyboard_pressed_memory_repeat(KEYCODE_Z, 4) && sndcmd > 3) {
+      sndcmd--;
+      sprintf(s, "%2d", sndcmd);
+      core_textOut(s, 2, 45, 0, 5);
+      for (i=0; i < sndcmd; i++) {
+        cpu_set_nmi_line(1, PULSE_LINE);
+      }
+    } else if (keyboard_pressed_memory_repeat(KEYCODE_X, 4) && sndcmd < 0x20) {
+      sndcmd++;
+      sprintf(s, "%2d", sndcmd);
+      core_textOut(s, 2, 45, 0, 5);
+      for (i=0; i < sndcmd; i++) {
+        cpu_set_nmi_line(1, PULSE_LINE);
+      }
     }
   }
 #endif /* MAME_DEBUG */
@@ -100,29 +102,45 @@ static SWITCH_UPDATE(JP) {
 // bits 24 to 27 decide about the lit segment (4 bits decoded by a 4028 chip),
 // the rest of the bits enable the single digits (therefore 28 digits possible).
 static void dispStrobe(void) {
+//static UINT32 oldDisp;
   static int pos[32] = { 31, 30, 29, 28, 26, 25, 24, 23, 22, 19, 18, 17, 16, 15,
     12, 11, 10, 9, 8, 5, 4, 3, 2, 1, 33, 34, 35, 36, 21, 14, 7, 0 };
-  int i, digit = (locals.dispData >> 24) & 0x0f;
-  switch (digit) {
+  int i, data = locals.sixColumns ? (!(locals.dispData >> 24) ? 8 : 
+    core_BitColToNum(locals.dispData >> 24)) : (locals.dispData >> 24) & 0x0f;
+//if (oldDisp != locals.dispData) printf(" %08x ", locals.dispData); oldDisp = locals.dispData;
+  switch (data) {
   case 9: case 10: case 11: case 12: case 13: case 14: case 15:
-    logerror("Undocumented write to display register %d!\n", digit);
+    logerror("Undocumented write to display register %d!\n", data);
     break;
   case 8:
-    // number of balls: data is bit 6 - 13 reversed
-    locals.segments[32].w = core_revbyte((locals.dispData >> 6) ^ 0xff);
-    // LEDs: strobed by bits 14 - 23
-    coreGlobals.tmpLampMatrix[14] = core_revbyte((locals.dispData >> 14) ^ 0xff);
-    coreGlobals.tmpLampMatrix[15] = core_revbyte(~(locals.dispData >> 22)) >> 6;
+    if (!locals.sixColumns) {
+      // number of balls: data is bit 6 - 13 reversed
+      locals.segments[32].w = core_revbyte((locals.dispData >> 6) ^ 0xff);
+      // lottery LEDs: strobed by bits 14 - 23
+      coreGlobals.tmpLampMatrix[14] = core_revbyte((locals.dispData >> 14) ^ 0xff);
+      coreGlobals.tmpLampMatrix[15] = core_revbyte(~(locals.dispData >> 22)) >> 6;
+    } else { // lottery LEDs, million lamps, player up lamps and other stuff on petaco2
+      coreGlobals.tmpLampMatrix[14] = 0xff ^ core_revbyte((locals.dispData & 0x00ff0000) >> 16);
+      coreGlobals.tmpLampMatrix[15] = 0xff ^ core_revbyte((locals.dispData & 0x0000ff00) >> 8);
+      coreGlobals.tmpLampMatrix[16] = 0x03 ^ core_revbyte(locals.dispData & 0x000000ff);
+    }
     break;
-  case 7:
-    // all comma segments
-    for (i=0; i < 32; i++)
-      if (!(locals.dispData & (1 << i))) locals.segments[pos[i]].w &= ~0x80;
+  case 7: // extra outputs, some blink when HSTD is displayed, no idea what the others are!?
+    if (!locals.sixColumns) {
+      coreGlobals.tmpLampMatrix[16] = 0xff ^ (locals.dispData & 0x000000ff);
+      coreGlobals.tmpLampMatrix[17] = 0xff ^ ((locals.dispData & 0x0000ff00) >> 8);
+      coreGlobals.tmpLampMatrix[18] = 0xff ^ ((locals.dispData & 0x00ff0000) >> 16);
+      coreGlobals.tmpLampMatrix[19] = 0xff ^ ((locals.dispData & 0xff000000) >> 24);
+    } else {
+      coreGlobals.tmpLampMatrix[17] = 0xff ^ (locals.dispData & 0x000000ff);
+      coreGlobals.tmpLampMatrix[18] = 0xff ^ ((locals.dispData & 0x0000ff00) >> 8);
+      coreGlobals.tmpLampMatrix[19] = 0xff ^ ((locals.dispData & 0x00ff0000) >> 16);
+    }
     break;
   default:
     // all player scores, match & credits displays
     for (i=0; i < 32; i++)
-      if (locals.dispData & (1 << i)) locals.segments[pos[i]].w &= ~(1 << (6-digit));
+      if (locals.dispData & (1 << i)) locals.segments[pos[i]].w &= ~(1 << (locals.sixColumns ? data : 6 - data));
     // fake single points zero digits
     for (i=0; i < 4; i++)
       locals.segments[i*7 + 6].w = (locals.segments[i*7 + 5].w) ? core_bcd2seg7[0] : 0;
@@ -165,7 +183,7 @@ static WRITE_HANDLER(lamp1_w) {
 
 static WRITE_HANDLER(lamp2_w) {
   // morse code; pulses the NMI of the external sound board CPU a couple of times!
-  if (offset == 5 && (data & 0x02)) {
+  if (cpu_gettotalcpu() > 1 && offset == 5 && (data & 0x02)) {
     cpu_set_nmi_line(1, PULSE_LINE);
   }
   coreGlobals.tmpLampMatrix[6+offset] = data;
@@ -240,6 +258,7 @@ static MEMORY_READ_START(JP_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(JP_writemem)
+  {0x0000,0x3fff, MWA_NOP},
   {0x4000,0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000,0x6000, ay8910_ctrl_w},
   {0x6002,0x6002, ay8910_data_w},
@@ -276,12 +295,11 @@ MACHINE_DRIVER_END
 
 static MACHINE_INIT(JPS) {
   machine_init_JP();
-  /* init sound */
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(JP_MEMREG_SND),NULL,NULL);
 }
 
-static MACHINE_STOP(JPS) {
-  sndbrd_0_exit();
+static MACHINE_INIT(JP1) {
+  machine_init_JP();
+  locals.sixColumns = 1;
 }
 
 static INTERRUPT_GEN(JPS_irq) {
@@ -338,9 +356,14 @@ MACHINE_DRIVER_START(JPS)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(jpsnd_readmem, jpsnd_writemem)
   MDRV_CPU_PERIODIC_INT(JPS_irq, 4000)
-  MDRV_CORE_INIT_RESET_STOP(JPS,NULL,JPS)
+  MDRV_CORE_INIT_RESET_STOP(JPS,NULL,NULL)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(MSM5205, JP_msm5205Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(JP1)
+  MDRV_IMPORT_FROM(JP)
+  MDRV_CORE_INIT_RESET_STOP(JP1,NULL,NULL)
 MACHINE_DRIVER_END
 
 

@@ -426,7 +426,7 @@ BY68701_ROMSTART_CA8(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae401
 BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 ROM_END
-CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype rev. 1)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (Prototype rev. 1)",1981,"Bally",by68701_61S,0)
 
 #define init_flashgp2 init_flashgdp
 #define input_ports_flashgp2 input_ports_flashgdp
@@ -437,7 +437,7 @@ BY68701_ROMSTART_CA8(flashgp2,"fg6801.bin",CRC(8af7bf77) SHA1(fd65578b2340eb207b
 BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 ROM_END
-CORE_CLONEDEFNV(flashgp2,flashgdn,"Flash Gordon (prototype rev. 2)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(flashgp2,flashgdn,"Flash Gordon (Prototype rev. 2)",1981,"Bally",by68701_61S,0)
 
 /*------------------
 / Eight Ball Deluxe
@@ -454,7 +454,7 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 ROM_END
-CORE_CLONEDEFNV(eballdp1,eballdlx,"Eight Ball Deluxe (prototype rev. 1)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(eballdp1,eballdlx,"Eight Ball Deluxe (Prototype rev. 1)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp2 init_eballdp1
 #define input_ports_eballdp2 input_ports_eballdp1
@@ -467,7 +467,7 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 ROM_END
-CORE_CLONEDEFNV(eballdp2,eballdlx,"Eight Ball Deluxe (prototype rev. 2)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(eballdp2,eballdlx,"Eight Ball Deluxe (Prototype rev. 2)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp3 init_eballdp1
 #define input_ports_eballdp3 input_ports_eballdp1
@@ -480,7 +480,7 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 ROM_END
-CORE_CLONEDEFNV(eballdp3,eballdlx,"Eight Ball Deluxe (prototype rev. 3)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(eballdp3,eballdlx,"Eight Ball Deluxe (Prototype rev. 3)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp4 init_eballdp1
 #define input_ports_eballdp4 input_ports_eballdp1
@@ -492,4 +492,4 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 ROM_END
-CORE_CLONEDEFNV(eballdp4,eballdlx,"Eight Ball Deluxe (prototype rev. 4)",1981,"Bally",by68701_61S,0)
+CORE_CLONEDEFNV(eballdp4,eballdlx,"Eight Ball Deluxe (Prototype rev. 4)",1981,"Bally",by68701_61S,0)

@@ -32,9 +32,11 @@ static READ_HANDLER(snd_r) {
 static WRITE_HANDLER(snd_ctrl_w) {
   if (locals.sndCtrl & ~data & 0x04) {
     AY8910Write(0, (locals.sndCtrl & 0x01) ? 0 : 1, locals.sndData);
+    pia_read(1, 0); // force a pia port A read to reset the IRQ!
   }
   if (locals.sndCtrl & ~data & 0x20) {
     AY8910Write(1, (locals.sndCtrl & 0x08) ? 0 : 1, locals.sndData);
+    pia_read(1, 0); // force a pia port A read to reset the IRQ!
   }
   locals.sndCtrl = data;
 }
@@ -43,51 +45,45 @@ static WRITE_HANDLER(snd_data_w) {
   locals.sndData = data;
 }
 
-static void ice_pia0irq(int state) {
-  if (state) logerror("PIA irq #0\n");
+static void ice_irq(int state) {
   cpu_set_irq_line(0, M6809_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
-static void ice_pia1irq(int state) {
-  if (state) logerror("PIA irq #1\n");
-}
-static void ice_pia2irq(int state) {
-  if (state) logerror("PIA irq #2\n");
-  cpu_set_irq_line(0, M6809_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
-
-static READ_HANDLER(pia0cb1_r) {
-  return locals.cb10;
-}
-
-static READ_HANDLER(pia1ca1_r) {
-  return locals.ca11;
+static void ice_firq(int state) {
+  cpu_set_irq_line(0, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static const struct pia6821_interface ice_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ stick_r, dip_r, PIA_UNUSED_VAL(1), pia0cb1_r, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ stick_r, dip_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ 0, 0, 0, 0,
-  /*irq: A/B           */ ice_pia0irq, ice_pia0irq
+  /*irq: A/B           */ ice_irq, ice_irq
 },{
-  /*i: A/B,CA/B1,CA/B2 */ snd_r, 0, pia1ca1_r, PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ snd_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snd_data_w, snd_ctrl_w, 0, 0,
-  /*irq: A/B           */ ice_pia1irq, ice_pia1irq
+  /*irq: A/B           */ ice_firq, ice_firq
 },{
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ 0, 0, 0, 0,
-  /*irq: A/B           */ ice_pia2irq, ice_pia2irq
+  /*irq: A/B           */ ice_irq, ice_irq
 }};
+
+static void sirq(int data) {
+  pia_set_input_cb1(0, locals.cb10 = data);
+}
 
 // handles the 8279 keyboard / display interface chip
 static READ_HANDLER(i8279_r) {
   static UINT8 lastData;
   logerror("i8279 r%d (cmd %02x, reg %02x)\n", offset, locals.i8279cmd, locals.i8279reg);
   if (offset) {
+    sirq(0);
     return 0xfb & coreGlobals.swMatrix[1];
   }
   if ((locals.i8279cmd & 0xe0) == 0x60)
     lastData = locals.i8279ram[locals.i8279reg]; // read display ram
-  else
+  else {
+    sirq(0);
     lastData = coreGlobals.swMatrix[(locals.i8279cmd & 0x03) + 1]; // read switches
+  }
   if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
   return lastData;
 }
@@ -119,8 +115,18 @@ static WRITE_HANDLER(motor_w) {
   coreGlobals.solenoids = (coreGlobals.solenoids & 0x1ff00) | (data ^ 0xff);
 }
 
+static READ_HANDLER(ay_r) {
+  printf("r%d ", offset);
+  return 0;
+}
+
+static WRITE_HANDLER(ay_w) {
+  printf("w%d:%02x ", offset, data);
+}
+
 static MEMORY_WRITE_START(ice_writemem)
   { 0x0000, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size },
+  { 0x4000, 0x4007, ay_w },
   { 0x4010, 0x4013, pia_w(0) },
   { 0x4020, 0x4023, pia_w(1) },
   { 0x4040, 0x4043, pia_w(2) }, // unused
@@ -131,6 +137,7 @@ MEMORY_END
 
 static MEMORY_READ_START(ice_readmem)
   { 0x0000, 0x07ff, MRA_RAM },
+  { 0x4000, 0x4007, ay_r },
   { 0x4010, 0x4013, pia_r(0) },
   { 0x4020, 0x4023, pia_r(1) },
   { 0x4040, 0x4043, pia_r(2) }, // unused
@@ -167,7 +174,15 @@ struct AY8910interface ice_ay8910Int = {
 
 static MACHINE_INIT(ICE) {
   int i; for (i=0; i < 3; i++) pia_config(i, PIA_STANDARD_ORDERING, &ice_pia[i]);
+  pia_reset();
+  pia_set_input_ca1(1, 1);
   AY8910_set_volume(0, 2, 0); // AY chip #0 channel C is used as a 30Hz clock generator, so it needs to be muted!
+}
+static MACHINE_RESET(ICE) {
+  memset(&locals, 0, sizeof(locals));
+}
+static MACHINE_STOP(ICE) {
+  pia_unconfig();
 }
 
 static SWITCH_UPDATE(ICE) {
@@ -181,23 +196,27 @@ static SWITCH_UPDATE(ICE) {
 
 static INTERRUPT_GEN(ice_vblank) {
   core_updateSw(TRUE);
+  if (coreGlobals.swMatrix[1] || coreGlobals.swMatrix[2] || coreGlobals.swMatrix[3]) sirq(1);
 }
-static INTERRUPT_GEN(ice_irq) {
-  pia_set_input_cb1(0, locals.cb10 = !locals.cb10);
+static void ice_30hz(int data) {
+  locals.ca11 = !locals.ca11;
+  pia_set_input_ca1(1, locals.ca11);
 }
-static void ice_firq(int data) {
-  pia_set_input_ca1(1, locals.ca11 = !locals.ca11);
-  if (locals.ca11) cpu_set_irq_line(0, M6809_FIRQ_LINE, PULSE_LINE);
-}
+
+#define INITGAME(name, disptype) \
+	INPUT_PORTS_START(name) INPUT_PORTS_END \
+	static core_tGameData name##GameData = {0,icb_disp,{FLIP_SW(FLIP_L),0,-5}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
 
 MACHINE_DRIVER_START(icecold)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(ICE,NULL,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", M6809, 1500000)
+  MDRV_CORE_INIT_RESET_STOP(ICE,ICE,ICE)
+  MDRV_CPU_ADD_TAG("mcpu", M6809, 6000000/4)
   MDRV_CPU_MEMORY(ice_readmem, ice_writemem)
-  MDRV_CPU_PERIODIC_INT(ice_irq, 120)
   MDRV_CPU_VBLANK_INT(ice_vblank, 1)
-  MDRV_TIMER_ADD(ice_firq, 30)
+  MDRV_TIMER_ADD(ice_30hz, 30)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(ICE)
   MDRV_DIPS(16)
@@ -286,3 +305,21 @@ ROM_START(icecold)
     ROM_LOAD("icb24.bin",  0xc000, 0x2000, CRC(2d1e7282) SHA1(6f170e24f71d1504195face5f67176b55c933eef))
 ROM_END
 CORE_GAMEDEFNV(icecold,"Ice Cold Beer",1983,"Taito",icecold,GAME_NOT_WORKING)
+
+INITGAME(icecoldf, icb_disp)
+ROM_START(icecoldf)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("icb23b_f.bin", 0xe000, 0x2000, CRC(6fe73c9d) SHA1(24b60da1fc791844601bd9a7628fde195e9e9644))
+    ROM_LOAD("icb24.bin",  0xc000, 0x2000, CRC(2d1e7282) SHA1(6f170e24f71d1504195face5f67176b55c933eef))
+ROM_END
+#define input_ports_icecoldf input_ports_icecold
+CORE_CLONEDEFNV(icecoldf,icecold,"Ice Cold Beer (Free Play)",1983,"Taito",icecold,GAME_NOT_WORKING)
+
+INITGAME(zekepeak, icb_disp)
+ROM_START(zekepeak)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("zp23.bin", 0xe000, 0x2000, CRC(ef959586) SHA1(7f8a4787b340bfa34180164806b181b5fb4e5cfa))
+    ROM_LOAD("zp24.bin", 0xc000, 0x2000, CRC(ee90c8f5) SHA1(27a513000e90536e485ccdf43786b415b3c95bd7))
+ROM_END
+#define input_ports_zekepeak input_ports_icecold
+CORE_CLONEDEFNV(zekepeak,icecold,"Zeke's Peak",1983,"Taito",icecold,GAME_NOT_WORKING)

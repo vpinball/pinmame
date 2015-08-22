@@ -102,10 +102,19 @@ BY6803_ROMEND
 #define input_ports_blackblt input_ports_by6803
 CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 
-// 1st Game to use Sounds Deluxe Sound Hardware
+INITGAME6803(blackbl2,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BY61, BY6803_DISPALPHA)
+BY6803_ROMSTART44(blackbl2,"cpu_u2.cpu",     CRC(b86d16ec) SHA1(2e4601e725261aca67e4d706f310b14eb7578d8b),
+                           "cpu_u3.cpu",     CRC(c63e3e6f) SHA1(cd3f66c3796eaf64c36cabba9d74cc8c690d9d8b))
+BY61_SOUNDROM0000(         "blb_u2.snd",NO_DUMP,
+                           "blb_u3.snd",NO_DUMP,
+                           "blb_u4.snd",NO_DUMP,
+                           "blb_u5.snd",NO_DUMP)
+BY6803_ROMEND
+#define input_ports_blackbl2 input_ports_blackblt
+CORE_CLONEDEFNV(blackbl2,blackblt,"Black Belt (Squawk and Talk)",1986,"Bally",by_mBY6803_61SA,0)
 
 /*------------------------------------
-/ Special Force (6803-0E47: 08/86)
+/ Special Force (6803-0E47: 08/86) // 1st Game to use Sounds Deluxe Sound Hardware
 /------------------------------------*/
 INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(specforc,"u2_revc.128",CRC(d042af04) SHA1(0a73ee6d3ce603899fd89de70f90e9efc58b8b42),
@@ -128,6 +137,14 @@ BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742ac
 BY6803_ROMEND
 #define input_ports_strngsci input_ports_by6803
 CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
+
+BY6803_ROMSTART44(strngscg, "cpub_u2.128",  CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
+                            "cpub_u3.128",  CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
+BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
+BY6803_ROMEND
+#define init_strngscg init_strngsci
+#define input_ports_strngscg input_ports_strngsci
+CORE_CLONEDEFNV(strngscg,strngsci,"Strange Science (German)",1986,"Bally",by_mBY6803_TCSS,0)
 
 /*------------------------------------
 / City Slicker (6803-0E79: 03/87)
@@ -174,6 +191,17 @@ BYSD_SOUNDROM0000(         "snd_u12.512",CRC(265a9494) SHA1(3b631f2b1c8c685aef32
 BY6803_ROMEND
 #define input_ports_prtyanim input_ports_by6803
 CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803_SDS,0)
+
+BY6803_ROMSTART44(prtyanig,"cpu_u2g.128", CRC(8abf40a2) SHA1(04ac296c99bc176faf21f1277ff59228a2031715),
+                           "cpu_u3g.128", CRC(e781dd4b) SHA1(3395ddd2d774c83cac98b6d67415d3c8cd0b04fe))
+BYSD_SOUNDROM0000(         "snd_u12.512",CRC(265a9494) SHA1(3b631f2b1c8c685aef32fb6c5289cd792711ff7e),
+                           "snd_u11.512",CRC(20be998f) SHA1(7f98073d0f559e081b2d6dc8c1f3462e3fe9a713),
+                           "snd_u14.512",CRC(639b3db1) SHA1(e07669c3186c963f2fea29bcf5675ac86eb07c86),
+                           "snd_u13.512",CRC(b652597b) SHA1(8b4074a545d420319712a1fdd77a3bfb282ed9cd))
+BY6803_ROMEND
+#define init_prtyanig init_prtyanim
+#define input_ports_prtyanig input_ports_prtyanim
+CORE_CLONEDEFNV(prtyanig,prtyanim,"Party Animal (German)",1987,"Bally",by_mBY6803_SDS,0)
 
 /*-----------------------------------------
 / Heavy Metal Meltdown (6803-0H03: 08/87)

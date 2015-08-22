@@ -886,14 +886,14 @@ int dss_adsrenv_step(struct node_description *node)
 	struct dss_adsr_context *context;
 	context=(struct dss_adsr_context*)node->context;
 
-	if(node->input[0])
-	{
+	//if(node->input[0])
+	//{
 		node->output=0;
-	}
+	/*}
 	else
 	{
 		node->output=0;
-	}
+	}*/
 	return 0;
 }
 

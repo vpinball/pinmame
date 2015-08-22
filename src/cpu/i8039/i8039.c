@@ -658,7 +658,7 @@ void i8039_reset (void *param)
 
 	R.A11ff   = R.A11     = 0;
 	R.tirq_en = R.xirq_en = 0;
-	R.timerON = R.countON = 0;
+	/*R.timerON =*/ R.countON = 0;
 	R.timerON = 1;  /* Mario Bros. doesn't work without this */
 	R.irq_extra_cycles = 0;
 	R.masterClock = 0;

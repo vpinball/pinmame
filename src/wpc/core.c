@@ -8,6 +8,14 @@
 #include "mech.h"
 #include "core.h"
 
+#ifdef VPINMAME
+ #include "../pindmd/pindmd.h"
+
+ UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+ UINT32 g_raw_dmdx = ~0u;
+ UINT32 g_raw_dmdy = ~0u;
+#endif
+
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
@@ -24,6 +32,9 @@ void vp_setDIP(int bank, int value) { }
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
+  extern char g_fShowPinDMD; /* pinDMD */
+  extern int time_to_reset;  /* pinDMD */
+  extern int g_fDumpFrames;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
@@ -129,7 +140,7 @@ static const unsigned char core_palette[48+COL_COUNT][3] = {
 typedef UINT32 tSegRow[17];
 typedef struct { int rows, cols; tSegRow *segs; } tSegData;
 
-static tSegRow segSize1C[5][20] = { /* with commas */
+static tSegRow segSize1C[6][20] = { /* with commas */
 { /* alphanumeric display characters */
 /*                       all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*    11111111111  */{0x00555554,0x00555554,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -236,6 +247,27 @@ static tSegRow segSize1C[5][20] = { /* with commas */
 /* 133333333333132 */{0x1fffffde,0x00000000,0x00000000,0x00000010,0x0fffffc0,0x10000000,0x00000000,0x00000000,0x0000000e},
 /*  11111111111 31 */{0x0555554d,0x00000000,0x00000000,0x00000000,0x05555540,0x00000000,0x00000000,0x00000000,0x0000000d},
 /*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
+},{ /* alphanumeric display characters (period only) */
+/*    11111111111  */{0x00555554,0x00555554,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*   1133331333311 */{0x017fdff5,0x003fcff0,0x00000001,0x00000000,0x00000000,0x00000000,0x01000000,0x00000000,0x00000000,0x00400000,0x00001000,0x00000004,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*   11    1   1 1 */{0x01401011,0x00000000,0x00000001,0x00000000,0x00000000,0x00000000,0x01000000,0x00000000,0x00000000,0x00400000,0x00001000,0x00000010,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  31 1  31  1 31 */{0x0d10d04d,0x00000000,0x0000000d,0x00000000,0x00000000,0x00000000,0x0d000000,0x00000000,0x00000000,0x00100000,0x0000d000,0x00000040,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  32 1  32  1 32 */{0x0e10e04e,0x00000000,0x0000000e,0x00000000,0x00000000,0x00000000,0x0e000000,0x00000000,0x00000000,0x00100000,0x0000e000,0x00000040,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  22  1 22 1  22 */{0x0a04a10a,0x00000000,0x0000000a,0x00000000,0x00000000,0x00000000,0x0a000000,0x00000000,0x00000000,0x00040000,0x0000a000,0x00000100,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  23  1 231   23 */{0x0b04b40b,0x00000000,0x0000000b,0x00000000,0x00000000,0x00000000,0x0b000000,0x00000000,0x00000000,0x00040000,0x0000b000,0x00000400,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  13   1131   13 */{0x07017407,0x00000000,0x00000007,0x00000000,0x00000000,0x00000000,0x07000000,0x00000000,0x00000000,0x00010000,0x00007000,0x00000400,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  1333311133331  */{0x07fd5ff4,0x00000000,0x00000004,0x00000000,0x00000000,0x00000000,0x04000000,0x03fc0000,0x00000000,0x00010000,0x00004000,0x00001000,0x00000ff0,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  3111113111113  */{0x0d55d55c,0x00000000,0x0000000c,0x0000000c,0x00000000,0x0c000000,0x0c000000,0x0155c000,0x00000000,0x0000c000,0x0000c000,0x0000c000,0x0000d550,0x0000c000,0x0000c000,0x0000c000,0x00000000},
+/*  1333311133331  */{0x07fd5ff4,0x00000000,0x00000000,0x00000004,0x00000000,0x04000000,0x00000000,0x03fc0000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000ff0,0x00001000,0x00004000,0x00010000,0x00000000},
+/* 31   1311   31  */{0x34075034,0x00000000,0x00000000,0x00000034,0x00000000,0x34000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00001000,0x00034000,0x00040000,0x00000000},
+/* 32   132 1  32  */{0x38078438,0x00000000,0x00000000,0x00000038,0x00000000,0x38000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000400,0x00038000,0x00040000,0x00000000},
+/* 22  1 22 1  22  */{0x28128428,0x00000000,0x00000000,0x00000028,0x00000000,0x28000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000400,0x00028000,0x00100000,0x00000000},
+/* 23 1  23  1 23  */{0x2c42c12c,0x00000000,0x00000000,0x0000002c,0x00000000,0x2c000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000100,0x0002c000,0x00400000,0x00000000},
+/* 13 1  13  1 13  */{0x1c41c11c,0x00000000,0x00000000,0x0000001c,0x00000000,0x1c000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000100,0x0001c000,0x00400000,0x00000000},
+/* 1 1   1    11   */{0x11010050,0x00000000,0x00000000,0x00000010,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000040,0x00010000,0x01000000,0x00000000},
+/* 113333133331132 */{0x17fdff5e,0x00000000,0x00000000,0x00000010,0x03fcff00,0x10000000,0x00000000,0x00000000,0x0000000e,0x00000000,0x00000000,0x00000000,0x00000000,0x00000040,0x00010000,0x04000000,0x0000000e},
+/*  11111111111 31 */{0x0555554d,0x00000000,0x00000000,0x00000000,0x05555540,0x00000000,0x00000000,0x00000000,0x0000000d,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x0000000d},
+/*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
 static tSegRow segSize1[3][20] = { /* without commas */
 { /* alphanumeric display characters */
@@ -303,7 +335,7 @@ static tSegRow segSize1[3][20] = { /* without commas */
 /*  11111111111    */{0x05555540,0x00000000,0x00000000,0x00000000,0x05555540,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
 /*                 */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
-static tSegRow segSize2C[5][12] = { /* with commas */
+static tSegRow segSize2C[6][12] = { /* with commas */
 { /* alphanumeric display characters */
 /*                   all        0001       0002       0004       0008       0010       0020       0040       0080       0100       0200       0400       0800       1000       2000       4000       8000 */
 /*  xxxxxxx    */{0x05554000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
@@ -370,6 +402,19 @@ static tSegRow segSize2C[5][12] = { /* with commas */
 /* x       x   */{0x10001000,0x00000000,0x00000000,0x00001000,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000},
 /*  xxxxxxx  x */{0x05554100,0x00000000,0x00000000,0x00000000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000100},
 /*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
+},{ /* alphanumeric display characters (period only) */
+/*  xxxxxxx    */{0x05554000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/* xx  x  xx   */{0x14105000,0x00000000,0x00001000,0x00000000,0x00000000,0x00000000,0x10000000,0x00000000,0x00000000,0x04000000,0x00100000,0x00004000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/* x x x x x   */{0x11111000,0x00000000,0x00001000,0x00000000,0x00000000,0x00000000,0x10000000,0x00000000,0x00000000,0x01000000,0x00100000,0x00010000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/* x x x x x   */{0x11111000,0x00000000,0x00001000,0x00000000,0x00000000,0x00000000,0x10000000,0x00000000,0x00000000,0x01000000,0x00100000,0x00010000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/* x  xxx  x   */{0x10541000,0x00000000,0x00001000,0x00000000,0x00000000,0x00000000,0x10000000,0x00000000,0x00000000,0x00400000,0x00100000,0x00040000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000},
+/*  xxx xxx    */{0x05454000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x05400000,0x00000000,0x00000000,0x00000000,0x00000000,0x00054000,0x00000000,0x00000000,0x00000000,0x00000000},
+/* x  xxx  x   */{0x10541000,0x00000000,0x00000000,0x00001000,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00040000,0x00100000,0x00400000,0x00000000},
+/* x x x x x   */{0x11111000,0x00000000,0x00000000,0x00001000,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00010000,0x00100000,0x01000000,0x00000000},
+/* x x x x x   */{0x11111000,0x00000000,0x00000000,0x00001000,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00010000,0x00100000,0x01000000,0x00000000},
+/* xx  x  xx   */{0x14105000,0x00000000,0x00000000,0x00001000,0x00000000,0x10000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00004000,0x00100000,0x04000000,0x00000000},
+/*  xxxxxxx  x */{0x05554100,0x00000000,0x00000000,0x00000000,0x05554000,0x00000000,0x00000000,0x00000000,0x00000100,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000100},
+/*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
 static tSegRow segSize2[3][12] = { /* without commas */
 { /* alphanumeric display characters */
@@ -500,7 +545,7 @@ static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but sp
 /*             */{0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000}
 }};
 
-static tSegData segData[2][16] = {{
+static tSegData segData[2][18] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
   {20,15,&segSize1C[3][0]},/* SEG16R*/
   {20,15,&segSize1C[2][0]},/* SEG10 */
@@ -516,7 +561,9 @@ static tSegData segData[2][16] = {{
   {12,11,&segSize2C[1][0]},/* SEG7SC */
   {20,15,&segSize1S[0][0]},/* SEG16S */
   { 2, 2,NULL},            /* DMD */
-  { 1, 1,NULL}             /* VIDEO */
+  { 1, 1,NULL},            /* VIDEO */
+  {20,15,&segSize1[0][0]}, /* SEG16N */
+  {20,15,&segSize1C[5][0]} /* SEG16D */
 },{
   {12,11,&segSize2C[0][0]},/* SEG16 */
   {12,11,&segSize2C[3][0]},/* SEG16R*/
@@ -533,7 +580,9 @@ static tSegData segData[2][16] = {{
   { 8, 7,&segSize3C[1][0]},/* SEG7SC */
   {12,11,&segSize2S[0][0]},/* SEG16S */
   { 1, 1,NULL},            /* DMD */
-  { 1, 1,NULL}             /* VIDEO */
+  { 1, 1,NULL},            /* VIDEO */
+  {12,11,&segSize2[0][0]}, /* SEG16N */
+  {12,11,&segSize2C[5][0]} /* SEG16D */
 }};
 
 /*-------------------
@@ -583,6 +632,26 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_DMDON][0]    = rStart;
   tmpPalette[COL_DMDON][1]    = gStart;
   tmpPalette[COL_DMDON][2]    = bStart;
+
+  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+  if (pmoptions.dmd_colorize) { 
+    if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+      tmpPalette[COL_DMDOFF][0]   = pmoptions.dmd_red0;
+      tmpPalette[COL_DMDOFF][1]   = pmoptions.dmd_green0;
+      tmpPalette[COL_DMDOFF][2]   = pmoptions.dmd_blue0;
+    }
+    if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+      tmpPalette[COL_DMD33][0]    = pmoptions.dmd_red33;
+      tmpPalette[COL_DMD33][1]    = pmoptions.dmd_green33;
+      tmpPalette[COL_DMD33][2]    = pmoptions.dmd_blue33;
+    }
+    if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+      tmpPalette[COL_DMD66][0]    = pmoptions.dmd_red66;
+      tmpPalette[COL_DMD66][1]    = pmoptions.dmd_green66;
+      tmpPalette[COL_DMD66][2]    = pmoptions.dmd_blue66;
+    }
+  }
+  
   /*-- segment display antialias colors --*/
   tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
   tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
@@ -658,16 +727,32 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
 
-#define DUMPFRAMES 0 //disabled by default
-#define DETECTSAMEFRAMES 1
-#if DUMPFRAMES
+#ifdef VPINMAME
   static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
   static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-  static UINT8 *currbuffer = buffer1;  
+  static UINT8 *currbuffer = buffer1;
   static UINT8 *oldbuffer = NULL;
 
   UINT8 dumpframe = 1;
-  FILE *f;
+
+  const UINT8 perc0 = pmoptions.dmd_perc0;
+  const UINT8 perc1 = pmoptions.dmd_perc33;
+  const UINT8 perc2 = pmoptions.dmd_perc66;
+  const UINT8 perc3 = 100;
+
+  static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
+  static const int levelsam[16]  = {0/*5*/, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 100}; // SAM brightness seems okay
+  
+  const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
+
+  const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
+  const UINT8 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+
+  if(layout->length >= 128) // Capcom hack
+  {
+      g_raw_dmdx = layout->length;
+      g_raw_dmdy = layout->start;
+  }
 #endif
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
@@ -677,12 +762,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
-        *line++ = dmdColor[dotCol[ii][jj]];
-
-#if DUMPFRAMES
+#ifdef VPINMAME
 		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
+ 	    if(layout->length >= 128) // Capcom hack
+			g_raw_dmdbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj] >= 63 ? rawg[dotCol[ii][jj]-63] : raws[dotCol[ii][jj]];
 #endif
-
+        *line++ = dmdColor[dotCol[ii][jj]];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
@@ -702,29 +787,42 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
-#if DUMPFRAMES
-#if DETECTSAMEFRAMES
+#ifdef VPINMAME
+  if(g_fShowPinDMD || g_fDumpFrames) {
   if(oldbuffer != NULL) {
 	dumpframe = 0;
 	for(jj = 0; jj < layout->start; jj++)
 		for(ii = 0; ii < layout->length; ii++)
-			if(currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii]) {
+		{
+			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
+			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
 				dumpframe = 1;
 				break;
 			}
+		}
   }
-#endif
 
   if(dumpframe) {
-	f = fopen("dump.txt","a");
-	if(f) {
-		for(jj = 0; jj < layout->start; jj++) {
-			for(ii = 0; ii < layout->length; ii++)
-				fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
-			fprintf(f,"\n");
+	    //usb dmd
+	    if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
+		{
+	      if(g_fShowPinDMD)
+		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
+		  else
+		  {
+		    FILE *f;
+			f = fopen("dump.txt","a");
+			if(f) {
+				for(jj = 0; jj < layout->start; jj++) {
+					for(ii = 0; ii < layout->length; ii++)
+						fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+					fprintf(f,"\n");
+				}
+				fprintf(f,"\n");
+				fclose(f);
+			}
+		  }
 		}
-		fprintf(f,"\n");
-		fclose(f);
 
 		if(currbuffer == buffer1) {
 			currbuffer = buffer2;
@@ -734,6 +832,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			oldbuffer = buffer2;
 		}
 	}
+
+	if(g_fShowPinDMD)
+	    frameClock();
   }
 #endif
 }
@@ -751,7 +852,20 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 /------------------------------------*/
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos) {
+
+#ifdef VPINMAME
+  static UINT16 seg_data[50];
+  static UINT8 disp_lens[50];
+  int idx=0;
+  int total_disp=0;
+#endif
+
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
+
+#ifdef VPINMAME
+  memset(seg_data, 0, 50*sizeof(UINT16));
+#endif
+
   for (; layout->length; layout += 1) {
     if (layout->type == CORE_IMPORT)
       { updateDisplay(bitmap, cliprect, layout->lptr, pos); continue; }
@@ -765,6 +879,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
+#ifdef VPINMAME
+  	  disp_lens[total_disp++] = ii;
+#endif
+
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
@@ -775,7 +893,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 		if(1) {
 #else
         if ((tmpSeg != *lastSeg) ||
-            inRect(cliprect,left,top,locals.segData[layout->type & 0x0f].cols,locals.segData[layout->type & 0x0f].rows)) {
+            inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
 #endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
@@ -799,16 +917,26 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
+
+#ifdef VPINMAME
+  		  seg_data[idx++] = tmpSeg;
+#endif
+		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
 		(*pos)++;
-        left += locals.segData[layout->type & 0x0f].cols+1;
+        left += locals.segData[layout->type & CORE_SEGALL].cols+1;
         seg += step; lastSeg += step;
       }
     }
   }
+
+#ifdef VPINMAME
+  //alpha frame
+  if(g_fShowPinDMD)
+  	renderAlphanumericFrame(core_gameData->gen, seg_data, total_disp, disp_lens);
+#endif
 }
 
 VIDEO_UPDATE(core_gen) {
@@ -824,7 +952,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG)) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;
@@ -1427,10 +1555,23 @@ static MACHINE_INIT(core) {
 
 /* TOM: this causes to draw the static sim text */
   schedule_full_refresh();
+
+#ifdef VPINMAME
+  // DMD USB Init
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdInit();
+#endif
 }
 
 static MACHINE_STOP(core) {
   int ii;
+
+#ifdef VPINMAME
+  // DMD USB Kill
+  if(g_fShowPinDMD && !time_to_reset)
+	pindmdDeInit();
+#endif
+
   mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();
@@ -1451,7 +1592,7 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
 #endif
       if (type == CORE_IMPORT)
         { core_findSize(layout->lptr, maxX, maxY); continue; }
-      if (type >= CORE_DMD) {
+      if (type == CORE_DMD || type == CORE_VIDEO) {
         tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
         tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }

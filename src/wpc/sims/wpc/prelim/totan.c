@@ -291,10 +291,10 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(totan,14,"Tales Of The Arabian Nights (1.4)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(totan,13,14,"Tales Of The Arabian Nights (1.3)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(totan,12,14,"Tales Of The Arabian Nights (1.2)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(totan,04,14,"Tales Of The Arabian Nights (0.4)",1996,"Williams",wpc_m95S,0)
+CORE_GAMEDEF(totan,14,"Tales of the Arabian Nights (1.4)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,13,14,"Tales of the Arabian Nights (1.3)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,12,14,"Tales of the Arabian Nights (1.2)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,04,14,"Tales of the Arabian Nights (0.4)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

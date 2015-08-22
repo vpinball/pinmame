@@ -1,5 +1,5 @@
 /*******************************************************************************
- Preliminary Who Dunnit (Bally, 1995) Pinball Simulator
+ Preliminary WHO Dunnit (Bally, 1995) Pinball Simulator
 
  by Marton Larrosa (marton@mail.com)
  Dec. 24, 2000
@@ -330,14 +330,14 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF (wd,12,    "Who Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,12g,12,"Who Dunnit (1.2 Germany)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,11,12, "Who Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,10r,12,"Who Dunnit (1.0 R)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,10g,12,"Who Dunnit (1.0 Germany)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,10f,12,"Who Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,03r,12,"Who Dunnit (0.3 R)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,048r,12,"Who Dunnit (0.48 R)",1995,"Bally",wpc_m95DCSS,0)
+CORE_GAMEDEF (wd,12,    "WHO Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,12g,12,"WHO Dunnit (1.2 German)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,11,12, "WHO Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10r,12,"WHO Dunnit (1.0R)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10g,12,"WHO Dunnit (1.0 German)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10f,12,"WHO Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,03r,12,"WHO Dunnit (0.3R)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,048r,12,"WHO Dunnit (0.48R)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions

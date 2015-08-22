@@ -636,12 +636,21 @@ static MACHINE_INIT(alvg) {
   install_mem_write_handler(0, 0x2c00, 0x2c00, LED_LATCH);
   install_mem_write_handler(0, 0x2c80, 0x2c83, LED_DATA);
 }
-static MACHINE_INIT(alvgdmd) {
+static MACHINE_INIT(alvgdmd1) {
   init_common();
   /* Init the dmd board */
   install_mem_write_handler(0, 0x2c00, 0x2fff, DMD_LATCH);
   sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
+
+#ifdef MYSTERY_CASTLE_HACK
+static MACHINE_INIT(alvgdmd2) {
+  init_common();
+  /* Init the dmd board */
+  install_mem_write_handler(0, 0x2c00, 0x2fff, DMD_LATCH);
+  sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
+}
+#endif
 
 static MACHINE_STOP(alvg) {
   sndbrd_0_exit();
@@ -744,11 +753,19 @@ MACHINE_DRIVER_START(alvgs2)
 MACHINE_DRIVER_END
 
 //Main CPU, DMD, Sound hardware Driver (Generation #2)
-MACHINE_DRIVER_START(alvgs2dmd)
+MACHINE_DRIVER_START(alvgs2dmd1)
   MDRV_IMPORT_FROM(alvgs2)
-  MDRV_IMPORT_FROM(alvgdmd)
-  MDRV_CORE_INIT_RESET_STOP(alvgdmd,NULL,alvg)
+  MDRV_IMPORT_FROM(alvgdmd1)
+  MDRV_CORE_INIT_RESET_STOP(alvgdmd1,NULL,alvg)
 MACHINE_DRIVER_END
+
+#ifdef MYSTERY_CASTLE_HACK
+MACHINE_DRIVER_START(alvgs2dmd2)
+  MDRV_IMPORT_FROM(alvgs2)
+  MDRV_IMPORT_FROM(alvgdmd2)
+  MDRV_CORE_INIT_RESET_STOP(alvgdmd2,NULL,alvg)
+MACHINE_DRIVER_END
+#endif
 
 //Use only to test 8031 core
 #ifdef MAME_DEBUG

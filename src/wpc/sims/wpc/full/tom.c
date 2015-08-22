@@ -545,21 +545,29 @@ DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba) SHA1(59101f9f4f43c240630dfbdc7fb432a99
 /  ROM definitions  (Take them from Games.c)
 /------------------*/
 WPC_ROMSTART(tom,14h,"1_40h.u6",  0x80000,CRC(4181db9b) SHA1(027ada8518207d5a841ec3cc8c7842c7b3841f70)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,14hb,"1_40hb.u6",  0x80000,CRC(93fc2b7b) SHA1(8b180f7e92ab4f9daabb648ad3e64c6005869083)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c) SHA1(9896f3034bb7a59c9e241d16bf231fefc0ae1fd0)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,13f,"tom1_3f.rom",0x80000,CRC(8a87756b) SHA1(c1f600ed1b88880b5cfd0ae0cc3f1ed1cffbf8ea)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884) SHA1(2cb74ae5082d8ceaf89b8ef4df86f78cb5ba6463)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,121,"tom1_21.rom",0x80000,CRC(d578ba58) SHA1(cbc195935a0ffad282941e605fd94c1b095d17de)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,10f,"tom1.0f",0x80000,CRC(be7626ad) SHA1(2f7918b9d2d0618671d7a8676cf69ee76e86bcb9)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,101f,"tom1.01f",0x80000,CRC(b46ce0c2) SHA1(679c3d7a0110e17090078f8fd921bd1523ab8f51)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,06,"u6-06a.rom", 0x80000,CRC(dc1d6681) SHA1(7e60e9fd6e953e3c2899ae2fb2900982f078a4ba)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,061,"u6-061.rom", 0x80000,CRC(b4e8045d) SHA1(f53fc7b8616d3a320814eae728bf2ac4f2e50819)) TOM_SOUND WPC_ROMEND
 
 /*--------------
 /  Game drivers    (Found in Games.c too)
 /---------------*/
-CORE_GAMEDEF(tom,13,"Theatre Of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,14h,13,"Theatre Of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,12,13,"Theatre Of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,121,13,"Theatre Of Magic (1.21X) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,06,13,"Theatre Of Magic (0.6a)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,061,13,"Theatre Of Magic (0.61a) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
+CORE_GAMEDEF(tom,13,"Theatre of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,13f,13,"Theatre of Magic (1.3 French)",2005,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,14h,13,"Theatre of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,14hb,13,"Theatre of Magic (1.4H Coin Play)",2005,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,12,13,"Theatre of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,121,13,"Theatre of Magic (1.21X LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,10f,13,"Theatre of Magic (1.0 French)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,101f,13,"Theatre of Magic (1.01 French) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,06,13,"Theatre of Magic (0.6a)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,061,13,"Theatre of Magic (0.61a LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

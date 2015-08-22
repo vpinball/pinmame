@@ -4,8 +4,8 @@
    Hardware:
    ---------
 		CPU:     Z80 @ 2.5 MHz
-			INT: IRQ @ 1250 Hz ?
-		IO:      Z80 ports, AY8910 ports for lamps
+			INT: IRQ @ ~1800 Hz (R/C timer, needs to be measured on real machine)
+		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910 @ 2.5 MHz
  ************************************************************************************************/
@@ -16,7 +16,6 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
-#define PEYPER_VBLANKFREQ   60 /* VBLANK frequency */
 #define PEYPER_IRQFREQ    1800 /* IRQ frequency */
 #define PEYPER_CPUFREQ 2500000 /* CPU clock frequency */
 
@@ -26,9 +25,10 @@
 static struct {
   int    vblankCount;
   UINT32 solenoids;
-  UINT8  dispCol;
-  UINT8  swCol;
   core_tSeg segments;
+  int    i8279cmd;
+  int    i8279reg;
+  UINT8  i8279ram[16];
 } locals;
 
 static INTERRUPT_GEN(PEYPER_irq) {
@@ -42,8 +42,7 @@ static INTERRUPT_GEN(PEYPER_vblank) {
   locals.vblankCount++;
 
   /*-- lamps --*/
-  if ((locals.vblankCount % PEYPER_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % PEYPER_SOLSMOOTH) == 0)
@@ -71,35 +70,11 @@ static int PEYPER_m2sw(int col, int row) {
 }
 
 static READ_HANDLER(dip_r) {
-  return core_getDip(offset / 4);
+  return ~core_revbyte(core_getDip(offset / 4));
 }
 
 static READ_HANDLER(sw0_r) {
   return ~coreGlobals.swMatrix[0];
-}
-
-static READ_HANDLER(sw_r) {
-  return coreGlobals.swMatrix[locals.swCol+1];
-}
-
-// switch and display strobing done here
-static WRITE_HANDLER(col_w) {
-  if ((data & 0x40) == 0x40) locals.swCol = data & 0x0f;
-  else if ((data & 0x90) == 0x90) locals.dispCol = 0;
-}
-
-static WRITE_HANDLER(disp_w) {
-  static int colMap[16] = { 8, 10, 12, 0, 0, 0, 0, 0, 9, 11, 13 };
-  locals.segments[15-locals.dispCol].w = core_bcd2seg7[data >> 4];
-  locals.segments[31-locals.dispCol].w = core_bcd2seg7[data & 0x0f];
-  // mapping various lamps (million, player up, game over, tilt) from segments data
-  if (colMap[locals.dispCol]) coreGlobals.tmpLampMatrix[colMap[locals.dispCol]] = data;
-  // mapping lamps to million display digit for early Sonic games
-  locals.segments[32].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[12] & 0x40 ? 1 : 0x0f];
-  locals.segments[33].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[13] & 0x40 ? 1 : 0x0f];
-  locals.segments[34].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[13] & 0x04 ? 1 : 0x0f];
-  locals.segments[35].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[12] & 0x04 ? 1 : 0x0f];
-  locals.dispCol = (locals.dispCol + 1) % 16;
 }
 
 static WRITE_HANDLER(lamp_w) {
@@ -135,6 +110,63 @@ struct AY8910interface PEYPER_ay8910Int = {
 	{ ay8910_0_portb_w, ay8910_1_portb_w },
 };
 
+// handles the 8279 keyboard / display interface chip
+static READ_HANDLER(i8279_r) {
+  static UINT8 lastData;
+  logerror("i8279 r%d (cmd %02x, reg %02x)\n", offset, locals.i8279cmd, locals.i8279reg);
+  if ((locals.i8279cmd & 0xe0) == 0x40) lastData = coreGlobals.swMatrix[1 + (locals.i8279cmd & 0x07)]; // read switches (only 4 columns actually used)
+  else if ((locals.i8279cmd & 0xe0) == 0x60) lastData = locals.i8279ram[locals.i8279reg]; // read display ram
+  else logerror("i8279 r:%02x\n", locals.i8279cmd);
+  if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
+  return lastData;
+}
+static WRITE_HANDLER(i8279_w) {
+  if (offset) { // command
+    locals.i8279cmd = data;
+    if ((locals.i8279cmd & 0xe0) == 0x40)
+      logerror("I8279 read switches: %x\n", data & 0x07);
+    else if ((locals.i8279cmd & 0xe0) == 0x80)
+      logerror("I8279 write display: %x\n", data & 0x0f);
+    else if ((locals.i8279cmd & 0xe0) == 0x60)
+      logerror("I8279 read display: %x\n", data & 0x0f);
+    else if ((locals.i8279cmd & 0xe0) == 0x20)
+      logerror("I8279 scan rate: %02x\n", data & 0x1f);
+    else if ((locals.i8279cmd & 0xe0) == 0)
+      logerror("I8279 set modes: display %x, keyboard %x\n", (data >> 3) & 0x03, data & 0x07);
+    else logerror("i8279 w%d:%02x\n", offset, data);
+    if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
+  } else { // data
+    if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
+      if ((coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
+        locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
+      } else {
+        locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];
+        locals.segments[31 - locals.i8279reg].w = core_bcd2seg7[data & 0x0f];
+      }
+      // mapping various lamps (million, player up, game over, tilt) from segments data
+      switch (locals.i8279reg) {
+        case  2:
+          coreGlobals.tmpLampMatrix[8] = data;
+          // mapping to million display digit for early Sonic games
+          locals.segments[32].w = data & 0x40 ? core_bcd2seg7[1] : 0;
+          locals.segments[35].w = data & 0x04 ? core_bcd2seg7[1] : 0;
+          break;
+        case  6: if (!locals.segments[36].w) locals.segments[36].w = core_bcd2seg7[0]; break; // odin(dlx)
+        case  7: if (!locals.segments[36].w) locals.segments[36].w = core_bcd2seg7[0]; break; // others
+        case  8: coreGlobals.tmpLampMatrix[9] = data; break;
+        case  9: coreGlobals.tmpLampMatrix[10] = data; break;
+        case 10:
+          coreGlobals.tmpLampMatrix[11] = data;
+          // mapping to million display digit for early Sonic games
+          locals.segments[33].w = data & 0x40 ? core_bcd2seg7[1] : 0;
+          locals.segments[34].w = data & 0x04 ? core_bcd2seg7[1] : 0;
+          break;
+      }
+    } else logerror("i8279 w%d:%02x\n", offset, data);
+    if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
+  }
+}
+
 static MEMORY_READ_START(PEYPER_readmem)
   {0x0000,0x5fff, MRA_ROM},
   {0x6000,0x67ff, MRA_RAM},
@@ -146,14 +178,13 @@ static MEMORY_WRITE_START(PEYPER_writemem)
 MEMORY_END
 
 static PORT_READ_START(PEYPER_readport)
-  {0x00,0x00, sw_r},
+  {0x00,0x01, i8279_r},
   {0x20,0x24, dip_r}, // only 20, 24 used
   {0x28,0x28, sw0_r},
 PORT_END
 
 static PORT_WRITE_START(PEYPER_writeport)
-  {0x00,0x00, disp_w},
-  {0x01,0x01, col_w},
+  {0x00,0x01, i8279_w},
   {0x04,0x04, ay8910_0_ctrl_w},
   {0x06,0x06, ay8910_0_data_w},
   {0x08,0x08, ay8910_1_ctrl_w},

@@ -219,7 +219,11 @@ static READ_HANDLER(pia0b_r) {
     UINT8 sw;
     if (core_gameData->hw.gameSpecific1 & BY35GD_SWVECTOR) col |= (locals.b1 & 0x10)<<1;
     else                                                   col |= (locals.b1 & 0x80)>>2;
-    sw = core_getSwCol(col);
+    if (!col && (core_gameData->hw.gameSpecific1 & BY35GD_MARAUDER)) {
+      sw = coreGlobals.swMatrix[3];
+    } else {
+      sw = core_getSwCol(col);
+    }
     return (locals.hw & BY35HW_REVSW) ? core_revbyte(sw) : sw;
   }
 }
@@ -276,8 +280,11 @@ static WRITE_HANDLER(pia1b_w) {
   locals.b1 = data;
   if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO && (sb & 0xff00) != SNDBRD_ST100 && sb != SNDBRD_GRAND) sndbrd_0_data_w(0, data & 0x0f); 	// ok
   coreGlobals.pulsedSolState = 0;
-  if (!locals.cb21)
+  if (!locals.cb21) {
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
+  } else if (core_gameData->hw.gameSpecific1 & BY35GD_MARAUDER) {
+    coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
+  }
   data ^= 0xf0;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((data & 0xf0)<<12);
   locals.solenoids |= (data & 0xf0)<<12;
@@ -327,7 +334,34 @@ static INTERRUPT_GEN(by35_vblank) {
   core_updateSw(core_getSol(19));
 }
 
+#ifdef MAME_DEBUG
+static void adjust_timer(int offset) {
+  static char s[2];
+  static UINT8 cmd;
+  cmd += offset;
+  sprintf(s, "%02x", cmd);
+  core_textOut(s, 2, 25, 5, 5);
+  if (!offset) {
+    sndbrd_0_ctrl_w(0, (cmd >> 3) & 0x02);
+    sndbrd_0_ctrl_w(0, ((cmd >> 3) & 0x02) | 1);
+    sndbrd_0_data_w(0, cmd);
+  }
+}
+#endif /* MAME_DEBUG */
+
 static SWITCH_UPDATE(by35) {
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
+    adjust_timer(-0x10);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
+    adjust_timer(-1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
+    adjust_timer(1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
+    adjust_timer(0x10);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_SPACE, 2))
+    adjust_timer(0);
+#endif /* MAME_DEBUG */
   if (inports) {
     if (core_gameData->gen & (GEN_BY17|GEN_BY35|GEN_STMPU100)) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);

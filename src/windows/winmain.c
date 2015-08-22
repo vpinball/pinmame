@@ -133,7 +133,7 @@ int main(int argc, char **argv)
                               "Please consult the documentation for more information.\n"
                               "\n"
                               "Would you like to open the documentation now?");
-#else
+#else /* PINMAME */
 		sprintf(message_text, APPLONGNAME " v%s - Multiple Arcade Machine Emulator\n"
 							  "Copyright (C) 1997-2003 by Nicola Salmoria and the MAME Team\n"
 							  "\n"
@@ -152,13 +152,13 @@ int main(int argc, char **argv)
 							  "Would you like to open the documentation now?"
 							  , build_version);
 #endif /* PINMAME */
-#else
+#else /* MESS */
 		sprintf(message_text, APPLONGNAME " is a console application, you should launch it from a command prompt.\n"
 							  "\n"
 							  "Please consult the documentation for more information.\n"
 							  "\n"
 							  "Would you like to open the documentation now?");
-#endif
+#endif /* MESS */
 
 		// pop up a messagebox with some information
 		button = MessageBox(NULL, message_text, APPLONGNAME " usage information...", MB_YESNO | MB_ICONASTERISK);
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 		}
 		return 1;
 	}
- #endif
+ #endif /* WINUI */
 #endif
 
 	// parse the map file, if present
@@ -337,6 +337,7 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 				info->ExceptionRecord->ExceptionInformation[0] ? "write" : "read",
 				(UINT32)info->ExceptionRecord->ExceptionInformation[1]);
 
+#ifndef __LP64__
 	// print the state of the CPU
 	fprintf(stderr, "-----------------------------------------------------\n");
 	fprintf(stderr, "EAX=%08X EBX=%08X ECX=%08X EDX=%08X\n",
@@ -349,16 +350,35 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 			(UINT32)info->ContextRecord->Edi,
 			(UINT32)info->ContextRecord->Ebp,
 			(UINT32)info->ContextRecord->Esp);
+#else
+	// print the state of the CPU
+	fprintf(stderr, "-----------------------------------------------------\n");
+	fprintf(stderr, "RAX=%16X RBX=%16X RCX=%16X RDX=%16X\n",
+			(UINT64)info->ContextRecord->Rax,
+			(UINT64)info->ContextRecord->Rbx,
+			(UINT64)info->ContextRecord->Rcx,
+			(UINT64)info->ContextRecord->Rdx);
+	fprintf(stderr, "RSI=%16X RDI=%16X RBP=%16X RSP=%16X\n",
+			(UINT64)info->ContextRecord->Rsi,
+			(UINT64)info->ContextRecord->Rdi,
+			(UINT64)info->ContextRecord->Rbp,
+			(UINT64)info->ContextRecord->Rsp);
+#endif
 
 	// crawl the stack for a while
 	if (get_code_base_size(&code_start, &code_size))
 	{
 		char prev_symbol[1024], curr_symbol[1024];
 		UINT32 last_call = (UINT32)info->ExceptionRecord->ExceptionAddress;
+#ifdef __LP64__
+		UINT64 esp_start = info->ContextRecord->Rsp;
+		UINT64 esp_end = (esp_start | 0xffff) + 1;
+		UINT64 esp;
+#else
 		UINT32 esp_start = info->ContextRecord->Esp;
 		UINT32 esp_end = (esp_start | 0xffff) + 1;
 		UINT32 esp;
-
+#endif
 		// reprint the actual exception address
 		fprintf(stderr, "-----------------------------------------------------\n");
 		fprintf(stderr, "Stack crawl:\n");

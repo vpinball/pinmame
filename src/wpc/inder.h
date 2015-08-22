@@ -110,8 +110,6 @@
 
 #define INDER_COMINPORT       CORE_COREINPORT
 
-#define INDER_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
-#define INDER_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 #define INDER_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 
 /*-- Memory regions --*/
@@ -123,6 +121,14 @@
 #define INDER_SND_CPU	1
 
 /*-- GAME ROMS --*/
+#define INDER_ROMSTARTP(name, n1, chk1, n2, chk2, n3, chk3) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, INDER_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x8c00, 0x0800, chk1) \
+       ROM_LOAD(n2, 0x8800, 0x0400, chk2) \
+       ROM_LOAD(n3, 0x9800, 0x0400, chk3) \
+         ROM_RELOAD(0xfc00, 0x0400)
+
 #define INDER_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, INDER_MEMREG_CPU) \
@@ -155,14 +161,20 @@
     ROM_LOAD(n5, 0x30000, 0x10000, chk5)
 
 /*-- These are only here so the game structure can be in the game file --*/
+extern MACHINE_DRIVER_EXTERN(INDERP);
 extern MACHINE_DRIVER_EXTERN(INDER0);
 extern MACHINE_DRIVER_EXTERN(INDER1);
 extern MACHINE_DRIVER_EXTERN(INDER2);
-extern MACHINE_DRIVER_EXTERN(INDERS);
+extern MACHINE_DRIVER_EXTERN(INDERS0);
+extern MACHINE_DRIVER_EXTERN(INDERS1);
+extern MACHINE_DRIVER_EXTERN(INDERS2);
 
+#define gl_mINDERP		INDERP
 #define gl_mINDER0		INDER0
 #define gl_mINDER1		INDER1
 #define gl_mINDER2		INDER2
-#define gl_mINDERS		INDERS
+#define gl_mINDERS0		INDERS0
+#define gl_mINDERS1		INDERS1
+#define gl_mINDERS2		INDERS2
 
 #endif /* INC_INDER */

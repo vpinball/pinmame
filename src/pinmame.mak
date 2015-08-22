@@ -58,7 +58,7 @@ DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
 DRVLIBS += $(PINOBJ)/sleic.o
-DRVLIBS += $(PINOBJ)/play.o
+DRVLIBS += $(PINOBJ)/play.o $(PINOBJ)/playsnd.o
 DRVLIBS += $(PINOBJ)/bowarrow.o $(PINOBJ)/flicker.o $(PINOBJ)/rotation.o
 DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
@@ -72,6 +72,9 @@ DRVLIBS += $(PINOBJ)/micropin.o
 DRVLIBS += $(PINOBJ)/mephisto.o
 DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
+DRVLIBS += $(PINOBJ)/spectra.o
+DRVLIBS += $(PINOBJ)/idsa.o
+DRVLIBS += $(PINOBJ)/mac.o
 #
 # Games
 #
@@ -112,6 +115,7 @@ PINGAMES += $(PINOBJ)/sims/s11/full/milln.o
 PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/elvis.o
+PINGAMES += $(PINOBJ)/sims/se/prelim/harley.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
@@ -194,6 +198,7 @@ CPUS += AT91@
 CPUS += CDP1802@
 CPUS += TMS9980@
 CPUS += TMS9995@
+CPUS += COP420@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
@@ -225,6 +230,9 @@ SOUNDS += S14001A@
 SOUNDS += YM2203@
 SOUNDS += YM3526@
 SOUNDS += TMS5110@
+SOUNDS += SP0256@
+SOUNDS += Y8950@
+SOUNDS += ASTROCADE@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims

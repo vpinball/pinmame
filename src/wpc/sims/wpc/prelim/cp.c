@@ -257,8 +257,8 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(cp,16,"The Champion Pub (1.6)",1998,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(cp,15,16,"The Champion Pub (1.5)",1998,"Bally",wpc_m95S,0)
+CORE_GAMEDEF(cp,16,"Champion Pub, The (1.6)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cp,15,16,"Champion Pub, The (1.5)",1998,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

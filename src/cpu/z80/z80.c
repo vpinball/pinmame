@@ -17,7 +17,53 @@
  *	   terms of its usage and license at any time, including retroactively
  *	 - This entire notice must remain in the source code.
  *
- *	 Changes in 3,3
+ *   TODO:
+ *    - Interrupt mode 0 should be able to execute arbitrary opcodes
+ *    - If LD A,I or LD A,R is interrupted, P/V flag gets reset, even if IFF2
+ *      was set before this instruction (implemented, but not enabled: we need
+ *      document Z80 types first, see below)
+ *    - Ideally, the tiny differences between Z80 types should be supported,
+ *      currently known differences:
+ *       - LD A,I/R P/V flag reset glitch is fixed on CMOS Z80
+ *       - OUT (C),0 outputs 0 on NMOS Z80, $FF on CMOS Z80
+ *       - SCF/CCF X/Y flags is ((flags | A) & 0x28) on SGS/SHARP/ZiLOG NMOS Z80,
+ *         (flags & A & 0x28) on NEC NMOS Z80, other models unknown.
+ *         However, people from the Speccy scene mention that SCF/CCF X/Y results
+ *         are inconsistant and may be influenced by I and R registers.
+ *      This Z80 emulator assumes a ZiLOG NMOS model.
+ *
+ *   Changes in 3.9:
+ *    - Fixed cycle counts for LD IYL/IXL/IYH/IXH,n [Marshmellow]
+ *    - Fixed X/Y flags in CCF/SCF/BIT, ZEXALL is happy now [hap]
+ *    - Simplified DAA, renamed MEMPTR (3.8) to WZ, added TODO [hap]
+ *    - Fixed IM2 interrupt cycles [eke]
+ *   Changes in 3.8 [Miodrag Milanovic]:
+ *    - Added MEMPTR register (according to informations provided
+ *      by Vladimir Kladov
+ *    - BIT n,(HL) now return valid values due to use of MEMPTR
+ *    - Fixed BIT 6,(XY+o) undocumented instructions
+ *   Changes in 3.7 [Aaron Giles]:
+ *    - Changed NMI handling. NMIs are now latched in set_irq_state
+ *      but are not taken there. Instead they are taken at the start of the
+ *      execute loop.
+ *    - Changed IRQ handling. IRQ state is set in set_irq_state but not taken
+ *      except during the inner execute loop.
+ *    - Removed x86 assembly hacks and obsolete timing loop catchers.
+ *   Changes in 3.6:
+ *    - Got rid of the code that would inexactly emulate a Z80, i.e. removed
+ *      all the #if Z80_EXACT #else branches.
+ *    - Removed leading underscores from local register name shortcuts as
+ *      this violates the C99 standard.
+ *    - Renamed the registers inside the Z80 context to lower case to avoid
+ *      ambiguities (shortcuts would have had the same names as the fields
+ *      of the structure).
+ *   Changes in 3.5:
+ *    - Implemented OTIR, INIR, etc. without look-up table for PF flag.
+ *      [Ramsoft, Sean Young]
+ *   Changes in 3.4:
+ *    - Removed Z80-MSX specific code as it's not needed any more.
+ *    - Implemented DAA without look-up table [Ramsoft, Sean Young]
+ *   Changes in 3.3:
  *	 - Fixed undocumented flags XF & YF in the non-asm versions of CP,
  *	   and all the 16 bit arithmetic instructions. [Sean Young]
  *	 Changes in 3.2
@@ -78,10 +124,6 @@
 #include "mamedbg.h"
 #include "z80.h"
 
-#ifdef Z80_MSX
-#include "z80_msx.h"
-#endif
-
 #define VERBOSE 0
 
 #if VERBOSE
@@ -93,23 +135,6 @@
 /* execute main opcodes inside a big switch statement */
 #ifndef BIG_SWITCH
 #define BIG_SWITCH			1
-#endif
-
-/* big flags array for ADD/ADC/SUB/SBC/CP results */
-#define BIG_FLAGS_ARRAY 	1
-
-/* Set to 1 for a more exact (but somewhat slower) Z80 emulation */
-#define Z80_EXACT			1
-
-/* on JP and JR opcodes check for tight loops */
-#define BUSY_LOOP_HACKS 	1
-
-/* check for delay loops counting down BC */
-#define TIME_LOOP_HACKS 	1
-
-#ifdef X86_ASM
-#undef	BIG_FLAGS_ARRAY
-#define BIG_FLAGS_ARRAY 	0
 #endif
 
 static UINT8 z80_reg_layout[] = {
@@ -205,11 +230,7 @@ typedef struct {
 #define _IFF2	Z80.IFF2
 #define _HALT	Z80.HALT
 
-#ifdef Z80_MSX
-	#define Z80_ICOUNT	z80_msx_ICount
-#else
-	#define	Z80_ICOUNT	z80_ICount
-#endif
+#define	Z80_ICOUNT	z80_ICount
 
 int Z80_ICOUNT;
 static Z80_Regs Z80;
@@ -222,117 +243,86 @@ static UINT8 SZP[256];		/* zero, sign and parity flags */
 static UINT8 SZHV_inc[256]; /* zero, sign, half carry and overflow flags INC r8 */
 static UINT8 SZHV_dec[256]; /* zero, sign, half carry and overflow flags DEC r8 */
 
-#include "z80daa.h"
-
-#if BIG_FLAGS_ARRAY
 #include <signal.h>
 static UINT8 *SZHVC_add = 0;
 static UINT8 *SZHVC_sub = 0;
-#endif
-
-#if Z80_EXACT
-/* tmp1 value for ini/inir/outi/otir for [C.1-0][io.1-0] */
-static const UINT8 irep_tmp1[4][4] = {
-	{0,0,1,0},{0,1,0,1},{1,0,1,1},{0,1,1,0}
-};
-
-/* tmp1 value for ind/indr/outd/otdr for [C.1-0][io.1-0] */
-static const UINT8 drep_tmp1[4][4] = {
-	{0,1,0,0},{1,0,0,1},{0,0,1,0},{0,1,0,1}
-};
-
-/* tmp2 value for all in/out repeated opcodes for B.7-0 */
-static const UINT8 breg_tmp2[256] = {
-	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
-	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
-	1,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1
-};
-#endif
 
 static const UINT8 cc_op[0x100] = {
- 4,10, 7, 6, 4, 4, 7, 4, 4,11, 7, 6, 4, 4, 7, 4,
- 8,10, 7, 6, 4, 4, 7, 4,12,11, 7, 6, 4, 4, 7, 4,
- 7,10,16, 6, 4, 4, 7, 4, 7,11,16, 6, 4, 4, 7, 4,
- 7,10,13, 6,11,11,10, 4, 7,11,13, 6, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 7, 7, 7, 7, 7, 7, 4, 7, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
- 5,10,10,10,10,11, 7,11, 5,10,10, 0,10,17, 7,11,
- 5,10,10,11,10,11, 7,11, 5, 4,10,11,10, 0, 7,11,
- 5,10,10,19,10,11, 7,11, 5, 4,10, 4,10, 0, 7,11,
- 5,10,10, 4,10,11, 7,11, 5, 6,10, 4,10, 0, 7,11};
+	4,10, 7, 6, 4, 4, 7, 4, 4,11, 7, 6, 4, 4, 7, 4,
+	8,10, 7, 6, 4, 4, 7, 4,12,11, 7, 6, 4, 4, 7, 4,
+	7,10,16, 6, 4, 4, 7, 4, 7,11,16, 6, 4, 4, 7, 4,
+	7,10,13, 6,11,11,10, 4, 7,11,13, 6, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	7, 7, 7, 7, 7, 7, 4, 7, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+	5,10,10,10,10,11, 7,11, 5,10,10, 0,10,17, 7,11, /* cb -> cc_cb */
+	5,10,10,11,10,11, 7,11, 5, 4,10,11,10, 0, 7,11, /* dd -> cc_xy */
+	5,10,10,19,10,11, 7,11, 5, 4,10, 4,10, 0, 7,11, /* ed -> cc_ed */
+	5,10,10, 4,10,11, 7,11, 5, 6,10, 4,10, 0, 7,11      /* fd -> cc_xy */
+};
 
 static const UINT8 cc_cb[0x100] = {
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
- 8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
- 8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
- 8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
- 8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8};
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
+	8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
+	8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
+	8, 8, 8, 8, 8, 8,12, 8, 8, 8, 8, 8, 8, 8,12, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
+	8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8
+};
 
 static const UINT8 cc_ed[0x100] = {
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-12,12,15,20, 8, 8, 8, 9,12,12,15,20, 8, 8, 8, 9,
-12,12,15,20, 8, 8, 8, 9,12,12,15,20, 8, 8, 8, 9,
-12,12,15,20, 8, 8, 8,18,12,12,15,20, 8, 8, 8,18,
-12,12,15,20, 8, 8, 8, 8,12,12,15,20, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+12,12,15,20, 8,14, 8, 9,12,12,15,20, 8,14, 8, 9,
+12,12,15,20, 8,14, 8, 9,12,12,15,20, 8,14, 8, 9,
+12,12,15,20, 8,14, 8,18,12,12,15,20, 8,14, 8,18,
+12,12,15,20, 8,14, 8, 8,12,12,15,20, 8,14, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
 16,16,16,16, 8, 8, 8, 8,16,16,16,16, 8, 8, 8, 8,
 16,16,16,16, 8, 8, 8, 8,16,16,16,16, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
- 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8
+};
 
+/* ix/iy: with the exception of (i+offset) opcodes, t-states are main_opcode_table + 4 */
 static const UINT8 cc_xy[0x100] = {
- 4, 4, 4, 4, 4, 4, 4, 4, 4,15, 4, 4, 4, 4, 4, 4,
- 4, 4, 4, 4, 4, 4, 4, 4, 4,15, 4, 4, 4, 4, 4, 4,
- 4,14,20,10, 9, 9, 9, 4, 4,15,20,10, 9, 9, 9, 4,
- 4, 4, 4, 4,23,23,19, 4, 4,15, 4, 4, 4, 4, 4, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 9, 9, 9, 9, 9, 9,19, 9, 9, 9, 9, 9, 9, 9,19, 9,
-19,19,19,19,19,19, 4,19, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 9, 9,19, 4, 4, 4, 4, 4, 9, 9,19, 4,
- 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4,
- 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
- 4,14, 4,23, 4,15, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4,
- 4, 4, 4, 4, 4, 4, 4, 4, 4,10, 4, 4, 4, 4, 4, 4};
+	4+4,10+4, 7+4, 6+4, 4+4, 4+4, 7+4, 4+4, 4+4,11+4, 7+4, 6+4, 4+4, 4+4, 7+4, 4+4,
+	8+4,10+4, 7+4, 6+4, 4+4, 4+4, 7+4, 4+4,12+4,11+4, 7+4, 6+4, 4+4, 4+4, 7+4, 4+4,
+	7+4,10+4,16+4, 6+4, 4+4, 4+4, 7+4, 4+4, 7+4,11+4,16+4, 6+4, 4+4, 4+4, 7+4, 4+4,
+	7+4,10+4,13+4, 6+4,23  ,23  ,19  , 4+4, 7+4,11+4,13+4, 6+4, 4+4, 4+4, 7+4, 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+19  ,19  ,19  ,19  ,19  ,19  , 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4, 4+4, 4+4, 4+4, 4+4, 4+4, 4+4,19  , 4+4,
+	5+4,10+4,10+4,10+4,10+4,11+4, 7+4,11+4, 5+4,10+4,10+4, 0  ,10+4,17+4, 7+4,11+4, /* cb -> cc_xycb */
+	5+4,10+4,10+4,11+4,10+4,11+4, 7+4,11+4, 5+4, 4+4,10+4,11+4,10+4, 4  , 7+4,11+4, /* dd -> cc_xy again */
+	5+4,10+4,10+4,19+4,10+4,11+4, 7+4,11+4, 5+4, 4+4,10+4, 4+4,10+4, 4  , 7+4,11+4, /* ed -> cc_ed */
+	5+4,10+4,10+4, 4+4,10+4,11+4, 7+4,11+4, 5+4, 6+4,10+4, 4+4,10+4, 4  , 7+4,11+4      /* fd -> cc_xy again */
+};
 
 static const UINT8 cc_xycb[0x100] = {
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
@@ -350,27 +340,28 @@ static const UINT8 cc_xycb[0x100] = {
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
-23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23};
+23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
+};
 
 /* extra cycles if jr/jp/call taken and 'interrupt latency' on rst 0-7 */
 static const UINT8 cc_ex[0x100] = {
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/* DJNZ */
- 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0,	/* JR NZ/JR Z */
- 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0,	/* JR NC/JR C */
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0,	/* LDIR/CPIR/INIR/OTIR LDDR/CPDR/INDR/OTDR */
- 6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
- 6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
- 6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
- 6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2};
-
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* DJNZ */
+	5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, /* JR NZ/JR Z */
+	5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, /* JR NC/JR C */
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, /* LDIR/CPIR/INIR/OTIR LDDR/CPDR/INDR/OTDR */
+	6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
+	6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
+	6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
+	6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2
+};
 static const UINT8 *cc[6] = { cc_op, cc_cb, cc_ed, cc_xy, cc_xycb, cc_ex };
 #define Z80_TABLE_dd	Z80_TABLE_xy
 #define Z80_TABLE_fd	Z80_TABLE_xy
@@ -600,21 +591,10 @@ INLINE void BURNODD(int cycles, int opcodes, int cyclesum)
 /***************************************************************
  * Enter HALT state; write 1 to fake port on first execution
  ***************************************************************/
-#ifdef Z80_MSX
 #define ENTER_HALT {											\
 	_PC--;														\
 	_HALT = 1;													\
-	if( !after_EI ) 											\
-		z80_msx_burn( Z80_ICOUNT ); 							\
 }
-#else
-#define ENTER_HALT {											\
-	_PC--;														\
-	_HALT = 1;													\
-	if( !after_EI ) 											\
-		z80_burn( Z80_ICOUNT ); 								\
-}
-#endif
 
 /***************************************************************
  * Leave HALT state; write 0 to fake port
@@ -673,9 +653,6 @@ INLINE void WM16( UINT32 addr, PAIR *r )
 INLINE UINT8 ROP(void)
 {
 	unsigned pc = _PCD;
-#ifdef Z80_MSX
-	if ( !(pc & 0x1fff) ) change_pc16 (pc);
-#endif
 	_PC++;
 	return cpu_readop(pc);
 }
@@ -689,23 +666,15 @@ INLINE UINT8 ROP(void)
 INLINE UINT8 ARG(void)
 {
 	unsigned pc = _PCD;
-#ifdef Z80_MSX
-	if ( !(pc & 0x1fff) ) change_pc16 (pc);
-#endif
 	_PC++;
 	return cpu_readop_arg(pc);
 }
 
 INLINE UINT32 ARG16(void)
 {
-#ifdef Z80_MSX
-	unsigned ret = ARG();
-	return ret | ((ARG()&0xffff) << 8);
-#else
 	unsigned pc = _PCD;
 	_PC += 2;
 	return cpu_readop_arg(pc) | (cpu_readop_arg((pc+1)&0xffff) << 8);
-#endif
 }
 
 /***************************************************************
@@ -728,46 +697,10 @@ INLINE UINT32 ARG16(void)
 /***************************************************************
  * JP
  ***************************************************************/
-#if BUSY_LOOP_HACKS
-#define JP {													\
-	unsigned oldpc = _PCD-1;									\
-	_PCD = ARG16(); 											\
-	change_pc16(_PCD);											\
-	/* speed up busy loop */									\
-	if( _PCD == oldpc ) 										\
-	{															\
-		if( !after_EI ) 										\
-			BURNODD( Z80_ICOUNT, 1, cc[Z80_TABLE_op][0xc3] );	\
-	}															\
-	else														\
-	{															\
-		UINT8 op = cpu_readop(_PCD);							\
-		if( _PCD == oldpc-1 )									\
-		{														\
-			/* NOP - JP $-1 or EI - JP $-1 */					\
-			if ( op == 0x00 || op == 0xfb ) 					\
-			{													\
-				if( !after_EI ) 								\
-					BURNODD( Z80_ICOUNT-cc[Z80_TABLE_op][0x00], \
-						2, cc[Z80_TABLE_op][0x00]+cc[Z80_TABLE_op][0xc3]); \
-			}													\
-		}														\
-		else													\
-		/* LD SP,#xxxx - JP $-3 (Galaga) */ 					\
-		if( _PCD == oldpc-3 && op == 0x31 ) 					\
-		{														\
-			if( !after_EI ) 									\
-				BURNODD( Z80_ICOUNT-cc[Z80_TABLE_op][0x31], 	\
-					2, cc[Z80_TABLE_op][0x31]+cc[Z80_TABLE_op][0xc3]); \
-		}														\
-	}															\
-}
-#else
 #define JP {													\
 	_PCD = ARG16(); 											\
 	change_pc16(_PCD);											\
 }
-#endif
 
 /***************************************************************
  * JP_COND
@@ -789,38 +722,9 @@ INLINE UINT32 ARG16(void)
  ***************************************************************/
 #define JR()													\
 {																\
-	unsigned oldpc = _PCD-1;									\
 	INT8 arg = (INT8)ARG(); /* ARG() also increments _PC */ 	\
 	_PC += arg; 			/* so don't do _PC += ARG() */      \
 	change_pc16(_PCD);											\
-	/* speed up busy loop */									\
-	if( _PCD == oldpc ) 										\
-	{															\
-		if( !after_EI ) 										\
-			BURNODD( Z80_ICOUNT, 1, cc[Z80_TABLE_op][0x18] );	\
-	}															\
-	else														\
-	{															\
-		UINT8 op = cpu_readop(_PCD);							\
-		if( _PCD == oldpc-1 )									\
-		{														\
-			/* NOP - JR $-1 or EI - JR $-1 */					\
-			if ( op == 0x00 || op == 0xfb ) 					\
-			{													\
-				if( !after_EI ) 								\
-				   BURNODD( Z80_ICOUNT-cc[Z80_TABLE_op][0x00],	\
-					   2, cc[Z80_TABLE_op][0x00]+cc[Z80_TABLE_op][0x18]); \
-			}													\
-		}														\
-		else													\
-		/* LD SP,#xxxx - JR $-3 */								\
-		if( _PCD == oldpc-3 && op == 0x31 ) 					\
-		{														\
-			if( !after_EI ) 									\
-			   BURNODD( Z80_ICOUNT-cc[Z80_TABLE_op][0x31],		\
-				   2, cc[Z80_TABLE_op][0x31]+cc[Z80_TABLE_op][0x18]); \
-		}														\
-	}															\
 }
 
 /***************************************************************
@@ -880,7 +784,7 @@ INLINE UINT32 ARG16(void)
 	LOG(("Z80 #%d RETN IFF1:%d IFF2:%d\n", cpu_getactivecpu(), _IFF1, _IFF2)); \
 	POP(PC);													\
 	change_pc16(_PCD);											\
-	if( _IFF1 == 0 && _IFF2 == 1 )								\
+	if( _IFF1 == 0 && _IFF2 == 1 ) /* DE128x16 needs this if, otherwise DMD stuck */ \
 	{															\
 		_IFF1 = 1;												\
 		if( Z80.irq_state != CLEAR_LINE ||						\
@@ -891,7 +795,7 @@ INLINE UINT32 ARG16(void)
 			take_interrupt();									\
 		}														\
 	}															\
-	else _IFF1 = _IFF2; 										\
+	else _IFF1 = _IFF2;  /* MESS only has the else case */		\
 }
 
 /***************************************************************
@@ -902,7 +806,7 @@ INLINE UINT32 ARG16(void)
 	POP(PC);													\
 	change_pc16(_PCD);											\
 /* according to http://www.msxnet.org/tech/Z80/z80undoc.txt */	\
-/*	_IFF1 = _IFF2;	*/											\
+	_IFF1 = _IFF2;												\
 	if( device >= 0 )											\
 	{															\
 		LOG(("Z80 #%d RETI device %d: $%02x\n",                 \
@@ -973,67 +877,37 @@ INLINE UINT8 DEC(UINT8 value)
 /***************************************************************
  * RLCA
  ***************************************************************/
-#if Z80_EXACT
 #define RLCA													\
 	_A = (_A << 1) | (_A >> 7); 								\
 	_F = (_F & (SF | ZF | PF)) | (_A & (YF | XF | CF))
-#else
-#define RLCA													\
-	_A = (_A << 1) | (_A >> 7); 								\
-	_F = (_F & (SF | ZF | YF | XF | PF)) | (_A & CF)
-#endif
 
 /***************************************************************
  * RRCA
  ***************************************************************/
-#if Z80_EXACT
 #define RRCA													\
 	_F = (_F & (SF | ZF | PF)) | (_A & CF); 					\
 	_A = (_A >> 1) | (_A << 7); 								\
 	_F |= (_A & (YF | XF) )
-#else
-#define RRCA													\
-	_F = (_F & (SF | ZF | YF | XF | PF)) | (_A & CF);			\
-	_A = (_A >> 1) | (_A << 7)
-#endif
 
 /***************************************************************
  * RLA
  ***************************************************************/
-#if Z80_EXACT
 #define RLA {													\
 	UINT8 res = (_A << 1) | (_F & CF);							\
 	UINT8 c = (_A & 0x80) ? CF : 0; 							\
 	_F = (_F & (SF | ZF | PF)) | c | (res & (YF | XF)); 		\
 	_A = res;													\
 }
-#else
-#define RLA {													\
-	UINT8 res = (_A << 1) | (_F & CF);							\
-	UINT8 c = (_A & 0x80) ? CF : 0; 							\
-	_F = (_F & (SF | ZF | YF | XF | PF)) | c;					\
-	_A = res;													\
-}
-#endif
 
 /***************************************************************
  * RRA
  ***************************************************************/
-#if Z80_EXACT
 #define RRA {													\
 	UINT8 res = (_A >> 1) | (_F << 7);							\
 	UINT8 c = (_A & 0x01) ? CF : 0; 							\
 	_F = (_F & (SF | ZF | PF)) | c | (res & (YF | XF)); 		\
 	_A = res;													\
 }
-#else
-#define RRA {													\
-	UINT8 res = (_A >> 1) | (_F << 7);							\
-	UINT8 c = (_A & 0x01) ? CF : 0; 							\
-	_F = (_F & (SF | ZF | YF | XF | PF)) | c;					\
-	_A = res;													\
-}
-#endif
 
 /***************************************************************
  * RRD
@@ -1058,39 +932,6 @@ INLINE UINT8 DEC(UINT8 value)
 /***************************************************************
  * ADD	A,n
  ***************************************************************/
-#ifdef X86_ASM
-#if Z80_EXACT
-#define ADD(value)												\
- asm (															\
- " addb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " addb %1,%1           \n"                                     \
- " addb %1,%1           \n" /* shift to P/V bit position */     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n"                                     \
- " movb %0,%%ah         \n" /* get result */                    \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#else
-#define ADD(value)												\
- asm (															\
- " addb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " addb %1,%1           \n"                                     \
- " addb %1,%1           \n" /* shift to P/V bit position */     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n"                                     \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#endif
-#else
-#if BIG_FLAGS_ARRAY
 #define ADD(value)												\
 {																\
 	UINT32 ah = _AFD & 0xff00;									\
@@ -1098,57 +939,10 @@ INLINE UINT8 DEC(UINT8 value)
 	_F = SZHVC_add[ah | res];									\
 	_A = res;													\
 }
-#else
-#define ADD(value)												\
-{																\
-	unsigned val = value;										\
-	unsigned res = _A + val;									\
-	_F = SZ[(UINT8)res] | ((res >> 8) & CF) |					\
-		((_A ^ res ^ val) & HF) |								\
-		(((val ^ _A ^ 0x80) & (val ^ res) & 0x80) >> 5);		\
-	_A = (UINT8)res;											\
-}
-#endif
-#endif
 
 /***************************************************************
  * ADC	A,n
  ***************************************************************/
-#ifdef X86_ASM
-#if Z80_EXACT
-#define ADC(value)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " adcb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " addb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- " movb %0,%%ah         \n" /* get result */                    \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#else
-#define ADC(value)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " adcb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " addb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#endif
-#else
-#if BIG_FLAGS_ARRAY
 #define ADC(value)												\
 {																\
 	UINT32 ah = _AFD & 0xff00, c = _AFD & 1;					\
@@ -1156,57 +950,10 @@ INLINE UINT8 DEC(UINT8 value)
 	_F = SZHVC_add[(c << 16) | ah | res];						\
 	_A = res;													\
 }
-#else
-#define ADC(value)												\
-{																\
-	unsigned val = value;										\
-	unsigned res = _A + val + (_F & CF);						\
-	_F = SZ[res & 0xff] | ((res >> 8) & CF) |					\
-		((_A ^ res ^ val) & HF) |								\
-		(((val ^ _A ^ 0x80) & (val ^ res) & 0x80) >> 5);		\
-	_A = res;													\
-}
-#endif
-#endif
 
 /***************************************************************
  * SUB	n
  ***************************************************************/
-#ifdef X86_ASM
-#if Z80_EXACT
-#define SUB(value)												\
- asm (															\
- " subb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- " movb %0,%%ah         \n" /* get result */                    \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#else
-#define SUB(value)												\
- asm (															\
- " subb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#endif
-#else
-#if BIG_FLAGS_ARRAY
 #define SUB(value)												\
 {																\
 	UINT32 ah = _AFD & 0xff00;									\
@@ -1214,59 +961,10 @@ INLINE UINT8 DEC(UINT8 value)
 	_F = SZHVC_sub[ah | res];									\
 	_A = res;													\
 }
-#else
-#define SUB(value)												\
-{																\
-	unsigned val = value;										\
-	unsigned res = _A - val;									\
-	_F = SZ[res & 0xff] | ((res >> 8) & CF) | NF |				\
-		((_A ^ res ^ val) & HF) |								\
-		(((val ^ _A) & (_A ^ res) & 0x80) >> 5);				\
-	_A = res;													\
-}
-#endif
-#endif
 
 /***************************************************************
  * SBC	A,n
  ***************************************************************/
-#ifdef X86_ASM
-#if Z80_EXACT
-#define SBC(value)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " sbbb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- " movb %0,%%ah         \n" /* get result */                    \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#else
-#define SBC(value)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " sbbb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#endif
-#else
-#if BIG_FLAGS_ARRAY
 #define SBC(value)												\
 {																\
 	UINT32 ah = _AFD & 0xff00, c = _AFD & 1;					\
@@ -1274,18 +972,6 @@ INLINE UINT8 DEC(UINT8 value)
 	_F = SZHVC_sub[(c<<16) | ah | res]; 						\
 	_A = res;													\
 }
-#else
-#define SBC(value)												\
-{																\
-	unsigned val = value;										\
-	unsigned res = _A - val - (_F & CF);						\
-	_F = SZ[res & 0xff] | ((res >> 8) & CF) | NF |				\
-		((_A ^ res ^ val) & HF) |								\
-		(((val ^ _A) & (_A ^ res) & 0x80) >> 5);				\
-	_A = res;													\
-}
-#endif
-#endif
 
 /***************************************************************
  * NEG
@@ -1300,11 +986,17 @@ INLINE UINT8 DEC(UINT8 value)
  * DAA
  ***************************************************************/
 #define DAA {													\
-	int idx = _A;												\
-	if( _F & CF ) idx |= 0x100; 								\
-	if( _F & HF ) idx |= 0x200; 								\
-	if( _F & NF ) idx |= 0x400; 								\
-	_AF = DAATable[idx];										\
+	UINT8 a = _A; \
+	if (_F & NF) { \
+		if ((_F&HF) | ((_A&0xf)>9)) a-=6; \
+		if ((_F&CF) | (_A>0x99)) a-=0x60; \
+	} \
+	else { \
+		if ((_F&HF) | ((_A&0xf)>9)) a+=6; \
+		if ((_F&CF) | (_A>0x99)) a+=0x60; \
+	} \
+	_F = (_F&(CF|NF)) | (_A>0x99) | ((_A^a)&HF) | SZP[a]; \
+	_A = a; \
 }
 
 /***************************************************************
@@ -1331,41 +1023,6 @@ INLINE UINT8 DEC(UINT8 value)
 /***************************************************************
  * CP	n
  ***************************************************************/
-#ifdef X86_ASM
-#if Z80_EXACT
-#define CP(value)												\
- asm (															\
- " cmpb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- " movb %2,%%ah         \n" /* get result */                    \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#else
-#define CP(value)												\
- asm (															\
- " cmpb %2,%0           \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n" /* al = 1 if overflow */            \
- " stc                  \n" /* prepare to set N flag */         \
- " adcb %1,%1           \n" /* shift to P/V bit position */     \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
- " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=q" (_A), "=q" (_F)                                          \
- :"q" (value), "1" (_F), "0" (_A)                               \
- )
-#endif
-#else
-#if BIG_FLAGS_ARRAY
 #define CP(value)												\
 {																\
 	unsigned val = value;										\
@@ -1374,18 +1031,6 @@ INLINE UINT8 DEC(UINT8 value)
 	_F = (SZHVC_sub[ah | res] & ~(YF | XF)) |					\
 		(val & (YF | XF));										\
 }
-#else
-#define CP(value)												\
-{																\
-	unsigned val = value;										\
-	unsigned res = _A - val;									\
-	_F = (SZ[res & 0xff] & (SF | ZF)) |							\
-		(val & (YF | XF)) | ((res >> 8) & CF) | NF |			\
-		((_A ^ res ^ val) & HF) |								\
-		((((val ^ _A) & (_A ^ res)) >> 5) & VF);				\
-}
-#endif
-#endif
 
 /***************************************************************
  * EX	AF,AF'
@@ -1428,36 +1073,6 @@ INLINE UINT8 DEC(UINT8 value)
 /***************************************************************
  * ADD16
  ***************************************************************/
-#ifdef	X86_ASM
-#if Z80_EXACT
-#define ADD16(DR,SR)											\
- asm (															\
- " andb $0xc4,%1        \n"                                     \
- " addb %%dl,%%cl       \n"                                     \
- " adcb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " andb $0x11,%%ah      \n"                                     \
- " orb %%ah,%1          \n"                                     \
- " movb %%ch,%%ah       \n" /* get result MSB */                \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (Z80.DR.d), "=q" (_F)                                    \
- :"0" (Z80.DR.d), "1" (_F), "d" (Z80.SR.d)                      \
- )
-#else
-#define ADD16(DR,SR)											\
- asm (															\
- " andb $0xc4,%1        \n"                                     \
- " addb %%dl,%%cl       \n"                                     \
- " adcb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " andb $0x11,%%ah      \n"                                     \
- " orb %%ah,%1          \n"                                     \
- :"=c" (Z80.DR.d), "=q" (_F)                                    \
- :"0" (Z80.DR.d), "1" (_F), "d" (Z80.SR.d)                      \
- )
-#endif
-#else
 #define ADD16(DR,SR)											\
 {																\
 	UINT32 res = Z80.DR.d + Z80.SR.d;							\
@@ -1466,55 +1081,10 @@ INLINE UINT8 DEC(UINT8 value)
 		((res >> 16) & CF) | ((res >> 8) & (YF | XF)); 			\
 	Z80.DR.w.l = (UINT16)res;									\
 }
-#endif
 
 /***************************************************************
  * ADC	r16,r16
  ***************************************************************/
-#ifdef	X86_ASM
-#if Z80_EXACT
-#define ADC16(Reg)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " adcb %%dl,%%cl       \n"                                     \
- " lahf                 \n"                                     \
- " movb %%ah,%%dl       \n"                                     \
- " adcb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n"                                     \
- " orb $0xbf,%%dl       \n" /* set all but zero */              \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign,zero,half carry and carry */\
- " addb %1,%1           \n"                                     \
- " orb %%ah,%1          \n" /* overflow into P/V */             \
- " andb %%dl,%1         \n" /* mask zero */                     \
- " movb %%ch,%%ah       \n" /* get result MSB */                \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (_HLD), "=q" (_F)                                        \
- :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
- )
-#else
-#define ADC16(Reg)												\
- asm (															\
- " shrb $1,%1           \n"                                     \
- " adcb %%dl,%%cl       \n"                                     \
- " lahf                 \n"                                     \
- " movb %%ah,%%dl       \n"                                     \
- " adcb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n"                                     \
- " orb $0xbf,%%dl       \n" /* set all but zero */              \
- " addb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign,zero,half carry and carry */\
- " addb %1,%1           \n"                                     \
- " orb %%ah,%1          \n" /* overflow into P/V */             \
- " andb %%dl,%1         \n" /* mask zero */                     \
- :"=c" (_HLD), "=q" (_F)                                        \
- :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
- )
-#endif
-#else
 #define ADC16(Reg)												\
 {																\
 	UINT32 res = _HLD + Z80.Reg.d + (_F & CF);					\
@@ -1525,57 +1095,10 @@ INLINE UINT8 DEC(UINT8 value)
 		(((Z80.Reg.d ^ _HLD ^ 0x8000) & (Z80.Reg.d ^ res) & 0x8000) >> 13); \
 	_HL = (UINT16)res;											\
 }
-#endif
 
 /***************************************************************
  * SBC	r16,r16
  ***************************************************************/
-#ifdef	X86_ASM
-#if Z80_EXACT
-#define SBC16(Reg)												\
-asm (															\
- " shrb $1,%1           \n"                                     \
- " sbbb %%dl,%%cl       \n"                                     \
- " lahf                 \n"                                     \
- " movb %%ah,%%dl       \n"                                     \
- " sbbb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n"                                     \
- " orb $0xbf,%%dl       \n" /* set all but zero */              \
- " stc                  \n"                                     \
- " adcb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign,zero,half carry and carry */\
- " addb %1,%1           \n"                                     \
- " orb %%ah,%1          \n" /* overflow into P/V */             \
- " andb %%dl,%1         \n" /* mask zero */                     \
- " movb %%ch,%%ah       \n" /* get result MSB */                \
- " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
- " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (_HLD), "=q" (_F)                                        \
- :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
- )
-#else
-#define SBC16(Reg)												\
-asm (															\
- " shrb $1,%1           \n"                                     \
- " sbbb %%dl,%%cl       \n"                                     \
- " lahf                 \n"                                     \
- " movb %%ah,%%dl       \n"                                     \
- " sbbb %%dh,%%ch       \n"                                     \
- " lahf                 \n"                                     \
- " setob %1             \n"                                     \
- " orb $0xbf,%%dl       \n" /* set all but zero */              \
- " stc                  \n"                                     \
- " adcb %1,%1           \n"                                     \
- " andb $0xd1,%%ah      \n" /* sign,zero,half carry and carry */\
- " addb %1,%1           \n"                                     \
- " orb %%ah,%1          \n" /* overflow into P/V */             \
- " andb %%dl,%1         \n" /* mask zero */                     \
- :"=c" (_HLD), "=q" (_F)                                        \
- :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
- )
-#endif
-#else
 #define SBC16(Reg)												\
 {																\
 	UINT32 res = _HLD - Z80.Reg.d - (_F & CF);					\
@@ -1586,7 +1109,6 @@ asm (															\
 		(((Z80.Reg.d ^ _HLD) & (_HLD ^ res) &0x8000) >> 13);	\
 	_HL = (UINT16)res;											\
 }
-#endif
 
 /***************************************************************
  * RLC	r8
@@ -1689,17 +1211,13 @@ INLINE UINT8 SRL(UINT8 value)
  ***************************************************************/
 #undef BIT
 #define BIT(bit,reg)											\
-	_F = (_F & CF) | HF | SZ_BIT[reg & (1<<bit)]
+	_F = (_F & CF) | HF | (SZ_BIT[reg & (1<<bit)] & ~(YF|XF)) | (reg & (YF|XF))
 
 /***************************************************************
  * BIT	bit,(IX/Y+o)
  ***************************************************************/
-#if Z80_EXACT
 #define BIT_XY(bit,reg) 										\
 	_F = (_F & CF) | HF | (SZ_BIT[reg & (1<<bit)] & ~(YF|XF)) | ((EA>>8) & (YF|XF))
-#else
-#define BIT_XY	BIT
-#endif
 
 /***************************************************************
  * RES	bit,r8
@@ -1720,7 +1238,6 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 /***************************************************************
  * LDI
  ***************************************************************/
-#if Z80_EXACT
 #define LDI {													\
 	UINT8 io = RM(_HL); 										\
 	WM( _DE, io );												\
@@ -1730,19 +1247,10 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 	_HL++; _DE++; _BC--;										\
 	if( _BC ) _F |= VF; 										\
 }
-#else
-#define LDI {													\
-	WM( _DE, RM(_HL) ); 										\
-	_F &= SF | ZF | YF | XF | CF;								\
-	_HL++; _DE++; _BC--;										\
-	if( _BC ) _F |= VF; 										\
-}
-#endif
 
 /***************************************************************
  * CPI
  ***************************************************************/
-#if Z80_EXACT
 #define CPI {													\
 	UINT8 val = RM(_HL);										\
 	UINT8 res = _A - val;										\
@@ -1753,74 +1261,42 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 	if( res & 0x08 ) _F |= XF; /* bit 3 -> flag 3 */			\
 	if( _BC ) _F |= VF; 										\
 }
-#else
-#define CPI {													\
-	UINT8 val = RM(_HL);										\
-	UINT8 res = _A - val;										\
-	_HL++; _BC--;												\
-	_F = (_F & CF) | SZ[res] | ((_A ^ val ^ res) & HF) | NF;	\
-	if( _BC ) _F |= VF; 										\
-}
-#endif
 
 /***************************************************************
  * INI
  ***************************************************************/
-#if Z80_EXACT
 #define INI {													\
+    unsigned t; \
 	UINT8 io = IN(_BC); 										\
 	_B--;														\
 	WM( _HL, io );												\
 	_HL++;														\
 	_F = SZ[_B];												\
-	if( io & SF ) _F |= NF; 									\
-	if( ( ( (_C + 1) & 0xff) + io) & 0x100 ) _F |= HF | CF; 	\
-	if( (irep_tmp1[_C & 3][io & 3] ^							\
-		 breg_tmp2[_B] ^										\
-		 (_C >> 2) ^											\
-		 (io >> 2)) & 1 )										\
-		_F |= PF;												\
+	t = (unsigned)((_C + 1) & 0xff) + (unsigned)io; \
+	if (io & SF) _F |= NF; \
+	if (t & 0x100) _F |= HF | CF; \
+	_F |= SZP[(UINT8)(t & 0x07) ^ _B] & PF; \
 }
-#else
-#define INI {													\
-	_B--;														\
-	WM( _HL, IN(_BC) ); 										\
-	_HL++;														\
-	_F = (_B) ? NF : NF | ZF;									\
-}
-#endif
 
 /***************************************************************
  * OUTI
  ***************************************************************/
-#if Z80_EXACT
 #define OUTI {													\
+    unsigned t; \
 	UINT8 io = RM(_HL); 										\
 	_B--;														\
 	OUT( _BC, io ); 											\
 	_HL++;														\
 	_F = SZ[_B];												\
-	if( io & SF ) _F |= NF; 									\
-	if( ( ( (_C + 1) & 0xff) + io) & 0x100 ) _F |= HF | CF; 	\
-	if( (irep_tmp1[_C & 3][io & 3] ^							\
-		 breg_tmp2[_B] ^										\
-		 (_C >> 2) ^											\
-		 (io >> 2)) & 1 )										\
-		_F |= PF;												\
+	t = (unsigned)_L + (unsigned)io; \
+	if (io & SF) _F |= NF; \
+	if (t & 0x100) _F |= HF | CF; \
+	_F |= SZP[(UINT8)(t & 0x07) ^ _B] & PF; \
 }
-#else
-#define OUTI {													\
-	_B--;														\
-	OUT( _BC, RM(_HL) );										\
-	_HL++;														\
-	_F = (_B) ? NF : NF | ZF;									\
-}
-#endif
 
 /***************************************************************
  * LDD
  ***************************************************************/
-#if Z80_EXACT
 #define LDD {													\
 	UINT8 io = RM(_HL); 										\
 	WM( _DE, io );												\
@@ -1830,19 +1306,10 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 	_HL--; _DE--; _BC--;										\
 	if( _BC ) _F |= VF; 										\
 }
-#else
-#define LDD {													\
-	WM( _DE, RM(_HL) ); 										\
-	_F &= SF | ZF | YF | XF | CF;								\
-	_HL--; _DE--; _BC--;										\
-	if( _BC ) _F |= VF; 										\
-}
-#endif
 
 /***************************************************************
  * CPD
  ***************************************************************/
-#if Z80_EXACT
 #define CPD {													\
 	UINT8 val = RM(_HL);										\
 	UINT8 res = _A - val;										\
@@ -1853,69 +1320,38 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 	if( res & 0x08 ) _F |= XF; /* bit 3 -> flag 3 */			\
 	if( _BC ) _F |= VF; 										\
 }
-#else
-#define CPD {													\
-	UINT8 val = RM(_HL);										\
-	UINT8 res = _A - val;										\
-	_HL--; _BC--;												\
-	_F = (_F & CF) | SZ[res] | ((_A ^ val ^ res) & HF) | NF;	\
-	if( _BC ) _F |= VF; 										\
-}
-#endif
 
 /***************************************************************
  * IND
  ***************************************************************/
-#if Z80_EXACT
 #define IND {													\
+    unsigned t; \
 	UINT8 io = IN(_BC); 										\
 	_B--;														\
 	WM( _HL, io );												\
 	_HL--;														\
 	_F = SZ[_B];												\
-	if( io & SF ) _F |= NF; 									\
-	if( ( ( (_C - 1) & 0xff) + io) & 0x100 ) _F |= HF | CF; 	\
-	if( (drep_tmp1[_C & 3][io & 3] ^							\
-		 breg_tmp2[_B] ^										\
-		 (_C >> 2) ^											\
-		 (io >> 2)) & 1 )										\
-		_F |= PF;												\
+	t = ((unsigned)(_C - 1) & 0xff) + (unsigned)io; \
+	if (io & SF) _F |= NF; \
+	if (t & 0x100) _F |= HF | CF; \
+	_F |= SZP[(UINT8)(t & 0x07) ^ _B] & PF; \
 }
-#else
-#define IND {													\
-	_B--;														\
-	WM( _HL, IN(_BC) ); 										\
-	_HL--;														\
-	_F = (_B) ? NF : NF | ZF;									\
-}
-#endif
 
 /***************************************************************
  * OUTD
  ***************************************************************/
-#if Z80_EXACT
 #define OUTD {													\
+    unsigned t; \
 	UINT8 io = RM(_HL); 										\
 	_B--;														\
 	OUT( _BC, io ); 											\
 	_HL--;														\
 	_F = SZ[_B];												\
-	if( io & SF ) _F |= NF; 									\
-	if( ( ( (_C - 1) & 0xff) + io) & 0x100 ) _F |= HF | CF; 	\
-	if( (drep_tmp1[_C & 3][io & 3] ^							\
-		 breg_tmp2[_B] ^										\
-		 (_C >> 2) ^											\
-		 (io >> 2)) & 1 )										\
-		_F |= PF;												\
+	t = (unsigned)_L + (unsigned)io; \
+	if (io & SF) _F |= NF; \
+	if (t & 0x100) _F |= HF | CF; \
+	_F |= SZP[(UINT8)(t & 0x07) ^ _B] & PF; \
 }
-#else
-#define OUTD {													\
-	_B--;														\
-	OUT( _BC, RM(_HL) );										\
-	_HL--;														\
-	_F = (_B) ? NF : NF | ZF;									\
-}
-#endif
 
 /***************************************************************
  * LDIR
@@ -2008,11 +1444,14 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
 /***************************************************************
  * EI
  ***************************************************************/
+// MESS only has:
+// 	after_EI = 1;	/* avoid cycle skip hacks */
+//	_IFF1 = _IFF2 = 1;
+// but then Gameplan games don't work
 #define EI {													\
-	/* If interrupts were disabled, execute one more			\
-	 * instruction and check the IRQ line.						\
-	 * If not, simply set interrupt flip-flop 2 				\
-	 */ 														\
+	/* If interrupts were disabled, execute one more */ 			\
+	/* instruction and check the IRQ line. */						\
+	/* If not, simply set interrupt flip-flop 2 */ 				\
 	if( _IFF1 == 0 )											\
 	{															\
 		_IFF1 = _IFF2 = 1;										\
@@ -3510,145 +2949,6 @@ OP(ed,fd) { illegal_2();											} /* DB   ED		  */
 OP(ed,fe) { illegal_2();											} /* DB   ED		  */
 OP(ed,ff) { illegal_2();											} /* DB   ED		  */
 
-#if TIME_LOOP_HACKS
-
-#define CHECK_BC_LOOP												\
-if( _BC > 1 && _PCD < 0xfffc ) {									\
-	UINT8 op1 = cpu_readop(_PCD);									\
-	UINT8 op2 = cpu_readop(_PCD+1); 								\
-	if( (op1==0x78 && op2==0xb1) || (op1==0x79 && op2==0xb0) )		\
-	{																\
-		UINT8 op3 = cpu_readop(_PCD+2); 							\
-		UINT8 op4 = cpu_readop(_PCD+3); 							\
-		if( op3==0x20 && op4==0xfb )								\
-		{															\
-			int cnt =												\
-				cc[Z80_TABLE_op][0x78] +							\
-				cc[Z80_TABLE_op][0xb1] +							\
-				cc[Z80_TABLE_op][0x20] +							\
-				cc[Z80_TABLE_ex][0x20]; 							\
-			while( _BC > 0 && Z80_ICOUNT > cnt )					\
-			{														\
-				BURNODD( cnt, 4, cnt ); 							\
-				_BC--;												\
-			}														\
-		}															\
-		else														\
-		if( op3 == 0xc2 )											\
-		{															\
-			UINT8 ad1 = cpu_readop_arg(_PCD+3); 					\
-			UINT8 ad2 = cpu_readop_arg(_PCD+4); 					\
-			if( (ad1 + 256 * ad2) == (_PCD - 1) )					\
-			{														\
-				int cnt =											\
-					cc[Z80_TABLE_op][0x78] +						\
-					cc[Z80_TABLE_op][0xb1] +						\
-					cc[Z80_TABLE_op][0xc2] +						\
-					cc[Z80_TABLE_ex][0xc2]; 						\
-				while( _BC > 0 && Z80_ICOUNT > cnt )				\
-				{													\
-					BURNODD( cnt, 4, cnt ); 						\
-					_BC--;											\
-				}													\
-			}														\
-		}															\
-	}																\
-}
-
-#define CHECK_DE_LOOP												\
-if( _DE > 1 && _PCD < 0xfffc ) {									\
-	UINT8 op1 = cpu_readop(_PCD);									\
-	UINT8 op2 = cpu_readop(_PCD+1); 								\
-	if( (op1==0x7a && op2==0xb3) || (op1==0x7b && op2==0xb2) )		\
-	{																\
-		UINT8 op3 = cpu_readop(_PCD+2); 							\
-		UINT8 op4 = cpu_readop(_PCD+3); 							\
-		if( op3==0x20 && op4==0xfb )								\
-		{															\
-			int cnt =												\
-				cc[Z80_TABLE_op][0x7a] +							\
-				cc[Z80_TABLE_op][0xb3] +							\
-				cc[Z80_TABLE_op][0x20] +							\
-				cc[Z80_TABLE_ex][0x20]; 							\
-			while( _DE > 0 && Z80_ICOUNT > cnt )					\
-			{														\
-				BURNODD( cnt, 4, cnt ); 							\
-				_DE--;												\
-			}														\
-		}															\
-		else														\
-		if( op3==0xc2 ) 											\
-		{															\
-			UINT8 ad1 = cpu_readop_arg(_PCD+3); 					\
-			UINT8 ad2 = cpu_readop_arg(_PCD+4); 					\
-			if( (ad1 + 256 * ad2) == (_PCD - 1) )					\
-			{														\
-				int cnt =											\
-					cc[Z80_TABLE_op][0x7a] +						\
-					cc[Z80_TABLE_op][0xb3] +						\
-					cc[Z80_TABLE_op][0xc2] +						\
-					cc[Z80_TABLE_ex][0xc2]; 						\
-				while( _DE > 0 && Z80_ICOUNT > cnt )				\
-				{													\
-					BURNODD( cnt, 4, cnt ); 						\
-					_DE--;											\
-				}													\
-			}														\
-		}															\
-	}																\
-}
-
-#define CHECK_HL_LOOP												\
-if( _HL > 1 && _PCD < 0xfffc ) {									\
-	UINT8 op1 = cpu_readop(_PCD);									\
-	UINT8 op2 = cpu_readop(_PCD+1); 								\
-	if( (op1==0x7c && op2==0xb5) || (op1==0x7d && op2==0xb4) )		\
-	{																\
-		UINT8 op3 = cpu_readop(_PCD+2); 							\
-		UINT8 op4 = cpu_readop(_PCD+3); 							\
-		if( op3==0x20 && op4==0xfb )								\
-		{															\
-			int cnt =												\
-				cc[Z80_TABLE_op][0x7c] +							\
-				cc[Z80_TABLE_op][0xb5] +							\
-				cc[Z80_TABLE_op][0x20] +							\
-				cc[Z80_TABLE_ex][0x20]; 							\
-			while( _HL > 0 && Z80_ICOUNT > cnt )					\
-			{														\
-				BURNODD( cnt, 4, cnt ); 							\
-				_HL--;												\
-			}														\
-		}															\
-		else														\
-		if( op3==0xc2 ) 											\
-		{															\
-			UINT8 ad1 = cpu_readop_arg(_PCD+3); 					\
-			UINT8 ad2 = cpu_readop_arg(_PCD+4); 					\
-			if( (ad1 + 256 * ad2) == (_PCD - 1) )					\
-			{														\
-				int cnt =											\
-					cc[Z80_TABLE_op][0x7c] +						\
-					cc[Z80_TABLE_op][0xb5] +						\
-					cc[Z80_TABLE_op][0xc2] +						\
-					cc[Z80_TABLE_ex][0xc2]; 						\
-				while( _HL > 0 && Z80_ICOUNT > cnt )				\
-				{													\
-					BURNODD( cnt, 4, cnt ); 						\
-					_HL--;											\
-				}													\
-			}														\
-		}															\
-	}																\
-}
-
-#else
-
-#define CHECK_BC_LOOP
-#define CHECK_DE_LOOP
-#define CHECK_HL_LOOP
-
-#endif
-
 /**********************************************************
  * main opcodes
  **********************************************************/
@@ -3664,7 +2964,7 @@ OP(op,07) { RLCA;													} /* RLCA			  */
 OP(op,08) { EX_AF;													} /* EX   AF,AF'      */
 OP(op,09) { ADD16(HL,BC);											} /* ADD  HL,BC 	  */
 OP(op,0a) { _A = RM(_BC);											} /* LD   A,(BC)	  */
-OP(op,0b) { _BC--; CHECK_BC_LOOP;									} /* DEC  BC		  */
+OP(op,0b) { _BC--; 									} /* DEC  BC		  */
 OP(op,0c) { _C = INC(_C);											} /* INC  C 		  */
 OP(op,0d) { _C = DEC(_C);											} /* DEC  C 		  */
 OP(op,0e) { _C = ARG(); 											} /* LD   C,n		  */
@@ -3682,7 +2982,7 @@ OP(op,17) { RLA;													} /* RLA			  */
 OP(op,18) { JR();													} /* JR   o 		  */
 OP(op,19) { ADD16(HL,DE);											} /* ADD  HL,DE 	  */
 OP(op,1a) { _A = RM(_DE);											} /* LD   A,(DE)	  */
-OP(op,1b) { _DE--; CHECK_DE_LOOP;									} /* DEC  DE		  */
+OP(op,1b) { _DE--; 									} /* DEC  DE		  */
 OP(op,1c) { _E = INC(_E);											} /* INC  E 		  */
 OP(op,1d) { _E = DEC(_E);											} /* DEC  E 		  */
 OP(op,1e) { _E = ARG(); 											} /* LD   E,n		  */
@@ -3700,7 +3000,7 @@ OP(op,27) { DAA;													} /* DAA			  */
 OP(op,28) { JR_COND( _F & ZF, 0x28 );								} /* JR   Z,o		  */
 OP(op,29) { ADD16(HL,HL);											} /* ADD  HL,HL 	  */
 OP(op,2a) { EA = ARG16(); RM16( EA, &Z80.HL );						} /* LD   HL,(w)	  */
-OP(op,2b) { _HL--; CHECK_HL_LOOP;									} /* DEC  HL		  */
+OP(op,2b) { _HL--; 									} /* DEC  HL		  */
 OP(op,2c) { _L = INC(_L);											} /* INC  L 		  */
 OP(op,2d) { _L = DEC(_L);											} /* DEC  L 		  */
 OP(op,2e) { _L = ARG(); 											} /* LD   L,n		  */
@@ -3713,7 +3013,7 @@ OP(op,33) { _SP++;													} /* INC  SP		  */
 OP(op,34) { WM( _HL, INC(RM(_HL)) );								} /* INC  (HL)		  */
 OP(op,35) { WM( _HL, DEC(RM(_HL)) );								} /* DEC  (HL)		  */
 OP(op,36) { WM( _HL, ARG() );										} /* LD   (HL),n	  */
-OP(op,37) { _F = (_F & (SF|ZF|PF)) | CF | (_A & (YF|XF));			} /* SCF			  */
+OP(op,37) { _F = (_F & (SF|ZF|YF | XF | PF)) | CF | (_A & (YF|XF));			} /* SCF			  */
 
 OP(op,38) { JR_COND( _F & CF, 0x38 );								} /* JR   C,o		  */
 OP(op,39) { ADD16(HL,SP);											} /* ADD  HL,SP 	  */
@@ -3722,7 +3022,7 @@ OP(op,3b) { _SP--;													} /* DEC  SP		  */
 OP(op,3c) { _A = INC(_A);											} /* INC  A 		  */
 OP(op,3d) { _A = DEC(_A);											} /* DEC  A 		  */
 OP(op,3e) { _A = ARG(); 											} /* LD   A,n		  */
-OP(op,3f) { _F = ((_F&(SF|ZF|PF|CF))|((_F&CF)<<4)|(_A&(YF|XF)))^CF; } /* CCF			  */
+OP(op,3f) { _F = ((_F&(SF|ZF|YF|XF|PF|CF))|((_F&CF)<<4)|(_A&(YF|XF)))^CF; } /* CCF			  */
 //OP(op,3f) { _F = ((_F & ~(HF|NF)) | ((_F & CF)<<4)) ^ CF; 		  } /* CCF				*/
 
 OP(op,40) { 														} /* LD   B,B		  */
@@ -3982,7 +3282,7 @@ static void take_interrupt(void)
 			RM16( irq_vector, &Z80.PC );
 			LOG(("Z80 #%d IM2 [$%04x] = $%04x\n",cpu_getactivecpu() , irq_vector, _PCD));
 			/* CALL opcode timing */
-			Z80.extra_cycles += cc[Z80_TABLE_op][0xcd];
+			Z80.extra_cycles += cc[Z80_TABLE_op][0xcd] + cc[Z80_TABLE_ex][0xff];
 		}
 		else
 		/* Interrupt mode 1. RST 38h */
@@ -4006,37 +3306,35 @@ static void take_interrupt(void)
 					PUSH( PC );
 					_PCD = irq_vector & 0xffff;
 					 /* CALL $xxxx + 'interrupt latency' cycles */
-					Z80.extra_cycles += cc[Z80_TABLE_op][0xcd] + cc[Z80_TABLE_ex][0xff];
+					Z80.extra_cycles += cc[Z80_TABLE_op][0xcd];
 					break;
 				case 0xc30000:	/* jump */
 					_PCD = irq_vector & 0xffff;
 					/* JP $xxxx + 2 cycles */
-					Z80.extra_cycles += cc[Z80_TABLE_op][0xc3] + cc[Z80_TABLE_ex][0xff];
+					Z80.extra_cycles += cc[Z80_TABLE_op][0xc3];
 					break;
 				default:		/* rst (or other opcodes?) */
 					PUSH( PC );
 					_PCD = irq_vector & 0x0038;
 					/* RST $xx + 2 cycles */
-					Z80.extra_cycles += cc[Z80_TABLE_op][_PCD] + cc[Z80_TABLE_ex][_PCD];
+					Z80.extra_cycles += cc[Z80_TABLE_op][0xff];
 					break;
 			}
+
+			/* 'interrupt latency' cycles */
+			Z80.extra_cycles += cc[Z80_TABLE_ex][0xff];
 		}
-		change_pc16(_PCD);
+		change_pc16(_PCD);		
 	}
 }
 
 /****************************************************************************
  * Processor initialization
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_init(void)
-#else
 void z80_init(void)
-#endif
 {
 	int cpu = cpu_getactivecpu();
 	int i, p;
-#if BIG_FLAGS_ARRAY
 	if( !SZHVC_add || !SZHVC_sub )
 	{
 		int oldval, newval, val;
@@ -4060,9 +3358,7 @@ void z80_init(void)
 				/* add or adc w/o carry set */
 				val = newval - oldval;
 				*padd = (newval) ? ((newval & 0x80) ? SF : 0) : ZF;
-#if Z80_EXACT
 				*padd |= (newval & (YF | XF));	/* undocumented flag bits 5+3 */
-#endif
 				if( (newval & 0x0f) < (oldval & 0x0f) ) *padd |= HF;
 				if( newval < oldval ) *padd |= CF;
 				if( (val^oldval^0x80) & (val^newval) & 0x80 ) *padd |= VF;
@@ -4071,9 +3367,7 @@ void z80_init(void)
 				/* adc with carry set */
 				val = newval - oldval - 1;
 				*padc = (newval) ? ((newval & 0x80) ? SF : 0) : ZF;
-#if Z80_EXACT
 				*padc |= (newval & (YF | XF));	/* undocumented flag bits 5+3 */
-#endif
 				if( (newval & 0x0f) <= (oldval & 0x0f) ) *padc |= HF;
 				if( newval <= oldval ) *padc |= CF;
 				if( (val^oldval^0x80) & (val^newval) & 0x80 ) *padc |= VF;
@@ -4082,9 +3376,7 @@ void z80_init(void)
 				/* cp, sub or sbc w/o carry set */
 				val = oldval - newval;
 				*psub = NF | ((newval) ? ((newval & 0x80) ? SF : 0) : ZF);
-#if Z80_EXACT
 				*psub |= (newval & (YF | XF));	/* undocumented flag bits 5+3 */
-#endif
 				if( (newval & 0x0f) > (oldval & 0x0f) ) *psub |= HF;
 				if( newval > oldval ) *psub |= CF;
 				if( (val^oldval) & (oldval^newval) & 0x80 ) *psub |= VF;
@@ -4093,9 +3385,7 @@ void z80_init(void)
 				/* sbc with carry set */
 				val = oldval - newval - 1;
 				*psbc = NF | ((newval) ? ((newval & 0x80) ? SF : 0) : ZF);
-#if Z80_EXACT
 				*psbc |= (newval & (YF | XF));	/* undocumented flag bits 5+3 */
-#endif
 				if( (newval & 0x0f) >= (oldval & 0x0f) ) *psbc |= HF;
 				if( newval >= oldval ) *psbc |= CF;
 				if( (val^oldval) & (oldval^newval) & 0x80 ) *psbc |= VF;
@@ -4103,7 +3393,7 @@ void z80_init(void)
 			}
 		}
 	}
-#endif
+
 	for (i = 0; i < 256; i++)
 	{
 		p = 0;
@@ -4116,13 +3406,9 @@ void z80_init(void)
 		if( i&0x40 ) ++p;
 		if( i&0x80 ) ++p;
 		SZ[i] = i ? i & SF : ZF;
-#if Z80_EXACT
 		SZ[i] |= (i & (YF | XF));		/* undocumented flag bits 5+3 */
-#endif
 		SZ_BIT[i] = i ? i & SF : ZF | PF;
-#if Z80_EXACT
 		SZ_BIT[i] |= (i & (YF | XF));	/* undocumented flag bits 5+3 */
-#endif
 		SZP[i] = SZ[i] | ((p & 1) ? 0 : PF);
 		SZHV_inc[i] = SZ[i];
 		if( i == 0x80 ) SZHV_inc[i] |= VF;
@@ -4163,11 +3449,7 @@ void z80_init(void)
 /****************************************************************************
  * Reset registers to their initial values
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_reset(void *param)
-#else
 void z80_reset(void *param)
-#endif
 {
 	Z80_DaisyChain *daisy_chain = (Z80_DaisyChain *)param;
 	memset(&Z80, 0, sizeof(Z80));
@@ -4195,28 +3477,18 @@ void z80_reset(void *param)
 	change_pc16(_PCD);
 }
 
-#ifdef Z80_MSX
-void z80_msx_exit(void)
-#else
 void z80_exit(void)
-#endif
 {
-#if BIG_FLAGS_ARRAY
 	if (SZHVC_add) free(SZHVC_add);
 	SZHVC_add = NULL;
 	if (SZHVC_sub) free(SZHVC_sub);
 	SZHVC_sub = NULL;
-#endif
 }
 
 /****************************************************************************
  * Execute 'cycles' T-states. Return number of T-states really executed
  ****************************************************************************/
-#ifdef Z80_MSX
-int z80_msx_execute(int cycles)
-#else
 int z80_execute(int cycles)
-#endif
 {
 	Z80_ICOUNT = cycles - Z80.extra_cycles;
 	Z80.extra_cycles = 0;
@@ -4238,11 +3510,7 @@ int z80_execute(int cycles)
 /****************************************************************************
  * Burn 'cycles' T-states. Adjust R register for the lost time
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_burn(int cycles)
-#else
 void z80_burn(int cycles)
-#endif
 {
 	if( cycles > 0 )
 	{
@@ -4256,11 +3524,7 @@ void z80_burn(int cycles)
 /****************************************************************************
  * Get all registers in given buffer
  ****************************************************************************/
-#ifdef Z80_MSX
-unsigned z80_msx_get_context (void *dst)
-#else
 unsigned z80_get_context (void *dst)
-#endif
 {
 	if( dst )
 		*(Z80_Regs*)dst = Z80;
@@ -4270,11 +3534,7 @@ unsigned z80_get_context (void *dst)
 /****************************************************************************
  * Set all registers to given values
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_context (void *src)
-#else
 void z80_set_context (void *src)
-#endif
 {
 	if( src )
 		Z80 = *(Z80_Regs*)src;
@@ -4284,11 +3544,7 @@ void z80_set_context (void *src)
 /****************************************************************************
  * Get a pointer to a cycle count table
  ****************************************************************************/
-#ifdef Z80_MSX
-const void *z80_msx_get_cycle_table (int which)
-#else
 const void *z80_get_cycle_table (int which)
-#endif
 {
 	if (which >= 0 && which <= Z80_TABLE_xycb)
 		return cc[which];
@@ -4298,11 +3554,7 @@ const void *z80_get_cycle_table (int which)
 /****************************************************************************
  * Set a new cycle count table
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_cycle_table (int which, void *new_table)
-#else
 void z80_set_cycle_table (int which, void *new_table)
-#endif
 {
 	if (which >= 0 && which <= Z80_TABLE_ex)
 		cc[which] = new_table;
@@ -4311,11 +3563,7 @@ void z80_set_cycle_table (int which, void *new_table)
 /****************************************************************************
  * Return a specific register
  ****************************************************************************/
-#ifdef Z80_MSX
-unsigned z80_msx_get_reg (int regnum)
-#else
 unsigned z80_get_reg (int regnum)
-#endif
 {
 	switch( regnum )
 	{
@@ -4360,11 +3608,7 @@ unsigned z80_get_reg (int regnum)
 /****************************************************************************
  * Set a specific register
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_reg (int regnum, unsigned val)
-#else
 void z80_set_reg (int regnum, unsigned val)
-#endif
 {
 	switch( regnum )
 	{
@@ -4388,13 +3632,8 @@ void z80_set_reg (int regnum, unsigned val)
 		case Z80_IFF1: Z80.IFF1 = val; break;
 		case Z80_IFF2: Z80.IFF2 = val; break;
 		case Z80_HALT: Z80.HALT = val; break;
-#ifdef Z80_MSX
-		case Z80_NMI_STATE: z80_msx_set_irq_line(IRQ_LINE_NMI,val); break;
-		case Z80_IRQ_STATE: z80_msx_set_irq_line(0,val); break;
-#else
 		case Z80_NMI_STATE: z80_set_irq_line(IRQ_LINE_NMI,val); break;
 		case Z80_IRQ_STATE: z80_set_irq_line(0,val); break;
-#endif
 		case Z80_DC0: Z80.int_state[0] = val; break;
 		case Z80_DC1: Z80.int_state[1] = val; break;
 		case Z80_DC2: Z80.int_state[2] = val; break;
@@ -4415,11 +3654,7 @@ void z80_set_reg (int regnum, unsigned val)
 /****************************************************************************
  * Set IRQ line state
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_irq_line(int irqline, int state)
-#else
 void z80_set_irq_line(int irqline, int state)
-#endif
 {
 	if (irqline == IRQ_LINE_NMI)
 	{
@@ -4489,11 +3724,7 @@ void z80_set_irq_line(int irqline, int state)
 /****************************************************************************
  * Set IRQ vector callback
  ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_irq_callback(int (*callback)(int))
-#else
 void z80_set_irq_callback(int (*callback)(int))
-#endif
 {
 	LOG(("Z80 #%d set_irq_callback $%08x\n",cpu_getactivecpu() , (int)callback));
 	Z80.irq_callback = callback;
@@ -4502,11 +3733,7 @@ void z80_set_irq_callback(int (*callback)(int))
 /****************************************************************************
  * Return a formatted string for a register
  ****************************************************************************/
-#ifdef Z80_MSX
-const char *z80_msx_info(void *context, int regnum)
-#else
 const char *z80_info(void *context, int regnum)
-#endif
 {
 	static char buffer[32][47+1];
 	static int which = 0;
@@ -4554,11 +3781,7 @@ const char *z80_info(void *context, int regnum)
 				r->AF.b.l & 0x02 ? 'N':'.',
 				r->AF.b.l & 0x01 ? 'C':'.');
 			break;
-#ifdef Z80_MSX
-		case CPU_INFO_NAME: return "Z80-MSX";
-#else
 		case CPU_INFO_NAME: return "Z80";
-#endif
 		case CPU_INFO_FAMILY: return "Zilog Z80";
 		case CPU_INFO_VERSION: return "3.3";
 		case CPU_INFO_FILE: return __FILE__;
@@ -4569,11 +3792,7 @@ const char *z80_info(void *context, int regnum)
 	return buffer[which];
 }
 
-#ifdef Z80_MSX
-unsigned z80_msx_dasm( char *buffer, unsigned pc )
-#else
 unsigned z80_dasm( char *buffer, unsigned pc )
-#endif
 {
 #ifdef MAME_DEBUG
 	return DasmZ80( buffer, pc );

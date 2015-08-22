@@ -182,8 +182,7 @@ SND CPU #2 8255 PPI
 #define SPINB_Z80CPU_FREQ   5000000 /* should be  2500000 2.5 MHz, tweaked for playability */
 #define SPINB_8051CPU_FREQ 24000000 /* should be 16000000  16 MHz, tweaked for playability */
 
-#define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
+//#define SPINB_INTFREQ      210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
 #define INTCYCLES             90 /* keep irq high for this many cycles */
 #define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) (should probably be INTFRQ*8=2000) */
 
@@ -259,8 +258,10 @@ struct {
   int    DMDPort2;
   int    DMDRamEnabled;
   int    DMDRom1Enabled;
+  int    DMDRom2Enabled;
   int    DMDA16Enabled;
   int    DMDA17Enabled;
+  int    DMDA18Enabled;
   int    DMDPage;
   int    DMDFrame;
   int    DMDRow;
@@ -294,7 +295,7 @@ struct {
   UINT8  solInv0,solInv1,solInv2;
   mame_timer *irqtimer;
   int    irqfreq;
-  int    nonmi;
+  int    nmiSeries;
   int    dmdframes;
   UINT8  dmdP1;
 } SPINBlocals;
@@ -334,8 +335,16 @@ static struct MSM5205interface SPINB_msm6585Int = {
 	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
 	{100,75}								//Volume
 };
+/* MSM6585 ADPCM CHIP INTERFACE */
+static struct MSM5205interface SPINB_msm6585Int2 = {
+	2,										//# of chips
+	720000,									//720Khz Clock Frequency
+	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{100,75}								//Volume
+};
 /* Sound board */
-const struct sndbrdIntf spinbIntf = {
+struct sndbrdIntf spinbIntf = {
    "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
@@ -365,7 +374,7 @@ void dmd_serial_callback(int data)
 	if(r5 >= 18 && r5 <= 21) SPINBlocals.DMDPage = 0x1200;
 	if(r5 >= 22 && r5 <= 25) SPINBlocals.DMDPage = 0x1600;
 	if(r5 >= 26 && r5 <= 29) SPINBlocals.DMDPage = 0x1a00;
-    if(r5 >= 30 && r5 <= 33) SPINBlocals.DMDPage = 0x1e00;
+	if(r5 >= 30 && r5 <= 33) SPINBlocals.DMDPage = 0x1e00;
 #else
   if (    (SPINBlocals.DMDFrame >= SPINBlocals.dmdframes )
        || (SPINBlocals.DMDRow   >= 32)
@@ -384,42 +393,46 @@ void dmd_serial_callback(int data)
 /* -------------------------------- */
 /* DMD External Hardware Addressing */
 /* -------------------------------- */
-//Here we must generate the appropriate 32 bit address based on the hardware configuration for
+//Here we must generate the appropriate 20 bit address based on the hardware configuration for
 //external ram access..
 //Because we had to map everything in linear address space in our memory map, we must translate the
 //hardware control pins to generate the proper address for the cpu to pull from memory properly
 //
-//There are 2 enable bits, RAM & ROM1 respectively.. if BOTH are disabled, data on the bus
+//There are 2 enable bits, RAM & ROM1+2 respectively.. if BOTH are disabled, data on the bus
 //is coming from the Main CPU
 //
 //To generate an address, the offset passed is either: 8 bit (MOVX @R0/R1) or 16 bit (MOVX @DPTR)
-//for 8 Bit: offset = bits 0-7, Port 2 is used for bits 8-15, and we track A16, A17, and add it.
-//for 16 Bit: offset = bits 0-15, and we track A16, A17, and add it.
-//NOTE: A16/17 ONLY Apply to ROM1 as those address pins are not wired to RAM.
+//for 8 Bit: offset = bits 0-7, Port 2 is used for bits 8-15, and we track A16-A19, and add them.
+//for 16 Bit: offset = bits 0-15, and we track A16-A19, and add them.
+//NOTE: A16-A19 ONLY apply to ROM1+2 as those address pins are not wired to RAM.
 //
 //Then we must translate the address to the appropriate space in the map!
 //The 8051 CPU will automatically add 0x10000 to the address we return because this is external addressing!
 //
 //RAM does not need to translate since it begins at 0x10000.
-//ROM must translate to begin @ 0x12000 (so we add 0x2000)
-//DMD Commands translate to a fixed address of 0x32000 (so we set it to 0x22000)
+//ROM must translate to begin @ 0x14000 (so we add 0x4000)
+//DMD Commands translate to a fixed address of 0x13fff (so we set it to 0x3fff)
 READ32_HANDLER(dmd_eram_address)
 {
 	UINT32 addr = offset;
 
 	//DMD Command?
-	if(!SPINBlocals.DMDRamEnabled && !SPINBlocals.DMDRom1Enabled)
-		addr = 0x22000;		//Fixed location we use
+	if(!SPINBlocals.DMDRamEnabled && !SPINBlocals.DMDRom1Enabled && !SPINBlocals.DMDRom2Enabled)
+		addr = 0x3fff;		//Fixed location we use
 	else
 	{
 		//If 8 bit offset, add port2 as upper 8 bits.
 		if(mem_mask < 0x100)
 			addr = offset | (SPINBlocals.DMDPort2<<8);
 
-		//Accessing ROM1? Translate to begin @ 0x12000 and add A16! (Note: A17 not connected)
-		if(SPINBlocals.DMDRom1Enabled) {
-			addr |= (SPINBlocals.DMDA16Enabled<<16);
-			addr += 0x2000;
+		//Accessing ROM1+2? Translate to begin @ 0x14000 and add A16 - A18
+		if(SPINBlocals.DMDRom1Enabled || SPINBlocals.DMDRom2Enabled) {
+			addr |= (SPINBlocals.DMDA16Enabled<<16)
+        | (SPINBlocals.DMDA17Enabled<<17);
+      if (SPINBlocals.nmiSeries == 2) {
+        addr |= (SPINBlocals.DMDA18Enabled << 18) | (SPINBlocals.DMDRom2Enabled << 19);
+      }
+			addr += 0x4000;
 		}
 	}
 	return addr;
@@ -533,7 +546,7 @@ CI-23 8255 PPI
   Summary: P0-P7 - Lamp Data Bits 0-7
 */
 WRITE_HANDLER(ci23_porta_w) {
-	if (SPINBlocals.nonmi)
+	if (!SPINBlocals.nmiSeries)
 		coreGlobals.tmpLampMatrix[4] |= data;
 	else
 		coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] |= data;
@@ -545,8 +558,10 @@ CI-23 8255 PPI
   (out) P0-P7 : J3 - Pins 11 - 19 (no 18) (Nivel Luces 0-7) - Lamp Column Strobe 0 - 7
 */
 WRITE_HANDLER(ci23_portb_w) {
-	if (SPINBlocals.nonmi)
+	if (!SPINBlocals.nmiSeries)
 		coreGlobals.tmpLampMatrix[5] |= data;
+	else if  (SPINBlocals.nmiSeries == 2)
+		SPINBlocals.lampColumn = data & 0x07;
 	else
 		SPINBlocals.lampColumn = core_BitColToNum(data);
 }
@@ -589,7 +604,7 @@ WRITE_HANDLER(ci22_porta_w) {
 		coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFEFFFFFF) | ((data & 0x80)<<17);
 		data &= 0x7f;
 	}
-	if (SPINBlocals.nonmi)
+	if (!SPINBlocals.nmiSeries)
 		coreGlobals.tmpLampMatrix[1] |= data;
 	else
 		coreGlobals.tmpLampMatrix[8] |= data;
@@ -601,7 +616,7 @@ CI-22 8255 PPI
   (out) P0-P7 : J4 - Pins 5 - 12 (Marked Various) - Flasher Control 5-12
 */
 WRITE_HANDLER(ci22_portb_w) {
-	if (SPINBlocals.nonmi)
+	if (!SPINBlocals.nmiSeries)
 		coreGlobals.tmpLampMatrix[2] |= data;
 	else
 		coreGlobals.tmpLampMatrix[9] |= data;
@@ -614,7 +629,7 @@ CI-22 8255 PPI
   (out) P4-P7 : J5 - Pins 15-19 (no 16) (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
 WRITE_HANDLER(ci22_portc_w) {
-	if (SPINBlocals.nonmi)
+	if (!SPINBlocals.nmiSeries)
 		coreGlobals.tmpLampMatrix[3] |= data;
 	else
 		coreGlobals.tmpLampMatrix[10] |= data;
@@ -638,7 +653,7 @@ CI-21 8255 PPI
   (out) P6-P7 : J6 - Pins 18-19 (Marked Various) - Solenoids 17-18?
 */
 WRITE_HANDLER(ci21_portb_w) {
-  if (SPINBlocals.nonmi)
+  if (!SPINBlocals.nmiSeries)
     coreGlobals.tmpLampMatrix[0] |= data;
   else
     if (data) solenoid_w(2,data ^ ~SPINBlocals.solInv2);
@@ -792,6 +807,7 @@ static INTERRUPT_GEN(spinb_vblank) {
 	coreGlobals.solenoids = SPINBlocals.solenoids;
 	SPINBlocals.ssEn = (coreGlobals.solenoids >> (SPINBlocals.L16isGameOn ? 25-1 : 5-1)) & 1;
 	SPINBlocals.solenoids = coreGlobals.pulsedSolState;
+	if (SPINBlocals.nmiSeries == 2) coreGlobals.pulsedSolState = 0;
   }
   core_updateSw(SPINBlocals.ssEn);
 }
@@ -867,7 +883,7 @@ static MACHINE_INIT(spinb) {
   SPINBlocals.L16isGameOn =  core_gameData->hw.gameSpecific1        & 0xff;
 
   SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
-  SPINBlocals.irqfreq = SPINB_INTFREQ;
+  SPINBlocals.irqfreq = core_gameData->hw.gameSpecific2;
   timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
 
   /* init PPI */
@@ -880,12 +896,17 @@ static MACHINE_INIT(spinb) {
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
-  SPINBlocals.nonmi=1;
+  SPINBlocals.nmiSeries=0;
 }
 
 static MACHINE_INIT(spinbnmi) {
   machine_init_spinb();
-  SPINBlocals.nonmi=0;
+  SPINBlocals.nmiSeries=1;
+}
+
+static MACHINE_INIT(spinbnmi2) {
+  machine_init_spinb();
+  SPINBlocals.nmiSeries=2;
 }
 
 static MACHINE_RESET(spinb) {
@@ -904,16 +925,6 @@ static READ_HANDLER(i8031_port_read)
 	return data;
 }
 
-/*PORT 1:
-    P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram)
-    P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
-    P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
-    P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
-    P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
-    P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu
-    P1.6    (O) = STAT0
-    P1.7    (O) = STAT1 */
-
 enum P1BITS { RAMCE=0, DESP=1, RDATA=2, ROWCK=3, COLATCH=4, READY=5, STAT0=6, STAT1=7 };
 #define GETBIT(value,bitno) (((value) >> (bitno)) & 1)
 
@@ -931,8 +942,14 @@ static void P1_update(int data)
   if (chg)
   {
     // RAM Chip ~Enable
-    if (GETBIT(chg,RAMCE)) {
-      SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
+    if (SPINBlocals.nmiSeries != 2) {
+      if (GETBIT(chg,RAMCE)) {
+        SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
+      }
+    } else {
+      if (chg & 0x21) {
+        SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE) && !GETBIT(data,READY);
+      }
     }
 
     // Data Enable
@@ -963,10 +980,19 @@ static void P1_update(int data)
     }
 
     // DMD Ready (to read next command)
-    if (GETBIT(chg,READY)) {
-      SPINBlocals.DMDReady = GETBIT(data,READY);
-      if (GETBIT(wlo,READY)) {
-        cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+    if (SPINBlocals.nmiSeries != 2) {
+      if (GETBIT(chg,READY)) {
+        SPINBlocals.DMDReady = GETBIT(data,READY);
+        if (GETBIT(wlo,READY)) {
+          cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+        }
+      }
+    } else {
+      if (chg & 0x21) {
+        SPINBlocals.DMDReady = !GETBIT(data,RAMCE) || !GETBIT(data,READY);
+        SPINBlocals.DMDRom1Enabled = GETBIT(data,RAMCE) && !GETBIT(data,READY);
+        SPINBlocals.DMDRom2Enabled = !GETBIT(data,RAMCE) && GETBIT(data,READY);
+        if (SPINBlocals.DMDReady) cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
       }
     }
 
@@ -1005,6 +1031,15 @@ static WRITE_HANDLER(i8031_port_write)
             SPINBlocals.DMDPort2 = data;
             break;
 
+        /*PORT 1:
+            P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram) / A input of 2-of-4 decoder on VW
+            P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
+            P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
+            P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
+            P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
+            P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu / B input of 2-of-4 decoder on VW
+            P1.6    (O) = STAT0
+            P1.7    (O) = STAT1 */
         case 1:
             P1_update(data);
             break;
@@ -1014,14 +1049,18 @@ static WRITE_HANDLER(i8031_port_write)
             P3.1/TXD (O) = DOTCK
             P3.2/INT0(I) = Command Ready from Main CPU
             P3.3/INT1(O) = A16 to ROM1
-            P3.4/TO  (O) = ROM1 Chip Enable (Active Low)
-            P3.5/T1  (O) = A17 to ROM1 (not connected)
+            P3.4/TO  (O) = ROM1 Chip Enable (Active Low) / A18 to ROM1 on VW
+            P3.5/T1  (O) = A17 to ROM1
             P3.6     (O) = /WR
             P3.7     (O) = /RD*/
         case 3:
+            if (SPINBlocals.nmiSeries != 2) {
+              SPINBlocals.DMDRom1Enabled = !(GET_BIT4);
+            } else {
+              SPINBlocals.DMDA17Enabled = GET_BIT5;
+              SPINBlocals.DMDA18Enabled = GET_BIT4;
+            }
             SPINBlocals.DMDA16Enabled = GET_BIT3;
-            SPINBlocals.DMDRom1Enabled = !(GET_BIT4);
-            SPINBlocals.DMDA17Enabled = GET_BIT5;
             break;
 
         default:
@@ -1168,6 +1207,28 @@ static MEMORY_WRITE_START(spinb_writemem)
 {0x6ce0,0x6ce0,X6ce0_w},
 MEMORY_END
 
+static MEMORY_READ_START(spinb_readmem2)
+{0x0000,0x7fff,MRA_ROM},
+{0x8000,0x85ff,MRA_RAM},
+{0x8600,0x86ff,MRA_RAM},
+{0xc000,0xc003,ppi8255_0_r},
+{0xc400,0xc403,ppi8255_1_r},
+{0xc800,0xc803,ppi8255_2_r},
+{0xcc00,0xcc03,ppi8255_3_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(spinb_writemem2)
+{0x8000,0x83ff,MWA_RAM},
+{0x8400,0x85ff,MWA_RAM, &generic_nvram, &generic_nvram_size},
+{0x8600,0x86ff,MWA_RAM},
+{0xc000,0xc003,ppi8255_0_w},
+{0xc400,0xc403,ppi8255_1_w},
+{0xc800,0xc803,ppi8255_2_w},
+{0xcc00,0xcc03,ppi8255_3_w},
+{0xcc20,0xcc20,soundbd_w},
+{0xcc60,0xcc60,dmdbd_w},
+MEMORY_END
+
 /* ------------------- */
 /* DMD CPU MEMORY MAP  */
 /* ------------------- */
@@ -1178,25 +1239,25 @@ MEMORY_END
 //00000 -  FFFF is used for MOVC(/PSEN=0) commands
 //10000 - 1FFFF is used for MOVX(/RD=0 or /WR=0) commands
 // We'll map as follows to make it all fit into linear address space:
-//     10000- 11FFF (RAM 2K)
-//     12000- 31FFF (ROM1 - 128K)
-//     32000- 32000 (DATA CMD FROM CPU)
+//     00000 - 0FFFF (ROM0 - 64K)
+//     10000 - 13FFE (RAM - 16K minus 1 byte... which should suffice all needs)
+//     13FFF         (DATA CMD FROM CPU)
+//     14000 - FFFFF (ROM1 and ROM2)
 static MEMORY_READ_START(spinbdmd_readmem)
-	{ 0x000000, 0x00ffff, MRA_ROM },
-	{ 0x010000, 0x011fff, MRA_RAM },
-	{ 0x012000, 0x031fff, MRA_ROM },
-	{ 0x032000, 0x032000, dmd_readcmd },
+	{ 0x00000, 0x0ffff, MRA_ROM },
+	{ 0x10000, 0x13ffe, MRA_RAM },
+	{ 0x13fff, 0x13fff, dmd_readcmd },
+	{ 0x14000, 0xfffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(spinbdmd_writemem)
-	{ 0x000000, 0x00ffff, MWA_ROM },		//This area can never really be accessed by the cpu core but we'll put this here anyway
+	{ 0x00000, 0x0ffff, MWA_ROM },		//This area can never really be accessed by the cpu core but we'll put this here anyway
 #if DMD_FROM_RAM
-	{ 0x010000, 0x011fff, MWA_RAM, &dmd32RAM },
+	{ 0x10000, 0x13ffe, MWA_RAM, &dmd32RAM },
 #else
-	{ 0x010000, 0x011fff, MWA_RAM },
+	{ 0x10000, 0x13ffe, MWA_RAM },
 #endif
-	{ 0x012000, 0x031fff, MWA_ROM },
-	{ 0x032000, 0x032000, MWA_NOP },
+	{ 0x13fff, 0xfffff, MWA_NOP },
 MEMORY_END
 
 static PORT_READ_START( spinbdmd_readport )
@@ -1242,7 +1303,7 @@ static MEMORY_WRITE_START(spinbsnd2_writemem)
 MEMORY_END
 
 /* DMD DRIVER */
-MACHINE_DRIVER_START(spinbdmd)
+static MACHINE_DRIVER_START(spinbdmd)
   MDRV_CPU_ADD(I8051, SPINB_8051CPU_FREQ)	/*16 Mhz*/
   MDRV_CPU_MEMORY(spinbdmd_readmem, spinbdmd_writemem)
   MDRV_CPU_PORTS(spinbdmd_readport, spinbdmd_writeport)
@@ -1306,6 +1367,26 @@ MACHINE_DRIVER_START(spinbs1n)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
 
+//Main CPU with NMI, DMD, Sound hardware Driver, extended DMD memory
+MACHINE_DRIVER_START(spinbs1n2)
+  MDRV_IMPORT_FROM(spinb)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CORE_INIT_RESET_STOP(spinbnmi2,spinb,spinb)
+  MDRV_CPU_MEMORY(spinb_readmem2, spinb_writemem2)
+  MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
+  MDRV_IMPORT_FROM(spinbdmd)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 5 or 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, SPINB_msm6585Int2)
+  MDRV_SOUND_CMD(spinb_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("spinb")
+MACHINE_DRIVER_END
+
 /* -------------------- */
 /* DMD DRAWING ROUTINES */
 /* -------------------- */
@@ -1340,6 +1421,14 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 	  offset+=0x100;
   if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
 	  offset-=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+	  offset+=0x10;
+  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
+	  offset-=0x10;
+  if(keyboard_pressed_memory_repeat(KEYCODE_COMMA,2))
+	  offset+=0x1;
+  if(keyboard_pressed_memory_repeat(KEYCODE_STOP,2))
+	  offset-=0x1;
   }
   RAM += offset;
   RAM2 += offset;

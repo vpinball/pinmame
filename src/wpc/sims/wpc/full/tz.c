@@ -451,6 +451,12 @@ WPC_ROMSTART(tz,h7,  "u6-h7.040",   0x80000,CRC(84f29e46) SHA1(744c7e64418c8d959
 WPC_ROMSTART(tz,i7,  "u6-i7.040",   0x80000,CRC(d5b85618) SHA1(4c9dbe3a720007448771ccb44ec41164196ab5c2)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,h8,  "tz_h8.u6",    0x80000,CRC(f1b2d60c) SHA1(295fc07ae83f2cfbc84caf581915f99080fa397d)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,i8,  "tz_i8.u6",    0x80000,CRC(1dea86d8) SHA1(dcf293a8285519fa51b3c843fa68081c06721b91)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f10,  "ftz0_10.rom",0x80000,CRC(109bdbdb) SHA1(5b5ee9d9bfd606eaf84608c065fef89c0f81f283)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f19,  "ftz0_19.rom",0x80000,CRC(5ff34614) SHA1(f5d8f500618832e3ef436ccc8f906caca8b097cd)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f50,  "ftz0_50.rom",0x80000,CRC(7398fb25) SHA1(0f75114d0f2486c1a378af77eb5a874049610e10)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f86,  "ftz0_86.rom",0x80000,CRC(5c77935e) SHA1(e1b6626851435bb5a9618113cb1d774975c6ea8e)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f97,  "ftz0_97.rom",0x80000,CRC(c508a593) SHA1(98d098e872e1352a76bacfc501ae015dafb4aac5)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,f100, "ftz1_00.rom",0x80000,CRC(1736f38f) SHA1(75119f1961f0e8e44e5e25ac5a79d14e8e5eb46f)) TZ_SOUND WPC_ROMEND
 
 WPC_ROMSTART(tz,l1,"u6-l1.040",0x80000,CRC(6db6ae06) SHA1(a0e15c5f5e94391c3f0e77155307c3aacba1aff9))
 WPCS_SOUNDROM882("tzu18_l1.rom", CRC(a021a494) SHA1(27bbb60fce2892b1b0b611687a1ac59c7c668f9d),
@@ -500,29 +506,35 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)", 1995,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,93, 92,"Twilight Zone (9.3) LED Ghost Fix",1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,93,  92,"Twilight Zone (9.3 LED Ghost Fix)",1998,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)",1998,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,94ch, 92,"Twilight Zone (9.4CH)",1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94ch,92,"Twilight Zone (9.4CH Coin Play)",1998,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,pa2, 92,"Twilight Zone (PA-2) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,pa2, 92,"Twilight Zone (PA-2 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p3,  92,"Twilight Zone (P-3)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,p3d,  92,"Twilight Zone (P-3) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,p3d, 92,"Twilight Zone (P-3 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p4,  92,"Twilight Zone (P-4)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,p5,  92,"Twilight Zone (P-5) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,p5,  92,"Twilight Zone (P-5 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l1,  92,"Twilight Zone (L-1)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,d1,  92,"Twilight Zone (D-1) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,d1,  92,"Twilight Zone (D-1 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l2,  92,"Twilight Zone (L-2)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,d2,  92,"Twilight Zone (D-2) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,d2,  92,"Twilight Zone (D-2 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,ifpa,92,"Twilight Zone (IFPA rules)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,ifpa2,92,"Twilight Zone (IFPA rules) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,ifpa2,92,"Twilight Zone (IFPA rules LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l3,  92,"Twilight Zone (L-3)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,d3,  92,"Twilight Zone (D-3) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,d3,  92,"Twilight Zone (D-3 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l4,  92,"Twilight Zone (L-4)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,d4,  92,"Twilight Zone (D-4) LED Ghost Fix", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,d4,  92,"Twilight Zone (D-4 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,h7,  92,"Twilight Zone (H-7)", 1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,i7,  92,"Twilight Zone (I-7) LED Ghost Fix", 1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,i7,  92,"Twilight Zone (I-7 LED Ghost Fix)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,h8,  92,"Twilight Zone (H-8)", 1994,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,i8,  92,"Twilight Zone (I-8) LED Ghost Fix", 1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,i8,  92,"Twilight Zone (I-8 LED Ghost Fix)", 1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f10, 92,"Twilight Zone (FreeWPC 0.10)", 2006,"FreeWPC",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f19, 92,"Twilight Zone (FreeWPC 0.19)", 20??,"FreeWPC",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f50, 92,"Twilight Zone (FreeWPC 0.50)", 20??,"FreeWPC",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f86, 92,"Twilight Zone (FreeWPC 0.86)", 20??,"FreeWPC",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f97, 92,"Twilight Zone (FreeWPC 0.97)", 2010,"FreeWPC",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,f100,92,"Twilight Zone (FreeWPC 1.00)", 2011,"FreeWPC",wpc_mFliptronS,0)
 
 /*----------
 / Game Data

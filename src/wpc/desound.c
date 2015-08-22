@@ -432,7 +432,7 @@ static INTERRUPT_GEN(de2s_firq) {
 #define ARMCPU_FREQ	40000000				//40 MHZ
 #define ARMIRQ_FREQ ARMCPU_FREQ/2/0x339		//Works out to be 24,242Hz
 #define WAVE_OUT_RATE ARMIRQ_FREQ			//Output rate is exactly the IRQ frequency
-#define ARMSNDBUFSIZE 400
+#define ARMSNDBUFSIZE 400                   //Sound command input port buffer size
 #define BUFFSIZE 0x100000
 
 //Includes
@@ -449,8 +449,7 @@ static data32_t *de3as_reset_ram;
 static data32_t *de3as_page0_ram;
 static data32_t *u7_base;
 static int sndcmdbuf[ARMSNDBUFSIZE];
-static int sbuf=0;
-static int spos=0;
+static int sndcmdread = 0, sndcmdwrite = 0, sndcmdlast = 0;
 static int sampout = 0;
 static int sampnum = 0;
 static const int rommap[4] = {4,2,3,1};
@@ -492,8 +491,42 @@ static READ32_HANDLER(xilinx_r)
 	return data;
 }
 
+//CSR 0 Mapped to 0x10000000 (U8 ROM)
+static READ32_HANDLER(csr0roms_r)
+{
+	data32_t data = 0;
+	int mask_adjust = 0;
+
+	//Adjust offset due to the way MAME 32Bit handler works
+	offset*=4;
+	switch(mem_mask^0xffffffff)
+	{
+	case 0x000000ff:
+		mask_adjust=0;
+		break;
+	case 0x0000ff00:
+		mask_adjust=1;
+		break;
+	case 0x00ff0000:
+		mask_adjust=2;
+		break;
+	case 0xff000000:
+		mask_adjust=3;
+		break;
+	}
+	offset+=mask_adjust;
+	//Read from U8 ROM
+	{
+		// keep bottom 
+		int romaddr = offset;
+		data = (data8_t)*((memory_region(DE2S_CPUREGION) + romaddr + 0x400000));
+	}
+	//Adjust for Mask
+	return data << (8*mask_adjust);
+}
+
 //CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-static READ32_HANDLER(roms_r)
+static READ32_HANDLER(csr2roms_r)
 {
 	data32_t data = 0;
 	int mask_adjust = 0;
@@ -614,6 +647,8 @@ static void remove_led_code(void)
 
 static void setup_at91(void)
 {
+  //set up the JIT memory map - allow for 128k of address space from address 0
+  at91_init_jit(0, 0x20000);
   //because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
   at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
   //Copy U7 ROM into correct location (ie, starting at 0x40000000 where it is mapped)
@@ -637,23 +672,42 @@ static void de3s_init(struct sndbrdData *brdData) {
 //Write new sound command to the command queue
 static WRITE_HANDLER(scmd_w)
 {
-	sndcmdbuf[sbuf]=data;
-	sbuf = (sbuf + 1) % ARMSNDBUFSIZE;
+	if (data != sndcmdlast)
+	{
+		// add the command to the queue
+		sndcmdbuf[sndcmdwrite] = sndcmdlast = data;
+		
+		// Advance the write head.  If it collides with the read head,
+		// it means the buffer is full, in which case we need to drop
+		// the oldest sample by advancing the read head as well.
+		sndcmdwrite = (sndcmdwrite + 1) % ARMSNDBUFSIZE;
+		if (sndcmdwrite == sndcmdread)
+			sndcmdread = (sndcmdread + 1) % ARMSNDBUFSIZE;
+		
+		// Whitestar II speedup: wake up the CPU if idle
+		cpunum_resume(de2slocals.brdData.cpuNo, SUSPEND_ANY_REASON);
+	}
 }
-
+	
 //Buffer the sound commands (to account for timing offsets between the 6809 Main CPU & the AT91 CPU)
 static READ_HANDLER(scmd_r)
 {
-	int data = sndcmdbuf[spos];
-	if(spos < sbuf)
-		spos = (spos + 1) % ARMSNDBUFSIZE;
-	if(spos >= sbuf) {
-		spos = sbuf = 0;
-		sndcmdbuf[0] = data;
-	}
+	// read the next sample
+	int data = sndcmdbuf[sndcmdread];
+
+	// If the buffer is non-empty, advance the read head (the buffer is
+	// circular, so wrap if we hit the high end).
+	if (sndcmdread != sndcmdwrite)
+		sndcmdread = (sndcmdread + 1) % ARMSNDBUFSIZE;
+
+	// if this leaves the buffer empty, repeat the last sample on
+	// future calls until a new sample arrives
+	if (sndcmdread == sndcmdwrite)
+		sndcmdbuf[sndcmdread] = data;
+
+	// return the sample
 	return data;
 }
-
 
 static int at91_stream = 0;
 static INT16 lastsamp = 0;
@@ -770,8 +824,9 @@ static MEMORY_READ32_START(arm_readmem)
 {0x00000000,0x000FFFFF,MRA32_RAM},						//Boot RAM
 {0x00300000,0x003FFFFF,MRA32_RAM},						//Swapped RAM
 {0x00400000,0x005FFFFF,MRA32_RAM},						//Mirrored BIOS @ Boot Time
+{0x10000000,0x101FFFFF,csr0roms_r},						//CSR 0 - U8 ROM (2MB)
 {0x20000000,0x20000003,xilinx_r},						//Xilinx Sound Command Input
-{0x20000004,0x207FFFFF,roms_r},							//U17-U37 ROMS (4MB FOR ALL)
+{0x20000004,0x207FFFFF,csr2roms_r},						//CSR2 - U17-U37 ROMS (4MB FOR ALL)
 {0x40000000,0x4000FFFF,MRA32_ROM},						//U7 ROM (64K)
 MEMORY_END
 
@@ -819,6 +874,7 @@ MACHINE_DRIVER_END
 
 
 
+//======================================================================================================================
 //No longer supported, code needs to be rewritten to do memory handlers properly now that support removed from AT91 core
 #if 0
 

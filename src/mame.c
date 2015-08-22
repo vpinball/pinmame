@@ -155,6 +155,7 @@ struct GameOptions options;
 /* the active video display */
 static struct mame_display current_display;
 static UINT8 visible_area_changed;
+struct mame_display *current_display_ptr = &current_display;
 
 /* video updating */
 static UINT8 full_refresh_pending;
@@ -284,7 +285,7 @@ int run_game(int game)
 #endif
 
 	/* first give the machine a good cleaning */
-	memset(Machine, 0, sizeof(Machine));
+	memset(Machine, 0, sizeof(*Machine));
 
 	/* initialize the driver-related variables in the Machine */
 	Machine->gamedrv = gamedrv = drivers[game];

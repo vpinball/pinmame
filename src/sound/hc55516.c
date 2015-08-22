@@ -45,9 +45,9 @@ int hc55516_sh_start(const struct MachineSound *msound)
 	int i;
 
 	/* compute the fixed charge, decay, and leak time constants */
-	charge = pow(exp(-1), 1.0 / (FILTER_CHARGE_TC * 16000.0));
-	decay = pow(exp(-1), 1.0 / (FILTER_DECAY_TC * 16000.0));
-	leak = pow(exp(-1), 1.0 / (INTEGRATOR_LEAK_TC * 16000.0));
+	charge = pow(exp(-1.0), 1.0 / (FILTER_CHARGE_TC * 16000.0));
+	decay = pow(exp(-1.0), 1.0 / (FILTER_DECAY_TC * 16000.0));
+	leak = pow(exp(-1.0), 1.0 / (INTEGRATOR_LEAK_TC * 16000.0));
 
 	/* loop over HC55516 chips */
 	for (i = 0; i < intf->num; i++)

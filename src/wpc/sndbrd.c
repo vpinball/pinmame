@@ -69,8 +69,8 @@ void sndbrd_diag(int board, int button) {
 
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
-    if(b && (b->flags & SNDBRD_NOTSOUND)==0)
-		snd_cmd_log(board, data);
+  if(b && (b->flags & SNDBRD_NOTSOUND)==0)
+	snd_cmd_log(board, data);
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
 #if 0
     if((b->flags & SNDBRD_NOTSOUND)==0)
@@ -126,6 +126,10 @@ void sndbrd_manCmd(int board, int cmd) {
       { intf[board].manCmdBuf = cmd; return; }
     b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;
   }
+}
+void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd))) {
+  struct sndbrdIntf *b = (struct sndbrdIntf *)intf[board].brdIntf;
+  b->manCmd_w = manCmd;
 }
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
@@ -231,4 +235,10 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(jvh)
   SNDBRDINTF(tabart)
   SNDBRDINTF(jeutel)
+  SNDBRDINTF(play1s)
+  SNDBRDINTF(play2s)
+  SNDBRDINTF(play3s)
+  SNDBRDINTF(play4s)
+  SNDBRDINTF(playzs)
+  SNDBRDINTF(tecnoplay)
 #endif /* SNDBRD_RECURSIVE */

@@ -1,7 +1,15 @@
 /******************************************************************************************
   Jeutel Games
   ------------
+  by G. Volkenborn, 03/03/2011
+
+  Jeutel is using two Z80 CPUs, and they are interacting heavily
+  with lots of bus signals. I doubt it can be fully handled by MAME
+  but it's close enough to make the games work as it is now;
+  only thing I can say for sure is they're running way too fast!
+  For sound this is using a TMS5110A speak n spell
 *******************************************************************************************/
+
 #include "driver.h"
 #include "core.h"
 #include "sim.h"
@@ -15,6 +23,7 @@ static struct {
   UINT8 swStrobe;
   int lampStrobe;
   int dispStrobe;
+  int dispBlank;
   int dipStrobe;
 } locals;
 
@@ -25,13 +34,12 @@ static INTERRUPT_GEN(jeutel_vblank) {
 static INTERRUPT_GEN(jeutel_irq) {
   static int irq = 0;
   irq = !irq;
-  cpu_set_irq_line(1, 0, irq ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, 0, irq ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void jeutel_nmi(int data) {
-  if (cpunum_get_reg(1, Z80_HALT)) { // only fire the NMI when CPU #1 is halted!
-//    printf(".");
-    cpu_set_nmi_line(1, PULSE_LINE);
+  if (cpunum_get_reg(0, Z80_HALT)) { // only fire the NMI when CPU is halted!
+    cpu_set_nmi_line(0, PULSE_LINE);
   }
 }
 
@@ -42,19 +50,6 @@ static WRITE_HANDLER(shared_ram_w) {
 static READ_HANDLER(shared_ram_r) {
   return shared_RAM[offset];
 }
-
-static MEMORY_READ_START(cpu_readmem0)
-  {0x0000, 0x1fff, MRA_ROM},
-  {0xc000, 0xc3ff, shared_ram_r},
-  {0xc400, 0xc7ff, MRA_RAM},
-  {0xe000, 0xe003, ppi8255_2_r},
-MEMORY_END
-
-static MEMORY_WRITE_START(cpu_writemem0)
-  {0xc000, 0xc3ff, shared_ram_w, &shared_RAM},
-  {0xc400, 0xc7ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  {0xe000, 0xe003, ppi8255_2_w},
-MEMORY_END
 
 static WRITE_HANDLER(m4000_w) {
   logerror("m4000_w: %02x\n", data);
@@ -76,11 +71,25 @@ static MEMORY_WRITE_START(cpu_writemem1)
   {0xc000, 0xc3ff, shared_ram_w},
 MEMORY_END
 
+static MEMORY_READ_START(cpu_readmem2)
+  {0x0000, 0x1fff, MRA_ROM},
+  {0xc000, 0xc3ff, shared_ram_r},
+  {0xc400, 0xc7ff, MRA_RAM},
+  {0xe000, 0xe003, ppi8255_2_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(cpu_writemem2)
+  {0xc000, 0xc3ff, shared_ram_w, &shared_RAM},
+  {0xc400, 0xc7ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0xe000, 0xe003, ppi8255_2_w},
+MEMORY_END
+
 // display row & data
 static WRITE_HANDLER(ppi0_porta_w) {
   UINT16 digit;
-  if ((data & 0x70) == 0x40) {
-    coreGlobals.segments[32 + locals.dispStrobe].w = core_bcd2seg7[data & 0x0f];
+  locals.dispBlank = data & 0x80 ? 0 : 1;
+  if (data & 0x40) {
+    coreGlobals.segments[32 + locals.dispStrobe].w = locals.dispBlank ? 0 : core_bcd2seg7[data & 0x0f];
     return;
   }
   switch (data & 0x0f) {
@@ -97,10 +106,10 @@ static WRITE_HANDLER(ppi0_porta_w) {
     default:
       digit = core_bcd2seg9[data & 0x0f];
   }
-  if ((data & 0x70) == 0x10) {
-    coreGlobals.segments[locals.dispStrobe].w = digit;
-  } else if ((data & 0x70) == 0x20) {
-    coreGlobals.segments[16 + locals.dispStrobe].w = digit;
+  if (data & 0x10) {
+    coreGlobals.segments[locals.dispStrobe].w = locals.dispBlank ? 0 : digit;
+  } else if (data & 0x20) {
+    coreGlobals.segments[16 + locals.dispStrobe].w = locals.dispBlank ? 0 : digit;
   }
 }
 // lamp & display strobe
@@ -110,9 +119,9 @@ static WRITE_HANDLER(ppi0_portb_w) {
   if (locals.lampStrobe < 8) {
     coreGlobals.lampMatrix[locals.lampStrobe] = locals.lampData;
   } else if (locals.lampStrobe == 8) {
-    coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00) | locals.lampData;
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xfff00) | locals.lampData;
   } else if (locals.lampStrobe == 9) {
-    coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ff) | (locals.lampData << 8);
+    coreGlobals.solenoids = (coreGlobals.solenoids & 0xf00ff) | (locals.lampData << 8);
   }
 }
 // lamp data
@@ -129,11 +138,15 @@ static READ_HANDLER(ppi1_portb_r) {
   return ~coreGlobals.swMatrix[1 + core_BitColToNum(locals.swStrobe)];
 }
 static WRITE_HANDLER(ppi1_portb_w) { logerror("8255 #1 port B: %02x\n", data); }
-static WRITE_HANDLER(ppi1_portc_w) { logerror("8255 #1 port C: %02x\n", data); }
+static WRITE_HANDLER(ppi1_portc_w) {
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 0x07) << 16);
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x04) | ((data & 0x30) >> 4);
+}
 
-// dip strobe
+// dip strobe, sound control
 static WRITE_HANDLER(ppi2_porta_w) {
   locals.dipStrobe = ~data & 0x0f;
+  sndbrd_ctrl_w(0, data >> 6);
 }
 // dip return
 static READ_HANDLER(ppi2_portb_r) {
@@ -141,7 +154,6 @@ static READ_HANDLER(ppi2_portb_r) {
 }
 // sound command
 static WRITE_HANDLER(ppi2_portc_w) {
-  logerror("snd cmd: %02x\n", data);
   sndbrd_data_w(0, data);
 }
 
@@ -176,41 +188,54 @@ static SWITCH_UPDATE(JEUTEL) {
 
 static struct {
   UINT8 sndCmd;
+  UINT8 tmsLatch;
+  UINT16 tmsAddr;
+  int tmsBit;
 } sndlocals;
 
 static void jeutel_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0x00, sizeof(sndlocals));
+  tms5110_reset();
+  AY8910_reset(0);
 }
 
 static WRITE_HANDLER(jeutel_data_w) {
   sndlocals.sndCmd = data;
-  cpu_set_nmi_line(2, PULSE_LINE);
+}
+
+static WRITE_HANDLER(jeutel_ctrl_w) {
+  if (!(data & 0x01)) {
+    logerror(" CPU RESET\n");
+    cpuint_reset_cpu(2);
+    return;
+  }
+  if (data & 0x02) logerror(" CPU NMI\n");
+  cpu_set_nmi_line(2, data & 0x02 ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static WRITE_HANDLER(jeutel_manCmd_w) {
+  jeutel_data_w(0, data);
+  jeutel_ctrl_w(0, 3);
+  jeutel_ctrl_w(0, 1);
+}
+
+static WRITE_HANDLER(m8000_w) {
+  sndlocals.tmsLatch = data;
 }
 
 static MEMORY_READ_START(snd_readmem)
-  {0x0000, 0x2fff, MRA_ROM},
+  {0x0000, 0x0fff, MRA_ROM},
   {0x4000, 0x43ff, MRA_RAM},
+  {0x6000, 0x7fff, MRA_ROM},
 MEMORY_END
-
-static WRITE_HANDLER(m8000_w) {
-  logerror("m8000_w: %02x\n", data);
-  tms5110_CTL_w(0, data >> 4);
-  tms5110_PDC_w(0, 1);
-  tms5110_PDC_w(0, 0);
-}
 
 static MEMORY_WRITE_START(snd_writemem)
   {0x4000, 0x43ff, MWA_RAM},
   {0x8000, 0x8000, m8000_w},
 MEMORY_END
 
-static READ_HANDLER(snd_cmd_r) {
-  return sndlocals.sndCmd;
-}
-
 static PORT_READ_START(snd_readport)
-  {0, 0, AY8910_read_port_0_r},
-  {4, 4, snd_cmd_r},
+  {4, 4, AY8910_read_port_0_r},
 PORT_END
 
 static PORT_WRITE_START(snd_writeport)
@@ -218,63 +243,95 @@ static PORT_WRITE_START(snd_writeport)
   {1, 1, AY8910_write_port_0_w},
 PORT_END
 
-static WRITE_HANDLER(ay8910_porta_w) { logerror("8910 port A: %02x\n", data); }
-static WRITE_HANDLER(ay8910_portb_w) { logerror("8910 port B: %02x\n", data); }
+/*
+ * Bits 0 - 7: NC, NC, J6, LDH, CLR/LDL, CCLK, C1, C0
+ */
+static WRITE_HANDLER(ay8910_porta_w) {
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | (data & 0x04);
+  logerror("8910 port A: %c%c%c%c%c%cxx\n", data & 0x80 ? '0' : ' ', data & 0x40 ? '1' : ' ', data & 0x20 ? 'K' : ' ', data & 0x10 ? ' ' : 'L', data & 0x08 ? ' ' : 'H', data & 0x04 ? 'J' : ' ');
+  if (~data & 0x10) { // load lower byte & reset bit counter
+    sndlocals.tmsBit = 0;
+    sndlocals.tmsAddr = (sndlocals.tmsAddr & 0xff00) | sndlocals.tmsLatch;
+  }
+  if (~data & 0x08) { // load upper byte
+    sndlocals.tmsAddr = (sndlocals.tmsAddr & 0x00ff) | (sndlocals.tmsLatch << 8);
+    logerror(" TMS offset:   %04x\n", sndlocals.tmsAddr);
+  }
+  if ((data & 0xf0) == 0xf0) {
+    tms5110_CTL_w(0, TMS5110_CMD_RESET);
+    tms5110_PDC_w(0, 1);
+    tms5110_PDC_w(0, 0);
+  }
+  if ((data & 0xf0) == 0xd0) {
+    tms5110_CTL_w(0, TMS5110_CMD_SPEAK);
+    tms5110_PDC_w(0, 1);
+    tms5110_PDC_w(0, 0);
+  }
+}
+static READ_HANDLER(ay8910_portb_r) {
+  logerror("8910 port B read: %02x\n", sndlocals.sndCmd);
+  return sndlocals.sndCmd;
+}
 
 static struct AY8910interface jeutel_8910Int = {
   1,
-  3333333/2,
-  { 30 },
-  { 0 },
-  { 0 },
+  2000000,
+  { 20 },
+  { NULL },
+  { ay8910_portb_r },
   { ay8910_porta_w },
-  { ay8910_portb_w },
 };
 
 static void tms5110_irq(int data) {
-  logerror("5110 irq: %d\n", data);
-  cpu_set_irq_line(2, 0, data ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(2, 0, tms5110_status_r(0) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static int tms5110_callback(void) {
-  logerror("5110 callback\n");
-  return 0;
+  int value;
+  value = (memory_region(REGION_SOUND1)[sndlocals.tmsAddr] >> sndlocals.tmsBit) & 1;
+  sndlocals.tmsBit++;
+  if (sndlocals.tmsBit > 7) {
+    sndlocals.tmsAddr++;
+    sndlocals.tmsBit = 0;
+  }
+  return value;
 }
 
 static struct TMS5110interface jeutel_5110Int = {
-  3300000/4,				/* clock rate = 80 * output sample rate,     */
+  639450,				/* clock rate = 80 * output sample rate,     */
 								/* usually 640000 for 8000 Hz sample rate or */
 								/* usually 800000 for 10000 Hz sample rate.  */
-  100,					/* volume */
-  tms5110_irq,		/* IRQ callback function */
+  50,					/* volume */
+  tms5110_irq,		/* IRQ callback function (not implemented!) */
   tms5110_callback	/* function to be called when chip requests another bit*/
 };
 
 const struct sndbrdIntf jeutelIntf = {
-  "JEUTEL", jeutel_init, NULL, NULL, jeutel_data_w, jeutel_data_w, NULL, jeutel_data_w
+  "JEUTEL", jeutel_init, NULL, NULL, jeutel_manCmd_w, jeutel_data_w, NULL, jeutel_ctrl_w
 };
 
 MACHINE_DRIVER_START(jeutel)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu0", Z80, 3300000)
-  MDRV_CPU_MEMORY(cpu_readmem0, cpu_writemem0)
-
-  MDRV_CPU_ADD_TAG("mcpu1", Z80, 3300000)
+  MDRV_CPU_ADD_TAG("mcpue", Z80, 2000000) // should be 4 MHz, yet games run way too fast then
   MDRV_CPU_MEMORY(cpu_readmem1, cpu_writemem1)
+
+  MDRV_CPU_ADD_TAG("mcpum", Z80, 2000000) // should be 4 MHz, yet games run way too fast then
+  MDRV_CPU_MEMORY(cpu_readmem2, cpu_writemem2)
 
   MDRV_INTERLEAVE(250)
   MDRV_CPU_VBLANK_INT(jeutel_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(jeutel_irq, 100)
-  MDRV_TIMER_ADD(jeutel_nmi, 250)
+  MDRV_CPU_PERIODIC_INT(jeutel_irq, 500)
+  MDRV_TIMER_ADD(jeutel_nmi, 200) // this is not correct; the 2nd CPU should trigger this on BUSAK actually
   MDRV_CORE_INIT_RESET_STOP(JEUTEL,JEUTEL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(JEUTEL)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(3)
 
-  MDRV_CPU_ADD_TAG("scpu", Z80, 3300000)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_TIMER_ADD(tms5110_irq, 100) // needed so the chip can tell the CPU it's ready
 
   MDRV_SOUND_ADD(AY8910, jeutel_8910Int)
   MDRV_SOUND_ADD(TMS5110, jeutel_5110Int)
@@ -299,13 +356,13 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_BITDEF(  0x0001, IPT_TILT,   KEYCODE_INSERT) \
     COREPORT_BIT(     0x0020, "Test",     KEYCODE_7) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S1/1") \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "S1/1") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "S1/2") \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S1/2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S1/5") \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S1/5") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S1/6") \
@@ -332,13 +389,13 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_DIPNAME( 0x0008, 0x0000, "S3/5") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0000, "S3/6") \
+    COREPORT_DIPNAME( 0x0800, 0x0800, "S3/6") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0800, "1" ) \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S4/1") \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "S4/1") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "S4/2") \
+    COREPORT_DIPNAME( 0x0100, 0x0100, "S4/2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0100, "1" ) \
     COREPORT_DIPNAME( 0x0002, 0x0000, "S4/5") \
@@ -351,13 +408,13 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_DIPNAME( 0x0040, 0x0000, "S1/3") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "S1/4") \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S1/4") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "S1/7") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S1/8") \
+    COREPORT_DIPNAME( 0x8000, 0x8000, "S1/8") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
     COREPORT_DIPNAME( 0x0010, 0x0000, "S2/3") \
@@ -415,13 +472,21 @@ static core_tLCDLayout dispAlpha[] = {
 /-------------------------------*/
 ROM_START(leking)
   NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("game-m.bin", 0x0000, 0x2000, CRC(4b66517a) SHA1(1939ea78932d469a16441507bb90b032c5f77b1e))
-  NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("game-v.bin", 0x0000, 0x1000, CRC(cbbc8b55) SHA1(4fe150fa3b565e5618896c0af9d51713b381ed88))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("game-m.bin", 0x0000, 0x2000, CRC(4b66517a) SHA1(1939ea78932d469a16441507bb90b032c5f77b1e))
 
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("sound-v.bin", 0x0000, 0x1000, CRC(36130e7b) SHA1(d9b66d43b55272579b3972005355b8a18ce6b4a9))
-    ROM_LOAD("sound-p.bin", 0x1000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound-p.bin", 0x0000, 0x2000, BAD_DUMP CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
 ROM_END
 
 INITGAME(leking,dispAlpha,FLIP_SW(FLIP_L))
@@ -433,13 +498,21 @@ CORE_GAMEDEFNV(leking, "Le King", 1983, "Jeutel", jeutel, GAME_NOT_WORKING)
 /-------------------------------*/
 ROM_START(olympic)
   NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("game-jo1.bin", 0x0000, 0x2000, CRC(c9f040cf) SHA1(c689f3a82d904d3f9fc8688d4c06082c51645b2f))
-  NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("game-v.bin", 0x0000, 0x1000, CRC(cd284a20) SHA1(94568e1247994c802266f9fbe4a6f6ed2b55a978))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("game-jo1.bin", 0x0000, 0x2000, CRC(c9f040cf) SHA1(c689f3a82d904d3f9fc8688d4c06082c51645b2f))
 
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("sound-j0.bin", 0x0000, 0x1000, CRC(5c70ce72) SHA1(b0b6cc7b6ec3ed9944d738b61a0d144b77b07000))
-    ROM_LOAD("sound-p.bin", 0x1000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound-p.bin", 0x0000, 0x2000, CRC(97eedd6c) SHA1(3bb8e5d32417c49ef97cbe407f2c5eeb214bf72d))
+    ROM_RELOAD(0x2000, 0x2000)
+    ROM_RELOAD(0x4000, 0x2000)
+    ROM_RELOAD(0x6000, 0x2000)
+    ROM_RELOAD(0x8000, 0x2000)
+    ROM_RELOAD(0xa000, 0x2000)
+    ROM_RELOAD(0xc000, 0x2000)
+    ROM_RELOAD(0xe000, 0x2000)
 ROM_END
 
 INITGAME(olympic,dispAlpha,FLIP_SW(FLIP_L))

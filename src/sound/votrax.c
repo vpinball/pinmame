@@ -90,7 +90,7 @@ static const char *PhonemeNames[65] =
 };
 #endif
 
-static const int PhonemeLengths[65] =
+/*static const int PhonemeLengths[65] =
 {
 	 59,  71, 121,  47,  47,  71, 103,  90,
 	 71,  55,  80, 121, 103,  80,  71,  71,
@@ -101,7 +101,7 @@ static const int PhonemeLengths[65] =
 	 90,  71, 103, 185,  80, 121,  59,  90,
 	 80,  71, 146, 185, 121, 250, 185,  47,
 	0
-};
+};*/
 
 #define PT_NS 0
 #define PT_V  1
@@ -285,7 +285,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeOut = 1.0;
 
 			if ( !doMix )
-				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*3.1415/2);
+				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*(M_PI/2));
 
 			if ( !votraxsc01_locals.iRemainingSamples ) {
 				votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation];

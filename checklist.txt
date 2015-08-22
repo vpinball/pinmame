@@ -5,7 +5,7 @@ Important steps to take before a release:
 - Clean up the repository: Update the pinmame folder, remove sticky tags, commit tested changes.
 - check "whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on.
 - check the date, year and version in all .txt files!
-  (bugs.txt, pinmame.text, visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
+  (bugs.txt, pinmame.txt, visual pinmame.txt, whatsnew.txt, whatsnewVPM.txt)
 - remove the DEBUG define in the makefile (which is probably not there anyway)!
 - edit "src/version.c" for the correct version number
 - edit "src/ui/PinMAME32.rc" for the correct version number and copyright years
@@ -31,12 +31,13 @@ Important steps to take before a release:
 
 #4 Tag repository
 - Tag the new version
-  svn copy https://pinmame.svn.sourceforge.net/svnroot/pinmame/trunk https://pinmame.svn.sourceforge.net/svnroot/pinmame/tags/release_x_y -m "Tag release X.Y"
+  svn copy https://svn.code.sf.net/p/pinmame/code/trunk https://svn.code.sf.net/p/pinmame/code/tags/release_x_y -m "Tag release X.Y"
 
 #5 Create zip packages
 - Pack everything together nicely, using max. compression
 - Make sure all default folders are included in the VPM zip
   (these are: artwork, cfg, hi, ini, inp, memcard, nvram, roms, samples, snap, sta, wave)
+  svn export https://svn.code.sf.net/p/pinmame/code/tags/release_x_y/release
 - Make sure MAME license is in all released zips
 
 If anything of the above fails, forget about a release and correct the errors first!
@@ -77,7 +78,7 @@ Known Issues:
    > known issues:
      (2008) Errors when compiling PinMAME32 VC debug builds
             "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
-   > last trunk revision tested: 3111 = all release builds compiled, but no VC debug builds (Maddes)
+   > last trunk revision tested: 3264 = all release builds compiled, but no VC debug builds (Maddes)
 
 
 

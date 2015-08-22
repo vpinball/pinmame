@@ -30,7 +30,7 @@
   CPU: 2 x Z80
   Clock: 4 Mhz
   Interrupt: IRQ via a timer - hardwired & jumpered to 60Hz, NMI via the 7th bit of the sound command
-  Generation #1 - Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
+  Generation #1 - Audio: 3 X DAC (1 used to drive volume), 1 X TMS5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
   Generation #2 - Audio: 3 X DAC (1 used to drive volume), 1 X M114S Digital Wave Table Synth Chip
 
   Issues/Todo:

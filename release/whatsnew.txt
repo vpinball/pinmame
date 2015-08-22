@@ -1,3 +1,222 @@
+Version 2.6 (X X, 2015) - "We're not dead (yet)"
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
+Optimization to DCS sound decoding for 1993-era games (STTNG, IJ, JD)
+(Optional) Separate RGB-Color selection for the 4 DMD shades
+Added driver for MAC / CICPlay games
+Correct display outputs on IDSA
+Slight digits correction for Papillon
+Different display handling for Tecnoplay "Space Team"
+Added Y8950 sound for Tecnoplay games and Astrocade sound for Midway's Rotation VIII
+Corrected Atari gen.1 & gen.2 sound (so make sure you have the 82s130.bin in the ROM set)
+Fixed display width for Black Belt (Squawk and Talk)
+Some fixes for Midnight Marauders
+Corrected CPU clock, RIOT speed, displays for GTS80B
+Corrected GTS80 SS sound clock
+Cured scratchy GTS80 sound after reset
+Corrected DMD for Strikes n' Spares
+Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
+Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
+Tweak CPU clock for Mystery Castle to make it look more correct
+Fixed single zero digit on Odin & Odin Deluxe
+Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
+Improve Speech on Nuova Bell and Jeutel games
+Fix some/most of the general sound stutter issues by improving the throttle code
+Improve performance for all ARM7 based games (e.g. Whitestar II)
+Updated to zlib 1.2.8
+
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
+New:
+Atari: 4x4 (not working yet)
+CICPlay: Galaxy Play, Galaxy Play 2
+Data East: King Kong 1.0
+IDSA: Basket Ball, V-1 (speech not working yet)
+Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
+JP: Add missing ROM for Olympus
+MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
+Premier: Amazon Hunt II
+Stargame: Iron Balls
+Stern: Dale Jr. (Nascar 5.00)
+Sleic: Io Moon (not working yet)
+       Bike Race (not working yet)
+WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
+     Rush Pinball (custom MOD, no sound)
+
+Kinda new:
+Star Wars 20th Anniversary 1.04
+Last Action Hero 1.13 (unofficial MOD)
+
+Clones:
+Al's Garage Band Goes On A World Tour R06a
+Amazon Hunt (alternate set)
+Apollo 13 2.03 & 5.01/Display 4.01
+Arena (alternate set)
+Black Knight 2000 LA-2 & PA-7
+Batman Forever 1.02 & 2.02
+Baywatch 3.00 Dutch & 4.00 England & 4.00 Dutch
+Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
+Bone Busters (French)
+Breakshot 1.2
+Chicago Cubs Triple Play (alternate set)
+Corvette LX-2 & LA-1
+Creature from the Black Lagoon P-3
+Cue Ball Wizard rev.2 & rev.3
+Cyclone L-1
+Diner LU-2
+Fire L-2
+Fish Tales L-5 & D-6 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) & LED Ghost Fix
+Flash L-2 (yellow flipper ROMs)
+Funhouse L-2
+Godzilla 0.90 & 1.00
+Guns n' Roses 3.00 French
+Guns n' Roses 3.00 Dutch
+Hyperball L-2
+Independence Day 2.01 & French/Display 2.00
+Indiana Jones P-2
+Indy 500 1.0R
+Joust L-1
+Jungle Lord L-1 & New Tricks Home ROMs by A.M. Thurnherr
+Kiss prototype v.2 (not working yet)
+Laser War 8.1
+Mars - God of War French
+Monopoly 2.51 (Italian display)
+Monster Bash 0.5
+Monte Carlo (alternate set)
+No Fear 1.1X
+No Good Gofers 1.2
+Party Animal (German)
+Phantom of the Opera 2.9
+Pinbot P-4 & L-5 mod
+Pistol Poker R01
+Pool Sharks LA-5
+Popeye LA-4
+Punchy the Clown R03
+Raven (alternate set)
+Riverboat Gambler PA-7
+Robocop 3.0
+Rotation VIII v.1.01 & 1.15
+STTNG P-8 & L-3
+Secret Service 4.2 (alternate sound)
+Soccer Kings (alternate set)
+Corrected display rom for South Park 0.90
+Space Jam 2.00
+Space Shuttle L-3
+Spring Break (alternate set)
+Star Trek 25th Anniversary 1.17
+Starship Troopers 2.00
+Still Crazy L-1
+Strikes n' Spares rev.2
+Swords of Fury L-1
+Taxi P-5
+Theatre of Magic 1.3 (French)
+The Shadow LH-6 with wrong text index patch (0x520AA changed from 0x69 to 0x68)
+Thunderball P-1 & P-2 & P-3
+Time Machine 1.8 German
+Tommy 1.02
+Torpedo Alley 1.6
+Viper Night Drivin' v1.02
+Volcano (Sound Only, alternate version 2)
+World Cup Soccer '94 LA-2
+X-Files 2.00
+
+
+
+Version 2.5 (June 5, 2012) - "Playmatics on the loose!"
+------------------------------------------------------------------------------
+A lot of work has been done on Playmatic.  I was happy enough to simply be able to play the games, but then Gerrit went ahead and got the sound working too!  We're still looking for roms for Playmatic Stop Ship and Playmatic Phantom Ship so if you see those, let us know please.
+With help from Matt Elder and Basillo Garcia, we managed to get working roms for Inder Metal Man and Spinball's last game - Verne's World.
+S1500 was kind enough to send us the game code for "White Force" and I hope to see it working soon.  Enjoy!
+
+*** CORE/CPU ***
+Improved segmented displays for WPC alphanumeric games
+Corrected DMD colors for Gottlieb system 3 games
+Improved DMD displays for Alvin G
+Preliminary support for IDSA SP0256 sound chip
+Playmatic System 2 sound now works and games are playable!
+Peyper/Sonic/Juegos Populares Dip Switch Handling has been changed - anyone who used dip menus for those games will need to adjust dip values
+Playmatic Lamp Numbering has changed to match the schematics
+Spectra IV - new U4 for better game operation - if you play this game, grab the new romset from vpforums.org
+
+*** ROM SUPPORT *** at least 55 new romsets!
+Alvin G Mystery Castle - 3 DMD rom "enhanced romset"
+Bally Strange Science (German) - Lee Buck
+Bell Games World Defender (Free Play)
+Funhouse 9.06H, Whitewater LH6C, Cirqus Voltaire 2.0HC (Coin Play Enabled)/T2 L-81/T2 L-82 - thanks MrGlee!
+Apollo 13 1.00
+Alternate versions of Ripleys, Sopranos, Nascar, Grand Prix, LOTR - thanks Micko!
+Alternate Stern Harley Davidson
+Stern Playboy 3.02/Simpsons Party 3.00/Terminator 3 3.01
+FreeWPC Twilight Zone 0.97/1.00/FreeWPC Corvette .61
+Cactus Canyon 1.04/1.00 - Lee Buck
+Congo 1.1, F-14 Tomcat P-5, Secret Service b26 (alternate Sound) - thanks Inkochnito
+Getaway P-B
+Johnny Mnemonic 0.5R/No Fear 1.0 - John Wart Jr.
+Judge Dredd L-4/L-5, Shadow LA-6
+Safecracker 0.91
+STTNG P-4 - Scott Charles
+IDSA V1/Basket Ball
+Inder Metal Man/Moon Light
+Juegos Populares Halley Comet/Petaco 2/Pimbal "Pinball 3000"
+Peyper Nemesis/Odin - Basillo
+Playmatic Flash Dragon, Nautilus, Skill Flight, Star Fire (alternate set), The Raid
+Playmatic Megaaton (alternate set) - Didier
+Playmatic Zira - Lee Buck
+Sonic Gamatron/Sonic Star Wars (alternate set)
+Spinball Verne's World
+Videodens Ator - Basillo
+Videodens Papillon - Lee Buck
+
+
+
+Version 2.4 (August 19, 2011) - "Summertime"
+------------------------------------------------------------------------------
+Eight months is a long time to go without a release, but we wanted to make some significant progress
+with plenty of testing, so it's here now.  We thought the rom fountain had run dry, but then
+Seymour Shabow mentioned he had worked on free play roms, Micko alerted us to alternate Stern roms,
+David Gersic posted his modified Zaccaria Free Play roms, and Inkochnito told us we were missing a lot
+of roms from Oliver Okaegi... so...a whole lot of typing was required to add support for all of these!
+
+One of our goals is to archive all pinball game code, as well as code that runs on pinball hardware.
+If you think you have code we don't support, please let one of us know.
+
+Changes:
+
+*** CORE/CPU ***
+Atari sound has been improved [Gerrit Volkenborn/Pascal Janin]
+GamePlan Lady Sharpshooter's solenoids now work 100%
+Added support for Jeutel - fully emulated with sound and speech [Gerrit Volkenborn]
+Updated TMS 5220 to latest MAME core code
+Added support for Valley Manufacturing [Gerrit Volkenborn]
+Zaccaria - Added support for SenseInput line and enhanced diagnostic output [Gerrit Volkenborn/David Gersic]
+Improved speech emulation for Bally 35, Nuova Bell, and Zaccaria Generation 2 [Gerrit Volkenborn]
+
+Corrected spinners for PinMAME simulators [Steve Ellenoff]
+Added simulator for Sega Harley Davidson [Steve Ellenoff/Brian Smith]
+Improved simulator for Stern Monopoly [Brian Smith]
+
+*** ROM SUPPORT ***
+Bowlers: Aristocrat, King Tut, Pompeii, Tic-Tac-Strike L-1 and L-2
+         Corrected sound roms for Aristocrat, Pompeii, Shuffle Inn, Taurus, Topaz
+Data East: Tales from the Crypt 3.02 Dutch (thanks Inkochnito!)
+GamePlan: alternate Lady Sharpshooter set
+Inder: Mundial 90
+Juegos Populares: Halley Comet, Olympus (good game rom)
+Sega: South Park 0.96 (thanks Inkochnito!) and Stern Harley Davidson 3rd Edition 4.0 (thanks Steve Ellenoff!)
+     Cut the Cheese and Cut the Cheese Deluxe
+Taito: Zeke's Peak (Ice Cold Beer clone)
+Valley Spectra IV
+
+Added a whole bunch of Stern whitestar revisions (thanks Micko!)
+Added Oliver Okaegi sets that were missing or skipped in previous PinMAME releases
+Added FreeWPC sets that work in PinMAME/Visual PinMAME
+Added Free Play and alternate rules roms for early Stern (thanks Seymour Shabow!)
+Added Free Play roms for Zaccaria (thanks David Gersic!)
+Added a lot of WPC/WPC-95 sets including the real Scared Stiff prototype rom with working kickback! (thanks Pete Haduch!)
+
+
+
 Version 2.3 (December 24, 2010) - "Merry Christmas"
 ------------------------------------------------------------------------------
 And here we are again at the end of another year for PinMAME; time flies!
@@ -15,7 +234,7 @@ for a good set of ROMs for like 10 years... ;)
 Also: Brian got the speech ROM for "Caribbean Cruise" from Steve Young,
 the missing DMD ROM for "Aaron Spelling" from Mike Pacak,
 and built in support for Ed Cheung's WPC "ghosting" patch ROMs, which
-should make for a clearer look in our emulated DMD display too.
+should make for a clearer look in our emulated version too.
 
 Last but not least we found a sound ROM revision for Williams Space Shuttle
 that corrects a bug in the previously known U49 dump which was provided by

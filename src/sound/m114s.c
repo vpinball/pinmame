@@ -463,7 +463,7 @@ INLINE void init_all_channels(struct M114SChip *chip)
  		init_channel(&chip->channels[i]);
 
 	//Chip init stuff
-	memset(&chip->tempch_regs,0,sizeof(&chip->tempch_regs));
+	memset(&chip->tempch_regs,0,sizeof(chip->tempch_regs));
 	chip->channel = 0;
 	chip->bytes_read = 0;
 	memset(&tb1,0,sizeof(tb1));

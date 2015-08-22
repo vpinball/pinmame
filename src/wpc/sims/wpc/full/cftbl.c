@@ -397,13 +397,21 @@ WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
+
+WPC_ROMSTART(cftbl,p3,"cftbl_p3.u6",0x80000,CRC(dfced9c6) SHA1(f8f3abed8dd6339e91e8d6acc48cb83dbccf992b))
+WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e87acadeda4),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3,SP-1)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3,SP-1) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3, SP-1)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3, SP-1 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3)",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -427,7 +435,7 @@ static core_tGameData cftblGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,0,0,0,0,
+    0,1,0,0,0,0,0, // 8 (or 12?) ramp lights; the pattern repeats every 4 lamps, so 1 extra column is enough
     NULL, cftbl_handleMech, NULL, cftbl_drawMech,
     NULL, cftbl_samsolmap
   },
@@ -441,11 +449,21 @@ static core_tGameData cftblGameData = {
   }
 };
 
+static WRITE_HANDLER(cftbl_wpc_w) {
+  UINT8 state;
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID3) {
+    state = 1 << ((GET_BIT7 << 1) | GET_BIT3);
+    coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = (state << 4) | state;
+  }
+}
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_cftbl(void) {
   core_gameData = &cftblGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, cftbl_wpc_w);
 }
 
 static void cftbl_handleMech(int mech) {

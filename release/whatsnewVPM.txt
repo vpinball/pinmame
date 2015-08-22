@@ -1,6 +1,68 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 2.6 (X X, 2015)
+-----------------------------
+- New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
+  so please setup the default options again after installation!
+
+- Improved support for PinDMD over the last 'official' PinDMD build by russdx:
+  better 192x64 rescale, support for 256x64 and better support for AlvinG.
+
+- 'F6' can now be used to dump DMD frames to a text file
+
+- New methods for the Controller object:
+	HRESULT DmdWidth([out, retval] int *pVal); - Get Width of Window (as rendered by VPM)
+	HRESULT DmdHeight([out, retval] int *pVal); - Get Height of Window (as rendered by VPM)
+	HRESULT DmdPixel([in] int x, [in] int y, [out, retval] int *pVal); - Get Pixel at Position (x,y) (as rendered by VPM)
+	HRESULT updateDmdPixels([in] int **buf, [in] int width, [in] int height, [out, retval] int *pVal); - Get all Pixels (as rendered by VPM) (user-allocated)
+
+	HRESULT RawDmdWidth([out, retval] int *pVal); - Get Width of Window (Raw, equal to the original DMD resolution)
+	HRESULT RawDmdHeight([out, retval] int *pVal); - Get Height of Window (Raw, equal to the original DMD resolution)
+	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution) (NOT user-allocated)
+
+	HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal); - Copy all changed lamps (user-allocated)
+	HRESULT LampsState([in] int **buf, [out, retval] int *pVal); - Copy all lamps (user-allocated)
+
+	HRESULT ChangedSolenoidsState([in] int **buf, [out, retval] int *pVal); - Copy all changed solenoids (user-allocated)
+	HRESULT SolenoidsState([in] int **buf, [out, retval] int *pVal); - Copy all solenoids (user-allocated)
+
+	HRESULT ChangedGIsState([in] int **buf, [out, retval] int *pVal); - Copy all changed GI lamps (user-allocated)
+
+        HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal); - Copy all changed LEDs (user-allocated)
+
+	HRESULT MasterVolume([out, retval] int *pVal); - Get Master Volume
+	HRESULT MasterVolume([in] int newVal); - Set Master Volume
+	HRESULT EnumAudioDevices([out, retval] int *pVal); - Enumerate audio devices using DirectSound and return the number of found devices
+	HRESULT AudioDevicesCount([out, retval] int *pVal); - Return the number of found devices (by previous call to EnumAudioDevices)
+	HRESULT AudioDeviceDescription([in] int num,[out, retval] BSTR *pVal); - Return the audio device description (null char ended string) of "num" device
+	HRESULT AudioDeviceModule([in] int num,[out, retval] BSTR *pVal); - Return the audio device module (null char ended string) of "num" device
+	HRESULT CurrentAudioDevice([out, retval] int *pVal); - Get the current audio device number
+	HRESULT CurrentAudioDevice([in] int newVal); - Set the current audio device number
+
+- New methods for Game.Settings:
+	- PinDMD 2 Support (for PinDMD 1 Support, comment out "#define PINDMD2" in pinddrv.c, as it pulls in an external library and needs the ext\ftdi\i386\ftd2xx.dll during runtime)
+	HRESULT ShowPinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of PinDMD display
+	HRESULT ShowPinDMD([in] VARIANT_BOOL newVal); - En/Disable PinDMD display
+
+	- Enhanced Cabinet Support
+	HRESULT ShowWinDMD([out, retval] VARIANT_BOOL *pVal); - Get state of DMD display
+	HRESULT ShowWinDMD([in] VARIANT_BOOL newVal); - En/Disable DMD display
+	HRESULT FastFrames([out, retval] int *pVal); - Get Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize) 
+	HRESULT FastFrames([in] int newVal); - Set Number of Display Frames that are initially rendered as fast as possible (e.g. loading and initialize)
+	HRESULT IgnoreRomCrc([out, retval] VARIANT_BOOL  *pVal); - Get Flag Ignore wrong CRCs of Romsets
+	HRESULT IgnoreRomCrc([in] VARIANT_BOOL  newVal); - Set Flag Ignore wrong CRCs of Romsets
+	HRESULT CabinetMode([out, retval] VARIANT_BOOL  *pVal); - Get Flag Special Cabinet Mode that disables splash screen, window on main monitor check, etc
+	HRESULT CabinetMode([in] VARIANT_BOOL  newVal); - Set Flag Special Cabinet Mode that disables splash screen, window on main monitor check, etc
+
+Version 2.5 (June 5, 2012)
+-----------------------------
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
+Version 2.4 (August 19, 2011)
+-----------------------------
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
 Version 2.3 (December 24, 2010)
 -------------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes
@@ -71,7 +133,7 @@ Version 1.53, (June 1, 2006)
   not visible VPM will wait until it becomse visible (or a timeout of one second times out). Once the
   parent window is visible it will be set as the active and foreground window
 - selecting the vpm display and pressing escape will cause an error - known issue
-  
+
 Version 1.52 (August 1th, 2005)
 -------------------------------
 - Added an easter egg screen: THANK YOU GUYS!
@@ -160,7 +222,7 @@ Version 1.20 Alpha (August 24, 2002)
 - added 'Game.Settings' property including the "settings"-object you receive
 - added 'Controller.Settings property including the "settings"-object you receive
 - by using Controller.Settings and Game.Settings access to nearly all MAME settings is available
-  ('Settings.Value("name")=value' 
+  ('Settings.Value("name")=value'
 - the emulation thread is running at a slightly higher system priority now
 - the display can be resized to every size you like
 
@@ -243,7 +305,7 @@ Version 0.99 Beta 2 (April 22, 2001)
 -New Dialog for troubleshooting missing roms and bad configurations
 -Rom + Configuation Paths only need to be set once, rather than for each individual rom.
 -New Interface Web Page for easier reading of the interface properties!
--Many New Interface properties for controlling Visual PinMAME: 
+-Many New Interface properties for controlling Visual PinMAME:
   (See interface.html for more info)
   Controller.GetMech
   Controller.SampleRate

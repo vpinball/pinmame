@@ -1,0 +1,535 @@
+#include <stdlib.h>
+#include <memory.h>
+#include <string.h>
+#include <assert.h>
+
+#include <Windows.h>
+
+#define JIT_OPALIGN 0
+#include "jit.h"
+
+#if JIT_ENABLED
+
+#if JIT_DEBUG
+//
+// debug mode
+//
+
+// enable ASSERTions
+#define ASSERT(x) assert(x)
+
+// In debug mode, set generated code pages to EXECUTE+READ mode only (no write access)
+// during normal execution.  This protects our generated code against stray pointer overwrites
+// when we're not explicitly generating code, which can be helpful in isolating bugs that
+// corrupt random memory by causing a hard memory fault if we try to write a code page in
+// error.  We only use this mode during debugging, because it costs us some extra time when
+// we generate new JIT code, because we have to make a couple of Windows API calls to change
+// the memory protection for the memory holding the generated code (to make it writable, then
+// set it back to execute-only).
+#define BASE_CODEPAGE_MODE  PAGE_EXECUTE_READ
+#define DbgVirtualProtect(addr, len, mode, pOldMode) VirtualProtect(addr, len, mode, pOldMode)
+
+#else
+//
+// Release mode
+//
+
+// turn off assertions
+#define ASSERT(x)
+
+// Release mode - keep the code page in EXECUTE+READ+WRITE mode all the time.  This makes
+// write access during code generation faster, the trade-off being that it exposes generated
+// code pages to stray pointer overwrites.  That's only a problem if there are bugs, and
+// release code *should* be bug-free, so...
+#define DbgVirtualProtect(addr, len, mode, pOldMode) (*(pOldMode) = 0)
+#define BASE_CODEPAGE_MODE  PAGE_EXECUTE_READWRITE
+
+#endif // JIT_DEBUG
+
+static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz);
+static byte *emit_lookup_code(struct jit_ctl *jit, int patch);
+static void init_code_pages(struct jit_ctl *jit);
+static void delete_code_pages(struct jit_ctl *jit);
+
+
+
+
+// create the JIT control structure
+struct jit_ctl *_jit_create(int *cycle_counter, int rshift)
+{
+	// allocate and initialize the control structure, including extra space for the jit_private
+	// structure after the end of the main jit_ctl portion
+	struct jit_ctl *jit = (struct jit_ctl *)malloc(sizeof(struct jit_ctl));
+	jit->minAddr = 0;
+	jit->maxAddr = 0;
+	jit->native = 0;
+	jit->rshift = rshift;
+	jit->pages = 0;
+	jit->cycle_counter_ptr = cycle_counter;
+
+	// initialize the native code page list
+	init_code_pages(jit);
+
+	// return the new control structure
+	return jit;
+}
+
+// Reset the JIT
+void jit_reset(struct jit_ctl *jit)
+{
+	int i;
+	int nAddrs;
+
+	// Forget all previous translation, and reset all addresses to 'emulate'.
+	// This will disable new translation until we get the go-ahead from the 
+	// emulator, via a call to jit_enable().
+	nAddrs = (jit->maxAddr - jit->minAddr) >> jit->rshift;
+	for (i = 0 ; i < nAddrs ; ++i)
+		jit->native[i] = jit->pEmulate;
+
+	// delete all native code pages
+	delete_code_pages(jit);
+
+	// re-initialize the code page list
+	init_code_pages(jit);
+}
+
+// initialize the code page list
+static void init_code_pages(struct jit_ctl *jit)
+{
+	byte *res, *p;
+	int reslen;
+	byte retn[] = { 0xC3 };  // RETN instruction
+	
+	// allocate the first page for native code storage (use the default length)
+	jit_add_page(jit, 0);
+
+	// reserve space for the boilerplate code
+	p = res = jit_reserve_native(jit, reslen = 16, 0);
+
+	// Create the special 'pending' and 'emulate' pointers.  Native code
+	// can jump to any address in the mapping array, so every entry must
+	// be populated with a pointer to valid code.  For any opcode that
+	// hasn't been or can't be translated, a native code jump to that
+	// location must return to the emulator.  So the 'pending' and 'emulate'
+	// pointers must both simply point to native RETN instruction.  The
+	// two pointer values must be distinct, though, because the emulator
+	// uses the two values to determine whether or not to attempt
+	// translation when it encounters an untranslated opcode.  So we
+	// need to set up a separate RETN instruction for each one.
+	jit->pPending = p = jit_store_native(jit, retn, 1) + 1;
+	jit->pEmulate = p = jit_store_native(jit, retn, 1) + 1;
+
+	// Generate a similar special location for the 'working' state.  This is
+	// really just a distinguished pointer value; the code at the other end
+	// of the pointer shouldn't matter since it should never be invoked.  The
+	// working state can only exist while the translator is running, and that
+	// has to complete before we resume execution of any emulated or translated
+	// code.
+	jit->pWorking = p = jit_store_native(jit, retn, 1) + 1;
+
+	// close the reserved space
+	jit_close_native(jit, res, reslen);
+
+	// Create the emulated address lookup code.  This is a routine that
+	// generated code can invoke to look up an emulated address at run-time
+	// and jump to it, or return to the emulator if no native code is
+	// available.  To invoke this code, the generated code loads the
+	// target emulated address into EAX and jumps to jit->pLookup.
+	jit->pLookup = emit_lookup_code(jit, 0);
+	jit->pLookupPatch = emit_lookup_code(jit, 1);
+}
+
+// Run-time address lookup.  This is invoked from generated code to
+// find the native code for an emulated address.  See emit_lookup_code()
+// for how this is invoked.
+static byte *rtlookup(struct jit_ctl *jit, data32_t addr)
+{
+	// if it's not a valid address, return to the emulator
+	if (addr < jit->minAddr || addr > jit->maxAddr)
+		return jit->pEmulate;
+
+	// if we're out of cycles, return to the emulator
+	if (*jit->cycle_counter_ptr == 0)
+		return jit->pEmulate;
+
+	// look up the address
+	return JIT_NATIVE(jit, addr);
+}
+
+// Run-time address lookup and patch.  This is invoked from generated
+// code to find the native code for an emulated address, and then patch
+// the caller if the code has been translated.
+static byte *rtlookup_patch(struct jit_ctl *jit, data32_t addr, byte *caller)
+{
+	// look up the address
+	byte *nat = rtlookup(jit, addr);
+
+	// If it's been translated, patch the calling code.  The calling code
+	// will always look like this:
+	//
+	//    B8 imm32    MOV EAX, emuaddr
+	//    E8 ofs32    CALL patchLookup
+	//
+	// We want to replace both instructions with a jump to the translated address,
+	// so go back 10 bytes and replace the MOV.
+	if (nat != jit->pEmulate && nat != jit->pPending)
+	{
+		DWORD prvPro;
+		
+		// back up the caller address to the MOV instruction
+		caller -= 10;
+		ASSERT(caller[0] == 0xB8 && caller[5] == 0xE8);  // MOV, CALL
+
+		// make the code page temporarily writable
+		DbgVirtualProtect(caller, 10, PAGE_EXECUTE_READWRITE, &prvPro);
+
+		// patch the MOV with JMP ofs32
+		caller[0] = 0xE9;       // JMP ofs32
+		*(UINT32 *)&caller[1] = (UINT32)(nat - (caller+5));
+
+		// restore the old page protection
+		DbgVirtualProtect(caller, 5, prvPro, &prvPro);
+	}
+
+	// return the native address to invoke
+	return nat;
+}
+
+// Emit the pLookup code.  When the generated code encounters a jump to an
+// address that hasn't been translated yet, it loads EAX with the destination
+// emulator address (the target of the Branch instruction in the original
+// emulator code) and jumps directly to pLookup.  The pLookup routine does
+// a run-time lookup on the emulator address to see if it's been converted
+// to generated code yet.  If so, the pLookup routine simply transfers control
+// directly to the generated code.  This allows relatively fast calling from
+// one native routine to another when the target was translated later than
+// the caller.  If the target routine hasn't been translated, pLookup simply
+// returns to the emulator with EAX still loaded with the target emulator
+// address.  This allows the emulator to either do an on-demand translation
+// of the target code, or simply emulate the target code.
+//
+// If 'patch' is true, we'll generate the version of the routine for
+// pLookupPatch, which patches the calling code with a direct jump to the
+// target address when the translation is successful.
+static byte *emit_lookup_code(struct jit_ctl *jit, int patch)
+{
+	// The generated code looks like this.  "P" in the first columns means
+	// that this is generated for the "patch" version only.
+	//
+	// P  5A           POP EDX         ; pop the caller address, for patching
+	//    50           PUSH EAX        ; push the address to look up, to save
+	// P  52           PUSH EDX        ; push the caller address, as an argument to lookup()
+	//    50           PUSH EAX        ; push the address to look up, as an argument to lookup()
+	//    68 <jit>     PUSH <jit>      ; put the jit_ctl pointer, as an argument to lookup>()
+	//    E8 <lookup>  CALL <lookup>   ; call lookup()
+	//    83 C4 nn     ADD SP,n        ; discard arguments
+	//    5A           POP EDX         ; pop the saved destination address
+	//    92           XCHG EAX,EDX    ; get the destination address back into EAX
+	//    FF E0        JMP EDX         ; jump to the translated address
+	//
+	// Note that the reason we have to generate this code rather than use
+	// a static handler is that we won't have the 'jit' structure pointer
+	// stashed anywhere that generated code can reach.  We need that to
+	// do the address lookup.  So we just need to generate this little bit
+	// of glue that loads up the 'jit' pointer and calls a static handler
+	// that takes that as an argument.
+	//
+	// If the emulator address we're jumping to has already been translated,
+	// rtlookup will return its native address, so we simply want to jump there.
+	// If the address hasn't been translated yet, rtlookup will return pEmulate,
+	// which is native code that simply returns to the emulator.  So in either
+	// case we simply jump to the address returned.  In the pEmulate case, we
+	// must load EAX with the target emulator address first; doing this in the
+	// case where the code has already been translated is harmless, so simply
+	// load EAX with the target address in all cases.
+
+	byte pushEAX[] = { 0x50 };               // PUSH EAX
+	byte pushJit[] = { 0x68, 0, 0, 0, 0 };   // PUSH Imm32
+	byte callLk[]  = { 0xE8, 0, 0, 0, 0 };   // CALL Ofs32
+	byte addSp8[]  = { 0x83, 0xC4, 0x08 };   // ADD SP,8
+	byte addSp12[] = { 0x83, 0xC4, 0x0C };   // ADD SP,12
+	byte pushEDX[] = { 0x52 };               // PUSH EDX
+	byte popEDX[]  = { 0x5A };               // POP EDX
+	byte xchgED[]  = { 0x92 };               // XCHG EAX,EDX
+	byte jmpEDX[]  = { 0xFF, 0xE2 };         // JMP EDX
+	byte *code, *p;
+	byte *lookup = (patch ? (byte *)rtlookup_patch : (byte *)rtlookup);
+	int reslen;
+
+	// reserve space for the handler code
+	code = p = jit_reserve_native(jit, reslen = 64, 0);
+
+	// if patching, pop the caller address into EDX
+	if (patch)
+		p = jit_store_native(jit, popEDX, 1) + 1;
+
+	// PUSH EAX (save the target emu address)
+	p = jit_store_native(jit, pushEAX, 1) + 1;
+
+	// if patching, push the additional caller address argument from EDX
+	if (patch)
+		p = jit_store_native(jit, pushEDX, 1) + 1;
+
+	// PUSH EAX (target emu address argument)
+	p = jit_store_native(jit, pushEAX, 1) + 1;
+
+	// PUSH <jit> ('jit' structure pointer argument)
+	*(UINT32 *)(&pushJit[1]) = (UINT32)jit;
+	p = jit_store_native(jit, pushJit, 5) + 5;
+
+	// generate the CALL to the static handler
+	*(UINT32 *)(&callLk[1]) = (UINT32)(lookup - (p+5));
+	p = jit_store_native(jit, callLk, 5) + 5;
+
+	// discard arguments
+	p = jit_store_native(jit, patch ? addSp12 : addSp8, 3) + 3;
+
+	// POP EDX (restore the saved target emu address)
+	p = jit_store_native(jit, popEDX, 1) + 1;
+
+	// XCHG EAX,EDX (get the target emu address into EAX)
+	p = jit_store_native(jit, xchgED, 1) + 1;
+
+	// JMP EDX (jump to the translated address)
+	p = jit_store_native(jit, jmpEDX, 2) + 2;
+
+	// end the store-native operation
+	jit_close_native(jit, code, reslen);
+	
+	// return the generated code pointer
+	return code;
+}
+
+// free the native code page list
+static void delete_code_pages(struct jit_ctl *jit)
+{
+	// delete each page in the list
+	struct jit_page *p = jit->pages;
+	while (p != 0)
+	{
+		// remember the next page
+		struct jit_page *nxt = p->nxt;
+
+		// free the code space
+		VirtualFree(p->b, 0, MEM_RELEASE);
+
+		// free the page descriptor
+		free(p);
+
+		// move on
+		p = nxt;
+	}
+
+	// clear the list head pointer
+	jit->pages = 0;
+
+	// the internal native code pointers are no longer valid
+	jit->pEmulate = 0;
+	jit->pPending = 0;
+	jit->pWorking = 0;
+	jit->pLookup = 0;
+}
+
+void jit_create_map(struct jit_ctl *jit, data32_t minAddr, data32_t maxAddr)
+{
+	int i, nBytes, nAddrs;
+	
+	// if there's an existing map, delete it
+	if (jit->native != 0)
+		free(jit->native);
+
+	// figure the size in bytes of the address space (NB: the range is
+	// exclusive of maxAddr)
+	nBytes = maxAddr - minAddr;
+
+	// figure the size in indices of the address space, taking into account
+	// that we only store every other address for 2-byte alignment, every 4th
+	// address for 4-byte alignment, etc
+	nAddrs = nBytes >> jit->rshift;
+
+	// store the new range parameters
+	jit->minAddr = minAddr;
+	jit->maxAddr = maxAddr;
+
+	// allocate the new mapping array
+	jit->native = (byte **)malloc(nAddrs * sizeof(byte *));
+	memset(jit->native, 0, nAddrs * sizeof(byte *));
+
+	// initialize the entire opcode address space to 'emulate', to disable
+	// translation until the bootstrapping process is finished
+	for (i = 0 ; i < nAddrs ; ++i)
+		jit->native[i] = jit->pEmulate;
+}
+
+void jit_set_mem_callbacks(
+	struct jit_ctl *jit,
+	data8_t (*read8)(int addr),
+	data16_t (*read16)(int addr),
+	data32_t (*read32)(int addr),
+	void (*write8)(int addr, data8_t data),
+	void (*write16)(int addr, data16_t data),
+	void (*write32)(int addr, data32_t data))
+{
+	jit->read8 = (byte *)read8;
+	jit->read16 = (byte *)read16;
+	jit->read32 = (byte *)read32;
+	jit->write8 = (byte *)write8;
+	jit->write16 = (byte *)write16;
+	jit->write32 = (byte *)write32;
+}
+
+void jit_enable(struct jit_ctl *jit)
+{
+	// figure the size of the map array
+	int nBytes = jit->maxAddr - jit->minAddr;
+	int nAddrs = nBytes >> jit->rshift;
+	int i;
+
+	// set each address that's currently set to 'emulate' to 'pending'
+	for (i = 0 ; i < nAddrs ; ++i) {
+		if (jit->native[i] == jit->pEmulate)
+			jit->native[i] = jit->pPending;
+	}
+}
+
+void jit_untranslate(struct jit_ctl *jit, data32_t addr)
+{
+	byte *p;
+
+	// if it's not in the JIT covered memory space, there's nothing to do
+	if (addr < jit->minAddr || addr >= jit->maxAddr)
+		return;
+
+	// un-translate only if the existing opcode is translated
+	p = JIT_NATIVE(jit, addr);
+	if (p != jit->pEmulate && p != jit->pPending)
+	{
+		// Replace the code with MOV EAX,<emulator address>, RETN.
+		// This will return to the emulator and resume emulation at the
+		// replaced code address.
+		p[0] = 0xB8;                 // MOV EAX,Imm32
+		*(UINT32 *)(&p[1]) = addr;   // ... the immediate data for the MOV
+		p[5] = 0xC3;                 // RETN
+
+		// Set the opcode mapping to 'emulate', so that we don't try
+		// to translate it again in the future.  Once a location is written,
+		// we'll assume that it will be written again, so we don't want to
+		// waste time and memory on repeated translations that will just
+		// be undone.
+		jit->native[(addr - jit->minAddr) >> jit->rshift] = jit->pEmulate;
+
+		// flush the instruction cache for this section of code
+		FlushInstructionCache(GetCurrentProcess(), p, 128);
+	}
+}
+
+void jit_delete(struct jit_ctl **jit)
+{
+	// delete all code pages
+	delete_code_pages(*jit);
+
+	// free the mapping array
+	if ((*jit)->native != 0)
+		free((*jit)->native);
+
+	// free the control structure
+	free(*jit);
+	*jit = 0;
+}
+
+byte *jit_reserve_native(struct jit_ctl *jit, int len, struct jit_page **pgp)
+{
+	struct jit_page *pg;
+	byte *res;
+	DWORD prvPro;
+
+	// find an existing page with space for the new code
+	for (pg = jit->pages ; pg != 0 && pg->siz - pg->ofsFree < len ; pg = pg->nxt) ;
+
+	// if that failed, allocate a new page with at least the required space
+	if (pg == 0) {
+		pg = jit_add_page(jit, len);
+		if (pg == 0 || pg->siz - pg->ofsFree < len)
+			return 0;
+	}
+
+	// give the caller the page reference if desired
+	if (pgp != 0)
+		*pgp = pg;
+
+	// figure the reserved area pointer
+	res = pg->b + pg->ofsFree;
+
+	// open this memory to writing
+	DbgVirtualProtect(res, len, PAGE_EXECUTE_READWRITE, &prvPro);
+
+	// return the destination pointer
+	return pg->b + pg->ofsFree;
+}
+
+void jit_close_native(struct jit_ctl *jit, byte *addr, int len)
+{
+	DWORD prvPro;
+
+	// make the reserved memory executable and non-writable
+	DbgVirtualProtect(addr, len, PAGE_EXECUTE_READ, &prvPro);
+}
+
+byte *jit_store_native(struct jit_ctl *jit, const byte *code, int len)
+{
+	// reserve space
+	struct jit_page *pg;
+	byte *dst = jit_reserve_native(jit, len, &pg);
+
+	// copy the data, if any
+	if (len != 0)
+	{
+		// store the instruction data
+		memcpy(dst, code, len);
+
+		// consume the space
+		pg->ofsFree += len;
+		
+		// flush the CPU instruction cache for the area where the new code resides
+		FlushInstructionCache(GetCurrentProcess(), dst, len);
+	}
+
+	// return the new code address
+	return dst;
+}
+
+static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
+{
+	DWORD prvPro;
+	int siz;
+	struct jit_page *p;
+
+	// Figure the page size.  Allocate at least the minimum size requested
+	// (plus the header structure overhead), or a default minimum if they didn't
+	// request more.
+	min_siz += sizeof(struct jit_page);
+	siz = 128*1024;
+	if (siz < min_siz)
+		siz = min_siz;
+
+	// create the page descriptor structure
+	p = (struct jit_page *)malloc(sizeof(struct jit_page));
+	p->siz = siz;
+	p->ofsFree = 0;
+
+	// link it in at the head of the page list
+	p->nxt = jit->pages;
+	jit->pages = p;
+
+	// allocate the code space
+	p->b = (byte *)VirtualAlloc(0, siz, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+	// make the code space executable
+	VirtualProtect(p->b, siz, BASE_CODEPAGE_MODE, &prvPro);
+
+	// return the new page pointer
+	return p;
+}
+
+#endif /* JIT_ENABLED */

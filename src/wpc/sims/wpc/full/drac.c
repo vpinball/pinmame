@@ -504,9 +504,9 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(drac,l1,"Bram Stoker's Dracula (L-1)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(drac,d1,l1,"Bram Stoker's Dracula (D-1) LED Ghost Fix",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(drac,d1,l1,"Bram Stoker's Dracula (D-1 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(drac,p11,l1,"Bram Stoker's Dracula (P-11)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(drac,p12,l1,"Bram Stoker's Dracula (P-12) LED Ghost Fix",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(drac,p12,l1,"Bram Stoker's Dracula (P-12 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
