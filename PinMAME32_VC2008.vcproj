@@ -536,22 +536,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\jit.c"
-					>
-				</File>
-				<File
-					RelativePath=".\src\jit.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\jitemit.c"
-					>
-				</File>
-				<File
-					RelativePath=".\src\jitemit.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\legacy.h"
 					>
 				</File>
@@ -2862,6 +2846,94 @@
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jit.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\windows\jitemit.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jitemit.h"
+					>
 				</File>
 				<File
 					RelativePath=".\src\windows\misc.c"
