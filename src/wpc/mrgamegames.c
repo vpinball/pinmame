@@ -3,9 +3,6 @@
 #include "mrgame.h"
 #include "sndbrd.h"
 
-//cheap hack to avoid the problem that we've run out of generation flags again
-#define GEN_MRGAME GEN_ALVG
-
 
 /* 10' Color Video Monitor - Generation #1*/
 core_tLCDLayout mrgame_disp_g1[] = {
@@ -101,7 +98,7 @@ CORE_GAMEDEFNV(macattck,"Mac Attack",1990,"Mr. Game (Italy)",mMRGAME2,GAME_IMPER
 
 
 /*-------------------------------------------------------------------
-/ World Cup 90 (1990)
+/ World Cup '90 (1990)
 /-------------------------------------------------------------------*/
 INITGAME(wcup90, mrgame_disp_g2, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(wcup90,	"cpu_ic13.rom", CRC(0e2edfb0) SHA1(862fb1f6509fb1f560d0b2bb8a5764f64b259f04),
@@ -119,4 +116,4 @@ MRGAME_SOUNDROM25(		"snd_ic06.rom", CRC(19a66331) SHA1(fbd71bc378b5a04247fd17545
 						"snd_ic45.rom", CRC(265aa979) SHA1(9ca10c41526a2d227c21f246273ca14bec7f1bc7),
 						"snd_ic46.rom", CRC(7edb321e) SHA1(b242e94c24e996d2de803d339aa9bf6e93586a4c))
 MRGAME_ROMEND
-CORE_GAMEDEFNV(wcup90,"World Cup 90",1990,"Mr. Game (Italy)",mMRGAME3,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(wcup90,"World Cup '90",1990,"Mr. Game (Italy)",mMRGAME3,GAME_IMPERFECT_SOUND)

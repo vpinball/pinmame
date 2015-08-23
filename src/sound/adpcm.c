@@ -52,6 +52,9 @@ struct ADPCMVoice
 	INT16 curr_sample;		/* current sample target */
 	UINT32 source_step;		/* step value for frequency conversion */
 	UINT32 source_pos;		/* current fractional position */
+#ifdef PINMAME
+	int is6376;
+#endif
 };
 
 /* array of ADPCM voices */
@@ -65,9 +68,30 @@ static int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 static int diff_lookup[49*16];
 
 /* volume lookup table */
-static UINT32 volume_table[16];
+//static UINT32 volume_table[16];
 
-
+// volume lookup table. The manual lists only 9 steps, ~3dB per step. Given the dB values,
+// that seems to map to a 5-bit volume control. Any volume parameter beyond the 9th index
+// results in silent playback.
+const UINT8 okim6295_volume_table[16] =
+{
+	0x20,   //   0 dB
+	0x16,   //  -3.2 dB
+	0x10,   //  -6.0 dB
+	0x0b,   //  -9.2 dB
+	0x08,   // -12.0 dB
+	0x06,   // -14.5 dB
+	0x04,   // -18.0 dB
+	0x03,   // -20.5 dB
+	0x02,   // -24.0 dB
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+};
 
 /**********************************************************************************************
 
@@ -106,19 +130,49 @@ static void compute_tables(void)
 	}
 
 	/* generate the OKI6295 volume table */
-	for (step = 0; step < 16; step++)
-	{
-		double out = 256.0;
-		int vol = step;
-
-		/* 3dB per step */
-		while (vol-- > 0)
-			out /= 1.412537545;	/* = 10 ^ (3/20) = 3dB */
-		volume_table[step] = (UINT32)out;
-	}
+	//for (step = 0; step < 16; step++)
+	//{
+	//	double out = 256.0;
+	//	int vol = step;
+	//
+	//	/* 3dB per step */
+	//	while (vol-- > 0)
+	//		out /= 1.412537545;	/* = 10 ^ (3/20) = 3dB */
+	//	volume_table[step] = (UINT32)out;
+	//}
 }
 
+/**********************************************************************************************
 
+     clock_adpcm -- clock the next ADPCM byte
+
+***********************************************************************************************/
+
+static INT16 clock_adpcm(struct ADPCMVoice *voice, UINT8 nibble)
+{
+	int signal = voice->signal;
+	int step = voice->step;
+
+	signal += diff_lookup[step * 16 + (nibble & 15)];
+
+	/* clamp to the maximum 12bit */
+	if (signal > 2047)
+		signal = 2047;
+	else if (signal < -2048)
+		signal = -2048;
+
+	/* adjust the step size and clamp */
+	step += index_shift[nibble & 7];
+	if (step > 48)
+		step = 48;
+	else if (step < 0)
+		step = 0;
+
+	voice->signal = signal;
+	voice->step = step;
+
+	return signal;
+}
 
 /**********************************************************************************************
 
@@ -133,33 +187,16 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 	{
 		UINT8 *base = voice->base;
 		int sample = voice->sample;
-		int signal = voice->signal;
 		int count = voice->count;
-		int step = voice->step;
-		int val;
 
 		/* loop while we still have samples to generate */
 		while (samples)
 		{
 			/* compute the new amplitude and update the current step */
-			val = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
-			signal += diff_lookup[step * 16 + (val & 15)];
-
-			/* clamp to the maximum */
-			if (signal > 2047)
-				signal = 2047;
-			else if (signal < -2048)
-				signal = -2048;
-
-			/* adjust the step size and clamp */
-			step += index_shift[val & 7];
-			if (step > 48)
-				step = 48;
-			else if (step < 0)
-				step = 0;
+			int nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
 
 			/* output to the buffer, scaling by the volume */
-			*buffer++ = signal * voice->volume / 16;
+			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
 			samples--;
 
 			/* next! */
@@ -172,8 +209,6 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 
 		/* update the parameters */
 		voice->sample = sample;
-		voice->signal = signal;
-		voice->step = step;
 	}
 
 	/* fill the rest with silence */
@@ -181,7 +216,61 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 		*buffer++ = 0;
 }
 
+#ifdef PINMAME
+static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int samples)
+{
+	/* if this voice is active */
+	if (voice->playing)
+	{
+		UINT8 *base = voice->base;
+		int sample = voice->sample;
+		int count = voice->count;
 
+		/* loop while we still have samples to generate */
+		while (samples)
+		{
+			int nibble;
+
+			if (count == 0)
+			{
+				/* get the number of samples to play */
+				count = (base[sample / 2] & 0x7f) << 1;
+
+				/* end of voice marker */
+				if (count == 0)
+				{
+					voice->playing = 0;
+					break;
+				}
+				else
+				{
+					/* step past the count byte */
+					sample += 2;
+				}
+			}
+
+			/* compute the new amplitude and update the current step */
+			nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
+
+			/* output to the buffer, scaling by the volume */
+			/* signal in range -4096..4095, volume in range 2..16 => signal * volume / 2 in range -32768..32767 */
+			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
+
+			++sample;
+			--count;
+			--samples;
+		}
+
+		/* update the parameters */
+		voice->sample = sample;
+		voice->count = count;
+	}
+
+	/* fill the rest with silence */
+	while (samples--)
+		*buffer++ = 0;
+}
+#endif
 
 /**********************************************************************************************
 
@@ -222,6 +311,11 @@ static void adpcm_update(int num, INT16 *buffer, int length)
 		new_samples = MAX_SAMPLE_CHUNK;
 
 	/* generate them into our buffer */
+#ifdef PINMAME
+	if (voice->is6376)
+		generate_adpcm_6376(voice, sample_data, new_samples);
+	else
+#endif
 	generate_adpcm(voice, sample_data, new_samples);
 	prev = curr;
 	curr = *curr_data++;
@@ -505,26 +599,36 @@ int ADPCM_playing(int num)
 
 /**********************************************************************************************
  *
- *	OKIM 6295 ADPCM chip:
- *
- *	Command bytes are sent:
- *
- *		1xxx xxxx = start of 2-byte command sequence, xxxxxxx is the sample number to trigger
- *		abcd vvvv = second half of command; one of the abcd bits is set to indicate which voice
- *		            the v bits seem to be volumed
- *
- *		0abc d000 = stop playing; one or more of the abcd bits is set to indicate which voice(s)
- *
- *	Status is read:
- *
- *		???? abcd = one bit per voice, set to 0 if nothing is playing, or 1 if it is active
+    OKIM 6295 ADPCM chip:
+
+    Command bytes are sent:
+
+        1xxx xxxx = start of 2-byte command sequence, xxxxxxx is the sample
+                    number to trigger
+        abcd vvvv = second half of command; one of the abcd bits is set to
+                    indicate which voice the v bits seem to be volumed
+
+        0abc d000 = stop playing; one or more of the abcd bits is set to
+                    indicate which voice(s)
+
+    Status is read:
+
+        ???? abcd = one bit per voice, set to 0 if nothing is playing, or
+                    1 if it is active
  *
 ***********************************************************************************************/
 
+#ifdef PINMAME
+static int OKIM6295_VOICES = 4;
+
+static INT32 okim6295_command[MAX_OKIM6295];
+static INT32 okim6295_base[MAX_OKIM6295][4];
+#else
 #define OKIM6295_VOICES		4
 
 static INT32 okim6295_command[MAX_OKIM6295];
 static INT32 okim6295_base[MAX_OKIM6295][OKIM6295_VOICES];
+#endif
 
 
 /**********************************************************************************************
@@ -570,6 +674,9 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 	int i;
 
 	/* reset the ADPCM system */
+#ifdef PINMAME // OKI6376 has only 2 voices per chip, activated by num <= 0!
+  if (intf->num < 1) { OKIM6295_VOICES = 2; num_voices = 2; } else
+#endif
 	num_voices = intf->num * OKIM6295_VOICES;
 	compute_tables();
 
@@ -585,6 +692,10 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		okim6295_base[chip][voice] = 0;
 
 		/* generate the name and create the stream */
+#ifdef PINMAME
+		if (intf->num < 1) adpcm[i].is6376 = 1;
+		if (intf->num < 1) sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice); else
+#endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
 		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], Machine->sample_rate, i, adpcm_update);
 		if (adpcm[i].stream == -1)
@@ -658,7 +769,7 @@ void OKIM6295_set_bank_base(int which, int base)
 
 ***********************************************************************************************/
 
-void OKIM6295_set_frequency(int which, int frequency)
+void OKIM6295_set_frequency(int which, double frequency)
 {
 	int channel;
 
@@ -669,7 +780,7 @@ void OKIM6295_set_frequency(int which, int frequency)
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
 		if (Machine->sample_rate)
-			voice->source_step = (UINT32)((double)frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
+			voice->source_step = (UINT32)(frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
 	}
 }
 
@@ -766,7 +877,7 @@ static void OKIM6295_data_w(int num, int data)
 						/* also reset the ADPCM parameters */
 						voice->signal = -2;
 						voice->step = 0;
-						voice->volume = volume_table[data & 0x0f];
+						voice->volume = okim6295_volume_table[data & 0x0f];
 					}
 					else
 					{
@@ -819,7 +930,94 @@ static void OKIM6295_data_w(int num, int data)
 	}
 }
 
+#ifdef PINMAME
+/**********************************************************************************************
 
+     OKIM6376_data_w -- write to the data port of an OKIM6376-compatible chip
+
+***********************************************************************************************/
+
+static void OKIM6376_data_w(int num, int data)
+{
+	/* if a command is pending, process the second half */
+	if (okim6295_command[num] != -1)
+	{
+		int temp = data >> 4, i, start;
+		unsigned char *base;
+
+		/* determine which voice(s) (voice is set by a 1 bit in the upper 4 bits of the second byte) */
+		for (i = 0; i < OKIM6295_VOICES; i++, temp >>= 1)
+		{
+			if (temp & 1)
+			{
+				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
+
+				/* update the stream */
+				stream_update(voice->stream, 0);
+
+				if (Machine->sample_rate == 0) return;
+
+				/* determine the start position, max address space is 16Mbit */
+				base = &voice->region_base[ okim6295_base[num][i] + okim6295_command[num] * 4];
+				start = ((base[0] << 16) + (base[1] << 8) + base[2]) & 0x1fffff;
+
+				if (start == 0)
+				{
+					voice->playing = 0;
+				}
+				else
+				{
+					/* set up the voice to play this sample */
+					if (!voice->playing)
+					{
+						voice->playing = 1;
+						voice->base = &voice->region_base[okim6295_base[num][i] + start];
+						voice->sample = 0;
+						voice->count = 0;
+
+						/* also reset the ADPCM parameters */
+						voice->signal = -2;
+						voice->step = 0;
+						voice->volume = 0x20;
+					}
+					else
+					{
+						logerror("OKIM6376:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1);
+					}
+				}
+			}
+		}
+
+		/* reset the command */
+		okim6295_command[num] = -1;
+	}
+
+	/* if this is the start of a command, remember the sample number for next time */
+	else if (data & 0x80)
+	{
+		// FIX: maximum adpcm words are 111, there are other 8 commands to generate BEEP tone (0x70 to 0x77),
+		// and others for internal testing, that manual explicitly says not to use (0x78 to 0x7f)
+		okim6295_command[num] = data & 0x7f;
+	}
+
+	/* otherwise, see if this is a silence command */
+	else
+	{
+		int temp = data >> 3, i;
+
+		/* determine which voice(s) (voice is set by a 1 bit in bits 3-6 of the command */
+		for (i = 0; i < OKIM6295_VOICES; i++, temp >>= 1)
+		{
+			if (temp & 1)
+			{
+				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
+
+				voice->playing = 0;
+			}
+		}
+	}
+}
+#endif
 
 /**********************************************************************************************
 
@@ -932,3 +1130,9 @@ WRITE16_HANDLER( OKIM6295_data_2_msb_w )
 	if (ACCESSING_MSB)
 		OKIM6295_data_w(2, data >> 8);
 }
+#ifdef PINMAME
+WRITE_HANDLER( OKIM6376_data_0_w )
+{
+	OKIM6376_data_w(0, data);
+}
+#endif

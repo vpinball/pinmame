@@ -281,7 +281,9 @@ static WRITE_HANDLER(lampdriv_w) {
   core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn, selocals.lampRow);
 }
 static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);}
+static READ_HANDLER(lampstrb_r) { return selocals.lampColumn & 0xff; }
 static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8), selocals.lampRow);}
+static READ_HANDLER(auxlamp_r) { return (selocals.lampColumn >> 8) & 0xff; }
 static WRITE_HANDLER(gilamp_w) {
   logerror("GI lamps %d=%02x\n", offset, data);
   coreGlobals.tmpLampMatrix[10 + offset] = data;
@@ -316,8 +318,8 @@ static READ_HANDLER(dedswitch_r) {
 static READ_HANDLER(dip_r) { return ~core_getDip(0); }
 
 /*-- Solenoids --*/
+static const int solmaskno[] = { 8, 0, 16, 24 };
 static WRITE_HANDLER(solenoid_w) {
-  static const int solmaskno[] = { 8, 0, 16, 24 };
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
@@ -327,6 +329,52 @@ static WRITE_HANDLER(solenoid_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
   selocals.solenoids |= sols;
 }
+// Some Whitestar II ROMS read from the solenoid ports
+static READ_HANDLER(solenoid_r) {
+  int data = (coreGlobals.pulsedSolState >> solmaskno[offset]) & 0xff;
+  if (offset == 0) {
+	data &= 0x3f;
+	data |= ((selocals.flipsolPulse & 0x01) << 7);
+	data |= ((selocals.flipsolPulse & 0x04) >> 4);
+  }
+  return data;
+}
+
+// *** Unknown memory mapped ports $200C to $3FFF - read ***
+// The CPU #0 ROM code in some Whitestar II games read from a sequence
+// of memory locations from $200C to $3FE8 at some game events.  The
+// reads don't hit every address in this range and don't follow an
+// obvious sequence, but they hit about every 4th-8th byte in a mostly
+// ascending order.  The reads occur on specific game events and seem
+// to always follow reads on the known solenoid, lamp, and aux lamp
+// ports.  My best guess from the grouping with the solenoid/lamp port
+// reads is that the unknown locations are related, perhaps reading the
+// status of other output devices or the status of individual lamps or
+// solenoids.  It's not clear from the schematics that these addresses
+// are mapped at all, but the deliberate ROM reads suggest they have
+// some purpose.  It doesn't seem to have any ill effect on game play
+// to have these locations always read as "0" values.
+//
+// This explicit handler is mainly for the sake of documentation. 
+// These addresses can alternatively be delegated to the default
+// "unmapped byte" handler, since that will just return 0 as well, but
+// it seemed worth calling these out for future reference, in case
+// anyone wants to look into the real purpose of these locations at
+// some point.
+static READ_HANDLER(unknown_r) {
+  return 0;
+}
+
+// *** Unknown memory mapped port $3801 - write ***
+// Similar to above: The CPU #0 code writes a byte to port $3801.  This
+// is rare and seems to happen after end of game.  Port $3800 is the
+// sound board command port, so the location suggests this is another
+// function on the sound board - maybe a reset or something like that?
+// Ignoring it has no obvious bad effect, so this handler is here just
+// for the sake of documentation.
+static WRITE_HANDLER(sndbrd_unk_data_w) {
+}
+
 /*-- DMD communication --*/
 static WRITE_HANDLER(dmdlatch_w) {
   sndbrd_0_data_w(0,data);
@@ -629,13 +677,17 @@ if (!pmoptions.dmd_only)
 
 static MEMORY_READ_START(se_readmem)
   { 0x0000, 0x1fff, ram_r },
+  { 0x2000, 0x2003, solenoid_r },
   { 0x2007, 0x2007, auxboard_r },
+  { 0x2008, 0x2008, lampstrb_r },
+  { 0x2009, 0x2009, auxlamp_r },
   { 0x3000, 0x3000, dedswitch_r },
   { 0x3100, 0x3100, dip_r },
   { 0x3400, 0x3400, switch_r },
   { 0x3406, 0x3407, gilamp_r }, // GI lamps on SPP?
   { 0x3500, 0x3500, dmdie_r },
   { 0x3700, 0x3700, dmdstatus_r },
+  { 0x200c, 0x3fff, unknown_r }, // unknown ports from $200c to $3fff, excluding known ports mapped above
   { 0x4000, 0x7fff, MRA_BANK1 },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -655,6 +707,7 @@ static MEMORY_WRITE_START(se_writemem)
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
   { 0x3800, 0x3800, sndbrd_1_data_w },
+  { 0x3801, 0x3801, sndbrd_unk_data_w },
   { 0x4000, 0xffff, MWA_NOP },
 MEMORY_END
 

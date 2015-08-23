@@ -617,32 +617,38 @@ DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad414392
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
+WPC_ROMSTART(sttng,p4,"sttng_p4.u6",0x80000,CRC(836774f0) SHA1(5784f77eaad41ccf07446874720be146fd562c68)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,p5,"sttng_p5.u6",0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,p6,"sttng_p6.u6",0x80000,CRC(3162c58a) SHA1(f9007a36b53f762fb220f23953cd9745e2ca3cba)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,p8,"sttng_p8.u6",0x80000,CRC(bf599f45) SHA1(ec660f99030f89bdfe3d04cc38fd450d6bbedf7d)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,g7,"trek_lg7.rom",0x80000,CRC(e723b8a1) SHA1(77c3f8ea378772ce45bb8de818069fc08cbc4574)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,h7,"trek_dg7.rom",0x80000,CRC(8df53345) SHA1(341951d7d1d775d81b8166270787852b34693808)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,l1,"trek_lx1.rom",0x80000,CRC(390befc0) SHA1(2059891e3fc3034d600274c3915371123c964d28)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,d1,"trek_dx1.rom",0x80000,CRC(925005af) SHA1(cfdf289c5a12f890c9677213d9a82a60903d57d5)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,l2,"trek_lx2.rom",0x80000,CRC(e2557554) SHA1(7d8502ab9df340d60fd72e6964740bc7a2da2065)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,d2,"trek_lx2.rom",0x80000,CRC(d0002381) SHA1(9dfe5aca4ce06a6adf6a4edec54e22aba93c0a12)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,l3,"trek_lx3.rom",0x80000,CRC(400e7887) SHA1(23d5e9796f0c3c66121da53088df6f5275348f4a)) ST_SND WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,d7,l7,"Star Trek: The Next Generation (DX-7) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,d7,l7,"Star Trek: The Next Generation (DX-7 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7 Special)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,dx,l7,"Star Trek: The Next Generation (DX-7 Special) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,dx,l7,"Star Trek: The Next Generation (DX-7 Special LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,p4,l7,"Star Trek: The Next Generation (P-4)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p5,l7,"Star Trek: The Next Generation (P-5)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,p6,l7,"Star Trek: The Next Generation (P-6) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7) SP1",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,ds,l7,"Star Trek: The Next Generation (DX-7) SP1 LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,p6,l7,"Star Trek: The Next Generation (P-6 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,p8,l7,"Star Trek: The Next Generation (P-8)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7 SP1)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,ds,l7,"Star Trek: The Next Generation (DX-7 SP1 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,g7,l7,"Star Trek: The Next Generation (LG-7)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,h7,l7,"Star Trek: The Next Generation (HG-7) LED Ghost Fix",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,h7,l7,"Star Trek: The Next Generation (HG-7 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l1,l7,"Star Trek: The Next Generation (LX-1)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,d1,l7,"Star Trek: The Next Generation (DX-1) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,d1,l7,"Star Trek: The Next Generation (DX-1 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l2,l7,"Star Trek: The Next Generation (LX-2)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,d2,l7,"Star Trek: The Next Generation (DX-2) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,d2,l7,"Star Trek: The Next Generation (DX-2 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,l3,l7,"Star Trek: The Next Generation (LX-3)",1993,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

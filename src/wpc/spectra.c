@@ -41,13 +41,10 @@ static READ_HANDLER(riot_porta_r) {
 }
 
 static WRITE_HANDLER(riot_portb_w) {
-  float vco = 5.0;
-  logerror("RIOT B WRITE %02x\n", data);
-  if (data & 0x01) vco -= 0.3125;
-  if (data & 0x02) vco -= 0.625;
-  if (data & 0x04) vco -= 1.25;
-  if (data & 0x08) vco -= 2.5;
-  SN76477_set_vco_voltage(0, 5.4 - vco);
+  float vco = 5.5 - (core_getDip(0) >> 4) / 6.0;
+  vco -= ((data & 8) ? vco / 2.0 : 0) + ((data & 4) ? vco / 4.0 : 0)+ ((data & 2) ? vco / 8.0 : 0)+ ((data & 1) ? vco / 16.0 : 0);
+  logerror("RIOT B WRITE %02x, vco: %0f\n", data, vco);
+  SN76477_set_vco_voltage(0, 5.5 - vco);
   SN76477_enable_w(0, data & 0x10 ? 0 : 1); // strobe: toggles enable
   SN76477_envelope_w(0, data & 0x20 ? 0 : 1); //decay: toggles envelope
   SN76477_vco_w(0, data & 0x40 ? 1 : 0); // "phaser" sound: VCO toggled
@@ -56,7 +53,7 @@ static WRITE_HANDLER(riot_portb_w) {
 
 static READ_HANDLER(riot_portb_r) {
   logerror("RIOT B READ\n");
-  return 0x0;
+  return (core_getDip(1) & 1) ? 0x5a : 0;
 }
 
 static struct riot6532_interface riot6532_intf = {
@@ -67,6 +64,7 @@ static struct riot6532_interface riot6532_intf = {
 
 static MACHINE_INIT(SPECTRA) {
   riot6532_config(0, &riot6532_intf);
+  riot6532_set_clock(0, 905000);
 }
 
 static MACHINE_RESET(SPECTRA) {
@@ -136,12 +134,12 @@ static MEMORY_WRITE_START(cpu_writemem)
 MEMORY_END
 
 static struct SN76477interface spectra_sn76477Int = { 1, { 50 }, /* mixing level */
-/*						   pin description		*/
-	{ RES_M(1000) },	/*	4  noise_res		*/
-	{ RES_M(1000) },	/*	5  filter_res		*/
-	{ CAP_N(0)    },	/*	6  filter_cap		*/
-	{ RES_K(470)  },	/*	7  decay_res		*/
-	{ CAP_N(1)    },	/*	8  attack_decay_cap */
+	                	/* pin description		*/
+	{ RES_M(1000) },	/*  4  noise_res		*/
+	{ RES_M(1000) },	/*  5  filter_res		*/
+	{ CAP_N(0)    },	/*  6  filter_cap		*/
+	{ RES_K(470)  },	/*  7  decay_res		*/
+	{ CAP_N(1)    },	/*  8  attack_decay_cap */
 	{ RES_K(22)   },	/* 10  attack_res		*/
 	{ RES_K(100)  },	/* 11  amplitude_res	*/
 	{ RES_K(52)   },	/* 12  feedback_res 	*/
@@ -165,6 +163,7 @@ MACHINE_DRIVER_START(spectra)
   MDRV_NVRAM_HANDLER(SPECTRA)
   MDRV_SWITCH_UPDATE(SPECTRA)
   MDRV_SOUND_ADD(SN76477, spectra_sn76477Int)
+  MDRV_DIPS(8) // added so the NVRAM can be reset, and for tone pitch
 MACHINE_DRIVER_END
 
 #define INITGAME(name, disp, flip) \
@@ -182,6 +181,21 @@ static void init_##name(void) { core_gameData = &name##GameData; }
     COREPORT_BITTOG(0x0020, "Test",       KEYCODE_8) \
     COREPORT_BIT   (0x0080, "Tilt",       KEYCODE_INSERT) \
     COREPORT_BIT   (0x0001, "Slam Tilt",  KEYCODE_HOME) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Reset NVRAM") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off)) \
+      COREPORT_DIPSET(0x0001, DEF_STR(On)) \
+    COREPORT_DIPNAME( 0x00f0, 0x0020, "Tone pitch") \
+      COREPORT_DIPSET(0x0000, "0") \
+      COREPORT_DIPSET(0x0010, "1") \
+      COREPORT_DIPSET(0x0020, "2") \
+      COREPORT_DIPSET(0x0030, "3") \
+      COREPORT_DIPSET(0x0040, "4") \
+      COREPORT_DIPSET(0x0050, "5") \
+      COREPORT_DIPSET(0x0060, "6") \
+      COREPORT_DIPSET(0x0070, "7") \
+      COREPORT_DIPSET(0x0080, "8") \
+      COREPORT_DIPSET(0x0090, "9") \
   INPUT_PORTS_END
 
 static core_tLCDLayout dispAlpha[] = {
@@ -197,7 +211,7 @@ ROM_START(spectra)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("spect_u3.dat", 0x0c00, 0x0400, CRC(9ca7510f) SHA1(a87849f16903836158063d593bb4a2e90c7473c8))
       ROM_RELOAD(0xfc00, 0x0400)
-    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(e6519689) SHA1(06ef3d349ea27a072889b7c379f258d29b7217be) BAD_DUMP)
+    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(b58f1205) SHA1(9578fd89485f3f560789cb0f24c7116e4bc1d0da) BAD_DUMP)
     ROM_LOAD("spect_u5.dat", 0x0400, 0x0400, CRC(49e0759f) SHA1(c3badc90ff834cbc92d8c519780069310c2b1507))
 ROM_END
 

@@ -26,6 +26,7 @@
 
  Read PZ.c or FH.c if you like more help.
 
+ 022512 Added helmet lights (GV)
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -52,6 +53,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "machine/4094.h"
 
 /*------------------
 /  Local functions
@@ -382,24 +384,29 @@ static int bop_handleBallState(sim_tBallStatus *ball, int *inports) {
   --------------------*/
 static core_tLampDisplay bop_lampPos = {
 { 0, 0 }, /* top left */
-{39, 29}, /* size */
+{41, 31}, /* size */
 {
-{1,{{30, 0,ORANGE}}},{1,{{30, 3,ORANGE}}},{1,{{30,26,ORANGE}}},{1,{{30,29,ORANGE}}},
-{1,{{27, 3,GREEN}}},{1,{{24,23,GREEN}}},{1,{{26,24,GREEN}}},{1,{{38,14,ORANGE}}},
-{1,{{25,14,RED}}},{1,{{23,14,RED}}},{1,{{31,18,ORANGE}}},{1,{{33,14,LBLUE}}},
-{1,{{31,10,YELLOW}}},{1,{{27,10,WHITE}}},{1,{{29,14,RED}}},{1,{{19, 1,YELLOW}}},
-{1,{{27,18,GREEN}}},{1,{{25,20,GREEN}}},{1,{{33,20,ORANGE}}},{1,{{35,14,LBLUE}}},
-{1,{{33, 8,YELLOW}}},{1,{{25, 8,WHITE}}},{1,{{19, 4,WHITE}}},{1,{{21, 5,ORANGE}}},
-{1,{{21,27,LBLUE}}},{1,{{18,27,RED}}},{1,{{15,27,ORANGE}}},{1,{{12,27,YELLOW}}},
-{1,{{ 9,27,LBLUE}}},{1,{{ 2, 9,RED}}},{1,{{ 2,13,RED}}},{1,{{ 5,11,RED}}},
-{1,{{13, 9,RED}}},{1,{{15, 9,ORANGE}}},{1,{{17, 9,YELLOW}}},{1,{{19, 9,WHITE}}},
-{1,{{14,23,GREEN}}},{1,{{16,22,ORANGE}}},{1,{{18,21,YELLOW}}},{1,{{20,20,WHITE}}},
-{1,{{16,14,LBLUE}}},{1,{{14,14,GREEN}}},{1,{{12,14,YELLOW}}},{1,{{10,10,WHITE}}},
-{1,{{14,20,RED}}},{1,{{16,19,ORANGE}}},{1,{{18,18,YELLOW}}},{1,{{20,17,WHITE}}},
-{1,{{ 0, 0,YELLOW}}},{1,{{ 0, 2,YELLOW}}},{1,{{ 0, 4,YELLOW}}},{1,{{ 0, 6,YELLOW}}},
-{1,{{ 0, 8,YELLOW}}},{1,{{ 0,10,YELLOW}}},{1,{{ 0,12,YELLOW}}},{1,{{ 0,14,YELLOW}}},
-{1,{{ 0,21,RED}}},{1,{{ 0,23,RED}}},{1,{{ 0,25,RED}}},{1,{{ 0,27,RED}}},
-{1,{{ 0,29,RED}}},{1,{{ 1,22,ORANGE}}},{1,{{ 1,25,YELLOW}}},{1,{{ 1,28,WHITE}}}
+{1,{{32, 0,ORANGE}}},{1,{{32, 3,ORANGE}}},{1,{{32,26,ORANGE}}},{1,{{32,29,ORANGE}}},
+{1,{{29, 3,GREEN}}}, {1,{{26,23,GREEN}}}, {1,{{28,24,GREEN}}}, {1,{{40,14,ORANGE}}},
+{1,{{27,14,RED}}},   {1,{{25,14,RED}}},   {1,{{33,18,ORANGE}}},{1,{{35,14,LBLUE}}},
+{1,{{33,10,YELLOW}}},{1,{{29,10,WHITE}}}, {1,{{31,14,RED}}},   {1,{{21, 1,YELLOW}}},
+{1,{{29,18,GREEN}}}, {1,{{27,20,GREEN}}}, {1,{{35,20,ORANGE}}},{1,{{37,14,LBLUE}}},
+{1,{{35, 8,YELLOW}}},{1,{{27, 8,WHITE}}}, {1,{{21, 4,WHITE}}}, {1,{{23, 5,ORANGE}}},
+{1,{{23,27,LBLUE}}}, {1,{{20,27,RED}}},   {1,{{17,27,ORANGE}}},{1,{{14,27,YELLOW}}},
+{1,{{11,27,LBLUE}}}, {1,{{ 4, 9,RED}}},   {1,{{ 4,13,RED}}},   {1,{{ 7,11,RED}}},
+{1,{{15, 9,RED}}},   {1,{{17, 9,ORANGE}}},{1,{{19, 9,YELLOW}}},{1,{{21, 9,WHITE}}},
+{1,{{16,23,GREEN}}}, {1,{{18,22,ORANGE}}},{1,{{20,21,YELLOW}}},{1,{{22,20,WHITE}}},
+{1,{{18,14,LBLUE}}}, {1,{{16,14,GREEN}}}, {1,{{14,14,YELLOW}}},{1,{{12,10,WHITE}}},
+{1,{{16,20,RED}}},   {1,{{18,19,ORANGE}}},{1,{{20,18,YELLOW}}},{1,{{22,17,WHITE}}},
+{1,{{ 2, 0,YELLOW}}},{1,{{ 2, 2,YELLOW}}},{1,{{ 2, 4,YELLOW}}},{1,{{ 2, 6,YELLOW}}},
+{1,{{ 2, 8,YELLOW}}},{1,{{ 2,10,YELLOW}}},{1,{{ 2,12,YELLOW}}},{1,{{ 2,14,YELLOW}}},
+{1,{{ 2,21,RED}}},   {1,{{ 2,23,RED}}},   {1,{{ 2,25,RED}}},   {1,{{ 2,27,RED}}},
+{1,{{ 2,29,RED}}},   {1,{{ 4,22,ORANGE}}},{1,{{ 4,25,YELLOW}}},{1,{{ 4,28,WHITE}}},
+// 16 helmet lights below (see test #15)
+{1,{{ 0, 0,WHITE}}}, {1,{{ 0, 2,WHITE}}}, {1,{{ 0, 4,WHITE}}}, {1,{{ 0, 6,WHITE}}},
+{1,{{ 0, 8,WHITE}}}, {1,{{ 0,10,WHITE}}}, {1,{{ 0,12,WHITE}}}, {1,{{ 0,14,WHITE}}},
+{1,{{ 0,16,WHITE}}}, {1,{{ 0,18,WHITE}}}, {1,{{ 0,20,WHITE}}}, {1,{{ 0,22,WHITE}}},
+{1,{{ 0,24,WHITE}}}, {1,{{ 0,26,WHITE}}}, {1,{{ 0,28,WHITE}}}, {1,{{ 0,30,WHITE}}}
 }
 };
 
@@ -470,20 +477,20 @@ WPC_ROMSTART(bop,d2,"bop_d2.u6",   0x20000,CRC(c362eb30) SHA1(93704d1634f170e10c
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1992,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d7,l7,"The Machine: Bride of Pinbot (D-7) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l8,l7,"The Machine: Bride of Pinbot (L-8) fixes billionaire multiplayer",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d8,l7,"The Machine: Bride of Pinbot (D-8) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l6,l7,"The Machine: Bride of Pinbot (L-6)",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d6,l7,"The Machine: Bride of Pinbot (D-6) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l5,l7,"The Machine: Bride of Pinbot (L-5)",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d5,l7,"The Machine: Bride of Pinbot (D-5) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l4,l7,"The Machine: Bride of Pinbot (L-4)",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d4,l7,"The Machine: Bride of Pinbot (D-4) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l3,l7,"The Machine: Bride of Pinbot (L-3)",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d3,l7,"The Machine: Bride of Pinbot (D-3) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,l2,l7,"The Machine: Bride of Pinbot (L-2)",1991,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(bop,d2,l7,"The Machine: Bride of Pinbot (D-2) LED Ghost Fix",1991,"Williams",wpc_mAlpha2S,0)
+CORE_GAMEDEF(bop,l7,"Machine: Bride of Pinbot, The (L-7)",1992,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d7,l7,"Machine: Bride of Pinbot, The (D-7 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l8,l7,"Machine: Bride of Pinbot, The (L-8 billionaire multiplayer patch)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d8,l7,"Machine: Bride of Pinbot, The (D-8 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l6,l7,"Machine: Bride of Pinbot, The (L-6)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d6,l7,"Machine: Bride of Pinbot, The (D-6 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l5,l7,"Machine: Bride of Pinbot, The (L-5)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d5,l7,"Machine: Bride of Pinbot, The (D-5 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l4,l7,"Machine: Bride of Pinbot, The (L-4)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d4,l7,"Machine: Bride of Pinbot, The (D-4 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l3,l7,"Machine: Bride of Pinbot, The (L-3)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d3,l7,"Machine: Bride of Pinbot, The (D-3 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l2,l7,"Machine: Bride of Pinbot, The (L-2)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,d2,l7,"Machine: Bride of Pinbot, The (D-2 LED Ghost Fix)",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -507,7 +514,7 @@ static core_tGameData bopGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha,
   {
     FLIP_SWNO(12,11),
-    0,0,0,0,0,0,0,
+    0,2,0,0,0,0,0, // 2 extra lamp columns for the helmet lights
     NULL, bop_handleMech, bop_getMech, bop_drawMech,
     &bop_lampPos, bop_samsolmap
   },
@@ -520,13 +527,6 @@ static core_tGameData bopGameData = {
     { swStart, swTilt, swSlamTilt, swCoinDoor, 0},
   }
 };
-
-/*---------------
-/  Game handling
-/----------------*/
-static void init_bop(void) {
-  core_gameData = &bopGameData;
-}
 
 /*----------------
 /  Init Simulator
@@ -667,4 +667,44 @@ static void bop_handleMech(int mech) {
 
 static int bop_getMech(int mechNo) {
   return locals.headPos;
+}
+
+static WRITE_HANDLER(parallel_0_out) {
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
+}
+static WRITE_HANDLER(parallel_1_out) {
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
+}
+static WRITE_HANDLER(qspin_0_out) {
+  HC4094_data_w(1, data);
+}
+
+static HC4094interface hc4094bop = {
+  2, // 2 chips
+  { parallel_0_out, parallel_1_out },
+  { qspin_0_out }
+};
+
+static WRITE_HANDLER(bop_wpc_w) {
+  static UINT8 lastVal;
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+    HC4094_strobe_w(0, lastVal == (data & 3));
+    HC4094_strobe_w(1, lastVal == (data & 3));
+    HC4094_data_w  (0, GET_BIT0);
+    HC4094_clock_w (0, GET_BIT1);
+    HC4094_clock_w (1, GET_BIT1);
+    lastVal = data & 3;
+  }
+}
+
+/*---------------
+/  Game handling
+/----------------*/
+static void init_bop(void) {
+  core_gameData = &bopGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, bop_wpc_w);
+  HC4094_init(&hc4094bop);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
 }

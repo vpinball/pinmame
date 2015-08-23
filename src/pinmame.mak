@@ -59,7 +59,7 @@ DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
 DRVLIBS += $(PINOBJ)/sleic.o
-DRVLIBS += $(PINOBJ)/play.o
+DRVLIBS += $(PINOBJ)/play.o $(PINOBJ)/playsnd.o
 DRVLIBS += $(PINOBJ)/bowarrow.o $(PINOBJ)/flicker.o $(PINOBJ)/rotation.o
 DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
@@ -74,6 +74,8 @@ DRVLIBS += $(PINOBJ)/mephisto.o
 DRVLIBS += $(PINOBJ)/tabart.o
 DRVLIBS += $(PINOBJ)/jeutel.o
 DRVLIBS += $(PINOBJ)/spectra.o
+DRVLIBS += $(PINOBJ)/idsa.o
+DRVLIBS += $(PINOBJ)/mac.o
 #
 # Games
 #
@@ -197,6 +199,7 @@ CPUS += AT91@
 CPUS += CDP1802@
 CPUS += TMS9980@
 CPUS += TMS9995@
+CPUS += COP420@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
@@ -228,6 +231,9 @@ SOUNDS += S14001A@
 SOUNDS += YM2203@
 SOUNDS += YM3526@
 SOUNDS += TMS5110@
+SOUNDS += SP0256@
+SOUNDS += Y8950@
+SOUNDS += ASTROCADE@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims
@@ -270,10 +276,4 @@ cleanpinmame:
 	@echo Deleting $(target) object tree $(PINOBJ)...
 	$(RM) -r $(PINOBJ)
 	@echo Deleting $(EMULATOR)...
-	$(RM) $(EMULATOR).full
 	$(RM) $(EMULATOR)
-	@echo Deleting $(EMULATOR).debug...
-	$(RM) $(EMULATOR).debug
-	$(RM) $(EMULATOR).strip
-	@echo Deleting $(FULLNAME).map...
-	$(RM) $(FULLNAME).map

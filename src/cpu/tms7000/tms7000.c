@@ -51,6 +51,9 @@ void tms7000_int2_callback( int	param );
 
 int tms7000_icount;
 
+static int cpuNum;
+static int checkIrqs;
+
 static UINT8 tms7000_reg_layout[] = {
 	TMS7000_PC, TMS7000_SP, TMS7000_ST, 0
 };
@@ -63,8 +66,6 @@ static UINT8 tms7000_win_layout[] = {
 	27,13,53, 9,	/* memory #2 window (right, lower middle) */
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
-
-void tms7000_check_IRQ_lines( void );
 
 //SJE
 //#define RM(Addr) ((unsigned)cpu_readmem16(Addr))
@@ -223,19 +224,20 @@ void tms7000_set_reg(int regnum, unsigned val)
 
 void tms7000_init(void)
 {
-	int cpu = cpu_getactivecpu();
+	cpuNum = cpu_getactivecpu();
 
-	memset(tms7000.pf, 0, 0x100);
-	timer_set(TIME_NEVER, 0, tms7000_int2_callback);
-	tms7000.timer1_capturelatch = 0;
-
-	state_save_register_UINT16("tms7000", cpu, "PC", &pPC, 1);
-	state_save_register_UINT8("tms7000", cpu, "SP", &pSP, 1);
-	state_save_register_UINT8("tms7000", cpu, "SR", &pSR, 1);
+	state_save_register_UINT16("tms7000", cpuNum, "PC", &pPC, 1);
+	state_save_register_UINT8("tms7000", cpuNum, "SP", &pSP, 1);
+	state_save_register_UINT8("tms7000", cpuNum, "SR", &pSR, 1);
 }
 
 void tms7000_reset(void *param)
 {
+	memset(tms7000.pf, 0, 0x100);
+	tms7000.timer1 = timer_alloc(tms7000_int2_callback);
+	timer_adjust( tms7000.timer1, TIME_NEVER, 0, TIME_NEVER );
+	tms7000.timer1_capturelatch = 0;
+
 //	tms7000.architecture = (int)param;
 	
 	tms7000.idle_state = 0;
@@ -329,7 +331,7 @@ void tms7000_set_irq_line(int irqline, int state)
 {
 	tms7000.irq_state[ irqline ] = state;
 
-	LOG(("TMS7000#%d set_irq_line %d, %d\n", cpu_getactivecpu(), irqline, state));
+	LOG(("TMS7000#%d set_irq_line %d, %d\n", cpuNum, irqline, state));
 
 	if (state == CLEAR_LINE)
 	{
@@ -354,7 +356,7 @@ void tms7000_set_irq_line(int irqline, int state)
 		}
 	}
 	
-	tms7000_check_IRQ_lines();
+	checkIrqs = 1;
 }
 
 void tms7000_set_irq_callback(int (*callback)(int irqline))
@@ -427,6 +429,10 @@ tms7000_interrupt:
 int tms7000_execute(int cycles)
 {
 	int op;
+	if (checkIrqs) {
+		checkIrqs = 0;
+		tms7000_check_IRQ_lines();
+	}
 	
 	tms7000_icount = cycles;
 
@@ -457,8 +463,9 @@ void tms7000_starttimer1( void )
 	else
 	{
 		/* Source: internal clock */
-		timer_reset(tms7000.timer1, TIME_IN_CYCLES( 16 * ((tms7000.pf[ 0x03 ] & 0x1f)+1) * ((tms7000.pf[ 0x02 ])+1),
-															cpu_getactivecpu() ) );
+		double d = TIME_IN_CYCLES( 16 * ((tms7000.pf[ 0x03 ] & 0x1f)+1) * ((tms7000.pf[ 0x02 ])+1),	cpuNum );
+		timer_adjust(tms7000.timer1, d, 0, d);
+
 		tms7000.time_timer1 = timer_get_time();
 	}
 }
@@ -507,7 +514,7 @@ UINT8 tms7000_calculate_timer1_decrementator( void )
 	   overflows.
 	*/
 	
-	double prescalertimer = TIME_IN_CYCLES(16,cpu_getactivecpu()) *
+	double prescalertimer = TIME_IN_CYCLES(16,cpuNum) *
 													(tms7000.pf[0x03] & 0x1f);
 	
 	result = (tms7000.time_timer1 - timer_get_time()) / prescalertimer;
@@ -534,17 +541,19 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 			break;
 
 		case 0x03:	/* T1CTL, timer 1 control */
+			if( ((tms7000.pf[0x03] & 0x80) == 0) && ((data & 0x80) == 0x80 ) )   /* Start timer? */
+			{
+				tms7000_starttimer1();
+			}
+			else if( ((data & 0x80) == 0 ) && ((tms7000.pf[0x03] & 0x80) == 0x80) )   /* Timer Stopped? */
+			{
+				timer_adjust( tms7000.timer1, TIME_NEVER, 0, TIME_NEVER );
+			}
+
 			/* stuff data in register */
 			tms7000.pf[0x03] = data;
-			
-			/* Stop current counter */
-			timer_reset( tms7000.timer1, TIME_NEVER );
-			
-			if ((data & 0x80) == 0x80)
-				tms7000_starttimer1();
-
 			break;
-		
+
 		case 0x04: /* Port A write */
 			/* Port A is read only so this is a NOP */
 			break;

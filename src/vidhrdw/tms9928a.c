@@ -441,7 +441,7 @@ static void _TMS9928A_change_register (int which, int reg, UINT8 val) {
     tms[which].Change = 1;
     switch (reg) {
     case 0:
-        if (val & 2) {
+        /*if (val & 2)*/ {
             /* re-calculate masks and pattern generator & colour */
             if (val & 2) {
                 tms[which].colour = ((tms[which].Regs[3] & 0x80) * 64) & (tms[which].vramsize - 1);

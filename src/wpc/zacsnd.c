@@ -5,7 +5,7 @@
 #include "cpu/i8039/i8039.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
-#include "sound/tms5220.h"
+#include "sound/tms5220.h" // TMS5200 & TMS5220CNL
 #include "core.h"
 #include "sndbrd.h"
 #include "zacsnd.h"
@@ -349,7 +349,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 639450, 50, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 639450, 75, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579545/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -362,7 +362,7 @@ static MEMORY_READ_START(sns_readmem)
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x1800, 0x1800, sns2_8910a_r }, // 13136 only
   { 0x2000, 0x2000, sns_8910a_r },
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns_writemem)
@@ -380,7 +380,7 @@ static MEMORY_READ_START(sns3_readmem)
   { 0x00b0, 0x00b0, readcmd},
   { 0x00ff, 0x00ff, readlatch },
   { 0x5000, 0x5000, read5000 }, // only to prevent error messages
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns3_writemem)
@@ -398,19 +398,22 @@ static MACHINE_DRIVER_START(zac1370_nosound)
   MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
-
-  MDRV_INTERLEAVE(500)
-  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac1370)
   MDRV_IMPORT_FROM(zac1370_nosound)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(AY8910,  sns_ay8910Int)
   MDRV_SOUND_ADD(DAC,     sns_dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac13136)
   MDRV_IMPORT_FROM(zac1370_nosound)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(AY8910,  sns2_ay8910Int)
   MDRV_SOUND_ADD(DAC,     sns2_dacInt)
 MACHINE_DRIVER_END
@@ -575,8 +578,8 @@ static void sns_init(struct sndbrdData *brdData) {
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
     snslocals.pia1a = 0xff;
-    pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   }
+  pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
     UpdateZACSoundLED(1, 1);
 // allocate channels
@@ -591,6 +594,10 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
 //    tms5220_reset();
+  }
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+    tms5220_set_variant(TMS5220_IS_5200);
+  } else {
     tms5220_set_variant(TMS5220_IS_5220);
   }
 }
@@ -807,7 +814,7 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  static int oldSpeed = 6;  // default voice clock set to 660 kHz
+  static int oldSpeed = 6;  // default voice clock set to 640 kHz
   if ((core_getDip(0) >> 4) != oldSpeed) tms5220_set_frequency((93 + (oldSpeed = (core_getDip(0) >> 4))) * 6666.666);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);

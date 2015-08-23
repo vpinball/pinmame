@@ -93,7 +93,8 @@ DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 // IController
 public:
-	STDMETHOD(get_ChangedLEDs)(/*[in]*/ int nHigh, int nLow, /*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(get_ChangedLEDs)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, /*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(get_ChangedLEDsState)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, int **buf, /*[out, retval]*/ int *pVal);
 	STDMETHOD(get_Settings)(/*[out, retval]*/ IControllerSettings * *pVal);
 	STDMETHOD(get_Games)(/*[out, retval]*/ IGames* *pVal);
 	STDMETHOD(get_Version)(/*[out, retval]*/ BSTR *pVal);
@@ -142,7 +143,35 @@ public:
 	STDMETHOD(GetWindowRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(GetClientRect)(/*[in,defaultvalue(0)]*/ long hWnd, /*[out, retval]*/ VARIANT *pVal);
 
-/* depricated methods/properties */
+	STDMETHOD(get_RawDmdWidth)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_RawDmdHeight)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_RawDmdPixels)(/*[out, retval]*/ VARIANT *pVal);
+
+	STDMETHOD(get_DmdWidth)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_DmdHeight)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_DmdPixel)(/*[in]*/ int x, /*[in]*/ int y, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_updateDmdPixels)(/*[in]*/ int **buf, /*[in]*/ int width, /*[in]*/ int height, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_ChangedLampsState)(/*[in]*/ int **buf, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_LampsState)(/*[in]*/ int **buf, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_ChangedSolenoidsState)(/*[in]*/ int **buf, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_SolenoidsState)(/*[in]*/ int **buf, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_ChangedGIsState)(/*[in]*/ int **buf, /*[out, retval]*/ int *pVal);
+	STDMETHOD(get_MasterVolume)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_MasterVolume)(/*[in]*/ int newVal);
+	STDMETHOD(get_EnumAudioDevices)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_AudioDevicesCount)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_AudioDeviceDescription)(/*[in]*/ int num, /*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(get_AudioDeviceModule)(/*[in]*/ int num, /*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(get_CurrentAudioDevice)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_CurrentAudioDevice)(/*[in]*/ int num);
+
+	STDMETHOD(get_ShowPinDMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowPinDMD)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(get_ShowWinDMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowWinDMD)(/*[in]*/ VARIANT_BOOL newVal);
+
+/* deprecated methods/properties */
 	STDMETHOD(get_NewSoundCommands)(/*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(get_ImgDir)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_ImgDir)(/*[in]*/ BSTR newVal);
@@ -181,6 +210,12 @@ public:
 	STDMETHOD(get_RomDirs)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_RomDirs)(/*[in]*/ BSTR newVal);
 	STDMETHOD(ShowOptsDialog)(/*[in]*/ long hParentWnd=0);
+	STDMETHOD(get_FastFrames)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_FastFrames)(/*[in]*/ int newVal);
+	STDMETHOD(get_IgnoreRomCrc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_IgnoreRomCrc)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_CabinetMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_CabinetMode)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_)

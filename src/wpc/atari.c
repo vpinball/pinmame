@@ -348,8 +348,13 @@ static WRITE_HANDLER(lamp_w) {
 /* sound */
 // Gen 1
 static WRITE_HANDLER(soundg1_w) {
-	logerror("Play sound %2x\n", data);
-	sndbrd_0_data_w(0, data);
+	logerror("Play sound %2x | %02x | %02x | %02x\n", data, latch[0], latch[1], latch[2]);
+	sndbrd_0_ctrl_w(0, ((latch[1] & 0x0f) << 4) | (latch[0] & 0x0f));
+	switch (core_gameData->hw.gameSpecific1) {
+	  case 1: sndbrd_0_data_w(0, latch[1] & 0x0f); break;
+	  case 2: sndbrd_0_data_w(0, latch[2] & 0x0f); break;
+	  default: sndbrd_0_data_w(0, data);
+  }
 }
 
 static WRITE_HANDLER(audiog1_w) {
@@ -516,4 +521,62 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(ATARI3)
   MDRV_IMPORT_FROM(ATARI2)
   MDRV_DIPS(64)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------
+/  Memory map for 4x4
+/------------------------------------------*/
+static MEMORY_READ_START(ATARI4_readmem)
+  {0x0000,0x07ff,	MRA_RAM},
+  {0x1000,0x17ff,	MRA_RAM},
+  {0x2000,0x27ff,	MRA_RAM},
+  {0x3000,0x37ff,	MRA_RAM},
+  {0x8000,0xffff,	MRA_ROM},
+MEMORY_END
+
+static MEMORY_WRITE_START(ATARI4_writemem)
+  {0x0000,0x07ff,	MWA_RAM},
+  {0x1000,0x17ff,	MWA_RAM},
+  {0x2000,0x27ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x3000,0x37ff,	MWA_RAM},
+MEMORY_END
+
+static int enable_irq = 1;
+static int irq_callback(int line) {
+  cpu_set_irq_line(0, 0, CLEAR_LINE);
+  enable_irq = 1;
+  return 0;
+}
+
+static INTERRUPT_GEN(ATARI4_irq) {
+  if (enable_irq) {
+    cpu_set_irq_line(0, 0, ASSERT_LINE);
+    enable_irq = 0;
+  }
+}
+
+static MACHINE_INIT(ATARI4) {
+  memset(&locals, 0, sizeof locals);
+  memset(memory_region(ATARI_MEMREG_CPU), 0, 0x2000);
+  cpu_set_irq_callback(0, irq_callback);
+}
+
+static SWITCH_UPDATE(ATARI4) {
+	if (inports) {
+		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x62) | (inports[ATARI_COMINPORT] & 0x9d);
+	}
+}
+
+MACHINE_DRIVER_START(ATARI4)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 575000)
+  MDRV_CPU_MEMORY(ATARI4_readmem, ATARI4_writemem)
+  MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(ATARI4_irq, 500)
+  MDRV_CORE_INIT_RESET_STOP(ATARI4,NULL,ATARI)
+  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(ATARI4)
+  MDRV_DIAGNOSTIC_LEDH(1)
+//  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
 MACHINE_DRIVER_END

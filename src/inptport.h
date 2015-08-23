@@ -125,7 +125,10 @@ enum { IPT_END=1,IPT_PORT,
 	/* 8 player support */
 	IPT_START5, IPT_START6, IPT_START7, IPT_START8,
 	IPT_COIN5, IPT_COIN6, IPT_COIN7, IPT_COIN8,
-	__ipt_max
+	__ipt_max,
+
+	/* pinDMD frame dumping */
+	IPT_UI_DUMPFRAME
 };
 
 #define IPT_UNUSED     IPF_UNUSED

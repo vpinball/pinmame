@@ -53,6 +53,7 @@ static cycles_t suspend_time;
 
 #ifdef _MSC_VER
 
+#ifndef __LP64__
 static int has_rdtsc(void)
 {
 	int nFeatures;
@@ -66,6 +67,12 @@ static int has_rdtsc(void)
 
 	return ((nFeatures & 0x10) == 0x10) ? TRUE : FALSE;
 }
+#else
+static int has_rdtsc(void)
+{
+	return TRUE;
+}
+#endif
 
 #else
 
@@ -201,6 +208,7 @@ static cycles_t performance_cycle_counter(void)
 
 #ifdef _MSC_VER
 
+#ifndef __LP64__
 static cycles_t rdtsc_cycle_counter(void)
 {
 	INT64 result;
@@ -216,6 +224,12 @@ static cycles_t rdtsc_cycle_counter(void)
 
 	return result;
 }
+#else
+static cycles_t rdtsc_cycle_counter(void)
+{
+	return __rdtsc();
+}
+#endif
 
 #else
 
@@ -312,3 +326,35 @@ void win_timer_enable(int enabled)
 	}
 }
 
+//
+
+static unsigned int sTimerInit = 0;
+static LARGE_INTEGER TimerFreq;
+static LARGE_INTEGER sTimerStart;
+
+static void wintimer_init(void)
+{
+	sTimerInit = 1;
+
+	QueryPerformanceFrequency(&TimerFreq);
+	QueryPerformanceCounter(&sTimerStart);
+}
+
+void uSleep(const unsigned long long u)
+{
+	LARGE_INTEGER TimerEnd;
+	LARGE_INTEGER TimerNow;
+
+	if (sTimerInit == 0)
+		wintimer_init();
+
+	QueryPerformanceCounter(&TimerEnd);
+	TimerEnd.QuadPart += (u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart;
+
+	do
+	{
+		SwitchToThread();
+
+		QueryPerformanceCounter(&TimerNow);
+	} while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
+}

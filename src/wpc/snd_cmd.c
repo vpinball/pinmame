@@ -19,6 +19,12 @@
 #include "sndbrd.h"
 #include "snd_cmd.h"
 
+//#define VPINMAME_ALTSOUND
+
+#ifdef VPINMAME_ALTSOUND
+ #include "snd_alt.h"
+#endif
+
 #ifdef MAME_DEBUG
 extern UINT8 debugger_focus;
 #endif
@@ -83,6 +89,10 @@ void snd_cmd_init(void) {
 void snd_cmd_exit(void) {
   clrCmds();
   wave_exit();
+
+#ifdef VPINMAME_ALTSOUND
+  alt_sound_exit();
+#endif
 }
 
 /*----------------
@@ -94,6 +104,11 @@ void snd_cmd_log(int boardNo, int cmd) {
     locals.cmdLog[locals.firstLog++] = boardNo;
     locals.firstLog %= MAX_CMD_LOG;
   }
+
+#ifdef VPINMAME_ALTSOUND
+  alt_sound_handle(boardNo, cmd);
+#endif
+
   locals.cmdLog[locals.firstLog++] = cmd;
   locals.firstLog %= MAX_CMD_LOG;
 }
@@ -509,6 +524,7 @@ static void wave_close(void) {
     wavelocals.file = NULL;
   }
 }
+
 /*--------------------*/
 /* exported functions */
 /*--------------------*/

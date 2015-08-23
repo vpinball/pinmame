@@ -659,7 +659,7 @@ static void print_game_micro(int OUTPUT_XML, FILE* out, const struct GameDriver*
 		}
 	}
 
-	for(j=0;j<MAX_SOUND;++j) if (sound[j].sound_type)
+	for(j=0;j<MAX_SOUND;++j)
 	{
 		if (sound[j].sound_type)
 		{

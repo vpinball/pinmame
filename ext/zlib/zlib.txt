@@ -5,8 +5,8 @@ Reason: Support for zipped ROM packages
 
 Visual C++
 ----------
-zlib Version: 1.1.4
-Built with: Visual C++ 6.0
+zlib Version: 1.2.8
+Built with: Visual C++ 9.0
 
 Library type: static
 Runtime library: /MT (multi-threaded non-DLL)

@@ -166,7 +166,7 @@ static WRITE_HANDLER(ic2_cb2_w) {
     HC4094_clock_w(14, !data);
     HC4094_clock_w(15, !data);
   }
-  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x0e) | !locals.dispSel;
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x0e) | (int)(!locals.dispSel);
 }
 
 /* PA0: from J1-J (left thumper bumper)

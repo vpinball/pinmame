@@ -83,6 +83,36 @@
  * - INR r, DCR r, ADD r, SUB r, CMP r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
  * 
+ * 23-Dec-2006 Tomasz Slanina
+ * - SIM fixed
+ *
+ * 28-Jan-2007 Zsolt Vasvari
+ * - Removed archaic i8080_EXACT flag.
+ *
+ * 08-June-2008 Miodrag Milanovic
+ * - Flag setting fix for some instructions and cycle count update
+ *
+ * August 2009, hap
+ * - removed DAA table
+ * - fixed accidental double memory reads due to macro overuse
+ * - fixed cycle deduction on unconditional CALL / RET
+ * - added cycle tables and cleaned up big switch source layout (1 tab = 4 spaces)
+ * - removed HLT cycle eating (earlier, HLT after EI could theoretically fail)
+ * - fixed parity flag on add/sub/cmp
+ * - renamed temp register XX to official name WZ
+ * - renamed flags from Z80 style S Z Y H X V N C  to  S Z X5 H X3 P V C, and
+ *   fixed X5 / V flags where accidentally broken due to flag names confusion
+ *
+ * 21-Aug-2009, Curt Coder
+ * - added 8080A variant
+ * - refactored callbacks to use devcb
+ *
+ * October 2012, hap
+ * - fixed H flag on subtraction opcodes
+ * - on 8080, don't push the unsupported flags(X5, X3, V) to stack
+ * - 8080 passes on 8080/8085 CPU Exerciser, 8085 errors only on the DAA test
+ *   (ref: http://www.idb.me.uk/sunhillow/8080.html - tests only 8080 opcodes)
+ *
  *****************************************************************************/
 
 /*int survival_prot = 0; */
@@ -95,7 +125,6 @@
 #include "mamedbg.h"
 #include "i8085.h"
 #include "i8085cpu.h"
-#include "i8085daa.h"
 
 #if VERBOSE
 #include <stdio.h>
@@ -122,6 +151,56 @@ static UINT8 i8085_win_layout[] = {
 	25,14,55, 8,	/* memory #2 window (right, lower middle) */
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
+
+
+/* cycles lookup */
+const UINT8 i8085_lut_cycles_8080[256]={
+/*      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  */
+/* 0 */ 4, 10,7, 5, 5, 5, 7, 4, 4, 10,7, 5, 5, 5, 7, 4,
+/* 1 */ 4, 10,7, 5, 5, 5, 7, 4, 4, 10,7, 5, 5, 5, 7, 4,
+/* 2 */ 4, 10,16,5, 5, 5, 7, 4, 4, 10,16,5, 5, 5, 7, 4,
+/* 3 */ 4, 10,13,5, 10,10,10,4, 4, 10,13,5, 5, 5, 7, 4,
+/* 4 */ 5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+/* 5 */ 5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+/* 6 */ 5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,
+/* 7 */ 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 7, 5,
+/* 8 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 9 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* A */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* C */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
+/* D */ 5, 10,10,10,11,11,7, 11,5, 10,10,10,11,11,7, 11,
+/* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,5, 11,11,7, 11,
+/* F */ 5, 10,10,4, 11,11,7, 11,5, 5, 10,4, 11,11,7, 11 };
+const UINT8 i8085_lut_cycles_8085[256]={
+/*      0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  */
+/* 0 */ 4, 10,7, 6, 4, 4, 7, 4, 10,10,7, 6, 4, 4, 7, 4,
+/* 1 */ 7, 10,7, 6, 4, 4, 7, 4, 10,10,7, 6, 4, 4, 7, 4,
+/* 2 */ 7, 10,16,6, 4, 4, 7, 4, 10,10,16,6, 4, 4, 7, 4,
+/* 3 */ 7, 10,13,6, 10,10,10,4, 10,10,13,6, 4, 4, 7, 4,
+/* 4 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 5 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 6 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 7 */ 7, 7, 7, 7, 7, 7, 5, 7, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 8 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* 9 */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* A */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* B */ 4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,
+/* C */ 6, 10,10,10,11,12,7, 12,6, 10,10,12,11,11,7, 12,
+/* D */ 6, 10,10,10,11,12,7, 12,6, 10,10,10,11,10,7, 12,
+/* E */ 6, 10,10,16,11,12,7, 12,6, 6, 10,5, 11,10,7, 12,
+/* F */ 6, 10,10,4, 11,12,7, 12,6, 6, 10,4, 11,10,7, 12 };
+
+/* special cases (partially taken care of elsewhere):
+               base c    taken?   not taken?
+M_RET  8080    5         +6(11)   -0            (conditional)
+M_RET  8085    6         +6(12)   -0            (conditional)
+M_JMP  8080    10        +0       -0
+M_JMP  8085    10        +0       -3(7)
+M_CALL 8080    11        +6(17)   -0
+M_CALL 8085    11        +7(18)   -2(9)
+
+*/
 
 
 typedef struct {
@@ -189,924 +268,932 @@ static	void illegal(void)
 
 INLINE void execute_one(int opcode)
 {
+        i8085_ICount -= I.cputype ? i8085_lut_cycles_8085[opcode] : i8085_lut_cycles_8080[opcode];
+
 	switch (opcode)
 	{
-		case 0x00: i8085_ICount -= 4;	/* NOP	*/
+		case 0x00:	/* NOP	*/
 			/* no op */
 			break;
-		case 0x01: i8085_ICount -= 10;	/* LXI	B,nnnn */
+		case 0x01:      /* LXI	B,nnnn */
 			I.BC.w.l = ARG16();
 			break;
-		case 0x02: i8085_ICount -= 7;	/* STAX B */
+		case 0x02: 	/* STAX B */
 			WM(I.BC.d, I.AF.b.h);
 			break;
-		case 0x03: i8085_ICount -= 5;	/* INX	B */
+		case 0x03: 	/* INX	B */
 			I.BC.w.l++;
-			if (I.BC.b.l == 0x00) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.BC.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x04: i8085_ICount -= 5;	/* INR	B */
+		case 0x04: 	/* INR	B */
 			M_INR(I.BC.b.h);
 			break;
-		case 0x05: i8085_ICount -= 5;	/* DCR	B */
+		case 0x05: 	/* DCR	B */
 			M_DCR(I.BC.b.h);
 			break;
-		case 0x06: i8085_ICount -= 7;	/* MVI	B,nn */
+		case 0x06: 	/* MVI	B,nn */
 			M_MVI(I.BC.b.h);
 			break;
-		case 0x07: i8085_ICount -= 4;	/* RLC	*/
+		case 0x07: 	/* RLC	*/
 			M_RLC;
 			break;
-
 		case 0x08:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* DSUB */
+						/* DSUB */
 				M_DSUB();
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x09: i8085_ICount -= 10;	/* DAD	B */
+		case 0x09: 	/* DAD	B */
 			M_DAD(BC);
 			break;
-		case 0x0a: i8085_ICount -= 7;	/* LDAX B */
+		case 0x0a: 	/* LDAX B */
 			I.AF.b.h = RM(I.BC.d);
 			break;
-		case 0x0b: i8085_ICount -= 5;	/* DCX	B */
+		case 0x0b: 	/* DCX	B */
 			I.BC.w.l--;
-			if (I.BC.b.l == 0xff) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.BC.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x0c: i8085_ICount -= 5;	/* INR	C */
+		case 0x0c: 	/* INR	C */
 			M_INR(I.BC.b.l);
 			break;
-		case 0x0d: i8085_ICount -= 5;	/* DCR	C */
+		case 0x0d: 	/* DCR	C */
 			M_DCR(I.BC.b.l);
 			break;
-		case 0x0e: i8085_ICount -= 7;	/* MVI	C,nn */
+		case 0x0e: 	/* MVI	C,nn */
 			M_MVI(I.BC.b.l);
 			break;
-		case 0x0f: i8085_ICount -= 4;	/* RRC	*/
+		case 0x0f: 	/* RRC	*/
 			M_RRC;
 			break;
 
 		case 0x10:
 			if( I.cputype ) {
-				i8085_ICount -= 7;		/* ASRH */
+						/* ASRH */
 				I.AF.b.l = (I.AF.b.l & ~CF) | (I.HL.b.l & CF);
 				I.HL.w.l = (I.HL.w.l >> 1);
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x11: i8085_ICount -= 10;	/* LXI	D,nnnn */
+		case 0x11: 	/* LXI	D,nnnn */
 			I.DE.w.l = ARG16();
 			break;
-		case 0x12: i8085_ICount -= 7;	/* STAX D */
+		case 0x12: 	/* STAX D */
 			WM(I.DE.d, I.AF.b.h);
 			break;
-		case 0x13: i8085_ICount -= 5;	/* INX	D */
+		case 0x13: 	/* INX	D */
 			I.DE.w.l++;
-			if (I.DE.b.l == 0x00) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.DE.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x14: i8085_ICount -= 5;	/* INR	D */
+		case 0x14: 	/* INR	D */
 			M_INR(I.DE.b.h);
 			break;
-		case 0x15: i8085_ICount -= 5;	/* DCR	D */
+		case 0x15: 	/* DCR	D */
 			M_DCR(I.DE.b.h);
 			break;
-		case 0x16: i8085_ICount -= 7;	/* MVI	D,nn */
+		case 0x16: 	/* MVI	D,nn */
 			M_MVI(I.DE.b.h);
 			break;
-		case 0x17: i8085_ICount -= 4;	/* RAL	*/
+		case 0x17: 	/* RAL	*/
 			M_RAL;
 			break;
 
 		case 0x18:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* RLDE */
+						/* RLDE */
 				I.AF.b.l = (I.AF.b.l & ~(CF | VF)) | (I.DE.b.h >> 7);
 				I.DE.w.l = (I.DE.w.l << 1) | (I.DE.w.l >> 15);
 				if (0 != (((I.DE.w.l >> 15) ^ I.AF.b.l) & CF))
 					I.AF.b.l |= VF;
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x19: i8085_ICount -= 10;	/* DAD	D */
+		case 0x19: 	/* DAD	D */
 			M_DAD(DE);
 			break;
-		case 0x1a: i8085_ICount -= 7;	/* LDAX D */
+		case 0x1a: 	/* LDAX D */
 			I.AF.b.h = RM(I.DE.d);
 			break;
-		case 0x1b: i8085_ICount -= 5;	/* DCX	D */
+		case 0x1b: 	/* DCX	D */
 			I.DE.w.l--;
-			if (I.DE.b.l == 0xff) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.DE.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x1c: i8085_ICount -= 5;	/* INR	E */
+		case 0x1c: 	/* INR	E */
 			M_INR(I.DE.b.l);
 			break;
-		case 0x1d: i8085_ICount -= 5;	/* DCR	E */
+		case 0x1d: 	/* DCR	E */
 			M_DCR(I.DE.b.l);
 			break;
-		case 0x1e: i8085_ICount -= 7;	/* MVI	E,nn */
+		case 0x1e: 	/* MVI	E,nn */
 			M_MVI(I.DE.b.l);
 			break;
-		case 0x1f: i8085_ICount -= 4;	/* RAR	*/
+		case 0x1f: 	/* RAR	*/
 			M_RAR;
 			break;
 
 		case 0x20:
-			if( I.cputype ) {
-				i8085_ICount -= 7;		/* RIM	*/
+			if( I.cputype ) { //!! misses fixes from newer MAME
+						/* RIM	*/
 				I.AF.b.h = I.IM;
 				I.AF.b.h |= RIM_IEN; RIM_IEN = 0; //AT: read and clear IEN status latch
 /*				survival_prot ^= 0x01; */
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x21: i8085_ICount -= 10;	/* LXI	H,nnnn */
+		case 0x21: 	/* LXI	H,nnnn */
 			I.HL.w.l = ARG16();
 			break;
-		case 0x22: i8085_ICount -= 16;	/* SHLD nnnn */
+		case 0x22: 	/* SHLD nnnn */
 			I.XX.w.l = ARG16();
 			WM(I.XX.d, I.HL.b.l);
 			I.XX.w.l++;
 			WM(I.XX.d, I.HL.b.h);
 			break;
-		case 0x23: i8085_ICount -= 5;	/* INX	H */
+		case 0x23: 	/* INX	H */
 			I.HL.w.l++;
-			if (I.HL.b.l == 0x00) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.HL.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x24: i8085_ICount -= 5;	/* INR	H */
+		case 0x24: 	/* INR	H */
 			M_INR(I.HL.b.h);
 			break;
-		case 0x25: i8085_ICount -= 5;	/* DCR	H */
+		case 0x25: 	/* DCR	H */
 			M_DCR(I.HL.b.h);
 			break;
-		case 0x26: i8085_ICount -= 7;	/* MVI	H,nn */
+		case 0x26: 	/* MVI	H,nn */
 			M_MVI(I.HL.b.h);
 			break;
-		case 0x27: i8085_ICount -= 4;	/* DAA	*/
-			I.XX.d = I.AF.b.h;
-			if (I.AF.b.l & CF) I.XX.d |= 0x100;
-			if (I.AF.b.l & HF) I.XX.d |= 0x200;
-			if (I.AF.b.l & NF) I.XX.d |= 0x400;
-			I.AF.w.l = DAA[I.XX.d];
+		case 0x27: 	/* DAA	*/
+			I.XX.b.h = I.AF.b.h;
+					if (I.cputype && I.AF.b.l&VF) {
+						if ((I.AF.b.l&HF) | ((I.AF.b.h&0xf)>9)) I.XX.b.h-=6;
+						if ((I.AF.b.l&CF) | (I.AF.b.h>0x99)) I.XX.b.h-=0x60;
+					}
+					else {
+						if ((I.AF.b.l&HF) | ((I.AF.b.h&0xf)>9)) I.XX.b.h+=6;
+						if ((I.AF.b.l&CF) | (I.AF.b.h>0x99)) I.XX.b.h+=0x60;
+					}
+
+					I.AF.b.l=(I.AF.b.l&3) | (I.AF.b.h&0x28) | (I.AF.b.h>0x99) | ((I.AF.b.h^I.XX.b.h)&0x10) | ZSP[I.XX.b.h];
+					I.AF.b.h=I.XX.b.h;
 			break;
 
 		case 0x28:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* LDEH nn */
+						/* LDEH nn */
 				I.XX.d = ARG();
 				I.DE.d = (I.HL.d + I.XX.d) & 0xffff;
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x29: i8085_ICount -= 10;	/* DAD	H */
+		case 0x29: 	/* DAD	H */
 			M_DAD(HL);
 			break;
-		case 0x2a: i8085_ICount -= 16;	/* LHLD nnnn */
+		case 0x2a: 	/* LHLD nnnn */
 			I.XX.d = ARG16();
 			I.HL.b.l = RM(I.XX.d);
 			I.XX.w.l++;
 			I.HL.b.h = RM(I.XX.d);
 			break;
-		case 0x2b: i8085_ICount -= 5;	/* DCX	H */
+		case 0x2b: 	/* DCX	H */
 			I.HL.w.l--;
-			if (I.HL.b.l == 0xff) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.HL.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x2c: i8085_ICount -= 5;	/* INR	L */
+		case 0x2c: 	/* INR	L */
 			M_INR(I.HL.b.l);
 			break;
-		case 0x2d: i8085_ICount -= 5;	/* DCR	L */
+		case 0x2d: 	/* DCR	L */
 			M_DCR(I.HL.b.l);
 			break;
-		case 0x2e: i8085_ICount -= 7;	/* MVI	L,nn */
+		case 0x2e: 	/* MVI	L,nn */
 			M_MVI(I.HL.b.l);
 			break;
-		case 0x2f: i8085_ICount -= 4;	/* CMA	*/
+		case 0x2f: 	/* CMA	*/
 			I.AF.b.h ^= 0xff;
-			I.AF.b.l |= HF + NF;
+			if( I.cputype ) { I.AF.b.l |= HF | VF; }
 			break;
 
-		case 0x30:
+		case 0x30: //!! misses new port from MAME
 			if( I.cputype ) {
-				i8085_ICount -= 7;		/* SIM	*/
+						/* SIM	*/
 				if ((I.IM ^ I.AF.b.h) & 0x80)
 					if (I.sod_callback) (*I.sod_callback)(I.AF.b.h >> 7);
 //AT
-				//I.IM &= (IM_SID + IM_IEN + IM_TRAP);
-				//I.IM |= (I.AF.b.h & ~(IM_SID + IM_SOD + IM_IEN + IM_TRAP));
+				//I.IM &= (IM_SID + IM_IE + IM_TRAP);
+				//I.IM |= (I.AF.b.h & ~(IM_SID + IM_SOD + IM_IE + IM_TRAP));
 
 				// overwrite RST5.5-7.5 interrupt masks only when bit 0x08 of the accumulator is set
 				if (I.AF.b.h & 0x08)
-					I.IM = (I.IM & ~(IM_RST55+IM_RST65+IM_RST75)) | (I.AF.b.h & (IM_RST55+IM_RST65+IM_RST75));
+					I.IM = (I.IM & ~(IM_M55+IM_M65+IM_M75)) | (I.AF.b.h & (IM_M55+IM_M65+IM_M75));
 //ZT
 				if (I.AF.b.h & 0x80) I.IM |= IM_SOD;
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x31: i8085_ICount -= 10;	/* LXI SP,nnnn */
+		case 0x31: 	/* LXI SP,nnnn */
 			I.SP.w.l = ARG16();
 			break;
-		case 0x32: i8085_ICount -= 13;	/* STAX nnnn */
+		case 0x32: 	/* STAX nnnn */
 			I.XX.d = ARG16();
 			WM(I.XX.d, I.AF.b.h);
 			break;
-		case 0x33: i8085_ICount -= 5;	/* INX	SP */
+		case 0x33: 	/* INX	SP */
 			I.SP.w.l++;
-			if (I.SP.b.l == 0x00) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.SP.w.l == 0x0000) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x34: i8085_ICount -= 10;	/* INR	M */
+		case 0x34: 	/* INR	M */
 			I.XX.b.l = RM(I.HL.d);
 			M_INR(I.XX.b.l);
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x35: i8085_ICount -= 10;	/* DCR	M */
+		case 0x35: 	/* DCR	M */
 			I.XX.b.l = RM(I.HL.d);
 			M_DCR(I.XX.b.l);
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x36: i8085_ICount -= 10;	/* MVI	M,nn */
+		case 0x36: 	/* MVI	M,nn */
 			I.XX.b.l = ARG();
 			WM(I.HL.d, I.XX.b.l);
 			break;
-		case 0x37: i8085_ICount -= 4;	/* STC	*/
-			I.AF.b.l = (I.AF.b.l & ~(HF + NF)) | CF;
+		case 0x37: 	/* STC	*/
+			I.AF.b.l = (I.AF.b.l & 0xfe) | CF;
 			break;
 
 		case 0x38:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* LDES nn */
+						/* LDES nn */
 				I.XX.d = ARG();
 				I.DE.d = (I.SP.d + I.XX.d) & 0xffff;
 			} else {
-				i8085_ICount -= 4;		/* NOP undocumented */
+						/* NOP undocumented */
 			}
 			break;
-		case 0x39: i8085_ICount -= 10;	/* DAD SP */
+		case 0x39: 	/* DAD SP */
 			M_DAD(SP);
 			break;
-		case 0x3a: i8085_ICount -= 13;	/* LDAX nnnn */
+		case 0x3a: 	/* LDAX nnnn */
 			I.XX.d = ARG16();
 			I.AF.b.h = RM(I.XX.d);
 			break;
-		case 0x3b: i8085_ICount -= 5;	/* DCX	SP */
+		case 0x3b: 	/* DCX	SP */
 			I.SP.w.l--;
-			if (I.SP.b.l == 0xff) I.AF.b.l |= XF; else I.AF.b.l &= ~XF;
+			if( I.cputype ) { if (I.SP.w.l == 0xffff) I.AF.b.l |= X5F; else I.AF.b.l &= ~X5F; }
 			break;
-		case 0x3c: i8085_ICount -= 5;	/* INR	A */
+		case 0x3c: 	/* INR	A */
 			M_INR(I.AF.b.h);
 			break;
-		case 0x3d: i8085_ICount -= 5;	/* DCR	A */
+		case 0x3d: 	/* DCR	A */
 			M_DCR(I.AF.b.h);
 			break;
-		case 0x3e: i8085_ICount -= 7;	/* MVI	A,nn */
+		case 0x3e: 	/* MVI	A,nn */
 			M_MVI(I.AF.b.h);
 			break;
-		case 0x3f: i8085_ICount -= 4;	/* CMF	*/
-			I.AF.b.l = ((I.AF.b.l & ~(HF + NF)) |
-					   ((I.AF.b.l & CF) << 4)) ^ CF;
+		case 0x3f: 	/* CMC	*/
+			I.AF.b.l = (I.AF.b.l & 0xfe) | (~I.AF.b.l & CF);
 			break;
 
-		case 0x40: i8085_ICount -= 5;	/* MOV	B,B */
+		case 0x40: 	/* MOV	B,B */
 			/* no op */
 			break;
-		case 0x41: i8085_ICount -= 5;	/* MOV	B,C */
+		case 0x41: 	/* MOV	B,C */
 			I.BC.b.h = I.BC.b.l;
 			break;
-		case 0x42: i8085_ICount -= 5;	/* MOV	B,D */
+		case 0x42: 	/* MOV	B,D */
 			I.BC.b.h = I.DE.b.h;
 			break;
-		case 0x43: i8085_ICount -= 5;	/* MOV	B,E */
+		case 0x43: 	/* MOV	B,E */
 			I.BC.b.h = I.DE.b.l;
 			break;
-		case 0x44: i8085_ICount -= 5;	/* MOV	B,H */
+		case 0x44: 	/* MOV	B,H */
 			I.BC.b.h = I.HL.b.h;
 			break;
-		case 0x45: i8085_ICount -= 5;	/* MOV	B,L */
+		case 0x45: 	/* MOV	B,L */
 			I.BC.b.h = I.HL.b.l;
 			break;
-		case 0x46: i8085_ICount -= 7;	/* MOV	B,M */
+		case 0x46: 	/* MOV	B,M */
 			I.BC.b.h = RM(I.HL.d);
 			break;
-		case 0x47: i8085_ICount -= 5;	/* MOV	B,A */
+		case 0x47: 	/* MOV	B,A */
 			I.BC.b.h = I.AF.b.h;
 			break;
 
-		case 0x48: i8085_ICount -= 5;	/* MOV	C,B */
+		case 0x48: 	/* MOV	C,B */
 			I.BC.b.l = I.BC.b.h;
 			break;
-		case 0x49: i8085_ICount -= 5;	/* MOV	C,C */
+		case 0x49: 	/* MOV	C,C */
 			/* no op */
 			break;
-		case 0x4a: i8085_ICount -= 5;	/* MOV	C,D */
+		case 0x4a: 	/* MOV	C,D */
 			I.BC.b.l = I.DE.b.h;
 			break;
-		case 0x4b: i8085_ICount -= 5;	/* MOV	C,E */
+		case 0x4b: 	/* MOV	C,E */
 			I.BC.b.l = I.DE.b.l;
 			break;
-		case 0x4c: i8085_ICount -= 5;	/* MOV	C,H */
+		case 0x4c: 	/* MOV	C,H */
 			I.BC.b.l = I.HL.b.h;
 			break;
-		case 0x4d: i8085_ICount -= 5;	/* MOV	C,L */
+		case 0x4d: 	/* MOV	C,L */
 			I.BC.b.l = I.HL.b.l;
 			break;
-		case 0x4e: i8085_ICount -= 7;	/* MOV	C,M */
+		case 0x4e: 	/* MOV	C,M */
 			I.BC.b.l = RM(I.HL.d);
 			break;
-		case 0x4f: i8085_ICount -= 5;	/* MOV	C,A */
+		case 0x4f: 	/* MOV	C,A */
 			I.BC.b.l = I.AF.b.h;
 			break;
 
-		case 0x50: i8085_ICount -= 5;	/* MOV	D,B */
+		case 0x50: 	/* MOV	D,B */
 			I.DE.b.h = I.BC.b.h;
 			break;
-		case 0x51: i8085_ICount -= 5;	/* MOV	D,C */
+		case 0x51: 	/* MOV	D,C */
 			I.DE.b.h = I.BC.b.l;
 			break;
-		case 0x52: i8085_ICount -= 5;	/* MOV	D,D */
+		case 0x52: 	/* MOV	D,D */
 			/* no op */
 			break;
-		case 0x53: i8085_ICount -= 5;	/* MOV	D,E */
+		case 0x53: 	/* MOV	D,E */
 			I.DE.b.h = I.DE.b.l;
 			break;
-		case 0x54: i8085_ICount -= 5;	/* MOV	D,H */
+		case 0x54: 	/* MOV	D,H */
 			I.DE.b.h = I.HL.b.h;
 			break;
-		case 0x55: i8085_ICount -= 5;	/* MOV	D,L */
+		case 0x55: 	/* MOV	D,L */
 			I.DE.b.h = I.HL.b.l;
 			break;
-		case 0x56: i8085_ICount -= 7;	/* MOV	D,M */
+		case 0x56: 	/* MOV	D,M */
 			I.DE.b.h = RM(I.HL.d);
 			break;
-		case 0x57: i8085_ICount -= 5;	/* MOV	D,A */
+		case 0x57: 	/* MOV	D,A */
 			I.DE.b.h = I.AF.b.h;
 			break;
 
-		case 0x58: i8085_ICount -= 5;	/* MOV	E,B */
+		case 0x58: 	/* MOV	E,B */
 			I.DE.b.l = I.BC.b.h;
 			break;
-		case 0x59: i8085_ICount -= 5;	/* MOV	E,C */
+		case 0x59: 	/* MOV	E,C */
 			I.DE.b.l = I.BC.b.l;
 			break;
-		case 0x5a: i8085_ICount -= 5;	/* MOV	E,D */
+		case 0x5a: 	/* MOV	E,D */
 			I.DE.b.l = I.DE.b.h;
 			break;
-		case 0x5b: i8085_ICount -= 5;	/* MOV	E,E */
+		case 0x5b: 	/* MOV	E,E */
 			/* no op */
 			break;
-		case 0x5c: i8085_ICount -= 5;	/* MOV	E,H */
+		case 0x5c: 	/* MOV	E,H */
 			I.DE.b.l = I.HL.b.h;
 			break;
-		case 0x5d: i8085_ICount -= 5;	/* MOV	E,L */
+		case 0x5d: 	/* MOV	E,L */
 			I.DE.b.l = I.HL.b.l;
 			break;
-		case 0x5e: i8085_ICount -= 7;	/* MOV	E,M */
+		case 0x5e: 	/* MOV	E,M */
 			I.DE.b.l = RM(I.HL.d);
 			break;
-		case 0x5f: i8085_ICount -= 5;	/* MOV	E,A */
+		case 0x5f: 	/* MOV	E,A */
 			I.DE.b.l = I.AF.b.h;
 			break;
 
-		case 0x60: i8085_ICount -= 5;	/* MOV	H,B */
+		case 0x60: 	/* MOV	H,B */
 			I.HL.b.h = I.BC.b.h;
 			break;
-		case 0x61: i8085_ICount -= 5;	/* MOV	H,C */
+		case 0x61: 	/* MOV	H,C */
 			I.HL.b.h = I.BC.b.l;
 			break;
-		case 0x62: i8085_ICount -= 5;	/* MOV	H,D */
+		case 0x62: 	/* MOV	H,D */
 			I.HL.b.h = I.DE.b.h;
 			break;
-		case 0x63: i8085_ICount -= 5;	/* MOV	H,E */
+		case 0x63: 	/* MOV	H,E */
 			I.HL.b.h = I.DE.b.l;
 			break;
-		case 0x64: i8085_ICount -= 5;	/* MOV	H,H */
+		case 0x64: 	/* MOV	H,H */
 			/* no op */
 			break;
-		case 0x65: i8085_ICount -= 5;	/* MOV	H,L */
+		case 0x65: 	/* MOV	H,L */
 			I.HL.b.h = I.HL.b.l;
 			break;
-		case 0x66: i8085_ICount -= 7;	/* MOV	H,M */
+		case 0x66: 	/* MOV	H,M */
 			I.HL.b.h = RM(I.HL.d);
 			break;
-		case 0x67: i8085_ICount -= 5;	/* MOV	H,A */
+		case 0x67: 	/* MOV	H,A */
 			I.HL.b.h = I.AF.b.h;
 			break;
 
-		case 0x68: i8085_ICount -= 5;	/* MOV	L,B */
+		case 0x68: 	/* MOV	L,B */
 			I.HL.b.l = I.BC.b.h;
 			break;
-		case 0x69: i8085_ICount -= 5;	/* MOV	L,C */
+		case 0x69: 	/* MOV	L,C */
 			I.HL.b.l = I.BC.b.l;
 			break;
-		case 0x6a: i8085_ICount -= 5;	/* MOV	L,D */
+		case 0x6a: 	/* MOV	L,D */
 			I.HL.b.l = I.DE.b.h;
 			break;
-		case 0x6b: i8085_ICount -= 5;	/* MOV	L,E */
+		case 0x6b: 	/* MOV	L,E */
 			I.HL.b.l = I.DE.b.l;
 			break;
-		case 0x6c: i8085_ICount -= 5;	/* MOV	L,H */
+		case 0x6c: 	/* MOV	L,H */
 			I.HL.b.l = I.HL.b.h;
 			break;
-		case 0x6d: i8085_ICount -= 5;	/* MOV	L,L */
+		case 0x6d: 	/* MOV	L,L */
 			/* no op */
 			break;
-		case 0x6e: i8085_ICount -= 7;	/* MOV	L,M */
+		case 0x6e: 	/* MOV	L,M */
 			I.HL.b.l = RM(I.HL.d);
 			break;
-		case 0x6f: i8085_ICount -= 5;	/* MOV	L,A */
+		case 0x6f: 	/* MOV	L,A */
 			I.HL.b.l = I.AF.b.h;
 			break;
 
-		case 0x70: i8085_ICount -= 7;	/* MOV	M,B */
+		case 0x70:  	/* MOV	M,B */
 			WM(I.HL.d, I.BC.b.h);
 			break;
-		case 0x71: i8085_ICount -= 7;	/* MOV	M,C */
+		case 0x71: 	/* MOV	M,C */
 			WM(I.HL.d, I.BC.b.l);
 			break;
-		case 0x72: i8085_ICount -= 7;	/* MOV	M,D */
+		case 0x72: 	/* MOV	M,D */
 			WM(I.HL.d, I.DE.b.h);
 			break;
-		case 0x73: i8085_ICount -= 7;	/* MOV	M,E */
+		case 0x73: 	/* MOV	M,E */
 			WM(I.HL.d, I.DE.b.l);
 			break;
-		case 0x74: i8085_ICount -= 7;	/* MOV	M,H */
+		case 0x74: 	/* MOV	M,H */
 			WM(I.HL.d, I.HL.b.h);
 			break;
-		case 0x75: i8085_ICount -= 7;	/* MOV	M,L */
+		case 0x75: 	/* MOV	M,L */
 			WM(I.HL.d, I.HL.b.l);
 			break;
-		case 0x76: i8085_ICount -= 4;	/* HALT */
+		case 0x76: 	/* HALT */
 			I.PC.w.l--;
 			I.HALT = 1;
-			if (i8085_ICount > 0) i8085_ICount = 0;
+			if (i8085_ICount > 0) i8085_ICount = 0; //!!
 			break;
-		case 0x77: i8085_ICount -= 7;	/* MOV	M,A */
+		case 0x77: 	/* MOV	M,A */
 			WM(I.HL.d, I.AF.b.h);
 			break;
 
-		case 0x78: i8085_ICount -= 5;	/* MOV	A,B */
+		case 0x78: 	/* MOV	A,B */
 			I.AF.b.h = I.BC.b.h;
 			break;
-		case 0x79: i8085_ICount -= 5;	/* MOV	A,C */
+		case 0x79: 	/* MOV	A,C */
 			I.AF.b.h = I.BC.b.l;
 			break;
-		case 0x7a: i8085_ICount -= 5;	/* MOV	A,D */
+		case 0x7a: 	/* MOV	A,D */
 			I.AF.b.h = I.DE.b.h;
 			break;
-		case 0x7b: i8085_ICount -= 5;	/* MOV	A,E */
+		case 0x7b: 	/* MOV	A,E */
 			I.AF.b.h = I.DE.b.l;
 			break;
-		case 0x7c: i8085_ICount -= 5;	/* MOV	A,H */
+		case 0x7c: 	/* MOV	A,H */
 			I.AF.b.h = I.HL.b.h;
 			break;
-		case 0x7d: i8085_ICount -= 5;	/* MOV	A,L */
+		case 0x7d: 	/* MOV	A,L */
 			I.AF.b.h = I.HL.b.l;
 			break;
-		case 0x7e: i8085_ICount -= 7;	/* MOV	A,M */
+		case 0x7e: 	/* MOV	A,M */
 			I.AF.b.h = RM(I.HL.d);
 			break;
-		case 0x7f: i8085_ICount -= 5;	/* MOV	A,A */
+		case 0x7f: 	/* MOV	A,A */
 			/* no op */
 			break;
 
-		case 0x80: i8085_ICount -= 4;	/* ADD	B */
+		case 0x80: 	/* ADD	B */
 			M_ADD(I.BC.b.h);
 			break;
-		case 0x81: i8085_ICount -= 4;	/* ADD	C */
+		case 0x81: 	/* ADD	C */
 			M_ADD(I.BC.b.l);
 			break;
-		case 0x82: i8085_ICount -= 4;	/* ADD	D */
+		case 0x82: 	/* ADD	D */
 			M_ADD(I.DE.b.h);
 			break;
-		case 0x83: i8085_ICount -= 4;	/* ADD	E */
+		case 0x83: 	/* ADD	E */
 			M_ADD(I.DE.b.l);
 			break;
-		case 0x84: i8085_ICount -= 4;	/* ADD	H */
+		case 0x84: 	/* ADD	H */
 			M_ADD(I.HL.b.h);
 			break;
-		case 0x85: i8085_ICount -= 4;	/* ADD	L */
+		case 0x85:      /* ADD	L */
 			M_ADD(I.HL.b.l);
 			break;
-		case 0x86: i8085_ICount -= 7;	/* ADD	M */
+		case 0x86: 	/* ADD	M */
 			M_ADD(RM(I.HL.d));
 			break;
-		case 0x87: i8085_ICount -= 4;	/* ADD	A */
+		case 0x87: 	/* ADD	A */
 			M_ADD(I.AF.b.h);
 			break;
 
-		case 0x88: i8085_ICount -= 4;	/* ADC	B */
+		case 0x88: 	/* ADC	B */
 			M_ADC(I.BC.b.h);
 			break;
-		case 0x89: i8085_ICount -= 4;	/* ADC	C */
+		case 0x89: 	/* ADC	C */
 			M_ADC(I.BC.b.l);
 			break;
-		case 0x8a: i8085_ICount -= 4;	/* ADC	D */
+		case 0x8a: 	/* ADC	D */
 			M_ADC(I.DE.b.h);
 			break;
-		case 0x8b: i8085_ICount -= 4;	/* ADC	E */
+		case 0x8b: 	/* ADC	E */
 			M_ADC(I.DE.b.l);
 			break;
-		case 0x8c: i8085_ICount -= 4;	/* ADC	H */
+		case 0x8c: 	/* ADC	H */
 			M_ADC(I.HL.b.h);
 			break;
-		case 0x8d: i8085_ICount -= 4;	/* ADC	L */
+		case 0x8d: 	/* ADC	L */
 			M_ADC(I.HL.b.l);
 			break;
-		case 0x8e: i8085_ICount -= 7;	/* ADC	M */
+		case 0x8e: 	/* ADC	M */
 			M_ADC(RM(I.HL.d));
 			break;
-		case 0x8f: i8085_ICount -= 4;	/* ADC	A */
+		case 0x8f: 	/* ADC	A */
 			M_ADC(I.AF.b.h);
 			break;
 
-		case 0x90: i8085_ICount -= 4;	/* SUB	B */
+		case 0x90: 	/* SUB	B */
 			M_SUB(I.BC.b.h);
 			break;
-		case 0x91: i8085_ICount -= 4;	/* SUB	C */
+		case 0x91: 	/* SUB	C */
 			M_SUB(I.BC.b.l);
 			break;
-		case 0x92: i8085_ICount -= 4;	/* SUB	D */
+		case 0x92: 	/* SUB	D */
 			M_SUB(I.DE.b.h);
 			break;
-		case 0x93: i8085_ICount -= 4;	/* SUB	E */
+		case 0x93: 	/* SUB	E */
 			M_SUB(I.DE.b.l);
 			break;
-		case 0x94: i8085_ICount -= 4;	/* SUB	H */
+		case 0x94: 	/* SUB	H */
 			M_SUB(I.HL.b.h);
 			break;
-		case 0x95: i8085_ICount -= 4;	/* SUB	L */
+		case 0x95: 	/* SUB	L */
 			M_SUB(I.HL.b.l);
 			break;
-		case 0x96: i8085_ICount -= 7;	/* SUB	M */
+		case 0x96: 	/* SUB	M */
 			M_SUB(RM(I.HL.d));
 			break;
-		case 0x97: i8085_ICount -= 4;	/* SUB	A */
+		case 0x97: 	/* SUB	A */
 			M_SUB(I.AF.b.h);
 			break;
 
-		case 0x98: i8085_ICount -= 4;	/* SBB	B */
+		case 0x98: 	/* SBB	B */
 			M_SBB(I.BC.b.h);
 			break;
-		case 0x99: i8085_ICount -= 4;	/* SBB	C */
+		case 0x99: 	/* SBB	C */
 			M_SBB(I.BC.b.l);
 			break;
-		case 0x9a: i8085_ICount -= 4;	/* SBB	D */
+		case 0x9a: 	/* SBB	D */
 			M_SBB(I.DE.b.h);
 			break;
-		case 0x9b: i8085_ICount -= 4;	/* SBB	E */
+		case 0x9b: 	/* SBB	E */
 			M_SBB(I.DE.b.l);
 			break;
-		case 0x9c: i8085_ICount -= 4;	/* SBB	H */
+		case 0x9c: 	/* SBB	H */
 			M_SBB(I.HL.b.h);
 			break;
-		case 0x9d: i8085_ICount -= 4;	/* SBB	L */
+		case 0x9d: 	/* SBB	L */
 			M_SBB(I.HL.b.l);
 			break;
-		case 0x9e: i8085_ICount -= 7;	/* SBB	M */
+		case 0x9e: 	/* SBB	M */
 			M_SBB(RM(I.HL.d));
 			break;
-		case 0x9f: i8085_ICount -= 4;	/* SBB	A */
+		case 0x9f: 	/* SBB	A */
 			M_SBB(I.AF.b.h);
 			break;
 
-		case 0xa0: i8085_ICount -= 4;	/* ANA	B */
+		case 0xa0: 	/* ANA	B */
 			M_ANA(I.BC.b.h);
 			break;
-		case 0xa1: i8085_ICount -= 4;	/* ANA	C */
+		case 0xa1: 	/* ANA	C */
 			M_ANA(I.BC.b.l);
 			break;
-		case 0xa2: i8085_ICount -= 4;	/* ANA	D */
+		case 0xa2: 	/* ANA	D */
 			M_ANA(I.DE.b.h);
 			break;
-		case 0xa3: i8085_ICount -= 4;	/* ANA	E */
+		case 0xa3: 	/* ANA	E */
 			M_ANA(I.DE.b.l);
 			break;
-		case 0xa4: i8085_ICount -= 4;	/* ANA	H */
+		case 0xa4: 	/* ANA	H */
 			M_ANA(I.HL.b.h);
 			break;
-		case 0xa5: i8085_ICount -= 4;	/* ANA	L */
+		case 0xa5: 	/* ANA	L */
 			M_ANA(I.HL.b.l);
 			break;
-		case 0xa6: i8085_ICount -= 7;	/* ANA	M */
+		case 0xa6: 	/* ANA	M */
 			M_ANA(RM(I.HL.d));
 			break;
-		case 0xa7: i8085_ICount -= 4;	/* ANA	A */
+		case 0xa7: 	/* ANA	A */
 			M_ANA(I.AF.b.h);
 			break;
 
-		case 0xa8: i8085_ICount -= 4;	/* XRA	B */
+		case 0xa8: 	/* XRA	B */
 			M_XRA(I.BC.b.h);
 			break;
-		case 0xa9: i8085_ICount -= 4;	/* XRA	C */
+		case 0xa9: 	/* XRA	C */
 			M_XRA(I.BC.b.l);
 			break;
-		case 0xaa: i8085_ICount -= 4;	/* XRA	D */
+		case 0xaa: 	/* XRA	D */
 			M_XRA(I.DE.b.h);
 			break;
-		case 0xab: i8085_ICount -= 4;	/* XRA	E */
+		case 0xab: 	/* XRA	E */
 			M_XRA(I.DE.b.l);
 			break;
-		case 0xac: i8085_ICount -= 4;	/* XRA	H */
+		case 0xac: 	/* XRA	H */
 			M_XRA(I.HL.b.h);
 			break;
-		case 0xad: i8085_ICount -= 4;	/* XRA	L */
+		case 0xad: 	/* XRA	L */
 			M_XRA(I.HL.b.l);
 			break;
-		case 0xae: i8085_ICount -= 7;	/* XRA	M */
+		case 0xae: 	/* XRA	M */
 			M_XRA(RM(I.HL.d));
 			break;
-		case 0xaf: i8085_ICount -= 4;	/* XRA	A */
+		case 0xaf: 	/* XRA	A */
 			M_XRA(I.AF.b.h);
 			break;
 
-		case 0xb0: i8085_ICount -= 4;	/* ORA	B */
+		case 0xb0: 	/* ORA	B */
 			M_ORA(I.BC.b.h);
 			break;
-		case 0xb1: i8085_ICount -= 4;	/* ORA	C */
+		case 0xb1: 	/* ORA	C */
 			M_ORA(I.BC.b.l);
 			break;
-		case 0xb2: i8085_ICount -= 4;	/* ORA	D */
+		case 0xb2: 	/* ORA	D */
 			M_ORA(I.DE.b.h);
 			break;
-		case 0xb3: i8085_ICount -= 4;	/* ORA	E */
+		case 0xb3: 	/* ORA	E */
 			M_ORA(I.DE.b.l);
 			break;
-		case 0xb4: i8085_ICount -= 4;	/* ORA	H */
+		case 0xb4: 	/* ORA	H */
 			M_ORA(I.HL.b.h);
 			break;
-		case 0xb5: i8085_ICount -= 4;	/* ORA	L */
+		case 0xb5: 	/* ORA	L */
 			M_ORA(I.HL.b.l);
 			break;
-		case 0xb6: i8085_ICount -= 7;	/* ORA	M */
+		case 0xb6: 	/* ORA	M */
 			M_ORA(RM(I.HL.d));
 			break;
-		case 0xb7: i8085_ICount -= 4;	/* ORA	A */
+		case 0xb7: 	/* ORA	A */
 			M_ORA(I.AF.b.h);
 			break;
 
-		case 0xb8: i8085_ICount -= 4;	/* CMP	B */
+		case 0xb8: 	/* CMP	B */
 			M_CMP(I.BC.b.h);
 			break;
-		case 0xb9: i8085_ICount -= 4;	/* CMP	C */
+		case 0xb9: 	/* CMP	C */
 			M_CMP(I.BC.b.l);
 			break;
-		case 0xba: i8085_ICount -= 4;	/* CMP	D */
+		case 0xba: 	/* CMP	D */
 			M_CMP(I.DE.b.h);
 			break;
-		case 0xbb: i8085_ICount -= 4;	/* CMP	E */
+		case 0xbb: 	/* CMP	E */
 			M_CMP(I.DE.b.l);
 			break;
-		case 0xbc: i8085_ICount -= 4;	/* CMP	H */
+		case 0xbc: 	/* CMP	H */
 			M_CMP(I.HL.b.h);
 			break;
-		case 0xbd: i8085_ICount -= 4;	/* CMP	L */
+		case 0xbd: 	/* CMP	L */
 			M_CMP(I.HL.b.l);
 			break;
-		case 0xbe: i8085_ICount -= 7;	/* CMP	M */
+		case 0xbe: 	/* CMP	M */
 			M_CMP(RM(I.HL.d));
 			break;
-		case 0xbf: i8085_ICount -= 4;	/* CMP	A */
+		case 0xbf: 	/* CMP	A */
 			M_CMP(I.AF.b.h);
 			break;
 
-		case 0xc0: i8085_ICount -= 5;	/* RNZ	*/
+		case 0xc0: 	/* RNZ	*/
 			M_RET( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc1: i8085_ICount -= 10;	/* POP	B */
+		case 0xc1: 	/* POP	B */
 			M_POP(BC);
 			break;
-		case 0xc2: i8085_ICount -= 7;	/* JNZ	nnnn */
+		case 0xc2: 	/* JNZ	nnnn */
 			M_JMP( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc3: i8085_ICount -= 7;	/* JMP	nnnn */
+		case 0xc3: 	/* JMP	nnnn */
 			M_JMP(1);
 			break;
-		case 0xc4: i8085_ICount -= 11;	/* CNZ	nnnn */
+		case 0xc4: 	/* CNZ	nnnn */
 			M_CALL( !(I.AF.b.l & ZF) );
 			break;
-		case 0xc5: i8085_ICount -= 11;	/* PUSH B */
+		case 0xc5: 	/* PUSH B */
 			M_PUSH(BC);
 			break;
-		case 0xc6: i8085_ICount -= 7;	/* ADI	nn */
+		case 0xc6:  	/* ADI	nn */
 			I.XX.b.l = ARG();
 			M_ADD(I.XX.b.l);
 				break;
-		case 0xc7: i8085_ICount -= 11;	/* RST	0 */
+		case 0xc7: 	/* RST	0 */
 			M_RST(0);
 			break;
 
-		case 0xc8: i8085_ICount -= 5;	/* RZ	*/
+		case 0xc8: 	/* RZ	*/
 			M_RET( I.AF.b.l & ZF );
 			break;
-		case 0xc9: i8085_ICount -= 4;	/* RET	*/
+		case 0xc9: 	/* RET	*/
 			M_RET(1);
 			break;
-		case 0xca: i8085_ICount -= 7;	/* JZ	nnnn */
+		case 0xca: 	/* JZ	nnnn */
 			M_JMP( I.AF.b.l & ZF );
 			break;
 		case 0xcb:
 			if( I.cputype ) {
 				if (I.AF.b.l & VF) {
-					i8085_ICount -= 12;
 					M_RST(8);			/* call 0x40 */
 				} else {
-					i8085_ICount -= 6;	/* RST  V */
+					i8085_ICount += 6;	/* RST  V */
 				}
 			} else {
-				i8085_ICount -= 7;	/* JMP	nnnn undocumented*/
+					/* JMP	nnnn undocumented*/
 				M_JMP(1);
 			}
 			break;
-		case 0xcc: i8085_ICount -= 11;	/* CZ	nnnn */
+		case 0xcc: 	/* CZ	nnnn */
 			M_CALL( I.AF.b.l & ZF );
 			break;
-		case 0xcd: i8085_ICount -= 11;	/* CALL nnnn */
+		case 0xcd: 	/* CALL nnnn */
 			M_CALL(1);
 			break;
-		case 0xce: i8085_ICount -= 7;	/* ACI	nn */
+		case 0xce: 	/* ACI	nn */
 			I.XX.b.l = ARG();
 			M_ADC(I.XX.b.l);
 			break;
-		case 0xcf: i8085_ICount -= 11;	/* RST	1 */
+		case 0xcf: 	/* RST	1 */
 			M_RST(1);
 			break;
 
-		case 0xd0: i8085_ICount -= 5;	/* RNC	*/
+		case 0xd0: 	/* RNC	*/
 			M_RET( !(I.AF.b.l & CF) );
 			break;
-		case 0xd1: i8085_ICount -= 10;	/* POP	D */
+		case 0xd1: 	/* POP	D */
 			M_POP(DE);
 			break;
-		case 0xd2: i8085_ICount -= 7;	/* JNC	nnnn */
+		case 0xd2: 	/* JNC	nnnn */
 			M_JMP( !(I.AF.b.l & CF) );
 			break;
-		case 0xd3: i8085_ICount -= 10;	/* OUT	nn */
+		case 0xd3: 	/* OUT	nn */
 			M_OUT;
 			break;
-		case 0xd4: i8085_ICount -= 11;	/* CNC	nnnn */
+		case 0xd4: 	/* CNC	nnnn */
 			M_CALL( !(I.AF.b.l & CF) );
 			break;
-		case 0xd5: i8085_ICount -= 11;	/* PUSH D */
+		case 0xd5: 	/* PUSH D */
 			M_PUSH(DE);
 			break;
-		case 0xd6: i8085_ICount -= 7;	/* SUI	nn */
+		case 0xd6: 	/* SUI	nn */
 			I.XX.b.l = ARG();
 			M_SUB(I.XX.b.l);
 			break;
-		case 0xd7: i8085_ICount -= 11;	/* RST	2 */
+		case 0xd7: 	/* RST	2 */
 			M_RST(2);
 			break;
 
-		case 0xd8: i8085_ICount -= 5;	/* RC	*/
+		case 0xd8: 	/* RC	*/
 			M_RET( I.AF.b.l & CF );
 			break;
 		case 0xd9:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* SHLX */
+						/* SHLX */
 				I.XX.w.l = I.DE.w.l;
 				WM(I.XX.d, I.HL.b.l);
 				I.XX.w.l++;
 				WM(I.XX.d, I.HL.b.h);
 			} else {
-				i8085_ICount -= 4;	/* RET undocumented */
-				M_RET(1);
+					/* RET undocumented */
+				M_POP(PC);
+                                change_pc16(I.PC.d);									\
 			}
 			break;
-		case 0xda: i8085_ICount -= 7;	/* JC	nnnn */
+		case 0xda: 	/* JC	nnnn */
 			M_JMP( I.AF.b.l & CF );
 			break;
-		case 0xdb: i8085_ICount -= 10;	/* IN	nn */
+		case 0xdb: 	/* IN	nn */
 			M_IN;
 			break;
-		case 0xdc: i8085_ICount -= 11;	/* CC	nnnn */
+		case 0xdc: 	/* CC	nnnn */
 			M_CALL( I.AF.b.l & CF );
 			break;
 		case 0xdd:
 			if( I.cputype ) {
-				i8085_ICount -= 7;		/* JNX  nnnn */
-				M_JMP( !(I.AF.b.l & XF) );
+						/* JNX  nnnn */
+				M_JMP( !(I.AF.b.l & X5F) );
 			} else {
-				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+					/* CALL nnnn undocumented */
 				M_CALL(1);
 			}
 			break;
-		case 0xde: i8085_ICount -= 7;	/* SBI	nn */
+		case 0xde: 	/* SBI	nn */
 			I.XX.b.l = ARG();
 			M_SBB(I.XX.b.l);
 			break;
-		case 0xdf: i8085_ICount -= 11;	/* RST	3 */
+		case 0xdf: 	/* RST	3 */
 			M_RST(3);
 			break;
 
-		case 0xe0: i8085_ICount -= 5;	/* RPE	  */
-			M_RET( !(I.AF.b.l & VF) );
+		case 0xe0: 	/* RPO	  */
+			M_RET( !(I.AF.b.l & PF) );
 			break;
-		case 0xe1: i8085_ICount -= 10;	/* POP	H */
+		case 0xe1: 	/* POP	H */
 			M_POP(HL);
 			break;
-		case 0xe2: i8085_ICount -= 7;	/* JPO	nnnn */
-			M_JMP( !(I.AF.b.l & VF) );
+		case 0xe2: 	/* JPO	nnnn */
+			M_JMP( !(I.AF.b.l & PF) );
 			break;
-		case 0xe3: i8085_ICount -= 18;	/* XTHL */
+		case 0xe3: 	/* XTHL */
 			M_POP(XX);
 			M_PUSH(HL);
 			I.HL.d = I.XX.d;
 			break;
-		case 0xe4: i8085_ICount -= 11;	/* CPE	nnnn */
-			M_CALL( !(I.AF.b.l & VF) );
+		case 0xe4: 	/* CPE	nnnn */
+			M_CALL( !(I.AF.b.l & PF) );
 			break;
-		case 0xe5: i8085_ICount -= 11;	/* PUSH H */
+		case 0xe5: 	/* PUSH H */
 			M_PUSH(HL);
 			break;
-		case 0xe6: i8085_ICount -= 7;	/* ANI	nn */
+		case 0xe6: 	/* ANI	nn */
 			I.XX.b.l = ARG();
 			M_ANA(I.XX.b.l);
 			break;
-		case 0xe7: i8085_ICount -= 11;	/* RST	4 */
+		case 0xe7: 	/* RST	4 */
 			M_RST(4);
 			break;
 
-		case 0xe8: i8085_ICount -= 5;	/* RPO	*/
-			M_RET( I.AF.b.l & VF );
+		case 0xe8: 	/* RPO	*/
+			M_RET( I.AF.b.l & PF );
 			break;
-		case 0xe9: i8085_ICount -= 5;	/* PCHL */
+		case 0xe9: 	/* PCHL */
 			I.PC.d = I.HL.w.l;
 			change_pc16(I.PC.d);
 			break;
-		case 0xea: i8085_ICount -= 7;	/* JPE	nnnn */
-			M_JMP( I.AF.b.l & VF );
+		case 0xea: 	/* JPE	nnnn */
+			M_JMP( I.AF.b.l & PF );
 			break;
-		case 0xeb: i8085_ICount -= 4;	/* XCHG */
+		case 0xeb: 	/* XCHG */
 			I.XX.d = I.DE.d;
 			I.DE.d = I.HL.d;
 			I.HL.d = I.XX.d;
 			break;
-		case 0xec: i8085_ICount -= 11;	/* CPO	nnnn */
-			M_CALL( I.AF.b.l & VF );
+		case 0xec: 	/* CPE	nnnn */
+			M_CALL( I.AF.b.l & PF );
 			break;
 		case 0xed:
 			if( I.cputype ) {
-				i8085_ICount -= 10;		/* LHLX */
+						/* LHLX */
 				I.XX.w.l = I.DE.w.l;
 				I.HL.b.l = RM(I.XX.d);
 				I.XX.w.l++;
 				I.HL.b.h = RM(I.XX.d);
 			} else {
-				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+					/* CALL nnnn undocumented */
 				M_CALL(1);
 			}
 			break;
-		case 0xee: i8085_ICount -= 7;	/* XRI	nn */
+		case 0xee: 	/* XRI	nn */
 			I.XX.b.l = ARG();
 			M_XRA(I.XX.b.l);
 			break;
-		case 0xef: i8085_ICount -= 11;	/* RST	5 */
+		case 0xef: 	/* RST	5 */
 			M_RST(5);
 			break;
 
-		case 0xf0: i8085_ICount -= 5;	/* RP	*/
+		case 0xf0: 	/* RP	*/
 			M_RET( !(I.AF.b.l&SF) );
 			break;
-		case 0xf1: i8085_ICount -= 10;	/* POP	A */
+		case 0xf1: 	/* POP	A */
 			M_POP(AF);
 			break;
-		case 0xf2: i8085_ICount -= 7;	/* JP	nnnn */
+		case 0xf2: 	/* JP	nnnn */
 			M_JMP( !(I.AF.b.l & SF) );
 			break;
-		case 0xf3: i8085_ICount -= 4;	/* DI	*/
+		case 0xf3: 	/* DI	*/
 			/* remove interrupt enable */
-			I.IM &= ~IM_IEN;
+			I.IM &= ~IM_IE;
 			break;
-		case 0xf4: i8085_ICount -= 11;	/* CP	nnnn */
+		case 0xf4: 	/* CP	nnnn */
 			M_CALL( !(I.AF.b.l & SF) );
 			break;
-		case 0xf5: i8085_ICount -= 11;	/* PUSH A */
+		case 0xf5: 	/* PUSH A */
+                        //if (IS_8080()) I.AF.b.l = (I.AF.b.l&~(X3F|X5F))|VF; // on 8080, VF=1 and X3F=0 and X5F=0 always! (we don't have to check for it elsewhere)
 			M_PUSH(AF);
 			break;
-		case 0xf6: i8085_ICount -= 7;	/* ORI	nn */
+		case 0xf6: 	/* ORI	nn */
 			I.XX.b.l = ARG();
 			M_ORA(I.XX.b.l);
 			break;
-		case 0xf7: i8085_ICount -= 11;	/* RST	6 */
+		case 0xf7: 	/* RST	6 */
 			M_RST(6);
 			break;
 
-		case 0xf8: i8085_ICount -= 5;	/* RM	*/
+		case 0xf8: 	/* RM	*/
 			M_RET( I.AF.b.l & SF );
 			break;
-		case 0xf9: i8085_ICount -= 5;	/* SPHL */
+		case 0xf9: 	/* SPHL */
 			I.SP.d = I.HL.d;
 			break;
-		case 0xfa: i8085_ICount -= 7;	/* JM	nnnn */
+		case 0xfa: 	/* JM	nnnn */
 			M_JMP( I.AF.b.l & SF );
 			break;
-		case 0xfb: i8085_ICount -= 4;	/* EI */
+		case 0xfb: 	/* EI */ //!! not ported from new MAME
 			/* set interrupt enable */
-			I.IM |= IM_IEN;
+			I.IM |= IM_IE;
 			/* remove serviced IRQ flag */
 			I.IREQ &= ~I.ISRV;
 			/* reset serviced IRQ */
@@ -1119,28 +1206,28 @@ INLINE void execute_one(int opcode)
 			if( I.cputype ) {
 				if( I.irq_state[1] != CLEAR_LINE ) {
 					LOG(("i8085 EI sets RST5.5\n"));
-					I.IREQ |= IM_RST55;
+					I.IREQ |= IM_M55;
 				}
 				if( I.irq_state[2] != CLEAR_LINE ) {
 					LOG(("i8085 EI sets RST6.5\n"));
-					I.IREQ |= IM_RST65;
+					I.IREQ |= IM_M65;
 				}
 				if( I.irq_state[3] != CLEAR_LINE ) {
 					LOG(("i8085 EI sets RST7.5\n"));
-					I.IREQ |= IM_RST75;
+					I.IREQ |= IM_M75;
 				}
 				/* find highest priority IREQ flag with
 				   IM enabled and schedule for execution */
-				if( !(I.IM & IM_RST75) && (I.IREQ & IM_RST75) ) {
-					I.ISRV = IM_RST75;
+				if( !(I.IM & IM_M75) && (I.IREQ & IM_M75) ) {
+					I.ISRV = IM_M75;
 					I.IRQ2 = ADDR_RST75;
 				}
 				else
-				if( !(I.IM & IM_RST65) && (I.IREQ & IM_RST65) ) {
-					I.ISRV = IM_RST65;
+				if( !(I.IM & IM_M65) && (I.IREQ & IM_M65) ) {
+					I.ISRV = IM_M65;
 					I.IRQ2 = ADDR_RST65;
-				} else if( !(I.IM & IM_RST55) && (I.IREQ & IM_RST55) ) {
-					I.ISRV = IM_RST55;
+				} else if( !(I.IM & IM_M55) && (I.IREQ & IM_M55) ) {
+					I.ISRV = IM_M55;
 					I.IRQ2 = ADDR_RST55;
 				} else if( !(I.IM & IM_INTR) && (I.IREQ & IM_INTR) ) {
 					I.ISRV = IM_INTR;
@@ -1153,23 +1240,23 @@ INLINE void execute_one(int opcode)
 				}
 			}
 			break;
-		case 0xfc: i8085_ICount -= 11;	/* CM	nnnn */
+		case 0xfc: 	/* CM	nnnn */
 			M_CALL( I.AF.b.l & SF );
 			break;
 		case 0xfd:
 			if( I.cputype ) {
-				i8085_ICount -= 7;		/* JX   nnnn */
-				M_JMP( I.AF.b.l & XF );
+						/* JX   nnnn */
+				M_JMP( I.AF.b.l & X5F );
 			} else {
-				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+					/* CALL nnnn undocumented */
 				M_CALL(1);
 			}
 			break;
-		case 0xfe: i8085_ICount -= 7;	/* CPI	nn */
+		case 0xfe: 	/* CPI	nn */
 			I.XX.b.l = ARG();
 			M_CMP(I.XX.b.l);
 			break;
-		case 0xff: i8085_ICount -= 11;	/* RST	7 */
+		case 0xff: 	/* RST	7 */
 			M_RST(7);
 			break;
 	}
@@ -1185,9 +1272,9 @@ static void Interrupt(void)
 	}
 //AT
 	I.IREQ &= ~I.ISRV; // remove serviced IRQ flag
-	RIM_IEN = (I.ISRV==IM_TRAP) ? I.IM & IM_IEN : 0; // latch general interrupt enable bit on TRAP or NMI
+	RIM_IEN = (I.ISRV==IM_TRAP) ? I.IM & IM_IE : 0; // latch general interrupt enable bit on TRAP or NMI
 //ZT
-	I.IM &= ~IM_IEN;		/* remove general interrupt enable bit */
+	I.IM &= ~IM_IE;		/* remove general interrupt enable bit */
 
 	if( I.ISRV == IM_INTR )
 	{
@@ -1197,21 +1284,21 @@ static void Interrupt(void)
 
 	if( I.cputype )
 	{
-		if( I.ISRV == IM_RST55 )
+		if( I.ISRV == IM_M55 )
 		{
 			LOG(("Interrupt get RST5.5 vector\n"));
 			//I.IRQ1 = (I.irq_callback)(1);
 			I.irq_state[I8085_RST55_LINE] = CLEAR_LINE; //AT: processing RST5.5, reset interrupt line
 		}
 
-		if( I.ISRV == IM_RST65	)
+		if( I.ISRV == IM_M65	)
 		{
 			LOG(("Interrupt get RST6.5 vector\n"));
 			//I.IRQ1 = (I.irq_callback)(2);
 			I.irq_state[I8085_RST65_LINE] = CLEAR_LINE; //AT: processing RST6.5, reset interrupt line
 		}
 
-		if( I.ISRV == IM_RST75 )
+		if( I.ISRV == IM_M75 )
 		{
 			LOG(("Interrupt get RST7.5 vector\n"));
 			//I.IRQ1 = (I.irq_callback)(3);
@@ -1233,9 +1320,9 @@ static void Interrupt(void)
 			switch( I.ISRV )
 			{
 				case IM_TRAP:
-				case IM_RST75:
-				case IM_RST65:
-				case IM_RST55:
+				case IM_M75:
+				case IM_M65:
+				case IM_M55:
 					M_PUSH(PC);
 					if (I.IRQ1 != (1 << I8085_RST75_LINE))
 						I.PC.d = I.IRQ1;
@@ -1258,7 +1345,7 @@ int i8085_execute(int cycles)
 	{
 		CALL_MAME_DEBUG;
 		/* interrupts enabled or TRAP pending ? */
-		if ( (I.IM & IM_IEN) || (I.IREQ & IM_TRAP) )
+		if ( (I.IM & IM_IE) || (I.IREQ & IM_TRAP) )
 		{
 			/* copy scheduled to executed interrupt request */
 			I.IRQ1 = I.IRQ2;
@@ -1298,7 +1385,7 @@ static void init_tables (void)
 		if (i&64) ++p;
 		if (i&128) ++p;
 		ZS[i] = zs;
-		ZSP[i] = zs | ((p&1) ? 0 : VF);
+		ZSP[i] = zs | ((p&1) ? 0 : PF);
 	}
 }
 
@@ -1495,11 +1582,11 @@ void i8085_set_RST75(int state)
 	if( state )
 	{
 
-		I.IREQ |= IM_RST75; 			/* request RST7.5 */
-		if( I.IM & IM_RST75 ) return;	/* if masked, ignore it for now */
+		I.IREQ |= IM_M75; 			/* request RST7.5 */
+		if( I.IM & IM_M75 ) return;	/* if masked, ignore it for now */
 		if( !I.ISRV )					/* if no higher priority IREQ is serviced */
 		{
-			I.ISRV = IM_RST75;			/* service RST7.5 */
+			I.ISRV = IM_M75;			/* service RST7.5 */
 			I.IRQ2 = ADDR_RST75;
 		}
 	}
@@ -1514,17 +1601,17 @@ void i8085_set_RST65(int state)
 	LOG(("i8085: RST6.5 %d\n", state));
 	if( state )
 	{
-		I.IREQ |= IM_RST65; 			/* request RST6.5 */
-		if( I.IM & IM_RST65 ) return;	/* if masked, ignore it for now */
+		I.IREQ |= IM_M65; 			/* request RST6.5 */
+		if( I.IM & IM_M65 ) return;	/* if masked, ignore it for now */
 		if( !I.ISRV )					/* if no higher priority IREQ is serviced */
 		{
-			I.ISRV = IM_RST65;			/* service RST6.5 */
+			I.ISRV = IM_M65;			/* service RST6.5 */
 			I.IRQ2 = ADDR_RST65;
 		}
 	}
 	else
 	{
-		I.IREQ &= ~IM_RST65;			/* remove request for RST6.5 */
+		I.IREQ &= ~IM_M65;			/* remove request for RST6.5 */
 	}
 }
 
@@ -1536,17 +1623,17 @@ void i8085_set_RST55(int state)
 	LOG(("i8085: RST5.5 %d\n", state));
 	if( state )
 	{
-		I.IREQ |= IM_RST55; 			/* request RST5.5 */
-		if( I.IM & IM_RST55 ) return;	/* if masked, ignore it for now */
+		I.IREQ |= IM_M55; 			/* request RST5.5 */
+		if( I.IM & IM_M55 ) return;	/* if masked, ignore it for now */
 		if( !I.ISRV )					/* if no higher priority IREQ is serviced */
 		{
-			I.ISRV = IM_RST55;			/* service RST5.5 */
+			I.ISRV = IM_M55;			/* service RST5.5 */
 			I.IRQ2 = ADDR_RST55;
 		}
 	}
 	else
 	{
-		I.IREQ &= ~IM_RST55;			/* remove request for RST5.5 */
+		I.IREQ &= ~IM_M55;			/* remove request for RST5.5 */
 	}
 }
 
@@ -1587,7 +1674,7 @@ void i8085_set_irq_line(int irqline, int state)
 		I.irq_state[irqline] = state;
 		if (state == CLEAR_LINE)
 		{
-			if( !(I.IM & IM_IEN) )
+			if( !(I.IM & IM_IE) )
 			{
 				switch (irqline)
 				{
@@ -1600,7 +1687,7 @@ void i8085_set_irq_line(int irqline, int state)
 		}
 		else
 		{
-			if( I.IM & IM_IEN )
+			if( I.IM & IM_IE )
 			{
 				switch( irqline )
 				{
@@ -1655,11 +1742,11 @@ const char *i8085_info(void *context, int regnum)
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
 				r->AF.b.l & 0x80 ? 'S':'.',
 				r->AF.b.l & 0x40 ? 'Z':'.',
-				r->AF.b.l & 0x20 ? '?':'.',
+				r->AF.b.l & 0x20 ? 'X':'.', // X5
 				r->AF.b.l & 0x10 ? 'H':'.',
 				r->AF.b.l & 0x08 ? '?':'.',
 				r->AF.b.l & 0x04 ? 'P':'.',
-				r->AF.b.l & 0x02 ? 'N':'.',
+				r->AF.b.l & 0x02 ? 'V':'.',
 				r->AF.b.l & 0x01 ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "8085A";
@@ -1743,12 +1830,12 @@ void i8080_set_irq_line(int irqline, int state)
 		I.irq_state[irqline] = state;
 		if (state == CLEAR_LINE)
 		{
-			if (!(I.IM & IM_IEN))
+			if (!(I.IM & IM_IE))
 				i8085_set_INTR(0);
 		}
 		else
 		{
-			if (I.IM & IM_IEN)
+			if (I.IM & IM_IE)
 				i8085_set_INTR(1);
 		}
 	}

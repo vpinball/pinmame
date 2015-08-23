@@ -1,8 +1,5 @@
 #ifndef INC_SNDBRD
 #define INC_SNDBRD
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
 
 extern void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data);
 /*-- core interface --*/
@@ -18,6 +15,7 @@ extern void sndbrd_ctrl_w(int board, int data);
 extern int sndbrd_ctrl_r(int board);
 extern void sndbrd_ctrl_cb(int board, int data);
 extern void sndbrd_data_cb(int board, int data);
+void sndbrd_setManCmd(int board, WRITE_HANDLER((*manCmd)));
 void sndbrd_manCmd(int board, int cmd);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
@@ -140,4 +138,10 @@ struct sndbrdIntf {
 #define SNDBRD_JVH     SNDBRD_TYPE(48,0)
 #define SNDBRD_TABART  SNDBRD_TYPE(49,0)
 #define SNDBRD_JEUTEL  SNDBRD_TYPE(50,0)
+#define SNDBRD_PLAY1   SNDBRD_TYPE(51,0)
+#define SNDBRD_PLAY2   SNDBRD_TYPE(52,0)
+#define SNDBRD_PLAY3   SNDBRD_TYPE(53,0)
+#define SNDBRD_PLAY4   SNDBRD_TYPE(54,0)
+#define SNDBRD_PLAYZ   SNDBRD_TYPE(55,0)
+#define SNDBRD_TECNOPLAY SNDBRD_TYPE(56,0)
 #endif /* INC_SNDBRD */

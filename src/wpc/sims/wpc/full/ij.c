@@ -731,23 +731,34 @@ DCS_SOUNDROM7x("ijsnd_l1.u2",CRC(89061ade) SHA1(0bd5ec961c780c4d46296aee7f2cb63b
                "ijsnd_l3.u8",CRC(45e35bd7) SHA1(782b406be341d55d22a96acb8c2459f3058940df))
 WPC_ROMEND
 
+WPC_ROMSTART(ij,p2,"ijone_p2.rom",0x80000,CRC(1854d3b6) SHA1(6a27b0ba1a63721df6e176ab11ae46562a637285))
+DCS_SOUNDROM7x("ijsnd_l1.u2",CRC(89061ade) SHA1(0bd5ec961c780c4d46296aee7f2cb63b72e990f5),
+               "ijsnd_l3.u3",CRC(3f12a996) SHA1(5f5d2853e671d13fafdb2972f52a823e18f27643),
+               "ijsnd_l3.u4",CRC(05a92937) SHA1(e4e53e2899a7e7cbcd6ce7e3331bb8aa13321aa6),
+               "ijsnd_l3.u5",CRC(e6fe417c) SHA1(d990ed218fe296ad9a015d77519b8d954d252035),
+               "ijsnd_l3.u6",CRC(975f3e48) SHA1(16c56500b18e551bcd2e0c7e4c55ddab4791ac84),
+               "ijsnd_l3.u7",CRC(2d9cd098) SHA1(8d26c84cbd4ab2a5c9f4be3ea95a79fd125248e3),
+               "ijsnd_l3.u8",CRC(45e35bd7) SHA1(782b406be341d55d22a96acb8c2459f3058940df))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ij,l7,"Indiana Jones (L-7)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,d7,l7,"Indiana Jones (D-7) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,h1,l7,"Indiana Jones (HK-1) No Hate Speech",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,i1,l7,"Indiana Jones (I-1) No Hate LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,d7,l7,"Indiana Jones (D-7 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,h1,l7,"Indiana Jones (HK-1 No Hate Speech)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,i1,l7,"Indiana Jones (I-1 No Hate Speech LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,lg7,l7,"Indiana Jones (LG-7)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,dg7,l7,"Indiana Jones (DG-7) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,dg7,l7,"Indiana Jones (DG-7 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l6,l7,"Indiana Jones (L-6)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,d6,l7,"Indiana Jones (D-6) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,d6,l7,"Indiana Jones (D-6 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l5,l7,"Indiana Jones (L-5)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,d5,l7,"Indiana Jones (D-5) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,d5,l7,"Indiana Jones (D-5 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l4,l7,"Indiana Jones (L-4)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,d4,l7,"Indiana Jones (D-4) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,d4,l7,"Indiana Jones (D-4 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l3,l7,"Indiana Jones (L-3)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,d3,l7,"Indiana Jones (D-3) LED Ghost Fix",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,d3,l7,"Indiana Jones (D-3 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,p2,l7,"Indiana Jones (P-2)",1993,"Williams",wpc_mDCSS,0)
 
 /*----------
 / Game Data

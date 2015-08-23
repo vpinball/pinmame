@@ -363,6 +363,14 @@
        ROM_LOAD(n1, 0x7800, 0x0800, chk1) \
          ROM_RELOAD(0xf800, 0x0800)
 
+#define ATARI_4x4_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x8000, 0x2000, chk1) \
+       ROM_LOAD(n2, 0xa000, 0x2000, chk2) \
+       ROM_LOAD(n3, 0xc000, 0x2000, chk3) \
+         ROM_RELOAD(0xe000, 0x2000)
+
 #define ATARI_SNDSTART(n1, chk1) \
      NORMALREGION(0x1000, REGION_SOUND1) \
        ROM_LOAD(n1, 0x0000, 0x0200, chk1)
@@ -373,6 +381,7 @@ extern MACHINE_DRIVER_EXTERN(ATARI1);
 extern MACHINE_DRIVER_EXTERN(ATARI1A);
 extern MACHINE_DRIVER_EXTERN(ATARI2);
 extern MACHINE_DRIVER_EXTERN(ATARI3);
+extern MACHINE_DRIVER_EXTERN(ATARI4);
 extern MACHINE_DRIVER_EXTERN(atari2s);
 extern MACHINE_DRIVER_EXTERN(atari1s);
 
@@ -381,5 +390,6 @@ extern MACHINE_DRIVER_EXTERN(atari1s);
 #define gl_mATARI1A		ATARI1A
 #define gl_mATARI2		ATARI2
 #define gl_mATARI3		ATARI3
+#define gl_mATARI4		ATARI4
 
 #endif /* INC_ATARI */

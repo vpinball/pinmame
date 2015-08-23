@@ -37,7 +37,7 @@ CWSHDlgCtrl::CWSHDlgCtrl()
 
 CWSHDlgCtrl::~CWSHDlgCtrl()
 {
-	m_x = m_x;
+	//m_x = m_x;
 }
 
 STDMETHODIMP CWSHDlgCtrl::get_Type(BSTR *pVal)
@@ -99,7 +99,7 @@ STDMETHODIMP CWSHDlgCtrl::put_Title(BSTR newVal)
 
 STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR sTitle)
 {
-	CComBSTR sHelp(sType);
+	//CComBSTR sHelp(sType);
 
 	char szType[256];
 	WideCharToMultiByte(CP_ACP, 0, sType, -1, szType, sizeof szType, NULL, NULL);

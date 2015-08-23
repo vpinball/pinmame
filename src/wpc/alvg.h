@@ -8,6 +8,8 @@
 #include "wpcsam.h"
 #include "sim.h"
 
+#define MYSTERY_CASTLE_HACK // hack to double the 8031 CPU clockrate, this does not make sense currently, but fixes the speed of DMD animations
+
 #define ALVG_CPUNO	0
 
 /*-------------------------
@@ -74,12 +76,18 @@ extern void alvg_UpdateSoundLEDS(int num,int data);
 extern MACHINE_DRIVER_EXTERN(alvg);
 extern MACHINE_DRIVER_EXTERN(alvgs1);
 extern MACHINE_DRIVER_EXTERN(alvgs2);
-extern MACHINE_DRIVER_EXTERN(alvgs2dmd);
+extern MACHINE_DRIVER_EXTERN(alvgs2dmd1);
+#ifdef MYSTERY_CASTLE_HACK
+extern MACHINE_DRIVER_EXTERN(alvgs2dmd2);
+#endif
 
 #define mALVG         alvg
 #define mALVGS1		  alvgs1
 #define mALVGS2		  alvgs2
-#define mALVGS2DMD    alvgs2dmd
+#define mALVGS2DMD1   alvgs2dmd1
+#ifdef MYSTERY_CASTLE_HACK
+#define mALVGS2DMD2   alvgs2dmd2
+#endif
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG

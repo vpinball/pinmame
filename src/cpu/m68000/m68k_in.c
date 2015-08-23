@@ -1816,6 +1816,10 @@ M68KMAKE_OP(asr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	if(GET_MSB_8(src))
 		res |= m68ki_shift_8_table[shift];
 
@@ -1835,6 +1839,10 @@ M68KMAKE_OP(asr, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	if(GET_MSB_16(src))
 		res |= m68ki_shift_16_table[shift];
 
@@ -1853,6 +1861,10 @@ M68KMAKE_OP(asr, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = src >> shift;
+
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
 
 	if(GET_MSB_32(src))
 		res |= m68ki_shift_32_table[shift];
@@ -2047,6 +2059,10 @@ M68KMAKE_OP(asl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_X = FLAG_C = src << shift;
@@ -2064,6 +2080,10 @@ M68KMAKE_OP(asl, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -2080,6 +2100,10 @@ M68KMAKE_OP(asl, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
+
+	if(shift != 0) {
+		USE_CYCLES(shift<<CYC_SHIFT);
+    }
 
 	*r_dst = res;
 
@@ -2578,17 +2602,21 @@ M68KMAKE_OP(bfexts, 32, ., .)
 		if(BIT_5(word2))
 			width = REG_D[width&7];
 
-		/* Offset is signed so we have to use ugly math =( */
-		ea += offset / 8;
-		offset %= 8;
-		if(offset < 0)
-		{
-			offset += 8;
-			ea--;
-		}
+                if(BIT_B(word2))
+                {
+                        /* Offset is signed so we have to use ugly math =( */
+                        ea += offset / 8;
+                        offset %= 8;
+                        if(offset < 0)
+                        {
+                                offset += 8;
+                                ea--;
+                        }
+                }
 		width = ((width-1) & 31) + 1;
 
-		data = m68ki_read_32(ea);
+		data = (offset+width) < 8 ? (m68ki_read_8(ea) << 24) :
+				(offset+width) < 16 ? (m68ki_read_16(ea) << 16) : m68ki_read_32(ea);
 
 		data = MASK_OUT_ABOVE_32(data<<offset);
 
@@ -2660,6 +2688,8 @@ M68KMAKE_OP(bfextu, 32, ., .)
 		if(BIT_5(word2))
 			width = REG_D[width&7];
 
+		if(BIT_B(word2))
+		{
 		/* Offset is signed so we have to use ugly math =( */
 		ea += offset / 8;
 		offset %= 8;
@@ -2668,9 +2698,11 @@ M68KMAKE_OP(bfextu, 32, ., .)
 			offset += 8;
 			ea--;
 		}
+		}
 		width = ((width-1) & 31) + 1;
 
-		data = m68ki_read_32(ea);
+		data = (offset+width) < 8 ? (m68ki_read_8(ea) << 24) :
+				(offset+width) < 16 ? (m68ki_read_16(ea) << 16) : m68ki_read_32(ea);
 		data = MASK_OUT_ABOVE_32(data<<offset);
 
 		if((offset+width) > 32)
@@ -2757,7 +2789,7 @@ M68KMAKE_OP(bfffo, 32, ., .)
 		}
 		width = ((width-1) & 31) + 1;
 
-		data = m68ki_read_32(ea);
+		data = (offset+width) < 16 ? (m68ki_read_16(ea) << 16) : m68ki_read_32(ea);
 		data = MASK_OUT_ABOVE_32(data<<local_offset);
 
 		if((local_offset+width) > 32)
@@ -2846,13 +2878,16 @@ M68KMAKE_OP(bfins, 32, ., .)
 		if(BIT_5(word2))
 			width = REG_D[width&7];
 
-		/* Offset is signed so we have to use ugly math =( */
+				if(BIT_B(word2))
+		{
+			/* Offset is signed so we have to use ugly math =( */
 		ea += offset / 8;
 		offset %= 8;
 		if(offset < 0)
 		{
 			offset += 8;
 			ea--;
+		}
 		}
 		width = ((width-1) & 31) + 1;
 
@@ -2864,11 +2899,23 @@ M68KMAKE_OP(bfins, 32, ., .)
 		FLAG_Z = insert_base;
 		insert_long = insert_base >> offset;
 
-		data_long = m68ki_read_32(ea);
+		data_long = (offset+width) < 8 ? (m68ki_read_8(ea) << 24) :
+				(offset+width) < 16 ? (m68ki_read_16(ea) << 16) : m68ki_read_32(ea);
 		FLAG_V = VFLAG_CLEAR;
 		FLAG_C = CFLAG_CLEAR;
 
+		if((width + offset) < 8)
+		{
+			m68ki_write_8(ea, ((data_long & ~mask_long) | insert_long) >> 24);
+		}
+		else if((width + offset) < 16)
+		{
+			m68ki_write_16(ea, ((data_long & ~mask_long) | insert_long) >> 16);
+		}
+		else
+		{
 		m68ki_write_32(ea, (data_long & ~mask_long) | insert_long);
+		}
 
 		if((width + offset) > 32)
 		{
@@ -4374,9 +4421,11 @@ M68KMAKE_OP(dbf, 16, ., .)
 		REG_PC -= 2;
 		m68ki_trace_t0();			   /* auto-disable (see m68kcpu.h) */
 		m68ki_branch_16(offset);
+		USE_CYCLES(CYC_DBCC_F_NOEXP);
 		return;
 	}
 	REG_PC += 2;
+	USE_CYCLES(CYC_DBCC_F_EXP);
 }
 
 
@@ -5283,6 +5332,10 @@ M68KMAKE_OP(lsr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = src >> shift;
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_CLEAR;
@@ -5299,6 +5352,10 @@ M68KMAKE_OP(lsr, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = src >> shift;
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_CLEAR;
@@ -5314,6 +5371,10 @@ M68KMAKE_OP(lsr, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = src >> shift;
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -5456,6 +5517,10 @@ M68KMAKE_OP(lsl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = MASK_OUT_ABOVE_8(src << shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_8(res);
@@ -5472,6 +5537,10 @@ M68KMAKE_OP(lsl, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = MASK_OUT_ABOVE_16(src << shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -5487,6 +5556,10 @@ M68KMAKE_OP(lsl, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = *r_dst;
 	uint res = MASK_OUT_ABOVE_32(src << shift);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -6369,7 +6442,8 @@ M68KMAKE_OP(move, 32, pd, d)
 	uint res = DY;
 	uint ea = EA_AX_PD_32();
 
-	m68ki_write_32(ea, res);
+	m68ki_write_16(ea+2, res & 0xFFFF );
+	m68ki_write_16(ea, (res >> 16) & 0xFFFF );
 
 	FLAG_N = NFLAG_32(res);
 	FLAG_Z = res;
@@ -6383,7 +6457,8 @@ M68KMAKE_OP(move, 32, pd, a)
 	uint res = AY;
 	uint ea = EA_AX_PD_32();
 
-	m68ki_write_32(ea, res);
+	m68ki_write_16(ea+2, res & 0xFFFF );
+	m68ki_write_16(ea, (res >> 16) & 0xFFFF );
 
 	FLAG_N = NFLAG_32(res);
 	FLAG_Z = res;
@@ -6397,7 +6472,8 @@ M68KMAKE_OP(move, 32, pd, .)
 	uint res = M68KMAKE_GET_OPER_AY_32;
 	uint ea = EA_AX_PD_32();
 
-	m68ki_write_32(ea, res);
+	m68ki_write_16(ea+2, res & 0xFFFF );
+	m68ki_write_16(ea, (res >> 16) & 0xFFFF );
 
 	FLAG_N = NFLAG_32(res);
 	FLAG_Z = res;
@@ -6908,7 +6984,8 @@ M68KMAKE_OP(movem, 32, re, pd)
 		if(register_list & (1 << i))
 		{
 			ea -= 4;
-			m68ki_write_32(ea, REG_DA[15-i]);
+			m68ki_write_16(ea+2, REG_DA[15-i] & 0xFFFF );
+			m68ki_write_16(ea, (REG_DA[15-i] >> 16) & 0xFFFF );
 			count++;
 		}
 	AY = ea;
@@ -8200,6 +8277,10 @@ M68KMAKE_OP(ror, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROR_8(src, shift);
 
+	if(orig_shift != 0) {
+                USE_CYCLES(orig_shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_8(res);
@@ -8216,6 +8297,10 @@ M68KMAKE_OP(ror, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROR_16(src, shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -8231,6 +8316,10 @@ M68KMAKE_OP(ror, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint64 src = *r_dst;
 	uint res = ROR_32(src, shift);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -8345,6 +8434,10 @@ M68KMAKE_OP(rol, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROL_8(src, shift);
 
+	if(orig_shift != 0) {
+                USE_CYCLES(orig_shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
 	FLAG_N = NFLAG_8(res);
@@ -8361,6 +8454,10 @@ M68KMAKE_OP(rol, 16, s, .)
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROL_16(src, shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	*r_dst = MASK_OUT_BELOW_16(*r_dst) | res;
 
 	FLAG_N = NFLAG_16(res);
@@ -8376,6 +8473,10 @@ M68KMAKE_OP(rol, 32, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint64 src = *r_dst;
 	uint res = ROL_32(src, shift);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	*r_dst = res;
 
@@ -8506,6 +8607,10 @@ M68KMAKE_OP(roxr, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROR_9(src | (XFLAG_AS_1() << 8), shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	FLAG_C = FLAG_X = res;
 	res = MASK_OUT_ABOVE_8(res);
 
@@ -8523,6 +8628,10 @@ M68KMAKE_OP(roxr, 16, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROR_17(src | (XFLAG_AS_1() << 16), shift);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	FLAG_C = FLAG_X = res >> 8;
 	res = MASK_OUT_ABOVE_16(res);
@@ -8543,6 +8652,10 @@ M68KMAKE_OP(roxr, 32, s, .)
 	uint   shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint64 src   = *r_dst;
 	uint64 res   = src | (((uint64)XFLAG_AS_1()) << 32);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	res = ROR_33_64(res, shift);
 
@@ -8718,6 +8831,10 @@ M68KMAKE_OP(roxl, 8, s, .)
 	uint src = MASK_OUT_ABOVE_8(*r_dst);
 	uint res = ROL_9(src | (XFLAG_AS_1() << 8), shift);
 
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
+
 	FLAG_C = FLAG_X = res;
 	res = MASK_OUT_ABOVE_8(res);
 
@@ -8735,6 +8852,10 @@ M68KMAKE_OP(roxl, 16, s, .)
 	uint shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint src = MASK_OUT_ABOVE_16(*r_dst);
 	uint res = ROL_17(src | (XFLAG_AS_1() << 16), shift);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	FLAG_C = FLAG_X = res >> 8;
 	res = MASK_OUT_ABOVE_16(res);
@@ -8755,6 +8876,10 @@ M68KMAKE_OP(roxl, 32, s, .)
 	uint   shift = (((REG_IR >> 9) - 1) & 7) + 1;
 	uint64 src   = *r_dst;
 	uint64 res   = src | (((uint64)XFLAG_AS_1()) << 32);
+
+	if(shift != 0) {
+                USE_CYCLES(shift<<CYC_SHIFT);
+        }
 
 	res = ROL_33_64(res, shift);
 
@@ -9242,6 +9367,7 @@ M68KMAKE_OP(scc, 8, ., d)
 	if(M68KMAKE_CC)
 	{
 		DY |= 0xff;
+                //!! USE_CYCLES(CYC_SCC_R_TRUE);
 		return;
 	}
 	DY &= 0xffffff00;

@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)\MIDL"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -83,7 +83,7 @@
 				Version="20.0"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc6"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
@@ -151,7 +151,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)\MIDL"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -181,7 +181,7 @@
 				Version="4.0"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc6"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -251,7 +251,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)\MIDL"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -280,7 +280,7 @@
 				Version="20.0"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc6"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
@@ -348,7 +348,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)\MIDL"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_DLL;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -378,7 +378,7 @@
 				Version="4.0"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc6"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -1791,6 +1791,46 @@
 								/>
 							</FileConfiguration>
 						</File>
+						<File
+							RelativePath=".\src\cpu\arm7\arm7jit.c"
+							>
+							<FileConfiguration
+								Name="Release|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release with MAME Debugger|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Debug with MAME Debugger|Win32"
+								ExcludedFromBuild="true"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+								/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath=".\src\cpu\arm7\arm7jit.h"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="CDP1802"
@@ -1805,6 +1845,30 @@
 						</File>
 						<File
 							RelativePath=".\src\cpu\cdp1802\cdp1802.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="COP400"
+						>
+						<File
+							RelativePath=".\src\cpu\cop400\410ops.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\420ops.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop400.h"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop420.c"
+							>
+						</File>
+						<File
+							RelativePath=".\src\cpu\cop400\cop420ds.c"
 							>
 						</File>
 					</Filter>
@@ -1986,6 +2050,14 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\adpcm.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\astrocde.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\astrocde.h"
 						>
 					</File>
 					<File
@@ -2325,6 +2397,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\sp0256.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\sp0256.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\streams.c"
 						>
 					</File>
@@ -2446,6 +2526,14 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\ym2151.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymdeltat.h"
 						>
 					</File>
 				</Filter>
@@ -2796,6 +2884,94 @@
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jit.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\windows\jitemit.c"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug with MAME Debugger|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\Windows\"
+							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\jitemit.h"
+					>
 				</File>
 				<File
 					RelativePath=".\src\windows\misc.c"
@@ -3510,6 +3686,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\idsa.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\inder.c"
 					>
 				</File>
@@ -3555,6 +3735,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\ltdgames.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\mac.c"
 					>
 				</File>
 				<File
@@ -3619,6 +3803,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\playgames.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\playsnd.c"
 					>
 				</File>
 				<File
@@ -4333,6 +4521,34 @@
 						>
 					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="PinDMD"
+				>
+				<File
+					RelativePath=".\src\pindmd\pinddrv.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pinddrv.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pindmd.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\pindmd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\usbalphanumeric.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pindmd\usbalphanumeric.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

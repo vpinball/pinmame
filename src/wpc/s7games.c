@@ -50,7 +50,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
-CORE_CLONEDEF(frpwr,b7,l6,"Firepower (Sys.7 7-digit conversion)",2003,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,b7,l6,"Firepower (Sys.7/7-digit conversion)",2003,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 6-Digit conversion, rev. 31
@@ -65,7 +65,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_e7 input_ports_s7
-CORE_GAMEDEFNV(frpwr_e7,"Firepower (Sys.7/6-digit /10 Scoring Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_GAMEDEFNV(frpwr_e7,"Firepower (Sys.7/6-digit /10 Scoring rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 6-Digit conversion, rev. 31
@@ -80,7 +80,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_a7 input_ports_s7
-CORE_GAMEDEFNV(frpwr_a7,"Firepower (Sys.7/6-digit Custom Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_GAMEDEFNV(frpwr_a7,"Firepower (Sys.7/6-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 31
@@ -95,7 +95,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr_d7 input_ports_s7
-CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom Rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 38
@@ -111,7 +111,7 @@ S67S_SPEECHROMS0000(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic4.532",   CRC(8d4ff909) SHA1(b82666fe96bdf174bc4f347d7139da9ab7dadee1))
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
-CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7/7-digit Custom Rev. 38)",2006,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7/7-digit Custom rev. 38)",2006,"Williams / Oliver",s7_mS7S6,0)
 
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)
@@ -142,6 +142,28 @@ S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7e
 S7_ROMEND
 #define input_ports_jngld input_ports_s7
 CORE_GAMEDEF(jngld,l2,"Jungle Lord (L-2)",1981,"Williams",s7_mS7S,0)
+
+S7_ROMSTART8088(jngld,l1, "ic14-l1.716", CRC(0144af0d) SHA1(2e5b6e35613decbac10f9b99c7a8cbe7f63b6b07),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26-l1.716", CRC(df37bb45) SHA1(60a0670e73f2370d6269ef241b581f5b0ade6ea0))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,l1,l2,"Jungle Lord (L-1)",1981,"Williams",s7_mS7S,0)
+
+S7_ROMSTART8088(jngld,nt, "ic14.bin",   CRC(714bfdaa) SHA1(6d566578d1f6e445bf66e917699c99e91f4f9aca),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26.bin",   CRC(6bcb8a17) SHA1(91778503a9402b073b4066c386b00dd447a3e740))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+S7_ROMEND
+CORE_CLONEDEF(jngld,nt,l2,"Jungle Lord New Tricks",2013,"A.M. Thurnherr",s7_mS7S,0)
 
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)
@@ -187,7 +209,29 @@ S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071
                           "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
 S7_ROMEND
 #define input_ports_thund input_ports_s7
-CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7SND,0)
+CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7SND,0) // dated 6/22
+
+S7_ROMSTART000x(thund,p2, "ic14_831.532", CRC(873ccf24) SHA1(2723aa7d059a111374d8145391fbef0c81043e4b),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20_831.532", CRC(91ed089b) SHA1(0e47f5a87cb227a6ee8645931bfa807219b388ef))
+S67S_SOUNDROMS0(          "sound12.532",CRC(cc70af52) SHA1(d9c2840acdcd69aab39fc647dd4819eccc06af33))
+S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071e297a81cc3ef3dcf44f),
+                          "speech5.532",CRC(11780c80) SHA1(bcc5efcd69b4f776feef32484a872863847d64cd),
+                          "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
+                          "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
+S7_ROMEND
+CORE_CLONEDEF(thund,p2,p1,"Thunderball (P-2)",1982,"Williams",s7_mS7SND,0) // dated 8/31
+
+S7_ROMSTART000x(thund,p3, "ic14_908.532", CRC(099e798e) SHA1(38d79622b4d68c69308ee109f47509e0733828ba),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20_908.532", CRC(21f87917) SHA1(6cfdd5aadafb2d137f2e959fa047ffbe5c09ac2c))
+S67S_SOUNDROMS0(          "sound12.532",CRC(cc70af52) SHA1(d9c2840acdcd69aab39fc647dd4819eccc06af33))
+S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071e297a81cc3ef3dcf44f),
+                          "speech5.532",CRC(11780c80) SHA1(bcc5efcd69b4f776feef32484a872863847d64cd),
+                          "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
+                          "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
+S7_ROMEND
+CORE_CLONEDEF(thund,p3,p1,"Thunderball (P-3)",1982,"Williams",s7_mS7SND,0) // dated 9/08
 
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
@@ -208,6 +252,13 @@ S7_ROMSTART000x(hypbl,l4, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
 CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,0)
+
+S7_ROMSTART000x(hypbl,l2, "ic14-l2.532", CRC(8eb82df4) SHA1(854b3f1fa2112fbdba19f4c843f67989c0572d8c),
+                          "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
+                          "ic20-l2.532", CRC(f5f66cf1) SHA1(885b4961b6ec712b7445001d448d881245be1234))
+S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
+S7_ROMEND
+CORE_CLONEDEF(hypbl,l2,l4,"HyperBall (L-2)",1981,"Williams",s7_mS7S,0)
 
 S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51efeb8be7c20d6465239e),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
@@ -299,6 +350,14 @@ S7_ROMEND
 #define input_ports_jst input_ports_s7
 CORE_GAMEDEF(jst,l2,"Joust (L-2)",1983,"Williams",s7_mS7S,0)
 
+S7_ROMSTART8088(jst,l1, "ic14-l1.716", CRC(9871ebb2) SHA1(75c639a26d3bf7e05de7b5be063742f7448284ac),
+                        "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                        "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                        "ic26-l1.716", CRC(123d8ffc) SHA1(c227a53653525269ea77203d4d1b14132058c073))
+S67S_SOUNDROMS0(        "sound12.532",CRC(3bbc90bf) SHA1(82154e719ceca5c72d1ab034bc4ff5e3ebb36832))
+S7_ROMEND
+#define input_ports_jst input_ports_s7
+CORE_CLONEDEF(jst,l1,l2,"Joust (L-1)",1983,"Williams",s7_mS7S,0)
 
 /*---------------------------
 / Laser Cue - Sys.7 (Game #520)
@@ -350,4 +409,3 @@ S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594c
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
-
