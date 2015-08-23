@@ -2934,6 +2934,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\windows\jitemit.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\windows\misc.c"
 					>
 					<FileConfiguration
@@ -2972,10 +2976,6 @@
 							ProgramDataBaseFileName="$(IntDir)\Windows\$(TargetName).pdb"
 						/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\src\windows\jitemit.h"
-					>
 				</File>
 				<File
 					RelativePath=".\src\windows\misc.h"
