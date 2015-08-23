@@ -81,7 +81,9 @@ static SWITCH_UPDATE(wpc);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 const struct core_dispLayout wpc_dispAlpha[] = {
-  DISP_SEG_16(0,CORE_SEG16R),DISP_SEG_16(1,CORE_SEG16R),{0}
+  {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},
+  {4,0,20,13,CORE_SEG16R},{4,26,33,2,CORE_SEG16D},{4,30,35,1,CORE_SEG16N},
+  {0}
 };
 const struct core_dispLayout wpc_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(genf *)wpcdmd_update,NULL}, {0}
@@ -399,7 +401,7 @@ static INTERRUPT_GEN(wpc_vblank) {
 		}
 #endif
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, 8);
   }
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
     if ((core_gameData->gen & GENWPC_HASDMD) == 0) {
@@ -877,8 +879,7 @@ static MACHINE_INIT(wpc) {
   coreGlobals.swMatrix[2] |= 0x08; /* Always closed switch */
 
   /*-- init security chip (if present) --*/
-  if ((core_gameData->gen & GENWPC_HASPIC) &&
-      (core_gameData->wpc.serialNo))
+  if (core_gameData->gen & GENWPC_HASPIC)
     wpc_serialCnv(core_gameData->wpc.serialNo, wpclocals.pic.sData,
                   wpclocals.pic.codeNo);
   /* check flippers we have */

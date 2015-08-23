@@ -17,18 +17,27 @@
 extern "C" {
 #endif  // __cplusplus
 
+#ifdef _MSC_VER
+#if _MSC_VER < 1200
 // Defines for Win64
 #ifndef _WIN64
 #define DWORD_PTR DWORD
+#endif
+#endif
+#endif
+
+#ifndef __in
+#define __in
+#define __in_opt
 #endif
 
 // Commands to pass to HtmlHelp()
 
 #define HH_DISPLAY_TOPIC        0x0000
 #define HH_HELP_FINDER          0x0000  // WinHelp equivalent
-#define HH_DISPLAY_TOC          0x0001
-#define HH_DISPLAY_INDEX        0x0002
-#define HH_DISPLAY_SEARCH       0x0003
+#define HH_DISPLAY_TOC          0x0001  
+#define HH_DISPLAY_INDEX        0x0002  
+#define HH_DISPLAY_SEARCH       0x0003  
 #define HH_SET_WIN_TYPE         0x0004
 #define HH_GET_WIN_TYPE         0x0005
 #define HH_GET_WIN_HANDLE       0x0006
@@ -53,8 +62,10 @@ extern "C" {
 #define HH_SET_EXCLUSIVE_FILTER 0x0019  // set exclusive filtering method for untyped topics to be excluded from display
 #define HH_INITIALIZE            0x001C  // Initializes the help system.
 #define HH_UNINITIALIZE          0x001D  // Uninitializes the help system.
-#define HH_PRETRANSLATEMESSAGE  0x00fd  // Pumps messages. (NULL, NULL, MSG*).
+#define HH_SET_QUERYSERVICE     0x001E  // Set the Host IQueryService interface
+#define HH_PRETRANSLATEMESSAGE  0x00fd  // Pumps messages. (NULL, NULL, MSG*). 
 #define HH_SET_GLOBAL_PROPERTY  0x00fc  // Set a global property. (NULL, NULL, HH_GPROP)
+#define HH_SAFE_DISPLAY_TOPIC   0x0020  // private addition to the interface for InternetExplorer.
 
 #define HHWIN_PROP_TAB_AUTOHIDESHOW (1 << 0)    // Automatically hide/show tri-pane window
 #define HHWIN_PROP_ONTOP            (1 << 1)    // Top-most window
@@ -364,19 +375,19 @@ typedef struct tagHHNTRACK
 HWND
 WINAPI
 HtmlHelpA(
-    HWND hwndCaller,
-    LPCSTR pszFile,
-    UINT uCommand,
-    DWORD_PTR dwData
+    __in_opt HWND hwndCaller,
+    __in LPCSTR pszFile,
+    __in UINT uCommand,
+    __in DWORD_PTR dwData
     );
 
 HWND
 WINAPI
 HtmlHelpW(
-    HWND hwndCaller,
-    LPCWSTR pszFile,
-    UINT uCommand,
-    DWORD_PTR dwData
+    __in_opt HWND hwndCaller,
+    __in LPCWSTR pszFile,
+    __in UINT uCommand,
+    __in DWORD_PTR dwData
     );
 #ifdef UNICODE
 #define HtmlHelp  HtmlHelpW
@@ -391,7 +402,7 @@ HtmlHelpW(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Global Control Properties.
+// Global Control Properties. 
 //
 typedef enum tagHH_GPROPID
 {

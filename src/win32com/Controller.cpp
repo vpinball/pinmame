@@ -26,11 +26,23 @@ extern "C" {
 #include "driver.h"
 #include "core.h"
 #include "vpintf.h"
+#include "mame.h"
 
 extern HWND win_video_window;
 extern int g_fPause;
 extern HANDLE g_hEnterThrottle;
 extern int g_iSyncFactor;
+extern struct RunningMachine *Machine;
+extern struct mame_display *current_display_ptr;
+
+extern UINT8 g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT32 g_raw_dmdx;
+extern UINT32 g_raw_dmdy;
+
+extern char g_fShowWinDMD;
+
+// from ticker.c
+extern void uSleep(const unsigned long long u);
 }
 #include "alias.h"
 
@@ -236,9 +248,14 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		return Error(TEXT("Game ROMS invalid!"));
 	}
 
+	VariantInit(&vValue);
+	m_pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
+	BOOL cabinetMode = (vValue.boolVal==VARIANT_TRUE);
+
 	if ( GameWasNeverStarted(m_szROM) ) {
 		int fFirstTime = GameUsedTheFirstTime(m_szROM);
 
+		if(!cabinetMode) {
 		CComBSTR sDescription;
 		m_pGame->get_Description(&sDescription);
 		char szDescription[256];
@@ -246,18 +263,22 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 		if ( !ShowDisclaimer(m_hParentWnd, szDescription) )
 			return Error(TEXT("User is not legally entitled to play this game!"));
+		}
 
 		SetGameWasStarted(m_szROM);
 
+		if(!cabinetMode) {
 		if ( fFirstTime ) {
 			char szTemp[256];
 			sprintf(szTemp,"This is the first time you use: %s\nPlease specify options for this game by clicking \"OK\"!",drivers[m_nGameNo]->description);
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
 			m_pGameSettings->ShowSettingsDlg(0);
 		}
+		}
 	}	
 
 #ifndef DEBUG
+	if(!cabinetMode) {
 	// See if game is flagged as GAME_NOT_WORKING and ask user if they wish to continue!!
 	if ( drivers[m_nGameNo]->flags&GAME_NOT_WORKING ) {
 		if(MessageBox(GetActiveWindow(),"This game DOES NOT WORK properly!\n Running it may cause VPinMAME to crash or lock up \n\n Are you sure you would like to continue?","Notice!",MB_YESNO | MB_ICONWARNING) == IDNO)
@@ -269,13 +290,13 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		return Error(TEXT("CRC Errors!! Game cannot be run!"));
 	}
 
-	//Any game messages to display (messages that allow game to continue
+		//Any game messages to display (messages that allow game to continue)
 	if ( drivers[m_nGameNo]->flags )
 	{
 		char szTemp[256];
 		sprintf(szTemp,"");
 
-		// See if game is flagged as GAME_NO_SOU7ND and show user a message!
+		// See if game is flagged as GAME_NO_SOUND and show user a message!
 		if ( drivers[m_nGameNo]->flags&GAME_NO_SOUND )
 			sprintf(szTemp,"%sPlease be aware that this game does not have sound emulated yet!\n\n",szTemp);
 
@@ -289,6 +310,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 		if(strlen(szTemp)>0)
 			MessageBox(GetActiveWindow(),szTemp,"Notice!",MB_OK | MB_ICONINFORMATION);
+	}
 	}
 #endif
 
@@ -458,6 +480,352 @@ STDMETHODIMP CController::get_Lamps(VARIANT *pVal)
 	return S_OK;
 }
 
+/************************************************************************
+ * IController.RawDmdWidth property (read-only): get the width of the DMD
+ ************************************************************************/
+STDMETHODIMP CController::get_RawDmdWidth(int *pVal)
+{
+	*pVal = g_raw_dmdx;
+	return S_OK;
+}
+
+/**************************************************************************
+ * IController.RawDmdHeight property (read-only): get the height of the DMD
+ **************************************************************************/
+STDMETHODIMP CController::get_RawDmdHeight(int *pVal)
+{
+	*pVal = g_raw_dmdy;
+	return S_OK;
+}
+
+/************************************************************************************************
+ * IController.RawDmdPixels (read-only): Copy whole DMD to a self allocated array (values 0..100)
+ ************************************************************************************************/
+STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
+{
+	if(Machine && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
+	{
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI8;
+	
+		LONG ofs = 0;
+		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
+		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
+		{
+			DMDState.uintVal = g_raw_dmdbuffer[ofs];
+			SafeArrayPutElement(psa, &ofs, &DMDState);
+		}
+
+		pVal->vt = VT_ARRAY|VT_VARIANT;
+		pVal->parray = psa;
+		return S_OK;
+	}
+	else
+		return S_FALSE;
+}
+
+/************************************************************************
+ * IController.DmdWidth property (read-only): get the width of DMD bitmap
+ ************************************************************************/
+STDMETHODIMP CController::get_DmdWidth(int *pVal)
+{
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x+1 : 0;
+	return S_OK;
+}
+
+/**************************************************************************
+ * IController.DmdHeight property (read-only): get the height of DMD bitmap
+ **************************************************************************/
+STDMETHODIMP CController::get_DmdHeight(int *pVal)
+{
+	*pVal = current_display_ptr ? current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y+1 : 0;
+	return S_OK;
+}
+
+/*************************************************************************
+ * IController.DmdPixel (read-only): read a given pixel of the DMD (slow!)
+ *************************************************************************/
+STDMETHODIMP CController::get_DmdPixel(int x, int y, int *pVal)
+{
+	if(Machine && Machine->scrbitmap)
+		*pVal = Machine->scrbitmap->read(Machine->scrbitmap,x,y);
+	else
+		*pVal = 0;
+	return S_OK;
+}
+
+/*******************************************************************************
+ * updateDmdPixels  (read-only): Copy whole Dmd Bitmap to a user allocated array
+ *******************************************************************************/
+STDMETHODIMP CController::get_updateDmdPixels(int **buf, int width, int height, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	mame_bitmap * btm = current_display_ptr ? current_display_ptr->game_bitmap : 0;
+	if(Machine && current_display_ptr && btm)
+	{
+		if(width  != (current_display_ptr->game_visible_area.max_x-current_display_ptr->game_visible_area.min_x+1) || 
+		   height != (current_display_ptr->game_visible_area.max_y-current_display_ptr->game_visible_area.min_y+1)  )
+		{
+			*pVal = 0;
+			return S_OK;
+		}
+
+		float *dst = reinterpret_cast<float*>(buf);
+		if (btm->depth == 8)
+		{
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
+			{
+				UINT8 *src = (UINT8*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
+				{
+					UINT8 r,g,b;
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
+				}
+			}
+		}
+		else if(btm->depth == 15 || btm->depth == 16)
+		{
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
+			{
+				UINT16 *src = (UINT16*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
+				{
+					UINT8 r,g,b;
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
+				}
+			}
+		}
+		else
+		{
+			for(int j=current_display_ptr->game_visible_area.max_y;j>=current_display_ptr->game_visible_area.min_y;j--)
+			{
+				UINT32 *src = (UINT32*)btm->line[j] + current_display_ptr->game_visible_area.min_x;
+				for(int i=current_display_ptr->game_visible_area.min_x;i<=current_display_ptr->game_visible_area.max_x;i++)
+				{
+					UINT8 r,g,b;
+					palette_get_color((*src++),&r,&g,&b);
+					*(dst++) = (float)r*(float)(1.0/255.0);
+					*(dst++) = (float)g*(float)(1.0/255.0);
+					*(dst++) = (float)b*(float)(1.0/255.0);
+					*(dst++) = 1.0f;
+				}
+			}
+		}
+
+		//*pVal = Machine->scrbitmap->read(Machine->scrbitmap,x,y);
+
+		*pVal = 1;
+	}
+	else
+		*pVal = 0;
+	return S_OK;
+}
+
+/*****************************************************************************************
+ * ChangedLampsState (read-only): Copy whole Changed Lamps array to a user allocated array
+ *****************************************************************************************/
+STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+  vp_tChgLamps chgLamps;
+
+  if (!pVal) return S_FALSE;
+
+  if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+    { pVal = 0; return S_OK; }
+
+  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+  else if ( synclevel<0 )
+	  uSleep(-synclevel*1000);
+
+  /*-- Count changes --*/
+  int uCount = vp_getChangedLamps(chgLamps);
+
+  if (uCount == 0)
+    { pVal = 0; return S_OK; }
+
+  /*-- add changed lamps to array --*/
+  int *dst = reinterpret_cast<int*>(buf);
+  for (int i = 0; i < uCount; i++)
+  {
+    *(dst++) = chgLamps[i].lampNo;
+    *(dst++) = chgLamps[i].currStat ? 1:0;
+  }
+
+  *pVal = uCount;
+
+  return S_OK;
+}
+
+/**************************************************************************
+ * LampsState (read-only): Copy whole Lamps array to a user allocated array
+ **************************************************************************/
+STDMETHODIMP CController::get_LampsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	if (!pVal) return S_FALSE;
+
+	/*-- list lamps states to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+
+	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
+		for (int ix=0; ix<89; ix++)
+			*(dst++) = 0;
+	}
+	else {
+		for (int ix=0; ix<89; ix++)
+			*(dst++) = vp_getLamp(ix) ? 1:0;
+	}
+
+	*pVal = 89;
+
+	return S_OK;
+}
+
+/*************************************************************************************************
+ * ChangedSolenoidsState (read-only): Copy whole Changed Solenoids array to a user allocated array
+ *************************************************************************************************/
+STDMETHODIMP CController::get_ChangedSolenoidsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	vp_tChgSols chgSol;
+
+	if (!pVal) return S_FALSE;
+
+	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+	{ pVal = 0; return S_OK; }
+
+	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+	else if ( synclevel<0 )
+		uSleep(-synclevel*1000);
+
+	/*-- Count changes --*/
+	int uCount = vp_getChangedSolenoids(chgSol);
+
+	if (uCount == 0)
+	{ pVal = 0; return S_OK; }
+
+	/*-- add changed lamps to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+	for (int i = 0; i < uCount; i++)
+	{
+		*(dst++) = chgSol[i].solNo;
+		*(dst++) = chgSol[i].currStat;
+	}
+
+	*pVal = uCount;
+
+	return S_OK;
+}
+
+
+/**********************************************************************************
+ * SolenoidsState (read-only): Copy whole Solenoids array to a user allocated array
+ **********************************************************************************/
+STDMETHODIMP CController::get_SolenoidsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	if (!pVal) return S_FALSE;
+
+	/*-- list lamps states to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+
+	if ( WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_TIMEOUT ) {
+		for (int ix=0; ix<65; ix++)
+			*(dst++) = 0;
+	}
+	else {
+		for (int ix=0; ix<65; ix++)
+			*(dst++) = vp_getSolenoid(ix);
+	}
+
+	*pVal = 65;
+
+	return S_OK;
+}
+
+/*************************************************************************************
+ * ChangedGIsState (read-only): Copy whole Changed GIs array to a user allocated array
+ *************************************************************************************/
+STDMETHODIMP CController::get_ChangedGIsState(int **buf, int *pVal)
+{
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+	vp_tChgGIs chgGI;
+
+	if (!pVal) return S_FALSE;
+
+	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+	{ pVal = 0; return S_OK; }
+
+	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+		WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+	else if ( synclevel<0 )
+		uSleep(-synclevel*1000);
+
+	/*-- Count changes --*/
+	int uCount = vp_getChangedGI(chgGI);
+
+	if (uCount == 0)
+	{ pVal = 0; return S_OK; }
+
+	/*-- add changed lamps to array --*/
+	int *dst = reinterpret_cast<int*>(buf);
+	for (int i = 0; i < uCount; i++)
+	{
+		*(dst++) = chgGI[i].giNo;
+		*(dst++) = chgGI[i].currStat;
+	}
+
+	*pVal = uCount;
+
+	return S_OK;
+}
+
 /****************************************************************************
  * IController.Switches property: sets/gets the state of all switches at once
  ****************************************************************************/
@@ -559,7 +927,7 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 		return Error(TEXT("Game name not found!"));
 
 	// reset visibility of the controller window to visible
-	m_fWindowHidden = false;
+	m_fWindowHidden = !g_fShowWinDMD;
 
 	// reset set use of mechanical samples to false
 	m_fMechSamples = false;
@@ -686,7 +1054,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
 	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
   else if ( synclevel<0 )
-	  Sleep(-synclevel);
+	  uSleep(-synclevel*1000);
 
   /*-- Count changes --*/
   int uCount = vp_getChangedLamps(chgLamps);
@@ -695,7 +1063,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -718,9 +1086,10 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
   return S_OK;
 }
 
-STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, VARIANT *pVal)
+STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, int nnHigh, int nnLow, VARIANT *pVal)
 {
   UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+  UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
   vp_tChgLED chgLED;
 
   if (!pVal) return S_FALSE;
@@ -729,13 +1098,13 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Count changes --*/
-  int uCount = vp_getChangedLEDs(chgLED, mask);
+  int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
 
   if (uCount == 0)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {3,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {3,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -757,6 +1126,56 @@ STDMETHODIMP CController::get_ChangedLEDs(int nHigh, int nLow, VARIANT *pVal)
 
   pVal->vt = VT_ARRAY | VT_VARIANT;
   pVal->parray = psa;
+
+  return S_OK;
+}
+
+
+/*****************************************************************************************
+ * get_ChangedLEDsState (read-only): Copy whole Changed LEDS digits/Segments array to a user allocated array
+ *****************************************************************************************/
+STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, int nnLow, int **buf, int *pVal)
+{
+	UINT64 mask = (((UINT64)nHigh)<<32) | ((UINT32)nLow);
+	UINT64 mask2 = (((UINT64)nnHigh)<<32) | ((UINT32)nnLow);
+	vp_tChgLED chgLED;
+	
+	if (!pVal) return S_FALSE;
+	
+	if(!buf)
+	{
+		*pVal = 0;
+		return S_FALSE;
+	}
+
+
+  if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+    { pVal = 0; return S_OK; }
+
+  /*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+  if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) 
+	WaitForSingleObject(g_hEnterThrottle, (synclevel<=20) ? synclevel : 50);
+  else if ( synclevel<0 )
+	  uSleep(-synclevel*1000);
+
+  /*-- Count changes --*/
+  int uCount = vp_getChangedLEDs(chgLED, mask, mask2);
+
+  if (uCount == 0)
+    { pVal = 0; return S_OK; }
+
+  long ix[2];
+
+  /*-- add changed LEDs to array --*/
+  int *dst = reinterpret_cast<int*>(buf);
+  for (int i = 0; i < uCount; i++) {
+
+	  *(dst++) = chgLED[i].ledNo;
+	  *(dst++) = chgLED[i].chgSeg;
+	  *(dst++) = chgLED[i].currStat;
+  }
+
+  *pVal = uCount;
 
   return S_OK;
 }
@@ -854,7 +1273,7 @@ STDMETHODIMP CController::get_ChangedGIStrings(VARIANT *pVal) {
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT GIState;
@@ -898,7 +1317,7 @@ STDMETHODIMP CController::get_ChangedSolenoids(VARIANT *pVal)
 	{ pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT varValue;
@@ -1114,14 +1533,14 @@ STDMETHODIMP CController::get_Settings(IControllerSettings **pVal)
 }
 
 /* ---------------------------------------------------------------------------------------------*/
-/* ------------------ depricated properties and methods ----------------------------------------*/
+/* ------------------ deprecated properties and methods ----------------------------------------*/
 /* ---------------------------------------------------------------------------------------------*/
 
 /**************************************************************************
  * IController.BorderSizeX: gets/sets the x value of the space between the
  * window border and the display inself
  *
- * Depricated:
+ * Deprecated:
  * Will be deleted in the next version, actually it does nothing anymore
  **************************************************************************/
 STDMETHODIMP CController::get_BorderSizeX(int *pVal)
@@ -1143,7 +1562,7 @@ STDMETHODIMP CController::put_BorderSizeX(int newVal)
  * IController.BorderSizeY: gets/sets the y value of the space between the
  * window border and the display inself
  *
- * Depricated:
+ * Deprecated:
  * Will be deleted in the next version, actually it does nothing anymore
  **************************************************************************/
 STDMETHODIMP CController::get_BorderSizeY(int *pVal)
@@ -1165,7 +1584,7 @@ STDMETHODIMP CController::put_BorderSizeY(int newVal)
  * IController.WindowPosX property: gets/sets the x position of the 
  * video window
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayPosX(hwnd) instead
  ********************************************************************/
 STDMETHODIMP CController::get_WindowPosX(int *pVal)
@@ -1191,7 +1610,7 @@ STDMETHODIMP CController::put_WindowPosX(int newVal)
  * IController.WindowPosY property: gets/sets the y position of the 
  * video window
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayPosY(hwnd) instead
  ********************************************************************/
 STDMETHODIMP CController::get_WindowPosY(int *pVal)
@@ -1217,7 +1636,7 @@ STDMETHODIMP CController::put_WindowPosY(int newVal)
  * IController.NewSoundCommands property (read-only): returns a list of 
  * latest sound commands for the sound board
  *
- * Depricated:
+ * Deprecated:
  * will be deleted in the next version
  *************************************************************************/
 STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
@@ -1235,7 +1654,7 @@ STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
     { pVal->vt = 0; return S_OK; }
 
   /*-- Create array --*/
-  SAFEARRAYBOUND Bounds[] = {{uCount,0}, {2,0}};
+  SAFEARRAYBOUND Bounds[] = {{(ULONG)uCount,0}, {2,0}};
   SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
   long ix[2];
   VARIANT SoundsState;
@@ -1259,7 +1678,7 @@ STDMETHODIMP CController::get_NewSoundCommands(VARIANT *pVal)
 /*******************************************************
  * IController.InstallDir property: gets the install dir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.InstallDir instead
  *******************************************************/
 STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
@@ -1271,7 +1690,7 @@ STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
  * IController:SetDisplayPosition: The set position of the video
  * window relative to the client area of the parent window
  *
- * Depricated:
+ * Deprecated:
  * use 
  *   Controller.Games("name").Settings.SetDisplayPosition(x,y,hwnd)
  * instead
@@ -1296,7 +1715,7 @@ STDMETHODIMP CController::SetDisplayPosition(int x, int y, long hParentWindow)
 /************************************************
  * IController.RomDirs property: get/set ROM dirs
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.RomPath instead
  ************************************************/
 STDMETHODIMP CController::get_RomDirs(BSTR *pVal)
@@ -1318,7 +1737,7 @@ STDMETHODIMP CController::put_RomDirs(BSTR newVal)
 /*********************************************
  * IController.CfgDir property: get/set CfgDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.CfgPath instead
  *********************************************/
 STDMETHODIMP CController::get_CfgDir(BSTR *pVal)
@@ -1340,7 +1759,7 @@ STDMETHODIMP CController::put_CfgDir(BSTR newVal)
 /****************************************************
  * IController.NVRamDirs property: get/set NVRAM dirs
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.NVRamPath instead
  ****************************************************/
 STDMETHODIMP CController::get_NVRamDir(BSTR *pVal)
@@ -1362,7 +1781,7 @@ STDMETHODIMP CController::put_NVRamDir(BSTR newVal)
 /*****************************************************
  * IController.SamplesDir property: get/set SamplesDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.SamplesPath instead
  *****************************************************/
 STDMETHODIMP CController::get_SamplesDir(BSTR *pVal)
@@ -1384,7 +1803,7 @@ STDMETHODIMP CController::put_SamplesDir(BSTR newVal)
 /*********************************************
  * IController.ImgDir property: get/set ImgDir
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.SnapshotPath instead
  *********************************************/
 STDMETHODIMP CController::get_ImgDir(BSTR *pVal)
@@ -1406,7 +1825,7 @@ STDMETHODIMP CController::put_ImgDir(BSTR newVal)
 /*****************************************************************
  * IController.ShowOptsDialog: shows the options dialog
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.ShowSettingsDlg instead
  *****************************************************************/
 STDMETHODIMP CController::ShowOptsDialog(long hParentWnd)
@@ -1417,7 +1836,7 @@ STDMETHODIMP CController::ShowOptsDialog(long hParentWnd)
 /************************************************************
  * IController.ShowDMDOnly property: get/set UseLamps
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DisplayOnly instead
  ************************************************************/
 STDMETHODIMP CController::get_ShowDMDOnly(VARIANT_BOOL *pVal)
@@ -1443,7 +1862,7 @@ STDMETHODIMP CController::put_ShowDMDOnly(VARIANT_BOOL newVal)
 /***********************************************************
  * IController.UseSamples property: get/set UseSamples
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.UseSamples instead
  ***********************************************************/
 STDMETHODIMP CController::get_UseSamples(VARIANT_BOOL *pVal)
@@ -1468,7 +1887,7 @@ STDMETHODIMP CController::put_UseSamples(VARIANT_BOOL newVal)
 /******************************************************
  * IController.ShowTitle property: get/set ShowTitle
  *
- * Depricated: 
+ * Deprecated: 
  * use Controller.Games("name").Settings.Title instead
  ******************************************************/
 STDMETHODIMP CController::get_ShowTitle(VARIANT_BOOL *pVal)
@@ -1493,7 +1912,7 @@ STDMETHODIMP CController::put_ShowTitle(VARIANT_BOOL newVal)
 /*******************************************************
  * IController.ShowFrame property: get/set the border
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.Border instead
  *******************************************************/
 STDMETHODIMP CController::get_ShowFrame(VARIANT_BOOL *pVal)
@@ -1518,7 +1937,7 @@ STDMETHODIMP CController::put_ShowFrame(VARIANT_BOOL newVal)
 /***********************************************************
  * IController.SampleRate property: get/set the sample rate
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.SampleRate instead
  ************************************************************/
 STDMETHODIMP CController::get_SampleRate(int *pVal)
@@ -1544,7 +1963,7 @@ STDMETHODIMP CController::put_SampleRate(int newVal)
  * IController.DoubleSize property: display the video window
  * double sized or not
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.DoubleSize instead
  ************************************************************/
 STDMETHODIMP CController::get_DoubleSize(VARIANT_BOOL *pVal)
@@ -1570,7 +1989,7 @@ STDMETHODIMP CController::put_DoubleSize(VARIANT_BOOL newVal)
  * IController.DoubleSize property: display the video window
  * in compact size or not
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").Settings.CompactDisplay instead
  ************************************************************/
 STDMETHODIMP CController::get_Antialias(VARIANT_BOOL *pVal)
@@ -1595,7 +2014,7 @@ STDMETHODIMP CController::put_Antialias(VARIANT_BOOL newVal)
 /*********************************************************************
  * IController.CheckROMS: returns TRUE if ROMS are ok
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Games("name").ShowInfoDlg instead
  *********************************************************************/
 STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ long hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
@@ -1606,7 +2025,7 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
 	int fResult;
 	HRESULT hr = m_pGame->ShowInfoDlg(nShowOptions, hParentWnd, &fResult);
 
-	*pVal = (fResult=IDOK)?VARIANT_TRUE:VARIANT_FALSE;
+	*pVal = (fResult==IDOK)?VARIANT_TRUE:VARIANT_FALSE;
 
 	return hr;
 }
@@ -1614,7 +2033,7 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
 /****************************************************************************
  * IController:ShowPathesDialog: Display a dialog to set up the paths
  *
- * Depricated:
+ * Deprecated:
  * use Controller.Settings.ShowSettingsDlg instead
  ****************************************************************************/
 STDMETHODIMP CController::ShowPathesDialog(long hParentWnd)
@@ -1640,14 +2059,14 @@ STDMETHODIMP CController::ShowPathesDialog(long hParentWnd)
 }
 
 /****************************************************************************
- * IController.Hidden property: Hiddes/Shows the display to the user
+ * IController.Hidden property: Hides/Shows the display to the user
  ****************************************************************************/
 STDMETHODIMP CController::get_Hidden(VARIANT_BOOL *pVal)
 {
 	if ( !pVal )
 		return E_POINTER;
 
-	if ( m_fWindowHidden ) 
+	if ( m_fWindowHidden || !g_fShowWinDMD) 
 		*pVal = VARIANT_TRUE;
 
 	return S_OK;
@@ -1658,7 +2077,7 @@ STDMETHODIMP CController::put_Hidden(VARIANT_BOOL newVal)
 	m_fWindowHidden = newVal;
 
 	if ( IsWindow(win_video_window) ) 
-		ShowWindow(win_video_window, newVal?SW_HIDE:SW_SHOW);
+		ShowWindow(win_video_window, newVal || !g_fShowWinDMD ?SW_HIDE:SW_SHOW);
 
 	return S_OK;
 }
@@ -1767,4 +2186,209 @@ STDMETHODIMP CController::GetClientRect(long hWnd, VARIANT *pVal)
 	pVal->parray = psa;
 
 	return S_OK;
+}
+
+
+/*********************************************************
+ * IController.MasterVolume property: get/set MasterVolume
+ *********************************************************/
+STDMETHODIMP CController::get_MasterVolume(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_mastervolume();
+	return S_OK;
+}
+
+STDMETHODIMP CController::put_MasterVolume(int newVal)
+{
+	osd_set_mastervolume(newVal);
+
+	return S_OK;
+}
+
+/***********************************************************************************
+ IController.EnumAudioDevices property (read only):
+    Enumerate audio devices using DirectSound and return the number of found devices
+************************************************************************************/
+STDMETHODIMP CController::get_EnumAudioDevices(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_enum_audio_devices();
+	return S_OK;
+}
+
+/*************************************************************************
+ IController.AudioDevicesCount property (read only):
+    Return the number of found devices (by previous call EnumAudioDevices)
+**************************************************************************/
+STDMETHODIMP CController::get_AudioDevicesCount(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_audio_devices_count();
+	return S_OK;
+}
+
+/**********************************************************************************
+ IController.AudioDeviceDescription property (read only):
+   Return the audio device description (null char ended string) of the "num" device
+***********************************************************************************/
+STDMETHODIMP CController::get_AudioDeviceDescription(int num, BSTR *pVal)
+{
+	if ( !pVal )
+		return S_FALSE;
+
+	CComBSTR bstrDescription(osd_get_audio_device_description(num));
+
+	*pVal = bstrDescription.Detach();
+
+	return S_OK;
+}
+
+/***************************************************************************
+ IController.AudioDeviceModule property (read only):
+ Return the audio device module (null char ended string) of the "num" device
+****************************************************************************/
+STDMETHODIMP CController::get_AudioDeviceModule(int num, BSTR *pVal)
+{
+	if ( !pVal )
+		return S_FALSE;
+
+	CComBSTR bstrDescription(osd_get_audio_device_module(num));
+
+	*pVal = bstrDescription.Detach();
+
+	return S_OK;
+}
+
+/******************************************
+ IController.CurrentAudioDevice property):
+    Get/Set the current audio device number
+*******************************************/
+STDMETHODIMP CController::get_CurrentAudioDevice(int *pVal)
+{
+	if (pVal)
+		*pVal = osd_get_current_audio_device();
+	return S_OK;
+}
+
+STDMETHODIMP CController::put_CurrentAudioDevice(int newVal)
+{
+	if(osd_set_audio_device(newVal)!=newVal)
+		return S_FALSE;
+	else
+		return S_OK;
+}
+
+/***************************************************************
+ * IController.FastFrames property: get/set FastFrames
+ ***************************************************************/
+
+STDMETHODIMP CController::get_FastFrames(int *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("fastframes"), &vValue);
+	*pVal = vValue.lVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_FastFrames(int newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("fastframes"), CComVariant(newVal));
+}
+
+/*************************************************************** 
+ * IController.IgnoreRomCrc property: get/set IgnoreRomCrc
+ ***************************************************************/
+
+STDMETHODIMP CController::get_IgnoreRomCrc(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("ignore_rom_crc"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_IgnoreRomCrc(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant(newVal));
+}
+
+/*************************************************************** 
+ * IController.CabinetMode property: get/set CabinetMode
+ ***************************************************************/
+
+STDMETHODIMP CController::get_CabinetMode(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("cabinet_mode"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_CabinetMode(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("cabinet_mode"), CComVariant(newVal));
+}
+
+
+/****************************************************************************
+ * IController.ShowPinDMD property: activate/deactivate pinDMD board
+ ****************************************************************************/
+STDMETHODIMP CController::get_ShowPinDMD(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("showpindmd"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_ShowPinDMD(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("showpindmd"), CComVariant(newVal));
+}
+
+/****************************************************************************
+ * IController.ShowWinDMD property: activate/deactivate windows DMD
+ ****************************************************************************/
+STDMETHODIMP CController::get_ShowWinDMD(VARIANT_BOOL *pVal)
+{
+	if ( !pVal )
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("showwindmd"), &vValue);
+	*pVal = vValue.boolVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_ShowWinDMD(VARIANT_BOOL newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("showwindmd"), CComVariant(newVal));
 }

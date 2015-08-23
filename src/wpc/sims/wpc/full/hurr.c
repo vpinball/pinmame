@@ -337,7 +337,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(hurr,l2,"Hurricane (L-2)",1991, "Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(hurr,d2,l2,"Hurricane (D-2) LED Ghost Fix",1991, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(hurr,d2,l2,"Hurricane (D-2 LED Ghost Fix)",1991, "Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

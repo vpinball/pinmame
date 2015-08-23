@@ -9177,7 +9177,7 @@ static void DoSearch(SearchInfo * search)
 			region->numResults = 0;
 
 			if(	(region->length < kSearchByteIncrementTable[search->bytes]) ||
-				!region->flags & kRegionFlag_Enabled)
+				!(region->flags & kRegionFlag_Enabled))
 			{
 				continue;
 			}
@@ -9220,7 +9220,7 @@ static void DoSearch(SearchInfo * search)
 			region->numResults = 0;
 
 			if(	(region->length < kSearchByteIncrementTable[search->bytes]) ||
-				!region->flags & kRegionFlag_Enabled)
+				!(region->flags & kRegionFlag_Enabled))
 			{
 				continue;
 			}

@@ -46,8 +46,7 @@
 #define GEN_BY6803A     U64(0x00020000000)
 #define GEN_BOWLING     U64(0x00040000000) /* Big Ball Bowling, Stern hardware */
 
-#define GEN_ALVG        U64(0x00080000000) /* Alving G Hardware */
-
+#define GEN_GTS1		U64(0x00100000000) /* GTS1 */
 #define GEN_GTS80       U64(0x00200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
 #define GEN_GTS80B      U64(0x00400000000) /* GTS80B */
@@ -60,6 +59,12 @@
 #define GEN_ZAC2        U64(0x80000000000)
 
 #define GEN_SAM         U64(0x100000000000) /* Stern SAM */
+
+#define GEN_ALVG        U64(0x200000000000) /* Alvin G Hardware */
+#define GEN_ALVG_DMD2   U64(0x400000000000) /* Alvin G Hardware, with more shades */
+#define GEN_MRGAME		U64(0x800000000000) /* Mr.Game Hardware */
+#define GEN_SLEIC		U64(0x1000000000000) /* Sleic Hardware */
+#define GEN_WICO		U64(0x2000000000000) /* Wico Hardware */
 
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0008000ff00)

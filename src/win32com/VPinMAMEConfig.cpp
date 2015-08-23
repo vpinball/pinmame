@@ -26,6 +26,9 @@ extern "C" {
   // Global options
   int verbose	= 0;
   char *rompath_extra;
+  /* pinDMD */
+  extern char g_fShowPinDMD;
+  extern char g_fShowWinDMD;
 }
 
 int fAllowWriteAccess = 1;
@@ -37,6 +40,14 @@ int dmd_pos_y  = 0;
 int dmd_doublesize = 0;
 int dmd_width = 0;
 int dmd_height = 0;
+extern "C" int fastfrms;
+BOOL ignoreRomCRC = FALSE;
+extern "C" BOOL cabinetMode;
+
+int dmd_colorize = FALSE;
+int dmd_red66 = 225, dmd_green66 = 15, dmd_blue66 = 193;
+int dmd_red33 = 6, dmd_green33 = 0, dmd_blue33 = 214;
+int dmd_red0 = 0, dmd_green0 = 0, dmd_blue0 = 0;
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -56,6 +67,24 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
 	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
+        { "fastframes",  NULL, rc_int,  &fastfrms,  "-1", -1, 100000, NULL, "Unthrottled frames at game start" },
+        { "ignore_rom_crc", NULL, rc_bool, &ignoreRomCRC,  "0", -1, 1, NULL, "Ignore ROM CRC Errors" },
+        { "cabinet_mode", NULL, rc_bool, &cabinetMode,  "0", -1, 1, NULL, "Enables Cabinet Mode" },
+
+        { "dmd_colorize", NULL, rc_bool, &dmd_colorize, "0", 0, 0, NULL, "Set DMD intensity levels as independent colors" },
+        { "dmd_red66", NULL, rc_int, &dmd_red66, "225", 0, 255, NULL, "Colorized DMD: red level for 66% intensity" },
+        { "dmd_green66", NULL, rc_int, &dmd_green66, "15", 0, 255, NULL, "Colorized DMD: green level for 66% intensity" },
+        { "dmd_blue66", NULL, rc_int, &dmd_blue66, "193", 0, 255, NULL, "Colorized DMD: blue level for 66% intensity" },
+        { "dmd_red33", NULL, rc_int, &dmd_red33, "6", 0, 255, NULL, "Colorized DMD: red level for 33% intensity" },
+        { "dmd_green33", NULL, rc_int, &dmd_green33, "0", 0, 255, NULL, "Colorized DMD: green level for 33% intensity" },
+        { "dmd_blue33", NULL, rc_int, &dmd_blue33, "214", 0, 255, NULL, "Colorized DMD: blue level for 33% intensity" },
+        { "dmd_red0", NULL, rc_int, &dmd_red0, "0", 0, 255, NULL, "Colorized DMD: red level for 0% intensity" },
+        { "dmd_green0", NULL, rc_int, &dmd_green0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
+        { "dmd_blue0", NULL, rc_int, &dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
+        
+	/* pinDMD */
+	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
+	{ "showwindmd", NULL, rc_bool, &g_fShowWinDMD, "1", 0, 0, NULL, "Show DMD display" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -146,6 +175,17 @@ static char* RunningGameSettings[] = {
 	"dmd_title",
 	"dmd_width",
 	"dmd_height",
+
+        "dmd_colorize",
+        "dmd_red66",
+        "dmd_green66",
+        "dmd_blue66",
+        "dmd_red33",
+        "dmd_green33",
+        "dmd_blue33",
+        "dmd_red0",
+        "dmd_green0",
+        "dmd_blue0",
 
 	// video_opts
 	"screen",
@@ -461,7 +501,7 @@ bool RegSaveOpts(HKEY hKey, rc_option *pOpt, void* pValue)
 		break;
 
 	case rc_float:
-		sprintf(szTemp, "%f", pValue);
+		sprintf(szTemp, "%f", *(float*)pValue);
 		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) szTemp, lstrlen(szTemp)+1)!=ERROR_SUCCESS);
 		break;
 	}

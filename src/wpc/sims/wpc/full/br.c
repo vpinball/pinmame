@@ -462,13 +462,13 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (br,l4,"Black Rose (L-4)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,d4,l4,"Black Rose (D-4) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d4,l4,"Black Rose (D-4 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,p17,l4,"Black Rose (SP-1)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,p18,l4,"Black Rose (DSP-1) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,p18,l4,"Black Rose (DSP-1 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,l1,l4,"Black Rose (L-1)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,d1,l4,"Black Rose (D-1) LED Ghost Fix",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d1,l4,"Black Rose (D-1 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,l3,l4,"Black Rose (L-3)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,d3,l4,"Black Rose (D-3) LED Ghost Fix",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,d3,l4,"Black Rose (D-3 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

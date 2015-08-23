@@ -117,8 +117,8 @@
 
 #define SPINB_COMINPORT       CORE_COREINPORT
 
-#define SPINB_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-#define SPINB_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define SPINB_SOLSMOOTH       1 /* Smooth the Solenoids over this numer of VBLANKS */
+#define SPINB_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define SPINB_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
@@ -142,20 +142,36 @@
        ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
 	   ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
+#define SPINB_ROMSTART2(name, n1, chk1, n2, chk2) \
+   ROM_START(name) \
+   NORMALREGION(0x10000, SPINB_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x0000, 0x4000, chk1) \
+	   ROM_LOAD(n2, 0x4000, 0x4000, chk2)
+
 /*-- DMD ROMS --*/
-//NOTE: DMD CPU requires a memory region of 204,801 Bytes to allow linear address mapping as follows:
-//      ROM0 lives in 1st 64K space, RAM lives in next 2K space, ROM1 lives in next 128K space, and
-//      DMD Commands lives in the next byte, totalling 0x32001 of space required
+//NOTE: DMD board requires a trick to make them all fit into the 8051 memory region
+//      ROM0 lives in 1st 64K space - 0 to 0xffff
+//      RAM sits in next 16383 bytes - 0x10000 to 0x13ffe
+//      DMD Command is stored as byte 0x13fff
+//other ROMs live in the remaining space - 0x14000 to 0xfffff
 
 /* 1 X 64K ROM */
 #define SPINB_DMDROM1(n1, chk1) \
-  NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
+  NORMALREGION(0x14000, SPINB_MEMREG_DMD) \
    ROM_LOAD(n1, 0x00000, 0x10000, chk1)
-/* 2 X 64K ROM */
+
+/* 1 X 64K ROM, 1 x 128K ROM */
 #define SPINB_DMDROM2(n1, chk1, n2, chk2) \
-  NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
+  NORMALREGION(0x34000, SPINB_MEMREG_DMD) \
    ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
-   ROM_LOAD(n2, 0x12000, 0x20000, chk2)
+   ROM_LOAD(n2, 0x14000, 0x20000, chk2)
+
+/* 1 X 64K ROM, 2 x 512K ROM */
+#define SPINB_DMDROM3(n1, chk1, n2, chk2, n3, chk3) \
+  NORMALREGION(0x114000, SPINB_MEMREG_DMD) \
+   ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
+   ROM_LOAD(n2, 0x14000, 0x80000, chk2) \
+   ROM_LOAD(n3, 0x94000, 0x80000, chk3)
 
 /*-- SOUND ROMS --*/
 #define SPINB_SNDROM23(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
@@ -196,14 +212,29 @@ NORMALREGION(0x180000, REGION_USER2) \
    ROM_LOAD(n4, 0x0000, 0x80000, chk4) \
    ROM_LOAD(n5, 0x80000, 0x80000, chk5)
 
+/*-- SOUND ROMS --*/
+#define SPINB_SNDROM13(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6) \
+  NORMALREGION(0x10000, SPINB_MEMREG_SND1) \
+   ROM_LOAD(n1, 0x00000, 0x2000, chk1) \
+NORMALREGION(0x180000, REGION_USER1) \
+   ROM_LOAD(n2, 0x0000, 0x80000, chk2) \
+NORMALREGION(0x10000, SPINB_MEMREG_SND2) \
+   ROM_LOAD(n3, 0x00000, 0x2000, chk3) \
+  NORMALREGION(0x180000, REGION_USER2) \
+   ROM_LOAD(n4, 0x0000, 0x80000, chk4) \
+   ROM_LOAD(n5, 0x80000, 0x80000, chk5) \
+   ROM_LOAD(n6, 0x100000, 0x80000, chk6)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(spinb);
 extern MACHINE_DRIVER_EXTERN(spinbs1);
 extern MACHINE_DRIVER_EXTERN(spinbs1n);
+extern MACHINE_DRIVER_EXTERN(spinbs1n2);
 
 #define mSPINB        spinb
 #define mSPINBS		  spinbs1
 #define mSPINBSNMI	  spinbs1n
+#define mSPINBSNMI2	  spinbs1n2
 
 extern PINMAME_VIDEO_UPDATE(SPINBdmd_update);
 

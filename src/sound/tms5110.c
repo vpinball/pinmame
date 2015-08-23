@@ -61,7 +61,7 @@ static UINT8 sample_count;       /* sample number within interp (0-24) */
 static int pitch_count;
 
 static int u[11];
-static int x[10];
+static int x[11];
 
 static INT32 RNG;	/* the random noise generator configuration is: 1 + x + x^3 + x^4 + x^13 */
 
@@ -100,6 +100,8 @@ void tms5110_reset(void)
     /* initialize the sample generators */
     interp_count = sample_count = pitch_count = 0;
 		RNG = 0x1fff;
+    PDC = 0;
+    
     memset(u, 0, sizeof(u));
     memset(x, 0, sizeof(x));
 }
@@ -447,21 +449,18 @@ void tms5110_process(INT16 *buffer, unsigned int size)
 		}
 		else
 		{
-      /* generate voiced samples here */
-      /* US patent 4331836 Figure 14B shows, and logic would hold, that a pitch based chirp
-       * function has a chirp/peak and then a long chain of zeroes.
-       * The last entry of the chirp rom is at address 0b110011 (50d), the 51st sample,
-       * and if the address reaches that point the ADDRESS incrementer is
-       * disabled, forcing all samples beyond 50d to be == 50d
-       * (address 50d holds zeroes)
-       */
-  
-  	  /*if (tms->coeff->subtype & (SUBTYPE_TMS5100 | SUBTYPE_M58817))*/
+                        // generate voiced samples here
+			/* US patent 4331836 Figure 14B shows, and logic would hold, that a pitch based chirp
+			 * function has a chirp/peak and then a long chain of zeroes.
+			 * The last entry of the chirp rom is at address 0b110011 (51d), the 52nd sample,
+			 * and if the address reaches that point the ADDRESS incrementer is
+			 * disabled, forcing all samples beyond 51d to be == 51d
+			 */
 
-   		if (pitch_count > 50)
-  			current_val = chirptable[50];
+   		if (pitch_count >= 51)
+  			current_val = (INT8)chirptable[51];
   		else
-  			current_val = chirptable[pitch_count];
+  			current_val = (INT8)chirptable[pitch_count];
 		}
 
 		/* Update LFSR *20* times every sample, like patent shows */

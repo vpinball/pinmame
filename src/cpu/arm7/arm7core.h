@@ -30,11 +30,13 @@
 #endif
 
 #include "driver.h"
+#include "arm7jit.h"
 
 /****************************************************************************************************
  *	PUBLIC FUNCTIONS ( to be called directly from cpu implementation )
  ***************************************************************************************************/
 //static void arm7_core_init(const char *cpuname);
+//static void arm7_core_exit(void);
 //static void arm7_core_reset(void *param);
 //static int arm7_core_execute(int cycles);
 //static void arm7_core_set_irq_line(int irqline, int state);
@@ -73,7 +75,8 @@ enum
 	data8_t pendingAbtD; \
 	data8_t pendingAbtP; \
 	data8_t pendingUnd; \
-	data8_t pendingSwi; 
+	data8_t pendingSwi; \
+	struct jit_ctl *jit;
 
 
 /****************************************************************************************************
@@ -98,21 +101,30 @@ enum
 /* This is a list of each *unique* register */
 enum
 {
-	/* All modes have the following */
+	/* 
+	 *   All modes have the following.  This set is also the ACTIVE set, in
+	 *   the first 18 slots of the ARM7.sArmRegister array.  On each mode
+	 *   change, we copy these registers into the outgoing mode's banked
+	 *   registers, and copy the incoming mode's banked registers into these.
+	 */
 	eR0=0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
 	eR8,eR9,eR10,eR11,eR12,
 	eR13, /* Stack Pointer */
 	eR14, /* Link Register (holds return address) */
 	eR15, /* Program Counter */
 	eCPSR, /* Current Status Program Register */
+	eNoSPSR, /* placeholder slot for modes that don't have an SPSR register */
+
+	/* User Mode Registers */
+	eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,eR13_User,eR14_User,
 
 	/* Fast Interrupt - Bank switched registers */
 	eR8_FIQ,eR9_FIQ,eR10_FIQ,eR11_FIQ,eR12_FIQ,eR13_FIQ,eR14_FIQ,eSPSR_FIQ,
 
-	/* IRQ - Bank switched registers*/
+	/* IRQ - Bank switched registers for IRQ mode */
 	eR13_IRQ,eR14_IRQ,eSPSR_IRQ,
 
-	/* Supervisor/Service Mode - Bank switched registers*/
+	/* Supervisor/Service Mode - Bank switched registers */
 	eR13_SVC,eR14_SVC,eSPSR_SVC,
 
 	/* Abort Mode - Bank switched registers*/
@@ -129,50 +141,50 @@ enum
  */
 static const int sRegisterTable[ARM7_NUM_MODES][18] =
 {
-	{ /* USR */
+	{ /* mode 0 - USR */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
-		eR13,eR14,
-		eR15,eCPSR	//No SPSR in this mode
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
+		eR13_User,eR14_User,
+		eR15,eCPSR,eNoSPSR	//No SPSR in this mode
 	},
-	{ /* FIQ */
+	{ /* mode 1 - FIQ */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
 		eR8_FIQ,eR9_FIQ,eR10_FIQ,eR11_FIQ,eR12_FIQ,
 		eR13_FIQ,eR14_FIQ,
 		eR15,eCPSR,eSPSR_FIQ
 	},
-	{ /* IRQ */
+	{ /* mode 2 - IRQ */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
 		eR13_IRQ,eR14_IRQ,
 		eR15,eCPSR,eSPSR_IRQ
 	},
-	{ /* SVC */
+	{ /* mode 3 - SVC */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
 		eR13_SVC,eR14_SVC,
 		eR15,eCPSR,eSPSR_SVC
 	},
 	{0},{0},{0},		//values for modes 4,5,6 are not valid
-	{ /* ABT */
+	{ /* mode 7 - ABT */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
 		eR13_ABT,eR14_ABT,
 		eR15,eCPSR,eSPSR_ABT
 	},
 	{0},{0},{0},		//values for modes 8,9,a are not valid!
-	{ /* UND */
+	{ /* mode B - UND */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
 		eR13_UND,eR14_UND,
 		eR15,eCPSR,eSPSR_UND
 	},
 	{0},{0},{0},		//values for modes c,d,e are not valid!
-	{ /* SYS */
+	{ /* mode F - SYS */
 		eR0,eR1,eR2,eR3,eR4,eR5,eR6,eR7,
-		eR8,eR9,eR10,eR11,eR12,
-		eR13,eR14,
-		eR15,eCPSR	//No SPSR in this mode
+		eR8_User,eR9_User,eR10_User,eR11_User,eR12_User,
+		eR13_User,eR14_User,
+		eR15,eCPSR,eNoSPSR	//No SPSR in this mode
 	}
 };
 
@@ -180,6 +192,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_BIT	30
 #define C_BIT	29
 #define V_BIT	28
+#define Q_BIT   27
 #define I_BIT	7
 #define F_BIT	6
 #define T_BIT	5	//Thumb mode
@@ -188,6 +201,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_MASK	((data32_t)(1<<Z_BIT)) /* Zero flag */
 #define C_MASK	((data32_t)(1<<C_BIT)) /* Carry flag */
 #define V_MASK	((data32_t)(1<<V_BIT)) /* oVerflow flag */
+#define Q_MASK  ((data32_t)(1<<Q_BIT)) /* signed overflow for QADD, MAC */
 #define I_MASK	((data32_t)(1<<I_BIT)) /* Interrupt request disable */
 #define F_MASK	((data32_t)(1<<F_BIT)) /* Fast interrupt request disable */
 #define T_MASK	((data32_t)(1<<T_BIT)) /* Thumb Mode flag */
@@ -196,6 +210,7 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_IS_SET(pc)	((pc) & Z_MASK)
 #define C_IS_SET(pc)	((pc) & C_MASK)
 #define V_IS_SET(pc)	((pc) & V_MASK)
+#define Q_IS_SET(pc)    ((pc) & Q_MASK)
 #define I_IS_SET(pc)	((pc) & I_MASK)
 #define F_IS_SET(pc)	((pc) & F_MASK)
 
@@ -203,98 +218,111 @@ static const int sRegisterTable[ARM7_NUM_MODES][18] =
 #define Z_IS_CLEAR(pc)	(!Z_IS_SET(pc))
 #define C_IS_CLEAR(pc)	(!C_IS_SET(pc))
 #define V_IS_CLEAR(pc)	(!V_IS_SET(pc))
+#define Q_IS_CLEAR(pc)  (!Q_IS_SET(pc))
 #define I_IS_CLEAR(pc)	(!I_IS_SET(pc))
 #define F_IS_CLEAR(pc)	(!F_IS_SET(pc))
 
 /* Deconstructing an instruction */
 //todo: use these in all places (including dasm file)
-#define INSN_COND			((data32_t) 0xf0000000u)
-#define INSN_SDT_L			((data32_t) 0x00100000u)
-#define INSN_SDT_W			((data32_t) 0x00200000u)
-#define INSN_SDT_B			((data32_t) 0x00400000u)
-#define INSN_SDT_U			((data32_t) 0x00800000u)
-#define INSN_SDT_P			((data32_t) 0x01000000u)
-#define INSN_BDT_L			((data32_t) 0x00100000u)
-#define INSN_BDT_W			((data32_t) 0x00200000u)
-#define INSN_BDT_S			((data32_t) 0x00400000u)
-#define INSN_BDT_U			((data32_t) 0x00800000u)
-#define INSN_BDT_P			((data32_t) 0x01000000u)
-#define INSN_BDT_REGS		((data32_t) 0x0000ffffu)
-#define INSN_SDT_IMM		((data32_t) 0x00000fffu)
-#define INSN_MUL_A			((data32_t) 0x00200000u)
-#define INSN_MUL_RM			((data32_t) 0x0000000fu)
-#define INSN_MUL_RS			((data32_t) 0x00000f00u)
-#define INSN_MUL_RN			((data32_t) 0x0000f000u)
-#define INSN_MUL_RD			((data32_t) 0x000f0000u)
-#define INSN_I				((data32_t) 0x02000000u)
-#define INSN_OPCODE			((data32_t) 0x01e00000u)
-#define INSN_S				((data32_t) 0x00100000u)
-#define INSN_BL				((data32_t) 0x01000000u)
-#define INSN_BRANCH			((data32_t) 0x00ffffffu)
-#define INSN_SWI			((data32_t) 0x00ffffffu)
-#define INSN_RN				((data32_t) 0x000f0000u)
-#define INSN_RD				((data32_t) 0x0000f000u)
-#define INSN_OP2			((data32_t) 0x00000fffu)
-#define INSN_OP2_SHIFT		((data32_t) 0x00000f80u)
-#define INSN_OP2_SHIFT_TYPE	((data32_t) 0x00000070u)
-#define INSN_OP2_RM			((data32_t) 0x0000000fu)
-#define INSN_OP2_ROTATE		((data32_t) 0x00000f00u)
-#define INSN_OP2_IMM		((data32_t) 0x000000ffu)
-#define INSN_OP2_SHIFT_TYPE_SHIFT	4
-#define INSN_OP2_SHIFT_SHIFT		7
-#define INSN_OP2_ROTATE_SHIFT		8
-#define INSN_MUL_RS_SHIFT			8
-#define INSN_MUL_RN_SHIFT			12
-#define INSN_MUL_RD_SHIFT			16
-#define INSN_OPCODE_SHIFT			21
-#define INSN_RN_SHIFT				16
-#define INSN_RD_SHIFT				12
-#define INSN_COND_SHIFT				28
+#define INSN_COND           ((data32_t)0xf0000000u)
+#define INSN_SDT_L          ((data32_t)0x00100000u)
+#define INSN_SDT_W          ((data32_t)0x00200000u)
+#define INSN_SDT_B          ((data32_t)0x00400000u)
+#define INSN_SDT_U          ((data32_t)0x00800000u)
+#define INSN_SDT_P          ((data32_t)0x01000000u)
+#define INSN_BDT_L          ((data32_t)0x00100000u)
+#define INSN_BDT_W          ((data32_t)0x00200000u)
+#define INSN_BDT_S          ((data32_t)0x00400000u)
+#define INSN_BDT_U          ((data32_t)0x00800000u)
+#define INSN_BDT_P          ((data32_t)0x01000000u)
+#define INSN_BDT_REGS       ((data32_t)0x0000ffffu)
+#define INSN_SDT_IMM        ((data32_t)0x00000fffu)
+#define INSN_MUL_A          ((data32_t)0x00200000u)
+#define INSN_MUL_RM         ((data32_t)0x0000000fu)
+#define INSN_MUL_RS         ((data32_t)0x00000f00u)
+#define INSN_MUL_RN         ((data32_t)0x0000f000u)
+#define INSN_MUL_RD         ((data32_t)0x000f0000u)
+#define INSN_I              ((data32_t)0x02000000u)
+#define INSN_OPCODE         ((data32_t)0x01e00000u)
+#define INSN_S              ((data32_t)0x00100000u)
+#define INSN_BL             ((data32_t)0x01000000u)
+#define INSN_BRANCH         ((data32_t)0x00ffffffu)
+#define INSN_SWI            ((data32_t)0x00ffffffu)
+#define INSN_RN             ((data32_t)0x000f0000u)
+#define INSN_RD             ((data32_t)0x0000f000u)
+#define INSN_OP2            ((data32_t)0x00000fffu)
+#define INSN_OP2_SHIFT      ((data32_t)0x00000f80u)
+#define INSN_OP2_SHIFT_TYPE ((data32_t)0x00000070u)
+#define INSN_OP2_RM         ((data32_t)0x0000000fu)
+#define INSN_OP2_ROTATE     ((data32_t)0x00000f00u)
+#define INSN_OP2_IMM        ((data32_t)0x000000ffu)
+#define INSN_OP2_SHIFT_TYPE_SHIFT   4
+#define INSN_OP2_SHIFT_SHIFT        7
+#define INSN_OP2_ROTATE_SHIFT       8
+#define INSN_MUL_RS_SHIFT           8
+#define INSN_MUL_RN_SHIFT           12
+#define INSN_MUL_RD_SHIFT           16
+#define INSN_OPCODE_SHIFT           21
+#define INSN_RN_SHIFT               16
+#define INSN_RD_SHIFT               12
+#define INSN_COND_SHIFT             28
+
+#define INSN_COPRO_N        ((data32_t) 0x00100000u)
+#define INSN_COPRO_CREG     ((data32_t) 0x000f0000u)
+#define INSN_COPRO_AREG     ((data32_t) 0x0000f000u)
+#define INSN_COPRO_CPNUM    ((data32_t) 0x00000f00u)
+#define INSN_COPRO_OP2      ((data32_t) 0x000000e0u)
+#define INSN_COPRO_OP3      ((data32_t) 0x0000000fu)
+#define INSN_COPRO_N_SHIFT          20
+#define INSN_COPRO_CREG_SHIFT       16
+#define INSN_COPRO_AREG_SHIFT       12
+#define INSN_COPRO_CPNUM_SHIFT      8
+#define INSN_COPRO_OP2_SHIFT        5
 
 enum
 {
-	OPCODE_AND,	/* 0000 */
-	OPCODE_EOR,	/* 0001 */
-	OPCODE_SUB,	/* 0010 */
-	OPCODE_RSB,	/* 0011 */
-	OPCODE_ADD,	/* 0100 */
-	OPCODE_ADC,	/* 0101 */
-	OPCODE_SBC,	/* 0110 */
-	OPCODE_RSC,	/* 0111 */
-	OPCODE_TST,	/* 1000 */
-	OPCODE_TEQ,	/* 1001 */
-	OPCODE_CMP,	/* 1010 */
-	OPCODE_CMN,	/* 1011 */
-	OPCODE_ORR,	/* 1100 */
-	OPCODE_MOV,	/* 1101 */
-	OPCODE_BIC,	/* 1110 */
-	OPCODE_MVN	/* 1111 */
+	OPCODE_AND, /* 0000 */
+	OPCODE_EOR, /* 0001 */
+	OPCODE_SUB, /* 0010 */
+	OPCODE_RSB, /* 0011 */
+	OPCODE_ADD, /* 0100 */
+	OPCODE_ADC, /* 0101 */
+	OPCODE_SBC, /* 0110 */
+	OPCODE_RSC, /* 0111 */
+	OPCODE_TST, /* 1000 */
+	OPCODE_TEQ, /* 1001 */
+	OPCODE_CMP, /* 1010 */
+	OPCODE_CMN, /* 1011 */
+	OPCODE_ORR, /* 1100 */
+	OPCODE_MOV, /* 1101 */
+	OPCODE_BIC, /* 1110 */
+	OPCODE_MVN  /* 1111 */
 };
 
 enum
 {
-	COND_EQ = 0,	/* Z: equal */
-	COND_NE,		/* ~Z: not equal */
-	COND_CS, COND_HS = 2,	/* C: unsigned higher or same */
-	COND_CC, COND_LO = 3,	/* ~C: unsigned lower */
-	COND_MI,		/* N: negative */
-	COND_PL,		/* ~N: positive or zero */
-	COND_VS,		/* V: overflow */
-	COND_VC,		/* ~V: no overflow */
-	COND_HI,		/* C && ~Z: unsigned higher */
-	COND_LS,		/* ~C || Z: unsigned lower or same */
-	COND_GE,		/* N == V: greater or equal */
-	COND_LT,		/* N != V: less than */
-	COND_GT,		/* ~Z && (N == V): greater than */
-	COND_LE,		/* Z || (N != V): less than or equal */
-	COND_AL,		/* always */
-	COND_NV			/* never */
+	COND_EQ = 0,          /*  Z           equal                   */
+	COND_NE,              /* ~Z           not equal               */
+	COND_CS, COND_HS = 2, /*  C           unsigned higher or same */
+	COND_CC, COND_LO = 3, /* ~C           unsigned lower          */
+	COND_MI,              /*  N           negative                */
+	COND_PL,              /* ~N           positive or zero        */
+	COND_VS,              /*  V           overflow                */
+	COND_VC,              /* ~V           no overflow             */
+	COND_HI,              /*  C && ~Z     unsigned higher         */
+	COND_LS,              /* ~C ||  Z     unsigned lower or same  */
+	COND_GE,              /*  N == V      greater or equal        */
+	COND_LT,              /*  N != V      less than               */
+	COND_GT,              /* ~Z && N == V greater than            */
+	COND_LE,              /*  Z || N != V less than or equal      */
+	COND_AL,              /*  1           always                  */
+	COND_NV               /*  0           never                   */
 };
 
-#define LSL(v,s) ((v) << (s))
-#define LSR(v,s) ((v) >> (s))
-#define ROL(v,s) (LSL((v),(s)) | (LSR((v),32u - (s))))
-#define ROR(v,s) (LSR((v),(s)) | (LSL((v),32u - (s))))
+#define LSL(v, s) ((v) << (s))
+#define LSR(v, s) ((v) >> (s))
+#define ROL(v, s) (LSL((v), (s)) | (LSR((v), 32u - (s))))
+#define ROR(v, s) (LSR((v), (s)) | (LSL((v), 32u - (s))))
 
 /* Convenience Macros */
 #define R15						ARMREG(eR15)
@@ -306,9 +334,34 @@ enum
 #define SIGN_BIT				((data32_t)(1<<31))
 #define SIGN_BITS_DIFFER(a,b)	(((a)^(b)) >> 31)
 
-/* At one point I thought these needed to be cpu implementation specific, but they don't.. */
-#define GET_REGISTER(reg)		GetRegister(reg)
-#define SET_REGISTER(reg,val)	SetRegister(reg,val)
+// These cover macros are in case these ever need to be CPU implementation specific.  Currently they're
+// not, so we define these for all implementations here.
+//
+// The real ARM hardware has multiple banks of registers that are selected by CPU mode, to provide
+// fast context switching on interrupts and system service calls.  The complication is that some
+// registers are shared across modes; for example, R0 is the same register in every mode, and R8
+// is the same register in every mode except FIQ mode.  The bank layout is idiosyncratic; there's
+// no regular pattern to it, so we have to keep a lookup table that maps Mode + Register Number to
+// a particular bank location.  sRegisterTable[mode][regnum] serves this function - the indexed
+// value is an index into the master register array.
+//
+// In the original emulator implementation, all run-time register accesses were done by looking
+// up the master array index in sRegisterTable, and then accessing the master array.  This mimics
+// the hardware design's goal of allowing fast context switching, in that a context switch only
+// requires changing the 'mode' value - subsequent register lookups will find the right master
+// array entry because they always go through the sRegisterTable index.  However, in developing
+// the JIT, it became apparent that this makes every register access fairly expensive - it requires
+// three memory lookups (mode, sRegisterTable[mode][regnum], and ARM7.sArmRegister[that result
+// index]) plus several arithmetic operations per register access.  Register accesses are the
+// bulk of what the emulator does, and mode switches are relatively rare, so it's better to make
+// register accesses fast at the expense of making mode switching a little slower.  The new
+// scheme uses a separate ACTIVE REGISTER FILE.  The active registers are always in the same
+// place - in the first 18 slots of the master register array - so we can access a register
+// in a single memory operation (with no run-time arithmetic at all in the JIT).
+#define GET_REGISTER(reg)		GetActiveRegister(reg)
+#define SET_REGISTER(reg, val)	SetActiveRegister(reg, val)
+#define GET_MODE_REGISTER(mode, reg)	GetModeRegister(mode, reg)
+#define SET_MODE_REGISTER(mode, reg, val)  SetModeRegister(mode, reg, val)
 #define ARM7_CHECKIRQ			arm7_check_irq_state()
 
 /* Static Vars */

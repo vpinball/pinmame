@@ -385,8 +385,8 @@ static WRITE_HANDLER(mp2_out) {
 }
 
 static READ_HANDLER(mp2_in) {
-  return ~coreGlobals.swMatrix[offset];
   logerror("in %x\n", offset);
+  return ~coreGlobals.swMatrix[offset];
 }
 
 static WRITE_HANDLER(col_out) {

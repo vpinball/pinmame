@@ -332,14 +332,14 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(fs,lx5,"The Flintstones (LX-5)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,dx5,lx5,"The Flintstones (DX-5) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,lx2,lx5,"The Flintstones (LX-2)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,dx2,lx5,"The Flintstones (DX-2) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,sp2,lx5,"The Flintstones (SP-2)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,sp2d,lx5,"The Flintstones (SP-2D) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,lx4,lx5,"The Flintstones (LX-4)",1994,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(fs,dx4,lx5,"The Flintstones (DX-4) LED Ghost Fix",1994,"Williams",wpc_mSecurityS,0)
+CORE_GAMEDEF(fs,lx5,"Flintstones, The (LX-5)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,dx5,lx5,"Flintstones, The (DX-5 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,lx2,lx5,"Flintstones, The (LX-2)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,dx2,lx5,"Flintstones, The (DX-2 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,sp2,lx5,"Flintstones, The (SP-2)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,sp2d,lx5,"Flintstones, The (SP-2D LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,lx4,lx5,"Flintstones, The (LX-4)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,dx4,lx5,"Flintstones, The (DX-4 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

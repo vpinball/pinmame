@@ -188,6 +188,15 @@ static const core_tLCDLayout dispVD[] = {
   {0}
 };
 
+static const core_tLCDLayout dispVD2[] = {
+  { 0, 0, 0, 7, CORE_SEG87 },
+  { 3, 0, 8, 7, CORE_SEG87 },
+  { 6, 0,16, 7, CORE_SEG87 },
+  { 9, 0,24, 7, CORE_SEG87 },
+  {12, 3,33, 2, CORE_SEG7S}, {12, 8,35, 2, CORE_SEG7S}, {12,13,37, 1, CORE_SEG7S},
+  {0}
+};
+
 // Break (1986)
 
 static core_tGameData breakGameData = {GEN_ZAC1,dispVD,{FLIP_SW(FLIP_L),0,0,0}}; \
@@ -203,3 +212,29 @@ VD_INPUT_PORTS_START(break, 1) INPUT_PORTS_END
 CORE_GAMEDEFNV(break, "Break", 1986, "Videodens", VD, 0)
 
 // Papillon (1986)
+
+static core_tGameData papillonGameData = {GEN_ZAC1,dispVD2,{FLIP_SW(FLIP_L),0,0,0}}; \
+static void init_papillon(void) { core_gameData = &papillonGameData; }
+
+ROM_START(papillon) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("u4.dat", 0x0000, 0x2000, CRC(e57bfcdd) SHA1(d0d5c798552a2436693dfee0e2ebf4b6f465b194)) \
+    ROM_LOAD("u5.dat", 0x2000, 0x2000, CRC(6d2ef02a) SHA1(0b67b2edd85624531630c162ae31af8078be01e3)) \
+    ROM_LOAD("u6.dat", 0x4000, 0x2000, CRC(6b2867b3) SHA1(720fe8a65b447e839b0eb9ea21e0b3cb0e50cf7a))
+ROM_END
+VD_INPUT_PORTS_START(papillon, 1) INPUT_PORTS_END
+CORE_GAMEDEFNV(papillon, "Papillon", 1986, "Videodens", VD, 0)
+
+// Ator (19??)
+
+static core_tGameData atorGameData = {GEN_ZAC1,dispVD,{FLIP_SW(FLIP_L),0,0,0}}; \
+static void init_ator(void) { core_gameData = &atorGameData; }
+
+ROM_START(ator) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("ator.u4", 0x0000, 0x2000, NO_DUMP) \
+    ROM_LOAD("ator.u5", 0x2000, 0x2000, NO_DUMP) \
+    ROM_LOAD("ator.u6", 0x4000, 0x2000, CRC(21aad5c4) SHA1(e78da5d80682710db34cbbfeae5af54241c73371))
+ROM_END
+VD_INPUT_PORTS_START(ator, 1) INPUT_PORTS_END
+CORE_GAMEDEFNV(ator, "Ator", 19??, "Videodens", VD, 0)

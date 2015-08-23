@@ -266,6 +266,15 @@ DCS_SOUNDROM6x(	"popsndl2.u2",CRC(00590f2d) SHA1(540ad9825dbaace55bf36a6cee98bef
 		"popsndl2.u7",CRC(b8fde2c7) SHA1(ee82a7b1ad32e1231356ce42c4ad3109150a9992))
 WPC_ROMEND
 
+WPC_ROMSTART(pop,la4,"peye_la4.rom",0x80000,CRC(11cedcf7) SHA1(e0219060cf09a757edf19875a224801b3179664c))
+DCS_SOUNDROM6x(	"popsndl2.u2",CRC(00590f2d) SHA1(540ad9825dbaace55bf36a6cee98bef06f240e15),
+		"popsndl2.u3",CRC(87032b27) SHA1(9488d177418b53ceb37686cf6f4f58800b306d85),
+		"popsndl2.u4",CRC(b0808aa8) SHA1(bebe6ec3c3e675e096084b6ed61065ad48dc5c3f),
+		"popsndl2.u5",CRC(3662206b) SHA1(c2714665db18e9ae540a8f922d7ebb3058638563),
+		"popsndl2.u6",CRC(84a5f317) SHA1(f1b9710d109e28fe3255e36dafa2be23656d0445),
+		"popsndl2.u7",CRC(b8fde2c7) SHA1(ee82a7b1ad32e1231356ce42c4ad3109150a9992))
+WPC_ROMEND
+
 WPC_ROMSTART(pop,pa3,"peye_pa3.rom",0x80000,CRC(1cee3ae7) SHA1(e5b05fcf8aac98993940a2cda2552ff93ee3a518))
 DCS_SOUNDROM6x(	"popsndp0.u2",CRC(1e3a98a4) SHA1(2f871f354df7684d0b4aa31e2d2bb4035072bb4a),
 		"popsndl2.u3",CRC(87032b27) SHA1(9488d177418b53ceb37686cf6f4f58800b306d85),
@@ -287,9 +296,10 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(pop,lx5,"Popeye Saves The Earth (LX-5)",1994,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(pop,dx5,lx5,"Popeye Saves The Earth (DX-5) LED Ghost Fix",1994,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,dx5,lx5,"Popeye Saves The Earth (DX-5 LED Ghost Fix)",1994,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,la4,lx5,"Popeye Saves The Earth (LA-4)",1994,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(pop,pa3,lx5,"Popeye Saves The Earth (PA-3)",1994,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(pop,pa4,lx5,"Popeye Saves The Earth (PA-4) LED Ghost Fix",1994,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,pa4,lx5,"Popeye Saves The Earth (PA-4 LED Ghost Fix)",1994,"Bally",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

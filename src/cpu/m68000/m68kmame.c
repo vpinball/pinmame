@@ -117,6 +117,8 @@ static void changepc_a24_d32(offs_t pc)
 	change_pc24bedw(pc);
 }
 
+#ifndef A68K2
+#if HAS_M68EC020
 /* interface for 24-bit address bus, 32-bit data bus (68EC020) */
 static const struct m68k_memory_interface interface_a24_d32 =
 {
@@ -129,7 +131,8 @@ static const struct m68k_memory_interface interface_a24_d32 =
 	writelong_a24_d32,
 	changepc_a24_d32
 };
-
+#endif
+#endif
 
 /****************************************************************************
  * 32-bit address, 32-bit data memory interface
@@ -199,6 +202,7 @@ static void changepc_a32_d32(offs_t pc)
 	change_pc32bedw(pc);
 }
 
+#if HAS_M68020
 /* interface for 24-bit address bus, 32-bit data bus (68020) */
 static const struct m68k_memory_interface interface_a32_d32 =
 {
@@ -211,6 +215,7 @@ static const struct m68k_memory_interface interface_a32_d32 =
 	writelong_a32_d32,
 	changepc_a32_d32
 };
+#endif
 
 /* global access */
 struct m68k_memory_interface m68k_memory_intf;

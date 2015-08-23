@@ -579,13 +579,13 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(pz,f4,"Party Zone (F-4)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,f5,f4,"Party Zone (F-5) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,f5,f4,"Party Zone (F-5 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l1,f4,"Party Zone (L-1)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d1,f4,"Party Zone (D-1) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d1,f4,"Party Zone (D-1 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l2,f4,"Party Zone (L-2)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d2,f4,"Party Zone (D-2) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d2,f4,"Party Zone (D-2 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l3,f4,"Party Zone (L-3)",1991,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(pz,d3,f4,"Party Zone (D-3) LED Ghost Fix",1991,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(pz,d3,f4,"Party Zone (D-3 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

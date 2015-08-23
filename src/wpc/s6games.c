@@ -32,7 +32,7 @@ S6_ROMSTART(lzbal,t2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75
 S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S6_ROMEND
 #define input_ports_lzbal_t2 input_ports_s6
-CORE_CLONEDEF(lzbal,t2,l2,"Laser Ball (T-2) Ted Estes",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(lzbal,t2,l2,"Laser Ball (T-2 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
 /*-----------------------------
 / Scorpion - Sys.6 (Game #494)
@@ -52,7 +52,7 @@ S6_ROMSTART(scrpn,t1,  "gamerom.716", CRC(881109a9) SHA1(53d4275c76b47b68a74209f
 S67S_SOUNDROMS8(       "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S6_ROMEND
 #define input_ports_scrpn_t1 input_ports_s6
-CORE_CLONEDEF(scrpn,t1,l1,"Scorpion (T-1) Ted Estes",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(scrpn,t1,l1,"Scorpion (T-1 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
 /*----------------------------
 / Blackout - Sys.6 (Game #495)
@@ -88,7 +88,7 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(87864071) SHA1(d03c71efc0431f30a07c819
                        "v_ic5.532" ,  CRC(046a96d8) SHA1(879127a88b3640bbb202c64cbf8678869c964177),
                        "v_ic6.532" ,  CRC(0104e5c4) SHA1(c073cb4bdea189085ae074e9c16872752b6ffba0))
 S6_ROMEND
-CORE_CLONEDEF(blkou,t1,l1,"Blackout (T-1) Ted Estes",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(blkou,t1,l1,"Blackout (T-1 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
 /*--------------------------
 / Gorgar - Sys.6 (Game #496)
@@ -114,7 +114,7 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
                        "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
 S6_ROMEND
 #define input_ports_grgar_t1 input_ports_s6
-CORE_CLONEDEF(grgar,t1,l1,"Gorgar (T-1) Ted Estes",1979,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(grgar,t1,l1,"Gorgar (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
 
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
@@ -147,7 +147,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_t6 input_ports_frpwr_l6
-CORE_CLONEDEFNV(frpwr_t6,frpwr_l6,"Firepower (T-6) Ted Estes",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_t6,frpwr_l6,"Firepower (T-6 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_l2,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTPROM(frpwr_l2, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
@@ -174,7 +174,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_a6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-Digit Custom Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_d6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_d6, "fir6d614.732", CRC(b9274332) SHA1(53dd65dcda566b2b000928ff32a8256e6054ebb5),
@@ -186,7 +186,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_d6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_d6,frpwr_l6,"Firepower (Sys.6/6-Digit /10 Scoring Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_d6,frpwr_l6,"Firepower (Sys.6/6-digit /10 Scoring rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 static const struct core_dispLayout fp_7digit_disp[] = {
   // Player 1            Player 2
@@ -206,7 +206,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_b6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_b6,frpwr_l6,"Firepower (Sys.6 7-digit conversion)",2003,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_b6,frpwr_l6,"Firepower (Sys.6/7-digit conversion)",2003,"Williams / Oliver",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_c6,fp_7digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_c6, "fire7614.732", CRC(5cf2fd3f) SHA1(5efd5389d9281b8f9ce0c62deda3b9ac7665f390),
@@ -218,7 +218,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_c6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-Digit Custom Rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 
@@ -268,7 +268,7 @@ S67S_SPEECHROMS0000(  "5t5014fr.dat",CRC(1d961517) SHA1(c71ee324becfc8cdbecabd1e
                       "5t5016fr.dat",CRC(0ddf91e9) SHA1(48f5fdfc0c5a66dd318fecb7c90e5f5a684a3876),
                       "5t5017fr.dat",CRC(7e546dc1) SHA1(58f8286403978b0d929987189089881d754a9a83))
 S6_ROMEND
-CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French speech)",1980,"Williams",s6_mS6S,0)
+CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French Speech)",1980,"Williams",s6_mS6S,0)
 
 S6_ROMSTARTMOD(alpok_b6,"al32ic14.732",CRC(7e950f6e) SHA1(5f9b7c6bc2b9e6ee7b6d6dc66f0d3608f7b467f3),
                         "al32ic20.716",CRC(0058551c) SHA1(6b4bd2bd329ecac18d7a848ff4614cd61f5b37ad),
@@ -279,4 +279,3 @@ S67S_SPEECHROMS000x(    "v_ic7.532" ,  CRC(a66c7ca6) SHA1(6e90081f853fcf66bfeac0
                         "v_ic6.532" ,  CRC(15a3cc85) SHA1(86002ac78189415ae912e8bc23c92b3b67610d87))
 S6_ROMEND
 CORE_CLONEDEF(alpok,b6,l6,"Alien Poker (L-6, Multiball conversion)",2006,"Williams / Oliver",s6_mS6S,0)
-

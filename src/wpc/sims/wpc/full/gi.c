@@ -474,13 +474,13 @@ WPC_ROMSTART(gi,d6,"gi_d6.u6",    0x40000,CRC(44bc3aa6) SHA1(4450605331f8891d941
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(gi,l9,"Gilligan's Island (L-9)",1991,"Bally", wpc_mDMDS,0)
-CORE_CLONEDEF(gi,d9,l9,"Gilligan's Island (D-9) LED Ghost Fix",1991,"Bally", wpc_mDMDS,0)
+CORE_CLONEDEF(gi,d9,l9,"Gilligan's Island (D-9 LED Ghost Fix)",1991,"Bally", wpc_mDMDS,0)
 CORE_CLONEDEF(gi,l3,l9,"Gilligan's Island (L-3)",1991,"Bally", wpc_mDMDS,0)
-CORE_CLONEDEF(gi,d3,l9,"Gilligan's Island (D-3) LED Ghost Fix",1991,"Bally", wpc_mDMDS,0)
+CORE_CLONEDEF(gi,d3,l9,"Gilligan's Island (D-3 LED Ghost Fix)",1991,"Bally", wpc_mDMDS,0)
 CORE_CLONEDEF(gi,l4,l9,"Gilligan's Island (L-4)",1991,"Bally", wpc_mDMDS,0)
-CORE_CLONEDEF(gi,d4,l9,"Gilligan's Island (D-4) LED Ghost Fix",1991,"Bally", wpc_mDMDS,0)
+CORE_CLONEDEF(gi,d4,l9,"Gilligan's Island (D-4 LED Ghost Fix)",1991,"Bally", wpc_mDMDS,0)
 CORE_CLONEDEF(gi,l6,l9,"Gilligan's Island (L-6)",1991,"Bally", wpc_mDMDS,0)
-CORE_CLONEDEF(gi,d6,l9,"Gilligan's Island (D-6) LED Ghost Fix",1991,"Bally", wpc_mDMDS,0)
+CORE_CLONEDEF(gi,d6,l9,"Gilligan's Island (D-6 LED Ghost Fix)",1991,"Bally", wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions

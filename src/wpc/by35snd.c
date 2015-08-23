@@ -3,7 +3,7 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/m68000/m68000.h"
 #include "cpu/m6809/m6809.h"
-#include "sound/tms5220.h"
+#include "sound/tms5220.h" // uses TMS5200
 #include "core.h"
 #include "sndbrd.h"
 #include "by35.h"
@@ -444,7 +444,7 @@ static READ_HANDLER(snt_8910a_r);
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface snt_tms5220Int = { 639450, 50, snt_5220Irq, snt_5220Rdy };
+static struct TMS5220interface snt_tms5220Int = { 639450, 75, snt_5220Irq, snt_5220Rdy };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
 static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
 
@@ -499,6 +499,9 @@ static const struct pia6821_interface snt_pia[] = {{
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 }};
+
+extern void tms5200_set_reverb(int delay, float force);
+
 static void snt_init(struct sndbrdData *brdData) {
   int i;
   sntlocals.brdData = *brdData;
@@ -507,6 +510,9 @@ static void snt_init(struct sndbrdData *brdData) {
 //  tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
+  if (core_gameData->hw.gameSpecific1 & BY35GD_REVERB) {
+    tms5200_set_reverb(1500, core_getDip(4) * 0.05);
+  }
 }
 static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);

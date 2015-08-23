@@ -177,7 +177,6 @@ void streams_sh_update(void)
 	}
 }
 
-
 int stream_init(const char *name,int default_mixing_level,
 		int sample_rate,
 		int param,void (*callback)(int param,INT16 *buffer,int length))
@@ -217,6 +216,11 @@ void stream_set_sample_rate(int channel, int sample_rate) {
  	if (stream_buffer_pos[channel] >= stream_sample_length[channel]) {
 		stream_buffer_pos[channel] = 0;
 	}
+}
+
+void stream_free(int channel) {
+	free(stream_buffer[channel]);
+	stream_buffer[channel] = 0;
 }
 #endif /* PINMAME */
 

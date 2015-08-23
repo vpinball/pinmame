@@ -24,11 +24,12 @@
  * (remember, 1 is the FIRST entry!)
  *
  * Instead,  { 1, 8, 8, 8, 4, 4, 4, 2 }
- * will calculate those coefficients and this has been used below.
- * LN:
- * The real chip uses shifters and not true division to achieve those factors,
- * so they have been replaced by the shifting coefficients:
- * { 0, 3, 3, 3, 2, 2, 2, 1 }
+ * will calculate those coefficients.
+ * Howeever, after simulating the actual circuit from the patent in pspice,
+ * the { 1, 8, 8, 8, 4, 4, 2, 2 } pattern is revealed as the correct one.
+ * Since the real chip uses shifters and not true division to achieve those
+ * factors, they have been replaced by the shifting coefficients:
+ * { 0, 3, 3, 3, 2, 2, 1, 1 }
  */
 
  /* quick note on derivative analysis:
@@ -42,6 +43,7 @@
 #define SUBTYPE_TMS5220			16
 #define SUBTYPE_TMS5220C		32
 #define SUBTYPE_PAT4335277		64
+#define SUBTYPE_2501E          128
 
 /* coefficient defines */
 #define MAX_K					10
@@ -64,8 +66,14 @@ struct tms5100_coeffs
 	INT8			interp_coeff[8];
 };
 
- /* The following TMS5100/TMC0280/CD2801 coefficients come from US Patent 4,209,836 and several others, and have been verified using derivative analysis to show which values were bad (due to poor quality images or badly typed copies of the tables in the patents, depending on which patent you look at) which were then corrected by figuring out what the tiny remaining marks on the photocopied version of the coefficient sheet COULD have been which would make the derivatives play nice.
-***These values have not yet been verified against a real TMS5100 or TMC0280 or CD2801 (from speak & spell, etc)***
+/*
+The TMS5100NL was decapped and imaged by digshadow in April, 2013.
+The LPC table is verified to match the decap.
+ It also matches the intended contents of US Patent 4,209,836 and several others.
+The chirp table is verified to match the decap, and also matches the patents.
+The TMS5100 (development name: TMC0280) and the Speak and spell's "CD2801" chip
+are believed to be the same silicon. The 5100 may be the 'A' die revision of
+the CD2801 based on die markings.
 */
 static const struct tms5100_coeffs pat4209836_coeff =
 {
@@ -76,44 +84,45 @@ static const struct tms5100_coeffs pat4209836_coeff =
 	5,
 	{ 5, 5, 4, 4, 4, 4, 4, 3, 3, 3 },
 	/* E   */
-	{ 0, 0, 1, 1, 2, 3, 5, 7, 10, 15, 21, 30, 43, 61, 86, 511 }, /* last value is actually 0 in ROM, but 511 is stop sentinel */
-	/* P   note: value #20 may be 95; value #29 may be 140 */
+	{ 0,  0,  1,  1,  2,  3,  5,  7,
+		10,  15,  21,  30,  43,  61,  86, COEFF_ENERGY_SENTINEL }, // last rom value is actually really 0, but the tms5110.c code still requires the sentinel value to function correctly, until it is properly updated or merged with tms5220.c
+	/* P  */
 	{   0,  41,  43,  45,  47,  49,  51,  53,
 	   55,  58,  60,  63,  66,  70,  73,  76,
 	   79,  83,  87,  90,  94,  99, 103, 107,
-	  112, 118, 123, 129, 134, 141, 147, 153 },
+		112, 118, 123, 129, 134, 140, 147, 153 },
 	{
 		/* K1  */
 		{ -501, -497, -493, -488, -480, -471, -460, -446,
 		  -427, -405, -378, -344, -305, -259, -206, -148,
 		   -86,  -21,   45,  110,  171,  227,  277,  320,
-		   357,  388,  413,  434,  451,  464,  474,  482 },
+			357,  388,  413,  434,  451,  464,  474,  498 },
 		/* K2  */
 		{ -349, -328, -305, -280, -252, -223, -192, -158,
 		  -124,  -88,  -51,  -14,  23,    60,   97,  133,
 		   167,  199,  230,  259,  286,  310,  333,  354,
-		   372,  389,  404,  417,  429,  439,  449,  490 },
+			372,  389,  404,  417,  429,  439,  449,  506 },
 		/* K3  */
 		{ -397, -365, -327, -282, -229, -170, -104, -36,
 		    35,  104,  169,  228,  281,  326,  364, 396 },
 		/* K4  */
-		{ -373, -334, -293, -245, -191, -131, -67,  -1,
+		{ -369, -334, -293, -245, -191, -131, -67,  -1,
 		    64,  128,  188,  243,  291,  332, 367, 397 },
 		/* K5  */
 		{ -319, -286, -250, -211, -168, -122, -74, -25,
-		    24,   73,  121,  167,  210,  249, 285, 319 },
+			24,   73,  121,  167,  210,  249, 285, 318 },
 		/* K6  */
 		{ -290, -252, -209, -163, -114,  -62,  -9,  44,
-		    97,  147,  194,  239,  278,  313, 344, 371 },
+			97,  147,  194,  238,  278,  313, 344, 371 },
 		/* K7  */
 		{ -291, -256, -216, -174, -128, -80, -31,  19,
 		    69,  117,  163,  206,  246, 283, 316, 345 },
 		/* K8  */
-		{ -219, -133,  -38,  59,  152,  235, 305, 361 },
+		{ -218, -133,  -38,  59,  152,  235, 305, 361 },
 		/* K9  */
-		{ -225, -157,  -82,  -3,   76,  151, 220, 280 },
+		{ -226, -157,  -82,  -3,   76,  151, 220, 280 },
 		/* K10 */
-		{ -179, -122,  -61,    1,   63,  123, 179, 231 },
+		{ -179, -122,  -61,    1,   62,  123, 179, 231 },
 	},
 	/* Chirp table */
 	{   0,  42, -44, 50, -78, 18, 37, 20,
@@ -124,7 +133,7 @@ static const struct tms5100_coeffs pat4209836_coeff =
 	    1,  0,    0,  0,   0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 2, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
 /* The following CD2802 coefficients come from US Patents 4,403,965 and 4,946,391; They have not yet been verified using derivatives. The M58817 seems to work best with these coefficients, so its possible the engineers of that chip copied them from the TI patents.
@@ -188,10 +197,17 @@ static const struct tms5100_coeffs pat4403965_coeff =
 	    1,  0,    0,  0,  0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 2, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
-/* The following TMS5110A LPC coefficients were directly read from an actual TMS5110A chip by Jarek Burczynski using the PROMOUT pin, and can be regarded as established fact. However, the chirp table and the interpolation coefficients still come from the patents as there doesn't seem to be an easy way to read those out from the chip without decapping it.
+/* The following TMS5110A LPC coefficients were directly read from an actual
+TMS5110A chip by Jarek Burczynski using the PROMOUT pin, and can be regarded
+as established fact. However, the chirp table and the interpolation
+coefficients still come from the patents as there doesn't seem to be an easy
+way to read those out from the chip without decapping it.
+The TMS5111NLL was decapped and imaged by digshadow in April, 2013.
+The LPC table is verified to match the values from Jarek's PROMOUT dump of the TMS5110,
+and the die even says "TMS5110AJ" on it. It uses the 'newer' 5200-style chirp table.
 */
 static const struct tms5100_coeffs tms5110a_coeff =
 {
@@ -243,19 +259,22 @@ static const struct tms5100_coeffs tms5110a_coeff =
 		{ -205, -132,  -59,   14,   87,  160,  234,  307 },
 	},
 	/* Chirp table */
-	{   0,  42, -44, 50, -78, 18, 37, 20,
-	    2, -31, -59,  2,  95, 90,  5, 15,
-	   38, -4,  -91,-91, -42,-35,-36, -4,
-	   37, 43,   34, 33,  15, -1, -8,-18,
-	  -19,-17,   -9,-10,  -6,  0,  3,  2,
-	    1,  0,    0,  0,   0,  0,  0,  0,
+	{   0x00, 0x03, 0x0F, 0x28, 0x4C, 0x6C, 0x71, 0x50,
+		0x25, 0x26, 0x4C, 0x44, 0x1A, 0x32, 0x3B, 0x13,
+		0x37, 0x1A, 0x25, 0x1F, 0x1D, 0x00, 0x00, 0x00,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 2, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
-/* The following coefficients come from US Patent 4,335,277 and 4,581,757. However, the K10 row of coefficients are entirely missing from both of those patents.
-The K values don't match the values read from an actual TMS5200 chip, but might match the CD2501 or some other undiscovered chip?
+/* The following coefficients come from US Patent 4,335,277 and 4,581,757.
+However, the K10 row of coefficients are entirely missing from both of those
+patents.
+The K values don't match the values read from an actual TMS5200 chip, but
+might match the TMS5111 or some other undiscovered chip?
 */
    // k* is followed by d if done transcription, c if checked for derivative aberrations
 static const struct tms5100_coeffs pat4335277_coeff =
@@ -320,12 +339,31 @@ static const struct tms5100_coeffs pat4335277_coeff =
 	    1,  0,    0,  0,   0,  0,  0,  0,
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
-	{ 3, 3, 3, 2, 2, 2, 1, 0 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
-/* The following TMS5200/TMC0285 coefficients were directly read from an actual TMS5200 chip by Lord Nightmare using the PROMOUT pin, and can be regarded as established fact. However, the chirp table and the interpolation coefficients still come from the patents as there doesn't seem to be an easy way to read those out from the chip without decapping it.
-Note that the K coefficients are VERY different from the coefficients given in the US 4,335,277 patent, which may have been for some sort of prototype or otherwise intentionally scrambled. The energy and pitch tables, however, are identical to the patent.
-Also note, that the K coefficients are ALMOST identical to the coefficients from the CD2802, above. */
+/*
+The TMS5200CNL was decapped and imaged by digshadow in March, 2013.
+It is equivalent to the CD2501E (internally: "TMC0285") chip used
+ on the TI 99/4(A) speech module.
+The LPC table is verified to match the decap.
+ (It was previously dumped with PROMOUT which matches as well)
+The chirp table is verified to match the decap. (sum = 0x3da)
+Note that the K coefficients are VERY different from the coefficients given
+ in the US 4,335,277 patent, which may have been for some sort of prototype or
+ otherwise intentionally scrambled. The energy and pitch tables, however, are
+ identical to that patent.
+Also note, that the K coefficients are ALMOST identical to the coefficients from the CD2802.
+The interpolation coefficients still come from the patents pending verification
+ of the interpolation counter circuit from the chip decap image.
+NOTE FROM DECAP: immediately to the left of each of the K1,2,3,4,5,and 6
+ coefficients in the LPC rom are extra columns containing the constants
+ -510, -502, 313, 318, or in hex 0x202, 0x20A, 0x139, 0x13E.
+ Those EXACT constants DO appear (rather nonsensically) on the lpc table in US
+ patent 4,335,277. They don't seem to do anything except take up space and may
+ be a leftover from an older design predating even the patent.
+*/
+
 static const struct tms5100_coeffs tms5200_coeff =
 {
 	/* subtype */
@@ -375,26 +413,33 @@ static const struct tms5100_coeffs tms5200_coeff =
 		/* K8 */
 		{ -205, -112,  -10,   92,  187,  269,  336,  387 },
 		/* K9 */
-		{ -249, -183, -110,  -32,   48,  126,  198,  261 },// on cd2802 the 4th entry is -19
+		{ -249, -183, -110,  -32,   48,  126,  198,  261 }, // verified from decap; on the cd2802 patent the 4th entry is -19 (patent typo?)
 		/* K10 */
 		{ -190, -133,  -73,  -10,   53,  115,  173,  227 },
 	},
 	/* Chirp table */
-	{   0,  42, -44, 50, -78, 18, 37, 20,
-	    2, -31, -59,  2,  95, 90,  5, 15,
-	   38, -4,  -91,-91, -42,-35,-36, -4,
-	   37, 43,   34, 33,  15, -1, -8,-18,
-	  -19,-17,   -9,-10,  -6,  0,  3,  2,
-	    1,  0,    0,  0,   0,  0,  0,  0,
-	    0,  0,    0,  0 },
+	{   0x00, 0x03, 0x0F, 0x28, 0x4C, 0x6C, 0x71, 0x50,
+		0x25, 0x26, 0x4C, 0x44, 0x1A, 0x32, 0x3B, 0x13,
+		0x37, 0x1A, 0x25, 0x1F, 0x1D, 0x00, 0x00, 0x00,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0 },
 	/* interpolation coefficients */
-	{ 0, 3, 3, 3, 2, 2, 2, 1 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
 
-/* The following TMS5220 coefficients were directly read from an actual TMS5220 chip by Lord Nightmare using the PROMOUT pin, and can be regarded as established fact. However, the chirp table and the interpolation coefficients still come from the patents as there doesn't seem to be an easy way to read those out from the chip without decapping it.
-Note: The coefficients match those from the datasheet, and its addendum, with the exception of the energy table. The energy table on the datasheet (and in the QV5220.COD from qboxpro) lists it in RMS notation which doesn't help us since I(Lord Nightmare) can't figure out the proper formula TI used for converting energy to RMS (the obvious 'take all the values in the chirp ROM, multiply them by 1/2/3/4/etc, square each one, sum them up, divide by 51, which is # of ROM entries in chirp ROM, and take the square root of the result', doesn't QUITE work. It almost does, if you add 16 to the result, for the first 4 entries, but beyond that the entries become farther and farther offset).
-Note that all the LPC K* values match the TMS5110a table exactly.
+/*
+The TMS5220NL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap.
+The chirp table is verified to match the decap. (sum = 0x3da)
+Note that all the LPC K* values match the TMS5110a table (as read via PROMOUT)
+exactly.
+The TMS5220CNL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap and exactly matches TMS5220NL.
+The chirp table is verified to match the decap. (sum = 0x3da)
 */
+#if 0
 static const struct tms5100_coeffs tms5220_coeff =
 {
 	/* subtype */
@@ -449,16 +494,105 @@ static const struct tms5100_coeffs tms5220_coeff =
 		{ -205, -132,  -59,   14,   87,  160,  234,  307  },
 	},
 	/* Chirp table */
-	{   0,  42, -44, 50, -78, 18, 37, 20,
-	    2, -31, -59,  2,  95, 90,  5, 15,
-	   38, -4,  -91,-91, -42,-35,-36, -4,
-	   37, 43,   34, 33,  15, -1, -8,-18,
-	  -19,-17,   -9,-10,  -6,  0,  3,  2,
-	    1,  0,    0,  0,   0,  0,  0,  0,
-	    0,  0,    0,  0 },
+	{   0x00, 0x03, 0x0F, 0x28, 0x4C, 0x6C, 0x71, 0x50,
+		0x25, 0x26, 0x4C, 0x44, 0x1A, 0x32, 0x3B, 0x13,
+		0x37, 0x1A, 0x25, 0x1F, 0x1D, 0x00, 0x00, 0x00,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0,  0,  0,  0,  0,
+		0,  0,  0,  0 },
 	/* interpolation coefficients */
-	{ 0, 3, 3, 3, 2, 2, 2, 1 }
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
+#else
+#define TI_0285_LATER_ENERGY \
+		/* E  */\
+		{   0,  1,  2,  3,  4,  6,  8, 11, \
+			16, 23, 33, 47, 63, 85,114, 0 },
+        
+#define TI_5220_PITCH \
+	/* P */\
+	{   0,  15,  16,  17,  18,  19,  20,  21,  \
+		22,  23,  24,  25,  26,  27,  28,  29,  \
+		30,  31,  32,  33,  34,  35,  36,  37,  \
+		38,  39,  40,  41,  42,  44,  46,  48,  \
+		50,  52,  53,  56,  58,  60,  62,  65,  \
+		68,  70,  72,  76,  78,  80,  84,  86,  \
+		91,  94,  98, 101, 105, 109, 114, 118, \
+		122, 127, 132, 137, 142, 148, 153, 159},
+                
+#define TI_5110_5220_LPC \
+		/* K1  */\
+		{ -501, -498, -497, -495, -493, -491, -488, -482,\
+		  -478, -474, -469, -464, -459, -452, -445, -437,\
+		  -412, -380, -339, -288, -227, -158,  -81,   -1,\
+			80,  157,  226,  287,  337,  379,  411,  436 },\
+		/* K2  */\
+		{ -328, -303, -274, -244, -211, -175, -138,  -99,\
+		   -59,  -18,   24,   64,  105,  143,  180,  215,\
+		   248,  278,  306,  331,  354,  374,  392,  408,\
+		   422,  435,  445,  455,  463,  470,  476,  506 },\
+		/* K3  */\
+		{ -441, -387, -333, -279, -225, -171, -117,  -63,\
+			-9,   45,   98,  152,  206,  260,  314,  368  },\
+		/* K4  */\
+		{ -328, -273, -217, -161, -106,  -50,    5,   61,\
+		   116,  172,  228,  283,  339,  394,  450,  506  },\
+		/* K5  */\
+		{ -328, -282, -235, -189, -142,  -96,  -50,   -3,\
+			43,   90,  136,  182,  229,  275,  322,  368  },\
+		/* K6  */\
+		{ -256, -212, -168, -123,  -79,  -35,   10,   54,\
+			98,  143,  187,  232,  276,  320,  365,  409  },\
+		/* K7  */\
+		{ -308, -260, -212, -164, -117,  -69,  -21,   27,\
+			75,  122,  170,  218,  266,  314,  361,  409  },\
+		/* K8  */\
+		{ -256, -161,  -66,   29,  124,  219,  314,  409  },\
+		/* K9  */\
+		{ -256, -176,  -96,  -15,   65,  146,  226,  307  },\
+		/* K10 */\
+		{ -205, -132,  -59,   14,   87,  160,  234,  307  },
+                
+#define TI_LATER_CHIRP \
+	/* Chirp table */\
+	{   0x00, 0x03, 0x0f, 0x28, 0x4c, 0x6c, 0x71, 0x50,\
+		0x25, 0x26, 0x4c, 0x44, 0x1a, 0x32, 0x3b, 0x13,\
+		0x37, 0x1a, 0x25, 0x1f, 0x1d, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+		0x00, 0x00, 0x00, 0x00 },
+                
+/* TMS5220/5220C:
+(1983 era for 5220, 1986-1992 era for 5220C; 5220C may also be called TSP5220C)
+The TMS5220NL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap.
+The chirp table is verified to match the decap. (sum = 0x3da)
+Note that all the LPC K* values match the TMS5110a table (as read via PROMOUT)
+exactly.
+The TMS5220CNL was decapped and imaged by digshadow in April, 2013.
+The LPC table table is verified to match the decap and exactly matches TMS5220NL.
+The chirp table is verified to match the decap. (sum = 0x3da)
+*/
+static const struct tms5100_coeffs tms5220_coeff =
+{
+	/* subtype */
+	SUBTYPE_TMS5220,
+	10,
+	4,
+	6,
+	{ 5, 5, 4, 4, 4, 4, 4, 3, 3, 3 },
+	TI_0285_LATER_ENERGY
+	TI_5220_PITCH
+	{
+	TI_5110_5220_LPC
+	},
+	TI_LATER_CHIRP
+	/* interpolation coefficients */
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
+};        
+#endif
 
 /* The following TMS5220C coefficients come from the tables in QBOXPRO, a program written at least in part by George "Larry" Brantingham of Quadravox, formerly of Texas Instruments, who had laid out the silicon for the TMS5100/TMC0280/CD2801. It is the same as the TMS5220 but has a change in the energy table (is this actually correct? or is this one correct for both 5220s? or is this the wrong table and the TMS5220 one correct for both?)
 Note: the energy table in QV5220.COD is also in RMS and was not used (it also may well be incorrect; the values in QV5220.COD have an offset by one index which looks wrong), instead the table from the 5200/5220 is used here.
@@ -531,4 +665,66 @@ static const struct tms5100_coeffs tms5220c_coeff =
 	    0,  0,    0,  0 },
 	/* interpolation coefficients */
 	{ 0, 3, 3, 3, 2, 2, 2, 1 }
+};
+
+#define TI_2501E_PITCH \
+	/* P */\
+	{   0,  14,  15,  16,  17,  18,  19,  20,  \
+		21,  22,  23,  24,  25,  26,  27,  28,  \
+		29,  30,  31,  32,  34,  36,  38,  40,  \
+		41,  43,  45,  48,  49,  51,  54,  55,  \
+		57,  60,  62,  64,  68,  72,  74,  76,  \
+		81,  85,  87,  90,  96,  99, 103, 107, \
+		112, 117, 122, 127, 133, 139, 145, 151, \
+		157, 164, 171, 178, 186, 194, 202, 211},                        
+
+#define TI_2801_2501E_LPC \
+		/* K1  */\
+		{ -501, -498, -495, -490, -485, -478, -469, -459,\
+		  -446, -431, -412, -389, -362, -331, -295, -253,\
+		  -207, -156, -102,  -45,   13,   70,  126,  179,\
+		   228,  272,  311,  345,  374,  399,  420,  437 },\
+		/* K2  */\
+		{ -376, -357, -335, -312, -286, -258, -227, -195,\
+		  -161, -124,  -87,  -49,  -10,   29,   68,  106,\
+		   143,  178,  212,  243,  272,  299,  324,  346,\
+		   366,  384,  400,  414,  427,  438,  448,  506 },\
+		/* K3  */\
+		{ -407, -381, -349, -311, -268, -218, -162, -102,\
+		   -39,   25,   89,  149,  206,  257,  302,  341 },\
+		/* K4  */\
+		{ -290, -252, -209, -163, -114,  -62,   -9,   44,\
+			97,  147,  194,  238,  278,  313,  344,  371 },\
+		/* K5  */\
+		{ -318, -283, -245, -202, -156, -107,  -56,   -3,\
+			49,  101,  150,  196,  239,  278,  313,  344 },\
+		/* K6  */\
+		{ -193, -152, -109,  -65,  -20,   26,   71,  115,\
+		   158,  198,  235,  270,  301,  330,  355,  377 },\
+		/* K7  */\
+		{ -254, -218, -180, -140,  -97,  -53,   -8,   36,\
+			81,  124,  165,  204,  240,  274,  304,  332 },\
+		/* K8  */\
+		{ -205, -112,  -10,   92,  187,  269,  336,  387 },\
+		/* K9  */\
+		{ -249, -183, -110,  -32,   48,  126,  198,  261 }, /* on patents 4,403,965 and 4,946,391 the 4th entry is 0x3ED (-19) which is a typo of the correct value of 0x3E0 (-32)*/\
+		/* K10 */\
+		{ -190, -133,  -73,  -10,   53,  115,  173,  227 },
+                
+static const struct tms5100_coeffs T0285_2501E_coeff =
+{
+	/* subtype */
+	SUBTYPE_2501E,
+	10,
+	4,
+	6,
+	{ 5, 5, 4, 4, 4, 4, 4, 3, 3, 3 },
+	TI_0285_LATER_ENERGY
+	TI_2501E_PITCH
+	{
+	TI_2801_2501E_LPC
+	},
+	TI_LATER_CHIRP
+	/* interpolation coefficients */
+	{ 0, 3, 3, 3, 2, 2, 1, 1 }
 };
