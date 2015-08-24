@@ -274,7 +274,7 @@ static mech_tInitData wcs_goalieMech = {
 };
 
 static mech_tInitData wcs_ballMech = {
-  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(1), 4, 4, {{0}}
+  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(2), 4, 4, {{0}}
 };
 
 static void wcs_handleMech(int mech) {
