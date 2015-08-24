@@ -25,6 +25,9 @@ Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issu
 Improve Speech on Nuova Bell and Jeutel games
 Fix some/most of the general sound stutter issues by improving the throttle code
 Improve performance for all ARM7 based games (e.g. Whitestar II)
+Added mech handler for mech #0 (goalie) in WCS94:
+ The goalie will assume positions between 0 (max. left) and 50 (max. right), and will close the left switch when < 10 and the right one when > 40
+ Also Mech #1 (ball) will now return the speed of the ball rather than its position, with values ranging from -120 to 120
 Updated to zlib 1.2.8
 
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
