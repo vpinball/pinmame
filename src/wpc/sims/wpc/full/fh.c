@@ -740,12 +740,33 @@ static core_tGameData fhGameData = {
 ---------------------------------------------------------------------------------------------*/
 
 
+#ifdef PROC_SUPPORT
+  #include "p-roc/p-roc.h"
+  /*
+    Solenoid smoothing messes up Rudy's mouth (C21 and C22)
+  */
+  void fh_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    switch (solNum) {
+      case 20:  // C21, Mouth Motor
+      case 21:  // C22, Up/Down Driver
+        // Solenoids to handle in immediate mode, not smoothed.  Negate `smoothed`
+        // so default handler will process immediate solenoid changes and ignore
+        // smoothed changes.
+        smoothed = !smoothed;
+    }
+    default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
+  }
+#endif
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_fh(void) {
   core_gameData = &fhGameData;
   locals.divertercount=0;
+#ifdef PROC_SUPPORT
+  wpc_proc_solenoid_handler = fh_wpc_proc_solenoid_handler;
+#endif
 }
 
 

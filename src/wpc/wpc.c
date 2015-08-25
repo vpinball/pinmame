@@ -166,6 +166,113 @@ static void wpc_zc(int data) {
 	wpclocals.zc = 1;
 }
 
+#ifdef PROC_SUPPORT
+  /*
+    Configure a function pointer with a default handler for processing
+    solenoid changes.  This allows specific machines to override the handler
+    in their init routine with one that can intercept certain solenoid
+    changes and then have the default handler cover all other cases.
+    
+    `solNum` is 0 to 63 and represents a bit number in the value returned by
+    core_getAllSol().
+    
+    `enabled` indicates whether the solenoid has changed to enabled (1) or
+    disabled (0).
+    
+    `smoothed` indicated whether this came from the period solenoid change
+    processing with smoothed readings (1) or came from an immediate solenoid
+    change in the emulator (0).
+  */
+  wpc_proc_solenoid_handler_t wpc_proc_solenoid_handler = default_wpc_proc_solenoid_handler;
+  void default_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    // by default, we only processed smoothed solenoid readings.  Custom
+    // handlers in the various sims may process non-smoothed readings (for
+    // reduced latency) and ignore the smoothed readings for some solenoids.
+    if (!smoothed)
+      return;
+
+    // Standard Coils
+    if (solNum < 32) {
+      if (solNum > 27 && (core_gameData->gen & GEN_ALLWPC)) { // 29-32 GameOn
+        switch (solNum) {
+          case 28:
+            fprintf(stderr, "SOL28: %s\n", enabled ? "game over" : "start game");
+            // If game supports this "GameOver" solenoid, it's safe to disable the
+            // flippers here (something that happens when the game starts up) and
+            // rely on solenoid 30 telling us when to enable them.
+            // ...on WPC-95 games, SOL28 doesn't seem to fire
+            if (enabled) {
+              procConfigureFlipperSwitchRules(0);
+            } else if (core_gameData->gen & GEN_WPC95) {
+              procConfigureFlipperSwitchRules(1);
+            }
+            break;
+          case 30:
+            fprintf(stderr, "SOL30: %s flippers\n", enabled ? "enable" : "disable");
+            procConfigureFlipperSwitchRules(enabled);
+            // enable flippers on pre-fliptronic games (with no PRFlippers)
+            if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) {
+              procDriveLamp(79, enabled);
+            }
+            break;
+          default:
+            fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
+            return;
+        }
+      } else {
+        // C01 to C28 (WPC) or C32 (all others)
+        procDriveCoil(solNum+40, enabled);
+      }
+    } else if (solNum < 36) {
+      // upper flipper coils, C33 to C36
+      procDriveCoil(solNum+4, enabled);
+    } else if (solNum < 44) {
+      if (core_gameData->gen & GENWPC_HASWPC95) {
+        // solNum 40 to 43 are duplicates of 36 to 39
+        if (solNum < 40)
+          procDriveCoil(solNum+32, enabled);
+      } else {
+        procDriveCoil(solNum+108, enabled);
+      }
+    } else if (solNum < 48) {
+      // In pre-fliptronic WPC games, coil 44 (odd?) seems to work as the flipper enable/disable
+      if (core_gameData->gen & (GEN_WPCDMD | GEN_WPCALPHA_1 | GEN_WPCALPHA_2)) {
+          if (solNum == 44) procFlipperRelay(enabled);
+      } else {
+        // lower flipper coils, C29 to C32
+        procDriveCoil(solNum-12, enabled);
+      }
+    } else if (solNum >= 50 && solNum < 58) {
+      // 8-driver board (DM, IJ, RS, STTNG, TZ), C37 to C44
+      // note that this maps to same P-ROC coils as SOL 36-43 on non-WPC95
+      procDriveCoil(solNum+94, enabled);
+    } else {
+      fprintf(stderr, "SOL%d (%s) does not map\n", solNum, enabled ? "on" : "off");
+      return;
+    }
+    // TODO:PROC: Upper flipper circuits in WPC-95. (Is this still the case?)
+    // Some games (AFM) seem to use sim files to activate these coils.  Others (MM) don't ever seem to activate them (Trolls).
+  }
+  
+  // Called from wpc_w() to process immediate changes to solenoid values.
+  void proc_immediate_solenoid_change(int offset, UINT8 new_data) {
+    static UINT32 current_values = 0;
+    UINT32 mask = (0xFF << offset);
+    UINT8 changed_data = new_data ^ ((current_values & mask) >> offset);
+    int i;
+    
+    if (changed_data) {
+      current_values = (current_values & ~mask) | (new_data << offset);
+      for (i = offset; changed_data; ++i, changed_data >>= 1, new_data >>= 1) {
+        // bits 28-31 map to C37 to C40 (index 36 to 39 of wpc_proc_solenoid_handler)
+        if (i == 28) i += 8;
+        if (changed_data & 1)
+          wpc_proc_solenoid_handler(i, new_data & 1, FALSE);
+      }
+    }
+  }
+#endif
+
 /*-----------------
 /  Machine drivers
 /------------------*/
@@ -262,18 +369,6 @@ static INTERRUPT_GEN(wpc_vblank) {
     }
   }
 
-#ifdef PROC_SUPPORT
-	if (coreGlobals.p_rocEn) {
-		// Enable Flippers for WPC-Alphanumeric machines
-		// This is done here instead of in the init code because the P-ROC's
-		// 1 second watchdog timer expires after the init code runs, leaving
-		// the flippers disabled.
-		if (core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_WPCDMD)) {
-			procDriveLamp(79, 1);
-		}
-	}
-#endif
-
   /*--------------------------------------------------------
   /  Most solonoids don't have a holding coil so the software
   /  simulates it by pulsing the power to the main (and only) coil.
@@ -283,10 +378,6 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  during that time.
   /-------------------------------------------------------------*/
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_SOLSMOOTH)) == 0) {
-#ifdef PROC_SUPPORT
-		//TODO/PROC: Check implemenatation
-		UINT64 allSol = core_getAllSol();
-#endif
 
     coreGlobals.solenoids = (wpc_data[WPC_SOLENOID1] << 24) |
                             (wpc_data[WPC_SOLENOID3] << 16) |
@@ -294,56 +385,37 @@ static INTERRUPT_GEN(wpc_vblank) {
                              wpc_data[WPC_SOLENOID2];
 
 #ifdef PROC_SUPPORT
-		//TODO/PROC: Check implemenatation
-		allSol = (allSol & 0xffffffff00000000) |
-		         (wpc_data[WPC_SOLENOID1] << 24) |
-		         (wpc_data[WPC_SOLENOID3] << 16) |
-		         (wpc_data[WPC_SOLENOID4] <<  8) |
-		          wpc_data[WPC_SOLENOID2];
-		if (coreGlobals.p_rocEn) {
-			int ii;
-			UINT64 chgSol = (allSol ^ coreGlobals.lastSol) & 0xffffffffffffffff; //vp_getSolMask64();
-			UINT64 tmpSol = allSol;
-
-			for (ii=0; ii<64; ii++) {
-				if ((chgSol & 0x1) && ii != 30) {
-                                //slug    if ((chgSol & 0x1)) {
-
-                                        if (mame_debug) fprintf(stderr,"\nDrive pinmame coil %d",ii);
-                                            // Standard Coils
-                                            if (ii < 32) {
-                                                    procDriveCoil(ii+40, tmpSol & 0x1);
-                                            } else if (ii < 36) {
-                                                    procDriveCoil(ii+4, tmpSol & 0x1);
-                                            } else if (ii < 44) {
-                                                    if (core_gameData->gen & GENWPC_HASWPC95) {
-                                                            procDriveCoil(ii+32, tmpSol & 0x1);
-                                                    } else {
-                                                            procDriveCoil(ii+108, tmpSol & 0x1);
-                                                    }
-                                            } else if (ii < 64) {
-                                                    printf("\nChanging: %d",ii);
-                                            }
-					// TODO:PROC: Upper flipper circuits in WPC-95.
-					// Some games (AFM) seem to use sim files to activate these coils.  Others (MM) don't ever seem to activate them (Trolls).
-				}
-				chgSol >>= 1;
-				tmpSol >>= 1;
-			}
-
-			// GI
-			for (ii = 0; ii < CORE_MAXGI; ii++) {
-				changed_gi[ii] = gi_last[ii] != coreGlobals.gi[ii];
-				gi_last[ii] = coreGlobals.gi[ii];
-
-				if (changed_gi[ii]) {
-					procDriveLamp(ii+72, coreGlobals.gi[ii] > 2);
-				}
-			}
-
-			// This doesn't seem to be happening in core.c.  Why not?
-			coreGlobals.lastSol = allSol;
-		}
+    //TODO/PROC: Check implementation
+    if (coreGlobals.p_rocEn) {
+      int ii;
+      static UINT64 lastSol;
+      UINT64 allSol = core_getAllSol();
+      UINT64 chgSol = (allSol ^ lastSol);
+      lastSol = allSol;
+      
+      if (chgSol) {
+        for (ii=0; ii<64; ii++) {
+          if (chgSol & 0x1) {
+            if (mame_debug) {
+              fprintf( stderr,"Drive SOL%02d %s\n", ii, (allSol & 0x1) ? "on" : "off");
+            }
+            wpc_proc_solenoid_handler(ii, allSol & 0x1, TRUE);
+          }
+          chgSol >>= 1;
+          allSol >>= 1;
+        }
+      }
+  
+      // GI
+      for (ii = 0; ii < CORE_MAXGI; ii++) {
+        changed_gi[ii] = gi_last[ii] != coreGlobals.gi[ii];
+        gi_last[ii] = coreGlobals.gi[ii];
+  
+        if (changed_gi[ii]) {
+          procDriveLamp(ii+72, coreGlobals.gi[ii] > 2);
+        }
+      }
+    }
 #endif
 
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
@@ -427,13 +499,18 @@ static INTERRUPT_GEN(wpc_vblank) {
 	// Check for any coils that need to be disabled due to inactivity.
 	if (coreGlobals.p_rocEn) {
 		procCheckActiveCoils();
+		procFullTroughDisablesFlippers();
 	}
 #endif
 
   /*------------------------------
-  /  Update switches every vblank
+  /  Update switches every vblank; or on every pass when using P-ROC
   /-------------------------------*/
-  if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
+  if (
+#ifdef PROC_SUPPORT
+      coreGlobals.p_rocEn || 
+#endif
+      (wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
     core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
 }
 
@@ -553,6 +630,18 @@ READ_HANDLER(wpc_r) {
 }
 
 WRITE_HANDLER(wpc_w) {
+#ifdef PROC_SUPPORT
+  if (coreGlobals.p_rocEn) {
+    // process immediate coil changes for C01 to C28 and C37 to C40
+    switch (offset) {
+      case WPC_SOLENOID1: proc_immediate_solenoid_change(24, data); break;
+      case WPC_SOLENOID2: proc_immediate_solenoid_change( 0, data); break;
+      case WPC_SOLENOID3: proc_immediate_solenoid_change(16, data); break;
+      case WPC_SOLENOID4: proc_immediate_solenoid_change( 8, data); break;
+    }
+  }
+#endif
+
   switch (offset) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
@@ -736,6 +825,12 @@ WRITE_HANDLER(wpc_w) {
         }
         mame_fwrite(wpc_printfile, &wpc_data[WPC_PRINTDATA], 1);
       }
+      break;
+    case WPC_SERIAL_DATA:
+      break;
+    case WPC_SERIAL_CTRL:
+      break;
+    case WPC_SERIAL_BAUD:
       break;
     default:
       DBGLOG(("wpc_w %4x %2x\n", offset+WPC_BASE, data));

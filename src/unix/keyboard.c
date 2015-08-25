@@ -7,6 +7,7 @@
 /*
  * Include files.
  */
+#include <signal.h>
 #include "xmame.h"
 #include "driver.h"
 #include "keyboard.h"
@@ -142,14 +143,36 @@ UINT8 trying_to_quit;
 /* private methods */
 FIFO(INLINE, kbd, struct xmame_keyboard_event)
 
+void sigquit_handler(int signum)
+{
+   fprintf(stderr, "info: caught SIGQUIT, exiting gracefully...\n");
+   trying_to_quit = 1;
+}
+
 /* public methods (in keyboard.h / osdepend.h) */
 int xmame_keyboard_init(void)
 {
+   struct sigaction new_action, old_action;
+   
    memset(key, 0, KEY_MAX);
 
    kbd_fifo = kbd_fifo_create(256);
    if(!kbd_fifo)
       return -1;
+   
+   /* Add a signal handler for SIGQUIT to quit app gracefully */
+   if (sigaction(SIGQUIT, NULL, &old_action) != 0)
+      fprintf(stderr, "error: sigaction() failed\n");
+   else if (old_action.sa_handler == SIG_IGN)
+      fprintf(stderr, "info: SIGQUIT set to ignore (SIG_IGN)\n");
+   else
+   {
+      fprintf(stderr, "info: adding signal handler for SIGQUIT\n");
+      new_action.sa_handler = sigquit_handler;
+      sigemptyset(&new_action.sa_mask);
+      new_action.sa_flags = 0;
+      sigaction(SIGQUIT, &new_action, NULL);
+   }
    
    return 0;
 }
@@ -243,3 +266,20 @@ int osd_trying_to_quit()
 	return 0;
 }
 
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+/* Stub to supply osd_get_proc_list() for src/input.c */
+#include "input.h"
+
+const struct PROCInfo procInputList[] = {
+        { "Left Flipper",       0, PROC_FLIPPER_L },
+        { "Right Flipper",      1, PROC_FLIPPER_R },
+        { "Start Button",       2, PROC_START },
+        { "Quit",               3, PROC_ESC_SEQ },
+        { NULL,                 0, 0 },
+};
+
+const struct PROCInfo *osd_get_proc_list(void)
+{
+        return procInputList;
+}
+#endif

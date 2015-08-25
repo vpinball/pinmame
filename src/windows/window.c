@@ -1811,6 +1811,9 @@ static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t 
 	// for 8bpp bitmaps, update the debug colors
 	for (i = 0; i < DEBUGGER_TOTAL_COLORS; i++)
 	{
+		// Note that GCC may throw an array-bounds error on these lines, since the
+		// BITMAPINFO structure defines bmiColors as a single-element array.  Its
+		// size actually varies depending on settings in the header.
 		debug_dib_info->bmiColors[i].rgbRed		= RGB_RED(palette[i]);
 		debug_dib_info->bmiColors[i].rgbGreen	= RGB_GREEN(palette[i]);
 		debug_dib_info->bmiColors[i].rgbBlue	= RGB_BLUE(palette[i]);

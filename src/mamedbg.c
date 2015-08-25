@@ -30,11 +30,6 @@
 #define INVALID -1
 #endif
 
-/* On Ubuntu 10.10 there's only strnicmp, although it is not an ISO function */
-#if defined(__GNUC__) && !defined(__WIN32__) && !defined(_WIN32)
-#define _strnicmp strnicmp
-#endif
-
 /****************************************************************************
  * Externals (define in the header files)
  ****************************************************************************/
@@ -1622,7 +1617,7 @@ static unsigned get_register_id( char **parg, int *size )
 	for( i = 0; i < DBGREGS.count; i++ )
 	{
 		l = strlen( DBGREGS.name[i] );
-		if( l > 0 && !_strnicmp( *parg, DBGREGS.name[i], l ) )
+		if( l > 0 && !strncasecmp( *parg, DBGREGS.name[i], l ) )
 		{
 			if( !isalnum( (*parg)[l] ) )
 			{
@@ -1765,7 +1760,11 @@ static void trace_output( void )
 		for( i = count = 0; i < MAX_LOOPS; i++ )
 			if( TRACE.last_pc[i] == pc )
 				count++;
-		if( count > 1 )
+#ifdef CONFIG_FOR_FREEWPC
+		if( count > 32)
+#else
+		if( count > 1)
+#endif
 		{
 			TRACE.loops++;
 		}
@@ -1780,6 +1779,9 @@ static void trace_output( void )
 			}
 			if( TRACE.regs[0] )
 			{
+#ifdef CONFIG_FOR_FREEWPC
+				dst += sprintf (dst, "#%u ", activecpu_gettotalcycles ());
+#endif
 				for( i = 0; i < MAX_REGS && TRACE.regs[i]; i++ )
 					dst += sprintf( dst, "%s ", activecpu_dump_reg(TRACE.regs[i]) );
 			}

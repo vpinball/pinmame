@@ -10,9 +10,6 @@ extern "C" {
 extern PRHandle proc;
 extern PRMachineType machineType;
 
-extern int S11CreditPos;
-extern int S11BallPos;
-
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
 

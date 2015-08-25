@@ -698,6 +698,53 @@ static WRITE_HANDLER(bop_wpc_w) {
   }
 }
 
+#ifdef PROC_SUPPORT
+  #include "p-roc/p-roc.h"
+  #include "p-roc/proc_shift_reg.h"
+
+  /*
+    LEDs of helmet controlled by a serial shift register.  Game sets DATA and
+    then pulses clock HIGH for less than 1ms, about every 100ms.  Except for
+    when it's clearing the LEDs or pulsing a specific pattern and shifts with
+    sub-millisecond timing.  We use a 64-bit queue to track shift requests,
+    and a 12ms timer to shift them out at a rate the P-ROC can handle.
+  */
+  void bop_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    static int helmet_data = 0;
+
+    // coils to process immediately, and not smoothed
+    switch (solNum) {
+      case 16:  // C17 to C24 flashers
+      case 17:
+      case 18:
+      case 19:
+      case 20:
+      case 21:
+      case 22:
+      case 23:
+      
+      case 26:  // C27, head direction
+      case 27:  // C28, head motor
+        if (!smoothed)
+          default_wpc_proc_solenoid_handler(solNum, enabled, TRUE);
+        return;
+
+      case 24:  // C25 data for helmet LEDs
+        if (!smoothed)
+          helmet_data = enabled;
+        return;
+
+      case 25:  // C26 clock for helmet LEDs
+        if (!smoothed && enabled) {
+          proc_shiftRegEnqueue(helmet_data);
+        }
+        return;
+    }
+
+    default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
+  }
+#endif
+
 /*---------------
 /  Game handling
 /----------------*/
@@ -707,4 +754,9 @@ static void init_bop(void) {
   HC4094_init(&hc4094bop);
   HC4094_oe_w(0, 1);
   HC4094_oe_w(1, 1);
+#ifdef PROC_SUPPORT
+  wpc_proc_solenoid_handler = bop_wpc_proc_solenoid_handler;
+  // clock on C26, data on C25
+  proc_shiftRegInit(25 + 40, 24 + 40);
+#endif
 }

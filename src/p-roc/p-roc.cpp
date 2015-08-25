@@ -35,9 +35,16 @@ YAML::Node yamlDoc;
 int S11CreditPos=0;
 int S11BallPos=0;
 int doubleAlpha=0;
+int exitButton=0;
+int exitButtonHoldTime=0;
 
 // Determine whether automatic patter detection is on or off by default
 bool autoPatterDetection = true;
+
+// Is there an arduino connected for RGB effects?
+bool isArduino = false;
+char arduinoPort[] = "NONE";
+
 
 // Load/Parse the YAML file.
 PRMachineType procLoadMachineYAML(char *filename) {
@@ -88,60 +95,45 @@ PRMachineType getRomMachineType() {
 	switch (core_gameData->gen) {
 		case GEN_WPCALPHA_1:
 		case GEN_WPCALPHA_2:
-			if (pmoptions.alpha_on_dmd) {
-				return kPRMachineWPC;
-				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
-			} else {
-				return kPRMachineWPCAlphanumeric;
-				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
-			}
-			break;
                 case GEN_DE:
-                
+                case GEN_S4:
                 case GEN_S11A:
-                    
                 case GEN_S11:
                 case GEN_S11B2:
                 case GEN_S11C:
-
 			if (pmoptions.alpha_on_dmd) {
-				return kPRMachineWPC;
 				fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric,\nbut using kPRMachineWPC due to alpha_on_dmd option\n");
-			} else {
-				return kPRMachineWPCAlphanumeric;
-                                //return kPRMachineWPC;
-                                fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
+				return kPRMachineWPC;
 			}
-			break;
+                        fprintf(stderr, "ROM machine type: kPRMachineWPCAlphanumeric\n");
+			return kPRMachineWPCAlphanumeric;
+
                 case GEN_DEDMD32:
-                	return kPRMachineWPC;
-			fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
-			break;
 		case GEN_WPCDMD:
 		case GEN_WPCFLIPTRON:
 		case GEN_WPCDCS:
 		case GEN_WPCSECURITY:
-			return kPRMachineWPC;
 			fprintf(stderr, "ROM machine type: kPRMachineWPC\n");
-			break;
+			return kPRMachineWPC;
+
 		case GEN_WPC95DCS:
 		case GEN_WPC95:
-			return kPRMachineWPC95;
 			fprintf(stderr, "ROM machine type: kPRMachineWPC95\n");
-			break;
+			return kPRMachineWPC95;
+
 		case GEN_WS:
 		case GEN_WS_1:
 		case GEN_WS_2:
-			return kPRMachineSternWhitestar;
 			fprintf(stderr, "ROM machine type: kPRMachineSternWhitestar\n");
-			break;
+			return kPRMachineSternWhitestar;
+
 		case GEN_SAM:
-			return kPRMachineSternSAM;
 			fprintf(stderr, "ROM machine type kPRMachineSternSAM\n");
-			break;
+			return kPRMachineSternSAM;
+
 		default:
-			return kPRMachineInvalid;
 			fprintf(stderr, "Unknown ROM machine type in YAML file\n");
+			return kPRMachineInvalid;
 	}
 }
 
@@ -171,71 +163,116 @@ void procDeinitialize() {
 	}
 }
 
+std::string procGetYamlPinmameSettingString(const char *key, const char *defaultValue) {
+    std::string retval;
+
+    try {
+       yamlDoc["PRPinmame"][key] >> retval;
+    }
+    catch (...) {
+        retval = defaultValue;
+    }
+
+    return retval;
+}
+
+int procGetYamlPinmameSettingInt(const char *key, int defaultValue) {
+    int retval;
+
+    try {
+       yamlDoc["PRPinmame"][key] >> retval;
+    }
+    catch (...) {
+        // Not defined in YAML or not numeric
+        retval = defaultValue;
+    }
+    
+    return retval;
+}
+
 // When testing and using pinmame it is useful to be able to run
 // the diagnostic switches from the keyboard instead of the machine
 // as having the door switches work the P-ROC requires additional
 // cabling. A YAML entry controls whether the keyboard is active or not
 int procKeyboardWanted(void) {
-    std::string keyb;
-    try {
-       yamlDoc["PRPinmame"]["keyboard"] >> keyb;
+    return (procGetYamlPinmameSettingString("keyboard", "off") == "on");
+}
+
+// To quit pinmame, you can hold both flippers and press the start button at the same time.
+// For machines that do not register flipper buttons when the flippers themselves are disabled
+// we can use a parameter in the YAML to determine a period of time to just hold the start button
+void procCheckQuitMethod(void) {
+    std::string exitButtonName, numStr;
+    exitButtonName = procGetYamlPinmameSettingString("exitButton", "startButton");
+    if (yamlDoc[kSwitchesSection].FindValue(exitButtonName)) {
+        yamlDoc[kSwitchesSection][exitButtonName][kNumberField] >> numStr;
+        exitButton = PRDecode(machineType, numStr.c_str());
+        exitButtonHoldTime = procGetYamlPinmameSettingInt("exitButtonHoldTime", 0);
+        if (exitButtonHoldTime > 0)
+            printf("\nHold %s (%d) for %dms to quit.\n", exitButtonName.c_str(), exitButton, exitButtonHoldTime);
     }
-    catch (...) {
-        keyb = "off";
-    }
-    if (keyb == "on") return 1;
-    else return 0;
-    }
+}
 
 
 // Check patter detection from YAML
 void setPatterDetection(void) {
-    std::string pat;
+    autoPatterDetection = (procGetYamlPinmameSettingString("autoPatterDetection", "on") == "on");
+    
+    printf("\nAutomatic patter detection : %s\n", autoPatterDetection ? "Enabled" : "Disabled");
+    
+}
+
+// Check if we have an arduino port specified within the YAML which will be used for 
+// controlling the RGB lamps
+void procCheckArduinoRGB(void) {
+    std::string port;
+
     try {
-        yamlDoc["PRPinmame"]["autoPatterDetection"] >> pat;
+        yamlDoc["PRGame"]["arduino"] >> port;
     }
     catch (...) {
-        pat = "on";
+        port = "none";
     }
-    if (pat == "on") autoPatterDetection = true;
-    else autoPatterDetection = false;
-    printf("\nAutomatic patter detection : %s\n",pat.c_str());
+    if (port == "none") 
+        isArduino = false;
+    else {
+        isArduino = true;
+        strcpy(arduinoPort, port.c_str());
+        procConfigureRGBLamps();
+        printf("\nArduino enabled for RGB control on port %s",arduinoPort);
+    }
 }
 
 // Called to set the credit/ball display positions
 void procBallCreditDisplay(void) {
+    S11CreditPos = procGetYamlPinmameSettingInt("s11CreditDisplay", 0);
+    doubleAlpha = procGetYamlPinmameSettingInt("doubleAlpha", 0);
+    S11BallPos = procGetYamlPinmameSettingInt("s11BallDisplay", 0);
+}
 
-    try  {
-        yamlDoc["PRPinmame"]["s11CreditDisplay"] >> S11CreditPos;
-    }
-    catch (...)	{
-        // Not defined in YAML or not numeric
-        S11CreditPos=0;
-    }
-
-    try  {
-        yamlDoc["PRPinmame"]["doubleAlpha"] >> doubleAlpha;
-    }
-    catch (...)	{
-        // Not defined in YAML or not numeric
-        doubleAlpha=0;
-    }
-
-    try  {
-        yamlDoc["PRPinmame"]["s11BallDisplay"] >> S11BallPos;
-    }
-    catch (...)	{
-        // Not defined in YAML or not numeric
-        S11BallPos=0;
-    }
-
+// Clear the contents of the P-ROC aux memory to ensure it doesn't try to
+// execute random instructions on startup.
+void procClearAuxMemory(void) {
+	int cmd_index=0;
+	PRDriverAuxCommand auxCommands[255];
+	
+	if (proc) {
+		PRDriverAuxPrepareDisable(&auxCommands[cmd_index++]);
+		while (cmd_index < 255) {
+			PRDriverAuxPrepareJump(&auxCommands[cmd_index++], 0);
+		}
+		// Send the commands.
+		PRDriverAuxSendCommands(proc, auxCommands, cmd_index, 0);
+		procFlush();
+	}
 }
 
 // Initialize the P-ROC hardware.
 int procInitialize(char *yaml_filename) {
-	fprintf(stderr, "\n\n****** Initializing P-ROC ******\n");
+	fprintf(stderr, "\n\n****** Initializing P-ROC with %s\n", yaml_filename);
         setMachineType(yaml_filename);
         setPatterDetection();
+        
 	if (machineType != kPRMachineInvalid) {
 		proc = PRCreate(machineType);
 		if (proc == kPRHandleInvalid) {
@@ -244,6 +281,8 @@ int procInitialize(char *yaml_filename) {
 			return 0;
 		} else {
 			PRReset(proc, kPRResetFlagUpdateDevice);
+
+			procClearAuxMemory();
 			procConfigureDefaultSwitchRules();
 			procConfigureInputMap();
 
@@ -252,10 +291,12 @@ int procInitialize(char *yaml_filename) {
 
 			procConfigureDriverDefaults();
                         
+                        procCheckArduinoRGB();
 
 			if (machineType != kPRMachineWPCAlphanumeric) {
 				procDMDInit();
 			}
+			procCheckQuitMethod();
                         fprintf(stderr, "\n****** P-ROC Initialization COMPLETE ******\n\n");
 		}
 	}

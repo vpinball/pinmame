@@ -347,7 +347,7 @@ int run_game(int game)
 static int init_machine(void)
 {
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-	char * yaml_filename = (char *)pmoptions.p_roc;
+	char * yaml_filename = pmoptions.p_roc;
 #endif /* PINMAME && PROC_SUPPORT */
 
 	/* load the localization file */

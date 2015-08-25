@@ -10,8 +10,13 @@ DEFS += -DPROC_SUPPORT
 # add objects for P-ROC
 PROCOBJS = \
  $(OBJ)/p-roc/p-roc.o \
+ $(OBJ)/p-roc/proc_shift_reg.o \
  $(OBJ)/p-roc/display.o \
  $(OBJ)/p-roc/gameitems.o
+
+ifeq ($(MAMEOS),windows)
+ PROCOBJS += $(OBJ)/p-roc/Serial.o
+endif
 
 # add libraries for P-ROC
 PROCLIBS = \

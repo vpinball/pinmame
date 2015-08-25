@@ -70,6 +70,32 @@ static int add_device(struct rc_option *option, const char *arg, int priority);
 #endif
 
 /* struct definitions */
+#ifdef PINMAME
+struct rc_option pinmame_opts[] = {
+	/* PinMAME options */
+	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
+#ifdef VPINMAME
+	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "255", 0, 255, NULL, "DMD color: Red" },
+	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "88", 0, 255, NULL, "DMD color: Green" },
+#else
+	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
+	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
+#endif
+	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
+	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
+	{ "dmd_perc33",	NULL, rc_int, &pmoptions.dmd_perc33,  "33", 0, 100, NULL, "DMD low intensity [%]" },
+	{ "dmd_perc66", NULL, rc_int, &pmoptions.dmd_perc66,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
+	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
+	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show compact display" },
+	{ "dmd_antialias",NULL, rc_int,&pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
+#ifdef PROC_SUPPORT
+	{ "alpha_on_dmd",NULL, rc_bool,&pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
+	{ "p-roc",NULL, rc_string,&pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
+	{ "virtual_dmd", NULL, rc_bool,&pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
+#endif
+	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
+};
+#endif /* PINMAME */
 static struct rc_option opts[] = {
    /* name, shortname, type, dest, deflt, min, max, func, help */
 	{ NULL, NULL, rc_link, video_opts, NULL, 0, 0, NULL, NULL },
@@ -77,6 +103,9 @@ static struct rc_option opts[] = {
 	{ NULL, NULL, rc_link, input_opts, NULL, 0, 0, NULL, NULL },
 	{ NULL, NULL, rc_link, network_opts, NULL, 0, 0, NULL, NULL },
 	{ NULL, NULL, rc_link, fileio_opts, NULL, 0, 0, NULL, NULL },
+#ifdef PINMAME
+	{ NULL, NULL, rc_link, pinmame_opts, NULL, 0,	0, NULL, NULL },
+#endif /* PINMAME */
 #ifdef MESS
 	/* FIXME - these option->names should NOT be hardcoded! */
 	{ "MESS specific options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
@@ -509,7 +538,7 @@ int config_init (int argc, char *argv[])
 				/* game is a clone */
 				if (drivers[i]->clone_of != 0 && !(drivers[i]->clone_of->flags & NOT_A_DRIVER))
 				{
-					if ((!(drivers[game_index]->flags & GAME_NOT_WORKING)) || (drivers[i]->flags & GAME_NOT_WORKING))
+					if ((!drivers[game_index]->flags & GAME_NOT_WORKING) || (drivers[i]->flags & GAME_NOT_WORKING))
 						continue;
 				}
 				else continue;

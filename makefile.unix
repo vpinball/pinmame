@@ -65,6 +65,9 @@ TARGET = pinmame
 # Uncomment to use DRC MIPS3 engine
 # X86_MIPS3_DRC = 1
 
+# uncomment next line to include P-ROC support
+# see http://www.pinballcontrollers.com/
+PROC = 1
 
 ###########################################################################
 # Development environment options 
@@ -88,10 +91,12 @@ TARGET = pinmame
 # possible.
 
 #CC	= /usr/i686-pc-linux-gnu/gcc-bin/3.4.6/gcc
-# CC   = gcc
-CC	= cc
+#CC	= gcc-3.4.6
+CC    = cc
 # CC	= icc
 # CC	= c89
+
+CPP    = g++
 
 # Uncomment for Sun Forte 7 and above C/C++ compiler, see below for
 # additional optimizations.
@@ -351,7 +356,8 @@ IL	= '-DINLINE=static __inline__'
 ###########################################################################
 
 # Normal linking.
-LD	= $(CC) -Wl,-s
+#LD	= $(CC) -Wl,-s
+LD	= g++ -Wl,-s
 
 # For the Intel C++ Compiler -- expect large link time due to -ipo 
 # optimization.
@@ -465,13 +471,13 @@ XMAMEROOT = $(PREFIX)/share/x$(TARGET)
 ###########################################################################
 
 # i386, GNU asm
-MY_CPU = i386
+# MY_CPU = i386
 
 # i386, no asm -- needed for the Intel C++ compiler, which does not fully
 # understand gcc's inline assembly syntax, though you may still enable 
 # X86_ASM_68000, etc., which are assembled by NASM.  You may also need to 
 # use this for BeOS.
-# MY_CPU = i386_noasm
+MY_CPU = i386_noasm
 
 # IA64
 # MY_CPU = ia64
@@ -594,10 +600,10 @@ ARCH  = linux
 # use SDL.
 
 # X11
-DISPLAY_METHOD = x11
+#DISPLAY_METHOD = x11
 
 # SDL library 
-# DISPLAY_METHOD = SDL
+DISPLAY_METHOD = SDL
 
 # SVGALib, only supported under Linux
 # DISPLAY_METHOD = svgalib
@@ -742,6 +748,10 @@ NASM_FMT  = -f elf
 # ASM_STRIP = true  # no strip command
 # NASM_FMT  = -f aoutb
 
+ifdef PROC
+# Enable support for P-ROC
+CFLAGS += -DPROC_SUPPORT
+endif
 
 ###########################################################################
 # All done.  Type make -f makefile.unix and enjoy xmame/xmess.  ;)
