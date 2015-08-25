@@ -405,7 +405,7 @@ private:
         LRESULT OnLeftButtonDown(UINT, WPARAM, LPARAM lpar, BOOL&) {
                 if (IsDlgButtonChecked(IDC_DMD_COLORIZE)) {
                         // check if the click is in a color patch text box
-                        POINT pt = { GET_X_LPARAM(lpar), GET_Y_LPARAM(lpar) };
+					POINT pt = { ((int)(short)LOWORD(lpar)), ((int)(short)HIWORD(lpar)) };
                         RGB dmd100;
                         int np2, np3, np4;
                         GetDMD_RGB_Color(&dmd100.r, &dmd100.g, &dmd100.b, &np2, &np3, &np4);
@@ -547,9 +547,10 @@ private:
                         0
                 };
                 int clr = IsDlgButtonChecked(IDC_DMD_COLORIZE);
-                for (int i = 0 ; shade_ctls[i] != 0 ; ++i)
+				int i;
+                for (i = 0 ; shade_ctls[i] != 0 ; ++i)
                         ::ShowWindow(GetDlgItem(shade_ctls[i]), clr ? SW_HIDE : SW_SHOW);
-                for (int i = 0 ; colorize_ctls[i] != 0 ; ++i)
+                for (i = 0 ; colorize_ctls[i] != 0 ; ++i)
                         ::ShowWindow(GetDlgItem(colorize_ctls[i]), clr ? SW_SHOW : SW_HIDE);
         }
 

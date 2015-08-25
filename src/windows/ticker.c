@@ -340,7 +340,7 @@ static void wintimer_init(void)
 	QueryPerformanceCounter(&sTimerStart);
 }
 
-void uSleep(const unsigned long long u)
+void uSleep(const UINT64 u)
 {
 	LARGE_INTEGER TimerEnd;
 	LARGE_INTEGER TimerNow;

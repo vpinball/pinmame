@@ -253,7 +253,7 @@
 
 typedef unsigned char byte;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) // visual studio & > 6
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
 #else
 #define JIT_ENABLED  0

@@ -42,7 +42,7 @@ extern UINT32 g_raw_dmdy;
 extern char g_fShowWinDMD;
 
 // from ticker.c
-extern void uSleep(const unsigned long long u);
+extern void uSleep(const UINT64 u);
 }
 #include "alias.h"
 
