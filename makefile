@@ -114,11 +114,11 @@ endif
 
 # uncomment next line to include the symbols (for debugging)
 # [PinMAME] always create symbols file (separated from executable)
-SYMBOLS = 1
+#SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
 # [PinMAME] always create map file
-MAP = 1
+#MAP = 1
 
 # uncomment next line to generate verbose build information
 # VERBOSE = 1
@@ -449,7 +449,7 @@ endif
 
 # [PinMAME] avoid dynamic dependencies on Windows, so link statically
 ifeq ($(MAMEOS),windows)
-LDFLAGS += -static -static-libgcc -static-libstdc++
+LDFLAGS += -static -static-libgcc
 endif
 
 

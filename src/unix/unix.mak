@@ -119,6 +119,7 @@ endif
 # these are the object subdirectories that need to be created.
 ##############################################################################
 OBJ     = $(NAME).obj
+PROC_OBJ = $(NAME).obj/p-roc
 
 CORE_OBJDIRS = $(OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
@@ -171,6 +172,10 @@ ifeq ($(TARGET), mess)
 include mess/rules_ms.mak
 endif
 
+ifdef PROC
+include src/p-roc/p-roc.mak
+endif
+
 ifdef DEBUG
 DBGDEFS = -DMAME_DEBUG
 else
@@ -189,6 +194,10 @@ MY_CFLAGS = $(CFLAGS) $(IL) $(CFLAGS.$(MY_CPU)) \
 	$(INCLUDES) $(INCLUDE_PATH)
 
 MY_LIBS = $(LIBS) $(LIBS.$(ARCH)) $(LIBS.$(DISPLAY_METHOD)) -lz
+
+ifdef PROC
+MY_LIBS += -lyaml-cpp -lpinproc -lftdi1 -lusb
+endif
 
 ifdef SEPARATE_LIBM
 MY_LIBS += -lm
@@ -296,13 +305,12 @@ OBJS  += $(subst $(OBJ)/vidhrdw/vector.o, ,$(COREOBJS)) $(DRVLIBS) \
 
 MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 
-
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(PROCOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(MY_LIBS)
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(PROCOBJS) $(MY_LIBS) 
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
@@ -355,6 +363,14 @@ $(OBJ)/%.a:
 	$(CC_COMMENT) @echo 'Archiving $@ ...'
 	$(CC_COMPILE) ar $(AR_OPTS) $@ $^
 	$(CC_COMPILE) $(RANLIB) $@
+
+$(PROC_OBJ)/%.o: src/p-roc/%.cpp
+	$(CC_COMMENT) @echo 'Compiling $< ...'
+	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
+
+#$(CPP_OBJ)/%.o: src/wpc/%.cpp
+#	$(CC_COMMENT) @echo 'Compiling $< ...'
+#	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
 
 # special cases for the 68000 core
 #

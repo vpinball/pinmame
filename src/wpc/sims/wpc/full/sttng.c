@@ -689,8 +689,7 @@ static core_tGameData sttngGameData = {
 /----------------*/
 /*-- patched memory read function to handle the 9th switch column --*/
 READ_HANDLER(sttng_swRowRead) {
-//  if ((wpc_data[WPC_EXTBOARD1] && 0x80) > 0) /* 9th column enabled */
-  if (wpc_data[WPC_EXTBOARD1] == 0x80) /* 9th column enabled */
+  if ((wpc_data[WPC_EXTBOARD1] & 0x80) > 0) /* 9th column enabled */
     return coreGlobals.swMatrix[CORE_CUSTSWCOL];
   else
     return wpc_r(WPC_SWROWREAD);

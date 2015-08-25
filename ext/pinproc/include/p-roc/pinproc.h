@@ -111,6 +111,7 @@ typedef enum PRMachineType {
     kPRMachineWPC95 = 4,
     kPRMachineSternWhitestar = 5,
     kPRMachineSternSAM = 6,
+    kPRMachinePDB = 7,
 } PRMachineType;
 
 // PRHandle Creation and Deletion
@@ -203,6 +204,7 @@ typedef struct PRDriverState {
     uint8_t patterOnTime;
     uint8_t patterOffTime;
     bool_t patterEnable;
+    bool_t futureEnable;
 } PRDriverState;
 
 typedef struct PRDriverAuxCommand {
@@ -256,6 +258,11 @@ PINPROC_API PRResult PRDriverDisable(PRHandle handle, uint8_t driverNum);
  */
 PINPROC_API PRResult PRDriverPulse(PRHandle handle, uint8_t driverNum, uint8_t milliseconds);
 /**
+ * Pulses the given driver for a number of milliseconds when the hardware reaches a specific timestamp.
+ * This function is provided for convenience.  See PRDriverStatePulse() for a full description.
+ */
+PINPROC_API PRResult PRDriverFuturePulse(PRHandle handle, uint8_t driverNum, uint8_t milliseconds, uint32_t futureTime);
+/**
  * Assigns a repeating schedule to the given driver.
  * This function is provided for convenience.  See PRDriverStateSchedule() for a full description.
  */
@@ -264,17 +271,12 @@ PINPROC_API PRResult PRDriverSchedule(PRHandle handle, uint8_t driverNum, uint32
  * Assigns a pitter-patter schedule (repeating on/off) to the given driver.
  * This function is provided for convenience.  See PRDriverStatePatter() for a full description.
  */
-PINPROC_API PRResult PRDriverPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+PINPROC_API PRResult PRDriverPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime, bool_t now);
 /**
  * Assigns a pitter-patter schedule (repeating on/off) to the given driver on for the given duration.
  * This function is provided for convenience.  See PRDriverStatePulsedPatter() for a full description.
  */
-PINPROC_API PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
-/**
- * Assigns a pitter-patter schedule (repeating on/off) to the given driver for the given duration.
- * This function is provided for convenience.  See PRDriverStatePatter() for a full description.
- */
-PINPROC_API PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+PINPROC_API PRResult PRDriverPulsedPatter(PRHandle handle, uint8_t driverNum, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime, bool_t now);
 /**
  * Prepares an Aux Command to drive the Aux bus.
  * This function is provided for convenience.
@@ -316,6 +318,13 @@ PINPROC_API void PRDriverStateDisable(PRDriverState *driverState);
  */
 PINPROC_API void PRDriverStatePulse(PRDriverState *driverState, uint8_t milliseconds);
 /**
+ * Changes the given #PRDriverState to reflect a future scheduled pulse state.
+ * @param milliseconds Number of milliseconds to pulse the driver for.
+ * @param futureTime Value indicating at which HW timestamp the pulse should occur.  Currently only the low 10-bits are used.
+ * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
+ */
+PINPROC_API void PRDriverStateFuturePulse(PRDriverState *driverState, uint8_t milliseconds, uint32_t futureTime);
+/**
  * Changes the given #PRDriverState to reflect a scheduled state.
  * Assigns a repeating schedule to the given driver.
  * @note The driver state structure must be applied using PRDriverUpdateState() or linked to a switch rule using PRSwitchUpdateRule() to have any effect.
@@ -328,14 +337,14 @@ PINPROC_API void PRDriverStateSchedule(PRDriverState *driverState, uint32_t sche
  *
  * Use originalOnTime to pulse the driver for a number of milliseconds before the pitter-patter schedule begins.
  */
-PINPROC_API void PRDriverStatePatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime);
+PINPROC_API void PRDriverStatePatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t originalOnTime, bool_t now);
 
 /**
  * @brief Changes the given #PRDriverState to reflect a pitter-patter schedule state.
  * Just like the regular Patter above, but PulsePatter only drives the patter
  * scheduled for the given number of milliseconds before disabling the driver.
  */
-PINPROC_API void PRDriverStatePulsedPatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t patterTime);
+PINPROC_API void PRDriverStatePulsedPatter(PRDriverState *driverState, uint8_t millisecondsOn, uint8_t millisecondsOff, uint8_t patterTime, bool_t now);
 
 /**
  * Write Aux Port commands into the Aux Port command memory.
@@ -383,9 +392,9 @@ PINPROC_API int PRGetEvents(PRHandle handle, PREvent *eventsOut, int maxEvents);
 
 
 #define kPRSwitchPhysicalFirst (0)   /**< Switch number of the first physical switch. */
-#define kPRSwitchPhysicalLast (223)  /**< Switch number of the last physical switch.  */
-#define kPRSwitchVirtualFirst (224)  /**< Switch number of the first virtual switch.  */
-#define kPRSwitchVirtualLast (255)   /**< Switch number of the last virtual switch.   */
+#define kPRSwitchPhysicalLast (255)  /**< Switch number of the last physical switch.  */
+#define kPRSwitchNeverDebounceFirst (192)  /**< Switch number of the first switch that doesn't need to debounced.  */
+#define kPRSwitchNeverDebounceLast (255)   /**< Switch number of the last switch that doesn't need to be debounce.   */
 #define kPRSwitchCount (256)
 #define kPRSwitchRulesCount (kPRSwitchCount << 2) /**< Total number of available switch rules. */
 
@@ -461,7 +470,7 @@ PINPROC_API PRResult PRSwitchUpdateConfig(PRHandle handle, PRSwitchConfig *switc
  * @param linkedDrivers An array of #PRDriverState structures describing the driver state changes to be made when this switch rule is triggered.  May be NULL if numDrivers is 0.
  * @param numDrivers Number of elements in the linkedDrivers array.  May be zero or more.
  */
-PINPROC_API PRResult PRSwitchUpdateRule(PRHandle handle, uint8_t switchNum, PREventType eventType, PRSwitchRule *rule, PRDriverState *linkedDrivers, int numDrivers);
+PINPROC_API PRResult PRSwitchUpdateRule(PRHandle handle, uint8_t switchNum, PREventType eventType, PRSwitchRule *rule, PRDriverState *linkedDrivers, int numDrivers, bool_t drive_outputs_now);
 
 /** Returns a list of PREventTypes describing the states of the requested number of switches  */
 PINPROC_API PRResult PRSwitchGetStates(PRHandle handle, PREventType * switchStates, uint16_t numSwitches);

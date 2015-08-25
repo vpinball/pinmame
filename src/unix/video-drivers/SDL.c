@@ -32,7 +32,6 @@
 #undef SDL_DEBUG
 /* #define DIRECT_HERMES */
 
-#include <signal.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <SDL.h>

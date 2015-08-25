@@ -256,7 +256,7 @@ int ii;
                                                 if (ii==24) procDriveCoil(44,0);
                                                 else procDriveCoil(ii+27,0);
                                                 }
-                                            else procDriveCoil(ii+16, 0);
+                                            else if (ii < 44) procDriveCoil(ii+16, 0);
                                             }
                                     }
                                     chgSol1 >>= 1;
@@ -271,7 +271,7 @@ int ii;
                                 if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
                                     if ((offSol ^ coreGlobals.lastSol) & 0xff007010) {
                                         // Some are active, so we won't process A/C yet
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %llu %llu",offSol,allSol);
+                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
                                     }
                                     else {
                                         // No switched coils are active, so it's safe to do the A/C
@@ -283,7 +283,7 @@ int ii;
                                 else { //Not a Road Kings
                                     // Check if any of the switched solenoids are active
                                     if ((offSol ^ coreGlobals.lastSol) & 0xff0000ff) {
-                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %llu %llu",offSol,allSol);
+                                        if (mame_debug) fprintf(stderr,"\n -AC Select change delayed, code %lx %lx", (long unsigned) offSol,(long unsigned) allSol);
                                     }
                                     else {
                                         // If not, it's safe to handle the A/C select
@@ -308,7 +308,7 @@ int ii;
                                                 if (ii==24) procDriveCoil(44,1);
                                                 else procDriveCoil(ii+27,1);
                                                 }
-                                            else procDriveCoil(ii+16, 1);
+                                            else if (ii< 44) procDriveCoil(ii+16, 1);
                                             }
                                     }
                                     chgSol2 >>= 1;

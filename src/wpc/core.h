@@ -264,7 +264,6 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_FIRSTSIMSOL   49
 #ifdef PROC_SUPPORT
 #define CORE_MAXSOL        64
-extern int doubleAlpha;
 #endif
 
 #define CORE_SSFLIPENSOL  23

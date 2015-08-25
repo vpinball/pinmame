@@ -378,11 +378,34 @@ static core_tGameData dwGameData = {
   }
 };
 
+#ifdef PROC_SUPPORT
+  #include "p-roc/p-roc.h"
+  /*
+    Solenoid smoothing messes up the long-running changes to C27 and C28,
+    so make use of the actual state to determine if it's appropriate to
+    make a change.
+  */
+  void dw_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    if (solNum == 26 || solNum == 27) {
+      // Ignore smoothed changes to C27 and C28
+      if (smoothed) return;
+
+      // Allow default solenoid handler to process changes to C27 and C28
+      // by telling it that they are actually smoothed.
+      smoothed = TRUE;
+    }
+    default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
+  }
+#endif
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_dw(void) {
   core_gameData = &dwGameData;
+#ifdef PROC_SUPPORT
+  wpc_proc_solenoid_handler = dw_wpc_proc_solenoid_handler;
+#endif
 }
 
 static void dw_handleMech(int mech) {
