@@ -1,0 +1,193 @@
+cabv1.0							# version number of the .cab format (required)
+								# must be the first 7 characters of the file
+#
+# Default GLmame cabinet
+#
+# Designed by Mike Oliphant
+#
+#
+camerapan 7						# we're going to define a 7-pan camera move
+
+#		  xyz location   xyz point      xyz norma   frames
+
+goto	  -5.0 0.0 5.0  0.0 0.0 -5.0   0.0 1.0 0.0
+moveto	  0.0 0.0 -12.0  0.0 -0.75 -20.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 -12.0  0.0 -0.75 -20.0  0.0 1.0 0.0  120
+moveto	  5.0 0.0 5.0  0.0 0.0 -5.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 10.0  0.0 -2.0 -20.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 10.0  0.0 -2.0 -20.0  0.0 1.0 0.0  120
+moveto	  -5.0 0.0 5.0  0.0 0.0 -5.0  0.0 1.0 0.0  120
+end  # camerapan ended with end statement
+
+numtex 2						# number of textures we are going to use
+
+loadtex 0 128 64 cabtitle.jpg	# load the title texture as texture 0
+                                # with dimensions 128x64
+
+loadtex 1 32 32 cabfront.jpg
+
+startgeom						# this line must come after the textures
+								#  have been loaded, but before any model
+								#  geometry is defined
+
+shading flat					# set flat shading
+
+color3 1.0 1.0 0.0				# set the color to yellow
+
+# left side of cabinet
+
+begin polygon					# begin a 6-vertex polygon
+vertex -2.0 -4.0 2.0
+vertex -2.0 -0.2 2.0
+vertex -2.0 0.0 1.0
+vertex -2.0 2.5 0.0
+vertex -2.0 2.5 -2.0
+vertex -2.0 -4.0 -2.0
+end 
+
+begin polygon
+vertex 2.0 2.5 0.0
+vertex 2.0 3.0 1.2
+vertex 2.0 4.0 1.0
+vertex 2.0 3.0 -2.0
+vertex 2.0 2.5 -2.0
+end 
+
+# Right side
+
+begin polygon
+vertex 2.0 -4.0 2.0
+vertex 2.0 -0.2 2.0
+vertex 2.0 0.0 1.0
+vertex 2.0 2.5 0.0
+vertex 2.0 2.5 -2.0
+vertex 2.0 -4.0 -2.0
+end 
+
+begin polygon
+vertex -2.0 2.5 0.0
+vertex -2.0 3.0 1.2
+vertex -2.0 4.0 1.0
+vertex -2.0 3.0 -2.0
+vertex -2.0 2.5 -2.0
+end 
+
+begin quad_strip						# begin a strip of quads
+										# (a series four-sided polygons where
+										# each shares an edge with the next
+# Back
+
+color3 1.0 0.0 0.0
+
+vertex -2.0 -4.0 -2.0
+vertex 2.0 -4.0 -2.0
+vertex -2.0 3.0 -2.0
+vertex 2.0 3.0 -2.0
+
+# Top
+
+color3 1.0 1.0 0.0
+
+vertex -2.0 4.0 1.0
+vertex 2.0 4.0 1.0
+
+end  # quad_strip
+
+# Title bit
+
+color3 1.0 1.0 1.0
+
+enable texture							# enable texturing
+
+settex 0								# select texture 0 (the title)
+
+begin quads
+texcoord 0 1
+vertex -2.0 4.0 1.0
+texcoord 1 1
+vertex 2.0 4.0 1.0
+texcoord 1 0
+vertex 2.0 3.0 1.2
+texcoord 0 0
+vertex -2.0 3.0 1.2
+end
+
+disable texture							# turn off texturing
+
+shading smooth
+
+begin quad_strip
+
+# Under top side
+
+color3 0.0 1.0 1.0
+
+vertex -2.0 3.0 1.2
+vertex 2.0 3.0 1.2
+
+color3 0.0 1.0 0.0
+
+vertex -2.0 2.5 0.0
+vertex 2.0 2.5 0.0
+
+# Screen backing
+
+color3 0.5 0.5 0.5
+
+vertex -2.0 0.0 1.0
+vertex 2.0 0.0 1.0
+
+# Control panel
+
+color3 0.0 0.0 1.0
+
+vertex -2.0 -0.2 2.0
+vertex 2.0 -0.2 2.0
+
+# Front
+
+end		# quad_strip
+
+shading flat								# switch to flat shading
+
+color3 1.0 1.0 1.0
+
+enable texture
+settex 1
+
+begin quads
+
+texcoord 0 1
+vertex -2.0 -0.2 2.0
+texcoord 1 1
+vertex 2.0 -0.2 2.0
+texcoord 1 0
+vertex 2.0 -4.0 2.0
+texcoord 0 0
+vertex -2.0 -4.0 2.0
+
+disable texture
+
+# Screen
+
+color3 0.0 0.0 0.0							# put black behind the screen
+
+vertex -1.7 2.5 0.005
+vertex 1.7 2.5 0.005
+vertex 1.7 0.0 1.05
+vertex -1.7 0.0 1.05
+end #quads
+
+color3 1.0 1.0 1.0							# Color to modulate the screen
+											# bitmap with (white means don't
+											# mess with it
+
+begin screen								# this tells GLmame where the
+vertex -1.7 2.5 0.01						# actual game screen should go
+vertex 1.7 2.5 0.01
+vertex 1.7 0.0 1.1
+vertex -1.7 0.0 1.1
+end #screen
+
+
+# that's all folks!

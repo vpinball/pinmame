@@ -1,0 +1,88 @@
+cabv1.0							# version number of the .cab format (required)
+								# must be the first 7 characters of the file
+#
+# Transparrent "cabinet"
+#
+# Designed by Mike Oliphant
+#
+#
+camerapan 7						# we're going to define a 7-pan camera move
+
+#		  xyz location   xyz point      xyz norma   frames
+
+goto	  -5.0 0.0 5.0  0.0 0.0 -5.0   0.0 1.0 0.0
+moveto	  0.0 0.0 -12.0  0.0 -0.75 -20.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 -12.0  0.0 -0.75 -20.0  0.0 1.0 0.0  120
+moveto	  5.0 0.0 5.0  0.0 0.0 -5.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 10.0  0.0 -2.0 -20.0  0.0 1.0 0.0  120
+moveto	  0.0 0.0 10.0  0.0 -2.0 -20.0  0.0 1.0 0.0  120
+moveto	  -5.0 0.0 5.0  0.0 0.0 -5.0  0.0 1.0 0.0  120
+end  # camerapan ended with end statement
+
+startgeom						# this line must come after the textures
+								#  have been loaded, but before any model
+								#  geometry is defined
+
+shading flat					# set flat shading
+
+color3 1.0 0.0 0.0
+
+begin quad_strip
+
+vertex -1.7 0.0 0.0
+vertex -1.7 2.5 0.0
+
+color3 0.0 1.0 0.0
+
+vertex -1.7 0.0 -2.0
+vertex -1.7 2.5 -2.0
+
+color3 0.0 0.0 1.0
+
+vertex 1.7 0.0 -2.0
+vertex 1.7 2.5 -2.0
+
+color3 1.0 0.0 0.0
+
+vertex 1.7 0.0 0.0
+vertex 1.7 2.5 0.0
+
+end  # quad_strip
+
+color3 1.0 1.0 0.0
+
+begin quads
+
+vertex -1.7 2.5 0.0
+vertex -1.7 2.5 -2.0
+vertex 1.7 2.5 -2.0
+vertex 1.7 2.5 0.0
+
+vertex -1.7 0.0 0.0
+vertex -1.7 0.0 -2.0
+vertex 1.7 0.0 -2.0
+vertex 1.7 0.0 0.0
+
+end  # quads
+
+# Screen
+
+color3 0.0 0.0 0.0							# put black behind the screen
+
+vertex -1.7 2.5 0.005
+vertex 1.7 2.5 0.005
+vertex 1.7 0.0 0.005
+vertex -1.7 0.0 0.005
+end #quads
+
+color4 1.0 1.0 1.0 0.5
+
+begin screen								# this tells GLmame where the
+vertex -1.7 2.5 0.01						# actual game screen should go
+vertex 1.7 2.5 0.01
+vertex 1.7 0.0 0.01
+vertex -1.7 0.0 0.01
+end #screen
+
+
+# that's all folks!

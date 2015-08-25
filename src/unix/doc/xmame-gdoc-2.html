@@ -1,0 +1,399 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+ <TITLE>XMAME/XMESS DOKUMENTATION: Übersetzen, Einrichten und Starten von
+ XMame/XMess</TITLE>
+ <LINK HREF="xmame-gdoc-3.html" REL=next>
+ <LINK HREF="xmame-gdoc-1.html" REL=previous>
+ <LINK HREF="xmame-gdoc.html#toc2" REL=contents>
+<link rel="stylesheet" href="xmame.css" type="text/css" >
+</HEAD>
+<BODY BACKGROUND="img/xmame.jpg" BGPROPERTIES="fixed" >
+<A HREF="xmame-gdoc-3.html">Weiter</A> <A HREF="xmame-gdoc-1.html">Zurück</A> <A HREF="xmame-gdoc.html#toc2">Inhalt</A>
+<HR>
+<H2><A NAME="s2">2. Übersetzen, Einrichten und Starten von XMame/XMess</A></H2>
+
+<P><b>Anmerkung:</b> Dieses Kapitel ist kein Unix Handbuch. Du benötigst einige
+Grundkenntnisse von Unix-Befehlen um XMame/XMess übersetzen und installieren zu
+können.<H2><A NAME="ss2.1">2.1 Voraussetzungen</A>
+</H2>
+
+<P>
+<UL>
+<LI>GNU make ist zwingend ERFORDERLICH auf ALLEN Systemen, selbst wenn ein
+  anderer Compiler als gcc verwendet wird. </LI>
+<LI>Auf allen Plattformen wird nun die zlib benötigt, seit die DOS-Version dies
+  macht. Wenn Du keine zlib hast, dann kannst Du die abgespeckte Version
+  benutzen, die bei XMame mit dabei ist. Siehe <A HREF="xmame-gdoc-3.html#FAQ: Why do I get gz_open symbol not found while compiling?">FAQ:
+  Warum bekomme ich &quot;get gz_open symbol not found&quot; beim Übersetzen ?</A>
+  und <A HREF="xmame-gdoc-3.html#FAQ: Why do I get zlib.h not found?">FAQ: Warum
+  bekomme ich &quot;zlib.h not found&quot; ?</A>
+ </LI>
+<LI>Du solltest die die GNU Entwicklungsumgebung nutzen: gcc, gmake und gnu-ar.
+  Viele Probleme tauchen durch die sehr nachlässige Syntax in gcc auf. Wenn Du also
+  einen Compiler mit strictly ANSI C verwendest, dann werden viele Warnungen
+  auftreten und, falls die Version von XMame/XMess noch nicht voll debugged ist,
+  auch Übersetzungsfehler. </LI>
+<LI>Das Übersetzen von XMame schlägt fehl, wenn egcs-1.1.x oder gcc-2.95
+  benutzt wird. Verwende den Schalter <CODE>-fno-strict-aliasing</CODE>  um das
+  zu Beheben. Gcc-2.95.1 funktioniert mit <CODE>-fstrict-aliasing</CODE> und
+  bringt netterweise etwas höhere Geschwindigkeit.&nbsp;</LI>
+<LI>Das Übersetzen von XMame schlägt auch fehl, wenn unter Red Hat 7 der
+  neueste Update von gcc eingespielt ist (vom 16. Januar 2001). Wenn Probleme
+  auftreten, dann ersetze den Compiler wieder mit der Version, die auf den CD's
+  von Red Hat 7 mitgeliefert wurde oder ersetze im Makefile &quot;gcc&quot; mit
+  &quot;kgcc&quot;. Letzteres nutzt dann den egcs-1.1.2. (Siehe auch die Info zum
+  Flag <CODE>-fstrict-aliasing</CODE>).</LI>
+</UL>
+<H2><A NAME="ss2.2">2.2 Schritt-für-Schritt Anleitung zum Übersetzen von XMame/XMess</A>
+</H2>
+
+<P>
+<OL>
+<LI>Siehe <A HREF="#Compile Notes for Specific Operating Systems">Betriebssystemabhängige
+  Anmerkungen
+  beim Übersetzen</A> für plattformabhängige
+  Informationen zum Übersetzen.</LI>
+<LI>Siehe <A HREF="xmame-gdoc-4.html#Display subsystem specific comments and notes">Kommentare
+  und Anmerkungen speziell für die grafische Ausgabe</A> für Informationen zu
+  speziellen Grafikausgaben.</LI>
+<LI>Lade den Sourcecode von XMame/XMess herunter.</LI>
+<LI>Verschiebe den Sourcecode in ein passendes Arbeitsverzeichnis. Wenn Du das
+  Archiv auspackst, dann werden unter dem Arbeitsverzeichnis neue
+  Unterverzeichnisse angelegt.</LI>
+<LI>Benenne das Source-Archiv um, damit die Endung .gz ist. Zum Beispiel ändere <CODE>xmame-0.34b1.1.tgz</CODE> 
+  in
+<CODE>xmame-0.34b1.1.tar.gz</CODE></LI>
+<LI>Benutze gzip -d um das Archiv zu entpacken. Versuche beispielsweise:
+<PRE>gzip -d xmame-0.34b1.1.tar.gz
+ </PRE>
+</LI>
+<LI>Extrahiere die Dateien mit tar. Tippe beispielsweise ein:
+<PRE>tar xvf xmame-0.34b1.1.tar
+</PRE>
+</LI>
+<LI>Wechsle nach dem entpacken des Archives in das Unterverzeichnis, dass beim
+  Entpacken anglegt wurde. So wurde z.B. nach dem Entpacken von&nbsp; xmame-0.34b1.1.tar
+  ein Verzeichnis mit dem Namen <CODE>xmame-0.34b1.1</CODE>  angelegt. Wechsle
+  dort hinein. Dieses Verzeichnis ist die Wurzel des Sourcen-Baumes.</LI>
+<LI>Kopiere makefile.unix zu Makefile. Das mitgelieferte Makefile wird zur
+  Entwicklung benutzt und ist kein guter Ausgangspunkt !</LI>
+<LI>Editiere das <CODE>Makefile</CODE>  und ändere die Einstellungen, die Dein
+  System betreffen. Der Standard im&nbsp; <CODE>makefile.unix</CODE> ist
+  voreingestellt um unter X11/Linux zu laufen. Bitte vorsichtig sein beim
+  Editieren dieser Datei.
+<UL>
+<LI>Wenn Du vor hast, X11 Joystickunterstützung zu Übersetzen, dann tippe
+  folgendes ein um die vorhandene Xdevice Liste zu erhalten:
+<PRE>
+make xlistdev; ./xlistdev
+  
+</PRE>
+</LI>
+<LI>Wähle das gewünschte Device aus und editiere das Makefile nochmals umd bei
+  der Option
+X11_JOYNAME das korrekte Device einzutragen.<br>
+</LI>
+</UL>
+</LI>
+<LI>Übersetze XMame/XMess mit dem Befehl:
+<PRE>
+make
+ </PRE>
+</LI>
+<LI>Wenn das Übersetzen fehlschlägt, dann berichte dieses Problem an den
+  Author.</LI>
+<LI><B>*** DU MUSST ROOT-RECHTE HABEN UM DIESEN SCHRITT AUSZUFÜHREN ZU KÖNNEN ***</B> &nbsp;<br>
+  Um XMame/XMess zu installieren, gib folgendes ein:
+<PRE>
+make install
+ </PRE>
+</LI>
+<LI>Nun kannst Du XMame/XMess für andere Anzeigearten übersetzen. Wenn dies
+  nicht gewünscht, dann einfach diesen Schritt übergehen.
+<OL>
+<LI>Wenn Du also für eine anderes Ziel übersetzen willst, dann wiederhole die
+  Schritte
+<CODE>"
+make"</CODE>  und <CODE>"
+make install"</CODE>  und füge dabei <CODE>"
+TARGET=&lt;target&gt;"</CODE>  zum Kommando make hinzu. Beispiel:
+<PRE>
+make TARGET=mess
+make install
+  
+</PRE>
+</LI>
+<LI>Wenn Du für eine andere Anzeigeart übersetzen willst, dann wiederhole die
+  Schritte <CODE>"
+make"</CODE>  und <CODE>"
+make install"</CODE>  und füge dabei <CODE>"
+DISPLAY_METHOD=&lt;method&gt;"</CODE>
+  zum Kommando make hinzu. Beispiel:
+<PRE>
+make DISPLAY_METHOD=svgalib
+make install
+  
+</PRE>
+</LI>
+<LI>Du kannst auch die beiden Möglichkeiten von oben kombinieren. Beispiel:
+<PRE>
+make TARGET=mess DISPLAY_METHOD=svgalib
+make install
+  
+</PRE>
+</LI>
+</OL>
+</LI>
+<LI>Lege in Deinem Home-Verzeichnis ein Unterverzeichnis namens .xmame an.</LI>
+<LI>Aus dem Source-Verzeichnis von XMame kopiere die Datei doc/xmamerc.dist nach ${HOME}/.xmame/
+  . (Für XMess natürlich xmessrc)</LI>
+<LI>Falls bevorzugt kopiere xmamerc.dist in den global gültigen Platz als &quot;xmamerc&quot;
+  (für XMess kopiere die xmamerc.dist zu xmessrc). Der global gültige Platz
+  für xmamerc wird im Makefile definiert.</LI>
+<LI>Editiere ${HOME}/.xmame/xmamerc und passe sie an die Einstellungen an. (Für
+  XMess, editiere ${HOME}/.xmess/xmessrc)</LI>
+<LI>Vergewissere Dich, dass die Umgebungsvariablen DISPLAY und PATH richtig
+  gesetzt sind.</LI>
+<LI>Vergewissere Dich, dass Deine ROM's installiert sind.</LI>
+<LI>Starte das X-Window System. (Wenn Du XMame/XMess für eine andere Anzeigeart
+  übersetzt hast kann dieser Schritt ggf. entfallen.)</LI>
+<LI>Starte XMame/XMess. Beispielsweise:
+<PRE>
+/usr/games/xmame.x11 dkong
+ 
+</PRE>
+</LI>
+</OL>
+<H2><A NAME="ss2.3">2.3 Bei Problemen beim Übersetzen, Einrichten und Starten
+von XMame/XMess...</A>
+</H2>
+
+<P>
+<UL>
+<LI>Lies <A HREF="xmame-gdoc-3.html#Xmame frequently asked questions">XMame
+  häufig gestellte Fragen</A>
+</LI>
+<LI>Lies (die zutreffenden Teile der) 
+<A HREF="xmame-gdoc-7.html#ChangeLogs">Changelogs</A>
+. Sie könnten einige Hinweise über aktuelle Änderungen enthalten, die noch
+  nicht in die Dokumentation aufgenommen sind.</LI>
+<LI>Prüfe <A HREF="#Compile Notes for Specific Operating Systems">Betriebssystemabhängige
+  Anmerkungen
+  beim Übersetzen</A>. Möglicherweise muss bei Deinem
+  Betriebssystem etwas beachtet werden.</LI>
+<LI>Prüfe <A HREF="xmame-gdoc-4.html#Display subsystem specific comments and notes">Kommentare
+  und Anmerkungen speziell für die grafische Ausgabe</A> für Anmerkungen zu
+  Anzeigearten. Möglicherweise muss bei Deiner Anzeigeart etwas beachtet werden.</LI>
+<LI>Wenn Du einen Fehler bezüglich &quot;gz_open&quot; und eine Menge anderer
+  Fehlermeldungen, dass Funktionen beim Linken nicht gefunden werden, dann lies:
+  <A HREF="xmame-gdoc-3.html#FAQ: Why do I get gz_open symbol not found while compiling?">FAQ:
+  Warum bekomme ich &quot;gz_open symbol not found&quot; beim Übersetzen ?</A>
+  und <A HREF="xmame-gdoc-3.html#FAQ: Why do I get zlib.h not found?">FAQ: Warum
+  bekomme ich &quot;zlib.h not found&quot; ?</A>
+.</LI>
+<LI>Überprüfe, ob der Pfad zu den ROMs in xmamerc/xmessrc korrekt gesetzt ist;
+  siehe <A HREF="xmame-gdoc-3.html#FAQ: Where do roms, images, samples, highscores, configfiles, etc go?">FAQ:
+  Wo müssen roms.images usw. hin ?</A>
+.</LI>
+<LI>Prüfe nochmals xmamerc/xmessrc: Ist alles richtig gesetzt ? Wirklich ?</LI>
+<LI>Bekommst Du Meldungen, dass Dateien nicht gefunden wurden ? Möglicherweise
+  fehlen PROMs. Siehe <A HREF="xmame-gdoc-3.html#FAQ: Why doesn't a game work?">FAQ:
+  Warum funktioniert ein Spiel nicht ?</A> und <A HREF="xmame-gdoc-3.html#FAQ: What are PROMs?">FAQ:
+  Was sind PROMs ?</A>
+</LI>
+<LI>Ist das Programm im Suchpfad (Umgebungsvariable $PATH) ?</LI>
+<LI>Für die SVGAlib/xf86_DGA Version von XMame/XMess wird setuid root benötigt.
+  Sind die Zugriffsrechte korrekt gesetzt ?</LI>
+<LI>Frage die Leute in der Newsgroup alt.game.mame ob schon jemand anderes so ein
+  Problem hatte und vielleicht auch lösen konnte.</LI>
+<LI>Sende eine Mail an die XMame Mailingliste, siehe 
+<A HREF="xmame-gdoc-5.html#Mail">Mail</A>
+  für mehr Information.</LI>
+</UL>
+<P>Wenn das alles nichts hilft, dann schicke eine Mail an den derzeitigen
+Koordinator des von XMame/XMess Projektes. Siehe 
+<A HREF="xmame-gdoc-5.html#Mail">Mail</A>
+ für nährere Informationen.<H2><A NAME="Compile Notes for Specific Operating Systems"></A> 
+ <A NAME="ss2.4">2.4 Betriebssystemabhängige Anmerkungen beim Übersetzen</A>
+</H2>
+
+<H3>Linux i386</H3>
+
+<P>Linux i386 ist die Plattform, die ich (Hans) benutze. XMame sollte also ohne
+Probleme unter Linux i386 zu Übersetzen sein (Anmerkung: dies gilt auch für
+Lawrence Gold).<P>Einige Fehler tauchten beim Benutzen von gcc27x auf und
+konnten behoben werden. Bitte egcs benutzen falls vorhanden. Wenn noch mehr
+Fehler in gcc auftauchen sollten, dann wird egcs zwingend werden. Aber ich
+hoffe, dass das nicht notwendig ist.<br>
+<br>
+Es wurde berichtet, dass einige SoundBlaster AWE32 und VIA-82cxxx (OnBoard)
+Karten nicht korrekt mit get_freespace() umgehen können. Wenn dem so ist, dann
+werden einige Meldungen bzgl. audio_ioctl() failed in der Konsole auftauchen
+und, wenn alles richtig läuft, eine Meldung, dass XMame/XMess auf timer-basierte Soundunterstützung zurückfällt. Wenn dies nicht automatisch passiert
+und der Sound trotzdem nicht korrekt klingt, dann versuche XMame/XMess zur
+timer-basierten Soundausgabe zu zwingen mit dem Schalter <CODE>-timer</CODE>.<br>
+<br>
+SB64/128PCI Karten (Ensoniq 137x-basierende Karten) können ebenfalls
+get_freespace() nicht richtig handeln. Unglücklicherweise tauchen keine
+Meldungen bzgl. audi_ioctl() auf. Diese Karten ignorieren die Aufrufe einfach.
+XMame versucht diese Karten automatisch zu erkennen und setzt dabei auf
+timer-basierte Soundunterstützung zurück. Wenn dies nicht automatisch
+funktioniert und der Sound nicht korrekt klingt, dann versuche XMame/XMess zur
+timer-basierten Soundausgabe zu zwingen mit dem Schalter <CODE>-timer</CODE>.<br>
+<br>
+Einige Leute haben berichtet, dass sie bei ALSA mit OSS-Emulation erfolgreich
+waren (siehe
+<A HREF="http://www.alsa-project.org/">http://www.alsa-project.org/</A>
+ ). Wenn obige Probleme auch bei Dir auftauchen, dann kann dies möglicherweise
+einen Versuch wert sein.&nbsp;<br>
+<br>
+Zusätzlich habe ich das PC-Speaker Modul getestet. Es funktioniert !! Aber es
+benötigt ebenfalls <CODE>-timer.</CODE>  Nochmals, dies sollte automatisch
+passieren. Wenn nicht, dann weisst Du ja nun was zu tun ist.<P>Distributionsabhängige
+Kommentare:
+<UL>
+<LI>S.u.S.E. Linux: Neben dem gcc Compiler und den Libraries libc, beide aus der
+  Serie &quot;d&quot;, müssen noch andere Pakte installiert sein oder das
+  Übersetzen wird fehlschlagen. Beim Übersetzen für die SVGAlib wird das
+  Paket svgalib aus der Serie &quot;d&quot; benötigt. Wenn für das X-Window
+  System übersetzt wird, dann muss das Paket xdevel aus der Serie &quot;x&quot;
+  installiert sein. Diese Pakete können mit dem Tool &quot;yast&quot;
+  installiert werden, dass bei der S.u.S.E. Distribution dabei ist.</LI>
+<LI>Red Hat Linux ist das Betriebssystem, dass vom Author benutzt wird.
+  XMame/XMess sollten sich beide korrekt unter Red Hat Linux übersetzen lassen
+  ;-)</LI>
+</UL>
+<H3>Linux PowerPC</H3>
+
+<P>Linux PowerPC sollte von nun an funktionieren. Hier ist eine Mail von Andreas
+Varga <CODE>
+<A HREF="mailto:sid@skater.htu.tuwien.ac.at">sid@skater.htu.tuwien.ac.at</A></CODE>,
+dem Entwickler für Linux/PowerPC, die die notwendigen Schritte
+beschreibt:&nbsp;&nbsp;&nbsp;<br>
+<br>
+Notwendige Änderungen um XMame 0.34b3.1 auf Linux/PowerPC mit SVGALIB zu
+übersetzen.
+<P>Makefile:
+<UL>
+<LI>aktiviere CFLAGS für Linux/PPC </LI>
+<LI>aktiviere DISPLAY_METHOD = svgalib </LI>
+<LI>aktiviere ARCH = linux </LI>
+<LI>entferne -lvgagl von LIBS.svgalib in src/unix/unix.mak (nur -lvga wird
+  benötigt)</LI>
+</UL>
+<P>Notwendige Änderungen um XMame 0.34b3.1 auf Linux/PowerPC mit X11 zu
+übersetzen.<br>
+<br>
+Makefile:
+<UL>
+<LI>aktiviere CFLAGS für Linux/PPC </LI>
+<LI>aktiviere DISPLAY_METHOD = x11 </LI>
+<LI>aktiviere ARCH = linux </LI>
+</UL>
+<P>Etwas anderes... Sound funktioniert nicht, weil die Unterstützung von
+Soundtreibern bei Linux/PPC Kerneln noch in der Entwicklung ist. Es gibt einen
+alten Treiber, ein gehackter Soundblaster Treiber und neuere 2.1.1xx Kernel
+haben einen Soundtreiber, der auf Amiga DMA Soundtreiber basiert. Wenn diese
+Einschränkungen behoben sind, dann sollte ein vollwertiger OSS-kompatibler
+Soundtreiber zur Verfügung stehen.... dann sollte der Sound auch funktionieren.<br>
+<br>
+Ich kann nichts über Joystick Unterstützung sagen ...<P>Die Änderungen im
+Übersetzungsziel Linux/PPC im Makefile stammen von mir selbst, aber es sind einige weitere Änderungen notwendig um es übersetzen zu können ... Von Oktober
+ab habe ich mehr Zeit um daran zu arbeiten, und ich werde euch regelmäßig
+informieren...<br>
+<br>
+Cheers, Andreas
+<H3>IRIX</H3>
+
+<P>Benutze die allgemeine Unix-Architektur für diese Maschinen, die keine
+Soundunterstützung installiert haben (XMame/XMess nutzt das dmedia Paket oder
+das neuere AL Paket auf IRIX Systemen).<br>
+<br>
+Silicon Graphics unterstützt mehrere native Compiler. XMame/XMess wurden
+übersetzt und getestet mit dem normalen cc. Es gab einige Probleme, wenn -n32
+für den neuen 32bit Code verwendet wird. Es funktioniert beim Benutzen von -o32
+für den alten 32bit Code. Es sollte nun auch mit -n32 funktionieren und um
+Einiges schneller sein..<P>Die Benutzung von DCC ist (wieder mal) nicht empfohlen seit dies ein C++
+Compiler ist. Das Übersetzen von XMame/XMess wird ohne Änderungen im
+Sourcecode nicht klappen wegen etlicher malloc Aufrufe. Das Ändern dieser
+Aufrufe würde einen verrückt machen, weil die Fehler auch im Core-Teil
+auftauchen, der aber von der DOS-Version kommt. Ganz nebenbei, Mame ist in
+normalen C geschrieben, deshalb bitte einen normalen C-Compiler verwenden.<br>
+<br>
+Einige Probleme wurden gemeldet bei der Benutzung des GNU Linkers. Es ist
+besser, den Linker des Betriebssystems zu verwenden.
+<H3>HPUX</H3>
+
+<P>Benutze bitte die allgemeine Unix Architektur (generic unix). In HP-UX sind
+gcc und gnu-Make VORAUSSETZUNG.
+<H3>ULTRIX </H3>
+
+<P>Benutze bitte die allgemeine Unix Architektur (generic unix).
+<P>Anmerkungen von Danny <CODE><A HREF="mailto:dboxhoor@iso.vilspa.esa.es">dboxhoor@iso.vilspa.esa.es</A></CODE>
+<P><B>SEHR WICHTIG !!!</B>
+<P>Die Xmame/Xmess CPU-Emulatoren greifen auf Speicher durch Zeiger (Pointer) zu, die manchmal einen illegalen Speicherzugriff	verursachen - soweit die MIPS CPU davon betroffen ist. Das	Ultrix Betriebssystem behebt diese "unerlaubten Datenzugriffe".&nbsp;<br>
+<br>
+In Abhängigkeit der Systemeinstellung, werden jede Menge Warnungen ausgegeben bei bestimmten Spielen. Diese Meldungen können&nbsp;
+abgeschaltet werden, wenn man das Kommando "uac p 0" in der	selben Shell eingibt, von der aus Xmame/Xmess gestartet wird.<br>
+<br>
+UPDATE: Der neue Schalter -DALIGN_INTS im makefile.unix behebt diese unerlaubten Zugriffe im Sourcecode was natürlich viel	schneller ist, als diesen
+Fehler im Kernel segfault handler	per Hotfix zu beheben.<br>
+<br>
+	Benutze GNU make.<br>
+<br>
+	Übersetze mit dem 'c89' Compiler. Obwohl gcc keine Probleme beim	Übersetzen und optimieren von Xmame/Xmess macht, ist die	ausführbare Datei mit c89 übersetzt schneller auf einer	unbelasteten Maschine (Xmame kann die ganze CPU und den ganzen
+Speicher benutzen, ohne mit anderen hochprioren Prozessen zu	kollidieren), somit kann "frameskip 1" gesetzt werden.<br>
+<br>
+	Wenn mit "c89 -O2" übersetzt wird, dann nicht vergessen,	ebenfalls "-Olimit 1000 zu setzen. Wenn 1000 nicht genug ist,	dann teilt der Compiler mit, daß der Wert erhöht werden muß.<br>
+<H3>SunOS &amp; Solaris</H3>
+
+<P>Im Makefile sind zwei relevante Optionen für die verschiedenen	Architekturen vorhanden:<br>
+<PRE>
+    ARCH = generic : dies ist für das alte SunOS auf den Sparcs, aber
+                     eine Sparc mit Solaris darauf wird natürlich mit
+                     dieser Option auch umgehen können
+    ARCH = solaris : dies sollte man für Sparcs mit Solaris benutzen
+</PRE>
+<P>Momentan wird kein Sound unterstützt unter SunOS. Die Solaris Architektur unterstützt Sound.
+<P>Wenn Sun's OpenWindows Implementation von X11 benutzt wird, dann	müssen die Variablen X11INC und X11LIB in der X11 Options Sektion
+des Makefiles korrekt gesetzt sein. (Es sind bereits Einträge für	das Standard OpenWin-Verzeichnis vorhanden. Diese können
+auskommentiert werden).<br>
+<br>
+	Wenn natürlich für X11 übersetzt wird, dann müssen diese Variablen korrekt gesetzt sein, unabhängig von der X11-Implementation, die	verwendet wird ! :)<br>
+<br>
+Wenn der SunPro cc Compiler von Sun verwendet wird, dann haben sich	folgende Flags zum Optimieren bewährt:
+<PRE>
+    OPTFLAGS    = -fast -xO4 -native
+</PRE>
+<P>Es sind Fälle aufgetreten, bei denen die Übersetzung von Xmame am Program "ar" gescheitert ist. Die meisten Solaris Installationen	haben einen Satz Utilities die mit dem XPG4-Standard konform sind,	üblicherweise im Verzeichins "/usr/xpg4/bin" zu finden. Die XPG4-Version von "ar" sollte wie eine Plage gemieden werden. Es muß	sichergestellt werden, daß im Suchpfad "/usr/ccs/bin" vor dem	Verzeichnis "/usr/xpg4/bin" erscheint und alles sollte sauber laufen.<br>
+<br>
+	BITTE BEACHTEN: Derzeit gibt es nicht sonderlich viel Unterstützung	für SunOS/Solaris. Wenn ein Problem auftritt, versuche es selbst	zu lösen. Wenn Du erfolgreich bist, sende eine Mitteilung an die	Mailingliste mit den Angaben, was Du dafür getan hast. Wenn Du	keinen Erfolg hast, sende trotzdem eine Mitteilung an die
+Mailingliste und jemand _könnte_ Dir vielleicht helfen. Trotz alledem,	dies ist der einzige Weg, wie Probleme mit Xmame unter SunOS/Solaris behoben werden können.&nbsp;<br>
+<H3>Openstep</H3>
+
+<P>Du musst den gnumake von OpenStep benutzen, NICHT make. Ausserdem ist
+NeXT/Apple cc dem gcc vorzuziehen. Nur die Optimierung nutzen, die für OpenStep
+im Makefile vorgesehen sind, sonst wird die ausführbare Datei abstürzen. Der
+OpenStep Assembler ist auf i386-Architekturen nicht kompatibel mit dem
+Assemblercode von Mame. Deshalb muss die C-Version benutzt werden (benutze
+i386-noasm anstatt i386, wenn für i386 übersetzt wird).<br>
+<br>
+Der mitgelieferte Compiler basiert auf dem gcc 2.7.2.1 und kann src/profiler.c
+nicht ohne Absturz übersetzen. Um dies zu Umgehen gehe folgendermaßen
+vor: Optimiereun abschalten, wenn der Fehler auftritt. Make für diese Datei
+nochmals ausführen und Make beenden. Optmierung wieder aktivieren und
+fortfahren.<br>
+<br>
+Auf einer OpenStep Tastatur funktionieren die Funktionstasten nicht wie
+vorgesehen. Das Benutzen der Kommando-Taste in Verbindung mit einer
+Ziffern-Taste erzeugt eine äquivalente Funktionstaste innerhalb von XMame. Mit
+0 , - und = + wird F10, F11 und F12 erzeugt. Bitte auch beachten, dass die
+Kombinationen ALT + Taste nicht gemapped werden können. Da die meisten Spiele
+dies als Feuertaste voreingestellt haben ist es extrem nützlich diese Tasten
+umzusetzen beim ersten Start von XMame.
+<HR>
+<A HREF="xmame-gdoc-3.html">Weiter</A> <A HREF="xmame-gdoc-1.html">Zurück</A> <A HREF="xmame-gdoc.html#toc2">Inhalt</A>
+</BODY>
+</HTML>

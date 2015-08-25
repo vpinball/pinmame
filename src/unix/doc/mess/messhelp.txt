@@ -1,0 +1,102 @@
+
+SYSTEM ROMS
+===========
+
+Most systems will require a bios/system rom. If a system requires a bios/system rom, then it will
+not start without it. Most drivers have been written using a specific bios/system rom and you
+are recommended to use this rom. When the system is started, the rom you have provided is compared
+against the recommended rom and a report is generated if they are different.
+
+If you use a rom which does not match the recommended rom then the driver is not guaranteed to work.
+
+All bios/system roms should be put into the bios directory.
+
+The rom you use must have the same filename as the recommended rom.
+You have two options:
+
+1. You can put the rom into a zip archive and this archive must have the same name as the system.
+e.g. 
+
+"cp464.zip" containing "cpc464.rom" and "cpcados.rom" in the "bios" directory:
+
+bios\cpc464.zip
+
+2. You can create a sub-directory inside "roms" which has the same name as the system. Put the roms for the
+system inside this sub-directory.
+
+e.g.
+"bios\cpc464" directory containing "cpc464.rom" and "cpcados.rom"
+
+bios\cpc464\cpc464.rom
+bios\cpc464\cpcados.rom
+
+SOFTWARE
+========
+
+To use software with a system you must have it in a emulator format (e.g. a rom dump, a cartridge dump,
+a disk image, a tape image).
+
+If there isn't a "software" directory you must create one, so that you have the following directory tree:
+
+mess.exe
+bios\
+software\
+
+In the "software" directory, create a sub-directory which has the same name as the system:
+
+e.g.
+
+software\cpc464\
+
+put the software in a uncompressed form into this directory.
+
+e.g.
+
+software\cpc464\commando.dsk
+
+You can see a list of devices and the emulator file format that they support by typing:
+
+mess -listformats
+
+
+USAGE
+=====
+
+The minimum to start MESS is:
+
+mess <system name>
+
+e.g.
+
+mess cpc464
+
+MESS will stop if:
+
+1. the system roms can't be found
+2. the system roms are incorrect 
+3. a emulator file is required but it was not specified (e.g. a cartridge is required but this has not been specified)
+4. a emulator file was specified but the format was not recognised.
+
+<insert image info here from original mess.txt>
+
+KEYBOARD
+========
+
+MESS has two keyboard-modes, UI and Game. You can press SCROLL-LOCK to toggle between these,
+and a window will display for a brief time to display the current mode.
+
+Mode: FULL keyboard
+UI: Disabled
+
+or
+
+Mode: PARTIAL keyboard
+UI: Enabled
+
+When UI is enabled, the function of some keys will change. These are not passed through to the emulation!
+
+If you press TAB when the UI is enabled a menu will appear where you can view and change settings.
+When you return to the emulation, be careful if UI mode is still active, pressing P for example will
+pause the emulation (pressing P again will resume the emulation). You can press SCROLL-LOCK to change
+it back to Game mode.
+

@@ -1,0 +1,66 @@
+This file describes the process for getting new MAME and MESS releases working
+as xmame/xmess.  It is heavily adapted from documentation originally written by
+Hans de Goede.
+
+In Hans's words:
+
+"It is meant for those who want to have the latest and hottest version even
+before your xmame-maintainer finds the time to release it.  And to stop them
+from porting mistakes and thus reporting unjustified bugs ;)
+
+"I also wrote this so that I don't leave a big void if anything might happen
+to me, I know this is a bit doomsday thinking, but i have seen too many young
+people die around me not to take this precaution. ;(,
+Don't worry though I'm planning on staying around for a while."
+
+Lawrence Gold
+<gold@aros.net>
+
+Preparation 
+===========
+- Unpack the latest xmame release.  You'll need fix-comments.c and
+  prep-new-mame from its contrib dir.
+- Compile fix-comments.c: gcc -o fix-comments fix-comments.c
+- Put fix-comments and prep-new-mame somewhere in your PATH (e.g.,
+  /usr/local/bin).
+
+Porting MAME
+============
+- Make a new directory called xmame-newversionnumber.1 (e.g., xmame-0.37b14.1).
+- cd to this directory.
+- Run unzip -L on the DOS source .zip file.  The -L makes all of the filenames
+  lowercase.
+- Run prep-new-mame from within this directory, providing the path to a previous
+  xmame release's directory.  For example:
+
+	prep-new-mame ~/emulators/xmame-0.37b13.2
+
+  This will copy over src/unix and makefile.unix from the previous release;
+  create symlinks to some of the directories in there; rename/move doc files;
+  fix the line endings of source, text, and makefiles; and fix the comments in
+  source files.
+- Run diff -uBbr <old-xmame>/src/windows <new-xmame>/src/windows > win-changes 
+- Look in the win-changes file to see if anything on the OSD side has
+  changed--things like different return/call value, new functions altogether,
+  different prototypes, etc.
+- Make the necessary changes to <new-xmame>/src/unix/*
+- Do a diff -uBbr <old-xmame>/src/unix <new-xmame>/src/unix > unix-changes
+- Look in unix-changes and make sure you didn't break anything.
+- If you want to distribute this port, it's best to leave the defaults in
+  makefile.unix alone since they're pretty sane.  So copy makefile.unix to
+  Makefile.
+- Edit Makefile to suit your needs; if possible, force ANSI compliance on your
+  compiler to test the new version's compliance.
+- make -f makefile.bla 2> stderrlog (remember use GNU-make)
+- If something goes wrong, see stderrlog.  If everything goes well, see
+  stderrlog for non-ANSI warnings and fix them unless they are about unused
+  vars or trigraphs.
+- All done!  Enjoy your new xmame.  Now you just need to 'make clean' and bundle
+  it up in a tarball to distribute to friends.  If you followed this step by
+  step, you should have an xmame of the same quality as the official
+  distributions.
+
+Porting MESS
+============
+- See the prep-new-mess script.  I'll fill this section in later, when my
+  fingers aren't so tired.  ;-)

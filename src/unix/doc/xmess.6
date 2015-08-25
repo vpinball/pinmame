@@ -1,0 +1,581 @@
+.\"  -*- nroff -*-
+.\"
+.\" xmame.6
+.\"
+.\" Done by René Herrmann <rene.herrmann@berlin.de>, September 2000
+.\"
+.\" xmame should be distributed under terms of the license in
+.\" readme.mame.
+.\" The main issue involves ROM images. ROM images are protected under the
+.\" copyrights of their authors, and CANNOT be distributed in the same
+.\" package as xmame. Download any ROM images at your own risk and
+.\" responsibility.
+.\"
+.Dd 02. September 2000
+.Dt Xmame 6
+.Os
+.Sh NAME
+.Nm xmame
+.Nd THE Arcade game machine emulator for UNIX/X
+.Sh SYNOPSIS
+.Nm xmame[.x11|svga]
+.Op Fl options
+.Ar gamename
+.Sh EXAMPLES
+Some examples for those who are in a hurry.
+
+If you don't have/want a frontend, you'll mostly use
+.Nm xmame
+(with a well defined xmamerc) in the following way:
+
+.Nm xmame
+.Ar ladybug
+
+Plays Ladybug with all options defined in xmamerc. If there is no xmamerc the 
+game starts with the buildin defaults.
+
+.Nm xmame
+.Ar defender
+.Fl frameskip Ar 1
+.Fl cheat
+
+Starts
+.Ar defender
+using a frameskip of 1 and cheat is enabled.
+Useful for slower computers, if the game is running really slowly.
+And of course if you want (have?) to cheat. ;-)
+.Sh LEGAL NOTICE
+The main issue involves ROM images. ROM images are protected under the
+copyrights of their authors, and CANNOT be distributed in the same
+package as xmame. Download any ROM images at your own risk and
+responsibility.
+
+.Nm xmame
+should be distributed under terms of the license in doc/readme.mame
+
+XInputExtensions based Joystick support. Source code is entirely pure 
+hack work. No sample code, no info at all was found (only library 
+reference manual) and is copyrighted by me (Juan Antonio Marmnez).
+Use it under terms of GNU General Public License.
+
+PLEASE BE AWARE OF THE POSSIBLE LEGAL RAMIFICATIONS OF DOWNLOADING ROM
+IMAGES, BEFORE YOU ACTUALLY DO SO!  YOU HAVE BEEN WARNED, AND WE TAKE NO
+RESPONSIBILITY FOR YOUR ACTIONS -- YOU ARE ON YOUR OWN!
+
+Also, the
+.Nm xmame 
+authors ask that you DO NOT distribute any ROM images with either source
+code or binaries of the
+.Nm xmame
+emulator.
+.Sh DESCRIPTION
+.Nm xmame 
+is the (M)ulti (A)rcade (M)achine (E)mulator for UNIX-(X).  It emulates
+the hardware of realy many classic arcade game machines.
+
+Most games allow you to specify one or more options to control the behavior of
+.Nm xmame
+and the game of your choice. Below is a complete list of all the available
+options:
+.Bl -tag -width Ds
+.It \fB*** Digital sound related ***\fR
+.It Fl dsp-plugin , dp Ar string
+Select which plugin to use for digital sound
+.It Fl list-dsp-plugins , ldp
+List available sound-dsp plugins
+.It Fl [no]timer , [no]ti
+Use / don't use timer based audio (normally it will be used automagicly when nescesarry)
+.It \fB*** Sound mixer related ***\fR
+.It Fl sound-mixer-plugin , smp Ar string
+Select which plugin to use for the sound mixer
+.It Fl list-mixer-plugins , lmp
+List available sound-mixer plugins
+.It \fB*** Video Related ***\fR
+.It Fl bpp , b Ar int
+Specify the colordepth the core should render, one of: auto(0), 8, 16
+.It Fl heightscale , hs Ar int
+Set Y-Scale aspect ratio
+.It Fl widthscale , ws Ar int
+Set X-Scale aspect ratio
+.It Fl scale , s Ar arg
+Set X-Y Scale to the same aspect ratio. For vector games scale (and also width- and heightscale) may have value's like 1.5 and even 0.5. For scaling of regular games this will be rounded to an int
+.It Fl [no]autodouble , [no]adb
+Enable/disable automatic scale doubling for 1:2 pixel aspect ratio games
+.It Fl [no]dirty , [no]dt
+Enable/disable use of dirty rectangles
+.It Fl [no]scanlines , [no]sl
+Enable/disable displaying simulated scanlines
+.It Fl [no]artwork , [no]a
+Use/don't use artwork if available
+.It Fl frameskipper , fsr Ar int
+Select which autoframeskip and throttle routines to use. Available choices are:
+0 Dos frameskip code
+1 Enhanced frameskip code by William A. Barath
+.It Fl [no]throttle , [no]th
+Enable/disable throttle
+.It Fl [no]sleepidle , [no]si
+Enable/disable sleep during idle
+.It Fl [no]autoframeskip , [no]afs
+Enable/disable autoframeskip
+.It Fl maxautoframeskip , mafs Ar int
+Set highest allowed frameskip for autoframeskip
+.It Fl frameskip , fs Ar int
+Set frameskip when not using autoframeskip
+.It Fl brightness , brt Ar int
+Set the brightness (0-100%%)
+.It Fl gamma-correction , gc Ar float
+Set the gamma-correction (0.5-2.0)
+.It Fl norotate , nr
+Disable rotation
+.It Fl ror , rr
+Rotate display 90 degrees rigth
+.It Fl rol , rl
+Rotate display 90 degrees left
+.It Fl flipx , fx
+Flip X axis
+.It Fl flipy , fy
+Flip Y axis
+.It \fB*** Vector Games Related ***\fR
+.It Fl vectorres , vres Ar string
+Always scale vectorgames to XresxYres, keeping their aspect ratio. This overrides the scale options
+.It Fl beam , B Ar float
+Set the beam size for vector games
+.It Fl flicker , f Ar float
+Set the flicker for vector games
+.It Fl [no]antialias , [no]aa
+Enable/disable antialiasing
+.It Fl [no]translucency , [no]t
+Enable/disable tranlucency
+.It \fB*** X11 Related ***\fR
+.It Fl x11-mode , x11 Ar int
+Select x11 video mode: (if compiled in)
+0 Normal window  (hotkey left-alt + insert)
+1 Fullscreen DGA (hotkey left-alt + home)
+.It \fB*** X11-window Related ***\fR
+.It Fl [no]cursor , [no]cu
+Show/ don't show the cursor
+.It Fl [no]mitshm , [no]ms
+Use / don't use MIT Shared Mem (if avaiable and compiled in)
+.It Fl [no]xsync , [no]xs
+Use / don't use XSync instead of XFlush as screen refresh method
+.It Fl [no]privatecmap , [no]p
+Enable/disable use of private color map
+.It Fl [no]xil , [no]x
+Enable/disable use of XIL for scaling (if available and compiled in)
+.It Fl [no]mtxil , [no]mtx
+Enable/disable multi threading of XIL
+.It Fl [no]run-in-root-window , [no]root
+Enable/disable running in root window
+.It Fl root_window_id , rid Ar int
+Create the xmame-window in an alternate root-window, mostly usefull for frontends!
+.It Fl geometry , geo Ar string
+Specify the location of the window
+.It \fB*** XFree86 DGA Related ***\fR
+.It \fB*** Video Mode Selection Related ***\fR
+.It Fl [no]keepaspect , [no]ka
+Try / don't try to keep the aspect ratio of a game when selecting the best videomode
+.It Fl displayaspectratio , dar Ar float
+Set the display aspect ratio of your monitor. This is used for -keepaspect The default = 1.33 (4/3). Use 0.75 (3/4) for a portrait monitor
+.It Fl disablemode , dm Ar arg
+Don't use mode XRESxYRESxDEPTH this can be used to disable specific video modes which don't work on your system. The xDEPTH part of the string is optional. This option may be used more then once
+.It \fB*** X11-input related ***\fR
+.It Fl [no]grabmouse , [no]gm
+Enable/disable mousegrabbing (also alt + pagedown)
+.It Fl [no]winkeys , [no]wk
+Enable/disable mapping of windowskeys under X
+.It Fl mapkey , mk Ar arg
+Set a specific key mapping, see xmamerc.dist
+.It \fB*** Sound Related ***\fR
+.It Fl [no]sound , [no]snd
+Enable/disable sound (if available)
+.It Fl [no]samples , [no]sam
+Use/don't use samples (if available)
+.It Fl fakesound , fsnd
+Generate sound even when sound is disabled, this is needed for some games which won't run without sound
+.It Fl samplefreq , sf Ar int
+Set the playback sample-frequency/rate
+.It Fl bufsize , bs Ar float
+Number of frames of sound to buffer
+.It Fl volume , v Ar int
+Set volume to <int> db, (-32 (soft) - 0(loud) )
+.It Fl audiodevice , ad Ar string
+Use an alternative audiodevice
+.It Fl mixerdevice , md Ar string
+Use an alternative mixerdevice
+.It \fB*** Input Related ***\fR
+.It Fl joytype , jt Ar int
+Select type of joysticksupport to use:
+0 No joystick
+1 i386 style joystick driver (if compiled in)
+2 Fm Town Pad support (if compiled in)
+3 X11 input extension joystick (if compiled in)
+4 new i386 linux 1.x.x joystick driver(if compiled in)
+5 NetBSD USB joystick driver (if compiled in)
+.It Fl [no]analogstick , [no]as
+Use Joystick as analog for analog controls
+.It Fl [no]mouse , [no]m
+Enable/disable mouse (if supported)
+.It \fB*** Fileio Related ***\fR
+.It Fl rompath , rp Ar string
+Set the rom search path
+.It Fl spooldir , sd Ar string
+Set highscore spooldir
+.It Fl screenshotdir , ssd Ar string
+Set dir to store screenshots in
+.It Fl cheatdir Ar string
+Set dir to look for cheat files in
+.It Fl crcdir Ar string
+Set dir to look for crc files in
+.It Fl cheatfile , cf Ar string
+Set the file to use as cheat database
+.It Fl hiscorefile , hif Ar string
+Set the file to use as high score database
+.It Fl historyfile , hf Ar string
+Set the file to use as history database
+.It Fl mameinfofile , mf Ar string
+Set the file to use as mameinfo database
+.It Fl record , rec Ar arg
+Set a file to record keypresses into
+.It Fl playback , pb Ar arg
+Set a file to playback keypresses from
+.It Fl stdout-file , out Ar filename
+Set a file to redirect stderr to
+.It Fl stderr-file , err Ar filename
+Set a file to redirect stdout to
+.It Fl log , L Ar filename
+Set a file to log debug info to
+.It \fB*** Mess Related ***\fR
+.It Fl rom , cart
+All following images/roms are seen as carts/roms
+.It Fl floppy
+All following images/roms are seen as floppies
+.It Fl casette
+All following images/roms are seen as casettes
+.It Fl printer
+All following images/roms are seen as carts/roms
+.It Fl serial
+All following images/roms are seen as serial ports??
+.It Fl snapshot
+All following images/roms are seen as snapshots
+.It Fl language , lang Ar string
+Select the language for the menu's and osd
+.It Fl [no]fuzzycmp , [no]fc
+Enable/disable use of fuzzy gamename matching when there is no exact match
+.It Fl [no]cheat , [no]c
+Enable/disable cheat subsystem
+.It Fl [no]debug , [no]d
+Enable/disable debugger
+.It Fl debug-size , ds Ar arg
+Specify the resolution/ windowsize to use for the debugger(window) in the form of XRESxYRES (minimum size = 640x480)
+.It \fB*** Frontend Related ***\fR
+.It Fl list , l
+List supported games matching gamename, or all, gamename may contain * and ? wildcards
+.It Fl listfull , lf
+Like -list, with full description
+.It Fl listgames , lg
+Like -list, with manufacturer and year
+.It Fl listdetails , ld
+Like -list, with detailed info
+.It Fl listgamelist , lgl
+Like -list, with specialy formatted extra info for generating gamelist.mame, also see -listgamelistheader
+.It Fl listsourcefile , lsf
+Like -list, with driver sourcefile
+.It Fl listcolors , lcol
+Like -list, with the number of colors used
+.It Fl listextensions
+Like -list, with devices and image file extensions supported
+.It Fl listromsize , lrs
+Like -list, with the year and size of the roms used
+.It Fl listroms , lr
+Like -list, but lists used ROMS
+.It Fl listcrc , lcrc
+Like -list, but lists used ROMS with crc
+.It Fl listsamples , ls
+Like -list, but lists used audio samples
+.It Fl listsamdir , lsd
+Like -list, but lists dir where samples are taken from
+.It Fl verifyroms , vr
+Verify ROMS for games matching gamename, or all, gamename may contain * and ? wildcards
+.It Fl verifyromsets , vrs
+Like -verifyroms, but less verbose
+.It Fl verifysamples , vs
+Like -verifyroms but verify audio samples instead
+.It Fl verifysamplesets , vss
+Like -verifysamples, but less verbose
+.It Fl [no]clones , [no]cl
+Show / don't show bootlegs/clones in the above list commands
+.It Fl listclones , lcl
+Like -list, but lists the clones of the specified game
+.It Fl listinfo , li
+List all available info on drivers
+.It Fl listcpu , lc
+List cpu usage statics per year
+.It Fl listgamelistheader , lgh
+Print header for generating gamelist.mame, also see -listgamelist
+.It \fB*** Internal verification list commands (only for developers) ***\fR
+.It Fl listmissingroms , lmr
+Like -list, but lists ROMS missing
+.It Fl listdupcrc , ldc
+Like -list, but lists ROMS with identical crc
+.It Fl listwrongorientation , lwo
+Like -list, but lists any games which use the orientation flags wrongly
+.It Fl listwrongmerge , lwm
+Like -list, but lists any games which use the clone_of field wrongly
+.It Fl listwrongfps , lwf
+Like -list, but lists any games which use the FPS field wrongly
+.It \fB*** Rom Identification Related ***\fR
+.It Fl ident , id
+Identify unknown romdump, or unknown romdumps in dir/zip
+.It Fl isknown , ik
+Check if romdump or romdumps in dir/zip are known
+.It \fB*** General Options ***\fR
+.It Fl [no]loadconfig , [no]lc
+Load (don't load) configfiles
+.It Fl showconfig , sc
+Display Running parameters in rc style
+.It Fl manhelp , mh
+Print commandline help in man format, usefull for manpage creation
+.It Fl version , V
+Display version
+.It Fl help , ?
+Show this help
+.It \fB*** Arguments ***\fR
+.It Ar game
+the name of the game you wish to play. You better choose one. :-)
+.El
+
+Note: There are really many options. You can set the default options and / or
+options per game in
+.Nm xmames
+config files see the RCFILES section below.
+.Sh INSTALLING GAMES
+Most game ROM images come in ZIP files.  Download the ZIP files for
+the games you want, and move them to a directory of your choice (i.e. it is
+a good idea to put them all in one dir).
+
+Note: There is no need to unzip the games in a separate directory, because
+.Nm xmame
+has zip file support through zlib.
+
+.Nm xmame
+uses a ":" seperated rompath to find out which dirs to search for
+roms/samples. The default rompath is XMAMEROOT as defined in the Makefile
+during the compilation (normaly /usr/local/share/xmame). If you put all 
+the zipped-ROM-Files in this dir everything will work automagicly.
+
+The rompath will be overwritten by any rompath in xmamerc. Which can be
+overwritten again with the -rompath commandline option.
+
+.Nm xmame
+searches every dir in this path for roms (and samples) in the following way:
+
+.TS
+tab (@);
+l l.
+<dir>/gamename.zip@(containing filename.ext)
+<dir>/gamename/filename.ext
+<dir>/gamename/filename.ext.gz@(containing filename.ext)
+<dir>/gamename/filename.zip@(containing filename.ext)
+.TE
+
+Note: If your neogeo games can't find neogeo.rom put it in a dir called
+neogeo somewhere in your rompath, or put it in neogeo.zip somewhere in
+your rompath.
+.Sh PLAYING GAMES
+After running
+.Nm xmame
+i.e.
+.Nm xmame
+.Ar ladybug
+you will see two screens.
+
+The first with a copyright message (PLEASE READ THIS!). If you type (ok)
+this screen will only come up again after the cfg-file of the game
+(romname.cfg) will be deleted.
+
+Another screen shows information about the game. Hit any key to continue.
+
+Note: If you want to see this information screen again, you could press
+\fI<TAB>\fR and select \fI<Game Information>\fR or hit \fI<ESC>\fR and
+restart. ;-)
+
+The game will then go through a `hardware self-test' (remember,
+.Nm xmame
+is emulating game HARDWARE). After the self-test, you are `in' the video game.
+Feed the hungry machine with some coins (key \fI<5>\fR for one coin)
+then start (key \fI<1>\fR) it. For more coins and player read the next section
+(KEYBOARD COMMANDS).
+
+HAVE A LOT OF FUN!
+.Sh KEYBOARD COMMANDS
+While playing a game, there are certain keyboard commands available for
+you to use.
+
+.TS
+tab (@);
+l l.
+\fBKEY@Action\fR
+<1> (the number `one')@Start a 1-player game.
+<2> (the number `two')@Start a 2-player game.
+<3> (the number `three')@Start a 3-player game.
+<4> (the number `four')@Start a 4-player game.
+<5> (the number `five')@Insert coin (slot 1).
+<6> (the number `six')@Insert coin (slot 2).
+<7> (the number `seven')@Insert coin (slot 3).
+<8> (the number `eight')@Insert coin (slot 4).
+<Tab>@Toggles the configuration menu.
+<~> (Tilde)@Toggles the `On Screen Display'.
+@Use the up and down arrow keys to select
+@the parameter (global volume, mixing level,
+@gamma correction etc.), left and right to
+@modify.
+<P>@Pauses the game.
+<Shift+P>@While paused, walk to the next frame.
+<F3>@Resets the game (start with
+@`hardware self-test').
+<F4>@Shows the game graphics. Use cursor keys
+@to change set/color, F4 or Esc to return to
+@the emulation.
+<F9>@Changes frame skip on the fly.
+<F10>@Toggles speed throttling.
+<F11>@Toggles speed display.
+<Shift+F11>@Toggles profiler display.
+<F12>@Saves a screen snapshot. The default
+@target directory is SNAP. You must create
+@this directory yourself; the program will
+@not create it if it doesn't exist.
+<ESC>@Exits the emulator.
+<L-CTRL>@is mostly used as a button.
+<L-ALT>)@is also mostly used as a button.
+<arrows>@will emulate the joystick, pad or
+@trakball. If you have a joystick (pad,
+@trakball ), you can use it with the
+@Input-Related options: -joytype, -jt 
+@and/or -[no]analogstick, -[no]as
+.TE
+
+For a complete list of the usefull keys in
+.Nm xmame
+start a game, press the \fI<tab>\fR button, select \fI<Input (general)>\fR or
+\fI<Input (this game)>\fR and you see a complete list of the related keys.
+.Sh RCFILES
+You can put the most commandline options in an (r)essource (c)onfiguration
+(rc) file. To generate a `clean' xmamerc you type in your ${HOME}/.xmame
+directory:
+
+.Nm xmame
+.Fl sc
+>
+.Ar xmamerc
+
+Now you have a good base to build your specific rc-file. Here is a piece
+from this file to tell you how the syntax works.
+
+    ### X11-window Related ###
+    cursor                  1
+    mitshm                  1
+    xsync                   1
+    privatecmap             0
+    xil                     1
+    mtxil                   0
+    run-in-root-window      0
+    root_window_id          0
+    geometry                640x480
+
+    ### XFree86 DGA Related ###
+
+    ### Video Mode Selection Related ###
+    keepaspect              1
+    displayaspectratio      1.330000
+
+The number `0' is equal to `no' or `false' and `1' means `yes' or `true'.
+
+Some parameters like `geometry' needs a string `800x600' and
+some others like `displayaspectratio' use a number `1.330000'.
+.Sh ENVIRONMENT
+The following environment variables are used:
+
+.TS
+tab (@);
+l l.
+\fBENV@USE\fR
+HOME@The user's home directory.  (normally set by the login process.)
+DISPLAY@X server to display in.
+.TE
+.Sh FILES
+The config files are parsed in the following order:
+
+.TS
+tab (@);
+l l.
+\fBPATH@CONFIG FILE\fR
+/usr/local/share/xmame/xmamerc@global configuration
+${HOME}/.xmame/xmamerc@user configuration
+/usr/local/share/xmame/xmame-x11rc@global per display
+@method
+${HOME}/.xmame/xmame-x11rc@user per display
+@method
+/usr/local/share/xmame/rc/<game>rc@global per game
+${HOME}/.xmame/rc/<game>rc@user per game
+.TE
+.Sh BUGS
+There might be some bugs. Take a look in the doc-dir for more info,
+because the xmame-project is always in progress. :-)
+.Sh CREDITS
+Lots and lots and lots of thank to everyone for there great help on the
+xmame project. I would like to thank the following people and of course anyone
+I've forgotten.
+
+Thank you all,
+
+Hans
+
+  1. Fathers of the mame-creature (main version)
+        Nicola Salmoria
+        Allard van der Bas
+        Mirko (Mix) Buffoni (General Mantainer)
+  2. Fathers of mess
+        Brad Oliver
+        Richard Bannister
+        Ben Bruscella (current coordinator)
+  3. Original UNIX/X11 port
+        Allard van der Bas
+        Dick the Ridder
+        Juan Antonio Marmnez
+  4. Unix maintainer
+        Hans de Goede
+  5. Alpha specific issues
+        Christian Groessler
+  6. Sun specific issues
+        Keith Hargrove
+        Mathis Rosenhau
+  7. Irix specific issues
+        Tristram Scott
+  8. GGI maintainance
+        Gabriele Boccone (original port)
+        Christian Groessler (current maintainer)
+  9. OpenGL code & maintainance
+        Mike Oliphant
+ 10. Network code
+        Eric Totel
+ 11. Perl scripts for automation of some porting issues
+        Bill Adams
+ 12. Xmame rpms
+        Jeremy Hansen
+ 13. Mailing list maintainer
+        Chris McCraw
+ 14. Bits and pieces
+        Christian Groessler
+        Torsten Paul
+ 15. AIX Sound code
+        Chris Sharpp
+ 16. IRIX Sound code
+        entropy@zippy.bernstein.com
+ 17. German readme
+        Robert Hamberger
+ 18. Documentation (SGML, HTML, MAN ...)
+        Rene Herrmann
+
+    And now you've come to the end of this man(ual).
+    Have a lot of fun
+    Rene'

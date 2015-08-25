@@ -1,0 +1,16 @@
+#!/usr/bin/perl -pi.bak
+
+#  Strip Underscores , written by jer johnson (jer@gweep.net) (k) 1998
+#
+# DELIM is the list of special characters that separate
+# variables ..  \s is Perl for "all whitespace characters"
+#  special characters need to be escaped with \'s so that
+# they don't cause trouble in the 1st pattern match
+#
+# if I missed some delimitting characters, add them to the $DELIM variable
+
+
+$DELIM = '\s\+\-\*\:\[\]/';
+
+s/([$DELIM]+)_/\1/g;            # remove the _ , leave the delimiter
+s/^_//;                         # remove _ 's at the beginning of the line

@@ -1,0 +1,133 @@
+### xmess running parameters ###
+
+### Digital sound related ###
+# dsp-plugin            <NULL> (not set)
+timer                   0
+
+### Sound mixer related ###
+# sound-mixer-plugin    <NULL> (not set)
+
+### Video Related ###
+bpp                     0
+heightscale             1
+widthscale              1
+autodouble              1
+scanlines               0
+artwork                 1
+frameskipper            0
+throttle                1
+sleepidle               0
+autoframeskip           1
+maxautoframeskip        8
+frameskip               0
+brightness              1.000000
+gamma                   1.000000
+
+### Vector Games Related ###
+# vectorres             <NULL> (not set)
+beam                    1.000000
+flicker                 0.000000
+antialias               1
+translucency            1
+
+### X11 Related ###
+x11-mode                0
+
+### X11-window Related ###
+cursor                  1
+mitshm                  1
+xsync                   1
+privatecmap             0
+xil                     1
+mtxil                   0
+run-in-root-window      0
+root_window_id          0
+geometry                640x480
+
+### XFree86 DGA Related ###
+
+### Video Mode Selection Related ###
+keepaspect              1
+displayaspectratio      1.330000
+
+### X11-input related ###
+grabmouse               0
+winkeys                 0
+
+### Sound Related ###
+sound                   1
+samples                 1
+samplefreq              22050
+bufsize                 3.000000
+volume                  -3
+# audiodevice           <NULL> (not set)
+# mixerdevice           <NULL> (not set)
+
+### Input Related ###
+joytype                 0
+analogstick             0
+mouse                   1
+
+### Fileio Related ###
+biospath                /usr/local/share/xmess/bios
+softwarepath            /usr/local/share/xmess/software
+CRC_directory           /usr/local/share/xmess/crc
+snapshot_directory      .
+cheat_directory         /usr/local/share/xmess/cheat
+cheatfile               cheat.cdb
+hiscore_file            /usr/local/share/xmess/hiscore.dat
+history_file            /usr/local/share/xmess/history.dat
+mameinfo_file           /usr/local/share/xmess/mameinfo.dat
+
+### Mess Related ###
+language                english
+fuzzycmp                1
+cheat                   0
+debug                   0
+
+### Frontend Related ###
+clones                  1
+
+### Internal verification list commands (only for developers) ###
+
+### Rom Identification Related ###
+
+### General Options ###
+
+### X11 keymapping ###
+#
+# mapkey	<Xcode>,<Scancode>
+#
+# Xcode means the HEX code of the key as appears in /usr/include/X11/keysymdef.h
+# Scancode means the hexadecimal code that represents the value used for Xmame
+# 	in keyboard inputs, as defined in src/osdepend.h xmame source file
+# IMPORTANT: 
+#	1- Due to some limitations, only LATIN-1 X-codes ( 0x0000-0x00ff ) and
+#	Especial X-keycodes ( 0xff00-0xffff ) are supported
+#	2- Some keys are keyboard dependent: As Xmame works internally with
+#	Standard US-AT keyboard codes, you must take care in remmaping some keys
+#
+
+# An example: map space as "firebutton" (Mame predefines it as OSD_KEY_RCONTROL)
+# in simbolic Xlib/Mame notation it should be:
+#
+# mapkey XK_space,OSD_KEY_RCONTROL 
+# 
+# So looking in X11/keysymdef.h and src/osdepend.h we'll write
+# mapkey 0x0020,0x0039
+#
+# (Other example). To use F8 key to insert coin you shoud use:
+# mapkey 0xffc5,0x0004
+
+### suggested german keymap mods by Peter Trauner <peter.trauner@jk.uni-linz.ac.at> ###
+#mapkey 0xfe52,0x0029
+#mapkey 0x00df,0x000c
+#mapkey 0xfe51,0x000d
+#mapkey 0x00fc,0x001a
+#mapkey 0x002b,0x001b
+#mapkey 0x00f6,0x0027
+#mapkey 0x00e4,0x0028
+#mapkey 0x0023,0x002b
+#mapkey 0x0059,0x002c
+#mapkey 0x005a,0x0015
+#mapkey 0x002d,0x0035

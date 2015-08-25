@@ -1,0 +1,460 @@
+#!/usr/bin/perl -w
+#
+# mame_parse - Read output MAME -listinfo/ RAINE -gameinfo command from STDIN
+#              and parse it
+#
+# (c) 2000 - 2001 Stefan Becker
+#
+# It generates the following files
+#
+#  mameinfo.db  - A Berkeley DB file with all information about the ROMs
+#  mameinfo.txt - A text file with information about the supported ROMS sets
+#
+#-----------------------------------------------------------------------------
+#
+# REQUIRED PERL PACKAGES
+#
+#-----------------------------------------------------------------------------
+require 5.005_03;
+use     strict;
+use     Getopt::Long;
+use     Fcntl;
+use     IO::File;
+use     File::Spec;
+use     MLDBM qw(DB_File); # CPAN, requires
+                           #   Data::Dumper standard
+                           #   DB_File      standard if BerkeleyDB exists
+use     Parse::Lex 2.07;   # CPAN
+use     Parse::Yapp;       # CPAN, at least version 0.31 required
+#use     Parse::RecDescent  # CPAN (for alternative parser)
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#
+# GLOBAL VARIABLES
+#
+#-----------------------------------------------------------------------------
+use vars qw(%Games); # Accessed by the parser package
+
+#-----------------------------------------------------------------------------
+#
+# DATASTRUCTURES
+#
+#-----------------------------------------------------------------------------
+#
+# Hash with all available games (stored in DB_File using MLDBM)
+#
+# %Games = ( Name of game1 => Hash with game information
+#             { roms   => Hash with ROMs for this game 
+#                { Key of ROM1 => Hash with ROM data, key = crc . size
+#                   { name => File name
+#                     size => Size in bytes
+#                     crc  => CRC32 checksum
+#                   },
+#                  ... next ROM
+#                }
+#               clones => Hash with clones for this game
+#                { Name of Clone1 => Hash with ROMs for this clone
+#                   { (see above)
+#                   },
+#                  ... next clone
+#                }
+#             },
+#            ... next game
+#          );
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#
+# COMMAND LINE OPTIONS
+#
+#-----------------------------------------------------------------------------
+# Default values
+my $mamedir = File::Spec->catdir($ENV{HOME}, 'mame');
+my %Options = (
+	       'mame-dir'  => $mamedir,
+	       'db-file'   => 'mameinfo.db',
+	       'text-file' => 'mameinfo.txt'
+	      );
+
+# Parse command line options
+if (GetOptions(\%Options,
+	       'mame-dir=s', 'db-file=s', 'text-file=s', 'help|h')) {
+
+  # Help requested?
+  if ($Options{help}) {
+
+    # Print usage
+    print "Usage: $0 <options>\n\n";
+    print " --mame-dir <dir>   MAME directory (Default: $mamedir)\n";
+    print " --db-file <file>   Database file  (Default: ",
+    File::Spec->catfile($mamedir, 'mameinfo.db'), ")\n";
+    print " --text-file <file> Text file      (Default: ",
+    File::Spec->catfile($mamedir, 'mameinfo.txt'), ")\n\n";
+    print " --help | -h        This help page\n\n";
+    print "The data is read from STDIN.\n"
+
+  } else {
+
+#-----------------------------------------------------------------------------
+#
+# MAIN PROGRAM
+#
+#-----------------------------------------------------------------------------
+
+    # Activate autoflush on STDOUT
+    STDOUT->autoflush(1);
+
+    # Tie DB file to hash
+    my $dbname = File::Spec->catfile($Options{'mame-dir'},
+				     $Options{'db-file'});
+    print "Creating database '$dbname'...";
+    if (tie(my %DB, 'MLDBM', $dbname, O_CREAT | O_RDWR | O_TRUNC, 0644)) {
+
+      # Open text file
+      my $txtname = File::Spec->catfile($Options{'mame-dir'},
+					$Options{'text-file'});
+      print " DONE\nCreating text file '$txtname'...";
+      if (open(FH, "> $txtname")) {
+
+	print " DONE\n";
+
+#
+# Alternative lexer/parser using Parse::RecDescent
+#
+# It takes about twice as long as the Parse::Lex/Yapp combination,
+# but as you can see it is much more concise. Once an optimizing
+# Parse::RecDescent is available this parser should be re-evaluated
+#
+# FIXME: Not checked against Raine output
+#
+# PROBLEMS: - Line numbers in error messages not correct,
+#             because of paragraph input mode
+#           - paragraph input mode requires native text format
+# 
+# Create parser
+#my $parser = Parse::RecDescent->new(<<'END_OF_SYNTAX'
+#
+#{
+#  my $name;
+#  my $ref;
+#  my $count;
+#
+#  sub AddROM($@) {
+#    my($ref, $name, $size, $crc) = @_;
+#
+#    # Create key from CRC, size and name (if CRC = 0 [NO GOOD DUMP KNOWN])
+#    $ref->{roms}->{$crc, $size, $crc =~ m/0{8}/ ? $name : ''} =
+#      {
+#        name => $name,
+#        size => $size,
+#        crc  => $crc
+#      };
+#  }
+#
+#  sub AddGame() {
+#    # Don't replace existing game!
+#    if (exists $main::Games{$name}) {
+#      print "WARNING: Duplicate ROM set '$name'!\n";
+#    } else {
+#      $main::Games{$name} = $ref;
+#    }
+#
+#    # Progress report
+#    if (($count++ % 10) == 0) {
+#      print ".";
+#
+#    }
+#  }
+#}
+#
+#start: 'game'     <commit> { undef $name; $ref = {}; } '(' info(s) ')' { AddGame(); }
+# |     'resource' <commit> { undef $name; $ref = {}; } '(' info(s) ')' { AddGame(); }
+# |     'total'    <commit>
+# |     <error>
+#
+#info: 'name'        <commit> anystring                                                                    { $name         = $item{anystring}; }
+# |    'romof'       <commit> anystring                                                                    { $ref->{clone} = $item{anystring}; }
+# |    'rom'     '(' <commit> 'name' anystring merge(?) 'size' /\d+/ 'crc' /[\da-f]{8}/ anystring(s?)  ')' { AddROM($ref, @item[5, 8, 10]); }
+# |    anystring '(' <commit> ignorestring(s) ')'
+# |    anystring ignorestring
+#
+#merge: 'merge' <commit> anystring
+#
+#ignorestring: /\"[^\\\"]*(?:\\.[^\\\"]*)*\"/
+# |            anystring
+#
+#anystring: /[\w\-\/._!]+/
+#
+#END_OF_SYNTAX
+#);
+#
+## Use paragraph mode
+#$/ = '';
+#
+## Parse input, use paragraph mode
+#my $success = 1;
+#while (<STDIN>) {
+#  $success = 0, last unless defined $parser->start($_);
+#}
+#if ($success) {
+#  # All done, free resources
+#  print " DONE\n", scalar(keys %Games), " ROM set(s) found.\n";
+#  undef $parser;
+#
+#  ... The rest is the same as for the other lexer/parser
+
+	# Create lexer which reads information from STDIN
+	# Parse::Lex->trace;
+	my $lexer = Parse::Lex->new(#
+				    # Lexer token list for the
+				    # current ambigous syntax
+				    #
+				    # Single character tokens
+				    LEFTPAREN  => '\(',
+				    RIGHTPAREN => '\)',
+
+				    # Keyword tokens
+				    CRC        => 'crc(32)?(?=[ \t\r\n])',
+				    EMULATOR   => 'emulator(?=[ \t\r\n])',
+				    GAME       => 'game(?=[ \t\r\n])',
+				    MERGE      => 'merge(?=[ \t\r\n])',
+				    NAME       => 'name(?=[ \t\r\n])',
+				    RESOURCE   => 'resource(?=[ \t\r\n])',
+				    ROMOF      => 'romof(?=[ \t\r\n])',
+				    ROM        => 'rom(?=[ \t\r\n])',
+				    SIZE       => 'size(?=[ \t\r\n])',
+				    TOTAL      => 'Total(?=[ \t\r\n])',
+
+				    # String & number tokens
+				    INTEGER    => '[0-9][0-9]*(?=[ \t\r\n])',
+				    CRC32      => '[0-9a-f]{8}(?=[ \t\r\n])',
+				    IDENTIFIER => '\w[\S]*(?=[ \t\r\n])',
+				    STRING     => '\".*\"',
+
+				    # Everything else is an error
+				    ERROR      => '.*'
+				   );
+	$lexer->skip('[ \t\n\r]+');
+	$lexer->from(\*STDIN);
+
+	# Compile syntax description
+	my $parser = Parse::Yapp->new(input => <<'END_OF_SYNTAX'
+%{
+  my $name;
+  my $ref;
+  my $count;
+
+  sub CreateROM(@) {
+    return({name => $_[0], size => $_[1], crc => $_[2]});
+  }
+
+  sub AddROM($$) {
+    my($ref, $rom) = @_;
+
+    # Create key from CRC, size and name (if CRC = 0 [NO GOOD DUMP KNOWN])
+    $ref->{roms}->{$rom->{crc}, $rom->{size},
+                   ($rom->{crc} =~ /0{8}/) ? $rom->{name} : ''} = $rom;
+  }
+
+  sub AddGame() {
+    # Don't replace existing game!
+    if (exists $main::Games{$name}) {
+      print "WARNING: Duplicate ROM set '$name'!\n";
+    } else {
+      $main::Games{$name} = $ref;
+    }
+
+    # Progress report
+    if (($count++ % 10) == 0) {
+      print ".";
+    }
+  }
+
+%}
+%%
+#
+# Parser description for current ambigous syntax
+#
+mame_info_sequence: mame_info
+  |                 mame_info_sequence mame_info
+  |                 EMULATOR LEFTPAREN raine_info_sequence RIGHTPAREN;
+
+mame_info: GAME { undef $name; $ref = {}; } LEFTPAREN info_sequence RIGHTPAREN { AddGame(); }
+  |        RESOURCE { undef $name; $ref = {}; } LEFTPAREN info_sequence RIGHTPAREN { AddGame(); }
+  |        TOTAL { $_[0]->YYAccept; };
+
+info_sequence: info
+  |            info_sequence info;
+
+info: NAME game_name                            { $name = $_[2]; }
+  |   ROMOF game_name                           { $ref->{clone} = $_[2]; }
+  |   ROM LEFTPAREN rom_info RIGHTPAREN         { AddROM($ref, $_[3]); }
+  |   ROM LEFTPAREN merge_info RIGHTPAREN       { AddROM($ref, $_[3]); }
+  |   IDENTIFIER IDENTIFIER
+  |   IDENTIFIER INTEGER
+  |   IDENTIFIER STRING
+  |   IDENTIFIER LEFTPAREN any_sequence RIGHTPAREN;
+
+game_name: IDENTIFIER
+  |        INTEGER;
+
+rom_info: NAME rom_name SIZE INTEGER CRC crc_value any_sequence { CreateROM(@_[2,4,6]); };
+
+merge_info: NAME rom_name MERGE rom_name SIZE INTEGER CRC crc_value any_sequence { CreateROM(@_[2,6,8]); };
+
+# This is what happens when the syntax is so ambigous :-(
+rom_name: IDENTIFIER
+  |       SOUND
+  |       INTEGER
+  |       CRC32;
+
+# Same here...
+crc_value: CRC32
+  |        INTEGER;
+
+any_sequence: # EMPTY
+  |           any_sequence any_element;
+
+any_element: NAME
+  |          IDENTIFIER
+  |          INTEGER
+  |          STRING;
+
+# Ignore raine info file information 
+raine_info_sequence: raine_info
+  |                  raine_info_sequence raine_info;
+
+raine_info: NAME STRING
+  |         IDENTIFIER STRING
+  |         IDENTIFIER INTEGER;
+%%
+END_OF_SYNTAX
+				     );
+        #print "Parser WARNINGS:\n", $parser->Warnings, "\n";
+	#print "Parser CONFLICTS:\n", $parser->Conflicts, "\n";
+	#print "Parser RULES:\n", $parser->ShowRules, "\n";
+	#print "Parser STATES:\n", $parser->ShowDfa, "\n";
+	#print "Parser Summary:\n", $parser->Summary, "\n";
+	$parser = $parser->Output(classname => 'MAMEInfoParser');
+	#print "$parser";
+	eval $parser;
+
+	# Create parser
+	$parser = MAMEInfoParser->new(yylex => sub {
+					# Wrapper for lexer
+					my $token = $lexer->next;
+
+					return($lexer->eoi ? '' :
+					       $token->name, $token->text);
+				      },
+				      yyerror => sub {
+					# Print better error message
+					my $parser = shift;
+
+					print "Parse error in line $.: Expected: ",
+					$parser->YYExpect,
+					" Token: ", $parser->YYCurtok,
+					" Value: ", $parser->YYCurval, "\n";
+				      });
+
+	# Execute arser
+	print "Parsing MAME ROM set information";
+	$parser->YYParse();
+
+	# Parser successful?
+	if ($parser->YYNberr() == 0) {
+	  my $count;
+
+	  # All done, free resources
+	  print " DONE\n", scalar(keys %Games), " ROM set(s) found.\n";
+	  undef $parser;
+	  undef $lexer;
+
+	  # Write list of supported sets to text file
+	  print FH scalar(keys %Games), " supported sets: ",
+	  join(' ', sort keys %Games), "\n";
+
+	  # Sort the data
+	  print "Adding clones to parent";
+	  foreach (keys %Games) {
+	    my $game = $Games{$_};
+
+	    # Is it a clone?
+	    if (exists $game->{clone}) {
+
+	      # Add it to its parent
+	      $Games{$game->{clone}}->{clones}->{$_} = $game->{roms};
+	    }
+
+	    # Progress report
+	    if (($count++ % 10) == 0) {
+	      print ".";
+	    }
+	  }
+
+	  # Remove pure clones
+	  print " DONE\nRemoving clones";
+	  foreach (keys %Games) {
+	    my $game = $Games{$_};
+
+	    # Is it a clone without any clones?
+	    if (exists $game->{clone} && not exists $game->{clones}) {
+
+	      # Yes, remove it from list
+	      delete $Games{$_};
+	    }
+
+	    # Progress report
+	    if (($count++ % 10) == 0) {
+	      print ".";
+	    }
+	  }
+	  print " DONE\n", scalar(keys %Games), " parent ROM set(s) found.\n";
+
+	  # Write master/clone games to text file
+	  foreach (sort keys %Games) {
+	    my $game   = $Games{$_};
+	    my $clones = exists $game->{clones} ? $game->{clones} : undef;
+	    print FH "Clones for $_: ", join(' ', sort keys %$clones), "\n";
+	  }
+
+	  # Move data to DB
+	  print "Moving data to database";
+	  $count = 0;
+	  foreach (sort keys %Games) {
+
+	    # Move one entry to DB
+	    $DB{$_} = $Games{$_};
+	    delete $Games{$_};
+
+	    # Progress report
+	    if (($count++ % 10) == 0) {
+	      print ".";
+	    }
+	  }
+	  print " DONE\n";
+	}
+
+	# Close text file
+	close(FH) or die "$!";
+	print "Text file closed.\n";
+
+      } else {
+	print STDERR "Can't open text file '$txtname'!\n";
+      }
+
+      # Close DB
+      untie %DB or die "$!";
+      print "Database closed.\n";
+
+    } else {
+      print STDERR "Can't open DB file $dbname!\n";
+    }
+  }
+} else {
+  print STDERR "Error on command line!\n";
+}
+
+exit 0;
