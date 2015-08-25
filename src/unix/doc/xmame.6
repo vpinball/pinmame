@@ -1,0 +1,527 @@
+.\"  -*- nroff -*-
+.\"
+.\" xmame.6
+.\"
+.\" Done by René Herrmann <rene.herrmann@berlin.de>, September 2000
+.\" Updated by Andrew Burton <burtona@gol.com>, July 2003
+.\"
+.\" xmame should be distributed under terms of the license in
+.\" readme.mame.
+.\" The main issue involves ROM images. ROM images are protected under the
+.\" copyrights of their authors, and CANNOT be distributed in the same
+.\" package as xmame. Download any ROM images at your own risk and
+.\" responsibility.
+.\"
+.TH Xmame 6 "10 July 2003" "0.71" "xmame"
+.Sh NAME
+xmame \- THE Arcade game machine emulator for UNIX/X
+.Sh SYNOPSIS
+.B xmame
+.RB [ .x11 | svga | xgl | sdl ]
+.RI [\| options \|] 
+.RI [\| rom \|]
+.PP
+Use "xmame[ .x11 | svga | xgl | sdl ] -help" to display a complete list of current options.
+.Sh DESCRIPTION
+.B xmame
+is the (M)ulti (A)rcade (M)achine (E)mulator for Unix. It emulates the hardware of many classic arcade game machines.
+.PP
+MAME is an arcade machine emulator. Started in 1997 by Nicola Salmoria, MAME started out as a series of emulators for individual games. This series of emulators was combined into a simgle multi-game emulator. This is the current form of MAME; no longer a one-man show, there are over 100 contributors to the project.
+.Sh OPTIONS
+.SS Digital sound related
+.TP
+.BI \-dp\  plugin ,\ \-dsp-plugin\  plugin
+Select which plugin to use for digital sound
+.TP
+.B \-ldp, \-list-dsp-plugins
+List available sound-dsp plugins
+.TP
+.B \-[no]ti, \-[no]timer
+Toggle timer based audio (normally it will be used automatically when necessary)
+.SS Sound mixer related
+.TP
+.BI \-smp\  plugin ,\ \-sound-mixer-plugin\  plugin
+Select which plugin to use for the sound mixer  
+.TP                                           
+.B \-lmp, \-list-mixer-plugins
+List available sound-mixer plugins
+.SS Video related
+.TP
+.BI \-b\  depth ,\ \-bpp\  depth
+Specify the colordepth the core should render, one of: auto(0), 8, 16
+.TP
+.BI \-ah\  height ,\ \-arbheight\  depth
+Scale video to exactly this height (0 = disable)
+.TP
+.BI \-heightscale\  yaspect ,\ \-hs\  yaspect
+Set Y-Scale aspect ratio
+.TP
+.BI \-ws\  xaspect ,\ \-widthscale\  xaspect
+Set X-Scale aspect ratio
+.TP
+.BI \-s\  scale ,\ \-scale\  scale
+Set X-Y Scale to the same aspect ratio. For vector games scale (and also width- and height-scale) may have value's like 1.5 and even 0.5. For scaling of regular games this will be rounded to an integer value.
+.TP
+.BI \-ef\  effect ,\ \-effect\  effect
+Video effect:
+0 = none (default)
+1 = scale2x (smooth scaling effect)
+2 = scan2 (light scanlines)
+3 = rgbstripe (3x2 rgb vertical stripes)
+4 = rgbscan (2x3 rgb horizontal scanlines)
+5 = scan3 (3x3 deluxe scanlines)
+.TP
+.B \-[no]adb, \-[no]autodouble
+Enable/disable automatic scale doubling for 1:2 pixel aspect ratio games                        
+.TP
+.B \-[no]sl, \-[no]scanlines
+Enable/disable displaying simulated scanlines
+.TP
+.B \-[no]art, \-[no]artwork
+Use additional game artwork (sets default for specific options below).
+.TP
+.B \-[no]backdrop, \-[no]use_backdrops
+Use backdrop artwork.                            
+.TP
+.B \-[no]overlay, \-[no]use_overlays
+Use overlay artwork.
+.TP
+.B \-[no]bezel, \-[no]use_bezels
+Use bezel artwork.
+.TP
+.B \-[no]artcrop, \-[no]artwork_crop
+Crop artwork to game screen only.               
+.TP
+.BI \-artres\  res ,\ \-artwork_resolution\  res
+Artwork resolution (0 for auto)
+.TP
+.BI \-fsr\  skip ,\ \-frameskipper\  skip
+Select which autoframeskip and throttle routines to use. Available choices are:
+0 DOS frameskip code
+1 Enhanced frameskip code by William A. Barath
+.TP
+.B \-[no]th, \-[no]throttle
+Enable/disable throttle
+.TP
+.BI \-ftr\  frames ,\ \-frames_to_run\  frames
+Sets the number of frames to run within the game                                            
+.TP
+.B \-[no]si, \-[no]sleepidle
+Enable/disable sleep during idle
+.TP
+.B \-[no]afs, \-[no]autoframeskip
+Enable/disable autoframeskip
+.TP
+.BI \-mafs\  maxskip ,\ \-maxautoframeskip\  maxskip
+Set highest allowed frameskip for autoframeskip
+.TP
+.BI \-fs\  skip ,\ \-frameskip\  skip
+Set frameskip when not using autoframeskip      
+.TP
+.BI \-brt\  brightness ,\ \-brightness\  brightness
+Set the brightness correction (0.5 - 2.0)       
+.TP
+.BI \-pb\  pause ,\ \-pause_brightness\  pause
+Additional pause brightness (float)                                                    
+.TP
+.BI \-gc\  gamma ,\ \-gamma\  gamma
+Set the gamma correction (0.5 - 2.0)
+.TP
+.B \-[no]nr, \-[no]norotate
+Do not apply rotation                           
+.TP
+.B \-[no]rr, \-[no]ror
+Rotate screen clockwise
+.TP
+.B \-[no]rl, \-[no]rol
+Rotate screen counter-clockwise                 
+.TP
+.B \-[no]autoror
+Automatically rotate screen clockwise for vertical games                                  
+.TP
+.B \-[no]autorol
+Automatically rotate screen counter-clockwise for vertical games                              
+.TP
+.B \-[no]fx, \-[no]flipx
+Flip screen left-right                          
+.TP
+.B \-[no]fy, \-[no]flipy
+Flip screen upside-down
+.SS Vector related
+.TP
+.BI \-vres\  vres ,\ \-vectorres\  vres
+Always scale vectorgames to XresxYres, keeping their aspect ratio. This overrides the scale options.
+.TP
+.BI \-B\  beam ,\ \-beam\  beam
+Set the beam size for vector games (float)
+.TP
+.BI \-f\  flicker ,\ \-flicker\  flicer
+Set the flicker size for vector games (float)
+.TP
+.BI \-intensity\  intensity
+Set intensity in vector games (float)
+.TP
+.B \-[no]aa, \-[no]antialias
+Enable/disable antialiasing                     
+.TP
+.B \-[no]t, \-[no]translucency
+Enable/disable tranlucency                      
+.SS X11 related
+.TP
+.BI \-x11\  mode ,\ \-x11-mode
+Select x11 video mode: (if compiled in)
+0 Normal window (hotkey left-alt + insert)
+1 Fullscreen DGA (hotkey left-alt + home)       
+.SS X11-window related
+.TP
+.B \-[no]cu, \-[no]cursor
+Show/don't show the cursor
+.TP
+.B \-[no]ms, \-[no]mitshm
+Use/don't use MIT Shared Mem (if available and compiled in)                                    
+.TP
+.B \-[no]xv, \-[no]xvext
+Use/don't use Xv extension for hardware scaling (if available and compiled in))                 
+.TP
+.B \-[no]fullscreen
+Start in fullscreen mode                        
+.TP
+.B \-[no]yuv
+Force YUV mode (for video cards with broken RGB hwscales)
+.TP
+.B \-[no]yv12
+Force YV12 mode (for video cards with broken RGB hwscales)
+.TP
+.B \-[no]xs, \-[no]xsync
+Use/don't use XSync instead of XFlush as screen refresh method                                  
+.TP
+.B \-[no]p, \-[no]privatecmap
+Enable/disable use of private color map         
+.TP
+.B \-[no]x, \-[no]xil
+Enable/disable use of XIL for scaling (if available and compiled in)                      
+.TP
+.B \-[no]mtx, \-[no]mtxil
+Enable/disable multi threading of XIL           
+.TP
+.B \-[no]root, \-[no]run-in-root-window
+Enable/disable running in root window           
+.TP
+.BI \-rid\  window ,\ \-root_window_id\  window
+Create the xmame-window in an alternate root-window, mostly useful for frontends
+.TP
+.BI \-geometry\  location ,\ \-geo\  location
+Specify the location of the window (string)
+.SS Video mode selection related
+.TP
+.B \-[no]ka, \-[no]keepaspect
+Try / don't try to keep the aspect ratio of a game when selecting the best videomode          
+.TP
+.BI \-dar\  ratio ,\ \-displayaspectratio\  ratio
+Set the display aspect ratio of your monitor (float). This is used for
+.B -keepaspect
+The default is 1.33 (4/3). Use 0.75 (3/4) for a portrait monitor
+.TP
+.BI \-dm\  disable ,\ \-disablemode\  disable
+Don't use mode XRESxYRESxDEPTH. This can be used to disable specific video modes which don't work on your system. The xDEPTH part of the string is optional. This option may be used more then once                                  
+.SS X11-input related
+.TP
+.B \-[no]gm, \-[no]grabmouse
+Enable/disable mousegrabbing (also alt + pagedown)                                       
+.TP
+.B \-[no]gkb, \-[no]grabkeyboard
+Enable/disable keyboardgrabbing (also alt + pageup)                                         
+.TP
+.B \-[no]wk, \-[no]winkeys
+Enable/disable mapping of Windows keys under X
+.TP
+.BI \-mk\  keymap ,\ \-mapkey\  keymap
+Set a specific key mapping, see xmamerc.dist
+.SS Sound related
+.TP
+.B \-[no]snd, \-[no]sound
+Enable/disable sound (if available)
+.TP
+.B \-[no]sam, \-[no]samples
+Use/don't use samples (if available)
+.TP
+.B \-fsnd, \-fakesound
+Generate sound even when sound is disabled. This is needed for some games which won't run without sound
+.TP
+.BI \-sf\  freq ,\ \-samplefreq\  freq
+Set the playback sample-frequency/rate          
+.TP
+.BI \-bs\  buffer ,\ \-bufsize\  buffer
+Number of frames of sound to buffer (float)
+.TP
+.BI \-v\  volume ,\ \-volume\  volume
+Set volume to an integer decibal level, (-32 (soft) - 0(loud))
+.TP
+.BI \-ad\  device ,\ \-audiodevice\  device
+Use an alternative audiodevice
+.TP
+.BI \-md\  mixer ,\ \-mixerdevice\  mixer
+Use an alternative mixerdevice                  
+.SS Input related
+.TP
+.BI \-jt\  joy ,\ \-joytype\  joy
+Select type of joystick support to use:
+0 No joystick
+1 i386 style joystick driver (if compiled in)
+2 Fm Town Pad support (if compiled in)
+3 X11 input extension joystick (if compiled in)
+4 new i386 linux 1.x.x joystick driver(if compiled in)
+5 NetBSD USB joystick driver (if compiled in)
+6 PS2-Linux native pad (if compiled in)
+7 SDL joystick driver                           
+.TP
+.B \-[no]as, \-[no]analogstick
+Use joystick as analog for analog controls
+.TP
+.BI \-jdev\  device ,\ \-joydevname\  device
+Joystick device prefix (defaults to /dev/js)
+.TP
+.B \-[no]m, \-[no]mouse
+Enable/disable mouse (if supported)
+.TP
+.B \-[no]ugcicoin
+Enable/disable UGCI(tm) Coin/Play support
+.TP
+.B \-[no]pspad, \-[no]usbpspad
+Enable/disable USB PS Game Pad joystick support
+.TP
+.B \-[no]rapidf, \-[no]rapidfire
+Enable/disable rapid-fire support for joysticks         
+.TP
+.B \-ctrlr\  controller
+Preconfigure for specified controller, e.g., HotRod, HotRodSE, SlikStik, XArcade
+.SS File I/O related
+.TP
+.BI \-rp\  rompath ,\ \-rompath\  rompath
+Search path for ROM files
+.TP
+.BI \-sp\  samplepath ,\ \-samplepath\  samplepath
+Search path for sample files
+.TP
+.BI \-inipath\ inipath
+Search path for ini files
+.TP
+.BI \-cfg_directory\  cfgpath
+Directory to save configurations
+.TP
+.BI \-nvram_directory\  nvrampath
+Directory to save nvram contents
+.TP
+.BI \-memcard_directory\  memcardpath
+Directory to save memory card contents
+.TP
+.BI \-input_directory\  inputpath
+Directory to save input device logs
+.TP
+.BI \-hiscore_directory\  hipath
+Directory to save hiscores
+.TP
+.BI \-state_directory\  statepath
+Directory to save states
+.TP
+.BI \-artwork_directory\  artpath
+Directory for artwork (overlays etc.)
+.TP
+.BI \-snapshot_directory\  screenshotpath
+Directory for screenshots (.png format)
+.TP
+.BI \-diff_directory\  diffpath
+Directory for hard drive image difference files
+.TP
+.BI \-ctrlr_directory\  controllerpath
+Directory to save controller definitions
+.TP
+.BI \-cheat_file\  cheatfile
+Cheat filename
+.TP
+.BI \-hiscore_file\  hifile
+.TP
+.BI \-history_file\  historyfile
+.TP
+.BI \-mameinfo_file\  mameinfofile
+.TP
+.BI \-rec\  keyfile ,\ \-record\  keyfile
+Set a file to record keypresses into
+.TP
+.BI \-pb\  playfile ,\ \-playback\  playfile
+Set a file to playback keypresses from
+.TP
+.BI \-out\  stdout ,\ \-stdout-file\  stdout
+Set a file to redirect stdout to
+.TP
+.BI \-err\  stderr ,\ \-stderr-file\  stderr
+Set a file to redirect stderr to
+.TP
+.BI \-L\  logfile ,\ \-log\  logfile
+Set a file to log debug info to                 
+.SS MAME related
+.TP
+.BI \-def\  defaultgame ,\ \-defaultgame\  defaultgame
+Set the default game started when no game is given on the commandline, only useful for the config files.
+.TP
+.BI \-lang\  language ,\ \-language\  language
+Select the language for the menus and OSD
+.TP
+.B \-[no]fc, \-[no]fuzzycmp
+Enable/disable use of fuzzy gamename matching when there is no exact match
+.TP
+.B \-[no]c, \-[no]cheat
+Enable/disable cheat subsystem
+.TP
+.B \-[no]skip_disclaimer
+Skip displaying the disclaimer screen
+.TP
+.B \-[no]skip_gameinfo
+Skip displaying the game info screen     
+.TP
+.B \-[no]crconly
+Use only CRC for all integrity checks
+.TP
+.BI \-bios\  bios
+Change system bios (int)
+.SS Frontend related
+.TP
+.B \-l, \-list
+List supported games matching gamename, or all, gamename may contain * and ? wildcards
+.TP
+.B \-lf, \-listfull
+Like -list, with full description
+.TP
+.B \-lg, \-listgames
+Like -list, with manufacturer and year
+.TP
+.B \-ld, \-listdetails
+Like -list, with detailed info
+.TP
+.B \-lgl, \-listgamelist
+Like -list, with specialy formatted extra info for generating gamelist.mame
+.TP
+.B \-lsf, \-listsourcefile
+Like -list, with driver sourcefile
+.TP
+.B \-lcol, \-listcolors
+Like -list, with the number of colors used
+.TP
+.B \-lrs, \-listromsize
+Like -list, with the year and size of the ROMs used                                            
+.TP
+.B \-lps, \-listpalettesize
+Like -list, with the year and palette size of the roms used                                   
+.TP
+.B \-lr, \-listroms
+Like -list, but lists used ROMs
+.TP
+.B \-lcrc, \-listcrc
+Like -list, but lists used ROMs with CRC-32s
+.TP
+.B \-lsha1, \-listsha1
+Like -list, but lists used ROMs with SHA-1s
+.TP
+.B \-lmd5, \-listmd5
+Like -list, but lists used ROMs with MD5s
+.TP
+.B \-ls, \-listsamples
+Like -list, but lists used audio samples
+.TP
+.B \-lsd, \-listsamdir
+Like -list, but lists dir where samples are taken from                                      
+.TP
+.B \-vr, \-verifyroms
+Verify ROMs for games matching gamename, or all, gamename may contain * and ? wildcards
+.TP
+.B \-vrs, \-verifyromsets
+Like -verifyroms, but less verbose
+.TP
+.B \-vs, \-verifysamples
+Like -verifyroms but verify audio samples instead                                         
+.TP
+.B \-vss, \-verifysamplesets
+Like -verifysamples, but less verbose
+.TP
+.B \-[no]cl, \-[no]clones
+Show / don't show bootlegs/clones in the above list commands
+.TP
+.B \-lcl, \-listclones
+Like -list, but lists the clones of the specified game
+.TP
+.B \-li, \-listinfo
+List all available info on drivers
+.TP
+.B \-lc, \-listcpu
+List CPU usage statics per year
+.SS Internal verification list commands (only for developers)
+.TP
+.B \-ldc, \-listdupcrc
+Like -list, but lists ROMs with identical CRC
+.TP
+.B \-lwo, \-listwrongorientation
+Like -list, but lists any games which use the orientation flags wrongly
+.TP
+.B \-lwm, \-listwrongmerge
+Like -list, but lists any games which use the clone_of field wrongly
+.TP
+.B \-lwf, \-listwrongfps
+Like -list, but lists any games which use the FPS field wrongly
+.TP
+.B \-srtn, \-sortname
+Sort ROMs by name
+.TP
+.B, \-srtd, \-sortdriver
+Sort ROMs by driver name
+.SS ROM identification related
+.TP
+.B \-id, \-ident
+Identify unknown ROM dump, or unknown ROM dumps in dir/zip                                      
+.TP
+.B \-ik, \-isknown
+Check if romdump or romdumps in dir/zip are known                                           
+.SS General options
+.TP
+.B \-[no]lcf, \-[no]loadconfig
+Enable/disable loading of config files                   
+.TP
+.B \-sc, \-showconfig
+Display running parameters in rc style
+.TP
+.B \-mh, \-manhelp
+Print commandline help in man format, useful for manpage creation                            
+.TP
+.B \-V, \-version
+Display version
+.TP
+.B \-?, \-help
+Show help
+.Sh EXAMPLES
+.Sh LEGAL NOTICE
+The main issue involves ROM images. ROM images are protected under the copyrights of their authors, and CANNOT be distributed in the same package as xmame. Download any ROM images at your own risk and responsibility.
+.PP
+.B PLEASE BE AWARE OF THE POSSIBLE LEGAL RAMIFICATIONS OF DOWNLOADING ROM IMAGES, BEFORE YOU ACTUALLY DO SO! YOU HAVE BEEN WARNED, AND WE TAKE NO RESPONSIBILITY FOR YOUR ACTIONS -- YOU ARE ON YOUR OWN!
+.PP
+Also, the \fBxmame\fR authors ask that you DO NOT distribute any ROM images with either source code or binaries of the \fBxmame\fR emulator.
+.Sh FILES
+Config Files are parsed in the following order:
+.TP
+.I /usr/local/share/xmame/xmamerc
+Global configuration config file
+.TP
+.I ${HOME}/.xmame/xmamerc
+User configuration config file
+.TP
+.I /usr/local/share/xmame/xmame-x11rc
+Global per display method config file
+.TP
+.I ${HOME}/.xmame/xmame-x11rc
+User per display method config file
+.TP
+.I /usr/local/share/xmame/rc/<game>rc
+Global per game config file
+.TP
+.I ${HOME}/.xmame/rc/<game>rc
+User per game config file
+.Sh "SEE ALSO"
+.Sh BUGS

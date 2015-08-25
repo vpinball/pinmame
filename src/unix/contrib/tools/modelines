@@ -1,0 +1,58 @@
+# Wil's xmame.x11 dga fullscreen modelines list
+#
+# most recent version can be had at http://victoria.tc.ca/~wi534/modelines
+#
+# A small warning: many of these modelines really push my hardware.  I
+# have some of them at 110Hz vertical synch rates and others at 30 and
+# 62KHz horizontal synch rates.  If you have configured your XF86Config
+# file's display section correctly then modes outside the safe operating
+# range for your monitor will be skipped.  Otherwise, well, I can't be
+# responsible for you blowing up your display hardware.  
+#
+# Use at your own risk!
+#
+# Feel free to offer suggestions and ask for new resolutions.  I'm not
+# sure which ones I may have missed.
+#
+# mailto://wi534@victoria.tc.ca with 'Modelines' in the subject heading.
+
+# vertical orientation screens:
+
+Modeline "224x256"  22.0  224 318 416 460  256 260 266 270 doublescan
+Modeline "240x256"  24.0  240 318 396 468  256 260 266 270 doublescan
+Modeline "256x256"  26.0  256 340 412 504  256 260 266 270 doublescan
+Modeline "256x304"  19.00  256 336 400 496  304 307 310 321
+
+# above modelines are perfect
+
+Modeline "248x320"  16.75  248 332 396 484  320 323 326 337
+Modeline "248x368"  16.75  248 332 396 484  368 371 374 385
+Modeline "248x384"  16.75  248 332 396 484  384 387 390 401
+# above modelines are 5% thin for 224,
+# 2% fat for 240, and 5% fat for 248
+
+# "256x480" is handled by 640x480 modeline
+# "480x480" is handled by 640x480 modeline
+
+# horizontal orientation screens (except as noted)
+
+Modeline "320x200"     12.75  320 324 372 388  200 204 206 210 doublescan
+Modeline "224x224"     12.75  224 228 276 288  224 228 230 236 doublescan
+Modeline "256x224"     12.75  256 260 308 320  224 228 230 236 doublescan
+Modeline "288x224"     12.75  288 292 340 352  224 228 230 236 doublescan
+Modeline "320x224"     12.75  320 324 372 388  224 228 230 236 doublescan
+Modeline "256x240"     15.00  256 260 308 320  240 244 246 254 doublescan
+Modeline "292x240"     16.75  292 296 344 356  240 244 246 254 doublescan
+Modeline "320x240"     16.75  320 324 372 388  240 244 246 254 doublescan
+Modeline "336x240"     18.00  336 344 392 417  240 244 246 254 doublescan
+Modeline "384x224"     20.00  384 388 436 480  224 228 230 236 doublescan
+Modeline "384x240"     20.00  384 388 436 480  240 244 246 254 doublescan
+Modeline "360x288"     20.00  360 364 412 444  288 292 298 302 doublescan
+Modeline "360x256"     18.00  360 364 412 444  256 260 266 270 doublescan
+Modeline "400x300"     19.00  400 412 476 500  300 303 306 317
+Modeline "400x256"     22.00  400 416 480 504  256 259 262 269 doublescan
+Modeline "400x224"     20.00  400 416 480 500  224 228 230 234 doublescan
+Modeline "512x384"     25.00  512 516 580 632  384 385 388 400
+ModeLine "640x240"     31.50  640 644 708 788  240 244 246 254 doublescan
+ModeLine "672x240"     31.50  672 676 740 820  240 244 246 254 doublescan
+

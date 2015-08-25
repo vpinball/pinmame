@@ -1,0 +1,977 @@
+diff -ruN xmame-esd/Makefile xmame-0.33b7.1/Makefile
+--- xmame-esd/Makefile	Thu Jan  1 01:00:00 1970
++++ xmame-0.33b7.1/Makefile	Sun Aug  2 21:02:44 1998
+@@ -0,0 +1,757 @@
++##############################################################################
++#
++# Makefile for X-Mame-0.33b7.1
++#
++# by Juan Antonio Martinez
++# http:/www.dit.upm.es/~jantonio/mame/
++# mailto:mame@drake.dit.upm.es
++#
++##############################################################################
++
++VERSION = 0.33b7.1
++DATE = 24-July-1998
++
++#########################################################################
++#									#
++# READ COMMENTS AND MODIFY CONFIGURABLE OPTIONS WITH CARE...		#
++#									#
++# Members of Mame and X-Mame project assumes no responsability  	#
++# implicit or explicit about illegal or incorrect use of this   	#
++# sofware and about possible hard/soft damage derived of it   	  	#
++#									#
++# THIS SOFTWARE IS DISTRIBUTED "AS IS" . USE AT YOUR OWN RISK		#
++#									#
++# Mame and X-Mame are Copyright of Nicola Salmoria and Mirko buffoni	#
++# and distributed under terms of the GNU General Public License         #
++#									#
++# Arcade ROM images are copyright of their authors. DISTRIBUTING MAME   #
++# OR X-MAME INCLUDING ROM IMAGES IN THE SAME PACKAGE IS ILLEGAL AND	#
++# CONSTITUTES A VIOLATION OF TERMS OF COPYRIGHT				#
++#									#
++#########################################################################
++
++##############################################################################
++# *** general options
++###############################################################################
++# GNU MAKE is MANDATORY !!!
++# so please give me the path...
++# if GNU make is "native" use this
++MAKE	= make
++# else ...
++# MAKE=/usr/people/jantonio/bin/gmake
++
++# *** Choose your compiler
++CC	= gcc
++# for IRIX systems seems that DCC gets better code than GNU. so use it:
++# CC	= DCC
++#
++# Use of `c89' is recommend for ultrix as it generates faster code (which
++# means less frames to be skipped and better graphics) but `gcc' works just
++# as well. However, stay away from the `cc' ultrix compiler if possible.
++# CC	= c89
++# for ansi compliance testing, only for developers !!
++# CC	= gcc -ansi -pedantic -D_XOPEN_SOURCE -DM_PI=3.141592 -DPEDANTIC
++
++# *** Choose your linker ( some OS's needs native linker instead GNU one )
++# normal
++LD	= $(CC) -s
++# to profile with gcc and gprof
++# LD	= $(CC) -pg
++# no profiling (less strace output), but with debug info
++# LD	= $(CC)
++# for debugging only, only works with gnu-binutils !!
++# LD	= $(CC) -Wl,-warn-common
++
++# *** How to install executable? ( some OS's doesn't support install command )
++INSTALL = cp
++
++# *** set to aproppiate flag if want to debug/optimize
++# normal
++DBGFLAGS =
++# with debug info 
++# DBGFLAGS    = -ggdb
++
++### normal optimization flags
++OPTFLAGS    = -O -Wall
++
++# use these for debugging on x86-gcc
++# OPTFLAGS    = -O2 -m486 -Wall
++### to get full optimization under gcc/x Intel based OS's.. ( !!else comment!! )
++# OPTFLAGS     = -O3 -m486 -Wall -Wno-parentheses -funroll-loops \
++#   -fstrength-reduce -fomit-frame-pointer -ffast-math -malign-functions=2 \
++#   -malign-jumps=2 -malign-loops=2
++### for Linux/X11/PowerPC use following opts
++# OPTFLAGS     = -O3 -Wall -Wno-parentheses -funroll-loops \
++#  -fstrength-reduce -fomit-frame-pointer -ffast-math -fsigned-char
++
++# *** Does your compiler supports inline funcs?. use appropiate item:
++# do not use IL = inline : wont work due to Z80 and 6809 stuffs
++# if strict ansi used set IL to "static"
++# IL	= '-DINLINE=static inline'
++IL     = -DINLINE=static
++
++##############################################################################
++# *** Capabilities
++##############################################################################
++
++# *** To disable joystick support comment next line
++# JOY		= -DUSE_JOYSTICK
++
++# *** To disable  mouse support comment next line
++MOUSE		= -DUSE_MOUSE
++
++# if you have selected joystick support , select your preferences:
++#
++# *** for using X Input Extensions based joystick
++# ( Recommended if available. Of course: doesn't work in SVGALib arch ...)
++# You should also declare a default name for input device.
++# and choose polling method ( event processing or device polling )
++# use provided program "xlistdev" to now available ones
++# and dont forget to include library in linker definition !!
++# JS	= -DX11_JOYSTICK
++# JSNAME = \"Joystick\"
++# JSPOLL  = -DUSE_X11_JOYEVENTS
++# JSLIB   = -lXi
++
++# On iX86 based OS's, if supported, you can use standard joystick driver
++# JS	= -DI386_JOYSTICK
++
++# Linux FM-TOWNS game PAD joystick emulation support
++# Thanks to Osamu Kurati for provided patch
++# JS	= -DLIN_FM_TOWNS
++
++# *** X-Mame uses the XPM library to make snapshots. If you want to, uncomment
++# following section to support them ( you should have libxpm available :-) )
++# COMMENT IT if your are compiling for Linux's SVGALIB arch
++#XPM	= -DHAS_XPM
++#XPMLIB	= -lXpm -L/usr/X11R6/lib
++ 
++# *** If you haven't  the MIT-Shared Memory X Extensions, comment the following:
++# ( Test if available by mean of xdpyinfo command )
++# Comment it if compiling to svgalib xmame
++# MSHM	= -DUSE_MITSHM
++
++# *** Does your system support gettimeofday() function? If do, we encourage you
++# to enable this feature . Else .... comment it :-(
++TD	= -DHAVE_GETTIMEOFDAY
++
++# do not edit next line !! ( note that XPM options are not included )
++CAPABILITIES = $(MSHM) $(MOUSE) $(JOY) $(JS) "-DX11_JOYNAME='$(JSNAME)'" $(JSPOLL) $(TD) 
++
++##############################################################################
++# *** Configuration files and directories
++##############################################################################
++
++# *** where does your X11 source tree resides ?? use aproppiate switch 
++
++# standard location for X11 
++# X11INC		= -I/usr/include/X11
++# X11LIB		= -L/usr/lib/X11
++# standard location for XFree86
++X11INC		= -I/usr/X11R6/include
++X11LIB		= -L/usr/X11R6/lib
++# for Sun systems 
++# X11INC		= -I/usr/openwin/include
++# X11LIB		= -L/usr/openwin/lib
++# for non-standard locations
++# X11INC		= -I/usr/local/include/X11
++# X11LIB		= -L/usr/local/lib
++
++# *** If you want esound support you need to tell where to find lib and 
++# include files. Next two lines should be very common locations.
++ESDINC		= -I/usr/local/include
++ESDLIB		= -L/usr/local/lib -lesd
++
++# These options defines default location for roms and configuration files
++# also, your default X display is defined here
++#
++
++# *** Select destination directory for your compiled program , manual page
++# and binary distribution ( if you want to... )
++# ( only needed to install, not to compile... )
++DESTDIR = /usr/games
++MANDIR = /usr/local/man/man6
++DISTDIR = /home/ftp/pub/emulators/mame
++
++# *** Where the ROM source tree ?
++MDIR = \"/usr/games/lib/mame\"
++
++# *** Where to store high scores ?
++SDIR = \"/usr/games/lib/mame\"
++
++# *** Where resides global configuration file ?
++MRC = \"/usr/games/lib/mame/xmamerc\"
++
++# *** Use this definition as default X Display
++DP = \":0.0\"
++
++# Dont modify next line !!
++CONF = -DMAMEDIR='$(MDIR)' -DSPOOLDIR='$(SDIR)' -DMAMERC='$(MRC)' -DDISPLAY='$(DP)'
++
++##############################################################################
++# *** Audio features
++# ( only used if audio is available and enabled at compile-time )
++##############################################################################
++
++# *** Do you want linear interpolation in mixer? Uncomment following line
++# Some OS's ( AIX and Solaris ) makes terrible noise if these feature is set
++# so you can test it and decide....
++S_LIN = -DFANCY_SOUND
++
++# *** If your system supports query audio buffer size (like IRIX or Linux )
++# you might decide to use these feature. Otherwise, you should use a 
++# timer based audio code and ajust in src/unix/sound.h AUDIO_TIMER_FREQ item
++# Note: esound support needs timer ON to output sound right
++#
++# S_TIM = -DDONTUSE_TIMER
++S_TIM = -DUSE_TIMER
++
++# *** When using timer, you should provide the frequency to generate audio sample
++# frames in your system. See readme.unix notes about these item
++#
++S_AFR =	-DAUDIO_TIMER_FREQ=50
++
++# *** For EsounD support uncomment the next line. Linux ONLY for the moment! 
++S_ESD = -DUSE_EsounD
++
++# Dont modify next line !!
++SOUND_OPTS = $(S_LIN) $(S_TIM) $(S_AFR) $(S_ESD)
++
++##############################################################################
++# *** architecture.
++##############################################################################
++
++# *** Choose your OS (!!only one!!) 
++#  you can also try make -f makefile.unix ARCH=<your_unix_arch>
++
++######## PowerPC/Linux/X11
++# ARCH  = linux_powerpc
++######## Alpha/Linux/X11
++# ARCH  = linux_alpha
++######## ix86/Linux/X11
++ARCH  = linux
++######## ix86/Linux/SVGALIB
++# ARCH	= svgalib
++######## ix86/Linux/GGI *New* *New* *New* Please test - no mouse or joy yet
++# ARCH  = ggi
++######## ix86/FreeBSD/X11 and ix86/BSDi/X11
++# ARCH  = FREEBSD
++######## ix86/NetBSD/X11
++# ARCH  = netbsd_i386
++######## Sparc/SunOS/X11 ( no sound )
++# ARCH  = sunos
++######## ix86/Solaris/X11
++# ARCH  = solaris_i386
++######## Sparc/Solaris/X11 ( horrible sound :-( )
++# ARCH  = solaris
++######## Mips/IRIX/X11 ( sound selectable: see arch-dependent options )
++# ARCH  = irix
++######## HP-PA/hpux/X11 ( no sound )
++# ARCH  = hpux
++######## IBM/aix/X11 ( sound selectable: see arch-dependent options )
++# ARCH  = aix
++######## RISC/ultrix/X11 ( no sound )
++# ARCH  = ultrix
++
++##############################################################################
++# **** Architecture dependent defs. Only change if you know what're you doing...
++##############################################################################
++
++# Linux PowerPC + X-Windows
++#####################
++DEFS.linux_powerpc   = -DUNIX -Dlinux -Dlinux_powerpc -DACORN -DSIGNED_SAMPLES
++LIBS.linux_powerpc   = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.linux_powerpc = $(X11INC) -fstrength-reduce -funroll-loops \
++                -fomit-frame-pointer -fsigned-char -Wall
++# for debbuging disable all opts...
++# CFLAGS.linux_powerpc = $(X11INC) -Wall
++INST.linux_powerpc   = doinstall
++
++# Linux Alpha + X-Windows
++#####################
++DEFS.linux_alpha   = -DLSB_FIRST -DUNIX -Dlinux -DAXP_ASM -Dlinux_alpha -DACORN -DSIGNED_SAMPLES
++LIBS.linux_alpha   = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.linux_alpha = $(X11INC) -fstrength-reduce -funroll-loops \
++		-fomit-frame-pointer -Wall
++# for debbuging disable all opts...
++# CFLAGS.linux_alpha = $(X11INC) -Wall
++INST.linux_alpha   = doinstall
++
++# Linux Intelx86 + X-Windows
++#####################
++# to debug you'll have to exclude -DX86_ASM
++DEFS.linux   = -DLSB_FIRST -DUNIX -Dlinux -DX86_ASM -DSIGNED_SAMPLES
++LIBS.linux   = $(X11LIB) $(ESDLIB) -lX11 -lXext -lm
++# CFLAGS.linux = $(X11INC) -m486 -fstrength-reduce -funroll-loops \
++#   		-fomit-frame-pointer -Wall
++# for debbuging disable all opts...
++CFLAGS.linux = $(X11INC) $(ESDINC) -m486 -Wall -g 
++INST.linux   = doinstall
++
++# Linux + Svgalib
++#####################
++DEFS.svgalib   = -DLSB_FIRST -DUNIX -Dsvgalib -Dlinux -DX86_ASM -DSIGNED_SAMPLES
++LIBS.svgalib   = -lm -lvga -lvgagl
++CFLAGS.svgalib = 
++INST.svgalib   = doinstallsvgalib
++
++# Linux + libGGI *definitely maybe*
++#####################
++DEFS.ggi       = -DLSB_FIRST -DUNIX -Dggi -Dlinux -DX86_ASM -DSIGNED_SAMPLES
++LIBS.ggi       = -lm -lggi
++CFLAGS.ggi     = -I/usr/local/include #I'd put a '-g' here...
++INST.ggi       = doinstall
++
++# FreeBSD and BSDi
++#####################
++# to compile under BSDI add "-DBSDi" to DEFS.FREEBSD
++#
++DEFS.FREEBSD   = -DX86_ASM -DLSB_FIRST -DUNIX -Dlinux -DFREEBSD \
++		-DFREEBSD_SOUND_WORKAROUND -DSIGNED_SAMPLES
++LIBS.FREEBSD   = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.FREEBSD = $(X11INC) -m486 -fstrength-reduce -funroll-loops \
++		-fomit-frame-pointer -Wall
++INST.FREEBSD   = doinstall
++
++# netbsd_i386
++#####################
++#If you want sound add to DEFS.netbsd_i386  "-DUSE_AUDIO" and 
++#set STIM=-DUSE_TIMER above
++#
++DEFS.netbsd_i386   = -DX86_ASM -DLSB_FIRST -DUNIX -Dnetbsd_i386 -DNETBSD \
++		-DHAVE_GETTIMEOFDAY -DUSE_AUDIO -DSIGNED_SAMPLES
++LIBS.netbsd_i386   = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.netbsd_i386 = $(X11INC) -m486 -fstrength-reduce -funroll-loops \
++		-fomit-frame-pointer -Wall
++INST.netbsd_i386   = doinstall
++
++# SunOS
++#####################
++DEFS.sunos	 = -DUNIX -Dsun -Dsunos -DCLOCKS_PER_SEC=1000000 \
++		-DACORN -DSIGNED_SAMPLES
++LIBS.sunos       = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.sunos	 = $(X11INC)
++INST.sunos      = doinstall
++
++# Solaris
++#####################
++DEFS.solaris	 = -DUNIX -Dsun -Dsolaris -DACORN -DSIGNED_SAMPLES
++LIBS.solaris     = $(X11LIB) -lX11 -lXext -lnsl -lsocket -lm
++CFLAGS.solaris   = $(X11INC)
++INST.solaris     = doinstall
++
++# Solaris_i386
++#####################
++DEFS.solaris_i386     = -DUNIX -DLSB_FIRST -Dsun -Dsolaris -DSIGNED_SAMPLES
++LIBS.solaris_i386     = $(X11LIB) -lX11 -lXext -lnsl -lsocket -lm
++CFLAGS.solaris_i386   = $(X11INC) 
++INST.solaris_i386     = doinstall
++
++# IRIX + Sound
++#####################
++# configurable sound support thanks to entropy@zippy.bernstein.com
++# if your IRIX system has the dmedia package installed use following defs
++DEFS.irix	 = -DUNIX -Dsgi -DACORN -DSIGNED_SAMPLES
++LIBS.irix        = $(X11LIB) -lX11 -lXext -lm -laudio
++CFLAGS.irix      = $(X11INC)
++INST.irix        = doinstall
++
++# IRIX without sound support
++######################
++# If you have no sound support ( dmedia package not installed )
++# or you don't want sound, use these definitions instead of above
++# DEFS.irix	 = -DUNIX -Dsgi -DIRIX_NOSOUND -DACORN -DSIGNED_SAMPLES
++# LIBS.irix        = $(X11LIB) -lX11 -lXext -lm
++# CFLAGS.irix      = $(X11INC)
++# INST.irix        = doinstall
++
++
++# AIX + Sound
++#####################
++# Thanks to Chris Sharp for writing sound driver and sending patches
++# you'll need the UMS and SOM lpp's installed ( under AIX4 )
++DEFS.aix	 = -DUNIX -Daix -DUSE_AUDIO -DACORN -DSIGNED_SAMPLES
++LIBS.aix         = $(X11LIB) -lX11 -lXext -lm -lUMSobj
++CFLAGS.aix	 = $(X11INC) -O2 -I/usr/include/UMS -I/usr/lpp/som/include 
++INST.aix         = doinstall
++
++# AIX Without Sound support
++############################
++# If you have no sound libs availables in AIX, you should disable audio
++# so use these definitions instead of above ones
++# DEFS.aix	 = -DUNIX -Daix -DACORN -DSIGNED_SAMPLES
++# LIBS.aix       = $(X11LIB) -lX11 -lXext -lm
++# CFLAGS.aix	 = $(X11INC)
++# INST.aix         = doinstall
++
++# HP-UX
++#####################
++# you MUST use GNU compiler and GNU make to get it run
++# no sound support (yet)
++DEFS.hpux	 = -DUNIX -Dhpux -DACORN -DSIGNED_SAMPLES
++LIBS.hpux        = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.hpux 	 = $(X11INC)
++INST.hpux        = doinstall
++
++# RISC/Ultrix
++#####################
++# Use c89 as compiler ( see above ) 
++# no sound support (yet)
++DEFS.ultrix	 = -DLSB_FIRST -DUNIX -Dultrix -DACORN -DSIGNED_SAMPLES
++LIBS.ultrix      = $(X11LIB) -lX11 -lXext -lm
++CFLAGS.ultrix 	 = $(X11INC)
++INST.ultrix      = doinstall
++
++###########################################################################
++# No configurable options below this line....
++###########################################################################
++
++INCDIRS	= -Isrc -Isrc/unix -Isrc/Z80 -Isrc/M6502 -Isrc/M6808 -Isrc/M6809\
++ -Isrc/M68000 -Isrc/I8039 -Isrc/I86
++
++# Perhaps one day original mame sources will use POSIX strcasecmp and M_PI
++# instead MS-DOS counterparts... ( a long and sad history ...)
++CFLAGS	= $(CAPABILITIES) $(SOUND_OPTS) $(DBGFLAGS) $(OPTFLAGS) \
++	  $(XPM) $(IL) $(INCDIRS) $(CFLAGS.$(ARCH)) -Dstricmp=strcasecmp -DPI=M_PI
++
++OBJOSDEP = obj/unix/osdepend.a
++
++OBJMAME= obj/mame.o obj/common.o obj/usrintrf.o obj/driver.o \
++         obj/cpuintrf.o obj/memory.o obj/timer.o obj/palette.o obj/gfxlayer.o \
++         obj/inptport.o obj/cheat.o obj/unzip.o obj/inflate.o \
++         obj/audit.o \
++         obj/sndhrdw/adpcm.o \
++         obj/sndhrdw/psg.o obj/sndhrdw/psgintf.o \
++         obj/sndhrdw/2151intf.o obj/sndhrdw/fm.o \
++         obj/sndhrdw/ym2151.o obj/sndhrdw/ym3812.o \
++	 obj/sndhrdw/tms5220.o obj/sndhrdw/5220intf.o obj/sndhrdw/vlm5030.o \
++	 obj/sndhrdw/pokey.o obj/sndhrdw/pokyintf.o obj/sndhrdw/sn76496.o \
++	 obj/sndhrdw/nes.o obj/sndhrdw/nesintf.o \
++	 obj/sndhrdw/votrax.o obj/sndhrdw/dac.o obj/sndhrdw/samples.o \
++         obj/machine/Z80fmly.o obj/machine/6821pia.o \
++         obj/vidhrdw/generic.o obj/sndhrdw/generic.o \
++         obj/vidhrdw/vector.o obj/vidhrdw/avgdvg.o obj/machine/mathbox.o \
++         obj/sndhrdw/namco.o \
++         obj/machine/pacman.o obj/drivers/pacman.o \
++         obj/machine/theglob.o \
++         obj/drivers/maketrax.o \
++         obj/machine/jrpacman.o obj/drivers/jrpacman.o obj/vidhrdw/jrpacman.o \
++         obj/vidhrdw/pengo.o obj/drivers/pengo.o \
++         obj/vidhrdw/ladybug.o obj/drivers/ladybug.o \
++         obj/vidhrdw/mrdo.o obj/drivers/mrdo.o \
++         obj/machine/docastle.o obj/vidhrdw/docastle.o obj/drivers/docastle.o \
++         obj/drivers/dowild.o \
++         obj/vidhrdw/nova2001.o obj/drivers/nova2001.o \
++         obj/vidhrdw/cclimber.o obj/sndhrdw/cclimber.o obj/drivers/cclimber.o \
++         obj/drivers/ckongs.o \
++         obj/vidhrdw/seicross.o obj/drivers/seicross.o \
++         obj/vidhrdw/dkong.o obj/sndhrdw/dkong.o obj/drivers/dkong.o \
++         obj/machine/bagman.o obj/vidhrdw/bagman.o obj/drivers/bagman.o \
++         obj/machine/wow.o obj/vidhrdw/wow.o obj/sndhrdw/wow.o obj/drivers/wow.o \
++         obj/sndhrdw/gorf.o \
++         obj/vidhrdw/galaxian.o obj/drivers/galaxian.o \
++         obj/sndhrdw/mooncrst.o obj/drivers/mooncrst.o \
++         obj/vidhrdw/frogger.o obj/sndhrdw/frogger.o obj/drivers/frogger.o \
++         obj/machine/scramble.o obj/sndhrdw/scramble.o obj/drivers/scramble.o \
++         obj/drivers/scobra.o \
++         obj/vidhrdw/amidar.o obj/drivers/amidar.o \
++         obj/vidhrdw/warpwarp.o obj/drivers/warpwarp.o \
++         obj/vidhrdw/popeye.o obj/drivers/popeye.o \
++         obj/vidhrdw/rallyx.o obj/drivers/rallyx.o \
++         obj/drivers/locomotn.o \
++         obj/vidhrdw/pooyan.o obj/drivers/pooyan.o \
++         obj/vidhrdw/timeplt.o obj/drivers/timeplt.o \
++         obj/vidhrdw/phoenix.o obj/sndhrdw/phoenix.o obj/drivers/phoenix.o \
++         obj/sndhrdw/pleiads.o \
++         obj/vidhrdw/vicdual.o obj/sndhrdw/vicdual.o obj/drivers/vicdual.o \
++         obj/machine/8080bw.o obj/vidhrdw/8080bw.o obj/sndhrdw/8080bw.o obj/drivers/8080bw.o \
++         obj/machine/Z80bw.o obj/vidhrdw/Z80bw.o obj/sndhrdw/Z80bw.o obj/drivers/Z80bw.o \
++         obj/vidhrdw/mario.o obj/sndhrdw/mario.o obj/drivers/mario.o \
++         obj/vidhrdw/zaxxon.o obj/sndhrdw/zaxxon.o obj/drivers/zaxxon.o \
++         obj/vidhrdw/congo.o obj/sndhrdw/congo.o obj/drivers/congo.o \
++         obj/vidhrdw/bombjack.o obj/drivers/bombjack.o \
++         obj/machine/centiped.o obj/vidhrdw/centiped.o obj/drivers/centiped.o \
++         obj/machine/milliped.o obj/vidhrdw/milliped.o obj/drivers/milliped.o \
++         obj/vidhrdw/warlord.o obj/drivers/warlord.o \
++         obj/vidhrdw/rockola.o obj/sndhrdw/rockola.o obj/drivers/rockola.o \
++         obj/vidhrdw/mpatrol.o  obj/sndhrdw/mpatrol.o obj/drivers/mpatrol.o \
++         obj/vidhrdw/travrusa.o obj/drivers/travrusa.o \
++         obj/vidhrdw/btime.o obj/drivers/btime.o \
++         obj/vidhrdw/jumpbug.o obj/drivers/jumpbug.o \
++         obj/vidhrdw/gberet.o obj/drivers/gberet.o \
++         obj/machine/exidy.o obj/vidhrdw/exidy.o obj/drivers/exidy.o \
++	 obj/sndhrdw/targ.o \
++         obj/vidhrdw/gottlieb.o obj/sndhrdw/gottlieb.o obj/drivers/gottlieb.o \
++         obj/vidhrdw/bking2.o obj/drivers/bking2.o \
++         obj/machine/taito.o obj/vidhrdw/taito.o obj/drivers/taito.o \
++         obj/machine/panic.o obj/vidhrdw/panic.o obj/drivers/panic.o \
++         obj/machine/arabian.o obj/vidhrdw/arabian.o obj/drivers/arabian.o \
++         obj/vidhrdw/1942.o obj/drivers/1942.o \
++         obj/vidhrdw/vulgus.o obj/drivers/vulgus.o \
++         obj/vidhrdw/commando.o obj/drivers/commando.o \
++         obj/vidhrdw/gng.o obj/drivers/gng.o \
++         obj/vidhrdw/sonson.o obj/drivers/sonson.o \
++         obj/vidhrdw/exedexes.o obj/drivers/exedexes.o \
++         obj/sndhrdw/gyruss.o obj/vidhrdw/gyruss.o obj/drivers/gyruss.o \
++         obj/machine/superpac.o obj/vidhrdw/superpac.o obj/drivers/superpac.o \
++         obj/machine/galaga.o obj/vidhrdw/galaga.o obj/drivers/galaga.o \
++         obj/machine/kangaroo.o obj/vidhrdw/kangaroo.o obj/drivers/kangaroo.o \
++         obj/vidhrdw/kungfum.o obj/drivers/kungfum.o \
++         obj/machine/qix.o obj/vidhrdw/qix.o obj/drivers/qix.o \
++         obj/machine/williams.o obj/vidhrdw/williams.o obj/drivers/williams.o \
++         obj/machine/ticket.o \
++         obj/sndhrdw/starforc.o obj/vidhrdw/starforc.o obj/drivers/starforc.o \
++         obj/vidhrdw/naughtyb.o obj/drivers/naughtyb.o \
++         obj/machine/mystston.o obj/vidhrdw/mystston.o obj/drivers/mystston.o \
++         obj/vidhrdw/matmania.o obj/drivers/matmania.o \
++         obj/vidhrdw/tutankhm.o obj/drivers/tutankhm.o \
++         obj/drivers/junofrst.o \
++         obj/machine/spacefb.o obj/vidhrdw/spacefb.o obj/sndhrdw/spacefb.o obj/drivers/spacefb.o \
++         obj/machine/mappy.o obj/vidhrdw/mappy.o obj/drivers/mappy.o \
++         obj/vidhrdw/ccastles.o obj/drivers/ccastles.o \
++         obj/vidhrdw/yiear.o obj/drivers/yiear.o \
++         obj/machine/digdug.o obj/vidhrdw/digdug.o obj/drivers/digdug.o \
++         obj/machine/asteroid.o obj/sndhrdw/asteroid.o \
++	 obj/machine/atari_vg.o obj/drivers/asteroid.o \
++         obj/drivers/bwidow.o \
++         obj/sndhrdw/bzone.o  obj/drivers/bzone.o \
++         obj/sndhrdw/redbaron.o \
++         obj/drivers/tempest.o \
++         obj/machine/starwars.o obj/machine/swmathbx.o obj/drivers/starwars.o obj/sndhrdw/starwars.o \
++         obj/machine/mhavoc.o obj/drivers/mhavoc.o \
++         obj/machine/quantum.o obj/drivers/quantum.o \
++         obj/machine/missile.o obj/vidhrdw/missile.o obj/drivers/missile.o \
++         obj/machine/bublbobl.o obj/vidhrdw/bublbobl.o obj/drivers/bublbobl.o \
++         obj/machine/bosco.o obj/sndhrdw/bosco.o obj/vidhrdw/bosco.o obj/drivers/bosco.o \
++         obj/vidhrdw/yard.o obj/drivers/yard.o \
++         obj/vidhrdw/blueprnt.o obj/drivers/blueprnt.o \
++         obj/vidhrdw/sega.o obj/sndhrdw/sega.o obj/machine/sega.o obj/drivers/sega.o \
++         obj/vidhrdw/segar.o obj/sndhrdw/segar.o obj/machine/segar.o obj/drivers/segar.o \
++         obj/sndhrdw/monsterb.o \
++         obj/drivers/omegrace.o \
++         obj/vidhrdw/xevious.o obj/machine/xevious.o obj/drivers/xevious.o \
++         obj/vidhrdw/bankp.o obj/drivers/bankp.o \
++         obj/vidhrdw/sbasketb.o obj/drivers/sbasketb.o \
++         obj/machine/mcr.o \
++         obj/vidhrdw/mcr1.o obj/vidhrdw/mcr2.o obj/vidhrdw/mcr3.o \
++         obj/drivers/mcr1.o obj/drivers/mcr2.o obj/drivers/mcr3.o \
++         obj/machine/mcr68.o obj/vidhrdw/mcr68.o obj/drivers/mcr68.o \
++         obj/machine/espial.o obj/vidhrdw/espial.o obj/drivers/espial.o \
++         obj/machine/tp84.o obj/vidhrdw/tp84.o obj/drivers/tp84.o \
++         obj/vidhrdw/mikie.o obj/drivers/mikie.o \
++         obj/vidhrdw/ironhors.o obj/drivers/ironhors.o \
++         obj/vidhrdw/shaolins.o obj/drivers/shaolins.o \
++         obj/machine/rastan.o obj/vidhrdw/rastan.o obj/sndhrdw/rastan.o obj/drivers/rastan.o \
++         obj/machine/cloak.o obj/vidhrdw/cloak.o obj/drivers/cloak.o \
++         obj/machine/lwings.o obj/vidhrdw/lwings.o obj/drivers/lwings.o \
++         obj/machine/berzerk.o obj/vidhrdw/berzerk.o obj/sndhrdw/berzerk.o obj/drivers/berzerk.o \
++         obj/machine/capbowl.o obj/vidhrdw/capbowl.o obj/vidhrdw/tms34061.o obj/drivers/capbowl.o \
++         obj/vidhrdw/1943.o obj/drivers/1943.o \
++         obj/vidhrdw/gunsmoke.o obj/drivers/gunsmoke.o \
++         obj/vidhrdw/blktiger.o obj/drivers/blktiger.o \
++         obj/vidhrdw/tecmo.o obj/drivers/tecmo.o \
++         obj/vidhrdw/gaiden.o obj/drivers/gaiden.o \
++         obj/vidhrdw/sidearms.o obj/drivers/sidearms.o \
++         obj/vidhrdw/srumbler.o obj/drivers/srumbler.o \
++         obj/vidhrdw/champbas.o obj/drivers/champbas.o \
++         obj/vidhrdw/pbaction.o obj/drivers/pbaction.o \
++         obj/vidhrdw/exerion.o obj/drivers/exerion.o \
++         obj/machine/arkanoid.o obj/vidhrdw/arkanoid.o obj/drivers/arkanoid.o \
++         obj/machine/slapstic.o \
++         obj/machine/gauntlet.o obj/vidhrdw/gauntlet.o obj/drivers/gauntlet.o \
++         obj/vidhrdw/klax.o obj/drivers/klax.o \
++         obj/machine/blstroid.o obj/vidhrdw/blstroid.o obj/drivers/blstroid.o \
++         obj/vidhrdw/eprom.o obj/drivers/eprom.o \
++         obj/vidhrdw/xybots.o obj/drivers/xybots.o \
++         obj/machine/atarisy1.o obj/vidhrdw/atarisy1.o obj/drivers/atarisy1.o \
++         obj/machine/atarisy2.o obj/vidhrdw/atarisy2.o obj/drivers/atarisy2.o \
++	 obj/machine/atarigen.o \
++         obj/machine/foodf.o obj/vidhrdw/foodf.o obj/drivers/foodf.o \
++         obj/vidhrdw/circus.o obj/drivers/circus.o \
++         obj/machine/konami.o obj/vidhrdw/trackfld.o obj/sndhrdw/trackfld.o obj/drivers/trackfld.o \
++         obj/vidhrdw/hyperspt.o obj/drivers/hyperspt.o \
++         obj/vidhrdw/rocnrope.o obj/drivers/rocnrope.o \
++         obj/vidhrdw/circusc.o obj/drivers/circusc.o \
++         obj/vidhrdw/pingpong.o obj/drivers/pingpong.o \
++         obj/vidhrdw/astrof.o obj/drivers/astrof.o \
++         obj/machine/sprint2.o obj/vidhrdw/sprint2.o obj/drivers/sprint2.o \
++         obj/vidhrdw/punchout.o obj/sndhrdw/punchout.o obj/drivers/punchout.o \
++         obj/vidhrdw/firetrap.o obj/drivers/firetrap.o \
++         obj/vidhrdw/jack.o obj/drivers/jack.o \
++         obj/machine/vastar.o obj/vidhrdw/vastar.o obj/drivers/vastar.o \
++         obj/vidhrdw/brkthru.o obj/drivers/brkthru.o \
++         obj/vidhrdw/citycon.o obj/drivers/citycon.o \
++         obj/machine/starfire.o obj/vidhrdw/starfire.o obj/drivers/starfire.o \
++         obj/machine/sbrkout.o obj/vidhrdw/sbrkout.o obj/drivers/sbrkout.o \
++         obj/vidhrdw/superqix.o obj/drivers/superqix.o \
++         obj/machine/jedi.o obj/vidhrdw/jedi.o obj/sndhrdw/jedi.o obj/drivers/jedi.o \
++         obj/vidhrdw/gameplan.o obj/drivers/gameplan.o \
++         obj/machine/dominos.o obj/vidhrdw/dominos.o obj/drivers/dominos.o \
++         obj/vidhrdw/tankbatt.o obj/drivers/tankbatt.o \
++         obj/machine/rainbow.o obj/drivers/rainbow.o \
++         obj/vidhrdw/nitedrvr.o obj/machine/nitedrvr.o obj/drivers/nitedrvr.o \
++         obj/vidhrdw/lrunner.o obj/drivers/lrunner.o \
++         obj/vidhrdw/liberatr.o obj/machine/liberatr.o obj/drivers/liberatr.o \
++         obj/vidhrdw/wiz.o obj/drivers/wiz.o \
++         obj/vidhrdw/blockout.o obj/drivers/blockout.o \
++         obj/vidhrdw/fastfred.o obj/drivers/fastfred.o \
++         obj/vidhrdw/thepit.o obj/drivers/thepit.o \
++         obj/vidhrdw/bsktball.o obj/machine/bsktball.o obj/drivers/bsktball.o \
++         obj/vidhrdw/copsnrob.o obj/machine/copsnrob.o obj/drivers/copsnrob.o \
++         obj/vidhrdw/toki.o obj/drivers/toki.o \
++         obj/vidhrdw/snowbros.o obj/drivers/snowbros.o \
++         obj/machine/cps1.o obj/vidhrdw/cps1.o obj/drivers/cps1.o \
++         obj/vidhrdw/gundealr.o obj/drivers/gundealr.o \
++         obj/machine/tnzs.o obj/vidhrdw/tnzs.o obj/drivers/tnzs.o \
++         obj/vidhrdw/route16.o obj/drivers/route16.o \
++         obj/vidhrdw/wc90.o obj/drivers/wc90.o \
++         obj/vidhrdw/wc90b.o obj/drivers/wc90b.o \
++         obj/drivers/twincobr.o \
++         obj/machine/dec0.o obj/vidhrdw/dec0.o obj/drivers/dec0.o \
++         obj/vidhrdw/dec8.o obj/drivers/dec8.o \
++         obj/vidhrdw/karnov.o obj/drivers/karnov.o \
++         obj/machine/toobin.o obj/vidhrdw/toobin.o obj/drivers/toobin.o \
++         obj/vidhrdw/tigeroad.o obj/drivers/tigeroad.o \
++         obj/vidhrdw/blockade.o obj/drivers/blockade.o \
++         obj/machine/leprechn.o obj/vidhrdw/leprechn.o obj/drivers/leprechn.o \
++         obj/vidhrdw/atetris.o obj/drivers/atetris.o \
++         obj/vidhrdw/dday.o obj/sndhrdw/dday.o obj/drivers/dday.o \
++         obj/vidhrdw/system8.o obj/drivers/system8.o \
++         obj/vidhrdw/pacland.o obj/drivers/pacland.o \
++         obj/vidhrdw/tmnt.o obj/drivers/tmnt.o \
++         obj/vidhrdw/sidepckt.o obj/drivers/sidepckt.o \
++         obj/vidhrdw/xain.o obj/drivers/xain.o \
++         obj/machine/slapfght.o obj/vidhrdw/slapfght.o obj/drivers/slapfght.o \
++         obj/vidhrdw/hexa.o obj/drivers/hexa.o \
++         obj/vidhrdw/shootout.o obj/drivers/shootout.o \
++         obj/vidhrdw/ddragon.o obj/drivers/ddragon.o \
++         obj/vidhrdw/aeroboto.o obj/drivers/aeroboto.o \
++         obj/machine/system16.o obj/vidhrdw/shinobi.o \
++         obj/drivers/shinobi.o obj/drivers/altbeast.o obj/drivers/goldnaxe.o \
++         obj/vidhrdw/redalert.o obj/sndhrdw/redalert.o obj/drivers/redalert.o \
++         obj/machine/irobot.o obj/vidhrdw/irobot.o obj/drivers/irobot.o \
++         obj/vidhrdw/crbaloon.o obj/drivers/crbaloon.o \
++         obj/vidhrdw/zaccaria.o obj/drivers/zaccaria.o \
++         obj/vidhrdw/ssi.o obj/drivers/ssi.o \
++         obj/vidhrdw/nemesis.o obj/drivers/nemesis.o \
++         obj/vidhrdw/cosmica.o obj/drivers/cosmica.o \
++         obj/machine/spiders.o obj/vidhrdw/crtc6845.o obj/vidhrdw/spiders.o obj/drivers/spiders.o \
++         obj/vidhrdw/lastduel.o obj/drivers/lastduel.o \
++         obj/machine/avalnche.o obj/vidhrdw/avalnche.o obj/drivers/avalnche.o \
++         obj/machine/gladiatr.o obj/vidhrdw/gladiatr.o obj/drivers/gladiatr.o \
++         obj/drivers/lazercmd.o obj/vidhrdw/lazercmd.o \
++         obj/drivers/meadows.o obj/sndhrdw/meadows.o obj/vidhrdw/meadows.o \
++         obj/machine/jackal.o obj/vidhrdw/jackal.o obj/drivers/jackal.o \
++         obj/vidhrdw/contra.o obj/drivers/contra.o \
++         obj/vidhrdw/solomon.o obj/drivers/solomon.o \
++         obj/vidhrdw/tehkanwc.o obj/drivers/tehkanwc.o \
++         obj/vidhrdw/vindictr.o obj/drivers/vindictr.o \
++         obj/machine/stactics.o obj/vidhrdw/stactics.o obj/drivers/stactics.o \
++         obj/vidhrdw/mainevt.o obj/drivers/mainevt.o \
++         obj/vidhrdw/darkseal.o obj/drivers/darkseal.o \
++         obj/vidhrdw/goldstar.o obj/drivers/goldstar.o \
++         obj/vidhrdw/ninjakd2.o obj/drivers/ninjakd2.o \
++         obj/Z80/Z80.o obj/M6502/M6502.o obj/I86/I86.o obj/I8039/I8039.o obj/I8085/I8085.o \
++	 obj/M6809/M6809.o obj/M6805/M6805.o \
++         obj/S2650/S2650.o obj/T11/t11.o \
++         obj/M6808/M6808.o obj/M6808/6808dasm.o \
++	 obj/M68000/opcode0.o obj/M68000/opcode1.o obj/M68000/opcode2.o obj/M68000/opcode3.o \
++	 obj/M68000/opcode4.o obj/M68000/opcode5.o obj/M68000/opcode6.o obj/M68000/opcode7.o \
++	 obj/M68000/opcode8.o obj/M68000/opcode9.o obj/M68000/opcodeb.o obj/M68000/opcodec.o \
++	 obj/M68000/opcoded.o obj/M68000/opcodee.o obj/M68000/mc68kmem.o obj/M68000/cpufunc.o \
++         obj/mamedbg.o obj/asg.o obj/M6502/6502dasm.o obj/I8085/8085dasm.o \
++         obj/M6809/6809dasm.o obj/M6805/6805dasm.o  obj/I8039/8039dasm.o \
++         obj/S2650/2650dasm.o obj/T11/t11dasm.o obj/M68000/M68kdasm.o
++
++OBJS = $(OBJMAME) $(OBJOSDEP)
++
++# not sure why, but was in original xmame makefile long time ago...
++VPATH = src src/Z80 src/M6502 src/I86 src/M6809 src/M68000 src/unix
++
++all: objdirs osdepend xmame.$(ARCH)
++
++OBJDIRS= obj.$(ARCH) obj.$(ARCH)/msdos obj.$(ARCH)/unix obj.$(ARCH)/T11 \
++	 obj.$(ARCH)/I86 obj.$(ARCH)/I8039 obj.$(ARCH)/I8085 obj.$(ARCH)/Z80 \
++ 	 obj.$(ARCH)/M6502 obj.$(ARCH)/M6805 obj.$(ARCH)/M6808 \
++	 obj.$(ARCH)/M6809 obj.$(ARCH)/M68000 obj.$(ARCH)/S2650 \
++	 obj.$(ARCH)/drivers obj.$(ARCH)/machine \
++	 obj.$(ARCH)/vidhrdw obj.$(ARCH)/sndhrdw
++
++$(OBJDIRS):
++	-mkdir $@
++
++objdirs: $(OBJDIRS) objlnk
++
++objlnk:
++	-rm -fR obj
++	 ln -s obj.$(ARCH) obj
++
++xmame.$(ARCH):	$(OBJS)
++	$(LD) -g3 -o xmame.$(ARCH) $(OBJS) $(JSLIB) $(XPMLIB) $(LIBS.$(ARCH))
++
++xlistdev: xlistdev.c
++	$(CC) $(X11INC) xlistdev.c -o xlistdev $(JSLIB) $(LIBS.$(ARCH))
++
++# obj/unix/osdepend.a:
++
++osdepend:
++	 ( \
++	 cd src/unix; \
++	  $(MAKE) CC="$(CC)" ARCH="$(ARCH)" DEFS="$(CONF) $(DEFS.$(ARCH))" CFLAGS="$(CFLAGS)" \
++	 )
++
++sndserver.$(ARCH): obj/unix/sndserver.o obj/unix/osdepend.a 
++	$(LD) -g3 -o  sndserver.$(ARCH) obj/unix/sndserver.o $(LIBS.$(ARCH))
++
++obj/%.o: src/%.c
++	$(CC) $(DEFS.$(ARCH)) $(CFLAGS) -o $@ -c $<
++
++sndtest: sndtest.c
++	gcc -o sndtest sndtest.c
++
++# dependencies
++
++obj/sndhrdw/cclimber.o:	src/sndhrdw/psg.c src/sndhrdw/psg.h
++
++obj/Z80/Z80.o:		src/Z80/Z80.c src/Z80/Z80.h src/Z80/Z80Codes.h \
++	        	src/Z80/Z80IO.h src/Z80/Z80DAA.h src/Z80/Z80CDx86.h
++obj/M6502/M6502.o:	src/M6502/M6502.c src/M6502/M6502.h \
++		        src/M6502/Tables.h src/M6502/Codes.h
++obj/M6809/M6809.o:	src/M6809/M6809.c src/M6809/M6809.h
++obj/I86/I86.o:		src/I86/I86.c src/I86/I86.h \
++			src/I86/instr.h
++
++install: install-bin install-man
++	@echo X-Mame $(VERSION) for $(ARCH) installation completed
++
++install-bin: $(INST.$(ARCH)) xmame.$(ARCH)
++
++install-man:
++	@echo installing manual pages under $(MANDIR) ...
++	$(INSTALL) doc/xmame.man $(MANDIR)/xmame.6
++
++doinstall:
++	@echo installing binaries under $(DESTDIR)...
++	$(INSTALL) xmame.$(ARCH) $(DESTDIR)/xmame
++
++# Every SVGALIB-based software must be run setuid. Beware security !!!
++doinstallsvgalib:
++	@echo installing binaries under $(DESTDIR)...
++	$(INSTALL) xmame.$(ARCH) $(DESTDIR)/mame
++	chmod 4755 $(DESTDIR)/mame	
++
++#clean now depends on objdirs, cause otherwise it just might rm the wrong ARCH
++clean: objdirs
++	rm -f $(OBJS) xmame.$(ARCH) xlistdev sndserver.* sndtest
++	( cd src/unix; $(MAKE) ARCH="$(ARCH)" clean; )
++
++bindist: 
++	tar zcvf $(DISTDIR)/xmame.$(ARCH)_bin.tgz xmame.$(ARCH) doc
++
++srcdist: pristine
++	( cd ..; tar zcvf $(DISTDIR)/xmame-$(VERSION)_src.tgz xmame-$(VERSION) )
++
++pristine:
++	rm -rf *.o */*.o */*/*.o
++	rm -rf obj.*
++	rm -f xmame.* xlistdev sndserver.* Makefile
+diff -ruN xmame-esd/README.esd xmame-0.33b7.1/README.esd
+--- xmame-esd/README.esd	Thu Jan  1 01:00:00 1970
++++ xmame-0.33b7.1/README.esd	Sun Aug  2 21:08:39 1998
+@@ -0,0 +1,13 @@
++To get esound support in xmame you need:
++
++- enable USE_TIMER in line 207 of Makefile. 
++- uncomment line 215 in Makefile (S_ESD)
++- uncomment and set the right path lines 162 and 163 (ESDINC and ESDLIB)
++
++Furthermore you will also need to set the timerfreq setting in xmamerc to
++a apropriate value, 100 did the trick for me.
++
++
++- Blaze (goofy@neptun.hib.no)
++
++With thanks to Chutt for pointing out some important stuff!
+diff -ruN xmame-esd/README.esd~ xmame-0.33b7.1/README.esd~
+--- xmame-esd/README.esd~	Thu Jan  1 01:00:00 1970
++++ xmame-0.33b7.1/README.esd~	Sun Aug  2 21:06:00 1998
+@@ -0,0 +1,7 @@
++To get esound support in xmame you need to enable USE_TIMER in line 207 of
++the Makefile. You will also need to set the timerfreq setting in xmamerc to
++a apropriate value, 100 did the trick for me.
++
++Blaze (goofy@neptun.hib.no)
++
++With thanks to Chutt for pointing out some important stuff!
+diff -ruN xmame-esd/makefile.unix xmame-0.33b7.1/makefile.unix
+--- xmame-esd/makefile.unix	Fri Jul 24 16:41:16 1998
++++ xmame-0.33b7.1/makefile.unix	Sun Aug  2 21:03:45 1998
+@@ -123,8 +123,8 @@
+ # *** X-Mame uses the XPM library to make snapshots. If you want to, uncomment
+ # following section to support them ( you should have libxpm available :-) )
+ # COMMENT IT if your are compiling for Linux's SVGALIB arch
+-# XPM	= -DHAS_XPM
+-# XPMLIB	= -lXpm -L/usr/X11R6/lib
++#XPM	= -DHAS_XPM
++#XPMLIB	= -lXpm -L/usr/X11R6/lib
+  
+ # *** If you haven't  the MIT-Shared Memory X Extensions, comment the following:
+ # ( Test if available by mean of xdpyinfo command )
+@@ -157,6 +157,11 @@
+ # X11INC		= -I/usr/local/include/X11
+ # X11LIB		= -L/usr/local/lib
+ 
++# *** If you want esound support you need to tell where to find lib and 
++# include files. Next two lines should be very common locations.
++ESDINC		= -I/usr/local/include
++ESDLIB		= -L/usr/local/lib -lesd
++
+ # These options defines default location for roms and configuration files
+ # also, your default X display is defined here
+ #
+@@ -196,17 +201,21 @@
+ # *** If your system supports query audio buffer size (like IRIX or Linux )
+ # you might decide to use these feature. Otherwise, you should use a 
+ # timer based audio code and ajust in src/unix/sound.h AUDIO_TIMER_FREQ item
++# Note: esound support needs timer ON to output sound right
+ #
+-S_TIM = -DDONTUSE_TIMER
+-# S_TIM = -DUSE_TIMER
++# S_TIM = -DDONTUSE_TIMER
++S_TIM = -DUSE_TIMER
+ 
+ # *** When using timer, you should provide the frequency to generate audio sample
+ # frames in your system. See readme.unix notes about these item
+ #
+ S_AFR =	-DAUDIO_TIMER_FREQ=50
+ 
++# *** For EsounD support uncomment the next line. Linux ONLY for the moment! 
++S_ESD = -DUSE_EsounD
++
+ # Dont modify next line !!
+-SOUND_OPTS = $(S_LIN) $(S_TIM) $(S_AFR)
++SOUND_OPTS = $(S_LIN) $(S_TIM) $(S_AFR) $(S_ESD)
+ 
+ ##############################################################################
+ # *** architecture.
+@@ -272,11 +281,11 @@
+ #####################
+ # to debug you'll have to exclude -DX86_ASM
+ DEFS.linux   = -DLSB_FIRST -DUNIX -Dlinux -DX86_ASM -DSIGNED_SAMPLES
+-LIBS.linux   = $(X11LIB) -lX11 -lXext -lm 
++LIBS.linux   = $(X11LIB) $(ESDLIB) -lX11 -lXext -lm
+ # CFLAGS.linux = $(X11INC) -m486 -fstrength-reduce -funroll-loops \
+ #   		-fomit-frame-pointer -Wall
+ # for debbuging disable all opts...
+-CFLAGS.linux = $(X11INC) -m486 -Wall -g
++CFLAGS.linux = $(X11INC) $(ESDINC) -m486 -Wall -g 
+ INST.linux   = doinstall
+ 
+ # Linux + Svgalib
+diff -ruN xmame-esd/src/unix/linux.c xmame-0.33b7.1/src/unix/linux.c
+--- xmame-esd/src/unix/linux.c	Fri Jun  5 13:00:43 1998
++++ xmame-0.33b7.1/src/unix/linux.c	Sun Aug  2 21:03:02 1998
+@@ -1,3 +1,4 @@
++
+ /*
+  * Linux Dependent system file 
+ */
+@@ -6,6 +7,15 @@
+ 
+ #define __LINUX_C
+ 
++#ifdef USE_EsounD
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <sys/ioctl.h>
++#include <fcntl.h>
++#include <stdio.h>
++#include <esd.h>
++#endif
++
+ #include <sys/time.h>
+ #include <unistd.h>
+ #include <math.h>
+@@ -22,6 +32,12 @@
+ #define USE_AUDIO 0
+ #define USE_DSP   1
+ 
++#ifdef USE_EsounD
++#define USE_ESD   2
++#endif
++
++int esd_write (char *buf,int bytes);
++
+ static int linux_sound_device;
+ /*
+  * Put anything here you need to do when the program is started.
+@@ -60,10 +76,17 @@
+     	if (play_sound) {
+ 	    int linux_sound_init(void);
+ 	    int linux_audio_init(void);
++#ifdef USE_EsounD
++            int linux_esd_init(void);
++#endif
+ 	    linux_sound_device=USE_DSP;
+ 	    result = -1;
+ 	    if ( !strcmp(audiodevice,"/dev/dsp") ) result=linux_sound_init();
+ 	    if ( !strcmp(audiodevice,"/dev/audio") ) result=linux_audio_init();
++#ifdef USE_EsounD
++	    if ( !strcmp(audiodevice,"esound") ) result=linux_esd_init();
++#endif
++
+ 	    if(result<0) fprintf(stderr,"Sound device init failed. Sound disabled\n");	
+ 	}
+ 	return (TRUE);
+@@ -152,6 +175,39 @@
+ 	       audiodevice, options.samplerate);
+        return 0;   
+ }
++
++#ifdef USE_EsounD
++int linux_esd_init(void) {
++   esd_format_t flags = ESD_STREAM | ESD_PLAY;
++ 
++       fprintf(stderr,"EsounD initialization... \n");
++
++   flags = (ESD_MONO | ESD_BITS8 | ESD_STREAM | ESD_PLAY);
++
++   audio_fd = esd_play_stream(flags, options.samplerate, NULL, NULL);
++   if (audio_fd <= 0) {
++      fprintf(stderr,"EsounD wasn't running, attempting to exec it.\n");
++      if (!fork()) {  /* child */
++         if (execl("/bin/sh", "/bin/sh", "-c","esd", NULL) == -1) 
++            fprintf(stderr,"Couldn't execute 'esd'... please get and install EsounD..\n");
++         exit(0);
++      }
++      sleep(2);
++      audio_fd = esd_play_stream(flags, options.samplerate, NULL, NULL);
++      if (audio_fd <= 0) {
++         fprintf(stderr,"EsounD could not be started properly.. help, help, i'll just fallback instead\n");
++         audio_fd = esd_play_stream_fallback(flags, options.samplerate, NULL, NULL);
++	 if (audio_fd <= 0) {
++            fprintf(stderr,"Couldn't even open audio normally.. Kill whatever's taking over /dev/dsp and\nlet me use it..\n");
++	    exit(-1);
++	 }
++      }
++   }
++       linux_sound_device=USE_ESD;
++       fprintf(stderr,"EsounD socket opened and set to 8bit mono %dHz\n", options.samplerate);
++       return 0;
++}
++#endif
+   
+ /*
+  * Cleanup routines to be executed when the program is terminated.
+@@ -195,7 +251,12 @@
+            if (run_n < 0 || run_n > AUDIO_BUFF_SIZE) run_n = 0;
+            tv1 = tv2;
+            return(run_n);
+-	   break;
++	   break; 
++#ifdef USE_EsounD
++        case USE_ESD:
++	   return 257 /* FIXME */;
++	   break; 
++#endif
+        }
+        return 0; /* should not occurs */
+ }
+@@ -218,7 +279,12 @@
+          p++;
+        }
+        return write(audio_fd,buf, bufsize);
+-       break;
++       break; 
++#ifdef USE_EsounD
++    case USE_ESD:
++       return write(audio_fd, buf, bufsize);
++       break; 
++#endif
+    }
+    return 0; /* should never occur */
+ }

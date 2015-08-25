@@ -1,0 +1,456 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="LinuxDoc-Tools 0.9.11">
+ <TITLE>XMAME/XMESS DOCUMENTATION: Compiling, Setting Up and Starting Xmame/Xmess</TITLE>
+ <LINK HREF="xmame-doc-3.html" REL=next>
+ <LINK HREF="xmame-doc-1.html" REL=previous>
+ <LINK HREF="xmame-doc.html#toc2" REL=contents>
+<link rel="stylesheet" href="xmame.css" type="text/css" >
+</HEAD>
+<BODY BACKGROUND="img/xmame.jpg" BGPROPERTIES="fixed" >
+<A HREF="xmame-doc-3.html">Next</A>
+<A HREF="xmame-doc-1.html">Previous</A>
+<A HREF="xmame-doc.html#toc2">Contents</A>
+<HR>
+<H2><A NAME="s2">2.</A> <A HREF="xmame-doc.html#toc2">Compiling, Setting Up and Starting Xmame/Xmess</A></H2>
+
+<P>Note: This section is not a Unix tutorial. You need to know some
+basic  Unix commands to compile and install xmame/xmess.</P>
+
+<H2><A NAME="ss2.1">2.1</A> <A HREF="xmame-doc.html#toc2.1">Requirements </A>
+</H2>
+
+<P>
+<UL>
+<LI>GNU make is MANDATORY in ALL Systems, even if you use a different
+compiler. </LI>
+<LI>On all platforms zlib is now needed since the core uses it. If
+you don't have zlib, a stripped version is included with xmame. See:
+<A HREF="xmame-doc-3.html#FAQ: Why do I get gz_open symbol not found while compiling?">FAQ: Why do I get gz_open symbol not while compiling?</A> and 
+<A HREF="xmame-doc-3.html#FAQ: Why do I get zlib.h not found?">FAQ: Why do I get zlib.h not found?</A></LI>
+<LI>You are encouraged to use a GNU development environment: gcc,
+gmake, gnu- ar. Lots of problems are found due to the very permissive
+syntax in gcc, so if you use a strictly ANSI C compiler, you'll get
+lots of warnings, and if the version of xmame/xmess is not fully
+debugged, compilation errors.</LI>
+<LI>Xmame compilation breaks when using egcs-1.1.x or gcc-2.95, use
+<CODE>-fno-strict-aliasing</CODE> to fix it. gcc-2.95.1 does work with <CODE>-fstrict-aliasing</CODE>,
+and gives a nice speed increase.</LI>
+<LI>Xmame compilation also breaks when using Red Hat 7's latest (as
+of 16 January 2001) update for gcc. If you experience problems, please
+either downgrade your compiler to the one included on the Red Hat
+7 CD-ROM, or try replacing "gcc" in the Makefile with "kgcc", which will
+invoke egcs-1.1.2. (But please see above about the <CODE>-fstrict-aliasing</CODE>flag.)
+</LI>
+</UL>
+</P>
+<H2><A NAME="ss2.2">2.2</A> <A HREF="xmame-doc.html#toc2.2">Follow these steps to compile xmame/xmess</A>
+</H2>
+
+<P>
+<OL>
+<LI>See 
+<A HREF="#Compile Notes for Specific Operating Systems">Compile Notes for Specific Operating Systems</A> for platform specific compiling information.</LI>
+<LI>See 
+<A HREF="xmame-doc-4.html#Display subsystem specific comments and notes">Display subsystem specific comments and notes</A> for special display methods information.</LI>
+<LI>Download the xmame/xmess source files archive.</LI>
+<LI>Move the xmame/xmess source files archive to a suitable work
+directory. When you extract the archive, sub directories will be
+created under the  work directory.</LI>
+<LI>Rename the source files archive so its extension is .gz, so that
+gzip doesn't complain. For example, change <CODE>xmame-0.34b1.1.tgz</CODE> to
+<CODE>xmame-0.34b1.1.tar.gz</CODE></LI>
+<LI>Use gzip -d to uncompress the archive. For example, type:
+<PRE>
+gzip -d xmame-0.34b1.1.tar.gz
+
+ 
+</PRE>
+</LI>
+<LI>Extract the files with tar. For example, type:
+<PRE>
+tar xvf xmame-0.34b1.1.tar
+
+ 
+</PRE>
+</LI>
+<LI>After extracting the archive, change to the subdirectory created
+by  the extraction process. For example, after extracting the xmame-0.34b1.1.tar
+archive, a directory named <CODE>xmame-0.34b1.1</CODE> is created. Change to it.
+This directory is the top of the source tree.</LI>
+<LI>Copy makefile.unix to Makefile, the distributed Makefile is used
+for development and is not a good starting point!</LI>
+<LI>Edit the <CODE>Makefile</CODE> and change the settings according to your system.
+The default <CODE>makefile.unix</CODE> is preconfigured to run under X11/Linux.
+Be careful editing this file.
+<UL>
+<LI>If you intend to compile in X11 joystick support, type the following
+to see the available Xdevice list:
+<PRE>
+make xlistdev; ./xlistdev
+
+  
+</PRE>
+</LI>
+<LI>Choose the desired device and re-edit Makefile, setting the option
+X11_JOYNAME to the correct device.
+</LI>
+</UL>
+</LI>
+<LI>Compile xmame/xmess by typing:
+<PRE>
+make
+
+ 
+</PRE>
+</LI>
+<LI>If the compile fails, report the problem to the author.</LI>
+<LI><B>*** YOU MAY NEED TO BE root TO PERFORM THIS STEP ***</B> To install
+xmame/xmess, type:
+<PRE>
+make install
+
+ 
+</PRE>
+</LI>
+<LI>If you want you can now build xmame/xmess for another target/display
+method, otherwise skip to the next step.
+<OL>
+<LI>If you want to also build for another target repeat repeat the
+<CODE>"make"</CODE> and <CODE>"make install"</CODE> steps adding <CODE>"TARGET=&lt;target&gt;"</CODE> to the make
+command for example:
+<PRE>
+make TARGET=mess
+make install
+
+  
+</PRE>
+</LI>
+<LI>If you want to also build for another display method repeat the
+<CODE>"make"</CODE> and <CODE>"make install"</CODE> steps adding <CODE>"DISPLAY_METHOD=&lt;method&gt;"</CODE>
+to the make command for example:
+<PRE>
+make DISPLAY_METHOD=svgalib
+make install
+
+  
+</PRE>
+</LI>
+<LI>You can also combine the 2 above for example:
+<PRE>
+make TARGET=mess DISPLAY_METHOD=svgalib
+make install
+
+  
+</PRE>
+
+</LI>
+</OL>
+</LI>
+<LI>In your home directory, create a subdirectory called .xmame.</LI>
+<LI>From the top of the source tree, copy the file doc/xmamerc.dist
+to the ${HOME}/.xmame/ directory. (For xmess do
+this for xmessrc)</LI>
+<LI>If desired, copy xmamerc.dist to the global xmamerc location
+as &quot;xmamerc&quot; (for xmess, copy xmamerc.dist to xmessrc).
+The global xmamerc location is defined in the Makefile.</LI>
+<LI>Edit ${HOME}/.xmame/xmamerc to match your preferences.
+(For xmess, edit ${HOME}/.xmess/xmessrc)</LI>
+<LI>Be sure that the DISPLAY and PATH environment variables are 
+set correctly.</LI>
+<LI>Make sure your ROM images are installed.</LI>
+<LI>Start the X-Window System. (Unless you compiled for a different
+display method in which case you skip this step.)</LI>
+<LI>Start xmame/xmess. For example:
+<PRE>
+/usr/games/xmame.x11 dkong
+
+ 
+</PRE>
+
+</LI>
+</OL>
+</P>
+<H2><A NAME="ss2.3">2.3</A> <A HREF="xmame-doc.html#toc2.3">If you have problems compiling, installing and starting xmame/xmess...</A>
+</H2>
+
+<P>
+<UL>
+<LI>Read  
+<A HREF="xmame-doc-3.html#Xmame frequently asked questions">Xmame frequently asked questions</A></LI>
+<LI>Read (the recent parts of) 
+<A HREF="xmame-doc-8.html#ChangeLogs">Changelogs</A>. They might contain some hints about
+recent changes which aren't fully documented yet.</LI>
+<LI>Check 
+<A HREF="#Compile Notes for Specific Operating Systems">Compile Notes for Specific Operating Systems</A> for operating system-specific notes. You may need to do
+something special for your operating system.</LI>
+<LI>Check 
+<A HREF="xmame-doc-4.html#Display subsystem specific comments and notes">Display subsystem specific comments and notes</A> for display subsystem-specific notes. You may need to
+do something special for your display system.</LI>
+<LI>If you get an error about gz_open and a bunch of other functions
+not found during linking, read: 
+<A HREF="xmame-doc-3.html#FAQ: Why do I get gz_open symbol not found while compiling?">FAQ: Why do I get gz_open symbol not while compiling?</A> and 
+<A HREF="xmame-doc-3.html#FAQ: Why do I get zlib.h not found?">FAQ: Why do I get zlib.h not found?</A>.</LI>
+<LI>Be sure that the rompath in your xmamerc/xmessrc is correct;
+see 
+<A HREF="xmame-doc-3.html#FAQ: Where do roms, images, samples, highscores, configfiles, etc go?">FAQ: Where do roms.images.etc go?</A>.</LI>
+<LI>Check xmamerc/xmessrc: Is it configured correctly?</LI>
+<LI>Are you getting messages that you are missing files? Maybe you
+are missing PROMs; see 
+<A HREF="xmame-doc-3.html#FAQ: Why doesn't a game work?">FAQ: Why doesn't a game work?</A> and 
+<A HREF="xmame-doc-3.html#FAQ: What are PROMs?">FAQ: What are PROMs?</A></LI>
+<LI>Is the program in your PATH?</LI>
+<LI>The svgalib/xf86_dga build of xmame/xmess requires setuid root.
+Are your permissions correct?</LI>
+<LI>Try asking the friendly folks at the newsgroup alt.game.mame
+to see if anyone else has experienced the same problem as you.</LI>
+<LI>Try mailing to the xmame mailinglist, see 
+<A HREF="xmame-doc-5.html#Mail">Mail</A> for more information.
+</LI>
+</UL>
+</P>
+<P>If all else fails, send email to the current maintainer of the
+xmame/xmess project. See 
+<A HREF="xmame-doc-5.html#Mail">Mail</A> for contact information.</P>
+
+<H2><A NAME="Compile Notes for Specific Operating Systems"></A> <A NAME="ss2.4">2.4</A> <A HREF="xmame-doc.html#toc2.4">Compile Notes for Specific Operating Systems </A>
+</H2>
+
+<H3>Linux i386</H3>
+
+<P>Linux i386 is the platform I (Hans) use, so xmame should compile
+without any hassles on Linux i386. (Note: The same is true for Lawrence
+Gold.)</P>
+
+<P>Some bugs have been found and worked around when using gcc27x,
+please use egcs if available. If more gcc bugs popup, egcs will be
+made mandatory, but I hope that won't be necessary.</P>
+
+<P>It has been reported that some SoundBlaster AWE32 and VIA-82cxxx
+(onboard) cards do not  correctly manage get_freespace(). If so,
+you'll get some audio_ioctl() calls failed messages in console, and
+if everything goes right a message that xmame/xmess is falling back
+to timer based audio. If  this doesn't happen and sound isn't right,
+try forcing timer-based  audio by starting xmame/xmess with <CODE>-timer</CODE>.</P>
+
+<P>SB64/128PCI cards (Ensoniq 137x-based cards) also do not correctly
+manage get_freespace(). Unfortunately, this doesn't result in failed
+ioctl's; instead, they just ignore the calls. Xmame tries to autodetect
+this and to fall back to timer-based audio. If this doesn't happen
+and sound isn't right, try forcing timer based audio by starting
+xmame/xmess with <CODE>-timer</CODE>.</P>
+
+<P>Some have reported success using ALSA with OSS emulation (see
+<A HREF="http://www.alsa-project.org/">http://www.alsa-project.org/</A>). If you experience the above problems, this would certainly be
+worth a try.</P>
+
+<P>Also, I've tested sound using the PC-Speaker driver module. It
+works!! But it needs <CODE>-timer.</CODE> Again, it should do this  automagically,
+but you know what to do if it doesn't.</P>
+
+<P>Distribution-Specific Comments:</P>
+
+<P>
+<UL>
+<LI>S.u.S.E. Linux: Besides the gcc compiler and libc libraries,
+which are both from the &quot;d&quot; series, other packages  need
+to be installed or the build will fail. If compiling for svgalib,
+the svgalib package from series &quot;d&quot; installed. If compiling
+for the X-Window System, you must have xdevel package from series
+&quot;x&quot; installed. These packages can be installed using the
+&quot;yast&quot; utility included in the S.u.S.E. distribution.</LI>
+<LI>Red Hat Linux is the operating system used by the author. xmame/xmess
+should build correctly under Red Hat Linux. :-)
+</LI>
+</UL>
+</P>
+<H3>Linux PowerPC</H3>
+
+<P>Linux PowerPC should work from now on. Here's an email from Andreas
+Varga <CODE>
+<A HREF="mailto:sid@skater.htu.tuwien.ac.at">sid@skater.htu.tuwien.ac.at</A></CODE>, the Linux/PowerPC maintainer, describing the necessary steps:</P>
+
+<P>Required changes to compile xmame 0.34b3.1 on Linux/PowerPC with
+SVGALIB</P>
+
+<P>Makefile:</P>
+
+<P>
+<UL>
+<LI>enable CFLAGS for linux/ppc </LI>
+<LI>enable DISPLAY_METHOD = svgalib </LI>
+<LI>enable ARCH = linux </LI>
+<LI>remove -lvgagl from LIBS.svgalib in src/unix/unix.mak (only -lvga
+is required)
+</LI>
+</UL>
+</P>
+<P>Required changes to compile xmame 0.34b3.1 on Linux/PowerPC with
+X11 </P>
+
+<P>Makefile: </P>
+
+<P>
+<UL>
+<LI>enable CFLAGS for linux/ppc </LI>
+<LI>enable DISPLAY_METHOD = x11 </LI>
+<LI>enable ARCH = linux 
+</LI>
+</UL>
+</P>
+<P>Another thing... sound is not working, because sound drivers
+support is currently under development in Linux/PPC kernels...there
+is an old driver that is a hacked Soundblaster driver, and newer
+2.1.1xx kernels have a sound drivers based on Amiga DMA sound drivers...
+Once this issues are settled there should be a full OSS-compatible
+driver... sound should work then...</P>
+
+<P>I can't speak about Joystick support...</P>
+
+<P>The original Linux/PPC target changes in the Makefile were done
+by me, but there are some other changes required to get it to compile...
+Starting from October I will have some more time to work on this,
+and I'll keep you updated...</P>
+
+<P>Cheers, Andreas</P>
+
+<H3>IRIX</H3>
+
+<P>Use the generic unix arch for those machines that have no  sound
+support installed (xmame/xmess uses the dmedia package or the newer
+AL package on IRIX systems).</P>
+
+<P>Silicon Graphics provides several native compilers. xmame/xmess
+has  been compiled and tested with the normal cc. There were some
+problems with this when using -n32 for new style 32bit code. It does
+work when using -o32 for oldstyle 32 bit code. It should now also
+work with -n32 which is much faster.</P>
+
+<P>The use of DCC is not recommended (anymore) since it's a C++
+compiler and thus won't even compile xmame/xmess out of the box
+due to uncasted mallocs. Changing all these mallocs would be crazy,
+esp. since they are not only in the osd part, but also in the core
+which is not under our control. Besides that, mame is normal C, so
+please compile it with a normal C compiler.</P>
+
+<P>Some problems have been reported using the GNU linker. It's recommended
+that you use the native one.</P>
+
+<H3>HPUX</H3>
+
+<P>Use the generic unix arch. In HP-UX, gcc and gnu-make are MANDATORY.</P>
+
+<H3>ULTRIX </H3>
+
+<P>Use the generic unix arch.</P>
+
+<P>Notes received from Danny <CODE>
+<A HREF="mailto:dboxhoor@iso.vilspa.esa.es">dboxhoor@iso.vilspa.esa.es</A></CODE></P>
+
+<P><B>VERY IMPORTANT!!!</B></P>
+
+<P>The xmame/xmess CPU emulators access memory through pointers
+which are sometimes cast to illegal addresses - as far as the MIPS
+CPU is concerned. The Ultrix operating system is aware of that and
+fixes this &quot;unaligned data access&quot;.</P>
+
+<P>Depending on your system setup, lots of warnings are generated
+for certain games. Fortunately these messages can be disabled by
+executing the command &quot;uac p 0&quot; in the same shell where
+xmame/xmess  will be running.</P>
+
+<P>UPDATE: The new <CODE>-DALIGN_INTS</CODE> switch in the makefile fixes these
+unaligned accesses in the source which is probably a lot faster than
+hot fixing them in the kernel segfault handler.</P>
+
+<P>Use gnu make.</P>
+
+<P>Compile with the `c89' compiler. Though `gcc' has no problems
+with compiling and optimizing xmame/xmess, the resulting `c89' 
+executable is faster on an empty machine (read: xmame can use all
+cpu &amp; memory without competing with other high priority  processes),
+so you can set `frameskip' to 1.</P>
+
+<P>When compiling with `c89 -O2' don't forget to also use `-Olimit
+1000'. If 1000 is not enough, the compiler will tell you to  increase
+it.</P>
+
+<H3>SunOS &amp; Solaris</H3>
+
+<P>There are 2 relevant architecture options available in the makefile:</P>
+
+
+<P>
+<PRE>
+    ARCH = generic : use this for old SunOs running on Sparcs,
+                     but a Sparc running Solaris will usually
+                     handle this option too.
+    ARCH = solaris : this is the one you should use for Sparcs
+                     running Solaris.        
+</PRE>
+</P>
+<P>Currently sound is not supported under sunos. The solaris arch
+does support audio.</P>
+
+<P>If you are using Sun's OpenWindows implementation of X11, then
+make sure that the X11INC and X11LIB variables in the X11 Options
+section of the makefile are set properly. (There are already entries
+for the standard OpenWin directory there that you can uncomment.)</P>
+
+<P>Of course, if you are compiling for X11 then you need to set
+these variables properly, no matter what implementation of X11 you
+are using!  :)</P>
+
+<P>If you are using Sun's SunPro cc compiler, then the following
+optimisation flags have been reported to be good:</P>
+
+<P>
+<PRE>
+    OPTFLAGS    = -fast -xO4 -native
+</PRE>
+</P>
+<P>Finally, there has been a case of the xmame compilation processes
+breaking over the &quot;ar&quot; program. Most Solaris installations
+will include a set of utilities that conform to the XPG4 standard,
+usually in the &quot;/usr/xpg4/bin&quot; directory. The XPG4 version
+of &quot;ar&quot; should be avoided like the plague. Ensure that
+the &quot;/usr/ccs/bin&quot; appears in your path before the &quot;/usr/xpg4/bin&quot;
+directory and everything should go smoothly.</P>
+
+<P>PLEASE NOTE : There is currently not much support for SunOS/Solaris.
+If you have any trouble, try to fix it yourself. If you succeed,
+send a message to the mailing list detailing what you did. If you
+don't succeed, send a message anyway and someone _may_ be able to
+help you. Either way, this is the only way that problems with xmame
+on SunOS/Solaris will get fixed.</P>
+
+<H3>Openstep</H3>
+
+<P>You must use the OpenStep gnumake, not make. You must also use
+the NeXT/Apple cc rather than gcc. Also use only the optimisation
+options as recommended for OpenStep in the makefile, others will
+cause the resulting executable to crash. The OpenStep assembler on
+i386 architectures is incompatible with the mame assembler CPU cores
+and thus you must use the C versions (Use i386-noasm instead of i386
+when compiling for i386).</P>
+
+<P>The supplied complier is based on gcc 2.7.2.1 which will not
+compile src/profiler.c without crashing. To get around this you must
+turn off + optimisation when this crash occurs, re-make to compile
+this file only, then stop the make, re-enable optimisation, and continue.</P>
+
+<P>On an OpenStep keyboard the functions keys do not all operate
+as expected. Using the command key in conjuction with a number key
+generates the equivalent function key within xmame, with 0, - and
+= + representing F10, F11 and F12 resepectively. Also note that the
+ALT + keys cannot be mapped. As most games tend to use this as the
+default fire button it is exteremly useful to remap this globally
+the first time you run xmame.</P>
+
+<HR>
+<A HREF="xmame-doc-3.html">Next</A>
+<A HREF="xmame-doc-1.html">Previous</A>
+<A HREF="xmame-doc.html#toc2">Contents</A>
+</BODY>
+</HTML>

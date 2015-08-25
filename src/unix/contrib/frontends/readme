@@ -1,0 +1,26 @@
+The frontends in here are provided as is, no guarentees made.
+
+For a list of more activly maintained frontends with there own webpages see:
+http://x.mame.net
+
+Contents of directory contrib/frontends
+==========================================
+
+1)	Name:		Mameload-Fvwm95 
+	Author:		Tom Hansen <tom@toetag.com>
+	Description:	Script to add a X-Mame Popup menu to .fvwm2rc95 file
+	Notes:		See script instalation notes
+
+2)      Name:		Mamex
+	Author:		Chris Sharp <sharp@hursley.ibm.com>
+	Description:    TcL/Wish frontend for X-Mame
+	Notes:		See readme.mamex file
+
+3)	Name:		readme
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	This file
+
+4)      Name:           tkmame.pl
+	Author:         genkai wa doko da <gauze@loa.com>
+	Description:    a TkPerl X-Mame launcher
+	Notes:          See readme.tkmame file

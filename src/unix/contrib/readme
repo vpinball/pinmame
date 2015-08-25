@@ -1,0 +1,37 @@
+This directory contains contributed material, and various tidbits which
+don't fit elsewhere.
+
+Contents of directory contrib
+==========================================
+
+1)	Name:		cutzlib-1.1.4
+	Description:	A cutdown version of zlib for compiling xmame on
+			systems without zlib.
+	Notes:		See doc/readme.unix, makefile.unix and
+			contrib/cutzlib-1.1.4/README.mame
+
+2)      Name:		frontends
+	Description:    Various frontends
+	Notes:		See contrib/frontends/readme
+
+3)	Name:		kxmame
+	Description:	A script for running xmame.x11 in older versions of KDE
+			which had a problem with the window not opening.
+	Author:		Sylvain Trosset and Hoonis
+
+4)      Name:           patches
+	Description:    Various patches
+	Notes:          See contrib/patches/readme
+
+5)	Name:		porting
+	Description:	Various tools and scripts used in porting
+			the dos mame version to unix.
+	Notes:		See contrib/porting/readme
+
+6)	Name:		readme
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	This file
+
+7)	Name:		tools
+	Description:	Various xmame / xmess related tools and stuff
+	Notes:		See contrib/tools/readme
