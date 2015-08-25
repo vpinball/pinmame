@@ -30,6 +30,11 @@
 #define INVALID -1
 #endif
 
+/* On Ubuntu 10.10 there's only strnicmp, although it is not an ISO function */
+#if defined(__GNUC__) && !defined(__WIN32__) && !defined(_WIN32)
+#define _strnicmp strnicmp
+#endif
+
 /****************************************************************************
  * Externals (define in the header files)
  ****************************************************************************/

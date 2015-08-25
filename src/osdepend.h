@@ -5,6 +5,9 @@
 #endif
 
 #include "osd_cpu.h"
+#ifdef PINMAME
+#include "pinmame.h"
+#endif
 #include "inptport.h"
 
 #ifdef __cplusplus
