@@ -101,7 +101,7 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
+  locals.solenoids = 0;
 
   core_updateSw(TRUE);
 }
@@ -233,14 +233,14 @@ static WRITE_HANDLER(out2_n) {
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0xf0) | lampData;
         else
           coreGlobals.tmpLampMatrix[abcData] = (coreGlobals.tmpLampMatrix[abcData] & 0x0f) | (lampData << 4);
-        if ((locals.lampCol & 0x08))
+        if ((locals.lampCol & 0x08)) {
           locals.solenoids |= 1 << abcData;
-        else
-          locals.solenoids &= ~(1 << abcData);
-        if ((locals.lampCol & 0x10))
+          coreGlobals.solenoids = locals.solenoids;
+        }
+        if ((locals.lampCol & 0x10)) {
           locals.solenoids |= 0x100 << abcData;
-        else
-          locals.solenoids &= ~(0x100 << abcData);
+          coreGlobals.solenoids = locals.solenoids;
+        }
       }
       if (core_gameData->hw.soundBoard == SNDBRD_PLAY3 || core_gameData->hw.soundBoard == SNDBRD_PLAYZ) {
 //if (locals.sndCmd != (data & 0x70)) printf("\nc:%02x\n", data & 0x70);
