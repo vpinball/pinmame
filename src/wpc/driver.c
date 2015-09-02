@@ -346,8 +346,9 @@ DRIVERNV(kpv106)        // 12/96    Kingpin
 // ----------------
 // CICPLAY GAMES
 // ----------------
-DRIVERNV(glxplay)       //Galaxy Play (1987)
-DRIVERNV(glxplay2)      //Galaxy Play 2 (1988)
+DRIVERNV(kidnap)        //Kidnap (1986)
+DRIVERNV(glxplay)       //Galaxy Play (1986)
+DRIVERNV(glxplay2)      //Galaxy Play 2 (1987)
 
 // -------------------
 // DATA EAST GAMES
@@ -532,7 +533,6 @@ DRIVERNV(blkhole7)      //          01/08 Black Hole (Sound & Speech, Rev 4, 7-d
 DRIVERNV(blkhole2)      //                Black Hole (Sound & Speech, Rev 2)
 DRIVERNV(blkholea)      //                Black Hole (Sound Only)
 DRIVERNV(blkhol7s)      //          01/08 Black Hole (Sound Only, 7-digit conversion)
-                        //          ??/81 Night Hawk (never produced, by Premier, before the merger)
 DRIVERNV(hh)            //S80-669:  06/82 Haunted House (Rev 2)
 DRIVERNV(hh7)           //          01/08 Haunted House (Rev 2, 7-digit conversion)
 DRIVERNV(hh_1)          //                Haunted House (Rev 1)
@@ -597,6 +597,7 @@ DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 DRIVERNV(bonebstf)      //S80b-719: 08/89 Bone Busters Inc (French)
 DRIVERNV(nmoves)        //C-103:    11/89 Night Moves (for International Concepts)
+DRIVERNV(amazonh3)      //S80b-684D:09/91 Amazon Hunt III
 //System 3 Alphanumeric
 DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
@@ -608,7 +609,6 @@ DRIVERNV(deadweap)      //S3-724:   09/90 Deadly Weapon
 DRIVERNV(tfight)        //S3-726:   10/90 Title Fight
 DRIVERNV(bellring)      //S3-N103:  12/90 Bell Ringer
 DRIVERNV(nudgeit)       //S3-N102:  12/90 Nudge It
-                        //??-???:   ??/91 Amazon Hunt III
 DRIVERNV(carhop)        //S3-725:   01/91 Car Hop
 DRIVERNV(hoops)         //S3-727:   02/91 Hoops
 DRIVERNV(cactjack)      //S3-729:   04/91 Cactus Jack's

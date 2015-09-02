@@ -30,16 +30,16 @@ Added mech handler for mech #0 (goalie) in WCS94:
  Also Mech #1 (ball) will now return the speed of the ball rather than its position, with values ranging from -120 to 120
 Updated to zlib 1.2.8
 
-*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty & Tim Polzin
 New:
 Atari: 4x4 (not working yet)
-CICPlay: Galaxy Play, Galaxy Play 2
+CICPlay: Galaxy Play 2, Kidnap
 Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
 JP: Add missing ROM for Olympus
 MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
-Premier: Amazon Hunt II
+Premier: Amazon Hunt II & III
 Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)

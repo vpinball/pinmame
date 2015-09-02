@@ -564,6 +564,15 @@ static core_tLCDLayout dispCIC[] = {
   {0}
 };
 
+ROM_START(kidnap)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("kidnap_1.bin", 0x0000, 0x2000, CRC(4b8f9bb1) SHA1(16672c1a5e55ba5963fbd8834443dbead9bdff10) BAD_DUMP)
+    ROM_LOAD("kidnap_2.bin", 0x2000, 0x2000, CRC(4333d9ba) SHA1(362bcc9caaf37ad7efc116c3bee9b99cbbfa0563))
+ROM_END
+INITGAME(kidnap,dispCIC,FLIP_SW(FLIP_L),3)
+CIC_COMPORTS(kidnap, 1)
+CORE_GAMEDEFNV(kidnap, "Kidnap", 1986, "CICPlay", cic, 0)
+
 ROM_START(glxplay)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("1083-1.cpu", 0x0000, 0x2000, NO_DUMP)
