@@ -1147,7 +1147,7 @@ GTS80_ROMEND
 #define input_ports_bonebstf input_ports_bonebstr
 CORE_CLONEDEFNV(bonebstf,bonebstr, "Bone Busters Inc. (French)",1989,"Gottlieb",gl_mGTS80BS3A,0)
 
-
+// Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
 / Night Moves (C-103)
 /-------------------------------------------------------------------*/
@@ -1159,3 +1159,13 @@ GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843
 GTS80_ROMEND
 #define input_ports_nmoves input_ports_gts80
 CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,0)
+
+/*-------------------------------------------------------------------
+/ Amazon Hunt III (#684D)
+/-------------------------------------------------------------------*/
+INITGAME(amazonh3, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_8K_ROMSTART(amazonh3, "684d-cpu.rom", CRC(2ec8bd4c) SHA1(46a08ddccba952fa69b79739802b676567f6386f))
+GTS80BSSOUND32(              "684d-snd.rom", CRC(a660f233) SHA1(3b80629696a2fd5aa4a86ed472e60c95d3cfa906))
+GTS80_ROMEND
+#define input_ports_amazonh3 input_ports_gts80
+CORE_GAMEDEFNV(amazonh3, "Amazon Hunt III (France)", 1991, "Gottlieb", gl_mGTS80BS3, 0)
