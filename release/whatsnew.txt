@@ -22,6 +22,7 @@ Made some Inder games sound a lot nicer then before and adjusted music / speech 
 Tweak CPU clock for Mystery Castle to make it look more correct
 Fixed single zero digit on Odin & Odin Deluxe
 Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
+Improve Solenoids on Playmatic games
 Improve Speech on Nuova Bell and Jeutel games
 Fix some/most of the general sound stutter issues by improving the throttle code
 Improve performance for all ARM7 based games (e.g. Whitestar II)
@@ -33,7 +34,7 @@ Updated to zlib 1.2.8
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty & Tim Polzin
 New:
 Atari: 4x4 (not working yet)
-CICPlay: Galaxy Play 2, Kidnap
+CICPlay: Galaxy Play, Galaxy Play 2, Kidnap
 Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
 Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
