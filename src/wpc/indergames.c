@@ -16,15 +16,15 @@
 
 static core_tLCDLayout inderDisp6[] = {
   {0, 0, 2,6,CORE_SEG7}, {2, 0,10,6,CORE_SEG7},
-  {6, 0,18,6,CORE_SEG7}, {8, 0,26,6,CORE_SEG7},
-  {4, 1,34,2,CORE_SEG7}, {4, 7,38,2,CORE_SEG7},
+  {7, 0,18,6,CORE_SEG7}, {9, 0,26,6,CORE_SEG7},
+  {5, 3,34,2,CORE_SEG7S},{5, 9,38,2,CORE_SEG7S},
   {0}
 };
 
 static core_tLCDLayout inderDisp7[] = {
   {0, 0, 1,7,CORE_SEG7}, {2, 0, 9,7,CORE_SEG7},
-  {6, 0,17,7,CORE_SEG7}, {8, 0,25,7,CORE_SEG7},
-  {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},
+  {7, 0,17,7,CORE_SEG7}, {9, 0,25,7,CORE_SEG7},
+  {5, 4,34,2,CORE_SEG7S},{5,10,38,2,CORE_SEG7S},
   {0}
 };
 
@@ -79,7 +79,7 @@ CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout lblDisp[] = {
   DISP_SEG_IMPORT(inderDisp7),
-  {10,2,48,2,CORE_SEG7}, {10,8,50,2,CORE_SEG7},
+  {12,4,48,2,CORE_SEG7S},{12,10,50,2,CORE_SEG7S},
   {0}
 };
 INITGAME(lapbylap, lblDisp, 0, 0,0,0x0c,0,0)
@@ -118,7 +118,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
-INITGAME(corsario, inderDisp7a, 0, 0,0,0,0,0)
+INITGAME(corsario, inderDisp7a, 0, 0,0x10,0,0,0)
 INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
