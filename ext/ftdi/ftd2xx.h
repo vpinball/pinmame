@@ -58,6 +58,10 @@ kernel & user mode
 #elif defined(FTD2XX_STATIC)
 // Avoid decorations when linking statically to D2XX.
 #define FTD2XX_API
+// Static D2XX depends on these Windows libs:
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "user32.lib")
 #else
 #define FTD2XX_API __declspec(dllimport)
 #endif
@@ -310,6 +314,18 @@ enum {
 extern "C" {
 #endif
 
+
+#ifdef FTD2XX_STATIC
+    FTD2XX_API
+        FT_STATUS WINAPI FT_Initialise(
+        void
+        );
+
+    FTD2XX_API
+        void WINAPI FT_Finalise(
+        void
+        );
+#endif // FTD2XX_STATIC
 
 	FTD2XX_API
 		FT_STATUS WINAPI FT_Open(
