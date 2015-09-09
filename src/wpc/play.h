@@ -48,7 +48,7 @@
     COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BIT(   0x0010, "Tilt / Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x1010, "Tilt / Diagnostics", KEYCODE_7) \
     COREPORT_BIT(   0x0020, "Advance Digit", KEYCODE_2) \
     COREPORT_BIT(   0x0080, "Advance Step", KEYCODE_8) \
     /* Switch Column 0 */ \

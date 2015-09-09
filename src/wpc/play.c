@@ -101,8 +101,11 @@ static INTERRUPT_GEN(PLAYMATIC_vblank2) {
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  locals.solenoids = 0;
-
+  locals.vblankCount = (locals.vblankCount + 1) % 2;
+  if (!locals.vblankCount) {
+    coreGlobals.solenoids = locals.solenoids;
+    locals.solenoids = 0;
+  }
   core_updateSw(TRUE);
 }
 
@@ -132,15 +135,14 @@ static WRITE_HANDLER(disp_w) {
 
 static int bitColToNum(int tmp)
 {
-	int i, data;
-	i = data = 0;
-	while(tmp)
-	{
-		if(tmp&1) data=i;
-		tmp = tmp>>1;
-		i++;
-	}
-	return data;
+  int i, data;
+  i = data = 0;
+  while(tmp) {
+    if (tmp & 1) data = i;
+    tmp = tmp >> 1;
+    i++;
+  }
+  return data;
 }
 
 static WRITE_HANDLER(out1_n) {
@@ -298,12 +300,12 @@ static void out_sc(int data) {
 
 static CDP1802_CONFIG play1802_config =
 {
-	in_mode,	// MODE
-	in_ef,		// EF
-	out_sc,		// SC
-	out_q,		// Q
-	NULL,				// DMA read
-	NULL				// DMA write
+  in_mode,  // MODE
+  in_ef,    // EF
+  out_sc,   // SC
+  out_q,    // Q
+  NULL,     // DMA read
+  NULL      // DMA write
 };
 
 static void init_common(int cpuType) {
