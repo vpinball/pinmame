@@ -1,7 +1,9 @@
 How to setup Visual C++ to compile PinMAME (all flavours)
 =========================================================
 
-ToDo: ISO C99 and C90 issues (msc.h include), VS2008 is currently used by developmen team, but batch scripts and infos are available for older VS versions
+ToDo:
+* ISO C99 and C90 issues (msc.h include), VS2008 is currently used by developmen team, but batch scripts and infos are available for older VS versions
+* Re-check first and last supported versions of WSDK, MSDN, etc. for all VS versions
 
 -------
 General
@@ -14,8 +16,8 @@ To use a Visual C++ version for compiling the following is necessary:
   or a free MSDN Lib
   MSDN Library für Visual Studio 2008 SP1 (April 2009)
   http://www.microsoft.com/downloads/details.aspx?FamilyID=7bbe5eda-5062-4ebb-83c7-d3c5ff92a373
- 
-Status 2015-08: Microsoft has removed support for VS/VC 6.0 completely, all download and documentation links are now disfunctional
+- Checksum Integrity Verification
+  https://support.microsoft.com/kb/841290 
 
 Additionally the following is necessary:
 - NASM compiler for the assembler parts
@@ -27,6 +29,8 @@ Additionally the following is necessary:
      Note: If an older NASM Win32 package is used (<0.99.4), then rename the
            executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
   c) Add this directory to the bin directories of Visual C++.
+
+Update 2015-08: Microsoft has removed support for VS/VC 6.0 completely, all download and documentation links are now disfunctional
 
 
 ----------
@@ -204,55 +208,92 @@ Known Issues:
 ---------------
 Visual C++ 2010 (10.0, _MSC_VER = 1600)
 ---------------
-WIP
+<WIP>
 
-Difference between MSDN release and trial ISOs is only the product key in "Setup\setup.sdb", and somtimes depending on the language the DVD name.
-So the trial ISO has the full retail content and can be unlimited with a key.
-
+- Downloads
+  http://stackoverflow.com/questions/8894654/vs-2010-trial-version-link
+  - Difference between MSDN release and trial ISOs is only the product key in "Setup\setup.sdb", and sometimes depending on the language the DVD name.
+    So the trial ISO has the full retail content and can be unlimited with a key.
+- Service Packs
+  2010 SP1:
+  http://www.microsoft.com/en-us/download/details.aspx?id=23691  (ISO under Installation Instructions)
+  http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2010+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+- Updates
+  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Studio 2010 Service Pack 1
+- <ToDo> Windows SDK
 http://blogs.msdn.com/b/vcblog/archive/2009/05/20/using-the-windows-7-rc-sdk-in-visual-c-2010-beta-1.aspx
 http://blogs.msdn.com/b/chuckw/archive/2010/06/15/windows-sdk-7-1.aspx
-
-Trial 2010: http://www.microsoft.com/downloads/details.aspx?FamilyID=5414e4c0-c1f8-473e-8e9d-a1a7be786141
 
 2010-05-19 / Windows SDK for Windows 7 and .NET Framework 4: http://www.microsoft.com/downloads/details.aspx?FamilyID=35aeda01-421d-4ba5-b44b-543dc8c33a20
 
 2009-08-14 / Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1: http://www.microsoft.com/downloads/details.aspx?familyid=71DEB800-C591-4F97-A900-BEA146E4FAE1
 
-- Service Packs
-  2010 SP1: http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2010+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2010 information/integration was <Month> 201?.
 
 
 ---------------
 Visual C++ 2012 (11.0, _MSC_VER = 1700)
 ---------------
+<WIP>
+
+- Downloads
+  Express for Windows Desktop (Upd0): https://www.microsoft.com/en-us/download/details.aspx?id=34673 
+  Professional (Upd0): https://www.microsoft.com/en-us/download/details.aspx?id=30682
 - Updates: https://support.microsoft.com/en-us/kb/2707250
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2012 information/integration was <Month> 201?.
 
 
 ---------------
 Visual C++ 2013 (12.0, _MSC_VER = 1800)
 ---------------
+<WIP>
+
 - Editions: https://www.visualstudio.com/products/compare-visual-studio-products-vs
 - Downloads:
+  Checksums: https://www.visualstudio.com/en-us/downloads/visual-studio-2013-iso-sha1-vs.aspx
   Community (Upd4): http://go.microsoft.com/?linkid=9863609
   Community (latest): https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx 
-  Professional (Upd0):http://download.microsoft.com/download/A/F/1/AF128362-A6A8-4DB3-A39A-C348086472CC/VS2013_RTM_PRO_ENU.iso
+  Professional (Upd0):http://download.microsoft.com/download/A/F/1/AF128362-A6A8-4DB3-A39A-C348086472CC/VS2013_RTM_PRO_ENU.iso (also named en_visual_studio_professional_2013_x86_dvd_3175298.iso)
   Professional (latest): http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2013+professional&ftapplicableproducts=Developer+Tools&sortby=-availabledate
-
-en_visual_studio_professional_2013_x86_dvd_3009197.iso SHA1: 4C0C7B3372FE44248F1AF995DD0E9B3864657DAD
-VS2013_RTM_PRO_ENU.iso
-SHA1:4C0C7B3372FE44248F1AF995DD0E9B3864657DAD
-
 - Updates: https://support.microsoft.com/en-us/kb/2829760
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2013 information/integration was <Month> 201?.
 
 
 ---------------
 Visual C++ 2015 (14.0, _MSC_VER = 1900)
 ---------------
+<WIP>
+
 - Editions: https://www.visualstudio.com/products/compare-visual-studio-2015-products-vs
 - Downloads:
+  Checksums: https://www.visualstudio.com/en-us/downloads/visual-studio-2015-iso-sha1-vs.aspx
   Community: https://www.microsoft.com/en-us/download/details.aspx?id=48146
   Professional: https://www.microsoft.com/en-us/download/details.aspx?id=48147
-- Updates: ./.
+- Updates: ./. (as of 2015-08)
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2013 information/integration was <Month> 201?.
 
 
 -----------
