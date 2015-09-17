@@ -630,55 +630,45 @@ static void init_pz(void) {
   core_gameData = &pzGameData;
 }
 
-static int trick=0;
+static int trick = 44;
 
 static void pz_handleMech(int mech) {
   /* ---------------------------------------
      --	 Handle the Moving Head (Tricky)  --
-     WPCMAME: All this ++ stuff doesn't seem right but I don't want to change it
+      Gaston: completely recoded 09/17/2015
      --------------------------------------- */
   if (mech & 0x01) {
-    /* Move to the Left */
-    if (core_getSol(sHeadOnOff) && core_getSol(sHeadDirection)) {
+    if (core_getSol(sHeadOnOff)) {
+      if (core_getSol(sHeadDirection)) {
+        /* Move to the left, test pos. #6 is the most left! */
+        trick++;
+        if (trick > 95) trick = 95;
+      } else {
+        /* Move to the right, test pos. #0 is the most right! */
+        trick--;
+        if (trick < 0) trick = 0;
+      }
+    }
+    if (trick >= 84) {
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 010 */
+    } else if (trick >= 72) {
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 110 */
+    } else if (trick >= 60) {
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 100 */
+    } else if (trick >= 48) {
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 000 */
+    } else if (trick >= 36) {
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 001 */
+    } else if (trick >= 24) {
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 101 */
+    } else if (trick >= 12) {
       core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 111 */
-      if (trick++ > 20)
-        core_setSw(swHeadOpto2,0); /* 101 */
-      if (trick++ > 40)
-        core_setSw(swHeadOpto3,0); /* 100 */
-      if (trick++ > 60)
-        core_setSw(swHeadOpto1,0); /* 000 */
-      if (trick++ > 80)
-        core_setSw(swHeadOpto3,1); /* 001 */
-      if (trick++ > 100)
-        core_setSw(swHeadOpto2,1); /* 011 */
-      if (trick++ > 120)
-        core_setSw(swHeadOpto3,0); /* 010 */
+    } else {
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 011 */
     }
-    if (trick++>120)
-      trick = 0;
-    /* Move to the Right */
-    if (core_getSol(sHeadOnOff) && !core_getSol(sHeadDirection)) {
-      core_setSw(swHeadOpto1,0);core_setSw(swHeadOpto2,1);core_setSw(swHeadOpto3,0); /* 010 */
-      if (trick++>20)
-        core_setSw(swHeadOpto3,1); /* 011 */
-      if (trick++>40)
-        core_setSw(swHeadOpto2,0); /* 001 */
-      if (trick++>60)
-        core_setSw(swHeadOpto3,0); /* 000 */
-      if (trick++>80)
-        core_setSw(swHeadOpto1,1); /* 100 */
-      if (trick++>100)
-        core_setSw(swHeadOpto3,1); /* 101 */
-      if (trick++>120)
-        core_setSw(swHeadOpto2,1);
-      core_setSw(swHeadOpto3,0); /* 110 */
-    }
-    if (trick++>120)
-      trick = 0;
   }
 }
 
 static int pz_getMech(int mechNo) {
   return trick;
 }
-
