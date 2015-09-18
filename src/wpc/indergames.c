@@ -36,8 +36,8 @@ static core_tLCDLayout inderDisp7a[] = {
   {0}
 };
 
-// Hot and Cold (1978)
-// Screech (1978)
+// Hot and Cold (1978) - uses Recel System III
+// Screech (1978) - uses Recel System III
 
 /*-------------------------------------------------------------------
 / Centaur (1979)
@@ -47,7 +47,7 @@ static core_tGameData centauriGameData = {GEN_INDER,inderDisp6,{FLIP_SW(FLIP_L)}
 static void init_centauri(void) {
 	core_gameData = &centauriGameData;
 }
-INDER_ROMSTARTP(centauri,	"cent2.bin", NO_DUMP,
+INDER_ROMSTARTP(centauri,	"cent2.bin", CRC(4f1ad0bc) SHA1(0622c16520275e629eac27ae2575e4e433de56ed),
 						"cent3.bin", CRC(f87abd63) SHA1(c3f48ffd46fad076fd064cbc0fdcc31641f5b1b6),
 						"cent4.bin", CRC(b69e95b6) SHA1(2f053a5848110d084239e1fc960198b247b3b98e))
 INDER_ROMEND
