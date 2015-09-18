@@ -39,14 +39,15 @@ Atari: 4x4 (not working yet)
 CICPlay: Galaxy Play, Galaxy Play 2, Kidnap
 Data East: King Kong 1.0
 IDSA: Basket Ball, V-1 (speech not working yet)
-Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
+Inder: Centaur (not working yet)
 JP: Add missing ROM for Olympus
 MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
 Premier: Amazon Hunt II & III
-Stargame: Iron Balls
-Stern: Dale Jr. (Nascar 5.00)
 Sleic: Io Moon (not working yet)
        Bike Race (not working yet)
+Stargame: Iron Balls
+Stern: Dale Jr. (Nascar 5.00)
+Valley Spectra IV: good U4 dump for correctly timed bonus countdown
 WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
      Rush Pinball (custom MOD, no sound)
 
