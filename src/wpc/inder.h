@@ -121,7 +121,7 @@
 #define INDER_SND_CPU	1
 
 /*-- GAME ROMS --*/
-#define INDER_ROMSTARTP0(name, n1, chk1, n2, chk2, n3, chk3) \
+#define INDER_ROMSTARTP(name, n1, chk1, n2, chk2, n3, chk3) \
   ROM_START(name) \
     NORMALREGION(0x10000, INDER_MEMREG_CPU) \
       ROM_LOAD(n1, 0x8800, 0x0800, chk1) \
