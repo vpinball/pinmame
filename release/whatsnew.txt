@@ -50,6 +50,7 @@ Stern: Dale Jr. (Nascar 5.00)
 Valley Spectra IV: good U4 dump for correctly timed bonus countdown
 WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
      Rush Pinball (custom MOD, no sound)
+Zaccaria: Devil Riders French speech (one ROM is missing, unfortunately)
 
 Kinda new:
 Star Wars 20th Anniversary 1.04

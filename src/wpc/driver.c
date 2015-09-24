@@ -2487,6 +2487,7 @@ DRIVERNV(farfgfp)       //      Farfalla (German speech Free Play)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
 DRIVERNV(dvlridei)      //      Devil Riders (Italian speech)
 DRIVERNV(dvlrideg)      //      Devil Riders (German speech)
+DRIVERNV(dvlridef)      //      Devil Riders (French speech)
 DRIVERNV(dvlrdfp)       //04/84 Devil Riders (Free Play)
 DRIVERNV(dvlrdifp)      //      Devil Riders (Italian speech Free Play))
 DRIVERNV(dvlrdgfp)      //      Devil Riders (German speech Free Play)
