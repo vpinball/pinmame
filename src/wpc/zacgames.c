@@ -544,6 +544,15 @@ ZAC_SOUNDROM_de2g(	"g_snd_1.bin",CRC(77d042dc) SHA1(78e056468887a315e29c913803e3
 ZAC_ROMEND
 CORE_CLONEDEFNV(dvlrideg,dvlrider,"Devil Riders (German Speech)",1984,"Zaccaria",ZAC2X,0)
 
+INITGAME(dvlridef,GEN_ZAC2,dispZAC2,SNDBRD_ZAC13136,366)
+ZAC_ROMSTART1820(dvlridef,	"cpu.ic1",CRC(5874ab12) SHA1(e616193943797d91e5cf2abfcc052821d24336b4),
+							"cpu.ic2",CRC(09829446) SHA1(dc82135eae544f8eb1a3227bc6de0bd9a464e778))
+ZAC_SOUNDROM_de2g(	"fr01snd1.1d",CRC(ba435706) SHA1(a05fb75aa135d02e9f97024524fe780d48d92be0),
+					"fr01snd2.1e",NO_DUMP,
+					"fr01snd3.1g",CRC(f707ad05) SHA1(0e3254ccf901181854f2e31c7339bd9e21d7d0bd))
+ZAC_ROMEND
+CORE_CLONEDEFNV(dvlridef,dvlrider,"Devil Riders (French Speech)",1984,"Zaccaria",ZAC2X,0)
+
 INITGAME(dvlrdfp,GEN_ZAC2,dispZAC2,SNDBRD_ZAC13136,366)
 ZAC_ROMSTART1820(dvlrdfp,	"driders.ic1",CRC(e69e12d0) SHA1(6df947a73c35d33c4ca5a1c81271bdbac1a10c37),
 							"driders.ic2",CRC(0de27aca) SHA1(2770c8ae4ac41b9e287162d875df393362d0ae78))

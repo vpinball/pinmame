@@ -638,8 +638,8 @@ static void pz_handleMech(int mech) {
       Gaston: completely recoded 09/17/2015
      --------------------------------------- */
   if (mech & 0x01) {
-    if (core_getSol(sHeadOnOff)) {
-      if (core_getSol(sHeadDirection)) {
+    if (core_getSol(sHeadOnOff)) { // wpc_data[WPC_SOLENOID3] & 0x40) {
+      if (core_getSol(sHeadDirection)) { // (wpc_data[WPC_SOLENOID3] & 0x80) {
         /* Move to the left, test pos. #6 is the most left! */
         trick++;
         if (trick > 95) trick = 95;
@@ -650,21 +650,21 @@ static void pz_handleMech(int mech) {
       }
     }
     if (trick >= 84) {
-      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 010 */
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 101 */
     } else if (trick >= 72) {
-      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 110 */
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 001 */
     } else if (trick >= 60) {
-      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 100 */
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 011 */
     } else if (trick >= 48) {
-      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 000 */
+      core_setSw(swHeadOpto1,0); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 111 */
     } else if (trick >= 36) {
-      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 001 */
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,0); /* 110 */
     } else if (trick >= 24) {
-      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 101 */
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,0); core_setSw(swHeadOpto3,1); /* 010 */
     } else if (trick >= 12) {
-      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 111 */
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,1); /* 000 */
     } else {
-      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 011 */
+      core_setSw(swHeadOpto1,1); core_setSw(swHeadOpto2,1); core_setSw(swHeadOpto3,0); /* 100 */
     }
   }
 }
