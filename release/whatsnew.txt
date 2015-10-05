@@ -47,14 +47,15 @@ Sleic: Io Moon (not working yet)
        Bike Race (not working yet)
 Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
-Valley Spectra IV: good U4 dump for correctly timed bonus countdown
+Valley: Spectra IV (good U4 dump for correctly timed bonus countdown)
 WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
      Rush Pinball (custom MOD, no sound)
-Zaccaria: Devil Riders French speech (one ROM is missing, unfortunately)
 
 Kinda new:
-Star Wars 20th Anniversary 1.04
+Jurassic Park 6.00 (unofficial MOD)
 Last Action Hero 1.13 (unofficial MOD)
+Star Wars 20th Anniversary 1.04
+Tales from the Crypt 4.00 (unofficial MOD)
 
 Clones:
 Al's Garage Band Goes On A World Tour R06a
@@ -72,6 +73,7 @@ Corvette LX-2 & LA-1
 Creature from the Black Lagoon P-3
 Cue Ball Wizard rev.2 & rev.3
 Cyclone L-1
+Devil Riders (French speech) one ROM is missing, unfortunately
 Diner LU-2
 Fire L-2
 Fish Tales L-5 & D-6 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) & LED Ghost Fix
