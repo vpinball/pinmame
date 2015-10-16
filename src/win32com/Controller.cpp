@@ -508,13 +508,13 @@ STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
 		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
 
 		VARIANT DMDState;
-		DMDState.vt = VT_UI8;
+		DMDState.vt = VT_UI1;
 	
 		LONG ofs = 0;
 		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
 		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
 		{
-			DMDState.uintVal = g_raw_dmdbuffer[ofs];
+			DMDState.cVal = g_raw_dmdbuffer[ofs];
 			SafeArrayPutElement(psa, &ofs, &DMDState);
 		}
 
