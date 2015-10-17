@@ -19,7 +19,8 @@ Version 2.6 (X X, 2015)
 
 	HRESULT RawDmdWidth([out, retval] int *pVal); - Get Width of Window (Raw, equal to the original DMD resolution)
 	HRESULT RawDmdHeight([out, retval] int *pVal); - Get Height of Window (Raw, equal to the original DMD resolution)
-	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution) (NOT user-allocated)
+	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution, brightness 0..100%) (NOT user-allocated)
+	HRESULT RawDmdColoredPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution, RGB levels 0..255) (NOT user-allocated)
 
 	HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal); - Copy all changed lamps (user-allocated)
 	HRESULT LampsState([in] int **buf, [out, retval] int *pVal); - Copy all lamps (user-allocated)
