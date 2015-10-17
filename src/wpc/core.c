@@ -738,9 +738,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
 
-  const UINT8 perc0 = pmoptions.dmd_perc0;
-  const UINT8 perc1 = pmoptions.dmd_perc33;
-  const UINT8 perc2 = pmoptions.dmd_perc66;
+  const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
+  const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
+  const UINT8 perc2 = (pmoptions.dmd_perc66 > 0) ? pmoptions.dmd_perc66 : 67;
   const UINT8 perc3 = 100;
 
   static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
@@ -748,33 +748,28 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   
   const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
 
-  const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
-  const UINT8 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+  const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
+  const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
 
-  unsigned char palette[4][3];
-  int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
-  int perc66 = 67, perc33 = 33, perc00 = 20;
-
+  int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
 	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
   }
-  if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
-	  perc66 = pmoptions.dmd_perc66; perc33 = pmoptions.dmd_perc33; perc00 = pmoptions.dmd_perc0;
-  }
 
   /*-- Autogenerate DMD Color Shades--*/
-  palette[0][0] = rStart * perc00 / 100;
-  palette[0][1] = gStart * perc00 / 100;
-  palette[0][2] = bStart * perc00 / 100;
-  palette[1][0] = rStart * perc33 / 100;
-  palette[1][1] = gStart * perc33 / 100;
-  palette[1][2] = bStart * perc33 / 100;
-  palette[2][0] = rStart * perc66 / 100;
-  palette[2][1] = gStart * perc66 / 100;
-  palette[2][2] = bStart * perc66 / 100;
-  palette[3][0] = rStart;
-  palette[3][1] = gStart;
-  palette[3][2] = bStart;
+  unsigned char palette[4][3];
+  palette[0][0] = rStart * perc0 / 100;
+  palette[0][1] = gStart * perc0 / 100;
+  palette[0][2] = bStart * perc0 / 100;
+  palette[1][0] = rStart * perc1 / 100;
+  palette[1][1] = gStart * perc1 / 100;
+  palette[1][2] = bStart * perc1 / 100;
+  palette[2][0] = rStart * perc2 / 100;
+  palette[2][1] = gStart * perc2 / 100;
+  palette[2][2] = bStart * perc2 / 100;
+  palette[3][0] = rStart * perc3 / 100;
+  palette[3][1] = gStart * perc3 / 100;
+  palette[3][2] = bStart * perc3 / 100;
 
   /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
   if (pmoptions.dmd_colorize) {
@@ -794,6 +789,15 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		  palette[2][2] = pmoptions.dmd_blue66;
 	  }
   }
+
+  const UINT32 palette32_4[4] = {(palette[0][0] | (((UINT32)palette[0][1]) << 8) | (((UINT32)palette[0][2]) << 16)),
+	                             (palette[1][0] | (((UINT32)palette[1][1]) << 8) | (((UINT32)palette[1][2]) << 16)),
+					             (palette[2][0] | (((UINT32)palette[2][1]) << 8) | (((UINT32)palette[2][2]) << 16)),
+					             (palette[3][0] | (((UINT32)palette[3][1]) << 8) | (((UINT32)palette[3][2]) << 16))};
+
+  UINT32 palette32_16[16];
+  for(ii = 0; ii < 16; ++ii)
+	  palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
 
   //
 
@@ -816,10 +820,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		const int offs = (ii-1)*layout->length + jj;
 		currbuffer[offs] = col;
  	    if(layout->length >= 128) { // Capcom hack
-			g_raw_dmdbuffer[offs] = (col >= 63) ? rawg[col-63] : raws[col];
-			g_raw_colordmdbuffer[offs] = (col >= 63) ?
-				                         0 : //!! 0 for SAM and GTS3 = meh
-										 (palette[col][0] | (((unsigned int)palette[col][1]) << 8) | (((unsigned int)palette[col][2]) << 16));
+			g_raw_dmdbuffer[offs] = (col >= 63) ? raw_16[col-63] : raw_4[col];
+			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
 		}
 #endif
         *line++ = dmdColor[col];
@@ -849,8 +851,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	for(jj = 0; jj < layout->start; jj++)
 		for(ii = 0; ii < layout->length; ii++)
 		{
-			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
-			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
+			const int offs = jj*layout->length + ii;
+			if ((currbuffer[offs] != oldbuffer[offs]) &&
+			  ((currbuffer[offs] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
 				dumpframe = 1;
 				break;
 			}
