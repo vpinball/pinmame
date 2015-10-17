@@ -35,7 +35,8 @@ extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
 
-extern UINT8 g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
 
@@ -515,6 +516,34 @@ STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
 		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
 		{
 			DMDState.cVal = g_raw_dmdbuffer[ofs];
+			SafeArrayPutElement(psa, &ofs, &DMDState);
+		}
+
+		pVal->vt = VT_ARRAY|VT_VARIANT;
+		pVal->parray = psa;
+		return S_OK;
+	}
+	else
+		return S_FALSE;
+}
+
+/******************************************************************************************************
+* IController.RawDmdColoredPixels (read-only): Copy whole DMD to a self allocated array (RGB(A) values)
+*******************************************************************************************************/
+STDMETHODIMP CController::get_RawDmdColoredPixels(VARIANT *pVal)
+{
+	if(Machine && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
+	{
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI4;
+
+		LONG ofs = 0;
+		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
+		for(unsigned int x = 0; x < g_raw_dmdx; ++x, ++ofs)
+		{
+			DMDState.uintVal = g_raw_colordmdbuffer[ofs];
 			SafeArrayPutElement(psa, &ofs, &DMDState);
 		}
 

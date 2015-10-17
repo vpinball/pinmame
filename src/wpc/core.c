@@ -12,6 +12,7 @@
  #include "../pindmd/pindmd.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+ UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 #endif
@@ -735,6 +736,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
   UINT8 dumpframe = 1;
 
+  // prepare all brightness & color/palette tables for mappings from internal DMD representation:
+
   const UINT8 perc0 = pmoptions.dmd_perc0;
   const UINT8 perc1 = pmoptions.dmd_perc33;
   const UINT8 perc2 = pmoptions.dmd_perc66;
@@ -747,6 +750,52 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
   const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
   const UINT8 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+
+  unsigned char palette[4][3];
+  int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
+  int perc66 = 67, perc33 = 33, perc00 = 20;
+
+  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
+	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
+  }
+  if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
+	  perc66 = pmoptions.dmd_perc66; perc33 = pmoptions.dmd_perc33; perc00 = pmoptions.dmd_perc0;
+  }
+
+  /*-- Autogenerate DMD Color Shades--*/
+  palette[0][0] = rStart * perc00 / 100;
+  palette[0][1] = gStart * perc00 / 100;
+  palette[0][2] = bStart * perc00 / 100;
+  palette[1][0] = rStart * perc33 / 100;
+  palette[1][1] = gStart * perc33 / 100;
+  palette[1][2] = bStart * perc33 / 100;
+  palette[2][0] = rStart * perc66 / 100;
+  palette[2][1] = gStart * perc66 / 100;
+  palette[2][2] = bStart * perc66 / 100;
+  palette[3][0] = rStart;
+  palette[3][1] = gStart;
+  palette[3][2] = bStart;
+
+  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+  if (pmoptions.dmd_colorize) {
+	  if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+		  palette[0][0] = pmoptions.dmd_red0;
+		  palette[0][1] = pmoptions.dmd_green0;
+		  palette[0][2] = pmoptions.dmd_blue0;
+	  }
+	  if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+		  palette[1][0] = pmoptions.dmd_red33;
+		  palette[1][1] = pmoptions.dmd_green33;
+		  palette[1][2] = pmoptions.dmd_blue33;
+	  }
+	  if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+		  palette[2][0] = pmoptions.dmd_red66;
+		  palette[2][1] = pmoptions.dmd_green66;
+		  palette[2][2] = pmoptions.dmd_blue66;
+	  }
+  }
+
+  //
 
   if(layout->length >= 128) // Capcom hack
   {
@@ -762,14 +811,20 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
+		const UINT8 col = dotCol[ii][jj];
 #ifdef VPINMAME
-		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
- 	    if(layout->length >= 128) // Capcom hack
-			g_raw_dmdbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj] >= 63 ? rawg[dotCol[ii][jj]-63] : raws[dotCol[ii][jj]];
+		const int offs = (ii-1)*layout->length + jj;
+		currbuffer[offs] = col;
+ 	    if(layout->length >= 128) { // Capcom hack
+			g_raw_dmdbuffer[offs] = (col >= 63) ? rawg[col-63] : raws[col];
+			g_raw_colordmdbuffer[offs] = (col >= 63) ?
+				                         0 : //!! 0 for SAM and GTS3 = meh
+										 (palette[col][0] | (((unsigned int)palette[col][1]) << 8) | (((unsigned int)palette[col][2]) << 16));
+		}
 #endif
-        *line++ = dmdColor[dotCol[ii][jj]];
+        *line++ = dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
-          *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
+          *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
     }
     if (locals.displaySize > 1) {
