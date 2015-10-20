@@ -357,7 +357,7 @@ STDMETHODIMP CControllerSettings::put_Value(BSTR sName, VARIANT newVal)
 	char szName[4096];
 	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
 
-	HRESULT hr = PutSetting(NULL, szName, newVal);
+	HRESULT hr = PutSetting(NULL, szName, newVal)?S_OK:S_FALSE;
 	if ( SUCCEEDED(hr) ) {
 		VariantChangeType(&newVal, &newVal, 0, VT_BSTR);
 		char szValue[4096];
