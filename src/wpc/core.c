@@ -751,13 +751,13 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
   const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
 
+  unsigned char palette[4][3];
   int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
 	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
   }
 
   /*-- Autogenerate DMD Color Shades--*/
-  unsigned char palette[4][3];
   palette[0][0] = rStart * perc0 / 100;
   palette[0][1] = gStart * perc0 / 100;
   palette[0][2] = bStart * perc0 / 100;
@@ -790,6 +790,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  }
   }
 
+  {
   const UINT32 palette32_4[4] = {(palette[0][0] | (((UINT32)palette[0][1]) << 8) | (((UINT32)palette[0][2]) << 16)),
 	                             (palette[1][0] | (((UINT32)palette[1][1]) << 8) | (((UINT32)palette[1][2]) << 16)),
 					             (palette[2][0] | (((UINT32)palette[2][1]) << 8) | (((UINT32)palette[2][2]) << 16)),
@@ -841,6 +842,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
+  }
+
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
