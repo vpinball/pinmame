@@ -1193,8 +1193,6 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
   if (uCount == 0)
     { pVal = 0; return S_OK; }
 
-  long ix[2];
-
   /*-- add changed LEDs to array --*/
   int *dst = reinterpret_cast<int*>(buf);
   for (int i = 0; i < uCount; i++) {
