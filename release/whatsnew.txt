@@ -35,6 +35,7 @@ Updated to zlib 1.2.8
 
 *** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty & Tim Polzin
 New:
+Apple Time: Thunder Man
 Atari: 4x4 (not working yet)
 CICPlay: Galaxy Play, Galaxy Play 2, Kidnap
 Data East: King Kong 1.0
@@ -90,6 +91,7 @@ Joust L-1
 Jungle Lord L-1 & New Tricks Home ROMs by A.M. Thurnherr
 Kiss prototype v.2 (not working yet)
 Laser War 8.1
+Lost in Space US display 1.01 & German display 1.02
 Mars - God of War French
 Monopoly 2.51 (Italian display)
 Monster Bash 0.5
@@ -98,7 +100,7 @@ No Fear 1.1X
 No Good Gofers 1.2
 Party Animal (German)
 Phantom of the Opera 2.9
-Pinbot P-4 & L-5 mod
+Pin-Bot P-4 & L-1 & L-5 mod
 Pistol Poker R01
 Pool Sharks LA-5
 Popeye LA-4 & LX-4

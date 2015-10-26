@@ -759,6 +759,7 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 } // diag led
 
 static WRITE_HANDLER(sns_data_w) {
+  if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) tms5220_reset(); // some of the speech would be garbled otherwise!
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)

@@ -351,17 +351,36 @@ CORE_CLONEDEFNV(vipr_102, viprsega,"Viper Night Drivin' (1.02)",1998,"Sega",de_m
 /*-------------------------------------------------------------------
 / Lost in Space
 /-------------------------------------------------------------------*/
+#define LIS_SND \
+DE2S_SOUNDROM14444("lisu7.100",CRC(96e6b3c4) SHA1(5cfb43b8c182aed4b49ad1b8803812a18c6c8b6f), \
+                  "lisu17.100",CRC(69076939) SHA1(f2cdf61a2b469d1a69eb3f08fc6e511d72336586), \
+                  "lisu21.100",CRC(56eede09) SHA1(9ff53d7a188bd7293ad92089d143bd54623a50d4), \
+                  "lisu36.100",CRC(56f2c53b) SHA1(5c2daf17116016fbead1320eb150cf655984662b), \
+                  "lisu37.100",CRC(f9430c59) SHA1(f0f7169e63fc12d29fe39cd24dd67c5fb17779f7))
+
 INITGAME(lostspc,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lostspc, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
 DE_DMD32ROM8x(  "lisdspa.102",CRC(e8bf4a58) SHA1(572313fb79e5a0c0034938a09b04ef43fc235c84))
-DE2S_SOUNDROM14444("lisu7.100" ,CRC(96e6b3c4) SHA1(5cfb43b8c182aed4b49ad1b8803812a18c6c8b6f),
-                  "lisu17.100",CRC(69076939) SHA1(f2cdf61a2b469d1a69eb3f08fc6e511d72336586),
-                  "lisu21.100",CRC(56eede09) SHA1(9ff53d7a188bd7293ad92089d143bd54623a50d4),
-                  "lisu36.100",CRC(56f2c53b) SHA1(5c2daf17116016fbead1320eb150cf655984662b),
-                  "lisu37.100",CRC(f9430c59) SHA1(f0f7169e63fc12d29fe39cd24dd67c5fb17779f7))
+LIS_SND
 SE_ROMEND
 #define input_ports_lostspc input_ports_se
-CORE_GAMEDEFNV(lostspc,"Lost in Space",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(lostspc,"Lost in Space (1.01)",1998,"Sega",de_mSES1,0)
+
+INITGAME(lostspcg,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lostspcg, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
+DE_DMD32ROM8x("lisdspg.102",CRC(66f3feb7) SHA1(a1f718193998f3210fb25c1353e4ae6703802311))
+LIS_SND
+SE_ROMEND
+#define input_ports_lostspcg input_ports_lostspc
+CORE_CLONEDEFNV(lostspcg,lostspc,"Lost in Space (1.01 German)",1998,"Sega",de_mSES1,0)
+
+INITGAME(lostspc1,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lostspc1, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
+DE_DMD32ROM8x("lisdspa.101",CRC(a8bfa71f) SHA1(45886ae8edcfd26a2225914aaf96eb960fc7e988))
+LIS_SND
+SE_ROMEND
+#define input_ports_lostspc1 input_ports_lostspc
+CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01, Display 1.01)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Golden Cue
