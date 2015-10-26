@@ -751,7 +751,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
   const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
 
+  UINT32 palette32_4[4];
+  UINT32 palette32_16[16];
   unsigned char palette[4][3];
+
   int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
 	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
@@ -790,13 +793,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  }
   }
 
-  {
-  const UINT32 palette32_4[4] = {(palette[0][0] | (((UINT32)palette[0][1]) << 8) | (((UINT32)palette[0][2]) << 16)),
-	                             (palette[1][0] | (((UINT32)palette[1][1]) << 8) | (((UINT32)palette[1][2]) << 16)),
-					             (palette[2][0] | (((UINT32)palette[2][1]) << 8) | (((UINT32)palette[2][2]) << 16)),
-					             (palette[3][0] | (((UINT32)palette[3][1]) << 8) | (((UINT32)palette[3][2]) << 16))};
+  for (ii = 0; ii < 4; ++ii)
+	  palette32_4[ii] = (UINT32)palette[ii][0] | (((UINT32)palette[ii][1]) << 8) | (((UINT32)palette[ii][2]) << 16);
 
-  UINT32 palette32_16[16];
   for(ii = 0; ii < 16; ++ii)
 	  palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
 
@@ -841,7 +840,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
         col1 = col2;
       }
     }
-  }
   }
 
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
