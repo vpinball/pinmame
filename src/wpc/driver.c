@@ -62,6 +62,11 @@ DRIVERNV(punchy3)       //Punchy the Clown R03 (1993)
   DRIVERNV(test8031)    //Test 8031 cpu core
 #endif
 
+// --------------------
+// APPLE TIME
+// --------------------
+DRIVERNV(thndrman)      //Thunder Man (Zaccaria hardware)
+
 // ---------------
 // ASTILL ENTERTAINMENT
 // ---------------
@@ -859,34 +864,34 @@ DRIVERNV(heavymtl)    //Heavy Metal (198?)
 // SEGA GAMES
 // --------------
 //Data East Hardware, DMD 192x64
-DRIVERNV(mav_100)       //DE/Sega MPU: 09/94 Maverick 1.00
-DRIVERNV(mav_400)       //DE/Sega MPU: 09/94 Maverick 4.00
-DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
-DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
+DRIVER  (mav,100)       //DE/Sega MPU: 09/94 Maverick 1.00
+DRIVER  (mav,400)       //DE/Sega MPU: 09/94 Maverick 4.00
+DRIVER  (mav,401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
+DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein, Mary Shelley's
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein, Mary Shelley's (German)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch 4.00
-DRIVERNV(bay_d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch)
-DRIVERNV(bay_e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (English)
-DRIVERNV(bay_d300)      //DE/Sega MPU: 03/95 Baywatch 3.00 (Dutch)
+DRIVER  (bay,d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch)
+DRIVER  (bay,e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (English)
+DRIVER  (bay,d300)      //DE/Sega MPU: 03/95 Baywatch 3.00 (Dutch)
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
 DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
 DRIVERNV(batmanf2)      //DE/Sega MPU: 07/95 Batman Forever (2.02)
 DRIVERNV(batmanf1)      //DE/Sega MPU: 07/95 Batman Forever (1.02)
-DRIVERNV(bmf_uk)        //DE/Sega MPU: 07/95 Batman Forever (English)
-DRIVERNV(bmf_at)        //DE/Sega MPU: 07/95 Batman Forever (Austrian)
-DRIVERNV(bmf_be)        //DE/Sega MPU: 07/95 Batman Forever (Belgian)
-DRIVERNV(bmf_ch)        //DE/Sega MPU: 07/95 Batman Forever (Swiss)
-DRIVERNV(bmf_cn)        //DE/Sega MPU: 07/95 Batman Forever (Canadian)
-DRIVERNV(bmf_de)        //DE/Sega MPU: 07/95 Batman Forever (German)
-DRIVERNV(bmf_fr)        //DE/Sega MPU: 07/95 Batman Forever (French)
-DRIVERNV(bmf_nl)        //DE/Sega MPU: 07/95 Batman Forever (Dutch)
-DRIVERNV(bmf_it)        //DE/Sega MPU: 07/95 Batman Forever (Italian)
-DRIVERNV(bmf_sp)        //DE/Sega MPU: 07/95 Batman Forever (Spanish)
-DRIVERNV(bmf_no)        //DE/Sega MPU: 07/95 Batman Forever (Norwegian)
-DRIVERNV(bmf_sv)        //DE/Sega MPU: 07/95 Batman Forever (Swedish)
-DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japanese)
-DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
+DRIVER  (bmf,uk)        //DE/Sega MPU: 07/95 Batman Forever (English)
+DRIVER  (bmf,at)        //DE/Sega MPU: 07/95 Batman Forever (Austrian)
+DRIVER  (bmf,be)        //DE/Sega MPU: 07/95 Batman Forever (Belgian)
+DRIVER  (bmf,ch)        //DE/Sega MPU: 07/95 Batman Forever (Swiss)
+DRIVER  (bmf,cn)        //DE/Sega MPU: 07/95 Batman Forever (Canadian)
+DRIVER  (bmf,de)        //DE/Sega MPU: 07/95 Batman Forever (German)
+DRIVER  (bmf,fr)        //DE/Sega MPU: 07/95 Batman Forever (French)
+DRIVER  (bmf,nl)        //DE/Sega MPU: 07/95 Batman Forever (Dutch)
+DRIVER  (bmf,it)        //DE/Sega MPU: 07/95 Batman Forever (Italian)
+DRIVER  (bmf,sp)        //DE/Sega MPU: 07/95 Batman Forever (Spanish)
+DRIVER  (bmf,no)        //DE/Sega MPU: 07/95 Batman Forever (Norwegian)
+DRIVER  (bmf,sv)        //DE/Sega MPU: 07/95 Batman Forever (Swedish)
+DRIVER  (bmf,jp)        //DE/Sega MPU: 07/95 Batman Forever (Japanese)
+DRIVER  (bmf,time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
 DRIVERNV(ctcheese)      //DE/Sega MPU: ??/96 Cut The Cheese (Redemption)
 //Whitestar Hardware, DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13 (5.01)
@@ -899,8 +904,8 @@ DRIVER  (twst,404)      //Whitestar: 05/96 Twister (4.04)
 DRIVER  (twst,405)      //Whitestar: 05/96 Twister (4.05)
 DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independence Day (2.02)
 DRIVERNV(id4f)          //Whitestar: 07/96 ID4: Independence Day (2.02 French)
-DRIVERNV(id4_201)       //Whitestar: 07/96 ID4: Independence Day (2.01)
-DRIVERNV(id4_201f)      //Whitestar: 07/96 ID4: Independence Day (2.01 French)
+DRIVER  (id4,201)       //Whitestar: 07/96 ID4: Independence Day (2.01)
+DRIVER  (id4,201f)      //Whitestar: 07/96 ID4: Independence Day (2.01 French)
 DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam (3.00)
 DRIVERNV(spacejm2)      //Whitestar: 08/96 Space Jam (2.00)
 DRIVERNV(spacejmf)      //Whitestar: 08/96 Space Jam (3.00 French)
@@ -919,12 +924,14 @@ DRIVERNV(ctchzdlx)      //Whitestar: ??/98 Cut The Cheese Deluxe (Redemption)
 DRIVERNV(wackadoo)      //Whitestar: ??/98 Wack-A-Doodle-Doo (Redemption)
 DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin' (2.01)
-DRIVERNV(vipr_102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
-DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
+DRIVER  (vipr,102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
+DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space (1.01)
+DRIVERNV(lostspc1)      //Whitestar: 06/98 Lost in Space (1.01, Display 1.01)
+DRIVERNV(lostspcg)      //Whitestar: 06/98 Lost in Space (1.01 German)
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla (2.05)
-DRIVERNV(godz_100)      //Whitestar: 09/98 Godzilla (1.00)
-DRIVERNV(godz_090)      //Whitestar: 09/98 Godzilla (0.90)
+DRIVER  (godz,100)      //Whitestar: 09/98 Godzilla (1.00)
+DRIVER  (godz,090)      //Whitestar: 09/98 Godzilla (0.90)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,096)      //Whitestar: 01/99 South Park (0.96)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
@@ -1902,11 +1909,12 @@ DRIVER(rdkng,l2)        //          07/86 W Road Kings (L-2)
 DRIVER(rdkng,l3)        //          07/86 W Road Kings (L-3)
 DRIVER(rdkng,l4)        //          07/86 W Road Kings (L-4)
                         //S11-546:  10/86 W Strike Force
-DRIVER(pb,p4)           //S11-549:  10/86 W Pin-bot (P-4)
-DRIVER(pb,l2)           //          10/86 W Pin-bot (L-2)
-DRIVER(pb,l3)           //          10/86 W Pin-bot (L-3)
-DRIVER(pb,l5)           //          10/86 W Pin-bot (L-5)
-DRIVER(pb,l5h)          //          08/12   Pin-bot (L-5, Freeplay / solar value mod)
+DRIVER(pb,p4)           //S11-549:  10/86 W Pin-Bot (P-4)
+DRIVER(pb,l1)           //          10/86 W Pin-Bot (L-1)
+DRIVER(pb,l2)           //          10/86 W Pin-Bot (L-2)
+DRIVER(pb,l3)           //          10/86 W Pin-Bot (L-3)
+DRIVER(pb,l5)           //          10/86 W Pin-Bot (L-5)
+DRIVER(pb,l5h)          //          08/12   Pin-Bot (L-5, Freeplay / solar value mod)
 DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
 DRIVER(tts,l2)          //          ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
