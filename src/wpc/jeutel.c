@@ -298,7 +298,7 @@ static int tms5110_callback(void) {
 }
 
 static struct TMS5110interface jeutel_5110Int = {
-  639450,				/* clock rate = 80 * output sample rate,     */
+  640000,				/* clock rate = 80 * output sample rate,     */
 								/* usually 640000 for 8000 Hz sample rate or */
 								/* usually 800000 for 10000 Hz sample rate.  */
   50,					/* volume */
