@@ -5153,7 +5153,7 @@ void m68k_op_bfchg_32_ai(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte ^ mask_byte);
@@ -5207,7 +5207,7 @@ void m68k_op_bfchg_32_di(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte ^ mask_byte);
@@ -5261,7 +5261,7 @@ void m68k_op_bfchg_32_ix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte ^ mask_byte);
@@ -5315,7 +5315,7 @@ void m68k_op_bfchg_32_aw(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte ^ mask_byte);
@@ -5369,7 +5369,7 @@ void m68k_op_bfchg_32_al(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte ^ mask_byte);
@@ -5460,7 +5460,7 @@ void m68k_op_bfclr_32_ai(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte & ~mask_byte);
@@ -5514,7 +5514,7 @@ void m68k_op_bfclr_32_di(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte & ~mask_byte);
@@ -5568,7 +5568,7 @@ void m68k_op_bfclr_32_ix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte & ~mask_byte);
@@ -5622,7 +5622,7 @@ void m68k_op_bfclr_32_aw(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte & ~mask_byte);
@@ -5676,7 +5676,7 @@ void m68k_op_bfclr_32_al(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte & ~mask_byte);
@@ -6913,7 +6913,7 @@ void m68k_op_bfins_32_ai(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			insert_byte = MASK_OUT_ABOVE_8(insert_base);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
@@ -6974,7 +6974,7 @@ void m68k_op_bfins_32_di(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			insert_byte = MASK_OUT_ABOVE_8(insert_base);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
@@ -7035,7 +7035,7 @@ void m68k_op_bfins_32_ix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			insert_byte = MASK_OUT_ABOVE_8(insert_base);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
@@ -7096,7 +7096,7 @@ void m68k_op_bfins_32_aw(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			insert_byte = MASK_OUT_ABOVE_8(insert_base);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
@@ -7157,7 +7157,7 @@ void m68k_op_bfins_32_al(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			insert_byte = MASK_OUT_ABOVE_8(insert_base);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
@@ -7250,7 +7250,7 @@ void m68k_op_bfset_32_ai(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte | mask_byte);
@@ -7305,7 +7305,7 @@ void m68k_op_bfset_32_di(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte | mask_byte);
@@ -7360,7 +7360,7 @@ void m68k_op_bfset_32_ix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte | mask_byte);
@@ -7415,7 +7415,7 @@ void m68k_op_bfset_32_aw(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte | mask_byte);
@@ -7470,7 +7470,7 @@ void m68k_op_bfset_32_al(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 			m68ki_write_8(ea+4, data_byte | mask_byte);
@@ -7557,7 +7557,7 @@ void m68k_op_bftst_32_ai(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7608,7 +7608,7 @@ void m68k_op_bftst_32_di(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7659,7 +7659,7 @@ void m68k_op_bftst_32_ix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7710,7 +7710,7 @@ void m68k_op_bftst_32_aw(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7761,7 +7761,7 @@ void m68k_op_bftst_32_al(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7812,7 +7812,7 @@ void m68k_op_bftst_32_pcdi(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
@@ -7863,7 +7863,7 @@ void m68k_op_bftst_32_pcix(void)
 
 		if((width + offset) > 32)
 		{
-			mask_byte = MASK_OUT_ABOVE_8(mask_base);
+			mask_byte = MASK_OUT_ABOVE_8(mask_base) << (8-offset);
 			data_byte = m68ki_read_8(ea+4);
 			FLAG_Z |= (data_byte & mask_byte);
 		}
