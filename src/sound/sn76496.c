@@ -83,8 +83,9 @@ static void SN76496Write(int chip,int data)
 			case 2:	/* tone 1 : frequency */
 			case 4:	/* tone 2 : frequency */
                 if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
-                if ((R->Register[r] != 0) /*|| (!m_freq0_is_max)*/) R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_freq0_is_max always true/false?
-                    else R->Period[c] = R->UpdateStep * 0x400;
+                //if ((R->Register[r] != 0) /*|| (!m_sega_style_psg)*/)
+					R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_sega_style_psg true/false?
+                    //else R->Period[c] = R->UpdateStep * 0x400;
 
 				if (r == 4)
 				{
@@ -130,8 +131,9 @@ static void SN76496Write(int chip,int data)
 			case 2:	/* tone 1 : frequency */
 			case 4:	/* tone 2 : frequency */
 				if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
-                if ((R->Register[r] != 0) /*|| (!m_freq0_is_max)*/) R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_freq0_is_max always true/false?
-                    else R->Period[c] = R->UpdateStep * 0x400;
+                //if ((R->Register[r] != 0) /*|| (!m_sega_style_psg)*/)
+				    R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_sega_style_psg true/false?
+                    //else R->Period[c] = R->UpdateStep * 0x400;
 
 				if (r == 4)
 				{
@@ -306,11 +308,11 @@ static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int
 
 	for (i = 0;i < 4;i++) R->Volume[i] = 0;
 
-	R->LastRegister = 0;
+	R->LastRegister = /*m_sega_style_psg?3:*/0; // Sega VDP PSG defaults to selected period reg for 2nd channel //!! m_sega_style_psg true/false?
 	for (i = 0;i < 8;i+=2)
 	{
 		R->Register[i] = 0;
-		R->Register[i + 1] = 0x0f;	/* volume = 0 */
+		R->Register[i + 1] = 0x0;   //!! 0x0f?? // volume = 0x0 (max volume) on reset; this needs testing on chips other than SN76489A and Sega VDP PSG //!! m_sega_style_psg true/false?
 	}
 
 	for (i = 0;i < 4;i++)
