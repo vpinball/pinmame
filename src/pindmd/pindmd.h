@@ -4,6 +4,7 @@
 extern void pindmdInit(void);
 extern void pindmdDeInit(void);
 extern void sendLogo(void);
+extern void sendColor(void);
 extern void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_in, UINT8 doDumpFrame);
 extern void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens);
 extern void drawPixel(int x, int y, UINT8 colour);
