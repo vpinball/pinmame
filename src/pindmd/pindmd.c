@@ -67,6 +67,7 @@ void sendColor(void)
 {
 	struct { int r; int g; int b; } dmd, dmd66, dmd33, dmd0; // colorized DMD values
 
+#if 0
 	const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
 	const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
 	const UINT8 perc2 = (pmoptions.dmd_perc66 > 0) ? pmoptions.dmd_perc66 : 67;
@@ -109,6 +110,23 @@ void sendColor(void)
 			dmd66.b = pmoptions.dmd_blue66;
 		}
 	}
+#else
+	if (!pmoptions.dmd_colorize)
+		return;
+
+	dmd0.r = pmoptions.dmd_red0;
+	dmd0.g = pmoptions.dmd_green0;
+	dmd0.b = pmoptions.dmd_blue0;
+	dmd33.r = pmoptions.dmd_red33;
+	dmd33.g = pmoptions.dmd_green33;
+	dmd33.b = pmoptions.dmd_blue33;
+	dmd66.r = pmoptions.dmd_red66;
+	dmd66.g = pmoptions.dmd_green66;
+	dmd66.b = pmoptions.dmd_blue66;
+	dmd.r = pmoptions.dmd_red;
+	dmd.g = pmoptions.dmd_green;
+	dmd.b = pmoptions.dmd_blue;
+#endif
 
 	const UINT8 tmp[7+16*3] = {
 		0x81, 0xC3, 0xE7, 0xFF, 0x04, 0x00, 0x01, //header
