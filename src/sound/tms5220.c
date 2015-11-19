@@ -1007,10 +1007,10 @@ void tms5220_process_chip(void *chip, INT16 *buffer, unsigned int size)
          * Old frame was unvoiced, new is voiced
          * Old frame was unvoiced, new frame is silence/zero energy (unique to tms52xx)
        */
-      if ( ((OLD_FRAME_UNVOICED_FLAG == 0) && (NEW_FRAME_UNVOICED_FLAG == 1))
-        || ((OLD_FRAME_UNVOICED_FLAG == 1) && (NEW_FRAME_UNVOICED_FLAG == 0))
-        || ((OLD_FRAME_SILENCE_FLAG == 1) && (NEW_FRAME_SILENCE_FLAG == 0))
-        || ((OLD_FRAME_UNVOICED_FLAG == 1) && (NEW_FRAME_SILENCE_FLAG == 1)) )
+      if ( ((OLD_FRAME_UNVOICED_FLAG == 0) && NEW_FRAME_UNVOICED_FLAG)
+        || ((OLD_FRAME_UNVOICED_FLAG == 1) && !NEW_FRAME_UNVOICED_FLAG)
+        || ((OLD_FRAME_SILENCE_FLAG == 1) && !NEW_FRAME_SILENCE_FLAG)
+        || ((OLD_FRAME_UNVOICED_FLAG == 1) && NEW_FRAME_SILENCE_FLAG) )
       {
         tms->inhibit = 1;
       } else { // normal frame, normal interpolation
@@ -1353,7 +1353,7 @@ static INT32 matrix_multiply(INT32 a, INT32 b)
   while (a<-512) { a+=1024; }
   while (b>16383) { b-=32768; }
   while (b<-16384) { b+=32768; }
-	result = ((a*b)>>9)|1;//&(~1);
+  result = ((a*b)>>9); /** TODO: this isn't technically right to the chip, which truncates the lowest result bit, but it causes glitches otherwise. **/
 #ifdef VERBOSE
   if (result>16383) fprintf(stderr,"matrix multiplier overflowed! a: %x, b: %x, result: %x", a, b, result);
   if (result<-16384) fprintf(stderr,"matrix multiplier underflowed! a: %x, b: %x, result: %x", a, b, result);
