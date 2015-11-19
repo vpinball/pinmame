@@ -127,7 +127,7 @@ void sendColor(void)
 	dmd.g = pmoptions.dmd_green;
 	dmd.b = pmoptions.dmd_blue;
 #endif
-
+	{
 	const UINT8 tmp[7+16*3] = {
 		0x81, 0xC3, 0xE7, 0xFF, 0x04, 0x00, 0x01, //header
 		dmd0.r, dmd0.g, dmd0.b, // color 0 0%
@@ -150,6 +150,7 @@ void sendColor(void)
 
 	pinddrvSendFrame();
 	memset(frame_buf, 0, sizeof(frame_buf));
+	}
 }
 
 //*****************************************************
