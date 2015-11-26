@@ -53,7 +53,7 @@ void alt_sound_handle(int boardNo, int cmd)
 		static signed char jingle_ducking = -1;
 		static signed char voice_ducking[ALT_MAX_VOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
-		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0)
+		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0) // another game has been loaded? -> previous data has to be free'd
 		{
 			cmd_counter = 0;
 			cmd_storage = -1;

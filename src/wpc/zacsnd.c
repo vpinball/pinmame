@@ -598,7 +598,7 @@ static void sns_init(struct sndbrdData *brdData) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
-    tms5220_set_variant(TMS5220_IS_5220);
+    tms5220_set_variant(TMS5220_IS_5220); //!! 5220C ?
   }
 }
 
