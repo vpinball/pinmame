@@ -590,7 +590,8 @@ void LoadGlobalSettings()
 				if ( IsPathOrFile(opts[sp]->name) )
 					lstrcpy(szDefault, szInstallDir);
 				
-				lstrcat(szDefault, opts[sp]->deflt);
+				if (opts[sp]->deflt)
+					lstrcat(szDefault, opts[sp]->deflt);
 
 				fNew |= RegLoadOpts(hKey, opts[sp], szDefault, szValue);
 				rc_set_option3(opts[sp], szValue, 0);

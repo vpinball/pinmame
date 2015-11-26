@@ -206,7 +206,7 @@ CGames::~CGames()
 			i++;
 		}
 
-		delete m_pGamesList;
+		delete [] m_pGamesList;
 		m_pGamesList = NULL;
 	}
 }

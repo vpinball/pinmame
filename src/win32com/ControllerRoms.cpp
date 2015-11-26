@@ -222,7 +222,7 @@ STDMETHODIMP CRoms::Deinit()
 			i++;
 		}
 
-		delete m_pRomsList;
+		delete [] m_pRomsList;
 		m_pRomsList = NULL;
 	}
 
