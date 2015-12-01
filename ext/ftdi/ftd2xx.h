@@ -1178,7 +1178,7 @@ extern "C" {
 		WORD XoffLim;				/* Transmit X-OFF threshold				*/
 		BYTE ByteSize;				/* Number of bits/byte, 4-8				*/
 		BYTE Parity;				/* 0-4=None,Odd,Even,Mark,Space			*/
-		BYTE StopBits;				/* 0,1,2 = 1, 1.5, 2					*/
+		BYTE StopBits;				/* FT_STOP_BITS_1 or FT_STOP_BITS_2		*/
 		char XonChar;				/* Tx and Rx X-ON character				*/
 		char XoffChar;				/* Tx and Rx X-OFF character			*/
 		char ErrorChar;				/* Error replacement char				*/
