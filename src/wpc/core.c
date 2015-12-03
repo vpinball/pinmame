@@ -15,6 +15,8 @@
  UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
+
+ UINT32 g_needs_DMD_update = 1;
 #endif
 
 /* stuff to test VPINMAME */
@@ -846,22 +848,25 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
-  if(g_fShowPinDMD || g_fDumpFrames) {
   if(oldbuffer != NULL) {
-	dumpframe = 0;
-	for(jj = 0; jj < layout->start; jj++)
-		for(ii = 0; ii < layout->length; ii++)
-		{
-			const int offs = jj*layout->length + ii;
-			if ((currbuffer[offs] != oldbuffer[offs]) &&
-			  ((currbuffer[offs] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
-				dumpframe = 1;
-				break;
-			}
-		}
+	  dumpframe = 0;
+	  for(jj = 0; jj < layout->start; jj++)
+		  for(ii = 0; ii < layout->length; ii++)
+		  {
+			  const int offs = jj*layout->length + ii;
+			  if ((currbuffer[offs] != oldbuffer[offs]) &&
+				  ((currbuffer[offs] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
+				  dumpframe = 1;
+				  break;
+			  }
+		  }
   }
 
-  if(dumpframe) {
+  if(dumpframe)
+	  g_needs_DMD_update = 1;
+
+  if(g_fShowPinDMD || g_fDumpFrames) {
+    if(dumpframe) {
 	    //usb dmd
 	    if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
 		{
@@ -882,18 +887,18 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			}
 		  }
 		}
-
-		if(currbuffer == buffer1) {
-			currbuffer = buffer2;
-			oldbuffer = buffer1;
-		} else {
-			currbuffer = buffer1;
-			oldbuffer = buffer2;
-		}
 	}
 
 	if(g_fShowPinDMD)
 	    frameClock();
+  }
+
+  if (currbuffer == buffer1) {
+	  currbuffer = buffer2;
+	  oldbuffer = buffer1;
+  } else {
+	  currbuffer = buffer1;
+	  oldbuffer = buffer2;
   }
 #endif
 }
