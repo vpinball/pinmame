@@ -153,7 +153,7 @@ static UINT8 video_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *video_dib_info = (BITMAPINFO *)video_dib_info_data;
 static UINT8 debug_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *debug_dib_info = (BITMAPINFO *)debug_dib_info_data;
-static UINT8 *converted_bitmap;
+static UINT8 *converted_bitmap = NULL;
 
 // video bounds
 static double aspect_ratio;
@@ -554,6 +554,7 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 
 	// allocate a temporary bitmap in case we need it
 	converted_bitmap = malloc(MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
+	memset(converted_bitmap,0,MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
 	if (!converted_bitmap)
 		return 1;
 
@@ -667,6 +668,10 @@ void win_destroy_window(void)
 	// kill the window if it still exists
 	if (win_video_window)
 		DestroyWindow(win_video_window);
+
+	if (converted_bitmap)
+		free(converted_bitmap);
+	converted_bitmap = NULL;
 }
 
 
