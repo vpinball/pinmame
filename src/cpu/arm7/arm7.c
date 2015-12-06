@@ -375,7 +375,8 @@ unsigned arm7_dasm(char *buffer, unsigned int pc)
 
 void arm7_init(void)
 {
-	memset(&arm7, 0, sizeof(arm7));
+	memset(&ARM7, 0, sizeof(ARM7));
+	ARM7_ICOUNT = 0;
 
 	//must call core 
 	arm7_core_init("arm7");
