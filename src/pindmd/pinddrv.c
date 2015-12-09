@@ -58,8 +58,6 @@ void sendFrame(void);
 //*****************************************************
 void pinddrvInit(void)
 {
-	UINT8 deviceId;
-
 #ifdef PINDMD2
 	int ret = 0;
 	enabled = 1;
@@ -112,8 +110,8 @@ void pinddrvInit(void)
 	DWORD numDevs;
 	UINT8 i;
 	UINT8 BitMode;
-	deviceId = 0;
-	sendFrameCount=0;
+	UINT8 deviceId = 0;
+	sendFrameCount = 0;
 
 	// create the device information list
 	ftStatus = FT_CreateDeviceInfoList(&numDevs);

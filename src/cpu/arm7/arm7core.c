@@ -187,43 +187,46 @@ INLINE data8_t arm7_cpu_read8( int addr )
  * helper funcs
  ***************/
 
-#define IsNeg(i) ((i) >> 31)
-#define IsPos(i) ((~(i)) >> 31)
+/* Simplified (not using >> 31), as only used in the two Macros below, so sign bit is extracted there */
+#define IsNeg(i) (i)
+#define IsPos(i) ((i)^SIGN_BIT)
+#define SIGN_BITS_DIFFER(a,b) ((a)^(b))
+#define SIGN_BITS_DO_NOT_DIFFER(a,b) ((a)^(b)^SIGN_BIT)
 
 /* Set NZCV flags for ADDS / SUBS */
-#define HandleALUAddFlags(rd, rn, op2)                                                \
-	if (insn & INSN_S)                                                                  \
-	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                       \
-				| (((!SIGN_BITS_DIFFER(rn, op2)) && SIGN_BITS_DIFFER(rn, rd)) << V_BIT) \
-				| (((IsNeg(rn) & IsNeg(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsNeg(op2) & IsPos(rd))) ? C_MASK : 0) \
-				| HandleALUNZFlags(rd)));                                               \
+#define HandleALUAddFlags(rd, rn, op2)                                                                           \
+	if (insn & INSN_S)                                                                                           \
+	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                                                  \
+				| (((SIGN_BITS_DO_NOT_DIFFER(rn, op2) & SIGN_BITS_DIFFER(rn, rd)) & SIGN_BIT) == SIGN_BIT ? V_MASK : 0) \
+				| ((((IsNeg(rn) & IsNeg(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsNeg(op2) & IsPos(rd))) & SIGN_BIT) == SIGN_BIT ? C_MASK : 0) \
+				| HandleALUNZFlags(rd)));                                                                        \
 	R15 += 4;
 
-#define HandleALUSubFlags(rd, rn, op2)                                                                         \
+#define HandleALUSubFlags(rd, rn, op2)                                                                           \
 	if (insn & INSN_S)                                                                                           \
-	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                                                \
-				| ((SIGN_BITS_DIFFER(rn, op2) && SIGN_BITS_DIFFER(rn, rd)) << V_BIT)                             \
-				| (((IsNeg(rn) & IsPos(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsPos(op2) & IsPos(rd))) ? C_MASK : 0) \
+	SET_CPSR(((GET_CPSR & ~(N_MASK | Z_MASK | V_MASK | C_MASK))                                                  \
+				| (((SIGN_BITS_DIFFER(rn, op2) & SIGN_BITS_DIFFER(rn, rd)) & SIGN_BIT) == SIGN_BIT ? V_MASK : 0) \
+				| ((((IsNeg(rn) & IsPos(op2)) | (IsNeg(rn) & IsPos(rd)) | (IsPos(op2) & IsPos(rd))) & SIGN_BIT) == SIGN_BIT ? C_MASK : 0) \
 				| HandleALUNZFlags(rd)));                                                                        \
 	R15 += 4;
 
 /* Set NZC flags for logical operations. */
 
 //This macro (which I didn't write) - doesn't make it obvious that the SIGN BIT = 31, just as the N Bit does,
-//therfore, N is set by default
+//therefore, N is set by default
 #define HandleALUNZFlags(rd) \
-  (((rd) & SIGN_BIT) | ((!(rd)) << Z_BIT))
+  (((rd) & SIGN_BIT) | (((rd)==0) ? Z_MASK : 0))
 
 
 //Long ALU Functions use bit 63 
 #define HandleLongALUNZFlags(rd) \
-  ((((rd) & ((UINT64)1<<63))>>32) | ((!(rd)) << Z_BIT))
+  ((((rd) & ((UINT64)1<<63))>>32) | (((rd)==0) ? Z_MASK : 0))
 
 #define HandleALULogicalFlags(rd, sc) \
   if (insn & INSN_S) \
     SET_CPSR( ((GET_CPSR &~ (N_MASK | Z_MASK | C_MASK)) \
                      | HandleALUNZFlags(rd) \
-                     | (((sc) != 0) << C_BIT)));\
+                     | (((sc) != 0) ? C_MASK : 0)));\
   R15 += 4;
 
 //convert cpsr mode num into to text
