@@ -1,9 +1,10 @@
 #include <stdlib.h>
-#include <memory.h>
 #include <string.h>
 #include <assert.h>
 
 #include <Windows.h>
+
+#include "memory.h"
 
 #define JIT_OPALIGN 0
 #include "jit.h"
