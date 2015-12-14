@@ -75,10 +75,10 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
-#include <memory.h>
 #include <string.h>
 #include <assert.h>
 
+#include "memory.h"
 #include "jit.h"
 #include "jitemit.h"
 
@@ -259,7 +259,7 @@ static struct instr *alloc_instr(int len, const byte *b)
 {
 	struct instr *iop;
 	int alolen;
-	byte *op;
+	const byte *op;
 	int rem;
 	int twobyte = 0;
 	struct instr *i;
@@ -1586,7 +1586,7 @@ static int immlen(optype t)
 	default:     return 0;
 	}
 }
-static int oplen(struct mnedef *o)
+static int oplen(const struct mnedef *o)
 {
 	// start with one byte for the opcode
 	int len = 1;
@@ -1690,7 +1690,7 @@ static int match_operand(optype t, struct opdesc *op)
 
 // Encode the MOD REG R/M byte for an instruction.  'rm' is the operand to encode
 // into the MOD RM fields, and 'r' is the operand to encode in the REG field.
-static byte *encode_modrm(byte *p, struct mnedef *o, struct opdesc *rm, struct opdesc *r)
+static byte *encode_modrm(byte *p, const struct mnedef *o, const struct opdesc *rm, const struct opdesc *r)
 {
 	// Start with the memory operand
 	if (rm->typ == opMem || rm->typ == opMem8 || rm->typ == opMem16 || rm->typ == opMem32)
@@ -1885,7 +1885,7 @@ void jit_emit(intelMneId mne, ...)
 	int n;
 	struct opdesc op[3];
 	int i;
-	struct mnedef *m, *mbest;
+	const struct mnedef *m, *mbest;
 	byte buf[32], *p;
 	struct instr *ins;
 	opdesctyp memType;
