@@ -864,7 +864,7 @@ DRIVERNV(starfira) //       Star Fire (alternate set)
 DRIVERNV(trailer)  // ??/85 Trailer
                    // ??/85 Stop Ship
 DRIVERNV(fldragon) // ??/86 Flash Dragon
-                   // ??/87 Phantom Ship
+DRIVERNV(phntmshp) // ??/87 Phantom Ship
 DRIVERNV(sklflite) // ??/87 Skill Flight
 
 // ----------------
