@@ -511,6 +511,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\machine\z80fmly.c" />
     <ClCompile Include="src\sound\2151intf.c" />
     <ClCompile Include="src\sound\2203intf.c" />
+    <ClCompile Include="src\sound\262intf.c" />
     <ClCompile Include="src\sound\3812intf.c" />
     <ClCompile Include="src\sound\5110intf.c" />
     <ClCompile Include="src\sound\5220intf.c" />
@@ -587,6 +588,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\sound\votrax.c" />
     <ClCompile Include="src\sound\ym2151.c" />
     <ClCompile Include="src\sound\ymdeltat.c" />
+    <ClCompile Include="src\sound\ymf262.c" />
     <ClCompile Include="src\vidhrdw\avgdvg.c" />
     <ClCompile Include="src\vidhrdw\crtc6845.c" />
     <ClCompile Include="src\vidhrdw\generic.c" />
@@ -774,6 +776,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\atari.c" />
     <ClCompile Include="src\wpc\atarigames.c" />
     <ClCompile Include="src\wpc\atarisnd.c" />
+    <ClCompile Include="src\wpc\barni.c" />
     <ClCompile Include="src\wpc\bingo.c" />
     <ClCompile Include="src\wpc\bowarrow.c" />
     <ClCompile Include="src\wpc\bowlgames.c" />
@@ -811,11 +814,14 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\idsa.c" />
     <ClCompile Include="src\wpc\inder.c" />
     <ClCompile Include="src\wpc\indergames.c" />
+    <ClCompile Include="src\wpc\inderp.c" />
     <ClCompile Include="src\wpc\jeutel.c" />
+    <ClCompile Include="src\wpc\joctronic.c" />
     <ClCompile Include="src\wpc\jp.c" />
     <ClCompile Include="src\wpc\jpgames.c" />
     <ClCompile Include="src\wpc\jvh.c" />
     <ClCompile Include="src\wpc\kissproto.c" />
+    <ClCompile Include="src\wpc\lancelot.c" />
     <ClCompile Include="src\wpc\ltd.c" />
     <ClCompile Include="src\wpc\ltdgames.c" />
     <ClCompile Include="src\wpc\mac.c" />
@@ -1059,6 +1065,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\machine\z80fmly.h" />
     <ClInclude Include="src\sound\2151intf.h" />
     <ClInclude Include="src\sound\2203intf.h" />
+    <ClInclude Include="src\sound\262intf.h" />
     <ClInclude Include="src\sound\3812intf.h" />
     <ClInclude Include="src\sound\5110intf.h" />
     <ClInclude Include="src\sound\5220intf.h" />
@@ -1087,6 +1094,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\sound\votrax.h" />
     <ClInclude Include="src\sound\ym2151.h" />
     <ClInclude Include="src\sound\ymdeltat.h" />
+    <ClInclude Include="src\sound\ymf262.h" />
     <ClInclude Include="src\vidhrdw\avgdvg.h" />
     <ClInclude Include="src\vidhrdw\crtc6845.h" />
     <ClInclude Include="src\vidhrdw\generic.h" />

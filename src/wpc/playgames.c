@@ -33,6 +33,13 @@
     core_gameData = &name##GameData; \
   }
 
+#define INITGAME5(name, disptype, balls) \
+  PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY5}}; \
+  static void init_##name(void) { \
+    core_gameData = &name##GameData; \
+  }
+
 core_tLCDLayout play_dispOld[] = {
   { 0, 0, 0,2,CORE_SEG7 }, { 0, 4, 2,1,CORE_SEG8D}, { 0, 6, 3,3,CORE_SEG7 },
   { 3, 0, 6,2,CORE_SEG7 }, { 3, 4, 8,1,CORE_SEG8D}, { 3, 6, 9,1,CORE_SEG7 }, { 3, 8, 4,2,CORE_SEG7 },
@@ -257,7 +264,7 @@ INITGAME4(theraid, play_disp7, 1)
 PLAYMATIC_ROMSTART64(theraid, "theraid.cpu", CRC(97aa1489) SHA1(6b691b287138cc78cfc1010f380ff8c66342c39b))
 PLAYMATIC_SOUNDROM64("theraid.snd", CRC(e33f8363) SHA1(e7f251c334b15e12b1eb7e079c2e9a5f64338052))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(theraid,"Raid, The",1984,"Playmatic",gl_mPLAYMATIC4,0)
+CORE_GAMEDEFNV(theraid,"The Raid",1984,"Playmatic",gl_mPLAYMATIC4,0)
 
 /*-------------------------------------------------------------------
 / 11/84 UFO-X
@@ -323,23 +330,81 @@ CORE_GAMEDEFNV(trailer,"Trailer",1985,"Playmatic",gl_mPLAYMATIC4,0)
 INITGAME4(fldragon, play_disp7, 1)
 PLAYMATIC_ROMSTART64_2(fldragon,"fldrcpu1.rom", CRC(e513ded0) SHA1(64ed3dcff53311fb93bd50d105a4c1186043fdd7),
             "fldrcpu2.rom", CRC(6ff2b276) SHA1(040b614f0b0587521ef5550b5587b94a7f3f178b))
-PLAYMATIC_SOUNDROM6416("fdsndu3.rom", NO_DUMP,
-            "fdsndu4.rom", NO_DUMP)
+PLAYMATIC_SOUNDROM6416("fdsndu3.rom", CRC(aa9c52a8) SHA1(97d5d63b14d10c70a5eb80c08ccf5a1f3df7596d),
+            "fdsndu4.rom", CRC(0a7dc1d2) SHA1(32c7be5e9fbe4fa9ca661af7b7b5ea13ef250ce6))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(fldragon,"Flash Dragon",1986,"Playmatic",gl_mPLAYMATIC4,0)
 
-// ??/87 Phantom Ship
+INITGAME4(fldragoa, play_disp7, 1)
+PLAYMATIC_ROMSTART64_2(fldragoa,"fldr_1a.cpu", CRC(21fda8e8) SHA1(feea608c2605cea1cdf9f7ed884297a95993f754),
+            "fldr_2a.cpu", CRC(3592a0b7) SHA1(4c4ed7930dcbbf81ce2e5296c0b36bb615bd2270))
+PLAYMATIC_SOUNDROM6416("fdsndu3.rom", CRC(aa9c52a8) SHA1(97d5d63b14d10c70a5eb80c08ccf5a1f3df7596d),
+            "fdsndu4.rom", CRC(0a7dc1d2) SHA1(32c7be5e9fbe4fa9ca661af7b7b5ea13ef250ce6))
+PLAYMATIC_ROMEND
+CORE_CLONEDEFNV(fldragoa,fldragon,"Flash Dragon (alternate set)",1986,"Playmatic",gl_mPLAYMATIC4,0)
+
+/*-------------------------------------------------------------------
+/ ??/87 Phantom Ship
+/-------------------------------------------------------------------*/
+INITGAME5(phntmshp, play_disp7, 1)
+PLAYMATIC_ROMSTART64_2(phntmshp,"video1.bin", CRC(2b61a8d2) SHA1(1b5cabbab252b2ffb6ed12fb7e4181de7695ed9a),
+            "video2.bin", CRC(50126db1) SHA1(58d89e44131554cb087c4cad62869f90366704ad))
+PLAYMATIC_SOUNDROM256x4("sonido1.bin", CRC(3294611d) SHA1(5f790b41bcb6d87418c80e61ac8ae69c57864b1d),
+            "sonido2.bin", CRC(c2efc826) SHA1(44ee144b902627745853011968e0d654b35b3b08),
+            "sonido3.bin", CRC(13d50f39) SHA1(70624de2dd8412c83866183a83f16cc5b8bdccb8),
+            "sonido4.bin", CRC(b53f73ed) SHA1(bb928cfee418e8d9698d7bee78a32426f793c6e9))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(phntmshp,"Phantom Ship",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / ??/87 Skill Flight
 /-------------------------------------------------------------------*/
-INITGAME4(sklflite, play_disp7a, 1)
+INITGAME5(sklflite, play_disp7a, 1)
 PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22b51d1cc401aa8f270aa5cdadabe),
             "skflcpu2.rom", CRC(ffc497aa) SHA1(3e88539ae1688322b9268f502d8ca41cffb28df3))
-PLAYMATIC_SOUNDROM6416("sfsndu3.rom", NO_DUMP,
-            "sfsndu4.rom", NO_DUMP)
+PLAYMATIC_SOUNDROM256("skflsnd.rom", CRC(926a1da9) SHA1(16c762fbfe6a55597f26ff55d380192bb8647ee0))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4,0)
+CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
+/ ??/?? Miss Disco (Bingo machine)
+/-------------------------------------------------------------------*/
+core_tLCDLayout play_disp_bingo[] = {
+  {0} // no digits
+};
+INPUT_PORTS_START(msdisco) CORE_PORTS SIM_PORTS(1)
+  PORT_START
+    COREPORT_BIT(0x0001, "Key 1", KEYCODE_1)
+    COREPORT_BIT(0x0002, "Key 2", KEYCODE_2)
+    COREPORT_BIT(0x0004, "Key 3", KEYCODE_3)
+    COREPORT_BIT(0x0008, "Key 4", KEYCODE_4)
+    COREPORT_BIT(0x0010, "Key 5", KEYCODE_5)
+    COREPORT_BIT(0x0020, "Key 6", KEYCODE_6)
+    COREPORT_BIT(0x0040, "Key 7", KEYCODE_7)
+    COREPORT_BIT(0x0080, "Key 8", KEYCODE_8)
+  PORT_START
+    COREPORT_DIPNAME( 0x0001, 0x0000, "EF1")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0001, "1" )
+    COREPORT_DIPNAME( 0x0002, 0x0000, "EF2")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+    COREPORT_DIPNAME( 0x0004, 0x0000, "EF3")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0004, "1" )
+    COREPORT_DIPNAME( 0x0008, 0x0000, "EF4")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0008, "1" )
+INPUT_PORTS_END
+static core_tGameData msdiscoGameData = {GEN_PLAYMATIC,play_disp_bingo,{FLIP_SW(FLIP_L),0,17}};
+static void init_msdisco(void) {
+  core_gameData = &msdiscoGameData;
+}
+ROM_START(msdisco)
+  NORMALREGION(0x10000, PLAYMATIC_MEMREG_CPU)
+    ROM_LOAD("1.bin", 0x0000, 0x1000, CRC(06fb7da9) SHA1(36c6fda166b2a07a5ed9ad5d2b6fdfe8fd707b0f))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(msdisco,"Miss Disco (Bingo)",19??,"Playmatic",gl_mPLAYMATICBINGO,GAME_NOT_WORKING)
 
 
 // games by other manufacturers below

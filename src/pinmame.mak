@@ -53,7 +53,7 @@ DRVLIBS += $(PINOBJ)/techno.o
 DRVLIBS += $(PINOBJ)/spinb.o
 DRVLIBS += $(PINOBJ)/mrgame.o
 DRVLIBS += $(PINOBJ)/nuova.o
-DRVLIBS += $(PINOBJ)/inder.o
+DRVLIBS += $(PINOBJ)/inder.o $(PINOBJ)/inderp.o
 DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
@@ -75,6 +75,9 @@ DRVLIBS += $(PINOBJ)/jeutel.o
 DRVLIBS += $(PINOBJ)/spectra.o
 DRVLIBS += $(PINOBJ)/idsa.o
 DRVLIBS += $(PINOBJ)/mac.o
+DRVLIBS += $(PINOBJ)/barni.o
+DRVLIBS += $(PINOBJ)/joctronic.o
+DRVLIBS += $(PINOBJ)/lancelot.o
 #
 # Games
 #
@@ -233,6 +236,7 @@ SOUNDS += TMS5110@
 SOUNDS += SP0256@
 SOUNDS += Y8950@
 SOUNDS += ASTROCADE@
+SOUNDS += YMF262@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims

@@ -933,6 +933,14 @@ SOURCE=.\src\sound\2203intf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\262intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\262intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\3812intf.c
 # End Source File
 # Begin Source File
@@ -1206,6 +1214,14 @@ SOURCE=.\src\sound\ymdeltat.c
 # Begin Source File
 
 SOURCE=.\src\sound\ymdeltat.h
+# End Source File
+# End Group
+
+SOURCE=.\src\sound\ymf262.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ymf262.h
 # End Source File
 # End Group
 # Begin Group "VidHrdw"
@@ -2176,6 +2192,10 @@ SOURCE=.\src\wpc\atarisnd.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\barni.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\bingo.c
 # End Source File
 # Begin Source File
@@ -2400,7 +2420,15 @@ SOURCE=.\src\wpc\indergames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\inderp.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\jeutel.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\joctronic.c
 # End Source File
 # Begin Source File
 
@@ -2421,6 +2449,10 @@ SOURCE=.\src\wpc\jvh.c
 # Begin Source File
 
 SOURCE=.\src\wpc\kissproto.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\lancelot.c
 # End Source File
 # Begin Source File
 

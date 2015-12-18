@@ -296,6 +296,11 @@ DRIVERNV(trucksp3)      //6803      12/88 Truck Stop (P-3)
 DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis
                         //??        05/89 Ice Castle
 
+// ---------------
+// BARNI
+// ---------------
+DRIVERNV(redbaron)      // Red Baron (1985)
+
 // ------------------
 // (NUOVA) BELL GAMES
 // ------------------
@@ -715,11 +720,17 @@ DRIVERNV(leking)        //Le King (??/1983)
 DRIVERNV(olympic)       //Olympic Games (??/1984)
 
 // ----------------
+// JOCTRONIC
+// ----------------
+DRIVERNV(punkywil)      //Punky Willy (1986)
+DRIVERNV(walkyria)      //Walkyria (198?)
+
+// ----------------
 // JUEGOS POPULARES
 // ----------------
 DRIVERNV(petaco  )      //1101  - Petaco (1984)
-DRIVERNV(petacon )      //        Petaco (1985, using the new hardware)
-DRIVERNV(jpgame  )      //1102? - Unknown 6-digit game, maybe an alternative version of Petaco?
+DRIVERNV(petacon )      //1102? - Petaco (1985, using the new hardware)
+DRIVERNV(petacona)      //        Petaco (new hardware, alternate version)
 DRIVERNV(faeton  )      //1103  - Faeton (1985)
 DRIVERNV(halley  )      //1104  - Halley Comet (1986)
 DRIVERNV(halleya )      //        Halley Comet (alternate version)
@@ -816,7 +827,7 @@ DRIVERNV(odin)          // Odin (1985)
 DRIVERNV(nemesis)       // Nemesis (1986)
 DRIVERNV(wolfman)       // Wolf Man (1987)
 DRIVERNV(odisea)        // Odisea Paris-Dakar (1987)
-                        // Sir Lancelot (1994)
+DRIVERNV(lancelot)      // Sir Lancelot (1994)
 
 // ---------------
 // PINSTAR GAMES
@@ -826,6 +837,7 @@ DRIVERNV(gamatron)      //Pinstar Gamatron (December 85)
 // ----------------
 // PLAYMATIC
 // ----------------
+DRIVERNV(msdisco)  // ??/?? Miss Disco (bingo machine)
 DRIVERNV(spcgambl) // 03/78 Space Gambler
 DRIVERNV(bigtown)  // 04/78 Big Town
 DRIVERNV(lastlap)  // 09/78 Last Lap
