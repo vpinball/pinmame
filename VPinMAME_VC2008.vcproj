@@ -2021,6 +2021,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\262intf.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\262intf.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\3812intf.c"
 						>
 					</File>
@@ -2534,6 +2542,14 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\ymdeltat.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymf262.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymf262.h"
 						>
 					</File>
 				</Filter>
@@ -3478,6 +3494,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\barni.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\bingo.c"
 					>
 				</File>
@@ -3702,7 +3722,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\inderp.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\jeutel.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\joctronic.c"
 					>
 				</File>
 				<File
@@ -3723,6 +3751,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\kissproto.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\lancelot.c"
 					>
 				</File>
 				<File

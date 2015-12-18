@@ -20,7 +20,8 @@
  Whenever you think you got it right, another issue pops up somewhere else... :)
 
  Sound started out with 4 simple tones (with fading option), and evolved through a CPU-driven
- oscillator circuit on to complete sound boards with another 1802 CPU.
+ oscillator circuit on to complete sound boards with another 1802 CPU,
+ and also a completely new sound board design for their latest two games!
 
  Hardware:
  ---------
@@ -32,6 +33,7 @@
            ZIRA:  like gen.2, plus an additional COP402 @ 2 MHz with 1 x AY8910 sound chip
            gen.3: like gen.2, plus an additional CDP1802 @ 2.95 MHz with 1 x TMS5220 speech chip
            gen.4: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2
+           gen.5: Z80 @ 4 MHz clock with 2 x CTC chip, 2 x AY8910, MSM5205
  ************************************************************************************************/
 
 #include "driver.h"
@@ -252,6 +254,9 @@ static WRITE_HANDLER(out2_n) {
         locals.sndCmd = locals.lampCol;
         sndbrd_0_data_w(0, locals.sndCmd);
         sndbrd_0_ctrl_w(0, locals.enSn);
+      } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY5 && !locals.enSn) {
+        locals.sndCmd = locals.lampCol;
+        sndbrd_0_data_w(0, locals.sndCmd);
       }
       cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
       locals.ef[2] = 1;
@@ -477,4 +482,90 @@ MACHINE_DRIVER_START(PLAYMATIC4)
   MDRV_CPU_REPLACE("mcpu", CDP1802, 3579545)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 3579545/8192)
   MDRV_IMPORT_FROM(PLAYMATICS4)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PLAYMATIC4S5)
+  MDRV_IMPORT_FROM(PLAYMATIC3)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,PLAYMATIC)
+  MDRV_CPU_REPLACE("mcpu", CDP1802, 3579545)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 3579545/8192)
+  MDRV_IMPORT_FROM(PLAYMATICS5)
+MACHINE_DRIVER_END
+
+
+// Bingo machine hardware
+
+static MACHINE_INIT(PLAYMATICBINGO) {
+  memset(&locals, 0, sizeof locals);
+  locals.resetDone = 1;
+}
+
+static INTERRUPT_GEN(PLAYMATIC_irqBingo) {
+  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
+}
+
+static void PLAYMATIC_zeroCrossBingo(int data) {
+  locals.ef[1] = !locals.ef[1];
+}
+
+static SWITCH_UPDATE(PLAYMATICBINGO) {
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+  }
+  locals.ef[1] = locals.ef[1] ^ (core_getDip(0) & 1);
+  locals.ef[2] = (core_getDip(0) >> 1) & 1;
+  locals.ef[3] = (core_getDip(0) >> 2) & 1;
+  locals.ef[4] = (core_getDip(0) >> 3) & 1;
+}
+
+static READ_HANDLER(in_bingo) {
+  switch (offset) {
+    case 1:
+      cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
+      return coreGlobals.swMatrix[0];
+    case 2:
+      return ~coreGlobals.swMatrix[1 + bitColToNum(locals.lampCol & 0x1f)];
+    default:
+      printf("unknown in %d\n", offset);
+      return 0;
+  }
+}
+
+static WRITE_HANDLER(out_bingo) {
+  switch (offset) {
+    case 1:
+      locals.panelSel = 0;
+      locals.lampCol = data;
+      break;
+    case 2:
+      coreGlobals.tmpLampMatrix[1 + (8 * locals.panelSel++) + (locals.lampCol & 0x07)] = data;
+      break;
+    case 4:
+      coreGlobals.tmpLampMatrix[0] = data;
+      break;
+    default:
+      printf("%d:%02x ", offset, data);
+  }
+}
+
+static PORT_READ_START(PLAYMATIC_readportBingo)
+  {0x00,0x07, in_bingo},
+MEMORY_END
+
+static PORT_WRITE_START(PLAYMATIC_writeportBingo)
+  {0x00,0x07, out_bingo},
+MEMORY_END
+
+MACHINE_DRIVER_START(PLAYMATICBINGO)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000)
+  MDRV_CPU_MEMORY(PLAYMATIC_readmem3, PLAYMATIC_writemem3)
+  MDRV_CPU_PORTS(PLAYMATIC_readportBingo, PLAYMATIC_writeportBingo)
+  MDRV_CPU_CONFIG(play1802_config)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irqBingo, 3579545/8192)
+  MDRV_TIMER_ADD(PLAYMATIC_zeroCrossBingo, 100)
+  MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank2, 1)
+  MDRV_CORE_INIT_RESET_STOP(PLAYMATICBINGO,NULL,PLAYMATIC)
+  MDRV_SWITCH_UPDATE(PLAYMATICBINGO)
+  MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END

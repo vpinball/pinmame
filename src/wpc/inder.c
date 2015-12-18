@@ -126,27 +126,6 @@ static READ_HANDLER(sndcmd_r) {
   return locals.sndCmd;
 }
 
-// earlier games, 6502 based, WIP (needs more ROM dumps)
-
-static MEMORY_READ_START(INDERP_readmem)
-  {0x0000,0x00ff, MRA_RAM},
-  {0x8000,0xffff, MRA_ROM},
-MEMORY_END
-
-static MEMORY_WRITE_START(INDERP_writemem)
-  {0x0000,0x00ff, MWA_RAM},
-MEMORY_END
-
-MACHINE_DRIVER_START(INDERP)
-  MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 1000000)
-  MDRV_CPU_MEMORY(INDERP_readmem, INDERP_writemem)
-  MDRV_CPU_VBLANK_INT(INDER_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(INDER_irq, 250)
-  MDRV_SWITCH_UPDATE(INDER)
-  MDRV_DIAGNOSTIC_LEDH(1)
-MACHINE_DRIVER_END
-
 /*-------------------------------------------------------
 / Brave Team: Using a TI76489 chip, equivalent to 76496.
 /--------------------------------------------------------*/

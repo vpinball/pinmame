@@ -18,7 +18,7 @@ Corrected GTS80 SS sound clock
 Cured scratchy GTS80 sound after reset
 Corrected DMD for Strikes n' Spares
 Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
-Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
+Made some Inder games sound a lot nicer then before, adjusted music / speech pitch for Metal Man
 Tweak CPU clock for Mystery Castle to make it look more correct
 Fixed single zero digit on Odin & Odin Deluxe
 Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
@@ -37,19 +37,33 @@ Updated to zlib 1.2.8
 New:
 Apple Time: Thunder Man
 Atari: 4x4 (not working yet)
-CICPlay: Galaxy Play, Galaxy Play 2, Kidnap
+Barni: Red Baron (not working yet)
+CICPlay: Galaxy Play 2,
+         Kidnap
 Data East: King Kong 1.0
-IDSA: Basket Ball, V-1 (speech not working yet)
-Inder: Centaur (not working yet)
-JP: Add missing ROM for Olympus
-MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
+IDSA: Basket Ball,
+      V-1 (speech not working yet)
+Inder: Centaur
+Joctronic: Walkyria (not working yet),
+           Punky Willy (not working yet, incomplete dumps)
+JP: support correct sound ROMs for Olympus
+    moved jpgame to petacona
+MAC: Galaxy,
+     Space Train,
+     Space Panther,
+     NBA MAC,
+     and a yet unknown game (may be an alternate Space Panther version)
+Peyper: Sir Lancelot (incomplete sound because of undumped MCU)
+Playmatic: Flash Dragon alternate version & sound support,
+           Phantom Ship (no sound yet),
+           Miss Dicso (bingo machine, not working yet)
 Premier: Amazon Hunt II & III
-Sleic: Io Moon (not working yet)
+Sleic: Io Moon (not working yet),
        Bike Race (not working yet)
 Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
 Valley: Spectra IV (good U4 dump for correctly timed bonus countdown)
-WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
+WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man),
      Rush Pinball (custom MOD, no sound)
 
 Kinda new:
