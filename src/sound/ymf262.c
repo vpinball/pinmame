@@ -3,7 +3,7 @@
 ** File: ymf262.c - software implementation of YMF262
 **                  FM sound generator type OPL3
 **
-** Copyright (C) 2003 Jarek Burczynski
+** Copyright Jarek Burczynski
 **
 ** Version 0.2
 **
@@ -14,6 +14,20 @@ Revision History:
  - thanks to Olivier Galibert and Chris Hardy for YMF262 and YAC512 chips
  - thanks to Stiletto for the datasheets
 
+   Features as listed in 4MF262A6 data sheet:
+    1. Registers are compatible with YM3812 (OPL2) FM sound source.
+    2. Up to six sounds can be used as four-operator melody sounds for variety.
+    3. 18 simultaneous melody sounds, or 15 melody sounds with 5 rhythm sounds (with two operators).
+    4. 6 four-operator melody sounds and 6 two-operator melody sounds, or 6 four-operator melody
+       sounds, 3 two-operator melody sounds and 5 rhythm sounds (with four operators).
+    5. 8 selectable waveforms.
+    6. 4-channel sound output.
+    7. YMF262 compabile DAC (YAC512) is available.
+    8. LFO for vibrato and tremolo effedts.
+    9. 2 programable timers.
+   10. Shorter register access time compared with YM3812.
+   11. 5V single supply silicon gate CMOS process.
+   12. 24 Pin SOP Package (YMF262-M), 48 Pin SQFP Package (YMF262-S).
 
 
 differences between OPL2 and OPL3 not documented in Yamaha datahasheets:
@@ -325,6 +339,10 @@ static const UINT32 ksl_tab[8*16]=
 };
 #undef DV
 
+/* 0 / 3.0 / 1.5 / 6.0 dB/OCT */
+static const UINT32 ksl_shift[4] = { 31, 1, 2, 0 };
+
+
 /* sustain level table (3dB per step) */
 /* 0 - 15: 0, 3, 6, 9,12,15,18,21,24,27,30,33,36,39,42,93 (dB)*/
 #define SC(db) (UINT32) ( db * (2.0/ENV_STEP) )
@@ -446,8 +464,8 @@ O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),
 #define ML 2
 static const UINT8 mul_tab[16]= {
 /* 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,10,12,12,15,15 */
-   0.50*ML, 1.00*ML, 2.00*ML, 3.00*ML, 4.00*ML, 5.00*ML, 6.00*ML, 7.00*ML,
-   8.00*ML, 9.00*ML,10.00*ML,10.00*ML,12.00*ML,12.00*ML,15.00*ML,15.00*ML
+	ML/2, 1*ML, 2*ML, 3*ML, 4*ML, 5*ML, 6*ML, 7*ML,
+	8*ML, 9*ML,10*ML,10*ML,12*ML,12*ML,15*ML,15*ML
 };
 #undef ML
 
@@ -480,7 +498,7 @@ static unsigned int sin_tab[SIN_LEN * 8];
 	The whole table takes: 64 * 210 = 13440 samples.
 
 	When AM = 1 data is used directly
-	When AM = 0 data is divided by 4 before being used (loosing precision is important)
+	When AM = 0 data is divided by 4 before being used (losing precision is important)
 */
 
 #define LFO_AM_TAB_ELEMENTS 210
@@ -1180,9 +1198,9 @@ static int init_tables(void)
 		/* we never reach zero here due to ((i*2)+1) */
 
 		if (m>0.0)
-			o = 8*log(1.0/m)/log(2);	/* convert to 'decibels' */
+			o = 8*log(1.0/m)/log(2.0);	/* convert to 'decibels' */
 		else
-			o = 8*log(-1.0/m)/log(2);	/* convert to 'decibels' */
+			o = 8*log(-1.0/m)/log(2.0);	/* convert to 'decibels' */
 
 		o = o / (ENV_STEP/4);
 
@@ -1300,16 +1318,16 @@ static void OPL3_initalize(OPL3 *chip)
 	int i;
 
 	/* frequency base */
-	chip->freqbase  = (chip->rate) ? ((double)chip->clock / (8.0*36)) / chip->rate  : 0;
+	chip->freqbase  = (chip->rate) ? ((double)chip->clock / (8*36)) / chip->rate  : 0;
 #if 0
-	chip->rate = (double)chip->clock / (8.0*36);
+	chip->rate = (double)chip->clock / (8*36);
 	chip->freqbase  = 1.0;
 #endif
 
 	/* logerror("YMF262: freqbase=%f\n", chip->freqbase); */
 
 	/* Timer base time */
-	chip->TimerBase = 1.0 / ((double)chip->clock / (8.0*36) );
+	chip->TimerBase = (8*36) / (double)chip->clock;
 
 	/* make fnumber -> increment counter table */
 	for( i=0 ; i < 1024 ; i++ )
@@ -1493,9 +1511,7 @@ INLINE void set_ksl_tl(OPL3 *chip,int slot,int v)
 	OPL3_CH   *CH   = &chip->P_CH[slot/2];
 	OPL3_SLOT *SLOT = &CH->SLOT[slot&1];
 
-	int ksl = v>>6; /* 0 / 1.5 / 3.0 / 6.0 dB/OCT */
-
-	SLOT->ksl = ksl ? 3-ksl : 31;
+	SLOT->ksl = ksl_shift[v >> 6];
 	SLOT->TL  = (v&0x3f)<<(ENV_BITS-1-7); /* 7 bits TL (bit 6 = always 0) */
 
 	if (chip->OPL3_mode & 1)
@@ -2098,7 +2114,7 @@ static void OPL3WriteReg(OPL3 *chip, int r, int v)
 			case 9: case 10: case 11:
 				if (CH->extended)
 				{
-					UINT8 conn = (CH->SLOT[SLOT1].CON<<1) || ((CH+3)->SLOT[SLOT1].CON<<0);
+					UINT8 conn = (CH->SLOT[SLOT1].CON<<1) | ((CH+3)->SLOT[SLOT1].CON<<0);
 					switch(conn)
 					{
 					case 0:
@@ -2150,7 +2166,7 @@ static void OPL3WriteReg(OPL3 *chip, int r, int v)
 			case 12: case 13: case 14:
 				if ((CH-3)->extended)
 				{
-					UINT8 conn = ((CH-3)->SLOT[SLOT1].CON<<1) || (CH->SLOT[SLOT1].CON<<0);
+					UINT8 conn = ((CH-3)->SLOT[SLOT1].CON<<1) | (CH->SLOT[SLOT1].CON<<0);
 					switch(conn)
 					{
 					case 0:
