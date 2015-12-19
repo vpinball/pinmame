@@ -1,4 +1,4 @@
-Version 2.6 (X X, 2015) - "We're not dead (yet)"
+Version 2.6 (December 24, 2015) - "We're not dead (yet)"
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***
@@ -44,22 +44,22 @@ Data East: King Kong 1.0
 IDSA: Basket Ball,
       V-1 (speech not working yet)
 Inder: Centaur
-Joctronic: Walkyria (not working yet),
-           Punky Willy (not working yet, incomplete dumps)
-JP: support correct sound ROMs for Olympus
-    moved jpgame to petacona
+Joctronic: Punky Willy (not working yet, incomplete dumps),
+           Walkyria (not working yet)
+JP: support correct sound ROMs for Olympus,
+    renamed unknown jpgame to petacona (Petaco with new hardware, alternate set)
 MAC: Galaxy,
      Space Train,
      Space Panther,
      NBA MAC,
      and a yet unknown game (may be an alternate Space Panther version)
 Peyper: Sir Lancelot (incomplete sound because of undumped MCU)
-Playmatic: Flash Dragon alternate version & sound support,
-           Phantom Ship (no sound yet),
-           Miss Dicso (bingo machine, not working yet)
+Playmatic: Flash Dragon (alternate set & sound support),
+           Miss Dicso (bingo machine, not working yet),
+           Phantom Ship (no sound yet)
 Premier: Amazon Hunt II & III
-Sleic: Io Moon (not working yet),
-       Bike Race (not working yet)
+Sleic: Bike Race (not working yet),
+       Io Moon (not working yet)
 Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
 Valley: Spectra IV (good U4 dump for correctly timed bonus countdown)
