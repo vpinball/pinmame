@@ -1,6 +1,6 @@
 Version 2.6 (December 24, 2015) - "The team awakens"
 ------------------------------------------------------------------------------
-Three and a half year have gone by since the last release.
+Three and a half years have gone by since the last release.
 We kept everybody happy by putting out beta versions now and then,
 but now we felt the time was right to issue a new version.
 
