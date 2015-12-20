@@ -1,5 +1,13 @@
-Version 2.6 (December 24, 2015) - "We're not dead (yet)"
+Version 2.6 (December 24, 2015) - "The team awakens"
 ------------------------------------------------------------------------------
+Three and a half year have gone by since the last release.
+We kept everybody happy by putting out beta versions now and then,
+but now we felt the time was right to issue a new version.
+
+This time, Visual PinMAME will also be bundled with the new VP10 in one installer package
+in order to reduce the amount of inherent knowledge needed to create a working playable setup.
+
+Have fun, and Merry Christmas everyone! :)
 
 *** CORE/CPU ***
 Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
