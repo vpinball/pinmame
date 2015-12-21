@@ -99,6 +99,7 @@ DRIVERNV(fourx4)        //4x4 (Prototype, 1982)
 // ---------------
 //S2650 hardware
 DRIVERNV(cntinntl)      //          10/80 Continental (Bingo)
+DRIVERNV(cntintl2)      //          10/80 Continental (Bingo, alternate version)
 
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
@@ -266,6 +267,7 @@ DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
 DRIVERNV(fbclassa)      //BY35      10/04 Fireball Classic (Free Play)
 DRIVERNV(cybrnaut)      //BY35-0B42 02/85 Cybernaut
 DRIVERNV(cybrnaua)      //BY35      10/04 Cybernaut (Free Play)
+DRIVERNV(bigbat)        //BY35-848: ??/84 Big Bat
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38:09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
@@ -1915,7 +1917,8 @@ DRIVER(comet,l5)        //          06/85 W Comet (L-5)
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
 DRIVER(hs,l4)           //          01/86 W High Speed (L-4)
-DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
+DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard (L-4)
+DRIVER(grand,l3)        //          04/86 W Grand Lizard (L-3)
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
 DRIVER(rdkng,l2)        //          07/86 W Road Kings (L-2)
 DRIVER(rdkng,l3)        //          07/86 W Road Kings (L-3)
@@ -1951,6 +1954,7 @@ DRIVER(bnzai,pa)        //S11-566:  05/88 W Banzai Run (P-A)
 DRIVER(bnzai,l1)        //          05/88 W Banzai Run (L-1)
 DRIVER(bnzai,l3)        //          05/88 W Banzai Run (L-3)
 DRIVER(bnzai,g3)        //          05/88 W Banzai Run (L-3 German)
+DRIVER(bnzai,t3)        //          10/11 W Banzai Run (L-3 Target sound fix)
 DRIVER(swrds,l1)        //S11-559:  06/88 W Swords of Fury (L-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury (L-2)
 DRIVER(taxi,p5)         //S11-553:  08/88 W Taxi (P-5)
@@ -1970,8 +1974,9 @@ DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1)
 DRIVER(bk2k,lg1)        //          04/89 W Black Knight 2000 (LG-1)
 DRIVER(bk2k,lg3)        //          04/89 W Black Knight 2000 (LG-3)
 DRIVER(bk2k,l4)         //          04/89 W Black Knight 2000 (L-4)
-DRIVER(bk2k,la2)        //S11-563:  04/89 W Black Knight 2000 (LA-2)
-DRIVER(bk2k,pa7)        //S11-563:  04/89 W Black Knight 2000 (PA-7)
+DRIVER(bk2k,la2)        //          04/89 W Black Knight 2000 (LA-2)
+DRIVER(bk2k,pa7)        //          04/89 W Black Knight 2000 (PA-7)
+DRIVER(bk2k,pa5)        //          04/89 W Black Knight 2000 (PA-5)
                         //S11:      05/89 W Pool
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue

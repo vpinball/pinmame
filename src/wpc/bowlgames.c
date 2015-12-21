@@ -6,6 +6,7 @@
 #include "driver.h"
 #include "core.h"
 #include "by35.h"
+#include "by35snd.h"
 #include "sndbrd.h"
 #include "wmssnd.h"
 #include "wpc.h"
@@ -178,6 +179,23 @@ S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a
 S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
 CORE_GAMEDEF(tstrk,l1,"Triple Strike (Shuffle) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
+
+/*--------------------------------
+/ Big Bat
+/-------------------------------*/
+static core_tLCDLayout dispBigbat[] = {
+  {0, 0,34, 6,CORE_SEG7}, {0}
+};
+static core_tGameData bigbatGameData = {GEN_BY35,dispBigbat,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_BY61,0,BY35GD_NOSOUNDE}};
+static void init_bigbat(void) { core_gameData = &bigbatGameData; }
+BY35_ROMSTARTx00(bigbat,"u2.bin",CRC(2beda24d) SHA1(80fb9ed548e4886741c709979aa4f865f47d2257),
+                          "u6.bin",CRC(8f13469d) SHA1(00c626f7eb166f627f6498d75906b3c56bccdd62))
+BY61_SOUNDROMx000(        "u3.bin",CRC(b87a9335) SHA1(8a21bcbcbe91da1bab0af06b71604bb8f247d0d4),
+                          "u4.bin",CRC(4ab75b31) SHA1(46acd1c9250a635b51bffccd77ea4e67a0c5edf5),
+                          "u5.bin",CRC(0aec8204) SHA1(f44216cccc3652399549345d8c74bcae54662aa3))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(bigbat,1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(bigbat,"Big Bat",1984,"Bally Midway",by35_mBY35_61S,0)
 
 /*------------------------------------------------
 / Midnight Marauders (BY35-???: 05/84) - Gun game
