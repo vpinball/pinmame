@@ -45,6 +45,7 @@ Updated to zlib 1.2.8
 New:
 Apple Time: Thunder Man
 Atari: 4x4 (not working yet)
+Bally: Big Bat (bat game)
 Barni: Red Baron (not working yet)
 CICPlay: Galaxy Play 2,
          Kidnap
@@ -85,13 +86,15 @@ Al's Garage Band Goes On A World Tour R06a
 Amazon Hunt (alternate set)
 Apollo 13 2.03 & 5.01/Display 4.01
 Arena (alternate set)
-Black Knight 2000 LA-2 & PA-7
+Banzai Run (L-3 with changed target sounds)
 Batman Forever 1.02 & 2.02
 Baywatch 3.00 Dutch & 4.00 England & 4.00 Dutch
 Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
+Black Knight 2000 LA-2, PA-5 & PA-7
 Bone Busters (French)
 Breakshot 1.2
 Chicago Cubs Triple Play (alternate set)
+Continental Bingo (alternate set)
 Corvette LX-2 & LA-1
 Creature from the Black Lagoon P-3
 Cue Ball Wizard rev.2 & rev.3
@@ -103,6 +106,7 @@ Fish Tales L-5 & D-6 with wrong text size patch (0x6C6AA changed from 0x25 to 0x
 Flash L-2 (yellow flipper ROMs)
 Funhouse L-2
 Godzilla 0.90 & 1.00
+Grand Lizard L-3
 Guns n' Roses 3.00 French
 Guns n' Roses 3.00 Dutch
 Hyperball L-2
