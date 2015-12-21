@@ -1,8 +1,8 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 2.6 (X X, 2015)
------------------------------
+Version 2.6 (December 24, 2015) - "The team awakens"
+------------------------------------------------------------------------------
 - New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
   so please setup the default options again after installation!
 
