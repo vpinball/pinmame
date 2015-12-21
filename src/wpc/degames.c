@@ -564,6 +564,15 @@ DE_ROMEND
 #define input_ports_lw3 input_ports_des11
 CORE_GAMEDEF(lw3,208,"Lethal Weapon 3 (2.08)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lw3_208p,"lw3cpuu.208",CRC(a3041f8a) SHA1(3c5b8525b8e9b924590648429c56aaf97adee460))
+DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
+                   "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
+DE2S_SOUNDROM022(  "lw3u7.dat"   ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat"  ,CRC(5168dbbd) SHA1(e5f91650e613350c542ac93d0d4be64b25333186),
+                   "lw3u21.dat"  ,CRC(7ec96750) SHA1(13e41833d43396e370b817928618f72f928d9ba0))
+DE_ROMEND
+CORE_CLONEDEF(lw3,208p,208,"Lethal Weapon 3 (2.08p, Voices Mod)",2013,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(lw3_207,"lw3gc5.207",CRC(27aeaea9) SHA1(f8c40cbc37edac20187ac880be281dd45d8ad614))
 DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
                    "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
