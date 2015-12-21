@@ -2,7 +2,7 @@
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
                              Version 2.6
-                             (X X, 2015)
+                         (December 24th, 2015)
                         http://www.pinmame.com
 **************************************************************************************
 
