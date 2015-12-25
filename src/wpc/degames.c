@@ -591,6 +591,15 @@ DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae4
 DE_ROMEND
 CORE_CLONEDEF(lw3,205,208,"Lethal Weapon 3 (2.05)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lw3_203,"lw3cpuu.203",CRC(0cfa38d4) SHA1(11d2e101a574c2dfec49ec701f480173b84c842e))
+DE_DMD32ROM44(     "lw3dsp1.204",CRC(1ba79363) SHA1(46d489a1190533c73370acd8a48cef60d12f87ce),
+                   "lw3dsp0.204",CRC(c74d3cf2) SHA1(076ee9b2e3cad0b8058ac0c70f5ffe7e29f3eff5))
+DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
+                   "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
+DE_ROMEND
+CORE_CLONEDEF(lw3,203,208,"Lethal Weapon 3 (2.03)",1992,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(lw3_200,"lw3cpu.200",CRC(ddb6e7a7) SHA1(d48309e1984ef9a7682dfde190cf457632044657))
 DE_DMD32ROM44(     "lw3dsp1.204",CRC(1ba79363) SHA1(46d489a1190533c73370acd8a48cef60d12f87ce),
                    "lw3dsp0.204",CRC(c74d3cf2) SHA1(076ee9b2e3cad0b8058ac0c70f5ffe7e29f3eff5))
