@@ -198,7 +198,7 @@ void DisplayInstalledVersion(HWND hWnd)
 	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (WPARAM) szVersionText);
 }
 
-int PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HICON m_hIcon = 0;
 	char szHelp[256];

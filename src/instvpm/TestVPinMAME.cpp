@@ -342,9 +342,9 @@ void RunGame(HWND hWnd, IController *pController)
 	PGAMEINFO pGameInfo = (PGAMEINFO) SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETITEMDATA, iIndex, 0);
 
 	BSTR sGameName;
-	sGameName = SysAllocStringLen(NULL, strlen(pGameInfo->szGameName));
+	sGameName = SysAllocStringLen(NULL, (UINT)strlen(pGameInfo->szGameName));
 
-	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, strlen(pGameInfo->szGameName)); 
+	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, (int)strlen(pGameInfo->szGameName)); 
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
@@ -369,9 +369,9 @@ void CheckRoms(HWND hWnd, IController *pController)
 	PGAMEINFO pGameInfo = (PGAMEINFO) SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETITEMDATA, iIndex, 0);
 
 	BSTR sGameName;
-	sGameName = SysAllocStringLen(NULL, strlen(pGameInfo->szGameName));
+	sGameName = SysAllocStringLen(NULL, (UINT)strlen(pGameInfo->szGameName));
 
-	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, strlen(pGameInfo->szGameName)); 
+	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, (int)strlen(pGameInfo->szGameName)); 
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
@@ -396,9 +396,9 @@ void GameOptions(HWND hWnd, IController *pController)
 	PGAMEINFO pGameInfo = (PGAMEINFO) SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETITEMDATA, iIndex, 0);
 
 	BSTR sGameName;
-	sGameName = SysAllocStringLen(NULL, strlen(pGameInfo->szGameName));
+	sGameName = SysAllocStringLen(NULL, (UINT)strlen(pGameInfo->szGameName));
 
-	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, strlen(pGameInfo->szGameName)); 
+	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, (int)strlen(pGameInfo->szGameName)); 
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
@@ -431,7 +431,7 @@ void EnableButtons(HWND hWnd, IController *pController) {
 	EnableWindow(GetDlgItem(hWnd, IDC_CHECKROMS), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
 }
 
-int PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HICON m_hIcon = 0;
 	static IController *pController = NULL;
