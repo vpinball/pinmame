@@ -12,6 +12,10 @@
 static 	HBRUSH hLinkBrush = 0;
 static	HFONT  hFont = 0;
 
+#ifdef _WIN64
+ #define GCL_HCURSOR         (-12)
+#endif
+
 class CAboutDlg : public CDialogImpl<CAboutDlg> {
 public:
 	BEGIN_MSG_MAP(CAboutDlg)

@@ -253,7 +253,7 @@
 
 typedef unsigned char byte;
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1400) // visual studio & > 6
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) && !defined(__LP64__) // visual studio & > 6 & 32bit compile
 #define JIT_ENABLED  1   // enable the JIT (false -> use only the standard emulator code)
 #else
 #define JIT_ENABLED  0
