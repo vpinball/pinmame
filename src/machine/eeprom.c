@@ -35,7 +35,7 @@ static int reset_delay;
 
 	Note: (cmd) may be NULL. Return 0 (no match) in this case.
 */
-static int EEPROM_command_match(const char *buf, const char *cmd, int len)
+static int EEPROM_command_match(const char *buf, const char *cmd, size_t len)
 {
 	if ( cmd == 0 )	return 0;
 	if ( len == 0 )	return 0;

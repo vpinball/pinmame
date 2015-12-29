@@ -221,7 +221,7 @@ void identify_rom(const char* name, const char* hash, int length)
 	int found = 0;
 
 	/* remove directory name */
-	int i;
+	size_t i;
 	for (i = strlen(name)-1;i >= 0;i--)
 	{
 		if (name[i] == '/' || name[i] == '\\')
@@ -420,7 +420,7 @@ void romident(const char* name,int enter_dirs) {
 		if (enter_dirs)
 			identify_dir(name);
 	} else {
-		unsigned l = strlen(name);
+		size_t l = strlen(name);
 		if (l>=4 && _stricmp(name+l-4,".zip")==0)
 			identify_zip(name);
 		else

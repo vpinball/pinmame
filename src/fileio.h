@@ -62,10 +62,10 @@ typedef struct _mame_file mame_file;
 int mame_faccess(const char *filename, int filetype);
 mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, int openforwrite);
 mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char* exphash);
-UINT32 mame_fread(mame_file *file, void *buffer, UINT32 length);
-UINT32 mame_fwrite(mame_file *file, const void *buffer, UINT32 length);
-UINT32 mame_fread_swap(mame_file *file, void *buffer, UINT32 length);
-UINT32 mame_fwrite_swap(mame_file *file, const void *buffer, UINT32 length);
+UINT32 mame_fread(mame_file *file, void *buffer, size_t length);
+UINT32 mame_fwrite(mame_file *file, const void *buffer, size_t length);
+UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length);
+UINT32 mame_fwrite_swap(mame_file *file, const void *buffer, size_t length);
 #ifdef LSB_FIRST
 #define mame_fread_msbfirst mame_fread_swap
 #define mame_fwrite_msbfirst mame_fwrite_swap

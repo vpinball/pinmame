@@ -734,7 +734,8 @@ static int effects_rgb_init(void)
 	UINT8 *pattern_rgb_data;
 	int x, y, pattern_xsize, pattern_ysize;
 	int patternsize;
-	int internal_pattern, i;
+	int internal_pattern;
+	size_t i;
 	const char *pattern_name;
 
 	// fail if we have no RGB effects pattern

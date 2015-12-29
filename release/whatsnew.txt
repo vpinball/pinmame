@@ -1,6 +1,9 @@
 Version 2.7 (X X, 2016) - ""
 ------------------------------------------------------------------------------
 
+*** CORE/CPU ***
+64bit compilation supported
+
 *** ROM SUPPORT *** Thanks to Inkochnito
 Hyperball L-3
 Lethal Weapon 2.03

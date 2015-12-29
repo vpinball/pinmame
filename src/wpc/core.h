@@ -461,7 +461,7 @@ extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
 
 /*-- nvram handling --*/
-extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init);
+extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);
 
 /* makes it easier to swap bits */
 extern const UINT8 core_swapNyb[16];
