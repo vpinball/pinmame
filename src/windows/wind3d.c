@@ -555,6 +555,7 @@ void win_d3d_kill(void)
 
 int win_d3d_init(int width, int height, int depth, int attributes, double aspect, const struct win_effect_data *effect)
 {
+#ifndef DISABLE_DX7
 	type_directdraw_create_ex fn_directdraw_create_ex;
 
 	DDSURFACEDESC2 currmode = { sizeof(DDSURFACEDESC2) };
@@ -729,6 +730,9 @@ int win_d3d_init(int width, int height, int depth, int attributes, double aspect
 	// error handling
 error_handling:
 	win_d3d_kill();
+#else
+	MessageBox(NULL, "Direct 3D not supported", NULL, MB_OK);
+#endif
 
 	return 1;
 }
@@ -1532,6 +1536,7 @@ error_handling:
 
 static void set_brightness(void)
 {
+#ifndef DISABLE_DX7
 	HRESULT result;
 	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
@@ -1564,6 +1569,7 @@ static void set_brightness(void)
 		if (result != DD_OK)
 			fprintf(stderr, "Error setting gamma ramp: %08x\n", (UINT32)result);
 	}
+#endif
 }
 
 

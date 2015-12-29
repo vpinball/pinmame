@@ -93,7 +93,11 @@ BEGIN
             VALUE "FileVersion", "2, 7, 0, 0"
             VALUE "InternalName", "VPinMAME"
             VALUE "LegalCopyright", "© 2000-2016 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, and R. Perlow"
+#ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
+#else
+            VALUE "OriginalFilename", "VPinMAME64.DLL"
+#endif
             VALUE "ProductName", "Visual PinMAME"
             VALUE "ProductVersion", "2.7"
         END

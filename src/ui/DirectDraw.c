@@ -126,6 +126,7 @@ typedef HRESULT (WINAPI* LPDIRECTDRAWENUMERATEA)(LPDDENUMCALLBACKA lpCallback, L
 
 BOOL DirectDraw_Initialize(void)
 {
+#ifndef DISABLE_DX7
 	HRESULT  hr;
 	UINT	 error_mode;
 	ddc_proc ddc;
@@ -232,6 +233,11 @@ BOOL DirectDraw_Initialize(void)
 	}
 
 	return TRUE;
+#else
+	MessageBox(NULL, "Direct Draw not supported", NULL, MB_OK);
+
+	return FALSE;
+#endif
 }
 
 /****************************************************************************

@@ -208,6 +208,7 @@ void win_ddraw_wait_vsync(void)
 
 int win_ddraw_init(int width, int height, int depth, int attributes, const struct win_effect_data *effect)
 {
+#ifndef DISABLE_DX7
 	HRESULT result;
 	DDCAPS hel_caps;
 	LPDIRECTDRAW4 *ddraw4addr = &ddraw4;
@@ -286,6 +287,10 @@ cant_get_caps:
 	IDirectDraw_Release(ddraw);
 cant_create_ddraw:
 	ddraw = NULL;
+#else
+	MessageBox(NULL, "Direct Draw not supported", NULL, MB_OK);
+#endif
+
 	return 1;
 }
 
@@ -771,6 +776,7 @@ cant_create_blit:
 
 static void set_brightness(void)
 {
+#ifndef DISABLE_DX7
 	HRESULT result;
 	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
@@ -803,6 +809,7 @@ static void set_brightness(void)
 		if (result != DD_OK)
 			fprintf(stderr, "Error setting gamma ramp: %08x\n", (UINT32)result);
 	}
+#endif
 }
 
 
