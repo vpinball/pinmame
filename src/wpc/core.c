@@ -1698,7 +1698,7 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   return (maxX<<16) | maxY;
 }
 
-void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
+void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
   if (write)     mame_fwrite(file, mem, length); /* save */
   else if (file) mame_fread(file,  mem, length); /* load */
   else           memset(mem, init, length);     /* first time */

@@ -95,7 +95,7 @@ static unsigned int ss_dump_size;
 static UINT32 ss_get_signature(void)
 {
 	ss_module *m;
-	unsigned int size = 0, pos = 0;
+	size_t size = 0, pos = 0;
 	char *info;
 	UINT32 signature;
 

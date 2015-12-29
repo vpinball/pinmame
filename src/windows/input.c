@@ -1220,7 +1220,7 @@ static void init_joylist(void)
 
 			// attempt to get the object info
 			instance.dwSize = STRUCTSIZE(DIDEVICEOBJECTINSTANCE);
-			result = IDirectInputDevice_GetObjectInfo(mouse_device[mouse], &instance, offsetof(DIMOUSESTATE, rgbButtons[button]), DIPH_BYOFFSET);
+			result = IDirectInputDevice_GetObjectInfo(mouse_device[mouse], &instance, (DWORD)offsetof(DIMOUSESTATE, rgbButtons[button]), DIPH_BYOFFSET);
 			if (result == DI_OK)
 			{
 				// add mouse number to the name
@@ -1271,7 +1271,7 @@ static void init_joylist(void)
 
 			// attempt to get the object info
 			instance.dwSize = STRUCTSIZE(DIDEVICEOBJECTINSTANCE);
-			result = IDirectInputDevice_GetObjectInfo(joystick_device[stick], &instance, offsetof(DIJOYSTATE, rgbButtons[button]), DIPH_BYOFFSET);
+			result = IDirectInputDevice_GetObjectInfo(joystick_device[stick], &instance, (DWORD)offsetof(DIJOYSTATE, rgbButtons[button]), DIPH_BYOFFSET);
 			if (result == DI_OK)
 			{
 				// make the name for this item
@@ -1288,7 +1288,7 @@ static void init_joylist(void)
 
 			// attempt to get the object info
 			instance.dwSize = STRUCTSIZE(DIDEVICEOBJECTINSTANCE);
-			result = IDirectInputDevice_GetObjectInfo(joystick_device[stick], &instance, offsetof(DIJOYSTATE, rgdwPOV[pov]), DIPH_BYOFFSET);
+			result = IDirectInputDevice_GetObjectInfo(joystick_device[stick], &instance, (DWORD)offsetof(DIJOYSTATE, rgdwPOV[pov]), DIPH_BYOFFSET);
 			if (result == DI_OK)
 			{
 				// add up direction

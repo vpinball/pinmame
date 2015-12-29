@@ -73,7 +73,7 @@ size_t generic_nvram_size;
 data8_t *generic_nvram;
 
 #ifdef PINMAME
-extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init);
+extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);
 #endif
 
 /* hard disks */

@@ -1540,7 +1540,7 @@ static char * DoDynamicEditTextField(char * buf)
 	{
 		if(buf)
 		{
-			UINT32	length = strlen(buf);
+			size_t length = strlen(buf);
 
 			if(length > 0)
 			{
@@ -1563,7 +1563,7 @@ static char * DoDynamicEditTextField(char * buf)
 	{
 		if(buf)
 		{
-			UINT32	length = strlen(buf);
+			size_t length = strlen(buf);
 
 			buf = realloc(buf, length + 2);
 
@@ -1585,7 +1585,7 @@ static char * DoDynamicEditTextField(char * buf)
 static void DoStaticEditTextField(char * buf, int size)
 {
 	char	code = osd_readkey_unicode(0) & 0xFF;
-	UINT32	length;
+	size_t	length;
 
 	if(!buf)
 		return;
@@ -7220,7 +7220,7 @@ static char * CreateStringCopy(char * buf)
 
 	if(buf)
 	{
-		UINT32	length = strlen(buf) + 1;
+		size_t	length = strlen(buf) + 1;
 
 		temp = malloc(length);
 
@@ -7633,7 +7633,7 @@ static void SetupCheatFromWatchAsWatch(CheatEntry * entry, WatchInfo * watch)
 	{
 		CheatAction	* action;
 		char		tempString[1024];
-		int			tempStringLength;
+		size_t		tempStringLength;
 
 		DisposeCheat(entry);
 		ResizeCheatActionList(entry, 1);

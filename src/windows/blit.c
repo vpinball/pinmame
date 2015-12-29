@@ -473,7 +473,9 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 	int srcdepth = (blit->srcdepth + 7) / 8;
 	int dstdepth = (blit->dstdepth + 7) / 8;
 	struct rectangle temprect;
+#ifndef _WIN64
 	blitter_func blitter;
+#endif
 	int srcx, srcy;
 	DWORD dw;
 

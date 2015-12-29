@@ -698,7 +698,7 @@ static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
 static MACHINE_INIT(wpc) {
                               /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
-  int romLength = memory_region_length(WPC_ROMREGION);
+  size_t romLength = memory_region_length(WPC_ROMREGION);
 
   memset(&wpclocals, 0, sizeof(wpclocals));
 

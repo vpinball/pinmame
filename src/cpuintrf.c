@@ -1160,7 +1160,7 @@ const char *activecpu_dump_state(void)
 	char *dst = buffer;
 	const char *src;
 	const INT8 *regs;
-	int width;
+	size_t width;
 
 	VERIFY_ACTIVECPU("", activecpu_dump_state);
 
