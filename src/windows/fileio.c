@@ -228,7 +228,7 @@ static char *copy_and_expand_variables(const char *path, int len)
 {
 	char *dst, *result;
 	const char *src;
-	int length = 0;
+	size_t length = 0;
 
 	/* first determine the length of the expanded string */
 	for (src = path; src < path + len; )
