@@ -589,10 +589,12 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 	memcpy(debug_dib_info_data, video_dib_info_data, sizeof(debug_dib_info_data));
 
 	// Determine which DirectX components to use
+#ifndef DISABLE_DX7
 	if (win_use_d3d)
 		win_use_directx = USE_D3D;
 	else if (win_use_ddraw)
 		win_use_directx = USE_DDRAW;
+#endif
 
 	// determine the aspect ratio: hardware stretch case
 	if (win_force_int_stretch != FORCE_INT_STRECT_FULL && (win_use_directx == USE_D3D || (win_use_directx == USE_DDRAW && win_dd_hw_stretch)))

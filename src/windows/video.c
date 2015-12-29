@@ -481,8 +481,10 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	// proper screen
 
 	screen_guid_ptr = NULL;
+#ifndef DISABLE_DX7
  	if (win_use_ddraw)
 		DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
+#endif
 
 	// create the window
 	if (win_create_window(video_width, video_height, video_depth, video_attributes, aspect_ratio))
