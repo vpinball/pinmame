@@ -126,7 +126,7 @@ static const struct GameDriver *gamedrv;
 int strwildcmp(const char *sp1, const char *sp2)
 {
 	char s1[9], s2[9];
-	int i, l1, l2;
+	size_t i, l1, l2;
 	char *p;
 
 	strncpy(s1, sp1, 8); s1[8] = 0; if (s1[0] == 0) strcpy(s1, "*");
