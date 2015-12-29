@@ -1882,9 +1882,10 @@ DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
 DRIVER(hypbl,l2)        //S7-509:   12/81 W HyperBall (L-2)
+DRIVER(hypbl,l3)        //          12/81 W HyperBall (L-3)
 DRIVER(hypbl,l4)        //          12/81 W HyperBall (L-4)
-DRIVER(hypbl,l5)        //          04/98   HyperBall (bootleg w/ high score save)
-DRIVER(hypbl,l6)        //          05/06   HyperBall (bootleg w/ high score save)
+DRIVER(hypbl,l5)        //          04/98   HyperBall (Jess Askey bootleg w/ high score save)
+DRIVER(hypbl,l6)        //          05/06   HyperBall (Jess Askey bootleg w/ high score save, fixed)
 DRIVER(csmic,l1)        //S7-502:   06/82 W Cosmic Gunfight
 DRIVER(thund,p1)        //S7-508:   06/82 W Thunderball (P-1)
 DRIVER(thund,p2)        //          08/82 W Thunderball (P-2)
@@ -1919,8 +1920,8 @@ DRIVER(comet,l5)        //          06/85 W Comet (L-5)
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
 DRIVER(hs,l4)           //          01/86 W High Speed (L-4)
-DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard (L-4)
-DRIVER(grand,l3)        //          04/86 W Grand Lizard (L-3)
+DRIVER(grand,l3)        //S11-523:  04/86 W Grand Lizard (L-3)
+DRIVER(grand,l4)        //          04/86 W Grand Lizard (L-4)
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
 DRIVER(rdkng,l2)        //          07/86 W Road Kings (L-2)
 DRIVER(rdkng,l3)        //          07/86 W Road Kings (L-3)
