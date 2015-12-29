@@ -253,6 +253,13 @@ S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829
 S7_ROMEND
 CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,0)
 
+S7_ROMSTART000x(hypbl,l3, "ic14-l3.532", CRC(e233bbed) SHA1(bb29acc3e48d6b40b3df2e7702f8a8ff4357c15c),
+                          "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
+						  "ic20-l3.532", CRC(4a37d6e8) SHA1(8c26dd5652ace431a6ff0faf0bb9db37489c4fec))
+S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
+S7_ROMEND
+CORE_CLONEDEF(hypbl,l3,l4,"HyperBall (L-3)",1981,"Williams",s7_mS7S,0)
+
 S7_ROMSTART000x(hypbl,l2, "ic14-l2.532", CRC(8eb82df4) SHA1(854b3f1fa2112fbdba19f4c843f67989c0572d8c),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
                           "ic20-l2.532", CRC(f5f66cf1) SHA1(885b4961b6ec712b7445001d448d881245be1234))
