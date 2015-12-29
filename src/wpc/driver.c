@@ -1033,6 +1033,7 @@ DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 DRIVERNV(princefp)      //MPU-100: 08/79 Cosmic Princess (Free Play)
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
+DRIVERNV(meteorbf)      //MPU-200: 05/09 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
 DRIVERNV(meteorfp)      //MPU-200: 09/79 Meteor (Free Play)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
 DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
