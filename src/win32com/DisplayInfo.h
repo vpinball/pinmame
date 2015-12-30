@@ -1,6 +1,8 @@
 #pragma once
 
-#include <ddraw.h>
+#ifndef DISABLE_DX7
+ #include <ddraw.h>
+#endif
 
 #define DEFAULT_DISPLAY_NAME "(Default)"
 #define DISPLAY_ON_TEXT " on "

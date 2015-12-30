@@ -773,6 +773,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 
 	// if we have a blit surface, use that
 
+#ifndef DISABLE_DX7
 	if (win_use_directx)
 	{
 		if (win_use_directx == USE_D3D)
@@ -786,6 +787,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 				return;
 		}
 	}
+#endif
 
 	// draw to the window with a DIB
 	dib_draw_window(dc, bitmap, bounds, vector_dirty_pixels, update);

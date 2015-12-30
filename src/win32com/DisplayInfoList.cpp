@@ -7,7 +7,9 @@
 #endif
 
 #include ".\displayinfolist.h"
-#include <ddraw.h>
+#ifndef DISABLE_DX7
+ #include <ddraw.h>
+#endif
 
 #ifdef _MSC_VER
 #include "msc.h"

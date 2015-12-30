@@ -7,7 +7,9 @@
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <ddraw.h>
+#ifndef DISABLE_DX7
+ #include <ddraw.h>
+#endif
 
 // standard C headers
 #include <math.h>
