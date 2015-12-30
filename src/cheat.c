@@ -10291,7 +10291,7 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 				if(	(operation == kOperation_WriteMask) &&
 					(action->extendData == 0))
 				{
-					action->extendData = ~0;
+					action->extendData = ~0u;
 				}
 			}
 		}

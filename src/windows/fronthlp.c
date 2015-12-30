@@ -221,8 +221,8 @@ void identify_rom(const char* name, const char* hash, int length)
 	int found = 0;
 
 	/* remove directory name */
-	size_t i;
-	for (i = strlen(name)-1;i >= 0;i--)
+	int i;
+	for (i = (int)strlen(name)-1;i >= 0;i--)
 	{
 		if (name[i] == '/' || name[i] == '\\')
 		{
