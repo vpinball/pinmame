@@ -293,7 +293,7 @@ sha1_update(struct sha1_ctx *ctx,
       buffer += SHA1_DATA_SIZE;
       length -= SHA1_DATA_SIZE;
     }
-  if ((ctx->index = length))     /* This assignment is intended */
+  if (ctx->index = length)     /* This assignment is intended */
     /* Buffer leftovers */
     memcpy(ctx->block, buffer, length);
 }
