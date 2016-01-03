@@ -1,8 +1,11 @@
+#include "pindmd.h"
+
+#ifndef PINDMD3
+
 #include <windows.h>
 #include <time.h>
-#include "pindmd.h"
+
 #include "usbalphanumeric.h"
-#include "driver.h"
 #include "pinddrv.h"
 #include "gen.h"
 
@@ -28,7 +31,7 @@ UINT8			dump_16_map[16] = {'0','3','5','7','9','B','D','F','H','J','L','N','P','
 //* In:
 //* Out:
 //*****************************************************
-void pindmdInit(void)
+void pindmdInit(tPMoptions colours)
 {
 	pinddrvInit();
 	hasExtraData=0;
@@ -690,3 +693,4 @@ void frameClock(void)
 		frameDelay++;
 	}
 }
+#endif
