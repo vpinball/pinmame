@@ -1623,7 +1623,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit();
+	pindmdInit(pmoptions);
 #endif
 }
 
