@@ -599,7 +599,7 @@ int seq_cmp(InputSeq* a, InputSeq* b)
 	return 0;
 }
 
-void seq_name(InputSeq* code, char* buffer, unsigned max)
+void seq_name(InputSeq* code, char* buffer, size_t max)
 {
 	int j;
 	char* dest = buffer;

@@ -1944,7 +1944,7 @@ tryagain:
 	}
 
 	// align the destination to 16 bytes
-	dstxoffs = (((UINT32)blit_desc.lpSurface + 16) & ~15) - (UINT32)blit_desc.lpSurface;
+	dstxoffs = (((size_t)blit_desc.lpSurface + 16) & ~15) - (size_t)blit_desc.lpSurface;
 	dstxoffs /= (dstdepth / 8);
 
 	// perform the low-level blit

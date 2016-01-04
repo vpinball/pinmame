@@ -563,7 +563,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
                         }
 
                         /* Get length of text to add to the buffer */
-                        len = strlen (s);
+                        len = strlen(s);
 
                         /* Check for buffer overflow */
                         /* For some reason we can get a crash if we try */

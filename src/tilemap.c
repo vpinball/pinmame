@@ -774,7 +774,7 @@ int tilemap_init( void )
 	priority_bitmap = bitmap_alloc_depth( screen_width, screen_height, -8 );
 	if( priority_bitmap )
 	{
-		priority_bitmap_pitch_line = ((UINT8 *)priority_bitmap->line[1]) - ((UINT8 *)priority_bitmap->line[0]);
+		priority_bitmap_pitch_line = (UINT32)(((UINT8 *)priority_bitmap->line[1]) - ((UINT8 *)priority_bitmap->line[0]));
 		return 0;
 	}
 	InitMask32();
@@ -1281,7 +1281,7 @@ profiler_mark(PROFILER_TILEMAP_DRAW);
 		}
 		else
 		{
-			blit.screen_bitmap_pitch_line = ((UINT8 *)dest->line[1]) - ((UINT8 *)dest->line[0]);
+			blit.screen_bitmap_pitch_line = (UINT32)(((UINT8 *)dest->line[1]) - ((UINT8 *)dest->line[0]));
 			switch( dest->depth )
 			{
 			case 32:
@@ -1651,7 +1651,7 @@ void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, U
 	struct tilemap *tilemap = tilemap_nb_find( number );
 
 	blit.screen_bitmap = dest;
-	blit.screen_bitmap_pitch_line = ((UINT8 *)dest->line[1]) - ((UINT8 *)dest->line[0]);
+	blit.screen_bitmap_pitch_line = (UINT32)(((UINT8 *)dest->line[1]) - ((UINT8 *)dest->line[0]));
 	switch( dest->depth )
 	{
 	case 32:

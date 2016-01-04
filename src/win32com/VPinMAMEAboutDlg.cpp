@@ -75,7 +75,7 @@ private:
 		if ( wEntrySize>wMaxSize )
 			wEntrySize = wMaxSize;
 
-		lstrcpyn(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
+		strncpy(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
 
 		GlobalUnlock(hVersionInfo);
 		GlobalFree(hVersionInfo);
@@ -135,7 +135,7 @@ private:
 			// so the mouse cursor will turn to a pointing finger over the link.
 			// However this won't compile on certain OS's, but MAKEINTRESOURCE(32649)
 			// seems to work fine, so we just use this one instead...
-			SetClassLong(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (long)LoadCursor(NULL, MAKEINTRESOURCE(32649)));
+			SetClassLongPtr(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (LONG_PTR)LoadCursor(NULL, MAKEINTRESOURCE(32649)));
 		}
 		//MUST RETURN 1
 		return 1;

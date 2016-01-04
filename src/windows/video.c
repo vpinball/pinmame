@@ -421,6 +421,7 @@ void win_disorient_rect(struct rectangle *rect)
 //============================================================
 //  devices_enum_callback
 //============================================================
+#ifndef DISABLE_DX7
 static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription,
 										 LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 {
@@ -442,7 +443,7 @@ static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription
 	// continue enumeration
 	return 1;
 }
-
+#endif
 
 
 //============================================================

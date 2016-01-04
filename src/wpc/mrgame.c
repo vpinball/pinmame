@@ -734,8 +734,8 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 
 //Video Update - Generation #2
 PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
-    static int scrollers[32];
-	int offs = 0;
+	static int scrollers[32];
+	size_t offs;
 	int colorindex = 0;
 	int tile = 0;
 	int flipx=0;

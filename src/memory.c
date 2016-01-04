@@ -974,7 +974,7 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 
 genf *assign_dynamic_bank(int cpunum, offs_t start)
 {
-	int bank;
+	size_t bank;
 
 	/* special case: never assign a dynamic bank to an offset that */
 	/* intersects the CPU's region; always use RAM for that */

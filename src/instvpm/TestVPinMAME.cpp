@@ -137,8 +137,8 @@ void DeleteListContent(HWND hWnd)
 {
 	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
 
-	int nCount = SendMessage(hGamesList, LB_GETCOUNT, 0, 0);
-	for(int i=0; i<nCount; i++) {
+	LRESULT nCount = SendMessage(hGamesList, LB_GETCOUNT, 0, 0);
+	for(LRESULT i=0; i<nCount; i++) {
 		PGAMEINFO pGameInfo = (PGAMEINFO) SendMessage(hGamesList, LB_GETITEMDATA, i, 0);
 		delete pGameInfo;
 	}
@@ -183,7 +183,7 @@ BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 				WideCharToMultiByte(CP_ACP, 0, sGameName, -1, szGameName, sizeof szGameName, NULL, NULL);
 				
 				lstrcpy(szListEntry, szGameName); // for future versions here we can add the full game name 
-				int nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
+				size_t nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
 				
 				PGAMEINFO pGameInfo = new GAMEINFO;
 				lstrcpy(pGameInfo->szGameName, szGameName);
@@ -293,7 +293,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 			lstrcat(szListEntry, "\tX");
 
 		/* put it to the list */
-		int nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
+		size_t nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
 		SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
 	}
 
@@ -332,7 +332,7 @@ BOOL PopulateList(HWND hWnd, IController *pController)
 /***************************************************************************************/
 void RunGame(HWND hWnd, IController *pController)
 {   
-	int iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
+	LRESULT iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
 
 	if ( iIndex<0 )
 		return;
@@ -348,7 +348,7 @@ void RunGame(HWND hWnd, IController *pController)
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
-	pController->put_HandleKeyboard(true);
+	pController->put_HandleKeyboard(VARIANT_TRUE);
 
 	if ( FAILED(pController->Run(0,0)) ) 
 		DisplayCOMError(pController, __uuidof(IController));
@@ -361,7 +361,7 @@ void RunGame(HWND hWnd, IController *pController)
 /***************************************************************************************/
 void CheckRoms(HWND hWnd, IController *pController)
 {   
-	int iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
+	LRESULT iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
 
 	if ( iIndex<0 )
 		return;
@@ -388,7 +388,7 @@ void CheckRoms(HWND hWnd, IController *pController)
 /***************************************************************************************/
 void GameOptions(HWND hWnd, IController *pController)
 {   
-	int iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
+	LRESULT iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
 
 	if ( iIndex<0 )
 		return;

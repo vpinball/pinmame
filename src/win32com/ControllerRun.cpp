@@ -393,7 +393,7 @@ void SaveWindowPosition(HWND hWnd, CController *pController)
 // set the window style: 0: title (includes border), 1: only border, 2: without border
 void SetWindowStyle(HWND hWnd, int iWindowStyle)
 {
-	long lNewStyle = GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE;
+	LONG_PTR lNewStyle = GetWindowLongPtr(hWnd, GWL_STYLE) & WS_VISIBLE;
 
 	if ( IsWindow(GetParent(hWnd)) ) {
 		switch (iWindowStyle) {
@@ -433,7 +433,7 @@ void SetWindowStyle(HWND hWnd, int iWindowStyle)
 	}
 
 	RECT Rect;
-	SetWindowLong(hWnd, GWL_STYLE, lNewStyle);
+	SetWindowLongPtr(hWnd, GWL_STYLE, lNewStyle);
 	GetClientRect(hWnd,  &Rect);
 
 	int iWidth = Machine->uiwidth;

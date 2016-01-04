@@ -665,7 +665,8 @@ UINT32 mame_fwrite_swap(mame_file *file, const void *buffer, size_t length)
 {
 	UINT8 *buf;
 	UINT8 temp;
-	int res, i;
+	int res;
+	size_t i;
 
 	/* swap the data first */
 	buf = (UINT8 *)buffer;

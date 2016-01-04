@@ -77,7 +77,7 @@ private:
 
 			// Add to the list
 			// displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM)display->GetDriverDescription());
-			int index = displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM) display->GetFriendlyName());
+			UINT_PTR index = displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM) display->GetFriendlyName());
 
 			char* szItemData = new char[256];
 			if ( display->GetIsDefault() )
@@ -97,8 +97,8 @@ private:
 
 	void CleanupDisplayComboBox()
 	{
-		int count = displayList.SendMessage(CB_GETCOUNT, 0, 0);
-		for(int i=0; i<count; i++) 
+		UINT_PTR count = displayList.SendMessage(CB_GETCOUNT, 0, 0);
+		for(UINT_PTR i=0; i<count; i++) 
 		{
 			char* szItemData = (char*) displayList.SendMessage(CB_GETITEMDATA, (WPARAM) i, (LPARAM) NULL);	
 			displayList.SendMessage(CB_SETITEMDATA, (WPARAM) i, (LPARAM) NULL);	
@@ -159,7 +159,7 @@ private:
 		GetDlgItemText(IDC_IMGDIR, szPath, sizeof(szPath));
 		pControllerSettings->put_Value(CComBSTR("snapshot_directory"), CComVariant(szPath));
 
-		int index = displayList.SendMessage(CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0);
+		UINT_PTR index = displayList.SendMessage(CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0);
 		char* szItemData = (char*) displayList.SendMessage(CB_GETITEMDATA, (WPARAM) index, (LPARAM) NULL);
 		pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(szItemData));
 

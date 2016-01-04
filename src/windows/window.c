@@ -222,7 +222,7 @@ INLINE int wnd_extra_width(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLong(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif
@@ -241,7 +241,7 @@ INLINE int wnd_extra_height(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLong(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif
@@ -1373,8 +1373,8 @@ void win_toggle_full_screen(void)
 		GetWindowRect(win_video_window, &non_fullscreen_bounds);
 
 		// adjust the style
-		SetWindowLong(win_video_window, GWL_STYLE, FULLSCREEN_STYLE);
-		SetWindowLong(win_video_window, GWL_EXSTYLE, FULLSCREEN_STYLE_EX);
+		SetWindowLongPtr(win_video_window, GWL_STYLE, FULLSCREEN_STYLE);
+		SetWindowLongPtr(win_video_window, GWL_EXSTYLE, FULLSCREEN_STYLE_EX);
 		set_aligned_window_pos(win_video_window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		// set topmost
@@ -1568,7 +1568,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	win_compute_multipliers(&client, &xmult, &ymult);
 
 	// blit to our temporary bitmap
-	params.dstdata		= (void *)(((UINT32)converted_bitmap + 15) & ~15);
+	params.dstdata		= (void *)(((size_t)converted_bitmap + 15) & ~15);
 	params.dstpitch		= (((win_visible_width * xmult) + 3) & ~3) * depth / 8;
 	params.dstdepth		= depth;
 	params.dstxoffs		= 0;
@@ -1826,7 +1826,7 @@ static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t 
 	}
 
 	// fill in bitmap-specific info
-	debug_dib_info->bmiHeader.biWidth = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / (bitmap->depth / 8);
+	debug_dib_info->bmiHeader.biWidth = (LONG)(((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / (bitmap->depth / 8);
 	debug_dib_info->bmiHeader.biHeight = -bitmap->height;
 	debug_dib_info->bmiHeader.biBitCount = bitmap->depth;
 

@@ -482,7 +482,7 @@ static int run_machine(void)
 				for (region = 0; region < MAX_MEMORY_REGIONS; region++)
 					if (Machine->memory_region[region].flags & ROMREGION_DISPOSE)
 					{
-						int i;
+						size_t i;
 
 						/* invalidate contents to avoid subtle bugs */
 						for (i = 0; i < memory_region_length(region); i++)

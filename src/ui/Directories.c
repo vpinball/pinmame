@@ -190,7 +190,7 @@ static BOOL DirInfo_Modified(tDirInfo *pInfo, int nType)
 /* lop off trailing backslash if it exists */
 static char * FixSlash(char *s)
 {
-	int len = 0;
+	size_t len = 0;
 
 	if (s)
 		len = strlen(s);

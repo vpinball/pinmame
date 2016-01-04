@@ -362,7 +362,7 @@ static void adpcm_state_save_base_store (void)
 	for (i=0; i<num_voices; i++)
 	{
 		voice = &adpcm[i];
-		voice_base_offset[i] = voice->base - voice->region_base;
+		voice_base_offset[i] = (UINT32)(voice->base - voice->region_base);
 	}
 }
 
