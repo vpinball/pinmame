@@ -330,7 +330,7 @@ static void readCmds(int boardNo, const char *head) {
           strncpy(tmpCmd.name, &tmp[1], MAX_NAME_LENGTH);
 
           /*-- make sure name is less than MAX_NAME_LENGTH --*/
-          cmd = strlen(&tmp[1]) - 1;
+          cmd = (int)strlen(&tmp[1]) - 1;
           if (cmd >= MAX_NAME_LENGTH)
             cmd = MAX_NAME_LENGTH - 1;
           tmpCmd.name[cmd] = '\0';
