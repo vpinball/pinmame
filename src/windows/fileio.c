@@ -304,7 +304,7 @@ static void expand_pathlist(struct pathdata *list)
 			goto out_of_memory;
 
 		// copy the path in
-		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, token - rawpath);
+		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, (int)(token - rawpath));
 #if VERBOSE
 		printf("  %s\n", list->path[list->pathcount - 1]);
 #endif

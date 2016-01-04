@@ -596,7 +596,7 @@ static unsigned multiline_extract(const char **pbegin, const char *end, unsigned
 			}
 
 			/* advance to the end of this word */
-			numchars += word_end - begin;
+			numchars += (unsigned)(word_end - begin);
 			begin = word_end;
 		}
 
@@ -2036,15 +2036,15 @@ static int settraksettings(struct mame_bitmap *bitmap,int selected)
 {
 	const char *menu_item[40];
 	const char *menu_subitem[40];
+	char label[30][40];
+	char setting[30][40];
 	struct InputPort *entry[40];
 	int i,sel;
 	struct InputPort *in;
 	int total,total2;
 	int arrowize;
 
-
 	sel = selected - 1;
-
 
 	if (Machine->input_ports == 0)
 		return 0;
@@ -2081,8 +2081,6 @@ static int settraksettings(struct mame_bitmap *bitmap,int selected)
 	{
 		if (i < total2 - 1)
 		{
-			char label[30][40];
-			char setting[30][40];
 			int sensitivity,delta;
 			int reverse;
 
@@ -3416,6 +3414,8 @@ static void onscrd_discrete(struct mame_bitmap *bitmap,int increment,int arg)
 			logval+=loginc;
 			adjuster.value=pow(10,logval);
 
+			ourval=(int) (100.0*((logval-logmin)/logspan));
+
 			/* Keep within sensible bounds */
 			if(adjuster.value > adjuster.max)
 			{
@@ -3428,7 +3428,6 @@ static void onscrd_discrete(struct mame_bitmap *bitmap,int increment,int arg)
 				ourval=0;
 			}
 
-			ourval=(int) (100.0*((logval-logmin)/logspan));
 			initial=(int) (100.0*((loginit-logmin)/logspan));
 		}
 		else

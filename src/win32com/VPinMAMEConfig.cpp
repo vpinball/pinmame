@@ -247,12 +247,12 @@ void vpm_game_init(int game_index) {
 
 	/* override if no rotation requested */
 	// if (video_norotate)
-	if ( (int) get_option("norotate") )
+	if ( (int) get_option("norotate") ) //!! cast to int is ok
 		orientation = options.ui_orientation = ROT0;
 
 	/* rotate right */
 //	if (video_ror)
-	if ( (int) get_option("ror") )
+	if ( (int) get_option("ror") ) //!! cast to int is ok
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -264,7 +264,7 @@ void vpm_game_init(int game_index) {
 
 	/* rotate left */
 	// if (video_rol)
-	if ( (int) get_option("rol") )
+	if ( (int) get_option("rol") ) //!! cast to int is ok
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -276,7 +276,7 @@ void vpm_game_init(int game_index) {
 
 	/* auto-rotate right (e.g. for rotating lcds), based on original orientation */
 	// if (video_autoror && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
-	if ( (int) get_option("autoror") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	if ( (int) get_option("autoror") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) ) //!! cast to int is ok
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -288,7 +288,7 @@ void vpm_game_init(int game_index) {
 
 	/* auto-rotate left (e.g. for rotating lcds), based on original orientation */
 	// if (video_autorol && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
-	if ( (int) get_option("autorol") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	if ( (int) get_option("autorol") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) ) //!! cast to int is ok
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -300,10 +300,10 @@ void vpm_game_init(int game_index) {
 
 	/* flip X/Y */
 	// if (video_flipx)
-	if ( (int) get_option("flipx") )
+	if ( (int) get_option("flipx") ) //!! cast to int is ok
 		orientation ^= ORIENTATION_FLIP_X;
 	// if (video_flipy)
-	if ( (int) get_option("flipy") )
+	if ( (int) get_option("flipy") ) //!! cast to int is ok
 		orientation ^= ORIENTATION_FLIP_Y;
 
 	blit_flipx = ((orientation & ORIENTATION_FLIP_X) != 0);
@@ -484,10 +484,10 @@ bool RegSaveOpts(HKEY hKey, rc_option *pOpt, void* pValue)
 	case rc_string:
 		pszValue = *(char**) pValue;
 		if ( pszValue )
-			fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) pszValue, lstrlen(pszValue)+1)!=ERROR_SUCCESS);
+			fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) pszValue, strlen(pszValue)+1)!=ERROR_SUCCESS);
 		else {
 			lstrcpy(szTemp, "");
-			fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) &szTemp, lstrlen(szTemp)+1)!=ERROR_SUCCESS);
+			fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) &szTemp, strlen(szTemp)+1)!=ERROR_SUCCESS);
 		}
 		break;
 
@@ -502,7 +502,7 @@ bool RegSaveOpts(HKEY hKey, rc_option *pOpt, void* pValue)
 
 	case rc_float:
 		sprintf(szTemp, "%f", *(float*)pValue);
-		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) szTemp, lstrlen(szTemp)+1)!=ERROR_SUCCESS);
+		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) szTemp, strlen(szTemp)+1)!=ERROR_SUCCESS);
 		break;
 	}
 

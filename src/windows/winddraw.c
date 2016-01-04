@@ -1087,7 +1087,7 @@ tryagain:
 	}
 
 	// align the destination to 16 bytes
-	dstxoffs = (((UINT32)blit_desc.lpSurface + 16) & ~15) - (UINT32)blit_desc.lpSurface;
+	dstxoffs = (((size_t)blit_desc.lpSurface + 16) & ~15) - (size_t)blit_desc.lpSurface;
 	dstxoffs /= (dstdepth / 8);
 
 	// perform the low-level blit
@@ -1361,7 +1361,7 @@ tryagain:
 	dstdepth = temp_desc.ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
 
 	// try to align the destination
-	while (inner.left > outer.left && (((UINT32)temp_desc.lpSurface + ((dstdepth + 7) / 8) * inner.left) & 15) != 0)
+	while (inner.left > outer.left && (((size_t)temp_desc.lpSurface + ((dstdepth + 7) / 8) * inner.left) & 15) != 0)
 		inner.left--, inner.right--;
 
 	// clamp to the display rect

@@ -301,7 +301,7 @@ INLINE void blockmove_NtoN_transpen_noremap8(
 	while (srcheight)
 	{
 		end = dstdata + srcwidth;
-		while (((long)srcdata & 3) && dstdata < end)	/* longword align */
+		while (((size_t)srcdata & 3) && dstdata < end)	/* longword align */
 		{
 			int col;
 
@@ -369,7 +369,7 @@ INLINE void blockmove_NtoN_transpen_noremap_flipx8(
 	while (srcheight)
 	{
 		end = dstdata + srcwidth;
-		while (((long)srcdata & 3) && dstdata < end)	/* longword align */
+		while (((size_t)srcdata & 3) && dstdata < end)	/* longword align */
 		{
 			int col;
 

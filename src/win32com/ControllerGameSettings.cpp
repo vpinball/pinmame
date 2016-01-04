@@ -361,7 +361,7 @@ private:
 
 			/*Change background color of item*/
 			SetBkColor((HDC) wParam, thecolor);
-			return (int) m_hBrushDMDColor;
+			return (LRESULT) m_hBrushDMDColor;
 		}
 		return 0;
 	}

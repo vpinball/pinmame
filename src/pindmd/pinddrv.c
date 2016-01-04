@@ -129,7 +129,7 @@ void pinddrvInit(void)
 				// search for pindmd board serial number
 				if((strcmp(devInfo[i].SerialNumber,"DMD1000")==0) || (strcmp(devInfo[i].SerialNumber,"DMD1001")==0) || (strcmp(devInfo[i].SerialNumber,"DMD2000A")==0)){
 					// assign divice id (incase other ftdi devices are connected)
-					deviceId=i;
+					deviceId= i;
 					enabled = 1;
 				}
 				// pinDMD 2

@@ -52,6 +52,10 @@
 #include "help.h"
 #include "resource.hm"
 
+#ifdef _WIN64
+ #define DWL_MSGRESULT   0
+#endif
+
 #ifdef MESS
 /* done like this until I figure out a better idea */
 #include "ui/resourcems.h"

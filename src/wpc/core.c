@@ -1167,7 +1167,7 @@ void core_textOut(char *buf, int length, int x, int y, int color) {
   if (y < locals.maxSimRows) {
     int ii, l;
 
-    l = strlen(buf);
+    l = (int)strlen(buf);
     for (ii = 0; ii < length; ii++) {
       char c = (ii >= l) ? ' ' : buf[ii];
 

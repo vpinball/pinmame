@@ -397,7 +397,7 @@ INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Rect.bottom += (iButtonHeight + iBorderY);
 		}
 
-		AdjustWindowRect(&Rect, GetWindowLong(hDlg, GWL_STYLE), FALSE);
+		AdjustWindowRect(&Rect, GetWindowLongPtr(hDlg, GWL_STYLE), FALSE);
 
 		int x,y;
 

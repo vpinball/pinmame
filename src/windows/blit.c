@@ -697,7 +697,7 @@ static int snippet_length(void *snippet)
 	// determine the length of a code snippet
 	while (current[0] != 0xcc || current[1] != 0xcc || current[2] != 0xcc || current[3] != 0xe0)
 		current++;
-	return current - (UINT8 *)snippet;
+	return (int)(current - (UINT8 *)snippet);
 }
 
 
@@ -1404,7 +1404,7 @@ static void fixup_addresses(UINT8 **fixups, UINT8 *start, UINT8 *end)
 		if (start[0] == 0xcc && start[1] == 0xcc && start[2] == 0xcc && (start[3] & 0xe0) == 0x00)
 		{
 			int idx = start[3] & 0x1f;
-			*(UINT32 *)start = fixups[idx] - (start + 4);
+			*(UINT32 *)start = (UINT32)(fixups[idx] - (start + 4));
 		}
 	}
 }

@@ -15,7 +15,8 @@
 #include "msc.h"
 #endif
 
-static BOOL WINAPI DDEnumCallbackEx(GUID FAR *lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext, HMONITOR  hm)
+#ifndef DISABLE_DX7
+static BOOL WINAPI DDEnumCallbackEx(GUID FAR *lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 {
     // Context is a pointer to a display list
     CDisplayInfoList* displayList = (CDisplayInfoList*)lpContext;
@@ -31,6 +32,7 @@ static BOOL WINAPI DDEnumCallback(GUID FAR *lpGUID, LPSTR lpDriverDescription, L
 {
     return DDEnumCallbackEx(lpGUID, lpDriverDescription, lpDriverName, lpContext, NULL);
 }
+#endif
 
 /************************************************
  * Constructors

@@ -49,6 +49,10 @@
 #include "msc.h"
 #endif
 
+#ifdef _WIN64
+ #define GWL_WNDPROC         (-4)
+#endif
+
 #define MAX_EXTRA_FOLDERS 256
 
 /***************************************************************************
