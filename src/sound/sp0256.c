@@ -1026,7 +1026,7 @@ static void sp0256_micro(void)
             /* ------------------------------------------------------------ */
             if (delta)  /* Sign extend */
             {
-                if (value & (1 << (len - 1))) value |= -1 << len;
+                if (value & (1 << (len - 1))) value |= ~0u << len;
             }
 
             /* ------------------------------------------------------------ */
@@ -1048,8 +1048,8 @@ static void sp0256_micro(void)
             {
                 LOG(("--field-> r[%2d] = %.2X -> ", prm, sp0256.filt.r[prm]));
 
-                sp0256.filt.r[prm] &= ~(~0 << shf); /* Clear the old bits.     */
-                sp0256.filt.r[prm] |= value;        /* Merge in the new bits.  */
+                sp0256.filt.r[prm] &= ~(~0u << shf); /* Clear the old bits.     */
+                sp0256.filt.r[prm] |= value;         /* Merge in the new bits.  */
 
                 LOG(("%.2X\n", sp0256.filt.r[prm]));
 
