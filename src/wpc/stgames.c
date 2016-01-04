@@ -288,8 +288,8 @@ CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,0)
 INITGAME(meteorbf,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorbf,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
                           "cpu_u5.716",CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
-						  "cpu_u2_bf.716", CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
-						  "cpu_u6_bf.716", CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
+						  "cpu_u2bf.716", CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
+						  "cpu_u6bf.716", CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
 BY35_ROMEND
 #define input_ports_meteorbf input_ports_st
 CORE_CLONEDEFNV(meteorbf,meteor,"Meteor (Bonus Count Fix)",1979,"Stern",by35_mST200,0)

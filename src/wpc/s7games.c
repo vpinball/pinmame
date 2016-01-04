@@ -380,7 +380,7 @@ S7_ROMEND
 CORE_GAMEDEF(lsrcu,l2,"Laser Cue (L-2)",1983,"Williams",s7_mS7S,0)
 
 /*--------------------------------
-/ Firepower II- Sys.7 (Game #521)
+/ Firepower II - Sys.7 (Game #521)
 /-------------------------------*/
 INITGAMEFULL(fpwr2,s7_dispS7,0,13,47,48,41,42,43,44)
 S7_ROMSTART8088(fpwr2,l2, "ic14.716",   CRC(a29688dd) SHA1(83815154bbaf51dd789112664d772a876efee3da),
@@ -416,3 +416,20 @@ S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594c
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
+
+
+// Games below are from different manufacturers
+
+/*--------------------------------
+/ Wild Texas - Sys.7 (identifies as #521 L-1 which makes it a Firepower II clone)
+/-------------------------------*/
+INITGAMEFULL(wldtexas,s7_dispS7,0,13,47,48,41,42,43,44)
+ROM_START(wldtexas)
+  NORMALREGION(0x10000, S7_CPUREGION)
+    ROM_LOAD("wldtexas.prg", 0x4000, 0x4000, CRC(243e7116) SHA1(c13c261632b3e8693a500d922f151296102e0169))
+    ROM_RELOAD(0x8000, 0x4000)
+    ROM_RELOAD(0xc000, 0x4000)
+S67S_SOUNDROMS8("sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S7_ROMEND
+#define input_ports_wldtexas input_ports_fpwr2
+CORE_CLONEDEFNV(wldtexas,fpwr2_l2,"Wild Texas",????,"Unknown Manufacturer",s7_mS7S,0)
