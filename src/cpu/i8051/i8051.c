@@ -273,69 +273,69 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
  * Easy macros for Setting Flags
  ***************************************************************/
 /*PSW Flags*/
-#define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | (n<<7);	//Carry Flag
-#define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | (n<<6);	//Aux.Carry Flag
-#define SET_FO(n)		R_PSW = (R_PSW & 0xdf) | (n<<5);	//User Flag
-#define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | (n<<3);	//R Bank Select
-#define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | (n<<2);	//Overflow Flag
-#define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);	//Parity Flag
+#define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | ((n)<<7);	//Carry Flag
+#define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | ((n)<<6);	//Aux.Carry Flag
+#define SET_FO(n)		R_PSW = (R_PSW & 0xdf) | ((n)<<5);	//User Flag
+#define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | ((n)<<3);	//R Bank Select
+#define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | ((n)<<2);	//Overflow Flag
+#define SET_P(n)		R_PSW = (R_PSW & 0xfe) | ((n)<<0);	//Parity Flag
 /*IE Flags*/
-#define SET_EA(n)		R_IE = (R_IE & 0x7f) | (n<<7);		//Global Interrupt Enable/Disable
+#define SET_EA(n)		R_IE = (R_IE & 0x7f) | ((n)<<7);		//Global Interrupt Enable/Disable
 #if (HAS_I8052 || HAS_I8752)
-   #define SET_ET2(n)		R_IE = (R_IE & 0xdf) | (n<<5);	//Timer 2 Interrupt Enable/Disable
+   #define SET_ET2(n)		R_IE = (R_IE & 0xdf) | ((n)<<5);	//Timer 2 Interrupt Enable/Disable
 #endif
-#define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4);		//Serial Interrupt Enable/Disable
-#define SET_ET1(n)		R_IE = (R_IE & 0xf7) | (n<<3);		//Timer 1 Interrupt Enable/Disable
-#define SET_EX1(n)		R_IE = (R_IE & 0xfb) | (n<<2);		//External Int 1 Interrupt Enable/Disable
-#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);		//Timer 0 Interrupt Enable/Disable
-#define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);		//External Int 0 Interrupt Enable/Disable
+#define SET_ES(n)		R_IE = (R_IE & 0xef) | ((n)<<4);		//Serial Interrupt Enable/Disable
+#define SET_ET1(n)		R_IE = (R_IE & 0xf7) | ((n)<<3);		//Timer 1 Interrupt Enable/Disable
+#define SET_EX1(n)		R_IE = (R_IE & 0xfb) | ((n)<<2);		//External Int 1 Interrupt Enable/Disable
+#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | ((n)<<1);		//Timer 0 Interrupt Enable/Disable
+#define SET_EX0(n)		R_IE = (R_IE & 0xfe) | ((n)<<0);		//External Int 0 Interrupt Enable/Disable
 /*IP Flags*/
 #if (HAS_I8052 || HAS_I8752)
-   #define SET_PT2(n)		R_IP = (R_IP & 0xdf) | (n<<5);	//Set Timer 2 Priority Level
+   #define SET_PT2(n)		R_IP = (R_IP & 0xdf) | ((n)<<5);	//Set Timer 2 Priority Level
 #endif
-#define SET_PS0(n)		R_IP = (R_IP & 0xef) | (n<<4);		//Set Serial Priority Level
-#define SET_PT1(n)		R_IP = (R_IP & 0xf7) | (n<<3);		//Set Timer 1 Priority Level
-#define SET_PX1(n)		R_IP = (R_IP & 0xfb) | (n<<2);		//Set External Int 1 Priority Level
-#define SET_PT0(n)		R_IP = (R_IP & 0xfd) | (n<<1);		//Set Timer 0 Priority Level
-#define SET_PX0(n)		R_IP = (R_IP & 0xfe) | (n<<0);		//Set External Int 0 Priority Level
+#define SET_PS0(n)		R_IP = (R_IP & 0xef) | ((n)<<4);		//Set Serial Priority Level
+#define SET_PT1(n)		R_IP = (R_IP & 0xf7) | ((n)<<3);		//Set Timer 1 Priority Level
+#define SET_PX1(n)		R_IP = (R_IP & 0xfb) | ((n)<<2);		//Set External Int 1 Priority Level
+#define SET_PT0(n)		R_IP = (R_IP & 0xfd) | ((n)<<1);		//Set Timer 0 Priority Level
+#define SET_PX0(n)		R_IP = (R_IP & 0xfe) | ((n)<<0);		//Set External Int 0 Priority Level
 /*TCON Flags*/
-#define SET_TF1(n)		R_TCON = (R_TCON & 0x7f) | (n<<7);	//Indicated Timer 1 Overflow Int Triggered
-#define SET_TR1(n)		R_TCON = (R_TCON & 0xbf) | (n<<6);  //IndicateS Timer 1 is running
-#define SET_TF0(n)		R_TCON = (R_TCON & 0xdf) | (n<<5);	//Indicated Timer 0 Overflow Int Triggered
-#define SET_TR0(n)		R_TCON = (R_TCON & 0xef) | (n<<4);  //IndicateS Timer 0 is running
-#define SET_IE1(n)		R_TCON = (R_TCON & 0xf7) | (n<<3);  //Indicated External Int 1 Triggered
-#define SET_IT1(n)		R_TCON = (R_TCON & 0xfb) | (n<<2);  //Indicates how External Int 1 is Triggered
-#define SET_IE0(n)		R_TCON = (R_TCON & 0xfd) | (n<<1);  //Indicated External Int 0 Triggered
-#define SET_IT0(n)		R_TCON = (R_TCON & 0xfe) | (n<<0);  //Indicates how External Int 0 is Triggered
+#define SET_TF1(n)		R_TCON = (R_TCON & 0x7f) | ((n)<<7);	//Indicated Timer 1 Overflow Int Triggered
+#define SET_TR1(n)		R_TCON = (R_TCON & 0xbf) | ((n)<<6);  //IndicateS Timer 1 is running
+#define SET_TF0(n)		R_TCON = (R_TCON & 0xdf) | ((n)<<5);	//Indicated Timer 0 Overflow Int Triggered
+#define SET_TR0(n)		R_TCON = (R_TCON & 0xef) | ((n)<<4);  //IndicateS Timer 0 is running
+#define SET_IE1(n)		R_TCON = (R_TCON & 0xf7) | ((n)<<3);  //Indicated External Int 1 Triggered
+#define SET_IT1(n)		R_TCON = (R_TCON & 0xfb) | ((n)<<2);  //Indicates how External Int 1 is Triggered
+#define SET_IE0(n)		R_TCON = (R_TCON & 0xfd) | ((n)<<1);  //Indicated External Int 0 Triggered
+#define SET_IT0(n)		R_TCON = (R_TCON & 0xfe) | ((n)<<0);  //Indicates how External Int 0 is Triggered
 /*SCON Flags*/
-#define SET_SM0(n)		R_SCON = (R_SCON & 0x7f) | (n<<7);	//Sets Serial Port Mode
-#define SET_SM1(n)		R_SCON = (R_SCON & 0xbf) | (n<<6);  //Sets Serial Port Mode
-#define SET_SM2(n)		R_SCON = (R_SCON & 0xdf) | (n<<5);	//Sets Serial Port Mode (Multiprocesser mode)
-#define SET_REN(n)		R_SCON = (R_SCON & 0xef) | (n<<4);  //Sets Serial Port Receive Enable
-#define SET_TB8(n)		R_SCON = (R_SCON & 0xf7) | (n<<3);  //Transmit 8th Bit
-#define SET_RB8(n)		R_SCON = (R_SCON & 0xfb) | (n<<2);  //Receive 8th Bit
-#define SET_TI(n)		R_SCON = (R_SCON & 0xfd) | (n<<1);  //Indicates Transmit Interrupt Occurred
-#define SET_RI(n)		R_SCON = (R_SCON & 0xfe) | (n<<0);  //Indicates Receive Interrupt Occurred
+#define SET_SM0(n)		R_SCON = (R_SCON & 0x7f) | ((n)<<7);	//Sets Serial Port Mode
+#define SET_SM1(n)		R_SCON = (R_SCON & 0xbf) | ((n)<<6);  //Sets Serial Port Mode
+#define SET_SM2(n)		R_SCON = (R_SCON & 0xdf) | ((n)<<5);	//Sets Serial Port Mode (Multiprocesser mode)
+#define SET_REN(n)		R_SCON = (R_SCON & 0xef) | ((n)<<4);  //Sets Serial Port Receive Enable
+#define SET_TB8(n)		R_SCON = (R_SCON & 0xf7) | ((n)<<3);  //Transmit 8th Bit
+#define SET_RB8(n)		R_SCON = (R_SCON & 0xfb) | ((n)<<2);  //Receive 8th Bit
+#define SET_TI(n)		R_SCON = (R_SCON & 0xfd) | ((n)<<1);  //Indicates Transmit Interrupt Occurred
+#define SET_RI(n)		R_SCON = (R_SCON & 0xfe) | ((n)<<0);  //Indicates Receive Interrupt Occurred
 /*TMOD Flags*/
-#define SET_GATE1(n)	R_TMOD = (R_TMOD & 0x7f) | (n<<7);	//Timer 1 Gate Mode
-#define SET_CT1(n)		R_TMOD = (R_TMOD & 0xbf) | (n<<6);  //Timer 1 Counter Mode
-#define SET_M1_1(n)		R_TMOD = (R_TMOD & 0xdf) | (n<<5);	//Timer 1 Timer Mode Bit 1
-#define SET_M1_0(n)		R_TMOD = (R_TMOD & 0xef) | (n<<4);  //Timer 1 Timer Mode Bit 0
-#define SET_GATE0(n)	R_TMOD = (R_TMOD & 0xf7) | (n<<3);  //Timer 0 Gate Mode
-#define SET_CT0(n)		R_TMOD = (R_TMOD & 0xfb) | (n<<2);  //Timer 0 Counter Mode
-#define SET_M0_1(n)		R_TMOD = (R_TMOD & 0xfd) | (n<<1);  //Timer 0 Timer Mode Bit 1
-#define SET_M0_0(n)		R_TMOD = (R_TMOD & 0xfe) | (n<<0);  //Timer 0 Timer Mode Bit 0
+#define SET_GATE1(n)	R_TMOD = (R_TMOD & 0x7f) | ((n)<<7);	//Timer 1 Gate Mode
+#define SET_CT1(n)		R_TMOD = (R_TMOD & 0xbf) | ((n)<<6);  //Timer 1 Counter Mode
+#define SET_M1_1(n)		R_TMOD = (R_TMOD & 0xdf) | ((n)<<5);	//Timer 1 Timer Mode Bit 1
+#define SET_M1_0(n)		R_TMOD = (R_TMOD & 0xef) | ((n)<<4);  //Timer 1 Timer Mode Bit 0
+#define SET_GATE0(n)	R_TMOD = (R_TMOD & 0xf7) | ((n)<<3);  //Timer 0 Gate Mode
+#define SET_CT0(n)		R_TMOD = (R_TMOD & 0xfb) | ((n)<<2);  //Timer 0 Counter Mode
+#define SET_M0_1(n)		R_TMOD = (R_TMOD & 0xfd) | ((n)<<1);  //Timer 0 Timer Mode Bit 1
+#define SET_M0_0(n)		R_TMOD = (R_TMOD & 0xfe) | ((n)<<0);  //Timer 0 Timer Mode Bit 0
 
 #if (HAS_I8052 || HAS_I8752)
   /*T2CON Flags*/
-  #define SET_TF2(n)		R_T2CON = (R_T2CON & 0x7f) | (n<<7);	//Indicated Timer 2 Overflow Int Triggered
-  #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | (n<<6);	//Indicates Timer 2 External Flag
-  #define SET_RCLK(n)		R_T2CON = (R_T2CON & 0xdf) | (n<<5);	//Receive Clock
-  #define SET_TCLK(n)		R_T2CON = (R_T2CON & 0xef) | (n<<4);	//Transmit Clock
-  #define SET_EXEN2(n)		R_T2CON = (R_T2CON & 0xf7) | (n<<3);	//Timer 2 External Interrupt Enable
-  #define SET_TR2(n)		R_T2CON = (R_T2CON & 0xfb) | (n<<2);	//Indicates Timer 2 is running
-  #define SET_CT2(n)		R_T2CON = (R_T2CON & 0xfd) | (n<<1);	//Sets Timer 2 Counter/Timer Mode
-  #define SET_CP(n)			R_T2CON = (R_T2CON & 0xfe) | (n<<0);	//Sets Timer 2 Capture/Reload Mode
+  #define SET_TF2(n)		R_T2CON = (R_T2CON & 0x7f) | ((n)<<7);	//Indicated Timer 2 Overflow Int Triggered
+  #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | ((n)<<6);	//Indicates Timer 2 External Flag
+  #define SET_RCLK(n)		R_T2CON = (R_T2CON & 0xdf) | ((n)<<5);	//Receive Clock
+  #define SET_TCLK(n)		R_T2CON = (R_T2CON & 0xef) | ((n)<<4);	//Transmit Clock
+  #define SET_EXEN2(n)		R_T2CON = (R_T2CON & 0xf7) | ((n)<<3);	//Timer 2 External Interrupt Enable
+  #define SET_TR2(n)		R_T2CON = (R_T2CON & 0xfb) | ((n)<<2);	//Indicates Timer 2 is running
+  #define SET_CT2(n)		R_T2CON = (R_T2CON & 0xfd) | ((n)<<1);	//Sets Timer 2 Counter/Timer Mode
+  #define SET_CP(n)			R_T2CON = (R_T2CON & 0xfe) | ((n)<<0);	//Sets Timer 2 Capture/Reload Mode
 #endif
 
 /***************************************************************
