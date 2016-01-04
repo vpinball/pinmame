@@ -1424,7 +1424,7 @@ static int read_rom_data(struct rom_load_data *romdata, const struct RomModule *
 			return 0;
 		numbytes -= bytesleft;
 
-		debugload("  Copying to %08X\n", (int)base);
+		debugload("  Copying to %08X\n", (size_t)base);
 
 		/* unmasked cases */
 		if (datamask == 0xff)
