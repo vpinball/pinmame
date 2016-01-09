@@ -9,6 +9,7 @@
 #include "core.h"
 
 #ifdef VPINMAME
+ #include <windows.h>
  #include "../pindmd/pindmd.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -821,7 +822,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 #ifdef VPINMAME
 		const int offs = (ii-1)*layout->length + jj;
 		currbuffer[offs] = col;
- 	    if(layout->length >= 128) { // Capcom hack
+		if(layout->length >= 128) { // Capcom hack
 			g_raw_dmdbuffer[offs] = (col >= 63) ? raw_16[col-63] : raw_4[col];
 			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
 		}
@@ -872,14 +873,27 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		{
 	      if(g_fShowPinDMD)
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
-		  else
+		  if(g_fDumpFrames)
 		  {
-		    FILE *f;
-			f = fopen("dump.txt","a");
+			static const char* const dump_ext = "_dump.txt";
+			const unsigned int DumpFilenamel = strlen(Machine->gamedrv->name) + strlen(dump_ext) + 1;
+			char* const DumpFilename = (char*)malloc(DumpFilenamel);
+			FILE *f;
+
+			strcpy_s(DumpFilename, DumpFilenamel, Machine->gamedrv->name);
+			strcat_s(DumpFilename, DumpFilenamel, dump_ext);
+
+			f = fopen(DumpFilename,"a");
+			free(DumpFilename);
 			if(f) {
+				const DWORD tick = GetTickCount();
+				fprintf(f,"0x%08x\n", tick);
 				for(jj = 0; jj < layout->start; jj++) {
 					for(ii = 0; ii < layout->length; ii++)
-						fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+					{
+						const UINT8 col = currbuffer[jj*layout->length + ii];
+						fprintf(f,"%01x",(col >= 63) ? col-63 : col);
+					}
 					fprintf(f,"\n");
 				}
 				fprintf(f,"\n");
