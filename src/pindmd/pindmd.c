@@ -56,6 +56,7 @@ void pindmdInit(tPMoptions colours)
 void pindmdDeInit(void)
 {
 	sendLogo();
+	sendClearSettings();
 	Sleep(100);
 	pinddrvDeInit();
 }
@@ -154,6 +155,24 @@ void sendColor(void)
 	pinddrvSendFrame();
 	memset(frame_buf, 0, sizeof(frame_buf));
 	}
+}
+
+//*****************************************************
+//* Name:		sendClearSettings
+//* Purpose:	clear settings of device
+//* In:
+//* Out:
+//*****************************************************
+
+void sendClearSettings(void)
+{
+	const UINT8 tmp[5] = {
+		0x81, 0xC3, 0xE7, 0xFF, 0x07 //header
+		}; 
+	memcpy(frame_buf, tmp, sizeof(tmp));
+
+	pinddrvSendFrame();
+	memset(frame_buf, 0, sizeof(frame_buf));
 }
 
 //*****************************************************
