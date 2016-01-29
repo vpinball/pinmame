@@ -1673,6 +1673,8 @@ DRIVER(avs,110)         //S.A.M.: ??/12 Avengers
 DRIVER(avs,120h)
 DRIVER(avs,140)
 DRIVER(avs,140h)
+DRIVER(avs,170)         //S.A.M.: 01/16 Avengers
+DRIVER(avs,170h)
 DRIVER(mtl,103)         //S.A.M.: ??/13 Metallica
 DRIVER(mtl,105)
 DRIVER(mtl,106)
@@ -1694,6 +1696,8 @@ DRIVER(mtl,160h)
 DRIVER(mtl,163)
 DRIVER(mtl,163d)        // LED version
 DRIVER(mtl,163h)
+DRIVER(mtl,164)
+DRIVER(mtl,164h)
 DRIVER(st,120)          //S.A.M.: ??/13 Star Trek
 DRIVER(st,130)
 DRIVER(st,140)
@@ -1712,7 +1716,8 @@ DRIVER(mt,120)          //S.A.M.: ??/14 Mustang
 DRIVER(mt,130)
 DRIVER(mt,130h)
 DRIVER(mt,140)
-DRIVER(mt,140h)
+DRIVER(mt,140h)         //S.A.M.: 10/14 Mustang Limited Edition - V1.4
+DRIVER(mt,140hb)        //S.A.M.: 10/14 Mustang Boss - V1.4
 DRIVER(twd,105)         //S.A.M.: ??/14 Walking Dead, The - V1.05
 DRIVER(twd,111)         //S.A.M.: 10/14 Walking Dead, The - V1.11
 DRIVER(twd,111h)        //S.A.M.: 10/14 Walking Dead, The - V1.11 Limited Edition
@@ -1723,6 +1728,14 @@ DRIVER(twd,124)         //S.A.M.: 05/15 Walking Dead, The - V1.24
 DRIVER(twd,124h)        //S.A.M.: 05/15 Walking Dead, The - V1.24 Limited Edition
 DRIVER(twd,125)         //S.A.M.: 05/15 Walking Dead, The - V1.25
 DRIVER(twd,125h)        //S.A.M.: 05/15 Walking Dead, The - V1.25 Limited Edition
+DRIVER(twd,128)         //S.A.M.: 07/15 Walking Dead, The - V1.28
+DRIVER(twd,128h)        //S.A.M.: 07/15 Walking Dead, The - V1.28 Limited Edition
+DRIVER(twd,141)         //S.A.M.: 08/15 Walking Dead, The - V1.41
+DRIVER(twd,141h)        //S.A.M.: 08/15 Walking Dead, The - V1.41 Limited Edition
+DRIVER(twd,153)         //S.A.M.: 11/15 Walking Dead, The - V1.53
+DRIVER(twd,153h)        //S.A.M.: 11/15 Walking Dead, The - V1.53 Limited Edition
+DRIVER(twd,156)         //S.A.M.: 12/15 Walking Dead, The - V1.56
+DRIVER(twd,156h)        //S.A.M.: 12/15 Walking Dead, The - V1.56 Limited Edition
 #endif
 
 // ---------------
