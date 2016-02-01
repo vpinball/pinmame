@@ -69,7 +69,7 @@
 #include "mamedbg.h"
 #include "i8051.h"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 #if VERBOSE
 #define LOG(x)	logerror x
