@@ -24,7 +24,7 @@ ACK to ACK and STROBE to STROBE.
 
 
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 #if VERBOSE
 #define LOG(x) logerror x

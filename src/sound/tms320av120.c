@@ -58,7 +58,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tms320av120.h"
 
 
-#define VERBOSE
+//#define VERBOSE
 
 #ifdef VERBOSE
 #define LOG(x)	logerror x

@@ -6,7 +6,8 @@ Version 2.7 (X X, 2016) - ""
 
 *** ROM SUPPORT *** Thanks to Inkochnito
 New:
-Wild Texas (Firepower II Modification, Unknown)
+Sonic: Hang-On
+Unknown: Wild Texas (Firepower II Modification)
 
 Clones:
 Hyperball L-3
