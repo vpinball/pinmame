@@ -48,6 +48,7 @@ int dmd_colorize = FALSE;
 int dmd_red66 = 225, dmd_green66 = 15, dmd_blue66 = 193;
 int dmd_red33 = 6, dmd_green33 = 0, dmd_blue33 = 214;
 int dmd_red0 = 0, dmd_green0 = 0, dmd_blue0 = 0;
+int dmd_opacity = 100;
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -81,6 +82,7 @@ static struct rc_option vpinmame_opts[] = {
         { "dmd_red0", NULL, rc_int, &dmd_red0, "0", 0, 255, NULL, "Colorized DMD: red level for 0% intensity" },
         { "dmd_green0", NULL, rc_int, &dmd_green0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
         { "dmd_blue0", NULL, rc_int, &dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
+        { "dmd_opacity", NULL, rc_int, &dmd_opacity, "100", 0, 100, NULL, "Set DMD opacity" },
         
 	/* pinDMD */
 	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
@@ -186,6 +188,7 @@ static char* RunningGameSettings[] = {
         "dmd_red0",
         "dmd_green0",
         "dmd_blue0",
+        "dmd_opacity",
 
 	// video_opts
 	"screen",

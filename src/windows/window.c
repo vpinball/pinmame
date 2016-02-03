@@ -59,7 +59,7 @@ int win_d3d_effects_in_use(void);
 #else
 #define WINDOW_STYLE			WS_OVERLAPPEDWINDOW
 #endif
-#define WINDOW_STYLE_EX			0
+#define WINDOW_STYLE_EX			((pmoptions.dmd_opacity < 100) ? WS_EX_LAYERED : 0)
 
 // debugger window styles
 #define DEBUG_WINDOW_STYLE		WS_OVERLAPPED
@@ -507,6 +507,9 @@ int win_init_window(void)
 			20, 20, 100, 100, NULL, menu, GetModuleHandle(NULL), NULL);
 	if (!win_video_window)
 		return 1;
+
+	if(pmoptions.dmd_opacity < 100)
+		SetLayeredWindowAttributes(win_video_window,0,pmoptions.dmd_opacity*255/100,LWA_ALPHA);
 
 	// possibly create the debug window, but don't show it yet
 	if (options.mame_debug)

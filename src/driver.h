@@ -93,6 +93,7 @@ typedef struct {
   int dmd_red66, dmd_green66, dmd_blue66;
   int dmd_red33, dmd_green33, dmd_blue33;
   int dmd_red0, dmd_green0, dmd_blue0;
+  int dmd_opacity;
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

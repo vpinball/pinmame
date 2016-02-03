@@ -319,6 +319,7 @@ static REG_OPTION regGameOpts[] =
         { "dmd_red66",              RO_INT,     &gOpts.dmd_red66,         0, 0},
         { "dmd_green66",            RO_INT,     &gOpts.dmd_green66,       0, 0},
         { "dmd_blue66",             RO_INT,     &gOpts.dmd_blue66,        0, 0},
+        { "dmd_opacity",            RO_INT,     &gOpts.dmd_opacity,       0, 0},
 #endif /* PINMAME */
 
 };
@@ -797,6 +798,7 @@ BOOL OptionsInit()
         global.dmd_red66         = 225;
         global.dmd_green66       = 15;
         global.dmd_blue66        = 193;
+        global.dmd_opacity       = 100;
 #endif /* PINMAME */
 
         // game_options[x] is valid if game_variables[i].options_loaded == true
