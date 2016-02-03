@@ -17,6 +17,14 @@
 
 #define STEP 0x8000
 
+//#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
 
 int ay8910_index_ym;
 static int num = 0, ym_num = 0;
@@ -218,12 +226,13 @@ void _AYWriteReg(int n, int r, int v)
 		{
 			if (PSG->PortAwrite)
 				(*PSG->PortAwrite)(0, PSG->Regs[AY_PORTA]);
-			else
-				logerror("PC %04x: warning - write %02x to 8910 #%d Port A\n",activecpu_get_pc(),PSG->Regs[AY_PORTA],n);
+			else {
+				LOG(("PC %04x: warning - write %02x to 8910 #%d Port A\n",activecpu_get_pc(),PSG->Regs[AY_PORTA],n));
+			}
 		}
 		else
 		{
-			logerror("warning: write to 8910 #%d Port A set as input - ignored\n",n);
+			LOG(("warning: write to 8910 #%d Port A set as input - ignored\n",n));
 		}
 		break;
 	case AY_PORTB:
@@ -231,12 +240,13 @@ void _AYWriteReg(int n, int r, int v)
 		{
 			if (PSG->PortBwrite)
 				(*PSG->PortBwrite)(0, PSG->Regs[AY_PORTB]);
-			else
-				logerror("PC %04x: warning - write %02x to 8910 #%d Port B\n",activecpu_get_pc(),PSG->Regs[AY_PORTB],n);
+			else {
+				LOG(("PC %04x: warning - write %02x to 8910 #%d Port B\n",activecpu_get_pc(),PSG->Regs[AY_PORTB],n));
+			}
 		}
 		else
 		{
-			logerror("warning: write to 8910 #%d Port B set as input - ignored\n",n);
+			LOG(("warning: write to 8910 #%d Port B set as input - ignored\n",n));
 		}
 		break;
 	}
@@ -274,20 +284,22 @@ unsigned char AYReadReg(int n, int r)
 	switch (r)
 	{
 	case AY_PORTA:
-		if ((PSG->Regs[AY_ENABLE] & 0x40) != 0)
-			logerror("warning: read from 8910 #%d Port A set as output\n",n);
+		if ((PSG->Regs[AY_ENABLE] & 0x40) != 0) {
+			LOG(("warning: read from 8910 #%d Port A set as output\n",n));
+		}
 		/*
 		   even if the port is set as output, we still need to return the external
 		   data. Some games, like kidniki, need this to work.
 		 */
 		if (PSG->PortAread) PSG->Regs[AY_PORTA] = (*PSG->PortAread)(0);
-		else logerror("PC %04x: warning - read 8910 #%d Port A\n",activecpu_get_pc(),n);
+			else { LOG(("PC %04x: warning - read 8910 #%d Port A\n",activecpu_get_pc(),n)); }
 		break;
 	case AY_PORTB:
-		if ((PSG->Regs[AY_ENABLE] & 0x80) != 0)
-			logerror("warning: read from 8910 #%d Port B set as output\n",n);
+		if ((PSG->Regs[AY_ENABLE] & 0x80) != 0) {
+			LOG(("warning: read from 8910 #%d Port B set as output\n",n));
+		}
 		if (PSG->PortBread) PSG->Regs[AY_PORTB] = (*PSG->PortBread)(0);
-		else logerror("PC %04x: warning - read 8910 #%d Port B\n",activecpu_get_pc(),n);
+			else { LOG(("PC %04x: warning - read 8910 #%d Port B\n",activecpu_get_pc(),n)); }
 		break;
 	}
 	return PSG->Regs[r];

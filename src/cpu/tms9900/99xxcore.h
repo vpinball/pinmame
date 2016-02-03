@@ -67,6 +67,13 @@ Tons of thanks to the guy who posted these, whoever he is...
 	#define IRQ_MAGIC_LEVEL -2
 #endif
 
+#define VERBOSE 0
+
+#if VERBOSE
+#define LOG(x)	logerror x
+#else
+#define LOG(x)
+#endif
 
 #include "memory.h"
 #include "mamedbg.h"
@@ -880,7 +887,7 @@ int TMS99XX_EXECUTE(int cycles)
 				if (I.interrupt_pending)  /* we may have just cleared this */
 #endif
 				{
-					logerror("tms9900.c : the interrupt_pending flag was set incorrectly\n");
+					LOG(("tms9900.c : the interrupt_pending flag was set incorrectly\n"));
 					I.interrupt_pending = 0;
 				}
 			}
@@ -1446,7 +1453,7 @@ static void writeCRU(int CRUAddr, int Number, UINT16 Value)
 
 	CRUAddr &= wCRUAddrMask;
 
-	logerror("%04x: Write CRU %04x for %2d = %02x\n",I.PC,CRUAddr,Number,Value);
+	LOG(("%04x: Write CRU %04x for %2d = %02x\n",I.PC,CRUAddr,Number,Value));
 
 	/* Write Number bits from CRUAddr */
 
@@ -1523,11 +1530,11 @@ static void external_instruction_notify(int ext_op_ID)
 			break;
 		case 0:
 			/* normal CRU write !!! */
-			logerror("PC %4.4x : external_instruction_notify : wrong ext_op_ID",I.PC);
+			LOG(("PC %4.4x : external_instruction_notify : wrong ext_op_ID",I.PC));
 			break;
 		default:
 			/* unknown address */
-			logerror("PC %4.4x : external_instruction_notify : unknown ext_op_ID",I.PC);
+			LOG(("PC %4.4x : external_instruction_notify : unknown ext_op_ID",I.PC));
 			break;
 	}
 #endif
@@ -1593,7 +1600,7 @@ static UINT16 readCRU(int CRUAddr, int Number)
 
 	Location = CRUAddr >> 3;
 
-	logerror("%04x: Read  CRU  %03x for %2d\n",I.PC,Location,Number);
+	LOG(("%04x: Read  CRU  %03x for %2d\n",I.PC,Location,Number));
 
 	Offset   = CRUAddr & 07;
 

@@ -570,7 +570,9 @@ void via_write(int which, int offset, int data)
 				v->intf->out_ca2_func(0, 1);
 			}
 			else
-				logerror("6522VIA chip %d: Port CA2 is being pulsed but has no handler.  PC: %08X\n", which, activecpu_get_pc());
+			{
+				LOG(("6522VIA chip %d: Port CA2 is being pulsed but has no handler.  PC: %08X\n", which, activecpu_get_pc()));
+			}
 
 			/* set CA2 (shouldn't be needed) */
 			v->out_ca2 = 1;

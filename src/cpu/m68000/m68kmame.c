@@ -2101,7 +2101,7 @@ static void duart_command_register_w(int which, int data)
 //----------------------------
 static void m68306_intreg_w(offs_t address, data16_t data, int word) {
   if (word && (address & 1)) {
-    logerror("M68306reg_w odd word address %08x\n",address); return;
+    LOG(("M68306reg_w odd word address %08x\n",address)); return;
   }
   if (address >= 0xffffffc0) { /* internal regs */
     const int reg = (address & 0x3f)>>1;
@@ -2147,12 +2147,12 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
         m68306intreg[irICR] = data; m68306irq(0,0); // update irq level
         break;
       case irBUSERR: /* refresh + buserror */
-        logerror("buserror_w %04x\n",data);
+        LOG(("buserror_w %04x\n",data));
         break;
       case irSYSTEM: /* system */
 		LOG(("%8x:SYSTEM REG=%04x\n",activecpu_get_pc(),data));
         m68306intreg[irSYSTEM] = (oldval & 0x8000) | (data & 0x7fff); // BTERR bit ignored
-        if (data & 0x4000) logerror("Bus Timeout Error not implmented %x\n",data);
+        if (data & 0x4000) { LOG(("Bus Timeout Error not implmented %x\n",data)); }
         break;
     } /* switch */
   }
@@ -2166,7 +2166,7 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
 static data16_t m68306_intreg_r(offs_t address, int word) {
   data16_t data = 0;
   if (word && (address & 1)) {
-    logerror("M68306reg_r odd word address %08x\n",address); return 0;
+    LOG(("M68306reg_r odd word address %08x\n",address)); return 0;
   }
   if (address >= 0xffffffc0) { /* internal regs */
     const int reg = (address & 0x3f)>>1;
@@ -2196,7 +2196,7 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
         data = m68306intreg[irICR]; break;
         break;
       case irBUSERR: /* refresh + buserror */
-        logerror("buserror_r\n");
+        LOG(("buserror_r\n"));
         break;
       case irSYSTEM: /* system */
         data = m68306intreg[irSYSTEM];
@@ -2239,8 +2239,9 @@ static int m68306ack(int int_level) {
     else { // no autovector, IACK is not emulated
       if (m68306intack)
         return m68306intack(int_level);
-      else
-        logerror("M68306 No-AutoVector but no callback IRQ=%d\n",int_level);
+      else {
+        LOG(("M68306 No-AutoVector but no callback IRQ=%d\n",int_level));
+      }
     }
   }
   return M68K_INT_ACK_AUTOVECTOR; // Whatever

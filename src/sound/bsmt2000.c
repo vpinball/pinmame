@@ -42,6 +42,14 @@
 #include "wavwrite.h"
 #endif
 
+//#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
 
 #define MAX_SAMPLE_CHUNK		10000
 
@@ -183,7 +191,7 @@ static void decompress_samples(struct BSMT2000Chip *chip)
 			if(samp>DECOMP_SIZE)
 			{
 				samp = DECOMP_SIZE;
-				logerror("exceeded limit\n");
+				LOG(("exceeded limit\n"));
 			}
 
 			/* update position */
@@ -260,8 +268,8 @@ static void reset_compression_flags(struct BSMT2000Chip *chip)
 ***************************************************/
 static void set_mode(struct BSMT2000Chip *chip, int i)
 {
-	logerror("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register);
-	logerror("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register);
+	LOG(("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register));
+	LOG(("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register));
 }
 
 #endif		//ifdef PINMAME
@@ -754,7 +762,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
  			case 0x6d:
  				COMBINE_DATA(&voice->reg[REG_LOOPEND]);
  				voice->loop_stop_position = voice->reg[REG_LOOPEND] << 16;
-				logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position);
+				LOG(("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position));
  				break;
 
 			#ifdef PINMAME
@@ -799,20 +807,20 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 			//RIGHT CHANNEL VOLUME
 			case 0x74:
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
-				logerror("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]);
+				LOG(("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]));
  				break;
 
 			//SAMPLE START POSITION
  			case 0x75:
  				COMBINE_DATA(&voice->reg[REG_CURRPOS]);
  				voice->position = voice->reg[REG_CURRPOS] << 16;
-				logerror("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position);
+				LOG(("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position));
  				break;
 
 			//LEFT CHANNEL VOLUME
  			case 0x78:
  				COMBINE_DATA(&voice->reg[REG_LEFTVOL]);
-				logerror("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]);
+				LOG(("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]));
  				break;
  		}
 	}
