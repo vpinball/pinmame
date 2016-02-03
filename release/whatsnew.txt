@@ -6,10 +6,13 @@ Version 2.7 (X X, 2016) - ""
 
 *** ROM SUPPORT *** Thanks to Inkochnito
 New:
+MAC: MAC Jungle (1995 version)
+Sleic: Bike Race (2-ball play)
 Sonic: Hang-On
 Unknown: Wild Texas (Firepower II Modification)
 
 Clones:
+Inder Centaur (alternate version)
 Hyperball L-3
 Lethal Weapon 2.03
 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
@@ -75,7 +78,7 @@ Joctronic: Punky Willy (not working yet, incomplete dumps),
            Walkyria (not working yet)
 JP: support correct sound ROMs for Olympus,
     renamed unknown jpgame to petacona (Petaco with new hardware, alternate set)
-MAC: Galaxy,
+MAC: MAC's Galaxy,
      Space Train,
      Space Panther,
      NBA MAC,
