@@ -169,6 +169,10 @@ private:
 		SetDlgItemInt(IDC_DMDPERC0, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
+		pGameSettings->get_Value(CComBSTR("dmd_opacity"), &vValue);
+		SetDlgItemInt(IDC_DMDOPACITY, vValue.lVal, FALSE);
+		VariantClear(&vValue);
+
 		pGameSettings->Release();
 	}
 
@@ -212,6 +216,8 @@ private:
                 pGameSettings->put_Value(CComBSTR("dmd_red0"), CComVariant(m_dmd0.r));
                 pGameSettings->put_Value(CComBSTR("dmd_green0"), CComVariant(m_dmd0.g));
                 pGameSettings->put_Value(CComBSTR("dmd_blue0"), CComVariant(m_dmd0.b));
+
+                pGameSettings->put_Value(CComBSTR("dmd_opacity"), CComVariant((int) GetDlgItemInt(IDC_DMDOPACITY,NULL,TRUE)));
                 
 		pGameSettings->Release();
 	}
