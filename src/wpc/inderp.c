@@ -299,6 +299,14 @@ INDER_ROMSTARTP(centauri,	"cent2.bin", CRC(4f1ad0bc) SHA1(0622c16520275e629eac27
 INDER_ROMEND
 CORE_GAMEDEFNV(centauri,"Centaur (Inder)",1979,"Inder (Spain)",INDERP,0)
 
+#define init_centaurj init_centauri
+INDERP_INPUT_PORTS(centaurj)
+INDER_ROMSTARTP(centaurj,	"cent2.bin", CRC(4f1ad0bc) SHA1(0622c16520275e629eac27ae2575e4e433de56ed),
+						"cent3a.bin", CRC(7b8215b1) SHA1(7cb6c18ad88060b56785bbde398bff157d8417cd),
+						"cent4a.bin", CRC(7ee64ea6) SHA1(b751b757faab7e3bb56625e4d72c3aeeb84a3f28))
+INDER_ROMEND
+CORE_CLONEDEFNV(centaurj,centauri,"Centaur (Inder, alternate set)",1979,"Inder (Spain)",INDERP,0)
+
 /*-------------------------------------------------------------------
 / Topaz (1979)
 /-------------------------------------------------------------------*/
