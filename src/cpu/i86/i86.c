@@ -16,6 +16,7 @@
 #include "i86.h"
 #include "i86intf.h"
 
+//#define VERBOSE_DEBUG
 
 /* All pre-i286 CPUs have a 1MB address space */
 #define AMASK	0xfffff
@@ -326,7 +327,6 @@ int i86_execute(int num_cycles)
 	/* run until we're out */
 	while (i86_ICount > 0)
 	{
-//#define VERBOSE_DEBUG
 #ifdef VERBOSE_DEBUG
 		logerror("[%04x:%04x]=%02x\tF:%04x\tAX=%04x\tBX=%04x\tCX=%04x\tDX=%04x %d%d%d%d%d%d%d%d%d\n",
 				I.sregs[CS], I.pc - I.base[CS], ReadByte(I.pc), I.flags, I.regs.w[AX], I.regs.w[BX], I.regs.w[CX], I.regs.w[DX], I.AuxVal ? 1 : 0, I.OverVal ? 1 : 0,
