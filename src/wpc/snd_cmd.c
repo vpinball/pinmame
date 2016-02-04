@@ -25,6 +25,14 @@
  #include "snd_alt.h"
 #endif
 
+//#define VPINMAME_PINSOUND
+
+#ifdef VPINMAME_PINSOUND
+ #include <windows.h>
+ #include <Shlwapi.h>
+ #include <tchar.h>
+#endif
+
 #ifdef MAME_DEBUG
 extern UINT8 debugger_focus;
 #endif
@@ -83,6 +91,20 @@ void snd_cmd_init(void) {
   wave_init();
 }
 
+#ifdef VPINMAME_PINSOUND
+ static BOOL init_pinsound_log = FALSE;
+ static BOOL pinsound_studio_enabled = FALSE;
+ static FILE *fp_pinsound_log;
+ static unsigned long start_time_pinsound_log;
+ static char path_pinsound_cwd[2048];
+ static BOOL sys11_patch;
+ static BOOL sys11_counter;
+ static HANDLE hFilePinSound;
+ static HANDLE hFilePinMAME;
+
+ void pinsound_exit();
+#endif
+
 /*----------------------------------------*/
 /*-- clean up manual sound command data --*/
 /*----------------------------------------*/
@@ -93,12 +115,342 @@ void snd_cmd_exit(void) {
 #ifdef VPINMAME_ALTSOUND
   alt_sound_exit();
 #endif
+#ifdef VPINMAME_PINSOUND
+  pinsound_exit();
+#endif
 }
+
+#ifdef VPINMAME_PINSOUND
+char * getPinSoundDirectory()
+{
+	char * pos;
+
+	GetModuleFileNameA(NULL, path_pinsound_cwd, 2048);
+	pos = strrchr(path_pinsound_cwd, '\\');
+	if (pos != NULL) {
+	   *pos = '\0'; 
+	}
+	sprintf(path_pinsound_cwd,"%s\\PinSound\\", path_pinsound_cwd);
+
+	return path_pinsound_cwd;
+}
+
+LPTSTR PinMAMESlotName = TEXT("\\\\.\\mailslot\\PinSoundPinMAME");
+LPTSTR PinSoundStudioSlotName = TEXT("\\\\.\\mailslot\\PinSoundStudio");
+
+BOOL WriteSlot(HANDLE hFile, LPTSTR lpszMessage)
+{
+   DWORD cbWritten; 
+   const BOOL fResult = WriteFile(hFile, 
+     lpszMessage, 
+     (DWORD) (lstrlen(lpszMessage)+1)*sizeof(TCHAR),  
+     &cbWritten, 
+     (LPOVERLAPPED) NULL); 
+ 
+   return fResult ? TRUE : FALSE;
+}
+
+BOOL sendToSlot(HANDLE hFile, TCHAR msg_to_pinsound_studio[100])
+{
+   if (hFile != INVALID_HANDLE_VALUE) 
+   { 
+	  WriteSlot(hFile, TEXT(msg_to_pinsound_studio));	
+	  return TRUE;
+   } 
+   else
+   {
+	  logerror("PinSound: WriteSlot failed with %d.\n", GetLastError()); 
+	  return FALSE;
+   }
+}
+
+HANDLE WINAPI makeWriteSlot(HANDLE hFile, LPTSTR slotName)
+{
+	hFile = CreateFile(slotName, 
+		 GENERIC_WRITE, 
+		 FILE_SHARE_READ,
+		 (LPSECURITY_ATTRIBUTES) NULL, 
+		 OPEN_EXISTING, 
+		 FILE_ATTRIBUTE_NORMAL, 
+		 (HANDLE) NULL);
+    
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+		logerror("PinSound: Cannot open slot: %s. Error: %d.\n", slotName, GetLastError());
+    }
+    else
+    {
+		logerror("PinSound: Communication slot opened: %s.\n", slotName);
+    }
+	return hFile;
+}
+
+HANDLE WINAPI makeReadSlot(HANDLE hFile, LPTSTR slotName)
+{
+	hFile = CreateMailslot(slotName,
+        0,                             // no maximum message size
+        MAILSLOT_WAIT_FOREVER,         // no time-out for operations
+        (LPSECURITY_ATTRIBUTES) NULL); // default security
+
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+		logerror("PinSound: Cannot open read slot: %s. Error: %d.\n", slotName, GetLastError());
+    }
+    else
+    {
+		logerror("PinSound: Communication read slot opened: %s.\n", slotName); 
+    }
+	return hFile;
+}
+
+BOOL readSlot(HANDLE hFile, char * msg)
+{
+	DWORD   msgSize;
+	BOOL    err;
+	DWORD	numRead;
+	LPTSTR	buffer;
+
+	// Get the size of the next record
+	err = GetMailslotInfo(hFile, 0, &msgSize, 0, 0);
+
+	// Check for an error 
+	if (!err)
+	{
+		logerror("PinSound: GetMailslotInfo failed: %s \n", GetLastError());
+		return FALSE;
+	}
+
+	// if there are any data waiting to be read
+	if (msgSize > 0)
+	{
+		// Allocate buffer memory
+		buffer = (LPTSTR) GlobalAlloc(GPTR, msgSize); //Combines GMEM_FIXED and GMEM_ZEROINIT.
+		if( NULL == buffer )
+		{
+			return FALSE;
+		}
+		buffer[0] = '\0';
+
+		if (!buffer)
+		{
+			logerror("PinSound: readSlot / error GlobalAlloc: %d\n", GetLastError());
+		}
+		else
+		{
+		   // Read the message
+		   err = ReadFile(hFile, buffer, msgSize, &numRead, 0);
+
+		   // See if an error occurred
+		   if (!err)
+		   {
+			    logerror("PinSound: readSlot / readFile error: %d\n", GetLastError());
+		   }
+		   // Make sure all the bytes were read 
+		   else if (msgSize != numRead) 
+		   {
+				logerror("PinSound: readSlot / readFile did not read the correct number of bytes!\n");
+		   }
+		   else
+		   {
+				logerror("PinSound: Read from mailslot: %s \n",buffer);
+				sprintf(msg, "%s", buffer);
+				GlobalFree((HGLOBAL) buffer);
+				return TRUE;
+		   }
+		}
+		GlobalFree((HGLOBAL) buffer);
+	}
+	return FALSE;
+}
+
+void pinsound_exit()
+{
+	// send stop-all command to the PinSound Studio
+	if (pinsound_studio_enabled)
+	{
+		TCHAR cmd_to_pinsound_studio[3];
+		_stprintf( cmd_to_pinsound_studio, _T("00") );
+		// double because we don't know if we are talking 8bits or 16bits instructions
+		sendToSlot(hFilePinSound, cmd_to_pinsound_studio);
+		sendToSlot(hFilePinSound, cmd_to_pinsound_studio);
+	}
+
+	CloseHandle(hFilePinSound); 
+	CloseHandle(hFilePinMAME); 
+}
+
+void reinit_pinSound()
+{
+	char	game_rom_system[100];
+	BOOL	response;
+	int		responseValue;
+	char	buffer_msg[100];
+	int		ch;
+
+	init_pinsound_log = FALSE;
+	pinsound_studio_enabled = FALSE;
+
+	// create a mail slot to talk to the PinSound Studio
+	hFilePinSound = makeWriteSlot(hFilePinSound, PinSoundStudioSlotName);
+
+	// create slot to receive response from the PinSound Studio
+	hFilePinMAME = makeReadSlot(hFilePinMAME, PinMAMESlotName);
+
+	// send game rom name and sound system to PSStudio
+	if (sndbrd_typestr(0))
+	{
+		sprintf(game_rom_system,"#ROM%s#SYSTEM%s", Machine->gamedrv->name, sndbrd_typestr(0));
+	}
+	else
+	{
+		sprintf(game_rom_system,"#ROM%s#SYSTEM%s", Machine->gamedrv->name, sndbrd_typestr(1));
+	}
+	
+	sendToSlot(hFilePinSound, game_rom_system);
+
+	// wait for the answer from the PinSound Studio
+	Sleep(500);
+	
+	// read response from PinSoundStudio
+	response = readSlot(hFilePinMAME, buffer_msg);
+	if (response != TRUE)
+	{
+		CloseHandle(hFilePinSound); 
+		CloseHandle(hFilePinMAME); 
+		logerror("PinSound: Cannot communicate with PinSound Studio.\n");
+	}
+	else
+	{
+		sscanf(buffer_msg,"%d",&responseValue);
+		if (responseValue == 1)
+		{
+			pinsound_studio_enabled = TRUE;
+			
+			// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+			for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) 
+			{
+				if (mixer_get_name(ch) != NULL)
+				{
+					mixer_set_volume(ch, 0);
+				}
+			}
+			logerror("PinSound: PinSound Studio audio engine is ready to play the ROM requested. \n");
+		}
+		else
+		{
+			pinsound_studio_enabled = FALSE;
+			CloseHandle(hFilePinSound); 
+			CloseHandle(hFilePinMAME); 
+			logerror("PinSound: PinSound Studio cannot find any sound package relative to the ROM requested. \n");
+		}
+	}
+}
+#else
+void reinit_pinSound() {}
+#endif
 
 /*----------------
 / log handling
 /-----------------*/
 void snd_cmd_log(int boardNo, int cmd) {
+#ifdef VPINMAME_PINSOUND
+	FILE *fp_check;
+	int	ch;
+	
+	if (init_pinsound_log == FALSE)
+	{
+		init_pinsound_log = TRUE;
+		
+		if (CreateDirectory(getPinSoundDirectory(), NULL) || ERROR_ALREADY_EXISTS == GetLastError())
+		{
+			char machine_name[120];
+		    sprintf(machine_name,"%s/%.8s.psrec", getPinSoundDirectory(), Machine->gamedrv->name);
+			
+			// check if this filename is not already used
+			fp_check = fopen(machine_name, "r");
+			
+			if (fp_check)
+			{
+				//otherwise use "gamename-NNNN.psrec" 
+				int cpt_filename = 0;
+				do 
+				{ 
+					fclose(fp_check);
+					sprintf(machine_name,"%s/%.8s-%04d.psrec",getPinSoundDirectory(), Machine->gamedrv->name,++cpt_filename);
+					fp_check = fopen(machine_name, "r");
+				} 
+				while (fp_check);
+			}
+
+			fp_pinsound_log = fopen(machine_name, "ab+");
+			
+			if (fp_pinsound_log)
+			{
+				if (sndbrd_typestr(0))
+				{
+					fprintf(fp_pinsound_log, "#system %s\n", sndbrd_typestr(0));
+					if (!strcmp(sndbrd_typestr(0), "WMSS11C"))
+					{
+						sys11_patch = TRUE;
+						sys11_counter = TRUE;
+					}
+				}
+				else
+				{
+					fprintf(fp_pinsound_log, "#system %s\n", sndbrd_typestr(1));	
+					if (!strcmp(sndbrd_typestr(1), "WMSS11C"))
+					{
+						sys11_patch = TRUE;
+						sys11_counter = TRUE;
+					}
+				}
+			}
+			else
+			{
+				logerror("PinSound: Cannot open PinSound PSREC file.\n");
+			}
+		}
+		else
+		{
+			 // Failed to create directory
+		}
+		start_time_pinsound_log = timeGetTime();
+	}
+
+	if (fp_pinsound_log)
+	{			
+		if ( sys11_patch && sys11_counter )
+		{
+			// skip instruction every 2 instr
+		}
+		else
+		{
+			// send current sound cmd to PSStudio
+			if (pinsound_studio_enabled)
+			{
+				TCHAR cmd_to_pinsound_studio[100];
+				_stprintf( cmd_to_pinsound_studio, _T("%02x"), cmd );
+
+				// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+				// required for WPC89 sound board
+				for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) 
+				{
+					if (mixer_get_name(ch) != NULL)
+					{
+						mixer_set_volume(ch, 0);
+					}
+				}
+				sendToSlot(hFilePinSound, cmd_to_pinsound_studio);
+			}
+
+			// write current sound cmd to PSREC file
+			fprintf(fp_pinsound_log, "%02x %lu\n", cmd, timeGetTime() - start_time_pinsound_log);
+			fflush(fp_pinsound_log);
+		}
+		sys11_counter = !sys11_counter;
+	}
+#endif
+
   if (locals.soundMode || (locals.boards == 0)) return; // Don't log from within sound commander
   if (locals.boards == 3) {
     locals.cmdLog[locals.firstLog++] = boardNo;

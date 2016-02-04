@@ -14,6 +14,8 @@ void snd_cmd_exit(void);
 void snd_cmd_log(int boardNo, int cmd);
 int snd_get_cmd_log(int *last, int *buffer);
 
+void reinit_pinSound();
+
 /*Constants*/
 #define DCS_COMMS	14	/* # of Sequential Commands to trigger a sound (DCS )*/
 #define WPCS_COMMS	4	/* # of Sequential Commands to trigger a sound (Non-DCS )*/
