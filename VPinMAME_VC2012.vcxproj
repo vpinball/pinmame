@@ -296,7 +296,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\win32com\VPinMAME64.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -405,7 +405,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\win32com\VPinMAME64.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -509,7 +509,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Version>20.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\win32com\VPinMAME64.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -615,7 +615,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Version>4.0</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>src\win32com\VPinMAME.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\win32com\VPinMAME64.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -1853,6 +1853,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">true</ExcludedFromBuild>
     </CustomBuild>
     <None Include="src\win32com\VPinMAME.def" />
+    <None Include="src\win32com\VPinMAME64.def" />
     <None Include="src\win32com\Controller.rgs" />
     <None Include="src\win32com\WSHDlg.rgs" />
   </ItemGroup>

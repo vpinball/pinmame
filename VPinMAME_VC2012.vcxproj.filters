@@ -1956,6 +1956,9 @@
     <None Include="src\win32com\VPinMAME.def">
       <Filter>Source Files\VPinMAME</Filter>
     </None>
+    <None Include="src\win32com\VPinMAME64.def">
+      <Filter>Source Files\VPinMAME</Filter>
+    </None>
     <None Include="src\win32com\Controller.rgs">
       <Filter>Resource Files</Filter>
     </None>
