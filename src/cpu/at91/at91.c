@@ -1657,4 +1657,3 @@ INLINE AfterOpCodeHook(void)
 // Include the ARM7 JIT
 //
 #include "../arm7/arm7jit.c"
-

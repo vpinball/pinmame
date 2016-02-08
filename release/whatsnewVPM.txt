@@ -3,6 +3,10 @@ What's new in Visual PinMAME:
 
 Version 2.7 (X X, 2016) - ""
 ------------------------------------------------------------------------------
+- New option for the DMD window: DMD opacity
+
+- PinSound Studio connection
+
 - PinDMD 3 handling
 
 Version 2.6 (December 24, 2015) - "The team awakens"
