@@ -104,7 +104,11 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			//
 			char cvpmd[1024];
+#ifndef _WIN64
 			HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+#else
+			HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+#endif
 			GetModuleFileName(hInst, cvpmd, 1024);
 
 			char *lpHelp = cvpmd;
@@ -330,6 +334,11 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					//sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
 				}
+
+				// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+				for (DSidx = 0; DSidx < MIXER_MAX_CHANNELS; DSidx++)
+					if (mixer_get_name(DSidx) != NULL)
+						mixer_set_volume(DSidx, 0);
 			}
 			else
 				cmd_storage = 0;
