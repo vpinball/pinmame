@@ -76,6 +76,9 @@ struct rc_option pinmame_opts[] = {
         { "dmd_green0", NULL, rc_int, &pmoptions.dmd_green0, "0", 0, 255, NULL, "Colorized DMD: 0%: Green" },
         { "dmd_blue0", NULL, rc_int, &pmoptions.dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: 0%: Blue" },
         { "dmd_opacity", NULL, rc_int, &pmoptions.dmd_opacity, "100", 0, 100, NULL, "DMD opacity" },
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+        { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
+#endif
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */

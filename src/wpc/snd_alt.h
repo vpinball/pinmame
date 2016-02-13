@@ -346,6 +346,13 @@ void alt_sound_handle(int boardNo, int cmd)
 
 		if (psd.num_files > 0)
 		{
+			int ch;
+			// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+			// required for WPC89 sound board
+			for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++)
+				if (mixer_get_name(ch) != NULL)
+					mixer_set_volume(ch, 0);
+
 			cmd_counter++;
 
 			for (unsigned int i = ALT_MAX_CMDS - 1; i > 0; --i)
