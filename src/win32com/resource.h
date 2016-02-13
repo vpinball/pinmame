@@ -30,6 +30,7 @@
 #define IDC_PINDMD                      114
 #define IDC_WINDMD                      115
 #define IDC_DMDOPACITY                  116
+#define IDC_SOUNDMODE                   117
 #define IDC_DMDRED                      120
 #define IDC_DMDGREEN                    121
 #define IDC_DMDBLUE                     122

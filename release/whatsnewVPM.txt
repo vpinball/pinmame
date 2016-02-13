@@ -5,7 +5,15 @@ Version 2.7 (X X, 2016) - ""
 ------------------------------------------------------------------------------
 - New option for the DMD window: DMD opacity
 
-- PinSound Studio connection
+- New option for the sound processing: Sound Mode, where:
+  0 = standard builtin PinMAME emulation
+  1 = builtin alternate sound file support
+      (store the alternate sound files in a PinSound-like directory structure (incl. textfiles for ducking and gain),
+       within a new PinMAME directory subfolder 'altsound' and there within the machines shortname subfolder,
+       e.g. for ij_l7: 'C:\PinMAME\altsound\ij_l7\'
+       or for an example alternate sound file for tz_94h: 'C:\PinMAME\altsound\tz_94h\jingle\000064-load_gumball_pt_1\load_gum__LEGACY.ogg')
+  2 = external pinsound, 3 = external pinsound + psrec sound recording
+      (must have PinSound Studio 0.7 or newer running at the same time)
 
 - PinDMD 3 handling
 

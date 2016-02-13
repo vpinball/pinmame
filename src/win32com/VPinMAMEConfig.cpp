@@ -49,6 +49,9 @@ int dmd_red66 = 225, dmd_green66 = 15, dmd_blue66 = 193;
 int dmd_red33 = 6, dmd_green33 = 0, dmd_blue33 = 214;
 int dmd_red0 = 0, dmd_green0 = 0, dmd_blue0 = 0;
 int dmd_opacity = 100;
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+int sound_mode = 0;
+#endif
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -83,7 +86,10 @@ static struct rc_option vpinmame_opts[] = {
         { "dmd_green0", NULL, rc_int, &dmd_green0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
         { "dmd_blue0", NULL, rc_int, &dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
         { "dmd_opacity", NULL, rc_int, &dmd_opacity, "100", 0, 100, NULL, "Set DMD opacity" },
-        
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+        { "sound_mode", NULL, rc_int, &sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
+#endif
+
 	/* pinDMD */
 	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
 	{ "showwindmd", NULL, rc_bool, &g_fShowWinDMD, "1", 0, 0, NULL, "Show DMD display" },
@@ -178,17 +184,20 @@ static char* RunningGameSettings[] = {
 	"dmd_width",
 	"dmd_height",
 
-        "dmd_colorize",
-        "dmd_red66",
-        "dmd_green66",
-        "dmd_blue66",
-        "dmd_red33",
-        "dmd_green33",
-        "dmd_blue33",
-        "dmd_red0",
-        "dmd_green0",
-        "dmd_blue0",
-        "dmd_opacity",
+	"dmd_colorize",
+	"dmd_red66",
+	"dmd_green66",
+	"dmd_blue66",
+	"dmd_red33",
+	"dmd_green33",
+	"dmd_blue33",
+	"dmd_red0",
+	"dmd_green0",
+	"dmd_blue0",
+	"dmd_opacity",
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+	"sound_mode",
+#endif
 
 	// video_opts
 	"screen",
