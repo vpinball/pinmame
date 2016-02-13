@@ -13,7 +13,9 @@ Version 2.7 (X X, 2016) - ""
        e.g. for ij_l7: 'C:\PinMAME\altsound\ij_l7\'
        or for an example alternate sound file for tz_94h: 'C:\PinMAME\altsound\tz_94h\jingle\000064-load_gumball_pt_1\load_gum__LEGACY.ogg')
   2 = external pinsound, 3 = external pinsound + psrec sound recording
-      (must have PinSound Studio 0.7 or newer running at the same time)
+      (must have PinSound Studio 0.7 or newer running at the same time:
+       make sure that the windows permissions match between PinSound Studio and Visual PinMAME/Pinball, e.g.
+       if one is using admin permissions when running, then both need to be started with that (or the other way round))
 
 - PinDMD 3 handling
 
