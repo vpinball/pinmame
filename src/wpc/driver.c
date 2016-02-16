@@ -408,6 +408,7 @@ DRIVER(trek,117)        //Data East MPU: 01/92 Star Trek 25th Anniversary (1.17)
 DRIVER(trek,120)        //Data East MPU: 01/92 Star Trek 25th Anniversary (1.20)
 DRIVER(trek,200)        //Data East MPU: 04/92 Star Trek 25th Anniversary (2.00)
 DRIVER(trek,201)        //Data East MPU: 04/92 Star Trek 25th Anniversary (2.01)
+DRIVER(hook,401p)       //Data East MPU: 11/91 Hook (4.01 with Prototype Sound)
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
@@ -1378,7 +1379,7 @@ DRIVERNV(dalejr)        //Whitestar: 07/06 Dale Jr. (Nascar 5.00)
 DRIVER(sam1_flashb,0102)//S.A.M.: 02/06 S.A.M. System Flash Boot - V1.02
 DRIVER(sam1_flashb,0106)//S.A.M.: 08/06 S.A.M. System Flash Boot - V1.06
 DRIVER(sam1_flashb,0210)//S.A.M.: ??/07 S.A.M. System Flash Boot - V2.10
-DRIVER(sam1_flashb,0230)//S.A.M.: ??/07 S.A.M. System Flash Boot - V2.30
+DRIVER(sam1_flashb,0230)//S.A.M.: 06/07 S.A.M. System Flash Boot - V2.30
 DRIVER(sam1_flashb,0310)//S.A.M.: 01/08 S.A.M. System Flash Boot - V3.10
 DRIVER(wpt,103a)        //S.A.M.: 02/06 World Poker Tour - V1.03 (English)
 DRIVER(wpt,105a)        //S.A.M.: 02/06 World Poker Tour - V1.05 (English)

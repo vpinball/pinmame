@@ -530,6 +530,14 @@ DE_ROMEND
 #define input_ports_hook input_ports_des11
 CORE_GAMEDEF(hook,408,"Hook (4.08)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(hook_401p,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
+DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(20091293) SHA1(fdfc4eadef0bf1915c7c72c1fd8dafaa429b3c44),
+                    "hook-voi.u17" ,CRC(667cf0fb) SHA1(dd12a7fa280384381ebc5c3d8add652eddb294fb),
+                    "hook-voi.u21" ,CRC(04775416) SHA1(5675aea39b76178ff476b0f627223a1c75a3d6b7))
+DE_ROMEND
+CORE_CLONEDEF(hook,401p,408,"Hook (4.01 with Prototype Sound)",1992,"Data East",de_mDEDMD16S2A,0)
+
 DE_ROMSTARTx0(hook_401,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
 DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
