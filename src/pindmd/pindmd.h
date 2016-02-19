@@ -56,7 +56,7 @@ PINDMD_API void getDeviceInfo(deviceInfo info);
 PINDMD_API void getDllInfo(dllInfo info);
 PINDMD_API void enableDebug(void);
 PINDMD_API void disableDebug(void);
-#define frameClock() (void)	// legacy pinMame
+#define frameClock() {}	// legacy pinMame
 
 #else
 
