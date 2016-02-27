@@ -143,7 +143,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4f input_ports_se
-CORE_GAMEDEFNV(id4f,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4f,id4,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -153,7 +153,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201 input_ports_se
-CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4_201,id4,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201f,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201f, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -163,7 +163,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201f input_ports_se
-CORE_GAMEDEFNV(id4_201f,"ID4: Independence Day (2.01 French)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4_201f,id4,"ID4: Independence Day (2.01 French)",1996,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Space Jam
@@ -421,7 +421,7 @@ DE2S_SOUNDROM14444("gdzu7.100" ,CRC(a0afe8b7) SHA1(33e4a824b26b58e8f963fa8a525a6
                   "gdzu37.100",CRC(2c1acb14) SHA1(4d710e09f5500da937932b4b01d862abb4a89e5a))
 SE_ROMEND
 #define input_ports_godz_100 input_ports_se
-CORE_GAMEDEFNV(godz_100,"Godzilla (1.00)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(godz_100, godzilla,"Godzilla (1.00)", 1998, "Sega", de_mSES1, 0)
 
 INITGAME(godz_090,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(godz_090,"gdzcpu.090",CRC(54e3b6d7) SHA1(c11cf71140c00c96c7feea569fa04f75061b9af7))
@@ -433,7 +433,7 @@ DE2S_SOUNDROM14444("gdzu7.090" ,CRC(076401a9) SHA1(17aa63c2b26e6fc4849a5101ff970
                   "gdzu37.090",CRC(1410ae6b) SHA1(28d025403fd60b1bb132cffcc14be21be48d808c))
 SE_ROMEND
 #define input_ports_godz_090 input_ports_se
-CORE_GAMEDEFNV(godz_090,"Godzilla (0.90)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(godz_090, godzilla,"Godzilla (0.90)", 1998, "Sega", de_mSES1, 0)
 
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 
