@@ -532,9 +532,9 @@ CORE_GAMEDEF(hook,408,"Hook (4.08)",1992,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTARTx0(hook_401p,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
-DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(20091293) SHA1(fdfc4eadef0bf1915c7c72c1fd8dafaa429b3c44),
-                    "hook-voi.u17" ,CRC(667cf0fb) SHA1(dd12a7fa280384381ebc5c3d8add652eddb294fb),
-                    "hook-voi.u21" ,CRC(04775416) SHA1(5675aea39b76178ff476b0f627223a1c75a3d6b7))
+DE2S_SOUNDROM022(   "hooksnd_p.u7" ,CRC(20091293) SHA1(fdfc4eadef0bf1915c7c72c1fd8dafaa429b3c44),
+                    "hook-voi_p.u17" ,CRC(667cf0fb) SHA1(dd12a7fa280384381ebc5c3d8add652eddb294fb),
+                    "hook-voi_p.u21" ,CRC(04775416) SHA1(5675aea39b76178ff476b0f627223a1c75a3d6b7))
 DE_ROMEND
 CORE_CLONEDEF(hook,401p,408,"Hook (4.01 with Prototype Sound)",1992,"Data East",de_mDEDMD16S2A,0)
 
@@ -576,8 +576,8 @@ DE_ROMSTARTx0(lw3_208p,"lw3cpuu.208",CRC(a3041f8a) SHA1(3c5b8525b8e9b92459064842
 DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
                    "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
 DE2S_SOUNDROM022(  "lw3u7.dat"   ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
-                   "lw3u17.dat"  ,CRC(5168dbbd) SHA1(e5f91650e613350c542ac93d0d4be64b25333186),
-                   "lw3u21.dat"  ,CRC(7ec96750) SHA1(13e41833d43396e370b817928618f72f928d9ba0))
+                   "lw3u17_vm.dat",CRC(5168dbbd) SHA1(e5f91650e613350c542ac93d0d4be64b25333186),
+                   "lw3u21_vm.dat",CRC(7ec96750) SHA1(13e41833d43396e370b817928618f72f928d9ba0))
 DE_ROMEND
 CORE_CLONEDEF(lw3,208p,208,"Lethal Weapon 3 (2.08p, Voices Mod)",2013,"Data East",de_mDEDMD32S2A,0)
 

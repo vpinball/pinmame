@@ -302,6 +302,7 @@ ST200_ROMSTART8888(meteorfp,"fpmet_u1.716",CRC(7a5472ce) SHA1(7e3be954b66e5f61cf
 BY35_ROMEND
 #define input_ports_meteorfp input_ports_st
 CORE_CLONEDEFNV(meteorfp,meteor,"Meteor (Free Play)",1979,"Stern",by35_mST200,0)
+
 /*--------------------------------
 / Meteor (7-digit conversion)
 /-------------------------------*/
@@ -325,9 +326,9 @@ CORE_CLONEDEFNV(meteorc,meteor,"Meteor (7-digit conversion Free Play)",2003,"Ste
 
 INITGAME(meteord,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteord,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
-                          "cpu_u5.716",CRC(a0ac4dac) SHA1(05943374cdc9d67a20a00c62213e04f8f72c772c),
-                          "cpu_u2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
-                          "cpu_u6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
+                          "cpu_u5_d10.716",CRC(a0ac4dac) SHA1(05943374cdc9d67a20a00c62213e04f8f72c772c),
+                          "fp10met2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
+                          "fp10met6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
 BY35_ROMEND
 #define input_ports_meteord input_ports_meteor
 CORE_CLONEDEFNV(meteord,meteor,"Meteor (/10 Scoring)",2005,"Stern / Oliver",by35_mST200,0)
@@ -450,7 +451,7 @@ CORE_CLONEDEFNV(cheetafp,cheetah,"Cheetah (Free Play)",1980,"Stern",by35_mST200,
 
 INITGAME(cheetah1,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetah1,"cpu_u1.716",CRC(6a845d94) SHA1(c272d5895edf2270f5f06fc33345bb4911abbee4),
-                           "cpu_u5.716",CRC(fb7e0400) SHA1(81443e93e68d8dfecc3a33d61a1a39e6e9ea34ca),
+                           "bgcpu_u5.716",CRC(fb7e0400) SHA1(81443e93e68d8dfecc3a33d61a1a39e6e9ea34ca),
                            "cpu_u2.716",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
                            "cpu_u6.716",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
@@ -458,10 +459,10 @@ BY35_ROMEND
 CORE_CLONEDEFNV(cheetah1,cheetah,"Cheetah (Bonus shot 1/game)",1980,"Stern",by35_mST200,0)
 
 INITGAME(cheetah2,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(cheetah2,"cpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
-                           "cpu_u5.716",CRC(d4e4b50d) SHA1(c59f465ade7512d129a0e60519ec7066db2cbde9),
+ST200_ROMSTART8888(cheetah2,"bbcpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
+                           "bbcpu_u5.716",CRC(d4e4b50d) SHA1(c59f465ade7512d129a0e60519ec7066db2cbde9),
                            "cpu_u2.716",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
-                           "cpu_u6.716",CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
+                           "bbcpu_u6.716",CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
 BY35_ROMEND
 #define input_ports_cheetah2 input_ports_st
 CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Bonus shot 1/ball)",1980,"Stern",by35_mST200,0)
@@ -753,7 +754,7 @@ INITGAME(dragfisb,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(dragfisb,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a3300107605db26d474ecfc3101),
                             "cpu_u5.716",CRC(1783269a) SHA1(75151b79844d26d9e8ecf00dec96643ee2fedc5b),
                             "cpu_u2.716",CRC(9ac8292b) SHA1(99ad3ad6e1d1b19695ce1b5b76f6bd85c9c6530d),
-                            "cpu_u6.716",CRC(7e8db47b) SHA1(4a42636c1baf39072bbe123855c9cc5f20ca6888))
+                            "bcpu_u6.716",CRC(7e8db47b) SHA1(4a42636c1baf39072bbe123855c9cc5f20ca6888))
 BY35_ROMEND
 #define input_ports_dragfisb input_ports_st
 CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (Bootleg)",1982,"Stern",by35_mST200,0)
