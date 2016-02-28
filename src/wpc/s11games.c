@@ -212,8 +212,8 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
 S11_ROMEND
 #define input_ports_pb input_ports_s11
 
-S11_ROMSTART48(pb,l5h,"pbot_u26.l5", CRC(511d9f9e) SHA1(4906fcc9de4c34c991cae6ccb266a077cc5ce0cd),
-                     "pbot_u27.l5", CRC(0e0af3f8) SHA1(b91eaf3f531a26a6641de90b377394983ab3d561))
+S11_ROMSTART48(pb,l5h,"pbot_u26_svm.l5", CRC(511d9f9e) SHA1(4906fcc9de4c34c991cae6ccb266a077cc5ce0cd),
+                     "pbot_u27_svm.l5", CRC(0e0af3f8) SHA1(b91eaf3f531a26a6641de90b377394983ab3d561))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
 S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc45bf77c12b69228),
@@ -253,7 +253,7 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
 S11_ROMEND
 
 CORE_GAMEDEF(pb, l5, "Pin-Bot (L-5)", 1986, "Williams", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,l5h,l5, "Pin-Bot (L-5, Free Play / solar value mod)", 2012, "Francis", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l5h,l5, "Pin-Bot (L-5, Free Play / Solar Value Mod)", 2012, "Francis", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l3,l5, "Pin-Bot (L-3)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l2,l5, "Pin-Bot (L-2)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l1,l5, "Pin-Bot (L-1)", 1986, "Williams", s11_mS11XSL,0)
@@ -576,8 +576,8 @@ S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e6
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 
-S11_ROMSTART48(esha,ma3,"eshk_u26.l3", CRC(7b7b1a8a) SHA1(8c1d5e4e0b4217055ad9e1490ff3dba52ef013f4),
-                        "eshk_u27.l3", CRC(6197c56c) SHA1(338438e8e4c9a7790977dc8e394f6f032516f755))
+S11_ROMSTART48(esha,ma3,"eshk_u26.ma3", CRC(7b7b1a8a) SHA1(8c1d5e4e0b4217055ad9e1490ff3dba52ef013f4),
+                        "eshk_u27.ma3", CRC(6197c56c) SHA1(338438e8e4c9a7790977dc8e394f6f032516f755))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
                         "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
 S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e60e978b84775e16c64e),
