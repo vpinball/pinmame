@@ -136,7 +136,7 @@ INDER_ROMEND
 CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
-/ 250 CC (1992)
+/ 250 c.c. (1992)
 /-------------------------------------------------------------------*/
 INITGAME(ind250cc, inderDisp7a, 0, 0,0,0,0,0)
 INDER_ROMSTART1(ind250cc,"0-250cc.bin", CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
@@ -146,7 +146,7 @@ INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bc
 						"d-250cc.bin", CRC(a0940387) SHA1(0e06483e3e823bf4673d8e0bd120b0a6b802035d),
 						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
 INDER_ROMEND
-CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS1,0)
+CORE_GAMEDEFNV(ind250cc,"250 c.c.",1992,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Metal Man (1992)
