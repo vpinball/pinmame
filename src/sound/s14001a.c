@@ -108,7 +108,7 @@ and off as it normally does during speech). Once START has gone low-high-low, th
 #include <math.h>
 #include "driver.h"
 #include "sndintrf.h"
-#include "s14001a_new.h"
+#include "s14001a.h"
 #include "streams.h"
 
 #define BOOL int
