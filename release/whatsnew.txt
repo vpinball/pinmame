@@ -3,6 +3,7 @@ Version 2.7 (X X, 2016) - ""
 
 *** CORE/CPU ***
 64bit compilation supported
+new S14001A sound core for old Sterns
 
 *** ROM SUPPORT *** Thanks to Inkochnito
 New:
