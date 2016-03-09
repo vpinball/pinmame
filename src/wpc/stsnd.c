@@ -5,6 +5,9 @@
 #include "sndbrd.h"
 #include "stsnd.h"
 #include "math.h"
+
+#define S14001_CLOCK (25e5) //!!?
+
 /*----------------------------------------
 / Stern Sound System
 / 3 different boards:
@@ -452,10 +455,11 @@ static WRITE_HANDLER(st300_ctrl_w) {
  	logerror("st300_CTRL_W xxxx data %02x  \n", data);
 	if (data & 0x80) /* VSU-1000 control write */
 	{
-  		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, (data & 0x38)>>3);
+		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
 		/* volume and frequency control goes here */
-		S14001A_set_volume(7-((data & 0x38)>>3));
-		S14001A_set_rate(data & 0x07);
+		S14001A_set_volume(15-((data >> 3) & 0xf));
+		UINT8 clock_divisor = 16 - (data & 0x07);
+		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
 	}
 	else if (data & 0x40)
 	{
