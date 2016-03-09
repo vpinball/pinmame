@@ -217,14 +217,14 @@ int s14001a_sh_start(const struct MachineSound *msound)
 
 	//!! m_stream = machine().sound().stream_alloc(*this, 0, 1, clock() ? clock() : machine().sample_rate());
 #ifdef PINMAME
-	stream = stream_init("S14001A", 100, 34700, 0, s14001a_update); //!! 19.5kHz to 34.7kHz?
+	stream = stream_init("S14001A", 100, 19000, 0, s14001a_update); //!! 19.5kHz to 34.7kHz?
 #else
 	stream = stream_init("S14001A", 100, 44100, 0, s14001a_update);
 #endif
 	if (stream == -1)
 		return 1;
 
-	VSU1000_amp = 7;
+	VSU1000_amp = 15;
 
 	// resolve callbacks
 	//m_ext_read_handler.resolve();
@@ -331,7 +331,7 @@ static void s14001a_update(int ch, INT16 *buffer, int length)
 	{
 		Clock();
 		sample = m_uOutputP2 - 7; // range -7..8
-		buffer[i] = (INT16)(sample * (0xf00 * (21 + 2 * VSU1000_amp) / 35));
+		buffer[i] = (INT16)(sample * 0xf00 * VSU1000_amp / 15);
 	}
 }
 
@@ -376,14 +376,14 @@ void S14001A_rst_0_w(int data)
 void S14001A_set_rate(int newrate)
 {
 #ifdef PINMAME
-	static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
+	//static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
 #endif
 	if (stream != -1)
 		stream_update(stream, 0);
 #ifdef PINMAME
-	if (newrate < 0) newrate = 0;
-	else if (newrate > 7) newrate = 7;
-	stream_set_sample_rate(stream, rates[newrate]);
+	//if (newrate < 0) newrate = 0;
+	//else if (newrate > 7) newrate = 7;
+	stream_set_sample_rate(stream, newrate/*rates[newrate]*/);
 #else
 	VSU1000_freq = newrate;
 #endif
@@ -395,7 +395,7 @@ void S14001A_set_volume(int volume)
 		stream_update(stream, 0);
 #ifdef PINMAME
 	if (volume < 0) volume = 0;
-	else if (volume > 7) volume = 7;
+	else if (volume > 15) volume = 15;
 #endif
 	VSU1000_amp = volume;
 }
