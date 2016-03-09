@@ -117,6 +117,7 @@ and off as it normally does during speech). Once START has gone low-high-low, th
 
 UINT8 *m_SpeechRom;
 int stream;
+int VSU1000_amp;
 
 //devcb_write_line m_bsy_handler;
 //devcb_read8 m_ext_read_handler;
@@ -223,6 +224,8 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	if (stream == -1)
 		return 1;
 
+	VSU1000_amp = 7;
+
 	// resolve callbacks
 	//m_ext_read_handler.resolve();
 	//m_bsy_handler.resolve();
@@ -323,11 +326,12 @@ void s14001a_sh_stop(void)
 static void s14001a_update(int ch, INT16 *buffer, int length)
 {
 	int i;
+	int sample;
 	for (i = 0; i < length; i++)
 	{
 		Clock();
-		INT16 sample = m_uOutputP2 - 7; // range -7..8
-		buffer[i] = sample * 0xf00;
+		sample = m_uOutputP2 - 7; // range -7..8
+		buffer[i] = (INT16)(sample * (0xf00 * (21 + 2 * VSU1000_amp) / 35));
 	}
 }
 
@@ -387,7 +391,13 @@ void S14001A_set_rate(int newrate)
 
 void S14001A_set_volume(int volume)
 {
-	//!! always 15?!
+	if (stream != -1)
+		stream_update(stream, 0);
+#ifdef PINMAME
+	if (volume < 0) volume = 0;
+	else if (volume > 7) volume = 7;
+#endif
+	VSU1000_amp = volume;
 }
 
 /**************************************************************************
