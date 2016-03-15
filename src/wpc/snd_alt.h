@@ -518,10 +518,12 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
+                        else
+                        {
+                            BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-						BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-						BASS_ChannelPlay(jingle_stream, 0);
+                            BASS_ChannelPlay(jingle_stream, 0);
+                        }
 					}
 
 					if (strstr(psd.files_with_subpath[idx], path_music) != 0)
@@ -544,11 +546,13 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
+                        else
+                        {
+                            music_vol = psd.gain[idx];
+                            BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-						music_vol = psd.gain[idx];
-						BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-						BASS_ChannelPlay(music_stream, 0);
+                            BASS_ChannelPlay(music_stream, 0);
+                        }
 					}
 
 					if ((strstr(psd.files_with_subpath[idx], path_voice) != 0) || (strstr(psd.files_with_subpath[idx], path_sfx) != 0))
@@ -602,10 +606,12 @@ void alt_sound_handle(int boardNo, int cmd)
 							{
 								//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 							}
+                            else
+                            {
+                                BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-							BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-							BASS_ChannelPlay(voice_stream[voice_idx], 0);
+                                BASS_ChannelPlay(voice_stream[voice_idx], 0);
+                            }
 						}
 					}
 				}
