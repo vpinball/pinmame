@@ -398,8 +398,6 @@ static void check_irqs(void)
 
 void adsp2100_set_irq_line(int irqline, int state)
 {
-	if (irqline < 5)
-	{
 		/* update the latched state */
 		if (state != CLEAR_LINE && adsp2100.irq_state[irqline] == CLEAR_LINE)
 	    	adsp2100.irq_latch[irqline] = 1;
@@ -410,7 +408,6 @@ void adsp2100_set_irq_line(int irqline, int state)
 		/* check for IRQs */
 	    if (state != CLEAR_LINE)
 	    	check_irqs();
-	}
 }
 
 
@@ -504,7 +501,7 @@ void adsp2100_reset(void *param)
 	/* reset status registers */
 	adsp2100.astat_clear = ~(CFLAG | VFLAG | NFLAG | ZFLAG);
 	adsp2100.mstat = 0;
-	adsp2100.sstat = 0;
+	adsp2100.sstat = 0x55;
 	adsp2100.idle = 0;
 
 	/* reset stacks */

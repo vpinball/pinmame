@@ -521,7 +521,7 @@ static void PREFIX(rep)(int flagval)
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
 			dst = GetMemW(ES, I.regs.w[DI]);
 			src = GetMemW(DS, I.regs.w[SI]);
-		    SUBB(src,dst); /* opposite of the usual convention */
+		    SUBW(src,dst); /* opposite of the usual convention */
 			I.regs.w[DI] += 2 * I.DirVal;
 			I.regs.w[SI] += 2 * I.DirVal;
 			ICOUNT -= cycles.rep_cmps16_count;

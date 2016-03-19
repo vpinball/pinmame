@@ -169,13 +169,13 @@ static PAIR ea;         /* effective address */
 #define EA	ea.w.l
 #define EAD ea.d
 
-#define CHANGE_PC change_pc16(PCD)
+#define CHANGE_PC change_pc(PCD)
 #if 0
 #define CHANGE_PC	{			\
 	if( m6809_slapstic )		\
 		cpu_setOPbase16(PCD);	\
 	else						\
-		change_pc16(PCD);		\
+		change_pc(PCD);		\
 	}
 #endif
 

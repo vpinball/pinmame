@@ -69,7 +69,7 @@ extern	MHELE	*cur_mrhard;
 extern	UINT8	*RAM;
 #endif
 
-#define CHANGE_PC change_pc16(PCD)
+#define CHANGE_PC change_pc(PCD)
 
 /***************************************************************
  *	RDOP	read an opcode
@@ -87,9 +87,9 @@ extern	UINT8	*RAM;
 #if FAST_MEMORY
 #define RDMEM(addr) 											\
 	((cur_mrhard[(addr) >> (ABITS2_16 + ABITS_MIN_16)]) ?		\
-		cpu_readmem16(addr) : RAM[addr])
+		program_read_byte_8(addr) : RAM[addr])
 #else
-#define RDMEM(addr) cpu_readmem16(addr)
+#define RDMEM(addr) program_read_byte_8(addr)
 #endif
 
 /***************************************************************
@@ -98,11 +98,11 @@ extern	UINT8	*RAM;
 #if FAST_MEMORY
 #define WRMEM(addr,data)										\
 	if (cur_mwhard[(addr) >> (ABITS2_16 + ABITS_MIN_16)])		\
-		cpu_writemem16(addr,data);								\
+		program_write_byte_8(addr,data);								\
 	else														\
 		RAM[addr] = data
 #else
-#define WRMEM(addr,data) cpu_writemem16(addr,data)
+#define WRMEM(addr,data) program_write_byte_8(addr,data)
 #endif
 
 /***************************************************************

@@ -18,6 +18,7 @@
  *	 - This entire notice must remain in the source code.
  *
  *	 2003-05-26  Fixed PHP, PLP, PHA, PLA cycle counts. [SJ]
+ *	 2004-04-30  Fixed STX (abs) cycle count. [SJ]
  *
  *****************************************************************************/
 
@@ -176,10 +177,10 @@ OP(b7) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 OP(d7) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 OP(f7) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 
-OP(08) {		  m6502_ICount -= 3;		 PHP;		  } /* 2 PHP */
-OP(28) {		  m6502_ICount -= 4;		 PLP;		  } /* 2 PLP */
-OP(48) {		  m6502_ICount -= 3;		 PHA;		  } /* 2 PHA */
-OP(68) {		  m6502_ICount -= 4;		 PLA;		  } /* 2 PLA */
+OP(08) {		  m6502_ICount -= 3;		 PHP;		  } /* 3 PHP */
+OP(28) {		  m6502_ICount -= 4;		 PLP;		  } /* 4 PLP */
+OP(48) {		  m6502_ICount -= 3;		 PHA;		  } /* 3 PHA */
+OP(68) {		  m6502_ICount -= 4;		 PLA;		  } /* 4 PLA */
 OP(88) {		  m6502_ICount -= 2;		 DEY;		  } /* 2 DEY */
 OP(a8) {		  m6502_ICount -= 2;		 TAY;		  } /* 2 TAY */
 OP(c8) {		  m6502_ICount -= 2;		 INY;		  } /* 2 INY */
@@ -288,7 +289,7 @@ OP(0e) { int tmp; m6502_ICount -= 6; RD_ABS; ASL; WB_EA;  } /* 6 ASL ABS */
 OP(2e) { int tmp; m6502_ICount -= 6; RD_ABS; ROL; WB_EA;  } /* 6 ROL ABS */
 OP(4e) { int tmp; m6502_ICount -= 6; RD_ABS; LSR; WB_EA;  } /* 6 LSR ABS */
 OP(6e) { int tmp; m6502_ICount -= 6; RD_ABS; ROR; WB_EA;  } /* 6 ROR ABS */
-OP(8e) { int tmp; m6502_ICount -= 5;		 STX; WR_ABS; } /* 5 STX ABS */
+OP(8e) { int tmp; m6502_ICount -= 4;		 STX; WR_ABS; } /* 4 STX ABS */
 OP(ae) { int tmp; m6502_ICount -= 4; RD_ABS; LDX;		  } /* 4 LDX ABS */
 OP(ce) { int tmp; m6502_ICount -= 6; RD_ABS; DEC; WB_EA;  } /* 6 DEC ABS */
 OP(ee) { int tmp; m6502_ICount -= 6; RD_ABS; INC; WB_EA;  } /* 6 INC ABS */
