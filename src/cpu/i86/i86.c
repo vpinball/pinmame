@@ -26,16 +26,16 @@ static UINT8 i86_reg_layout[] =
 {
 	I86_AX, I86_BX, I86_DS, I86_ES, I86_SS, I86_FLAGS, I86_CS, I86_VECTOR, -1,
 	I86_CX, I86_DX, I86_SI, I86_DI, I86_SP, I86_BP, I86_IP,
-	I86_IRQ_STATE, I86_NMI_STATE, 0
+	0
 };
 
 /* Layout of the debugger windows x,y,w,h */
 static UINT8 i86_win_layout[] =
 {
-	0, 0, 80, 2,					   /* register window (top rows) */
-	0, 3, 34, 19,					   /* disassembler window (left colums) */
-	35, 3, 45, 9,					   /* memory #1 window (right, upper middle) */
-	35, 13, 45, 9,					   /* memory #2 window (right, lower middle) */
+	0, 0, 80, 3,					   /* register window (top rows) */
+	0, 4, 34, 18,					   /* disassembler window (left colums) */
+	35, 4, 45, 9,					   /* memory #1 window (right, upper middle) */
+	35, 13, 45, 8,					   /* memory #2 window (right, lower middle) */
 	0, 23, 80, 1,					   /* command line window (bottom rows) */
 };
 
@@ -126,7 +126,7 @@ static void i86_state_register(void)
 	state_save_register_int(   type, cpu, "EXTRA_CYCLES",	&I.extra_cycles);
 }
 
-void i86_init(void)
+static void i86_init(void)
 {
 	unsigned int i, j, c;
 	BREGS reg_name[8] = {AL, CL, DL, BL, AH, CH, DH, BH};
@@ -154,7 +154,7 @@ void i86_init(void)
 	i86_state_register();
 }
 
-void i86_reset(void *param)
+static void i86_reset(void *param)
 {
 	memset(&I, 0, sizeof (I));
 
@@ -163,10 +163,10 @@ void i86_reset(void *param)
 	I.pc = 0xffff0 & AMASK;
 	ExpandFlags(I.flags);
 
-	change_pc20(I.pc);
+	change_pc(I.pc);
 }
 
-void i86_exit(void)
+static void i86_exit(void)
 {
 	/* nothing to do ? */
 }
@@ -180,7 +180,7 @@ unsigned i86_get_context(void *dst)
 	return sizeof (i86_Regs);
 }
 
-void i86_set_context(void *src)
+static void i86_set_context(void *src)
 {
 	if (src)
 	{
@@ -189,7 +189,7 @@ void i86_set_context(void *src)
 		I.base[DS] = SegBase(DS);
 		I.base[ES] = SegBase(ES);
 		I.base[SS] = SegBase(SS);
-		change_pc20(I.pc);
+		change_pc(I.pc);
 	}
 }
 
@@ -452,7 +452,7 @@ const char *i88_info(void *context, int regnum)
 #include "instr186.c"
 #undef I186
 
-int i186_execute(int num_cycles)
+static int i186_execute(int num_cycles)
 {
 	/* copy over the cycle counts if they're not correct */
 	if (cycles.id != 80186)
@@ -586,11 +586,11 @@ static void v30_interrupt(unsigned int_num, BOOLEAN md_flag)
 	I.sregs[CS] = (WORD) dest_seg;
 	I.base[CS] = SegBase(CS);
 	I.pc = (I.base[CS] + dest_off) & AMASK;
-	change_pc20(I.pc);
+	change_pc(I.pc);
 /*	logerror("=%06x\n",activecpu_get_pc()); */
 }
 
-void v30_trap(void)
+static void v30_trap(void)
 {
 	(*v30_instruction[FETCHOP])();
 	v30_interrupt(1, 0);
@@ -602,13 +602,13 @@ void v30_trap(void)
 #include "instrv30.c"
 #undef V20
 
-void v30_reset(void *param)
+static void v30_reset(void *param)
 {
 	i86_reset(param);
 	SetMD(1);
 }
 
-int v30_execute(int num_cycles)
+static int v30_execute(int num_cycles)
 {
 	/* copy over the cycle counts if they're not correct */
 	if (cycles.id != 30)

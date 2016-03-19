@@ -173,7 +173,7 @@ int alumac(char *buffer, int dest, int op)
 /* execute instructions on this CPU until icount expires */
 unsigned dasm2100(char *buffer, unsigned pc)
 {
-	unsigned int op = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + (pc << 2)];
+	unsigned int op = cpu_readop32(pc << 2);
 	int temp;
 
 	switch ( ( op >> 16 ) & 0xff )

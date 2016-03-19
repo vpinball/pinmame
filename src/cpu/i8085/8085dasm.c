@@ -3,20 +3,42 @@
  *	 8085dasm.c
  *	 Portable I8085A disassembler
  *
- *	 Copyright (c) 1999 Juergen Buchmueller, all rights reserved.
- *	 Partially based on information out of Z80Em by Marcel De Kogel
+ *   Copyright (C) 1998,1999,2000 Juergen Buchmueller, all rights reserved.
+ *	 You can contact me at juergen@mame.net or pullmoll@stop1984.com
  *
- *	 - This source code is released as freeware for non-commercial purposes.
- *	 - You are free to use and redistribute this code in modified or
- *	   unmodified form, provided you list me in the credits.
- *	 - If you modify this source code, you must add a notice to each modified
- *	   source file that it has been changed.  If you're a nice person, you
- *	   will clearly mark each change too.  :)
- *	 - If you wish to use this for commercial purposes, please contact me at
- *	   pullmoll@t-online.de
- *	 - The author of this copywritten work reserves the right to change the
- *     terms of its usage and license at any time, including retroactively
- *   - This entire notice must remain in the source code.
+ *   - This source code is released as freeware for non-commercial purposes
+ *     as part of the M.A.M.E. (Multiple Arcade Machine Emulator) project.
+ *	   The licensing terms of MAME apply to this piece of code for the MAME
+ *	   project and derviative works, as defined by the MAME license. You
+ *	   may opt to make modifications, improvements or derivative works under
+ *	   that same conditions, and the MAME project may opt to keep
+ *	   modifications, improvements or derivatives under their terms exclusively.
+ *
+ *	 - Alternatively you can choose to apply the terms of the "GPL" (see
+ *     below) to this - and only this - piece of code or your derivative works.
+ *	   Note that in no case your choice can have any impact on any other
+ *	   source code of the MAME project, or binary, or executable, be it closely
+ *	   or losely related to this piece of code.
+ *
+ *	-  At your choice you are also free to remove either licensing terms from
+ *	   this file and continue to use it under only one of the two licenses. Do this
+ *	   if you think that licenses are not compatible (enough) for you, or if you
+ *	   consider either license 'too restrictive' or 'too free'.
+ *
+ *	-  GPL (GNU General Public License)
+ *	   This program is free software; you can redistribute it and/or
+ *	   modify it under the terms of the GNU General Public License
+ *	   as published by the Free Software Foundation; either version 2
+ *	   of the License, or (at your option) any later version.
+ *
+ *	   This program is distributed in the hope that it will be useful,
+ *	   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	   GNU General Public License for more details.
+ *
+ *	   You should have received a copy of the GNU General Public License
+ *	   along with this program; if not, write to the Free Software
+ *	   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  *****************************************************************************/
 
