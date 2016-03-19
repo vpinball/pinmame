@@ -126,7 +126,7 @@ static void i86_state_register(void)
 	state_save_register_int(   type, cpu, "EXTRA_CYCLES",	&I.extra_cycles);
 }
 
-static void i86_init(void)
+void i86_init(void)
 {
 	unsigned int i, j, c;
 	BREGS reg_name[8] = {AL, CL, DL, BL, AH, CH, DH, BH};
@@ -154,7 +154,7 @@ static void i86_init(void)
 	i86_state_register();
 }
 
-static void i86_reset(void *param)
+void i86_reset(void *param)
 {
 	memset(&I, 0, sizeof (I));
 
@@ -163,10 +163,10 @@ static void i86_reset(void *param)
 	I.pc = 0xffff0 & AMASK;
 	ExpandFlags(I.flags);
 
-	change_pc(I.pc);
+	change_pc16(I.pc);
 }
 
-static void i86_exit(void)
+void i86_exit(void)
 {
 	/* nothing to do ? */
 }
@@ -180,7 +180,7 @@ unsigned i86_get_context(void *dst)
 	return sizeof (i86_Regs);
 }
 
-static void i86_set_context(void *src)
+void i86_set_context(void *src)
 {
 	if (src)
 	{
@@ -189,7 +189,7 @@ static void i86_set_context(void *src)
 		I.base[DS] = SegBase(DS);
 		I.base[ES] = SegBase(ES);
 		I.base[SS] = SegBase(SS);
-		change_pc(I.pc);
+		change_pc16(I.pc);
 	}
 }
 
@@ -452,7 +452,7 @@ const char *i88_info(void *context, int regnum)
 #include "instr186.c"
 #undef I186
 
-static int i186_execute(int num_cycles)
+int i186_execute(int num_cycles)
 {
 	/* copy over the cycle counts if they're not correct */
 	if (cycles.id != 80186)
@@ -586,7 +586,7 @@ static void v30_interrupt(unsigned int_num, BOOLEAN md_flag)
 	I.sregs[CS] = (WORD) dest_seg;
 	I.base[CS] = SegBase(CS);
 	I.pc = (I.base[CS] + dest_off) & AMASK;
-	change_pc(I.pc);
+	change_pc16(I.pc);
 /*	logerror("=%06x\n",activecpu_get_pc()); */
 }
 

@@ -185,14 +185,14 @@ static void m6502_state_register(const char *type)
 	state_save_register_UINT8 (type, cpu, "so_state", &m6502.so_state, 1);
 }
 
-static void m6502_init(void)
+void m6502_init(void)
 {
 	m6502.subtype = SUBTYPE_6502;
 	m6502.insn = insn6502;
 	m6502_state_register("m6502");
 }
 
-static void m6502_reset(void *param)
+void m6502_reset(void *param)
 {
 	/* wipe out the rest of the m6502 structure */
 	/* read the reset vector into PC */
@@ -207,10 +207,10 @@ static void m6502_reset(void *param)
 	m6502.irq_state = 0;
 	m6502.nmi_state = 0;
 
-	change_pc(PCD);
+    change_pc16(PCD);
 }
 
-static void m6502_exit(void)
+void m6502_exit(void)
 {
 	/* nothing to do yet */
 }
@@ -222,12 +222,12 @@ unsigned m6502_get_context (void *dst)
 	return sizeof(m6502_Regs);
 }
 
-static void m6502_set_context (void *src)
+void m6502_set_context (void *src)
 {
 	if( src )
 	{
 		m6502 = *(m6502_Regs*)src;
-		change_pc(PCD);
+        change_pc16(PCD);
 	}
 }
 
@@ -306,16 +306,16 @@ INLINE void m6502_take_irq(void)
 		LOG(("M6502#%d takes IRQ ($%04x)\n", cpu_getactivecpu(), PCD));
 		/* call back the cpuintrf to let it clear the line */
 		if (m6502.irq_callback) (*m6502.irq_callback)(0);
-		change_pc(PCD);
+        change_pc16(PCD);
 	}
 	m6502.pending_irq = 0;
 }
 
-static int m6502_execute(int cycles)
+int m6502_execute(int cycles)
 {
 	m6502_ICount = cycles;
 
-	change_pc(PCD);
+    change_pc16(PCD);
 
 	do
 	{
@@ -367,7 +367,7 @@ static int m6502_execute(int cycles)
 	return cycles - m6502_ICount;
 }
 
-static void m6502_set_irq_line(int irqline, int state)
+void m6502_set_irq_line(int irqline, int state)
 {
 	if (irqline == IRQ_LINE_NMI)
 	{
@@ -385,7 +385,7 @@ static void m6502_set_irq_line(int irqline, int state)
 			PCL = RDMEM(EAD);
 			PCH = RDMEM(EAD+1);
 			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-			change_pc(PCD);
+			change_pc16(PCD);
 		}
 	}
 	else
@@ -659,7 +659,7 @@ void m65c02_init(void)
 	m6502_state_register("m65c02");
 }
 
-static void m65c02_reset (void *param)
+void m65c02_reset (void *param)
 {
 	m6502_reset(param);
 	P &=~F_D;
@@ -682,16 +682,16 @@ INLINE void m65c02_take_irq(void)
 		LOG(("M65c02#%d takes IRQ ($%04x)\n", cpu_getactivecpu(), PCD));
 		/* call back the cpuintrf to let it clear the line */
 		if (m6502.irq_callback) (*m6502.irq_callback)(0);
-		change_pc(PCD);
+        change_pc16(PCD);
 	}
 	m6502.pending_irq = 0;
 }
 
-static int m65c02_execute(int cycles)
+int m65c02_execute(int cycles)
 {
 	m6502_ICount = cycles;
 
-	change_pc(PCD);
+    change_pc16(PCD);
 
 	do
 	{
@@ -755,7 +755,7 @@ void m65c02_set_irq_line(int irqline, int state)
 			PCL = RDMEM(EAD);
 			PCH = RDMEM(EAD+1);
 			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-			change_pc(PCD);
+            change_pc16(PCD);
 		}
 	}
 	else
@@ -890,7 +890,7 @@ static void deco16_reset (void *param)
 	m6502.after_cli = 0;	/* pending IRQ and last insn cleared I */
 	m6502.irq_callback = NULL;
 
-	change_pc(PCD);
+    change_pc16(PCD);
 }
 
 INLINE void deco16_take_irq(void)
@@ -908,7 +908,7 @@ INLINE void deco16_take_irq(void)
 		LOG(("M6502#%d takes IRQ ($%04x)\n", cpu_getactivecpu(), PCD));
 		/* call back the cpuintrf to let it clear the line */
 		if (m6502.irq_callback) (*m6502.irq_callback)(0);
-		change_pc(PCD);
+        change_pc16(PCD);
 	}
 	m6502.pending_irq = 0;
 }
@@ -931,7 +931,7 @@ static void deco16_set_irq_line(int irqline, int state)
 			PCL = RDMEM(EAD+1);
 			PCH = RDMEM(EAD);
 			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-			change_pc(PCD);
+            change_pc16(PCD);
 		}
 	}
 	else
@@ -961,7 +961,7 @@ static int deco16_execute(int cycles)
 {
 	m6502_ICount = cycles;
 
-	change_pc(PCD);
+    change_pc16(PCD);
 
 	do
 	{

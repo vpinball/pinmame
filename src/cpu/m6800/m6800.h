@@ -270,13 +270,13 @@ unsigned nsc8105_dasm(char *buffer, unsigned pc);
 /****************************************************************************/
 /* Read a byte from given memory location									*/
 /****************************************************************************/
-/* ASG 971005 -- changed to program_read_byte_8/program_write_byte_8 */
-#define M6800_RDMEM(Addr) ((unsigned)program_read_byte_8(Addr))
+/* ASG 971005 -- changed to cpu_readmem16/cpu_writemem16 */
+#define M6800_RDMEM(Addr) ((unsigned)cpu_readmem16(Addr))
 
 /****************************************************************************/
 /* Write a byte to given memory location                                    */
 /****************************************************************************/
-#define M6800_WRMEM(Addr,Value) (program_write_byte_8(Addr,Value))
+#define M6800_WRMEM(Addr,Value) (cpu_writemem16(Addr,Value))
 
 /****************************************************************************/
 /* M6800_RDOP() is identical to M6800_RDMEM() except it is used for reading */
