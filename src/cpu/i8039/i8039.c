@@ -610,7 +610,7 @@ static s_opcode opcode_main[256]=
 /****************************************************************************
  * Initialize emulation
  ****************************************************************************/
-static void i8039_init (void)
+void i8039_init (void)
 {
 	int cpu = cpu_getactivecpu();
 
@@ -643,7 +643,7 @@ static void i8039_init (void)
 /****************************************************************************
  * Reset registers to their initial values
  ****************************************************************************/
-static void i8039_reset (void *param)
+void i8039_reset (void *param)
 {
 	R.PC.w.l = 0;
 	R.SP  = 0;
@@ -668,7 +668,7 @@ static void i8039_reset (void *param)
 /****************************************************************************
  * Shut down CPU emulation
  ****************************************************************************/
-static void i8039_exit (void)
+void i8039_exit (void)
 {
 	/* nothing to do ? */
 }
@@ -740,7 +740,7 @@ static int Timer_IRQ(void)
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
  ****************************************************************************/
-static int i8039_execute(int cycles)
+int i8039_execute(int cycles)
 {
 	unsigned opcode, T1;
 	int count;
@@ -847,7 +847,6 @@ unsigned i8039_get_reg (int regnum)
 		case I8039_SP: return R.SP;
 		case I8039_PSW: return R.PSW;
 		case I8039_A: return R.A;
-		case I8039_IRQ_STATE: return R.irq_state;
 		case I8039_TC: return R.timer;
 		case I8039_P1: return R.P1;
 		case I8039_P2: return R.P2;
@@ -884,7 +883,6 @@ void i8039_set_reg (int regnum, unsigned val)
 		case I8039_SP: R.SP = val; break;
 		case I8039_PSW: R.PSW = val; break;
 		case I8039_A: R.A = val; break;
-		case I8039_IRQ_STATE: i8039_set_irq_line( 0, val ); break;
 		case I8039_TC: R.timer = val; break;
 		case I8039_P1: R.P1 = val; break;
 		case I8039_P2: R.P2 = val; break;
@@ -949,7 +947,6 @@ const char *i8039_info(void *context, int regnum)
 		case CPU_INFO_REG+I8039_SP: sprintf(buffer[which], "SP:%02X", r->SP); break;
 		case CPU_INFO_REG+I8039_PSW: sprintf(buffer[which], "PSW:%02X", r->PSW); break;
 		case CPU_INFO_REG+I8039_A: sprintf(buffer[which], "A:%02X", r->A); break;
-		case CPU_INFO_REG+I8039_IRQ_STATE: sprintf(buffer[which], "IRQ:%X", r->irq_state); break;
 		case CPU_INFO_REG+I8039_TC: sprintf(buffer[which], "TC:%02X", r->timer); break;
 		case CPU_INFO_REG+I8039_P1: sprintf(buffer[which], "P1:%02X", r->P1); break;
 		case CPU_INFO_REG+I8039_P2: sprintf(buffer[which], "P2:%02X", r->P2); break;
@@ -1009,7 +1006,7 @@ READ_HANDLER(i8039_internal_r) {
 #if (HAS_I8035)
 /* Layout of the registers in the debugger */
 static UINT8 i8035_reg_layout[] = {
-	I8035_PC, I8035_SP, I8035_PSW, I8035_A, I8035_IRQ_STATE,    I8035_TC, I8035_P1, I8035_P2, -1,
+	I8035_PC, I8035_SP, I8035_PSW, I8035_A, I8035_TC, I8035_P1, I8035_P2, -1,
 	I8035_R0, I8035_R1, I8035_R2, I8035_R3, I8035_R4, I8035_R5, I8035_R6, I8035_R7, 0
 };
 

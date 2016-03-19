@@ -78,25 +78,25 @@ typedef enum { AH,AL,CH,CL,DH,DL,BH,BL,SPH,SPL,BPH,BPL,SIH,SIL,DIH,DIL } BREGS;
 
 #define DefaultBase(Seg) 		((seg_prefix && (Seg == DS || Seg == SS)) ? prefix_base : I.base[Seg])
 
-#define GetMemB(Seg,Off)		(program_read_byte_8((DefaultBase(Seg) + (Off)) & AMASK))
+#define GetMemB(Seg,Off)		(cpu_readmem20((DefaultBase(Seg) + (Off)) & AMASK))
 #define GetMemW(Seg,Off)		((WORD)GetMemB(Seg, Off) + (WORD)(GetMemB(Seg, (Off) + 1) << 8))
-#define PutMemB(Seg,Off,x)		program_write_byte_8((DefaultBase(Seg) + (Off)) & AMASK, (x))
+#define PutMemB(Seg,Off,x)		cpu_writemem20((DefaultBase(Seg) + (Off)) & AMASK, (x))
 #define PutMemW(Seg,Off,x)		{ PutMemB(Seg, Off, (x) & 0xff); PutMemB(Seg, (Off) + 1, ((x) >> 8) & 0xff); }
 
-#define PEEKBYTE(ea) 			(program_read_byte_8((ea) & AMASK))
-#define ReadByte(ea) 			(program_read_byte_8((ea) & AMASK))
-#define ReadWord(ea)			(program_read_byte_8((ea) & AMASK) + (program_read_byte_8(((ea) + 1) & AMASK) << 8))
-#define WriteByte(ea,val)		program_write_byte_8((ea) & AMASK, val);
-#define WriteWord(ea,val)		{ program_write_byte_8((ea) & AMASK, (val) & 0xff); program_write_byte_8(((ea) + 1) & AMASK, ((val) >> 8) & 0xff); }
+#define PEEKBYTE(ea) 			(cpu_readmem20((ea) & AMASK))
+#define ReadByte(ea) 			(cpu_readmem20((ea) & AMASK))
+#define ReadWord(ea)			(cpu_readmem20((ea) & AMASK) + (cpu_readmem20(((ea) + 1) & AMASK) << 8))
+#define WriteByte(ea,val)		cpu_writemem20((ea) & AMASK, val);
+#define WriteWord(ea,val)		{ cpu_writemem20((ea) & AMASK, (val) & 0xff); cpu_writemem20(((ea) + 1) & AMASK, ((val) >> 8) & 0xff); }
 
-#define read_port(port) 		io_read_byte_8(port)
-#define write_port(port,val) 	io_write_byte_8(port,val)
+#define read_port(port) 		cpu_readport16(port)
+#define write_port(port,val) 	cpu_writeport16(port,val)
 
 #define FETCH					(cpu_readop_arg(I.pc++))
 #define FETCHOP					(cpu_readop(I.pc++))
 #define PEEKOP(addr)			(cpu_readop(addr))
 #define FETCHWORD(var) 			{ var = cpu_readop_arg(I.pc); var += (cpu_readop_arg(I.pc + 1) << 8); I.pc += 2; }
-#define CHANGE_PC(addr)			change_pc(addr)
+#define CHANGE_PC(addr)			change_pc16(addr)
 #define PUSH(val)				{ I.regs.w[SP] -= 2; WriteWord(((I.base[SS] + I.regs.w[SP]) & AMASK), val); }
 #define POP(var)				{ var = ReadWord(((I.base[SS] + I.regs.w[SP]) & AMASK)); I.regs.w[SP] += 2; }
 
