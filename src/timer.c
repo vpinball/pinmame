@@ -413,6 +413,10 @@ void timer_adjust(mame_timer *which, double duration, int param, double period)
 	which->callback_param = param;
 	which->enabled = 1;
 
+	/* clamp negative times to 0 */
+	if (duration < 0.)
+		duration = 0.;
+
 	/* set the start and expire times */
 	which->start = time;
 	which->expire = time + duration;

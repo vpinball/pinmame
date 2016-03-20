@@ -2001,7 +2001,7 @@ static void PREFIX86(_pushf)(void)    /* Opcode 0x9c */
 {
 	ICOUNT -= cycles.pushf;
 #ifdef I286
-    PUSH( CompressFlags() | 0xc000 );
+    PUSH( CompressFlags() & ~0xf000 );
 #elif defined V20
     PUSH( CompressFlags() | 0xe000 );
 #else

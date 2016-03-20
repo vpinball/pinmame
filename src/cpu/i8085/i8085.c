@@ -480,8 +480,12 @@ INLINE void execute_one(int opcode)
 		case 0x30: //!! misses new port from MAME
 			if( I.cputype ) {
 						/* SIM	*/
-				if ((I.IM ^ I.AF.b.h) & 0x80)
-					if (I.sod_callback) (*I.sod_callback)(I.AF.b.h >> 7);
+				if (I.AF.b.h & 0x40) //SOE - only when bit 0x40 is set!
+				{
+					I.IM &=~IM_SOD;
+					if (I.AF.b.h & 0x80) I.IM |= IM_SOD; //is it needed ?
+					if (I.sod_callback) (*I.sod_callback)(I.AF.b.h >> 7); //SOD - data = bit 0x80
+				}
 //AT
 				//I.IM &= (IM_SID + IM_IE + IM_TRAP);
 				//I.IM |= (I.AF.b.h & ~(IM_SID + IM_SOD + IM_IE + IM_TRAP));
@@ -489,8 +493,6 @@ INLINE void execute_one(int opcode)
 				// overwrite RST5.5-7.5 interrupt masks only when bit 0x08 of the accumulator is set
 				if (I.AF.b.h & 0x08)
 					I.IM = (I.IM & ~(IM_M55+IM_M65+IM_M75)) | (I.AF.b.h & (IM_M55+IM_M65+IM_M75));
-//ZT
-				if (I.AF.b.h & 0x80) I.IM |= IM_SOD;
 			} else {
 						/* NOP undocumented */
 			}
@@ -1102,7 +1104,7 @@ INLINE void execute_one(int opcode)
 			M_PUSH(HL);
 			I.HL.d = I.XX.d;
 			break;
-		case 0xe4: 	/* CPE	nnnn */
+		case 0xe4: 	/* CPO	nnnn */
 			M_CALL( !(I.AF.b.l & PF) );
 			break;
 		case 0xe5: 	/* PUSH H */
@@ -1131,7 +1133,7 @@ INLINE void execute_one(int opcode)
 			I.DE.d = I.HL.d;
 			I.HL.d = I.XX.d;
 			break;
-		case 0xec: 	/* CPE	nnnn */
+		case 0xec: 	/* CPO	nnnn */
 			M_CALL( I.AF.b.l & PF );
 			break;
 		case 0xed:

@@ -690,7 +690,7 @@ static void arm7_core_reset(void *param)
 	SwitchMode(eARM7_MODE_SVC);
 	SET_CPSR(GET_CPSR | I_MASK | F_MASK);
 	R15 = 0;
-//change_pc32lew(R15);
+    //change_pc(R15);
 }
 
 //Execute used to be here.. moved to separate file (arm7exec.c) to be included by cpu cores separately

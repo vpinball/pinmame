@@ -697,7 +697,7 @@ int m6809_execute(int cycles)	/* NS 970908 */
             switch( m6809.ireg )
 			{
 			case 0x00: neg_di();   m6809_ICount-= 6; break;
-			case 0x01: illegal();  m6809_ICount-= 2; break;
+			case 0x01: neg_di();   m6809_ICount-= 6; break; /* undocumented */
 			case 0x02: illegal();  m6809_ICount-= 2; break;
 			case 0x03: com_di();   m6809_ICount-= 6; break;
 			case 0x04: lsr_di();   m6809_ICount-= 6; break;
