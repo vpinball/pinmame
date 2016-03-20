@@ -201,7 +201,7 @@ unsigned i86_get_reg(int regnum)
 		case I86_IP:		return I.pc - I.base[CS];
 		case REG_SP:		return I.base[SS] + I.regs.w[SP];
 		case I86_SP:		return I.regs.w[SP];
-		case I86_FLAGS: 	CompressFlags(); return I.flags;
+		case I86_FLAGS: 	I.flags = CompressFlags(); return I.flags;
 		case I86_AX:		return I.regs.w[AX];
 		case I86_CX:		return I.regs.w[CX];
 		case I86_DX:		return I.regs.w[DX];

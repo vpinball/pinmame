@@ -4821,7 +4821,7 @@ int YM2612Write(int n, int a,UINT8 v)
 			{
 			case 0x2a:	/* DAC data (YM2612) */
 				YM2612UpdateReq(n);
-				F2612->dacout = ((int)v - 0x80) << 8;	/* level unknown */
+				F2612->dacout = ((int)v - 0x80) << 7;	/* level unknown */
 				break;
 			case 0x2b:	/* DAC Sel  (YM2612) */
 				/* b7 = dac enable */
