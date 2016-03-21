@@ -297,7 +297,7 @@ void pinsound_exit()
 	}
 }
 
-void reinit_pinSound()
+void reinit_pinSound(void)
 {
 	const LPTSTR PinMAMESlotName = TEXT("\\\\.\\mailslot\\PinSoundPinMAME");
 	const LPTSTR PinSoundStudioSlotName = TEXT("\\\\.\\mailslot\\PinSoundStudio");

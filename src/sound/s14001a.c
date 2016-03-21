@@ -195,7 +195,7 @@ UINT32 m_uNControlWords;
 UINT32 m_uPrintLevel;
 
 UINT8 readmem(UINT16 offset, BOOL phase);
-BOOL Clock(); // called once to toggle external clock twice
+BOOL Clock(void); // called once to toggle external clock twice
 
 // emulator helper functions
 UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2);
@@ -410,7 +410,7 @@ UINT8 readmem(UINT16 offset, BOOL phase)
 	return /*((m_ext_read_handler.isnull()) ? */m_SpeechRom[offset /*& (m_SpeechRom.bytes() - 1)*/] /*: m_ext_read_handler(offset))*/;
 }
 
-BOOL Clock()
+BOOL Clock(void)
 {
 	// effectively toggles external clock twice, one cycle
 	// internal clock toggles on external clock transition from 0 to 1 so internal clock will always transition here

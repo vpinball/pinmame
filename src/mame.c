@@ -1798,12 +1798,13 @@ static int validitychecks(void)
 						post++;
 						c++;
 					}
+#ifndef PINMAME
 					if (pre > 8 || post > 4)
 					{
 						printf("%s: %s has >8.3 ROM name %s\n",drivers[i]->source_file,drivers[i]->name,ROM_GETNAME(romp));
 						error = 1;
 					}
-
+#endif
 					hash = ROM_GETHASHDATA(romp);
 					if (!hash_verify_string(hash))
 					{
