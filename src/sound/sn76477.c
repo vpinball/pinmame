@@ -27,9 +27,9 @@
 
 #include "driver.h"
 
-//#define VERBOSE 0
+#define VERBOSE 0
 
-#if defined(VERBOSE) && (VERBOSE >= 0)
+#if (VERBOSE >= 0)
 #define LOG(n,x) if( VERBOSE >= (n) ) logerror x
 #else
 #define LOG(n,x)
