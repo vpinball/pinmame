@@ -18,6 +18,7 @@ Inder Centaur (alternate version)
 Hyperball L-3
 Lethal Weapon 2.03
 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
+Taxi LU-1
 
 
 

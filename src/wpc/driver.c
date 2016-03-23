@@ -1979,6 +1979,7 @@ DRIVER(bnzai,t3)        //          10/11 W Banzai Run (L-3 Target sound fix)
 DRIVER(swrds,l1)        //S11-559:  06/88 W Swords of Fury (L-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury (L-2)
 DRIVER(taxi,p5)         //S11-553:  08/88 W Taxi (P-5)
+DRIVER(taxi,lu1)        //S11-553:  08/88 W Taxi (Marilyn LU-1)
 DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1) German
 DRIVER(taxi,l3)         //          08/88 W Taxi (Marilyn)
 DRIVER(taxi,l4)         //          08/88 W Taxi (Lola)
