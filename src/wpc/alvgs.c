@@ -220,9 +220,9 @@ static READ_HANDLER(alvgs_ctrl_r);
 /*Interfaces*/
 
 /* 12 Voice Style BSMT Chip */
-/* Schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips, so we use 3 */
+/* Schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips, so we use 0 */
 static struct BSMT2000interface alvgs_bsmt2000Int = {
-  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, 0, 3, 1
+  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, 0, 0, 1 // should be BSMT2000 mode 5, as it does not trigger ADPCM commands //!! does not trigger reset, thus cannot set BSMT2000 mode itself currently
 };
 
 /* Sound board */
