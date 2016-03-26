@@ -16,7 +16,7 @@
 		IO:      DMA for earlier games,
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
-		SOUND:	 TI76489 @ 2 or 4 MHz for Brave Team
+		SOUND:	 TI76489 @ 2 MHz for Brave Team
 				 AY8910 @ 2 MHz for Canasta86, 2x AY8910 on separate Z80 CPU for Lap By Lap,
 		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
@@ -131,7 +131,7 @@ static READ_HANDLER(sndcmd_r) {
 /--------------------------------------------------------*/
 struct SN76496interface INDER_ti76489Int = {
 	1,	/* total number of chips in the machine */
-	{ 2000000 },	/* base clock 2 MHz (or 4 MHz?) */
+	{ 2000000 },	/* base clock 2 MHz */
 	{ 75 }	/* volume */
 };
 static WRITE_HANDLER(ti76489_0_w)	{ SN76496_0_w(0, core_revbyte(data)); }

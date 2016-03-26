@@ -10,6 +10,10 @@
   layout is unknown. It can be set for either period or white noise; again,
   the details are unknown.
 
+  28/03/2005 : Sebastien Chevalier
+  Update th SN76496Write func, according to SN76489 doc found on SMSPower.
+   - On write with 0x80 set to 0, when LastRegister is other then TONE,
+   the function is similar than update with 0x80 set to 1
 ***************************************************************************/
 
 #include "driver.h"
@@ -46,7 +50,6 @@ struct SN76496
 {
 	int Channel;
 	int SampleRate;
-	unsigned int UpdateStep;
 	int VolTable[16];	/* volume table         */
 	int Register[8];	/* registers */
 	int LastRegister;	/* last register written */
@@ -84,8 +87,9 @@ static void SN76496Write(int chip,int data)
 			case 4:	/* tone 2 : frequency */
                 if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
                 //if ((R->Register[r] != 0) /*|| (!m_sega_style_psg)*/)
-					R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_sega_style_psg true/false?
+					R->Period[c] = STEP * R->Register[r]; //!! m_sega_style_psg true/false?
                     //else R->Period[c] = R->UpdateStep * 0x400;
+				if (R->Period[c] == 0) R->Period[c] = STEP;
 
 				if (r == 4)
 				{
@@ -111,7 +115,7 @@ static void SN76496Write(int chip,int data)
 					R->NoiseFB = (n & 4) ? FB_WNOISE : FB_PNOISE;
 					n &= 3;
 					/* N/512,N/1024,N/2048,Tone #3 output */
-					R->Period[3] = (n == 3) ? 2 * R->Period[2] : (R->UpdateStep << (5+n));
+					R->Period[3] = ((n&3) == 3) ? 2 * R->Period[2] : (STEP << (5+(n&3)));
 
 					/* reset noise shifter */
 					R->RNG = NG_PRESET;
@@ -132,14 +136,37 @@ static void SN76496Write(int chip,int data)
 			case 4:	/* tone 2 : frequency */
 				if ((data & 0x80) == 0) R->Register[r] = (R->Register[r] & 0x0f) | ((data & 0x3f) << 4);
                 //if ((R->Register[r] != 0) /*|| (!m_sega_style_psg)*/)
-				    R->Period[c] = R->UpdateStep * R->Register[r]; //!! m_sega_style_psg true/false?
+				    R->Period[c] = STEP * R->Register[r]; //!! m_sega_style_psg true/false?
                     //else R->Period[c] = R->UpdateStep * 0x400;
+				if (R->Period[c] == 0) R->Period[c] = STEP;
 
 				if (r == 4)
 				{
 					/* update noise shift frequency */
 					if ((R->Register[6] & 0x03) == 0x03)
 						R->Period[3] = 2 * R->Period[2];
+				}
+				break;
+			case 1:	/* tone 0 : volume */
+			case 3:	/* tone 1 : volume */
+			case 5:	/* tone 2 : volume */
+			case 7:	/* noise  : volume */
+				R->Volume[c] = R->VolTable[data & 0x0f];
+				R->Register[r] = (R->Register[r] & 0x3f0) | (data & 0x0f);
+				break;
+			case 6:	/* noise  : frequency, mode */
+				{
+					int n;
+					R->Register[r] = (R->Register[r] & 0x3f0) | (data & 0x0f);
+					n = R->Register[6];
+					R->NoiseFB = (n & 4) ? FB_WNOISE : FB_PNOISE;
+					n &= 3;
+					/* N/512,N/1024,N/2048,Tone #3 output */
+					R->Period[3] = ((n&3) == 3) ? 2 * R->Period[2] : (STEP << (5+(n&3)));
+
+					/* reset noise shifter */
+					R->RNG = NG_PRESET;
+					R->Output[3] = R->RNG & 1;
 				}
 				break;
 		}
@@ -244,24 +271,6 @@ static void SN76496Update(int chip,INT16 *buffer,int length)
 	}
 }
 
-
-
-static void SN76496_set_clock(int chip,int clock)
-{
-	struct SN76496 *R = &sn[chip];
-
-
-	/* the base clock for the tone generators is the chip clock divided by 16; */
-	/* for the noise generator, it is clock / 256. */
-	/* Here we calculate the number of steps which happen during one sample */
-	/* at the given sample rate. No. of events = sample rate / (clock/16). */
-	/* STEP is a multiplier used to turn the fraction into a fixed point */
-	/* number. */
-	R->UpdateStep = ((double)STEP * R->SampleRate * 16) / clock;
-}
-
-
-
 static void SN76496_set_gain(int chip,int gain)
 {
 	struct SN76496 *R = &sn[chip];
@@ -290,12 +299,13 @@ static void SN76496_set_gain(int chip,int gain)
 
 
 
-static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int volume,int sample_rate)
+static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int volume)
 {
 	int i;
 	struct SN76496 *R = &sn[chip];
 	char name[40];
 
+	int sample_rate = clock/16;
 
 	sprintf(name,"SN76496 #%d",chip);
 	R->Channel = stream_init(name,volume,sample_rate,chip,SN76496Update);
@@ -304,7 +314,6 @@ static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int
 		return 1;
 
 	R->SampleRate = sample_rate;
-	SN76496_set_clock(chip,clock);
 
 	for (i = 0;i < 4;i++) R->Volume[i] = 0;
 
@@ -318,7 +327,7 @@ static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int
 	for (i = 0;i < 4;i++)
 	{
 		R->Output[i] = 0;
-		R->Period[i] = R->Count[i] = R->UpdateStep;
+		R->Period[i] = R->Count[i] = STEP;
 	}
 	R->RNG = NG_PRESET;
 	R->Output[3] = R->RNG & 1;
@@ -336,7 +345,7 @@ int SN76496_sh_start(const struct MachineSound *msound)
 
 	for (chip = 0;chip < intf->num;chip++)
 	{
-		if (SN76496_init(msound,chip,intf->baseclock[chip],intf->volume[chip] & 0xff,Machine->sample_rate) != 0)
+		if (SN76496_init(msound,chip,intf->baseclock[chip],intf->volume[chip] & 0xff) != 0)
 			return 1;
 
 		SN76496_set_gain(chip,(intf->volume[chip] >> 8) & 0xff);
