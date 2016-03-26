@@ -5,7 +5,7 @@
  *
  *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian
  *
- *             - TODO: 1)Certain effects are missing (sound played when BSMT DMD animation comes on in stereo games) -> Is this still true?
+ *             - TODO: 1)Certain effects are missing (sound played when BSMT DMD animation comes on in stereo games)
  *             -       2)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but seem to still want to use Mode 1
  *             -       3)Remove DE Rom loading flag & fix in the drivers themselves.
  *             -       4)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
