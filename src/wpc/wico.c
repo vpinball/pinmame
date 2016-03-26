@@ -8,7 +8,7 @@
 			INT: IRQ @ ZC-speed for 1st CPU,
 			     NE555 chip for 2nd CPU
 		DISPLAY: 9-segment LCD
-		SOUND:	 SN76494 (76496-compatible?)
+		SOUND:	 SN76494 (76496-compatible)
  ************************************************************************************************/
 
 #include "driver.h"
@@ -141,7 +141,7 @@ static WRITE_HANDLER(io_w) {
       locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
       break;
     case 5: // sound
-      SN76496_0_w(0, data);
+      SN76494_0_w(0, data);
       break;
     case 6: // watchdog housekeeping cpu reset line
       if (data == 0xff) {
@@ -224,7 +224,7 @@ static MACHINE_RESET(WICO) {
   cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
 }
 
-struct SN76496interface WICO_sn76494Int = {
+struct SN76494interface WICO_sn76494Int = {
   1, /* total number of chips in the machine */
   { WICO_CLOCK_FREQ/8 }, /* base clock */
   { 75 } /* volume */
@@ -248,7 +248,7 @@ MACHINE_DRIVER_START(aftor)
   MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
   MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
-  MDRV_SOUND_ADD(SN76496, WICO_sn76494Int)
+  MDRV_SOUND_ADD(SN76494, WICO_sn76494Int)
 
 //  MDRV_TIMER_ADD(WICO_firq_command, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
