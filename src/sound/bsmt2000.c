@@ -10,6 +10,8 @@
  *             -       3)Remove DE Rom loading flag & fix in the drivers themselves.
  *             -       4)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
  *             -       5)Are the 6e and 70 commands in ADPCM handling correct like-is?
+ *             -       6)command 77 could be the sample rate/'pitch' for ADPCM
+ *             -       7)Monopoly and RCT do never set the left volume, thus a special hack is necessary
  **********************************************************************************************/
 
 #include <stdio.h>
@@ -102,6 +104,7 @@ struct BSMT2000Chip
 #ifdef PINMAME
     int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
 	int			shift_data;				/* Shift integer to apply to samples for changing volume - this is most likely done external to the bsmt chip in the real hardware */
+    UINT8       left_volume_set;        /* Monopoly, RCT do never set left volume although its supposed to be stereo */
 #endif
 };
 
@@ -229,7 +232,11 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
             UINT32 rate = voice->reg[REG_RATE];
             INT32 rvol = voice->reg[REG_RIGHTVOL];
-            INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
+            INT32 lvol = (chip->stereo
+#ifdef PINMAME
+                && chip->left_volume_set
+#endif
+                ) ? voice->reg[REG_LEFTVOL] : rvol;
             UINT16 pos = voice->reg[REG_CURRPOS];
             UINT16 frac = voice->fraction;
 
@@ -284,7 +291,11 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
   	{
         INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
         INT32 rvol = voice->reg[REG_RIGHTVOL];
-        INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
+        INT32 lvol = (chip->stereo
+#ifdef PINMAME
+            && chip->left_volume_set
+#endif
+            ) ? voice->reg[REG_LEFTVOL] : rvol;
         UINT32 pos = voice->reg[REG_CURRPOS];
         UINT32 frac = voice->fraction;
 
@@ -407,6 +418,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		//Capture other interface flags we need later
 		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
 		bsmt2000[i].shift_data = intf->shift_data;
+        bsmt2000[i].left_volume_set = 0;
 #else
 		vol[0] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
@@ -506,7 +518,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
         if (voice_index >= chip->voices)
             return;
 
-	    voice = &chip->voice[voice_index];
+        voice = &chip->voice[voice_index];
 
 #if LOG_COMMANDS
 	    logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, voice_index, regindex, data);
@@ -523,6 +535,9 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 				         ((voice->reg[REG_BANK] & 0x20)>>2);
 		    voice->reg[REG_BANK] = temp;
 	    }
+
+        if (regindex == REG_LEFTVOL)
+            chip->left_volume_set = 1;
 #endif
     }
     else if(chip->adpcm) /* update parameters for compressed voice */
@@ -530,6 +545,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 #if LOG_COMPRESSED_ONLY
         logerror("BSMT#%d write: %02x = %04X\n", chip - bsmt2000, offset, data);
 #endif
+
         voice = &chip->voice[ADPCM_VOICE];
  		switch (offset)
  		{
@@ -539,7 +555,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
                 LOG(("REG_LOOPEND=%04X\n", voice->reg[REG_LOOPEND]));
  				break;
 
-#ifdef PINMAME
+#if 0//def PINMAME // seems like some SEGA games use this as volume control for already playing ADPCM, others just set to 0
 			//STOP PLAYING LEFT/RIGHT CHANNELS?
 			case 0x6e:
 			case 0x70:
@@ -558,7 +574,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 					voice->reg[REG_BANK] = temp;
 				}
 #endif
-			break;
+    			break;
 
 			//RATE - USED AS A CONTROL TO TELL CHIP READY TO OUTPUT COMPRESSED DATA (VALUE = 1 FOR VALID DATA)
 			case 0x73:
@@ -571,9 +587,12 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 					chip->adpcm_current = 0;
 					chip->adpcm_delta_n = 10;
 				}
-			break;
+	    		break;
 
 			//RIGHT CHANNEL VOLUME
+#ifdef PINMAME
+            case 0x6e: // seems like some SEGA games use this as volume control for already playing ADPCM, others just set to 0
+#endif
 			case 0x74:
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
 				LOG(("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]));
@@ -587,16 +606,25 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 
 			//LEFT CHANNEL VOLUME
             case 0x76:
-#if 0//def PINMAME //!! seems like this was simply wrong before (78 instead of 76), but i could be wrong?
+#ifdef PINMAME // seems like this was simply wrong before (78 instead of 76), but games trigger this after setting the right channel volume (and NOT 76)!
             case 0x78:
+
+            case 0x70: // seems like some SEGA games use this as volume control for already playing ADPCM, others just set to 0
 #endif
                 if (chip->stereo)
                 {
+#ifdef PINMAME
+                    chip->left_volume_set = 1;
+#endif
                     COMBINE_DATA(&voice->reg[REG_LEFTVOL]);
                     LOG(("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]));
                 }
  				break;
- 		}
+
+            //for example MONOPOLY (and no other ADPCM commands it seems), STAR WARS, APOLLO13 trigger a lot of: 0x77 (data = 0)?
+            //for example ID4 uses 0x77 also with increasing/decreasing data input (1280 up to 32000), so maybe sample rate/'pitch' for ADPCM?
+            //for example BATMAN,ST25TH trigger sequence: mode 1 set, 0x7F,0x7E,0x7D,0x7C,0x7B,0x7A,..,0x6D, then mode 0 set but continue to set ADPCM commands and use reg mapping of mode 1
+        }
 	}
 }
 
