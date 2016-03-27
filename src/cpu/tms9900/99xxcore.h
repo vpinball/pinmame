@@ -577,7 +577,7 @@ static void reset_decrementer(void);
 		else if (addr < 0xfffa)
 		{
 			TMS99XX_ICOUNT -= I.memory_wait_states_byte;
-			return cpu_readmem16(addr);;
+			return cpu_readmem16(addr);
 		}
 		else if (addr < 0xfffc)
 		{

@@ -95,7 +95,6 @@ UINT16 RRF16( UINT32 mAddr )
 	PAIR result;
 	result.b.h = RM((mAddr-1)&0xffff);
 	result.b.l = RM(mAddr);
-//	return (result.b.h << 8) & result.b.l;
 	return result.w.l;
 }
 
@@ -105,10 +104,6 @@ void WRF16( UINT32 mAddr, PAIR p )
 	WM( (mAddr-1)&0xffff, p.b.h );
 	WM( mAddr, p.b.l );
 }
-
-//SJE: Not used
-//#define RPF(x)		tms7000_pf_r(x)
-//#define WPF(x,y)	tms7000_pf_w(x,y)
 
 #define IMMBYTE(b)	b = ((unsigned)cpu_readop_arg(pPC)); pPC++
 #define SIMMBYTE(b)	b = ((signed)cpu_readop_arg(pPC)); pPC++
@@ -244,7 +239,7 @@ void tms7000_reset(void *param)
 	tms7000.irq_state[ TMS7000_IRQ1_LINE ] = CLEAR_LINE;
 	tms7000.irq_state[ TMS7000_IRQ2_LINE ] = CLEAR_LINE;
 	tms7000.irq_state[ TMS7000_IRQ3_LINE ] = CLEAR_LINE;
-	
+
 	WM( 0x100 + 9, 0 );		/* Data direction regs are cleared */
 	WM( 0x100 + 11, 0 );
 	
@@ -262,9 +257,9 @@ void tms7000_reset(void *param)
 	pSP = 0x01;				/* Set stack pointer to r1 */
 	pSR = 0x00;				/* Clear status register (disabling interrupts */
 	WM( 0x100 + 0, 0 );		/* Write a zero to IOCNT0 */
-	
+
 	/* On TMS70x2 and TMS70Cx2 IOCNT1 is zero */
-	
+
 	WRA( tms7000.pc.b.h );	/* Write previous PC to A:B */
 	WRB( tms7000.pc.b.l );
 	pPC = RM16(0xfffe);		/* Load reset vector */
@@ -530,14 +525,10 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 	switch( offset )
 	{
 		case 0x00:	/* IOCNT0, Input/Ouput control */
-			temp1 = data & 0x2a;				/* Record which bits to clear */
-			//SJE - Must be a mistake..
-			//temp2 = tms7000.pf[0x03] & 0x2a;	/* Get copy of current bits */
-			temp2 = tms7000.pf[0x00] & 0x2a;	/* Get copy of current bits */		
-			temp3 = (~temp1) & temp2;			/* Clear the requested bits */
-			temp4 = temp3 | (data & (~0x2a) );	/* OR in the remaining data */
-			
-			tms7000.pf[0x00] = temp4;
+			temp1 = data & 0x2a;							/* Record which bits to clear */
+			temp2 = tms7000.pf[0x00] & 0x2a;				/* Get copy of current bits */
+			temp3 = (~temp1) & temp2;						/* Clear the requested bits */
+			tms7000.pf[0x00] = temp3 | (data & (~0x2a) );	/* OR in the remaining data */
 			break;
 
 		case 0x03:	/* T1CTL, timer 1 control */
@@ -557,24 +548,24 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 		case 0x04: /* Port A write */
 			/* Port A is read only so this is a NOP */
 			break;
-			
+
 		case 0x06: /* Port B write */
 			cpu_writeport16( TMS7000_PORTB, data );
 			tms7000.pf[ 0x06 ] = data;
 			break;
-		
+
 		case 0x08: /* Port C write */
 			temp1 = data & tms7000.pf[ 0x09 ];	/* Mask off input bits */
 			cpu_writeport16( TMS7000_PORTC, temp1 );
 			tms7000.pf[ 0x08 ] = temp1;
 			break;
-			
+
 		case 0x0a: /* Port D write */
 			temp1 = data & tms7000.pf[ 0x0b ];	/* Mask off input bits */
 			cpu_writeport16( TMS7000_PORTD, temp1 );
 			tms7000.pf[ 0x0a ] = temp1;
 			break;
-			
+
 		default:
 			/* Just stuff the other registers */
 			tms7000.pf[ offset ] = data;
@@ -589,7 +580,6 @@ READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 	
 	switch( offset )
 	{
-		//SJE: Why was this commented out?
 		case 0x00:	/* IOCNT0, Input/Ouput control */
 			result = tms7000.pf[0x00];
 			break;
@@ -614,31 +604,27 @@ READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 		case 0x04: /* Port A read */
 			result = cpu_readport16( TMS7000_PORTA );
 			break;
-			
-//SJE: Why was this commented out?
+
+
 		case 0x06: /* Port B read */
 			/* Port B is write only, return a previous written value */
 			result = tms7000.pf[ 0x06 ];
 			break;
-		
+
 		case 0x08: /* Port C read */
 			temp1 = tms7000.pf[ 0x08 ] & tms7000.pf[ 0x09 ];	/* Get previous output bits */
 			temp2 = cpu_readport16( TMS7000_PORTC );			/* Read port */
 			temp3 = temp2 & (~tms7000.pf[ 0x09 ]);				/* Mask off output bits */
-			temp4 = temp1 | temp3;								/* OR together */
-			
-			result = temp4;
+			result = temp1 | temp3;								/* OR together */
 			break;
-			
+
 		case 0x0a: /* Port D read */
 			temp1 = tms7000.pf[ 0x0a ] & tms7000.pf[ 0x0b ];	/* Get previous output bits */
 			temp2 = cpu_readport16( TMS7000_PORTD );			/* Read port */
 			temp3 = temp2 & (~tms7000.pf[ 0x0b ]);				/* Mask off output bits */
-			temp4 = temp1 | temp3;								/* OR together */
-			
-			result = temp4;
+			result = temp1 | temp3;								/* OR together */
 			break;
-			
+
 		default:
 			/* Just unstuff the other registers */
 			result = tms7000.pf[ offset ];
@@ -652,7 +638,7 @@ READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 static UINT16 bcd_add( UINT16 a, UINT16 b )
 {
 	UINT16	t1,t2,t3,t4,t5,t6;
-	
+
 	/* Sure it is a lot of code, but it works! */
 	t1 = a + 0x0666;
 	t2 = t1 + b;
@@ -666,7 +652,7 @@ static UINT16 bcd_add( UINT16 a, UINT16 b )
 static UINT16 bcd_tencomp( UINT16 a )
 {
 	UINT16	t1,t2,t3,t4,t5,t6;
-	
+
 	t1 = 0xffff - a;
 	t2 = -a;
 	t3 = t1 ^ 0x0001;
@@ -676,9 +662,13 @@ static UINT16 bcd_tencomp( UINT16 a )
 	return t2-t6;
 }
 
+/*
+    Compute difference a-b???
+*/
 static UINT16 bcd_sub( UINT16 a, UINT16 b)
 {
-	return bcd_tencomp(b) - bcd_tencomp(a);
+	//return bcd_tencomp(b) - bcd_tencomp(a);
+	return bcd_add(a, bcd_tencomp(b) & 0xff);
 }
 
 
