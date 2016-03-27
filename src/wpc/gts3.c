@@ -16,7 +16,7 @@
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
-#include "cpu/m6502/m65ce02.h"
+//#include "cpu/m6502/m65ce02.h"
 #include "machine/6522via.h"
 #include "core.h"
 #include "sndbrd.h"
