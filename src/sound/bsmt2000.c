@@ -362,8 +362,18 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
     /* reduce the overall gain */
     for (samp = 0; samp < length; samp++)
     {
-        ldest[samp] = (INT16)(left[samp] >> 9);
-        rdest[samp] = (INT16)(right[samp] >> 9);
+        INT32 l = (left[samp] >> 9);
+        INT32 r = (right[samp] >> 9);
+        if (l >= 32767)
+            l = 32767;
+        else if (l <= -32768)
+            l = -32768;
+        if (r >= 32767)
+            r = 32767;
+        else if (r <= -32768)
+            r = -32768;
+        ldest[samp] = (INT16)l;
+        rdest[samp] = (INT16)r;
     }
 }
 
