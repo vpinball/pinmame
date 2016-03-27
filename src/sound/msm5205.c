@@ -57,7 +57,7 @@
  */
 
 /* step size index shift table */
-static int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
+static const int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 
 /* lookup table for the precomputed difference */
 static int diff_lookup[49*16];
