@@ -429,7 +429,11 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #define SERIALPORT_IRQ    ((R_SCON & 0x03) && GET_ES)
 
 #if (HAS_I8052 || HAS_I8752)
+#ifdef PINMAME // otherwise no sound on spinball games
 #define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(SERIALPORT_IRQ) && !GET_TF2 && !GET_EXF2
+#else
+#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(SERIALPORT_IRQ) && !GET_ET2 //!GET_TF2 && !GET_EXF2
+#endif
 #else
 #define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(SERIALPORT_IRQ)
 #endif
@@ -1539,8 +1543,11 @@ INLINE UINT8 check_interrupts(void)
 	}
 #if (HAS_I8052 || HAS_I8752)
 	//Timer 2 overflow (Either Timer Overflow OR External Interrupt)
+#ifdef PINMAME // otherwise no sound on spinball games
 	if(!i8051.priority_request && (GET_TF2 || GET_EXF2) && (!i8051.int_vec || (i8051.int_vec && GET_PT2))) {
-		//Set vector & priority level request
+#else
+	if(!i8051.priority_request && GET_ET2 && (GET_TF2 || GET_EXF2) && (!i8051.int_vec || (i8051.int_vec && GET_PT2))) {
+#endif		//Set vector & priority level request
 		i8051.int_vec = V_TF2;
 		i8051.priority_request = GET_PT2;
 	}
@@ -2077,7 +2084,7 @@ INLINE void update_timer(int cyc)
 	//Update Timer 0
 	if(GET_TR0) {
 		//Determine Mode
-		int mode = GET_M0_0 + GET_M0_1;
+		int mode = (GET_M0_1<<1) | GET_M0_0;
 		int overflow;
 		UINT16 count = 0;
 		switch(mode) {
@@ -2131,6 +2138,33 @@ INLINE void update_timer(int cyc)
 				R_TL0 = count & 0xff;
 				break;
 			case 3:			//Split Timer
+                //Split Timer 1
+				overflow = 0xff;
+				count = R_TL0;
+				//Check for overflow
+                if(count+(cyc/12)>overflow) {
+					count = overflow-count;
+                    SET_TF0(1);
+                }
+				else
+					count+=(cyc/12);
+				//Update new values of the counter
+				R_TL0 = count & 0xff;
+
+                //Split Timer 2
+                if(GET_TR1) {
+				    overflow = 0xff;
+				    count = R_TH0;
+				    //Check for overflow
+                    if(count+(cyc/12)>overflow) {
+					    count = overflow-count;
+                        SET_TF1(1);
+                    }
+				    else
+                        count+=(cyc/12);
+				    //Update new values of the counter
+				    R_TH0 = count & 0xff;
+                }
 				break;
 		}
 	}
@@ -2138,7 +2172,7 @@ INLINE void update_timer(int cyc)
 	//Update Timer 1
 	if(GET_TR1) {
 		//Determine Mode
-		int mode = GET_M1_0 + GET_M1_1;
+		int mode = (GET_M1_1<<1) | GET_M1_0;
 		int overflow;
 		UINT16 count = 0;
 		switch(mode) {
@@ -2254,7 +2288,7 @@ INLINE void update_timer(int cyc)
 //NOTE: Enable Serial Port Interrupt bit is NOT required to send/receive data!
 INLINE void serial_transmit(UINT8 data)
 {
-	int mode = GET_SM0+GET_SM1;
+	int mode = (GET_SM0<<1) | GET_SM1;
 
 	//Flag that we're sending data
 	uart.sending = 1;
