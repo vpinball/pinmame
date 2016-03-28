@@ -3,8 +3,9 @@ Version 2.7 (X X, 2016) - ""
 
 *** CORE/CPU ***
 64bit compilation supported
-new S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
-improved BSMT2000 sound core for Sega, Alvin G. DMDs, Data East DMDs (Batman and newer), and Stern DMDs (up to Terminator 3)
+New S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
+Improved BSMT2000 sound core for Sega, Alvin G. DMDs, Data East DMDs (Batman and newer), and Stern DMDs (up to Terminator 3)
+Improved Brave Team sound core
 
 *** ROM SUPPORT *** Thanks to Inkochnito
 New:
