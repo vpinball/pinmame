@@ -543,19 +543,19 @@ void adsp2100_reset(void *param)
 	{
 		case CHIP_TYPE_ADSP2100:
 			adsp2100.pc = 4;
-		break;
+			break;
 
 		case CHIP_TYPE_ADSP2101:
 		case CHIP_TYPE_ADSP2105:
 		case CHIP_TYPE_ADSP2115:
 			adsp2100.pc = 0;
-		break;
+			break;
 
 		default:
 			logerror( "ADSP2100 core: Unknown chip type!. Defaulting to ADSP2100.\n" );
 			adsp2100.pc = 4;
 			chip_type = CHIP_TYPE_ADSP2100;
-		break;
+			break;
 	}
 
 	adsp2100.ppc = -1;
@@ -955,9 +955,9 @@ resume_from_speedup:
 				temp = adsp2100.mstat;
 				if (chip_type >= CHIP_TYPE_ADSP2101)
 				{
-				if (op & 0x000008) temp = (temp & ~MSTAT_GOMODE) | ((op << 5) & MSTAT_GOMODE);
-				if (op & 0x002000) temp = (temp & ~MSTAT_INTEGER) | ((op >> 8) & MSTAT_INTEGER);
-				if (op & 0x008000) temp = (temp & ~MSTAT_TIMER) | ((op >> 9) & MSTAT_TIMER);
+					if (op & 0x000008) temp = (temp & ~MSTAT_GOMODE) | ((op << 5) & MSTAT_GOMODE);
+					if (op & 0x002000) temp = (temp & ~MSTAT_INTEGER) | ((op >> 8) & MSTAT_INTEGER);
+					if (op & 0x008000) temp = (temp & ~MSTAT_TIMER) | ((op >> 9) & MSTAT_TIMER);
 				}
 				if (op & 0x000020) temp = (temp & ~MSTAT_BANK) | ((op >> 4) & MSTAT_BANK);
 				if (op & 0x000080) temp = (temp & ~MSTAT_REVERSE) | ((op >> 5) & MSTAT_REVERSE);
