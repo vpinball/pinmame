@@ -508,6 +508,20 @@ S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343b
 S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
                         "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
 S11_ROMEND
+S11_ROMSTART48(taxi, l5c,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
+                        "taxi_u27.l5c", CRC(15dab081) SHA1(7b6c195ed9588d09d7e8d046a260e25c384a4426))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
+S11_ROMSTART48(taxi, l5cm,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
+                        "taxi_u27.l5cm", CRC(4cf164bc) SHA1(26150540860667e6857ef426c0ac08fcd2073ce1))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
 S11_ROMSTART48(taxi, l3,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
                         "taxi_u27.l3", CRC(e2bfb6fa) SHA1(ba1bddffe4d4e8f04131dd6f5a0380765fbcdfc5))
 S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
@@ -538,6 +552,8 @@ S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f
 S11_ROMEND
 #define input_ports_taxi input_ports_s11
 CORE_GAMEDEF(taxi , l4, "Taxi (Lola) (L-4)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , l5c, l4, "Taxi (Lola) (L-5C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , l5cm, l4, "Taxi (Marilyn) (L-5C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marilyn) (L-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lu1, l4, "Taxi (Marilyn) (LU-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (L-1 German)", 1988, "Williams", s11_mS11BS,0)

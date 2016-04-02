@@ -482,6 +482,12 @@ WPCS_SOUNDROM888("dracsnd.u18",CRC(372ffb90) SHA1(89979670869c565d3ab86abbce462e
                  "dracsnd.u14",CRC(5137aaf5) SHA1(e6ee924e7e4718db0f7f315f2a6843e6f90afb41))
 WPC_ROMEND
 
+WPC_ROMSTART(drac,l2c,"dracu_l2c.rom",0x80000,CRC(77e9129c) SHA1(339614b5b1ccde7a9e083976c585f01639228bf6))
+WPCS_SOUNDROM888("dracsnd.u18",CRC(372ffb90) SHA1(89979670869c565d3ab86abbce462e2f935a566b),
+                 "dracsnd.u15",CRC(77b5abe2) SHA1(e5622ae9ae0c1a0be886a1e5dc25b5a42c00c2ae),
+                 "dracsnd.u14",CRC(5137aaf5) SHA1(e6ee924e7e4718db0f7f315f2a6843e6f90afb41))
+WPC_ROMEND
+
 WPC_ROMSTART(drac,d1,"dracu_d1.rom",0x80000,CRC(a45509fd) SHA1(e377faf8fc850bc0bd8d1ace6c8c3c7586d12dd4))
 WPCS_SOUNDROM888("dracsnd.u18",CRC(372ffb90) SHA1(89979670869c565d3ab86abbce462e2f935a566b),
                  "dracsnd.u15",CRC(77b5abe2) SHA1(e5622ae9ae0c1a0be886a1e5dc25b5a42c00c2ae),
@@ -504,6 +510,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(drac,l1,"Bram Stoker's Dracula (L-1)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(drac,l2c,l1,"Bram Stoker's Dracula (L-2C Competition MOD)",2016,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(drac,d1,l1,"Bram Stoker's Dracula (D-1 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(drac,p11,l1,"Bram Stoker's Dracula (P-11)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(drac,p12,l1,"Bram Stoker's Dracula (P-12 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)

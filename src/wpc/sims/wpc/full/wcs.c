@@ -393,6 +393,15 @@ DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45
                "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
                "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
 WPC_ROMEND
+WPC_ROMSTART(wcs,l3c,"wcup_l3c.rom",0x80000,CRC(a5f42019) SHA1(06977874272c3cfb14e0f0ef7e12f6cd5b607837))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WPC_ROMEND
 WPC_ROMSTART(wcs,d2,"wcup_dx2.rom",0x80000,CRC(ae5de4ab) SHA1(7ac2c56662ab57ea2c8bbc3b04104537eb4a7772))
 DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
                "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
@@ -481,6 +490,7 @@ DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45
 WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (LX-2)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,l3c,l2,"World Cup Soccer (LX-3C Competition MOD)",2016,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,la2,l2,"World Cup Soccer (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (DX-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (PA-2)",1994,"Bally",wpc_mSecurityS,0)
