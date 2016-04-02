@@ -7,20 +7,27 @@ New S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightnin
 Improved BSMT2000 sound core for Sega, Alvin G. DMDs, Data East DMDs (Batman and newer), and Stern DMDs (up to Terminator 3)
 Improved Brave Team sound core
 
-*** ROM SUPPORT *** Thanks to Inkochnito
+*** ROM SUPPORT *** Thanks to Inkochnito, Soren
 New:
 MAC: MAC Jungle (1995 version)
-Sleic: Bike Race (2-ball play)
+Sleic: Bike Race (2-ball play) (not working yet)
 Sonic: Hang-On
 Unknown: Wild Texas (Firepower II Modification)
 
 Clones:
+Bram Stoker's Dracula L-2C (competition MOD)
+Dr. Dude LA-3C (competition MOD)
 Hook 4.01p (4.01 with Prototype Sound)
 Inder Centaur (alternate version)
 Hyperball L-3
 Lethal Weapon 2.03
 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
 Taxi LU-1
+Taxi (Lola) L-5C (competition MOD)
+Taxi (Marilyn) L-5C (competition MOD)
+Theatre of Magic 1.5C (competition MOD)
+Tales of the Arabian Nights 1.5C (competition MOD)
+World Cup Soccer LX-3C (competition MOD)
 
 
 

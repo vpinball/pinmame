@@ -1721,6 +1721,9 @@ DRIVER(mt,130h)
 DRIVER(mt,140)
 DRIVER(mt,140h)         //S.A.M.: 10/14 Mustang Limited Edition - V1.4
 DRIVER(mt,140hb)        //S.A.M.: 10/14 Mustang Boss - V1.4
+DRIVER(mt,145)
+DRIVER(mt,145h)         //S.A.M.: 02/15 Mustang Limited Edition - V1.45
+DRIVER(mt,145hb)        //S.A.M.: 02/15 Mustang Boss - V1.45
 DRIVER(twd,105)         //S.A.M.: ??/14 Walking Dead, The - V1.05
 DRIVER(twd,111)         //S.A.M.: 10/14 Walking Dead, The - V1.11
 DRIVER(twd,111h)        //S.A.M.: 10/14 Walking Dead, The - V1.11 Limited Edition
@@ -1983,6 +1986,8 @@ DRIVER(taxi,lu1)        //S11-553:  08/88 W Taxi (Marilyn LU-1)
 DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1) German
 DRIVER(taxi,l3)         //          08/88 W Taxi (Marilyn)
 DRIVER(taxi,l4)         //          08/88 W Taxi (Lola)
+DRIVER(taxi,l5cm)       //          04/16 W Taxi (Marilyn L-5C)
+DRIVER(taxi,l5c)        //          04/16 W Taxi (Lola L-5C)
 DRIVER(jokrz,l3)        //S11-567:  12/88 W Jokerz! (L-3)
 DRIVER(jokrz,l6)        //          12/88 W Jokerz! (L-6)
 DRIVER(esha,pa1)        //S11-568:  02/89 W Earthshaker Prototype version
@@ -2048,6 +2053,7 @@ DRIVER(radcl,g1)        //          06/90 B Radical! (G-1)
 DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (domestic prototype)
 DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (P-6)
 DRIVER(dd,l2)           //          09/90 B Dr. Dude (L-2)
+DRIVER(dd,l3c)          //          04/16 B Dr. Dude (L-3C)
 DRIVER(bbnny,l2)        //S11-209:  12/90 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2) European
 //WPC
@@ -2204,6 +2210,7 @@ DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
 DRIVER(drac,d1)         //                  Bram Stoker's Dracula (D-1) LED Ghost Fix
+DRIVER(drac,l2c)        //          04/16 W Bram Stoker's Dracula (L-2C)
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
 DRIVER(tz,pa2)          //                  Twilight Zone (PA-2) LED Ghost Fix
 DRIVER(tz,p3)           //          04/93 B Twilight Zone (P-3)
@@ -2312,6 +2319,7 @@ DRIVER(tafg,la3)        //          10/94 B Addams Family Special Collectors Edi
 DRIVER(tafg,da3)        //                  Addams Family Special Collectors Edition, The (DA-3) LED Ghost Fix
 DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,d2)          //                  World Cup Soccer (Dx-2) LED Ghost Fix
+DRIVER(wcs,l3c)         //WPC-531:  06/16 B World Cup Soccer (Lx-3C)
 DRIVER(wcs,la2)         //WPC-531:  02/94 B World Cup Soccer (La-2)
 DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (Pa-2)
 DRIVER(wcs,p5)          //                  World Cup Soccer (Pa-5) LED Ghost Fix
@@ -2381,6 +2389,7 @@ DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
+DRIVER(tom,15c)         //          06/16 B Theatre of Magic (1.5C)
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)
@@ -2432,6 +2441,7 @@ DRIVER(totan,04)        //WPC-547:  05/96 W Tales of the Arabian Nights (0.4)
 DRIVER(totan,12)        //          06/96 W Tales of the Arabian Nights (1.2)
 DRIVER(totan,13)        //          07/96 W Tales of the Arabian Nights (1.3)
 DRIVER(totan,14)        //          10/96 W Tales of the Arabian Nights (1.4)
+DRIVER(totan,15c)       //          04/16 W Tales of the Arabian Nights (1.5C)
 DRIVER(ss,01)           //WPC-548:  09/96 B Scared Stiff (D0.1R with sound rev.25)
 DRIVER(ss,01b)          //          09/96 B Scared Stiff (D0.1R with sound rev.25 Coin Play)
 DRIVER(ss,03)           //          09/96 B Scared Stiff (0.3)
