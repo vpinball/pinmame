@@ -206,6 +206,10 @@ void win_ddraw_wait_vsync(void)
 //	win_ddraw_init
 //============================================================
 
+#ifdef VPINMAME
+int get_ShowVideoWindow();
+#endif
+
 int win_ddraw_init(int width, int height, int depth, int attributes, const struct win_effect_data *effect)
 {
 #ifndef DISABLE_DX7
@@ -291,7 +295,11 @@ cant_create_ddraw:
 	MessageBox(NULL, "Direct Draw not supported", NULL, MB_OK);
 #endif
 
-	return 1;
+	return
+#ifdef VPINMAME
+		!get_ShowVideoWindow() ? 0 : // in case the window is hidden anyway, ignore the error
+#endif
+		1;
 }
 
 
