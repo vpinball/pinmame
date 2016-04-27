@@ -4,7 +4,7 @@
 #include "driver.h"
 
 #define PINDMD2 // define for PinDMD2 support, undefine for PinDMD1 support, latter needs the separate ftd2xx.dll then!
-//#define PINDMD3 // define for PinDMD3 support (needs PinDMD.dll then), undefine for PinDMD1 support, latter needs the separate ftd2xx.dll then!
+//#define PINDMD3 // define for PinDMD3 support (needs PinDMD.dll then and linking to PinDMD.lib), undefine for PinDMD1 support, latter needs the separate ftd2xx.dll then!
 
 #ifdef PINDMD3
 
