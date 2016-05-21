@@ -250,22 +250,9 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 #if ENABLE_INTERPOLATION
                 INT32 val1 = base[pos];
                 INT32 val2 = base[pos+1];
-#if 0//def PINMAME // not needed anymore it seems due to improved emulation
-                //Shift ROM data if interface specifies this
-                if (chip->shift_data)
-                {
-                    val1 = val1 << chip->shift_data;
-                    val2 = val2 << chip->shift_data;
-                }
-#endif
                 sample = (val1 * (0x800 - frac) + (val2 * frac)) >> 11;
 #else
                 INT32 val1 = base[pos];
-#if 0//def PINMAME // not needed anymore it seems due to improved emulation
-                //Shift ROM data if interface specifies this
-                if (chip->shift_data)
-                    val1 = val1 << chip->shift_data;
-#endif
                 sample = val1;
 #endif
 				/* apply volumes and add */
@@ -360,11 +347,17 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
             voice->reg[REG_RATE] = 0;
     }
 
+#if 0//def PINMAME // different shifts to 'simulate' external amplifiers and other hardware
+    INT32 bsmt_shift_data = 9 - chip->shift_data;
+#else
+    #define bsmt_shift_data 9
+#endif
+
     /* reduce the overall gain */
     for (samp = 0; samp < length; samp++)
     {
-        INT32 l = (left[samp] >> 9);
-        INT32 r = (right[samp] >> 9);
+        INT32 l = (left[samp] >> bsmt_shift_data);
+        INT32 r = (right[samp] >> bsmt_shift_data);
         if (l >= 32767)
             l = 32767;
         else if (l <= -32768)
