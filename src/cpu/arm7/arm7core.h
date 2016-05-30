@@ -332,7 +332,6 @@ enum
 #define MODE_FLAG				0xF									//Mode bits are 4:0 of CPSR, but we ignore bit 4.
 #define GET_MODE				(GET_CPSR & MODE_FLAG)				
 #define SIGN_BIT				((data32_t)(1<<31))
-#define SIGN_BITS_DIFFER(a,b)	(((a)^(b)) >> 31)
 
 // These cover macros are in case these ever need to be CPU implementation specific.  Currently they're
 // not, so we define these for all implementations here.

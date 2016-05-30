@@ -380,6 +380,12 @@ WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
+WPC_ROMSTART(cftbl,l5c,"creat_l5c.rom",0x80000,CRC(9cb6f4b3) SHA1(310b125935694d9c5ef040340e1608006e27a214))
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
+WPC_ROMEND
+
 WPC_ROMSTART(cftbl,d4,"crea_ld4.rom",0x80000,CRC(a88d2712) SHA1(bb9b100f8dbd546b2cd2a48b658fe0ee7f435c30))
 WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
@@ -408,6 +414,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l5c,l4,"Creature from the Black Lagoon (L-5C Competition MOD)",2016,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3, SP-1)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3, SP-1 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)

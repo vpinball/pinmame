@@ -349,7 +349,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 639450, 75, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 640000, 75, sns_5220Irq, sns_5220Rdy }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579545/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -598,7 +598,7 @@ static void sns_init(struct sndbrdData *brdData) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
-    tms5220_set_variant(TMS5220_IS_5220);
+    tms5220_set_variant(TMS5220_IS_5220); //!! 5220C ?
   }
 }
 
@@ -759,6 +759,7 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 } // diag led
 
 static WRITE_HANDLER(sns_data_w) {
+  if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) tms5220_reset(); // some of the speech would be garbled otherwise!
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)

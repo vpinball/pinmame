@@ -1,5 +1,7 @@
-#include "usbalphanumeric.h"
 #include "pindmd.h"
+
+#ifndef PINDMD3
+#include "usbalphanumeric.h"
 
 static UINT8 segSizes[7][16] = {
 	{5,5,5,5,5,5,2,2,5,5,5,2,5,5,5,1},
@@ -608,3 +610,4 @@ void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data)
 		}
 	}
 }
+#endif

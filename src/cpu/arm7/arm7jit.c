@@ -554,7 +554,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 
 	// If we're doing an R15-relative operation with a constant address, we
 	// can short-circuit most of the work
-	if (rn == 15 && immOfs && preIdx && immOfs) {
+	if (rn == 15 && immOfs && preIdx) {
 		gen_mem(jit, rd, ld, siz, sx, addr, is_br, Imm, addr+8, 0);
 		return 1;
 	}

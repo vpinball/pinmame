@@ -290,7 +290,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, fi
 
 			/* adjust the end if it's too big */
 			if (src > src_end) {
-				frac += (src - src_end) << FRACTION_BITS;
+				frac += (int)(src - src_end) << FRACTION_BITS;
 				src = src_end;
 			}
 
@@ -400,7 +400,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, fil
 
 			/* adjust the end if it's too big */
 			if (src > src_end) {
-				frac += (src - src_end) << FRACTION_BITS;
+				frac += (int)(src - src_end) << FRACTION_BITS;
 				src = src_end;
 			}
 
@@ -574,7 +574,7 @@ void mix_sample_8(struct mixer_channel_data *channel, int samples_to_generate)
 	/* an outer loop to handle looping samples */
 	while (samples_to_generate > 0)
 	{
-		samples_to_generate -= mixer_channel_resample_8_pan(channel,mixing_volume,samples_to_generate,&source,source_end - source);
+		samples_to_generate -= mixer_channel_resample_8_pan(channel,mixing_volume,samples_to_generate,&source,(unsigned int)(source_end - source));
 
 		assert( source <= source_end );
 
@@ -623,7 +623,7 @@ void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
 	/* an outer loop to handle looping samples */
 	while (samples_to_generate > 0)
 	{
-		samples_to_generate -= mixer_channel_resample_16_pan(channel,mixing_volume,samples_to_generate,&source,source_end - source);
+		samples_to_generate -= mixer_channel_resample_16_pan(channel,mixing_volume,samples_to_generate,&source,(unsigned int)(source_end - source));
 
 		assert( source <= source_end );
 
@@ -678,7 +678,7 @@ static void mixer_flush(struct mixer_channel_data *channel)
 	save_available = channel->samples_available;
 
 	/* mix the silence */
-	mixer_channel_resample_8_pan(channel,mixing_volume,ACCUMULATOR_MASK,&source_begin,source_end - source_begin);
+	mixer_channel_resample_8_pan(channel,mixing_volume,ACCUMULATOR_MASK,&source_begin,(unsigned int)(source_end - source_begin));
 
 	/* restore the number of samples availables */
 	channel->samples_available = save_available;

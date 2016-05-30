@@ -383,6 +383,13 @@ S11CS_SOUNDROM000(   "dude_u4.l1",  CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca
                      "dude_u20.l1", CRC(a83d53dd) SHA1(92a81069c42c7760888201fb0787fa7ddfbf1658))
 S11_ROMEND
 
+S11_ROMSTART48(dd,l3c,"dude_u26.l3c", CRC(08192d8b) SHA1(9a2f0347a611663fdc12dcd9f952a6b8415add04),
+                      "dude_u27.l3c", CRC(95976170) SHA1(a35f6d64edf922bd018199601f0a8f407cc89031))
+S11CS_SOUNDROM000(    "dude_u4.l1",   CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca83001694faafec7),
+                      "dude_u19.l1",  CRC(dc7b985b) SHA1(f672d1f1fe1d1d887113ea6ccd745a78f7760526),
+                      "dude_u20.l1",  CRC(a83d53dd) SHA1(92a81069c42c7760888201fb0787fa7ddfbf1658))
+S11_ROMEND
+
 S11_ROMSTART48(dd,p6,"u26-pa6.11c", CRC(6f6a6e22) SHA1(2d8a1b472eb06a9f7aeea4b2f9a82f83eb4ee08a),
                      "u27-pa6.11c", CRC(26022273) SHA1(ca66139c3bd0c313d41a396c484d2c1b8f4ae536))
 S11CS_SOUNDROM000(   "dude_u4.l1",  CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca83001694faafec7),
@@ -399,6 +406,7 @@ static MACHINE_DRIVER_START(s11c_one)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 CORE_GAMEDEF(dd, l2, "Dr. Dude (LA-2)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(dd,l3c,l2, "Dr. Dude (LA-3C Competition MOD)", 2016,"Bally", s11c_one,0)
 CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (PA-6)", 1990, "Bally", s11c_one,0)
 
 /*-----------------------

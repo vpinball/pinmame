@@ -143,7 +143,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4f input_ports_se
-CORE_GAMEDEFNV(id4f,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4f,id4,"ID4: Independence Day (2.02 French)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -153,7 +153,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201 input_ports_se
-CORE_GAMEDEFNV(id4_201,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4_201,id4,"ID4: Independence Day (2.01)",1996,"Sega",de_mSES1,0)
 
 INITGAME(id4_201f,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4_201f, "id4cpu.201",CRC(c0cd47a1) SHA1(63bb6da28b4f6fcc8525a8f1a6d262e35931efc9))
@@ -163,7 +163,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",CRC(deeaed37) SHA1(06d79967a25af0b90a5f1d6360a5
                   "id4sdu21.400",CRC(f384a9ab) SHA1(06bd607e7efd761017a7b605e0294a34e4c6255c))
 SE_ROMEND
 #define input_ports_id4_201f input_ports_se
-CORE_GAMEDEFNV(id4_201f,"ID4: Independence Day (2.01 French)",1996,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(id4_201f,id4,"ID4: Independence Day (2.01 French)",1996,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Space Jam
@@ -351,17 +351,36 @@ CORE_CLONEDEFNV(vipr_102, viprsega,"Viper Night Drivin' (1.02)",1998,"Sega",de_m
 /*-------------------------------------------------------------------
 / Lost in Space
 /-------------------------------------------------------------------*/
+#define LIS_SND \
+DE2S_SOUNDROM14444("lisu7.100",CRC(96e6b3c4) SHA1(5cfb43b8c182aed4b49ad1b8803812a18c6c8b6f), \
+                  "lisu17.100",CRC(69076939) SHA1(f2cdf61a2b469d1a69eb3f08fc6e511d72336586), \
+                  "lisu21.100",CRC(56eede09) SHA1(9ff53d7a188bd7293ad92089d143bd54623a50d4), \
+                  "lisu36.100",CRC(56f2c53b) SHA1(5c2daf17116016fbead1320eb150cf655984662b), \
+                  "lisu37.100",CRC(f9430c59) SHA1(f0f7169e63fc12d29fe39cd24dd67c5fb17779f7))
+
 INITGAME(lostspc,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lostspc, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
 DE_DMD32ROM8x(  "lisdspa.102",CRC(e8bf4a58) SHA1(572313fb79e5a0c0034938a09b04ef43fc235c84))
-DE2S_SOUNDROM14444("lisu7.100" ,CRC(96e6b3c4) SHA1(5cfb43b8c182aed4b49ad1b8803812a18c6c8b6f),
-                  "lisu17.100",CRC(69076939) SHA1(f2cdf61a2b469d1a69eb3f08fc6e511d72336586),
-                  "lisu21.100",CRC(56eede09) SHA1(9ff53d7a188bd7293ad92089d143bd54623a50d4),
-                  "lisu36.100",CRC(56f2c53b) SHA1(5c2daf17116016fbead1320eb150cf655984662b),
-                  "lisu37.100",CRC(f9430c59) SHA1(f0f7169e63fc12d29fe39cd24dd67c5fb17779f7))
+LIS_SND
 SE_ROMEND
 #define input_ports_lostspc input_ports_se
-CORE_GAMEDEFNV(lostspc,"Lost in Space",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(lostspc,"Lost in Space (1.01)",1998,"Sega",de_mSES1,0)
+
+INITGAME(lostspcg,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lostspcg, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
+DE_DMD32ROM8x("lisdspg.102",CRC(66f3feb7) SHA1(a1f718193998f3210fb25c1353e4ae6703802311))
+LIS_SND
+SE_ROMEND
+#define input_ports_lostspcg input_ports_lostspc
+CORE_CLONEDEFNV(lostspcg,lostspc,"Lost in Space (1.01 German)",1998,"Sega",de_mSES1,0)
+
+INITGAME(lostspc1,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lostspc1, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
+DE_DMD32ROM8x("lisdspa.101",CRC(a8bfa71f) SHA1(45886ae8edcfd26a2225914aaf96eb960fc7e988))
+LIS_SND
+SE_ROMEND
+#define input_ports_lostspc1 input_ports_lostspc
+CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01, Display 1.01)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Golden Cue
@@ -402,7 +421,7 @@ DE2S_SOUNDROM14444("gdzu7.100" ,CRC(a0afe8b7) SHA1(33e4a824b26b58e8f963fa8a525a6
                   "gdzu37.100",CRC(2c1acb14) SHA1(4d710e09f5500da937932b4b01d862abb4a89e5a))
 SE_ROMEND
 #define input_ports_godz_100 input_ports_se
-CORE_GAMEDEFNV(godz_100,"Godzilla (1.00)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(godz_100, godzilla,"Godzilla (1.00)", 1998, "Sega", de_mSES1, 0)
 
 INITGAME(godz_090,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(godz_090,"gdzcpu.090",CRC(54e3b6d7) SHA1(c11cf71140c00c96c7feea569fa04f75061b9af7))
@@ -414,7 +433,7 @@ DE2S_SOUNDROM14444("gdzu7.090" ,CRC(076401a9) SHA1(17aa63c2b26e6fc4849a5101ff970
                   "gdzu37.090",CRC(1410ae6b) SHA1(28d025403fd60b1bb132cffcc14be21be48d808c))
 SE_ROMEND
 #define input_ports_godz_090 input_ports_se
-CORE_GAMEDEFNV(godz_090,"Godzilla (0.90)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(godz_090, godzilla,"Godzilla (0.90)", 1998, "Sega", de_mSES1, 0)
 
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 

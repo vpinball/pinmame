@@ -248,7 +248,7 @@ int hash_data_has_checksum(const char* data, unsigned int function)
 		return 0;
 
 	// Return the offset within the string where the checksum begins
-	return (res - data + 2);
+	return (int)(res - data + 2);
 }
 
 static int hash_data_add_binary_checksum(char* d, unsigned int function, UINT8* checksum)
@@ -271,7 +271,7 @@ static int hash_data_add_binary_checksum(char* d, unsigned int function, UINT8* 
 	*d++ = '#';
 
 	// Return the number of written bytes
-	return (d - start);
+	return (int)(d - start);
 }
 
 

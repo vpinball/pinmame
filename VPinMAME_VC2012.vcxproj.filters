@@ -1214,6 +1214,24 @@
     <ClCompile Include="src\pindmd\usbalphanumeric.c">
       <Filter>Source Files\PinDMD</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\ymf262.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\262intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\barni.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\inderp.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\joctronic.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\lancelot.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1924,12 +1942,21 @@
     <ClInclude Include="src\pindmd\usbalphanumeric.h">
       <Filter>Source Files\PinDMD</Filter>
     </ClInclude>
+    <ClInclude Include="src\sound\262intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ymf262.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\sound\vtxsmpls.inc">
       <Filter>Source Files\MAME\Sound</Filter>
     </None>
     <None Include="src\win32com\VPinMAME.def">
+      <Filter>Source Files\VPinMAME</Filter>
+    </None>
+    <None Include="src\win32com\VPinMAME64.def">
       <Filter>Source Files\VPinMAME</Filter>
     </None>
     <None Include="src\win32com\Controller.rgs">

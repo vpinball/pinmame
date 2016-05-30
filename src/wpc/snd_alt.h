@@ -53,7 +53,7 @@ void alt_sound_handle(int boardNo, int cmd)
 		static signed char jingle_ducking = -1;
 		static signed char voice_ducking[ALT_MAX_VOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
-		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0)
+		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0) // another game has been loaded? -> previous data has to be free'd
 		{
 			cmd_counter = 0;
 			cmd_storage = -1;
@@ -104,7 +104,11 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			//
 			char cvpmd[1024];
+#ifndef _WIN64
 			HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+#else
+			HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+#endif
 			GetModuleFileName(hInst, cvpmd, 1024);
 
 			char *lpHelp = cvpmd;
@@ -330,6 +334,11 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					//sprintf_s(bla, "BASS music/sound library initialization error %d", BASS_ErrorGetCode());
 				}
+
+				// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+				for (DSidx = 0; DSidx < MIXER_MAX_CHANNELS; DSidx++)
+					if (mixer_get_name(DSidx) != NULL)
+						mixer_set_volume(DSidx, 0);
 			}
 			else
 				cmd_storage = 0;
@@ -337,6 +346,13 @@ void alt_sound_handle(int boardNo, int cmd)
 
 		if (psd.num_files > 0)
 		{
+			int ch;
+			// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
+			// required for WPC89 sound board
+			for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++)
+				if (mixer_get_name(ch) != NULL)
+					mixer_set_volume(ch, 0);
+
 			cmd_counter++;
 
 			for (unsigned int i = ALT_MAX_CMDS - 1; i > 0; --i)
@@ -502,10 +518,12 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
+                        else
+                        {
+                            BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-						BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-						BASS_ChannelPlay(jingle_stream, 0);
+                            BASS_ChannelPlay(jingle_stream, 0);
+                        }
 					}
 
 					if (strstr(psd.files_with_subpath[idx], path_music) != 0)
@@ -528,11 +546,13 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
+                        else
+                        {
+                            music_vol = psd.gain[idx];
+                            BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-						music_vol = psd.gain[idx];
-						BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-						BASS_ChannelPlay(music_stream, 0);
+                            BASS_ChannelPlay(music_stream, 0);
+                        }
 					}
 
 					if ((strstr(psd.files_with_subpath[idx], path_voice) != 0) || (strstr(psd.files_with_subpath[idx], path_sfx) != 0))
@@ -586,10 +606,12 @@ void alt_sound_handle(int boardNo, int cmd)
 							{
 								//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 							}
+                            else
+                            {
+                                BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
 
-							BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx]*global_vol);
-
-							BASS_ChannelPlay(voice_stream[voice_idx], 0);
+                                BASS_ChannelPlay(voice_stream[voice_idx], 0);
+                            }
 						}
 					}
 				}

@@ -16,10 +16,15 @@
 //	MACROS
 //============================================================
 
-#define osd_pend	osd_pend
+#ifdef _WIN64
+#define pdo16		NULL
+#define pdt16		NULL
+#define pdt16np		NULL
+#else
 #define pdo16		osd_pdo16
 #define pdt16		osd_pdt16
 #define pdt16np		osd_pdt16np
+#endif
 
 
 //============================================================

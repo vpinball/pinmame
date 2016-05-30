@@ -328,7 +328,7 @@ int mame_faccess(const char *filename, int filetype)
 	mame_fread
 ***************************************************************************/
 
-UINT32 mame_fread(mame_file *file, void *buffer, UINT32 length)
+UINT32 mame_fread(mame_file *file, void *buffer, size_t length)
 {
 	/* switch off the file type */
 	switch (file->type)
@@ -361,7 +361,7 @@ UINT32 mame_fread(mame_file *file, void *buffer, UINT32 length)
 	mame_fwrite
 ***************************************************************************/
 
-UINT32 mame_fwrite(mame_file *file, const void *buffer, UINT32 length)
+UINT32 mame_fwrite(mame_file *file, const void *buffer, size_t length)
 {
 	/* switch off the file type */
 	switch (file->type)
@@ -643,7 +643,7 @@ UINT64 mame_ftell(mame_file *file)
 	mame_fread_swap
 ***************************************************************************/
 
-UINT32 mame_fread_swap(mame_file *file, void *buffer, UINT32 length)
+UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length)
 {
 	UINT8 *buf;
 	UINT8 temp;
@@ -670,11 +670,12 @@ UINT32 mame_fread_swap(mame_file *file, void *buffer, UINT32 length)
 	mame_fwrite_swap
 ***************************************************************************/
 
-UINT32 mame_fwrite_swap(mame_file *file, const void *buffer, UINT32 length)
+UINT32 mame_fwrite_swap(mame_file *file, const void *buffer, size_t length)
 {
 	UINT8 *buf;
 	UINT8 temp;
-	int res, i;
+	int res;
+	size_t i;
 
 	/* swap the data first */
 	buf = (UINT8 *)buffer;

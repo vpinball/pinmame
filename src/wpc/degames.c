@@ -530,6 +530,14 @@ DE_ROMEND
 #define input_ports_hook input_ports_des11
 CORE_GAMEDEF(hook,408,"Hook (4.08)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(hook_401p,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
+DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
+DE2S_SOUNDROM022(   "hooksnd_p.u7" ,CRC(20091293) SHA1(fdfc4eadef0bf1915c7c72c1fd8dafaa429b3c44),
+                    "hook-voi_p.u17" ,CRC(667cf0fb) SHA1(dd12a7fa280384381ebc5c3d8add652eddb294fb),
+                    "hook-voi_p.u21" ,CRC(04775416) SHA1(5675aea39b76178ff476b0f627223a1c75a3d6b7))
+DE_ROMEND
+CORE_CLONEDEF(hook,401p,408,"Hook (4.01 with Prototype Sound)",1992,"Data East",de_mDEDMD16S2A,0)
+
 DE_ROMSTARTx0(hook_401,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
 DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
@@ -564,6 +572,15 @@ DE_ROMEND
 #define input_ports_lw3 input_ports_des11
 CORE_GAMEDEF(lw3,208,"Lethal Weapon 3 (2.08)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lw3_208p,"lw3cpuu.208",CRC(a3041f8a) SHA1(3c5b8525b8e9b924590648429c56aaf97adee460))
+DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
+                   "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
+DE2S_SOUNDROM022(  "lw3u7.dat"   ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17_vm.dat",CRC(5168dbbd) SHA1(e5f91650e613350c542ac93d0d4be64b25333186),
+                   "lw3u21_vm.dat",CRC(7ec96750) SHA1(13e41833d43396e370b817928618f72f928d9ba0))
+DE_ROMEND
+CORE_CLONEDEF(lw3,208p,208,"Lethal Weapon 3 (2.08p, Voices Mod)",2013,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(lw3_207,"lw3gc5.207",CRC(27aeaea9) SHA1(f8c40cbc37edac20187ac880be281dd45d8ad614))
 DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
                    "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
@@ -581,6 +598,15 @@ DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae4
                    "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
 DE_ROMEND
 CORE_CLONEDEF(lw3,205,208,"Lethal Weapon 3 (2.05)",1992,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(lw3_203,"lw3cpuu.203",CRC(0cfa38d4) SHA1(11d2e101a574c2dfec49ec701f480173b84c842e))
+DE_DMD32ROM44(     "lw3dsp1.204",CRC(1ba79363) SHA1(46d489a1190533c73370acd8a48cef60d12f87ce),
+                   "lw3dsp0.204",CRC(c74d3cf2) SHA1(076ee9b2e3cad0b8058ac0c70f5ffe7e29f3eff5))
+DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
+                   "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
+DE_ROMEND
+CORE_CLONEDEF(lw3,203,208,"Lethal Weapon 3 (2.03)",1992,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lw3_200,"lw3cpu.200",CRC(ddb6e7a7) SHA1(d48309e1984ef9a7682dfde190cf457632044657))
 DE_DMD32ROM44(     "lw3dsp1.204",CRC(1ba79363) SHA1(46d489a1190533c73370acd8a48cef60d12f87ce),
@@ -695,13 +721,21 @@ CORE_CLONEDEF(rab,103,320,"Adventures of Rocky and Bullwinkle and Friends, The (
 /------------------------------------------------------------*/
 INITGAMES11(jupk,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(jupk_513,"jpcpua.513",CRC(9f70a937) SHA1(cdea6c6e852982eb5e800db138f7660d51b6fdc8))
-DE_DMD32ROM8x(        "jpdspa.510",CRC(9ca61e3c) SHA1(38ae472f38e6fc33671e9a276313208e5ccd8640))
-DE2S_SOUNDROM142(     "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2ebea475566b90c13),
-                      "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
-                      "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
+DE_DMD32ROM8x(         "jpdspa.510",CRC(9ca61e3c) SHA1(38ae472f38e6fc33671e9a276313208e5ccd8640))
+DE2S_SOUNDROM142(      "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2ebea475566b90c13),
+                       "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
+                       "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
 DE_ROMEND
 #define input_ports_jupk input_ports_des11
 CORE_GAMEDEF(jupk,513,"Jurassic Park (5.13)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(jupk_600, "jpcpua.600",CRC(b1cfc259) SHA1(a856531abf7e94b961a84bde340e8d3f33a5a6a3))
+DE_DMD32ROM8x(          "jpdspa.600",CRC(b591b297) SHA1(83bd9dc08320ed4bde862a5cd63f30f0367c446e))
+DE2S_SOUNDROM142(       "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2ebea475566b90c13),
+                        "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
+                        "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
+DE_ROMEND
+CORE_CLONEDEF(jupk,600,513,"Jurassic Park (6.00 unofficial MOD)",2015,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(jupk_501,"jpcpua.501",CRC(d25f09c4) SHA1(a12ace496352002685b0415515f5f5ce4fc95bdb))
 DE_DMD32ROM8x(         "jpdspa.501",CRC(04a87d42) SHA1(e13df9a63ec77ec6f97b681ed99216ef3f3af691))
@@ -769,43 +803,51 @@ CORE_CLONEDEF(lah,113,112,"Last Action Hero (1.13 unofficial MOD)",2014,"Data Ea
 /------------------------------------------------------------*/
 INITGAMES11(tftc,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(tftc_303,"tftccpua.303",CRC(e9bec98e) SHA1(02643805d596017c88d9a534b94b2075bb2ab101))
-DE_DMD32ROM8x(      "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
-DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
-                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
-                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_DMD32ROM8x(         "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
+DE2S_SOUNDROM144(      "sndu7.dat"   ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat"  ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat"  ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 #define input_ports_tftc input_ports_des11
 CORE_GAMEDEF(tftc,303,"Tales from the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(tftc_400,"tftccpua.400",CRC(766c144e) SHA1(c99c0eb0017784c61b09a0e5ed4056b6f0cdb4e4))
+DE_DMD32ROM8x(         "tftcdspa.400",CRC(015d24e0) SHA1(91e8a42dda4a8359ebf244418c873744a499430e))
+DE2S_SOUNDROM144(      "sndu7.dat"   ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat"  ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat"  ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_ROMEND
+CORE_CLONEDEF(tftc,400,303,"Tales from the Crypt (4.00 unofficial MOD)",2015,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(tftc_302,"tftccpua.302",CRC(a194fe0f) SHA1(b83e048300f7e072f76672d72cdf43e43fab2e9e))
-DE_DMD32ROM8x(      "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
-DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
-                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
-                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_DMD32ROM8x(         "tftcdspa.301",CRC(3888d06f) SHA1(3d276df436a76c6e9bed6629114204dacd88245b))
+DE2S_SOUNDROM144(      "sndu7.dat"   ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat"  ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat"  ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 CORE_CLONEDEF(tftc,302,303,"Tales from the Crypt (3.02 Dutch)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_300,"tftccpua.300",CRC(3d275152) SHA1(0aa6df629c27d9265cf35ca0724e241d9820e56b))
-DE_DMD32ROM8x(      "tftcdspa.300",CRC(bf5c812b) SHA1(c10390b6cad0ad457fb83241c7ee1d6b109cf5be))
-DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
-                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
-                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_DMD32ROM8x(         "tftcdspa.300",CRC(bf5c812b) SHA1(c10390b6cad0ad457fb83241c7ee1d6b109cf5be))
+DE2S_SOUNDROM144(      "sndu7.dat"   ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat"  ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat"  ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 CORE_CLONEDEF(tftc,300,303,"Tales from the Crypt (3.00)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_200,"tftcgc5.a20",CRC(94b61f83) SHA1(9f36353a06cacb8ad67f70cd8d9d8ac698905ba3))
-DE_DMD32ROM8x(      "tftcdot.a20",CRC(16b3968a) SHA1(6ce91774fc60187e4b0d8874a14ef64e2805eb3f))
-DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
-                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
-                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_DMD32ROM8x(         "tftcdot.a20",CRC(16b3968a) SHA1(6ce91774fc60187e4b0d8874a14ef64e2805eb3f))
+DE2S_SOUNDROM144(      "sndu7.dat"  ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 CORE_CLONEDEF(tftc,200,303,"Tales from the Crypt (2.00)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tftc_104,"tftccpua.104",CRC(efb3c0d0) SHA1(df1505947732704171e31dbace4c263723c8342b))
 DE_DMD32ROM8x(         "tftcdspl.103",CRC(98f3b13e) SHA1(909c373b1a27b5aeebad2535ae4fb9bba71e9b5c))
-DE2S_SOUNDROM144(      "sndu7.dat",   CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
-                       "sndu17.dat" , CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
-                       "sndu21.dat" , CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE2S_SOUNDROM144(      "sndu7.dat"   ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                       "sndu17.dat"  ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                       "sndu21.dat"  ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
 DE_ROMEND
 CORE_CLONEDEF(tftc,104,303,"Tales from the Crypt (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
 

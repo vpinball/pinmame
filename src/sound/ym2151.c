@@ -1076,14 +1076,14 @@ void YM2151WriteReg(int n, int r, int v)
 			if (v&0x20)	/* reset timer B irq flag */
 			{
 				int oldstate = chip->status & 3;
-				chip->status &= 0xfd;
+				chip->status &= ~2;
 				if ((oldstate==2) && (chip->irqhandler)) (*chip->irqhandler)(0);
 			}
 
 			if (v&0x10)	/* reset timer A irq flag */
 			{
 				int oldstate = chip->status & 3;
-				chip->status &= 0xfe;
+				chip->status &= ~1;
 				if ((oldstate==1) && (chip->irqhandler)) (*chip->irqhandler)(0);
 
 			}

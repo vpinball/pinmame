@@ -1,130 +1,107 @@
+// license:BSD-3-Clause
+// copyright-holders:Ed Bernard, Jonathan Gevaryahu, hap
+// thanks-to:Kevin Horton
 /*
+    SSi TSI S14001A speech IC emulator
+    aka CRC: Custom ROM Controller, designed in 1975, first usage in 1976 on TSI Speech+ calculator
+    Originally written for MAME by Jonathan Gevaryahu(Lord Nightmare) 2006-2013,
+    replaced with near-complete rewrite by Ed Bernard in 2016
 
- TSI S14001A emulator v1.11
- By Jonathan Gevaryahu ("Lord Nightmare") with help from Kevin Horton ("kevtris")
- MAME conversion and integration by R. Belmont
+    TODO:
+    - nothing at the moment?
 
- Copyright (c) 2007 Jonathan Gevaryahu.
-
- Version history:
- 0.8 initial version - LN
- 0.9 MAME conversion, glue code added - R. Belmont
- 1.0 partly fixed stream update - LN (0.111u4)
- 1.01 fixed clipping problem - LN (0.111u5)
- 1.1 add VSU-1000 features, fully fixed stream update by fixing word latching - LN (0.111u6)
- 1.11 fix signedness of output, pre-multiply, fixes clicking on VSU-1000 volume change - LN (0.111u7)
-
- TODO:
- * increase accuracy of internal S14001A 'filter' for both driven and undriven cycles (its not terribly inaccurate for undriven cycles, but the dc sliding of driven cycles is not emulated)
- * add option for and attach Frank P.'s emulation of the Analog external filter from the vsu-1000 using the discrete core.
+    Further reading:
+    - http://www.vintagecalculators.com/html/speech-.html
+    - http://www.vintagecalculators.com/html/development_of_the_tsi_speech-.html
+    - http://www.vintagecalculators.com/html/speech-_state_machine.html
+    - https://archive.org/stream/pdfy-QPCSwTWiFz1u9WU_/david_djvu.txt
 */
 
-/* state map:
+/* Chip Pinout:
+The original datasheet (which is lost as far as I know) clearly called the
+s14001a chip the 'CRC chip', or 'Custom Rom Controller', as it appears with
+this name on the Stern and Canon schematics, as well as on some TSI speech
+print advertisements.
+Labels are not based on the labels used by the Atari wolf pack and Stern
+schematics, as these are inconsistent. Atari calls the word select/speech address
+input pins SAx while Stern calls them Cx. Also Atari and Canon both have the bit
+ordering for the word select/speech address bus backwards, which may indicate it
+was so on the original datasheet. Stern has it correct, and I've used their Cx
+labeling.
 
- * state machine 1: odd/even clock state
- * on even clocks, audio output is floating, /romen is low so rom data bus is driven, input is latched?
- * on odd clocks, audio output is driven, /romen is high, state machine 2 is clocked
- * *****
- * state machine 2: decoder state
- * NOTE: holding the start line high forces the state machine 2 state to go to or remain in state 1!
- * state 0(Idle): Idle (no sample rom bus activity, output at 0), next state is 0(Idle)
+                      ______    ______
+                    _|o     \__/      |_
+            +5V -- |_|1             40|_| -> /BUSY*
+                    _|                |_
+          ?TEST ?? |_|2             39|_| <- ROM D7
+                    _|                |_
+ XTAL CLOCK/CKC -> |_|3             38|_| -> ROM A11
+                    _|                |_
+  ROM CLOCK/CKR <- |_|4             37|_| <- ROM D6
+                    _|                |_
+  DIGITAL OUT 0 <- |_|5             36|_| -> ROM A10
+                    _|                |_
+  DIGITAL OUT 1 <- |_|6             35|_| -> ROM A9
+                    _|                |_
+  DIGITAL OUT 2 <- |_|7             34|_| <- ROM D5
+                    _|                |_
+  DIGITAL OUT 3 <- |_|8             33|_| -> ROM A8
+                    _|                |_
+        ROM /EN <- |_|9             32|_| <- ROM D4
+                    _|       S        |_
+          START -> |_|10 7   1   T  31|_| -> ROM A7
+                    _|   7   4   S    |_
+      AUDIO OUT <- |_|11 3   0   I  30|_| <- ROM D3
+                    _|   7   0        |_
+         ROM A0 <- |_|12     1      29|_| -> ROM A6
+                    _|       A        |_
+SPCH ADR BUS C0 -> |_|13            28|_| <- SPCH ADR BUS C5
+                    _|                |_
+         ROM A1 <- |_|14            27|_| <- ROM D2
+                    _|                |_
+SPCH ADR BUS C1 -> |_|15            26|_| <- SPCH ADR BUS C4
+                    _|                |_
+         ROM A2 <- |_|16            25|_| <- ROM D1
+                    _|                |_
+SPCH ADR BUS C2 -> |_|17            24|_| <- SPCH ADR BUS C3
+                    _|                |_
+         ROM A3 <- |_|18            23|_| <- ROM D0
+                    _|                |_
+         ROM A4 <- |_|19            22|_| -> ROM A5
+                    _|                |_
+            GND -- |_|20            21|_| -- -10V
+                     |________________|
 
- * state 1(GetHiWord):
- *   grab byte at (wordinput<<1) -> register_WH
- *   reset output DAC accumulator to 0x8 <- ???
- *   reset OldValHi to 1
- *   reset OldValLo to 0
- *   next state is 2(GetLoWord) UNLESS the PLAY line is still high, in which case the state remains at 1
+*Note from Kevin Horton when testing the hookup of the S14001A: the /BUSY line
+is not a standard voltage line: when it is in its HIGH state (i.e. not busy) it
+puts out a voltage of -10 volts, so it needs to be dropped back to a sane
+voltage level before it can be passed to any sort of modern IC. The address
+lines for the speech rom (A0-A11) do not have this problem, they output at a
+TTL/CMOS compatible voltage. The AUDIO OUT pin also outputs a voltage below GND,
+and the TEST pins may do so too.
 
- * state 2(GetLoWord):
- *   grab byte at (wordinput<<1)+1 -> register_WL
- *   next state is 3(GetHiPhon)
+START is pulled high when a word is to be said and the word number is on the
+word select/speech address input lines. The Canon 'Canola' uses a separate 'rom
+strobe' signal independent of the chip to either enable or clock the speech rom.
+It's likely that they did this to be able to force the speech chip to stop talking,
+which is normally impossible. The later 'version 3' TSI speech board as featured in
+an advertisement in the John Cater book probably also has this feature, in addition
+to external speech rom banking.
 
- * state 3(GetHiPhon):
- *   grab byte at ((register_WH<<8) + (register_WL))>>4 -> phoneaddress
- *   next state is 4(GetLoPhon)
+The Digital out pins supply a copy of the 4-bit waveform which also goes to the
+internal DAC. They are only valid every other clock cycle. It is possible that
+on 'invalid' cycles they act as a 4 bit input to drive the dac.
 
- * state 4(GetLoPhon):
- *   grab byte at (((register_WH<<8) + (register_WL))>>4)+1 -> playparams
- *   set phonepos register to 0
- *   set oddphone register to 0
- *   next state is 5(PlayForward1)
- *   playparams:
- *   7 6 5 4 3 2 1 0
- *   G                G = LastPhone
- *     B              B = PlayMode
- *       Y            Y = Silenceflag
- *         S S S      S = Length count load value
- *               R R  R = Repeat count reload value (upon carry/overflow of 3 bits)
- *   load the repeat counter with the bits 'R R 0'
- *   load the length counter with the bits 'S S S 0'
- *   NOTE: though only three bits of the length counter load value are controllable, there is a fourth lower bit which is assumed 0 on start and controls the direction of playback, i.e. forwards or backwards within a phone.
- *   NOTE: though only two bits of the repeat counter reload value are controllable, there is a third bit which is loaded to 0 on phoneme start, and this hidden low-order bit of the counter itself is what controls whether the output is forced to silence in mirrored mode. the 'carry' from the highest bit of the 3 bit counter is what increments the address pointer for pointing to the next phoneme in mirrored mode
+Because it requires -10V to operate, the chip manufacturing process must be PMOS.
 
-
- *   shift register diagram:
- *   F E D C B A 9 8 7 6 5 4 3 2 1 0
- *   <new byte here>
- *               C C                 C = Current delta sample read point
- *                   O O             O = Old delta sample read point
- * I *OPTIMIZED OUT* the shift register by making use of the fact that the device reads each rom byte 4 times
-
- * state 5(PlayForward1):
- *   grab byte at (((phoneaddress<<8)+(oddphone*8))+(phonepos>>2)) -> PlayRegister high end, bits F to 8
- *   if Playmode is mirrored, set OldValHi and OldValLo to 1 and 0 respectively, otherwise leave them with whatever was in them before.
- *   Put OldValHi in bit 7 of PlayRegister
- *   Put OldValLo in bit 6 of PlayRegister
- *   Get new OldValHi from bit 9
- *   Get new OldValLo from bit 8
- *   feed current delta (bits 9 and 8) and olddelta (bits 7 and 6) to delta demodulator table, delta demodulator table applies a delta to the accumulator, accumulator goes to enable/disable latch which Silenceflag enables or disables (forces output to 0x8 on disable), then to DAC to output.
- *   next state: state 6(PlayForward2)
-
- * state 6(PlayForward2):
- *   grab byte at (((phoneaddress<<8)+oddphone)+(phonepos>>2)) -> PlayRegister bits D to 6.
- *   Put OldValHi in bit 7 of PlayRegister\____already done by above operation
- *   Put OldValLo in bit 6 of PlayRegister/
- *   Get new OldValHi from bit 9
- *   Get new OldValLo from bit 8
- *   feed current delta (bits 9 and 8) and olddelta (bits 7 and 6) to delta demodulator table, delta demodulator table applies a delta to the accumulator, accumulator goes to enable/disable latch which Silenceflag enables or disables (forces output to 0x8 on disable), then to DAC to output.
- *   next state: state 7(PlayForward3)
-
- * state 7(PlayForward3):
- *   grab byte at (((phoneaddress<<8)+oddphone)+(phonepos>>2)) -> PlayRegister bits B to 4.
- *   Put OldValHi in bit 7 of PlayRegister\____already done by above operation
- *   Put OldValLo in bit 6 of PlayRegister/
- *   Get new OldValHi from bit 9
- *   Get new OldValLo from bit 8
- *   feed current delta (bits 9 and 8) and olddelta (bits 7 and 6) to delta demodulator table, delta demodulator table applies a delta to the accumulator, accumulator goes to enable/disable latch which Silenceflag enables or disables (forces output to 0x8 on disable), then to DAC to output.
- *   next state: state 8(PlayForward4)
-
- * state 8(PlayForward4):
- *   grab byte at (((phoneaddress<<8)+oddphone)+(phonepos>>2)) -> PlayRegister bits 9 to 2.
- *   Put OldValHi in bit 7 of PlayRegister\____already done by above operation
- *   Put OldValLo in bit 6 of PlayRegister/
- *   Get new OldValHi from bit 9
- *   Get new OldValLo from bit 8
- *   feed current delta (bits 9 and 8) and olddelta (bits 7 and 6) to delta demodulator table, delta demodulator table applies a delta to the accumulator, accumulator goes to enable/disable latch which Silenceflag enables or disables (forces output to 0x8 on disable), then to DAC to output.
- *   Call function: increment address
-
- *   next state: depends on playparams:
- *     if we're in mirrored mode, next will be LoadAndPlayBackward1
-
- * state 9(LoadAndPlayBackward1)
- * state 10(PlayBackward2)
- * state 11(PlayBackward3)
- * state 12(PlayBackward4)
+* Operation:
+Put the 6-bit address of the word to be said onto the C0-C5 word select/speech
+address bus lines. Next, clock the START line low-high-low. As long as the START
+line is held high, the first address byte of the first word will be read repeatedly
+every clock, with the rom enable line enabled constantly (i.e. it doesn't toggle on
+and off as it normally does during speech). Once START has gone low-high-low, the
+/BUSY line will go low until 3 clocks after the chip is done speaking.
 */
-
-/* increment address function:
- *   increment repeat counter
-        if repeat counter produces a carry, do two things:
-           1. if mirrored mode is ON, increment oddphone. if oddphone carries out (i.e. if it was 1), increment phoneaddress and zero oddphone
-       2. increment lengthcounter. if lengthcounter carries out, we're done this phone.
- *   increment output counter
- *      if mirrored mode is on, output direction is
- *   if mirrored mode is OFF, increment oddphone. if not, don't touch it here. if oddphone was 1 before the increment, increment phoneaddress and set oddphone to 0
- *
- */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,346 +111,206 @@
 #include "s14001a.h"
 #include "streams.h"
 
+#define BOOL int
+#define FALSE 0
+#define TRUE 1
+
+UINT8 *m_SpeechRom;
 int stream;
+int VSU1000_amp;
 
-UINT8 WordInput; // value on word input bus
-UINT8 LatchedWord; // value latched from input bus
-UINT16 SyllableAddress; // address read from word table
-UINT16 PhoneAddress; // starting/current phone address from syllable table
-UINT8 PlayParams; // playback parameters from syllable table
-UINT8 PhoneOffset; // offset within phone
-UINT8 LengthCounter; // 4-bit counter which holds the inverted length of the word in phones, leftshifted by 1
-UINT8 RepeatCounter; // 3-bit counter which holds the inverted number of repeats per phone, leftshifted by 1
-UINT8 OutputCounter; // 2-bit counter to determine forward/backward and output/silence state.
-UINT8 machineState; // chip state machine state
-UINT8 nextstate; // chip state machine's new state
-UINT8 laststate; // chip state machine's previous state, needed for mirror increment masking
-UINT8 resetState; // reset line state
-UINT8 oddeven; // odd versus even cycle toggle
-UINT8 GlobalSilenceState; // same as above but for silent syllables instead of silent portions of mirrored syllables
-UINT8 OldDelta; // 2-bit old delta value
-UINT8 DACOutput; // 4-bit DAC Accumulator/output
-UINT8 audioout; // filtered audio output
-UINT8 *SpeechRom; // array to hold rom contents, mame will not need this, will use a pointer
-UINT8 filtervals[8];
-UINT8 VSU1000_amp; // amplitude setting on VSU-1000 board
-UINT16 VSU1000_freq; // frequency setting on VSU-1000 board
-UINT16 VSU1000_counter; // counter for freq divider
+//devcb_write_line m_bsy_handler;
+//devcb_read8 m_ext_read_handler;
 
-//#define DEBUGSTATE
+// internal state
+BOOL m_bPhase1; // 1 bit internal clock
 
-#define SILENCE 0x77 // value output when silent
-
-#define LASTSYLLABLE ((PlayParams & 0x80)>>7)
-#define MIRRORMODE ((PlayParams & 0x40)>>6)
-#define SILENCEFLAG ((PlayParams & 0x20)>>5)
-#define LENGTHCOUNT ((PlayParams & 0x1C)>>1) // remember: its 4 bits and the bottom bit is always zero!
-#define REPEATCOUNT ((PlayParams<<1)&0x6) // remember: its 3 bits and the bottom bit is always zero!
-#define LOCALSILENCESTATE ((OutputCounter & 0x2) && (MIRRORMODE)) // 1 when silent output, 0 when DAC output.
-
-static INT8 DeltaTable[4][4] =
+enum states
 {
-	{ (INT8)0xCD, (INT8)0xCD, (INT8)0xEF, (INT8)0xEF, },
-	{ (INT8)0xEF, (INT8)0xEF, 0x00, 0x00, },
-	{ 0x00, 0x00, 0x11, 0x11, },
-	{ 0x11, 0x11, 0x33, 0x33  },
+	IDLE = 0,
+	WORDWAIT,
+	CWARMSB,    // read 8 CWAR MSBs
+	CWARLSB,    // read 4 CWAR LSBs from rom d7-d4
+	DARMSB,     // read 8 DAR  MSBs
+	CTRLBITS,   // read Stop, Voiced, Silence, Length, XRepeat
+	PLAY,
+	DELAY
 };
 
-static UINT8 audiofilter(void) /* rewrite me to better match the real filter! */
-{
-	UINT16 temp1, temp2 = 0;
-	/* crappy averaging filter! */
-	for (temp1 = 0; temp1 < 8; temp1++) { temp2 += filtervals[temp1]; }
-	temp2 >>= 3;
-	return temp2;
-}
+// registers
+int m_uStateP1;          // 3 bits, enum 'states'
+int m_uStateP2;
 
-static void shiftIntoFilter(UINT8 inputvalue)
-{
-	UINT8 temp1;
-	for (temp1 = 7; temp1 > 0; temp1--)
-	{
-		filtervals[temp1] = filtervals[(temp1 - 1)];
-	}
-	filtervals[0] = inputvalue;
+UINT16 m_uDAR13To05P1;      // 9 MSBs of delta address register
+UINT16 m_uDAR13To05P2;      // incrementing uDAR05To13 advances ROM address by 8 bytes
 
-}
+UINT16 m_uDAR04To00P1;      // 5 LSBs of delta address register
+UINT16 m_uDAR04To00P2;      // 3 address ROM, 2 mux 8 bits of data into 2 bit delta
+// carry indicates end of quarter pitch period (32 cycles)
 
-static void PostPhoneme(void) /* figure out what the heck to do after playing a phoneme */
-{
-#ifdef DEBUGSTATE
-	fprintf(stderr,"0: entered PostPhoneme\n");
-#endif
-	RepeatCounter++; // increment the repeat counter
-	OutputCounter++; // increment the output counter
-	if (MIRRORMODE) // if mirroring is enabled
-	{
-#ifdef DEBUGSTATE
-		fprintf(stderr,"1: MIRRORMODE was on\n");
-#endif
-		if (RepeatCounter == 0x8) // exceeded 3 bits?
-		{
-#ifdef DEBUGSTATE
-			fprintf(stderr,"2: RepeatCounter was == 8\n");
-#endif
-			// reset repeat counter, increment length counter
-			// but first check if lowest bit is set
-			RepeatCounter = REPEATCOUNT; // reload repeat counter with reload value
-			if (LengthCounter & 0x1) // if low bit is 1 (will carry after increment)
-			{
-#ifdef DEBUGSTATE
-				fprintf(stderr,"3: LengthCounter's low bit was 1\n");
-#endif
-				PhoneAddress+=8; // go to next phone in this syllable
-			}
-			LengthCounter++;
-			if (LengthCounter == 0x10) // if Length counter carried out of 4 bits
-			{
-#ifdef DEBUGSTATE
-				fprintf(stderr,"3: LengthCounter overflowed\n");
-#endif
-				SyllableAddress += 2; // go to next syllable
-				nextstate = LASTSYLLABLE ? 13 : 3; // if we're on the last syllable, go to end state, otherwise go and load the next syllable.
-			}
-			else
-			{
-#ifdef DEBUGSTATE
-				fprintf(stderr,"3: LengthCounter's low bit wasn't 1 and it didn't overflow\n");
-#endif
-				PhoneOffset = (OutputCounter&1) ? 7 : 0;
-				nextstate = (OutputCounter&1) ? 9 : 5;
-			}
-		}
-		else // repeatcounter did NOT carry out of 3 bits so leave length counter alone
-		{
-#ifdef DEBUGSTATE
-			fprintf(stderr,"2: RepeatCounter is less than 8 (its actually %d)\n", RepeatCounter);
-#endif
-			PhoneOffset = (OutputCounter&1) ? 7 : 0;
-			nextstate = (OutputCounter&1) ? 9 : 5;
-		}
-	}
-	else // if mirroring is NOT enabled
-	{
-#ifdef DEBUGSTATE
-		fprintf(stderr,"1: MIRRORMODE was off\n");
-#endif
-		if (RepeatCounter == 0x8) // exceeded 3 bits?
-		{
-#ifdef DEBUGSTATE
-			fprintf(stderr,"2: RepeatCounter was == 8\n");
-#endif
-			// reset repeat counter, increment length counter
-			RepeatCounter = REPEATCOUNT; // reload repeat counter with reload value
-			LengthCounter++;
-			if (LengthCounter == 0x10) // if Length counter carried out of 4 bits
-			{
-#ifdef DEBUGSTATE
-				fprintf(stderr,"3: LengthCounter overflowed\n");
-#endif
-				SyllableAddress += 2; // go to next syllable
-				nextstate = LASTSYLLABLE ? 13 : 3; // if we're on the last syllable, go to end state, otherwise go and load the next syllable.
-#ifdef DEBUGSTATE
-				fprintf(stderr,"nextstate is now %d\n", nextstate); // see line below, same reason.
-#endif
-				return; // need a return here so we don't hit the 'nextstate = 5' line below
-			}
-		}
-		PhoneAddress += 8; // regardless of counters, the phone address always increments in non-mirrored mode
-		PhoneOffset = 0;
-		nextstate = 5;
-	}
-#ifdef DEBUGSTATE
-	fprintf(stderr,"nextstate is now %d\n", nextstate);
-#endif
-}
+UINT16 m_uCWARP1;           // 12 bits Control Word Address Register (syllable)
+UINT16 m_uCWARP2;
 
-void s14001a_clock(void) /* called once per clock */
-{
-	UINT8 CurDelta; // Current delta
+BOOL m_bStopP1;
+BOOL m_bStopP2;
+BOOL m_bVoicedP1;
+BOOL m_bVoicedP2;
+BOOL m_bSilenceP1;
+BOOL m_bSilenceP2;
+UINT8 m_uLengthP1;          // 7 bits, upper three loaded from ROM length
+UINT8 m_uLengthP2;          // middle two loaded from ROM repeat and/or uXRepeat
+// bit 0 indicates mirror in voiced mode
+// bit 1 indicates internal silence in voiced mode
+// incremented each pitch period quarter
 
-	/* on even clocks, audio output is floating, /romen is low so rom data bus is driven, input is latched?
-	 * on odd clocks, audio output is driven, /romen is high, state machine 2 is clocked */
-	oddeven = !(oddeven); // invert the clock
-	if (oddeven == 0) // even clock
-        {
-		audioout = audiofilter(); // function to handle output filtering by internal capacitance based on clock speed and such
-#ifdef PINMAME
-		if (!machineState) audioout = SILENCE;
-#endif
-		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
-	}
-	else // odd clock
-	{
-		// fix dac output between samples. theoretically this might be unnecessary but it would require some messy logic in state 5 on the first sample load.
-		if (GlobalSilenceState || LOCALSILENCESTATE)
-		{
-			DACOutput = SILENCE;
-			OldDelta = 2;
-		}
-		audioout = (GlobalSilenceState || LOCALSILENCESTATE) ? SILENCE : DACOutput; // when either silence state is 1, output silence.
-#ifdef PINMAME
-		if (!machineState) audioout = SILENCE;
-#endif
-		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
-		switch(machineState) // HUUUUUGE switch statement
-		{
-		case 0: // idle state
-			nextstate = 0;
-			break;
-		case 1: // read starting syllable high byte from word table
-			SyllableAddress = 0; // clear syllable address
-			SyllableAddress |= SpeechRom[(LatchedWord<<1)]<<4;
-			nextstate = resetState ? 1 : 2;
-			break;
-		case 2: // read starting syllable low byte from word table
-			SyllableAddress |= SpeechRom[(LatchedWord<<1)+1]>>4;
-			nextstate = 3;
-			break;
-		case 3: // read starting phone address
-			PhoneAddress = SpeechRom[SyllableAddress]<<4;
-			nextstate = 4;
-			break;
-		case 4: // read playback parameters and prepare for play
-			PlayParams = SpeechRom[SyllableAddress+1];
-			GlobalSilenceState = SILENCEFLAG; // load phone silence flag
-			LengthCounter = LENGTHCOUNT; // load length counter
-			RepeatCounter = REPEATCOUNT; // load repeat counter
-			OutputCounter = 0; // clear output counter and disable mirrored phoneme silence indirectly via LOCALSILENCESTATE
-			PhoneOffset = 0; // set offset within phone to zero
-			OldDelta = 0x2; // set old delta to 2 <- is this right?
-			DACOutput = 0x88; // set DAC output to center/silence position (0x88)
-			nextstate = 5;
-			break;
-		case 5: // Play phone forward, shift = 0 (also load)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc0)>>6; // grab current delta from high 2 bits of high nybble
-			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 6;
-			break;
-		case 6: // Play phone forward, shift = 2
-	   		CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x30)>>4; // grab current delta from low 2 bits of high nybble
-			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 7;
-			break;
-		case 7: // Play phone forward, shift = 4
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc)>>2; // grab current delta from high 2 bits of low nybble
-			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 8;
-			break;
-		case 8: // Play phone forward, shift = 6 (increment address if needed)
-			CurDelta = SpeechRom[(PhoneAddress)+PhoneOffset]&0x3; // grab current delta from low 2 bits of low nybble
-			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			PhoneOffset++; // increment phone offset
-			if (PhoneOffset == 0x8) // if we're now done this phone
-			{
-				/* call the PostPhoneme Function */
-				PostPhoneme();
-			}
-			else
-			{
-				nextstate = 5;
-			}
-			break;
-		case 9: // Play phone backward, shift = 6 (also load)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x3); // grab current delta from low 2 bits of low nybble
-			if (laststate != 8) // ignore first (bogus) dac change in mirrored backwards mode. observations and the patent show this.
-			{
-				DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
-			}
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 10;
-			break;
-		case 10: // Play phone backward, shift = 4
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc)>>2; // grab current delta from high 2 bits of low nybble
-			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 11;
-			break;
-		case 11: // Play phone backward, shift = 2
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x30)>>4; // grab current delta from low 2 bits of high nybble
-			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			nextstate = 12;
-			break;
-		case 12: // Play phone backward, shift = 0 (increment address if needed)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc0)>>6; // grab current delta from high 2 bits of high nybble
-			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
-			OldDelta = CurDelta; // Move current delta to old
-			PhoneOffset--; // decrement phone offset
-			if (PhoneOffset == 0xFF) // if we're now done this phone
-			{
-				/* call the PostPhoneme() function */
-				PostPhoneme();
-			}
-			else
-			{
-				nextstate = 9;
-			}
-			break;
-		case 13: // For those pedantic among us, consume an extra two clocks like the real chip does.
-			nextstate = 0;
-			break;
-		}
-#ifdef DEBUGSTATE
-		fprintf(stderr, "Machine state is now %d, was %d, PhoneOffset is %d\n", nextstate, machineState, PhoneOffset);
-#endif
-		laststate = machineState;
-		machineState = nextstate;
-	}
-}
+UINT8 m_uXRepeatP1;         // 2 bits, loaded from ROM repeat
+UINT8 m_uXRepeatP2;
+UINT8 m_uDeltaOldP1;        // 2 bit old delta
+UINT8 m_uDeltaOldP2;
+UINT8 m_uOutputP1;          // 4 bits audio output, calculated during phase 1
 
-/**************************************************************************
-   MAME glue code
- **************************************************************************/
+// derived signals
+BOOL m_bDAR04To00CarryP2;
+BOOL m_bPPQCarryP2;
+BOOL m_bRepeatCarryP2;
+BOOL m_bLengthCarryP2;
+UINT16 m_RomAddrP1;         // rom address
 
-static void s14001a_update(int ch, INT16 *buffer, int length)
-{
-	int i;
+// output pins
+UINT8 m_uOutputP2;          // output changes on phase2
+UINT16 m_uRomAddrP2;        // address pins change on phase 2
+BOOL m_bBusyP1;             // busy changes on phase 1
 
-	for (i = 0; i < length; i++)
-	{
-		if (--VSU1000_counter <= 0) {
-		  s14001a_clock();
-		  VSU1000_counter = VSU1000_freq;
-		}
-#ifdef PINMAME
-		buffer[i] = ((((INT16)audioout)-128)*36)*((21 + 2 * VSU1000_amp) / 5);
-#else
-		buffer[i] = ((((INT16)audioout)-128)*36)*VSU1000_amp;
-#endif
-	}
-}
+// input pins
+BOOL m_bStart;
+UINT8 m_uWord;              // 6 bit word noumber to be spoken
+
+// emulator variables
+// statistics
+UINT32 m_uNPitchPeriods;
+UINT32 m_uNVoiced;
+UINT32 m_uNControlWords;
+
+// diagnostic output
+UINT32 m_uPrintLevel;
+
+UINT8 readmem(UINT16 offset, BOOL phase);
+BOOL Clock(void); // called once to toggle external clock twice
+
+// emulator helper functions
+UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2);
+void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDeltaP2, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2);
+UINT8 CalculateOutput(BOOL bVoicedP2, BOOL bXSilenceP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uLOutputP2, UINT8 uIncrementP2, BOOL bAddP2);
+void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords);
+
+void s14001a_update(int ch, INT16 *buffer, int length);
+
+//-------------------------------------------------
+//  device_start - device-specific startup
+//-------------------------------------------------
 
 int s14001a_sh_start(const struct MachineSound *msound)
 {
 	const struct S14001A_interface *intf = msound->sound_interface;
-	int i;
 
-	GlobalSilenceState = 1;
-	OldDelta = 0x02;
-	DACOutput = SILENCE;
-	VSU1000_amp = 0; /* reset by /reset line */
-	VSU1000_freq = 1; /* base-1; reset by /reset line */
-	VSU1000_counter = 1; /* base-1; not reset by /reset line but this is the best place to reset it */
+	m_SpeechRom = memory_region(intf->region);
 
-	for (i = 0; i < 8; i++)
-	{
-		filtervals[i] = SILENCE;
-	}
-
-	SpeechRom = memory_region(intf->region);
-
+	//!! m_stream = machine().sound().stream_alloc(*this, 0, 1, clock() ? clock() : machine().sample_rate());
 #ifdef PINMAME
-	stream = stream_init("S14001A", 100, 19000, 0, s14001a_update);
+	stream = stream_init("S14001A", 100, 19000, 0, s14001a_update); //!! 19.5kHz to 34.7kHz?
 #else
 	stream = stream_init("S14001A", 100, 44100, 0, s14001a_update);
 #endif
 	if (stream == -1)
 		return 1;
+
+	VSU1000_amp = 15;
+
+	// resolve callbacks
+	//m_ext_read_handler.resolve();
+	//m_bsy_handler.resolve();
+
+	m_bPhase1 = 0;
+	m_uStateP1 = 0;
+	m_uStateP2 = 0;
+
+	m_uDAR13To05P1 = 0;
+	m_uDAR13To05P2 = 0;
+	m_uDAR04To00P1 = 0;
+	m_uDAR04To00P2 = 0;
+	m_uCWARP1 = 0;
+	m_uCWARP2 = 0;
+
+	m_bStopP1 = 0;
+	m_bStopP2 = 0;
+	m_bVoicedP1 = 0;
+	m_bVoicedP2 = 0;
+	m_bSilenceP1 = 0;
+	m_bSilenceP2 = 0;
+	m_uLengthP1 = 0;
+	m_uLengthP2 = 0;
+	m_uXRepeatP1 = 0;
+	m_uXRepeatP2 = 0;
+	m_uDeltaOldP1 = 0;
+	m_uDeltaOldP2 = 0;
+	m_bDAR04To00CarryP2 = 0;
+	m_bPPQCarryP2 = 0;
+	m_bRepeatCarryP2 = 0;
+	m_bLengthCarryP2 = 0;
+	m_RomAddrP1 = 0;
+	m_uRomAddrP2 = 0;
+	m_bBusyP1 = 0;
+	m_bStart = 0;
+	m_uWord = 0;
+	m_uNPitchPeriods = 0;
+	m_uNVoiced = 0;
+	m_uNControlWords = 0;
+	m_uPrintLevel = 0;
+
+	m_uOutputP1 = m_uOutputP2 = 7;
+
+	// register for savestates
+	//!!
+	/*save_item(NAME(m_bPhase1));
+	save_item(NAME(m_uStateP1));
+	save_item(NAME(m_uStateP2));
+	save_item(NAME(m_uDAR13To05P1));
+	save_item(NAME(m_uDAR13To05P2));
+	save_item(NAME(m_uDAR04To00P1));
+	save_item(NAME(m_uDAR04To00P2));
+	save_item(NAME(m_uCWARP1));
+	save_item(NAME(m_uCWARP2));
+
+	save_item(NAME(m_bStopP1));
+	save_item(NAME(m_bStopP2));
+	save_item(NAME(m_bVoicedP1));
+	save_item(NAME(m_bVoicedP2));
+	save_item(NAME(m_bSilenceP1));
+	save_item(NAME(m_bSilenceP2));
+	save_item(NAME(m_uLengthP1));
+	save_item(NAME(m_uLengthP2));
+	save_item(NAME(m_uXRepeatP1));
+	save_item(NAME(m_uXRepeatP2));
+	save_item(NAME(m_uDeltaOldP1));
+	save_item(NAME(m_uDeltaOldP2));
+	save_item(NAME(m_uOutputP1));
+
+	save_item(NAME(m_bDAR04To00CarryP2));
+	save_item(NAME(m_bPPQCarryP2));
+	save_item(NAME(m_bRepeatCarryP2));
+	save_item(NAME(m_bLengthCarryP2));
+	save_item(NAME(m_RomAddrP1));
+
+	save_item(NAME(m_uOutputP2));
+	save_item(NAME(m_uRomAddrP2));
+	save_item(NAME(m_bBusyP1));
+	save_item(NAME(m_bStart));
+	save_item(NAME(m_uWord));
+
+	save_item(NAME(m_uNPitchPeriods));
+	save_item(NAME(m_uNVoiced));
+	save_item(NAME(m_uNControlWords));
+	save_item(NAME(m_uPrintLevel));*/
 
 	return 0;
 }
@@ -482,6 +319,27 @@ void s14001a_sh_stop(void)
 {
 }
 
+//-------------------------------------------------
+//  sound_stream_update - handle a stream update
+//-------------------------------------------------
+
+static void s14001a_update(int ch, INT16 *buffer, int length)
+{
+	int i;
+	int sample;
+	for (i = 0; i < length; i++)
+	{
+		Clock();
+		sample = m_uOutputP2 - 7; // range -7..8
+		buffer[i] = (INT16)(sample * 0xf00 * VSU1000_amp / 15);
+	}
+}
+
+
+/**************************************************************************
+    External interface
+**************************************************************************/
+
 int S14001A_bsy_0_r(void)
 {
 	if (stream != -1)
@@ -489,36 +347,43 @@ int S14001A_bsy_0_r(void)
 #ifdef DEBUGSTATE
 	fprintf(stderr,"busy state checked: %d\n",(machineState != 0) );
 #endif
-	return machineState;
+	return (m_bBusyP1) ? 1 : 0;
 }
+
+#if 0 //!!
+READ_LINE_MEMBER(s14001a_device::romen_r)
+{
+	m_stream->update();
+	return (m_bPhase1) ? 1 : 0;
+}
+#endif
 
 void S14001A_reg_0_w(int data)
 {
 	if (stream != -1)
 		stream_update(stream, 0);
-	WordInput = data;
+	m_uWord = data & 0x3f; // C0-C5
 }
 
 void S14001A_rst_0_w(int data)
 {
 	if (stream != -1)
 		stream_update(stream, 0);
-    LatchedWord = WordInput;
-	resetState = (data==1);
-	machineState = resetState ? 1 : machineState;
+	m_bStart = (data != 0);
+	if (m_bStart) m_uStateP1 = WORDWAIT;
 }
 
 void S14001A_set_rate(int newrate)
 {
 #ifdef PINMAME
-	static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
+	//static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
 #endif
 	if (stream != -1)
 		stream_update(stream, 0);
 #ifdef PINMAME
-	if (newrate < 0) newrate = 0;
-	else if (newrate > 7) newrate = 7;
-	stream_set_sample_rate(stream, rates[newrate]);
+	//if (newrate < 0) newrate = 0;
+	//else if (newrate > 7) newrate = 7;
+	stream_set_sample_rate(stream, newrate/*rates[newrate]*/);
 #else
 	VSU1000_freq = newrate;
 #endif
@@ -530,7 +395,339 @@ void S14001A_set_volume(int volume)
 		stream_update(stream, 0);
 #ifdef PINMAME
 	if (volume < 0) volume = 0;
-	else if (volume > 7) volume = 7;
+	else if (volume > 15) volume = 15;
 #endif
-    VSU1000_amp = volume;
+	VSU1000_amp = volume;
+}
+
+/**************************************************************************
+    Device emulation
+**************************************************************************/
+
+UINT8 readmem(UINT16 offset, BOOL phase)
+{
+	offset &= 0xfff; // 11-bit internal
+	return /*((m_ext_read_handler.isnull()) ? */m_SpeechRom[offset /*& (m_SpeechRom.bytes() - 1)*/] /*: m_ext_read_handler(offset))*/;
+}
+
+BOOL Clock(void)
+{
+	// effectively toggles external clock twice, one cycle
+	// internal clock toggles on external clock transition from 0 to 1 so internal clock will always transition here
+	// return false if some emulator problem detected
+
+	// On the actual chip, all register phase 1 values needed to be refreshed from phase 2 values
+	// or else risk losing their state due to charge loss.
+	// But on a computer the values are static.
+	// So to reduce code clutter, phase 1 values are only modified if they are different
+	// from the preceeding phase 2 values.
+
+	if (m_bPhase1)
+	{
+		// transition to phase2
+		m_bPhase1 = FALSE;
+
+		// transfer phase1 variables to phase2
+		m_uStateP2     = m_uStateP1;
+		m_uDAR13To05P2 = m_uDAR13To05P1;
+		m_uDAR04To00P2 = m_uDAR04To00P1;
+		m_uCWARP2      = m_uCWARP1;
+		m_bStopP2      = m_bStopP1;
+		m_bVoicedP2    = m_bVoicedP1;
+		m_bSilenceP2   = m_bSilenceP1;
+		m_uLengthP2    = m_uLengthP1;
+		m_uXRepeatP2   = m_uXRepeatP1;
+		m_uDeltaOldP2  = m_uDeltaOldP1;
+
+		m_uOutputP2    = m_uOutputP1;
+		m_uRomAddrP2   = m_RomAddrP1;
+
+		// setup carries from phase 2 values
+		m_bDAR04To00CarryP2  = m_uDAR04To00P2 == 0x1F;
+		m_bPPQCarryP2        = m_bDAR04To00CarryP2 && ((m_uLengthP2&0x03) == 0x03); // pitch period quarter
+		m_bRepeatCarryP2     = m_bPPQCarryP2       && ((m_uLengthP2&0x0C) == 0x0C);
+		m_bLengthCarryP2     = m_bRepeatCarryP2    && ( m_uLengthP2       == 0x7F);
+
+		return TRUE;
+	}
+	m_bPhase1 = TRUE;
+
+	// logic done during phase 1
+	switch (m_uStateP1)
+	{
+	case IDLE:
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+
+		//if (m_bBusyP1 && !m_bsy_handler.isnull())
+		//	m_bsy_handler(0);
+		m_bBusyP1 = FALSE;
+		break;
+
+	case WORDWAIT:
+		// the delta address register latches the word number into bits 03 to 08
+		// all other bits forced to 0.  04 to 08 makes a multiply by two.
+		m_uDAR13To05P1 = (m_uWord&0x3C)>>2;
+		m_uDAR04To00P1 = (m_uWord&0x03)<<3;
+		m_RomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = CWARMSB;
+
+		//if (!m_bBusyP1 && !m_bsy_handler.isnull())
+		//	m_bsy_handler(1);
+		m_bBusyP1 = TRUE;
+		break;
+
+	case CWARMSB:
+		if (m_uPrintLevel >= 1)
+			printf("\n speaking word %02x",m_uWord);
+
+		// use uDAR to load uCWAR 8 msb
+		m_uCWARP1 = readmem(m_uRomAddrP2,m_bPhase1)<<4; // note use of rom address setup in previous state
+		// increment DAR by 4, 2 lsb's count deltas within a byte
+		m_uDAR04To00P1 += 4;
+		if (m_uDAR04To00P1 >= 32) m_uDAR04To00P1 = 0; // emulate 5 bit counter
+		m_RomAddrP1 = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = CWARLSB;
+		break;
+
+	case CWARLSB:
+		m_uCWARP1   = m_uCWARP2|(readmem(m_uRomAddrP2,m_bPhase1)>>4); // setup in previous state
+		m_RomAddrP1 = m_uCWARP1;
+
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = DARMSB;
+		break;
+
+	case DARMSB:
+		m_uDAR13To05P1 = readmem(m_uRomAddrP2,m_bPhase1)<<1; // 9 bit counter, 8 MSBs from ROM, lsb zeroed
+		m_uDAR04To00P1 = 0;
+		m_uCWARP1++;
+		m_RomAddrP1 = m_uCWARP1;
+		m_uNControlWords++; // statistics
+
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = CTRLBITS;
+		break;
+
+	case CTRLBITS:
+		m_bStopP1 = readmem(m_uRomAddrP2, m_bPhase1) & 0x80 ? TRUE : FALSE;
+		m_bVoicedP1 = readmem(m_uRomAddrP2, m_bPhase1) & 0x40 ? TRUE : FALSE;
+		m_bSilenceP1 = readmem(m_uRomAddrP2, m_bPhase1) & 0x20 ? TRUE : FALSE;
+		m_uXRepeatP1 = readmem(m_uRomAddrP2,m_bPhase1)&0x03;
+		m_uLengthP1  =(readmem(m_uRomAddrP2,m_bPhase1)&0x1F)<<2; // includes external length and repeat
+		m_uDAR04To00P1 = 0;
+		m_uCWARP1++; // gets ready for next DARMSB
+		m_RomAddrP1  = (m_uDAR13To05P1<<3)|(m_uDAR04To00P1>>2); // remove lower two bits
+
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = PLAY;
+
+		if (m_uPrintLevel >= 2)
+			printf("\n cw %d %d %d %d %d",m_bStopP1,m_bVoicedP1,m_bSilenceP1,m_uLengthP1>>4,m_uXRepeatP1);
+
+		break;
+
+	case PLAY:
+	{
+		UINT8 uDeltaP2;     // signal line
+		UINT8 uIncrementP2; // signal lines
+		BOOL bAddP2;        // signal line
+
+		// statistics
+		if (m_bPPQCarryP2)
+		{
+			// pitch period end
+			if (m_uPrintLevel >= 3)
+				printf("\n ppe: RomAddr %03x",m_uRomAddrP2);
+
+			m_uNPitchPeriods++;
+			if (m_bVoicedP2) m_uNVoiced++;
+		}
+		// end statistics
+
+		// modify output
+		uDeltaP2 = Mux8To2(m_bVoicedP2,
+					m_uLengthP2 & 0x03,     // pitch period quater counter
+					m_uDAR04To00P2 & 0x03,  // two bit delta address within byte
+					readmem(m_uRomAddrP2,m_bPhase1)
+		);
+		CalculateIncrement(m_bVoicedP2,
+					m_uLengthP2 & 0x03,     // pitch period quater counter
+					m_uDAR04To00P2 == 0,    // pitch period quarter start
+					uDeltaP2,
+					m_uDeltaOldP2,          // input
+					&m_uDeltaOldP1,          // output
+					&uIncrementP2,           // output 0, 1, or 3
+					&bAddP2                  // output
+		);
+		m_uOutputP1 = CalculateOutput(m_bVoicedP2,
+					m_bSilenceP2,
+					m_uLengthP2 & 0x03,     // pitch period quater counter
+					m_uDAR04To00P2 == 0,    // pitch period quarter start
+					m_uOutputP2,            // last output
+					uIncrementP2,
+					bAddP2
+		);
+
+		// advance counters
+		m_uDAR04To00P1++;
+		if (m_bDAR04To00CarryP2) // pitch period quarter end
+		{
+			m_uDAR04To00P1 = 0; // emulate 5 bit counter
+
+			m_uLengthP1++; // lower two bits of length count quarter pitch periods
+			if (m_uLengthP1 >= 0x80)
+			{
+				m_uLengthP1 = 0; // emulate 7 bit counter
+			}
+		}
+
+		if (m_bVoicedP2 && m_bRepeatCarryP2) // repeat complete
+		{
+			m_uLengthP1 &= 0x70; // keep current "length"
+			m_uLengthP1 |= (m_uXRepeatP1<<2); // load repeat from external repeat
+			m_uDAR13To05P1++; // advances ROM address 8 bytes
+			if (m_uDAR13To05P1 >= 0x200) m_uDAR13To05P1 = 0; // emulate 9 bit counter
+		}
+		if (!m_bVoicedP2 && m_bDAR04To00CarryP2)
+		{
+			// unvoiced advances each quarter pitch period
+			// note repeat counter not reloaded for non voiced speech
+			m_uDAR13To05P1++; // advances ROM address 8 bytes
+			if (m_uDAR13To05P1 >= 0x200) m_uDAR13To05P1 = 0; // emulate 9 bit counter
+		}
+
+		// construct m_RomAddrP1
+		m_RomAddrP1 = m_uDAR04To00P1;
+		if (m_bVoicedP2 && m_uLengthP1&0x1) // mirroring
+		{
+			m_RomAddrP1 ^= 0x1f; // count backwards
+		}
+		m_RomAddrP1 = (m_uDAR13To05P1<<3) | m_RomAddrP1>>2;
+
+		// next state
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else if (m_bStopP2 && m_bLengthCarryP2) m_uStateP1 = DELAY;
+		else if (m_bLengthCarryP2)
+		{
+			m_uStateP1  = DARMSB;
+			m_RomAddrP1 = m_uCWARP1; // output correct address
+		}
+		else m_uStateP1 = PLAY;
+		break;
+	}
+
+	case DELAY:
+		m_uOutputP1 = 7;
+		if (m_bStart) m_uStateP1 = WORDWAIT;
+		else          m_uStateP1 = IDLE;
+		break;
+	}
+
+	return TRUE;
+}
+
+UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2)
+{
+	// pick two bits of rom data as delta
+
+	if (bVoicedP2 && uPPQtrP2&0x01) // mirroring
+	{
+		uDeltaAdrP2 ^= 0x03; // count backwards
+	}
+	// emulate 8 to 2 mux to obtain delta from byte (bigendian)
+	switch (uDeltaAdrP2)
+	{
+	case 0x00:
+		return (uRomDataP2&0xC0)>>6;
+	case 0x01:
+		return (uRomDataP2&0x30)>>4;
+	case 0x02:
+		return (uRomDataP2&0x0C)>>2;
+	case 0x03:
+		return (uRomDataP2&0x03)>>0;
+	}
+	return 0xFF;
+}
+
+void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDelta, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2)
+{
+	// uPPQtr, pitch period quarter counter; 2 lsb of uLength
+	// bPPStart, start of a pitch period
+	// implemented to mimic silicon (a bit)
+
+	// beginning of a pitch period
+	if (uPPQtrP2 == 0x00 && bPPQStartP2) // note this is done for voiced and unvoiced
+	{
+		uDeltaOldP2 = 0x02;
+	}
+	static const UINT8 uIncrements[4][4] =
+	{
+	//    00  01  10  11
+		{ 3,  3,  1,  1,}, // 00
+		{ 1,  1,  0,  0,}, // 01
+		{ 0,  0,  1,  1,}, // 10
+		{ 1,  1,  3,  3 }, // 11
+	};
+
+#define MIRROR  (uPPQtrP2&0x01)
+
+	// calculate increment from delta, always done even if silent to update uDeltaOld
+	// in silicon a PLA determined 0,1,3 and add/subtract and passed uDelta to uDeltaOld
+	if (!bVoicedP2 || !MIRROR)
+	{
+		*uIncrementP2 = uIncrements[uDelta][uDeltaOldP2];
+		*bAddP2       = uDelta >= 0x02;
+	}
+	else
+	{
+		*uIncrementP2 = uIncrements[uDeltaOldP2][uDelta];
+		*bAddP2       = uDeltaOldP2 < 0x02;
+	}
+	*uDeltaOldP1 = uDelta;
+	if (bVoicedP2 && bPPQStartP2 && MIRROR) uIncrementP2 = 0; // no change when first starting mirroring
+}
+
+UINT8 CalculateOutput(BOOL bVoiced, BOOL bXSilence, UINT8 uPPQtr, BOOL bPPQStart, UINT8 uLOutput, UINT8 uIncrementP2, BOOL bAddP2)
+{
+	// implemented to mimic silicon (a bit)
+	// limits output to 0x00 and 0x0f
+	UINT8 uTmp; // used for subtraction
+
+#define SILENCE (uPPQtr&0x02)
+
+	// determine output
+	if (bXSilence || (bVoiced && SILENCE)) return 7;
+
+	// beginning of a pitch period
+	if (uPPQtr == 0x00 && bPPQStart) // note this is done for voiced and nonvoiced
+	{
+		uLOutput = 7;
+	}
+
+	// adder
+	uTmp = uLOutput;
+	if (!bAddP2) uTmp ^= 0x0F; // turns subtraction into addition
+
+	// add 0, 1, 3; limit at 15
+	uTmp += uIncrementP2;
+	if (uTmp > 15) uTmp = 15;
+
+	if (!bAddP2) uTmp ^= 0x0F; // turns addition back to subtraction
+	return uTmp;
+}
+
+void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords)
+{
+	*uNPitchPeriods = m_uNPitchPeriods;
+	*uNVoiced = m_uNVoiced;
+	*uNControlWords = m_uNControlWords;
 }

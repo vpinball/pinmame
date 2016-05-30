@@ -11,11 +11,15 @@
 #include "p-roc/p-roc.h"
 #endif
 #ifdef VPINMAME
+ #include <windows.h>
  #include "../pindmd/pindmd.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+ UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
+
+ UINT32 g_needs_DMD_update = 1;
 #endif
 
 /* stuff to test VPINMAME */
@@ -743,9 +747,11 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
   UINT8 dumpframe = 1;
 
-  const UINT8 perc0 = pmoptions.dmd_perc0;
-  const UINT8 perc1 = pmoptions.dmd_perc33;
-  const UINT8 perc2 = pmoptions.dmd_perc66;
+  // prepare all brightness & color/palette tables for mappings from internal DMD representation:
+
+  const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
+  const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
+  const UINT8 perc2 = (pmoptions.dmd_perc66 > 0) ? pmoptions.dmd_perc66 : 67;
   const UINT8 perc3 = 100;
 
   static const int levelgts3[16] = {0/*5*/, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100}; // GTS3 and AlvinG brightness seems okay
@@ -753,8 +759,58 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   
   const int * const level = (core_gameData->gen == GEN_SAM) ? levelsam : levelgts3;
 
-  const UINT8 raws[5] = {perc0,perc1,perc2,perc3,0xFF};
-  const UINT8 rawg[17] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15],0xFF};
+  const UINT8 raw_4[4]   = {perc0,perc1,perc2,perc3};
+  const UINT8 raw_16[16] = {level[0],level[1],level[2],level[3],level[4],level[5],level[6],level[7],level[8],level[9],level[10],level[11],level[12],level[13],level[14],level[15]};
+
+  UINT32 palette32_4[4];
+  UINT32 palette32_16[16];
+  unsigned char palette[4][3];
+
+  int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
+  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
+	  rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
+  }
+
+  /*-- Autogenerate DMD Color Shades--*/
+  palette[0][0] = rStart * perc0 / 100;
+  palette[0][1] = gStart * perc0 / 100;
+  palette[0][2] = bStart * perc0 / 100;
+  palette[1][0] = rStart * perc1 / 100;
+  palette[1][1] = gStart * perc1 / 100;
+  palette[1][2] = bStart * perc1 / 100;
+  palette[2][0] = rStart * perc2 / 100;
+  palette[2][1] = gStart * perc2 / 100;
+  palette[2][2] = bStart * perc2 / 100;
+  palette[3][0] = rStart * perc3 / 100;
+  palette[3][1] = gStart * perc3 / 100;
+  palette[3][2] = bStart * perc3 / 100;
+
+  /*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+  if (pmoptions.dmd_colorize) {
+	  if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+		  palette[0][0] = pmoptions.dmd_red0;
+		  palette[0][1] = pmoptions.dmd_green0;
+		  palette[0][2] = pmoptions.dmd_blue0;
+	  }
+	  if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+		  palette[1][0] = pmoptions.dmd_red33;
+		  palette[1][1] = pmoptions.dmd_green33;
+		  palette[1][2] = pmoptions.dmd_blue33;
+	  }
+	  if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+		  palette[2][0] = pmoptions.dmd_red66;
+		  palette[2][1] = pmoptions.dmd_green66;
+		  palette[2][2] = pmoptions.dmd_blue66;
+	  }
+  }
+
+  for (ii = 0; ii < 4; ++ii)
+	  palette32_4[ii] = (UINT32)palette[ii][0] | (((UINT32)palette[ii][1]) << 8) | (((UINT32)palette[ii][2]) << 16);
+
+  for(ii = 0; ii < 16; ++ii)
+	  palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
+
+  //
 
   if(layout->length >= 128) // Capcom hack
   {
@@ -770,14 +826,18 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
+		const UINT8 col = dotCol[ii][jj];
 #ifdef VPINMAME
-		currbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj];
- 	    if(layout->length >= 128) // Capcom hack
-			g_raw_dmdbuffer[(ii-1)*layout->length + jj] = dotCol[ii][jj] >= 63 ? rawg[dotCol[ii][jj]-63] : raws[dotCol[ii][jj]];
+		const int offs = (ii-1)*layout->length + jj;
+		currbuffer[offs] = col;
+		if(layout->length >= 128) { // Capcom hack
+			g_raw_dmdbuffer[offs] = (col >= 63) ? raw_16[col-63] : raw_4[col];
+			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
+		}
 #endif
-        *line++ = dmdColor[dotCol[ii][jj]];
+        *line++ = dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
-          *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
+          *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
     }
     if (locals.displaySize > 1) {
@@ -792,38 +852,56 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
+
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
-  if(g_fShowPinDMD || g_fDumpFrames) {
   if(oldbuffer != NULL) {
-	dumpframe = 0;
-	for(jj = 0; jj < layout->start; jj++)
-		for(ii = 0; ii < layout->length; ii++)
-		{
-			if((currbuffer[jj*layout->length + ii] != oldbuffer[jj*layout->length + ii])&&
-			  ((currbuffer[jj*layout->length + ii] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
-				dumpframe = 1;
-				break;
-			}
-		}
+	  dumpframe = 0;
+	  for(jj = 0; jj < layout->start; jj++)
+		  for(ii = 0; ii < layout->length; ii++)
+		  {
+			  const int offs = jj*layout->length + ii;
+			  if ((currbuffer[offs] != oldbuffer[offs]) &&
+				  ((currbuffer[offs] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
+				  dumpframe = 1;
+				  break;
+			  }
+		  }
   }
 
-  if(dumpframe) {
+  if(dumpframe)
+	  g_needs_DMD_update = 1;
+
+  if(g_fShowPinDMD || g_fDumpFrames) {
+    if(dumpframe) {
 	    //usb dmd
 	    if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
 		{
 	      if(g_fShowPinDMD)
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
-		  else
+		  if(g_fDumpFrames)
 		  {
-		    FILE *f;
-			f = fopen("dump.txt","a");
+			static const char* const dump_ext = "_dump.txt";
+			const unsigned int DumpFilenamel = strlen(Machine->gamedrv->name) + strlen(dump_ext) + 1;
+			char* const DumpFilename = (char*)malloc(DumpFilenamel);
+			FILE *f;
+
+			strcpy_s(DumpFilename, DumpFilenamel, Machine->gamedrv->name);
+			strcat_s(DumpFilename, DumpFilenamel, dump_ext);
+
+			f = fopen(DumpFilename,"a");
+			free(DumpFilename);
 			if(f) {
+				const DWORD tick = GetTickCount();
+				fprintf(f,"0x%08x\n", tick);
 				for(jj = 0; jj < layout->start; jj++) {
 					for(ii = 0; ii < layout->length; ii++)
-						fprintf(f,"%d",currbuffer[jj*layout->length + ii]);
+					{
+						const UINT8 col = currbuffer[jj*layout->length + ii];
+						fprintf(f,"%01x",(col >= 63) ? col-63 : col);
+					}
 					fprintf(f,"\n");
 				}
 				fprintf(f,"\n");
@@ -831,18 +909,18 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			}
 		  }
 		}
-
-		if(currbuffer == buffer1) {
-			currbuffer = buffer2;
-			oldbuffer = buffer1;
-		} else {
-			currbuffer = buffer1;
-			oldbuffer = buffer2;
-		}
 	}
 
 	if(g_fShowPinDMD)
 	    frameClock();
+  }
+
+  if (currbuffer == buffer1) {
+	  currbuffer = buffer2;
+	  oldbuffer = buffer1;
+  } else {
+	  currbuffer = buffer1;
+	  oldbuffer = buffer2;
   }
 #endif
 }
@@ -1175,7 +1253,7 @@ void core_textOut(char *buf, int length, int x, int y, int color) {
   if (y < locals.maxSimRows) {
     int ii, l;
 
-    l = strlen(buf);
+    l = (int)strlen(buf);
     for (ii = 0; ii < length; ii++) {
       char c = (ii >= l) ? ' ' : buf[ii];
 
@@ -1698,7 +1776,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit();
+	pindmdInit(pmoptions);
 #endif
 }
 
@@ -1778,7 +1856,7 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   return (maxX<<16) | maxY;
 }
 
-void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
+void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
   if (write)     mame_fwrite(file, mem, length); /* save */
   else if (file) mame_fread(file,  mem, length); /* load */
   else           memset(mem, init, length);     /* first time */

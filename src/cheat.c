@@ -1540,7 +1540,7 @@ static char * DoDynamicEditTextField(char * buf)
 	{
 		if(buf)
 		{
-			UINT32	length = strlen(buf);
+			size_t length = strlen(buf);
 
 			if(length > 0)
 			{
@@ -1563,7 +1563,7 @@ static char * DoDynamicEditTextField(char * buf)
 	{
 		if(buf)
 		{
-			UINT32	length = strlen(buf);
+			size_t length = strlen(buf);
 
 			buf = realloc(buf, length + 2);
 
@@ -1585,7 +1585,7 @@ static char * DoDynamicEditTextField(char * buf)
 static void DoStaticEditTextField(char * buf, int size)
 {
 	char	code = osd_readkey_unicode(0) & 0xFF;
-	UINT32	length;
+	size_t	length;
 
 	if(!buf)
 		return;
@@ -2024,12 +2024,12 @@ static void RebuildStringTables(void)
 					menuStrings.mainStringLength,
 					menuStrings.subStringLength,
 
-					(int)menuStrings.mainList,
-					(int)menuStrings.subList,
-					(int)menuStrings.flagList,
-					(int)menuStrings.mainStrings,
-					(int)menuStrings.subStrings,
-					(int)menuStrings.buf);
+					(size_t)menuStrings.mainList,
+					(size_t)menuStrings.subList,
+					(size_t)menuStrings.flagList,
+					(size_t)menuStrings.mainStrings,
+					(size_t)menuStrings.subStrings,
+					(size_t)menuStrings.buf);
 
 		exit(1);
 	}
@@ -7220,7 +7220,7 @@ static char * CreateStringCopy(char * buf)
 
 	if(buf)
 	{
-		UINT32	length = strlen(buf) + 1;
+		size_t	length = strlen(buf) + 1;
 
 		temp = malloc(length);
 
@@ -7633,7 +7633,7 @@ static void SetupCheatFromWatchAsWatch(CheatEntry * entry, WatchInfo * watch)
 	{
 		CheatAction	* action;
 		char		tempString[1024];
-		int			tempStringLength;
+		size_t		tempStringLength;
 
 		DisposeCheat(entry);
 		ResizeCheatActionList(entry, 1);
@@ -7896,7 +7896,7 @@ static void RestoreRegionBackup(SearchRegion * region)
 static UINT8 DefaultEnableRegion(SearchRegion * region, SearchInfo * info)
 {
 	mem_write_handler	handler = region->writeHandler->handler;
-	UINT32				handlerAddress = (UINT32)handler;
+	size_t				handlerAddress = (size_t)handler;
 
 	switch(info->searchSpeed)
 	{
@@ -7958,8 +7958,8 @@ static UINT8 DefaultEnableRegion(SearchRegion * region, SearchInfo * info)
 			return 0;
 
 		case kSearchSpeed_Medium:
-			if(	(handlerAddress >= ((UINT32)MWA_BANK1)) &&
-				(handlerAddress <= ((UINT32)MWA_BANK24)))
+			if(	(handlerAddress >= ((size_t)MWA_BANK1)) &&
+				(handlerAddress <= ((size_t)MWA_BANK24)))
 				return 1;
 
 			if(handler == MWA_RAM)
@@ -8000,24 +8000,24 @@ static void SetSearchRegionDefaultName(SearchRegion * region)
 			if(region->writeHandler)
 			{
 				mem_write_handler	handler = region->writeHandler->handler;
-				UINT32				handlerAddress = (UINT32)handler;
+				size_t				handlerAddress = (size_t)handler;
 
-				if(	(handlerAddress >= ((UINT32)MWA_BANK1)) &&
-					(handlerAddress <= ((UINT32)MWA_BANK24)))
+				if(	(handlerAddress >= ((size_t)MWA_BANK1)) &&
+					(handlerAddress <= ((size_t)MWA_BANK24)))
 				{
-					sprintf(desc, "BANK%.2d", (handlerAddress - ((UINT32)MWA_BANK1)) + 1);
+					sprintf(desc, "BANK%.2d", (handlerAddress - ((size_t)MWA_BANK1)) + 1);
 				}
 				else
-					if(handlerAddress == (UINT32)MWA_NOP)
+					if(handlerAddress == (size_t)MWA_NOP)
 						strcpy(desc, "NOP   ");
 					else
-					if(handlerAddress == (UINT32)MWA_RAM)
+					if(handlerAddress == (size_t)MWA_RAM)
 						strcpy(desc, "RAM   ");
 					else
-					if(handlerAddress == (UINT32)MWA_ROM)
+					if(handlerAddress == (size_t)MWA_ROM)
 						strcpy(desc, "ROM   ");
 					else
-					if(handlerAddress == (UINT32)MWA_RAMROM)
+					if(handlerAddress == (size_t)MWA_RAMROM)
 						strcpy(desc, "RAMROM");
 					else
 						strcpy(desc, "CUSTOM");
@@ -10291,7 +10291,7 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 				if(	(operation == kOperation_WriteMask) &&
 					(action->extendData == 0))
 				{
-					action->extendData = ~0;
+					action->extendData = ~0u;
 				}
 			}
 		}

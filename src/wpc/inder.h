@@ -122,12 +122,14 @@
 
 /*-- GAME ROMS --*/
 #define INDER_ROMSTARTP(name, n1, chk1, n2, chk2, n3, chk3) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, INDER_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x8c00, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x8800, 0x0400, chk2) \
-       ROM_LOAD(n3, 0x9800, 0x0400, chk3) \
-         ROM_RELOAD(0xfc00, 0x0400)
+  ROM_START(name) \
+    NORMALREGION(0x10000, INDER_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x8800, 0x0800, chk1) \
+      ROM_LOAD(n2, 0x9000, 0x0400, chk2) \
+        ROM_RELOAD(0x9400, 0x0400) \
+      ROM_LOAD(n3, 0x9800, 0x0400, chk3) \
+        ROM_RELOAD(0x9c00, 0x0400) \
+        ROM_RELOAD(0xfc00, 0x0400)
 
 #define INDER_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \

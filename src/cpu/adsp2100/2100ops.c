@@ -295,7 +295,7 @@ INLINE int CONDITION(int c)
 {
 	if (c != 14)
 		return condition_table[((c) << 8) | adsp2100.astat];
-	else if (--adsp2100.cntr != 0)
+	else if ((INT32)--adsp2100.cntr > 0)
 		return 1;
 	else
 	{

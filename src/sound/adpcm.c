@@ -32,6 +32,14 @@
 #define FRAC_ONE			(1 << FRAC_BITS)
 #define FRAC_MASK			(FRAC_ONE - 1)
 
+//#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
 
 /* struct describing a single playing ADPCM voice */
 struct ADPCMVoice
@@ -362,7 +370,7 @@ static void adpcm_state_save_base_store (void)
 	for (i=0; i<num_voices; i++)
 	{
 		voice = &adpcm[i];
-		voice_base_offset[i] = voice->base - voice->region_base;
+		voice_base_offset[i] = (UINT32)(voice->base - voice->region_base);
 	}
 }
 
@@ -491,7 +499,7 @@ void ADPCM_play(int num, int offset, int length)
 	/* range check the numbers */
 	if (num >= num_voices)
 	{
-		logerror("error: ADPCM_trigger() called with channel = %d, but only %d channels allocated\n", num, num_voices);
+		LOG(("error: ADPCM_trigger() called with channel = %d, but only %d channels allocated\n", num, num_voices));
 		return;
 	}
 
@@ -528,7 +536,7 @@ void ADPCM_stop(int num)
 	/* range check the numbers */
 	if (num >= num_voices)
 	{
-		logerror("error: ADPCM_stop() called with channel = %d, but only %d channels allocated\n", num, num_voices);
+		LOG(("error: ADPCM_stop() called with channel = %d, but only %d channels allocated\n", num, num_voices));
 		return;
 	}
 
@@ -558,7 +566,7 @@ void ADPCM_setvol(int num, int vol)
 	/* range check the numbers */
 	if (num >= num_voices)
 	{
-		logerror("error: ADPCM_setvol() called with channel = %d, but only %d channels allocated\n", num, num_voices);
+		LOG(("error: ADPCM_setvol() called with channel = %d, but only %d channels allocated\n", num, num_voices));
 		return;
 	}
 
@@ -586,7 +594,7 @@ int ADPCM_playing(int num)
 	/* range check the numbers */
 	if (num >= num_voices)
 	{
-		logerror("error: ADPCM_playing() called with channel = %d, but only %d channels allocated\n", num, num_voices);
+		LOG(("error: ADPCM_playing() called with channel = %d, but only %d channels allocated\n", num, num_voices));
 		return 0;
 	}
 
@@ -798,7 +806,7 @@ static int OKIM6295_status_r(int num)
 	/* range check the numbers */
 	if (num >= num_voices / OKIM6295_VOICES)
 	{
-		logerror("error: OKIM6295_status_r() called with chip = %d, but only %d chips allocated\n",num, num_voices / OKIM6295_VOICES);
+		LOG(("error: OKIM6295_status_r() called with chip = %d, but only %d chips allocated\n",num, num_voices / OKIM6295_VOICES));
 		return 0xff;
 	}
 
@@ -832,22 +840,24 @@ static void OKIM6295_data_w(int num, int data)
 	/* range check the numbers */
 	if (num >= num_voices / OKIM6295_VOICES)
 	{
-		logerror("error: OKIM6295_data_w() called with chip = %d, but only %d chips allocated\n", num, num_voices / OKIM6295_VOICES);
+		LOG(("error: OKIM6295_data_w() called with chip = %d, but only %d chips allocated\n", num, num_voices / OKIM6295_VOICES));
 		return;
 	}
 
 	/* if a command is pending, process the second half */
 	if (okim6295_command[num] != -1)
 	{
-		int temp = data >> 4, i, start, stop;
-		unsigned char *base;
+		// the manual explicitly says that it's not possible to start multiple voices at the same time
+		int voicemask = data >> 4, i;
 
 		/* determine which voice(s) (voice is set by a 1 bit in the upper 4 bits of the second byte) */
-		for (i = 0; i < OKIM6295_VOICES; i++, temp >>= 1)
+		for (i = 0; i < OKIM6295_VOICES; i++, voicemask >>= 1)
 		{
-			if (temp & 1)
+			if (voicemask & 1)
 			{
 				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
+				unsigned char *base;
+				int start, stop;
 
 				/* update the stream */
 				stream_update(voice->stream, 0);
@@ -855,17 +865,20 @@ static void OKIM6295_data_w(int num, int data)
 				if (Machine->sample_rate == 0) return;
 
 				/* determine the start/stop positions */
-				base = &voice->region_base[ okim6295_base[num][i] + okim6295_command[num] * 8];
-				if ((int)base < 0x400) { // avoid access violations
+				base = &voice->region_base[okim6295_base[num][i] + okim6295_command[num] * 8];
+				/*if ((int)base < 0x400) { // avoid access violations // this cannot work like this, was supposed to "fix" Caribbean Cruise
 					start = stop = 0x40000;
-				} else {
-	  				start = (base[0] << 16) + (base[1] << 8) + base[2];
-  					stop = (base[3] << 16) + (base[4] << 8) + base[5];
-				}
-				logerror("OKIM6295:%d playing sample %02x [%05x:%05x] on voice #%x\n", num, okim6295_command[num], start, stop, i+1);
+				} else {*/
+					start = (base[0] << 16) + (base[1] << 8) + base[2];
+					stop = (base[3] << 16) + (base[4] << 8) + base[5];
+					//start &= 0x3ffff;
+					//stop &= 0x3ffff;
+				//}
+				LOG(("OKIM6295:%d playing sample %02x [%05x:%05x] on voice #%x\n", num, okim6295_command[num], start, stop, i+1));
 				/* set up the voice to play this sample */
 				if (start >= stop) {
-					logerror("OKIM6295:%d empty data - ignore\n", num);
+					LOG(("OKIM6295:%d empty data - ignore\n", num));
+					//voice->playing = 0; // needed?
 				} else if (start < 0x40000 && stop < 0x40000) {
 					if (!voice->playing) /* fixes Got-cha and Steel Force */
 					{
@@ -881,13 +894,13 @@ static void OKIM6295_data_w(int num, int data)
 					}
 					else
 					{
-						logerror("OKIM6295:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1);
+						LOG(("OKIM6295:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1));
 					}
 				}
 				/* invalid samples go here */
 				else
 				{
-					logerror("OKIM6295:%d requested to play invalid sample %02x on voice #%x\n",num,okim6295_command[num],i+1);
+					LOG(("OKIM6295:%d requested to play invalid sample %02x on voice #%x\n",num,okim6295_command[num],i+1));
 					voice->playing = 0;
 				}
 			}
@@ -906,16 +919,16 @@ static void OKIM6295_data_w(int num, int data)
 	/* otherwise, this is a silence command */
 	else
 	{
-		int temp = data >> 3, i;
+		int voicemask = data >> 3, i;
 		// TODO either mute all channels or only one - fixes some sound in GTS3 games!?
-		if (temp == 0x0f || temp == 0x08 || temp == 0x04 || temp == 0x02 || temp == 0x01) {
+		if (voicemask == 0x0f || voicemask == 0x08 || voicemask == 0x04 || voicemask == 0x02 || voicemask == 0x01) {
 			/* determine which voice(s) (voice is set by a 1 bit in bits 3-6 of the command */
-			for (i = 0; i < 4; i++, temp >>= 1)
+			for (i = 0; i < 4; i++, voicemask >>= 1)
 			{
-				if (temp & 1)
+				if (voicemask & 1)
 				{
 					struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
-					logerror("OKIM6295:%d mute voice #%x\n", num, i+1);
+					LOG(("OKIM6295:%d mute voice #%x\n", num, i+1));
 					if (voice->playing) {
 
 						/* update the stream, then turn it off */
@@ -925,7 +938,7 @@ static void OKIM6295_data_w(int num, int data)
 				}
 			}
 		} else {
-			logerror("OKIM6295:%d ignoring mute command 0x%02x\n", num, data);
+			LOG(("OKIM6295:%d ignoring mute command 0x%02x\n", num, data));
 		}
 	}
 }
@@ -982,7 +995,7 @@ static void OKIM6376_data_w(int num, int data)
 					}
 					else
 					{
-						logerror("OKIM6376:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1);
+						LOG(("OKIM6376:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1));
 					}
 				}
 			}

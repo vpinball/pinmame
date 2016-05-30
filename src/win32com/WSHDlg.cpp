@@ -156,7 +156,7 @@ STDMETHODIMP CWSHDlg::get_Ctrls(IWSHDlgCtrls **ppVal)
 	return m_pWSHDlgCtrls->QueryInterface(IID_IWSHDlgCtrls, (void**) ppVal);
 }
 
-int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 STDMETHODIMP CWSHDlg::Show(long hParentWnd, VARIANT *RetVal)
 {
@@ -212,7 +212,7 @@ void SaveDlgValues(HWND hDlg, CWSHDlgCtrls *pWSHDlgCtrls)
 	}
 }
 
-int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CWSHDlg		*pWSHDlg = NULL;
 	static CWSHDlgCtrls *pWSHDlgCtrls = NULL;
@@ -397,7 +397,7 @@ int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			Rect.bottom += (iButtonHeight + iBorderY);
 		}
 
-		AdjustWindowRect(&Rect, GetWindowLong(hDlg, GWL_STYLE), FALSE);
+		AdjustWindowRect(&Rect, GetWindowLongPtr(hDlg, GWL_STYLE), FALSE);
 
 		int x,y;
 

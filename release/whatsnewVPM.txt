@@ -1,8 +1,26 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 2.6 (X X, 2015)
------------------------------
+Version 2.7 (X X, 2016) - ""
+------------------------------------------------------------------------------
+- New option for the DMD window: DMD opacity
+
+- New option for the sound processing: Sound Mode, where:
+  0 = standard builtin PinMAME emulation
+  1 = builtin alternate sound file support
+      (store the alternate sound files in a PinSound-like directory structure (incl. textfiles for ducking and gain),
+       within a new PinMAME directory subfolder 'altsound' and there within the machines shortname subfolder,
+       e.g. for ij_l7: 'C:\PinMAME\altsound\ij_l7\'
+       or for an example alternate sound file for tz_94h: 'C:\PinMAME\altsound\tz_94h\jingle\000064-load_gumball_pt_1\load_gum__LEGACY.ogg')
+  2 = external pinsound, 3 = external pinsound + psrec sound recording
+      (must have PinSound Studio 0.7 or newer running at the same time:
+       make sure that the windows permissions match between PinSound Studio and Visual PinMAME/Pinball, e.g.
+       if one is using admin permissions when running, then both need to be started with that (or the other way round))
+
+- PinDMD 3 handling
+
+Version 2.6 (December 24, 2015) - "The team awakens"
+------------------------------------------------------------------------------
 - New specialized options for Cabinet support, PinDMD 2 handling (for PinDMD 1 Support, see below) and 4-Color support for DMDs,
   so please setup the default options again after installation!
 
@@ -19,7 +37,8 @@ Version 2.6 (X X, 2015)
 
 	HRESULT RawDmdWidth([out, retval] int *pVal); - Get Width of Window (Raw, equal to the original DMD resolution)
 	HRESULT RawDmdHeight([out, retval] int *pVal); - Get Height of Window (Raw, equal to the original DMD resolution)
-	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution) (NOT user-allocated)
+	HRESULT RawDmdPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution, brightness 0..100%) (NOT user-allocated)
+	HRESULT RawDmdColoredPixels([out, retval] VARIANT *pVal); - Get all Pixels (Raw, equal to the original DMD resolution, RGB levels 0..255) (NOT user-allocated)
 
 	HRESULT ChangedLampsState([in] int **buf, [out, retval] int *pVal); - Copy all changed lamps (user-allocated)
 	HRESULT LampsState([in] int **buf, [out, retval] int *pVal); - Copy all lamps (user-allocated)

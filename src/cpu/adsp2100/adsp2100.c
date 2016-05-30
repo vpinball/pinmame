@@ -1,12 +1,76 @@
-/*###################################################################################################
-**
-**
-**		ADSP2100.c
-**		Core implementation for the portable Analog ADSP-2100 emulator.
-**		Written by Aaron Giles
-**
-**
-**#################################################################################################*/
+/***************************************************************************
+
+        ADSP2100.c
+        Core implementation for the portable Analog ADSP-2100 emulator.
+        Written by Aaron Giles
+
+****************************************************************************
+
+    For ADSP-2101, ADSP-2111
+    ------------------------
+
+        MMAP = 0                                        MMAP = 1
+
+        Automatic boot loading                          No auto boot loading
+
+        Program Space:                                  Program Space:
+            0000-07ff = 2k Internal RAM (booted)            0000-37ff = 14k External access
+            0800-3fff = 14k External access                 3800-3fff = 2k Internal RAM
+
+        Data Space:                                     Data Space:
+            0000-03ff = 1k External DWAIT0                  0000-03ff = 1k External DWAIT0
+            0400-07ff = 1k External DWAIT1                  0400-07ff = 1k External DWAIT1
+            0800-2fff = 10k External DWAIT2                 0800-2fff = 10k External DWAIT2
+            3000-33ff = 1k External DWAIT3                  3000-33ff = 1k External DWAIT3
+            3400-37ff = 1k External DWAIT4                  3400-37ff = 1k External DWAIT4
+            3800-3bff = 1k Internal RAM                     3800-3bff = 1k Internal RAM
+            3c00-3fff = 1k Internal Control regs            3c00-3fff = 1k Internal Control regs
+
+
+    For ADSP-2105, ADSP-2115, ADSP-2104
+    -----------------------------------
+
+        MMAP = 0                                        MMAP = 1
+
+        Automatic boot loading                          No auto boot loading
+
+        Program Space:                                  Program Space:
+            0000-03ff = 1k Internal RAM (booted)            0000-37ff = 14k External access
+            0400-07ff = 1k Reserved                         3800-3bff = 1k Internal RAM
+            0800-3fff = 14k External access                 3c00-3fff = 1k Reserved
+
+        Data Space:                                     Data Space:
+            0000-03ff = 1k External DWAIT0                  0000-03ff = 1k External DWAIT0
+            0400-07ff = 1k External DWAIT1                  0400-07ff = 1k External DWAIT1
+            0800-2fff = 10k External DWAIT2                 0800-2fff = 10k External DWAIT2
+            3000-33ff = 1k External DWAIT3                  3000-33ff = 1k External DWAIT3
+            3400-37ff = 1k External DWAIT4                  3400-37ff = 1k External DWAIT4
+            3800-39ff = 512 Internal RAM                    3800-39ff = 512 Internal RAM
+            3a00-3bff = 512 Reserved                        3a00-3bff = 512 Reserved
+            3c00-3fff = 1k Internal Control regs            3c00-3fff = 1k Internal Control regs
+
+
+    For ADSP-2181
+    -------------
+
+        MMAP = 0                                        MMAP = 1
+
+        Program Space:                                  Program Space:
+            0000-1fff = 8k Internal RAM                     0000-1fff = 8k External access
+            2000-3fff = 8k Internal RAM or Overlay          2000-3fff = 8k Internal
+
+        Data Space:                                     Data Space:
+            0000-1fff = 8k Internal RAM or Overlay          0000-1fff = 8k Internal RAM or Overlay
+            2000-3fdf = 8k-32 Internal RAM                  2000-3fdf = 8k-32 Internal RAM
+            3fe0-3fff = 32 Internal Control regs            3fe0-3fff = 32 Internal Control regs
+
+        I/O Space:                                      I/O Space:
+            0000-01ff = 512 External IOWAIT0                0000-01ff = 512 External IOWAIT0
+            0200-03ff = 512 External IOWAIT1                0200-03ff = 512 External IOWAIT1
+            0400-05ff = 512 External IOWAIT2                0400-05ff = 512 External IOWAIT2
+            0600-07ff = 512 External IOWAIT3                0600-07ff = 512 External IOWAIT3
+
+***************************************************************************/
 
 #include <stdio.h>
 #include <stddef.h>
@@ -40,7 +104,7 @@
 
 
 /*###################################################################################################
-**	STRUCTURES & TYPEDEFS
+**  STRUCTURES & TYPEDEFS
 **#################################################################################################*/
 
 /* 16-bit registers that can be loaded signed or unsigned */
@@ -398,8 +462,6 @@ static void check_irqs(void)
 
 void adsp2100_set_irq_line(int irqline, int state)
 {
-	if (irqline < 5)
-	{
 		/* update the latched state */
 		if (state != CLEAR_LINE && adsp2100.irq_state[irqline] == CLEAR_LINE)
 	    	adsp2100.irq_latch[irqline] = 1;
@@ -410,7 +472,6 @@ void adsp2100_set_irq_line(int irqline, int state)
 		/* check for IRQs */
 	    if (state != CLEAR_LINE)
 	    	check_irqs();
-	}
 }
 
 
@@ -482,19 +543,19 @@ void adsp2100_reset(void *param)
 	{
 		case CHIP_TYPE_ADSP2100:
 			adsp2100.pc = 4;
-		break;
+			break;
 
 		case CHIP_TYPE_ADSP2101:
 		case CHIP_TYPE_ADSP2105:
 		case CHIP_TYPE_ADSP2115:
 			adsp2100.pc = 0;
-		break;
+			break;
 
 		default:
 			logerror( "ADSP2100 core: Unknown chip type!. Defaulting to ADSP2100.\n" );
 			adsp2100.pc = 4;
 			chip_type = CHIP_TYPE_ADSP2100;
-		break;
+			break;
 	}
 
 	adsp2100.ppc = -1;
@@ -504,7 +565,7 @@ void adsp2100_reset(void *param)
 	/* reset status registers */
 	adsp2100.astat_clear = ~(CFLAG | VFLAG | NFLAG | ZFLAG);
 	adsp2100.mstat = 0;
-	adsp2100.sstat = 0;
+	adsp2100.sstat = 0x55;
 	adsp2100.idle = 0;
 
 	/* reset stacks */
@@ -771,32 +832,16 @@ resume_from_speedup:
 				{
 					if (CONDITION(op & 15))
 					{
-						switch ((op >> 4) & 3)
-						{
-							case 1:	adsp2100.flagout = !adsp2100.flagout;
-							case 2: adsp2100.flagout = 0;
-							case 3: adsp2100.flagout = 1;
-						}
+						if (op & 0x020) adsp2100.flagout = 0;
+						if (op & 0x010) adsp2100.flagout ^= 1;
 						if (chip_type >= CHIP_TYPE_ADSP2101)
 						{
-						switch ((op >> 6) & 3)
-						{
-							case 1:	adsp2100.fl0 = !adsp2100.fl0;
-							case 2: adsp2100.fl0 = 0;
-							case 3: adsp2100.fl0 = 1;
-						}
-						switch ((op >> 8) & 3)
-						{
-							case 1:	adsp2100.fl1 = !adsp2100.fl1;
-							case 2: adsp2100.fl1 = 0;
-							case 3: adsp2100.fl1 = 1;
-						}
-						switch ((op >> 10) & 3)
-						{
-							case 1:	adsp2100.fl2 = !adsp2100.fl2;
-							case 2: adsp2100.fl2 = 0;
-							case 3: adsp2100.fl2 = 1;
-						}
+							if (op & 0x080) adsp2100.fl0 = 0;
+							if (op & 0x040) adsp2100.fl0 ^= 1;
+							if (op & 0x200) adsp2100.fl1 = 0;
+							if (op & 0x100) adsp2100.fl1 ^= 1;
+							if (op & 0x800) adsp2100.fl2 = 0;
+							if (op & 0x400) adsp2100.fl2 ^= 1;
 						}
 					}
 				}
@@ -910,9 +955,9 @@ resume_from_speedup:
 				temp = adsp2100.mstat;
 				if (chip_type >= CHIP_TYPE_ADSP2101)
 				{
-				if (op & 0x000008) temp = (temp & ~MSTAT_GOMODE) | ((op << 5) & MSTAT_GOMODE);
-				if (op & 0x002000) temp = (temp & ~MSTAT_INTEGER) | ((op >> 8) & MSTAT_INTEGER);
-				if (op & 0x008000) temp = (temp & ~MSTAT_TIMER) | ((op >> 9) & MSTAT_TIMER);
+					if (op & 0x000008) temp = (temp & ~MSTAT_GOMODE) | ((op << 5) & MSTAT_GOMODE);
+					if (op & 0x002000) temp = (temp & ~MSTAT_INTEGER) | ((op >> 8) & MSTAT_INTEGER);
+					if (op & 0x008000) temp = (temp & ~MSTAT_TIMER) | ((op >> 9) & MSTAT_TIMER);
 				}
 				if (op & 0x000020) temp = (temp & ~MSTAT_BANK) | ((op >> 4) & MSTAT_BANK);
 				if (op & 0x000080) temp = (temp & ~MSTAT_REVERSE) | ((op >> 5) & MSTAT_REVERSE);
@@ -984,10 +1029,13 @@ resume_from_speedup:
 				break;
 			case 0x18: case 0x19: case 0x1a: case 0x1b:
 				/* 000110xx xxxxxxxx xxxxxxxx  conditional jump (immediate addr) */
-				if (CONDITION(op & 15)) adsp2100.pc = (op >> 4) & 0x3fff;
-				/* check for a busy loop */
-				if ( adsp2100.pc == adsp2100.ppc )
-					adsp2100_icount = 0;
+				if (CONDITION(op & 15))
+				{
+					adsp2100.pc = (op >> 4) & 0x3fff;
+					/* check for a busy loop */
+					if ( adsp2100.pc == adsp2100.ppc )
+						adsp2100_icount = 0;
+				}
 				break;
 			case 0x1c: case 0x1d: case 0x1e: case 0x1f:
 				/* 000111xx xxxxxxxx xxxxxxxx  conditional call (immediate addr) */

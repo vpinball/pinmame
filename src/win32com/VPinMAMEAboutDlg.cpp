@@ -12,6 +12,10 @@
 static 	HBRUSH hLinkBrush = 0;
 static	HFONT  hFont = 0;
 
+#ifdef _WIN64
+ #define GCL_HCURSOR         (-12)
+#endif
+
 class CAboutDlg : public CDialogImpl<CAboutDlg> {
 public:
 	BEGIN_MSG_MAP(CAboutDlg)
@@ -71,7 +75,7 @@ private:
 		if ( wEntrySize>wMaxSize )
 			wEntrySize = wMaxSize;
 
-		lstrcpyn(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
+		strncpy(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
 
 		GlobalUnlock(hVersionInfo);
 		GlobalFree(hVersionInfo);
@@ -131,7 +135,7 @@ private:
 			// so the mouse cursor will turn to a pointing finger over the link.
 			// However this won't compile on certain OS's, but MAKEINTRESOURCE(32649)
 			// seems to work fine, so we just use this one instead...
-			SetClassLong(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (long)LoadCursor(NULL, MAKEINTRESOURCE(32649)));
+			SetClassLongPtr(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (LONG_PTR)LoadCursor(NULL, MAKEINTRESOURCE(32649)));
 		}
 		//MUST RETURN 1
 		return 1;

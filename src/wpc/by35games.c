@@ -1074,6 +1074,12 @@ CORE_CLONEDEFNV(medusaf,medusa,"Medusa (6802 board)",2004,"Bally / Oliver",by35_
 /*--------------------------------
 / Centaur
 /-------------------------------*/
+MACHINE_DRIVER_START(by35_centaur)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_DIPS(35)
+  MDRV_IMPORT_FROM(by61)
+MACHINE_DRIVER_END
+
 static core_tGameData centaurGameData = {GEN_BY35,dispBy7,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61B,0,BY35GD_NOSOUNDE|BY35GD_REVERB}};
 static void init_centaur(void) { core_gameData = &centaurGameData; }
 BY35_ROMSTARTx00(centaur,"848-08_2.732",CRC(8bdcd32b) SHA1(39f64393d3a39a8172b3d80d196253aac1342f40),
@@ -1094,7 +1100,7 @@ BY35_INPUT_PORTS_START(centaur, 5) \
       COREPORT_DIPSET(0x0006, "6" ) \
       COREPORT_DIPSET(0x0007, "7" ) \
 INPUT_PORTS_END
-CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_mBY35_61BS,0)
+CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_centaur,0)
 
 #define init_centaura init_centaur
 BY35_ROMSTARTx00(centaura,"848-08_2.732",CRC(8bdcd32b) SHA1(39f64393d3a39a8172b3d80d196253aac1342f40),
@@ -1104,7 +1110,7 @@ BY61_SOUNDROMx008(       "848-01_3.532" ,CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b
                          "848-05_5.716" ,CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
 BY35_ROMEND
 #define input_ports_centaura input_ports_centaur
-CORE_CLONEDEFNV(centaura,centaur,"Centaur (Free Play)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(centaura,centaur,"Centaur (Free Play)",2004,"Bally / Oliver",by35_centaur,0)
 
 #define init_centaurb init_centaur
 BY35_ROMSTARTx00(centaurb,"cent2un.u2" ,CRC(047d08c5) SHA1(82e3952f84450a51b0c70129a593065b99d57dc0),
@@ -1114,7 +1120,7 @@ BY61_SOUNDROMx008(       "848-01_3.532",CRC(88322c8a) SHA1(424fd2b107f5fbc3ab8b5
                          "848-05_5.716",CRC(cbd765ba) SHA1(bdfae28af46c805f253f02d449dd81575aa9305b))
 BY35_ROMEND
 #define input_ports_centaurb input_ports_centaur
-CORE_CLONEDEFNV(centaurb,centaur,"Centaur (Free Play rev. 27)",2008,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(centaurb,centaur,"Centaur (Free Play rev. 27)",2008,"Bally / Oliver",by35_centaur,0)
 
 /*--------------------------------
 / Elektra

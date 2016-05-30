@@ -1,5 +1,47 @@
-Version 2.6 (X X, 2015) - "We're not dead (yet)"
+Version 2.7 (X X, 2016) - ""
 ------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+64bit compilation supported
+New S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
+Improved BSMT2000 sound core for Sega, Alvin G. DMDs, Data East DMDs (Batman and newer), and Stern DMDs (up to Terminator 3)
+Improved Brave Team sound core
+
+*** ROM SUPPORT *** Thanks to Inkochnito, Soren
+New:
+MAC: MAC Jungle (1995 version)
+Sleic: Bike Race (2-ball play) (not working yet)
+Sonic: Hang-On
+Unknown: Wild Texas (Firepower II Modification)
+
+Clones:
+Bram Stoker's Dracula L-2C (competition MOD)
+Creature from the Black Lagoon L-5C (competition MOD)
+Dr. Dude LA-3C (competition MOD)
+Hook 4.01p (4.01 with Prototype Sound)
+Inder Centaur (alternate version)
+Hyperball L-3
+Lethal Weapon 2.03
+Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
+Taxi LU-1
+Taxi (Lola) L-5C (competition MOD)
+Taxi (Marilyn) L-5C (competition MOD)
+Theatre of Magic 1.5C (competition MOD)
+Tales of the Arabian Nights 1.5C (competition MOD)
+World Cup Soccer LX-3C (competition MOD)
+
+
+
+Version 2.6 (December 24, 2015) - "The team awakens"
+------------------------------------------------------------------------------
+Three and a half years have gone by since the last release.
+We kept everybody happy by putting out beta versions now and then,
+but now we felt the time was right to issue a new version.
+
+This time, Visual PinMAME will also be bundled with the new VP10 in one installer package
+in order to reduce the amount of inherent knowledge needed to create a working playable setup.
+
+Have fun, and Merry Christmas everyone! :)
 
 *** CORE/CPU ***
 Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
@@ -18,58 +60,87 @@ Corrected GTS80 SS sound clock
 Cured scratchy GTS80 sound after reset
 Corrected DMD for Strikes n' Spares
 Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
-Made some Inder games sound a lot nicer then before and adjusted music / speech pitch for Metal Man
+Made some Inder games sound a lot nicer then before, adjusted music / speech pitch for Metal Man
 Tweak CPU clock for Mystery Castle to make it look more correct
 Fixed single zero digit on Odin & Odin Deluxe
 Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
+Improve Solenoids on Playmatic games
 Improve Speech on Nuova Bell and Jeutel games
 Fix some/most of the general sound stutter issues by improving the throttle code
 Improve performance for all ARM7 based games (e.g. Whitestar II)
+Added mech handler for mech #0 (goalie) in WCS:
+ The goalie will assume positions between 0 (max. left) and 50 (max. right), and will close the left switch when < 10 and the right one when > 40
+ Also Mech #1 (ball) will now return the speed of the ball rather than its position, with values ranging from -120 to 120
+Changed head mech handler for PZ:
+ Head will assume varying positions between 0 and 95 that translate to test positions 0 to 6 (within small ranges)
 Updated to zlib 1.2.8
 
-*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, PinKitty & Tim Polzin
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty & Tim Polzin
 New:
+Apple Time: Thunder Man
 Atari: 4x4 (not working yet)
-CICPlay: Galaxy Play, Galaxy Play 2
+Bally: Big Bat (bat game)
+Barni: Red Baron (not working yet)
+CICPlay: Galaxy Play 2,
+         Kidnap
 Data East: King Kong 1.0
-IDSA: Basket Ball, V-1 (speech not working yet)
-Inder: Centaur, also used as Hot and Cold, Screech, Skate Board, Topaz (incomplete dump)
-JP: Add missing ROM for Olympus
-MAC: Galaxy, Space Train, Space Panther, NBA MAC, and a yet unknown game
-Premier: Amazon Hunt II
+IDSA: Basket Ball,
+      V-1 (speech not working yet)
+Inder: Centaur
+Joctronic: Punky Willy (not working yet, incomplete dumps),
+           Walkyria (not working yet)
+JP: support correct sound ROMs for Olympus,
+    renamed unknown jpgame to petacona (Petaco with new hardware, alternate set)
+MAC: MAC's Galaxy,
+     Space Train,
+     Space Panther,
+     NBA MAC,
+     and a yet unknown game (may be an alternate Space Panther version)
+Peyper: Sir Lancelot (incomplete sound because of undumped MCU)
+Playmatic: Flash Dragon (alternate set & sound support),
+           Miss Dicso (bingo machine, not working yet),
+           Phantom Ship (no sound yet)
+Premier: Amazon Hunt II & III
+Sleic: Bike Race (not working yet),
+       Io Moon (not working yet)
 Stargame: Iron Balls
 Stern: Dale Jr. (Nascar 5.00)
-Sleic: Io Moon (not working yet)
-       Bike Race (not working yet)
-WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man)
+Valley: Spectra IV (good U4 dump for correctly timed bonus countdown)
+WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man),
      Rush Pinball (custom MOD, no sound)
 
 Kinda new:
-Star Wars 20th Anniversary 1.04
+Jurassic Park 6.00 (unofficial MOD)
 Last Action Hero 1.13 (unofficial MOD)
+Star Wars 20th Anniversary 1.04
+Tales from the Crypt 4.00 (unofficial MOD)
 
 Clones:
 Al's Garage Band Goes On A World Tour R06a
 Amazon Hunt (alternate set)
 Apollo 13 2.03 & 5.01/Display 4.01
 Arena (alternate set)
-Black Knight 2000 LA-2 & PA-7
+Banzai Run (L-3 with changed target sounds)
 Batman Forever 1.02 & 2.02
 Baywatch 3.00 Dutch & 4.00 England & 4.00 Dutch
 Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
+Black Knight 2000 LA-2, PA-5 & PA-7
 Bone Busters (French)
 Breakshot 1.2
 Chicago Cubs Triple Play (alternate set)
+Continental Bingo (alternate set)
 Corvette LX-2 & LA-1
 Creature from the Black Lagoon P-3
 Cue Ball Wizard rev.2 & rev.3
 Cyclone L-1
+Devil Riders (French speech) one ROM is missing, unfortunately
 Diner LU-2
 Fire L-2
 Fish Tales L-5 & D-6 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) & LED Ghost Fix
 Flash L-2 (yellow flipper ROMs)
 Funhouse L-2
 Godzilla 0.90 & 1.00
+Grand Lizard L-3
 Guns n' Roses 3.00 French
 Guns n' Roses 3.00 Dutch
 Hyperball L-2
@@ -80,6 +151,8 @@ Joust L-1
 Jungle Lord L-1 & New Tricks Home ROMs by A.M. Thurnherr
 Kiss prototype v.2 (not working yet)
 Laser War 8.1
+Lethal Weapon 2.08p voices mod
+Lost in Space US display 1.01 & German display 1.02
 Mars - God of War French
 Monopoly 2.51 (Italian display)
 Monster Bash 0.5
@@ -88,10 +161,10 @@ No Fear 1.1X
 No Good Gofers 1.2
 Party Animal (German)
 Phantom of the Opera 2.9
-Pinbot P-4 & L-5 mod
+Pin-Bot P-4 & L-1 & L-5 mod
 Pistol Poker R01
 Pool Sharks LA-5
-Popeye LA-4
+Popeye LA-4 & LX-4
 Punchy the Clown R03
 Raven (alternate set)
 Riverboat Gambler PA-7

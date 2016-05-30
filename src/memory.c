@@ -877,7 +877,7 @@ UINT8 alloc_new_subtable(const struct memport_data *memport, struct table_data *
 	}
 
 	/* initialize the table entries */
-	memset(&tabledata->table[(1 << l1bits) + (tabledata->subtable_count << l2bits)], previous_value, 1 << l2bits);
+	memset(&tabledata->table[(1 << l1bits) + (tabledata->subtable_count << l2bits)], previous_value, 1ull << l2bits);
 
 	/* return the new index */
 	return SUBTABLE_BASE + tabledata->subtable_count++;
@@ -974,7 +974,7 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 
 genf *assign_dynamic_bank(int cpunum, offs_t start)
 {
-	int bank;
+	size_t bank;
 
 	/* special case: never assign a dynamic bank to an offset that */
 	/* intersects the CPU's region; always use RAM for that */
@@ -1147,16 +1147,16 @@ static int init_memport(int cpunum, struct memport_data *data, int abits, int db
 	data->mask = 0xffffffffUL >> (32 - abits);
 
 	/* allocate memory */
-	data->read.table = malloc(1 << LEVEL1_BITS(data->ebits));
-	data->write.table = malloc(1 << LEVEL1_BITS(data->ebits));
+	data->read.table = malloc(1ull << LEVEL1_BITS(data->ebits));
+	data->write.table = malloc(1ull << LEVEL1_BITS(data->ebits));
 	if (!data->read.table)
 		return fatalerror("cpu #%d couldn't allocate read table\n", cpunum);
 	if (!data->write.table)
 		return fatalerror("cpu #%d couldn't allocate write table\n", cpunum);
 
 	/* initialize everything to unmapped */
-	memset(data->read.table, STATIC_UNMAP, 1 << LEVEL1_BITS(data->ebits));
-	memset(data->write.table, STATIC_UNMAP, 1 << LEVEL1_BITS(data->ebits));
+	memset(data->read.table, STATIC_UNMAP, 1ull << LEVEL1_BITS(data->ebits));
+	memset(data->write.table, STATIC_UNMAP, 1ull << LEVEL1_BITS(data->ebits));
 
 	/* initialize the pointers to the handlers */
 	if (ismemory)

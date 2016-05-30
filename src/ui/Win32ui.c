@@ -74,6 +74,10 @@
 #include "msc.h"
 #endif
 
+#ifdef _WIN64
+ #define GWL_WNDPROC         (-4)
+#endif
+
 #if defined(__GNUC__)
 
 /* fix warning: cast does not match function type */
@@ -145,7 +149,7 @@ static BOOL             PumpMessage(void);
 static BOOL             PumpAndReturnMessage(MSG *pmsg);
 static void             OnIdle(void);
 static void             OnSize(HWND hwnd, UINT state, int width, int height);
-static long WINAPI      MameWindowProc(HWND hwnd,UINT message,UINT wParam,LONG lParam);
+static LRESULT WINAPI   MameWindowProc(HWND hwnd,UINT message,UINT_PTR wParam,LONG_PTR lParam);
 
 static void             SetView(int menu_id,int listview_style);
 static void             ResetListView(void);
@@ -1934,7 +1938,7 @@ static void Win32UI_exit()
 	HelpExit();
 }
 
-static long WINAPI MameWindowProc(HWND hWnd, UINT message, UINT wParam, LONG lParam)
+static LRESULT WINAPI MameWindowProc(HWND hWnd, UINT message, UINT_PTR wParam, LONG_PTR lParam)
 {
 	MINMAXINFO	*mminfo;
 	int 		i;
@@ -5789,7 +5793,7 @@ static void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	for (nColumn = 1; nColumn < nColumnMax; nColumn++)
 	{
-		int 	nRetLen;
+		size_t 	nRetLen;
 		UINT	nJustify;
 		LV_ITEM lvItem;
 

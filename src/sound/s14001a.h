@@ -1,8 +1,12 @@
-#ifndef _S14001A_H_
-#define _S14001A_H_
-#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
-#pragma once
-#endif
+// license:BSD-3-Clause
+// copyright-holders:Ed Bernard, Jonathan Gevaryahu, hap
+// thanks-to:Kevin Horton
+/*
+    SSi TSI S14001A speech IC emulator
+*/
+
+#ifndef __S14001A_H__
+#define __S14001A_H__
 
 struct S14001A_interface
 {
@@ -12,12 +16,11 @@ struct S14001A_interface
 int s14001a_sh_start(const struct MachineSound *msound);
 void s14001a_sh_stop(void);
 
-int S14001A_bsy_0_r(void);     		/* read BUSY pin */
-void S14001A_reg_0_w(int data);		/* write to input latch */
-void S14001A_rst_0_w(int data);		/* write to RESET pin */
-void S14001A_0_set_rate(int newrate);	/* set sample rate */
-void S14001A_set_rate(int newrate);     /* set VSU-1000 clock divider */
-void S14001A_set_volume(int volume);    /* set VSU-1000 volume control */
+int S14001A_bsy_0_r(void);     		/* read BUSY pin (pin 40) */
+void S14001A_reg_0_w(int data);		/* write to input latch (6-bit word) */
+void S14001A_rst_0_w(int data);		/* write to RESET/START pin (pin 10) */
+void S14001A_set_rate(int newrate); /* set VSU-1000 clock divider */
+void S14001A_set_volume(int volume);/* set VSU-1000 volume control */
+//!! DECLARE_READ_LINE_MEMBER(romen_r); // ROM /EN (pin 9)
 
-#endif
-
+#endif /* __S14001A_H__ */

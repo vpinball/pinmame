@@ -1,8 +1,11 @@
+#include "pindmd.h"
+
+#ifndef PINDMD3
+
 #include <windows.h>
 #include <time.h>
-#include "pindmd.h"
+
 #include "usbalphanumeric.h"
-#include "driver.h"
 #include "pinddrv.h"
 #include "gen.h"
 
@@ -28,7 +31,7 @@ UINT8			dump_16_map[16] = {'0','3','5','7','9','B','D','F','H','J','L','N','P','
 //* In:
 //* Out:
 //*****************************************************
-void pindmdInit(void)
+void pindmdInit(tPMoptions colours)
 {
 	pinddrvInit();
 	hasExtraData=0;
@@ -37,8 +40,11 @@ void pindmdInit(void)
 	memset(seg_data_old,0,50*sizeof(UINT16));
 	// clear dmd frame buf
 	memset(frame_buf,0,sizeof(frame_buf));
+
 	// send dmdlogo.txt to pinDMD
 	//sendLogo();
+
+	sendColor();
 }
 
 //*****************************************************
@@ -50,8 +56,123 @@ void pindmdInit(void)
 void pindmdDeInit(void)
 {
 	sendLogo();
+	sendClearSettings();
 	Sleep(100);
 	pinddrvDeInit();
+}
+
+//*****************************************************
+//* Name:		sendColor
+//* Purpose:	send color palette to device
+//* In:
+//* Out:
+//*****************************************************
+void sendColor(void)
+{
+	struct { int r; int g; int b; } dmd, dmd66, dmd33, dmd0; // colorized DMD values
+
+#if 0
+	const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
+	const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
+	const UINT8 perc2 = (pmoptions.dmd_perc66 > 0) ? pmoptions.dmd_perc66 : 67;
+	const UINT8 perc3 = 100;
+	
+	int rStart = 0xFF, gStart = 0xE0, bStart = 0x20;
+	if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
+		rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
+	}
+
+	/*-- Autogenerate DMD Color Shades--*/
+	dmd0.r  = rStart * perc0 / 100;
+	dmd0.g  = gStart * perc0 / 100;
+	dmd0.b  = bStart * perc0 / 100;
+	dmd33.r = rStart * perc1 / 100;
+	dmd33.g = gStart * perc1 / 100;
+	dmd33.b = bStart * perc1 / 100;
+	dmd66.r = rStart * perc2 / 100;
+	dmd66.g = gStart * perc2 / 100;
+	dmd66.b = bStart * perc2 / 100;
+	dmd.r   = rStart * perc3 / 100;
+	dmd.g   = gStart * perc3 / 100;
+	dmd.b   = bStart * perc3 / 100;
+
+	/*-- If the "colorize" option is set, use the individual option colors for the shades --*/
+	if (pmoptions.dmd_colorize) {
+		if (pmoptions.dmd_red0 > 0 || pmoptions.dmd_green0 > 0 || pmoptions.dmd_blue0 > 0) {
+			dmd0.r = pmoptions.dmd_red0;
+			dmd0.g = pmoptions.dmd_green0;
+			dmd0.b = pmoptions.dmd_blue0;
+		}
+		if (pmoptions.dmd_red33 > 0 || pmoptions.dmd_green33 > 0 || pmoptions.dmd_blue33 > 0) {
+			dmd33.r = pmoptions.dmd_red33;
+			dmd33.g = pmoptions.dmd_green33;
+			dmd33.b = pmoptions.dmd_blue33;
+		}
+		if (pmoptions.dmd_red66 > 0 || pmoptions.dmd_green66 > 0 || pmoptions.dmd_blue66 > 0) {
+			dmd66.r = pmoptions.dmd_red66;
+			dmd66.g = pmoptions.dmd_green66;
+			dmd66.b = pmoptions.dmd_blue66;
+		}
+	}
+#else
+	if (!pmoptions.dmd_colorize)
+		return;
+
+	dmd0.r = pmoptions.dmd_red0;
+	dmd0.g = pmoptions.dmd_green0;
+	dmd0.b = pmoptions.dmd_blue0;
+	dmd33.r = pmoptions.dmd_red33;
+	dmd33.g = pmoptions.dmd_green33;
+	dmd33.b = pmoptions.dmd_blue33;
+	dmd66.r = pmoptions.dmd_red66;
+	dmd66.g = pmoptions.dmd_green66;
+	dmd66.b = pmoptions.dmd_blue66;
+	dmd.r = pmoptions.dmd_red;
+	dmd.g = pmoptions.dmd_green;
+	dmd.b = pmoptions.dmd_blue;
+#endif
+	{
+	const UINT8 tmp[7+16*3] = {
+		0x81, 0xC3, 0xE7, 0xFF, 0x04, 0x00, 0x01, //header
+		dmd0.r, dmd0.g, dmd0.b, // color 0 0%
+		dmd33.r, dmd33.g, dmd33.b, // color 1 33&
+		0x00, 0x00, 0x00, // color 2
+		0x00, 0x00, 0x00, // color 3
+		dmd66.r, dmd66.g, dmd66.b, // color 4 66%
+		0x00, 0x00, 0x00, // color 5
+		0x00, 0x00, 0x00, // color 6
+		0x00, 0x00, 0x00, // color 7 
+		0x00, 0x00, 0x00, // color 8
+		0x00, 0x00, 0x00, // color 9
+		0x00, 0x00, 0x00, // color 10
+		0x00, 0x00, 0x00, // color 11
+		0x00, 0x00, 0x00, // color 12
+		0x00, 0x00, 0x00, // color 13
+		0x00, 0x00, 0x00, // color 14
+		dmd.r, dmd.g, dmd.b }; // color 15 100%
+	memcpy(frame_buf, tmp, sizeof(tmp));
+
+	pinddrvSendFrame();
+	memset(frame_buf, 0, sizeof(frame_buf));
+	}
+}
+
+//*****************************************************
+//* Name:		sendClearSettings
+//* Purpose:	clear settings of device
+//* In:
+//* Out:
+//*****************************************************
+
+void sendClearSettings(void)
+{
+	const UINT8 tmp[5] = {
+		0x81, 0xC3, 0xE7, 0xFF, 0x07 //header
+		}; 
+	memcpy(frame_buf, tmp, sizeof(tmp));
+
+	pinddrvSendFrame();
+	memset(frame_buf, 0, sizeof(frame_buf));
 }
 
 //*****************************************************
@@ -591,3 +712,4 @@ void frameClock(void)
 		frameDelay++;
 	}
 }
+#endif

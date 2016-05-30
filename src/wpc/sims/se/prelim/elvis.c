@@ -48,15 +48,27 @@ static struct {
   int direction, position, arms, legs;
 } locals;
 
-// The last used selocals variable is "flipsolPulse", so we can forget about the rest.
 extern struct {
-  int    vblankCount;
-  int    initDone;
-  UINT32 solenoids;
-  int    lampRow, lampColumn;
-  int    diagnosticLed;
-  int    swCol;
-  int	 flipsol, flipsolPulse;
+	int    vblankCount;
+	int    initDone;
+	UINT32 solenoids;
+	int    lampRow, lampColumn;
+	int    diagnosticLed;
+	int    swCol;
+	int	 flipsol, flipsolPulse;
+	int    sst0;			//SST0 bit from sound section
+	int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
+	UINT8 *ram8000;
+	int    auxdata;
+	/* Mini DMD stuff */
+	int    lastgiaux, miniidx, miniframe;
+	int    minidata[7], minidmd[4][3][8];
+	/* trace ram related */
+#if SUPPORT_TRACERAM
+	UINT8 *traceRam;
+#endif
+	UINT8  curBank;                   /* current bank select */
+#define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
 } selocals;
 
 /*--------------------------

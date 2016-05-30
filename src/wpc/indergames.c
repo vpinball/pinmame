@@ -16,15 +16,15 @@
 
 static core_tLCDLayout inderDisp6[] = {
   {0, 0, 2,6,CORE_SEG7}, {2, 0,10,6,CORE_SEG7},
-  {6, 0,18,6,CORE_SEG7}, {8, 0,26,6,CORE_SEG7},
-  {4, 1,34,2,CORE_SEG7}, {4, 7,38,2,CORE_SEG7},
+  {7, 0,18,6,CORE_SEG7}, {9, 0,26,6,CORE_SEG7},
+  {5, 3,34,2,CORE_SEG7S},{5, 9,38,2,CORE_SEG7S},
   {0}
 };
 
 static core_tLCDLayout inderDisp7[] = {
   {0, 0, 1,7,CORE_SEG7}, {2, 0, 9,7,CORE_SEG7},
-  {6, 0,17,7,CORE_SEG7}, {8, 0,25,7,CORE_SEG7},
-  {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},
+  {7, 0,17,7,CORE_SEG7}, {9, 0,25,7,CORE_SEG7},
+  {5, 4,34,2,CORE_SEG7S},{5,10,38,2,CORE_SEG7S},
   {0}
 };
 
@@ -35,26 +35,6 @@ static core_tLCDLayout inderDisp7a[] = {
   {3,20,41,1,CORE_SEG7S},
   {0}
 };
-
-// Hot and Cold (1978)
-// Screech (1978)
-
-/*-------------------------------------------------------------------
-/ Centaur (1979)
-/-------------------------------------------------------------------*/
-INDER_INPUT_PORTS_START(centauri, 1) INDER_INPUT_PORTS_END
-static core_tGameData centauriGameData = {GEN_INDER,inderDisp6,{FLIP_SW(FLIP_L)}};
-static void init_centauri(void) {
-	core_gameData = &centauriGameData;
-}
-INDER_ROMSTARTP(centauri,	"cent2.bin", NO_DUMP,
-						"cent3.bin", CRC(f87abd63) SHA1(c3f48ffd46fad076fd064cbc0fdcc31641f5b1b6),
-						"cent4.bin", CRC(b69e95b6) SHA1(2f053a5848110d084239e1fc960198b247b3b98e))
-INDER_ROMEND
-CORE_GAMEDEFNV(centauri,"Centaur (Inder)",1979,"Inder (Spain)",gl_mINDERP,GAME_NOT_WORKING)
-
-// Topaz (1979)
-// Skate Board (1980)
 
 /*-------------------------------------------------------------------
 / Brave Team (1985)
@@ -79,7 +59,7 @@ CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout lblDisp[] = {
   DISP_SEG_IMPORT(inderDisp7),
-  {10,2,48,2,CORE_SEG7}, {10,8,50,2,CORE_SEG7},
+  {12,4,48,2,CORE_SEG7S},{12,10,50,2,CORE_SEG7S},
   {0}
 };
 INITGAME(lapbylap, lblDisp, 0, 0,0,0x0c,0,0)
@@ -118,7 +98,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
-INITGAME(corsario, inderDisp7a, 0, 0,0,0,0,0)
+INITGAME(corsario, inderDisp7a, 0, 0,0x10,0,0,0)
 INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
@@ -156,7 +136,7 @@ INDER_ROMEND
 CORE_GAMEDEFNV(atleta,"Atleta",1991,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
-/ 250 CC (1992)
+/ 250 c.c. (1992)
 /-------------------------------------------------------------------*/
 INITGAME(ind250cc, inderDisp7a, 0, 0,0,0,0,0)
 INDER_ROMSTART1(ind250cc,"0-250cc.bin", CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
@@ -166,7 +146,7 @@ INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bc
 						"d-250cc.bin", CRC(a0940387) SHA1(0e06483e3e823bf4673d8e0bd120b0a6b802035d),
 						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
 INDER_ROMEND
-CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS1,0)
+CORE_GAMEDEFNV(ind250cc,"250 c.c.",1992,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Metal Man (1992)

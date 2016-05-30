@@ -7,7 +7,9 @@
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <ddraw.h>
+#ifndef DISABLE_DX7
+ #include <ddraw.h>
+#endif
 
 // standard C headers
 #include <math.h>
@@ -40,7 +42,7 @@ extern int verbose;
 extern struct rc_option win_d3d_opts[];
 
 // from ticker.c
-extern void uSleep(const unsigned long long u);
+extern void uSleep(const UINT64 u);
 
 //============================================================
 //	PARAMETERS
@@ -419,6 +421,7 @@ void win_disorient_rect(struct rectangle *rect)
 //============================================================
 //  devices_enum_callback
 //============================================================
+#ifndef DISABLE_DX7
 static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription,
 										 LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 {
@@ -440,7 +443,7 @@ static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription
 	// continue enumeration
 	return 1;
 }
-
+#endif
 
 
 //============================================================
@@ -481,8 +484,10 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	// proper screen
 
 	screen_guid_ptr = NULL;
+#ifndef DISABLE_DX7
  	if (win_use_ddraw)
 		DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
+#endif
 
 	// create the window
 	if (win_create_window(video_width, video_height, video_depth, video_attributes, aspect_ratio))
@@ -724,8 +729,8 @@ static void throttle_speed(void)
 		while (curr - target < 0)
 		{
 #ifdef VPINMAME
-			//if((long long)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below
-			//	uSleep((unsigned long long)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
+			//if((INT64)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below
+			//	uSleep((UINT64)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
 			
 			uSleep((target-curr)*1000/ticks_per_sleep_msec);
 #else

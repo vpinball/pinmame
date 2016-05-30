@@ -59,7 +59,11 @@ int win_d3d_effects_in_use(void);
 #else
 #define WINDOW_STYLE			WS_OVERLAPPEDWINDOW
 #endif
-#define WINDOW_STYLE_EX			0
+#if(_WIN32_WINNT >= 0x0500)
+ #define WINDOW_STYLE_EX		((pmoptions.dmd_opacity < 100) ? WS_EX_LAYERED : 0)
+#else
+ #define WINDOW_STYLE_EX		0
+#endif
 
 // debugger window styles
 #define DEBUG_WINDOW_STYLE		WS_OVERLAPPED
@@ -153,7 +157,7 @@ static UINT8 video_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *video_dib_info = (BITMAPINFO *)video_dib_info_data;
 static UINT8 debug_dib_info_data[sizeof(BITMAPINFO) + 256 * sizeof(RGBQUAD)];
 static BITMAPINFO *debug_dib_info = (BITMAPINFO *)debug_dib_info_data;
-static UINT8 *converted_bitmap;
+static UINT8 *converted_bitmap = NULL;
 
 // video bounds
 static double aspect_ratio;
@@ -222,7 +226,7 @@ INLINE int wnd_extra_width(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLong(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif
@@ -241,7 +245,7 @@ INLINE int wnd_extra_height(void)
 	if (!win_window_mode)
 		return 0;
 #ifdef VPINMAME
-	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLong(win_video_window, GWL_EXSTYLE));
+	AdjustWindowRectEx(&window, GetWindowLongPtr(win_video_window, GWL_STYLE), win_has_menu(), GetWindowLongPtr(win_video_window, GWL_EXSTYLE));
 #else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 #endif
@@ -508,6 +512,11 @@ int win_init_window(void)
 	if (!win_video_window)
 		return 1;
 
+#if(_WIN32_WINNT >= 0x0500)
+	if (pmoptions.dmd_opacity < 100)
+		SetLayeredWindowAttributes(win_video_window,0,pmoptions.dmd_opacity*255/100,LWA_ALPHA);
+#endif
+
 	// possibly create the debug window, but don't show it yet
 	if (options.mame_debug)
 		if (create_debug_window())
@@ -554,6 +563,7 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 
 	// allocate a temporary bitmap in case we need it
 	converted_bitmap = malloc(MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
+	memset(converted_bitmap,0,MAX_VIDEO_WIDTH * MAX_VIDEO_HEIGHT * 4);
 	if (!converted_bitmap)
 		return 1;
 
@@ -588,10 +598,12 @@ int win_create_window(int width, int height, int depth, int attributes, double a
 	memcpy(debug_dib_info_data, video_dib_info_data, sizeof(debug_dib_info_data));
 
 	// Determine which DirectX components to use
+#ifndef DISABLE_DX7
 	if (win_use_d3d)
 		win_use_directx = USE_D3D;
 	else if (win_use_ddraw)
 		win_use_directx = USE_DDRAW;
+#endif
 
 	// determine the aspect ratio: hardware stretch case
 	if (win_force_int_stretch != FORCE_INT_STRECT_FULL && (win_use_directx == USE_D3D || (win_use_directx == USE_DDRAW && win_dd_hw_stretch)))
@@ -667,6 +679,10 @@ void win_destroy_window(void)
 	// kill the window if it still exists
 	if (win_video_window)
 		DestroyWindow(win_video_window);
+
+	if (converted_bitmap)
+		free(converted_bitmap);
+	converted_bitmap = NULL;
 }
 
 
@@ -766,6 +782,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 
 	// if we have a blit surface, use that
 
+#ifndef DISABLE_DX7
 	if (win_use_directx)
 	{
 		if (win_use_directx == USE_D3D)
@@ -779,6 +796,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 				return;
 		}
 	}
+#endif
 
 	// draw to the window with a DIB
 	dib_draw_window(dc, bitmap, bounds, vector_dirty_pixels, update);
@@ -1364,8 +1382,8 @@ void win_toggle_full_screen(void)
 		GetWindowRect(win_video_window, &non_fullscreen_bounds);
 
 		// adjust the style
-		SetWindowLong(win_video_window, GWL_STYLE, FULLSCREEN_STYLE);
-		SetWindowLong(win_video_window, GWL_EXSTYLE, FULLSCREEN_STYLE_EX);
+		SetWindowLongPtr(win_video_window, GWL_STYLE, FULLSCREEN_STYLE);
+		SetWindowLongPtr(win_video_window, GWL_EXSTYLE, FULLSCREEN_STYLE_EX);
 		set_aligned_window_pos(win_video_window, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 		// set topmost
@@ -1559,7 +1577,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	win_compute_multipliers(&client, &xmult, &ymult);
 
 	// blit to our temporary bitmap
-	params.dstdata		= (void *)(((UINT32)converted_bitmap + 15) & ~15);
+	params.dstdata		= (void *)(((size_t)converted_bitmap + 15) & ~15);
 	params.dstpitch		= (((win_visible_width * xmult) + 3) & ~3) * depth / 8;
 	params.dstdepth		= depth;
 	params.dstxoffs		= 0;
@@ -1820,7 +1838,7 @@ static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t 
 	}
 
 	// fill in bitmap-specific info
-	debug_dib_info->bmiHeader.biWidth = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / (bitmap->depth / 8);
+	debug_dib_info->bmiHeader.biWidth = (LONG)(((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / (bitmap->depth / 8);
 	debug_dib_info->bmiHeader.biHeight = -bitmap->height;
 	debug_dib_info->bmiHeader.biBitCount = bitmap->depth;
 
