@@ -1,0 +1,208 @@
+#!/usr/bin/wish
+#
+# MAMEX - MAME front End v.1.1
+# 
+# Chris Sharp <sharpc@hursley.ibm.com>
+# 
+# 5/9/97
+#
+# - Change Log -
+# Aug 4, 1998 v1.1
+#  enhanced by Takashi MATSUDA <matsu@arch.comp.kyutech.ac.jp>
+#
+# - Known Bug -
+#  zombie process remains when xmame finished.
+#
+
+set RCFILE "~/.mamex"
+set XMAME xmame
+
+wm title	. "M.A.M.E. selector"
+wm iconname	. "M.A.M.E. selector"
+
+
+# define procedures
+
+proc setListItems {type dummy opt} {
+  global allGames gamesAvailable
+  global GAMESLIST
+  upvar $type show_type
+
+  $GAMESLIST delete 0 end
+  foreach title [lsort [array names allGames]] {
+    if {[string compare $show_type "All Games"] == 0 ||
+    	[lsearch $gamesAvailable $allGames($title)] >= 0} {
+      $GAMESLIST insert end $title 
+    }
+  }
+}
+
+proc runMame {} {
+  global XMAME sound FM scale allGames TB JS
+  global BUTTONS OPTENTRY
+
+  set game "" 
+  if [catch {set game $allGames([selection get])}] {
+    bell
+  } else {
+    set options ""
+    if {$sound} { set options " -sound " }
+    if {$FM} { set options "$options -fm" }
+    if {$TB} { set options "$options -trak" }
+    if {$JS} { set options "$options -joy" }
+    if {$scale} { set options "$options -scale $scale" }
+
+    set options "$options [$OPTENTRY get]"
+
+    eval "catch { exec $XMAME $game $options & }"
+  }
+}
+
+proc setScale value {
+  global scale
+  global PANEL
+
+  set scale [ $PANEL.factor get ]
+}
+
+proc quitMamex {} {
+  global sound FM scale TB JS show_type RCFILE
+  global OPTENTRY
+
+  if { ! [ catch { set rcfile [ open $RCFILE w ] } ] } {
+    puts $rcfile "set sound $sound"
+    puts $rcfile "set FM $FM"
+    puts $rcfile "set scale $scale"
+    puts $rcfile "set TB $TB"
+    puts $rcfile "set JS $JS"
+    puts $rcfile "set show_type \"$show_type\""
+    regsub -all {"} [$OPTENTRY get] {} result
+    puts $rcfile "set more_options \"$result\""
+
+    close $rcfile
+  }
+  exit 0
+}
+
+
+# setup configuration.
+
+set sound 0
+set FM 0
+set scale 1
+set TB 0
+set JS 0
+set show_type "Available Games"
+set more_options ""
+
+catch { source $RCFILE }
+
+# find supported games.
+
+catch { [exec $XMAME -listfull 2>/dev/null] } gamelist
+set mamelist [lsort [lrange [split $gamelist "\n"] 1 end]]
+
+foreach i $mamelist {
+  if {$i != "" } {
+    set titlelist [split $i { \"} ]
+    set index [string trim [lindex $titlelist 0]]
+    if {$index != "NAMES:"} {
+      set title [string trim [join [lrange $titlelist 1 end]]]
+      set allGames($title) $index
+    }
+  }
+}
+
+# find available game roms.
+
+catch { exec $XMAME -showconfig } config
+set mamedirs {}
+foreach line [split $config "\n"] {
+  set dir ""
+  regexp -- {mamedir[ \t]*([^ \t\n].*)} $line dummy dir
+  if [string length "$dir"] {
+    lappend mamedirs $dir
+  }
+}
+set gamesAvailable {}
+foreach dir $mamedirs {
+  foreach f [ glob -nocomplain $dir/* ] {
+    if [ file isdirectory $f ] {
+      lappend gamesAvailable [file tail $f]
+    }
+  }
+}
+
+# create widgets
+
+set PANEL	.main.right.top
+set BUTTONS	.main.right.bottom
+
+set GAMESLIST	.main.left.gameslist
+set OPTENTRY	.bottom.option
+
+
+frame 		.main -border 2
+
+frame 		.main.left
+tk_optionMenu 	.main.left.menu show_type "Available Games" "All Games"
+listbox 	$GAMESLIST -relief raised -borderwidth 2 \
+			-yscrollcommand ".main.scroll set" -relief sunken
+scrollbar 	.main.scroll -command ".main.left.gameslist yview"
+
+bind $GAMESLIST <Double-1> "runMame" 
+trace variable show_type w setListItems
+setListItems show_type "" w
+
+frame 		.main.right
+
+frame 		$PANEL
+label 		$PANEL.title -text MAMEX \
+			-font "-*-helvetica-bold-r-*--14-*" -foreground red
+label 		$PANEL.title2 -text "MAME front end v1.1" \
+			-font "-*-helvetica-normal-r-*--10-*"
+checkbutton 	$PANEL.sound -text Sound -variable sound -anchor w 
+checkbutton 	$PANEL.fm -text FM -variable FM -anchor w 
+checkbutton 	$PANEL.trakball -text TrakBall -variable TB -anchor w 
+checkbutton 	$PANEL.joystick -text Joystick -variable JS -anchor w 
+
+scale 		$PANEL.factor -label scale -from 1 -to 3 -length 2c \
+			-orient horizontal -command "setScale"
+
+frame		$BUTTONS -border 2
+button		$BUTTONS.play -text "Play!!" -command "runMame"
+button		$BUTTONS.exit -text "Quit" -command quitMamex
+
+frame		.bottom
+label		.bottom.label -text "More options:"
+entry		$OPTENTRY
+
+$OPTENTRY insert 0 $more_options
+bind $OPTENTRY <Return> "$BUTTONS.play invoke"
+
+# packing widgets
+
+pack .main -fill both -expand 1
+
+pack .main.right -side right -fill y
+pack $PANEL -side top -fill both -expand 1
+pack $PANEL.title -side top
+pack $PANEL.title2 -side top
+pack $PANEL.sound -side top -anchor w
+pack $PANEL.fm -side top -anchor w
+pack $PANEL.trakball -side top -anchor w
+pack $PANEL.joystick -side top -anchor w
+pack $PANEL.factor -side top -anchor nw -fill x -ipady 5
+
+pack $BUTTONS -side bottom -fill x
+pack $BUTTONS.play -side left -fill x -expand 1
+pack $BUTTONS.exit -side right -fill x -expand 1
+
+pack .main.left -side left -fill both -expand 1
+pack .main.left.menu -side top -fill x
+pack $GAMESLIST -side bottom -fill both -expand 1
+pack .main.scroll -side left -fill y
+
+pack .bottom -side bottom -fill x -pady 3 -anchor n
+pack .bottom.label -side left -padx 2 -anchor e
+pack $OPTENTRY -side right -fill x -expand 1 -padx 3 -anchor w

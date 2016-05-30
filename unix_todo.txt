@@ -1,0 +1,462 @@
+Trying to build and run PinMAME 2.2 with Brian Dominy's XPinMAME patch using Ubuntu 10.10 i386 (32-Bit).
+!!! CURRENTLY DOESN'T RUN ON MY SYSTEM !!!
+
+Using a VM on Windows 7 64-Bit:
+### Easier maintenance: aptitude, ssh access (open SSH port for VM)
+apt-get install aptitude
+aptitude install openssh-server
+mkdir ~/.ssh
+touch ~/.ssh/authorized_keys
+chmod -R u=rw,go= .ssh
+
+### Virtualbox support (according to manual)
+aptitude install dkms
+# >= 3.2 signing key
+wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | apt-key add -
+# < 3.2 signing key
+wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -
+# mount VirtualBox Guest Additions ISO and go to the mount point, normally /media/VBOXADDITIONS_....
+sh ./VBoxLinuxAdditions-x86.run
+# reboot guest system (clipboard exchange should work after reboot)
+
+* Dependencies Ubuntu 10 Development:
+aptitude install \
+  build-essential \
+  subversion \
+  git \
+  zlib1g-dev \
+  libx11-dev \
+  libxext-dev \
+  libxv-dev \
+  libncurses5-dev \
+  libsdl1.2-dev \
+  x11proto-video-dev
+
+* Dependencies Ubuntu 10 Runtime:
+aptitude install \
+  zlib1g \
+  libx11-6 \
+  libxext6 \
+  libxv1 \
+  libncurses5 \
+  libsdl1.2debian
+
+* Source code setup
+mkdir -p ~/pinmame/release_2_2
+cd ~/pinmame/release_2_2
+svn co https://pinmame.svn.sourceforge.net/svnroot/pinmame/tags/release_2_2 .
+wget http://oddchange.com/freewpc/pinmame-x.patch.gz
+gunzip -d -N -c pinmame-x.patch.gz >pinmame-x.patch
+patch -p1 -i pinmame-x.patch
+# not fixing any of the failed hunks)
+file changes:
+* makefile.unix:
+  @92: CC = cc  (was: CC	= gcc-3.4.6)
+fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
+* src/fileio.c
+  @1088: vsnprintf (was: _vsnprintf)
+* src/mamedbg.c
+  @1620: strnicmp (was: _strnicmp)
+
+make -f makefile.unix
+
+* Pinmame setup
+mkdir /usr/local/share/xpinmame
+cd /usr/local/share/xpinmame
+ln -s /media/E_DRIVE/Pinball/PinMAME_data/roms/ roms
+#
+cd ~/pinmame/release_2_2
+./xpinmamed.x11 ij_l7
+
+Sound (SDLMAME)
+http://ubuntuforums.org/showthread.php?t=320377
+
+http://linux.die.net/man/6/xmame
+-ldp
+-v volume, -volume volume
+    Specify audio attenuation in dB (-32 (soft) - 0 (loud)). 
+-ad device, -audiodevice device
+    Use an alternative audiodevice. 
+http://ubuntuforums.org/showthread.php?t=115021
+
+
+========================================
+
+patch log: (problems place moved to top)
+----------
+patching file src/mamedbg.c
+Hunk #1 succeeded at 1760 (offset 54 lines).
+Hunk #2 succeeded at 1779 (offset 54 lines).
+
+patching file src/pinmame.mak
+Hunk #1 succeeded at 33 (offset 2 lines).
+Hunk #2 succeeded at 236 (offset 5 lines).
+Hunk #3 succeeded at 245 (offset 5 lines).
+Hunk #4 FAILED at 256.
+1 out of 4 hunks FAILED -- saving rejects to file src/pinmame.mak.rej
+
+patching file src/wpc/wpc.c
+Hunk #4 succeeded at 632 (offset 4 lines).
+Hunk #5 succeeded at 787 (offset 4 lines).
+
+patching file src/wpc/wpc.h
+Hunk #1 succeeded at 148 (offset 10 lines).
+Hunk #2 succeeded at 206 (offset 10 lines).
+
+patching file makefile.unix
+patching file src/osdepend.h
+patching file src/sound/votrax.c
+patching file src/unix/Makefile
+patching file src/unix/arch-defines-used.txt
+patching file src/unix/cab/glmame/glmame.cab
+patching file src/unix/cab/glmamejau/glmamejau.cab
+patching file src/unix/cab/trans/trans.cab
+patching file src/unix/config.c
+patching file src/unix/contrib/cutzlib-1.1.4/Makefile
+patching file src/unix/contrib/cutzlib-1.1.4/Makefile.in
+patching file src/unix/contrib/cutzlib-1.1.4/README
+patching file src/unix/contrib/cutzlib-1.1.4/README.mame
+patching file src/unix/contrib/cutzlib-1.1.4/adler32.c
+patching file src/unix/contrib/cutzlib-1.1.4/compress.c
+patching file src/unix/contrib/cutzlib-1.1.4/configure
+patching file src/unix/contrib/cutzlib-1.1.4/crc32.c
+patching file src/unix/contrib/cutzlib-1.1.4/deflate.c
+patching file src/unix/contrib/cutzlib-1.1.4/deflate.h
+patching file src/unix/contrib/cutzlib-1.1.4/gzio.c
+patching file src/unix/contrib/cutzlib-1.1.4/infblock.c
+patching file src/unix/contrib/cutzlib-1.1.4/infblock.h
+patching file src/unix/contrib/cutzlib-1.1.4/infcodes.c
+patching file src/unix/contrib/cutzlib-1.1.4/infcodes.h
+patching file src/unix/contrib/cutzlib-1.1.4/inffast.c
+patching file src/unix/contrib/cutzlib-1.1.4/inffast.h
+patching file src/unix/contrib/cutzlib-1.1.4/inffixed.h
+patching file src/unix/contrib/cutzlib-1.1.4/inflate.c
+patching file src/unix/contrib/cutzlib-1.1.4/inftrees.c
+patching file src/unix/contrib/cutzlib-1.1.4/inftrees.h
+patching file src/unix/contrib/cutzlib-1.1.4/infutil.c
+patching file src/unix/contrib/cutzlib-1.1.4/infutil.h
+patching file src/unix/contrib/cutzlib-1.1.4/maketree.c
+patching file src/unix/contrib/cutzlib-1.1.4/trees.c
+patching file src/unix/contrib/cutzlib-1.1.4/trees.h
+patching file src/unix/contrib/cutzlib-1.1.4/uncompr.c
+patching file src/unix/contrib/cutzlib-1.1.4/zconf.h
+patching file src/unix/contrib/cutzlib-1.1.4/zlib.h
+patching file src/unix/contrib/cutzlib-1.1.4/zutil.c
+patching file src/unix/contrib/cutzlib-1.1.4/zutil.h
+patching file src/unix/contrib/frontends/Mameload-Fvwm95
+patching file src/unix/contrib/frontends/mamex
+patching file src/unix/contrib/frontends/mamex.new
+patching file src/unix/contrib/frontends/readme
+patching file src/unix/contrib/frontends/readme.tkmame
+patching file src/unix/contrib/frontends/tkmame.pl
+patching file src/unix/contrib/frontends/xmameload/xmameload.c
+patching file src/unix/contrib/frontends/xmameload/xmameload.fd
+patching file src/unix/contrib/frontends/xmameload/xmameload.h
+patching file src/unix/contrib/kxmame
+patching file src/unix/contrib/patches/alsa.c
+patching file src/unix/contrib/patches/boundary-check-patch
+patching file src/unix/contrib/patches/configure.in
+patching file src/unix/contrib/patches/esound.diff
+patching file src/unix/contrib/patches/readme
+patching file src/unix/contrib/patches/word-align-patch
+patching file src/unix/contrib/porting/fix-comments.c
+patching file src/unix/contrib/porting/porting.txt
+patching file src/unix/contrib/porting/prep-new-mame
+patching file src/unix/contrib/porting/prep-new-mess
+patching file src/unix/contrib/porting/readme
+patching file src/unix/contrib/porting/strip_
+patching file src/unix/contrib/readme
+patching file src/unix/contrib/tools/Sample_Intel_Compiler_Wrapper_Script
+patching file src/unix/contrib/tools/makecd_mame2.pl
+patching file src/unix/contrib/tools/mame-cd
+patching file src/unix/contrib/tools/mame-listmissing
+patching file src/unix/contrib/tools/mame_perl-1.3/README
+patching file src/unix/contrib/tools/mame_perl-1.3/mame_merge
+patching file src/unix/contrib/tools/mame_perl-1.3/mame_parse
+patching file src/unix/contrib/tools/mame_perl-1.3/mame_sets
+patching file src/unix/contrib/tools/mame_perl-1.3/zipcmp
+patching file src/unix/contrib/tools/mame_perl-1.3/zipfix
+patching file src/unix/contrib/tools/mamecds-1.0/Makefile
+patching file src/unix/contrib/tools/mamecds-1.0/include/gamelist.h
+patching file src/unix/contrib/tools/mamecds-1.0/include/html.h
+patching file src/unix/contrib/tools/mamecds-1.0/include/mamecds.h
+patching file src/unix/contrib/tools/mamecds-1.0/include/utils.h
+patching file src/unix/contrib/tools/mamecds-1.0/src/gamelist.c
+patching file src/unix/contrib/tools/mamecds-1.0/src/html.c
+patching file src/unix/contrib/tools/mamecds-1.0/src/main.c
+patching file src/unix/contrib/tools/mamecds-1.0/src/mamecds.c
+patching file src/unix/contrib/tools/modelines
+patching file src/unix/contrib/tools/readme
+patching file src/unix/contrib/tools/romalizer/romalizer
+patching file src/unix/contrib/tools/romalizer/romalizer.eng
+patching file src/unix/contrib/tools/romalizer/romalizer.es
+patching file src/unix/contrib/tools/romulan.pl
+patching file src/unix/contrib/tools/xlistdev.c
+patching file src/unix/contrib/tools/xmame-screensaver
+patching file src/unix/devices.c
+patching file src/unix/devices.h
+patching file src/unix/dirio.c
+patching file src/unix/dirty.c
+patching file src/unix/doc/AIX-install-notes
+patching file src/unix/doc/changes.opengl
+patching file src/unix/doc/changes.unix
+patching file src/unix/doc/dga2.txt
+patching file src/unix/doc/liesmich.unix
+patching file src/unix/doc/makedoc.sh
+patching file src/unix/doc/mame/ctrlr.txt
+patching file src/unix/doc/mame/gamelist.txt
+patching file src/unix/doc/mame/listinfo.txt
+patching file src/unix/doc/mame/mame.txt
+patching file src/unix/doc/mame/msdos.txt
+patching file src/unix/doc/mame/whatsnew.txt
+patching file src/unix/doc/mame/whatsold.txt
+patching file src/unix/doc/mame/windows.txt
+patching file src/unix/doc/mess/cgafont.txt
+patching file src/unix/doc/mess/compilewin.html
+patching file src/unix/doc/mess/credits.txt
+patching file src/unix/doc/mess/imgtool.txt
+patching file src/unix/doc/mess/messhelp.txt
+patching file src/unix/doc/mess/messnew.txt
+patching file src/unix/doc/mess/messold.txt
+patching file src/unix/doc/mess/messroms.txt
+patching file src/unix/doc/mess/sysinfo.dat
+patching file src/unix/doc/mess/windows.txt
+patching file src/unix/doc/multiplayer-readme.txt
+patching file src/unix/doc/xmame-doc-1.html
+patching file src/unix/doc/xmame-doc-2.html
+patching file src/unix/doc/xmame-doc-3.html
+patching file src/unix/doc/xmame-doc-4.html
+patching file src/unix/doc/xmame-doc-5.html
+patching file src/unix/doc/xmame-doc-6.html
+patching file src/unix/doc/xmame-doc-7.html
+patching file src/unix/doc/xmame-doc-8.html
+patching file src/unix/doc/xmame-doc.html
+patching file src/unix/doc/xmame-doc.lyx
+patching file src/unix/doc/xmame-doc.man.skel
+patching file src/unix/doc/xmame-doc.sgml
+patching file src/unix/doc/xmame-doc.txt
+patching file src/unix/doc/xmame-gdoc-1.html
+patching file src/unix/doc/xmame-gdoc-2.html
+patching file src/unix/doc/xmame-gdoc-3.html
+patching file src/unix/doc/xmame-gdoc-4.html
+patching file src/unix/doc/xmame-gdoc-5.html
+patching file src/unix/doc/xmame-gdoc-6.html
+patching file src/unix/doc/xmame-gdoc-7.html
+patching file src/unix/doc/xmame-gdoc-8.html
+patching file src/unix/doc/xmame-gdoc.html
+patching file src/unix/doc/xmame.6
+patching file src/unix/doc/xmame.css
+patching file src/unix/doc/xmamerc.dist
+patching file src/unix/doc/xmess.6
+patching file src/unix/doc/xmessrc.dist
+patching file src/unix/effect.c
+patching file src/unix/effect.h
+patching file src/unix/fileio.c
+patching file src/unix/frameskip-drivers/barath.c
+patching file src/unix/frameskip-drivers/dos.c
+patching file src/unix/fronthlp.c
+patching file src/unix/ident.c
+patching file src/unix/install-sh
+patching file src/unix/joystick-drivers/XInputDevices.c
+patching file src/unix/joystick-drivers/XInputDevices.h
+patching file src/unix/joystick-drivers/joy_SDL.c
+patching file src/unix/joystick-drivers/joy_i386.c
+patching file src/unix/joystick-drivers/joy_pad.c
+patching file src/unix/joystick-drivers/joy_ps2.c
+patching file src/unix/joystick-drivers/joy_usb.c
+patching file src/unix/joystick-drivers/joy_x11.c
+patching file src/unix/joystick-drivers/pad.h
+patching file src/unix/keyboard.c
+patching file src/unix/keyboard.h
+patching file src/unix/main.c
+patching file src/unix/mode.c
+patching file src/unix/nec765_dummy.c
+patching file src/unix/network.c
+patching file src/unix/osd_cpu.h
+patching file src/unix/osdutils.h
+patching file src/unix/osinline.h
+patching file src/unix/parallel.c
+patching file src/unix/snprintf.c
+patching file src/unix/sound-drivers.old/aix.c
+patching file src/unix/sound-drivers.old/irix.c
+patching file src/unix/sound-drivers.old/netbsd.c
+patching file src/unix/sound-drivers.old/nosound.c
+patching file src/unix/sound-drivers.old/solaris.c
+patching file src/unix/sound-drivers.old/soundkit.m
+patching file src/unix/sound.c
+patching file src/unix/sysdep/COPYING.LIB
+patching file src/unix/sysdep/begin_code.h
+patching file src/unix/sysdep/blit_2.h
+patching file src/unix/sysdep/blit_3.h
+patching file src/unix/sysdep/dsp-drivers/alsa.c
+patching file src/unix/sysdep/dsp-drivers/arts.c
+patching file src/unix/sysdep/dsp-drivers/artssound.c
+patching file src/unix/sysdep/dsp-drivers/coreaudio.c
+patching file src/unix/sysdep/dsp-drivers/esound.c
+patching file src/unix/sysdep/dsp-drivers/io-audio.c
+patching file src/unix/sysdep/dsp-drivers/irix.c
+patching file src/unix/sysdep/dsp-drivers/irix_al.c
+patching file src/unix/sysdep/dsp-drivers/netbsd.c
+patching file src/unix/sysdep/dsp-drivers/oss.c
+patching file src/unix/sysdep/dsp-drivers/sdl.c
+patching file src/unix/sysdep/dsp-drivers/solaris.c
+patching file src/unix/sysdep/dsp-drivers/soundkit.m
+patching file src/unix/sysdep/dsp-drivers/waveout.c
+patching file src/unix/sysdep/end_code.h
+patching file src/unix/sysdep/fifo.h
+patching file src/unix/sysdep/misc.c
+patching file src/unix/sysdep/misc.h
+patching file src/unix/sysdep/mixer-drivers/oss.c
+patching file src/unix/sysdep/mixer-drivers/solaris.c
+patching file src/unix/sysdep/plugin_manager.c
+patching file src/unix/sysdep/plugin_manager.h
+patching file src/unix/sysdep/plugin_manager_priv.h
+patching file src/unix/sysdep/rc.c
+patching file src/unix/sysdep/rc.h
+patching file src/unix/sysdep/rc_priv.h
+patching file src/unix/sysdep/sound_stream.c
+patching file src/unix/sysdep/sound_stream.h
+patching file src/unix/sysdep/sound_stream_priv.h
+patching file src/unix/sysdep/sysdep_display.c
+patching file src/unix/sysdep/sysdep_display.h
+patching file src/unix/sysdep/sysdep_display_priv.h
+patching file src/unix/sysdep/sysdep_dsp.c
+patching file src/unix/sysdep/sysdep_dsp.h
+patching file src/unix/sysdep/sysdep_dsp_plugins.h
+patching file src/unix/sysdep/sysdep_dsp_priv.h
+patching file src/unix/sysdep/sysdep_mixer.c
+patching file src/unix/sysdep/sysdep_mixer.h
+patching file src/unix/sysdep/sysdep_mixer_plugins.h
+patching file src/unix/sysdep/sysdep_mixer_priv.h
+patching file src/unix/sysdep/sysdep_palette.c
+patching file src/unix/sysdep/sysdep_palette.h
+patching file src/unix/sysdep/unused/parser.c
+patching file src/unix/sysdep/unused/parser.h
+patching file src/unix/ticker.c
+patching file src/unix/unix.mak
+patching file src/unix/video-drivers/SDL-keytable.h
+patching file src/unix/video-drivers/SDL.c
+patching file src/unix/video-drivers/blit.h
+patching file src/unix/video-drivers/blit_core.h
+patching file src/unix/video-drivers/fxgen.c
+patching file src/unix/video-drivers/fxvec.c
+patching file src/unix/video-drivers/ggi.c
+patching file src/unix/video-drivers/gl-disp-fetch.hc
+patching file src/unix/video-drivers/gl-disp-var.h
+patching file src/unix/video-drivers/gl-disp-var.hc
+patching file src/unix/video-drivers/glcab.c
+patching file src/unix/video-drivers/glcaps.c
+patching file src/unix/video-drivers/glcaps.h
+patching file src/unix/video-drivers/gldirty.c
+patching file src/unix/video-drivers/gldirty.h
+patching file src/unix/video-drivers/glexport.c
+patching file src/unix/video-drivers/glgen.c
+patching file src/unix/video-drivers/gljpg.c
+patching file src/unix/video-drivers/glmame.h
+patching file src/unix/video-drivers/gltool.c
+patching file src/unix/video-drivers/gltool.h
+patching file src/unix/video-drivers/glu-disp-fetch.hc
+patching file src/unix/video-drivers/glu-disp-var.h
+patching file src/unix/video-drivers/glu-disp-var.hc
+patching file src/unix/video-drivers/glvec.c
+patching file src/unix/video-drivers/glx-disp-fetch.hc
+patching file src/unix/video-drivers/glx-disp-var.h
+patching file src/unix/video-drivers/glx-disp-var.hc
+patching file src/unix/video-drivers/glxtool.c
+patching file src/unix/video-drivers/glxtool.h
+patching file src/unix/video-drivers/openstep.m
+patching file src/unix/video-drivers/openstep_input.m
+patching file src/unix/video-drivers/phkeyboard.h
+patching file src/unix/video-drivers/photon2.c
+patching file src/unix/video-drivers/photon2.h
+patching file src/unix/video-drivers/photon2_input.c
+patching file src/unix/video-drivers/photon2_overlay.c
+patching file src/unix/video-drivers/photon2_window.c
+patching file src/unix/video-drivers/svgafx.c
+patching file src/unix/video-drivers/svgainput.c
+patching file src/unix/video-drivers/svgainput.h
+patching file src/unix/video-drivers/svgalib.c
+patching file src/unix/video-drivers/twkmodes.h
+patching file src/unix/video-drivers/twkuser.c
+patching file src/unix/video-drivers/twkuser.h
+patching file src/unix/video-drivers/vectorgen.c
+patching file src/unix/video-drivers/vroot.h
+patching file src/unix/video-drivers/wgl-disp-fetch.hc
+patching file src/unix/video-drivers/wgl-disp-var.h
+patching file src/unix/video-drivers/wgl-disp-var.hc
+patching file src/unix/video-drivers/wgltool.c
+patching file src/unix/video-drivers/wgltool.h
+patching file src/unix/video-drivers/x11-avi.c
+patching file src/unix/video-drivers/x11.c
+patching file src/unix/video-drivers/x11.h
+patching file src/unix/video-drivers/x11_window.c
+patching file src/unix/video-drivers/xf86_dga.c
+patching file src/unix/video-drivers/xf86_dga1.c
+patching file src/unix/video-drivers/xf86_dga2.c
+patching file src/unix/video-drivers/xfx.c
+patching file src/unix/video-drivers/xgl.c
+patching file src/unix/video-drivers/xil.c
+patching file src/unix/video-drivers/xinput.c
+patching file src/unix/video-drivers/xkeyboard.h
+patching file src/unix/video.c
+patching file src/unix/xmame.6-1
+patching file src/unix/xmame.6-3
+patching file src/unix/xmame.h
+patching file src/unix/xmamerc-keybinding-notes.txt
+patching file src/wpc/serial.c
+patching file src/wpc/sim.h
+
+
+
+
+========================================
+
+HAVE_VSNPRINTF
+HAVE_SNPRINTF
+
+_vsnprintf
+_snprintf
+_stricmp
+_strcmpi
+_strnicmp
+_str
+HAS_vsnprintf
+HAS_snprintf
+
+_vsprintf
+_vnprintf
+_vprintf
+_sprintf
+
+
+Specialities:
+- src/mamedbg.c
+CONFIG_FOR_FREEWPC
+
+* src/osdepend.h
+#ifdef PINMAME
+#include "pinmame.h"
+#endif
+? What for?
+
+* src/wpc/sim.h
+#include "osdepend.h"
+? What for?
+
+* src/wpc/wpc.c
+orkin stuff (Orkin debugger)
+serial stuff (WPC_SERIAL_...)
+
+* src/wpc/wpc.h
+orkin stuff (Orkin debugger)
+serial stuff (WPC_SERIAL_...)
+ticket dispenser stuff (WPC_SERIAL_...)
+
+* src\sound\votrax.c
+-#include "windows.h"
++typedef unsigned char byte;
++
+
+* src\pinmame.mak
++DRVLIBS += $(PINOBJ)/serial.o
+removed LDFLAGS -Xlinker --cref

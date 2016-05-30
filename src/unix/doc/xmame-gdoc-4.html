@@ -1,0 +1,484 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+ <TITLE>XMAME/XMESS DOKUMENTATION: Kommentare und Anmerkungen zu speziellen
+ Anzeigearten </TITLE>
+ <LINK HREF="xmame-gdoc-5.html" REL=next>
+ <LINK HREF="xmame-gdoc-3.html" REL=previous>
+ <LINK HREF="xmame-gdoc.html#toc4" REL=contents>
+ <link rel="stylesheet" href="xmame.css" type="text/css" >
+</HEAD>
+<BODY BACKGROUND="img/xmame.jpg" BGPROPERTIES="fixed" >
+<A HREF="xmame-gdoc-5.html">Weiter</A> <A HREF="xmame-gdoc-3.html">Zurück</A> <A HREF="xmame-gdoc.html#toc4">Inhalt</A>
+<HR>
+<H2><A NAME="Display subsystem specific comments and notes"></A>  <A NAME="s4">4.
+Kommentare und Anmerkungen zu speziellen Anzeigearten</A></H2>
+
+<H2><A NAME="ss4.1">4.1 FXMame, ein Glide Treiber für XMame</A>
+</H2>
+
+<P>Die neueste Version diese Treibers kann bei 
+<A HREF="http://glmame.linuxgames.com">http://glmame.linuxgames.com</A>
+ gefunden werden.<H3>Voraussetzungen</H3>
+
+<P>Um FXMame zum Laufen zu bekommen muss folgendes vorhanden sein:<br>
+<UL>
+<LI>eine 3Dfx Karte</LI>
+<LI>Glide 2x</LI>
+<LI>der XMame Sourcecode</LI>
+</UL>
+<H3>Übersetzen und Installieren</H3>
+
+<P>FXMame kommt in zwei &quot;Geschmacksrichtungen&quot;: xfx unf svgafx. Die
+xfx-Version läuft unter X11. Es nutzt ein X-Fenster für die Eingabe. Die
+svgafx-Vesion kann von der Konsole aus gestartet werden und nutzt die SVGAlib
+zur Eingabe. Beide nutzen die 3Dfx-Hardware zum Rendern.<br>
+<P>Um FXMame zu installieren folge der allgemeinen Anleitung von XMame. Um den
+Glide Treiber zuzuweisen, ändere folgendes im Makefile:
+<UL>
+<LI>wähle entweder &quot;xfx&quot; oder &quot;svgafx&quot; als Anzeigeart (display
+method)</LI>
+<LI>konfiguriere die Glide Variablen entsprechend Deiner Glide Installation</LI>
+</UL>
+<P>Die ausführbaren Dateien von FXMame heissen &quot;xmame.xfx&quot; und
+&quot;xmame.svgafx&quot;.<br>
+<H3>Starten</H3>
+
+<P>FXMame startet mit den selben Parametern und nutzt die selben
+Tastaturkommandos wie xmame.x11.<br>
+<br>
+Einige neue Tastaturkommandos wurden für den Glidetreiber hinzugefügt:
+<UL>
+<LI>STRG-Rechts + A -- aktivieren von Antialiasing in Vector Spielen </LI>
+<LI>STRG-Rechts + B -- aktivieren der bilinearen Filterung</LI>
+</UL>
+<P>Der Glide Treiber fügt auch einige Kommandozeilen Optionen hinzu:<PRE>
+    -fxgama &lt;Wert&gt; Wert der 3Dfx Gamma Korrekur
+</PRE>
+<P>Bitte beachten, dass&nbsp;ich, um die fps in Vector Spielen anzeigen zu
+können, die Spielebitmap über die Vectoranzeige legen musste. Dies geschah,
+weil ich die Bitmap in Vector Spielen umgehen musste. Das Zeichnen der Bitmap
+belastet die CPU enorm, deshalb bricht die Geschwindigkeit der Spiele beim
+Anzeigen der fps ein. (Ich weiss, nicht gerade ideal, aber wenn Du die Framerate
+rausfinden willst ....).<br>
+<H3>Allgemeine Fragen (FAQ)</H3>
+
+<P>Q: Wenn ich FXMame starte bekomme ich einen Core Dump.<P>A: Bitte
+sicherstellen, dass FXame als root gestartet wird. Root-Rechte werden für den
+Zugriff auf 3Dfx-Hardware benötigt.<P>Q: Wenn ich xmame.xfx starte, dann hängt
+das Spiel beim Initialisieren.<P>A: Läuft gerade KDE ? Manchmal funktioniert
+dann die Tastatur unter KDE nicht. Wenn Du dieses Problem hast, dann wechsle den
+Fenstermanager oder benutze stattdessen xmame.svgafx.<H3>Aktuelle
+Einschränkungen/Bugs</H3>
+
+<UL>
+<LI>Antialiasing funktioniert nicht so gut wie es sollte</LI>
+<LI>Eingabeprobleme unter KDE</LI>
+</UL>
+<H3>Zukünftige Neuerungen&nbsp;</H3>
+
+<UL>
+<LI>Optimierung des Codes zum Zeichnen, damit nur die Teile der Bitmap neu
+  gezeichnet werden, die sich geändert haben.</LI>
+</UL>
+<H3>Lizenz</H3>
+
+<P>Der Code von FXMame steht unter dem Copyright (1998) von Mike Oliphant. Es kann
+benutzt und weitergegeben werden unter den selben Bedingungen wie in der MAME
+Lizenz beschrieben.<H3>Version History (im englischen Original)</H3>
+
+<P>v0.5 -- December 11th, 1998 ---------------------------
+<UL>
+<LI>implemented long copies in screen update</LI>
+<LI>added dirty handling. this greatly increases the speed of games
+that support the dirty update strategy (although most of them are
+older games that already ran at full speed on modern hardware)</LI>
+<LI>merged source with xmame b8.1</LI>
+</UL>
+<P>v0.4 -- October 30th, 1998 --------------------------
+<UL>
+<LI>improved alpha handling in vector games - now bitmapped overlays
+do not dim the screen o added svgalib support (xmame.svgafx) o fixed
+a tiling bug that gave artifacts on texture tile boundaries</LI>
+</UL>
+<P>v0.3 -- October 29th, 1998 --------------------------
+<UL>
+<LI>got rid of extra lines in vector games o added bitmap overlay
+in vector games to show options/fps o added antialiasing in vector
+games</LI>
+</UL>
+<P>v0.2 -- October 28th, 1998 --------------------------
+<UL>
+<LI>added screenshots o added 3Dfx gamma adjustment o added direct
+acceleration of vector games (still buggy)</LI>
+</UL>
+<P>v0.1 -- October 27th, 1998 --------------------------
+<UL>
+<LI>first public release</LI>
+</UL>
+<H3>Author</H3>
+
+<P>Mike Oliphant <CODE>
+<A HREF="mailto:oliphant@ling.ed.ac.uk">(oliphant@ling.ed.ac.uk)</A></CODE> 
+<A HREF="http://glmame.linuxgames.com">http://glmame.linuxgames.com</A><P>
+<H2><A NAME="ss4.2">4.2 GLMame, ein OPENGL Treiber für XMame</A>
+</H2>
+
+<P>Die neueste Version dieses Treibers kann unter <a HREF="http://www.jausoft.com/glmame.html">http://www.jausoft.com/glmame.html</a>
+gefunden werden.<H3>Voraussetzungen</H3>
+
+<P>Für GLMame ist folgendes notwendig:&nbsp;
+<UL>
+<LI>Ein OpenGL Treiber</LI>
+<LI>libjpeg</LI>
+<LI>Hardware 3D-Beschleunigung (wenn überhaupt eine vernünftige Framerate
+  rauskommen soll)</LI>
+<LI>der Source-Code von XMame</LI>
+</UL>
+<H3>Übersetzen und Installieren</H3>
+
+<P>Die allgemeinen Anweisungen zur Installation von XMame beachten. Um den OpenGL
+Treiber zu verwenden muss folgendes im Makefile geändert werden:
+<UL>
+<LI>Wähle &quot;xgl&quot; als Anzeigeart aus</LI>
+<LI>Für Debug-Informationen zur Laufzeit, füge &quot;-DGLDEBUG&quot; zur
+  Variablen &quot;GLCFLAGS&quot; hinzu.</LI>
+<LI>GLU version 1.2 is recommended (e.g., from SGI). If you use Mesa's GLU, you may have to add " -DGLU_VERSION_1_2" to the " GLCFLAGS".</LI>
+<LI>GLU Version 1.2 wird benötigt (z.B. von SGI). Wenn Du Mesa-GLU benutzt,
+  dann muss ggf. " -DGLU_VERSION_1_2" bei der Variablen &quot;GLCFLAGS&quot;
+  hinzugefügt werden.</LI>
+</UL>
+<P>Die ausführbare Datei von GLMame heisst &quot;xmame.xgl&quot;<H3>Starten</H3>
+
+<P>xmame.xgl startet mit den selben Parametern und nutzt die selben
+Tastaturkommandos wie xmame.x11.<P>Das Programm startet im Cabinet-Modus. Weil
+es auch nett und recht &quot;cool&quot; ist, willst Du sicher von nun an im
+Fullscreen-Modus spielen.<P>
+Einige neue Tastaturkommandos wurden für den OpenGL-Treiber hinzugefügt:
+<UL>
+<LI>ALT-Rechts + A -- Antialias Filtern ein-/ausschalten (Vektorspiele)</LI>
+<LI>ALT-Rechts + B -- Bilineares Filtern ein-/ausschalten (Rasterspiele)</LI>
+<LI>ALT-Rechts + C -- Cabinet/Fullscreen ein-/ausschalten (Beide)</LI>
+<LI>ALT-Rechts + F -- Vollbild/Startgröße ein-/ausschalten (Beide)</LI>
+<LI>ALT-Rechts + O -- Draw Bitmap ein-/ausschalten (Beide, macht aber bei
+  Rasterspielen keinen Sinn, beschleunigt Vektorspiele)</LI>
+<LI>ALT-Rechts + T -- nachleuchtende Spuren ein-/ausschalten (Vektorspiele)</LI>
+<LI>ALT-Rechts + + -- Lichtstärke erhöhen (Vektorspiele)</LI>
+<LI>ALT-Rechts + -&nbsp; -- Lichtstärke verringern (Vektorspiele)</LI>
+</UL>
+<P>Der OpenGL-Treiber bringt auch einige Kommandozeilen-Optionen hinzu:<PRE>    -[no]fullscreen         Starten im Vollbildmodus
+			    (default: abgeschaltet)</PRE>
+<PRE>    -[no]gldblbuffer        Doppeltes Puffern ein-/ausschalten
+                            (default: aktiviert)
+
+    -gltexture_size &lt;int&gt;   die maximale Breite und Höhe eines Texturensegments                            
+			    erzwingen (default: autosize)
+
+    -[no]glforceblitmode /  Bitter in Echtfarben-Modi 15/32bpp erzwingen
+    -[no]glblit             (default: aktiviert)
+
+    -[no]glext78 /          die Benutzung der GL extension number 78 erzwingen,
+    -[no]glext              falls vorhanden (paletted texture)
+                            (default: aktiviert)</PRE>
+<PRE>    -[no]glbilinear /       bilineares Filtern ein-/ausschalten
+    -[no]glbilin            (default: aktiviert)
+
+    -[no]gldrawbitmap /     zeichnen der Bitmap ein-/ausschalten;  
+    -[no]glbitmap           z.B. in Vektorspielen abschalten zur Geschwindigkeitserhöhung
+                            (default: aktiviert)
+
+    -[no]glcolormod         Farbmodulation (Intensität, Gamma) ein-/ausschalten
+    -[no]glcmod             (default: aktiviert)
+                            
+    -glbeam &lt;float&gt;         die Lichtstärke für Vektorspiele setzen
+                            (default: 1.0)
+
+    -[no]glalphablending /  Alpha-Blendung ein-/ausschalten, falls vorhanden
+    -[no]glalpha            (default: aktiviert)
+
+    -[no]glantialias /      Antialiasing ein-/ausschalten
+    -[no]glaa               (default: aktiviert)
+
+    -gllibname /            die OpenGL-Bibliothek angeben, die dynamisch geladen werden soll
+    -gllib &lt;string&gt;         (default: libGL.so)
+
+    -glulibname /           die GLU-Bibliothek angeben, die dynamisch geladen werden soll
+    -glulib &lt;string&gt;        (default: libGLU.so)
+
+    -[no]cabview            im Cabinet Anzeigemodus starten/nicht starten
+                            (default: nicht in diesem modus starten)
+
+    -cabinet &lt;cabname&gt;      welches Cabinet Modell soll genutzt werden ?
+                            (default: glmamejau)
+ 
+   -glres &lt;string&gt;          Spiele immer skalieren auf &lt;Xres&gt;x&lt;Yres&gt;, 
+                            Seitenverhältnis beibehalten. 
+                            Dieses überschreibt die Scale-Option. 
+	 		    Dieses z.B. für Voodoo1 Grafikkarten nutzen
+                            mit: &quot;-glres 640x480&quot;
+</PRE>
+<P>Drei Cabinet-Modelle werden mitgeliefert. Der Standard, &quot;glmamejau&quot;,
+sieht aus wie ein Standard Arcade Cabinet, wie &quot;glmame&quot;. Der Letzte, &quot;trans&quot;, ist
+mit einem transparenten Spiele-Bildschirm, durch den man durchschauen kann.<P>Bitte
+beachten, dass&nbsp; um die fps in Vector Spielen anzeigen zu können, die
+Spielebitmap über die Vectoranzeige gelegt werden muss. Das Zeichnen der Bitmap
+geht bei einigen low-end hardwarebeschleunigten OpenGL-Implementationen voll auf
+die CPU. Man wird also leider bemerken, dass das Spiel beim überlagern der
+Bitmap langsamer wird.<P>Da das Überlagen der Bitmap der Standard ist, kann man
+es an-/ausschalten mit &quot;STRG_ALT-O&quot; oder beim Starten abschalten mit
+der Kommandozeilenoption &quot;-noglbitmap&quot;.<P>Ein Problem von Vector
+Spielen und dem Cabinet Modus hängt mit einigen Vector Punkten zusammen, dei
+nicht innerhalb der Bildschirmkoordinaten liegen. Man wird einige Vectoren
+ausserhalb der Mame Cabinet Anzeige feststellen.<br>
+<P><B>*** WICHTIG ! ***</B>
+<P>Wenn Du Problem mit GLMame hast, oder es recht langsam ist, dann lese den
+Abschnitt &quot;Allgemeine Fragen&quot;. Viele der Fragen, die mich per Mail
+erreichen, sind damit schon beantwortet.<H3>Cabinet Modelle</H3>
+
+<P>Die Information des Cabinet-Modells ist im Verzeichnis &quot;cab&quot;
+abgelegt, defniert in der Variable ROMPATH im Makefile. Pfadangaben, die in
+xmamerc oder mit der Umgebungsvariablen &quot;rompath&quot; gesetzt sind, werden
+derzeit nicht unterstützt. Jedes Cabinet-Modell hat sein eigenes
+Unterverzeichnis. GLMame versucht zuerst jedes, vom Benutzer angegebene Modell,
+zu laden (mit der Kommandozeilen-Option -cabinet) oder ein passendes Modell zum
+benutzten Spielnamen. Wenn dies fehlschlägt, dann wird das allgemeine
+&quot;glmame&quot;-Modell herangezogen.<br>
+<br>
+<br>
+Das Verzeichnis eines Cabinet-Modells muss eine Geometrie-Datei enthalten
+&lt;modelname&gt;.cab und .jpg Dateien für die Texturen auf dem Modell. Das
+Format der .cab Datei ist recht einfach zu begreifen, wenn man in der
+Programmierung mit OpenGL zu tun hatte. Es sieht wie eine Liste mit Anweisungen
+zur Anzeige unter OpenGL aus. Das Format ist folgendermaßen:
+<PRE>
+    cabv1.1</PRE>
+<P>Dieser Header muss die ersten 7 Stellen der Datei sein.
+<PRE>
+    #&lt;text&gt;</PRE>
+<P>Kommentare beginnen mit einem '#'
+<PRE>
+    begin &lt;type&gt;</PRE>
+<P>Anfang eines Geometrie Objektes, und zwar eines der folgenden (points,
+polygon, quads,
+quad_strip, screen). Jedes Statement &quot;begin&quot; muss mit einem
+entsprechenden &quot;end&quot; Statement geschlossen werden. Ein
+&quot;polygon&quot; gibt an, dass ein vertex pro, nun .... vertex benutzt wird.
+&quot;quads&quot; sind vierseitige polygone, jedes definiert durch vier Vertexe
+angeordnet um das Polygon. Ein &quot;quad_strip&quot; ist eine Reihe von
+vierseitigen Polygonen. Jedes teilt sich eine Ecke mit einem anderen Polygon
+davor und danach im &quot;strip&quot;.&nbsp; Ein &quot;screen&quot; ist ein
+&quot;quad&quot;, dass den derzeit gültigen Bereich im 3D Raum beschreibt, in
+dem das Spiel angezeigt wird. Nur einer von diesen sollte definiert sein. Für
+mehr Informationen siehe Beschreibungen zu OpenGL Geometry an.
+<PRE>
+    end</PRE>
+<P>Beendet das Geometry Objekt, dass mit &quot;begin&quot; angefangen hat.<PRE>
+    pointsize &lt;s&gt;</PRE>
+<P>Ändert die aktuelle Punktgröße auf die entsprechenden Wert (bestimmt durch
+eine Gleitkommazahl zwischen 0.0 und z.B. 20.0). Anmerkung: Das Statement kann
+nicht zwischen begin und end verwendet werden.<br>
+<PRE>    color4 &lt;r&gt; &lt;g&gt; &lt;b&gt;</PRE>
+<P>Ändert die aktuelle Farbe zu dem angegebenen RGB-Wert (definiert durch
+Gleitkommazahlen zwischen 0 und 1).
+<PRE>
+    color4 &lt;r&gt; &lt;g&gt; &lt;b&gt; &lt;a&gt;</PRE>
+<P>Ändert die aktuelle Farbe zu dem angegebenen RGBA-Wert (definiert durch
+Gleitkommazahlen zwischen 0 und 1).
+<PRE>
+    shading &lt;type&gt;</PRE>
+<P>Setzt den &quot;shading&quot; Type. Verfügbare Typen sind &quot;smooth&quot;
+(blendet Farben von einem vertex zum nächsten über) oder &quot;flat&quot;
+(macht dies nicht).
+<PRE>
+    vertex &lt;x&gt; &lt;y&gt; &lt;z&gt;</PRE>
+<P>Definiert ein vertex des aktuellen Geometrie Objektes als einen im Punkt im
+3D-Raum.
+<PRE>
+    numtex &lt;num&gt;</PRE>
+<P>Definiert die Anzahl verschiedener Texturen die geladen werden. Diese Angabe
+muss jeglicher &quot;loadtex&quot; Anweisung vorangehen.
+<PRE>
+    loadtex &lt;num&gt; &lt;width&gt; &lt;height&gt; &lt;filename&gt;</PRE>
+<P>Lädt Texture Nummer &lt;num&gt; aus einer .jpg Datei &lt;filename&gt;. Die
+.jpg-Datei MUSS &lt;width&gt; bei &lt;height&gt; Pixeln sein und beide Angaben
+&lt;width&gt; und &lt;height&gt; müssen ein Vielfaches von 2 sein (und muss mit
+den Hardwareanforderungen jeder 3D-Karte, mit der der Cabinet-Modus
+funktionieren soll, übereinstimmen --- 256x256 für 3Dfx).
+<PRE>
+    texcoord &lt;xcoord&gt; &lt;ycoord&gt;</PRE>
+<P>Setzt die Texturkoordinaten des nächsten vertex. Dies definiert, wo in
+2D-Texture Raum die vertex liegt.
+<PRE>
+    enable texture</PRE>
+<P>Aktiviert texture mapping (unter Benutzung der aktuell ausgwählten Textur).
+<PRE>
+    disable texture</PRE>
+<P>Schaltet das texture mapping ab.
+<PRE>
+    settex &lt;num&gt;</PRE>
+<P>Wählt die Texture &lt;num&gt; als nächste aus. Die Texture muss vorab
+geladen sein unter Benutzung von &quot;loadtex&quot;.
+<PRE>
+    camerapan &lt;num&gt;</PRE>
+<P>Startet die Definition der camera pan gefolgt von einer Anzahl &lt;num&gt;
+von Kamera Positionen. Nach der transision Definiton muss die Sequence pan durch
+eine &quot;end&quot; Anweisung abgeschlossen werden.
+<PRE>
+    goto &lt;lx&gt; &lt;ly&gt; &lt;lz&gt; &lt;px&gt; &lt;py&gt; &lt;pz&gt; &lt;nx&gt; &lt;ny&gt; &lt;nz&gt;</PRE>
+<P>Positoniert / reorientiert die Kamera. Die Argumente sind die selben wie beim
+OpenGL Komando &quot;gluLookAt()&quot;.&nbsp; Die Kamera ist bei Punkt
+&lt;lx,ly,lz&gt; positioniert, zeigt den Vektor &lt;px,py,pz&gt; entlang, mit
+&quot;up&quot; normal (die Richtung die oben ist für die Kamera)
+&lt;nx,ny,nz&gt;.
+<PRE>
+    moveto &lt;lx&gt; &lt;ly&gt; &lt;lz&gt; &lt;px&gt; &lt;py&gt; &lt;pz&gt; &lt;nx&gt; &lt;ny&gt; &lt;nz&gt; &lt;frames&gt;</PRE>
+<P>Bewegt die Kamera zu einer neuen Position (angegeben im Befehl
+&quot;goto&quot;). Das Versetzen geschieht über &lt;frames&gt; Frames.<br>
+<br>
+Alle Anweisungen müssen jeweils in einer neuen Zeile stehen. Benutze die
+(teilweise) kommentierte Datei glmamejau als ein Beispiel um
+anzufangen.<br>
+<H3>Allgemeine Fragen (FAQ)</H3>
+
+<P>Q: Ich bekomme nur ein paar Frames pro Sekunde. Das ist mist ! Warum nur ?<P>A1:
+Du lässt wahrscheinlich Mesa im Softwaremodus laufen. Du solltes die Datei &quot;README.3Dfx&quot;
+in Deinem Mesa-Paket durchlesen. Möglicherweise muss die Anweisung &quot;setenv MESA_GLX_FX fullscreen&quot;
+ausgeführt werden.<P>A2: Du brauchst eine Grafikkarte mit&nbsp;
+3D-Beschleunigung. Kauf Dir eine (siehe unten) !<P>Q: Wenn ich xmame.xgl starte, dann macht es
+nur einen Core-Dump. Das macht weniger Spass als 3D Pacman zu spielen. Und nun ?<P>A1:
+Wenn Du eine 3Dfx-Karte hast, dass muss xmame.xgl als root ausgeführt werden.
+Es sind Root-Rechte nötig, um auf die 3Dfx-Hardware zuzugreifen<P>A2: Wenn Du
+Mesa nutzt, dann musst Du auf Version 3.0 upgraden.<P>Q: Wenn ich xmame.xgl
+starte dann hängt
+das Spiel beim Initialisieren.
+<P>A: Läuft gerade KDE ? Manchmal funktioniert
+dann die Tastatur unter KDE nicht. Wenn Du dieses Problem hast, dann wechsle den
+Fenstermanager.
+<P>Q: Welche Grafikkarten funktionieren mit xmame.xgl ?<P>A: Derzeit haben wir
+folgende Erkenntnisse (Stand: 13.07.2001)
+<UL>
+<LI> Vodoo3 + DRI OpenGL Treiber (XFree86 4.0.2), mit der Kommandozeilenoption "-noglaa"
+  und 16bpp Farbtiefe beim X11 Server</LI>
+<LI> Vodoo1 + Mesa 3.4 + Glide, mit dem Aufruf " -glres 640x480" !</LI>
+<LI> GeForce + NVIDIA OpenGL Treiber + XFree86 4.0.2 und 16/24bpp Farbtiefe</LI>
+<LI>NVIDIA TNT2 + NVIDIA OpenGL Treiber + XFree86 4.0.2 mit dem Aufruf "-bpp 16"
+  und 16bpp (möglicherweise auch 24bpp&nbsp; ???) Farbtiefe (das Mapping der
+  OpenGL Farbpaletten ist fehlerhaft).</LI>
+<LI>NVIDIA TNT + NVIDIA OpenGL Treiber + XFree86 4.0.2 mit dem Aufruf "-bpp 16"
+  und 16bpp (möglicherweise auch 24bpp&nbsp; ???) Farbtiefe (das Mapping der
+  OpenGL Farbpaletten ist fehlerhaft).</LI>
+<LI> Matrox MGA 400 + DRI OpenGL Treiber (XFree86 4.0.2) mit dem Aufruf "-bpp 16", "-noglaa" (???)
+  und 16bpp (ggf.. auch 24bpp ???) Farbtiefe (das Mapping der OpenGL
+  Farbpaletten ist fehlerhaft).</LI>
+<LI> ATI R128 + DRI OpenGL Treiber (XFree86 4.1.0) mit den Aufrufen " -noglext78 -noglaa"
+  oder " -bpp 16 -noglaa" , wobei die letzteren Optionen etwas langsamer sind (ca. 5 fps).</LI>
+<li> LinuxPPC - Powerbook-Firewire + ATI R128: siehe oben !</li>
+</UL>
+<P>Alle oben angegebenen Treiber funktionieren mit der Option &quot;-bpp
+16&quot; und/oder &quot;-noglext78&quot;. Es sieht also danach aus, dass ein
+Fehler in der OpenGL Implementation verursacht, dass diese Treiber/Hardware
+Kombinationen nur mit den angegebenen Kommandozeilenoptionen funktionieren. Der
+Fehler könnte in diesen OpenGL-Funktionen liegen:
+<UL>
+<LI> glColorTableEXT</LI>
+<li> glColorSubTableEXT</li>
+</UL>
+<P>Eine derzeit schnelle und spassige Treiber/Hardware Kombination ist:
+<UL>
+<li> NVIDIA GeForce + NVIDIA OpenGL Treiber + XFree86 4.0.2; Ich habe eine GeForce256 (AGP)
+  getestet.</li>
+<li> Vodoo + DRI OpenGL Treiber (XFree86 4.0.2); Ich habe eine Vodoo3 getestet.</li>
+</UL>
+<P><br>
+Q: Wenn ich xmame.xgl starte, dann funktioniert gar nichts mehr.<br>
+<br>
+A: Lies die oben genannten Erkenntnisse ... und versuche
+<UL>
+<li>die Farbtiefe es X-Servers abändern (-bpp), z.B. mit 32bpp oder 24bpp oder
+  16bpp;</li>
+<li>die Kommandozeilenoption &quot;-bpp 16&quot;;</li>
+<li>die Kommandozeilenoption &quot;-noglaa&quot;;</li>
+<li>die Kommandozeilenoption &quot;-noglext&quot;.</li>
+</UL>
+<P>&nbsp;
+<H3>Aktuelle
+Einschränkungen/Bugs</H3>
+
+<UL>
+<LI>kein Clipping bei Vektor Spielen (meist im Cabinet-Modus zu bemerken)</LI>
+<LI>kein Einhalten des korrekten Seitenverhältnisses im Cabinet-Modus<br>
+</LI>
+</UL>
+<H3>Zukünftige Neuerungen&nbsp;</H3>
+
+<UL>
+<LI>bestehende Fehler beheben ... sind da welche ? Oder sind da nur ein paar
+  unbekannte Features ;-) ?&nbsp;</LI>
+<LI>Optimierung des Codes zum Zeichnen, damit nur die Teile der Bitmap neu
+  gezeichnet werden, die sich geändert haben.<br>
+  Das Coding optimieren ....</LI>
+</UL>
+<H3>Lizenz</H3>
+
+<p>Der Code von GLMmame basiert auf&nbsp; Mike Oliphant's GLMame Code Version
+0.6.</p>
+<p>Der Code von GLMame steht unter dem Copyright (1998) von Mike Oliphant. Es
+kann benutzt und weitergegeben werden unter den selben Bedingungen wie in der
+MAME Lizenz beschrieben.</p>
+<p>Seit GLMame Version 0.7 wurde der Code verändert und start verbessert von
+Sven Goethel -- keine Änderung der Lizenz !!</p>
+<H3><br>
+Version History (im englischen Original)</H3>
+
+<P>v0.83 -- March 29th, 2001 ---------------------------
+<UL>
+<li> Changed the code heavily to improve compatibility and speed. The new code is a re-merge of the GLMame32 code, which is a branch of Mike Oliphant's GLmame code version 0.6.</li>
+<li> For a detailed list, please consult the file changes.opengl within the distribution's documentation directory! You can also view the current changes.opengl here:
+  <a href="http://www.jausoft.com/glmame.html"> http://www.jausoft.com/glmame.html</a></li>
+</UL>
+
+<P><br>
+v0.6 -- December 14th, 1998 ---------------------------
+<UL>
+<LI>added support for systems that do not support paletted textures
+(SGI and solaris OpenGL implementations, for example)</LI>
+<LI>merged source with xmame b8.1</LI>
+</UL>
+<P>v0.5 -- October 30th, 1998 --------------------------
+<UL>
+<LI>fixed a bug with texturing being left on in bad places</LI>
+<LI>added 3Dfx gamma adjustment</LI>
+</UL>
+<P>v0.4 -- October 21st, 1998 --------------------------
+<UL>
+<LI>updated to work with xmame v0.34b5.2</LI>
+</UL>
+<P>v0.3 -- October 12th, 1998 --------------------------
+<UL>
+<LI>fixed verticle screen centering in fullscreen mode</LI>
+<LI>moved cabinet and camera panning information into a user-editable
+configuration file</LI>
+<LI>added 'trans' cabinet model o added double buffer, view type,
+and cabinet selection command-line options</LI>
+</UL>
+<P>v0.2 -- October 6th, 1998 -------------------------
+<UL>
+<LI>adding missing 'cab' directory</LI>
+</UL>
+<P>v0.1 -- October 5th, 1998 -------------------------
+<UL>
+<LI>first public release</LI>
+</UL>
+<H3>Author</H3>
+
+<P>Seit GLMame Version 0.7: Sven Goethel (<a href="mailto:sgoethel@jausoft.com">sgoethel@jausoft.com</a>)
+<a href="http://www.jausoft.com/glmame.html"> http://www.jausoft.com/glmame.html</a><br>
+<br>
+Bis GLMame Version 0.6: Mike Oliphant <CODE>
+<A HREF="mailto:oliphant@ling.ed.ac.uk">(oliphant@ling.ed.ac.uk)</A></CODE> 
+<A HREF="http://glmame.linuxgames.com">http://glmame.linuxgames.com</A><P>
+<HR>
+<A HREF="xmame-gdoc-5.html">Weiter</A> <A HREF="xmame-gdoc-3.html">Zurück</A> <A HREF="xmame-gdoc.html#toc4">Inhalt</A>
+</BODY>
+</HTML>

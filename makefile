@@ -101,6 +101,10 @@ endif
 # uncomment next line to include the MAME ROM debugger
 # DEBUG = 1
 
+# uncomment next line to include P-ROC support
+# see http://www.pinballcontrollers.com/
+# PROC = 1
+
 
 
 #-------------------------------------------------
@@ -110,11 +114,11 @@ endif
 
 # uncomment next line to include the symbols (for debugging)
 # [PinMAME] always create symbols file (separated from executable)
-SYMBOLS = 1
+#SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
 # [PinMAME] always create map file
-MAP = 1
+#MAP = 1
 
 # uncomment next line to generate verbose build information
 # VERBOSE = 1
@@ -141,6 +145,41 @@ X86_MIPS3_DRC = 1
 ##################   END USER-CONFIGURABLE OPTIONS   ######################
 ###########################################################################
 
+
+#-------------------------------------------------
+# macros for arithemtics
+# taken from http://www.cmcrossroads.com/ask-mr-make/6504-learning-gnu-make-functions-with-arithmetic
+#-------------------------------------------------
+
+# decode turns a number in x's representation into a integer for human
+# consumption
+decode = $(words $1)
+
+# encode takes an integer and returns the appropriate x's representation
+# of the number by chopping $1 x's from the start of input_int
+16 = x x x x x x x x x x x x x x x x
+max_int := $(foreach a,$(16),$(foreach b,$(16),$(foreach c,$(16),$(16)))))
+encode = $(wordlist 1,$1,$(max_int))
+
+# max returns the maximum of its arguments and min the minimum
+max = $(subst xx,x,$(join $1,$2))
+min = $(subst xx,x,$(filter xx,$(join $1,$2)))
+
+# The following operators return a non-empty string if their result
+# is true:
+#
+# gt   First argument greater than second argument
+# gte  First argument greater than or equal to second argument
+# lt   First argument less than second argument
+# lte  First argument less than or equal to second argument
+# eq   First argument is numerically equal to the second argument
+# ne   First argument is not numerically equal to the second argument
+gt = $(filter-out $(words $2),$(words $(call max,$1,$2)))
+lt = $(filter-out $(words $1),$(words $(call max,$1,$2)))
+eq = $(filter $(words $1),$(words $2))
+ne = $(filter-out $(words $1),$(words $2))
+gte = $(call gt,$1,$2)$(call eq,$1,$2)
+lte = $(call lt,$1,$2)$(call eq,$1,$2)
 
 #-------------------------------------------------
 # sanity check the configuration
@@ -178,7 +217,8 @@ endif
 # compiler, linker and utilities
 AR = @ar
 CC = @gcc
-LD = @gcc
+CPP = @g++
+LD = @g++
 ASM = @nasm
 ASMFLAGS = -f coff
 MD = -mkdir$(EXE)
@@ -186,10 +226,25 @@ RM = @rm -f
 #PERL = @perl -w
 OBJCOPY = @objcopy
 
+CC_VERSION := $(shell $(subst @,,$(CC)) -dumpversion)
+CC_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
+CC_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
+CC_PATCH := $(word 3,$(subst ., ,$(CC_VERSION)))
+
+CPP_VERSION := $(shell $(subst @,,$(CPP)) -dumpversion)
+CPP_MAJOR := $(word 1,$(subst ., ,$(CPP_VERSION)))
+CPP_MINOR := $(word 2,$(subst ., ,$(CPP_VERSION)))
+CPP_PATCH := $(word 3,$(subst ., ,$(CPP_VERSION)))
+
 
 #-------------------------------------------------
 # form the name of the executable
 #-------------------------------------------------
+
+# P-ROC builds just get the 'p' suffix and nothing more
+ifdef PROC
+PROCSUFFIX = p
+endif
 
 # debug builds just get the 'd' suffix and nothing more
 ifdef DEBUG
@@ -200,7 +255,7 @@ endif
 NAME = $(TARGET)
 
 # fullname is prefix+name+suffix+debugsuffix
-FULLNAME = $(PREFIX)$(NAME)$(SUFFIX)$(DEBUGSUFFIX)
+FULLNAME = $(PREFIX)$(NAME)$(SUFFIX)$(PROCSUFFIX)$(DEBUGSUFFIX)
 
 # add an EXE suffix to get the final emulator name
 EMULATOR = $(FULLNAME)$(EXE)
@@ -268,27 +323,45 @@ endif
 #-------------------------------------------------
 
 CFLAGS =
+CPPFLAGS =
 
 CFLAGS += -std=gnu99
+# gnu++98 is supported since 3.4.0
+#  check for >= 4
+ifeq ($(CPP_MAJOR),$(call gte,$(call encode,$(CPP_MAJOR)),$(call encode,4)))
+ CPPFLAGS += -std=gnu++98
+else
+#  check for >= 3.4
+ ifeq ($(CPP_MAJOR),$(call eq,$(call encode,$(CPP_MAJOR)),$(call encode,3)))
+  ifeq ($(CPP_MINOR),$(call gte,$(call encode,$(CPP_MINOR)),$(call encode,4)))
+   CPPFLAGS += -std=gnu++98
+  endif
+ endif
+endif
 
 # add -g if we need symbols, and ensure we have frame pointers
 # [PinMAME] not omiting frame pointers is very helpful for stack traces, and there's hardly a performance gain if you do omit
 ifdef SYMBOLS
 CFLAGS += -g
+CPPFLAGS += -g
 endif
 CFLAGS += -fno-omit-frame-pointer
+CPPFLAGS += -fno-omit-frame-pointer
 
 # add -v if we need verbose build information
 ifdef VERBOSE
 CFLAGS += -v
+CPPFLAGS += -v
 endif
 
 # add the optimization flag
 CFLAGS += -O$(OPTIMIZE)
+CPPFLAGS += -O$(OPTIMIZE)
 
 # if we are optimizing, include optimization options
 ifneq ($(OPTIMIZE),0)
 CFLAGS += $(ARCHOPTS)
+CPPFLAGS += $(ARCHOPTS)
 endif
 
 # add MAME 0.76 basic set of warnings
@@ -310,7 +383,27 @@ CFLAGS += \
 #	-Wmissing-prototypes \
 #	-Wmissing-declarations
 
+CPPFLAGS += \
+	-fstrict-aliasing \
+	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wpointer-arith -Wcast-align \
+	-Wshadow -Wundef \
+	-Wformat-security -Wwrite-strings \
+	-Wdisabled-optimization \
+#	-Waggregate-return (removed to eliminate warnings from p-roc and
+#	                    yaml-cpp functions returning structures, which
+#	                    is not a problem.)
+#	-Wredundant-decls
+#	-Wfloat-equal
+#	-Wunreachable-code -Wpadded
+#	-W had to remove because of the "missing initializer" warning
+#	-Wlarger-than-262144 \
+#	-Wcast-qual \
+#	-Wwrite-strings \
+#	-Wconversion
+
 CFLAGSPEDANTIC = $(CFLAGS) -pedantic
+CPPFLAGSPEDANTIC = $(CPPFLAGS) -pedantic
 
 
 #-------------------------------------------------
@@ -318,6 +411,13 @@ CFLAGSPEDANTIC = $(CFLAGS) -pedantic
 #-------------------------------------------------
 
 CFLAGS += \
+	-Isrc \
+	-Isrc/includes \
+	-Isrc/$(MAMEOS) \
+	-I$(OBJ)/cpu/m68000 \
+	-Isrc/cpu/m68000
+
+CPPFLAGS += \
 	-Isrc \
 	-Isrc/includes \
 	-Isrc/$(MAMEOS) \
@@ -349,7 +449,7 @@ endif
 
 # [PinMAME] avoid dynamic dependencies on Windows, so link statically
 ifeq ($(MAMEOS),windows)
-LDFLAGS += -static
+LDFLAGS += -static -static-libgcc
 endif
 
 
@@ -404,6 +504,7 @@ include src/core.mak
 include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
+include src/p-roc/p-roc.mak
 
 # if the MAME ROM debugger is not included, then remove objects for it
 ifndef DEBUG
@@ -422,11 +523,11 @@ CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS) $(DBGDEFS)
 extra:	$(TOOLS) $(TEXTS)
 
 # primary target(s)
-$(EMULATOR).full: $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
+$(EMULATOR).full: $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS) $(PROCOBJS)
 # always recompile the version string
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
-	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) -o $@ $(MAPFLAGS)
+	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(PROCOBJS) $(LIBS) $(DRVLIBS) $(PROCLIBS) -o $@ $(MAPFLAGS)
 
 ifdef SYMBOLS
 # [PinMAME] extract debug information into separate file, then strip executable and add a debug link to it

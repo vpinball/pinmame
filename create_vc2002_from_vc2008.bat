@@ -42,6 +42,15 @@ copy /V /-Y "VPinMAME_VC2008.vcproj" "VPinMAME_VC2002.vcproj"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"Version=^'9.00^'" /replace:"Version=^'7.00^'" /quotes /in:"VPinMAME_VC2002.vcproj" /out:"VPinMAME_VC2002.vcproj"
 @if errorlevel 1 goto manual
+@REM
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"InstallVPinMAME_VC2002.vcproj" /out:"InstallVPinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"PinMAME_VC2002.vcproj" /out:"PinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"PinMAME32_VC2002.vcproj" /out:"PinMAME32_VC2002.vcproj"
+@if errorlevel 1 goto manual
+@cscript "simplereplace.wsf" //nologo /search:";PROC_SUPPORT" /replace:"" /quotes /in:"VPinMAME_VC2002.vcproj" /out:"VPinMAME_VC2002.vcproj"
+@if errorlevel 1 goto manual
 
 @goto end
 

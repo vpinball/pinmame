@@ -1,0 +1,159 @@
+/* $Id: xmame.css,v 1.1 2002/06/07 04:45:05 l_g Exp $ */
+
+/*body {
+  color:             black;
+  background:        white;
+}*/
+
+a {
+/*  background:        white; */
+  color:             #3060f0;
+  font-weight:       bold;
+}
+
+/*
+a:link {
+  background:        white;
+  color:             #3838f0;
+}
+*/
+
+a:visited {
+/*  background:        white; */
+/*  color:             #702090; */
+  color:             #3060f0;
+  font-weight:       bold;
+}
+
+/*
+a:active {
+  background:        white;
+  color:             #2828f0;
+}
+*/
+
+a:hover {
+  background:        #e0e0e0;
+  color:             #cc5555;
+  font-weight:       bold;
+}
+
+span.learnmore {
+  background:        white;
+  color:             #553344;
+}
+
+.center, #logo {
+  text-align:        center;
+}
+
+p.lastupdate {
+  font-size:         xx-small;
+  margin-left:       0pt;
+  margin-right:      40pt;
+}
+
+div.banner {
+  border:            none;
+  padding:           0.2em 0.7em;
+  text-align:        center;
+  font-weight:       bold;
+}
+
+div.banner a:link, div.banner a:visited, div.banner {
+  background:        black;
+  text-decoration:   none;
+}
+
+div.banner, div.banner a:link, div.banner a:visited {
+  color:             white;
+}
+
+div.banner a:active {
+  background:        white;
+  color:             black;
+  text-decoration:   none;
+}
+
+p.small {
+  font-size:         small;
+}
+
+p.smallcenter {
+  text-align:        center;
+  font-size:         small;
+}
+
+h1 {
+  color:             black;
+  background:        rgb(150,150,255);
+  font-weight:       bold;
+  margin-top:        5pt;
+  margin-bottom:     5pt;
+}
+
+h2, h3 {
+  color:             black;
+  background:        rgb(200,200,255);
+  font-weight:       bold;
+  margin-top:        5pt;
+  margin-bottom:     9pt;
+  margin-left:       0px;
+  margin-right:      32px;
+}
+
+h4 {
+  color:             black;
+}
+
+p {
+  margin-left:       20pt;
+  margin-right:      30pt;
+  color:             black;
+}
+
+ul {
+  margin-right:      20px;
+  margin-left:       24px;
+}
+
+li {
+  margin-left:       9px;
+  color:             black;
+}
+
+#addy {
+  text-align:        center;
+  font-size:         small;
+  margin-top:        -7px;
+  font-family:       Arial, serif;
+  color:             black;
+  background:        white;
+}
+
+span.date {
+  text-decoration:   underline;
+}
+
+span.underline {
+  text-decoration:   underline;
+}
+
+.codesample {
+  font-family:       "Courier New", Courier, mono;
+}
+
+.codesampleblock {
+  font-family:       "Courier New", Courier, mono;
+  margin-left:       96px;
+  margin-right:      32px;
+}
+
+.smalltitle {
+  font-family:       verdana, san-serif;
+}
+
+.smalltext {
+  font-size:         x-small;
+  font-family:       verdana, san-serif;
+}

@@ -1,0 +1,212 @@
+### xmame running parameters ###
+
+### Digital sound related ###
+# dsp-plugin            <NULL> (not set)
+timer                   0
+
+### Sound mixer related ###
+# sound-mixer-plugin    <NULL> (not set)
+
+### Video Related ###
+bpp                     0
+heightscale             1
+widthscale              1
+autodouble              1
+scanlines               0
+artwork                 1
+frameskipper            0
+throttle                1
+sleepidle               0
+autoframeskip           1
+maxautoframeskip        8
+frameskip               0
+brightness              1.000000
+gamma                   1.000000
+
+### Vector Games Related ###
+# vectorres             <NULL> (not set)
+beam                    1.000000
+flicker                 0.000000
+antialias               1
+translucency            1
+
+### X11 Related ###
+x11-mode                0
+
+### X11-window Related ###
+cursor                  1
+mitshm                  1
+xsync                   1
+privatecmap             0
+xil                     1
+mtxil                   0
+run-in-root-window      0
+root_window_id          0
+geometry                640x480
+
+### XFree86 DGA Related ###
+
+### Video Mode Selection Related ###
+keepaspect              1
+displayaspectratio      1.330000
+
+### X11-input related ###
+grabmouse               0
+winkeys                 0
+
+### Sound Related ###
+sound                   1
+samples                 1
+samplefreq              22050
+bufsize                 3.000000
+volume                  -3
+# audiodevice           <NULL> (not set)
+# mixerdevice           <NULL> (not set)
+
+### Input Related ###
+joytype                 0
+analogstick             0
+mouse                   1
+
+### Fileio Related ###
+rompath                 /usr/local/share/xmame/roms
+snapshot_directory      .
+cheat_file              /usr/local/share/xmame/cheat.dat
+hiscore_file            /usr/local/share/xmame/hiscore.dat
+history_file            /usr/local/share/xmame/history.dat
+mameinfo_file           /usr/local/share/xmame/mameinfo.dat
+
+### Mame Related ###
+defaultgame             pacman
+language                english
+fuzzycmp                1
+cheat                   0
+# debug                   0
+
+### Frontend Related ###
+clones                  1
+
+### Internal verification list commands (only for developers) ###
+
+### Rom Identification Related ###
+
+### General Options ###
+
+### X11 keymapping ###
+#
+# mapkey	<Xcode>,<Scancode>
+#
+# Xcode means the HEX code of the key as appears in /usr/include/X11/keysymdef.h
+# Scancode means the hexadecimal code that represents the value used for Xmame
+# 	in keyboard inputs, as defined in src/unix/keyboard.h xmame source file
+# IMPORTANT: 
+#	1- Due to some limitations, only LATIN-1 X-codes ( 0x0000-0x00ff ) and
+#	Especial X-keycodes ( 0xff00-0xffff ) are supported
+#	2- Some keys are keyboard dependent: As Xmame works internally with
+#	Standard US-AT keyboard codes, you must take care in remmaping some keys
+#
+
+# An example: map space as "firebutton" (Mame predefines it as KEY_LCONTROL)
+# in symbolic Xlib/Mame notation it should be:
+#
+# mapkey XK_space,KEY_LCONTROL 
+# 
+# So, looking in X11/keysymdef.h and src/unix/keyboard.h, we'll write
+# mapkey 0x0020,0x001d
+#
+# (Other example). To use the F8 key to insert a coin, you should use
+# mapkey 0xffc5,0x0006
+
+### Suggested German keymap mods by Peter Trauner.
+#   <peter.trauner@jk.uni-linz.ac.at>
+#
+#mapkey 0xfe52,0x0029
+#mapkey 0x00df,0x000c
+#mapkey 0xfe51,0x000d
+#mapkey 0x00fc,0x001a
+#mapkey 0x002b,0x001b
+#mapkey 0x00f6,0x0027
+#mapkey 0x00e4,0x0028
+#mapkey 0x0023,0x002b
+#mapkey 0x0059,0x002c
+#mapkey 0x005a,0x0015
+#mapkey 0x002d,0x0035
+
+### SDL keymapping ###
+#
+# sdlmapkey	<SDLcode>,<Scancode>
+#
+# SDLcode means the HEX code of the key as it appears in 
+#       include/SDL/SDL_keysym.h
+# Scancode means the hexadecimal code that represents the value used for Xmame
+# 	in keyboard inputs, as defined in src/unix/keyboard.h xmame source file
+#
+
+# An example: map space as "firebutton" (Mame predefines it as KEY_LCONTROL)
+# in symbolic SDL/Mame notation it should be:
+#
+# sdlmapkey SDLK_SPACE,KEY_LCONTROL 
+# 
+# So, looking in X11/keysymdef.h and src/unix/keyboard.h, we'll write
+# sdlmapkey 0x0020,0x001d
+#
+# (Other example). To use the F8 key to insert a coin, you should use
+# sdlmapkey 0x0121,0x0006
+
+### Suggested French (azerty) SDL keymap mods by Luc Saillard.
+#
+#   SDLK_WORLD_18 ² => KEY_TILDE
+#sdlmapkey 0x00b2,0x0029
+#   SDLK_AMPERSAND  => KEY_1
+#sdlmapkey 0x0026,0x0002
+#   SDLK_WORLD_73 é => KEY_2
+#sdlmapkey 0x00e9,0x0003
+#   SDLK_QUOTEDBL   => KEY_3
+#sdlmapkey 0x0022,0x0004
+#   SDLK_QUOTE      => KEY_4
+#sdlmapkey 0x0027,0x0005
+#   SDLK_LEFTPAREN  => KEY_5
+#sdlmapkey 0x0028,0x0006
+#   SDLK_MINUS      => KEY_6
+#sdlmapkey 0x002d,0x0007
+#   SDLK_WORLD_73 è => KEY_7
+#sdlmapkey 0x00e8,0x0008
+#   SDLK_UNDERSCORE => KEY_8
+#sdlmapkey 0x005f,0x0009
+#   SDLK_WORLD_71 ç => KEY_9
+#sdlmapkey 0x00e7,0x000a
+#   SDLK_WORLD_64 à => KEY_10
+#sdlmapkey 0x00e0,0x000b
+#   SDLK_RIGHTPAREN => KEY_11
+#sdlmapkey 0x0029,0x000c
+#   SDLK_EQUALS     => KEY_12
+#sdlmapkey 0x003d,0x000d
+
+#   SDLK_A          => KEY_Q
+#sdlmapkey 0x0041,0x0010
+#   SDLK_Z          => KEY_W
+#sdlmapkey 0x005a,0x0011
+#   SDLK_CARET      => KEY_OPENBRACE
+#sdlmapkey 0x005e,0x001a
+#   SDLK_DOLLAR     => KEY_CLOSEBRACE
+#sdlmapkey 0x0024,0x001b
+
+#   SDLK_Q          => KEY_A
+#sdlmapkey 0x0051,0x001e
+#   SDLK_M          => KEY_COLON
+#sdlmapkey 0x004d,0x0027
+#   SDLK_WORLD_89 ù => KEY_QUOTE
+#sdlmapkey 0x00f9,0x0028
+#   SDLK_ASTERISK   => KEY_TILDE
+#sdlmapkey 0x002a,0x0029
+
+#   SDLK_W          => KEY_Z
+#sdlmapkey 0x0057,0x002c
+#   SDLK_COMMA      => KEY_M
+#sdlmapkey 0x002c,0x0032
+#   SDLK_SEMICOLON  => KEY_COMMA
+#sdlmapkey 0x003b,0x0033
+#   SDLK_COLON      => KEY_STOP
+#sdlmapkey 0x003a,0x0034
+#   SDLK_EXCLAIM    => KEY_SLASH
+#sdlmapkey 0x0021,0x0035

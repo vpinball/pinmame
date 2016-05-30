@@ -4,6 +4,8 @@
 #pragma once
 #endif
 
+#include "osdepend.h"
+
 /* 121200  Added SIM_STSWON, SIM_STSWOFF */
 /* 201100  Added new types for manual shooter */
 /* 111100  Updated solenoid numbering */

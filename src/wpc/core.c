@@ -7,7 +7,9 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
-
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 #ifdef VPINMAME
  #include <windows.h>
  #include "../pindmd/pindmd.h"
@@ -42,8 +44,8 @@ void vp_setDIP(int bank, int value) { }
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
 #else /* VPINMAME */
-  #define g_fHandleKeyboard  (TRUE)
-  #define g_fHandleMechanics (0xff)
+  int g_fHandleKeyboard = 1;
+  int g_fHandleMechanics = 0xff;
   #define OnSolenoid(nSolenoid, IsActive)
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
@@ -551,7 +553,12 @@ static tSegRow segSize2S[1][12] = { /* 16 segment displays without commas but sp
 
 static tSegData segData[2][18] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
-  {20,15,&segSize1C[3][0]},/* SEG16R*/
+#ifdef PROC_SUPPORT	//TODO/PROC: Will this work in normal PinMAME build too?
+  /* Use segSize2C for P-ROC's alpha_on_dmd functionality as it maps better to the DMD. */
+  {20,15,&segSize2C[0][0]},/* SEG16R */
+#else
+  {20,15,&segSize1C[3][0]},/* SEG16R */
+#endif
   {20,15,&segSize1C[2][0]},/* SEG10 */
   {20,15,&segSize1[2][0]}, /* SEG9 */
   {20,15,&segSize1C[1][0]},/* SEG8 */
@@ -570,7 +577,7 @@ static tSegData segData[2][18] = {{
   {20,15,&segSize1C[5][0]} /* SEG16D */
 },{
   {12,11,&segSize2C[0][0]},/* SEG16 */
-  {12,11,&segSize2C[3][0]},/* SEG16R*/
+  {12,11,&segSize2C[3][0]},/* SEG16R */
   {12,11,&segSize2C[2][0]},/* SEG10 */
   {12,11,&segSize2[2][0]}, /* SEG9 */
   {12,11,&segSize2C[1][0]},/* SEG8 */
@@ -725,6 +732,7 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout) {
+
   UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
   UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
@@ -961,6 +969,12 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
   	  disp_lens[total_disp++] = ii;
 #endif
 
+#ifdef PROC_SUPPORT
+		static UINT16 proc_top[16];
+		static UINT16 proc_bottom[16];
+		int char_width = locals.segData[layout->type & 0x0f].cols+1;
+#endif
+
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
         UINT16 tmpSeg = *seg;
@@ -976,6 +990,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
           switch (tmpType) {
+
           case CORE_SEG87: case CORE_SEG87F:
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
               if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
@@ -995,18 +1010,45 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-
 #ifdef VPINMAME
-  		  seg_data[idx++] = tmpSeg;
+		  seg_data[idx++] = tmpSeg;
 #endif
-		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr))
+		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
+
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
+#ifdef PROC_SUPPORT
+					if (coreGlobals.p_rocEn) {
+                                                if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
+						    (!pmoptions.alpha_on_dmd)) {
+                                                    switch (top) {
+                                                        case 0: proc_top[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
+                                                        case 21:  // This is the ball/credit display if fitted, so work out which position
+                                                            if (left == 12) proc_bottom[0] = tmpSeg;
+                                                            else if (left == 24) proc_bottom[8] = tmpSeg;
+                                                            else if (left == 48) proc_top[0] = tmpSeg;
+                                                            else proc_top[8] = tmpSeg;
+                                                        break;
+                                                        default: proc_bottom[left/char_width + (doubleAlpha == 0)] = tmpSeg; break;
+							} 
+						}
+					}
+#endif
+          }
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
 		(*pos)++;
         left += locals.segData[layout->type & CORE_SEGALL].cols+1;
         seg += step; lastSeg += step;
       }
+#ifdef PROC_SUPPORT
+        		if (coreGlobals.p_rocEn) {
+				if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
+				    (!pmoptions.alpha_on_dmd)) {
+					procUpdateAlphaDisplay(proc_top, proc_bottom);
+
+				}
+			}
+#endif 
     }
   }
 
@@ -1019,8 +1061,26 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 
 VIDEO_UPDATE(core_gen) {
   int count = 0;
+#ifdef PROC_SUPPORT
+	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2 || core_gameData->gen & GEN_ALLS11;
+	if (coreGlobals.p_rocEn) {
+		if (pmoptions.alpha_on_dmd && alpha) {
+			procClearDMD();
+		}
+	}
+	// If we don't want the DMD displayed on the screen, skip this code
+	if (pmoptions.virtual_dmd) {
+#endif
   updateDisplay(bitmap, cliprect, core_gameData->lcdLayout, &count);
   memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
+#ifdef PROC_SUPPORT
+	}
+	if (coreGlobals.p_rocEn) {
+		if (pmoptions.alpha_on_dmd && alpha) {
+			procUpdateDMD();
+		}
+	}
+#endif
   video_update_core_status(bitmap,cliprect);
 }
 
@@ -1036,8 +1096,10 @@ void core_updateSw(int flipEn) {
   int ii;
 
   if (g_fHandleKeyboard) {
+
     for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
       inports[ii] = readinputport(ii);
+
 
     /*-- buttons --*/
     swFlip = 0;
@@ -1059,9 +1121,18 @@ void core_updateSw(int flipEn) {
   else
     swFlip = (coreGlobals.swMatrix[flipSwCol] ^ coreGlobals.invSw[flipSwCol]) & (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
 
-  /*-- set switches in matrix for non-fliptronic games --*/
-  if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
-  if (FLIP_SWR(flip)) core_setSw(FLIP_SWR(flip), swFlip & CORE_SWLRFLIPBUTBIT);
+#ifdef PROC_SUPPORT
+  /*-- Only handle flipper switches if we're not in a real game, otherwise they --*/
+  /*-- will get physically activated anyway */
+  if (!coreGlobals.p_rocEn) {
+#endif
+
+    /*-- set switches in matrix for non-fliptronic games --*/
+    if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
+    if (FLIP_SWR(flip)) core_setSw(FLIP_SWR(flip), swFlip & CORE_SWLRFLIPBUTBIT);
+#ifdef PROC_SUPPORT
+  }
+#endif
 
   /*-- fake solenoids if not CPU controlled --*/
   if ((flip & FLIP_SOL(FLIP_L)) == 0) {
@@ -1142,6 +1213,7 @@ void core_updateSw(int flipEn) {
   if (g_fHandleKeyboard &&
       (!coreGlobals.simAvail || inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
     /*-- simulator keys disabled, use row+column keys --*/
+
     static int lastRow = 0, lastCol = 0;
     int row = 0, col = 0;
 #ifdef MAME_DEBUG
@@ -1402,8 +1474,18 @@ int core_getSwCol(int colEn) {
 /-----------------------*/
 void core_setSw(int swNo, int value) {
   if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  //fprintf(stderr,"\nPinmame switch %d",swNo);
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ 0) & (1<<(swNo%8));
+	} else {
+#endif
+
   coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
+#ifdef PROC_SUPPORT
+	}
+#endif
 }
 
 /*-------------------------
@@ -1547,9 +1629,35 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
                     { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming }};
 
   for (kk = 1; bits; kk++, bits >>= 1) {
-    if (bits & 0x01)
+    if (bits & 0x01) {
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
+				if (pmoptions.alpha_on_dmd) {
+                                    	/* Draw alphanumeric segments on the DMD */
+                                    switch (row) {
+                                        case 0:
+                                            procDrawSegment(col/2, 3, kk-1);
+                                            break;
+                                        case 21:
+                                            // This is the ball/credit display on older Sys11
+                                            // Push through an 11 as the row
+                                            // number, the display routine will
+                                            // take care of repositioning
+                                            procDrawSegment(col/2,11,kk-1);
+                                            break;
+                                        case 42:
+                                            procDrawSegment(col/2, 19, kk-1);
+                                                break;
+                                        default:
+                                            break;
+
+					}
+				}
+			}
+#endif
       for (ll = 0; ll < s->rows; ll++)
         pixel[ll] |= s->segs[ll][kk];
+    }
   }
   for (kk = 0; kk < s->rows; kk++) {
     BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
@@ -1566,6 +1674,10 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 /  Initialize PinMAME
 /-----------------------*/
 static MACHINE_INIT(core) {
+#ifdef PROC_SUPPORT
+	char * yaml_filename = pmoptions.p_roc;
+#endif
+
   if (!coreData) { // first time
     /*-- init variables --*/
     memset(&coreGlobals, 0, sizeof(coreGlobals));
@@ -1585,6 +1697,33 @@ static MACHINE_INIT(core) {
     /*-- init switch matrix --*/
     memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
+
+#ifdef PROC_SUPPORT
+		/*-- P-ROC operation requires a YAML.  Disable P-ROC operation
+		 * if no YAML is specified. --*/
+
+		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
+		if (coreGlobals.p_rocEn) {
+			/*-- Finish P-ROC initialization now that the sim is active. --*/
+			coreGlobals.p_rocEn = procIsActive();
+			/*-- If the initialization fails, disable the p-roc support --*/
+			if (!coreGlobals.p_rocEn) {
+				fprintf(stderr, "P-ROC initialization failed.  Disabling P-ROC support.\n");
+				// TODO: deInit P-ROC here?
+			}
+			else {
+                             // read s11CreditDisplay, doubleAlpha and s11BallDisplay settings
+                             procBallCreditDisplay();
+
+                             // Added option to enable keyboard for direct switches to YAML
+                             g_fHandleKeyboard = procKeyboardWanted();
+
+                             // We don't want the PC to make the noises of pop bumpers etc
+                             g_fHandleMechanics= 0;
+                       }
+		}
+#endif
+
     /*-- masks bit used by flippers --*/
     {
       const int flip = core_gameData->hw.flippers;
@@ -1614,7 +1753,6 @@ static MACHINE_INIT(core) {
     if (g_fHandleKeyboard && core_gameData->simData) {
       int inports[CORE_MAXPORTS];
       int ii;
-
       for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
         inports[ii] = readinputport(ii);
 
@@ -1658,6 +1796,11 @@ static MACHINE_STOP(core) {
       timer_remove(locals.timers[ii]);
   }
   memset(locals.timers, 0, sizeof(locals.timers));
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		procDeinitialize();
+	}
+#endif
   coreData = NULL;
 }
 

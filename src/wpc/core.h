@@ -262,6 +262,9 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_FIRSTCUSTSOL  51
 #define CORE_FIRSTLFLIPSOL 45
 #define CORE_FIRSTSIMSOL   49
+#ifdef PROC_SUPPORT
+#define CORE_MAXSOL        64
+#endif
 
 #define CORE_SSFLIPENSOL  23
 #define CORE_FIRSTSSSOL   17
@@ -388,6 +391,10 @@ typedef struct {
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+#ifdef PROC_SUPPORT
+  int    p_rocEn;         /* P-ROC support enable */
+  int    isKickbackLamp[255];
+#endif
   char   segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;

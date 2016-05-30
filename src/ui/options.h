@@ -307,7 +307,7 @@ typedef struct
     int      ui_joy_history_down[4];
     int      ui_joy_exec[4];
 
-    char*    exec_command;  // Command line to execute on ui_joy_exec   
+    char*    exec_command;  // Command line to execute on ui_joy_exec
     int      exec_wait;     // How long to wait before executing
     BOOL     hide_mouse;    // Should mouse cursor be hidden on startup?
     BOOL     full_screen;   // Should we fake fullscreen?
@@ -321,6 +321,9 @@ typedef struct
 
     char*    romdirs;
     char*    sampledirs;
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+    char*    procdirs;
+#endif /* PINMAME && PROC_SUPPORT */
     char*    inidir;
     char*    cfgdir;
     char*    nvramdir;
@@ -334,7 +337,7 @@ typedef struct
     char*	 iconsdir;
     char*    bgdir;
 #ifdef PINMAME
-        char*    wavedir;
+    char*    wavedir;
 #endif /* PINMAME */
     char*    cheat_filename;
     char*    history_filename;
@@ -482,9 +485,14 @@ const char* GetRomDirs(void);
 void SetRomDirs(const char* paths);
 
 const char* GetSampleDirs(void);
-void  SetSampleDirs(const char* paths);
+void SetSampleDirs(const char* paths);
 
-const char * GetIniDir(void);
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+const char* GetProcDirs(void);
+void SetProcDirs(const char* paths);
+#endif /* PINMAME && PROC_SUPPORT */
+
+const char* GetIniDir(void);
 void SetIniDir(const char *path);
 
 const char* GetCfgDir(void);

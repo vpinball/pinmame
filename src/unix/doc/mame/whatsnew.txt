@@ -1,0 +1,120 @@
+0.74
+
+Basically a cleaned up version of .73 now my machine is working again.
+
+General Source Changes
+----------------------
+
+Misc source changes mainly to Improve compatibility with MESS [Nathan Woods]
+	src/driver.h:
+	- Minor changes within #ifdef MESS
+
+	src/inptport.c:
+	- Minor change to recognize MESS IPT_CONFIG input ports
+
+	src/legacy.h:
+	- Changed some of the prototypes to use 'mame_file *' instead of
+	'void *'
+
+	src/mame.h:
+	- Added APPNAME and APPLONGNAME macros to define the name of the
+	program (MAME/M.A.M.E. vs MESS/M.E.S.S.)
+
+	src/vidhrdw/jaguar.c:
+	- Adds some MESS specific templated blitters within #ifdef MESS
+
+	src/vidhrdw/ppu2c03b.c:
+	src/vidhrdw/ppu2c03b.h:
+	src/vidhrdw/playch10.c:
+	src/vidhrdw/vsnes.c:
+	- Small speedups (eliminated some usage of plot_pixel())
+	- Added support for scanline counts other than 262
+	- Interrupt changes by Brad Oliver
+	- Requisite changes to playch10 and vsnes to support Brad's
+	interrupt changes
+
+	src/windows/input.c:
+	src/windows/video.c:
+	src/windows/window.c:
+	src/windows/window.h:
+	src/windows/winmain.c:
+	- Misc changes to support MESS's menu bar (should not affect
+	MAME)
+	- Misc changes to use APPNAME and APPLONGNAME
+
+Improved Loading of .72 cfg Files (prevents Mixer settings corruption) [Stefan Jokisch]
+	src/sound/mixer.c
+
+Fixed User-Interface bug which was causing problems setting controls for some of the
+players [Stefan Jokisch]
+	src/usrintrf.c
+
+Support for 8 Controllers [Robin Merrill]
+	src/input.h
+	src/windows/input.c
+	src/inptport.c
+
+Workaround for a v60 crash causing ultra-x not to run on some systems [Tomasz Slanina]
+	src/cpu/v60/op12.c
+
+Support upd7759 Silence Compression [Olivier Galibert]
+	src/sound/upd7759.c
+
+SegaPCM cleanups / fixes [Olivier Galibert]
+	src/sound/segapcm.c
+	src/sound/segapcm.h
+	src/sndintrf.c
+
+Changed Afterburner Inputs to use z-axis for throttle [Howard Casto]
+	src/drivers/aburner.c
+
+Some Improvements to Chequered Flag protection + Sound [Angelo Salese]
+	src/drivers/chqflag.c
+	src/vidhrdw/konamiic.c
+
+More ST-V Improvements [Angelo Salese, David Haywood]
+	src/drivers/stv.c
+	src/vidhrdw/stvvdp1.c
+	src/vidhrdw/stvvdp2.c
+
+New games supported:
+--------------------
+
+Miyasu Nonki no Quiz 18-Kin (Japan) [Takahiro Nogi]
+	src/drivers/welltris.c
+	src/vidhrdw/welltris.c
+
+Ojanko Club (Japan) [Takahiro Nogi, Uki]
+	src/drivers/ojankohs.c
+
+Quiz & Variety Sukusuku Inufuku (Japan) [Takahiro Nogi]
+	src/drivers/inufuku.c
+	src/vidhrdw/inufuku.c
+
+Dancing Eyes (DC1/VER.A) [smf]
+Kosodate Quiz My Angel 3 (KQT1/VER.A) [smf]
+	src/drivers/namcos11.c
+	+ most psx files
+
+Super-X [David Haywood]
+	src/drivers/dooyong.c
+
+A Few new Megatech sets (mostly SMS based, not yet working)
+	src/drivers/segac2.c
+
+New Clones supported:
+---------------------
+
+Natsuiro Mahjong (Mahjong Summer Story) (Japan) (clone of mjnatsu) [Takahiro Nogi]
+	src/drivers/fromance.c
+
+Bang (Japan) [Manuel Abadia]
+	src/drivers/gaelco2.c
+
+Hangly Man (set 3) [Manuel Abadia]
+	src/drivers/pacman.c
+Apocaljpse Now (bootleg of Rescue) [Pierpaolo Prazzoli]
+	src/drivers/scobra.c
+Explorer (bootleg of Scramble) [Pierpaolo Prazzoli]
+	src/drivers/scramble.c
+	todo : check these 3 bootlegs are worth supporting, if not remove them

@@ -46,8 +46,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PROC_SUPPORT"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -71,11 +71,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				AdditionalDependencies="libpinprocmt.lib libyaml-cppmt.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -134,8 +135,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include"
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;PROC_SUPPORT"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				AssemblerListingLocation="$(IntDir)\"
@@ -159,11 +160,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				AdditionalDependencies="libpinprocmtd.lib libyaml-cppmtd.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -224,7 +226,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -249,11 +251,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				AdditionalDependencies="libpinprocmtd.lib libyaml-cppmtd.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008md.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -312,7 +315,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include"
+				AdditionalIncludeDirectories="src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;ext\pinproc\include;ext\yaml-cpp\include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;MAME_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -337,11 +340,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
+				AdditionalDependencies="libpinprocmtd.lib libyaml-cppmtd.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcmd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -4305,6 +4309,30 @@
 						</Filter>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="p-roc"
+					>
+					<File
+						RelativePath=".\src\p-roc\display.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\p-roc\gameitems.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\p-roc\p-roc.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\p-roc\p-roc.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\p-roc\p-roc_drivers.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="VC"
@@ -4326,6 +4354,82 @@
 				Name="external"
 				>
 				<Filter
+					Name="yaml-cpp"
+					>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\conversion.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\emitter.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\emittermanip.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\exceptions.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\iterator.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\mark.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\node.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodeimpl.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodereadimpl.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\nodeutil.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\noncopyable.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\null.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\ostream.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\parser.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\stlemitter.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\stlnode.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\traits.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\yaml-cpp\include\yaml-cpp\yaml.h"
+						>
+					</File>
+				</Filter>
+				<Filter
 					Name="zlib"
 					>
 					<File
@@ -4334,6 +4438,14 @@
 					</File>
 					<File
 						RelativePath=".\ext\zlib\include\zlib.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="pinproc"
+					>
+					<File
+						RelativePath=".\ext\pinproc\include\p-roc\pinproc.h"
 						>
 					</File>
 				</Filter>

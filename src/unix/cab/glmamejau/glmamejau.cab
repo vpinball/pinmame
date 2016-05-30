@@ -1,0 +1,297 @@
+cabv1.1				# version number of the .cab format (required)
+				# must be the first 7 characters of the file
+#
+# Default GLmame cabinet
+#
+# Designed by Mike Oliphant
+#
+# Modified by Sven Goethel
+#
+#
+
+#	  xyz location   xyz point      xyz norma   frames
+
+#
+# still watch the right cabinet side
+#
+#camerapan 2
+#
+#goto     5.0 0.0 -1.0  0.0 0.0 -1.0  0.0 1.0 0.0  120
+#moveto   5.0 0.0 -1.0  0.0 0.0 -1.0  0.0 1.0 0.0  120
+#end
+#
+
+#
+# watch from the left , front, right, and back
+#
+camerapan 8
+
+goto     -5.0 0.0 -0.5  0.0 -0.2 -1.0  0.0 1.0 0.0  120    # left
+moveto	  0.0 0.0 4.0  0.0 -0.75 -5.0  0.0 1.0 0.0  120   # far fron
+moveto	  0.0 0.0 -1.0  0.0 -0.75 -4.5  0.0 1.0 0.0  180  # near front ..
+moveto	  0.0 0.0 -1.0  0.0 -0.75 -5.0  0.0 1.0 0.0  180 # near front
+moveto	  0.0 0.0 4.0  0.0 -0.75 -5.0  0.0 1.0 0.0  120   # far front
+moveto   5.0 0.0 -1.0  0.0 0.0 -1.0  0.0 1.0 0.0  120      # right
+moveto	  0.0 0.0 4.0  0.0 -0.75 -5.0  0.0 1.0 0.0  120    # far front
+moveto   -5.0 0.0 -1.0  0.0 -0.2 -1.0  0.0 1.0 0.0  120    # left
+end
+
+numtex 3			# number of textures we are going to use
+
+loadtex 0 128 64 cabtitle.jpg	# load the title texture as texture 0
+                                # with dimensions 128x64
+
+loadtex 1 32 32  cabfront.jpg
+
+loadtex 2 256 64 cabside.jpg
+
+startgeom			# this line must come after the textures
+				#  have been loaded, but before any model
+				#  geometry is defined
+
+shading smooth
+
+color3 1.0 1.0 0.0		# set the color to yellow
+
+# left side of cabinet
+
+begin polygon			# begin a 6-vertex polygon
+vertex -2.0 -4.0 2.0
+vertex -2.0 -0.2 2.0
+vertex -2.0 0.0 1.0
+vertex -2.0 2.5 0.0
+vertex -2.0 2.5 -2.0
+vertex -2.0 -4.0 -2.0
+end 
+
+begin polygon
+vertex 2.0 2.5 0.0
+vertex 2.0 3.0 1.2
+vertex 2.0 4.0 1.0
+vertex 2.0 3.0 -2.0
+vertex 2.0 2.5 -2.0
+end 
+
+color3 1.0 1.0 1.0
+
+enable texture	# enable texturing
+
+settex 2	# select texture 0 (the jau-side left)
+
+begin quads
+texcoord 0 1
+vertex -2.001 3.4 -0.6 # P1
+
+texcoord 1 1
+vertex -2.001 -3.0  2.0 # P2
+
+texcoord 1 0
+vertex -2.001 -3.5 0.7 # P3
+
+texcoord 0 0
+vertex -2.001 2.8 -2.0 # P4
+
+end
+
+disable texture	# turn off texturing
+
+#
+# just some checkpoints !
+#
+pointsize 20
+
+begin points
+
+color3 0.0 0.0 1.0
+vertex -2.001 3.4 -0.6 # P1
+vertex -2.001 -3.0  2.0 # P2
+vertex -2.001 -3.5 0.7 # P3
+vertex -2.001 2.8 -2.0 # P4
+
+end
+
+pointsize 1
+
+
+color3 1.0 1.0 0.0		# set the color to yellow
+
+# Right side
+
+begin polygon
+vertex 2.0 -4.0 2.0
+vertex 2.0 -0.2 2.0
+vertex 2.0 0.0 1.0
+vertex 2.0 2.5 0.0
+vertex 2.0 2.5 -2.0
+vertex 2.0 -4.0 -2.0
+end 
+
+begin polygon
+vertex -2.0 2.5 0.0
+vertex -2.0 3.0 1.2
+vertex -2.0 4.0 1.0
+vertex -2.0 3.0 -2.0
+vertex -2.0 2.5 -2.0
+end 
+
+color3 1.0 1.0 1.0
+
+enable texture	# enable texturing
+
+settex 2	# select texture 0 (the jau-side right)
+
+begin quads
+texcoord 1 1
+vertex 2.001 3.4 -0.6 # P1
+
+texcoord 0 1
+vertex 2.001 -3.0  2.0 # P2
+
+texcoord 0 0
+vertex 2.001 -3.5 0.7 # P3
+
+texcoord 1 0
+vertex 2.001 2.8 -2.0 # P4
+
+end
+
+disable texture	# turn off texturing
+
+#
+# just some checkpoints !
+#
+pointsize 20
+
+begin points
+
+color3 0.0 0.0 1.0
+vertex 2.001 3.4 -0.6 # P1
+vertex 2.001 -3.0  2.0 # P2
+vertex 2.001 -3.5 0.7 # P3
+vertex 2.001 2.8 -2.0 # P4
+
+end
+
+pointsize 1
+
+
+color3 1.0 1.0 0.0		# set the color to yellow
+
+begin quad_strip		# begin a strip of quads
+										# (a series four-sided polygons where
+										# each shares an edge with the next
+# Back
+
+color3 1.0 0.0 0.0
+
+vertex -2.0 -4.0 -2.0
+vertex 2.0 -4.0 -2.0
+vertex -2.0 3.0 -2.0
+vertex 2.0 3.0 -2.0
+
+# Top
+
+color3 1.0 1.0 0.0
+
+vertex -2.0 4.0 1.0
+vertex 2.0 4.0 1.0
+
+end  # quad_strip
+
+# Title bit
+
+color3 1.0 1.0 1.0
+
+enable texture	# enable texturing
+
+settex 0	# select texture 0 (the title)
+
+begin quads
+texcoord 0 1
+vertex -2.0 4.0 1.0
+texcoord 1 1
+vertex 2.0 4.0 1.0
+texcoord 1 0
+vertex 2.0 3.0 1.2
+texcoord 0 0
+vertex -2.0 3.0 1.2
+end
+
+disable texture	# turn off texturing
+
+begin quad_strip
+
+# Under top side
+
+color3 0.0 1.0 1.0
+
+vertex -2.0 3.0 1.2
+vertex 2.0 3.0 1.2
+
+color3 0.0 1.0 0.0
+
+vertex -2.0 2.5 0.0
+vertex 2.0 2.5 0.0
+
+# Screen backing
+
+color3 0.5 0.5 0.5
+
+vertex -2.0 0.0 1.0
+vertex 2.0 0.0 1.0
+
+# Control panel
+
+color3 0.0 0.0 1.0
+
+vertex -2.0 -0.2 2.0
+vertex 2.0 -0.2 2.0
+
+# Front
+
+end		# quad_strip
+
+color3 1.0 1.0 1.0
+
+enable texture
+
+settex 1
+
+begin quads
+texcoord 0 1
+vertex -2.0 -0.2 2.0
+texcoord 1 1
+vertex 2.0 -0.2 2.0
+texcoord 1 0
+vertex 2.0 -4.0 2.0
+texcoord 0 0
+vertex -2.0 -4.0 2.0
+end
+
+disable texture
+
+begin quads
+
+# Screen
+
+color3 0.0 0.0 0.0			# put black behind the screen
+
+vertex -1.7 2.5 0.005
+vertex 1.7 2.5 0.005
+vertex 1.7 0.0 1.05
+vertex -1.7 0.0 1.05
+end #quads
+
+color3 1.0 1.0 1.0			# Color to modulate the screen
+											# bitmap with (white means don't
+											# mess with it
+
+begin screen			# this tells GLmame where the
+vertex -1.7 2.5 0.01		# actual game screen should go
+vertex 1.7 2.5 0.01
+vertex 1.7 0.0 1.1
+vertex -1.7 0.0 1.1
+end #screen
+
+
+# that's all folks!

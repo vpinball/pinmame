@@ -380,7 +380,11 @@ enum {
 	STR_TOTAL
 };
 
-enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY };
+enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	, IKT_OSD_PROC
+#endif /* PINMAME && PROC_SUPPORT */
+};
 
 #define DEF_STR(str_num) (ipdn_defaultstrings[STR_##str_num])
 

@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+ <TITLE>XMAME/XMESS DOKUMENTATION: Einleitung und Links </TITLE>
+ <LINK HREF="xmame-gdoc-2.html" REL=next>
+
+ <LINK HREF="xmame-gdoc.html#toc1" REL=contents>
+ <link rel="stylesheet" href="xmame.css" type="text/css" >
+ </HEAD>
+<BODY background="../img/xmame.jpg">
+<A HREF="xmame-gdoc-2.html">Weiter</A> Zurück <A HREF="xmame-gdoc.html#toc1">Inhalt</A>
+<HR>
+<H2><A NAME="Introduction and Links"></A>  <A NAME="s1">1. Einleitung und Links </A></H2>
+
+<H2><A NAME="ss1.1">1.1 Willkommen bei XMame</A>
+</H2>
+
+<P>Dies ist die *nix Portierung des regelrecht legendären Mame. Mame ist ein
+Emulator für Arcade Geräte, begonnen 1997 von Nicola Salmoria. Es hat mit
+einer Reihe von Emulatoren für einzelne Spiele begonnen. Diese Reihe von
+Emulatoren wurde zusammengefasst zu einem einzigen Multi-Spiele Emulator. Dies
+ist die derzeitige Form von Mame, nicht länger nur eine Ein-Mann Show, sondern
+über 100 Leute arbeiten an dem Projekt mit.<br>
+<H2><A NAME="ss1.2">1.2 Alles immer up-to-date halten!</A>
+</H2>
+
+<P>Die aktuellste Version dieser Anleitung, die Sourcen von XMame und vieles
+mehr kann auf der Homepage des XMame-Projektes gefunden werden unter <a href="http://x.mame.net/">http://x.mame.net/</a><P>
+<H2><A NAME="ss1.3">1.3 Hängende Arbeiten - oder TODO</A>
+</H2>
+
+<P>Wenn Du der Meinung bist, dass Du bei der TODO-Liste helfen kannst oder etwas
+anbieten kannst, was interessant ist, dann schicke bitte eine Mail an den
+XMame/XMess Koordinator. Siehe unter <A HREF="xmame-gdoc-5.html#Mail">Mail</A>
+ für mehr Informationen.
+<P>
+<UL>
+<LI>Mausbewegungen optimieren</LI>
+<LI>Entfernen von osd_input_init_post, Flag für display ready hinzufügen</LI>
+<LI>Aktualisieren der fps (Bilder pro Sekunde) ist inaktiv bei Vektor Spielen</LI>
+<LI>Update der porting.txt</LI>
+<LI>Alle übrigen Soundtreiber in Plugins konvertieren</LI>
+<LI>Neuschreiben des display/input Codes für mehr Modularität, objektorientiert
+  und benutzbar als separate Library</LI>
+<LI>Aufspalten der Option <CODE>-[no]scanline</CODE>  in emulierte und echte
+  Scanline Option&nbsp;</LI>
+<LI>Hinzufügen eines Schalter zum Setzen der benutzten Auflösung, ...</LI>
+<LI>Die Pentium TSC für uclock nutzen, falls vorhanden</LI>
+<LI>Netzwerk:
+<UL>
+<LI>Rausfinden, ob das dosnet-Team noch existiert; wieder zum Laufen bringen, da Netzwerkunterstützung im DOS-Code nicht mehr funktioniert</LI>
+</UL>
+<UL>
+<LI>Hinzufügen von Maus/Joystick-Unterstützung bei Netzwerkspielen</LI>
+<li>Versuchen die Netzwerkunterstützung nach tcp zu konvertieren, derzeit existiert keine Fehlerkorrektur</li>
+<li>Netzwerk Code robuster machen, Versionsprüfung, Eingabeeinstellungen prüfen, usw.</li>
+</UL>
+</LI>
+<LI>X11-Joystick Unterstützung prüfen. Angeblich funktioniert dies nicht mehr,
+  aber bisher nur eine Fehlermeldung. Scheinbar nutzt dies niemand</LI>
+<LI>fm Soundhack für Linux-i386</LI>
+<li>Rausfinden welche Messages ausgegeben werden und wann es einstellbar ist
+  (log-Typ und log-Level), fileio dazu bringen Messages auszugeben über die
+  Dateien die versuchen es zu öffnen. Dies soll helfen, das Problem beim Laden
+  von Roms zu debuggen. Alles Messages durchgehen, die XMame ausgibt, und sie in
+  ein Standardformat zu bringen wie:<br>
+  <br>
+  <font face="Courier" size="2">OSD:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  Info:&nbsp;&nbsp;&nbsp; bla<br>
+  X11-window: Warning: bla<br>
+  Svgalib:&nbsp;&nbsp;&nbsp; Error:&nbsp;&nbsp; bla</font><br>
+  &nbsp;<br>
+</li>
+<LI>Hinzufügen Scancode 128-255 für nicht-PC&nbsp; Tasten wie F13 - F24, mehr
+  Keypad Tasten usw., update aller Anzeigearten um dieses zu nutzen</LI>
+<li>Sieh auch im Text der TODO-Datei:&nbsp; <A HREF="todo">todo</A>
+</li>
+</UL>
+<HR>
+<A HREF="xmame-gdoc-2.html">Weiter</A> Zurück <A HREF="xmame-gdoc.html#toc1">Inhalt</A>
+</BODY>
+</HTML>

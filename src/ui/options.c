@@ -337,6 +337,9 @@ static REG_OPTION global_game_options[] =
 
         {"rompath",            RO_STRING,  &settings.romdirs,          0, 0},
         {"samplepath",         RO_STRING,  &settings.sampledirs,       0, 0},
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	{"procpath",           RO_STRING,  &settings.procdirs,         0, 0},
+#endif /* PINMAME && PROC_SUPPORT */
         {"inipath",            RO_STRING,  &settings.inidir,           0, 0},
         {"cfg_directory",      RO_STRING,  &settings.cfgdir,           0, 0},
         {"nvram_directory",    RO_STRING,  &settings.nvramdir,         0, 0},
@@ -648,6 +651,9 @@ BOOL OptionsInit()
 
         settings.romdirs           = _strdup("roms");
         settings.sampledirs        = _strdup("samples");
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+        settings.procdirs          = _strdup("proc");
+#endif /* PINMAME && PROC_SUPPORT */
         settings.inidir            = _strdup("ini");
         settings.cfgdir            = _strdup("cfg");
         settings.nvramdir          = _strdup("nvram");
@@ -840,6 +846,9 @@ BOOL OptionsInit()
         // this leaks a little, but the win32 file core writes to this string
         set_pathlist(FILETYPE_ROM,_strdup(settings.romdirs));
         set_pathlist(FILETYPE_SAMPLE,_strdup(settings.sampledirs));
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	set_pathlist(FILETYPE_PROC,_strdup(settings.procdirs));
+#endif /* PINMAME && PROC_SUPPORT */
 #ifdef MESS
         set_pathlist(FILETYPE_CRC,_strdup(settings.crcdir));
 #endif
@@ -864,6 +873,9 @@ void OptionsExit(void)
     FreeIfAllocated(&settings.language);
     FreeIfAllocated(&settings.romdirs);
     FreeIfAllocated(&settings.sampledirs);
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+    FreeIfAllocated(&settings.procdirs);
+#endif /* PINMAME && PROC_SUPPORT */
     FreeIfAllocated(&settings.inidir);
     FreeIfAllocated(&settings.cfgdir);
     FreeIfAllocated(&settings.hidir);
@@ -1464,6 +1476,27 @@ void SetSampleDirs(const char* paths)
         }
 
 }
+
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+const char* GetProcDirs(void)
+{
+	return settings.procdirs;
+}
+
+void SetProcDirs(const char* paths)
+{
+	FreeIfAllocated(&settings.procdirs);
+
+	if (paths != NULL)
+	{
+		settings.procdirs = _strdup(paths);
+
+		// have our mame core (file code) know about it
+		// this leaks a little, but the win32 file core writes to this string
+		set_pathlist(FILETYPE_PROC,_strdup(settings.procdirs));
+	}
+}
+#endif /* PINMAME && PROC_SUPPORT */
 
 const char * GetIniDir(void)
 {

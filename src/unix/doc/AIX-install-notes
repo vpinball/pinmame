@@ -1,0 +1,49 @@
+Install Notes for AIX
+===========================================
+
+I started out with a bare machine and this is what I had to do to get it
+running:
+
+1.) Installed AIX 4.3.3 on a 7043-150 Model Machine
+
+    It should work on most machines without a problem
+
+2.) Installed all the bos.adt filesets from the operating system cd's
+
+   I was missing the 'as' function and this cleared it up.
+
+3.) Installed gcc 2.95.3.0 (Available from http://www.bull.de/pub/)
+
+   It unpacks as a installp package so you can install from 'smit'
+
+4.) Installed gnu-make 3.79.1.0  (Available from http://www.bull.de/pub/)
+
+   Make sure you are running this make and not the AIX one! (Maybe call it
+gmake?)
+
+5.) Added  /usr/include to my path directory to help find files
+
+6.) Installed the X11.adt filesets from the operating system cd's
+
+7.) Installed the X11.compat filesets from the operating system cd's
+
+8.) Installed the UMS filesets from the 4.3.3 Bonus Pack Cd's
+
+9). Had to use these lines in the makefile:
+
+     changed 'CFLAGS    = -O -Wall'    into  ' CFLAGS    = -O -Wall
+-mminimal-toc'
+     to kill off a TOC error when linking
+     used the available 'MY_CPU = risc' line
+     used the available 'ARCH  = aix' line
+     the X11 libraries are here for AIX:
+     X11INC                = -I/usr/include/X11
+            X11LIB                = -L/usr/lib/X11
+
+9) For some reason I had to edit the nes_def.h file and commented out the
+INT=8, INT=16 and INT=32
+    lines because it would cough up when compiling.
+
+10) Used  make -f makefile.unix to compile it up.
+
+11) Followed the rest of the readme for setup info

@@ -4,6 +4,10 @@
 #pragma once
 #endif
 
+#ifdef PROC_SUPPORT
+int s11_m2sw(int col, int row);
+#endif
+
 /*-- Common Inports for S11Games --*/
 #define S11_COMPORTS \
   PORT_START /* 0 */ \
@@ -231,7 +235,6 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define S11_MUXDELAY     0x10 // Delay mux solenoid by one IRQ
 #define S11_SNDDELAY     0x20 // Sound delay for Pool Sharks
 #define S9_BREAKPIA      0x40 // cut one wire on the sound PIA for Still Crazy
-
 #if 0
 GEN_S9      BCDDISP
 GEN_S11
