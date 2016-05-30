@@ -118,11 +118,11 @@ void snd_cmd_exit(void) {
   wave_exit();
 
 #ifdef VPINMAME_ALTSOUND
-  if (pmoptions.sound_mode == 1)
+  if (options.samplerate != 0 && pmoptions.sound_mode == 1)
     alt_sound_exit();
 #endif
 #ifdef VPINMAME_PINSOUND
-  if (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3)
+  if (options.samplerate != 0 && (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))
     pinsound_exit();
 #endif
 }
@@ -306,7 +306,7 @@ void reinit_pinSound(void)
 	BOOL	response;
 	char	buffer_msg[100];
 
-	if (!(pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))
+	if (!(pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3) || options.samplerate == 0) // if not internal or external pinsound enabled, or if sound in general is disabled -> return
 		return;
 
 	init_pinsound = FALSE;
@@ -467,11 +467,11 @@ void reinit_pinSound() {}
 /-----------------*/
 void snd_cmd_log(int boardNo, int cmd) {
 #ifdef VPINMAME_ALTSOUND
-  if (pmoptions.sound_mode == 1)
+  if (options.samplerate != 0 && pmoptions.sound_mode == 1)
     alt_sound_handle(boardNo, cmd);
 #endif
 #ifdef VPINMAME_PINSOUND
-  if (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3)
+  if (options.samplerate != 0 && (pmoptions.sound_mode == 2 || pmoptions.sound_mode == 3))
     pinsound_handle(boardNo, cmd);
 #endif
 
