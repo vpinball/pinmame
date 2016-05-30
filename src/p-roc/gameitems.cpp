@@ -242,17 +242,21 @@ void ConfigureKickerRule(int lampNum, int swNum, int coilNum, int pulseTime)
         
 }
 
-// Unlike regular bumper rules, for kickbacks we need to be able to clear the
-// rule.  Called by procKickbackCheck when the related lamp goes off.
-void ClearKickerRule(int lampNum, int swNum)
+// Need to disable switch rule for inactive kickbacks, along with flippers and
+// bumpers when a player tilts or a game is in attract mode.  In addition,
+// remove coil from the ignored coil list so ball searches will still work.
+void ClearSwitchRule(int swNum, int coilNum)
 {
         PRSwitchRule sw;
+
         sw.notifyHost = true;
         sw.reloadActive = false;
         PRSwitchUpdateRule(proc,swNum,kPREventTypeSwitchClosedNondebounced, &sw, NULL, 0, true);
         sw.notifyHost = true;
         sw.reloadActive = false;
         PRSwitchUpdateRule(proc,swNum,kPREventTypeSwitchClosedDebounced, &sw, NULL, 0, true);
+
+        ignoreCoils[coilNum] = FALSE;
 }
 
 // This routine is called by the lamp matrix handler (in wpc.c and s11.c) for each
@@ -278,7 +282,7 @@ void procKickbackCheck(int num)
         // If we've reached the cycle count required to turn the related kickback off
         if (cyclesSinceTransition[num] == kickbackOffDelay[num]) {
             if (mame_debug) fprintf(stderr,"\nDisable kickback");
-            ClearKickerRule(num,swKickback[num]);
+            ClearSwitchRule(swKickback[num], coilKickback[num]);
         }
         // If we've reached the cycle count required to turn the related kickback on
         else if (cyclesSinceTransition[num] == kickbackOnDelay[num]) {
@@ -495,7 +499,7 @@ void procFullTroughDisablesFlippers(void)
 	if (lightsOut) {
 		if (++lightsOutCount > 60 && flippersEnabled) {
 			fprintf(stderr, "all lamps off, disabling flippers (TILT?)\n");
-			procConfigureFlipperSwitchRules((flippersEnabled = FALSE));
+			procConfigureSwitchRules((flippersEnabled = FALSE));
 		}
 	} else {
 		lightsOutCount = 0;
@@ -509,20 +513,20 @@ void procFullTroughDisablesFlippers(void)
 			if (flippersEnabled != (ballCount != troughCount)) {
 				flippersEnabled = (ballCount != troughCount);
 				fprintf(stderr, "change flippers to %sabled\n", flippersEnabled ? "en" : "dis");
-				procConfigureFlipperSwitchRules(flippersEnabled);
+				procConfigureSwitchRules(flippersEnabled);
 			}
 		} else if (!flippersEnabled) {
 			fprintf(stderr, "lamps back on, enabling flippers\n");
-			procConfigureFlipperSwitchRules((flippersEnabled = TRUE));
+			procConfigureSwitchRules((flippersEnabled = TRUE));
 		}
 	}
 }
 
-void procConfigureSwitchRules(void)
+void procConfigureSwitchRules(int enabled)
 {
 	std::string numStr;
 
-	procConfigureFlipperSwitchRules(true);
+	procConfigureFlipperSwitchRules(enabled);
 
 	if (yamlDoc.size() > 0) {
                 printf("\n\nProcessing bumper entries");
@@ -539,9 +543,13 @@ void procConfigureSwitchRules(void)
                             yamlDoc[kCoilsSection][bumperName][kNumberField] >> numStr;
                             coilNum = PRDecode(machineType, numStr.c_str());
 
-                            ConfigureBumperRule(swNum, coilNum, kBumperPulseTime);
-                            AddIgnoreCoil(coilNum);
-                            printf("\n- processed %s",bumperName.c_str());
+                            if (enabled) {
+                                    ConfigureBumperRule(swNum, coilNum, kBumperPulseTime);
+                                    AddIgnoreCoil(coilNum);
+                            } else {
+                                    ClearSwitchRule(swNum, coilNum);
+                            }
+                            printf("\n- %sabled %s", enabled ? "en" : "dis", bumperName.c_str());
                     }
                 }
                 else printf("\n - no entries found");
@@ -571,15 +579,19 @@ void procConfigureSwitchRules(void)
                         yamlDoc[kLampsSection][kickbackName][kNumberField] >> numStr;
                         lampNum = PRDecode(machineType, numStr.c_str());
 
-                        coreGlobals.isKickbackLamp[lampNum] = TRUE;
+                        coreGlobals.isKickbackLamp[lampNum] = enabled;
                         coilKickback[lampNum] = coilNum;
                         swKickback[lampNum] = swNum;
                         kickbackOnDelay[lampNum] = (delayOnTime *60) / 1000;
                         kickbackOffDelay[lampNum] = ((delayOffTime * 60) / 1000) * -1;
 
-                        // This coil is under P-ROC control, not pinmame, so add it to the ignore list
-                        AddIgnoreCoil(coilNum);
-                        printf("\n- processed %s",kickbackName.c_str());
+                        if (enabled) {
+                                // This coil is under P-ROC control, not pinmame, so add it to the ignore list
+                                AddIgnoreCoil(coilNum);
+                        } else {
+                                ClearSwitchRule(swNum, coilNum);
+                        }
+                        printf("\n- %sabled %s", enabled ? "en" : "dis", kickbackName.c_str());
                         if (mame_debug) fprintf(stderr,"\nKicker %s is lamp %d, switch %d, coil %d, delay on %d, delay off %d",kickbackName.c_str(),lampNum,swNum,coilNum, delayOnTime, delayOffTime);
                     }
                 }

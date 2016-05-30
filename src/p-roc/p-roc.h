@@ -63,7 +63,7 @@ void procConfigureDriverDefaults(void);
 void procFlipperRelay(int state);
 void procFullTroughDisablesFlippers(void);
 void procConfigureFlipperSwitchRules(int enabled);
-void procConfigureSwitchRules(void);
+void procConfigureSwitchRules(int enabled);
 void procConfigureInputMap(void);
 void procKickbackCheck(int num);
 void procConfigureRGBLamps(void);

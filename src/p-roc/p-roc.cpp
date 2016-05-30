@@ -287,7 +287,7 @@ int procInitialize(char *yaml_filename) {
 			procConfigureInputMap();
 
 			procInitializeCoilDrivers();
-			procConfigureSwitchRules();
+			procConfigureSwitchRules(true);
 
 			procConfigureDriverDefaults();
                         
