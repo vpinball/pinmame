@@ -1,0 +1,47 @@
+OK, this is a front end for XWindows for launching XMAME ROMS written in 
+Tkperl...you need to have the Tkperl package compiled for this to work.
+(Check at http://www.perl.org/CPAN/ to get Tkperl source)
+
+1) move tkmame.pl to a directory in your $PATH(or you'll have to run it with full pathname)
+
+2) chmod 755 tkmame.pl
+
+3) open up tkmame.pl in a text editor and change: 
+$MAMEDIR='$PATH to your ROMS'
+$XMAMERC_LOC='$PATH/FILENAME of your configuration file'
+$MAMEBIN='$PATH/FILENAME of your xmame executable'
+
+Default:
+$MAMEDIR = "/usr/local/share/xmame/roms";
+$XMAMERC_LOC = "/usr/local/share/xmame/xmamerc";
+$MAMEBIN = "/usr/local/bin/xmame.linux";
+
+4) play games :-)
+
+you can add a command line switch (rather than changing the *rc file) in the box right above the 'Quit' bar.... you can edit the xmamerc file with the button
+marked as such...(i'd make a back up of your xmamerc just in case, always a good idea with configuration files anyway)
+
+you can run it from command line from an xterm/rxvt/etc or make a menu item
+for it in your window manager of choice...
+
+my line from .fvwmrc:
+
+	Exec	"MAME"		exec /mame/tkmame.pl &
+
+you can change tkmame.pl to another name if you so wish...
+
+BUGS
+----
+I had to use the Tk::BrowseEntry widget instead of the Entry Widget 
+because for some reason I couldn't get Entry to work :-( , maybe a bug in
+Tkperl,Ignore the "Arrow" buttons they do nothing!
+
+TO DO
+-----
+have a "remote control" box to Pause or kill games (kill is easy the pause 
+I am not sure of how to do!)
+email me with suggestions!
+
+-@@@-
+gauze 12/2/97    email:gauze@loa.com
+

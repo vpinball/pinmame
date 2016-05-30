@@ -1,0 +1,91 @@
+diff -ur mame-0.35.orig.fixed/src/memory.c xmame-0.35.4/src/memory.c
+--- mame-0.35.orig.fixed/src/memory.c	Sat Jul 10 13:49:25 1999
++++ xmame-0.35.4/src/memory.c	Sat Jul 10 14:33:20 1999
+@@ -130,6 +130,58 @@
+ 
+ ***************************************************************************/
+ 
++#ifdef ALIGN_SHORTS
++/*
++ * Previously READ_WORD and WRITE_WORDS were implemented as macros.
++ * However they assumed that unaligned loads are legal, which is not
++ * true on most non-x86 hardware.  Even on a Pentium, unaligned loads are
++ * slower than aligned loads.
++ */
++
++#ifdef LSB_FIRST
++#ifndef __GNUC__
++/* don't include it for gcc, gcc has a way to tell the compiler
++   to generate a unaligned access sequence (see memory.h) */
++
++int
++READ_WORD(void *dst)
++{
++  unsigned char *p = (unsigned char *) dst;
++  return (p[1] << 8) | p[0];
++}
++
++int
++WRITE_WORD(void *dst, int val)
++
++{
++  unsigned char *p = (unsigned char *) dst;
++  p[0] = val & 0xff;
++  p[1] = (val >> 8) & 0xff;
++  return val;
++}
++
++#endif /* #ifndef __GNUC__ */
++#else
++
++int
++READ_WORD(void *dst)
++{
++  unsigned char *p = (unsigned char *) dst;
++  return (p[0] << 8) | p[1];
++}
++
++int
++WRITE_WORD(void *dst, int val)
++
++{
++  unsigned char *p = (unsigned char *) dst;
++  p[1] = val & 0xff;
++  p[0] = (val >> 8) & 0xff;
++  return val;
++}
++#endif
++#endif
++
+ int mrh_ram(int address){return RAM[address];}
+ int mrh_bank1(int address){return cpu_bankbase[1][address];}
+ int mrh_bank2(int address){return cpu_bankbase[2][address];}
+diff -ur mame-0.35.orig.fixed/src/memory.h xmame-0.35.4/src/memory.h
+--- mame-0.35.orig.fixed/src/memory.h	Sat Jul 10 13:49:46 1999
++++ xmame-0.35.4/src/memory.h	Sat Jul 10 14:33:20 1999
+@@ -211,8 +211,25 @@
+ 
+ /* ----- 16-bit memory access macros ----- */
+ 
++#ifdef ALIGN_SHORTS
++#if defined(LSB_FIRST) && defined(__GNUC__)
++
++/* special way for gcc to tell it to create unaliged access sequence */
++typedef struct {
++  unsigned short __x __attribute__((packed));
++} packed_word;
++#define READ_WORD(a)    (((packed_word *)(a))->__x)
++#define WRITE_WORD(a,d) ((((packed_word *)(a))->__x) = (d))
++
++#else
++/* Use these to avoid alignment problems on non-x86 hardware. */
++extern int READ_WORD(void *dst);
++extern int WRITE_WORD(void *dst, int d);
++#endif
++#else
+ #define READ_WORD(a)          (*(unsigned short *)(a))
+ #define WRITE_WORD(a,d)       (*(unsigned short *)(a) = (d))
++#endif
+ 
+ #define COMBINE_WORD(w,d)     (((w) & ((d) >> 16)) | ((d) & 0xffff))
+ #define COMBINE_WORD_MEM(a,d) (WRITE_WORD ((a), (READ_WORD (a) & ((d) >> 16)) | (d)))

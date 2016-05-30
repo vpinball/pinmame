@@ -5,6 +5,9 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "dedmd.h"
+#ifdef PROC_SUPPORT
+#include "p-roc/p-roc.h"
+#endif
 
 /*--------- Common DMD stuff ----------*/
 static struct {
@@ -33,7 +36,7 @@ static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd32Intf = {
-  NULL, dmd32_init, NULL, NULL,NULL, 
+  NULL, dmd32_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -120,6 +123,31 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
   tDMDDot dotCol;
   int ii,jj;
 
+#ifdef PROC_SUPPORT
+	if (coreGlobals.p_rocEn) {
+		/* Whitestar games drive 4 colors using 2 subframes, which the P-ROC
+		   has 4 subframes for up to 16 colors. Experimentation has showed
+		   using P-ROC subframe 2 and 3 provides a pretty good color match. */
+		const int procSubFrame0 = 2;
+		const int procSubFrame1 = 3;
+
+		/* Start with an empty frame buffer */
+		procClearDMD();
+
+		/* Fill the P-ROC subframes from the video RAM */
+		procFillDMDSubFrame(procSubFrame0, RAM, 0x200);
+		procFillDMDSubFrame(procSubFrame1, RAM2, 0x200);
+
+		/* Each byte is reversed in the video RAM relative to the bit order the P-ROC
+		   expects. So reverse each byte. */
+		procReverseSubFrameBytes(procSubFrame0);
+		procReverseSubFrameBytes(procSubFrame1);
+                procUpdateDMD();
+		/* Don't explicitly update the DMD from here. The P-ROC code
+		   will update after the next DMD event. */
+	}
+#endif
+
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
@@ -137,6 +165,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
     }
     *line = 0;
   }
+
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
 }
@@ -150,7 +179,7 @@ static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd64Intf = {
-  NULL, dmd64_init, NULL, NULL,NULL, 
+  NULL, dmd64_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -271,7 +300,7 @@ static WRITE_HANDLER(dmd16_ctrl_w);
 static INTERRUPT_GEN(dmd16_nmi);
 
 const struct sndbrdIntf dedmd16Intf = {
-  NULL, dmd16_init, NULL, NULL,NULL, 
+  NULL, dmd16_init, NULL, NULL,NULL,
   dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 

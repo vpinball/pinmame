@@ -105,6 +105,9 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		case FILETYPE_HISTORY:
 		case FILETYPE_LANGUAGE:
 		case FILETYPE_INI:
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+		case FILETYPE_PROC_YAML:
+#endif /* PINMAME && PROC_SUPPORT */
 			if (openforwrite)
 			{
 				logerror("mame_fopen: type %02x write not supported\n", filetype);
@@ -115,7 +118,7 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		/* write-only cases */
 		case FILETYPE_SCREENSHOT:
 #ifdef PINMAME
-                case FILETYPE_WAVE:
+		case FILETYPE_WAVE:
 #endif /* PINMAME */
 
 			if (!openforwrite)
@@ -182,7 +185,7 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		/* screenshot files */
 		case FILETYPE_SCREENSHOT:
 #ifdef PINMAME
-                case FILETYPE_WAVE:
+		case FILETYPE_WAVE:
 #endif /* PINMAME */
 
 			return generic_fopen(filetype, NULL, filename, 0, FILEFLAG_OPENWRITE);
@@ -206,6 +209,12 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		/* game specific ini files */
 		case FILETYPE_INI:
 			return generic_fopen(filetype, NULL, gamename, 0, FILEFLAG_OPENREAD);
+
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+		/* P-ROC YAML files */
+		case FILETYPE_PROC_YAML:
+			return generic_fopen(filetype, gamename, filename, 0, FILEFLAG_OPENREAD);	// filename???
+#endif /* PINMAME && PROC_SUPPORT */
 
 		/* anything else */
 		default:
@@ -799,10 +808,15 @@ static const char *get_extension_for_filetype(int filetype)
 			extension = "ini";
 			break;
 #ifdef PINMAME
-		// wavefiles
-		case FILETYPE_WAVE:
+		case FILETYPE_WAVE:			/* wavefiles */
 			extension = "wav";
 			break;
+
+#ifdef PROC_SUPPORT
+		case FILETYPE_PROC_YAML:	/* P-ROC YAML files */
+			extension = "yaml";
+			break;
+#endif /* PROC_SUPPORT */
 #endif /* PINMAME */
 	}
 	return extension;

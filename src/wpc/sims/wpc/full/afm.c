@@ -440,6 +440,63 @@ static HC4094interface hc4094afm = {
   { qspin_0_out }
 };
 
+#ifdef PROC_SUPPORT
+  #include "p-roc/p-roc.h"
+  #include "p-roc/proc_shift_reg.h"
+
+  /*
+    LEDs of saucer controlled by a serial shift register.  Game sets DATA and
+    then pulses clock HIGH for less than 1ms, about every 100ms.  Except for
+    when it's clearing the LEDs or pulsing a specific pattern and shifts with
+    sub-millisecond timing.  We use a 64-bit queue to track shift requests,
+    and a 12ms timer to shift them out at a rate the P-ROC can handle.
+    
+    Martians seem to be enabled for 0.5 to 1.1ms, disabled briefly (0.1ms),
+    enabled for about 15ms, and disabled for 133ms.  Then the pattern repeats.
+    
+    For solenoids with immediate handling, invert the `smoothed` value to allow
+    default handler to process the changes.
+  */
+  void afm_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    static int saucer_data = 0;
+    switch (solNum) {
+      case  4:  // C05 Left Alien Low
+      case  5:  // C06 Left Alien High
+      case  7:  // C08 Right Alien High
+      case 13:  // C14 Right Alien Low
+
+      case 16:  // C17 to C23, C25 to C28 flashers
+      case 17:
+      case 18:
+      case 19:
+      case 20:
+      case 21:
+      case 22:
+      case 24:
+      case 25:
+      case 26:
+      case 27:
+      
+      case 23:  // C24 Bank Motor
+      case 38:  // C39 Strobe Light
+        smoothed = !smoothed;
+        break;
+
+      case 37:  // C38 data for saucer LEDs
+        if (!smoothed)
+          saucer_data = enabled;
+        return;
+
+      case 36:  // C37 clock for saucer LEDs
+        if (!smoothed && enabled) {
+          proc_shiftRegEnqueue(saucer_data);
+        }
+        return;
+    }
+    default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
+  }
+#endif
+
 static WRITE_HANDLER(afm_wpc_w) {
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
@@ -460,5 +517,10 @@ static void init_afm(void) {
   HC4094_oe_w(1, 1);
   HC4094_strobe_w(0, 1);
   HC4094_strobe_w(1, 1);
+#ifdef PROC_SUPPORT
+  wpc_proc_solenoid_handler = afm_wpc_proc_solenoid_handler;
+  // clock on C37, data on C38
+  proc_shiftRegInit(36 + 32, 37 + 32);
+#endif
 }
 

@@ -1,0 +1,73 @@
+#!/bin/bash
+# This is a script which automates some of the operations needed for porting DOS
+# MAME to Un*x.  Run it in a directory containing the latest MAME sources,
+# unzipped with the -L option to make all the filenames lower case.  Also, you
+# must specify a previous xmame release's source directory.  For example, here's
+# what I would do in my ~/emulators directory to port 0.37b14:
+#           mkdir xmame-0.37b14.1
+#           cd xmame-0.37b14.1
+#           unzip -L ../M37B14.ZIP
+#           prep-new-mame ../xmame-0.37b13.2
+#
+# Lawrence Gold <gold@aros.net>
+# Last modified on 11 April 2001.
+
+# Fix the line endings of the included text files, makefiles, and sources.
+if [ -x "`which d2u 2> /dev/null`" ]; then
+  d2u `find . -name "*.txt" -print` 2> /dev/null
+  d2u `find . -name "*.htm" -print` 2> /dev/null
+  d2u `find . -name "*.html" -print` 2> /dev/null
+  d2u `find . -name "*.mak" -print` 2> /dev/null
+  d2u `find . -name "*.ini" -print` 2> /dev/null
+  d2u `find . -name "*.pl" -print` 2> /dev/null
+  d2u `find . -name "*.[ch]" -print` 2> /dev/null
+else
+  echo "Unable to run d2u.  This may cause build problems on some platforms."
+fi
+
+
+# Change // comments to /* */ pairs.  Some C compilers don't like //.
+fix-comments `find . -name "*.[ch]" -print`
+
+# Copy over the src/unix folder from a previous release.
+if [ -d $1/src/unix ]; then
+  cp -R $1/src/unix src
+else
+  echo "Cannot find src/unix in old xmame directory, exiting..."
+  exit 1
+fi
+
+# Make some symlinks.
+ln -s src/unix/cab .
+ln -s src/unix/contrib .
+ln -s src/unix/doc .
+ln -s src/unix/install-sh .
+
+# Move the MAME text files to the doc directory.
+if [ -f whatsnew.txt ]; then
+  mv whatsnew.txt doc/mame/
+fi
+
+if [ -f whatsold.txt ]; then
+  mv whatsold.txt doc/mame/
+fi
+
+if [ -d docs ]; then
+  mv docs/* doc/mame/
+  rm -r docs
+fi
+
+# Rename the MAME makefile and fix its line endings.
+mv makefile makefile.mame
+d2u makefile.mame 2> /dev/null
+
+# Copy makefile.unix from the old xmame directory.
+cp $1/makefile.unix .
+
+# Copy README and todo from the old xmame directory.
+cp $1/README .
+cp $1/todo .
+
+# Clean up the files left over from d2u and fix-comments.
+rm -f `find . -name "*~" -print`
+rm -f `find . -name "*.orig" -print`

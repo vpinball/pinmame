@@ -1,0 +1,240 @@
+#!/usr/bin/perl
+
+#############################################################################
+# MAME-CD v0.1  This is BETA QUALITY ...or worse ;) 
+#
+# Copyright (C) 2001  Mario J. Barchein Molina <mbarchein@yahoo.es>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#############################################################################
+
+
+#
+# CONFIGURATION OPTIONS. Modify them to suit your system
+#
+
+# The xmame executable (needed to read game info). 
+# MUST _NOT_ BE ROOT SETUID!!!
+$XMAME = "/usr/local/bin/xmame.x11";
+
+# Your rompath. Separate components with ':'. List paths with more recent
+# roms before paths with older ones.
+# eg: $ROMPATH = /stuff/mame-54-roms:/stuff/mame-all-other-roms
+$ROMPATH = "/your/mame/roms";
+
+# The output dir where structure will be created
+$CDROM_DIR = "/tmp/mame-cd";
+
+# Max size (in bytes) of each CD. This is aprox 650MB. You can reduce if
+# you want to include other files in the CDs.
+$CDROM_SIZE = 678602880;
+
+#
+# ----- END OF CONFIGURATION -------
+#
+
+#-----------------------------------------------------------------------------
+
+print "Reading game info. Please wait...\n";
+open (XMAME, "$XMAME -listinfo 2>/dev/null |");
+
+# process each info block
+@block = ();
+foreach (<XMAME>){
+    
+    # add line to block (game, resource,...)
+    $block[$#block+1]=$_ if not $_ =~ /^\s*$/;
+    
+    # end of block
+    if ($_ =~ /^\)$/){
+	
+	# get the name of the block
+	$block[1] =~ /name ([^\s]+)/;
+	$blockname = $1;
+	
+	#initialize variables
+	$year = "19xx-unknown";
+
+	# process block
+	if ($block[0] =~ /^game/ ){ #block is game
+	    
+	    # search for clone of another game or use roms of another game
+	    for ($i=0, $cloneof="", $romof=""; $i < $#block; $i++){
+		if ($block[$i]=~/^\s*cloneof ([^\s]+)/){
+		    $cloneof=$1; 
+		    
+		    #add game to the list of clones of a game
+		    $clone_of{$cloneof} .= "$blockname ";
+		} 
+		
+		if ($block[$i]=~/^\s*romof ([^\s]+)/){
+		    $romof=$1; 
+		    
+		    #add game to $game_uses_roms_of{}
+		    $game_uses_roms_of{$blockname}.= "$romof ";
+		} 
+		
+		# get the year of a game
+		if ($block[$i]=~/^\s*year ([^\s]+)/){
+		    $year = $1;
+		} 
+	    }
+	    
+	    # add to the list of non-clones (if ok) and year
+	    if ($cloneof eq ""){
+		$non_clones{$blockname}=1;
+		$games_in_year{$year} .= "$blockname ";
+	    }
+	    
+	} elsif ($block[0] =~ /^resource/ ){ #block is resource
+	}
+
+
+	# reset block
+	@block = ();
+    }
+    
+}
+close (XMAME);
+
+# calculate size of each game and its clones.
+foreach (sort keys %non_clones){
+    $current_non_clone = $_;
+    #print "No clone: $current_non_clone\n";
+    
+    # foreach non-clone, process itself and all ist clones
+    foreach ($current_non_clone, split(/\s+/,$clone_of{$current_non_clone})){
+	$romset = $_;
+	$found = 0;
+	
+	# search file in each component of the ROMPATH
+	foreach (split(/:/,$ROMPATH)){
+	    s#/$##;
+	    $filepath = $_."/".$romset.".zip";	    
+	    
+	    if ( !$found && -f $filepath){
+		$found=1;
+		$romset_filepath{$romset}=$filepath;
+		
+		# stat the file
+		($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+		     $atime,$mtime,$ctime,$blksize,$blocks) = stat($filepath);
+		
+		$romset_size{$romset} = $size;
+
+		# add the size of this romset to the total of the clones of
+		# the non-clone game. The size is calculated in the way
+		# each file use a complete CDROM sector for the last one.
+		$sectors = $size / 2048;
+		$sectors =~ s/\..+//;
+		$cdrom_size = ($sectors*2048) + ( (($size%2048)!=0) ? 2048:0);
+		$non_clone_plus_clones_size{$current_non_clone} += $cdrom_size;
+		
+		#print "$romset ocupa $cdrom_size\n";
+		#print "clones de $current_non_clone ocupan $non_clone_plus_clones_size{$current_non_clone}\n";
+	    }
+	}
+	
+	# show warning if the romset isn't found in the ROMPATH
+	print "Romset for $romset not found. Skipping\n" if !$found;
+    }
+}
+
+
+# Look for other resources the games might need and locate them in the disk
+# (like NEOGEO games that need neogeo.zip)
+foreach (sort values %game_uses_roms_of){
+    $resource = $_;
+    $resource =~ s#\s+$##;
+    
+    # search file in each component of the ROMPATH (only if not found
+    # previously)
+    if ($romset_filepath{$resource} eq "" && 
+	$resource_filepath{$resource} eq "")
+    {
+	$found = 0;
+	
+	foreach (split(/:/,$ROMPATH)){
+	    s#/$##;
+	    $filepath = $_."/".$resource.".zip";
+	
+	    if ( !$found && -f $filepath){
+		$found=1;
+		$resource_filepath{$resource}=$filepath;
+	    }
+	}
+    }
+}
+
+### FILE OPERATIONS
+
+# create output dir
+mkdir ($CDROM_DIR,0755);
+
+# initialize CDROM count and create dir
+$current_cd = 1;
+$remaining_size = $CDROM_SIZE;
+
+$current_output_dir = $CDROM_DIR."/cd".$current_cd."/";
+mkdir ($current_output_dir,0755);
+mkdir ($current_output_dir."allroms/",0755);
+
+# distribute the games in the cd's (ordered by year)
+foreach (sort keys %games_in_year){
+    $current_year = $_;
+    mkdir ($current_output_dir."$current_year/",0755);
+	
+    # foreach set + clones, symlink them to the output directory
+    foreach (sort split(/\s+/, $games_in_year{$current_year})){
+	$current_non_clone = $_;
+	
+	# if there is no more space, advance to the next CD
+	if ($remaining_size - $non_clone_plus_clones_size{$current_non_clone} < 0){
+	    $current_cd++;
+	    $remaining_size = $CDROM_SIZE;
+	    
+	    #create CDROM dir
+	    $current_output_dir = $CDROM_DIR."/cd".$current_cd."/";
+	    mkdir ($current_output_dir,0755);
+	    mkdir ($current_output_dir."allroms/",0755);
+	    mkdir ($current_output_dir."$current_year/",0755);
+	}
+	
+	# adjust new remaining size for the CD
+	$remaining_size -= $non_clone_plus_clones_size{$current_non_clone};
+	
+	# foreach romset, link it to the output directories.
+	foreach ($current_non_clone,split(/\s+/,$clone_of{$current_non_clone})){
+	    $romset=$_;
+	    
+	    symlink ($romset_filepath{$romset}, $current_output_dir."allroms/".$romset.".zip");
+	    symlink ("../allroms/".$romset.".zip", $current_output_dir."$current_year/".$romset.".zip");
+	    
+	    #link any other resource the game might need
+	    $resource = $game_uses_roms_of{$romset};
+	    $resource =~ s#\s+$##;
+	    
+	    if ($resource_filepath{$resource} ne ""){
+		symlink ($resource_filepath{$resource}, $current_output_dir."allroms/".$resource.".zip");
+		symlink ("../allroms/".$resource.".zip", $current_output_dir."$current_year/".$resource.".zip");
+	    }
+	    
+	}
+    }
+}
+
+
+
+

@@ -92,6 +92,9 @@ struct rc_option fileio_opts[] =
 	{ "Windows path and directory options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "rompath", "rp", rc_string, &pathlist[FILETYPE_ROM].rawpath, "roms", 0, 0, NULL, "path to romsets" },
 	{ "samplepath", "sp", rc_string, &pathlist[FILETYPE_SAMPLE].rawpath, "samples", 0, 0, NULL, "path to samplesets" },
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	{ "procpath", NULL, rc_string, &pathlist[FILETYPE_PROC].rawpath, "proc", 0, 0, NULL, "path to P-ROC files" },
+#endif /* PINMAME && PROC_SUPPORT */
 #ifdef __WIN32__
 	{ "inipath", NULL, rc_string, &pathlist[FILETYPE_INI].rawpath, ".;ini", 0, 0, NULL, "path to ini files" },
 #else
@@ -348,6 +351,12 @@ static const char *get_path_for_filetype(int filetype, int pathindex, DWORD *cou
 			list = &pathlist[FILETYPE_ROM];
 			break;
 #endif
+
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+		case FILETYPE_PROC_YAML:
+			list = &pathlist[FILETYPE_PROC];
+			break;
+#endif /* PINMAME && PROC_SUPPORT */
 
 		default:
 			list = &pathlist[filetype];
@@ -715,7 +724,7 @@ void set_pathlist(int file_type, const char *new_rawpath)
 	// by default, start with an empty list
 	list->path = NULL;
 	list->pathcount = 0;
-		
+
 	list->rawpath = new_rawpath;
 
 }

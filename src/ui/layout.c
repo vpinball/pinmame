@@ -85,6 +85,9 @@ DIRECTORYINFO g_directoryInfo[] =
 {
 	{ "ROMs",                  GetRomDirs,      SetRomDirs,      TRUE,  DIRDLG_ROMS },
 	{ "Samples",               GetSampleDirs,   SetSampleDirs,   TRUE,  DIRDLG_SAMPLES },
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	{ "P-ROC Files",           GetProcDirs,     SetProcDirs,     TRUE,  0 },
+#endif /* PINMAME && PROC_SUPPORT */
 	{ "Ini Files",             GetIniDir,       SetIniDir,       FALSE, DIRDLG_INI },
 	{ "Config",                GetCfgDir,       SetCfgDir,       FALSE, DIRDLG_CFG },
 	{ "High Scores",           GetHiDir,        SetHiDir,        FALSE, DIRDLG_HI },

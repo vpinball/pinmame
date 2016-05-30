@@ -1,0 +1,74 @@
+.\"  -*- nroff -*-
+.\"
+.\" xmame.6
+.\"
+.\" Done by René Herrmann <rene.herrmann@berlin.de>, September 2000
+.\"
+.\" xmame should be distributed under terms of the license in
+.\" readme.mame.
+.\" The main issue involves ROM images. ROM images are protected under the
+.\" copyrights of their authors, and CANNOT be distributed in the same
+.\" package as xmame. Download any ROM images at your own risk and
+.\" responsibility.
+.\"
+.Dd 22. March 2001
+.Dt Xmame 6
+.Os
+.Sh NAME
+.Nm xmame
+.Nd THE Arcade game machine emulator for UNIX/X
+.Sh SYNOPSIS
+.Nm xmame[.x11|svga|xgl|sdl]
+.Op Fl options
+.Ar gamename
+.Sh EXAMPLES
+Some examples for those who are in a hurry.
+
+If you don't have/want a frontend, you'll mostly use
+.Nm xmame
+(with a well defined xmamerc) in the following way:
+
+.Nm xmame
+.Ar ladybug
+
+Plays Ladybug with all options defined in xmamerc. If there is no xmamerc the 
+game starts with the buildin defaults.
+
+.Nm xmame
+.Ar defender
+.Fl frameskip Ar 1
+.Fl cheat
+
+Starts
+.Ar defender
+using a frameskip of 1 and cheat is enabled.
+Useful for slower computers, if the game is running really slowly.
+And of course if you want (have?) to cheat. ;-)
+.Sh LEGAL NOTICE
+The main issue involves ROM images. ROM images are protected under the
+copyrights of their authors, and CANNOT be distributed in the same
+package as xmame. Download any ROM images at your own risk and
+responsibility.
+
+.Nm xmame
+should be distributed under terms of the license in doc/readme.mame
+
+XInputExtensions based Joystick support. Source code is entirely pure 
+hack work. No sample code, no info at all was found (only library 
+reference manual) and is copyrighted by me (Juan Antonio Marmnez).
+Use it under terms of GNU General Public License.
+
+PLEASE BE AWARE OF THE POSSIBLE LEGAL RAMIFICATIONS OF DOWNLOADING ROM
+IMAGES, BEFORE YOU ACTUALLY DO SO!  YOU HAVE BEEN WARNED, AND WE TAKE NO
+RESPONSIBILITY FOR YOUR ACTIONS -- YOU ARE ON YOUR OWN!
+
+Also, the
+.Nm xmame 
+authors ask that you DO NOT distribute any ROM images with either source
+code or binaries of the
+.Nm xmame
+emulator.
+.Sh DESCRIPTION
+.Nm xmame 
+is the (M)ulti (A)rcade (M)achine (E)mulator for UNIX-(X).  It emulates
+the hardware of realy many classic arcade game machines.

@@ -368,11 +368,112 @@ static core_tGameData dmGameData = {
   }
 };
 
+#ifdef PROC_SUPPORT
+  #include "p-roc/p-roc.h"
+  /*
+    Override the flipper enable/disable code in default_wpc_proc_solenoid_handler()
+    with special support for the handles on Demolition Man.
+  */
+  #define CLAW_MOTOR_OFF    (0)
+  #define CLAW_MOTOR_LEFT   (1<<18)
+  #define CLAW_MOTOR_RIGHT  (1<<19)
+  void dm_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
+    static const char *coil_name[] = { "FLRM", "FLRH", "FLLM", "FLLH", "FULM", "FULH" };
+    static const char *sw_right[] = { "SF2", "SF6" };
+    static const char *sw_left[]  = { "SF4", "SF8" };
+    static int motor_pinmame = 0;
+    static int motor_proc = 0;
+    int flippers = -1;
+    
+    if (!smoothed) {
+      // Only process immediate changes to claw motor solenoids (C19 and C20)
+      if (solNum == 18 || solNum == 19) {
+        if (enabled)
+          motor_pinmame |= (1 << solNum);
+        else
+          motor_pinmame &= ~(1 << solNum);
+        // ignore states where both motors are enabled
+        if (motor_pinmame != (CLAW_MOTOR_LEFT | CLAW_MOTOR_RIGHT)) {
+          // motor_pinmame and motor_proc are either _OFF, _LEFT or _RIGHT
+          // Turn off the motor if it's _LEFT or _RIGHT, then turn it on a
+          // direction if necessary.
+          if (motor_pinmame != motor_proc) {
+            if (motor_proc == CLAW_MOTOR_LEFT) {     // _LEFT to _OFF or _RIGHT
+              default_wpc_proc_solenoid_handler(18, FALSE, TRUE);
+            }
+            if (motor_proc == CLAW_MOTOR_RIGHT) {    // _RIGHT to _OFF or _LEFT
+              default_wpc_proc_solenoid_handler(19, FALSE, TRUE);
+            }
+            if (motor_pinmame == CLAW_MOTOR_LEFT) {  // _OFF or _RIGHT to _LEFT
+              default_wpc_proc_solenoid_handler(18, TRUE, TRUE);
+            }
+            if (motor_pinmame == CLAW_MOTOR_RIGHT) { // _OFF or _LEFT to _RIGHT
+              default_wpc_proc_solenoid_handler(19, TRUE, TRUE);
+            }
+
+            motor_proc = motor_pinmame;
+          }
+        }
+      }
+      return;
+    }
+    
+    switch (solNum) {
+      case 18:  // claw motor left
+      case 19:  // claw motor right
+        // Ignore smoothed changes to C19 and C20, handled in non-smoothed case
+        return;
+        
+      case 28:
+        // If game supports this "GameOver" solenoid, it's safe to disable the
+        // flippers here (something that happens when the game starts up) and
+        // rely on solenoid 30 telling us when to enable them.
+        if (enabled)
+          flippers = 0;
+        break;
+      case 30:
+        flippers = enabled;
+        break;
+      default:
+        default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
+        return;
+    }
+    
+    if (flippers != -1) {
+      PRCoilList coils[6];
+      int i;
+      
+      for (i = 0; i < 6; ++i) {
+        coils[i].coilNum = PRDecode(kPRMachineWPC, coil_name[i]);
+        coils[i].pulseTime = (i & 1) ? 0 : kFlipperPulseTime;
+        AddIgnoreCoil(coils[i].coilNum);
+      }
+      
+      for (i = 0; i < 2; ++i) {
+        ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_right[i]),
+          &coils[0], flippers ? 2 : 0);
+        ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_left[i]),
+          &coils[2], flippers ? 4 : 0);
+      }
+        
+      if (! flippers) {
+        // make sure none of the coils are being driven
+        for (i = 0; i < 6; ++i) {
+          procDriveCoilDirect(coils[i].coilNum, FALSE);
+        }
+      }
+    }
+  }
+#endif
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_dm(void) {
   core_gameData = &dmGameData;
+#ifdef PROC_SUPPORT
+  wpc_proc_solenoid_handler = dm_wpc_proc_solenoid_handler;
+#endif
 }
 
 static int dm_getSol(int solNo) {

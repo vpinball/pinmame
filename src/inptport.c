@@ -1505,7 +1505,7 @@ int num_ik = sizeof(input_keywords)/sizeof(struct ik);
 /***************************************************************************/
 /* Generic IO */
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
+#ifndef PINMAME_NO_UNUSED	/* currently unused function (GCC 3.4) */
 static int readint(mame_file *f,UINT32 *num)
 {
 	unsigned i;
@@ -1524,9 +1524,9 @@ static int readint(mame_file *f,UINT32 *num)
 
 	return 0;
 }
-#endif
+#endif /* PINMAME_NO_UNUSED */
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
+#ifndef PINMAME_NO_UNUSED	/* currently unused function (GCC 3.4) */
 static void writeint(mame_file *f,UINT32 num)
 {
 	unsigned i;
@@ -1541,7 +1541,7 @@ static void writeint(mame_file *f,UINT32 num)
 		num <<= 8;
 	}
 }
-#endif
+#endif /* PINMAME_NO_UNUSED */
 
 static int readword(mame_file *f,UINT16 *num)
 {
@@ -3001,6 +3001,14 @@ void seq_set_string(InputSeq* a, const char *buf)
 							j++;
 							found = 1;
 						break;
+
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+						case IKT_OSD_PROC:
+							(*a)[j] = procoscode_to_code(pik->val);
+							j++;
+							found = 1;
+						break;
+#endif /* PINMAME && PROC_SUPPORT */
 					}
 				}
 				pik++;

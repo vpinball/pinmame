@@ -1,0 +1,2107 @@
+Xmame history:
+
+Last Modified by Lawrence Gold (gold@aros.net)
+
+Release 0.74.1, 15 September 2003
+	- Everything from MAME 0.74 and MESS CVS.
+	- Reapplied David Mitchell's fix for the XInput inertial effect when 
+	  a mouse or spinner is used.  (Jake Stookey)
+	- Added support for controllor setup via "-ctrlr".  Note that "-hotrod"
+	  and "-hotrodse" have been replaced by "-ctrlr HotRod" and "-ctlrlr 
+	  HotRodSE".
+	- Added support for the Sun Forte 7 C compiler.  (Greg Menke)
+	- Added support for Mesa and Sun OpenGL on Solaris.  (Greg Menke)
+
+Release 0.72.1, 15 August 2003
+	- Everything from MAME 0.72 and MESS 0.72.
+	- The various effects enabled by -effect now work with rotation enabled.
+	  (Shyouzou Sugitani)
+	- The Xv target supports more effects.   (Shyouzou Sugitani)
+	- The rc parsing code displays more compact and readable error messages.
+	  (Andre Majorel)
+	- Xv windowed mode is now enabled with "-x11-mode 2" or "-x11 2", and 
+	  Xv fullscreen mode is enabled with "-x11-mode 3" or "-x11 3".  The 
+	  "-[no]xv" and "-fullscreen" switches are no longer available for X11 
+	  builds.
+	- Networking should work again.  I'd forgotten to change instances of 
+	  MAME_NET in src/unix to XMAME_NET in the 0.70.1 release.
+	- Added hotkey switching for Xv windowed mode via ALT + DEL and Xv 
+	  fullscreen mode via ALT + END.
+	- The xfx target should build again.
+	- Added -widescreen for Xv.  This shrinks the width of the output for 
+	  display on a widescreen TV.  (Per Wigren)
+
+Release 0.71.1, 19 July 2003
+	- Everything from MAME 0.71 and MESS 0.71.
+	- The include path for xmess now puts 'mess' before 'src' and 
+	  'src/includes'.  Fixes Bugzilla bug 435.
+	- The man page xmame.6 is much more up-to-date.  (Andrew Burton)
+	- Fixed errors reported for xmame.6 on a Debian Woody system.  (Alex 
+	  Kirk)
+
+Release 0.70.1, 18 June 2003
+	- Almost everything from MAME 0.70 and MESS 0.70.
+	- Changed an instance of MAME_DEBUG to DEBUG in unix.mak.  (Christopher
+	  Stone)
+	- Removed an obsolete (?) #include from osdutils.h that was interfering
+	  with MESS debug and IRIX builds.  Fixes Bugzilla bug #385.  (Frank 
+	  Everdij, Christopher Stone)
+	- Fixed some unused variable warnings when building non-debug versions
+	  of glgen.c and esound.c.
+	- Fixed the default values for -sysinfo_file and -messinfo_file, which
+	  were missing a '/'.
+	- Fixed the handling of leading zeros in the fractional part of a float
+	  in src/unix/snprintf.c.  (Chris Kirmse)
+	- Building 'tools' for xmess works again.
+	- Reduced the core changes needed to support networking, rapidfire, and
+	  IRIX-specific support.  Note that MAME_NET in the makefile has been 
+	  changed to XMAME_NET.
+	- The numeric keypad '*' key is now mapped correctly for SDL builds.
+	- The GLmame version string is now printed to stderr instead of stdout,
+	  as suggested by Matthias Saou.
+
+Release 0.69.1, 26 May 2003
+	- Almost everything from MAME 0.69.  The included MESS is version 0.68.
+	- Re-added Ben Collins' core change that adds support for extra mice.
+	- Rearranged the doc directory so that MAME- and MESS-specific files are
+	  in their own subdirectories.
+	- Reverted to using the original fronthlp.c (from 0.67.2) modified to 
+	  work with the 0.69 core.
+	- Building with the debugger enabled now works.  Note that in the 
+	  makefile, MAME_DEBUG is now just DEBUG.  (Christopher Stone)
+	- Fixed a logic bug in the XInput devices button-handling.  (Ben 
+	  Collins)
+	- Added UGCI coin/play support based on the libugci library for Linux's
+	  HIDDevice layer.  See http://www.phunnypharm.org/ugci/  (Ben Collins)
+	- Building the neomame target works again.  (Steve Behling)
+	- Made a tiny fix in fileio.c that allows specifying direct paths to 
+	  roms to work again; e.g., ./xmame.x11 ./moo.zip
+
+Release 0.68.1, 22 May 2003
+	- Almost everything from MAME 0.68 and MESS 0.68.
+	- Fixed the analog joystick support so that the Y-axis is recognized as
+	  analog.  (Sebastien Devaux)
+	- The command line is now parsed even if the display cannot be opened.
+	  (Christopher Stone, David Mitchell)
+	- Added support to the core for 4-button mice and 10-button joysticks.
+	  (Ben Collins)
+	- Removed superfluous checks for use_mouse in the OpenStep and SVGA 
+	  targets.  (Ben Collins)
+	- Fixed several problems and did a lot of cleanup in the XInput code, 
+	  especially for the output (e.g., showing detection status).  (Ben 
+	  Collins)
+	- Made a less intrusive change to fm.c which removes LFO support in 
+	  YM2610-only builds.  (Jarek Burczynski)
+	- Fixed a few problems with -listinfo output.  (Andrea Mazzoleni)
+
+Release 0.67.2, 12 April 2003
+	- Fixed a bug in unix.mak that caused libusb to be linked in when the 
+	  USB joystick driver was not enabled.
+	- The makefile should now handle the CC variable correctly if it's some
+	  variation of 'gcc', such as 'gcc-2.95.3'.
+	- The MIPS x86 dynamic recompiling core now builds with GCC 2.95.x.
+	- Fixed several other warnings and errors that occurred when building 
+	  with GCC 2.95.x.
+	- INSTALL_MAN_DIR in the makefile now uses INSTALL_GROUP for the gid 
+	  instead of 0.
+	- Fixed several C++-style comments and a couple of warnings in the 
+	  OpenGL code.
+	- Fixed a build error in the xmess.xgl target.
+	- Merged the latest MESS CVS changes.
+
+Release 0.67.1, 9 April 2003
+	- Almost everything from MAME 0.67 and MESS CVS.
+	- Added support for konamigx to info.c.  (David Haywood) 
+	- Building the neomame target now works.  (Steve Behling)
+	- Using XFree86 3.3.6 fbdev in 32bpp now works.  (Steve Behling)
+	- USB patches to take recent FreeBSD changes into account.  (Matthew 
+	  N. Dodd)
+
+Release 0.66.2, 19 March 2003
+	- Fixed several C89 errors and warnings, mostly caused by C++-style 
+	  comments.
+	- Merged the latest MESS CVS code.
+
+Release 0.66.1, 17 March 2003
+	- Amost everything from MAME 0.66 and MESS CVS.
+	- Enabling X11_DGA in the makefile causes "make install" to set the 
+	  suid bit on the executable.  (Christopher Stone)
+	- The Barath frameskipper is now enabled by default.  (suggested by 
+	  Christopher Stone)
+	- Fixed the use of 'sdl-config' in src/unix/unix.mak on platforms such 
+	  as FreeBSD.  (Stijn Hoop)
+	- Rotation has been moved to the blit core and should be a lot faster. 
+	  (Shyouzou Sugitani)
+	- Updated the GLmame driver to 0.94, which supports hardware bitmap 
+	  rotation and should fix the OpenGL problems that have affected recent
+	  releases.  (Sven Goethel)
+	- Analog controls work again, and the analog code is now synced up with
+	  the Windows code.  (Sebastien Devaux)
+	- The "-joydev" switch now allows a full device name, such as 
+	  /dev/input/js0, to be specified.
+	- Added makecd_mame2.pl to contrib tools; this script aids with burning
+	  CDs with ROMs, flyers, and cabinets.  (Luc Saillard)
+	- Renamed "-gamma-correction" to "-gamma" to be consistent with the 
+	  Win32 version.  It should also work now.
+	- An Xv-enabled build should no longer report 0 bits per pixel and stop
+	  on a display that doesn't support the Xv extension.  (Alexander 
+	  Miller)
+	- The "-brightness" switch now works as in Windows.  Removed obsolete 
+	  brightness and gamma code from sysdep_palette.
+	- Idle sleeping is now disabled while the onscreen configuration menu 
+	  is displayed.  This works around a problem with key and button 
+	  presses not registering when setting input preferences.
+	- The "-record" and "-playback" switches now work as in the Win32 
+	  version.  Also, the "inp" directory is now created on startup if 
+	  it is missing.
+	- MAME's disassemblers are no longer built by default.  This avoids  
+	  having to make some ugly little patches to the core.  (Christopher 
+	  Stone)
+	- Removed the obsolete 8bpp update functions from most of the targets.  
+	  This should speed compilation and produce a smaller binary.
+	- Building on IRIX should again work "out of the box".
+
+Release 0.65.1, 11 February 2003
+	- Almost everything from MAME 0.65 and MESS CVS.
+	- Removed support for the ALSA 0.5 plugin.  (Shyouzou Sugitani)
+	- The default path for data files in the example rc files, docs, and 
+	  several scripts is now more FHS-compliant.  (Reported by anarxia.)
+	- Disabled XScreenSaver support because it can cause the game window to
+	  not open when running in KDE.  (Christopher Stone)
+	- Reworked makefile.unix with the intent of making it a bit cleaner and
+	  easier to tweak.
+	- hdcomp now builds via "make -f makefile.unix tools".
+	- Removed most Windows- and MS-DOS-specific files.
+
+Release 0.62.2, 12 January 2003
+	- Fixed a link error that affected xmame but not xmess.
+
+Release 0.62.1, 12 January 2003
+	- Almost everything from MAME 0.62 and MESS 0.62.1.
+	- The game window should no longer open twice on startup in most cases.
+	  One known exception is Pac-Man with artwork enabled.
+	- Replaced fileio.c with a slightly modified version from the Win32 
+	  codebase.  Be aware that several command line switches have changed 
+	  as a result!
+	- Applied the Xv cleanup patch required for the VIDIX patch.  (Alastair 
+	  Robinson)
+	- The number of games is no longer hard-coded to 3000 in datafile.c.  
+	  This should fix problems with history.dat and "-listinfo".  (Rene 
+	  Single)
+	- Rotation is now handled by the OSD code.  The method used is hardly 
+	  optimal, but it should work for all display targets.  Moving the 
+	  rotation to the blit core is planned for a future release.
+	- The Xv target now uses the game driver's aspect ratio unless the 
+	  "-nokeepaspect" or "-noka" switch is specified.  Inspired by Paul 
+	  Sajecki's patch.
+	- Simplified/unified the FPS on-screen display.  This is now only 
+	  overridden when the Barath frameskipper is in debug mode.
+	- The DGA, GGI, and SVGALIB targets now use the game aspect ratio 
+	  provided by the core rather than a hard-coded 4:3.
+	- Using "-x11-mode" or "-x11" to activate DGA fullscreen mode now 
+	  disables Xv.  Likewise, switching to DGA fullscreen mode via <ALT>-
+	  <HOME> is now disabled while Xv is active.
+	- All path and directory options in fileio.c now support expansion of 
+	  environment variables such as $HOME.
+	- Fixed a warning about snprintf when building for Mac OS X.
+	- Fixed the XInput handling so that spinners no longer show an inertial
+	  effect.  (David Mitchell)
+	- Updated the documentation to include a section about the Xv extension.
+	  (Frank Cox)
+	- Fixed problems in memory.c that could lead to crashes and default.cfg
+	  corruption.  (smf)
+	- Fixed a bunch of ANSI/ISO warnings reported by Stefano Priore.
+	- Aspect and mode switches are now available for the Xv driver even if 
+	  DGA isn't enabled.
+	- Fixed a couple of files so that they include <alsa/asoundlib.h> 
+	  instead of the deprecated <sys/asoundlib.h>.  (Nico)
+	- Changed a net_active() call in src/mame.c to the osd_net_active().  I 
+	  must have messed up my all-in-one core patch at some point.
+	- The 'rc' and 'hi' directories are now created on startup if they're 
+	  missing.  (Gerd Sussner)
+	- Merged NetMAME 0.6rc1, which should allow games to be playable over 
+	  medium-latency connections, DSL, and cable.  It also adds configurable
+	  ports and NVRAM sync.  (Steve Freeland)
+
+Release 0.61.1, 13 November 2002
+	- Almost everything from MAME 0.61 and MESS 0.61.2.
+	- The mouse cursor is now hidden in OpenGL fullscreen mode.  (Craig 
+	  Servin)
+	- Applied a patch for FreeBSD to unix/video-drivers/svgainput.c.  
+	  (Stijn Hoop)
+	- Applied the NetMAME 0.5 patch, which adds a new option, -parallelsync,
+	  which should allow games to work without lag at network latencies of 
+	  up to 16 milliseconds.  (Steve Freeland)
+	- Added support for Linux on the Playstation 2.  (Joan Sarah Touzet)
+	- Fixed a problem in the ALSA 0.9 driver with setting the sample rate 
+	  on SB128 soundcards.  (Stephen Anthony)
+	- Fixed a bug in unix/devices.h that prevented compilation on non-X11 
+	  platforms.
+	- Fixed the register constraints in cpu/i8085/i8085cpu.h so that 
+	  cpu/i8085/i8085.c can build for x86 using gcc-3.1 with -O3.  This 
+	  change was missed in the MAME 0.61 release.
+	- Fixed multiple definition warnings in the psikyosh driver.
+	- Increased the size of the buffer used to display history.  (Steve 
+	  Fewell)
+	- Modified unix/fronthlp.c so that it flushes its output more often to 
+	  aid frontends.  (Shadow Walker)
+	- Changed unix/video-drivers/xfx.c to be more frontend-friendly.  
+	  (Benoit Dumont)
+	- Added support for the SDL joystick driver.  (Yang Hyun)
+	- You can now specify a config subdirectory name using -cfgname/-cn.  
+	  This is useful for creating an alternate configuration.  (Benoit 
+	  Dumont)
+	- Added a "waveout" DSP plugin which redirects sound to a file using 
+	  Microsoft's PCM WAVE format.  The file name can be specified with the 
+	  "-audiodevice" switch and defaults to "xmameout.wav".  (Donald King)
+	- Added support for showing average frames per second when quitting.  
+	  Also added support for the -frames_to_run/-ftr switch.
+	- Added Xv hardware scaling support!  To enable, uncomment the line 
+	  reading "X11_XV = 1" in the makefile and use the -xvext/-xv switches 
+	  (and possibly the -yuv switch).  (Alastair Robinson)
+	- An X11 build can now grab the keyboard to bypass window managers.  
+	  Use -grabkeyboard/-gkb to activate and/or the ALT + PGUP keypress to
+	  toggle it on/off.  (Gerd Sussner)
+	- The code for finding the best X11 visual now checks in descending 
+	  order of bit depth.  This is to work around a bug/feature in the 
+	  latest NVidia drivers.  (Gerd Sussner)
+	- Fixed a problem in the DGA2 driver that could lead to scrambled 
+	  colors with an i830MG video card in 24bpp mode.  (Eric Brunet, 
+	  Shyouzou Sugitani)
+	- The SDL target's -listmodes switch now operates before attempting to 
+	  load a game.  (Shadow Walker)
+	- If xmame is iconified in IRIX, it will automatically pause ("boss 
+	  hanging around mode").  (Andrea Suatoni)
+	- Added a switch to force yv12 mode in the Xv driver; made improvements
+	  to the yv12 code.  (Eric Brunet)
+	- Xmame should now build "out of the box" for FreeBSD.  Note that for 
+	  the SDL target, you may have to set the SDL_CONFIG flag in the 
+	  makefile.  (Stijn Hoop)
+
+Release 0.561.1 (xmess), 16 May 2002
+	- Everything from MESS 0.561.
+	- Fixed the register constraints in cpu/i8085/i8085cpu.h so that 
+	  cpu/i8085/i8085.c can build for x86 using gcc-3.1 with -O3.
+
+Release 0.60.1 (xmame only), 5 May 2002
+	- Everything from MAME 0.60, except for the new special controllers 
+	  support.
+	- Updated the SNK driver to fix sound for games that couldn't use Y8950
+	  together with YM326/YM3812.  (Nicola Salmoria)
+	- Fixed the leg of the tiger in namcos86.  (SUZ of the MAME E2J board)
+	- Updated the Moo Mesa driver to the latest version.  (R. Belmont)
+	- Fixed a stereo output bug in sound/2612intf.c; fixed a sample loop 
+	  timing bug in sound/k007232.c.  (Hiromitsu Shioya)
+	- The '-diffdir' setting might actually work now.
+	- Fixed the Mortal Kombat 3 level select screen.  (Aaron Giles)
+	- Updated the description of the new '-ctrlr' option in changes.mame 
+	  and windows.txt.  (Ron Fries, et al)
+	- Updated the V60 core to handle unaligned memory accesses, which 
+	  should fix some SSV games.  (Nicola Salmoria)
+	- Updated 8080bw to fix the dip switches for Ozma Wars and its clones, 
+	  and to add the offscreen bonus display to 4-Player Bowling.  
+	  (Nephrite, Zsolt Vasvari)
+	- Updated drivers/psikyosh.c and vidhrdw/psikyosh.c to allow Lode 
+	  Runner and Hot Gimmick to run through their attract modes.  (David 
+	  Haywood)
+	- Fixed a crashing bug in vidhrdw/shaolins.c.  (David Haywood)
+	- Modified sound/ay8910.c to fix sound in some M62 games.  (Nicola 
+	  Salmoria)
+	- Updated drivers/wecleman.c to make the car in wecleman controllable.  
+	  (David Haywood)
+	
+Release 0.59.2 (xmame only), 17 April 2002
+	- Updated the included zlib library to 1.1.4, which fixes a "double 
+	  free" security vulnerability.
+	- Applied a fix for the fromance video driver.  (Takahiro Nogi)
+	- Updated romalizer to the latest release, 0.7pre3.  (Christopher 
+	  Stone)
+	- Fixed a potential crash and a linear interpolation bug in the ES550x 
+	  sound driver.  (Aaron Giles)
+	- Fixed a crash in the renegade driver caused by a sound effect reading 
+	  past the end of the ADPCM memory region.  (Phil Stroffolino)
+	- Fixed the following MAME testers bugs: blmbycar059red, uopoko059red,
+	  gcpinbal059red, jitsupro059red, metroc059red, phelios059red, 
+	  paclandc059red, ncv1058red, av2mj059red, fromancec058red.  (Aaron 
+	  Giles)
+
+Release 0.59.1 (xmame only), 25 March 2002
+	- Everything from MAME 0.59.
+	- Set some more sensible defaults for the various path settings in 
+	  fileio.c (e.g., XMAMEROOT/samples for samplepath).
+	- Fixed a segfault in psikyosh games.  (David Haywood)
+	- The NetBSD USB joystick code now compiles on newer NetBSD 
+	  installations.  (Krister Walfridsson)
+	- DGA 2.0 support now works on NetBSD PowerPC machines.  It was broken 
+	  due to an issue with using memset() on mapped video buffers.  
+	  (Charles M. Hannum)
+	- The GLmame driver now compiles and runs on the OpenGL 1.1 shipped 
+	  with IRIX, but still doesn't work as it should.  (Andrea Suatoni)
+
+Release 0.58.3 (xmame only), 17 March 2002
+	- Cleaned up src/unix/effect.c a bit.  It should now be able to compile 
+	  better with non-GCC compilers.  (Inspiration by Marcus Herbert.)
+	- Fixed a memory core bug in drivers/btoads.c.  (Aaron Giles)
+	- Fixed an endian bug in sndhrdw/williams.c that could affect 
+	  big-endian architectures.  (Aaron Giles)
+	- Worked around several warnings about 'PPC' being redefined when 
+	  building under LinuxPPC.
+	- Added support for using multiple mice as trackballs under X11.  (Gerd
+	  Sussner)
+	- Updated NetMAME to 0.4.1, which fixes several problems that prevented 
+	  3+ player sessions from working.  (Steve Freeland)
+	- Changed the XIL support to use 16bpp instead of 8bpp.  (Carson Gaspar)
+	- Applied a fix for a crash in Vulgus.  (Stefan Jokisch)
+	- Added the latest romulan.pl to src/unix/contrib/tools.  This release 
+	  adds support for finding roms that are in the wrong zipfiles and also 
+	  has new options to disable strict merged sets.  (Nathan Hand)
+	- Added a workaround for the XFree86 tdfx DGA2 driver which can prevent 
+	  the original mode from being restored when leaving fullscreen mode.  
+	  To enable, uncomment TDFX_DGA_WORKAROUND = 1 in the makefile.
+	  (Gilles Hamel)
+	- 'make xlistdev' should work again.  (Bugzilla #189)
+
+Release 0.58.2 (xmame only), 10 February 2002
+	- Applied a tilemap fix needed for Numan Athletics.  (Phil Stroffolino)
+	- Fixed a bug that caused the network code to break in FreeBSD.  (Stijn 
+	  Hoop)
+	- The xfx and svgafx targets failed to build in 0.58.1 because of a 
+	  core patch that was inadvertently overwritten.  They now build again.
+	  (Steve Freeland)
+	- Applied sound fix for Final Fight and Truxton 2 and possibly other 
+	  games which use FM timers; applied QSound fix for CPS1; applied sound
+	  fix for Yie Ar Kung-Fu.  (Aaron Giles)
+	- Outrun no longer segfaults on startup.  (Steve Freeland)
+	- Fixed several multiply-defined variables that caused link warnings.
+	- The OSS audio driver no longer automatically falls back on timer-
+	  based audio if the requested fragment size/numfrags cannot be 
+	  obtained from the sound device.
+	- Fixed a few gcc 3.0.x warnings.
+	- The xgl target compiles again, but may have problems with vector 
+	  games.
+
+Release 0.58.1 (xmame only), 5 February 2002
+	- Everything from MAME 0.58.
+	- Fixed several C++-style comments.
+	- The problem with compiling src/cpu/v60/v60.c in LinuxPPC should really
+	  be fixed now.
+	- Updated to GLmame 0.93, which fixes a bug affecting Voodoo cards.  
+	  (Sven Goethel)
+	- Pausing while in fullscreen DGA mode no longer causes the sound to be 
+	  lost.  (Steve Slaven)
+	- The short version of "-loadconfig" is now "-lcf", since "-lc" was 
+	  conflicting with -listcpu.
+	- Corrected a minor error with the help info for "-stdout-file" and 
+	  "-stderr-file".
+	- Added an SDL sound plugin that is enabled by default for the BeOS 
+	  target.  (Jack Burton, Caz Jones)
+	- Updated/cleaned up some bits of the DGA2 code.  (Fernand Albarracin, 
+	  Shyouzou Sugitani)
+	- The xfx target is working again.  (Steve Freeland)
+	- Updated netmame to version 0.4, which should tolerate latency better.
+	  (Steve Freeland)
+
+Release 0.57.1 (xmame only), 5 January 2002
+	- Everything from MAME 0.57.
+	- src/cpu/z80.c now builds with gcc 3.0.x using -O3.  (Andrea Mazzoleni)
+	- Fixed a minor typo in src/cpuintrf.c.  (Quench)
+	- Fixed a bug in src/vidhrdw/nmk16.c that caused bad/leftover sprites 
+	  in gunnail.  (David Haywood)
+	- Added experimental network support.  To enable it, uncomment 
+	  MAME_NET=1 in the makefile.  See src/unix/doc/multiplayer-readme.txt. 
+	  (Steve Freeland)
+
+Release 0.56.2, 1 January 2002
+	- Added the MESS 0.56 core.
+	- Added contrib/kxmame.  This script launches xmame.x11 in builds of KDE
+	  which have problems with the window not opening.  (Sylvain Trosset and
+	  Hoonis)
+	- Updated dga2.txt to mention Radeon DGA2 fixes that are in the XFree86
+	  cvs tree.  (Shyouzou Sugitani)
+	- Updated GLmame to v0.92--see src/unix/doc/changes.opengl.  (Sven
+	  Goethel)
+	- Added extra debugging output to the DGA 2.0 driver.  (Shyouzou
+	  Sugitani)
+	- Fixed a compile error that could occur in blit.h due to a C++-style
+	  comment.  (Artane)
+	- Added the ability for xmame to interpret file names as game names,
+	  e.g., 'xmame.x11 /path/to/mspacman.zip' should now work.  (Peter
+	  Trauner)
+	- Renamed several xmame-specific keyboard functions to prevent a clash 
+	  with svgalib and to avoid future clashes.  (Bugzilla #123)
+        - Added rapid-fire support for joysticks: Use -rapidfire or -rapidf.
+          (Shyouzou Sugitani)
+	- Added an SDL azerty keymap to doc/xmamerc.dist.  (Luc Saillard)
+	- The xfx target can now compile, though it still won't run.  (Viet)
+	- Upgraded to romalizer 0.7pre2; fixed a problem that caused '-listfull 
+	  mokomo' to break romalizer.  (Christopher Stone)
+	- The svgafx target compiles again.
+	- Added some notes to makefile.unix regarding known problems with gcc
+	  optimization flags on IA32 platforms.
+	- Added src/unix/doc/AIX-install-notes.  (Greg Peter)
+
+Release 0.56.1 (xmame only), 21 November 2001
+	- Everything from MAME 0.56.
+	- The svgafx driver is working again--it was broken by the removal of
+	  8bpp support from the core.  (Henri and Jason)
+	- Numeric keypad support is now much better.  (Andre Majorel)	
+	- Added arbitrary height scaling, available via the -arbheight option
+	  and started sanitizing the blit core.  This currently only works with
+	  the X11 (windows, DGA1, DGA2) and svgalib drivers.  (Adam Moss)
+	- Added support in makefile.unix for the Intel C++ compiler, and also a
+	  sample wrapper script in contrib/tools.  (Adam Moss)
+	- Added -usbpspad/-pspad switch for support of the direction buttons on
+	  the Playstation gamepad.  (Bill Adams)
+	- Added support for SDL under BeOS.  Sound is not currently supported,
+	  however.  (Jack Burton)
+	- Fixed a bug that prevented romalizer from working.  (Shyouzou
+	  Sugitani)
+	- The xgl target should work much better.  (Sven Goethel)
+	- The -hotrod/-hr and -hotrodse/-hrse commands should actually work now.
+	- Fixed a bunch of warnings that occurred when linking with GNU binutils
+	  using -warn-common.
+	- Added DGA2 documentation: src/unix/doc/dga2.txt.  (Shyouzou Sugitani)
+
+Release 0.55.2 (xmame only), 4 October 2001
+	- Added special-cased fast 2x1 and 3x1 scaling to the blit core.  (Adam
+	  Moss)
+	- Added several AdvanceMAME effects, available via -effect/-ef.  Note
+	  that these effects are not available for some video drivers, nor do
+	  they work on actual 24-bit (packed) displays yet.  (Ben Saylor)
+	- Added mame-listmissing to contrib/tools.  (David Griffith)
+	- Fixed compilation errors reported in snprintf.c on some platforms,
+	  e.g. HP-UX 10.20 with GCC 3.0.  (Stefan Becker)
+
+Release 0.55.1 (xmame only), 17 September 2001
+        - Everything from MAME 0.55.
+	- Removed the romcheck script until its author considers it far enough
+	  along for public consumption.
+	- Added mamecds to contrib/tools.  (Carlos Calzada Grau)
+	- Updated the ALSA 0.9 support: Added -alsa-buffer; replaced the use of
+	  SND_PCM_FORMAT_S16_{LE,BE} with SND_PCM_FORMAT_S16; changed
+	  -alsapcm(-pcm) to -alsa-pcm(-apcm); changed the default value of
+	  -alsa-pcm.  (Shyouzou Sugitani)
+
+Release 0.54.2 (xmame only), 4 September 2001
+	- Applied a fix for the Bubble Bobble driver.  (Haze)
+	- Added a couple words to the makefile to indicate that the 68020 asm
+	  core is broken.
+	- Added a.out support (e.g. for OpenBSD) to the dlsym calls in several
+	  GLmame files.  (Claudio Castiglia)
+	- Applied a fix for Konami games.  (Aaron Giles)
+	- Using -debug no longer results in a segfault.
+	- Applied a patch for the ES550x that fixes the runaway voices in Puzzle
+	  Bobble 3 and might fix other games with problems.  (Aaron Giles)
+	- Added -samplepath/-sp and -artworkpath/-ap command line options.
+	- Added mame-cd to contrib/tools.  (Mario J.Barchéin Molina)
+	- Added romcheck to contrib/tools.  (David Griffith)
+
+Release 0.54.1 (xmame only), 26 August 2001
+	- Everything from MAME 0.54.
+	- Fixed a compile error in the xgl target caused by a change in the
+	  core.  (Sven Goethel)
+	- Applied a patch that fixes CPS2 games.  (Aaron Giles)
+
+Release 0.37b15.2, 26 August 2001
+	- Everything from MESS 0.37b15.  Yay!
+	- Changed the short version of -list-display-plugins from -ldp to
+	  -ldisp.  -ldp was already being used for -list-dsp-plugins.  (Shyouzou
+	  Sugitani)
+	- Fixed prep-new-mess to account for some of the new text file
+	  names/locations.
+
+Release 0.53.1, 18 August 2001
+	- Everything from MAME 0.53 except for what was missing before.
+	- GLmame now supports LinuxPPC.  (Sven Goethel)
+	- Fixed a problem that could cause an xmame.xgl build to fail when
+	  esound is enabled.
+	- Fixed a bug in src/unix/unix.mak that caused builds using the asm 68k
+	  core to fail.
+	- QNX Neutrino/Photon updates: Added extended keyboard support; support
+	  for a wider range of sound cards; swapfile support.  (Travis Coady and
+	  Julian Kinraid)
+	- Fixed a bug in contrib/porting/prep-new-mess that caused fix-comments
+	  to erroneously run on src/unix when processing .h files; made other
+	  cleanups in this script and prep-new-mame.  (Christopher Stone).
+
+Release 0.37b16.1, 7 July 2001
+	- Everything from MAME 0.37b16 except for steadykey support and the new
+	  RGB blitters.  These may be appearing in a later release.  :-)
+	- Added Matt Lowry's latest README, which has been missing from xmame
+	  for several releases.
+	- Fixed the contrib/porting/prep-new-mame script so it doesn't omit the
+	  README file.
+	- QNX Photon2 updates: A fix for dirio.c which allows xmess to compile
+	  under the QNX 6.1 internal beta; audio has better verbosity; fixed a
+	  bug which caused games utilizing a mouse to core dump.  (Travis Coady)
+	- Fixed some ANSI/ISO warnings in the GLmame code.
+	- Changed contrib/porting/prep-new-mame to reflect the new .txt files
+	  bundled with MAME.
+	- Updated contrib/porting/porting.txt to refer to src/windows rather
+	  than src/msdos for diffing between versions, since the Win32 target
+	  is now the primary one.
+	- Updated the docs to mention that KDE 2.2b1 has been reported to fix
+	  the xmame.x11 problem whereby the window never displays without using
+	  a workaround.
+
+Release 0.37b15.1 (xmame only), 26 May 2001
+	- Everything from MAME 0.37b15 except for 'steadykey' support.
+	- Added an aRts sound server driver.  (Manuel Teira)
+	- Added another aRts sound server driver.  It needs reasonable aRts 
+	  server settings, something like artsd -F 6 -S 4096 should be ok to get
+	  near accurate response time.  (Petr Smotek)
+	- ALSA updates: Added preliminary support for ALSA 0.9 API; split the
+	  0.5 and 0.9 API stuff into separate files.  (Shyouzou Sugitani) 
+	- HotRod support is now enabled by either -hotrod or -hotrodse, just
+	  like the DOS/Win32 version.
+	- Added dummy flicker and vector orientation functions to fxvec.c so
+	  that xmame.xfx can link again.
+
+Release 0.37b14.2 (xmame only), 13 May 2001
+-------------------------------------------
+	- Updated the romulan.pl script in contrib/tools.  (Nathan Hand)
+	- The sound device is now released when the emulation is paused.
+	  (Shyouzou Sugitani)
+	- Updated the comment in makefile.unix about nasm to indicate that v0.98
+	  or higher must be used to build the asm 68k cores.
+	- Added -hotrod for HotRod and HotRod SE support.  Set it to 1 for
+	  HotRod, 2 for HotRod SE.
+	- The DGA target now reports whether it's using DGA1 or DGA2.
+	  (Christian Groessler)
+	- Updated GLmame to version 0.62.  (Sven Goethel)
+	- Fixed src/tiny.mak so the tiny build would work.
+	- Added the KDE workaround to the documentation.
+
+Release 0.37b14.1 (xmame only)
+	- Everything from MAME 0.37b14 except for 'steadykey' support.
+	- Major updates to the files in contrib/porting.  Added prep-new-mame
+	  and prep-new-mess scripts for porting from the MS-DOS sources.
+	- Added new CFLAGS to makefile.unix for more optimal builds under IRIX.
+	  (John Gilbert) 
+	- Fixed the files in src/unix for which Per Wigren reported problems
+	  when using the Tru64 compiler.
+	- Incorporated fixes to the core sources for the Tru64 compilation
+	  problems. (Nicola Salmoria)
+	- Audio now works on the released version of Mac OS X.  (Pete French)
+	- Fixed a bug in logerror() that could cause a crash.  (Pete French)
+	- Added the German HTML docs.  (Robert Hamberger)
+	- Added a note to the docs and makefile about adding -DGLU_VERSION_1_2
+	  to the GLCFLAGS when using Mesa's GLU.  (Sven Goethel)
+	- Updates to the ALSA dsp driver: cosmetic changes, suppression of bogus
+	  warnings about underruns.  (Shyouzou Sugitani)
+	- Added new sound driver plugins for IRIX.  (Brandon Corey)
+	- Updated the changelog for the ALSA dsp driver.  (Shyouzou Sugitani)
+
+Release 0.37b13.2
+	- MESS 0.37b13 is now included.
+	- Added an updated romulan.pl to contrib/tools.  (Nathan Hand)
+	- Added an updated romalizer to contrib/tools.  (Christopher Stone)
+	- Adopted the directory layout used in MESS CVS.  Namely, all of the
+	  xmame-specific directories have been moved into src/unix.  Releases
+	  will now have symlinks to these directories in the root.
+	- Updated the docs to reflect the new mailing list address, courtesy of
+	  Pete French.
+	- Fixed an unmatched parenthesis error in src/drawgfx.c that was
+	  affecting non-Intel platforms.
+	- Fixed a bug in mess/cpu/apexc/apexcdsm.c that was causing xmess
+	  linking to fail.
+	- Updates to the QNX target: Added sound support via an ALSA hack, added
+	  fullscreen Photon2 support, and made other miscellaneous Photon2
+	  updates and fixes.  (Travis Coady)
+	- Updated GLMame to v0.85.  (Sven Goethel)
+	- Vector games now work with the SDL target.
+
+Release 0.37b13.1 (xmame only)
+	- Everything from MAME 0.37b13.
+	- Numerous updates to the OpenGL target.  (Sven Goethel)
+	- Added Photon2 display support for the QNX target.  (Travis Coady)
+	- You can now run "make clean68k" before building with a different 68k
+	  core.  (Mike Coates)
+	- Applied a patch from StretchMAME that prevents a bunch of games from
+	  segfaulting on startup.  (Shyouzou Sugitani)
+	- A fix for the sprites in CVS games.  (Nicola Salmoria)
+
+Release 0.37b12.1
+	- Everything from MAME and MESS 0.37b12.
+	- The SDL install no longer sets SUID root on the binary.  (Torbjörn
+	  Andersson)
+	- Updated mame_perl to 1.3.  (Stefan Becker)
+	- Added support for the RGB 555 mode for targets which support 16bpp
+	  displays.
+	- Added support for the RGB 888 mode to the x11_window, DGA, and SDL
+	  targets.  (Shyouzou Sugitani, Lawrence Gold)
+	- Added -sdlmapkey/-sdlmk to the SDL target to allow the remapping of
+	  keys.  This should help users with non-U.S. keyboards.
+	- Revised the example key remappings in doc/xmamerc.dist and
+	  src/unix/xmamerc-keybinding-notes.txt to match the current keycodes.
+	  Also added SDL examples.
+	- Added the beginnings of QNX 6/QNX 4 support.  The X11 display driver
+	  should at least work.  (Travis Coady)
+	- The semicolon/colon and period keys should now work for the SDL target
+	  in xmess (tested with the a800 driver). 
+	- Updated/added a couple of key mappings (\", :, and <) to match the
+	  MS-DOS version.
+	- Improved OpenGL support, including better performance, dynamic
+	  checking of OpenGL extensions, and dynamic fetching of the max texture
+	  size.  (Sven Goethel)
+
+Release 0.37b11.2
+	- MESS 0.37b11 is now included.
+	- Full DGA 2.0 support, with automatic depth-switching.  A build on an
+	  XFree86 4.0.x system will automatically use the DGA 2.0 calls; if the
+	  binary with 2.0 support is run on an XFree86 3.3.x system, it will
+	  fall back on DGA 1.0 calls.  (Shyouzou Sugitani, Stea Greene, Matt
+	  Lowry)
+	- Support for either NetBSD or OSS sound under OpenBSD.  The default is
+	  the NetBSD sound interface, which reportedly works better.  (Claudio
+	  Castiglia)
+	- Cleaner install mechanism in the makefiles; included install-sh script
+	  from X11R5 for platforms which lack the install command; the default
+	  install prefix is now "/usr/local".  (Claudio Castiglia) 
+	- SDL mouse support has been added.  (riq)
+	- SDL target should now have all previously missing update routines.
+	  (riq)
+	- Added -joydevname/-jdev option to select the device prefix for the
+	  i386 joystick.  Defaults to "/dev/js" for Linux and "/dev/joy" *BSD.
+	  (Thanks to Laurent Simon for the suggestion.)
+
+Release 0.37b11.1 (xmame only)
+	- Everything from MAME 0.37b11.
+	- Merged in changes from the src/unix tree that were in the MESS CVS;
+	  one of which is that if MAME_DEBUG is enabled, the binary will be
+	  called xmamed.<target> or xmessd.<target>.  (Christopher Stone)
+	- Commented out the call to osd_dirty_merge() in SDL.c.  The SDL target
+	  has its own dirty handling.  (Hans de Goede)
+	- The menu colors no longer fade when you pause a game.  (Sean Young)
+	- xmess compiles again without having to uncomment VLM5030 in
+	  src/mess.mak. (Christopher Stone, Lawrence Gold)
+	- make -f <makefile> tools should work again for xmess.
+	- Possible fix for a problem with the DGA target on ATI Rage Mobility
+	  which caused a switch to fullscreen mode to not change the resolution.
+	  (Lawrence Gold)
+	- -listgamelist no longer prints the column headers (they are shown by
+	  -listgamelistheader).  (Lawrence Gold)
+
+Release 0.37b10.1
+	- Everything from mame 0.37b10 and mess 0.37b10
+	- ALSA sound driver uses stream mode; this fixes the problem of
+	  continuous static during games.  (Shyouzou Sugitani)
+	- Running with DGA 2.0 no longer causes a blank screen with Matrox
+	  G200/G400.  (Shyouzou Sugitani)
+	- The asm 68k code compiles again.  (Agawa Koji)
+	- Building on older gcc, non-gcc, and FreeBSD 3.3 systems works much
+	  better.  (Pete French, Olivier Galiber)
+	- New unified OpenStep 4.2 Intel/Mac OS X PowerPC code.  (Pete French)
+	- The SDL driver now has video_update for 16bpp_to_16bpp; SDL_HWPALETTE
+	  was added to the flags of SDL_SetVideoMode (Ricardo Quesada)
+	- New version of the mame_perl ROM manager.  (Stefan Becker)
+	- Fixes for getcwd/getwd for BSD43 systems.  (Pete French)
+	- Running with -listsamples no longer causes a core dump.  (me)
+	- Sprite corruption fix for the NES driver.  (Christopher Stone, Sean
+	  Young, Brad Oliver)
+	- The SDL driver now supports 32bpp XFree86 modes.  (Dan Scholnik)
+	- The SDL driver now has fullscreen support.  (Patrice Mandin)
+	- The back-quote/tilde key now toggles the on-screen display when using
+	  the SDL driver.  (me)
+	- Gave credit to Tadeusz Szczyrba for writing the original SDL driver.
+	- Added a needed call to fflush() in the error logging.  (Christopher
+	  Stone).
+	- The frontend code (-list options) should more or less resemble its
+	  MS-DOS counterpart.  Thanks to Christopher Stone for pointing out the
+	  problem areas.
+	- Added an "openbsd" ARCH define.  (Claudio Castiglia)
+	- Fixed some core files to allow building under Solaris 8 using its 
+	  native cc.  (Vincent ^_^)
+	- Changed the optimization flags in the Makefile for the IRIX platform
+	  so that the comment about turning on all optimization holds true.
+	  (Chris McCraw)
+	- The svgafx target should run again; a call to osd_dirty_merge() had to
+	  be commented out.  (henri)
+	- Updated the docs to mention problems using Red Hat 7's latest gcc;
+	  added suggestion for using ALSA with OSS emulation if OSS problems are
+	  experienced.
+	- Added a top-level README; removed old-changes.mess, which was
+	  identical to messold.txt; extended copyright notice to 2001 and listed
+	  Lawrence Gold as maintainer in config.c.  (Matt Lowry)
+
+Last Modified by Hans de Goede (hans@highrise.nl)
+
+Release 0.37b7.1
+	- Everything from mame 0.37b7, no mess yet
+	- Added support for USB joysticks under FreeBSD thanks to:
+	  Christian Weisgerber <naddy@unix-ag.uni-kl.de>
+	- Fixed xmame hanging with the message:
+	  WARNING: the game might not run correctly.
+	  Press any key to continue
+	- Made the debugger always use the aspect ratio of the actual monitor,
+	  instead of the aspect ratio of the emulated game.
+
+Release 0.37b6.1
+	- Everything from mame 0.37b6 & mess 0.37b5 & 0.37b6
+	- Alsa sound driver, thanks to: Luc Saillard <luc@alcove.fr>
+	  also please send any questions in his direction since I don't
+	  have alsa and thus can't test this.
+	- Applied a small fix to src/cpu/adsp2100/adsp2100.c, which
+	  should fix mk3 and friends, thanks to: Frank Cox
+	- Fixed a core bug causing ataxx and brutforc to crash.
+	- Some crc and cheatfile changes for xmess by Christopher Stone
+	  * The crcdir now defaults to XMAMEROOT/crc
+	  * Added a new cheatdir (option -cheatdir) defaulting to
+	    XMAMEROOT/cheat
+	  * Default cheatfile for MESS is now cheat.cdb
+	    (this filename actually gets changed in the core now to
+	     gamename.cdb, if the user wants to use her own filename,
+	     she can just use anything except cheat.cdb or cheat.dat
+	     and it will not be renamed in the core)
+	  * xmess now looks for cheat files in cheatdir/filename
+	- NETbsd USB joystick driver, thanks to: Krister Walfridsson
+	- IA64 support, YEAH, thanks to: Christian Groessler <cpg@aladdin.de>
+	- Made XF86-DGA honer -disablemode
+	- SGML(linuxdoc) based documentation many many thanks to
+	  Rene Herrmann <Rene.Herrmann@gmx.de>
+	  The .lyx file is the master file I use, so please submit either
+	  patches against the .lyx file, or just plain text additions.
+	  Patches against the .sgml file are of no use to me.
+	- Added a doc target to the makefile which generates the docs
+	  from the sgml source and generates gamelist.xxx, xxxxxxrc.dist and
+	  xxxxxx.6 .
+	- Openstep fixes, openstep should work out of the box now, thanks to:
+	  Pete French <pete@toybox.twisted.org.uk>
+	- Fixed crashes in svgafx for games which resize the screen, like
+	  mkla4.
+	- Fixed crashes in 8 bit X-windows with games which resize the screen,
+	  like mkla4.
+	- Fixed crash on exit in svgaXX displaymethods, when using the mouse
+	  and running games which resize the display, like mkla4.
+	- Support for the new "graphical" mame debugger. This uses just one
+	  window resizing it to the debugger or normal size, using seperate
+	  windows for each is something xmame's current architecture is
+	  not designed for. This might still happen in the future but not
+	  before a rewrite of the video subsystem.
+	- Added -debug-size / -ds XXXxYYY, with this you can specify the
+	  width and height of the debug window, please keep in mind that
+	  the minimum size is 640x480.
+	- You can now change the scale of a window on the fly with
+	  leftshift +:
+	  Insert	Increase widthscale
+	  Delete	Decrease widthscale
+	  Home		Increase heightscale
+	  End		Decrease heightscale
+	  Page Up	Increase scale
+	  Page Down	Decrease scale
+	- Added a partly autogenerated manpage, thanks to
+	  Rene Herrmann <Rene.Herrmann@gmx.de>
+	  
+Release 0.37b5.1
+	- Everything from mame 0.37b5, no mess yet!
+	- The asm m68000 core is currently broken, so don't use it! ,
+	  on the brighter side of things, neogeo games seems to
+	  be working with the C-core now.
+	- Fixed the segfault when exiting the xgl version.
+	
+Release 0.37b4.1
+	- Everything from mame & mess 0.37b3 & 0.37b4
+	- Note neogeo games don't seem to work this release with the C 68000
+	  cpu core, use the asm one instead.
+	  (Non x86 users seem to be outa luck, for this release only I hope.)
+	- Changed the makefile to use the new dos makefiles:
+	  -No more makefile editing for each release
+	  -No you can build tinymame / neomame / neofree mame too.
+	   (just set TARGET to neomame / tiny)
+	  -Also much cleaned up
+	- Added support for debugging on b/w xterm's thanks to:
+	  cpg@aladdin.de
+	- Updated romalizer to 0.61, thanks to: 
+	  TKMAME <tkmame@retrogames.com>
+	- Updated opengl support now also works with uthaglx, and vectors
+	  have been fixed for nvidea. Thanks to:
+	  Tony Hoyle <tmh@magenta-logic.com>
+	- Added support for mess snapshots (-snapshot) thanks to:
+	  "Wojciech Walaszkowski" <walaszkowskiw@prokom.pl>
+	- Added -hiscorefile switch to specify the location of highscore.dat
+	  Thanks to: TKMAME <tkmame@retrogames.com>
+	- Added a blurb to readme.unix about needing hiscore.dat to get
+	  highscores to work.
+	- Made svgafx and xfx honor -[no]keepaspect for those who want to fill
+	  the entire screen.
+	- Updated the mame_perl rom tool to 1.1 . Thanks to:
+	  Stefan Becker <Stefan.Becker@nokia.com>
+	- Added tools target to the makefile, to build the platform indepent
+	  tools.
+	- Added gamelist target to the makefile to generate gamelist.<target>
+	- Added SYSDEP_DSP_O_NONBLOCK switch to the sysdep_dsp_create flags,
+	  currently only implemented for esound and OSS. And not guaranteed to
+	  actually work.
+	- Made sound_stream.c check the return value of sysdep_dsp_write,
+	  incase it doesn't succeed / doesn't write all data. This should
+	  fix xmame with alsa's OSS emulation.
+	- Added Dingus Family <ddingus@usewest.net> as irix maintainer to
+	  readme.unix
+	- Added Jacob A. Hart <c9710216@studentmail.newcastle.edu.au> as
+	  freebsd maintainer to readme.unix
+	- If you don't specify a specific cheatfile xmess will now
+	  now uses XMAMEROOT/system.cdb instead of cheat.dat, this
+	  doesn't affect mame thanks to Chris <tkmame@retrogames.com>
+	- Readded openstep soundsupport thanks to:
+	  Pete French <pete@toybox.twisted.org.uk>
+	- Cleaned up src/unix/sysdep/misc.* so that the system headers
+	  are only included in the .c file.
+	- Cleaned up src/unix/osd_cpu.h to mach the above changes.
+	- Added a special case to both osd_cpu.h and misc.c for openstep
+	  since CLOCKS_PER_SEC is not defined and should be 64 on openstep.
+	- Added a blurb to doc/readme.unix about adding modelines to XF86Config
+	  Thanks to: Matt Lowry <mclowry@cs.adelaide.edu.au>
+	- Changed rc.c so that it no auto prepends no for clearing booleans,
+	  allowing for short boolean options.
+	- Added short options for most options thanks to:
+	  Christopher Stone <tkmame@retrogames.com>
+	- Made -help honor the COLUMNS environment variable, thanks to:
+	  Christopher Stone <tkmame@retrogames.com>
+	- Changed the config file parsing order a bit, now also parses global
+	  per game config files, see -help output, thanks to:
+	  Christopher Stone <tkmame@retrogames.com>
+	- Added prelimenary sgml-ised version of xmame-docs, see doc/html.
+	  Many thanks to: Rene Herrmann
+	- Xmame should no longer crash when compiled with DGA and run as root
+	  on a remote display. (Work around for an XFree86 bug)
+	- Xmames frontend code now checks for games which don't use any roms,
+	  yet still have a ROM_REGION defined. Like the "genesis" driver under
+	  xmess.
+
+Release 0.37b2.2
+	- 0.37b2.1 featured a rewrite of the keyboard handling to add unicode
+	  support, unfortunatly I only adopted the x11 based drivers, and
+	  forgot the others, so only the x11 based ones compiled. This release
+	  has much cleaned up and rewritten keyboard support for:
+	  -svgalib
+	  -ggi
+	  -xgl
+	  -xfx
+	  -svgafx
+	- Made the unicode support for X11 actually work (shift and altgr are
+	  now honered)
+	- Corrected a small type in makefile.obj-xmess, thanks to:
+	  Peter Trauner
+	- Fixed the creation of tape images in xmess, thanks to:
+	  Oscar Martín González
+	- Updated the romalizer script in contrib to v0.6, thanks to:
+	  tkmame@larry.ztnet.com
+
+Release 0.37b2.1
+	- Everything from mame & mess 0.37b2.
+	- Fixed brightness handling on pause, the brightness no longer
+	  gets darker and darker if you pause/unpause a lot.
+
+Release 0.37b1.2
+	- (Re)added mess 0.37b1, including everything that's new.
+	- The solaris sound drivers now uses AUDIODEV if set thanks to:
+	  Keith Hargrove.
+	- Made sound update synchronious with video update,
+	  this should improve sound quality.
+	- Fixed a crash when running with -nosound -fakesound.
+	- Added detection of buggy FreeBSD newpcm driver, and fallback
+	  to timerbased audio when detected.
+	- Slightly changed the fragsize calculation in the oss dsp plugin,
+	  again, it now uses slightly smaller frags, which should increase
+	  sound quality a bit.
+	- Changed the default soundbufsize to 3.0, this is still smaller as
+	  before the default bufsize before the sound rewrite, and it seems
+	  that the 2.0 was a bit to optimistic.
+
+Release 0.37b1.1
+	- Everything from mame 0.37b1, no mess yet, if you want mess
+	  use 0.36.1 .
+
+Release 0.36.1
+	- Everything from mame & mess 0.36rc2 & 0.36 final.
+	- Fixed a compile error in the solaris dsp-plugin.
+	- Removed cheat,doc, cheat.dat and history.dat as they were out of
+	  date, get the most rescent version from http://www.mame.net.
+	- Slightly changed the fragsize calculation in the oss dsp plugin,
+	  it now takes the samplerate used into account.
+	- Added -verifyromsets and -verifysamplesets, both are less verbose,
+	  more easy parsable versions of -verifyroms resp -verifysamples.
+	- Added a number of hints about compiling for optimal performance
+	  to readme.unix, thanks to: Frank Cox <theatre@spreda.sk.ca>
+	- The i386 joystickdriver now also supports freebsd, thanks to:
+	  Robert Muir <rmuir@looksharp.net>
+	- Fixed (rewrote) the console switch handling for svgalib / svgafx,
+	  it now works with version 1.4.1 and higher compiled without
+	  background support (such as distributed with RedHat 6.2).
+	- Improved ggi mode selection, added -xres, -yres to force a
+	  certain mode, thanks to Christian Groessler.
+	- Openstep support has been updated for the new palette code, so
+	  the openstep version should compile again. Still no sound
+	  though, thanks to: Bat.
+	- Changing the volume under Solaris should no longer cause the
+	  sound to stop working, thanks to Mathis Rosenhauer.
+	- Solaris sound has been reported to work for SunOS too.
+
+Release 0.36rc1.1
+	- Everything from mame & mess msdos 0.36rc1
+	- Cleaned up the -list options output and made it more consistent,
+	  this could cause some slight problems with frontends, but
+	  the changes aren't that big. This should be the last time the
+	  format changes (I hope).
+	- Changed -bufsize to be in frames, so that it automagicly scales
+	  for games which have more / less frames / sec. The default of 2
+	  should be fine for everyone, please lett me know if you need to
+	  change this option, if no-one needs it it will be removed in a
+	  future release.
+	- Added a sound buffering layer on top of the new core sound mixer
+	  code. This is nescesarry, since the new buffering code only allows
+	  very slightly variating the number of samples per frame, and with
+	  OSS for example the number of samples per frame could variate a
+	  lott.
+	- Fixed OSS sound plugin compilation under freebsd.
+
+Release 0.36b16.1
+	- Everything from mame & mess msdos 0.36b16
+	- Fixed error messages for: "error optionx requires an argument".
+	- Fixed --boolean option parsing.
+	- Fixed bools in configfiles overriding commandline.
+	- Fixed printing of NULL strings in -showconfig.
+	- Fixed -vectorres for vertical oriented games.
+	- Reworked and cleaned up the makefile, you can now choose your os
+	  and cpu seperatly. This adds linux-sparc support amongst other
+	  things.
+	- Made oss.c compatible with linux/powerpc giving sound on this
+	  platform thanks to John Cramp.
+	- Wrote a generic plugin system, currently only supporting static
+	  plugins, but prepared for dynamic plugins.
+	- Rewrote the entire sound subsystem, to match a few core changes.
+	  Sound-drivers are now plugins, allowing for example esd support.
+	  All sound drivers need to be converted to this new system.
+	  Platforms which sound-driver(s) haven't been converted, don't
+	  have sound.
+	- Added a sound-mixer (for volume control) subsystem, again plugin
+	  based.
+	- Converted the oss driver to be a dsp plugin.
+	- Added an oss mixer plugin.
+	- Updated (fixed) SDL display driver, thanks to: Ricardo Calixto
+	  Quesada (riq@ciudad.com.ar).
+	- Added an esound dsp plugin.
+	- Fuzzy name matching alla the dos port, thanks to: Andrea Vettorello
+	  <molotov@dei.unipd.it>.
+	- Don't parse the game specific rc file untill the final name lookup
+	  has been done (for fuzzy / random name matching).
+	- Converted the netbsd sounddriver to be a dsp plugin, thanks to:
+	  Krister Walfridsson <cato@df.lth.se>
+	- Removed emulation of analogjoysticks using the mouse, this is now
+	  done by the core.
+	- Converted the solaris sounddriver to be a dsp plugin, added
+	  a mixer plugin thanks to: Mathis Rosenhauer
+
+Release 0.36b15.2
+	- Fixed the X11 target when compiled with XIL but without
+	  MITSHM.
+	- Fixed compiling on machines without DGA (sorry about this one ;)
+	- Added -version / -V to show the version, mainly for frontends.
+	- Fixed -listclones.
+	- Now accepts both -option and --option (--version for example)
+	- -showconfig no longer tries to print string options which are
+	  NULL.
+	- Updated german readme, thanks to: Robert Hamberger
+	- Renamed signal to sound_signal in src/sndhrdw/geebee.c, this
+	  should fix compiling it under HP-UX
+
+Release 0.36b15.1
+	- Everything from mame & mess msdos 0.36b15
+	- Removed the IRIX specific c-compiler entry in the makefile
+	  as this doesn't work on all machines, and shouldn't be needed
+	  on most others. Added hint about adding -DHAVE_SNPRINTF to
+	  CFLAGS for IRIX 6.5 .
+	- Changed all occurences of xmame.retrogames.com to x.mame.net .
+	- Completed contrib dir documentation.
+	- Added nvram file support.
+	- Fixed -gamma-correction and -brightness.
+	- Fixed (worked around) xgl crash with nvidea xgl drivers.
+	- Rewrote the config file susbsytem. It's much more modular now and
+	  can be used for other projects.
+	- Did the rename and move blues to get all the options in the
+	  modules where they belong. Removed a lott of global symbols.
+	- Xmame/xmess now parses all configfiles found starting
+	  with the most global files, and ending with the gamespecific file.
+	  The later parsed files can overwrite options in the previous
+	  parsed files.
+	- Each videomethod compile now only supports it's own options. In order
+	  to get rid of the warnings xmame now also parses a videomethod
+	  specific file, where you can put the videomethod specific config
+	  parameters. Taking the x11 video method as an example the extra
+	  parsed files are:
+	  $XMAMEROOT/xmame-x11rc and
+	  $HOME/.xmame/xmame-x11rc for 
+	  See doc/readme.unix for more info.
+	- Added mame_perl-1.0 to contrib/tools. Yet Another Romsets Manager
+	  by: Stefan Becker
+
+Release 0.36b14.1
+	- Everything from mame-msdos 0.36b14 & mess-msdos 0.36b14.
+	- Fixed make install for xmess
+	- Fixed -ident crash
+	- Fixed a small xmess link error
+	- Sorta fixed galaxian & clones (they run now)
+	- Updated the email adress for the openstep maintainer
+	- Added a suggested set of german keymappings to doc/xmamerc.dist,
+	  thanks to: Peter Trauner
+	- Implemented crc checking for xmess, added -crcdir option.
+	- Added crc database files from the mess dos distribution.
+	- Readded the 16bpp speedup using int copies for DGA, since it is now
+	  in the generic palette system, it is now also used for regular X and
+	  GGI.
+	- Xmame now detects if 16bpp is not available and falls back to 8bpp
+	  automagicly.
+	- Added color approximation in X11-window 8bpp mode, this means
+	  that -privatecmap isn't needed anymore to get a non-black emulation,
+	  -privatecmap is still faster though.
+	- Made the mouse buttons seperate buttons instead of piggy backed upon
+	  the joystick buttons, as the latest dos releases.
+	- Fixed a header conflict with the xgl target
+
+Release 0.36b13.1
+	- Everything from mame-msdos 0.36b12 & mess-msdos 0.36b12 &
+	  mame-msdos 0.36b13 & mess-msdos 0.36b13.
+	- New palette subsystem for the new 16 bpp paletised modes,
+	  making life easier for the display drivers, still room
+	  for improvement but a good start.
+	- Updated german readme thanks to: Robert Hamberger
+	- HP-UX compilation fixes, thanks to: Stefan Becker
+	- Netbsd 8 bit sound fix, thanks to: Krister Walfridsson
+
+Release 0.36b11.1
+	- Everything from mame-msdos 0.36b9 & mess-msdos 0.36b9 &
+	  mame-msdos 0.36b10 & mess-msdos 0.36b10 &
+	  mame-msdos 0.36b11 & mess-msdos 0.36b11.
+	- These changes include a changed output for -verifyroms which could
+	  break some frontends
+	- These changes also include some palette changes: -[no]16bitvideo
+	  has been removed and replaced by -bpp xxx (auto,8 or 16).
+	  If your display can only handle 8 bpp you should specify -bpp 8.
+	  Otherwise the default of auto will do fine.
+	- Fixed the x86-asm m68000 cpu core compile problems.
+	- Fixed problems with mess emulations which use r/w disk images,
+	  note that these don't support gzipped or zipped images.
+	- Fixed possible bufferoveruns with very long rompaths in
+	  fileio.c. This was never a security risk since xmame drops root
+	  rights before doing any fileio.
+        - This also changed the behaviour of -rompath it now longer adds a 
+          path to the rompath but instead replaces the entire rompath.
+	- Added a portable standalone snprintf implementation from mutt,
+	  for those platforms which don't have snprintf. Add
+	  -DHAVE_SNPRINTF -DHAVE_VSNPRINTF to DEFS.arch if your platform
+	  has these functions to use your libc implementation and not the
+	  one shipped with xmame, and please lett me know. This has already
+	  been done for: linux-* netbsd-* freebsd
+	- Fixed problems with -verifyroms failing on zippedroms with
+	  the wrong names but right checksums, while playing the game works
+	  fine.
+	- Added virtual root support to the -run-in-root-window option,
+	  now xmame can be used as a part of xscreensaver ;)
+	- Wrote a little script to run a random game in the root window for 2
+	  minutes and then run another random game etc. Use this as the extern
+	  command for xscreensaver, it is in contrib/tools/xmame-screensaver .
+	  Usage:
+	    - compile the x11 version of xmame
+	    - install it somewhere in your path
+	    - copy xmame-screensaver to /usr/games
+	    - edit ~/.xscreensaver , and add a line:
+	      /usr/games/xmame-screensaver
+	- Really fixed the glide compile problems <sigh>.
+	- Alpha sound fixes, thanks to Christian Groessler.
+	- Rearranged the contrib directory, now everything is devided into
+	  a few subdirs: frontends, patches, porting and tools.
+        - Added / updated a few readme's in the contrib dir (not complete yet).
+	- Fixed timerbased audio in combination with xf86-DGA.
+	- Fixed netbsd joystick support to use the correct device names.
+	- Fixed up the artwork searching method to be a bit more logical,
+	  see readme.unix for a description .
+
+Release 0.36b8.1
+	- Everything from mame-msdos 0.36b7 & mess-msdos 0.36b7 &
+	  mame-msdos 0.36b8 & mess-msdos 0.36b8
+	- Merged in the new 0.36b7 mess release. You can now specify if
+	  you want to build mess or mame at the top of the makefile.
+	  Xmess and xmame are built in a seperate obj dir so you can safely
+	  build both in the same tree, even at the same time if you want to.
+	- Renamed lotts of doc files for the mess merge, see the doc dir.
+	- Replaced all occurances of j.w.r.degoede@et.tudelft.nl with
+	  hans@highrise.nl which is my new email the old one will disappear
+	  soon. Also fixed any url's still referring to the old homepage.
+	- Replaced #include <glide.h> by #include <glide/glide.h>. So you
+	  nolonger have to specify /usr/include/glide as additional include
+	  path.
+	- Fixed xmame setting the root cursor to invisible when switching to
+	  fullscreen with the mouse grabbed.
+	- Fixed xmame forgetting that it had the mouse grabbed when to focus
+	  was switched away with the keyboard under enlightenment.
+	- You can't grab the mouse anymore when you specify -nomouse.
+	- Changes the svgalib tweaked mode code a bit, the 240x272 mode has
+	  been removed since it was broken. Added some more tweaked modes
+	  from the dos team including some planar tweaked modes:
+	  384x256
+          384x240
+          384x224
+          336x240
+          256x240
+          256x256 vertical orientation
+          240x256
+          Note if you use -noplanar you won't get the tweaked planar modes
+          either.
+        - Added -centerx <#> -centery <#> with these you can change
+          the center of all tweaked modes.
+        - Added scanline support to 320x240
+	- Svgalib version now restores textmode when mame exits with:
+	  Error: gfx[0] extends past allocated memory
+	- Changed -list output to seperate the different games with spaces
+	- Added romalizer 0.53 to the contrib dir this is a tcl script
+	  for cleaning up your rom collection by: Christopher Stone
+	  For more info see tkmame.retrogames.com.
+	- The asm68000 core is know to cause problems, and the speed gain is
+	  not impressive. Documented this.
+	- Sunos is now on the supported list, thanks to
+	  Saga <jolletx@cybercable.fr>
+	- Rethinked the way the rompath was handled, if you want the old
+	  behaviour and your rompath was:
+	  rompath /foo:/bar
+	  change it into:
+	  rompath /foo/roms:/foo/samples:/foo/artwork:/bar/roms:/bar/samples:/bar/artwork
+	  For an exact description of the new rompath handling for both
+	  xmame and xmess see readme.unix.
+ 	- Experimental sample synchronysing code in src/unix/sound.c
+	  should decrease the incident of dropped/skipped samples.
+	  This is disabled by default you can enable it with -samplesynch,
+	  see readme.unix for more info.
+	  Please give it a spin and mail your experiences to the xmame-list.
+	  Thanks to William A. Barath.
+	- Updated barath frameskip code with load detection.
+	  Thanks to William A. Barath.
+	- Added a alsa-sound driver to the contrib dir as alsa.c copy it
+	  over src/unix/sound-drivers/oss.c and add -lasound to EXTRA_LIBS
+	  in makefile.unix. Thanks to "Who Wants to Know?"
+	- You can now run xmame / xmess in your root-window as screen-saver
+	  / background. This can be enabled with -run-in-root-window.
+	- Added random game support option, specify random as game to
+	  play a random game ;)
+	- New openstep video code supporting scaling and 16bpp video modes
+	  Thanks to Bat
+	- New openstep makefile entries now with support for:
+	  - OpenStep for Intel
+	  - OpenStep for Motorola
+	  - OpenStep for Sparc
+	  - Mac OS X for Intel
+	  - Mac OS X for PPC
+	  Thanks to Bat
+	- Completly rewritten ggi video code with:
+	  - scaling
+	  - 16bpp support
+	  - works on 8, 16, 24 and 32 bpp X servers
+	  Thanks to Christian <cpg@aladdin.de>
+
+Release 0.36b6.1
+	- Everything from msdos 0.36b4 & b5 & b6
+	- Lotts and lotts of thanks goto William A. Barath for
+	  sorta taking my place while I was busy switching jobs and for a
+	  lotts of the improvements in this release.
+	- After a lott of discussion on the mailinglist about which
+	  frameskipping method is the best, selectable frameskipping methods
+	  have been added. Use -frameskipper # or the frameskipper keyword
+	  in xmamerc to configure this. The frameskipmethod can also be
+	  changed runtime with left-control + key combinations.
+	  Currently available frameskippers are:
+	  0   lctrl+insert   Dos frameskipping code
+	  1   lctrl+home     Improved frameskipping code thanks to  William A.
+	                     Barath
+        - added toggleable idle sleeping "-[no]sleepidle" which can make
+	  xmame run smoothly on a loaded machine as well as freeing the
+	  CPU so we can do more than just play games... :) This defaults
+	  to -nosleepidle. You can see that it is enabled by an 'S' in the
+	  fps display. There also a T there if throttle is enabled. This can
+	  be toggled runtime with shift + F10. Thanks to William A. Barath.
+	- added upper-bound for autoframeskip "-maxautoframeskip <#>" which
+	  assures a playable framerate even if the emulation can't keep up
+	  with real time. Thanks to William A. Barath.
+	- Made -geometry work for fx and gl versions, it can be used to
+	  specify the windowsize / resolution now. Thanks to Nguyen The Toan
+	- Fixed XIL (again) Thanks to Taso N. Devetzis
+	- Fixed screenshots for 16bpp games. Thanks to Mathis Rosenhauer for
+	  the hint where the problem was.
+	- It turn out that xmame compilation breaks when using egcs-1.1.x or
+	  gcc-2.95, added note to use -fno-strict-aliasing to fix it.
+	  gcc-2.95.1 does work with -fstrict-aliasing, and gives a nice
+	  speed increase.
+	- Quieted make output. Thanks to David R. Hampton
+	- Fixed making of obj/cpu/m68000/m68kops.o to not use implicit rules
+	  this was needed for the quieting to work. This should also
+	  make our openstep users very happy.
+	- Preliminary SDL display target. Thanks to: Tadeusz Szczyrba
+	- Fixed the trailing problem in a lott of dirty using games thanks
+	  to William A. Barath for pointing me in the right direction.
+	- This also fixes the > 7 frameskip values to not skip more frames
+	  then asked.
+
+Release 0.36b3.1
+	- Everything from msdos 0.36b3
+	- Fixed a bug in the new svgalib code which caused modes which are
+	  non tweaked, non planar and nonlinear to stay black / crash.
+	  This should also fix the problems people where having with vector
+	  games.
+	- Fixed svgafx compilation, Thanks to: "Chris, Lo Cheuk Kong"
+	- Fixed svgafx running suid root
+	- Added console switching to svgafx
+	- Removed -fxgamma this was not possible with a clean solution to
+	  suid root 3dfx support.
+	- Fixed 16bpp modes on cards which use 65536 colors instead of 32678
+	  with svgalib, thanks to: William Barath
+	- Workaround for a DGA bug on Matrox G100 cards which causes the
+	  display to be corrupted. Thanks to: d.swanson
+	- Made -listroms respect -stdout-file by: Chris from TKMAME
+	- Fixed xgl compilation.
+	- I couldn't find a clean and portable way to tell Mesa to init glide
+	  without switching to 3d mode, which is needed since glide needs to
+	  be initialised before any commandline parsing is done for security
+	  reasons. Thus setuid root support for Mesa on glide is broken.
+	  Use /dev/3dfx instead. Any help appreciated.
+	- Added autoconf to the cutdown zlib instead of the generic unix
+	  makefile.
+	- Added the original copyright notice to the cutdown zlib (oops)
+	- Removed the .o en .a files from contrib-zlib as distributed,
+	  added removing them to make clean (oops 2)
+
+Release 0.36b2.1
+	- Everything from msdos 0.36b2.
+	- Fixed tweaked mode restoration after console switch with svgalib
+	  for the soon to be releases svgalib 1.4.1 thanks to: Matan Ziv-Av
+	- Fixed the pause(BREAK) key. It should have worked from the start,
+	  I don't know how this bug slipped in.
+	- Fixed the cheat menu.
+	- Added auto doubling of width- or heightscale for 1:2 pixel aspect
+	  games (like goldstar). Use -noautodouble to disable.
+	- Added optimsed scaling code for 1x2x scaling for 1:2 pixel aspect
+	  games (like goldstar)
+	- Added new mode selection code for svgalib and DGA which not only
+	  tries to fill the entire screen but also tries to keep the aspect
+	  ratio correct. Use -nokeepaspect to get the old behaviour
+	  of trying to fill as much screen as possible.
+	  Thanks to: William Barath
+	- Implemented 16bpp modes for X11 in a window, DGA and svgalib. Xmame
+	  uses these modes when available and nescesarry. use -no16bitvideo to
+	  disable them.
+        - Enhanced -disablemode now it is either of:
+          -disablemode XresxYres
+          -disablemode XresxYresxDepth
+          Use it with xDepth to disable a mode just for a certain colordepth
+          Accepted depths are: 256, 65536.
+	- Implemented scaling other then 1x1 and 2x2 for 24bpp packed pixel
+	  modes.
+	- Rewrote joystick handling code to match the new core handling code
+	  Xmame now supports upto 8 joysticks with upto 16 axis / stick and 
+          upto 16 buttons / stick. Adding more sticks/axis/buttons is just a
+	  matter of changing a few #define's now. Since xmame now supports 
+          more then 2 axis -[no]swapjoyaxis has been removed.
+	- Fixed saving of more then 1 snapshot.
+	- Fixed -widthscale 2 -heightscale 1 for DGA and svgalib
+	- Added contrib/modelines. This is a file with a bunch of tweaked mode
+	  modelines for XFree86. Kindly contributed by William Barath
+	- Xmame now saves cfg, sta and mem files in seperate dirs in
+	  $(HOME)/.xmame So if you want to keep your old ones move them.
+	  Files:	Go in / become:
+	  XXX.cfg	$(HOME)/.xmame/cfg/XXX.cfg
+	  XXX.mem	$(HOME)/.xmame/mem/XXX.mem
+	  XXX.sta	$(HOME)/.xmame/sta/XXX.sta
+	  And xmame now searches for game specific rc files as:
+	  $(HOME)/.xmame/rc/<gamename>rc
+	  Thanks to: TKMAME
+	- Added a cutdown version of zlib in contrib which can be used
+	  instead of the system wide version (see makefile.unix). For 
+	  systems which have no or a broken zlib. Thanks to: Matt Lowry
+	- Rewrote svgalib mode selection code (again) now it doesn't use
+	  a static list of modes anymore but queries the available modes
+	  from svgalib like DGA does under X11. This means that special
+	  modes in svgalib replacements like scitech display doctor and
+	  ggi can be used.
+
+Release 0.36b1.2
+	- Added emulation of arcade cabinet lights through the keyboard leds
+	  for svgalib. X doesn't seem to support this, help appreciated.
+	- Added -geometry option, to specify the location where
+	  the xmame window appears.
+	- Added -[no]linear to enable/disable linear framebuffer support with
+	  svgalib. It defaults to off since lfb is broken on some cards.
+	  This fixes the black screen problem some people where having.
+	- Added a keymapping for the ^ key on german keyboards so that the
+	  on screen display works under X.
+	- Reordered the output for -help so that it makes more sense.
+	- Added a few accidently ondocumented options to -help
+	- Fixed xgl, xfx, svgafx and openstep compile. Since I don't have
+	  openstep and / or an 3dfx over here this is untested.
+	- Changed -scale, -widthscale & -heightscale so that they do the
+	  logical thing. Meaning that the last one parsed determines
+	  the scales used.
+	- Added -vectorres <XresxYres>, this scales vectorgames to XresxYres,
+	  keeping their aspect ratio. This overrides the scale options.
+
+Release 0.36b1.1
+	- Everything from msdos 0.36b1
+	- With al the testing of the svgalib code, a bug which has been
+          there for ages has been found and fixed. This bug cause a shifted
+	  and cropped screen with games which require a resolution >= 640x480
+	  and visualsize != size
+	- Rewrote the svgalib mode selection code, -videomode was removed.
+	  Use -[no]tweak and -[no]scanlines instead
+	- Added linear framebuffer support to the svgalib code
+	- Added doublebuffer support to svgalib scaled modes
+	- Added -disablemode <XRESxYRES> option for svgalib this can be used
+	  to disable a specific mode when it gives trouble on your system.
+	  So that for example only one troublesome tweaked mode can be disable
+	  instead of disabling all tweaked modes.
+	- Improved doublebuffer alloc code for XF86DGA, don't malloc the
+	  buffer if it isn't used.
+	- Improved doublebuffer avtivation code it is now also used for
+	  2x2 scanlines mode giving a nice speedup.
+	- Removed the unix-only core-patch to align words according to Nicola
+	  this shouldn't be nescesarry anymore. If you have trouble running
+	  z80 (and probably other) games on non intel machine's. Try applying
+	  the patch, it is in contrib/ as word-align-patch
+	- Changed the xkeymappings back so that the winkeys (META) are mapped
+	  to alt. This was nescesarry to support international keyboards.
+	- Added -[no]winkeys to map the winkeys under X (META) to the winkeys
+	  under xmame. Use this if you have a winkeyboard and want to use
+	  your windows keys under xmame. This option doesn't do anything for
+	  non X versions of xmame.
+	- Added -screenshotdir <dir> to specify where xmame saves the png
+	  screenshots made by pressing F12. It defaults to the current
+	  working dir (.) .
+	- Added the IRIX buggy compiler fix for MWA_NOP to MRA_NOP too,
+	  this should fix a load of games on IRIX. You could ofcourse
+	  also use a real compiler, grrr.
+
+Release 0.35.3
+	- Really fixed the bug in the svgalib code, now it's also
+	  fixed for resolutions >= 640x480, and thus for vector games.
+
+Release 0.35.2
+	- Fixed a nasty bug in the svgalib code
+
+Release 0.35.1
+	- Everything from msdos rc2, 0.35 release + fixes
+	- Some alpha compile and alignment fixes (by Christian Groessler)
+	- Added netbsd-alpha as target (by Christian Groessler)
+	- Some powerpc compile fixes
+	- Windows keys are now recognised and can be used, under X
+	  your X needs to be configured properly for this though
+
+Release 0.35rc1.1
+	- Everything from msdos b13 & rc1 highlights:
+	  - Now all display targets do snapshot in png format
+	  - png support needs zlib, since png is in the core zlib is
+	    now mandatory
+	  - history.dat file location can now be specified
+	- Updated German README
+	- Many changes to the blit-core these include:
+          -use memcpy's to speed up where possible
+          -use doublebuffering when doing direct framebuffer access,
+           and scaling.
+          -simulated scanlines when scaling
+          -hand optimised cases for 3x and 4x inproved generic case
+          Overall this should give a nice speedup in a lott of cases.
+          Much of the work and ideas where contributes by a kind soul whos
+          email and name I've lost. If you read this please mail me so you can
+          be given proper credit.
+        - Don't crash on exit when no suitable DGA mode can be found
+	- Made xmame emmit warnings and continue on errors in xmamerc, instead
+          of emmit errors and exit (By TKMAME)
+	- Made xmame except fxmame and glmame options even when not compiled
+          with fx / gl, it just ignores them.
+	- Added some boundary checks in: sound/adpcm.c and vidhrdw/megasys1.c
+	  this fixes edf in b12. I don't know wether it's still nescesarry in
+	  rc1, thus these changes are backed out and are now available in:
+	  contrib/boundary-check-patch
+
+Release 0.35b12.1
+	- Everything from msdos b11 & b12
+	- Changed the way the makefile handles the generated c-files for the
+	  m68000 c-core again. Now openstep should be happy too.
+	- Changed TRUE -> OSD_OK in a number of sounddrivers this should fix
+	  compile problems for: irix, netbsd_i386 and aix.
+	- Added a spanish tranlation of the readme by Vicente Aguilar.
+
+Release 0.35b10.2
+	- Fixed a bug in the config parsing code which caused core dumps at
+	  start on most non x86 platforms.
+	- Changed the way the makefile handles the generated c-files for the
+	  m68000 c-core. Now it also works with compilers which don't like
+	  object files with an unusual suffix (.og instead of .o).
+
+Release 0.35b10.1
+	- Everything from msdos b10
+	- Updated the debuger code, now it should work again and it looks a
+	  lott better as the old code.
+	- GGI support updated for ggi2.0b2 and some other small fixes.
+	  By Christian Groessler
+	- As requested changed the init sequence for x11 so that -list options
+	  can be used even without a display. This only works for binaries
+	  without DGA support due to security reasons.
+
+Release 0.35b9.1 (Never got released the mame team released b10 before)
+	- Everything from msdos b9.
+	- Updated solaris sound-driver which also supports solaris i386.
+	  Thanks to Mathias for this.
+	- Installed solaris x86, Fixed XIL.
+	- Also fixed mitshm on solaris.
+	- Some fixes to fix-comments to handle nice c-code like: '"' and "\\"
+
+Release 0.35b8.1
+	- Everything from msdos b8.
+	- Note about history.dat:
+	  The new dos-release uses a file called history.dat to display some
+	  nice background info on games. Unfortunatly the location of
+	  history.dat is hardcoded into the core as just history.dat in the
+	  current working directory. Thus if you want to use it you need to
+	  start xmame in the dir where history.dat resides or at least create
+	  a shell script which cd's into this dir before executing xmame.
+
+Release 0.35b7.1
+	- Everything from msdos b7.
+	- Added -listinfo option
+	- Did the rename and move blues, lotts of restructering of the unix
+	  code. End users won't notice this except that it probably has
+	  introduced a couple of bugs ;)
+
+Release 0.35b6.1 (Aka naming releases was fun while it lasted)
+	- Everything from msdos b6
+	- Added 24bpp packed pixel support for X11 by Trent Piepho
+	- Added 24bpp packed pixel and 32 bpp support to xf86-dga
+	- Removed the z80 fix. Jurgen, from the dos team, has fixed the z80
+	  core so that it now works with gcc 2.7.2.x too. Please reports
+	  any new problems with z80 games.
+
+Release 0.35b5.1 (Aka yar (yet another release))
+	- Everything from msdos b5
+	- Fixed a vsb (very stupid bug) which caused xmame
+	  to hang on exit sometimes
+	- Reintroduced the z80 fix from 0.35b2, you only need it if
+	  your using gcc, you can disable the fix in the makefile if your
+	  using egcs for a slight performance increase. This only affects
+	  x86 users. Also note that since the dos-team now is using gcc 2.8.1
+	  more of these bugs might popup, so if you have egcs use it.
+
+Release 0.35b4.2 (Aka the brown paperbag release)
+	- Fix a compile bug in src/unix/config.c
+
+Release 0.35b4.1
+	- Everything from msdos b3 & b4.
+	- contrib/fix-comments.c no longer generate: /*/////*/ but instead:
+	  /*///////////// */
+	- Nicola from the dos-port honored my request and in one go all
+	  ACORN and linux_alpha defines have been changed to ALIGN_INTS,
+	  ALIGN_WORDS and LP64, thanks Nicola
+	- Before parsing $HOME/.xmame/xmamerc xmame now first looks if
+	  $HOME/.xmame/<gamename>rc exists and parses that instead if found.
+	  By Chris (from TKmame) 
+
+Release 0.35b2.1
+	- Everything from msdos b2.
+	- An interesting note from whatsnew.txt,
+	  which might be worth repeating:
+	  Note: the configuration save format has changed. You may just as well
+	  delete all of the cfg/*.cfg files, since they won't be loaded. Old
+	  .inp files will not work either. The good news is that the default
+	  key assignments can now be modified, so you don't have to change them
+	  for all the games. The code is a quick hack put together in fifteen
+	  minutes, but it's bettern than nothing. It will be improved
+	  in future versions.
+	- Worked around the compilation of the z80-core with -DX86_ASM, still
+          working on this with Juergen
+	- Added 16 bit & stereo sound-support. Many thanks to Mike Oliphant
+	  For writing this. Use -mono, -8bit to get the old behaviour back.
+	- Added a new blitting macro, now used for svgalib, X en dga.
+	  taking away a lott of old almost the same code. This also means that
+	  X now uses direct image access even in truecolor modes speeding
+	  things up quite a bit. And update_dsp* files were all removed since
+ 	  since they are now unnescesarry.
+	- The above is really all added bonus, the mean reason was to also
+	  write a generic scaling system. So now dga and svgalib also support
+	  scaling.
+	- Removed -forcetrucolor, since it doesn't do anything anymore with
+	  the new blitting macro.
+
+Release 0.35b1.1
+	- Everything from msdos including autoframeskip use:
+	  -autoframeskip / -noautoframeskip to en-/disable.
+	  It's enabled by default.
+	- Bat wrote snapshot support (F12) for openstep.
+
+Release 0.34.2
+	- Fixed a bug which caused:
+	  X Error of failed request:  BadValue
+	  When running in a window under X11 with a game which doesn't
+	  support dirty, and has a visual area which isn't quad-word aligned.
+
+Release 0.34.1 
+	- Everything from dos 0.34 final
+	- The mouse is now ungrabbed when the window looses focus.
+	- Ggi dirty support, tested with ggi 2.0beta1
+
+Release 0.34rc2.1
+	- Everything from dos rc 2
+	- Added mouse grabbing, press left-alt + page-down to grab the mouse
+	  under X, press it again to release it. Use -grabmouse to start
+	  with the mouse grabbed.
+	- Added invisible mousecursor for people using focus follows mouse,
+	  use -nocursor to make the cursor invisible, grabbing the mouse as
+	  above also makes it invisible. This was kindly contributed by:
+	  Dave Dribin
+	- Removed ROMPATH, SPOOLDIR etc defines from makefile.unix and
+	  replaced them with XMAMEROOT by Christian Groessler
+	- Fully intergrated openstep support, it now no longer needs the files
+	  in contrib, see README.unix
+	- Added sound synchronisation for streamed sound, this should fix
+	  the lag in pacman. This only works when throttle is enabled.
+	- Netbsd-i386 audiobuffer querying support by: Tom Spindler
+
+Release 0.34rc1.1
+	- Everything from dos rc 1
+	- Merged in glmame-0.6 and fxmame-0.5
+	- Fixes for ggi to compile with the latest ggi-snapshot
+	- Some fixes to -verifyroms to now use -stdout-file
+	- Added preliminary openstep support, see contrib/openstep/README
+	  Kindly contributed by Bat.
+
+Release 0.34b8.1
+	- Everything from dos beta 8
+	- DGA now is a compile option for x11, just like mitshm,
+	  use -x11-mode (see -help) to choice between normal window and
+	  DGA, or use left-alt + home as a hotkey to jump to fullscreen,
+	  and left-alt + insert to jump to a window.
+	- Rearranged and rewrote most of the joysticks support, upto 4
+          joysticks are now supported. And you can compile in more then 1
+	  one joytype, and select which one will be used runtime with -joytype.
+	- Support for new linux joystick driver interface, use I386JOYSTICK
+	  if the new headers are found they are automaticly used.
+	  By: Luca Montecchiani
+	- Removed -display commandline option as it intervened with DGA,
+	  sorry about that, use $(DISPLAY) instead, or write a wrapper script.
+	- Added support for mame's internal debugger, see makefile.unix
+	  only enable this if you need it! It's slow.
+	- Which obj files are build in the unix dir is now display-method
+	  dependent.
+	- Unixware7 support by: Richard Cohen
+
+Release 0.34b7.1
+	- Everything from dos beta 7
+	- Completly new dirty code speeding up xf86,x11 and svgalib
+	  quite a bit.
+	- -analogmouse options to emulate a analogjostick through the mouse
+	  very nice for starwars and maybe others.
+	- -verifyroms no also tries to load roms by crc matching the actual
+	  loading behaviour.
+
+Release 0.34b6.1
+	- Everything from dos beta 6
+	- Fixed a bug which caused all checksums to be 0 for non-zipped
+	  files.
+	- Fixed unpause bug.
+	- If not shared with the game, the ui colors are no longer
+	  influenced by brightness and gamma settings.
+	- Made -widthscale, -heightscale and -scale work for vector games
+	  on all supported display-methods, using mame's vector engine todo
+	  the scaling. Also for vector games values like 1.5 and even 0.5 are
+	  now supported.
+	- Spend a lott of time on network support, it should now work for
+	  all displaytargets. Exiting one participant no also exits
+	  the others instead of hanging them. Timeouts implement, if one side
+	  is killed/ connection is broken xmame will continue in single player
+	  mode. The network code can now be concidered stable, but still only
+	  supports keyboard.
+	- Merged in fxmame-0.4 and glmame-0.5
+	- Vector.o and inptport.o are compiled in display_method dependend
+	  dirs now.
+	- Solaris XIL support (hardware scaling) by Elias Martenson.
+	- Preliminary Digital Unix support by Leandro Dardini
+	- Added tkmame frontend to contrib
+
+Release 0.34b5.2
+	- Fixed the __extension__ compile bug, I hope
+	- Fixed the segfault when compile without joystick-support &
+	  joy = 1 in xmamerc
+	- Merged in gl-mame code, many thanks to Mike Oliphant for the
+	  excellent and easy to merge patch. see doc/README.xgl
+	- Merged in net-mame code, many thanks to Eric Totel, for the also
+	  excellent and easy to merge patch. see doc/multiplayer-readme.txt
+	- Added a volume xmamerc and commandline option.
+
+Release 0.34b5.1
+	- Everything from dos-0.34b4&b5, including the profiler, romident
+	  asm 68000! and on screen display.
+	- Removed /dev/audio (uLaw) support from linux, since it
+	  was seriously broken en useless anyway. The audiodevice option
+	  is from now on only usefull to use a second soundcard, see
+	  doc/xmamerc.dist.
+	- Rearranged most of the code in src/unix/fronthlp.c it's a lott nicer
+	  now.
+	- Rewrote src/unix/config.c it was nescesarry adding new options is so
+	  much easier now. This also means that for consistency with the
+	  commandline a lot of options in xmamerc have been renamed and/or
+	  added, please copy xmamerc.dist over, and change it as needed.
+	- Added -fragsize & -numfrags, see -help and doc/README.unix. This 
+	  should help people who experience lagged sound. As a side-result of
+	  this all soundbuffers are now dynamicly allocated and thus all OSS
+	  problems should be gone, please report any remaining problems.
+	- Added -stdout-file and -stderr-file to redirect stdout and stderr to
+	  a file at a highlevel so svgalib doesn't bug us. Only usefull for
+	  frontends, and only influences text printed by the osd part of
+	  xmame, so -list and stuff are redirected, -verifyroms only partial,
+	  and mame-core errors and messages are not redirected at all.
+	- Cleaned up stdout/stderr use:
+	  Stdout is used for requested info like -list options, and -help.
+	  Stderr is used for status and error messages.
+	- Partially rewrote palette-handling no brightness and gamma-
+	  correction are supported, see -help, xmamerc and osd.
+	- Robert Hamberger kindly donated a german translation of the readme.
+	- New irix AL sound support by Tristram Scott, added Tristram as sgi/irix
+	  maintainer.
+	- linux-powerpc is now offically supported.
+	- Added Mathis Rosenhau as sun/solaris maintainer.
+
+Release 0.34b3.1
+	- Everything from dos-0.34b3
+	- Fixed the compilation problem on some platforms in config.c
+	  (missing includes for sys/stat.h and unistd.h)
+	- Speeded up palette cycling under xf86_dga with 8bpp
+	- Rewrote X mouse handling now mouse works under xf86_dga
+	- Added support for 15bpp truecolor visuals
+	- Fixed irix_nosound and aix_nosound targets
+	- Fixed a bug in osd_fseek which caused sample loading to fail,
+	  now samples work as advertised.
+	- Fixed a bug in svgalib & ggi palette handling which caused
+	  some strange effects with translucent vectors.
+	- Updated README.unix to contain who maintains which arch/os
+	  combination and which are currently unmaintained,
+	  maintainers wanted!
+	- Added a section to README.unix on howto work around yet another
+	  bug in the irix c-compiler. See the platform specific hints.
+	- Added doc/TODO
+
+Release 0.34b2.2
+	- Fixed a bug: .cfg files where still saved in ${HOME}/xmame
+	  instead of ${HOME}/.xmame.
+	- On startup existence of ${HOME}/.xmame is verified and created
+	  if nescesarry
+	- On startup a check is done to see if compiled- and
+	  runtime-endianess match (actually this has been there for
+	  a few releases now but I forgot to mention it ;)
+	- Some minor updates to README.unix
+	- One note: /usr/games/lib/mame has been changed to
+	  /usr/games/lib/xmame for concistency. So rename it, or use the old
+	  setting in xmamerc.
+
+Release 0.34b2.1
+	- Everything from dos-0.34b2.
+	- Everything unix from xmess-0.2b4.1:
+	  *Fileio no supports gzipped files and a search path, see README.unix
+	   Note: This means that you have to change mamedir to rompath
+	   in your xmamerc.
+	  *Updated README.unix to contain info on both xmess and xmame
+	   not only on xmame.
+	  *The title and other reference to xmame/xmess and version are now no
+	   longer wrapped in ifdef's but instead are taken from defines set by
+	   the makefile so to change the version no, or the name only the 
+	   makefile has to be changed from now on.
+	- Changed ${HOME}/xmame to ${HOME}/.xmame on popular request so
+	  move that dir ;)
+	- Makefile.objs no is no longer autogenerated due to some changes
+	  in the dos makefile. These changes do mean that the number of objs
+	  on the commandline at once have been greatly reduced. So those
+	  who got a cmdline to long error shoould be happy now.
+	- Updated contrib/porting.txt to include the manual creation of
+	  makefile.objs. Added contrib/lowercase which is used for this.
+	- Changed fix.c to fix-comments.c which is a more accurate name.
+	- Removed autogeneration of makefile.objs from make-makefiles.pl
+	  renamed it to fix-includes
+	- Updated fix-mame to match the name changes of fix and
+	  make-makefiles.pl .
+	- General clean-up and restructering of README.unix with much thanks
+	  to: Joseph E. Miele
+	- The x86-asm m6808 core now also works on other i386 unices, thanks
+	  to: Christian Groessler
+
+Release 0.34b1.1
+	- Everything from dos-0.34b1.
+	- Intergrated xf86-dga support.
+	- Hardware palette cycling (as promised way too long ago).
+	  It's enabled automaticly, you'll receive a notice of this.
+	  Under XFree86 it only seems to work on 8-bit displays with
+	  a private colormap (-privatecmap).
+	- Changed makefile so that you now choose:
+	  a) arch
+	  b) display method
+	  So we no longer have linux-svgalib and linux-x and linux-ggi and
+	  linux-xf86-dga. This esp makes sence since ggi and xf86-dga are
+	  also supported on other arch's.
+	- Added soft-klipping to the soundmixer. Actually done in 0.33.1
+	  but I forgot to mention it there.
+
+Release 0.33.3
+	- Again fixed the m6808 asm core, this time a work around for
+	  gnu-make not liking a long dep chain.
+
+Release 0.33.2
+	- Fixed a minor bug which made the compilation of the x86-asm 
+	  m6808 cpucore fail.
+
+Release 0.33.1
+	- All the changes from dos-0.33(final).
+	- Workaround for an of by one bug in newer oss (the linux sound driver)
+	  versions. This caused the big delay for this release and hopefully
+	  is now solved.
+	- Workaround for an obscure irix compiler bug this means irix is
+	  now fully supported, but don't use DCC !
+	- Added contrib/xnetmame.tgz this contains files for (beta) network
+	  play.
+	- Added contrib/esound.diff, apply for sound output to the esound
+	  deamon, this patch will be included in a newer version.
+	- Added contrib/xf86-dga.diff, apply for xfree86 dga support, this
+	  patch will be included in a newer version.
+	- Updated contrib/mamex to work with newer versions of mame.
+	- Added contrib/mamex.new, an enhanced version.
+
+Release 0.33rc1.1
+	- All the changes form dos-0.33rc1
+	- Automated the porting process a bit, changed contrib/make-makefiles.pl
+          not to generate a malloc-lines log. Since this is not nescesarry
+	  anymore. Added contrib/fix-mame. See contrib/porting.txt for
+          a quick description on how to use these porting tools, to get a new
+          dos version ported to unix.
+        - Part of these automation changes it that the objs generated by
+	  make-makefiles are now used in makefile.unix by including
+	  makefile.core.
+        - Due to the above changes also all core-filenames have been made
+	  lowercase, finally bringing unity.
+	- Changed the compiler hints in README.unix not to use DCC,
+	  since that was a bad advice which was causing the malloc trouble in
+          the first place. We still have irix problems when using -n32
+	  which are being looked into. For now use -o32 when compiling.
+	- Added support for the m6808 asm cpu core, it has its own flag in the
+	  makefile and defaults to off, this is only tested for linux-x86-elf
+	  if anyone wants to get it to work on other x86 archs feel free
+	  todo so. And please mail me your results. This requires a copy
+	  of nasm, a free x86-asembler, in your path. 
+	- Added 16 bit sound calls support.
+
+Release 0.33b7.1
+	- All the changes form dos-0.33b7, including a new frontend
+	  option (-listclones).
+	- Fixed the volume after menu setting bug, for real this time
+	- Split update_dsp into true- and pseudo-color specific files,
+	  with the hope to one day add a 16 bit mode truecolor variant
+	- Cleaned up the error handling in the creation of the X display
+	- When running xmame on a remote console mit-shm doesn't only fail
+	  but it even tells you it failed amasing isn't it?
+
+Release 0.33b6.1
+	- All the changes form dos-0.33b6, including some new frontend
+	  options (-listgames, -noclones).
+	- Cleaned up keyboard-handling a bit.
+	- Changed osd_analog_read to match the new syntax.
+	- Added -root_window_id [id] cmdline option to create the window
+	  within an existing window, to be used with frontend's
+	- Added a credits.unix file, if you think you deserve an entry please
+	  remind me, I don't remember all contributers.
+
+Release 0.33b5.1
+	- Just a port of dos-0.33b5, using the unix tree from
+	  0.33b4.1. Nothing new on the unix-end but the main MAME team has
+          added a few new goodies to this release.
+
+Release 0.33b4.1
+	- Basicly a port 0f 0.31.1 to 0.33b4
+	- added 320x240 and 320x400 to svgalib-version
+	- some changes to support the new 0.33 layer code
+
+Release 0.31.1
+	- A lott has happenend since the last release, before this release
+	  there have been a lott of beta's. And I (Hans) have taken over as
+	  main coordinator. This release fixes all known bugs to previous 
+	  release's. And we've done our best to make this the best release
+	  ever. In the switching and the quick beta-period to catch up,
+	  changes have got lost however. The Changes file will be updated from
+	  here on again.
+
+Release 0.30.1
+	- Just a patched Mame-0.30 version
+
+Release 0.29.3
+	- Added GGI ( General Graphics Interface support )
+	- Added zlib support
+	- Preliminary autoconf support
+	- Some minor fixes
+
+Release 0.29.2
+	- Now osd_clearbitmap() uses named pen instead of default 0
+          this solves several color bugs in atari vector games
+	- Added xmame.man manual page. Thanks to Donald Burr
+          Moved src/unix/xmamerc.dist to doc
+	- Added "bindist" and "srcdist" options to makefile, for easy 
+	  making of a source/binary distribution
+	- Fixed missaligned integer pointer bug in src/sndhrdw/pokey.c
+	- Some incongruent items in Copyright license has been changed
+	- Created and moved documentation to doc directory
+	- Intensive work of cleanning non-ansi and warnning items
+	- Added UnZip-on-the-fly support for ROM's and Samples.
+	  Thanks to Tomi Ollila for the unzipper code
+	- Support for dirty lines speedup strategy in X
+	  via -DUSE_DIRTY and -DDIRTY_RFSH makefile.unix options
+	- Added support for Linux/X11/PowerPC. Thanks to Andreas Varga
+	- Now "-list" and "-listfull" options writes to stdout, to 
+	  allow interface with loaders
+	- fixed bug in sndhrdw/starforc.c that makes sound too slow
+	- fixed bug in src/unix/xdep.c that made incorrect graphics and
+	  cores in swaped-xy games when X & Y scale differs
+
+Release 0.29.1
+	- Original Mame-029 sources ported to UNIX by Hans de Goede
+	- Added "-[no]xsync" and "use_xsync" commandline/config option
+	  To select between XFlush() or XSync() screen refresh method
+	- Added "spooldir makefile/config/commandline configurable option
+          to store high scores
+	- Now .xmamerc and per-game user configurations parameters are moved
+	  and stored into ${HOME}/xmame/ directory
+	- New file update_dsp.c to code video update routines
+	- Added -devdsp and -devaudio options to allow selection of audio
+          device in those systems that has no /dev/audio
+	- Added -showconfig cmdline option to display current running parameters
+	  in a xmamerc-like style 
+	- Now -DUSE_TIMER works on svgalib. Thanks Hans
+
+Release 0.28.2
+	- Added Solaris/ix86 support
+	- Added Linux/Alpha support
+	- Fixed several bugs in 8910intf.c to makes core in init sound
+	- Changed Keyboard code to reset key table when entering/leaving
+	  XMame window
+	- Lots of porting errors solved
+	- Solved (again) missalingned int problems in src/common.c:drawgfx()
+	  Blames to Intel for trying to correct programmer errors instead a
+	  clean core
+
+Release 0.28.1
+	- A Mix between official 0.28 Mame and XMame 0.27.2
+	- Changed "static char *single" for "static char *_single" in 
+	  src/sndhrdw/starforc.c due to a solaris varname conflict
+	- Added -ror, -rol -flipx, -flipy, -cheat commandline options
+	- Changed osd_obtain_pen() to use double-indexed color array for
+	  cell allocation. This makes pseudocolor mode as slow than truecolor
+	  but no esay way to bypass problem ( private colorcell is a color
+	  waster strategy )
+	- New fix.c code to make port easy. Thanks Hans
+	- Added ultrix support
+
+Release 0.27.2
+	- Created new directory contrib. Waitting for your works...
+	- Added support for ix86/BSDi. Thanks Tom <tom@toetag.com> for Patches
+	- AUDIO_TIMER_FREQ #define moved to makefile sound options
+	- Finally I got xmame running for 8bpp, 16bpp, 24bpp and 32bpp Xservers
+	  No easy way to get 1 ( monocrhome ) and 4 ( 16 colors ). Sorry
+	- Solved Audio bug in non-i386 machines ( audio buffer mixer works in
+	  unsigned char fashion, and every others audio devices likes signed 
+          ones )
+	- Support for trackball emulation and mouse
+	- Universal Joystick support:
+	    - Patch for FM-TOWN game key pad joystick emulation (Linux)
+	    - i386 joystick driver rewwriten. ( finally does diagonal correctly )
+	    - Joystick support via X11 Input Extensions for "any" XServer that
+	      supports them
+	- Changed common.c to solve unaligment problem that causes SISEGV cores
+	- makefile.unix changes. Lots of new switches ( perhaps it's time to
+	  create a configuration script.. )
+	- Solved bug that make change settings not to work ( TAB key )
+
+Release 0.27.1
+	- Hans de Goede did the work during my little holidays. Every one
+	  thank's him
+	- Linux SVGALIB support
+	- Now osd_play_streamed_sample() works (yes, finally !!! )
+	- src/sndhrdw/starforc.c static char *single changed to _single due
+	  to solaris previous definition
+	- Added samplefreq and videomode command line options ( only have 
+	  sense in linux .... )
+	- Changed (again) every PI items to POSIX M_PI .Mirko, please...
+	
+Release 0.26.3
+	- Changes in makefile.unix and readme.unix. 
+	- src/drivers/digdug.c bug fixed ( but still remain a bug: if
+          no key pressed soundtrack stops.... )
+	- New commandline options
+	- Support sound on netbsd_i386 and freebsd
+	- xdep.c scaling bug fixed
+	- Added missing function in system-dependent code
+	- osd_play_streamed_sample() in src/unix/sound.c improved 
+	  ( needs further work... )
+
+Release 0.26.2
+	- Now timer based audio works again
+	- Fixed several non-linux related audio bugs
+	- Changed src/mame.c to optimize arg search and make unix help
+	  available
+	- readme.unix updated . READ CAREFULLY before trying to compile
+	- X-Events scanning routine changed and optimized 
+	- Several minor bugs and ANSI warnnigs fixed
+
+Release 0.26.1
+	- Original sources from Mame0.26.1 patched for Hans De Goede
+	- Entire code "ANSI'ed" 
+	- Added global xmamerc file parsing
+	- Makefile structure changed. READ AND EDIT CAREFULLY BEFORE COMPILE
+	- New Sound Code!! no more timer in those systems that allows query
+	  free space in sound driver 
+	- Improved mixer. Settable FANCY_SOUND to perform a linear interpolation
+	  Play it!! you'll see the difference
+	- Optimized video code for 2x and 3x scales
+
+Release 0.23.3 
+
+	- Added Joystick support under NetBSD
+	- Fixed bug to bypass upper/lowercase names ROM filenames
+	- Lot of portability bugs fixed
+	- An optional sound.c.new code included. Perhaps you'll want to
+	  test and improve...
+
+Release 0.23.2
+
+	(Thanks to entropy@zippy.bernstein.com for patches)
+	- Fixed stupid bug in src/common.c:readbit();
+	- Added support for i386/NetBSD ( No sound. sorry )
+	- Now MAME-023 new games doesn't core
+
+Release 0.23.1
+
+	- Patched from Official MAME 0.23
+	- Now you can make snapshots ( needed Xpm Library )
+	- MAME-023 FM music synthesis doesn't work (yet)
+	- New makefile.unix to allow enable/disable sound in IRIX and SGI
+	- Lot of improvements and bugfixes
+	- NOTE: some newer games dumps core in fgx routines. still
+	  working on it. sorry :-(
+
+Release 0.22.1
+	
+	- Patched from Official MAME 0.22
+	- Included unix code from 0.21.7
+
+Release 0.21.7
+
+	- Added AIX sound support. Thanks to Chris Sharp
+	- Added "-privatecmap" command line option and "private_colormap"
+	  .xmamerc parameter to enable use of private color maps
+	- Now sounds works again ( more work on sound server included )
+	- Lots of bugs and **IX porting problems solved
+	- New readme.unix with FAQ and installation guide
+
+Release 0.21.6
+
+	- Patched from Official MAME 0.21.5
+	
+Release 0.21.1
+
+	- Mixed 0.20.3 with official MAME 0.21 sources
+	- Makefile.unix changed
+	- UNSTABLE. needs further work
+
+Release 0.20.3
+
+	- Support for HP-UX and AIX
+	- Adecuate use of DISPLAY and MAMEDIR environment variables
+	- Support for -help command line option
+	- Support for ${HOME}/.xmamerc configuration file
+	- Support for keyboard remapping
+
+Release 0.20.2
+
+	- Directory src/unix rewritten. no longer a big unix.c
+	- A src/unix/Makefile is provided to create osdepend.a library 
+	- ( Now I can start doing real work in a clean environment )
+	- File makefile.unix adapted to new src/unix structure
+	- changed macro PI ( non-posix ) for M_PI in some files under
+	  directory src/sndhrdw
+ 
+Release 0.20.1
+
+	- Check for available 8bit depth Visual. if no, warns and quit
+	- Check for available and runable MIT-SHM. 
+	- Added command line -display "displayname"
+	- Added command line -nomitshm to disable use of MIT shared memory
+	- Rewritten most of video code
+	- Several bugs fixed
+
+Release 0.20
+	
+	- Finally Mame and X-Mame converges!!!
+	- osd_update_display() rewritten. Should work at least two times
+	  faster
+	- osd_poll_joystick() patched to allow simultaneous x&y movements
+	  when really desired ( Linux )
+
+Release 0.19.1
+May-2-1997
+	- Corrected 0.19 sources to compile & run unde UNIX
+	- Some POSIX'ing work
+	- Corrected 0.19 bug that makes phoenix and pleiads unrunables if
+	  not sound samples availables
+
+Release 0.19 
+April-29-1997
+
+	- Official 0.19 sources. Due to a bug in building distribution doesn't
+	work neither compile under UNIXes
+
+Release 0.18 patch level 2
+April-25-1997
+
+	- Modify Makefile.UNIX, to support simultaneous multi-architecture
+	  compiling
+	- Set up hierachies obj.arch
+	- Correct source files to support non-gcc ansi compilers
+	- Added -DINLINE=static to specific irix native compiler CFLAGS in 
+	  Makefile.UNIX
+	- Added support for Sparc SUNW,dbri audio chipset
+
+Release 0.18 patch level 1
+April-24-1997
+
+	- Added support for Audio on SGI Irix machines ( tested on a SGI Indy )
+	- Corrected posix undefined PI macro in math.h
+
+Release 0.18
+
+	- Original sources from repository
+
+SOUND TESTED ON:
+	linux (i586/133) sounds acceptable
+	Irix  (SGI Indy ) near nice
+	Solaris ( Sparc5 SUNW,CS4231 ) poor, but usable
+		( Sparc1+ SUNW,am79c30 ) horrible, better dont use
+		( Sparc10 SUNW,dbri ) need more work ( too delayed and tickly )
+	AIX	( Reported by Chris Sharp <sharp@hursley.ibm.com> )
+		
+KNOWN BUGS ( ONLY UNIX SPECIFIC INCLUDED ):
+	- AUDIO_TIMER_FREQ is machine dependent
+	- Cannot correctly control audio channels in Sparc ( doc wrong :-( )
+	- Low quality in audio
+	- Some games send long sound samples ( like soundtracks ) that overruns 
+	  buffers and make core : -( 
+	- Some games dump core when exiting. Don't know why...
+
+TODO:
+	- Make it runnable in servers that has no support for 8-bit depht
+	  Visuals ( Actually warns and exit )
+	- Support for kernel in-built n-channel mixer in Irix
+	- Joystick support under Irix ( using the analog input port )
+	- Rewrite mixer and buffering sound module
+	- Full support of Sparc sound ( lots of bugs in actual one )
+
+Please send patches, bugfixes, suggestions, blames, and money :-) to me,
+hans@highrise.nl
+
+See X-Mame http://x.mame.net
+
+	Enjoy!!!!

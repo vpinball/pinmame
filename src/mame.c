@@ -117,7 +117,9 @@
 #include "vidhrdw/vector.h"
 #include "palette.h"
 #include "harddisk.h"
-
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+#include "p-roc/p-roc.h"
+#endif /* PINMAME && PROC_SUPPORT */
 
 /***************************************************************************
 
@@ -344,6 +346,10 @@ int run_game(int game)
 
 static int init_machine(void)
 {
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	char * yaml_filename = pmoptions.p_roc;
+#endif /* PINMAME && PROC_SUPPORT */
+
 	/* load the localization file */
 	if (uistring_init(options.language_file) != 0)
 	{
@@ -357,6 +363,10 @@ static int init_machine(void)
 		logerror("code_init failed\n");
 		goto cant_init_input;
 	}
+
+#if defined(PINMAME) && defined(PROC_SUPPORT)
+	procInitialize(yaml_filename);
+#endif /* PINMAME && PROC_SUPPORT */
 
 	/* if we have inputs, process them now */
 	if (gamedrv->input_ports)
@@ -2000,7 +2010,6 @@ static int validitychecks(void)
 									printf("%s: %s wrong port read handler start = %08x, end = %08x ALIGN = %d\n",drivers[i]->source_file,drivers[i]->name,pra->start,pra->end,alignunit);
 									error = 1;
 								}
-							
 							}
 							pra++;
 						}
@@ -2056,7 +2065,6 @@ static int validitychecks(void)
 									printf("%s: %s wrong port write handler start = %08x, end = %08x ALIGN = %d\n",drivers[i]->source_file,drivers[i]->name,pwa->start,pwa->end,alignunit);
 									error = 1;
 								}
-						
 							}
 							pwa++;
 						}

@@ -54,10 +54,10 @@ struct rc_option pinmame_opts[] = {
 #ifdef VPINMAME
         { "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "255", 0, 255, NULL, "DMD color: Red" },
         { "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "88", 0, 255, NULL, "DMD color: Green" },
-#else
+#else /* VPINMAME */
         { "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
         { "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
-#endif
+#endif /* VPINMAME */
         { "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
         { "dmd_perc0",  NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
         { "dmd_perc33", NULL, rc_int, &pmoptions.dmd_perc33,  "33", 0, 100, NULL, "DMD low intensity [%]" },
@@ -79,6 +79,12 @@ struct rc_option pinmame_opts[] = {
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
 #endif
+#ifdef PROC_SUPPORT
+// TODO/PROC: Correct implementation?
+	{ "p-roc", NULL, rc_string, &pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
+	{ "alpha_on_dmd", NULL, rc_bool, &pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
+	{ "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
+#endif /* PROC_SUPPORT */
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */

@@ -1,0 +1,558 @@
+GLMame v 0.94 - the_peace_version - Mame Display Driver
+=======================================================
+
+Sven Goethel
+http://www.jausoft.com
+sgoethel@jausoft.com
+
+MAME License
+
+Based upon GLmame v0.6 driver for xmame, written by Mike Oliphant
+
+peace, sven
+
+  22/January/2003 GLMame OpenGL-Display-Driver Version 0.94
+  ==========================================================
+  	o affects xmame 0.65.1 + Sugitani's Blit-Patch !
+		- so patch after you have patched the blit-patch on 0.65.1 !
+	
+	o all rotations are done within opengl, 
+	  disabled them in unix/video.c (-> unix/video-drivers/blit*.h)
+	  	- via "#ifndef xgl"
+		- via "int blit_hardware_rotation=1" 
+
+	o all rotations does work now, even in cabinet mode ;-)
+
+	o cabinet screen vector specification:
+		the <model>.cab file contains the screen section for the mame
+		gameplane !
+
+		the vectrices must follow the following order:
+			1.) left  - top
+			2.) right - top
+			3.) right - bottom
+			4.) left  - bottom
+		where:
+			left   < right
+			bottom < top
+
+		this order is because of historical reason,
+		and is reordered, i.e. reversed, within the glcab.c code.
+
+	o complete rearranged cabinet screen calculations
+		- fixes game screen offset and aspect-ratio
+		- float -> double
+		- much better documentation !
+
+	o some cabinet bugfixes ..
+
+	o some other bugfixes ;-)
+
+	o todo:
+		- fix fullscreen bug, while toggling cabinet mode
+
+		- try to find a 16bpp solution for opengl color tables,
+		  so no more blit's are needed ... (nvidia does not allow ..)
+
+
+  01/December/2001 GLMame OpenGL-Display-Driver Version 0.92
+  =================================================================
+  	o clean up: glvec.c again 
+
+	o added 2 new options for vector games:
+
+	  -[no]glantialiasvec, -[no]glaav , default true !
+	   Enable/disable vector antialiasing
+	   (otherwise 16bpp opengl displays looks kinda bad ..)
+
+	  -[no]gldrawbitmapvec, -[no]glbitmapv, default true
+	   Enable/Disable the drawing of the bitmap only for vector games - speedup
+	   
+	   (remember, you can also toggle this via RALT-O)
+
+	o  added vector flickering ;-)
+
+	o because of the buggy dirty-code,
+	  i recommend you use -nodirty for opengl as default ..
+
+
+  27/November/2001 GLMame OpenGL-Display-Driver Version 0.91
+  =================================================================
+  	o clean up: glvec.c, glgen.c 
+
+	o removed gldirty.[ch]
+	  added functionality to glgen.c
+
+	o added new dirty strategie to glgen's texture handling ..
+	  as for mplayer ;-)
+	  
+	  WARNING: still needs -nodirty flag for some games,
+	  like atetris !
+
+	o still don't know how to handle effect's .. ! HELP !
+
+	o WARNING: modified src/cpu/v60/v60.c to being compiled
+	  under PPC architecture !
+
+  18/November/2001 GLMame OpenGL-Display-Driver Version 0.90
+  =================================================================
+        - true color vector game bug (all vector game colors are true since 0.5x.y)
+
+        - using blit.h for 16bpp colorIndex mapping only,
+          e.g. true color games don't need it .. (xexex, shocking, ..)
+          -> useColorBlitter !
+
+        - added an own texture memory with BITMAP_SAFETY's,
+          if using useColorBlitter !
+
+        - removed color bpp "guessing" - this fixes some neogeo problems ..
+
+  20/August/2001 GLMame OpenGL-Display-Driver Version 0.88
+  =================================================================
+  	o changed to the new png usage
+
+	o INFO: I kept the 8bpp color-table stuff for now,
+	        but the base mame 0.53 does not support it anymore !
+
+  13/July/2001 GLMame   OpenGL-Display-Driver Version 0.87
+  =================================================================
+	o tested xmam.xgl with LinuxPPC 
+         (Powerbook) + ATI-Rage128 + XFree86 4.1 + DRI 
+	  ! SUCCESS !
+
+	  Use options: "-noglext78 -noglaa" or "-bpp 16 -noglaa",
+	  where the latter is a bit slower for me (about 5fps)
+
+	o changed GLboolean -> int,
+	  because of Linux-PPC problems ..
+
+  05/May/2001 GLMame   OpenGL-Display-Driver Version 0.86
+  =================================================================
+  	o Added option:
+		- glres <Xres>x<Yres>
+
+          Always scale games to XresxYres, 
+	  keeping their aspect ratio. This overrides the scale options.
+
+	  This is e.g. necessary, if you run xmame.xgl under 
+	  a Vodoo1 gfx card, which only allows you a 640x480 fullscreen
+	  "window" ;-) - but your desktop runs under a different resolution.
+
+  04/April/2001 GLMame   OpenGL-Display-Driver Version 0.85
+  =================================================================
+  	o recreated general purpose opengl modules:
+		- gltool.[ch]
+		- glxtool.[ch]
+		- glcaps.[ch]
+	  these are now licensed under the LGPL _and_ the MAME license !
+	  (I am the creator and copyright holder .. so ..)
+
+	o fixed glxtool modules
+		- segmentation fault, due to NULL pix pointer
+		- bug fixed fall back method ..
+		- extended finding appropiate visual, falling back ..
+
+        o Last but not least, you can use gltool's feature of
+          specifying the GL/GLU library names by the systems
+          environment variables:
+                GLTOOL_USE_GLLIB        - OpenGL library name
+                GLTOOL_USE_GLULIB       - GLU    library name
+          these environment variables does _always_ overrides
+          any given ones !
+
+  01/April/2001 GLMame   OpenGL-Display-Driver Version 0.84
+  =================================================================
+	o fixed vector module
+		- flickering and "now show" is now avoided,
+		  e.g. in mhavoc (flicker), warrior(no show), 
+		          spacewar(no show), ...
+
+  29/March/2001 GLMame   OpenGL-Display-Driver Version 0.83
+  =================================================================
+	o fixed cmdline options ..
+
+	o fixed documentation
+
+	o fixed info printouts (-DGLDEBUG)
+
+  28/March/2001 GLMame   OpenGL-Display-Driver Version 0.82
+  =================================================================
+  	o Fixed vector module
+	  - resize, and a little new arrangement to fix begin/end
+	    problems
+
+	o new cmdline options ..
+
+  28/March/2001 GLMame   OpenGL-Display-Driver Version 0.81
+  =================================================================
+  	o Fixed vector module
+
+	  - now you can play vector games with 16bpp either,
+	    but do not complain the speed ;-)
+
+	    You can toggle drawing the overlayed bitmaps, 
+	    while pressing "RALT-O"
+	  
+
+  27/March/2001 GLMame   OpenGL-Display-Driver Version 0.80
+  =================================================================
+  	o Added 15bpp & 32bpp true color support
+		- Both modes uses std. opengl direct texture mapping
+		- You can additionally add a blitter run for nonsense,
+		  Via cmdline option "-glblit"
+
+	  Let me say: "Yeahh... "
+	  This easy solution you can follow in glgen.c costs me nerves ..
+	  But you need OpenGL >= 1.2, well .. of course ..
+
+	o Added 16bpp color index mode
+		- This modes uses a blitter run, to 
+		  exchange the indices <-> colors from lookup table
+		  within the opengl texture.
+		  We only need it at the original size.
+
+		- If your graphic's card opengl colortable mapping
+		  does not work nice,
+		  you can now call xgl with "-bpp 16", and the blitter
+		  code is used for color mapping !
+
+		  Everything else (zoom, filter, cabinet) is still
+		  done by opengl.
+
+	  After getting crazy about this color mode
+	  (mk ran without indices lookup .. with _nearly_ correct colors),
+	  i looked at SDL.c and took the blitter :-), for the conversion.
+
+	  By the way, .. it was impossible to use OpenGL's colormapping
+	  for colortables > 256, neither with Mesa 3.4 nor with nvidia.
+	  So this old mode is reserved for the best ever games ;-)
+	  		      pacman, mr do, ..
+
+	o Added opengl snapshoot via std. F12 (-> png)
+	  But be aware, the current window size is being used ;-)
+	  with RGB mode !
+
+	  If you complain on colors now, 
+	  make a screenshot.
+	  But I am a bit colorblind (red/green),
+	  so don't hit me :-))
+	  (yes, i have tested the rgb(a) mapping via the colormaps ..)
+
+	o The fullscreen (R-ALT+F) key does now toggle
+	  between full- and windowscreen.
+
+	o Added a startup "hack" within unix/main.c,
+	  where i try to find the games nicest 
+	  full color - low color depth size.
+	  Be aware, the games do not start at 8bpp now,
+	  if they are colorfull.
+
+	  This only works, if you do not use the "-bpp" cmdline option
+
+	o Many bugfixes and cleanup,
+	  so new bugs are in :-))
+
+
+  23/March/2001 GLMame   OpenGL-Display-Driver Version 0.74
+  =================================================================
+  	o Bugfixed the cmdline argument handling "-cabinet"
+		- previously, the argument was simply ignored ..
+		- misc cabinet bugfixes ..
+
+	o Added new elements for the cabinet syntax (cabv1.1): 
+		- pointsize <float> (-> glPointSize(<float>) )
+		- begin points      (-> glBegin(GL_POINTS) )
+
+	o Created and added my cabinet (glmamejau) and 
+	  use it as the default ..
+
+	  You can now simply add your 256x64 jpeg banner
+	  to your mame cabinet :-)
+	
+	o updated sgml documentation ..
+
+	o switched back frm "glColorSubTableEXT" to "glColorTableEXT",
+	  may be this can help somebody .. (i do not think so)
+
+  22/March/2001 GLMame   OpenGL-Display-Driver Version 0.73
+  =================================================================
+  	o Updated the doc/xmame-doc.sgml root documentation,
+	  to respect the new xmame.xgl
+
+	  Added a little script, named makedoc.sh, to produce
+	  all the destination documentation !
+
+  	o Added runtime toggle's for opengl options with keyboard input
+
+	  KEYCODE_RALT + KEYCODE_A        := toggle antialias       (vector)
+	  KEYCODE_RALT + KEYCODE_B        := toggle bilinear        (raster)
+	  KEYCODE_RALT + KEYCODE_C        := toggle cabinet mode    (both)
+	  KEYCODE_RALT + KEYCODE_F        := switch to fullscreen   (both)
+	  KEYCODE_RALT + KEYCODE_O        := toggle draw-bitmap     (both)
+	  KEYCODE_RALT + KEYCODE_T        := toggle phosphor trails (vector)
+	  KEYCODE_RALT + KEYCODE_PLUS_PAD := incr. beam size        (vector)
+	  KEYCODE_RALT + KEYCODE_MINUS_PAD:= decr. beam size        (vector)
+
+	o The OpenGL (xgl) cmdline options are (unchanged since 0.71):
+
+  *** OpenGL Related ***
+  -[no]fullscreen                Start fullscreen
+  -[no]gldblbuffer               Enable/disable double buffering
+  -gltexture_size <int>          Force the max width and height of one texture
+                                 segment (default: autosize)
+  -[no]glext                     Force the usage of gl extensions (default:
+                                 auto)
+  -[no]glbilinear / -[no]glbilin Enable/disable bilinear filtering
+  -glbeam <float>                Set the beam size for vector games
+  -[no]glalphablending /         Enable/disable alphablending (default: try
+  -[no]glalpha                   alphablending)
+  -[no]glantialias / -[no]glaa   Enable/disable antialiasing
+  -gllod <int>                   level of bitmap-texture detail
+  -gllibname / -gllib <string>   Choose the dynamically loaded OpenGL Library
+                                 (default libGL.so)
+  -glulibname / -glulib <string> Choose the dynamically loaded GLU Library
+                                 (default libGLU.so)
+  -[no]cabview                   Start/ don't start in cabinet view mode
+  -cabinet <string>              Specify which cabinet model to use
+
+  22/March/2001 GLMame   OpenGL-Display-Driver Version 0.72
+  =================================================================
+  	o Added a fallback visual attribute fetch algo
+	  this is done with (a modified gl4java module)
+	  the new glxtool.c's functions !
+
+	  This is important to fallback to lower visual capabilites ..
+
+	o Now the glcontext is bound to the window !!
+	  .. not the root window or NULL :-)
+
+
+  21/March/2001 GLMame   OpenGL-Display-Driver Version 0.71
+  =================================================================
+  	o Fetching all GL, GLU and GLX functions dynamically
+	  	- I use a compiler for these stubs, 
+		  which I have implemented for the project 
+		  "OpenGL for Java" (gl4java)
+
+	o Choosing the GL and GLU library at runtime (commandline argument)
+
+	o Some misc. bugfixes ..
+
+  	o Changed this file from 
+	  "doc/ChangeLog-GLMame.txt" to "doc/changes.opengl"
+
+  	o Alpha is used for default
+
+	o Alpha & db-buffer is checked
+
+	o Split texture work's now,
+	  e.g. you have an vodoo card with max texture size = 256,
+	  so more than one textures must be used, if bitmap > 256 !
+
+	O The non OpenGL Extension Mode works now (is tested) 
+
+	o Changed runtime options
+
+	o Changed compiler options
+		- only if the compiler define 'GLDEBUG'
+		  is set, NDEBUG is not set ;-)
+
+		  if you want to have some opengl related debug output,
+		  recompile with 'GLDEBUG' !
+
+  	o Vector:
+		- onscreen (osd) menu cleanup
+		- fixed LINE_WIDTH == 0 (e.g. tacscan ..)
+		- now using (runtime config)
+			- intensity & gamma
+
+	o Compiler options:
+		No more used:
+			-GLLIBS= -lGL -lGLU  (!! important !!)
+			-DNVIDIA 
+			-DUTAH_GLX
+		New:
+			-GLLIBS= -ldl (!! important !!)
+			-DGLDEBUG
+				Enables (more) OpenGL related (debug) info's,
+				included runtime gl-error check's ..
+
+
+  12/March/2001 GLMame   OpenGL-Display-Driver Version 0.7
+  =================================================================
+
+  General Changes
+  	
+	o Merge back to xmame
+		- is used xmame 0.37b12.1pre3
+
+	o Cleanup
+
+	o All OpenGL specific changes i have done for the GLMame32 version
+	  are present within this version !
+
+	  - no memcpy
+	  - direct mame bitmap usage
+	  - eff. color buffer
+	  - dynamical query of
+	  	- glColorTableEXT
+		- texture size
+	  - many more .. (see below)
+
+  ToDo (?!):
+
+  	o fix vectorgame's gl display
+		- some bitmaps, etc. are not shown
+
+	o if more than one texture is used for the bitmap presentation,
+	  only the very first is rendered ...
+	  i don't now what's the damn problem, i have tested it a long time.
+	  please help ..
+
+	  usually today's gfx cards does support big enough texture sizes
+
+	  you can test this bug e.g. with the option:
+	  	xmame.xgl -gltexture_size 128
+	  where the texture size is forced to 128x128, so more than one
+	  texture is needed ..
+
+	o add png save of the gl rendere frame
+
+	o add mac port ?
+
+	o backport to win32 (partial included -> cleanup) ..
+
+  Info:
+
+  	o for debug purpose, just edit glmame.h and undef NDEBUG
+	  in this case many info printf's are shown up :-)
+
+  20/March/2000 GLMame32 Version 36rc2 OpenGL-Display-AddOn 1.3beta
+  ==================================================================
+
+  General Changes
+
+	o Taken Windows-Source-Base from Mame32-36b16 !
+
+	o Taken MAME Source Mame 36rc2 !
+
+  Mame32 integration
+
+	o Now GLMame32 just adds the OpenGL display driver !
+
+	o Vector Games are support for OpenGL only in this Version !
+
+	o the '#define xgl' exists everywhere in the source,
+	  except of the Ressource Files :-(
+
+  OpenGL Changes
+
+	o Because of the lower changes, 
+          the performance should be increased ...
+
+	o Now useing normal coordinates [0.0-1.0].
+
+	o The vector implementation is bug-fixed,
+          and is able to show the bitmap for options etc.
+	  The artwork bitmap still does not work ... but is coming !
+	  The Fullscreen mode for vectors has the correct aspect-ration now !
+
+	o The color allocation is bug-fixed,
+          so the "disclaimer" where you have to say OK the first time
+	  is viewabel !
+	  Also the color sheme should accept high color games now ...
+
+
+  15/June/1999 GLMame32 Version 35rc1 OpenGL-Display-AddOn 1.2
+  ============================================================
+
+  General Changes
+
+	o Taken Windows-Source-Base from Mame32-35b13 !
+
+	o Taken MAME Source Mame 35rc1
+
+  Mame32 integration
+
+	o Now GLMame32 is compiled with MSVC 6.0
+
+	o Now GLMame32 just adds the OpenGL display driver,
+	  - the others are still available !
+	  - you can choose OpenGL within the properties.advanced dialog-box.
+
+	o The following values are transparent to the main Mame32
+	  and are saved into the config-file:
+		alpha, gamma, OpenGL-Usage, automatic-fps, skip-fps,
+		fullscreen
+
+	o osd_pause is implemented
+
+	o the auto-pause mechanism has changed a bit (implementation).
+
+	o the '#define xgl' exists sometimes in the source,
+          but in a way of hurry - it is not used consitency.
+
+	o the opengl-part supports png-files, but just the
+	  poor mame-bitmap quality :-( yet !
+
+  OpenGL Changes
+
+	o getting PIXELFORMAT with depth 16 bits as default
+
+	o IF alphablending == FALSE
+		- Only RGB rendering is done, the Alpha-Channel is dropped !
+		- Alpha will modify the RGB intensity !
+
+	o The maximal texture-size is tested and used,
+	  so the bitmap may be displayed within more than one
+	  texture.
+	  This is a must for OpenGL hardware with a restricted texture size !
+	  The texture-size of each testure is equal, but only the 
+	  viewable part is watchable.
+	  The width and height is tested in a way, 
+	  so they can be different.
+	  The test algorythm tests till the texture-proxy allows
+	  the settings :-)
+
+	o The maximal texture width and height can be forced to a spec. value !
+	  Of course the used value is adapted to 2**n=size :-) !
+
+	o the opengl-part supports png-files, but just the
+	  poor mame-bitmap quality :-( yet !
+
+	o while setting properties.misc.error_log to true, 
+	  you can read the file 'glmame32_stderr.log' for information
+	  about some opengl-metrics and the opengl-vendor !
+	  The log file catches the info of the last game-run !
+
+
+  15/May/1999 GLMame32 Version 35b12 OpenGL-Display-Only 1.1
+  ===========================================================
+
+	o Using the original bitmap in ONE texture-buffer !
+		- So the *_create_display and *_new_bitmap is patched !
+		- Using the true view size, to update the texture
+
+	o if the EXT functions is not their, the other one works !
+	  - The non EXT function for Color-Index works,
+		but - of course - it is _very_ slow !
+	  - The non EXT function for color index can be used,
+		while toggeling the flag in the GL-status dialog.
+		Be aware of broken OpenGL drivers ...
+		... the ELSA driver for Gloria L/MX frozes my NT-machine :-(,
+		so i use 3DLabs now (faster for Quake2 anyway ...).
+	  - The non EXT support works only from this version on !
+
+	o Using the true color number for the palette
+
+	o Using the right component size of the bitmap
+
+	o using the alpha values for brightness
+
+	o added win32 function to load the EXT functions !
+
+	o added snapshot support for:
+		- BMP (Win32 only)
+		- PPM (Win32 and all the others - now it works :)
+		- JPG (why not - but the quality is poor ..)
+

@@ -1,0 +1,35 @@
+Contents of directory contrib/porting
+==========================================
+
+1)      Name:		fix-comments.c
+	Author:		Hans De Goede <hans@highrise.nl> 
+	Description:   	A utility to patch original mame sources to xmame 
+	Notes:		Convert c++ style comments to std-c style,
+                        dos2unix text conversion, eof character
+                        removal and lowercase #include's and fix \ to /.
+
+2)	Name:		prep-new-mame
+	Author:		Lawrence Gold <gold@aros.net>
+			Hans de Goede <hans@highrise.nl>
+	Description:	A script which should be run from the root of a just
+			unpacked MS-DOS MAME source tree, and carries out most
+			of the nescessary porting steps.
+	Notes:		See also porting.txt for a full description on how to
+			port an MS-DOS tree to UN*X.
+
+3)	Name:		porting.txt
+	Author:		Lawrence Gold <gold@aros.net>	
+	Description:	A text file describing how to port the MS-DOS source  
+			tree to UN*X.  Heavily based on the original by Hans de
+			Goede.
+
+4)	Name:		readme
+	Author:		Lawrence Gold <gold@aros.net>	
+			Hans de Goede <hans@highrise.nl>
+	Description:	This file
+
+5)	Name:		strip_
+	Author:		jer johnson (jer@gweep.net)
+	Description:	A perl script which remove the leading _ in front of
+			symbols in nasm files, so that they work with ELF-based 
+			systems which don't use leading underscores.

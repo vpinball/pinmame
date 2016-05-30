@@ -1,0 +1,53 @@
+#!/bin/sh
+##################################################################
+#	Mameload-Fvwm95 - Tom Jansen tom@toetag.com - 8/15/97	 #
+#							         #
+#	A cheap hack used as a gui for xmame under Fvwm95.	 #
+#	I wrote this because I'm lazy and didn't see the need	 #
+#	for wasting ram on a cool interface.			 #
+#	What the hell it works for me.				 #
+#							         #
+#							         #
+# To use this you must add the following line to your .fvwm95rc  #
+# file under the "AddToMenu Games" line. (or whatever)		 #
+#+ "X-mame            %mini-happy.xpm%"       Popup  X-mame      #
+#								 #
+# After running the script append the output (mamelist-new)	 #
+# to your .fvwm95rc and make any needed changes (like -scale 1)  #
+# Then restart Fvwm95. 						 #
+# Modifications for other window managers should be easy enuf.	 #
+#								 #
+# Instructions for fully automating new menus at the end	 #
+##################################################################
+GAMES=`xmame -listfull |grep -v NAMES |wc -l`
+xmame -listfull | sort -ifbk2 | grep -v NAME | awk '{print "+ "$2 $3 $4 $5 $6 $7 $8 $9" Exec xmame "$1" &"}'  >/tmp/foo
+
+rm -f /tmp/Mame-*
+split -l 40 /tmp/foo /tmp/Mame-
+
+echo "############# Start of Games supported by Xmame ##########" >/tmp/foo
+echo 'AddToMenu "X-mame" "X-mame  '$GAMES' Games" Title' >>/tmp/foo
+
+cd /tmp
+for i in `ls Mame*`
+do 
+echo '+ "More Games 	%mini-happy.xpm%"	Popup '$i >>/tmp/foo
+cat $i >>/tmp/foo
+echo 'AddToMenu "'$i'" "X-mame '$GAMES' Games" Title' >>/tmp/foo
+rm $i
+done
+mv /tmp/foo ~/mamelist-new
+clear
+echo ; echo
+echo " Your mamelist is complete - This version of Xmame supports $GAMES games"; echo
+###################################################################
+# IMPORTANT BEFORE USING THIS FEATURE COPY .fvwmrc to .fvwmrc.bak #
+# I won't be held responsible for you nuking your WM if you don't #
+#								  #
+# Ok, now assuming that you did copy .fvwm2rc95 to .fvwm2rc95.bak #
+# You can now uncomment the last line and your FVWM menus will    #
+# rebuild whenever you run this script.				  #
+###################################################################
+
+#cat ~/.fvwm2rc95.bak ~/mamelist-new > ~/.fvwm2rc95 ; echo "Don't forget to restart your Window Manager"
+

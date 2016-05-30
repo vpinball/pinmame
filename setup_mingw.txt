@@ -31,6 +31,9 @@ The GCC homepage is available at http://gcc.gnu.org/
 The GDB homepage is available at http://www.gnu.org/software/gdb/
 The Make homepage is available at http://www.gnu.org/software/make/
 The 7-Zip homepage is available at http://www.7-zip.org/
+The P-ROC homepage is available at http://www.pinballcontrollers.com/
+The YAML-CPP homepage is available at http://code.google.com/p/yaml-cpp/
+The FTDI homepage is available at http://www.ftdichip.com/
 
 
 -----------------
@@ -38,7 +41,10 @@ Step 1: Downloads
 -----------------
 - Create a directory to hold all downloads, for example c:\mingw-setup.
 
-- Choose between a MinGW 2.0 setup or a more recent one:
+- Choose between a MinGW 2.0 setup or a more recent one.
+  For P-ROC support either use MinGW2/GCC3.2.3 setup, or MinGW5/GCC 4.5.0 setup
+  but with sounds issues on some ROMs.
+
   a) MinGW 2.0
      Download MinGW-2.0.0-3.exe to the downloads directory.
      Unfortunately it is nomore available at the official MinGW project homepage.
@@ -64,29 +70,36 @@ Step 1: Downloads
      * mingwrt-3.18-mingw32-dev        (part of the Base System)
      * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
      * w32api-3.14-mingw32-dev         (part of the Base System)
-     * gcc-3.2.3-20030504-1
      * gdb-7.1-2-mingw32-bin           (part of the Base System)
        with expat: libexpat-2.0.1-1-mingw32-dll-1
      * make-3.81-20090914-mingw32-bin
 
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
+
      Also possible is GCC 4.5.0 but with missing sounds on some ROMs:
      * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
        with libgmp: libgmp-5.0.1-1-mingw32-dll-10
                mpc: libmpc-0.8.1-1-mingw32-dll-2
               mpfr: libmpfr-2.4.1-1-mingw32-dll-1
+
 
      (MinGW 5 tested in October 2009)
      * mingwrt-3.16-mingw32-dll        (part of the Base System)
      * mingwrt-3.16-mingw32-dev        (part of the Base System)
      * binutils-2.19.1-mingw32-bin     (part of the Base System)
      * w32api-3.13-mingw32-dev         (part of the Base System)
-     * gcc-3.2.3-20030504-1
      * gdb-6.3-1.exe                   (part of the Base System)
        (also gdb-7.0-2-mingw32-bin was tested)
      * make-3.81-20090914-mingw32-bin
 
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
+
      Also possible is GCC 4.4.0 but with missing sounds on some ROMs:
      * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
 
      (MinGW 5 tested in May 2008)
      * mingw-runtime-3.14              (part of the Base System)
@@ -122,6 +135,24 @@ Step 1: Downloads
 - Download the assembler compiler NASM 2.0 for Win32 to the downloads directory.
   * nasm-2.02-win32 (later versions should work too)
   Get it from http://www.nasm.us/pub/nasm/releasebuilds/
+
+For P-ROC support additional downloads are necessary:
+
+- Download the P-ROC library (libpinproc) to the downloads directory.
+  * libpinproc-20101230-mingw2-gcc323-dev
+  - or -
+  * libpinproc-20101230-mingw5-gcc450-dev
+  Get it from http://ftp.maddes.net/mingw/libpinproc/
+
+- Download the YAML-CPP library (libyaml-cpp) to the downloads directory.
+  * libyaml-cpp-0.2.5-mingw2-gcc323-dev
+  - or -
+  * libyaml-cpp-0.2.5-mingw5-gcc450-dev
+  Get it from http://ftp.maddes.net/mingw/yaml-cpp/
+
+- Download FTDI's ftd2xx library (D2XX Direct Drivers) to the downloads directory.
+  * CDM20808.zip
+  Get it from http://www.ftdichip.com/Drivers/D2XX.htm
 
 
 -------------
@@ -208,6 +239,20 @@ Step 2: Setup
       path c:\mingw5\bin;%path%
   Call the corresponding batch file for the needed MinGW version.
 
+For P-ROC support additional MinGW installations are necessary:
+
+- Extract the P-ROC library (libpinproc) package to the installation directory.
+  * libpinproc_20101205-mingw32-dev.tar.gz
+
+- Extract the YAML-CPP library (libyaml-cpp) package to the installation directory.
+  * libyaml-cpp-0.2.5-mingw32-dev.tar.gz
+
+- Extract the following files from FTDI's ftd2xx library (D2XX Direct Drivers)
+  to the installation directory.
+  * CDM20808.zip
+    - i386/ftd2xx.lib to MinGW's lib folder
+    - ftd2xx.h to MinGW's include folder
+
 
 The other (non-MinGW) tools can be placed into separate installation directories
 and added to the system's path separately (or also placed in the above mentioned
@@ -261,6 +306,8 @@ Step 4: Compilation
 - To compile PinMAME type "mingw32-make".
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32".
 - To add the MAME ROM debugger into a build, just define "DEBUG=1".
+- To add P-ROC support into a PinMAME build, just define "PROC=1". Not available
+  for PinMAME32.
 - A symbols file ("SYMBOLS=1") and map file ("MAP=1") are always created.
 - To change the optimization level (default is 3), define "OPTIMIZE=<level>".
 - To get verbose info during compilation, define "VERBOSE=1".

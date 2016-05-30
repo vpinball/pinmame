@@ -1,0 +1,9 @@
+src/unix/joystick-drivers/joy_i386.c:#elif defined __ARCH_linux
+src/unix/video-drivers/svgalib.c:#ifdef __CPU_i386
+src/unix/video-drivers/svgalib.c:#endif /* ifdef __CPU_i386 */
+src/unix/video-drivers/svgalib.c:#ifdef __CPU_i386
+src/unix/video-drivers/svgalib.c:#ifdef __CPU_i386
+src/unix/sysdep/dsp-drivers/oss.c:#ifdef __ARCH_freebsd
+src/unix/joystick-drivers/joy_i386.c:#ifdef __ARCH_netbsd
+src/unix/joystick-drivers/joy_i386.c:#ifdef __ARCH_netbsd
+src/unix/joystick-drivers/joy_i386.c:#ifdef __ARCH_netbsd

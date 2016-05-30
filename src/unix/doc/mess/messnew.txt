@@ -1,0 +1,36 @@
+0.74
+
+New System Drivers Supported (in no particular order):
+------------------------------------------------------
+(none)
+
+
+System Driver Changes:
+----------------------
+- [A7800] Implemented Kangaroo and transparency modes. [Eric Ball]
+
+- [A7800] Removed use of plot_pixel(), resulting in performance gains. [Nate
+  Woods]
+
+- [APPLE2] Writing to disk images and ProDOS order (*.po) disk images are now
+  supported.  [Nate Woods]
+
+
+User Interface Changes:
+-----------------------
+- [Windows] It is now possible to make customized keyboard dialogs for
+  different drivers, in the same way that it is possible to make per-driver
+  customized joystick dialogs.  [Nate Woods]
+  
+
+Imgtool Changes:
+----------------
+(none)
+
+
+Source Changes:
+---------------
+- The core is based on MAME 0.74.  This incorporates all features of the
+  update to this core.  [MAME team]
+
+
