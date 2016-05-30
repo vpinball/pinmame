@@ -35,14 +35,16 @@ extern int g_iSyncFactor;
 extern struct RunningMachine *Machine;
 extern struct mame_display *current_display_ptr;
 
-extern UINT8 g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+extern UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
+extern UINT32 g_needs_DMD_update;
 
 extern char g_fShowWinDMD;
 
 // from ticker.c
-extern void uSleep(const unsigned long long u);
+extern void uSleep(const UINT64 u);
 }
 #include "alias.h"
 
@@ -205,7 +207,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 {
 	/*Make sure GameName Specified!*/
 	if (!m_szROM)
-		return Error(TEXT("Game Name Not Specified!"));
+		return Error(TEXT("Game name not specified!"));
 
 	int nVersionNo0, nVersionNo1;
 	GetProductVersion(&nVersionNo0, &nVersionNo1, NULL, NULL);
@@ -222,8 +224,11 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		}
 	}
 
-	if ( m_nGameNo<0 ) {
-		return Error(TEXT("Machine not found!! Invalid game name, or game name not set!"));
+	char szTemp[256];
+
+	if (m_nGameNo<0) {
+		sprintf(szTemp, "Machine '%s' not found! Invalid game name, or game name not set!", m_szROM);
+		return Error(TEXT(szTemp));
 	}
 
 	// set the parent window
@@ -245,7 +250,8 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 	m_pGame->ShowInfoDlg(0x8000|CHECKOPTIONS_SHOWRESULTSIFFAIL|((vValue.boolVal==VARIANT_TRUE)?0x0000:CHECKOPTIONS_IGNORESOUNDROMS), (long) m_hParentWnd, &iCheckVal);
 	if ( iCheckVal==IDCANCEL ) {
-		return Error(TEXT("Game ROMS invalid!"));
+		sprintf(szTemp, "Game ROMs for '%s' (%s) invalid!", m_szROM, drivers[m_nGameNo]->description);
+		return Error(TEXT(szTemp));
 	}
 
 	VariantInit(&vValue);
@@ -286,14 +292,14 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 	}
 	// See if the game is flagged as GAME_NOCRC so that the CRC *must* be correct
 	if ((iCheckVal!=IDOK) && (drivers[m_nGameNo]->flags & GAME_NOCRC)) {
-		MessageBox(GetActiveWindow(),"The game you have chosen can only run with the *exact* romset required!","Notice!",MB_OK | MB_ICONINFORMATION);
-		return Error(TEXT("CRC Errors!! Game cannot be run!"));
+		MessageBox(GetActiveWindow(),"This game can only run with the EXACT romset required!","Notice!",MB_OK | MB_ICONINFORMATION);
+		sprintf(szTemp, "CRC Errors! Game '%s' (%s) cannot be run!", m_szROM, drivers[m_nGameNo]->description);
+		return Error(TEXT(szTemp));
 	}
 
 		//Any game messages to display (messages that allow game to continue)
 	if ( drivers[m_nGameNo]->flags )
 	{
-		char szTemp[256];
 		sprintf(szTemp,"");
 
 		// See if game is flagged as GAME_NO_SOUND and show user a message!
@@ -343,7 +349,8 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 	DestroyEventWindow(this);
 
-	return Error(TEXT("Machine terminated before intialized, check the rom path or rom file!"));
+	sprintf(szTemp, "Machine '%s' (%s) terminated before intialized, check the rom path or rom file!", m_szROM, drivers[m_nGameNo]->description);
+	return Error(TEXT(szTemp));
 }
 
 /*********************************************
@@ -503,23 +510,57 @@ STDMETHODIMP CController::get_RawDmdHeight(int *pVal)
  ************************************************************************************************/
 STDMETHODIMP CController::get_RawDmdPixels(VARIANT *pVal)
 {
-	if(Machine && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
+	if(Machine && g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
 	{
 		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
 
 		VARIANT DMDState;
-		DMDState.vt = VT_UI8;
+		DMDState.vt = VT_UI1;
 	
 		LONG ofs = 0;
 		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
 		for(unsigned int x = 0; x < g_raw_dmdx; ++x,++ofs)
 		{
-			DMDState.uintVal = g_raw_dmdbuffer[ofs];
+			DMDState.cVal = g_raw_dmdbuffer[ofs];
 			SafeArrayPutElement(psa, &ofs, &DMDState);
 		}
 
 		pVal->vt = VT_ARRAY|VT_VARIANT;
 		pVal->parray = psa;
+
+		g_needs_DMD_update = 0;
+
+		return S_OK;
+	}
+	else
+		return S_FALSE;
+}
+
+/******************************************************************************************************
+* IController.RawDmdColoredPixels (read-only): Copy whole DMD to a self allocated array (RGB(A) values)
+*******************************************************************************************************/
+STDMETHODIMP CController::get_RawDmdColoredPixels(VARIANT *pVal)
+{
+	if(Machine && g_needs_DMD_update && (int)g_raw_dmdx > 0 && (int)g_raw_dmdy > 0 && pVal)
+	{
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, g_raw_dmdx*g_raw_dmdy);
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI4;
+
+		LONG ofs = 0;
+		for(unsigned int y = 0; y < g_raw_dmdy; ++y)
+		for(unsigned int x = 0; x < g_raw_dmdx; ++x, ++ofs)
+		{
+			DMDState.uintVal = g_raw_colordmdbuffer[ofs];
+			SafeArrayPutElement(psa, &ofs, &DMDState);
+		}
+
+		pVal->vt = VT_ARRAY|VT_VARIANT;
+		pVal->parray = psa;
+
+		g_needs_DMD_update = 0;
+		
 		return S_OK;
 	}
 	else
@@ -1163,8 +1204,6 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
 
   if (uCount == 0)
     { pVal = 0; return S_OK; }
-
-  long ix[2];
 
   /*-- add changed LEDs to array --*/
   int *dst = reinterpret_cast<int*>(buf);

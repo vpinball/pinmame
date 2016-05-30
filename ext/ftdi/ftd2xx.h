@@ -58,6 +58,10 @@ kernel & user mode
 #elif defined(FTD2XX_STATIC)
 // Avoid decorations when linking statically to D2XX.
 #define FTD2XX_API
+// Static D2XX depends on these Windows libs:
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "user32.lib")
 #else
 #define FTD2XX_API __declspec(dllimport)
 #endif
@@ -221,6 +225,7 @@ enum {
 	FT_DEVICE_4222H_1_2,
 	FT_DEVICE_4222H_3,
     FT_DEVICE_4222_PROG,
+    FT_DEVICE_900,
 };
 
 //
@@ -310,6 +315,18 @@ enum {
 extern "C" {
 #endif
 
+
+#ifdef FTD2XX_STATIC
+    FTD2XX_API
+        FT_STATUS WINAPI FT_Initialise(
+        void
+        );
+
+    FTD2XX_API
+        void WINAPI FT_Finalise(
+        void
+        );
+#endif // FTD2XX_STATIC
 
 	FTD2XX_API
 		FT_STATUS WINAPI FT_Open(
@@ -1162,7 +1179,7 @@ extern "C" {
 		WORD XoffLim;				/* Transmit X-OFF threshold				*/
 		BYTE ByteSize;				/* Number of bits/byte, 4-8				*/
 		BYTE Parity;				/* 0-4=None,Odd,Even,Mark,Space			*/
-		BYTE StopBits;				/* 0,1,2 = 1, 1.5, 2					*/
+		BYTE StopBits;				/* FT_STOP_BITS_1 or FT_STOP_BITS_2		*/
 		char XonChar;				/* Tx and Rx X-ON character				*/
 		char XoffChar;				/* Tx and Rx X-OFF character			*/
 		char ErrorChar;				/* Error replacement char				*/

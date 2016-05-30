@@ -697,7 +697,7 @@ int m6809_execute(int cycles)	/* NS 970908 */
             switch( m6809.ireg )
 			{
 			case 0x00: neg_di();   m6809_ICount-= 6; break;
-			case 0x01: illegal();  m6809_ICount-= 2; break;
+			case 0x01: neg_di();   m6809_ICount-= 6; break; /* undocumented */
 			case 0x02: illegal();  m6809_ICount-= 2; break;
 			case 0x03: com_di();   m6809_ICount-= 6; break;
 			case 0x04: lsr_di();   m6809_ICount-= 6; break;
@@ -1142,7 +1142,7 @@ INLINE void fetch_effective_address( void )
 	case 0x9c: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(EAD);	m6809_ICount-=4;   break;
 	case 0x9d: IMMWORD(ea); 	EA+=PC; 			EAD=RM16(EAD);	m6809_ICount-=8;   break;
 	case 0x9e: EA=0;																   break; /*   ILLEGAL*/
-	case 0x9f: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=5;   break;
+	case 0x9f: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=8;   break;
 
 	case 0xa0: EA=Y;	Y++;										m6809_ICount-=2;   break;
 	case 0xa1: EA=Y;	Y+=2;										m6809_ICount-=3;   break;
@@ -1176,7 +1176,7 @@ INLINE void fetch_effective_address( void )
 	case 0xbc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(EAD);	m6809_ICount-=4;   break;
 	case 0xbd: IMMWORD(ea); 	EA+=PC; 			EAD=RM16(EAD);	m6809_ICount-=8;   break;
 	case 0xbe: EA=0;																   break; /*   ILLEGAL*/
-	case 0xbf: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=5;   break;
+	case 0xbf: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=8;   break;
 
 	case 0xc0: EA=U;			U++;								m6809_ICount-=2;   break;
 	case 0xc1: EA=U;			U+=2;								m6809_ICount-=3;   break;
@@ -1210,7 +1210,7 @@ INLINE void fetch_effective_address( void )
 	case 0xdc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(EAD);	m6809_ICount-=4;   break;
 	case 0xdd: IMMWORD(ea); 	EA+=PC; 			EAD=RM16(EAD);	m6809_ICount-=8;   break;
 	case 0xde: EA=0;																   break; /*ILLEGAL*/
-	case 0xdf: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=5;   break;
+	case 0xdf: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=8;   break;
 
 	case 0xe0: EA=S;	S++;										m6809_ICount-=2;   break;
 	case 0xe1: EA=S;	S+=2;										m6809_ICount-=3;   break;
@@ -1244,6 +1244,6 @@ INLINE void fetch_effective_address( void )
 	case 0xfc: IMMBYTE(EA); 	EA=PC+SIGNED(EA);	EAD=RM16(EAD);	m6809_ICount-=4;   break;
 	case 0xfd: IMMWORD(ea); 	EA+=PC; 			EAD=RM16(EAD);	m6809_ICount-=8;   break;
 	case 0xfe: EA=0;																   break; /*ILLEGAL*/
-	case 0xff: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=5;   break;
+	case 0xff: IMMWORD(ea); 						EAD=RM16(EAD);	m6809_ICount-=8;   break;
 	}
 }

@@ -166,15 +166,27 @@ INPUT_PORTS_END
 
 ROM_START(cntinntl) \
   NORMALREGION(0x8000, REGION_CPU1) \
-    ROM_LOAD("bingo.u37", 0x1800, 0x0800, CRC(3b21b22c) SHA1(21b002dd0dd11ee55674955c67c627470f427591)) \
-    ROM_LOAD("bingo.u40", 0x1000, 0x0800, CRC(67160fc8) SHA1(6b93c1a7edcd7079a1e7d8a926e72febe2b39e9e)) \
-    ROM_LOAD("bingo.u44", 0x0800, 0x0800, CRC(068acc49) SHA1(34fa2977513276bd5adc0b06cf258bb5a3702ed2)) \
+    ROM_LOAD("bingo.u37", 0x1800, 0x0800, CRC(3b21b22c) SHA1(21b002dd0dd11ee55674955c67c627470f427591))
+    ROM_LOAD("bingo.u40", 0x1000, 0x0800, CRC(67160fc8) SHA1(6b93c1a7edcd7079a1e7d8a926e72febe2b39e9e))
+    ROM_LOAD("bingo.u44", 0x0800, 0x0800, CRC(068acc49) SHA1(34fa2977513276bd5adc0b06cf258bb5a3702ed2))
     ROM_LOAD("bingo.u48", 0x0000, 0x0800, CRC(81bbcb19) SHA1(17c3d900d1cbe3cb5332d830288ef2c578afe8f8))
 ROM_END
 #define input_ports_cntinntl input_ports_bingo
 #define init_cntinntl init_bingo
 
 CORE_GAMEDEFNV(cntinntl, "Continental (Bingo)", 1980, "Bally", bingo, GAME_NOT_WORKING)
+
+ROM_START(cntintl2) \
+  NORMALREGION(0x8000, REGION_CPU1) \
+    ROM_LOAD("u36.bin", 0x1800, 0x0800, CRC(205cca08) SHA1(ae21794a63f1c50e3c7239275f7a58caf701a7bc))
+    ROM_LOAD("bingo.u40", 0x1000, 0x0800, CRC(67160fc8) SHA1(6b93c1a7edcd7079a1e7d8a926e72febe2b39e9e))
+    ROM_LOAD("bingo.u44", 0x0800, 0x0800, CRC(068acc49) SHA1(34fa2977513276bd5adc0b06cf258bb5a3702ed2))
+    ROM_LOAD("u48.bin", 0x0000, 0x0800, CRC(8fda0bf9) SHA1(ea2926bb2c1cc394a060d88cc6ef53b7cf39790b))
+ROM_END
+#define input_ports_cntintl2 input_ports_bingo
+#define init_cntintl2 init_bingo
+
+CORE_CLONEDEFNV(cntintl2, cntinntl, "Continental (Bingo, alternate version)", 1980, "Bally", bingo, GAME_NOT_WORKING)
 
 
 // Splin Bingo (Belgium)

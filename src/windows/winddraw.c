@@ -206,8 +206,13 @@ void win_ddraw_wait_vsync(void)
 //	win_ddraw_init
 //============================================================
 
+#ifdef VPINMAME
+int get_ShowVideoWindow();
+#endif
+
 int win_ddraw_init(int width, int height, int depth, int attributes, const struct win_effect_data *effect)
 {
+#ifndef DISABLE_DX7
 	HRESULT result;
 	DDCAPS hel_caps;
 	LPDIRECTDRAW4 *ddraw4addr = &ddraw4;
@@ -286,7 +291,15 @@ cant_get_caps:
 	IDirectDraw_Release(ddraw);
 cant_create_ddraw:
 	ddraw = NULL;
-	return 1;
+#else
+	MessageBox(NULL, "Direct Draw not supported", NULL, MB_OK);
+#endif
+
+	return
+#ifdef VPINMAME
+		!get_ShowVideoWindow() ? 0 : // in case the window is hidden anyway, ignore the error
+#endif
+		1;
 }
 
 
@@ -771,6 +784,7 @@ cant_create_blit:
 
 static void set_brightness(void)
 {
+#ifndef DISABLE_DX7
 	HRESULT result;
 	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
@@ -803,6 +817,7 @@ static void set_brightness(void)
 		if (result != DD_OK)
 			fprintf(stderr, "Error setting gamma ramp: %08x\n", (UINT32)result);
 	}
+#endif
 }
 
 
@@ -1080,7 +1095,7 @@ tryagain:
 	}
 
 	// align the destination to 16 bytes
-	dstxoffs = (((UINT32)blit_desc.lpSurface + 16) & ~15) - (UINT32)blit_desc.lpSurface;
+	dstxoffs = (int)((((size_t)blit_desc.lpSurface + 16) & ~15) - (size_t)blit_desc.lpSurface);
 	dstxoffs /= (dstdepth / 8);
 
 	// perform the low-level blit
@@ -1354,7 +1369,7 @@ tryagain:
 	dstdepth = temp_desc.ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
 
 	// try to align the destination
-	while (inner.left > outer.left && (((UINT32)temp_desc.lpSurface + ((dstdepth + 7) / 8) * inner.left) & 15) != 0)
+	while (inner.left > outer.left && (((size_t)temp_desc.lpSurface + ((dstdepth + 7) / 8) * inner.left) & 15) != 0)
 		inner.left--, inner.right--;
 
 	// clamp to the display rect

@@ -16,6 +16,7 @@
 #include "i86.h"
 #include "i86intf.h"
 
+//#define VERBOSE_DEBUG
 
 /* All pre-i286 CPUs have a 1MB address space */
 #define AMASK	0xfffff
@@ -25,16 +26,16 @@ static UINT8 i86_reg_layout[] =
 {
 	I86_AX, I86_BX, I86_DS, I86_ES, I86_SS, I86_FLAGS, I86_CS, I86_VECTOR, -1,
 	I86_CX, I86_DX, I86_SI, I86_DI, I86_SP, I86_BP, I86_IP,
-	I86_IRQ_STATE, I86_NMI_STATE, 0
+	0
 };
 
 /* Layout of the debugger windows x,y,w,h */
 static UINT8 i86_win_layout[] =
 {
-	0, 0, 80, 2,					   /* register window (top rows) */
-	0, 3, 34, 19,					   /* disassembler window (left colums) */
-	35, 3, 45, 9,					   /* memory #1 window (right, upper middle) */
-	35, 13, 45, 9,					   /* memory #2 window (right, lower middle) */
+	0, 0, 80, 3,					   /* register window (top rows) */
+	0, 4, 34, 18,					   /* disassembler window (left colums) */
+	35, 4, 45, 9,					   /* memory #1 window (right, upper middle) */
+	35, 13, 45, 8,					   /* memory #2 window (right, lower middle) */
 	0, 23, 80, 1,					   /* command line window (bottom rows) */
 };
 
@@ -162,7 +163,7 @@ void i86_reset(void *param)
 	I.pc = 0xffff0 & AMASK;
 	ExpandFlags(I.flags);
 
-	change_pc20(I.pc);
+	change_pc16(I.pc);
 }
 
 void i86_exit(void)
@@ -188,7 +189,7 @@ void i86_set_context(void *src)
 		I.base[DS] = SegBase(DS);
 		I.base[ES] = SegBase(ES);
 		I.base[SS] = SegBase(SS);
-		change_pc20(I.pc);
+		change_pc16(I.pc);
 	}
 }
 
@@ -200,7 +201,7 @@ unsigned i86_get_reg(int regnum)
 		case I86_IP:		return I.pc - I.base[CS];
 		case REG_SP:		return I.base[SS] + I.regs.w[SP];
 		case I86_SP:		return I.regs.w[SP];
-		case I86_FLAGS: 	CompressFlags(); return I.flags;
+		case I86_FLAGS: 	I.flags = CompressFlags(); return I.flags;
 		case I86_AX:		return I.regs.w[AX];
 		case I86_CX:		return I.regs.w[CX];
 		case I86_DX:		return I.regs.w[DX];
@@ -326,7 +327,6 @@ int i86_execute(int num_cycles)
 	/* run until we're out */
 	while (i86_ICount > 0)
 	{
-//#define VERBOSE_DEBUG
 #ifdef VERBOSE_DEBUG
 		logerror("[%04x:%04x]=%02x\tF:%04x\tAX=%04x\tBX=%04x\tCX=%04x\tDX=%04x %d%d%d%d%d%d%d%d%d\n",
 				I.sregs[CS], I.pc - I.base[CS], ReadByte(I.pc), I.flags, I.regs.w[AX], I.regs.w[BX], I.regs.w[CX], I.regs.w[DX], I.AuxVal ? 1 : 0, I.OverVal ? 1 : 0,
@@ -586,11 +586,11 @@ static void v30_interrupt(unsigned int_num, BOOLEAN md_flag)
 	I.sregs[CS] = (WORD) dest_seg;
 	I.base[CS] = SegBase(CS);
 	I.pc = (I.base[CS] + dest_off) & AMASK;
-	change_pc20(I.pc);
+	change_pc16(I.pc);
 /*	logerror("=%06x\n",activecpu_get_pc()); */
 }
 
-void v30_trap(void)
+static void v30_trap(void)
 {
 	(*v30_instruction[FETCHOP])();
 	v30_interrupt(1, 0);
@@ -602,13 +602,13 @@ void v30_trap(void)
 #include "instrv30.c"
 #undef V20
 
-void v30_reset(void *param)
+static void v30_reset(void *param)
 {
 	i86_reset(param);
 	SetMD(1);
 }
 
-int v30_execute(int num_cycles)
+static int v30_execute(int num_cycles)
 {
 	/* copy over the cycle counts if they're not correct */
 	if (cycles.id != 30)

@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 #ifdef __LP64__
-#define FPTR unsigned long   /* 64bit: sizeof(void *) is sizeof(long)  */
+#define FPTR unsigned long long  /* 64bit: sizeof(void *) is sizeof(long long)  */
 #else
 #define FPTR unsigned int
 #endif

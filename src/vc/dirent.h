@@ -34,7 +34,7 @@ typedef struct my_dir {
 
 /* Standard directory name entry returned by readdir() */
 struct dirent {
-  char d_namlen;
+  unsigned int d_namlen;
   char d_name[MAX_PATH];
 };
 

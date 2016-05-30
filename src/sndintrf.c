@@ -661,6 +661,33 @@ struct snd_interface sndintf[] =
 #endif
 #if (HAS_SN76496)
     {
+		SOUND_SN76489,
+		"SN76489",
+		SN76496_num,
+		SN76496_clock,
+		SN76489_sh_start,
+        0,
+		0
+	},
+    {
+		SOUND_SN76489A,
+		"SN76489A",
+		SN76496_num,
+		SN76496_clock,
+		SN76489A_sh_start,
+        0,
+		0
+	},
+    {
+        SOUND_SN76494,
+        "SN76494",
+        SN76496_num,
+        SN76496_clock,
+        SN76494_sh_start,
+        0,
+        0
+    },
+    {
 		SOUND_SN76496,
 		"SN76496",
 		SN76496_num,
@@ -1389,7 +1416,10 @@ int sound_clock(const struct MachineSound *msound)
 
 int sound_scalebufferpos(int value)
 {
-	int result = (int)((double)value * timer_timeelapsed(sound_update_timer) * refresh_period_inv);
+	double elapsed = timer_timeelapsed(sound_update_timer);
+	if(elapsed < 0.)
+		elapsed = 0.;
+	int result = (int)((double)value * elapsed * refresh_period_inv);
 	if (value >= 0) return (result < value) ? result : value;
 	else return (result > value) ? result : value;
 }

@@ -100,14 +100,14 @@ CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom rev. 31)",2005,"Willi
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 38
 /------------------------------*/
-S7_ROMSTART8088(frpwr,c7,"f7ic14pr.716",CRC(4cd22956) SHA1(86380754b9cbb0a81b4fa4d26cff71b9a70d2a96),
-                         "f7ic17gr.532",CRC(3a1b7cc7) SHA1(1f32ef6d66040a53b04a0cddb1ffbf197a29c940),
-                         "f7ic20ga.716",CRC(5ed61e41) SHA1(b73a05b336f7bb8ee528205612bd0744e86498f5),
+S7_ROMSTART8088(frpwr,c7,"f7ic14pr_38.716",CRC(4cd22956) SHA1(86380754b9cbb0a81b4fa4d26cff71b9a70d2a96),
+                         "f7ic17gr_38.532",CRC(3a1b7cc7) SHA1(1f32ef6d66040a53b04a0cddb1ffbf197a29c940),
+                         "f7ic20ga_38.716",CRC(5ed61e41) SHA1(b73a05b336f7bb8ee528205612bd0744e86498f5),
                          "f7ic26.716"  ,CRC(aaf82d89) SHA1(c481a49c7e7d4734c0eeab31b9970ca62a3995f0))
 S67S_SOUNDROMS8(         "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS0000(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
                          "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
-                         "v_ic6.532",   CRC(35db11d2) SHA1(001df0d5245230b960ff69c30ee2b305b3a5e4b4),
+                         "v_ic6_38.532",CRC(35db11d2) SHA1(001df0d5245230b960ff69c30ee2b305b3a5e4b4),
                          "v_ic4.532",   CRC(8d4ff909) SHA1(b82666fe96bdf174bc4f347d7139da9ab7dadee1))
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
@@ -253,6 +253,13 @@ S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829
 S7_ROMEND
 CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,0)
 
+S7_ROMSTART000x(hypbl,l3, "ic14-l3.532", CRC(e233bbed) SHA1(bb29acc3e48d6b40b3df2e7702f8a8ff4357c15c),
+                          "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
+						  "ic20-l3.532", CRC(4a37d6e8) SHA1(8c26dd5652ace431a6ff0faf0bb9db37489c4fec))
+S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
+S7_ROMEND
+CORE_CLONEDEF(hypbl,l3,l4,"HyperBall (L-3)",1981,"Williams",s7_mS7S,0)
+
 S7_ROMSTART000x(hypbl,l2, "ic14-l2.532", CRC(8eb82df4) SHA1(854b3f1fa2112fbdba19f4c843f67989c0572d8c),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
                           "ic20-l2.532", CRC(f5f66cf1) SHA1(885b4961b6ec712b7445001d448d881245be1234))
@@ -373,7 +380,7 @@ S7_ROMEND
 CORE_GAMEDEF(lsrcu,l2,"Laser Cue (L-2)",1983,"Williams",s7_mS7S,0)
 
 /*--------------------------------
-/ Firepower II- Sys.7 (Game #521)
+/ Firepower II - Sys.7 (Game #521)
 /-------------------------------*/
 INITGAMEFULL(fpwr2,s7_dispS7,0,13,47,48,41,42,43,44)
 S7_ROMSTART8088(fpwr2,l2, "ic14.716",   CRC(a29688dd) SHA1(83815154bbaf51dd789112664d772a876efee3da),
@@ -409,3 +416,20 @@ S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594c
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
+
+
+// Games below are from different manufacturers
+
+/*--------------------------------
+/ Wild Texas - Sys.7 (identifies as #521 L-1 which makes it a Firepower II clone)
+/-------------------------------*/
+INITGAMEFULL(wldtexas,s7_dispS7,0,13,47,48,41,42,43,44)
+ROM_START(wldtexas)
+  NORMALREGION(0x10000, S7_CPUREGION)
+    ROM_LOAD("wldtexas.prg", 0x4000, 0x4000, CRC(243e7116) SHA1(c13c261632b3e8693a500d922f151296102e0169))
+    ROM_RELOAD(0x8000, 0x4000)
+    ROM_RELOAD(0xc000, 0x4000)
+S67S_SOUNDROMS8("sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S7_ROMEND
+#define input_ports_wldtexas input_ports_fpwr2
+CORE_CLONEDEFNV(wldtexas,fpwr2_l2,"Wild Texas",????,"Unknown Manufacturer",s7_mS7S,0)

@@ -37,8 +37,8 @@
 /   2    Extra Ball buy-in
 /---------------------------*/
 
-#define WCS_GOALIETIME  100
-#define WCS_GOALIESLACK  20
+#define WCS_GOALIETIME  50
+#define WCS_GOALIESLACK  10
 
 /*------------------
 /  Local functions
@@ -49,14 +49,6 @@ static void wcs_handleMech(int mech);
 static int wcs_getMech(int mechNo);
 static void wcs_drawMech(BMTYPE **line);
 static void wcs_drawStatic(BMTYPE **line);
-
-/*-----------------------
-/ local static variables
-/------------------------*/
-static struct {
-  int goaliePos;     /* bank motor position */
-  int ball;
-} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -260,8 +252,8 @@ static sim_tState wcs_stateDef[] = {
 
 static int wcs_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state) {
-    case stAssist:   if (locals.goaliePos > WCS_GOALIESLACK) return setState(stGoal,15);
-                     else                                    return setState(stGoalie,15);
+    case stAssist:   if (mech_getPos(0) > WCS_GOALIESLACK) return setState(stGoal,15);
+                     else                                  return setState(stGoalie,15);
     case stSLane:    if (ball->speed > 40) return setState(stSkillF,5);
                      if (ball->speed > 30) return setState(stSkillC,5);
                      if (ball->speed > 20) return setState(stSkillR,5);
@@ -277,28 +269,25 @@ static int wcs_getSol(int solNo) {
   return 0;
 }
 
+static mech_tInitData wcs_goalieMech = {
+  sGoalieMot, 0, MECH_LINEAR|MECH_REVERSE|MECH_ONESOL, WCS_GOALIETIME, WCS_GOALIETIME, {{0}}
+};
+
 static mech_tInitData wcs_ballMech = {
-  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(3), 20, 4,
-  {{0}}
+  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(2), 4, 4, {{0}}
 };
 
 static void wcs_handleMech(int mech) {
-  /*---------------
-  /  handle bank
-  /----------------*/
   if ((mech & 0x01) && core_getSol(sGoalieMot)) {
-    locals.goaliePos = (locals.goaliePos + 1) % WCS_GOALIETIME;
-    core_setSw(swGoalieL, locals.goaliePos < WCS_GOALIESLACK);
-    core_setSw(swGoalieR, (locals.goaliePos >= WCS_GOALIETIME/2) &&
-                          (locals.goaliePos <  WCS_GOALIETIME/2 + WCS_GOALIESLACK));
+    core_setSw(swGoalieL, mech_getPos(0) < WCS_GOALIESLACK);
+    core_setSw(swGoalieR, mech_getPos(0) > WCS_GOALIETIME - WCS_GOALIESLACK);
   }
-  //if (mech & 0x02) mech_update(1);
 }
 
 /* 0 = goaliePos */
-/* 1 = ball */
+/* 1 = ball speed */
 static int wcs_getMech(int mechNo) {
-  return mechNo ? mech_getPos(1) : locals.goaliePos;
+  return mechNo ? mech_getSpeed(1) : mech_getPos(0);
 }
 
 /*---------------------------
@@ -352,9 +341,10 @@ static void wcs_drawMech(BMTYPE **line) {
   static const char ball[] = {'|','/','-','\\'};
   core_textOutf(50, 0,BLACK,"Goalie: [%s]",
                goalie[core_getSw(swGoalieL) ? 1 : (core_getSw(swGoalieR) ? 2 : 0)]);
-  core_textOutf(50,10,BLACK,"Ball: %c %3d", ball[mech_getPos(1)], mech_getSpeed(1));
+  core_textOutf(50,10,BLACK,"Ball: %c %3d  ", ball[mech_getPos(1)], mech_getSpeed(1));
 }
-  /* Help */
+
+/* Help */
 static void wcs_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
   core_textOutf(30, 50,BLACK,"L/R Ctrl+R = L/R Ramp");
@@ -395,6 +385,15 @@ static core_tLampDisplay wcs_lampPos = {
 };
 
 WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,CRC(0e4514e8) SHA1(4ef8b78777b8caf1a1ab8f63383c8a7a74d5189a))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
+WPC_ROMEND
+WPC_ROMSTART(wcs,l3c,"wcup_l3c.rom",0x80000,CRC(a5f42019) SHA1(06977874272c3cfb14e0f0ef7e12f6cd5b607837))
 DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
                "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
                "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
@@ -491,6 +490,7 @@ DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45
 WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (LX-2)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,l3c,l2,"World Cup Soccer (LX-3C Competition MOD)",2016,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,la2,l2,"World Cup Soccer (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,d2,l2,"World Cup Soccer (DX-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(wcs,p2,l2,"World Cup Soccer (PA-2)",1994,"Bally",wpc_mSecurityS,0)
@@ -538,6 +538,6 @@ static core_tGameData wcsGameData = {
 /----------------*/
 static void init_wcs(void) {
   core_gameData = &wcsGameData;
+  mech_add(0, &wcs_goalieMech);
   mech_add(1, &wcs_ballMech);
 }
-

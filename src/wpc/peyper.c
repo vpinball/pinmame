@@ -137,7 +137,7 @@ static WRITE_HANDLER(i8279_w) {
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
-      if ((coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
+      if (!core_gameData->hw.gameSpecific1 && (coreGlobals.tmpLampMatrix[8] & 0x11) == 0x11) { // load replay values
         locals.segments[40 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
       } else {
         locals.segments[15 - locals.i8279reg].w = core_bcd2seg7[data >> 4];

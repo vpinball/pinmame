@@ -169,6 +169,16 @@ private:
 		SetDlgItemInt(IDC_DMDPERC0, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
+		pGameSettings->get_Value(CComBSTR("dmd_opacity"), &vValue);
+		SetDlgItemInt(IDC_DMDOPACITY, vValue.lVal, FALSE);
+		VariantClear(&vValue);
+
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+		pGameSettings->get_Value(CComBSTR("sound_mode"), &vValue);
+		SetDlgItemInt(IDC_SOUNDMODE, vValue.lVal, FALSE);
+		VariantClear(&vValue);
+#endif
+
 		pGameSettings->Release();
 	}
 
@@ -202,17 +212,23 @@ private:
 		pGameSettings->put_Value(CComBSTR("dmd_perc33"), CComVariant((int) GetDlgItemInt(IDC_DMDPERC33,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("dmd_perc0"), CComVariant((int) GetDlgItemInt(IDC_DMDPERC0,NULL,TRUE)));
 
-                pGameSettings->put_Value(CComBSTR("dmd_colorize"), CComVariant((BOOL) IsDlgButtonChecked(IDC_DMD_COLORIZE)));
-                pGameSettings->put_Value(CComBSTR("dmd_red66"), CComVariant(m_dmd66.r));
-                pGameSettings->put_Value(CComBSTR("dmd_green66"), CComVariant(m_dmd66.g));
-                pGameSettings->put_Value(CComBSTR("dmd_blue66"), CComVariant(m_dmd66.b));
-                pGameSettings->put_Value(CComBSTR("dmd_red33"), CComVariant(m_dmd33.r));
-                pGameSettings->put_Value(CComBSTR("dmd_green33"), CComVariant(m_dmd33.g));
-                pGameSettings->put_Value(CComBSTR("dmd_blue33"), CComVariant(m_dmd33.b));
-                pGameSettings->put_Value(CComBSTR("dmd_red0"), CComVariant(m_dmd0.r));
-                pGameSettings->put_Value(CComBSTR("dmd_green0"), CComVariant(m_dmd0.g));
-                pGameSettings->put_Value(CComBSTR("dmd_blue0"), CComVariant(m_dmd0.b));
-                
+		pGameSettings->put_Value(CComBSTR("dmd_colorize"), CComVariant((BOOL) IsDlgButtonChecked(IDC_DMD_COLORIZE)));
+		pGameSettings->put_Value(CComBSTR("dmd_red66"), CComVariant(m_dmd66.r));
+		pGameSettings->put_Value(CComBSTR("dmd_green66"), CComVariant(m_dmd66.g));
+		pGameSettings->put_Value(CComBSTR("dmd_blue66"), CComVariant(m_dmd66.b));
+		pGameSettings->put_Value(CComBSTR("dmd_red33"), CComVariant(m_dmd33.r));
+		pGameSettings->put_Value(CComBSTR("dmd_green33"), CComVariant(m_dmd33.g));
+		pGameSettings->put_Value(CComBSTR("dmd_blue33"), CComVariant(m_dmd33.b));
+		pGameSettings->put_Value(CComBSTR("dmd_red0"), CComVariant(m_dmd0.r));
+		pGameSettings->put_Value(CComBSTR("dmd_green0"), CComVariant(m_dmd0.g));
+		pGameSettings->put_Value(CComBSTR("dmd_blue0"), CComVariant(m_dmd0.b));
+
+		pGameSettings->put_Value(CComBSTR("dmd_opacity"), CComVariant((int) GetDlgItemInt(IDC_DMDOPACITY,NULL,TRUE)));
+
+#if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
+		pGameSettings->put_Value(CComBSTR("sound_mode"), CComVariant((int) GetDlgItemInt(IDC_SOUNDMODE,NULL,TRUE)));
+#endif
+
 		pGameSettings->Release();
 	}
 
@@ -361,7 +377,7 @@ private:
 
 			/*Change background color of item*/
 			SetBkColor((HDC) wParam, thecolor);
-			return (int) m_hBrushDMDColor;
+			return (LRESULT) m_hBrushDMDColor;
 		}
 		return 0;
 	}
@@ -405,7 +421,7 @@ private:
         LRESULT OnLeftButtonDown(UINT, WPARAM, LPARAM lpar, BOOL&) {
                 if (IsDlgButtonChecked(IDC_DMD_COLORIZE)) {
                         // check if the click is in a color patch text box
-                        POINT pt = { GET_X_LPARAM(lpar), GET_Y_LPARAM(lpar) };
+					POINT pt = { ((int)(short)LOWORD(lpar)), ((int)(short)HIWORD(lpar)) };
                         RGB dmd100;
                         int np2, np3, np4;
                         GetDMD_RGB_Color(&dmd100.r, &dmd100.g, &dmd100.b, &np2, &np3, &np4);
@@ -547,9 +563,10 @@ private:
                         0
                 };
                 int clr = IsDlgButtonChecked(IDC_DMD_COLORIZE);
-                for (int i = 0 ; shade_ctls[i] != 0 ; ++i)
+				int i;
+                for (i = 0 ; shade_ctls[i] != 0 ; ++i)
                         ::ShowWindow(GetDlgItem(shade_ctls[i]), clr ? SW_HIDE : SW_SHOW);
-                for (int i = 0 ; colorize_ctls[i] != 0 ; ++i)
+                for (i = 0 ; colorize_ctls[i] != 0 ; ++i)
                         ::ShowWindow(GetDlgItem(colorize_ctls[i]), clr ? SW_SHOW : SW_HIDE);
         }
 

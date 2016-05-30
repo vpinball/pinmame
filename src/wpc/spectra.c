@@ -53,7 +53,7 @@ static WRITE_HANDLER(riot_portb_w) {
 
 static READ_HANDLER(riot_portb_r) {
   logerror("RIOT B READ\n");
-  return (core_getDip(1) & 1) ? 0x5a : 0;
+  return (core_getDip(0) & 1) ? 0x5a : 0;
 }
 
 static struct riot6532_interface riot6532_intf = {
@@ -199,11 +199,11 @@ static void init_##name(void) { core_gameData = &name##GameData; }
   INPUT_PORTS_END
 
 static core_tLCDLayout dispAlpha[] = {
-  { 9, 0,24, 6,CORE_SEG7},
-  { 6, 0,16, 6,CORE_SEG7},
-  { 3, 0, 8, 6,CORE_SEG7},
-  { 0, 0, 0, 6,CORE_SEG7},
-  {12, 0,32, 6,CORE_SEG7},
+  { 9, 0,24, 6,CORE_SEG8D},
+  { 6, 0,16, 6,CORE_SEG8D},
+  { 3, 0, 8, 6,CORE_SEG8D},
+  { 0, 0, 0, 6,CORE_SEG8D},
+  {12, 0,32, 6,CORE_SEG8D},
   {0}
 };
 
@@ -211,7 +211,7 @@ ROM_START(spectra)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("spect_u3.dat", 0x0c00, 0x0400, CRC(9ca7510f) SHA1(a87849f16903836158063d593bb4a2e90c7473c8))
       ROM_RELOAD(0xfc00, 0x0400)
-    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(b58f1205) SHA1(9578fd89485f3f560789cb0f24c7116e4bc1d0da) BAD_DUMP)
+    ROM_LOAD("spect_u4.dat", 0x0800, 0x0400, CRC(15e53712) SHA1(e03049178569313cb89cfe0f09043c21d05b1988))
     ROM_LOAD("spect_u5.dat", 0x0400, 0x0400, CRC(49e0759f) SHA1(c3badc90ff834cbc92d8c519780069310c2b1507))
 ROM_END
 

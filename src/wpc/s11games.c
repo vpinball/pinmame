@@ -143,7 +143,7 @@ CORE_CLONEDEF(hs,l3,l4, "High Speed (L-3)", 1986, "Williams", s11_mS11XS,0)
 /--------------------*/
 INITGAMEFULL(grand, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(0,48),
              S11_BCDDIAG,0,0,43,44,0,0,0,0)
-S11_ROMSTART28(grand,l4,"lzrd_u26.l4", CRC(5fe50db6) SHA1(7e2adfefce5c33ad605606574dbdfb2642aa0e85),
+S11_ROMSTART28(grand,l4,"lzrd_u26.l3", CRC(5fe50db6) SHA1(7e2adfefce5c33ad605606574dbdfb2642aa0e85),
                         "lzrd_u27.l4", CRC(6462ca55) SHA1(0ebfa998d3cefc213ada9ed815d44977120e5d6d))
 S11XS_SOUNDROM44(       "lzrd_u21.l1", CRC(98859d37) SHA1(08429b9e6a3b3007815373dc280b985e3441aa9f),
                         "lzrd_u22.l1", CRC(4e782eba) SHA1(b44ab499128300175bdb57f07ffe2992c82e47e4))
@@ -151,6 +151,14 @@ S11CS_SOUNDROM8(        "lzrd_u4.l1",  CRC(4baafc11) SHA1(3507f5f37e02688fa56cf5
 S11_ROMEND
 #define input_ports_grand input_ports_s11
 CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11XS,0)
+
+S11_ROMSTART28(grand,l3,"lzrd_u26.l3", CRC(5fe50db6) SHA1(7e2adfefce5c33ad605606574dbdfb2642aa0e85),
+                        "lzrd_u27.l3", CRC(9061dfdc) SHA1(06e0add721afa0a89ad4961cddbc5409f95362df))
+S11XS_SOUNDROM44(       "lzrd_u21.l1", CRC(98859d37) SHA1(08429b9e6a3b3007815373dc280b985e3441aa9f),
+                        "lzrd_u22.l1", CRC(4e782eba) SHA1(b44ab499128300175bdb57f07ffe2992c82e47e4))
+S11CS_SOUNDROM8(        "lzrd_u4.l1",  CRC(4baafc11) SHA1(3507f5f37e02688fa56cf5bb303eaccdcedede06))
+S11_ROMEND
+CORE_CLONEDEF(grand, l3, l4, "Grand Lizard (L-3)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Road Kings 07/86
@@ -201,7 +209,7 @@ S11_ROMEND
 CORE_CLONEDEF(rdkng,l3,l4,"Road Kings (L-3)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
-/ Pinbot 10/86
+/ Pin-Bot 10/86
 /--------------------*/
 INITGAMEFULL(pb, GEN_S11X, s11_dispS11, 14, FLIP_SWNO(10,11),
              0,0,0, 53, 0, 48, 54, 55,52)
@@ -214,15 +222,15 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
 S11_ROMEND
 #define input_ports_pb input_ports_s11
 
-S11_ROMSTART48(pb,l5h,"pbot_u26.l5", CRC(511d9f9e) SHA1(4906fcc9de4c34c991cae6ccb266a077cc5ce0cd),
-                     "pbot_u27.l5", CRC(0e0af3f8) SHA1(b91eaf3f531a26a6641de90b377394983ab3d561))
+S11_ROMSTART48(pb,l5h,"pbot_u26_svm.l5", CRC(511d9f9e) SHA1(4906fcc9de4c34c991cae6ccb266a077cc5ce0cd),
+                     "pbot_u27_svm.l5", CRC(0e0af3f8) SHA1(b91eaf3f531a26a6641de90b377394983ab3d561))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
 S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc45bf77c12b69228),
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-S11_ROMSTART48(pb,l3,"u26-l2.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
+S11_ROMSTART48(pb,l3,"u26-l1.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
                      "u27-l3.rom", CRC(6f40ee84) SHA1(85453137e3fdb1e422e3903dd053e04c9f2b9607))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
@@ -230,7 +238,7 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-S11_ROMSTART48(pb,l2,"u26-l2.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
+S11_ROMSTART48(pb,l2,"u26-l1.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
                      "u27-l2.rom", CRC(0a334fc5) SHA1(d08afe6ddc141e37f97ea588d184a316ff7f6db7))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
@@ -238,7 +246,15 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-S11_ROMSTART48(pb,p4,"u26-l2.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
+S11_ROMSTART48(pb,l1,"u26-l1.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
+                     "u27-l1.rom", CRC(fa0be640) SHA1(723dd96bbcc9b3043c91e0215050fb626dd6ced3))
+S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
+                     "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
+S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc45bf77c12b69228),
+                     "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
+S11_ROMEND
+
+S11_ROMSTART48(pb,p4,"u26-l1.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
                      "u27_p4.bin", CRC(fbe2c466) SHA1(ac6c8f953b00e0ec7626cd1ccf4e16851ab905d0))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
@@ -246,11 +262,12 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,l5h,l5, "Pinbot (L-5, Free Play / solar value mod)", 2012, "Francis", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,l3,l5, "Pinbot (L-3)", 1987, "Williams", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,l2,l5, "Pinbot (L-2)", 1987, "Williams", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,p4,l5, "Pinbot (P-4)", 1987, "Williams", s11_mS11XSL,0)
+CORE_GAMEDEF(pb, l5, "Pin-Bot (L-5)", 1986, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l5h,l5, "Pin-Bot (L-5, Free Play / Solar Value Mod)", 2012, "Francis", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l3,l5, "Pin-Bot (L-3)", 1986, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l2,l5, "Pin-Bot (L-2)", 1986, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l1,l5, "Pin-Bot (L-1)", 1986, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4)", 1986, "Williams", s11_mS11XSL,0)
 
 /*--------------------
 / F14 Tomcat 5/87
@@ -430,6 +447,15 @@ S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12
 S11_ROMEND
 #define input_ports_bnzai input_ports_s11
 
+S11_ROMSTART48(bnzai,t3,"banz_u26.l3t",CRC(b3c7fba7) SHA1(f8477b93b9bd5d86ff938c4651dc56d6041884bf),
+                        "banz_u27.l3", CRC(af66fac4) SHA1(84929aaad8a8e4a312a230b73f206d3b43a04dc3))
+S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
+                        "banz_u22.l1", CRC(e8159033) SHA1(e8f15801feefeb30768e88d685c208108aa134e8))
+S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12ab5943a7be8709bfe3),
+                        "banz_u19.l1", CRC(9104248c) SHA1(48a8c41f3a4127f4fb4de37e876c8380e3511e1f),
+                        "banz_u20.l1", CRC(26b3d15c) SHA1(528084b6c62394f8ed9fc0f90b91d844060fc904))
+S11_ROMEND
+
 S11_ROMSTART48(bnzai,g3,"banz_u26.l3g",CRC(744b8758) SHA1(0bcd5dfd872656d0261a819e3dbd222754585ec0),
                         "banz_u27.l3", CRC(af66fac4) SHA1(84929aaad8a8e4a312a230b73f206d3b43a04dc3))
 S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
@@ -458,6 +484,7 @@ S11CS_SOUNDROM888(      "u4-p7.rom",   CRC(630d1ce9) SHA1(fb7f6004b94bf202812165
 S11_ROMEND
 
 CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,t3,l3,"Banzai Run (L-3 Target sound fix)", 2011, "Williams / Francis", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (L-3 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,l1,l3,"Banzai Run (L-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,pa,l3,"Banzai Run (P-A)", 1988, "Williams", s11_mS11BS,0)
@@ -501,6 +528,20 @@ S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343b
 S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
                         "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
 S11_ROMEND
+S11_ROMSTART48(taxi, l5c,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
+                        "taxi_u27.l5c", CRC(15dab081) SHA1(7b6c195ed9588d09d7e8d046a260e25c384a4426))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
+S11_ROMSTART48(taxi, l5cm,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
+                        "taxi_u27.l5cm", CRC(4cf164bc) SHA1(26150540860667e6857ef426c0ac08fcd2073ce1))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
 S11_ROMSTART48(taxi, l3,"taxi_u26.l4", CRC(a70d8088) SHA1(0986035436e2b1199571248dac8eb7a903b5015c),
                         "taxi_u27.l3", CRC(e2bfb6fa) SHA1(ba1bddffe4d4e8f04131dd6f5a0380765fbcdfc5))
 S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
@@ -508,7 +549,14 @@ S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343b
 S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
                         "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
 S11_ROMEND
-S11_ROMSTART48(taxi, lg1,"u26-lg1m.rom", CRC(40a2f33c) SHA1(815910b36a5df6c63862590c42b6a41286f38236),
+S11_ROMSTART48(taxi, lu1,"u26-lu1m.rom", CRC(40a2f33c) SHA1(815910b36a5df6c63862590c42b6a41286f38236),
+                        "u27-lu1m.rom", CRC(d15f08b4) SHA1(adef8c2c7ee685207b146b4401dc9b732cf212b7))
+S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
+                        "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
+S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f6598d2d574e4ac5a7d),
+                        "taxi_u19.l1", CRC(91c64913) SHA1(10e48977f925f6bc1be0c56854aafa99283b4047))
+S11_ROMEND
+S11_ROMSTART48(taxi, lg1,"u26-lu1m.rom", CRC(40a2f33c) SHA1(815910b36a5df6c63862590c42b6a41286f38236),
                         "u27-lg1m.rom", CRC(955dcbab) SHA1(e66e0da6366885ceed7618b09cf66fe11ae27627))
 S11XS_SOUNDROM88(       "taxi_u21.l1", CRC(2b20e9ab) SHA1(d785667ae0fd237dd8343bb1ecfbacf050ec2c6f),
                         "taxi_u22.l1", CRC(d13055c5) SHA1(8c2959bde03567b83db425ebc9e7309d9601c2b2))
@@ -524,7 +572,10 @@ S11CS_SOUNDROM88(       "taxi_u4.l1",  CRC(6082ebb5) SHA1(37e19ad27fe05b4c8e572f
 S11_ROMEND
 #define input_ports_taxi input_ports_s11
 CORE_GAMEDEF(taxi , l4, "Taxi (Lola) (L-4)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , l5c, l4, "Taxi (Lola) (L-5C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , l5cm, l4, "Taxi (Marilyn) (L-5C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marilyn) (L-3)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , lu1, l4, "Taxi (Marilyn) (LU-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (L-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , p5, l4, "Taxi (P-5)", 1988, "Williams", s11_mS11BS,0)
 
@@ -569,8 +620,8 @@ S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e6
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 
-S11_ROMSTART48(esha,ma3,"eshk_u26.l3", CRC(7b7b1a8a) SHA1(8c1d5e4e0b4217055ad9e1490ff3dba52ef013f4),
-                        "eshk_u27.l3", CRC(6197c56c) SHA1(338438e8e4c9a7790977dc8e394f6f032516f755))
+S11_ROMSTART48(esha,ma3,"eshk_u26.ma3", CRC(7b7b1a8a) SHA1(8c1d5e4e0b4217055ad9e1490ff3dba52ef013f4),
+                        "eshk_u27.ma3", CRC(6197c56c) SHA1(338438e8e4c9a7790977dc8e394f6f032516f755))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
                         "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
 S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e60e978b84775e16c64e),
@@ -676,6 +727,15 @@ S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da871
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
 CORE_CLONEDEF(bk2k,pa7,l4, "Black Knight 2000 (PA-7)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(bk2k,pa5,"bk2k_u26.pa5",CRC(0012fe41) SHA1(06031684839268fdb73491626ec5bff6daacbf4c),
+                        "bk2k_u27.pa5",CRC(2e40e173) SHA1(7d961bb0bd03e836ebfe705b8895dd2e9704e6e1))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+CORE_CLONEDEF(bk2k,pa5,l4, "Black Knight 2000 (PA-5)", 1989, "Williams", s11_mS11BS,0)
 
 /*-----------------------
 / Police Force 9/89

@@ -186,12 +186,6 @@
     <ClCompile Include="src\input.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
-    <ClCompile Include="src\jit.c">
-      <Filter>Source Files\MAME</Filter>
-    </ClCompile>
-    <ClCompile Include="src\jitemit.c">
-      <Filter>Source Files\MAME</Filter>
-    </ClCompile>
     <ClCompile Include="src\mame.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
@@ -1137,6 +1131,30 @@
     <ClCompile Include="src\vc\dirent.c">
       <Filter>Source Files\VC</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\ymf262.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\262intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\barni.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\inderp.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\joctronic.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\lancelot.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\jit.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\jitemit.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1176,9 +1194,6 @@
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\filter.h">
-      <Filter>Source Files\MAME</Filter>
-    </ClInclude>
-    <ClInclude Include="src\gfxobj.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\harddisk.h">
@@ -1233,9 +1248,6 @@
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\sndintrf.h">
-      <Filter>Source Files\MAME</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sprite.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\state.h">
@@ -1771,6 +1783,12 @@
     </ClInclude>
     <ClInclude Include="ext\zlib\include\zlib.h">
       <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\262intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ymf262.h">
+      <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

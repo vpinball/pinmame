@@ -225,22 +225,22 @@ const struct sndbrdIntf de2sIntf = {
 
 /* 11 Voice Style BSMT Chip used with Data East (Hook/Batman/Star Wars, etc..) */
 static struct BSMT2000interface de2s_bsmt2000aaInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 1, 0
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 0, 0 // BSMT2000 mode 1 (Batman,ST25th and Hook also trigger mode 0, but this is most likely a glitch/emulation bug?)
 };
 
 /* 11 Voice Style BSMT Chip used with Sega/Stern (Apollo13,ID4,Godzilla,Monopoly,RCTYCN)*/
 static struct BSMT2000interface de2s_bsmt2000aInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 4, 0
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 0, 0 // BSMT2000 mode 1
 };
 
 /* 12 Voice Style BSMT Chip used with later model Stern (Austin Powers and forward) */
 static struct BSMT2000interface de2s_bsmt2000bInt = {
-  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, 1, 4, 0
+  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, 1, 0, 0 // BSMT2000 mode 5
 };
 
 /* 11 Voice Style BSMT Chip used on Titanic */
 static struct BSMT2000interface de2s_bsmt2000tInt = {
-  1, {28000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 4, 0
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 0, 0 // BSMT2000 mode 1
 };
 
 static MEMORY_READ_START(de2s_readmem)
@@ -364,12 +364,10 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 /* Writing 0x80 here resets BSMT ?*/
 static WRITE_HANDLER(de2s_bsmtreset_w) {
-	static int last_data = 0;
+	static data8_t last_data = 0;
 	//Watch for 0->1 transition in 8th bit to force a reset
-	if(data & 0x80 && (last_data & 0x80) == 0)
-	{
+	if (!(last_data & 0x80) && (data & 0x80))
 		BSMT2000_sh_reset();
-	}
 	last_data = data;
 }
 

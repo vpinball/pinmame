@@ -13,6 +13,13 @@
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAME_SONIC(name, disptype, balls, lamps) \
+	PEYPER_INPUT_PORTS_START(name, balls) PEYPER_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_PEYPER,disptype,{FLIP_SW(FLIP_L),0,lamps,0,SNDBRD_NONE,0,1}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 static core_tLCDLayout disp6f[] = {
   {0, 0,32,1,CORE_SEG8D},{0, 2, 8,2,CORE_SEG7}, {0, 6,10,1,CORE_SEG8D},{0, 8,11,2,CORE_SEG7}, {0,12,36,1,CORE_SEG7},
   {0,22,33,1,CORE_SEG8D},{0,24, 0,2,CORE_SEG7}, {0,28, 2,1,CORE_SEG8D},{0,30, 3,2,CORE_SEG7}, {0,34,36,1,CORE_SEG7},
@@ -97,7 +104,7 @@ static core_tLCDLayout sonicDisp7[] = {
 /*-------------------------------------------------------------------
 / Odin De Luxe (1985)
 /-------------------------------------------------------------------*/
-INITGAME(odin_dlx, disp6f, 1, 4)
+INITGAME_SONIC(odin_dlx, disp6f, 1, 4)
 PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
 						   "odin_b.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
@@ -106,7 +113,7 @@ CORE_CLONEDEFNV(odin_dlx,odin,"Odin De Luxe",1985,"Sonic (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Gamatron (1986)
 /-------------------------------------------------------------------*/
-INITGAME(gamatros, sonicDisp7, 1, 4)
+INITGAME_SONIC(gamatros, sonicDisp7, 1, 4)
 PEYPER_ROMSTART2(gamatros, "gama_a.bin", CRC(1dc2841c) SHA1(27c6a07b1f8bd5e73b425e7dbdcfb1d5233c18b2),
 						  "gama_b.bin", CRC(56125890) SHA1(8b30a2282df264d798df1b031ecade999d135f81))
 PEYPER_ROMEND
@@ -115,7 +122,7 @@ CORE_GAMEDEFNV(gamatros,"Gamatron (Sonic)",1986,"Sonic (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Solar Wars (1986)
 /-------------------------------------------------------------------*/
-INITGAME(solarwar, sonicDisp7, 1, 4)
+INITGAME_SONIC(solarwar, sonicDisp7, 1, 4)
 PEYPER_ROMSTART2(solarwar, "solarw1c.bin", CRC(aa6bf0cd) SHA1(7332a4b1679841283d846f3e4f1792cb8e9529bf),
 						  "solarw2.bin", CRC(95e2cbb1) SHA1(f9ab3222ca0b9e0796030a7a618847a4e8f77957))
 PEYPER_ROMEND
@@ -124,7 +131,7 @@ CORE_GAMEDEFNV(solarwar,"Solar Wars (Sonic)",1986,"Sonic (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Pole Position (1987)
 /-------------------------------------------------------------------*/
-INITGAME(poleposn, sonicDisp7, 1, 4)
+INITGAME_SONIC(poleposn, sonicDisp7, 1, 4)
 PEYPER_ROMSTART(poleposn, "1.bin", CRC(fdd37f6d) SHA1(863fef32ab9b5f3aca51788b6be9373a01fa0698),
 						  "2.bin", CRC(967cb72b) SHA1(adef17018e2caf65b64bbfef72fe159b9704c409),
 						  "3.bin", CRC(461fe9ca) SHA1(01bf35550e2c55995f167293746f355cfd484af1))
@@ -134,7 +141,7 @@ CORE_GAMEDEFNV(poleposn,"Pole Position (Sonic)",1987,"Sonic (Spain)",gl_mPEYPER,
 /*-------------------------------------------------------------------
 / Star Wars (1987)
 /-------------------------------------------------------------------*/
-INITGAME(sonstwar, sonicDisp7, 1, 4)
+INITGAME_SONIC(sonstwar, sonicDisp7, 1, 4)
 PEYPER_ROMSTART(sonstwar, "sw1.bin", CRC(a2555d92) SHA1(5c82be85bf097e94953d11c0d902763420d64de4),
 						  "sw2.bin", CRC(c2ae34a7) SHA1(0f59242e3aec5da7111e670c4d7cf830d0030597),
 						  "sw3.bin", CRC(aee516d9) SHA1(b50e54d4d5db59e3fb71fb000f9bc5e34ff7de9c))
@@ -149,4 +156,12 @@ PEYPER_ROMSTART(sonstwr2, "stw1i.bin", CRC(416e2a0c) SHA1(74ca550ee9eb83d9762ffa
 PEYPER_ROMEND
 CORE_CLONEDEFNV(sonstwr2,sonstwar,"Star Wars (Sonic, alternate set)",1987,"Sonic (Spain)",gl_mPEYPER,0)
 
-// Hang-On (1988)
+/*-------------------------------------------------------------------
+/ Hang-On (1988)
+/-------------------------------------------------------------------*/
+INITGAME_SONIC(hangon, sonicDisp7, 1, 4)
+PEYPER_ROMSTART(hangon, "hangon1.bin", CRC(b0672137) SHA1(e0bd0808a3a8c6df200b0edc7b5e8cf293a659b7),
+						"hangon2.bin", CRC(6e1e55c0) SHA1(473c882a0eb68807969894b82be2b86d7c463c93),
+						"hangon3.bin", CRC(26949f2f) SHA1(e3e1a436ce59c7f1c2904cd8f50f2ba4a4e37638))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(hangon,"Hang-On",1988,"Sonic (Spain)",gl_mPEYPER,0)

@@ -403,7 +403,7 @@ static int ci_strcmp (const char *s1, const char *s2)
  *      Returns zero if the first n characters of s1 and s2 are equal,
  *      ignoring case.
  **************************************************************************/
-static int ci_strncmp (const char *s1, const char *s2, int n)
+static int ci_strncmp (const char *s1, const char *s2, size_t n)
 {
         int c1, c2;
 
@@ -563,7 +563,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
                         }
 
                         /* Get length of text to add to the buffer */
-                        len = strlen (s);
+                        len = strlen(s);
 
                         /* Check for buffer overflow */
                         /* For some reason we can get a crash if we try */
@@ -663,7 +663,7 @@ int load_driver_history (const struct GameDriver *drv, char *buffer, int bufsize
                 /* load informational text (append) */
                 if (mame_idx)
                 {
-                        int len = strlen (buffer);
+                        size_t len = strlen (buffer);
                         const struct GameDriver *gdrv;
 
                         gdrv = drv;

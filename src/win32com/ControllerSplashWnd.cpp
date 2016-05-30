@@ -24,7 +24,7 @@ public:
 
 private:
 	char*		m_pszCredits;		// use defined credit text, displayed at the bottom of the picture
-	UINT		m_uClosedTimer;		// if this timer runs out, the window will be closed
+	UINT_PTR    m_uClosedTimer;     // if this timer runs out, the window will be closed
 	HBITMAP		m_hBitmap;			// the bitmap we are displaying
 	BITMAP		m_Bitmap;			// bitmap info to hBitmap
 	HFONT		m_hFont;			// font for the credit line

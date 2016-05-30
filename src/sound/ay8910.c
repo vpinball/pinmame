@@ -12,11 +12,20 @@
 
 #include "driver.h"
 #include "ay8910.h"
+#include "state.h"
 
 #define MAX_OUTPUT 0x7fff
 
 #define STEP 0x8000
 
+//#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
 
 int ay8910_index_ym;
 static int num = 0, ym_num = 0;
@@ -25,22 +34,22 @@ struct AY8910
 {
 	int Channel;
 	int SampleRate;
-	mem_read_handler PortAread;
-	mem_read_handler PortBread;
-	mem_write_handler PortAwrite;
-	mem_write_handler PortBwrite;
-	int register_latch;
-	unsigned char Regs[16];
-	int lastEnable;
-	unsigned int UpdateStep;
-	int PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
-	int CountA,CountB,CountC,CountN,CountE;
-	unsigned int VolA,VolB,VolC,VolE;
-	unsigned char EnvelopeA,EnvelopeB,EnvelopeC;
-	unsigned char OutputA,OutputB,OutputC,OutputN;
-	signed char CountEnv;
-	unsigned char Hold,Alternate,Attack,Holding;
-	int RNG;
+	read8_handler PortAread;
+	read8_handler PortBread;
+	write8_handler PortAwrite;
+	write8_handler PortBwrite;
+	INT32 register_latch;
+	UINT8 Regs[16];
+	INT32 lastEnable;
+	UINT32 UpdateStep;
+	INT32 PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
+	INT32 CountA,CountB,CountC,CountN,CountE;
+	UINT32 VolA,VolB,VolC,VolE;
+	UINT8 EnvelopeA,EnvelopeB,EnvelopeC;
+	UINT8 OutputA,OutputB,OutputC,OutputN;
+	INT8 CountEnv;
+	UINT8 Hold,Alternate,Attack,Holding;
+	INT32 RNG;
 	unsigned int VolTable[32];
 };
 
@@ -218,12 +227,13 @@ void _AYWriteReg(int n, int r, int v)
 		{
 			if (PSG->PortAwrite)
 				(*PSG->PortAwrite)(0, PSG->Regs[AY_PORTA]);
-			else
-				logerror("PC %04x: warning - write %02x to 8910 #%d Port A\n",activecpu_get_pc(),PSG->Regs[AY_PORTA],n);
+			else {
+				LOG(("PC %04x: warning - write %02x to 8910 #%d Port A\n",activecpu_get_pc(),PSG->Regs[AY_PORTA],n));
+			}
 		}
 		else
 		{
-			logerror("warning: write to 8910 #%d Port A set as input - ignored\n",n);
+			LOG(("warning: write to 8910 #%d Port A set as input - ignored\n",n));
 		}
 		break;
 	case AY_PORTB:
@@ -231,12 +241,13 @@ void _AYWriteReg(int n, int r, int v)
 		{
 			if (PSG->PortBwrite)
 				(*PSG->PortBwrite)(0, PSG->Regs[AY_PORTB]);
-			else
-				logerror("PC %04x: warning - write %02x to 8910 #%d Port B\n",activecpu_get_pc(),PSG->Regs[AY_PORTB],n);
+			else {
+				LOG(("PC %04x: warning - write %02x to 8910 #%d Port B\n",activecpu_get_pc(),PSG->Regs[AY_PORTB],n));
+			}
 		}
 		else
 		{
-			logerror("warning: write to 8910 #%d Port B set as input - ignored\n",n);
+			LOG(("warning: write to 8910 #%d Port B set as input - ignored\n",n));
 		}
 		break;
 	}
@@ -274,20 +285,22 @@ unsigned char AYReadReg(int n, int r)
 	switch (r)
 	{
 	case AY_PORTA:
-		if ((PSG->Regs[AY_ENABLE] & 0x40) != 0)
-			logerror("warning: read from 8910 #%d Port A set as output\n",n);
+		if ((PSG->Regs[AY_ENABLE] & 0x40) != 0) {
+			LOG(("warning: read from 8910 #%d Port A set as output\n",n));
+		}
 		/*
 		   even if the port is set as output, we still need to return the external
 		   data. Some games, like kidniki, need this to work.
 		 */
 		if (PSG->PortAread) PSG->Regs[AY_PORTA] = (*PSG->PortAread)(0);
-		else logerror("PC %04x: warning - read 8910 #%d Port A\n",activecpu_get_pc(),n);
+			else { LOG(("PC %04x: warning - read 8910 #%d Port A\n",activecpu_get_pc(),n)); }
 		break;
 	case AY_PORTB:
-		if ((PSG->Regs[AY_ENABLE] & 0x80) != 0)
-			logerror("warning: read from 8910 #%d Port B set as output\n",n);
+		if ((PSG->Regs[AY_ENABLE] & 0x80) != 0) {
+			LOG(("warning: read from 8910 #%d Port B set as output\n",n));
+		}
 		if (PSG->PortBread) PSG->Regs[AY_PORTB] = (*PSG->PortBread)(0);
-		else logerror("PC %04x: warning - read 8910 #%d Port B\n",activecpu_get_pc(),n);
+			else { LOG(("PC %04x: warning - read 8910 #%d Port B\n",activecpu_get_pc(),n)); }
 		break;
 	}
 	return PSG->Regs[r];
@@ -749,6 +762,50 @@ static int AY8910_init(const char *chip_name,int chip,
 }
 
 
+static void AY8910_statesave(int chip)
+{
+	struct AY8910 *PSG = &AYPSG[chip];
+
+	state_save_register_INT32("AY8910",  chip, "register_latch", &PSG->register_latch, 1);
+	state_save_register_UINT8("AY8910",  chip, "Regs",           PSG->Regs,            8);
+	state_save_register_INT32("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
+	state_save_register_UINT32("AY8910", chip, "UpdateStep",     &PSG->UpdateStep,     1);
+
+	state_save_register_INT32("AY8910",  chip, "PeriodA",        &PSG->PeriodA,        1);
+	state_save_register_INT32("AY8910",  chip, "PeriodB",        &PSG->PeriodB,        1);
+	state_save_register_INT32("AY8910",  chip, "PeriodC",        &PSG->PeriodC,        1);
+	state_save_register_INT32("AY8910",  chip, "PeriodN",        &PSG->PeriodN,        1);
+	state_save_register_INT32("AY8910",  chip, "PeriodE",        &PSG->PeriodE,        1);
+
+	state_save_register_INT32("AY8910",  chip, "CountA",         &PSG->CountA,         1);
+	state_save_register_INT32("AY8910",  chip, "CountB",         &PSG->CountB,         1);
+	state_save_register_INT32("AY8910",  chip, "CountC",         &PSG->CountC,         1);
+	state_save_register_INT32("AY8910",  chip, "CountN",         &PSG->CountN,         1);
+	state_save_register_INT32("AY8910",  chip, "CountE",         &PSG->CountE,         1);
+
+	state_save_register_UINT32("AY8910", chip, "VolA",           &PSG->VolA,           1);
+	state_save_register_UINT32("AY8910", chip, "VolB",           &PSG->VolB,           1);
+	state_save_register_UINT32("AY8910", chip, "VolC",           &PSG->VolC,           1);
+	state_save_register_UINT32("AY8910", chip, "VolE",           &PSG->VolE,           1);
+
+	state_save_register_UINT8("AY8910",  chip, "EnvelopeA",      &PSG->EnvelopeA,      1);
+	state_save_register_UINT8("AY8910",  chip, "EnvelopeB",      &PSG->EnvelopeB,      1);
+	state_save_register_UINT8("AY8910",  chip, "EnvelopeC",      &PSG->EnvelopeC,      1);
+
+	state_save_register_UINT8("AY8910",  chip, "OutputA",        &PSG->OutputA,        1);
+	state_save_register_UINT8("AY8910",  chip, "OutputB",        &PSG->OutputB,        1);
+	state_save_register_UINT8("AY8910",  chip, "OutputC",        &PSG->OutputC,        1);
+	state_save_register_UINT8("AY8910",  chip, "OutputN",        &PSG->OutputN,        1);
+
+	state_save_register_INT8("AY8910",   chip, "CountEnv",       &PSG->CountEnv,       1);
+	state_save_register_UINT8("AY8910",  chip, "Hold",           &PSG->Hold,           1);
+	state_save_register_UINT8("AY8910",  chip, "Alternate",      &PSG->Alternate,      1);
+	state_save_register_UINT8("AY8910",  chip, "Attack",         &PSG->Attack,         1);
+	state_save_register_UINT8("AY8910",  chip, "Holding",        &PSG->Holding,        1);
+	state_save_register_INT32("AY8910",  chip, "RNG",            &PSG->RNG,            1);
+}
+
+
 int AY8910_sh_start(const struct MachineSound *msound)
 {
 	int chip;
@@ -765,7 +822,10 @@ int AY8910_sh_start(const struct MachineSound *msound)
 				intf->portAwrite[chip],intf->portBwrite[chip]) != 0)
 			return 1;
 		build_mixer_table(chip+ym_num);
+
+		AY8910_statesave(chip+ym_num);
 	}
+
 	return 0;
 }
 
@@ -791,6 +851,9 @@ int AY8910_sh_start_ym(const struct MachineSound *msound)
 				intf->portAwrite[chip],intf->portBwrite[chip]) != 0)
 			return 1;
 		build_mixer_table(chip+num);
+
+
+		AY8910_statesave(chip+num);
 	}
 	return 0;
 }

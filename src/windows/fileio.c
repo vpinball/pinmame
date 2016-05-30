@@ -231,7 +231,7 @@ static char *copy_and_expand_variables(const char *path, int len)
 {
 	char *dst, *result;
 	const char *src;
-	int length = 0;
+	size_t length = 0;
 
 	/* first determine the length of the expanded string */
 	for (src = path; src < path + len; )
@@ -307,7 +307,7 @@ static void expand_pathlist(struct pathdata *list)
 			goto out_of_memory;
 
 		// copy the path in
-		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, token - rawpath);
+		list->path[list->pathcount++] = copy_and_expand_variables(rawpath, (int)(token - rawpath));
 #if VERBOSE
 		printf("  %s\n", list->path[list->pathcount - 1]);
 #endif

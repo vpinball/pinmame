@@ -95,7 +95,7 @@ static unsigned int ss_dump_size;
 static UINT32 ss_get_signature(void)
 {
 	ss_module *m;
-	unsigned int size = 0, pos = 0;
+	size_t size = 0, pos = 0;
 	char *info;
 	UINT32 signature;
 
@@ -301,7 +301,7 @@ static void ss_register_func(ss_func **root, void (*func)(void))
 	{
 		if (next->func == func && next->tag == ss_current_tag)
 		{
-			logerror("Duplicate save state function (%d, 0x%x)\n", ss_current_tag, (int)func);
+			logerror("Duplicate save state function (%d, 0x%x)\n", ss_current_tag, (size_t)func);
 			exit(1);
 		}
 		next = next->next;

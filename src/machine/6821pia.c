@@ -641,7 +641,7 @@ void pia_set_input_ca1(int which, int data)
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
     if (!(p->in_set & PIA_IN_SET_CA1)) {
-	  logerror("PIA%d: Warning: CA1 not initialized before set_input_ca1\n",which);
+      LOG(("PIA%d: Warning: CA1 not initialized before set_input_ca1\n",which));
       p->in_set |= PIA_IN_SET_CA1;
     }
     else
@@ -689,7 +689,7 @@ void pia_set_input_ca2(int which, int data)
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
     if (!(p->in_set & PIA_IN_SET_CA2)) {
-	  logerror("PIA%d: Warning: CA2 not initialized before set_input_ca2\n",which);
+	  LOG(("PIA%d: Warning: CA2 not initialized before set_input_ca2\n",which));
 	  p->in_set |= PIA_IN_SET_CA2;
     }
     else
@@ -744,7 +744,7 @@ void pia_set_input_cb1(int which, int data)
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
     if (!(p->in_set & PIA_IN_SET_CB1)) {
-	  logerror("PIA%d: Warning: CB1 not initialized before set_input_cb1\n",which);
+	  LOG(("PIA%d: Warning: CB1 not initialized before set_input_cb1\n",which));
 	  p->in_set |= PIA_IN_SET_CB1;
     }
     else
@@ -797,7 +797,7 @@ void pia_set_input_cb2(int which, int data)
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
     if (!(p->in_set & PIA_IN_SET_CB2)) {
-	  logerror("PIA%d: Warning: CB2 not initialized before set_input_cb2\n",which);
+      LOG(("PIA%d: Warning: CB2 not initialized before set_input_cb2\n",which));
       p->in_set |= PIA_IN_SET_CB2;
     }
     else

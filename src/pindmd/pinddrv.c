@@ -1,9 +1,9 @@
-#include "driver.h"
-#include <windows.h>
-//#include <process.h>
 #include "pindmd.h"
 
-#define PINDMD2 // define for PinDMD2 support, undefine for PinDMD1 support, latter needs the separate ftd2xx.dll then!
+#ifndef PINDMD3
+
+#include <windows.h>
+//#include <process.h>
 
 #ifdef PINDMD2
 #include "..\..\ext\libusb\include\lusb0_usb.h"
@@ -58,8 +58,6 @@ void sendFrame(void);
 //*****************************************************
 void pinddrvInit(void)
 {
-	UINT8 deviceId;
-
 #ifdef PINDMD2
 	int ret = 0;
 	enabled = 1;
@@ -112,8 +110,8 @@ void pinddrvInit(void)
 	DWORD numDevs;
 	UINT8 i;
 	UINT8 BitMode;
-	deviceId = 0;
-	sendFrameCount=0;
+	UINT8 deviceId = 0;
+	sendFrameCount = 0;
 
 	// create the device information list
 	ftStatus = FT_CreateDeviceInfoList(&numDevs);
@@ -131,7 +129,7 @@ void pinddrvInit(void)
 				// search for pindmd board serial number
 				if((strcmp(devInfo[i].SerialNumber,"DMD1000")==0) || (strcmp(devInfo[i].SerialNumber,"DMD1001")==0) || (strcmp(devInfo[i].SerialNumber,"DMD2000A")==0)){
 					// assign divice id (incase other ftdi devices are connected)
-					deviceId=i;
+					deviceId= i;
 					enabled = 1;
 				}
 				// pinDMD 2
@@ -265,4 +263,5 @@ usb_dev_handle* open_dev( void )
 	//return null if no devices were found
 	return NULL;
 }
+#endif
 #endif

@@ -492,7 +492,7 @@ static int run_machine(void)
 				for (region = 0; region < MAX_MEMORY_REGIONS; region++)
 					if (Machine->memory_region[region].flags & ROMREGION_DISPOSE)
 					{
-						int i;
+						size_t i;
 
 						/* invalidate contents to avoid subtle bugs */
 						for (i = 0; i < memory_region_length(region); i++)
@@ -1808,12 +1808,13 @@ static int validitychecks(void)
 						post++;
 						c++;
 					}
+#ifndef PINMAME
 					if (pre > 8 || post > 4)
 					{
 						printf("%s: %s has >8.3 ROM name %s\n",drivers[i]->source_file,drivers[i]->name,ROM_GETNAME(romp));
 						error = 1;
 					}
-
+#endif
 					hash = ROM_GETHASHDATA(romp);
 					if (!hash_verify_string(hash))
 					{

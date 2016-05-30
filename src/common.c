@@ -73,7 +73,7 @@ size_t generic_nvram_size;
 data8_t *generic_nvram;
 
 #ifdef PINMAME
-extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init);
+extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);
 #endif
 
 /* hard disks */
@@ -1424,7 +1424,7 @@ static int read_rom_data(struct rom_load_data *romdata, const struct RomModule *
 			return 0;
 		numbytes -= bytesleft;
 
-		debugload("  Copying to %08X\n", (int)base);
+		debugload("  Copying to %08X\n", (size_t)base);
 
 		/* unmasked cases */
 		if (datamask == 0xff)
@@ -1509,7 +1509,7 @@ static int fill_rom_data(struct rom_load_data *romdata, const struct RomModule *
 	}
 
 	/* fill the data (filling value is stored in place of the hashdata) */
-	memset(base, (UINT32)ROM_GETHASHDATA(romp) & 0xff, numbytes);
+	memset(base, (size_t)ROM_GETHASHDATA(romp) & 0xff, numbytes);
 	return 1;
 }
 
@@ -1523,7 +1523,7 @@ static int copy_rom_data(struct rom_load_data *romdata, const struct RomModule *
 	UINT8 *base = romdata->regionbase + ROM_GETOFFSET(romp);
 	int srcregion = ROM_GETFLAGS(romp) >> 24;
 	UINT32 numbytes = ROM_GETLENGTH(romp);
-	UINT32 srcoffs = (UINT32)ROM_GETHASHDATA(romp);  /* srcoffset in place of hashdata */
+	size_t srcoffs = (size_t)ROM_GETHASHDATA(romp);  /* srcoffset in place of hashdata */
 	UINT8 *srcbase;
 
 	/* make sure we copy within the region space */
@@ -1836,7 +1836,7 @@ int rom_load(const struct RomModule *romp)
 	/* loop until we hit the end */
 	for (region = romp, regnum = 0; region; region = rom_next_region(region), regnum++)
 	{
-		int regiontype = ROMREGION_GETTYPE(region);
+		size_t regiontype = ROMREGION_GETTYPE(region);
 
 		debugload("Processing region %02X (length=%X)\n", regiontype, ROMREGION_GETLENGTH(region));
 
@@ -1861,7 +1861,7 @@ int rom_load(const struct RomModule *romp)
 		/* remember the base and length */
 		romdata.regionlength = memory_region_length(regiontype);
 		romdata.regionbase = memory_region(regiontype);
-		debugload("Allocated %X bytes @ %08X\n", romdata.regionlength, (int)romdata.regionbase);
+		debugload("Allocated %X bytes @ %08X\n", romdata.regionlength, (size_t)romdata.regionbase);
 
 		/* clear the region if it's requested */
 		if (ROMREGION_ISERASE(region))

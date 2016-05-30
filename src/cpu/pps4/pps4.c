@@ -88,7 +88,7 @@ static UINT8 RM(UINT32 a)
 
 static void WM(UINT32 a, UINT8 v)
 {
-if (a > 0x10ff) logerror("%03x: Write to memory @%04x:%x\n", activecpu_get_pc(), a, v);
+	if (a > 0x10ff) { LOG(("%03x: Write to memory @%04x:%x\n", activecpu_get_pc(), a, v)); }
 	cpu_writemem16(a, v & 0x0f);
 }
 

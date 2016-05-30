@@ -20,7 +20,7 @@
 #include "4094.h"
 
 
-#define VERBOSE
+//#define VERBOSE
 
 #ifdef VERBOSE
 #define LOG(x)	logerror x

@@ -936,17 +936,20 @@ INLINE void set_ar_ksr(FM_CH *CH,FM_SLOT *SLOT,int v)
 		CH->SLOT[SLOT1].Incr=-1;
 	}
 
-		/* refresh Attack rate */
-		if ((SLOT->ar + SLOT->ksr) < 32+62)
-		{
-			SLOT->eg_sh_ar  = eg_rate_shift [SLOT->ar  + SLOT->ksr ];
-			SLOT->eg_sel_ar = eg_rate_select[SLOT->ar  + SLOT->ksr ];
-		}
-		else
-		{
-			SLOT->eg_sh_ar  = 0;
-			SLOT->eg_sel_ar = 17*RATE_STEPS;
-		}
+	/* Even if it seems unnecessary, in some odd case, KSR and KC are modified   */
+	/* and could result in SLOT->kc remaining unchanged.                              */
+	/* In such case, AR values would not be recalculated despite SLOT->ar has changed */
+	/* This actually fixes the intro of "The Adventures of Batman & Robin" (Eke-Eke) */
+	if ((SLOT->ar + SLOT->ksr) < 94 /*32+62*/)
+	{
+		SLOT->eg_sh_ar  = eg_rate_shift [SLOT->ar  + SLOT->ksr ];
+		SLOT->eg_sel_ar = eg_rate_select[SLOT->ar  + SLOT->ksr ];
+	}
+	else
+	{
+		SLOT->eg_sh_ar  = 0;
+		SLOT->eg_sel_ar = 18*RATE_STEPS;    /* verified by Nemesis on real hardware */
+	}
 }
 
 /* set decay rate */
@@ -1321,7 +1324,7 @@ INLINE void refresh_fc_eg_slot(FM_OPN *OPN, FM_SLOT *SLOT , int fc , int kc )
 		else
 		{
 			SLOT->eg_sh_ar  = 0;
-			SLOT->eg_sel_ar = 17*RATE_STEPS;
+			SLOT->eg_sel_ar = 18*RATE_STEPS; /* verified by Nemesis on real hardware (Attack phase is blocked) */
 		}
 
 		SLOT->eg_sh_d1r = eg_rate_shift [SLOT->d1r + SLOT->ksr];
@@ -1927,7 +1930,7 @@ static void OPNWriteReg(FM_OPN *OPN, int r, int v)
 				UINT32 fn = (((UINT32)(OPN->SL3.fn_h&7))<<8) + v;
 				UINT8 blk = OPN->SL3.fn_h>>3;
 				/* keyscale code */
-				OPN->SL3.kcode[c]= (blk<<2) | opn_fktable[fn >> 7];
+				OPN->SL3.kcode[c]= (blk<<2) | opn_fktable[(fn >> 7) & 0xf];
 				/* phase increment counter */
 				OPN->SL3.fc[c] = OPN->fn_table[fn*2]>>(7-blk);
 				OPN->SL3.block_fnum[c] = (blk<<11) | fn;
@@ -4660,8 +4663,8 @@ static void YM2612_postload(void)
 	for(num=0;num<YM2612NumChips;num++)
 	{
 		/* DAC data & port */
-		FM2612[num].dacout = ((int)FM2612[num].REGS[0x2a] - 0x80) << 0;	/* level unknown */
-		FM2612[num].dacen  = FM2612[num].REGS[0x2d] & 0x80;
+		FM2612[num].dacout = ((int)FM2612[num].REGS[0x2a] - 0x80) << 6;	/* level unknown */
+		FM2612[num].dacen  = FM2612[num].REGS[0x2b] & 0x80;
 		/* OPN registers */
 		/* DT / MULTI , TL , KS / AR , AMON / DR , SR , SL / RR , SSG-EG */
 		for(r=0x30;r<0x9e;r++)
@@ -4821,7 +4824,7 @@ int YM2612Write(int n, int a,UINT8 v)
 			{
 			case 0x2a:	/* DAC data (YM2612) */
 				YM2612UpdateReq(n);
-				F2612->dacout = ((int)v - 0x80) << 8;	/* level unknown */
+				F2612->dacout = ((int)v - 0x80) << 6;	/* level unknown */
 				break;
 			case 0x2b:	/* DAC Sel  (YM2612) */
 				/* b7 = dac enable */
@@ -4890,7 +4893,7 @@ int YM2612TimerOver(int n,int c)
 		/* timer update */
 		TimerAOver( &(F2612->OPN.ST) );
 		/* CSM mode key,TL controll */
-		if( F2612->OPN.ST.mode & 0x80 )
+		if( (F2612->OPN.ST.mode & 0xc0) == 0x80 )
 		{	/* CSM mode total level latch and auto key on */
 			CSMKeyControll( &(F2612->CH[2]) );
 		}

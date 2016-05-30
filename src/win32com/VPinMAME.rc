@@ -73,8 +73,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,0
- PRODUCTVERSION 2,6,0,0
+ FILEVERSION 2,7,0,0
+ PRODUCTVERSION 2,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +90,16 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "2, 6, 0, 0"
+            VALUE "FileVersion", "2, 7, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2015 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, and R. Perlow"
+            VALUE "LegalCopyright", "© 2000-2016 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, and R. Perlow"
+#ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
+#else
+            VALUE "OriginalFilename", "VPinMAME64.DLL"
+#endif
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "2.6"
+            VALUE "ProductVersion", "2.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -110,30 +114,20 @@ END
 // Dialog
 //
 
-IDD_GAMESETTINGSDLG DIALOGEX 0, 0, 237, 202
-STYLE DS_ABSALIGN | DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND |
-    DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GAMESETTINGSDLG DIALOGEX 0, 0, 237, 222
+STYLE DS_ABSALIGN | DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Default Options",IDC_STATIC,7,7,217,169
-    CONTROL         "Skip Pinball Startup &Test",IDC_USECHEAT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,17,97,10
-    CONTROL         "Use &Sound",IDC_USESOUND,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,27,55,10
-    CONTROL         "Use S&amples",IDC_USESAMPLES,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,37,61,10
-    CONTROL         "&Compact Display",IDC_COMPACTSIZE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,47,73,10
-    CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,57,54,10
-    CONTROL         "&Ignore ROM CRC errors",IDC_IGNOREROMCRC,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,67,88,10
-    CONTROL         "Cabinet &Mode",IDC_CABINETMODE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,77,88,10
-    CONTROL         "Use &DMD",IDC_WINDMD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,100,77,54,10
-    CONTROL         "Use &PinDMD",IDC_PINDMD,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,165,77,54,10
+    GROUPBOX        "Default Options",IDC_STATIC,7,7,223,181
+    CONTROL         "Skip Pinball Startup &Test",IDC_USECHEAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,17,97,10
+    CONTROL         "Use &Sound",IDC_USESOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,27,55,10
+    CONTROL         "Use S&amples",IDC_USESAMPLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,37,61,10
+    CONTROL         "&Compact Display",IDC_COMPACTSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,47,73,10
+    CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,57,54,10
+    CONTROL         "&Ignore ROM CRC errors",IDC_IGNOREROMCRC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,88,10
+    CONTROL         "Cabinet &Mode",IDC_CABINETMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,77,60,10
+    CONTROL         "Show &DMD window",IDC_WINDMD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,87,79,10
+    CONTROL         "Use &PinDMD",IDC_PINDMD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,97,54,10
     RTEXT           "Sample&rate:",IDC_STATIC,127,18,38,8
     EDITTEXT        IDC_SAMPLERATE,171,18,49,12,ES_AUTOHSCROLL
     RTEXT           "&Antialias %:",IDC_STATIC,127,33,38,8
@@ -142,45 +136,41 @@ BEGIN
     EDITTEXT        IDC_SYNCLEVEL,171,46,49,12,ES_AUTOHSCROLL
     RTEXT           "FastFrames:",IDC_STATIC,127,63,38,8
     EDITTEXT        IDC_FASTFRAMES,171,60,49,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,9,93,215,1
-    CONTROL         "Colori&ze DMD (set shades individually)",
-                    IDC_DMD_COLORIZE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,97,140,10
-    LTEXT           "Click on a color patch   >>>\r\nto select a color\r\nfor that intensity level",
-                    IDC_DMD_STATIC1A,13,119,160,24
-    // to separate IDC_DMD_STATICn values
-    GROUPBOX        "Color",IDC_DMD_STATIC1,13,109,127,27
-    LTEXT           "R:",IDC_DMD_STATIC2,19,121,8,8
-    EDITTEXT        IDC_DMDRED,29,119,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "G:",IDC_DMD_STATIC3,49,121,8,8
-    EDITTEXT        IDC_DMDGREEN,57,119,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "B:",IDC_DMD_STATIC4,79,121,8,8
-    EDITTEXT        IDC_DMDBLUE,87,119,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    PUSHBUTTON      "&Color",IDGETCOLOR,108,118,27,14
-    GROUPBOX        "Intensity",IDC_DMD_STATIC5,13,138,128,27
-    LTEXT           "66%",IDC_DMD_STATIC6,21,152,15,8
-    EDITTEXT        IDC_DMDPERC66,39,148,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "33%",IDC_DMD_STATIC7,61,150,16,8
-    EDITTEXT        IDC_DMDPERC33,77,148,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    RTEXT           "Off",IDC_DMD_STATIC8,99,150,10,8
-    EDITTEXT        IDC_DMDPERC0,113,148,17,12,ES_AUTOHSCROLL | ES_NUMBER
-    GROUPBOX        "Results",IDC_STATIC,151,109,58,62
-    RTEXT           "100%",IDC_STATIC,159,119,18,8
-    EDITTEXT        IDC_DMDSHOW1,179,117,12,12,WS_DISABLED | NOT WS_BORDER |
-                    NOT WS_TABSTOP,WS_EX_STATICEDGE
-    RTEXT           "66%",IDC_STATIC,159,132,18,8
-    EDITTEXT        IDC_DMDSHOW2,179,130,12,12,WS_DISABLED | NOT WS_BORDER |
-                    NOT WS_TABSTOP,WS_EX_STATICEDGE
-    RTEXT           "33%",IDC_STATIC,159,145,18,8
-    EDITTEXT        IDC_DMDSHOW3,179,143,12,12,WS_DISABLED | NOT WS_BORDER |
-                    NOT WS_TABSTOP,WS_EX_STATICEDGE
-    RTEXT           "Off",IDC_STATIC,159,158,18,8
-    EDITTEXT        IDC_DMDSHOW4,179,156,12,12,WS_DISABLED | NOT WS_BORDER |
-                    NOT WS_TABSTOP,WS_EX_STATICEDGE
-    PUSHBUTTON      "&Info...",IDABOUT,7,181,50,14
-    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,181,50,14
-    DEFPUSHBUTTON   "OK",IDOK,127,181,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,180,181,50,14
+    RTEXT           "Sound Mode:",IDC_STATIC,116,76,49,8
+    EDITTEXT        IDC_SOUNDMODE,171,74,49,12,ES_AUTOHSCROLL
+    RTEXT           "DMD Opacity:",IDC_STATIC,116,90,49,8
+    EDITTEXT        IDC_DMDOPACITY,171,88,49,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,9,110,215,1
+    CONTROL         "Colori&ze DMD (4 colors)",IDC_DMD_COLORIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,114,92,10
+    LTEXT           "Click on a color patch   >>>\r\nto select a color\r\nfor that intensity level",IDC_DMD_STATIC1A,13,136,160,24
+    GROUPBOX        "Color",IDC_DMD_STATIC1,13,126,127,27
+    LTEXT           "R:",IDC_DMD_STATIC2,19,138,8,8
+    EDITTEXT        IDC_DMDRED,29,136,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "G:",IDC_DMD_STATIC3,49,138,8,8
+    EDITTEXT        IDC_DMDGREEN,57,136,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "B:",IDC_DMD_STATIC4,79,138,8,8
+    EDITTEXT        IDC_DMDBLUE,87,136,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "&Color",IDGETCOLOR,108,135,27,14
+    GROUPBOX        "Intensity",IDC_DMD_STATIC5,13,155,128,27
+    LTEXT           "66%",IDC_DMD_STATIC6,21,169,15,8
+    EDITTEXT        IDC_DMDPERC66,39,165,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "33%",IDC_DMD_STATIC7,61,167,16,8
+    EDITTEXT        IDC_DMDPERC33,77,165,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Off",IDC_DMD_STATIC8,99,167,10,8
+    EDITTEXT        IDC_DMDPERC0,113,165,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Results",IDC_STATIC,151,120,58,62
+    RTEXT           "100%",IDC_STATIC,159,130,18,8
+    EDITTEXT        IDC_DMDSHOW1,179,128,12,12,WS_DISABLED | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
+    RTEXT           "66%",IDC_STATIC,159,143,18,8
+    EDITTEXT        IDC_DMDSHOW2,179,141,12,12,WS_DISABLED | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
+    RTEXT           "33%",IDC_STATIC,159,156,18,8
+    EDITTEXT        IDC_DMDSHOW3,179,154,12,12,WS_DISABLED | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
+    RTEXT           "Off",IDC_STATIC,159,169,18,8
+    EDITTEXT        IDC_DMDSHOW4,179,167,12,12,WS_DISABLED | NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "&Info...",IDABOUT,7,201,50,14
+    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,201,50,14
+    DEFPUSHBUTTON   "OK",IDOK,127,201,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,180,201,50,14
 END
 
 IDD_ABOUTDLG DIALOGEX 0, 0, 317, 188
@@ -196,11 +186,11 @@ BEGIN
     CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,
                     103,160,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
-    CTEXT           "Copyright © 1997-2015 by the authors of MAME, MAME32, MAMEW and PinMAME",
+    CTEXT           "Copyright © 1997-2016 by the authors of MAME, MAME32, MAMEW and PinMAME",
                     IDC_STATIC,148,116,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
                     IDC_STATIC,7,135,134,24
-    CTEXT           "Copyright © 2001-2015 by the authors.",IDC_STATIC,150,
+    CTEXT           "Copyright © 2001-2016 by the authors.",IDC_STATIC,150,
                     78,160,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",
                     IDC_STATIC,149,139,160,24
@@ -315,7 +305,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 230
         TOPMARGIN, 7
-        BOTTOMMARGIN, 168
+        BOTTOMMARGIN, 188
     END
 
     IDD_ABOUTDLG, DIALOG

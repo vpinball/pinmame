@@ -118,7 +118,7 @@ int GetVersionResourceEntry(LPCTSTR lpszFilename, LPCTSTR lpszResourceEntry, LPT
 	if ( wEntrySize>wMaxSize )
 		wEntrySize = wMaxSize;
 
-	lstrcpyn(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
+	strncpy(lpszBuffer, (LPSTR) lpEntry, wEntrySize);
 
 	GlobalUnlock(hVersionInfo);
 	GlobalFree(hVersionInfo);

@@ -177,7 +177,7 @@ static void tms5110_update(int ch, INT16 *buffer, int length)
 		/* interpolate */
 		while (length > 0 && source_pos < FRAC_ONE)
 		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - source_pos)) + ((INT32)curr * source_pos)) >> FRAC_BITS;
+			*buffer++ = (((INT32)prev * (INT32)(FRAC_ONE - source_pos)) + ((INT32)curr * (INT32)source_pos)) >> FRAC_BITS;
 			source_pos += source_step;
 			length--;
 		}
@@ -209,7 +209,7 @@ static void tms5110_update(int ch, INT16 *buffer, int length)
 		/* interpolate */
 		while (length > 0 && source_pos < FRAC_ONE)
 		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - source_pos)) + ((INT32)curr * source_pos)) >> FRAC_BITS;
+			*buffer++ = (((INT32)prev * (INT32)(FRAC_ONE - source_pos)) + ((INT32)curr * (INT32)source_pos)) >> FRAC_BITS;
 			source_pos += source_step;
 			length--;
 		}
