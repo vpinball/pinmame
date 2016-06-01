@@ -26,7 +26,7 @@
 #define S11_PIA4 4
 #define S11_PIA5 5
 
-#define S11_VBLANKFREQ    60 /* VBLANK frequency was 60 */
+#define S11_VBLANKFREQ    60 /* VBLANK frequency */
 
 #define S11_IRQFREQ     1000
 /*-- Smoothing values --*/
@@ -71,7 +71,9 @@ static struct {
   UINT32 extSol, extSolPulse;
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
+#ifdef PROC_SUPPORT
   int    ac_select, ac_state;
+#endif
   int    digSel;
   int    diagnosticLed;
   int    swCol;
@@ -116,21 +118,21 @@ static INTERRUPT_GEN(s11_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
- 
-int ii;
+
+  int ii;
 
 #ifdef PROC_SUPPORT
-    // Keep the P-ROC tickled each time we run around the interrupt
-    // so it knows we are still alive
-	if (coreGlobals.p_rocEn) {
-		procTickleWatchdog();
-	}
+  // Keep the P-ROC tickled each time we run around the interrupt
+  // so it knows we are still alive
+  if (coreGlobals.p_rocEn) {
+    procTickleWatchdog();
+  }
 #endif
   locals.vblankCount += 1;
-  /*-- lamps ---*/
+  /*-- lamps --*/
   if ((locals.vblankCount % S11_LAMPSMOOTH) == 0) {
-        #ifdef PROC_SUPPORT
-      		if (coreGlobals.p_rocEn) {
+#ifdef PROC_SUPPORT
+			if (coreGlobals.p_rocEn) {
                     // Loop through the lamp matrix, looking for any which have changed state
                         int col, row, procLamp;
 			for(col = 0; col < CORE_STDLAMPCOLS; col++) {
@@ -153,7 +155,7 @@ int ii;
 			}
 			procFlush();
 		}
-        #endif //PROC_SUPPORT
+#endif //PROC_SUPPORT
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
@@ -161,12 +163,11 @@ int ii;
 #ifdef PROC_SUPPORT
 		//TODO/PROC: Check implemenatation
 		UINT64 allSol = core_getAllSol();
-                
-  #endif
-  
+#endif
+
   if (locals.ssEn) { // set gameon and special solenoids
     locals.solenoids |= CORE_SOLBIT(S11_GAMEONSOL);
-    
+
 #ifdef PROC_SUPPORT
     if (!coreGlobals.p_rocEn) {
 #endif
@@ -185,28 +186,28 @@ int ii;
 #ifdef FIXMUX
 // mux translation moved
 #else
-    if ((core_gameData->sxx.muxSol) &&
+  if ((core_gameData->sxx.muxSol) &&
       (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
-    if (core_gameData->hw.gameSpecific1 & S11_RKMUX) {
-      
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
       locals.solenoids = (locals.solenoids & 0x00ff8fef) |
                          ((locals.solenoids & 0x00000010)<<20) |
-                         ((locals.solenoids & 0x00007000)<<13); }
-    else {
+                         ((locals.solenoids & 0x00007000)<<13);
+    else
       locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
-    }
   }
 #endif
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
-//#if S11_SOLSMOOTH != 2
-//#  error "Need to update smooth formula"
-//#endif
+#ifndef PROC_SUPPORT 
+ #if S11_SOLSMOOTH != 2
+ #  error "Need to update smooth formula"
+ #endif
+#endif
   coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
   coreGlobals.solenoids2 = locals.extSol << 8;
   locals.solenoids = coreGlobals.pulsedSolState;
   locals.extSol = locals.extSolPulse;
 
-  #ifdef PROC_SUPPORT 
+#ifdef PROC_SUPPORT 
   /*
    * Now this code is kind of complicated.  Basically on each iteration, we examine the state of the coils
    * as pinmame has them at the moment.  We compare that to the state of the coils on the previous iteration.
@@ -335,7 +336,7 @@ int ii;
 #endif //PROC_SUPPORT
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
-  } 
+  }
   core_updateSw(locals.ssEn);
 }
 
@@ -469,8 +470,8 @@ static void updsol(void) {
 
   /* if game has a MUX and it's active... */
   if ((core_gameData->sxx.muxSol) &&
-  (coreGlobals.pulsedSolState & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
-      if (core_gameData->hw.gameSpecific1 & S11_RKMUX) /* special case WMS Road Kings */
+      (coreGlobals.pulsedSolState & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX) /* special case WMS Road Kings */
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ff8fef)      |
                                   ((coreGlobals.pulsedSolState & 0x00000010)<<20) |
                                   ((coreGlobals.pulsedSolState & 0x00007000)<<13);
@@ -498,7 +499,7 @@ static WRITE_HANDLER(pia0b_w) {
 
 static WRITE_HANDLER(latch2200) {
   if (data != locals.solBits1) {
-      //fprintf(stderr,"\nPIA Data %d",data);
+    //fprintf(stderr,"\nPIA Data %d",data);
     locals.solBits1 = data;
     updsol();
   }
@@ -652,21 +653,21 @@ static struct pia6821_interface s11_pia[] = {
 };
 
 static SWITCH_UPDATE(s11) {
-    #ifdef PROC_SUPPORT
-        // Go read the switches from the P-ROC
+#ifdef PROC_SUPPORT
+	// Go read the switches from the P-ROC
 	if (coreGlobals.p_rocEn) 
 		procGetSwitchEvents();
-    #endif
-    
+#endif
+
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[S11_COMINPORT] & 0x7f00)>>8;
     // All the matrix switches come from the P-ROC, so we only want to read
     // the first column from the keyboard if we are not using the P-ROC
-    #ifndef PROC_SUPPORT
-      coreGlobals.swMatrix[1] = inports[S11_COMINPORT];
-    #endif
+#ifndef PROC_SUPPORT
+    coreGlobals.swMatrix[1] = inports[S11_COMINPORT];
+#endif
   }
-  
+
   /*-- Generate interupts for diganostic keys --*/
   cpu_set_nmi_line(0, core_getSw(S11_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S11_SWSOUNDDIAG));

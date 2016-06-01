@@ -163,18 +163,8 @@ CORE_CLONEDEF(grand, l3, l4, "Grand Lizard (L-3)", 1986, "Williams", s11_mS11XS,
 /*--------------------
 / Road Kings 07/86
 /--------------------*/
-
-// Road King muxed solenoids were the first in Sys11 and work
-// differently to the others.  Pinmame has special logic for
-// this, which P-ROC doesn't like.  So only enable if not
-// building for P-ROC
-#ifdef PROC_SUPPORT
-         INITGAMEFULL(rdkng, GEN_S11X, s11_dispS11,12, FLIP_SWNO(47,48),
-         S11_BCDDIAG,S11_RKMUX,0,43,44,24,25,26,27)
-#else
-         INITGAMEFULL(rdkng, GEN_S11X, s11_dispS11,12, FLIP_SWNO(47,48),
-         S11_BCDDIAG,S11_RKMUX,0,43,44,24,25,26,27)
-#endif
+INITGAMEFULL(rdkng, GEN_S11X, s11_dispS11,12, FLIP_SWNO(47,48),
+             S11_BCDDIAG,S11_RKMUX,0,43,44,24,25,26,27)
 S11_ROMSTART48(rdkng,l4,"road_u26.l4", CRC(4ea27d67) SHA1(cf46e8c5e417999150403d6d40adf8c36b1c0347),
                         "road_u27.l4", CRC(5b88e755) SHA1(6438505bb335f670e0892126764819a48eec9b88))
 S11XS_SOUNDROM88(       "road_u21.l1", CRC(f34efbf4) SHA1(cb5ffe9818994f4681e3492a5cd46f410d2e5353),
@@ -307,20 +297,10 @@ S11CS_SOUNDROM88(     "f14_u4.l1",  CRC(43ecaabf) SHA1(64b50dbff03cd556130d0cff4
                       "f14_u19.l1", CRC(d0de4a7c) SHA1(46ecd5786653add47751cc56b38d9db7c4622377))
 S11_ROMEND
 
-S11_ROMSTART48(f14,l2,"f14_u26.l1", CRC(62c2e615) SHA1(456ce0d1f74fa5e619c272880ba8ac6819848ddc),
-                      "f14_u27.l1", CRC(da1740f7) SHA1(1395a4f3891a043cfedc5426ec88af35eab8d4ea))
-S11XS_SOUNDROM88(     "f14_u21.l1", CRC(e412300c) SHA1(382d0cfa47abea295f0c7501bc0a010473e9d73b),
-                      "f14_u22.l1", CRC(c9dd7496) SHA1(de3cb855d87033274cc912578b02d1593d2d69f9))
-S11CS_SOUNDROM88(     "f14_u4.l1",  CRC(43ecaabf) SHA1(64b50dbff03cd556130d0cff47b951fdf37d397d),
-                      "f14_u19.l1", CRC(d0de4a7c) SHA1(46ecd5786653add47751cc56b38d9db7c4622377))
-S11_ROMEND
-
-
 CORE_GAMEDEF(f14, l1, "F14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p3, l1, "F14 Tomcat (P-3)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p4, l1, "F14 Tomcat (P-4)", 1987, "Williams", s11_mS11AS,0)
 CORE_CLONEDEF(f14, p5, l1, "F14 Tomcat (P-5)", 1987, "Williams", s11_mS11AS,0)
-CORE_CLONEDEF(f14, l2, l1, "F14 Tomcat (L-2)", 1987, "Williams", s11_mS11AS,0)
 
 /*--------------------
 / Fire! 8/87

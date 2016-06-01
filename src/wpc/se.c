@@ -776,7 +776,9 @@ static NVRAM_HANDLER(se) {
 }
 
 // convert switch numbers
+#ifdef PROC_SUPPORT
 int se_m2sw(int col, int row) { return col*8+(7-row)+1; }
+#endif
 
 //Stern S.A.M Hardware support
 #ifdef INCLUDE_STERN_SAM

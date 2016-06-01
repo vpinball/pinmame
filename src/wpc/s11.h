@@ -4,7 +4,9 @@
 #pragma once
 #endif
 
+#ifdef PROC_SUPPORT
 int s11_m2sw(int col, int row);
+#endif
 
 /*-- Common Inports for S11Games --*/
 #define S11_COMPORTS \

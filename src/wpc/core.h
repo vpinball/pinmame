@@ -393,7 +393,7 @@ typedef struct {
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
 #ifdef PROC_SUPPORT
   int    p_rocEn;         /* P-ROC support enable */
-  int   isKickbackLamp[255];
+  int    isKickbackLamp[255];
 #endif
   char   segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;

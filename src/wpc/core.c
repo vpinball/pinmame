@@ -1011,12 +1011,12 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             break;
           }
 #ifdef VPINMAME
-  		  seg_data[idx++] = tmpSeg;
+		  seg_data[idx++] = tmpSeg;
 #endif
-          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
+		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
 
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
-#ifdef PROC_SUPPORT 
+#ifdef PROC_SUPPORT
 					if (coreGlobals.p_rocEn) {
                                                 if ((core_gameData->gen & (GEN_WPCALPHA_1 | GEN_WPCALPHA_2 | GEN_ALLS11)) &&
 						    (!pmoptions.alpha_on_dmd)) {
@@ -1062,22 +1062,22 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 VIDEO_UPDATE(core_gen) {
   int count = 0;
 #ifdef PROC_SUPPORT
-  	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2 || core_gameData->gen & GEN_ALLS11;
+	int alpha = core_gameData->gen & GEN_WPCALPHA_1 || core_gameData->gen & GEN_WPCALPHA_2 || core_gameData->gen & GEN_ALLS11;
 	if (coreGlobals.p_rocEn) {
 		if (pmoptions.alpha_on_dmd && alpha) {
 			procClearDMD();
 		}
 	}
 	// If we don't want the DMD displayed on the screen, skip this code
-  if (pmoptions.virtual_dmd) {
+	if (pmoptions.virtual_dmd) {
 #endif
   updateDisplay(bitmap, cliprect, core_gameData->lcdLayout, &count);
   memcpy(locals.lastSeg, coreGlobals.segments, sizeof(locals.lastSeg));
 #ifdef PROC_SUPPORT
-  }
+	}
 	if (coreGlobals.p_rocEn) {
 		if (pmoptions.alpha_on_dmd && alpha) {
-                    	procUpdateDMD();
+			procUpdateDMD();
 		}
 	}
 #endif
@@ -1095,11 +1095,11 @@ void core_updateSw(int flipEn) {
   UINT8 swFlip;
   int ii;
 
-  if (g_fHandleKeyboard ) {
-  
-   for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
-      inports[ii] = readinputport(ii); 
-      
+  if (g_fHandleKeyboard) {
+
+    for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
+      inports[ii] = readinputport(ii);
+
 
     /*-- buttons --*/
     swFlip = 0;
@@ -1175,7 +1175,7 @@ void core_updateSw(int flipEn) {
     if (core_gameData->hw.handleMech) core_gameData->hw.handleMech(g_fHandleMechanics);
   }
   /*-- Run simulator --*/
-    if (coreGlobals.simAvail)
+  if (coreGlobals.simAvail)
     sim_run(inports, CORE_COREINPORT+(coreData->coreDips+31)/16,
             (inports[CORE_SIMINPORT] & SIM_SWITCHKEY) == 0,
             (SIM_BALLS(inports[CORE_SIMINPORT])));
@@ -1213,7 +1213,7 @@ void core_updateSw(int flipEn) {
   if (g_fHandleKeyboard &&
       (!coreGlobals.simAvail || inports[CORE_SIMINPORT] & SIM_SWITCHKEY)) {
     /*-- simulator keys disabled, use row+column keys --*/
-      
+
     static int lastRow = 0, lastCol = 0;
     int row = 0, col = 0;
 #ifdef MAME_DEBUG
@@ -1473,15 +1473,15 @@ int core_getSwCol(int colEn) {
 /  Set/reset a switch
 /-----------------------*/
 void core_setSw(int swNo, int value) {
-    if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
-    //fprintf(stderr,"\nPinmame switch %d",swNo);
-    coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
+  if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  //fprintf(stderr,"\nPinmame switch %d",swNo);
+  coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
 		coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ 0) & (1<<(swNo%8));
 	} else {
 #endif
-            
+
   coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 #ifdef PROC_SUPPORT
 	}
@@ -1636,7 +1636,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
                                     	/* Draw alphanumeric segments on the DMD */
                                     switch (row) {
                                         case 0:
-				            procDrawSegment(col/2, 3, kk-1);
+                                            procDrawSegment(col/2, 3, kk-1);
                                             break;
                                         case 21:
                                             // This is the ball/credit display on older Sys11
@@ -1650,8 +1650,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
                                                 break;
                                         default:
                                             break;
-						
-                                        
+
 					}
 				}
 			}
@@ -1702,7 +1701,7 @@ static MACHINE_INIT(core) {
 #ifdef PROC_SUPPORT
 		/*-- P-ROC operation requires a YAML.  Disable P-ROC operation
 		 * if no YAML is specified. --*/
-                 
+
 		coreGlobals.p_rocEn = strcmp(yaml_filename, "None") != 0;
 		if (coreGlobals.p_rocEn) {
 			/*-- Finish P-ROC initialization now that the sim is active. --*/

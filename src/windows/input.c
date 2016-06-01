@@ -1703,7 +1703,7 @@ static int ipdef_custom_rc_func(struct rc_option *option, const char *arg, int p
 
 		// if an input definition was re-defined
 		else if (pinput_keywords->type == IKT_IPT ||
-		         pinput_keywords->type == IKT_IPT_EXT)
+			pinput_keywords->type == IKT_IPT_EXT)
 		{
 			// loop through all definitions
 			while (idef->type != IPT_END)

@@ -80,7 +80,7 @@ struct rc_option pinmame_opts[] = {
         { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
 #endif
 #ifdef PROC_SUPPORT
-// TODO/PROC: Correct implemenatation?
+// TODO/PROC: Correct implementation?
 	{ "p-roc", NULL, rc_string, &pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
 	{ "alpha_on_dmd", NULL, rc_bool, &pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
 	{ "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
