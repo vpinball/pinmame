@@ -102,35 +102,6 @@ PinMAME:
   * Need "tagged" version of pinproc (0.9.1?)
 
 
-
-Changed files: (svn diff -r3073:BASE [path])
-==============
-makefile
-src\pinmame.mak
-src\windows\windows.mak
-src\p-roc\p-roc.mak
-
-src\driver.h
-src\input.c
-src\input.h
-src\mame.c
-src\osdepend.h
-src\p-roc\*.cpp
-src\p-roc\*.h
-src\p-roc\*.hpp
-src\usrintrf.c
-src\windows\config.c
-src\windows\input.c
-src\wpc\core.c
-src\wpc\core.h
-src\wpc\dedmd.c
-src\wpc\se.c
-src\wpc\se.h
-src\wpc\wpc.c
-src\wpc\wpc.h
-
-
-
 Compilation of libraries:
 =========================
 a) MinGW
