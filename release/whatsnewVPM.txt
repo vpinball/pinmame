@@ -16,8 +16,10 @@ Version 2.7 (X X, 2016) - ""
       (must have PinSound Studio 0.7 or newer running at the same time:
        make sure that the windows permissions match between PinSound Studio and Visual PinMAME/Pinball, e.g.
        if one is using admin permissions when running, then both need to be started with that (or the other way round))
+  (needs VPINMAME_ALTSOUND (also requires bass.lib/.dll) and/or VPINMAME_PINSOUND defined when compiling)
 
 - PinDMD 3 handling
+  (see pindmd.h to change defines when compiling, also requires pindmd.lib/.dll)
 
 Version 2.6 (December 24, 2015) - "The team awakens"
 ------------------------------------------------------------------------------
