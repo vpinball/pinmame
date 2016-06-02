@@ -1995,6 +1995,7 @@ DRIVER(esha,la1)        //          02/89 W Earthshaker LA-1
 DRIVER(esha,lg1)        //          02/89 W Earthshaker LG-1 (German)
 DRIVER(esha,lg2)        //          02/89 W Earthshaker LG-2 (German)
 DRIVER(esha,la3)        //          02/89 W Earthshaker LA-3
+DRIVER(esha,l4c)        //          06/16 W Earthshaker LA-4C
 DRIVER(esha,ma3)        //                  Earthshaker LA-3 (Metallica)
 DRIVER(esha,pr4)        //          02/89 W Earthshaker Family version
 DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1)

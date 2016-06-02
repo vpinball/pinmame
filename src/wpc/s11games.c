@@ -600,6 +600,14 @@ S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e6
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 
+S11_ROMSTART48(esha,l4c,"eshk_u26.l4c", CRC(e2e067ec) SHA1(946ce6764bbd992591d9f8215da333d50d7d2593),
+                        "eshk_u27.l4c", CRC(aacfb7aa) SHA1(17abe7f294f815f5078601f548526022497ef0b1))
+S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
+                        "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
+S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e60e978b84775e16c64e),
+                        "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
+S11_ROMEND
+
 S11_ROMSTART48(esha,ma3,"eshk_u26.ma3", CRC(7b7b1a8a) SHA1(8c1d5e4e0b4217055ad9e1490ff3dba52ef013f4),
                         "eshk_u27.ma3", CRC(6197c56c) SHA1(338438e8e4c9a7790977dc8e394f6f032516f755))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
@@ -642,7 +650,8 @@ S11_ROMEND
 
 #define input_ports_esha input_ports_s11
 CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, ma3, la3, "Earthshaker (Metallica mod) (LA-3)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, l4c, la3, "Earthshaker (LA-4C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, ma3, la3, "Earthshaker (LA-3 Metallica MOD)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
