@@ -7,7 +7,8 @@ XMAME port for unix/linux systems
 PROC support (needs special compile with PROC_SUPPORT defined) to drive (at least) real WPC machines with PinMAME/PROC
 
 New S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
-Improved BSMT2000 sound core for Sega, Alvin G. DMDs, Data East DMDs (Batman and newer), and Stern DMDs (up to Terminator 3)
+Improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
+Improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)
 Improved Brave Team sound core
 
 *** ROM SUPPORT *** Thanks to Inkochnito, Soren
