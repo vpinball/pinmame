@@ -188,7 +188,7 @@ static WRITE_HANDLER(de1s_ym2151Port) {
  When the CPU reads the sound commands (BIN) a FIRQ is generated and BUF-FULL
  is cleared.
  A FIRQ is also generated from the 24MHz signal via two dividers U3 & U2
- (I think it is 24MHz/4/4096=1536 Hz)
+ (I think it is 24MHz/4/4096=1536 Hz, new T3 manual says toggle at 976Hz, code below uses 489Hz)
 
  The really strange thing is the PAL. It can generate the following output
  BUSY  - Not used on BSMT board. Sent back to CPU board to STATUS latch?
@@ -221,6 +221,8 @@ const struct sndbrdIntf de2sIntf = {
 /* ---------------------------------------------------------------------------------------------------------------*/
 /* The ONLY differences in the different BSMT interfaces here are for adjusting volume & # of voices used         */
 /* The # of voices should really be handled by the reset lines and the bsmt emulation, but for now it's hardcoded */
+/* The first 4 Sega games (Maverick, MS Frankenstein, Baywatch, Batman Forever) were still using DE board sets which used the volume control mounted on the power junction box to control the volume. It was not done through the software. Although they did start using the Portal menu system for the other settings for the later two games. So you can not turn these 4 up to 31 as you suggest. One thing to note they did use a new revision sound board 520-5126-02 on the latter 2, Baywatch being one of them. I don't know if that would have any bearing. */
+/* Sega's 5th game (Apollo 13) was the first with the new board set that allowed you to control the audio through the software. */
 /* ---------------------------------------------------------------------------------------------------------------*/
 
 /* 11 Voice Style BSMT Chip used with Data East (Hook/Batman/Star Wars, etc..) */
@@ -264,7 +266,7 @@ MACHINE_DRIVER_START(de2as)
   MDRV_CPU_ADD(M6809, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(de2s_readmem, de2s_writemem)
-  MDRV_CPU_PERIODIC_INT(de2s_firq, 489) /* Fixed FIRQ of 489Hz as measured on real machine*/
+  MDRV_CPU_PERIODIC_INT(de2s_firq, 489) /* Fixed FIRQ of 489Hz as measured on real machine (new T3 manual says toggling at 976Hz) */
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("bsmt", BSMT2000, de2s_bsmt2000aInt)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
@@ -362,6 +364,7 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
 }
 
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
+
 /* Writing 0x80 here resets BSMT ?*/
 static WRITE_HANDLER(de2s_bsmtreset_w) {
 	static data8_t last_data = 0;
@@ -389,7 +392,7 @@ static INTERRUPT_GEN(de2s_firq) {
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)
    by simply replacing the older game roms into the board.
    The BSMT chip is software emulated by the AT91 CPU and has added new capabilities such as
-   16 bit sample support and ADPCM compression. The Xilinx FPGA is programmed to handle a variety of
+   16 bit sample support with ADPCM compression. The Xilinx FPGA is programmed to handle a variety of
    tasks. It controls 2 of the ROM Enable lines, acts as a sound command buffer from the main cpu,
    and most importantly, acts as a simple DSP chip which converts the 16 bit sample data into a serial sound
    stream for output to a DAC. It may have other functionality as well, but not related to sound if so.
@@ -398,7 +401,7 @@ static INTERRUPT_GEN(de2s_firq) {
    certain register write occurs, and the boot code is also swapped, I needed to provide the
    AT91 code pointers to the memory region data so it could perform the swap, see init for details.
 
-   Internally the code sets up a timer interrupt @ 24,242Hz (40Mhz/2/0x339).
+   Internally the code sets up a timer interrupt @ 24,242Hz (40Mhz/2/0x339). //!! 24,000Hz??
 
    -10/13/2006
     Removed external irq call and silly irq ready hacks
@@ -427,11 +430,12 @@ static INTERRUPT_GEN(de2s_firq) {
 #define	AT91IMP_LOG_NO_SAMPLES_2PLAY	0	// Set to 1 to log when there are not enough sound samples to play
 
 //Definitions
-#define ARMCPU_FREQ	40000000				//40 MHZ
-#define ARMIRQ_FREQ ARMCPU_FREQ/2/0x339		//Works out to be 24,242Hz
-#define WAVE_OUT_RATE ARMIRQ_FREQ			//Output rate is exactly the IRQ frequency
-#define ARMSNDBUFSIZE 400                   //Sound command input port buffer size
-#define BUFFSIZE 0x100000
+#define ARMCPU_FREQ	40000000				// 40 MHZ
+#define WAVE_OUT_RATE 24000			        // Output rate like BSMT2000
+#define ARMSNDBUFSIZE 4                     // Sound command input port buffer size (doublebuffer should actually be good enough, but lets play safe)
+#define BUFFSIZE 0x40000
+
+#define AT91_SOUND_CATCHUP_HACK             // Catch up during sound buffer update, if generated sound and consumed sound is too far apart (e.g. somewhere some frequencies or CPU cycles do not match yet :/)
 
 //Includes
 #if AT91IMP_MAKE_WAVS
@@ -470,7 +474,7 @@ static void * wavraw;					/* raw waveform */
 //CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
 static READ32_HANDLER(xilinx_r)
 {
-	data32_t data = 0;
+	data32_t data;
 
 	//Xilinx Provides Sound Command from Main CPU
 	#if AT91IMP_LOG_SOUND_CMD
@@ -492,7 +496,7 @@ static READ32_HANDLER(xilinx_r)
 //CSR 0 Mapped to 0x10000000 (U8 ROM)
 static READ32_HANDLER(csr0roms_r)
 {
-	data32_t data = 0;
+	data32_t data;
 	int mask_adjust = 0;
 
 	//Adjust offset due to the way MAME 32Bit handler works
@@ -526,7 +530,7 @@ static READ32_HANDLER(csr0roms_r)
 //CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
 static READ32_HANDLER(csr2roms_r)
 {
-	data32_t data = 0;
+	data32_t data;
 	int mask_adjust = 0;
 
 	//Adjust offset due to the way MAME 32Bit handler works
@@ -591,7 +595,6 @@ static WRITE32_HANDLER(xilinx_w)
 //Remove Delay from LED Flashing code to speed up the boot time of the cpu
 static void remove_led_code(void)
 {
-
   //LOTR OS Version -
   if(
 	  (de3as_page0_ram[(0x2854+0x8000)/4] == 0xeb000061) &&
@@ -653,7 +656,8 @@ static void setup_at91(void)
   memcpy(u7_base, memory_region(REGION_SOUND1), memory_region_length(REGION_SOUND1));
 }
 
-static void de3s_init(struct sndbrdData *brdData) {
+static void de3s_init(struct sndbrdData *brdData)
+{
   memset(&de2slocals, 0, sizeof(de2slocals));
   de2slocals.brdData = *brdData;
   setup_at91();
@@ -712,11 +716,15 @@ static INT16 lastsamp = 0;
 
 static void at91_sh_update(int num, INT16 *buffer, int length)
 {
- int ii=0;
+ int ii;
 
  /* fill in with samples until we hit the end or run out */
  for (ii = 0; ii < length; ii++) {
-	if(sampout == sampnum || sampnum < 500) {
+	if(sampout == sampnum
+#if 0
+		|| sampnum < 500 //!! check is stupid due to wrap around?!
+#endif
+		) {
 		#if AT91IMP_LOG_NO_SAMPLES_2PLAY
 		LOG(("not enough samples to play\n"));
 		#endif
@@ -732,9 +740,16 @@ static void at91_sh_update(int num, INT16 *buffer, int length)
 	//Store last output
 	lastsamp = buffer[ii];
  }
- /* fill the rest with last sample output */
+
+ /* fill the rest with last sample output */ //!! should only be needed, if at all, initially?
  for ( ; ii < length; ii++)
 	buffer[ii] = lastsamp;
+
+#ifdef AT91_SOUND_CATCHUP_HACK
+ /* if sound is more than 1s/10 = 100ms apart, then catch up */
+ if (sampnum - sampout > WAVE_OUT_RATE / 10)
+	 sampout = sampnum;
+#endif
 }
 
 int at91_sh_start(const struct MachineSound *msound)
@@ -772,10 +787,10 @@ static struct CustomSound_interface at91CustIntf =
 /*********************/
 READ32_HANDLER(arm_port_r)
 {
-	data32_t data;
-	int logit = AT91IMP_LOG_PORT_READ;
-	data = 0;
-	if(logit)	LOG(("%08x: Read port - Data = %08x\n",activecpu_get_pc(),data));
+	data32_t data = 0;
+#if AT91IMP_LOG_PORT_READ
+    LOG(("%08x: Read port - Data = %08x\n", activecpu_get_pc(), data));
+#endif
 	return data;
 }
 
@@ -789,7 +804,6 @@ static WRITE32_HANDLER(arm_port_w)
 //for debugging
 #if AT91IMP_LOG_PORT_WRITE
 	char bitstr[33];
-	int logit = 1;
 	int i;
 	for(i = 31; i >= 0; i--)
 	{
@@ -799,7 +813,7 @@ static WRITE32_HANDLER(arm_port_w)
 			bitstr[31-i]='0';
 	}
 	bitstr[32]='\0';
-	if(logit)	LOG(("%08x: Write port - Data = %08x  (%s)\n",activecpu_get_pc(),data,bitstr));
+	LOG(("%08x: Write port - Data = %08x  (%s)\n",activecpu_get_pc(),data,bitstr));
 #endif
 
 	plin = ((data & 0x1F0000) >> 16) | ((data & 0x3800000) >> 18);
@@ -861,7 +875,7 @@ MACHINE_DRIVER_START(de3as)
   MDRV_CPU_MEMORY(arm_readmem, arm_writemem)
   MDRV_CPU_PORTS(arm_readport, arm_writeport)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_ADD(CUSTOM,  at91CustIntf)
+  MDRV_SOUND_ADD(CUSTOM, at91CustIntf)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
