@@ -53,6 +53,11 @@ void alt_sound_handle(int boardNo, int cmd)
 		static signed char jingle_ducking = -1;
 		static signed char voice_ducking[ALT_MAX_VOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
+		int	attenuation = osd_get_mastervolume();
+		float master_vol = 1.0f;
+		while (attenuation++ < 0)
+			master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
+
 		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0) // another game has been loaded? -> previous data has to be free'd
 		{
 			cmd_counter = 0;
@@ -376,7 +381,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					{
 						global_vol = min((float)cmd_buffer[1] / 127.f, 1.0f);
 						if (music_stream != 0)
-							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, music_vol * global_vol);
+							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, music_vol * global_vol * master_vol);
 #ifdef ALT_LOG
 						fprintf(f, "change volume %.2f\n", global_vol);
 #endif
@@ -518,12 +523,12 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
-                        else
-                        {
-                            BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
+						else
+						{
+							BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
 
-                            BASS_ChannelPlay(jingle_stream, 0);
-                        }
+							BASS_ChannelPlay(jingle_stream, 0);
+						}
 					}
 
 					if (strstr(psd.files_with_subpath[idx], path_music) != 0)
@@ -546,13 +551,13 @@ void alt_sound_handle(int boardNo, int cmd)
 						{
 							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 						}
-                        else
-                        {
-                            music_vol = psd.gain[idx];
-                            BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
+						else
+						{
+							music_vol = psd.gain[idx];
+							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
 
-                            BASS_ChannelPlay(music_stream, 0);
-                        }
+							BASS_ChannelPlay(music_stream, 0);
+						}
 					}
 
 					if ((strstr(psd.files_with_subpath[idx], path_voice) != 0) || (strstr(psd.files_with_subpath[idx], path_sfx) != 0))
@@ -606,12 +611,12 @@ void alt_sound_handle(int boardNo, int cmd)
 							{
 								//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
 							}
-                            else
-                            {
-                                BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol);
+							else
+							{
+								BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
 
-                                BASS_ChannelPlay(voice_stream[voice_idx], 0);
-                            }
+								BASS_ChannelPlay(voice_stream[voice_idx], 0);
+							}
 						}
 					}
 				}
