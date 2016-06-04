@@ -520,7 +520,7 @@ UINT8 tms7000_calculate_timer1_decrementator( void )
 
 WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 {
-	data8_t	temp1, temp2, temp3, temp4;
+	data8_t	temp1, temp2, temp3;
 	
 	switch( offset )
 	{
@@ -576,7 +576,7 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 {
 	data8_t result;
-	data8_t	temp1, temp2, temp3, temp4;
+	data8_t	temp1, temp2, temp3;
 	
 	switch( offset )
 	{
