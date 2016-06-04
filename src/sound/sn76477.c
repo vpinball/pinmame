@@ -320,7 +320,7 @@ void SN76477_enable_w(int chip, int data)
 
 	timer_adjust(sn->envelope_timer, TIME_NEVER, chip, 0);
 	timer_adjust(sn->oneshot_timer, TIME_NEVER, chip, 0);
-	
+
 	if( sn->enable == 0 )
 	{
 		switch( sn->envelope )
@@ -332,6 +332,7 @@ void SN76477_enable_w(int chip, int data)
 				oneshot_envelope_cb(chip);
 			break;
 		case 1: /* One-Shot */
+			sn->vol = 0;
 			oneshot_envelope_cb(chip);
 			if (sn->oneshot_time > 0)
 				timer_adjust(sn->oneshot_timer, sn->oneshot_time, chip, 0);
@@ -528,7 +529,7 @@ void SN76477_set_amplitude_res(int chip, double res)
 #endif
 		for( i = 0; i < VMAX+1; i++ )
 		{
-			int vol = (int)((3.4 * sn->feedback_res / sn->amplitude_res) * 32767 * i / (VMAX+1));
+			int vol = (int)((sn->feedback_res / sn->amplitude_res) * 32767 * i / (VMAX+1));
 #if VERBOSE
 			if( vol > 32767 && !clip )
 				clip = i;
@@ -538,7 +539,7 @@ void SN76477_set_amplitude_res(int chip, double res)
 			sn->vol_lookup[i] = vol * intf->mixing_level[chip] / 100;
 		}
 #if VERBOSE
-		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 256));
+		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 32767));
 #endif
 	}
 	else
@@ -568,7 +569,7 @@ void SN76477_set_feedback_res(int chip, double res)
 #endif
 		for( i = 0; i < VMAX+1; i++ )
 		{
-			int vol = (int)((3.4 * sn->feedback_res / sn->amplitude_res) * 32767 * i / (VMAX+1));
+			int vol = (int)((sn->feedback_res / sn->amplitude_res) * 32767 * i / (VMAX+1));
 #if VERBOSE
 			if( vol > 32767 && !clip ) clip = i;
 #endif
@@ -576,7 +577,7 @@ void SN76477_set_feedback_res(int chip, double res)
 			sn->vol_lookup[i] = vol * intf->mixing_level[chip] / 100;
 		}
 #if VERBOSE
-		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 256));
+		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 32767));
 #endif
 	}
 	else
@@ -805,8 +806,11 @@ void SN76477_set_oneshot_cap(int chip, double cap)
 						   0x18000 ) & 0x1ffff; 							\
 																			\
 	/* low pass filter: sample every noise_freq pseudo random value */		\
-	sn->noise_count -= sn->noise_freq;										\
-	while( sn->noise_count <= 0 )											\
+	if (sn->noise_count > sn->noise_freq)									\
+	{																		\
+		sn->noise_count -= sn->noise_freq;									\
+	}																		\
+	else																	\
 	{																		\
 		sn->noise_count = sn->samplerate;									\
 		sn->noise_out = sn->noise_poly & 1; 								\
