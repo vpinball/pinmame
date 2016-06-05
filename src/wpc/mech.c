@@ -175,6 +175,10 @@ void mech_nv(void *file, int write) {
     if (write)     mame_fwrite(file, &locals.mechData[ii].anglePos, sizeof(int)); /* Save */
     else if (file) mame_fread (file, &locals.mechData[ii].anglePos, sizeof(int)); /* Load */
     else locals.mechData[ii].anglePos = 0; /* First time */
+
+    if (write && file && ((mame_file*)file)->type == RAM_FILE) // if writing out nvram to ram file then do nothing to pos
+      continue;
+
     locals.mechData[ii].pos = -1;
   }
 }

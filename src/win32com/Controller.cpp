@@ -505,6 +505,160 @@ STDMETHODIMP CController::get_RawDmdHeight(int *pVal)
 	return S_OK;
 }
 
+/**************************************************************************
+* IController.NVRAM (read-only): Copy whole NVRAM to a self allocated array
+***************************************************************************/
+STDMETHODIMP CController::get_NVRAM(VARIANT *pVal)
+{
+	if (Machine && Machine->drv && Machine->drv->nvram_handler && pVal)
+	{
+		// setup a ram file manually (MAME has no mechanism so far)
+		mame_file* nvram_file = (mame_file*)malloc(sizeof(mame_file));
+		memset(nvram_file, 0, sizeof(mame_file));
+		nvram_file->type = RAM_FILE;
+		// call nvram handler to write to file
+		(*Machine->drv->nvram_handler)(nvram_file, 1);
+
+		if (nvram_file->offset == 0)
+		{
+			mame_fclose(nvram_file);
+			return S_FALSE;
+		}
+
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, nvram_file->offset);
+
+		VARIANT NVState;
+		NVState.vt = VT_UI1;
+
+		for (LONG ofs = 0; ofs < nvram_file->offset; ++ofs)
+		{
+			NVState.cVal = nvram_file->data[ofs];
+			SafeArrayPutElement(psa, &ofs, &NVState);
+		}
+
+		pVal->vt = VT_ARRAY | VT_VARIANT;
+		pVal->parray = psa;
+
+		mame_fclose(nvram_file);
+
+		return S_OK;
+	}
+	else
+		return S_FALSE;
+}
+
+static UINT8 oldNVRAM[CORE_MAXNVRAM];
+static INT64 oldNVRAMlength = -1; // meh, not good enough when changing games! //!! use game name, too?
+static vp_tChgNVRAMs chgNVRAMs; // stack overflow when put into get_ChangedNVRAM??
+
+/***************************************************************
+* IController.ChangedNVRAM property: returns a list of the
+* numbers of NVRAM locations, which state has changed since the last call
+* number is in the first, state in the second part, previous state in the third
+***************************************************************/
+STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
+{
+	if (!pVal) return S_FALSE;
+
+	if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
+	{
+		pVal->vt = 0; return S_OK;
+	}
+
+	if (!(Machine && Machine->drv && Machine->drv->nvram_handler))
+		return S_FALSE;
+
+	// setup a ram file manually (MAME has no mechanism so far)
+	mame_file* nvram_file = (mame_file*)malloc(sizeof(mame_file));
+	memset(nvram_file, 0, sizeof(mame_file));
+	nvram_file->type = RAM_FILE;
+	// call nvram handler to write to file
+	(*Machine->drv->nvram_handler)(nvram_file, 1);
+
+	if (nvram_file->offset == 0)
+	{
+		mame_fclose(nvram_file);
+		return S_FALSE;
+	}
+
+	/*-- if enabled: wait for the worker thread to enter "throttle_speed()" --*/
+	if ((g_hEnterThrottle != INVALID_HANDLE_VALUE) && g_iSyncFactor)
+		WaitForSingleObject(g_hEnterThrottle, (synclevel <= 20) ? synclevel : 50);
+	else if (synclevel<0)
+		uSleep(-synclevel * 1000);
+
+	/*-- Count changes --*/
+	int uCount;
+
+	if (oldNVRAMlength != nvram_file->offset)
+	{
+		uCount = min(nvram_file->offset, CORE_MAXNVRAM);
+		for (int i = 0; i < uCount; ++i)
+		{
+			chgNVRAMs[i].nvramNo = i;
+			chgNVRAMs[i].oldStat = 0; //!!
+			chgNVRAMs[i].currStat = nvram_file->data[i];
+		}
+		memcpy(oldNVRAM, nvram_file->data, uCount);
+		oldNVRAMlength = nvram_file->offset;
+
+
+
+		mame_fclose(nvram_file);
+		pVal->vt = 0; return S_OK; //!! for now, as too many changes initially!?!
+	}
+	else
+	{
+		uCount = 0;
+		int uCountMax = min(nvram_file->offset, CORE_MAXNVRAM);
+		for (int i = 0; i < uCountMax; ++i)
+		{
+			if (oldNVRAM[i] != nvram_file->data[i])
+			{
+				chgNVRAMs[uCount].nvramNo = i;
+				chgNVRAMs[uCount].oldStat = oldNVRAM[i];
+				chgNVRAMs[uCount].currStat = nvram_file->data[i];
+				uCount++;
+
+				oldNVRAM[i] = nvram_file->data[i];
+			}
+		}
+	}
+
+	mame_fclose(nvram_file);
+
+	if (uCount == 0)
+	{
+		pVal->vt = 0; return S_OK;
+	}
+
+	/*-- Create array --*/
+	SAFEARRAYBOUND Bounds[] = { { (ULONG)uCount, 0 }, { 3, 0 } };
+	SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 2, Bounds);
+	long ix[2];
+	VARIANT varValue;
+
+	varValue.vt = VT_I4;
+
+	/*-- add changed locations to array --*/
+	for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
+		ix[1] = 0;
+		varValue.lVal = chgNVRAMs[ix[0]].nvramNo;
+		SafeArrayPutElement(psa, ix, &varValue);
+		ix[1] = 1; // NVRAM value
+		varValue.lVal = chgNVRAMs[ix[0]].currStat;
+		SafeArrayPutElement(psa, ix, &varValue);
+		ix[1] = 2; // Old NVRAM value
+		varValue.lVal = chgNVRAMs[ix[0]].oldStat;
+		SafeArrayPutElement(psa, ix, &varValue);
+	}
+
+	pVal->vt = VT_ARRAY | VT_VARIANT;
+	pVal->parray = psa;
+
+	return S_OK;
+}
+
 /************************************************************************************************
  * IController.RawDmdPixels (read-only): Copy whole DMD to a self allocated array (values 0..100)
  ************************************************************************************************/

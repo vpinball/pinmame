@@ -18,6 +18,10 @@ Version 2.7 (X X, 2016) - ""
        if one is using admin permissions when running, then both need to be started with that (or the other way round))
   (needs VPINMAME_ALTSOUND (also requires bass.lib/.dll) and/or VPINMAME_PINSOUND defined when compiling)
 
+- New methods for the Controller object:
+	HRESULT NVRAM(/*[out, retval]*/ VARIANT *pVal); - Get the full NVRAM of the emulation (e.g. high scores, settings, etc. as a binary blob of 8bit values) 
+	HRESULT ChangedNVRAM(/*[out, retval]*/ VARIANT *pVal); - Get only the NVRAM parts that have changed since last call (similar to ChangedLamps), first dimension has the location, second the new value (only 8 bits are valid), third the previous value (only 8 bits are valid)
+
 - PinDMD 3 handling
   (see pindmd.h to change defines when compiling, also requires pindmd.lib/.dll)
 
@@ -50,7 +54,7 @@ Version 2.6 (December 24, 2015) - "The team awakens"
 
 	HRESULT ChangedGIsState([in] int **buf, [out, retval] int *pVal); - Copy all changed GI lamps (user-allocated)
 
-        HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal); - Copy all changed LEDs (user-allocated)
+	HRESULT ChangedLEDsState([in] int nHigh, [in] int nLow, [in] int nnHigh, [in] int nnLow, [in] int **buf, [out, retval] int *pVal); - Copy all changed LEDs (user-allocated)
 
 	HRESULT MasterVolume([out, retval] int *pVal); - Get Master Volume
 	HRESULT MasterVolume([in] int newVal); - Set Master Volume
