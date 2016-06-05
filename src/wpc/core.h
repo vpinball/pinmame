@@ -302,6 +302,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_CUSTLAMPCOL   CORE_STDLAMPCOLS  /* first custom lamp column */
 #define CORE_MAXPORTS        8   /* Maximum input ports */
 #define CORE_MAXGI           5   /* Maximum GI strings */
+#define CORE_MAXNVRAM        131118 /* Maximum number of NVRAM bytes, only used for get_ChangedNVRAM so far */
 
 /*-- create a custom switch number --*/
 /* example: #define swCustom CORE_CUSTSWNO(1,2)  // custom column 1 row 2 */

@@ -39,11 +39,6 @@
 	CONSTANTS
 ***************************************************************************/
 
-#define PLAIN_FILE				0
-#define RAM_FILE				1
-#define ZIPPED_FILE				2
-#define UNLOADED_ZIPPED_FILE	3
-
 #define FILEFLAG_OPENREAD		0x01
 #define FILEFLAG_OPENWRITE		0x02
 #define FILEFLAG_HASH			0x04
@@ -55,25 +50,6 @@
 #ifdef MAME_DEBUG
 #define DEBUG_COOKIE			0xbaadf00d
 #endif
-
-/***************************************************************************
-	TYPE DEFINITIONS
-***************************************************************************/
-
-struct _mame_file
-{
-#ifdef DEBUG_COOKIE
-	UINT32 debug_cookie;
-#endif
-	osd_file *file;
-	UINT8 *data;
-	UINT64 offset;
-	UINT64 length;
-	UINT8 eof;
-	UINT8 type;
-	char hash[HASH_BUF_SIZE];
-};
-
 
 
 /***************************************************************************
@@ -368,6 +344,26 @@ UINT32 mame_fwrite(mame_file *file, const void *buffer, size_t length)
 	{
 		case PLAIN_FILE:
 			return osd_fwrite(file->file, buffer, length);
+		case RAM_FILE:
+			if (!file->data || (file->offset + length > file->length))
+			{
+				if (!file->data)
+					file->data = malloc(length);
+				else
+					file->data = realloc(file->data, file->offset + length);
+				memcpy(file->data + file->offset, buffer, length);
+				file->offset += length;
+				file->length = file->offset;
+				file->eof = 1;
+				return length;
+			}
+			else
+			{
+				memcpy(file->data + file->offset, buffer, length);
+				file->offset += length;
+				return length;
+			}
+			break;
 	}
 
 	return 0;
