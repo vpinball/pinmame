@@ -353,6 +353,7 @@ BEGIN
     POPUP "CTRL_CTX_MENU"
     BEGIN
         MENUITEM "&Restore window size",        ID_CTRLCTXMENU_DISPLAY_RESTORESIZE
+        MENUITEM "Restore &window position",    ID_CTRLCTXMENU_DISPLAY_RESTOREPOS
 
         MENUITEM SEPARATOR
         MENUITEM "Show window &title",          ID_CTRLCTXMENU_DISPLAY_TITLE
