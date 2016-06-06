@@ -150,7 +150,7 @@ DWORD FAR PASCAL CController::RunController(CController* pController)
 		if ( iSyncLevel<=20 )
 			g_iSyncFactor = 1024;
 		else
-			g_iSyncFactor = (int) (1024.0*(iSyncLevel/60.0));
+			g_iSyncFactor = (int) (1024.0*(iSyncLevel/60.0)); //!!!!
 
 		g_hEnterThrottle = CreateEvent(NULL, false, true, NULL);
 	}
@@ -633,6 +633,17 @@ extern "C" LRESULT CALLBACK osd_hook(HWND wnd, UINT message, WPARAM wparam, LPAR
 
 				pController->m_pGameSettings->put_Value(CComBSTR("dmd_width"), vValue);
 				pController->m_pGameSettings->put_Value(CComBSTR("dmd_height"), vValue);
+
+				*pfhandled = TRUE;
+			}
+			break;
+
+		case ID_CTRLCTXMENU_DISPLAY_RESTOREPOS:
+			{
+				CComVariant vValue((int) 0);
+
+				pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), vValue);
+				pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_y"), vValue);
 
 				*pfhandled = TRUE;
 			}
