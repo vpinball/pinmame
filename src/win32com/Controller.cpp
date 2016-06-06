@@ -548,7 +548,7 @@ STDMETHODIMP CController::get_NVRAM(VARIANT *pVal)
 }
 
 static UINT8 oldNVRAM[CORE_MAXNVRAM];
-static INT64 oldNVRAMlength = -1; // meh, not good enough when changing games! //!! use game name, too?
+static char* oldNVRAMname = 0;
 static vp_tChgNVRAMs chgNVRAMs; // stack overflow when put into get_ChangedNVRAM??
 
 /***************************************************************
@@ -590,7 +590,7 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	/*-- Count changes --*/
 	int uCount;
 
-	if (oldNVRAMlength != nvram_file->offset)
+	if (oldNVRAMname == 0 || strstr(Machine->gamedrv->name, oldNVRAMname) == 0) // detect initial VPM start or game change
 	{
 		uCount = min(nvram_file->offset, CORE_MAXNVRAM);
 		for (int i = 0; i < uCount; ++i)
@@ -600,8 +600,11 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 			chgNVRAMs[i].currStat = nvram_file->data[i];
 		}
 		memcpy(oldNVRAM, nvram_file->data, uCount);
-		oldNVRAMlength = nvram_file->offset;
 
+		if (oldNVRAMname)
+			free(oldNVRAMname);
+		oldNVRAMname = (char*)malloc(strlen(Machine->gamedrv->name) + 1);
+		strcpy(oldNVRAMname, Machine->gamedrv->name);
 
 
 		mame_fclose(nvram_file);
