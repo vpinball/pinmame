@@ -1,7 +1,7 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 2.7 (X X, 2016) - ""
+Version 2.7 (June 08th, 2016) - "Alive and kicking"
 ------------------------------------------------------------------------------
 - New option for the DMD window: DMD opacity
 
@@ -21,6 +21,7 @@ Version 2.7 (X X, 2016) - ""
 - New methods for the Controller object:
 	HRESULT NVRAM(/*[out, retval]*/ VARIANT *pVal); - Get the full NVRAM of the emulation (e.g. high scores, settings, etc. as a binary blob of 8bit values) 
 	HRESULT ChangedNVRAM(/*[out, retval]*/ VARIANT *pVal); - Get only the NVRAM parts that have changed since last call (similar to ChangedLamps), first dimension has the location, second the new value (only 8 bits are valid), third the previous value (only 8 bits are valid)
+  (See for example https://github.com/tomlogic/pinmame-nvram-maps for some machines NVRAM mappings)
 
 - Add 'Restore window position' to menu
 
