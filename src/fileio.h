@@ -63,7 +63,7 @@ enum
 
 struct _mame_file
 {
-#ifdef DEBUG_COOKIE
+#ifdef MAME_DEBUG
 	UINT32 debug_cookie;
 #endif
 	osd_file *file;
