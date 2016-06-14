@@ -363,7 +363,6 @@ S7_ROMSTART8088(jst,l1, "ic14-l1.716", CRC(9871ebb2) SHA1(75c639a26d3bf7e05de7b5
                         "ic26-l1.716", CRC(123d8ffc) SHA1(c227a53653525269ea77203d4d1b14132058c073))
 S67S_SOUNDROMS0(        "sound12.532",CRC(3bbc90bf) SHA1(82154e719ceca5c72d1ab034bc4ff5e3ebb36832))
 S7_ROMEND
-#define input_ports_jst input_ports_s7
 CORE_CLONEDEF(jst,l1,l2,"Joust (L-1)",1983,"Williams",s7_mS7S,0)
 
 /*---------------------------
@@ -378,6 +377,14 @@ S67S_SOUNDROMS8(          "sound12.716",CRC(1888c635) SHA1(5dcdaee437a69c6027c24
 S7_ROMEND
 #define input_ports_lsrcu input_ports_s7
 CORE_GAMEDEF(lsrcu,l2,"Laser Cue (L-2)",1983,"Williams",s7_mS7S,0)
+
+S7_ROMSTART8088(lsrcu,l3, "ic14-l3.716",CRC(6b0c8368) SHA1(ee98108696996d24e0d059b6fd5343aeee77e583),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26.716",   CRC(db4a09e7) SHA1(5ea454c852303e12cc606c2c1e403b72e0a99f25))
+S67S_SOUNDROMS8(          "sound12.716",CRC(1888c635) SHA1(5dcdaee437a69c6027c24310f0cd2cae4e89fa05))
+S7_ROMEND
+CORE_CLONEDEF(lsrcu,l3,l2,"Laser Cue (L-3)",1983,"Timmo (Neverending bell fix)",s7_mS7S,0)
 
 /*--------------------------------
 / Firepower II - Sys.7 (Game #521)

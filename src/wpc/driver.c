@@ -1919,7 +1919,8 @@ DRIVER(tmfnt,l5)        //S7-515:   03/83 W Time Fantasy
 DRIVER(jst,l1)          //S7-519:   04/83 W Joust (L-1)
 DRIVER(jst,l2)          //          04/83 W Joust (L-2)
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
-DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
+DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue (L-2)
+DRIVER(lsrcu,l3)        //          06/16 W Laser Cue (Timmo bootleg, fixes neverending bell)
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
 //System 8
 DRIVER(bstrk,l1)        //S8-???:   ??/83 W Big Strike (Bowler)
