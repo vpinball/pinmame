@@ -420,7 +420,8 @@ DRIVER(lw3,207)         //Data East MPU: 08/92 Lethal Weapon (2.07 Canadian)
 DRIVER(lw3,208)         //Data East MPU: 11/92 Lethal Weapon (2.08)
 DRIVER(lw3,208p)        //Data East MPU: 04/13 Lethal Weapon (2.08p, Voices Mod)
 DRIVER(aar,101)         //Data East MPU: 12/92 Aaron Spelling (1.01)
-DRIVER(stwr,104)        //Data East MPU: 10/92 Star Wars (1.04)
+DRIVER(stwr,106)        //Data East MPU: 05/16 Star Wars (1.06)
+DRIVER(stwr,104)        //Data East MPU: 12/12 Star Wars (1.04)
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
 DRIVER(stwr,a14)        //Data East MPU: 10/92 Star Wars (Display Rev.1.04)
 DRIVER(stwr,g11)        //Data East MPU: 10/92 Star Wars (1.01 German)
@@ -447,6 +448,7 @@ DRIVER(tftc,400)        //Data East MPU: 10/15 Tales From the Crypt (4.00 unoffi
 DRIVER(tomy,102)        //Data East MPU: 02/94 Tommy (1.02)
 DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Dutch)
 DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
+DRIVER(tomy,500)        //Data East MPU: 05/16 Tommy (5.00 unofficial MOD)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
 DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
 DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N' Roses (3.00)
@@ -1522,6 +1524,7 @@ DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
 DRIVER(sman,250)        //S.A.M.: ??/?? Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
 DRIVER(sman,261)        //S.A.M.: ??/1? Spider-Man - V2.61
+DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
 DRIVER(sman,261x)       //S.A.M.: ??/1? Spider-Man - V2.61x (hacked 2.60 plunger lane music)
 DRIVER(sman,262x)       //S.A.M.: ??/1? Spider-Man - V2.62x (hacked 2.60 music)
 DRIVER(wof,100)         //S.A.M.: 11/07 Wheel of Fortune - V1.0
