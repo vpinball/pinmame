@@ -1,8 +1,13 @@
 Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
-*** ROM SUPPORT ***
+
+*** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson
+Kinda new:
+Star Wars 20th Anniversary 1.06
+Tommy 5.00 (unofficial MOD)
+
 Clones:
-Laser Cue (neverendig bell fix by Timmo)
+Laser Cue L-3 (Neverending Bell Fix)
 
 
 
@@ -88,7 +93,7 @@ Changed head mech handler for PZ:
  Head will assume varying positions between 0 and 95 that translate to test positions 0 to 6 (within small ranges)
 Updated to zlib 1.2.8
 
-*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty & Tim Polzin
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty, Tim Polzin & Chad Hendrickson
 New:
 Apple Time: Thunder Man
 Atari: 4x4 (not working yet)

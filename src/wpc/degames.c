@@ -642,7 +642,15 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
 #define input_ports_stwr input_ports_des11
-CORE_GAMEDEF(stwr,104,"Star Wars (1.04)",2012,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(stwr,104,"Star Wars (1.04 20th Anniversary)",2012,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(stwr_106,"starcpua.106",CRC(35d3cfd9) SHA1(14d8960f3657d7cd977b0a749e995aadb3fd4c7c))
+DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,106,104,"Star Wars (1.06 20th Anniversary)",2016,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_103,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
 DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))
@@ -877,6 +885,16 @@ DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3
 DE_ROMEND
 #define input_ports_tomy input_ports_des11
 CORE_GAMEDEF(tomy,400,"Tommy (4.00)",1994,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(tomy_500,"tomcpua.500", CRC(902cfaa7) SHA1(0f2931d43d8effb7c8ab4e430dcb57a2ea8364c6))
+DE_DMD32ROM8x(      "tommydva.500",CRC(9ade47a0) SHA1(16b5600afc4dd22cf8a04997225cdac9edb685d8))
+DE2S_SOUNDROM14444( "tommysnd.u7" ,CRC(ab0b4626) SHA1(31237b4f5e866710506f1336e3ca2dbd6a89385a),
+                    "tommysnd.u17",CRC(11bb2aa7) SHA1(57b4867c109996861f45ead1ceedb7153aff852e),
+                    "tommysnd.u21",CRC(bb4aeec3) SHA1(2ac6cd25b79584fa6ad2c8a36c3cc58ab8ec0206),
+                    "tommysnd.u36",CRC(208d7aeb) SHA1(af8af2094d1a91c7b4ef8ac6d4f594728e97450f),
+                    "tommysnd.u37",CRC(46180085) SHA1(f761c27532180de313f23b41f02341783be8938b))
+DE_ROMEND
+CORE_CLONEDEF(tomy,500,400,"Tommy (5.00 unofficial MOD)",2016,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(tomy_h30,"tomcpuh.300", CRC(121b5932) SHA1(e7d7bf8a78baf1c00c8bac908d4646586b8cf1f5))
 DE_DMD32ROM8x(      "tommydva.300",CRC(1f2d0896) SHA1(50c617e30bb843c69a6ca8afeeb751c886f5e6bd))
