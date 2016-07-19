@@ -8,14 +8,14 @@
  *
  *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian & Carsten Waechter
  *
- *             - TODO: 1)Certain effects are missing (sound played when BSMT DMD animation comes on in stereo games)
+ *             - TODO: 1)Certain effects are missing (e.g. sound played when BSMT DMD animation comes on in stereo games)
  *             -       2)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but seem to still want to use Mode 1
  *             -       3)Remove DE Rom loading flag & fix in the drivers themselves.
  *             -       4)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
  *             -       5)Are the 6e and 70 commands in ADPCM handling correct like-is?
- *             -       6)command 77 could be the sample rate/'pitch' for ADPCM
- *             -       7)Monopoly and RCT do never set the right volume, thus a special hack is necessary
- *             -       8)ADPCM voices are scaled by 2 in comparison to MAME core to make up for too low voices (for example in TFTC)
+ *             -       6)Command 77 could be the sample rate/'pitch' for ADPCM
+ *             - DONE: 7)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
+ *             -       8)ADPCM voice volume is corrected in comparison to MAME core
  **********************************************************************************************/
 
 #include <stdio.h>
@@ -120,7 +120,7 @@ struct BSMT2000Chip
 ***********************************************************************************************/
 
 static struct BSMT2000Chip bsmt2000[MAX_BSMT2000];
-static INT32 *scratch;
+static INT64 *scratch;
 
 /***************************************************************************************************
 
@@ -210,7 +210,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 static void bsmt2000_update(int num, INT16 **buffer, int length)
 {
 	struct BSMT2000Chip *chip = &bsmt2000[num];
-	INT32 *left, *right;
+	INT64 *left, *right;
 	INT16 *ldest = buffer[0];
 	INT16 *rdest = buffer[1];
     struct BSMT2000Voice *voice;
@@ -225,7 +225,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 	memset(left, 0, length * sizeof(left[0]));
 	memset(right, 0, length * sizeof(right[0]));
 
-	/* loop over voices */
+	/* loop over voices (8bit, 8kHz mono samples) */
     for (voicenum = 0; voicenum < chip->voices; voicenum++)
 	{
 		voice = &chip->voice[voicenum];
@@ -246,17 +246,16 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			/* loop while we still have samples to generate */
             for (samp = 0; samp < length; samp++)
             {
-                INT32 sample;
+                INT32 val1 = base[pos];
+                // sample is shifted by 8, as accumulator expects everything in 16bit*16bit (sampledata*volume), and then cuts that down to 16bit in the end
 #if ENABLE_INTERPOLATION
-                INT32 val1 = base[pos];
                 INT32 val2 = base[pos+1];
-                sample = (val1 * (0x800 - frac) + (val2 * frac)) >> 11;
+                INT32 sample = (val1 * (0x800 - frac) + (val2 * frac)) >> 3; // (... >> 11) << 8
 #else
-                INT32 val1 = base[pos];
-                sample = val1;
+                INT32 sample = val1 << 8;
 #endif
 				/* apply volumes and add */
-				left[samp] += sample * lvol;
+				left[samp]  += sample * lvol;
 				right[samp] += sample * rvol;
 
                 /* update position */
@@ -292,14 +291,9 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
         for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
         {
             /* apply volumes and add */
-#ifdef PINMAME
-            /* adjust volumes to balance better with non-compressed voices - just a guess on this, but seems ok */
-            left[samp] += (chip->adpcm_current * lvol) >> 7;
-            right[samp] += (chip->adpcm_current * rvol) >> 7;
-#else        
-            left[samp] += (chip->adpcm_current * lvol) >> 8;
-            right[samp] += (chip->adpcm_current * rvol) >> 8;
-#endif
+            left[samp]  += chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
+            right[samp] += chip->adpcm_current * (rvol * 2);
+
             /* update position */
             frac++;
             if (frac == 6)
@@ -312,11 +306,17 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
             if (frac == 1 || frac == 4)
             {
                 static const UINT8 delta_tab[] = { 58, 58, 58, 58, 77, 102, 128, 154 };
-                int nibble = base[pos] >> ((frac == 1) ? 4 : 0);
-                int value = (INT8)(nibble << 4) >> 4;
+                INT32 delta;
+                // extract corresponding nibble and convert to full integer
+                INT32 value = base[pos];
+                if (frac == 1)
+                    value >>= 4;
+                value &= 0xF;
+                if (value & 0x8)
+                    value |= 0xFFFFFFF0;
 
                 /* compute the delta for this sample */
-                int delta = chip->adpcm_delta_n * value;
+                delta = chip->adpcm_delta_n * value;
                 if (value > 0)
                     delta += chip->adpcm_delta_n >> 1;
                 else
@@ -324,14 +324,14 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 
                 /* add and clamp against the sample */
                 chip->adpcm_current += delta;
-                if (chip->adpcm_current >= 32767)
+                if (chip->adpcm_current > 32767) //!! ??
                     chip->adpcm_current = 32767;
-                else if (chip->adpcm_current <= -32768)
+                else if (chip->adpcm_current < -32768)
                     chip->adpcm_current = -32768;
 
                 /* adjust the delta multiplier */
                 chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[abs(value)]) >> 6;
-                if (chip->adpcm_delta_n > 2000)
+                if (chip->adpcm_delta_n > 2000) //!! ??
                     chip->adpcm_delta_n = 2000;
                 else if (chip->adpcm_delta_n < 1)
                     chip->adpcm_delta_n = 1;
@@ -347,24 +347,26 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
             voice->reg[REG_RATE] = 0;
     }
 
+    /* reduce the overall gain */
+    /* which is a simple SACH opcode on the TMS, so this copies the upper 16bit to the output, thus a shift by 16 */
+
 #if 0//def PINMAME // different shifts to 'simulate' external amplifiers and other hardware
-    INT32 bsmt_shift_data = 9 - chip->shift_data;
+    INT32 bsmt_shift_data = 16 - chip->shift_data;
 #else
-    #define bsmt_shift_data 9
+    #define bsmt_shift_data 16
 #endif
 
-    /* reduce the overall gain */
     for (samp = 0; samp < length; samp++)
     {
-        INT32 l = (left[samp] >> bsmt_shift_data);
-        INT32 r = (right[samp] >> bsmt_shift_data);
-        if (l >= 32767)
+        INT64 l = (left[samp] >> bsmt_shift_data);
+        INT64 r = (right[samp] >> bsmt_shift_data);
+        if (l > 32767) // this overflow check happens after each voices accumulation on the TMS (as it only has a 32bit ACC with saturation enabled), but this way we are more accurately mixing (not with respect to the actual HW though)
             l = 32767;
-        else if (l <= -32768)
+        else if (l < -32768)
             l = -32768;
-        if (r >= 32767)
+        if (r > 32767)
             r = 32767;
-        else if (r <= -32768)
+        else if (r < -32768)
             r = -32768;
         ldest[samp] = (INT16)l;
         rdest[samp] = (INT16)r;
