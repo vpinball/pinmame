@@ -984,7 +984,7 @@ static MACHINE_INIT(wpc) {
     wpclocals.nonFlipBits |= CORE_ULFLIPSOLBITS;
 
   if (options.cheat && !(core_gameData->gen & GEN_WPCALPHA_1)) {
-    /*-- speed up startup by disable checksum --*/
+    /*-- speed up startup by disable checksum and also make tom_14h(c) work --*/
     *(memory_region(WPC_CPUREGION) + 0xffec) = 0x00;
     *(memory_region(WPC_CPUREGION) + 0xffed) = 0xff;
   }
