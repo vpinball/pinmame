@@ -288,6 +288,12 @@ static void PostPhoneme(void) /* figure out what the heck to do after playing a 
 #endif
 }
 
+UINT8 s14001a_readmem(UINT16 offset)
+{
+	offset &= 0xfff; // 11-bit internal
+	return /*((m_ext_read_handler.isnull()) ?*/ SpeechRom[offset /*& (SpeechRom.bytes() - 1)*/];// : m_ext_read_handler(offset));
+}
+
 void s14001a_clock(void) /* called once per clock */
 {
 	UINT8 CurDelta; // Current delta
@@ -316,26 +322,26 @@ void s14001a_clock(void) /* called once per clock */
 		if (!machineState) audioout = SILENCE;
 #endif
 		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
-		switch(machineState) // HUUUUUGE switch statement
+		switch(machineState)
 		{
 		case 0: // idle state
 			nextstate = 0;
 			break;
 		case 1: // read starting syllable high byte from word table
 			SyllableAddress = 0; // clear syllable address
-			SyllableAddress |= SpeechRom[(LatchedWord<<1)]<<4;
+			SyllableAddress |= s14001a_readmem(LatchedWord<<1)<<4;
 			nextstate = resetState ? 1 : 2;
 			break;
 		case 2: // read starting syllable low byte from word table
-			SyllableAddress |= SpeechRom[(LatchedWord<<1)+1]>>4;
+			SyllableAddress |= s14001a_readmem((LatchedWord<<1)+1)>>4;
 			nextstate = 3;
 			break;
 		case 3: // read starting phone address
-			PhoneAddress = SpeechRom[SyllableAddress]<<4;
+			PhoneAddress = s14001a_readmem(SyllableAddress)<<4;
 			nextstate = 4;
 			break;
 		case 4: // read playback parameters and prepare for play
-			PlayParams = SpeechRom[SyllableAddress+1];
+			PlayParams = s14001a_readmem(SyllableAddress+1);
 			GlobalSilenceState = SILENCEFLAG; // load phone silence flag
 			LengthCounter = LENGTHCOUNT; // load length counter
 			RepeatCounter = REPEATCOUNT; // load repeat counter
@@ -346,25 +352,25 @@ void s14001a_clock(void) /* called once per clock */
 			nextstate = 5;
 			break;
 		case 5: // Play phone forward, shift = 0 (also load)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc0)>>6; // grab current delta from high 2 bits of high nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0xc0)>>6; // grab current delta from high 2 bits of high nybble
 			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			nextstate = 6;
 			break;
 		case 6: // Play phone forward, shift = 2
-	   		CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x30)>>4; // grab current delta from low 2 bits of high nybble
+	   		CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0x30)>>4; // grab current delta from low 2 bits of high nybble
 			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			nextstate = 7;
 			break;
 		case 7: // Play phone forward, shift = 4
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc)>>2; // grab current delta from high 2 bits of low nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0xc)>>2; // grab current delta from high 2 bits of low nybble
 			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			nextstate = 8;
 			break;
 		case 8: // Play phone forward, shift = 6 (increment address if needed)
-			CurDelta = SpeechRom[(PhoneAddress)+PhoneOffset]&0x3; // grab current delta from low 2 bits of low nybble
+			CurDelta = s14001a_readmem((PhoneAddress)+PhoneOffset)&0x3; // grab current delta from low 2 bits of low nybble
 			DACOutput += DeltaTable[CurDelta][OldDelta]; // send data to forward delta table and add result to accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			PhoneOffset++; // increment phone offset
@@ -379,7 +385,7 @@ void s14001a_clock(void) /* called once per clock */
 			}
 			break;
 		case 9: // Play phone backward, shift = 6 (also load)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x3); // grab current delta from low 2 bits of low nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0x3); // grab current delta from low 2 bits of low nybble
 			if (laststate != 8) // ignore first (bogus) dac change in mirrored backwards mode. observations and the patent show this.
 			{
 				DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
@@ -388,19 +394,19 @@ void s14001a_clock(void) /* called once per clock */
 			nextstate = 10;
 			break;
 		case 10: // Play phone backward, shift = 4
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc)>>2; // grab current delta from high 2 bits of low nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0xc)>>2; // grab current delta from high 2 bits of low nybble
 			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			nextstate = 11;
 			break;
 		case 11: // Play phone backward, shift = 2
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0x30)>>4; // grab current delta from low 2 bits of high nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0x30)>>4; // grab current delta from low 2 bits of high nybble
 			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			nextstate = 12;
 			break;
 		case 12: // Play phone backward, shift = 0 (increment address if needed)
-			CurDelta = (SpeechRom[(PhoneAddress)+PhoneOffset]&0xc0)>>6; // grab current delta from high 2 bits of high nybble
+			CurDelta = (s14001a_readmem((PhoneAddress)+PhoneOffset)&0xc0)>>6; // grab current delta from high 2 bits of high nybble
 			DACOutput -= DeltaTable[OldDelta][CurDelta]; // send data to forward delta table and subtract result from accumulator
 			OldDelta = CurDelta; // Move current delta to old
 			PhoneOffset--; // decrement phone offset
@@ -456,7 +462,7 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	GlobalSilenceState = 1;
 	OldDelta = 0x02;
 	DACOutput = SILENCE;
-	VSU1000_amp = 0; /* reset by /reset line */
+	VSU1000_amp = 7; /* reset by /reset line */
 	VSU1000_freq = 1; /* base-1; reset by /reset line */
 	VSU1000_counter = 1; /* base-1; not reset by /reset line but this is the best place to reset it */
 

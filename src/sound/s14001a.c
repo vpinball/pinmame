@@ -660,15 +660,6 @@ UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP
 
 void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDelta, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2)
 {
-	// uPPQtr, pitch period quarter counter; 2 lsb of uLength
-	// bPPStart, start of a pitch period
-	// implemented to mimic silicon (a bit)
-
-	// beginning of a pitch period
-	if (uPPQtrP2 == 0x00 && bPPQStartP2) // note this is done for voiced and unvoiced
-	{
-		uDeltaOldP2 = 0x02;
-	}
 	static const UINT8 uIncrements[4][4] =
 	{
 	//    00  01  10  11
@@ -677,6 +668,16 @@ void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 
 		{ 0,  0,  1,  1,}, // 10
 		{ 1,  1,  3,  3 }, // 11
 	};
+
+        // uPPQtr, pitch period quarter counter; 2 lsb of uLength
+	// bPPStart, start of a pitch period
+	// implemented to mimic silicon (a bit)
+
+	// beginning of a pitch period
+	if (uPPQtrP2 == 0x00 && bPPQStartP2) // note this is done for voiced and unvoiced
+	{
+		uDeltaOldP2 = 0x02;
+	}
 
 #define MIRROR  (uPPQtrP2&0x01)
 

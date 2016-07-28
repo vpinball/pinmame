@@ -187,7 +187,7 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsig
 	channel->lowpass_frequency = lowpass_frequency;
 	channel->from_frequency = from_frequency;
 	channel->to_frequency = to_frequency;
-	channel->step = (double)from_frequency * (1 << FRACTION_BITS) / to_frequency;
+	channel->step = (unsigned long long)from_frequency * (1 << FRACTION_BITS) / to_frequency;
 
 	/* reset the filter state */
 	if (channel->filter && channel->is_reset_requested)
@@ -692,6 +692,7 @@ int mixer_sh_start(void)
 {
 	struct mixer_channel_data *channel;
 	int i;
+	int r;
 
 	/* reset all channels to their defaults */
 	memset(&mixer_channel, 0, sizeof(mixer_channel));
@@ -715,7 +716,11 @@ int mixer_sh_start(void)
 	memset(left_accum, 0, sizeof(left_accum));
 	memset(right_accum, 0, sizeof(right_accum));
 
-	samples_this_frame = osd_start_audio_stream(is_stereo);
+	r = osd_start_audio_stream(is_stereo);
+	if (r < 0)
+		return -1;
+
+	samples_this_frame = r;
 
 	mixer_sound_enabled = 1;
 
@@ -930,9 +935,9 @@ int mixer_allocate_channels(int channels, const int *default_mixing_levels)
 		channel->mixing_level = channel->default_mixing_level;
 		if (!is_config_invalid)
 		{
-			/* if the defaults match, set the mixing level from the config */
-			if (channel->default_mixing_level == channel->config_default_mixing_level && channel->config_mixing_level <= 100)
-				channel->mixing_level = channel->config_mixing_level;
+		/* if the defaults match, set the mixing level from the config */
+		if (channel->default_mixing_level == channel->config_default_mixing_level && channel->config_mixing_level <= 100)
+			channel->mixing_level = channel->config_mixing_level;
 
 			/* otherwise, invalidate all channels that have been created so far */
 			else

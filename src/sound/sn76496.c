@@ -332,6 +332,7 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 {
 	int chip;
 	const struct SN76496interface *intf = msound->sound_interface;
+	struct SN76496 *R;
 
 	for (chip = 0;chip < intf->num;chip++)
 	{
@@ -340,7 +341,7 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 
 		SN76496_set_gain(chip,(intf->volume[chip] >> 8) & 0xff);
 
-        struct SN76496 *R = &sn[chip];
+        R = &sn[chip];
 
         R->FeedbackMask = feedbackmask;
         R->WhitenoiseTaps = noisetaps;

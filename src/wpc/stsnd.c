@@ -438,7 +438,7 @@ static WRITE_HANDLER(st300_ctrl_w) {
 // c0 -> 00 -> 2 clock cycles
 // c0 -> 10 -> 4 clock cycles
 // c0 -> 20 -> 8 clock cycles
-  	snddatst300.c0=data;
+  	snddatst300.c0 = data;
   	st300loc.extfreq  = ((data & 0xf0) >> 4) + 1;
   	st300loc.noise    =  (data & 0x08) >> 3;
   	st300loc.conx = (data & 0x04) >> 2;
@@ -455,10 +455,10 @@ static WRITE_HANDLER(st300_ctrl_w) {
  	logerror("st300_CTRL_W xxxx data %02x  \n", data);
 	if (data & 0x80) /* VSU-1000 control write */
 	{
+		UINT8 clock_divisor = 16 - (data & 0x07);
 		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
 		/* volume and frequency control goes here */
 		S14001A_set_volume(15-((data >> 3) & 0xf));
-		UINT8 clock_divisor = 16 - (data & 0x07);
 		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
 	}
 	else if (data & 0x40)

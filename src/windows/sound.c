@@ -304,6 +304,8 @@ static void copy_sample_data(INT16 *data, int bytes_to_copy)	// adopted from MAM
 
 	// attempt to lock the stream buffer
 	result = IDirectSoundBuffer_Lock(stream_buffer, stream_buffer_in, bytes_to_copy, &buffer1, &length1, &buffer2, &length2, 0);
+
+	// if we failed, assume it was an underflow (i.e.,
 	if (result != DS_OK)
 	{
 		buffer_underflows++;
@@ -578,7 +580,7 @@ static int dsound_init(void)
 	result = IDirectSound_SetCooperativeLevel(dsound, win_video_window, DSSCL_PRIORITY);
 	if (result != DS_OK)
 	{
-		fprintf(stderr, "Error setting cooperative level: %08x\n", (UINT32)result);
+		fprintf(stderr, "Error setting DirectSound cooperative level: %08x\n", (UINT32)result);
 		goto cant_set_coop_level;
 	}
 
@@ -659,6 +661,7 @@ static int dsound_create_buffers(void)
 	DWORD locked;
 
 	// create a buffer desc for the primary buffer
+	memset(&primary_desc, 0, sizeof(primary_desc));
 	primary_desc.dwSize				= sizeof(primary_desc);
 	primary_desc.dwFlags			= DSBCAPS_PRIMARYBUFFER |
 									  DSBCAPS_GETCURRENTPOSITION2;
@@ -668,7 +671,7 @@ static int dsound_create_buffers(void)
 	result = IDirectSound_CreateSoundBuffer(dsound, &primary_desc, &primary_buffer, NULL);
 	if (result != DS_OK)
 	{
-		fprintf(stderr, "Error creating primary buffer: %08x\n", (UINT32)result);
+		fprintf(stderr, "Error creating primary DirectSound buffer: %08x\n", (UINT32)result);
 		goto cant_create_primary;
 	}
 
@@ -676,7 +679,7 @@ static int dsound_create_buffers(void)
 	result = IDirectSoundBuffer_SetFormat(primary_buffer, &stream_format);
 	if (result != DS_OK)
 	{
-		fprintf(stderr, "Error setting primary format: %08x\n", (UINT32)result);
+		fprintf(stderr, "Error setting primary DirectSound buffer format: %08x\n", (UINT32)result);
 		goto cant_set_primary_format;
 	}
 
@@ -692,6 +695,7 @@ static int dsound_create_buffers(void)
 				(int)primary_format.nSamplesPerSec, (int)primary_format.wBitsPerSample, (int)primary_format.nChannels);
 
 	// create a buffer desc for the stream buffer
+	memset(&stream_desc, 0, sizeof(stream_desc));
 	stream_desc.dwSize				= sizeof(stream_desc);
 	stream_desc.dwFlags				= DSBCAPS_CTRLVOLUME |
 									  DSBCAPS_GLOBALFOCUS |
@@ -703,7 +707,7 @@ static int dsound_create_buffers(void)
 	result = IDirectSound_CreateSoundBuffer(dsound, &stream_desc, &stream_buffer, NULL);
 	if (result != DS_OK)
 	{
-		fprintf(stderr, "Error creating DirectSound buffer: %08x\n", (UINT32)result);
+		fprintf(stderr, "Error creating DirectSound stream buffer: %08x\n", (UINT32)result);
 		goto cant_create_buffer;
 	}
 
@@ -711,7 +715,7 @@ static int dsound_create_buffers(void)
 	result = IDirectSoundBuffer_Lock(stream_buffer, 0, stream_buffer_size, &buffer, &locked, NULL, NULL, 0);
 	if (result != DS_OK)
 	{
-		fprintf(stderr, "Error locking stream buffer: %08x\n", (UINT32)result);
+		fprintf(stderr, "Error locking DirectSound stream buffer: %08x\n", (UINT32)result);
 		goto cant_lock_buffer;
 	}
 
@@ -749,4 +753,9 @@ static void dsound_destroy_buffers(void)
 	if (stream_buffer)
 		IDirectSoundBuffer_Release(stream_buffer);
 	stream_buffer = NULL;
+
+	// release the primary buffer
+	if (primary_buffer != NULL)
+		IDirectSoundBuffer_Release(primary_buffer);
+	primary_buffer = NULL;
 }
