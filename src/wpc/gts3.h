@@ -200,19 +200,45 @@ extern MACHINE_DRIVER_EXTERN(gts3_1as80b2);
 extern MACHINE_DRIVER_EXTERN(gts3_1as80b3);
 extern MACHINE_DRIVER_EXTERN(gts3_1b);
 extern MACHINE_DRIVER_EXTERN(gts3_1bs);
-extern MACHINE_DRIVER_EXTERN(gts3_2);
-extern MACHINE_DRIVER_EXTERN(gts3_2a);
+extern MACHINE_DRIVER_EXTERN(gts3_2_4c_a);
+extern MACHINE_DRIVER_EXTERN(gts3_2_4c_b);
+extern MACHINE_DRIVER_EXTERN(gts3_2_5c);
+extern MACHINE_DRIVER_EXTERN(gts3_2a_4c_a);
+extern MACHINE_DRIVER_EXTERN(gts3_2a_4c_b);
+extern MACHINE_DRIVER_EXTERN(gts3_2a_5c);
 extern MACHINE_DRIVER_EXTERN(gts3_22);
 
-#define mGTS3         gts3_1a
-#define mGTS3S        gts3_1as
-#define mGTS3SNO      gts3_1as_no
-#define mGTS3S80B2    gts3_1as80b2
-#define mGTS3S80B3    gts3_1as80b3
-#define mGTS3B        gts3_1b
-#define mGTS3BS       gts3_1bs
-#define mGTS3DMDS     gts3_2
-#define mGTS3DMDSA    gts3_2a
-#define mGTS3DMDS2    gts3_22
+#define mGTS3           gts3_1a
+#define mGTS3S          gts3_1as
+#define mGTS3SNO        gts3_1as_no
+#define mGTS3S80B2      gts3_1as80b2
+#define mGTS3S80B3      gts3_1as80b3
+#define mGTS3B          gts3_1b
+#define mGTS3BS         gts3_1bs
+#define mGTS3DMDS_4C_a  gts3_2_4c_a
+#define mGTS3DMDS_4C_b  gts3_2_4c_b
+#define mGTS3DMDS_5C    gts3_2_5c
+#define mGTS3DMDSA_4C_a gts3_2a_4c_a
+#define mGTS3DMDSA_4C_b gts3_2a_4c_b
+#define mGTS3DMDSA_5C   gts3_2a_5c
+#define mGTS3DMDS2      gts3_22 // uses 4_a color_mode
+
+typedef struct {
+  int    version;
+  int	 pa0;
+  int	 pa1;
+  int	 pa2;
+  int	 pa3;
+  int	 a18;
+  int	 q3;
+  int	 dmd_latch;
+  int	 diagnosticLed;
+  int	 status1;
+  int	 status2;
+  int    dstrb;
+  UINT8  dmd_visible_addr;
+  int    nextDMDFrame;
+  int    color_mode; // 4_a, 4_b or 5 (=0,1,2)
+} GTS3_DMDlocals;
 
 #endif /* INC_GTS3 */

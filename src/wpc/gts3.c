@@ -25,8 +25,8 @@
 #include "gts3dmd.h"
 #include "gts80s.h"
 
-UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
-UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];		//2nd DMD Display for Strikes N Spares
+UINT8 DMDFrames [GTS3DMD_FRAMES_5C][0x200];
+UINT8 DMDFrames2[GTS3DMD_FRAMES_5C][0x200]; //2nd DMD Display for Strikes N Spares
 
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ       1500 /* IRQ Frequency (Guessed)*/
@@ -94,23 +94,6 @@ struct {
   int    sound_data;
   UINT8  prn[8];
 } GTS3locals;
-
-typedef struct {
-  int    version;
-  int	 pa0;
-  int	 pa1;
-  int	 pa2;
-  int	 pa3;
-  int	 a18;
-  int	 q3;
-  int	 dmd_latch;
-  int	 diagnosticLed;
-  int	 status1;
-  int	 status2;
-  int    dstrb;
-  UINT8  dmd_visible_addr;
-  int    nextDMDFrame;
-} GTS3_DMDlocals;
 
 //We need 2 structures, since Strikes N Spares has 2 DMD Displays
 GTS3_DMDlocals GTS3_dmdlocals[2];
@@ -573,12 +556,36 @@ static void gts3dmd_init(void) {
 }
 
 /*DMD Generation Init*/
-static MACHINE_INIT(gts3dmd) {
+static MACHINE_INIT(gts3dmd_4c_a) {
 	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 0;
 }
 
-static MACHINE_INIT(gts3dmda) {
+static MACHINE_INIT(gts3dmd_4c_b) {
 	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 1;
+}
+
+static MACHINE_INIT(gts3dmd_5c) {
+	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 2;
+}
+
+static MACHINE_INIT(gts3dmda_4c_a) {
+	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 0;
+	GTS3_dmdlocals[0].version = 1;
+}
+
+static MACHINE_INIT(gts3dmda_4c_b) {
+	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 1;
+	GTS3_dmdlocals[0].version = 1;
+}
+
+static MACHINE_INIT(gts3dmda_5c) {
+	gts3dmd_init();
+	GTS3_dmdlocals[0].color_mode = 2;
 	GTS3_dmdlocals[0].version = 1;
 }
 
@@ -587,6 +594,7 @@ static MACHINE_INIT(gts3dmd2) {
   gts3dmd_init();
   memset(&GTS3_dmdlocals[1], 0, sizeof(GTS3_DMDlocals));
   memset(&DMDFrames2, 0, sizeof(DMDFrames2));
+  GTS3_dmdlocals[0].color_mode = 0;
   GTS3_dmdlocals[0].version = 2;
 
   //Init 2nd 6845
@@ -824,7 +832,7 @@ static void dmd_vblank(int which) {
 	else
 		memcpy(DMDFrames[GTS3_dmdlocals[0].nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
 	cpu_set_nmi_line(which ? GTS3_DCPUNO2 : GTS3_DCPUNO, PULSE_LINE);
-	GTS3_dmdlocals[which].nextDMDFrame = (GTS3_dmdlocals[which].nextDMDFrame + 1) % GTS3DMD_FRAMES;
+	GTS3_dmdlocals[which].nextDMDFrame = (GTS3_dmdlocals[which].nextDMDFrame + 1) % (GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C));
 }
 
 /* Printer connector */
@@ -1026,17 +1034,37 @@ MACHINE_DRIVER_START(gts3_1bs)
   MDRV_IMPORT_FROM(gts80s_s3)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(gts3_2)
+MACHINE_DRIVER_START(gts3_2_4c_a)
   MDRV_IMPORT_FROM(gts3)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
-  MDRV_CORE_INIT_RESET_STOP(gts3dmd,NULL,gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd_4c_a,NULL,gts3)
   MDRV_IMPORT_FROM(gts80s_s3)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(gts3_2a)
-  MDRV_IMPORT_FROM(gts3_2)
-  MDRV_CORE_INIT_RESET_STOP(gts3dmda,NULL,gts3)
+MACHINE_DRIVER_START(gts3_2_4c_b)
+  MDRV_IMPORT_FROM(gts3_2_4c_a)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd_4c_b,NULL,gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2_5c)
+  MDRV_IMPORT_FROM(gts3_2_4c_a)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd_5c,NULL,gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2a_4c_a)
+  MDRV_IMPORT_FROM(gts3_2_4c_a)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmda_4c_a,NULL,gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2a_4c_b)
+  MDRV_IMPORT_FROM(gts3_2_4c_a)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmda_4c_b,NULL,gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2a_5c)
+  MDRV_IMPORT_FROM(gts3_2_4c_a)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmda_5c,NULL,gts3)
 MACHINE_DRIVER_END
 
 
@@ -1053,7 +1081,7 @@ MACHINE_DRIVER_START(gts3_22)
   MDRV_IMPORT_FROM(gts3)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
-  MDRV_CORE_INIT_RESET_STOP(gts3dmd,NULL,gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd_4c_a,NULL,gts3)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem2, GTS3_dmdwritemem2)
   MDRV_CORE_INIT_RESET_STOP(gts3dmd2,NULL,gts3)
