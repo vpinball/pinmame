@@ -372,29 +372,14 @@ void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_i
 						//else if(pixel==1)
 						//	pixel=1;
 					}
-					else if(gen == GEN_GTS3) // also depends on the mapping in gts3dmd.c
-					{
-						if(pixel<=3)
-							pixel=1;
-						else if(pixel<=6)
-							pixel=4;
-						else if(pixel<=9)
-							pixel=4;
-						else //if(pixel<=15)
-							pixel=15;
-					}
-					//else if(gen == GEN_ALVG_DMD2)
-					//{
-					//  //!! do some magic remapping
-					//}
 				}
-				else if(gen == GEN_GTS3) // also depends on the mapping in gts3dmd.c
+				else if(gen == GEN_GTS3) // also depends on the mapping in gts3dmd.c //!! retweak?
 				{
 					if(pixel<=3)
 						pixel=1;
-					else if(pixel<=6)
+					else /*if(pixel<=6)
 						pixel=2;
-					else if(pixel<=9)
+					else*/ if(pixel<=9)
 						pixel=2;
 					else if(pixel<=15)
 						pixel=3;
