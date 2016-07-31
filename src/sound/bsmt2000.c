@@ -22,6 +22,10 @@
 
 #include "driver.h"
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+
 /**********************************************************************************************
 
      CONSTANTS
@@ -46,6 +50,9 @@ static const UINT8 regmap[8][7] = {
 /* NOTE: the original chip did not support interpolation, but it sounds */
 /* nicer if you enable it. For accuracy's sake, we leave it off by default. */
 #define ENABLE_INTERPOLATION    0
+
+// Whacky ADPCM interpolation, better leave off for now
+#define ENABLE_ADPCM_INTERPOLATION 0
 
 #ifdef PINMAME
 #define	LOG_COMPRESSED_ONLY		0
@@ -228,7 +235,116 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 	memset(left, 0, length * sizeof(left[0]));
 	memset(right, 0, length * sizeof(right[0]));
 
-	/* loop over voices (8bit, 8kHz mono samples) */
+	/* compressed voice */
+	voice = &chip->voice[ADPCM_VOICE];
+	if (chip->adpcm && voice->reg[REG_BANK] < chip->total_banks && voice->reg[REG_RATE])
+	{
+		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
+		INT32 rvol = voice->reg[REG_RIGHTVOL];
+		INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
+		UINT32 pos = voice->reg[REG_CURRPOS];
+		UINT32 frac = voice->fraction;
+#ifdef PINMAME
+		if (chip->stereo && !chip->right_volume_set) // Monopoly and RCT feature stereo hardware, but only ever set the left volume
+			rvol = lvol;
+#endif
+		/* loop while we still have samples to generate & decompressed samples to play */
+		for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
+		{
+			/* apply volumes and add */
+            left[samp]  = chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
+            right[samp] = chip->adpcm_current * (rvol * 2);
+
+			/* update position */
+			frac++;
+			if (frac == 6)
+			{
+				pos++;
+				frac = 0;
+			}
+
+			/* every 3 samples, we update the ADPCM state */
+			if (frac == 1 || frac == 4)
+			{
+				static const INT32 delta_tab[16] = { 154, 154, 128, 102, 77, 58, 58, 58, 58, 58, 58, 58, 77, 102, 128, 154 };
+				INT32 delta;
+				// extract corresponding nibble and convert to full integer
+				INT32 value = base[pos];
+				if (frac == 1)
+					value >>= 4;
+				value &= 0xF;
+				if (value & 0x8)
+					value |= 0xFFFFFFF0;
+
+				/* compute the delta for this sample */
+				delta = chip->adpcm_delta_n * value;
+				if (value > 0)
+					delta += chip->adpcm_delta_n >> 1;
+				else
+					delta -= chip->adpcm_delta_n >> 1;
+
+				/* add and clamp against the sample */
+				chip->adpcm_current += delta;
+				if (chip->adpcm_current > 32767) //!! ??
+					chip->adpcm_current = 32767;
+				else if (chip->adpcm_current < -32768)
+					chip->adpcm_current = -32768;
+
+				/* adjust the delta multiplier */
+                chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[value+8]) >> 6;
+				if (chip->adpcm_delta_n > 2000) //!! ??
+					chip->adpcm_delta_n = 2000;
+				else if (chip->adpcm_delta_n < 1)
+					chip->adpcm_delta_n = 1;
+			}
+		}
+
+#if ENABLE_ADPCM_INTERPOLATION
+		pos = voice->reg[REG_CURRPOS];
+		frac = voice->fraction;
+		// interpolate each package of three same samples that the ADPCM generated
+		for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
+		{
+			INT32 samp_c;
+			switch (frac)
+			{
+			case 0:
+			case 3:
+				samp_c = MIN(samp + 1, length);
+				left[samp]  = (left [samp] * 3333 + left [samp_c] * 6666) / 10000;
+				right[samp] = (right[samp] * 3333 + right[samp_c] * 6666) / 10000;
+				break;
+			case 1:
+			case 4:
+				break;
+			case 2:
+			case 5:
+				samp_c = MIN(samp + 2, length);
+				left[samp]  = (left [samp] * 6666 + left [samp_c] * 3333) / 10000;
+				right[samp] = (right[samp] * 6666 + right[samp_c] * 3333) / 10000;
+				break;
+			}
+
+			/* update position */
+			frac++;
+			if (frac == 6)
+			{
+				pos++;
+				frac = 0;
+			}
+		}
+#endif
+
+		/* update the position */
+		voice->reg[REG_CURRPOS] = pos;
+		voice->fraction = frac;
+
+		/* "rate" is a control register; clear it to 0 when done */
+		if (pos >= voice->reg[REG_LOOPEND])
+			voice->reg[REG_RATE] = 0;
+	}
+
+	/* loop over normal voices (8bit, 8kHz mono samples) */
     for (voicenum = 0; voicenum < chip->voices; voicenum++)
 	{
 		voice = &chip->voice[voicenum];
@@ -276,79 +392,6 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
             voice->fraction = frac;
         }
 	}
-
-  	/* compressed voice */
-    voice = &chip->voice[ADPCM_VOICE];
-    if (chip->adpcm && voice->reg[REG_BANK] < chip->total_banks && voice->reg[REG_RATE])
-  	{
-        INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-        INT32 rvol = voice->reg[REG_RIGHTVOL];
-        INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
-        UINT32 pos = voice->reg[REG_CURRPOS];
-        UINT32 frac = voice->fraction;
-#ifdef PINMAME
-		if (chip->stereo && !chip->right_volume_set) // Monopoly and RCT feature stereo hardware, but only ever set the left volume
-			rvol = lvol;
-#endif
-		/* loop while we still have samples to generate & decompressed samples to play */
-        for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
-        {
-            /* apply volumes and add */
-            left[samp]  += chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
-            right[samp] += chip->adpcm_current * (rvol * 2);
-
-            /* update position */
-            frac++;
-            if (frac == 6)
-            {
-                pos++;
-                frac = 0;
-            }
-            
-            /* every 3 samples, we update the ADPCM state */
-            if (frac == 1 || frac == 4)
-            {
-                static const INT32 delta_tab[16] = { 154, 154, 128, 102, 77, 58, 58, 58, 58, 58, 58, 58, 77, 102, 128, 154 };
-                INT32 delta;
-                // extract corresponding nibble and convert to full integer
-                INT32 value = base[pos];
-                if (frac == 1)
-                    value >>= 4;
-                value &= 0xF;
-                if (value & 0x8)
-                    value |= 0xFFFFFFF0;
-
-                /* compute the delta for this sample */
-                delta = chip->adpcm_delta_n * value;
-                if (value > 0)
-                    delta += chip->adpcm_delta_n >> 1;
-                else
-                    delta -= chip->adpcm_delta_n >> 1;
-
-                /* add and clamp against the sample */
-                chip->adpcm_current += delta;
-                if (chip->adpcm_current > 32767) //!! ??
-                    chip->adpcm_current = 32767;
-                else if (chip->adpcm_current < -32768)
-                    chip->adpcm_current = -32768;
-
-                /* adjust the delta multiplier */
-                chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[value+8]) >> 6;
-                if (chip->adpcm_delta_n > 2000) //!! ??
-                    chip->adpcm_delta_n = 2000;
-                else if (chip->adpcm_delta_n < 1)
-                    chip->adpcm_delta_n = 1;
-            }
-        }
-
-        /* update the position */
-        voice->reg[REG_CURRPOS] = pos;
-        voice->fraction = frac;
-
-        /* "rate" is a control register; clear it to 0 when done */
-        if (pos >= voice->reg[REG_LOOPEND])
-            voice->reg[REG_RATE] = 0;
-    }
 
     /* reduce the overall gain */
     /* which is a simple SACH opcode on the TMS, so this copies the upper 16bit to the output, thus a shift by 16 */
@@ -548,6 +591,9 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 
         if (regindex == REG_RIGHTVOL)
             chip->right_volume_set = 1;
+
+		if (regindex == REG_CURRPOS)
+			voice->fraction = 0;
 #endif
     }
     else if(chip->adpcm) /* update parameters for compressed voice */
@@ -607,7 +653,8 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
  			case 0x75:
  				COMBINE_DATA(&voice->reg[REG_CURRPOS]);
                 LOG(("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->reg[REG_LOOPEND]));
- 				break;
+				voice->fraction = 0;
+				break;
 
  			//case 0x77:
 			//	chip->adpcm_77 = data;
