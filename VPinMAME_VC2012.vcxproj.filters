@@ -1980,16 +1980,10 @@
     <Image Include="src\win32com\Res\VPinMAMELogo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="src\win32com\Res\VPinMAMESplash.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="src\win32com\Res\VPinMAMESplash2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="src\win32com\Res\VPinMAMESplash3.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="src\win32com\Res\VPinMAMESplash4.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

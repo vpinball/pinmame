@@ -53,10 +53,8 @@ END
 //
 
 IDB_LOGO                BITMAP                  "Res\\VPinMAMELogo.bmp"
-IDB_SPLASH              BITMAP                  "Res\\VPinMAMESplash.bmp"
 IDB_SPLASH2             BITMAP                  "Res\\VPinMAMESplash2.bmp"
 IDB_SPLASH3             BITMAP                  "Res\\VPinMAMESplash3.bmp"
-IDB_SPLASH4             BITMAP                  "Res\\VPinMAMESplash4.bmp"
 IDB_EASTEREGG           BITMAP                  "Res\\VPinMAMEEasterEgg.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,7 +90,7 @@ BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
             VALUE "FileVersion", "2, 8, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2016 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, and R. Perlow"
+            VALUE "LegalCopyright", "© 2000-2016 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
 #ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
 #else
@@ -205,7 +203,7 @@ BEGIN
                     SS_LEFTNOWORDWRAP,8,168,55,9
     CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
                     SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, and Matthias Bücher",
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, Matthias Bücher and Carsten Wächter",
                     IDC_STATIC,152,51,154,24
 END
 

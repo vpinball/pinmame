@@ -3003,19 +3003,11 @@ SOURCE=.\src\win32com\Res\VPinMAMELogo.bmp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\Res\VPinMAMESplash.bmp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\win32com\Res\VPinMAMESplash2.bmp
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\win32com\Res\VPinMAMESplash3.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\Res\VPinMAMESplash4.bmp
 # End Source File
 # Begin Source File
 
