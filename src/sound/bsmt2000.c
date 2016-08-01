@@ -249,7 +249,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			rvol = lvol;
 #endif
 		/* loop while we still have samples to generate & decompressed samples to play */
-		for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
+		for (samp = 0; samp < length; samp++)
 		{
 			/* apply volumes and add */
             left[samp]  = chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
@@ -266,6 +266,9 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			/* every 3 samples, we update the ADPCM state */
 			if (frac == 1 || frac == 4)
 			{
+				if(pos >= voice->reg[REG_LOOPEND])
+					break;
+
 				static const INT32 delta_tab[16] = { 154, 154, 128, 102, 77, 58, 58, 58, 58, 58, 58, 58, 77, 102, 128, 154 };
 				INT32 delta;
 				// extract corresponding nibble and convert to full integer
@@ -334,10 +337,9 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			}
 		}
 #endif
-
 		/* update the position */
-		voice->reg[REG_CURRPOS] = pos;
-		voice->fraction = frac;
+		voice->reg[REG_CURRPOS] = (UINT16)pos;
+		voice->fraction = (UINT16)frac;
 
 		/* "rate" is a control register; clear it to 0 when done */
 		if (pos >= voice->reg[REG_LOOPEND])
@@ -356,8 +358,8 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
             UINT32 rate = voice->reg[REG_RATE];
             INT32 rvol = voice->reg[REG_RIGHTVOL];
             INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
-            UINT16 pos = voice->reg[REG_CURRPOS];
-            UINT16 frac = voice->fraction;
+            UINT32 pos = voice->reg[REG_CURRPOS];
+            UINT32 frac = voice->fraction;
 #ifdef PINMAME
 			if (chip->stereo && !chip->right_volume_set) // Monopoly and RCT feature stereo hardware, but only ever set the left volume
 				rvol = lvol;
@@ -368,7 +370,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
                 INT32 val1 = base[pos];
                 // sample is shifted by 8, as accumulator expects everything in 16bit*16bit (sampledata*volume), and then cuts that down to 16bit in the end
 #if ENABLE_INTERPOLATION
-                INT32 val2 = base[pos+1];
+                INT32 val2 = base[MIN(pos + 1, (UINT32)voice->reg[REG_LOOPEND])];
                 INT32 sample = (val1 * (0x800 - frac) + (val2 * frac)) >> 3; // (... >> 11) << 8
 #else
                 INT32 sample = val1 << 8;
@@ -384,12 +386,15 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 
 				/* check for loop end */
                 if (pos >= voice->reg[REG_LOOPEND])
-                    pos += voice->reg[REG_LOOPSTART] - voice->reg[REG_LOOPEND];
+                {
+                    pos = voice->reg[REG_LOOPSTART]; //!! was: pos += voice->reg[REG_LOOPSTART] - voice->reg[REG_LOOPEND];
+                    frac = 0;
+                }
 			}
 
 			/* update the position */
-            voice->reg[REG_CURRPOS] = pos;
-            voice->fraction = frac;
+            voice->reg[REG_CURRPOS] = (UINT16)pos;
+            voice->fraction = (UINT16)frac;
         }
 	}
 
