@@ -75,7 +75,7 @@ private:
 		m_pszCredits = (char*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 
 		srand( (unsigned)time(NULL));
-		int iSplashScreenNo = int(rand()%4);
+		int iSplashScreenNo = int(rand()%2)+1;
 
 		// choose the right color and font style for the user setable text
 		int iWeight = FW_NORMAL;
@@ -90,9 +90,6 @@ private:
 			case 2: // Forchia's image
 				m_Color = RGB(0,0,0);
 				iWeight = FW_BOLD;
-				break;
-			default: // The original one (0) and Steve's new one (3)
-				m_Color = RGB(255,255,255);
 				break;
 		}
 		m_hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_SPLASH)+iSplashScreenNo);

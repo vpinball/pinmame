@@ -1865,10 +1865,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\win32com\Res\VPinMAMELogo.bmp" />
-    <Image Include="src\win32com\Res\VPinMAMESplash.bmp" />
     <Image Include="src\win32com\Res\VPinMAMESplash2.bmp" />
     <Image Include="src\win32com\Res\VPinMAMESplash3.bmp" />
-    <Image Include="src\win32com\Res\VPinMAMESplash4.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
