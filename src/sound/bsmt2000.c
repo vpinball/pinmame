@@ -8,12 +8,11 @@
  *
  *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian & Carsten Waechter
  *
- *             - TODO: 1)Certain effects are missing (e.g. sound played when BSMT DMD animation comes on in stereo games: https://www.youtube.com/watch?v=2FtzLzbapZs, related to command 0x77)
- *             -       2)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but still use reg mapping of Mode 1
- *             -       3)Remove DE Rom loading flag & fix in the drivers themselves.
- *             -       4)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
- *             -       5)Command 0x77 could be the sample rate/'pitch' for ADPCM?
- *             - DONE: 6)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
+ *             - TODO: 1)Batman,ST25th and Hook set Mode 0 (after setting Mode 1), but still use reg mapping of Mode 1
+ *             -       2)Remove DE Rom loading flag & fix in the drivers themselves.
+ *             -       3)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
+ *             -       4)Command 0x77 could be the sample rate/'pitch' for ADPCM? Or volume like it is now implemented (e.g. sound played when BSMT DMD animation comes on in stereo games: https://www.youtube.com/watch?v=2FtzLzbapZs)
+ *             - DONE: 5)Monopoly and RCT do never set the right volume (as these are mono only), thus a special hack is necessary to make up for that (right_volume_set)
  **********************************************************************************************/
 
 #include <stdio.h>
@@ -111,7 +110,7 @@ struct BSMT2000Chip
     struct BSMT2000Voice voice[MAX_VOICES];	/* the voices */
 
 #ifdef PINMAME
-    //int         adpcm_77;
+    UINT16      adpcm_77;
     int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
     //int         shift_data;             /* Shift integer to apply to samples for changing volume - this is most likely done external to the bsmt chip in the real hardware */
     UINT8       right_volume_set;       /* Monopoly, RCT do never set right volume although its supposed to be stereo */
@@ -154,7 +153,8 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
     default: // 119 happens sometimes
         break;
 
-#ifndef PINMAME // disabled, as Batman,ST25th and Hook set this (after setting Mode 1), but actually always use Mode 1 register mapping
+		//BATMAN,ST25TH,Hook trigger sequence: mode 1 set, 0x7F,0x7E,0x7D,0x7C,0x7B,0x7A,..,0x6D, then mode 0 set but definetly use reg mapping of mode 1
+#ifndef PINMAME
         /* mode 0: 24kHz, 12 channel PCM, 1 channel ADPCM, mono */
     case 0:
         chip->sample_rate = chip->clock / 1000;
@@ -364,6 +364,11 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			if (chip->stereo && !chip->right_volume_set) // Monopoly and RCT feature stereo hardware, but only ever set the left volume
 				rvol = lvol;
 #endif
+			if (chip->adpcm_77 > 0 && rvol == 0 && lvol == 0) //!! is this really correct?
+			{
+				rvol = lvol = chip->adpcm_77;
+			}
+
 			/* loop while we still have samples to generate */
             for (samp = 0; samp < length; samp++)
             {
@@ -387,7 +392,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 				/* check for loop end */
                 if (pos >= voice->reg[REG_LOOPEND])
                 {
-                    pos = voice->reg[REG_LOOPSTART]; //!! was: pos += voice->reg[REG_LOOPSTART] - voice->reg[REG_LOOPEND];
+                    pos += voice->reg[REG_LOOPSTART] - voice->reg[REG_LOOPEND]; // looks whacky, but it seems to be correct like this
                     frac = 0;
                 }
 			}
@@ -476,7 +481,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
 		//bsmt2000[i].shift_data = intf->shift_data;
         bsmt2000[i].right_volume_set = 0;
-		//bsmt2000[i].adpcm_77 = 0;
+		bsmt2000[i].adpcm_77 = 0;
 #else
 		vol[0] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
@@ -661,9 +666,13 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 				voice->fraction = 0;
 				break;
 
- 			//case 0x77:
-			//	chip->adpcm_77 = data;
-			//	break;
+ 			case 0x77:
+				//for example MONOPOLY & RCT (and no other ADPCM commands it seems), STAR WARS, APOLLO13 trigger a lot of: 0x77 (data = 0)?
+				//for example ID4 uses 0x77 also with increasing/decreasing data input (1280 up to 32000), so maybe sample rate/'pitch' for ADPCM? Or really volume?
+				//Tommy even uses 0x77 without using any other ADPCM commands
+				COMBINE_DATA(&chip->adpcm_77);
+				LOG(("REG_ADPCM77=%04X\n", chip->adpcm_77));
+				break;
 
 			//LEFT CHANNEL VOLUME
 #ifdef PINMAME
@@ -677,11 +686,6 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
                     LOG(("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]));
                 }
  				break;
-
-            //for example MONOPOLY & RCT (and no other ADPCM commands it seems), STAR WARS, APOLLO13 trigger a lot of: 0x77 (data = 0)?
-            //for example ID4 uses 0x77 also with increasing/decreasing data input (1280 up to 32000), so maybe sample rate/'pitch' for ADPCM?
-            //Tommy even uses 0x77 without using any other ADPCM commands
-			//BATMAN,ST25TH trigger sequence: mode 1 set, 0x7F,0x7E,0x7D,0x7C,0x7B,0x7A,..,0x6D, then mode 0 set but definetly use reg mapping of mode 1
         }
 	}
 }
