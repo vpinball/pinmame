@@ -266,13 +266,14 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			/* every 3 samples, we update the ADPCM state */
 			if (frac == 1 || frac == 4)
 			{
+				static const INT32 delta_tab[16] = { 154, 154, 128, 102, 77, 58, 58, 58, 58, 58, 58, 58, 77, 102, 128, 154 };
+				INT32 delta, value;
+
 				if(pos >= voice->reg[REG_LOOPEND])
 					break;
 
-				static const INT32 delta_tab[16] = { 154, 154, 128, 102, 77, 58, 58, 58, 58, 58, 58, 58, 77, 102, 128, 154 };
-				INT32 delta;
 				// extract corresponding nibble and convert to full integer
-				INT32 value = base[pos];
+				value = base[pos];
 				if (frac == 1)
 					value >>= 4;
 				value &= 0xF;
@@ -308,14 +309,14 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 		// interpolate each package of three same samples that the ADPCM generated
 		for (samp = 0; samp < length && pos < voice->reg[REG_LOOPEND]; samp++)
 		{
-			INT32 samp_c;
+			int samp_c;
 			switch (frac)
 			{
 			case 0:
 			case 3:
 				samp_c = MIN(samp + 1, length);
-				left[samp]  = (left [samp] * 3333 + left [samp_c] * 6666) / 10000;
-				right[samp] = (right[samp] * 3333 + right[samp_c] * 6666) / 10000;
+				left[samp]  = (left [samp] * 3334 + left [samp_c] * 6666) / 10000;
+				right[samp] = (right[samp] * 3334 + right[samp_c] * 6666) / 10000;
 				break;
 			case 1:
 			case 4:
@@ -323,8 +324,8 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			case 2:
 			case 5:
 				samp_c = MIN(samp + 2, length);
-				left[samp]  = (left [samp] * 6666 + left [samp_c] * 3333) / 10000;
-				right[samp] = (right[samp] * 6666 + right[samp_c] * 3333) / 10000;
+				left[samp]  = (left [samp] * 6666 + left [samp_c] * 3334) / 10000;
+				right[samp] = (right[samp] * 6666 + right[samp_c] * 3334) / 10000;
 				break;
 			}
 
