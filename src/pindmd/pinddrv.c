@@ -32,7 +32,11 @@ void* asyncWriteContext = NULL;
 usb_dev_handle *device = NULL;
 #else
 #include "..\..\ext\ftdi\ftd2xx.h"
-#pragma comment(lib, "ext\\ftdi\\i386\\ftd2xx.lib")
+#ifdef _WIN64
+ #pragma comment(lib, "ext\\ftdi\\amd64\\ftd2xx.lib")
+#else
+ #pragma comment(lib, "ext\\ftdi\\i386\\ftd2xx.lib")
+#endif
 
 FT_STATUS ftStatus;
 FT_HANDLE ftHandle;
@@ -264,4 +268,11 @@ usb_dev_handle* open_dev( void )
 	return NULL;
 }
 #endif
+
+#else
+ #ifdef _WIN64
+  #pragma comment(lib, "ext\\pindmd3\\x64\\pinDMD.lib")
+ #else
+  #pragma comment(lib, "ext\\pindmd3\\pinDMD.lib")
+ #endif
 #endif
