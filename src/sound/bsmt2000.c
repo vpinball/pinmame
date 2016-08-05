@@ -39,22 +39,22 @@
 static const UINT8 regmap[8][7] = {
     { 0x00, 0x18, 0x24, 0x30, 0x3c, 0x48, 0xff }, // last one (stereo/leftvol) unused, set to max for mapping
     { 0x00, 0x16, 0x21, 0x2c, 0x37, 0x42, 0x4d },
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 2 non existing?
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 3 non existing?
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 4 non existing?
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 2 only a testmode left channel
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 3 only a testmode right channel
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // mode 4 only a testmode left channel
     { 0x00, 0x18, 0x24, 0x30, 0x3c, 0x54, 0x60 },
     { 0x00, 0x10, 0x18, 0x20, 0x28, 0x38, 0x40 },
     { 0x00, 0x12, 0x1b, 0x24, 0x2d, 0x3f, 0x48 } };
 
-/* NOTE: the original chip did not support interpolation, but it sounds */
-/* nicer if you enable it. For accuracy's sake, we leave it off by default. */
-#define ENABLE_INTERPOLATION    0
+/* NOTE: the original chip did not support interpolation, but music usually sounds */
+/* nicer if you enable it. For accuracy's sake, we leave it off by default, also sound effects sound clearer without it. */
+#define ENABLE_INTERPOLATION 0
 
 // Whacky ADPCM interpolation, better leave off for now
 #define ENABLE_ADPCM_INTERPOLATION 0
 
 #ifdef PINMAME
-#define	LOG_COMPRESSED_ONLY		0
+#define	LOG_COMPRESSED_ONLY	0
 #endif
 
 //#define VERBOSE
@@ -377,7 +377,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
                 // sample is shifted by 8, as accumulator expects everything in 16bit*16bit (sampledata*volume), and then cuts that down to 16bit in the end
 #if ENABLE_INTERPOLATION
                 INT32 val2 = base[MIN(pos + 1, (UINT32)voice->reg[REG_LOOPEND])];
-                INT32 sample = (val1 * (0x800 - frac) + (val2 * frac)) >> 3; // (... >> 11) << 8
+                INT32 sample = (val1 * (INT32)(0x800 - frac) + (val2 * (INT32)frac)) >> 3; // (... >> 11) << 8
 #else
                 INT32 sample = val1 << 8;
 #endif
