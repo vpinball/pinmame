@@ -723,16 +723,16 @@ static void throttle_speed(void)
 	{
 		// initialize the ticks per sleep
 		if (ticks_per_sleep_msec == 0)
-			ticks_per_sleep_msec = (double)(cps / 1000);
+			ticks_per_sleep_msec = (double)cps / 1000.;
 
 		// loop until we reach the target time
 		while (curr - target < 0)
 		{
 #ifdef VPINMAME
-			//if((INT64)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below
+			//if((INT64)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below, but still stutters then
 			//	uSleep((UINT64)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
-			
-			uSleep((target-curr)*1000/ticks_per_sleep_msec);
+
+			uSleep((UINT64)((target-curr)*1000/ticks_per_sleep_msec));
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind

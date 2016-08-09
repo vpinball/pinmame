@@ -340,20 +340,27 @@ static void wintimer_init(void)
 	QueryPerformanceCounter(&sTimerStart);
 }
 
+// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// but MAME code does this already
 void uSleep(const UINT64 u)
 {
+	LARGE_INTEGER TimerEndSleep;
 	LARGE_INTEGER TimerEnd;
 	LARGE_INTEGER TimerNow;
 
 	if (sTimerInit == 0)
 		wintimer_init();
 
-	QueryPerformanceCounter(&TimerEnd);
-	TimerEnd.QuadPart += (u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart;
+	QueryPerformanceCounter(&TimerNow);
+	TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
+	TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
 
 	do
 	{
-		SwitchToThread();
+		if ((u > 2000ull) && (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEndSleep.QuadPart))
+			Sleep(1); // really pause thread for 1-2ms (depending on OS)
+		else
+			SwitchToThread(); // let other threads on same core run
 
 		QueryPerformanceCounter(&TimerNow);
 	} while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
