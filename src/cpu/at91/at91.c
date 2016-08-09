@@ -1307,7 +1307,7 @@ unsigned at91_get_reg(int regnum)
 	case ARM732_CPSR: return ARMREG(eCPSR);
 
 	case ARM732_FR8: return	ARMREG(eR8_FIQ);
-	case ARM732_FR9:	return ARMREG(eR9_FIQ);
+	case ARM732_FR9: return ARMREG(eR9_FIQ);
 	case ARM732_FR10: return ARMREG(eR10_FIQ);
 	case ARM732_FR11: return ARMREG(eR11_FIQ);
 	case ARM732_FR12: return ARMREG(eR12_FIQ);
@@ -1330,7 +1330,7 @@ void at91_set_reg(int regnum, unsigned val)
 {
 	switch( regnum )
 	{
-	case ARM732_R0: ARMREG(0)= val; break;
+	case ARM732_R0: ARMREG( 0)= val; break;
 	case ARM732_R1: ARMREG( 1)= val; break;
 	case ARM732_R2: ARMREG( 2)= val; break;
 	case ARM732_R3: ARMREG( 3)= val; break;

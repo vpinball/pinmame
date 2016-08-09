@@ -177,9 +177,8 @@ static WRITE_HANDLER(de1s_ym2151Port) {
 /* by Steve Ellenoff, Martin Adrian, and Aaron Giles
 
  BSMT Clock rate of 24Mhz is confirmed to match the pitch on the real machines (10/31/04)
- Compressed Voice is not really understood and still sounds pretty bad
  There are some special effects the BSMT is programmed to do, but we don't know how, this
- can be heard on the BSMT 2000 Logo (for early games like DE - Star Wars)
+ can be heard on the BSMT 2000 Logo (for early games like DE - Star Wars, command 0x77)
 
  Missing things
  When a sound command is written from the Main CPU it generates a BUF-FULL signal
@@ -452,10 +451,11 @@ static data32_t *de3as_page0_ram;
 static data32_t *u7_base;
 static int sndcmdbuf[ARMSNDBUFSIZE];
 static int sndcmdread = 0, sndcmdwrite = 0, sndcmdlast = 0;
-static int sampout = 0;
-static int sampnum = 0;
+static int sampout[2] = {0,0};
+static int sampnum[2] = {0,0};
 static const int rommap[4] = {4,2,3,1};
-static INT16 samplebuf[BUFFSIZE];
+static INT16 samplebuf[2][BUFFSIZE];
+static INT16 lastsamp[2] = {0,0};
 
 #if AT91IMP_MAKE_WAVS
 static void * wavraw;					/* raw waveform */
@@ -573,16 +573,26 @@ static READ32_HANDLER(csr2roms_r)
 //CSR 2 Mapped to 0x20000000 (Xilinx) - Sound Data Stream Output
 static WRITE32_HANDLER(xilinx_w)
 {
-	//Store 16 bit data to our buffer
-	samplebuf[sampnum] = data & 0xffff;
-	sampnum = (sampnum + 1) % BUFFSIZE;
+	int mask = ~mem_mask;
+
+	//if upper mask is used, shift the data
+	if (mask & 0xffff0000)
+	{
+		data = data >> 16;
+		samplebuf[0][sampnum[0]] = data & 0xffff;
+		sampnum[0] = (sampnum[0] + 1) % BUFFSIZE;
+	}
+	else
+	{
+		samplebuf[1][sampnum[1]] = data & 0xffff;
+		sampnum[1] = (sampnum[1] + 1) % BUFFSIZE;
+	}
 
 	//Dump to Wave File
 	#if AT91IMP_MAKE_WAVS
 	if(wavraw)
 	{
-		INT16 d;
-		d = (INT16)data;
+		INT16 d = (INT16)data;
 		wav_add_data_16(wavraw, &d, 1);
 	}
 	#endif
@@ -654,6 +664,15 @@ static void setup_at91(void)
   at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
   //Copy U7 ROM into correct location (ie, starting at 0x40000000 where it is mapped)
   memcpy(u7_base, memory_region(REGION_SOUND1), memory_region_length(REGION_SOUND1));
+
+  sndcmdread = 0;
+  sndcmdwrite = 0;
+  sndcmdlast = 0;
+  sampout[0] = sampout[1] = 0;
+  sampnum[0] = sampnum[1] = 0;
+  lastsamp[0] = lastsamp[1] = 0;
+  memset(sndcmdbuf, 0, sizeof(sndcmdbuf));
+  memset(samplebuf, 0, sizeof(samplebuf));
 }
 
 static void de3s_init(struct sndbrdData *brdData)
@@ -711,18 +730,17 @@ static READ_HANDLER(scmd_r)
 	return data;
 }
 
-static int at91_stream = 0;
-static INT16 lastsamp = 0;
-
-static void at91_sh_update(int num, INT16 *buffer, int length)
+static void at91_sh_update(int num, INT16 *buffer[2], int length)
 {
- int ii;
+ int ii,jj;
 
  /* fill in with samples until we hit the end or run out */
+ for (jj = 0; jj < 2; jj++)
+ {
  for (ii = 0; ii < length; ii++) {
-	if(sampout == sampnum
+	if(sampout[jj] == sampnum[jj]
 #if 0
-		|| sampnum < 500 //!! check is stupid due to wrap around?!
+		|| sampnum[jj] < 500 //!! check is stupid due to wrap around?!
 #endif
 		) {
 		#if AT91IMP_LOG_NO_SAMPLES_2PLAY
@@ -732,33 +750,39 @@ static void at91_sh_update(int num, INT16 *buffer, int length)
 	}
 
 	//Send next pcm sample to output buffer
-	buffer[ii] = samplebuf[sampout];
+	buffer[jj][ii] = samplebuf[jj][sampout[jj]];
 
 	//Loop to beginning if we reach end of pcm buffer
-	sampout = (sampout + 1) % BUFFSIZE;
+	sampout[jj] = (sampout[jj] + 1) % BUFFSIZE;
 
 	//Store last output
-	lastsamp = buffer[ii];
+	lastsamp[jj] = buffer[jj][ii];
  }
 
  /* fill the rest with last sample output */ //!! should only be needed, if at all, initially?
  for ( ; ii < length; ii++)
-	buffer[ii] = lastsamp;
+	buffer[jj][ii] = lastsamp[jj];
 
 #ifdef AT91_SOUND_CATCHUP_HACK
  /* if sound is more than 1s/10 = 100ms apart, then catch up */
- if (sampnum - sampout > WAVE_OUT_RATE / 10)
-	 sampout = sampnum;
+ if (sampnum[jj] - sampout[jj] > WAVE_OUT_RATE / 10)
+	 sampout[jj] = sampnum[jj];
 #endif
+ }
 }
 
 int at91_sh_start(const struct MachineSound *msound)
 {
-	char stream_name[40];
+	const char* stream_name[2] = { "AT91 Channel #1", "AT91 Channel #2" };
+	int volume[2] = { MIXER(100, MIXER_PAN_LEFT), MIXER(100, MIXER_PAN_RIGHT) };
 	/*-- allocate a DAC stream at fixed frequency --*/
-	sprintf(stream_name, "%s", "AT91");
-	at91_stream = stream_init(stream_name, 100, WAVE_OUT_RATE*2, 0, at91_sh_update);		// RATE * 2 because we didn't separate out the left/right data stream
-	return at91_stream < 0;
+	return stream_init_multi
+		(2,
+		stream_name,
+		volume,
+		WAVE_OUT_RATE,
+		0,
+		at91_sh_update) < 0;
 }
 
 void at91_sh_stop(void)
