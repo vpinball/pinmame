@@ -3,6 +3,8 @@ Version 2.8 (X X, 2016) - ""
 
 *** CORE/CPU ***
 Further improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
+Further improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)
+ but still one should avoid high volume levels for these machines (~24 and above, for example on Nascar)
 Improve DMD brightness level mapping for Gottlieb GTS3s
 
 *** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson
