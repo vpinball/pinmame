@@ -1888,7 +1888,7 @@ void jit_emit(intelMneId mne, ...)
 	const struct mnedef *m, *mbest;
 	byte buf[32], *p;
 	struct instr *ins;
-	opdesctyp memType;
+	opdesctyp memType = opNone;
 
 	// initialize the opcode table if we haven't already
 	if (!mneIdxInit)
