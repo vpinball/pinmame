@@ -86,6 +86,7 @@
 #define IDI_HEADER_DOWN                 183
 #define IDD_PROP_DIRECT3D               184
 #define IDD_PROP_PINMAME                185
+#define IDB_ABOUTS                      186
 #define IDC_LIST                        1000
 #define IDC_PLAY                        1001
 #define IDC_DISPLAYS                    1002
@@ -385,8 +386,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        186
+#define _APS_3D_CONTROLS                1
+#define _APS_NEXT_RESOURCE_VALUE        187
 #define _APS_NEXT_COMMAND_VALUE         40080
 #define _APS_NEXT_CONTROL_VALUE         1253
 #define _APS_NEXT_SYMED_VALUE           101
