@@ -1374,9 +1374,11 @@ int YM2151Init(int num, int clock, int rate)
 		YMPSG[i].porthandler = NULL;				/* port write handler */
 		init_chip_tables( &YMPSG[i] );
 
-		YMPSG[i].lfo_timer_add = (1<<LFO_SH) * (long long)clock / (64ll*YMPSG[i].sampfreq);
+		YMPSG[i].lfo_timer_add = (YMPSG[i].sampfreq == clock/64) ? (1<<LFO_SH) :
+			((1<<LFO_SH)* (long long)clock / (64ll*YMPSG[i].sampfreq));
 
-		YMPSG[i].eg_timer_add  = (1<<EG_SH)  * (long long)clock / (64ll*YMPSG[i].sampfreq);
+		YMPSG[i].eg_timer_add  = (YMPSG[i].sampfreq == clock/64) ? (1<<EG_SH) :
+			((1<<EG_SH) * (long long)clock / (64ll*YMPSG[i].sampfreq));
 		YMPSG[i].eg_timer_overflow = ( 3 ) * (1<<EG_SH);
 		/*logerror("YM2151[init] eg_timer_add=%8x eg_timer_overflow=%8x\n", YMPSG[i].eg_timer_add, YMPSG[i].eg_timer_overflow);*/
 
@@ -2219,7 +2221,6 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 	bufR = buffers[1];
 
 	PSG = &YMPSG[num];
-
 
 	for (i=0; i<length; i++)
 	{
