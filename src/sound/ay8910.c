@@ -16,7 +16,7 @@
 
 #define MAX_OUTPUT 0x7fff
 
-#define STEP 0x8000
+#define STEP 2
 
 //#define VERBOSE
 
@@ -34,6 +34,7 @@ struct AY8910
 {
 	int Channel;
 	int SampleRate;
+	int ready;
 	read8_handler PortAread;
 	read8_handler PortBread;
 	write8_handler PortAwrite;
@@ -41,7 +42,6 @@ struct AY8910
 	INT32 register_latch;
 	UINT8 Regs[16];
 	INT32 lastEnable;
-	UINT32 UpdateStep;
 	INT32 PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
 	INT32 CountA,CountB,CountC,CountN,CountE;
 	UINT32 VolA,VolB,VolC,VolE;
@@ -77,7 +77,7 @@ static struct AY8910 AYPSG[MAX_8910];		/* array of PSG's */
 
 
 
-void _AYWriteReg(int n, int r, int v)
+static void _AYWriteReg(int n, int r, int v)
 {
 	struct AY8910 *PSG = &AYPSG[n];
 	int old;
@@ -101,8 +101,8 @@ void _AYWriteReg(int n, int r, int v)
 	case AY_ACOARSE:
 		PSG->Regs[AY_ACOARSE] &= 0x0f;
 		old = PSG->PeriodA;
-		PSG->PeriodA = (PSG->Regs[AY_AFINE] + 256 * PSG->Regs[AY_ACOARSE]) * PSG->UpdateStep;
-		if (PSG->PeriodA == 0) PSG->PeriodA = PSG->UpdateStep;
+		PSG->PeriodA = (PSG->Regs[AY_AFINE] + 256 * PSG->Regs[AY_ACOARSE]) * STEP;
+		if (PSG->PeriodA == 0) PSG->PeriodA = STEP;
 		PSG->CountA += PSG->PeriodA - old;
 		if (PSG->CountA <= 0) PSG->CountA = 1;
 		break;
@@ -110,8 +110,8 @@ void _AYWriteReg(int n, int r, int v)
 	case AY_BCOARSE:
 		PSG->Regs[AY_BCOARSE] &= 0x0f;
 		old = PSG->PeriodB;
-		PSG->PeriodB = (PSG->Regs[AY_BFINE] + 256 * PSG->Regs[AY_BCOARSE]) * PSG->UpdateStep;
-		if (PSG->PeriodB == 0) PSG->PeriodB = PSG->UpdateStep;
+		PSG->PeriodB = (PSG->Regs[AY_BFINE] + 256 * PSG->Regs[AY_BCOARSE]) * STEP;
+		if (PSG->PeriodB == 0) PSG->PeriodB = STEP;
 		PSG->CountB += PSG->PeriodB - old;
 		if (PSG->CountB <= 0) PSG->CountB = 1;
 		break;
@@ -119,16 +119,16 @@ void _AYWriteReg(int n, int r, int v)
 	case AY_CCOARSE:
 		PSG->Regs[AY_CCOARSE] &= 0x0f;
 		old = PSG->PeriodC;
-		PSG->PeriodC = (PSG->Regs[AY_CFINE] + 256 * PSG->Regs[AY_CCOARSE]) * PSG->UpdateStep;
-		if (PSG->PeriodC == 0) PSG->PeriodC = PSG->UpdateStep;
+		PSG->PeriodC = (PSG->Regs[AY_CFINE] + 256 * PSG->Regs[AY_CCOARSE]) * STEP;
+		if (PSG->PeriodC == 0) PSG->PeriodC = STEP;
 		PSG->CountC += PSG->PeriodC - old;
 		if (PSG->CountC <= 0) PSG->CountC = 1;
 		break;
 	case AY_NOISEPER:
 		PSG->Regs[AY_NOISEPER] &= 0x1f;
 		old = PSG->PeriodN;
-		PSG->PeriodN = PSG->Regs[AY_NOISEPER] * PSG->UpdateStep;
-		if (PSG->PeriodN == 0) PSG->PeriodN = PSG->UpdateStep;
+		PSG->PeriodN = PSG->Regs[AY_NOISEPER] * STEP;
+		if (PSG->PeriodN == 0) PSG->PeriodN = STEP;
 		PSG->CountN += PSG->PeriodN - old;
 		if (PSG->CountN <= 0) PSG->CountN = 1;
 		break;
@@ -169,8 +169,8 @@ void _AYWriteReg(int n, int r, int v)
 	case AY_EFINE:
 	case AY_ECOARSE:
 		old = PSG->PeriodE;
-		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + 256 * PSG->Regs[AY_ECOARSE])) * PSG->UpdateStep;
-		if (PSG->PeriodE == 0) PSG->PeriodE = PSG->UpdateStep / 2;
+		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + 256 * PSG->Regs[AY_ECOARSE])) * STEP;
+		if (PSG->PeriodE == 0) PSG->PeriodE = STEP / 2;
 		PSG->CountE += PSG->PeriodE - old;
 		if (PSG->CountE <= 0) PSG->CountE = 1;
 		break;
@@ -390,6 +390,16 @@ static void AY8910Update(int chip,INT16 **buffer,int length)
 	buf2 = buffer[1];
 	buf3 = buffer[2];
 
+	/* hack to prevent us from hanging when starting filtered outputs */
+	if (!PSG->ready)
+	{
+		memset(buf1, 0, length * sizeof(*buf1));
+		if (buf2)
+			memset(buf2, 0, length * sizeof(*buf2));
+		if (buf3)
+			memset(buf3, 0, length * sizeof(*buf3));
+		return;
+	}
 
 	/* The 8910 has three outputs, each output is the mix of one of the three */
 	/* tone generators and of the (single) noise generator. The two are mixed */
@@ -647,21 +657,12 @@ static void AY8910Update(int chip,INT16 **buffer,int length)
 }
 
 
-void AY8910_set_clock(int chip,int clock)
+void AY8910_set_clock(int chip, int clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
-	/* the step clock for the tone and noise generators is the chip clock    */
-	/* divided by 8; for the envelope generator of the AY-3-8910, it is half */
-	/* that much (clock/16), but the envelope of the YM2149 goes twice as    */
-	/* fast, therefore again clock/8.                                        */
-	/* Here we calculate the number of steps which happen during one sample  */
-	/* at the given sample rate. No. of events = sample rate / (clock/8).    */
-	/* STEP is a multiplier used to turn the fraction into a fixed point     */
-	/* number.                                                               */
-	PSG->UpdateStep = ((double)STEP * PSG->SampleRate * 8 + clock/2) / clock;
+	stream_set_sample_rate(PSG->Channel, clock/8);
 }
-
 
 void AY8910_set_volume(int chip,int channel,int volume)
 {
@@ -713,6 +714,7 @@ void AY8910_reset(int chip)
 		_AYWriteReg(chip,i,0);	/* AYWriteReg() uses the timer system; we cannot */
 								/* call it at this time because the timer system */
 								/* has not been initialized. */
+	PSG->ready = 1;
 }
 
 void AY8910_sh_reset(void)
@@ -734,10 +736,13 @@ static int AY8910_init(const char *chip_name,int chip,
 	const char *name[3];
 	int vol[3];
 
-
+	/* the step clock for the tone and noise generators is the chip clock    */
+	/* divided by 8; for the envelope generator of the AY-3-8910, it is half */
+	/* that much (clock/16), but the envelope of the YM2149 goes twice as    */
+	/* fast, therefore again clock/8.                                        */
 // causes crashes with YM2610 games - overflow?
 //	if (options.use_filter)
-//		sample_rate = clock/8;
+		sample_rate = clock/8;
 
 	memset(PSG,0,sizeof(struct AY8910));
 	PSG->SampleRate = sample_rate;
@@ -756,8 +761,6 @@ static int AY8910_init(const char *chip_name,int chip,
 	if (PSG->Channel == -1)
 		return 1;
 
-	AY8910_set_clock(chip,clock);
-
 	return 0;
 }
 
@@ -769,7 +772,6 @@ static void AY8910_statesave(int chip)
 	state_save_register_INT32("AY8910",  chip, "register_latch", &PSG->register_latch, 1);
 	state_save_register_UINT8("AY8910",  chip, "Regs",           PSG->Regs,            8);
 	state_save_register_INT32("AY8910",  chip, "lastEnable",     &PSG->lastEnable,     1);
-	state_save_register_UINT32("AY8910", chip, "UpdateStep",     &PSG->UpdateStep,     1);
 
 	state_save_register_INT32("AY8910",  chip, "PeriodA",        &PSG->PeriodA,        1);
 	state_save_register_INT32("AY8910",  chip, "PeriodB",        &PSG->PeriodB,        1);
