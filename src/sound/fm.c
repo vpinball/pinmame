@@ -985,9 +985,7 @@ INLINE void set_sl_rr(FM_SLOT *SLOT,int v)
 
 INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm)
 {
-	UINT32 p;
-
-	p = (env<<3) + sin_tab[ ( ((signed int)((phase & ~FREQ_MASK) + (pm<<15))) >> FREQ_SH ) & SIN_MASK ];
+	UINT32 p = (env<<3) + sin_tab[ ( ((signed int)((phase & ~FREQ_MASK) + (pm<<15))) >> FREQ_SH ) & SIN_MASK ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -996,9 +994,7 @@ INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm)
 
 INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm)
 {
-	UINT32 p;
-
-	p = (env<<3) + sin_tab[ ( ((signed int)((phase & ~FREQ_MASK) + pm      )) >> FREQ_SH ) & SIN_MASK ];
+	UINT32 p = (env<<3) + sin_tab[ ( ((signed int)((phase & ~FREQ_MASK) + pm      )) >> FREQ_SH ) & SIN_MASK ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1015,7 +1011,6 @@ INLINE void advance_lfo(FM_OPN *OPN)
 		OPN->lfo_cnt += OPN->lfo_inc;
 
 		pos = (OPN->lfo_cnt >> LFO_SH) & 127;
-
 
 		/* update AM when LFO output changes */
 
@@ -1052,7 +1047,6 @@ static void advance_eg_channel(FM_OPN *OPN, FM_SLOT *SLOT)
 	unsigned int out;
 	unsigned int swap_flag = 0;
 	unsigned int i;
-
 
 	i = 4; /* four operators per channel */
 	do
@@ -1190,9 +1184,7 @@ static void advance_eg_channel(FM_OPN *OPN, FM_SLOT *SLOT)
 		SLOT++;
 		i--;
 	}while (i);
-
 }
-
 
 
 #define volume_calc(OP) ((OP)->vol_out + (AM & (OP)->AMmask))
@@ -1202,7 +1194,6 @@ INLINE void chan_calc(FM_OPN *OPN, FM_CH *CH)
 	unsigned int eg_out;
 
 	UINT32 AM = LFO_AM >> CH->ams;
-
 
 	m2 = c1 = c2 = mem = 0;
 
@@ -1250,10 +1241,7 @@ INLINE void chan_calc(FM_OPN *OPN, FM_CH *CH)
 	/* update phase counters AFTER output calculations */
 	if(CH->pms)
 	{
-
-
-	/* add support for 3 slot mode */
-
+		/* add support for 3 slot mode */
 
 		UINT32 block_fnum = CH->block_fnum;
 
@@ -1356,7 +1344,7 @@ static void refresh_fc_eg_chan(FM_OPN *OPN, FM_CH *CH )
 static void init_timetables( FM_ST *ST , const UINT8 *dttable )
 {
 	int i,d;
-	double rate;
+	INT32 rate;
 
 #if 0
 	logerror("FM.C: samplerate=%8i chip clock=%8i  freqbase=%f  \n",
@@ -1368,15 +1356,14 @@ static void init_timetables( FM_ST *ST , const UINT8 *dttable )
 	{
 		for (i = 0;i <= 31;i++)
 		{
-			rate = ((double)dttable[d*32 + i]) * SIN_LEN  * ST->freqbase  * (1<<FREQ_SH) / ((double)(1<<20));
-			ST->dt_tab[d][i]   = (INT32) rate;
+			rate = ((int)dttable[d*32 + i]) * (1<<(FREQ_SH+SIN_BITS-20)) * ST->freqbase;
+			ST->dt_tab[d][i]   = rate;
 			ST->dt_tab[d+4][i] = -ST->dt_tab[d][i];
 #if 0
 			logerror("FM.C: DT [%2i %2i] = %8x  \n", d, i, ST->dt_tab[d][i] );
 #endif
 		}
 	}
-
 }
 
 
@@ -1413,8 +1400,7 @@ static int init_tables(void)
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = (1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0);
-		m = floor(m);
+		m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0));
 
 		/* we never reach (1<<16) here due to the (x+1) */
 		/* result fits within 16 bits at maximum */
@@ -1452,12 +1438,9 @@ static int init_tables(void)
 
 		/* we never reach zero here due to ((i*2)+1) */
 
-		if (m>0.0)
-			o = 8*log(1.0/m)/log(2.0);  /* convert to 'decibels' */
-		else
-			o = 8*log(-1.0/m)/log(2.0); /* convert to 'decibels' */
+		o = 8.0*log(1.0/fabs(m))/log(2.0);  /* convert to 'decibels' */
 
-		o = o / (ENV_STEP/4);
+		o = o / (ENV_STEP/4.);
 
 		n = (int)(2.0*o);
 		if (n&1)						/* round to nearest */
@@ -1511,13 +1494,11 @@ static int init_tables(void)
 	}
 
 
-
 #ifdef SAVE_SAMPLE
 	sample[0]=fopen("sampsum.pcm","wb");
 #endif
 
 	return 1;
-
 }
 
 
@@ -1596,6 +1577,7 @@ INLINE void TimerAOver(FM_ST *ST)
 	ST->TAC = (1024-ST->TA);
 	if (ST->Timer_Handler) (ST->Timer_Handler)(ST->index,0,ST->TAC,ST->TimerBase);
 }
+
 /* Timer B Overflow */
 INLINE void TimerBOver(FM_ST *ST)
 {
@@ -1605,6 +1587,7 @@ INLINE void TimerBOver(FM_ST *ST)
 	ST->TBC = ( 256-ST->TB)<<4;
 	if (ST->Timer_Handler) (ST->Timer_Handler)(ST->index,1,ST->TBC,ST->TimerBase);
 }
+
 /* CSM Key Controll */
 INLINE void CSMKeyControll(FM_CH *CH)
 {
@@ -1700,7 +1683,7 @@ static void OPNSetPres(FM_OPN *OPN , int pres , int TimerPres, int SSGpres)
 	{
 		/* freq table for octave 7 */
 		/* OPN phase increment counter = 20bit */
-		OPN->fn_table[i] = (UINT32)( (double)i * 32 * OPN->ST.freqbase * (1<<(FREQ_SH-10)) ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
+		OPN->fn_table[i] = (UINT32)( (double)(i * 32 * (1<<(FREQ_SH-10))) * OPN->ST.freqbase ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
 #if 0
 		logerror("FM.C: fn_table[%4i] = %08x (dec=%8i)\n",
 				 i, OPN->fn_table[i]>>6,OPN->fn_table[i]>>6 );
@@ -1708,7 +1691,7 @@ static void OPNSetPres(FM_OPN *OPN , int pres , int TimerPres, int SSGpres)
 	}
 
 	/* maximal frequency is required for Phase overflow calculation, register size is 17 bits (Nemesis) */
-	OPN->fn_max = (UINT32)( (double)0x20000 * OPN->ST.freqbase * (1<<(FREQ_SH-10)) );
+	OPN->fn_max = (UINT32)( (double)(0x20000* (1<<(FREQ_SH-10))) * OPN->ST.freqbase );
 
 	/* LFO freq. table */
 	for(i = 0; i < 8; i++)

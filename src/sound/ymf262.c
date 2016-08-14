@@ -860,9 +860,7 @@ INLINE void advance(OPL3 *chip)
 
 INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
-	UINT32 p;
-
-	p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + (pm<<16))) >> FREQ_SH ) & SIN_MASK) ];
+	UINT32 p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + (pm<<16))) >> FREQ_SH ) & SIN_MASK) ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -871,9 +869,7 @@ INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm, unsigne
 
 INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
-	UINT32 p;
-
-	p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm))>>FREQ_SH) & SIN_MASK)];
+	UINT32 p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm))>>FREQ_SH) & SIN_MASK)];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1152,11 +1148,9 @@ static int init_tables(void)
 	signed int n;
 	double o,m;
 
-
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = (1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0);
-		m = floor(m);
+		m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0));
 
 		/* we never reach (1<<16) here due to the (x+1) */
 		/* result fits within 16 bits at maximum */
@@ -1197,12 +1191,9 @@ static int init_tables(void)
 
 		/* we never reach zero here due to ((i*2)+1) */
 
-		if (m>0.0)
-			o = 8*log(1.0/m)/log(2.0);	/* convert to 'decibels' */
-		else
-			o = 8*log(-1.0/m)/log(2.0);	/* convert to 'decibels' */
+		o = 8.0*log(1.0/fabs(m))/log(2.0);	/* convert to 'decibels' */
 
-		o = o / (ENV_STEP/4);
+		o = o / (ENV_STEP/4.0);
 
 		n = (int)(2.0*o);
 		if (n&1)						/* round to nearest */
@@ -1333,7 +1324,7 @@ static void OPL3_initalize(OPL3 *chip)
 	for( i=0 ; i < 1024 ; i++ )
 	{
 		/* opn phase increment counter = 20bit */
-		chip->fn_tab[i] = (UINT32)( (double)i * 64 * chip->freqbase * (1<<(FREQ_SH-10)) ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
+		chip->fn_tab[i] = (UINT32)( (double)(i * 64 * (1<<(FREQ_SH-10))) * chip->freqbase ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
 #if 0
 		logerror("YMF262.C: fn_tab[%4i] = %08x (dec=%8i)\n",
 				 i, chip->fn_tab[i]>>6, chip->fn_tab[i]>>6 );
@@ -1575,7 +1566,7 @@ INLINE void set_ar_dr(OPL3 *chip,int slot,int v)
 	OPL3_CH   *CH   = &chip->P_CH[slot/2];
 	OPL3_SLOT *SLOT = &CH->SLOT[slot&1];
 
-	SLOT->ar = (v>>4)  ? 16 + ((v>>4)  <<2) : 0;
+	SLOT->ar = (v>>4) ? 16 + ((v>>4)  <<2) : 0;
 
 	if ((SLOT->ar + SLOT->ksr) < 16+60) /* verified on real YMF262 - all 15 x rates take "zero" time */
 	{
@@ -1622,7 +1613,6 @@ static void update_channels(OPL3 *chip, OPL3_CH *CH)
 	{	/* we've just switched to normal 2 operator mode */
 
 	}
-
 }
 
 /* write a value v to register r on OPL chip */
@@ -2526,6 +2516,7 @@ void YMF262Shutdown(void)
 	}
 	YMF262NumChips = 0;
 }
+
 void YMF262ResetChip(int which)
 {
 	OPL3ResetChip(YMF262[which]);
