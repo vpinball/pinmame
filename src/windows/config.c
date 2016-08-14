@@ -248,7 +248,7 @@ struct rc_option core_opts[] = {
         { "Mame CORE sound options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
         { "samplerate", "sr", rc_int, &options.samplerate, "48000", 8000, 96000, NULL, "set samplerate" },
         { "samples", NULL, rc_bool, &options.use_samples, "1", 0, 0, NULL, "use samples" },
-        { "resamplefilter", NULL, rc_bool, &options.use_filter, "1", 0, 0, NULL, "resample if samplerate does not match" },
+        //{ "resamplefilter", NULL, rc_bool, &options.use_filter, "1", 0, 0, NULL, "resample if samplerate does not match" },
         { "sound", NULL, rc_bool, &enable_sound, "1", 0, 0, NULL, "enable/disable sound and sound CPUs" },
         { "volume", "vol", rc_int, &attenuation, "0", -32, 0, NULL, "volume (range [-32,0])" },
 

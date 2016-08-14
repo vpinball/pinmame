@@ -278,7 +278,7 @@ static REG_OPTION regGameOpts[] =
         // sound
         { "samplerate",             RO_INT,     &gOpts.samplerate,        0, 0},
         { "samples",                RO_BOOL,    &gOpts.use_samples,       0, 0},
-        { "resamplefilter",         RO_BOOL,    &gOpts.use_filter,        0, 0},
+        //{ "resamplefilter",         RO_BOOL,    &gOpts.use_filter,        0, 0},
         { "sound",                  RO_BOOL,    &gOpts.enable_sound,      0, 0},
         { "volume",                 RO_INT,     &gOpts.attenuation,       0, 0},
         { "audio_latency",          RO_INT,     &gOpts.audio_latency,     0, 0},
@@ -766,7 +766,7 @@ BOOL OptionsInit()
         /* Sound */
         global.samplerate        = 48000;
         global.use_samples       = TRUE;
-        global.use_filter        = TRUE;
+        //global.use_filter        = TRUE;
         global.enable_sound      = TRUE;
         global.attenuation       = 0;
         global.audio_latency     = 1;
