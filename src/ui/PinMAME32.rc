@@ -587,9 +587,9 @@ BEGIN
                     HIDC_USE_SOUND
     CONTROL         "Use samples",IDC_SAMPLES,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,50,64,55,10,0,HIDC_SAMPLES
-    CONTROL         "Resample if sample rate does not match",IDC_USE_FILTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,78,140,10,0,
-                    HIDC_USE_FILTER
+    //CONTROL         "Resample if sample rate does not match",IDC_USE_FILTER,
+	//                "Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,78,140,10,0,
+	//                HIDC_USE_FILTER
     LTEXT           "Sample rate:",IDC_RATETEXT,50,94,40,8,NOT WS_GROUP
     COMBOBOX        IDC_SAMPLERATE,94,92,59,60,CBS_DROPDOWNLIST |
                     CBS_UPPERCASE | WS_VSCROLL | WS_TABSTOP,0,

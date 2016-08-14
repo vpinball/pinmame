@@ -216,7 +216,7 @@
 #define IDC_FILTER_EDIT                 1129
 #define IDC_ABOUT                       1130
 #define IDC_PROP_DISPLAY                1131
-#define IDC_USE_FILTER                  1132
+//#define IDC_USE_FILTER                  1132
 #define IDC_USE_SOUND                   1133
 #define IDC_WAITVSYNC                   1134
 #define IDC_HWSTRETCH                   1135

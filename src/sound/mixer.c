@@ -16,9 +16,6 @@
 /***************************************************************************/
 /* Options */
 
-/* Define it to enable the check of the flag options.use_filter as condition for the filter use */
-#define MIXER_USE_OPTION_FILTER
-
 /* Undefine it to turn off clipping (helpful to find cases where we max out */
 #define MIXER_USE_CLIPPING
 
@@ -156,9 +153,7 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsig
 		}
 
 		/* make a new filter */
-#ifdef MIXER_USE_OPTION_FILTER
-		if (options.use_filter)
-#endif
+		//if (options.use_filter)
 		if ((from_frequency != 0 && to_frequency != 0 && (from_frequency != to_frequency || lowpass_frequency != 0)))
 		{
 			double cut;

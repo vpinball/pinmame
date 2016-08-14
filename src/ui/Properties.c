@@ -261,7 +261,7 @@ static DWORD dwHelpIDs[] =
 	IDC_TRANSLUCENCY,       HIDC_TRANSLUCENCY,
 	IDC_TRIPLE_BUFFER,      HIDC_TRIPLE_BUFFER,
 	IDC_USE_DEFAULT,        HIDC_USE_DEFAULT,
-	IDC_USE_FILTER,         HIDC_USE_FILTER,
+	//IDC_USE_FILTER,         HIDC_USE_FILTER,
 	IDC_USE_MOUSE,          HIDC_USE_MOUSE,
 	IDC_USE_SOUND,          HIDC_USE_SOUND,
 	IDC_VOLUME,             HIDC_VOLUME,
@@ -1551,7 +1551,7 @@ static void SetPropEnabledControls(HWND hWnd)
 
 		EnableWindow(GetDlgItem(hWnd,IDC_VOLUME),sound);
 		EnableWindow(GetDlgItem(hWnd,IDC_RATETEXT),sound);
-		EnableWindow(GetDlgItem(hWnd,IDC_USE_FILTER),sound);
+		//EnableWindow(GetDlgItem(hWnd,IDC_USE_FILTER),sound);
 		EnableWindow(GetDlgItem(hWnd,IDC_VOLUMEDISP),sound);
 		EnableWindow(GetDlgItem(hWnd,IDC_VOLUMETEXT),sound);
 		EnableWindow(GetDlgItem(hWnd,IDC_AUDIO_LATENCY),sound);
@@ -1866,7 +1866,7 @@ static void BuildDataMap(void)
 	/* sound */
 	DataMapAdd(IDC_SAMPLERATE,    DM_INT,  CT_COMBOBOX, &g_nSampleRateIndex,       DM_INT, &pGameOpts->samplerate, 0, 0, AssignSampleRate);
 	DataMapAdd(IDC_SAMPLES,       DM_BOOL, CT_BUTTON,   &pGameOpts->use_samples,   DM_BOOL, &pGameOpts->use_samples,   0, 0, 0);
-	DataMapAdd(IDC_USE_FILTER,    DM_BOOL, CT_BUTTON,   &pGameOpts->use_filter,    DM_BOOL, &pGameOpts->use_filter,    0, 0, 0);
+	//DataMapAdd(IDC_USE_FILTER,    DM_BOOL, CT_BUTTON,   &pGameOpts->use_filter,    DM_BOOL, &pGameOpts->use_filter,    0, 0, 0);
 	DataMapAdd(IDC_USE_SOUND,     DM_BOOL, CT_BUTTON,   &pGameOpts->enable_sound,  DM_BOOL, &pGameOpts->enable_sound,  0, 0, 0);
 	DataMapAdd(IDC_VOLUME,        DM_INT,  CT_SLIDER,   &g_nVolumeIndex,           DM_INT, &pGameOpts->attenuation, 0, 0, AssignVolume);
 	DataMapAdd(IDC_VOLUMEDISP,    DM_NONE, CT_NONE,  NULL,  DM_INT, &pGameOpts->attenuation, 0, 0, 0);

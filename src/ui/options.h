@@ -192,7 +192,7 @@ typedef struct
 	/* Sound */
 	int    samplerate;
 	BOOL   use_samples;
-	BOOL   use_filter;
+	//BOOL   use_filter;
 	BOOL   enable_sound;
 	int    attenuation;
 	int audio_latency;
