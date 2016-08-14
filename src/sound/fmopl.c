@@ -898,9 +898,7 @@ INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm, unsigne
 
 INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
-	UINT32 p;
-
-	p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm      )) >> FREQ_SH ) & SIN_MASK) ];
+	UINT32 p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm      )) >> FREQ_SH ) & SIN_MASK) ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -982,7 +980,6 @@ INLINE void OPL_CALC_RH( FM_OPL *OPL, OPL_CH *CH, unsigned int noise )
 	OPL_SLOT *SLOT;
 	signed int out;
 	unsigned int env;
-
 
 	/* Bass Drum (verified on real YM3812):
 	  - depends on the channel 6 'connect' register:
@@ -1148,11 +1145,9 @@ static int init_tables(void)
 	signed int n;
 	double o,m;
 
-
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = (1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0);
-		m = floor(m);
+		m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0));
 
 		/* we never reach (1<<16) here due to the (x+1) */
 		/* result fits within 16 bits at maximum */
@@ -1190,12 +1185,9 @@ static int init_tables(void)
 
 		/* we never reach zero here due to ((i*2)+1) */
 
-		if (m>0.0)
-			o = 8*log(1.0/m)/log(2.0);  /* convert to 'decibels' */
-		else
-			o = 8*log(-1.0/m)/log(2.0); /* convert to 'decibels' */
+		o = 8.0*log(1.0/fabs(m))/log(2.0);  /* convert to 'decibels' */
 
-		o = o / (ENV_STEP/4);
+		o = o / (ENV_STEP/4.0);
 
 		n = (int)(2.0*o);
 		if (n&1)						/* round to nearest */
@@ -1277,7 +1269,7 @@ static void OPL_initalize(FM_OPL *OPL)
 	for( i=0 ; i < 1024 ; i++ )
 	{
 		/* opn phase increment counter = 20bit */
-		OPL->fn_tab[i] = (UINT32)( (double)i * 64 * OPL->freqbase * (1<<(FREQ_SH-10)) ); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
+		OPL->fn_tab[i] = (UINT32)((double)(i * 64 * (1 << (FREQ_SH - 10))) * OPL->freqbase); /* -10 because chip works with 10.10 fixed point, while we use 16.16 */
 #if 0
 		logerror("FMOPL.C: fn_tab[%4i] = %08x (dec=%8i)\n",
 				 i, OPL->fn_tab[i]>>6, OPL->fn_tab[i]>>6 );
@@ -1450,7 +1442,6 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 	int slot;
 	int block_fnum;
 
-
 	/* adjust bus to 8 bits */
 	r &= 0xff;
 	v &= 0xff;
@@ -1460,7 +1451,6 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 		fputc( (unsigned char)r, cymfile );
 		fputc( (unsigned char)v, cymfile );
 	}
-
 
 	switch(r&0xe0)
 	{
@@ -1776,7 +1766,7 @@ static void OPLResetChip(FM_OPL *OPL)
 	OPL->eg_cnt   = 0;
 
 	OPL->noise_rng = 1;	/* noise shift register */
-	OPL->mode   = 0;	/* normal mode */
+	OPL->mode = 0;		/* normal mode */
 	OPL_STATUS_RESET(OPL,0x7f);
 
 	/* reset with register write */
@@ -2475,4 +2465,3 @@ void Y8950SetKeyboardHandler(int which,OPL_PORTHANDLER_W KeyboardHandler_w,OPL_P
 }
 
 #endif
-
