@@ -14,24 +14,10 @@
 #include "ym2151.h"
 
 
-/* undef this to not use MAME timer system */
-#define USE_MAME_TIMERS
-
-/*#define FM_EMU*/
-#ifdef FM_EMU
-	#define INLINE static __inline__
-	#ifdef USE_MAME_TIMERS
-		#undef USE_MAME_TIMERS
-	#endif
+/*#define LOG_CYM_FILE*/
+#ifdef LOG_CYM_FILE
+	FILE * cymfile = NULL;
 #endif
-#ifdef USE_MAME_TIMERS
-	/*#define LOG_CYM_FILE*/
-	#ifdef LOG_CYM_FILE
-		FILE * cymfile = NULL;
-	#endif
-#endif
-
-
 /* struct describing a single operator */
 typedef struct{
 	UINT32		phase;					/* accumulated operator phase */
@@ -122,20 +108,12 @@ typedef struct
 	UINT32		status;					/* chip status (BUSY, IRQ Flags) */
 	UINT8		connect[8];				/* channels connections */
 
-#ifdef USE_MAME_TIMERS
 /* ASG 980324 -- added for tracking timers */
 	void		*timer_A;
 	void		*timer_B;
 	double		timer_A_time[1024];		/* timer A times for MAME */
 	double		timer_B_time[256];		/* timer B times for MAME */
-#else
-	UINT8		tim_A;					/* timer A enable (0-disabled) */
-	UINT8		tim_B;					/* timer B enable (0-disabled) */
-	INT32		tim_A_val;				/* current value of timer A */
-	INT32		tim_B_val;				/* current value of timer B */
-	UINT32		tim_A_tab[1024];		/* timer A deltas */
-	UINT32		tim_B_tab[256];			/* timer B deltas */
-#endif
+
 	UINT32		timer_A_index;			/* timer A index */
 	UINT32		timer_B_index;			/* timer B index */
 	UINT32		timer_A_index_old;		/* timer A previous index */
@@ -514,8 +492,7 @@ static void init_tables(void)
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
-		m = (1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0);
-		m = floor(m);
+		m = floor((1<<16) / pow(2, (x+1) * (ENV_STEP/4.0) / 8.0)); // = 2^((4095.-x)/256.)
 
 		/* we never reach (1<<16) here due to the (x+1) */
 		/* result fits within 16 bits at maximum */
@@ -554,12 +531,9 @@ static void init_tables(void)
 
 		/* we never reach zero here due to ((i*2)+1) */
 
-		if (m>0.0)
-			o = 8*log(1.0/m)/log(2.0);  /* convert to 'decibels' */
-		else
-			o = 8*log(-1.0/m)/log(2.0); /* convert to 'decibels' */
+		o = 8.0*log(1.0/fabs(m))/log(2.0);  /* convert to 'decibels' */
 
-		o = o / (ENV_STEP/4);
+		o = o / (ENV_STEP/4.);
 
 		n = (int)(2.0*o);
 		if (n&1)						/* round to closest */
@@ -575,8 +549,7 @@ static void init_tables(void)
 	/* calculate d1l_tab table */
 	for (i=0; i<16; i++)
 	{
-		m = (i!=15 ? i : i+16) * (4.0/ENV_STEP);   /* every 3 'dB' except for all bits = 1 = 45+48 'dB' */
-		d1l_tab[i] = m;
+		d1l_tab[i] = (i!=15 ? i : i+16) * (4.0/ENV_STEP);   /* every 3 'dB' except for all bits = 1 = 45+48 'dB' */
 		/*logerror("d1l_tab[%02x]=%08x\n",i,d1l_tab[i] );*/
 	}
 
@@ -599,37 +572,17 @@ static void init_tables(void)
 static void init_chip_tables(YM2151 *chip)
 {
 	int i,j;
-	double mult,pom,phaseinc,Hz;
-	double scaler;
-
-	scaler = ( (double)chip->clock / 64.0 ) / ( (double)chip->sampfreq );
-	/*logerror("scaler    = %20.15f\n", scaler);*/
-
 
 	/* this loop calculates Hertz values for notes from c-0 to b-7 */
 	/* including 64 'cents' (100/64 that is 1.5625 of real cent) per note */
 	/* i*100/64/1200 is equal to i/768 */
 
 	/* real chip works with 10 bits fixed point values (10.10) */
-	mult = (1<<(FREQ_SH-10)); /* -10 because phaseinc_rom table values are already in 10.10 format */
 
 	for (i=0; i<768; i++)
 	{
-		/* 3.4375 Hz is note A; C# is 4 semitones higher */
-		Hz = 1000;
-#if 0
-/* Hz is close, but not perfect */
-		//Hz = scaler * 3.4375 * pow (2, (i + 4 * 64 ) / 768.0 );
-		/* calculate phase increment */
-		phaseinc = (Hz*SIN_LEN) / (double)chip->sampfreq;
-#endif
-
-		phaseinc = phaseinc_rom[i];	/* real chip phase increment */
-		phaseinc *= scaler;			/* adjust */
-
-
 		/* octave 2 - reference octave */
-		chip->freq[ 768+2*768+i ] = ((int)(phaseinc*mult)) & 0xffffffc0; /* adjust to X.10 fixed point */
+		chip->freq[ 768+2*768+i ] = (((int)phaseinc_rom[i]) << (FREQ_SH - 10)) & 0xffffffc0; /* adjust to X.10 fixed point */
 		/* octave 0 and octave 1 */
 		for (j=0; j<2; j++)
 		{
@@ -640,12 +593,6 @@ static void init_chip_tables(YM2151 *chip)
 		{
 			chip->freq[768 + j*768 + i] = chip->freq[ 768+2*768+i ] << (j-2);
 		}
-
-	#if 0
-			pom = (double)chip->freq[ 768+2*768+i ] / ((double)(1<<FREQ_SH));
-			pom = pom * (double)chip->sampfreq / (double)SIN_LEN;
-			logerror("1freq[%4i][%08x]= real %20.15f Hz  emul %20.15f Hz\n", i, chip->freq[ 768+2*768+i ], Hz, pom);
-	#endif
 	}
 
 	/* octave -1 (all equal to: oct 0, _KC_00_, _KF_00_) */
@@ -663,75 +610,36 @@ static void init_chip_tables(YM2151 *chip)
 		}
 	}
 
-#if 0
-		for (i=0; i<11*768; i++)
-		{
-			pom = (double)chip->freq[i] / ((double)(1<<FREQ_SH));
-			pom = pom * (double)chip->sampfreq / (double)SIN_LEN;
-			logerror("freq[%4i][%08x]= emul %20.15f Hz\n", i, chip->freq[i], pom);
-		}
-#endif
-
-	mult = (1<<FREQ_SH);
 	for (j=0; j<4; j++)
 	{
 		for (i=0; i<32; i++)
 		{
-			Hz = ( (double)dt1_tab[j*32+i] * ((double)chip->clock/64.0) ) / (double)(1<<20);
-
-			/*calculate phase increment*/
-			phaseinc = (Hz*SIN_LEN) / (double)chip->sampfreq;
-
-			/*positive and negative values*/
-			chip->dt1_freq[ (j+0)*32 + i ] = phaseinc * mult;
+			/*calculate phase increment, positive and negative values*/
+			chip->dt1_freq[ (j+0)*32 + i ] = (((int)dt1_tab[j*32+i]) * SIN_LEN) >> (20 - FREQ_SH);
 			chip->dt1_freq[ (j+4)*32 + i ] = -chip->dt1_freq[ (j+0)*32 + i ];
-
-#if 0
-			{
-				int x = j*32 + i;
-				pom = (double)chip->dt1_freq[x] / mult;
-				pom = pom * (double)chip->sampfreq / (double)SIN_LEN;
-				logerror("DT1(%03i)[%02i %02i][%08x]= real %19.15f Hz  emul %19.15f Hz\n",
-						 x, j, i, chip->dt1_freq[x], Hz, pom);
-			}
-#endif
 		}
 	}
 
-
 	/* calculate timers' deltas */
 	/* User's Manual pages 15,16  */
-	mult = (1<<TIMER_SH);
 	for (i=0; i<1024; i++)
 	{
 		/* ASG 980324: changed to compute both tim_A_tab and timer_A_time */
-		pom= ( 64.0  *  (1024.0-i) / (double)chip->clock );
-		#ifdef USE_MAME_TIMERS
-			chip->timer_A_time[i] = pom;
-		#else
-			chip->tim_A_tab[i] = pom * (double)chip->sampfreq * mult;  /* number of samples that timer period takes (fixed point) */
-		#endif
+		chip->timer_A_time[i] = ( 64  *  (1024-i) / (double)chip->clock );
 	}
 	for (i=0; i<256; i++)
 	{
 		/* ASG 980324: changed to compute both tim_B_tab and timer_B_time */
-		pom= ( 1024.0 * (256.0-i)  / (double)chip->clock );
-		#ifdef USE_MAME_TIMERS
-			chip->timer_B_time[i] = pom;
-		#else
-			chip->tim_B_tab[i] = pom * (double)chip->sampfreq * mult;  /* number of samples that timer period takes (fixed point) */
-		#endif
+		chip->timer_B_time[i] = ( 1024 * (256-i)  / (double)chip->clock );
 	}
 
 	/* calculate noise periods table */
-	scaler = ( (double)chip->clock / 64.0 ) / ( (double)chip->sampfreq );
 	for (i=0; i<32; i++)
 	{
 		j = (i!=31 ? i : 30);				/* rate 30 and 31 are the same */
 		j = 32-j;
-		j = (65536.0 / (double)(j*32.0));	/* number of samples per one shift of the shift register */
-		/*chip->noise_tab[i] = j * 64;*/	/* number of chip clock cycles per one shift */
-		chip->noise_tab[i] = j * 64 * scaler;
+		j = 65536 / (j*32);	/* number of samples per one shift of the shift register */
+		chip->noise_tab[i] = j * 64;
 		/*logerror("noise_tab[%02x]=%08x\n", i, chip->noise_tab[i]);*/
 	}
 }
@@ -789,7 +697,6 @@ INLINE void envelope_KONKOFF(YM2151Operator * op, int v)
 }
 
 
-#ifdef USE_MAME_TIMERS
 static void timer_callback_a (int n)
 {
 	YM2151 *chip = &YMPSG[n];
@@ -804,6 +711,7 @@ static void timer_callback_a (int n)
 	if (chip->irq_enable & 0x80)
 		chip->csm_req = 2;		/* request KEY ON / KEY OFF sequence */
 }
+
 static void timer_callback_b (int n)
 {
 	YM2151 *chip = &YMPSG[n];
@@ -816,6 +724,7 @@ static void timer_callback_b (int n)
 		if ((!oldstate) && (chip->irqhandler)) (*chip->irqhandler)(1);
 	}
 }
+
 #if 0
 static void timer_callback_chip_busy (int n)
 {
@@ -823,10 +732,6 @@ static void timer_callback_chip_busy (int n)
 	chip->status &= 0x7f;	/* reset busy flag */
 }
 #endif
-#endif
-
-
-
 
 
 
@@ -1089,7 +994,6 @@ void YM2151WriteReg(int n, int r, int v)
 			}
 
 			if (v&0x02){	/* load and start timer B */
-				#ifdef USE_MAME_TIMERS
 				/* ASG 980324: added a real timer */
 				/* start timer _only_ if it wasn't already started (it will reload time value next round) */
 					if (!timer_enable(chip->timer_B, 1))
@@ -1097,24 +1001,12 @@ void YM2151WriteReg(int n, int r, int v)
 						timer_adjust(chip->timer_B, chip->timer_B_time[ chip->timer_B_index ], n, 0);
 						chip->timer_B_index_old = chip->timer_B_index;
 					}
-				#else
-					if (!chip->tim_B)
-					{
-						chip->tim_B = 1;
-						chip->tim_B_val = chip->tim_B_tab[ chip->timer_B_index ];
-					}
-				#endif
 			}else{		/* stop timer B */
-				#ifdef USE_MAME_TIMERS
 				/* ASG 980324: added a real timer */
 					timer_enable(chip->timer_B, 0);
-				#else
-					chip->tim_B = 0;
-				#endif
 			}
 
 			if (v&0x01){	/* load and start timer A */
-				#ifdef USE_MAME_TIMERS
 				/* ASG 980324: added a real timer */
 				/* start timer _only_ if it wasn't already started (it will reload time value next round) */
 					if (!timer_enable(chip->timer_A, 1))
@@ -1122,20 +1014,9 @@ void YM2151WriteReg(int n, int r, int v)
 						timer_adjust(chip->timer_A, chip->timer_A_time[ chip->timer_A_index ], n, 0);
 						chip->timer_A_index_old = chip->timer_A_index;
 					}
-				#else
-					if (!chip->tim_A)
-					{
-						chip->tim_A = 1;
-						chip->tim_A_val = chip->tim_A_tab[ chip->timer_A_index ];
-					}
-				#endif
 			}else{		/* stop timer A */
-				#ifdef USE_MAME_TIMERS
 				/* ASG 980324: added a real timer */
 					timer_enable(chip->timer_A, 0);
-				#else
-					chip->tim_A = 0;
-				#endif
 			}
 			break;
 
@@ -1341,7 +1222,6 @@ int YM2151ReadStatus( int n )
 
 
 
-#ifdef USE_MAME_TIMERS
 /*
 *	state save support for MAME
 */
@@ -1458,11 +1338,6 @@ static void ym2151_state_save_register( int numchips )
 
 	state_save_register_func_postload(ym2151_postload_refresh);
 }
-#else
-static void ym2151_state_save_register( int numchips )
-{
-}
-#endif
 
 
 /*
@@ -1470,7 +1345,7 @@ static void ym2151_state_save_register( int numchips )
 *
 *	'num' is the number of virtual YM2151's to allocate
 *	'clock' is the chip clock in Hz
-*	'rate' is sampling rate
+*	'rate' is sampling rate (=clock/64)
 */
 int YM2151Init(int num, int clock, int rate)
 {
@@ -1494,26 +1369,21 @@ int YM2151Init(int num, int clock, int rate)
 	for (i=0 ; i<YMNumChips; i++)
 	{
 		YMPSG[i].clock = clock;
-		/*rate = clock/64;*/
-		YMPSG[i].sampfreq = rate ? rate : 44100;	/* avoid division by 0 in init_chip_tables() */
+		YMPSG[i].sampfreq = rate;
 		YMPSG[i].irqhandler = NULL;					/* interrupt handler  */
 		YMPSG[i].porthandler = NULL;				/* port write handler */
 		init_chip_tables( &YMPSG[i] );
 
-		YMPSG[i].lfo_timer_add = (1<<LFO_SH) * (clock/64.0) / YMPSG[i].sampfreq;
+		YMPSG[i].lfo_timer_add = (1<<LFO_SH) * (long long)clock / (64ll*YMPSG[i].sampfreq);
 
-		YMPSG[i].eg_timer_add  = (1<<EG_SH)  * (clock/64.0) / YMPSG[i].sampfreq;
+		YMPSG[i].eg_timer_add  = (1<<EG_SH)  * (long long)clock / (64ll*YMPSG[i].sampfreq);
 		YMPSG[i].eg_timer_overflow = ( 3 ) * (1<<EG_SH);
 		/*logerror("YM2151[init] eg_timer_add=%8x eg_timer_overflow=%8x\n", YMPSG[i].eg_timer_add, YMPSG[i].eg_timer_overflow);*/
 
-#ifdef USE_MAME_TIMERS
-/* this must be done _before_ a call to YM2151ResetChip() */
+		/* this must be done _before_ a call to YM2151ResetChip() */
 		YMPSG[i].timer_A = timer_alloc(timer_callback_a);
 		YMPSG[i].timer_B = timer_alloc(timer_callback_b);
-#else
-		YMPSG[i].tim_A      = 0;
-		YMPSG[i].tim_B      = 0;
-#endif
+
 		YM2151ResetChip(i);
 		/*logerror("YM2151[init] clock=%i sampfreq=%i\n", YMPSG[i].clock, YMPSG[i].sampfreq);*/
 	}
@@ -1569,13 +1439,12 @@ void YM2151ResetChip(int num)
 	int i;
 	YM2151 *chip = &YMPSG[num];
 
-
 	/* initialize hardware registers */
 	for (i=0; i<32; i++)
 	{
 		memset(&chip->oper[i],'\0',sizeof(YM2151Operator));
 		chip->oper[i].volume = MAX_ATT_INDEX;
-			chip->oper[i].kc_i = 768; /* min kc_i value */
+		chip->oper[i].kc_i = 768; /* min kc_i value */
 	}
 
 	chip->eg_timer = 0;
@@ -1593,16 +1462,10 @@ void YM2151ResetChip(int num)
 	chip->test= 0;
 
 	chip->irq_enable = 0;
-#ifdef USE_MAME_TIMERS
 	/* ASG 980324 -- reset the timers before writing to the registers */
 	timer_enable(chip->timer_A, 0);
 	timer_enable(chip->timer_B, 0);
-#else
-	chip->tim_A      = 0;
-	chip->tim_B      = 0;
-	chip->tim_A_val  = 0;
-	chip->tim_B_val  = 0;
-#endif
+
 	chip->timer_A_index = 0;
 	chip->timer_B_index = 0;
 	chip->timer_A_index_old = 0;
@@ -1628,10 +1491,7 @@ void YM2151ResetChip(int num)
 
 INLINE signed int op_calc(YM2151Operator * OP, unsigned int env, signed int pm)
 {
-	UINT32 p;
-
-
-	p = (env<<3) + sin_tab[ ( ((signed int)((OP->phase & ~FREQ_MASK) + (pm<<15))) >> FREQ_SH ) & SIN_MASK ];
+	UINT32 p = (env<<3) + sin_tab[ ( ((signed int)((OP->phase & ~FREQ_MASK) + (pm<<15))) >> FREQ_SH ) & SIN_MASK ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1644,14 +1504,13 @@ INLINE signed int op_calc1(YM2151Operator * OP, unsigned int env, signed int pm)
 	UINT32 p;
 	INT32  i;
 
-
 	i = (OP->phase & ~FREQ_MASK) + pm;
 
-/*logerror("i=%08x (i>>16)&511=%8i phase=%i [pm=%08x] ",i, (i>>16)&511, OP->phase>>FREQ_SH, pm);*/
+	/*logerror("i=%08x (i>>16)&511=%8i phase=%i [pm=%08x] ",i, (i>>16)&511, OP->phase>>FREQ_SH, pm);*/
 
 	p = (env<<3) + sin_tab[ (i>>FREQ_SH) & SIN_MASK];
 
-/*logerror("(p&255=%i p>>8=%i) out= %i\n", p&255,p>>8, tl_tab[p&255]>>(p>>8) );*/
+	/*logerror("(p&255=%i p>>8=%i) out= %i\n", p&255,p>>8, tl_tab[p&255]>>(p>>8) );*/
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1712,6 +1571,7 @@ INLINE void chan_calc(unsigned int chan)
 	/* M1 */
 	op->mem_value = mem;
 }
+
 INLINE void chan7_calc(void)
 {
 	YM2151Operator *op;
@@ -1986,8 +1846,6 @@ INLINE void advance_eg(void)
 {
 	YM2151Operator *op;
 	unsigned int i;
-
-
 
 	PSG->eg_timer += PSG->eg_timer_add;
 
@@ -2362,24 +2220,6 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 
 	PSG = &YMPSG[num];
 
-#ifdef USE_MAME_TIMERS
-		/* ASG 980324 - handled by real timers now */
-#else
-	if (PSG->tim_B)
-	{
-		PSG->tim_B_val -= ( length << TIMER_SH );
-		if (PSG->tim_B_val<=0)
-		{
-			PSG->tim_B_val += PSG->tim_B_tab[ PSG->timer_B_index ];
-			if ( PSG->irq_enable & 0x08 )
-			{
-				int oldstate = PSG->status & 3;
-				PSG->status |= 2;
-				if ((!oldstate) && (PSG->irqhandler)) (*PSG->irqhandler)(1);
-			}
-		}
-	}
-#endif
 
 	for (i=0; i<length; i++)
 	{
@@ -2457,27 +2297,6 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		}
 #endif
 
-#ifdef USE_MAME_TIMERS
-		/* ASG 980324 - handled by real timers now */
-#else
-		/* calculate timer A */
-		if (PSG->tim_A)
-		{
-			PSG->tim_A_val -= ( 1 << TIMER_SH );
-			if (PSG->tim_A_val <= 0)
-			{
-				PSG->tim_A_val += PSG->tim_A_tab[ PSG->timer_A_index ];
-				if (PSG->irq_enable & 0x04)
-				{
-					int oldstate = PSG->status & 3;
-					PSG->status |= 1;
-					if ((!oldstate) && (PSG->irqhandler)) (*PSG->irqhandler)(1);
-				}
-				if (PSG->irq_enable & 0x80)
-					PSG->csm_req = 2;	/* request KEY ON / KEY OFF sequence */
-			}
-		}
-#endif
 		advance();
 	}
 }

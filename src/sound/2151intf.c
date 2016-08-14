@@ -67,14 +67,13 @@ void YM2151UpdateRequest(int chip)
 static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 {
 	int i,j;
-	int rate = Machine->sample_rate;
+	int rate;// = Machine->sample_rate;
 	char buf[YM2151_NUMBUF][40];
 	const char *name[YM2151_NUMBUF];
 	int mixed_vol,vol[YM2151_NUMBUF];
 
-	if( rate == 0 ) rate = 1000;	/* kludge to prevent nasty crashes */
-
 	intf = msound->sound_interface;
+	rate = intf->baseclock/64;
 
 	if( mode ) FMMode = CHIP_YM2151_ALT;
 	else       FMMode = CHIP_YM2151_DAC;
@@ -104,7 +103,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 			Timer[i][0] = timer_alloc(timer_callback_2151);
 			Timer[i][1] = timer_alloc(timer_callback_2151);
 		}
-		if (OPMInit(intf->num,intf->baseclock,Machine->sample_rate,TimerHandler,IRQHandler) == 0)
+		if (OPMInit(intf->num,intf->baseclock,rate,TimerHandler,IRQHandler) == 0)
 		{
 			/* set port handler */
 			for (i = 0; i < intf->num; i++)
@@ -116,10 +115,6 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 #endif
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:	/* Jarek's */
-
-		if (options.use_filter)
-			rate = intf->baseclock/64;
-
 		/* stream system initialize */
 		for (i = 0;i < intf->num;i++)
 		{
@@ -389,5 +384,3 @@ WRITE16_HANDLER( YM2151_data_port_2_lsb_w )
 	if (ACCESSING_LSB)
 		YM2151_data_port_2_w(0, data & 0xff);
 }
-
-
