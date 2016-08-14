@@ -764,7 +764,7 @@ BOOL OptionsInit()
         global.f_intensity               = 1.5;
 
         /* Sound */
-        global.samplerate        = 44100;
+        global.samplerate        = 48000;
         global.use_samples       = TRUE;
         global.use_filter        = TRUE;
         global.enable_sound      = TRUE;
