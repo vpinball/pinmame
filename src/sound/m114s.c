@@ -34,6 +34,10 @@
 #define LOG(x) logerror x
 #endif
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+
 /**********************************************************************************************
 
      CONSTANTS
@@ -281,25 +285,29 @@ static void build_vol_table(void)
      read_sample -- returns 1 sample from the channel's output buffer, but upsamples the data
 	 as necessary to match the Machine driver's output sample rate.
 
-	 Note: eventually we should put some interpolation here to improve the sound quality.
-
 ***********************************************************************************************/
-static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int length)
+static INT16 read_sample(struct M114SChannel *channel, UINT32 sample_rate, UINT32 length)
 {
-	UINT32 incr = ((long long)sample_rate<<FRAC_BITS)/Machine->sample_rate; // play safe with overflows
-	INT16 sample = 0;
-	UINT32 offset = channel->outpos >> FRAC_BITS;
 	if(channel->outpos < (length << FRAC_BITS))
 	{
-		sample = channel->output[offset];
+		UINT32 incr = (((unsigned long long)sample_rate) << FRAC_BITS) / Machine->sample_rate;
+		UINT32 pos = channel->outpos >> FRAC_BITS;
+		UINT32 frac = channel->outpos & FRAC_MASK;
+
+		// interpolate
+		INT16 val1 = channel->output[pos];
+		INT16 val2 = channel->output[MIN(pos + 1, length)];
+		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + (val2 * (INT32)frac)) >> FRAC_BITS;
+
 		channel->outpos += incr;
+		return sample;
 	}
 	else {
 		//printf("End of Table\n");
 		channel->end_of_table++;
 		channel->outpos = 0;
+		return 0;
 	}
-	return sample;
 }
 
 /**********************************************************************************************
@@ -714,7 +722,7 @@ static void process_channel_data(struct M114SChip *chip)
 		//if(channel->output[0] == 0)
 			read_table(chip,channel);
 
-#if 1
+#if 0
 //if(chip->channel == 2) {
 if(channel->regs.outputs == 2) {
 	if(channel->regs.frequency == 0x70)
