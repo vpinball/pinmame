@@ -269,7 +269,7 @@ static void build_vol_table(void)
 	out = 0x6f;		//Max Volume is 0x7F for an INT16 value
 	for (i = 0;i < 62;i++)
 	{
-		VolTable[i] = out + 0.5;	/* round to nearest */
+		VolTable[i] = (unsigned int)(out + 0.5);	/* round to nearest */
 		out /= 1.090184492;			/* = 10 ^ (0.75/20) = 0.75dB */
 	}
 	//Max Attenuation
@@ -286,9 +286,9 @@ static void build_vol_table(void)
 ***********************************************************************************************/
 static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int length)
 {
-	UINT32 incr = (sample_rate<<FRAC_BITS)/Machine->sample_rate;
+	UINT32 incr = ((long long)sample_rate<<FRAC_BITS)/Machine->sample_rate; // play safe with overflows
 	INT16 sample = 0;
-	INT16 offset = channel->outpos >> FRAC_BITS;
+	UINT32 offset = channel->outpos >> FRAC_BITS;
 	if(channel->outpos < (length << FRAC_BITS))
 	{
 		sample = channel->output[offset];
@@ -371,11 +371,10 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 	struct M114SChip *chip = &m114schip[num];
 	struct M114SChannel *channel;
 	INT16 sample;
-	INT16 accum[M114S_OUTPUT_CHANNELS];
+	INT32 accum[M114S_OUTPUT_CHANNELS];
 	int c;
 	while (samples > 0)
 	{
-
 		/* clear accum */
 		for( c = 0; c < M114S_OUTPUT_CHANNELS; c++)
 			accum[c] = 0;
@@ -389,7 +388,7 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
 				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
 				//Mix the output of this channel to the appropriate output channel
-				accum[channel->regs.outputs]+= sample;
+				accum[channel->regs.outputs] += sample;
 			}
 		}
 
@@ -414,7 +413,6 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 	int c;
 	while (samples > 0)
 	{
-
 		/* loop over channels - each channel write's to it's own output mixer channel  (not accurate for emulation)*/
 		for (c = 0; c < M114S_CHANNELS; c++)
 		{
@@ -673,13 +671,13 @@ static void process_channel_data(struct M114SChip *chip)
 		//Adjust frequency if octave divisor set
 		if(channel->regs.oct_divisor)
 		{
-			freq1/=2;
-			freq2/=2;
+			freq1/=2.;
+			freq2/=2.;
 		}
 
 		//Setup Sample Rate - Current Adjusted Frequency * the length of the table
-		channel->table1.sample_rate = freq1 * lent1;
-		channel->table2.sample_rate = freq2 * lent2;
+		channel->table1.sample_rate = (UINT32)(freq1 * lent1);
+		channel->table2.sample_rate = (UINT32)(freq2 * lent2);
 
 		//Assign start & stop address offsets to ROM
 		channel->table1.start_address = t1start;
@@ -755,9 +753,9 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	   a certain amount of time elapses without receiving another byte of programming...
 	   128us in the 4Mhz chip, 85us in the 6Mhz chip.
 	*/
-	static double last_totcyc = 0;
-	double curr_totcyc = cpu_gettotalcycles(chip->cpu_num);
-	double diff = abs(curr_totcyc-last_totcyc);
+	static UINT64 last_totcyc = 0;
+	UINT64 curr_totcyc = cpu_gettotalcycles64(chip->cpu_num);
+	double diff = (double)llabs((INT64)(curr_totcyc-last_totcyc));
 	last_totcyc = curr_totcyc;
 	if(chip->bytes_read && diff > chip->reset_cycles) {
 		LOG(("M114S: Auto Reset - bytes read=%0d - data=%0x, elapsed cycles = %f\n",chip->bytes_read,data&0x3f,diff));

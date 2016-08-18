@@ -456,7 +456,7 @@ struct tms5220
        TODO: add a way to set/reset this other than the FORCE_DIGITAL define
      */
   UINT8 digital_select;
-  int clock;
+  //int clock;
 };
 static struct tms5220 onechip;
 
@@ -500,8 +500,11 @@ void tms5220_reset_chip(void *chip)
   tms->old_frame_energy_idx = tms->old_frame_pitch_idx = 0;
   memset(tms->old_frame_k_idx, 0, sizeof(tms->old_frame_k_idx));
 #endif
-  tms->new_frame_energy_idx = tms->current_energy = tms->target_energy = tms->previous_energy = 0;
-  tms->new_frame_pitch_idx = tms->current_pitch = tms->target_pitch = 0;
+  tms->new_frame_energy_idx = 0;
+  tms->current_energy = tms->target_energy = 0;
+  tms->previous_energy = 0;
+  tms->new_frame_pitch_idx = 0;
+  tms->current_pitch = tms->target_pitch = 0;
   memset(tms->new_frame_k_idx, 0, sizeof(tms->new_frame_k_idx));
   memset(tms->current_k, 0, sizeof(tms->current_k));
   memset(tms->target_k, 0, sizeof(tms->target_k));
@@ -1281,7 +1284,7 @@ static void apply_reverb(INT16 *buf, int len) {
     int newPos = reverbPos - reverbDelay;
     if (newPos < 0) newPos += 5000;
     for (i = 0; i < len; i++) {
-    buf[i] = buf[i] * (1.0 - reverbForce) + reverbBuffer[newPos] * reverbForce;
+      buf[i] = (INT16)((float)buf[i] * (1.0f - reverbForce) + (float)reverbBuffer[newPos] * reverbForce);
       reverbBuffer[reverbPos] = buf[i];
       reverbPos++; if (reverbPos > 5000) reverbPos = 0;
       newPos++; if (newPos > 5000) newPos = 0;

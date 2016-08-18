@@ -254,7 +254,7 @@ static void tms5220_update(int ch, INT16 *buffer, int length)
 
 ***********************************************************************************************/
 
-void tms5220_set_frequency(int frequency)
+void tms5220_set_frequency(double frequency)
 {
 	/* skip if output frequency is zero */
 	if (!Machine->sample_rate)
