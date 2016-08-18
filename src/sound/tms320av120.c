@@ -243,7 +243,7 @@ static const struct TMS320AV120interface *intf;					// Pointer to the interface
 static long layer1ScaleFactors[64];								// MPG Layer 1 Scale Factors
 static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};		// Bit reading masks
 //Matrix stuff
-static const double MYPI=3.14159265358979323846;
+static const double MYPI=3.1415926535897932384626433832795;
 static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
                              1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
 static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
@@ -372,7 +372,7 @@ static void Layer12Synthesis(  int num,
          sample += (*nextD++ * V[i][j]) >> 8;
          sample += (*nextD++ * V[i+1][j+32]) >> 8;
       }
-      *pcmSamples++ = sample >> 1; // Output samples are 16 bit
+      *pcmSamples++ = (INT16)(sample >> 1); // Output samples are 16 bit
    }
 }
 
@@ -824,4 +824,3 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		//stream_update(tms320av120[chipnum].stream, 0);
 	}
 }
-

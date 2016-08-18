@@ -39,7 +39,7 @@ int ADPCM_playing(int num);
 struct OKIM6295interface
 {
 	int num;                  		/* total number of chips */
-	int frequency[MAX_OKIM6295];	/* playback frequency */
+	float frequency[MAX_OKIM6295];	/* playback frequency */
 	int region[MAX_OKIM6295];		/* memory region where the sample ROM lives */
 	int mixing_level[MAX_OKIM6295];	/* master volume */
 };

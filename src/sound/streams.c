@@ -50,24 +50,23 @@ void set_RC_filter(int channel,int R1,int R2,int R3,int C)
 
 void apply_RC_filter(int channel,INT16 *buf,int len,int sample_rate)
 {
-	float R1,R2,R3,C;
-	float Req;
+	double R1,R2,R3,C;
+	double Req;
 	int K;
 	int i;
-
 
 	if (c[channel] == 0) return;	/* filter disabled */
 
 	R1 = r1[channel];
 	R2 = r2[channel];
 	R3 = r3[channel];
-	C = (float)c[channel] * 1E-12;	/* convert pF to F */
+	C = c[channel] * 1E-12;	/* convert pF to F */
 
 	/* Cut Frequency = 1/(2*Pi*Req*C) */
 
 	Req = (R1*(R2+R3))/(R1+R2+R3);
 
-	K = 0x10000 * exp(-1 / (Req * C) / sample_rate);
+	K = (int)(0x10000 * exp(-1. / (Req * C) / sample_rate));
 
 	buf[0] = buf[0] + (memory[channel] - buf[0]) * K / 0x10000;
 
