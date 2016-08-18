@@ -6,7 +6,8 @@
 #include "stsnd.h"
 #include "math.h"
 
-#define S14001_CLOCK 2500000
+#define MASTER_CLOCK 10000000
+#define S14001_CLOCK (MASTER_CLOCK / 4)
 
 /*----------------------------------------
 / Stern Sound System
@@ -455,11 +456,13 @@ static WRITE_HANDLER(st300_ctrl_w) {
  	logerror("st300_CTRL_W xxxx data %02x  \n", data);
 	if (data & 0x80) /* VSU-1000 control write */
 	{
-		UINT8 clock_divisor = 16 - (data & 0x07);
+		int clock_divisor = 16 - (data & 0x07);
 		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
 		/* volume and frequency control goes here */
 		S14001A_set_volume(15-((data >> 3) & 0xf));
-		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / (clock_divisor * 8));
+		/* clock control - the first LS161 divides the clock by 9 to 16, the 2nd by 8,
+		   giving a final clock from 19.5kHz to 34.7kHz */
+		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
 	}
 	else if (data & 0x40)
 	{
