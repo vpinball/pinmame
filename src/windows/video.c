@@ -342,7 +342,7 @@ static int decode_aspect(struct rc_option *option, const char *arg, int priority
 		fprintf(stderr, "error: invalid value for aspect ratio: %s\n", arg);
 		return -1;
 	}
-	win_screen_aspect = (double)num / (double)den;
+	win_screen_aspect = (float)((double)num / (double)den);
 
 	option->priority = priority;
 	return 0;
@@ -891,7 +891,7 @@ void update_autoframeskip(void)
 		{
 			// if below 80% speed, be more aggressive
 			if (performance->game_speed_percent < 80)
-				frameskipadjust -= (90 - performance->game_speed_percent) / 5;
+				frameskipadjust -= (int)((90. - performance->game_speed_percent) / 5.);
 
 			// if we're close, only force it up to frameskip 8
 			else if (frameskip < 8)

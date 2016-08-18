@@ -152,11 +152,11 @@ static int video_set_beam(struct rc_option *option, const char *arg, int priorit
 
 static int video_set_flicker(struct rc_option *option, const char *arg, int priority)
 {
-        options.vector_flicker = (int)(f_flicker * 2.55);
-        if (options.vector_flicker < 0)
-                options.vector_flicker = 0;
-        if (options.vector_flicker > 255)
-                options.vector_flicker = 255;
+        options.vector_flicker = f_flicker * 2.55f;
+        if (options.vector_flicker < 0.f)
+                options.vector_flicker = 0.f;
+        if (options.vector_flicker > 255.f)
+                options.vector_flicker = 255.f;
         option->priority = priority;
         return 0;
 }

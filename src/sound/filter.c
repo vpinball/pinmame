@@ -81,45 +81,45 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	assert( 0 < freq && freq <= 0.5 );
 
 	/* Compute the antitrasform of the perfect low pass filter */
-	gain = 2*freq;
+	gain = 2.*freq;
 #ifdef FILTER_USE_INT
-	f->xcoeffs[0] = gain * (1 << FILTER_INT_FRACT);
+	f->xcoeffs[0] = (filter_real)(gain * (1 << FILTER_INT_FRACT));
 #else
-	f->xcoeffs[0] = gain;
+	f->xcoeffs[0] = (filter_real)gain;
 #endif
 	for(i=1;i<=midorder;++i) {
 		/* number of the sample starting from 0 to (order-1) included */
 		unsigned n = i + midorder;
 
 		/* sample value */
-		double c = sin(2*M_PI*freq*i) / (M_PI*i);
+		double c = sin((2.*M_PI)*freq*i) / (M_PI*i);
 
 		/* apply only one window or none */
-		/* double w = 2 - 2*n/(order-1); */ /* Bartlett (triangular) */
-		/* double w = 0.5 * (1 - cos(2*M_PI*n/(order-1))); */ /* Hanning */
-		double w = 0.54 - 0.46 * cos(2*M_PI*n/(order-1)); /* Hamming */
-		/* double w = 0.42 - 0.5 * cos(2*M_PI*n/(order-1)) + 0.08 * cos(4*M_PI*n/(order-1)); */ /* Blackman */
+		/* double w = 2. - 2.*n/(order-1); */ /* Bartlett (triangular) */
+		/* double w = 0.5 * (1. - cos(2.*M_PI*n/(order-1))); */ /* Hanning */
+		double w = 0.54 - 0.46 * cos((2.*M_PI)*n/(order-1)); /* Hamming */
+		/* double w = 0.42 - 0.5 * cos(2.*M_PI*n/(order-1)) + 0.08 * cos(4*M_PI*n/(order-1)); */ /* Blackman */
 
 		/* apply the window */
 		c *= w;
 
 		/* update the gain */
-		gain += 2*c;
+		gain += 2.*c;
 
 		/* insert the coeff */
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] = c * (1 << FILTER_INT_FRACT);
+		f->xcoeffs[i] = (filter_real)(c * (1 << FILTER_INT_FRACT));
 #else
-		f->xcoeffs[i] = c;
+		f->xcoeffs[i] = (filter_real)c;
 #endif
 	}
 
 	/* adjust the gain to be exact 1.0 */
 	for(i=0;i<=midorder;++i) {
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] /= gain;
+		f->xcoeffs[i] /= (filter_real)gain;
 #else
-		f->xcoeffs[i] = f->xcoeffs[i] * (double)(1 << FILTER_INT_FRAC) / gain;
+		f->xcoeffs[i] = (filter_real)(f->xcoeffs[i] * (double)(1 << FILTER_INT_FRAC) / gain);
 #endif
 	}
 

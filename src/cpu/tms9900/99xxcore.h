@@ -522,7 +522,7 @@ static void reset_decrementer(void);
 				return I.decrementer_count;
 			else if (I.decrementer_enabled && !(I.flag & 1))
 				/* timer mode, timer enabled */
-				return ceil(TIME_TO_CYCLES(cpu_getactivecpu(), timer_timeleft(I.timer)) / 16);
+				return (int)ceil(TIME_TO_CYCLES(cpu_getactivecpu(), timer_timeleft(I.timer)) / 16);
 			else
 				/* timer mode, timer disabled */
 				return 0;
@@ -589,7 +589,7 @@ static void reset_decrementer(void);
 				value = I.decrementer_count;
 			else if (I.decrementer_enabled && !(I.flag & 1))
 				/* timer mode, timer enabled */
-				value = ceil(TIME_TO_CYCLES(cpu_getactivecpu(), timer_timeleft(I.timer)) / 16);
+				value = (int)ceil(TIME_TO_CYCLES(cpu_getactivecpu(), timer_timeleft(I.timer)) / 16);
 			else
 				/* timer mode, timer disabled */
 				value = 0;
@@ -2917,7 +2917,7 @@ static void h2000(UINT16 opcode)
 		{
 			unsigned long prod = ((unsigned long) readword(dest)) * ((unsigned long) readword(src));
 			writeword(dest, prod >> 16);
-			writeword(dest+2, prod);
+			writeword(dest+2, prod & 0xFFFF);
 		}
 		CYCLES(52, 23);
 		break;
@@ -2939,7 +2939,7 @@ static void h2000(UINT16 opcode)
 			else
 			{
 				I.STATUS &= ~ST_OV;
-				writeword(dest, divq/d);
+				writeword(dest, (divq/d) & 0xFFFF);
 				writeword(dest+2, divq%d);
 				/* tms9900 : from 92 to 124, possibly 92 + 2*(number of bits to 1 (or 0?) in quotient) */
 				/* tms9995 : 28 is the worst case */

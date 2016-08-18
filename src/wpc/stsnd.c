@@ -6,7 +6,7 @@
 #include "stsnd.h"
 #include "math.h"
 
-#define S14001_CLOCK (25e5) //!!?
+#define S14001_CLOCK 2500000
 
 /*----------------------------------------
 / Stern Sound System
@@ -459,7 +459,7 @@ static WRITE_HANDLER(st300_ctrl_w) {
 		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
 		/* volume and frequency control goes here */
 		S14001A_set_volume(15-((data >> 3) & 0xf));
-		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
+		S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / (clock_divisor * 8));
 	}
 	else if (data & 0x40)
 	{

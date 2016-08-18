@@ -1322,7 +1322,7 @@ void mac_op_mf(int op)
 
 void shift_op(int op)
 {
-	INT8 sc = adsp2100.core.se.s;
+	INT8 sc = (INT8)adsp2100.core.se.s;
 	INT32 xop = (op >> 8) & 7;
 	UINT32 res;
 
@@ -1436,7 +1436,7 @@ void shift_op(int op)
 				xop |= 0x8000;
 				while ((xop & 0x40000000) == 0) res++, xop <<= 1;
 			}
-			adsp2100.core.se.s = -res;
+			adsp2100.core.se.s = -(INT16)res;
 			break;
 		case 0x0d<<11:
 			/* EXP (HIX) */
@@ -1461,7 +1461,7 @@ void shift_op(int op)
 					xop |= 0x8000;
 					while ((xop & 0x40000000) == 0) res++, xop <<= 1;
 				}
-				adsp2100.core.se.s = -res;
+				adsp2100.core.se.s = -(INT16)res;
 			}
 			break;
 		case 0x0e<<11:
@@ -1477,7 +1477,7 @@ void shift_op(int op)
 					xop = (xop << 1) | 1;
 					while ((xop & 0x10000) == 0) res++, xop <<= 1;
 				}
-				adsp2100.core.se.s = -res;
+				adsp2100.core.se.s = -(INT16)res;
 			}
 			break;
 		case 0x0f<<11:
@@ -1491,8 +1491,8 @@ void shift_op(int op)
 				xop |= 0x8000;
 				while ((xop & 0x40000000) == 0) res++, xop <<= 1;
 			}
-			if (res < -adsp2100.core.sb.s)
-				adsp2100.core.sb.s = -res;
+			if ((INT16)res < -adsp2100.core.sb.s)
+				adsp2100.core.sb.s = -(INT16)res;
 			break;
 	}
 }

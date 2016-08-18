@@ -47,7 +47,7 @@ static void mp_adjust_volume(void) {
     }
     if (locals.vol_on) {
       if (volume > locals.vol)
-        volume = (int)(volume - locals.vol) * expdecay + locals.vol; 
+        volume = (int)((volume - locals.vol) * expdecay) + locals.vol;
       else
         volume = locals.vol;
     } else {

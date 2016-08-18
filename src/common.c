@@ -1173,7 +1173,7 @@ static void verify_length_and_hash(struct rom_load_data *romdata, const char *na
 		return;
 
 	/* get the length and CRC from the file */
-	actlength = mame_fsize(romdata->file);
+	actlength = (UINT32)mame_fsize(romdata->file);
 	acthash = mame_fhash(romdata->file);
 
 	/* verify length */

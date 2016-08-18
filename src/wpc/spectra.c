@@ -41,7 +41,7 @@ static READ_HANDLER(riot_porta_r) {
 }
 
 static WRITE_HANDLER(riot_portb_w) {
-  float vco = 5.5 - (core_getDip(0) >> 4) / 6.0;
+  double vco = 5.5 - (core_getDip(0) >> 4) / 6.0;
   vco -= ((data & 8) ? vco / 2.0 : 0) + ((data & 4) ? vco / 4.0 : 0)+ ((data & 2) ? vco / 8.0 : 0)+ ((data & 1) ? vco / 16.0 : 0);
   logerror("RIOT B WRITE %02x, vco: %0f\n", data, vco);
   SN76477_set_vco_voltage(0, 5.5 - vco);

@@ -2036,13 +2036,13 @@ static int artwork_load(const struct GameDriver *driver, int width, int height, 
 	for (piece = artwork_list; piece; piece = piece->next)
 	{
 		/* convert from pixel coordinates if necessary */
-		if (fabs(piece->left) > 4.0 || fabs(piece->right) > 4.0 ||
-			fabs(piece->top) > 4.0 || fabs(piece->bottom) > 4.0)
+		if (fabs(piece->left) > 4.0f || fabs(piece->right) > 4.0f ||
+			fabs(piece->top) > 4.0f || fabs(piece->bottom) > 4.0f)
 		{
-			piece->left /= (double)width;
-			piece->right /= (double)width;
-			piece->top /= (double)height;
-			piece->bottom /= (double)height;
+			piece->left /= (float)width;
+			piece->right /= (float)width;
+			piece->top /= (float)height;
+			piece->bottom /= (float)height;
 		}
 
 		/* assign to one of the categories */
@@ -2773,18 +2773,18 @@ static int generate_rect_piece(struct artwork_piece *piece, const struct overlay
 	piece->right = data->right;
 
 	/* convert from pixel coordinates if necessary */
-	if (fabs(piece->left) > 4.0 || fabs(piece->right) > 4.0 ||
-		fabs(piece->top) > 4.0 || fabs(piece->bottom) > 4.0)
+	if (fabs(piece->left) > 4.0f || fabs(piece->right) > 4.0f ||
+		fabs(piece->top) > 4.0f || fabs(piece->bottom) > 4.0f)
 	{
-		piece->left /= (double)width;
-		piece->right /= (double)width;
-		piece->top /= (double)height;
-		piece->bottom /= (double)height;
+		piece->left /= (float)width;
+		piece->right /= (float)width;
+		piece->top /= (float)height;
+		piece->bottom /= (float)height;
 	}
 
 	/* compute the effective width/height */
-	gfxwidth = (int)((piece->right - piece->left) * (double)width * 2.0 + 0.5);
-	gfxheight = (int)((piece->bottom - piece->top) * (double)height * 2.0 + 0.5);
+	gfxwidth = (int)((piece->right - piece->left) * (float)width * 2.0f + 0.5f);
+	gfxheight = (int)((piece->bottom - piece->top) * (float)height * 2.0f + 0.5f);
 
 	/* allocate a source bitmap 2x the game bitmap's size */
 	piece->rawbitmap = auto_bitmap_alloc_depth(gfxwidth, gfxheight, 32);
@@ -2855,10 +2855,10 @@ static int generate_disk_piece(struct artwork_piece *piece, const struct overlay
 	}
 
 	/* generate coordinates */
-	piece->top = y - r * (double)width / (double)height;
-	piece->left = x - r;
-	piece->bottom = y + r * (double)width / (double)height;
-	piece->right = x + r;
+	piece->top = (float)(y - r * (double)width / (double)height);
+	piece->left = (float)(x - r);
+	piece->bottom = (float)(y + r * (double)width / (double)height);
+	piece->right = (float)(x + r);
 
 	/* compute the effective width/height */
 	gfxwidth = (int)((piece->right - piece->left) * (double)width * 2.0 + 0.5);

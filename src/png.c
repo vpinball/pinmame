@@ -332,7 +332,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 		free (pidat);
 	}
 	p->bpp = (samples[p->color_type] * p->bit_depth) / 8;
-	p->rowbytes = ceil((p->width * p->bit_depth * samples[p->color_type]) / 8.0);
+	p->rowbytes = (UINT32)(ceil((p->width * p->bit_depth * samples[p->color_type]) / 8.0));
 
 	if (png_inflate_image(p)==0)
 		return 0;
@@ -692,7 +692,7 @@ int png_deflate_image(struct png_info *p)
 {
 	unsigned long zbuff_size;
 
-	zbuff_size = (p->height*(p->rowbytes+1))*1.1+12;
+	zbuff_size = (unsigned long)((p->height*(p->rowbytes+1))*1.1+12.);
 
 	if((p->zimage = (UINT8 *)malloc (zbuff_size))==NULL)
 	{
@@ -789,7 +789,7 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 
 		png_delete_unused_colors (&p);
 		p.bit_depth = p.num_palette > 16 ? 8 : p.num_palette > 4 ? 4 : p.num_palette > 2 ? 2 : 1;
-		p.rowbytes=ceil((p.width*p.bit_depth)/8.0);
+		p.rowbytes = (UINT32)(ceil((p.width*p.bit_depth)/8.0));
 		if (png_pack_buffer (&p) == 0)
 			return 0;
 
@@ -917,7 +917,7 @@ int mng_capture_start(mame_file *fp, struct mame_bitmap *bitmap)
 	memset (mhdr, 0, 28);
 	convert_to_network_order(bitmap->width, mhdr);
 	convert_to_network_order(bitmap->height, mhdr+4);
-	convert_to_network_order(Machine->drv->frames_per_second, mhdr+8);
+	convert_to_network_order((UINT32)Machine->drv->frames_per_second, mhdr+8);
 	convert_to_network_order(0x0041, mhdr+24); /* Simplicity profile */
 	/* frame count and play time unspecified because
 	   we don't know at this stage */

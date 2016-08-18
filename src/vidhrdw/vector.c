@@ -148,7 +148,7 @@ void vector_set_gamma(float _gamma)
 
 	for (i = 0; i < 256; i++)
 	{
-		h = 255.0*pow(i/255.0, 1.0/gamma_correction);
+		h = (int)(255.0*pow(i/255.0, 1.0/gamma_correction));
 		if( h > 255) h = 255;
 		Tgamma[i] = Tgammar[255-i] = h;
 	}

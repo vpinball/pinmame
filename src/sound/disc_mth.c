@@ -333,7 +333,7 @@ int dst_ramp_reset(struct node_description *node)
 
 	node->output=node->input[5];
 	context->step = node->input[2] / Machine->sample_rate;
-	context->dir = ((node->input[4] - node->input[3]) == abs(node->input[4] - node->input[3]));
+	context->dir = ((node->input[4] - node->input[3]) == fabs(node->input[4] - node->input[3]));
 	context->last_en = 0;
 	return 0;
 }

@@ -26,7 +26,7 @@
     This emulation flips the bits on every byte of the memory map during
     the sp0256_start() call.
 
-    If the memory map contents is modified during execution (becuase of ROM
+    If the memory map contents is modified during execution (because of ROM
     bank switching) the sp0256_bitrevbuff() call must be called after the
     section of ROM is modified.
 */
@@ -1101,7 +1101,7 @@ static void sp0256_micro(void)
 static void sp0256_update(int num, INT16 *output, int length)
 {
 	int output_index = 0;
-  int samples, did_samp, old_idx;
+  int samples, did_samp/*, old_idx*/;
 
 	while( output_index < length )
 	{
@@ -1132,7 +1132,7 @@ static void sp0256_update(int num, INT16 *output, int length)
 		/*  repeat count holds up and we have room in our scratch buffer.   */
 		/* ---------------------------------------------------------------- */
 		did_samp = 0;
-		old_idx  = sp0256.sc_head;
+		//old_idx  = sp0256.sc_head;
 		if (samples > 0) do
 		{
 			int do_samp;

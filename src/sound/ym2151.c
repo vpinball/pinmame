@@ -549,7 +549,7 @@ static void init_tables(void)
 	/* calculate d1l_tab table */
 	for (i=0; i<16; i++)
 	{
-		d1l_tab[i] = (i!=15 ? i : i+16) * (4.0/ENV_STEP);   /* every 3 'dB' except for all bits = 1 = 45+48 'dB' */
+		d1l_tab[i] = (UINT32)((i!=15 ? i : i+16) * (4.0/ENV_STEP));   /* every 3 'dB' except for all bits = 1 = 45+48 'dB' */
 		/*logerror("d1l_tab[%02x]=%08x\n",i,d1l_tab[i] );*/
 	}
 
@@ -1619,7 +1619,7 @@ INLINE void chan7_calc(void)
 	env = volume_calc(op+3);	/* C2 */
 	if (PSG->noise & 0x80)
 	{
-		UINT32 noiseout;
+		int noiseout;
 
 		noiseout = 0;
 		if (env < 0x3ff)

@@ -304,7 +304,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeIn = 1.0;
 
 			if ( iFadeInPos<iFadeInSamples ) {
-				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*3.1415/2);
+				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*3.1415926535897932384626433832795/2);
 				iFadeInPos++;
 			}
 

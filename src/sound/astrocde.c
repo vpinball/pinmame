@@ -171,9 +171,9 @@ int astrocade_sh_start(const struct MachineSound *msound)
 		return 0;
 	}
 
-	buffer_len = Machine->sample_rate / Machine->drv->frames_per_second / 2;
+	buffer_len = (int)((double)Machine->sample_rate / (double)Machine->drv->frames_per_second / 2.);
 
-	emulation_rate = buffer_len * Machine->drv->frames_per_second;
+	emulation_rate = (int)((double)buffer_len * (double)Machine->drv->frames_per_second);
 	div_by_N_factor = intf->baseclock/emulation_rate;
 
 	channel = mixer_allocate_channels(intf->num,intf->volume);
