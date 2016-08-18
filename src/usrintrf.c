@@ -3619,8 +3619,8 @@ static void onscrd_brightness(struct mame_bitmap *bitmap,int increment,int arg)
 	}
 	brightness = palette_get_global_brightness();
 
-	sprintf(buf,"%s %3d%%", ui_getstring (UI_brightness), (int)(brightness * 100));
-	displayosd(bitmap,buf,brightness*100,100);
+	sprintf(buf,"%s %3d%%", ui_getstring (UI_brightness), (int)(brightness * 100.));
+	displayosd(bitmap,buf,(int)(brightness*100.),100);
 }
 
 static void onscrd_gamma(struct mame_bitmap *bitmap,int increment,int arg)

@@ -689,7 +689,7 @@ static void build_mixer_table(int chip)
 	out = MAX_OUTPUT;
 	for (i = 31;i > 0;i--)
 	{
-		PSG->VolTable[i] = out + 0.5;	/* round to nearest */
+		PSG->VolTable[i] = (unsigned int)(out + 0.5);	/* round to nearest */
 
 		out /= 1.188502227;	/* = 10 ^ (1.5/20) = 1.5dB */
 	}

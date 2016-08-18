@@ -10082,7 +10082,7 @@ static void DoCheatAction(CheatAction * action)
 
 				if(currentValue != action->lastValue)
 				{
-					action->frameTimer = parameter * Machine->drv->frames_per_second;
+					action->frameTimer = (INT32)(parameter * Machine->drv->frames_per_second);
 
 					action->flags |= kActionFlag_WasModified;
 				}

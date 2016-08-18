@@ -125,7 +125,7 @@ static void attack_decay(int param)
 	if( sn->envelope_state )
 	{
 		/* start ATTACK */
-		sn->vol_rate = ( sn->attack_time > 0 ) ? VMAX / sn->attack_time : VMAX;
+		sn->vol_rate = ( sn->attack_time > 0 ) ? (INT32)(VMAX / sn->attack_time) : VMAX;
 		sn->vol_step = +1;
 		LOG(2,("SN76477 #%d: ATTACK rate %d/%d = %d/sec\n", param, sn->vol_rate, sn->samplerate, sn->vol_rate/sn->samplerate));
     }
@@ -133,7 +133,7 @@ static void attack_decay(int param)
 	{
 		/* start DECAY */
 		sn->vol = VMAX; /* just in case... */
-		sn->vol_rate = ( sn->decay_time > 0 ) ? VMAX / sn->decay_time : VMAX;
+		sn->vol_rate = ( sn->decay_time > 0 ) ? (INT32)(VMAX / sn->decay_time) : VMAX;
 		sn->vol_step = -1;
 		LOG(2,("SN76477 #%d: DECAY rate %d/%d = %d/sec\n", param, sn->vol_rate, sn->samplerate, sn->vol_rate/sn->samplerate));
     }

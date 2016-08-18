@@ -6,7 +6,7 @@
 
 struct tDatafileIndex
 {
-	long offset;
+	UINT64 offset;
 	const struct GameDriver *driver;
 };
 

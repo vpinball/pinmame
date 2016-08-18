@@ -275,7 +275,7 @@ static void SN76496_set_gain(int chip,int gain)
 	{
 		/* limit volume to avoid clipping */
 		if (out > (double)(MAX_OUTPUT / 4)) R->VolTable[i] = MAX_OUTPUT / 4;
-		else R->VolTable[i] = out;
+		else R->VolTable[i] = (int)out;
 
 		out /= 1.258925412;	/* = 10 ^ (2/20) = 2dB */
 	}

@@ -174,7 +174,7 @@ void profiler_show(struct mame_bitmap *bitmap)
 		}
 		if (computed || showdelay[i])
 		{
-			if (computed) showdelay[i] = Machine->drv->frames_per_second;
+			if (computed) showdelay[i] = (int)Machine->drv->frames_per_second;
 			showdelay[i]--;
 
 			if (i < PROFILER_PROFILER)

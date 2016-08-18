@@ -2184,26 +2184,26 @@ void update_analog_port(int port)
 			{
 				if (new > 0)
 				{
-					current = (pow(new / 32768.0, 100.0 / sensitivity) * (max-in->default_value)
-							+ in->default_value) * 100 / sensitivity;
+					current = (int)((pow(new / 32768.0, 100.0 / sensitivity) * (max-in->default_value)
+							+ in->default_value) * 100 / sensitivity);
 				}
 				else
 				{
-					current = (pow(-new / 32768.0, 100.0 / sensitivity) * (min-in->default_value)
-							+ in->default_value) * 100 / sensitivity;
+					current = (int)((pow(-new / 32768.0, 100.0 / sensitivity) * (min-in->default_value)
+							+ in->default_value) * 100 / sensitivity);
 				}
 			}
 			else
 			{
 				if (new > 0)
 				{
-					current = (pow(new / 128.0, 100.0 / sensitivity) * (max-in->default_value)
-							+ in->default_value) * 100 / sensitivity;
+					current = (int)((pow(new / 128.0, 100.0 / sensitivity) * (max-in->default_value)
+							+ in->default_value) * 100 / sensitivity);
 				}
 				else
 				{
-					current = (pow(-new / 128.0, 100.0 / sensitivity) * (min-in->default_value)
-							+ in->default_value) * 100 / sensitivity;
+					current = (int)((pow(-new / 128.0, 100.0 / sensitivity) * (min-in->default_value)
+							+ in->default_value) * 100 / sensitivity);
 				}
 			}
 		}

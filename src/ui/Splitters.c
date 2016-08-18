@@ -202,7 +202,7 @@ void OnSizeSplitter(HWND hWnd)
 
 		if (bMustChange)
 		{
-			nSplitterOffset[i] = (rWindowRect.right - rWindowRect.left) * g_splitterInfo[i].dPosition;
+			nSplitterOffset[i] = (int)((rWindowRect.right - rWindowRect.left) * g_splitterInfo[i].dPosition);
 			changed = TRUE;
 		}
 	}

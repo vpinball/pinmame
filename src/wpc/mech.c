@@ -4,7 +4,7 @@
 #include "mech.h"
 
 #ifndef M_PI
-#  define M_PI 3.1415927
+#  define M_PI 3.1415926535897932384626433832795
 #endif /* M_PI */
 #define MECH_STEP       60
 #define MECH_FASTPULSES  8
@@ -150,7 +150,7 @@ static void mech_update(int mechNo) {
       else if (anglePos < 0)                anglePos += md->length*MECH_STEP;
     }
     if (md->type & MECH_NONLINEAR)
-      currPos = md->length * MECH_STEP * (1-cos(anglePos*M_PI/md->length/MECH_STEP)) / 2;
+      currPos = md->length * MECH_STEP * (1.-cos(anglePos*M_PI/md->length/MECH_STEP)) / 2;
     else /* MECH_LINEAR */
       currPos = (anglePos >= md->length*MECH_STEP) ? md->length*2*MECH_STEP-anglePos : anglePos;
     md->anglePos = anglePos;

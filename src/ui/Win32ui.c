@@ -826,7 +826,7 @@ static int RunMAME(int nGameIndex)
 	PROCESS_INFORMATION pi;
 	char pCmdLine[2048];
 	time_t start, end;
-	double elapsedtime;
+	time_t elapsedtime;
 
 	CreateCommandLine(nGameIndex, pCmdLine);
 
@@ -1298,7 +1298,7 @@ void ResizePickerControls(HWND hWnd)
 		RECT rWindow;
 
 		for (i = 0; i < nSplitterCount; i++)
-			nSplitterOffset[i] = rect.right * g_splitterInfo[i].dPosition;
+			nSplitterOffset[i] = (int)(rect.right * g_splitterInfo[i].dPosition);
 
 		GetWindowRect(hStatusBar, &rWindow);
 		bottomMargin = rWindow.bottom - rWindow.top;

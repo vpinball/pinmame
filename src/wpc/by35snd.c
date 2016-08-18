@@ -511,7 +511,7 @@ static void snt_init(struct sndbrdData *brdData) {
   tms5220_set_variant(TMS5220_IS_5200);
   for (i=0; i < 0x80; i++) memory_region(BY61_CPUREGION)[i] = 0xff;
   if (core_gameData->hw.gameSpecific1 & BY35GD_REVERB) {
-    tms5200_set_reverb(1500, core_getDip(4) * 0.05);
+    tms5200_set_reverb(1500, (float)core_getDip(4) * 0.05f);
   }
 }
 static void snt_diag(int button) {

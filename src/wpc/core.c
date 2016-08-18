@@ -678,7 +678,7 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
-  diff = (float)(100 - perc0) / 15.0;
+  diff = (float)(100 - perc0) / 15.0f;
   for (ii = 0; ii < 16; ii++) {
     tmpPalette[palSize-16+ii][0]  = rStart * (perc0 + diff * ii) / 100;
     tmpPalette[palSize-16+ii][1]  = gStart * (perc0 + diff * ii) / 100;

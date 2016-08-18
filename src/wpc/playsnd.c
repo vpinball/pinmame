@@ -90,7 +90,7 @@ static void play2s_init(struct sndbrdData *brdData) {
 static WRITE_HANDLER(play2s_data_w) {
   sndlocals.freq = data;
   if (mixer_is_sample_playing(sndlocals.channel)) {
-    mixer_set_sample_frequency(sndlocals.channel, 2950000.0 / 4 / (sndlocals.freq + 1));
+    mixer_set_sample_frequency(sndlocals.channel, 2950000 / (4 * (sndlocals.freq + 1)));
   }
 }
 
@@ -98,7 +98,7 @@ static WRITE_HANDLER(play2s_ctrl_w) {
   if (!sndlocals.enSn && (data & 1)) { // sound on to full volume
     timer_adjust(sndlocals.timer, TIME_NEVER, 0, 0);
     if (!mixer_is_sample_playing(sndlocals.channel)) {
-      mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000.0 / 4 / (sndlocals.freq + 1), 1);
+      mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000 / (4 * (sndlocals.freq + 1)), 1);
     }
     sndlocals.volume = 100;
     mixer_set_volume(sndlocals.channel, sndlocals.volume);
@@ -360,7 +360,7 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
 }
 struct AY8910interface play4s_8910Int = {
 	2,			/* 2 chips */
-	3579545.0/2,	/* 1.79 MHz */
+	3579545.0/2.,	/* 1.79 MHz */
 	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
 	{ 0, 0 },
 	{ 0, 0 },

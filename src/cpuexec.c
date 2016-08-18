@@ -667,7 +667,7 @@ static void watchdog_reset(void)
 {
 	if (watchdog_counter == -1)
 		logerror("watchdog armed\n");
-	watchdog_counter = 3 * Machine->drv->frames_per_second;
+	watchdog_counter = (INT32)(3. * (double)Machine->drv->frames_per_second);
 }
 
 
@@ -1102,31 +1102,15 @@ int cycles_left_to_run(void)
 
 --------------------------------------------------------------*/
 
-UINT32 activecpu_gettotalcycles(void)
-{
-	VERIFY_EXECUTINGCPU(0, cpu_gettotalcycles);
-	return cpu[activecpu].totalcycles + cycles_currently_ran();
-}
-
-UINT32 cpu_gettotalcycles(int cpunum)
-{
-	VERIFY_CPUNUM(0, cpu_gettotalcycles);
-	if (cpunum == cpu_getexecutingcpu())
-		return cpu[cpunum].totalcycles + cycles_currently_ran();
-	else
-		return cpu[cpunum].totalcycles;
-}
-
-
 UINT64 activecpu_gettotalcycles64(void)
 {
-	VERIFY_EXECUTINGCPU(0, cpu_gettotalcycles);
+	VERIFY_EXECUTINGCPU(0, cpu_gettotalcycles64);
 	return cpu[activecpu].totalcycles + cycles_currently_ran();
 }
 
 UINT64 cpu_gettotalcycles64(int cpunum)
 {
-	VERIFY_CPUNUM(0, cpu_gettotalcycles);
+	VERIFY_CPUNUM(0, cpu_gettotalcycles64);
 	if (cpunum == cpu_getexecutingcpu())
 		return cpu[cpunum].totalcycles + cycles_currently_ran();
 	else
