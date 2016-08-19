@@ -194,6 +194,7 @@ static const struct pia6821_interface snd_pia[] = {{
 static void snd_init(struct sndbrdData *brdData) {
   pia_config(2, PIA_STANDARD_ORDERING, &snd_pia[0]);
   pia_config(3, PIA_STANDARD_ORDERING, &snd_pia[1]);
+  tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5220); // schematics say TMS5200 but that sounds terrible!
 }
 static void snd_diag(int button) {
