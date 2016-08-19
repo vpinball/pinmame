@@ -82,6 +82,7 @@ static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
   pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia[0]);
+  tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5220C);
 }
 

@@ -30,7 +30,7 @@ static INT16 last_sample, curr_sample;
 static UINT32 source_step;
 static UINT32 source_pos;
 static int stream;
-
+static double baseclock;
 
 /* static function prototypes */
 static void tms5220_update(int ch, INT16 *buffer, int length);
@@ -51,6 +51,10 @@ int tms5220_sh_start(const struct MachineSound *msound)
     tms5220_reset();
     tms5220_set_irq(intf->irq);
     tms5220_set_ready(intf->ready);
+    /* init the speech ROM handlers */
+    tms5220_set_read(intf->read);
+    tms5220_set_load_address(intf->load_address);
+    tms5220_set_read_and_branch(intf->read_and_branch);
 
     /* set the initial frequency */
     stream = -1;
@@ -62,11 +66,6 @@ int tms5220_sh_start(const struct MachineSound *msound)
 	stream = stream_init("TMS5220", intf->mixing_level, Machine->sample_rate, 0, tms5220_update);
 	if (stream == -1)
 		return 1;
-
-	/* init the speech ROM handlers */
-	tms5220_set_read(intf->read);
-	tms5220_set_load_address(intf->load_address);
-	tms5220_set_read_and_branch(intf->read_and_branch);
 
     /* request a sound channel */
     return 0;
@@ -122,7 +121,7 @@ WRITE_HANDLER( tms5220_data_w )
 READ_HANDLER( tms5220_status_r )
 {
     /* bring up to date first */
-    stream_update(stream, -1);
+    stream_update(stream, 0);
     return tms5220_status_read();
 }
 
@@ -137,7 +136,7 @@ READ_HANDLER( tms5220_status_r )
 int tms5220_ready_r(void)
 {
     /* bring up to date first */
-    stream_update(stream, -1);
+    stream_update(stream, 0);
     return tms5220_ready_read();
 }
 
@@ -154,9 +153,9 @@ double tms5220_time_to_ready(void)
 	double cycles;
 
 	/* bring up to date first */
-	stream_update(stream, -1);
+	stream_update(stream, 0);
 	cycles = tms5220_cycles_to_ready();
-	return cycles * 80.0 / intf->baseclock;
+	return cycles * 80.0 / baseclock;
 }
 
 
@@ -170,7 +169,7 @@ double tms5220_time_to_ready(void)
 int tms5220_int_r(void)
 {
     /* bring up to date first */
-    stream_update(stream, -1);
+    stream_update(stream, 0);
     return tms5220_int_read();
 }
 
@@ -246,8 +245,6 @@ static void tms5220_update(int ch, INT16 *buffer, int length)
 	curr_sample = curr;
 }
 
-
-
 /**********************************************************************************************
 
      tms5220_set_frequency -- adjusts the playback frequency
@@ -256,6 +253,8 @@ static void tms5220_update(int ch, INT16 *buffer, int length)
 
 void tms5220_set_frequency(double frequency)
 {
+	baseclock = frequency;
+
 	/* skip if output frequency is zero */
 	if (!Machine->sample_rate)
 		return;
@@ -263,5 +262,5 @@ void tms5220_set_frequency(double frequency)
 	/* update the stream and compute a new step size */
 	if (stream != -1)
 		stream_update(stream, 0);
-	source_step = (UINT32)((double)(frequency / 80) * (double)FRAC_ONE / (double)Machine->sample_rate);
+	source_step = (UINT32)((frequency / 80.) * (double)FRAC_ONE / (double)Machine->sample_rate);
 }

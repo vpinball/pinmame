@@ -582,7 +582,7 @@ static void sns_init(struct sndbrdData *brdData) {
   pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
     UpdateZACSoundLED(1, 1);
-// allocate channels
+    // allocate channels
     snslocals.channel = mixer_allocate_channels(4, mixing_levels);
     mixer_set_name  (snslocals.channel+0, "CEM 3374 A TR");
     mixer_set_volume(snslocals.channel+0,0);
@@ -592,13 +592,13 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+2,0);
     mixer_set_name  (snslocals.channel+3, "CEM 3374 B SA");
     mixer_set_volume(snslocals.channel+3,0);
-// reset tms5220
-//    tms5220_reset();
   }
+  // reset tms5220
+  tms5220_reset();
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
-    tms5220_set_variant(TMS5220_IS_5220); //!! 5220C ?
+    tms5220_set_variant(TMS5220_IS_5220); //!! 5220C (also see below) ?
   }
 }
 
@@ -759,7 +759,16 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 } // diag led
 
 static WRITE_HANDLER(sns_data_w) {
-  if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) tms5220_reset(); // some of the speech would be garbled otherwise!
+  if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) // some of the speech would be garbled otherwise!
+  {
+      tms5220_reset();
+      if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+        tms5220_set_variant(TMS5220_IS_5200);
+      }
+      else {
+        tms5220_set_variant(TMS5220_IS_5220); //!! 5220C (also see above) ?
+      }
+  }
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
