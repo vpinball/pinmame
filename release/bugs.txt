@@ -3,10 +3,11 @@
 Bugs in Pinmame that we are aware of:
 -------------------------------------
 (Note: Many of these bugs have been extremely difficult to track down and fix,
-       so it might be awhile before they can be corrected!)
+       so it take be a while before they can be corrected!)
 
- #1) Williams/Bally WPC: DCS sound still has some problems.
-     (Don't use full volume (29-31) to avoid static noise)
+ #1) Williams/Bally WPC: DCS sound still has some problems, only on high volume levels.
+     (So don't use full volume (29-31) to avoid static noise)
+     This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
 
  #2) Not all Williams/Bally WPC functions are implemented in PinMAME.
      The most important (?!) functions missing are the ticket dispenser,
@@ -20,7 +21,9 @@ Bugs in Pinmame that we are aware of:
 
  #5) Occasional pops/clicks on Capcom sound
 
- #6) Occasional pops/clicks on Whitestar II sound, only on high volume levels (~24 and above, for example on Nascar)
+ #6) Occasional pops/clicks/crackling on Whitestar II sound, only on high volume levels.
+     (~24 and above, for example on Nascar and Grand Prix, so avoid this)
+     This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
 
  #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate.
 
