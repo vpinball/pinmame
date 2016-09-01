@@ -1,6 +1,10 @@
 #include "driver.h"
 #include <math.h>
 
+#define SAMPLE_RATE (4*48000) // 4x oversampling of standard output rate
+#ifndef M_E
+ #define M_E 2.7182818284590452353602874713527
+#endif
 
 #define	INTEGRATOR_LEAK_TC		0.001
 #define	FILTER_DECAY_TC			0.004
@@ -45,9 +49,9 @@ int hc55516_sh_start(const struct MachineSound *msound)
 	int i;
 
 	/* compute the fixed charge, decay, and leak time constants */
-	charge = pow(exp(-1.0), 1.0 / (FILTER_CHARGE_TC * 16000.0));
-	decay = pow(exp(-1.0), 1.0 / (FILTER_DECAY_TC * 16000.0));
-	leak = pow(exp(-1.0), 1.0 / (INTEGRATOR_LEAK_TC * 16000.0));
+	charge = pow(1.0/M_E, 1.0 / (FILTER_CHARGE_TC * 16000.0));
+	decay = pow(1.0/M_E, 1.0 / (FILTER_DECAY_TC * 16000.0));
+	leak = pow(1.0/M_E, 1.0 / (INTEGRATOR_LEAK_TC * 16000.0));
 
 	/* loop over HC55516 chips */
 	for (i = 0; i < intf->num; i++)
@@ -60,7 +64,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 
 		/* create the stream */
 		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i] & 0xff, Machine->sample_rate, i, hc55516_update);
+		chip->channel = stream_init(name, intf->volume[i] & 0xff, SAMPLE_RATE, i, hc55516_update);
 		chip->gain = SAMPLE_GAIN;
 		/* bail on fail */
 		if (chip->channel == -1)
@@ -84,20 +88,21 @@ void hc55516_update(int num, INT16 *buffer, int length)
 
 	/* track how many samples we've updated without a clock */
 	chip->update_count += length;
-	if (chip->update_count > Machine->sample_rate / 32)
+	if (chip->update_count > SAMPLE_RATE / 32)
 	{
-		chip->update_count = Machine->sample_rate;
+		chip->update_count = SAMPLE_RATE;
 		chip->next_value = 0;
 	}
 
 	/* compute the interpolation slope */
 	data = chip->curr_value;
-	slope = ((INT32)chip->next_value - data) / length;
+	slope = (((INT32)chip->next_value - data)<<16) / length;
+	data <<= 16;
 	chip->curr_value = chip->next_value;
 
 	/* reset the sample count */
 	for (i = 0; i < length; i++, data += slope)
-		*buffer++ = data;
+		*buffer++ = data>>16;
 }
 
 
@@ -118,17 +123,13 @@ void hc55516_clock_w(int num, int state)
 		/* clear the update count */
 		chip->update_count = 0;
 
+		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & 7;
+
 		/* move the estimator up or down a step based on the bit */
 		if (chip->databit)
-		{
-			chip->shiftreg = ((chip->shiftreg << 1) | 1) & 7;
 			integrator += chip->filter;
-		}
 		else
-		{
-			chip->shiftreg = (chip->shiftreg << 1) & 7;
 			integrator -= chip->filter;
-		}
 
 		/* simulate leakage */
 		integrator *= leak;
@@ -136,11 +137,10 @@ void hc55516_clock_w(int num, int state)
 		/* if we got all 0's or all 1's in the last n bits, bump the step up */
 		if (chip->shiftreg == 0 || chip->shiftreg == 7)
 		{
-			chip->filter = FILTER_MAX - ((FILTER_MAX - chip->filter) * charge);
+			chip->filter = FILTER_MAX - (FILTER_MAX - chip->filter) * charge;
 			if (chip->filter > FILTER_MAX)
 				chip->filter = FILTER_MAX;
 		}
-
 		/* simulate decay */
 		else
 		{
@@ -155,11 +155,11 @@ void hc55516_clock_w(int num, int state)
 
 #ifdef PINMAME
 		/* Cut off extreme peaks produced by bad speech data (eg. Pharaoh) */
-		if (temp < -80000) temp = -80000;
-		else if (temp > 80000) temp = 80000;
+		if (temp < -80000.) temp = -80000.;
+		else if (temp > 80000.) temp = 80000.;
 		/* Just wrap to prevent clipping */
-		if (temp < -32768) chip->next_value = (INT16)(-65536 - temp);
-		else if (temp > 32767) chip->next_value = (INT16)(65535 - temp);
+		if (temp < -32768.) chip->next_value = (INT16)(-65536. - temp);
+		else if (temp > 32767.) chip->next_value = (INT16)(65535. - temp);
 		else chip->next_value = (INT16)temp;
 #else
 		/* compress the sample range to fit better in a 16-bit word */
