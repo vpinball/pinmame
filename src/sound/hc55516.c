@@ -6,6 +6,9 @@
  #define M_E 2.7182818284590452353602874713527
 #endif
 
+#define SHIFTMASK 0x07 // = hc55516 and mc3417
+//#define SHIFTMASK 0x0F // = mc3418
+
 #define	INTEGRATOR_LEAK_TC		0.001
 #define	FILTER_DECAY_TC			0.004
 #define	FILTER_CHARGE_TC		0.004
@@ -86,17 +89,19 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	if (length == 0)
 		return;
 
-	/* track how many samples we've updated without a clock */
+	/* track how many samples we've updated without a clock, e.g. if its too many, then chip got no data = silence */
 	chip->update_count += length;
 	if (chip->update_count > SAMPLE_RATE / 32)
 	{
-		chip->update_count = SAMPLE_RATE;
+		chip->update_count = SAMPLE_RATE; // prevent overflow
 		chip->next_value = 0;
 	}
 
 	/* compute the interpolation slope */
+	// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
+	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
 	data = chip->curr_value;
-	slope = (((INT32)chip->next_value - data)<<16) / length;
+	slope = (((INT32)chip->next_value - data)<<16) / length; // PINMAME: increase/fix precision!
 	data <<= 16;
 	chip->curr_value = chip->next_value;
 
@@ -123,7 +128,7 @@ void hc55516_clock_w(int num, int state)
 		/* clear the update count */
 		chip->update_count = 0;
 
-		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & 7;
+		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & SHIFTMASK;
 
 		/* move the estimator up or down a step based on the bit */
 		if (chip->databit)
@@ -135,7 +140,7 @@ void hc55516_clock_w(int num, int state)
 		integrator *= leak;
 
 		/* if we got all 0's or all 1's in the last n bits, bump the step up */
-		if (chip->shiftreg == 0 || chip->shiftreg == 7)
+		if (chip->shiftreg == 0 || chip->shiftreg == SHIFTMASK)
 		{
 			chip->filter = FILTER_MAX - (FILTER_MAX - chip->filter) * charge;
 			if (chip->filter > FILTER_MAX)
@@ -154,6 +159,21 @@ void hc55516_clock_w(int num, int state)
 		chip->integrator = integrator;
 
 #ifdef PINMAME
+#if 1
+		/* compress the sample range to fit better in a 16-bit word */
+		// Pharaoh: up to 109000, 'normal' max around 45000-50000, so find a balance between compression and clipping
+		if (temp < 0.)
+			temp = temp / (temp * -(1.0 / 32768.0) + 1.0) + temp*0.15;
+		else
+			temp = temp / (temp *  (1.0 / 32768.0) + 1.0) + temp*0.15;
+
+		if(temp <= -32768.)
+			chip->next_value = -32768;
+		else if(temp >= 32767.)
+			chip->next_value = 32767;
+		else
+			chip->next_value = (INT16)temp;
+#else
 		/* Cut off extreme peaks produced by bad speech data (eg. Pharaoh) */
 		if (temp < -80000.) temp = -80000.;
 		else if (temp > 80000.) temp = 80000.;
@@ -161,6 +181,7 @@ void hc55516_clock_w(int num, int state)
 		if (temp < -32768.) chip->next_value = (INT16)(-65536. - temp);
 		else if (temp > 32767.) chip->next_value = (INT16)(65535. - temp);
 		else chip->next_value = (INT16)temp;
+#endif
 #else
 		/* compress the sample range to fit better in a 16-bit word */
 		if (temp < 0)
