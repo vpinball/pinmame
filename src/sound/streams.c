@@ -55,7 +55,7 @@ void apply_RC_filter(int channel,INT16 *buf,int len,int sample_rate)
 	int K;
 	int i;
 
-	if (c[channel] == 0) return;	/* filter disabled */
+	if (c[channel] == 0 || len == 0) return;	/* filter disabled */
 
 	R1 = r1[channel];
 	R2 = r2[channel];
@@ -64,7 +64,7 @@ void apply_RC_filter(int channel,INT16 *buf,int len,int sample_rate)
 
 	/* Cut Frequency = 1/(2*Pi*Req*C) */
 
-	Req = (R1*(R2+R3))/(R1+R2+R3);
+	Req = (R2+R3 > 0.) ? (R1*(R2+R3))/(R1+R2+R3) : R1;
 
 	K = (int)(0x10000 * exp(-1. / (Req * C) / sample_rate));
 
@@ -82,11 +82,12 @@ int streams_sh_start(void)
 {
 	int i;
 
-
 	for (i = 0;i < MIXER_MAX_CHANNELS;i++)
 	{
 		stream_joined_channels[i] = 1;
 		stream_buffer[i] = 0;
+
+		c[i] = 0;
 	}
 
 	return 0;
@@ -96,7 +97,6 @@ int streams_sh_start(void)
 void streams_sh_stop(void)
 {
 	int i;
-
 
 	for (i = 0;i < MIXER_MAX_CHANNELS;i++)
 	{
@@ -110,7 +110,6 @@ void streams_sh_update(void)
 {
 	int channel,i;
 
-
 	if (Machine->sample_rate == 0) return;
 
 	/* update all the output buffers */
@@ -121,7 +120,6 @@ void streams_sh_update(void)
 			int newpos;
 			int buflen;
 
-
 			newpos = SAMPLES_THIS_FRAME(channel);
 
 			buflen = newpos - stream_buffer_pos[channel];
@@ -129,7 +127,6 @@ void streams_sh_update(void)
 			if (stream_joined_channels[channel] > 1)
 			{
 				INT16 *buf[MIXER_MAX_CHANNELS];
-
 
 				if (buflen > 0)
 				{
@@ -150,7 +147,6 @@ void streams_sh_update(void)
 				if (buflen > 0)
 				{
 					INT16 *buf;
-
 
 					buf = stream_buffer[channel] + stream_buffer_pos[channel];
 
@@ -181,7 +177,6 @@ int stream_init(const char *name,int default_mixing_level,
 		int param,void (*callback)(int param,INT16 *buffer,int length))
 {
 	int channel;
-
 
 	channel = mixer_allocate_channel(default_mixing_level);
 
@@ -229,7 +224,6 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 {
 	int channel,i;
 
-
 	channel = mixer_allocate_channels(channels,default_mixing_levels);
 
 	stream_joined_channels[channel] = channels;
@@ -247,11 +241,12 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 			stream_sample_length[channel+i] = 1000000 / sample_rate;
 		else
 			stream_sample_length[channel+i] = 0;
+
+		set_RC_filter(channel+i,0,0,0,0);
 	}
 
 	stream_param[channel] = param;
 	stream_callback_multi[channel] = callback;
-	set_RC_filter(channel,0,0,0,0);
 
 	return channel;
 }
@@ -262,7 +257,6 @@ void stream_update(int channel,int min_interval)
 {
 	int newpos;
 	int buflen;
-
 
 	if (Machine->sample_rate == 0 || stream_buffer[channel] == 0)
 		return;
@@ -279,7 +273,6 @@ void stream_update(int channel,int min_interval)
 			INT16 *buf[MIXER_MAX_CHANNELS];
 			int i;
 
-
 			for (i = 0;i < stream_joined_channels[channel];i++)
 				buf[i] = stream_buffer[channel+i] + stream_buffer_pos[channel+i];
 
@@ -293,7 +286,6 @@ void stream_update(int channel,int min_interval)
 		else
 		{
 			INT16 *buf;
-
 
 			buf = stream_buffer[channel] + stream_buffer_pos[channel];
 
