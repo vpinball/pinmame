@@ -128,9 +128,9 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		freq_scale = max(min(freq_scale, 1.), 0.); // make sure to be in 0..1
 		freq_scale = 1.-sqrt(sqrt(freq_scale));    // penalty for low clock rates -> even more of the lower frequencies removed then
 
-		if (freq_scale < 0.999) // assume that high clock rates/most modern machines do not need to be filtered at all (improves clarity at the price of some noise)
+		if (freq_scale < 0.45) // assume that high clock rates/most modern machines (that would end up at ~12000Hz filtering, see below) do not need to be filtered at all (improves clarity at the price of some noise)
 		{
-			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, 51); // magic, majority of modern machines up to TZ = 24000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
+			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, 51); // magic, majority of modern machines up to TZ = ~12000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
 			chip->filter_state = filter_state_alloc(); //!! leaks
 			filter_state_reset(chip->filter_f, chip->filter_state);
 		}
