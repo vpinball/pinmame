@@ -22,7 +22,7 @@
 #include "driver.h"
 
 #ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
+ #define MIN(x,y) ((x)<(y)?(x):(y))
 #endif
 
 /**********************************************************************************************
@@ -314,18 +314,18 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 			{
 			case 0:
 			case 3:
-				samp_c = MIN(samp + 1, length);
-				left[samp]  = (left [samp] * 3334 + left [samp_c] * 6666) / 10000;
-				right[samp] = (right[samp] * 3334 + right[samp_c] * 6666) / 10000;
+				samp_c = MIN(samp + 1, length-1);
+				left[samp]  = (left [samp] * (INT64)3334 + left [samp_c] * (INT64)6666) / (INT64)10000;
+				right[samp] = (right[samp] * (INT64)3334 + right[samp_c] * (INT64)6666) / (INT64)10000;
 				break;
 			case 1:
 			case 4:
 				break;
 			case 2:
 			case 5:
-				samp_c = MIN(samp + 2, length);
-				left[samp]  = (left [samp] * 6666 + left [samp_c] * 3334) / 10000;
-				right[samp] = (right[samp] * 6666 + right[samp_c] * 3334) / 10000;
+				samp_c = MIN(samp + 2, length-1);
+				left[samp]  = (left [samp] * (INT64)6666 + left [samp_c] * (INT64)3334) / (INT64)10000;
+				right[samp] = (right[samp] * (INT64)6666 + right[samp_c] * (INT64)3334) / (INT64)10000;
 				break;
 			}
 
@@ -376,7 +376,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
                 INT32 val1 = base[pos];
                 // sample is shifted by 8, as accumulator expects everything in 16bit*16bit (sampledata*volume), and then cuts that down to 16bit in the end
 #if ENABLE_INTERPOLATION
-                INT32 val2 = base[MIN(pos + 1, (UINT32)voice->reg[REG_LOOPEND])];
+                INT32 val2 = base[MIN(pos + 1, (UINT32)voice->reg[REG_LOOPEND]-1)];
                 INT32 sample = (val1 * (INT32)(0x800 - frac) + (val2 * (INT32)frac)) >> 3; // (... >> 11) << 8
 #else
                 INT32 sample = val1 << 8;
