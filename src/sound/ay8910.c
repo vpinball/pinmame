@@ -33,7 +33,6 @@ static int num = 0, ym_num = 0;
 struct AY8910
 {
 	int Channel;
-	int SampleRate;
 	int ready;
 	read8_handler PortAread;
 	read8_handler PortBread;
@@ -101,7 +100,7 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_ACOARSE:
 		PSG->Regs[AY_ACOARSE] &= 0x0f;
 		old = PSG->PeriodA;
-		PSG->PeriodA = (PSG->Regs[AY_AFINE] + 256 * PSG->Regs[AY_ACOARSE]) * STEP;
+		PSG->PeriodA = (PSG->Regs[AY_AFINE] + (INT32)256 * PSG->Regs[AY_ACOARSE]) * STEP;
 		if (PSG->PeriodA == 0) PSG->PeriodA = STEP;
 		PSG->CountA += PSG->PeriodA - old;
 		if (PSG->CountA <= 0) PSG->CountA = 1;
@@ -110,7 +109,7 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_BCOARSE:
 		PSG->Regs[AY_BCOARSE] &= 0x0f;
 		old = PSG->PeriodB;
-		PSG->PeriodB = (PSG->Regs[AY_BFINE] + 256 * PSG->Regs[AY_BCOARSE]) * STEP;
+		PSG->PeriodB = (PSG->Regs[AY_BFINE] + (INT32)256 * PSG->Regs[AY_BCOARSE]) * STEP;
 		if (PSG->PeriodB == 0) PSG->PeriodB = STEP;
 		PSG->CountB += PSG->PeriodB - old;
 		if (PSG->CountB <= 0) PSG->CountB = 1;
@@ -119,7 +118,7 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_CCOARSE:
 		PSG->Regs[AY_CCOARSE] &= 0x0f;
 		old = PSG->PeriodC;
-		PSG->PeriodC = (PSG->Regs[AY_CFINE] + 256 * PSG->Regs[AY_CCOARSE]) * STEP;
+		PSG->PeriodC = (PSG->Regs[AY_CFINE] + (INT32)256 * PSG->Regs[AY_CCOARSE]) * STEP;
 		if (PSG->PeriodC == 0) PSG->PeriodC = STEP;
 		PSG->CountC += PSG->PeriodC - old;
 		if (PSG->CountC <= 0) PSG->CountC = 1;
@@ -127,7 +126,7 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_NOISEPER:
 		PSG->Regs[AY_NOISEPER] &= 0x1f;
 		old = PSG->PeriodN;
-		PSG->PeriodN = PSG->Regs[AY_NOISEPER] * STEP;
+		PSG->PeriodN = PSG->Regs[AY_NOISEPER] * (INT32)STEP;
 		if (PSG->PeriodN == 0) PSG->PeriodN = STEP;
 		PSG->CountN += PSG->PeriodN - old;
 		if (PSG->CountN <= 0) PSG->CountN = 1;
@@ -169,7 +168,7 @@ static void _AYWriteReg(int n, int r, int v)
 	case AY_EFINE:
 	case AY_ECOARSE:
 		old = PSG->PeriodE;
-		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + 256 * PSG->Regs[AY_ECOARSE])) * STEP;
+		PSG->PeriodE = ((PSG->Regs[AY_EFINE] + (INT32)256 * PSG->Regs[AY_ECOARSE])) * STEP;
 		if (PSG->PeriodE == 0) PSG->PeriodE = STEP / 2;
 		PSG->CountE += PSG->PeriodE - old;
 		if (PSG->CountE <= 0) PSG->CountE = 1;
@@ -745,7 +744,6 @@ static int AY8910_init(const char *chip_name,int chip,
 		sample_rate = clock/8;
 
 	memset(PSG,0,sizeof(struct AY8910));
-	PSG->SampleRate = sample_rate;
 	PSG->PortAread = portAread;
 	PSG->PortBread = portBread;
 	PSG->PortAwrite = portAwrite;
@@ -864,4 +862,3 @@ void AY8910_sh_stop_ym(void)
 {
 	ym_num = 0;
 }
-
