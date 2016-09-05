@@ -8,8 +8,8 @@
 
 #define SAMPLE_RATE (4*48000) // 4x oversampling of standard output rate
 
-#define SHIFTMASK 0x07 // = hc55516 and mc3417
-//#define SHIFTMASK 0x0F // = mc3418
+#define SHIFTMASK 0x07 // = hc55516 and mc3417 //!! At least Xenon and Flash Gordon, and early Williams' (C-8226, but NOT the C-8228 so maybe does not matter overall??) had a MC3417
+//#define SHIFTMASK 0x0F // = mc3418 //!! also features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the simpler chips above!
 
 #define	INTEGRATOR_LEAK_TC		0.001
  #define leak   /*=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));*/ 0.939413062813475786119710824622305084524680890549441822009
@@ -18,12 +18,12 @@
 #define	FILTER_CHARGE_TC		0.004
  #define charge /*=pow(1.0/M_E, 1.0/(FILTER_CHARGE_TC * 16000.0));  */ 0.984496437005408405986988829697020369707861003180350567476
 
-#define	FILTER_MAX				1.0954
+#define	FILTER_MAX				1.0954 // 0 dbmo sine wave peak value volts from MC3417 datasheet
 #ifdef PINMAME
  #define ENABLE_LOWPASS_ESTIMATE 1
  #define SAMPLE_GAIN			6500.0
 #else
- #define FILTER_MIN				0.0416
+ #define FILTER_MIN				0.0416 // idle voltage (0/1 alternating input on each clock) from MC3417 datasheet
  #define SAMPLE_GAIN			10000.0
 #endif
 
@@ -43,7 +43,7 @@ struct hc55516_data
 	double	integrator;
 	double  gain;
 
-#ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks)
+#ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks, f.e. Flash Gordon has (multiple) Sallen-Key Active Low-pass at the end (at least ~3Khz), TZ has (multiple) Multiple Feedback Active Low-pass at the end (~3.5KHz))
 #if ENABLE_LOWPASS_ESTIMATE
 	filter* filter_f;           /* filter used, ==0 if none */
 	filter_state* filter_state; /* state of the filter */
@@ -155,12 +155,11 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	/* compute the interpolation slope */
 	// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
 	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
-	INT32 next_v = chip->next_value;
 	data = chip->curr_value;
 
-	slope = ((next_v - data) << 16) / length; // PINMAME: increase/fix precision issue!
+	slope = (((INT32)chip->next_value - data) << 16) / length; // PINMAME: increase/fix precision issue!
 	data <<= 16;
-	chip->curr_value = next_v;
+	chip->curr_value = chip->next_value;
 
 #ifdef PINMAME
 #if ENABLE_LOWPASS_ESTIMATE
