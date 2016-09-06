@@ -157,7 +157,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
 	data = chip->curr_value;
 
-	slope = (((INT32)chip->next_value - data) << 16) / length; // PINMAME: increase/fix precision issue!
+	slope = (((INT64)chip->next_value - data) << 16) / length; // PINMAME: increase/fix precision issue! //!! requires length to be at least 2, otherwise overflow can happen!
 	data <<= 16;
 	chip->curr_value = chip->next_value;
 
