@@ -151,15 +151,14 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		chip->filter = 0.;
 		chip->shiftreg = 0;
 	}
-	else
-		chip->update_count += length;
 
 	/* compute the interpolation slope */
 	// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
 	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
-	data = chip->curr_value;
+	// PINMAME: to handle the case where no data was incoming, and to avoid a lerp from 0 to next_value then, disable the lerp completely and only output next_value
+	data = (chip->update_count == 0) ? chip->curr_value : chip->next_value;
 
-	slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
+	slope = (chip->update_count == 0) ? (((INT32)chip->next_value - data) << 15) / length : 0; // PINMAME: increase/fix precision issue!
 	data <<= 15;
 	chip->curr_value = chip->next_value;
 
@@ -176,6 +175,8 @@ void hc55516_update(int num, INT16 *buffer, int length)
 #endif
 		for (i = 0; i < length; i++, data += slope)
 			*buffer++ = data >> 15;
+
+	chip->update_count += length;
 }
 
 
