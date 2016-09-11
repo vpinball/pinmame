@@ -141,24 +141,26 @@ void hc55516_update(int num, INT16 *buffer, int length)
 #endif
 
 	/* track how many samples we've updated without a clock, e.g. if its too many, then chip got no data = silence */
-	chip->update_count += length;
-	if (chip->update_count > SAMPLE_RATE / 32)
+	if (chip->update_count > SAMPLE_RATE / 2048) //!! magic // PINMAME: be less conservative/more precise
 	{
 		chip->update_count = SAMPLE_RATE; // prevent overflow
-		chip->next_value /= 2; // PINMAME: fade out
+		chip->next_value = 0;
 
-		chip->integrator = 0.; // PINMAME: reset all state
+		chip->curr_value = 0; // PINMAME: reset all state
+		chip->integrator = 0.;
 		chip->filter = 0.;
 		chip->shiftreg = 0;
 	}
+	else
+		chip->update_count += length;
 
 	/* compute the interpolation slope */
 	// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
 	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
 	data = chip->curr_value;
 
-	slope = (((INT64)chip->next_value - data) << 16) / length; // PINMAME: increase/fix precision issue! //!! requires length to be at least 2, otherwise overflow can happen!
-	data <<= 16;
+	slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
+	data <<= 15;
 	chip->curr_value = chip->next_value;
 
 #ifdef PINMAME
@@ -166,14 +168,14 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	if (chip->filter_f)
 		for (i = 0; i < length; i++, data += slope)
 		{
-			filter_insert(chip->filter_f, chip->filter_state, data >> 16);
+			filter_insert(chip->filter_f, chip->filter_state, data >> 15);
 			*buffer++ = filter_compute(chip->filter_f, chip->filter_state);
 		}
 	else
 #endif
 #endif
 		for (i = 0; i < length; i++, data += slope)
-			*buffer++ = data >> 16;
+			*buffer++ = data >> 15;
 }
 
 
