@@ -869,7 +869,7 @@ STDMETHODIMP CController::get_ChangedLampsState(int **buf, int *pVal)
   for (int i = 0; i < uCount; i++)
   {
     *(dst++) = chgLamps[i].lampNo;
-    *(dst++) = chgLamps[i].currStat ? 1:0;
+    *(dst++) = chgLamps[i].currStat;
   }
 
   *pVal = uCount;
@@ -1274,7 +1274,7 @@ STDMETHODIMP CController::get_ChangedLamps(VARIANT *pVal)
     varValue.lVal = chgLamps[ix[0]].lampNo;
     SafeArrayPutElement(psa, ix, &varValue);
     ix[1] = 1; // Lamp value
-    varValue.lVal = chgLamps[ix[0]].currStat?1:0;
+    varValue.lVal = chgLamps[ix[0]].currStat;
     SafeArrayPutElement(psa, ix, &varValue);
   }
 
