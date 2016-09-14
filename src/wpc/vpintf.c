@@ -6,6 +6,7 @@
 
 static struct {
   UINT8  lastLampMatrix[CORE_MAXLAMPCOL];
+  UINT32 lastRGBLamps[CORE_MAXRGBLAMPS];
   UINT64 lastSol;
   UINT32 solMask[2];
   int    lastGI[CORE_MAXGI];
@@ -38,11 +39,13 @@ int vp_getLamp(int lampNo) {
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   UINT8 lampMatrix[CORE_MAXLAMPCOL];
+  UINT32 RGBlamps[CORE_MAXRGBLAMPS];
   int idx = 0;
   int ii;
 
   /*-- get current status --*/
   memcpy(lampMatrix, coreGlobals.lampMatrix, sizeof(lampMatrix));
+  memcpy(RGBlamps, coreGlobals.RGBlamps, sizeof(RGBlamps));
 
   /*-- fill in array --*/
   for (ii = 0; ii < CORE_STDLAMPCOLS+core_gameData->hw.lampCol; ii++) {
@@ -62,7 +65,18 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
       }
     }
   }
+
+  for (ii = 0; ii < CORE_MAXRGBLAMPS; ii++) {
+	  int chgLamp = RGBlamps[ii] ^ locals.lastRGBLamps[ii];
+	  if (chgLamp) {
+		  chgStat[idx].lampNo = 0; //!!
+		  chgStat[idx].currStat = RGBlamps[ii]; //!! remap?
+		  idx += 1;
+	  }
+  }
+
   memcpy(locals.lastLampMatrix, lampMatrix, sizeof(lampMatrix));
+  memcpy(locals.lastRGBLamps, RGBlamps, sizeof(RGBlamps));
   return idx;
 }
 
