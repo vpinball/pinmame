@@ -390,9 +390,20 @@ void votraxsc01_set_base_frequency(int baseFrequency)
 {
 	int i;
 	if ( baseFrequency>=0 )
+	{
 		votraxsc01_locals.baseFrequency = baseFrequency;
-	for (i=0; i < 4; i++) {
-		stream_set_sample_rate(votraxsc01_locals.channels[i], baseFrequency);
+		for (i=0; i < 4; i++)
+			stream_set_sample_rate(votraxsc01_locals.channels[i], baseFrequency);
+	}
+}
+
+void votraxsc01_set_volume(int volume)
+{
+	int i;
+	if (volume >= 0)
+	{
+		for (i = 0; i < 4; i++)
+			mixer_set_volume(votraxsc01_locals.channels[i], volume);
 	}
 }
 
