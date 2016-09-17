@@ -23,5 +23,6 @@ WRITE_HANDLER(votraxsc01_w);
 READ_HANDLER(votraxsc01_status_r);
 
 void votraxsc01_set_base_frequency(int baseFrequency);
+void votraxsc01_set_volume(int volume);
 
 #endif
