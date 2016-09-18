@@ -1586,8 +1586,8 @@ static void AssignSampleRate(HWND hWnd)
 	{
 		case 0:  pGameOpts->samplerate = 11025; break;
 		case 1:  pGameOpts->samplerate = 22050; break;
-		case 2:  pGameOpts->samplerate = 44100; break;
-		default: pGameOpts->samplerate = 44100; break;
+		case 2:  pGameOpts->samplerate = 48000; break;
+		default: pGameOpts->samplerate = 48000; break;
 	}
 }
 
@@ -1763,7 +1763,7 @@ static void ResetDataMap(void)
 		case 11025:  g_nSampleRateIndex = 0; break;
 		case 22050:  g_nSampleRateIndex = 1; break;
 		default:
-		case 44100:  g_nSampleRateIndex = 2; break;
+		case 48000:  g_nSampleRateIndex = 2; break;
 	}
 
 	g_nEffectIndex = 0;
@@ -2688,7 +2688,7 @@ static void InitializeSoundUI(HWND hwnd)
 	{
 		idx = ComboBox_AddString(hCtrl, "11025");
 		idx = ComboBox_AddString(hCtrl, "22050");
-		idx = ComboBox_AddString(hCtrl, "44100");
+		idx = ComboBox_AddString(hCtrl, "48000");
 		result = ComboBox_SetCurSel(hCtrl, 1);
 	}
 }
