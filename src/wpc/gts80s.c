@@ -127,7 +127,7 @@ MEMORY_WRITE_START(GTS80S_writemem)
 { 0xf800, 0xffff, MWA_ROM},
 MEMORY_END
 
-static void GTS80S_Update(int num, INT16 *buffer, int length)
+static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
 	double dActClock, dInterval, dCurrentClock;
 	int i;
@@ -188,7 +188,6 @@ void gts80s_init(struct sndbrdData *brdData) {
 		memcpy(mr+0x1000, mr+0x0700, 0x100);
 	}
 
-
 	/*
 		Init RAM, i.e. set base of all bank to the base of bank 1,
 		the memory repeats ever 64 bytes; haven't found another way to
@@ -207,7 +206,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 	  stream_free(stream_locals.stream);
 	}
 	stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
-	set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000);
+	set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000, 11025);
 }
 
 /*--------------
