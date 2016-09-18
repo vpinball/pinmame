@@ -75,6 +75,9 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	unsigned midorder = (order - 1) / 2;
 	unsigned i;
 	double gain;
+#ifdef FILTER_USE_INT
+	double xcoeffs[(FILTER_ORDER_MAX+1)/2];
+#endif
 
 	assert( order <= FILTER_ORDER_MAX );
 	assert( order % 2 == 1 );
@@ -83,7 +86,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	/* Compute the antitrasform of the perfect low pass filter */
 	gain = 2.*freq;
 #ifdef FILTER_USE_INT
-	f->xcoeffs[0] = (filter_real)(gain * (1 << FILTER_INT_FRACT));
+	xcoeffs[0] = gain;
 #else
 	f->xcoeffs[0] = (filter_real)gain;
 #endif
@@ -112,15 +115,19 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 
 		/* insert the coeff */
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] = (filter_real)(c * (1 << FILTER_INT_FRACT));
+		xcoeffs[i] = c;
 #else
 		f->xcoeffs[i] = (filter_real)c;
 #endif
 	}
 
 	/* adjust the gain to be exact 1.0 */
-	for(i=0;i<=midorder;++i)
-		f->xcoeffs[i] = (filter_real)(f->xcoeffs[i]/gain);
+	for (i = 0; i <= midorder; ++i)
+#ifdef FILTER_USE_INT
+		f->xcoeffs[i] = (filter_real)((xcoeffs[i] / gain) * (1 << FILTER_INT_FRACT));
+#else
+		f->xcoeffs[i] = (filter_real)(f->xcoeffs[i] / gain);
+#endif
 
 	/* decrease the order if the last coeffs are 0 */
 	i = midorder;
@@ -206,7 +213,7 @@ void filter2_step(filter2_context *filter2)
 void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, double c2,
 					filter2_context *filter2, unsigned int sample_rate)
 {
-	double	r_in, fc, d, gain;
+	double r_in, fc, d, gain;
 
 	if (r1 == 0.)
 	{
