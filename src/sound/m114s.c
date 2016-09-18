@@ -296,8 +296,8 @@ static INT16 read_sample(struct M114SChannel *channel, UINT32 sample_rate, UINT3
 
 		// interpolate
 		INT16 val1 = channel->output[pos];
-		INT16 val2 = channel->output[MIN(pos + 1, length)];
-		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + (val2 * (INT32)frac)) >> FRAC_BITS;
+		INT16 val2 = channel->output[MIN(pos + 1, length - 1)];
+		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + val2 * (INT32)frac) >> FRAC_BITS;
 
 		channel->outpos += incr;
 		return sample;
