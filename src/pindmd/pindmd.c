@@ -384,7 +384,7 @@ void renderDMDFrame(UINT64 gen, UINT32 width, UINT32 height, UINT8 *currbuffer_i
 					else if(pixel<=15)
 						pixel=3;
 				}
-				else if(gen == GEN_ALVG_DMD2) // also depends on the mapping in alvgdmd.c
+				else if((gen == GEN_ALVG_DMD2) || (gen == GEN_SAM)) // also depends on the mapping in alvgdmd.c & sam.c
 				{
 					pixel >>= 2; //!! do some better magic remapping?
 				}
