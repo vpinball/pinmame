@@ -38,7 +38,12 @@
 
 /* fractional numbers have FRACTION_BITS bits of resolution */
 #define FRACTION_BITS			16
-#define FRACTION_MASK			((1 << FRACTION_BITS) - 1)
+#define FRACTION_ONE			(1 << FRACTION_BITS)
+#define FRACTION_MASK			(FRACTION_ONE - 1)
+
+#ifndef MIN
+ #define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
 
 /***************************************************************************/
 /* Static data */
@@ -115,7 +120,7 @@ static unsigned samples_this_frame;
 
 /* Window size of the FIR filter in samples (must be odd) */
 /* Greater values are more precise, lesser values are faster. */
-#define FILTER_WIDTH 31
+#define FILTER_WIDTH 51
 
 /* The number of samples that need to be played to flush the filter state */
 /* For the FIR filters it's equal to the filter width */
@@ -182,7 +187,7 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsig
 	channel->lowpass_frequency = lowpass_frequency;
 	channel->from_frequency = from_frequency;
 	channel->to_frequency = to_frequency;
-	channel->step = (unsigned long long)from_frequency * (1 << FRACTION_BITS) / to_frequency;
+	channel->step = ((unsigned long long)from_frequency << FRACTION_BITS) / to_frequency;
 
 	/* reset the filter state */
 	if (channel->filter && channel->is_reset_requested)
@@ -840,7 +845,6 @@ void mixer_sh_update(void)
 			else if (sample > 32767)
 				sample = 32767;
 #endif
-
 			/* store and zero out behind us */
 			*mix++ = sample;
 			left_accum[accum_pos] = 0;
@@ -868,10 +872,10 @@ void mixer_sh_update(void)
 	WaveDataOutEnd( mix_buffer, samples_this_frame, is_stereo );
 #endif
 #ifdef PINMAME
-       {
-         extern void pm_wave_record(INT16 *buffer, int samples);
-         pm_wave_record(mix_buffer, samples_this_frame);
-       }
+    {
+    extern void pm_wave_record(INT16 *buffer, int samples);
+    pm_wave_record(mix_buffer, samples_this_frame);
+    }
 #endif /* PINMAME */
 	samples_this_frame = osd_update_audio_stream(mix_buffer);
 
@@ -919,8 +923,8 @@ int mixer_allocate_channels(int channels, const int *default_mixing_levels)
 		channel->pan 					= MIXER_GET_PAN(default_mixing_levels[i]);
 		channel->gain 					= MIXER_GET_GAIN(default_mixing_levels[i]);
 		/* add by hiro-shi */
-		channel->left_volume 				= 100;
-		channel->right_volume 				= 100;
+		channel->left_volume			= 100;
+		channel->right_volume 			= 100;
 
 		/* backwards compatibility with old 0-255 volume range */
 		if (channel->default_mixing_level > 100)
@@ -930,10 +934,9 @@ int mixer_allocate_channels(int channels, const int *default_mixing_levels)
 		channel->mixing_level = channel->default_mixing_level;
 		if (!is_config_invalid)
 		{
-		/* if the defaults match, set the mixing level from the config */
-		if (channel->default_mixing_level == channel->config_default_mixing_level && channel->config_mixing_level <= 100)
-			channel->mixing_level = channel->config_mixing_level;
-
+			/* if the defaults match, set the mixing level from the config */
+			if (channel->default_mixing_level == channel->config_default_mixing_level && channel->config_mixing_level <= 100)
+				channel->mixing_level = channel->config_mixing_level;
 			/* otherwise, invalidate all channels that have been created so far */
 			else
 			{
