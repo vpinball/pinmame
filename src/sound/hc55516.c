@@ -37,8 +37,6 @@ struct hc55516_data
 	INT16	curr_value;
 	INT16	next_value;
 
-	UINT32	update_count;
-
 	double 	filter;
 	double	integrator;
 	double  gain;
@@ -50,6 +48,8 @@ struct hc55516_data
 
 	UINT32  length_estimate;    // for estimating the clock rate/'default' sample playback rate of the machine
 	UINT32  length_estimate_runs;
+
+	int     last_sound;
 #endif
 #endif
 };
@@ -87,6 +87,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		chip->filter_f = 0;
 		chip->length_estimate = 0;
 		chip->length_estimate_runs = 0;
+		chip->last_sound = 0;
 #endif
 #endif
 	}
@@ -99,7 +100,6 @@ int hc55516_sh_start(const struct MachineSound *msound)
 void hc55516_update(int num, INT16 *buffer, int length)
 {
 	struct hc55516_data *chip = &hc55516[num];
-	INT32 data, slope;
 	int i;
 
 	/* zero-length? bail */
@@ -111,7 +111,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	// 'detect' clock rate and guesstimate low pass filtering from this
 	// not perfect, as some machines vary the clock rate, depending on the sample played  :/
  #define LOWPASS_ESTIMATE_CYCLES 666
-	if (chip->update_count == 0 // is update coming from clock?
+	if (chip->last_sound == 0 // is update coming from clock?
 		&& length < SAMPLE_RATE/12000 // and no outlier?
 		&& chip->length_estimate_runs < LOWPASS_ESTIMATE_CYCLES) // and we are still tracking the clock?
 	{
@@ -141,42 +141,46 @@ void hc55516_update(int num, INT16 *buffer, int length)
 #endif
 
 	/* track how many samples we've updated without a clock, e.g. if its too many, then chip got no data = silence */
-	if (chip->update_count > SAMPLE_RATE / 2048) //!! magic // PINMAME: be less conservative/more precise
+	if (length > SAMPLE_RATE/2048  //!! magic // PINMAME: be less conservative/more precise
+		&& chip->last_sound != 0)  // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
 	{
-		chip->update_count = SAMPLE_RATE; // prevent overflow
-		chip->next_value = 0;
+		double tmp = chip->curr_value;
+		for (i = 0; i < length; i++, tmp *= 0.95)
+			*buffer++ = tmp;
 
-		chip->curr_value = 0; // PINMAME: reset all state
-		chip->integrator = 0.;
+		chip->next_value = tmp; // update next_value with the faded value
+
+		chip->integrator = 0.; // PINMAME: Reset all chip state
 		chip->filter = 0.;
 		chip->shiftreg = 0;
 	}
-
-	/* compute the interpolation slope */
-	// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
-	// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
-	// PINMAME: to handle the case where no data was incoming, and to avoid a lerp from 0 to next_value then, disable the lerp completely and only output next_value
-	data = (chip->update_count == 0) ? chip->curr_value : chip->next_value;
-
-	slope = (chip->update_count == 0) ? (((INT32)chip->next_value - data) << 15) / length : 0; // PINMAME: increase/fix precision issue!
-	data <<= 15;
-	chip->curr_value = chip->next_value;
+	else
+	{
+		/* compute the interpolation slope */
+		// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
+		// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
+		INT32 data = chip->curr_value;
+		INT32 slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
+		data <<= 15;
 
 #ifdef PINMAME
 #if ENABLE_LOWPASS_ESTIMATE
-	if (chip->filter_f)
-		for (i = 0; i < length; i++, data += slope)
-		{
-			filter_insert(chip->filter_f, chip->filter_state, data >> 15);
-			*buffer++ = filter_compute(chip->filter_f, chip->filter_state);
-		}
-	else
+		if (chip->filter_f)
+			for (i = 0; i < length; i++, data += slope)
+			{
+				filter_insert(chip->filter_f, chip->filter_state, data >> 15);
+				*buffer++ = filter_compute(chip->filter_f, chip->filter_state);
+			}
+		else
 #endif
 #endif
-		for (i = 0; i < length; i++, data += slope)
-			*buffer++ = data >> 15;
+			for (i = 0; i < length; i++, data += slope)
+				*buffer++ = data >> 15;
+	}
 
-	chip->update_count += length;
+	chip->curr_value = chip->next_value;
+
+	chip->last_sound = 1;
 }
 
 
@@ -193,9 +197,6 @@ void hc55516_clock_w(int num, int state)
 	if (diffclock && clock) //!! mc341x would need !clock
 	{
 		double temp;
-
-		/* clear the update count */
-		chip->update_count = 0;
 
 		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & SHIFTMASK;
 
@@ -239,6 +240,9 @@ void hc55516_clock_w(int num, int state)
 		else
 			temp = temp / (temp *  (1.0 / 32768.0) + 1.0) + temp*0.15;
 
+		if (chip->last_sound == 0) // missed a soundupdate: lerp data in here directly
+			temp = (temp + chip->next_value)*0.5;
+
 		if(temp <= -32768.)
 			chip->next_value = -32768;
 		else if(temp >= 32767.)
@@ -261,6 +265,9 @@ void hc55516_clock_w(int num, int state)
 		else
 			chip->next_value = (int)(temp / (temp *  (1.0 / 32768.0) + 1.0));
 #endif
+		/* clear the update count */
+		chip->last_sound = 0;
+
 		/* update the output buffer before changing the registers */
 		stream_update(chip->channel, 0);
 	}
