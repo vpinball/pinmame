@@ -25,10 +25,8 @@ static void (*stream_callback[MIXER_MAX_CHANNELS])(int param,INT16 *buffer,int l
 static void (*stream_callback_multi[MIXER_MAX_CHANNELS])(int param,INT16 **buffer,int length);
 
 static int memory[MIXER_MAX_CHANNELS];
-static int r1[MIXER_MAX_CHANNELS];
-static int r2[MIXER_MAX_CHANNELS];
-static int r3[MIXER_MAX_CHANNELS];
-static int c[MIXER_MAX_CHANNELS];
+static int K[MIXER_MAX_CHANNELS];
+static double K_tmp[MIXER_MAX_CHANNELS];
 
 /*
 signal >--R1--+--R2--+
@@ -40,43 +38,49 @@ signal >--R1--+--R2--+
 
 /* R1, R2, R3 in Ohm; C in pF */
 /* set C = 0 to disable the filter */
-void set_RC_filter(int channel,int R1,int R2,int R3,int C)
+void set_RC_filter(int channel, int R1, int R2, int R3, int C, int sample_rate)
 {
-	r1[channel] = R1;
-	r2[channel] = R2;
-	r3[channel] = R3;
-	c[channel] = C;
-}
-
-void apply_RC_filter(int channel,INT16 *buf,int len,int sample_rate)
-{
-	double R1,R2,R3,C;
 	double Req;
-	int K;
-	int i;
 
-	if (c[channel] == 0 || len == 0) return;	/* filter disabled */
+	memory[channel] = 0;
 
-	R1 = r1[channel];
-	R2 = r2[channel];
-	R3 = r3[channel];
-	C = c[channel] * 1E-12;	/* convert pF to F */
+	if (C == 0)
+	{
+		K[channel] = 0x10000;
+		K_tmp[channel] = 0.;
+
+		return;
+	}
 
 	/* Cut Frequency = 1/(2*Pi*Req*C) */
 
-	Req = (R2+R3 > 0.) ? (R1*(R2+R3))/(R1+R2+R3) : R1;
+	Req = (R2 + R3 > 0) ? ((long long)R1*(R2 + R3)) / (double)(R1 + R2 + R3) : R1;
 
-	K = (int)(0x10000 * exp(-1. / (Req * C) / sample_rate));
+	K_tmp[channel] = Req * (C * 1E-12); /* 1E-12: convert pF to F */
 
-	buf[0] = buf[0] + (memory[channel] - buf[0]) * K / 0x10000;
-
-	for (i = 1;i < len;i++)
-		buf[i] = buf[i] + (buf[i-1] - buf[i]) * K / 0x10000;
-
-	memory[channel] = buf[len-1];
+	K[channel] = 0x10000 - (int)(0x10000 * exp(-1. / (K_tmp[channel] * sample_rate)));
 }
 
+static void set_RC_filter_sample_rate(int channel, int sample_rate)
+{
+	if (K_tmp[channel] == 0.)
+		return;
 
+	K[channel] = (int)(0x10000 - 0x10000 * exp(-1. / (K_tmp[channel] * sample_rate)));
+}
+
+static void apply_RC_filter(int channel,INT16 *buf,int len)
+{
+	int i;
+
+	if (K[channel] == 0x10000) return;	/* filter disabled */
+
+	for (i = 0; i < len; i++)
+	{
+		memory[channel] += (buf[i] - memory[channel]) * K[channel] / 0x10000;
+		buf[i] = memory[channel];
+	}
+}
 
 int streams_sh_start(void)
 {
@@ -87,7 +91,8 @@ int streams_sh_start(void)
 		stream_joined_channels[i] = 1;
 		stream_buffer[i] = 0;
 
-		c[i] = 0;
+		K[i] = 0x10000;
+		K_tmp[i] = 0.;
 	}
 
 	return 0;
@@ -140,7 +145,7 @@ void streams_sh_update(void)
 					stream_buffer_pos[channel+i] = 0;
 
 				for (i = 0;i < stream_joined_channels[channel];i++)
-					apply_RC_filter(channel+i,stream_buffer[channel+i],buflen,stream_sample_rate[channel+i]);
+					apply_RC_filter(channel+i,stream_buffer[channel+i],buflen);
 			}
 			else
 			{
@@ -155,7 +160,7 @@ void streams_sh_update(void)
 
 				stream_buffer_pos[channel] = 0;
 
-				apply_RC_filter(channel,stream_buffer[channel],buflen,stream_sample_rate[channel]);
+				apply_RC_filter(channel,stream_buffer[channel],buflen);
 			}
 		}
 	}
@@ -195,7 +200,7 @@ int stream_init(const char *name,int default_mixing_level,
 		stream_sample_length[channel] = 0;
 	stream_param[channel] = param;
 	stream_callback[channel] = callback;
-	set_RC_filter(channel,0,0,0,0);
+	set_RC_filter(channel,0,0,0,0,sample_rate);
 
 	return channel;
 }
@@ -210,6 +215,8 @@ void stream_set_sample_rate(int channel, int sample_rate) {
  	if (stream_buffer_pos[channel] >= stream_sample_length[channel]) {
 		stream_buffer_pos[channel] = 0;
 	}
+
+	set_RC_filter_sample_rate(channel,sample_rate);
 }
 
 void stream_free(int channel) {
@@ -242,7 +249,7 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 		else
 			stream_sample_length[channel+i] = 0;
 
-		set_RC_filter(channel+i,0,0,0,0);
+		set_RC_filter(channel+i,0,0,0,0,sample_rate);
 	}
 
 	stream_param[channel] = param;

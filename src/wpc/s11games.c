@@ -912,6 +912,22 @@ CORE_GAMEDEF(gs,l4,"Game Show (L-4)", 1990, "Bally", s11c_one,0)
 /*--------------------
 / Rollergames 5/90
 /--------------------*/
+/*
+This is Dan Forden, the sound guy for said pin, I just couldn't believe
+anyone actually remembered (or cared) about this game. Actually, it is
+the well-worn voice of Steve "needs more bass" Ritchie doing the
+impressive monster-truck/wrestling announcer impression throughout the
+game. We used as little as possible from the show itself (the opening
+vocoded "RollerGames" is the only remnant). We also used the show's theme
+as the main play tune (although initially Germany said they hated the
+music so I composed an alternative - which I preferred but Steve wanted to
+stick with the original - I think Hans, the German distributor, just
+wanted to say "jump" and have us do it. The music went out essentially
+unchanged). Even though this game was based on the absolute worst theme
+of all time and future, it was pretty fun. I have a Getaway now and kind
+of miss RollerGames (I used to have one). So there's some inside RollerGames dope.
+dwf
+*/
 INITGAME(rollr,GEN_S11C,s11_dispS11c,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(rollr,l2,"rolr_u26.l2", CRC(cd7cad9e) SHA1(e381fa73895c307a0b3b4b699cfec2a68908f6f7),
                         "rolr_u27.l2", CRC(f3bac2b8) SHA1(9f0ff32ea83e43097de42065909137a362b29d49))

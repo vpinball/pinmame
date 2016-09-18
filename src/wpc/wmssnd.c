@@ -763,7 +763,7 @@ static void dcs_init(struct sndbrdData *brdData);
 
 static struct {
  int     enabled;
- UINT32  sOut, sIn, sStep;
+ UINT32  sOut, sIn;
  INT16  *buffer;
  int     stream;
 } dcs_dac;
@@ -919,8 +919,6 @@ static int dcs_custStart(const struct MachineSound *msound) {
 
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
-
-  dcs_dac.sStep = 0x10000;
 
   return (dcs_dac.buffer == 0);
 }
