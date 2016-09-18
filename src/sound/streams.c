@@ -207,6 +207,9 @@ int stream_init(const char *name,int default_mixing_level,
 
 #ifdef PINMAME
 void stream_set_sample_rate(int channel, int sample_rate) {
+	if (stream_sample_rate[channel] == sample_rate)
+		return;
+
 	stream_sample_rate[channel] = sample_rate;
 	if (sample_rate)
 		stream_sample_length[channel] = 1000000 / sample_rate;

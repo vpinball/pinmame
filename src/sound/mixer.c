@@ -314,7 +314,12 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, fi
 			while (src != src_end && dst_pos != dst_pos_end)
 			{
 				/* source */
-				filter_insert(channel->filter,state,*src * v / 256);
+				filter_insert(channel->filter,state,
+#ifdef FILTER_USE_INT
+					(*src * v) >> 8);
+#else
+					(*src * v) * (1./256.));
+#endif
 				pivot += channel->from_frequency;
 				if (pivot > 0)
 				{
@@ -330,7 +335,12 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, fi
 			while (src != src_end && dst_pos != dst_pos_end)
 			{
 				/* source */
-				filter_insert(channel->filter,state,*src * v / 256);
+				filter_insert(channel->filter,state,
+#ifdef FILTER_USE_INT
+					(*src * v) >> 8);
+#else
+					(*src * v) * (1./256.));
+#endif
 				pivot -= channel->to_frequency;
 				++src;
 				/* dest */
@@ -416,7 +426,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, fil
 		unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
 		/* volume */
-		filter_real v = volume;
+		int v = volume;
 
 		if (channel->from_frequency < channel->to_frequency)
 		{
