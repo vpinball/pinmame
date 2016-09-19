@@ -169,7 +169,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 			for (i = 0; i < length; i++, data += slope)
 			{
 				filter_insert(chip->filter_f, chip->filter_state, data >> 15);
-				*buffer++ = filter_compute(chip->filter_f, chip->filter_state);
+				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 			}
 		else
 #endif

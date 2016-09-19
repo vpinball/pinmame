@@ -55,7 +55,7 @@ INLINE void filter_insert(filter* f, filter_state* s, filter_real x) {
 
 /* Compute the filter output */
 filter_real filter_compute(filter* f, filter_state* s);
-
+INT16       filter_compute_clamp16(filter* f, filter_state* s);
 
 /* Filter types */
 #define FILTER_LOWPASS		0
@@ -79,7 +79,7 @@ typedef struct filter2_context_struct {
  * gain - overall filter gain. Set to 1 if not needed.
  */
 void filter2_setup(int type, double fc, double d, double gain,
-                   filter2_context *filter2, unsigned int sample_rate);
+					filter2_context *filter2, unsigned int sample_rate);
 
 
 /* Reset the input/output voltages to 0. */
@@ -112,6 +112,6 @@ void filter2_step(filter2_context *filter2);
  *
  */
 void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, double c2,
-                                   filter2_context *filter2, unsigned int sample_rate);
+					filter2_context *filter2, unsigned int sample_rate);
 
 #endif

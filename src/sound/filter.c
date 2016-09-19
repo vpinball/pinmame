@@ -70,6 +70,16 @@ filter_real filter_compute(filter* f, filter_state* s) {
 #endif
 }
 
+INT16 filter_compute_clamp16(filter* f, filter_state* s) {
+	filter_real tmp = filter_compute(f, s);
+	if (tmp < -32768)
+		return -32768;
+	else if (tmp > 32767)
+		return 32767;
+	else
+		return (INT16)tmp;
+}
+
 filter* filter_lp_fir_alloc(double freq, int order) {
 	filter* f = filter_alloc();
 	unsigned midorder = (order - 1) / 2;
@@ -102,10 +112,11 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 
 		/* apply only one window or none */
 		/* double w = 2. - 2.*n/(order-1); */ /* Bartlett (triangular) */
-		//double w = 0.5 * (1. - cos((2.*M_PI)*n/(order-1))); /* Hanning */
+		//double w = 0.5 * (1. - cos((2.*M_PI)*n/(order-1))); /* Hann(ing) */
 		//double w = 0.54 - 0.46 * cos((2.*M_PI)*n/(order-1)); /* Hamming */
 		//double w = 0.42 - 0.5 * cos((2.*M_PI)*n/(order-1)) + 0.08 * cos((4.*M_PI)*n/(order-1)); /* Blackman */
-		double w = 0.35875 - 0.48829 * cos((2.*M_PI)*n/(order - 1)) + 0.14128 * cos((4.*M_PI)*n/(order - 1)) - 0.01168 * cos((6.*M_PI)*n/(order - 1)); /* Blackman-Harris */
+		double w = 0.355768 - 0.487396 * cos((2.*M_PI)*n/(order - 1)) + 0.144232 * cos((4.*M_PI)*n/(order - 1)) - 0.012604 * cos((6.*M_PI)*n/(order - 1)); /* Nutall */
+		//double w = 0.35875 - 0.48829 * cos((2.*M_PI)*n/(order - 1)) + 0.14128 * cos((4.*M_PI)*n/(order - 1)) - 0.01168 * cos((6.*M_PI)*n/(order - 1)); /* Blackman-Harris */
 
 		/* apply the window */
 		c *= w;
