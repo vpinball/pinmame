@@ -1,19 +1,34 @@
 #include "driver.h"
 #include <math.h>
 
+#define DAC_SAMPLE_RATE (48000)
 
 static int channel[MAX_DAC];
 static int output[MAX_DAC];
+static int curr_output[MAX_DAC];
+static int prev_data[MAX_DAC];
+static double integrator[MAX_DAC];
 static int UnsignedVolTable[256];
 static int SignedVolTable[256];
 
 
-
 static void DAC_update(int num,INT16 *buffer,int length)
 {
-	int out = output[num];
+	int i;
+	INT32 data, slope;
 
-	while (length--) *(buffer++) = out;
+	/* zero-length? bail */
+	if (length == 0)
+		return;
+
+	data = curr_output[num];
+	slope = ((output[num] - data) << 15) / length;
+	data <<= 15;
+
+	for (i = 0; i < length; i++, data += slope)
+		*buffer++ = data >> 15;
+
+	curr_output[num] = output[num];
 }
 
 
@@ -21,7 +36,7 @@ void DAC_data_w(int num,int data)
 {
 	int out = UnsignedVolTable[data];
 
-	if (output[num] != out)
+	//if (output[num] != out)
 	{
 		/* update the output buffer before changing the registers */
 		stream_update(channel[num],0);
@@ -34,7 +49,7 @@ void DAC_signed_data_w(int num,int data)
 {
 	int out = SignedVolTable[data];
 
-	if (output[num] != out)
+	//if (output[num] != out)
 	{
 		/* update the output buffer before changing the registers */
 		stream_update(channel[num],0);
@@ -47,7 +62,7 @@ void DAC_data_16_w(int num,int data)
 {
 	int out = data >> 1;		/* range      0..32767 */
 
-	if (output[num] != out)
+	//if (output[num] != out)
 	{
 		/* update the output buffer before changing the registers */
 		stream_update(channel[num],0);
@@ -55,12 +70,34 @@ void DAC_data_16_w(int num,int data)
 	}
 }
 
+void DAC_DC_offset_correction_data_16_w(int num, int data)
+{
+	// convert from 0..65535 to -32768..32767, including DC offset correction (e.g. average = 0)
+	int out;
+
+	integrator[num] = integrator[num]*0.995 + (data - prev_data[num]); // 0.7 .. 0.995
+
+	out = (int)integrator[num];
+	if (out < -32768)
+		out = -32768;
+	else if (out > 32767)
+		out = 32767;
+
+	prev_data[num] = data;
+
+	//if (output[num] != out)
+	{
+		/* update the output buffer before changing the registers */
+		stream_update(channel[num], 0);
+		output[num] = out;
+	}
+}
 
 void DAC_signed_data_16_w(int num,int data)
 {
 	int out = data - 0x8000;	/* range -32768..32767 */
 
-	if (output[num] != out)
+	//if (output[num] != out)
 	{
 		/* update the output buffer before changing the registers */
 		stream_update(channel[num],0);
@@ -72,7 +109,6 @@ void DAC_signed_data_16_w(int num,int data)
 static void DAC_build_voltable(void)
 {
 	int i;
-
 
 	/* build volume table (linear) */
 	for (i = 0;i < 256;i++)
@@ -88,22 +124,22 @@ int DAC_sh_start(const struct MachineSound *msound)
 	int i;
 	const struct DACinterface *intf = msound->sound_interface;
 
-
 	DAC_build_voltable();
 
 	for (i = 0;i < intf->num;i++)
 	{
 		char name[40];
 
-
 		sprintf(name,"DAC #%d",i);
-		channel[i] = stream_init(name,intf->mixing_level[i],Machine->sample_rate,
-				i,DAC_update);
+		channel[i] = stream_init(name,intf->mixing_level[i],DAC_SAMPLE_RATE,i,DAC_update);
 
 		if (channel[i] == -1)
 			return 1;
 
 		output[i] = 0;
+		curr_output[i] = 0;
+		integrator[i] = 0.;
+		prev_data[i] = 0;
 	}
 
 	return 0;
