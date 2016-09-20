@@ -849,26 +849,26 @@ static WRITE_HANDLER( s80bs_ym2151_w )
 static WRITE_HANDLER( s80bs_dac_vol_w )
 {
 	GTS80BS_locals.dac_volume = data;
-	DAC_data_16_w(0, GTS80BS_locals.dac_volume * GTS80BS_locals.dac_data);
+	DAC_DC_offset_correction_data_16_w(0, (int)GTS80BS_locals.dac_volume * (int)GTS80BS_locals.dac_data);
 	//logerror("volume = %x\n",data);
 	//DAC_data_w(0,data);
 }
 static WRITE_HANDLER( s80bs_dac2_vol_w )
 {
 	GTS80BS_locals.dac2_volume = data;
-	DAC_data_16_w(1, GTS80BS_locals.dac2_volume * GTS80BS_locals.dac2_data);
+	DAC_DC_offset_correction_data_16_w(1, (int)GTS80BS_locals.dac2_volume * (int)GTS80BS_locals.dac2_data);
 }
 //DAC Handling.. Set data to send
 static WRITE_HANDLER( s80bs_dac_data_w )
 {
 	GTS80BS_locals.dac_data = data;
-	DAC_data_16_w(0, GTS80BS_locals.dac_volume * GTS80BS_locals.dac_data);
+	DAC_DC_offset_correction_data_16_w(0, (int)GTS80BS_locals.dac_volume * (int)GTS80BS_locals.dac_data);
 	//DAC_data_w(0,data);
 }
 static WRITE_HANDLER( s80bs_dac2_data_w )
 {
 	GTS80BS_locals.dac2_data = data;
-	DAC_data_16_w(1, GTS80BS_locals.dac2_volume * GTS80BS_locals.dac2_data);
+	DAC_DC_offset_correction_data_16_w(1, (int)GTS80BS_locals.dac2_volume * (int)GTS80BS_locals.dac2_data);
 }
 
 //Process command from Main CPU
@@ -1586,13 +1586,13 @@ static WRITE_HANDLER(techno_sp0250_latch) {
 static WRITE_HANDLER( techno_dac_vol_w )
 {
 	techno_locals.dac_volume = data;
-	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+	DAC_DC_offset_correction_data_16_w(0, (int)techno_locals.dac_volume * (int)techno_locals.dac_data);
 }
 //DAC Handling.. Set data to send
 static WRITE_HANDLER( techno_dac_data_w )
 {
 	techno_locals.dac_data = data;
-	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+	DAC_DC_offset_correction_data_16_w(0, (int)techno_locals.dac_volume * (int)techno_locals.dac_data);
 }
 
 //TMS7000 will use dac chip #1
