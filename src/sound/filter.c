@@ -4,6 +4,13 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define SSE_FILTER_OPT
+
+#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+ #include <xmmintrin.h>
+ #include <emmintrin.h>
+#endif
+
 static filter* filter_alloc(void) {
 	filter* f = malloc(sizeof(filter));
 	return f;
@@ -14,7 +21,7 @@ void filter_free(filter* f) {
 }
 
 void filter_state_reset(filter* f, filter_state* s) {
-	int i;
+	unsigned int i;
 	s->prev_mac = 0;
 	for(i=0;i<f->order;++i) {
 		s->xprev[i] = 0;
@@ -37,11 +44,33 @@ void filter_state_free(filter_state* s) {
 /****************************************************************************/
 /* FIR */
 
-filter_real filter_compute(filter* f, filter_state* s) {
-	unsigned order = f->order;
-	unsigned midorder = f->order / 2;
-	filter_real y = 0;
-	unsigned i,j,k;
+#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+INLINE __m128 horizontal_add(const __m128 a)
+{
+#if 0 //!! needs SSE3
+    const __m128 ftemp = _mm_hadd_ps(a, a);
+    return _mm_hadd_ps(ftemp, ftemp);
+#else    
+    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a)); //a0+a2,a1+a3
+    return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, _MM_SHUFFLE(1, 1, 1, 1))); //(a0+a2)+(a1+a3)
+#endif
+}
+#endif
+
+filter_real filter_compute(const filter* f, const filter_state* s) {
+	int order = f->order;
+	int midorder = f->order / 2;
+#ifdef FILTER_USE_INT
+	filter_real //!! long long??! -> not needed, as long as signal is balanced around 0 and/or number of coefficients low (i guess, at least for random values this works with plain int!)
+#else
+ #ifdef SSE_FILTER_OPT
+	float
+ #else
+	double
+ #endif
+#endif
+	y = 0;
+	int i,j,k;
 
 	/* i == [0] */
 	/* j == [-2*midorder] */
@@ -50,34 +79,111 @@ filter_real filter_compute(filter* f, filter_state* s) {
 	if (j == order)
 		j = 0;
 
+	const filter_real * const __restrict xcoeffs = f->xcoeffs;
+	const filter_real * const __restrict xprev = s->xprev;
+
 	/* x */
-	for(k=0;k<midorder;++k) {
-		y += f->xcoeffs[midorder-k] * (s->xprev[i] + s->xprev[j]);
-		++j;
-		if (j == order)
-			j = 0;
-		if (i == 0)
-			i = order - 1;
-		else
-			--i;
-	}
-	y += f->xcoeffs[0] * s->xprev[i];
+	k = 0;
+
+#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+        __m128 y128 = _mm_setzero_ps();
+        for (; k<midorder-3; k+=4) {
+            __m128 coeffs = _mm_loadu_ps(xcoeffs + (midorder - (k + 3)));
+
+            __m128 xprevj;
+            if (j + 3 < order)
+            {
+                xprevj = _mm_loadu_ps(xprev + j);
+                xprevj = _mm_shuffle_ps(xprevj, xprevj, _MM_SHUFFLE(0, 1, 2, 3));
+                j += 4;
+                if (j == order)
+                    j = 0;
+            }
+            else
+            {
+                xprevj.m128_f32[3] = xprev[j];
+                ++j;
+                if (j == order)
+                    j = 0;
+
+                xprevj.m128_f32[2] = xprev[j];
+                ++j;
+                if (j == order)
+                    j = 0;
+
+                xprevj.m128_f32[1] = xprev[j];
+                ++j;
+                if (j == order)
+                    j = 0;
+
+                xprevj.m128_f32[0] = xprev[j];
+                ++j;
+                if (j == order)
+                    j = 0;
+            }
+
+            __m128 xprevi;
+            if (i - 3 >= 0)
+            {
+                xprevi = _mm_loadu_ps(xprev + (i-3));
+                i -= 4;
+                if (i == -1)
+                    i = order - 1;
+            }
+            else
+            {
+                xprevi.m128_f32[3] = xprev[i];
+                if (i == 0)
+                    i = order - 1;
+                else
+                    --i;
+
+                xprevi.m128_f32[2] = xprev[i];
+                if (i == 0)
+                    i = order - 1;
+                else
+                    --i;
+
+                xprevi.m128_f32[1] = xprev[i];
+                if (i == 0)
+                    i = order - 1;
+                else
+                    --i;
+
+                xprevi.m128_f32[0] = xprev[i];
+                if (i == 0)
+                    i = order - 1;
+                else
+                    --i;
+            }
+
+            y128 = _mm_add_ps(y128,_mm_mul_ps(coeffs,_mm_add_ps(xprevi, xprevj)));
+        }
+#endif
+
+        for (; k < midorder; ++k) {
+            y += xcoeffs[midorder - k] * (xprev[i] + xprev[j]);
+
+            ++j;
+            if (j == order)
+                j = 0;
+            if (i == 0)
+                i = order - 1;
+            else
+                --i;
+        }
+
+        y += 
+#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+			_mm_cvtss_f32(horizontal_add(y128)) +
+#endif
+			xcoeffs[0] * xprev[i];
 
 #ifdef FILTER_USE_INT
 	return y >> FILTER_INT_FRACT;
 #else
-	return y;
+	return (filter_real)y;
 #endif
-}
-
-INT16 filter_compute_clamp16(filter* f, filter_state* s) {
-	filter_real tmp = filter_compute(f, s);
-	if (tmp < -32768)
-		return -32768;
-	else if (tmp > 32767)
-		return 32767;
-	else
-		return (INT16)tmp;
 }
 
 filter* filter_lp_fir_alloc(double freq, int order) {
@@ -85,9 +191,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	unsigned midorder = (order - 1) / 2;
 	unsigned i;
 	double gain;
-#ifdef FILTER_USE_INT
 	double xcoeffs[(FILTER_ORDER_MAX+1)/2];
-#endif
 
 	assert( order <= FILTER_ORDER_MAX );
 	assert( order % 2 == 1 );
@@ -95,11 +199,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 
 	/* Compute the antitrasform of the perfect low pass filter */
 	gain = 2.*freq;
-#ifdef FILTER_USE_INT
 	xcoeffs[0] = gain;
-#else
-	f->xcoeffs[0] = (filter_real)gain;
-#endif
 
 	freq *= 2.*M_PI;
 
@@ -125,11 +225,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 		gain += 2.*c;
 
 		/* insert the coeff */
-#ifdef FILTER_USE_INT
 		xcoeffs[i] = c;
-#else
-		f->xcoeffs[i] = (filter_real)c;
-#endif
 	}
 
 	/* adjust the gain to be exact 1.0 */
@@ -137,12 +233,16 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 #ifdef FILTER_USE_INT
 		f->xcoeffs[i] = (filter_real)((xcoeffs[i] / gain) * (1 << FILTER_INT_FRACT));
 #else
-		f->xcoeffs[i] = (filter_real)(f->xcoeffs[i] / gain);
+		f->xcoeffs[i] = (filter_real)(xcoeffs[i] / gain);
 #endif
 
 	/* decrease the order if the last coeffs are 0 */
 	i = midorder;
+#ifdef FILTER_USE_INT
 	while (i > 0 && f->xcoeffs[i] == 0)
+#else
+	while (i > 0 && (int)(fabs(f->xcoeffs[i])*32767) == 0) // cutoff low coefficients similar to integer case
+#endif
 		--i;
 
 	f->order = i * 2 + 1;
@@ -158,7 +258,7 @@ void filter2_setup(int type, double fc, double d, double gain,
 	double w_squared;
 	double den;	/* temp variable */
 	double two_over_T = 2*sample_rate;
-	double two_over_T_squared = (long long)(2*sample_rate) * (long long)(2*sample_rate);
+	double two_over_T_squared = (double)((long long)(2*sample_rate) * (long long)(2*sample_rate));
 
 	/* calculate digital filter coefficents */
 	/*w = (2.0*M_PI)*fc; no pre-warping */
