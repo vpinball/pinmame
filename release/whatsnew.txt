@@ -2,6 +2,7 @@ Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***
+Improve precision/performance of general sound filtering
 Improve sound pitch for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
 Further improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
 Further improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)

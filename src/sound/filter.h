@@ -7,16 +7,16 @@
 #include "osd_cpu.h"
 
 /* Max filter order */
-#define FILTER_ORDER_MAX 51
+#define FILTER_ORDER_MAX 501
 
 /* Define to use integer calculation */
-#define FILTER_USE_INT
+//#define FILTER_USE_INT
 
 #ifdef FILTER_USE_INT
 typedef int filter_real;
 #define FILTER_INT_FRACT 15 /* fractional bits */
 #else
-typedef double filter_real;
+typedef float filter_real;
 #endif
 
 typedef struct filter_struct {
@@ -43,7 +43,7 @@ void filter_state_free(filter_state* s);
 void filter_state_reset(filter* f, filter_state* s);
 
 /* Insert a value in the filter state */
-INLINE void filter_insert(filter* f, filter_state* s, filter_real x) {
+INLINE void filter_insert(const filter* f, filter_state* s, const filter_real x) {
 	/* next state */
 	++s->prev_mac;
 	if (s->prev_mac >= f->order)
@@ -54,8 +54,17 @@ INLINE void filter_insert(filter* f, filter_state* s, filter_real x) {
 }
 
 /* Compute the filter output */
-filter_real filter_compute(filter* f, filter_state* s);
-INT16       filter_compute_clamp16(filter* f, filter_state* s);
+filter_real filter_compute(const filter* f, const filter_state* s);
+
+INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
+	filter_real tmp = filter_compute(f, s);
+	if (tmp < (filter_real)-32768)
+		return -32768;
+	else if (tmp > (filter_real)32767)
+		return 32767;
+	else
+		return (INT16)tmp;
+}
 
 /* Filter types */
 #define FILTER_LOWPASS		0
