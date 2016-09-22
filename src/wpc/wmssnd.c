@@ -1355,11 +1355,11 @@ UINT32 dcs_speedup(UINT32 pc) {
           INT32 tmp, mr;
 			/* 2B6E           MR = MX0 * MY0 (SS), MX1 = DM(I1,M1) */
           mx1 = *i1++;
-          tmp = ((mx0 * my0)<<1);
+          tmp = (((INT32)mx0 * my0)<<1);
           mr = tmp;
 			/* 2B6F           MR = MR - MX1 * MY1 (RND), AY0 = DM(I0,M1) */
           ay0 = *i0++;
-          tmp = ((mx1 * my1)<<1);
+          tmp = (((INT32)mx1 * my1)<<1);
           mr = (mr - tmp + 0x8000) & (((tmp & 0xffff) == 0x8000) ? 0xfffeffff : 0xffffffff);
 			/* 2B70           MR = MX1 * MY0 (SS), AX0 = MR1 */
           ax0 = mr>>16;
@@ -1367,7 +1367,7 @@ UINT32 dcs_speedup(UINT32 pc) {
           mr = tmp;
 			/* 2B71           MR = MR + MX0 * MY1 (RND), AY1 = DM(I0,M0) */
           ay1 = *i0--; /* M0 = -1 */
-          tmp = ((mx0 * my1)<<1);
+          tmp = (((INT32)mx0 * my1)<<1);
           mr = (mr + tmp + 0x8000) & (((tmp & 0xffff) == 0x8000) ? 0xfffeffff : 0xffffffff);
 			/* 2B72           AR = AY0 - AX0, MX0 = DM(I1,M1) */
           mx0 = *i1++;
@@ -1410,7 +1410,7 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B82     I0 = $2000 >>> (3800) <<< */
     i0 = &ram2source[0x0000];
 			/* 2B84     MY0 = DM($15FD) (390e) */
-    my0 = volume;
+    my0 = min(volume,0x8000); // be paranoid about the volume, see code below
 			/* 2B83     CNTR = $0100 */
 			/* 2B85     DO $2B89 UNTIL CE */
     /* M0 = 0, M1 = 1 */
@@ -1420,13 +1420,13 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B86       MX0 = DM(I0,M0) */
       mx0 = *i0;
 			/* 2B87       MR = MX0 * MY0 (SU) */
-      mr = (mx0 * my0)<<1;
+      mr = ((INT32)mx0 * my0); // <<1; // see shift below
 			/* 2B88       IF MV SAT MR */
       /* This instruction limits MR to 32 bits */
       /* In reality the volume will never be higher than 0x8000 so */
       /* this is not needed */
 			/* 2B89       DM(I0,M1) = MR1 */
-      *i0++ = mr>>16;
+      *i0++ = mr>>15; // >>16; // see above
     }
   }
   activecpu_set_reg(ADSP2100_PC, pc + 0x2b89 - 0x2b44);
@@ -2277,7 +2277,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         i4 = &ram[0x3801];
 
         /* 0135   MY0 = WORD PTR [$3aa] - current volume level */
-        my0 = volume;
+        my0 = min(volume, 0x8000); // be paranoid about the volume, see code below
 
         /* 0136   MX0 = DM(reverse i1, m2) */
         mx0 = ram[reverse_bits(i1)];
@@ -2288,13 +2288,13 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         for (ii = 0 ; ii < 0x100 ; ii++)
         {
             /* 0138   MR = (MX0 * MY0) << 1, MX0 = DM(reverse i1,m2) */
-            mr = ((INT32)mx0 * my0) << 1;
+            mr = ((INT32)mx0 * my0); // << 1; // see shift below
             mx0 = ram[reverse_bits(i1)];
             i1 += 0x20;
 
-            /* 0139  SATURATE MR (effectively NOP) */
+            /* 0139  SATURATE MR (effectively NOP, as volume always <= 0x8000) */
             /* 013A  DM(I4,M6) = MR1 */
-            *i4 = mr >> 16;
+            *i4 = mr >> 15; // >> 16; // see above
             i4 += 2;
         }
 	}

@@ -120,7 +120,7 @@ static unsigned samples_this_frame;
 
 /* Window size of the FIR filter in samples (must be odd) */
 /* Greater values are more precise, lesser values are faster. */
-#define FILTER_WIDTH 51
+#define FILTER_WIDTH FILTER_ORDER_MAX
 
 /* The number of samples that need to be played to flush the filter state */
 /* For the FIR filters it's equal to the filter width */
