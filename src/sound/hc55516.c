@@ -130,7 +130,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 
 		if (freq_scale < 0.45) // assume that high clock rates/most modern machines (that would end up at ~12000Hz filtering, see below) do not need to be filtered at all (improves clarity at the price of some noise)
 		{
-			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, 51); // magic, majority of modern machines up to TZ = ~12000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
+			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, FILTER_ORDER_MAX); // magic, majority of modern machines up to TZ = ~12000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
 			chip->filter_state = filter_state_alloc(); //!! leaks
 			filter_state_reset(chip->filter_f, chip->filter_state);
 		}
@@ -144,8 +144,8 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	if (length > SAMPLE_RATE/2048  //!! magic // PINMAME: be less conservative/more precise
 		&& chip->last_sound != 0)  // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
 	{
-		double tmp = chip->curr_value;
-		for (i = 0; i < length; i++, tmp *= 0.95)
+		float tmp = chip->curr_value;
+		for (i = 0; i < length; i++, tmp *= 0.95f)
 			*buffer++ = tmp;
 
 		chip->next_value = tmp; // update next_value with the faded value
