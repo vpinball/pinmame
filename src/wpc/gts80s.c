@@ -75,7 +75,7 @@ static WRITE_HANDLER(gts80s_riot6530_0a_w) {
 		return;
 
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = timer_get_time();
-	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = ((data<<7)-0x4000)*2;
+	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (((INT16)data<<7)-0x4000)*2;
 }
 
 static WRITE_HANDLER(gts80s_riot6530_0b_w) {
@@ -471,11 +471,11 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length) // Mars - God of
 	{
 		if (GTS80SS_locals.last_sound != 0) // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
 		{
-			double tmp = GTS80SS_locals.curr_value;
-			for (i = 0; i < length; i++, tmp *= 0.95)
-				*buffer++ = tmp;
+			float tmp = GTS80SS_locals.curr_value;
+			for (i = 0; i < length; i++, tmp *= 0.95f)
+				*buffer++ = (INT16)tmp;
 
-			GTS80SS_locals.next_value = tmp; // update next_value with the faded value
+			GTS80SS_locals.next_value = (INT16)tmp; // update next_value with the faded value
 		}
 		else // clock did update next_value just now, so we now need to fade/lerp from silence to next_value
 		{

@@ -77,7 +77,7 @@ void start_samples(void)
 
 	iBuffer = 1-iBuffer;
 	for (i=0; i<0x20; i++)
-		samples[iBuffer][i] = (((*adr++)<<4)-0x80) * hnks_locals.volume; 
+		samples[iBuffer][i] = (INT8)((((*adr++)<<4)-0x80) * hnks_locals.volume);
 
 	// looks strange? (cond?32:1), thats ok!
 	mixer_play_sample(

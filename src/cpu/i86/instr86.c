@@ -2881,7 +2881,7 @@ static void PREFIX86(_f6pre)(void)
 				}
 				else
 				{
-					I.regs.b[AL] = result;
+					I.regs.b[AL] = (UINT8)result;
 					I.regs.b[AH] = tmp2;
 				}
 			}
