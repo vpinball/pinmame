@@ -6,7 +6,7 @@
 
 static struct {
   UINT8  lastLampMatrix[CORE_MAXLAMPCOL];
-  UINT32 lastRGBLamps[CORE_MAXRGBLAMPS];
+  UINT8 lastRGBLamps[CORE_MAXRGBLAMPS];
   UINT64 lastSol;
   UINT32 solMask[2];
   int    lastGI[CORE_MAXGI];
@@ -39,7 +39,7 @@ int vp_getLamp(int lampNo) {
 /-------------------------------------*/
 int vp_getChangedLamps(vp_tChgLamps chgStat) {
   UINT8 lampMatrix[CORE_MAXLAMPCOL];
-  UINT32 RGBlamps[CORE_MAXRGBLAMPS];
+  UINT8 RGBlamps[CORE_MAXRGBLAMPS];
   int idx = 0;
   int ii;
 
@@ -69,8 +69,11 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
   for (ii = 0; ii < CORE_MAXRGBLAMPS; ii++) {
 	  int chgLamp = RGBlamps[ii] ^ locals.lastRGBLamps[ii];
 	  if (chgLamp) {
-		  chgStat[idx].lampNo = 0; //!!
-		  chgStat[idx].currStat = RGBlamps[ii]; //!! remap?
+		  // With this mapping 1-80 are "legacy" 
+		  // 8 bit lamps, and 81+ are modern intensity-level
+		  // RGB capable LEDs.  
+		  chgStat[idx].lampNo = ii+81;  
+		  chgStat[idx].currStat = RGBlamps[ii]; 
 		  idx += 1;
 	  }
   }
