@@ -99,7 +99,7 @@ static void HandleSMulLong( data32_t insn);
 INLINE void HandleBranch( data32_t insn);		//pretty short, so inline should be ok
 static void HandleMemSingle( data32_t insn);
 static void HandleMemBlock( data32_t insn);
-static data32_t decodeShift( data32_t insn, data32_t *pCarry);
+INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry);
 INLINE void SwitchMode( int );
 static void arm7_check_irq_state(void);
 
@@ -313,7 +313,7 @@ INLINE void SwitchMode (int cpsr_mode_val)
    ROR >32   = Same result as ROR n-32 until amount in range of 1-32 then follow rules
 */
 
-static data32_t decodeShift( data32_t insn, data32_t *pCarry)
+INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 {
 	data32_t k	= (insn & INSN_OP2_SHIFT) >> INSN_OP2_SHIFT_SHIFT;	//Bits 11-7
 	data32_t rm	= GET_REGISTER( insn & INSN_OP2_RM );
