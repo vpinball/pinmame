@@ -454,6 +454,18 @@ src_simple (SRC_DATA *src_data, int converter, int channels)
 } /* src_simple */
 
 void
+src_char_to_float_array(const char *in, float *out, int len)
+{
+	while (len)
+	{
+		len--;
+		out[len] = (float)(in[len] / (1.0 * 0x80));
+	};
+
+	return;
+} /* src_char_to_float_array */
+
+void
 src_short_to_float_array (const short *in, float *out, int len)
 {
 	while (len)
