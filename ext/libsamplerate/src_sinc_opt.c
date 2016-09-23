@@ -284,7 +284,17 @@ static inline __m128 horizontal_add(const __m128 a)
 
 static inline double
 calc_output_single (SINC_FILTER *filter, const increment_t increment, const increment_t start_filter_index)
-{	increment_t	filter_index, max_filter_index ;
+{
+#ifdef RESAMPLER_SSE_OPT
+	__m128i increment4;
+	__m128 left128,right128;
+	float left,right;
+#else
+	double left;
+#endif
+	const coeff_t * const __restrict coeffs = filter->coeffs;
+	const float * const __restrict buffer = filter->buffer;
+	increment_t	filter_index, max_filter_index ;
 	int			data_index, coeff_count;
 
 	/* Convert input parameters into fixed point. */
@@ -296,29 +306,27 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 	filter_index = filter_index + coeff_count * increment ;
 	data_index = filter->b_current - coeff_count ;
 
-	const coeff_t * const __restrict coeffs = filter->coeffs;
-	const float * const __restrict buffer = filter->buffer;
-
 #ifdef RESAMPLER_SSE_OPT
-	__m128i increment4 = _mm_set_epi32(increment * 3, increment * 2, increment, 0);
+	increment4 = _mm_set_epi32(increment * 3, increment * 2, increment, 0);
 
-	__m128 left128 = _mm_setzero_ps();
+	left128 = _mm_setzero_ps();
 	while(filter_index >= increment * 3)
 	{
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx,_mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
+		__m128 icoeff,icoeffp1,icoeffd,fraction;
 
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
 
-		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
 		icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(coeffs + indx.m128i_i32[0])), (__m64*)(coeffs + indx.m128i_i32[1]));
 		icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(coeffs + indx.m128i_i32[2])), (__m64*)(coeffs + indx.m128i_i32[3]));
 
-		__m128 icoeff   = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0));
-		__m128 icoeffp1 = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1));
+		icoeff   = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0));
+		icoeffp1 = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1));
 
-		__m128 icoeffd = _mm_sub_ps(icoeffp1, icoeff);
-		__m128 fraction = _mm_mul_ps(_mm_cvtepi32_ps(fractioni), _mm_set1_ps((float)INV_FP_ONE));
+		icoeffd = _mm_sub_ps(icoeffp1, icoeff);
+		fraction = _mm_mul_ps(_mm_cvtepi32_ps(fractioni), _mm_set1_ps((float)INV_FP_ONE));
 		icoeff = _mm_add_ps(icoeff,_mm_mul_ps(icoeffd, fraction));
 
 		left128 = _mm_add_ps(left128,_mm_mul_ps(icoeff, _mm_loadu_ps(buffer + data_index)));
@@ -326,10 +334,8 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 		data_index += 4;
 		filter_index -= increment * 4;
 	}
-	float left = 0.;
-#else
-	double left = 0.;
 #endif
+	left = 0.;
 
 	while (filter_index >= MAKE_INCREMENT_T(0))
 	{
@@ -351,35 +357,34 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 	data_index = filter->b_current + 1 + coeff_count ;
 
 #ifdef RESAMPLER_SSE_OPT
-	__m128 right128 = _mm_setzero_ps();
+	right128 = _mm_setzero_ps();
 	while (filter_index > increment * 3)
 	{
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx, _mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
+		__m128 icoeff,icoeffp1,icoeffd,fraction,data;
 
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
 
-		__m128 icoeff0, icoeff2;
 		icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(coeffs + indx.m128i_i32[0])), (__m64*)(coeffs + indx.m128i_i32[1]));
 		icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(coeffs + indx.m128i_i32[2])), (__m64*)(coeffs + indx.m128i_i32[3]));
 
-		__m128 icoeff = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0));
-		__m128 icoeffp1 = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1));
+		icoeff = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0));
+		icoeffp1 = _mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1));
 
-		__m128 icoeffd = _mm_sub_ps(icoeffp1, icoeff);
-		__m128 fraction = _mm_mul_ps(_mm_cvtepi32_ps(fractioni), _mm_set1_ps((float)INV_FP_ONE));
+		icoeffd = _mm_sub_ps(icoeffp1, icoeff);
+		fraction = _mm_mul_ps(_mm_cvtepi32_ps(fractioni), _mm_set1_ps((float)INV_FP_ONE));
 		icoeff = _mm_add_ps(icoeff, _mm_mul_ps(icoeffd, fraction));
 
-		__m128 data = _mm_loadu_ps(buffer + (data_index - 3));
+		data = _mm_loadu_ps(buffer + (data_index - 3));
 		right128 = _mm_add_ps(right128,_mm_mul_ps(icoeff, _mm_shuffle_ps(data,data,_MM_SHUFFLE(0,1,2,3))));
 
 		data_index -= 4;
 		filter_index -= increment * 4;
 	}
-	float right = 0.;
-#else
-	double right = 0.;
 #endif
+	right = 0.;
 
 	while (filter_index > MAKE_INCREMENT_T(0))
 	{
