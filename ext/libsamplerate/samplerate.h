@@ -168,7 +168,8 @@ enum
 ** back again.
 */
 
-void src_short_to_float_array (const short *in, float *out, int len) ;
+void src_char_to_float_array(const char *in, float *out, int len);
+void src_short_to_float_array(const short *in, float *out, int len);
 void src_float_to_short_array (const float *in, short *out, int len) ;
 
 void src_int_to_float_array (const int *in, float *out, int len) ;
