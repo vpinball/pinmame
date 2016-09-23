@@ -323,7 +323,6 @@ static INT16 read_sample(struct M114SChannel *channel, UINT32 sample_rate, UINT3
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 {
 	int t1start, t2start, lent1,lent2, rep1, rep2, i,j,intp;
-	INT16 d;
 	INT8 *rom = &chip->region_base[0];
 	t1start = channel->table1.start_address;
 	t2start = channel->table2.start_address;
@@ -352,7 +351,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 
 	//Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
-		d = (INT16)(tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16);
+		double d = (tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16);
 
 		//Apply volume - If envelope - use volume step to calculate sample volume, otherwise, apply directly
 #if USE_VOL_ENVELOPE
@@ -360,10 +359,8 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 			channel->sample_vol+= channel->vol_step;
 		}
 #endif
-		d *= channel->sample_vol;
-
 		//write to output buffer
-		channel->output[i] = d;
+		channel->output[i] = (INT16)(d * channel->sample_vol);
 	}
 }
 

@@ -517,7 +517,7 @@ void tms5220_reset_chip(void *chip)
 
   /* initialize the sample generators */
   tms->inhibit = 1;
-  tms->subcycle = tms->tms5220c_rate = tms->pitch_count = tms->PC = 0;
+  tms->pitch_count = tms->subcycle = tms->tms5220c_rate = tms->PC = 0;
   tms->subc_reload = FORCE_SUBC_RELOAD;
   tms->OLDE = tms->OLDP = 1;
   tms->interp_period = reload_table[tms->tms5220c_rate&0x3];

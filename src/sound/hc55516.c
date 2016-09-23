@@ -146,9 +146,9 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	{
 		float tmp = chip->curr_value;
 		for (i = 0; i < length; i++, tmp *= 0.95f)
-			*buffer++ = tmp;
+			*buffer++ = (INT16)tmp;
 
-		chip->next_value = tmp; // update next_value with the faded value
+		chip->next_value = (INT16)tmp; // update next_value with the faded value
 
 		chip->integrator = 0.; // PINMAME: Reset all chip state
 		chip->filter = 0.;
@@ -168,7 +168,12 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		if (chip->filter_f)
 			for (i = 0; i < length; i++, data += slope)
 			{
-				filter_insert(chip->filter_f, chip->filter_state, data >> 15);
+				filter_insert(chip->filter_f, chip->filter_state,
+#ifdef FILTER_USE_INT
+					data >> 15);
+#else
+					(filter_real)data * (filter_real)(1.0/32768.0));
+#endif
 				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 			}
 		else

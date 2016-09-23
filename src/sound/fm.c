@@ -1356,7 +1356,7 @@ static void init_timetables( FM_ST *ST , const UINT8 *dttable )
 	{
 		for (i = 0;i <= 31;i++)
 		{
-			rate = ((int)dttable[d*32 + i]) * (1<<(FREQ_SH+SIN_BITS-20)) * ST->freqbase;
+			rate = (INT32)( ((int)dttable[d*32 + i]) * (1<<(FREQ_SH+SIN_BITS-20)) * ST->freqbase );
 			ST->dt_tab[d][i]   = rate;
 			ST->dt_tab[d+4][i] = -ST->dt_tab[d][i];
 #if 0
@@ -1663,7 +1663,7 @@ static void OPNSetPres(FM_OPN *OPN , int pres , int TimerPres, int SSGpres)
 	OPN->ST.freqbase = 1.0;
 #endif
 
-	OPN->eg_timer_add  = (1<<EG_SH)  *  OPN->ST.freqbase;
+	OPN->eg_timer_add = (UINT32)( (1<<EG_SH) *  OPN->ST.freqbase );
 	OPN->eg_timer_overflow = ( 3 ) * (1<<EG_SH);
 
 
@@ -1698,7 +1698,7 @@ static void OPNSetPres(FM_OPN *OPN , int pres , int TimerPres, int SSGpres)
 	{
 		/* Amplitude modulation: 64 output levels (triangle waveform); 1 level lasts for one of "lfo_samples_per_step" samples */
 		/* Phase modulation: one entry from lfo_pm_output lasts for one of 4 * "lfo_samples_per_step" samples  */
-		OPN->lfo_freq[i] = (1.0 / lfo_samples_per_step[i]) * (1<<LFO_SH) * OPN->ST.freqbase;
+		OPN->lfo_freq[i] = (UINT32)( (1.0 / lfo_samples_per_step[i]) * (1<<LFO_SH) * OPN->ST.freqbase );
 #if 0
 		logerror("FM.C: lfo_freq[%i] = %08x (dec=%8i)\n",
 				 i, OPN->lfo_freq[i],OPN->lfo_freq[i] );

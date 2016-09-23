@@ -31,7 +31,7 @@ static struct {
 /* 1978 version */
 
 static void mp_adjust_volume(void) {
-  static int volume;
+  static double volume;
   double expdecay = 0;
 
   if (locals.decay & 0x8) {
@@ -47,7 +47,7 @@ static void mp_adjust_volume(void) {
     }
     if (locals.vol_on) {
       if (volume > locals.vol)
-        volume = (int)((volume - locals.vol) * expdecay) + locals.vol;
+        volume = ((volume - locals.vol) * expdecay) + locals.vol;
       else
         volume = locals.vol;
     } else {
@@ -60,7 +60,7 @@ static void mp_adjust_volume(void) {
     else
       volume = 0;
   }
-  mixer_set_volume(0, volume);
+  mixer_set_volume(0, (int)volume);
 }
 
 static WRITE_HANDLER(mp_pia0a_w) {

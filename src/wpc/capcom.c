@@ -103,7 +103,7 @@ static struct {
   int blanking;
   int swCol;
   int read_u16;
-  UINT8 lastb;
+  UINT16 lastb;
   int vset;
   int line_v;
   int greset;
