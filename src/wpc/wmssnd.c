@@ -11,6 +11,7 @@
 #include "s11.h"
 #include "wpc.h"
 #include "wmssnd.h"
+#include "sound/filter.h"
 
 //This awful hack is here to prevent the bug where the speech pitch is too low on pre-dcs games when
 //the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
@@ -766,6 +767,8 @@ static struct {
  UINT32  sOut, sIn;
  INT16  *buffer;
  int     stream;
+ filter *filter_f;
+ filter_state *filter_state;
 } dcs_dac;
 
 static struct {
@@ -920,12 +923,19 @@ static int dcs_custStart(const struct MachineSound *msound) {
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
 
+  dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
+  dcs_dac.filter_state = filter_state_alloc();
+  filter_state_reset(dcs_dac.filter_f, dcs_dac.filter_state);
+
   return (dcs_dac.buffer == 0);
 }
 
 static void dcs_custStop(void) {
   if (dcs_dac.buffer)
-    { free(dcs_dac.buffer); dcs_dac.buffer = NULL; }
+    { free(dcs_dac.buffer); dcs_dac.buffer = NULL;
+      filter_state_free(dcs_dac.filter_state);
+      filter_free(dcs_dac.filter_f);
+    }
 }
 
 static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
@@ -936,12 +946,16 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++) {
       if (dcs_dac.sOut == dcs_dac.sIn) break;
-      buffer[ii] = dcs_dac.buffer[dcs_dac.sOut];
+      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[dcs_dac.sOut]);
+      buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
       dcs_dac.sOut = (dcs_dac.sOut + 1) & DCS_BUFFER_MASK;
     }
-    /* fill the rest with the last sample */
+    /* fill the rest with the last sample (usually only 1 or 2 samples necessary) */
     for ( ; ii < length; ii++)
-      buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
+    {
+      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK]);
+      buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+    }
   }
 }
 
@@ -1034,9 +1048,8 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   stream_update(dcs_dac.stream, 0);
   if (size == 0) /* No data, stop playing */
     { dcs_dac.enabled = FALSE; return; }
-  /*-- For some reason can't the sample rate of streams be changed --*/
-  /*-- The DCS samplerate is now hardcoded to 32K. Seems to work with all games */
-  // if (!dcs_dac.enabled) stream_set_sample_frequency(dcs_dac.stream,sRate);
+  if (!dcs_dac.enabled) stream_set_sample_rate(dcs_dac.stream,sRate); // unnecessary as sample rate seems to be always 31250
+
   /*-- size is the size of the buffer not the number of samples --*/
 #if MAMEVER >= 3716
   for (idx = 0; idx < size; idx += memStep) {
