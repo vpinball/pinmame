@@ -58,12 +58,16 @@ INLINE __m128 horizontal_add(const __m128 a)
 #endif
 
 filter_real filter_compute(const filter* f, const filter_state* s) {
+	const filter_real * const __restrict xcoeffs = f->xcoeffs;
+	const filter_real * const __restrict xprev = s->xprev;
+
 	int order = f->order;
 	int midorder = f->order / 2;
 #ifdef FILTER_USE_INT
 	filter_real //!! long long??! -> not needed, as long as signal is balanced around 0 and/or number of coefficients low (i guess, at least for random values this works with plain int!)
 #else
  #ifdef SSE_FILTER_OPT
+	__m128 y128;
 	float
  #else
 	double
@@ -79,18 +83,15 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
 	if (j == order)
 		j = 0;
 
-	const filter_real * const __restrict xcoeffs = f->xcoeffs;
-	const filter_real * const __restrict xprev = s->xprev;
-
 	/* x */
 	k = 0;
 
 #if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
-        __m128 y128 = _mm_setzero_ps();
+        y128 = _mm_setzero_ps();
         for (; k<midorder-3; k+=4) {
             __m128 coeffs = _mm_loadu_ps(xcoeffs + (midorder - (k + 3)));
 
-            __m128 xprevj;
+            __m128 xprevj,xprevi;
             if (j + 3 < order)
             {
                 xprevj = _mm_loadu_ps(xprev + j);
@@ -122,7 +123,6 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
                     j = 0;
             }
 
-            __m128 xprevi;
             if (i - 3 >= 0)
             {
                 xprevi = _mm_loadu_ps(xprev + (i-3));

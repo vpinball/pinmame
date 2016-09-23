@@ -262,16 +262,16 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	INT16* src = *psrc;
 
-	assert( dst_len <= ACCUMULATOR_MASK );
-
 #ifdef USE_LIBSAMPLERATE
-	assert( src_len <= ACCUMULATOR_MASK*25 ); //!! magic see in_f
-
 	SRC_DATA data;
+	long i;
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
+
+	assert( src_len <= ACCUMULATOR_MASK*25 ); //!! magic see in_f
 #endif
+	assert( dst_len <= ACCUMULATOR_MASK );
 
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
 	{
@@ -339,7 +339,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	src_process(src_state, &data);
 
-	for (unsigned int i = 0; i < data.output_frames_gen; ++i) //!! opt.?
+	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
 		double scaled_value = out_f[i] * (8.0 * 0x10000000);
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
@@ -461,16 +461,16 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	INT8* src = *psrc;
 
-	assert( dst_len <= ACCUMULATOR_MASK );
-
 #ifdef USE_LIBSAMPLERATE
-	assert(src_len <= ACCUMULATOR_MASK * 25); //!! magic see in_f
-
 	SRC_DATA data;
+	long i;
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
+
+	assert(src_len <= ACCUMULATOR_MASK * 25); //!! magic see in_f
 #endif
+	assert( dst_len <= ACCUMULATOR_MASK );
 
 	if (channel->from_frequency == channel->to_frequency)
 	{
@@ -506,7 +506,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	src_process(src_state, &data);
 
-	for (unsigned int i = 0; i < data.output_frames_gen; ++i) //!! opt.?
+	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
 		double scaled_value = out_f[i] * (8.0 * 0x10000000);
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
