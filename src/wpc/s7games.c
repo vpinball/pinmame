@@ -384,7 +384,7 @@ S7_ROMSTART8088(lsrcu,l3, "ic14-l3.716",CRC(6b0c8368) SHA1(ee98108696996d24e0d05
                           "ic26.716",   CRC(db4a09e7) SHA1(5ea454c852303e12cc606c2c1e403b72e0a99f25))
 S67S_SOUNDROMS8(          "sound12.716",CRC(1888c635) SHA1(5dcdaee437a69c6027c24310f0cd2cae4e89fa05))
 S7_ROMEND
-CORE_CLONEDEF(lsrcu,l3,l2,"Laser Cue (L-3)",1983,"Timmo (Neverending bell fix)",s7_mS7S,0)
+CORE_CLONEDEF(lsrcu,l3,l2,"Laser Cue (L-3)",2016,"Timmo (Neverending bell fix)",s7_mS7S,0)
 
 /*--------------------------------
 / Firepower II - Sys.7 (Game #521)

@@ -584,6 +584,15 @@ GTS3SOUND32512A(		"yrom1.bin",CRC(53123fd4) SHA1(77fd183a10eea2e04a07edf9da14ef7
 GTS3_ROMEND
 CORE_CLONEDEFNV(stargat4,stargate,"Stargate (rev. 4)",1995,"Gottlieb",mGTS3DMDS_4C_a, 0)
 
+INITGAME2(stargat5, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
+GTS3ROMSTART(stargat5,  "stgtcpu5.512", CRC(c0579d86) SHA1(ba7ea85ccf407ec72d19e15b34b96a7ca95bf893))
+GTS3_DMD512_ROMSTART( "dsprom3.bin",CRC(db483524) SHA1(ea14e8b04c32fc403ce2ff060caed5562104a862))
+GTS3SOUND32512A(    "yrom1.bin",CRC(53123fd4) SHA1(77fd183a10eea2e04a07edf9da14ef7aadb65f91),
+            "drom1.bin",CRC(781b2b27) SHA1(06decd22b9064ee4859618a043055e0b3e3b9e04),
+            "arom1.bin",CRC(a0f62605) SHA1(8c39452367150f66271371ab02be2f5a812cb954))
+GTS3_ROMEND
+CORE_CLONEDEFNV(stargat5,stargate,"Stargate (rev. 5)",1995,"Gottlieb",mGTS3DMDS_4C_a, 0)
+
 /*-------------------------------------------------------------------
 / Big Hurt
 /-------------------------------------------------------------------*/
