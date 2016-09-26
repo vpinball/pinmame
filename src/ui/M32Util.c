@@ -102,7 +102,8 @@ void __cdecl dprintf(const char* fmt, ...)
 
 	va_start(va, fmt);
 
-	vsnprintf(buf,sizeof(buf),fmt,va);
+	vsnprintf(buf,sizeof(buf)-1,fmt,va);
+	strcat(buf, "\n");
 
 	OutputDebugString(buf);
 
