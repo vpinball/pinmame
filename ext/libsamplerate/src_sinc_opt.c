@@ -315,6 +315,9 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx,_mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
 		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
+#ifdef _DEBUG
+		icoeff0 = icoeff2 = _mm_setzero_ps();
+#endif
 		__m128 icoeff,icoeffp1,icoeffd,fraction;
 
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
@@ -363,6 +366,9 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx, _mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
 		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
+#ifdef _DEBUG
+		icoeff0 = icoeff2 = _mm_setzero_ps();
+#endif
 		__m128 icoeff,icoeffp1,icoeffd,fraction,data;
 
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
