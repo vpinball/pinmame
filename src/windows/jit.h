@@ -395,6 +395,7 @@ struct jit_ctl
 	// for this CPU.  The JIT uses this internally to manage the memory
 	// containing the translated code.
 	struct jit_page *pages;
+	data32_t mem_count;
 
 	// Read and write callbacks.  The generated code calls these
 	// functions to access memory.
@@ -729,6 +730,11 @@ byte *jit_reserve_native(struct jit_ctl *jit, int len, /*OUT*/ struct jit_page *
  *   page.  Returns the address of the stored code.
  */
 byte *jit_store_native(struct jit_ctl *jit, const byte *code, int len);
+
+/* Same as jit_store_native but does not try to find a new location for code. Needed for blocks of code with relative jumps */
+
+void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, const byte *dst);
+
 
 /*
  *   End a store-native operation.  Each call to jit_reserve_native() should

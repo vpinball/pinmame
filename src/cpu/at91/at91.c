@@ -46,6 +46,7 @@
 #include "../arm7/arm7core.h"
 #include "state.h"
 #include "mamedbg.h"
+#include <assert.h>
 
 //needed to capture this cpu's operating frequency
 extern int activecpu;
@@ -174,11 +175,13 @@ typedef struct
 	ARM7CORE_REGS								//these must be included in your cpu specific register implementation
 	int prev_cycles;							//# of previous cycles used since last opcode was performed.
 	int tot_prev_cycles;						//# of total previous cycles
-	int remap;									//flag if remap of ram occurred
-	int aic_vectors[32];						//holds vector address for each interrupt 0-31
+	int remap;	//flag if remap of ram occurred
+	data32_t aic_vectors[32];						//holds vector address for each interrupt 0-31
+	data32_t aic_smr[32];						//Holds IRQ priorities
 	data32_t aic_irqmask;						//holds the irq enabled mask for each interrupt 0-31 (0 = disabled, 1 = enabled) - 1 bit per interrupt.
 	data32_t aic_irqstatus;						//holds the status of the current interrupt # - 0-31 are valid #
 	data32_t aic_irqpending;					//holds the status of any pending interupts
+	data32_t aic_spurious;						//Spurious interrupt vector
 	data32_t pio_enabled_status;				//holds status of each pio pin, 1 bit per pin. (0 = peripheral control, 1 = PIO control)
 	data32_t pio_output_status;					//holds output status of each pio pin, 1 bit per pin. (0 = Input Pin, 1 = Output Pin)
 	data32_t pio_output_data_status;			//holds output data status of each pio pin, 1 bit per pin. (0 = Pin Value is programmed as 0, 1 = Pin is programmed 1) - Only if pin is under PIO control and set as an output pin.
@@ -205,6 +208,7 @@ typedef struct
 static AT91_REGS at91;
 static AT91_REGS_RS at91rs;
 int at91_ICount;
+int at91_priority_map[31];
 
 #define AT91_RECEIVE_BUFFER_SIZE 512
 
@@ -361,6 +365,23 @@ char *GetUARTOffset(int addr)
 	else
 		sprintf(temp,"** Unknown **");
 	return temp;
+}
+
+void at91_build_priority_map()
+{
+	int i, c=0, j;
+
+	for(i=7;i>=0;i--)
+	{
+		for (j=1;j<32;j++)
+		{
+			if ((at91.aic_smr[j] & 0x07) == i)
+			{
+				at91_priority_map[c++]=j;
+			}
+		}
+	}
+	assert(c==31);
 }
 
 //Update the status of the pio pins (1 bit per pin)
@@ -1052,8 +1073,44 @@ INLINE void internal_write (int addr, data32_t data)
 			int offset2 = addr & 0x1ff;
 			switch(offset2)
 			{
-				//AIC Interrupt Vector Register - Based on current IRQ source 0-31, returns value of Source Vector
-				case 0x80:
+			case 0x00:
+				case 0x04:
+				case 0x08:
+				case 0x0c:
+				case 0x10:
+				case 0x14:
+				case 0x18:
+				case 0x1c:
+				case 0x20:
+				case 0x24:
+				case 0x28:
+				case 0x2c:
+				case 0x30:
+				case 0x34:
+				case 0x38:
+				case 0x3c:
+				case 0x40:
+				case 0x44:
+				case 0x48:
+				case 0x4c:
+				case 0x50:
+				case 0x54:
+				case 0x58:
+				case 0x5c:
+				case 0x60:
+				case 0x64:
+				case 0x68:
+				case 0x6c:
+				case 0x70:
+				case 0x74:
+				case 0x78:
+				case 0x7c:
+					at91.aic_smr[(addr-0xfffff000)/4] = data;
+					at91_build_priority_map();
+					break;
+									//AIC Interrupt Vector Register - Based on current IRQ source 0-31, returns value of Source Vector
+
+			case 0x80:
 				case 0x84:
 				case 0x88:
 				case 0x8c:
@@ -1112,6 +1169,9 @@ INLINE void internal_write (int addr, data32_t data)
 						arm7_core_set_irq_line(ARM7_IRQ_LINE, 1);
 						//arm7_core_set_irq_line(ARM7_IRQ_LINE, 0);
 					}
+					break;
+				case 0x134:
+					at91.aic_spurious = data ;
 					break;
 			}
 			if(logit) LOG(("%08x: AT91-AIC WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetAICOffset(addr),addr,data));
@@ -1179,9 +1239,12 @@ INLINE data32_t internal_read (int addr)
 
 					//Counter Value
 					case 0x10:
-						data = at91.tc_clock[timer_num].tc_counter;
+
 						#if USE_MAME_TIMERS
 						LOG(("Timer TC%d - Reading Counter Value not supported with MAME TIMERS!\n",timer_num));
+						data = at91.tc_clock[timer_num].tc_counter;// ARM7_ICOUNT;
+						#else
+						data = at91.tc_clock[timer_num].tc_counter;
 						#endif
 
 						break;
@@ -1312,16 +1375,18 @@ INLINE data32_t internal_read (int addr)
 				case 0x100:  // IVR
 					// Find the highest ranked vector that's set in irqpending
 
-					for (i = 1; i < 32; i++)
+					for (i = 0; i < 31; i++)
 					{
-						if (at91.aic_irqpending & (1 << i))
+						if (at91.aic_irqpending & (1 << at91_priority_map[i]))
 						{
-							at91.aic_irqstatus = i;
-							data = at91.aic_vectors[i];
-							at91.aic_irqpending &= ~(1 << i);
+							at91.aic_irqstatus = at91_priority_map[i];
+							data = at91.aic_vectors[at91_priority_map[i]];
+							at91.aic_irqpending &= ~(1 << at91_priority_map[i]);
 							break;
 						}
 					}
+					if (i==31) 
+						data = at91.aic_spurious;
 					break;
 
 				//FIQ - Has it's own register address
@@ -1809,7 +1874,7 @@ void at91_init(void)
 
 	//Store the cpu clock frequency (is there any easier way to get this?)
 	at91rs.cpu_freq = Machine->drv->cpu[activecpu].cpu_clock;
-
+	at91_build_priority_map();
 	return;
 }
 

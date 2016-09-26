@@ -38,6 +38,7 @@
  *
 *****************************************************************************/
 
+
 extern unsigned at91_get_reg(int regnum);
 
 /* This implementation uses an improved switch() for hopefully faster opcode fetches compared to my last version
@@ -60,6 +61,17 @@ extern unsigned at91_get_reg(int regnum);
 
 		/* load 32 bit instruction, trying the JIT first */
 		pc = R15;
+
+			// Debug test triggers
+
+			//if (pc == 0x9c60)
+			//	pc = 0x9c60;
+
+			// Helpful to backtrace a crash :)
+
+			//pc_prev2 = pc_prev1;
+			//pc_prev1 = pc;
+
 		JIT_FETCH(ARM7.jit, pc);
 		insn = cpu_readop32(pc);
 
@@ -221,6 +233,7 @@ extern unsigned at91_get_reg(int regnum);
 			case 7:
 				HandleMemSingle(insn);
 				R15 += 4;
+				ARM7_CHECKIRQ;
 				break;
 			/* Block Data Transfer/Access */
 			case 8:
@@ -256,12 +269,13 @@ extern unsigned at91_get_reg(int regnum);
 			/* Undefined */
 			default:
 				ARM7.pendingSwi = 1;
-				ARM7_CHECKIRQ;
+
 				ARM7_ICOUNT -= 1;				//undefined takes 4 cycles (page 77)
 				LOG(("%08x:  Undefined instruction\n",pc-4));
 				L_Next:
 					R15 += 4;
 					ARM7_ICOUNT +=2;	//Any unexecuted instruction only takes 1 cycle (page 193)
+					ARM7_CHECKIRQ;
 		}
 		/* All instructions remove 3 cycles.. Others taking less / more will have adjusted this # prior to here */
 		ARM7_ICOUNT -= 3;
@@ -344,6 +358,7 @@ jit_go_native:
 		ARM7_ICOUNT = tmp2;
 	}
 	
+	ARM7_CHECKIRQ;
 	// resume emulation
 	goto resume_from_jit;
 

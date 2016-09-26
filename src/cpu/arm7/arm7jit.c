@@ -262,10 +262,11 @@ static int MUL32(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 	// if the S flag is set, set the N and Z flags
 	if (insn & INSN_S)
 	{
+		// Bugfixes here -- djrobx 
 		// figure Z from the result
-		emit(CMP, EAX, 0);
+		emit(CMP, EAX, Imm, 0);
 		emit(SETZ, BL);          // EBX = xxxxxxxx xxxxxxxx xxxxxxxx 0000000Z
-		emit(SHL, BL, 7);        // EBX = xxxxxxxx xxxxxxxx xxxxxxxx Z0000000
+		emit(SHL, BL, Imm, 7);        // EBX = xxxxxxxx xxxxxxxx xxxxxxxx Z0000000
 
 		// figure N from the result
 		emit(TEST, EAX, Imm, 0x80000000);
@@ -275,7 +276,7 @@ static int MUL32(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 		// MUL always sets C to 0 and leaves V unchanged - we conveniently have
 		// 0 in the right bit for C at this point.  Mask out the bits in CPSR
 		// and OR in the new flags from EBX.
-		emit(AND, DwordPtr, RCPSR, 0x1FFFFFFF);
+		emit(AND, DwordPtr, RCPSR, Imm, 0x1FFFFFFF);
 		emit(OR, RCPSR, EBX);
 	}
 
@@ -425,11 +426,12 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 				emit(MOV, Rn(rd+1), EAX);
 				emit(POP, EAX);
 			}
-			else if (siz == 32)
+			/*else if (siz == 32)
 			{
 				// 32-bit operand
-				emit(MOV, Rn(rd), EAX);
-			}
+				// Nothing to do, this was being generated twice.
+				// emit(MOV, Rn(rd), EAX);
+			}*/
 			else if (siz == 16)
 			{
 				// 16 bits - sign-extend or zero-extend AX to EAX 
@@ -438,7 +440,7 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 				else
 					emit(MOVZX, EAX, AX);
 			}
-			else
+			else if (siz ==8)
 			{
 				// 8 bits - sign-extend or zero-extend AL to EAX 
 				if (sx)
@@ -911,11 +913,17 @@ static void spsr_to_cpsr(void)
 	{
 		// load CPSR from SPSR
 		SET_CPSR(GET_REGISTER(SPSR));
-
 		// do the mode switch
 		SwitchMode(GET_MODE);
+		ARM7_CHECKIRQ;
 	}
 }
+
+static void check_irq_helper(void)
+{
+	ARM7_CHECKIRQ;
+}
+
 
 // Emit code for a jump to an emulator address.  We normally generate the cycle count
 // update at the end of an instruction's generated code, but we have to generate it
@@ -957,6 +965,10 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	int is_sub_op;
 	int is_test_op;
 	int need_shift_carry_out;
+//  TODO: BUGGY MOV opcode on Mtl_145h
+//	if (addr == 0x14568)
+//		addr = 0x14568;
+
 
 	// Normal data processing is 1 cycle - reduce the default 3-cycle count by 2
 	*cycles -= 2;
@@ -1153,6 +1165,8 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	case OPCODE_MOV:
 		// MOV - moves op2
 		result_reg = EAX;
+		// BUGGY OPCODE
+		return 0;
 		break;
 
 	case OPCODE_MVN:
@@ -1343,7 +1357,7 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 			gen_mem(jit, rd, ld, byt ? 8 : 32, 0, addr, is_br, EBX, 0, 0);
 			return 1;
 		}
-		else if (oty == 0 && (insn & 0xfff) == 0)
+		else if (oty == 0) //&& (insn & 0xfff) == 0)
 		{
 			// writing back a (possibly) changed value - save the index register
 			// for the write-back
@@ -1721,6 +1735,8 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	// check for loading R15
 	if (ld && (insn & 0x8000))
 	{
+		return 0;
+
 		// loading R15 costs 2 extra cycles
 		*cycles += 2;
 
@@ -1901,6 +1917,12 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 
 		// presume this instruction won't perform a branch
 		int br = 0;
+
+		/* Debugging trap
+		if (addr == 0x12790)
+		{ 
+			addr = 0x12790;
+		}*/
 
 		// if we've strayed outside the JIT-able range, stop here
 		if (addr < jit->minAddr || addr >= jit->maxAddr)

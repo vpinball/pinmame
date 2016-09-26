@@ -66,6 +66,7 @@ struct jit_ctl *_jit_create(int *cycle_counter, int rshift)
 	jit->native = 0;
 	jit->rshift = rshift;
 	jit->pages = 0;
+	jit->mem_count = 0;
 	jit->cycle_counter_ptr = cycle_counter;
 
 	// initialize the native code page list
@@ -330,6 +331,7 @@ static void delete_code_pages(struct jit_ctl *jit)
 	jit->pPending = 0;
 	jit->pWorking = 0;
 	jit->pLookup = 0;
+	jit->mem_count = 0;
 }
 
 void jit_create_map(struct jit_ctl *jit, data32_t minAddr, data32_t maxAddr)
@@ -400,6 +402,9 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr)
 
 	// if it's not in the JIT covered memory space, there's nothing to do
 	if (addr < jit->minAddr || addr >= jit->maxAddr)
+		return;
+
+	if (addr >= 0x97f0 || addr <= 0x98ff)
 		return;
 
 	// un-translate only if the existing opcode is translated
@@ -500,6 +505,22 @@ byte *jit_store_native(struct jit_ctl *jit, const byte *code, int len)
 	return dst;
 }
 
+void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int len, struct jit_page *pg, const byte *dst)
+{
+	// copy the data, if any
+	if (len != 0)
+	{
+		// store the instruction data
+		memcpy(dst, code, len);
+
+		// consume the space
+		pg->ofsFree += len;
+		
+		// flush the CPU instruction cache for the area where the new code resides
+		FlushInstructionCache(GetCurrentProcess(), dst, len);
+	}
+}
+
 static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 {
 	DWORD prvPro;
@@ -530,6 +551,7 @@ static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 	VirtualProtect(p->b, siz, BASE_CODEPAGE_MODE, &prvPro);
 
 	// return the new page pointer
+	jit->mem_count+=siz;
 	return p;
 }
 
