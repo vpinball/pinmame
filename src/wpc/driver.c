@@ -1542,8 +1542,6 @@ DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
 DRIVER(sman,261)        //S.A.M.: 05/14 Spider-Man - V2.61
 DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
 DRIVER(sman,101ve)      //S.A.M.: 06/16 Spider-Man - Vault Edition V1.01
-DRIVER(sman,261x)       //S.A.M.: ??/1? Spider-Man - V2.61x (hacked 2.60 plunger lane music)
-DRIVER(sman,262x)       //S.A.M.: ??/1? Spider-Man - V2.62x (hacked 2.60 music)
 DRIVER(wof,100)         //S.A.M.: 11/07 Wheel of Fortune - V1.0
 DRIVER(wof,200)         //S.A.M.: 11/07 Wheel of Fortune - V2.0
 DRIVER(wof,200f)        //S.A.M.: 11/07 Wheel of Fortune - V2.0 (French)
@@ -1610,7 +1608,6 @@ DRIVER(bdk,202)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.02
 DRIVER(bdk,240)         //S.A.M.: 11/09 Batman - The Dark Knight - V2.4  (scarecrow sometimes 2 balls, sometimes 3 balls)
 DRIVER(bdk,290)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
 DRIVER(bdk,294)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
-DRIVER(bdk,294e)        //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball), hacked music
 DRIVER(bdk,300)         //S.A.M.: ??/1? Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 C.S.I. - V1.00
 //DRIVER(csi,101)         //S.A.M.: 11/08 C.S.I. - V1.01
@@ -1692,7 +1689,6 @@ DRIVER(trn,170)         //S.A.M.: 11/11 TRON: Legacy - V1.7
 DRIVER(trn,174)         //S.A.M.: 02/13 TRON: Legacy - V1.74
 DRIVER(trn,174h)        //S.A.M.: 11/13 TRON: Legacy Limited Edition - V1.74
 DRIVER(trn,17402)       //S.A.M.: 02/13 TRON: Legacy - V1.7402 (New CPU)
-DRIVER(trn,1741h)       //S.A.M.: ??/1? TRON: Legacy Limited Edition - V1.741 (hacked 1.74 music)
 DRIVER(tf,088h)         //S.A.M.: ??/11 Transformers - V0.88 Limited Edition
 //DRIVER(tf,100)          //S.A.M.: 10/11 Transformers - V1.0
 DRIVER(tf,100h)         //S.A.M.: 11/11 Transformers - V1.00 Limited Edition
@@ -1808,8 +1804,6 @@ DRIVER(st,160)          //S.A.M.: 03/15 Star Trek Pro - V1.6
 DRIVER(st,160h)         //S.A.M.: 03/15 Star Trek Limited Edition - V1.6
 DRIVER(st,161)          //S.A.M.: 03/15 Star Trek Pro - V1.61
 DRIVER(st,161h)         //S.A.M.: 03/15 Star Trek Limited Edition - V1.61
-DRIVER(st,162)          // (hacked 1.61 music)
-DRIVER(st,163)          // (hacked 1.61 music)
 //DRIVER(mt,100)          //S.A.M.: 03/14 Mustang - V1.0
 //DRIVER(mt,101)          //S.A.M.: 03/14 Mustang - V1.01
 //DRIVER(mt,102)          //S.A.M.: 03/14 Mustang - V1.02
@@ -1838,7 +1832,6 @@ DRIVER(twd,111)         //S.A.M.: 10/14 Walking Dead, The - V1.11
 DRIVER(twd,111h)        //S.A.M.: 10/14 Walking Dead, The - V1.11 Limited Edition
 DRIVER(twd,119)         //S.A.M.: 11/14 Walking Dead, The - V1.19
 DRIVER(twd,119h)        //S.A.M.: 11/14 Walking Dead, The - V1.19 Limited Edition
-DRIVER(twd,1191)        //S.A.M.: 11/14 Walking Dead, The - V1.191 (hacked 1.91 music)
 DRIVER(twd,124)         //S.A.M.: 05/15 Walking Dead, The - V1.24
 DRIVER(twd,124h)        //S.A.M.: 05/15 Walking Dead, The - V1.24 Limited Edition
 DRIVER(twd,125)         //S.A.M.: 05/15 Walking Dead, The - V1.25
