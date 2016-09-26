@@ -727,6 +727,7 @@ static void arm7_check_irq_state(void)
 
 	//FIRQ
 	if (ARM7.pendingFiq && (cpsr & F_MASK)==0) {
+		ARM7.pendingFiq = 0;
 		SwitchMode(eARM7_MODE_FIQ);				/* Set FIQ mode so PC is saved to correct R14 bank */
 		SET_REGISTER( 14, pc - 4 + 4);			/* save PC to R14 */
 		SET_REGISTER( SPSR, cpsr );				/* Save current CPSR */
@@ -738,6 +739,7 @@ static void arm7_check_irq_state(void)
 
 	//IRQ
 	if (ARM7.pendingIrq && (cpsr & I_MASK)==0) {
+		ARM7.pendingIrq = 0;
 		SwitchMode(eARM7_MODE_IRQ);				/* Set IRQ mode so PC is saved to correct R14 bank */
 		SET_REGISTER( 14, pc - 4 + 4);			/* save PC to R14 */
 		SET_REGISTER( SPSR, cpsr );				/* Save current CPSR */
@@ -804,11 +806,11 @@ static void arm7_core_set_irq_line(int irqline, int state)
 	switch (irqline) {
 
 	case ARM7_IRQ_LINE: /* IRQ */
-		ARM7.pendingIrq= (state & 1);
+		ARM7.pendingIrq |= (state & 1);
 		break;
 
 	case ARM7_FIRQ_LINE: /* FIRQ */
-		ARM7.pendingFiq= (state & 1);
+		ARM7.pendingFiq |= (state & 1);
 		break;
 
 	case ARM7_ABORT_EXCEPTION:
@@ -822,8 +824,14 @@ static void arm7_core_set_irq_line(int irqline, int state)
 		ARM7.pendingUnd= (state & 1);
 		break;
 	}
+	// It would be logical to check here, but the IRQ check is a pretty unsafe 
+	// operation.  It MUST be called *AFTER* the PC has been moved forward, or 
+	// else the PC will be incremented after reading the vector, calling the wrong handler.
+	// This function is likely to be called by downstream hardware simulations, possibly in the middle of a 
+	// READ or WRITE request.  What we can do though is ensure MAME will check soon.   
 
-	ARM7_CHECKIRQ;
+	ARM7_ICOUNT = 0;
+	//ARM7_CHECKIRQ;
 }
 
 /***************************************************************************
@@ -1141,8 +1149,8 @@ static void HandleMemSingle( data32_t insn )
 			}
 		}
 	}
-
-	//	ARM7_CHECKIRQ
+	// Can't do this here, R15 gets incremented after. 
+	//ARM7_CHECKIRQ;
 
 } /* HandleMemSingle */
 
@@ -1698,7 +1706,7 @@ static void HandleALU( data32_t insn )
 				ARM7_ICOUNT -= 2;
 
 				/* IRQ masks may have changed in this instruction */
-//				ARM7_CHECKIRQ;
+				ARM7_CHECKIRQ;
 			}
 			else
 				/* S Flag is set - Write results to register & update CPSR (which was already handled using HandleALU flag macros) */
@@ -1716,7 +1724,7 @@ static void HandleALU( data32_t insn )
 			R15 = rd;
 
 			/* IRQ masks may have changed in this instruction */
-//			ARM7_CHECKIRQ;
+			ARM7_CHECKIRQ;
 		}
 		else
 		{

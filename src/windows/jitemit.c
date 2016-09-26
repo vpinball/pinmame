@@ -598,6 +598,8 @@ void jit_emit_commit(struct jit_ctl *jit)
 	byte *resp;
 	struct instr *i;
 	byte *p;
+	struct jit_page *pg;
+
 
 	// if there's no code, there's nothing to do
 	if (stktop->ihead == 0)
@@ -650,7 +652,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 	len += 1;
 
 	// Reserve the space
-	resp = jit_reserve_native(jit, reslen = len, 0);
+	resp = jit_reserve_native(jit, reslen = len, &pg);  
 
 	// Edit jumps that exceed +/- 127 bytes.  On each pass, we'll
 	// look for any two-byte jumps that are out of bounds.  For
@@ -963,14 +965,13 @@ void jit_emit_commit(struct jit_ctl *jit)
 		}
 		
 		// copy this instruction to the JIT executable code page
-		p = jit_store_native(jit, i->b, i->len);
-		ASSERT(p == i->nataddr);
+		jit_store_native_from_reserved(jit, i->b, i->len, pg, i->nataddr);
 
 		// if this is the first native instruction for this emulated opcode,
 		// set the address mapping
 		if (i->emuaddr != emuaddr) {
 			emuaddr = i->emuaddr;
-			JIT_NATIVE(jit, emuaddr) = p;
+			JIT_NATIVE(jit, emuaddr) = i->nataddr;
 		}
 	}
 
