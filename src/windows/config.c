@@ -91,7 +91,7 @@ struct rc_option pinmame_opts[] = {
 extern int frontend_help(char *gamename);
 static int config_handle_arg(char *arg);
 
-static FILE *logfile;
+static FILE *logfile = NULL;
 static int maxlogsize;
 static int curlogsize;
 static int errorlog;

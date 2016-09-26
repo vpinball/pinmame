@@ -57,7 +57,7 @@ int threadpriority = 1;
 //int synclevel = 60;
 int synclevel = 0;		//SJE: Default synclevel is 0 now.. 10/01/03
 
-static FILE *logfile;
+static FILE *logfile = NULL;
 
 static struct rc_option vpinmame_opts[] = {
 	// VPinMAME options
