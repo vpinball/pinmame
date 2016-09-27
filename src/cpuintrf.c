@@ -300,7 +300,7 @@
  *
  *************************************/
 
-struct cpuinfo
+struct cpuinfo_intf
 {
 	struct cpu_interface intf; 		/* copy of the interface data */
 	int cputype; 					/* type index of this CPU */
@@ -814,7 +814,7 @@ int activecpu;		/* index of active CPU (or -1) */
 int executingcpu;	/* index of executing CPU (or -1) */
 int totalcpu;		/* total number of CPUs */
 
-static struct cpuinfo cpu[MAX_CPU];
+static struct cpuinfo_intf cpu[MAX_CPU];
 
 static int cpu_active_context[CPU_COUNT];
 static int cpu_context_stack[4];
