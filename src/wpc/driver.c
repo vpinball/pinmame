@@ -1432,7 +1432,11 @@ DRIVER(wpt,140gf)       //S.A.M.: 01/08 World Poker Tour - V14.0 (German, French
 DRIVER(wpt,140i)        //S.A.M.: 01/08 World Poker Tour - V14.0 (Italian)
 DRIVER(wpt,140l)        //S.A.M.: 01/08 World Poker Tour - V14.0 (Spanish)
 DRIVERNV(scarn9nj)      //S.A.M.: ??/06 Simpsons Kooky Carnival (Redemption) - V0.90 New Jersey
+//DRIVERNV(scarn100)      //S.A.M.: ??/06 Simpsons Kooky Carnival (Redemption) - V1.00
+//DRIVERNV(scarn101)      //S.A.M.: 04/06 Simpsons Kooky Carnival (Redemption) - V1.01
+//DRIVERNV(scarn102)      //S.A.M.: 04/06 Simpsons Kooky Carnival (Redemption) - V1.02
 DRIVERNV(scarn103)      //S.A.M.: 04/06 Simpsons Kooky Carnival (Redemption) - V1.03
+//DRIVERNV(scarn104)      //S.A.M.: 05/06 Simpsons Kooky Carnival (Redemption) - V1.04
 DRIVERNV(scarn105)      //S.A.M.: 08/06 Simpsons Kooky Carnival (Redemption) - V1.05
 DRIVERNV(scarn200)      //S.A.M.: 02/08 Simpsons Kooky Carnival (Redemption) - V2.0
 //DRIVER(potc,103as)      //S.A.M.: 07/06 Pirates of the Caribbean - V1.03 (English, Spanish)
@@ -1602,8 +1606,8 @@ DRIVER(bdk,130)         //S.A.M.: 07/08 Batman - The Dark Knight - V1.3
 DRIVER(bdk,150)         //S.A.M.: 07/08 Batman - The Dark Knight - V1.5
 DRIVER(bdk,160)         //S.A.M.: 07/08 Batman - The Dark Knight - V1.6
 DRIVER(bdk,200)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.0
-DRIVER(bdk,201)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.01
-DRIVER(bdk,202)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.02
+DRIVER(bdk,210)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.1
+DRIVER(bdk,220)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.2
 //DRIVER(bdk,230)         //S.A.M.: 10/08 Batman - The Dark Knight - V2.3
 DRIVER(bdk,240)         //S.A.M.: 11/09 Batman - The Dark Knight - V2.4  (scarecrow sometimes 2 balls, sometimes 3 balls)
 DRIVER(bdk,290)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
@@ -1709,7 +1713,7 @@ DRIVER(tf,180)          //S.A.M.: ??/1? Transformers - V1.8
 DRIVER(tf,180h)         //S.A.M.: 03/13 Transformers - V1.8 Limited Edition
 DRIVER(acd,121)         //S.A.M.: 02/12 AC/DC Pro - V1.21
 //DRIVER(acd,121h)        //S.A.M.: 02/12 AC/DC Limited Edition - V1.21
-DRIVER(acd,125)
+DRIVER(acd,125)         //S.A.M.: 0?/12 AC/DC Pro - V1.25
 DRIVER(acd,130)         //S.A.M.: 0?/12 AC/DC Pro - V1.3
 DRIVER(acd,140)         //S.A.M.: 03/12 AC/DC Pro - V1.4
 //DRIVER(acd,140h)        //S.A.M.: 03/12 AC/DC Limited Edition - V1.4
@@ -1748,11 +1752,11 @@ DRIVER(avs,110)         //S.A.M.: 11/12 Avengers
 //DRIVER(avs,110h)        //S.A.M.: 12/12 Avengers Limited Edition - V1.1
 //DRIVER(avs,111)         //S.A.M.: 12/12 Avengers - V1.11
 //DRIVER(avs,112)         //S.A.M.: 12/12 Avengers - V1.12
-DRIVER(avs,120h)
-DRIVER(avs,140)
-DRIVER(avs,140h)
+DRIVER(avs,120h)        //S.A.M.: 12/12 Avengers Limited Edition - V1.2
+DRIVER(avs,140)         //S.A.M.: 02/13 Avengers - V1.4
+DRIVER(avs,140h)        //S.A.M.: 02/13 Avengers Limited Edition - V1.4
 DRIVER(avs,170)         //S.A.M.: 01/16 Avengers
-DRIVER(avs,170h)
+DRIVER(avs,170h)        //S.A.M.: 01/16 Avengers Limited Edition - V1.7
 //DRIVER(mtl,100)         //S.A.M.: 04/13 Metallica Pro - V1.0
 //DRIVER(mtl,102)         //S.A.M.: 05/13 Metallica Pro - V1.02
 DRIVER(mtl,103)         //S.A.M.: 05/13 Metallica Pro - V1.03
