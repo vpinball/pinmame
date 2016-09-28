@@ -720,8 +720,11 @@ void jit_emit_commit(struct jit_ctl *jit)
 				int use_proxy = 0;
 
 				// get the label address
-			    byte *lblnat = label_to_native(jit, i->lbl);
-				int lbldelta = lblnat - (i->nataddr + i->len);
+				byte *lblnat = label_to_native(jit, i->lbl);
+
+				//int lbldelta = lblnat - (i->nataddr + i->len);
+				INT64 lbldelta = (INT64)lblnat - ((INT64)i->nataddr + (INT64)i->len);
+				assert(lbldelta >= INT32_MIN && lbldelta <= INT32_MAX);
 
 				// If it's one of the special emulator handlers, it will definitely be
 				// out of range of a one-byte jump.  Further, we must use a proxy jump,
@@ -927,7 +930,9 @@ void jit_emit_commit(struct jit_ctl *jit)
 			// get the native code address of the label target, and
 			// calculate the offset from the end of this instruction
 			byte *lblnat = label_to_native(jit, i->lbl);
-			int lbldelta = lblnat - (i->nataddr + i->len);
+//			int lbldelta = lblnat - (i->nataddr + i->len);
+			INT64 lbldelta = (INT64)lblnat - ((INT64)i->nataddr + (INT64)i->len);
+			assert(lbldelta >= INT32_MIN && lbldelta <= INT32_MAX);
 
 			// There can be no unresolved labels remaining at this point.
 			// Anything that was pointing to non-translated code must have
