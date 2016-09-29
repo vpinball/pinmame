@@ -18,6 +18,8 @@
 
 #define STEP 2
 
+#define SINGLE_CHANNEL_MIXER // like on the real chip, mix all channels into one stream, undef for debugging purpose
+
 //#define VERBOSE
 
 #ifdef VERBOSE
@@ -50,6 +52,9 @@ struct AY8910
 	UINT8 Hold,Alternate,Attack,Holding;
 	INT32 RNG;
 	unsigned int VolTable[32];
+#ifdef SINGLE_CHANNEL_MIXER
+	unsigned int mix_vol[3];
+#endif
 };
 
 /* register id's */
@@ -379,24 +384,38 @@ WRITE16_HANDLER( AY8910_write_port_4_msb_w ) { if (ACCESSING_MSB) AY8910Write(4,
 
 
 
-static void AY8910Update(int chip,INT16 **buffer,int length)
+static void AY8910Update(int chip,
+#ifdef SINGLE_CHANNEL_MIXER
+                         INT16 *buffer,
+#else
+                         INT16 **buffer,
+#endif
+                         int length)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
-	INT16 *buf1,*buf2,*buf3;
 	int outn;
 
+	INT16 *buf1;
+#ifdef SINGLE_CHANNEL_MIXER
+	INT32 tmp_buf;
+	buf1 = buffer;
+#else
+	INT16 *buf2,*buf3;
 	buf1 = buffer[0];
 	buf2 = buffer[1];
 	buf3 = buffer[2];
+#endif
 
 	/* hack to prevent us from hanging when starting filtered outputs */
 	if (!PSG->ready)
 	{
 		memset(buf1, 0, length * sizeof(*buf1));
+#ifndef SINGLE_CHANNEL_MIXER
 		if (buf2)
 			memset(buf2, 0, length * sizeof(*buf2));
 		if (buf3)
 			memset(buf3, 0, length * sizeof(*buf3));
+#endif
 		return;
 	}
 
@@ -647,10 +666,14 @@ static void AY8910Update(int chip,INT16 **buffer,int length)
 			}
 		}
 
+#ifdef SINGLE_CHANNEL_MIXER
+		tmp_buf = vola * PSG->VolA * PSG->mix_vol[0]/(100*STEP) + volb * PSG->VolB * PSG->mix_vol[1]/(100*STEP) + volc * PSG->VolC * PSG->mix_vol[2]/(100*STEP);
+		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
+#else
 		*(buf1++) = (vola * PSG->VolA) / STEP;
 		*(buf2++) = (volb * PSG->VolB) / STEP;
 		*(buf3++) = (volc * PSG->VolC) / STEP;
-
+#endif
 		length--;
 	}
 }
@@ -660,9 +683,13 @@ void AY8910_set_clock(int chip, int clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
+#ifdef SINGLE_CHANNEL_MIXER
+	stream_set_sample_rate(PSG->Channel, clock/8);
+#else
 	int ch;
 	for (ch = 0; ch < 3; ch++)
 		stream_set_sample_rate(PSG->Channel + ch, clock/8);
+#endif
 }
 
 void AY8910_set_volume(int chip,int channel,int volume)
@@ -672,7 +699,11 @@ void AY8910_set_volume(int chip,int channel,int volume)
 
 	for (ch = 0; ch < 3; ch++)
 		if (channel == ch || channel == ALL_8910_CHANNELS)
+#ifdef SINGLE_CHANNEL_MIXER
+			PSG->mix_vol[ch] = volume;
+#else
 			mixer_set_volume(PSG->Channel + ch, volume);
+#endif
 }
 
 
@@ -731,11 +762,17 @@ static int AY8910_init(const char *chip_name,int chip,
 		mem_read_handler portAread,mem_read_handler portBread,
 		mem_write_handler portAwrite,mem_write_handler portBwrite)
 {
-	int i;
 	struct AY8910 *PSG = &AYPSG[chip];
+	int i;
+#ifdef SINGLE_CHANNEL_MIXER
+	char buf[40];
+	int gain = MIXER_GET_GAIN(volume);
+	int pan = MIXER_GET_PAN(volume);
+#else
 	char buf[3][40];
 	const char *name[3];
 	int vol[3];
+#endif
 
 	/* the step clock for the tone and noise generators is the chip clock    */
 	/* divided by 8; for the envelope generator of the AY-3-8910, it is half */
@@ -750,6 +787,13 @@ static int AY8910_init(const char *chip_name,int chip,
 	PSG->PortBread = portBread;
 	PSG->PortAwrite = portAwrite;
 	PSG->PortBwrite = portBwrite;
+
+#ifdef SINGLE_CHANNEL_MIXER
+	for (i = 0;i < 3;i++)
+		PSG->mix_vol[i] = MIXER_GET_LEVEL(volume);
+	sprintf(buf,"%s #%d",chip_name,chip);
+	PSG->Channel = stream_init(buf,MIXERG(100,gain,pan),sample_rate,chip,AY8910Update);
+#else
 	for (i = 0;i < 3;i++)
 	{
 		vol[i] = volume;
@@ -757,6 +801,7 @@ static int AY8910_init(const char *chip_name,int chip,
 		sprintf(buf[i],"%s #%d Ch %c",chip_name,chip,'A'+i);
 	}
 	PSG->Channel = stream_init_multi(3,name,vol,sample_rate,chip,AY8910Update);
+#endif
 
 	if (PSG->Channel == -1)
 		return 1;
