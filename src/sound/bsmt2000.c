@@ -207,6 +207,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
     /* update the sample rate */
     stream_set_sample_rate(chip->stream, chip->sample_rate);
+    stream_set_sample_rate(chip->stream+1, chip->sample_rate);
 
 	LOG(("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register));
 }
@@ -252,8 +253,8 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 		for (samp = 0; samp < length; samp++)
 		{
 			/* apply volumes and add */
-            left[samp]  = chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
-            right[samp] = chip->adpcm_current * (rvol * 2);
+			left[samp]  = chip->adpcm_current * (lvol * 2); // ADPCM voice gets added twice to ACC (2x APAC)
+			right[samp] = chip->adpcm_current * (rvol * 2);
 
 			/* update position */
 			frac++;
@@ -295,7 +296,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 					chip->adpcm_current = -32768;
 
 				/* adjust the delta multiplier */
-                chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[value+8]) >> 6;
+				chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[value+8]) >> 6;
 				if (chip->adpcm_delta_n > 2000) //!! ??
 					chip->adpcm_delta_n = 2000;
 				else if (chip->adpcm_delta_n < 1)
@@ -348,7 +349,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 	}
 
 	/* loop over normal voices (8bit, 8kHz mono samples) */
-    for (voicenum = 0; voicenum < chip->voices; voicenum++)
+	for (voicenum = 0; voicenum < chip->voices; voicenum++)
 	{
 		voice = &chip->voice[voicenum];
 
@@ -356,11 +357,11 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 		if (voice->reg[REG_BANK] < chip->total_banks)
 		{
 			INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-            UINT32 rate = voice->reg[REG_RATE];
-            INT32 rvol = voice->reg[REG_RIGHTVOL];
-            INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
-            UINT32 pos = voice->reg[REG_CURRPOS];
-            UINT32 frac = voice->fraction;
+			UINT32 rate = voice->reg[REG_RATE];
+			INT32 rvol = voice->reg[REG_RIGHTVOL];
+			INT32 lvol = chip->stereo ? voice->reg[REG_LEFTVOL] : rvol;
+			UINT32 pos = voice->reg[REG_CURRPOS];
+			UINT32 frac = voice->fraction;
 #ifdef PINMAME
 			if (chip->stereo && !chip->right_volume_set) // Monopoly and RCT feature stereo hardware, but only ever set the left volume
 				rvol = lvol;
