@@ -20,8 +20,11 @@
  *
  *   Some ideas were taken from the source from BSMT2000 & AY8910
  *
- *   Note: No support yet for the 6Mhz version of the chip
+ *   The mixer can optionally mix every channel into a separate stream for testing (undef SINGLE_CHANNEL_MIXER)
+ *
+ *   Note: No support yet for the 6Mhz version of the chip (mainly the frequency tables missing)
  **********************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -29,6 +32,7 @@
 #include "m114s.h"
 
 #define SAMPLE_RATE 48000
+#define SINGLE_CHANNEL_MIXER // like on the real chip, mix all channels into one stream, undef for debugging purpose
 
 #if 0
 #define LOG(x) printf x
@@ -352,7 +356,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 
 	//Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
-		double d = (tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16);
+		double d = (tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16); //!! increase precision?? -> not from the specs, but..
 
 		//Apply volume - If envelope - use volume step to calculate sample volume, otherwise, apply directly
 #if USE_VOL_ENVELOPE
@@ -365,80 +369,65 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	}
 }
 
-#if USE_REAL_OUTPUTS
 /**********************************************************************************************
 
      m114s_update -- update the sound chip so that it is in sync with CPU execution
 
 ***********************************************************************************************/
 //Seems this sometimes still produces some static, but I don't know why!
-static void m114s_update(int num, INT16 **buffer, int samples)
+static void m114s_update(int num,
+#ifdef SINGLE_CHANNEL_MIXER 
+	INT16 *buffer,
+#else
+	INT16 **buffer,
+#endif
+	int samples)
 {
 	struct M114SChip *chip = &m114schip[num];
-	struct M114SChannel *channel;
-	INT16 sample;
-	INT32 accum[M114S_OUTPUT_CHANNELS];
-	int c;
+
 	while (samples > 0)
 	{
+#ifdef SINGLE_CHANNEL_MIXER 
+		INT32 accum = 0;
+#else
+		INT32 accum[M114S_OUTPUT_CHANNELS];
+#endif
+		int c;
+
+#ifndef SINGLE_CHANNEL_MIXER 
 		/* clear accum */
-		for( c = 0; c < M114S_OUTPUT_CHANNELS; c++)
+		for(c = 0; c < M114S_OUTPUT_CHANNELS; c++)
 			accum[c] = 0;
+#endif
 
 		/* loop over channels */
 		for (c = 0; c < M114S_CHANNELS; c++)
 		{
-			channel = &chip->channels[c];
+			struct M114SChannel *channel = &chip->channels[c];
 			/* Grab the next sample from the table data if the channel is active */
-			if(channel->active)	{
+			if(channel->active)
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				sample = read_sample(channel, channel->table1.total_length);
 				//Mix the output of this channel to the appropriate output channel
-				accum[channel->regs.outputs] += sample;
-			}
+#ifdef SINGLE_CHANNEL_MIXER
+				accum
+#else
+				accum[channel->regs.outputs]
+#endif
+				+= read_sample(channel, channel->table1.total_length);
 		}
 
 		/* Update the buffer & Ensure we don't clip */
-		for( c = 0; c < M114S_OUTPUT_CHANNELS; c++)
-			*buffer[c]++ = (accum[c] < -16384) ? -16384 : (accum[c] > 16384) ? 16384 : accum[c];
-
-		samples--;
-	}
-}
+#ifdef SINGLE_CHANNEL_MIXER
+		accum /= M114S_OUTPUT_CHANNELS;
+		*buffer++ = (accum < -32768) ? -32768 : ((accum > 32767) ? 32767 : accum);
 #else
-/**********************************************************************************************
+		for (c = 0; c < M114S_OUTPUT_CHANNELS; c++)
+			*buffer[c]++ = (accum[c] < -32768) ? -32768 : ((accum[c] > 32767) ? 32767 : accum[c]);
+#endif
 
-     m114s_update -- update the sound chip so that it is in sync with CPU execution
-
-***********************************************************************************************/
-static void m114s_update(int num, INT16 **buffer, int samples)
-{
-	struct M114SChip *chip = &m114schip[num];
-	struct M114SChannel *channel;
-	INT16 sample;
-	int c;
-	while (samples > 0)
-	{
-		/* loop over channels - each channel write's to it's own output mixer channel  (not accurate for emulation)*/
-		for (c = 0; c < M114S_CHANNELS; c++)
-		{
-			sample = 0;
-			channel = &chip->channels[c];
-
-			/* Grab the next sample from the table data if the channel is active */
-			if(channel->active)	{
-				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				sample = read_sample(channel, channel->table1.total_length);
-				*buffer[c]++ = sample;
-			}
-			else {
-			*buffer[c]++ = 0;
-			}
-		}
 		samples--;
 	}
 }
-#endif
 
 /**********************************************************************************************
 
@@ -478,9 +467,13 @@ INLINE void init_all_channels(struct M114SChip *chip)
 int M114S_sh_start(const struct MachineSound *msound)
 {
 	const struct M114Sinterface *intf = msound->sound_interface;
+#ifdef SINGLE_CHANNEL_MIXER 
+	char stream_name[40];
+#else
 	char stream_name[M114S_OUTPUT_CHANNELS][40];
 	const char *stream_name_ptrs[M114S_OUTPUT_CHANNELS];
 	int vol[M114S_OUTPUT_CHANNELS];
+#endif
 	int i,j;
 
 	/* create the volume table */
@@ -490,13 +483,6 @@ int M114S_sh_start(const struct MachineSound *msound)
 	memset(&m114schip, 0, sizeof(m114schip));
 	for (i = 0; i < intf->num; i++)
 	{
-		/* generate the name and create the stream */
-		for(j=0; j<M114S_OUTPUT_CHANNELS; j++) {
-			sprintf(stream_name[j], "%s #%d Ch%d",sound_name(msound),i,j);
-			stream_name_ptrs[j] = stream_name[j];
-			vol[j] = 25;
-		}
-
 		/* Chip specific setup based on clock speed */
 		switch(intf->baseclock[i]) {
 			// 4 Mhz
@@ -513,8 +499,18 @@ int M114S_sh_start(const struct MachineSound *msound)
 				return 1;
 		}
 
-		/* create the stream */
+		/* generate the name and create the stream */
+#ifdef SINGLE_CHANNEL_MIXER 
+		sprintf(stream_name, "%s #%d", sound_name(msound), i);
+		m114schip[i].stream = stream_init(stream_name, 100, SAMPLE_RATE, i, m114s_update);
+#else
+		for (j = 0; j<M114S_OUTPUT_CHANNELS; j++) {
+			sprintf(stream_name[j], "%s #%d Ch%d", sound_name(msound), i, j);
+			stream_name_ptrs[j] = stream_name[j];
+			vol[j] = 100 / M114S_OUTPUT_CHANNELS;
+		}
 		m114schip[i].stream = stream_init_multi(M114S_OUTPUT_CHANNELS, stream_name_ptrs, vol, SAMPLE_RATE, i, m114s_update);
+#endif
 		if (m114schip[i].stream == -1)
 			return 1;
 
