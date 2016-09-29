@@ -346,16 +346,12 @@ MACHINE_DRIVER_END
 
 static WRITE_HANDLER(ay8910_0_porta_w)	{
   int volume = 100 - 25 * (data >> 6);
-  AY8910_set_volume(0, 0, volume);
-  AY8910_set_volume(0, 1, volume);
-  AY8910_set_volume(0, 2, volume);
+  AY8910_set_volume(0, ALL_8910_CHANNELS, volume);
   // TODO bits 1 to 6 control a slight reverb effect!?
 }
 static WRITE_HANDLER(ay8910_1_porta_w)	{
   int volume = 100 - 25 * (data >> 6);
-  AY8910_set_volume(1, 0, volume);
-  AY8910_set_volume(1, 1, volume);
-  AY8910_set_volume(1, 2, volume);
+  AY8910_set_volume(1, ALL_8910_CHANNELS, volume);
   // TODO bits 1 to 6 control a slight reverb effect!?
 }
 struct AY8910interface play4s_8910Int = {
