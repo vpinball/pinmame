@@ -28,6 +28,8 @@
 #include "driver.h"
 #include "m114s.h"
 
+#define SAMPLE_RATE 48000
+
 #if 0
 #define LOG(x) printf x
 #else
@@ -59,7 +61,6 @@
 /* struct describing a single table */
 struct M114STable
 {
-		UINT32			sample_rate;				/* Current Sample Rate to play back table */
 		UINT8			reread;						/* # of times to re-read each byte from table */
         UINT32          position;                   /* current reading position for table */
         UINT32          start_address;				/* start address (offset into ROM) for table */
@@ -98,6 +99,7 @@ struct M114SChannel
 		int				end_of_table;					/* End of Table Flag */
 		struct M114STable table1;						/* Table 1 Data */
 		struct M114STable table2;						/* Table 2 Data */
+		UINT32			incr;							/* Current Sample Rate/Step size increase to play back table */
 };
 
 /* struct describing the entire M114S chip */
@@ -286,24 +288,23 @@ static void build_vol_table(void)
 	 as necessary to match the Machine driver's output sample rate.
 
 ***********************************************************************************************/
-static INT16 read_sample(struct M114SChannel *channel, UINT32 sample_rate, UINT32 length)
+static INT16 read_sample(struct M114SChannel *channel, UINT32 length)
 {
-	if(channel->outpos < (length << FRAC_BITS))
+	UINT32 pos = channel->outpos >> FRAC_BITS;
+	if (pos < length)
 	{
-		UINT32 incr = (((unsigned long long)sample_rate) << FRAC_BITS) / Machine->sample_rate;
-		UINT32 pos = channel->outpos >> FRAC_BITS;
-		UINT32 frac = channel->outpos & FRAC_MASK;
+		INT32 frac = channel->outpos & FRAC_MASK;
 
 		// interpolate
 		INT16 val1 = channel->output[pos];
 		INT16 val2 = channel->output[MIN(pos + 1, length - 1)];
-		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + val2 * (INT32)frac) >> FRAC_BITS;
+		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + val2 * frac) >> FRAC_BITS;
 
-		channel->outpos += incr;
+		channel->outpos += channel->incr;
 		return sample;
 	}
 	else {
-		//printf("End of Table\n");
+		//LOG(("End of Table\n"));
 		channel->end_of_table++;
 		channel->outpos = 0;
 		return 0;
@@ -334,7 +335,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
 
-	//printf("t1s = %d t2s = %d, l1=%d l2=%d, r1=%d, r2=%d, int = %d\n",t1start,t2start,lent1,lent2,rep1,rep2,intp);
+	//LOG(("t1s = %d t2s = %d, l1=%d l2=%d, r1=%d, r2=%d, int = %d\n",t1start,t2start,lent1,lent2,rep1,rep2,intp));
 
 	//Table1 is always larger, so use that as the size
 	//Scan Table 1
@@ -391,7 +392,7 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 			/* Grab the next sample from the table data if the channel is active */
 			if(channel->active)	{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
+				sample = read_sample(channel, channel->table1.total_length);
 				//Mix the output of this channel to the appropriate output channel
 				accum[channel->regs.outputs] += sample;
 			}
@@ -427,7 +428,7 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 			/* Grab the next sample from the table data if the channel is active */
 			if(channel->active)	{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
+				sample = read_sample(channel, channel->table1.total_length);
 				*buffer[c]++ = sample;
 			}
 			else {
@@ -512,11 +513,8 @@ int M114S_sh_start(const struct MachineSound *msound)
 				return 1;
 		}
 
-		//If this value is not used, the pitch is wrong, why?!!
-		Machine->sample_rate = 44100;
-
 		/* create the stream */
-		m114schip[i].stream = stream_init_multi(M114S_OUTPUT_CHANNELS, stream_name_ptrs, vol, Machine->sample_rate, i, m114s_update);
+		m114schip[i].stream = stream_init_multi(M114S_OUTPUT_CHANNELS, stream_name_ptrs, vol, SAMPLE_RATE, i, m114s_update);
 		if (m114schip[i].stream == -1)
 			return 1;
 
@@ -599,6 +597,7 @@ static void process_freq_codes(struct M114SChip *chip)
 			break;
 		default:
 			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->regs.frequency));
+			break;
 	}
 }
 
@@ -654,11 +653,7 @@ static void process_channel_data(struct M114SChip *chip)
 		int t2start = (channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff);		//T2 Addr is upper 8 bits, but masked by length
 		int t2end = t2start + (lent2-1);
 		//Calculate initial frequency of both tables
-		double freq1, freq2;
-		freq1 = freq2 = freqtable4Mhz[channel->regs.frequency];
-		//Freq Table is based on 16 byte length & 1 pass read - adjust for length..
-		if(lent1>16) freq1 /= (double)(lent1/16);
-		if(lent2>16) freq2 /= (double)(lent2/16);
+		double freq = freqtable4Mhz[channel->regs.frequency];
 
 		//Adjust Start & Stop Address - Special case for table length of 16 - Bit 5 always 1 in this case
 		if(lent1 == 16) {
@@ -675,14 +670,10 @@ static void process_channel_data(struct M114SChip *chip)
 
 		//Adjust frequency if octave divisor set
 		if(channel->regs.oct_divisor)
-		{
-			freq1/=2.;
-			freq2/=2.;
-		}
+			freq /= 2.;
 
-		//Setup Sample Rate - Current Adjusted Frequency * the length of the table
-		channel->table1.sample_rate = (UINT32)(freq1 * lent1);
-		channel->table2.sample_rate = (UINT32)(freq2 * lent2);
+		// Setup Sample Rate/Step size increase
+		channel->incr = freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE);
 
 		//Assign start & stop address offsets to ROM
 		channel->table1.start_address = t1start;
@@ -723,10 +714,8 @@ static void process_channel_data(struct M114SChip *chip)
 //if(chip->channel == 2) {
 if(channel->regs.outputs == 2) {
 	if(channel->regs.frequency == 0x70)
-	{
-		LOG(("orig: = %0f, freq1 = %0f, sample_rate = %0d \n",freqtable4Mhz[channel->regs.frequency],freq1,channel->table1.sample_rate));
-	}
-		//printf("EOT=%d\n",channel->end_of_table);
+		LOG(("orig: = %0f, freq = %0f, incr = %0d \n",freqtable4Mhz[channel->regs.frequency],freq,channel->incr));
+	//LOG(("EOT=%d\n",channel->end_of_table));
 	LOG(("C:%02d V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
 		chip->channel,
 		channel->regs.atten,
@@ -835,6 +824,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 
 		default:
 			LOG(("M114S.C - logic error - too many bytes processed: %x\n",chip->bytes_read));
+			break;
 	}
 }
 
