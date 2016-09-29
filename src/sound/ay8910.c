@@ -660,7 +660,9 @@ void AY8910_set_clock(int chip, int clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
-	stream_set_sample_rate(PSG->Channel, clock/8);
+	int ch;
+	for (ch = 0; ch < 3; ch++)
+		stream_set_sample_rate(PSG->Channel + ch, clock/8);
 }
 
 void AY8910_set_volume(int chip,int channel,int volume)
