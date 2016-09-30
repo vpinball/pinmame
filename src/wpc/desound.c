@@ -659,7 +659,10 @@ static void remove_led_code(void)
 static void setup_at91(void)
 {
   //set up the JIT memory map - allow for 128k of address space from address 0
-  at91_init_jit(0, 0x20000);
+  if (options.at91jit)
+  {
+    at91_init_jit(0, 0x20000);
+  }
   //because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
   at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
   //Copy U7 ROM into correct location (ie, starting at 0x40000000 where it is mapped)

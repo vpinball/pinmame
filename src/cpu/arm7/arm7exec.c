@@ -45,6 +45,7 @@ extern unsigned at91_get_reg(int regnum);
 .. though there's still room for improvement. */
 {
 	data32_t pc;
+	static data32_t pc_prev2 = 0, pc_prev1=0;
 	data32_t insn;
 
 	RESET_ICOUNT
@@ -69,11 +70,13 @@ extern unsigned at91_get_reg(int regnum);
 
 			// Helpful to backtrace a crash :)
 
-			//pc_prev2 = pc_prev1;
-			//pc_prev1 = pc;
+
 
 		JIT_FETCH(ARM7.jit, pc);
 		insn = cpu_readop32(pc);
+
+		pc_prev2 = pc_prev1;
+		pc_prev1 = pc;
 
 		/* process condition codes for this instruction */
 		switch (insn >> INSN_COND_SHIFT)

@@ -271,6 +271,7 @@ struct rc_option core_opts[] = {
         { "skip_gameinfo", NULL, rc_bool, &options.skip_gameinfo, "0", 0, 0, NULL, "skip displaying the game info screen" },
         { "crconly", NULL, rc_bool, &options.crc_only, "0", 0, 0, NULL, "use only CRC for all integrity checks" },
         { "bios", NULL, rc_string, &options.bios, "default", 0, 14, NULL, "change system bios" },
+        { "at91jit", NULL, rc_int, &options.at91jit, "1", 0, 33554432, NULL, "at91 CPU JIT compiler enabled" },
 
         /* config options */
         { "Configuration options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },

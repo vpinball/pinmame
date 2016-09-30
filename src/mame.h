@@ -233,6 +233,8 @@ struct GameOptions
 	int		debug_height;	/* requested height of debugger bitmap */
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
+	int		at91jit;
+
 	#ifdef MESS
 	UINT32 ram;
 	struct ImageFile image_files[MAX_IMAGES];
