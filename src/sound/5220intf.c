@@ -11,29 +11,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "driver.h"
 #include "tms5220.h"
 
 
-#define MAX_SAMPLE_CHUNK	10000
-
-#define FRAC_BITS			14
-#define FRAC_ONE			(1 << FRAC_BITS)
-#define FRAC_MASK			(FRAC_ONE - 1)
-
-
 /* the state of the streamed output */
-static const struct TMS5220interface *intf;
-static INT16 last_sample, curr_sample;
-static UINT32 source_step;
-static UINT32 source_pos;
 static int stream;
 static double baseclock;
 
 /* static function prototypes */
-static void tms5220_update(int ch, INT16 *buffer, int length);
+static void tms5220_update(int ch, INT16 *buffer, int samples);
 
 
 
@@ -45,7 +33,7 @@ static void tms5220_update(int ch, INT16 *buffer, int length);
 
 int tms5220_sh_start(const struct MachineSound *msound)
 {
-    intf = msound->sound_interface;
+    const struct TMS5220interface *intf = msound->sound_interface;
 
     /* reset the 5220 */
     tms5220_reset();
@@ -56,14 +44,10 @@ int tms5220_sh_start(const struct MachineSound *msound)
     tms5220_set_load_address(intf->load_address);
     tms5220_set_read_and_branch(intf->read_and_branch);
 
-    /* set the initial frequency */
-    stream = -1;
-    tms5220_set_frequency(intf->baseclock);
-    source_pos = 0;
-    last_sample = curr_sample = 0;
+    baseclock = intf->baseclock;
 
 	/* initialize a stream */
-	stream = stream_init("TMS5220", intf->mixing_level, Machine->sample_rate, 0, tms5220_update);
+	stream = stream_init("TMS5220", intf->mixing_level, intf->baseclock/80, 0, tms5220_update);
 	if (stream == -1)
 		return 1;
 
@@ -181,68 +165,9 @@ int tms5220_int_r(void)
 
 ***********************************************************************************************/
 
-static void tms5220_update(int ch, INT16 *buffer, int length)
+static void tms5220_update(int ch, INT16 *buffer, int samples)
 {
-	INT16 sample_data[MAX_SAMPLE_CHUNK], *curr_data = sample_data;
-	INT16 prev = last_sample, curr = curr_sample;
-	UINT32 final_pos;
-	UINT32 new_samples;
-
-	/* finish off the current sample */
-	if (source_pos > 0)
-	{
-		/* interpolate */
-		while (length > 0 && source_pos < FRAC_ONE)
-		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - source_pos)) + ((INT32)curr * source_pos)) >> FRAC_BITS;
-			source_pos += source_step;
-			length--;
-		}
-
-		/* if we're over, continue; otherwise, we're done */
-		if (source_pos >= FRAC_ONE)
-			source_pos -= FRAC_ONE;
-		else
-		{
-			tms5220_process(sample_data, 0);
-			return;
-		}
-	}
-
-	/* compute how many new samples we need */
-	final_pos = source_pos + length * source_step;
-	new_samples = (final_pos + FRAC_ONE - 1) >> FRAC_BITS;
-	if (new_samples > MAX_SAMPLE_CHUNK)
-		new_samples = MAX_SAMPLE_CHUNK;
-
-	/* generate them into our buffer */
-	tms5220_process(sample_data, new_samples);
-	prev = curr;
-	curr = *curr_data++;
-
-	/* then sample-rate convert with linear interpolation */
-	while (length > 0)
-	{
-		/* interpolate */
-		while (length > 0 && source_pos < FRAC_ONE)
-		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - source_pos)) + ((INT32)curr * source_pos)) >> FRAC_BITS;
-			source_pos += source_step;
-			length--;
-		}
-
-		/* if we're over, grab the next samples */
-		if (source_pos >= FRAC_ONE)
-		{
-			source_pos -= FRAC_ONE;
-			prev = curr;
-			curr = *curr_data++;
-		}
-	}
-
-	/* remember the last samples */
-	last_sample = prev;
-	curr_sample = curr;
+	tms5220_process(buffer, samples);
 }
 
 /**********************************************************************************************
@@ -255,12 +180,9 @@ void tms5220_set_frequency(double frequency)
 {
 	baseclock = frequency;
 
-	/* skip if output frequency is zero */
-	if (!Machine->sample_rate)
-		return;
-
-	/* update the stream and compute a new step size */
 	if (stream != -1)
-		stream_update(stream, 0);
-	source_step = (UINT32)((frequency / 80.) * (double)FRAC_ONE / (double)Machine->sample_rate);
+	{
+		//stream_update(stream, 0); //!! not necessary as clock change only done once on startup, also leads to garbled sound for whatever reason
+		stream_set_sample_rate(stream, (int)(frequency / 80 + 0.5));
+	}
 }

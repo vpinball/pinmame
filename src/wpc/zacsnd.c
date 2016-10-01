@@ -824,8 +824,7 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  static int oldSpeed = 6;  // default voice clock set to 640 kHz
-  if ((core_getDip(0) >> 4) != oldSpeed) tms5220_set_frequency((93 + (oldSpeed = (core_getDip(0) >> 4))) * 6666.666);
+  tms5220_set_frequency((93 + (core_getDip(0) >> 4)) * 6666.66666666666); //=0:620kHz..27:800kHz
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);
   logerror("sns_5220Irq: state=%x\n",state);
