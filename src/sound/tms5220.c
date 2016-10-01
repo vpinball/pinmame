@@ -496,6 +496,7 @@ void tms5220_reset_chip(void *chip)
   /* Note that we do not actually clear IRQ on start-up : IRQ is even raised if tms->buffer_empty or tms->buffer_low are 0 */
   tms->speaking_now = tms->speak_external = tms->talk_status = tms->irq_pin = tms->ready_pin = 0;
   set_interrupt_state(tms, 0);
+  tms->io_ready = 1;
   update_ready_state(tms);
   tms->buffer_empty = tms->buffer_low = 1;
 
@@ -533,7 +534,6 @@ void tms5220_reset_chip(void *chip)
     (*tms->load_address_callback)(0);
 
   tms->schedule_dummy_read = TRUE;
-  tms->io_ready = 1;
 
 #ifdef PINMAME
   reverbDelay = 0;
@@ -1432,10 +1432,6 @@ static INT32 lattice_filter(struct tms5220 *tms)
 static void process_command(struct tms5220 *tms, unsigned char cmd)
 {
   int i;
-#ifdef PINMAME
-  int reverb_delay;
-  float reverb_force;
-#endif
 #ifdef DEBUG_COMMAND_DUMP
   fprintf(stderr,"process_command called with parameter %02X\n",cmd);
 #endif
@@ -1530,14 +1526,10 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
           (*tms->read_callback)(1);
       }
       i = tms->variant;
-#ifdef PINMAME
-      reverb_delay = reverbDelay;
-      reverb_force = reverbForce;
-#endif
       tms5220_reset_chip(tms);
       tms5220_set_variant(i);
 #ifdef PINMAME
-      tms5200_set_reverb(reverb_delay, reverbForce);
+      tms5200_set_reverb(reverbDelay, reverbForce);
 #endif
       break;
   }
@@ -1594,11 +1586,6 @@ static int extract_bits(struct tms5220 *tms, int count)
 static void parse_frame(struct tms5220 *tms)
 {
   int indx, i, rep_flag;
-
-#ifdef PINMAME
-  int reverb_delay;
-  float reverb_force;
-#endif
 
   // We actually don't care how many bits are left in the fifo here; the frame subpart will be processed normally, and any bits extracted 'past the end' of the fifo will be read as zeroes; the fifo being emptied will set the /BE latch which will halt speech exactly as if a stop frame had been encountered (instead of whatever partial frame was read); the same exact circuitry is used for both on the real chip, see us patent 4335277 sheet 16, gates 232a (decode stop frame) and 232b (decode /BE plus DDIS (decode disable) which is active during speak external).
 
@@ -1694,11 +1681,9 @@ static void parse_frame(struct tms5220 *tms)
 #endif
 #ifdef PINMAME
   i = tms->variant;
-  reverb_delay = reverbDelay;
-  reverb_force = reverbForce;
   tms5220_reset_chip(tms);
   tms5220_set_variant(i);
-  tms5200_set_reverb(reverb_delay, reverbForce);
+  tms5200_set_reverb(reverbDelay, reverbForce);
 #endif
 }
 

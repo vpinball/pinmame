@@ -9,6 +9,7 @@ Further improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RB
  but still one should avoid high volume levels for these machines (~24 and above, for example on Nascar)
 Improved AT91 core emulation features & fix Whitestar II-JIT-speedup crashes on startup
 Slightly improved FM sound emulation cores (like AY8910, YMF262 and YM2151: so a lot of Gottlieb generations, old Ballys, pre-DCS games, etc)
+Slightly improved TMS5200 core (Bally Centaur, etc), especially the wrong pitch if Zaccaria games were run after the first time from within VP
 Improved M114 sound core (Mr. Game)
 Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some lowpass filtering (active only on older machines) to remove some of the audible noise
 Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise
