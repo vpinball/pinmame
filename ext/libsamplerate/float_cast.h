@@ -63,6 +63,32 @@
 
 	#include	<math.h>
 
+#elif (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(__LP64__) || defined (WIN64) || defined(_WIN64)
+
+	/*	Win64 section should be places before Win32 one, because
+	**	most likely both WIN32 and WIN64 will be defined in 64-bit case.
+	*/
+
+	#include	<math.h>
+
+	/*	Win64 doesn't seem to have these functions, nor inline assembly.
+	**	Therefore implement inline versions of these functions here.
+	*/
+	#include    <xmmintrin.h>
+	#include    <emmintrin.h>
+
+	__inline long int
+	lrint(double flt)
+	{
+		return _mm_cvtsd_si32(_mm_load_sd(&flt));
+	}
+
+	__inline long int
+	lrintf(float flt)
+	{
+		return _mm_cvtss_si32(_mm_load_ss(&flt));
+	}
+
 #elif (defined (__CYGWIN__))
 
 	#include	<math.h>
@@ -110,32 +136,6 @@
 
 		return retval ;
 	} /* float2int */
-
-#elif (defined (WIN64) || defined(_WIN64))
-
-	/*	Win64 section should be places before Win32 one, because
-	**	most likely both WIN32 and WIN64 will be defined in 64-bit case.
-	*/
-
-	#include	<math.h>
-
-	/*	Win64 doesn't seem to have these functions, nor inline assembly.
-	**	Therefore implement inline versions of these functions here.
-	*/
-	#include    <emmintrin.h>
-	#include    <mmintrin.h>
-
-	__inline long int
-	lrint(double flt)
-	{
-		return _mm_cvtsd_si32(_mm_load_sd(&flt));
-	}
-
-	__inline long int
-	lrintf(float flt)
-	{
-		return _mm_cvtss_si32(_mm_load_ss(&flt));
-	}
 
 #elif (defined (WIN32) || defined (_WIN32))
 
