@@ -704,7 +704,7 @@ extern "C" void VPM_ShowVideoWindow()
 extern "C" int get_ShowVideoWindow()
 {
 	if (m_pController == NULL)
-		return false;
+		return 0;
 
 	return !m_pController->m_fWindowHidden && g_fShowWinDMD;
 }
