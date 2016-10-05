@@ -4,11 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define SSE_FILTER_OPT
-
 #if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
  #include <xmmintrin.h>
- #include <emmintrin.h>
 #endif
 
 static filter* filter_alloc(void) {

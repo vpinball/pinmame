@@ -19,6 +19,12 @@ typedef int filter_real;
 typedef float filter_real;
 #endif
 
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(__LP64__)
+ #define SSE_FILTER_OPT
+#else
+ #pragma message ( "Warning: No SSE optimizations for Filter enabled" )
+#endif
+
 typedef struct filter_struct {
 	filter_real xcoeffs[(FILTER_ORDER_MAX+1)/2];
 	unsigned order;
