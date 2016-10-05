@@ -153,7 +153,7 @@
 	lrint (double flt)
 	{	int intgr ;
 
-		_asm
+		__asm
 		{	fld flt
 			fistp intgr
 			} ;
@@ -165,7 +165,7 @@
 	lrintf (float flt)
 	{	int intgr ;
 
-		_asm
+		__asm
 		{	fld flt
 			fistp intgr
 			} ;
