@@ -34,7 +34,7 @@
 ** Normal #defines follow.
 */
 
-#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__)
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(__LP64__)
  #define RESAMPLER_SSE_OPT
 #else
  #pragma message ( "Warning: No SSE2 optimizations for Resampler enabled" )
@@ -95,11 +95,14 @@
 /* Define to 1 if you have the `m' library (-lm). */
 /* #undef HAVE_LIBM */
 
-/* Define if you have C99's lrint function. */
-#define HAVE_LRINT 0
-
-/* Define if you have C99's lrintf function. */
-#define HAVE_LRINTF 0
+/* Define if you have C99's lrint/lrintf functions. */
+#if (defined(__STDC_VERSION__) &&  (__STDC_VERSION__ >= 199901L)) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
+ #define HAVE_LRINT 1
+ #define HAVE_LRINTF 1
+#else
+ #define HAVE_LRINT 0
+ #define HAVE_LRINTF 0
+#endif
 
 /* Define to 1 if you have the `malloc' function. */
 #define HAVE_MALLOC 1
@@ -209,5 +212,5 @@
 */
 
 #ifdef _MSC_VER
-#define inline __inline
+ #define inline __inline
 #endif
