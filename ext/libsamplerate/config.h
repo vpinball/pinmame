@@ -34,7 +34,11 @@
 ** Normal #defines follow.
 */
 
-#define RESAMPLER_SSE_OPT
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__)
+ #define RESAMPLER_SSE_OPT
+#else
+ #pragma message ( "Warning: No SSE2 optimizations for Resampler enabled" )
+#endif
 
 /* Set to 1 if the compile is GNU GCC. */
 #ifdef _MSC_VER
@@ -92,10 +96,10 @@
 /* #undef HAVE_LIBM */
 
 /* Define if you have C99's lrint function. */
-/* #undef HAVE_LRINT */
+#define HAVE_LRINT 0
 
 /* Define if you have C99's lrintf function. */
-/* #undef HAVE_LRINTF */
+#define HAVE_LRINTF 0
 
 /* Define to 1 if you have the `malloc' function. */
 #define HAVE_MALLOC 1
