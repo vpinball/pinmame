@@ -517,7 +517,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	rm = insn & 0x0f;                 // offset register; valid only if isImmOfs is false
 	preIdx = (insn & INSN_SDT_P);
 	up = insn & INSN_SDT_U;
-	ddinstr = (!ld && ((insn & 60) == 0x40 || (insn & 0x60) == 0x60));
+	ddinstr = (!ld && ((insn & 0x60) == 0x40 || (insn & 0x60) == 0x60));
 
 	// If we have a double-word instruction (LDRD, STRD), the encoding is special.
 	// NOTE!  These instructions aren't exercised in any Whitestar code.
@@ -1047,7 +1047,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 			// Logical operators with the S flag save the carry from the shift to CPSR.
 			// We can do so now in this case, since the rest of the operation won't affect
 			// the carry bit.
-			if (need_shift_carry_out)
+			//if (need_shift_carry_out)
 			{
 				emit(SETC, CL);                  // ECX = xxxxxxxx xxxxxxxx xxxxxxxx 0000000C
 				emit(SHL, ECX, Imm, 29);         //       00C00000 00000000 00000000 00000000
