@@ -226,7 +226,7 @@ static void init_nsm(void) {
 
 static SWITCH_UPDATE(nsm) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT]&0xff, 0xff, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]     , 0xff, 0);
     CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 9);
   }
   if (keyboard_pressed_memory_repeat(KEYCODE_M, 1)) cpu_set_irq_line(0, 1, PULSE_LINE);
