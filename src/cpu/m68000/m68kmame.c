@@ -2194,7 +2194,6 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
         data = m68306intreg[irISR]; break;
       case irICR: /* interrupt control */
         data = m68306intreg[irICR]; break;
-        break;
       case irBUSERR: /* refresh + buserror */
         LOG(("buserror_r\n"));
         break;
