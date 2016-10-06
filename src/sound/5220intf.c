@@ -186,3 +186,11 @@ void tms5220_set_frequency(double frequency)
 		stream_set_sample_rate(stream, (int)(frequency / 80 + 0.5));
 	}
 }
+
+#ifdef PINMAME
+void tms5220_set_reverb_filter(float delay, float force)
+{
+	//stream_update(stream, 0); //!!?
+	mixer_set_reverb_filter(stream, delay, force);
+}
+#endif

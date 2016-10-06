@@ -909,3 +909,20 @@ void AY8910_sh_stop_ym(void)
 {
 	ym_num = 0;
 }
+
+#ifdef PINMAME
+void AY8910_set_reverb_filter(int chip, float delay, float force)
+{
+	struct AY8910 *PSG = &AYPSG[chip];
+
+#ifdef SINGLE_CHANNEL_MIXER
+	//stream_update(PSG->Channel, 0); //!!?
+	mixer_set_reverb_filter(PSG->Channel, delay, force);
+#else
+	int ch;
+	for (ch = 0; ch < 3; ch++)
+		//stream_update(PSG->Channel + ch, 0); //!!?
+		mixer_set_reverb_filter(PSG->Channel + ch, delay, force);
+#endif
+}
+#endif

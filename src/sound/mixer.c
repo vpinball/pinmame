@@ -17,6 +17,7 @@
 /* Options */
 
 /* Undefine to use builtin lowpass filter/resampling code, way less quality though, and also not faster anymore */
+/* Also, undefining it misses the new reverb filter (Centaur,..) */
 #define USE_LIBSAMPLERATE
 
 /* Undefine it to turn off clipping (helpful to find cases where we max out */
@@ -111,6 +112,14 @@ struct mixer_channel_data
 	filter_state* left; /* state of the filter for the left/mono channel */
 	filter_state* right; /* state of the filter for the right channel */
 #endif
+
+#ifdef PINMAME
+	int reverbPos[2];
+	float reverbDelay[2];
+	float reverbForce[2];
+#define REVERB_LENGTH 100000
+	float reverbBuffer[2][REVERB_LENGTH];
+#endif
 };
 
 /* channel data */
@@ -136,6 +145,27 @@ static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2]; /* *2 for stereo */
 
 /* global sample tracking */
 static unsigned samples_this_frame;
+
+#ifdef PINMAME
+static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, float * const __restrict buf, const int len, const unsigned left_right)
+{
+	if (channel->reverbDelay[left_right] != 0.f && len) {
+		float * const __restrict rev_buf = channel->reverbBuffer[left_right];
+		int i;
+		const float rev_force = channel->reverbForce[left_right] * (left_right ? 1.f : 1.04f); // magic: slightly different parameters for left and right makes reverb sound a bit more natural
+		int rev_pos = channel->reverbPos[left_right];
+		int newPos = rev_pos - (int)(channel->reverbDelay[left_right] * channel->to_frequency * (left_right ? 1.04f : 1.f)); // magic: slightly different parameters for left and right makes reverb sound a bit more natural
+		if (newPos < 0) newPos += REVERB_LENGTH;
+		for (i = 0; i < len; i++) {
+			buf[i] = buf[i] + (rev_buf[newPos] - buf[i]) * rev_force;
+			rev_buf[rev_pos] = buf[i];
+			rev_pos++; if (rev_pos > REVERB_LENGTH) rev_pos = 0;
+			newPos++; if (newPos > REVERB_LENGTH) newPos = 0;
+		}
+		channel->reverbPos[left_right] = rev_pos;
+	}
+}
+#endif
 
 /***************************************************************************
 	mixer_channel_resample
@@ -255,12 +285,12 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 #else
 	filter_state* state,
 #endif
-	int volume, int* dst, unsigned dst_len, INT16** psrc, unsigned src_len)
+	int volume, int* const __restrict dst, unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
-	INT16* src = *psrc;
+	INT16* __restrict src = *psrc;
 
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
@@ -338,6 +368,8 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	data.src_ratio = (double)channel->to_frequency/channel->from_frequency;
 
 	src_process(src_state, &data);
+
+	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
@@ -454,12 +486,12 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 #else
 	filter_state* state,
 #endif
-	int volume, int* dst, unsigned dst_len, INT8** psrc, unsigned src_len)
+	int volume, int* const __restrict dst, unsigned dst_len, INT8** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
-	INT8* src = *psrc;
+	INT8* __restrict src = *psrc;
 
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
@@ -505,6 +537,8 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	data.src_ratio = (double)channel->to_frequency / channel->from_frequency;
 
 	src_process(src_state, &data);
+
+	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
@@ -617,12 +651,12 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 	  unsigned save_pivot = channel->pivot;
 	  unsigned save_frac = channel->frac;
 	  INT8* save_src = *src;
-	  count = mixer_channel_resample_8(channel, channel->left, volume[0], left_accum, dst_len, src, src_len);
+	  count = mixer_channel_resample_8(channel, channel->left, volume[0], left_accum, dst_len, src, src_len, 0);
 	  /* restore */
 	  channel->pivot = save_pivot;
 	  channel->frac = save_frac;
 	  *src = save_src;
-	  mixer_channel_resample_8(channel, channel->right, volume[1], right_accum, dst_len, src, src_len);
+	  mixer_channel_resample_8(channel, channel->right, volume[1], right_accum, dst_len, src, src_len, 1);
 	  channel->samples_available += count;
 	  return count;
 	}
@@ -637,9 +671,9 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 #endif
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
-		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 	} else if (channel->pan == MIXER_PAN_RIGHT) {
-		count = mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	} else {
 		/* save */
 #ifndef USE_LIBSAMPLERATE
@@ -647,14 +681,14 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 		unsigned save_frac = channel->frac;
 #endif
 		INT8* save_src = *src;
-		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 		/* restore */
 #ifndef USE_LIBSAMPLERATE
 		channel->pivot = save_pivot;
 		channel->frac = save_frac;
 #endif
 		*src = save_src;
-		mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len);
+		mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	}
 
 	channel->samples_available += count;
@@ -673,12 +707,12 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 	  unsigned save_pivot = channel->pivot;
 	  unsigned save_frac = channel->frac;
 	  INT16* save_src = *src;
-	  count = mixer_channel_resample_16(channel, channel->left, volume[0], left_accum, dst_len, src, src_len);
+	  count = mixer_channel_resample_16(channel, channel->left, volume[0], left_accum, dst_len, src, src_len, 0);
 	  /* restore */
 	  channel->pivot = save_pivot;
 	  channel->frac = save_frac;
 	  *src = save_src;
-	  mixer_channel_resample_16(channel, channel->right, volume[1], right_accum, dst_len, src, src_len);
+	  mixer_channel_resample_16(channel, channel->right, volume[1], right_accum, dst_len, src, src_len, 1);
 	  channel->samples_available += count;
 	  return count;
 	}
@@ -693,9 +727,9 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 #endif
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
-		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 	} else if (channel->pan == MIXER_PAN_RIGHT) {
-		count = mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	} else {
 		/* save */
 #ifndef USE_LIBSAMPLERATE
@@ -703,14 +737,14 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 		unsigned save_frac = channel->frac;
 #endif
 		INT16* save_src = *src;
-		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len);
+		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 		/* restore */
 #ifndef USE_LIBSAMPLERATE
 		channel->pivot = save_pivot;
 		channel->frac = save_frac;
 #endif
 		*src = save_src;
-		mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len);
+		mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	}
 
 	channel->samples_available += count;
@@ -1527,3 +1561,15 @@ void mixer_sound_enable_global_w(int enable)
 
 	mixer_sound_enabled = enable;
 }
+
+#ifdef PINMAME
+void mixer_set_reverb_filter(int ch, float delay, float force)
+{
+	struct mixer_channel_data *channel = &mixer_channel[ch];
+
+	channel->reverbPos[0] = channel->reverbPos[1] = 0;
+	channel->reverbDelay[0] = channel->reverbDelay[1] = delay;
+	channel->reverbForce[0] = channel->reverbForce[1] = force;
+	memset(channel->reverbBuffer, 0, sizeof(channel->reverbBuffer[0][0])*2*REVERB_LENGTH);
+}
+#endif

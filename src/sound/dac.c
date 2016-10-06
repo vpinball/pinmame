@@ -159,6 +159,14 @@ int DAC_sh_start(const struct MachineSound *msound)
 	return 0;
 }
 
+#ifdef PINMAME
+void DAC_set_reverb_filter(int num, float delay, float force)
+{
+	//stream_update(channel[num], 0); //!!?
+	mixer_set_reverb_filter(channel[num], delay, force);
+}
+#endif
+
 
 WRITE_HANDLER( DAC_0_data_w )
 {
