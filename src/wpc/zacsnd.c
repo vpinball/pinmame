@@ -459,6 +459,7 @@ static struct {
   UINT8 s_ensynca,s_ensawb,s_entrigb,s_enpwma,s_ensawa,s_entriga,s_refsel,s_dacsh; // output from ls259 3h
   UINT8 s_inh4,s_inh3,s_inh2,s_inh1,s_envca,s_ensyncb; // output from ls259 3I
   int vcrfreq,rescntl,levchb,pwmb,freqb,levcha,pwma,freqa,r500cmd,w500cmd;
+  int tmsPitch;
 } snslocals;
 
 static const UINT8 triangleWave[] = {
@@ -594,6 +595,7 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
   }
   // reset tms5220
+  snslocals.tmsPitch = -1;
   tms5220_reset();
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
@@ -824,7 +826,8 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  tms5220_set_frequency((93 + (core_getDip(0) >> 4)) * 6666.66666666666); //=0:620kHz..27:800kHz
+  if ((core_getDip(0) >> 4) != snslocals.tmsPitch)
+    tms5220_set_frequency((93 + (snslocals.tmsPitch = (core_getDip(0) >> 4))) * 6666.66666666666); // 0:620kHz .. 15:720kHz
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);
   logerror("sns_5220Irq: state=%x\n",state);
