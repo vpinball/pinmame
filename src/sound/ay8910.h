@@ -37,6 +37,9 @@ void AY8910_reset(int chip);
 void AY8910_set_clock(int chip,int _clock);
 void AY8910_set_volume(int chip,int channel,int volume);
 
+#ifdef PINMAME
+void AY8910_set_reverb_filter(int chip, float delay, float force);
+#endif
 
 void AY8910Write(int chip,int a,int data);
 int AY8910Read(int chip);

@@ -468,13 +468,6 @@ static void update_ready_state(struct tms5220 *tms);
 static INT32 lattice_filter(struct tms5220 *tms);
 static INT16 clip_analog(INT16 clip);
 
-#ifdef PINMAME
-static int reverbPos;
-static int reverbDelay;
-static float reverbForce;
-static INT16 reverbBuffer[5000];
-#endif
-
 /**********************************************************************************************
 
      tms5220_reset -- resets the TMS5220
@@ -534,10 +527,6 @@ void tms5220_reset_chip(void *chip)
     (*tms->load_address_callback)(0);
 
   tms->schedule_dummy_read = TRUE;
-
-#ifdef PINMAME
-  reverbDelay = 0;
-#endif
 }
 
 void tms5220_reset(void) {
@@ -1274,34 +1263,8 @@ empty:
   }
 }
 
-#ifdef PINMAME
-void tms5200_set_reverb(int delay, float force) { //!! sampling rate dependent
-  reverbPos = 0;
-  reverbDelay = delay;
-  reverbForce = force;
-  memset(&reverbBuffer, 0, sizeof(reverbBuffer));
-}
-
-static void apply_reverb(INT16 *buf, int len) {
-  if (reverbDelay && len) {
-    int i;
-    int newPos = reverbPos - reverbDelay;
-    if (newPos < 0) newPos += 5000;
-    for (i = 0; i < len; i++) {
-      buf[i] = (INT16)((float)buf[i] * (1.0f - reverbForce) + (float)reverbBuffer[newPos] * reverbForce);
-      reverbBuffer[reverbPos] = buf[i];
-      reverbPos++; if (reverbPos > 5000) reverbPos = 0;
-      newPos++; if (newPos > 5000) newPos = 0;
-    }
-  }
-}
-#endif
-
 void tms5220_process(INT16 *buffer, unsigned int size) {
   tms5220_process_chip(&onechip, buffer, size);
-#ifdef PINMAME
-  apply_reverb(buffer, size);
-#endif
 }
 
 /**********************************************************************************************
@@ -1528,9 +1491,6 @@ static void process_command(struct tms5220 *tms, unsigned char cmd)
       i = tms->variant;
       tms5220_reset_chip(tms);
       tms5220_set_variant(i);
-#ifdef PINMAME
-      tms5200_set_reverb(reverbDelay, reverbForce);
-#endif
       break;
   }
 
@@ -1683,7 +1643,6 @@ static void parse_frame(struct tms5220 *tms)
   i = tms->variant;
   tms5220_reset_chip(tms);
   tms5220_set_variant(i);
-  tms5200_set_reverb(reverbDelay, reverbForce);
 #endif
 }
 
