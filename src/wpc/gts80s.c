@@ -553,7 +553,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	if (stream_locals.stream) {
 	  stream_free(stream_locals.stream);
 	}
-	stream_locals.stream = stream_init("SND DAC", 25, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
+	stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
 	//set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE);
 }
 
@@ -1222,7 +1222,7 @@ MEMORY_END
 static struct DACinterface GTS3_dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
- {100,100}		/* Volume */
+ {50,50}		/* Volume */
 };
 
 static struct OKIM6295interface GTS3_okim6295_interface = {

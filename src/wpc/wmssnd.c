@@ -11,7 +11,12 @@
 #include "s11.h"
 #include "wpc.h"
 #include "wmssnd.h"
-#include "sound/filter.h"
+
+#define DCS_LOWPASS // enables some subtle low pass on the DCS output to avoid a bit of noise. As the real HW also has a bunch of lowpass filters, it would be interesting to check the direct output of the DCS chip on real hardware if it also features a bit of noise or not at that stage (e.g. before all the filters).
+
+#ifdef DCS_LOWPASS
+ #include "sound/filter.h"
+#endif
 
 //This awful hack is here to prevent the bug where the speech pitch is too low on pre-dcs games when
 //the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
@@ -767,8 +772,10 @@ static struct {
  UINT32  sOut, sIn;
  INT16  *buffer;
  int     stream;
+#ifdef DCS_LOWPASS
  filter *filter_f;
  filter_state *filter_state;
+#endif
 } dcs_dac;
 
 static struct {
@@ -923,9 +930,11 @@ static int dcs_custStart(const struct MachineSound *msound) {
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
 
+#ifdef DCS_LOWPASS
   dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
   dcs_dac.filter_state = filter_state_alloc();
   filter_state_reset(dcs_dac.filter_f, dcs_dac.filter_state);
+#endif
 
   return (dcs_dac.buffer == 0);
 }
@@ -933,8 +942,10 @@ static int dcs_custStart(const struct MachineSound *msound) {
 static void dcs_custStop(void) {
   if (dcs_dac.buffer)
     { free(dcs_dac.buffer); dcs_dac.buffer = NULL;
+#ifdef DCS_LOWPASS
       filter_state_free(dcs_dac.filter_state);
       filter_free(dcs_dac.filter_f);
+#endif
     }
 }
 
@@ -946,15 +957,23 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++) {
       if (dcs_dac.sOut == dcs_dac.sIn) break;
+#ifdef DCS_LOWPASS
       filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[dcs_dac.sOut]);
       buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+#else
+      buffer[ii] = dcs_dac.buffer[dcs_dac.sOut];
+#endif
       dcs_dac.sOut = (dcs_dac.sOut + 1) & DCS_BUFFER_MASK;
     }
     /* fill the rest with the last sample (usually only 1 or 2 samples necessary) */
     for ( ; ii < length; ii++)
     {
+#ifdef DCS_LOWPASS
       filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK]);
       buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+#else
+      buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
+#endif
     }
   }
 }
