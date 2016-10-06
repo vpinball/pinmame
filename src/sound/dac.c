@@ -1,34 +1,46 @@
 #include "driver.h"
 #include <math.h>
 
-#define DAC_SAMPLE_RATE (48000)
+#define DAC_SAMPLE_RATE (4*48000)
+//#define DAC_ENABLE_INTERPOLATION // if used, machines like Centaur sound way too muffled and crackle, most likely due to the really low sample rate these machines have and this simple upsample mechanism
 
 static int channel[MAX_DAC];
 static int output[MAX_DAC];
-static int curr_output[MAX_DAC];
+
+#ifdef DAC_ENABLE_INTERPOLATION
+ static int curr_output[MAX_DAC];
+#endif
+
+// DC offset correction:
 static int prev_data[MAX_DAC];
 static double integrator[MAX_DAC];
+
 static int UnsignedVolTable[256];
 static int SignedVolTable[256];
-
 
 static void DAC_update(int num,INT16 *buffer,int length)
 {
 	int i;
-	INT32 data, slope;
 
 	/* zero-length? bail */
 	if (length == 0)
 		return;
+	else
+	{
+#ifdef DAC_ENABLE_INTERPOLATION
+		INT32 data = curr_output[num];
+		INT32 slope = ((output[num] - data) << 15) / length;
+		data <<= 15;
 
-	data = curr_output[num];
-	slope = ((output[num] - data) << 15) / length;
-	data <<= 15;
+		for (i = 0; i < length; i++, data += slope)
+			*buffer++ = data >> 15;
 
-	for (i = 0; i < length; i++, data += slope)
-		*buffer++ = data >> 15;
-
-	curr_output[num] = output[num];
+		curr_output[num] = output[num];
+#else
+		for (i = 0; i < length; i++)
+			*buffer++ = output[num];
+#endif
+	}
 }
 
 
@@ -137,7 +149,9 @@ int DAC_sh_start(const struct MachineSound *msound)
 			return 1;
 
 		output[i] = 0;
+#ifdef DAC_ENABLE_INTERPOLATION
 		curr_output[i] = 0;
+#endif
 		integrator[i] = 0.;
 		prev_data[i] = 0;
 	}
