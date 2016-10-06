@@ -296,6 +296,8 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	SRC_DATA data;
 	long i;
 
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+
 	if (src_len == 0 || dst_len == 0)
 		return 0;
 
@@ -497,6 +499,8 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	SRC_DATA data;
 	long i;
 
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+
 	if (src_len == 0 || dst_len == 0)
 		return 0;
 
@@ -504,7 +508,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 #endif
 	assert( dst_len <= ACCUMULATOR_MASK );
 
-	if (channel->from_frequency == channel->to_frequency)
+	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
 	{
 		/* copy */
 		unsigned len;
