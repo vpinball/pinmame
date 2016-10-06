@@ -68,10 +68,13 @@ static void FMTimerInit( void )
 int YM2203_sh_start(const struct MachineSound *msound)
 {
 	int i;
+	int rate;
 
 	if (AY8910_sh_start_ym(msound)) return 1;
 
 	intf = msound->sound_interface;
+
+	rate = intf->baseclock/72; /* ??? */
 
 	/* Timer Handler set */
 	FMTimerInit();
@@ -82,10 +85,10 @@ int YM2203_sh_start(const struct MachineSound *msound)
 		char name[20];
 		sprintf(name,"%s #%d FM",sound_name(msound),i);
 		volume = intf->mixing_level[i]>>16; /* high 16 bit */
-		stream[i] = stream_init(name,volume,Machine->sample_rate,i,YM2203UpdateOne/*YM2203UpdateCallback*/);
+		stream[i] = stream_init(name,volume,rate,i,YM2203UpdateOne/*YM2203UpdateCallback*/);
 	}
 	/* Initialize FM emurator */
-	if (YM2203Init(intf->num,intf->baseclock,Machine->sample_rate,TimerHandler,IRQHandler) == 0)
+	if (YM2203Init(intf->num,intf->baseclock,rate,TimerHandler,IRQHandler) == 0)
 	{
 		/* Ready */
 		return 0;
