@@ -323,7 +323,7 @@ void s14001a_sh_stop(void)
 //  sound_stream_update - handle a stream update
 //-------------------------------------------------
 
-static void s14001a_update(int ch, INT16 *buffer, int length)
+void s14001a_update(int ch, INT16 *buffer, int length)
 {
 	int i;
 	int sample;

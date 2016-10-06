@@ -57,7 +57,7 @@ extern struct {
 	int    lastgiaux, miniidx, miniframe;
 	int    minidata[7], minidmd[4][3][8];
 	/* trace ram related */
-#if SUPPORT_TRACERAM
+#if defined(SUPPORT_TRACERAM) && SUPPORT_TRACERAM
 	UINT8 *traceRam;
 #endif
 	UINT8  curBank;                   /* current bank select */

@@ -290,7 +290,7 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 	__m128 left128,right128;
 	float left,right;
 #else
-	double left;
+	double left,right;
 #endif
 	const coeff_t * const __restrict coeffs = filter->coeffs;
 	const float * const __restrict buffer = filter->buffer;
