@@ -553,7 +553,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	if (stream_locals.stream) {
 	  stream_free(stream_locals.stream);
 	}
-	stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
+	stream_locals.stream = stream_init("SND DAC", 25, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
 	//set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE);
 }
 
@@ -858,6 +858,7 @@ static WRITE_HANDLER( s80bs_dac2_vol_w )
 	GTS80BS_locals.dac2_volume = data;
 	DAC_DC_offset_correction_data_16_w(1, (int)GTS80BS_locals.dac2_volume * (int)GTS80BS_locals.dac2_data);
 }
+
 //DAC Handling.. Set data to send
 static WRITE_HANDLER( s80bs_dac_data_w )
 {
