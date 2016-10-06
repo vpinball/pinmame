@@ -373,15 +373,16 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
+	double scale = volume * (8.0 * 0x10000000 / 256.0);
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
-		double scaled_value = out_f[i] * (8.0 * 0x10000000);
+		double scaled_value = out_f[i] * scale;
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-			dst[dst_pos] += (32767 * volume) >> 8;
+			dst[dst_pos] += 32767;
 		else if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-			dst[dst_pos] += (-32768 * volume) >> 8;
+			dst[dst_pos] += -32768;
 		else
-			dst[dst_pos] += ((lrint(scaled_value) >> 16) * volume) >> 8;
+			dst[dst_pos] += (lrint(scaled_value) >> 16);
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
@@ -544,15 +545,16 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
+	double scale = volume * (8.0 * 0x10000000 / 256.0);
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
-		double scaled_value = out_f[i] * (8.0 * 0x10000000);
+		double scaled_value = out_f[i] * scale;
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-			dst[dst_pos] += (32767 * volume) >> 8;
+			dst[dst_pos] += 32767;
 		else if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-			dst[dst_pos] += (-32768 * volume) >> 8;
+			dst[dst_pos] += -32768;
 		else
-			dst[dst_pos] += ((lrint(scaled_value) >> 16) * volume) >> 8;
+			dst[dst_pos] += (lrint(scaled_value) >> 16);
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
