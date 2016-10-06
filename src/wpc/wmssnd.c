@@ -11,7 +11,9 @@
 #include "s11.h"
 #include "wpc.h"
 #include "wmssnd.h"
-#include <windef.h>
+#ifdef __MINGW32__
+ #include <windef.h>
+#endif
 
 #define DCS_LOWPASS // enables some subtle low pass on the DCS output to avoid a bit of noise. As the real HW also has a bunch of lowpass filters, it would be interesting to check the direct output of the DCS chip on real hardware if it also features a bit of noise or not at that stage (e.g. before all the filters).
 

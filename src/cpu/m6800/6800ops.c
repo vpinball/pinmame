@@ -2204,8 +2204,9 @@ INLINE void btst_ix( void )
 // $b2 - assuming correct, store first byte to (X + $disp8)
 INLINE void stx_nsc( void )
 {
+	UINT8 val;
 	IMM8;
-	UINT8 val = RM(EAD);
+	val = RM(EAD);
 	IMM8;
 	EA = X + RM(EAD);
 	CLR_NZV;
