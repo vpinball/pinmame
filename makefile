@@ -367,7 +367,7 @@ endif
 # add MAME 0.76 basic set of warnings
 CFLAGS += \
 	-fstrict-aliasing \
-	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wbad-function-cast -Wcast-align -Waggregate-return \
 	-Wshadow -Wstrict-prototypes -Wundef \
 	-Wformat-security -Wwrite-strings \
@@ -385,7 +385,7 @@ CFLAGS += \
 
 CPPFLAGS += \
 	-fstrict-aliasing \
-	-Werror -Wall -Wno-sign-compare -Wunused \
+	-Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wcast-align \
 	-Wshadow -Wundef \
 	-Wformat-security -Wwrite-strings \
@@ -504,7 +504,9 @@ include src/core.mak
 include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
+ifdef PROC
 include src/p-roc/p-roc.mak
+endif
 
 # if the MAME ROM debugger is not included, then remove objects for it
 ifndef DEBUG

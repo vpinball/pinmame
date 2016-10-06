@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "filter.h"
-//#include <math.h>
+#include <math.h>
+#include <windef.h>
 
 //#ifndef M_E
 // #define M_E 2.7182818284590452353602874713527
