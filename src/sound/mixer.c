@@ -295,6 +295,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
+	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
@@ -373,7 +374,6 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
-	double scale = volume * (8.0 * 0x10000000 / 256.0);
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
 		double scaled_value = out_f[i] * scale;
@@ -499,6 +499,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
+	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
@@ -545,7 +546,6 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
-	double scale = volume * (8.0 * 0x10000000 / 256.0);
 	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
 	{
 		double scaled_value = out_f[i] * scale;
