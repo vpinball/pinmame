@@ -65,12 +65,7 @@ extern unsigned at91_get_reg(int regnum);
 
 			// Debug test triggers
 
-			//if (pc == 0x9c60)
-			//	pc = 0x9c60;
-
 			// Helpful to backtrace a crash :)
-
-
 
 		JIT_FETCH(ARM7.jit, pc);
 		insn = cpu_readop32(pc);
@@ -360,8 +355,6 @@ jit_go_native:
 		R15 = tmp1;
 		ARM7_ICOUNT = tmp2;
 	}
-	
-	ARM7_CHECKIRQ;
 	// resume emulation
 	goto resume_from_jit;
 

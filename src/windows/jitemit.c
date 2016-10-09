@@ -1307,9 +1307,13 @@ const static struct mnedef mnetab[] = {
 	{ imTEST, rm8,   r8,    none,  0x84,  0,    0,    0 },
 	{ imTEST, rm16,  r16,   none,  0x85,  0,    0,    E_16 },
 	{ imTEST, rm32,  r32,   none,  0x85,  0,    0,    0 },
-	{ imTEST, rAL,   r8,    none,  0xA8,  0,    0,    0 },
-	{ imTEST, rAX,   r16,   none,  0xA9,  0,    0,    E_16 | E_RExt },
-	{ imTEST, rEAX,  r32,   none,  0xA9,  0,    0,    E_RExt },
+// These were incorrectly set as A-to-register comparisons before,
+// and generated bad code.  They don't seem to be needed by current code.
+// Commenting out until they are needed and can be tested since I'm unsure
+// of the encodings. 
+//	{ imTEST, rAL,   imm8,    none,  0xA8,  0,    0,    0 },    
+///	{ imTEST, rAX,   imm16,   none,  0xA9,  0,    0,    E_16 | E_RExt },
+//	{ imTEST, rEAX,  imm32,   none,  0xA9,  0,    0,    E_RExt },  
 	{ imTEST, rm8,   imm8,  none,  0xF6,  0,    0,    E_Ext },
 	{ imTEST, rm16,  imm16, none,  0xF7,  0,    0,    E_16 | E_Ext },
 	{ imTEST, rm32,  imm32, none,  0xF7,  0,    0,    E_Ext },

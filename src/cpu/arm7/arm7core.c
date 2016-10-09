@@ -824,11 +824,6 @@ static void arm7_core_set_irq_line(int irqline, int state)
 		ARM7.pendingUnd= (state & 1);
 		break;
 	}
-	// It would be logical to check here, but the IRQ check is a pretty unsafe 
-	// operation.  It MUST be called *AFTER* the PC has been moved forward, or 
-	// else the PC will be incremented after reading the vector, calling the wrong handler.
-	// This function is likely to be called by downstream hardware simulations, possibly in the middle of a 
-	// READ or WRITE request.  What we can do though is ensure MAME will check soon.   
 
 	ARM7_CHECKIRQ;
 }

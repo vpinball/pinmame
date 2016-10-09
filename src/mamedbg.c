@@ -1789,6 +1789,7 @@ static void trace_output( void )
 			activecpu_dasm( dst, pc );
 			strcat( dst, "\n" );
 			fprintf( TRACE.file, "%s", buffer );
+			fflush(TRACE.file);
 			memmove(
 				&TRACE.last_pc[0],
 				&TRACE.last_pc[1],

@@ -111,12 +111,29 @@ static int xlat_recursive(struct jit_ctl *jit, data32_t addr);
 #define flags_to_cpsr() \
 	emit(LAHF), \
 	emit(SETO, AL), \
-	emit(SHL, AL, 7), \
-	emit(SHR, EAX, 1), \
-	emit(SHR, AH, 5), \
-	emit(SHL, EAX, 22), \
+	emit(SHL, AL, Imm, 7), \
+	emit(SHR, EAX, Imm, 1), \
+	emit(SHR, AH, Imm, 5), \
+	emit(SHL, EAX, Imm, 22), \
 	emit(AND, DwordPtr, RCPSR, Imm, 0x0FFFFFFF), \
 	emit(OR, RCPSR, EAX)
+
+// Copy just the carry flag to intel register.
+
+#define cpsr_to_carry() \
+	emit(MOV, EAX, RCPSR), \
+	emit(SHR, EAX, Imm, 21), \
+	emit(SAHF)
+
+// Store just the carry flag
+// ECX = xxxxxxxx xxxxxxxx xxxxxxxx 0000000C
+//       00C00000 00000000 00000000 00000000
+
+#define carry_to_cpsr() \
+	emit(SETC, CL), \
+	emit(SHL, ECX, Imm, 29), \
+	emit(AND, DwordPtr, RCPSR, Imm, ~C_MASK), \
+	emit(OR, RCPSR, ECX)
 	
 // Cycle counter.  This is in the static variable ARM7_ICOUNT, but because we
 // access it once for every translated opcode, we keep it in EDI while in
@@ -308,9 +325,11 @@ static int MUL32(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 // 'sp_inc' tells us how many bytes of temps the caller has saved on the stack.  If
 // we need to abort, we'll add this number to ESP to remove temps and restore the
 // stack for the RETN to the emulator.
+
 static void gen_test_abort(struct jit_ctl *jit, data32_t addr, int sp_inc)
 {
 	data8_t *abt = &ARM7.pendingAbtD;
+
 	struct jit_label *lbl;
 
 	emit(CMP, BytePtr, Idx, Imm, (UINT32)abt, Imm, 0);   // test pending ABORT flag
@@ -320,6 +339,39 @@ static void gen_test_abort(struct jit_ctl *jit, data32_t addr, int sp_inc)
 	if (sp_inc != 0) emit(ADD, ESP, Imm, sp_inc);        // clear temps off the stack
 	emit(RETN);                                          // return to the emulator
 	jit_resolve_label(lbl);                              // no abort - proceed as normal
+}
+
+// A memory read/write may trigger an IRQ.  We need to check and possibly branch
+// to a new address. 
+
+static void gen_test_irq(struct jit_ctl *jit, data32_t addr)
+{
+	data8_t *abt = &ARM7.pendingIrq;
+	struct jit_label *lbl;
+
+	// If no pending IRQ, skip IRQ check. Probably should also
+	// check FIQ here, but the implementation that calls for this
+	// doesn't need it, and the IRQ check wasn't here before, so 
+	// probably shouldn't take performance penalty for no good reason.
+	// The gist is that a memory read/write may have caused an external source
+	// to throw an IRQ.  FIQ tends to be for something like a timer, which MAME
+	// will check for on its own schedule. 
+//	emit(CMP, BytePtr, Idx, Imm, (UINT32)abt, Imm, 0);
+//	emit(JE, Label, lbl = jit_new_fwd_label());  
+	emit(MOV, DwordPtr, Rn(15), Imm, addr+4);
+	emit(CALL, Label, jit_new_native_label((byte *)&arm7_check_irq_state));
+	// If R15 changed, then do a lookup, otherwise move along.
+	emit(MOV, EAX, Rn(15));
+	emit(CMP, EAX, Imm, addr+4);
+	emit(JE, Label, lbl = jit_new_fwd_label());
+	emit(JMP, Label, jit_new_native_label(jit->pLookup));
+	jit_resolve_label(lbl);  
+	// While we're at it, let's look at the cycle count.  
+	emit(CMP, RCYCLECNT, Imm, 0);
+	emit(JG, Label, lbl = jit_new_fwd_label());
+	emit(MOV, EAX, Imm, addr+4);
+	emit(RETN);
+	jit_resolve_label(lbl);
 }
 
 // service routines for gen_mem
@@ -642,6 +694,8 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	else if (!ld && siz == 16)
 		*cycles -= 1;
 
+	gen_test_irq(jit, addr);
+
 	// successful translation
 	return 1;
 }
@@ -696,9 +750,7 @@ static int genShift(data32_t insn, data32_t addr, int carry_out)
 		|| (shift_by_reg && carry_out))                             // case 3: register-specified shift and caller uses carry out
 	{
 		// ROR #0 == RRX #1 - pre-load the Intel carry flag with the CPSR C flag
-		emit(MOV, EAX, RCPSR);
-		emit(SHR, EAX, Imm, 21);
-		emit(SAHF);
+		cpsr_to_carry();
 	}
 
 	// Load the shift register (Rm) value into EAX.
@@ -964,11 +1016,8 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	int is_logical_op;
 	int is_sub_op;
 	int is_test_op;
+	int is_arithmetic_op;
 	int need_shift_carry_out;
-//  TODO: BUGGY MOV opcode on Mtl_145h
-//	if (addr == 0x14568)
-//		addr = 0x14568;
-
 
 	// Normal data processing is 1 cycle - reduce the default 3-cycle count by 2
 	*cycles -= 2;
@@ -993,6 +1042,15 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	// result is that the CPSR carry is unaffected.  In that case we can omit the
 	// extra code needed to update the CPSR carry.)
 	need_shift_carry_out = (is_logical_op && (insn & INSN_S));
+
+	// If this is a "with carry" operation we need to get carry from CPSR and put it into
+	// the intel carry flag.
+	if (opcode == OPCODE_SBC || opcode == OPCODE_RSC || opcode == OPCODE_ADC)
+	{
+		cpsr_to_carry();
+		if (is_sub_op)
+			emit(CMC);
+	}
 
 	// figure OP2
 	if (insn & INSN_I)
@@ -1047,12 +1105,9 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 			// Logical operators with the S flag save the carry from the shift to CPSR.
 			// We can do so now in this case, since the rest of the operation won't affect
 			// the carry bit.
-			//if (need_shift_carry_out)
+			if (need_shift_carry_out)
 			{
-				emit(SETC, CL);                  // ECX = xxxxxxxx xxxxxxxx xxxxxxxx 0000000C
-				emit(SHL, ECX, Imm, 29);         //       00C00000 00000000 00000000 00000000
-				emit(AND, DwordPtr, RCPSR, Imm, ~C_MASK);  // mask out old CPSR C bit
-				emit(OR, RCPSR, ECX);
+				carry_to_cpsr();
 			}
 		}
 
@@ -1074,6 +1129,8 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 		}
 	}
 
+
+
 	// Perform the operation.  We have rn in EBX and op2 in EAX, so for most operations
 	// it will be most efficient to leave the result in EBX.  There are some reverse
 	// operations that will leave it in EAX.
@@ -1086,7 +1143,6 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	case OPCODE_SBC:
 		// Subtract with carry.  ARM SBC uses the carry flag in the opposite sense
 		// of Intel SBB, but we can use SBB if we complement the carry first.
-		emit(CMC);
 		emit(SBB, EBX, EAX);
 		break;
 
@@ -1102,7 +1158,6 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 
 	case OPCODE_RSC:
 		// RSC - reverse subtract with carry: computes op2 - rn
-		emit(CMC);
 		emit(SBB, EAX, EBX);
 		result_reg = EAX;
 		break;
@@ -1165,19 +1220,26 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	case OPCODE_MOV:
 		// MOV - moves op2
 		result_reg = EAX;
-		// BUGGY OPCODE
-		return 0;
+		// If the S flag is set, we need to TEST the result.  
+		// Intel MOV does not set flags.
+		if ((insn & INSN_S))
+			emit(TEST, EAX, EAX);
 		break;
 
 	case OPCODE_MVN:
 		// MVN - moves ~op2
 		emit(NOT, EAX);
+		// If the S flag is set, we need to TEST the result.  
+		// Intel MOV does not set flags.
+		if ((insn & INSN_S))
+			emit(TEST, EAX, EAX);
+
 		result_reg = EAX;
 		break;
 	}
 
 	// save flags to CPSR if desired
-	if (insn & INSN_S)
+	if ((insn & INSN_S))
 	{
 		// Logical and arithmetic ops have different treatments for the flags
 		if (is_logical_op)
@@ -1219,18 +1281,11 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 			//   SHR EAX, 1    0xxxxxxx xxxxxxxx xNZxxxxx CV000000
 			//   SHR AH, 5     0xxxxxxx xxxxxxxx 00000xNZ CV000000
 			//   SHL EAX, 22   NZCV0000 00000000 00000000 00000000
-			emit(LAHF);
-			emit(SETO, AL);
-			emit(SHL, AL, Imm, 7);
-			emit(SHR, EAX, Imm, 1);
-		    emit(SHR, AH, Imm, 5);
-			emit(SHL, EAX, Imm, 22);
 
-			// mask out NZCV in the CPSR, then OR in the new flag values
-			emit(AND, DwordPtr, RCPSR, Imm, 0x0FFFFFFF);
-			emit(OR, RCPSR, EAX);
+			flags_to_cpsr();
 		}
 	}
+
 
 	/* Put the result in its register if not one of the test only opcodes (TST,TEQ,CMP,CMN) */
 	if (!is_test_op)
@@ -1249,14 +1304,18 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 				// CPSR. --> This form of instruction cannot be used in User mode. <--
 
 				// save the result register (the destination address for the branch) on the stack
-				emit(PUSH, result_reg);
+				// (djrobx - the mode change may result in R15 pointing to an IRQ handler, so we need to 
+				// move it there, and look at result when it comes back. ) 
+				//emit(PUSH, result_reg);
+				emit(MOV, Rn(rd), result_reg);
 
 				// call our helper routine to load SPSR into CPSR and switch modes
 				emit(CALL, Label, jit_new_native_label((byte *)&spsr_to_cpsr));
 
-				// pop the result into EAX and go do the lookup
-				emit(POP, EAX);
+				// Load R15 into EAX and go do the lookup
+				emit(MOV, EAX, Rn(15));
 				emit(JMP, Label, jit_new_native_label(jit->pLookup));
+
 			}
 			else
 			{
@@ -1279,7 +1338,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 			emit(MOV, Rn(rd), result_reg);
 		}
 	}
-
+	gen_test_irq(jit, addr);
 	// successful translation
 	return 1;
 }
@@ -1421,6 +1480,7 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	else if (!ld)
 		*cycles -= 1;
 
+	gen_test_irq(jit, addr);
 	// successful translation
 	return 1;
 }
@@ -1529,11 +1589,16 @@ static int PSRX(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 			int rd = insn & 0x0f;
 			emit(PUSH, DwordPtr, Rn(rd));
 		}
-
+		//emit(MOV, DwordPtr, Rn(15), Imm, addr+4);
 		// call HandleMSR(spsr, val, insn) to do the update
 		emit(PUSH, Imm, spsr);
 		emit(CALL, Label, jit_new_native_label((byte *)&HandleMSR));
 		emit(ADD, ESP, Imm, 12);
+		// Changing IRQ mask may have caused a branch. 
+		//emit(MOV, EAX, Rn(15));
+		//emit(JMP, Label, jit_new_native_label(jit->pLookup));
+		gen_test_irq(jit, addr);
+		//*is_br = 1;
 	}
 	else
 	{
@@ -1563,7 +1628,7 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	int wrt = (insn & INSN_BDT_W);                   // write-back mode
 	int user_bank_xfer;                              // S flag set, but R15 not in list = User Bank Transfer
 	data8_t *abt = &ARM7.pendingAbtD;                // ABORT flag variable, for testing in generated code
-	struct jit_label *lAbort, *lNoAbort;             // assembler labels for the abort handler
+	struct jit_label *lAbort, *lNoAbort, *lbl;       // assembler labels for the abort handler
 	int rcnt;                                        // number of registers transferred
 	int i;
 
@@ -1735,7 +1800,7 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	// check for loading R15
 	if (ld && (insn & 0x8000))
 	{
-		return 0;
+		// return 0;
 
 		// loading R15 costs 2 extra cycles
 		*cycles += 2;
@@ -1746,7 +1811,13 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 
 		// Generate a jump to the new R15
 		*is_br = 1;
+		// Check to see if changed flags causes an IRQ jump
+		emit(CALL, Label, jit_new_native_label((byte *)&arm7_check_irq_state));
 		emit(MOV, EAX, Rn(15));
+		emit(CMP, RCYCLECNT, Imm, 0);
+		emit(JG, Label, lbl = jit_new_fwd_label());
+		emit(RETN);
+		jit_resolve_label(lbl);
 		emit(JMP, Label, jit_new_native_label(jit->pLookup));
 	}
 
@@ -1756,6 +1827,8 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 		*cycles += (rcnt + 1) + 1;
 	else
 		*cycles += (rcnt - 1) + 2;
+
+	gen_test_irq(jit, addr);
 
 	// successful translation
 	return 1;
@@ -2202,7 +2275,14 @@ static int xlat(struct jit_ctl *jit, data32_t pc)
 		// falling through the end of this code, we'll want to resume at the
 		// *next* instruction, since we've generated code for this one.  So
 		// the return address is addr+4.
+
+#ifdef _DEBUG
+		// Force this to TRUE if you want 1 by 1 code execution, good for debugging. 
+		// Keeping it in an #ifdef so I don't accidentally release this way.
+		if (/*1 || */br && condLabel == 0) {
+#else
 		if (br && condLabel == 0) {
+#endif
 			retAddr = addr + 4;
 			break;
 		}
