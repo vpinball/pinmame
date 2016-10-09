@@ -89,6 +89,7 @@ INLINE data32_t at91_cpu_read32( int addr );
 INLINE data16_t at91_cpu_read16( int addr );
 INLINE data8_t at91_cpu_read8( int addr );
 void at91_fire_irq(int irqline);
+void at91_irq_assert_if_greater();
 void (*at91_transmit_serial)(int usartno, data8_t *data, int size) = NULL;
 void (*at91_serial_receive_ready)(int usartno) = NULL;
 
@@ -542,7 +543,7 @@ void at91_usart_read(int usartno, int addr, data32_t *pData)
 	switch ((addr & 0xff) / 4)
 	{
 	case 0x0c: // Receive pointer
-		if (at91_serial_receive_ready)
+		if (at91_serial_receive_ready && at91usart[usartno].US_RPR == 0x00)
 			at91_serial_receive_ready(usartno);
 		*pData = at91usart[usartno].US_RPR;
 		break;
@@ -1168,8 +1169,8 @@ INLINE void internal_write (int addr, data32_t data)
 				//AIC Interrupt Enable
 				case 0x120:
 					SET_BITS(at91.aic_irqmask,data);
+					at91_irq_assert_if_greater();
 					break;
-
 				//AIC Interrupt Disable
 				case 0x124:
 					CLEAR_BITS(at91.aic_irqmask,data);
@@ -1185,15 +1186,10 @@ INLINE void internal_write (int addr, data32_t data)
 				//End of Interrupt
 				case 0x130:
 					logit = LOG_AIC_EOI;
-					at91.aic_irqstatus = at91_irqstack[--at91_irqstackpos];
-					if (at91_irqstackpos < 0)
+					if (at91_irqstackpos > 0)
 					{
-						// should never happen if ROM code is working.
-						at91_irqstackpos = 0;
-					}
-					if (at91.aic_irqpending > 1 && at91.aic_irqstatus == 0)
-					{
-						ARM7.pendingIrq = 1;
+						at91.aic_irqstatus = at91_irqstack[--at91_irqstackpos];
+						at91_irq_assert_if_greater();
 					}
 					break;
 				case 0x134:
@@ -1403,7 +1399,7 @@ INLINE data32_t internal_read (int addr)
 
 					for (i = 0; i < 31; i++)
 					{
-						if (at91.aic_irqpending & (1 << at91_priority_map[i]))
+						if (( at91.aic_irqpending & at91.aic_irqmask) & (1 << at91_priority_map[i]))
 						{
 							at91_irqstack[at91_irqstackpos++] = at91.aic_irqstatus;
 							if (at91_irqstackpos >= 32)
@@ -1418,7 +1414,10 @@ INLINE data32_t internal_read (int addr)
 						}
 					}
 					if (i==31) 
+					{
+						at91_irqstack[at91_irqstackpos++] = 0;
 						data = at91.aic_spurious;
+					}
 					ARM7.pendingIrq = 0;
 //					arm7_core_set_irq_line(ARM7_IRQ_LINE, 0);
 					break;
@@ -1426,7 +1425,15 @@ INLINE data32_t internal_read (int addr)
 				//FIQ - Has it's own register address
 				case 0x104:
 					logit = LOG_AIC_VECTOR_READ;
-					data = at91.aic_vectors[0];
+					if ((at91.aic_irqmask & 1))
+					{
+						data = at91.aic_vectors[0];
+					}
+					else
+					{
+						at91_irqstack[at91_irqstackpos++] = 0;
+						data = at91.aic_spurious;
+					}
 					ARM7.pendingFiq = 0;
 					break;
 
@@ -1443,6 +1450,9 @@ INLINE data32_t internal_read (int addr)
 				//Interrupt Mask
 				case 0x110:
 					data = at91.aic_irqmask;
+					break;
+				case 0x114:
+					data = ARM7.pendingIrq << 1 | ARM7.pendingFiq;
 					break;
 			}
 			if(logit)	LOG(("%08x: AT91-AIC READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetAICOffset(addr),addr,data));
@@ -1737,13 +1747,36 @@ void at91_set_nmi_line(int state)
 {
 }
 
+void at91_irq_assert_if_greater()
+{
+	if (at91.aic_irqstatus > 0)
+	{
+		// We only want to assert if this IRQ is higher in priority than what's currently being processed.
+		int i;
+
+		for (i = 0; i < 31; i++)
+		{
+			if (at91_priority_map[i] == at91.aic_irqstatus)
+				break;
+			if ((( at91.aic_irqpending & at91.aic_irqmask) & ( 1 << at91_priority_map[i])))
+			{
+				ARM7.pendingIrq = 1;
+				break;
+			}
+		}
+	} else {
+		if (( at91.aic_irqpending & at91.aic_irqmask))
+			ARM7.pendingIrq = 1;
+	}
+}
 
 void at91_fire_irq(int irqline)
 {
-	if ((at91.aic_irqmask & (1<<irqline)) == 0)
-	{
-		return;
-	}
+//	if ((at91.aic_irqmask & (1<<irqline)) == 0)
+//	{
+//		return;
+//	}
+//  Always mark as pending, but don't fire if masked. 
 
 	if(irqline == AT91_FIQ_IRQ)
 	{
@@ -1752,23 +1785,7 @@ void at91_fire_irq(int irqline)
 	else
 	{
 		at91.aic_irqpending |= (1 << irqline);
-		if (at91.aic_irqstatus > 0)
-		{
-			// We only want to assert if this IRQ is higher in priority than what's currently being processed.
-			int i;
-
-			for (i = 0; i < 31; i++)
-			{
-						if (at91_priority_map[i] == at91.aic_irqstatus)
-							break;
-						if (at91_priority_map[i] == irqline)
-						{
-							ARM7.pendingIrq = 1;
-							break;
-						}
-			}
-		} else
-			ARM7.pendingIrq = 1;
+		at91_irq_assert_if_greater();
 	}
 }
 
