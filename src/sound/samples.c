@@ -1,9 +1,6 @@
 #include "driver.h"
 
-
-
 static int firstchannel,numchannels;
-
 
 /* Start one of the samples loaded from disk. Note: channel must be in the range */
 /* 0 .. Samplesinterface->channels-1. It is NOT the discrete channel to pass to */
@@ -105,7 +102,7 @@ int sample_playing(int channel)
    sound hardware, it's necessary to always call samples_sh_stop() on reset!
 */
 #define MAX_SAMPLES 4
-static int hi_samples;
+static int hi_samples = 0;
 static struct GameSamples *game_samples[MAX_SAMPLES];
 
 int samples_sh_start(const struct MachineSound *msound)
