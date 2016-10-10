@@ -31,6 +31,10 @@
 #include "driver.h"
 #include "m114s.h"
 
+#if defined(_MSC_VER) && (_MSC_VER <= 1500)
+ #define llabs _abs64
+#endif
+
 #define SAMPLE_RATE 48000
 #define SINGLE_CHANNEL_MIXER // like on the real chip, mix all channels into one stream, undef for debugging purpose
 
@@ -343,7 +347,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 
 	//Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
-		double d = (tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16); //!! increase precision?? -> not from the specs, but..
+		double d = ((int)tb1[i] * (intp + 1) / 16) + ((int)tb2[i] * (15-intp) / 16); //!! increase precision?? -> not from the specs, but..
 
 		//Apply volume - If envelope - use volume step to calculate sample volume, otherwise, apply directly
 #if USE_VOL_ENVELOPE
@@ -461,7 +465,10 @@ int M114S_sh_start(const struct MachineSound *msound)
 	const char *stream_name_ptrs[M114S_OUTPUT_CHANNELS];
 	int vol[M114S_OUTPUT_CHANNELS];
 #endif
-	int i,j;
+	int i;
+#ifndef SINGLE_CHANNEL_MIXER
+	int j;
+#endif
 
 	/* create the volume table */
 	build_vol_table();
