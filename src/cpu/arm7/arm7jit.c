@@ -967,12 +967,7 @@ static void spsr_to_cpsr(void)
 		SET_CPSR(GET_REGISTER(SPSR));
 		// do the mode switch
 		SwitchMode(GET_MODE);
-		ARM7_CHECKIRQ;
 	}
-}
-
-static void check_irq_helper(void)
-{
 	ARM7_CHECKIRQ;
 }
 
@@ -1016,8 +1011,8 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	int is_logical_op;
 	int is_sub_op;
 	int is_test_op;
-	int is_arithmetic_op;
 	int need_shift_carry_out;
+	struct jit_label *lbl;
 
 	// Normal data processing is 1 cycle - reduce the default 3-cycle count by 2
 	*cycles -= 2;
@@ -1309,20 +1304,25 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 				//emit(PUSH, result_reg);
 				emit(MOV, Rn(rd), result_reg);
 
-				// call our helper routine to load SPSR into CPSR and switch modes
+				// call our helper routine to load SPSR into CPSR and switch modes.  Also check if run count exhausted.
 				emit(CALL, Label, jit_new_native_label((byte *)&spsr_to_cpsr));
-
-				// Load R15 into EAX and go do the lookup
 				emit(MOV, EAX, Rn(15));
-				emit(JMP, Label, jit_new_native_label(jit->pLookup));
-
+				emit(CMP, RCYCLECNT, Imm, 0);
+				emit(JG, Label, lbl = jit_new_fwd_label());
+				emit(RETN);
+				jit_resolve_label(lbl);
+				emit(JMP, Label, jit_new_native_label(jit->pLookup));		
 			}
 			else
 			{
-				// Jump to the result value by loading EAX with the result (if it's not there
-				// already) and invoking pLookup.
-				if (result_reg != EAX)
-					emit(XCHG, EAX, result_reg);
+				// Jump to the result value by loading it into R15.  Check IRQs and run count.
+				emit(MOV, Rn(rd), result_reg);
+				emit(CALL, Label, jit_new_native_label((byte *)&arm7_check_irq_state));
+				emit(MOV, EAX, Rn(15));
+				emit(CMP, RCYCLECNT, Imm, 0);
+				emit(JG, Label, lbl = jit_new_fwd_label());
+				emit(RETN);
+				jit_resolve_label(lbl);
 				emit(JMP, Label, jit_new_native_label(jit->pLookup));
 			}
 				

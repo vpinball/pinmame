@@ -419,7 +419,7 @@ void at91_irqcheck()
 	arm7_check_irq_state();
 }
 
-void at91_pending_serial(int usartno)
+void at91_pending_serial(int usartno, int delaytime)
 {
 	// We can't process serial output immediately, the code will get confused and loop.
 	// So we set up a timer to process it a little bit later.
@@ -427,7 +427,10 @@ void at91_pending_serial(int usartno)
 	// 54 characters 60 times per second.  If this gets behind 
 	// things lag.   If this is too fast then it starts blocking
 	// timer interrupts
-	int freq = 60 * 60;  
+	// The longer serial multi-byte strings seem to get hung up unless there is more delay
+	// so added a delaytime parameter.  This became more apparent when I added more
+	// nimble IRQ handling.  *Sigh*. 
+	int freq = delaytime * 60;  
 	timer_adjust(at91_serial_timer, TIME_IN_HZ(freq), 0, TIME_IN_HZ(freq));
 }
 
@@ -600,7 +603,7 @@ void at91_usart_write(int usartno, int addr, data32_t outdata)
 	case 0x07:
 		at91usart[usartno].US_THR = outdata; // Transmit character
 		at91usart[usartno].US_CSR &= ~(US_TXRDY | US_TXEMPTY); 
-		at91_pending_serial(usartno);
+		at91_pending_serial(usartno, 60);
 		break;
 	case 0x0c:
 		at91usart[usartno].US_RPR = outdata; // Receive pointer:
@@ -615,7 +618,7 @@ void at91_usart_write(int usartno, int addr, data32_t outdata)
 	case 0x0f:  // Transmit counter
 		at91usart[usartno].US_TCR = outdata;
 		at91usart[usartno].US_CSR &= ~(US_ENDTX); 
-		at91_pending_serial(usartno);
+		at91_pending_serial(usartno, 30);
 		break;
 	}
 }
@@ -1262,12 +1265,12 @@ INLINE data32_t internal_read (int addr)
 					//Counter Value
 					case 0x10:
 
-						#if USE_MAME_TIMERS
+#if USE_MAME_TIMERS
 						LOG(("Timer TC%d - Reading Counter Value not supported with MAME TIMERS!\n",timer_num));
 						data = at91.tc_clock[timer_num].tc_counter;// ARM7_ICOUNT;
 #else
 						data = at91.tc_clock[timer_num].tc_counter;
-						#endif
+#endif
 
 						break;
 
@@ -1425,15 +1428,7 @@ INLINE data32_t internal_read (int addr)
 				//FIQ - Has it's own register address
 				case 0x104:
 					logit = LOG_AIC_VECTOR_READ;
-					if ((at91.aic_irqmask & 1))
-					{
-						data = at91.aic_vectors[0];
-					}
-					else
-					{
-						at91_irqstack[at91_irqstackpos++] = 0;
-						data = at91.aic_spurious;
-					}
+					data = at91.aic_vectors[0];
 					ARM7.pendingFiq = 0;
 					break;
 
@@ -1451,6 +1446,8 @@ INLINE data32_t internal_read (int addr)
 				case 0x110:
 					data = at91.aic_irqmask;
 					break;
+
+				//Pending status
 				case 0x114:
 					data = ARM7.pendingIrq << 1 | ARM7.pendingFiq;
 					break;
