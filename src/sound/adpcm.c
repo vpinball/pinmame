@@ -26,12 +26,6 @@
 #include "adpcm.h"
 
 
-#define MAX_SAMPLE_CHUNK	10000
-
-#define FRAC_BITS			14
-#define FRAC_ONE			(1 << FRAC_BITS)
-#define FRAC_MASK			(FRAC_ONE - 1)
-
 //#define VERBOSE
 
 #ifdef VERBOSE
@@ -55,11 +49,6 @@ struct ADPCMVoice
 	UINT32 signal;			/* current ADPCM signal */
 	UINT32 step;			/* current ADPCM step */
 	UINT32 volume;			/* output volume */
-
-	INT16 last_sample;		/* last sample output */
-	INT16 curr_sample;		/* current sample target */
-	UINT32 source_step;		/* step value for frequency conversion */
-	UINT32 source_pos;		/* current fractional position */
 #ifdef PINMAME
 	int is6376;
 #endif
@@ -190,6 +179,8 @@ static INT16 clock_adpcm(struct ADPCMVoice *voice, UINT8 nibble)
 
 static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 {
+	float last_sample = 0;
+
 	/* if this voice is active */
 	if (voice->playing)
 	{
@@ -204,12 +195,13 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 			int nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
 
 			/* output to the buffer, scaling by the volume */
-			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
+			*buffer++ = (INT32)clock_adpcm(voice, nibble) * (INT32)voice->volume / 2;
 			samples--;
 
 			/* next! */
 			if (++sample >= count)
 			{
+				last_sample = *(buffer-1);
 				voice->playing = 0;
 				break;
 			}
@@ -219,14 +211,19 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 		voice->sample = sample;
 	}
 
-	/* fill the rest with silence */
+	/* for the rest: fade to silence */ //!! correct??
 	while (samples--)
-		*buffer++ = 0;
+	{
+		last_sample *= 0.95f;
+		*buffer++ = (INT16)last_sample;
+	}
 }
 
 #ifdef PINMAME
 static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 {
+	float last_sample = 0;
+
 	/* if this voice is active */
 	if (voice->playing)
 	{
@@ -247,6 +244,7 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 				/* end of voice marker */
 				if (count == 0)
 				{
+					last_sample = *(buffer-1);
 					voice->playing = 0;
 					break;
 				}
@@ -261,8 +259,8 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 			nibble = base[sample / 2] >> (((sample & 1) << 2) ^ 4);
 
 			/* output to the buffer, scaling by the volume */
-			/* signal in range -4096..4095, volume in range 2..16 => signal * volume / 2 in range -32768..32767 */
-			*buffer++ = clock_adpcm(voice, nibble) * voice->volume / 2;
+			/* signal in range -2048..2047, volume in range 2..32 => signal * volume / 2 in range -32768..32767 */
+			*buffer++ = (INT32)clock_adpcm(voice, nibble) * (INT32)voice->volume / 2;
 
 			++sample;
 			--count;
@@ -274,9 +272,12 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 		voice->count = count;
 	}
 
-	/* fill the rest with silence */
+	/* for the rest: fade to silence */ //!! correct??
 	while (samples--)
-		*buffer++ = 0;
+	{
+		last_sample *= 0.95f;
+		*buffer++ = (INT16)last_sample;
+	}
 }
 #endif
 
@@ -289,68 +290,14 @@ static void generate_adpcm_6376(struct ADPCMVoice *voice, INT16 *buffer, int sam
 static void adpcm_update(int num, INT16 *buffer, int length)
 {
 	struct ADPCMVoice *voice = &adpcm[num];
-	INT16 sample_data[MAX_SAMPLE_CHUNK], *curr_data = sample_data;
-	INT16 prev = voice->last_sample, curr = voice->curr_sample;
-	UINT32 final_pos;
-	UINT32 new_samples;
-
-	/* finish off the current sample */
-	if (voice->source_pos > 0)
-	{
-		/* interpolate */
-		while (length > 0 && voice->source_pos < FRAC_ONE)
-		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - voice->source_pos)) + ((INT32)curr * voice->source_pos)) >> FRAC_BITS;
-			voice->source_pos += voice->source_step;
-			length--;
-		}
-
-		/* if we're over, continue; otherwise, we're done */
-		if (voice->source_pos >= FRAC_ONE)
-			voice->source_pos -= FRAC_ONE;
-		else
-			return;
-	}
-
-	/* compute how many new samples we need */
-	final_pos = voice->source_pos + length * voice->source_step;
-	new_samples = (final_pos + FRAC_ONE - 1) >> FRAC_BITS;
-	if (new_samples > MAX_SAMPLE_CHUNK)
-		new_samples = MAX_SAMPLE_CHUNK;
 
 	/* generate them into our buffer */
 #ifdef PINMAME
 	if (voice->is6376)
-		generate_adpcm_6376(voice, sample_data, new_samples);
+		generate_adpcm_6376(voice, buffer, length);
 	else
 #endif
-	generate_adpcm(voice, sample_data, new_samples);
-	prev = curr;
-	curr = *curr_data++;
-
-	/* then sample-rate convert with linear interpolation */
-	while (length > 0)
-	{
-		/* interpolate */
-		while (length > 0 && voice->source_pos < FRAC_ONE)
-		{
-			*buffer++ = (((INT32)prev * (FRAC_ONE - voice->source_pos)) + ((INT32)curr * voice->source_pos)) >> FRAC_BITS;
-			voice->source_pos += voice->source_step;
-			length--;
-		}
-
-		/* if we're over, grab the next samples */
-		if (voice->source_pos >= FRAC_ONE)
-		{
-			voice->source_pos -= FRAC_ONE;
-			prev = curr;
-			curr = *curr_data++;
-		}
-	}
-
-	/* remember the last samples */
-	voice->last_sample = prev;
-	voice->curr_sample = curr;
+	generate_adpcm(voice, buffer, length);
 }
 
 
@@ -406,11 +353,6 @@ static void adpcm_state_save_register( void )
 		state_save_register_UINT32 (buf, i, "signal" , &voice->signal,  1);
 		state_save_register_UINT32 (buf, i, "step"   , &voice->step,    1);
 		state_save_register_UINT32 (buf, i, "volume" , &voice->volume,  1);
-
-		state_save_register_INT16  (buf, i, "last_sample", &voice->last_sample, 1);
-		state_save_register_INT16  (buf, i, "curr_sample", &voice->curr_sample, 1);
-		state_save_register_UINT32 (buf, i, "source_step", &voice->source_step, 1);
-		state_save_register_UINT32 (buf, i, "source_pos" , &voice->source_pos,  1);
 	}
 	state_save_register_func_presave(adpcm_state_save_base_store);
 	state_save_register_func_postload(adpcm_state_save_base_refresh);
@@ -438,16 +380,14 @@ int ADPCM_sh_start(const struct MachineSound *msound)
 	{
 		/* generate the name and create the stream */
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], Machine->sample_rate, i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], intf->frequency, i, adpcm_update);
 		if (adpcm[i].stream == -1)
 			return 1;
 
 		/* initialize the rest of the structure */
 		adpcm[i].region_base = memory_region(intf->region);
-		adpcm[i].volume = 255;
+		adpcm[i].volume = 0x20;
 		adpcm[i].signal = -2;
-		if (Machine->sample_rate)
-			adpcm[i].source_step = (UINT32)((double)intf->frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
 	}
 
 	adpcm_state_save_register();
@@ -705,16 +645,14 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		if (intf->num < 1) sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice); else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], Machine->sample_rate, i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], intf->frequency[chip], i, adpcm_update);
 		if (adpcm[i].stream == -1)
 			return 1;
 
 		/* initialize the rest of the structure */
 		adpcm[i].region_base = memory_region(intf->region[chip]);
-		adpcm[i].volume = 255;
+		adpcm[i].volume = 0x20;
 		adpcm[i].signal = -2;
-		if (Machine->sample_rate)
-			adpcm[i].source_step = (UINT32)((double)intf->frequency[chip] * (double)FRAC_ONE / (double)Machine->sample_rate);
 	}
 
 	okim6295_state_save_register();
@@ -787,8 +725,7 @@ void OKIM6295_set_frequency(int which, double frequency)
 
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
-		if (Machine->sample_rate)
-			voice->source_step = (UINT32)(frequency * (double)FRAC_ONE / (double)Machine->sample_rate);
+		stream_set_sample_rate(voice->stream, frequency);
 	}
 }
 
