@@ -187,6 +187,8 @@ int stream_init(const char *name,int default_mixing_level,
 
 	stream_joined_channels[channel] = 1;
 
+	mixer_set_channel_legacy_resample(channel,0);
+
 	mixer_set_name(channel,name);
 
 	if ((stream_buffer[channel] = malloc(sizeof(INT16)*BUFFER_LEN)) == 0)
@@ -240,6 +242,8 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 
 	for (i = 0;i < channels;i++)
 	{
+		mixer_set_channel_legacy_resample(channel+i,0);
+
 		mixer_set_name(channel+i,names[i]);
 
 		if ((stream_buffer[channel+i] = malloc(sizeof(INT16)*BUFFER_LEN)) == 0)

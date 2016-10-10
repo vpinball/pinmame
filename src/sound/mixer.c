@@ -1673,3 +1673,16 @@ void mixer_set_reverb_filter(int ch, float delay, float force)
 	memset(channel->reverbBuffer, 0, sizeof(channel->reverbBuffer[0][0])*2*REVERB_LENGTH);
 }
 #endif
+
+#ifdef USE_LIBSAMPLERATE
+void mixer_set_channel_legacy_resample(int ch, int enable)
+{
+	struct mixer_channel_data *channel = &mixer_channel[ch];
+
+	channel->legacy_resample = enable;
+}
+#else
+void mixer_set_channel_legacy_resample(int ch, int enable)
+{
+}
+#endif
