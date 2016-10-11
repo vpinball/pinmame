@@ -8,9 +8,9 @@
 
 #include "driver.h"
 #include <math.h>
+#include <assert.h>
 
-
-#define BUFFER_LEN 16384
+#define BUFFER_LEN 65536
 
 #define SAMPLES_THIS_FRAME(channel) \
 	mixer_need_samples_this_frame((channel),stream_sample_rate[(channel)])
@@ -129,6 +129,11 @@ void streams_sh_update(void)
 
 			buflen = newpos - stream_buffer_pos[channel];
 
+			assert(buflen + stream_buffer_pos[channel] < BUFFER_LEN);
+
+			if (buflen + stream_buffer_pos[channel] >= BUFFER_LEN)
+				buflen = BUFFER_LEN-1 - stream_buffer_pos[channel];
+
 			if (stream_joined_channels[channel] > 1)
 			{
 				INT16 *buf[MIXER_MAX_CHANNELS];
@@ -136,7 +141,11 @@ void streams_sh_update(void)
 				if (buflen > 0)
 				{
 					for (i = 0;i < stream_joined_channels[channel];i++)
+					{
+						assert(buflen + stream_buffer_pos[channel+i] < BUFFER_LEN);
+
 						buf[i] = stream_buffer[channel+i] + stream_buffer_pos[channel+i];
+					}
 
 					(*stream_callback_multi[channel])(stream_param[channel],buf,buflen);
 				}
