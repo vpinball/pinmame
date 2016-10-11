@@ -304,7 +304,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeIn = 1.0;
 
 			if ( iFadeInPos<iFadeInSamples ) {
-				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*3.1415926535897932384626433832795/2);
+				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*(3.1415926535897932384626433832795/2));
 				iFadeInPos++;
 			}
 
@@ -440,6 +440,8 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 			buffer += samplesToCopy;
 
 			votraxsc01_locals.iDelay -= samplesToCopy;
+
+			length -= samplesToCopy;
 		}
 		else if ( votraxsc01_locals.iSamplesInBuffer==0 ) {
 			if ( votraxsc01_locals.busy ) {
@@ -457,7 +459,6 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 					votraxsc01_locals.pActPos = PhonemeData[votraxsc01_locals.actPhoneme].lpStart[votraxsc01_locals.actIntonation];
 					votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation];
 				}
-
 			}
 
 			samplesToCopy = (length<=votraxsc01_locals.iRemainingSamples)?length:votraxsc01_locals.iRemainingSamples;
