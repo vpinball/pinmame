@@ -139,7 +139,7 @@ static int left_accum[ACCUMULATOR_SAMPLES];
 static int right_accum[ACCUMULATOR_SAMPLES];
 
 #ifdef USE_LIBSAMPLERATE
-static float in_f[ACCUMULATOR_SAMPLES*25]; //!! 25=magic, should be able to handle all cases where src sample rate is far far larger than dst sample rate (e.g. 4x48000 -> 8000)
+static float in_f[ACCUMULATOR_SAMPLES*25]; //!! 25=magic, should be able to handle all cases where src sample rate is far far larger than dst sample rate (e.g. 4x48000 -> 8000), if changing also change asserts and overflow check in below code (search for ACCUMULATOR_MASK*25)
 static float out_f[ACCUMULATOR_SAMPLES];
 #endif
 
@@ -303,12 +303,15 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	long i;
 	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
-	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	//limit src_len input length, roughly same as old code did basically: (disabled, as problems with dvlsdre 'Fire' speech otherwise)
+	//src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
 
 	assert( src_len <= ACCUMULATOR_MASK*25 ); //!! magic see in_f
+
+	src_len = MIN(src_len, ACCUMULATOR_MASK*25);
 #endif
 	assert( dst_len <= ACCUMULATOR_MASK );
 
@@ -543,12 +546,15 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	long i;
 	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
-	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	//limit src_len input length, roughly same as old code did basically: (disabled, as problems with dvlsdre 'Fire' speech otherwise)
+	//src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
 
-	assert(src_len <= ACCUMULATOR_MASK * 25); //!! magic see in_f
+	assert(src_len <= ACCUMULATOR_MASK*25); //!! magic see in_f
+
+	src_len = MIN(src_len, ACCUMULATOR_MASK*25);
 #endif
 	assert( dst_len <= ACCUMULATOR_MASK );
 
