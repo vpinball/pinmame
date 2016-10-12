@@ -10,7 +10,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define BUFFER_LEN 65536
+#define BUFFER_LEN 16384
 
 #define SAMPLES_THIS_FRAME(channel) \
 	mixer_need_samples_this_frame((channel),stream_sample_rate[(channel)])

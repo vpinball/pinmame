@@ -303,13 +303,13 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	long i;
 	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
-	//limit src_len input length, roughly same as old code did basically: (disabled, as problems with dvlsdre 'Fire' speech otherwise)
-	//src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	//limit src_len input length, roughly same as old code did basically:
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
 
-	assert( src_len <= ACCUMULATOR_MASK*25 ); //!! magic see in_f
+	assert(src_len <= ACCUMULATOR_MASK*25); //!! magic see in_f
 
 	src_len = MIN(src_len, ACCUMULATOR_MASK*25);
 #endif
@@ -546,8 +546,8 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	long i;
 	const double scale = volume * (8.0 * 0x10000000 / 256.0);
 
-	//limit src_len input length, roughly same as old code did basically: (disabled, as problems with dvlsdre 'Fire' speech otherwise)
-	//src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	//limit src_len input length, roughly same as old code did basically:
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
@@ -1497,8 +1497,11 @@ int mixer_samples_this_frame(void)
 #define EXTRA_SAMPLES 1    // safety margin for sampling rate conversion
 int mixer_need_samples_this_frame(int channel,int freq)
 {
-	return (samples_this_frame - mixer_channel[channel].samples_available)
-			* freq / Machine->sample_rate + EXTRA_SAMPLES;
+	if (mixer_channel[channel].samples_available > samples_this_frame) // check if still enough samples around
+		return 0;
+
+	return (int)((samples_this_frame - mixer_channel[channel].samples_available)
+			* (INT64)freq / Machine->sample_rate + EXTRA_SAMPLES);
 }
 
 
