@@ -43,7 +43,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   for (ii = 1; ii <= 32; ii++)               // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
-      dotCol[ii][jj] = level[data];
+      dotCol[ii][jj] = 63 + level[data];
   }
 
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
@@ -79,7 +79,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   for (ii = 1; ii <= 32; ii++)               // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
-      dotCol[ii][jj] = level[data];
+      dotCol[ii][jj] = 63 + level[data];
   }
 
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
