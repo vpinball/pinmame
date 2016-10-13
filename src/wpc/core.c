@@ -835,7 +835,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
 		}
 #endif
-        *line++ = dmdColor[col];
+		if((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2)) 
+			*line++ = dmdColor[col+63];
+		else
+			*line++ = dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
