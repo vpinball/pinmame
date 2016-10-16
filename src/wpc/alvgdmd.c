@@ -218,9 +218,9 @@ MACHINE_DRIVER_START(alvgdmd1)
 MACHINE_DRIVER_END
 
 
-// HACK: Pistol Poker is clocked at 24MHz instead of 12MHz to enhance DMD animations
+// Pistol Poker
 MACHINE_DRIVER_START(alvgdmd2)
-  MDRV_CPU_ADD(I8051, 24000000)	/*24 Mhz*/ // retweak?
+  MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
