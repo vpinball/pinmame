@@ -83,7 +83,7 @@ static void changefr (int param) {
   if (freqarb5 [st100loc.freqb5] < 9999)  {
 	mixer_set_sample_frequency(st100loc.channel+4,freqarb5 [st100loc.freqb5] * sizeof(s100Waveb5));
 	}
-// emulationg the two lm324
+// emulating the two lm324
   if (freqarb6 [st100loc.freqb6] < 9999)  {
 	st100loc.freqb6++;
     	logerror("setfreq6 %i\n", freqarb6 [st100loc.freqb6] );
@@ -91,7 +91,7 @@ static void changefr (int param) {
   if (freqarb6 [st100loc.freqb6] < 9999)  {
 	mixer_set_sample_frequency(st100loc.channel+5,freqarb6 [st100loc.freqb6] * sizeof(s100Waveb6));
 	} else {
-     	logerror("stopsample 6 \n");
+     	logerror("stopsample 6\n");
    	mixer_set_volume(st100loc.channel+5,0);	   // bit 5
   }
 
@@ -102,11 +102,17 @@ static int st100_sh_start(const struct MachineSound *msound)  {
   int mixing_levels[6] = {25,25,25,25,25,25};
   memset(&st100loc, 0, sizeof(st100loc));
   st100loc.channel = mixer_allocate_channels(6, mixing_levels);
-  mixer_set_volume(st100loc.channel,0);	   // bit 1
+  mixer_set_name(st100loc.channel + 0, "ST100 0");
+  mixer_set_volume(st100loc.channel+0,0);  // bit 1
+  mixer_set_name(st100loc.channel + 1, "ST100 1");
   mixer_set_volume(st100loc.channel+1,0);  // bit 2
+  mixer_set_name(st100loc.channel + 2, "ST100 2");
   mixer_set_volume(st100loc.channel+2,0);  // bit 3
+  mixer_set_name(st100loc.channel + 3, "ST100 3");
   mixer_set_volume(st100loc.channel+3,0);  // bit 4
+  mixer_set_name(st100loc.channel + 4, "ST100 4");
   mixer_set_volume(st100loc.channel+4,0);  // bit 5
+  mixer_set_name(st100loc.channel + 5, "ST100 5");
   mixer_set_volume(st100loc.channel+5,0);  // bit 6
   mixer_play_sample_16(st100loc.channel,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ1*sizeof(s100Waveb1), 1);
   mixer_play_sample_16(st100loc.channel+1,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ2*sizeof(s100Waveb1), 1);
@@ -119,8 +125,6 @@ static int st100_sh_start(const struct MachineSound *msound)  {
   timer_pulse(TIME_IN_SEC(0.02),0,changefr);
   return 0;
 }
-
-
 
 
 static void st100_sh_stop(void) {
@@ -177,8 +181,6 @@ static WRITE_HANDLER(sts_data_w)
 //     	mixer_set_volume(st100loc.channel+5,0);	   // bit 5
      }
     logerror("snd_data_w: %i\n", data);
-
-
 }
 
 
@@ -411,7 +413,7 @@ static int st300_sh_start(const struct MachineSound *msound)  {
   mixer_set_volume(st300loc.channel,0);
   mixer_set_name  (st300loc.channel+1, "MC6840 #Q1");  // 6840 Output timer 1 (q1) is easy wave + volume always 100
   mixer_set_volume(st300loc.channel+1,70*ST300_VOL);
-  mixer_set_name  (st300loc.channel+2, "EXT TIM");   // External Timer (U10) is Noise geneartor + volume from q3
+  mixer_set_name  (st300loc.channel+2, "EXT TIM");   // External Timer (U10) is Noise generator + volume from q3
   mixer_set_volume(st300loc.channel+2,0);
   timer_pulse(TIME_IN_HZ(ST300_INTCLOCK),0x02,st300_pulse); // start internal clock
   return 0;
