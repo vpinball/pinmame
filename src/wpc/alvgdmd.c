@@ -209,6 +209,7 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
+// Al's Garage Band Goes On A World Tour
 MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
@@ -216,7 +217,6 @@ MACHINE_DRIVER_START(alvgdmd1)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
-
 
 // Pistol Poker
 MACHINE_DRIVER_START(alvgdmd2)
