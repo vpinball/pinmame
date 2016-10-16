@@ -597,7 +597,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 	byte *nataddr;
 	byte *resp;
 	struct instr *i;
-	byte *p;
+	//byte *p;
 	struct jit_page *pg;
 
 
