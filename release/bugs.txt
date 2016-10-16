@@ -8,6 +8,7 @@ Bugs in Pinmame that we are aware of:
  #1) Williams/Bally WPC: DCS sound still has some problems, only on high volume levels.
      (So don't use full volume (29-31) to avoid static noise)
      This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
+     (Note that disabling the low pass filter in the DCS core in addition exposes some static noise on some machines, when playing certain samples -> DCS compression itself is the cause?)
 
  #2) Not all Williams/Bally WPC functions are implemented in PinMAME.
      The most important (?!) functions missing are the ticket dispenser,
@@ -19,7 +20,7 @@ Bugs in Pinmame that we are aware of:
  #4) The name and year for each game were taken from the Internet Pinball Database
      (http://www.ipdb.org), and may not be 100% accurate!
 
- #5) Occasional pops/clicks on Capcom sound
+ #5) Occasional pops/clicks on Capcom sound.
 
  #6) Occasional pops/clicks/crackling on Whitestar II sound, only on high volume levels.
      (~24 and above, for example on Nascar and Grand Prix, so avoid this)

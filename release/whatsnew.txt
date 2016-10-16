@@ -7,14 +7,15 @@ Improve sound pitch for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, 
 Further improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
 Further improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)
  but still one should avoid high volume levels for these machines (~24 and above, for example on Nascar)
-Improved AT91 core emulation features & fix Whitestar II-JIT-speedup crashes on startup
-Slightly improved FM sound emulation cores (like AY8910, YMF262 and YM2151: so a lot of Gottlieb generations, old Ballys, pre-DCS games, etc)
+Improved AT91 core emulation features
+ and add 'at91jit' option to disable it
+Improved FM sound emulation cores (like AY8910, YMF262 and YM2151: so a lot of Gottlieb generations, old Ballys, pre-DCS games, etc)
 Slightly improved TMS5200 core (Bally Centaur, etc), especially the wrong pitch if Zaccaria games were run after the first time from within VP
 Use reverb for all sound cores (not just TMS5200) used in Bally Centaur
 Improved M114 sound core (Mr. Game)
 Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some lowpass filtering (active only on older machines) to remove some of the audible noise
 Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise
-Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores
+Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
 Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars God of War, etc)
 Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
 
