@@ -234,6 +234,7 @@ struct GameOptions
 	int		debug_depth;	/* requested depth of debugger bitmap */
 
 	int		at91jit;
+	int		usemodsol; 
 
 	#ifdef MESS
 	UINT32 ram;

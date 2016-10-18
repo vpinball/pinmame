@@ -1675,7 +1675,7 @@ STDMETHODIMP CController::get_SolMask(int nLow, long *pVal)
 
 STDMETHODIMP CController::put_SolMask(int nLow, long newVal)
 {
-	if ( (nLow<0) || (nLow>1) )
+	if ( (nLow<0) || (nLow>2) ) //TODO B2S hack, see vp_setSolMask()
 		return S_FALSE;
 
 	vp_setSolMask(nLow, newVal);

@@ -8,6 +8,7 @@ static struct {
   UINT8  lastLampMatrix[CORE_MAXLAMPCOL];
   UINT8 lastRGBLamps[CORE_MAXRGBLAMPS];
   UINT64 lastSol;
+  UINT8  lastModSol[CORE_MODSOL_MAX];
   UINT32 solMask[2];
   int    lastGI[CORE_MAXGI];
   UINT8  dips[VP_MAXDIPBANKS];
@@ -85,27 +86,52 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 
 /*-------------------------------------------
 /  get all solenoids changed since last call
-/  returns number of canged solenoids
+/  returns number of changed solenoids
 /-------------------------------------*/
-int vp_getChangedSolenoids(vp_tChgSols chgStat) {
-  UINT64 allSol = core_getAllSol();
-  UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
-  int idx = 0;
-  int ii;
+int vp_getChangedSolenoids(vp_tChgSols chgStat)
+{
+	UINT64 allSol = core_getAllSol();
+	UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
+	int idx = 0;
+	int ii;
+	int start = 0, end = CORE_FIRSTCUSTSOL+core_gameData->hw.custSol-1;
 
-  locals.lastSol = allSol;
+	locals.lastSol = allSol;
+	
+	if (options.usemodsol)
+	{
+		for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
+		{
+			// Skip the VPM reserved solenoids, they will be handled after.
+			if (ii==32)
+				ii+=(CORE_FIRSTCUSTSOL-32);
 
-  /*-- add changed solenoids to the array --*/
-  for (ii = 1; ii < CORE_FIRSTCUSTSOL+core_gameData->hw.custSol; ii++) {
-    if (chgSol & 0x01) {
-      chgStat[idx].solNo = ii; // Solenoid number
-      chgStat[idx].currStat = (allSol & 0x01);
-      idx += 1;
-    }
-    chgSol >>= 1;
-    allSol >>= 1;
-  }
-  return idx;
+			if (locals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
+			{
+				locals.lastModSol[ii] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii];
+				chgStat[idx].solNo = ii+1; // Solenoid number
+				chgStat[idx].currStat = locals.lastModSol[ii];
+				idx += 1;
+			}
+		}
+		// Treat the VPM reserved solenoids the old way. 
+		start = 32;
+		end = CORE_FIRSTCUSTSOL;
+		chgSol >>= start;
+		allSol >>= start;
+	}
+
+	for (ii = start; ii < end; ii++) 
+	{
+		if (chgSol & 0x01) {
+			chgStat[idx].solNo = ii+1; // Solenoid number
+			chgStat[idx].currStat = (allSol & 0x01);
+			idx += 1;
+		}
+		chgSol >>= 1;
+		allSol >>= 1;
+	}
+	return idx;
 }
 
 /*-------------------------------------------
@@ -149,7 +175,12 @@ int vp_getDIP(int dipBank) {
 /  set Solenoid Mask
 /-----------*/
 void vp_setSolMask(int no, int mask) {
-  locals.solMask[no] = mask;
+	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting.
+	// Use index 2 to turn on/off modulated solenoids
+	if (no == 2)
+		options.usemodsol = mask;
+	else
+		locals.solMask[no] = mask;
 }
 
 /*-----------
