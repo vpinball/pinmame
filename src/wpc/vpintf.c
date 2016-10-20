@@ -104,7 +104,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 		{
 			// Skip the VPM reserved solenoids, they will be handled after.
 			if (ii==32)
-				ii+=(CORE_FIRSTCUSTSOL-32);
+				ii = CORE_FIRSTCUSTSOL-1;
 
 			if (locals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
 			{
@@ -116,7 +116,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 		}
 		// Treat the VPM reserved solenoids the old way. 
 		start = 32;
-		end = CORE_FIRSTCUSTSOL;
+		end = CORE_FIRSTCUSTSOL-1;
 		chgSol >>= start;
 		allSol >>= start;
 	}
