@@ -3,6 +3,7 @@ What's new in Visual PinMAME:
 
 Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
+- To enable modulated/multi-level flasher support, set SolMask to 2
 
 Version 2.7 (June 08th, 2016) - "Alive and kicking"
 ------------------------------------------------------------------------------
