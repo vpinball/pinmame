@@ -23,8 +23,8 @@ Bugs in Pinmame that we are aware of:
  #5) Occasional pops/clicks on Capcom sound.
 
  #6) Occasional pops/clicks/crackling on Whitestar II sound, only on high volume levels.
-     (~24 and above, for example on Nascar and Grand Prix, so avoid this)
-     This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
+     (~24 and above, for example on Nascar and Grand Prix, or even ~20 on LOTR, so avoid this)
+     This seems to happen on real machines (verified on 2 different Grand Prix pinballs), too.
 
  #7) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate.
 
