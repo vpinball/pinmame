@@ -482,7 +482,7 @@ INLINE void core_update_modulated_light(UINT32 *light, int bit){
 		(*light) |= 0x01;
 }
 
-extern UINT8 core_calc_modulated_light(UINT32 bits, int bit_count, UINT8 *prev_level);
+extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level);
 
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);
