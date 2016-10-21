@@ -858,6 +858,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
+  // detect if same frame again
   if(oldbuffer != NULL) {
 	  dumpframe = 0;
 	  for(jj = 0; jj < layout->start; jj++)
@@ -875,6 +876,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   if(dumpframe)
 	  g_needs_DMD_update = 1;
 
+  // output to PinDMD or dump frame to .txt
   if(g_fShowPinDMD || g_fDumpFrames) {
     if(dumpframe) {
 	    //usb dmd
@@ -1903,9 +1905,10 @@ static const unsigned char core_bits_set_table256[256] =
     B6(0), B6(1), B6(1), B6(2)
 };
 
-UINT8 core_calc_modulated_light(UINT32 bits, int bit_count, UINT8 *prev_level)
+UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level)
 {
-	UINT8 outputlevel, targetlevel;
+	UINT8 outputlevel;
+	UINT32 targetlevel;
 	UINT32 mask = (1 << bit_count) - 1;
 
 	assert(bit_count <= 16);
@@ -1916,7 +1919,7 @@ UINT8 core_calc_modulated_light(UINT32 bits, int bit_count, UINT8 *prev_level)
 		core_bits_set_table256[(bits >> 24) & 0xff]) * 255 / bit_count;
 	// Apply some smoothing with the previous level
 	outputlevel = (UINT8)((targetlevel + *prev_level) / 2);
-	*prev_level = targetlevel;
+	*prev_level = (UINT8)targetlevel;
 	return outputlevel;
 }
 
