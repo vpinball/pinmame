@@ -30,7 +30,10 @@
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
 #define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
+#define WPC_MODSOLSMOOTH   14 /* Modulated solenoids - History length to smooth over */
+#define WPC_MODSOLSAMPLE   2  /* Modulated solenodi sampling rate (every n IRQs) */
 #endif
+
 
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ      976 /* IRQ Frequency-Timed by JD*/
@@ -113,6 +116,9 @@ static struct {
   int zc;						/* zero cross flag */
   int gi_irqcnt;                /* Count IRQ occurrences for GI Dimming */
   int gi_active[CORE_MAXGI];    /* Used to check if GI string is accessed at all */
+  UINT32 solenoidbits[48];
+  int modsol_count;
+  int modsol_sample;
 } wpclocals;
 
 static struct {
@@ -894,6 +900,53 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
+	if (options.usemodsol)
+	{
+		if (wpclocals.modsol_sample < WPC_MODSOLSAMPLE-1)
+		{
+			wpclocals.modsol_sample++;
+		}
+		else
+		{
+			int i;
+			wpclocals.modsol_sample = 0;
+			
+			for (i = 0; i < 32; i++)
+			{
+				core_update_modulated_light(&wpclocals.solenoidbits[i], coreGlobals.pulsedSolState & (1 << i));
+			}
+			for (i = 4; i < 8; i++)
+			{
+				if (wpclocals.nonFlipBits & (1 << i))
+				{
+					core_update_modulated_light(&wpclocals.solenoidbits[i + 28], wpclocals.solFlipPulse & (1 << i));
+				}
+			}
+			if (wpclocals.modsol_count < WPC_MODSOLSMOOTH)
+			{
+				wpclocals.modsol_count++;
+			}
+			else
+			{
+				wpclocals.modsol_count  = 0;
+				for (i = 0; i < 32; i++)
+				{
+					coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(wpclocals.solenoidbits[i], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);
+				}
+				for (i = 4; i < 8; i++)
+				{
+					if (wpclocals.nonFlipBits & (1 << i))
+					{
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = core_calc_modulated_light(wpclocals.solenoidbits[i + 28], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i + 28]);
+					}
+					else
+					{
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = ((wpclocals.solFlip & (1 << i)) > 0) ? 1 : 0;
+					}
+				}
+			}
+		}
+	}
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 
