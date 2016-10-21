@@ -394,7 +394,6 @@ typedef struct {
   UINT32 solenoids;       /* on power driver bord */
   UINT32 solenoids2;      /* flipper solenoids */
   UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
-  int    modulatedsolEn;  /* Enable solenoid modulation decoding */
   UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
   UINT64 lastSol;         /* last state of all solenoids */
   int    gi[CORE_MAXGI];  /* WPC gi strings */
@@ -476,6 +475,14 @@ extern int core_getSwCol(int colEn);
 extern int core_getSol(int solNo);
 extern int core_getPulsedSol(int solNo);
 extern UINT64 core_getAllSol(void);
+
+INLINE void core_update_modulated_light(UINT32 *light, int bit){
+	(*light) = (*light) << 1;
+	if (bit)
+		(*light) |= 0x01;
+}
+
+extern UINT8 core_calc_modulated_light(UINT32 bits, int bit_count, UINT8 *prev_level);
 
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);

@@ -2,6 +2,7 @@
 /* PINMAME - Interface function (Input/Output) */
 /***********************************************/
 #include <stdarg.h>
+#include <assert.h>
 #include "driver.h"
 #include "sim.h"
 #include "snd_cmd.h"
@@ -1188,6 +1189,7 @@ void core_updateSw(int flipEn) {
       for (ii = 1; ii < CORE_FIRSTCUSTSOL+core_gameData->hw.custSol; ii++) {
         if (chgSol & 0x01) {
           /*-- solenoid has changed state --*/
+
           OnSolenoid(ii, allSol & 0x01);
           /*-- log solenoid number on the display (except flippers) --*/
           if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
@@ -1891,6 +1893,31 @@ void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init) {
       vp_setDIP(5, readinputport(CORE_COREINPORT+3)>>8);
     }
   }
+}
+
+static const unsigned char core_bits_set_table256[256] =
+{
+#   define B2(n) n,     n+1,     n+1,     n+2
+#   define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
+#   define B6(n) B4(n), B4(n+1), B4(n+1), B4(n+2)
+    B6(0), B6(1), B6(1), B6(2)
+};
+
+UINT8 core_calc_modulated_light(UINT32 bits, int bit_count, UINT8 *prev_level)
+{
+	UINT8 outputlevel, targetlevel;
+	UINT32 mask = (1 << bit_count) - 1;
+
+	assert(bit_count <= 16);
+	bits &= mask;
+	targetlevel = ((UINT32)core_bits_set_table256[bits & 0xff] +
+		core_bits_set_table256[(bits >> 8) & 0xff] +
+		core_bits_set_table256[(bits >> 16) & 0xff] +
+		core_bits_set_table256[(bits >> 24) & 0xff]) * 255 / bit_count;
+	// Apply some smoothing with the previous level
+	outputlevel = (UINT8)((targetlevel + *prev_level) / 2);
+	*prev_level = targetlevel;
+	return outputlevel;
 }
 
 /*----------------------------------------------

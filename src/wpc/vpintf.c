@@ -88,7 +88,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 /  get all solenoids changed since last call
 /  returns number of changed solenoids
 /-------------------------------------*/
-int vp_getChangedSolenoids(vp_tChgSols chgStat)
+int vp_getChangedSolenoids(vp_tChgSols chgStat) 
 {
 	UINT64 allSol = core_getAllSol();
 	UINT64 chgSol = (allSol ^ locals.lastSol) & vp_getSolMask64();
@@ -102,9 +102,11 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 	{
 		for(ii = 0; ii<CORE_MODSOL_MAX; ii++)
 		{
-			// Skip the VPM reserved solenoids, they will be handled after.
-			if (ii==32)
-				ii = CORE_FIRSTCUSTSOL-1;
+			// Skip the VPM reserved solenoids, they will be handled after.  Need to include
+			// "flipper" solenoids as WPC may sneak flashers there when upper flippers aren't present.
+			// WPC will put unsmoothed 0/1 values on actual flippers so this shouldn't harm anything.
+			if (ii==40)
+				ii=CORE_FIRSTCUSTSOL;
 
 			if (locals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
 			{
@@ -115,8 +117,8 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 			}
 		}
 		// Treat the VPM reserved solenoids the old way. 
-		start = 32;
-		end = CORE_FIRSTCUSTSOL-1;
+		start = 40;
+		end = CORE_FIRSTCUSTSOL;
 		chgSol >>= start;
 		allSol >>= start;
 	}
