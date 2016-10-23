@@ -911,6 +911,7 @@ static INTERRUPT_GEN(wpc_irq) {
 			int i;
 			wpclocals.modsol_sample = 0;
 			
+			// Messy mappings to duplicate what the core does, see core_getSol()
 			for (i = 0; i < 32; i++)
 			{
 				core_update_modulated_light(&wpclocals.solenoidbits[i], coreGlobals.pulsedSolState & (1 << i));
@@ -942,6 +943,28 @@ static INTERRUPT_GEN(wpc_irq) {
 					else
 					{
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = ((wpclocals.solFlip & (1 << i)) > 0) ? 1 : 0;
+					}
+				}
+				if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS))
+				{
+					for (i=36;i<40;i++)
+					{
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i-8];
+					}
+					// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.
+					if (core_gameData->gen & GEN_ALLWPC)
+					{
+						for(i=28;i<32;i++)
+						{
+							coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i-1) ? 1 :0;
+						}
+					}
+				}
+				else
+				{
+					for(i=36;i<40;i++)
+					{
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i-1) ? 1 :0;
 					}
 				}
 			}
