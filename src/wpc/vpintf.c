@@ -106,7 +106,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 			// "flipper" solenoids as WPC may sneak flashers there when upper flippers aren't present.
 			// WPC will put unsmoothed 0/1 values on actual flippers so this shouldn't harm anything.
 			if (ii==40)
-				ii=CORE_FIRSTCUSTSOL;
+				ii=CORE_FIRSTCUSTSOL-1;
 
 			if (locals.lastModSol[ii] != coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii])
 			{
