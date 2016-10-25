@@ -1,7 +1,7 @@
-#ifndef INC_USBALPHANUMERIC
-#define INC_USBALPHANUMERIC
+#include "windows.h"
+#include "stdafx.h"
 
-#include <windows.h>
+extern char AlphaNumericFrameBuffer[];
 
 extern void _2x16Alpha(UINT16 *seg_data);
 extern void _2x20Alpha(UINT16 *seg_data);
@@ -17,5 +17,8 @@ extern void _4x7Num10(UINT16 *seg_data);
 extern void _6x4Num_4x1Num(UINT16 *seg_data);
 extern void _2x7Num_4x1Num_1x16Alpha(UINT16 *seg_data);
 extern void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data);
+extern UINT8 getPixel(int x, int y);
+extern void drawPixel(int x, int y, UINT8 colour);
+extern void smoothDigitCorners(int x, int y);
 
-#endif
+

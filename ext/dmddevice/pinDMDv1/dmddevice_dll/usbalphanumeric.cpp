@@ -1,7 +1,10 @@
-#include "pindmd.h"
 
-#ifndef PINDMD3
 #include "usbalphanumeric.h"
+
+extern UINT8	do16;
+
+
+char AlphaNumericFrameBuffer[2048] = {};
 
 static UINT8 segSizes[7][16] = {
 	{5,5,5,5,5,5,2,2,5,5,5,2,5,5,5,1},
@@ -107,24 +110,6 @@ static UINT8 segs[7][17][5][2] = {
 	// add 10seg small
 };
 
-//*****************************************************
-//* Name:			smoothDigitCorners
-//* Purpose:
-//* In:
-//* Out:
-//*****************************************************
-void smoothDigitCorners(int x, int y)
-{
-	// remove corner pixel (round font corners)
-	if(getPixel(x,1+y) && getPixel(1+x,y))
-		drawPixel(0+x,y,0);
-	if(getPixel(x+6,1+y) && getPixel(5+x,y))
-		drawPixel(6+x,y,0);
-	if(getPixel(x,9+y) && getPixel(1+x,10+y))
-		drawPixel(0+x,10+y,0);
-	if(getPixel(x+6,9+y) && getPixel(5+x,10+y))
-		drawPixel(6+x,10+y,0);
-}
 
 //*****************************************************
 //* Name:			drawSegment
@@ -137,6 +122,76 @@ void drawSegment(int x, int y, UINT8 type, UINT16 seg, UINT8 colour)
 	int i;
 	for(i=0; i<segSizes[type][seg]; i++)
 		drawPixel(segs[type][seg][i][0]+x,segs[type][seg][i][1]+y,colour);
+}
+
+
+//*****************************************************
+//* Name:			getPixel
+//* Purpose:
+//* In:
+//* Out:
+//*****************************************************
+UINT8 getPixel(int x, int y)
+{
+   int v,z;
+   v = (y*16)+(x/8);
+   z = 1<<(x%8);
+   // just check high buff
+
+	return ((AlphaNumericFrameBuffer[v+512]&z)!=0);
+}
+
+//*****************************************************
+//* Name:			drawPixel
+//* Purpose:
+//* In:
+//* Out:
+//*****************************************************
+void drawPixel(int x, int y, UINT8 colour)
+{
+   int v,z;
+   v = (y*16)+(x/8);
+   z = 1<<(x%8);
+   // clear both low and high buffer pixel
+	AlphaNumericFrameBuffer[v] |= z;
+	AlphaNumericFrameBuffer[v+512] |= z;
+	AlphaNumericFrameBuffer[v] ^= z;
+	AlphaNumericFrameBuffer[v+512] ^= z;
+	if(do16==1){
+		AlphaNumericFrameBuffer[v+1024] |= z;
+		AlphaNumericFrameBuffer[v+1536] |= z;
+		AlphaNumericFrameBuffer[v+1024] ^= z;
+		AlphaNumericFrameBuffer[v+1536] ^= z;
+	}
+   // set low buffer pixel
+   if (colour & 1)
+      AlphaNumericFrameBuffer[v] |= z;
+   //set high buffer pixel
+   if (colour & 2)
+      AlphaNumericFrameBuffer[v+512] ^= z;
+   if(do16==1)
+	   if (colour!=0){
+			AlphaNumericFrameBuffer[v+1024] |= z;
+			AlphaNumericFrameBuffer[v+1536] ^= z;
+		}
+}
+
+//*****************************************************
+//* Name:			smoothDigitCorners
+//* Purpose:
+//* In:
+//* Out:
+//*****************************************************
+void smoothDigitCorners(int x, int y) {
+	// remove corner pixel (round font corners)
+	if(getPixel(x,1+y) && getPixel(1+x,y))
+		drawPixel(0+x,y,0);
+	if(getPixel(x+6,1+y) && getPixel(5+x,y))
+		drawPixel(6+x,y,0);
+	if(getPixel(x,9+y) && getPixel(1+x,10+y))
+		drawPixel(0+x,10+y,0);
+	if(getPixel(x+6,9+y) && getPixel(5+x,10+y))
+		drawPixel(6+x,10+y,0);
 }
 
 //*****************************************************
@@ -610,4 +665,3 @@ void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data)
 		}
 	}
 }
-#endif
