@@ -13,7 +13,7 @@
 #endif
 #ifdef VPINMAME
  #include <windows.h>
- #include "../pindmd/pindmd.h"
+ #include "dmddevice.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -39,6 +39,7 @@ void vp_setDIP(int bank, int value) { }
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
+  extern char g_fShowWinDMD;
   extern char g_fShowPinDMD; /* pinDMD */
   extern int time_to_reset;  /* pinDMD */
   extern int g_fDumpFrames;
@@ -836,7 +837,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
 		}
 #endif
-        *line++ = dmdColor[col];
+		if((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))
+			*line++ = dmdColor[col+63];
+		else
+			*line++ = dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
@@ -884,7 +888,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		{
 	      if(g_fShowPinDMD)
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
-		  if(g_fDumpFrames)
+		  if((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)
 		  {
 			static const char* const dump_ext = "_dump.txt";
 			const unsigned int DumpFilenamel = strlen(Machine->gamedrv->name) + strlen(dump_ext) + 1;
@@ -1779,7 +1783,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit(pmoptions);
+	pindmdInit(Machine->gamedrv->name, core_gameData->gen, pmoptions);
 #endif
 }
 

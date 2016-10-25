@@ -1373,6 +1373,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\dedmd.c" />
     <ClCompile Include="src\wpc\degames.c" />
     <ClCompile Include="src\wpc\desound.c" />
+    <ClCompile Include="src\wpc\dmddevice.cpp" />
     <ClCompile Include="src\wpc\driver.c" />
     <ClCompile Include="src\wpc\flicker.c" />
     <ClCompile Include="src\wpc\gp.c" />
@@ -1530,9 +1531,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\win32com\WSHDlg.cpp" />
     <ClCompile Include="src\win32com\WSHDlgCtrl.cpp" />
     <ClCompile Include="src\win32com\WSHDlgCtrls.cpp" />
-    <ClCompile Include="src\pindmd\pinddrv.c" />
-    <ClCompile Include="src\pindmd\pindmd.c" />
-    <ClCompile Include="src\pindmd\usbalphanumeric.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h" />
@@ -1708,6 +1706,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\wpc\core.h" />
     <ClInclude Include="src\wpc\dedmd.h" />
     <ClInclude Include="src\wpc\desound.h" />
+    <ClInclude Include="src\wpc\dmddevice.h" />
     <ClInclude Include="src\wpc\gen.h" />
     <ClInclude Include="src\wpc\gp.h" />
     <ClInclude Include="src\wpc\gpsnd.h" />
@@ -1770,9 +1769,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\win32com\WSHDlgCtrls.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
-    <ClInclude Include="src\pindmd\pinddrv.h" />
-    <ClInclude Include="src\pindmd\pindmd.h" />
-    <ClInclude Include="src\pindmd\usbalphanumeric.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\sound\vtxsmpls.inc" />

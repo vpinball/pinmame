@@ -134,9 +134,6 @@
     <Filter Include="Source Files\external\zlib">
       <UniqueIdentifier>{4bcc24a4-1e1b-4884-a66f-89084ec30bed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\PinDMD">
-      <UniqueIdentifier>{081500d0-3b6c-4437-b0f1-3b9632d806ce}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{025c82ac-f73b-408e-a1bd-9fe88ad3cee9}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
@@ -1205,15 +1202,6 @@
     <ClCompile Include="src\win32com\WSHDlgCtrls.cpp">
       <Filter>Source Files\VPinMAME</Filter>
     </ClCompile>
-    <ClCompile Include="src\pindmd\pinddrv.c">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClCompile>
-    <ClCompile Include="src\pindmd\pindmd.c">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClCompile>
-    <ClCompile Include="src\pindmd\usbalphanumeric.c">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClCompile>
     <ClCompile Include="src\sound\ymf262.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1230,6 +1218,9 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\lancelot.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\dmddevice.cpp">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1933,20 +1924,14 @@
     <ClInclude Include="ext\zlib\include\zlib.h">
       <Filter>Source Files\external\zlib</Filter>
     </ClInclude>
-    <ClInclude Include="src\pindmd\pinddrv.h">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClInclude>
-    <ClInclude Include="src\pindmd\pindmd.h">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClInclude>
-    <ClInclude Include="src\pindmd\usbalphanumeric.h">
-      <Filter>Source Files\PinDMD</Filter>
-    </ClInclude>
     <ClInclude Include="src\sound\262intf.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\ymf262.h">
       <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\dmddevice.h">
+      <Filter>Source Files\PinMAME</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
