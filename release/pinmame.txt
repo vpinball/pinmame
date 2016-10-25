@@ -361,6 +361,7 @@ Oliver Kaegi       (okaegi at freesurf.ch)
 Matthias Buecher   (maddes.b at arcor.de)
 David Rodriguez    (netsplits at yahoo.es)
 Randall Perlow     (rperlow at yahoo.com)
+Carsten Waechter   (toxie at ainc.de)
 
 
 PinMAME Contributors
@@ -387,7 +388,6 @@ TecnoPinball       (www.tecnopinball.org)
 Peter Hall         (peter.hall at tele2.ch)
 Basilio Garcia     (basi_garcia at hergar.com)
 Paulo Branco       (paulovtec at gmail.com)
-Carsten            (toxie at ainc.de)
 
 
 Note from the PinMAME Dev. team
