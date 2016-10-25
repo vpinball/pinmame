@@ -833,8 +833,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		const int offs = (ii-1)*layout->length + jj;
 		currbuffer[offs] = col;
 		if(layout->length >= 128) { // Capcom hack
-			g_raw_dmdbuffer[offs] = (col >= 63) ? raw_16[col-63] : raw_4[col];
-			g_raw_colordmdbuffer[offs] = (col >= 63) ? palette32_16[col-63] : palette32_4[col];
+			g_raw_dmdbuffer[offs] = ((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2)) ? raw_16[col] : raw_4[col];
+			g_raw_colordmdbuffer[offs] = ((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2)) ? palette32_16[col] : palette32_4[col];
 		}
 #endif
 		if((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))
@@ -907,7 +907,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 					for(ii = 0; ii < layout->length; ii++)
 					{
 						const UINT8 col = currbuffer[jj*layout->length + ii];
-						fprintf(f,"%01x",(col >= 63) ? col-63 : col);
+						fprintf(f,"%01x",col);
 					}
 					fprintf(f,"\n");
 				}
