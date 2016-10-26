@@ -169,10 +169,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\usbalphanumeric.h" />
-    <ClInclude Include="dmddevice.h" />
+    <ClInclude Include="..\..\dmddevice.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\usbalphanumeric.cpp" />
     <ClCompile Include="dmddevice.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
