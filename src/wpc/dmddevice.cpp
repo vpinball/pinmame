@@ -5,6 +5,10 @@
 #include "gen.h"
 #include "core.h"
 
+#ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
+ #define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
+#endif
+
 extern HINSTANCE hVpmDLL;
 
 UINT16	seg_data_old[50] = {};
