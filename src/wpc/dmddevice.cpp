@@ -37,7 +37,7 @@ Render_16_Shades_t DmdDev_Render_16_Shades;
 typedef void (*Render_4_Shades_t)(UINT8 width, UINT8 height, UINT8 *currbuffer);
 Render_4_Shades_t DmdDev_Render_4_Shades;
 
-typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2);
+typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
 
 
