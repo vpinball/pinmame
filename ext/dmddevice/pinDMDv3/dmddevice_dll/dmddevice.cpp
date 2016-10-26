@@ -6,7 +6,7 @@
 #include "..\..\dmddevice.h"
 #include "..\pindmd3\pinDMD3.h"
 
-#include "..\..\usbalphanumeric.h"
+#include "..\..\usbalphanumeric.cpp"
 
 bool isOpen = false;
 //UINT64 gen = 0;
@@ -259,7 +259,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 }
 
 
-DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
+DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
 	if (isOpen) {	
 		memset(AlphaNumericFrameBuffer,0x00,2048);

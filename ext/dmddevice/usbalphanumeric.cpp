@@ -1,12 +1,6 @@
-#include "usbalphanumeric.h"
-
-#ifdef PINDMD1
-extern UINT8 do16;
-#endif
-
 UINT8 AlphaNumericFrameBuffer[2048] = {};
 
-static UINT8 segSizes[7][16] = {
+static const UINT8 segSizes[7][16] = {
 	{5,5,5,5,5,5,2,2,5,5,5,2,5,5,5,1},
 	{5,5,5,5,5,5,5,2,0,0,0,0,0,0,0,0},
 	{5,5,5,5,5,5,5,2,5,5,0,0,0,0,0,0},
@@ -16,7 +10,7 @@ static UINT8 segSizes[7][16] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 };
 
-static UINT8 segs[7][17][5][2] = {
+static const UINT8 segs[7][17][5][2] = {
 	/* alphanumeric display characters */
 	{	{{1,0},{2,0},{3,0},{4,0},{5,0}},
 		{{6,0},{6,1},{6,2},{6,3},{6,4}},
@@ -112,33 +106,18 @@ static UINT8 segs[7][17][5][2] = {
 
 
 //*****************************************************
-//* Name:			drawSegment
-//* Purpose:
-//* In:
-//* Out:
-//*****************************************************
-void drawSegment(int x, int y, UINT8 type, UINT16 seg, UINT8 colour)
-{
-	int i;
-	for(i=0; i<segSizes[type][seg]; i++)
-		drawPixel(segs[type][seg][i][0]+x,segs[type][seg][i][1]+y,colour);
-}
-
-
-//*****************************************************
 //* Name:			getPixel
 //* Purpose:
 //* In:
 //* Out:
 //*****************************************************
-UINT8 getPixel(int x, int y)
+UINT8 getPixel(const int x, const int y)
 {
-   int v,z;
-   v = (y*16)+(x/8);
-   z = 1<<(x%8);
+   const int v = (y*16)+(x/8);
+   const int z = 1<<(x%8);
    // just check high buff
 
-	return ((AlphaNumericFrameBuffer[v+512]&z)!=0);
+   return ((AlphaNumericFrameBuffer[v+512]&z)!=0);
 }
 
 //*****************************************************
@@ -147,25 +126,24 @@ UINT8 getPixel(int x, int y)
 //* In:
 //* Out:
 //*****************************************************
-void drawPixel(int x, int y, UINT8 colour)
+void drawPixel(const int x, const int y, const UINT8 colour)
 {
-   int v,z;
-   v = (y*16)+(x/8);
-   z = 1<<(x%8);
+   const int v = (y*16)+(x/8);
+   const int z = 1<<(x%8);
    // clear both low and high buffer pixel
-	AlphaNumericFrameBuffer[v] |= z;
-	AlphaNumericFrameBuffer[v+512] |= z;
-	AlphaNumericFrameBuffer[v] ^= z;
-	AlphaNumericFrameBuffer[v+512] ^= z;
+   AlphaNumericFrameBuffer[v] |= z;
+   AlphaNumericFrameBuffer[v+512] |= z;
+   AlphaNumericFrameBuffer[v] ^= z;
+   AlphaNumericFrameBuffer[v+512] ^= z;
 #ifdef PINDMD1
-	if(do16==1)
+   if(do16==1)
 #endif
-	{
+   {
 	AlphaNumericFrameBuffer[v+1024] |= z;
 	AlphaNumericFrameBuffer[v+1536] |= z;
 	AlphaNumericFrameBuffer[v+1024] ^= z;
 	AlphaNumericFrameBuffer[v+1536] ^= z;
-	}
+   }
    // set low buffer pixel
    if (colour & 1)
       AlphaNumericFrameBuffer[v] |= z;
@@ -178,7 +156,19 @@ void drawPixel(int x, int y, UINT8 colour)
    if (colour!=0){
 		AlphaNumericFrameBuffer[v+1024] |= z;
 		AlphaNumericFrameBuffer[v+1536] ^= z;
-	}
+   }
+}
+
+//*****************************************************
+//* Name:			drawSegment
+//* Purpose:
+//* In:
+//* Out:
+//*****************************************************
+void drawSegment(const int x, const int y, const UINT8 type, const UINT16 seg, const UINT8 colour)
+{
+	for (int i = 0; i<segSizes[type][seg]; i++)
+		drawPixel(segs[type][seg][i][0] + x, segs[type][seg][i][1] + y, colour);
 }
 
 //*****************************************************
@@ -187,7 +177,7 @@ void drawPixel(int x, int y, UINT8 colour)
 //* In:
 //* Out:
 //*****************************************************
-void smoothDigitCorners(int x, int y) {
+void smoothDigitCorners(const int x, const int y) {
 	// remove corner pixel (round font corners)
 	if(getPixel(x,1+y) && getPixel(1+x,y))
 		drawPixel(0+x,y,0);
@@ -205,11 +195,10 @@ void smoothDigitCorners(int x, int y) {
 //* In:
 //* Out:
 //*****************************************************
-void _2x16Alpha(UINT16 *seg_data)
+void _2x16Alpha(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<16; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<16; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment(i*8, 2, 0, j, 3);
 			if ((seg_data[i+16] >> j) & 0x1) 
@@ -226,11 +215,10 @@ void _2x16Alpha(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x20Alpha(UINT16 *seg_data)
+void _2x20Alpha(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<16; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<16; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment(i*8, 2, 0, j, 3);
 			if ((seg_data[i+20] >> j) & 0x1) 
@@ -248,11 +236,10 @@ void _2x20Alpha(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Alpha_2x7Num(UINT16 *seg_data)
+void _2x7Alpha_2x7Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 alphanumeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 2, 0, j, 3);
@@ -273,11 +260,10 @@ void _2x7Alpha_2x7Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Alpha_2x7Num_4x1Num(UINT16 *seg_data)
+void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 alphanumeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 0, 0, j, 3);
@@ -289,7 +275,7 @@ void _2x7Alpha_2x7Num_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[28] >> j) & 0x1) 
 			drawSegment(8, 12, 5, j, 3);
 		if ((seg_data[29] >> j) & 0x1) 
@@ -309,11 +295,10 @@ void _2x7Alpha_2x7Num_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x6Num_2x6Num_4x1Num(UINT16 *seg_data)
+void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<12; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<12; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<6)?0:4))*8, 0, 1, j, 3);
@@ -325,7 +310,7 @@ void _2x6Num_2x6Num_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[24] >> j) & 0x1) 
 			drawSegment(8, 24, 5, j, 3);
 		if ((seg_data[25] >> j) & 0x1) 
@@ -345,11 +330,10 @@ void _2x6Num_2x6Num_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x6Num10_2x6Num10_4x1Num(UINT16 *seg_data)
+void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<12; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<12; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<6)?0:4))*8, 0, 2, j, 3);
@@ -361,7 +345,7 @@ void _2x6Num10_2x6Num10_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[24] >> j) & 0x1) 
 			drawSegment(8, 12, 5, j, 3);
 		if ((seg_data[25] >> j) & 0x1) 
@@ -381,11 +365,10 @@ void _2x6Num10_2x6Num10_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_4x1Num(UINT16 *seg_data)
+void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
@@ -397,7 +380,7 @@ void _2x7Num_2x7Num_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[28] >> j) & 0x1) 
 			drawSegment(16, 24, 5, j, 3);
 		if ((seg_data[29] >> j) & 0x1) 
@@ -417,11 +400,10 @@ void _2x7Num_2x7Num_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_10x1Num(UINT16 *seg_data, UINT16 *extra_seg_data)
+void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *const extra_seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
@@ -433,7 +415,7 @@ void _2x7Num_2x7Num_10x1Num(UINT16 *seg_data, UINT16 *extra_seg_data)
 		}
 	}
 	// 10x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[28] >> j) & 0x1) 
 			drawSegment(16, 24, 5, j, 3);
 		if ((seg_data[29] >> j) & 0x1) 
@@ -466,11 +448,10 @@ void _2x7Num_2x7Num_10x1Num(UINT16 *seg_data, UINT16 *extra_seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_2x7Num_4x1Num_gen7(UINT16 *seg_data)
+void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 21, 1, j, 3);
@@ -482,7 +463,7 @@ void _2x7Num_2x7Num_4x1Num_gen7(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[28] >> j) & 0x1) 
 			drawSegment(8, 13, 5, j, 3);
 		if ((seg_data[29] >> j) & 0x1) 
@@ -502,11 +483,10 @@ void _2x7Num_2x7Num_4x1Num_gen7(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num10_2x7Num10_4x1Num(UINT16 *seg_data)
+void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 0, 2, j, 3);
@@ -518,7 +498,7 @@ void _2x7Num10_2x7Num10_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[28] >> j) & 0x1) 
 			drawSegment(8, 12, 5, j, 3);
 		if ((seg_data[29] >> j) & 0x1) 
@@ -536,11 +516,10 @@ void _2x7Num10_2x7Num10_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _4x7Num10(UINT16 *seg_data)
+void _4x7Num10(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric10
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 1, 2, j, 3);
@@ -560,11 +539,10 @@ void _4x7Num10(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _6x4Num_4x1Num(UINT16 *seg_data)
+void _6x4Num_4x1Num(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<8; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<8; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x4 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<4)?0:2))*8, 1, 5, j, 3);
@@ -580,7 +558,7 @@ void _6x4Num_4x1Num(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[24] >> j) & 0x1) 
 			drawSegment(16, 25, 5, j, 3);
 		if ((seg_data[25] >> j) & 0x1) 
@@ -600,11 +578,10 @@ void _6x4Num_4x1Num(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _2x7Num_4x1Num_1x16Alpha(UINT16 *seg_data)
+void _2x7Num_4x1Num_1x16Alpha(const UINT16 *const seg_data)
 {
-	int i,j;
-	for (i=0; i<14; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<14; i++) {
+		for (int j=0; j<16; j++) {
 			// 2x7 numeric
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
@@ -612,7 +589,7 @@ void _2x7Num_4x1Num_1x16Alpha(UINT16 *seg_data)
 		}
 	}
 	// 4x1 numeric small
-	for (j=0; j<16; j++) {
+	for (int j=0; j<16; j++) {
 		if ((seg_data[14] >> j) & 0x1) 
 			drawSegment(16, 12, 5, j, 3);
 		if ((seg_data[15] >> j) & 0x1) 
@@ -623,8 +600,8 @@ void _2x7Num_4x1Num_1x16Alpha(UINT16 *seg_data)
 			drawSegment(48, 12, 5, j, 3);
 	}
 	// 1x16 alphanumeric
-	for (i=0; i<12; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<12; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i+18] >> j) & 0x1) 
 				drawSegment((i*8)+16, 21, 0, j, 3);
 			smoothDigitCorners((i*8)+16,21);
@@ -640,13 +617,11 @@ void _2x7Num_4x1Num_1x16Alpha(UINT16 *seg_data)
 //* In:
 //* Out:
 //*****************************************************
-void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data)
+void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 {
-	int i,j;
-
 	// 1x16 alphanumeric
-	for (i=0; i<16; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<16; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment((i*8), 1, 0, j, 3);
 			smoothDigitCorners((i*8),1);
@@ -654,8 +629,8 @@ void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data)
 	}
 
 	// 1x16 numeric
-	for (i=0; i<16; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<16; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i+16] >> j) & 0x1) 
 				drawSegment((i*8), 21, 1, j, 3);
 			smoothDigitCorners((i*8),21);
@@ -663,8 +638,8 @@ void _1x16Alpha_1x16Num_1x7Num(UINT16 *seg_data)
 	}
 
 	// 1x7 numeric small
-	for (i=0; i<7; i++) {
-		for (j=0; j<16; j++) {
+	for (int i=0; i<7; i++) {
+		for (int j=0; j<16; j++) {
 			if ((seg_data[i+32] >> j) & 0x1) 
 				drawSegment(i*8, 13, 5, j, 3);
 		}

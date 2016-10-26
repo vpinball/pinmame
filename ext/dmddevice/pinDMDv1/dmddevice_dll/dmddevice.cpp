@@ -4,7 +4,10 @@
 #include <stdio.h>
 
 #include "..\..\dmddevice.h"
-#include "..\..\usbalphanumeric.h"
+
+bool do16 = false;
+
+#include "..\..\usbalphanumeric.cpp"
 
 #include "..\ftdi\ftd2xx.h"
 
@@ -14,7 +17,6 @@ FT_HANDLE ftHandle;
 bool isOpen = false;
 //bool doOther;
 bool slowUSB = false;
-bool do16 = false;
 
 
 void Send_Clear_Screen(void)
@@ -294,7 +296,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 }
 
 
-DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
+DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
 	if (isOpen) {	
 		memset(AlphaNumericFrameBuffer,0x00,2048);
