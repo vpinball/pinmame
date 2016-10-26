@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "dmddevice.h"
-#include "pinDMD3.h"
+#include "..\include\pinDMD3.h"
 
 #include "..\..\usbalphanumeric.h"
 
