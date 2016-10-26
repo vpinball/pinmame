@@ -6,7 +6,7 @@
 #include "dmddevice.h"
 #include "..\..\usbalphanumeric.h"
 
-#include "ftd2xx.h"
+#include "..\ftdi\ftd2xx.h"
 
 FT_STATUS ftStatus;
 FT_HANDLE ftHandle;
