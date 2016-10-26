@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "lusb0_usb.h"
+#include "..\libusb\include\lusb0_usb.h"
 #include "..\libusb\lib\dynamic\libusb_dyn.c"
 
 #include "dmddevice.h"
