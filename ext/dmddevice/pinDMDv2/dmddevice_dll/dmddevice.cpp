@@ -9,6 +9,14 @@
 #include "..\..\dmddevice.h"
 #include "..\..\usbalphanumeric.h"
 
+//define vendor id and product id
+#define VID 0x0314
+#define PID 0xe457
+
+//endpoints for communication
+#define EP_IN 0x81
+#define EP_OUT 0x01
+
 bool isOpen = false;
 
 usb_dev_handle *DeviceHandle = NULL; 
