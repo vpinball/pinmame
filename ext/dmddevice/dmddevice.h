@@ -20,15 +20,7 @@ typedef struct rgb24 {
 	char blue;
 } rgb24;
 
-//define vendor id and product id
-#define VID 0x0314
-#define PID 0xe457
-
-//endpoints for communication
-#define EP_IN 0x81
-#define EP_OUT 0x01
-
-unsigned char *OutputPacketBuffer;
+UINT8 *OutputPacketBuffer;
 
 typedef enum { 
 	None,
@@ -47,7 +39,6 @@ typedef enum {
 	__2x7Num_4x1Num_1x16Alpha,
 	__1x16Alpha_1x16Num_1x7Num
 } layout_t;
-
 
 #ifdef __cplusplus
 extern "C"
