@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "dmddevice.h"
+#include "..\..\dmddevice.h"
 #include "..\pindmd3\pinDMD3.h"
 
 #include "..\..\usbalphanumeric.h"

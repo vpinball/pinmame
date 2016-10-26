@@ -6,7 +6,7 @@
 #include "..\libusb\include\lusb0_usb.h"
 #include "..\libusb\lib\dynamic\libusb_dyn.c"
 
-#include "dmddevice.h"
+#include "..\..\dmddevice.h"
 #include "..\..\usbalphanumeric.h"
 
 bool isOpen = false;
