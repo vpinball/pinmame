@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "dmddevice.h"
+#include "..\..\dmddevice.h"
 #include "..\..\usbalphanumeric.h"
 
 #include "..\ftdi\ftd2xx.h"
