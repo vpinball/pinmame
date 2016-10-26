@@ -7,7 +7,7 @@
 
 bool do16 = false;
 
-#include "..\..\usbalphanumeric.cpp"
+#include "..\..\usbalphanumeric.h"
 
 #include "..\ftdi\ftd2xx.h"
 

@@ -7,7 +7,7 @@
 #include "..\libusb\lib\dynamic\libusb_dyn.c"
 
 #include "..\..\dmddevice.h"
-#include "..\..\usbalphanumeric.cpp"
+#include "..\..\usbalphanumeric.h"
 
 //define vendor id and product id
 #define VID 0x0314

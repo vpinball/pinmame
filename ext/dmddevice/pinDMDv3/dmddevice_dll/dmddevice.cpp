@@ -6,7 +6,7 @@
 #include "..\..\dmddevice.h"
 #include "..\pindmd3\pinDMD3.h"
 
-#include "..\..\usbalphanumeric.cpp"
+#include "..\..\usbalphanumeric.h"
 
 bool isOpen = false;
 //UINT64 gen = 0;
