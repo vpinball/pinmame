@@ -178,7 +178,7 @@ int vp_getDIP(int dipBank) {
 /-----------*/
 void vp_setSolMask(int no, int mask) {
 	// TODO This is a bit of a B2S compatibility hack - B2S precludes us from adding a proper new setting.
-	// Use index 2 to turn on/off modulated solenoids
+	// Use index 2 to turn on/off modulated solenoids, also see put_SolMask()
 	if (no == 2)
 		options.usemodsol = mask;
 	else

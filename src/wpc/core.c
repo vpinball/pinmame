@@ -9,7 +9,7 @@
 #include "mech.h"
 #include "core.h"
 #ifdef PROC_SUPPORT
-#include "p-roc/p-roc.h"
+ #include "p-roc/p-roc.h"
 #endif
 #ifdef VPINMAME
  #include <windows.h>
@@ -1783,7 +1783,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit(Machine->gamedrv->name, core_gameData->gen, pmoptions);
+	pindmdInit(Machine->gamedrv->name, core_gameData->gen, &pmoptions);
 #endif
 }
 

@@ -1,10 +1,10 @@
-
 #include "usbalphanumeric.h"
 
-extern UINT8	do16;
+#ifdef PINDMD1
+extern UINT8 do16;
+#endif
 
-
-char AlphaNumericFrameBuffer[2048] = {};
+UINT8 AlphaNumericFrameBuffer[2048] = {};
 
 static UINT8 segSizes[7][16] = {
 	{5,5,5,5,5,5,2,2,5,5,5,2,5,5,5,1},
@@ -157,11 +157,14 @@ void drawPixel(int x, int y, UINT8 colour)
 	AlphaNumericFrameBuffer[v+512] |= z;
 	AlphaNumericFrameBuffer[v] ^= z;
 	AlphaNumericFrameBuffer[v+512] ^= z;
-	if(do16==1){
-		AlphaNumericFrameBuffer[v+1024] |= z;
-		AlphaNumericFrameBuffer[v+1536] |= z;
-		AlphaNumericFrameBuffer[v+1024] ^= z;
-		AlphaNumericFrameBuffer[v+1536] ^= z;
+#ifdef PINDMD1
+	if(do16==1)
+#endif
+	{
+	AlphaNumericFrameBuffer[v+1024] |= z;
+	AlphaNumericFrameBuffer[v+1536] |= z;
+	AlphaNumericFrameBuffer[v+1024] ^= z;
+	AlphaNumericFrameBuffer[v+1536] ^= z;
 	}
    // set low buffer pixel
    if (colour & 1)
@@ -169,11 +172,13 @@ void drawPixel(int x, int y, UINT8 colour)
    //set high buffer pixel
    if (colour & 2)
       AlphaNumericFrameBuffer[v+512] ^= z;
+#ifdef PINDMD1
    if(do16==1)
-	   if (colour!=0){
-			AlphaNumericFrameBuffer[v+1024] |= z;
-			AlphaNumericFrameBuffer[v+1536] ^= z;
-		}
+#endif
+   if (colour!=0){
+		AlphaNumericFrameBuffer[v+1024] |= z;
+		AlphaNumericFrameBuffer[v+1536] ^= z;
+	}
 }
 
 //*****************************************************

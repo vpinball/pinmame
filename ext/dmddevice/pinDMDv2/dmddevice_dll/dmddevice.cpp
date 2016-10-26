@@ -1,12 +1,13 @@
-// This is the main DLL file.
-
-#include "windows.h"
-#include "stdafx.h"
-#include "dmddevice.h"
-#include <lusb0_usb.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "usbalphanumeric.h"
+
+#include "lusb0_usb.h"
+#include "..\libusb\lib\dynamic\libusb_dyn.c"
+
+#include "dmddevice.h"
+#include "..\..\usbalphanumeric.h"
 
 bool isOpen = false;
 
@@ -14,18 +15,18 @@ usb_dev_handle *DeviceHandle = NULL;
 usb_dev_handle* open_dev( void );
 
 
-void Send_Clear_Screen(void)
+void Send_Clear_Screen(void) //!! unused
 {
 	memset(OutputPacketBuffer,0x00, 2052);
 	const UINT8 tmp[4] = {
 		0x81, 0xC3, 0xE7, 0x00 //header
 		}; 
 	memcpy(OutputPacketBuffer, tmp, sizeof(tmp));
-	usb_bulk_write(DeviceHandle, EP_OUT, OutputPacketBuffer, 2052, 1000);
+	usb_bulk_write(DeviceHandle, EP_OUT, (char*)OutputPacketBuffer, 2052, 1000);
 	Sleep(50);
 }
 
-int Open()
+DMDDEV int Open()
 {
 		int ret = 0;
 		struct usb_bus *bus;
@@ -42,9 +43,12 @@ int Open()
 			for (dev = bus->devices; dev; dev = dev->next) {
 				//if device vendor id and product id are match
 				if (dev->descriptor.idVendor == VID && dev->descriptor.idProduct == PID)
+				{
 					//try to open our device
 					DeviceHandle = usb_open(dev);
-				break;
+					if(DeviceHandle)
+						break;
+				}
 			}
 		}
 
@@ -54,7 +58,6 @@ int Open()
 			MessageBox(NULL, L"pinDMD v2 not found",L"Error", MB_ICONERROR);
 			return 0;
 		}
-
 		
 
 		if (usb_set_configuration(DeviceHandle, 1) < 0) {
@@ -74,7 +77,7 @@ int Open()
 		if (ret > 0) {
 			if (strcmp(string, "pinDMD V2") == 0) { 
 */
-				OutputPacketBuffer = (char *)malloc(2052);
+				OutputPacketBuffer = (unsigned char *)malloc(2052);
 				isOpen = true;
 /*			} else {
 				MessageBox(NULL, L"pinDMD v2 not found",L"Error", MB_ICONERROR);
@@ -84,7 +87,6 @@ int Open()
 		}
 */
 		return 1;
-
 }
 
 
@@ -157,12 +159,13 @@ void Send_Logo(void)
 				}
 			}
 			fclose(fLogo);
-		} 
+		}
+
 	Render_16_Shades(128,32,*LogoBuffer);		
 }
 
 
-bool Close()
+DMDDEV bool Close()
 {
 	if (isOpen) {
 
@@ -178,24 +181,21 @@ bool Close()
 }
 
 
-
-
-void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, tPMoptions Options)
+DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
 {
 }
 
-void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) 
+DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) 
 {
 }
 
 
-void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer) 
+DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
 		int byteIdx=4;
 		int i,j,v;
 		UINT8 tempbuffer[128*32]; // for rescale
-
 
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
@@ -230,8 +230,8 @@ void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,4096);
-	
+			memcpy(tempbuffer,currbuffer,width*height);
+
 
 		// dmd height
 		for(j = 0; j < ((height==16)?16:32); ++j)
@@ -277,11 +277,11 @@ void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 			}
 		}
 
-		usb_bulk_write(DeviceHandle, EP_OUT, OutputPacketBuffer, 2052, 1000);
+		usb_bulk_write(DeviceHandle, EP_OUT, (char*)OutputPacketBuffer, 2052, 1000);
 	}
 }
 
-void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer) 
+DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
 		int byteIdx=4;
@@ -322,7 +322,7 @@ void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,4096);
+			memcpy(tempbuffer,currbuffer,width*height);
 	
 
 		// dmd height
@@ -364,14 +364,13 @@ void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 			}
 		}
 
-		usb_bulk_write(DeviceHandle, EP_OUT, OutputPacketBuffer, 2052, 1000);
+		usb_bulk_write(DeviceHandle, EP_OUT, (char*)OutputPacketBuffer, 2052, 1000);
 	}
 }
 
 
-void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
+DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
 {
-
 	if (isOpen) {	
 
 		memset(AlphaNumericFrameBuffer,0x00,2048);
@@ -430,16 +429,6 @@ void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg
 				
 		memcpy(OutputPacketBuffer+4,AlphaNumericFrameBuffer,2048);
 
-		usb_bulk_write(DeviceHandle, EP_OUT, OutputPacketBuffer, 2052, 1000);
+		usb_bulk_write(DeviceHandle, EP_OUT, (char*)OutputPacketBuffer, 2052, 1000);
 	}
 }
-
-
-   
-
-
-
-
-	
-
-

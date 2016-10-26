@@ -1,9 +1,8 @@
 #include <windows.h>
-#include <time.h>
 #include "driver.h"
-#include "dmddevice.h"
 #include "gen.h"
 #include "core.h"
+#include "dmddevice.h"
 
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
  #define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
@@ -16,13 +15,14 @@ UINT16	seg_data2[50] = {};
 
 HMODULE hModule;
 
+
 typedef int (*Open_t)();
 Open_t DmdDev_Open;
 
 typedef bool (*Close_t)();
 Close_t DmdDev_Close;
 
-typedef void (*PM_GameSettings_t)(const char* GameName, UINT64 HardwareGeneration, tPMoptions Options);
+typedef void (*PM_GameSettings_t)(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options);
 PM_GameSettings_t DmdDev_PM_GameSettings;
 
 typedef void (*Set_4_Colors_Palette_t)(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100);
@@ -40,18 +40,23 @@ Render_4_Shades_t DmdDev_Render_4_Shades;
 typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2);
 render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
 
-int pindmdInit(const char* GameName, UINT64 HardwareGeneration, tPMoptions Options) {
+
+int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options) {
 	
-	// look for the dmddevice.dll in the path of vpinmame.dll
+	// look for the DmdDevice(64).dll in the path of vpinmame.dll
 	char filename[MAX_PATH];
 	GetModuleFileName(hVpmDLL,filename,MAX_PATH);
 	char *ptr = strrchr(filename,'\\');
-	strcpy(ptr+1,"dmddevice.dll");
+#ifdef _WIN64
+	strcpy(ptr+1,"DmdDevice64.dll");
+#else
+	strcpy(ptr+1,"DmdDevice.dll");
+#endif
 
 	hModule = LoadLibraryEx(filename,NULL,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 	
 	if ( !hModule ) {
-		MessageBox(NULL, "No DMD device driver found", "DmdDevice.dll Error", MB_ICONERROR);
+		MessageBox(NULL, "No DMD device driver found", filename, MB_ICONERROR);
 		return 0;
 	}
 	
@@ -72,29 +77,29 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, tPMoptions Optio
 	DmdDev_Console_Data = (Console_Data_t) GetProcAddress(hModule, "Console_Data");
 
 	if ( !DmdDev_Open || !DmdDev_Close || !DmdDev_PM_GameSettings || !DmdDev_Render_4_Shades || !DmdDev_Render_16_Shades || !DmdDev_render_PM_Alphanumeric_Frame ) {
-		MessageBox(NULL, "Functions not found", "Error", MB_ICONERROR);
+		MessageBox(NULL, "DMD device driver functions not found", filename, MB_ICONERROR);
 		return 0;
 	} else {
 
 		DmdDev_Open();
 		
-		DmdDev_PM_GameSettings(GameName, HardwareGeneration, Options);
+		DmdDev_PM_GameSettings(GameName, HardwareGeneration, *Options);
 
 		rgb24 color0,color33,color66,color100;
 
-		if (DmdDev_Set_4_Colors_Palette && Options.dmd_colorize) {
-			color0.red = Options.dmd_red0;
-			color0.green = Options.dmd_green0;
-			color0.blue = Options.dmd_blue0;
-			color33.red = Options.dmd_red33;
-			color33.green = Options.dmd_green33;
-			color33.blue = Options.dmd_blue33;
-			color66.red = Options.dmd_red66;
-			color66.green = Options.dmd_green66;
-			color66.blue = Options.dmd_blue66;
-			color100.red = Options.dmd_red;
-			color100.green = Options.dmd_green;
-			color100.blue = Options.dmd_blue;
+		if (DmdDev_Set_4_Colors_Palette && Options->dmd_colorize) {
+			color0.red = Options->dmd_red0;
+			color0.green = Options->dmd_green0;
+			color0.blue = Options->dmd_blue0;
+			color33.red = Options->dmd_red33;
+			color33.green = Options->dmd_green33;
+			color33.blue = Options->dmd_blue33;
+			color66.red = Options->dmd_red66;
+			color66.green = Options->dmd_green66;
+			color66.blue = Options->dmd_blue66;
+			color100.red = Options->dmd_red;
+			color100.green = Options->dmd_green;
+			color100.blue = Options->dmd_blue;
 			DmdDev_Set_4_Colors_Palette(color0,color33,color66,color100);
 		}
 
@@ -110,7 +115,8 @@ void pindmdDeInit() {
 	FreeLibrary(hModule);
 }
 
-void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UINT8 doDumpFrame) {
+void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame) {
+
 	if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2)) {
 		if (DmdDev_Render_16_Shades)
 			DmdDev_Render_16_Shades(width,height,currbuffer);
@@ -279,5 +285,5 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 
 void FwdConsoleData(UINT8 data){
 	if (DmdDev_Console_Data)
-			DmdDev_Console_Data(data);
+		DmdDev_Console_Data(data);
 }
