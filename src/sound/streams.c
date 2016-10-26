@@ -54,7 +54,7 @@ void set_RC_filter(int channel, int R1, int R2, int R3, int C, int sample_rate)
 
 	/* Cut Frequency = 1/(2*Pi*Req*C) */
 
-	Req = (R2 + R3 > 0) ? ((long long)R1*(R2 + R3)) / (double)(R1 + R2 + R3) : R1;
+	Req = (R2 + R3 > 0) ? ((long long)R1*(long long)(R2 + R3)) / (double)(R1 + R2 + R3) : R1;
 
 	K_tmp[channel] = Req * (C * 1E-12); /* 1E-12: convert pF to F */
 

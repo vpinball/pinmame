@@ -325,11 +325,11 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 	CreateEventWindow(this);
 
 	DWORD dwThreadID;
-	m_hThreadRun = CreateThread(NULL,
+	m_hThreadRun = /*_beginthreadex*/CreateThread(NULL,
 								0,
 								(LPTHREAD_START_ROUTINE) RunController,
 								(LPVOID) this,
-  								0, &dwThreadID);
+								0, &dwThreadID);
 
 	if ( !dwThreadID ) {
 		DestroyEventWindow(this);

@@ -122,7 +122,7 @@ static usb_free_async_t _usb_free_async = NULL;
 
 void usb_init(void)
 {
-    HINSTANCE libusb_dll  = LoadLibrary(LIBUSB_DLL_NAME);
+    HINSTANCE libusb_dll  = LoadLibraryA(LIBUSB_DLL_NAME);
 
     if (!libusb_dll)
         return;

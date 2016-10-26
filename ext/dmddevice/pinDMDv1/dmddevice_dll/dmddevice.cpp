@@ -1,12 +1,10 @@
-// This is the main DLL file.
-
-#include "windows.h"
-#include "stdafx.h"
-#include "dmddevice.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "usbalphanumeric.h"
 
+#include "dmddevice.h"
+#include "..\..\usbalphanumeric.h"
 
 #include "ftd2xx.h"
 
@@ -14,9 +12,9 @@ FT_STATUS ftStatus;
 FT_HANDLE ftHandle;
 
 bool isOpen = false;
-UINT8			doOther;
-UINT8			slowUSB = 0;
-UINT8			do16 = 0;
+UINT8 doOther;
+UINT8 slowUSB = 0;
+UINT8 do16 = 0;
 
 
 void Send_Clear_Screen(void)
@@ -32,7 +30,7 @@ void Send_Clear_Screen(void)
 	Sleep(50);
 }
 
-int Open()
+DMDDEV int Open()
 {
 	FT_DEVICE_LIST_INFO_NODE *devInfo;
 	DWORD numDevs;
@@ -91,13 +89,13 @@ int Open()
 	// set Baud
 	FT_SetBaudRate(ftHandle, slowUSB?11000:12000);  // Actually 10400 * 16
 
+	return 1;
 }
 
 
-bool Close()
+DMDDEV bool Close()
 {
 	if (isOpen) {
-
 		Send_Clear_Screen();
 
 		// have to reset bitbangmode or the ftdi chip will flood the serial with '[00]'
@@ -112,15 +110,15 @@ bool Close()
 }
 
 
-void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, tPMoptions Options)
+DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
 {
 }
 
-void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) {
+DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) {
 }
 
 
-void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer) 
+DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
 		int byteIdx=4;
@@ -161,7 +159,7 @@ void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,4096);
+			memcpy(tempbuffer,currbuffer,width*height);
 	
 
 		// dmd height
@@ -215,7 +213,7 @@ void Render_4_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 	}
 }
 
-void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer) 
+DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
 		int byteIdx=4;
@@ -256,8 +254,8 @@ void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
 				}
 		} else
-			memcpy(tempbuffer,currbuffer,4096);
-	
+			memcpy(tempbuffer,currbuffer,width*height);
+
 
 		// dmd height
 		for(j = 0; j < ((height==16)?16:32); ++j)
@@ -305,9 +303,8 @@ void Render_16_Shades(UINT8 width, UINT8 height, UINT8 *currbuffer)
 }
 
 
-void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
+DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg_data2) 
 {
-
 	if (isOpen) {	
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
@@ -371,15 +368,12 @@ void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT16 *seg
 }
 
 
-void Send_Logo(void)
+void Send_Logo(void) //!! unused
 {
 		FILE *fLogo;
 		UINT8 i,j;
 
-		UINT8 **LogoBuffer;
-		LogoBuffer = (UINT8 **) malloc(32);
-		for(i=0;i<128;i++)
-			LogoBuffer[i] = (UINT8 *) malloc(128);
+		UINT8 LogoBuffer[32][128] = {};
 
 		// display dmd logo from text file if it exists
 		fopen_s(&fLogo, "dmdlogo.txt","r");
@@ -451,16 +445,7 @@ void Send_Logo(void)
 				}
 			}
 			fclose(fLogo);
-		} else 
-			free(LogoBuffer);
+		}
 
 		Render_16_Shades(128,32,*LogoBuffer);
 }
-   
-
-
-
-
-	
-
-

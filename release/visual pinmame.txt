@@ -55,7 +55,7 @@ Minimum System Requirements
 ---------------------------
 
 To use:
-Visual PinMAME is a Windows COM object, and as far as we know will only work on Win9x,NT,2000,XP computers.
+Visual PinMAME is a Windows COM object, and as far as we know will only work on Win9x,NT,2000,XP,Vista,7,8.X,10 computers.
 
 To Program:
 Any scripting language that can create COM objects, such as Visual Basic or Visual Basic Script.
