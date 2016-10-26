@@ -12,9 +12,9 @@ FT_STATUS ftStatus;
 FT_HANDLE ftHandle;
 
 bool isOpen = false;
-UINT8 doOther;
-UINT8 slowUSB = 0;
-UINT8 do16 = 0;
+//bool doOther;
+bool slowUSB = false;
+bool do16 = false;
 
 
 void Send_Clear_Screen(void)
@@ -26,39 +26,34 @@ void Send_Clear_Screen(void)
 	memcpy(OutputPacketBuffer, tmp, sizeof(tmp));
 	DWORD bytes;
 	// send dmd frame buffer to pindmd board
-	ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);
+	ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, do16 ? (DWORD)2052:(DWORD)1028, &bytes);
 	Sleep(50);
 }
 
 DMDDEV int Open()
 {
-	FT_DEVICE_LIST_INFO_NODE *devInfo;
-	DWORD numDevs;
-	UINT8 i;
-	UINT8 BitMode;
-	UINT8 deviceId = 0;
-
 	// create the device information list
+	DWORD numDevs;
 	ftStatus = FT_CreateDeviceInfoList(&numDevs);
 	isOpen = false;
 
 	// ftdi devices found
+	UINT8 deviceId = 0;
 	if (numDevs > 0) {
 		// allocate storage for list based on numDevs
-		devInfo = (FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs);
+		FT_DEVICE_LIST_INFO_NODE *devInfo = (FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs);
 		// get the device information list
 		ftStatus = FT_GetDeviceInfoList(devInfo,&numDevs);
 		// info request successful
 		if (ftStatus == FT_OK) {
-			for (i = 0; i < numDevs; i++) {
+			for (DWORD i = 0; i < numDevs; i++) {
 				// search for pindmd board serial number
 				if((strcmp(devInfo[i].SerialNumber,"DMD1000")==0) || (strcmp(devInfo[i].SerialNumber,"DMD1001")==0) || (strcmp(devInfo[i].SerialNumber,"DMD2000A")==0)){
 					// assign device id (incase other ftdi devices are connected)
-					deviceId= i;
+					deviceId = i;
 					isOpen = true;
 				}
-				if(strcmp(devInfo[i].SerialNumber,"DMD1001")==0)
-					slowUSB = 1;
+				slowUSB = (strcmp(devInfo[i].SerialNumber,"DMD1001")==0);
 			}
 		}
 	} else {
@@ -77,17 +72,18 @@ DMDDEV int Open()
 	
 	// check pinDMD firmware to see if its 16 colour (bit4=true)
 	FT_SetBitMode(ftHandle, 0x0, 0x20);
+	UINT8 BitMode;
 	ftStatus = FT_GetBitMode(ftHandle, &BitMode);
 	if (ftStatus == FT_OK) {
 		// BitMode contains current value
-		do16	= ((BitMode&0x08)==0x08);
-		doOther = ((BitMode&0x04)==0x04);
+		do16 = ((BitMode&0x08)==0x08);
+		//doOther = ((BitMode&0x04)==0x04);
 	}
 
 	// set Asynchronous Bit Bang Mode
 	FT_SetBitMode(ftHandle, 0xff, 0x1);
 	// set Baud
-	FT_SetBaudRate(ftHandle, slowUSB?11000:12000);  // Actually 10400 * 16
+	FT_SetBaudRate(ftHandle, slowUSB ? 11000:12000);  // Actually 10400 * 16
 
 	return 1;
 }
@@ -122,14 +118,12 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
 		int byteIdx=4;
-		int i,j,v;
 		UINT8 tempbuffer[128*32]; // for rescale
-
 
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
 		OutputPacketBuffer[2] = 0xE7;
-		OutputPacketBuffer[3] = 0x0;		// command byte
+		OutputPacketBuffer[3] = 0x0;	// command byte
 
 		// 128x16 = display centered vert
 		// 128x32 = no change
@@ -139,8 +133,8 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		if(width == 192 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*192)+i*3/2;
 					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
@@ -152,8 +146,8 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		else if(width == 256 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*256)+i*2;
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
@@ -163,17 +157,17 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 	
 
 		// dmd height
-		for(j = 0; j < ((height==16)?16:32); ++j)
+		for(int j = 0; j < ((height==16)?16:32); ++j)
 		{
 			// dmd width
-			for(i = 0; i < 128; i+=8)
+			for(int i = 0; i < 128; i+=8)
 			{
 				int bd0,bd1,bd2,bd3;
 				bd0 = 0;
 				bd1 = 0;
 				bd2 = 0;
 				bd3 = 0;
-				for (v = 7; v >= 0; v--)
+				for (int v = 7; v >= 0; v--)
 				{
 					// pixel colour
 					int pixel = tempbuffer[j*128 + i+v];
@@ -182,7 +176,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 					bd1 <<= 1;
 					bd2 <<= 1;
 					bd3 <<= 1;
-					if(do16 == 1)
+					if(do16)
 					{
 						if(pixel==3)
 							pixel=15;	
@@ -209,7 +203,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 		DWORD bytes;
 		// send dmd frame buffer to pindmd board
-		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);
+		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, do16 ? (DWORD)2052:(DWORD)1028, &bytes);
 	}
 }
 
@@ -217,9 +211,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
 		int byteIdx=4;
-		int i,j,v;
 		UINT8 tempbuffer[128*32]; // for rescale
-
 
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
@@ -234,8 +226,8 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		if(width == 192 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*192)+i*3/2;
 					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
@@ -247,8 +239,8 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		else if(width == 256 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*256)+i*2;
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
@@ -258,17 +250,17 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 
 		// dmd height
-		for(j = 0; j < ((height==16)?16:32); ++j)
+		for(int j = 0; j < ((height==16)?16:32); ++j)
 		{
 			// dmd width
-			for(i = 0; i < 128; i+=8)
+			for(int i = 0; i < 128; i+=8)
 			{
 				int bd0,bd1,bd2,bd3;
 				bd0 = 0;
 				bd1 = 0;
 				bd2 = 0;
 				bd3 = 0;
-				for (v = 7; v >= 0; v--)
+				for (int v = 7; v >= 0; v--)
 				{
 					// pixel colour
 					int pixel = tempbuffer[j*128 + i+v];
@@ -296,10 +288,9 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 			}
 		}
 
-
 		DWORD bytes;
 		// send dmd frame buffer to pindmd board
-		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);	}
+		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, do16 ? (DWORD)2052:(DWORD)1028, &bytes);	}
 }
 
 
@@ -363,7 +354,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT
 		memcpy(OutputPacketBuffer+4,AlphaNumericFrameBuffer,2048);
 		DWORD bytes;
 		// send dmd frame buffer to pindmd board
-		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, (do16==1)?(DWORD)2052:(DWORD)1028, &bytes);	
+		ftStatus = FT_Write(ftHandle, &OutputPacketBuffer, do16 ? (DWORD)2052:(DWORD)1028, &bytes);	
 	}
 }
 
@@ -371,28 +362,27 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, UINT16 *seg_data, UINT
 void Send_Logo(void) //!! unused
 {
 		FILE *fLogo;
-		UINT8 i,j;
 
 		UINT8 LogoBuffer[32][128] = {};
 
 		// display dmd logo from text file if it exists
 		fopen_s(&fLogo, "dmdlogo.txt","r");
 		if(fLogo){
-			for(i=0; i<32; i++){
-				for(j=0; j<128; j++)
+			for(int i=0; i<32; i++){
+				for(int j=0; j<128; j++)
 				{
 					UINT8 fileChar = getc(fLogo);
 					//Read next char after enter (beginning of next line)
 					while(fileChar == 10)
-					fileChar = getc(fLogo);
+						fileChar = getc(fLogo);
 
-					if(do16 == 0)
+					if(!do16)
 					{
 						LogoBuffer[i][j] = fileChar - '0';
 						if(LogoBuffer[i][j] > 3)
 							LogoBuffer[i][j] = 0;
 					}
-					if(do16 == 1)
+					else
 						switch(fileChar)
 						{
 							case '0':

@@ -20,7 +20,6 @@
 bool isOpen = false;
 
 usb_dev_handle *DeviceHandle = NULL; 
-usb_dev_handle* open_dev( void );
 
 
 void Send_Clear_Screen(void) //!! unused
@@ -36,10 +35,6 @@ void Send_Clear_Screen(void) //!! unused
 
 DMDDEV int Open()
 {
-		int ret = 0;
-		struct usb_bus *bus;
-		struct usb_device *dev = NULL;
-
 		//init usb library
 		usb_init();
 		//find busses
@@ -47,6 +42,8 @@ DMDDEV int Open()
 		//find devices
 		usb_find_devices();
 
+		struct usb_bus *bus;
+		struct usb_device *dev = NULL;
 		for (bus = usb_get_busses(); bus; bus = bus->next) {
 			for (dev = bus->devices; dev; dev = dev->next) {
 				//if device vendor id and product id are match
@@ -60,13 +57,11 @@ DMDDEV int Open()
 			}
 		}
 
-
 		if(DeviceHandle == NULL)
 		{
 			MessageBox(NULL, L"pinDMD v2 not found",L"Error", MB_ICONERROR);
 			return 0;
 		}
-		
 
 		if (usb_set_configuration(DeviceHandle, 1) < 0) {
 			usb_close(DeviceHandle);
@@ -80,7 +75,7 @@ DMDDEV int Open()
 		}
 
 /*		char string[256] = {};
-		ret = usb_get_string_simple(DeviceHandle, dev->descriptor.iProduct, string, sizeof(string));
+		int ret = usb_get_string_simple(DeviceHandle, dev->descriptor.iProduct, string, sizeof(string));
 
 		if (ret > 0) {
 			if (strcmp(string, "pinDMD V2") == 0) { 
@@ -101,15 +96,14 @@ DMDDEV int Open()
 void Send_Logo(void)
 {
 		FILE *fLogo;
-		UINT8 i,j;
 
 		UINT8 LogoBuffer[32][128] = {};
 
 		// display dmd logo from text file if it exists
 		fopen_s(&fLogo, "dmdlogo.txt","r");
 		if(fLogo){
-			for(i=0; i<32; i++){
-				for(j=0; j<128; j++)
+			for(int i=0; i<32; i++){
+				for(int j=0; j<128; j++)
 				{
 					UINT8 fileChar = getc(fLogo);
 					//Read next char after enter (beginning of next line)
@@ -202,7 +196,6 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
 		int byteIdx=4;
-		int i,j,v;
 		UINT8 tempbuffer[128*32]; // for rescale
 
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
@@ -218,8 +211,8 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		if(width == 192 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*192)+i*3/2;
 					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
@@ -231,8 +224,8 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		else if(width == 256 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*256)+i*2;
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
@@ -242,17 +235,17 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 
 		// dmd height
-		for(j = 0; j < ((height==16)?16:32); ++j)
+		for(int j = 0; j < ((height==16)?16:32); ++j)
 		{
 			// dmd width
-			for(i = 0; i < 128; i+=8)
+			for(int i = 0; i < 128; i+=8)
 			{
 				int bd0,bd1,bd2,bd3;
 				bd0 = 0;
 				bd1 = 0;
 				bd2 = 0;
 				bd3 = 0;
-				for (v = 7; v >= 0; v--)
+				for (int v = 7; v >= 0; v--)
 				{
 					// pixel colour
 					int pixel = tempbuffer[j*128 + i+v];
@@ -293,9 +286,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
 		int byteIdx=4;
-		int i,j,v;
 		UINT8 tempbuffer[128*32]; // for rescale
-
 
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
@@ -310,8 +301,8 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		if(width == 192 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*192)+i*3/2;
 					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
@@ -323,8 +314,8 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		else if(width == 256 && height == 64)
 		{
 			UINT32 o = 0;
-			for(j = 0; j < 32; ++j)
-				for(i = 0; i < 128; ++i,++o)
+			for(int j = 0; j < 32; ++j)
+				for(int i = 0; i < 128; ++i,++o)
 				{
 					const UINT32 offs = j*(2*256)+i*2;
 					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
@@ -334,17 +325,17 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 	
 
 		// dmd height
-		for(j = 0; j < ((height==16)?16:32); ++j)
+		for(int j = 0; j < ((height==16)?16:32); ++j)
 		{
 			// dmd width
-			for(i = 0; i < 128; i+=8)
+			for(int i = 0; i < 128; i+=8)
 			{
 				int bd0,bd1,bd2,bd3;
 				bd0 = 0;
 				bd1 = 0;
 				bd2 = 0;
 				bd3 = 0;
-				for (v = 7; v >= 0; v--)
+				for (int v = 7; v >= 0; v--)
 				{
 					// pixel colour
 					int pixel = tempbuffer[j*128 + i+v];
