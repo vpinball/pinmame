@@ -20,14 +20,6 @@ typedef struct rgb24 {
 	char blue;
 } rgb24;
 
-//define vendor id and product id
-#define VID 0x0314
-#define PID 0xe457
-
-//endpoints for communication
-#define EP_IN 0x81
-#define EP_OUT 0x01
-
 UINT8 *OutputPacketBuffer;
 
 typedef enum { 
