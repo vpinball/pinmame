@@ -7,11 +7,11 @@
 	#define PINDMD_API __declspec(dllimport) 
 #endif
 
-#define SETTING_DEBUG		      0x22
-#define SETTING_BRIGHTNESS		  0x23
+#define SETTING_DEBUG             0x22
+#define SETTING_BRIGHTNESS        0x23
 #define SETTING_4SHADES           0x24
 #define SETTING_16SHADES          0x25
-#define SETTING_RAINBOW_SPEED	  0x26
+#define SETTING_RAINBOW_SPEED     0x26
 
 /*typedef struct tPMoptions {
 	int dmd_red, dmd_green, dmd_blue;
