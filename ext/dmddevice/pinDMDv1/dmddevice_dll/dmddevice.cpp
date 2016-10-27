@@ -40,7 +40,7 @@ DMDDEV int Open()
 	isOpen = false;
 
 	// ftdi devices found
-	UINT8 deviceId = 0;
+	int deviceId = 0;
 	if (numDevs > 0) {
 		// allocate storage for list based on numDevs
 		FT_DEVICE_LIST_INFO_NODE *devInfo = (FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs);
