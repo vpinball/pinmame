@@ -1620,16 +1620,22 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	video_dib_info->bmiHeader.biHeight = -win_visible_height * ymult;
 	video_dib_info->bmiHeader.biBitCount = depth;
 
+	// The old code prevents the DMD window from scaling to fit. Yes,
+	// the basic StretchDIBBits is ugly, but it's very similar to the behavior
+	// with default directdraw=true.
+	//
 	// compute the center position
-	cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
-	cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
+	// cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
+	// cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
 
+	//!! SetStretchBltMode(dc, HALFTONE); // Could somehow enable filtering if 24bit RGBs??
 	// blit to the screen
-	StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+	// old: StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+	StretchDIBits(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
 				0, 0, win_visible_width * xmult, win_visible_height * ymult,
 				converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
-
-	// erase the edges if updating
+	/*
+	// also old: erase the edges if updating
 	if (update)
 	{
 		RECT inner;
@@ -1639,7 +1645,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		inner.right = cx + win_visible_width * xmult;
 		inner.bottom = cy + win_visible_height * ymult;
 		erase_outer_rect(&client, &inner, dc);
-	}
+	}*/
 }
 
 
