@@ -21,7 +21,7 @@ Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
 Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
 Add support for GI on Whitestar
 
-*** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson, Inkochnito
+*** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
 Kinda new:
 Star Wars 20th Anniversary 1.06
 Tommy 5.00 (unofficial MOD)
@@ -29,6 +29,7 @@ Tommy 5.00 (unofficial MOD)
 Clones:
 Laser Cue L-3 (Neverending Bell Fix)
 Stargate rev.5
+Star God (alternate version)
 
 
 

@@ -149,6 +149,15 @@ S67S_SOUNDROMS8(			"stargod.snd", CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028
 ZAC_ROMEND
 CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,0)
 
+INITGAME1(stargodb,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
+ZAC_ROMSTART84444(stargodb,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"stargod.ic2",CRC(a92ae202) SHA1(b5ed61f0c0c769f0bd4f5a69677d0eb5122bdb56),
+							"stargod.ic3",CRC(e677cf0d) SHA1(6aff0275148ccc56f2ac1bf5e5bd5baed64bfa7c),
+							"stargod.ic4",CRC(fdfbb31f) SHA1(b64a529a097a7e2589ff124998160d375153d16c),
+							"stargod.ic5",CRC(536484f8) SHA1(7c40bf7e8b5b21cce44d96633581730ea9eeb176))
+ZAC_ROMEND
+CORE_CLONEDEFNV(stargodb,stargod,"Star God (alternate version)",1980,"Zaccaria",mZAC1125,0)
+
 /*--------------------------------
 / Space Shuttle (09/80)
 /-------------------------------*/
