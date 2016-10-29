@@ -59,7 +59,7 @@ DMDDEV int Open()
 			}
 		}
 	} else {
-		MessageBox(NULL, L"pinDMD v1 not found",L"Error", MB_ICONERROR);
+		MessageBox(NULL, "pinDMD v1 not found","Error", MB_ICONERROR);
 		isOpen=false;
 		return 0;
 	}

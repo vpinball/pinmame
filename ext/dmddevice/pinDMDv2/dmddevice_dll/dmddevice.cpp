@@ -59,7 +59,7 @@ DMDDEV int Open()
 
 		if(DeviceHandle == NULL)
 		{
-			MessageBox(NULL, L"pinDMD v2 not found",L"Error", MB_ICONERROR);
+			MessageBox(NULL, "pinDMD v2 not found","Error", MB_ICONERROR);
 			return 0;
 		}
 
