@@ -54,6 +54,8 @@ extern "C"
 
 PINDMD_API int  pindmdInit(tPMoptions colours);
 PINDMD_API void pindmdDeInit(void);
+PINDMD_API void renderDMDFrame(UINT64 gen, UINT8 width, UINT8 height, UINT8 *currbuffer, UINT8 doDumpFrame);	// legacy pinMame
+PINDMD_API void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens);		// legacy pinMame
 PINDMD_API void render16ShadeFrame(UINT8 *currbuffer);
 PINDMD_API void renderRGB24Frame(rgb24 *currbuffer);
 PINDMD_API void setSetting(UINT8 setting, UINT8 *params);
