@@ -9,15 +9,7 @@
 #include "..\..\usbalphanumeric.h"
 
 bool isOpen = false;
-//UINT64 gen = 0;
 
-
-void Send_Clear_Screen(void) //!! unused
-{
-	memset(OutputPacketBuffer,0x00, 2048);
-	render16ShadeFrame(OutputPacketBuffer);
-	Sleep(50);
-}
 
 DMDDEV int Open()
 {
@@ -28,7 +20,6 @@ DMDDEV bool Close()
 {
 	if (isOpen) {
 		pindmdDeInit();
-		free(OutputPacketBuffer);
 	}
 
 	isOpen = false;
@@ -37,10 +28,8 @@ DMDDEV bool Close()
 
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
 {
-	//gen = HardwareGeneration;
 	if (pindmdInit(Options)) {
 		isOpen = true;
-		OutputPacketBuffer = (UINT8 *)malloc(2048);
 	}
 }
 
@@ -52,209 +41,14 @@ DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
 	if (isOpen) {
-		//int byteIdx=0;
-		UINT8 tempbuffer[128*32]; // for rescale
-
-		// 128x16 = display centered vert
-		// 128x32 = no change
-		// 192x64 = rescaled
-		// 256x64 = rescaled
-
-		if(width == 192 && height == 64)
-		{
-			UINT32 o = 0;
-			for(int j = 0; j < 32; ++j)
-				for(int i = 0; i < 128; ++i,++o)
-				{
-					const UINT32 offs = j*(2*192)+i*3/2;
-					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
-						tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+192] + (int)currbuffer[offs+1] + (int)currbuffer[offs+193])/4);
-					else
-						tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+192])/2);
-
-					switch (tempbuffer[o]){
-					case 0:
-						tempbuffer[o] = 0;
-						break;
-					case 1:
-						tempbuffer[o] = 1;
-						break;
-					case 2:
-						tempbuffer[o] = 7;
-						break;
-					case 3:
-						tempbuffer[o] = 15;
-						break;
-					}
-				}
-		}
-		else if(width == 256 && height == 64)
-		{
-			UINT32 o = 0;
-			for(int j = 0; j < 32; ++j)
-				for(int i = 0; i < 128; ++i,++o)
-				{
-					const UINT32 offs = j*(2*256)+i*2;
-					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
-
-					switch (tempbuffer[o]){
-					case 0:
-						tempbuffer[o] = 0;
-						break;
-					case 1:
-						tempbuffer[o] = 1;
-						break;
-					case 2:
-						tempbuffer[o] = 7;
-						break;
-					case 3:
-						tempbuffer[o] = 15;
-						break;
-					}
-				}
-		} else
-			for (int i = 0; i < width*height; i++){
-				switch (currbuffer[i]){
-				case 0:
-					tempbuffer[i] = 0;
-					break;
-				case 1:
-					tempbuffer[i] = 1;
-					break;
-				case 2:
-					tempbuffer[i] = 7;
-					break;
-				case 3:
-					tempbuffer[i] = 15;
-					break;
-				}
-			}
-	
-		// dmd height
-/*		for(int j = 0; j < ((height==16)?16:32); ++j)
-		{
-			// dmd width
-			for(int i = 0; i < 128; i+=8)
-			{
-				int bd0,bd1,bd2,bd3;
-				bd0 = 0;
-				bd1 = 0;
-				bd2 = 0;
-				bd3 = 0;
-				for (int v = 7; v >= 0; v--)
-				{
-					// pixel colour
-					int pixel = tempbuffer[j*128 + i+v];
-
-					bd0 <<= 1;
-					bd1 <<= 1;
-					bd2 <<= 1;
-					bd3 <<= 1;
-
-					if(pixel==3)
-						pixel=15;	
-					else if(pixel==2)
-						pixel=4;
-
-					if(pixel & 1)
-						bd0 |= 1;
-					if(pixel & 2)
-						bd1 |= 1;
-					if(pixel & 4)
-						bd2 |= 1;
-					if(pixel & 8)
-						bd3 |= 1;
-				}
-
-				OutputPacketBuffer[byteIdx     +((height==16)?128:0)] = bd0;
-				OutputPacketBuffer[byteIdx+ 512+((height==16)?128:0)] = bd1;
-				OutputPacketBuffer[byteIdx+1024+((height==16)?128:0)] = bd2;
-				OutputPacketBuffer[byteIdx+1536+((height==16)?128:0)] = bd3;
-				byteIdx++;
-			}
-		}
-*/
-		render16ShadeFrame(tempbuffer);
+		renderDMDFrame(0x00000000080, (UINT8) width, (UINT8) height, currbuffer, 0x00); 
 	}
 }
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
 	if (isOpen) {
-		//int byteIdx=0;
-		UINT8 tempbuffer[128*32]; // for rescale
-
-		// 128x16 = display centered vert
-		// 128x32 = no change
-		// 192x64 = rescaled
-		// 256x64 = rescaled
-
-		if(width == 192 && height == 64)
-		{
-			UINT32 o = 0;
-			for(int j = 0; j < 32; ++j)
-				for(int i = 0; i < 128; ++i,++o)
-				{
-					const UINT32 offs = j*(2*192)+i*3/2;
-					if((i&1) == 1) // filter only each 2nd pixel, could do better than this
-						tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+192] + (int)currbuffer[offs+1] + (int)currbuffer[offs+193])/4);
-					else
-						tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+192])/2);
-				}
-		}
-		else if(width == 256 && height == 64)
-		{
-			UINT32 o = 0;
-			for(int j = 0; j < 32; ++j)
-				for(int i = 0; i < 128; ++i,++o)
-				{
-					const UINT32 offs = j*(2*256)+i*2;
-					tempbuffer[o] = (UINT8)(((int)currbuffer[offs] + (int)currbuffer[offs+256] + (int)currbuffer[offs+1] + (int)currbuffer[offs+257])/4);
-				}
-		} else
-			memcpy(tempbuffer,currbuffer,width*height);
-	
-
-		// dmd height
-		/*for(int j = 0; j < ((height==16)?16:32); ++j)
-		{
-			// dmd width
-			for(int i = 0; i < 128; i+=8)
-			{
-				int bd0,bd1,bd2,bd3;
-				bd0 = 0;
-				bd1 = 0;
-				bd2 = 0;
-				bd3 = 0;
-				for (int v = 7; v >= 0; v--)
-				{
-					// pixel colour
-					int pixel = tempbuffer[j*128 + i+v];
-
-					bd0 <<= 1;
-					bd1 <<= 1;
-					bd2 <<= 1;
-					bd3 <<= 1;
-
-					if(pixel & 1)
-						bd0 |= 1;
-					if(pixel & 2)
-						bd1 |= 1;
-					if(pixel & 4)
-						bd2 |= 1;
-					if(pixel & 8)
-						bd3 |= 1;
-				}
-
-				OutputPacketBuffer[byteIdx     +((height==16)?128:0)] = bd0;
-				OutputPacketBuffer[byteIdx+ 512+((height==16)?128:0)] = bd1;
-				OutputPacketBuffer[byteIdx+1024+((height==16)?128:0)] = bd2;
-				OutputPacketBuffer[byteIdx+1536+((height==16)?128:0)] = bd3;
-				byteIdx++;
-			}
-		}
-*/
-		render16ShadeFrame(tempbuffer);
+		render16ShadeFrame(currbuffer);
 	}
 }
 
