@@ -30,7 +30,13 @@
 #include "mamedbg.h"
 #include "../window.h"
 
+//#define FAST_NN_BLIT // define for much faster nearest neighbor blitting, otherwise uses bilinear resample in dib_draw_window()
 
+#ifndef FAST_NN_BLIT
+ #include "..\..\ext\basicbitmap\BasicBitmap_C.h"
+ static UINT16 *upscale_bitmap = NULL;
+ static UINT32 upscale_bitmap_size = 0;
+#endif
 
 //============================================================
 //	IMPORTS
@@ -679,6 +685,12 @@ void win_destroy_window(void)
 	// kill the window if it still exists
 	if (win_video_window)
 		DestroyWindow(win_video_window);
+
+#ifndef FAST_NN_BLIT
+	if (upscale_bitmap)
+		free(upscale_bitmap);
+	upscale_bitmap = NULL;
+#endif
 
 	if (converted_bitmap)
 		free(converted_bitmap);
@@ -1570,7 +1582,7 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	struct win_blit_params params;
 	int xmult, ymult;
 	RECT client;
-	int cx, cy;
+	//int cx, cy;
 
 	// compute the multipliers
 	GetClientRect(win_video_window, &client);
@@ -1616,26 +1628,56 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	win_perform_blit(&params, update);
 
 	// fill in bitmap-specific info
+#ifdef FAST_NN_BLIT
 	video_dib_info->bmiHeader.biWidth = params.dstpitch / (depth / 8);
 	video_dib_info->bmiHeader.biHeight = -win_visible_height * ymult;
+#else
+	video_dib_info->bmiHeader.biWidth = ((client.right - client.left) + 3) & ~3;
+	video_dib_info->bmiHeader.biHeight = -(client.bottom - client.top);
+#endif
 	video_dib_info->bmiHeader.biBitCount = depth;
 
-	// The old code prevents the DMD window from scaling to fit. Yes,
-	// the basic StretchDIBBits is ugly, but it's very similar to the behavior
-	// with default directdraw=true.
+	// The old code prevents the DMD window from scaling-to-fit, so remove that.
 	//
 	// compute the center position
 	// cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
 	// cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
 
-	//!! SetStretchBltMode(dc, HALFTONE); // Could somehow enable filtering if 24bit RGBs??
 	// blit to the screen
-	// old: StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+	if ((video_dib_info->bmiHeader.biWidth == params.dstpitch / (depth / 8)) &&
+		((client.bottom - client.top) == win_visible_height * ymult)) // perfect pixel match?
+		SetDIBitsToDevice(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
+		                  0, 0, 0, (client.bottom - client.top),
+		                  converted_bitmap, video_dib_info, DIB_RGB_COLORS);
+	else
+#ifdef FAST_NN_BLIT
+	//!! SetStretchBltMode(dc, HALFTONE); // Does not really work. Internet says this could be due to some heuristic which does not do filtering on small images, but maybe also because its (unsupported) 15/16bit input?
+	// old code: StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
 	StretchDIBits(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
-				0, 0, win_visible_width * xmult, win_visible_height * ymult,
-				converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
+				  0, 0, win_visible_width * xmult, win_visible_height * ymult,
+				  converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
+#else
+	{
+		if (upscale_bitmap_size < video_dib_info->bmiHeader.biWidth * (client.bottom - client.top))
+		{
+			upscale_bitmap_size = video_dib_info->bmiHeader.biWidth * (client.bottom - client.top);
+			if (upscale_bitmap)
+				free(upscale_bitmap);
+			upscale_bitmap = (UINT16*)malloc(upscale_bitmap_size*sizeof(UINT16));
+		}
+
+		BasicBitmap_SSE2_AVX_Enable();
+		ResampleA1R5G5B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+			             (UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+
+		SetDIBitsToDevice(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
+			              0, 0, 0, (client.bottom - client.top),
+			              upscale_bitmap, video_dib_info, DIB_RGB_COLORS);
+	}
+#endif
+
 	/*
-	// also old: erase the edges if updating
+	// also old code: erase the edges if updating
 	if (update)
 	{
 		RECT inner;
