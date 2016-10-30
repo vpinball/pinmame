@@ -9,7 +9,13 @@
 #include <stdint.h>
 
 #include "BasicBitmap.h"
+#include "BasicBitmap_C.h"
 
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(__LP64__)
+	#define _COMPILE_WITH_SSE2
+#endif
+
+#if 0
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
 	#if (_MSC_VER >= 1400) || defined(__SSE2__)
 		#define _COMPILE_WITH_SSE2
@@ -25,10 +31,9 @@
 		#define _COMPILE_WITH_AVX
 	#endif
 #endif
-
-#ifndef _COMPILE_WITH_SSE2
-	#error "SSE2 instruction set not enabled"
 #endif
+
+#ifdef _COMPILE_WITH_SSE2
 
 #include <emmintrin.h>
 
@@ -1014,18 +1019,9 @@ static int TransparentBlit_32(void *dst, long dpitch, int dx, const void *src,
 //---------------------------------------------------------------------
 // internal const 
 //---------------------------------------------------------------------
-__m128i _pixel_mask_8x0101;
-__m128i _pixel_mask_8x00ff;
-__m128i _pixel_mask_4x000000ff;
-
-
-void BasicBitmap_SSE2_Init_Const()
-{
-	_pixel_mask_8x0101 = _mm_set1_epi16(0x0101);
-	_pixel_mask_8x00ff = _mm_set1_epi16(0x00ff);
-	_pixel_mask_4x000000ff = _mm_set1_epi32(0xff);
-}
-
+static const __m128i _pixel_mask_8x0101 = _mm_set1_epi16(0x0101);
+static const __m128i _pixel_mask_8x00ff = _mm_set1_epi16(0x00ff);
+static const __m128i _pixel_mask_4x000000ff = _mm_set1_epi32(0xff);
 
 //---------------------------------------------------------------------
 // internal inline 
@@ -1693,7 +1689,7 @@ static int _x86_cpu_detect_feature(unsigned int *features)
 
 
 // detect bits
-unsigned int _x86_cpu_feature(int nbit)
+static unsigned int _x86_cpu_feature(int nbit)
 {
 	static unsigned int features[8];
 	static int inited = 0;
@@ -1717,10 +1713,12 @@ extern void BasicBitmap_ResampleDriver(int id, void *ptr);
 //---------------------------------------------------------------------
 int BasicBitmap_SSE2_AVX_Enable()
 {
+	static int initialized = 0;
+	if (initialized != 0)
+		return initialized;
+
 	int result = 0;
 	if (_x86_cpu_feature(26)) {
-		BasicBitmap_SSE2_Init_Const();
-
 		_internal_hook_memcpy = memcpy_fast;
 
 		BasicBitmap::SetDriver(32, NormalBlit_32, false);
@@ -1753,7 +1751,15 @@ int BasicBitmap_SSE2_AVX_Enable()
 	}
 #endif
 
+	initialized = result;
 	return result;
 }
 
+#else
 
+int BasicBitmap_SSE2_AVX_Enable()
+{
+	return 0;
+}
+
+#endif

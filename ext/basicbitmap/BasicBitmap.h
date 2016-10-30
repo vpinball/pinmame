@@ -871,8 +871,4 @@ protected:
 	unsigned char **_lines;
 };
 
-
-
 #endif
-
-
