@@ -630,6 +630,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ext\basicbitmap\BasicBitmap.cpp" />
+    <ClCompile Include="ext\basicbitmap\BasicBitmap_SSE2.cpp" />
     <ClCompile Include="src\artwork.c" />
     <ClCompile Include="src\audit.c" />
     <ClCompile Include="src\cheat.c" />
@@ -1533,6 +1535,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\win32com\WSHDlgCtrls.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ext\basicbitmap\BasicBitmap.h" />
+    <ClInclude Include="ext\basicbitmap\BasicBitmap_C.h" />
     <ClInclude Include="src\artwork.h" />
     <ClInclude Include="src\audit.h" />
     <ClInclude Include="src\cheat.h" />

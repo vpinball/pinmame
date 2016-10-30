@@ -138,6 +138,9 @@
       <UniqueIdentifier>{025c82ac-f73b-408e-a1bd-9fe88ad3cee9}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\external\basicbitmap">
+      <UniqueIdentifier>{04845ed9-2191-4b84-b489-705dd4c69b24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\artwork.c">
@@ -1223,6 +1226,12 @@
     <ClCompile Include="src\wpc\dmddevice.cpp">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="ext\basicbitmap\BasicBitmap.cpp">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\basicbitmap\BasicBitmap_SSE2.cpp">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1932,6 +1941,12 @@
     </ClInclude>
     <ClInclude Include="src\wpc\dmddevice.h">
       <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\basicbitmap\BasicBitmap.h">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\basicbitmap\BasicBitmap_C.h">
+      <Filter>Source Files\external\basicbitmap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
