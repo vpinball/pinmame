@@ -116,7 +116,10 @@ static struct {
   int zc;						/* zero cross flag */
   int gi_irqcnt;                /* Count IRQ occurrences for GI Dimming */
   int gi_active[CORE_MAXGI];    /* Used to check if GI string is accessed at all */
-  UINT32 solenoidbits[48];
+  UINT32 solenoidbits[64];
+  UINT32 modsol_seen_pulses;
+  UINT8 modsol_seen_flip_pulses;
+  UINT8 modsol_seen_aux_pulses;
   int modsol_count;
   int modsol_sample;
 } wpclocals;
@@ -662,12 +665,14 @@ WRITE_HANDLER(wpc_w) {
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
+        wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
       }
       break;
     case WPC_FLIPPERCOIL95:
       if (core_gameData->gen & GENWPC_HASWPC95) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
+        wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
       }
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
@@ -716,6 +721,7 @@ WRITE_HANDLER(wpc_w) {
       break;
     }
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
+      wpclocals.modsol_seen_aux_pulses |= data;
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
@@ -740,18 +746,22 @@ WRITE_HANDLER(wpc_w) {
       break; /* just save value */
     case WPC_SOLENOID1:
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
+      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID2:
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
+      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID3:
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
+      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case WPC_SOLENOID4:
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
+      wpclocals.modsol_seen_pulses |= coreGlobals.pulsedSolState;
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
@@ -914,15 +924,22 @@ static INTERRUPT_GEN(wpc_irq) {
 			// Messy mappings to duplicate what the core does, see core_getSol()
 			for (i = 0; i < 32; i++)
 			{
-				core_update_modulated_light(&wpclocals.solenoidbits[i], coreGlobals.pulsedSolState & (1 << i));
+				core_update_modulated_light(&wpclocals.solenoidbits[i], wpclocals.modsol_seen_pulses & (1 << i));
 			}
+			wpclocals.modsol_seen_pulses = coreGlobals.pulsedSolState;
 			for (i = 4; i < 8; i++)
 			{
 				if (wpclocals.nonFlipBits & (1 << i))
 				{
-					core_update_modulated_light(&wpclocals.solenoidbits[i + 28], wpclocals.solFlipPulse & (1 << i));
+					core_update_modulated_light(&wpclocals.solenoidbits[i + 28], wpclocals.modsol_seen_flip_pulses & (1 << i));
 				}
 			}
+			wpclocals.modsol_seen_flip_pulses = wpclocals.solFlipPulse;
+			for (i = 0; i < core_gameData->hw.custSol; i++) 
+			{
+				core_update_modulated_light(&wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i -1], wpclocals.modsol_seen_aux_pulses & (1 << i));
+			}
+			wpclocals.modsol_seen_aux_pulses = wpc_data[WPC_EXTBOARD1];
 			if (wpclocals.modsol_count < WPC_MODSOLSMOOTH)
 			{
 				wpclocals.modsol_count++;
@@ -945,27 +962,32 @@ static INTERRUPT_GEN(wpc_irq) {
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i + 28] = ((wpclocals.solFlip & (1 << i)) > 0) ? 1 : 0;
 					}
 				}
-				if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS))
+				if (core_gameData->gen & (GEN_WPC95 | GEN_WPC95DCS))
 				{
-					for (i=36;i<40;i++)
+					for (i = 36; i < 40; i++)
 					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i-8];
-					}
-					// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.
-					if (core_gameData->gen & GEN_ALLWPC)
-					{
-						for(i=28;i<32;i++)
-						{
-							coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i-1) ? 1 :0;
-						}
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i - 8];
 					}
 				}
 				else
 				{
-					for(i=36;i<40;i++)
+					for (i = 36; i<40; i++)
 					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i-1) ? 1 :0;
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i + 1) ? 1 : 0;
 					}
+				}
+				// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.
+				if (core_gameData->gen & GEN_ALLWPC)
+				{
+					for(i=28;i<32;i++)
+					{
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i+1) ? 1 :0;
+					}
+				}
+				// Aux board solenoids
+				for (i = 0; i < core_gameData->hw.custSol; i++)
+				{
+					coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_calc_modulated_light(wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][CORE_FIRSTCUSTSOL + i - 1]);
 				}
 			}
 		}

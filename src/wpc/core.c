@@ -2,7 +2,6 @@
 /* PINMAME - Interface function (Input/Output) */
 /***********************************************/
 #include <stdarg.h>
-#include <assert.h>
 #include "driver.h"
 #include "sim.h"
 #include "snd_cmd.h"
@@ -1915,7 +1914,6 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level
 	UINT32 targetlevel;
 	UINT32 mask = (1 << bit_count) - 1;
 
-	assert(bit_count <= 16);
 	bits &= mask;
 	targetlevel = ((UINT32)core_bits_set_table256[bits & 0xff] +
 		core_bits_set_table256[(bits >> 8) & 0xff] +
