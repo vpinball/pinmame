@@ -26,6 +26,7 @@
 //
 //=====================================================================
 #include "BasicBitmap.h"
+#include "BasicBitmap_C.h"
 
 #ifndef PIXEL_NO_SYSTEM
 #if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64)
@@ -98,10 +99,10 @@ const IUINT32 _pixel_scale_6[64] = {
 };
 
 
-unsigned char pixel_blend_lut[2048 * 2];
+static unsigned char pixel_blend_lut[2048 * 2];
 
-unsigned char pixel_clip_vector[256 * 3];
-unsigned char *pixel_clip_256 = &pixel_clip_vector[256];
+static unsigned char pixel_clip_vector[256 * 3];
+static unsigned char *pixel_clip_256 = &pixel_clip_vector[256];
 
 #define PIXEL_CLIP_256(x) pixel_clip_256[x]
 
@@ -114,7 +115,7 @@ void (*_internal_hook_free)(void *ptr) = NULL;
 void *(*_internal_hook_memcpy)(void *dst, const void *src, size_t n) = NULL;
 
 // allocate aligned memory
-void *internal_align_malloc(size_t size, size_t n) {
+static void *internal_align_malloc(size_t size, size_t n) {
 	size_t need = size + n + sizeof(void*);
 	char *ptr = NULL;
 	char *dst;
@@ -130,7 +131,7 @@ void *internal_align_malloc(size_t size, size_t n) {
 }
 
 // free aligned memory
-void internal_align_free(void *ptr) {
+static void internal_align_free(void *ptr) {
 	char *dst = (char*)ptr;
 	ptr = *(char**)(dst - sizeof(char*));
 	assert(ptr);
@@ -143,7 +144,7 @@ void internal_align_free(void *ptr) {
 }
 
 // copy from destination to source
-void *internal_memcpy(void *dst, const void *src, size_t size) 
+static void *internal_memcpy(void *dst, const void *src, size_t size)
 {
 	if (_internal_hook_memcpy) {
 		return _internal_hook_memcpy(dst, src, size);
@@ -171,21 +172,21 @@ void *internal_memcpy(void *dst, const void *src, size_t size)
 //---------------------------------------------------------------------
 
 /* encode 8 bits unsigned int */
-inline char *basic_encode_8u(char *p, IUINT8 c)
+static inline char *basic_encode_8u(char *p, IUINT8 c)
 {
 	*(unsigned char*)p++ = c;
 	return p;
 }
 
 /* decode 8 bits unsigned int */
-inline const char *basic_decode_8u(const char *p, IUINT8 *c)
+static inline const char *basic_decode_8u(const char *p, IUINT8 *c)
 {
 	*c = *(unsigned char*)p++;
 	return p;
 }
 
 /* encode 16 bits unsigned int (lsb) */
-inline char *basic_encode_16u(char *p, IUINT16 w)
+static inline char *basic_encode_16u(char *p, IUINT16 w)
 {
 #if IWORDS_BIG_ENDIAN
 	*(unsigned char*)(p + 0) = (w & 255);
@@ -198,7 +199,7 @@ inline char *basic_encode_16u(char *p, IUINT16 w)
 }
 
 /* decode 16 bits unsigned int (lsb) */
-inline const char *basic_decode_16u(const char *p, IUINT16 *w)
+static inline const char *basic_decode_16u(const char *p, IUINT16 *w)
 {
 #if IWORDS_BIG_ENDIAN
 	*w = *(const unsigned char*)(p + 1);
@@ -211,7 +212,7 @@ inline const char *basic_decode_16u(const char *p, IUINT16 *w)
 }
 
 /* encode 32 bits unsigned int (lsb) */
-inline char *basic_encode_32u(char *p, IUINT32 l)
+static inline char *basic_encode_32u(char *p, IUINT32 l)
 {
 #if IWORDS_BIG_ENDIAN
 	*(unsigned char*)(p + 0) = (unsigned char)((l >>  0) & 0xff);
@@ -226,7 +227,7 @@ inline char *basic_encode_32u(char *p, IUINT32 l)
 }
 
 /* decode 32 bits unsigned int (lsb) */
-inline const char *basic_decode_32u(const char *p, IUINT32 *l)
+static inline const char *basic_decode_32u(const char *p, IUINT32 *l)
 {
 #if IWORDS_BIG_ENDIAN
 	*l = *(const unsigned char*)(p + 3);
@@ -244,7 +245,7 @@ inline const char *basic_decode_32u(const char *p, IUINT32 *l)
 //---------------------------------------------------------------------
 // initialize tables
 //---------------------------------------------------------------------
-void PixelInitLut()
+static void PixelInitLut()
 {
 	static int inited = 0;
 	if (inited) {
@@ -5785,5 +5786,12 @@ int BasicBitmap::Resample(int dx, int dy, int dw, int dh, const BasicBitmap *src
 	return 0;
 }
 
+///
 
+void ResampleA1R5G5B5(unsigned short *dst, int dx, int dy, unsigned short *src, int sx, int sy)
+{
+	BasicBitmap bdst(dx, dy, BasicBitmap::A1R5G5B5, dst, dx * 2);
+	BasicBitmap bsrc(sx, sy, BasicBitmap::A1R5G5B5, src, sx * 2);
 
+	bdst.Resample(0, 0, dx, dy, &bsrc, 0, 0, sx, sy, BasicBitmap::ResampleFilter::BILINEAR);
+}
