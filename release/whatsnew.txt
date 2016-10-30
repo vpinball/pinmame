@@ -17,9 +17,13 @@ Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some 
 Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise
 Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
 Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars God of War, etc)
+
 Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
+
 Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
 Add support for GI on Whitestar
+
+Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 
 *** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
 Kinda new:
