@@ -30,7 +30,7 @@
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
 #define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
-#define WPC_MODSOLSMOOTH   14 /* Modulated solenoids - History length to smooth over */
+#define WPC_MODSOLSMOOTH   28 /* Modulated solenoids - History length to smooth over */
 #define WPC_MODSOLSAMPLE   2  /* Modulated solenodi sampling rate (every n IRQs) */
 #endif
 
@@ -935,7 +935,7 @@ static INTERRUPT_GEN(wpc_irq) {
 				}
 			}
 			wpclocals.modsol_seen_flip_pulses = wpclocals.solFlipPulse;
-			for (i = 0; i < core_gameData->hw.custSol; i++) 
+			for (i = 0; i < 8; i++) 
 			{
 				core_update_modulated_light(&wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i -1], wpclocals.modsol_seen_aux_pulses & (1 << i));
 			}
@@ -984,10 +984,13 @@ static INTERRUPT_GEN(wpc_irq) {
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i+1) ? 1 :0;
 					}
 				}
-				// Aux board solenoids
+				// Aux board solenoids.  Copy anything above 8 as boolean.  TZ uses this for special gumball mech. Blah.
 				for (i = 0; i < core_gameData->hw.custSol; i++)
 				{
-					coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_calc_modulated_light(wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][CORE_FIRSTCUSTSOL + i - 1]);
+					if (i < 8)
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_calc_modulated_light(wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][CORE_FIRSTCUSTSOL + i - 1]);
+					else
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_getSol(CORE_FIRSTCUSTSOL + i) ? 1 :0;
 				}
 			}
 		}
