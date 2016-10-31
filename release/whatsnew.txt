@@ -24,6 +24,7 @@ Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on ho
 Add support for GI on Whitestar
 
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
+Fix window size issues if an additional mini-DMD is in use
 
 *** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
 Kinda new:
