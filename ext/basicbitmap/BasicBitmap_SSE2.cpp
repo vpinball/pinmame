@@ -6,7 +6,13 @@
 // for more information, please see the readme file
 //
 //=====================================================================
-#include <stdint.h>
+#if defined(_MSC_VER) && (_MSC_VER <= 1500)
+ #define uint16_t unsigned short
+ #define uint32_t unsigned int
+ #define uint64_t unsigned long long
+#else
+ #include <stdint.h>
+#endif
 
 #include "BasicBitmap.h"
 #include "BasicBitmap_C.h"

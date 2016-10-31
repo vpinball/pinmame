@@ -30,7 +30,9 @@
 #include "mamedbg.h"
 #include "../window.h"
 
-//#define FAST_NN_BLIT // define for much faster nearest neighbor blitting, otherwise uses bilinear resample in dib_draw_window()
+#ifndef VPINMAME
+ #define FAST_NN_BLIT // define for much faster nearest neighbor blitting, otherwise uses bilinear resample in dib_draw_window()
+#endif
 
 #ifndef FAST_NN_BLIT
  #include "..\..\ext\basicbitmap\BasicBitmap_C.h"
@@ -1583,7 +1585,9 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	struct win_blit_params params;
 	int xmult, ymult;
 	RECT client;
-	//int cx, cy;
+#ifndef VPINMAME
+	int cx, cy;
+#endif
 
 	// compute the multipliers
 	GetClientRect(win_video_window, &client);
@@ -1638,11 +1642,12 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 #endif
 	video_dib_info->bmiHeader.biBitCount = depth;
 
-	// The old code prevents the DMD window from scaling-to-fit, so remove that.
-	//
+
 	// compute the center position
-	// cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
-	// cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
+#ifndef VPINMAME // The old code prevents the DMD window from scaling-to-fit, so remove that in the VPM case.
+	cx = client.left + ((client.right - client.left) - win_visible_width * xmult) / 2;
+	cy = client.top + ((client.bottom - client.top) - win_visible_height * ymult) / 2;
+#endif
 
 	// blit to the screen
 	if ((video_dib_info->bmiHeader.biWidth == params.dstpitch / (depth / 8)) &&
@@ -1653,8 +1658,11 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	else
 #ifdef FAST_NN_BLIT
 	//!! SetStretchBltMode(dc, HALFTONE); // Does not really work. Internet says this could be due to some heuristic which does not do filtering on small images, but maybe also because its (unsupported) 15/16bit input?
-	// old code: StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+#ifndef VPINMAME
+	StretchDIBits(dc, cx, cy, win_visible_width * xmult, win_visible_height * ymult,
+#else
 	StretchDIBits(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
+#endif
 				  0, 0, win_visible_width * xmult, win_visible_height * ymult,
 				  converted_bitmap, video_dib_info, DIB_RGB_COLORS, SRCCOPY);
 #else
@@ -1664,12 +1672,32 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 			upscale_bitmap_size = video_dib_info->bmiHeader.biWidth * (client.bottom - client.top);
 			if (upscale_bitmap)
 				free(upscale_bitmap);
-			upscale_bitmap = (UINT16*)malloc(upscale_bitmap_size*sizeof(UINT16));
+			upscale_bitmap = (UINT16*)malloc(upscale_bitmap_size*((bitmap->depth+1)/8)); // +1 for 15bit
 		}
 
 		BasicBitmap_SSE2_AVX_Enable();
-		ResampleA1R5G5B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
-			             (UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+		switch(bitmap->depth)
+		{
+		case 16:
+			/*ResampleR5G6B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top), //!! 16 also seems to mean 15??!
+							(UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			break;*/
+		case 15:
+			ResampleX1R5G5B5(upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							(UINT16*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			break;
+		case 24:
+			ResampleR8G8B8((UINT8*)upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							(UINT8*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			break;
+		case 32:
+			ResampleX8R8G8B8((UINT32*)upscale_bitmap, video_dib_info->bmiHeader.biWidth, (client.bottom - client.top),
+							(UINT32*)converted_bitmap, params.dstpitch / (depth / 8), win_visible_height * ymult);
+			break;
+		default:
+			logerror("Cannot Resample, unknown bit depth");
+			break;
+		}
 
 		SetDIBitsToDevice(dc, 0, 0, (client.right - client.left), (client.bottom - client.top),
 			              0, 0, 0, (client.bottom - client.top),
@@ -1677,8 +1705,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 	}
 #endif
 
-	/*
-	// also old code: erase the edges if updating
+#ifndef VPINMAME
+	// erase the edges if updating
 	if (update)
 	{
 		RECT inner;
@@ -1688,7 +1716,8 @@ static void dib_draw_window(HDC dc, struct mame_bitmap *bitmap, const struct rec
 		inner.right = cx + win_visible_width * xmult;
 		inner.bottom = cy + win_visible_height * ymult;
 		erase_outer_rect(&client, &inner, dc);
-	}*/
+	}
+#endif
 }
 
 
