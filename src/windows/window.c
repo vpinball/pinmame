@@ -690,6 +690,7 @@ void win_destroy_window(void)
 	if (upscale_bitmap)
 		free(upscale_bitmap);
 	upscale_bitmap = NULL;
+	upscale_bitmap_size = 0;
 #endif
 
 	if (converted_bitmap)

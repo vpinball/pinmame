@@ -1815,9 +1815,7 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
   if (layout) {
     for (; layout->length; layout += 1) {
       int tmpX = 0, tmpY = 0, type = layout->type & CORE_SEGMASK;
-#ifndef MAME_DEBUG
       if (layout->type & CORE_NODISP) continue;
-#endif
       if (type == CORE_IMPORT)
         { core_findSize(layout->lptr, maxX, maxY); continue; }
       if (type == CORE_DMD || type == CORE_VIDEO) {
