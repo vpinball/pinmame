@@ -4,7 +4,7 @@
 
 	References:
 
-		6809 Simulator V09, By L.C. Benschop, Eidnhoven The Netherlands.
+		6809 Simulator V09, By L.C. Benschop, Eindhoven The Netherlands.
 
 		m6809: Portable 6809 emulator, DS (6809 code in MAME, derived from
 			the 6809 Simulator V09)
@@ -28,7 +28,7 @@ History
 
 990316  HJB
 	Renamed to 6800, since that's the basic CPU.
-	Added different cycle count tables for M6800/2/8, M6801/3 and HD63701.
+	Added different cycle count tables for M6800/2/8, M6801/3 and m68xx.
 
 990314  HJB
 	Also added the M6800 subtype.
@@ -51,6 +51,36 @@ TODO:
 
 *****************************************************************************/
 
+/*
+
+    Chip                RAM     NVRAM   ROM     SCI     r15-f   ports
+    -----------------------------------------------------------------
+    MC6800              -       -       -       no      no      4
+    MC6802              128     32      -       no      no      4
+    MC6802NS            128     -       -       no      no      4
+    MC6808              -       -       -       no      no      4
+
+    MC6801              128     64      2K      yes     no      4
+    MC68701             128     64      -       yes     no      4
+    MC6803              128     64      -       yes     no      4
+
+    MC6801U4            192     32      4K      yes     yes     4
+    MC6803U4            192     32      -       yes     yes     4
+
+    HD6801              128     64      2K      yes     no      4
+    HD6301V             128     -       4K      yes     no      4
+    HD63701V            192     -       4K      yes     no      4
+    HD6303R             128     -       -       yes     no      4
+
+    HD6301X             192     -       4K      yes     yes     6
+    HD6301Y             256     -       16K     yes     yes     6
+    HD6303X             192     -       -       yes     yes     6
+    HD6303Y             256     -       -       yes     yes     6
+
+    NSC8105
+    MS2010-A
+
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -469,7 +499,7 @@ static const UINT8 cycles_63701[] =
 static const UINT8 cycles_nsc8105[] =
 {
 		/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-	/*0*/ XX,XX, 2,XX,XX, 2,XX, 2, 4, 2, 4, 2, 2, 2, 2, 2,
+	/*0*/  5,XX, 2,XX,XX, 2,XX, 2, 4, 2, 4, 2, 2, 2, 2, 2,
 	/*1*/  2,XX, 2,XX,XX, 2,XX, 2,XX,XX, 2, 2,XX,XX,XX,XX,
 	/*2*/  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 	/*3*/  4, 4, 4, 4, 4, 4, 4, 4,XX,XX, 5,10,XX, 9,XX,12,
@@ -480,7 +510,7 @@ static const UINT8 cycles_nsc8105[] =
 	/*8*/  2,XX,XX, 2, 2, 2,XX, 2, 2, 2, 2,XX, 2,XX, 2, 2,
 	/*9*/  2,XX,XX, 2, 2, 2,XX, 2, 2, 2, 2,XX, 2,XX, 2, 2,
 	/*A*/  7,XX,XX, 7, 7, 7,XX, 7, 7, 7, 7,XX, 7, 4, 7, 7,
-	/*B*/  6,XX,XX, 6, 6, 6,XX, 6, 6, 6, 6,XX, 6, 3, 6, 6,
+	/*B*/  6,XX,XX, 6, 6, 6,XX, 6, 6, 6, 6, 5, 6, 3, 6, 6,
 	/*C*/  2, 2, 2,XX, 2, 2, 2, 3, 2, 2, 2, 2,XX, 3,XX, 4,
 	/*D*/  3, 3, 3,XX, 3, 3, 3, 4, 3, 3, 3, 3,XX, 4,XX, 5,
 	/*E*/  5, 5, 5,XX, 5, 5, 5, 6, 5, 5, 5, 5, 5, 6,XX, 7,
