@@ -192,21 +192,21 @@ typedef unsigned long long IUINT64;
 #define _pixel_fetch_32(ptr, offset) (((const IUINT32*)(ptr))[offset])
 
 #define _pixel_fetch_24_lsb(ptr, offset) \
-    ( (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[0]) <<  0 ) | \
+    ( (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[0]) /*<<  0*/ ) | \
       (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[1]) <<  8 ) | \
       (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[2]) << 16 ))
 
 #define _pixel_fetch_24_msb(ptr, offset) \
     ( (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[0]) << 16 ) | \
       (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[1]) <<  8 ) | \
-      (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[2]) <<  0 ))
+      (((IUINT32)(((const IUINT8*)(ptr)) + (offset) * 3)[2]) /*<<  0*/ ))
 
 #define _pixel_store_8(ptr, off, c)  (((IUINT8 *)(ptr))[off] = (IUINT8)(c))
 #define _pixel_store_16(ptr, off, c) (((IUINT16*)(ptr))[off] = (IUINT16)(c))
 #define _pixel_store_32(ptr, off, c) (((IUINT32*)(ptr))[off] = (IUINT32)(c))
 
 #define _pixel_store_24_lsb(ptr, off, c) do { \
-        ((IUINT8*)(ptr))[(off) * 3 + 0] = (IUINT8) (((c) >>  0) & 0xff); \
+        ((IUINT8*)(ptr))[(off) * 3 + 0] = (IUINT8) (((c) /*>>  0*/) & 0xff); \
         ((IUINT8*)(ptr))[(off) * 3 + 1] = (IUINT8) (((c) >>  8) & 0xff); \
         ((IUINT8*)(ptr))[(off) * 3 + 2] = (IUINT8) (((c) >> 16) & 0xff); \
     }   while (0)
@@ -214,7 +214,7 @@ typedef unsigned long long IUINT64;
 #define _pixel_store_24_msb(ptr, off, c)  do { \
         ((IUINT8*)(ptr))[(off) * 3 + 0] = (IUINT8) (((c) >> 16) & 0xff); \
         ((IUINT8*)(ptr))[(off) * 3 + 1] = (IUINT8) (((c) >>  8) & 0xff); \
-        ((IUINT8*)(ptr))[(off) * 3 + 2] = (IUINT8) (((c) >>  0) & 0xff); \
+        ((IUINT8*)(ptr))[(off) * 3 + 2] = (IUINT8) (((c) /*>>  0*/) & 0xff); \
     }   while (0)
 
 #define _pixel_load_card_lsb(ptr, r, g, b, a) do { \
@@ -313,13 +313,13 @@ extern const IUINT32 _pixel_scale_6[64];
             ((IUINT32)(a) << 24) | \
             ((IUINT32)(b) << 16) | \
             ((IUINT32)(c) <<  8) | \
-            ((IUINT32)(d) <<  0)))
+            ((IUINT32)(d) /*<<  0*/)))
 
 /* assembly 24 bits */
 #define _pixel_asm_888(a, b, c) ((IUINT32)( \
             ((IUINT32)(a) << 16) | \
             ((IUINT32)(b) <<  8) | \
-            ((IUINT32)(c) <<  0)))
+            ((IUINT32)(c) /*<<  0*/)))
 
 /* assembly 16 bits */
 #define _pixel_asm_1555(a, b, c, d) ((IUINT16)( \
@@ -342,7 +342,7 @@ extern const IUINT32 _pixel_scale_6[64];
 #define _pixel_asm_4444(a, b, c, d) ((IUINT16)( \
             ((IUINT16)((a) & 0xf0) << 8) | \
             ((IUINT16)((b) & 0xf0) << 4) | \
-            ((IUINT16)((c) & 0xf0) << 0) | \
+            ((IUINT16)((c) & 0xf0) /*<< 0*/) | \
             ((IUINT16)((d) & 0xf0) >> 4)))
 
 /* disassembly 32 bits */
@@ -350,7 +350,7 @@ extern const IUINT32 _pixel_scale_6[64];
             (a) = ((x) >> 24) & 0xff; \
             (b) = ((x) >> 16) & 0xff; \
             (c) = ((x) >>  8) & 0xff; \
-            (d) = ((x) >>  0) & 0xff; \
+            (d) = ((x) /*>>  0*/) & 0xff; \
         }   while (0)
 
 #define _pixel_disasm_888X(x, a, b, c) do { \
@@ -362,14 +362,14 @@ extern const IUINT32 _pixel_scale_6[64];
 #define _pixel_disasm_X888(x, a, b, c) do { \
             (a) = ((x) >> 16) & 0xff; \
             (b) = ((x) >>  8) & 0xff; \
-            (c) = ((x) >>  0) & 0xff; \
+            (c) = ((x) /*>>  0*/) & 0xff; \
         }   while (0)
 
 /* disassembly 24 bits */
 #define _pixel_disasm_888(x, a, b, c) do { \
             (a) = ((x) >> 16) & 0xff; \
             (b) = ((x) >>  8) & 0xff; \
-            (c) = ((x) >>  0) & 0xff; \
+            (c) = ((x) /*>>  0*/) & 0xff; \
         }   while (0)
 
 /* disassembly 16 bits */
@@ -377,20 +377,20 @@ extern const IUINT32 _pixel_scale_6[64];
             (a) = _pixel_scale_1[(x) >> 15]; \
             (b) = _pixel_scale_5[((x) >> 10) & 0x1f]; \
             (c) = _pixel_scale_5[((x) >>  5) & 0x1f]; \
-            (d) = _pixel_scale_5[((x) >>  0) & 0x1f]; \
+            (d) = _pixel_scale_5[((x) /*>>  0*/) & 0x1f]; \
         }   while (0)
 
 #define _pixel_disasm_X555(x, a, b, c) do { \
             (a) = _pixel_scale_5[((x) >> 10) & 0x1f]; \
             (b) = _pixel_scale_5[((x) >>  5) & 0x1f]; \
-            (c) = _pixel_scale_5[((x) >>  0) & 0x1f]; \
+            (c) = _pixel_scale_5[((x) /*>>  0*/) & 0x1f]; \
         }   while (0)
 
 #define _pixel_disasm_5551(x, a, b, c, d) do { \
             (a) = _pixel_scale_5[((x) >> 11) & 0x1f]; \
             (b) = _pixel_scale_5[((x) >>  6) & 0x1f]; \
             (c) = _pixel_scale_5[((x) >>  1) & 0x1f]; \
-            (d) = _pixel_scale_1[((x) >>  0) & 0x01]; \
+            (d) = _pixel_scale_1[((x) /*>>  0*/) & 0x01]; \
         }   while (0)
 
 #define _pixel_disasm_555X(x, a, b, c) do { \
@@ -402,20 +402,20 @@ extern const IUINT32 _pixel_scale_6[64];
 #define _pixel_disasm_565(x, a, b, c) do { \
             (a) = _pixel_scale_5[((x) >> 11) & 0x1f]; \
             (b) = _pixel_scale_6[((x) >>  5) & 0x3f]; \
-            (c) = _pixel_scale_5[((x) >>  0) & 0x1f]; \
+            (c) = _pixel_scale_5[((x) /*>>  0*/) & 0x1f]; \
         }   while (0)
 
 #define _pixel_disasm_4444(x, a, b, c, d) do { \
             (a) = _pixel_scale_4[((x) >> 12) & 0xf]; \
             (b) = _pixel_scale_4[((x) >>  8) & 0xf]; \
             (c) = _pixel_scale_4[((x) >>  4) & 0xf]; \
-            (d) = _pixel_scale_4[((x) >>  0) & 0xf]; \
+            (d) = _pixel_scale_4[((x) /*>>  0*/) & 0xf]; \
         }   while (0)
 
 #define _pixel_disasm_X444(x, a, b, c) do { \
             (a) = _pixel_scale_4[((x) >>  8) & 0xf]; \
             (b) = _pixel_scale_4[((x) >>  4) & 0xf]; \
-            (c) = _pixel_scale_4[((x) >>  0) & 0xf]; \
+            (c) = _pixel_scale_4[((x) /*>>  0*/) & 0xf]; \
         }   while (0)
 
 #define _pixel_disasm_444X(x, a, b, c) do { \
@@ -430,7 +430,7 @@ extern const IUINT32 _pixel_scale_6[64];
 //---------------------------------------------------------------------
 #ifndef ILINS_LOOP_DOUBLE
 #define ILINS_LOOP_DOUBLE(actionx1, actionx2, width) do { \
-	unsigned long __width = (unsigned long)(width); \
+	const unsigned long __width = (unsigned long)(width); \
 	unsigned long __increment = __width >> 2; \
 	for (; __increment > 0; __increment--) { actionx2; actionx2; } \
 	if (__width & 2) { actionx2; } \
@@ -823,21 +823,21 @@ protected:
 	static void CardSetAlpha(IUINT32 *card, int size, IUINT32 alpha);
 	static void CardPremultiply(IUINT32 *card, int size, bool reverse = false);
 
-	static void Fetch(PixelFmt fmt, const void *bits, int x, int w, IUINT32 *buffer);
-	static void Store(PixelFmt fmt, void *bits, int x, int w, const IUINT32 *buffer);
+	static void Fetch(PixelFmt fmt, const void * const __restrict bits, int x, int w, IUINT32 * __restrict buffer);
+	static void Store(PixelFmt fmt, void * const __restrict bits, int x, int w, const IUINT32 * __restrict buffer);
 
 	static void *LoadContent(const char *filename, long *size);
 
 	static int InterpolateRow(IUINT32 *card, int w, const IUINT32 *row1, 
 		const IUINT32 *row2, IINT32 fraction);
 
-	static int InterpolateCol(IUINT32 *card, int w, const IUINT32 *src, 
-		IINT32 x, IINT32 dx);
+	static int InterpolateCol(IUINT32 * __restrict card, const int w, const IUINT32 * const __restrict src, 
+		IINT32 x, const IINT32 dx);
 
 	static int InterpolateRowNearest(IUINT32 *card, int w, const IUINT32 *row1, 
 		const IUINT32 *row2, IINT32 fraction);
 
-	static int InterpolateColNearest(IUINT32 *card, int w, const IUINT32 *src,
+	static int InterpolateColNearest(IUINT32 * __restrict card, int w, const IUINT32 * const __restrict src,
 		IINT32 x, IINT32 dx);
 
 	static InterpRow InterpolateRowPtr;
