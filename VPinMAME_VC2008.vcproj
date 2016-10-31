@@ -4566,6 +4566,26 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="basicbitmap"
+					>
+					<File
+						RelativePath=".\ext\basicbitmap\BasicBitmap.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\basicbitmap\BasicBitmap.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\basicbitmap\BasicBitmap_C.h"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\basicbitmap\BasicBitmap_SSE2.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
