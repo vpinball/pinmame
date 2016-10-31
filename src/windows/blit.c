@@ -569,8 +569,8 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 				for (s = 0; s < blit->dstxscale; ++s)
 					((UINT16*)dst)[c2 * blit->dstxscale + s] = col;
 			}
-			for(s = 0; s < blit->dstyscale; ++s)
-				memcpy(dst + blit->dstpitch*(s+1), dst, blit->dstpitch);
+			for (s = 1; s < blit->dstyscale; ++s)
+				memcpy(dst + blit->dstpitch*s, dst, blit->dstpitch);
 			src += blit->srcpitch;
 			dst += blit->dstpitch * blit->dstyscale;
 		}
@@ -589,8 +589,8 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 				for (s = 0; s < blit->dstxscale; ++s)
 					((UINT32*)dst)[c2 * blit->dstxscale + s] = col;
 			}
-			for (s = 0; s < blit->dstyscale; ++s)
-				memcpy(dst + blit->dstpitch*(s + 1), dst, blit->dstpitch);
+			for (s = 1; s < blit->dstyscale; ++s)
+				memcpy(dst + blit->dstpitch*s, dst, blit->dstpitch);
 			src += blit->srcpitch;
 			dst += blit->dstpitch * blit->dstyscale;
 		}
