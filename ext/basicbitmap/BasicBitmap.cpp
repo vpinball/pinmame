@@ -4245,9 +4245,6 @@ int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IU
 int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IUINT32 * const __restrict src, 
 	IINT32 x, const IINT32 dx)
 {
-	IUINT32 c1, c2, rb, ag;
-	IINT32 xi, fx, fz;
-
 	if (dx == 0x10000 && (x & 0xffff) == 0) {
 		internal_memcpy(card, src + (x >> 16), w * sizeof(IUINT32));
 		return 0;
@@ -4256,9 +4253,11 @@ int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IU
 	const unsigned long __width = (unsigned long)(w);
 	unsigned long __increment = __width >> 2;
 	__m128i x128 = _mm_set_epi32(x+dx*3,x+dx*2,x+dx,x);
+	const __m128i mask = _mm_set1_epi32(0xff00ff);
+	const __m128i dx128 = _mm_set1_epi32(dx*4);
 	for (; __increment > 0; __increment--)
 	{
-            const __m128i xi = _mm_srai_epi32(x128, 16);
+            const __m128i xi = _mm_srli_epi32(x128, 16);
             __m128 icoeff0,icoeff2;
 #ifdef _DEBUG
             icoeff0 = icoeff2 = _mm_setzero_ps();
@@ -4267,61 +4266,32 @@ int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IU
             icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(src + xi.m128i_i32[2])), (__m64*)(src + xi.m128i_i32[3]));
 
             const __m128i c1 = _mm_castps_si128(_mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0)));
-            const __m128i c2 = _mm_castps_si128(_mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1)));            
+            const __m128i c2 = _mm_castps_si128(_mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1)));
 
-#ifdef __SSE4_1__ // SSE4.1 uses 32bit muls like the original C code, everything else replicates fx into the upper 16bits of each 32bits, then does 16bit muls
-            const __m128i fx = _mm_srai_epi32(_mm_and_si128(x128, _mm_set1_epi32(0xff00)), 8);
-            const __m128i fz = _mm_sub_epi32(_mm_set1_epi32(256), fx);
-
-            const __m128i rb = _mm_srai_epi32(_mm_add_epi32(_mm_mullo_epi32(_mm_and_si128(c1,_mm_set1_epi32(0xff00ff)),fz), _mm_mullo_epi32(_mm_and_si128(c2, _mm_set1_epi32(0xff00ff)),fx)), 8);
-            const __m128i ag = _mm_add_epi32(_mm_mullo_epi32(_mm_and_si128(_mm_srai_epi32(c1, 8),_mm_set1_epi32(0xff00ff)),fz), _mm_mullo_epi32(_mm_and_si128(_mm_srai_epi32(c2, 8), _mm_set1_epi32(0xff00ff)),fx));
-#else
-            const __m128i f = _mm_and_si128(x128, _mm_set1_epi32(0xff00));
-            const __m128i fx = _mm_or_si128(_mm_srai_epi32(f, 8), _mm_slli_epi32(f, 8));
+            const __m128i f  = _mm_and_si128(x128, _mm_set1_epi32(0xff00));
+            const __m128i fx = _mm_or_si128(_mm_srli_epi32(f, 8), _mm_slli_epi32(f, 8));
             const __m128i fz = _mm_sub_epi16(_mm_set1_epi16(256), fx);
 
-            const __m128i rb = _mm_srai_epi32(_mm_add_epi32(_mm_mullo_epi16(_mm_and_si128(c1,_mm_set1_epi32(0xff00ff)),fz), _mm_mullo_epi16(_mm_and_si128(c2, _mm_set1_epi32(0xff00ff)),fx)), 8);
-            const __m128i ag = _mm_add_epi32(_mm_mullo_epi16(_mm_and_si128(_mm_srai_epi32(c1, 8),_mm_set1_epi32(0xff00ff)),fz), _mm_mullo_epi16(_mm_and_si128(_mm_srai_epi32(c2, 8), _mm_set1_epi32(0xff00ff)),fx));
-#endif
-            _mm_storeu_si128((__m128i*)card, _mm_or_si128(_mm_and_si128(rb,_mm_set1_epi32(0xff00ff)), _mm_and_si128(ag,_mm_set1_epi32(0xff00ff00))));
+            const __m128i rb = _mm_srli_epi16(_mm_adds_epu16(_mm_mullo_epi16(_mm_and_si128(c1,mask),fz), _mm_mullo_epi16(_mm_and_si128(c2,mask),fx)), 8);
+            const __m128i ag =                _mm_adds_epu16(_mm_mullo_epi16(_mm_srli_epi16(c1, 8), fz), _mm_mullo_epi16(_mm_srli_epi16(c2, 8), fx));
 
-            x128 = _mm_add_epi32(x128, _mm_set1_epi32(dx*4));
+            _mm_storeu_si128((__m128i*)card, _mm_or_si128(rb, _mm_andnot_si128(mask,ag)));
+
+            x128 = _mm_add_epi32(x128, dx128);
             card += 4;
         }
 
-        if (__width & 2)
+        x = x128.m128i_i32[0];
+        for (unsigned long i = 0; i < (__width & 3); ++i)
         {
-            xi = x >> 16;
-            c1 = src[xi];
-            c2 = src[xi + 1];
-            fx = (x & 0xffff) >> 8;
-            fz = 256 - fx;
+            const IINT32 xi = x >> 16;
+            const IUINT32 c1 = src[xi];
+            const IUINT32 c2 = src[xi + 1];
+            const IINT32 fx = (x & 0xffff) >> 8;
+            const IINT32 fz = 256 - fx;
             x += dx;
-            rb = ((c1 & 0xff00ff) * fz + (c2 & 0xff00ff) * fx) >> 8;
-            ag = ((c1 >> 8) & 0xff00ff) * fz + ((c2 >> 8) & 0xff00ff) * fx;
-            *card++ = (rb & 0xff00ff) | (ag & 0xff00ff00);
-
-            xi = x >> 16;
-            c1 = src[xi];
-            c2 = src[xi + 1];
-            fx = (x & 0xffff) >> 8;
-            fz = 256 - fx;
-            x += dx;
-            rb = ((c1 & 0xff00ff) * fz + (c2 & 0xff00ff) * fx) >> 8;
-            ag = ((c1 >> 8) & 0xff00ff) * fz + ((c2 >> 8) & 0xff00ff) * fx;
-            *card++ = (rb & 0xff00ff) | (ag & 0xff00ff00);
-        }
-
-        if (__width & 1)
-        {
-            xi = x >> 16;
-            c1 = src[xi];
-            c2 = src[xi + 1];
-            fx = (x & 0xffff) >> 8;
-            fz = 256 - fx;
-            x += dx;
-            rb = ((c1 & 0xff00ff) * fz + (c2 & 0xff00ff) * fx) >> 8;
-            ag = ((c1 >> 8) & 0xff00ff) * fz + ((c2 >> 8) & 0xff00ff) * fx;
+            const IUINT32 rb = ((c1 & 0xff00ff) * fz + (c2 & 0xff00ff) * fx) >> 8;
+            const IUINT32 ag = ((c1 >> 8) & 0xff00ff) * fz + ((c2 >> 8) & 0xff00ff) * fx;
             *card++ = (rb & 0xff00ff) | (ag & 0xff00ff00);
 	}
 
@@ -4441,6 +4411,9 @@ void BasicBitmap::Scale(int dx, int dy, int dw, int dh, const BasicBitmap *src,
 	IUINT32 *scanline2 = scanline1 + sw;
 	IUINT32 *srcline = NULL;
 
+	int old_y1 = 0x80000000;
+	int old_y2 = 0x80000000;
+
 	for (int j = 0; j < dh; j++) {
 		IUINT8 *dstrow = (IUINT8*)Line(dy + j);
 		const IUINT32 *row1;
@@ -4459,8 +4432,16 @@ void BasicBitmap::Scale(int dx, int dy, int dw, int dh, const BasicBitmap *src,
 			}	else {
 				row1 = scanline1;
 				row2 = scanline2;
-				src->RowFetch(sx, y1, scanline1, sw);
-				src->RowFetch(sx, y2, scanline2, sw);
+				if(old_y1 != y1)
+				{
+					src->RowFetch(sx, y1, scanline1, sw);
+					old_y1 = y1;
+				}
+				if(old_y2 != y2)
+				{
+					src->RowFetch(sx, y2, scanline2, sw);
+					old_y2 = y2;
+				}
 			}
 			fraction = starty & 0xffff;
 			starty += incy;
@@ -4476,8 +4457,16 @@ void BasicBitmap::Scale(int dx, int dy, int dw, int dh, const BasicBitmap *src,
 			}	else {
 				row1 = scanline1;
 				row2 = scanline2;
-				src->RowFetch(sx, y1, scanline1, sw);
-				src->RowFetch(sx, y2, scanline2, sw);
+				if(old_y1 != y1)
+				{
+					src->RowFetch(sx, y1, scanline1, sw);
+					old_y1 = y1;
+				}
+				if(old_y2 != y2)
+				{
+					src->RowFetch(sx, y2, scanline2, sw);
+					old_y2 = y2;
+				}
 			}
 			fraction = 0x10000 - (starty & 0xffff);
 			starty -= incy;
