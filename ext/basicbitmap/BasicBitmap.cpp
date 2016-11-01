@@ -2746,6 +2746,19 @@ void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w
 		break;
 	case X1R5G5B5: {
 			IUINT16 * __restrict dst = (IUINT16*)bits + x;
+#ifdef _COMPILE_WITH_SSE2
+			for (; w > 3; w-=4) {
+				const __m128i b128 = _mm_loadu_si128((__m128i*)buffer);
+				buffer += 4;
+				const __m128i r = _mm_or_si128(
+					_mm_or_si128(
+						_mm_and_si128(_mm_srli_epi32(b128, 16-7), _mm_set1_epi32(0xf8u<<7)),
+						_mm_and_si128(_mm_srli_epi32(b128, 8-2), _mm_set1_epi32(0xf8u<<2))),
+					_mm_and_si128(_mm_srli_epi32(b128, 3), _mm_set1_epi32(0xf8u>>3)));
+				_mm_storel_epi64((__m128i*)dst,_mm_packs_epi32(r, r));
+				dst += 4;
+			}
+#endif
 			for (; w > 0; w--) {
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
