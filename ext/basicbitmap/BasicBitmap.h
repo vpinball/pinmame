@@ -838,7 +838,7 @@ protected:
 		const IUINT32 *row2, IINT32 fraction);
 
 	static int InterpolateColNearest(IUINT32 * __restrict card, int w, const IUINT32 * const __restrict src,
-		IINT32 x, IINT32 dx);
+		IINT32 x, const IINT32 dx);
 
 	static InterpRow InterpolateRowPtr;
 	static InterpCol InterpolateColPtr;

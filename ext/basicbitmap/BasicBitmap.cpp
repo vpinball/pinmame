@@ -4320,14 +4320,31 @@ int BasicBitmap::InterpolateRowNearest(IUINT32 *card, int w, const IUINT32 *row1
 }
 
 int BasicBitmap::InterpolateColNearest(IUINT32 * __restrict card, int w, const IUINT32 * const __restrict src,
-	IINT32 x, IINT32 dx)
+	IINT32 x, const IINT32 dx)
 {
-	int i;
 	if (dx == 0x10000) {
 		internal_memcpy(card, src + (x >> 16), sizeof(IUINT32) * w);
 		return 0;
 	}
-	for (i = w; i > 0; i--) {
+
+#ifdef _COMPILE_WITH_SSE2
+	__m128i x128 = _mm_set_epi32(x + dx * 3, x + dx * 2, x + dx, x);
+	const __m128i dx128 = _mm_set1_epi32(dx * 4);
+	for (; w > 3; w -= 4) {
+		const __m128i xi = _mm_srli_epi32(x128, 16);
+
+		card[0] = src[xi.m128i_i32[0]];
+		card[1] = src[xi.m128i_i32[1]];
+		card[2] = src[xi.m128i_i32[2]];
+		card[3] = src[xi.m128i_i32[3]];
+
+		x128 = _mm_add_epi32(x128, dx128);
+		card += 4;
+	}
+
+	x = x128.m128i_i32[0];
+#endif
+	for (; w > 0; w--) {
 		*card++ = src[x >> 16];
 		x += dx;
 	}
