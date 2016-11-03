@@ -37,6 +37,7 @@
 #include "core.h"
 #include "wpc.h"
 #include "sim.h"
+#include "mech.h"
 #include "wmssnd.h"
 
 /*------------------
@@ -57,10 +58,12 @@ static const char* showramp(int lr);
 static struct {
   int ramppos[2];       // status of left and right ramps
   int goferpos[2];      // status of left and right gofers
-  int wheelpos;         // position of wheel
   int slampos;          // position of slam ramp
   int slamdelay;        // slam ramp smoothing counter
 } locals;
+
+#define NGG_WHEELRES 10
+#define NGG_WHEEL_POS (mech_getPos(0)/ NGG_WHEELRES)
 
 /*Status of Ramps and Gofers*/
 enum {DOWN=0,UP};
@@ -201,6 +204,8 @@ WPC_INPUT_PORTS_END
 #define sLRampDown      27
 #define sRRampDown      28
 #define sSlamRamp       35 // Upper Left flipper power solenoid.
+#define sWheelFwd       37
+#define sWheelRev       38
 
 /*---------------------
 /  Ball state handling
@@ -317,7 +322,6 @@ static sim_tState ngg_stateDef[] = {
 
 static void ngg_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls)
 {
-    locals.wheelpos = 0;
     core_setSw(swOuterWheel,0);
     core_setSw(swInnerWheel,0);
 }
@@ -532,7 +536,7 @@ static const char* SlamText[] = {"Down","Up"};
 
   core_textOutf(30, 30,BLACK,"Centre Ramp: %-10s", showramp(0));
   core_textOutf(30, 40,BLACK,"Right Ramp: %-10s", showramp(1));
-  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(locals.wheelpos+1)/4]);
+  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(NGG_WHEEL_POS)/4]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
   static void ngg_drawStatic(BMTYPE **line) {
@@ -631,6 +635,32 @@ static core_tGameData nggGameData = {
   }
 };
 
+#define MARKER_POS_START 36
+#define MARKER_POS_END 64
+
+static mech_tInitData mechnggWheel = {
+	-sWheelRev, -sWheelFwd, MECH_CIRCLE | MECH_LINEAR | MECH_TWODIRSOL | MECH_FAST | MECH_ACC(100) | MECH_RET(15),20 * NGG_WHEELRES,64 * NGG_WHEELRES,
+	{ { swInnerWheel, (MARKER_POS_START-1)*NGG_WHEELRES, (MARKER_POS_END+1)*NGG_WHEELRES},
+	{ swInnerWheel, (0)*NGG_WHEELRES, ((MARKER_POS_END-64) + 1)*NGG_WHEELRES},
+	{ swOuterWheel,0 * NGG_WHEELRES,1 * NGG_WHEELRES }, 
+	{ swOuterWheel,4 * NGG_WHEELRES,5 * NGG_WHEELRES }, 
+	{ swOuterWheel,8 * NGG_WHEELRES,9 * NGG_WHEELRES }, 
+	{ swOuterWheel,12 * NGG_WHEELRES,13 * NGG_WHEELRES }, 
+	{ swOuterWheel,16 * NGG_WHEELRES,17 * NGG_WHEELRES }, 
+	{ swOuterWheel,20 * NGG_WHEELRES,21 * NGG_WHEELRES }, 
+	{ swOuterWheel,24 * NGG_WHEELRES,25 * NGG_WHEELRES },
+	{ swOuterWheel,28 * NGG_WHEELRES,29 * NGG_WHEELRES }, 
+	{ swOuterWheel,32 * NGG_WHEELRES,33 * NGG_WHEELRES },
+	{ swOuterWheel,36 * NGG_WHEELRES,37 * NGG_WHEELRES },
+	{ swOuterWheel,40 * NGG_WHEELRES,41 * NGG_WHEELRES },
+	{ swOuterWheel,44 * NGG_WHEELRES,45 * NGG_WHEELRES },
+	{ swOuterWheel,48 * NGG_WHEELRES,49 * NGG_WHEELRES },
+	{ swOuterWheel,52 * NGG_WHEELRES,53 * NGG_WHEELRES },
+	{ swOuterWheel, 56 * NGG_WHEELRES,57 * NGG_WHEELRES },
+	{ swOuterWheel, 60 * NGG_WHEELRES, 61 * NGG_WHEELRES }
+	}
+};
+
 static WRITE_HANDLER(ngg_wpc_w) {
   static int lastFlip, lastWheel = 0;
 // writes to the flippers have to be delayed 1 cycle to not interfere with the flashers.
@@ -661,21 +691,16 @@ static WRITE_HANDLER(ngg_wpc_w) {
 // Outer 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011
 //
 // Pos.    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
-  if (offset == WPC_SOLENOID1) {
-    if (lastWheel & ~data & 0x20) {
-      locals.wheelpos++;
-      if (locals.wheelpos > 63)
-        locals.wheelpos = 0;
-    }
-    if (lastWheel & ~data & 0x10) {
-      locals.wheelpos--;
-      if (locals.wheelpos < 0)
-        locals.wheelpos = 63;
-    }
+/*  if (offset == WPC_SOLENOID1) {
+    locals.wheeldir = 0;
+    if (lastWheel & ~data & 0x20) 
+        locals.wheeldir++;
+    if (lastWheel & ~data & 0x10) 
+        locals.wheeldir--;
     core_setSw(swInnerWheel, locals.wheelpos > 0);
     core_setSw(swOuterWheel, locals.wheelpos % 4 == 0 || locals.wheelpos % 4 == 3);
     lastWheel = data;
-  }
+  }*/
 }
 
 /*---------------
@@ -686,6 +711,7 @@ static void init_ngg(void) {
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ngg_wpc_w);
   locals.slampos = 0;
   locals.slamdelay = 0;
+  mech_add(0, &mechnggWheel);
 }
 
 static void ngg_handleMech(int mech) {
@@ -751,10 +777,12 @@ static int ngg_getSol(int solNo) {
 
 static int ngg_getMech (int mechNo) {
   switch (mechNo) {
-    case 0: return locals.wheelpos;
+    case 0: return NGG_WHEEL_POS;
     case 1: return locals.goferpos[0] | (locals.goferpos[1] << 1);
     case 2: return locals.ramppos[0] | (locals.ramppos[1] << 1);
     case 3: return locals.slampos;
+    case 4: return mech_getPos(0) * 360 / (64 * NGG_WHEELRES);
+    case 5: return mech_getSpeed(0);
   }
   return 0;
 }
