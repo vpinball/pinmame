@@ -23,6 +23,7 @@ Retweak Pistol Poker to use the correct 12MHz clock
 
 Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
 Add support for GI on Whitestar
+Improve NGG wheel by using the mech class to simulate the spinning wheel
 
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 Fix window size issues if an additional mini-DMD is in use
