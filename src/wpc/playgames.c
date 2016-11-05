@@ -410,6 +410,18 @@ CORE_GAMEDEFNV(msdisco,"Miss Disco (Bingo)",19??,"Playmatic",gl_mPLAYMATICBINGO,
 // games by other manufacturers below
 
 /*-------------------------------------------------------------------
+/ ??/86 Rider's Surf (JocMatic)
+/-------------------------------------------------------------------*/
+INITGAME4(ridersrf, play_disp7, 1)
+ROM_START(ridersrf)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu.bin", 0x0000, 0x2000, CRC(4941938e) SHA1(01e44054e65166d68602d6a38217eda7ea669761))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(2db2ecb2) SHA1(365fcac208607acc3e134affeababd6c89dbc74d))
+ROM_END
+CORE_GAMEDEFNV(ridersrf,"Rider's Surf",1986,"JocMatic",gl_mPLAYMATIC4,0)
+
+/*-------------------------------------------------------------------
 / ??/87 Iron Balls (Stargame)
 /-------------------------------------------------------------------*/
 INITGAME4(ironball, play_disp7, 1)
