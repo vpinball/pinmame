@@ -28,7 +28,10 @@ Improve NGG wheel by using the mech class to simulate the spinning wheel
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 Fix window size issues if an additional mini-DMD is in use
 
-*** ROM SUPPORT *** Thanks to Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
+*** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
+New:
+JocMatic: Rider's Surf (running on Playmatic hardware)
+
 Kinda new:
 Star Wars 20th Anniversary 1.06
 Tommy 5.00 (unofficial MOD)

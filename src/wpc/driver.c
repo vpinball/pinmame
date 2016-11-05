@@ -730,6 +730,11 @@ DRIVERNV(leking)        //Le King (??/1983)
 DRIVERNV(olympic)       //Olympic Games (??/1984)
 
 // ----------------
+// JOCMATIC
+// ----------------
+DRIVERNV(ridersrf)      //Rider's Surf (1986)
+
+// ----------------
 // JOCTRONIC
 // ----------------
 DRIVERNV(punkywil)      //Punky Willy (1986)
