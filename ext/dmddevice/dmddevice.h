@@ -48,11 +48,11 @@ extern "C"
 DMDDEV int Open();
 DMDDEV bool Close();
 DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100);
-DMDDEV void Set_16_Colors_Palette(rgb24 color0, rgb24 color1, rgb24 color2, rgb24 color3,rgb24 color4, rgb24 color5, rgb24 color6, rgb24 color7, rgb24 color8, rgb24 color9, rgb24 color10, rgb24 color11,rgb24 color12, rgb24 color13, rgb24 color14, rgb24 color15);
+DMDDEV void Set_16_Colors_Palette(rgb24 *color);
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options);
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
-DMDDEV void Render_RGB24(UINT16 width, UINT16 height, UINT8 *currbuffer);
+DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer);
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 
 #ifdef __cplusplus

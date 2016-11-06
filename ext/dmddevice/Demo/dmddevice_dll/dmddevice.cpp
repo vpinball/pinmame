@@ -4,90 +4,120 @@
 #include <stdio.h>
 
 #include "..\..\dmddevice.h"
-#include "..\pindmd3\pinDMD3.h"
-
 #include "..\..\usbalphanumeric.h"
 
-bool isOpen = false;
-bool useRGB = false;
+HWND hWnd;
+HDC hdc;
+COLORREF *arr;
 
+double colors[16] = {};
+bool isOpen = false;
 
 DMDDEV int Open()
 {
-	bool useRGB = false; 
+	hWnd = CreateWindowEx(0, "#32770", "DMD Device", WS_VISIBLE, 100, 100, 512+5, 128+30, 0, 0, 0, 0);
+	hdc = GetDC(hWnd);
+	arr = (COLORREF*)calloc(512 * 128, sizeof(COLORREF));
+	isOpen = true;
 	return 1;
 }
 
 DMDDEV bool Close()
 {
 	if (isOpen) {
-		pindmdDeInit();
+		DeleteDC(hdc); 
+		DestroyWindow(hWnd);
+		free(arr);
 	}
-	useRGB = false;
+
 	isOpen = false;
 	return true;
 }
 
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
 {
-	if (!isOpen) {
-		if (pindmdInit(Options))
-			isOpen = true;
-		else
-			MessageBox(NULL, "pinDMD v3 not found", "Error", MB_ICONERROR);
+	if (Options.dmd_colorize == 0) {
+		rgb24  Col[15] = {};
+		double R, G, B = 0;
+		int i, r, g, b = 0;
+		if (Options.dmd_red > 0)
+			R = Options.dmd_red / 255;
+		if (Options.dmd_green > 0)
+			G = Options.dmd_green / 255;
+		if (Options.dmd_blue > 0)
+			B = Options.dmd_blue / 255;
+		for (i = 0; i < 16; i++) {
+			r = (int)(R * (i * 17));
+			g = (int)(G * (i * 17));
+			b = (int)(B * (i * 17));
+			if (r > 255)
+				r = 255;
+			if (g > 255)
+				g = 255;
+			if (b > 255)
+				b = 255;
+			Col[i].red = (UINT8)r;
+			Col[i].green = (UINT8)g;
+			Col[i].blue = (UINT8)b;
+		}
+		Set_16_Colors_Palette(Col);
 	}
 }
 
 DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) 
 {
-	tPMoptions Options;
-	Options.dmd_red = color100.red;
-	Options.dmd_green = color100.green;
-	Options.dmd_blue = color100.blue;
-	Options.dmd_red66 = color66.red;
-	Options.dmd_green66 = color66.green;
-	Options.dmd_blue66 = color66.blue;
-	Options.dmd_red33 = color33.red;
-	Options.dmd_green33 = color33.green;
-	Options.dmd_blue33 = color33.blue;
-	Options.dmd_red0 = color0.red;
-	Options.dmd_green0 = color0.green;
-	Options.dmd_blue0 = color0.blue;
-	Options.dmd_colorize = 1;
-	if (!isOpen) {
-		if (pindmdInit(Options))
-			isOpen = true;
-		else
-			MessageBox(NULL, "pinDMD v3 not found", "Error", MB_ICONERROR);
-	}
+	colors[0] = ((color0.red << 16) & 0x00FF0000) | ((color0.green << 8) & 0x0000FF00) | ((color0.blue << 0) & 0x000000FF);
+	colors[1] = ((color33.red << 16) & 0x00FF0000) | ((color33.green << 8) & 0x0000FF00) | ((color33.blue << 0) & 0x000000FF);
+	colors[4] = ((color66.red << 16) & 0x00FF0000) | ((color66.green << 8) & 0x0000FF00) | ((color66.blue << 0) & 0x000000FF);
+	colors[15] = ((color100.red << 16) & 0x00FF0000) | ((color100.green << 8) & 0x0000FF00) | ((color100.blue << 0) & 0x000000FF);
 }
 
 DMDDEV void Set_16_Colors_Palette(rgb24 *color)
 {
-	tPMoptions Options;
-	Options.dmd_red = color[15].red;
-	Options.dmd_green = color[15].green;
-	Options.dmd_blue = color[15].blue;
-	Options.dmd_colorize = 0;
-	if (!isOpen) {
-		if (pindmdInit(Options))
-			isOpen = true;
-		else
-			MessageBox(NULL, "pinDMD v3 not found", "Error", MB_ICONERROR);
-	}
+	int i;
+	for (i = 0; i < 16;i++)
+		colors[i] = ((color[i].red << 16) & 0x00FF0000) | ((color[i].green << 8) & 0x0000FF00) | ((color[i].blue << 0) & 0x000000FF);
 }
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
+	int i;
 	if (isOpen) {
-		renderDMDFrame(0x00000000080, (UINT8) width, (UINT8) height, currbuffer, 0x00); 
+		for (i = 0; i < width*height; i++){
+			switch (currbuffer[i]) {
+			case 0:
+				arr[i] = colors[0];
+				break;
+			case 1:
+				arr[i] = colors[1];
+				break;
+			case 2:
+				arr[i] = colors[4];
+				break;
+			case 3:
+				arr[i] = colors[15];
+				break;
+			}
+		}
+		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
+		HDC src = CreateCompatibleDC(hdc);
+		SelectObject(src, map);
+		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height,SRCCOPY);
+		DeleteDC(src); // Deleting temp HDC*/
 	}
 }
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
+	int i;
 	if (isOpen) {
-		render16ShadeFrame(currbuffer);
+		for (i = 0; i < width*height; i++)
+			arr[i] = colors[currbuffer[i]];
+		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
+		HDC src = CreateCompatibleDC(hdc);
+		SelectObject(src, map);
+		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
+		DeleteDC(src); // Deleting temp HDC*/
 	}
 }
 
@@ -156,27 +186,33 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			tempbuffer[(i*8)+7] = AlphaNumericFrameBuffer[i]>>7 & 0x01 | AlphaNumericFrameBuffer[i+512]>>6 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>5 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>4 & 0x08;
 		}
 
-		render16ShadeFrame(tempbuffer);
+		Render_16_Shades(128, 32, tempbuffer);
 	}
 }
 
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer) {
-
-	tPMoptions Options;
-
-	if (!isOpen && !useRGB) {
-		Options.dmd_red = 255;
-		Options.dmd_green = 0;
-		Options.dmd_blue = 0;
-		Options.dmd_colorize = 0;
-		useRGB = true;
-		if (pindmdInit(Options))
-			isOpen = true;
-		else
-			MessageBox(NULL, "pinDMD v3 not found", "Error", MB_ICONERROR);
-	}
-
+	int i;
 	if (isOpen) {
-		renderRGB24Frame(currbuffer);
+		for (i = 0; i < width*height; i++){
+			arr[i] = ((currbuffer[i].red << 16) & 0x00FF0000) | ((currbuffer[i].green << 8) & 0x0000FF00) | ((currbuffer[i].blue << 0) & 0x000000FF);
+		}
+		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
+		HDC src = CreateCompatibleDC(hdc);
+		SelectObject(src, map);
+		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
+		DeleteDC(src); // Deleting temp HDC*/
 	}
+}
+
+
+DMDDEV void Console_Data(UINT8 data)
+{
+	/*
+	FILE *file;
+	fopen_s(&file, "console.txt", "ab");
+	if (file) {
+		fputc(data, file);
+		fclose(file);
+	}
+	*/
 }
