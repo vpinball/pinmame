@@ -112,9 +112,6 @@ DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, con
 {
 }
 
-DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) {
-}
-
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {

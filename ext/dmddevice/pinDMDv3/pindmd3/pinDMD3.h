@@ -1,11 +1,17 @@
 #ifndef INC_USBDMD
 #define INC_USBDMD
 
-#ifdef PINDMD_EXPORTS
+#ifdef _WIN64
+	#ifdef PINDMD_EXPORTS
 	#define PINDMD_API __declspec(dllexport) 
-#else
+	#else
 	#define PINDMD_API __declspec(dllimport) 
+	#endif
+#else
+	#define PINDMD_API
 #endif
+
+
 
 #define SETTING_DEBUG             0x22
 #define SETTING_BRIGHTNESS        0x23

@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "..\libusb\include\lusb0_usb.h"
-#include "..\libusb\lib\dynamic\libusb_dyn.c"
 
 #include "..\..\dmddevice.h"
 #include "..\..\usbalphanumeric.h"
@@ -184,10 +183,6 @@ DMDDEV bool Close()
 
 
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
-{
-}
-
-DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) 
 {
 }
 
