@@ -118,7 +118,7 @@ int vp_getChangedSolenoids(vp_tChgSols chgStat)
 		}
 		// Treat the VPM reserved solenoids the old way. 
 		start = 40;
-		end = CORE_FIRSTCUSTSOL;
+		end = CORE_FIRSTCUSTSOL-1;
 		chgSol >>= start;
 		allSol >>= start;
 	}

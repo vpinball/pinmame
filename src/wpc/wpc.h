@@ -243,6 +243,7 @@ extern MACHINE_DRIVER_EXTERN(wpc_95S);
 #define wpc_m95S         wpc_95S
 
 int wpc_m2sw(int col, int row);
+void wpc_set_modsol_aux_board(int board);
 
 #ifdef PROC_SUPPORT
   typedef void (*wpc_proc_solenoid_handler_t)(int solNum, int enabled, int smoothed);

@@ -717,6 +717,7 @@ static core_tGameData rsGameData = {
 /  Game handling
 /----------------*/
 static void init_rs(void) {
+  wpc_set_modsol_aux_board(1);
   core_gameData = &rsGameData;
 }
 

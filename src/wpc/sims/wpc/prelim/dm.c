@@ -471,6 +471,7 @@ static core_tGameData dmGameData = {
 /----------------*/
 static void init_dm(void) {
   core_gameData = &dmGameData;
+  wpc_set_modsol_aux_board(1);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = dm_wpc_proc_solenoid_handler;
 #endif

@@ -124,6 +124,9 @@ static struct {
   int modsol_sample;
 } wpclocals;
 
+// Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
+static int wpc_modsol_aux_board = 0;
+
 static struct {
   UINT8 *DMDFrames[DMD_FRAMES];
   int    nextDMDFrame;
@@ -173,6 +176,11 @@ int wpc_m2sw(int col, int row) { return col*10+row+1; }
 //Set Zero Cross flag (it's reset when read)
 static void wpc_zc(int data) {
 	wpclocals.zc = 1;
+}
+
+void wpc_set_modsol_aux_board(int board)
+{
+	wpc_modsol_aux_board = board;
 }
 
 #ifdef PROC_SUPPORT
@@ -727,9 +735,13 @@ WRITE_HANDLER(wpc_w) {
       break;
     }
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
-      wpclocals.modsol_seen_aux_pulses |= data;
+      if (wpc_modsol_aux_board == 1)
+        wpclocals.modsol_seen_aux_pulses |= data;
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
+      if (wpc_modsol_aux_board == 2)
+        wpclocals.modsol_seen_aux_pulses |= data;
+
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
@@ -941,11 +953,14 @@ static INTERRUPT_GEN(wpc_irq) {
 				}
 			}
 			wpclocals.modsol_seen_flip_pulses = wpclocals.solFlipPulse;
-			for (i = 0; i < 8; i++) 
+			if (wpc_modsol_aux_board > 0)
 			{
-				core_update_modulated_light(&wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i -1], wpclocals.modsol_seen_aux_pulses & (1 << i));
+				for (i = 0; i < 8; i++)
+				{
+					core_update_modulated_light(&wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], wpclocals.modsol_seen_aux_pulses & (1 << i));
+				}
+				wpclocals.modsol_seen_aux_pulses = (wpc_modsol_aux_board == 1) ? wpc_data[WPC_EXTBOARD1] : wpc_data[WPC_EXTBOARD2];
 			}
-			wpclocals.modsol_seen_aux_pulses = wpc_data[WPC_EXTBOARD1];
 			if (wpclocals.modsol_count < WPC_MODSOLSMOOTH)
 			{
 				wpclocals.modsol_count++;
@@ -990,7 +1005,7 @@ static INTERRUPT_GEN(wpc_irq) {
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i+1) ? 1 :0;
 					}
 				}
-				// Aux board solenoids.  Copy anything above 8 as boolean.  TZ uses this for special gumball mech. Blah.
+				// Aux board solenoids.  Copy anything above 8 as boolean.  TZ uses this for special fake gumball eject mech.  Bleh.
 				for (i = 0; i < core_gameData->hw.custSol; i++)
 				{
 					if (i < 8)
