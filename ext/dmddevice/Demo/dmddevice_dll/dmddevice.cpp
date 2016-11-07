@@ -10,7 +10,7 @@ HWND hWnd;
 HDC hdc;
 COLORREF *arr;
 
-double colors[16] = {};
+COLORREF colors[16] = {};
 bool isOpen = false;
 
 DMDDEV int Open()
@@ -37,19 +37,18 @@ DMDDEV bool Close()
 DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, const tPMoptions &Options)
 {
 	if (Options.dmd_colorize == 0) {
-		rgb24  Col[15] = {};
-		double R, G, B = 0;
-		int i, r, g, b = 0;
+		rgb24  Col[16] = {};
+		double R, G, B = 0.;
 		if (Options.dmd_red > 0)
-			R = Options.dmd_red / 255;
+			R = Options.dmd_red / 255.;
 		if (Options.dmd_green > 0)
-			G = Options.dmd_green / 255;
+			G = Options.dmd_green / 255.;
 		if (Options.dmd_blue > 0)
-			B = Options.dmd_blue / 255;
-		for (i = 0; i < 16; i++) {
-			r = (int)(R * (i * 17));
-			g = (int)(G * (i * 17));
-			b = (int)(B * (i * 17));
+			B = Options.dmd_blue / 255.;
+		for (int i = 0; i < 16; i++) {
+			int r = (int)(R * (i * 17));
+			int g = (int)(G * (i * 17));
+			int b = (int)(B * (i * 17));
 			if (r > 255)
 				r = 255;
 			if (g > 255)
@@ -66,24 +65,22 @@ DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, con
 
 DMDDEV void Set_4_Colors_Palette(rgb24 color0, rgb24 color33, rgb24 color66, rgb24 color100) 
 {
-	colors[0] = ((color0.red << 16) & 0x00FF0000) | ((color0.green << 8) & 0x0000FF00) | ((color0.blue << 0) & 0x000000FF);
-	colors[1] = ((color33.red << 16) & 0x00FF0000) | ((color33.green << 8) & 0x0000FF00) | ((color33.blue << 0) & 0x000000FF);
-	colors[4] = ((color66.red << 16) & 0x00FF0000) | ((color66.green << 8) & 0x0000FF00) | ((color66.blue << 0) & 0x000000FF);
-	colors[15] = ((color100.red << 16) & 0x00FF0000) | ((color100.green << 8) & 0x0000FF00) | ((color100.blue << 0) & 0x000000FF);
+	colors[0] = ((int)color0.red << 16) | ((int)color0.green << 8) | ((int)color0.blue /*<< 0*/);
+	colors[1] = ((int)color33.red << 16) | ((int)color33.green << 8) | ((int)color33.blue /*<< 0*/);
+	colors[4] = ((int)color66.red << 16) | ((int)color66.green << 8) | ((int)color66.blue /*<< 0*/);
+	colors[15] = ((int)color100.red << 16) | ((int)color100.green << 8) | ((int)color100.blue /*<< 0*/);
 }
 
 DMDDEV void Set_16_Colors_Palette(rgb24 *color)
 {
-	int i;
-	for (i = 0; i < 16;i++)
-		colors[i] = ((color[i].red << 16) & 0x00FF0000) | ((color[i].green << 8) & 0x0000FF00) | ((color[i].blue << 0) & 0x000000FF);
+	for (int i = 0; i < 16;i++)
+		colors[i] = ((int)color[i].red << 16) | ((int)color[i].green << 8) | ((int)color[i].blue /*<< 0*/);
 }
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
-	int i;
 	if (isOpen) {
-		for (i = 0; i < width*height; i++){
+		for (int i = 0; i < width*height; i++){
 			switch (currbuffer[i]) {
 			case 0:
 				arr[i] = colors[0];
@@ -109,9 +106,8 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
-	int i;
 	if (isOpen) {
-		for (i = 0; i < width*height; i++)
+		for (int i = 0; i < width*height; i++)
 			arr[i] = colors[currbuffer[i]];
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
@@ -176,10 +172,10 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 
 		UINT8 tempbuffer[128*32]; 
 		for (int i = 0; i < 512; ++i) {
-			tempbuffer[(i*8)] = AlphaNumericFrameBuffer[i] & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
-			tempbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512] & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
-			tempbuffer[(i*8)+2] = AlphaNumericFrameBuffer[i]>>2 & 0x01 | AlphaNumericFrameBuffer[i+512]>>1 & 0x02 | AlphaNumericFrameBuffer[i+1024] & 0x04 | AlphaNumericFrameBuffer[i+1536]<<1 & 0x08;
-			tempbuffer[(i*8)+3] = AlphaNumericFrameBuffer[i]>>3 & 0x01 | AlphaNumericFrameBuffer[i+512]>>2 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>1 & 0x04 | AlphaNumericFrameBuffer[i+1536] & 0x08;
+			tempbuffer[(i*8)]   = AlphaNumericFrameBuffer[i]    & 0x01 | AlphaNumericFrameBuffer[i+512]<<1 & 0x02 | AlphaNumericFrameBuffer[i+1024]<<2 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<3 & 0x08;
+			tempbuffer[(i*8)+1] = AlphaNumericFrameBuffer[i]>>1 & 0x01 | AlphaNumericFrameBuffer[i+512]    & 0x02 | AlphaNumericFrameBuffer[i+1024]<<1 & 0x04 | AlphaNumericFrameBuffer[i+1536]<<2 & 0x08;
+			tempbuffer[(i*8)+2] = AlphaNumericFrameBuffer[i]>>2 & 0x01 | AlphaNumericFrameBuffer[i+512]>>1 & 0x02 | AlphaNumericFrameBuffer[i+1024]    & 0x04 | AlphaNumericFrameBuffer[i+1536]<<1 & 0x08;
+			tempbuffer[(i*8)+3] = AlphaNumericFrameBuffer[i]>>3 & 0x01 | AlphaNumericFrameBuffer[i+512]>>2 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>1 & 0x04 | AlphaNumericFrameBuffer[i+1536]    & 0x08;
 			tempbuffer[(i*8)+4] = AlphaNumericFrameBuffer[i]>>4 & 0x01 | AlphaNumericFrameBuffer[i+512]>>3 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>2 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>1 & 0x08;
 			tempbuffer[(i*8)+5] = AlphaNumericFrameBuffer[i]>>5 & 0x01 | AlphaNumericFrameBuffer[i+512]>>4 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>3 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>2 & 0x08;
 			tempbuffer[(i*8)+6] = AlphaNumericFrameBuffer[i]>>6 & 0x01 | AlphaNumericFrameBuffer[i+512]>>5 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>4 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>3 & 0x08;
@@ -191,10 +187,9 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 }
 
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer) {
-	int i;
 	if (isOpen) {
-		for (i = 0; i < width*height; i++){
-			arr[i] = ((currbuffer[i].red << 16) & 0x00FF0000) | ((currbuffer[i].green << 8) & 0x0000FF00) | ((currbuffer[i].blue << 0) & 0x000000FF);
+		for (int i = 0; i < width*height; i++){
+			arr[i] = ((int)currbuffer[i].red << 16) | ((int)currbuffer[i].green << 8) | ((int)currbuffer[i].blue /*<< 0*/);
 		}
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);

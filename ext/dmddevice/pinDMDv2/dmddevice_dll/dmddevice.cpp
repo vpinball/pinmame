@@ -21,7 +21,7 @@ bool isOpen = false;
 usb_dev_handle *DeviceHandle = NULL; 
 
 
-void Send_Clear_Screen(void) //!! unused
+/*void Send_Clear_Screen(void) //!! unused
 {
 	memset(OutputPacketBuffer,0x00, 2052);
 	const UINT8 tmp[4] = {
@@ -30,7 +30,7 @@ void Send_Clear_Screen(void) //!! unused
 	memcpy(OutputPacketBuffer, tmp, sizeof(tmp));
 	usb_bulk_write(DeviceHandle, EP_OUT, (char*)OutputPacketBuffer, 2052, 1000);
 	Sleep(50);
-}
+}*/
 
 DMDDEV int Open()
 {
@@ -193,10 +193,10 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		int byteIdx=4;
 		UINT8 tempbuffer[128*32]; // for rescale
 
-		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
+		OutputPacketBuffer[0] = 0x81; // frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
 		OutputPacketBuffer[2] = 0xE7;
-		OutputPacketBuffer[3] = 0x0;		// command byte
+		OutputPacketBuffer[3] = 0x0;  // command byte
 
 		// 128x16 = display centered vert
 		// 128x32 = no change
@@ -283,10 +283,10 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		int byteIdx=4;
 		UINT8 tempbuffer[128*32]; // for rescale
 
-		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
+		OutputPacketBuffer[0] = 0x81; // frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
 		OutputPacketBuffer[2] = 0xE7;
-		OutputPacketBuffer[3] = 0x0;		// command byte
+		OutputPacketBuffer[3] = 0x0;  // command byte
 
 		// 128x16 = display centered vert
 		// 128x32 = no change
