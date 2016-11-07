@@ -8,6 +8,10 @@
  #define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR    0x00000100
 #endif
 
+#ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+ #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
+#endif
+
 extern HINSTANCE hVpmDLL;
 
 UINT16	seg_data_old[50] = {};
@@ -56,10 +60,18 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	hModule = LoadLibraryEx(filename,NULL,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 	
 	if ( !hModule ) {
+#ifdef _WIN64
+		hModule = LoadLibraryEx("DmdDevice64.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+#else
+		hModule = LoadLibraryEx("DmdDevice.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+#endif
+	}
+	
+	if (!hModule) {
 		MessageBox(NULL, "No DMD device driver found", filename, MB_ICONERROR);
 		return 0;
 	}
-	
+
 	DmdDev_Open = (Open_t) GetProcAddress(hModule, "Open");
 	
 	DmdDev_PM_GameSettings = (PM_GameSettings_t) GetProcAddress(hModule, "PM_GameSettings");
