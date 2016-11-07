@@ -806,6 +806,7 @@ READ_HANDLER(ij_ijRowRead) {
 
 static void init_ij(void) {
   core_gameData = &ijGameData;
+  wpc_set_modsol_aux_board(1);
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            ij_ijRowRead);
 }

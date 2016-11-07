@@ -712,6 +712,7 @@ static void init_ngg(void) {
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ngg_wpc_w);
   locals.slampos = 0;
   locals.slamdelay = 0;
+  wpc_set_modsol_aux_board(2);
   mech_add(0, &mechnggWheel);
 }
 

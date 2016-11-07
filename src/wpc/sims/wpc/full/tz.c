@@ -608,6 +608,7 @@ static void init_tz(void) {
   core_gameData = &tzGameData;
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            tz_swRowRead);
+  wpc_set_modsol_aux_board(1);
   mech_add(0,&mechClock);
 }
 

@@ -697,6 +697,7 @@ READ_HANDLER(sttng_swRowRead) {
 
 static void init_sttng(void) {
   core_gameData = &sttngGameData;
+  wpc_set_modsol_aux_board(1);
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                          sttng_swRowRead);
 }
