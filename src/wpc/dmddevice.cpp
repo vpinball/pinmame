@@ -82,8 +82,6 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	} else {
 
 		DmdDev_Open();
-		
-		DmdDev_PM_GameSettings(GameName, HardwareGeneration, *Options);
 
 		rgb24 color0,color33,color66,color100;
 
@@ -102,6 +100,8 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 			color100.blue = Options->dmd_blue;
 			DmdDev_Set_4_Colors_Palette(color0,color33,color66,color100);
 		}
+
+		DmdDev_PM_GameSettings(GameName, HardwareGeneration, *Options);
 
 		return 1;
 	}
