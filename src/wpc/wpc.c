@@ -12,9 +12,9 @@
 #include "p-roc/p-roc.h"
 #endif
 
-#define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes   */
-#define DEBUG_GI		   0 /* debug GI code - more printf stuff basically */
-
+#define PRINT_GI_DATA      0 /* printf the GI Data for debugging purposes   */
+#define DEBUG_GI           0 /* debug GI code - more printf stuff basically */
+#define WPC_FAST_FLIP      1
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
@@ -666,6 +666,9 @@ WRITE_HANDLER(wpc_w) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
         wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
+#ifdef WPC_FAST_FLIP
+        coreGlobals.solenoids2 |= wpclocals.solFlip;
+#endif
       }
       break;
     case WPC_FLIPPERCOIL95:
@@ -673,6 +676,9 @@ WRITE_HANDLER(wpc_w) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
         wpclocals.modsol_seen_flip_pulses |= wpclocals.solFlipPulse;
+#ifdef WPC_FAST_FLIP
+        coreGlobals.solenoids2 |= wpclocals.solFlip;
+#endif
       }
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
