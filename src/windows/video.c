@@ -687,7 +687,12 @@ extern int    g_iSyncFactor;
 int           iCurrentSyncValue = 512;
 #endif
 
-static void throttle_speed(void)
+static void throttle_speed()
+{
+	throttle_speed_part(1,1);
+}
+
+void throttle_speed_part(int part, int totalparts)
 {
 	static double ticks_per_sleep_msec = 0;
 	cycles_t target, curr, cps;
@@ -721,6 +726,8 @@ static void throttle_speed(void)
 	// sync
 	if (curr - target < 0)
 	{
+		// If we are throttling to a fractional vsync, adjust target to the partial target.
+		target -= ((target - curr) * (totalparts-part) / totalparts);
 		// initialize the ticks per sleep
 		if (ticks_per_sleep_msec == 0)
 			ticks_per_sleep_msec = (double)cps / 1000.;

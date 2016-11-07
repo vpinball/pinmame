@@ -10,6 +10,7 @@
 #include "driver.h"
 #include "timer.h"
 #include "state.h"
+#include "video.h"
 #include "mamedbg.h"
 #include "hiscore.h"
 
@@ -176,6 +177,8 @@ static int cycles_stolen;
  *	Timer variables
  *
  *************************************/
+
+#define MAME_VSYNC_MULT 8 
 
 static void *vblank_timer;
 static int vblank_countdown;
@@ -1614,6 +1617,10 @@ static void cpu_vblankcallback(int param)
 		/* reset the counter */
 		vblank_countdown = vblank_multiplier;
 	}
+	else
+	{
+		throttle_speed_part(vblank_multiplier - vblank_countdown, vblank_multiplier);
+	}
 }
 
 
@@ -1810,7 +1817,7 @@ static void cpu_inittimers(void)
 	}
 
 	/* now find the LCD with the rest of the CPUs (brute force - these numbers aren't huge) */
-	vblank_multiplier = max;
+	vblank_multiplier = min(max, MAME_VSYNC_MULT);
 	while (1)
 	{
 		for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
