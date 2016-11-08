@@ -132,10 +132,6 @@ static void mech_update(int mechNo) {
       { speed -= (speed > 0) + md->ret; if (speed < -md->acc*md->ret) speed = -md->acc*md->ret; }
     else /* if (dir > 0) */
       { speed += (speed < 0) + md->ret; if (speed >  md->acc*md->ret) speed =  md->acc*md->ret; }
-    if ((md->type & MECH_TWODIRSOL) > 0 && md->last == 3)
-    {  // Both solenoids on.  This acts like an electronic brake.
-       speed = 0;
-    }
     md->speed = speed;
   }
   /*-- update position --*/
