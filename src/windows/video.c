@@ -43,6 +43,7 @@ extern struct rc_option win_d3d_opts[];
 
 // from ticker.c
 extern void uSleep(const UINT64 u);
+extern void uSleepApproximate(const UINT64 u);
 
 //============================================================
 //	PARAMETERS
@@ -686,6 +687,23 @@ extern HANDLE g_hEnterThrottle;
 extern int    g_iSyncFactor;
 int           iCurrentSyncValue = 512;
 #endif
+int    g_iThrottleAdj = 0, g_iThrottleAdjCur = 0;
+
+#define THROTTLE_MAX_ADJ 1000
+
+void SetThrottleAdj(int adj)
+{
+	char tmp[81];
+	static int last = 0;
+
+	if (adj != last)
+	{
+		sprintf(tmp, "Set throttle adj: %d (cur %d)\n", adj, g_iThrottleAdjCur);
+		OutputDebugString(tmp);
+		last = adj;
+	}
+	g_iThrottleAdj = adj;
+}
 
 static void throttle_speed()
 {
@@ -722,24 +740,41 @@ void throttle_speed_part(int part, int totalparts)
 	curr = osd_cycles();
 	cps = osd_cycles_per_second();
 	target = this_frame_base + (int)((double)frameskip_counter * (double)cps / video_fps);
+	// initialize the ticks per sleep
+	if (ticks_per_sleep_msec == 0)
+		ticks_per_sleep_msec = (double)cps / 1000.;
 
+	if (g_iThrottleAdj)
+	{
+		/*if (totalparts == 1)
+		{
+			g_iThrottleAdjCur += g_iThrottleAdj;
+			if (g_iThrottleAdjCur > THROTTLE_MAX_ADJ)
+				g_iThrottleAdjCur = THROTTLE_MAX_ADJ;
+			if (g_iThrottleAdjCur < -THROTTLE_MAX_ADJ)
+				g_iThrottleAdjCur = -THROTTLE_MAX_ADJ;
+		}*/
+		target -= (cycles_t)(g_iThrottleAdj*ticks_per_sleep_msec);
+	}
 	// sync
 	if (curr - target < 0)
 	{
+		// Adjust target for sound catchup
+
 		// If we are throttling to a fractional vsync, adjust target to the partial target.
 		target -= ((target - curr) * (totalparts-part) / totalparts);
-		// initialize the ticks per sleep
-		if (ticks_per_sleep_msec == 0)
-			ticks_per_sleep_msec = (double)cps / 1000.;
 
 		// loop until we reach the target time
 		while (curr - target < 0)
 		{
-#ifdef VPINMAME
+#if 1 // VPINMAME
 			//if((INT64)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below, but still stutters then
 			//	uSleep((UINT64)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
+			if (totalparts > 1)
+				uSleepApproximate((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec));
+			else
+				uSleep((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec));
 
-			uSleep((UINT64)((target-curr)*1000/ticks_per_sleep_msec));
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind
@@ -762,7 +797,7 @@ void throttle_speed_part(int part, int totalparts)
 			}
 		}
 	}
-	else if (curr - target >= (int)(cps/video_fps))
+	else if (curr - target >= (int)(cps/video_fps) && totalparts == 1)
 	{
 		// We're behind schedule by a frame or more.  Something must
 		// have taken longer than it should have (e.g., a CPU emulator
