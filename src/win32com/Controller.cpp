@@ -138,7 +138,11 @@ void CController::GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVe
  * IController: Class construction and destruction
  *************************************************/
 CController::CController() {
+	MMRESULT result;
 
+	result = timeGetDevCaps(&caps, sizeof(caps));
+	if (result == TIMERR_NOERROR)
+		timeBeginPeriod(caps.wPeriodMin);
 	cli_frontend_init();
 
 	lstrcpy(m_szSplashInfoLine, "");
@@ -190,7 +194,7 @@ CController::CController() {
 CController::~CController() {
 	Stop();
 	CloseHandle(m_hEmuIsRunning);
-
+	timeEndPeriod(caps.wPeriodMin);
 	m_pGame->Release();
 	m_pGameSettings->Release();
 	m_pGames->Release();

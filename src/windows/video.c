@@ -687,21 +687,31 @@ extern HANDLE g_hEnterThrottle;
 extern int    g_iSyncFactor;
 int           iCurrentSyncValue = 512;
 #endif
-int    g_iThrottleAdj = 0, g_iThrottleAdjCur = 0;
+int    g_iThrottleAdj = 0;
 
-#define THROTTLE_MAX_ADJ 1000
+
+#ifdef DEBUG_SOUND
+void DebugSound(char *s)
+{
+	FILE *stream = fopen("C:\\temp\\sndlog.txt", "a");
+	fprintf(stream, "%s\n", s);
+	fclose(stream);
+}
+#endif
 
 void SetThrottleAdj(int adj)
 {
+
+#ifdef DEBUG_SOUND
 	char tmp[81];
 	static int last = 0;
-
 	if (adj != last)
 	{
-		sprintf(tmp, "Set throttle adj: %d (cur %d)\n", adj, g_iThrottleAdjCur);
-		OutputDebugString(tmp);
+		sprintf(tmp, "Set throttle adj: %d (cur %d)", adj, g_iThrottleAdjCur);
+		DebugSound(tmp);
 		last = adj;
 	}
+#endif
 	g_iThrottleAdj = adj;
 }
 
@@ -746,14 +756,6 @@ void throttle_speed_part(int part, int totalparts)
 
 	if (g_iThrottleAdj)
 	{
-		/*if (totalparts == 1)
-		{
-			g_iThrottleAdjCur += g_iThrottleAdj;
-			if (g_iThrottleAdjCur > THROTTLE_MAX_ADJ)
-				g_iThrottleAdjCur = THROTTLE_MAX_ADJ;
-			if (g_iThrottleAdjCur < -THROTTLE_MAX_ADJ)
-				g_iThrottleAdjCur = -THROTTLE_MAX_ADJ;
-		}*/
 		target -= (cycles_t)(g_iThrottleAdj*ticks_per_sleep_msec);
 	}
 	// sync

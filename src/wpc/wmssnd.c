@@ -767,11 +767,12 @@ static WRITE_HANDLER(dcs_ctrl_w);
 static void dcs_init(struct sndbrdData *brdData);
 
 /*-- local data --*/
-#define DCS_BUFFER_SIZE	  4096
+#define DCS_BUFFER_SIZE	  8192  // Must be power of 2 because of how circular buffer works
 #define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
+#define DCS_SAMPLE_RATE   31250
 
 static struct {
- int     enabled;
+ int     status;   // 0 = disabled, 1 playing, > 1 startup silence samples remaining
  UINT32  sOut, sIn;
  INT16  *buffer;
  int     stream;
@@ -928,10 +929,11 @@ static int dcs_custStart(const struct MachineSound *msound) {
   memset(&dcs_dac,0,sizeof(dcs_dac));
 
   /*-- allocate a DAC stream --*/
-  dcs_dac.stream = stream_init("DCS DAC", 100, 31250, 0, dcs_dacUpdate);
+  dcs_dac.stream = stream_init("DCS DAC", 100, DCS_SAMPLE_RATE, 0, dcs_dacUpdate);
 
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
+  memset(dcs_dac.buffer, 0, DCS_BUFFER_SIZE * sizeof(INT16));
 
 #ifdef DCS_LOWPASS
   dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
@@ -952,13 +954,14 @@ static void dcs_custStop(void) {
     }
 }
 
-static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
-  if (!dcs_dac.enabled)
-    memset(buffer, 0, length * sizeof(INT16));
-  else {
+
+static void dcs_dacUpdate(int num, INT16 *buffer, int length)
+{
     int ii;
+
     /* fill in with samples until we hit the end or run out */
-    for (ii = 0; ii < length; ii++) {
+    for (ii = 0; ii < length; ii++)
+    {
       if (dcs_dac.sOut == dcs_dac.sIn) break;
 #ifdef DCS_LOWPASS
       filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[dcs_dac.sOut]);
@@ -968,7 +971,10 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
 #endif
       dcs_dac.sOut = (dcs_dac.sOut + 1) & DCS_BUFFER_MASK;
     }
-    /* fill the rest with the last sample (usually only 1 or 2 samples necessary) */
+    /* Give core feedback on sound buffer progress, so speed can be throttled to keep sound perfect */
+    core_sound_throttle_adj(dcs_dac.sIn, &dcs_dac.sOut, DCS_BUFFER_SIZE, DCS_SAMPLE_RATE); //!! hardwired sample rate, but okay as seems to never change
+
+    /* fill the rest with the last sample (ideally never necessary) */
     for ( ; ii < length; ii++)
     {
 #ifdef DCS_LOWPASS
@@ -978,7 +984,6 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
       buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
 #endif
     }
-  }
 }
 
 /*-------------------
@@ -1067,11 +1072,22 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   UINT16 *mem = ((UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
   int idx;
 
-  stream_update(dcs_dac.stream, 0);
+  // Let the buffer fill naturally, so the throttling mechanism can work.
+//  stream_update(dcs_dac.stream, 0);
   if (size == 0) /* No data, stop playing */
-    { dcs_dac.enabled = FALSE; return; }
-  if (!dcs_dac.enabled) stream_set_sample_rate(dcs_dac.stream,sRate); // unnecessary as sample rate seems to be always 31250
+    { dcs_dac.status = 0; return; }
+  if (dcs_dac.status==0) stream_set_sample_rate(dcs_dac.stream,sRate); // unnecessary as sample rate seems to be always 31250
 
+  // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
+  if (dcs_dac.status == 0)
+  {
+      for (idx = 0; idx < DCS_SAMPLE_RATE * 20 / 1000 + 1; idx++) {
+          dcs_dac.buffer[dcs_dac.sIn] = 0;
+          dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
+      }
+
+      dcs_dac.status = 1;
+  }
   /*-- size is the size of the buffer not the number of samples --*/
 #if MAMEVER >= 3716
   for (idx = 0; idx < size; idx += memStep) {
@@ -1089,8 +1105,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
     idx += sStep;
   }
 #endif /* MAMEVER */
-  /*-- enable the dac playing --*/
-  dcs_dac.enabled = TRUE;
+
 }
 #define DCS_IRQSTEPS 4
 /*--------------------------------------------------*/
