@@ -23,7 +23,7 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 	// so now let's see if we can load vpinmame.dll
 	hModule = LoadLibrary(VPMDLLNAME);
 	if ( !hModule ) {
-		DisplayError(hWnd, GetLastError(), "The '"VPMDLLNAME"' file can't be loaded.", "Be sure to have this file in the current directory!");
+		DisplayError(hWnd, GetLastError(), "The '" VPMDLLNAME "' file can't be loaded.", "Be sure to have this file in the current directory!");
 		return 0;
 	}
 
@@ -53,14 +53,14 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 
 		DLLREGISTERSERVER* DllRegisterServer = (DLLREGISTERSERVER*) GetProcAddress(hModule, "DllRegisterServer");
 		if ( !DllRegisterServer ) {
-			DisplayError(hWnd, GetLastError(), "Can't find the registering function (DllRegisterServer) in the "VPMDLLNAME".", "Please check if you have a valid vpinmame.dll!");
+			DisplayError(hWnd, GetLastError(), "Can't find the registering function (DllRegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid vpinmame.dll!");
 			FreeLibrary(hModule);
 			return 0;
 		}
 
 		hr = (*DllRegisterServer)();
 		if ( FAILED(hr) ) {
-			DisplayError(hWnd, hr, "Unable to register the class object!", "Please check if you have a valid "VPMDLLNAME"!");
+			DisplayError(hWnd, hr, "Unable to register the class object!", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
 			return 0;
 		}
@@ -89,14 +89,14 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 
 		DLLUNREGISTERSERVER* DllUnregisterServer = (DLLUNREGISTERSERVER*) GetProcAddress(hModule, "DllUnregisterServer");
 		if ( !DllUnregisterServer ) {
-			DisplayError(hWnd, GetLastError(), "Can't find the unregistering function (DllUnegisterServer) in the "VPMDLLNAME".", "Please check if you have a valid vpinmame.dll!");
+			DisplayError(hWnd, GetLastError(), "Can't find the unregistering function (DllUnegisterServer) in the " VPMDLLNAME ".", "Please check if you have a valid vpinmame.dll!");
 			FreeLibrary(hModule);
 			return 0;
 		}
 
 		hr = (*DllUnregisterServer)();
 		if ( FAILED(hr) ) {
-			DisplayError(hWnd, hr, "Unable to unregister the class object!", "Please check if you have a valid "VPMDLLNAME"!");
+			DisplayError(hWnd, hr, "Unable to unregister the class object!", "Please check if you have a valid " VPMDLLNAME "!");
 			FreeLibrary(hModule);
 			return 0;
 		}
