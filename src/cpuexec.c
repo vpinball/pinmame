@@ -178,7 +178,9 @@ static int cycles_stolen;
  *
  *************************************/
 
-#define MAME_VSYNC_MULT 8 
+#define MAME_VSYNC_MULT 4
+static int sync_countdown;
+static int sync_multiplier;
 
 static void *vblank_timer;
 static int vblank_countdown;
@@ -1619,7 +1621,11 @@ static void cpu_vblankcallback(int param)
 	}
 	else
 	{
-		throttle_speed_part(vblank_multiplier - vblank_countdown, vblank_multiplier);
+		if (--sync_countdown == 0)
+		{
+			sync_countdown = sync_multiplier;
+			throttle_speed_part(vblank_multiplier - vblank_countdown, vblank_multiplier);
+		}
 	}
 }
 
@@ -1817,7 +1823,12 @@ static void cpu_inittimers(void)
 	}
 
 	/* now find the LCD with the rest of the CPUs (brute force - these numbers aren't huge) */
-	vblank_multiplier = max(max, MAME_VSYNC_MULT);
+
+	if (_strnicmp(Machine->gamedrv->name, "csi_", 4) == 0 || _strnicmp(Machine->gamedrv->name, "ij4_", 4) == 0) //!! timing hack for IJ4 and CSI
+		vblank_multiplier = max;
+	else
+		vblank_multiplier = max(max, MAME_VSYNC_MULT);
+
 	while (1)
 	{
 		for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
@@ -1830,6 +1841,8 @@ static void cpu_inittimers(void)
 			break;
 		vblank_multiplier += max;
 	}
+	sync_multiplier = vblank_multiplier / MAME_VSYNC_MULT;
+	sync_countdown = sync_multiplier;
 
 	/* initialize the countdown timers and intervals */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)

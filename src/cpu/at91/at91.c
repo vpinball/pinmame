@@ -489,11 +489,13 @@ static void serial_timer_event(int timer_num)
 			if (at91usart[usartno].US_RPR !=0 && at91usart[usartno].US_RCR > 0)
 			{
 				int i;
-				for (i=0;i<0x40;i++ && at91usart[usartno].US_RCR > 0)
+				for (i=0;i<0x40;i++ && at91usart[usartno].US_RCR > 0 && at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
 				{
 					cpu_writemem32ledw(at91usart[usartno].US_RPR++, 0x29);
 					at91usart[usartno].US_RPR++;
 					at91usart[usartno].US_RCR--;
+					if (++(at91usart[usartno].at91_rbuf_tail) == AT91_RECEIVE_BUFFER_SIZE - 1)
+						at91usart[usartno].at91_rbuf_tail = 0;
 
 				}
 				//at91usart[usartno].US_RPR += 5;
@@ -618,7 +620,7 @@ void at91_usart_write(int usartno, int addr, data32_t outdata)
 	case 0x0f:  // Transmit counter
 		at91usart[usartno].US_TCR = outdata;
 		at91usart[usartno].US_CSR &= ~(US_ENDTX); 
-		at91_pending_serial(usartno, 30);
+		at91_pending_serial(usartno, 40);
 		break;
 	}
 }
