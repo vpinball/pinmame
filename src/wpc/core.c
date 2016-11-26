@@ -7,6 +7,8 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
+#include "video.h"
+
 #ifdef PROC_SUPPORT
  #include "p-roc/p-roc.h"
 #endif
@@ -1923,6 +1925,58 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level
 	outputlevel = (UINT8)((targetlevel + *prev_level) / 2);
 	*prev_level = (UINT8)targetlevel;
 	return outputlevel;
+}
+
+void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
+{
+	int delta;
+
+	if (sIn >= *sOut)
+		delta = sIn - *sOut;
+	else
+		delta = sIn + buffersize - *sOut;
+
+#ifdef DEBUG_SOUND
+	{
+		char tmp[161];
+		LARGE_INTEGER performance_count;
+		QueryPerformanceCounter(&performance_count);
+
+		sprintf(tmp, "snd clk: %llu in: %d out: %d size: %d delta %d", performance_count.QuadPart, sIn, *sOut, buffersize, delta);
+		DebugSound(tmp);
+	}
+#endif
+
+	if (delta > samplerate * 50 / 1000)
+	{
+		// Over 50ms delta and throttle didn't catch it fast enough.   Drop some samples, but not so
+		// much that we have to restart from a zero buffer.
+		*sOut = sIn - (samplerate * 20 / 1000);
+		if (*sOut < 0)
+			*sOut += buffersize;
+
+		SetThrottleAdj(0);
+	}
+	else if (delta > samplerate * 35 / 1000)
+	{
+		SetThrottleAdj(-6);
+	}
+	else if (delta > samplerate * 25 / 1000)
+	{
+		SetThrottleAdj(-1);
+	}
+	else if (delta < samplerate * 10 / 1000)
+	{
+		SetThrottleAdj(10);
+	}
+	else if (delta < samplerate * 20 / 1000)
+	{
+		SetThrottleAdj(2);
+	}
+	else
+	{
+		SetThrottleAdj(0);
+	}
 }
 
 /*----------------------------------------------

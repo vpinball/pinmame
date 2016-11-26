@@ -385,26 +385,26 @@ typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT]
 typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #endif /* LSB_FIRST */
 typedef struct {
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
-  UINT8  lampMatrix[CORE_MAXLAMPCOL], tmpLampMatrix[CORE_MAXLAMPCOL];
-  UINT8  RGBlamps[CORE_MAXRGBLAMPS];
+  volatile UINT8  swMatrix[CORE_MAXSWCOL];
+  volatile UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
+  volatile UINT8  lampMatrix[CORE_MAXLAMPCOL], tmpLampMatrix[CORE_MAXLAMPCOL];
+  volatile UINT8  RGBlamps[CORE_MAXRGBLAMPS];
   core_tSeg segments;     /* segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT]; /* segments drawn */
-  UINT32 solenoids;       /* on power driver bord */
-  UINT32 solenoids2;      /* flipper solenoids */
-  UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
-  UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
+  volatile UINT32 solenoids;       /* on power driver bord */
+  volatile UINT32 solenoids2;      /* flipper solenoids */
+  volatile UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
+  volatile UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
   UINT64 lastSol;         /* last state of all solenoids */
-  int    gi[CORE_MAXGI];  /* WPC gi strings */
+  volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
-  int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+  volatile int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
 #ifdef PROC_SUPPORT
   int    p_rocEn;         /* P-ROC support enable */
   int    isKickbackLamp[255];
 #endif
-  char   segDim[CORE_SEGCOUNT]; /* segments dimming */
+  volatile char   segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
@@ -483,6 +483,7 @@ INLINE void core_update_modulated_light(UINT32 *light, int bit){
 }
 
 extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level);
+extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate);
 
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);

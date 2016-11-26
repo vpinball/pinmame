@@ -814,17 +814,6 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		//Reset Frame Buffer position for reading
 		tms320av120[chipnum].fb_pos = 0;
 
-		//Handle PCM wraparound.. (Leave room for this frame)
-
-		// this code is wrong.   It's a circular buffer - we are full when we are just behind the last sample being output. 
-/*		if( (tms320av120[chipnum].pcm_pos+1152) == CAP_PCMBUFFER_SIZE) {
-			//Flag SREQ HI to stop data coming in!
-			set_sreq_line(chipnum,1);
-		}*/
-
-
-
-
 		//Decode the frame (generates 1152 pcm samples)
 		DecodeLayer2(chipnum);		 //note: tms320av120[chipnum].pcm_pos will be adjusted +1152 inside the decode function
 
@@ -836,14 +825,12 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		if(tms320av120[chipnum].pcm_pos == CAP_PCMBUFFER_SIZE)
 			tms320av120[chipnum].pcm_pos=0;
 
-		// Circular buffer check.  If its a normal case of the output being behind the buffer head, remaining is head - tail.
-
+		// If our buffer is full, signal to stop sending data
 		if(get_sound_buffer_consumed(chipnum) >= CAP_PCMBUFFER_SIZE-1152)
 		{
 			//Flag SREQ HI to stop data coming in!
 			set_sreq_line(chipnum,1);
 		}
-
 
 		//Reset flag to search for next header
 		tms320av120[chipnum].found_header = 0;
