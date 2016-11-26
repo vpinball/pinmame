@@ -15,9 +15,9 @@ typedef struct tPMoptions {
 } tPMoptions;
 
 typedef struct rgb24 {
-	char red;
-	char green;
-	char blue;
+	unsigned char red;
+	unsigned char green;
+	unsigned char blue;
 } rgb24;
 
 UINT8 *OutputPacketBuffer;
