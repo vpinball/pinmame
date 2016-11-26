@@ -374,11 +374,11 @@ void uSleepApproximate(const UINT64 u)
 	if (sTimerInit == 0)
 		wintimer_init();
 
-	if (u < 2000)
+	if (u < 4000)
 		return;
 
 	QueryPerformanceCounter(&TimerNow);
-	TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull);
+	TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 4000ull) * TimerFreq.QuadPart) / 1000000ull);
 
 	while (TimerNow.QuadPart < TimerEndSleep.QuadPart)
 	{
