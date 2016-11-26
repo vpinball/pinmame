@@ -344,24 +344,45 @@ static void wintimer_init(void)
 // but MAME code does this already
 void uSleep(const UINT64 u)
 {
-	LARGE_INTEGER TimerEndSleep;
 	LARGE_INTEGER TimerEnd;
 	LARGE_INTEGER TimerNow;
+	LONGLONG TwoMSTimerTicks;
 
 	if (sTimerInit == 0)
 		wintimer_init();
 
 	QueryPerformanceCounter(&TimerNow);
-	TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
-	TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
+	TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
+	TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 
-	do
+	while (TimerNow.QuadPart < TimerEnd.QuadPart)
 	{
-		if ((u > 2000ull) && (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEndSleep.QuadPart))
+		if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
 			Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		else
 			SwitchToThread(); // let other threads on same core run
 
 		QueryPerformanceCounter(&TimerNow);
-	} while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
+	}
+}
+
+void uSleepApproximate(const UINT64 u)
+{
+	LARGE_INTEGER TimerEndSleep;
+	LARGE_INTEGER TimerNow;
+
+	if (sTimerInit == 0)
+		wintimer_init();
+
+	if (u < 2000)
+		return;
+
+	QueryPerformanceCounter(&TimerNow);
+	TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull);
+
+	while (TimerNow.QuadPart < TimerEndSleep.QuadPart)
+	{
+		Sleep(1); // really pause thread for 1-2ms (depending on OS)
+		QueryPerformanceCounter(&TimerNow);
+	}
 }

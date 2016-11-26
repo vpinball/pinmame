@@ -367,11 +367,11 @@ static void gen_test_irq(struct jit_ctl *jit, data32_t addr)
 	emit(JMP, Label, jit_new_native_label(jit->pLookup));
 	jit_resolve_label(lbl);  
 	// While we're at it, let's look at the cycle count.  
-	emit(CMP, RCYCLECNT, Imm, 0);
+/*	emit(CMP, RCYCLECNT, Imm, 0);
 	emit(JG, Label, lbl = jit_new_fwd_label());
 	emit(MOV, EAX, Imm, addr+4);
 	emit(RETN);
-	jit_resolve_label(lbl);
+	jit_resolve_label(lbl);*/
 }
 
 // service routines for gen_mem
@@ -1307,10 +1307,10 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 				// call our helper routine to load SPSR into CPSR and switch modes.  Also check if run count exhausted.
 				emit(CALL, Label, jit_new_native_label((byte *)&spsr_to_cpsr));
 				emit(MOV, EAX, Rn(15));
-				emit(CMP, RCYCLECNT, Imm, 0);
+				/*emit(CMP, RCYCLECNT, Imm, 0);
 				emit(JG, Label, lbl = jit_new_fwd_label());
 				emit(RETN);
-				jit_resolve_label(lbl);
+				jit_resolve_label(lbl);*/
 				emit(JMP, Label, jit_new_native_label(jit->pLookup));		
 			}
 			else
@@ -1319,10 +1319,10 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 				emit(MOV, Rn(rd), result_reg);
 				emit(CALL, Label, jit_new_native_label((byte *)&arm7_check_irq_state));
 				emit(MOV, EAX, Rn(15));
-				emit(CMP, RCYCLECNT, Imm, 0);
+			/*	emit(CMP, RCYCLECNT, Imm, 0);
 				emit(JG, Label, lbl = jit_new_fwd_label());
 				emit(RETN);
-				jit_resolve_label(lbl);
+				jit_resolve_label(lbl);*/
 				emit(JMP, Label, jit_new_native_label(jit->pLookup));
 			}
 				
@@ -1814,10 +1814,10 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 		// Check to see if changed flags causes an IRQ jump
 		emit(CALL, Label, jit_new_native_label((byte *)&arm7_check_irq_state));
 		emit(MOV, EAX, Rn(15));
-		emit(CMP, RCYCLECNT, Imm, 0);
+	/*	emit(CMP, RCYCLECNT, Imm, 0);
 		emit(JG, Label, lbl = jit_new_fwd_label());
 		emit(RETN);
-		jit_resolve_label(lbl);
+		jit_resolve_label(lbl);*/
 		emit(JMP, Label, jit_new_native_label(jit->pLookup));
 	}
 
@@ -1857,11 +1857,11 @@ static int B(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int 
 		// BL = branch link = subroutine call.  This is a good time to check
 		// the cycle counter to see if we need to return to the emulator and
 		// yield our emulated time slice.
-		emit(CMP, RCYCLECNT, Imm, 0);
+		/*emit(CMP, RCYCLECNT, Imm, 0);
 		emit(JG, Label, lbl = jit_new_fwd_label());
 		emit(MOV, EAX, Imm, addr);
 		emit(RETN);
-		jit_resolve_label(lbl);
+		jit_resolve_label(lbl);*/
 		
 		// Load R14 with the return address
 		emit(MOV, DwordPtr, Rn(14), Imm, addr+4);
