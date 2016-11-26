@@ -88,8 +88,8 @@ static int valid_header(int chipnum);
 ***********************************************************************************************/
 #define MPG_HEADERSIZE				4			//Mpeg1 - Layer 2 Header Size
 #define MPG_FRAMESIZE				140			//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps (excluding header)
-#define CAP_PCMBUFFER_SIZE			1152*100	//# of Samples to hold (1 Frame = 1152 Samples)
-#define CAP_PREBUFFER_SIZE			1152*3		//# of decoded samples needed before we begin to output pcm
+#define CAP_PCMBUFFER_SIZE			1152*10 	//# of Samples to hold (1 Frame = 1152 Samples)
+#define CAP_PREBUFFER_SIZE			1152*2		//# of decoded samples needed before we begin to output pcm
 
 #define	LOG_DATA_IN					0			//Set to 1 to log data input to an mp3 file
 
@@ -507,6 +507,14 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 }		//# of scale factors
 }
 
+static int get_sound_buffer_consumed(int chipnum)
+{
+	if (tms320av120[chipnum].pcm_pos >= tms320av120[chipnum].sOut)
+		return tms320av120[chipnum].pcm_pos - tms320av120[chipnum].sOut;
+	// Else tail has looped around, need to add buffer size.
+	return tms320av120[chipnum].pcm_pos + CAP_PCMBUFFER_SIZE - tms320av120[chipnum].sOut;
+}
+
 /**********************************************************************************************
      tms320av120_update -- output samples to the stream buffer
 ***********************************************************************************************/
@@ -520,12 +528,15 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 	/* fill in with samples until we hit the end or run out */
 	for (ii = 0; ii < length; ii++) {
 		//Ready to receive more data?
-		if (tms320av120[num].sreq_line && tms320av120[num].sOut + CAP_PREBUFFER_SIZE*2 > CAP_PCMBUFFER_SIZE) {
+		if (get_sound_buffer_consumed(num) < CAP_PCMBUFFER_SIZE - 1152 ) {
 			//Flag SREQ LO to request more data to come in!
 			set_sreq_line(num,0);
 		}
 		//No more data ready for output, so abort
 		if (tms320av120[num].sOut == tms320av120[num].pcm_pos){
+			tms320av120[num].prebuff_full = 0;
+			tms320av120[num].sOut = 0;
+			tms320av120[num].pcm_pos = 0;
 			if(tms320av120[num].found_header)
 				LOG(("TMS320AV120 #%d: No more pcm samples ready for output, skipping %d \n",num,length-ii));
 			break;
@@ -756,7 +767,7 @@ WRITE_HANDLER( TMS320AV120_data_w )
 	int chipnum = offset;
 
 	//Safety check
-	if( (intf->num-1) < offset) {
+	if( (intf->num-1) < chipnum) {
 		//LOG(("TMS320AV120_DATA_W: Error trying to send data to undefined chip #%d\n",offset));
 		return;
 	}
@@ -783,7 +794,16 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		//Reset BOF line
 		set_bof_line(chipnum,1);
 		tms320av120[chipnum].found_header = valid_header(chipnum);
-		tms320av120[chipnum].fb_pos=0;	//Overwrite the header since we don't need it
+		if (!tms320av120[chipnum].found_header)
+		{
+			// Shift byte down one so we don't miss a header entirely reading in 4 byte chunks.
+			int i;
+			for (i = 0; i < 3; i++)
+				tms320av120[chipnum].framebuff[i] = tms320av120[chipnum].framebuff[i + 1];
+			tms320av120[chipnum].fb_pos--;
+		}
+		else
+			tms320av120[chipnum].fb_pos=0;	//Overwrite the header since we don't need it
 	}
 
 	//Once we have a valid header, see if we've got an entire frame
@@ -795,10 +815,15 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		tms320av120[chipnum].fb_pos = 0;
 
 		//Handle PCM wraparound.. (Leave room for this frame)
-		if( (tms320av120[chipnum].pcm_pos+1152) == CAP_PCMBUFFER_SIZE) {
+
+		// this code is wrong.   It's a circular buffer - we are full when we are just behind the last sample being output. 
+/*		if( (tms320av120[chipnum].pcm_pos+1152) == CAP_PCMBUFFER_SIZE) {
 			//Flag SREQ HI to stop data coming in!
 			set_sreq_line(chipnum,1);
-		}
+		}*/
+
+
+
 
 		//Decode the frame (generates 1152 pcm samples)
 		DecodeLayer2(chipnum);		 //note: tms320av120[chipnum].pcm_pos will be adjusted +1152 inside the decode function
@@ -810,6 +835,15 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		//Start over for next round if we're at the end of the buffer now!
 		if(tms320av120[chipnum].pcm_pos == CAP_PCMBUFFER_SIZE)
 			tms320av120[chipnum].pcm_pos=0;
+
+		// Circular buffer check.  If its a normal case of the output being behind the buffer head, remaining is head - tail.
+
+		if(get_sound_buffer_consumed(chipnum) >= CAP_PCMBUFFER_SIZE-1152)
+		{
+			//Flag SREQ HI to stop data coming in!
+			set_sreq_line(chipnum,1);
+		}
+
 
 		//Reset flag to search for next header
 		tms320av120[chipnum].found_header = 0;
