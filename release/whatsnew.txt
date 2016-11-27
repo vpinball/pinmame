@@ -17,6 +17,7 @@ Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some 
 Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise
 Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
 Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars God of War, etc)
+Improved Capcom sound core
 
 Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
 Retweak Pistol Poker to use the correct 12MHz clock
@@ -24,6 +25,8 @@ Retweak Pistol Poker to use the correct 12MHz clock
 Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
 Add support for GI on Whitestar
 Improve NGG wheel by using the mech class to simulate the spinning wheel
+
+Reduce latency of input handling, especially on WPC
 
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 Fix window size issues if an additional mini-DMD is in use
