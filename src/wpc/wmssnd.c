@@ -769,7 +769,7 @@ static void dcs_init(struct sndbrdData *brdData);
 /*-- local data --*/
 #define DCS_BUFFER_SIZE	  8192  // Must be power of 2 because of how circular buffer works
 #define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
-#define DCS_SAMPLE_RATE   31250
+#define DCS_DEFAULT_SAMPLE_RATE 31250
 
 static struct {
  int     status;   // 0 = disabled, 1 playing, > 1 startup silence samples remaining
@@ -929,7 +929,7 @@ static int dcs_custStart(const struct MachineSound *msound) {
   memset(&dcs_dac,0,sizeof(dcs_dac));
 
   /*-- allocate a DAC stream --*/
-  dcs_dac.stream = stream_init("DCS DAC", 100, DCS_SAMPLE_RATE, 0, dcs_dacUpdate);
+  dcs_dac.stream = stream_init("DCS DAC", 100, DCS_DEFAULT_SAMPLE_RATE, 0, dcs_dacUpdate);
 
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
@@ -972,7 +972,7 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
       dcs_dac.sOut = (dcs_dac.sOut + 1) & DCS_BUFFER_MASK;
     }
     /* Give core feedback on sound buffer progress, so speed can be throttled to keep sound perfect */
-    core_sound_throttle_adj(dcs_dac.sIn, &dcs_dac.sOut, DCS_BUFFER_SIZE, DCS_SAMPLE_RATE); //!! hardwired sample rate, but okay as seems to never change
+    core_sound_throttle_adj(dcs_dac.sIn, &dcs_dac.sOut, DCS_BUFFER_SIZE, stream_get_sample_rate(dcs_dac.stream));
 
     /* fill the rest with the last sample (ideally never necessary) */
     for ( ; ii < length; ii++)
@@ -1081,7 +1081,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
   if (dcs_dac.status == 0)
   {
-      for (idx = 0; idx < DCS_SAMPLE_RATE * 20 / 1000 + 1; idx++) {
+      for (idx = 0; idx < stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1; idx++) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
       }

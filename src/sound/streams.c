@@ -233,6 +233,10 @@ void stream_set_sample_rate(int channel, int sample_rate) {
 	set_RC_filter_sample_rate(channel,sample_rate);
 }
 
+int stream_get_sample_rate(int channel) {
+	return stream_sample_rate[channel];
+}
+
 void stream_free(int channel) {
 	free(stream_buffer[channel]);
 	stream_buffer[channel] = 0;

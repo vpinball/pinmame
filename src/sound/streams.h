@@ -24,6 +24,7 @@ void stream_update(int channel,int min_interval);	/* min_interval is in usec */
 
 #ifdef PINMAME
 void stream_set_sample_rate(int channel, int sample_rate);
+int stream_get_sample_rate(int channel);
 #endif /* PINMAME */
 
 #ifdef __cplusplus
