@@ -27,6 +27,7 @@ extern "C" {
 #include "core.h"
 #include "vpintf.h"
 #include "mame.h"
+#include "video.h"
 
 extern HWND win_video_window;
 extern int g_fPause;
@@ -40,6 +41,7 @@ extern UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
 extern UINT32 g_raw_dmdx;
 extern UINT32 g_raw_dmdy;
 extern UINT32 g_needs_DMD_update;
+extern int g_cpu_affinity_mask;
 
 extern char g_fShowWinDMD;
 
@@ -340,6 +342,9 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 		return Error(TEXT("Unable to start thread!"));
 	}
 
+	if (g_cpu_affinity_mask > 0)
+		SetThreadAffinityMask(m_hThreadRun, g_cpu_affinity_mask);
+
 	// ok, let's wait for either the machine is set up or the thread terminates for some reason
 	HANDLE StartHandles[2] = {m_hEmuIsRunning, m_hThreadRun};
 
@@ -529,7 +534,7 @@ STDMETHODIMP CController::get_NVRAM(VARIANT *pVal)
 			return S_FALSE;
 		}
 
-		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, nvram_file->offset);
+		SAFEARRAY *psa = SafeArrayCreateVector(VT_VARIANT, 0, (ULONG)nvram_file->offset);
 
 		VARIANT NVState;
 		NVState.vt = VT_UI1;
@@ -592,12 +597,12 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 		uSleep(-synclevel * 1000);
 
 	/*-- Count changes --*/
-	int uCount;
+	size_t uCount;
 
 	if (oldNVRAMname == 0 || strstr(Machine->gamedrv->name, oldNVRAMname) == 0) // detect initial VPM start or game change
 	{
-		uCount = min(nvram_file->offset, CORE_MAXNVRAM);
-		for (int i = 0; i < uCount; ++i)
+		uCount = min((size_t)nvram_file->offset, CORE_MAXNVRAM);
+		for (size_t i = 0; i < uCount; ++i)
 		{
 			chgNVRAMs[i].nvramNo = i;
 			chgNVRAMs[i].oldStat = 0; //!!
@@ -617,8 +622,8 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	else
 	{
 		uCount = 0;
-		int uCountMax = min(nvram_file->offset, CORE_MAXNVRAM);
-		for (int i = 0; i < uCountMax; ++i)
+		size_t uCountMax = min((size_t)nvram_file->offset, CORE_MAXNVRAM);
+		for (size_t i = 0; i < uCountMax; ++i)
 		{
 			if (oldNVRAM[i] != nvram_file->data[i])
 			{
@@ -648,7 +653,7 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	varValue.vt = VT_I4;
 
 	/*-- add changed locations to array --*/
-	for (ix[0] = 0; ix[0] < uCount; ix[0]++) {
+	for (ix[0] = 0; ix[0] < (long)uCount; ix[0]++) {
 		ix[1] = 0;
 		varValue.lVal = chgNVRAMs[ix[0]].nvramNo;
 		SafeArrayPutElement(psa, ix, &varValue);
