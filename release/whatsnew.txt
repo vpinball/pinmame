@@ -14,7 +14,7 @@ Slightly improved TMS5200 core (Bally Centaur, etc), especially the wrong pitch 
 Use reverb for all sound cores (not just TMS5200) used in Bally Centaur
 Improved M114 sound core (Mr. Game)
 Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some lowpass filtering (active only on older machines) to remove some of the audible noise
-Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise
+Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise and additional sound throttling adjustments
 Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
 Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars God of War, etc)
 Improved Capcom sound core
@@ -27,7 +27,8 @@ Add support for GI on Whitestar
 Improve NGG wheel by using the mech class to simulate the spinning wheel
 
 Reduce latency of input handling, especially on WPC and add new options around this:
- cpu_affinity_mask (default 0) and low_latency_throttle (default 1, will divide an emulated frame into more parts to reduce input latency)
+ cpu_affinity_mask (default 0, note that its really a mask: For CPU #1 only, set it to 1 (=2^(1-1)), CPU #4 only is 8 (=2^(4-1)), so CPU's 1 and 4 is 9 (=2^(1-1) + 2^(4-1)) then, etc) and
+ low_latency_throttle (default 1, will divide an emulated frame into more parts to reduce input latency)
 
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 Fix window size issues if an additional mini-DMD is in use
