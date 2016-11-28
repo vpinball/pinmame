@@ -40,7 +40,7 @@ DMDDEV int Open()
 	isOpen = false;
 
 	// ftdi devices found
-	int deviceId = 0;
+	int deviceId = -1;
 	if (numDevs > 0) {
 		// allocate storage for list based on numDevs
 		FT_DEVICE_LIST_INFO_NODE *devInfo = (FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs);
@@ -58,9 +58,11 @@ DMDDEV int Open()
 				slowUSB = (strcmp(devInfo[i].SerialNumber,"DMD1001")==0);
 			}
 		}
-	} else {
+	}
+
+	if(numDevs == 0 || deviceId == -1)
+	{
 		MessageBox(NULL, "pinDMD v1 not found","Error", MB_ICONERROR);
-		isOpen=false;
 		return 0;
 	}
 
@@ -358,7 +360,8 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 }
 
 
-void Send_Logo(void) //!! unused
+#if 0 // unused
+void Send_Logo()
 {
 		FILE *fLogo;
 
@@ -438,3 +441,4 @@ void Send_Logo(void) //!! unused
 
 		Render_16_Shades(128,32,*LogoBuffer);
 }
+#endif

@@ -169,7 +169,6 @@ void Send_Logo(void)
 DMDDEV bool Close()
 {
 	if (isOpen) {
-
 		Send_Logo();
 
 		usb_release_interface( DeviceHandle, 0);
@@ -365,8 +364,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2)
 {
-	if (isOpen) {	
-
+	if (isOpen) {
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes

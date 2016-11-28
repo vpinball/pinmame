@@ -100,7 +100,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		HDC src = CreateCompatibleDC(hdc);
 		SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height,SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC*/
+		DeleteDC(src); // Deleting temp HDC
 	}
 }
 
@@ -113,7 +113,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		HDC src = CreateCompatibleDC(hdc);
 		SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC*/
+		DeleteDC(src); // Deleting temp HDC
 	}
 }
 
@@ -186,7 +186,8 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 	}
 }
 
-DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer) {
+DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
+{
 	if (isOpen) {
 		for (int i = 0; i < width*height; i++){
 			arr[i] = ((int)currbuffer[i].red << 16) | ((int)currbuffer[i].green << 8) | ((int)currbuffer[i].blue /*<< 0*/);
@@ -195,7 +196,7 @@ DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer) {
 		HDC src = CreateCompatibleDC(hdc);
 		SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC*/
+		DeleteDC(src); // Deleting temp HDC
 	}
 }
 

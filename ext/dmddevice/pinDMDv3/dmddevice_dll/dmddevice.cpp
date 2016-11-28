@@ -14,7 +14,7 @@ bool useRGB = false;
 
 DMDDEV int Open()
 {
-	bool useRGB = false; 
+	useRGB = false;
 	return 1;
 }
 
@@ -160,11 +160,10 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 	}
 }
 
-DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer) {
-
-	tPMoptions Options;
-
+DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
+{
 	if (!isOpen && !useRGB) {
+		tPMoptions Options;
 		Options.dmd_red = 255;
 		Options.dmd_green = 0;
 		Options.dmd_blue = 0;
