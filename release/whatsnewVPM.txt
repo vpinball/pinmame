@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 
 Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
-- To enable modulated/multi-level flasher support, set SolMask to 2
+- To enable the new modulated/multi-level flasher support (see whatsnew.txt), set SolMask to 2
 
 - New, generalized external DMD handling via a separate dmddevice.dll instead of define hell
 
