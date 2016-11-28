@@ -178,7 +178,7 @@ static int cycles_stolen;
  *
  *************************************/
 
-#define MAME_VSYNC_MULT 4
+#define LOW_LATENCY_THROTTLE_PARTS 4
 
 static void *sync_timer;
 static int sync_countdown;
@@ -1565,7 +1565,7 @@ static void cpu_firstvblankcallback(int param)
 
 static void cpu_synccallback(int param)
 {
-	throttle_speed_part(MAME_VSYNC_MULT-sync_countdown, MAME_VSYNC_MULT);
+	throttle_speed_part(LOW_LATENCY_THROTTLE_PARTS-sync_countdown, LOW_LATENCY_THROTTLE_PARTS);
 	if(!--sync_countdown)
 		timer_adjust(sync_timer, TIME_NEVER, 0, TIME_NEVER);
 }
@@ -1627,9 +1627,9 @@ static void cpu_vblankcallback(int param)
 
 		/* reset the counter */
 		vblank_countdown = vblank_multiplier;
-		sync_countdown = MAME_VSYNC_MULT - 1;
-		if(frameskip == 0)
-			timer_adjust(sync_timer, TIME_IN_HZ(60 * MAME_VSYNC_MULT), 0, TIME_IN_HZ(60 * MAME_VSYNC_MULT));
+		sync_countdown = LOW_LATENCY_THROTTLE_PARTS - 1;
+		if(g_low_latency_throttle && frameskip == 0)
+			timer_adjust(sync_timer, TIME_IN_HZ(60 * LOW_LATENCY_THROTTLE_PARTS), 0, TIME_IN_HZ(60 * LOW_LATENCY_THROTTLE_PARTS));
 	}
 }
 

@@ -28,6 +28,7 @@
 // current frameskip/autoframeskip settings
 extern int			frameskip;
 extern int			autoframeskip;
+extern int			g_low_latency_throttle;
 
 // speed throttling
 extern int			throttle;

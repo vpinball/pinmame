@@ -29,6 +29,8 @@ extern "C" {
   /* pinDMD */
   extern char g_fShowPinDMD;
   extern char g_fShowWinDMD;
+  extern int g_low_latency_throttle;
+  int g_cpu_affinity_mask = 0;
 }
 
 int fAllowWriteAccess = 1;
@@ -93,6 +95,8 @@ static struct rc_option vpinmame_opts[] = {
 	/* pinDMD */
 	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
 	{ "showwindmd", NULL, rc_bool, &g_fShowWinDMD, "1", 0, 0, NULL, "Show DMD display" },
+	{ "cpu_affinity_mask", NULL, rc_int, &g_cpu_affinity_mask, "0", 0, 0, NULL, "CPU affinity mask" },
+	{ "low_latency_throttle", NULL, rc_bool, &g_low_latency_throttle, "1", 0, 0, NULL, "Distribute CPU execution across one emulated frame to minimize flipper latency" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -138,6 +142,10 @@ static char* GlobalSettings[] = {
 	// video_opts
 	"screen",
 	"window",
+
+	// performance opts
+	"cpu_affinity_mask",
+	"low_latency_throttle",
 
 	NULL
 };

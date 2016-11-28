@@ -1959,7 +1959,7 @@ void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
 	}
 	else if (delta > samplerate * 35 / 1000)
 	{
-		SetThrottleAdj(-6);
+		SetThrottleAdj(-4);
 	}
 	else if (delta > samplerate * 25 / 1000)
 	{
