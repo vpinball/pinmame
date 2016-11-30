@@ -374,6 +374,14 @@ SE_ROMEND
 #define input_ports_lostspcg input_ports_lostspc
 CORE_CLONEDEFNV(lostspcg,lostspc,"Lost in Space (1.01 German)",1998,"Sega",de_mSES1,0)
 
+INITGAME(lostspcf,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lostspcf, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
+DE_DMD32ROM8x("lis_f-102.bin",CRC(422ba6d5) SHA1(0cd09b14a953fda39f8c7e5521c4115d2ada9186))
+LIS_SND
+SE_ROMEND
+#define input_ports_lostspcf input_ports_lostspc
+CORE_CLONEDEFNV(lostspcf,lostspc,"Lost in Space (1.01 French)",1998,"Sega",de_mSES1,0)
+
 INITGAME(lostspc1,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lostspc1, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
 DE_DMD32ROM8x("lisdspa.101",CRC(a8bfa71f) SHA1(45886ae8edcfd26a2225914aaf96eb960fc7e988))

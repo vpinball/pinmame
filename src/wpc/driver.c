@@ -955,6 +955,7 @@ DRIVER  (vipr,102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space (1.01)
 DRIVERNV(lostspc1)      //Whitestar: 06/98 Lost in Space (1.01, Display 1.01)
 DRIVERNV(lostspcg)      //Whitestar: 06/98 Lost in Space (1.01 German)
+DRIVERNV(lostspcf)      //Whitestar: 06/98 Lost in Space (1.01 French)
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla (2.05)
 DRIVER  (godz,100)      //Whitestar: 09/98 Godzilla (1.00)
