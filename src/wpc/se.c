@@ -472,7 +472,7 @@ static WRITE_HANDLER(giaux_w) {
   if(GET_BIT4 == 0)
   printf("giaux = %x, (GI=%x A=%x B=%x C=%x D=%x E=%x), aux = %x (%c)\n",data,GET_BIT0,GET_BIT7,GET_BIT3,GET_BIT4,GET_BIT5,GET_BIT6,selocals.auxdata,selocals.auxdata);
 #endif
-  coreGlobals.gi[0]=(~data & 0x01);
+  coreGlobals.gi[0]=(~data & 0x01) ? 9 : 0;
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
