@@ -33,6 +33,8 @@ Reduce latency of input handling, especially on WPC and add new options around t
 Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
 Fix window size issues if an additional mini-DMD is in use
 
+Store DMD dumps in a DmdDump subfolder (but only if it already exists)
+
 *** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
 New:
 JocMatic: Rider's Surf (running on Playmatic hardware)
@@ -43,9 +45,10 @@ Tommy 5.00 (unofficial MOD)
 
 Clones:
 Laser Cue L-3 (Neverending Bell Fix)
-Lost in Space (1.01 French)
+Lost in Space 1.01 French
 Stargate rev.5
 Star God (alternate version)
+X-Files 3.03 French
 
 
 
