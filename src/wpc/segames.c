@@ -278,6 +278,14 @@ SE_ROMEND
 #define input_ports_xfiles input_ports_se
 CORE_GAMEDEFNV(xfiles,"X-Files, The (3.03)",1997,"Sega",de_mSES1,0)
 
+SE128_ROMSTART(xfilesf,"xfcpuf.303",CRC(c7ab5efe) SHA1(dcb4b89adfb5ba39e59c1118a00b29941d3ea4e9))
+DE_DMD32ROM8x(   "xfildspf.300",CRC(fe9b1292) SHA1(ead40d2cdff060829008f468e08512c4f5f9e055))
+XFIL_SND
+SE_ROMEND
+#define input_ports_xfilesf input_ports_xfiles
+#define init_xfilesf init_xfiles
+CORE_CLONEDEFNV(xfilesf,xfiles,"X-Files, The (3.03 French)",1997,"Sega",de_mSES1,0)
+
 SE128_ROMSTART(xfiles2,"xfcpu.204",CRC(a4913128) SHA1(1fe348725e13fd5dc56b6b2dbd173d0b49953483))
 DE_DMD32ROM8x(   "xfildspa.201",CRC(bb015f24) SHA1(ca539d978ef0b8244227ea0c60087da5e7f0ee9e))
 XFIL_SND
@@ -364,7 +372,7 @@ DE_DMD32ROM8x(  "lisdspa.102",CRC(e8bf4a58) SHA1(572313fb79e5a0c0034938a09b04ef4
 LIS_SND
 SE_ROMEND
 #define input_ports_lostspc input_ports_se
-CORE_GAMEDEFNV(lostspc,"Lost in Space (1.01)",1998,"Sega",de_mSES1,0)
+CORE_GAMEDEFNV(lostspc,"Lost in Space (1.01, Display 1.02)",1998,"Sega",de_mSES1,0)
 
 INITGAME(lostspcg,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lostspcg, "liscpu.101",CRC(81b2ced8) SHA1(a1933e2686b2a4e48d0f327593df95a927b132cb))
@@ -388,7 +396,7 @@ DE_DMD32ROM8x("lisdspa.101",CRC(a8bfa71f) SHA1(45886ae8edcfd26a2225914aaf96eb960
 LIS_SND
 SE_ROMEND
 #define input_ports_lostspc1 input_ports_lostspc
-CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01, Display 1.01)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Golden Cue
