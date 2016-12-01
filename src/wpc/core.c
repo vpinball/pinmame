@@ -891,13 +891,19 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
 		  if((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)
 		  {
-			static const char* const dump_ext = "_dump.txt";
-			const unsigned int DumpFilenamel = strlen(Machine->gamedrv->name) + strlen(dump_ext) + 1;
-			char* const DumpFilename = (char*)malloc(DumpFilenamel);
 			FILE *f;
+			char* DumpFilename = (char*)malloc(MAX_PATH);
 
-			strcpy_s(DumpFilename, DumpFilenamel, Machine->gamedrv->name);
-			strcat_s(DumpFilename, DumpFilenamel, dump_ext);
+#ifndef _WIN64
+			const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+#else
+			const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+#endif
+			GetModuleFileName(hInst, DumpFilename, MAX_PATH);
+			char *ptr = strrchr(DumpFilename, '\\');
+			strcpy_s(ptr + 1, 11, "DmdDump\\");
+			strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+			strcat_s(DumpFilename, MAX_PATH, ".txt");
 
 			f = fopen(DumpFilename,"a");
 			free(DumpFilename);
