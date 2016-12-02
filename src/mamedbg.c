@@ -581,6 +581,20 @@ rgb_t debugger_palette[] = {
 
 #include "dbgfonts/m0813fnt.c"
 
+int stringcasecmp(const char *s1, const char *s2) {
+	while (*s1 != 0 && tolower(*s1) == tolower(*s2)) {
+		++s1;
+		++s2;
+	}
+
+	return
+		(*s2 == 0)
+		? (*s1 != 0)
+		: (*s1 == 0)
+		? -1
+		: (tolower(*s1) - tolower(*s2));
+}
+
 struct GfxElement *build_debugger_font(void)
 {
 	struct GfxElement *font;
@@ -1617,7 +1631,7 @@ static unsigned get_register_id( char **parg, int *size )
 	for( i = 0; i < DBGREGS.count; i++ )
 	{
 		l = strlen( DBGREGS.name[i] );
-		if( l > 0 && !strncasecmp( *parg, DBGREGS.name[i], l ) )
+		if( l > 0 && !stringcasecmp( *parg, DBGREGS.name[i], l ) )
 		{
 			if( !isalnum( (*parg)[l] ) )
 			{

@@ -12,8 +12,6 @@
  #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 #endif
 
-extern HINSTANCE hVpmDLL;
-
 UINT16	seg_data_old[50] = {};
 UINT16	seg_data2[50] = {};
 
@@ -49,6 +47,13 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	
 	// look for the DmdDevice(64).dll in the path of vpinmame.dll
 	char filename[MAX_PATH];
+
+#ifndef _WIN64
+	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME.dll");
+#else
+	const HINSTANCE hVpmDLL = GetModuleHandle("VPinMAME64.dll");
+#endif
+
 	GetModuleFileName(hVpmDLL,filename,MAX_PATH);
 	char *ptr = strrchr(filename,'\\');
 #ifdef _WIN64
