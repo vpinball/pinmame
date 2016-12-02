@@ -278,7 +278,7 @@ SE_ROMEND
 #define input_ports_xfiles input_ports_se
 CORE_GAMEDEFNV(xfiles,"X-Files, The (3.03)",1997,"Sega",de_mSES1,0)
 
-SE128_ROMSTART(xfilesf,"xfcpuf.303",CRC(c7ab5efe) SHA1(dcb4b89adfb5ba39e59c1118a00b29941d3ea4e9))
+SE128_ROMSTART(xfilesf,"xfcpu.303",CRC(c7ab5efe) SHA1(dcb4b89adfb5ba39e59c1118a00b29941d3ea4e9))
 DE_DMD32ROM8x(   "xfildspf.300",CRC(fe9b1292) SHA1(ead40d2cdff060829008f468e08512c4f5f9e055))
 XFIL_SND
 SE_ROMEND

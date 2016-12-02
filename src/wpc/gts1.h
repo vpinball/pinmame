@@ -238,7 +238,7 @@
        ROM_LOAD(n2, 0x0800, 0x0800, chk2)
 
 #define GTS1_1_ROMSTART(name, n1, chk1) \
-       ROM_LOAD(n1, 0x2000, 0x0400, chk1)
+       ROM_LOAD_NIB_LOW(n1, 0x2000, 0x0400, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GTS1C);
