@@ -36,8 +36,6 @@
 #include "Controller.h"
 #include "WSHDlg.h"
 
-HINSTANCE hVpmDLL;
-
 #ifdef _MERGE_PROXYSTUB
 extern "C" HINSTANCE hProxyDll;
 #endif
@@ -106,7 +104,6 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
     {
         _Module.Init(ObjectMap, hInstance, &LIBID_VPinMAMELib);
         DisableThreadLibraryCalls(hInstance);
-        hVpmDLL = hInstance;
     }
     else if (dwReason == DLL_PROCESS_DETACH)
         _Module.Term();
