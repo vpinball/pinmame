@@ -1012,7 +1012,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	int is_sub_op;
 	int is_test_op;
 	int need_shift_carry_out;
-	struct jit_label *lbl;
+	//struct jit_label *lbl;
 
 	// Normal data processing is 1 cycle - reduce the default 3-cycle count by 2
 	*cycles -= 2;
@@ -1628,7 +1628,7 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	int wrt = (insn & INSN_BDT_W);                   // write-back mode
 	int user_bank_xfer;                              // S flag set, but R15 not in list = User Bank Transfer
 	data8_t *abt = &ARM7.pendingAbtD;                // ABORT flag variable, for testing in generated code
-	struct jit_label *lAbort, *lNoAbort, *lbl;       // assembler labels for the abort handler
+	struct jit_label *lAbort, *lNoAbort;//, *lbl;   // assembler labels for the abort handler
 	int rcnt;                                        // number of registers transferred
 	int i;
 
@@ -1838,7 +1838,7 @@ static int LDM_STM(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 static int B(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int *cycles)
 {
 	int link = (insn & INSN_BL);
-	
+
 	// Pull out the offset - this is the bottom 24 bits shifted left by 2
 	data32_t ofs = (insn & INSN_BRANCH) << 2;
 
@@ -1852,8 +1852,8 @@ static int B(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int 
 	// check for BL
 	if (link)
 	{
-		struct jit_label *lbl;
-		
+		//struct jit_label *lbl;
+
 		// BL = branch link = subroutine call.  This is a good time to check
 		// the cycle counter to see if we need to return to the emulator and
 		// yield our emulated time slice.
@@ -1862,7 +1862,7 @@ static int B(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int 
 		emit(MOV, EAX, Imm, addr);
 		emit(RETN);
 		jit_resolve_label(lbl);*/
-		
+
 		// Load R14 with the return address
 		emit(MOV, DwordPtr, Rn(14), Imm, addr+4);
 	}
