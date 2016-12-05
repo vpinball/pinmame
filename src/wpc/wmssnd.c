@@ -1081,7 +1081,8 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
   if (dcs_dac.status == 0)
   {
-      for (idx = 0; idx < stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1; idx++) {
+      int idx_end = stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1;
+      for (idx = 0; idx < idx_end; idx++) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
       }
