@@ -49,6 +49,7 @@ static struct {
   UINT8 sndCmd, latch[2];
   UINT8 pia_a, pia_b;
   int bank, LED, mute, enable;
+  int sndIssued;
 } locals;
 
 static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
@@ -91,15 +92,18 @@ static void nuova_diag(int button) {
 }
 
 static WRITE_HANDLER(nuova_data_w) {
-  locals.sndCmd = (locals.sndCmd & 0xf0) | (data & 0x0f);
+  locals.sndCmd = (locals.sndCmd & 0x10) | (data & 0x0f);
+  locals.sndIssued = 1;
 }
 
 static WRITE_HANDLER(nuova_ctrl_w) {
-  locals.sndCmd = (locals.sndCmd & 0x0f) | (data << 4);
+  locals.sndCmd = (locals.sndCmd & 0x0f) | ((data & 1) << 4);
+  locals.sndIssued = 1;
 }
 
 static WRITE_HANDLER(nuova_man_w) {
   locals.sndCmd = data;
+  locals.sndIssued = 1;
 }
 
 static WRITE_HANDLER(dac_w) {
@@ -123,33 +127,31 @@ static WRITE_HANDLER(bank_w) {
 }
 
 static READ_HANDLER(snd_cmd_r) {
-//printf("snd_cmd_r: %02x\n", locals.sndCmd);
-  return locals.sndCmd ^ 0x1f;
+  return 0x1f ^ (((locals.sndCmd & 0x10) >> 4) | ((locals.sndCmd & 0x0f) << 1));
 }
 
-static READ_HANDLER(latch_r) {
-  UINT8 latch = locals.latch[offset];
-  if (offset) locals.latch[1] = snd_cmd_r(0);
-  return latch;
-}
-
-static WRITE_HANDLER(latch_w) {
-//printf("latch_w[%d]: %02x\n", offset, data);
-  locals.latch[offset] = data;
+static READ_HANDLER(mem_ff_r) {
+  if (locals.sndIssued) {
+    locals.sndIssued = 0;
+    if (snd_cmd_r(0)) {
+      memory_region(REGION_CPU2)[0xff] = locals.sndCmd;
+      locals.sndCmd = 0x1f;
+    }
+  }
+  return memory_region(REGION_CPU2)[0xff];
 }
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x0080, 0x00fe, MRA_RAM },
-  { 0x00fe, 0x00ff, latch_r },
+  { 0x00ff, 0x00ff, mem_ff_r },
+  { 0x0080, 0x00ff, MRA_RAM },
   { 0x4000, 0x4003, pia_r(2) },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0080, 0x00fe, MWA_RAM },
-  { 0x00fe, 0x00ff, latch_w },
+  { 0x0080, 0x00ff, MWA_RAM },
   { 0x4000, 0x4003, pia_w(2) },
   { 0xc000, 0xc000, bank_w },
 MEMORY_END
@@ -188,19 +190,57 @@ MACHINE_DRIVER_START(nuova)
   MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
 MACHINE_DRIVER_END
 
+// changes for U-Boat 65; uses a different memory location for the sound trigger
+
+static READ_HANDLER(mem_f2_r) {
+  if (locals.sndIssued) {
+    locals.sndIssued = 0;
+    if (snd_cmd_r(0)) {
+      memory_region(REGION_CPU2)[0xf2] = locals.sndCmd;
+      locals.sndCmd = 0x1f;
+    }
+  }
+  return memory_region(REGION_CPU2)[0xf2];
+}
+
+static MEMORY_READ_START(snd_readmem2)
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x00f2, 0x00f2, mem_f2_r },
+  { 0x0080, 0x00ff, MRA_RAM },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(snd_writemem2)
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0080, 0x00ff, MWA_RAM },
+MEMORY_END
+
+static struct DACinterface nuova_dacInt2 = { 1, { 25 }};
+
+MACHINE_DRIVER_START(uboat)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu", M6800, 530000)
+  MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
+  MDRV_NVRAM_HANDLER(nuova)
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem2, snd_writemem2)
+  MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_SOUND_ADD(DAC, nuova_dacInt2)
+MACHINE_DRIVER_END
 
 // games below
 
-#define INITGAME(name, gen, disp, flip, lamps, sb, db) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_NOSOUNDE}}; \
+#define INITGAME(name, gen, disp, flip, lamps, sb, gs1) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,0,BY35GD_NOSOUNDE | gs1}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAMENB(name, gen, disp, flip, lamps, sb, db) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_FAKEZERO}}; \
+#define INITGAMENB(name, gen, disp, flip, lamps, sb, gs1) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,0,BY35GD_FAKEZERO | gs1}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAMEAL(name, gen, disp, flip, lamps, sb, db) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_ALPHA}}; \
+#define INITGAMEAL(name, gen, disp, flip, lamps, sb, gs1) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,0,BY35GD_ALPHA | gs1}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 static core_tLCDLayout dispNB[] = {
@@ -366,7 +406,7 @@ ROM_START(skflight)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
+INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(skflight, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -394,7 +434,7 @@ ROM_START(cobra)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
+INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(cobra, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -426,7 +466,7 @@ ROM_START(futrquen)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
+INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(futrquen, 2) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -474,7 +514,7 @@ ROM_START(f1gp)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,0)
+INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(f1gp, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -506,7 +546,7 @@ ROM_START(toppin)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAMENB(toppin,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_NUOVA,0)
+INITGAMENB(toppin,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(toppin, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -533,9 +573,9 @@ ROM_START(uboat65)
       ROM_RELOAD(0x28000, 0x8000)
       ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
-  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+    ROM_LOAD("snd_u8.bin", 0x8000, 0x8000, CRC(d00fd4fd) SHA1(23f6b7c5d60821eb7fa2fdcfc85caeb536eef99a))
 ROM_END
 
-INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,0)
+INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(uboat65, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", nuova, 0)
+CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", uboat, GAME_IMPERFECT_SOUND)
