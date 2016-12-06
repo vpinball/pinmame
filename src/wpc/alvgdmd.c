@@ -19,6 +19,7 @@
 
 /*static vars*/
 static UINT8  *dmd32RAM;
+static UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100%
 
 static struct {
   struct sndbrdData brdData;
@@ -346,15 +347,14 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
-		  *line++ = ((RAM[0]>>7 & 0x01) | (RAM[0x200]>>6 & 0x02) | (RAM[0x400]>>5 & 0x04) | (RAM[0x600]>>4 & 0x08));
-		  *line++ = ((RAM[0]>>6 & 0x01) | (RAM[0x200]>>5 & 0x02) | (RAM[0x400]>>4 & 0x04) | (RAM[0x600]>>3 & 0x08));
-		  *line++ = ((RAM[0]>>5 & 0x01) | (RAM[0x200]>>4 & 0x02) | (RAM[0x400]>>3 & 0x04) | (RAM[0x600]>>2 & 0x08));
-		  *line++ = ((RAM[0]>>4 & 0x01) | (RAM[0x200]>>3 & 0x02) | (RAM[0x400]>>2 & 0x04) | (RAM[0x600]>>1 & 0x08));
-		  *line++ = ((RAM[0]>>3 & 0x01) | (RAM[0x200]>>2 & 0x02) | (RAM[0x400]>>1 & 0x04) | (RAM[0x600]>>0 & 0x08));
-		  *line++ = ((RAM[0]>>2 & 0x01) | (RAM[0x200]>>1 & 0x02) | (RAM[0x400]>>0 & 0x04) | (RAM[0x600]<<1 & 0x08));
-		  *line++ = ((RAM[0]>>1 & 0x01) | (RAM[0x200]>>0 & 0x02) | (RAM[0x400]<<1 & 0x04) | (RAM[0x600]<<2 & 0x08));
-		  *line++ = ((RAM[0]>>0 & 0x01) | (RAM[0x200]<<1 & 0x02) | (RAM[0x400]<<2 & 0x04) | (RAM[0x600]<<3 & 0x08));
-
+		  *line++ = level[((RAM[0] >> 7 & 0x01) + (RAM[0x200] >> 7 & 0x01) + (RAM[0x400] >> 7 & 0x01) + (RAM[0x600] >> 7 & 0x01))];
+		  *line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))]; 
+		  *line++ = level[((RAM[0] >> 5 & 0x01) + (RAM[0x200] >> 5 & 0x01) + (RAM[0x400] >> 5 & 0x01) + (RAM[0x600] >> 5 & 0x01))];
+		  *line++ = level[((RAM[0] >> 4 & 0x01) + (RAM[0x200] >> 4 & 0x01) + (RAM[0x400] >> 4 & 0x01) + (RAM[0x600] >> 4 & 0x01))];
+		  *line++ = level[((RAM[0] >> 3 & 0x01) + (RAM[0x200] >> 3 & 0x01) + (RAM[0x400] >> 3 & 0x01) + (RAM[0x600] >> 3 & 0x01))];
+		  *line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
+		  *line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
+		  *line++ = level[((RAM[0] >> 0 & 0x01) + (RAM[0x200] >> 0 & 0x01) + (RAM[0x400] >> 0 & 0x01) + (RAM[0x600] >> 0 & 0x01))];
 		  RAM += 1;
 		}
 		*line = 0;
@@ -363,15 +363,14 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
-		  *line++ = ((RAM[0]>>7 & 0x01) | (RAM[0]>>6 & 0x02) | (RAM[0]>>5 & 0x04) | (RAM[0]>>4 & 0x08));
-		  *line++ = ((RAM[0]>>6 & 0x01) | (RAM[0]>>5 & 0x02) | (RAM[0]>>4 & 0x04) | (RAM[0]>>3 & 0x08));
-		  *line++ = ((RAM[0]>>5 & 0x01) | (RAM[0]>>4 & 0x02) | (RAM[0]>>3 & 0x04) | (RAM[0]>>2 & 0x08));
-		  *line++ = ((RAM[0]>>4 & 0x01) | (RAM[0]>>3 & 0x02) | (RAM[0]>>2 & 0x04) | (RAM[0]>>1 & 0x08));
-		  *line++ = ((RAM[0]>>3 & 0x01) | (RAM[0]>>2 & 0x02) | (RAM[0]>>1 & 0x04) | (RAM[0]>>0 & 0x08));
-		  *line++ = ((RAM[0]>>2 & 0x01) | (RAM[0]>>1 & 0x02) | (RAM[0]>>0 & 0x04) | (RAM[0]<<1 & 0x08));
-		  *line++ = ((RAM[0]>>1 & 0x01) | (RAM[0]>>0 & 0x02) | (RAM[0]<<1 & 0x04) | (RAM[0]<<2 & 0x08));
-		  *line++ = ((RAM[0]>>0 & 0x01) | (RAM[0]<<1 & 0x02) | (RAM[0]<<2 & 0x04) | (RAM[0]<<3 & 0x08));
-
+		  *line++ = level[(RAM[0] >> 5 & 0x04)];
+		  *line++ = level[(RAM[0] >> 4 & 0x04)];
+		  *line++ = level[(RAM[0] >> 3 & 0x04)];
+		  *line++ = level[(RAM[0] >> 2 & 0x04)];
+		  *line++ = level[(RAM[0] >> 1 & 0x04)];
+		  *line++ = level[(RAM[0] >> 0 & 0x04)];
+		  *line++ = level[(RAM[0] << 1 & 0x04)];
+		  *line++ = level[(RAM[0] << 2 & 0x04)];
 		  RAM += 1;
 		}
 		*line = 0;
@@ -383,48 +382,47 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update3) {
 
-  UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  tDMDDot dotCol;
-  int ii,jj;
-  RAM += dmdlocals.vid_page << 11;
-  
+	UINT8 *RAM = ((UINT8 *)dmd32RAM);
+	tDMDDot dotCol;
+	int ii, jj;
+	RAM += dmdlocals.vid_page << 11;
 
-  if (dmdlocals.planenable) {
 
-	  for (ii = 1; ii <= 32; ii++) {
-		UINT8 *line = &dotCol[ii][0];
-		for (jj = 0; jj < (128/8); jj++) {
-		  *line++ = ((RAM[0x600]>>7 & 0x01) | (RAM[0x400]>>6 & 0x02) | (RAM[0x200]>>5 & 0x04) | (RAM[0]>>4 & 0x08));
-		  *line++ = ((RAM[0x600]>>6 & 0x01) | (RAM[0x400]>>5 & 0x02) | (RAM[0x200]>>4 & 0x04) | (RAM[0]>>3 & 0x08));
-		  *line++ = ((RAM[0x600]>>5 & 0x01) | (RAM[0x400]>>4 & 0x02) | (RAM[0x200]>>3 & 0x04) | (RAM[0]>>2 & 0x08));
-		  *line++ = ((RAM[0x600]>>4 & 0x01) | (RAM[0x400]>>3 & 0x02) | (RAM[0x200]>>2 & 0x04) | (RAM[0]>>1 & 0x08));
-		  *line++ = ((RAM[0x600]>>3 & 0x01) | (RAM[0x400]>>2 & 0x02) | (RAM[0x200]>>1 & 0x04) | (RAM[0]>>0 & 0x08));
-		  *line++ = ((RAM[0x600]>>2 & 0x01) | (RAM[0x400]>>1 & 0x02) | (RAM[0x200]>>0 & 0x04) | (RAM[0]<<1 & 0x08));
-		  *line++ = ((RAM[0x600]>>1 & 0x01) | (RAM[0x400]>>0 & 0x02) | (RAM[0x200]<<1 & 0x04) | (RAM[0]<<2 & 0x08));
-		  *line++ = ((RAM[0x600]>>0 & 0x01) | (RAM[0x400]<<1 & 0x02) | (RAM[0x200]<<2 & 0x04) | (RAM[0]<<3 & 0x08));
+	if (dmdlocals.planenable) {
 
-		  RAM += 1;
+		for (ii = 1; ii <= 32; ii++) {
+			UINT8 *line = &dotCol[ii][0];
+			for (jj = 0; jj < (128/8); jj++) {
+				*line++ = level[((RAM[0] >> 7 & 0x01) + (RAM[0x200] >> 7 & 0x01) + (RAM[0x400] >> 7 & 0x01) + (RAM[0x600] >> 7 & 0x01))];
+				*line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))];
+				*line++ = level[((RAM[0] >> 5 & 0x01) + (RAM[0x200] >> 5 & 0x01) + (RAM[0x400] >> 5 & 0x01) + (RAM[0x600] >> 5 & 0x01))];
+				*line++ = level[((RAM[0] >> 4 & 0x01) + (RAM[0x200] >> 4 & 0x01) + (RAM[0x400] >> 4 & 0x01) + (RAM[0x600] >> 4 & 0x01))];
+				*line++ = level[((RAM[0] >> 3 & 0x01) + (RAM[0x200] >> 3 & 0x01) + (RAM[0x400] >> 3 & 0x01) + (RAM[0x600] >> 3 & 0x01))];
+				*line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
+				*line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
+				*line++ = level[((RAM[0] >> 0 & 0x01) + (RAM[0x200] >> 0 & 0x01) + (RAM[0x400] >> 0 & 0x01) + (RAM[0x600] >> 0 & 0x01))];
+				RAM += 1;
+			}
+			*line = 0;
 		}
-		*line = 0;
-	  }
-  } else {
-	  for (ii = 1; ii <= 32; ii++) {
-		UINT8 *line = &dotCol[ii][0];
-		for (jj = 0; jj < (128/8); jj++) {
-		  *line++ = ((RAM[0]>>7 & 0x01) | (RAM[0]>>6 & 0x02) | (RAM[0]>>5 & 0x04) | (RAM[0]>>4 & 0x08));
-		  *line++ = ((RAM[0]>>6 & 0x01) | (RAM[0]>>5 & 0x02) | (RAM[0]>>4 & 0x04) | (RAM[0]>>3 & 0x08));
-		  *line++ = ((RAM[0]>>5 & 0x01) | (RAM[0]>>4 & 0x02) | (RAM[0]>>3 & 0x04) | (RAM[0]>>2 & 0x08));
-		  *line++ = ((RAM[0]>>4 & 0x01) | (RAM[0]>>3 & 0x02) | (RAM[0]>>2 & 0x04) | (RAM[0]>>1 & 0x08));
-		  *line++ = ((RAM[0]>>3 & 0x01) | (RAM[0]>>2 & 0x02) | (RAM[0]>>1 & 0x04) | (RAM[0]>>0 & 0x08));
-		  *line++ = ((RAM[0]>>2 & 0x01) | (RAM[0]>>1 & 0x02) | (RAM[0]>>0 & 0x04) | (RAM[0]<<1 & 0x08));
-		  *line++ = ((RAM[0]>>1 & 0x01) | (RAM[0]>>0 & 0x02) | (RAM[0]<<1 & 0x04) | (RAM[0]<<2 & 0x08));
-		  *line++ = ((RAM[0]>>0 & 0x01) | (RAM[0]<<1 & 0x02) | (RAM[0]<<2 & 0x04) | (RAM[0]<<3 & 0x08));
-
-		  RAM += 1;
+	}
+	else {
+		for (ii = 1; ii <= 32; ii++) {
+			UINT8 *line = &dotCol[ii][0];
+			for (jj = 0; jj < (128/8); jj++) {
+				*line++ = level[(RAM[0] >> 5 & 0x04)];
+				*line++ = level[(RAM[0] >> 4 & 0x04)];
+				*line++ = level[(RAM[0] >> 3 & 0x04)];
+				*line++ = level[(RAM[0] >> 2 & 0x04)];
+				*line++ = level[(RAM[0] >> 1 & 0x04)];
+				*line++ = level[(RAM[0] >> 0 & 0x04)];
+				*line++ = level[(RAM[0] << 1 & 0x04)];
+				*line++ = level[(RAM[0] << 2 & 0x04)];
+				RAM += 1;
+			}
+			*line = 0;
 		}
-		*line = 0;
-	  }
-  }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
-  return 0;
+	}
+	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+	return 0;
 }
