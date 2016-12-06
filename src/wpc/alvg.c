@@ -651,7 +651,7 @@ static MACHINE_INIT(alvgdmd2) {
   sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
 
-//Mystery Castle, basically same, but different DMD code
+//Mystery Castle, exactly same as Pistol Poker, but different clock rate
 static MACHINE_INIT(alvgdmd3) {
   init_common();
   /* Init the dmd board */

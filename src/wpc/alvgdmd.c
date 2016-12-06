@@ -228,7 +228,7 @@ MACHINE_DRIVER_START(alvgdmd2)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
-// HACK: Mystery Castle is clocked at 24MHz instead of 12MHz to enhance DMD animations
+// HACK: Mystery Castle is clocked at 24MHz instead of 12MHz to enhance DMD animations, otherwise all the same as Pistol Poker
 MACHINE_DRIVER_START(alvgdmd3)
   MDRV_CPU_ADD(I8051, 24000000)	/*24 Mhz*/ // retweak?
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
@@ -334,27 +334,23 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   return 0;
 }
 
-PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
-
+static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  tDMDDot dotCol;
   int ii,jj;
   RAM += dmdlocals.vid_page << 11;
 
-
   if (dmdlocals.planenable) {
-
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
 		  *line++ = level[((RAM[0] >> 7 & 0x01) + (RAM[0x200] >> 7 & 0x01) + (RAM[0x400] >> 7 & 0x01) + (RAM[0x600] >> 7 & 0x01))];
-		  *line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))]; 
+		  *line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))];
 		  *line++ = level[((RAM[0] >> 5 & 0x01) + (RAM[0x200] >> 5 & 0x01) + (RAM[0x400] >> 5 & 0x01) + (RAM[0x600] >> 5 & 0x01))];
 		  *line++ = level[((RAM[0] >> 4 & 0x01) + (RAM[0x200] >> 4 & 0x01) + (RAM[0x400] >> 4 & 0x01) + (RAM[0x600] >> 4 & 0x01))];
 		  *line++ = level[((RAM[0] >> 3 & 0x01) + (RAM[0x200] >> 3 & 0x01) + (RAM[0x400] >> 3 & 0x01) + (RAM[0x600] >> 3 & 0x01))];
 		  *line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
 		  *line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
-		  *line++ = level[((RAM[0] >> 0 & 0x01) + (RAM[0x200] >> 0 & 0x01) + (RAM[0x400] >> 0 & 0x01) + (RAM[0x600] >> 0 & 0x01))];
+		  *line++ = level[((RAM[0]/*>>0*/&0x01) + (RAM[0x200]/*>>0*/&0x01) + (RAM[0x400]/*>>0*/&0x01) + (RAM[0x600]/*>>0*/&0x01))];
 		  RAM += 1;
 		}
 		*line = 0;
@@ -368,7 +364,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
 		  *line++ = level[(RAM[0] >> 3 & 0x04)];
 		  *line++ = level[(RAM[0] >> 2 & 0x04)];
 		  *line++ = level[(RAM[0] >> 1 & 0x04)];
-		  *line++ = level[(RAM[0] >> 0 & 0x04)];
+		  *line++ = level[(RAM[0]/*>>0*/&0x04)];
 		  *line++ = level[(RAM[0] << 1 & 0x04)];
 		  *line++ = level[(RAM[0] << 2 & 0x04)];
 		  RAM += 1;
@@ -376,53 +372,18 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
 		*line = 0;
 	  }
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
-  return 0;
+}
+
+PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
+	tDMDDot dotCol;
+	pistol_poker__mystery_castle_dmd(dotCol);
+	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+	return 0;
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update3) {
-
-	UINT8 *RAM = ((UINT8 *)dmd32RAM);
 	tDMDDot dotCol;
-	int ii, jj;
-	RAM += dmdlocals.vid_page << 11;
-
-
-	if (dmdlocals.planenable) {
-
-		for (ii = 1; ii <= 32; ii++) {
-			UINT8 *line = &dotCol[ii][0];
-			for (jj = 0; jj < (128/8); jj++) {
-				*line++ = level[((RAM[0] >> 7 & 0x01) + (RAM[0x200] >> 7 & 0x01) + (RAM[0x400] >> 7 & 0x01) + (RAM[0x600] >> 7 & 0x01))];
-				*line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))];
-				*line++ = level[((RAM[0] >> 5 & 0x01) + (RAM[0x200] >> 5 & 0x01) + (RAM[0x400] >> 5 & 0x01) + (RAM[0x600] >> 5 & 0x01))];
-				*line++ = level[((RAM[0] >> 4 & 0x01) + (RAM[0x200] >> 4 & 0x01) + (RAM[0x400] >> 4 & 0x01) + (RAM[0x600] >> 4 & 0x01))];
-				*line++ = level[((RAM[0] >> 3 & 0x01) + (RAM[0x200] >> 3 & 0x01) + (RAM[0x400] >> 3 & 0x01) + (RAM[0x600] >> 3 & 0x01))];
-				*line++ = level[((RAM[0] >> 2 & 0x01) + (RAM[0x200] >> 2 & 0x01) + (RAM[0x400] >> 2 & 0x01) + (RAM[0x600] >> 2 & 0x01))];
-				*line++ = level[((RAM[0] >> 1 & 0x01) + (RAM[0x200] >> 1 & 0x01) + (RAM[0x400] >> 1 & 0x01) + (RAM[0x600] >> 1 & 0x01))];
-				*line++ = level[((RAM[0] >> 0 & 0x01) + (RAM[0x200] >> 0 & 0x01) + (RAM[0x400] >> 0 & 0x01) + (RAM[0x600] >> 0 & 0x01))];
-				RAM += 1;
-			}
-			*line = 0;
-		}
-	}
-	else {
-		for (ii = 1; ii <= 32; ii++) {
-			UINT8 *line = &dotCol[ii][0];
-			for (jj = 0; jj < (128/8); jj++) {
-				*line++ = level[(RAM[0] >> 5 & 0x04)];
-				*line++ = level[(RAM[0] >> 4 & 0x04)];
-				*line++ = level[(RAM[0] >> 3 & 0x04)];
-				*line++ = level[(RAM[0] >> 2 & 0x04)];
-				*line++ = level[(RAM[0] >> 1 & 0x04)];
-				*line++ = level[(RAM[0] >> 0 & 0x04)];
-				*line++ = level[(RAM[0] << 1 & 0x04)];
-				*line++ = level[(RAM[0] << 2 & 0x04)];
-				RAM += 1;
-			}
-			*line = 0;
-		}
-	}
+	pistol_poker__mystery_castle_dmd(dotCol);
 	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
 	return 0;
 }
