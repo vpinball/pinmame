@@ -892,6 +892,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		  if((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)
 		  {
 			FILE *f;
+			char *ptr;
 			char* DumpFilename = (char*)malloc(MAX_PATH);
 
 #ifndef _WIN64
@@ -900,7 +901,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
 #endif
 			GetModuleFileName(hInst, DumpFilename, MAX_PATH);
-			char *ptr = strrchr(DumpFilename, '\\');
+			ptr = strrchr(DumpFilename, '\\');
 			strcpy_s(ptr + 1, 11, "DmdDump\\");
 			strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
 			strcat_s(DumpFilename, MAX_PATH, ".txt");
