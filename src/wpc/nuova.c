@@ -46,10 +46,9 @@ MEMORY_END
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 sndCmd, latch[2];
+  UINT8 sndCmd[2];
   UINT8 pia_a, pia_b;
-  int bank, LED, mute, enable;
-  int sndIssued;
+  int bank, LED, mute, enable, sndCount;
 } locals;
 
 static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
@@ -92,18 +91,19 @@ static void nuova_diag(int button) {
 }
 
 static WRITE_HANDLER(nuova_data_w) {
-  locals.sndCmd = (locals.sndCmd & 0x10) | (data & 0x0f);
-  locals.sndIssued = 1;
+  locals.sndCmd[locals.sndCount] = (locals.sndCmd[locals.sndCount] & 0x01) | ((~data & 0x0f) << 1);
+  locals.sndCount = 1 - locals.sndCount;
 }
 
 static WRITE_HANDLER(nuova_ctrl_w) {
-  locals.sndCmd = (locals.sndCmd & 0x0f) | ((data & 1) << 4);
-  locals.sndIssued = 1;
+  locals.sndCmd[locals.sndCount] = (locals.sndCmd[locals.sndCount] & 0x1e) | (~data & 1);
+  cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
 }
 
 static WRITE_HANDLER(nuova_man_w) {
-  locals.sndCmd = data;
-  locals.sndIssued = 1;
+  locals.sndCmd[locals.sndCount] = data;
+  locals.sndCount = 1 - locals.sndCount;
+  if (locals.sndCount) cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
 }
 
 static WRITE_HANDLER(dac_w) {
@@ -127,23 +127,14 @@ static WRITE_HANDLER(bank_w) {
 }
 
 static READ_HANDLER(snd_cmd_r) {
-  return 0x1f ^ (((locals.sndCmd & 0x10) >> 4) | ((locals.sndCmd & 0x0f) << 1));
-}
-
-static READ_HANDLER(mem_ff_r) {
-  if (locals.sndIssued) {
-    locals.sndIssued = 0;
-    if (snd_cmd_r(0)) {
-      memory_region(REGION_CPU2)[0xff] = locals.sndCmd;
-      locals.sndCmd = 0x1f;
-    }
-  }
-  return memory_region(REGION_CPU2)[0xff];
+  UINT8 port2 = locals.sndCmd[locals.sndCount];
+  logerror("PORT2 read: %02x\n", port2);
+  locals.sndCount = 1 - locals.sndCount;
+  return port2;
 }
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x00ff, 0x00ff, mem_ff_r },
   { 0x0080, 0x00ff, MRA_RAM },
   { 0x4000, 0x4003, pia_r(2) },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
@@ -188,45 +179,6 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
   MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
-MACHINE_DRIVER_END
-
-// changes for U-Boat 65; uses a different memory location for the sound trigger
-
-static READ_HANDLER(mem_f2_r) {
-  if (locals.sndIssued) {
-    locals.sndIssued = 0;
-    if (snd_cmd_r(0)) {
-      memory_region(REGION_CPU2)[0xf2] = locals.sndCmd;
-      locals.sndCmd = 0x1f;
-    }
-  }
-  return memory_region(REGION_CPU2)[0xf2];
-}
-
-static MEMORY_READ_START(snd_readmem2)
-  { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x00f2, 0x00f2, mem_f2_r },
-  { 0x0080, 0x00ff, MRA_RAM },
-  { 0x8000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_WRITE_START(snd_writemem2)
-  { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0080, 0x00ff, MWA_RAM },
-MEMORY_END
-
-static struct DACinterface nuova_dacInt2 = { 1, { 25 }};
-
-MACHINE_DRIVER_START(uboat)
-  MDRV_IMPORT_FROM(by35)
-  MDRV_CPU_REPLACE("mcpu", M6800, 530000)
-  MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
-  MDRV_NVRAM_HANDLER(nuova)
-  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(snd_readmem2, snd_writemem2)
-  MDRV_CPU_PORTS(snd_readport, snd_writeport)
-  MDRV_SOUND_ADD(DAC, nuova_dacInt2)
 MACHINE_DRIVER_END
 
 // games below
@@ -578,4 +530,4 @@ ROM_END
 
 INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(uboat65, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", uboat, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
