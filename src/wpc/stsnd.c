@@ -278,7 +278,7 @@ static void playsam3(int param) {
 static void playsam2(int param){
 // timer 2 (q2) is easy wave + volume from q3
    if ((st300loc.cr2 & 0x80)  && (st300loc.timlat2 > 0) && (st300loc.reset == 0))   { // output is enabled...
- 	mixer_play_sample_16(st300loc.channel,sineWaveinp, sizeof(sineWaveinp), st300loc.tfre2*sizeof(sineWaveinp) / 2 / 1.137, 1);
+ 	mixer_play_sample_16(st300loc.channel,sineWaveinp, sizeof(sineWaveinp), (int)(st300loc.tfre2*sizeof(sineWaveinp) / 2 / 1.137), 1);
 	logerror("*** playsam Q2 start %04d ***\n",st300loc.tfre2);
 	}
 }
@@ -286,7 +286,7 @@ static void playsam2(int param){
 static void playsam1(int param){
 // timer 1 (q1) is easy wave + volume always 100
    if ((st300loc.cr1 & 0x80)  && (st300loc.timlat1 > 0) && (st300loc.reset == 0))   { // output is enabled...
- 	mixer_play_sample_16(st300loc.channel+1,sineWaveinpq1, sizeof(sineWaveinpq1), st300loc.tfre1*sizeof(sineWaveinpq1) / 2 / 1.137, 1);
+ 	mixer_play_sample_16(st300loc.channel+1,sineWaveinpq1, sizeof(sineWaveinpq1), (int)(st300loc.tfre1*sizeof(sineWaveinpq1) / 2 / 1.137), 1);
 	logerror("*** playsam Q1 start %04d ***\n",st300loc.tfre1);
 	}
 }

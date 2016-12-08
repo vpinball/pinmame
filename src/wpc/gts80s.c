@@ -1227,7 +1227,7 @@ static struct DACinterface GTS3_dacInt =
 
 static struct OKIM6295interface GTS3_okim6295_interface = {
 	1,						/* 1 chip */
-	{ 7575.76 },			/* base frequency */
+	{ 7575.76f },			/* base frequency */
 	{ GTS3_MEMREG_SROM1 },	/* memory region */
 	{ 50 }
 };

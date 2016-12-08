@@ -526,7 +526,7 @@ static void oneshoot (int param) {
 static void playsam1(int param){
 // timer 1 (q1) is easy wave 
    if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
-  	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137, 1);
+  	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
  	if (mixer_is_sample_playing(gps_locals.channel))	{	// is already playing
  		 mixer_set_sample_frequency(gps_locals.channel,(gps_locals.tfre1*sizeof(sineWaveinp) / 2) );
  	} else	{

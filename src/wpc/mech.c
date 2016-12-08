@@ -150,7 +150,7 @@ static void mech_update(int mechNo) {
       else if (anglePos < 0)                anglePos += md->length*MECH_STEP;
     }
     if (md->type & MECH_NONLINEAR)
-      currPos = md->length * MECH_STEP * (1.-cos(anglePos*M_PI/md->length/MECH_STEP)) / 2;
+      currPos = (int)(md->length * MECH_STEP * (1.-cos(anglePos*M_PI/md->length/MECH_STEP)) / 2.);
     else /* MECH_LINEAR */
       currPos = (anglePos >= md->length*MECH_STEP) ? md->length*2*MECH_STEP-anglePos : anglePos;
     md->anglePos = anglePos;
