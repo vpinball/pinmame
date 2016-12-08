@@ -954,7 +954,7 @@ DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin' (2.01)
 DRIVER  (vipr,102)      //Whitestar: 02/98 Viper Night Drivin' (1.02)
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space (1.01, Display 1.02)
-DRIVERNV(lostspc1)      //Whitestar: 06/98 Lost in Space (1.01)
+DRIVERNV(lostspc1)      //Whitestar: 06/98 Lost in Space (1.01, Display 1.01)
 DRIVERNV(lostspcg)      //Whitestar: 06/98 Lost in Space (1.01 German)
 DRIVERNV(lostspcf)      //Whitestar: 06/98 Lost in Space (1.01 French)
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue

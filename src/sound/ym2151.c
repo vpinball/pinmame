@@ -1227,7 +1227,7 @@ int YM2151ReadStatus( int n )
 */
 static void ym2151_postload_refresh(void)
 {
-	int i,j;
+	unsigned int i,j;
 
 	for (i=0; i<YMNumChips; i++)
 	{
@@ -1349,7 +1349,7 @@ static void ym2151_state_save_register( int numchips )
 */
 int YM2151Init(int num, int clock, int rate)
 {
-	int i;
+	unsigned int i;
 
 	if (YMPSG)
 		return -1;	/* duplicate init. */
