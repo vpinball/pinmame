@@ -494,7 +494,7 @@ INLINE void modify_address(UINT32 ireg, UINT32 mreg)
 	UINT32 i = adsp2100.i[ireg];
 	UINT32 l = adsp2100.l[ireg];
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -522,7 +522,7 @@ INLINE void data_write_dag1(UINT32 op, INT32 val)
 	else
 		WWORD_DATA(i, val);
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -546,7 +546,7 @@ INLINE UINT32 data_read_dag1(UINT32 op)
 	else
 		res = RWORD_DATA(i);
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -564,7 +564,7 @@ INLINE void data_write_dag2(UINT32 op, INT32 val)
 
 	WWORD_DATA(i, val);
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -581,7 +581,7 @@ INLINE UINT32 data_read_dag2(UINT32 op)
 
 	UINT32 res = RWORD_DATA(i);
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -603,7 +603,7 @@ INLINE void pgm_write_dag2(UINT32 op, INT32 val)
 
 	WWORD_PGM(i, (val << 8) | adsp2100.px);
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
@@ -623,7 +623,7 @@ INLINE UINT32 pgm_read_dag2(UINT32 op)
 	adsp2100.px = res;
 	res >>= 8;
 
-	i += adsp2100.m[mreg];
+	i = (i + adsp2100.m[mreg]) & 0x3fff;
 	if (i < base) i += l;
 	else if (i >= base + l) i -= l;
 	adsp2100.i[ireg] = i;
