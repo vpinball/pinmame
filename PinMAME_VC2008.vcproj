@@ -75,7 +75,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -164,7 +164,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -255,7 +255,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008md.exe"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -344,7 +344,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_VC2008vcmd.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc9;ext\yaml-cpp\lib_vc2008"
+				AdditionalLibraryDirectories="ext\zlib\lib_vc9;ext\pinproc\lib_vc6;ext\yaml-cpp\lib_vc2005"
 				DelayLoadDLLs="ftd2xx.dll;pinproc.dll"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -486,10 +486,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\gfxobj.h"
-					>
-				</File>
-				<File
 					RelativePath=".\src\harddisk.c"
 					>
 				</File>
@@ -619,10 +615,6 @@
 				</File>
 				<File
 					RelativePath=".\src\sndintrf.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\sprite.h"
 					>
 				</File>
 				<File
@@ -1985,6 +1977,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\262intf.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\262intf.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\3812intf.c"
 						>
 					</File>
@@ -2498,6 +2498,14 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\ymdeltat.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymf262.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\ymf262.h"
 						>
 					</File>
 				</Filter>
@@ -3482,6 +3490,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\barni.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\bingo.c"
 					>
 				</File>
@@ -3587,6 +3599,14 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\desound.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\dmddevice.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\dmddevice.h"
 					>
 				</File>
 				<File
@@ -3706,7 +3726,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\inderp.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\jeutel.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\joctronic.c"
 					>
 				</File>
 				<File
@@ -3727,6 +3755,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\kissproto.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\lancelot.c"
 					>
 				</File>
 				<File
