@@ -1929,9 +1929,11 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level
 		core_bits_set_table256[(bits >> 16) & 0xff] +
 		core_bits_set_table256[(bits >> 24) & 0xff]) * 255 / bit_count;
 	// Apply some smoothing with the previous level
-	outputlevel = (UINT8)((targetlevel + *prev_level) / 2);
+	// 12/8 - Commenting out for now, causes AFM monsters to stop shaking intermittently.
+	// outputlevel = (UINT8)((targetlevel + *prev_level) / 2);
+	// return outputlevel;
 	*prev_level = (UINT8)targetlevel;
-	return outputlevel;
+	return targetlevel;
 }
 
 void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
