@@ -839,8 +839,8 @@ static void m68k_prepare_substate(void)
 static void m68k_post_load(void)
 {
 	m68ki_set_sr_noint_nosp(m68k_substate.sr);
-	CPU_STOPPED = m68k_substate.stopped ? STOP_LEVEL_STOP : 0
-		        | m68k_substate.halted  ? STOP_LEVEL_HALT : 0;
+	CPU_STOPPED = (m68k_substate.stopped ? STOP_LEVEL_STOP : 0)
+		        | (m68k_substate.halted  ? STOP_LEVEL_HALT : 0);
 	m68ki_jump(REG_PC);
 }
 
