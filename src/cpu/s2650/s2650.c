@@ -928,7 +928,7 @@ void s2650_set_sense(int state)
 int s2650_get_sense(void)
 {
 	/* OR'd with Input to allow for external connections */
-    return ((S.psu & SI) | cpu_readport16(S2650_SENSE_PORT) ? SI : 0) ? 1 : 0;
+    return ((S.psu & SI) | (cpu_readport16(S2650_SENSE_PORT) ? SI : 0)) ? 1 : 0;
 }
 
 int s2650_execute(int cycles)
