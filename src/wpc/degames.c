@@ -237,14 +237,22 @@ CORE_GAMEDEF(play,a24,"Playboy 35th Anniversary (2.4)",1989,"Data East",de_mDEAS
 / Monday Night Football - CPU Rev 2 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /----------------------------------------------------------------------------------*/
 INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
+DE_ROMSTART48(mnfb_c29,"mnfb2-9.b5",CRC(2d6805d1) SHA1(f222cbf30d07975279eea210738f7d4f73b3fcf4),
+                   "mnfb2-9.c5",  CRC(98d50cf5) SHA1(59d3b16f8195ab95cece71a12dab3349dfeb2c2b))
+DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),       //F7 on schem (sound)
+                   "mnf-f5-6.512",CRC(0c6ea963) SHA1(8c88fa588222ef8a6c872b8c5b49639b108384d4),     //F6 on schem (voice1)
+                   "mnf-f4-5.512",CRC(efca5d80) SHA1(9655c885dd64aa170205170b6a0c052bd9367379))     //F4 on schem (voice2)
+DE_ROMEND
+#define input_ports_mnfb input_ports_des11
+CORE_GAMEDEF(mnfb,c29,"Monday Night Football (2.9, 50cts)",1989,"Data East",de_mDEAS1,0)
+
 DE_ROMSTART48(mnfb_c27,"mnfb2-7.b5",CRC(995eb9b8) SHA1(d05d74393fda59ffd8d7b5546313779cdb10d23e),
                    "mnfb2-7.c5",  CRC(579d81df) SHA1(9c96da34d37d3369513003e208222bd6e8698638))
 DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),       //F7 on schem (sound)
                    "mnf-f5-6.512",CRC(0c6ea963) SHA1(8c88fa588222ef8a6c872b8c5b49639b108384d4),     //F6 on schem (voice1)
                    "mnf-f4-5.512",CRC(efca5d80) SHA1(9655c885dd64aa170205170b6a0c052bd9367379))     //F4 on schem (voice2)
 DE_ROMEND
-#define input_ports_mnfb input_ports_des11
-CORE_GAMEDEF(mnfb,c27,"Monday Night Football (2.7, 50cts)",1989,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(mnfb,c27,c29,"Monday Night Football (2.7, 50cts)",1989,"Data East",de_mDEAS1,0)
 
 /*------------------------------------------------------------------
 / Robocop - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
