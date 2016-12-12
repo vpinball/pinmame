@@ -381,7 +381,8 @@ DRIVER(tmac,g18)        //Data East MPU: 12/88 Time Machine (1.8 German)
 DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine (2.4)
 DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
-DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football
+DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football (2.7, 50cts)
+DRIVER(mnfb,c29)        //Data East MPU: 09/89 ABC Monday Night Football (2.9, 50cts)
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
