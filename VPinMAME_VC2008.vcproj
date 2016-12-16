@@ -83,12 +83,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
+				AdditionalDependencies="bass.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="20.0"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\bass;ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
@@ -181,12 +181,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
+				AdditionalDependencies="bass.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="4.0"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\bass;ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -280,12 +280,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
+				AdditionalDependencies="bass.lib zlibstatmt.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="20.0"
 				LinkIncremental="0"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\bass;ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
@@ -378,12 +378,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
+				AdditionalDependencies="bass.lib zlibstatmtd.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib odbc32.lib odbccp32.lib version.lib"
 				OutputFile="$(OutDir)\VPinMAME.dll"
 				Version="4.0"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="ext\zlib\lib_vc9"
+				AdditionalLibraryDirectories="ext\bass;ext\zlib\lib_vc9"
 				ModuleDefinitionFile="src\win32com\VPinMAME.def"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
