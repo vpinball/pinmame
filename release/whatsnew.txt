@@ -1,7 +1,7 @@
 Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
 
-*** CORE/CPU ***
+*** CORE/CPU *** Thanks to DJRobX and lucky1 and mjr for some of these
 Improve precision/performance of general sound filtering and resampling to final output sample rate (latter using libsamplerate by Erik de Castro Lopo now)
 Improve sound pitch for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
 Further improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
@@ -36,6 +36,8 @@ Fix window size issues if an additional mini-DMD is in use
 Store DMD dumps in a DmdDump subfolder (but only if it already exists)
 
 *** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
+Add sound rom dump to U-Boat 65
+
 New:
 JocMatic: Rider's Surf (running on Playmatic hardware)
 
@@ -44,7 +46,7 @@ Star Wars 20th Anniversary 1.06
 Tommy 5.00 (unofficial MOD)
 
 Clones:
-ABC Monday Night Football (2.9, 50cts)
+ABC Monday Night Football 2.9 50cts
 Laser Cue L-3 (Neverending Bell Fix)
 Lost in Space 1.01 French
 Stargate rev.5
