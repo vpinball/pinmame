@@ -239,7 +239,7 @@ CORE_GAMEDEF(play,a24,"Playboy 35th Anniversary (2.4)",1989,"Data East",de_mDEAS
 INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART48(mnfb_c29,"mnfb2-9.b5",CRC(2d6805d1) SHA1(f222cbf30d07975279eea210738f7d4f73b3fcf4),
                    "mnfb2-9.c5",  CRC(98d50cf5) SHA1(59d3b16f8195ab95cece71a12dab3349dfeb2c2b))
-DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),       //F7 on schem (sound)
+DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),     //F7 on schem (sound)
                    "mnf-f5-6.512",CRC(0c6ea963) SHA1(8c88fa588222ef8a6c872b8c5b49639b108384d4),     //F6 on schem (voice1)
                    "mnf-f4-5.512",CRC(efca5d80) SHA1(9655c885dd64aa170205170b6a0c052bd9367379))     //F4 on schem (voice2)
 DE_ROMEND
@@ -248,7 +248,7 @@ CORE_GAMEDEF(mnfb,c29,"Monday Night Football (2.9, 50cts)",1989,"Data East",de_m
 
 DE_ROMSTART48(mnfb_c27,"mnfb2-7.b5",CRC(995eb9b8) SHA1(d05d74393fda59ffd8d7b5546313779cdb10d23e),
                    "mnfb2-7.c5",  CRC(579d81df) SHA1(9c96da34d37d3369513003e208222bd6e8698638))
-DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),       //F7 on schem (sound)
+DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),     //F7 on schem (sound)
                    "mnf-f5-6.512",CRC(0c6ea963) SHA1(8c88fa588222ef8a6c872b8c5b49639b108384d4),     //F6 on schem (voice1)
                    "mnf-f4-5.512",CRC(efca5d80) SHA1(9655c885dd64aa170205170b6a0c052bd9367379))     //F4 on schem (voice2)
 DE_ROMEND
@@ -538,6 +538,14 @@ DE_ROMEND
 #define input_ports_hook input_ports_des11
 CORE_GAMEDEF(hook,408,"Hook (4.08)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(hook_500,"hokcpua.500",CRC(93e25b12) SHA1(5ec37ad3358f1f093be771f5978f1ad8a7a7c61a))
+DE_DMD16ROM2(       "hokdspa.500",CRC(ed6a134b) SHA1(775975b629312f7f1151d878d40723ad4a79928c))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
+                    "hook-voi.u17" ,CRC(6ea9fcd2) SHA1(bffc66df542e06dedddaa403b5513446d9d6fc8c),
+                    "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
+DE_ROMEND
+CORE_CLONEDEF(hook,500,408,"Hook (5.00 unofficial MOD)",2016,"Data East",de_mDEDMD16S2A,0)
+
 DE_ROMSTARTx0(hook_401p,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
 DE2S_SOUNDROM022(   "hooksnd_p.u7" ,CRC(20091293) SHA1(fdfc4eadef0bf1915c7c72c1fd8dafaa429b3c44),
@@ -659,6 +667,14 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
 CORE_CLONEDEF(stwr,106,104,"Star Wars (1.06 20th Anniversary)",2016,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(stwr_107,"starcpua.107",CRC(1a801b7e) SHA1(fef567126dff87a2cb31401b029c3050438072b7))
+DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,107,104,"Star Wars (1.07 20th Anniversary)",2016,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_103,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
 DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))
