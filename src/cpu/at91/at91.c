@@ -567,7 +567,7 @@ void at91_usart_read(int usartno, int addr, data32_t *pData)
 			at91usart[usartno].at91_rbuf_tail = 0;
 		// No more characters left in buffer?  Clear rxready. 
 		if (at91usart[usartno].at91_rbuf_head == at91usart[usartno].at91_rbuf_tail) 
-			at91usart[usartno].US_CSR &= ~(US_RXRDY);
+			at91usart[usartno].US_CSR &= ~(US_RXRDY | US_ENDRX);
 		break;
 	case 0x05:  // Channel status 
 		*pData = at91usart[usartno].US_CSR;
