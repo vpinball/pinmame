@@ -5,7 +5,9 @@ Version 2.8 (X X, 2016) - ""
 ------------------------------------------------------------------------------
 - To enable the new modulated/multi-level flasher support (see whatsnew.txt), set SolMask to 2
 
-- New, generalized external DMD handling via a separate dmddevice.dll instead of define hell
+- New, generalized external DMD handling via a separate dmddevice.dll instead of the define hell
+  This also allows to drive any kind of virtual or real DMD via this new interface (see ext\dmddevice\dmddevice.h)
+  For now, Visual PinMAME ships with four different dll packages for PinDMD1/2/3 and Pin2DMD, so pick the one that you need
 
 Version 2.7 (June 08th, 2016) - "Alive and kicking"
 ------------------------------------------------------------------------------
