@@ -49,6 +49,7 @@ Tommy 5.00 (unofficial MOD)
 Clones:
 ABC Monday Night Football 2.9 50cts (B5 ROM from IPDB has a wrong checksum)
 Back to the Future 2.8
+Dragonfist Bootleg 2 (matches drop target scoring with the instruction card/manual)
 Laser Cue L-3 (Neverending Bell Fix)
 Lost in Space 1.01 French
 Stargate rev.5

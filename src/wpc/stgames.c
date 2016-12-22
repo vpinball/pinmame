@@ -757,7 +757,17 @@ ST200_ROMSTART8888(dragfisb,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a330010
                             "bcpu_u6.716",CRC(7e8db47b) SHA1(4a42636c1baf39072bbe123855c9cc5f20ca6888))
 BY35_ROMEND
 #define input_ports_dragfisb input_ports_st
-CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (Bootleg)",1982,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (Drop Target Score Bootleg)",1982,"Stern",by35_mST200,0)
+
+// This one from ipdb patches some more additional bytes from dragfisb, but no more documentation found
+INITGAME(dragfib2,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(dragfib2,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a3300107605db26d474ecfc3101),
+                            "cpu_u5.716",CRC(1783269a) SHA1(75151b79844d26d9e8ecf00dec96643ee2fedc5b),
+                            "cpu_u2.716",CRC(9ac8292b) SHA1(99ad3ad6e1d1b19695ce1b5b76f6bd85c9c6530d),
+                            "b2cpu_u6.716",CRC(90b3baad) SHA1(ac2982baff3c4d61d38b39d446a3b8aa012acb30))
+BY35_ROMEND
+#define input_ports_dragfib2 input_ports_st
+CORE_CLONEDEFNV(dragfib2,dragfist,"Dragonfist (Drop Target Score Bootleg 2)",1982,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Orbitor 1
