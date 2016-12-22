@@ -54,6 +54,7 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer);
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer);
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t, const UINT16 *const seg_data, const UINT16 *const seg_data2);
+DMDDEV void Console_Data(UINT8 data);
 
 #ifdef __cplusplus
 }
