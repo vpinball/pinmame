@@ -35,7 +35,7 @@ Fix window size issues if an additional mini-DMD is in use
 
 Store DMD dumps in a DmdDump subfolder (but only if it already exists)
 
-*** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com
+*** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com, ipdb.org
 Add sound rom dump to U-Boat 65
 
 New:
@@ -47,7 +47,8 @@ Star Wars 20th Anniversary 1.06 & 1.07
 Tommy 5.00 (unofficial MOD)
 
 Clones:
-ABC Monday Night Football 2.9 50cts
+ABC Monday Night Football 2.9 50cts (B5 ROM from IPDB has a wrong checksum)
+Back to the Future 2.8
 Laser Cue L-3 (Neverending Bell Fix)
 Lost in Space 1.01 French
 Stargate rev.5
