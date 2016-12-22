@@ -1094,6 +1094,7 @@ DRIVERNV(viperfp)       //MPU-200: 12/81 Viper (Free Play)
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
 DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
+DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (Bootleg 2 - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor One (Free Play)
 DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor One (Bootleg)
