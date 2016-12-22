@@ -392,6 +392,7 @@ DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
 DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
 DRIVER(bttf,a27)        //Data East MPU: 12/90 Back to the Future (2.7)
 DRIVER(bttf,g27)        //Data East MPU: ??/9? Back to the Future (2.7 German)
+DRIVER(bttf,a28)        //Data East MPU: 12/90 Back to the Future (2.8)
 DRIVER(simp,a20)        //Data East MPU: 09/90 Simpsons, The (2.0)
 DRIVER(simp,a27)        //Data East MPU: 09/90 Simpsons, The (2.7)
 //DMD 128 x 16

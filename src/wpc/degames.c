@@ -237,7 +237,7 @@ CORE_GAMEDEF(play,a24,"Playboy 35th Anniversary (2.4)",1989,"Data East",de_mDEAS
 / Monday Night Football - CPU Rev 2 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /----------------------------------------------------------------------------------*/
 INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
-DE_ROMSTART48(mnfb_c29,"mnfb2-9.b5",CRC(2d6805d1) SHA1(f222cbf30d07975279eea210738f7d4f73b3fcf4),
+DE_ROMSTART48(mnfb_c29,"mnfb2-9.b5",CRC(2d6805d1) SHA1(f222cbf30d07975279eea210738f7d4f73b3fcf4) BAD_DUMP,
                    "mnfb2-9.c5",  CRC(98d50cf5) SHA1(59d3b16f8195ab95cece71a12dab3349dfeb2c2b))
 DE1S_SOUNDROM244(  "mnf-f7.256",  CRC(fbc2d6f6) SHA1(33173c081de776d32e926481e94b265ec48d770b),     //F7 on schem (sound)
                    "mnf-f5-6.512",CRC(0c6ea963) SHA1(8c88fa588222ef8a6c872b8c5b49639b108384d4),     //F6 on schem (voice1)
@@ -313,15 +313,15 @@ CORE_GAMEDEF(kiko,a10,"King Kong (1.0)",1990,"Data East",de_mDEAS1,0)
 / Back to the Future - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------------*/
 INITGAMES11(bttf,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
-DE_ROMSTART48(bttf_a27,"bttfb5.2-7",CRC(24b53174) SHA1(00a5e47e70ce4244873980c946479f0bbc414f2e),
-                   "bttfc5.2-7",CRC(c4d85d7e) SHA1(88bb91f9ed50335fc402b68983b49319c7dd4e99))
+DE_ROMSTART48(bttf_a28,"bttfb5.2-8",CRC(a7dafa3c) SHA1(a29b8986d1886aa7bb7dea2521c3d7143ab75320),
+                   "bttfc5.2-8",CRC(5dc9928f) SHA1(03de05ed7b04ba86d695f03b1a3d65788faf2d4f))
 DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd46a2a8ce9e086),      //7f
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
 
 #define input_ports_bttf input_ports_des11
-CORE_GAMEDEF(bttf,a27,"Back to the Future (2.7)",1990,"Data East",de_mDEAS1,0)
+CORE_GAMEDEF(bttf,a28,"Back to the Future (2.8)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART88(bttf_a20,"bttfb5.2-0",CRC(c0d4df6b) SHA1(647d0d0a5af04f4255a588da41a6cdb2cf522875),
                    "bttfc5.2-0",CRC(a189a189) SHA1(9669653280c78c811931ea3944817c717f3b5b77))
@@ -329,7 +329,7 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,a20,a27,"Back to the Future (2.0)",1990,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,a20,a28,"Back to the Future (2.0)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART48(bttf_a21,"bktofutr.b5",CRC(a651f867) SHA1(99cff09a06a99abac505c7732bb4ed985f0946e4),
                    "bktofutr.c5",CRC(118ae58e) SHA1(a17e4cc3c12ca770e6e0674cfbeb55482739f735))
@@ -337,7 +337,15 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,a21,a27,"Back to the Future (2.1)",1990,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,a21,a28,"Back to the Future (2.1)",1990,"Data East",de_mDEAS1,0)
+
+DE_ROMSTART48(bttf_a27,"bttfb5.2-7",CRC(24b53174) SHA1(00a5e47e70ce4244873980c946479f0bbc414f2e),
+                   "bttfc5.2-7",CRC(c4d85d7e) SHA1(88bb91f9ed50335fc402b68983b49319c7dd4e99))
+DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd46a2a8ce9e086),      //7f
+                   "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
+                   "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
+DE_ROMEND
+CORE_CLONEDEF(bttf,a27,a28,"Back to the Future (2.7)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART48(bttf_g27,"bttfb5g.2-7",CRC(5e3e3cfa) SHA1(2d489c48463c7d28614d56aa566ffbc745bf6a8b),
                    "bttfc5g.2-7",CRC(31dec6d0) SHA1(b0f9323ace3f6d96790be7fe2df67b974c291a29))
@@ -345,7 +353,7 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,g27,a27,"Back to the Future (2.7 German)",199?,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,g27,a28,"Back to the Future (2.7 German)",199?,"Data East",de_mDEAS1,0)
 
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
