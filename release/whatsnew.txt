@@ -1,4 +1,4 @@
-Version 2.8 (X X, 2016) - ""
+Version 2.8 (December 24th, 2016) - "Sounds good"
 ------------------------------------------------------------------------------
 
 *** CORE/CPU *** Thanks to DJRobX and lucky1 and mjr for some of these
