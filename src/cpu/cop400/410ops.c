@@ -281,7 +281,16 @@ INLINE void LEI(UINT8 y)
 {
 	EN = y & 0x0f;
 
-	WRITE_Q(Q);
+	//WRITE_Q(Q);
+	
+	if (EN & 0x04)
+	{
+		OUT_L(Q);
+	}
+	else
+	{
+		OUT_L(0); //!! actually should be tri-state callback, see MAME/MESS
+	}
 }
 
 INLINE void lei0(void) { LEI(0); }
