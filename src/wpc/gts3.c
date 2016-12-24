@@ -230,9 +230,19 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 			bitSet++;
 			if (bitSet == 4)
 			{
-				dmd_vblank(0);
-				if(GTS3_dmdlocals[0].version == 2)
-					dmd_vblank(1);
+				// 12/17/16 (djrobx) - Teed Off's animations are running way too fast.  Vblank 
+				// appears to be firing too often.   Seems to be closer to correct if you do it every 
+				// 3rd time this bit is set, but probably means this method is not right as the 
+				// above comment suggests.
+				static int vblank_counter = 0;
+				vblank_counter++;
+				if (vblank_counter == 3)
+				{
+					vblank_counter = 0;
+					dmd_vblank(0);
+					if(GTS3_dmdlocals[0].version == 2)
+					  dmd_vblank(1);
+				}
 			}
 		} else
 			bitSet = 0;
