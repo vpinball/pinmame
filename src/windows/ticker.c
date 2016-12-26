@@ -340,6 +340,7 @@ static void wintimer_init(void)
 	QueryPerformanceCounter(&sTimerStart);
 }
 
+// tries(!) to be as exact as possible at the cost of potentially causing trouble with other threads/cores due to OS madness
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 // but MAME code does this already
 void uSleep(const UINT64 u)
@@ -360,13 +361,37 @@ void uSleep(const UINT64 u)
 		if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
 			Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		else
-			SwitchToThread(); // let other threads on same core run
+			SwitchToThread(); // let other threads on same core run //!! could also try Sleep(0) or __mm_pause() here
 
 		QueryPerformanceCounter(&TimerNow);
 	}
 }
 
-void uSleepApproximate(const UINT64 u)
+// can sleep too long by 1000 to 2000 (=1 to 2ms)
+// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// but MAME code does this already
+void uOverSleep(const UINT64 u)
+{
+	LARGE_INTEGER TimerEnd;
+	LARGE_INTEGER TimerNow;
+
+	if (sTimerInit == 0)
+		wintimer_init();
+
+	QueryPerformanceCounter(&TimerNow);
+	TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
+
+	while (TimerNow.QuadPart < TimerEnd.QuadPart)
+	{
+		Sleep(1); // really pause thread for 1-2ms (depending on OS)
+		QueryPerformanceCounter(&TimerNow);
+	}
+}
+
+// skips sleeping completely if u < 4000 (=4ms), otherwise will undersleep by -3000 to -2000 (=-3 to -2ms)
+// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// but MAME code does this already
+void uUnderSleep(const UINT64 u)
 {
 	LARGE_INTEGER TimerEndSleep;
 	LARGE_INTEGER TimerNow;
@@ -374,7 +399,7 @@ void uSleepApproximate(const UINT64 u)
 	if (sTimerInit == 0)
 		wintimer_init();
 
-	if (u < 4000)
+	if (u < 4000) // Sleep < 4ms? -> exit
 		return;
 
 	QueryPerformanceCounter(&TimerNow);
