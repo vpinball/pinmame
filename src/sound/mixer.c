@@ -102,6 +102,9 @@ struct mixer_channel_data
 	SRC_STATE* src_left;
 	SRC_STATE* src_right;
 
+	int lr_silent_value[2]; // detect complete silence of a channel
+	int lr_silence[2];
+
 	int legacy_resample; // fallback to old legacy samples playback
 #else
 	int pivot; /* resample brehesnam state (used if filter is active) */
@@ -370,9 +373,24 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	}
 
 #ifdef USE_LIBSAMPLERATE
+	// Detect complete silence to skip the resampling of such an unused channel
+	if (!channel->legacy_resample && channel->lr_silence[left_right])
+	{
+		// first sample? -> init
+		if (channel->lr_silent_value[left_right] == INT_MAX)
+			channel->lr_silent_value[left_right] = src[0];
+
+		for (i = 0; i < src_len; ++i)
+			if (src[i] != channel->lr_silent_value[left_right])
+			{
+				channel->lr_silence[left_right] = 0;
+				break;
+			}
+	}
+
 	// Special/Legacy samples playback code-path:
 
-	if (channel->legacy_resample)
+	if (channel->legacy_resample || channel->lr_silence[left_right])
 	{
 		/* end address */
 		INT16* src_end = src + src_len;
@@ -1001,6 +1019,11 @@ int mixer_sh_start(void)
 #ifdef USE_LIBSAMPLERATE
 		channel->src_left  = src_new(SRC_SINC_MEDIUM_QUALITY, 1, &error); //!! if changing quality, change src_sinc_opt again to include the other two tables (search for //!! there)
 		channel->src_right = src_new(SRC_SINC_MEDIUM_QUALITY, 1, &error);
+
+		channel->lr_silent_value[0] = INT_MAX;
+		channel->lr_silence[0] = 1;
+		channel->lr_silent_value[1] = INT_MAX;
+		channel->lr_silence[1] = 1;
 #else
 		channel->left = filter_state_alloc();
 		channel->right = filter_state_alloc();
