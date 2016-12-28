@@ -1017,8 +1017,8 @@ int mixer_sh_start(void)
 		channel->config_default_mixing_level 	= config_default_mixing_level[i];
 
 #ifdef USE_LIBSAMPLERATE
-		channel->src_left  = src_new(SRC_SINC_MEDIUM_QUALITY, 1, &error); //!! if changing quality, change src_sinc_opt again to include the other two tables (search for //!! there)
-		channel->src_right = src_new(SRC_SINC_MEDIUM_QUALITY, 1, &error);
+		channel->src_left  = src_new((pmoptions.resampling_quality == 0) ? SRC_SINC_FASTEST : SRC_SINC_MEDIUM_QUALITY, 1, &error); //!! if changing quality, change src_sinc_opt again to include the other table (search for //!! there)
+		channel->src_right = src_new((pmoptions.resampling_quality == 0) ? SRC_SINC_FASTEST : SRC_SINC_MEDIUM_QUALITY, 1, &error);
 
 		channel->lr_silent_value[0] = INT_MAX;
 		channel->lr_silence[0] = 1;
