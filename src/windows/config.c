@@ -76,14 +76,15 @@ struct rc_option pinmame_opts[] = {
         { "dmd_green0", NULL, rc_int, &pmoptions.dmd_green0, "0", 0, 255, NULL, "Colorized DMD: 0%: Green" },
         { "dmd_blue0", NULL, rc_int, &pmoptions.dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: 0%: Blue" },
         { "dmd_opacity", NULL, rc_int, &pmoptions.dmd_opacity, "100", 0, 100, NULL, "DMD opacity" },
+        { "resampling_quality", NULL, rc_int, &pmoptions.resampling_quality, "0", 0, 1, NULL, "Quality of the resampling implementation (0=Fast,1=Normal)" },
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode", NULL, rc_int, &pmoptions.sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
 #endif
 #ifdef PROC_SUPPORT
 // TODO/PROC: Correct implementation?
-	{ "p-roc", NULL, rc_string, &pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
-	{ "alpha_on_dmd", NULL, rc_bool, &pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
-	{ "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
+        { "p-roc", NULL, rc_string, &pmoptions.p_roc, "None",  0, 0, NULL, "YAML Machine description file" },
+        { "alpha_on_dmd", NULL, rc_bool, &pmoptions.alpha_on_dmd, "0",  0, 0, NULL, "Emulate alphanumeric display on DMD" },
+        { "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif /* PROC_SUPPORT */
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };

@@ -173,6 +173,10 @@ private:
 		SetDlgItemInt(IDC_DMDOPACITY, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
+		pGameSettings->get_Value(CComBSTR("resampling_quality"), &vValue);
+		SetDlgItemInt(IDC_RESAMPLEQ, vValue.lVal, FALSE);
+		VariantClear(&vValue);
+
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 		pGameSettings->get_Value(CComBSTR("sound_mode"), &vValue);
 		SetDlgItemInt(IDC_SOUNDMODE, vValue.lVal, FALSE);
@@ -224,6 +228,8 @@ private:
 		pGameSettings->put_Value(CComBSTR("dmd_blue0"), CComVariant(m_dmd0.b));
 
 		pGameSettings->put_Value(CComBSTR("dmd_opacity"), CComVariant((int) GetDlgItemInt(IDC_DMDOPACITY,NULL,TRUE)));
+
+		pGameSettings->put_Value(CComBSTR("resampling_quality"), CComVariant((int)GetDlgItemInt(IDC_RESAMPLEQ, NULL, TRUE)));
 
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 		pGameSettings->put_Value(CComBSTR("sound_mode"), CComVariant((int) GetDlgItemInt(IDC_SOUNDMODE,NULL,TRUE)));

@@ -320,6 +320,7 @@ static REG_OPTION regGameOpts[] =
         { "dmd_green66",            RO_INT,     &gOpts.dmd_green66,       0, 0},
         { "dmd_blue66",             RO_INT,     &gOpts.dmd_blue66,        0, 0},
         { "dmd_opacity",            RO_INT,     &gOpts.dmd_opacity,       0, 0},
+        { "resampling_quality",     RO_INT,     &gOpts.resampling_quality,0, 0},
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode",             RO_INT,     &gOpts.sound_mode,        0, 0},
 #endif
@@ -808,6 +809,7 @@ BOOL OptionsInit()
         global.dmd_green66       = 15;
         global.dmd_blue66        = 193;
         global.dmd_opacity       = 100;
+        global.resampling_quality= 0;
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         global.sound_mode        = 0;
 #endif
