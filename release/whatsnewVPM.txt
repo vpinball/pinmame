@@ -4,6 +4,10 @@ What's new in Visual PinMAME:
 Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
+Version 2.8b (December 29th, 2016)
+------------------------------------------------------------------------------
+- Expose new option in UI: Resampling Quality, to choose between fast/low quality (0) and normal (1)
+
 Version 2.8 (December 24th, 2016) - "Sounds good"
 ------------------------------------------------------------------------------
 - To enable the new modulated/multi-level flasher support (see whatsnew.txt), set SolMask to 2
