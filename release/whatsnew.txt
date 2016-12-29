@@ -1,6 +1,18 @@
 Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
+
+
+
+Version 2.8b (December 29th, 2016)
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Optimize general sound resampling code
+Expose new option "resampling_quality" to choose between fast/low quality (mode 0) and normal (mode 1)
+
+
+
 Version 2.8 (December 24th, 2016) - "Sounds good"
 ------------------------------------------------------------------------------
 
