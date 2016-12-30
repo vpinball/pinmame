@@ -87,6 +87,15 @@ BY6803_ROMEND
 #define input_ports_motrdome input_ports_by6803
 CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803_TCSS,0)
 
+// german version claims to be game #E69!?
+BY6803_ROMSTART44(motrdomg,"u2_11_de.bin",CRC(8a4bafd3) SHA1(d764d2e38be2df27ab982cfbedddb79f89ca2359),
+                           "u3_11_de.bin",CRC(9cb10037) SHA1(7847a71a0295e8de51a8f2f8d406350eca4555bf))
+BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679) SHA1(f17998198b542dd99a34abd678db7e031bde074b))
+BY6803_ROMEND
+#define init_motrdomg init_motrdome
+#define input_ports_motrdomg input_ports_motrdome
+CORE_CLONEDEFNV(motrdomg,motrdome,"MotorDome (German)",1986,"Bally",by_mBY6803_TCSS,0)
+
 /*------------------------------------
 / Karate Fight (6803-????: 06/86) - European version of Black Belt
 /------------------------------------*/
