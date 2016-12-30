@@ -275,17 +275,18 @@ DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
 DRIVERNV(beatclck)      //6803-0C70:11/85 Beat the Clock
 DRIVERNV(ladyluck)      //6803-0E34:02/86 Lady Luck
 DRIVERNV(motrdome)      //6803-0E14:05/86 MotorDome
+DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German)
                         //6803-????:06/86 Karate Fight (Prototype for Black Belt?)
 DRIVERNV(blackblt)      //6803-0E52:07/86 Black Belt
-DRIVERNV(blackbl2)      //6803-0E52:07/86 Black Belt (Squawk & Talk)
+DRIVERNV(blackbl2)      //6803      07/86 Black Belt (Squawk & Talk)
 DRIVERNV(specforc)      //6803-0E47:08/86 Special Force
 DRIVERNV(strngsci)      //6803-0E35:10/86 Strange Science
-DRIVERNV(strngscg)      //6803-0E35:10/86 Strange Science (German)
+DRIVERNV(strngscg)      //6803      10/86 Strange Science (German)
 DRIVERNV(cityslck)      //6803-0E79:03/87 City Slicker
 DRIVERNV(hardbody)      //6803-0E94:02/87 Hardbody
 DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01:05/87 Party Animal
-DRIVERNV(prtyanig)      //6803-0H01:05/87 Party Animal (German)
+DRIVERNV(prtyanig)      //6803      05/87 Party Animal (German)
 DRIVERNV(hvymetal)      //6803-0H03:08/87 Heavy Metal Meltdown
 DRIVERNV(dungdrag)      //6803-0H06:10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05:12/87 Escape from the Lost World
