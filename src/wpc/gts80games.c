@@ -1072,10 +1072,6 @@ GTS80_ROMEND
 #define input_ports_robowars input_ports_gts80
 CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mGTS80BS2,0)
 
-/****************************************/
-/* Start of Generation 3 Sound Hardware */
-/****************************************/
-
 /*-------------------------------------------------------------------
 / Excalibur (#715)
 /-------------------------------------------------------------------*/
@@ -1086,7 +1082,11 @@ GTS80BSSOUND3232(            "drom1.snd", CRC(a4368cd0) SHA1(c48513e56899938dc83
                              "yrom1.snd", CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
 GTS80_ROMEND
 #define input_ports_excalibr input_ports_gts80
-CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS3,0)
+CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS2,0)
+
+/****************************************/
+/* Start of Generation 3 Sound Hardware */
+/****************************************/
 
 /*-------------------------------------------------------------------
 / Bad Girls (#717)
