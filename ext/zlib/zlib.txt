@@ -5,12 +5,12 @@ Reason: Support for zipped ROM packages
 
 Visual C++
 ----------
-zlib Version: 1.2.8
+zlib Version: 1.2.10
 Built with: Visual C++ 9.0
 
 Library type: static
 Runtime library: /MT (multi-threaded non-DLL)
-Library files: zlibstatmt.lib, zlibstatmtd.lib
+Library files: zlibstatmt(64).lib, zlibstatmtd(64).lib
 
 Library type: DLL (shared)
 DLL import library: zlib.lib
