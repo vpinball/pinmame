@@ -1709,10 +1709,10 @@ DRIVER(rsn,105)         //S.A.M.: 03/11 Rolling Stones - V1.05
 DRIVER(rsn,110)         //S.A.M.: 11/11 Rolling Stones - V1.1
 DRIVER(rsn,110h)        //S.A.M.: 11/11 Rolling Stones - V1.1 Limited Edition
 //DRIVER(trn,100)         //S.A.M.: 05/11 TRON: Legacy - V1.0
-DRIVER(trn,100h)        //S.A.M.: 05/11 TRON: Legacy Limited Edition - V1.0
+DRIVER(trn,100h)        //S.A.M.: 06/11 TRON: Legacy Limited Edition - V1.0
 DRIVER(trn,110)         //S.A.M.: 05/11 TRON: Legacy - V1.10
-DRIVER(trn,110h)        //S.A.M.: 05/11 TRON: Legacy Limited Edition - V1.1
-DRIVER(trn,120)         //S.A.M.: 06/11 TRON: Legacy - V1.20
+DRIVER(trn,110h)        //S.A.M.: 07/11 TRON: Legacy Limited Edition - V1.1
+DRIVER(trn,120)         //S.A.M.: 06/11 TRON: Legacy - V1.2
 DRIVER(trn,130h)        //S.A.M.: 07/11 TRON: Legacy Limited Edition - V1.3 (Stern skipped over TRON: Legacy LE 1.2)
 DRIVER(trn,140)         //S.A.M.: 06/11 TRON: Legacy - V1.4 (Stern skipped over TRON: Legacy 1.3)
 DRIVER(trn,140h)        //S.A.M.: 11/11 TRON: Legacy Limited Edition - V1.4
@@ -1724,7 +1724,7 @@ DRIVER(trn,174h)        //S.A.M.: 11/13 TRON: Legacy Limited Edition - V1.74
 DRIVER(trn,17402)       //S.A.M.: 02/13 TRON: Legacy - V1.7402 (New CPU)
 DRIVER(tf,088h)         //S.A.M.: ??/11 Transformers - V0.88 Limited Edition
 //DRIVER(tf,100)          //S.A.M.: 10/11 Transformers - V1.0
-DRIVER(tf,100h)         //S.A.M.: 11/11 Transformers - V1.00 Limited Edition
+DRIVER(tf,100h)         //S.A.M.: 11/11 Transformers - V1.0 Limited Edition
 //DRIVER(tf,110)          //S.A.M.: 10/11 Transformers - V1.1
 //DRIVER(tf,110h)         //S.A.M.: 12/11 Transformers - V1.1 Limited Edition
 DRIVER(tf,120)          //S.A.M.: 10/11 Transformers - V1.2
@@ -1736,9 +1736,9 @@ DRIVER(tf,140)          //S.A.M.: 12/11 Transformers - V1.4
 DRIVER(tf,140h)         //S.A.M.: 01/12 Transformers - V1.4 Limited Edition
 DRIVER(tf,150)          //S.A.M.: 01/12 Transformers - V1.5
 DRIVER(tf,150h)         //S.A.M.: 03/12 Transformers - V1.5 Limited Edition
-DRIVER(tf,160)          //S.A.M.: ??/1? Transformers - V1.6
-DRIVER(tf,170)          //S.A.M.: ??/1? Transformers - V1.7
-DRIVER(tf,180)          //S.A.M.: ??/1? Transformers - V1.8
+DRIVER(tf,160)          //S.A.M.: 01/12 Transformers - V1.6
+DRIVER(tf,170)          //S.A.M.: 03/12 Transformers - V1.7
+DRIVER(tf,180)          //S.A.M.: 03/13 Transformers - V1.8
 DRIVER(tf,180h)         //S.A.M.: 03/13 Transformers - V1.8 Limited Edition
 DRIVER(acd,121)         //S.A.M.: 02/12 AC/DC Pro - V1.21
 //DRIVER(acd,121h)        //S.A.M.: 02/12 AC/DC Limited Edition - V1.21
@@ -1760,8 +1760,8 @@ DRIVER(acd,165)         //S.A.M.: 03/13 AC/DC Pro - V1.65
 DRIVER(acd,165h)        //S.A.M.: 03/13 AC/DC Limited Edition - V1.65
 DRIVER(acd,168)         //S.A.M.: 06/14 AC/DC Pro - V1.68
 DRIVER(acd,168h)        //S.A.M.: 06/14 AC/DC Limited Edition - V1.68
-DRIVER(xmn,100)         //S.A.M.: 0?/12 X-Men
-DRIVER(xmn,102)         //S.A.M.: 09/12 X-Men
+DRIVER(xmn,100)         //S.A.M.: 0?/12 X-Men - V1.0
+DRIVER(xmn,102)         //S.A.M.: 09/12 X-Men Pro - V1.02
 DRIVER(xmn,104)         //S.A.M.: 12/12 X-Men Pro - V1.04
 DRIVER(xmn,105)         //S.A.M.: 03/13 X-Men Pro - V1.05
 DRIVER(xmn,120h)        //S.A.M.: 08/12 X-Men Limited Edition - V1.2
@@ -1777,14 +1777,14 @@ DRIVER(xmn,151)         //S.A.M.: 02/14 X-Men Pro - V1.51
 DRIVER(xmn,151h)        //S.A.M.: 02/14 X-Men Limited Edition - V1.51
 //DRIVER(avs,100)         //S.A.M.: 11/12 Avengers - V1.0
 //DRIVER(avs,100h)        //S.A.M.: 12/12 Avengers Limited Edition - V1.0
-DRIVER(avs,110)         //S.A.M.: 11/12 Avengers
+DRIVER(avs,110)         //S.A.M.: 11/12 Avengers - V1.1
 //DRIVER(avs,110h)        //S.A.M.: 12/12 Avengers Limited Edition - V1.1
 //DRIVER(avs,111)         //S.A.M.: 12/12 Avengers - V1.11
 //DRIVER(avs,112)         //S.A.M.: 12/12 Avengers - V1.12
 DRIVER(avs,120h)        //S.A.M.: 12/12 Avengers Limited Edition - V1.2
 DRIVER(avs,140)         //S.A.M.: 02/13 Avengers - V1.4
 DRIVER(avs,140h)        //S.A.M.: 02/13 Avengers Limited Edition - V1.4
-DRIVER(avs,170)         //S.A.M.: 01/16 Avengers
+DRIVER(avs,170)         //S.A.M.: 01/16 Avengers - V1.7
 DRIVER(avs,170h)        //S.A.M.: 01/16 Avengers Limited Edition - V1.7
 //DRIVER(mtl,100)         //S.A.M.: 04/13 Metallica Pro - V1.0
 //DRIVER(mtl,102)         //S.A.M.: 05/13 Metallica Pro - V1.02
