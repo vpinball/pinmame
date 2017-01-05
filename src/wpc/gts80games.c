@@ -312,6 +312,14 @@ GTS80_ROMEND
 #define input_ports_pnkpntr7 input_ports_pnkpnthr
 CORE_CLONEDEFNV(pnkpntr7,pnkpnthr,"Pink Panther (7-digit conversion)",2008,"Oliver",gl_mGTS80S,0)
 
+INIT_S80(pnkpntrs, dispPinkPanther, SNDBRD_GTS80S)
+GTS80_1_ROMSTART ("664-1.cpu",          CRC(a0d3e69a) SHA1(590e68dc28067e61832927cd4b3eefcc066f0a92))
+GTS80S1K_ROMSTART("664_Flipprojets.snd",CRC(48aeb325) SHA1(49dae08c635f191841188565bd89f07c4ad44c08),
+                  "6530sy80.bin",       CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
+GTS80_ROMEND
+#define input_ports_pnkpntrs input_ports_pnkpnthr
+CORE_CLONEDEFNV(pnkpntrs,pnkpnthr,"Pink Panther (sound correction fix)",1981,"Flipprojets",gl_mGTS80S,0)
+
 /*-------------------------------------------------------------------
 / Mars - God of War
 /-------------------------------------------------------------------*/
@@ -324,7 +332,7 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(mars,gts80,"Mars - God of War",1981,"Gottlieb",gl_mGTS80SS,0)
 
 INIT_S80(marsf, dispNumeric1, SNDBRD_GTS80SS_VOTRAX)
-GTS80_1_ROMSTART  ("666-1.cpu",  CRC(bb7d476a) SHA1(22d5d7f0e52c5180f73a1ca0b3c6bd4b7d0843d6))
+GTS80_1_ROMSTART  ("666-1.cpu",   CRC(bb7d476a) SHA1(22d5d7f0e52c5180f73a1ca0b3c6bd4b7d0843d6))
 GTS80SS22_ROMSTART("f666-s1.snd", CRC(f9f782c5) SHA1(83438fcf3475bc2cb24c828036d94063c263a031),
                    "f666-s2.snd", CRC(7bd64d94) SHA1(a52492820e69f2072fd1dffb5cbb48fb960e19ce))
 GTS80_ROMEND
@@ -338,6 +346,15 @@ GTS80SS22_ROMSTART("666-s1.snd", CRC(d33dc8a5) SHA1(8d071c392996a74c3cdc2cf5ea3b
 GTS80_ROMEND
 #define input_ports_mars7 input_ports_mars
 CORE_CLONEDEFNV(mars7,mars,"Mars - God of War (7-digit conversion)",2008,"Oliver",gl_mGTS80SS,0)
+
+INIT_S80(mars_2, dispNumeric1, SNDBRD_GTS80SS_VOTRAX)
+GTS80_1_ROMSTART  ("666-2.cpu",  CRC(6fb6d10b) SHA1(bd6fcebb52733e56f6fb66ce527cbbe3573b7250))
+GTS80SS22_ROMSTART("666-s1.snd", CRC(d33dc8a5) SHA1(8d071c392996a74c3cdc2cf5ea3be3c86553ce89),
+                   "666-s2.snd", CRC(e5616f3e) SHA1(a6b5ebd0b456a555db0889cd63ce79aafc64dbe5))
+GTS80_ROMEND
+#define input_ports_mars_2 input_ports_mars
+CORE_CLONEDEFNV(mars_2,mars,"Mars - God of War (rev. 2 unofficial MOD)",1981,"Flipprojets",gl_mGTS80SS,0) // fixes a potential startup problem
+
 
 /*-------------------------------------------------------------------
 / Volcano (Sound and Speech)
@@ -461,6 +478,30 @@ GTS80_ROMEND
 #define input_ports_hh7 input_ports_hh
 CORE_CLONEDEFNV(hh7,hh,"Haunted House (rev. 2, 7-digit conversion)",2008,"Oliver",gl_mGTS80SS,0)
 
+INIT_S80(hh_3, dispNumeric2, SNDBRD_GTS80SS)
+GTS80_1_ROMSTART  ("669-3.cpu",  CRC(cf178411) SHA1(284e709ff3a569e84d1499a23f41adcbd8553930))
+GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723ecad01572129f),
+                   "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
+GTS80_ROMEND
+#define input_ports_hh_3 input_ports_hh
+CORE_CLONEDEFNV(hh_3,hh,"Haunted House (rev. 3 unofficial MOD)",1982,"Flipprojets",gl_mGTS80SS,0)
+
+INIT_S80(hh_3a, dispNumeric2, SNDBRD_GTS80SS)
+GTS80_1_ROMSTART  ("669-3a.cpu", CRC(effe6851) SHA1(fdf2fdddfebdf9c871d4395c307bf1f3ca2b2d10))
+GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723ecad01572129f),
+                   "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
+GTS80_ROMEND
+#define input_ports_hh_3a input_ports_hh
+CORE_CLONEDEFNV(hh_3a,hh,"Haunted House (rev. 3 unofficial MOD, LED)",1982,"Flipprojets",gl_mGTS80SS,0)
+
+INIT_S80(hh_3b, dispNumeric2, SNDBRD_GTS80SS)
+GTS80_1_ROMSTART  ("669-3b.cpu", CRC(2bfceb85) SHA1(9635cd29d5b53a4641b69f1648c1201924edd486))
+GTS80SS22_ROMSTART("669-s1.snd", CRC(52ec7335) SHA1(2b08dd8a89057c9c8c184d5b723ecad01572129f),
+                   "669-s2.snd", CRC(a3317b4b) SHA1(c3b14aa58fd4588c8b8fa3540ea6331a9ee40f1f))
+GTS80_ROMEND
+#define input_ports_hh_3b input_ports_hh
+CORE_CLONEDEFNV(hh_3b,hh,"Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)",1982,"Flipprojets",gl_mGTS80SS,0)
+
 /*-------------------------------------------------------------------
 / Haunted House up to serial no. 4999
 /-------------------------------------------------------------------*/
@@ -550,7 +591,7 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(caveman,gts80a,"Caveman (Pinball/Video Combo)",1981,"Gottlieb",gl_mGTS80VID,0)
 
 INIT_S80A(cavemana, GTS80_dispCaveman, SNDBRD_GTS80SS_VOTRAX,GTS80_DISPVIDEO)
-GTS80_1_ROMSTART  ("pv810-1.cpu",CRC(dd8d516c) SHA1(011d8744a7984ed4c7ceb1f57dcbd8fdb22e21fe))
+GTS80_1_ROMSTART  ("pv810-1.cpu", CRC(dd8d516c) SHA1(011d8744a7984ed4c7ceb1f57dcbd8fdb22e21fe))
 GTS80SS22_ROMSTART("pv810-s1.snd",CRC(a491664d) SHA1(45031bcbddb75b4f3a5c3b623a0f2723fb95f92f),
                    "pv810-s2.snd",CRC(d8654e6e) SHA1(75d4f1f966ed5a1632536723229166b9cc7d77c7))
 VIDEO_ROMSTART    ("v810-u8.bin", CRC(514aa152) SHA1(f61a98bbc95f202417cf97b35fe9835108200477),
@@ -564,6 +605,22 @@ VIDEO_ROMSTART    ("v810-u8.bin", CRC(514aa152) SHA1(f61a98bbc95f202417cf97b35fe
 GTS80_ROMEND
 #define input_ports_cavemana input_ports_caveman
 CORE_CLONEDEFNV(cavemana,caveman,"Caveman (Pinball/Video Combo) (set 2)",1981,"Gottlieb",gl_mGTS80VID,0)
+
+INIT_S80A(cavemane, GTS80_dispCaveman, SNDBRD_GTS80SS_VOTRAX,GTS80_DISPVIDEO)
+GTS80_1_ROMSTART  ("pv810-2.cpu", CRC(341697b9) SHA1(c7ca7227dd655380043b083f580baf2eaaedc034))
+GTS80SS22_ROMSTART("pv810-s1.snd",CRC(a491664d) SHA1(45031bcbddb75b4f3a5c3b623a0f2723fb95f92f),
+                   "pv810-s2.snd",CRC(d8654e6e) SHA1(75d4f1f966ed5a1632536723229166b9cc7d77c7))
+VIDEO_ROMSTART    ("v810-u8.bin", CRC(514aa152) SHA1(f61a98bbc95f202417cf97b35fe9835108200477),
+                   "v810-u7.bin", CRC(74c6533e) SHA1(8fe373c28dc4089bd9e573c69682113315236c72),
+                   "v810-u6.bin", CRC(2fd0ee95) SHA1(8374b7729b2de9e73784617ada6f9d895f54cc8d),
+                   "v810-u5.bin", CRC(2fb15da3) SHA1(ba2927bc88c1ee1b8dd682234b2616d2013c7e7c),
+                   "v810-u4.bin", CRC(2dfe8492) SHA1(a29604cda968504f95577e36c715ae97034bb5f8),
+                   "v810-u3.bin", CRC(740e9ec3) SHA1(ba4839680694bf5acff540147af4319c64c313e8),
+                   "v810-u2.bin", CRC(b793baf9) SHA1(cf1618cd0134529d057bc8245b9b366c3aae2326),
+                   "v810-u1.bin", CRC(0a283b15) SHA1(4a57ae5be36500c22b55ac17dc71968bd833298b))
+GTS80_ROMEND
+#define input_ports_cavemane input_ports_caveman
+CORE_CLONEDEFNV(cavemane,caveman,"Caveman (Pinball/Video Combo) (Evolution, unofficial MOD)",1981,"Flipprojets",gl_mGTS80VID,0)
 
 /*-------------------------------------------------------------------
 / Rocky (#672)
@@ -791,17 +848,31 @@ CORE_CLONEDEFNV(icefever,gts80as,"Ice Fever",1985,"Gottlieb",gl_mGTS80S,0)
 // using System80 sound only board
 INITGAME(triplay, GEN_GTS80B, FLIP616, dispAlpha,SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_8K_ROMSTART(triplay, "prom1.cpu", CRC(42b29b01) SHA1(58145ce10939d00faff49972ada669005a223792))
-GTS80S2K_ROMSTART(          "696-s.snd",CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80S2K_ROMSTART(          "696-s.snd", CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
 GTS80_ROMEND
 #define input_ports_triplay input_ports_gts80
 CORE_GAMEDEFNV(triplay, "Chicago Cubs Triple Play",1985,"Gottlieb",gl_mGTS80B,0)
 
 GTS80B_8K_ROMSTART(triplaya, "prom1a.cpu", CRC(fc2145cb) SHA1(f7b9648c533997e9f777a8b40dad9852f26abd9a))
-GTS80S2K_ROMSTART(          "696-s.snd",CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80S2K_ROMSTART(           "696-s.snd",  CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
 GTS80_ROMEND
 #define init_triplaya init_triplay
 #define input_ports_triplaya input_ports_triplay
 CORE_CLONEDEFNV(triplaya, triplay, "Chicago Cubs Triple Play (alternate set)",1985,"Gottlieb",gl_mGTS80B,0)
+
+GTS80B_8K_ROMSTART(triplyfp, "prom1_fp.cpu", CRC(521946d4) SHA1(527ed3f221e0ca5fe1778e3095c9b8a414911206))
+GTS80S2K_ROMSTART(           "696-s.snd",    CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80_ROMEND
+#define init_triplyfp init_triplay
+#define input_ports_triplyfp input_ports_triplay
+CORE_CLONEDEFNV(triplyfp, triplay, "Chicago Cubs Triple Play (Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
+
+GTS80B_8K_ROMSTART(triplyf1, "prom1_f1.cpu", CRC(4b58be44) SHA1(db7734692b3ff158cbd229b2d3ca723cfe963c7b))
+GTS80S2K_ROMSTART(           "696-s.snd",    CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80_ROMEND
+#define init_triplyf1 init_triplay
+#define input_ports_triplyf1 input_ports_triplay
+CORE_CLONEDEFNV(triplyf1, triplay, "Chicago Cubs Triple Play (rev. 1 Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
@@ -813,6 +884,13 @@ GTS80S2K_ROMSTART(          "694-s.snd", CRC(a0383e41) SHA1(156514d2b52fcd89b608
 GTS80_ROMEND
 #define input_ports_bountyh input_ports_gts80
 CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
+
+INITGAME(bounthfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+GTS80B_8K_ROMSTART(bounthfp, "prom1_fp.cpu", CRC(9e68b714) SHA1(bb33b1e8fb50776731c450e2c05c49dcd5535f41))
+GTS80S2K_ROMSTART(           "694-s.snd",    CRC(a0383e41) SHA1(156514d2b52fcd89b608b85991c5066780949979))
+GTS80_ROMEND
+#define input_ports_bounthfp input_ports_bountyh
+CORE_CLONEDEFNV(bounthfp, bountyh, "Bounty Hunter (Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Tag-Team Pinball (#698)
@@ -830,8 +908,24 @@ GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7
                             "prom1a.cpu", CRC(92766607) SHA1(29744dd3c447cc51fb123750ae1456329122e986))
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
-#define input_ports_tagteam2 input_ports_gts80
+#define input_ports_tagteam2 input_ports_tagteam
 CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Pinball (rev. 2)",1985,"Gottlieb",gl_mGTS80B,0)
+
+INITGAME(tagtemfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(tagtemfp,"prom2.cpu",    CRC(fd1615ce) SHA1(3a6c3525552286b86e5340af2bf196f12adc9b35),
+                            "prom1_fp.cpu", CRC(3f052c44) SHA1(176fbe35a4ad5832b1ba61889a858b8585dc86be))
+GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
+GTS80_ROMEND
+#define input_ports_tagtemfp input_ports_tagteam
+CORE_CLONEDEFNV(tagtemfp,tagteam,"Tag-Team Pinball (Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
+
+INITGAME(tagtem2f, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(tagtem2f,"prom2a.cpu",   CRC(6d56b636) SHA1(8f50f2742be727835e7343307787b4b5daa1623a),
+                            "prom1_2f.cpu", CRC(9c2c0058) SHA1(92e28a0e5fb454b046d1cd365e39ebdd6fa6baf1))
+GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
+GTS80_ROMEND
+#define input_ports_tagtem2f input_ports_tagteam
+CORE_CLONEDEFNV(tagtem2f,tagteam,"Tag-Team Pinball (rev. 2 Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
@@ -844,6 +938,14 @@ GTS80BSSOUND88(          "drom1.snd", CRC(03830e81) SHA1(786f85eba5a8f5e9cc65930
 GTS80_ROMEND
 #define input_ports_rock input_ports_gts80
 CORE_GAMEDEFNV(rock, "Rock",1985,"Gottlieb",gl_mGTS80BS1,0)
+
+INITGAME(rockfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_8K_ROMSTART(rockfp, "prom1_fp.cpu", CRC(77736ac3) SHA1(30c6322dcda033cbd1cbda5f1bfe97c2067c37f5))
+GTS80BSSOUND88(            "drom1.snd",    CRC(03830e81) SHA1(786f85eba5a8f5e9cc659305623e1d178b5410f6),
+                           "yrom1.snd",    CRC(effba2ad) SHA1(2288a4f655376e0aa18f8ecd9a3818ed4d6c6891))
+GTS80_ROMEND
+#define input_ports_rockfp input_ports_rock
+CORE_CLONEDEFNV(rockfp,rock, "Rock (Free Play)",1985,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / System 80B Test Fixture
@@ -869,14 +971,32 @@ GTS80_ROMEND
 #define input_ports_raven input_ports_gts80
 CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mGTS80BS1,0)
 
-GTS80B_2K_ROMSTART(ravena, "prom2a.cpu", CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
-                          "prom1.cpu", CRC(edc88561) SHA1(101878527307c6f04d141dd74e04102c4ea53105))
-GTS80BSSOUND88(           "drom1.snd", CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
-                          "yrom1.snd", CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
+GTS80B_2K_ROMSTART(ravena, "prom2a.cpu",CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
+                           "prom1.cpu", CRC(edc88561) SHA1(101878527307c6f04d141dd74e04102c4ea53105))
+GTS80BSSOUND88(            "drom1.snd", CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
+                           "yrom1.snd", CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
 GTS80_ROMEND
 #define init_ravena init_raven
 #define input_ports_ravena input_ports_raven
 CORE_CLONEDEFNV(ravena, raven, "Raven (alternate set)",1986,"Gottlieb",gl_mGTS80BS1,0)
+
+GTS80B_2K_ROMSTART(ravenfp, "prom2.cpu",    CRC(481f3fb8) SHA1(22ffa55ed362219ebedbc40edcf866ff152a01b9),
+                            "prom1_fp.cpu", CRC(d6e5120b) SHA1(1d00bce8170b5ad4185e6517ba1a0f46c8ae7444))
+GTS80BSSOUND88(             "drom1.snd",    CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
+                            "yrom1.snd",    CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
+GTS80_ROMEND
+#define init_ravenfp init_raven
+#define input_ports_ravenfp input_ports_raven
+CORE_CLONEDEFNV(ravenfp, raven, "Raven (Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
+
+GTS80B_2K_ROMSTART(ravenafp, "prom2a.cpu",   CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
+                             "prom1_fp.cpu", CRC(d6e5120b) SHA1(1d00bce8170b5ad4185e6517ba1a0f46c8ae7444))
+GTS80BSSOUND88(              "drom1.snd",    CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
+                             "yrom1.snd",    CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
+GTS80_ROMEND
+#define init_ravenafp init_raven
+#define input_ports_ravenafp input_ports_raven
+CORE_CLONEDEFNV(ravenafp, raven, "Raven (rev. 1 Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Rock Encore (#704)
@@ -902,6 +1022,16 @@ GTS80BSSOUND888(             "drom1.snd", CRC(a698ec33) SHA1(e7c1d28279ec4f12095
 GTS80_ROMEND
 #define input_ports_hlywoodh input_ports_gts80
 CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mGTS80BS1,0)
+
+INITGAME(hlywdhfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(hlywdhfp, "prom2.cpu",    CRC(a465e5f3) SHA1(56afa2f67aebcd17345bba76ecb814653719ee7b),
+                             "prom1_fp.cpu", CRC(63bc8395) SHA1(b4007b5a6b78e162c9b3e0243f01fa30501323ae))
+GTS80BSSOUND888(             "drom1.snd",    CRC(a698ec33) SHA1(e7c1d28279ec4f12095c3a106c6cefcc2a84b31e),
+                             "yrom1.snd",    CRC(9232591e) SHA1(72883e0c542c572226c6c654bea14749cc9e351f),
+                             "yrom2.snd",    CRC(51709c2f) SHA1(5834d7b72bd36e30c87377dc7c3ad0cf26ff303a))
+GTS80_ROMEND
+#define input_ports_hlywdhfp input_ports_hlywoodh
+CORE_CLONEDEFNV(hlywdhfp,hlywoodh, "Hollywood Heat (Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Genesis (#705)
@@ -1138,8 +1268,8 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(bonebstr, "Bone Busters Inc.",1989,"Gottlieb",gl_mGTS80BS3A,0)
 
 INITGAME(bonebstf, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
-GTS80B_4K_ROMSTART(bonebstf, "prom2f.cpu", CRC(73b6486e) SHA1(1baf17f31b16d564ed5e3bdf9f74b21f83ed76fa),
-                             "prom1f.cpu", CRC(3d334065) SHA1(6d44819cf84bee375a9f62351b00375404f6d3e3))
+GTS80B_4K_ROMSTART(bonebstf, "prom2f.cpu",CRC(73b6486e) SHA1(1baf17f31b16d564ed5e3bdf9f74b21f83ed76fa),
+                             "prom1f.cpu",CRC(3d334065) SHA1(6d44819cf84bee375a9f62351b00375404f6d3e3))
 GTS80BSSOUND3x32(            "drom2.snd", CRC(d147d78d) SHA1(f8f6d6a1921685b883b224a9ea85ead52a32a4c3),
                              "drom1.snd", CRC(ec43f4e9) SHA1(77b0988700be7a597dca7e5f06ac5d3c6834ce21),
                              "yrom1.snd", CRC(a95eedfc) SHA1(5ced2d6869a9895f8ff26d830b21d3c9364b32e7))
@@ -1149,16 +1279,25 @@ CORE_CLONEDEFNV(bonebstf,bonebstr, "Bone Busters Inc. (French)",1989,"Gottlieb",
 
 // Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
-/ Night Moves (C-103)
+/ Night Moves (C-101)
 /-------------------------------------------------------------------*/
 INITGAME(nmoves, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
-GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732", CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
-                             "nmovsp1.764", CRC(36837146) SHA1(88312ae1d1fe76defc4aa2d0a0570c5bb56253e9))
-GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
-                             "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
+GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
+                           "nmovsp1.764",  CRC(36837146) SHA1(88312ae1d1fe76defc4aa2d0a0570c5bb56253e9))
+GTS80BSSOUND3232(          "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
+                           "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
 GTS80_ROMEND
 #define input_ports_nmoves input_ports_gts80
 CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,0)
+
+INITGAME(nmovesfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(nmovesfp, "prom1_fp.cpu", CRC(1cd28cac) SHA1(304139bcd4d496f913399d9945a46aadf32078f9),
+                             "prom2_fp.cpu", CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa))
+GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
+                             "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
+GTS80_ROMEND
+#define input_ports_nmovesfp input_ports_nmoves
+CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
 / Amazon Hunt III (#684D)
@@ -1168,4 +1307,4 @@ GTS80B_8K_ROMSTART(amazonh3, "684d-cpu.rom", CRC(2ec8bd4c) SHA1(46a08ddccba952fa
 GTS80BSSOUND32(              "684d-snd.rom", CRC(a660f233) SHA1(3b80629696a2fd5aa4a86ed472e60c95d3cfa906))
 GTS80_ROMEND
 #define input_ports_amazonh3 input_ports_gts80
-CORE_GAMEDEFNV(amazonh3, "Amazon Hunt III (France)", 1991, "Gottlieb", gl_mGTS80BS3, 0)
+CORE_GAMEDEFNV(amazonh3, "Amazon Hunt III (French)",1991,"Gottlieb",gl_mGTS80BS3,0)

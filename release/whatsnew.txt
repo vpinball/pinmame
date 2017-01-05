@@ -4,9 +4,25 @@ Version 2.9 (X X, 2017) - ""
 *** CORE/CPU ***
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 
-*** ROM SUPPORT ***
+*** ROM SUPPORT *** Thanks to Flipprojets
 Clones:
+Bounty Hunter (Free Play)
+Caveman (Evolution, unofficial MOD)
+Chicago Cubs Triple Play (Free Play)
+Chicago Cubs Triple Play (rev. 1 Free Play)
+Haunted House (rev. 3 unofficial MOD)
+Haunted House (rev. 3 unofficial MOD, LED)
+Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)
+Hollywood Heat (Free Play)
+Mars - God of War (rev. 2 unofficial MOD, fixes a potential startup problem)
 MotorDome (German)
+Night Moves (Free Play)
+Pink Panther (sound correction fix)
+Raven (Free Play)
+Raven (rev. 1 Free Play)
+Rock (Free Play)
+Tag-Team Pinball (Free Play)
+Tag-Team Pinball (rev.2 Free Play)
 
 
 
@@ -37,7 +53,7 @@ Improved M114 sound core (Mr. Game)
 Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some lowpass filtering (active only on older machines) to remove some of the audible noise
 Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise and additional sound throttling adjustments
 Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
-Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars God of War, etc)
+Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars - God of War, etc)
 Improved Capcom sound core
 
 Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
