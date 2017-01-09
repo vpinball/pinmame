@@ -1152,7 +1152,7 @@ GTS80BSSOUND888(             "drom1.snd",    CRC(1a53ac15) SHA1(f2751664a09431e9
 GTS80_ROMEND
 #define init_mntecrfp init_mntecrlo
 #define input_ports_mntecrfp input_ports_mntecrlo
-CORE_CLONEDEFNV(mntecrfp, "Monte Carlo (Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(mntecrfp,mntecrlo, "Monte Carlo (Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(mntecrla, "prom2a.cpu", CRC(5dd75c06) SHA1(911f7e56b7602c9bc9b51dde7719d3e0562f0702),
                              "prom1a.cpu", CRC(de980755) SHA1(0df99526a432e26fb73288b529dc0f4f49623e81))
@@ -1280,7 +1280,7 @@ GTS80BSSOUND888(             "drom1.snd",    CRC(78e6cbf1) SHA1(7b66a0cb211a93cf
                              "yrom2.snd",    CRC(cc2aef4e) SHA1(a6e243de99f6a76eb527e879f4441c036dd379b6))
 GTS80_ROMEND
 #define input_ports_arena_fp input_ports_arena
-CORE_GAMEDEFNV(arena_fp,arena, "Arena (Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+CORE_CLONEDEFNV(arena_fp,arena, "Arena (Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 #define init_arenaa init_arena
 GTS80B_2K_ROMSTART(arenaa,"prom2a.cpu", CRC(13c8813b) SHA1(756e3583fd55b72e0bfb15e9b4a60740b389ca2e),
