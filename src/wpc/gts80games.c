@@ -1525,8 +1525,8 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,0)
 
 INITGAME(nmovesfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
-GTS80B_4K_ROMSTART(nmovesfp, "prom1_fp.cpu", CRC(1cd28cac) SHA1(304139bcd4d496f913399d9945a46aadf32078f9),
-                             "prom2_fp.cpu", CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa))
+GTS80B_4K_ROMSTART(nmovesfp, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
+                             "prom1_fp.cpu", CRC(1cd28cac) SHA1(304139bcd4d496f913399d9945a46aadf32078f9))
 GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
                              "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
 GTS80_ROMEND
