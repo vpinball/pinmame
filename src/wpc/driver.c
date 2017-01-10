@@ -619,51 +619,67 @@ DRIVERNV(ravena)        //                Raven (alternate set)
 DRIVERNV(ravenafp)      //                Raven (rev. 1 Free Play)
 DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(rock_efp)      //                Rock Encore (Free Play)
+DRIVERNV(rockegfp)      //                Rock Encore (German Free Play)
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(hlywdhfp)      //                Hollywood Heat (Free Play)
 DRIVERNV(hlywhgfp)      //                Hollywood Heat (German Free Play)
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(genesifp)      //                Genesis (Free Play)
+DRIVERNV(genesgfp)      //                Genesis (German Free Play)
 DRIVERNV(goldwing)      //S80b-707: 10/86 Gold Wings
 DRIVERNV(goldwgfp)      //                Gold Wings (Free Play)
+DRIVERNV(gldwggfp)      //                Gold Wings (German Free Play)
 DRIVERNV(mntecrlo)      //S80b-708: 02/87 Monte Carlo
 DRIVERNV(mntecrfp)      //                Monte Carlo (Free Play)
+DRIVERNV(mntcrgfp)      //                Monte Carlo (German Free Play)
 DRIVERNV(mntecrla)      //                Monte Carlo (alternate set)
 DRIVERNV(mntcrafp)      //                Monte Carlo (rev.1 Free Play)
 DRIVERNV(mntcr2fp)      //                Monte Carlo (rev.2 Free Play)
 DRIVERNV(sprbreak)      //S80b-706: 04/87 Spring Break
 DRIVERNV(sprbrkfp)      //                Spring Break (Free Play)
+DRIVERNV(sprbrgfp)      //                Spring Break (German Free Play)
 DRIVERNV(sprbrka)       //                Spring Break (alternate set)
 DRIVERNV(sprbrafp)      //                Spring Break (rev.1 Free Play)
 DRIVERNV(sprbrks)       //                Spring Break (single ball game)
 DRIVERNV(sprbrsfp)      //                Spring Break (single ball game, Free Play)
-DRIVERNV(amazonh2)      //S80b-684C:05/87 Amazon Hunt II
+DRIVERNV(amazonh2)      //S80b-684C:05/87 Amazon Hunt II (French)
+DRIVERNV(amazn2fp)      //                Amazon Hunt II (French Free Play)
 DRIVERNV(arena)         //S80b-709: 06/87 Arena
 DRIVERNV(arena_fp)      //                Arena (Free Play)
+DRIVERNV(arenagfp)      //                Arena (German Free Play)
 DRIVERNV(arenaa)        //                Arena (alternate set)
 DRIVERNV(arenaafp)      //                Arena (rev.1 Free Play)
 DRIVERNV(victory)       //S80b-710: 10/87 Victory
 DRIVERNV(victryfp)      //                Victory (Free Play)
+DRIVERNV(victrgfp)      //                Victory (German Free Play)
 DRIVERNV(diamond)       //S80b-711: 02/88 Diamond Lady
 DRIVERNV(diamonfp)      //                Diamond Lady (Free Play)
+DRIVERNV(diamngfp)      //                Diamond Lady (German Free Play)
 DRIVERNV(txsector)      //S80b-712: 03/88 TX Sector
 DRIVERNV(txsectfp)      //                TX Sector (Free Play)
+DRIVERNV(txsecgfp)      //                TX Sector (German Free Play)
 DRIVERNV(robowars)      //S80b-714: 04/88 Robo-War
 DRIVERNV(robowrfp)      //                Robo-War (Free Play)
 DRIVERNV(badgirls)      //S80b-717: 11/88 Bad Girls
 DRIVERNV(badgrlfp)      //                Bad Girls (Free Play)
+DRIVERNV(badgrgfp)      //                Bad Girls (German Free Play)
 DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(excalbfp)      //                Excalibur (Free Play)
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
 DRIVERNV(bighosfp)      //                Big House (Free Play)
+DRIVERNV(bighsgfp)      //                Big House (German Free Play)
 DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(hotshtfp)      //                Hot Shots (Free Play)
+DRIVERNV(hotshgfp)      //                Hot Shots (German Free Play)
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc.
 DRIVERNV(bonebsfp)      //                Bone Busters Inc. (Free Play)
+DRIVERNV(bonebgfp)      //                Bone Busters Inc. (German Free Play)
 DRIVERNV(bonebstf)      //                Bone Busters Inc. (French)
 DRIVERNV(nmoves)        //C-101:    11/89 Night Moves (for International Concepts)
 DRIVERNV(nmovesfp)      //                Night Moves (Free Play) (for International Concepts)
-DRIVERNV(amazonh3)      //S80b-684D:09/91 Amazon Hunt III
+DRIVERNV(amazonh3)      //S80b-684D:09/91 Amazon Hunt III (French)
+DRIVERNV(amazn3fp)      //                Amazon Hunt III (French Free Play)
+DRIVERNV(amaz3afp)      //                Amazon Hunt III (rev.1 French Free Play)
 //System 3 Alphanumeric
 DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
