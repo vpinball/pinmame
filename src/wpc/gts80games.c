@@ -1093,6 +1093,16 @@ GTS80_ROMEND
 #define input_ports_hlywhgfp input_ports_hlywoodh
 CORE_CLONEDEFNV(hlywhgfp,hlywoodh, "Hollywood Heat (German Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
+INITGAME(hlywhffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(hlywhffp, "prom2f_fp.cpu", CRC(969ca81f) SHA1(2606a0f63434056c5d2b509a885c9919a7a5d70f),
+                             "prom1f_fp.cpu", CRC(9b7df518) SHA1(02c649370c3424929813dcf8321bcc5f8cc85c88))
+GTS80BSSOUND888(             "drom1.snd",     CRC(a698ec33) SHA1(e7c1d28279ec4f12095c3a106c6cefcc2a84b31e),
+                             "yrom1.snd",     CRC(9232591e) SHA1(72883e0c542c572226c6c654bea14749cc9e351f),
+                             "yrom2.snd",     CRC(51709c2f) SHA1(5834d7b72bd36e30c87377dc7c3ad0cf26ff303a))
+GTS80_ROMEND
+#define input_ports_hlywhffp input_ports_hlywoodh
+CORE_CLONEDEFNV(hlywhffp,hlywoodh, "Hollywood Heat (French Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Genesis (#705)
 /-------------------------------------------------------------------*/
@@ -1126,6 +1136,16 @@ GTS80_ROMEND
 #define input_ports_genesgfp input_ports_genesis
 CORE_CLONEDEFNV(genesgfp,genesis, "Genesis (German Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
+INITGAME(genesffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(genesffp, "prom2f_fp.cpu",CRC(ea7f824f) SHA1(45f619153e0584cffd33e6e09e6f5a97ab9522b2),
+                             "prom1f_fp.cpu",CRC(4d94f012) SHA1(8da4793345365330d13873edee9ffded173ed935))
+GTS80BSSOUND888(             "drom1.snd",    CRC(758e1743) SHA1(6df3011c044796afcd88e52d1ca69692cb489ff4),
+                             "yrom1.snd",    CRC(4869b0ec) SHA1(b8a56753257205af56e06105515b8a700bb1935b),
+                             "yrom2.snd",    CRC(0528c024) SHA1(d24ff7e088b08c1f35b54be3c806f8a8757d96c7))
+GTS80_ROMEND
+#define input_ports_genesffp input_ports_genesis
+CORE_CLONEDEFNV(genesffp,genesis, "Genesis (French Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Gold Wings (#707)
 /-------------------------------------------------------------------*/
@@ -1158,6 +1178,16 @@ GTS80BSSOUND888(             "drom1.snd",    CRC(892dbb21) SHA1(e24611544693e95d
 GTS80_ROMEND
 #define input_ports_gldwggfp input_ports_goldwing
 CORE_CLONEDEFNV(gldwggfp,goldwing, "Gold Wings (German Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
+
+INITGAME(gldwgffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(gldwgffp, "prom2f_fp.cpu",CRC(50337adf) SHA1(dc286d52e6872edd68af442cbd0442babc174b93),
+                             "prom1f_fp.cpu",CRC(90dd07b7) SHA1(0058812c0ba94e4bb62579e84bc3f61918d2e6ab))
+GTS80BSSOUND888(             "drom1.snd",    CRC(892dbb21) SHA1(e24611544693e95dd2b9c0f2532c4d1f0b8ac10c),
+                             "yrom1.snd",    CRC(e17e9b1f) SHA1(ada9a6139a13ef31173801d560ec732d5a285140),
+                             "yrom2.snd",    CRC(4e482023) SHA1(62e97d229eb28ff67f0ebc4ee04c1b4918a4affe))
+GTS80_ROMEND
+#define input_ports_gldwgffp input_ports_goldwing
+CORE_CLONEDEFNV(gldwgffp,goldwing, "Gold Wings (French Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Monte Carlo (#708)
@@ -1193,6 +1223,17 @@ GTS80_ROMEND
 #define init_mntcrgfp init_mntecrlo
 #define input_ports_mntcrgfp input_ports_mntecrlo
 CORE_CLONEDEFNV(mntcrgfp,mntecrlo, "Monte Carlo (German Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+
+INITGAME(mntcrffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(mntcrffp, "prom2f_fp.cpu",CRC(f6842631) SHA1(7447994d2055c7fa12aaf35e93436ee829f5b7ae),
+                             "prom1f_fp.cpu",CRC(dbe0f749) SHA1(2a1fc7606dbc99ac534901ed91943d6dd49bd4e2))
+GTS80BSSOUND888(             "drom1.snd",    CRC(1a53ac15) SHA1(f2751664a09431e908873580ddf4f44df9b4eda7),
+                             "yrom1.snd",    CRC(6e234c49) SHA1(fdb4126ecdaac378d144e9dd3c29b4e79290da2a),
+                             "yrom2.snd",    CRC(a95d1a6b) SHA1(91946ef7af0e4dd96db6d2d6f4f2e9a3a7279b81))
+GTS80_ROMEND
+#define init_mntcrffp init_mntecrlo
+#define input_ports_mntcrffp input_ports_mntecrlo
+CORE_CLONEDEFNV(mntcrffp,mntecrlo, "Monte Carlo (French Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(mntecrla, "prom2a.cpu", CRC(5dd75c06) SHA1(911f7e56b7602c9bc9b51dde7719d3e0562f0702),
                              "prom1a.cpu", CRC(de980755) SHA1(0df99526a432e26fb73288b529dc0f4f49623e81))
@@ -1256,6 +1297,16 @@ GTS80_ROMEND
 #define init_sprbrgfp init_sprbreak
 #define input_ports_sprbrgfp input_ports_sprbreak
 CORE_CLONEDEFNV(sprbrgfp, sprbreak, "Spring Break (German Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+
+GTS80B_2K_ROMSTART(sprbrffp, "prom2f_fp.cpu",CRC(c0ee0555) SHA1(3d2aef5a8a6452f9f87b4ec2040643dda5843ebd),
+                             "prom1f_fp.cpu",CRC(8866bddf) SHA1(e8e54dbd5887241d96f21cb878024436e35f4e40))
+GTS80BSSOUND888(             "drom1.snd",    CRC(97d3f9ba) SHA1(1b34c7e51373c26d29d757c57a2b0333fe38d19e),
+                             "yrom1.snd",    CRC(5ea89df9) SHA1(98ce7661a4d862fd02c77e69b0f6e9372c3ade2b),
+                             "yrom2.snd",    CRC(0fb0128e) SHA1(3bdc5ed11b8e062f71f2a78b955830bd985e80a3))
+GTS80_ROMEND
+#define init_sprbrffp init_sprbreak
+#define input_ports_sprbrffp input_ports_sprbreak
+CORE_CLONEDEFNV(sprbrffp, sprbreak, "Spring Break (French Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(sprbrka,  "prom2a.cpu", CRC(d9d841b4) SHA1(8b9773e5ae9917d27089deca3b8311cb74e7f88e),
                              "prom1a.cpu", CRC(93db71e9) SHA1(59f75c4ef2c36b4f1f94dd365f2df82e7bcf53f8))
@@ -1349,6 +1400,16 @@ GTS80_ROMEND
 #define input_ports_arenagfp input_ports_arena
 CORE_CLONEDEFNV(arenagfp,arena, "Arena (German Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
 
+#define init_arenaffp init_arena
+GTS80B_2K_ROMSTART(arenaffp, "prom2f_fp.cpu",CRC(49b127d8) SHA1(0436f83e969b4bfc7edaf881bf7556a868c88cdc),
+                             "prom1f_fp.cpu",CRC(7389f4dc) SHA1(3dc72f011ebb2debbc005761da4b9720a279db2a))
+GTS80BSSOUND888(             "drom1.snd",    CRC(78e6cbf1) SHA1(7b66a0cb211a93cf475172aa0465a952009e1a59),
+                             "yrom1.snd",    CRC(f7a951c2) SHA1(12d7a6119d9033ae02c6312c9af888bfc7c63ad1),
+                             "yrom2.snd",    CRC(cc2aef4e) SHA1(a6e243de99f6a76eb527e879f4441c036dd379b6))
+GTS80_ROMEND
+#define input_ports_arenaffp input_ports_arena
+CORE_CLONEDEFNV(arenaffp,arena, "Arena (French Free Play)",1987,"Flipprojets",gl_mGTS80BS1,0)
+
 #define init_arenaa init_arena
 GTS80B_2K_ROMSTART(arenaa,"prom2a.cpu", CRC(13c8813b) SHA1(756e3583fd55b72e0bfb15e9b4a60740b389ca2e),
                           "prom1a.cpu", CRC(253eceb1) SHA1(b46ccec4b3e8fc57fb3295b675b4f27dafc0322e))
@@ -1403,6 +1464,15 @@ GTS80_ROMEND
 #define input_ports_victrgfp input_ports_victory
 CORE_CLONEDEFNV(victrgfp,victory, "Victory (German Free Play)",1987,"Flipprojets",gl_mGTS80BS2,0)
 
+INITGAME(victrffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(victrffp,"prom2f_fp.cpu",CRC(dffcfa77) SHA1(3efaca85295ca55268b8d7c7cfe8f09f159d5fbd),
+                            "prom1f_fp.cpu",CRC(a626da77) SHA1(300674ffb48deed503aae62a3b53b9941058605b))
+GTS80BSSOUND3232(           "drom1.snd",    CRC(4ab6dab7) SHA1(7e21e69029e60052112ddd5c7481582ea6684dc1),
+                            "yrom1.snd",    CRC(921a100e) SHA1(0c3c7eae4ceeb5a1a8150bac52203d3f1e8f917e))
+GTS80_ROMEND
+#define input_ports_victrffp input_ports_victory
+CORE_CLONEDEFNV(victrffp,victory, "Victory (French Free Play)",1987,"Flipprojets",gl_mGTS80BS2,0)
+
 /*-------------------------------------------------------------------
 / Diamond Lady (#711)
 /-------------------------------------------------------------------*/
@@ -1432,6 +1502,15 @@ GTS80BSSOUND3232(            "drom1.snd",    CRC(c216d1e4) SHA1(aa38db5ad36d1d1d
 GTS80_ROMEND
 #define input_ports_diamngfp input_ports_diamond
 CORE_CLONEDEFNV(diamngfp,diamond, "Diamond Lady (German Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+
+INITGAME(diamnffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(diamnffp, "prom2f_fp.cpu",CRC(943019a8) SHA1(558c3696339bb6e150b4ddb499bc60897d5954ec),
+                             "prom1f_fp.cpu",CRC(1d7feafd) SHA1(70f02157fcd94ff7b66750054b542642a3a051b2))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(c216d1e4) SHA1(aa38db5ad36d1d1d35e727ab27c1f1c05a9627cd),
+                             "yrom1.snd",    CRC(0a18d626) SHA1(6b367668be55ca04c69c4c4c5a4a524ae8f790f8))
+GTS80_ROMEND
+#define input_ports_diamnffp input_ports_diamond
+CORE_CLONEDEFNV(diamnffp,diamond, "Diamond Lady (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
 /*-------------------------------------------------------------------
 / TX-Sector (#712)
@@ -1463,6 +1542,15 @@ GTS80_ROMEND
 #define input_ports_txsecgfp input_ports_txsector
 CORE_CLONEDEFNV(txsecgfp,txsector, "TX-Sector (German Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
+INITGAME(txsecffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(txsecffp, "prom2f_fp.cpu",CRC(1bd08247) SHA1(968cc30e5e5c783e73cb3278a58189c4f8b8186f),
+                             "prom1f_fp.cpu",CRC(45e47931) SHA1(a92d323c4892cd1aa429cd884a8f1d33f0379667))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(61d66ca1) SHA1(59b1705b13d46b29f45257c566274f3cdce15ec2),
+                             "yrom1.snd",    CRC(469ef444) SHA1(faa16f34357a53c3fc61b59251fabdc44c605000))
+GTS80_ROMEND
+#define input_ports_txsecffp input_ports_txsector
+CORE_CLONEDEFNV(txsecffp,txsector, "TX-Sector (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+
 /*-------------------------------------------------------------------
 / Robo-War (#714)
 /-------------------------------------------------------------------*/
@@ -1484,6 +1572,15 @@ GTS80_ROMEND
 #define input_ports_robowrfp input_ports_robowars
 CORE_CLONEDEFNV(robowrfp,robowars, "Robo-War (Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
+INITGAME(robowffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(robowffp, "prom2f_fp.cpu",CRC(1afa0e69) SHA1(178813494b877ac9ca36863661596b4df04df1bb),
+                             "prom1f_fp.cpu",CRC(51cd5108) SHA1(9ba30ba0eaaabc8e60c79dc2322aeec51e4de09a))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(ea59b6a1) SHA1(6a4cdd37ba85f94f703afd1c5d3f102f51fedf46),
+                             "yrom1.snd",    CRC(7ecd8b67) SHA1(c5167b0acc64e535d389ba70be92a65672e119f6))
+GTS80_ROMEND
+#define input_ports_robowffp input_ports_robowars
+CORE_CLONEDEFNV(robowffp,robowars, "Robo-War (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+
 /*-------------------------------------------------------------------
 / Excalibur (#715)
 /-------------------------------------------------------------------*/
@@ -1504,6 +1601,15 @@ GTS80BSSOUND3232(            "drom1.snd",    CRC(a4368cd0) SHA1(c48513e56899938d
 GTS80_ROMEND
 #define input_ports_excalbfp input_ports_excalibr
 CORE_CLONEDEFNV(excalbfp,excalibr, "Excalibur (Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0) //!! different rev than above (as prom2 is NOT the same)??
+
+INITGAME(excalffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_4K_ROMSTART(excalffp, "prom2f_fp.cpu",CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
+                             "prom1f_fp.cpu",CRC(65601620) SHA1(d8a0f13618f5af4954e0079890ad1ce6ae490d57))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
+                             "yrom1.snd",    CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
+GTS80_ROMEND
+#define input_ports_excalffp input_ports_excalibr
+CORE_CLONEDEFNV(excalffp,excalibr, "Excalibur (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
 /****************************************/
 /* Start of Generation 3 Sound Hardware */
@@ -1539,6 +1645,15 @@ GTS80_ROMEND
 #define input_ports_badgrgfp input_ports_badgirls
 CORE_CLONEDEFNV(badgrgfp,badgirls, "Bad Girls (German Free Play)",1988,"Flipprojets",gl_mGTS80BS3,0)
 
+INITGAME(badgrffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(badgrffp, "prom2f_fp.cpu",CRC(58c35099) SHA1(ff76bd28175ea0f5d0437c16c5ae6886339edfe2),
+                             "prom1f_fp.cpu",CRC(32f42091) SHA1(0709f251b5633a68a93066721d105141fb79d74a))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(452dec20) SHA1(a9c41dfb2d83c5671ab96e946f13df774b567976),
+                             "yrom1.snd",    CRC(ab3b8e2d) SHA1(b57a0b804b42b923bb102d295e3b8a69b1033d27))
+GTS80_ROMEND
+#define input_ports_badgrffp input_ports_badgirls
+CORE_CLONEDEFNV(badgrffp,badgirls, "Bad Girls (French Free Play)",1988,"Flipprojets",gl_mGTS80BS3,0)
+
 /*-------------------------------------------------------------------
 / Big House (#713)
 /-------------------------------------------------------------------*/
@@ -1569,6 +1684,15 @@ GTS80_ROMEND
 #define input_ports_bighsgfp input_ports_bighouse
 CORE_CLONEDEFNV(bighsgfp,bighouse, "Big House (German Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
 
+INITGAME(bighsffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(bighsffp, "prom2f_fp.cpu",CRC(767efc44) SHA1(6b8f9a580e6a6ad92c9efe9f4345496d5063b7a8),
+                             "prom1f_fp.cpu",CRC(51012001) SHA1(5ad45694273234b2d13028b90c2a58245394095e))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(f330fd04) SHA1(1288c47f636d9d5b826a2b870b81788a630e489e),
+                             "yrom1.snd",    CRC(0b1ba1cb) SHA1(26327689992018837b1c9957c515ab67248623eb))
+GTS80_ROMEND
+#define input_ports_bighsffp input_ports_bighouse
+CORE_CLONEDEFNV(bighsffp,bighouse, "Big House (French Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
+
 /*-------------------------------------------------------------------
 / Hot Shots (#718)
 /-------------------------------------------------------------------*/
@@ -1598,6 +1722,15 @@ GTS80BSSOUND3232(            "drom1.snd",    CRC(42c3cc3d) SHA1(26ca7f3a71b83df1
 GTS80_ROMEND
 #define input_ports_hotshgfp input_ports_hotshots
 CORE_CLONEDEFNV(hotshgfp,hotshots, "Hot Shots (German Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
+
+INITGAME(hotshffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(hotshffp, "prom2f_fp.cpu",CRC(476e260c) SHA1(2b88920c77462d190f9b98aebf8fcb5c9e853ecd),
+                             "prom1f_fp.cpu",CRC(dedba56b) SHA1(b9b435173f1325e57532c7001777dec862213d97))
+GTS80BSSOUND3232(            "drom1.snd",    CRC(42c3cc3d) SHA1(26ca7f3a71b83df18ac6be1d1eb28da20120285e),
+                             "yrom1.snd",    CRC(2933a80e) SHA1(5982b9ed361d90f8ea47047fc29770ef142acbec))
+GTS80_ROMEND
+#define input_ports_hotshffp input_ports_hotshots
+CORE_CLONEDEFNV(hotshffp,hotshots, "Hot Shots (French Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
 / Bone Busters Inc. (#719)
@@ -1641,6 +1774,16 @@ GTS80BSSOUND3x32(            "drom2.snd", CRC(d147d78d) SHA1(f8f6d6a1921685b883b
 GTS80_ROMEND
 #define input_ports_bonebstf input_ports_bonebstr
 CORE_CLONEDEFNV(bonebstf,bonebstr, "Bone Busters Inc. (French)",1989,"Gottlieb",gl_mGTS80BS3A,0)
+
+INITGAME(bonebffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(bonebffp, "prom2f.cpu",   CRC(73b6486e) SHA1(1baf17f31b16d564ed5e3bdf9f74b21f83ed76fa),
+                             "prom1f_fp.cpu",CRC(5aa1bb17) SHA1(6499608e83261c1fd152e9bf982ce1470b6edf93))
+GTS80BSSOUND3x32(            "drom2.snd",    CRC(d147d78d) SHA1(f8f6d6a1921685b883b224a9ea85ead52a32a4c3),
+                             "drom1.snd",    CRC(ec43f4e9) SHA1(77b0988700be7a597dca7e5f06ac5d3c6834ce21),
+                             "yrom1.snd",    CRC(a95eedfc) SHA1(5ced2d6869a9895f8ff26d830b21d3c9364b32e7))
+GTS80_ROMEND
+#define input_ports_bonebffp input_ports_bonebstr
+CORE_CLONEDEFNV(bonebffp,bonebstr, "Bone Busters Inc. (French Free Play)",1989,"Flipprojets",gl_mGTS80BS3A,0)
 
 // Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
