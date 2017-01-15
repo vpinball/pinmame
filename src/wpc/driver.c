@@ -601,32 +601,41 @@ DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (alternate se
 DRIVERNV(triplyf1)      //                Chicago Cubs Triple Play (rev. 1 Free Play)
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(bounthfp)      //                Bounty Hunter (Free Play)
+DRIVERNV(bountyhg)      //                Bounty Hunter (German)
 DRIVERNV(bountgfp)      //                Bounty Hunter (German Free Play)
 DRIVERNV(tagteam)       //S80b-698: 09/85 Tag-Team Pinball
 DRIVERNV(tagtemfp)      //                Tag-Team Pinball (Free Play)
+DRIVERNV(tagteamg)      //                Tag-Team Pinball (German)
 DRIVERNV(tagtmgfp)      //                Tag-Team Pinball (German Free Play)
 DRIVERNV(tagteam2)      //                Tag-Team Pinball (rev.2)
 DRIVERNV(tagtem2f)      //                Tag-Team Pinball (rev.2 Free Play)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
 DRIVERNV(rockfp)        //                Rock (Free Play)
+DRIVERNV(rockg)         //                Rock (German)
 DRIVERNV(rockgfp)       //                Rock (German Free Play)
                         //S80b-700: ??/85 Ace High (never produced, playable whitewood exists)
 DRIVERNV(s80btest)      //S80B: Text Fixture
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
 DRIVERNV(ravenfp)       //                Raven (Free Play)
+DRIVERNV(raveng)        //                Raven (German)
 DRIVERNV(ravengfp)      //                Raven (German Free Play)
 DRIVERNV(ravena)        //                Raven (alternate set)
 DRIVERNV(ravenafp)      //                Raven (rev. 1 Free Play)
 DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(rock_efp)      //                Rock Encore (Free Play)
+DRIVERNV(rock_eg)       //                Rock Encore (German)
 DRIVERNV(rockegfp)      //                Rock Encore (German Free Play)
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(hlywdhfp)      //                Hollywood Heat (Free Play)
+DRIVERNV(hlywodhg)      //                Hollywood Heat (German)
 DRIVERNV(hlywhgfp)      //                Hollywood Heat (German Free Play)
+DRIVERNV(hlywodhf)      //                Hollywood Heat (French)
 DRIVERNV(hlywhffp)      //                Hollywood Heat (French Free Play)
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(genesifp)      //                Genesis (Free Play)
+DRIVERNV(genesisg)      //                Genesis (German)
 DRIVERNV(genesgfp)      //                Genesis (German Free Play)
+DRIVERNV(genesisf)      //                Genesis (French)
 DRIVERNV(genesffp)      //                Genesis (French Free Play)
 DRIVERNV(goldwing)      //S80b-707: 10/86 Gold Wings
 DRIVERNV(goldwgfp)      //                Gold Wings (Free Play)
@@ -694,6 +703,7 @@ DRIVERNV(nmoves)        //C-101:    11/89 Night Moves (for International Concept
 DRIVERNV(nmovesfp)      //                Night Moves (Free Play) (for International Concepts)
 DRIVERNV(amazonh3)      //S80b-684D:09/91 Amazon Hunt III (French)
 DRIVERNV(amazn3fp)      //                Amazon Hunt III (French Free Play)
+DRIVERNV(amazon3a)      //                Amazon Hunt III (rev.1 French)
 DRIVERNV(amaz3afp)      //                Amazon Hunt III (rev.1 French Free Play)
 //System 3 Alphanumeric
 DRIVERNV(tt_game)       //S3-7xx    ??/?? Unnamed game (for Toptronic)
