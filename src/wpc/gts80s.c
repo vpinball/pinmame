@@ -336,6 +336,20 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 	stream_update(stream_locals.stream, 0);
 }
 
+/* From flipprojets.fr:
+	The SC01-clock frequency is about 720 Khz at normal voice(when the 1408 receive
+	the value #7E at address $3000).The value #7E is about the middle of the
+	range and is used for all messages(except TILT).
+	For the “TILT”, the message start with the high value #A0 and end with the
+	low value #46 (the value is decreased by #0A, by 9 times).
+	The corresponding frequencies are :
+	Value #7E = 720 KHz (Must be adjusted to this frequency, for normal speech quality).
+	Value #46 = 398 KHz (Speech is very slow ...).
+	These frequencies were measured with the frequency meter, and data for
+	speech were programmed through our test equipment, so you can really use
+	them as a reference.
+*/
+
 /* D/A converter for voice clock */
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
@@ -1234,7 +1248,7 @@ static struct OKIM6295interface GTS3_okim6295_interface = {
 
 // Init
 void gts80b_init(struct sndbrdData *brdData) {
-    int drq = GTS80BS_locals.speechboard_drq;
+	int drq = GTS80BS_locals.speechboard_drq;
 	//GTS80BS_locals.nmi_timer = NULL;
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
 	GTS80BS_locals.cpuNo = brdData->cpuNo;
