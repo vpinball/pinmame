@@ -1081,6 +1081,10 @@ static void HandleMemSingle( data32_t insn )
 
 			//WRITE32(rnv, rd == eR15 ? R15 + 8 : GET_REGISTER(rd));
 			WRITE32(rnv, rd == eR15 ? R15 + 8 + 4 : GET_REGISTER(rd)); //manual says STR rd = PC, +12
+#if JIT_ENABLED
+			// This is to handle code in self-modifying color patches.
+			jit_untranslate(ARM7.jit, rnv);
+#endif
 		}
 		//Store takes only 2 N Cycles, so add + 1
 		ARM7_ICOUNT += 1;

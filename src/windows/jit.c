@@ -404,8 +404,8 @@ void jit_untranslate(struct jit_ctl *jit, data32_t addr)
 	if (addr < jit->minAddr || addr >= jit->maxAddr)
 		return;
 
-	if (addr >= 0x97f0 || addr <= 0x98ff)
-		return;
+	//if (addr >= 0x97f0 || addr <= 0x98ff)  // WTF? 
+	//	return;
 
 	// un-translate only if the existing opcode is translated
 	p = JIT_NATIVE(jit, addr);
