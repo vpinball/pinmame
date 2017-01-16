@@ -1844,43 +1844,33 @@ CORE_CLONEDEFNV(robowffp,robowars, "Robo-War (French Free Play)",1988,"Flipproje
 /*-------------------------------------------------------------------
 / Excalibur (#715)
 /-------------------------------------------------------------------*/
-//!! which set is the newer one? alternate or the original below?
-INITGAME(excalibr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
-GTS80B_4K_ROMSTART(excalibr, "prom2.cpu", CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
-                             "prom1.cpu", CRC(ed1083d7) SHA1(3ff829ecfaba7d20c75268d3ee5224cb3cac3507))
+INITGAME(excaliba, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_4K_ROMSTART(excaliba, "prom2.cpu", CRC(082d64ab) SHA1(0eae3b549839fc281d2487d483d0b4e723ebdc48),
+                             "prom1.cpu", CRC(e8902c16) SHA1(c3e4ece6be7027a4deef052ba4be752070e9b542))
 GTS80BSSOUND3232(            "drom1.snd", CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
                              "yrom1.snd", CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
 GTS80_ROMEND
-#define input_ports_excalibr input_ports_gts80
-CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS2,0)
-
-INITGAME(excaliba, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
-GTS80B_4K_ROMSTART(excaliba, "prom2a.cpu", CRC(082d64ab) SHA1(0eae3b549839fc281d2487d483d0b4e723ebdc48),
-                             "prom1a.cpu", CRC(e8902c16) SHA1(c3e4ece6be7027a4deef052ba4be752070e9b542))
-GTS80BSSOUND3232(            "drom1.snd",  CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
-                             "yrom1.snd",  CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
-GTS80_ROMEND
-#define input_ports_excaliba input_ports_excalibr
-CORE_CLONEDEFNV(excaliba,excalibr, "Excalibur (alternate set)",1988,"Gottlieb",gl_mGTS80BS2,0)
+#define input_ports_excaliba input_ports_gts80
+CORE_GAMEDEFNV(excaliba, "Excalibur",1988,"Gottlieb",gl_mGTS80BS2,0)
 
 INITGAME(excalbfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
-GTS80B_4K_ROMSTART(excalbfp, "prom2a.cpu",   CRC(082d64ab) SHA1(0eae3b549839fc281d2487d483d0b4e723ebdc48),
-                             "prom1a_fp.cpu",CRC(86cf464b) SHA1(c857187e6f3dd1f5b5013c95d3ded8a9a5a2e485))
-GTS80BSSOUND3232(            "drom1.snd",    CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
-                             "yrom1.snd",    CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
+GTS80B_4K_ROMSTART(excalbfp, "prom2.cpu",   CRC(082d64ab) SHA1(0eae3b549839fc281d2487d483d0b4e723ebdc48),
+                             "prom1_fp.cpu",CRC(86cf464b) SHA1(c857187e6f3dd1f5b5013c95d3ded8a9a5a2e485))
+GTS80BSSOUND3232(            "drom1.snd",   CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
+                             "yrom1.snd",   CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
 GTS80_ROMEND
-#define input_ports_excalbfp input_ports_excalibr
-CORE_CLONEDEFNV(excalbfp,excalibr, "Excalibur (alternate set Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+#define input_ports_excalbfp input_ports_excaliba
+CORE_CLONEDEFNV(excalbfp,excaliba, "Excalibur (Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
 // #715X
-INITGAME(excalibf, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
-GTS80B_4K_ROMSTART(excalibf, "prom2f.cpu", CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
+INITGAME(excalibr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_4K_ROMSTART(excalibr, "prom2f.cpu", CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
                              "prom1f.cpu", CRC(ed1083d7) SHA1(3ff829ecfaba7d20c75268d3ee5224cb3cac3507))
 GTS80BSSOUND3232(            "drom1.snd",  CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
                              "yrom1.snd",  CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
 GTS80_ROMEND
-#define input_ports_excalibf input_ports_excalibr
-CORE_CLONEDEFNV(excalibf,excalibr, "Excalibur (French)",1988,"Gottlieb",gl_mGTS80BS2,0)
+#define input_ports_excalibr input_ports_excaliba
+CORE_CLONEDEFNV(excalibr,excaliba, "Excalibur (French)",1988,"Gottlieb",gl_mGTS80BS2,0)
 
 INITGAME(excalffp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_4K_ROMSTART(excalffp, "prom2f.cpu",   CRC(499e2e41) SHA1(1e3fcba18882bd7df30a43843916aa5d7968eecc),
@@ -1888,8 +1878,8 @@ GTS80B_4K_ROMSTART(excalffp, "prom2f.cpu",   CRC(499e2e41) SHA1(1e3fcba18882bd7d
 GTS80BSSOUND3232(            "drom1.snd",    CRC(a4368cd0) SHA1(c48513e56899938dc83a3545d8ee9def3dc1491f),
                              "yrom1.snd",    CRC(9f194744) SHA1(dbd73b546071c3d4f0dcfe21e3e646da716c5b71))
 GTS80_ROMEND
-#define input_ports_excalffp input_ports_excalibr
-CORE_CLONEDEFNV(excalffp,excalibr, "Excalibur (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
+#define input_ports_excalffp input_ports_excaliba
+CORE_CLONEDEFNV(excalffp,excaliba, "Excalibur (French Free Play)",1988,"Flipprojets",gl_mGTS80BS2,0)
 
 /****************************************/
 /* Start of Generation 3 Sound Hardware */
