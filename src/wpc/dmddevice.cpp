@@ -14,6 +14,8 @@
 
 UINT16	seg_data_old[50] = {};
 UINT16	seg_data2[50] = {};
+UINT16	dmd_width = 128;
+UINT16	dmd_height = 32;
 
 HMODULE hModule;
 
@@ -108,6 +110,9 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 		DmdDev_Open();
 
+		dmd_width = 128; // set default DMD size
+		dmd_height = 32;
+
 		rgb24 color0,color33,color66,color100;
 
 		if (DmdDev_Set_4_Colors_Palette && Options->dmd_colorize) {
@@ -134,13 +139,23 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 void pindmdDeInit() {
 
+	UINT8 *tmpbuffer = (UINT8 *)malloc(dmd_width*dmd_height);
+	memset(tmpbuffer, 0x00, dmd_width*dmd_height);
+
+	if (DmdDev_Render_4_Shades) 
+		DmdDev_Render_4_Shades(dmd_width, dmd_height, tmpbuffer); //clear screen
+
 	if (DmdDev_Close)
 		DmdDev_Close();
 
+	free(tmpbuffer);
 	FreeLibrary(hModule);
 }
 
 void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame) {
+
+	dmd_width = width; // store for DeInit
+	dmd_height = height;
 
 	if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2)) {
 		if (DmdDev_Render_16_Shades)
