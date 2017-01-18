@@ -8,7 +8,7 @@ Fix some GTS3 DMD animations running too fast
 
 Change some more of the timing for the idle/throttle speed code
 
-Updated to zlib 1.2.10
+Updated to zlib 1.2.11
 
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches)
 Clones:

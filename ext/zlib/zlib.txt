@@ -5,7 +5,7 @@ Reason: Support for zipped ROM packages
 
 Visual C++
 ----------
-zlib Version: 1.2.10
+zlib Version: 1.2.11
 Built with: Visual C++ 9.0
 
 Library type: static
