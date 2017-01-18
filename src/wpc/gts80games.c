@@ -314,7 +314,7 @@ CORE_CLONEDEFNV(pnkpntr7,pnkpnthr,"Pink Panther (7-digit conversion)",2008,"Oliv
 
 INIT_S80(pnkpntrs, dispPinkPanther, SNDBRD_GTS80S)
 GTS80_1_ROMSTART ("664-1.cpu",          CRC(a0d3e69a) SHA1(590e68dc28067e61832927cd4b3eefcc066f0a92))
-GTS80S1K_ROMSTART("664_Flipprojets.snd",CRC(48aeb325) SHA1(49dae08c635f191841188565bd89f07c4ad44c08),
+GTS80S1K_ROMSTART("664_flipprojets.snd",CRC(48aeb325) SHA1(49dae08c635f191841188565bd89f07c4ad44c08),
                   "6530sy80.bin",       CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
 GTS80_ROMEND
 #define input_ports_pnkpntrs input_ports_pnkpnthr
