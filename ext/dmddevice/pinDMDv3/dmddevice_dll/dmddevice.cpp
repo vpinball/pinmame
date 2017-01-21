@@ -10,6 +10,7 @@
 
 bool isOpen = false;
 bool useRGB = false;
+static UINT8 oldbuffer[16384] = {};
 
 
 DMDDEV int Open()
@@ -79,6 +80,11 @@ DMDDEV void Set_16_Colors_Palette(rgb24 *color)
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 {
+	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+		return;
+
+	memcpy(oldbuffer, currbuffer, width*height);
+
 	if (isOpen) {
 		renderDMDFrame(0x00000000080, (UINT8) width, (UINT8) height, currbuffer, 0x00); 
 	}
@@ -86,6 +92,11 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
+	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+		return;
+
+	memcpy(oldbuffer, currbuffer, width*height);
+
 	if (isOpen) {
 		render16ShadeFrame(currbuffer);
 	}
@@ -162,6 +173,11 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 
 DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
 {
+	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+		return;
+
+	memcpy(oldbuffer, currbuffer, width*height);
+
 	if (!isOpen && !useRGB) {
 		tPMoptions Options;
 		Options.dmd_red = 255;
