@@ -310,7 +310,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 {
 	if (isOpen) {	
 		memset(AlphaNumericFrameBuffer,0x00,2048);
-	
+
 		OutputPacketBuffer[0] = 0x81;	// frame sync bytes
 		OutputPacketBuffer[1] = 0xC3;
 		OutputPacketBuffer[2] = 0xE7;
@@ -362,6 +362,11 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			default:
 				break;
 		}
+
+		if (!memcmp(oldbuffer, AlphaNumericFrameBuffer, 2048)) //check if same frame again
+			return;
+
+		memcpy(oldbuffer, AlphaNumericFrameBuffer, 2048);
 
 		memcpy(OutputPacketBuffer+4,AlphaNumericFrameBuffer,2048);
 		DWORD bytes;

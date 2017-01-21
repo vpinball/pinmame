@@ -105,7 +105,7 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
-	if (isOpen) {	
+	if (isOpen) {
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
 		switch (layout) {
@@ -166,6 +166,11 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			tempbuffer[(i*8)+6] = AlphaNumericFrameBuffer[i]>>6 & 0x01 | AlphaNumericFrameBuffer[i+512]>>5 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>4 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>3 & 0x08;
 			tempbuffer[(i*8)+7] = AlphaNumericFrameBuffer[i]>>7 & 0x01 | AlphaNumericFrameBuffer[i+512]>>6 & 0x02 | AlphaNumericFrameBuffer[i+1024]>>5 & 0x04 | AlphaNumericFrameBuffer[i+1536]>>4 & 0x08;
 		}
+
+		if (!memcmp(oldbuffer, tempbuffer, 128*32)) //check if same frame again
+			return;
+
+		memcpy(oldbuffer, tempbuffer, 128*32);
 
 		render16ShadeFrame(tempbuffer);
 	}
