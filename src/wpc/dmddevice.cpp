@@ -2,6 +2,7 @@
 #include "driver.h"
 #include "gen.h"
 #include "core.h"
+#include "cpu/at91/at91.h"
 #include "dmddevice.h"
 
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
@@ -35,6 +36,10 @@ Set_4_Colors_Palette_t DmdDev_Set_4_Colors_Palette;
 typedef void (*Console_Data_t)(UINT8 data);
 Console_Data_t DmdDev_Console_Data;
 
+typedef int(*Console_Input_t)(UINT8 *buf, int size);
+typedef int(*Console_Input_Ptr_t)(Console_Input_t ptr);
+Console_Input_Ptr_t DmdDev_Console_Input_Ptr;
+
 typedef void (*Render_16_Shades_t)(UINT16 width, UINT16 height, UINT8 *currbuffer);
 Render_16_Shades_t DmdDev_Render_16_Shades;
 
@@ -44,6 +49,20 @@ Render_4_Shades_t DmdDev_Render_4_Shades;
 typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
 
+void FwdConsoleData(UINT8 data){
+	if (DmdDev_Console_Data)
+		DmdDev_Console_Data(data);
+}
+
+extern "C" {
+	int at91_receive_serial(int usartno, data8_t *buf, int size);
+}
+
+int RcvConsoleInput(UINT8 *buf, int size)
+{
+	int ret = at91_receive_serial(1, buf, size);
+	return ret;
+}
 
 int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options) {
 	
@@ -103,12 +122,17 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 	DmdDev_Console_Data = (Console_Data_t) GetProcAddress(hModule, "Console_Data");
 
+	DmdDev_Console_Input_Ptr = (Console_Input_Ptr_t)GetProcAddress(hModule, "Console_Input_Ptr");
+
 	if ( !DmdDev_Open || !DmdDev_Close || !DmdDev_PM_GameSettings || !DmdDev_Render_4_Shades || !DmdDev_Render_16_Shades || !DmdDev_render_PM_Alphanumeric_Frame ) {
 		MessageBox(NULL, "DMD device driver functions not found", filename, MB_ICONERROR);
 		return 0;
 	} else {
 
 		DmdDev_Open();
+
+		if (DmdDev_Console_Input_Ptr)
+			DmdDev_Console_Input_Ptr(RcvConsoleInput);
 
 		dmd_width = 128; // set default DMD size
 		dmd_height = 32;
@@ -321,9 +345,3 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	memcpy(seg_data_old,seg_data,50*sizeof(UINT16));
 
 }   // legacy pinMame
-
-
-void FwdConsoleData(UINT8 data){
-	if (DmdDev_Console_Data)
-		DmdDev_Console_Data(data);
-}

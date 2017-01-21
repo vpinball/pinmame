@@ -429,6 +429,11 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 			default:
 				break;
 		}
+
+		if (!memcmp(oldbuffer, AlphaNumericFrameBuffer, 2048)) //check if same frame again
+			return;
+
+		memcpy(oldbuffer, AlphaNumericFrameBuffer, 2048);
 				
 		memcpy(OutputPacketBuffer+4,AlphaNumericFrameBuffer,2048);
 
