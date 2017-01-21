@@ -546,6 +546,7 @@ DRIVERNV(pnkpnthr)      //S80-664:  03/81 Pink Panther
 DRIVERNV(pnkpntr7)      //          01/08 Pink Panther (7-digit conversion)
 DRIVERNV(pnkpntrs)      //          03/81 Pink Panther (sound correction fix)
 DRIVERNV(mars)          //S80-666:  03/81 Mars God of War
+DRIVERNV(marsp)         //          ??/?? Mars God of War (Prototype)
 DRIVERNV(marsf)         //          03/81 Mars God of War (French speech)
 DRIVERNV(mars7)         //          01/08 Mars God of War (7-digit conversion)
 DRIVERNV(mars_2)        //          03/81 Mars God of War (rev. 2 unofficial MOD) // fixes a potential startup problem
