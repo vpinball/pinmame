@@ -17,6 +17,7 @@
 #define EP_OUT 0x01
 
 bool isOpen = false;
+static UINT8 oldbuffer[16384] = {};
 
 usb_dev_handle *DeviceHandle = NULL; 
 
@@ -188,6 +189,11 @@ DMDDEV void PM_GameSettings(const char* GameName, UINT64 HardwareGeneration, con
 
 DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
+	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+		return;
+
+	memcpy(oldbuffer, currbuffer, width*height);
+
 	if (isOpen) {
 		int byteIdx=4;
 		UINT8 tempbuffer[128*32]; // for rescale
@@ -278,6 +284,11 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer) 
 {
+	if (!memcmp(oldbuffer, currbuffer, width*height)) //check if same frame again
+		return;
+
+	memcpy(oldbuffer, currbuffer, width*height);
+
 	if (isOpen) {
 		int byteIdx=4;
 		UINT8 tempbuffer[128*32]; // for rescale
