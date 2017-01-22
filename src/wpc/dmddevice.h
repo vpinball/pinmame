@@ -33,7 +33,6 @@ void pindmdDeInit();
 void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame); // legacy pinMame
 void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens);   // legacy pinMame
 void FwdConsoleData(UINT8 data);
-#define frameClock() {}	// legacy pinMame
 
 #ifdef __cplusplus
 }
