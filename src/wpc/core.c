@@ -748,8 +748,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   static UINT8 *currbuffer = buffer1;
   static UINT8 *oldbuffer = NULL;
 
-  UINT8 dumpframe = 1;
-
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
 
   const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
@@ -863,79 +861,65 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 
 #ifdef VPINMAME
-  // detect if same frame again
-  if(oldbuffer != NULL) {
-	  dumpframe = 0;
-	  for(jj = 0; jj < layout->start; jj++)
-		  for(ii = 0; ii < layout->length; ii++)
-		  {
-			  const int offs = jj*layout->length + ii;
-			  if ((currbuffer[offs] != oldbuffer[offs]) &&
-				  ((currbuffer[offs] < 4) || (core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))) {
-				  dumpframe = 1;
-				  break;
-			  }
-		  }
-  }
 
-  if(dumpframe)
-	  g_needs_DMD_update = 1;
+  if ((layout->length == 128) || (layout->length == 192) || (layout->length == 256)) { // filter 16x8 output from Flipper Football
 
-  // output to PinDMD or dump frame to .txt
-  if(g_fShowPinDMD || g_fDumpFrames) {
-    if(dumpframe) {
-	    //usb dmd
-	    if((layout->length == 128) || (layout->length == 192) || (layout->length == 256))
-		{
-	      if(g_fShowPinDMD)
-		    renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
-		  if((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)
+	  //external dmd
+	  if (g_fShowPinDMD)
+		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
+
+	  if (oldbuffer != NULL) {	  // detect if same frame again
+		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
 		  {
-			FILE *f;
-			char *ptr;
-			char* DumpFilename = (char*)malloc(MAX_PATH);
+			  g_needs_DMD_update = 1;
+
+			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
+			  {
+				  FILE *f;
+				  char *ptr;
+				  char* DumpFilename = (char*)malloc(MAX_PATH);
 
 #ifndef _WIN64
-			const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
-			const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+				  const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
 #endif
-			GetModuleFileName(hInst, DumpFilename, MAX_PATH);
-			ptr = strrchr(DumpFilename, '\\');
-			strcpy_s(ptr + 1, 11, "DmdDump\\");
-			strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-			strcat_s(DumpFilename, MAX_PATH, ".txt");
+				  GetModuleFileName(hInst, DumpFilename, MAX_PATH);
+				  ptr = strrchr(DumpFilename, '\\');
+				  strcpy_s(ptr + 1, 11, "DmdDump\\");
+				  strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+				  strcat_s(DumpFilename, MAX_PATH, ".txt");
 
-			f = fopen(DumpFilename,"a");
-			free(DumpFilename);
-			if(f) {
-				const DWORD tick = GetTickCount();
-				fprintf(f,"0x%08x\n", tick);
-				for(jj = 0; jj < layout->start; jj++) {
-					for(ii = 0; ii < layout->length; ii++)
-					{
-						const UINT8 col = currbuffer[jj*layout->length + ii];
-						fprintf(f,"%01x",col);
-					}
-					fprintf(f,"\n");
-				}
-				fprintf(f,"\n");
-				fclose(f);
-			}
+				  f = fopen(DumpFilename, "a");
+				  free(DumpFilename);
+				  if (f) {
+					  const DWORD tick = GetTickCount();
+					  fprintf(f, "0x%08x\n", tick);
+					  for (jj = 0; jj < layout->start; jj++) {
+						  for (ii = 0; ii < layout->length; ii++)
+						  {
+							  const UINT8 col = currbuffer[jj*layout->length + ii];
+							  fprintf(f, "%01x", col);
+						  }
+						  fprintf(f, "\n");
+					  }
+					  fprintf(f, "\n");
+					  fclose(f);
+				  }
+			  }
 		  }
-		}
-	}
+	  }
 
-	if(g_fShowPinDMD)
-	    frameClock();
-  }
+	  // swap buffers
+	  if (currbuffer == buffer1) {
+		  currbuffer = buffer2;
+		  oldbuffer = buffer1;
+	  }
+	  else {
+		  currbuffer = buffer1;
+		  oldbuffer = buffer2;
+	  }
 
-  if (currbuffer == buffer1) {
-	  currbuffer = buffer2;
-	  oldbuffer = buffer1;
-  } else {
-	  currbuffer = buffer1;
-	  oldbuffer = buffer2;
   }
 #endif
 }
