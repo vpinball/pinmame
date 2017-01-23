@@ -83,16 +83,8 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	strcpy(ptr+1,"DmdDevice.dll");
 #endif
 
-	hModule = LoadLibraryEx(filename,NULL,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+	hModule = LoadLibraryEx(filename, NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 	
-	if ( !hModule ) {
-#ifdef _WIN64
-		hModule = LoadLibraryEx("DmdDevice64.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-#else
-		hModule = LoadLibraryEx("DmdDevice.dll", NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-#endif
-	}
-
 	if ( !hModule ) {
 #ifdef _WIN64
 		hModule = LoadLibrary("DmdDevice64.dll");
