@@ -16,6 +16,8 @@ FT_HANDLE ftHandle;
 
 bool isOpen = false;
 static UINT8 oldbuffer[16384] = {};
+static UINT16 seg_data_old[50] = {};
+
 //bool doOther;
 bool slowUSB = false;
 
@@ -308,6 +310,11 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2) 
 {
+	if (memcmp(seg_data, seg_data_old, 50 * sizeof(UINT16)) == 0)
+		return;
+
+	memcpy(seg_data_old, seg_data, 50 * sizeof(UINT16));
+
 	if (isOpen) {	
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 

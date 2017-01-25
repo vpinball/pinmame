@@ -13,7 +13,6 @@
  #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 #endif
 
-UINT16	seg_data_old[50] = {};
 UINT16	seg_data2[50] = {};
 UINT16	dmd_width = 128;
 UINT16	dmd_height = 32;
@@ -187,10 +186,6 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	layout_t layout = None;
 	bool hasExtraData = false;
 	
-	// dont update dmd if segments have changed
-	if(memcmp(seg_data,seg_data_old,50*sizeof(UINT16))==0)
-		return;
-
 	// Medusa fix
 	if((gen == GEN_BY35) && (disp_lens[0] == 2))
 	{
@@ -333,7 +328,5 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 
 	if (DmdDev_render_PM_Alphanumeric_Frame)
 		DmdDev_render_PM_Alphanumeric_Frame (layout, seg_data, seg_data2);
-
-	memcpy(seg_data_old,seg_data,50*sizeof(UINT16));
 
 }   // legacy pinMame
