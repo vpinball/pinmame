@@ -18,6 +18,7 @@
 
 bool isOpen = false;
 static UINT8 oldbuffer[16384] = {};
+static UINT16 seg_data_old[50] = {};
 
 usb_dev_handle *DeviceHandle = NULL; 
 
@@ -96,11 +97,21 @@ DMDDEV int Open()
 void Send_Logo(void)
 {
 		FILE *fLogo;
-
+		char filename[MAX_PATH];
 		UINT8 LogoBuffer[32][128] = {};
 
 		// display dmd logo from text file if it exists
-		fopen_s(&fLogo, "dmdlogo.txt","r");
+
+#ifndef _WIN64
+		const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
+#else
+		const HINSTANCE hInst = GetModuleHandle("VPinMAME64.dll");
+#endif
+		GetModuleFileName(hInst, filename, MAX_PATH);
+		char *ptr = strrchr(filename, '\\');
+		strcpy_s(ptr + 1, 12, "dmdlogo.txt");
+
+		fopen_s(&fLogo, filename, "r");
 		if(fLogo){
 			for(int i=0; i<32; i++){
 				for(int j=0; j<128; j++)
@@ -375,6 +386,11 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 
 DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2)
 {
+	if (memcmp(seg_data, seg_data_old, 50 * sizeof(UINT16)) == 0)
+		return;
+
+	memcpy(seg_data_old, seg_data, 50 * sizeof(UINT16));
+
 	if (isOpen) {
 		memset(AlphaNumericFrameBuffer,0x00,2048);
 	
