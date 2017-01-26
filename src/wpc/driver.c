@@ -2264,9 +2264,12 @@ DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
 DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1) Europe
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
-DRIVER(rollr,l3)        //          05/90 W Rollergames (L-3) Europe
-DRIVER(rollr,g3)        //          05/90 W Rollergames (L-3) German
-DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7) Proto
+DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3) Europe
+DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3) German
+DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2) French
+DRIVER(rollr,f3)        //          ??/90 W Rollergames (LF-3) French
+DRIVER(rollr,d2)        //          ??/?? W Rollergames (AD-2) Prototype
+DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7) Prototype
 DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
 DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)

@@ -10,7 +10,7 @@ Change some more of the timing for the idle/throttle speed code
 
 Updated to zlib 1.2.11
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches)
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org
 Clones:
 Amazon Hunt II (French Free Play)
 Amazon Hunt III (French Free Play)
@@ -99,6 +99,9 @@ Rock (German Free Play)
 Rock Encore (Free Play)
 Rock Encore (German)
 Rock Encore (German Free Play)
+Rollergames (AD-2 Prototype) (sample/prototype with 8 drop targets)
+Rollergames (LF-2 French)
+Rollergames (LF-3 French)
 Spring Break (Free Play)
 Spring Break (French)
 Spring Break (French Free Play)
