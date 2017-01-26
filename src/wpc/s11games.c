@@ -957,7 +957,7 @@ CORE_CLONEDEF(rollr,e1,l2, "Rollergames (PU-1)", 1991, "Williams", s11_mS11CS,0)
 S11_ROMSTART48(rollr,p2,"rolr_u26.pa2", CRC(11d96b1c) SHA1(e96991bdef8b14043285feeb4cacc182a6e9dcbd),
                         "rolr_u27.pa2", CRC(ee547bd5) SHA1(db45bf7a25321ac041f58404f7512bded9ebf11e))
 S11CS_SOUNDROM000(      "rolr_u4.pa1",  CRC(324df946) SHA1(e7ba2b9434baea20a0cf38540fdab1668c058539),
-                        "rolr_u19.pa1", CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
+                        "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
                         "rolr_u20.pa1", CRC(8ddaaad1) SHA1(33f58c6a9b0e509b7c9a460a687d6e2c388b4b54))
 S11_ROMEND
 CORE_CLONEDEF(rollr,p2,l2, "Rollergames (PA-2, PA-1 Sound)", 1991, "Williams", s11_mS11CS,0)
