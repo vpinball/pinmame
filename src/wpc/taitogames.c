@@ -407,18 +407,18 @@ TAITO_ROMEND
 CORE_GAMEDEFNV(gork,"Gork",1982,"Taito",taito_sintevoxpp,0)
 
 /*--------------------------------
-/ Voley Ball
+/ Volley
 /-------------------------------*/
 INITGAME(voleybal,SNDBRD_TAITO_SINTETIZADORPP)
-TAITO_ROMSTART2222(voleybal,"voley1.bin",NO_DUMP,
-                            "voley2.bin",NO_DUMP,
-                            "voley3.bin",NO_DUMP,
-                            "voley4.bin",NO_DUMP)
+TAITO_ROMSTART2222(voleybal,"voley1.bin",CRC(d218b759) SHA1(91dab8a583b9fa897fc0bd17cce2812015b2a82a),
+                            "voley2.bin",CRC(59b049cc) SHA1(f3b42debddf7e088f520c020017c0aca56ad0052),
+                            "voley3.bin",CRC(f3fdbb37) SHA1(d78bd68e7bdbdbc4447c65b77bd5b30a23d0951c),
+                            "voley4.bin",CRC(35168496) SHA1(29ca360368970a0fae51f187ad5a89ad81ae2c6a))
 TAITO_SOUNDROMS44("voley_s1.bin", CRC(9c825666) SHA1(330ecd9caccb8a1555c5e7302095ae25558c020e),
                   "voley_s2.bin", CRC(79a8228c) SHA1(e71d9347a8fc230c70703164ae0e4d44423bbb5d))
 TAITO_ROMEND
 #define input_ports_voleybal input_ports_taito
-CORE_GAMEDEFNV(voleybal,"Voley Ball",198?,"Taito",taito_sintetizadorpp,0)
+CORE_GAMEDEFNV(voleybal,"Volley",198?,"Taito",taito_sintetizadorpp,0)
 
 //??/8? Ogar
 
