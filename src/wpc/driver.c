@@ -2014,7 +2014,7 @@ DRIVERNV(lunelle )      //??/82 Lunelle (W Alien Poker, 10/80)
 DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
 DRIVERNV(snake   )      //??/82 Snake Machine
 DRIVERNV(gork    )      //??/82 Gork
-DRIVERNV(voleybal)      //??/?? Voley Ball
+DRIVERNV(voleybal)      //??/?? Volley
                         //??/8? Ogar
 DRIVERNV(icecold)       //??/83 Ice Cold Beer (Redemption)
 DRIVERNV(icecoldf)      //??/83 Ice Cold Beer (Redemption Free Play)
