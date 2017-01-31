@@ -10,7 +10,10 @@ Change some more of the timing for the idle/throttle speed code
 
 Updated to zlib 1.2.11
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta
+New:
+Volley (formerly known as Voley Ball and missing most dumps)
+
 Clones:
 Amazon Hunt II (French Free Play)
 Amazon Hunt III (French Free Play)
