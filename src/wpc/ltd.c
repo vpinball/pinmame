@@ -50,6 +50,7 @@ static struct {
   core_tSeg segments;
   int swCol, lampCol, cycle, solBank;
   UINT8 port2, dispData[2], auxData;
+  int isHH;
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
@@ -126,6 +127,12 @@ static WRITE_HANDLER(peri_w) {
   if (offset < 10) {
     locals.segments[18 - 2*offset].w = core_bcd2seg[data >> 4];
     locals.segments[19 - 2*offset].w = core_bcd2seg[data & 0x0f];
+    if (core_gameData->hw.gameSpecific1 & (1 << (19 - 2 * offset))) {
+      coreGlobals.tmpLampMatrix[17 - offset] = (coreGlobals.tmpLampMatrix[17 - offset] & 0xf0) | (data & 0x0f);
+    }
+    if (core_gameData->hw.gameSpecific1 & (1 << (18 - 2 * offset))) {
+      coreGlobals.tmpLampMatrix[17 - offset] = (coreGlobals.tmpLampMatrix[17 - offset] & 0x0f) | (data & 0xf0);
+    }
   } else if (offset >= 0x10 && offset < 0x16) {
     coreGlobals.tmpLampMatrix[offset - 0x10] = data;
     // map flippers enable to sol 17
@@ -164,12 +171,6 @@ static WRITE_HANDLER(auxlamp6_w) {
   coreGlobals.tmpLampMatrix[13] = data;
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static WRITE_HANDLER(auxlamp7_w) {
-  coreGlobals.tmpLampMatrix[7] = data;
-}
-#endif
-
 static WRITE_HANDLER(ram_w) {
   generic_nvram[offset] = data;
   if (offset >= 0x60 && offset < 0x78) peri_w(offset-0x60, data);
@@ -207,7 +208,7 @@ MACHINE_DRIVER_START(LTD)
   MDRV_CPU_ADD_TAG("mcpu", M6802, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(LTD_irq, 200)
+  MDRV_CPU_PERIODIC_INT(LTD_irq, 120)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
@@ -216,6 +217,11 @@ MACHINE_DRIVER_END
 
 
 // System 4
+
+static MACHINE_INIT(LTDHH) {
+  memset(&locals, 0, sizeof locals);
+  locals.isHH = 1;
+}
 
 static INTERRUPT_GEN(LTD4_vblank) {
   locals.vblankCount++;
@@ -263,7 +269,14 @@ static WRITE_HANDLER(peri4_w) {
   if (locals.port2 & 0x10) {
     switch (locals.cycle) {
       case  0: if (data != 0xff) locals.lampCol = (1 + core_BitColToNum(data)) % 8; clear = (data != 0xff); break;
-      case  1: locals.solBank = core_BitColToNum(data); break;
+      case  1: if (locals.isHH) {
+                 if ((data & 0x0f) != 0x0f) {
+                 	 locals.solenoids |= 1 << (data & 0x0f);
+                 	 coreGlobals.solenoids = locals.solenoids;
+                 }
+               } else
+               	 locals.solBank = core_BitColToNum(data);
+               break;
       case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4);
                locals.solenoids2 |= (data & 0x0f) << 4;
                coreGlobals.solenoids = locals.solenoids; coreGlobals.solenoids2 = locals.solenoids2; break;
@@ -285,6 +298,7 @@ static READ_HANDLER(unknown_r) {
 
 static WRITE_HANDLER(cycle_w) {
   if (~locals.port2 & data & 0x10) locals.cycle++;
+  if (locals.port2 == 0x04) locals.cycle = 0;
   locals.port2 = data;
 }
 
@@ -341,4 +355,9 @@ MACHINE_DRIVER_START(LTD4)
   MDRV_SWITCH_UPDATE(LTD4)
   MDRV_SOUND_ADD(AY8910, LTD_ay8910Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(LTD4HH)
+  MDRV_IMPORT_FROM(LTD4)
+  MDRV_CORE_INIT_RESET_STOP(LTDHH,NULL,NULL)
 MACHINE_DRIVER_END

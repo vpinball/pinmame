@@ -873,34 +873,38 @@ DRIVERNV(pimbal  )      //????  - Pimbal (Pinball 3000, 19??)
 // LTD
 // ----------------
 // Sistema III
-                        //O Gaucho
-                        //Samba
                         //Amazon
-                        //Arizona
+DRIVERNV(arizona )      //Arizona
 DRIVERNV(atla_ltd)      //Atlantis
+                        //Big Flush
+                        //Carnaval no Rio
+DRIVERNV(discodan)      //Disco Dancing
                         //Galaxia
                         //Grand Prix
-                        //Hustler
-                        //Martian Queen
-DRIVERNV(bhol_ltd)      //Black Hole
-DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
-// Sistema IV
-DRIVERNV(alcapone)      //Al Capone
-                        //Alien Warrior
-                        //Carnaval no Rio
-DRIVERNV(columbia)      //Columbia
-DRIVERNV(cowboy  )      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
-                        //Cowboy 2
-                        //Disco Dancing
-                        //Force
-                        //Haunted Hotel
-                        //King Kong
+DRIVERNV(hustler )      //Hustler
+DRIVERNV(hustlera)      //Hustler (alternate set)
+DRIVERNV(kkongltd)      //King Kong
                         //Kung Fu
+DRIVERNV(marqueen)      //Martian Queen
+                        //O Gaucho
+                        //Samba
+DRIVERNV(spcpoker)      //Space Poker
+DRIVERNV(vikngkng)      //Viking King
+DRIVERNV(force)         //Force
+DRIVERNV(bhol_ltd)      //Black Hole
+DRIVERNV(cowboy3p)      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
+DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
+DRIVERNV(zephya  )      //Zephy (alternate set)
+// Sistema IV
+DRIVERNV(cowboy  )      //Cowboy Eight Ball 2 (clone of Bally Eight Ball Deluxe)
+DRIVERNV(hhotel  )      //Haunted Hotel
 DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game! :))
-                        //Space Poker
-                        //Time Machine
-                        //Trick Shooter
-                        //Viking King
+DRIVERNV(alcapone)      //Al Capone
+DRIVERNV(alienwar)      //Alien Warrior
+DRIVERNV(columbia)      //Columbia
+DRIVERNV(tmacltd2)      //Time Machine (2 players)
+DRIVERNV(tmacltd4)      //Time Machine (4 players)
+DRIVERNV(tricksht)      //Trick Shooter
 
 // ----------------
 // MAC GAMES

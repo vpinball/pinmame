@@ -59,6 +59,27 @@
 /* CPUs */
 #define LTD_CPU	0
 
+/*-- LTD CPU regions and ROM, 1x1K game PROM version --*/
+#define LTD_1_ROMSTART(name, n1, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, LTD_MEMREG_CPU) \
+       ROM_LOAD(n1, 0xc000, 0x0400, chk1) \
+         ROM_RELOAD(0xc400, 0x0400) \
+         ROM_RELOAD(0xc800, 0x0400) \
+         ROM_RELOAD(0xcc00, 0x0400) \
+         ROM_RELOAD(0xd000, 0x0400) \
+         ROM_RELOAD(0xd400, 0x0400) \
+         ROM_RELOAD(0xd800, 0x0400) \
+         ROM_RELOAD(0xdc00, 0x0400) \
+         ROM_RELOAD(0xe000, 0x0400) \
+         ROM_RELOAD(0xe400, 0x0400) \
+         ROM_RELOAD(0xe800, 0x0400) \
+         ROM_RELOAD(0xec00, 0x0400) \
+         ROM_RELOAD(0xf000, 0x0400) \
+         ROM_RELOAD(0xf400, 0x0400) \
+         ROM_RELOAD(0xf800, 0x0400) \
+         ROM_RELOAD(0xfc00, 0x0400)
+
 /*-- LTD CPU regions and ROM, 1x2K game PROM version --*/
 #define LTD_2_ROMSTART(name, n1, chk1) \
    ROM_START(name) \
@@ -70,7 +91,7 @@
          ROM_RELOAD(0xe000, 0x0800) \
          ROM_RELOAD(0xe800, 0x0800) \
          ROM_RELOAD(0xf000, 0x0800) \
-         ROM_RELOAD(0xf800, 0x0800) \
+         ROM_RELOAD(0xf800, 0x0800)
 
 /*-- LTD CPU regions and ROM, 1x4K game PROM version --*/
 #define LTD_4_ROMSTART(name, n1, chk1) \
@@ -93,8 +114,10 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(LTD);
 extern MACHINE_DRIVER_EXTERN(LTD4);
+extern MACHINE_DRIVER_EXTERN(LTD4HH);
 
-#define gl_mLTD		LTD
-#define gl_mLTD4	LTD4
+#define gl_mLTD    LTD
+#define gl_mLTD4   LTD4
+#define gl_mLTD4HH LTD4HH
 
 #endif /* INC_LTD */
