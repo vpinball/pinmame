@@ -362,7 +362,7 @@ void uSleep(const UINT64 u)
 			Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		else
 #ifdef __MINGW32__
-			_mm_pause();
+			{__asm__ __volatile__("pause");}
 #else
 			YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
 #endif
