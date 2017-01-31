@@ -361,7 +361,11 @@ void uSleep(const UINT64 u)
 		if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
 			Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		else
+#ifdef __MINGW32__
+			_mm_pause();
+#else
 			YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
+#endif
 
 		QueryPerformanceCounter(&TimerNow);
 	}
