@@ -21,7 +21,7 @@ static core_tLCDLayout disp2p5[] = {
 /*-------------------------------------------------------------------
 / Arizona
 /-------------------------------------------------------------------*/
-INITGAME(arizona, disp2p5, 1, 5, 0x1f3)
+INITGAME(arizona, disp2p5, 1, 5, 0x3f3)
 LTD_1_ROMSTART(arizona, "arizltd.bin", CRC(908f00d8) SHA1(98f28f1aedbad43e0e096959fdef45e038405473))
 LTD_ROMEND
 CORE_GAMEDEFNV(arizona,"Arizona",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -29,7 +29,7 @@ CORE_GAMEDEFNV(arizona,"Arizona",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Atlantis
 /-------------------------------------------------------------------*/
-INITGAME(atla_ltd, disp2p5, 1, 5, 0x1f3)
+INITGAME(atla_ltd, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(atla_ltd, "atlantis.bin", CRC(c61be043) SHA1(e6c4463f59a5743fa34aa55beeb6f536ad9f1b56))
 LTD_ROMEND
 CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -37,7 +37,7 @@ CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Disco Dancing
 /-------------------------------------------------------------------*/
-INITGAME(discodan, disp2p5, 1, 5, 0x1f3)
+INITGAME(discodan, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(discodan, "disco.bin", CRC(83c79157) SHA1(286fd0c984870639fcd7d7b8f6a5a5ddabcddcf5))
 LTD_ROMEND
 CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -45,12 +45,12 @@ CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Hustler
 /-------------------------------------------------------------------*/
-INITGAME(hustler, disp2p5, 1, 5, 0x1f3)
+INITGAME(hustler, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(hustler, "hustler_1.bin", CRC(43f323f5) SHA1(086b81699bea08b10b4231e398f4f689395355b0))
 LTD_ROMEND
 CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
-INITGAME(hustlera, disp2p5, 1, 5, 0x1f3)
+INITGAME(hustlera, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(hustlera, "hustler_2.bin", CRC(83c79157) SHA1(286fd0c984870639fcd7d7b8f6a5a5ddabcddcf5))
 LTD_ROMEND
 CORE_CLONEDEFNV(hustlera,hustler,"Hustler (alternate set)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -58,15 +58,15 @@ CORE_CLONEDEFNV(hustlera,hustler,"Hustler (alternate set)",19??,"LTD",gl_mLTD,GA
 /*-------------------------------------------------------------------
 / Martian Queen
 /-------------------------------------------------------------------*/
-INITGAME(marqueen, disp2p5, 1, 5, 0x1f3)
-LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(c80dfdd8) SHA1(b81bf952f4f74c714484e0d1e6af41c155e09c4f))
+INITGAME(marqueen, disp2p5, 1, 5, 0x3f3)
+LTD_2_ROMSTART(marqueen, "mqueen.bin", NO_DUMP)
 LTD_ROMEND
-CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / King Kong
 /-------------------------------------------------------------------*/
-INITGAME(kkongltd, disp2p5, 1, 5, 0x1f3)
+INITGAME(kkongltd, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(kkongltd, "kong.bin", CRC(5b2a3123) SHA1(eee417d17d3272ee63c728915af84da33f1f73a2))
 LTD_ROMEND
 CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -74,15 +74,15 @@ CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Space Poker
 /-------------------------------------------------------------------*/
-INITGAME(spcpoker, disp2p5, 1, 5, 0x1f3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(a6ee0369) SHA1(e664a32dc69162e8a7980abf21515887b9bf0cba))
+INITGAME(spcpoker, disp2p5, 1, 5, 0x3f3)
+LTD_2_ROMSTART(spcpoker, "spoker.bin", NO_DUMP)
 LTD_ROMEND
-CORE_GAMEDEFNV(spcpoker,"Space Poker",19??,"LTD",gl_mLTD,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(spcpoker,"Space Poker",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Viking King
 /-------------------------------------------------------------------*/
-INITGAME(vikngkng, disp2p5, 1, 5, 0x1f3)
+INITGAME(vikngkng, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(vikngkng, "vikking.bin", CRC(aa32d158) SHA1(b24294ae4ecb2ab3119ad7fe79ef567b19ac792a))
 LTD_ROMEND
 CORE_GAMEDEFNV(vikngkng,"Viking King",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -132,6 +132,11 @@ INITGAME(cowboy3p, disp3p6, 1, 6, 0)
 LTD_4_ROMSTART(cowboy3p, "cowboy3p.bin", CRC(5afa29af) SHA1(a5ccf5cd17c63d4292222b792535187b1bcfa786))
 LTD_ROMEND
 CORE_GAMEDEFNV(cowboy3p,"Cowboy Eight Ball",1981,"LTD",gl_mLTD,GAME_NO_SOUND)
+
+INITGAME(cowboy3a, disp3p6, 1, 6, 0)
+LTD_4_ROMSTART(cowboy3a, "cowboy3a.bin", CRC(48278d77) SHA1(4102a2be10b48d0edb2b636e10696cbb2cd3a4c4))
+LTD_ROMEND
+CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Zephy
@@ -231,16 +236,16 @@ CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 / Time Machine
 /-------------------------------------------------------------------*/
 INITGAME4(tmacltd4, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(36655dbe) SHA1(5d5f7f7a4fc01de3ed2d420db0fc264bb31d7196),
+LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", NO_DUMP,
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
-CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,0)
 
 INITGAME4(tmacltd2, disp4p7, 1)
 LTD_44_ROMSTART(tmacltd2, "tm2_l.bin", NO_DUMP,
                           "tm2_h.bin", CRC(f717c9db) SHA1(9ca5819b707fa20edfc289734e1aa189ae242aa3))
 LTD_ROMEND
-CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players) (LTD)",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players)(LTD)",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Trick Shooter

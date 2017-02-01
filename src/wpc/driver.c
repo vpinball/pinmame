@@ -890,9 +890,10 @@ DRIVERNV(marqueen)      //Martian Queen
                         //Samba
 DRIVERNV(spcpoker)      //Space Poker
 DRIVERNV(vikngkng)      //Viking King
-DRIVERNV(force)         //Force
+DRIVERNV(force   )      //Force
 DRIVERNV(bhol_ltd)      //Black Hole
 DRIVERNV(cowboy3p)      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
+DRIVERNV(cowboy3a)      //Cowboy Eight Ball (alternate set)
 DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
 DRIVERNV(zephya  )      //Zephy (alternate set)
 // Sistema IV
