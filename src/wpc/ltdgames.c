@@ -6,7 +6,7 @@
 
 #define INITGAME(name, disptype, balls, lamps, gs1) \
 	LTD_INPUT_PORTS_START(name, balls) LTD_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disptype,{FLIP_SW(FLIP_L),0,6,0,0,0,gs1}}; \
+	static core_tGameData name##GameData = {0,disptype,{FLIP_SW(FLIP_L),0,lamps,0,0,0,gs1}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -72,14 +72,6 @@ LTD_ROMEND
 CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Space Poker
-/-------------------------------------------------------------------*/
-INITGAME(spcpoker, disp2p5, 1, 5, 0x3f3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", NO_DUMP)
-LTD_ROMEND
-CORE_GAMEDEFNV(spcpoker,"Space Poker",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------------
 / Viking King
 /-------------------------------------------------------------------*/
 INITGAME(vikngkng, disp2p5, 1, 5, 0x3f3)
@@ -87,20 +79,21 @@ LTD_2_ROMSTART(vikngkng, "vikking.bin", CRC(aa32d158) SHA1(b24294ae4ecb2ab3119ad
 LTD_ROMEND
 CORE_GAMEDEFNV(vikngkng,"Viking King",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
-static core_tLCDLayout disp2p5a[] = {
-  { 1, 0,14,2,CORE_SEG7 }, { 1, 4,18,2,CORE_SEG7 }, { 1, 8,11,1,CORE_SEG7 },
-  { 1,16,12,2,CORE_SEG7 }, { 1,20,16,2,CORE_SEG7 }, { 1,24, 9,1,CORE_SEG7 },
-  { 0,12, 3,1,CORE_SEG7 }, { 2,12, 2,1,CORE_SEG7 },
-  {0}
-};
-
 /*-------------------------------------------------------------------
 / Force
 /-------------------------------------------------------------------*/
-INITGAME(force, disp2p5a, 1, 6, 0x5f3)
+static core_tLCDLayout dispForce[] = {
+  { 1, 0,14,2,CORE_SEG7 }, { 1, 4,18,2,CORE_SEG7 }, { 1, 8,11,1,CORE_SEG7 },
+  { 1,16,12,2,CORE_SEG7 }, { 1,20,16,2,CORE_SEG7 }, { 1,24, 9,1,CORE_SEG7 },
+  { 0,12, 3,1,CORE_SEG7 }, { 2,12, 2,1,CORE_SEG7 },
+  { 4, 0, 5,1,CORE_SEG7S },{ 4, 3, 8,1,CORE_SEG7S },{ 4, 6, 4,1,CORE_SEG7S },
+  { 6, 0, 6,2,CORE_SEG7S },{ 6, 5,10,1,CORE_SEG7S },
+  {0}
+};
+INITGAME(force, dispForce, 1, 1, 0x03)
 LTD_2_ROMSTART(force, "forceltd.bin", CRC(48f9ebbe) SHA1(8aaab352fb21263b1b93ffefd9b5169284083beb))
 LTD_ROMEND
-CORE_GAMEDEFNV(force,"Force",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(force,"Force",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 static core_tLCDLayout disp2p6[] = {
   { 1, 0,10,2,CORE_SEG7 }, { 1, 4,14,2,CORE_SEG7 }, { 1, 8,18,2,CORE_SEG7 },
@@ -110,12 +103,20 @@ static core_tLCDLayout disp2p6[] = {
 };
 
 /*-------------------------------------------------------------------
+/ Space Poker
+/-------------------------------------------------------------------*/
+INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
+LTD_2_ROMSTART(spcpoker, "spoker.bin", NO_DUMP)
+LTD_ROMEND
+CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------------
 / Black Hole
 /-------------------------------------------------------------------*/
 INITGAME(bhol_ltd, disp2p6, 1, 4, 0xf3)
 LTD_2_ROMSTART(bhol_ltd, "blackhol.bin", CRC(9f6ae35e) SHA1(c17bf08a41c6cf93550671b0724c58e8ac302c33))
 LTD_ROMEND
-CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 static core_tLCDLayout disp3p6[] = {
   { 0, 0,14,6,CORE_SEG7 },
@@ -181,7 +182,12 @@ CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball 2",198?,"LTD",gl_mLTD4,0)
 /*-------------------------------------------------------------------
 / Haunted Hotel
 /-------------------------------------------------------------------*/
-INITGAME4(hhotel, disp4p6, 1)
+static core_tLCDLayout dispHH[] = {
+  DISP_SEG_IMPORT(disp4p6),
+  {15, 0, 7,2,CORE_SEG7 }, {15, 4,31,1,CORE_SEG7 }, {15, 6,16,1,CORE_SEG7 }, {15, 8,23,2,CORE_SEG7 },
+  {0}
+};
+INITGAME4(hhotel, dispHH, 1)
 LTD_44_ROMSTART(hhotel, "hh1.bin", CRC(a107a683) SHA1(5bb79d9a0a6b33f067cdd54942784c67ab557909),
                         "hh2.bin", CRC(e0c2ebc1) SHA1(131240589162c7b3f44a2bb951945c7d64f89c8d))
 LTD_ROMEND
@@ -190,7 +196,12 @@ CORE_GAMEDEFNV(hhotel,"Haunted Hotel",198?,"LTD",gl_mLTD4HH,0)
 /*-------------------------------------------------------------------
 / Mr. & Mrs. Pec-Men
 /-------------------------------------------------------------------*/
-INITGAME4(pecmen, disp4p6, 1)
+static core_tLCDLayout dispPec[] = {
+  DISP_SEG_IMPORT(disp4p6),
+  {15, 0, 7,2,CORE_SEG7 }, {15, 5,31,1,CORE_SEG7 }, {15, 7,16,1,CORE_SEG7 }, {15,10,23,2,CORE_SEG7 },
+  {0}
+};
+INITGAME4(pecmen, dispPec, 1)
 LTD_44_ROMSTART(pecmen, "pecmen_l.bin", CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
                         "pecmen_h.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
 LTD_ROMEND

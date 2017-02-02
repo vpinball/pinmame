@@ -175,8 +175,8 @@ TAITO_ROMSTART2222(ladylukt,"lluck1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba
                             "lluck2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
                             "lluck3.bin",CRC(f22666f6) SHA1(2b92007cc4c91a2804d9f6229fa68be35be849ce),
                             "lluck4.bin",CRC(1715ee7e) SHA1(45677053f501d687d7482e70b7902a67d277eee9))
-TAITO_SOUNDROMS22("lluck_s1.bin", CRC(78ed85b4) SHA1(72fee3e337f2d2174a41434084699c3a472d798e),
-                  "lluck_s2.bin", CRC(b0b05e9f) SHA1(1b5b5701ece241913367960eba7f58ca1a528548))
+TAITO_SOUNDROMS22("lluck_s1.bin", CRC(41c703c0) SHA1(2996f6e1e15d7caea19abceb27a2f897bb0f598d),
+                  "lluck_s2.bin", CRC(66ab66df) SHA1(4e4d3fd4872ba4943e40c7313f6ddc2d12c2224f))
 TAITO_ROMEND
 #define input_ports_ladylukt input_ports_taito
 CORE_GAMEDEFNV(ladylukt,"Lady Luck (Taito)",1981,"Taito",taito_sintevox,0)
@@ -188,8 +188,8 @@ TAITO_ROMSTART2222(vegast,"lluck1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba4a
                           "lluck2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
                           "vegas3.bin",CRC(bd1fdbc3) SHA1(e184cec644b2d5cc05c3d458a06299359322df00),
                           "vegas4.bin",CRC(61f733a9) SHA1(a86ac621d81eb69a56706f9b0d49c0816f14a016))
-TAITO_SOUNDROMS22("lluck_s1.bin", CRC(78ed85b4) SHA1(72fee3e337f2d2174a41434084699c3a472d798e),
-                  "lluck_s2.bin", CRC(b0b05e9f) SHA1(1b5b5701ece241913367960eba7f58ca1a528548))
+TAITO_SOUNDROMS22("vegas_s1.bin", CRC(78ed85b4) SHA1(72fee3e337f2d2174a41434084699c3a472d798e),
+                  "vegas_s2.bin", CRC(b0b05e9f) SHA1(1b5b5701ece241913367960eba7f58ca1a528548))
 TAITO_ROMEND
 #define init_vegast init_ladylukt
 #define input_ports_vegast input_ports_ladylukt

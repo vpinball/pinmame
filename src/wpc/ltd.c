@@ -125,8 +125,8 @@ static SWITCH_UPDATE(LTD) {
  */
 static WRITE_HANDLER(peri_w) {
   if (offset < 10) {
-    locals.segments[18 - 2*offset].w = core_bcd2seg[data >> 4];
-    locals.segments[19 - 2*offset].w = core_bcd2seg[data & 0x0f];
+    locals.segments[18 - 2*offset].w = core_bcd2seg7a[data >> 4];
+    locals.segments[19 - 2*offset].w = core_bcd2seg7a[data & 0x0f];
     if (core_gameData->hw.gameSpecific1 & (1 << (19 - 2 * offset))) {
       coreGlobals.tmpLampMatrix[17 - offset] = (coreGlobals.tmpLampMatrix[17 - offset] & 0xf0) | (data & 0x0f);
     }
