@@ -278,4 +278,4 @@ S67S_SPEECHROMS000x(    "v_ic7.532" ,  CRC(a66c7ca6) SHA1(6e90081f853fcf66bfeac0
                         "v_ic5.532" ,  CRC(f16a237a) SHA1(a904138fad5cbc19946bcf0de824e27537dcd621),
                         "v_ic6.532" ,  CRC(15a3cc85) SHA1(86002ac78189415ae912e8bc23c92b3b67610d87))
 S6_ROMEND
-CORE_CLONEDEF(alpok,b6,l6,"Alien Poker (L-6, Multiball conversion)",2006,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEF(alpok,b6,l6,"Alien Poker (L-6, Multiball conversion)",2006,"Williams / Oliver",s6_mS6S,0) // rev. 320
