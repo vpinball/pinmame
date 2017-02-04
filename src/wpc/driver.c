@@ -704,6 +704,8 @@ DRIVERNV(badgirlf)      //                Bad Girls (French)
 DRIVERNV(badgrffp)      //                Bad Girls (French Free Play)
 DRIVERNV(excaliba)      //S80b-715: 11/88 Excalibur
 DRIVERNV(excalbfp)      //                Excalibur (Free Play)
+DRIVERNV(excalibg)      //                Excalibur (German)
+DRIVERNV(excalgfp)      //                Excalibur (German Free Play)
 DRIVERNV(excalibr)      //                Excalibur (French)
 DRIVERNV(excalffp)      //                Excalibur (French Free Play)
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
