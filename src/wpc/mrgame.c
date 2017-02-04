@@ -747,12 +747,12 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	/* since last time and update it accordingly. */
 	for (offs = 0; offs < videoram_size; offs++)
 	{
-		if (1) //dirtybuffer[offs])
+		//if (dirtybuffer[offs])
 		{
 //			dirtybuffer[offs] = 0;
 
-			sx = offs % 32;
-			sy = offs / 32;
+			sx = (int)(offs % 32);
+			sy = (int)(offs / 32);
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
@@ -929,7 +929,7 @@ PALETTE_INIT( mrgame_g1 )
 	for (i=3; i < 8; i++)
 		palette_set_color(i,255,255,255);
 
-	for (; i < Machine->drv->total_colors; i++)
+	for (; (UINT32)i < Machine->drv->total_colors; i++)
 	{
 		/* red component */
 		bit0 = (*color_prom >> 0) & 0x01;
@@ -956,7 +956,7 @@ PALETTE_INIT( mrgame_g1 )
 PALETTE_INIT( mrgame_g2 )
 {
 	int bit0,bit1,bit2,i,r,g,b;
-	for (i = 0; i < Machine->drv->total_colors; i++)
+	for (i = 0; (UINT32)i < Machine->drv->total_colors; i++)
 	{
 		/* red component */
 		bit0 = (*color_prom >> 0) & 0x01;

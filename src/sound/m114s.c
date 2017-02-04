@@ -663,7 +663,7 @@ static void process_channel_data(struct M114SChip *chip)
 			freq /= 2.;
 
 		// Setup Sample Rate/Step size increase
-		channel->incr = freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE);
+		channel->incr = (UINT32)(freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE));
 
 		//Assign start & stop address offsets to ROM
 		channel->table1.start_address = t1start;

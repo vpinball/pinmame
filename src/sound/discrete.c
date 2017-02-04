@@ -477,8 +477,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 	}
 	else
 	{
-		int vol;
-		vol = output_node->input[2];
+		int vol = (int)output_node->input[2];
 		/* Initialise a stereo, stream, we always use stereo even if only a mono system */
 		discrete_stream=stream_init("Discrete Sound",vol,Machine->sample_rate,0,discrete_stream_update_mono);
 		discrete_log("discrete_sh_start() - Mono Audio Stream Initialised", node_count);
