@@ -683,15 +683,15 @@ static PALETTE_INIT(core) {
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
   diff = (float)(100 - perc0) / 15.0f;
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-16+ii][0]  = rStart * (perc0 + diff * ii) / 100;
-    tmpPalette[palSize-16+ii][1]  = gStart * (perc0 + diff * ii) / 100;
-    tmpPalette[palSize-16+ii][2]  = bStart * (perc0 + diff * ii) / 100;
-    tmpPalette[palSize-32+ii][0]  = rStart * (perc0 + diff * ii) * 72 / 10000;
-    tmpPalette[palSize-32+ii][1]  = gStart * (perc0 + diff * ii) * 72 / 10000;
-    tmpPalette[palSize-32+ii][2]  = bStart * (perc0 + diff * ii) * 72 / 10000;
-    tmpPalette[palSize-48+ii][0]  = rStart * (perc0 + diff * ii) * 33 / 10000;
-    tmpPalette[palSize-48+ii][1]  = gStart * (perc0 + diff * ii) * 33 / 10000;
-    tmpPalette[palSize-48+ii][2]  = bStart * (perc0 + diff * ii) * 33 / 10000;
+    tmpPalette[palSize-16+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) / 100);
+    tmpPalette[palSize-16+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) / 100);
+    tmpPalette[palSize-16+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) / 100);
+    tmpPalette[palSize-32+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) * 72 / 10000);
+    tmpPalette[palSize-32+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) * 72 / 10000);
+    tmpPalette[palSize-32+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) * 72 / 10000);
+    tmpPalette[palSize-48+ii][0] = (unsigned char)(rStart * (perc0 + diff * ii) * 33 / 10000);
+    tmpPalette[palSize-48+ii][1] = (unsigned char)(gStart * (perc0 + diff * ii) * 33 / 10000);
+    tmpPalette[palSize-48+ii][2] = (unsigned char)(bStart * (perc0 + diff * ii) * 33 / 10000);
   }
 
 //for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
@@ -1739,7 +1739,7 @@ static MACHINE_INIT(core) {
     locals.displaySize = pmoptions.dmd_compact ? 1 : 2;
     {
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
-      if ((size > Machine->drv->screen_width) && (locals.displaySize > 1)) {
+      if (((int)size > Machine->drv->screen_width) && (locals.displaySize > 1)) {
   	/* force small display */
   	locals.displaySize = 1;
   	core_initDisplaySize(core_gameData->lcdLayout);
@@ -1903,7 +1903,7 @@ static const unsigned char core_bits_set_table256[256] =
 
 UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level)
 {
-	UINT8 outputlevel;
+	//UINT8 outputlevel;
 	UINT32 targetlevel;
 	UINT32 mask = (1 << bit_count) - 1;
 

@@ -503,7 +503,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 
 		/* initialize the regions */
 		bsmt2000[i].region_base = (INT8 *)memory_region(intf->region[i]);
-		bsmt2000[i].total_banks = memory_region_length(intf->region[i]) / 0x10000;
+		bsmt2000[i].total_banks = (int)(memory_region_length(intf->region[i]) / 0x10000);
 
 		/* init the voices */
 		init_all_voices(&bsmt2000[i]);

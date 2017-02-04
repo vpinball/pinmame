@@ -380,7 +380,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 		if (channel->lr_silent_value[left_right] == INT_MAX)
 			channel->lr_silent_value[left_right] = src[0];
 
-		for (i = 0; i < src_len; ++i)
+		for (i = 0; (unsigned int)i < src_len; ++i)
 			if (src[i] != channel->lr_silent_value[left_right])
 			{
 				channel->lr_silence[left_right] = 0;
@@ -1139,7 +1139,7 @@ void mixer_sh_update(void)
 	if (!is_stereo)
 	{
 		mix = mix_buffer;
-		for (i = 0; i < samples_this_frame; i++)
+		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the sample */
 			sample = left_accum[accum_pos];
@@ -1163,7 +1163,7 @@ void mixer_sh_update(void)
 	else
 	{
 		mix = mix_buffer;
-		for (i = 0; i < samples_this_frame; i++)
+		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the left sample */
 			sample = left_accum[accum_pos];
