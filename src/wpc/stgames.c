@@ -363,7 +363,7 @@ ST200_ROMSTART8888(galaxyb,"cpu_u1b.716",CRC(53f7c0c9) SHA1(c3ee8bbdd1eca7a044c7
                            "cpu_u6b.716",CRC(be4eacc1) SHA1(3d95e8e859312ef0a7ed52356dabe35ed0bebdef))
 BY35_ROMEND
 #define input_ports_galaxyb input_ports_galaxy
-CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit bootleg)",2004,"Stern / Oliver",by35_mST200,0)
+CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,0) // rev. 2
 
 /*--------------------------------
 / Ali
@@ -489,7 +489,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(quicksfp,quicksil,"Quicksilver (Free Play)",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
-/ Stargazer
+/ Star Gazer
 /-------------------------------*/
 INITGAME(stargzr,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(stargzr,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd47a7242c1be4a93e84d),
@@ -498,7 +498,7 @@ ST200_ROMSTART8888(stargzr,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd
                            "cpu_u6.716",CRC(4e1f4dc6) SHA1(1f63a0b71af84fb6e1168ff77cbcbabcaa1323f3))
 BY35_ROMEND
 #define input_ports_stargzr input_ports_st
-CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(stargzr,"Star Gazer",1980,"Stern",by35_mST200,0)
 
 INITGAME(stargzfp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(stargzfp,"fpsg_u1.716",CRC(4a4e3847) SHA1(87205061f5c981a2e6be6b8d56c8bc563611a30c),
@@ -507,10 +507,10 @@ ST200_ROMSTART8888(stargzfp,"fpsg_u1.716",CRC(4a4e3847) SHA1(87205061f5c981a2e6b
                            "cpu_u6.716",CRC(4e1f4dc6) SHA1(1f63a0b71af84fb6e1168ff77cbcbabcaa1323f3))
 BY35_ROMEND
 #define input_ports_stargzfp input_ports_st
-CORE_CLONEDEFNV(stargzfp,stargzr,"Stargazer (Free Play)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(stargzfp,stargzr,"Star Gazer (Free Play)",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
-/ Stargazer (modified rules rev .9)
+/ Star Gazer (modified rules rev .9)
 /-------------------------------*/
 INITGAME(stargzrb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(stargzrb,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd47a7242c1be4a93e84d),
@@ -519,7 +519,7 @@ ST200_ROMSTART8888(stargzrb,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40f
                            "cpu_u6b.716",CRC(b68b11c5) SHA1(1af6aca8ecf70d2adf588a1e856f753193c05abd))
 BY35_ROMEND
 #define input_ports_stargzrb input_ports_stargzr
-CORE_CLONEDEFNV(stargzrb,stargzr,"Stargazer (modified rules rev. 9)",2006,"Stern / Oliver",by35_mST200,0)
+CORE_CLONEDEFNV(stargzrb,stargzr,"Star Gazer (modified rules rev. 9)",2006,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Flight 2000
