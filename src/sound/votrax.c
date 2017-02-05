@@ -1338,7 +1338,7 @@ READ_HANDLER(votraxsc01_status_r)
 #ifdef OLD_VOTRAX
 	return votraxsc01_locals.busy;
 #else
-	return !votraxsc01_locals.ar_state;
+	return !votraxsc01_locals.ar_state; //!! inverted behavior from MAME
 #endif
 #endif
 }
@@ -1502,7 +1502,7 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 
 	//!! m_ar_cb(votraxsc01_locals.ar_state);
 	if (votraxsc01_locals.intf->BusyCallback[0])
-		(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.ar_state);
+		(*votraxsc01_locals.intf->BusyCallback[0])(!votraxsc01_locals.ar_state); //!! inverted behavior from MAME
 #endif
 }
 
