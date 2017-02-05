@@ -354,7 +354,8 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
 	if (GTS80SS_locals.boardData.subType)
-		votraxsc01_set_base_frequency(11025+(data*100));
+		votraxsc01_set_base_frequency(11025+(data*100)); // OLD_VOTRAX
+		//votraxsc01_set_clock(data * 720000 / 0x7E); //!! correct like this? (see comment block above)
 	GTS80SS_locals.device = 3;
 }
 
