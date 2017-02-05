@@ -52,6 +52,11 @@ double timer_get_time(void);
 double timer_starttime(mame_timer *which);
 double timer_firetime(mame_timer *which);
 
+#ifdef PINMAME
+double timer_expire(mame_timer *which);
+int timer_param(mame_timer *which);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

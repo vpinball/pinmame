@@ -22,7 +22,8 @@ void VOTRAXSC01_sh_stop(void);
 WRITE_HANDLER(votraxsc01_w);
 READ_HANDLER(votraxsc01_status_r);
 
-void votraxsc01_set_base_frequency(int baseFrequency);
+void votraxsc01_set_base_frequency(int baseFrequency); // OLD_VOTRAX
+void votraxsc01_set_clock(UINT32 newfreq); // new one
 void votraxsc01_set_volume(int volume);
 
 #endif
