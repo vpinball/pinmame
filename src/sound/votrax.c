@@ -16,16 +16,16 @@ votraxsc01_status_r  - Return busy status (1 = busy)
 If you need to alter the base frequency (i.e. Qbert) then just alter
 the variable VotraxBaseFrequency, this is defaulted to 8000
 
+**************************************************************************/
+
 #define OLD_VOTRAX
-Define to use old sample based emulation
+// Define to use old sample based emulation, also adapt gts80s.c then accordingly (search for the OLD_VOTRAX)
 //!! marks all spots where the new emulation might be still shaky due to the manual port from MAME
 
 // #define REAL_DEVICE
-Uncomment the above line if you like to use a real SC-01 chip connected to
-the printer port 1. Connect the data lines P0-P5 to D1-D6, I0-I1 to D7-D6,
-ACK to ACK and STROBE to STROBE.
-
-**************************************************************************/
+// Uncomment the above line if you like to use a real SC-01 chip connected to
+// the printer port 1. Connect the data lines P0-P5 to D1-D6, I0-I1 to D7-D6,
+// ACK to ACK and STROBE to STROBE.
 
 /*
   tp3 stb i1 i2 tp2
