@@ -194,14 +194,19 @@ static char *WriteRegisterOperand1( char *pBuf, data32_t opcode )
 } /* WriteRegisterOperand */
 
 
-static char *WriteBranchAddress( char *pBuf, data32_t pc, data32_t opcode )
+static char *WriteBranchAddress( char *pBuf, data32_t pc, data32_t opcode, data8_t h_bit )
 {
-	opcode &= 0x00ffffff;
-	if( opcode&0x00800000 )
+	opcode <<= 2;
+	if (h_bit && (opcode & 0x04000000))
 	{
-		opcode |= 0xff000000; /* sign-extend */
+		opcode |= 2;
 	}
-	pc += 8+4*opcode;
+	opcode &= 0x03fffffe;
+	if( opcode & 0x02000000 )
+	{
+		opcode |= 0xfc000000; /* sign-extend */
+	}
+	pc += 8+opcode;
 	sprintf( pBuf, "$%x", pc );
 	return pBuf;
 } /* WriteBranchAddress */
@@ -229,7 +234,18 @@ void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode )
 	pConditionCode= pConditionCodeTable[opcode>>28];
 	pBuf0 = pBuf;
 
-	if( (opcode&0x0ffffff0)==0x012fff10 ) { //bits 27-4 == 000100101111111111110001
+	if( (opcode&0xfe000000)==0xfa000000 ) //bits 31-25 == 1111 101 (BLX - v5)
+	{
+		/* BLX */
+		pBuf += sprintf( pBuf, "BLX" );
+		//dasmflags = DASMFLAG_STEP_OVER;
+
+		WritePadding(pBuf, start_position);
+
+		WriteBranchAddress( pBuf, pc, opcode, 1 );
+	}
+	else if( (opcode&0x0ffffff0)==0x012fff10 ) //bits 27-4 == 000100101111111111110001
+	{
 		/* Branch and Exchange (BX) */
 		pBuf += sprintf( pBuf, "B");
 		pBuf += sprintf( pBuf, "%sX", pConditionCode );
@@ -581,7 +597,7 @@ void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode )
 
 		pBuf = WritePadding( pBuf, pBuf0 );
 
-		pBuf = WriteBranchAddress( pBuf, pc, opcode );
+		pBuf = WriteBranchAddress( pBuf, pc, opcode, 0 );
 	}
 	else if( (opcode&0x0e000000)==0x0c000000 )		//bits 27-25 == 110
 	{
