@@ -95,8 +95,8 @@ static void HandleALU( data32_t insn);
 static void HandleMul( data32_t insn);
 static void HandleUMulLong( data32_t insn);
 static void HandleSMulLong( data32_t insn);
-//static void HandleBranch( data32_t insn);
-INLINE void HandleBranch( data32_t insn);		//pretty short, so inline should be ok
+//static void HandleBranch( data32_t insn, data8_t h_bit);
+INLINE void HandleBranch( data32_t insn, data8_t h_bit);		//pretty short, so inline should be ok
 static void HandleMemSingle( data32_t insn);
 static void HandleMemBlock( data32_t insn);
 INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry);
@@ -944,9 +944,14 @@ static void HandleCoProcDT(data32_t insn)
 		SET_REGISTER(rn,ornv);
 }
 
-static void HandleBranch(  data32_t insn )
+static void HandleBranch(  data32_t insn, data8_t h_bit )
 {
 	data32_t off = (insn & INSN_BRANCH) << 2;
+	if (h_bit)
+	{
+		// H goes to bit1
+		off |= (insn & 0x01000000) >> 23;
+	}
 
 	/* Save PC into LR if this is a branch with link */
 	if (insn & INSN_BL)
