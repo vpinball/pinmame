@@ -345,9 +345,10 @@ void reinit_pinSound(void)
 			pinsound_studio_enabled = TRUE;
 			
 			// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
-			for(ch = 0; ch < MIXER_MAX_CHANNELS; ch++) 
-				if(mixer_get_name(ch) != NULL)
-					mixer_set_volume(ch, 0);
+			//for(ch = 0; ch < MIXER_MAX_CHANNELS; ch++)
+			//	if(mixer_get_name(ch) != NULL)
+			//		mixer_set_volume(ch, 0);
+			mixer_sound_enable_global_w(0);
 
 			LOG(("PinSound: PinSound Studio audio engine is ready to play the ROM requested. \n"));
 		}

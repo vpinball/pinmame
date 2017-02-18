@@ -357,9 +357,10 @@ void alt_sound_handle(int boardNo, int cmd)
 				}
 
 				// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
-				for (DSidx = 0; DSidx < MIXER_MAX_CHANNELS; DSidx++)
-					if (mixer_get_name(DSidx) != NULL)
-						mixer_set_volume(DSidx, 0);
+				//for (DSidx = 0; DSidx < MIXER_MAX_CHANNELS; DSidx++)
+				//	if (mixer_get_name(DSidx) != NULL)
+				//		mixer_set_volume(DSidx, 0);
+				mixer_sound_enable_global_w(0);
 			}
 			else
 				cmd_storage = 0;
