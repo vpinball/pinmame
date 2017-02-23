@@ -1074,6 +1074,14 @@ SOURCE=.\src\sound\m114s.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\mea8000.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\mea8000.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\mixer.c
 # End Source File
 # Begin Source File
@@ -2656,6 +2664,10 @@ SOURCE=.\src\wpc\spinb.h
 # Begin Source File
 
 SOURCE=.\src\wpc\spinbgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\stargame.c
 # End Source File
 # Begin Source File
 
