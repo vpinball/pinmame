@@ -19,7 +19,7 @@ static INTERRUPT_GEN(stargame_vblank) {
 }
 
 static INTERRUPT_GEN(stargame_zc) {
-	static int zc;
+  static int zc;
   z80ctc_0_trg2_w(0, zc);
   z80ctc_0_trg3_w(0, !zc);
   zc = !zc;
@@ -60,7 +60,7 @@ static MACHINE_INIT(STARGAME) {
   z80ctc_init(&ctc_intf);
 
   // MEA8000 uses DAC #0 as output device, so don't change order in driver definition!
-	mea8000_config(0, 0);
+  mea8000_config(0, 0);
   mixer_set_name(0, "MEA 8000");
 }
 
@@ -149,7 +149,7 @@ static READ_HANDLER(port_30_r) {
 // switch column - spcship only, yet whtforce writes here as well?!
 static WRITE_HANDLER(port_40_w) {
   if (locals.isWf) {
-    coreGlobals.lampMatrix[8] = data;
+//  coreGlobals.lampMatrix[8] = data;
     return;
   }
   locals.swCol = core_BitColToNum(data);
@@ -157,8 +157,8 @@ static WRITE_HANDLER(port_40_w) {
 
 // solenoids are part of the lamp matrix, as usual on Spanish manufacturers, but this time very heavily so!
 static WRITE_HANDLER(port_5x_w) {
-	coreGlobals.lampMatrix[offset] = data;
-	if (locals.isWf) {
+  coreGlobals.lampMatrix[offset] = data;
+  if (locals.isWf) {
     switch (offset) {
       case 0: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffefe) | ((data >> 3) & 1) | (((data >> 5) & 1) << 8); break;
       case 1: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffdfd) | (((data >> 3) & 1) << 1) | (((data >> 5) & 1) << 9); break;
@@ -244,7 +244,7 @@ PORT_END
 
 static READ_HANDLER(snd_resint_r) {
   cpu_set_irq_line(1, 0, CLEAR_LINE);
-	return 0;
+  return 0;
 }
 
 static READ_HANDLER(snd_cmd_r) {
@@ -291,6 +291,7 @@ PORT_END
 
 static MACHINE_DRIVER_START(spcship)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_FRAMES_PER_SECOND(50)
 
   MDRV_CPU_ADD_TAG("mcpu", Z80, 15000000/4)
   MDRV_CPU_CONFIG(STARGAME_DaisyChain)
@@ -378,5 +379,5 @@ STARGAME_COMPORTS(whtforce, 1)
     COREPORT_BIT   (0x0800, "Test",        KEYCODE_7)
     COREPORT_BIT   (0x0200, "Advance",     KEYCODE_8)
   INPUT_PORTS_END
-INITGAME(whtforce,dispWhtforce,FLIP_SW(FLIP_L),1)
+INITGAME(whtforce,dispWhtforce,FLIP_SW(FLIP_L),0)
 CORE_GAMEDEFNV(whtforce, "White Force", 1987, "Stargame", whtforce, 0)
