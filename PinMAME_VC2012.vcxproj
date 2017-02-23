@@ -842,6 +842,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\sound\fmopl.c" />
     <ClCompile Include="src\sound\hc55516.c" />
     <ClCompile Include="src\sound\m114s.c" />
+    <ClCompile Include="src\sound\mea8000.c" />
     <ClCompile Include="src\sound\mixer.c" />
     <ClCompile Include="src\sound\msm5205.c" />
     <ClCompile Include="src\sound\s14001a.c" />
@@ -1304,6 +1305,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\spectra.c" />
     <ClCompile Include="src\wpc\spinb.c" />
     <ClCompile Include="src\wpc\spinbgames.c" />
+    <ClCompile Include="src\wpc\stargame.c" />
     <ClCompile Include="src\wpc\stgames.c" />
     <ClCompile Include="src\wpc\stsnd.c" />
     <ClCompile Include="src\wpc\tabart.c" />
@@ -1501,6 +1503,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\sound\fmopl.h" />
     <ClInclude Include="src\sound\hc55516.h" />
     <ClInclude Include="src\sound\m114s.h" />
+    <ClInclude Include="src\sound\mea8000.h" />
     <ClInclude Include="src\sound\mixer.h" />
     <ClInclude Include="src\sound\msm5205.h" />
     <ClInclude Include="src\sound\s14001a.h" />

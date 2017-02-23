@@ -2311,6 +2311,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\nea8000.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\mea8000.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\mixer.c"
 						>
 					</File>
@@ -3973,6 +3981,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\spinbgames.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\stargame.c"
 					>
 				</File>
 				<File

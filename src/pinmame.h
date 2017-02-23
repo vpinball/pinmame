@@ -135,6 +135,7 @@
 #define HAS_Y8950      1
 #define HAS_ASTROCADE  1
 #define HAS_YMF262     1
+#define HAS_MEA8000    1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

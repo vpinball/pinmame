@@ -79,6 +79,7 @@ DRVLIBS += $(PINOBJ)/mac.o
 DRVLIBS += $(PINOBJ)/barni.o
 DRVLIBS += $(PINOBJ)/joctronic.o
 DRVLIBS += $(PINOBJ)/lancelot.o
+DRVLIBS += $(PINOBJ)/stargame.o
 #
 # Games
 #

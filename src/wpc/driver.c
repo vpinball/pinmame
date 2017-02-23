@@ -1131,8 +1131,10 @@ DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 // ---------------
 // STARGAME GAMES
 // ---------------
+DRIVERNV(spcship)       //1986 - Space Ship
 DRIVERNV(mephist1)      //1986 - Mephisto (rev. 1.1)
 DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
+DRIVERNV(whtforce)      //1987 - White Force
 DRIVERNV(ironball)      //1987 - Iron Balls
 
 // ---------------

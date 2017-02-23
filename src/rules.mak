@@ -1704,3 +1704,10 @@ else
 SOUNDDEFS += -DHAS_M114S=0
 endif
 
+SOUND=$(strip $(findstring MEA8000@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_MEA8000=1
+SOUNDOBJS += $(OBJ)/sound/mea8000.o
+else
+SOUNDDEFS += -DHAS_MEA8000=0
+endif
