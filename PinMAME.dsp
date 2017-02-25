@@ -2623,6 +2623,10 @@ SOURCE=.\src\wpc\sim.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\slalom.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\sleic.c
 # End Source File
 # Begin Source File

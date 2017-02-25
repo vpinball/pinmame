@@ -1136,6 +1136,7 @@ DRIVERNV(mephist1)      //1986 - Mephisto (rev. 1.1)
 DRIVERNV(mephisto)      //1986 - Mephisto (rev. 1.2)
 DRIVERNV(whtforce)      //1987 - White Force
 DRIVERNV(ironball)      //1987 - Iron Balls
+DRIVERNV(slalom03)      //1988 - Slalom Code 0.3
 
 // ---------------
 // STERN GAMES
