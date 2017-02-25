@@ -3944,6 +3944,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\slalom.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\sleic.c"
 					>
 				</File>

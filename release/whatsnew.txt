@@ -15,7 +15,7 @@ Updated to zlib 1.2.11
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones
 New:
 LTD: Arizona, Columbia, Cowboy Eight Ball, Disco Dancing, Force, Haunted Hotel, Hustler, Martian Queen, King Kong, Space Poker, Time Machine, Trick Shooter, Viking King
-Stargame: Space Ship, White Force
+Stargame: Space Ship, White Force, Slalom Code 0.3
 Taito: Volley (formerly known as Voley Ball and was missing most dumps)
 
 Clones:

@@ -1433,6 +1433,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\se.c" />
     <ClCompile Include="src\wpc\segames.c" />
     <ClCompile Include="src\wpc\sim.c" />
+    <ClCompile Include="src\wpc\slalom.c" />
     <ClCompile Include="src\wpc\sleic.c" />
     <ClCompile Include="src\wpc\sleicgames.c" />
     <ClCompile Include="src\wpc\snd_cmd.c" />
