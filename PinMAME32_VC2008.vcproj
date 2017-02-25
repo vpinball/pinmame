@@ -2311,7 +2311,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\sound\nea8000.c"
+						RelativePath=".\src\sound\mea8000.c"
 						>
 					</File>
 					<File
