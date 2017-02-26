@@ -30,9 +30,7 @@ static void ctc_interrupt(int state) {
 }
 
 static WRITE_HANDLER(to0_w) {
-  if (data) {
-    cpu_set_irq_line(1, 0, ASSERT_LINE);
-  }
+  cpu_set_irq_line(1, 0, data ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static WRITE_HANDLER(to1_w) {
@@ -169,7 +167,6 @@ static WRITE_HANDLER(port_5x_w) {
       case 6: coreGlobals.solenoids = (coreGlobals.solenoids & 0xfbfff) | (((data >> 5) & 1) << 14); break;
       case 7: coreGlobals.solenoids = (coreGlobals.solenoids & 0xf7fff) | (((data >> 5) & 1) << 15); break;
     }
-    return;
   } else {
     switch (offset) {
       case 0: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffffe) | (data & 1); break;
@@ -254,13 +251,13 @@ static READ_HANDLER(snd_cmd_r) {
 
 static struct DACinterface STARGAME_dacInt = {
   2,
-  { 75, 25 }
+  { 100, 30 }
 };
 
 static struct AY8910interface STARGAME_ay8910Int = {
   1,
   15000000/8,
-  { 75 },
+  { 30 },
   { 0 },
   { 0 },
   { DAC_1_data_w },
@@ -276,6 +273,7 @@ static MEMORY_READ_START(snd_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
+  {0x0000, 0x3fff, MWA_NOP},
   {0x4000, 0x4001, mea8000_w},
   {0x8000, 0x87ff, MWA_RAM},
 MEMORY_END
