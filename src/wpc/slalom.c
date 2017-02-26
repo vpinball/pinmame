@@ -190,14 +190,6 @@ static WRITE_HANDLER(resint_w) {
   cpu_set_irq_line(1, 0, CLEAR_LINE);
 }
 
-static WRITE_HANDLER(ay_0_w) {
-  AY8910Write(0, offset, data);
-}
-
-static WRITE_HANDLER(ay_1_w) {
-  AY8910Write(1, offset, data);
-}
-
 static WRITE_HANDLER(msm_ctrl_w) {
   if (GET_BIT6) {
     cpu_setbank(1, memory_region(REGION_SOUND1));
@@ -258,8 +250,10 @@ static PORT_READ_START(snd_readport)
 PORT_END
 
 static PORT_WRITE_START(snd_writeport)
-  {0x00, 0x01, ay_0_w},
-  {0x02, 0x03, ay_1_w},
+  {0x00, 0x00, AY8910_control_port_0_w},
+  {0x01, 0x01, AY8910_write_port_0_w},
+  {0x02, 0x02, AY8910_control_port_1_w},
+  {0x03, 0x03, AY8910_write_port_1_w},
   {0x06, 0x06, resint_w},
 PORT_END
 
@@ -267,14 +261,14 @@ static MACHINE_DRIVER_START(slalom)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_FRAMES_PER_SECOND(50)
 
-  MDRV_CPU_ADD_TAG("mcpu", Z80, 3000000)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 6000000)
   MDRV_CPU_CONFIG(slalom_DaisyChain)
   MDRV_CPU_MEMORY(cpu_readmem, cpu_writemem)
   MDRV_CPU_PORTS(cpu_readport, cpu_writeport)
   MDRV_CPU_VBLANK_INT(slalom_vblank, 1)
   MDRV_CPU_PERIODIC_INT(slalom_zc, 200)
 
-  MDRV_CPU_ADD_TAG("scpu", Z80, 3000000)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 6000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
