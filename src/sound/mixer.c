@@ -1685,6 +1685,9 @@ void mixer_sound_enable_global_w(int enable)
 	int i;
 	struct mixer_channel_data *channel;
 
+	if (mixer_sound_enabled == enable)
+		return;
+
 	/* update all channels (for streams this is a no-op) */
 	for (i = 0, channel = mixer_channel; i < first_free_channel; i++, channel++)
 	{

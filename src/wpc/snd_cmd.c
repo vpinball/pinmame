@@ -340,7 +340,7 @@ void reinit_pinSound(void)
 
 		if(responseValue == 1)
 		{
-			int	ch;
+			//int	ch;
 
 			pinsound_studio_enabled = TRUE;
 			
@@ -436,15 +436,16 @@ void pinsound_handle(const int boardNo, const int cmd)
 		if (!(sys11_patch && sys11_counter))
 		{
 			// send current sound cmd to PSStudio
-			int	ch;
+			//int	ch;
 			TCHAR cmd_to_pinsound_studio[100];
 			_stprintf( cmd_to_pinsound_studio, _T("%02x"), cmd );
 
 			// force internal PinMAME volume mixer to 0 to mute emulated sounds & musics
 			// required for WPC89 sound board
-			for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) 
-				if (mixer_get_name(ch) != NULL)
-					mixer_set_volume(ch, 0);
+			//for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) 
+			//	if (mixer_get_name(ch) != NULL)
+			//		mixer_set_volume(ch, 0);
+			mixer_sound_enable_global_w(0);
 
 			sendToSlot(hFilePinSound, cmd_to_pinsound_studio);
 
