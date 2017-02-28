@@ -557,7 +557,10 @@ WRITE_HANDLER ( mea8000_w )
 
 void mea8000_reset ( void )
 {
+  int i;
+
   LOG (( "mea8000_reset\n" ));
+
   if (mea8000.timer) {
     timer_reset( mea8000.timer, TIME_NEVER );
   }
