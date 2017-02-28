@@ -543,6 +543,9 @@
     <ClCompile Include="src\sound\m114s.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\mea8000.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
     <ClCompile Include="src\sound\mixer.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -894,6 +897,9 @@
     <ClCompile Include="src\wpc\sim.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\wpc\slalom.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\sleic.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
@@ -913,6 +919,9 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\spinbgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\stargame.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\stgames.c">
@@ -1587,6 +1596,9 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\m114s.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\mea8000.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\mixer.h">
