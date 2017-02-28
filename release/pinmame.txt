@@ -22,8 +22,9 @@ What is it?
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 1, 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
-  Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM, Jac van Ham,
-  Videodens, Micropin, Christian Tabart.
+  Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
+  Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
+  Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -44,12 +45,12 @@ What does it do?
   electronic circuit boards and the display in the pinball machine backbox.
   There is no playfield and no balls that you will see displayed!
 
-  However, you can activate switches with you keyboard, see display animations,
-  and listen/record the pinball game sounds.
+  However, you can activate switches with your keyboard, see display animations,
+  and listen to/record the pinball game sounds.
 
 
 Games supported
-----------------
+---------------
   Williams/Bally WPC:  All games from Dr. Dude (1990) to Cactus Canyon (1998)
   Williams/Bally System 11: All games from High Speed (1986) to Dr.Dude (1990)
   Williams System 9: All games from Space Shuttle (1984) to Comet (1985)
@@ -61,6 +62,7 @@ Games supported
   Data East 128x16 DMD: All games from Checkpoint (1991) to Hook (1992)
   Data East 128x32 DMD: All games from Lethal Weapon 3 (1992) to Guns 'n Roses (1994)
   Sega 192x64 DMD: All games from Maverick (1994) to Batman Forever (1995)
+  Sega 256x64 DMD: Flipper Football (1996)
   Sega/Stern Whitestar: All games from Apollo 13 (1995) to Nascar (2005)
   Stern MPU-100: All games from Stingray (1977) to Magic (1979)
   Stern MPU-200: All games from Meteor (1979) to Lazer Lord (1984)
@@ -91,13 +93,19 @@ Games supported
   Sonic: Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
   Allied Leisure: All games from Super Picker (1977) to Star Shooter (1979)
   Fascination, Int.: Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
+  Sleic:
   Playmatic: Last Lap (1978), Antar (1979), Evil Fight (1980), Mad Race (1982), Meg-Aaton (1983), KZ-26 (1984) (*)
+  NSM:
   Grand Products: 300/Bullseye (1986)
   Jac van Ham: Escape (1987)
   Videodens: Break (1986)
   Astro: Black Sheep Squadron (1978)
   Micropin: Pentacup (1979)
   Christian Tabart: L'Hexagone (1986)
+  Jeutel:
+  Valley Manufacturing:
+  MAC / CICPlay:
+  Stargame:
   Prototype games:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),
@@ -124,23 +132,15 @@ Simulated?
   try to explain how to do it)
 
   For more information, please refer to simulation.txt for instructions on using the pinball
-  simulator built into pinmame!
+  simulator built into PinMAME!
 
   *NEW*: Many games not fully simulated, now have preliminary simulator support!
 
 
 Instructions
--------------
+------------
   Only PinMAME specific setting are listed here. Please read the MAME readme
-  file for instructions on using mame and all it's options.
-
-  Note: The ROMS downloaded *directly* from William's website may be compressed with a zip
-  version not supported by mame.
-
-  If they do not work for you, you will need to uncompress them (using pkzip or Winzip for example),
-  and recompress them using the "normal compression" setting!
-
-  Roms available from other websites should work fine!
+  file for instructions on using MAME and all it's options.
 
   Some ROM images are double size (i.e. the data appears twice).
   This is most often done on purpose due to the limited availability
@@ -179,7 +179,6 @@ Other MAME settings (modified to work with PinMAME)
   - You may underclock the DCS sound CPU to increase performance but
     sound will be slightly delayed (not synchronized with the display)
     and will sometimes be garbled. Use F8,F9,F11 keys for underclocking.
-  - DCS GAMES: Use -samplerate 32000 for the most accurate sound reproduction
 
 PinMAME Specific Command line switches
 --------------------------------------
@@ -211,7 +210,6 @@ General Keys
 
 Controlling switches (manually)
 -------------------------------
-
   The following keys will toggle the state of a switch
 
   1 2 3 4 5 6 7 8
@@ -225,9 +223,9 @@ Controlling switches (manually)
 
 
 DIP settings
--------------
+------------
   You can change the country and other settings for the game in the DIP menu.
-  All games does not support all country settings.
+  Not all games do support all country settings.
 
   Each game and the simulator can use some "fake" DIP settings to
   choose between different hardware options (e.g. number of balls installed).
@@ -245,20 +243,19 @@ Display
   PinMAME contains functionality to diplay the lamp matrix laid out similar
   to the real pinball machine. See TZ for an example.
 
-  If you want to do a similar layout for you favorite game which does not
+  If you want to do a similar layout for your favorite game which does not
   yet exist, let us know.
 
 Changing the Look of the DMD
 ----------------------------
-
  Changing Color:
 
-   Every dot in the DMD uses an RGB(red, green, blue) color triplet to specify
+   Every dot in the DMD uses an RGB (red, green, blue) color triplet to specify
    the color of each dot to display. To change colors properly, you must know
    the appropriate RGB numbers of the color you wish to use.
 
-   For example, PinMAME's default is a yellowish color: Red = 255, Green = 224,
-   Blue = 32
+   For example, PinMAME's default is a yellow'ish color:
+   Red = 255, Green = 224, Blue = 32
    For an orange color, you could use: Red = 255, Green = 64, Blue = 0
    For red dots, you could use: Red = 255, Green = 0, Blue = 0
 
@@ -293,7 +290,6 @@ Changing the Look of the DMD
 
 Sound Command Mode
 ------------------
-
   PinMAME has the ability to let you trigger sound commands manually. This
   will let you play any sound the pinball game can make. Hit the F4 key to
   turn Sound Command Mode on or off. Follow the instructions on screen to
@@ -305,7 +301,7 @@ Sound Command Mode
                 Many games don't have a sound for command #01!
                 Most games require two bytes for each command.
 
-  Command mode: Sound command are read from the "sounds.dat" file
+  Command mode: Sound commands are read from the "sounds.dat" file
                 and you can scroll thru all available commands
                 with the arrow keys. Look in the sounds.dat for
                 details on hw to use it.
@@ -315,26 +311,21 @@ Sound Command Mode
 
 Recording Sounds to a Wave File
 -------------------------------
-
   PinMAME can record the sound output to a wave file for you to play back
   anytime you want. Hit the F5 key to begin recording, and hit F5 again,
   to stop recording.
   The files are created in the wave directory. They begin with the name
   of the game, plus a #, just like screenshots work.
 
-  If you're having trouble make sure your .cfg file points to a valid directory,
+  If you're having trouble, make sure your .cfg file points to a valid directory,
   and that you have enough free disk space to create the wave.
 
-  Important:
-  ----------
-
-  WAV files can become *very* big quickly. These are not compressed like
-  MP3 files, so be carefull. You can easily end up with 50MB wav files
+  Note that WAV files can become big quickly. These are not compressed like
+  MP3 files, so you can easily end up with 50MB of WAV files
   for just a few minutes of recording!
 
 Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
-
   Did you know that all WPC Machines have a hidden menu?
   Yes, it's true. To access it, you must leave the bookkeeping menu while
   holding down 'up' [9] and 'down' [8] buttons. i.e. press 'Enter' [0] three
@@ -347,7 +338,7 @@ Accessing Williams/Bally WPC - Hidden Menu
 
 Known Bugs
 ----------
- See bugs.txt for list of known problems with PinMAME.
+ See bugs.txt for a list of known problems with PinMAME.
 
 The PinMAME Development Team
 ----------------------------
@@ -390,9 +381,8 @@ Basilio Garcia     (basi_garcia at hergar.com)
 Paulo Branco       (paulovtec at gmail.com)
 
 
-Note from the PinMAME Dev. team
--------------------------------
-
+Note from the PinMAME Development team
+--------------------------------------
 We're working hard to improve this great emulator, and welcome your feedback!!
 Please do not hesitate to contact us with questions, bug reports, suggestions,
 whatever!
