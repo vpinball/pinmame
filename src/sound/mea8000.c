@@ -7,7 +7,7 @@
   The MEA 8000 is a speech synthesis chip.
   The French company TMPI (Techni-musique & parole informatique) provided
   speech extensions for several 8-bit computers (Thomson, Amstrad, Oric).
-  It was quite popular in France because of its ability to spell 'u' 
+  It was quite popular in France because of its ability to spell 'u'
   (unlike the more widespread SPO 296 chip).
 
   The synthesis is based on a 4-formant model.
@@ -20,6 +20,7 @@
 
   TODO:
   - REQ output pin
+  - optimize mea8000_compute_sample
   - should we accept new frames in slow-stop mode ?
 
 **********************************************************************/
@@ -36,58 +37,61 @@
 /******************* internal chip data structure ******************/
 
 /* finite machine state controling frames */
-typedef enum {
-  MEA8000_STOPPED,    /* nothing to do, timer disabled */
-  MEA8000_WAIT_FIRST, /* received pitch, wait for first full trame, timer disabled */
-  MEA8000_STARTED,    /* playing a frame, timer on */
-  MEA8000_SLOWING,    /* repating last frame with decreasing amplitude, timer on */
+typedef enum
+{
+	MEA8000_STOPPED,    /* nothing to do, timer disabled */
+	MEA8000_WAIT_FIRST, /* received pitch, wait for first full trame, timer disabled */
+	MEA8000_STARTED,    /* playing a frame, timer on */
+	MEA8000_SLOWING,    /* repating last frame with decreasing amplitude, timer on */
 } mea8000_state;
 
-typedef struct {
+typedef struct
+{
 #ifdef FLOAT_MODE
-  double fm, last_fm;         /* frequency, in Hz */
-  double bw, last_bw;         /* band-width, in Hz */
-  double output, last_output; /* filter state */
+	double fm, last_fm;         /* frequency, in Hz */
+	double bw, last_bw;         /* band-width, in Hz */
+	double output, last_output; /* filter state */
 #else
-  UINT16 fm, last_fm;
-  UINT16 bw, last_bw;
-  INT32  output, last_output;
+	UINT16 fm, last_fm;
+	UINT16 bw, last_bw;
+	INT32  output, last_output;
 #endif
 } filter_t;
 
-static struct {
+static struct
+{
 
-  /* configuration parameters */
+	/* configuration parameters */
 
-  int channel;                  /* first argument for DAC_data_w */
-  mem_write_handler req_out_func;  /* 1-bit 'ready' output, not negated */
+	int channel;                  /* first argument for DAC_data_w */
+	mem_write_handler req_out_func;  /* 1-bit 'ready' output, not negated */
 
-  /* state */
+	/* state */
 
-  mea8000_state state; /* current state */
+	mea8000_state state; /* current state */
 
-  UINT8 buf[4]; /* store 4 consecutive data to form a frame info */
-  UINT8 bufpos; /* new byte to write in frame info buffer */
+	UINT8 buf[4]; /* store 4 consecutive data to form a frame info */
+	UINT8 bufpos; /* new byte to write in frame info buffer */
 
-  UINT8 cont; /* if no data 0=stop 1=repeat last frame */
-  UINT8 roe;  /* enable req output, now unimplemented */
+	UINT8 cont; /* if no data 0=stop 1=repeat last frame */
+	UINT8 roe;  /* enable req output, now unimplemented */
 
-  UINT16 framelength;  /* in samples */
-  UINT16 framepos;     /* in samples */
-  UINT16 framelog;     /* log2 of framelength */
+	UINT16 framelength;  /* in samples */
+	UINT16 framepos;     /* in samples */
+	UINT16 framelog;     /* log2 of framelength */
 
-  INT16 lastsample, sample; /* output samples are interpolated */
+	INT16 lastsample, sample; /* output samples are interpolated */
 
-  UINT32 phi; /* absolute phase for frequency / noise generator */
+	UINT32 phi; /* absolute phase for frequency / noise generator */
 
-  filter_t f[4]; /* filters */
+	filter_t f[4]; /* filters */
 
-  UINT16 last_ampl, ampl;    /* amplitude * 1000 */
-  UINT16 last_pitch, pitch;  /* pitch of sawtooth signal, in Hz */
-  UINT8  noise;
+	UINT16 last_ampl, ampl;    /* amplitude * 1000 */
+	UINT16 last_pitch, pitch;  /* pitch of sawtooth signal, in Hz */
+	UINT8  noise;
 
-  mame_timer *timer;
-  
+	mame_timer *timer;
+
 } mea8000;
 
 
@@ -99,8 +103,8 @@ static struct {
 #define LOG(x)
 #endif
 
-/* digital filters work at 8KHz */
-#define F0 8192
+/* digital filters work at 8 kHz */
+#define F0 8192 //8096 or (clock() / 480) in MAME/MESS
 
 /* filtered output is supersampled x 8 */
 #define SUPERSAMPLING 8
@@ -113,47 +117,52 @@ static struct {
 
 /* frequency, in Hz */
 
-static const int fm1_table[32] = {
-  150,  162,  174,  188,  202,  217,  233,  250, 
-  267,  286,  305,  325,  346,  368,  391,  415, 
-  440,  466,  494,  523,  554,  587,  622,  659, 
-  698,  740,  784,  830,  880,  932,  988, 1047
+static const int fm1_table[32] =
+{
+	150,  162,  174,  188,  202,  217,  233,  250,
+	267,  286,  305,  325,  346,  368,  391,  415,
+	440,  466,  494,  523,  554,  587,  622,  659,
+	698,  740,  784,  830,  880,  932,  988, 1047
 };
 
-static const int fm2_table[32] = {
-  440,  466,  494,  523,  554,  587,  622,  659, 
-  698,  740,  784,  830,  880,  932,  988, 1047,
- 1100, 1179, 1254, 1337, 1428, 1528, 1639, 1761,
- 1897, 2047, 2214, 2400, 2609, 2842, 3105, 3400
+static const int fm2_table[32] =
+{
+	440,  466,  494,  523,  554,  587,  622,  659,
+	698,  740,  784,  830,  880,  932,  988, 1047,
+	1100, 1179, 1254, 1337, 1428, 1528, 1639, 1761,
+	1897, 2047, 2214, 2400, 2609, 2842, 3105, 3400
 };
 
-static const int fm3_table[8] = {
-  1179, 1337, 1528, 1761, 2047, 2400, 2842, 3400
+static const int fm3_table[8] =
+{
+	1179, 1337, 1528, 1761, 2047, 2400, 2842, 3400
 };
 
 static const int fm4_table[1] = { 3500 };
 
 
-/* bandwidth, in Hz */
 
+/* bandwidth, in Hz */
 static const int bw_table[4] = { 726, 309, 125, 50 };
 
 
-/* amplitude * 1000 */
 
-static const int ampl_table[16] = {
-   0,   8,  11,  16,  22,  31,  44,   62,
-  88, 125, 177, 250, 354, 500, 707, 1000
+/* amplitude * 1000 */
+static const int ampl_table[16] =
+{
+	0,   8,  11,  16,  22,  31,  44,   62,
+	88, 125, 177, 250, 354, 500, 707, 1000
 };
 
 
-/* pitch increment, in Hz / 8 ms */
 
-static const int pi_table[32] = {
-  0, 1,  2,  3,  4,  5,  6,  7, 
-  8, 9, 10, 11, 12, 13, 14, 15,
-  0 /* noise */, -15, -14, -13, -12, -11, -10, -9, 
-  -8, -7, -6, -5, -4, -3, -2, -1
+/* pitch increment, in Hz / 8 ms */
+static const int pi_table[32] =
+{
+	0, 1,  2,  3,  4,  5,  6,  7,
+	8, 9, 10, 11, 12, 13, 14, 15,
+	0 /* noise */, -15, -14, -13, -12, -11, -10, -9,
+	-8, -7, -6, -5, -4, -3, -2, -1
 };
 
 
@@ -199,41 +208,36 @@ static void mea8000_init_tables( void )
   int i;
   for (i=0; i<TABLE_LEN; i++) {
     double f = (double)i / F0;
-    cos_table[i]  = 2. * cos(2.*M_PI*f) * QUANT;
+    cos_table[i]  = 2. * cos((2.*M_PI)*f) * QUANT;
     exp_table[i]  = exp(-M_PI*f) * QUANT;
-    exp2_table[i] = exp(-2*M_PI*f) * QUANT;
+    exp2_table[i] = exp((-2.*M_PI)*f) * QUANT;
   }
   for (i=0; i<NOISE_LEN; i++)
     noise_table[i] = (rand() % (2*QUANT)) - QUANT;
 }
 
+
+#ifndef FLOAT_MODE /* UINT16 version */
+
+
 /* linear interpolation */
-static int mea8000_interp_i( UINT16 org, UINT16 dst )
+static int mea8000_interp( UINT16 org, UINT16 dst )
 {
   return org + (((dst-org) * mea8000.framepos) >> mea8000.framelog);
 }
-
-/* linear interpolation */
-static double mea8000_interp_f( double org, double dst )
-{
-  return org + ((dst-org) * mea8000.framepos) / mea8000.framelength;
-}
-
-#ifndef FLOAT_MODE /* UINT16 version */
 
 /* apply second order digital filter, sampling at F0 */
 static int mea8000_filter_step( int i, int input )
 {
   /* frequency */
-  int fm = mea8000_interp_i(mea8000.f[i].last_fm, mea8000.f[i].fm);
+  int fm = mea8000_interp(mea8000.f[i].last_fm, mea8000.f[i].fm);
   /* bandwidth */
-  int bw = mea8000_interp_i(mea8000.f[i].last_bw, mea8000.f[i].bw);
+  int bw = mea8000_interp(mea8000.f[i].last_bw, mea8000.f[i].bw);
   /* filter coefficients */
   int b = (cos_table[fm] * exp_table[bw]) / QUANT;
   int c = exp2_table[bw];
   /* transfer function */
-  int next_output = 
-    input + (b * mea8000.f[i].output - c * mea8000.f[i].last_output) / QUANT;
+  int next_output = input + (b * mea8000.f[i].output - c * mea8000.f[i].last_output) / QUANT;
   mea8000.f[i].last_output = mea8000.f[i].output;
   mea8000.f[i].output = next_output;
   return next_output;
@@ -249,16 +253,16 @@ static int mea8000_noise_gen( void )
 /* sawtooth waveform at F0, in [-QUANT,QUANT] */
 static int mea8000_freq_gen( void )
 {
-  int pitch = mea8000_interp_i(mea8000.last_pitch, mea8000.pitch);
-  mea8000.phi = (mea8000.phi + pitch) % F0;;
-  return ((mea8000.phi % F0) * QUANT * 2) / F0 - QUANT;
+  int pitch = mea8000_interp(mea8000.last_pitch, mea8000.pitch);
+  mea8000.phi = (mea8000.phi + pitch) % F0;
+  return ((mea8000.phi % F0) * (QUANT * 2)) / F0 - QUANT;
 }
 
-/* ssample in [-32768,32767], at F0 */
+/* sample in [-32768,32767], at F0 */
 static int mea8000_compute_sample( void )
 {
   int i, out;
-  int ampl = mea8000_interp_i(mea8000.last_ampl, mea8000.ampl);
+  int ampl = mea8000_interp(mea8000.last_ampl, mea8000.ampl);
 
 	if (mea8000.noise)
 		out = mea8000_noise_gen();
@@ -275,15 +279,24 @@ static int mea8000_compute_sample( void )
 	if (out < -32767)
 		out = -32767;
   return out;
-} 
+}
 
 #else /* float version */
 
+/* linear interpolation */
+static double mea8000_interp( double org, double dst )
+{
+  return org + ((dst-org) * mea8000.framepos) / mea8000.framelength;
+}
+
+
+
+/* apply second order digital filter, sampling at F0 */
 static double mea8000_filter_step( int i, double input )
 {
-  double fm = mea8000_interp_f(mea8000.f[i].last_fm, mea8000.f[i].fm);
-  double bw = mea8000_interp_f(mea8000.f[i].last_bw, mea8000.f[i].bw);
-  double b = 2.*cos(2.*M_PI*fm/F0);
+  double fm = mea8000_interp(mea8000.f[i].last_fm, mea8000.f[i].fm);
+  double bw = mea8000_interp(mea8000.f[i].last_bw, mea8000.f[i].bw);
+  double b = 2.*cos((2.*M_PI)*fm/F0);
   double c = -exp(-M_PI*bw/F0);
   double next_output =
     input -
@@ -303,21 +316,32 @@ static double mea8000_noise_gen( void )
 /* sawtooth waveform at F0, in [-1,1] */
 static double mea8000_freq_gen( void )
 {
-  int pitch = mea8000_interp_i(mea8000.last_pitch, mea8000.pitch);
-  mea8000.phi += pitch;
-  return (mea8000.phi % F0) / (F0/2) - 1.;
+	int pitch = mea8000_interp(mea8000.last_pitch, mea8000.pitch);
+	mea8000.phi += pitch;
+	return (double) (mea8000.phi % F0) / (F0/2.) - 1.;
 }
 
+/* sample in [-32767,32767], at F0 */
 static int mea8000_compute_sample( void )
 {
   int i;
-  double in, out;
-  double ampl = mea8000_interp_f(mea8000.last_ampl, mea8000.ampl);
-  if (mea8000.noise) in = mea8000_noise_gen();
-  else in = mea8000_freq_gen();
+  double out;
+  double ampl = mea8000_interp(8.*mea8000.last_ampl, 8.*mea8000.ampl);
+  
+  if (mea8000.noise)
+    out = mea8000_noise_gen();
+  else
+    out = mea8000_freq_gen();
+
+  out *= ampl;
+
   for (i=0; i<4; i++)
-    in = mea8000_filter_step(i, in);
-  out = in * ampl * 8;
+    out = mea8000_filter_step(i, out);
+
+  if ( out > 32767 )
+    out = 32767;
+  if ( out < -32767)
+    out = -32767;
   return out;
 } 
 
@@ -353,7 +377,7 @@ static void mea8000_decode_frame( void )
   mea8000.f[2].fm = fm3_table[ mea8000.buf[1] >> 5 ];
   mea8000.f[1].fm = fm2_table[ mea8000.buf[1] & 0x1f ];
   mea8000.f[0].fm = fm1_table[ mea8000.buf[2] >> 3 ];
-  mea8000.ampl = ampl_table[ ((mea8000.buf[2] & 7) << 1) | 
+  mea8000.ampl = ampl_table[ ((mea8000.buf[2] & 7) << 1) |
 			     (mea8000.buf[3] >> 7) ];
   mea8000.framelog = fd + 6 /* 64 samples / ms */ + 3;
   mea8000.framelength = 1 <<  mea8000.framelog;
@@ -392,7 +416,7 @@ static void mea8000_stop_frame( void )
   write_dac(0);
 }
 
-/* next sample in frame, sampling at 64 KHz */
+/* next sample in frame, sampling at 64 kHz */
 static void mea8000_timer_expire ( int dummy )
 {
   int pos = mea8000.framepos % SUPERSAMPLING;
@@ -412,7 +436,7 @@ static void mea8000_timer_expire ( int dummy )
   }
 
   mea8000.framepos++;
-  if (mea8000.framepos == mea8000.framelength) {
+  if (mea8000.framepos >= mea8000.framelength) {
     mea8000_shift_frame();
     /* end of frame */
     if (mea8000.bufpos == 4) {
@@ -542,6 +566,11 @@ void mea8000_reset ( void )
   mea8000.roe = 0;
   mea8000.state = MEA8000_STOPPED;
   mea8000_update_req();
+  for (i=0; i<4; i++)
+  {
+    mea8000.f[i].last_output = 0;
+    mea8000.f[i].output = 0;
+  }
 }
 
 
