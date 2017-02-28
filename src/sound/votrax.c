@@ -1508,10 +1508,11 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 
 int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 {
-#ifndef REAL_DEVICE
+#if defined(OLD_VOTRAX) && !defined(REAL_DEVICE)
 	static char s[32];
 	int i;
 #endif
+
 	memset(&votraxsc01_locals, 0x00, sizeof(votraxsc01_locals));
 
 	votraxsc01_locals.intf = msound->sound_interface;
@@ -1558,9 +1559,10 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 	votraxsc01_locals.cur_closure = 1;
 	votraxsc01_locals.noise = 0;
 	votraxsc01_locals.cur_noise = 0;
+
 #else
 
-    votraxsc01_locals.baseFrequency = votraxsc01_locals.intf->baseFrequency[0];
+	votraxsc01_locals.baseFrequency = votraxsc01_locals.intf->baseFrequency[0];
 	if ( votraxsc01_locals.baseFrequency<=0 )
 		votraxsc01_locals.baseFrequency = 8000;
 
@@ -1593,7 +1595,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 
 	votraxsc01_locals.timer = timer_alloc(VOTRAXSC01_sh_start_timeout);
 	timer_adjust(votraxsc01_locals.timer, 0, 0, 0.00001);
-	timer_enable(votraxsc01_locals.timer,1);
+	timer_enable(votraxsc01_locals.timer, 1);
 #endif
 #endif
 
