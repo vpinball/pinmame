@@ -1,5 +1,6 @@
 /******************************************************************************************
   Stargame: Slalom Code 0.3
+  Playbar:  Bloody Roller
 *******************************************************************************************/
 
 #include "driver.h"
@@ -10,7 +11,7 @@
 
 static struct {
   UINT8 sndCmd, msmData;
-  int swCol, dispCol, dispCnt, f2;
+  int swCol, dispCol, dispCnt, f2, isBr;
 } locals;
 
 static INTERRUPT_GEN(slalom_vblank) {
@@ -69,7 +70,7 @@ static void adjust_snd(int offset) {
 
 static SWITCH_UPDATE(slalom) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x3f, 9);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x3f, 11);
   }
 #ifdef MAME_DEBUG
   if (keyboard_pressed_memory_repeat(KEYCODE_B, 2)) {
@@ -85,35 +86,35 @@ static SWITCH_UPDATE(slalom) {
 }
 
 static READ_HANDLER(sw_r) {
+  if (offset) {
+    return ~coreGlobals.swMatrix[8 + offset / 8];
+  }
   return ~coreGlobals.swMatrix[1 + locals.swCol];
 }
 
-static READ_HANDLER(sw0_r) {
-  return ~coreGlobals.swMatrix[9];
+// only used on blroller, not sure what it is, mapped to dip switches for now
+static READ_HANDLER(dip_r) {
+  return ~core_getDip(0);
 }
 
 static READ_HANDLER(int_r) {
   return locals.f2;
 }
 
-static WRITE_HANDLER(swCol_w) {
-  locals.swCol = data;
-}
-
-static WRITE_HANDLER(sol1_w) {
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0xbffff) | ((data & 1) << 18); // coin counter
-}
-
-static WRITE_HANDLER(sol2_w) {
+static WRITE_HANDLER(m900x_w) {
   switch (offset) {
-    case 0: coreGlobals.solenoids = (coreGlobals.solenoids & 0xeffff) | ((data & 1) << 16); break; // control fijas
-    case 1: coreGlobals.solenoids = (coreGlobals.solenoids & 0xdffff) | ((data & 1) << 17); break; // reset
+    case 0: if (!locals.isBr) coreGlobals.solenoids = (coreGlobals.solenoids & 0xbffff) | ((data & 1) << 18); break; // coin counter on slalom03
+    case 2: locals.dispCol = (data >> 6) | ((data & 1) << 2); locals.dispCnt = 0; break; // blroller only
+    case 3: locals.swCol = data; break;
+    case 6: coreGlobals.solenoids = (coreGlobals.solenoids & 0xeffff) | ((data & 1) << 16); break; // control fijas on slalom03
+    case 7: coreGlobals.solenoids = (coreGlobals.solenoids & 0xdffff) | ((data & 1) << 17); break; // reset
   }
 }
 
-// solenoids are part of the lamp matrix, as usual on Spanish manufacturers, but this time very heavily so!
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.lampMatrix[offset + (locals.f2 ? 0 : 8)] = data;
+  if (locals.isBr) return;
+  // solenoids are part of the lamp matrix, as usual on Spanish manufacturers, but on Stargame games very heavily so!
   switch (offset) {
     case 0: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffefe) | ((data >> 3) & 1) | (((data >> 5) & 1) << 8); break;
     case 1: coreGlobals.solenoids = (coreGlobals.solenoids & 0xffdfd) | (((data >> 3) & 1) << 1) | (((data >> 5) & 1) << 9); break;
@@ -126,24 +127,46 @@ static WRITE_HANDLER(lamp_w) {
   }
 }
 
-static WRITE_HANDLER(dispCol_w) {
+static WRITE_HANDLER(sol_w) {
   static int pos[7] = { 5, 4, 3, 0, 6, 1, 2 };
-  locals.dispCol = pos[core_BitColToNum(data) - 1];
-  locals.dispCnt = 0;
+  UINT32 solMask, solBits;
+  if (!locals.isBr) { // on slalom03, $A008 is the display column write ($9002 on blroller)
+    locals.dispCol = pos[core_BitColToNum(data) - 1];
+    locals.dispCnt = 0;
+    return;
+  }
+
+  // Unbelievable... Playbar used dedicated solenoid outputs! :)
+  solMask = ~(0x1000101 << offset);
+  solBits = ((data & 1) << offset) | ((data & 2) << (7 + offset))| ((data & 8) << (21 + offset));
+  if (data & 0xf4) logerror("SOL %d:%x\n", offset, data);
+  coreGlobals.solenoids = (coreGlobals.solenoids & solMask) | solBits;
 }
 
+// only used on slalom03
 static UINT8 convBits(UINT8 data) {
   return ((data & 0x01) << 7) | ((data & 0x06) << 3) | ((data & 0x28) >> 3) | ((data & 0x10) >> 1) | (data & 0x40) | ((data & 0x80) >> 6);
 }
 
 static WRITE_HANDLER(dispData_w) {
-  switch (locals.dispCnt) {
-    case 23: coreGlobals.segments[6 - locals.dispCol].w = convBits(data ^ 0xff); break;
-    case 31: coreGlobals.segments[13 - locals.dispCol].w = convBits(data ^ 0xff); break;
-    case 7: coreGlobals.segments[20 - locals.dispCol].w = convBits(data ^ 0xff); break;
-    case 15: coreGlobals.segments[27 - locals.dispCol].w = convBits(data ^ 0xff); break;
-    case 39: coreGlobals.segments[34 - locals.dispCol].w = convBits(data ^ 0xff); break;
-    case 47: coreGlobals.segments[41 - locals.dispCol].w = convBits(data ^ 0xff); break;
+  if (locals.isBr) {
+    switch (locals.dispCnt) {
+      case 7: coreGlobals.segments[6 - locals.dispCol].w = data & 0x7f; break;
+      case 15: coreGlobals.segments[13 - locals.dispCol].w = data & 0x7f; break;
+      case 23: coreGlobals.segments[20 - locals.dispCol].w = data & 0x7f; break;
+      case 31: coreGlobals.segments[27 - locals.dispCol].w = data & 0x7f; break;
+      case 39: coreGlobals.segments[34 - locals.dispCol].w = data & 0x7f; break;
+      case 47: coreGlobals.segments[41 - locals.dispCol].w = data & 0x7f; break;
+    }
+  } else {
+    switch (locals.dispCnt) {
+      case 7: coreGlobals.segments[20 - locals.dispCol].w = convBits(~data); break;
+      case 15: coreGlobals.segments[27 - locals.dispCol].w = convBits(~data); break;
+      case 23: coreGlobals.segments[6 - locals.dispCol].w = convBits(~data); break;
+      case 31: coreGlobals.segments[13 - locals.dispCol].w = convBits(~data); break;
+      case 39: coreGlobals.segments[34 - locals.dispCol].w = convBits(~data); break;
+      case 47: coreGlobals.segments[41 - locals.dispCol].w = convBits(~data); break;
+    }
   }
   locals.dispCnt++;
 }
@@ -156,21 +179,18 @@ static WRITE_HANDLER(snd_w) {
 static MEMORY_READ_START(cpu_readmem)
   {0x0000, 0x7fff, MRA_ROM},
   {0x8000, 0x87ff, MRA_RAM},
-  {0xa020, 0xa020, sw_r},
-  {0xa028, 0xa030, MRA_NOP},
-  {0xa038, 0xa038, sw0_r},
+  {0xa020, 0xa038, sw_r},
+  {0xc000, 0xc000, dip_r},
   {0xe000, 0xe000, int_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(cpu_writemem)
   {0x8000, 0x87ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  {0x9000, 0x9000, sol1_w},
-  {0x9003, 0x9003, swCol_w},
-  {0x9004, 0x9005, MWA_NOP},
-  {0x9006, 0x9007, sol2_w},
-  {0xa008, 0xa008, dispCol_w},
+  {0x9000, 0x9007, m900x_w},
+  {0xa008, 0xa00f, sol_w},
   {0xa010, 0xa017, lamp_w},
   {0xa018, 0xa018, dispData_w},
+  {0xc000, 0xc000, MWA_NOP},
   {0xf000, 0xf000, snd_w},
 MEMORY_END
 
@@ -288,7 +308,7 @@ static core_tLCDLayout dispSlalom[] = {
   {3,16,28,2,CORE_SEG8D}, {3,21,30,1,CORE_SEG8D}, {3,24,31,2,CORE_SEG8D},
   {0}
 };
-static core_tGameData slalom03GameData = { 0, dispSlalom, { FLIP_SWNO(72,71), 0, 8 }};
+static core_tGameData slalom03GameData = {0,dispSlalom,{FLIP_SWNO(88,87),0,8}};
 static void init_slalom03(void) { core_gameData = &slalom03GameData; }
 ROM_START(slalom03)
   NORMALREGION(0x10000, REGION_CPU1)
@@ -311,3 +331,69 @@ INPUT_PORTS_START(slalom03)
     COREPORT_BIT   (0x0010, "Test",       KEYCODE_7)
 INPUT_PORTS_END
 CORE_GAMEDEFNV(slalom03, "Slalom Code 0.3", 1988, "Stargame", slalom, 0)
+
+static MACHINE_RESET(roller) {
+  memset(&locals, 0x00, sizeof(locals));
+  locals.isBr = 1;
+}
+
+static MACHINE_DRIVER_START(roller)
+  MDRV_IMPORT_FROM(slalom)
+  MDRV_CORE_INIT_RESET_STOP(slalom,roller,NULL)
+  MDRV_DIPS(8)
+MACHINE_DRIVER_END
+
+static core_tLCDLayout dispRoller[] = {
+  {0, 0, 0,7,CORE_SEG7}, {0,30, 7,7,CORE_SEG7},
+  {4, 0,14,7,CORE_SEG7}, {4,30,21,7,CORE_SEG7},
+  {2,16,28,2,CORE_SEG7}, {2,21,31,1,CORE_SEG7}, {2,24,33,2,CORE_SEG7},
+  {0}
+};
+static core_tGameData blrollerGameData = {0,dispRoller,{FLIP_SWNO(88,87),0,8}};
+static void init_blroller(void) { core_gameData = &blrollerGameData; }
+ROM_START(blroller)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu.bin", 0x0000, 0x8000, CRC(7fc31e24) SHA1(0ee26745cdc5be26f332f6a15b51dc209b7eb333))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("sound_1.bin", 0x0000, 0x8000, CRC(d1543527) SHA1(ae9959529052bae78f99a1ca413276bf08ab945c))
+  NORMALREGION(0x10000, REGION_SOUND1)
+    ROM_LOAD("sound_2.bin", 0x0000, 0x8000, CRC(ff9c6d23) SHA1(f31fd6fdc2cdb280845a3d0a6d00038504035723))
+    ROM_COPY(REGION_CPU2, 0x0000, 0x8000, 0x4000)
+ROM_END
+INPUT_PORTS_START(blroller)
+  CORE_PORTS
+  SIM_PORTS(3)
+  PORT_START /* 0 */
+    COREPORT_BIT   (0x0008, "Game start", KEYCODE_1)
+    COREPORT_BIT   (0x0001, "Coin 1",     KEYCODE_3)
+    COREPORT_BIT   (0x0002, "Coin 2",     KEYCODE_4)
+    COREPORT_BIT   (0x0004, "Coin 3",     KEYCODE_5)
+    COREPORT_BIT   (0x0020, "Tilt",       KEYCODE_INSERT)
+    COREPORT_BIT   (0x0010, "Test",       KEYCODE_7)
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0001, "1" )
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0004, "1" )
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0008, "1" )
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0010, "1" )
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0020, "1" )
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0040, "1" )
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0080, "1" )
+INPUT_PORTS_END
+CORE_GAMEDEFNV(blroller, "Bloody Roller", 1987, "Playbar", roller, 0)
