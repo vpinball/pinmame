@@ -3,7 +3,7 @@ Version 2.9 (X X, 2017) - ""
 
 *** CORE/CPU *** Thanks to DJRobX
 Support for some Stargame games added
-
+Support for Playbar's Bloody Roller, very similar hardware to Slalom Code 0.3
 Joctronic emulation works now, yet still no good dumps for Punky Willy, and Pin-Ball is missing entirely...
 
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
@@ -16,9 +16,10 @@ Fix a problem when using altsound packages (like PinSound) and changing the mach
 
 Updated to zlib 1.2.11
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.com, Juan
 New:
 LTD: Arizona, Columbia, Cowboy Eight Ball, Disco Dancing, Force, Haunted Hotel, Hustler, Martian Queen, King Kong, Space Poker, Time Machine, Trick Shooter, Viking King
+Playbar: Bloody Roller
 Stargame: Space Ship, White Force, Slalom Code 0.3
 Taito: Volley (formerly known as Voley Ball and was missing most dumps)
 
