@@ -80,6 +80,7 @@ static SWITCH_UPDATE(slalom) {
     adjust_snd(1);
   }
   if (keyboard_pressed_memory_repeat(KEYCODE_M, 2)) {
+  	adjust_snd(0);
     cpu_set_nmi_line(1, PULSE_LINE);
   }
 #endif /* MAME_DEBUG */
@@ -106,8 +107,8 @@ static WRITE_HANDLER(m900x_w) {
     case 0: if (!locals.isBr) coreGlobals.solenoids = (coreGlobals.solenoids & 0xbffff) | ((data & 1) << 18); break; // coin counter on slalom03
     case 2: locals.dispCol = (data >> 6) | ((data & 1) << 2); locals.dispCnt = 0; break; // blroller only
     case 3: locals.swCol = data; break;
-    case 6: coreGlobals.solenoids = (coreGlobals.solenoids & 0xeffff) | ((data & 1) << 16); break; // control fijas on slalom03
-    case 7: coreGlobals.solenoids = (coreGlobals.solenoids & 0xdffff) | ((data & 1) << 17); break; // reset
+    case 6: coreGlobals.solenoids = (coreGlobals.solenoids & 0xfffeffff) | ((data & 1) << 16); break; // control fijas on slalom03
+    case 7: coreGlobals.solenoids = (coreGlobals.solenoids & 0xfffdffff) | ((data & 1) << 17); break; // reset
   }
 }
 
