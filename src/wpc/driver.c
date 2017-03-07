@@ -918,7 +918,7 @@ DRIVERNV(spctrain)      //Space Train (1987)
 DRIVERNV(spcpnthr)      //Space Panther (1988)
 DRIVERNV(mac_1808)      //Unknown MAC game #1808 (19??)
 DRIVERNV(macjungn)      //New MAC Jungle (1995)
-DRIVERNV(nbamac)        //MBA MAC (1996)
+DRIVERNV(nbamac)        //NBA MAC (1996)
 
 // ----------------
 // MICROPIN GAMES
@@ -1926,9 +1926,9 @@ DRIVER(mtl,170h)        //S.A.M.: 06/16 Metallica Limited Edition - V1.7
 //DRIVER(st,100)          //S.A.M.: 09/13 Star Trek Pro - V1.0
 //DRIVER(st,101)          //S.A.M.: 09/13 Star Trek Pro - V1.01
 DRIVER(st,120)          //S.A.M.: 09/13 Star Trek Pro - V1.2
-DRIVER(st,130)          //S.A.M.: 10/13 Star Trek Pro - V1.3                    
+DRIVER(st,130)          //S.A.M.: 10/13 Star Trek Pro - V1.3
 //DRIVER(st,130h)         //S.A.M.: 11/13 Star Trek Limited Edition - V1.3
-DRIVER(st,140)          //S.A.M.: 12/13 Star Trek Pro - V1.4          
+DRIVER(st,140)          //S.A.M.: 12/13 Star Trek Pro - V1.4
 DRIVER(st,140h)         //S.A.M.: 12/13 Star Trek Limited Edition - V1.4
 DRIVER(st,141h)         //S.A.M.: 12/13 Star Trek Limited Edition - V1.41
 DRIVER(st,142h)         //S.A.M.: 02/14 Star Trek Limited Edition - V1.42
@@ -2491,21 +2491,21 @@ DRIVER(tz,f50)          //          ??/??   Twilight Zone (FreeWPC 0.50)
 DRIVER(tz,f86)          //          ??/??   Twilight Zone (FreeWPC 0.86)
 DRIVER(tz,f97)          //          05/10   Twilight Zone (FreeWPC 0.97)
 DRIVER(tz,f100)         //          08/11   Twilight Zone (FreeWPC 1.00)
-DRIVER(ij,p2)           //WPC-517:  07/93 W Indiana Jones (P-2)
-DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
-DRIVER(ij,d3)           //                  Indiana Jones (D-3) LED Ghost Fix
-DRIVER(ij,l4)           //          08/93 W Indiana Jones (L-4)
-DRIVER(ij,d4)           //                  Indiana Jones (D-4) LED Ghost Fix
-DRIVER(ij,l5)           //          09/93 W Indiana Jones (L-5)
-DRIVER(ij,d5)           //                  Indiana Jones (D-5) LED Ghost Fix
-DRIVER(ij,l6)           //          10/93 W Indiana Jones (L-6)
-DRIVER(ij,d6)           //                  Indiana Jones (D-6) LED Ghost Fix
-DRIVER(ij,l7)           //          11/93 W Indiana Jones (L-7)
-DRIVER(ij,d7)           //                  Indiana Jones (D-7) LED Ghost Fix
-DRIVER(ij,lg7)          //          11/93 W Indiana Jones (LG-7)
-DRIVER(ij,dg7)          //                  Indiana Jones (DG-7) LED Ghost Fix
-DRIVER(ij,h1)           //                  Indiana Jones (HK-1) Family no hate speech version
-DRIVER(ij,i1)           //                  Indiana Jones (I-1) Family no hate LED Ghost Fix
+DRIVER(ij,p2)           //WPC-517:  07/93 W Indiana Jones: The Pinball Adventure (P-2)
+DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones: The Pinball Adventure (L-3)
+DRIVER(ij,d3)           //                  Indiana Jones: The Pinball Adventure (D-3) LED Ghost Fix
+DRIVER(ij,l4)           //          08/93 W Indiana Jones: The Pinball Adventure (L-4)
+DRIVER(ij,d4)           //                  Indiana Jones: The Pinball Adventure (D-4) LED Ghost Fix
+DRIVER(ij,l5)           //          09/93 W Indiana Jones: The Pinball Adventure (L-5)
+DRIVER(ij,d5)           //                  Indiana Jones: The Pinball Adventure (D-5) LED Ghost Fix
+DRIVER(ij,l6)           //          10/93 W Indiana Jones: The Pinball Adventure (L-6)
+DRIVER(ij,d6)           //                  Indiana Jones: The Pinball Adventure (D-6) LED Ghost Fix
+DRIVER(ij,l7)           //          11/93 W Indiana Jones: The Pinball Adventure (L-7)
+DRIVER(ij,d7)           //                  Indiana Jones: The Pinball Adventure (D-7) LED Ghost Fix
+DRIVER(ij,lg7)          //          11/93 W Indiana Jones: The Pinball Adventure (LG-7)
+DRIVER(ij,dg7)          //                  Indiana Jones: The Pinball Adventure (DG-7) LED Ghost Fix
+DRIVER(ij,h1)           //                  Indiana Jones: The Pinball Adventure (HK-1) Family no hate speech version
+DRIVER(ij,i1)           //                  Indiana Jones: The Pinball Adventure (I-1) Family no hate LED Ghost Fix
 DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,d1)           //                  Judge Dredd (D-1) LED Ghost Fix
 DRIVER(jd,l4)           //          10/93 B Judge Dredd (L-4)
