@@ -208,9 +208,9 @@ static void mea8000_init_tables( void )
   int i;
   for (i=0; i<TABLE_LEN; i++) {
     double f = (double)i / F0;
-    cos_table[i]  = 2. * cos((2.*M_PI)*f) * QUANT;
-    exp_table[i]  = exp(-M_PI*f) * QUANT;
-    exp2_table[i] = exp((-2.*M_PI)*f) * QUANT;
+    cos_table[i]  = (int)(2. * cos((2.*M_PI)*f) * QUANT);
+    exp_table[i]  = (int)(exp(-M_PI*f) * QUANT);
+    exp2_table[i] = (int)(exp((-2.*M_PI)*f) * QUANT);
   }
   for (i=0; i<NOISE_LEN; i++)
     noise_table[i] = (rand() % (2*QUANT)) - QUANT;
