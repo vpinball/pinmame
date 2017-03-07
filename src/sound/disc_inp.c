@@ -50,7 +50,7 @@ READ_HANDLER(discrete_sound_r)
 	/* Update the node input value if allowed */
 	if(dss_input_map[offset])
 	{
-		data=dss_input_map[offset]->input[0];
+		data=(int)dss_input_map[offset]->input[0];
 	}
     return data;
 }

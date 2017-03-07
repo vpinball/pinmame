@@ -436,7 +436,8 @@ void at91_pending_serial(int usartno, int delaytime)
 
 static void serial_timer_event(int timer_num)
 {
-	int usartno, i;
+	int usartno;
+	unsigned int i;
 	timer_adjust(at91_serial_timer, TIME_NEVER, 0, TIME_NEVER);
 
 	for(usartno=0;usartno<2;usartno++)
