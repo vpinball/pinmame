@@ -1,5 +1,5 @@
 /*******************************************************************************
- Harley Davidson (Bally, 1991) Pinball Simulator
+ Harley-Davidson (Bally, 1991) Pinball Simulator
 
  by Marton Larrosa (marton@mail.com)
  Jan. 5, 2001
@@ -17,7 +17,7 @@
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
-  Keys for the Harley Davidson Simulator:
+  Keys for the Harley-Davidson Simulator:
   ---------------------------------------
       +L  L/R Loop
       +O  L/R Outlane
@@ -390,12 +390,12 @@ static MACHINE_DRIVER_START(hd)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 
-CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,d3,l3,"Harley Davidson (D-3 LED Ghost Fix)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,l2,l3,"Harley Davidson (L-2)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,d2,l3,"Harley Davidson (D-2 LED Ghost Fix)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,l1,l3,"Harley Davidson (L-1)",1991,"Bally", hd, 0)
-CORE_CLONEDEF(hd,d1,l3,"Harley Davidson (D-1 LED Ghost Fix)",1991,"Bally", hd, 0)
+CORE_GAMEDEF(hd,l3,"Harley-Davidson (L-3)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d3,l3,"Harley-Davidson (D-3 LED Ghost Fix)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,l2,l3,"Harley-Davidson (L-2)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d2,l3,"Harley-Davidson (D-2 LED Ghost Fix)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,l1,l3,"Harley-Davidson (L-1)",1991,"Bally", hd, 0)
+CORE_CLONEDEF(hd,d1,l3,"Harley-Davidson (D-1 LED Ghost Fix)",1991,"Bally", hd, 0)
 
 /*-----------------------
 / Simulation Definitions
