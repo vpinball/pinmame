@@ -133,7 +133,7 @@ extern unsigned at91_get_reg(int regnum);
 .. though there's still room for improvement. */
 {
 	data32_t pc;
-	static data32_t pc_prev2 = 0, pc_prev1=0;
+	static data32_t pc_prev2 = 0, pc_prev1 = 0;
 	data32_t insn;
 	int op_offset;
 
@@ -152,9 +152,9 @@ extern unsigned at91_get_reg(int regnum);
 		/* load 32 bit instruction, trying the JIT first */
 		pc = R15;
 
-			// Debug test triggers
+		// Debug test triggers
 
-			// Helpful to backtrace a crash :)
+		// Helpful to backtrace a crash :)
 
 		JIT_FETCH(ARM7.jit, pc);
 		insn = cpu_readop32(pc);
@@ -222,7 +222,7 @@ extern unsigned at91_get_reg(int regnum);
 		/*******************************************************************/
 		/* If we got here - condition satisfied, so decode the instruction */
 		/*******************************************************************/		
-		switch( (insn & 0xF000000)>>24 + op_offset)
+		switch( ((insn & 0xF000000)>>24) + op_offset)
 		{
 			/* Bits 27-24 = 0000 -> Can be Data Proc, Multiply, Multiply Long, Halfword Data Transfer */
 			case 0:
