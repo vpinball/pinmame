@@ -784,7 +784,7 @@ DE_DMD32ROM8x(           "pbdispa.500",  CRC(40450165) SHA1(80295466838cb08fe149
 PLAY_SND
 SE_ROMEND
 #define input_ports_playboys input_ports_se
-CORE_GAMEDEFNV(playboys,"Playboy (5.00)",2002,"Stern",de_mSES2,0)
+CORE_GAMEDEFNV(playboys,"Playboy (Stern, 5.00)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyf, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispf.500",  CRC(aedc6c32) SHA1(c930ae1b1308ae641553de34f8249b17f408be56))
@@ -792,7 +792,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyf input_ports_playboys
 #define init_playboyf init_playboys
-CORE_CLONEDEFNV(playboyf,playboys,"Playboy (5.00 French)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyf,playboys,"Playboy (Stern, 5.00 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyg, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispg.500",  CRC(681392fe) SHA1(23011d538282da144b8ff9cbb7c5655567017e5e))
@@ -800,7 +800,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyg input_ports_playboys
 #define init_playboyg init_playboys
-CORE_CLONEDEFNV(playboyg,playboys,"Playboy (5.00 German)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyg,playboys,"Playboy (Stern, 5.00 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyi, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispi.500",  CRC(d90d7ec6) SHA1(7442160f403a8ccabfc9dc8dc53f8b44f5df26bc))
@@ -808,7 +808,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyi input_ports_playboys
 #define init_playboyi init_playboys
-CORE_CLONEDEFNV(playboyi,playboys,"Playboy (5.00 Italian)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Stern, 5.00 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(playboyl, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispl.500",  CRC(b019f0f6) SHA1(184a9905cd3af9d272577e43666aed5e5a8a5281))
@@ -816,7 +816,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_playboyl input_ports_playboys
 #define init_playboyl init_playboys
-CORE_CLONEDEFNV(playboyl,playboys,"Playboy (5.00 Spanish)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(playboyl,playboys,"Playboy (Stern, 5.00 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401,  "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispa.400",  CRC(244e9740) SHA1(1a2de2c53104e1123cbcc9ccc92e0888b4cf4bec))
@@ -824,7 +824,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401 input_ports_playboys
 #define init_play401 init_playboys
-CORE_CLONEDEFNV(play401,playboys,"Playboy (4.01)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401,playboys,"Playboy (Stern, 4.01)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401l, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdisps.400",  CRC(92b48fdd) SHA1(deebb0bf6ec13b0cead3970c19bd0e8321046786))
@@ -832,7 +832,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401l input_ports_playboys
 #define init_play401l init_playboys
-CORE_CLONEDEFNV(play401l,playboys,"Playboy (4.01 Spanish)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401l,playboys,"Playboy (Stern, 4.01 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401g, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispg.400",  CRC(c26a0c73) SHA1(1841ab278e5d3e146cb3b43dfedc208d302dbc17))
@@ -840,7 +840,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401g input_ports_playboys
 #define init_play401g init_playboys
-CORE_CLONEDEFNV(play401g,playboys,"Playboy (4.01 German)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401g,playboys,"Playboy (Stern, 4.01 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401f, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispf.400",  CRC(8ccce5d9) SHA1(28370445d38b065001e96b455d283bc047ed0f21))
@@ -848,7 +848,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401f input_ports_playboys
 #define init_play401f init_playboys
-CORE_CLONEDEFNV(play401f,playboys,"Playboy (4.01 French)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401f,playboys,"Playboy (Stern, 4.01 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play401i, "pbcpu.401",    CRC(cb2e2824) SHA1(01413ff1f4fbee9d62776babb60ccc88f97feedf))
 DE_DMD32ROM8x(           "pbdispi.400",  CRC(90c5afed) SHA1(ea7ab06adb18854c9871b02f39fe616a27293415))
@@ -856,7 +856,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play401i input_ports_playboys
 #define init_play401i init_playboys
-CORE_CLONEDEFNV(play401i,playboys,"Playboy (4.01 Italian)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play401i,playboys,"Playboy (Stern, 4.01 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303,  "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -864,7 +864,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303 input_ports_playboys
 #define init_play303 init_playboys
-CORE_CLONEDEFNV(play303,playboys,"Playboy (3.03)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303,playboys,"Playboy (Stern, 3.03)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303l, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispl.300",  CRC(e7697fc3) SHA1(7a9796e7b99af0d3d2079876a8054209a3067e64))
@@ -872,7 +872,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303l input_ports_playboys
 #define init_play303l init_playboys
-CORE_CLONEDEFNV(play303l,playboys,"Playboy (3.03 Spanish)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303l,playboys,"Playboy (Stern, 3.03 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303g, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispg.300",  CRC(ed7b7c62) SHA1(28b0ab490f8abd5f29e8cb0996da9e7200918157))
@@ -880,7 +880,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303g input_ports_playboys
 #define init_play303g init_playboys
-CORE_CLONEDEFNV(play303g,playboys,"Playboy (3.03 German)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303g,playboys,"Playboy (Stern, 3.03 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303f, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispf.300",  CRC(69ab3bb2) SHA1(59d7ad5eca701d1216200cd489d2d07825a0856e))
@@ -888,7 +888,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303f input_ports_playboys
 #define init_play303f init_playboys
-CORE_CLONEDEFNV(play303f,playboys,"Playboy (3.03 French)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303f,playboys,"Playboy (Stern, 3.03 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play303i, "pbcpu.303",    CRC(6a6f6aab) SHA1(cac5d68d699db4016244ffd56355e2834be3da1f))
 DE_DMD32ROM8x(           "pbdispi.300",  CRC(74c8cedf) SHA1(474ad1939ea0a58852003e549ed85478e239a67c))
@@ -896,7 +896,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play303i input_ports_playboys
 #define init_play303i init_playboys
-CORE_CLONEDEFNV(play303i,playboys,"Playboy (3.03 Italian)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play303i,playboys,"Playboy (Stern, 3.03 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302,  "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -904,7 +904,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302 input_ports_playboys
 #define init_play302 init_playboys
-CORE_CLONEDEFNV(play302,playboys,"Playboy (3.02)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302,playboys,"Playboy (Stern, 3.02)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302l, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispl.300",  CRC(e7697fc3) SHA1(7a9796e7b99af0d3d2079876a8054209a3067e64))
@@ -912,7 +912,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302l input_ports_playboys
 #define init_play302l init_playboys
-CORE_CLONEDEFNV(play302l,playboys,"Playboy (3.02 Spanish)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302l,playboys,"Playboy (Stern, 3.02 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302g, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispg.300",  CRC(ed7b7c62) SHA1(28b0ab490f8abd5f29e8cb0996da9e7200918157))
@@ -920,7 +920,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302g input_ports_playboys
 #define init_play302g init_playboys
-CORE_CLONEDEFNV(play302g,playboys,"Playboy (3.02 German)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302g,playboys,"Playboy (Stern, 3.02 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302f, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispf.300",  CRC(69ab3bb2) SHA1(59d7ad5eca701d1216200cd489d2d07825a0856e))
@@ -928,7 +928,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302f input_ports_playboys
 #define init_play302f init_playboys
-CORE_CLONEDEFNV(play302f,playboys,"Playboy (3.02 French)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302f,playboys,"Playboy (Stern, 3.02 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play302i, "pbcpu.302",    CRC(206285ed) SHA1(65ec90b20f7be6fac62170f69b744f9e4eb6254c))
 DE_DMD32ROM8x(           "pbdispi.300",  CRC(74c8cedf) SHA1(474ad1939ea0a58852003e549ed85478e239a67c))
@@ -936,7 +936,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play302i input_ports_playboys
 #define init_play302i init_playboys
-CORE_CLONEDEFNV(play302i,playboys,"Playboy (3.02 Italian)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play302i,playboys,"Playboy (Stern, 3.02 Italian)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play300,  "pbcpu.300",    CRC(d7e5bada) SHA1(e4d5bc015751a559eb95acb6da04246b7418eaf5))
 DE_DMD32ROM8x(           "pbdispa.300",  CRC(2dbb372a) SHA1(b694ae06f380ea9f9730ea6bbfab7f9f7ec7342b))
@@ -944,7 +944,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play300 input_ports_playboys
 #define init_play300 init_playboys
-CORE_CLONEDEFNV(play300,playboys,"Playboy (3.00)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play300,playboys,"Playboy (Stern, 3.00)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203,  "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-a.201", CRC(78ec6af8) SHA1(35b8de8ab345cf81eec4f7b7d4f654115fe69ddf))
@@ -952,7 +952,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203 input_ports_playboys
 #define init_play203 init_playboys
-CORE_CLONEDEFNV(play203,playboys,"Playboy (2.03)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203,playboys,"Playboy (Stern, 2.03)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203l, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-l.201", CRC(eaa65c45) SHA1(4ec9f815e40ac2185812faad7b991723f0b5775b))
@@ -960,7 +960,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203l input_ports_playboys
 #define init_play203l init_playboys
-CORE_CLONEDEFNV(play203l,playboys,"Playboy (2.03 Spanish)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203l,playboys,"Playboy (Stern, 2.03 Spanish)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203g, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-g.201", CRC(ff525cc7) SHA1(475578cf8b2262a11f640883b70b706f705d90ff))
@@ -968,7 +968,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203g input_ports_playboys
 #define init_play203g init_playboys
-CORE_CLONEDEFNV(play203g,playboys,"Playboy (2.03 German)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203g,playboys,"Playboy (Stern, 2.03 German)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203f, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-f.201", CRC(eedea4f4) SHA1(31eb1d4de0a4aee73c424c0f21dd2042e6ad0dca))
@@ -976,7 +976,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203f input_ports_playboys
 #define init_play203f init_playboys
-CORE_CLONEDEFNV(play203f,playboys,"Playboy (2.03 French)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203f,playboys,"Playboy (Stern, 2.03 French)",2002,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(play203i, "pbcpu.203",    CRC(50eb01b0) SHA1(1618874f35432bd9fb2592e1a56592e7624257c4))
 DE_DMD32ROM8x(           "pbdisp-i.201", CRC(48f190dc) SHA1(bf5c096f755871b12783a63b55908751f9fa5b07))
@@ -984,7 +984,7 @@ PLAY_SND
 SE_ROMEND
 #define input_ports_play203i input_ports_playboys
 #define init_play203i init_playboys
-CORE_CLONEDEFNV(play203i,playboys,"Playboy (2.03 Italian)",2002,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(play203i,playboys,"Playboy (Stern, 2.03 Italian)",2002,"Stern",de_mSES2,0)
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
