@@ -24,7 +24,8 @@ What is it?
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
   Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
   Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
-  Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame.
+  Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
+  Splin Bingo, Playbar.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -97,15 +98,18 @@ Games supported
   Playmatic: Last Lap (1978), Antar (1979), Evil Fight (1980), Mad Race (1982), Meg-Aaton (1983), KZ-26 (1984) (*)
   NSM:
   Grand Products: 300/Bullseye (1986)
-  Jac van Ham: Escape (1987)
+  Jac van Ham: Escape (1987), Movie Masters
   Videodens: Break (1986)
   Astro: Black Sheep Squadron (1978)
   Micropin: Pentacup (1979)
   Christian Tabart: L'Hexagone (1986)
-  Jeutel:
+  Jeutel: Le King (1983), Olympic Games (1984)
   Valley Manufacturing:
-  MAC / CICPlay:
-  Stargame:
+  MAC / CICPlay: MAC Galaxy (1986), Space Train (1987), Space Panther (1988), New MAC Jungle (1995), NBA MAC (1996), Kidnap (1986), Galaxy Play (1986), Galaxy Play 2 (1987)
+  Stargame: Space Ship (1986), Mephisto (1986), White Force (1987), Iron Balls (1987), Slalom Code 0.3 (1988)
+  Barni: Red Baron (1985)
+  Splin Bingo: Golden Game
+  Playbar: Bloody Roller
   Prototype games:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),

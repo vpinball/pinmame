@@ -2,9 +2,9 @@ Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU *** Thanks to DJRobX
-Support for some Stargame games added
+Support for more Stargame games added (including new sound core for MEA 8000 emulation)
 Support for Playbar's Bloody Roller, very similar hardware to Stargame's Slalom Code 0.3
-Joctronic works now, yet still no good dumps for Punky Willy, and Pin-Ball is missing entirely.
+Joctronic works now, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely
 
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 
@@ -12,7 +12,7 @@ Fix some GTS3 DMD animations running too fast
 
 Change some more of the timing for the idle/throttle speed code
 
-Fix a problem when using altsound packages (like PinSound) and changing the machine volume (which resulted in doubled sounds: emulation and altsound)
+Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
 
 Updated to zlib 1.2.11
 
