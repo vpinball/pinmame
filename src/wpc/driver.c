@@ -2337,7 +2337,9 @@ DRIVER(bop,l8)          //                  Machine: Bride of Pinbot, The (L-8) 
 DRIVER(bop,d8)          //                  Machine: Bride of Pinbot, The (D-8) LED Ghost Fix
 DRIVER(hd,l1)           //WPC-201:  02/91 B Harley Davidson (L-1)
 DRIVER(hd,d1)           //                  Harley Davidson (D-1) LED Ghost Fix
-DRIVER(hd,l3)           //          02/91 B Harley Davidson (L-3)
+DRIVER(hd,l2)           //          02/91 B Harley Davidson (L-2)
+DRIVER(hd,d2)           //                  Harley Davidson (D-2) LED Ghost Fix
+DRIVER(hd,l3)           //          04/91 B Harley Davidson (L-3)
 DRIVER(hd,d3)           //                  Harley Davidson (D-3) LED Ghost Fix
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest (L-1)
 DRIVER(sf,d1)           //                  SlugFest (D-1) LED Ghost Fix
