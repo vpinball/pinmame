@@ -2294,7 +2294,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(sopr107i,sopranos, "Sopranos, The (1.07 Italian)",2005,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ Nascar
+/ NASCAR
 /-------------------------------------------------------------------*/
 #define NASCAR_SND \
 DE3SC_SOUNDROM18888("nassnd.u7",  CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5d3596b8a485c22), \
@@ -2317,7 +2317,7 @@ DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386
 NASCAR_SND
 SE_ROMEND
 #define input_ports_nascar input_ports_se
-CORE_GAMEDEFNV(nascar,"Nascar (4.50)",2006,"Stern",de_mSES3,0)
+CORE_GAMEDEFNV(nascar,"NASCAR (4.50)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nascarl, "nascpul.450", CRC(3eebae3f) SHA1(654f0e44ce009450e66250423fcf0ff4727e5ee1))
 DE_DMD32ROM8x(      "nasdspl.400", CRC(a4de490f) SHA1(bc1aa9fc0182045f5d10044b3e4fa083572be4ac))
@@ -2325,7 +2325,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nascarl input_ports_se
 #define init_nascarl init_nascar
-CORE_CLONEDEFNV(nascarl,nascar,"Nascar (4.50 Spanish)",2006,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nascarl,nascar,"NASCAR (4.50 Spanish)",2006,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas400, "nascpua.400", CRC(24a72071) SHA1(5bfe473e85e12b30963b15dfc8732f2ef9c299c3))
 DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386f87aa620e31e34))
@@ -2333,7 +2333,7 @@ NASCAR_SND
 SE_ROMEND
 #define input_ports_nas400 input_ports_se
 #define init_nas400 init_nascar
-CORE_CLONEDEFNV(nas400,nascar,"Nascar (4.00)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas400,nascar,"NASCAR (4.00)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas400l, "nascpul.400", CRC(23ca7b4a) SHA1(9ea7afb283157a8e65106dc027cfd45eecc3f86a))
 DE_DMD32ROM8x(      "nasdspl.400", CRC(a4de490f) SHA1(bc1aa9fc0182045f5d10044b3e4fa083572be4ac))
@@ -2341,7 +2341,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas400l input_ports_se
 #define init_nas400l init_nascar
-CORE_CLONEDEFNV(nas400l,nascar,"Nascar (4.00 Spanish)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas400l,nascar,"NASCAR (4.00 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas352, "nascpua.352", CRC(65b8132e) SHA1(b42dca3e68d3eff158bae830f6c8cca00e0ed3e2))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2349,7 +2349,7 @@ NASCAR_SND
 SE_ROMEND
 #define input_ports_nas352 input_ports_se
 #define init_nas352 init_nascar
-CORE_CLONEDEFNV(nas352,nascar,"Nascar (3.52)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas352,nascar,"NASCAR (3.52)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas352l, "nascpul.352", CRC(c78549d8) SHA1(9796c0d413fd2ea7f616ad238b67311c8c29286d))
 DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
@@ -2357,7 +2357,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas352l input_ports_se
 #define init_nas352l init_nascar
-CORE_CLONEDEFNV(nas352l,nascar,"Nascar (3.52 Spanish)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas352l,nascar,"NASCAR (3.52 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas350, "nascpua.350", CRC(e5b4ed49) SHA1(0d38c0e08862a0a5a200225634c5bf0d0afe5afe))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2365,7 +2365,7 @@ NASCAR_SND
 SE_ROMEND
 #define input_ports_nas350 input_ports_se
 #define init_nas350 init_nascar
-CORE_CLONEDEFNV(nas350,nascar,"Nascar (3.50)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas350,nascar,"NASCAR (3.50)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas350l, "nascpul.350", CRC(ab749309) SHA1(95d35126bda75c68037010f001c28a860b6a6e0c))
 DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
@@ -2373,7 +2373,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas350l input_ports_se
 #define init_nas350l init_nascar
-CORE_CLONEDEFNV(nas350l,nascar,"Nascar (3.50 Spanish)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas350l,nascar,"NASCAR (3.50 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas340, "nascpua.340", CRC(120dc65a) SHA1(151c1604dacb1c1cf74449291d81629a05fb1b09))
 DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
@@ -2381,7 +2381,7 @@ NASCAR_SND
 SE_ROMEND
 #define input_ports_nas340 input_ports_se
 #define init_nas340 init_nascar
-CORE_CLONEDEFNV(nas340,nascar,"Nascar (3.40)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas340,nascar,"NASCAR (3.40)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas340l, "nascpul.340", CRC(d5827082) SHA1(660216472a1faa445701eb3735771568cdba7b24))
 DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
@@ -2389,7 +2389,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas340l input_ports_se
 #define init_nas340l init_nascar
-CORE_CLONEDEFNV(nas340l,nascar,"Nascar (3.40 Spanish)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas340l,nascar,"NASCAR (3.40 Spanish)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas301, "nascpua.301", CRC(8ede60c2) SHA1(aa49da40f2ed858c5fa260ce5e7dd096b4217544))
 DE_DMD32ROM8x(      "nasdspa.301", CRC(4de3c8d5) SHA1(c2c08ddd0ecc511cf34ba6a6cae9968e903b88ad))
@@ -2397,7 +2397,7 @@ NASCAR_SND
 SE_ROMEND
 #define input_ports_nas301 input_ports_se
 #define init_nas301 init_nascar
-CORE_CLONEDEFNV(nas301,nascar,"Nascar (3.01)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas301,nascar,"NASCAR (3.01)",2005,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(nas301l, "nascpul.301", CRC(6c8fc295) SHA1(2852afb38807a96907bc7357c08235de643dfb29))
 DE_DMD32ROM8x(      "nasdspl.301", CRC(a6d4a9e7) SHA1(c87286bd173a50e17994474f98574c30cd6d8d39))
@@ -2405,7 +2405,7 @@ NASCAR_SND_SP
 SE_ROMEND
 #define input_ports_nas301l input_ports_se
 #define init_nas301l init_nascar
-CORE_CLONEDEFNV(nas301l,nascar,"Nascar (3.01 Spanish)",2005,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(nas301l,nascar,"NASCAR (3.01 Spanish)",2005,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / Dale Jr. (NASCAR 5.00)
