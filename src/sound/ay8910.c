@@ -18,7 +18,7 @@
 
 #define STEP 2
 
-#define SINGLE_CHANNEL_MIXER // like on the real chip, mix all channels into one stream, undef for debugging purpose
+#define SINGLE_CHANNEL_MIXER // mix all channels into one stream to avoid having to resample all separately, undef for debugging purpose
 
 //#define VERBOSE
 
@@ -667,7 +667,7 @@ static void AY8910Update(int chip,
 		}
 
 #ifdef SINGLE_CHANNEL_MIXER
-		tmp_buf = vola * PSG->VolA * PSG->mix_vol[0]/(100*STEP) + volb * PSG->VolB * PSG->mix_vol[1]/(100*STEP) + volc * PSG->VolC * PSG->mix_vol[2]/(100*STEP);
+		tmp_buf = (vola * PSG->VolA * PSG->mix_vol[0] + volb * PSG->VolB * PSG->mix_vol[1] + volc * PSG->VolC * PSG->mix_vol[2])/(100*STEP);
 		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
 #else
 		*(buf1++) = (vola * PSG->VolA) / STEP;
