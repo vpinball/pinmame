@@ -645,7 +645,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		if (intf->num < 1) sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice); else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], intf->frequency[chip], i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)intf->frequency[chip], i, adpcm_update);
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -725,7 +725,7 @@ void OKIM6295_set_frequency(int which, double frequency)
 
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
-		stream_set_sample_rate(voice->stream, frequency);
+		stream_set_sample_rate(voice->stream, (int)frequency);
 	}
 }
 
