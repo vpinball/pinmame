@@ -35,7 +35,7 @@
 
   Issues/Todo:
   #2) Timing of animations might be too slow..
-  #3) M114S Sound chip emulated but needs to be improved for better accuracy
+  #3) M114S Sound chip emulated but might need to be further improved for better accuracy
   #4) Generation #2 Video - some corrupt sprites appear on the soccer screen (right hand side)
 
 ************************************************************************************************/
