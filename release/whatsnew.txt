@@ -1,10 +1,10 @@
 Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
-*** CORE/CPU *** Thanks to DJRobX
+*** CORE/CPU *** Thanks to DJRobX for some of these
 Support for more Stargame games added (including new sound core for MEA 8000 emulation)
 Support for Playbar's Bloody Roller, very similar hardware to Stargame's Slalom Code 0.3
-Joctronic works now, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely
+Joctronic works now (e.g. Walkyria, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely)
 
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 
@@ -18,13 +18,27 @@ Updated to zlib 1.2.11
 
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan
 New:
-LTD: Arizona, Columbia, Cowboy Eight Ball, Disco Dancing, Force, Haunted Hotel, Hustler, King Kong, Martian Queen, Space Poker, Time Machine, Trick Shooter, Viking King
+LTD: Arizona
+     Cowboy Eight Ball (and alternate set)
+     Disco Dancing
+     Force
+     Haunted Hotel
+     Hustler (and alternate set)
+     King Kong
+     Martian Queen (only a bad dump exists though which has been 'correctly' patched (CRC matches))
+     Space Poker   (only a bad dump exists though which has been 'correctly' patched (CRC matches))
+     Time Machine  (only a bad dump exists for the 4p version though which has been patched to make most things work)
+     Trick Shooter
+     Viking King
 Playbar: Bloody Roller
-Stargame: Slalom Code 0.3, Space Ship, White Force
-Taito: Volley (formerly known as Voley Ball and was missing most dumps)
+Stargame: Slalom Code 0.3
+          Space Ship
+          White Force
+Taito: Volley (formerly known as Voley Ball and also was missing most dumps)
 
 Correct Dumps:
-Taito: Lady Luck (sound dumps were the ones from Vegas)
+LTD: Columbia
+Taito: Lady Luck (sound dumps were the ones from Vegas before)
 
 Clones:
 Amazon Hunt II (French Free Play)
@@ -77,7 +91,7 @@ Gold Wings (French)
 Gold Wings (French Free Play)
 Gold Wings (German)
 Gold Wings (German Free Play)
-Harley Davidson (Bally, L-2 and D-2)
+Harley-Davidson (Bally, L-2 and D-2)
 Haunted House (rev. 3 unofficial MOD)
 Haunted House (rev. 3 unofficial MOD, LED)
 Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)
