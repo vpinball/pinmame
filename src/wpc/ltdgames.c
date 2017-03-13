@@ -59,7 +59,7 @@ CORE_CLONEDEFNV(hustlera,hustler,"Hustler (alternate set)",19??,"LTD",gl_mLTD,GA
 / Martian Queen
 /-------------------------------------------------------------------*/
 INITGAME(marqueen, disp2p5, 1, 5, 0x3f3)
-LTD_2_ROMSTART(marqueen, "mqueen.bin", NO_DUMP) //!! gaston made a patched version himself from a broken one CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d)
+LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) //!! gaston made a patched version himself from a broken one
 LTD_ROMEND
 CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
@@ -106,7 +106,7 @@ static core_tLCDLayout disp2p6[] = {
 / Space Poker
 /-------------------------------------------------------------------*/
 INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", NO_DUMP) //!! gaston made a patched version himself from a broken one CRC(3cf29406) SHA1(5c27bda1193077a7b99c5b2dd19adb4d917ba37d)
+LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(3cf29406) SHA1(5c27bda1193077a7b99c5b2dd19adb4d917ba37d) BAD_DUMP) //!! gaston made a patched version himself from a broken one
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
@@ -247,7 +247,7 @@ CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 / Time Machine
 /-------------------------------------------------------------------*/
 INITGAME4(tmacltd4, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", NO_DUMP, //!! gaston made a patched version himself from a broken one (still bad CRC though) CRC(c5c4cd0e) SHA1(307aa7dd8e22bae1e01b10c5da9726271ed8b71b)
+LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(c5c4cd0e) SHA1(307aa7dd8e22bae1e01b10c5da9726271ed8b71b) BAD_DUMP, //!! gaston made a patched version himself from a broken one (still bad CRC though)
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
 CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,0)
