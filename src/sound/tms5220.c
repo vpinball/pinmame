@@ -23,7 +23,7 @@
      US patent 4,335,277 describes the complete 52xx chip
      Special Thanks to Larry Brantingham for answering questions regarding the chip details
 
-   TMS5200/TMS5220/TMS5220C/CD2501E/CD2501ECD:
+   TMS5200/TMS5220/TMS5220C/CD2501E/CD2501ECD/EFO90503:
 
                  +-----------------+
         D7(d0)   |  1           28 |  /RS
@@ -43,6 +43,50 @@
                  +-----------------+
 Note the standard naming for d* data bits with 7 as MSB and 0 as LSB is in lowercase.
 TI's naming has D7 as LSB and D0 as MSB and is in uppercase
+
+     TMS5100:
+
+                 +-----------------+
+        TST      |  1           28 |  CS
+        PDC      |  2           27 |  CTL8
+        ROM CK   |  3           26 |  ADD8
+        CPU CK   |  4           25 |  CTL1
+        VDD      |  5           24 |  ADD1
+        CR OSC   |  6           23 |  CTL2
+        RC OSC   |  7           22 |  ADD2
+        T11      |  8           21 |  ADD4
+        NC       |  9           20 |  CTL4
+        I/O      | 10           19 |  M1
+        SPK1     | 11           18 |  NC
+        SPK2     | 12           17 |  NC
+        PROM OUT | 13           16 |  NC
+        VSS      | 14           15 |  M0
+                 +-----------------+
+
+        T11: Sync for serial data out
+
+
+    M58817
+
+    The following connections could be derived from radar scope schematics.
+    The M58817 is not 100% pin compatible to the 5100, but really close.
+
+                 +-----------------+
+        (NC)     |  1           28 |  CS
+        PDC      |  2           27 |  CTL8
+        ROM CK   |  3           26 |  ADD8 (to 58819)
+        (NC)     |  4           25 |  CTL1
+        (VDD,-5) |  5           24 |  ADD1 (to 58819)
+        (GND)    |  6           23 |  CTL2
+        Xin      |  7           22 |  ADD2 (to 58819)
+        Xout     |  8           21 |  ADD4 (to 58819)
+        (NC)     |  9           20 |  CTL4
+        (VDD,-5) | 10           19 |  Status back to CPU
+        (NC)     | 11           18 |  C1 (to 58819)
+        SPKR     | 12           17 |  (NC)
+        SPKR     | 13           16 |  C0 (to 58819)
+        (NC)     | 14           15 |  (5V)
+                 +-----------------+
 
 TODO:
     * Ever since the big rewrite, there are glitches on certain frame transitions
@@ -217,6 +261,10 @@ upgraded to add it by hacking on a 'Squawk & Talk' pinball speech board
     Home computer: TI 99/4 PHP1500 Speech module (along with two VSM
 serial chips); Street Electronics Corp.'s Apple II 'Echo 2' Speech
 synthesizer (early cards only)
+
+EFO90503: (1982, EFO Sound-3 board used in a few Playmatic/Cidelsa games)
+    Arcade: Clean Octopus
+    Pinball: Cerberus, Spain '82
 
 CD2501ECD: (1983)
     Home computer: TI 99/8 (prototypes only)
