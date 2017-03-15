@@ -53,15 +53,18 @@ void arm7_cpu_device::arm9ops_1(uint32_t insn)
 	{
 		// unsupported (armv6 onwards only)
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else if ((insn & 0x00ff00f0) == 0x00010000) /* set endianness (SETEND) */
 	{
 		// unsupported (armv6 onwards only)
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else
 	{
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 }
 
@@ -72,10 +75,12 @@ void arm7_cpu_device::arm9ops_57(uint32_t insn)
 	{
 		// unsupported (armv6 onwards only)
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else
 	{
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 }
 
@@ -86,15 +91,18 @@ void arm7_cpu_device::arm9ops_89(uint32_t insn)
 	{
 		// unsupported (armv6 onwards only)
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else if ((insn & 0x00500f00) == 0x00100a00) /* Return From Exception (RFE) */
 	{
 		// unsupported (armv6 onwards only)
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else
 	{
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 }
 
@@ -112,10 +120,12 @@ void arm7_cpu_device::arm9ops_c(uint32_t insn)
 	{
 		// unsupported
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 	else
 	{
 		arm9ops_undef(insn);
+		R15 += 4;
 	}
 }
 
@@ -124,6 +134,7 @@ void arm7_cpu_device::arm9ops_e(uint32_t insn)
 	/* Additional coprocessor register transfer */
 	// unsupported
 	arm9ops_undef(insn);
+	R15 += 4;
 }
 #endif
 
