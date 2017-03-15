@@ -1190,6 +1190,7 @@ DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(cheetahb)      //MPU-200: 06/80 Cheetah (Blue cabinet)
 DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Free Play)
 DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
 DRIVERNV(cheetah2)      //MPU-200: 06/80 Cheetah (Bonus shot 1/ball)

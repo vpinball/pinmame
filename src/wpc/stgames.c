@@ -440,6 +440,15 @@ BY35_ROMEND
 #define input_ports_cheetah input_ports_st
 CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,0)
 
+INITGAME(cheetahb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cheetahb,"cheetah.u1",CRC(2f736a0a) SHA1(e0dc14215d90145881ac1b407fbe057770696122),
+                            "cheetah.u5",CRC(168f0650) SHA1(5b3294bf64f06cc9d193bb14891b2acfbb5c06d4),
+                            "cheetah.u2",CRC(f6bd41bc) SHA1(ac94f4ba17c31dfe10ab7efab63d98aa3401e4ae),
+                            "cheetah.u6",CRC(c7eba210) SHA1(ced377e53f30b371e74c26527e5f8bebcc10ee59))
+BY35_ROMEND
+#define input_ports_cheetahb input_ports_st
+CORE_CLONEDEFNV(cheetahb,cheetah,"Cheetah (Blue cabinet)",1980,"Stern",by35_mST200,0)
+
 INITGAME(cheetafp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetafp,"fpch_u1.716",CRC(af26e00e) SHA1(9573cf5a56bbd7a534022b43752c7c25042d707b),
                            "fpch_u5.716",CRC(f6c34e1d) SHA1(732b94196a45c0a818fe5613c106f9aad5eae53e),

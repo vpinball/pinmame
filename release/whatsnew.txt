@@ -16,7 +16,7 @@ Fix a problem when using altsound packages (like the PinSound ones) and changing
 
 Updated to zlib 1.2.11
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey
 New:
 LTD: Arizona
      Cowboy Eight Ball (and alternate set)
@@ -25,9 +25,9 @@ LTD: Arizona
      Haunted Hotel
      Hustler (and alternate set)
      King Kong
-     Martian Queen (only a bad dump exists though which has been 'correctly' patched (CRC matches))
-     Space Poker   (only a bad dump exists though which has been 'correctly' patched (CRC matches))
-     Time Machine  (only a bad dump exists for the 4p version though which has been patched to make most things work)
+     Martian Queen (only a bad dump exists which has been patched to make things work)
+     Space Poker   (only a bad dump exists which has been patched to make things work)
+     Time Machine  (only a bad dump exists for the 4p version which has been patched to make things work)
      Trick Shooter
      Viking King
 Playbar: Bloody Roller
@@ -69,6 +69,7 @@ Bounty Hunter (Free Play)
 Bounty Hunter (German)
 Bounty Hunter (German Free Play)
 Caveman (Evolution, unofficial MOD)
+Cheetah (Blue cabinet)
 Chicago Cubs Triple Play (Free Play)
 Chicago Cubs Triple Play (rev. 1 Free Play)
 Diamond Lady (Free Play)
