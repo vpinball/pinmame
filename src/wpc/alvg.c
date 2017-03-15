@@ -760,6 +760,10 @@ MACHINE_DRIVER_START(alvgs2)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
 
+extern void construct_alvgdmd1(struct InternalMachineDriver *machine); // workaround to fix confusion in the linker, as this is defined in alvgdmd.c
+extern void construct_alvgdmd2(struct InternalMachineDriver *machine);
+extern void construct_alvgdmd3(struct InternalMachineDriver *machine);
+
 //Main CPU, DMD, Sound hardware Driver (Generation #2)
 MACHINE_DRIVER_START(alvgs2dmd1)
   MDRV_IMPORT_FROM(alvgs2)

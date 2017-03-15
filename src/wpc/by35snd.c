@@ -124,8 +124,7 @@ static struct {
 
 
 static int by32_sh_start(const struct MachineSound *msound)  {
-  int mixing_levels[1] = {0};
-  mixer_allocate_channels(1, mixing_levels);
+  mixer_allocate_channel(0);
   return 0;
 }
 

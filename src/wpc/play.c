@@ -34,6 +34,19 @@
            gen.3: like gen.2, plus an additional CDP1802 @ 2.95 MHz with 1 x TMS5220 speech chip
            gen.4: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2
            gen.5: Z80 @ 4 MHz clock with 2 x CTC chip, 2 x AY8910, MSM5205
+
+MAME INFO:
+The IOS board common to all games provides sound effects through the CDP1863.
+4 different add-on sound boards were also used:
+- Black Fever has the Speaking System board, which produces analog signals for
+  controlling an 8-track tape player.
+- Zira uses the Sound-2 board with a COP402 and AY-3-8910. The latter device is
+  also supposedly used to control lights through a separate connector.
+- Cerberus uses the Sound-3 board with a 90435 processor, which is most likely a
+  CDP1802 by another name. The 90503 "synthesizer" is the only sound IC on this
+  board; it has a TI logo and seems at least pin-compatible with TMS52xx.
+- Mad Race uses a Sound Board IV (same as MPU-3 and later), but I/O ports
+  that talk to it are unknown.
  ************************************************************************************************/
 
 #include "driver.h"
