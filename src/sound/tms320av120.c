@@ -542,7 +542,8 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 			break;
 		}
 		//Send next pcm sample to output buffer (mute if it is set)
-		buffer[ii] = tms320av120[num].pcmbuffer[tms320av120[num].sOut++] * (!tms320av120[num].mute);
+		buffer[ii] = (!tms320av120[num].mute) ? tms320av120[num].pcmbuffer[tms320av120[num].sOut] : 0;
+		tms320av120[num].sOut++;
 		//Loop to beginning if we reach end of pcm buffer
 		if( tms320av120[num].sOut == CAP_PCMBUFFER_SIZE)	
 			tms320av120[num].sOut = 0;
