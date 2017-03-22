@@ -23,7 +23,7 @@ LTD: Arizona
      Disco Dancing
      Force
      Haunted Hotel
-     Hustler (and alternate set)
+     Hustler
      King Kong
      Martian Queen (only a bad dump exists which has been patched to make things work)
      Space Poker   (only a bad dump exists which has been patched to make things work)
@@ -34,10 +34,10 @@ Playbar: Bloody Roller
 Stargame: Slalom Code 0.3
           Space Ship
           White Force
-Taito: Volley (formerly known as Voley Ball and also was missing most dumps)
+Taito: Volley (formerly known as Voley Ball and also was missing main CPU dumps)
 
 Correct Dumps:
-LTD: Columbia
+LTD: Columbia (previously supported was in fact one ROM from pecmen)
 Taito: Lady Luck (sound dumps were the ones from Vegas before)
 
 Clones:
