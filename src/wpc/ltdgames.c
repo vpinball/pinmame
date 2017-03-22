@@ -50,11 +50,6 @@ LTD_2_ROMSTART(hustler, "hustler_1.bin", CRC(43f323f5) SHA1(086b81699bea08b10b42
 LTD_ROMEND
 CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
-INITGAME(hustlera, disp2p5, 1, 5, 0x3f3)
-LTD_2_ROMSTART(hustlera, "hustler_2.bin", CRC(83c79157) SHA1(286fd0c984870639fcd7d7b8f6a5a5ddabcddcf5))
-LTD_ROMEND
-CORE_CLONEDEFNV(hustlera,hustler,"Hustler (alternate set)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
-
 /*-------------------------------------------------------------------
 / Martian Queen
 /-------------------------------------------------------------------*/

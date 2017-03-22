@@ -884,7 +884,6 @@ DRIVERNV(discodan)      //Disco Dancing
                         //Galaxia
                         //Grand Prix
 DRIVERNV(hustler )      //Hustler
-DRIVERNV(hustlera)      //Hustler (alternate set)
 DRIVERNV(kkongltd)      //King Kong
                         //Kung Fu
 DRIVERNV(marqueen)      //Martian Queen
