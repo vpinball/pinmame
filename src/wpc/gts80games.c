@@ -648,6 +648,14 @@ GTS80_ROMEND
 #define input_ports_rocky input_ports_gts80
 CORE_CLONEDEFNV(rocky,gts80a,"Rocky",1982,"Gottlieb",gl_mGTS80SS,0)
 
+INIT_S80A(rockyf, dispRocky, SNDBRD_GTS80SS_VOTRAX,0)
+GTS80_1_ROMSTART  ("672-2x.cpu", CRC(8e2f0d39) SHA1(eb0982d2bfa910b3c95d6d55c04dc58395789411))
+GTS80SS22_ROMSTART("f672-s1.snd", CRC(57a0ce22) SHA1(cdc167b5eb72e8c3235d3ffd9143faf8e6c0a2ef),
+                   "f672-s2.snd", CRC(87a0474f) SHA1(62fe995f3bc7fe23422d75b043d508c2f84f745a))
+GTS80_ROMEND
+#define input_ports_rockyf input_ports_gts80
+CORE_CLONEDEFNV(rockyf,rocky,"Rocky (French speech)",1982,"Gottlieb",gl_mGTS80SS,0)
+
 /*-------------------------------------------------------------------
 / Spirit (#673)
 /-------------------------------------------------------------------*/
