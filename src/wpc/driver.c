@@ -43,10 +43,11 @@ DRIVERNV(starshot)      // 12/79 Star Shooter
 // --------------------
 DRIVERNV(agsoccer)      //A.G. Soccer (1992)
 //DRIVERNV(agfootbl)    //A.G. Football (1992)
+DRIVERNV(usafoota)      //U.S.A. Football R01u (1992)
+DRIVERNV(usafootb)      //U.S.A. Football R06u (1993)
 DRIVERNV(wrldtour)      //Al's Garage Band Goes On A World Tour (1993)
 DRIVERNV(wrldtou2)      //Al's Garage Band Goes On A World Tour R02b (1993)
 DRIVERNV(wrldtou3)      //Al's Garage Band Goes On A World Tour R06a (1993)
-DRIVERNV(usafootb)      //U.S.A. Football (1993)
 DRIVERNV(dinoeggs)      //Dinosaur Eggs (1993)
 //DRIVERNV(dualpool)    //Dual Pool (1993) - 1 Unit
 //DRIVERNV(maxbadaz)    //Max Badazz (1993) - 1 Unit
@@ -360,8 +361,8 @@ DRIVERNV(kpv106)        // 12/96    Kingpin
 // ----------------
 // CICPLAY GAMES
 // ----------------
+DRIVERNV(glxplay)       //Galaxy Play (1985)
 DRIVERNV(kidnap)        //Kidnap (1986)
-DRIVERNV(glxplay)       //Galaxy Play (1986)
 DRIVERNV(glxplay2)      //Galaxy Play 2 (1987)
 
 // -------------------

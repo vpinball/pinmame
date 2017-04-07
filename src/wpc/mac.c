@@ -574,6 +574,15 @@ static core_tLCDLayout dispCIC[] = {
   {0}
 };
 
+ROM_START(glxplay)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("1083-1.cpu", 0x0000, 0x2000, CRC(3df33169) SHA1(657720aab4cccf3364f013acb3f5dbc46fe0e05c))
+    ROM_LOAD("1083-2.cpu", 0x2000, 0x2000, CRC(47b4f49e) SHA1(59853ac56bb9e2dc7b848dc46ebd27c21b9d2e82))
+ROM_END
+INITGAME(glxplay,dispCIC,FLIP_SW(FLIP_L),3)
+CIC_COMPORTS(glxplay, 1)
+CORE_GAMEDEFNV(glxplay, "Galaxy Play", 1985, "CICPlay", cic, 0)
+
 ROM_START(kidnap)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("kidnap_1.bin", 0x0000, 0x2000, CRC(4b8f9bb1) SHA1(16672c1a5e55ba5963fbd8834443dbead9bdff10) BAD_DUMP)
@@ -582,15 +591,6 @@ ROM_END
 INITGAME(kidnap,dispCIC,FLIP_SW(FLIP_L),3)
 CIC_COMPORTS(kidnap, 1)
 CORE_GAMEDEFNV(kidnap, "Kidnap", 1986, "CICPlay", cic, 0)
-
-ROM_START(glxplay)
-  NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("1083-1.cpu", 0x0000, 0x2000, NO_DUMP)
-    ROM_LOAD("1083-2.cpu", 0x2000, 0x2000, NO_DUMP)
-ROM_END
-INITGAME(glxplay,dispCIC,FLIP_SW(FLIP_L),3)
-CIC_COMPORTS(glxplay, 1)
-CORE_GAMEDEFNV(glxplay, "Galaxy Play", 1986, "CICPlay", cic, 0)
 
 ROM_START(glxplay2)
   NORMALREGION(0x10000, REGION_CPU1)
