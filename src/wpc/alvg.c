@@ -62,7 +62,6 @@
    #7) Sound board (gen #2) FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
    #8) There's probably more I can't think of at the moment
    #9) Look into error log message from VIA chip about no callback handler for Timer.
-  #10) Hack used to get U8 test to pass on Generation #1 games
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -81,8 +80,6 @@
 #else
 #define LOG(x)
 #endif
-
-#define ALVG_VBLANKFREQ      60 /* VBLANK frequency*/
 
 WRITE_HANDLER(alvg_sndCmd_w);
 
@@ -301,7 +298,7 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 	alvglocals.sound_strobe = data&0x02;
 
 	if (data & ~alvglocals.via_1_b & 0x10)
-		alvglocals.dispCol = (alvglocals.dispCol + 1) % 20;
+		alvglocals.dispCol++;
 	if (data & 0x20)
 		alvglocals.dispCol = 0;
 	alvglocals.via_1_b = data;
@@ -494,7 +491,10 @@ static WRITE_HANDLER(disp_porta_w) {
 
 // Hi seg row A
 static WRITE_HANDLER(disp_portb_w) {
-  coreGlobals.segments[alvglocals.dispCol].w = segMapper(data << 8);
+  static int lastCol;
+  if (alvglocals.dispCol != lastCol)
+    coreGlobals.segments[alvglocals.dispCol].w = segMapper(data << 8);
+  lastCol = alvglocals.dispCol;
 }
 
 // Low seg row B
@@ -515,23 +515,15 @@ static ppi8255_interface ppi8255_intf =
 
 
 static INTERRUPT_GEN(alvg_vblank) {
-  //hack to improve the lamp display
-  static int lclear=0;
-  lclear++;
-
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
   alvglocals.vblankCount += 1;
 
   /*-- lamps --*/
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   if ((alvglocals.vblankCount % ALVG_LAMPSMOOTH) == 0) {
-	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-	//don't clear lamp display every time (this is a hack)
-	if((lclear%25)==0){
-		memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-		lclear=0;
-	}
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = alvglocals.solenoids;
@@ -546,16 +538,10 @@ static INTERRUPT_GEN(alvg_vblank) {
 	}
 	alvglocals.solenoids = coreGlobals.pulsedSolState;
   }
-  /*-- display --*/
-  if ((alvglocals.vblankCount % ALVG_DISPLAYSMOOTH) == 0) {
-	/*update leds*/
-	coreGlobals.diagnosticLed = (alvglocals.diagnosticLeds2<<2) |
-								(alvglocals.diagnosticLeds1<<1) |
-								alvglocals.diagnosticLed;
-	//alvglocals.diagnosticLed = 0;	//For some reason, LED won't work with this line in
-	alvglocals.diagnosticLeds1 = 0;
-	alvglocals.diagnosticLeds2 = 0;
-  }
+
+  /*update leds*/
+  coreGlobals.diagnosticLed = (alvglocals.diagnosticLeds2<<2) | (alvglocals.diagnosticLeds1<<1) |	alvglocals.diagnosticLed;
+
   core_updateSw(core_getSol(27));	//Flipper Enable Relay
 }
 
@@ -681,22 +667,6 @@ static NVRAM_HANDLER(alvg) {
   core_nvram(file, read_or_write, memory_region(ALVG_MEMREG_CPU), 0x2000, 0x00);
 }
 
-//Hack to get Punchy & Other Generation #1 games to pass the U8 startup test..
-//NOTE: LED 5 Flashes Test of U8 begins @ line 40FC in Punchy
-READ_HANDLER(cust_via_1_r)
-{
-	if(offset==0)
-	{
- 		int data = via_1_r(offset);
-		if (data == 0)
-			return 0x10;
-		else
-			return data;
-	}
-	else
-		return via_1_r(offset);
-}
-
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------
@@ -715,8 +685,7 @@ static MEMORY_READ_START(alvg_readmem)
 {0x2000,0x2003,ppi8255_0_r},
 {0x2400,0x2403,ppi8255_1_r},
 {0x2800,0x2803,ppi8255_2_r},
-//{0x3800,0x380f,via_1_r},
-{0x3800,0x380f,cust_via_1_r},
+{0x3800,0x380f,via_1_r},
 {0x3c00,0x3c0f,via_0_r},
 {0x4000,0xffff,MRA_ROM},
 MEMORY_END
@@ -736,7 +705,7 @@ MACHINE_DRIVER_START(alvg)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD(M65C02, 2000000)
   MDRV_CPU_MEMORY(alvg_readmem, alvg_writemem)
-  MDRV_CPU_VBLANK_INT(alvg_vblank, ALVG_VBLANKFREQ)
+  MDRV_CPU_VBLANK_INT(alvg_vblank, 10)
   MDRV_NVRAM_HANDLER(alvg)
   MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
   MDRV_SWITCH_UPDATE(alvg)

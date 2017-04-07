@@ -114,7 +114,14 @@ ALVGROMSTART(usafootb,	"usa_cpu.bin", CRC(53b00873) SHA1(96812c4722026554a830c62
 ALVGS_SOUNDROM11(		"usa_snd.bin", CRC(9d509cbc) SHA1(0be629945b5102adf75e88661e0f956e32ca77da),
 						"usa_vox.bin", CRC(baae0aa3) SHA1(7933bffcf1509ceeea58a4449268c10c9fac554c))
 ALVG_ROMEND
-CORE_GAMEDEFNV(usafootb,"U.S.A. Football",1993,"Alvin G",mALVGS1,0)
+CORE_GAMEDEFNV(usafootb,"U.S.A. Football (R06u)",1993,"Alvin G",mALVGS1,0)
+
+INITGAME(usafoota, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(usafoota,	"usa_cpu1.bin", CRC(3b64a6e9) SHA1(65535bc17395416181bafddc61c0fac177eeba2f))
+ALVGS_SOUNDROM11(		"usa_snd.bin", CRC(9d509cbc) SHA1(0be629945b5102adf75e88661e0f956e32ca77da),
+						"usa_vox.bin", CRC(baae0aa3) SHA1(7933bffcf1509ceeea58a4449268c10c9fac554c))
+ALVG_ROMEND
+CORE_CLONEDEFNV(usafoota,usafootb,"U.S.A. Football (R01u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
 / Mystery Castle

@@ -5,6 +5,7 @@ Version 2.9 (X X, 2017) - ""
 Support for more Stargame games added (including new sound core for MEA 8000 emulation)
 Support for Playbar's Bloody Roller, very similar hardware to Stargame's Slalom Code 0.3
 Joctronic works now (e.g. Walkyria, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely)
+Removed a nasty hack from the Alvin G. driver
 
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 
@@ -30,6 +31,7 @@ LTD: Arizona
      Time Machine  (only a bad dump exists for the 4p version which has been patched to make things work)
      Trick Shooter
      Viking King
+MAC: Galaxy Play
 Playbar: Bloody Roller
 Stargame: Slalom Code 0.3
           Space Ship
@@ -152,6 +154,7 @@ TX-Sector (French)
 TX-Sector (French Free Play)
 TX-Sector (German)
 TX-Sector (German Free Play)
+U.S.A. Football (R01u)
 Victory (Free Play)
 Victory (French)
 Victory (French Free Play)

@@ -45,9 +45,8 @@
 
 #define ALVG_COMINPORT       CORE_COREINPORT
 
-#define ALVG_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define ALVG_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
-#define ALVG_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
+#define ALVG_SOLSMOOTH       40 /* Smooth the Solenoids over this numer of VBLANKS */
+#define ALVG_LAMPSMOOTH      30 /* Smooth the lamps over this number of VBLANKS */
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define ALVG_CSOL(x) ((x)+24)
