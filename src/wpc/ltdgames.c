@@ -54,7 +54,7 @@ CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 / Martian Queen
 /-------------------------------------------------------------------*/
 INITGAME(marqueen, disp2p5, 1, 5, 0x3f3)
-LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP)
+LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
 CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
@@ -101,7 +101,7 @@ static core_tLCDLayout disp2p6[] = {
 / Space Poker
 /-------------------------------------------------------------------*/
 INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(3cf29406) SHA1(5c27bda1193077a7b99c5b2dd19adb4d917ba37d) BAD_DUMP)
+LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(3cf29406) SHA1(5c27bda1193077a7b99c5b2dd19adb4d917ba37d) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
@@ -224,8 +224,8 @@ CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,0)
 / Alien Warrior
 /-------------------------------------------------------------------*/
 INITGAME4(alienwar, disp4p7, 1)
-LTD_44_ROMSTART(alienwar, "alwar_l.bin", NO_DUMP,
-                          "alwar_h.bin", NO_DUMP)
+LTD_44_ROMSTART(alienwar, "alwar_l.bin", NO_DUMP, // existing dump was falsely trimmed to 2K
+                          "alwar_h.bin", NO_DUMP) // existing dump was falsely trimmed to 2K
 LTD_ROMEND
 CORE_GAMEDEFNV(alienwar,"Alien Warrior",198?,"LTD",gl_mLTD4,0)
 
@@ -242,13 +242,13 @@ CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 / Time Machine
 /-------------------------------------------------------------------*/
 INITGAME4(tmacltd4, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(417183bf) SHA1(59d6fe8cd0163e16bec9a0134270bd5872b1d6d8) BAD_DUMP, //!! working version created from a bad dump, internal checksum is still off though
+LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(88d1cc83) SHA1(075338595103bbf5573be78b517e6e8023053882) BAD_DUMP, //!! working version created from a bad dump
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
 CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,0)
 
 INITGAME4(tmacltd2, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd2, "tm2_l.bin", NO_DUMP,
+LTD_44_ROMSTART(tmacltd2, "tm2_l.bin", NO_DUMP, // existing dump has LSB set to high for all bytes
                           "tm2_h.bin", CRC(f717c9db) SHA1(9ca5819b707fa20edfc289734e1aa189ae242aa3))
 LTD_ROMEND
 CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players)(LTD)",198?,"LTD",gl_mLTD4,0)
