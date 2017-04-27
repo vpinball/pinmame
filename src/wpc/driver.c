@@ -401,6 +401,7 @@ DRIVER(simp,a27)        //Data East MPU: 09/90 Simpsons, The (2.7)
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
 DRIVER(tmnt,103)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.03)
 DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.04)
+DRIVER(tmnt,104g)       //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.04 German)
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)

@@ -408,6 +408,15 @@ DE_ROMEND
 #define input_ports_tmnt input_ports_des11
 CORE_GAMEDEF(tmnt,104,"Teenage Mutant Ninja Turtles (1.04)",1991,"Data East",de_mDEDMD16S1,0)
 
+DE_ROMSTART48(tmnt_104g,"tmntb5a.104",CRC(f508eeee) SHA1(5e67fde49f6e7d5d563645df9036d5691be076cf),
+                  "tmntc5g.104",CRC(d7f2fd8b) SHA1(b80f6201ca2981ec4a3869688963884948a6bd72))
+DE_DMD16ROM1(     "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
+DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+                   "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
+                   "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
+DE_ROMEND
+CORE_CLONEDEF(tmnt,104g,104,"Teenage Mutant Ninja Turtles (1.04 German)",1991,"Data East",de_mDEDMD16S1,0)
+
 DE_ROMSTART48(tmnt_103,"tmntb5.103",CRC(fcc6c5b0) SHA1(062bbc93de0f8bb1921da4d756a13923f23cf5d9),
                    "tmntc5.103",CRC(46b68ecc) SHA1(cb94041017c0856f1e15de05c70369cb4f8756cd))
 DE_DMD16ROM1(     "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
