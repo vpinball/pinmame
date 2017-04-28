@@ -67,7 +67,7 @@ TARGET = pinmame
 
 # uncomment next line to include P-ROC support
 # see http://www.pinballcontrollers.com/
-PROC = 1
+# PROC = 1
 
 ###########################################################################
 # Development environment options 
@@ -600,10 +600,10 @@ ARCH  = linux
 # use SDL.
 
 # X11
-#DISPLAY_METHOD = x11
+DISPLAY_METHOD = x11
 
 # SDL library 
-DISPLAY_METHOD = SDL
+# DISPLAY_METHOD = SDL
 
 # SVGALib, only supported under Linux
 # DISPLAY_METHOD = svgalib
@@ -730,7 +730,7 @@ CFLAGS += -DNDEBUG
 # Uncomment the next lines to build xmame with a built-in debugger (only
 # supported for X11 and SVGALib). Only enable this if you need it -- if you
 # want to develop drivers, that is, since it slows down xmame considerably.
-DEBUG = 1
+# DEBUG = 1
 
 ifdef DEBUG
 NAME=x$(TARGET)d

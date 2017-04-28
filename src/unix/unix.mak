@@ -4,7 +4,7 @@
 
 # *** Comment this line to get verbose make output, for debugging build
 # problems
-# QUIET = 1
+QUIET = 1
 
 
 ##############################################################################
