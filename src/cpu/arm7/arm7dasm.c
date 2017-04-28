@@ -240,7 +240,7 @@ void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode )
 		pBuf += sprintf( pBuf, "BLX" );
 		//dasmflags = DASMFLAG_STEP_OVER;
 
-		WritePadding(pBuf, start_position);
+		WritePadding(pBuf, pBuf0);
 
 		WriteBranchAddress( pBuf, pc, opcode, 1 );
 	}

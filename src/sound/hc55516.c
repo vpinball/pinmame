@@ -34,6 +34,13 @@
  #define SAMPLE_GAIN			10000.0
 #endif
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+#ifndef MAX
+#define MAX(x,y) ((x)>(y)?(x):(y))
+#endif
+
 struct hc55516_data
 {
 	INT8 	channel;
@@ -132,7 +139,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		chip->length_estimate /= LOWPASS_ESTIMATE_CYCLES;
 
 		freq_scale = ((INT32)chip->length_estimate - SAMPLE_RATE/48000) / (double)(SAMPLE_RATE/12000-1 - SAMPLE_RATE/48000); // estimate to end up within 0..1 (with all tested machines)
-		freq_scale = max(min(freq_scale, 1.), 0.); // make sure to be in 0..1
+		freq_scale = MAX(MIN(freq_scale, 1.), 0.); // make sure to be in 0..1
 		freq_scale = 1.-sqrt(sqrt(freq_scale));    // penalty for low clock rates -> even more of the lower frequencies removed then
 
 		if (freq_scale < 0.45) // assume that high clock rates/most modern machines (that would end up at ~12000Hz filtering, see below) do not need to be filtered at all (improves clarity at the price of some noise)

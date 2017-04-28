@@ -1167,3 +1167,37 @@ int should_sleep_idle()
 {
 	return sleep_idle && !setup_active();
 }
+
+// Throttle code changed to support parital frame syncing.
+// The emulated machine can often read, and respond to input by firing flippers in less than 10ms, but
+// if the emulation only runs in 60hz "chunks", we may need multiple frames to read and respond
+// to flipper input.  By distributing the emulation more evenly over a frame, it creates more opportunities
+// for the emulated machine to "see" the input and respond to it before the pinball simulator starts to draw its frame.
+
+void throttle_speed_part(int part, int totalparts)
+{
+	//!! TODO defined in video.c windows, needs to be implemented
+}
+
+// speed throttling
+//RTH from video.c windows
+int g_low_latency_throttle = 0;
+
+int g_iThrottleAdj = 0;
+
+//1:1 copy from windows video.c
+void SetThrottleAdj(int adj)
+{
+#ifdef DEBUG_SOUND
+	char tmp[81];
+
+	static int last = 0;
+	if (adj != last)
+	{
+		sprintf(tmp, "Set throttle adj: %d (cur %d)", adj, g_iThrottleAdjCur);
+		DebugSound(tmp);
+		last = adj;
+	}
+#endif
+	g_iThrottleAdj = adj;
+}
