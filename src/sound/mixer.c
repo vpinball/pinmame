@@ -18,7 +18,11 @@
 
 /* Undefine to use builtin lowpass filter/resampling code, way less quality though, and also not faster anymore */
 /* Also, undefining it misses the new reverb filter (Centaur,..) */
-#define USE_LIBSAMPLERATE
+#ifndef UNIX //!! TODO compile errors so far
+ #define USE_LIBSAMPLERATE
+#else
+ #pragma message "warning: libsamplerate support not enabled for unix"
+#endif
 
 /* Undefine it to turn off clipping (helpful to find cases where we max out */
 #define MIXER_USE_CLIPPING
