@@ -21,7 +21,7 @@
 #ifndef UNIX //!! TODO compile errors so far
  #define USE_LIBSAMPLERATE
 #else
- #pragma message "warning: libsamplerate support not enabled for unix"
+ #pragma message("warning: libsamplerate support not enabled for unix")
 #endif
 
 /* Undefine it to turn off clipping (helpful to find cases where we max out */
