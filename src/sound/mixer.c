@@ -34,11 +34,11 @@
 /* Config */
 
 #ifdef USE_LIBSAMPLERATE
- #include "..\..\ext\libsamplerate\samplerate.h"
- #include "..\..\ext\libsamplerate\samplerate.c"
- #include "..\..\ext\libsamplerate\src_linear.c"
- #include "..\..\ext\libsamplerate\src_sinc_opt.c"
- #include "..\..\ext\libsamplerate\src_zoh.c"
+ #include "../../ext/libsamplerate/samplerate.h"
+ #include "../../ext/libsamplerate/samplerate.c"
+ #include "../../ext/libsamplerate/src_linear.c"
+ #include "../../ext/libsamplerate/src_sinc_opt.c"
+ #include "../../ext/libsamplerate/src_zoh.c"
 #endif
 
 /* Internal log */
