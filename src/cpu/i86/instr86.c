@@ -1524,7 +1524,7 @@ static void PREFIX86(_jl)(void)    /* Opcode 0x7c */
 static void PREFIX86(_jnl)(void)    /* Opcode 0x7d */
 {
 	int tmp = (int)((INT8)FETCH);
-    if (ZF||(SF==OF)) {
+    if (SF==OF) {
 		I.pc += tmp;
 		ICOUNT -= cycles.jcc_t;
 /* ASG - can probably assume this is safe
