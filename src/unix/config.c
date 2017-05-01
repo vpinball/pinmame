@@ -749,7 +749,7 @@ static int add_device(struct rc_option *option, const char *arg, int priority)
 }
 #endif
 
-
+#ifdef MAME_DEBUG
 /*============================================================ */
 /*	logerror */
 /*============================================================ */
@@ -768,3 +768,4 @@ void logerror(const char *text, ...)
 		fflush(errorlog);
 	}
 }
+#endif
