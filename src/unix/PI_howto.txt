@@ -1,0 +1,19 @@
+howto compile pinmame (X11) with raspberry PI and raspbian Jessie
+
+
+1) install subversion
+apt-get install subversion
+
+2) get latest code
+svn checkout https://svn.code.sf.net/p/pinmame/code/trunk pinmame-code
+
+
+3) install missing X11 parts
+sudo apt-get install libx11-dev
+sudo apt-get install libxext-dev
+sudo apt-get install x11proto-video-dev
+sudo apt-get install libxv-dev
+
+4) compile
+cd pinmame-code
+make -f makefile.unix
