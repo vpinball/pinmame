@@ -406,7 +406,7 @@ static MACHINE_INIT(s4) {
   pia_config(S4_PIA2, PIA_STANDARD_ORDERING, &s4_pia[2]);
   pia_config(S4_PIA3, PIA_STANDARD_ORDERING, &s4_pia[3]);
   if (!(core_gameData->gen & GEN_S3C))
-    sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
+    sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
   s4locals.vblankCount = 1;
 }
 static MACHINE_RESET(s4) {
@@ -453,6 +453,12 @@ MACHINE_DRIVER_START(s4)
   MDRV_DIPS(8+16)
   MDRV_SWITCH_UPDATE(s4)
   MDRV_DIAGNOSTIC_LEDV(2)
+MACHINE_DRIVER_END
+
+/*-- S3 with sound board --*/
+MACHINE_DRIVER_START(s3S)
+  MDRV_IMPORT_FROM(s4)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
 MACHINE_DRIVER_END
 
 /*-- S4 with sound board --*/
