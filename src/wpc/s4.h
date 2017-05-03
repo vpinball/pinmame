@@ -202,9 +202,12 @@
 
 extern MACHINE_DRIVER_EXTERN(s4);
 extern MACHINE_DRIVER_EXTERN(s4S);
+extern MACHINE_DRIVER_EXTERN(s3S);
 #define s4_mS4      s4
 #define s4_mS4S     s4S
+#define s4_mS3S     s3S
 #define s3_mS3C     s4
+#define s3_mS3S     s3S
 
 /* standard 6 digit display layout */
 extern const core_tLCDLayout s4_disp[];
