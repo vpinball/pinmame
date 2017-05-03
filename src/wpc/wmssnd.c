@@ -65,7 +65,7 @@ static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
 static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
 
 MACHINE_DRIVER_START(wmssnd_s67s)
-  MDRV_CPU_ADD(M6808, 3579000/4)
+  MDRV_CPU_ADD(M6808, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s67s_readmem, s67s_writemem)
   MDRV_INTERLEAVE(50)
@@ -120,7 +120,7 @@ static WRITE_HANDLER(s67s_cmd_w) {
   if (s67slocals.brdData.subType & 1) {
     pia_set_input_cb1(S67S_PIA0, !((data & 0x7f) == 0x7f));
   } else if (s67slocals.brdData.subType & 2) {
-    pia_set_input_cb1(S67S_PIA0, !((data & 0x8f) == 0x8f));
+    pia_set_input_cb1(S67S_PIA0, !((data & 0x0f) == 0x0f));
   } else {
     pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
   }
