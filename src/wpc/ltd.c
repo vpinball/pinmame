@@ -137,8 +137,8 @@ static WRITE_HANDLER(peri_w) {
     coreGlobals.tmpLampMatrix[offset - 0x10] = data;
     // map flippers enable to sol 17
     if (offset == 0x10) {
-      locals.solenoids = (locals.solenoids & 0x0ffff) | ((coreGlobals.tmpLampMatrix[0] & 0x40) ? 0 : 0x10000);
-      locals.diagnosticLed = coreGlobals.tmpLampMatrix[0] >> 7;
+      locals.solenoids = (locals.solenoids & 0x0ffff) | ((data & 0x40) || (~data & 0x10) ? 0 : 0x10000);
+      locals.diagnosticLed = data >> 7;
     }
   } else if (offset == 0x16) {
     locals.solenoids = (locals.solenoids & 0x100ff) | (data << 8);
