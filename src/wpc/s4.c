@@ -170,6 +170,8 @@ void update_proc_coils(UINT8 cur_data, UINT8 last_data, int coil_index) {
 /* REGULAR SOLENOIDS #1-8 */
 /**************************/
 static WRITE_HANDLER(s4_sol1_8_w) {
+  // sol #8 also used for sound command on some System 3 / 4
+  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_ctrl_w(0, ~data);
 #ifdef PROC_SUPPORT
   if (coreGlobals.p_rocEn) {
     static UINT8 last_data = 0;
