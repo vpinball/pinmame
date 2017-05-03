@@ -28,6 +28,10 @@
 //MAME core bug with timing, but I can't find it. I really hope someone can fix this hack someday..SJE 09/17/03
 #define PREDCS_FIRQ_HACK
 
+#ifndef MIN
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#endif
+
 /*----------------------
 /    System 3 - 7
 /-----------------------*/
@@ -36,10 +40,11 @@
 /* sound board interface */
 static void s67s_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(s67s_cmd_w);
+static WRITE_HANDLER(s67s_ctrl_w);
 static void s67s_diag(int button);
 
 const struct sndbrdIntf s67sIntf = {
-  "WMSS67", s67s_init, NULL, s67s_diag, s67s_cmd_w, s67s_cmd_w, NULL, NULL, NULL, SNDBRD_NOCTRLSYNC
+  "WMSS67", s67s_init, NULL, s67s_diag, s67s_cmd_w, s67s_cmd_w, NULL, s67s_ctrl_w, NULL, SNDBRD_NOCTRLSYNC
 };
 
 /* machine interface */
@@ -72,6 +77,7 @@ MACHINE_DRIVER_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
+  int sndBit7;
 } s67slocals;
 
 static READ_HANDLER(snd_r) {
@@ -97,11 +103,15 @@ static void s67s_init(struct sndbrdData *brdData) {
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
 }
 
+static WRITE_HANDLER(s67s_ctrl_w) {
+  s67slocals.sndBit7 = (~data >> 7) & 1;
+}
+
 static WRITE_HANDLER(s67s_cmd_w) {
   if (s67slocals.brdData.subType & 1) { // don't use sound dips
     data &= 0x7f;
-  } else if (s67slocals.brdData.subType & 2) {
-    data = (data & 0x3f) | (core_getDip(0)<<6);
+  } else if (s67slocals.brdData.subType & 2) { // two additional command bits
+    data = (data & 0x3f) | (s67slocals.sndBit7 << 6) | (core_getDip(0) << 6);
   } else {
     data = (data & 0x1f) | (core_getDip(0)<<5);
   }
@@ -109,6 +119,8 @@ static WRITE_HANDLER(s67s_cmd_w) {
   pia_set_input_b(S67S_PIA0, data);
   if (s67slocals.brdData.subType & 1) {
     pia_set_input_cb1(S67S_PIA0, !((data & 0x7f) == 0x7f));
+  } else if (s67slocals.brdData.subType & 2) {
+    pia_set_input_cb1(S67S_PIA0, !((data & 0x8f) == 0x8f));
   } else {
     pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
   }
@@ -1089,7 +1101,8 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
   if (dcs_dac.status == 0)
   {
-      for (idx = 0; idx < stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1; idx++) {
+      int idx_end = stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1;
+      for (idx = 0; idx < idx_end; idx++) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
       }
@@ -1468,7 +1481,7 @@ UINT32 dcs_speedup(UINT32 pc) {
 			/* 2B82     I0 = $2000 >>> (3800) <<< */
     i0 = &ram2source[0x0000];
 			/* 2B84     MY0 = DM($15FD) (390e) */
-    my0 = min(volume,0x8000); // be paranoid about the volume, see code below
+    my0 = MIN(volume,0x8000); // be paranoid about the volume, see code below
 			/* 2B83     CNTR = $0100 */
 			/* 2B85     DO $2B89 UNTIL CE */
     /* M0 = 0, M1 = 1 */
@@ -2335,7 +2348,7 @@ UINT32 dcs_speedup_1993(UINT32 pc)
         i4 = &ram[0x3801];
 
         /* 0135   MY0 = WORD PTR [$3aa] - current volume level */
-        my0 = min(volume, 0x8000); // be paranoid about the volume, see code below
+        my0 = MIN(volume, 0x8000); // be paranoid about the volume, see code below
 
         /* 0136   MX0 = DM(reverse i1, m2) */
         mx0 = ram[reverse_bits(i1)];
