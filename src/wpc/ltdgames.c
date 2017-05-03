@@ -29,7 +29,12 @@ CORE_GAMEDEFNV(arizona,"Arizona",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Atlantis
 /-------------------------------------------------------------------*/
-INITGAME(atla_ltd, disp2p5, 1, 5, 0x3f3)
+static core_tLCDLayout dispAtla[] = {
+  DISP_SEG_IMPORT(disp2p5),
+  { 5, 0, 8,1,CORE_SEG7 }, { 5, 3, 9,1,CORE_SEG7 },
+  {0}
+};
+INITGAME(atla_ltd, dispAtla, 1, 5, 0xf3)
 LTD_2_ROMSTART(atla_ltd, "atlantis.bin", CRC(c61be043) SHA1(e6c4463f59a5743fa34aa55beeb6f536ad9f1b56))
 LTD_ROMEND
 CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -37,7 +42,12 @@ CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Disco Dancing
 /-------------------------------------------------------------------*/
-INITGAME(discodan, disp2p5, 1, 5, 0x3f3)
+static core_tLCDLayout dispDisco[] = {
+  DISP_SEG_IMPORT(disp2p5),
+  { 5, 0, 9,1,CORE_SEG7 },
+  {0}
+};
+INITGAME(discodan, dispDisco, 1, 5, 0x1f3)
 LTD_2_ROMSTART(discodan, "disco.bin", CRC(83c79157) SHA1(286fd0c984870639fcd7d7b8f6a5a5ddabcddcf5))
 LTD_ROMEND
 CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -53,7 +63,12 @@ CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Martian Queen
 /-------------------------------------------------------------------*/
-INITGAME(marqueen, disp2p5, 1, 5, 0x3f3)
+static core_tLCDLayout dispMarqn[] = {
+  DISP_SEG_IMPORT(disp2p5),
+  { 5, 0, 7,1,CORE_SEG7 },
+  {0}
+};
+INITGAME(marqueen, dispMarqn, 1, 5, 0x373)
 LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
 CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
@@ -61,7 +76,7 @@ CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / King Kong
 /-------------------------------------------------------------------*/
-INITGAME(kkongltd, disp2p5, 1, 5, 0x3f3)
+INITGAME(kkongltd, dispDisco, 1, 5, 0x1f3)
 LTD_2_ROMSTART(kkongltd, "kong.bin", CRC(5b2a3123) SHA1(eee417d17d3272ee63c728915af84da33f1f73a2))
 LTD_ROMEND
 CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
