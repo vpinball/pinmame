@@ -408,7 +408,7 @@ static MACHINE_INIT(s4) {
   pia_config(S4_PIA2, PIA_STANDARD_ORDERING, &s4_pia[2]);
   pia_config(S4_PIA3, PIA_STANDARD_ORDERING, &s4_pia[3]);
   if (!(core_gameData->gen & GEN_S3C))
-    sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
+    sndbrd_0_init(core_gameData->hw.soundBoard ? core_gameData->hw.soundBoard : SNDBRD_S67S, 1, NULL, NULL, NULL);
   s4locals.vblankCount = 1;
 }
 static MACHINE_RESET(s4) {
@@ -447,7 +447,7 @@ MEMORY_END
 MACHINE_DRIVER_START(s4)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(s4,s4,s4)
-  MDRV_CPU_ADD(M6800, 3580000/4)
+  MDRV_CPU_ADD(M6800, 3579545/4)
   MDRV_CPU_MEMORY(s4_readmem, s4_writemem)
   MDRV_CPU_VBLANK_INT(s4_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s4_irq, S4_IRQFREQ)
