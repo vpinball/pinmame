@@ -9,8 +9,10 @@ Removed a nasty hack from the Alvin G. driver
 Added support for game-specific sound ROMs for early WMS games
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 Fix some GTS3 DMD animations running too fast
+
 Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
+
 Updated to zlib 1.2.11
 
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl
@@ -24,7 +26,7 @@ LTD: Arizona
      King Kong
      Martian Queen (only a bad dump exists which has been patched to make things work)
      Space Poker   (only a bad dump exists which has been patched to make things work)
-     Time Machine  (only a bad dump exists for the 4p version which has been patched to make things work)
+     Time Machine  (only a bad dump exists which has been patched to make things work (4p version))
      Trick Shooter
      Viking King
 MAC: Galaxy Play
@@ -32,12 +34,12 @@ Playbar: Bloody Roller
 Stargame: Slalom Code 0.3
           Space Ship
           White Force
-Taito: Volley (formerly known as Voley Ball and also was missing main CPU dumps)
 
 Correct Dumps:
 LTD: Columbia (previously supported was in fact one ROM from pecmen)
 Taito: Lady Luck (sound dumps were the ones from Vegas before)
-WMS: World Cup Soccer, Contact, Disco Fever, Phoenix (correct sound ROMs)
+       Volley (formerly known as Voley Ball and also was missing main CPU dumps)
+WMS: Contact, Disco Fever, Phoenix, World Cup Soccer (correct sound ROMs)
 
 Clones:
 Amazon Hunt II (French Free Play)
