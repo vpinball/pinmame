@@ -928,7 +928,12 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 		/* get the subtable index */
 		subindex = tabledata->table[l1start];
 		if (subindex < SUBTABLE_BASE)
-			subindex = tabledata->table[l1start] = alloc_new_subtable(memport, tabledata, subindex);
+		//	subindex = tabledata->table[l1start] = alloc_new_subtable(memport, tabledata, subindex);
+		// changed by bontango - May 2017: split into two lines, see comment below
+		{
+			subindex = alloc_new_subtable(memport, tabledata, subindex);
+			tabledata->table[l1start] = subindex;
+		}
 		subindex &= SUBTABLE_MASK;
 
 		/* if the start and stop end within the same block, handle that */
@@ -949,7 +954,14 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 		/* get the subtable index */
 		subindex = tabledata->table[l1stop];
 		if (subindex < SUBTABLE_BASE)
-			subindex = tabledata->table[l1stop] = alloc_new_subtable(memport, tabledata, subindex);
+		//	subindex = tabledata->table[l1stop] = alloc_new_subtable(memport, tabledata, subindex);
+		// changed by bontango - May 2017:
+		// for some reason gcc under Linux (Raspbian 4.9.2-10 in my case) does not assign tabledata->table[l1stop] with the value from alloc_new_subtable
+		// splitting it up into two lines solved the problem for unix and should not harm windows compile
+		{
+			subindex = alloc_new_subtable(memport, tabledata, subindex);
+			tabledata->table[l1stop] = subindex;
+		}
 		subindex &= SUBTABLE_MASK;
 
 		/* fill from the beginning */
