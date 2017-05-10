@@ -6,6 +6,15 @@
 
 #if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
  #include <xmmintrin.h>
+ #if !defined(_MSC_VER) || !defined(_WIN32)
+     typedef union __attribute__ ((aligned (16))) Windows__m128
+     {
+         __m128 v;
+         float m128_f32[4];
+     } Windows__m128;
+ #else
+     #define USE_WINDOWS_CODE
+ #endif
 #endif
 
 static filter* filter_alloc(void) {
@@ -88,11 +97,20 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
         for (; k<midorder-3; k+=4) {
             __m128 coeffs = _mm_loadu_ps(xcoeffs + (midorder - (k + 3)));
 
+#ifdef USE_WINDOWS_CODE
             __m128 xprevj,xprevi;
+#else
+            Windows__m128 xprevj,xprevi;
+#endif
             if (j + 3 < order)
             {
+#ifdef USE_WINDOWS_CODE
                 xprevj = _mm_loadu_ps(xprev + j);
                 xprevj = _mm_shuffle_ps(xprevj, xprevj, _MM_SHUFFLE(0, 1, 2, 3));
+#else
+                xprevj.v = _mm_loadu_ps(xprev + j);
+                xprevj.v = _mm_shuffle_ps(xprevj.v, xprevj.v, _MM_SHUFFLE(0, 1, 2, 3));
+#endif
                 j += 4;
                 if (j == order)
                     j = 0;
@@ -122,7 +140,11 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
 
             if (i - 3 >= 0)
             {
+#ifdef USE_WINDOWS_CODE
                 xprevi = _mm_loadu_ps(xprev + (i-3));
+#else
+                xprevi.v = _mm_loadu_ps(xprev + (i-3));
+#endif
                 i -= 4;
                 if (i == -1)
                     i = order - 1;
@@ -154,7 +176,11 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
                     --i;
             }
 
+#ifdef USE_WINDOWS_CODE
             y128 = _mm_add_ps(y128,_mm_mul_ps(coeffs,_mm_add_ps(xprevi, xprevj)));
+#else
+            y128 = _mm_add_ps(y128,_mm_mul_ps(coeffs,_mm_add_ps(xprevi.v, xprevj.v)));
+#endif
         }
 #endif
 
