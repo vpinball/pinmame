@@ -19,6 +19,22 @@
 #ifdef RESAMPLER_SSE_OPT
  #include <xmmintrin.h>
  #include <emmintrin.h>
+ #if !defined(_MSC_VER) || !defined(_WIN32) 
+     typedef union __attribute__ ((aligned (16))) Windows__m128i
+     {
+         __m128i m128i;
+         int8_t m128i_i8[16];
+         int16_t m128i_i16[8];
+         int32_t m128i_i32[4];
+         int64_t m128i_i64[2];
+         unsigned char m128i_u8[16];
+         unsigned short int m128i_u16[8];
+         unsigned int m128i_u32[4];
+         uint64_t m128i_u64[2];
+     } Windows__m128i;
+ #else
+     #define USE_WINDOWS_CODE
+ #endif
 #endif
 
 #define	SINC_MAGIC_MARKER	MAKE_MAGIC (' ', 's', 'i', 'n', 'c', ' ')
@@ -312,14 +328,24 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 	left128 = _mm_setzero_ps();
 	while(filter_index >= increment * 3)
 	{
+#ifdef USE_WINDOWS_CODE
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx,_mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+#else
+		Windows__m128i indx;
+		indx.m128i = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
+		__m128i fractioni = _mm_and_si128(indx.m128i,_mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+#endif
 		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
 		__m128 icoeff,icoeffp1,icoeffd,fraction;
 #ifdef _DEBUG
 		icoeff0 = icoeff2 = _mm_setzero_ps();
 #endif
+#ifdef USE_WINDOWS_CODE
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
+#else
+		indx.m128i = _mm_srai_epi32(indx.m128i, SHIFT_BITS);
+#endif
 
 		icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(coeffs + indx.m128i_i32[0])), (__m64*)(coeffs + indx.m128i_i32[1]));
 		icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(coeffs + indx.m128i_i32[2])), (__m64*)(coeffs + indx.m128i_i32[3]));
@@ -362,14 +388,24 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 	right128 = _mm_setzero_ps();
 	while (filter_index > increment * 3)
 	{
+#ifdef USE_WINDOWS_CODE
 		__m128i indx = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
 		__m128i fractioni = _mm_and_si128(indx, _mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+#else
+		Windows__m128i indx;
+		indx.m128i = _mm_sub_epi32(_mm_set1_epi32(filter_index), increment4);
+		__m128i fractioni = _mm_and_si128(indx.m128i, _mm_set1_epi32(((((increment_t)1) << SHIFT_BITS) - 1)));
+#endif
 		__m128 icoeff0, icoeff2; // warning that these are uninitialized is okay and its intended, as both high and low 64bit-parts are set below
 		__m128 icoeff,icoeffp1,icoeffd,fraction,data;
 #ifdef _DEBUG
 		icoeff0 = icoeff2 = _mm_setzero_ps();
 #endif
+#ifdef USE_WINDOWS_CODE
 		indx = _mm_srai_epi32(indx, SHIFT_BITS);
+#else
+		indx.m128i = _mm_srai_epi32(indx.m128i, SHIFT_BITS);
+#endif
 
 		icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(coeffs + indx.m128i_i32[0])), (__m64*)(coeffs + indx.m128i_i32[1]));
 		icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(coeffs + indx.m128i_i32[2])), (__m64*)(coeffs + indx.m128i_i32[3]));

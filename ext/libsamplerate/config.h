@@ -96,7 +96,7 @@
 /* #undef HAVE_LIBM */
 
 /* Define if you have C99's lrint/lrintf functions. */
-#if (defined(__STDC_VERSION__) &&  (__STDC_VERSION__ >= 199901L)) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
+#if (defined(__STDC_VERSION__) &&  (__STDC_VERSION__ >= 199901L)) || (defined(_MSC_VER) && (_MSC_VER >= 1800)) || (defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 600)) || _ISOC99_SOURCE || (defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L))
  #define HAVE_LRINT 1
  #define HAVE_LRINTF 1
 #else
@@ -127,6 +127,7 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 /* #undef HAVE_STDINT_H */
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
