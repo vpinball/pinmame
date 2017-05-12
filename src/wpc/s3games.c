@@ -40,7 +40,7 @@ S4_ROMEND
 CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
 
 /*-------------------------------------
-/ World Cup Soccer - Sys.3 (Game #481)
+/ World Cup - Sys.3 (Game #481)
 /-------------------------------------*/
 INITGAMEFULL(wldcp, GEN_S3, s4_disp, SNDBRD_S3S, 0,0,38,37,0,0,0,0)
 S4_ROMSTART(wldcp,l1,"gamerom.716", CRC(c8071956) SHA1(0452aaf2ec1bcc5717fe52a6c541d79402bebb17),
@@ -49,7 +49,7 @@ S4_ROMSTART(wldcp,l1,"gamerom.716", CRC(c8071956) SHA1(0452aaf2ec1bcc5717fe52a6c
 S67S_SOUNDROMS8("481_s0_world_cup.716",CRC(cf012812) SHA1(26074f6a44075a94e6f91de1dbf92f8ec3ff8ca4))
 S4_ROMEND
 #define input_ports_wldcp input_ports_s3
-CORE_GAMEDEF(wldcp,l1,"World Cup Soccer (L-1)",1978,"Williams",s3_mS3S,0)
+CORE_GAMEDEF(wldcp,l1,"World Cup (L-1)",1978,"Williams",s3_mS3S,0)
 
 /*-------------------------------------
 / Contact - Sys.3 (Game #482)
