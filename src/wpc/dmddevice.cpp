@@ -167,12 +167,15 @@ void pindmdDeInit() {
 	FreeLibrary(hModule);
 }
 
-void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame) {
+void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName) {
 
 	dmd_width = width; // store for DeInit
 	dmd_height = height;
 
-	if((gen == GEN_SAM) || (gen == GEN_GTS3) || (gen == GEN_ALVG_DMD2)) {
+	if ((gen == GEN_SAM) ||
+		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
+		(_strnicmp(GameName, "smb", 3) == 0) || (_strnicmp(GameName, "cueball", 7) == 0) ||
+		(gen == GEN_ALVG_DMD2)) {
 		if (DmdDev_Render_16_Shades)
 			DmdDev_Render_16_Shades(width,height,currbuffer);
 	} else {
