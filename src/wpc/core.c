@@ -836,7 +836,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			g_raw_colordmdbuffer[offs] = ((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2)) ? palette32_16[col] : palette32_4[col];
 		}
 #endif
-		if((core_gameData->gen == GEN_SAM) || (core_gameData->gen == GEN_GTS3) || (core_gameData->gen == GEN_ALVG_DMD2))
+		if ((core_gameData->gen == GEN_SAM) ||
+			// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
+			(_strnicmp(Machine->gamedrv->name, "smb", 3) == 0) || (_strnicmp(Machine->gamedrv->name, "cueball", 7) == 0) ||
+			(core_gameData->gen == GEN_ALVG_DMD2))
 			*line++ = dmdColor[col+63];
 		else
 			*line++ = dmdColor[col];
@@ -866,7 +869,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
 	  //external dmd
 	  if (g_fShowPinDMD)
-		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames);
+		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name);
 
 	  if (oldbuffer != NULL) {	  // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))
