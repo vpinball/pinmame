@@ -9,11 +9,14 @@ Removed a nasty hack from the Alvin G. driver
 Added support for game-specific sound ROMs for early WMS games
 Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
 Fix some GTS3 DMD animations running too fast
+Improved DMD brightness level mapping (again :)) for Gottlieb GTS3 & Alvin G.
 
 Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
+Fix some compiler issues/undefined code behavior (mainly relevant for mingw and unix/gcc builds at the moment)
 
 Updated to zlib 1.2.11
+Updated to latest Pin2DMD dlls
 
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl
 New:
@@ -194,7 +197,7 @@ Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
 Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars - God of War, etc)
 Improved Capcom sound core
 
-Improved DMD brightness level mapping for Gottlieb GTS3 & AlvinG
+Improved DMD brightness level mapping for Gottlieb GTS3 & Alvin G.
 Retweak Pistol Poker to use the correct 12MHz clock
 
 Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
