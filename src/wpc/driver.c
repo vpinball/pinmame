@@ -1191,7 +1191,7 @@ DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
-DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
 DRIVERNV(cheetahb)      //MPU-200: 06/80 Cheetah (Blue cabinet)
 DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Free Play)
 DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
@@ -2334,7 +2334,7 @@ DRIVER(bop,l5)          //          05/91 W Machine: Bride of Pinbot, The (L-5)
 DRIVER(bop,d5)          //                  Machine: Bride of Pinbot, The (D-5) LED Ghost Fix
 DRIVER(bop,l6)          //          05/91 W Machine: Bride of Pinbot, The (L-6)
 DRIVER(bop,d6)          //                  Machine: Bride of Pinbot, The (D-6) LED Ghost Fix
-DRIVER(bop,l7)          //          12/92 W Machine: Bride of Pinbot, The (L-7)
+DRIVER(bop,l7)          //          12/92 W Machine: Bride of Pinbot, The (L-7) introduced billionaire crash multiplayer bug
 DRIVER(bop,d7)          //                  Machine: Bride of Pinbot, The (D-7) LED Ghost Fix
 DRIVER(bop,l8)          //                  Machine: Bride of Pinbot, The (L-8) fixes billionaire crash multiplayer bug
 DRIVER(bop,d8)          //                  Machine: Bride of Pinbot, The (D-8) LED Ghost Fix
@@ -2599,6 +2599,7 @@ DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
+DRIVER(rs,lx2p3)        //          10/94 W Red & Ted's Road Show (Lx_2, Sound P-3)
 DRIVER(rs,lx2)          //          10/94 W Red & Ted's Road Show (Lx_2)
 DRIVER(rs,dx2)          //                  Red & Ted's Road Show (Dx_2) LED Ghost Fix
 DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (Lx_3)
