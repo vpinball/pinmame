@@ -497,6 +497,8 @@ static void serial_timer_event(int timer_num)
 						if (++(at91usart[usartno].at91_rbuf_tail) == AT91_RECEIVE_BUFFER_SIZE-1)
 							at91usart[usartno].at91_rbuf_tail = 0;
 					}
+					else
+						break;
 				//at91usart[usartno].US_RPR += 5;
 				//at91usart[usartno].US_RCR -= 5;
 /*				cpu_writemem32ledw(at91usart[usartno].US_RPR++, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]);
