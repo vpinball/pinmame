@@ -39,6 +39,7 @@ Stargame: Slalom Code 0.3
           White Force
 
 Correct Dumps:
+Bally: Flash Gordon (prototype rev. 1): Missing U10 dump was rediscovered
 LTD: Columbia (previously supported was in fact one ROM from pecmen)
 Taito: Lady Luck (sound dumps were the ones from Vegas before)
        Volley (formerly known as Voley Ball and also was missing main CPU dumps)

@@ -419,8 +419,8 @@ BY68701_INPUT_PORTS_START(name)
 / Flash Gordon
 /------------------*/
 INITGAMEP(flashgdp,FLIP_SW(FLIP_L),SNDBRD_BY61,1)
-BY68701_ROMSTART_CA8(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae40192d858ca7f2dccda84de73f),
-                            "xxx-xx.u10",NO_DUMP,
+BY68701_ROMSTART_CA8(flashgdp,"fg6801.bin",CRC(8af7bf77) SHA1(fd65578b2340eb207b2e197765e6721473340565) BAD_DUMP,
+                            "xxx-xx.u10",CRC(3e9fb30f) SHA1(173cd9e55e9c954944aa504308564e4842646e55),
                             "xxx-xx.u11",CRC(8b0ae6d8) SHA1(2380bd6d354c204153fd44534d617f7be000e46f),
                             "xxx-xx.u12",CRC(57406a1f) SHA1(01986e8d879071374d6f94ae6fce5832eb89f160))
 BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
