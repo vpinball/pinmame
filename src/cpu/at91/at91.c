@@ -468,7 +468,7 @@ static void serial_timer_event(int timer_num)
 			{ 
 				at91_fire_irq(AT91_USART_IRQ(usartno));
 			}
-		} else if (at91usart[usartno].US_TPR == 0 && (at91usart[usartno].US_CSR & US_TXEMPTY) == 0 )
+		} else if (at91usart[usartno].US_TPR == 0 && (at91usart[usartno].US_CSR & US_TXEMPTY) == 0)
 			{
 				if (at91_transmit_serial)
 				{
@@ -483,30 +483,29 @@ static void serial_timer_event(int timer_num)
 					at91_fire_irq(AT91_USART_IRQ(usartno));
 				} 
 			} 
-		if (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
+		if (at91usart[usartno].US_RPR != 0 && at91usart[usartno].US_RCR > 0 && at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
 		{
-			if (at91usart[usartno].US_RPR !=0 && at91usart[usartno].US_RCR > 0)
-			{
-				int i;
-				for (i=0;i<0x40;i++)
-					if(at91usart[usartno].US_RCR > 0 && at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
-					{
-						cpu_writemem32ledw(at91usart[usartno].US_RPR++, 0x29);
-						at91usart[usartno].US_RPR++;
-						at91usart[usartno].US_RCR--;
-						if (++(at91usart[usartno].at91_rbuf_tail) == AT91_RECEIVE_BUFFER_SIZE-1)
-							at91usart[usartno].at91_rbuf_tail = 0;
-					}
-					else
-						break;
-				//at91usart[usartno].US_RPR += 5;
-				//at91usart[usartno].US_RCR -= 5;
-/*				cpu_writemem32ledw(at91usart[usartno].US_RPR++, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]);
-				if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE-1)
-					at91usart[usartno].at91_rbuf_tail = 0;
-				at91usart[usartno].US_RCR--; */
-				at91usart[usartno].US_CSR |= US_ENDRX;
-			}
+			int i;
+			for (i=0;i<0x40;i++)
+				if(at91usart[usartno].US_RCR > 0) //!! && at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head)
+				{
+					cpu_writemem32ledw(at91usart[usartno].US_RPR++, 0x29);
+					at91usart[usartno].US_RPR++; //!! really increase again??! or is this wrong?
+					at91usart[usartno].US_RCR--;
+					if (at91usart[usartno].at91_rbuf_tail++ == AT91_RECEIVE_BUFFER_SIZE-1)
+						at91usart[usartno].at91_rbuf_tail = 0;
+				}
+				else
+					break;
+
+			//at91usart[usartno].US_RPR += 5;
+			//at91usart[usartno].US_RCR -= 5;
+/*			cpu_writemem32ledw(at91usart[usartno].US_RPR++, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]);
+			if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE-1)
+				at91usart[usartno].at91_rbuf_tail = 0;
+			at91usart[usartno].US_RCR--; */
+
+			at91usart[usartno].US_CSR |= US_ENDRX;
 		}
 	}
 }
@@ -523,7 +522,7 @@ int at91_receive_serial(int usartno, data8_t *buf, int size)
 	{	
 		// Is buffer full? 
 		if ((at91usart[usartno].at91_rbuf_tail == 0 && at91usart[usartno].at91_rbuf_head == AT91_RECEIVE_BUFFER_SIZE-1) ||
-			(at91usart[usartno].at91_rbuf_tail-1  == at91usart[usartno].at91_rbuf_head))
+			(at91usart[usartno].at91_rbuf_tail-1 == at91usart[usartno].at91_rbuf_head))
 		{
 			break;
 		}
@@ -553,7 +552,7 @@ void at91_usart_read(int usartno, int addr, data32_t *pData)
 			at91_serial_receive_ready(usartno);
 		*pData = at91usart[usartno].US_RPR;
 		break;
-	case 0x0d:  // Receive counter:
+	case 0x0d:  // Receive counter
 		*pData = at91usart[usartno].US_RCR;
 		break;
 	case 0x0e:  // Transmit pointer
@@ -609,7 +608,7 @@ void at91_usart_write(int usartno, int addr, data32_t outdata)
 		at91_pending_serial(usartno, 60);
 		break;
 	case 0x0c:
-		at91usart[usartno].US_RPR = outdata; // Receive pointer:
+		at91usart[usartno].US_RPR = outdata; // Receive pointer
 		break;
 	case 0x0d:
 		at91usart[usartno].US_RCR = outdata; // Receive counter
