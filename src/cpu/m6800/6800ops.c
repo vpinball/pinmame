@@ -1,4 +1,5 @@
-// PINMAME: All cmpx opcodes are different from the latest ones (10/2016) in MAME/MESS as it screws up AY emu of some machines
+// Old:     PINMAME: All cmpx opcodes are different from the latest ones (10/2016) in MAME/MESS as it screws up AY emu of some machines
+// Update!: cmpx opcodes from 10/2016 didn't pass the extended overflow bit when setting the overflow flag. Now fixed (see #if 0's).
 
 /*
 
@@ -1062,7 +1063,7 @@ INLINE void adda_im( void )
 /* $8c CMPX immediate -***- */
 INLINE void cmpx_im( void )
 {
-#ifdef PINMAME
+#if 0
 	UINT32 r,d;
 	PAIR b;
 	IMMWORD(b);
@@ -1074,11 +1075,12 @@ INLINE void cmpx_im( void )
 	PAIR r,d,b;
 	IMMWORD(b);
 	d.d = X;
-	r.d = d.d - b.d;
+	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_Z16(r.d);
 	SET_N8(r.b.h);
-	SET_V8(d.b.h, b.b.h, r.b.h);
+	SET_V8(d.b.h, b.b.h, r.w.l);
+	r.d = d.d - b.d;
+	SET_Z16(r.d);
 #endif
 }
 
@@ -1227,7 +1229,7 @@ INLINE void adda_di( void )
 /* $9c CMPX direct -***- */
 INLINE void cmpx_di( void )
 {
-#ifdef PINMAME
+#if 0
 	UINT32 r,d;
 	PAIR b;
 	DIRWORD(b);
@@ -1239,11 +1241,12 @@ INLINE void cmpx_di( void )
 	PAIR r,d,b;
 	DIRWORD(b);
 	d.d = X;
-	r.d = d.d - b.d;
+	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_Z16(r.d);
 	SET_N8(r.b.h);
-	SET_V8(d.b.h, b.b.h, r.b.h);
+	SET_V8(d.b.h, b.b.h, r.w.l);
+	r.d = d.d - b.d;
+	SET_Z16(r.d);
 #endif
 }
 
@@ -1390,7 +1393,7 @@ INLINE void adda_ix( void )
 /* $ac CMPX indexed -***- */
 INLINE void cmpx_ix( void )
 {
-#ifdef PINMAME
+#if 0
 	UINT32 r,d;
 	PAIR b;
 	IDXWORD(b);
@@ -1402,11 +1405,12 @@ INLINE void cmpx_ix( void )
 	PAIR r,d,b;
 	IDXWORD(b);
 	d.d = X;
-	r.d = d.d - b.d;
+	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_Z16(r.d);
 	SET_N8(r.b.h);
-	SET_V8(d.b.h, b.b.h, r.b.h);
+	SET_V8(d.b.h, b.b.h, r.w.l);
+	r.d = d.d - b.d;
+	SET_Z16(r.d);
 #endif
 }
 
@@ -1553,7 +1557,7 @@ INLINE void adda_ex( void )
 /* $bc CMPX extended -***- */
 INLINE void cmpx_ex( void )
 {
-#ifdef PINMAME
+#if 0
 	UINT32 r,d;
 	PAIR b;
 	EXTWORD(b);
@@ -1565,11 +1569,12 @@ INLINE void cmpx_ex( void )
 	PAIR r,d,b;
 	EXTWORD(b);
 	d.d = X;
-	r.d = d.d - b.d;
+	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_Z16(r.d);
 	SET_N8(r.b.h);
-	SET_V8(d.b.h, b.b.h, r.b.h);
+	SET_V8(d.b.h, b.b.h, r.w.l);
+	r.d = d.d - b.d;
+	SET_Z16(r.d);
 #endif
 }
 
