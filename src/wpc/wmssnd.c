@@ -77,7 +77,7 @@ MACHINE_DRIVER_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
-  int sndBit7;
+  UINT8 sndBitsA;
 } s67slocals;
 
 static READ_HANDLER(snd_r) {
@@ -104,25 +104,44 @@ static void s67s_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(s67s_ctrl_w) {
-  s67slocals.sndBit7 = (~data >> 7) & 1;
+  if (s67slocals.brdData.subType & (16 | 8)) {
+    if (s67slocals.brdData.subType & 8) {      // + World Cup
+      s67slocals.sndBitsA = ((data & 0x40) >> 1);
+      s67slocals.sndCmd = (s67slocals.sndCmd & 0x9f) | s67slocals.sndBitsA | ((core_getDip(0) & 0x02) ? 0x00 : 0x40);
+    }
+    if (s67slocals.brdData.subType & 16) {     // + Disco Fever
+      s67slocals.sndBitsA = ((data & 0x10) << 3);
+      s67slocals.sndCmd = (s67slocals.sndCmd & 0x3f) | s67slocals.sndBitsA | ((core_getDip(0) & 0x02) ? 0x00 : 0x40);
+    }
+    pia_set_input_b(S67S_PIA0, s67slocals.sndCmd);
+    pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0xbf) == 0xbf));
+  } else {
+    s67slocals.sndBitsA = data;
+  }
 }
 
 static WRITE_HANDLER(s67s_cmd_w) {
   if (s67slocals.brdData.subType & 1) { // don't use sound dips
-    data &= 0x7f;
-  } else if (s67slocals.brdData.subType & 2) { // two additional command bits
-    data = (data & 0x3f) | (s67slocals.sndBit7 << 6) | (core_getDip(0) << 6);
+    s67slocals.sndCmd = data & 0x7f;
+  } else if (s67slocals.brdData.subType & 2) { // Contact, Phoenix, World Cup, Disco Fever and Disco Fever prototype
+    s67slocals.sndCmd = 0x30 | (data & 0x0f) | ((data & 0x10) << 3) | ((core_getDip(0) & 0x02) ? 0x00 : 0x40);
+    if (s67slocals.brdData.subType & 4)      // + World Cup, Disco Fever and Disco Fever prototype
+      s67slocals.sndCmd = (s67slocals.sndCmd & 0xef) | ((data & 0x40) >> 2);
+    if (s67slocals.brdData.subType & 8)      // + World Cup
+      s67slocals.sndCmd = (s67slocals.sndCmd & 0xdf) | s67slocals.sndBitsA;
+    if (s67slocals.brdData.subType & 16)     // + Disco Fever
+      s67slocals.sndCmd = (s67slocals.sndCmd & 0x7f) | s67slocals.sndBitsA;
   } else {
-    data = (data & 0x1f) | (core_getDip(0)<<5);
+    s67slocals.sndCmd = (data & 0x1f) | (core_getDip(0)<<5);
   }
-  s67slocals.sndCmd = data;
-  pia_set_input_b(S67S_PIA0, data);
+//  logerror("s67s_cmd_w  data=%02x  sndCmd=%02x  sndBitsA=%02x  SndBrdSW2=%02x  CB1_old=%02x\n", data, s67slocals.sndCmd, s67slocals.sndBitsA, (core_getDip(0) << 5), pia_6_cb1_r(0) );
+  pia_set_input_b(S67S_PIA0, s67slocals.sndCmd);
   if (s67slocals.brdData.subType & 1) {
-    pia_set_input_cb1(S67S_PIA0, !((data & 0x7f) == 0x7f));
+    pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0x7f) == 0x7f));
   } else if (s67slocals.brdData.subType & 2) {
-    pia_set_input_cb1(S67S_PIA0, !((data & 0x0f) == 0x0f));
+    pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0xbf) == 0xbf));
   } else {
-    pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
+    pia_set_input_cb1(S67S_PIA0, !((s67slocals.sndCmd & 0x1f) == 0x1f));
   }
 }
 static void s67s_diag(int button) {
