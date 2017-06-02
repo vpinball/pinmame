@@ -103,6 +103,10 @@ DRIVERNV(fourx4)        //4x4 (Prototype, 1982)
 DRIVERNV(cntinntl)      //          10/80 Continental (Bingo)
 DRIVERNV(cntintl2)      //          10/80 Continental (Bingo, alternate version)
 
+//Boomerang prototype
+DRIVERNV(boomrang)      //          11/75 Boomerang (Engineering prototype)
+DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
+
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
@@ -935,6 +939,11 @@ DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rota_101)      //Rotation VIII (v. 1.01, September 1978)
 DRIVERNV(rota_115)      //Rotation VIII (v. 1.15, 1978?)
 DRIVERNV(rotation)      //Rotation VIII (v. 1.17, 1978?)
+
+// ----------------
+// MIRCO GAMES
+// ----------------
+DRIVERNV(spirit76)      //Spirit of 76 (1975)
 
 // ----------------
 // MONROE BOWLING CO.

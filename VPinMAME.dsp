@@ -2208,6 +2208,10 @@ SOURCE=.\src\wpc\bingo.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\boomerang.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\bowarrow.c
 # End Source File
 # Begin Source File
@@ -2673,6 +2677,10 @@ SOURCE=.\src\wpc\spinb.h
 # Begin Source File
 
 SOURCE=.\src\wpc\spinbgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\spiritof76.c
 # End Source File
 # Begin Source File
 

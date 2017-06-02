@@ -2,6 +2,13 @@ Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU *** Thanks to DJRobX for some of these
+Support for Bally's Boomerang prototype added!
+Pinfixer noticed the code was available in US patent #4,198,051,
+so we extracted it using OCR software, corrected obvious mistakes, fatal bugs and missing pieces
+until a working version of the code emerged.
+On top of that, there's also a bootleg version that works even a little better.
+
+Support for Mirco's Spirit of 76 - finally, maybe the first commercial solid-state pinball game.
 Support for more Stargame games added (including new sound core for MEA 8000 emulation)
 Support for Playbar's Bloody Roller, very similar hardware to Stargame's Slalom Code 0.3
 Joctronic works now (e.g. Walkyria, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely)
@@ -18,8 +25,9 @@ Fix some compiler issues/undefined code behavior (mainly relevant for mingw and 
 Updated to zlib 1.2.11
 Updated to latest Pin2DMD dlls
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl, Pinfixer
 New:
+Bally: Boomerang prototype
 LTD: Arizona
      Cowboy Eight Ball (and alternate set)
      Disco Dancing
@@ -33,6 +41,7 @@ LTD: Arizona
      Trick Shooter
      Viking King
 MAC: Galaxy Play
+Mirco: Spirit of 76
 Playbar: Bloody Roller
 Stargame: Slalom Code 0.3
           Space Ship

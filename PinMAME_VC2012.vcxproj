@@ -1225,6 +1225,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\atarisnd.c" />
     <ClCompile Include="src\wpc\barni.c" />
     <ClCompile Include="src\wpc\bingo.c" />
+    <ClCompile Include="src\wpc\boomerang.c" />
     <ClCompile Include="src\wpc\bowarrow.c" />
     <ClCompile Include="src\wpc\bowlgames.c" />
     <ClCompile Include="src\wpc\by35.c" />
@@ -1306,6 +1307,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\spectra.c" />
     <ClCompile Include="src\wpc\spinb.c" />
     <ClCompile Include="src\wpc\spinbgames.c" />
+    <ClCompile Include="src\wpc\spiritof76.c" />
     <ClCompile Include="src\wpc\stargame.c" />
     <ClCompile Include="src\wpc\stgames.c" />
     <ClCompile Include="src\wpc\stsnd.c" />
