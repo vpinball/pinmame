@@ -81,6 +81,8 @@ DRVLIBS += $(PINOBJ)/joctronic.o
 DRVLIBS += $(PINOBJ)/lancelot.o
 DRVLIBS += $(PINOBJ)/stargame.o
 DRVLIBS += $(PINOBJ)/slalom.o
+DRVLIBS += $(PINOBJ)/boomerang.o
+DRVLIBS += $(PINOBJ)/spiritof76.o
 #
 # Games
 #

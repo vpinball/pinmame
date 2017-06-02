@@ -3512,6 +3512,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\boomerang.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\bowarrow.c"
 					>
 				</File>
@@ -3985,6 +3989,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\spinbgames.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\spiritof76.c"
 					>
 				</File>
 				<File
