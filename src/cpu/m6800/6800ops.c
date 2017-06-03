@@ -1077,7 +1077,7 @@ INLINE void cmpx_im( void )
 	d.d = X;
 	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_N8(r.b.h);
+	SET_N8(r.b.l);
 	SET_V8(d.b.h, b.b.h, r.w.l);
 	r.d = d.d - b.d;
 	SET_Z16(r.d);
@@ -1243,7 +1243,7 @@ INLINE void cmpx_di( void )
 	d.d = X;
 	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_N8(r.b.h);
+	SET_N8(r.b.l);
 	SET_V8(d.b.h, b.b.h, r.w.l);
 	r.d = d.d - b.d;
 	SET_Z16(r.d);
@@ -1407,7 +1407,7 @@ INLINE void cmpx_ix( void )
 	d.d = X;
 	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_N8(r.b.h);
+	SET_N8(r.b.l);
 	SET_V8(d.b.h, b.b.h, r.w.l);
 	r.d = d.d - b.d;
 	SET_Z16(r.d);
@@ -1571,7 +1571,7 @@ INLINE void cmpx_ex( void )
 	d.d = X;
 	r.w.l = d.b.h - b.b.h;
 	CLR_NZV;
-	SET_N8(r.b.h);
+	SET_N8(r.b.l);
 	SET_V8(d.b.h, b.b.h, r.w.l);
 	r.d = d.d - b.d;
 	SET_Z16(r.d);
