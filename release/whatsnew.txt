@@ -17,6 +17,7 @@ Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (t
 Fix some GTS3 DMD animations running too fast
 Improved DMD brightness level mapping (again :)) for Gottlieb GTS3 & Alvin G.
 Added extra display segments for some LTD-games, changed flipper enable for Sistema III
+Improve Stern SB100 sound module tone frequencies
 
 Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)

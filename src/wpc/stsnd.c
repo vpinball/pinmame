@@ -1,3 +1,5 @@
+//Note by Quench: I believe that Nugent/Lectronamo were released with the sounds pitched much higher though.
+//We can revisit this later and add another soundboard type to support the originalSB100 revA pitch.
 
 #include "driver.h"
 #include "core.h"
@@ -68,10 +70,10 @@ static struct {
 
 // 3 lm324 square wave circuits
 
-#define ST100_FREQ1   70 // 70  //
-#define ST100_FREQ2   60 // 140  //
-#define ST100_FREQ3   120 //  210  //  3 khz
-#define ST100_FREQ4   35  // (half freq 1)
+#define ST100_FREQ1   208            // Note G#3  //  70 //  70
+#define ST100_FREQ2   172            // Note F3   //  60 // 140
+#define ST100_FREQ3   138            // Note C#3  // 120 // 210  //  3 khz
+#define ST100_FREQ4   ST100_FREQ1/2  // Note G#2  //  35 // (Flip flop divides Freq1 by 2)
 
 
 static void changefr (int param) {
@@ -114,10 +116,10 @@ static int st100_sh_start(const struct MachineSound *msound)  {
   mixer_set_volume(st100loc.channel+4,0);  // bit 5
   mixer_set_name(st100loc.channel + 5, "ST100 5");
   mixer_set_volume(st100loc.channel+5,0);  // bit 6
-  mixer_play_sample_16(st100loc.channel,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ1*sizeof(s100Waveb1), 1);
-  mixer_play_sample_16(st100loc.channel+1,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ2*sizeof(s100Waveb1), 1);
-  mixer_play_sample_16(st100loc.channel+2,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ3*sizeof(s100Waveb1), 1);
-  mixer_play_sample_16(st100loc.channel+3,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ4*sizeof(s100Waveb1), 1);
+  mixer_play_sample_16(st100loc.channel,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ1*(sizeof(s100Waveb1)/2), 1);
+  mixer_play_sample_16(st100loc.channel+1,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ2*(sizeof(s100Waveb1)/2), 1);
+  mixer_play_sample_16(st100loc.channel+2,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ3*(sizeof(s100Waveb1)/2), 1);
+  mixer_play_sample_16(st100loc.channel+3,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ4*(sizeof(s100Waveb1)/2), 1);
   st100loc.freqb5 = 0;
   mixer_play_sample_16(st100loc.channel+4,s100Waveb5, sizeof(s100Waveb5), (freqarb5[st100loc.freqb5])*sizeof(s100Waveb5), 1);
   st100loc.freqb6 = 0;
