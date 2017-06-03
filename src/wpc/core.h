@@ -16,6 +16,10 @@
   #define TRUE (1)
 #endif
 
+#ifdef UNIX
+  #define _strnicmp(x,y,z) strncasecmp(x,y,z)
+#endif
+
 #ifdef MAME_DEBUG
   #define DBGLOG(x) logerror x
 #else
