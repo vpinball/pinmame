@@ -25,6 +25,11 @@
 #define TRACE(x) 
 #endif
 
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy1.h"
+#endif /* PINMAME && LISY_SUPPORT */
+
+
 /*----------------
 /  Local variables
 /-----------------*/
@@ -42,6 +47,13 @@ static struct {
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(GTS1_vblank) {
+
+#ifdef LISY_SUPPORT
+    // Keep the LISY80 tickled each time we run around the interrupt
+    // so it knows we are still alive
+    // we use it also to handle special functions for play & test switch
+    lisy1TickleWatchdog();
+#endif
 	locals.vblankCount++;
 	/*-- lamps --*/
 	if ((locals.vblankCount % GTS1_LAMPSMOOTH) == 0)
@@ -53,6 +65,8 @@ static INTERRUPT_GEN(GTS1_vblank) {
 }
 
 static SWITCH_UPDATE(GTS1) {
+//with LISY80(LISY1) we read the switches from Lisy rather from the keyboard
+//but we keep it as it is for the moment
 	if (inports) {
 		CORE_SETKEYSW(inports[GTS1_COMINPORT]>>8,0x80,0);
 		CORE_SETKEYSW(inports[GTS1_COMINPORT],   0x01,1);
@@ -106,6 +120,10 @@ static WRITE_HANDLER(lamp_w) {
 
 static WRITE_HANDLER(disp_w) {
 	coreGlobals.segments[offset].w = offset > 23 ? core_bcd2seg7a[data] : core_bcd2seg9a[data];
+#ifdef LISY_SUPPORT
+	//send display data to LISY1
+	lisy1_display_handler(offset, data);
+#endif
 }
 
 static WRITE_HANDLER(port_w) {
@@ -120,20 +138,36 @@ static WRITE_HANDLER(port_w) {
 		case 0x02: // U5 RRIO A1752 - Switch matrix
 			TRACE(("%03x: I/O on U5, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable));
 			if (ioport < 6 && !enable) {
-				locals.swStrobe = ioport + 1;
+				locals.swStrobe = ioport + 1; //range is 1..6 here
+#ifdef LISY_SUPPORT
+				lisy1_throttle(); //slow down in case we are running with lisy
+#endif
 			} else if (!sos && ioport > 7 && locals.swStrobe) {
 				locals.accu &= 0x07;
+#ifdef LISY_SUPPORT
+				//we read the switches from lisy1 via PIC (buffered)
+				coreGlobals.swMatrix[locals.swStrobe] = lisy1_switch_handler(locals.swStrobe);
+#endif
 				locals.accu |= (coreGlobals.swMatrix[locals.swStrobe] & (1 << (ioport - 8))) ? 0: 0x08;
 			} else
 				locals.swStrobe = 0;
-      sndbrd_0_ctrl_w(0, locals.swStrobe); // C. Tabart games read the switch returns for the current strobe
+			sndbrd_0_ctrl_w(0, locals.swStrobe); // C. Tabart games read the switch returns for the current strobe
 			break;
 		case 0x03: // U3 GPIO 10696 - Lamps, strobe, dip switches, bits 8 & 9 of PGOL address
 			if (rw) {
 				if (group & 1) // outputs 1 - 4: lamp data
+				{
 					locals.lampData = locals.accu;
-				if (group & 2) { // outputs 5 - 8: data strobe
+#ifdef LISY_SUPPORT
+					lisy1_lamp_handler( locals.accu, 1); 
+#endif
+				}
+				if (group & 2) // outputs 5 - 8: data strobe
+				{
 					locals.strobe = locals.accu < 12 ? locals.accu : -1;
+#ifdef LISY_SUPPORT
+					lisy1_lamp_handler( locals.accu, 0); 
+#endif
 					if (locals.strobe > 0) lamp_w(locals.strobe - 1, locals.lampData);
 				}
 				if (group & 4) { // outputs 9 & 10: PGOL address bits
@@ -143,20 +177,50 @@ static WRITE_HANDLER(port_w) {
 				locals.accu = 0;
 				if (locals.strobe > -1 && locals.strobe < 3) {
 					if (group & 1) // inputs 1 - 4: dips
+					{
+#ifndef LISY_SUPPORT
 						locals.accu ^= (core_getDip(locals.strobe) & 0x0f);
+#else
+						locals.accu ^= (lisy1_get_mpudips(locals.strobe) & 0x0f);
+#endif
+					}
 					if (group & 2) // inputs 5 - 8: dips
+					{
+#ifndef LISY_SUPPORT
 						locals.accu ^= (core_getDip(locals.strobe) >> 4);
+#else
+						locals.accu ^= (lisy1_get_mpudips(locals.strobe) >> 4);
+#endif
+					}
 				}
 				if (group & 4) // inputs 9 - 12: special switches
+				{
+#ifdef LISY_SUPPORT
+					//special switches come from lisy
+					//we read the switches from lisy1 via PIC (buffered)
+					coreGlobals.swMatrix[7] = lisy1_switch_handler(7); //request special switches
+#endif
 					locals.accu = 0x08 ^ (coreGlobals.swMatrix[7] >> 4);
+				}
 			}
-			TRACE(("%03x: I/O on U3: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
+			if (rw && ((group & 4)))
+			{
+				TRACE(("%03x: I/O on U3: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
+			}
 			break;
 		case 0x04: // U4 RRIO A1753 - Solenoids, NVRAM R/W & enable
-			TRACE(("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable));
+			if (ioport != 0x0e)
+			{
+				TRACE(("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable));
+			}
 			if (sos) {
 				if (ioport < 0x0c) {
 					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
+#ifdef LISY_SUPPORT
+					//send the solenoid states to LISY1->Coil PIC
+					//enable = 1 means off; enable = 0 means ON
+					lisy1_solenoid_handler(ioport,enable);
+#endif
 					if (ioport > 1 && ioport < 5) { // sound
 						if (!core_gameData->hw.soundBoard) {
 							if (locals.tones) discrete_sound_w(1 << (ioport - 2), !enable);
@@ -176,12 +240,23 @@ static WRITE_HANDLER(port_w) {
 				if (group & 2) // ram hi address
 					locals.ramAddr = (locals.ramAddr & 0x0f) | (locals.accu << 4);
 				if (!locals.ramE2 && locals.ramRW && (group & 4)) // write to nvram
+				{
 					cpu_writemem16(0x1800 + locals.ramAddr, locals.accu);
+#ifdef LISY_SUPPORT
+					lisy1_nvram_handler(1, locals.ramAddr, locals.accu);
+#endif
+				}
 //					memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr] = locals.accu;
 			} else {
 				locals.accu = 0x0f;
 				if (!locals.ramE2 && (group & 1)) // read from nvram
+				{
+#ifndef LISY_SUPPORT
 					locals.accu = cpu_readmem16(0x1800 + locals.ramAddr);
+#else
+					locals.accu = lisy1_nvram_handler(0, locals.ramAddr, 0);
+#endif
+				}
 //					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr];
 			}
 			TRACE(("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));

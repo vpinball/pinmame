@@ -1,0 +1,352 @@
+if(isset($_POST['dip01_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip01_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP01_" . $_POST['dip01_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip02_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip02_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP02_" . $_POST['dip02_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip03_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip03_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP03_" . $_POST['dip03_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip04_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip04_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP04_" . $_POST['dip04_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip05_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip05_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP05_" . $_POST['dip05_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip06_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip06_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP06_" . $_POST['dip06_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip07_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip07_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP07_" . $_POST['dip07_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip08_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip08_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP08_" . $_POST['dip08_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip09_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip09_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP09_" . $_POST['dip09_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip10_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip10_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP10_" . $_POST['dip10_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip11_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip11_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP11_" . $_POST['dip11_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip12_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip12_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP12_" . $_POST['dip12_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip13_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip13_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP13_" . $_POST['dip13_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip14_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip14_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP14_" . $_POST['dip14_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip15_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip15_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP15_" . $_POST['dip15_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip16_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip16_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP16_" . $_POST['dip16_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip17_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip17_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP17_" . $_POST['dip17_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip18_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip18_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP18_" . $_POST['dip18_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip19_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip19_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP19_" . $_POST['dip19_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip20_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip20_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP20_" . $_POST['dip20_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip21_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip21_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP21_" . $_POST['dip21_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip22_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip22_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP22_" . $_POST['dip22_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip23_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip23_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP23_" . $_POST['dip23_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip24_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip24_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP24_" . $_POST['dip24_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip25_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip25_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP25_" . $_POST['dip25_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip26_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip26_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP26_" . $_POST['dip26_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip27_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip27_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP27_" . $_POST['dip27_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip28_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip28_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP28_" . $_POST['dip28_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip29_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip29_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP29_" . $_POST['dip29_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip30_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip30_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP30_" . $_POST['dip30_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip31_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip31_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP31_" . $_POST['dip31_k'];
+fwrite($fp,$value);
+fclose($fp);
+}
+if(isset($_POST['dip32_v']))
+{
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "V_" . $_POST['dip32_v'];
+fwrite($fp,$value);
+fclose($fp);
+$fp = fsockopen("localhost", 5963, $errno, $errstr, 30);
+$value = "K_DIP32_" . $_POST['dip32_k'];
+fwrite($fp,$value);
+fclose($fp);
+}

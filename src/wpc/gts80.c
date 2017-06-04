@@ -26,6 +26,9 @@
 #include "sndbrd.h"
 #include "gts80.h"
 #include "gts80s.h"
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy80.h"
+#endif /* PINMAME && LISY_SUPPORT */
 
 #define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
@@ -77,6 +80,15 @@ static void GTS80_irq(int state) {
 
 static INTERRUPT_GEN(GTS80_vblank) {
   static UINT32 gameOn;
+
+#ifdef LISY_SUPPORT
+    // Keep the LISY80 tickled each time we run around the interrupt
+    // so it knows we are still alive
+    // we use it in 2.011 to handle special functions for play & test switch
+    //	if (coreGlobals.p_rocEn) ??? 
+    lisy80TickleWatchdog();
+#endif
+
   GTS80locals.vblankCount += 1;
   /*-- lamps are not strobed so no need to smooth --*/
   /*-- solenoids --*/
@@ -118,8 +130,12 @@ static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 static SWITCH_UPDATE(GTS80) {
   int isSlammed;
   int invPattern = coreGlobals.invSw[0];
+
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
+    // All the matrix switches come from LISY80, so we only want to read
+    // the first column from the keyboard if we are not using the LISY80
+    // at teh moment we keep it as it is, as we do switch reading via Riot0
     // Sound test
     CORE_SETKEYSW(inports[GTS80_COMINPORT] >> 8, 0x10, 0);
     // Set slam switch
@@ -127,6 +143,7 @@ static SWITCH_UPDATE(GTS80) {
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
+
   /*-- slam tilt --*/
   isSlammed = core_getSw(GTS80_SWSLAMTILT);
   GTS80locals.slamSw = isSlammed ? invPattern : (invPattern ^ 0xff);
@@ -148,20 +165,36 @@ static WRITE_HANDLER(GTS80_sndCmd_w) {
 static READ_HANDLER(riot6532_0a_r) {
   int bits = 0;
   if (GTS80locals.riot1b & 0x80) {
+#ifndef LISY_SUPPORT
     bits = core_getDip((GTS80locals.riot2b>>4)&0x03);
+#else
+    //we can configure the dip switches via /boot/lisy80/dips
+    bits = lisy80_get_mpudips((GTS80locals.riot2b>>4)&0x03);
+#endif
     return core_revbyte(bits);
   }
   else {
+#ifndef LISY_SUPPORT
+    //old routine without LISY80
     int ii;
     for (ii = 8; ii > 0; ii--) {
       bits <<= 1;
       if (coreGlobals.swMatrix[ii] & GTS80locals.riot0b) bits |= 1;
     }
+#else
+    //get the switches from Lisy80
+    bits = lisy80_switch_handler(GTS80locals.riot0b);
+#endif
     return bits;
   }
 }
+
 static WRITE_HANDLER(riot6532_0b_w) {
   GTS80locals.riot0b = data;
+#ifdef LISY_SUPPORT
+  //we use this routine to be able to 'throttle' the game a bit
+  lisy80_throttle(GTS80locals.riot0b);
+#endif
   GTS80locals.buf8212int |= (data & 0x03); // for caveman only
 }
 
@@ -195,7 +228,13 @@ static WRITE_HANDLER(riot6532_1aBCD_w) {
   GTS80locals.segments[20+pos].w |= GTS80locals.seg2;
   GTS80locals.segments[55-dispdata].w |= GTS80locals.seg3;
   GTS80locals.riot1a = data;
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+  //send port A and port B of RIOT 1 to lisy80
+  lisy80_display_handler_bcd( GTS80locals.riot1a, GTS80locals.riot1b);
+#endif /* PINMAME && LISY_SUPPORT */
+
 }
+
 static WRITE_HANDLER(riot6532_1bBCD_w) { GTS80locals.riot1b = data; }
 
 /* Alphanumeric */
@@ -205,7 +244,12 @@ static WRITE_HANDLER(riot6532_1a_w) {
   if (data & ~GTS80locals.riot1a & 0x20)
     GTS80locals.alphaData = (GTS80locals.alphaData & 0x0f) | ((GTS80locals.riot1b & 0x0f)<<4);
   GTS80locals.riot1a = data;
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+  //send port A to lisy80
+  lisy80_display_handler_alpha( 0, GTS80locals.riot1a); //0 means porta
+#endif /* PINMAME && LISY_SUPPORT */
 }
+
 static WRITE_HANDLER(riot6532_1b_w) {
   const int alpha = GTS80locals.alphaData  & 0x7f; // shortcut
   if (data & ~GTS80locals.riot1b & 0x10) { // LD1 (falling edge)
@@ -228,6 +272,10 @@ static WRITE_HANDLER(riot6532_1b_w) {
     GTS80locals.segPos2 = (GTS80locals.segPos2 + 1) % 0x14;
   }
   GTS80locals.riot1b = data;
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+  //send port B to lisy80
+  lisy80_display_handler_alpha( 1, GTS80locals.riot1b); //1 means portb
+#endif /* PINMAME && LISY_SUPPORT */
 }
 
 /*---------------------------
@@ -235,6 +283,10 @@ static WRITE_HANDLER(riot6532_1b_w) {
 /----------------------------*/
 /* solenoids */
 static WRITE_HANDLER(riot6532_2a_w) {
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+  //send port A RIOT 2 to lisy80
+  lisy80_coil_handler_a( data);
+#endif /* PINMAME && LISY_SUPPORT */
   data = ~data;
   if (data & 0x20)  /* solenoids 1-4 */
     GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffff0) | (1<<(data & 0x03));
@@ -251,6 +303,10 @@ static WRITE_HANDLER(riot6532_2a_w) {
 }
 
 static WRITE_HANDLER(riot6532_2b_w) {
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+  //send port B RIOT 2 to lisy80
+  lisy80_coil_handler_b( data);
+#endif /* PINMAME && LISY_SUPPORT */
   const int column = ((data & 0xf0)>>4)-1; // 4 lamps per column, 12 columns
   GTS80locals.riot2b = data;
   data &= 0x0f;
@@ -459,6 +515,11 @@ static MACHINE_STOP(gts80) {
 /-------------------------------------------------*/
 static NVRAM_HANDLER(gts80) {
   core_nvram(file, read_or_write, GTS80_pRAM, 0x100, 0x00);
+#ifdef LISY_SUPPORT
+  // 0 = read; 1 = write
+  lisy80_nvram_handler(read_or_write, GTS80_pRAM);
+#endif
+  //if it is a read copy 256bytes to mirrored sections also
   if (!read_or_write) {
     int ii;
     for (ii = 1; ii < 8; ii++)

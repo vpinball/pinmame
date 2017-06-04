@@ -1,0 +1,16 @@
+# lisy80 Makefile
+# RTH 11.2016
+# for readdips prog
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+
+#OBJ = hw_lib.o coils.o displays.o switches.o sound.o utils.o Tester.o
+OBJ = utils.o readdips.o
+
+readdips: $(OBJ)
+	$(CC) $(CFLAGS) -o readdips $(OBJ) $(LDFLAGS)
+
+%.o: ../%.c ../%.h
+	$(CC) $(CFLAGS) -c $<
+

@@ -120,6 +120,11 @@
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy80.h"
+ #include "lisy/lisy1.h"
+ #include "lisy/utils.h"
+#endif /* PINMAME && LISY_SUPPORT */
 
 /***************************************************************************
 
@@ -367,6 +372,9 @@ static int init_machine(void)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	procInitialize(yaml_filename);
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+	lisy_init();
+#endif /* PINMAME && LISY_SUPPORT */
 
 	/* if we have inputs, process them now */
 	if (gamedrv->input_ports)
@@ -395,6 +403,9 @@ static int init_machine(void)
 	if (gamedrv->rom && rom_load(gamedrv->rom) != 0)
 	{
 		logerror("readroms failed\n");
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+		lisy80_error(10);
+#endif /* PINMAME && LISY_SUPPORT */
 		goto cant_load_roms;
 	}
 
