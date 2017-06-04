@@ -120,6 +120,7 @@ endif
 ##############################################################################
 OBJ     = $(NAME).obj
 PROC_OBJ = $(NAME).obj/p-roc
+LISY_OBJ = $(NAME).obj/lisy
 
 CORE_OBJDIRS = $(OBJ) \
 	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw \
@@ -176,6 +177,10 @@ ifdef PROC
 include src/p-roc/p-roc.mak
 endif
 
+ifdef LISY_X
+include src/lisy/lisy.mak
+endif
+
 ifdef DEBUG
 DBGDEFS = -DMAME_DEBUG
 else
@@ -197,6 +202,12 @@ MY_LIBS = $(LIBS) $(LIBS.$(ARCH)) $(LIBS.$(DISPLAY_METHOD)) -lz
 
 ifdef PROC
 MY_LIBS += -lyaml-cpp -lpinproc -lftdi1 -lusb
+endif
+
+ifdef LISY_X
+MY_LIBS += -lSDL2
+MY_LIBS += -lSDL2_mixer
+MY_LIBS += -lwiringPi
 endif
 
 ifdef SEPARATE_LIBM
@@ -308,9 +319,9 @@ MY_OBJDIRS = $(CORE_OBJDIRS) $(sort $(OBJDIRS))
 ##############################################################################
 # Begin of the real makefile.
 ##############################################################################
-$(NAME).$(DISPLAY_METHOD): $(OBJS) $(PROCOBJS)
+$(NAME).$(DISPLAY_METHOD): $(OBJS) $(PROCOBJS) $(LISYOBJS)
 	$(CC_COMMENT) @echo 'Linking $@ ...'
-	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(PROCOBJS) $(MY_LIBS) 
+	$(CC_COMPILE) $(LD) $(LDFLAGS) -o $@ $(OBJS) $(PROCOBJS) $(LISYOBJS) $(MY_LIBS) 
 
 tools: $(ZLIB) $(OBJDIRS) $(TOOLS)
 
@@ -367,6 +378,10 @@ $(OBJ)/%.a:
 $(PROC_OBJ)/%.o: src/p-roc/%.cpp
 	$(CC_COMMENT) @echo 'Compiling $< ...'
 	$(CC_COMPILE) $(CPP) $(MY_CFLAGS) -o $@ -c $<
+
+$(LISY_OBJ)/%.o: src/lisy/%.c
+	$(CC_COMMENT) @echo 'Compiling $< ...'
+	$(CC_COMPILE) $(CC) $(MY_CFLAGS) -o $@ -c $<
 
 #$(CPP_OBJ)/%.o: src/wpc/%.cpp
 #	$(CC_COMMENT) @echo 'Compiling $< ...'

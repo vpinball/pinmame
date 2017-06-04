@@ -1,0 +1,2 @@
+sudo cp lisy80_control /boot/lisy80/bin
+sudo cp lisy1_control /boot/lisy1/bin

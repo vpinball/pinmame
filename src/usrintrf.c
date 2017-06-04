@@ -23,6 +23,10 @@
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 #include "p-roc/p-roc.h"
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(LISY_SUPPORT)
+ #include "lisy/hw_lib.h"
+ #include "lisy/lisy.h"
+#endif /* LISY_SUPPORT */
 
 
 
@@ -4067,10 +4071,19 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	    || code_pressed(PROC_ESC_SEQ)
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(LISY_SUPPORT)
+        //check in lisy for SIGUSR1
+        //and quit if we received it
+        || lisy_time_to_quit()
+#endif /* LISY_SUPPORT */
 	   )) {
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 		procClearDMD();
 #endif /* PINMAME && PROC_SUPPORT */
+#if defined(LISY_SUPPORT)
+        //make sure all coils are switches off
+        lisy_shutdown();
+#endif /* LISY_SUPPORT */
 		return 1;
 	}
 

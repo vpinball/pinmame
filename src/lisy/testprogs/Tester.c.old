@@ -1,0 +1,323 @@
+ /*
+  RTH 11.2016
+  lisy80NG first tests
+  provide menu for testing
+  version 0.02
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
+#include "hw_lib.h"
+//#include "coils.h"
+#include "displays.h"
+#include "switches.h"
+//#include "sound.h"
+//#include "utils.h"
+
+int lisy80_hw = 0;  // do we have LISY80 hardware connected?
+
+#define VERSION "0.10"
+	int position;
+	int gtb_sys80_type = 0;  //0==SYS80, 1=SYS80A, 2==SYS80B
+
+/*
+  display string on display
+*/
+void set_display_str( char *str)
+{
+
+        int i;
+        int display;
+        char *data;
+
+#ifdef HW_DEBUG
+                 printf("str=%s\n",str);
+                 printf("display=%d, data=%s\n",display,data);
+                 printf("gtb_type = %d\n",gtb_sys80_type);
+#endif
+                 strtok( str, ",");
+                 display = atoi( strtok( NULL, ","));
+                 data = strtok( NULL, ",");
+
+if ( display == 0) // status display?
+{
+        for(i=3; i >= 0; i--)
+                {
+                 set_digit( display, i, data[3-i]);
+#ifdef HW_DEBUG
+                 printf("display:%d, digit:%d, data:%d\n",display,i,data[3-i]);
+#endif
+                }
+
+}
+else
+{
+switch ( gtb_sys80_type )
+   {
+        case 0:
+        for(i=5; i >= 0; i--)
+                {
+                 set_digit( display, i, data[5-i]);
+#ifdef HW_DEBUG
+                 printf("display:%d, digit:%d, data:%d\n",display,i,data[5-i]);
+#endif
+                }
+        break;
+
+        case 1:
+        for(i=5; i >= 0; i--)
+                {
+                 set_digit( display, i, data[5-i]);
+#ifdef HW_DEBUG
+                 printf("display:%d, digit:%d, data:%d\n",display,i,data[5-i]);
+#endif
+                }
+            //in SYS8A mode digit 6 is for data[6]
+            set_digit( display, 6, data[6]);
+        break;
+
+        case 2:
+         printf("not implemented for SYS80B yet!\n");;
+        break;
+        }
+  }
+}
+
+
+void lisy_help( int position)
+{
+int pos;
+
+pos = position / 10;
+
+switch (pos)
+	{
+	 case 0:   printf("HELP, possible commands:\n");
+		   printf(" Display\n");
+		   printf(" Coil\n");
+		   printf(" Switch\n");
+		   printf(" sOund\n");
+		   printf(" eXit\n");
+		   printf(" Help\n");
+		   break;
+	 case 1:   printf("HELP, possible commands:\n");
+		   printf(" Show,<#Display>,<nnnnnn>   SYS80/SYS80A mode\n");
+		   printf(" sEnd,<byte>   SYS80B mode\n");
+		   printf(" N switch -> Switch to SYS80 Mode\n");
+		   printf(" A switch -> Switch to SYS80A Mode\n");
+		   printf(" B switch -> Switch to SYS80B Mode\n");
+		   printf(" Up\n");
+		   printf(" Help\n");
+		   break;
+	 case 2:   printf("HELP, possible commands:\n");
+		   printf(" On,<#Coil>\n");
+		   printf(" oFf,<#Coil>\n");
+		   printf(" Pulse,<#Coil>\n");
+		   printf(" Test all coils\n");
+		   printf(" Up\n");
+		   printf(" Help\n");
+		   break;
+	 case 3:   printf("HELP, possible commands:\n");
+		   printf(" Show switch stati\n");
+		   printf(" Up\n");
+		   printf(" Help\n");
+		   break;
+	 case 4:   printf("HELP, possible commands:\n");
+		   printf(" Play sound, <#No(1..15)>\n");
+		   printf(" Up\n");
+		   printf(" Help\n");
+		   break;
+	}
+}
+
+
+/* 
+ ****** DISPLAY *****
+*/
+
+void m_display(void)
+{
+	char input[80];
+	char prompt[80];
+	int position = 10;
+
+strcpy(prompt, "LISY80/Display>");
+
+while ( 1 )
+           {
+                printf("%s", prompt);
+                gets ( input );
+                switch ( tolower ( input[0] ))
+                        {
+                         case 's': set_display_str(input);
+				   break;
+                         case 'e': //send_80b_byte(input);
+				   break;
+                         case 'n': //switch_to_80(input);
+				   break;
+                         case 'a': //switch_to_80a(input);
+				   break;
+                         case 'b': //switch_to_80b(input);
+				   break;
+                         case 'u': return;
+				   break;
+                         case 'h':
+			 case '?': lisy_help(position);
+                                   break;
+                        }
+                }
+}
+
+/* 
+ ****** COIL *****
+*/
+void m_coil()
+{
+	char input[80];
+	char prompt[80];
+	int position = 20;
+
+ strcpy(prompt, "LISY80/Coil>");
+
+while ( 1 )
+           {
+                printf("%s", prompt);
+                gets ( input );
+                switch ( tolower ( input[0] ))
+                        {
+                         case 'u': break;
+                         case 'o': //coil_set_str(input,1);
+				   break;
+                         case 'f': //coil_set_str(input,0);
+				   break;
+                         case 'p': //coil_set_str(input,2);
+				   break;
+                         case 't': //coil_test();
+				   break;
+                         case 'h':
+			 case '?': lisy_help(position);
+                                   break;
+                        }
+                }
+
+}
+
+/* 
+ ****** SWITCH *****
+*/
+
+
+void
+echo(unsigned char ch)
+{
+  printf("%c", ch);
+  fflush(stdout);      /* push it out */
+}
+
+
+void m_switch()
+{
+	char input[80];
+	char prompt[80];
+	int position = 30;
+
+ strcpy(prompt, "LISY80/Switch>");
+
+while ( 1 )
+           {
+                printf("%s", prompt);
+                gets ( input );
+                switch ( tolower ( input[0] ))
+                        {
+                         case 'u': return;
+			 	   break;
+                         case 's': monitor_switches();
+				   break;
+                         case 'h':
+			 case '?': lisy_help(position);
+                                   break;
+                        }
+                }
+
+}
+
+/* 
+ ****** SOUND *****
+*/
+void m_sound()
+{
+	char input[80];
+	char prompt[80];
+	int position = 40;
+
+ strcpy(prompt, "LISY80/sOund>");
+
+while ( 1 )
+           {
+                printf("%s", prompt);
+                gets ( input );
+                switch ( tolower ( input[0] ))
+                        {
+                         case 'u': break;
+                         case 'h':
+			 case 'p': //play_sound_str(input);
+                                   break;
+			 case '?': lisy_help(position);
+                                   break;
+                        }
+                }
+}
+
+
+/* 
+ ****** MAIN *****
+*/
+
+
+int main( int argc, char **argv )
+{
+
+	char input[80];
+	char prompt[80];
+	int position = 0;
+	int ret;
+
+	printf("\n LISY80 Version %s",VERSION);
+	printf("\n 'h' or '?' for help\n\n");
+	strcpy(prompt, "LISY80>");
+
+	// INIT the Hardware
+	ret = lisy80_init_hw();
+	// init_coils();
+	// init_sound();
+
+	while ( 1 )
+	   {
+		printf("%s", prompt);
+		gets ( input );
+		switch ( tolower ( input[0] ))
+			{
+			 case 'u': 
+			 case 'x': break;
+			 case 'd': m_display();
+				   break;
+			 case 'c': m_coil();
+				   break;
+			 case 's': m_switch();
+				   break;
+			 case 'o': m_sound();
+				   break;
+			 case '?': 
+			 case 'h': lisy_help(position);
+				   break;
+			}
+
+		 if (( tolower(input[0]) == 'x') || ( tolower(input[0]) == 'u')) { exit(0); }
+
+	   }
+
+	exit(1); //never reached
+}

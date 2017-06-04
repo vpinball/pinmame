@@ -1,0 +1,62 @@
+ /*
+  RTH 11.2015
+  lisy80NG first tests
+  switches 0.01
+*/
+
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+
+#define PIC_ADDR 0x19   // Address of PIC, shifted right one bit ( org is 0x33 )
+
+int main (int argc, char *argv[])
+{
+	int fd,i;
+
+union both3 {
+    unsigned char byte;
+    struct {
+    unsigned STROBE:3, RETURN:3, FREE:1, ONOFF:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv;
+    } mydata;
+
+        wiringPiSetup () ;
+	pinMode ( 14, INPUT);
+
+        fd=wiringPiI2CSetup (PIC_ADDR) ; 
+        if(fd==-1)
+        {
+                printf("Can't setup the I2C device\n");
+                return -1;
+        }
+                printf("successfull setup of the I2C device at address %x\n",PIC_ADDR);
+
+
+	printf("ask for version \n ");
+	wiringPiI2CWrite (fd, 1) ;
+	//read answer
+//	while( digitalRead(7) == 0); //wait for data available
+usleep(10000);
+	 mydata.byte=wiringPiI2CRead(fd);
+                        if(mydata.byte==-1) printf("No data\n"); 
+	 printf("return:%d \n",mydata.byte);
+
+	printf("ask for switch matrix \n ");
+	wiringPiI2CWrite (fd, 2) ;
+	//read answer
+//	while( 1 )
+	for (i=0; i<=7; i++)
+	{
+//	while( digitalRead(7) == 0); //wait for data available
+	usleep(10000);
+	 mydata.byte=wiringPiI2CRead(fd);
+                        if(mydata.byte==-1) printf("No data\n"); 
+	 printf("return:%d \n",mydata.byte);
+	}
+
+return 1;
+}//main

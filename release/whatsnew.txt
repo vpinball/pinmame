@@ -23,6 +23,8 @@ Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
 Fix some compiler issues/undefined code behavior (mainly relevant for mingw and unix/gcc builds at the moment)
 
+Add LISY support (Linux for System1 & System80): one can control a Gottlieb pinball machine via PinMAME, special hardware needed, have a look at www.lisy80.com
+
 Updated to zlib 1.2.11
 Updated to latest Pin2DMD dlls
 

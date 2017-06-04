@@ -69,6 +69,13 @@ TARGET = pinmame
 # see http://www.pinballcontrollers.com/
 # PROC = 1
 
+# uncomment next line to include LISY support
+# see http://www.lisy80.com/
+# LISY_X = 1
+# uncomment next line to enable support for LISY fake VIDEO driver
+# this will also select 'vid_lisy' as DISPLAY_METHOD
+# LISY_X_FAKE_VIDEO = 1
+
 ###########################################################################
 # Development environment options 
 ###########################################################################
@@ -626,6 +633,12 @@ DISPLAY_METHOD = x11
 # Photon 2.x (QNX6), currently buggy, but working...
 # DISPLAY_METHOD = photon2
 
+# LISY by bontango, meaning NO video output
+# automatic selection 
+ifdef LISY_X_FAKE_VIDEO
+DISPLAY_METHOD = vid_lisy
+endif
+
 
 ###########################################################################
 # X-Window options (only needed when X is the display method)
@@ -752,6 +765,17 @@ ifdef PROC
 # Enable support for P-ROC
 CFLAGS += -DPROC_SUPPORT
 endif
+
+ifdef LISY_X
+# Enable support for LISY
+CFLAGS += -DLISY_SUPPORT
+endif
+
+ifdef LISY_X_FAKE_VIDEO
+# Enable support for LISY fake VIDEO driver
+CFLAGS += -DLISY_VIDEO
+endif
+
 
 ###########################################################################
 # All done.  Type make -f makefile.unix and enjoy xmame/xmess.  ;)
