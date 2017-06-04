@@ -466,7 +466,7 @@ WRITE_HANDLER(extra_sol_w) {
 
 WRITE_HANDLER(stern100_sol_w) {
   logerror("%04x: stern100_sol (c0) data  %02x \n", activecpu_get_previouspc(),data);
-//extra_sol_w(offset, data ^ 0xff);
+  sndbrd_0_data_w(0, ~data & 0x0f);
 }
 
 static MACHINE_INIT(by35) {
