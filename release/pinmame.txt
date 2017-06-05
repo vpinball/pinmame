@@ -31,12 +31,17 @@ What is it?
 
   PinMAME is built as an add-on to the MAME 0.76 Source Code.
   Some of the original code was altered, and fixes from later MAME versions were applied.
+  In addition, it can be compiled on unix platforms and is (hopefully) compatible
+  with 64bit CPU architectures/compiles by now.
 
   All the MAME readme file with all disclaimers, credits and instructions are included for
   info on using MAME related functions.
 
   All standard MAME "functions" work in PinMAME (profiler, debugger, cheats,
-  record/playback, command line switches etc.)
+  record/playback, command line switches etc.).
+
+  In addition, there is special compile time support for the P-ROC (http://www.pinballcontrollers.com)
+  and LISY (http://www.lisy80.com) platforms (see PROC and LISY_X defines in makefile.unix).
 
 What does it do?
 ----------------
