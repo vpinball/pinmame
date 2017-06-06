@@ -18,6 +18,7 @@ Fix some GTS3 DMD animations running too fast
 Improved DMD brightness level mapping (again :)) for Gottlieb GTS3 & Alvin G.
 Added extra display segments for some LTD-games, changed flipper enable for Sistema III
 Improve Stern SB100 sound module tone frequencies
+Some support for auxiliary lamps / LEDs on Scared Stiff rev. D0.1R
 
 Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
@@ -79,6 +80,7 @@ Big House (French)
 Big House (French Free Play)
 Big House (German)
 Big House (German Free Play)
+Black Knight 2000 (PF-1)
 Bone Busters Inc. (Free Play)
 Bone Busters Inc. (French Free Play)
 Bone Busters Inc. (German)

@@ -726,6 +726,15 @@ S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da871
 S11_ROMEND
 CORE_CLONEDEF(bk2k,pa5,l4, "Black Knight 2000 (PA-5)", 1989, "Williams", s11_mS11BS,0)
 
+S11_ROMSTART48(bk2k,pf1,"bk2k_u26.pf7",CRC(79a77d26) SHA1(dfecd3f1fa80f0e7a84cafe7f45a96dd1c847090),
+                        "bk2k_u27.pf1",CRC(2a84db98) SHA1(58438763ec702c1a1e73ab853c58352fe97c27e7))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+CORE_CLONEDEF(bk2k,pf1,l4, "Black Knight 2000 (PF-1)", 1989, "Williams", s11_mS11BS,0)
+
 /*-----------------------
 / Police Force 9/89
 /-----------------------*/
