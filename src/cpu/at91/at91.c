@@ -490,7 +490,7 @@ static void serial_timer_event(int timer_num)
 			}
 		}
 		// Are there characters in the output buffer waiting, and AT91 has set up a buffered receive pointer? 
-		if (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head && at91usart[usartno].US_RPR != 0 && at91usart[usartno].US_RCR > 0)
+		while (at91usart[usartno].at91_rbuf_tail != at91usart[usartno].at91_rbuf_head && at91usart[usartno].US_RPR != 0 && at91usart[usartno].US_RCR > 0)
 		{
 			cpu_writemem32ledw(at91usart[usartno].US_RPR++, at91usart[usartno].at91_receivebuf[at91usart[usartno].at91_rbuf_tail]);
 			if (at91usart[usartno].at91_rbuf_tail == AT91_RECEIVE_BUFFER_SIZE - 1)
