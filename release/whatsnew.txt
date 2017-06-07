@@ -29,7 +29,7 @@ Add LISY support (Linux for System1 & System80): one can control a Gottlieb pinb
 Updated to zlib 1.2.11
 Updated to latest Pin2DMD dlls
 
-*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl, Pinfixer
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl, Pinfixer, Effect
 New:
 Bally: Boomerang prototype (and bootleg set)
 LTD: Arizona
