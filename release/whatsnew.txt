@@ -1,7 +1,7 @@
 Version 2.9 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
-*** CORE/CPU *** Thanks to DJRobX and Quench for some of these
+*** CORE/CPU *** Thanks to DJRobX, Quench and Bontango for some of these
 Support for Bally's Boomerang prototype added!
  Pinfixer noticed the code was available in US patent #4,198,051,
  so we extracted it using OCR software, corrected obvious mistakes, fatal bugs and missing pieces
@@ -23,6 +23,7 @@ Some support for auxiliary lamps / LEDs on Scared Stiff rev. D0.1R
 Change some more of the timing for the idle/throttle speed code
 Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
 Fix some compiler issues/undefined code behavior (mainly relevant for mingw and unix/gcc builds at the moment)
+Add ALSA support for Unix builds
 
 Add LISY support (Linux for System1 & System80): one can control a Gottlieb pinball machine via PinMAME, special hardware needed, have a look at www.lisy80.com
 
