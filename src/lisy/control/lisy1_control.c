@@ -25,7 +25,7 @@
 
 //the version
 #define LISY1control_SOFTWARE_MAIN    0
-#define LISY1control_SOFTWARE_SUB     2
+#define LISY1control_SOFTWARE_SUB     3
 
 //dummy inits
 void lisy1_init( int lisy80_throttle_val) { }
@@ -305,7 +305,7 @@ void get_lamp_descriptions(void)
    FILE *fstream;
    char lamp_file_name[80];
    char buffer[1024];
-   char *line;
+   char *line,*desc;
    int first_line = 1;
    int lamp_no;
 
@@ -319,7 +319,7 @@ void get_lamp_descriptions(void)
  fstream = fopen(lamp_file_name,"r");
    if(fstream != NULL)
    {
-      fprintf(stderr,"LISY80 Info: lamp descriptions according to %s\n\r",lamp_file_name);
+      fprintf(stderr,"LISY1 Info: lamp descriptions according to %s\n\r",lamp_file_name);
    }
    else
    {
@@ -329,7 +329,7 @@ void get_lamp_descriptions(void)
     fstream = fopen(lamp_file_name,"r");
       if(fstream != NULL)
       {
-      fprintf(stderr,"LISY80 Info: lamp descriptions according to %s\n\r",lamp_file_name);
+      fprintf(stderr,"LISY1 Info: lamp descriptions according to %s\n\r",lamp_file_name);
       }
     }//second try
 
@@ -345,14 +345,26 @@ void get_lamp_descriptions(void)
      if (first_line) { first_line=0; continue; } //skip first line (Header)
      //interpret the line
      lamp_no = atoi(strtok(line, ";"));
-     if (lamp_no <52) 
-        { 
-	  strcpy ( lamp_description_line1[lamp_no], strtok(NULL, ";"));
-	  strcpy ( lamp_description_line2[lamp_no], strtok(NULL, ";"));
+     if (lamp_no <36) 
+        {
+	  if (( desc = strtok(NULL, ";") ) != NULL )
+	      {
+	  	strcpy ( lamp_description_line1[lamp_no], desc);
+	  	//remove trailing CR/LF
+		lamp_description_line1[lamp_no][strcspn(lamp_description_line1[lamp_no], "\r\n")] = 0;
+		}
+	  else  strcpy ( lamp_description_line1[lamp_no], "");
+
+	  if (( desc = strtok(NULL, ";") ) != NULL )
+	      {
+	  	strcpy ( lamp_description_line2[lamp_no], desc);
+	  	//remove trailing CR/LF
+		lamp_description_line2[lamp_no][strcspn(lamp_description_line2[lamp_no], "\r\n")] = 0;
+		}
+	  else  strcpy ( lamp_description_line2[lamp_no], "");
         }
 	else fprintf(stderr,"LISY1 Info: Lamp descriptions wrong info \n\r");
    }
-
 }
 
 //read the switch descriptions from the file
@@ -705,6 +717,8 @@ void send_home_infos( int sockfd )
    sprintf(buffer,"<h2>LISY1 Webeditor Home Page</h2> \n");
    sendit( sockfd, buffer);
    sprintf(buffer,"This is LISY1control version %d.%d<br>\n",LISY1control_SOFTWARE_MAIN,LISY1control_SOFTWARE_SUB);
+   sendit( sockfd, buffer);
+   sprintf(buffer,"Selected game is %s, internal number %d<br><br>\n",lisy1_game.gamename,lisy1_game.gamenr);
    sendit( sockfd, buffer);
    sprintf(buffer,"<p>\n<a href=\"./lisy1_switches.php\">Switches</a><br><br> \n");
    sendit( sockfd, buffer);
