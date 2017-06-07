@@ -51,6 +51,10 @@
  *       on SB128 soundcards.
  *   V 0.9 Mon, 13 Jan 2003    Shyouzou Sugitani <shy@debian.or.jp>
  *     - removed the 0.5 API support.
+ *   V 1.0 Wed, 21 Jan 2004    Shyouzou Sugitani <shy@debian.or.jp>
+ *     - Update to the ALSA 1.0 API.
+ *   V 1.1 (for LISY) June 2017    bontango <bontango@lisy80.com>
+ *     - Updated to latest version replacing depreciated functions
  *
  */
 
@@ -58,6 +62,8 @@
 #include "devices.h"         /* xMAME device header */
 
 #ifdef SYSDEP_DSP_ALSA
+
+#define ALSA_PCM_NEW_HW_PARAMS_API 1
 
 #include <sys/ioctl.h>       /* System and I/O control */
 #include <alsa/asoundlib.h>  /* ALSA sound library header */
@@ -69,6 +75,7 @@
 struct alsa_dsp_priv_data
 {
 	snd_pcm_t *pcm_handle;
+	size_t bits_per_frame;
 };
 
 /* public methods prototypes (static but exported through the sysdep_dsp or
@@ -83,21 +90,13 @@ static int alsa_device_list(struct rc_option *option, const char *arg,
 			    int priority);
 static int alsa_pcm_list(struct rc_option *option, const char *arg,
 			 int priority);
-static int alsa_dsp_set_params(struct alsa_dsp_priv_data *priv);
+
+/* private variables */
+static unsigned int buffer_time;
+static int alsa_dsp_bytes_per_sample[4] = SYSDEP_DSP_BYTES_PER_SAMPLE;
+static int resample = 1;                                /* enable alsa-lib resampling */
 
 /* public variables */
-
-static struct {
-        snd_pcm_format_t format;
-        unsigned int channels;
-        unsigned int rate;
-} pcm_params;
-
-static char *pcm_name = NULL;
-static snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
-static size_t bits_per_sample, bits_per_frame;
-static unsigned int buffer_time;
-
 struct rc_option alsa_dsp_opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "Alsa Sound System", NULL,     rc_seperator, NULL,
@@ -109,9 +108,6 @@ struct rc_option alsa_dsp_opts[] = {
 	{ "list-alsa-pcm", NULL,	rc_use_function_no_arg, NULL,
 	  NULL,    0,      0,    alsa_pcm_list,
 	  "List available pcm devices" },
-	{ "alsa-pcm",    "apcm",  rc_string,    &pcm_name,
-	  "default",     0,    0,    NULL,
-	  "Specify the PCM by name" },
 	{ "alsa-buffer", "abuf",  rc_int,       &buffer_time,
 	  "250000",      0,    0,    NULL,
 	  "Set the buffer size [micro sec] (default: 250000)" },
@@ -130,9 +126,6 @@ const struct plugin_struct sysdep_dsp_alsa = {
 	alsa_dsp_create,
 	4     /* high priority */
 };
-
-/* private variables */
-static int alsa_dsp_bytes_per_sample[4] = SYSDEP_DSP_BYTES_PER_SAMPLE;
 
 
 /* public methods (static but exported through the sysdep_dsp or plugin
@@ -168,12 +161,31 @@ static int alsa_dsp_init(void)
  */
 static void *alsa_dsp_create(const void *flags)
 {
-	int err;
-	struct alsa_dsp_priv_data *priv = NULL;
-	struct sysdep_dsp_struct *dsp = NULL;
-	const struct sysdep_dsp_create_params *params = flags;
+	int err, dir;
+	struct alsa_dsp_priv_data *priv;
+	struct sysdep_dsp_struct *dsp;
 	snd_pcm_info_t *info;
-	int open_mode = 0;
+	snd_pcm_hw_params_t *hw_params;
+	snd_pcm_sw_params_t *sw_params;
+	snd_pcm_uframes_t buffer_size;
+	snd_pcm_uframes_t period_size;
+	snd_pcm_uframes_t chunk_size;
+      
+static snd_output_t *output = NULL;
+ snd_pcm_uframes_t size;
+
+        unsigned int btime                            = buffer_time;
+	const struct sysdep_dsp_create_params *params = flags;
+        const char *device                            = params->device;
+//        snd_pcm_uframes_t period_frames               = 1;
+static unsigned int period_time = 100000;               /* period time in us */
+	/* rate >= 2000 && rate <= 128000 */
+	unsigned int rate       = params->samplerate;
+	unsigned int channels   = (params->type & SYSDEP_DSP_STEREO) ? 2 : 1;
+	snd_pcm_format_t format = (params->type & SYSDEP_DSP_16BIT) ?
+		SND_PCM_FORMAT_S16 /* Signed 16 bit CPU endian */ :
+		SND_PCM_FORMAT_U8;
+	unsigned int rrate;
 
 	/* allocate the dsp struct */
 	dsp = calloc(1, sizeof(struct sysdep_dsp_struct));
@@ -191,31 +203,15 @@ static void *alsa_dsp_create(const void *flags)
 		alsa_dsp_destroy(dsp);
 		return NULL;
 	}
+	
+	if (!device)
+		device = "default";
 
-	/* fill in the functions and some data */
-	memset(priv,0,sizeof(struct alsa_dsp_priv_data));
-	dsp->_priv = priv;
-	dsp->get_freespace = alsa_dsp_get_freespace;
-	dsp->write = alsa_dsp_write;
-	dsp->destroy = alsa_dsp_destroy;
-	dsp->hw_info.type = params->type;
-	dsp->hw_info.samplerate = params->samplerate;
-	dsp->hw_info.bufsize = 0;
-
-	open_mode |= SND_PCM_NONBLOCK;
-
-	pcm_params.format = (dsp->hw_info.type & SYSDEP_DSP_16BIT) ?
-		SND_PCM_FORMAT_S16 /* Signed 16 bit CPU endian */ :
-		SND_PCM_FORMAT_U8;
-
-	/* rate >= 2000 && rate <= 128000 */
-	pcm_params.rate = dsp->hw_info.samplerate;
-	pcm_params.channels = (dsp->hw_info.type & SYSDEP_DSP_STEREO) ? 2 : 1;
-
-	err = snd_pcm_open(&priv->pcm_handle, pcm_name, stream, open_mode);
+	err = snd_pcm_open(&priv->pcm_handle, device, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	if (err < 0) {
 		fprintf(stderr_file, "Alsa error: audio open error: %s\n",
 			snd_strerror(err));
+		alsa_dsp_destroy(dsp);
 		return NULL;
 	}
 
@@ -224,8 +220,10 @@ static void *alsa_dsp_create(const void *flags)
 	if (err < 0) {
 		fprintf(stderr_file, "Alsa error: info error: %s\n",
 			snd_strerror(err));
+		alsa_dsp_destroy(dsp);
 		return NULL;
 	}
+
 	/* set non-blocking mode if selected */
 	if (params->flags & SYSDEP_DSP_O_NONBLOCK) {
 		err = snd_pcm_nonblock(priv->pcm_handle, 1);
@@ -233,17 +231,209 @@ static void *alsa_dsp_create(const void *flags)
 			fprintf(stderr_file,
 				"Alsa error: nonblock setting error: %s\n",
 				snd_strerror(err));
+			alsa_dsp_destroy(dsp);
 			return NULL;
 		}
 	}
+
+	snd_pcm_hw_params_alloca(&hw_params);
+	snd_pcm_sw_params_alloca(&sw_params);
+	/* choose all parameters */
+	err = snd_pcm_hw_params_any(priv->pcm_handle, hw_params);
+	if (err < 0) {
+		fprintf(stderr_file,
+			"Alsa error: no configurations available\n");
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	} 
+        /* set hardware resampling */
+        err = snd_pcm_hw_params_set_rate_resample(priv->pcm_handle, hw_params, resample);
+        if (err < 0) {
+                printf("Resampling setup failed for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+
+	/* set the interleaved read/write format */
+	if (snd_pcm_hw_params_set_access(priv->pcm_handle, hw_params,
+					 SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
+		fprintf(stderr_file,
+			"Alsa error: interleaved access mode not available\n");
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	
+}
+	/* set the sample format */
+	err = snd_pcm_hw_params_set_format(priv->pcm_handle, hw_params, format);
+	if (err < 0) {
+		fprintf(stderr_file,
+			"Alsa error: requested format %s isn't supported with hardware\n",
+			snd_pcm_format_name(format));
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+
+	/* set the count of channels */
+	err = snd_pcm_hw_params_set_channels(priv->pcm_handle, hw_params, channels);
+	if (err < 0) {
+		fprintf(stderr_file,
+			"Alsa error: channels count non available\n");
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+
+/*
+	if (snd_pcm_hw_params_set_rate_near(priv->pcm_handle, hw_params, &rate, 0) < 0) {
+		unsigned int min, max;
+
+		snd_pcm_hw_params_get_rate_min(hw_params, &min, 0);
+		snd_pcm_hw_params_get_rate_max(hw_params, &max, 0);
+		fprintf(stderr_file,
+			"Alsa error: unsupported rate %uHz (valid range is %uHz-%iHz)\n",
+			rate, min, max);
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+*/
+        /* set the stream rate */
+        rrate = rate;
+        err = snd_pcm_hw_params_set_rate_near(priv->pcm_handle, hw_params, &rrate, 0);
+        if (err < 0) {
+                printf("Rate %iHz not available for playback: %s\n", rate, snd_strerror(err));
+                return NULL;
+        }
+        if (rrate != rate) {
+                printf("Rate doesn't match (requested %iHz, get %iHz)\n", rate, err);
+                return NULL;
+        }
+
+	/* set the buffer time */
+	err = snd_pcm_hw_params_set_buffer_time_near(priv->pcm_handle, hw_params, &btime, 0);
+        if (err < 0) {
+                printf("Unable to set buffer time %i for playback: %s\n", buffer_time, snd_strerror(err));
+                return NULL;
+        }
+        err = snd_pcm_hw_params_get_buffer_size(hw_params, &size);
+        if (err < 0) {
+                printf("Unable to get buffer size for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+        buffer_size = size;
+	/* set the period time */
+	err = snd_pcm_hw_params_set_period_time_near(priv->pcm_handle, hw_params, &period_time, &dir);
+        if (err < 0) {
+                printf("Unable to set period time %i for playback: %s\n", period_time, snd_strerror(err));
+                return NULL;
+        }
+        err = snd_pcm_hw_params_get_period_size(hw_params, &size, &dir);
+        if (err < 0) {
+                printf("Unable to get period size for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+        period_size = size;
+
+        /* write the parameters to device */
+	err = snd_pcm_hw_params(priv->pcm_handle, hw_params);
+	if (err < 0) {
+		fprintf(stderr_file,
+			"Alsa error: Unable to install hw params\n");
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+
+
+//do we need that stuff below?
+/*
+	snd_pcm_hw_params_get_period_size(hw_params, &chunk_size, 0);
+	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
+	if (chunk_size == buffer_size) {
+		fprintf(stderr_file,
+			"Alsa error: cannot use period equal to buffer size (%lu == %lu)\n",
+			chunk_size, buffer_size);
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+*/
+
+// set_swparams from the example on alsa-project.org
+
+        /* get the current swparams */
+	err = snd_pcm_sw_params_current(priv->pcm_handle, sw_params);
+        if (err < 0) {
+                printf("Unable to determine current swparams for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+
+        /* start the transfer when the buffer is almost full: */
+        /* (buffer_size / avail_min) * avail_min */
+        err = snd_pcm_sw_params_set_start_threshold(priv->pcm_handle, sw_params, (buffer_size / period_size) * period_size);
+        if (err < 0) {
+                printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+        /* allow the transfer when at least period_size samples can be processed */
+        /* or disable this mechanism when period event is enabled (aka interrupt like style processing) */
+        //err = snd_pcm_sw_params_set_avail_min(handle, swparams, period_event ? buffer_size : period_size);
+        err = snd_pcm_sw_params_set_avail_min(priv->pcm_handle, sw_params, period_size);
+        if (err < 0) {
+                printf("Unable to set avail min for playback: %s\n", snd_strerror(err));
+                return NULL;
+        }
+
+	// depreciated snd_pcm_sw_params_set_sleep_min(priv->pcm_handle, sw_params, 0);
+	// depreciated snd_pcm_sw_params_set_xfer_align(priv->pcm_handle, sw_params, 1);
+	//snd_pcm_sw_params_set_avail_min(priv->pcm_handle, sw_params, 1);
+	//snd_pcm_sw_params_set_start_threshold(priv->pcm_handle, sw_params, 1);
+	//snd_pcm_sw_params_set_stop_threshold(priv->pcm_handle, sw_params, buffer_size);
+
+	/* write the parameters to the playback device */
+	if (snd_pcm_sw_params(priv->pcm_handle, sw_params) < 0) {
+		fprintf(stderr_file, "Alsa error: unable to install sw params\n");
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+
+#if 0 /* DEBUG */
+	{
+		snd_output_t *log;
+		snd_output_stdio_attach(&log, stderr_file, 0);
+		snd_pcm_dump(priv->pcm_handle, log);
+		snd_output_close(log);
+	}
+#endif
+
+	err = snd_pcm_prepare(priv->pcm_handle);
+	if (err < 0) {
+		fprintf(stderr_file,
+			"Alsa error: unable to prepare audio: %s\n",
+			snd_strerror(err));
+		alsa_dsp_destroy(dsp);
+		return NULL;
+	}
+
+	/* fill in the functions and some data */
+	priv->bits_per_frame = snd_pcm_format_physical_width(format) * channels;
+	dsp->_priv = priv;
+	dsp->get_freespace = alsa_dsp_get_freespace;
+	dsp->write = alsa_dsp_write;
+	dsp->destroy = alsa_dsp_destroy;
+	dsp->hw_info.type = params->type;
+	dsp->hw_info.samplerate = rate;
+	dsp->hw_info.bufsize = 0;
 
 	fprintf(stderr_file, "info: set to %dbit linear %s %dHz\n",
 		(dsp->hw_info.type & SYSDEP_DSP_16BIT) ? 16 : 8,
 		(dsp->hw_info.type & SYSDEP_DSP_STEREO) ? "stereo" : "mono",
 		dsp->hw_info.samplerate);
 
-	if (alsa_dsp_set_params(priv) == 0)
-		return NULL;
+/*
+        err = snd_output_stdio_attach(&output, stdout, 0);
+        if (err < 0) {
+                printf("Output failed: %s\n", snd_strerror(err));
+                return 0;
+        }
+
+ snd_pcm_dump(priv->pcm_handle, output);
+*/
 
 	return dsp;
 }
@@ -277,24 +467,26 @@ static void alsa_dsp_destroy(struct sysdep_dsp_struct *dsp)
  */
 static int alsa_dsp_get_freespace(struct sysdep_dsp_struct *dsp)
 {
-	int err;
+	int i;
 	struct alsa_dsp_priv_data *priv = dsp->_priv;
 	snd_pcm_status_t *status;
 	snd_pcm_uframes_t frames;
 
 	snd_pcm_status_alloca(&status);
-	err = snd_pcm_status(priv->pcm_handle, status);
-	if (err < 0) {
+	i = snd_pcm_status(priv->pcm_handle, status);
+	if (i < 0) {
 		fprintf(stderr_file, "Alsa error: status error: %s\n",
-			snd_strerror(err));
+			snd_strerror(i));
 		return -1;
 	}
 	frames = snd_pcm_status_get_avail(status);
 	if (frames < 0)
 		return -1;
-	else
-		return frames * bits_per_frame / 8
-			/ alsa_dsp_bytes_per_sample[dsp->hw_info.type];
+		
+	i = frames * priv->bits_per_frame / 8
+		/ alsa_dsp_bytes_per_sample[dsp->hw_info.type];
+	
+	return i;
 }
 
 /*
@@ -309,9 +501,9 @@ static int alsa_dsp_write(struct sysdep_dsp_struct *dsp, unsigned char *data,
 {
 	int data_size, result;
 	struct alsa_dsp_priv_data *priv = dsp->_priv;
-
+	
 	data_size = count * alsa_dsp_bytes_per_sample[dsp->hw_info.type]
-		* 8 / bits_per_frame;
+		* 8 / priv->bits_per_frame;
 
 	result = snd_pcm_writei(priv->pcm_handle, data, data_size);
 	if (result == -EAGAIN) {
@@ -348,7 +540,7 @@ static int alsa_dsp_write(struct sysdep_dsp_struct *dsp, unsigned char *data,
 		return -1;
 	}
 
-	return result * bits_per_frame / 8
+	return result * priv->bits_per_frame / 8
 		/ alsa_dsp_bytes_per_sample[dsp->hw_info.type];
 }
 
@@ -403,7 +595,7 @@ static int alsa_device_list(struct rc_option *option, const char *arg,
 				break;
 			snd_pcm_info_set_device(pcminfo, dev);
 			snd_pcm_info_set_subdevice(pcminfo, 0);
-			snd_pcm_info_set_stream(pcminfo, stream);
+			snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 			err = snd_ctl_pcm_info(handle, pcminfo);
 			if (err < 0) {
 				if (err != -ENOENT)
@@ -476,123 +668,6 @@ static int alsa_pcm_list(struct rc_option *option, const char *arg,
         snd_output_close(out);
 
 	return -1;
-}
-
-/*
- * Function name : alsa_dsp_set_params
- *
- * Description :
- * Input :
- *   priv: a ptr to struct alsa_dsp_priv_data
- * Output :
- *  priv is modified with the current parameters.
- *  a boolean if the card accept the value.
- *  
- */
-static int alsa_dsp_set_params(struct alsa_dsp_priv_data *priv)
-{
-	snd_pcm_hw_params_t *hw_params;
-	snd_pcm_sw_params_t *sw_params;
-
-	size_t buffer_size;
-	int chunk_size;
-	int err;
-
-	snd_pcm_hw_params_alloca(&hw_params);
-	snd_pcm_sw_params_alloca(&sw_params);
-	err = snd_pcm_hw_params_any(priv->pcm_handle, hw_params);
-	if (err < 0) {
-		fprintf(stderr_file,
-			"Alsa error: no configurations available\n");
-		return 0;
-	}
-
-	if (snd_pcm_hw_params_set_access(priv->pcm_handle, hw_params,
-					 SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
-		fprintf(stderr_file,
-			"Alsa error: interleaved access mode non available\n");
-		return 0;
-	}
-
-	err = snd_pcm_hw_params_set_format(priv->pcm_handle, hw_params, pcm_params.format);
-	if (err < 0) {
-		fprintf(stderr_file,
-			"Alsa error: requested format %s isn't supported with hardware\n",
-			snd_pcm_format_name(pcm_params.format));
-		return 0;
-	}
-
-	err = snd_pcm_hw_params_set_channels(priv->pcm_handle, hw_params, pcm_params.channels);
-	if (err < 0) {
-		fprintf(stderr_file,
-			"Alsa error: channels count non available\n");
-		return 0;
-	}
-
-	if (snd_pcm_hw_params_set_rate_near(priv->pcm_handle, hw_params, pcm_params.rate, 0) < 0) {
-		fprintf(stderr_file,
-			"Alsa error: unsupported rate %iHz (valid range is %iHz-%iHz)\n",
-			pcm_params.rate,
-			snd_pcm_hw_params_get_rate_min(hw_params, 0),
-			snd_pcm_hw_params_get_rate_max(hw_params, 0));
-		return 0;
-	}
-
-	snd_pcm_hw_params_set_buffer_time_near(priv->pcm_handle, hw_params, buffer_time, 0);
-	snd_pcm_hw_params_set_period_size_near(priv->pcm_handle, hw_params, 1, 0);
-
-	err = snd_pcm_hw_params(priv->pcm_handle, hw_params);
-	if (err < 0) {
-		fprintf(stderr_file,
-			"Alsa error: Unable to install hw params\n");
-		return 0;
-	}
-
-	chunk_size = snd_pcm_hw_params_get_period_size(hw_params, 0);
-	buffer_size = snd_pcm_hw_params_get_buffer_size(hw_params);
-	if (chunk_size == buffer_size) {
-		fprintf(stderr_file,
-			"Alsa error: cannot use period equal to buffer size (%u == %lu)\n",
-			chunk_size, (long)buffer_size);
-		return 0;
-	}
-
-	snd_pcm_sw_params_current(priv->pcm_handle, sw_params);
-
-	snd_pcm_sw_params_set_sleep_min(priv->pcm_handle, sw_params, 0);
-	snd_pcm_sw_params_set_xfer_align(priv->pcm_handle, sw_params, 1);
-	snd_pcm_sw_params_set_avail_min(priv->pcm_handle, sw_params, 1);
-
-	snd_pcm_sw_params_set_start_threshold(priv->pcm_handle, sw_params, 1);
-
-	snd_pcm_sw_params_set_stop_threshold(priv->pcm_handle, sw_params, buffer_size);
-
-	if (snd_pcm_sw_params(priv->pcm_handle, sw_params) < 0) {
-		fprintf(stderr_file, "Alsa error: unable to install sw params\n");
-		return 0;
-	}
-
-#if 0 /* DEBUG */
-	{
-		snd_output_t *log;
-		snd_output_stdio_attach(&log, stderr_file, 0);
-		snd_pcm_dump(priv->pcm_handle, log);
-		snd_output_close(log);
-	}
-#endif
-
-	bits_per_sample = snd_pcm_format_physical_width(pcm_params.format);
-	bits_per_frame = bits_per_sample * pcm_params.channels;
-
-	err = snd_pcm_prepare(priv->pcm_handle);
-	if (err < 0) {
-		fprintf(stderr_file,
-			"Alsa error: unable to prepare audio: %s\n",
-			snd_strerror(err));
-		return 0;
-	}
-
-	return 1;
 }
 
 #endif /* SYSDEP_DSP_ALSA */

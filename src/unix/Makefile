@@ -43,7 +43,7 @@ VID_OBJS = $(VID_DIR)/$(DISPLAY_METHOD).o $(VID_OBJS.$(DISPLAY_METHOD))
 # sound driver objs per arch
 DSP_DIR = $(OBJDIR)/sysdep/dsp-drivers
 MIXER_DIR = $(OBJDIR)/sysdep/mixer-drivers
-SOUND_OBJS.linux   = $(DSP_DIR)/oss.o $(MIXER_DIR)/oss.o $(DSP_DIR)/alsa.o
+SOUND_OBJS.linux   = $(DSP_DIR)/oss.o $(MIXER_DIR)/oss.o $(DSP_DIR)/alsa.o $(MIXER_DIR)/alsa.o
 SOUND_OBJS.freebsd = $(DSP_DIR)/oss.o $(MIXER_DIR)/oss.o
 SOUND_OBJS.netbsd  = $(DSP_DIR)/netbsd.o
 #SOUND_OBJS.openbsd = $(DSP_DIR)/oss.o $(MIXER_DIR)/oss.o
