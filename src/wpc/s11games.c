@@ -699,8 +699,8 @@ S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da871
 S11_ROMEND
 CORE_CLONEDEF(bk2k,pu1,l4,"Black Knight 2000 (PU-1)", 1989, "Williams", s11_mS11BS,0)
 
-S11_ROMSTART48(bk2k,la2,"bk2k_u26.la2", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
-                        "bk2k_u27.la2", CRC(531e7752) SHA1(e51a93d40bc316876488ae0a7691ff5fd514472d))
+S11_ROMSTART48(bk2k,la2,"u26-pu1.rom", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
+                        "bk2k_u27.la2",CRC(531e7752) SHA1(e51a93d40bc316876488ae0a7691ff5fd514472d))
 S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
                         "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
@@ -708,8 +708,8 @@ S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da871
 S11_ROMEND
 CORE_CLONEDEF(bk2k,la2,l4, "Black Knight 2000 (LA-2)", 1989, "Williams", s11_mS11BS,0)
 
-S11_ROMSTART48(bk2k,pa7,"bk2k_u26.pa7", CRC(a0426491) SHA1(de31dd6a1c3d99fb39f8f6bd21daa5050e819614),
-                        "bk2k_u27.pa7", CRC(63e58e77) SHA1(961534fb09ca6db0e901b01d8ae45c82f418cd82))
+S11_ROMSTART48(bk2k,pa7,"bk2k_u26.pa7",CRC(a0426491) SHA1(de31dd6a1c3d99fb39f8f6bd21daa5050e819614),
+                        "bk2k_u27.pa7",CRC(63e58e77) SHA1(961534fb09ca6db0e901b01d8ae45c82f418cd82))
 S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
                         "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
@@ -727,7 +727,7 @@ S11_ROMEND
 CORE_CLONEDEF(bk2k,pa5,l4, "Black Knight 2000 (PA-5)", 1989, "Williams", s11_mS11BS,0)
 
 S11_ROMSTART48(bk2k,pf1,"bk2k_u26.pf7",CRC(79a77d26) SHA1(dfecd3f1fa80f0e7a84cafe7f45a96dd1c847090),
-                        "bk2k_u27.pf1",CRC(2a84db98) SHA1(58438763ec702c1a1e73ab853c58352fe97c27e7))
+                        "bk2k_u27.pf1",CRC(2a84db98) SHA1(58438763ec702c1a1e73ab853c58352fe97c27e7)) // The 2 roms are u26 and u27 from the same cpu board from a working bk2k
 S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
                         "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
