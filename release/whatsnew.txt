@@ -54,6 +54,7 @@ Stargame: Slalom Code 0.3
 
 Correct Dumps:
 Bally: Flash Gordon (prototype rev. 1): Missing U10 dump was rediscovered
+Inder: Metal Man (corrected one music ROM)
 LTD: Columbia (previously supported was in fact one ROM from pecmen)
 Taito: Lady Luck (sound dumps were the ones from Vegas before)
        Volley (formerly known as Voley Ball and also was missing main CPU dumps)
@@ -76,6 +77,7 @@ Bad Girls (French)
 Bad Girls (French Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
 Bad Girls (German)
 Bad Girls (German Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Beat the Clock (with flasher support)
 Big House (Free Play)
 Big House (French)
 Big House (French Free Play)

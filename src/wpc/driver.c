@@ -277,7 +277,8 @@ DRIVERNV(bigbat)        //BY35-848: ??/84 Big Bat
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38:09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
-DRIVERNV(beatclck)      //6803-0C70:11/85 Beat the Clock
+DRIVERNV(beatclck)      //6803-0C70:10/85 Beat the Clock
+DRIVERNV(beatclc2)      //          11/85 Beat the Clock (with flasher support)
 DRIVERNV(ladyluck)      //6803-0E34:02/86 Lady Luck
 DRIVERNV(motrdome)      //6803-0E14:05/86 MotorDome
 DRIVERNV(motrdomg)      //6803-0E69:07/86 MotorDome (German)
