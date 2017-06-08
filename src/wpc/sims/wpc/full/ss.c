@@ -401,8 +401,8 @@ CORE_GAMEDEF(ss,15,"Scared Stiff (1.5)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(ss,03,15,"Scared Stiff (0.3)",1996,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(ss,01,15,"Scared Stiff (D0.1R, Sound rev. 25)",1996,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D0.1R, Sound rev. 25 Coin Play)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,01,15,"Scared Stiff (D.01R, Sound rev. 0.25)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,01b,15,"Scared Stiff (D.01R, Sound rev. 0.25 Coin Play)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -420,10 +420,10 @@ static sim_tSimData ssSimData = {
 };
 
 static WRITE_HANDLER(parallel_0_out) {
-  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
+  coreGlobals.tmpLampMatrix[9] = core_revbyte(data);
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(data);
+  coreGlobals.tmpLampMatrix[8] = core_revbyte(data);
 }
 static WRITE_HANDLER(qspin_0_out) {
   HC4094_data_w(1, data);
@@ -462,14 +462,17 @@ static mech_tInitData ss_wheelMech = {
 };
 
 static WRITE_HANDLER(ss_wpc_w) {
-  static int enabled;
   wpc_w(offset, data);
-  if (offset == WPC_SOLENOID1 && enabled) {
+  if (offset == WPC_SOLENOID1) {
     HC4094_data_w (0, GET_BIT5);
     HC4094_clock_w(0, GET_BIT4);
     HC4094_clock_w(1, GET_BIT4);
   } else if (offset == WPC_SOLENOID3) {
-    enabled = GET_BIT3;
+    int enabled = GET_BIT3;
+    if (!enabled) { // finished strobing in the bits, now send data to the lamps - maybe slower by more reliable
+      coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8];
+      coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9];
+    }
     HC4094_strobe_w(0, enabled);
     HC4094_strobe_w(1, enabled);
     HC4094_oe_w(0, enabled);
