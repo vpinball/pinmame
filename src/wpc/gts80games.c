@@ -515,6 +515,33 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(hh_3b,hh,"Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)",1982,"Flipprojets",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
+/ Haunted House, since serial no. 5000 with added Speech and additional hardware Votrax MOD
+/-------------------------------------------------------------------*/
+INIT_S80(hh_4, dispNumeric2, SNDBRD_GTS80SS_VOTRAX)
+GTS80_1_ROMSTART  ("669-4.cpu",  CRC(8724cdf8) SHA1(9c8d7433ea14b8b50014deb7574c9d5043a794cc))
+GTS80SS22_ROMSTART("669-4-s1.snd", NO_DUMP, // unreleased by the Flipprojets guys so far
+                   "669-4-s2.snd", NO_DUMP)
+GTS80_ROMEND
+#define input_ports_hh_4 input_ports_hh
+CORE_CLONEDEFNV(hh_4,hh,"Haunted House (rev. 4 unofficial Votrax speech MOD)",1982,"Flipprojets",gl_mGTS80SS,0)
+
+INIT_S80(hh_4a, dispNumeric2, SNDBRD_GTS80SS_VOTRAX)
+GTS80_1_ROMSTART  ("669-4a.cpu", CRC(7b906d4b) SHA1(b22c5c94e52190fbf514b531674887be42a1f559))
+GTS80SS22_ROMSTART("669-4-s1.snd", NO_DUMP,
+                   "669-4-s2.snd", NO_DUMP)
+GTS80_ROMEND
+#define input_ports_hh_4a input_ports_hh
+CORE_CLONEDEFNV(hh_4a,hh,"Haunted House (rev. 4 unofficial Votrax speech MOD, LED)",1982,"Flipprojets",gl_mGTS80SS,0)
+
+INIT_S80(hh_4b, dispNumeric2, SNDBRD_GTS80SS_VOTRAX)
+GTS80_1_ROMSTART  ("669-4b.cpu", CRC(71025a8a) SHA1(5a682a6dbff825217e000df4f824dea6ad89223b))
+GTS80SS22_ROMSTART("669-4-s1.snd", NO_DUMP,
+                   "669-4-s2.snd", NO_DUMP)
+GTS80_ROMEND
+#define input_ports_hh_4b input_ports_hh
+CORE_CLONEDEFNV(hh_4b,hh,"Haunted House (rev. 4 unofficial Votrax speech MOD, LED+Secret Tunnel)",1982,"Flipprojets",gl_mGTS80SS,0)
+
+/*-------------------------------------------------------------------
 / Haunted House up to serial no. 4999
 /-------------------------------------------------------------------*/
 INIT_S80(hh_1, dispNumeric2, SNDBRD_GTS80SS)
@@ -1041,7 +1068,7 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(ravena, "prom2a.cpu",CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
-                           "prom1.cpu", CRC(edc88561) SHA1(101878527307c6f04d141dd74e04102c4ea53105))
+                           "prom1.cpu", CRC(edc88561) SHA1(101878527307c6f04d141dd74e04102c4ea53105)) // actually this would also be different, but in practice it isn't by accident (as the internal checksum for PROM2 stored in here is the same)
 GTS80BSSOUND88(            "drom1.snd", CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
                            "yrom1.snd", CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
 GTS80_ROMEND
@@ -1078,7 +1105,7 @@ GTS80_ROMEND
 CORE_CLONEDEFNV(ravengfp, raven, "Raven (German Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
 GTS80B_2K_ROMSTART(ravenafp, "prom2a.cpu",   CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
-                             "prom1_fp.cpu", CRC(d6e5120b) SHA1(1d00bce8170b5ad4185e6517ba1a0f46c8ae7444))
+                             "prom1_fp.cpu", CRC(d6e5120b) SHA1(1d00bce8170b5ad4185e6517ba1a0f46c8ae7444)) // actually this would also be different, but in practice it isn't by accident (as the internal checksum for PROM2 stored in here is the same)
 GTS80BSSOUND88(              "drom1.snd",    CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
                              "yrom1.snd",    CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
 GTS80_ROMEND

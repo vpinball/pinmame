@@ -574,6 +574,9 @@ DRIVERNV(hh_1)          //                Haunted House (rev. 1)
 DRIVERNV(hh_3)          //                Haunted House (rev. 3 unofficial MOD)
 DRIVERNV(hh_3a)         //                Haunted House (rev. 3 unofficial MOD, LED)
 DRIVERNV(hh_3b)         //                Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)
+DRIVERNV(hh_4)          //                Haunted House (rev. 4 unofficial Votrax speech MOD)
+DRIVERNV(hh_4a)         //                Haunted House (rev. 4 unofficial Votrax speech MOD, LED)
+DRIVERNV(hh_4b)         //                Haunted House (rev. 4 unofficial Votrax speech MOD, LED+Secret Tunnel)
 DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
 DRIVERNV(eclipse7)      //          01/08 Eclipse (7-digit conversion)
 DRIVERNV(s80tst)        //S80: Text Fixture
