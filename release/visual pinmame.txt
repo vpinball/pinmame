@@ -1,17 +1,16 @@
 **************************************************************************************
                     Visual PinMAME
                      Version 2.9
-                (X X, 2017)
+                  (June 11th, 2017)
                 http://www.pinmame.com
 **************************************************************************************
 
 Latest Info
 -----------
-  See the whatsnewVPM.txt for latest additions to Visual PinMAME!
+See the whatsnewVPM.txt for latest additions to Visual PinMAME!
 
 What is it?
 -----------
-
 Visual PinMAME is a totally new emulation project which is based on the current
 PinMAME source code. If you're new to PinMAME, check out the included pinmame.txt file.
 
@@ -32,7 +31,7 @@ state of the lamp matrix and the solenoid matrix during gameplay.
 
 What does it do?
 ----------------
- It allows programmers to control PinMAME emulation. Essentially PinMAME is entirely
+It allows programmers to control PinMAME emulation. Essentially PinMAME is entirely
 encapsulated into the Visual PinMAME object. Practically anything PinMAME can do,
 Visual PinMAME can do, only programmatically so the user has control over how certain
 things work.
@@ -40,8 +39,7 @@ things work.
 
 Installation:
 -------------
-
- See the Installation Guide.html file for step by step instructions on how to install Visual PinMAME.
+See the Installation Guide.html file for step by step instructions on how to install Visual PinMAME.
 
 
 How to Program Visual PinMAME
@@ -53,7 +51,6 @@ samples to help demonstrate possible ways to use Visual PinMAME.
 
 Minimum System Requirements
 ---------------------------
-
 To use:
 Visual PinMAME is a Windows COM object, and as far as we know will only work on Win9x,NT,2000,XP,Vista,7,8.X,10 computers.
 
@@ -63,7 +60,7 @@ Any scripting language that can create COM objects, such as Visual Basic or Visu
 
 Known Bugs
 ----------
-  None specific to VPinMAME yet, but we're sure you'll find them!
+None specific to VPinMAME yet, but we're sure you'll find them!
 
 
 The Visual PinMAME Development Team

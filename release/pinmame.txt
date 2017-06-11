@@ -2,7 +2,7 @@
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
                              Version 2.9
-                        (X X, 2017)
+                          (June 11th, 2017)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -40,8 +40,9 @@ What is it?
   All standard MAME "functions" work in PinMAME (profiler, debugger, cheats,
   record/playback, command line switches etc.).
 
-  In addition, there is special compile time support for the P-ROC (http://www.pinballcontrollers.com)
-  and LISY (http://www.lisy80.com) platforms (see PROC and LISY_X defines in makefile.unix).
+  In addition, there is special compile time support for the P-ROC (http://www.pinballcontrollers.com,
+  to drive (at least) real WPC machines with PinMAME/P-ROC) and LISY (http://www.lisy80.com,
+  to drive real Gottlieb Sys1 and Sys80 machines) platforms (see PROC and LISY_X defines in makefile.unix).
 
 What does it do?
 ----------------
