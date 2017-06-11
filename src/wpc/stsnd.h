@@ -12,6 +12,7 @@ struct sndbrdst300 {
   UINT16 timer1,timer2,timer3;
 };
 extern MACHINE_DRIVER_EXTERN(st100);
+extern MACHINE_DRIVER_EXTERN(st100b);
 extern MACHINE_DRIVER_EXTERN(st300);
 extern MACHINE_DRIVER_EXTERN(st300v);
 
