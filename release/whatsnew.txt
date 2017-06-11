@@ -1,4 +1,4 @@
-Version 2.9 (X X, 2017) - ""
+Version 2.9 (June 11th, 2017) - "Attack of the clones"
 ------------------------------------------------------------------------------
 
 *** CORE/CPU *** Thanks to DJRobX, Quench and Bontango for some of these
@@ -53,7 +53,7 @@ Stargame: Slalom Code 0.3
           White Force
 
 Correct Dumps:
-Bally: Flash Gordon (prototype rev. 1): Missing U10 dump was rediscovered
+Bally: Flash Gordon (prototype rev. 1) (missing U10 dump was rediscovered)
 Inder: Metal Man (corrected one music ROM)
 LTD: Columbia (previously supported was in fact one ROM from pecmen)
 Taito: Lady Luck (sound dumps were the ones from Vegas before)

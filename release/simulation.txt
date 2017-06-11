@@ -1,4 +1,4 @@
-PINMAME Simulation
+PinMAME Simulation
 ------------------
 
 The ball simulator can handle up to 7 balls in the machine. The simulator

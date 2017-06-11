@@ -1,4 +1,5 @@
-Rom Aliasing-
+Rom Aliasing
+------------
 
 To allow improved romset revision handling in PinMAME now and in the future, the following romsets
 need to be renamed to allow future romsets for these games to be supported. This list may grow in
