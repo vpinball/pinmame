@@ -18,6 +18,7 @@ Fix some GTS3 DMD animations running too fast
 Improved DMD brightness level mapping (again :)) for Gottlieb GTS3 & Alvin G.
 Added extra display segments for some LTD-games, changed flipper enable for Sistema III
 Improve Stern SB100 sound module tone frequencies
+Add specialized Stern SB100B support
 Support for auxiliary lamps / LEDs on Scared Stiff rev. D.01R
 
 Change some more of the timing for the idle/throttle speed code
