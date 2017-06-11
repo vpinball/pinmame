@@ -457,18 +457,19 @@ static WRITE_HANDLER(by35_CMOS_w) {
   by35_CMOS[offset] = data | ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO))? 0x00 : 0x0f);
 }
 
-// These games use the A0 memory address for extra sound solenoids only.
-WRITE_HANDLER(extra_sol_w) {
-  logerror("%04x: extra sol w (a0)  data  %02x \n", activecpu_get_previouspc(),data);
+// These games use the A0 memory address for monotone sounds
+WRITE_HANDLER(stern100_snd_w) {
+  logerror("%04x: stern100_snd_w (a0) data  %02x \n", activecpu_get_previouspc(),data);
   sndbrd_0_data_w(0,data);
 //if (data != 0)
 //  coreGlobals.pulsedSolState = (data << 24);
 //locals.solenoids = (locals.solenoids & 0x00ffffff) | coreGlobals.pulsedSolState;
 }
 
-WRITE_HANDLER(stern100_sol_w) {
-  logerror("%04x: stern100_sol (c0) data  %02x \n", activecpu_get_previouspc(),data);
-  sndbrd_0_data_w(0, ~data & 0x0f);
+// These games can use the C0 memory address for electronic chime sounds
+WRITE_HANDLER(stern100_chm_w) {
+  logerror("%04x: stern100_chm_w (c0) data  %02x \n", activecpu_get_previouspc(),data);
+  sndbrd_0_ctrl_w(0, ~data & 0x0f);
 }
 
 static MACHINE_INIT(by35) {
@@ -509,10 +510,10 @@ static MACHINE_INIT(by35) {
     install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);    	// ok
     install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);	// ok
   } else if (sb == SNDBRD_ST100) {
-    install_mem_write_handler(0,0x00a0, 0x00a0, extra_sol_w); // sounds on (DIP 23 = 1)
-    install_mem_write_handler(0,0x00c0, 0x00c0, stern100_sol_w); // chimes on (DIP 23 = 0)
+    install_mem_write_handler(0,0x00a0, 0x00a0, stern100_snd_w); // sounds on (DIP 23 = 1)
+    install_mem_write_handler(0,0x00c0, 0x00c0, stern100_chm_w); // chimes on (DIP 23 = 0)
   } else if (sb == SNDBRD_ST100B) {
-    install_mem_write_handler(0,0x00a0, 0x00a0, extra_sol_w);
+    install_mem_write_handler(0,0x00a0, 0x00a0, stern100_snd_w);
   } else if (sb == SNDBRD_GRAND) {
     install_mem_write_handler(0,0x0080, 0x0080, sndbrd_0_data_w);
   }
@@ -568,6 +569,11 @@ MACHINE_DRIVER_START(st100s)
   MDRV_IMPORT_FROM(st100)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(st100bs)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(st100b)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(by35_32S)
   MDRV_IMPORT_FROM(by35)
   MDRV_IMPORT_FROM(by32)
@@ -620,9 +626,9 @@ MACHINE_DRIVER_START(st200)
   MDRV_IMPORT_FROM(st300)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(st200s100)
+MACHINE_DRIVER_START(st200s100b)
   MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st100)
+  MDRV_IMPORT_FROM(st100b)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st200v)

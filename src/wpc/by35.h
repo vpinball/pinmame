@@ -345,8 +345,9 @@ extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st100s);
+extern MACHINE_DRIVER_EXTERN(st100bs);
 extern MACHINE_DRIVER_EXTERN(st200);
-extern MACHINE_DRIVER_EXTERN(st200s100);
+extern MACHINE_DRIVER_EXTERN(st200s100b);
 extern MACHINE_DRIVER_EXTERN(st200v);
 extern MACHINE_DRIVER_EXTERN(hnk);
 
@@ -361,12 +362,13 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_56S  by35_56S // XENON
 #define by35_mBY35_45S  by35_45S
 #define by35_m6802_45S  by6802_45S
-#define by35_mBowling   st100s
-#define by35_mBowling2  st200s100
+#define by35_mBowling   st100bs
+#define by35_mBowling2  st200s100b
 #define by35_mAstro     st200
 #define by35_mHNK       hnk
 #define by35_mST100     by35
 #define by35_mST100s    st100s
+#define by35_mST100bs   st100bs
 #define by35_mST200     st200
 #define by35_mST200v	st200v
 
