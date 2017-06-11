@@ -64,7 +64,7 @@ BY6803_ROMEND
 CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
 
 INITGAME6803(beatclc2,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
-BY6803_ROMSTARTx4(beatclc2,"btc_lights_pro_111385_C70-803-05_u3.cpu", CRC(dff5bad6) SHA1(915495d60be7ca12f00364b6e4b99c822ecfc7aa))
+BY6803_ROMSTARTx4(beatclc2,"btc_lights_pro_111385_c70-803-05_u3.cpu", CRC(dff5bad6) SHA1(915495d60be7ca12f00364b6e4b99c822ecfc7aa))
 BY61_SOUNDROM0000(         "btc_u2.snd",CRC(fd22fd2a) SHA1(efad3b94e91d07930ada5366d389f35377dfbd99),
                            "btc_u3.snd",CRC(22311a4a) SHA1(2c22ba9228e44e68b9308b3bf8803edcd70fa5b9),
                            "btc_u4.snd",CRC(af1cf23b) SHA1(ebfa3afafd7850dfa2664d3c640fbfa631012455),
