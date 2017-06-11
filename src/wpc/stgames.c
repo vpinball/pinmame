@@ -438,7 +438,7 @@ ST200_ROMSTART8888(cheetah,"cpu_u1.716",CRC(6a845d94) SHA1(c272d5895edf2270f5f06
                            "cpu_u6.716",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
 #define input_ports_cheetah input_ports_st
-CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(cheetah,"Cheetah (Black cabinet)",1980,"Stern",by35_mST200,0)
 
 INITGAME(cheetahb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetahb,"cheetah.u1",CRC(2f736a0a) SHA1(e0dc14215d90145881ac1b407fbe057770696122),
