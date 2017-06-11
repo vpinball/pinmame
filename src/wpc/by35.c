@@ -10,6 +10,8 @@
 #include "hnks.h"
 #include "by35.h"
 
+#define BY35_DEBUG_KEY_SUPPORT 0
+
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
@@ -334,7 +336,7 @@ static INTERRUPT_GEN(by35_vblank) {
   core_updateSw(core_getSol(19));
 }
 
-#ifdef MAME_DEBUG
+#if BY35_DEBUG_KEY_SUPPORT
 static void adjust_timer(int offset) {
   static char s[2];
   static UINT8 cmd;
@@ -347,10 +349,10 @@ static void adjust_timer(int offset) {
     sndbrd_0_data_w(0, cmd);
   }
 }
-#endif /* MAME_DEBUG */
+#endif /* BY35_DEBUG_KEY_SUPPORT */
 
 static SWITCH_UPDATE(by35) {
-#ifdef MAME_DEBUG
+#if BY35_DEBUG_KEY_SUPPORT
   if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
     adjust_timer(-0x10);
   else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
@@ -361,7 +363,7 @@ static SWITCH_UPDATE(by35) {
     adjust_timer(0x10);
   else if (keyboard_pressed_memory_repeat(KEYCODE_SPACE, 2))
     adjust_timer(0);
-#endif /* MAME_DEBUG */
+#endif /* BY35_DEBUG_KEY_SUPPORT */
   if (inports) {
     if (core_gameData->gen & (GEN_BY17|GEN_BY35|GEN_STMPU100)) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
