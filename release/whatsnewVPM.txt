@@ -1,6 +1,9 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 3.0 (X X, 2017) - ""
+------------------------------------------------------------------------------
+
 Version 2.9 (June 11th, 2017) - "Attack of the clones"
 ------------------------------------------------------------------------------
 - No interface changes, refer to whatsnew.txt for PinMAME changes
