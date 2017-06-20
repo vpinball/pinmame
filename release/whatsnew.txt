@@ -1,6 +1,10 @@
 Version 3.0 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
+*** ROM SUPPORT *** Thanks to Effect
+Correct Dumps:
+Joctronic: Punky Willy
+
 
 
 Version 2.9 (June 11th, 2017) - "Attack of the clones"
