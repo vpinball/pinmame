@@ -434,7 +434,7 @@ static sim_tInportData jd_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-#define JD_SOUND \
+#define JD_SOUND_L1 \
 DCS_SOUNDROM8x( "jdsnd_u2.bin",CRC(d8f453c6) SHA1(5dd677fde46436dbf2d2e9058f06dd3048600234), \
                 "jdsnd_u3.bin",CRC(0a11f673) SHA1(ab556477a25e3493555b8a281ca86677caec8947), \
                 "jdsnd_u4.bin",CRC(93f6ebc1) SHA1(5cb306afa693e60887069745588dfd5b930c5951), \
@@ -444,16 +444,31 @@ DCS_SOUNDROM8x( "jdsnd_u2.bin",CRC(d8f453c6) SHA1(5dd677fde46436dbf2d2e9058f06dd
                 "jdsnd_u8.bin",CRC(77604893) SHA1(a9a4a66412096edd88ee7adfd960eef6f5d16476), \
                 "jdsnd_u9.bin",CRC(885b7c70) SHA1(be3bb42aeda3020a72c527f52c5330d0bafa9966))
 
-WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,CRC(87b2a5c3) SHA1(e487e9ff78353ee96d5fb5f036b1a6cef586f5b4)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,d7,"jdrd_d7.rom",0x80000,CRC(75d71d08) SHA1(10e63b8eb57a800fe0eeb89b175d01576d79ee1a)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,l1,"jd_l1.u6",   0x80000,CRC(09a4b1d8) SHA1(9f941bbeb6e58d918d374694c7ff2a67f1084cc0)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,d1,"jd_d1.u6",   0x80000,CRC(307fdfa0) SHA1(0ad083cf1e35334caa0854375406e06672bf587d)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,l4,"jd_l4.u6",   0x80000,CRC(cc6f1068) SHA1(aef2a2eeb9110074eebff91318179ce97aba14ba)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,d4,"jd_d4.u6",   0x80000,CRC(4b7b350f) SHA1(5c827532ffa1e3b102cc6e2ec9446f2d1fc2ef84)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,l5,"jd_l5.u6",   0x80000,CRC(879b091e) SHA1(eaf1c86c0e72e8cdfa9ac942fc54ef4f70a65175)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,d5,"jd_d5.u6",   0x80000,CRC(4a04b45a) SHA1(84d20fa3beff412862e07a7092407159cc0567b5)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,l6,"jd_l6.u6",   0x80000,CRC(0a74cba4) SHA1(1872fd86bbfa772eac9cc2ef2634a90b72b3d5e2)) JD_SOUND WPC_ROMEND
-WPC_ROMSTART(jd,d6,"jd_d6.u6",   0x80000,CRC(fa17dd22) SHA1(e71c9c0f504a793d4e9c76aaad85f71c4e41a15e)) JD_SOUND WPC_ROMEND
+/*
+These are the L3 sound ROMs for Judge Dredd that are installed at U2 and U3. If you are running L2 game code or greater and do not have a locking ring in Deadworld, this is the matching sound ROM set.
+In the 8 chip sound ROM set for JD, the only ROMs that are different between L1 and L3 sound versions are U2 and U3. If you have EPROMS/masked ROMs in U4-U8 that are labeled L3, they are identical to the L1 version. The L1, L6 & L7 PinMAME ROM sets all contain identical L1 sound ROM images. In addition, U5 and U9 on the Planetary Pinball site are the same as what is found in the other L1 sets.
+The difference between the L1 and L3 sound ROMs is the callout used with Deadworld. L1 is used with Deadworld as originally designed. When Deadworld is active, the callout will be "Dimensional lock # is lit." L3 is used with the production Deadworld that virtually locks the balls and only diverts ball 3 to Deadworld. When Deadworld is active in this version the callout will be "Dimensional phase # is lit."
+*/
+#define JD_SOUND_L3 \
+DCS_SOUNDROM8x( "jdsu2_l3.bin",CRC(7a59ec18) SHA1(ee073d4bea198fd66de3508f67061b7d19f12edc), \
+                "jdsu3_l3.bin",CRC(42f52faa) SHA1(3fac9d3ddfe21877929eaa4cb7101a690745b163), \
+                "jdsnd_u4.bin",CRC(93f6ebc1) SHA1(5cb306afa693e60887069745588dfd5b930c5951), \
+                "jdsnd_u5.bin",CRC(c9f28ba6) SHA1(8447372428e3b9fc86a98286c05f95a13abe26b0), \
+                "jdsnd_u6.bin",CRC(ef0bf094) SHA1(c0860cecd436d352fe2c2208533ff6dc71bfced1), \
+                "jdsnd_u7.bin",CRC(aebab88b) SHA1(d3f1be60a6840d9d085e22b43aafea1354771980), \
+                "jdsnd_u8.bin",CRC(77604893) SHA1(a9a4a66412096edd88ee7adfd960eef6f5d16476), \
+                "jdsnd_u9.bin",CRC(885b7c70) SHA1(be3bb42aeda3020a72c527f52c5330d0bafa9966))
+
+WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,CRC(87b2a5c3) SHA1(e487e9ff78353ee96d5fb5f036b1a6cef586f5b4)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,d7,"jdrd_d7.rom",0x80000,CRC(75d71d08) SHA1(10e63b8eb57a800fe0eeb89b175d01576d79ee1a)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,l1,"jd_l1.u6",   0x80000,CRC(09a4b1d8) SHA1(9f941bbeb6e58d918d374694c7ff2a67f1084cc0)) JD_SOUND_L1 WPC_ROMEND
+WPC_ROMSTART(jd,d1,"jd_d1.u6",   0x80000,CRC(307fdfa0) SHA1(0ad083cf1e35334caa0854375406e06672bf587d)) JD_SOUND_L1 WPC_ROMEND
+WPC_ROMSTART(jd,l4,"jd_l4.u6",   0x80000,CRC(cc6f1068) SHA1(aef2a2eeb9110074eebff91318179ce97aba14ba)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,d4,"jd_d4.u6",   0x80000,CRC(4b7b350f) SHA1(5c827532ffa1e3b102cc6e2ec9446f2d1fc2ef84)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,l5,"jd_l5.u6",   0x80000,CRC(879b091e) SHA1(eaf1c86c0e72e8cdfa9ac942fc54ef4f70a65175)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,d5,"jd_d5.u6",   0x80000,CRC(4a04b45a) SHA1(84d20fa3beff412862e07a7092407159cc0567b5)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,l6,"jd_l6.u6",   0x80000,CRC(0a74cba4) SHA1(1872fd86bbfa772eac9cc2ef2634a90b72b3d5e2)) JD_SOUND_L3 WPC_ROMEND
+WPC_ROMSTART(jd,d6,"jd_d6.u6",   0x80000,CRC(fa17dd22) SHA1(e71c9c0f504a793d4e9c76aaad85f71c4e41a15e)) JD_SOUND_L3 WPC_ROMEND
 
 /*--------------
 /  Game drivers
