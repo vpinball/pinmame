@@ -1,4 +1,3 @@
-
 #include "driver.h"
 #include "core.h"
 #include "snd_cmd.h"
@@ -452,13 +451,13 @@ static void playsamext(int param){
 	int f;
 
 //	f = (17-(st300loc.extfreq))*sizeof(sineWaveext);
-//	Noise is not 100 % accurate, there is a wav file availiable from the author (solenoid 22 - 29)
-//	formular for f not correct
+//	Noise is not 100 % accurate, there is a wav file available from the author (solenoid 22 - 29)
+//	formula for f not correct
 	f = 625000 / (17-(st300loc.extfreq));
 
 	if (st300loc.noise) {	// output is enabled...
 		mixer_play_sample_16(st300loc.channel+2,sineWaveext, sizeof(sineWaveext), f , 1);
-		logerror("*** playsam EXT noise frequenz %08d data %04d ***\n",f,st300loc.extfreq);
+		logerror("*** playsam EXT noise frequence %08d data %04d ***\n",f,st300loc.extfreq);
 	} else {
 		mixer_stop_sample(st300loc.channel+2);
 		logerror("playsam EXT noise stop \n");
@@ -551,11 +550,11 @@ static int st300_sh_start(const struct MachineSound *msound) {
 	}
 	for (i = 0;i < 32000;i++) {
 		s = (s ? 0 : 1);
-		if (s) {
-			sineWaveext[i] = rand();
-		} else {
-			sineWaveext[i] = 0-rand();
-		}
+		//if (s) {
+			sineWaveext[i] = rand()*2-32767;
+		//} else {
+		//	sineWaveext[i] = 0-rand();
+		//}
 	}
 	st300loc.channel = mixer_allocate_channels(3, mixing_levels);
 	mixer_set_name  (st300loc.channel, "MC6840 #Q2");		// 6840 Output timer 2 (q2) is easy wave + volume from q3
