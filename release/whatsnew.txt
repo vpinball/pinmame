@@ -2,10 +2,12 @@ Version 3.0 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
+New:
+MAC: MAC Jungle
+
 Correct Dumps:
 Bally: Judge Dredd (use L3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
-MAC: Mac Jungle
 
 
 Version 2.9 (June 11th, 2017) - "Attack of the clones"
