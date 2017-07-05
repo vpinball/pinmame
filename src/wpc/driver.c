@@ -1235,10 +1235,11 @@ DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
 DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
 DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (Bootleg 2 - modified to match instruction card/manual)
-DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
-DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor One (Free Play)
-DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor One (Bootleg)
-DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor One (Bootleg Free Play)
+DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
+DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
+DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (Bootleg)
+DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor 1 (Bootleg Free Play)
+DRIVERNV(orbitorc)      //MPU-200: 04/82 Orbitor 1 (Bootleg No Timed Game)
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)

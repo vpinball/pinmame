@@ -9,6 +9,10 @@ Correct Dumps:
 Bally: Judge Dredd (use L3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
 
+Clones:
+Orbitor 1 (No Timed Game)
+
+
 
 Version 2.9 (June 11th, 2017) - "Attack of the clones"
 ------------------------------------------------------------------------------
