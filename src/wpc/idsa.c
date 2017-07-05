@@ -27,7 +27,7 @@ static struct {
   int dispCol;
   int dispRow;
   core_tSeg segments;
-  int isV1;
+  int isV1, lrq;
 } locals;
 
 static INTERRUPT_GEN(IDSA_irq) {
@@ -132,17 +132,21 @@ struct AY8910interface IDSA_ay8910Int = {
 };
 
 static WRITE_HANDLER(sp0256_w) {
-//  printf("%02x ", data);
   sp0256_ALD_w(0, data);
 }
-static READ_HANDLER(sp0256_r) {
-  UINT16 data = spb640_r(offset / 2, 0);
-  return offset % 2 ? (UINT8)(data >> 8) : (UINT8)(data & 0xff);
+static READ_HANDLER(snd_status_r) {
+  switch (offset) {
+    case 1: return locals.lrq ? 0xff : 0;
+    default: return 0;
+  }
+}
+static void lrq_callback(int state) {
+	locals.lrq = !state;
 }
 struct sp0256_interface IDSA_sp0256Int = {
-  MIXER(30,MIXER_PAN_RIGHT), /* volume */
-  3120000, /* clock */
-  NULL,
+  100, /* volume */
+  3579545, /* clock */
+  lrq_callback,
   NULL,
   REGION_SOUND1
 };
@@ -224,7 +228,7 @@ MEMORY_END
 static PORT_READ_START(IDSA_readport)
   {0x00,0x50, sw_r},
   {0x60,0x70, dip_r},
-  {0xb0,0xb3, sp0256_r},
+  {0xb0,0xb3, snd_status_r},
   {0xbd,0xbd, port_bd_r},
 MEMORY_END
 
@@ -239,9 +243,13 @@ static PORT_WRITE_START(IDSA_writeport)
 MEMORY_END
 
 static void reset_common(void) {
+  static int inverted;
   memset(&locals, 0, sizeof locals);
   sp0256_reset();
-//  sp0256_bitrevbuff(memory_region(REGION_SOUND1), 0, 0x10000);
+  if (!inverted) {
+    sp0256_bitrevbuff(memory_region(REGION_SOUND1), 0, 0x10000);
+    inverted = 1;
+  }
 }
 
 static MACHINE_RESET(IDSA) {
@@ -354,12 +362,40 @@ ROM_START(v1)
   NORMALREGION(0x10000, REGION_CPU1)
   ROM_LOAD("v1.128", 0x0000, 0x4000, CRC(4e08f7bc) SHA1(eb6ef00e489888dd9c53010c525840de06bcd0f3))
   NORMALREGION(0x10000, REGION_SOUND1)
-  ROM_LOAD("v1.128", 0x0000, 0x4000, CRC(4e08f7bc) SHA1(eb6ef00e489888dd9c53010c525840de06bcd0f3))
-  ROM_RELOAD(0x4000, 0x4000)
-  ROM_RELOAD(0x8000, 0x4000)
-  ROM_RELOAD(0xc000, 0x4000)
+  ROM_LOAD("sp0256-al2.bin", 0x0000, 0x0800, CRC(b504ac15) SHA1(e60fcb5fa16ff3f3b69d36c7a6e955744d3feafc) BAD_DUMP)
+  ROM_RELOAD(0x0800, 0x0800)
+  ROM_RELOAD(0x1000, 0x0800)
+  ROM_RELOAD(0x1800, 0x0800)
+  ROM_RELOAD(0x2000, 0x0800)
+  ROM_RELOAD(0x2800, 0x0800)
+  ROM_RELOAD(0x3000, 0x0800)
+  ROM_RELOAD(0x3800, 0x0800)
+  ROM_RELOAD(0x4000, 0x0800)
+  ROM_RELOAD(0x4800, 0x0800)
+  ROM_RELOAD(0x5000, 0x0800)
+  ROM_RELOAD(0x5800, 0x0800)
+  ROM_RELOAD(0x6000, 0x0800)
+  ROM_RELOAD(0x6800, 0x0800)
+  ROM_RELOAD(0x7000, 0x0800)
+  ROM_RELOAD(0x7800, 0x0800)
+  ROM_RELOAD(0x8000, 0x0800)
+  ROM_RELOAD(0x8800, 0x0800)
+  ROM_RELOAD(0x9000, 0x0800)
+  ROM_RELOAD(0x9800, 0x0800)
+  ROM_RELOAD(0xa000, 0x0800)
+  ROM_RELOAD(0xa800, 0x0800)
+  ROM_RELOAD(0xb000, 0x0800)
+  ROM_RELOAD(0xb800, 0x0800)
+  ROM_RELOAD(0xc000, 0x0800)
+  ROM_RELOAD(0xc800, 0x0800)
+  ROM_RELOAD(0xd000, 0x0800)
+  ROM_RELOAD(0xd800, 0x0800)
+  ROM_RELOAD(0xe000, 0x0800)
+  ROM_RELOAD(0xe800, 0x0800)
+  ROM_RELOAD(0xf000, 0x0800)
+  ROM_RELOAD(0xf800, 0x0800)
 ROM_END
-CORE_GAMEDEFNV(v1, "V.1", 1985, "IDSA (Spain)", v1, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(v1, "V.1", 1985, "IDSA (Spain)", v1, 0)
 
 core_tLCDLayout idsa_disp[] = {
   {0, 0, 0, 7, CORE_SEG7}, {0,16, 7, 7, CORE_SEG7},
@@ -378,7 +414,37 @@ ROM_START(bsktball)
   NORMALREGION(0x10000, REGION_CPU1)
   ROM_LOAD("bsktball.256", 0x0000, 0x8000, CRC(d474e29b) SHA1(750cbacef34dde0b3dcb6c1e4679db78a73643fd))
   NORMALREGION(0x10000, REGION_SOUND1)
-  ROM_LOAD("bsktball.256", 0x0000, 0x8000, CRC(d474e29b) SHA1(750cbacef34dde0b3dcb6c1e4679db78a73643fd))
-  ROM_RELOAD(0x8000, 0x8000)
+  ROM_LOAD("sp0256-al2.bin", 0x0000, 0x0800, CRC(b504ac15) SHA1(e60fcb5fa16ff3f3b69d36c7a6e955744d3feafc) BAD_DUMP)
+  ROM_RELOAD(0x0800, 0x0800)
+  ROM_RELOAD(0x1000, 0x0800)
+  ROM_RELOAD(0x1800, 0x0800)
+  ROM_RELOAD(0x2000, 0x0800)
+  ROM_RELOAD(0x2800, 0x0800)
+  ROM_RELOAD(0x3000, 0x0800)
+  ROM_RELOAD(0x3800, 0x0800)
+  ROM_RELOAD(0x4000, 0x0800)
+  ROM_RELOAD(0x4800, 0x0800)
+  ROM_RELOAD(0x5000, 0x0800)
+  ROM_RELOAD(0x5800, 0x0800)
+  ROM_RELOAD(0x6000, 0x0800)
+  ROM_RELOAD(0x6800, 0x0800)
+  ROM_RELOAD(0x7000, 0x0800)
+  ROM_RELOAD(0x7800, 0x0800)
+  ROM_RELOAD(0x8000, 0x0800)
+  ROM_RELOAD(0x8800, 0x0800)
+  ROM_RELOAD(0x9000, 0x0800)
+  ROM_RELOAD(0x9800, 0x0800)
+  ROM_RELOAD(0xa000, 0x0800)
+  ROM_RELOAD(0xa800, 0x0800)
+  ROM_RELOAD(0xb000, 0x0800)
+  ROM_RELOAD(0xb800, 0x0800)
+  ROM_RELOAD(0xc000, 0x0800)
+  ROM_RELOAD(0xc800, 0x0800)
+  ROM_RELOAD(0xd000, 0x0800)
+  ROM_RELOAD(0xd800, 0x0800)
+  ROM_RELOAD(0xe000, 0x0800)
+  ROM_RELOAD(0xe800, 0x0800)
+  ROM_RELOAD(0xf000, 0x0800)
+  ROM_RELOAD(0xf800, 0x0800)
 ROM_END
-CORE_GAMEDEFNV(bsktball, "Basket Ball", 1987, "IDSA (Spain)", idsa, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bsktball, "Basket Ball", 1987, "IDSA (Spain)", idsa, 0)
