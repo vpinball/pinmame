@@ -370,8 +370,6 @@ Barni: Red Baron (not working yet)
 CICPlay: Galaxy Play 2,
          Kidnap
 Data East: King Kong 1.0
-IDSA: Basket Ball,
-      V-1 (speech not working yet)
 Inder: Centaur
 Joctronic: Punky Willy (not working yet, incomplete dumps),
            Walkyria (not working yet)
