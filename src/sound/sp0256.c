@@ -271,7 +271,7 @@ static int lpc12_update(struct lpc12_t *f, int num_samp, INT16 *out, UINT32 *opt
         }
 
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-        out[oidx++ & SCBUF_MASK] = limit(samp) << 2;
+        out[oidx++ & SCBUF_MASK] = limit(samp) << 4;
 #else
         out[oidx++ & SCBUF_MASK] = (limit(samp >> 4) << 8);
 #endif

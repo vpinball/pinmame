@@ -1,6 +1,9 @@
 Version 3.0 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
+*** CORE/CPU ***
+Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work)
+
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
 New:
 MAC: MAC Jungle
