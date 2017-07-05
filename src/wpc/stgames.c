@@ -799,8 +799,8 @@ CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200v,0)
 
 INITGAME(orbitofp,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(orbitofp,"cpu_u1.716",CRC(575520e3) SHA1(9d52b065a14d4f95cebd48f60f628f2c246385fa),
-                            "fpo1_u5.716",CRC(d6eadb75) SHA1(dc3b483d76f3d02a3f8dd1d298f432ff594b968d),
-                            "fpo1_u2.716",CRC(83a6dc48) SHA1(ab6e8e5078ce94bd052ebaef9d323154b5c053bf),
+                           "fpo1_u5.716",CRC(d6eadb75) SHA1(dc3b483d76f3d02a3f8dd1d298f432ff594b968d),
+                           "fpo1_u2.716",CRC(83a6dc48) SHA1(ab6e8e5078ce94bd052ebaef9d323154b5c053bf),
                             "cpu_u6.716",CRC(8861155a) SHA1(81a1b3434d4f80dee5704454f8359200faea173d))
 VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a342f4d630e12dcb2decf5),
                            "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
@@ -829,6 +829,17 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a3
 BY35_ROMEND
 #define input_ports_orbitorb input_ports_st
 CORE_CLONEDEFNV(orbitorb,orbitor1,"Orbitor 1 (Bootleg Free Play)",1982,"Stern",by35_mST200v,0)
+
+INITGAME(orbitorc,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(orbitorc,"o1v3_u1.716",CRC(31677402) SHA1(5814c4eaa8c36842b6a9c3bbafed1efff39c7b3a), // called MOD1.716 on ipdb.org
+                             "MOD5.716", CRC(57896ec0) SHA1(a8aefa1fd8f05f3e2e112f2c2de474e71070ae05),
+                            "cpu_u2.716",CRC(4421d827) SHA1(9b617215f2d92ef2c69104eb4e63a924704665aa),
+                            "cpu_u6.716",CRC(8861155a) SHA1(81a1b3434d4f80dee5704454f8359200faea173d))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a342f4d630e12dcb2decf5),
+                           "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
+BY35_ROMEND
+#define input_ports_orbitorc input_ports_st
+CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (Bootleg No Timed Game)",1982,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Cue (Proto - Never released)
