@@ -261,11 +261,20 @@ DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b2
 		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
 WPC_ROMEND
 
+WPC_ROMSTART(dh,lf2,"harr_lf2.rom",0x80000,CRC(c4931917) SHA1(f7a366fade194ad7b3671acf55d894e3c31992d0))
+DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b200066c7),
+		"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
+		"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
+		"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
+		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(dh,lx2,"Dirty Harry (LX-2)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(dh,dx2,lx2,"Dirty Harry (DX-2 LED Ghost Fix)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(dh,lf2,lx2,"Dirty Harry (LF-2)",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
