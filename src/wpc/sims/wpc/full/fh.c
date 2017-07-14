@@ -623,6 +623,7 @@ static void fh_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
+// "special L-2 sound ROM" for L-9:
 #define FH_SOUND_L3 \
 WPCS_SOUNDROM222("fh_u18.sl3",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab), \
                  "fh_u15.sl2",CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92), \
