@@ -2,7 +2,7 @@ Version 3.0 (X X, 2017) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***
-Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work)
+Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work, for Basketball and V-1)
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
 New:
@@ -14,6 +14,7 @@ Joctronic: Punky Willy
 
 Clones:
 Dirty Harry (LF-2)
+Meteor (Bugfix)
 Orbitor 1 (No Timed Game)
 
 
@@ -372,6 +373,8 @@ CICPlay: Galaxy Play 2,
          Kidnap
 Data East: King Kong 1.0
 Inder: Centaur
+IDSA: Basket Ball,
+      V-1 (speech not working yet)
 Joctronic: Punky Willy (not working yet, incomplete dumps),
            Walkyria (not working yet)
 JP: support correct sound ROMs for Olympus,

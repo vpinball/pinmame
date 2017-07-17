@@ -285,20 +285,29 @@ BY35_ROMEND
 #define input_ports_meteor input_ports_st
 CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,0)
 
+INITGAME(meteora,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteora,"cpu_u1a.716",CRC(9ee33909) SHA1(5f58e4e72af47047c8f060f98706ed9607720705),
+                           "cpu_u5.716", CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
+                           "cpu_u2.716", CRC(fd396792) SHA1(b5d051a7ce7e7c2f9c4a0d900cef4f9ef2089476),
+                           "cpu_u6.716", CRC(03fa346c) SHA1(51c04123cb433e90920c241e2d1f89db4643427b))
+BY35_ROMEND
+#define input_ports_meteora input_ports_st
+CORE_GAMEDEFNV(meteora,"Meteor (Bugfix)",1979,"Stern",by35_mST200,0)
+
 INITGAME(meteorbf,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(meteorbf,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
-                          "cpu_u5.716",CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
-						  "cpu_u2bf.716", CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
-						  "cpu_u6bf.716", CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
+ST200_ROMSTART8888(meteorbf,"cpu_u1.716",  CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
+                            "cpu_u5.716",  CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
+						    "cpu_u2bf.716",CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
+						    "cpu_u6bf.716",CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
 BY35_ROMEND
 #define input_ports_meteorbf input_ports_st
 CORE_CLONEDEFNV(meteorbf,meteor,"Meteor (Bonus Count Fix)",1979,"Stern",by35_mST200,0)
 
 INITGAME(meteorfp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorfp,"fpmet_u1.716",CRC(7a5472ce) SHA1(7e3be954b66e5f61cfdbb189fa60ca33ad40a975),
-                          "cpu_u5.716",CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
-                          "cpu_u2.716",CRC(fd396792) SHA1(b5d051a7ce7e7c2f9c4a0d900cef4f9ef2089476),
-                          "fpmet_u6.716",CRC(0bd52abc) SHA1(2a40bcffbfc28b44c5badf1833ce6b1bd76a02e5))
+                            "cpu_u5.716",  CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
+                            "cpu_u2.716",  CRC(fd396792) SHA1(b5d051a7ce7e7c2f9c4a0d900cef4f9ef2089476),
+                            "fpmet_u6.716",CRC(0bd52abc) SHA1(2a40bcffbfc28b44c5badf1833ce6b1bd76a02e5))
 BY35_ROMEND
 #define input_ports_meteorfp input_ports_st
 CORE_CLONEDEFNV(meteorfp,meteor,"Meteor (Free Play)",1979,"Stern",by35_mST200,0)
@@ -317,18 +326,18 @@ CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit conversion)",2003,"Stern / Olive
 
 INITGAME(meteorc,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorc,"fp10met1.716",CRC(4b92583f) SHA1(44c78d856694d7fb34089f78212deac18a7c149f),
-                          "fp10met5.716",CRC(cd795f7a) SHA1(8f6113c7415cf5d2cf09d17c7de7f8e3d1c84334),
-                          "fp10met2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
-                          "fp10met6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
+                           "fp10met5.716",CRC(cd795f7a) SHA1(8f6113c7415cf5d2cf09d17c7de7f8e3d1c84334),
+                           "fp10met2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
+                           "fp10met6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
 BY35_ROMEND
 #define input_ports_meteorc input_ports_meteor
 CORE_CLONEDEFNV(meteorc,meteor,"Meteor (7-digit conversion Free Play)",2003,"Stern / Oliver",by35_mST200,0)
 
 INITGAME(meteord,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(meteord,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
-                          "cpu_u5_d10.716",CRC(a0ac4dac) SHA1(05943374cdc9d67a20a00c62213e04f8f72c772c),
-                          "fp10met2.716",CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
-                          "fp10met6.716",CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
+ST200_ROMSTART8888(meteord,"cpu_u1.716",    CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
+                           "cpu_u5_d10.716",CRC(a0ac4dac) SHA1(05943374cdc9d67a20a00c62213e04f8f72c772c),
+                           "fp10met2.716",  CRC(5a33ed97) SHA1(86c0c6cc68c33cdab603b65ec1dd30e208e0b1c1),
+                           "fp10met6.716",  CRC(2ae8e9fb) SHA1(60af7ffef90382c7bf4ec7612e079114481825e1))
 BY35_ROMEND
 #define input_ports_meteord input_ports_meteor
 CORE_CLONEDEFNV(meteord,meteor,"Meteor (/10 Scoring)",2005,"Stern / Oliver",by35_mST200,0)
