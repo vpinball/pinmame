@@ -403,7 +403,7 @@ static void nextvol(int param) {
 
 
 static void playsam3(int param) {
-// timer q3 from 6840 is used for volume controll
+// timer q3 from 6840 is used for volume control
 	if ((st300loc.cr3 & 0x80) && (st300loc.timlat3 > 0) && (st300loc.reset == 0)) {		// output is enabled...
 		startvol(0);
 		if (setvol(0) == 0) {
@@ -415,7 +415,7 @@ static void playsam3(int param) {
 
 		mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
 		mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);
-	} else {	// q3 is not running...
+	} else {	// q3 is not running... //!! exact same code!
 		startvol(0);
 		if (setvol(0) == 0) {
 			logerror("playsam Q2/EXT noise volume off \n");
