@@ -13,6 +13,7 @@
 
 #include "driver.h"
 #include "core.h"
+#include "cpu/z80/z80.h"
 
 #define IDSA_CPUFREQ 4000000 /* CPU clock frequency */
 
@@ -262,9 +263,18 @@ MACHINE_DRIVER_START(idsa)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
+// need to reset the program counter because reset calls NMI routine and halts the CPU
+static void v1_reset_timer(int dummy) {
+  cpunum_set_reg(0, Z80_PC, 0);
+}
+
 static MACHINE_RESET(v1) {
   reset_common();
   locals.isV1 = 1;
+  // NMI routine saves the credits to NVRAM (called upon power down on real machine)
+  cpu_set_nmi_line(0, PULSE_LINE);
+  void* timer = timer_alloc(v1_reset_timer);
+  timer_adjust(timer, TIME_IN_MSEC(1), 0, TIME_NEVER);
 }
 
 MACHINE_DRIVER_START(v1)
