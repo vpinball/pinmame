@@ -3,6 +3,7 @@ Version 3.0 (X X, 2017) - ""
 
 *** CORE/CPU ***
 Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
+Fixed reset / NMI handling for IDSA V-1
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
 New:
