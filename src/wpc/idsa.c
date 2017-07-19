@@ -273,8 +273,7 @@ static MACHINE_RESET(v1) {
   locals.isV1 = 1;
   // NMI routine saves the credits to NVRAM (called upon power down on real machine)
   cpu_set_nmi_line(0, PULSE_LINE);
-  void* timer = timer_alloc(v1_reset_timer);
-  timer_adjust(timer, TIME_IN_MSEC(1), 0, TIME_NEVER);
+  timer_adjust(timer_alloc(v1_reset_timer), TIME_IN_MSEC(1), 0, TIME_NEVER);
 }
 
 MACHINE_DRIVER_START(v1)
