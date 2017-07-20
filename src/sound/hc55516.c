@@ -16,6 +16,14 @@
 
 #define	FILTER_MAX				1.0954 // 0 dbmo sine wave peak value volts from MC3417 datasheet
 #ifdef PINMAME
+ // from exidy440, not really better or worse from quick testings
+ //#define INTEGRATOR_LEAK_TC		0.001
+ //#define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
+ //#define FILTER_DECAY_TC         ((18e3 + 3.3e3) * 0.33e-6)
+ //#define decay  0.99114768031730635396012114691053
+ //#define FILTER_CHARGE_TC        (18e3 * 0.33e-6)
+ //#define charge 0.9895332758787504236814964839343
+
  #define leak   0.96875
  #define decay  0.9990234375
  #define charge 0.9990234375
