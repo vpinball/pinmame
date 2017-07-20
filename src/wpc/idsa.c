@@ -263,8 +263,12 @@ MACHINE_DRIVER_START(idsa)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
-// need to reset the program counter because reset calls NMI routine and halts the CPU
+// we need to "reset" the CPU manually as game reset calls the NMI routine and halts the CPU
 static void v1_reset_timer(int dummy) {
+  cpunum_set_reg(0, Z80_R, 0);
+  cpunum_set_reg(0, Z80_HALT, 0);
+  cpunum_set_reg(0, Z80_AF, 0x0040);
+  cpunum_set_reg(0, Z80_SP, 0);
   cpunum_set_reg(0, Z80_PC, 0);
 }
 
