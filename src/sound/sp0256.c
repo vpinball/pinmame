@@ -37,7 +37,11 @@
 #include "cpuintrf.h"
 #include "sp0256.h"
 
+#ifdef PINMAME
+#define CLOCK_DIVIDER 312
+#else
 #define CLOCK_DIVIDER (7*6*8)
+#endif
 #define HIGH_QUALITY
 
 #define SCBUF_SIZE   (4096)             /* Must be power of 2               */
