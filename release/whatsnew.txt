@@ -4,6 +4,7 @@ Version 3.0 (X X, 2017) - ""
 *** CORE/CPU ***
 Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
 Fixed reset / NMI handling for IDSA V-1
+Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
 New:
@@ -56,6 +57,7 @@ Updated to latest Pin2DMD dlls
 *** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl, Pinfixer, Effect
 New:
 Bally: Boomerang prototype (and bootleg set)
+Inder: Canasta '86' (alternate set)
 LTD: Arizona
      Cowboy Eight Ball (and alternate set)
      Disco Dancing
@@ -68,6 +70,7 @@ LTD: Arizona
      Time Machine  (only a bad dump exists which has been patched to make things work (4p version))
      Trick Shooter
      Viking King
+     //!! alien warrior and time machine (2p version) bad dumps only
 MAC: Galaxy Play
 Mirco: Spirit of 76
 Playbar: Bloody Roller
