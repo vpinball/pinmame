@@ -542,6 +542,35 @@ static void st300_pulse (int param) {
 	}
 }
 
+
+// return pseudo random white noise number in the range -scale to scale
+static unsigned long noise_seed = 0xdeadbabe;
+static float white_noise(const float scale)
+{
+	unsigned long white;
+	noise_seed = noise_seed * 196314165 + 907633515;
+	white = noise_seed >> 9;
+	white |= 0x40000000;
+	return ((*(float*)&white) - 3.0f)*scale;
+}
+
+// return brown noise random number in the range -scale to scale
+static float noise_brown = 0.0f;
+static float brown_noise(const float scale)
+{
+	while(1)
+	{
+		const float white = white_noise(0.5f);
+		noise_brown += white;
+		if((noise_brown < -8.0f) || (noise_brown > 8.0f))
+			noise_brown -= white;
+		else
+			break;
+	}
+	return noise_brown*scale*(float)(0.0625/0.5);
+}
+
+
 static int st300_sh_start(const struct MachineSound *msound) {
 	int mixing_levels[3] = {30,30,30};
 	int i,j,k;
@@ -554,21 +583,25 @@ static int st300_sh_start(const struct MachineSound *msound) {
 		snddatst300.c0 = 0;
 	}
 
-	// very very rough approximation helper table for what the real noise generator is doing:
-	// random number table in [0]
+	// very very rough approximation sample table for what the real noise generator is doing:
+	// original noise sample table in [0]
 	for (i = 0;i < 32000;++i) {
 		//s = (s ? 0 : 1);
 		//if (s) {
-			sineWaveext[0][i] = rand()*2-32767;
+			sineWaveext[0][i] = (INT16)white_noise((float)(32767*0.85)); //rand()*2-32767;
 		//} else {
 		//	sineWaveext[i] = 0-rand();
 		//}
 	}
-	// box filtered random numbers in [1]..[15]
+	// add some brown noise to the white noise
+	for (i = 0;i < 32000;++i)
+		sineWaveext[0][i] += (INT16)brown_noise((float)(32767*0.15));
+
+	// box filtered noise sample tables in [1]..[15]
 	for (j = 1; j < 16; ++j) {
 		for (i = 0; i < 32000; ++i) {
 			int tmp = 0;
-			for (k = -j*2; k <= j*2; ++k)
+			for (k = -j*2; k <= j*2; ++k) // magic, filter down to something that loosely matches the original
 			{
 				int ofs;
 				if ((i + k) < 0)
