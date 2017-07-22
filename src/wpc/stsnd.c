@@ -1,3 +1,5 @@
+//!! look at MAME exidy.c, for the ST-300 noise generator?? (intro'ed in MAME 0.56 (src/sndhrdw/exidy.c))
+
 #include "driver.h"
 #include "core.h"
 #include "snd_cmd.h"
@@ -368,7 +370,7 @@ static INT16 volume300[] = {
 	0, 0, 0, 0, 0, 10, 20, 20, 30, 30, 40, 40, 60, 60, 80, 90, 100, 100
 };
 
-static INT16 sineWaveext[32000]; // wave triggered by external clock
+static INT16 sineWaveext[16][32000]; // wave triggered by external clock, very rough approximation for noise generator (related to exidy?)
 
 
 static int setvol(int param) {
@@ -448,16 +450,19 @@ static void playsam1(int param){
 
 static void playsamext(int param){
 //	external timer + volume from q3
-	int f;
+//  extfreq = 1..16
 
-//	f = (17-(st300loc.extfreq))*sizeof(sineWaveext);
 //	Noise is not 100 % accurate, there is a wav file available from the author (solenoid 22 - 29)
 //	formula for f not correct
-	f = 625000 / (17-(st300loc.extfreq));
+	//int f;
+	//f = (17-(st300loc.extfreq))*sizeof(sineWaveext);
+	//f = 625000 / (17-(st300loc.extfreq)); //!! do real lowpass filter then instead of passing this on to the non-filtering mixer (in this case)?!
 
 	if (st300loc.noise) {	// output is enabled...
-		mixer_play_sample_16(st300loc.channel+2,sineWaveext, sizeof(sineWaveext), f , 1);
-		logerror("*** playsam EXT noise frequence %08d data %04d ***\n",f,st300loc.extfreq);
+		//mixer_play_sample_16(st300loc.channel+2,sineWaveext, sizeof(sineWaveext), f , 1);
+		//logerror("*** playsam EXT noise frequence %08d data %04d ***\n",f,st300loc.extfreq);
+		mixer_play_sample_16(st300loc.channel + 2, sineWaveext[st300loc.extfreq-1], sizeof(sineWaveext[st300loc.extfreq-1]), 48000, 1);
+		logerror("*** playsam EXT noise data %04d ***\n", st300loc.extfreq);
 	} else {
 		mixer_stop_sample(st300loc.channel+2);
 		logerror("playsam EXT noise stop \n");
@@ -539,8 +544,8 @@ static void st300_pulse (int param) {
 
 static int st300_sh_start(const struct MachineSound *msound) {
 	int mixing_levels[3] = {30,30,30};
-	int i;
-	int s = 0;
+	int i,j,k;
+	//int s = 0;
 
 	memset(&st300loc, 0, sizeof(st300loc));
 	for (i = 0;i < 9;i++) {
@@ -548,14 +553,38 @@ static int st300_sh_start(const struct MachineSound *msound) {
 		snddatst300.axb[i] = 0;
 		snddatst300.c0 = 0;
 	}
-	for (i = 0;i < 32000;i++) {
-		s = (s ? 0 : 1);
+
+	// very very rough approximation helper table for what the real noise generator is doing:
+	// random number table in [0]
+	for (i = 0;i < 32000;++i) {
+		//s = (s ? 0 : 1);
 		//if (s) {
-			sineWaveext[i] = rand()*2-32767;
+			sineWaveext[0][i] = rand()*2-32767;
 		//} else {
 		//	sineWaveext[i] = 0-rand();
 		//}
 	}
+	// box filtered random numbers in [1]..[15]
+	for (j = 1; j < 16; ++j) {
+		for (i = 0; i < 32000; ++i) {
+			int tmp = 0;
+			for (k = -j*2; k <= j*2; ++k)
+			{
+				int ofs;
+				if ((i + k) < 0)
+					ofs = 32000+(i+k);
+				else if ((i+k) >= 32000)
+					ofs = (i+k)-32000;
+				else
+					ofs = i+k;
+				tmp += sineWaveext[0][ofs];
+			}
+			tmp /= (j+1)/2; //tmp /= j*2 * 2 + 1; // magic, to loosely match the volume of the original
+			sineWaveext[j][i] = (tmp < -32768) ? -32768 : ((tmp > 32767) ? 32767 : tmp);
+		}
+	}
+
+
 	st300loc.channel = mixer_allocate_channels(3, mixing_levels);
 	mixer_set_name  (st300loc.channel, "MC6840 #Q2");		// 6840 Output timer 2 (q2) is easy wave + volume from q3
 	mixer_set_volume(st300loc.channel,0);
@@ -608,6 +637,7 @@ static WRITE_HANDLER(st300_ctrl_w) {
 			logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
 			/* volume and frequency control goes here */
 			S14001A_set_volume(15-((data >> 3) & 0xf));
+			//m_s14001a->set_output_gain(0, ((data >> 3 & 0xf) + 1) / 16.0); //!! from MAME
 			/* clock control - the first LS161 divides the clock by 9 to 16, the 2nd by 8,
 			   giving a final clock from 19.5kHz to 34.7kHz */
 			S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
