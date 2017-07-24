@@ -1,0 +1,333 @@
+#!/usr/bin/perl -w
+#
+# zipfix - Salvage truncated zip archives
+#
+# (c) 2000  Stefan Becker
+#
+# Try to salvage as much data as possible from a ZIP archive and create
+# a new correct ZIP archive from it. The original ZIP archive X is renamed
+# to X.orig.
+#
+#-----------------------------------------------------------------------------
+#
+# REQUIRED PERL PACKAGES
+#
+#-----------------------------------------------------------------------------
+require 5.0004;
+use     strict;
+use     English;
+use     FileHandle;
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#
+# Salvage procedure
+#
+#-----------------------------------------------------------------------------
+# Read one compressed file plus information from the old ZIP archive
+# and copy it to the new ZIP archuve. Create an entry to the central
+# directory from the discovered information and add it to the list.
+sub CopyOneCompressedFile($$$$)
+  {
+    my ($oldfile, $newfile, $offset, $dirref) = @_;
+    my $data;
+    my $length = 0;
+
+    # Read local dir from old file
+    if ($oldfile->read($data, 30) == 30) {
+
+      #
+      # ZIP archive: Local directory structure
+      #
+      # All data is little endian and unsigned
+      #
+      #   0  char  magic[4]               "PK\x03\x04"
+      #   4  short version required
+      #   6  short flags
+      #   8  short compression method
+      #  10  long  time
+      #  14  long  CRC32 checksum of original file
+      #  18  long  compressed data size
+      #  22  long  original file size
+      #  26  short length of file name
+      #  28  short length of extension field
+      # ---
+      #  30  <local directory structure>
+      #      <file name>
+      #      <extension>
+      #      <compressed data>
+      #
+      my ($magic, $ver, $flags, $method, $time, $crc32,
+          $compsize, $origsize, $namelen, $extlen) =
+            unpack("a4vvvVVVVvv", $data);
+
+      # Check magic for local directory
+      if ($magic eq "PK\x03\x04") {
+
+        # Copy it to new file
+        if ($newfile->write($data, 30)) {
+
+          # Read name from old file
+          if ($oldfile->read($data, $namelen) == $namelen) {
+
+            # Copy it to new file
+            if ($newfile->write($data, $namelen)) {
+              my $vardata  = $data;
+              my $filename = unpack("a*", $data);
+
+              # Read extension from old file
+              if ($oldfile->read($data, $extlen) == $extlen) {
+
+                # Copy it to new file
+                if ($newfile->write($data, $extlen)) {
+
+                  # Add extension to variable data
+                  $vardata .= $data;
+
+                  # Read compressed data
+                  if ($oldfile->read($data, $compsize) == $compsize) {
+
+                    # Write it to new file
+                    if ($newfile->write($data, $compsize)) {
+
+                      # Data copied, print progress report
+                      write;
+
+                      # File table header
+                      format STDOUT_TOP =
+Size       Compr.     CRC-32   File Name
+--------------------------------------------------------------------
+.
+
+                      # File table entry
+                      format STDOUT =
+@>>>>>>>>> @>>>>>>>>> @>>>>>>> @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$origsize, $compsize,unpack("H8", pack("N", $crc32)),$filename
+.
+
+                      #
+                      # ZIP archive: Central directory structure
+                      #
+                      # All data is little endian and unsigned
+                      #
+                      #   0  char  magic[4]               "PK\x01\x02"
+                      #   4  short version made
+                      #   6  short version required
+                      #   8  short flags
+                      #  10  short compression method
+                      #  12  long  time
+                      #  16  long  CRC32 checksum of original file
+                      #  20  long  compressed data size
+                      #  24  long  original file size
+                      #  28  short length of file name
+                      #  30  short length of extension field
+                      #  32  short file comment length
+                      #  34  short disk number start
+                      #  36  short internal file attributes
+                      #  38  long  external file attributes
+                      #  42  long  offset of local directory from file start
+                      # ---
+                      #  46  <central directory structure>
+                      #      <file name>
+                      #      <extension>
+                      #      <file comment ???>
+                      #
+                      # Append entry to central directory array
+                      push(@$dirref,
+			   "PK\x01\x02" .
+			   pack("vvvvVVVVvvvvvVV",
+				$ver, $ver, $flags, $method, $time,
+				$crc32, $compsize, $origsize,
+				$namelen, $extlen,
+				0, 0, 0, 0, $offset) .
+			   $vardata);
+		
+                      # Return length of zip file part
+                      $length = 30 + $namelen + $extlen + $compsize;
+
+                    } else {
+                      print "Can't write compressed data!";
+                      $length = -1;
+                    }
+                  } else {
+                    print "EOF in compressed data (File: $filename [$compsize bytes]).\n";
+                  }
+                } else {
+                  print "Can't write extension field!";
+                  $length = -1;
+                }
+              } else {
+                print "EOF in extension field (File: $filename [$extlen bytes]).\n";
+              }
+            } else {
+              print "Can't write file name!";
+              $length = -1;
+            }
+          } else {
+            print "EOF in file name [$namelen bytes].\n";
+          }
+        } else {
+          print "Can't write local dir!";
+          $length = -1;
+        }
+      } else {
+        print "Next entry is not a local directory.\n";
+      }
+    } else {
+      print "EOF in local directory.\n";
+    }
+
+    return $length;
+  }
+
+#-----------------------------------------------------------------------------
+#
+# MAIN PROGRAM
+#
+#-----------------------------------------------------------------------------
+my $oldname;
+
+# For each file on the command line
+foreach $oldname (@ARGV) {
+  my $oldfile = new FileHandle;
+
+  # Open old file
+  if ($oldfile->open($oldname, "r")) {
+    my $newfile = new FileHandle;
+    my $newname = $oldname . $PID;
+
+    # Make sure we read in binary mode
+    binmode $oldfile;
+
+    # Open new file
+    if ($newfile->open($newname, "w")) {
+      my $offset   = 0;
+      my @dir;
+      my $position;
+
+      # Make sure we write in binary mode
+      binmode $newfile;
+
+      # Copy compressed files
+      while (1) {
+
+        # Get current file position
+        $position = $newfile->getpos();
+
+        # Copy one compressed file
+        my $newlength = CopyOneCompressedFile($oldfile, $newfile,
+                                              $offset, \@dir);
+
+        # Write error?
+        if ($newlength < 0) {
+          $offset = -1;
+          last;
+        }
+
+        # EOF reached?
+        if ($newlength == 0) {
+          last;
+        }
+
+        # Next compressed file
+        $offset += $newlength;
+      }
+
+      # No write error?
+      if ($offset > 0) {
+        my $files     = $#dir + 1;
+        my $dirlength;
+
+        # Progress report
+        print "Found $files file(s), regenerating central directory structure.\n";
+
+        # Move file pointer to end of valid data
+        $newfile->setpos($position);
+
+        # For each entry in the central directory
+        while ($#dir >= 0) {
+
+          # Get next entry from array
+          my $data = shift(@dir);
+          my $elen = length($data);
+
+          # Write entry to new file
+          if ($newfile->write($data, $elen) == 0) {
+            print "Can't write central directory entry!";
+            $offset = -1;
+            last;
+          }
+
+          # Add to directory length
+          $dirlength += $elen;
+        }
+
+        # Write error?
+        if ($offset > 0) {
+
+	  #
+	  # ZIP archive: End of archive structure
+	  #
+	  # All data is little endian and unsigned
+	  #
+	  #   0  char  magic[4]               "PK\x05\x06"
+	  #   4  short disk number
+	  #   6  short disk number where central directory starts ???
+	  #   8  short number of entries in the current central directory
+	  #  10  short total number of entries in all directories ???
+	  #  12  long  size of current central directory
+	  #  16  long  offset of central directory from file start
+	  #  20  short archive comment length
+	  # ---
+	  #  22  <end of archive structure>
+	  #      <zip file comment ???>
+	  #
+          # Write end of archive structure to the new file
+	  if ($newfile->write("PK\x05\x06" .
+			      pack("vvvvVVv",
+				   0, 0,
+				   $files, $files, $dirlength, $offset,
+				   0),
+			      22)) {
+
+            # Close files
+            $newfile->close();
+            $oldfile->close();
+
+            # Rename files
+	    unlink("$oldname.orig");
+            rename($oldname, "$oldname.orig");
+            rename($newname, $oldname);
+
+            # We did it!
+            print "Zip archive salvaged!\n";
+
+          } else {
+            print "Couldn't write end of zip file structure!";
+            $offset = -1;
+          }
+        }
+      }
+
+      # Write error?
+      if ($offset < 0) {
+
+        # Remove new file
+        print " ABORTING\n";
+        $newfile->close();
+        unlink($newname);
+      }
+
+    } else {
+      print "Can't open file $newname for writing!\n";
+    }
+
+    # Close old file
+    $oldfile->close();
+
+  } else {
+    print "Can't open file $oldname for reading!\n";
+  }
+}
+
+exit 0;

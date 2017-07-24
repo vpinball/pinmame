@@ -1,0 +1,16 @@
+#!/bin/bash
+
+trap "killall xmame.x11" EXIT
+ulimit -c 0
+
+while true; do
+   xmame.x11 random -run-in-root-window -scale 2 2> /dev/null &
+   sleep 120
+   killall xmame.x11
+   sleep 2
+   i=100
+   while [ "$i" -gt 0 ]; do
+      echo
+      i=$(($i-1))
+   done
+done

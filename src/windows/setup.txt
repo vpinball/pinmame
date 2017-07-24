@@ -1,0 +1,79 @@
+-----------------
+Step 1: Downloads
+-----------------
+
+- create a directory to hold all your downloads; for example, c:\mingw-setup
+
+- go to http://sourceforge.net/project/showfiles.php?group_id=2435
+  download the latest version (MinGW-2.0.0-3.exe at the time of this writing)
+  to your c:\mingw-setup directory
+
+- go to http://sourceforge.net/project/showfiles.php?group_id=6208
+  download the latest version (nasm-0.98.35-win32.zip at the time of this writing)
+  to your c:\mingw-setup directory
+
+- go to ftp://ftp.franken.de/pub/win32/develop/gnuwin32/mingw32/porters/Mikey/
+  download the following packages into your c:\mingw-setup directory:
+    - ming-selfhost.zip
+    - fileutils316-ming.tar.bz2
+    - textutils122-ming.tar.bz2
+    - sh-utils112-ming.tar.bz2
+
+- download this package into your c:\mingw-setup directory:
+    - http://pws.prserv.net/thefortins/directx6_1-cyg.tar.gz
+
+
+-------------
+Step 2: Setup
+-------------
+
+- run the MinGW installer; install to a logical path, for example c:\mingw
+
+- extract this .tar.gz file into the mingw directory as well:
+   (say "no" when it asks you to overwrite files)
+     - directx6_1-cyg.tar.gz
+
+- change your environment variables to add c:\mingw\bin as a path
+
+- unzip ming-selfhost.zip to a temporary directory under your c:\mingw directory,
+  for example c:\mingw\selfhost
+    - IMPORTANT: do NOT unzip to your mingw directory, or else you will overwrite
+      important files!
+
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\selfhost\bin\sh.exe 
+    - c:\mingw\selfhost\bin\bzip2.exe
+    - c:\mingw\selfhost\bin\tar.exe
+
+- from the command line, switch to your c:\mingw\selfhost directory and run:
+    - bzip2 -dc ../fileutils316-ming.tar.bz2 | tar x
+    - bzip2 -dc ../textutils122-ming.tar.bz2 | tar x
+    - bzip2 -dc ../sh-utils112-ming.tar.bz2 | tar x
+    
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\selfhost\bin\echo.exe
+    - c:\mingw\selfhost\bin\mkdir.exe
+    - c:\mingw\selfhost\bin\rm.exe
+    - c:\mingw\selfhost\bin\sort.exe
+
+- unzip nasm-0.98-win32.zip into a temporary directory, for example c:\mingw\nasm
+
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\nasm\nasmw.exe
+    - c:\mingw\nasm\ndisasmw.exe
+
+
+-----------------
+Step 3: Libraries
+-----------------
+
+- go to http://www.gzip.org/zlib/
+
+- download and extract the following package:
+    - zlib-1.1.4.tar.gz
+
+- change to the zlib directory and type mingw32-make -f nt/makefile.gcc
+
+- copy the resulting libz.a to the lib directory in your c:\mingw directory
+
+- copy zlib.h and zconf.h to the include directory in your c:\mingw directory

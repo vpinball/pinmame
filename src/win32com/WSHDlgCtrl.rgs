@@ -1,0 +1,26 @@
+HKCR
+{
+	Dialog.WSHDlgCtrl.1 = s 'WSHDlgCtrl Class'
+	{
+		CLSID = s '{D3BA6587-82A7-46A7-AEFE-7A75CAD51F31}'
+	}
+	Dialog.WSHDlgCtrl = s 'WSHDlgCtrl Class'
+	{
+		CLSID = s '{D3BA6587-82A7-46A7-AEFE-7A75CAD51F31}'
+		CurVer = s 'Dialog.WSHDlgCtrl.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {D3BA6587-82A7-46A7-AEFE-7A75CAD51F31} = s 'WSHDlgCtrl Class'
+		{
+			ProgID = s 'Dialog.WSHDlgCtrl.1'
+			VersionIndependentProgID = s 'Dialog.WSHDlgCtrl'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{EEFE1916-E8D6-4C74-BEFB-F22E1136783E}'
+		}
+	}
+}

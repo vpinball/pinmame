@@ -1,0 +1,61 @@
+CGAFONT is a program to assist in making a dump of the CGA character
+generator ROM.
+
+CGAFONT was written on 4 April 2003 by John Elliott <jce@seasip.demon.co.uk>
+and is Public Domain software.
+
+Latest version and executable is available at
+
+http://www.seasip.demon.co.uk/1512/index.html
+
+To use it, you will need an IBM-compatible PC with:
+* A CGA (or compatible) video controller.
+* DOS.
+
+How it works
+============
+CGAFONT creates a 2k font in memory. You edit this font until it matches the
+character shapes produced by the CGA in text mode. When the two sets of
+characters are identical, you have a dump of your CGA character generator ROM.
+
+How to use CGAFONT:
+===================
+1. Run GRAFTABL (optional, but will make your life easier by providing
+  default character shapes).
+2. Run CGAFONT. The screen will switch to 40-column mode and show this
+display:
+
+     Choose character to edit
+
+        000:
+
+     Cursor keys to select, ENTER to edit
+     W to write font dump to disc
+     S/T to test with ROM font, ESC to exit
+
+3. Press S or T to compare the font in CGAFONT's memory with the one in the
+  CGA ROM. It is not possible to display them both at once (one is drawn in
+  text mode, the other in graphics mode) so the display shows one, then the
+  other.
+
+  The S option switches between the two once every second, while T switches
+as fast as the system can manage. Press ESC to leave the test mode.
+
+  If the two fonts looked identical, then skip to step 6.
+
+4. Using the cursor keys, select a character that looked different in both
+  display modes. Press ENTER to edit it.
+
+5. The editing screen will now be displayed. On the left is an enlarged bitmap
+  of the character (from CGAFONT's memory); on the right is the one from the
+  CGA ROM, drawn at its usual size. Edit the bitmap on the left using the
+  cursor keys and SPACE. You can test using S/T on this screen as well; press
+  ESC to leave it. Note that you cannot undo changes you have made.
+
+6. Once you are satisfied that the font in CGAFONT's memory matches the one
+  in your CGA ROM, press W to write the font dump. This will write a file
+  CGAFONT.BIN to the current disc.
+
+7. If your card has more than one font (eg: a genuine IBM CGA card or an
+  Amstrad PC1512 built-in CGA) then rename CGAFONT.BIN, set the option links
+  for the next font, and repeat.

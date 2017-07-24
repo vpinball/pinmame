@@ -1,0 +1,5762 @@
+; This file is used in the sound command mode
+; and contains shortcuts for playing sounds
+;
+; The entries (lines starting with a ':') in this file are grouped
+; under different headings (headings end with a ':')
+;
+; When a game is loaded it will look for entries under the
+; following headings:
+; dcs:         (for DCS games)
+; wpcs:        (for pre-DCS games)
+; game_name:   (short game name)
+; parent_name: (short parent name)
+;
+; Example: TZ 9.2 will use the entries under the headings
+; wpcs, tz_92, tz_94h
+;
+; Each entry consist of two parts:
+; - Up to 6 bytes command (hexadecimal)
+; - The text to display on the screen
+;
+; Example: Send the command sequence 01 02 03 04 and call it "sequence 1"
+; :01020304:Sequence 1
+;
+; If the same command appear several times the last one in this file
+; will be used.
+;
+; Note that DCS requires an even number of bytes in the command.
+;-----------------------------------------------------------------------
+
+kpv106:
+:da0407010112:Trixy Death
+:da0407010178:Take a right loop
+:da0407010185:So you're the kid
+:da0407010008:Main Music
+:da040701003b:Cool groove
+
+bbb109:
+; da 04 07 0f 0000
+; da = command
+;    04 = ??
+;       07 = don't loop?
+;       06 = loop
+;          0f = volume?
+;             0000 = sample #
+:da0407010059: Main Music
+:da020301: Stop sound?
+:da04070f0035: Silence
+:da04070f0000: Startup Sound
+:da04060f0000: Startup Sound (Repeating)
+:da04070f0001: Whistle
+:da04070f0002: Menu Click
+:da04070f0003: Pop
+:da040726004a: No Credit
+:da04070f00fe: See the guy upstairs
+:da04070f00fd: Dig It
+:da04070f00fb: Let's Go Baby
+:da04070f00fa: Oh My
+:da04070f0202: Shake It Baby
+:da04070f0203: Yeah
+:da04070f0291: Foursome
+:da04070f0298: Upstairs
+:da0406010059: Main Music (Repeating)
+:da0407010069: Tube Tune
+:da040701006a: This is what I call Fourplay
+:da04070100a4: Hey Pal there's a cover charge here
+
+; Common for all DCS games.
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; -------------
+dcs:
+:0000:All sound off
+# ------------
+# 55aaXXYY = Set Volume
+# XX = 47 to FF step 08
+# YY = FF - XX ... reason unknown.
+# ------------
+:55aa47b8:Set volume (8)
+:55aa4fb0:Set volume (9)
+:55aa57a8:Set volume (10)
+:55aa5fa0:Set volume (11)
+:55aa6798:Set volume (12)
+:55aa6f90:Set volume (13)
+:55aa7788:Set volume (14)
+:55aa7f80:Set volume (15)
+:55aa8778:Set volume (16)
+:55aa8f70:Set volume (17)
+:55aa9768:Set volume (18)
+:55aa9f60:Set volume (19)
+:55aae718:Set volume (28)
+:55aaef10:Set volume (29)
+:55aaf708:Set volume (30)
+:55aaff00:Set volume (31)
+# ------------
+# 03dX = System Bank
+# ------------
+:03d4:Menu Select A
+:03d5:Menu Select B
+:03d6:Warning Beep
+:03d7:Menu Op Complete
+:03d8:Alert Beep
+:03d9:Menu Select C
+:03da:Menu Select D
+:03db:Menu Enter
+:03dc:Menu Cancel/Clear
+:03dd:System Sweep
+
+; Common for all pre-DCS games.
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; -------------
+; Tech notes re CVSD playback: It appears that CVSD samples are
+; affected by tempo/playback speed parameters, which are typically
+; set automatically by playing a music command.
+; -------------
+wpcs:
+:00:Reset Sound System
+:1e:Decrease Music Tempo
+:1f:Increase Music Tempo
+:20:Set DAC (drums) volume to 15
+:21:Set DAC (drums) volume to 14
+:22:Set DAC (drums) volume to 13
+:23:Set DAC (drums) volume to 12
+:24:Set DAC (drums) volume to 11
+:25:Set DAC (drums) volume to 10
+:26:Set DAC (drums) volume to 9
+:27:Set DAC (drums) volume to 8
+:28:Set DAC (drums) volume to 7
+:29:Set DAC (drums) volume to 6
+:2a:Set DAC (drums) volume to 5
+:2b:Set DAC (drums) volume to 4
+:2c:Set DAC (drums) volume to 3
+:2d:Set DAC (drums) volume to 2
+:2e:Set DAC (drums) volume to 1
+:2f:Set DAC (drums) volume to 0
+:50:FM: Menu Select A
+:51:FM: Menu Select B
+:52:FM: System Warning Beep
+:53:FM: Menu Op Completed
+:54:FM: System Attention Beep
+:55:FM: Menu Select C
+:56:FM: Menu Select D
+:57:FM: Menu Enter
+:58:FM: Menu Cancel/Clear
+:59:FM: System Sweep
+:60:Set FM (Music) volume to 18
+:61:Set FM (Music) volume to 17
+:62:Set FM (Music) volume to 16
+:63:Set FM (Music) volume to 15
+:64:Set FM (Music) volume to 14
+:65:Set FM (Music) volume to 13
+:66:Set FM (Music) volume to 12
+:67:Set FM (Music) volume to 11
+:68:Set FM (Music) volume to 10
+:69:Set FM (Music) volume to 9
+:6a:Set FM (Music) volume to 8
+:6b:Set FM (Music) volume to 7
+:6c:Set FM (Music) volume to 6
+:6d:Set FM (Music) volume to 5
+:6e:Set FM (Music) volume to 4
+:6f:Set FM (Music) volume to 3
+:70:Set FM (Music) volume to 2
+:71:Set FM (Music) volume to 1
+:72:Set FM (Music) volume to 0
+
+
+; ROM Header name must match the ROM name
+
+
+; Creature from the Black Lagoon
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; --------------
+; Special notes re Creature: This game uses the 7a bank for
+; more voices - same as TZ - but for some reason the WPCMame
+; sound command editor can't access it.
+; --------------
+cftbl_l4:
+:00:Reset Sound System
+:01:Music: Main Game Theme 1 (?)
+:02:Music: Main Game Theme 2
+:03:Music: Main Game Theme 3
+:04:Music: Mega Menu
+:05:Music: Main Game Theme 4
+:06:Music: Multiball
+:07:Music: ?? Loop
+:08:Music: Snack Attack
+:09:Music: Normal Prelaunch
+:0a:Music: Video Mode
+:0b:Music: Main Game Theme 5
+:0c:Music: Main Game Theme 6
+:0d:Music: Move Your Car!
+:0e:Music: Multiball Hurry-Up
+:10:Music: ?? (same as 01)
+:11:Music: (01 = messed up)
+:12:Music: (02 = messed up)
+:13:Music: (03 = messed up)
+:14:Music: (04 = messed up)
+:15:Music: (05 = messed up)
+:16:Music: (06 = messed up)
+:17:Music: (08 = messed up)
+:18:Music: (1c = messed up)
+:19:Music: (1b = messed up)
+:1a:Music: Bonus Ending 1
+:1e:Decrease Music Tempo
+:1f:Increase Music Tempo
+:30:SFX: Car driving by
+:31:SFX: Kiss - Mwah!
+:32:SFX: Projector Startup
+:33:(Blues mumbling 1)
+:34:(Blues mumbling 2)
+:35:(Blues mumbling 3)
+:36:(Creature Noise)
+:37:SFX: Cash Register
+:38:"Thank you, enjoy the film"
+:39:SFX: Cash Reg + "Thank you"
+# -----------
+# Apparently the next two were jokes put in by one of the Williams
+# programmers against their boss or something.  Sounds like
+# something they would do.
+# -----------
+:3a:"I'm sorry, Jeff..."
+:3b:"Jeff! You are a weenie!"
+#
+:3c:"My hero!"
+:3d:"Thank you!"
+:3e:"You saved my life!"
+:3f:VOX: Girl screams
+:40:SFX: Boom 1
+:41:"Focus!"
+:42:"Move your car!"
+:43:"Hey, slide over, baby!"
+:44:"Ummm, okay!"
+:45:"Okay!"
+:46:"How about a kiss?"
+:47:"Gee, I dunno..."
+:48:"Awww, c'mon!"
+:49:"Well, maybe..."
+:4a:SFX: Ahooga!
+:4b:"Shoot the left ramp!"
+:4c:"Jackpot!"
+:4d:"Super Jackpot!"
+:4e:"Let's try the next..."
+# -----------
+# "At the Hop" was a popular 50's song, and evidently they encoded a
+# huge number of samples into this game to play it as a soundtrack.
+# I've personally never heard it used in the game, though, and I'd
+# think the voice samples would get overridden by more important
+# voices as you play the game.
+# -----------
+:4f:"At the hop!"
+:5a:"Hop!" 1
+:5b:"Hop!" 2
+:5c:"Hop!" 3
+:5d:"Hop!" 4
+#
+:80:SFX: PAID rollover 1
+:81:SFX: PAID rollover 2
+:82:SFX: PAID rollover 3
+:83:Music: Sneak-In Award
+:84:Music: 5 Million Award
+:85:SFX: Misc 1
+:86:SFX: Misc 2
+:87:SFX: Jet Bumper 1
+:88:SFX: Jet Bumper 2
+:89:SFX: Jet Bumper 3
+:8a:SFX: Inlane 1
+:8b:SFX: Inlane 2
+:8c:SFX: Right Ramp
+:8d:SFX: Car horn
+:8e:Music: M.Ball Restart
+:8f:SFX: Snackbar target 1
+:90:SFX: Snackbar target 2
+:91:SFX: Snackbar target 3
+:92:SFX: Snackbar target 4
+:96:Music: Sn.Attack Score
+:97:Music: KISS Score
+:98:Music: Mega Menu Score
+:99:Music: Creature Found
+:9a:Music: Girl Rescued
+:9b:Music: Jackpot Lit
+:9c:Music: Jackpot Score
+:9d:Music: Empty Tunnel
+:9e:Music: ??
+:9f:Music: Explain Award
+:a0:SFX: Whiz-Bang 1
+:a1:SFX: Whiz-Bang 2
+:a2:SFX: Whiz-Bang 3
+:a3:SFX: Misc 3
+:a4:SFX: Misc 4
+:a5:SFX: Countdown Tick
+:a6:SFX: Mode Fail
+:a7:SFX: Combo Shot 1
+:a8:SFX: Combo Shot 2
+:a9:SFX: Combo Shot 3
+:aa:SFX: Combo Shot 4
+:ab:SFX: Combo Shot 5
+:ac:SFX: Combo Shot Score
+:ad:SFX: Extra Ball Score
+:ae:SFX: Slide Score
+:af:SFX: M.Y. Car Shot 1
+:b0:SFX: Snack Bar Open
+:b1:SFX: Special Lit
+:b2:Music: Replay/Special
+:b3:SFX: FILM Letter Score
+:b4:Music: Game Over
+:b5:Music: Shoot Again
+:b6:Music: Playground Awd
+:b7:Music: Sup.Jackpot Lit
+:b8:Music: Sup.Jack. Score
+:b9:Music: S.J. Score 2 (?)
+:ba:Music: Movie Madness
+:bb:SFX: Bonus X
+:bc:SFX: Unlim.Mill. Score
+:bd:SFX: Misc 5
+:be:SFX: Misc 6
+:bf:Music: KISS Letter
+:c2:Music: F-I-L-M Sequence
+:c3:Music: (combo?)
+:c4:Music: Snackbar Random
+:c5:Music: Tilt Warning
+:c6:SFX: Bell 1
+:c7:SFX: Creature Loop 1
+:c8:SFX: Creature Loop 2
+:c9:SFX: Creature Loop 3
+:ca:SFX: Creature Loop 4
+:cb:SFX: Creature Loop 5
+:cc:SFX: Creature Loop 6
+:cd:SFX: Creature Loop 7
+:ce:SFX: Creature Loop 8
+:cf:SFX: Misc 7
+# ------------
+# More Hop voices - can anyone verify that this was actually
+# used in the game?
+# ------------
+:d0:"Hop, Baby, Hop!" 1
+:d1:"Hop, Baby, Hop!" 2
+:d2:"Hop, Baby, Hop!" 3
+:d3:(Hop) "Laa, laa!"
+:d4:(Hop) "Oh Baby!" 1
+:d5:(Hop) "Oh Baby!" 2
+:d6:(Hop) "Aaaaaahhh..." 1
+:d7:(Hop) "Aaaaaahhh..." 2
+:d8:(Hop) "Aaaaaahhh..." 3
+:d9:(Hop) "To the hop!" 1
+:da:(Hop) "To the hop!" 2
+:db:(Hop) "To the hop!" 3
+:dc:"Let's go to the hop" 1
+:dd:"Let's go to the hop" 2
+:de:"Let's go to the hop" 3
+#
+:df:SFX: EB.Countdown Fail
+:e0:SFX: Misc 8 (loops)
+:e1:Music: Snackbar Bonus
+
+
+; Demolition Man
+; Additions made 01/23/01 by Dorsola (dorsola@descent2.com)
+; DCS Hardware
+; ------------
+dm_lx4:
+# ------------
+# 00xx = Music and SFX bank
+# ------------
+:0001:Music: Main Prelaunch
+:0002:Music: Main Game, var 1
+:0003:Music: Main Game, var 2
+:0004:Music: Multiball Mode 1
+:0005:Music: Multiball Ready
+:0006:Music: MBall Ready Pre
+:0008:Music: Demolition Time
+:0009:Music: ACMAG
+:000a:Music: Demolition Time
+:000b:Music: Multiball Mode 2
+:000c:Music: Explode Hurry-Up
+:000e:Music: Cryo-Claw
+:0010:Music: ??
+:0013:Music: Computer Award
+:001a:Music: Collect Bonus
+:001f:Music: High Score Entry
+:0020:Music: High Score Entry
+:0021:Music: Super Jackpot
+:0023:Music: Capture Simon
+:0024:Music: Game Over, var 2
+:0025:Music: Multiball Mode 3
+:0064:SFX: Resounding Slam
+:0068:SFX: Flamethrower
+:006a:SFX: Comm noise
+:006c:SFX: Misc 1
+:006d:SFX: Computer Beeps 1
+:0070:SFX: Misc 2
+:0072:SFX: Elevator
+:0073:SFX: Tires Screeching
+:0075:SFX: Crash 1
+:0077:SFX: Misc 3
+:0078:SFX: Pop-Drop
+:0079:SFX: Misc 4
+:007a:SFX: Misc 5
+:007b:SFX: Misc 6
+:007c:SFX: Ricochet
+:007e:SFX: Whoosh
+:0081:SFX: Tinkle-Rustle
+:0088:SFX: Helicopter
+:008b:SFX: Industrial 1
+:008c:SFX: Industrial 2
+:008d:SFX: Industrial 3
+:0093:SFX: Jet Bumper 1
+:0094:SFX: Jet Bumper 2
+:0095:SFX: Jet Bumper 3
+:0098:SFX: Boom 1
+:0099:SFX: Boom 2
+:009b:SFX: Boom 3
+:00a3:SFX: Misc 7
+:00a5:SFX: Flyby 1
+:00a6:SFX: Flyby 2
+:00aa:SFX: Alarm
+:00ab:SFX: Techno Ding
+:00b0:SFX: Misc 8
+:00b4:SFX: Industrial 4
+:00b6:SFX: Industrial 5
+:00b8:SFX: Industrial 6
+:00b9:SFX: Industrial 7
+:00ba:SFX: Industrial 8
+:00bb:SFX: Industrial 9
+:00bc:SFX: Industrial 10
+:00bd:SFX: Industrial 11
+:00be:SFX: Industrial 12
+:00bf:SFX: Industrial 13
+:00c5:SFX: Misc 9
+:00c6:SFX: Thunder 1
+:00c7:SFX: Thunder 2
+:00c8:SFX: Thunder 3
+:00cb:SFX: Boom 4
+:00cc:SFX: Boom 5
+:00cd:SFX: Boom 6
+:00d1:SFX: Flamethrower
+:00d4:SFX: Car Drive-By
+:00d9:SFX: Crash 2
+:00fc:SFX: Boom 1
+:00fd:SFX: Boom 2
+:00ff:SFX: Boom 3
+# ------------
+# 01xx = SFX and Voice Bank 1
+# ------------
+:012a:SFX: Thunder 1
+:012b:SFX: Thunder 2
+:0140:"Glorious!"
+:0143:"What I wouldn't give"
+:0144:"Not many people get.."
+:014a:"Close enough"
+:014b:"This is between..."
+:0154:"Forgot to say Simon.."
+:0155:"Somebody put me..."
+:0156:"Go left!"
+:015b:"Just catch up to him!"
+:015e:(Sp) "Let's go!"
+:0162:VOX: Phoenix Laugh 1
+:0163:VOX: Phoenix Laugh 2
+:0164:VOX: Phoenix Laugh 3
+:0165:VOX: Phoenix Laugh 4
+:0166:"Aaaaaaaaaa!"
+:016c:"Oh yeah!"
+:0170:"Punch it, Hawkley!"
+:0171:"Push the pedal as..."
+:017f:"Wonder if I can..."
+:0181:VOX: Phoenix Laugh 5
+:0182:"Yeah, well I feel..."
+:0188:"Oh, I'm so scared!"
+:018a:"Illuminate!"
+:0191:SFX: Thunder 3
+:0193:SFX: Boom 4
+:0194:SFX: Boom 5
+:0195:SFX: Boom 6
+:01f8:SFX: Footstep 1
+:01f9:SFX: Footstep 2
+:01fb:SFX: Synth Hit 1
+:01fc:SFX: Zap!
+# ------------
+# 02xx = SFX and Voice Bank 2
+# ------------
+:0200:SFX: Misc 10
+:0201:SFX: Drop in Liquid
+:0202:SFX: Launch Ball
+:0205:SFX: Computer Beeps 1
+:0208:SFX: Twang 1
+:0209:SFX: Twang 2
+:020d:SFX: Twang 3
+:020e:SFX: Twang 4
+:020f:SFX: Twang 5
+:0210:SFX: Orchestra Hit 1
+:0212:SFX: Orchestra Hit 2
+:0213:SFX: Orchestra Hit 3
+:0216:SFX: Synth Hit 2
+:0218:SFX: Synth Hit 3
+:0219:SFX: Ground Loop
+:021b:SFX: Misc 11
+:021c:SFX: Twang 1
+:021d:SFX: Motorcycle
+:021e:SFX: Motorcycle
+:021f:Music: Extra Ball!
+:0220:Music: Accordian
+:0221:Music: Extra Ball!
+:025a:"D'ya see any cows...?"
+:0261:VOX: Girl screaming
+:0263:"Okay okay I got it..."
+:0264:"Simon Phoenix knows.."
+:0269:"EXCUSE ME???"
+:026b:"Whoa!"
+:026c:"What're you doing?"
+:026e:"Is it cold in here..."
+:0270:"Oh we gotta stop this"
+:0271:"Heads up!"
+:0275:"Send a maniac..."
+:0279:"...the best day of..."
+:027a:"What can I say? I'm.."
+:027c:VOX: Phoenix Misc 1
+:0289:"How nice!"
+:028a:"I love this gun!"
+:0291:"Now we need those..."
+:0292:VOX: Phoenix Growling
+:0297:"No free rides!"
+:0298:"Oh that is just..."
+:029c:"Prepare for Simon..."
+:029e:"Oh I musta done..."
+:02a9:"2 for the price of 1!"
+:02ac:"What're ya doin here?"
+:02ae:"You're dead, Spartan!"
+:02af:"You're under arrest."
+:02b0:"Arrest?"
+:02b1:"And you're trespassin"
+:02b2:"Do somethin'!"
+:02b3:VOX: Misc 1
+:02b4:"Phoeniiiiiiiiix!!"
+:02bc:(Ph) "Extra ball!"
+:02bf:"You're gonna need..."
+:02c3:"Move!"
+:02c4:(Ph) "Move it!"
+:02c5:(Ph) "Nice move!"
+:02c7:(Ph) "Go!"
+:02c8:(Ph) "Great shot!"
+:02d2:(Ph) "Hurryup!"
+:02d4:(Ph) "Double Jackpot!"
+:02d6:"Get the Sup.Jackpot!"
+:02e1:(Ph) "Nice shot!"
+:02e2:(Ph) "Nice shooting!"
+:02e7:VOX: Phoenix Laugh 6
+:02e8:VOX: Phoenix Laugh 7
+:02e9:VOX: Phoenix Laugh 8
+:02f6:(Ph) "Outstanding!"
+:02ff:"Simon says"
+# ------------
+# 03xx = Voice Bank 3
+# ------------
+:0303:"Step on it!"
+:0306:"Too bad!"
+:0308:"That was pathetic!"
+:030b:"Yeee-haa!"
+:030c:"You got it!"
+:030d:(Ph) "Amazing!"
+:0310:"Come and get me!"
+:0320:(Sp) "Amazing!"
+:0323:"Let's go!"
+:0327:(Sp) "Move it!"
+:0328:"Nice!"
+:0329:"Very nice!"
+:032a:(Sp) "Nice move!"
+:032c:"Don't move."
+:032e:"Drive!"
+:0331:"Excellent!"
+:033a:(Sp) "Go!"
+:033b:"Hurry!"
+:0340:"Cryo-Prison Breakout"
+:0341:"Be well, Phoenix."
+:034a:(Sp) "Extra ball!"
+:034d:"Get the extra ball!"
+:0353:(Sp) "Nice shooting!"
+:0354:(Sp) "Nice shot!"
+:0355:(Sp) "Great shot!"
+:0356:"Great shooting!"
+:0358:"Now that's what..."
+:035b:(Sp) "Shoot again!"
+:0361:"Skill shot!"
+:0362:"I hate it when..."
+:0364:"I love it when..."
+:036e:"Jackpot!"
+:0374:"Double Jackpot!"
+:0375:"Doubled!"
+:0376:"Tripled!"
+:0378:"Super Jackpot!"
+:037b:"Now!"
+:037c:"Oh no..."
+:037e:"Woah, yeah!"
+:037f:"Ohhhh yeah!"
+:0380:"Outstanding!"
+:0384:"Replay!"
+:0385:"You and me, Phoenix"
+:03e8:"ACMAG now activated"
+:03ec:"Accessing..."
+:03ee:"Car Crash Tripled"
+:03ef:"Computer Award"
+:03f0:"Collect Bonus"
+:03f2:"Cryo-Claw now act..."
+:03fc:"Explode activated"
+:03fd:"Explode Hurry-Up..."
+# ------------
+# 04xx = Voice Bank 4
+# ------------
+:0405:"Player One"
+:0406:"Player Two"
+:0407:"Player Three"
+:0408:"Player Four"
+:040e:(CPU) "Shoot again!"
+:0412:"Super Jets completed"
+:0414:"S.Jets now activated"
+:0416:"You look great today!"
+:0417:"Use buttons to..."
+:0418:"Use triggers to..."
+:041a:"Don't you ever want.."
+:041b:"Anybody to this.." (?)
+:041c:"You always were a..."
+:041d:"I'm the Demol. Man"
+:041e:"Shoulda stayed there"
+:0420:"Don't worry!"
+:0421:"I'll getcha with..."
+:0422:"I know that musta..."
+:0423:"JOHN SPARTAN!??"
+:0424:"Bad aim, Blondie!"
+:0425:"Phoenix!"
+:0427:VOX: Cow
+:0428:VOX: Cow
+:0429:VOX: Misc 2
+:042a:VOX: Misc 3
+:042b:VOX: Misc 4
+:042e:"Triple car crash"
+:0431:"Collect Standups"
+:0434:"Light Arrows"
+:0435:"Light Extra Ball"
+:0436:"Maximize Freezes"
+:0437:"Multiball Activated"
+:0438:"Shoot Left Loop"
+:0439:"Quick-Freeze Now..."
+:043a:"Double Retina-Scan"
+:043c:"It ain't over yet!"
+:043d:"Don't move, Phoenix"
+:043e:"Who is that?"
+:043f:"I've been dreamin..."
+:0440:"Well, keep dreamin'!"
+:0441:SFX: Gunshot
+
+
+; Dr. Who
+dw_l2:
+
+
+; Fun House
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; ------------
+; Unable to access 7a bank in this game either.
+; There are a lot of misc sound effects that are used everywhere
+; in the game.  After a while I stopped trying to identify them
+; all.
+; ------------
+fh_l9:
+:00:Reset Sound System
+:01:Music: Normal Prelaunch
+:02:Music: Normal Game
+:04:Music: Crazy Steps
+:05:Music: 11:30 Lock Lit
+:06:Music: 11:45 Lock Lit
+:07:Music: Midnight
+:08:Music: Multiball (normal)
+:09:Music: Multiball (Jackpot!)
+:0a:Music: 11:30 Prelaunch
+:0c:Music: 11:45 Prelaunch
+:0d:Music: Multiball (Hurry-Up!)
+:0e:Music: Frenzy Mode
+:0f:Music: Super HotDog Mode
+:10:Music: MBall Hurry-Up 2
+:11:Music: ??
+:12:Music: ??
+:13:Music: ??
+:40:Music: Ta-Da Hit
+:41:Music: 02 (messed up)
+:42:Music: 05 (messed up)
+:43:Music: 06 (messed up)
+:44:Music: 07 (messed up)
+:45:Music: 08 (messed up)
+:46:Music: 09 (messed up)
+:47:Music: 0d (messed up)
+:48:Music: 0e (messed up)
+:49:Music: 0f (messed up)
+:4a:Music: 11 (messed up)
+:80:Music: Extra Ball Awarded
+:81:Music: 11:30 Strike
+:82:SFX: Inlane Rollover
+:83:SFX: Misc 2
+:84:SFX: Outlane
+:85:Music: Wind Tunnel Award
+:86:SFX: Misc 4
+:88:SFX: Clock Chime 1
+:89:SFX: Misc 5
+:8a:SFX: Bell 1
+:8b:SFX: Bell 2
+:8c:SFX: Bell 3
+:8d:SFX: Misc 6
+:8e:SFX: Misc 7
+:90:SFX: Tilt!
+:91:SFX: Misc 8
+:92:SFX: Misc 9
+:93:SFX: Tilt Warning
+:94:SFX: Coin Inserted
+:95:SFX: Smudge
+:96:SFX: Bell 4
+:97:SFX: Bell 5
+:98:SFX: Bell 6
+:99:SFX: Bell 7
+:9a:SFX: Bell 8
+:9b:SFX: Bell 9
+:9c:SFX: Misc 10
+:9d:SFX: Steps Missed 1
+:9f:SFX: R. Outer Inlane
+:a0:SFX: Misc 13
+:a1:SFX: Crazy Steps Award
+:a2:SFX: Misc 14
+:a3:SFX: TrapDoor Countup 1
+:a4:SFX: Misc 15
+:a5:SFX: TrapDoor Countup 2
+:a7:SFX: TrapDoor Countup 3
+:a9:SFX: Misc 19
+:aa:Music: Combo Shot 1
+:ac:SFX: Misc 20
+:ad:Music: Combo Shot 2
+:ae:SFX: Trap Door Award
+:b0:SFX: Ball Locked
+:b5:SFX: Misc 22
+:b6:SFX: Misc 23
+:b8:SFX: Trap Door Open
+:ba:SFX: Misc 25
+:bc:SFX: Misc 26
+:bf:SFX: Kickout ready
+:c0:SFX: Clock Shime 2
+:c1:SFX: Misc 28
+:c2:SFX: Misc 29
+:c3:SFX: Misc 30
+:c4:SFX: Misc 31
+:c6:SFX: Boom 1
+:c7:SFX: Boom 2
+:c8:SFX: Misc 32
+:c9:SFX: Drums + Cymbal
+:ca:SFX: Misc 33
+:cb:SFX: Misc 34
+:cc:Music: Misc 1
+:ce:Music: Replay Awarded
+:d0:SFX: Misc 35
+:d1:SFX: Misc 36
+:d2:SFX: Misc 37
+:d3:SFX: Misc 38
+:d4:SFX: Misc 39
+:d5:SFX: Misc 40
+:d6:SFX: Misc 41
+:d7:SFX: Misc 42
+:d8:SFX: Misc 43
+:d9:SFX: Misc 44
+:db:SFX: Misc 45
+:df:SFX: Crash 1
+:e0:SFX: Bonus Sound 1
+:e1:SFX: Bonus Sound 2
+:e2:SFX: Bonus Sound 3
+:e3:SFX: Bonus Sound 4
+:e4:SFX: Instructions 1
+:e5:SFX: Instructions 2
+:e6:SFX: Bonus Sound 5
+
+
+; Theatre of Magic
+; Additions made 01/23/01 by Dorsola (dorsola@descent2.com)
+; ------------
+tom_13:
+# ------------
+# Music, Main SFX
+# ------------
+:0001:Music: Main Game
+:0002:Music: Main Prelaunch
+:0005:Music: Trunk Escape
+:0006:Music: Metamorphosis
+:0007:Music: Game Over
+:0008:Music: Tiger Saw
+:0009:Music: Safe Escape
+:000b:Music: Theatre HurryUp
+:000c:Music: Grand Finale
+:000d:Music: Coll. Bonus pt 1
+:000e:Music: Coll. Bonus pt 2
+:000f:Music: M.Ball Start
+:0010:Music: Main Prelaunch
+:0029:Music: Mode Title
+:0032:Music: Shot Complete 1
+:0033:Music: Th.HurryUp Score
+:0034:Music: Basement Select
+:0035:SFX: Going to Basement
+:0036:Music: Mode Complete 1
+:0037:Music: Mode Complete 2
+:0038:Music: MAGIC Spelled
+:0039:Music: Jackpot Score
+# ------------
+# In /003a/, Host says "Extra Brawl!" - apparently a slip of
+# the tongue when the clip was recorded.  Either nobody caught
+# it prior to release, or they figured it didn't need fixing.
+# ------------
+:003a:Music: Extra Ball!
+#
+:003b:Music: Replay!
+:003c:Music: Shot Complete 2
+:003d:Music: Spirit Ring
+:003e:Music: Special
+:003f:Music: Levitate!
+:0046:Music: Safe Esc. Hit 1
+:0047:Music: Sp.Cards Hit
+:0064:SFX: Trunk Magnet 1
+:0065:SFX: Saw Startup
+:0066:SFX: Saw Sustain
+:0067:SFX: Saw Shutdown
+:0068:SFX: Boom 1
+:0069:SFX: Misc 1
+:006b:SFX: Clock Chime
+:006c:SFX: Launch Ball
+:006d:SFX: Saw Slicing
+:006e:SFX: Misc 2
+:006f:SFX: Spinner
+:0070:SFX: Magna-Save
+:0071:SFX: Boom 2
+:0072:SFX: Boom 3 + Zap
+:0073:SFX: Spot THEATRE
+:0074:SFX: Crash 1
+:0075:SFX: Trunk Rotating
+:0076:SFX: Hocus-Pocus Hit
+:0077:SFX: Sp.Ring Capture
+:0078:SFX: TrapDoor Kickout
+:0079:SFX: Trunk Hit
+:007a:SFX: Loop-Ramp Cascade
+:007b:SFX: TrapDoor Target
+:007c:SFX: Misc 3
+:007d:SFX: Thunder
+:007e:SFX: Outlane
+:007f:SFX: Jet Bumper
+:0080:SFX: Captive Ball Hit
+:0081:SFX: Bonus X Lane
+:0082:SFX: Clock Winding
+:0085:SFX: Jackpot Increased
+:0086:SFX: Misc 4
+:0087:SFX: Ball Locked
+:0088:SFX: Misc 5
+:008a:SFX: Misc 6
+:008e:SFX: Misc 6 + Twinkles
+:008f:SFX: Tiger Roaring
+:0090:SFX: Phone Ringing
+:0091:SFX: Pick Up Phone
+:0092:SFX: Shuffling Cards
+:0093:SFX: Rattlesnake
+:0094:SFX: Birds
+:0095:SFX: Misc 7
+:0097:VOX: Bonus X Increased
+:0098:SFX: Ramp Shot
+:0099:SFX: Kickout Warning
+:009b:SFX: Misc 8
+:009c:SFX: Misc 9
+:009d:SFX: Spirit Ring Lit
+:009e:SFX: Misc 10
+:009f:VOX: "Moo!"
+:00c7:SFX: Boom 4
+:00c8:SFX: Illusion Lit
+:00c9:SFX: Misc 11
+:00ca:"Move your car!"
+:00cb:"Here's your hot dog!"
+# ------------
+# Male Voice Bank starts here.
+# ------------
+:00cc:"Go for Jackpot!"
+:00cd:"Jackpot is lit!"
+:00ce:"Billion!"
+:00cf:SFX: Combo shot
+:012c:Music: Jackpot! (2)
+:012d:SFX: Musical 1
+:012e:SFX: Musical 2
+:0190:VOX: Zap! "Vanish!"
+:01f4:"Extra ball!" (brawl)
+:01f6:"Seven o'clock."
+:01f7:"Eight o'clock."
+:01f8:"Nine o'clock!"
+:01f9:"Ten o'clock!"
+:01fa:"Eleven o'clock!"
+:01fb:"Midnight Madness!"
+:01fe:"Shoot for the trunk!"
+:01ff:"Shoot ... trap door."
+:0200:"Welcome to the Th..."
+:0201:"The Theatre awaits!"
+:0203:"Theatre complete!"
+:0210:"One o'clock."
+:0211:"It's Two o'clock."
+:0212:"Three o'clock."
+:0213:"Four o'clock."
+:0214:"Five o'clock."
+:0215:"It's six o'clock."
+:0219:"Mystifying!"
+:021a:"Magnificent!"
+:021b:"Astounding!"
+:021c:"Sensational!"
+:021d:"Spectacular!"
+:021e:"Unbelievable!"
+:021f:"Go for the extra ball"
+:0220:"Congratulations!"
+:0222:"Shoot... center stair"
+:0223:"Shoot... right stair"
+:0224:"Shoot for the jets"
+:0225:"Shoot... left lane"
+:0226:"Shoot... right lane"
+:0227:"Shoot... captive ball"
+:0228:"Shoot... spinner"
+:0229:"Make the ball vanish!"
+:022a:"Go for the center loop"
+:022c:"The rope is breaking!"
+:022d:"Hurry up!"
+:022e:"You must hurry up!"
+:022f:"Hurry up! ..danger!"
+:0230:"Look! She's in danger!"
+:0234:"Tiger Saw Jackpot!"
+:0237:"Shoot... magic trunk!"
+:023a:"The first ball is..."
+:023b:"The second ball is..."
+:023d:"The trap door is open!"
+:023e:"You must shoot into..."
+:0241:"Excellent!"
+:0242:"This ball is full of.."
+:0244:"...amazing player!"
+:0247:"I knew you could do it"
+:0249:"...can't help you now!"
+:024a:"Ticket, please."
+:024b:"Stay right where you.."
+:024c:"Don't give up now!"
+:024d:"You must continue!"
+:024e:"The basement is full.."
+:024f:"Oh no!" (crash oof ow!)
+:0250:"Replay!"
+:0252:"Careful!"
+:0255:"Try to saw the ball..."
+:0258:"Tonight's performance"
+:025c:"Player 1 is up."
+:025d:"Player 2 is up."
+:025e:"Player 3 is up."
+:025f:"Player 4 is up."
+:0260:"Amazing skill!"
+:0261:"Time is running out!"
+:0262:"Extra ball is lit!"
+:0263:"The air pressure is..."
+:0264:"Fifty Million!"
+:0265:"One-Hundred Million!"
+# ------------
+# Female Voice Bank
+# ------------
+:02bc:"Welcome to the Th..."
+:02bd:"Player"
+:02be:"One"
+:02bf:"Two"
+:02c0:"Three"
+:02c1:"Four"
+:02c2:"Welcome!"
+:02c4:"...is now closed."
+:02c7:"It's magic!"
+:02d3:"Shoot up the ctr stc."
+:02d4:"Shoot up the rt stc.."
+:02d5:"Shoot... the spinner!"
+:02d6:"Shoot for the jets!"
+:02d7:"Shoot... magic trunk!"
+:02d8:"Go for the ctr stc..."
+:02d9:"Go for the rt stc..."
+:02da:"Go for the spinner!"
+:02db:"Go for the jets!"
+:02dc:"Escape from the trunk"
+:02dd:"Shoot into the trap.."
+:02df:"Look!"
+:02e0:"Tiger Saw!"
+:02e1:"Spirit Cards!"
+:02e2:"Trunk Escape!"
+:02e3:"Levitating Woman!"
+:02e4:"Safe Escape!"
+:02e5:"The Metamorphosis!"
+:02e6:"Strait Jacket Escape!"
+:02e7:"Hat Magic!"
+:02e8:"Hocus Pocus!"
+:02ea:"The magic is within.."
+:02eb:"Vanish!"
+:02ed:"... the Grand Finale!"
+:02ee:"Make the Theatre..."
+:02ef:"You're an outstanding"
+:02f0:"Welcome back to the.."
+:02f1:"I am only an illusion"
+:02f2:"Hurry up!"
+:02f3:"Vanquish the chains!"
+:02f4:"You must break free!"
+:02f7:"I shall give you..."
+:02f9:"Extra ball is lit!"
+:02fa:"Go for the extra ball"
+:02fc:"Go for Multiball!"
+:02fd:"Lock is lit!"
+:02fe:"You must concentrate."
+:0300:"You are amazing!"
+:0301:"Unbelievable!"
+:0304:"Keep your cool!"
+:0307:"Levitate!"
+:0308:"You have the magic!"
+:0309:"You must believe in.."
+:030a:"Please!  Shoot again!"
+:030b:"You can do it!"
+:030c:"Here is another ball!"
+# ------------
+# German Translation of some comments
+# ------------
+:0321:VOX: (German)
+:0323:VOX: (German)
+:0325:VOX: (German)
+:0327:VOX: (German)
+:0328:VOX: (German)
+:0329:VOX: (German)
+:032a:VOX: (German)
+:032b:VOX: (German)
+:032c:VOX: (German)
+:032d:VOX: (German)
+:032e:VOX: (German)
+:032f:VOX: (German)
+:0332:VOX: (German)
+# ------------
+# Interesting... they didn't do a Spanish translation.
+# ------------
+
+
+; Twilight Zone
+; Additions made 01/20/01 by Dorsola (dorsola@descent2.com)
+; ------------
+tz_94h:
+:00:Reset Sound System
+:02:Music: Normal Prelaunch
+:03:Music: Normal Game
+:04:Music: Lock Lit
+:05:Music: Powerball Prelaunch
+:06:Music: Powerball Game
+:07:Music: Battle the Power
+:08:Music: Collect Bonus (pt 1)
+:09:Music: Power Mania
+:0a:Music: Multiball (normal)
+:0b:Music: Town Square Madness
+:0c:Music: T.S.M. Hit 1 + Theme
+:0d:Music: T.S.M. Hit 2 + Theme
+:0e:Music: T.S.M. Hit 3 + Theme
+:0f:Music: Multiball (Hurry-Up)
+:10:Music: Multiball (Jackpot!)
+:11:Music: Multiball Ready Pre
+:12:Music: Multiball Ready Game
+:13:Music: Super Slot
+:14:Music: Super Skill Shot
+:15:Music: Quick Lock Lit
+:16:Music: The Spiral
+:17:Music: Greed
+:18:Music: Clock Chaos level 1
+:19:Music: Clock Chaos level 2
+:1a:Music: Clock Chaos level 3
+:1b:Music: Clock Chaos level 4
+:1c:Music: Clock Chaos level 5
+:1d:Music: Quick Lock Theme 1
+# -------------
+# In most pre-DCS games, 1e and 1f adjust music tempo.  They're used
+# differently in TZ, however.
+# -------------
+:1e:Music: Clock Millions
+:1f:Music: Continue?
+# -------------
+# NOTE ABOUT 30: Will only sound if 37 or 08 was called previously.
+# -------------
+:30:Music: Collect Bonus (pt 2)
+# -------------
+# NOTE: Items marked with an asterisk (*) are special fade-in music
+# commands.  They perform a smooth transition from one theme to
+# another.
+# -------------
+:31:Music: Normal Prelaunch
+:32:Music: Normal Game *
+:33:Music: Lock Lit *
+:34:Music: Powerball Prelaunch
+:35:Music: Powerball Game *
+:36:Music: Battle the Power *
+:37:Music: Collect Bonus (pt 1)
+:38:Music: Power Mania
+:39:Music: Multiball Ready *
+:40:Music: Load Gumball pt. 1
+:41:Music: Load Gumball pt. 2
+:42:Music: Quick Lock Theme 2
+:43:Music: Quick Lock Theme 3
+:44:Music: Quick Lock Theme 4
+:45:Music: Quick Lock Theme 5
+:5a:Increase music tempo
+:5b:Decrease music tempo
+:7a:(+ param) = Alt. sound bank
+:81:SFX: Camera whirr-click
+:82:SFX: Crash 1
+:84:SFX: Slingshot
+:85:SFX: Tonk!
+:86:SFX: Crank turn 1
+:87:SFX: Crank turn 2
+:88:SFX: Crank turn 3
+:89:SFX: Misc 1
+:8a:SFX: Plunk
+:8d:SFX: Cuckoo
+:8e:SFX: Click 1
+:8f:SFX: Energy Release 1
+:90:SFX: Energy Release 2
+:91:SFX: Energy Release 3
+:93:SFX: Energy Release 4
+:94:SFX: Energy Release 5
+:95:SFX: Click 2
+:96:SFX: Crash 2
+:97:SFX: Launch Ball
+:98:SFX: Crash 3
+:9b:SFX: Click 3
+:9c:SFX: Right Ramp Diverter
+:9d:SFX: Gumball whirr-click
+:9e:SFX: Slot Machine Wind-up
+:9f:SFX: Slot Machine Stop
+:a0:SFX: Splat
+:a1:SFX: Click 4
+:a2:SFX: Click 5
+:a3:SFX: Boom 1
+:a4:SFX: Boom 2
+:a5:SFX: Boom 3
+:a7:SFX: Energy Release 1
+:a8:SFX: Energy Release 2
+:a9:SFX: Energy Release 3
+:ab:SFX: Crash 4
+:ac:SFX: Crash 5
+:ad:Music: Piano 2 (unused)
+:ae:SFX: Horn 1
+:af:SFX: Crash 6
+:b0:SFX: Horn 2
+:b1:SFX: Horn 3
+:b2:SFX: Horn 4
+:b3:SFX: Energy Release 4
+:b4:SFX: Energy Release 5
+:b5:SFX: Inlane rollover
+:b6:SFX: Outlane rollover
+:b7:SFX: Extra Ball Lit
+:b8:SFX: Multiball Start
+:b9:SFX: Rocket (long)
+:ba:SFX: Left Ramp Start
+:bb:SFX: Left Ramp Complete
+:bc:SFX: Misc 2
+:bd:SFX: Clock Chime
+:be:SFX: Misc 3
+:bf:SFX: Misc 4
+:c0:SFX: Hitchhiker Score
+:c1:SFX: TZ Hit (single)
+:c2:SFX: TZ Hit (Fade out)
+:c3:SFX: Spiral Score 1
+:c4:SFX: Spiral Score 2
+:c5:SFX: Spiral Breakthru
+:c6:SFX: Powerball Loop
+:c7:Music: Camera Score
+:c8:Music: Camera Next Award
+:c9:Music: Misc 1
+:ca:Music: Misc 2
+:cb:Music: Misc 3
+:cc:Music: Misc 4
+:cd:SFX: Jackpot Relit
+:ce:SFX: Quick Lock Show 1
+:cf:SFX: Quick Lock Show 2
+:d0:SFX: Slot Launch (ready)
+:d1:SFX: Slot Launch (go)
+:d2:SFX: Tilt Warning
+:d3:SFX: Tilt!
+:d4:SFX: Slam Tilt!
+:d5:SFX: Skill Red
+:d6:SFX: Skill Orange
+:d7:SFX: Skill Yellow
+:d8:SFX: Skill Shot Missed
+:d9:SFX: Echoed Click 1
+:da:SFX: Echoed Click 2
+:db:SFX: Echoed Click 3
+:dc:SFX: Echoed Click 4
+:dd:SFX: Electric Arc 1
+:e0:SFX: Electric Arc 2
+:e1:SFX: Super Slot Score
+:e2:SFX: T.S.M. Hit 1
+:e3:SFX: T.S.M. Hit 2
+:e4:SFX: T.S.M. Hit 3
+:e5:SFX: Super Skill Red
+:e6:SFX: Super Skill Orange
+:e7:SFX: Super Skill Yellow
+:e8:SFX: Super Skill Missed
+:e9:SFX: Start Battle Power
+:ea:SFX: Lite Slot Machine
+:eb:SFX: Spiral Shot Start
+:ec:SFX: Spiral Shot Complete
+:ed:SFX: Rocket (short)
+:ee:SFX: Door appears
+:ef:SFX: Robot Score
+:f0:SFX: Kick-out from lock, etc
+:f1:SFX: Jet bumper added
+:f2:Music: Replay/Special
+:f3:SFX: Misc 5
+:f4:SFX: Misc 6
+:f5:SFX: Misc 7
+:f6:SFX: Misc 8
+:f7:SFX: Jackpot Score (pt 1)
+:f8:SFX: Jackpot Score (pt 2)
+:fa:SFX: Right Ramp
+:fb:Music: Piano Award
+:fc:SFX: Lock Lit!
+:fd:SFX: Misc 9
+:fe:SFX: Mode Explain
+:ff:SFX: Misc 10
+# --------------
+# 01 is a blank music track used here so that CVSD sound can be played
+# back correctly.  It's unknown at this time if it's actually necessary
+# to play a music track before a CVSD sample or if this is simply serving
+# as a workaround to a bug in emulation.
+#
+# 7a = Select alt sound bank.  Next parameter is effect from alt bank.
+# --------------
+:017a01:"Tee hee hee hee hee!"
+:017a02:SFX: Boom 4
+:017a03:(Cousin It) "Aack!"
+:017a04:SFX: Bonk!
+:017a07:SFX: Boom 5
+:017a08:SFX: Boom 6
+:017a09:SFX: Boom 7
+:017a0a:SFX: Car Driving 1
+:017a0b:(Rudy) "Mmph! BLAH!"
+:017a0c:SFX: Car Driving 2
+:017a0d:SFX: Boom 8
+:017a0e:SFX: Boom 9
+:017a0f:SFX: Boom 10
+:017a10:"Here's your extra ball!"
+:017a11:SFX: Mode Complete
+:017a12:SFX: Robot Chatter
+:017a13:"Hi!  I'm Talking Tina!"
+:017a14:SFX: Gumball Pop
+:017a15:SFX: Car Screech
+:017a16:SFX: Misc 12
+:017a17:SFX: Misc 13
+:017a18:SFX: Clank 1
+:017a19:SFX: Clank 2
+:017a1a:SFX: Clank 3
+:017a1b:SFX: Boom 11
+:017a1c:SFX: Scream 1
+:017a1d:SFX: Scream 2
+:017a1e:SFX: Scream 3
+:017a20:"Haw haw haw haw haw!"
+:017a21:"Aaaaaaaarrrrrggghhh!"
+:017a22:"Feel lucky?"
+:017a23:(Power) "Oof!"
+:017a24:VOX: Power chuckle 1
+:017a25:VOX: Power chuckle 2
+:017a26:"Miss and you lose..."
+:017a27:"Noooooooooooooo!!"
+:017a28:"It's not yours!"
+:017a29:"Powerbaaallll!"
+:017a2a:"Put it back!"
+:017a2b:"Are you ready to...?"
+:017a2c:"Stop it!"
+:017a2d:"Too hot to handle?"
+:017a2e:"I want it back!"
+:017a32:"Be careful."
+:017a33:"Beyond... sight."
+:017a34:"Beyond... sound."
+:017a35:"Beyond... mind."
+:017a37:"This clock is worth..."
+:017a38:"You've just crossed..."
+:017a39:"Here's your extra ball!"
+:017a3a:"The Twilight Zone."
+:017a3b:"Into The Twilight Zone."
+:017a3d:"Feel the power."
+:017a3e:"There.  See what...?"
+:017a3f:"There's madness in..."
+:017a40:"Player One."
+:017a41:"Player Two."
+:017a42:"Player Three."
+:017a43:"Player Four."
+:017a44:"Note the hitchhiker..."
+:017a45:"This shot requires..."
+:017a46:"The Spiral awaits you."
+:017a47:"...Super Skill."
+:017a48:"Ten Million Points."
+:017a4a:"Not an ordinary day."
+:017a4b:"In an ordinary place."
+:017a4c:"Not an ordinary game?"
+:017a4d:"Or an ordinary player?"
+:017a4e:"The stakes are higher..."
+:017a4f:"...gumball machine."
+:017a50:"Time is a one-way..."
+:017a51:"You unlock this door..."
+:017a53:"An opportunity awaits..."
+:017a54:(Power) "Oof!" (2)
+:017a55:(Power) "Oof!" (3)
+:017a56:VOX: Power chuckle 3
+:017a59:"Breakthru!"
+:017a5a:(Robot) "Careful!"
+:017a5b:(Robot) "Don't miss!"
+:017a5c:"Don't touch the door!" 1
+:017a5d:"Don't touch the door!" 2
+:017a5e:"Get the extra ball!"
+:017a5f:"Faster!"
+:017a60:"Five!"
+:017a61:"Look to the future!"
+:017a62:"Lucky!"
+:017a63:"Oh no!"
+:017a64:"One!"
+:017a66:(Robot) "Put it back!"
+:017a67:"The robots can help!"
+:017a68:"Into the spiral!"
+:017a69:"Three!"
+:017a6a:"Two!"
+:017a6b:"You want more!"
+:017a6c:"Yes!"
+:017a6d:"You can do it!"
+:017a6e:"More!"
+:017a6f:"Jackpot!"
+:017a70:"Four!"
+:017a71:"Don't touch the door!" 3
+:017a72:"Ooo, give us shelter!"
+:017a73:"Return to your homes!"
+:017a74:"Do not panic!"
+:017a75:"Hey, it's only pinball!"
+:017a76:"Quit playin' with..."
+:017a77:"Greeeeeeeeed!"
+:017a78:VOX: Cousin It babbling
+:017a7a:SFX: Radio tuning 1
+:017a7b:SFX: Radio tuning 2
+:017a7e:SFX: Robot step 1
+:017a7f:SFX: Robot step 2
+:017a80:"Going my way?"
+:017a81:"Welcome race fans!"
+:017a82:"Go for the hill!"
+:017a83:"It's sunny drive time!"
+:017a84:"Picture the future."
+:017a85:"Big risk, big reward..."
+:017a86:"Things are not what..."
+:017a87:"Picture a ... camera."
+:017a88:"It's time to tune in..."
+:017a8a:"A chance at one of..."
+:017a8b:"Never underestimate..."
+:017a8c:"You have ... detour..."
+:017a8f:"Dance with the Devil..."
+:017a90:SFX: Scream 4
+:017a94:"...end of your journey."
+:017a95:"Survival is everything."
+:017a96:SFX: Cash register
+:017a97:SFX: Robot/Ramp Award
+:017a98:Music: Super Skill Start
+:017a99:SFX: Synth clank 1
+:017a9a:SFX: Synth clank 2
+:017a9b:SFX: Synth clank 3
+:017a9c:SFX: Misc 14
+:017a9d:Music: Super Skill Score
+:017a9e:Music: Gumball Shot
+:017a9f:Music: 3-way Combo
+:017aa0:Music: 4-way Combo
+:017aa1:Music: Quick Lock Start
+:017aa2:SFX: Misc 15
+:017aa3:SFX: Misc 16
+
+
+; World Cup Soccer '94
+; Additions made 01/20/01 by Dorsola (dorsola@descent2.com)
+; DCS Hardware
+; ------------
+wcs_l2:
+# ------------
+# 00xx = Music/Main SFX Bank
+# ------------
+:0000:Sound OFF
+:0001:Music: Multiball Main
+:0002:Music: Lock Lit Main
+:0003:Music: Intro + Norm Main
+:0004:Music: Final Draw Lit
+:0005:Music: Normal Pre
+:0006:Music: Lock Lit Pre
+:0007:Music: Multiball Pre
+:000b:Music: Extra Ball
+:000c:Music: Multiball Goal!
+:0015:Music: Normal Main
+:0016:Music: Kickoff Norm Main
+:0017:Music: Multiball Jackpot
+:0018:Music: B-I-G Goal Win
+:0019:Music: Striker Award
+:001a:Music: Striker Shot Lit
+:001b:Music: Ultra Goalie/Ramp
+:001d:Music: Shoot Again!
+:001f:Music: Ultra Item Full
+:0020:Music: EOB Bonus Show 3
+:0021:Music: EOB Bonus Flash
+:0023:Music: Boston Tea Party
+:0024:Music: BTP Complete
+:0027:Music: EOB Bonus Show 1
+:0028:Music: EOB Bonus Show 2
+:0036:Music: Fanfare 1
+:0037:Music: Fanfare (Lock Lit)
+:0038:Music: Final Draw
+:0039:Music: Victory Lap
+:003a:Music: Free Kick Hit
+:003b:Music: Sup. Free Kick Hit
+:003c:Music: Multiball Next Opp
+:003d:Music: Buy Ticket
+:003e:Music: Penalty Kick
+:0040:Music: Replay/Special
+:0042:Music: Skill Shot Score
+:0043:Music: B-I-G Goal Score
+:0044:Music: Super Free Kick
+:0046:Music: Multiball Rematch
+:0048:Music: Extra Ball Round
+:004a:Music: B-I-G Goal Round
+:004c:Music: Go For the Goalie!
+:004e:Music: Where's Striker?
+:0064:SFX: Fan Foghorn
+:0065:SFX: Misc 1
+:0066:SFX: Misc 2
+:0067:VOX: Crowd Cheer 1
+:0068:VOX: Crowd Cheer 2
+:0069:VOX: Crowd "Awwwwww!"
+:006a:VOX: Crowd "Boooooo!"
+:006c:SFX: Jet Flies Overhead
+:006e:SFX: Referee Whistle
+:006f:SFX: Misc 3
+:0071:SFX: Firework Whistle
+:0072:SFX: Firework Explosion
+:0073:SFX: Magna-Goalie
+:0075:VOX: Crowd Cheer 3
+:0076:SFX: Punch!
+:0077:SFX: "Unh!"
+:0078:SFX: Boing!
+:007c:SFX: Jet Bumper 1
+:007d:SFX: Jet Bumper 2
+:007e:SFX: Kicker
+:007f:VOX: Crowd Encouraging
+:0080:SFX: Normal Spinner
+:0083:SFX: Misc 4
+:0086:SFX: Goal Rollover 1
+:0087:SFX: Goal Rollover 2
+:0088:SFX: Goal Rollover 3
+:0089:SFX: Goal Rollover 4
+:008c:SFX: Misc 5
+:008d:SFX: Misc 6
+:008e:SFX: Misc 7
+:008f:SFX: Ball Captured
+:0092:SFX: Ticket Lane (Good)
+:0093:SFX: Ticket Lane (Bad)
+:0095:SFX: Ramp Complete
+:0096:SFX: Goal Rollover 5
+:0097:SFX: Thunder 1
+:0098:SFX: Super Spinner
+:009a:VOX: "Moo!"
+:009b:SFX: Boom 1
+:009c:VOX: Crowd Loop 1
+:009d:VOX: Crowd Loop 2
+:00a0:VOX: Crowd Cheer 1
+:00a1:VOX: Crowd Cheer 2
+:00a2:VOX: Crowd "Awwwwww!"
+:00a3:VOX: Crowd "Boooooo!"
+:00a4:SFX: Alert Bell
+:00a5:SFX: Ding!
+:00a6:SFX: TV Click
+:00a7:SFX: TV Static
+:00a8:SFX: Ramp Start
+:00aa:SFX: "Spwat!"
+:00ab:VOX: "Gulp!"
+:00ac:SFX: Striker Throws In
+:00ad:SFX: Firework Fuse
+:00ae:SFX: Firework Launch
+:00af:SFX: Chalkboard
+:00b0:SFX: Misc 11
+:00b1:SFX: Goalie Impact
+:00b2:SFX: Tweeting Birds
+:00bb:SFX: Kickout Warning
+:00bc:"Five!"
+:00bd:"Four!"
+:00be:"Three!"
+:00bf:"Two!"
+:00c0:"One!"
+:00cc:SFX: Outlane Drain
+# ------------
+# 01xx = Misc Voice Bank
+# ------------
+:012c:"Skill!"
+:012d:"Speed!"
+:012e:"Spirit!"
+:012f:"Stamina!"
+:0130:"Strength!"
+:0131:"Ultra Goalie"
+:0132:"Ultra Jets"
+:0133:Crowd Cheer + Bells
+:0134:"Ultra Ramps"
+:0135:"Ultra Spinner"
+# NS = Next Stop
+:0136:"NS, Chicago"
+:0137:"NS, Dallas"
+:0138:"NS, Boston"
+:0139:"NS, New York"
+:013a:"NS, New Jersey"
+:013b:"NS, Orlando"
+:013c:"NS, Washington DC"
+:013d:"NS, San Francisco"
+:013e:"NS, Detroit"
+# WLI = We're Landing In
+:013f:"WLI Chicago"
+:0140:"WLI Dallas"
+:0141:"WLI Boston"
+:0142:"WLI New York"
+:0143:"WLI New Jersey"
+:0144:"WLI Orlando"
+:0145:"WLI Washington DC"
+:0146:"WLI San Francisco"
+:0147:"WLI Detroit"
+# WT = Welcome To
+:0148:"WT Chicago"
+:0149:"WT Dallas"
+:014a:"WT Boston"
+:014b:"WT New York"
+:014c:"WT New Jersey"
+:014d:"WT Orlando"
+:014e:"WT Washington DC"
+:014f:"WT San Francisco"
+:0150:"WT Detroit"
+# EYSI = Enjoy Your Stay In
+:0151:"EYSI Chicago"
+:0152:"EYSI Dallas"
+:0153:"EYSI Boston"
+:0154:"EYSI New York"
+:0155:"EYSI New Jersey"
+:0156:"EYSI Orlando"
+:0157:"EYSI Washington DC"
+:0158:"EYSI San Francisco"
+:0159:"EYSI Detroit"
+# F501 = Flight 501 Now Boarding For
+:015a:"F501 Chicago"
+:015b:"F501 Dallas"
+:015c:"F501 Boston"
+:015d:"F501 New York"
+:015e:"F501 New Jersey"
+:015f:"F501 Orlando"
+:0160:"F501 Washington DC"
+:0161:"F501 San Francisco"
+:0162:"F501 Detroit"
+# PTLI = Prepare To Land In
+:0163:"PTLI Chicago"
+:0164:"PTLI Dallas"
+:0165:"PTLI Boston"
+:0166:"PTLI New York"
+:0167:"PTLI New Jersey"
+:0168:"PTLI Orlando"
+:0169:"PTLI Washington DC"
+:016a:"PTLI San Francisco"
+:016b:"PTLI Detroit"
+:016c:"Ultra (everything)"
+:016d:"Raiden!"
+:016e:"Nice car!"
+:016f:"I thought we were..."
+:0170:"Stay cool, daddio!"
+:0171:"Admiral Biadgi Out"
+:0172:VOX: Scream
+# ------------
+# 07xx = Announcer bank 1
+# ------------
+:07d0:"Hit the goalie!"
+:07d1:"Go for the goalie!"
+:07d2:"It's the Boston Tea..."
+:07d3:"It's tea time in..."
+:07d4:"Super Free Kick!"
+:07d5:"Go for the extra ball!"
+:07d6:"Extra Ball!"
+:07d7:"Fifty Million!"
+:07dc:"Shoot the goal!"
+:07de:"This team is on the..."
+:07df:"What a save!"
+:07e0:"Great save!"
+:07e1:"I can't... stopped..."
+:07e2:"This goalie is unb..."
+:07e3:"Great hands!"
+:07e4:"The guy is a wall!"
+:07e5:"Incredible save!"
+:07e6:"How did he make...?"
+:07e8:"The shot is good!"
+:07e9:"Another goal!"
+:07ea:"Goal!"
+:07eb:"Goooooaaaaaalllll!!"
+:07ec:"I can't... it went in!"
+:07ed:"What an unbelievable.."
+:07ee:"He scores!"
+:07ef:"He kicks it in!"
+:07f0:"What a header!"
+:07f1:"It's going in!"
+:07f2:"What a move!"
+:07f3:"Jackpot!"
+:07f4:"He scores a jackpot!"
+:07f5:"Great bicycle kick!"
+:07f6:"What a pass!"
+:07f7:"What a shot!"
+:07f8:"What a play!"
+:07f9:"Great tackle!"
+:07fa:"That was a hard tackle"
+:07fb:"He's lined up for a..."
+:07fc:"He's got a free kick!"
+:07fd:"Free kick!"
+:07fe:"Yellow card!"
+:07ff:"It's a red card!"
+# ------------
+# 08xx = Announcer bank 2
+# ------------
+:0800:"He's outta there!"
+:0801:"He passes downfield."
+:0802:"Out of bounds."
+:0803:"The corner kick is..."
+:0804:"It's kicked back in..."
+:0805:"Ready for corner kick!"
+:0807:"... instant replay!"
+:0808:"Let's watch that..."
+:080d:"Welcome ... WC '94!"
+:080e:"Get ready for the..."
+:080f:"The players are..."
+:0810:"The stadium is..."
+:0811:"It's time... Fin.Draw!"
+:0812:"You've qualified for.."
+:0813:"You made... Fin. Draw!"
+:0814:"Welcome to L.A., ..."
+:0815:"... World Cup Final!"
+:0816:"Defeat Germany for..."
+:0817:"The match is tied!"
+:0819:"We're in Overtime!"
+:081a:"You've won the W. Cup!"
+:081b:"A few seconds remain!"
+:081c:"Victory lap!"
+:081d:"The team takes a V.lap"
+:0821:"Germany is ahead by 1"
+:0822:"Germany is ahead by 2"
+:0823:"Germany is ahead by 3"
+:0824:"Germany is ahead by 4"
+:0825:"Germany is ahead by 5"
+:0826:"Germany is ahead by 6"
+:0827:"Germany is ahead by 7"
+:0828:"Germany is ahead by 8"
+:082b:"Germany leads by 1"
+:082c:"Germany leads by 2"
+:082d:"Germany leads by 3"
+:082e:"Germany leads by 4"
+:082f:"Germany leads by 5"
+:0830:"Germany leads by 6"
+:0831:"Germany leads by 7"
+:0832:"Germany leads by 8"
+:0835:"Germany trails by 1"
+:0836:"Germany trails by 2"
+:0837:"Germany trails by 3"
+:0838:"Germany trails by 4"
+:0839:"Germany trails by 5"
+:083a:"Germany trails by 6"
+:083b:"Germany trails by 7"
+:083c:"Germany trails by 8"
+:083f:"Germany is behind by 1"
+:0840:"Germany is behind by 2"
+:0841:"Germany is behind by 3"
+:0842:"Germany is behind by 4"
+:0843:"Germany is behind by 5"
+:0844:"Germany is behind by 6"
+:0845:"Germany is behind by 7"
+:0846:"Germany is behind by 8"
+:0848:"Germany retains the..."
+:0849:"Germany scores!"
+:084a:"Germany scores a goal!"
+# FM = First Match
+:0851:"FM: Germany"
+:0852:"FM: Germany, defend..."
+:0853:"FM: Italy"
+:0854:"FM: Holland"
+:0855:"FM: Sweden"
+:0856:"FM: Austria"
+:0857:"FM: France"
+:0858:"FM: USA"
+:0859:"FM: Canada"
+:085a:"FM: Australia"
+:085b:"FM: Great Britain"
+:085c:"FM: Morocco"
+:085d:"FM: Spain"
+:085e:"FM: Saudi Arabia"
+:085f:"FM: South Korea"
+:0860:"FM: Russia"
+# YO = Your Opponent
+:0865:"YO: Germany"
+:0866:"YO: Germany, defend..."
+:0867:"YO: Italy"
+:0868:"YO: Holland"
+:0869:"YO: Sweden"
+:086a:"YO: Austria"
+:086b:"YO: France"
+:086c:"YO: USA"
+:086d:"YO: Canada"
+:086e:"YO: Australia"
+:086f:"YO: Great Britain"
+:0870:"YO: Morocco"
+:0871:"YO: Spain"
+:0872:"YO: Saudi Arabia"
+:0873:"YO: South Korea"
+:0874:"YO: Russia"
+# NM = Next Match
+:0879:"NM: Germany"
+:087a:"NM: Germany, defend..."
+:087b:"NM: Italy"
+:087c:"NM: Holland"
+:087d:"NM: Sweden"
+:087e:"NM: Austria"
+:087f:"NM: France"
+:0880:"NM: USA"
+:0881:"NM: Canada"
+:0882:"NM: Australia"
+:0883:"NM: Great Britain"
+:0884:"NM: Morocco"
+:0885:"NM: Spain"
+:0886:"NM: Saudi Arabia"
+:0887:"NM: South Korea"
+:0888:"NM: Russia"
+#
+:088b:"The crowd is waiting.."
+:088e:"They can't seem to..."
+:0890:"He's set up in front.."
+:0891:"It's a breakaway!"
+:0892:"He's lined up for a..."
+:0893:"Where's he gone now?"
+:0894:"Where's Striker?"
+:0895:"There he is!"
+:0896:"That's not him!"
+:0897:"I was sure that was..."
+:089a:"It's Big Goal Round!"
+:089d:"Extra Ball Round!"
+:089e:"He takes a brutal hit!"
+:089f:"A crushing blow!"
+:08a1:"Let's take another..."
+:08a3:"Replay!"
+:08a4:"It's a match!"
+:08a5:"Shoot again!"
+:08a6:"Unbelievable play!"
+:08a7:"What a remarkable..."
+:08a8:"...extra ball on..."
+:08a9:"...extra ball by..."
+:08aa:"Back and better than.."
+:08ab:"What a powerful shot!"
+:08ac:"Goooooaaaaallll!!!"
+:08ad:"Incredible shot!"
+:08ae:"He slams it in!"
+:08af:"There's no stopping..."
+:08b0:"He's unstoppable!"
+:08b1:"Another unbel. save!"
+:08b3:"He blocks another one!"
+:08b4:"That was an amazing..."
+:08b5:"Special!"
+# ------------
+# 09xx = Announcer bank 3
+# ------------
+:0929:"What a save!"
+:092a:"Great save!"
+:092b:"I can't... stopped..."
+:092c:"This goalie is unb..."
+:092d:"Great hands!"
+:092e:"The guy is a wall!"
+:092f:"Incredible save!"
+:0930:"How did he make...?"
+:0931:"The shot is good!"
+:0932:"Another goal!"
+:0933:"Goal!"
+:0934:"Goooooaaaaaalllll!!"
+:0935:"I can't... it went in!"
+:0936:"What an unbelievable.."
+:0937:"He scores!"
+:0938:"He kicks it in!"
+:0939:"What a header!"
+:093b:"What a move!"
+:093c:"Jackpot!"
+:093d:"He scores a jackpot!"
+:093e:"Great bicycle kick!"
+:093f:"What a pass!"
+:0940:"What a shot!"
+:0941:"What a play!"
+:0942:"Goal!" + crowd cheer
+:0943:"Kooowwaaahh!"
+:0944:"Towwaaaaahh!"
+:0945:"Koooooooaahhh!"
+
+#######
+esha_la3
+#
+# F/X
+:0001:wind decrease
+:0002:constant repeat beeps
+:0003:echo beeps
+:0004:decreasing scale
+:0005:echo effect decrease
+:0006:heartbeat decrease
+:0007:bounce effect
+:0008:accel repeat
+:0009:accel repeat 2
+:000a:pacman
+:000b:zap
+:000c:bounce
+:000d:dribble
+:000e:decrease
+:000f:decrease 2
+:0010:repeat echo
+:0011:increase
+:0012:bounce 2
+:0013:repeat fast
+:0015:hit (high)
+:0016:hit 2
+:0017:hit 3
+:0018:hit 4
+:0019:hit 5 (low)
+:001a:loud click
+:001b:white noise rise
+:001c:white noise lower
+:001e:bounce decrease
+:001f:dribble 2
+:0020:downscale bounce
+:0021:accel crazy
+:0022:repeat downscale increase
+:0023:wind bell hit
+:0024:wind bell hit
+:0025:wind bell hit
+:0026:bell hit
+:0027:bell hit
+:0028:bell hit
+:0029:bell hit
+:002a:bell hit
+:002b:bell hit
+:002c:bell hit
+:0030:tilt
+:0031:saucer landing
+:0032:pacman fast
+:0033:buzz
+:0034:chunk
+:0035:air pass
+:0038:atari bumper
+:0039:atari bumper 2
+:003a:atari bumper 3
+:003b:atari bumper 4
+:003c:atari bumper 5
+:003d:atari bumper 6
+:003e:pong
+:003f:pong 2
+:0040:pong 3
+:0041:pong 4
+:0042:pong 5
+:0043:pong 6
+:0044:joust
+:0045:joust 2
+:0046:joust 3
+:0047:joust 4
+:0048:joust 5
+:0049:joust 6
+:004a:shoot
+:004b:crash
+:004c:crash 2
+:0050:repeat bounce up
+:0051:repeat air hit
+:0052:repeat air hit 2
+:0053:repeat air pass
+:0054:repeat air dopple
+:0055:repeat air fast
+:0056:thunder away
+:0057:thunder hit
+:0058:fast zap
+:0059:fast zap 2
+:005a:fast zap 3
+#
+# SPEECH
+:0081:Hey, Check out the fault!
+:0082:Earthshaker scream
+:0083:Check out the fault!
+:0084:And now, for more music
+:0085:Million
+:0086:Wow
+:0087:Today
+:0088:Take a scenic fault drive today
+:0089:Ooh, get shelter!
+:008a:Stay locked on with all the hits
+:008c:Head for the shelter
+:008d:It's sunny drive time
+:008e:Ooh!
+:008f:Ooh! Move me!
+:0090:Bitchin'
+:0091:Ooh! Get shelter!
+:0092:Head for the shelter! Ooh! Get Shelter!
+:0093:Ooh! Bitchin!
+:0094:Ooh! Million!
+:0095:Ooh! Jackpot!
+:0096:Jackpot!
+:0097:Check out the fault today
+:0098:Million!
+#
+# EXTRA SOUND F/X
+:0099:Thunder
+:009a:Thunder 2
+:009b:Thunder 3
+:009c:Thunder 4
+:009d:Thunder 5
+:009e:Thunder 6
+:009f:Thunder 7
+:00a0:Thunder 8
+:00a1:Door slam
+:00a2:Door slam 2
+:00a3:Door slam 3
+:00a4:Door slam 4
+:00a5:Door slam 5
+:00a6:Door slam 6
+:00a7:Door slam 7
+:00a8:Door slam 8
+:00c0:air drum
+:00c1:air drum 2
+:00c2:air drum 3
+:00c3:air drum 4
+:00c4:air drum 5
+:00c5:air drum 6
+:00c6:air drum 7
+:00c7:air drum 8
+#
+# MUSIC
+:0100:Stop Music
+:0101:Main Game Music
+:0102:Pre-Multiball music
+:0103:Game over music
+:0104:hurryup music
+:0105:Multiball music
+:0106:music
+:0107:fast music
+:0108:slow happy music
+:0109:hurryup jackpot
+:010a:Shooter lane music
+:010c:lost ball music
+:010d:ding
+:010e:bonus count end
+:010f:completion
+:0110:completion 2
+:0111:shooter lane music 2
+:0112:hurryup jackpot copy109
+#
+# MUSIC DUPLICATED COMMANDS
+:0140:Lost ball music copy010c
+:0141:Main Game Music copy0101
+:0142:Pre-Multiball music copy0102
+:0143:Game over music copy0103
+:0144:hurryup music copy0104
+:0145:Multiball music copy0105
+:0146:music copy0106
+:0147:fast music copy0107
+:0148:hurryup jackpot copy 0109
+:0149:shooter lane music copy010a
+
+
+#######
+# FIREPOWER: some sounds are multilayered
+# 1f is needed to reset the line after each sound.
+# By Greywolf
+#######
+frpwr_l2:
+:001f:FIREPOWER/start
+:011f:FIREPOWER/score
+:021f:Player 4 Start
+:031f:Match
+:041f:End Game
+:051f:POWER completed
+:061f:Player 3 Start
+:071f:Fire One/Two/Three
+:081f:Boom
+:091f:Bonus (>145 layers)
+:0a1f:Whirring Background (30 layers)
+:0b1f:Launch
+:0c1f:All Sounds Off
+:0d1f:Spinner (32 layers)
+:0e1f:Firepower Background (36 layers)
+:0f1f:1-6 target base (thunk)
+:101f:FIREPOWER MISSION ACCOMPLISHED 
+:111f:ENEMY DESTROYED 
+:121f:FIRE 
+:131f:MISSION ACCOMPLISHED 
+:141f:1000 points 
+:151f:100 points
+:161f:Top Lane (thuff) 
+:171f:YOU WON ONE MISSION 
+:181f:YOU ARE DESTROYED 
+:191f:1-6 completed base 
+:1a1f:10 points 
+:1b1f:Player 2 Start/Extra Ball 
+:1c1f:Lock 
+:1d1f:Power Target 
+:1e1f:Tilt
+#
+#
+lotr:
+:fc01:"One dwarf ring"
+:fc02:"Two dwarf rings"
+:fc03:"Three dwarf rings"
+:fc04:"Four dwarf rings"
+:fc05:"Five dwarf rings"
+:fc06:"Six dwarf rings"
+:fc07:"Seven dwarf rings"
+:fc08:"You've gathered the seven"
+:fc09:"Win the War"
+:fc0b:"Open the chest"
+:fc0c:"Now that one there"
+:fc0e:"You've got them on the run"
+:fc0f:"Kill the witch king"
+:fc10:"Kill that flying monster"
+:fc11:"Find your shield lad"
+:fc12:"Stick em behind the knee laddie"
+:fc13:"Right under his crown"
+:fc14:"Rest In Peace"
+:fc15:"Stunning"
+:fc16:"Look out"
+:fc17:"Orcs"
+:fc18:"Misty mountain maggots"
+:fc19:"Kill the orcs"
+:fc1e:Make way across the ramp
+:fc1f:Something that ugly should not live
+:fc20:That Way
+:fc23:"mind those ladders"
+:fc24:The wall is breached
+:fc25:They're through the wall
+:fc26:The Siege riders
+:fc27:Throw down those ladders
+:fc2e:Almost There
+:fc31:keep your wits about ya
+:fc32:keep it up laddie
+:fc34:Jackpot
+:fc35:double jackpot
+:fc36:triple jackpot
+:fc37:4X Jackpot
+:fc38:5X Jackpot
+:fc39:6X Jackpot
+:fc3a:7X Jackpot
+:fc3b:8X Jackpot
+:fc3c:9X Jackpot
+:fc3d:10X Jackpot
+:fc3e:Jackpot
+:fc3f:Super Jackpot
+:fc41:Path of the dead
+:fc42:the dead are coming
+:fc44:get hold of yourself
+:fc45:100 more
+:fc46:250 more
+:fc47:500 more
+:fc48:Now that's an army
+:fc49:minus tirith is under attack
+:fc4a:They captured the first level
+:fc4b:They captured the second level
+:fc4c:They captured the third level
+:fc4d:They captured the fourth level
+:fc4e:They captured the fifth level
+:fc4f:They captured the sixth level
+:fc50:They captured the seventh level
+:fc51:The King has returned
+:fc52:Jackpot 1
+:fc53:Jackpot 2
+:fc54:Jackpot 3
+:fc55:Jackpot 4
+:fc56:Jackpot 5
+:fc57:Jackpot 6
+:fc58:Jackpot 7
+:fc59:Double Jackpot 1
+:fc5a:Double Jackpot 2
+:fc5b:Double Jackpot 3
+:fc5c:Double Jackpot 4
+:fc5d:Double Jackpot 5
+:fc5e:Double Jackpot 6
+:fc5f:Double Jackpot 7
+:fc60:Triple Jackpot 1
+:fc61:Triple Jackpot 2
+:fc62:Triple Jackpot 3
+:fc63:Triple Jackpot 4
+:fc64:Triple Jackpot 5
+:fc65:Triple Jackpot 6
+:fc66:Triple Jackpot 7
+:fc67:Big Points
+:fc68:5 Million
+:fc69:Super Ring Frenzy
+:fc6a:Extra Ball
+:fc6b:Your prize is doubled
+:fc6c:We have a wizard
+:fc6e:Special
+:fc6f:Replay
+:fc70:Ticket
+:fc71:Free Game
+:fc72:Don't move a muscle
+:fc73:Steady Mate
+:fc74:Very Dangerous such behavior
+:fc76:Never trust anyone over four feet
+:fc77:Ten
+:fc78:Nine
+:fc79:Eight
+:fc7a:Seven
+:fc7b:Six
+:fc7c:Five
+:fc7d:Four
+:fc7e:Three
+:fc7f:Two
+:fc80:One
+:fc81:Time's a Wasting
+:fc82:Quickly
+:fc84:Hurry
+:fc85:thunk sound
+:fc86:Quick
+:fc87:That's the Spirit
+:fc8b:You've Got It
+:fc8c:You're Almost There
+:fc8d:You're Doing Great
+:fc90:Shreek/Howl
+:fc91:low shreek/howl
+:fc92:low shreek/howl 2
+:fc93:lower shreek/howl
+:fc94:lower shreek/howl 2
+:fc95:lower shreek/howl 3
+:fc96:thwak
+:fc97:thwak
+:fc98:thwak
+:fc99:We Must join with him Gandalf
+:fc9a:When did Saruman the wise abandon reason for madness?
+:fc9b:But you have elected the way of pain
+:fca0:Spell effect sound
+:fca1:elvish chant
+:fca2:elvish scream effect
+:fca3:thunk
+:fca4:whoosh
+:fca5:shreek
+:fca6:shreek
+:fca7:shreek
+:fca8:Whoosh short
+:fca9:air short
+:fcaa:air short
+:fcab:air short
+:fcac:thunk thunk
+:fcad:thunk
+:fcae:thunk
+:fcb0:waa waa
+:fcb1:waaa
+:fcb2:waaa
+:fcb3:waaaaaaaaaa
+:fcb4:growl
+:fcb5:growl
+:fcb6:hit shreek
+:fcb7:hit shreek
+:fcb8:hit shreek
+:fcb9:growl
+:fcba:growl
+:fcbb:growl
+:fcbc:loud growl
+:fcbd:loud growl
+:fcbe:loud growl
+:fcc0:water drip
+:fcc1:two drips
+:fcc2:drip
+:fcc3:sword
+:fcc4:sword
+:fcc5:sword
+:fcc6:sword twice
+:fcc7:sword
+:fcc8:sword twice
+:fcc9:low sword
+:fcca:two low swords
+:fccb:low sword
+:fccc:sword +echo
+:fccd:sword +echo
+:fcce:sword low
+:fcd0:scream
+:fcd1:scream
+:fcd2:scream
+:fcd3:scream
+:fcd4:scream
+:fcd5:scream
+:fcd6:flap flap (wings)
+:fcd7:Flap (wings)
+:fcd8:Flap(wings)
+:fcd9:Flap(wings)
+:fcda:flap flap flap
+:fcdb:flap flap
+:fcdc:flap air
+:fcdd:flap
+:fcde:air
+:fce0:One Elf Ring
+:fce1:Two Elf Rings
+:fce2:Three Elf Rings
+:fce3:One Ring of Men
+:fce4:Two Rings of Men
+:fce5:Three Rings of Men
+:fce6:Four Rings of Men
+:fce7:Five Rings of Men
+:fce8:Six Rings of Men
+:fce9:Seven Rings of Men
+:fcea:Eight Rings of Men
+:fceb:Nine Rings of Men
+:fcec:100 more
+:fced:250 more
+:fcee:500 more
+:fcef:ching
+:fcf0:ching
+:fcf1:clang
+:fcf2:clang
+:fd02:main theme
+:fd03:slow mellow song
+:fd04:end of ball countdown
+:fd05:end of end of ball bonus
+:fd06:long tune repeat
+:fd07:horns rising pitch tune
+:fd08:horns part 2
+:fd09:march battle type
+:fd0a:march to battle type 2
+:fd0b:march battle type 2 part 2
+:fd0c:sad slow song
+:fd0d:sad slow song 2
+:fd0e:sad slow song 3
+:fd0f:evil 1
+:fd11:good 1
+:fd12:good 2
+:fd13:battle march 2
+:fd14:battle march 2 part 2
+:fd15:battle march 2 part 3 speedy
+:fd16:piano scale
+:fd17:strings scale+drums
+:fd18:good speed song
+:fd19:victory music
+:fd1a:victory music 2
+:fd1b:ogre creation tune
+:fd1c:ogre creation tune part 2
+:fd1d:ingame rougher battle/sad
+:fd20:inbattle music
+:fd21:inbattle music 2
+:fd22:guitar slow happy music
+:fd23:slow sad music
+:fd24:metal march
+:fd25:march battle anticipation
+:fd26:hobbit happiness
+:fd27:orc battle music 1
+:fd28:"When you look into the mirror"
+:fd29:completion
+:fd2c:explosions/rising battle music
+:fd2d:explosion/dings
+:fd2e:explosion/rising scale arrow?
+:fd2f:sand
+:fd30:"FIREWORK SOUND"
+:fd31:repetitive ding
+:fd32:inlane repetitive
+:fd33:grunt
+:fd34:chime
+:fd35:rising scale
+:fd36:thump/complete
+:fd37:boom
+:fd38:downscale
+:fd39:rising scale
+:fd3a:bing
+:fd3b:crumble
+:fd3c:chime hit
+:fd3d:repetitive scale up
+:fd3e:arrow thunk
+:fd40:rising air
+:fd41:victory sound 2
+:fd42:rising drip
+:fd43:rising victory
+:fd44:rising victory thunk
+:fd45:rising horns victory
+:fd46:rising air 2
+:fd47:end
+:fd48:bubbly complete
+:fd49:thunder
+:fd4a:thunder
+:fd4b:thunder
+:fd4c:thunder
+:fd4d:thunder
+:fd4e:thunder
+:fd4f:"I suppose you think that was terribly clever"
+:fd50:thunder
+:fd51:thuder
+:fd52:thunder
+:fd53:leaf
+:fd54:leaf
+:fd55:two leaf
+:fd56:leaf
+:fd57:leaf
+:fd58:leaf
+:fd59:leaf
+:fd5a:leaf
+:fd5b:leaf
+:fd5c:two leaf
+:fd5d:leaf
+:fd5e:leaf
+:fd5f:hammer/anvil orc sound
+:fd60:leaf
+:fd61:two leaf
+:fd62:leaf
+:fd63:two leaf
+:fd64:leaf
+:fd65:leaf
+:fd66:two anvil sounds
+:fd67:click/anvil sound
+:fd68:anvil
+:fd69:clean anvil
+:fd6a:anvil/echo
+:fd6b:single anvil
+:fd6c:single anvil
+:fd6d:single anvil
+:fd6e:single anvil
+:fd6f:"run frodo!!!"
+:fd70:anvil
+:fd71:anvil
+:fd72:anvil
+:fd73:two anvils
+:fd74:anvil
+:fd75:anvil
+:fd76:anvil special?
+:fd77:two anvils
+:fd78:two anvils
+:fd79:door slam
+:fd7a:door slam
+:fd7b:door slam echo
+:fd7c:two door slams
+:fd7d:door slam echo 2
+:fd7e:door slam
+:fd80:bang
+:fd81:bang
+:fd82:bang echo
+:fd83:bang distorted end
+:fd84:bang
+:fd85:bang
+:fd86:bang
+:fd87:bang
+:fd88:bang
+:fd89:bang
+:fd8a:bang echo
+:fd8b:bang
+:fd8c:bang bang twang
+:fd8d:bang twang
+:fd8e:bang bang twang
+:fd8f:chimes/bells scale down
+:fd90:bang
+:fd91:bang bang
+:fd92:bang bang
+:fd93:bang bang
+:fd94:bang
+:fd95:bang
+:fd96:bang bang
+:fd97:bang
+:fd98:bang echo
+:fd99:bang bang
+:fd9a:bang
+:fd9b:bang
+:fd9c:bang
+:fd9d:bang
+:fd9e:bang bang
+:fd9f:bang
+:fda0:loud bang
+:fda1:thunk
+:fda2:thunk
+:fda3:thunk
+:fda4:thunk echo
+:fda5:bang
+:fda6:thunk echo
+:fda7:thunk
+:fda8:thunk
+:fda9:river air
+:fdaa:river air rising
+:fdab:river air rising echo
+:fdac:river air rising low
+:fdad:river air rising short
+:fdae:river air rising short echo
+:fdaf:river air rising scream
+:fdb0:air swoop
+:fdb1:boom boom
+:fdb2:boom reverb
+:fdb3:boom thunder
+:fdb4:rising air scream
+:fdb5:bing
+:fdb6:rolling bing
+:fdb9:rolling complete
+:fdba:rolling complete higher
+:fdbb:tune shriek
+:fdbc:tune aaah
+:fdbd:thunk complete shriek
+:fdbe:tune
+:fdbf:scream tune
+:fdc0:test tune
+:fdc1:rising
+:fdc2:chimes
+:fdc3:arrow thunk
+:fdc4:arrow shriek
+:fdc5:chime/bell
+:fdc6:different bell
+:fdc7:low bell
+:fdc8:three bells
+:fdc9:five anvils
+:fdca:whoosh whoosh thunk
+:fdcb:victory up
+:fdcc:victory middle
+:fdcd:victory start
+:fdce:victory again
+:fdcf:water
+:fdd0:scream bing thunk
+:fdd1:done victory arrow
+:fdd2:victory continued
+:fdd3:oooh/howl/thunk arrow
+:fdd4:aagh swish
+:fdd5:Star Trek beeps
+:fdd6:"I was delayed"
+:fdd7:scream chime
+:fdd8:drums finale
+:fdd9:whish/swish
+:fdda:machinegun bang
+:fddb:machinegun bang 2
+:fddc:whoosh reverb air
+:fddd:whoosh
+:fdde:whoosh
+:fddf:explosion/horn
+:fde0:fast tune up
+:fde1:fast end tune
+:fde2:fast end tune
+:fde3:fast end tune shriek
+:fde4:fast end tune breaking glass extended
+:fde5:shriek explosion
+:fde6:groan
+:fde7:groan shriek
+:fde8:thunks repetitive
+:fde9:horns tune/explosion
+:fdea:boom "run you fools!"
+:fdeb:low scream
+:fdec:chime
+:fded:fast tune
+:fdee:fast tune
+:fdef:slower completion tune held 2-parts
+:fdf0:whoosh
+:fdf1:"YOU SHALL NOT PASS"
+:fdf2:bang
+:fdf3:clang
+:fdf4:ping
+:fdf5:lower ping
+:fdf6:I suppose you think that was terribly clever
+:fdf8:soft ping
+:fdf9:ping ping
+:fdfa:credit sound
+:fdfb:low drum
+:fe30:They are the Nazgul
+:fe31:He needs elvish medicine AAAh!
+:fe32:ride hard
+:fe33:you have my sword
+:fe35:I do not :fear them
+:fe36:if you want him come and claim him
+:fe37:welcome
+:fe38:this is indeed, gondor is done
+:fe39:this is no mine it's a tomb
+:fe3a:they have a cave troll
+:fe3d:the ring must be destroyed
+:fe3e:a gift from the elves
+:fe3f:you shall be the :fellowship of the ring
+:fe40:get off the road quick
+:fe42:I will take the ring to mordor
+:fe43:I suppose you think clever
+:fe44:I will help you bear this burden
+:fe45:to the bridge of castledoon
+:fe46:a balroq
+:fe47:a demon of the ancient world
+:fe48:this falls beyond any of you
+:fe49:run
+:fe4a:over the bridge
+:fe4c:go back to the shadow
+:fe4d:you shall not pass
+:fe4e:fly you fools
+:fe4f:at first light on the fifth day look to east
+:fe50:you have my axe
+:fe51:a game of special magnificence
+:fe53:gollum
+:fe54:must have my precious
+:fe55:they stole it from us
+:fe56:sneaky little hobbits
+:fe57:you don't have any friends
+:fe58:nobody likes you
+:fe59:you're a liar
+:fe5a:?
+:fe5b:murderer
+:fe5c:where would you be without me
+:fe5d:we survived because of me
+:fe5e:aaaah?
+:fe5f:tricksy
+:fe60:master betrayed us
+:fe61:do you see little hobbitses
+:fe62:my precious
+:fe63:by order of the king
+:fe64:I'm not sure
+:fe65:you have my bow
+:fe66:orcs
+:fe67:what is it?
+:fe68:a scout
+:fe6a:that rider was looking for something or someone
+:fe6b:we're coming too
+:fe6e:you need people of intelligence
+:fe70:ooooh/horn
+:fe71:there is no li:fein the void
+:fe72:build me an army worthy of mordor
+:fe73:A new power is rising
+:fe74:to war
+:fe75:frodo
+:fe76:what are you doing the wraiths are still out there
+:fe77:mr frodo's not going anywhere without me
+:fe78:so it begins
+:fe79:smeagol
+:fe7a:always hopes
+:fe7b:master is afraid
+:fe7c:I'm not listening
+:fe7d:go away
+:fe7e:I hate you
+:fe7f:master looks after us now
+:fe80:we don't need you
+:fe81:leave now and never come back
+:fe82:smeagol's free
+:fe83:I see you
+:fe84:you cannot hide
+:fe85:I want every man and strong lad to be ready for battle by nightfall
+:fe86:As You Wish
+:fe87:show him
+:fe88:you should know better
+:fe89:there is no --
+:fe8a:go to war
+:fe8b:a fine hit
+:fe8c:release the river
+:fe8d:what do you see?
+:fe8e:frodo scream
+:fe8f:shire
+:fe90:baggins
+:fe91:give up the halfling she elf
+:fe92:everybody's invited
+:fe93:welcome to the shire
+:fe94:we will journey through moria
+:fe95:orcs!
+:fe96:look out
+:fe9a:hurry
+:fe9b:quick!
+:fe9c:run!
+:fe9d:again!
+:fe9e:breathing
+:fe9f:destroy the ring
+:feA0:gollum has the ring
+:fea1:aaah
+:fea2:ugh
+:fea3:aah
+:fea4:uuugh
+:fea5:aaaaah
+:fea6:widdhuh
+:fea7:aaaaaaah
+:fea8:help me
+:fea9:hit the held ball
+:feaa:shoot the center ring
+:feac:the ring is mine
+:fead:we make for brie
+:feae:we make for wethertop
+:feaf:we make for rivendale
+:feb0:unleash the river
+:feb1:help
+:feb4:hurry
+:feb6:the fire
+:feb7:use my sword
+:feb8:be at peace
+:feb9:on to valinor
+:feba:you have done very well
+:febb:you gathered all the rings of power
+:febc:you gathered the nine
+:febd:you've gathered the three
+:febe:beware of gollums two sides
+:febf:don't trust gollum
+:fec1:good smeagol double points
+:fec2:the fall of the witch king
+:fec3:the flight of the four
+:fec4:look!
+:fec5:the march of the ents
+:fec6:shelob's tunnel
+:fec7:the treeson of saurumon
+:fec8:the warg riders
+:fec9:double points
+:feca:ring frenzy
+:fecb:five million
+:fecc:get the extra ball
+:fecf:ring multiball
+:fed1:special is lit
+:fed3:you're doing great
+:fed4:beautiful shot
+:fed5:breathtaking
+:fed6:good shot
+:fed8:great shot
+:fed9:magnificent
+:feda:priceless
+:fedb:spectacular
+:fedc:very skillful
+:fedd:well done
+:fede:confound it
+:fee0:great effort
+:fee1:just missed
+:fee2:oh so close
+:fee4:shall we try that again?
+:fee5:easy
+:fee6:eazie
+:fee7:why'd you do that
+:fee8:ten
+:fee9:nine
+:feea:eight
+:feeb:seven
+:feec:six
+:feed:five
+:feee:four
+:feef:three
+:fef0:two
+:fef1:one
+:fef2:shoot the center loop
+:fef3:shoot the left orbit
+:fef4:shoot the left ramp
+:fef5:shoot the left tower
+:fef6:shoot the right orbit
+:fef7:shoot the right ramp
+:fef8:shoot the right tower
+:fef9:shoot the balroq
+:fefa:shoot the ring
+#
+#
+ripleys:
+:fc01:Two more to go
+:fc02:Just one more
+:fc03:You can do it
+:fc04:Almost There
+:fc05:Another letter in my name, how nice
+:fc06:Strange things in Africa
+:fc07:An idle threat
+:fc09:Nice job
+:fc0a:Way to go
+:fc0b:Do it again
+:fc0c:Faster
+:fc0d:Time's running out
+:fc0f:The strange, the bizarre, the unusual
+:fc10:Try a ramp shot
+:fc11:Collecting an idol would be good now
+:fc12:Good show old man
+:fc13:Nice shot
+:fc14:Three more idols
+:fc15:Excellent
+:fc16:Let me tell you about the one that got away
+:fc17:A rollerskating penguin, how amazing
+:fc18:How does he do that?
+:fc19:That penguin can skate
+:fc1a:Firewalkers, very dangerous
+:fc1b:He looks like he's done this before
+:fc1c:The ancient secret of firewalking
+:fc1d:Boomerangs, an incredible weapon
+:fc1e:How did you invent such a thing?
+:fc1f:Weird gravestones, my favorite
+:fc20:Old graveyards, bizarre
+:fc21:Out of the dark forest
+:fc22:What could be lying?
+:fc23:Strange exciting creatures
+:fc24:Something that's never been seen before
+:fc25:Shrunken heads, I love collecting these
+:fc26:There's a story behind every one
+:fc27:Guard your collection closely
+:fc28:Get three in a row
+:fc29:Amazing things can happen
+:fc2a:Unlimited millions at your disposal
+:fc2b:A fast way to add jewels to my collection
+:fc2c:Super Jackpot is lit
+:fc2d:Get the jackpot
+:fc2e:Get the Super Jackpot
+:fc2f:That's super
+:fc30:Break the magic code
+:fc31:Very Valuable
+:fc32:Hard to collect but worth it
+:fc33:I'd travel the world to find one of those
+:fc34:Player 1
+:fc35:Player 2
+:fc36:Player 3
+:fc37:Player 4
+:fc38:Is up
+:fc39:I don't believe it
+:fc3a:Let's explore the ancient temple
+:fc3b:Valuable artifacts inside
+:fc3c:Many things worth collecting
+:fc3d:Another jewel for my collection
+:fc3e:What bizarre thing will we find next?
+:fc3f:So close to a big find
+:fc40:I don't believe my eyes
+:fc41:An eighth continent
+:fc42:I've searched all my life
+:fc43:What will we find here?
+:fc44:Incredibly valuable things
+:fc45:You did it
+:fc46:Shoot again
+:fc80:WHOA
+:fc81:OH
+:fc82:Ouch Mon
+:fc83:Yowza
+:fc84:Ouch
+:fc85:Oh No
+:fc86:Yikes
+:fc87:Oooh
+:fc88:Big Points
+:fc89:Shoot the idol
+:fc8a:A little something to help you along
+:fc8b:Collecting idols is very dangerous
+:fc8c:That idol is noisy
+:fc8d:Crush that idol
+:fc8e:Serve you right
+:fc8f:Another idol bites the dust
+:fc90:Very good mon
+:fc91:Nice job mon
+:fc92:Too cold for me mon
+:fc93:Oh that's got to hurt
+:fc94:A little too slippery for me
+:fc95:That's gonna leave a mark
+:fc96:Don't try to sail home mon
+:fc97:Or maybe only once, heh heh
+:fc98:Very dangerous
+:fc99:Hot foot mon
+:fc9a:I bet that hurts
+:fc9b:And I don't even have feet
+:fc9c:Careful
+:fc9d:Look out
+:fc9e:Watch your head
+:fc9f:Right back at ya
+:fcA0:Duck
+:fcA1:Should've listened to me
+:fcA2:I'm scared
+:fcA3:Centuries of comedy
+:fcA4:I can dig it
+:fcA5:You're freakin' me out
+:fcA6:Rock on hairy guy
+:fcA7:Whoa....heavy
+:fcA8:He has more hair than me
+:fcA9:Don't growl at me you big ape
+:fcAa:You think it's easy bein' a shrunken head?
+:fcAb:Sure, pick on the little guy
+:fcAc:OUCH!
+:fcAd:Nooooo!
+:fcAe:Oooo
+:fcAf:Eeeee
+:fcB0:OH!
+:fcB1:Aaah
+:fcB2:Ah!
+:fcB3:Ooh...
+:fcB4:Ohg!
+:fcB5:Can we pick on the idol instead?
+:fcB6:Let's go whack that Big Foot guy.
+:fcB7:Just hangin' around mon
+:fcB8:Penguin Jackpot is lit!
+:fcB9:Gimme an 'R'
+:fcBa:Gimme an 'I'
+:fcBb:Gimme a 'P'
+:fcBc:Give me an 'O'
+:fcBd:Give me an 'F'
+:fcBe:Give me another 'F'
+:fcBf:What that spell?
+:fcC0:That thing is amazing!
+:fcC1:I feel like a million
+:fcC2:Looks like a bad slot machine
+:fcC3:Now we're moving
+:fcC4:Keep going mon
+:fcC5:WIN
+:fcC6:wooooo
+:fcC7:Oh I'm lovin' that
+:fcC8:Double your fun
+:fcC9:Points everywhere
+:fcCa:This party don't last long mon
+:fcCb:Whoah...we jammin now
+:fcCc:Shoot the left ramp
+:fcCd:Shoot the right ramp
+:fcCe:Don't forget the penguin
+:fcCf:You woke up the idol
+:fcD0:You can never have too many points
+:fcD1:Extra Ball is still lit mon
+:fcD2:One more to go
+:fcD3:Hurry up
+:fcD4:Almost there
+:fcD5:Oh yeah
+:fcD6:Oh yes
+:fcD7:oooh
+:fcD8:ohhh
+:fcD9:Big bonus man
+:fcDa:Congratulations man
+:fcDb:That was awesome
+:fcDc:Ten
+:fcDd:Nine
+:fcDe:Eight
+:fcDf:Seven
+:fcE0:Six
+:fcE1:Five
+:fcE2:Four
+:fcE3:Three
+:fcE4:Two
+:fcE5:One
+:fcE6:I'm getting dizzy
+:fcE7:Easy there
+:fcE8:The turbo gate is open man
+:fcE9:Beat that ball upside the head with a dead fish man
+:fd02:Victory Theme
+:fd03:Theme 2
+:fd04:Crazy Theme
+:fd05:Bingle song
+:fd06: (A)=Part 1 Intro repeat tune
+:fd06: (B)=Part 2 repetitive tune
+:fd07:Completion
+:fd08:Ripley's Main Theme
+:fd09: (A)=Ripley's continued theme Part 1
+:fd09: (B)=Ripley's continued theme part 2
+:fd0a:Bongos
+:fd0b: (A)=Intro to song
+:fd0b: (B)=Repeat for song
+:fd0c:Scary Tune
+:fd0d:Scary Tune 2
+:fd0e:Miami vice type theme
+:fd0f:Horns theme
+:fd10:hi hat
+:fd11:Big Band theme
+:fd12:Arabian Theme
+:fd14:Swing Theme
+:fd15:Drunk Band Jam
+:fd16:Happy Tune
+:fd17:Piano Tune
+:fd18:New Age Theme
+:fd1a:Phantom distorted song
+:fd1b:Bonus Countdown
+:fd1c:Bonus Countdown end
+:fd1d:Bonus multiplier?
+:fd20:Swing tune 2
+:fd21:Finish music
+:fd3e:Thunder
+:fd40:gunshot
+:fd41:flyby
+:fd42:flyby 2
+:fd43:door close
+:fd44:door close 2
+:fd45:door close 3
+:fd46:sonic ping
+:fd47:high sonic ping
+:fd48:rising chimes
+:fd49:air
+:fd4a:slam
+:fd4b:slam 2
+:fd4c:rolling thunder
+:fd4d:thunder 2
+:fd4e:string scale up
+:fd4f:string scale down
+:fd50:arrow
+:fd51:completion
+:fd52:inlane
+:fd53:drums
+:fd54:Upward swish
+:fd55:Two upward swishes
+:fd56:Three upward swishes
+:fd57:ping
+:fd58:downward swish
+:fd59:completion
+:fd5a:completion
+:fd5b:completion
+:fd5d:Pop
+:fd5e:Pop 2
+:fd5f:Pop 3
+:fd60:Pop 4
+:fd61:Pop 5
+:fd62:Pop 6
+:fd63:Morse code
+:fd64:Biplane
+:fd65:Completion
+:fd66:End
+:fd67:Completion end
+:fd68:Good complete
+:fd69:Good complete 2
+:fd6a:rising strings
+:fd6b:thunder 3
+:fd6c:thunder 4
+:fd6d:death
+:fd6e:completion
+:fd70:laser
+:fd71:laser 2
+:fd72:anticipation
+:fd73:explosion/buzz
+:fd74:completion
+:fd75:slot machine
+:fd76:slot handle
+:fd77:click
+:fd78:click 2
+:fd7b:thunder
+:fd7c:thunder 2
+:fd7d:thunder 3
+:fd87:slow laser
+:fd88:laser
+:fd89:laser
+:fd8a:laser
+:fd8c:laser completion
+:fd8e:Extra Ball
+:fd8f:completion
+:fd90:shot laser
+:fd91:laser
+:fd92:completion
+:fd93:laser
+:fd94:Super Jackpot
+:fd96:rising
+:fd97:rising
+:fd98:rising
+:fd99:leaves
+:fd9b:drum hihat
+:fd9c:completion
+:fd9d:laser hihat
+:fd9e:drums oooh
+:fd9f:laser screams
+:fdA1:Intro scale
+:fdA2:scale
+:fdA3:whoosh
+:fdA4:down scale
+:fdA5:rising scale
+:fdA8:horns
+:fdA9:slow rising scale
+:fdB0:Bark 1
+:fdB1:Bark 2
+:fdB2:Bark 3
+:fdB3:Bark 4
+:fdB4:Bark 5
+:fdB5:Bark 6
+:fdB6:Bark 7
+:fdB7:Bark 8
+:fdB8:Bark 9
+:fdB9:Bark 10
+:fdBa:Bark 11
+:fdBb:Bark 12
+:fdF6:Speaker test tone
+:fdF7:diagnostic select
+:fdF8:diagnostic move
+:fdF9:Diagnostic Exit
+:fdFa:Diagnostic Enter Menu
+:fdFb:Drum
+:fe30:Yawn
+:fe31:Yawn 2
+:fe32:Yawn 3
+:fe33:It's not plugged in yet mon
+:fe34:The head knows
+:fe35:Not much I guess
+:fe36:Quite a bit eh?
+:fe37:A whole lot, ho ho ho
+:fe38:That's so weird mon
+:fe39:Who would have thought that
+:fe3a:That makes me feel big again
+:fe3b:Big foot mon
+:fe3c:Lock is lit mon
+:fe3d:Now ya done it
+:fe3e:Just don't mess with the idol
+:fe3f:Oh boy
+:fe40:Carefully Carefully
+:fe41:Oh no
+:fe42:Watch out
+:fe43:ooh
+:fe44:noooo
+:fe45:Oh
+:fe46:OOOooh
+:fe47:Oooh
+:fe48:Ooooh
+:fe49:Oh
+:fe4a:Oh
+:fe4b:Oh
+:fe4c:Jackpot
+:fe4d:Jackpot
+:fe4e:Super Jackpot
+:fe4f:Double points ha ha ha
+:fe50:One Million
+:fe51:Two Million
+:fe52:Three Million
+:fe53:Four Million
+:fe54:Five Million
+:fe55:Get the extra ball
+:fe56:Special is lit
+:fe57:Ripoff
+:fe58:Extra Ball
+:fe59:Special
+:fe5a:Replay
+:fe5b:Tickets
+:fe5c:Ha ha ha
+:fe5d:Ho
+:fe5e:Heh
+:fe5f:Ho ho ho ho ho
+:fe60:Time for a road trip mon (Ripley voice)
+:fe61:Time to rock
+:fe62:Super Jackpot is lit
+:fe63:So Close
+:fe64:Let's go
+:fe65:Hit me to party
+:fe66:Don't hold back
+:fe67:The natives are restless
+:fe70:Ah
+:fe71:Ah
+:fe72:Ah
+:fe73:Ah
+:fe74:Ah
+:fe75:Ah
+:fe76:Who (owl)
+:fe77:Ah
+:fe78:Scream
+:fe79:Scream
+:fe7a:Short scream
+:fe7b:Scream
+:fe7c:Whoa
+:fe7d:Ah
+:fe7e:Ah
+:fe7f:Whaaa
+:fe80:Roar
+:fe81:Roar
+:fe82:Roar
+:fe83:Roar
+:fe84:Roar
+:fe85:Roar
+:fe86:Roar
+:fe87:Roar
+:fe88:Roar
+:fe89:Roar
+:fe8a:Roar
+:fe90:Duck
+:fe91:Duck
+:fe92:Duck
+:fe93:Duck
+:fe94:Duck
+:fe95:Duck
+:feA0:?
+:feA1:?
+:feA2:?
+:feA3:?
+:feA4:?
+:feA5:?
+:feA6:?
+:feA7:Ow!
+:feA8:Ow!
+:feA9:Ow
+:feAa:?
+:feAb:?
+:feAc:ooh ooh ooh ooh ooh ooh
+:feB0:rolling hubcap
+:feB1:Woof
+:feB2:Woof
+:feB3:Woof Woof
+:feB4:Woof Woof
+:feB5:Woof Woof Woof
+:feB6:Woof Woof
+:feB7:HOWL
+:feB8:Woof Woof
+:feB9:Woof
+:feBa:Woof
+:feBc:Ripoff
+:feBd:Gulp
+:feBe:Gulp
+:feBf:?
+:feC0:Amazing
+:feC1:Welcome to Ripley's Odditorium
+:feC2:Prepare to be amazed
+:feC3:Come one, come all
+:feC4:We have room for one more
+:feC5:Welcome sir, welcome madam
+:feC6:Skate with the penguin at your own risk, in the Ripley Zone
+:feC7:Ball one locked
+:feC8:Ball two locked
+:feC9:Extra Ball is lit
+:feCa:Ripoff
+:feCb:It's time to visit Africa
+:feCc:It's time to visit Antarctica
+:feCd:It's time to visit Asia
+:feCe:It's time to visit Australia
+:feCf:It's time to visit Europe
+:feD0:It's time to visit North America
+:feD1:It's time to visit South America
+:feD2:That's once
+:feD3:That's twice
+:feD4:Careful
+:feD5:Very Dangerous
+:feD6:Welcome back
+:feD8:Believe it or Not
+:feD9:Multiball is lit
+:feDa:No matter where you go, there you are
+:feE0:?
+:feE1:?
+:feE2:?
+:feE3:?
+:feE4:?
+:feE5:?
+:feE6:?
+:feE7:Ow!
+:feE8:Ow!
+:feE9:Ow
+:feEa:?
+:feEb:?
+:feEc:ooh ooh ooh ooh ooh ooh
+#
+#
+elvis:
+:fd02:Main Theme
+:fd03:ooh ooh ooh song (cc rider acoustic)
+:fd04:Blue Suede Shoes song (with lyrics)
+:fd05:CC Rider song (with lyrics)
+:fd06:horns CC Rider part 2
+:fd07:Hound Dog sound (with lyrics)
+:fd08:I'm All Shook Up (with lyrics)
+:fd09:Burning Love song (with lyrics)
+:fd0a:Heartbreak Hotel song (with lyrics)
+:fd0b:Jailhouse Rock (with lyrics)
+:fd0c:2001 Theme part 1
+:fd0d:2001 Theme part 2
+:fd0e:2001 Theme part 3
+:fd0f:2001 Theme part 4
+:fd10:hihat
+:fd11:drumroll/horns - needs break
+:fd12:end horn
+:fd14:Jailhouse Rock dum/bass start -needs break
+:fd15:Siren/Drunk Jam -needs break
+:fd16:Drunk Jam 2 -needs break
+:fd17:Drunk Jam 2 higher -needs break
+:fd18:Drunk Jam 2 even higher -needs break
+:fd19:Catchy rock (MIDI)
+:fd1a:Horns acoustic -repeats indefinately
+:fd1b:dance jam
+:fd1c:drums - long intro shakers/piccolo/horns
+:fd1d:Drunk Jam 3 (MIDI)
+:fd20:Piano jam
+:fd21:ex-ripleys victory type tune
+:fd22:ex-ripleys victory type tune 2
+:fd23:Piano Jam 2
+:fd24:complete
+:fd25:rolling drums -needs break
+:fd26:cymbal
+:fd27:yet another dance jam - same as FD03
+:fd28:Catchy rock intro piece (otherwise same as FD19)
+:fd3c:Error?  Plays a bunch of samples in sequence
+:fd3d:uh huh I'm bustin my s? - stops mid-sentence
+:fd40:Fireworks
+:fd41:Swoosh
+:fd42:Swoosh 2
+:fd43:Drum Drum
+:fd44:Higher Drum Drum
+:fd45:Even higher Drum Drum
+:fd46:drum drum, string
+:fd47:drum, higher string
+:fd48:Harp scale up
+:fd49:Nine Inch Nails type drum (from closer)
+:fd4a:gunshot
+:fd4b:gunshot 2
+:fd4c:explosion
+:fd4d:explosion +string
+:fd4e:string
+:fd4f:Harp scale down
+:fd50:Electric guittar +explosion and hihats
+:fd51:Electric guittar +explosion and hihats 2
+:fd52:rolling hubcap +explosion
+:fd53:scratching record up
+:fd54:door slam
+:fd55:complete 2 horns
+:fd56:aaah
+:fd57:higher aaah
+:fd58:even higher aaah
+:fd59:low low aaah
+:fd5a:medium low aaah
+:fd5b:high low aaah
+:fd5c:painful aaah
+:fd5d:higher painful aaah
+:fd5e:even higher painful aaah
+:fd5f:bark
+:fd60:bark 2
+:fd61:bark 3
+:fd62:woof
+:fd63:woof 2
+:fd64:woof 3 woof 3
+:fd65:big woof
+:fd66:big woof 2 big woof 2
+:fd67:big woof 3
+:fd68:big bark
+:fd69:big bark 2
+:fd6a:big bark 3
+:fd6b:"E" - these all remind me of "WHEEL OF FORTUNE!"
+:fd6c:"L"
+:fd6d:"V"
+:fd6e:"I"
+:fd6f:"S"  - yes there are 2 S's...
+:fd70:"ELVIS"
+:fd71:Screams 1
+:fd72:rolling medium drum
+:fd73:lower rolling medium drum
+:fd74:lowest rolling medium drum
+:fd75:yip yip
+:fd76:yip
+:fd77:low yip
+:fd78:lower yip
+:fd79:even lower yip
+:fd7a:even even lower yip
+:fd7b:yet another yip
+:fd7c:low yip low yip
+:fd7d:another low yip
+:fd7e:and again...much lower yip
+:fd7f:how low can you yip?  as low as this one?
+:fd80:and on and on, more low yips
+:fd81:same, but lower
+:fd82:same, but lower than that
+:fd83:same, lower than that one too
+:fd84:and again, lower
+:fd85:Michael Jackson style "Yow!" with backup music
+:fd86:Michael Jackson style "Yow!" with better backup completion music
+:fd87:Police siren
+:fd88:Police Siren +Jailhouse rock intro bass
+:fd89:Police Siren +completion music
+:fd8a:Police Siren +completion music 2
+:fd8b:twang down
+:fd8c:twang up +screams
+:fd8d:twang up higher
+:fd8e:swoosh upwards
+:fd8f:swoosh downwards
+:fd90:twang skid down
+:fd91:Complete 2
+:fd92:twang up + complete 2
+:fd93:zipper string up
+:fd94:bang
+:fd95:zipper string down
+:fd96:plasma +organ
+:fd97:synth down
+:fd98:synth serene
+:fd99:synth coaster
+:fd9a:synth note
+:fd9b:synth slide up
+:fd9c:bouncing drums
+:fd9d:WLVS station identification
+:fd9e:complete 3
+:fd9f:complete 4
+:fda0:jumping notes synth down
+:fda1:jumping notes synth up
+:fda2:complete 5
+:fda3:complete 6
+:fda4:complete 7
+:fda5:zap downwards
+:fda6:complete 8 +Screams
+:fda7:longer complete 8 +screams
+:fda8:Thankyou, you all are beautiful, thankyou very much, I'd like to do one more for you (screaming background)
+:fda9:complete 9
+:fdaa:complete 10
+:fdab:complete 11
+:fdac:Welcome to Graceland (with music complete backup)
+:fdad:Complete 12
+:fdae:Rising sliding synth scale +hit
+:fdaf:guittar (1)
+:fdb0:higher guittar (2)
+:fdb1:even higher guittar (3)
+:fdb2:even higher guittar (4)
+:fdb3:even higher guittar (5)
+:fdb4:rolling drum complete 13
+:fdb5:complete 14
+:fdb6:Crowd screams
+:fdb7:lower crowd screams
+:fdb8:noisy crowd screams
+:fdb9:reverb hit
+:fdba:high hit slide down
+:fdbb:rolling drums up
+:fdbc:snare drums
+:fdbd:slam door 2
+:fdbe:slam door 2 +rising sliding synth
+:fdbf:triple hit +harp
+:fdc0:high key guittar
+:fdc1:lower key guittar
+:fdc2:lower key guittar (2)
+:fdc3:lower key guittar (3)
+:fdc4:lower key guittar (4)
+:fdc5:lower key guittar (5)
+:fdc6:lower key guittar (6)
+:fdc7:lower key guittar (7)
+:fdc8:lower key guittar (8)
+:fdc9:lower key guittar (9)
+:fdca:lower key guittar (10)
+:fdcb:lower key guittar (11)
+:fdcc:lower key guittar (12)
+:fdcd:lower key guittar (13)
+:fdce:lower key guittar (14)
+:fdcf:lower key guittar (15)
+:fdd0:lower key guittar (16)
+:fdd1:lower key guittar (17)
+:fdd2:lower key guittar (18)
+:fdd3:lower key guittar (19)
+:fdd4:5 strums guittar (possible extra ball lit prelude)
+:fdd5:complete 15
+:fdd6:thunder
+:fdd7:thunder +guittar
+:fdd8:WLVS Station Identification (copy of FD9d)
+:fdd9:complete 16
+:fdda:complete 17
+:fddb:Doppler effect screams
+:fddc:bing synth
+:fddd:siren rising scale background
+:fdde:electric bass low
+:fddf:same as FDDe
+:fde0:choppy rising scale
+:fdf1:choppy falling scale
+:fdf6:speaker test tone
+:fdf8:diagnostic change menu
+:fdf9:diagnostic change selection ping
+:fdfa:diagnostic exit
+:fdfb:out of credits?
+:fdfc:low bass drums (diagnostic something)
+:fe30:Ladies and gentleman
+:fe31:an extra ball
+:fe32:Elvis Presley
+:fe33:The King of rock 'n roll
+:fe34:Elvis has left the building
+:fe36:It's the Elvis has left the building bonus
+:fe37:Thanks
+:fe38:Thankyou
+:fe39:You all are beautiful
+:fe3a:Thankyou very much
+:fe3b:Welcome to the show
+:fe3c:Shoot the hound dog
+:fe3d:Shoot the dog
+:fe3e:Let's shake it up
+:fe3f:Shake it up a bit
+:fe40:You can do anything you want to do baby, but hit that innter loop
+:fe41:Let's take it to the jailhouse
+:fe42:Room service at the Heartbreak hotel, hehe, you're on your own son
+:fe43:Pull back around you missed it that time
+:fe44:Checking in?
+:fe46:Yes?
+:fe47:You called?
+:fe48:Say what?
+:fe49:Welcome to Graceland
+:fe4b:The Billiard Room
+:fe4c:The Jungle Room
+:fe4d:The Music Room
+:fe4e:The Trophy Room
+:fe4f:The TV Room
+:fe50:Jam til dawn baby
+:fe51:Taking care of business...in a flash
+:fe52:TCB
+:fe53:Double Scoring
+:fe54:Man I just work here!
+:fe55:I plead innocent of all charges
+:fe56:Whoa oh oh oh start over
+:fe57:Do over baby
+:fe58:Come on up and get a scarf
+:fe59:Here you go
+:fe5a:This is for you
+:fe5b:Get the extra ball
+:fe5c:Get the special
+:fe5f:Play it again, man
+:fe60:Put it in the Heartbreak Hotel
+:fe61:Put it in the inner loop
+:fe62:Put it in the jailhouse
+:fe63:Put it in the left
+:fe64:Ramp
+:fe65:Loop
+:fe66:Put it in the right
+:fe67:You're doin' great
+:fe69:Two more
+:fe6a:One More Time
+:fe6b:Keep it up
+:fe6c:Let 'em have it
+:fe6d:Let 'er rip
+:fe6e:My boy my boy
+:fe6f:Hot damn
+:fe70:Beautiful
+:fe71:Fantastic
+:fe72:Great shot
+:fe73:Nicely done
+:fe75:Outstanding
+:fe76:That's amazing
+:fe77:Way to go
+:fe78:You're beautiful
+:fe79:You done this before
+:fe7a:Just missed it
+:fe7b:So close
+:fe7c:You'll get that later
+:fe7d:What went wrong?
+:fe7e:Hey, don't be cruel
+:fe7f:So you're lookin' for trouble?
+:fe80:Hehe who broke it?
+:fe82:Ten
+:fe83:Nine
+:fe84:Eight
+:fe85:Seven
+:fe86:Six
+:fe87:Five
+:fe88:Four
+:fe89:Three
+:fe8a:Two
+:fe8b:One
+:fe8c:See ya around kid
+:fe8d:I'd like to do one more for you
+:fe8f:Hit it
+:fe90:Take a lead man
+:fe91:WLVS
+:fe92:Elvis Radio
+:fe94:One
+:fe95:In the top ten this week
+:fe96:Coming in
+:fe97:at
+:fe98:number
+:fe99:Ten
+:fe9a:Nine
+:fe9b:Eight
+:fe9c:Seven
+:fe9d:Six
+:fe9e:Five
+:fe9f:Four
+:fea0:Three
+:fea1:Two
+:fea2:Moving up
+:fea3:Four
+:fea4:Three
+:fea5:Two
+:fea6:Places to
+:fea7:The top 10's number 1 hit is
+:fea8:All the way up to number 1
+:fea9:He's the king of the charts at number 1
+:feaa:A fool such as I
+:feab:Are you lonesome tonight
+:feac:Can't help falling in love
+:fead:Cryin' in the chapel
+:feae:Don't
+:feaf:Don't be cruel
+:feb0:Good luck charm
+:feb1:Guittar Man
+:feb2:His latest flame
+:feb3:In the ghetto
+:feb4:Love me tender
+:feb5:One night with you
+:feb6:Return to sender
+:feb7:rubber neckin'
+:feb8:She's not you
+:feb9:Surrender
+:feba:Suspicious minds
+:febb:Teddy bear
+:febc:This week's
+:febd:Way down
+:febf:Special
+:fec0:Replay
+:fec1:Ticket
+:fec2:Bump 'n win
+:fec3:Jackpot
+:fec4:Jackpot!
+:fec5:Super Jackpot!
+:fec6:Stay tuned for a special encore performance
+:fec8:Almost done
+:fec9:Door's always open at the Heartbreak Hotel
+:feca:Easy baby
+:fecb:Extra Ball
+:fecc:Extra Ball is lit
+:fecd:Good try man
+:fece:Good Shot
+:fecf:Great shootin'
+:fed0:Hit it man
+:fed1:Hurry
+:fed2:Hurry up
+:fed3:Just keep cool
+:fed4:That's a thing of beauty
+:fed5:Let's try that over, alright?
+:fed6:Let's try that again shall we?
+:fed7:Now that's taking care of business
+:fed8:Party at the jailhouse
+:fed9:Ready when you are
+:feda:Special is lit
+:fedb:Well done
+:fedc:Whoa, careful man
+:fedd:You just took this show off the air
+:fede:You just won an extra ball
+:fee0:Welcome to Graceland
+:fee1:Do over baby
+:fee2:You called?
+:fee3:Room service at the Heartbreak Hotel, hehe You're on your own son
+:fee4:Put it in the Heartbreak Hotel
+:fee5:Put it in the Jailhouse
+:fee6:Put it in the inner loop
+:fee7:Eight
+:fee8:Ten
+:fee9:One
+:feea:Elvis Radio
+:feeb:WLVS
+:feec:Get the Extra Ball
+:feed:Get the Special
+:feee:Put it in the Heartbreak Hotel
+:feef:Five
+:fef0:Put it in the Heartbreak Hotel
+:fef1:Put it in the Jailhouse
+:fef2:Ten
+:fef3:Get the Special
+:fef4:Heartbreak Hotel MUSIC (Plus singing)
+#
+#
+sopranos:
+:fc01:Pineapple Pie
+:fc02:Minestra
+:fc03:Fettuccini
+:fc04:Aronccini
+:fc05:feladell
+:fc06:pasta
+:fc07:monigot
+:fc08:gabagol
+:fc09:fried calamari
+:fc0a:alabucko
+:fc0b:let's eat
+:fc0c:bon appetito
+:fc0d:not the good china
+:fc0f:don't even go there
+:fc12:I just think that's very wonderful
+:fc13:you're doing great
+:fc14:double episode
+:fc16:double meadowlands
+:fc17:double safe
+:fc18:double shakedown
+:fc19:double truck heist
+:fc1a:10
+:fc1b:9
+:fc1c:8
+:fc1d:7
+:fc1e:6
+:fc1f:5
+:fc20:4
+:fc21:3
+:fc22:2
+:fc23:1
+:fc24:how's it goin
+:fc26:What the
+:fc27:What the fuck
+:fc28:What the beep
+:fc29:What
+:fc2b:Great job kid
+:fc2c:Hey, you've done this before right
+:fc2d:Hey, who taught you how to play
+:fc2e:Yo, forget about it
+:fc2f:Who's the big cheese around here
+:fc30:That's a beautiful thing
+:fc31:That was some sweet shootin' kid
+:fc33: badda bing bada boom
+:fc34:where did I put my earplugs
+:fc35:hey why don't you get a room
+:fc36:get back to the boat
+:fc37:I wish I could get back to the boat
+:fc38:you know...jackpot
+:fc39:you'd better give him his fuckin money
+:fc3a:You'd better give him his friggin' money
+:fc3b:Give him his money already
+:fc3c:that's a big take
+:fc3d:yeah, party at the bing
+:fc3e:hoist one for me
+:fc3f:yeah, have a good time guys
+:fc40:now the party's really heatin up
+:fc41:now that's a party
+:fc42:goin' fishin' leave a message
+:fc43:get out
+:fc45:look what I found
+:fc46:here you go
+:fc47:Big Points
+:fc48:Big is Good
+:fc49:Wo, look at that
+:fc4c:skojuli ala mode
+:fc4d:hey more fish
+:fc4e:hey not in the face huh
+:fc50:Permission to come aboard sir
+:fc51:Hi Honey
+:fc52:giggle
+:fc53:giggle 2
+:fc54:Oh
+:fc55:Oh My
+:fc56:Oooh
+:fc57:oooh! Jackpot
+:fc58:Oh umm Double Jackpot
+:fc59:Triple Jackpot
+:fc5a:Good evening sir
+:fc5b:Hey Baby
+:fc5c:Hiya Honey
+:fc5d:Drink up
+:fc5e:Saloo
+:fc5f:Can I do something for you
+:fc60:Stop the truck
+:fc61:This is the guy
+:fc62:Get out of the fucking truck now
+:fc63:Get out of the beep truck now
+:fc64:Let's get the shit out of here
+:fc65:Let's get the stuff out of here
+:fc66:Get out of the trunk
+:fc68:Don't shoot
+:fc69:I've got a family
+:fc6a:No No Ah
+:fc6b:Aaaah
+:fc6c:Aaaah Ummm
+:fc6d:Aaaah Uuuummm 2
+:fc6e:Jackpot
+:fc6f:Jaackpot
+:fc70:Get the extra ball
+:fc71:Extra Ball
+:fc72:Fuck it
+:fc73:Fucked him
+:fc74:Fuckin
+:fc75:Fucking
+:fc76:Fuck
+:fc77:Fuckin
+:fc78:Fuckin
+:fc79:Fuck
+:fc7a:Fuck it
+:fc7b:Shit
+:fc7c:Fucking big points
+:fc80:Oh Boy
+:fc83:capable?
+:fc84:How you doin pal?
+:fc85:It's an honor
+:fc86:Pretty friggin good
+:fc87:nice shot
+:fc88:baldie dipped in shit
+:fc89:we now run the executive game
+:fc8a:the executive game
+:fc8b:cuz you're beautiful
+:fc8c:see you later
+:fc8e:oh this is too fucked up for me
+:fc8f:all right let's see the stuff
+:fc90:you know why we're here
+:fc91:come before everything else
+:fc92:it's a thing of honor
+:fc93:you stay within the family
+:fc94:all right, give me your hand
+:fc95:may I burn in hell
+:fc96:I betray my friends
+:fc97:congratulations
+:fc98:on ten
+:fc99:strong
+:fc9a:good earner
+:fc9b:unrespected
+:fc9c:making you captain
+:fc9d:What the fuck you shootin at?
+:fc9e:What the BEEP you shootin at?
+:fc9f:You drunk?
+:fca0:You're gonna take this family into the 21st century
+:fca1:over the next couple years more and more I'll be givin my orders through you
+:fca2:and then finally
+:fca3:only through you
+:fca4:I told you you were the future of this family
+:fca5:Welcome to Allied Vending
+:fca6:You're in my world now
+:fca7:Permission to come aboard sir
+:fca8:Hi honey
+:fca9:What the fbeep you shootin' at?
+:fcbf:Saloo
+:fcc0:This kid can fuckin' earn
+:fcc1:This kid can BEEP earn
+:fcc2:This kid can earn
+:fcc3:I think one more should do it
+:fcc4:Now get the fuck out of here
+:fcc5:Now get the BEEP out of here
+:fcc6:He had a back case of fuckfaceitis
+:fcc7:He had a bad case of BEEPfaceitis
+:fcc8:Earn some over here
+:fcc9:That's quite a score
+:fcca:Welcome to this thing of ours.
+:fccb:These turkeys have no sense of direction
+:fccc:Marone
+:fccd:marone
+:fcce:marone (female)
+:fccf:that was outstanding
+:fcD0:Well Done
+:fcD1:Holy Mackeral
+:fcD2:That's a lot of clams
+:fcD3:Got any marshmallows?
+:fcD4:We're givin' something back to the earth
+:fcD5:I'm in the real Witness Protection Program
+:fcD6:I'm dead, and I still can't keep my big mouth shut
+:fcD7:It was a horse
+:fcD8:Anyone for bowling?
+:fcD9:Have you had the fish
+:fcDa:I've never had a woman scream that
+:fcDb:Something smells fishy
+:fcDc:Shoot again
+:fd03:intro music
+:fd04:techno music
+:fd05:midi intro music
+:fd06:fun music
+:fd07:intro music 2
+:fd08:horse race
+:fd09:finale
+:fd0a:jam
+:fd0b:drum jam
+:fd0c:ripleys repeat
+:fd0d:slow beat
+:fd0e:ripleys jam 2
+:fd0f:birds
+:fd10:hihat 
+:fd11:fast jam
+:fd12:march
+:fd13:ripleys jam 3
+:fd14:drum beat 2
+:fd15:horses running
+:fd16:drunk jam
+:fd17:drunk jam higher
+:fd18:drunk jam higher 3
+:fd19:drum beat 3
+:fd1a:drum beat 3 higher
+:fd1b:drum beat 3 higher 3
+:fd1c:drum beat 3 higher 4
+:fd1d:drum beat 3 higher 5
+:fd20:drum beat 3 higher 6
+:fd21:drum beat 3 higher 7
+:fd22:drum beat 3 higher 8
+:fd23:drum beat 3 higher 9
+:fd24:intro music piece A
+:fd25:intro music piece B
+:fd26:intro music piece A
+:fd27:intro music piece B
+:fd28:can I do something for you?
+:fd29:pretty friggin good
+:fd2a:extra ball
+:fd2b:mmfh heh heh
+:fd30:waver
+:fd31:horserace start
+:fd32:ding ding ding ding
+:fd33:complete 3
+:fd34:complete 4
+:fd35:drop
+:fd36:oooh
+:fd37:complete 5
+:fd38:bounce drum cymbal
+:fd39:drop string
+:fd3a:anvil
+:fd3b:anvil 2
+:fd3c:bounce drum cymbal
+:fd40:gunshot
+:fd41:swoosh
+:fd42:swoosh 2
+:fd43:drum drum
+:fd44:fast drum
+:fd45:drum drum 2
+:fd46:chime
+:fd47:chime 2
+:fd48:piano
+:fd49:waver swoosh
+:fd4a:gunshot 2
+:fd4b:gunshot 3
+:fd4d:swoosh 3
+:fd4e:clicks up
+:fd4f:clicks down
+:fd50:strum
+:fd51:strum 2
+:fd52:strum 3
+:fd53:strum 4
+:fd54:clang
+:fd55:plane
+:fd56:single click
+:fd57:single click 2
+:fd58:single click 3
+:fd59:register
+:fd5a:downward scale bass
+:fd5b:crunch
+:fd5c:crunch 2
+:fd5d:crunch 3
+:fd5e:crunch 4
+:fd5f:crunch 5
+:fd60:crunch 6
+:fd61:punch
+:fd62:punch 2
+:fd63:punch 3
+:fd64:smash
+:fd65:smash 2
+:fd66:smash 3
+:fd67:ooh
+:fd68:oh
+:fd69:um
+:fd6a:uh
+:fd6b:ugh
+:fd6d:gunshot 3
+:fd6e:shotgun
+:fd6f:hat
+:fd70:water splash
+:fd71:horn
+:fd72:repeated cymbals
+:fd73:door
+:fd74:speed
+:fd75:speed 2
+:fd76:water splash 2
+:fd77:burn
+:fd78:gun again
+:fd79:rising scale ding
+:fd7a:driveby
+:fd7b:window lock
+:fd7c:bwoom
+:fd7d:thunk
+:fd7e:arrow-plate
+:fd7f:ricochet
+:fd80:pour
+:fd81:driveby 2
+:fd82:spinner?
+:fd83:ding
+:fd84:bell
+:fd85:harpiscord
+:fd86:harpiscord+drums
+:fd87:shot again 2
+:fd88:repeating scale
+:fd89:new completion
+:fd8a:dual scale
+:fd8b:catchy tune
+:fd8c:new completion 2
+:fd8d:repeat new completion 2
+:fd8e:reverb completion 2
+:fd8f:slam
+:fd90:slam 2
+:fd91:slam 3
+:fd92:buzz up
+:fd93:jazz complete
+:fd94:single bass
+:fd95:bubbles
+:fd96:strum 2
+:fd97:drumbeat 7
+:fd98:flyby
+:fd99:flyby
+:fd9a:water
+:fd9b:goose
+:fd9c:clang
+:fd9d:clang 2
+:fd9e:register
+:fd9f:water
+:fda0:hum
+:fda1:complete
+:fda2:flyby
+:fda3:ding ding ding ding
+:fda4:air
+:fda5:crunch
+:fda6:ping
+:fda7:ping 2
+:fda8:ping 3
+:fda9:ping 4
+:fdaa:ping 5
+:fdab:bang slide
+:fdac:shot
+:fdad:completion
+:fdae:completion
+:fdaf:clang
+:fdb0:bing
+:fdb1:low piano
+:fdb2:low piano 2
+:fdb3:piano 3
+:fdb4:hit hit hit
+:fdb5:atmosphere
+:fdb6:swirl
+:fdb7:cannon
+:fdb8:bop
+:fdb9:geiger counter
+:fdba:phone
+:fdbb:complete
+:fdbc:complete
+:fdbd:complete
+:fdbe:run
+:fdbf:rolling cymbol/piano
+:fdc0:breathing
+:fdc1:horn
+:fdc2:run faster
+:fdc3:horn
+:fdc4:splash
+:fdc5:horn
+:fdc6:strum
+:fdc7:cymbals
+:fdc8:horn
+:fdc9:horn
+:fdca:horn
+:fdcb:horn
+:fdcc:horns
+:fdcd:punch
+:fdce:punch
+:fdcf:punch
+:fdD0:hit
+:fdD1:hit 2
+:fdD2:hit
+:fdD3:ooh
+:fdD4:oh
+:fdD5:um
+:fdD6:oh
+:fdD7:uh
+:fdD8:horn
+:fdD9:complete
+:fdDa:complete
+:fdDb:complete ding
+:fdDc:hit
+:fdDd:complete
+:fdDe:complete
+:fdDf:explode
+:fdE0:swing
+:fdE1:complete
+:fdE2:complete
+:fdE3:complete
+:fdE4:siren
+:fdE5:siren
+:fdE6:thunder
+:fdE7:hit
+:fdE8:scale air
+:fdE9:hit
+:fdEa:hit
+:fdEb:hit
+:fdEc:rain
+:fdEd:repeat strum
+:fdEe:complete
+:fdEf:bang
+:fdF0:bubbles
+:fdF1:hit
+:fdF2:hit
+:fdF3:shot
+:fdF4:complete
+:fdF5:speaker test tone
+:fdF7:chime
+:fdF8:beep
+:fdF9:exit menu
+:fdFa:beep
+:fdFb:drum
+:fe30:hey junior
+:fe31:let's pick the new associate
+:fe32:let's meet the new soldier
+:fe33:good earner
+:fe34:let's meet the new acting capo
+:fe35:let's meet the new capo
+:fe36:let's meet the new concilere
+:fe37:let's drink to the new underboss
+:fe38:let's drink to the new boss
+:fe3b:welcome to this thing of ours
+:fe3c:food fight
+:fe3d:baked zili
+:fe3e:gonalee
+:fe3f:try this
+:fe44:party at the bing
+:fe45:check out the new girls
+:fe47:it's all on the house
+:fe48:now haul ass
+:fe49:let's go
+:fe4a:time to go
+:fe4c:go!
+:fe50:play play play
+:fe52:hurry
+:fe53:move it
+:fe54:check out the suits
+:fe57:look at those plasma tvs
+:fe5b:check over here
+:fe5c:now over here
+:fe5e:I got one
+:fe5f:nothin over here
+:fe60:this is clean
+:fe61:come on baby
+:fe62:come on girl
+:fe63:come on fiomi
+:fe64:second?
+:fe65:third?
+:fe66:fourth?
+:fe68:give me a hand with the gasoline
+:fe6b:you do the honors kid
+:fe6c:that fuckin rat
+:fe6d:that BEEP rat
+:fe6e:that little rat
+:fe72:see what happens when you mess with drug dealers
+:fe73:witness protection program
+:fe74:he was always a good earner
+:fe75:he was like a brother to me
+:fe76:I just can't talk about her yet
+:fe78:rest his soul
+:fe79:she was an innocent creature
+:fe7a:It's the executive game
+:fe80:rake em in kid
+:fe81:you'll get em next time
+:fe82:it's time to get rid of that
+:fe83:it's time to get rid of this
+:fe84:there he goes
+:fe85:run through there
+:fe86:one more
+:fe87:I think we're gettin' close
+:fe88:Oh!
+:fe89:now, let's get that cash
+:fe8a:gettin' close
+:fe8d:give me the money
+:fe8e:where's the fuckin' money
+:fe8f:where's the friggin' money
+:fe90:where's the BEEP money
+:fe91:all right
+:fe92:it was beautiful
+:fe93:yeah
+:fe94:Where's the fbeep money?
+:fe96:whoa, look at that
+:fe97:good shot
+:fe98:hey that's nice
+:fe99:marone
+:fe9a:that's very smart
+:fe9b:this could be major
+:fea0:the special is lit
+:fea3:let's meet our newest friend
+:fea5:he's just a jamug
+:fea6:welcome to the family
+:fea8:this kid can earn
+:fea9:he's like a brother to me
+:feaa:I knew this day would come for you
+:feab:you're a man among men
+:feac:mikie pomeach
+:fead:ritchie apreal
+:feae:salvador big pussy bumpin cierro
+:feaf:jackie apreal jr
+:feb0:My oh my
+:feb1:ralph cipperetto
+:feb2:tony blondero
+:feb3:adriano laserver
+:feb4:minestra
+:feb5:osobuko oboruko
+:feb7:eat this
+:feb9:nice dvd players
+:fec0:now isn't that special
+:fec1:replay
+:fec2:ticket
+:fec3:bump n win
+:fec4:outstanding
+:fec5:very nice
+:fec6:Hey hey Hey!
+:fec7:Ignoramus
+:fec8:Spineless Jerk
+:fec9:Oh my god now look what you did
+:fecb:spinach alavacha
+:fecc:he's not gonna need this in the witness protection program
+:fecd:we gotta make that disappear
+:fecf:before rico we didn't have any multiballs
+:feD1:at this juncture
+:feD2:I :feel
+:feD3:the trip to the pork store
+:feD4:looking in the sa:fe
+:feD5:a drive through the meadowland
+:feD6:a fishing trip
+:feD7:a :few hours on your boat
+:feD8:a visit to the bada bing
+:feD9:can we return to the bada bing?
+:feDa:can we return to the boat?
+:feDb:can we return to the fish?
+:feDc:can we return to the meadow lands?
+:feDd:can we return to the pork store?
+:feDe:can we return to the faith?
+:feDf:can we return to the truck heist?
+:feE0::fettuccini primavera
+:feE1:rogotta pineapple pies
+:feE4:I'm starving
+:feE6:that was outstanding
+:feE7:we're out of time for today
+:feE8:we've made real progress here
+:feEa:don't look at that as a de:feat
+:feEb:toodaloo
+:feEc:total fucking ooh!
+:feEd:total BEEP ooh!
+:feEe:cleaning out the truck
+:feEf:wouldn't be worthwhile
+:feF0:would be instructive
+:feF1:would do you some good
+:feF5:test tone
+:feF7:cymbal
+:feF8:beep
+:feF9:exit test mode
+:feFa:slide
+:feFb:drum
+#
+#
+nascar:
+:fc02:nut, get back to racin'
+:fc03:let's bring it into the garage
+:fc04:get ready
+:fc05:green green green
+:fc06:just hang right in there
+:fc0a:this isn't for the faint hearted
+:fc0e:use the draft, then pass him
+:fc10:find the groove and gun it
+:fc12:just hold your position
+:fc13:keep her steady man
+:fc1a:Woohoo, that's gotta hurt
+:fc1c:Man, that guy is somethin'
+:fc1e:I think you've finally found the line
+:fc1f:Keep the line and hit it again
+:fc22:Come on, make your move
+:fc23:You're runnin' out of time
+:fc24:Do it again
+:fc25:One more time
+:fc27:Think back to your short track days
+:fc2b:He was way sideways on that one
+:fc2f:Hit the garage
+:fc31:Now it's hard racin'
+:fc32:Now it's our turn
+:fc33:You're a gos
+:fc34:This is all about speed
+:fc36:Great Job
+:fc37:Nice Drivin'
+:fc38:Whoohoo
+:fc39:Keep it goin' chief
+:fc3a:Now keep it steady or dialed in
+:fc3c:You were the best man today
+:fc3e:You are handlin' it like a pro
+:fc3f:You are a fan favorite, listen to them
+:fc42:You almost had 'em
+:fc43:We were so close
+:fc47:You missed everything
+:fc48:Hurry, go go go
+:fc49:Come on come on
+:fc4a:Go Go Go
+:fc4b:Come on, keep diggin'
+:fc4c:Shoot the left ramp
+:fc4d:Shoot the right ramp
+:fc4e:Shoot the left orbit
+:fc4f:Shoot the right orbit
+:fc51:Spell RACE to light locks
+:fc52:Just a little more
+:fc53:Hit the standups
+:fc54:You go and hit the drops
+:fc55:Hit the captive ball
+:fc56:Hit the car
+:fc57:Whoo that was a close one
+:fc58:Hold that line
+:fc5a:Get back to the garage
+:fc5b:Hang right
+:fc60:Aw man
+:fc61:All that hard work for nothin'
+:fc62:Million
+:fc63:Gentlemen, start your engines
+:fc64:Jackpot
+:fc65:Bonus Jackpot
+:fc66:Super Jackpot
+:fc67:Nascar encourages you to party responsibly
+:fc68:Party in the infield
+:fc69:Extra Ball
+:fc6a:Replay
+:fc6b:Special
+:fc6c:Ticket
+:fc6d:Bump 'n Win
+:fc6e:One Million
+:fc6f:Two Million
+:fc70:Three Million
+:fc71:Four Million
+:fc72:Five Million
+:fc73:Six Million
+:fc74:Seven Million
+:fc75Eight Million
+:fc76:Nine Million
+:fc77:Ten Million
+:fc78:Whoa, what a beauty
+:fc7a:Yeah baby
+:fc7b:Oooh yeah
+:fc7c:Charge it, (horn honk)
+:fc7d:Step on it man
+:fc7f :Hey, did someone say party?
+:fc80:Party
+:fc81:Whoo
+:fc82:Whoo
+:fc83:Whoo hoo
+:fc84:Alright
+:fc85:Alright
+:fc86:Alright
+:fc87:Oh
+:fc88:Oh
+:fc89:Oh
+:fc8a:Woohoo
+:fc8b:Woohoo
+:fc8c:Woohoo
+:fc8d:Speed Shots
+:fc8e:He's got a real shot to be champion
+:fc8f:The championship is within reach
+:fc90:One more victory and the championship is his
+:fc91:Great season
+:fc92:You're the champ
+:fc94:We're pickin' up chatter on the scanner
+:fc95:Good thinking
+:fc96:Let's hit the road course
+:fc97:Road Course
+:fc98:It's all up to the crew chiefs
+:fc99:It's crazy out there
+:fc9a:Looks like he's trying to move him out of the groove
+:fc9b:We only have a few laps left folks
+:fc9c:An amazing stop by the pit crew
+:fc9d:This pit crew is fast
+:fc9e:That's a huge move on pit road
+:fc9f:All ride
+:fca0:Takin' a ride in the hauler
+:fca1:Come on, get in close
+:fca3:Alright, don't let that wreck throw ya
+:fca4:Fake inside and go out
+:fca5:Ooh ooh feels sweet today
+:fca6:Gonna need those drop targets if you want to get ahead
+:fca7:blue's green man, now go after the ultimate prize
+:fca8:aaaw damn, I thought we had 'em
+:fca9:it's just you and the track now
+:fcaa:it's time, keep steady
+:fcab:it's yours for the takin'
+:fcac:Let's go
+:fcad:Nice job
+:fcae:Now the fun begins
+:fcaf:One more to go
+:fcb0:Party in the infield
+:fcb1:Pass him on the inside
+:fcb2:Pass him on the outside
+:fcb4:The garage is lit
+:fcb5:We'll get 'em next time
+:fcb6:Hey what's goin' on down there?
+:fcb7:You did it
+:fcb8:Right turn
+:fcb9:Hard right
+:fcba:One more tweak and we got it
+:fcbb:Hurry up
+:fcbc:Better get a move on
+:fcbd:We don't have much time
+:fcbe:Only a few laps to go
+:fcbf:Move up on him
+:fcc0:Come on get in there
+:fcc1:Try and pass him
+:fcc2:Make a move on him
+:fcc3:Great pitstop
+:fcc4:Great stop
+:fcc5:Two cars only
+:fcc6:Woo great move
+:fcc7:We moved up on the track
+:fcc8:Great job, get the bonus
+:fcc9:Woohoo we did it
+:fcca:Take your victory lap
+:fccb:Where's my paycheck
+:fccc:Can I come down now?
+:fccd:Hey where'd everybody go?
+:fcce:Guys?
+:fccf:Let's just take two
+:fcd0:As fast as we can now boys
+:fcd1:Nice slide job
+:fcd2:Let's bear down here
+:fcd3:Lap times are good
+:fcd4:The fans love ya
+:fcd5:Make your move now
+:fcd6:What a pass
+:fcd7:What a move
+:fcd8:You're way up on the wheel now
+:fcd9:Woho don't panic
+:fcda:This a big opportunity
+:fcdb:Don't give up
+:fcdc:Wham bam what a lap
+:fcdd:That shows some muscle
+:fcde:Everyone's watchin' it now
+:fcdf:Now make it stick
+:fce0:Big time move
+:fce1:How'd you do that?
+:fce2:This isn't for the faint hearted
+:fce3:Fake left and go right
+:fce4:Use the drafts then pass him
+:fce5:Too much downforce in the corner
+:fce6:Party in the infield
+:fd03:Title music
+:fd04:Title music 2
+:fd05:Title music 3 repeat hihat
+:fd06:Title music 4
+:fd08:Title end
+:fd09:Title music 5
+:fd0a:Victory Lap theme
+:fd0b:Groovy music
+:fd0c:Drum beat tune
+:fd0d:Racing jam
+:fd0e:All drum beat
+:fd0f:Mixed up
+:fd10:cymbal
+:fd11:Dance music
+:fd12:Party in the infield tune
+:fd13:Horns mixed up
+:fd14:I can't drive 55 lyrics version +midi
+:fd15:Bar jam
+:fd16:Drum beat tune 2
+:fd17:Fight tune horns
+:fd18:Happy tune
+:fd19:Fight tune horns 2
+:fd1a:Happy tune 2
+:fd1b:Happy tune 3
+:fd1c:Slow jam
+:fd28:two hihats
+:fd29:hihat
+:fd2a:hihat
+:fd2b:hihat
+:fd3c:drums hit echo
+:fd40:gunshot
+:fd41:flyby
+:fd42:louder flyby
+:fd43:two drums
+:fd44:louder two drums
+:fd45:drum
+:fd46:string
+:fd47:higher string
+:fd48:chimes up scale
+:fd49:repeated air
+:fd4a:explode
+:fd4b:louder explode
+:fd4c:even louder explode
+:fd4d:higher louder explode
+:fd4e:electric guittar
+:fd4f:strings down
+:fd50:engine rev
+:fd51:engine rev 2
+:fd52:engine rev 3
+:fd53:driveby
+:fd54:driveby 2
+:fd55:driveby 3
+:fd56:driveby 4
+:fd57:driveby 5
+:fd58:driveby 6
+:fd59:driveby 7
+:fd5a:driveby 8
+:fd5b:driveby 9
+:fd5c:chink
+:fd5d:chink 2
+:fd5e:chink 3
+:fd5f:chink 4
+:fd60:chink 5
+:fd61:chink 6
+:fd62:chink 7
+:fd63:chink 8
+:fd64:chink 9
+:fd65:thunder
+:fd66:honk
+:fd67:honk 2
+:fd68:honk 3
+:fd69:honk 4
+:fd6a:honk 5
+:fd6b:honk 6
+:fd6c:honk 7
+:fd6d:honk 8
+:fd6e:electric hum
+:fd6f:electric hum 2
+:fd70:electric hum 3
+:fd71:electric hum 4
+:fd72:electric hum 5
+:fd73:electric hum 6
+:fd74:electric hum 7
+:fd75:electric hum 8
+:fd76:electric hum 9
+:fd77:electric hum 10
+:fd78:gun cymbal
+:fd79:tire screech
+:fd7a:tire screech 2
+:fd7b:tire screech 3
+:fd7f:driveby cheer
+:fd80:driveby cheer 2
+:fd81:driveby cheer 3
+:fd82:cheer
+:fd83:cheer 2
+:fd84:cheer 3
+:fd85:rev hit
+:fd86:rev
+:fd87:rev 2
+:fd88:rev 3
+:fd89:rev 4
+:fd8a:rev 5
+:fd8b:rev 6
+:fd8c:rev 7
+:fd8d:rev 8
+:fd8e:rev 9
+:fd8f:repeat swish
+:fd90:swish
+:fd91:jet
+:fd92:jet horn
+:fd93:crash
+:fd94:crash 2
+:fd95:complete
+:fd96:footfall
+:fd97:cymbal beat
+:fd98:buzz
+:fd99:buzz 2
+:fd9a:buzz 3
+:fd9b:buzz 4
+:fd9c:buzz 5
+:fd9d:buzz 6
+:fd9e:complete 2
+:fd9f:rev scale
+:fda0:burn rubber
+:fda1:complete 3
+:fda2:complete 4
+:fda3:driveby loud
+:fda4:complete 5
+:fda5:OW!
+:fda6:OW!
+:fda7:OW!
+:fda8:WHOO!
+:fda9:WHOO!
+:fdaa:WHOO!
+:fdab:Alright!
+:fdac:Alright!
+:fdad:Alright!
+:fdae:Woo!
+:fdaf:Woo!
+:fdb0:Woo!
+:fdb1:Whoohoo!
+:fdb2:Whoohoo!
+:fdb3:Whoohoo!
+:fdb4:Yeah!
+:fdb5:Yeah!
+:fdb6:Yeah!
+:fdb7:complete 6
+:fdb8:driveby again
+:fdb9:driveby again 2
+:fdba:driveby again 3
+:fdbb:driveby again 4
+:fdbc:driveby again 5
+:fdbd:driveby again 6
+:fdbe:driveby again 7
+:fdbf:driveby again 8
+:fdc0:driveby again 9
+:fdc1:jet flyby high
+:fdc2:jet flyby high 2
+:fdc3:jet flyby high 3
+:fdc4:jet flyby high 4
+:fdc5:jet flyby high 5
+:fdc6:Speeder repeat
+:fdc7:Speeder repeat 2
+:fdc8:Speeder repeat 3
+:fdc9:complete 7
+:fdca:complete 8
+:fdcb:complete 9
+:fdcc:complete 10
+:fdcd:upscale hits
+:fdce:top hit
+:fdcf:downshift guittar
+:fdd0:downshift guittar 2
+:fdd1:string strum
+:fdd2:explode completion
+:fdd3:loud explosion
+:fdd4:mid hit
+:fdd5:driveby drum scale
+:fdd6:hit with cymbal
+:fdd7:guitar wave
+:fdd8:complete beat tune 11
+:fdd9:complete beat tune 12
+:fdda:complete beat tune 13
+:fddb:short hits
+:fddc:siren scale complete
+:fddd:complete 14
+:fdde:guittar song
+:fddf:short guittar riff
+:fde0:complete 15
+:fde1:reverb hit
+:fde2:downscale guittar song
+:fde3:downward bubbles
+:fdf5:Speaker Test Tone
+:fdf7:two cymbals
+:fdf8:beep
+:fdf9:downward scale
+:fdfa:slide
+:fdfb:drum
+:fe31:Allen Bestwick here bringing you Nascar Pinball
+:fe32:Let's go racing
+:fe33:Welcome race fans, to Nascar Pinball
+:fe34:We have a late entry in today's field
+:fe35:Player 1
+:fe36:Player 2
+:fe37:Player 3
+:fe38:Player 4
+:fe39:Player 2, a late addition
+:fe3a:Player 3, a late addition
+:fe3b:Player 4, a late addition
+:fe3c:Player 2 has joined the field
+:fe3d:Player 3 has joined the field
+:fe3e:Player 4 has joined the field
+:fe3f:Player 1, you're up
+:fe40:Player 2, you're up
+:fe41:Player 3, you're up
+:fe42:Player 4, you're up
+:fe43:Player 1, don't move
+:fe44:Player 2, don't move
+:fe45:Player 3, don't move
+:fe46:Player 4, don't move
+:fe47:Player 1 shoot again
+:fe48:Player 2 shoot again
+:fe49:Player 3 shoot again
+:fe4a:Player 4 shoot again
+:fe4e:Pops at max
+:fe51:Lock is lit
+:fe52:Ball 1 locked
+:fe53:Ball 2 locked
+:fe54:Multiball is lit
+:fe56:It's time to rock and roll
+:fe57:We're racing
+:fe58:Jackpot is lit
+:fe59:Super Jackpot is lit
+:fe5a:Bonus Jackpot is lit
+:fe5b:He's moved in to 10th position
+:fe5c:He's moved in to 9th position
+:fe5d:He's moved in to 8th position
+:fe5e:He's moved in to 7th position
+:fe5f:He's moved in to 6th position
+:fe60:He's moved in to 5th position
+:fe61:He's moved in to 4th position
+:fe62:He's moved in to 3rd position
+:fe63:He's moved in to 2nd poisition
+:fe64:He's moved in to 10th place
+:fe65:He's moved in to 9th place
+:fe66:He's moved in to 8th place
+:fe67:He's moved in to 7th place
+:fe68:He's moved in to 6th place
+:fe69:He's moved in to 5th place
+:fe6a:He's moved in to 4th place
+:fe6b:He's moved in to 3rd place
+:fe6c:He's moved in to 2nd place
+:fe6d:Trouble in turn 3
+:fe6e:He's taken the lead
+:fe70:Now that's a real Nascar fan folks
+:fe72:Our fans are the best
+:fe73:Welcome to the short track
+:fe74:Small tracks, big action
+:fe79:Bump 'n Run
+:fe7a:Right sides only
+:fe7b:Gas 'n Go
+:fe7c:Take on fuel now, collect the prize later
+:fe8b:That was beautiful
+:fe8c:Hard Racin'
+:fe8d:Speed Shots
+:fe8e:Extra Ball is lit
+:fe8f:Special is lit
+:fe91:There's a big payback at the end of this line
+:fe93:This driver's havin' a great season
+:fe96:We have a new champion
+:fe97:Victory Lap
+:fe98:Congratulations
+:fe99:Great shot
+:fe9a:That was perfect
+:fe9b:Beautiful
+:fe9c:Now that's how to drive
+:fe9d:Put the operator on hold, he's dialed in
+:fea1:He almost has it
+:fea2:Time is a factor
+:fea3:Time's running out
+:fea4:The garage is open
+:fea6:Careful
+:fea7:He's out of control
+:fea9:You just knew how that was gonna end up
+:feaa:You could see that comin' from two turns back
+:feab:This is as intense as it gets
+:feac:Ten million
+:fead:Nine million
+:feae:Eight million
+:feaf:Seven million
+:feb0:Six million
+:feb1:Five million
+:feb2:Four million
+:feb3:Three million
+:feb4:Two million
+:feb5:One million
+:feb6:Ten
+:feb7:Nine
+:feb8:Eight
+:feb9:Seven
+:feba:Six
+:febb:Five
+:febc:Four
+:febd:Three
+:febe:Two
+:febf:One
+:fec0:Big points
+:fec2:This driver is unstopable
+:fec3:Looks like
+:fec4:The 29 car
+:fec5:The 21 car
+:fec6:The 2 car
+:fec7:is particularly fast today
+:fec8:is ready to go
+:feca:Rusty Wallace
+:fecb:Ricky Rudd
+:fecc:Kevin Harvick
+:fecd:has his race face on today
+:fece:is ready
+:fecf:is gonna be a contender before this race is over
+:fed0:We're almost ready to race
+:fed1:an amazing finish
+:fed2:It's a beautiful day for racing
+:fed3:Big mess in turn 2
+:fed4:Can he do it again?
+:fed5:The checkered flag is out
+:fed6:The crowd is on its feet
+:fed7:This driver is the new points leader
+:fed8:Get the extra ball
+:fed9:This is gonna pay off down the road
+:feda:He's gonna take at least two right sides here
+:fedb:Great job
+:fedc:He did it
+:fedd:He's comin' up on the leader
+:fedf:It's a jungle out there
+:fee0:It's war out there
+:fee1:Last chance to tune up the cars
+:fee2:Magnificent
+:fee3:Those marbles will get ya every time
+:fee4:Nice shot
+:fee5:Now that's pretty special
+:fee6:One lap to go
+:fee7:The pit crew's having trouble
+:fee8:I'd rather be lucky than good
+:fee9:Stay right there
+:feea:Sweet
+:feeb:That's worth doin' over
+:feec:That was some spectacular driving
+:feed:We're three wide
+:feee:It's time for some hard racin'
+:feef:We're two wide
+:fef0:Welcome back
+:fef1:Welcome to happy hour folks
+:fef2:Welcome to Nascar Pinball
+:fef3:There's always a party on the infield
+:fef4:Nascar fans sure know how to have a good time
+:fef5:Test beep
+:fef7:cymbal cymbal
+:fef8:beep beep
+:fef9:horns
+:fefa:slide
+:fefb:drum
+#
+#
+gprix:
+:fc02:now, get back to racing
+:fc03:let's bring it into the garage
+:fc04:get ready
+:fc05:green green green
+:fc06:just hang right in there
+:fc0a:this isn't for the faint hearted
+:fc10:find the groove and whalie it
+:fc12:just hold your position
+:fc13:keep her steady
+:fc1a:Ooh, that's gotta hurt
+:fc1c:Sure, that geezer is somethin'
+:fc1e:I think you've found the line
+:fc1f :Keep the line and hit it again
+:fc22:Make your move
+:fc23:You're running out of time
+:fc24:Do it again
+:fc25:One more time
+:fc27:Think back to your early racing days
+:fc2b:He was well sideways on that one
+:fc2f:Hit the garage
+:fc31:Now it's hard racing
+:fc32:Now it's our turn
+:fc33:Whalie it!
+:fc34:This is all about speed
+:fc36:Great Job
+:fc37:Nice Driving
+:fc38:Whoohoo
+:fc39:Keep it going mate
+:fc3a:Now keep it steady you're dialed in
+:fc3c:You were the best man today
+:fc3e:You are handlin'  like a pro
+:fc3f:You're a fan favorite
+:fc42:Oh, you almost had 'em
+:fc43:We were so close
+:fc47:You missed everything
+:fc48:Hurry, go go go go go
+:fc49:Come on come on
+:fc4a:Go Go Go
+:fc4b:Stick with it
+:fc4c:Shoot the left ramp
+:fc4d:Shoot the right ramp
+:fc4e:Shoot the left orbit
+:fc4f:Shoot the right orbit
+:fc51:Spell RACE to light locks
+:fc52:Just a little more
+:fc53:Hit the standups
+:fc54:Hit the drops
+:fc55:Hit the captive ball
+:fc56:Hit the car
+:fc57:That was a close one
+:fc58:Hold that line
+:fc5a:Get back to the garage
+:fc5b:Hang right
+:fc60:Aw man
+:fc61:All that hard work for nothing
+:fc62:Million
+:fc63:Ladies and gentlemen, let's go racing
+:fc64:Jackpot
+:fc65:Bonus Jackpot
+:fc66:Super Jackpot
+:fc67:Grand Prix encourages you to party responsibly
+:fc68:Party in the infield
+:fc69:Extra Ball
+:fc6a:Replay
+:fc6b:Special
+:fc6c:Ticket
+:fc6d:Bump 'n Win
+:fc6e:One Million
+:fc6f:Two Million
+:fc70:Three Million
+:fc71:Four Million
+:fc72:Five Million
+:fc73:Six Million
+:fc74:Seven Million
+:fc75:Eight Million
+:fc76:Nine Million
+:fc77:Ten Million
+:fc78:What a beauty
+:fc7a:come on come on come on come on come on
+:fc7b:Go go go go go go go
+:fc7c:Come on
+:fc7d:Yeah
+:fc7f:Did someone say party?
+:fc80:Party
+:fc81:Ah
+:fc82:Ah
+:fc83:Ah
+:fc84:No
+:fc85:No
+:fc86:No
+:fc87:Whoo
+:fc88:Whoo
+:fc89:Whoo
+:fc8a:Yeah
+:fc8b:Yeah
+:fc8c:Yeah
+:fc8d:Speed Shots
+:fc8e:He's got a real shot to be champion
+:fc8f:The championship is within reach
+:fc90:One more victory and the championship is his
+:fc91:Great season
+:fc92:You're the champ
+:fc94:We're picking up chatter on the scanner
+:fc95:Good thinking
+:fc96:Let's hit the esses
+:fc97:Esses are lit
+:fc98:It's all up to the crew chiefs
+:fc99:It's crazy out there
+:fc9a:Looks like he's trying to move him out of the groove
+:fc9b:We only have a few laps left folks
+:fc9c:An amazing stop by the pit crew
+:fc9d:This pit crew is fast
+:fc9e:That's a huge move on pit road
+:fc9f:Hauler ride
+:fca1:Come on, get in close
+:fca3:Don't let that crash throw ya
+:fca4:Fake inside and go out
+:fca5:Feels sweet today
+:fca6:Gonna need those drop targets if you want to get ahead
+:fca7:Great, now go after the ultimate prize
+:fca8:I thought we had 'em
+:fca9:it's just you and the track now
+:fcaa:it's tight, keep steady
+:fcab:it's yours for the taking
+:fcac:Let's go
+:fcad:Well nice
+:fcae:Now the fun begins
+:fcaf:One more to go
+:fcb0:Party in the infield
+:fcb1:Pass him on the inside
+:fcb2:Pass him on the outside
+:fcb4:The garage is lit
+:fcb5:Oh, you almost had 'em
+:fcb6:What's goin' on down there?
+:fcb7:You did it
+:fcb8:Right turn
+:fcb9:Hard right
+:fcbb:Hurry up
+:fcbc:Better get a move on
+:fcbd:We don't have much time
+:fcbe:Only a few laps left to go
+:fcbf:Move up on him
+:fcc0:Get in there
+:fcc1:Try and pass
+:fcc2:Make a move on him
+:fcc3:Great pitstop
+:fcc4:Great stop
+:fcc5:Quick stop
+:fcc6:Great move
+:fcc7:We moved up on the track
+:fcc8:Great job, get the bonus
+:fcc9:We did it
+:fcca:Take your victory lap
+:fccf:Make it quick
+:fcd0:As fast as we can now boys
+:fcd1:Nice drift
+:fcd2:Let's bear down here
+:fcd3:Lap times are good
+:fcd4:The fans love ya
+:fcd5:Make your move now
+:fcd6:What a pass
+:fcd7:What a move
+:fcd8:You're way up on the wheel now
+:fcd9:Don't panic
+:fcda:This a big opportunity
+:fcdb:Don't give up
+:fcdc:Wham bam what a lap
+:fcdd:That's showing some muscle
+:fcde:Everyone's watching you now
+:fcdf:Now make it stick
+:fce0:Big time move
+:fce1:How'd you do that?
+:fce2:This isn't for the faint hearted
+:fce3:Fake left and go right
+:fce6:Party in the infield
+:fd03:Title music
+:fd04:Title music 2
+:fd05:Title music 3 repeat hihat
+:fd06:Title music 4
+:fd08:Title end
+:fd09:Title music 5
+:fd0a:Victory Lap theme
+:fd0b:Groovy music
+:fd0c:Drum beat tune
+:fd0d:Racing jam
+:fd0e:All drum beat
+:fd0f:Mixed up
+:fd10:cymbal
+:fd11:Dance music
+:fd12:Party in the infield tune
+:fd13:Horns mixed up
+:fd14:I can't drive 55 lyrics version +midi
+:fd15:Bar jam
+:fd16:Drum beat tune 2
+:fd17:Fight tune horns
+:fd18:Happy tune
+:fd19:Fight tune horns 2
+:fd1a:Happy tune 2
+:fd1b:Happy tune 3
+:fd1c:Slow jam
+:fd28:two hihats
+:fd29:hihat
+:fd2a:hihat
+:fd2b:hihat
+:fd3c:drums hit echo
+:fd40:gunshot
+:fd41:flyby
+:fd42:louder flyby
+:fd43:two drums
+:fd44:louder two drums
+:fd45:drum
+:fd46:string
+:fd47:higher string
+:fd48:chimes up scale
+:fd49:repeated air
+:fd4a:explode
+:fd4b:louder explode
+:fd4c:even louder explode
+:fd4d:higher louder explode
+:fd4e:electric guittar
+:fd4f:strings down
+:fd50:engine rev
+:fd51:engine rev 2
+:fd52:engine rev 3
+:fd53:driveby
+:fd54:driveby 2
+:fd55:driveby 3
+:fd56:driveby 4
+:fd57:driveby 5
+:fd58:driveby 6
+:fd59:driveby 7
+:fd5a:driveby 8
+:fd5b:driveby 9
+:fd5c:chink
+:fd5d:chink 2
+:fd5e:chink 3
+:fd5f:chink 4
+:fd60:chink 5
+:fd61:chink 6
+:fd62:chink 7
+:fd63:chink 8
+:fd64:chink 9
+:fd65:thunder
+:fd66:honk
+:fd67:honk 2
+:fd68:honk 3
+:fd69:honk 4
+:fd6a:honk 5
+:fd6b:honk 6
+:fd6c:honk 7
+:fd6d:honk 8
+:fd6e:electric hum
+:fd6f:electric hum 2
+:fd70:electric hum 3
+:fd71:electric hum 4
+:fd72:electric hum 5
+:fd73:electric hum 6
+:fd74:electric hum 7
+:fd75:electric hum 8
+:fd76:electric hum 9
+:fd77:electric hum 10
+:fd78:gun cymbal
+:fd79:tire screech
+:fd7a:tire screech 2
+:fd7b:tire screech 3
+:fd7f:driveby cheer
+:fd80:driveby cheer 2
+:fd81:driveby cheer 3
+:fd82:cheer
+:fd83:cheer 2
+:fd84:cheer 3
+:fd85:rev hit
+:fd86:rev
+:fd87:rev 2
+:fd88:rev 3
+:fd89:rev 4
+:fd8a:rev 5
+:fd8b:rev 6
+:fd8c:rev 7
+:fd8d:rev 8
+:fd8e:rev 9
+:fd8f:repeat swish
+:fd90:swish
+:fd91:jet
+:fd92:jet horn
+:fd93:crash
+:fd94:crash 2
+:fd95:complete
+:fd96:footfall
+:fd97:cymbal beat
+:fd98:buzz
+:fd99:buzz 2
+:fd9a:buzz 3
+:fd9b:buzz 4
+:fd9c:buzz 5
+:fd9d:buzz 6
+:fd9e:complete 2
+:fd9f:rev scale
+:fda0:burn rubber
+:fda1:complete 3
+:fda2:complete 4
+:fda3:driveby loud
+:fda4:complete 5
+:fda5:OW!
+:fda6:OW!
+:fda7:OW!
+:fda8:WHOO!
+:fda9:WHOO!
+:fdaa:WHOO!
+:fdab:Alright!
+:fdac:Alright!
+:fdad:Alright!
+:fdae:Woo!
+:fdaf:Woo!
+:fdb0:Woo!
+:fdb1:Whoohoo!
+:fdb2:Whoohoo!
+:fdb3:Whoohoo!
+:fdb4:Yeah!
+:fdb5:Yeah!
+:fdb6:Yeah!
+:fdb7:complete 6
+:fdb8:driveby again
+:fdb9:driveby again 2
+:fdba:driveby again 3
+:fdbb:driveby again 4
+:fdbc:driveby again 5
+:fdbd:driveby again 6
+:fdbe:driveby again 7
+:fdbf:driveby again 8
+:fdc0:driveby again 9
+:fdc1:jet flyby high
+:fdc2:jet flyby high 2
+:fdc3:jet flyby high 3
+:fdc4:jet flyby high 4
+:fdc5:jet flyby high 5
+:fdc6:Speeder repeat
+:fdc7:Speeder repeat 2
+:fdc8:Speeder repeat 3
+:fdc9:complete 7
+:fdca:complete 8
+:fdcb:complete 9
+:fdcc:complete 10
+:fdcd:upscale hits
+:fdce:top hit
+:fdcf:downshift guittar
+:fdd0:downshift guittar 2
+:fdd1:string strum
+:fdd2:explode completion
+:fdd3:loud explosion
+:fdd4:mid hit
+:fdd5:driveby drum scale
+:fdd6:hit with cymbal
+:fdd7:guitar wave
+:fdd8:complete beat tune 11
+:fdd9:complete beat tune 12
+:fdda:complete beat tune 13
+:fddb:short hits
+:fddc:siren scale complete
+:fddd:complete 14
+:fdde:guittar song
+:fddf:short guittar riff
+:fde0:complete 15
+:fde1:reverb hit
+:fde2:downscale guittar song
+:fde3:downward bubbles
+:fdf5:Speaker Test Tone
+:fdf7:two cymbals
+:fdf8:beep
+:fdf9:downward scale
+:fdfa:slide
+:fdfb:drum
+:fe31:Kevin Smith here bringing you Grand Prix Pinball
+:fe32:Let's go racing
+:fe33:Welcome race fans, to Grand Prix Pinball
+:fe34:We have a late entry in today's field
+:fe35:Player 1
+:fe36:Player 2
+:fe37:Player 3
+:fe38:Player 4
+:fe39:Player 2, a late addition
+:fe3a:Player 3, a late addition
+:fe3b:Player 4, a late addition
+:fe3c:Player 2 has joined the field
+:fe3d:Player 3 has joined the field
+:fe3e:Player 4 has joined the field
+:fe3f:Player 1, you're up
+:fe40:Player 2, you're up
+:fe41:Player 3, you're up
+:fe42:Player 4, you're up
+:fe43:Player 1, don't move
+:fe44:Player 2, don't move
+:fe45:Player 3, don't move
+:fe46:Player 4, don't move
+:fe47:Player 1 shoot again
+:fe48:Player 2 shoot again
+:fe49:Player 3 shoot again
+:fe4a:Player 4 shoot again
+:fe4e:Pops at max
+:fe51:Lock is lit
+:fe52:Ball 1 locked
+:fe53:Ball 2 locked
+:fe54:Multiball is lit
+:fe56:It's time to rock and roll
+:fe57:We're racing
+:fe58:Jackpot is lit
+:fe59:Super Jackpot is lit
+:fe5a:Bonus Jackpot is lit
+:fe5b:He's moved in to 10th position
+:fe5c:He's moved in to 9th position
+:fe5d:He's moved in to 8th position
+:fe5e:He's moved in to 7th position
+:fe5f:He's moved in to 6th position
+:fe60:He's moved in to 5th position
+:fe61:He's moved in to 4th position
+:fe62:He's moved in to 3rd position
+:fe63:He's moved in to 2nd poisition
+:fe64:He's moved in to 10th place
+:fe65:He's moved in to 9th place
+:fe66:He's moved in to 8th place
+:fe67:He's moved in to 7th place
+:fe68:He's moved in to 6th place
+:fe69:He's moved in to 5th place
+:fe6a:He's moved in to 4th place
+:fe6b:He's moved in to 3rd place
+:fe6c:He's moved in to 2nd place
+:fe6d:Trouble in turn 3
+:fe6e:He's taken the lead
+:fe70:Now that's a real Grand Prix fan folks
+:fe72:Our fans are the best
+:fe73:Welcome to the fast track
+:fe74:Fast tracks, big action
+:fe79:Tough Racing
+:fe7a:Fast Pitstop
+:fe7b:Fuel Only
+:fe7c:Take on fuel now, collect the prize later
+:fe8b:That was beautiful
+:fe8c:Hard Racing
+:fe8d:Speed Shots
+:fe8e:Extra Ball is lit
+:fe8f:Special is lit
+:fe91:There's a big payback at the end of this line
+:fe93:This driver's having a great season
+:fe96:We have a new champion
+:fe97:Victory Lap
+:fe98:Congratulations
+:fe99:Great shot
+:fe9a:That was perfect
+:fe9b:Beautiful
+:fe9c:Now that's how to drive
+:fe9d:Put the operator on hold, he's dialed in
+:fea1:He almost has it
+:fea2:Time is a factor
+:fea3:Time's running out
+:fea4:The garage is open
+:fea6:Careful
+:fea7:He's out of control
+:fea9:You just knew how that was gonna end up
+:feaa:You could see that coming from two turns back
+:feab:This is as intense as it gets
+:feac:Ten million
+:fead:Nine million
+:feae:Eight million
+:feaf:Seven million
+:feb0:Six million
+:feb1:Five million
+:feb2:Four million
+:feb3:Three million
+:feb4:Two million
+:feb5:One million
+:feb6:Ten
+:feb7:Nine
+:feb8:Eight
+:feb9:Seven
+:feba:Six
+:febb:Five
+:febc:Four
+:febd:Three
+:febe:Two
+:febf:One
+:fec0:Big points
+:fec2:This driver is unstopable
+:fed0:We're almost ready to race
+:fed1:an amazing finish
+:fed2:It's a beautiful day for racing
+:fed3:Big mess in turn 2
+:fed4:Can he do it again?
+:fed5:The checkered flag is out
+:fed6:The crowd is on its feet
+:fed7:This driver is the new points leader
+:fed8:Get the extra ball
+:fed9:This will very likely pay off down the road
+:feda:He'll make a quick pitstop here
+:fedb:Great job
+:fedc:He did it
+:fedd:He's coming up on the leader
+:fedf:It's a jungle out there
+:fee0:It's war out there
+:fee1:Last chance to tune up the cars
+:fee2:Magnificent
+:fee4:Nice shot
+:fee5:Now that's pretty special
+:fee6:One lap to go
+:fee7:The pit crew is having trouble
+:fee8:I'd rather be lucky than good
+:fee9:Stay right there
+:feea:Sweet
+:feeb:That's worth doing over
+:feec:That was some spectacular driving
+:feee:It's time for some hard racing
+:fef0:Welcome back
+:fef1:Welcome to final practice
+:fef2:Welcome to Grand Prix Pinball
+:fef3:There's always a party on the infield
+:fef4:Grand Prix fans sure know how to have a good time
+:fef5:Test beep
+:fef7:cymbal cymbal
+:fef8:beep beep
+:fef9:horns
+:fefa:slide
+:fefb:drum
+
+; ------------
+; Attack From Mars
+; ------------
+afm_113:
+# ------------
+# Music
+# ------------
+:0001:Music: Prelaunch Loop
+:0002:Music: Launch Fanfare & Main Theme
+:0003:Music: Main Theme
+:0004:Music: Attack Wave 1
+:0005:Music: Destroy The Saucer
+:0006:Music: Attack Wave Short Loop
+:0007:Music: Attack Wave 2
+:0008:Music: Saucer Destroyed
+:0009:Music: Martian Attack 1
+:000a:Music: Martian Attack 2
+:000b:Music: Ball Locked
+:000c:Music: Martian Attack 3
+:000d:Music: Ball Summary Loop
+:000e:Music: Attack Wave 3
+:000f:Music: Attack Wave 4
+:0010:Music: Attack Wave 5
+:0011:Music: Short Loop
+:0012:Music: Short Loop continues
+:0014:Music: Dramatic Loop
+# ------------
+# Sound Effects
+# NOTE: Every sound effect appears twice.
+# ------------
+:0064:SFX: Whack 1
+:0065:SFX: Whack 1 louder
+:0068:SFX: Whack lower
+:0069:SFX: Laser
+:006a:SFX: Laser
+:006b:SFX: Laser
+:006c:SFX: Laser
+:006d:SFX: Laser
+:006e:SFX: Laser
+:006f:SFX: Laser
+:0070:SFX: Ball Locked
+:0071:SFX: Ball Locked
+:0072:SFX: Laser fire
+:0073:SFX: Laser fire
+:0074:SFX: Boom
+:0075:SFX: Boom
+:0076:SFX: Hiss
+:0077:SFX: Hiss
+:0078:SFX: Whoosh
+:0079:SFX: Whoosh
+:007a:SFX: Bash
+:007b:SFX: Bash
+:007c:SFX: Laser hit
+:007d:SFX: Laser hit
+:007e:SFX: Zoom
+:007f:SFX: Zoom
+:0080:SFX: Laser hit
+:0081:SFX: Laser hit
+:0082:SFX: Lane hit
+:0083:SFX: Lane hit
+:0084:SFX: Laser hit
+:0085:SFX: Laser hit
+:0088:SFX: Laser boing
+:0089:SFX: Laser boing
+:008a:SFX: Saucer zoom
+:008b:SFX: Saucer zoom
+:008c:SFX: Laser hit
+:008d:SFX: Laser hit
+:008e:SFX: Bonus Count
+:008f:SFX: Bonus Count
+:0090:SFX: Multiball Whoosh
+:0091:SFX: Multiball Whoosh
+:0092:SFX: Multiball Impact
+:0093:SFX: Multiball Impact
+:0094:Music: Fanfare
+:0095:Music: Fanfare
+:0098:SFX: Multiball jetplane zoom
+:0099:SFX: Multiball jetplane zoom
+:009a:SFX: Bumpers
+:009b:SFX: Bumpers
+:009c:SFX: Laser hit
+:009d:SFX: Laser hit
+:009e:SFX: Laser zoom
+:009f:SFX: Laser zoom
+:00a0:SFX: Boom
+:00a1:SFX: Boom
+:00a2:SFX: Metallic clang
+:00a3:SFX: Metallic clang
+:00a4:SFX: Boom
+:00a5:SFX: Boom
+:00ae:SFX: Martian Unngh
+:00af:SFX: Martian Unngh
+:00b2:SFX: Martian Aough
+:00b3:SFX: Martian Aough
+:00b4:SFX: Martian Aough longer
+:00b5:SFX: Martian Aough longer
+:00b8:SFX: Clank
+:00b9:SFX: Clank
+:00ba:SFX: Explosion
+:00bb:SFX: Explosion
+:00c0:SFX: Lane
+:00c1:SFX: Lane
+:00c4:SFX: Charging up
+:00c5:SFX: Charging up
+:00c8:SFX: Lane Combo
+:00c9:SFX: Lane Combo
+:00cc:SFX: Laser zoing
+:00cd:SFX: Laser zoing
+:00d0:SFX: Impact
+:00d1:SFX: Impact
+:00d2:SFX: Laser & Impact
+:00d3:SFX: Laser & Impact
+:00d4:SFX: Bonus Ding
+:00d5:SFX: Bonus Ding
+:00d6:SFX: Impact
+:00d7:SFX: Impact
+:00e4:SFX: Duck grows
+:00e5:SFX: Duck grows
+:00e6:SFX: Cow grows
+:00e7:SFX: Cow grows
+:00e8:Music: Goal fanfare
+:00e9:Music: Goal fanfare
+:00ea:SFX: Chord
+:00eb:SFX: Chord
+:00ec:SFX: Metallic clang
+:00ed:SFX: Metallic clang
+:00f0:SFX: Clang
+:00f1:SFX: Clang
+:00f2:SFX: Martian ray
+:00f3:SFX: Martian ray
+:00f4:SFX: UFO flies away
+:00f5:SFX: UFO flies away
+:00f6:SFX: Impact
+:00f7:SFX: Impact
+:00fc:SFX: Duck high
+:00fd:SFX: Duck high
+:00fe:SFX: Duck low
+:00ff:SFX: Duck low
+:0100:SFX: Cow high
+:0101:SFX: Cow high
+:0102:SFX: Laser beam
+:0103:SFX: Laser beam
+:0104:SFX: Impact
+:0105:SFX: Impact
+:010c:SFX: Chicken high
+:010d:SFX: Chicken high
+:010e:SFX: Chicken low
+:010f:SFX: Chicken low
+:0110:SFX: Chicken surprised
+:0111:SFX: Chicken surprised
+:0112:SFX: Laser beam
+:0113:SFX: Laser beam
+:0114:SFX: Laser fires
+:0115:SFX: Laser fires
+:0116:SFX: Impact
+:0117:SFX: Impact
+:0118:SFX: Growth ray
+:0119:SFX: Growth ray
+:011c:SFX: Growth effect
+:011d:SFX: Growth effect
+:011e:SFX: Clunk
+:011f:SFX: Clunk
+:0120:SFX: Impact
+:0121:SFX: Impact
+:0122:Music: Extra ball fanfare
+:0123:Music: Extra ball fanfare
+:0124:SFX: Martian growl
+:0125:SFX: Martian growl
+:0126:SFX: Laser fires
+:0127:SFX: Laser fires
+:0128:SFX: Laser charges and hits
+:0129:SFX: Laser charges and hits
+:012a:SFX: Dry impact
+:012b:SFX: Dry impact
+:012c:SFX: Harp hit
+:012d:SFX: Harp hit
+:012e:SFX: Laser pow 1
+:012f:SFX: Laser pow 1
+:0130:SFX: Laser pow 2
+:0131:SFX: Laser pow 2
+:0132:SFX: Laser pow 3
+:0133:SFX: Laser pow 3
+:0134:SFX: Laser pow 4
+:0135:SFX: Laser pow 4
+:0136:SFX: Laser pow 5
+:0137:SFX: Laser pow 5
+:0138:SFX: Impact splat
+:0139:SFX: Impact splat
+:013a:SFX: Drum roll zoom
+:013b:SFX: Drum roll zoom
+:013c:SFX: Saucer ray
+:013d:SFX: Saucer ray
+:013e:SFX: Impact
+:013f:SFX: Impact
+:0142:SFX: Boom
+:0143:SFX: Boom
+:0146:SFX: Tac
+:0147:SFX: Tac
+:0148:SFX: Extra ball fanfare
+:0149:SFX: Extra ball fanfare
+:014a:SFX: Saucer ray
+:014b:SFX: Saucer ray
+:014e:Music: Goal fanfare
+:014f:Music: Goal fanfare
+:0150:SFX: Countdown blip
+:0151:SFX: Countdown blip
+:0152:SFX: Poing
+:0153:SFX: Poing
+:0154:SFX: Outlane
+:0155:SFX: Outlane
+:0156:SFX: Crowd cheer
+:0157:SFX: Crowd cheer
+:0158:SFX: Crowd screams 1
+:0159:SFX: Crowd screams 1
+:015a:SFX: Crowd screams 2
+:015b:SFX: Crowd screams 2
+:015c:SFX: Boing
+:015d:SFX: Boing
+:015e:SFX: Saucer whee
+:015f:SFX: Saucer whee
+:0160:SFX: Boump
+:0161:SFX: Boump
+:0162:SFX: Saucer ray
+:0163:SFX: Saucer ray
+:0164:Music: Fanfare whoo
+:0165:Music: Fanfare whoo
+:0166:SFX: Martian whoo
+:0167:SFX: Martian whoo
+:0168:SFX: Impact dry
+:0169:SFX: Impact dry
+:0176:SFX: Bonus Counter
+:0177:SFX: Bonus Counter
+:0178:SFX: Crowd short
+:0179:SFX: Crowd short
+:017a:SFX: Crowd long
+:017b:SFX: Crowd long
+:017c:SFX: Crowd tails off
+:017d:SFX: Crowd tails off
+:017e:SFX: Crowd cheer long
+:017f:SFX: Crowd cheer long
+:0180:SFX: Multiball missile
+:0181:SFX: Multiball missile
+:0186:SFX: Metallic impact
+# ------------
+# Voice Samples: The General
+# ------------
+:0192:"Watch out men, they've got a big-o-beam!"
+:0193:"Use the atomic blaster - now!"
+:0194:"The fate of the world is in your hands."
+:0196:"Get every available man."
+:0197:"Get the troops ready."
+:019b:"Aaah, I hate martians."
+:019c:"Look out! Martians!"
+:019d:"Look out! More Martians!"
+:019e:"Missiles locked on target."
+:019f:"Missiles on standby."
+:01a0:"Take that, muffinhead!"
+:01a1:"Take that, wrinklehead!"
+:01a5:"Return to battle, soldier!"
+:01a6:"Don't shoot until you see them jump."
+:01a7:"Somebody shoot one of those things."
+:01a8:"Stop them!"
+:01a9:"Total annihilation! Whoohoo!"
+:01ab:"Excellent!"
+:01ae:"Great shot!"
+:01b1:"Well done, soldier!"
+:01b2:"Whoohoo!"
+:01b3:"Wow dang, you some ugly martians!"
+:01b4:"You some ugly martians!"
+:01b5:"Extra ball!"
+:01b6:"Jackpot!"
+:01b8:"Multiball!"
+:01ba:"Let's take their ship and attack mars!"
+:01bc:"We must build an atomic blaster."
+:01bd:"We must finish them off!"
+:01be:"Shoot again!"
+:01bf:"Superjets!"
+:01c0:"Five billion!"
+# ------------
+# Voice Samples: Martian
+# ------------
+:01f9:"Hawhawhawhaw."
+:01fa:"Unngh!"
+:01fb:"Oh no."
+:01fd:"Awwwgh!"
+:01fe:"Aaaawwwgh!"
+:0214:"Attack!"
+:0215:"Run away!"
+:0216:"Greetings, earthling! Haha, aww."
+:0217:"Aaah, women!"
+:0219:"Your cities will be destroyed!"
+:021a:"Earth will be ours!"
+:021c:"You cannot defeat our forcefield!"
+:021d:"Can't we just be friends?"
+:021e:"Had enough?"
+:021f:"We are invincible!"
+:0220:"Hahahaha haww."
+:0222:"Nothing can defeat us."
+:0223:"It will never work."
+:0224:"Oooouch!"
+:0225:"Ouch!"
+:0226:"Hey look, your shoe is untied. Hahahahaha."
+:0227:"Come here, tasty human."
+:0228:"No, no, noooo!"
+# ------------
+# Voice Samples: The General
+# ------------
+:0229:"Jackpot!"
+:022a:"Super Jackpot!"
+# ------------
+# Voice Samples: Martian
+# ------------
+:022b:"Greetings, earthling."
+:022d:"Muahaha ha haaa!"
+:022f:"Wroaaaggghh!"
+:0230:"Hahaha."
+:0231:"More women."
+:0232:"Oh, yes!"
+:0233:"You again?"
+:0234:"Not you again?"
+:0237:"Urgh! I'm so scared!"
+:0238:"Missed me, ha ha!"
+:0239:"Nyanyanyahya! Pfft!"
+:023a:"Puny humans. We have four arms."
+:023b:"Again!"
+:023c:"Oh, baby!"
+:0242:"Harrrgh!"
+:0243:"Martians superior, humans pathetic. Harrgh!"
+:0244:"I hate humans."
+:0245:"Oh no!"
+:0246:"Oh no! Multiball!"
+:0247:"Ha. We will not be defeated so easily."
+:0248:"Multiball!"
+:0249:"You rule the universe!"
+:024a:"But we'll be back."
+:024b:"It won't be that easy."
+:024c:"Not so fast!"
+:024d:"Not so fast, human!"
+:024e:"Replay!"
+:024f:"So you and rule the universe?"
+:0250:"You don't stand a chance!"
+:0251:"Surprise!"
+# ------------
+# Voice Samples: American Female
+# ------------
+:0258:"Get your hands off me!"
+:0259:"Get your hands off me! All four of them!"
+:025a:"Help, oh no! Whee!"
+:025b:"Whee!"
+:025c:"Put me down!"
+:025d:"Ooh!"
+:025e:"You're my hero."
+:025f:"Oh thank you, thank you!"
+:0260:"You're the best."
+:0261:"Look out, Martians!"
+:0262:"Get 'em!"
+:0263:"You know I enjoy killing these martians."
+:0269:"Oh no, they've got our livestock and treasured historical monuments."
+:026a:"Would you look at the size of that cow?"
+:026b:"It's hideous."
+:026d:"It's, it's so big."
+:0271:"Aaa!"
+:0272:"Go for the extra ball!"
+:0273:"Shoot the super jackpot!"
+:0274:"Save me, save me!"
+# ------------
+# Voice Samples: American Male
+# ------------
+:0276:"Get them!"
+:0277:"Hey! They've got our stuff!"
+:0278:"Stop them!"
+:0279:"Hey! That's my car!"
+:027a:"No! Not our hot dogs!"
+# ------------
+# Voice Samples: Frenchman
+# ------------
+:02bc:"We must destroy the stinking martians!"
+:02bd:"You martians will never take France!"
+:02be:"You will remove that saucer from the sky!"
+:02bf:"Sacre bleu! The Martians are destroying the Eiffel Tower!"
+:02c0:"Destroy the saucer!"
+:02c1:"Blow the saucer out of the sky!"
+:02c2:"Go away from France, you Martian from another planet."
+:02c3:"Vive la france!"
+# ------------
+# Voice Samples: Italian Male-a
+# ------------
+:02c6:"Mama mia. Save-a the tower of Pisa."
+:02c7:"You Martians are no good."
+:02ca:"Take-a that, you pasta head!"
+:02cb:"What's the matter, you, you ugly Martian?"
+:02cc:"I bust-a your face, you ugly Martian."
+:02cd:"Italia, Italia!"
+:02ce:"Excellent!"
+:02cf:"Well-a done!"
+# ------------
+# Voice Samples: German Male
+# ------------
+:02d0:"Achtung! Martians!
+:02d1:"We will fight for Germany!"
+:02d2:"Take that, you ugly green Martians!"
+:02d3:"Germany will kill your Martian butt to the moon!"
+:02d4:"The Brandenburger Toor is in danger!"
+:02d5:"Destroy the Martians!"
+:02d6:"Lookout, Martians! Germany coming through."
+:02d7:"Destroy the saucer!"
+:02d8:"Germany is victorious!"
+:02d9:"Der Martian, they'll never take Germany."
+:02da:"We must save the Brandenburger Toor!"
+# ------------
+# Voice Samples: British Female
+# ------------
+:02db:"No time for tea! Blast those Martians!"
+:02dc:"Blimey! London Bridge is falling down, isn't it?"
+:02dd:"Blow the saucer out of the sky!"
+:02de:"Destroy the bleedin' saucer!"
+:02df:"Destroy those lily-livered Martians!"
+:02e5:"Take that, you horrible green Martian!"
+:02e6:"Tataa for now!"
+:02ea:"I say! Good shot."
+:02eb:"Super shot!"
+:02ed:"Well done!"
+# ------------
+# Voice Samples: Misc
+# ------------
+:02f9:"Had your lobsters!" (?)
+:02fa:"This just in, reports are coming in..."
+:02fb:"This is an emergency broadcast. The earth is being invaded..."
+:02fc:"Oh no, Sparky!"
+:02ff:"Woof!"
+:0304:"Take that, you ugly green stinking disgusting Martians!"
+:0307:"You are very skillful, wow."
+:0308:"Oooh lala!"
+:0309:"Outrageous!"
+:030d:"Blow the saucer out of the sky!"
+:030f:"Mama mia. The Martians are straightening the Tower of Pisa."
+:0311:"Take that, Martians!"
+:0312:"And that!"
+:0313:"Blast the saucers!"
+:0314:"Blow the saucer out of the sky!"
+:0315:"We'll blow the snot out of you Martians!"
+:0316:"Destroy the saucer!"
+:0317:"We'll fight for our freedom!"
+:0318:"Get 'em!"
+:0319:"Look out, Martians!"
+:031a:"Nobody messes with the USA!"
+:031b:"We've got to save the Statue of Liberty!"
+# ------------
+# Music & Effects (Duplicates)
+# ------------
+:0320:Music: Fanfare
+:0321:Music: Fanfare
+:0322:SFX: Engine Whoosh
+:0323:SFX: Engine Whoosh
+:0328:SFX: Duck grows
+:0329:SFX: Duck grows
+:032a:SFX: Cow grows
+:032b:SFX: Cow grows
+:0330:SFX: Metallic clang
+:0331:SFX: Metallic clang
+:0332:SFX: Duck high
+:0333:SFX: Duck high
+:0334:SFX: Duck low
+:0335:SFX: Duck low
+:0336:SFX: Cow high
+:0337:SFX: Cow high
+:0338:SFX: Saucer ray
+:0339:SFX: Saucer ray
+:033a:SFX: Metallic impact
+:033b:SFX: Metallic impact
+:033c:SFX: Saucer rapid fire
+:033d:SFX: Saucer rapid fire
+:033e:SFX: Impact
+:033f:SFX: Impact
+:0340:SFX: Chicken high
+:0341:SFX: Chicken high
+:0342:SFX: Chicken low
+:0343:SFX: Chicken low
+:0344:SFX: Chicken surprised
+:0345:SFX: Chicken surprised
+:0346:SFX: Impact
+:0347:SFX: Impact
+:0348:SFX: Saucer tractor ray
+:0349:SFX: Saucer tractor ray
+:034a:SFX: Saucer flies away
+:034b:SFX: Saucer flies away
+:0352:SFX: Impact
+:0353:SFX: Impact
+:0354:SFX: Martian roar
+:0355:SFX: Martian roar
+:0356:SFX: Dry impact
+:0357:SFX: Dry impact
+:0358:SFX: Zoing
+:0359:SFX: Zoing
+:035a:SFX: Saucer tractor ray fades
+:035b:SFX: Saucer tractor ray fades
+:035c:SFX: Dry impact
+:035d:SFX: Dry impact
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:0362:"Hawhawhawhaw."
+:0363:"Hawhawhawhaw."
+:0364:"Unngh!"
+:0365:"Unngh!"
+:0366:"Oh no."
+:0367:"Oh no."
+:0368:"Awwwgh!"
+:0369:"Awwwgh!"
+:036a:"Aaaawwwgh!"
+:036b:"Aaaawwwgh!"
+:036e:"Attack!"
+:036f:"Attack!"
+:0370:"Run away!"
+:0371:"Run away!"
+:0372:"Greetings, earthling! Haha, aww."
+:0373:"Greetings, earthling! Haha, aww."
+:0374:"Aaah, women!"
+:0375:"Aaah, women!"
+:0378:"Your cities will be destroyed!"
+:0379:"Your cities will be destroyed!"
+:037a:"Earth will be ours!"
+:037b:"Earth will be ours!"
+:037e:"You cannot defeat our forcefield!"
+:037f:"You cannot defeat our forcefield!"
+:0380:"Can't we just be friends?"
+:0381:"Can't we just be friends?"
+:0382:"Had enough?"
+:0383:"Had enough?"
+:0384:"We are invincible!"
+:0385:"We are invincible!"
+:0386:"Hahahaha haww."
+:0387:"Hahahaha haww."
+:038a:"Nothing can defeat us."
+:038b:"Nothing can defeat us."
+:038c:"It will never work."
+:038d:"It will never work."
+:038e:"Oooouch!"
+:038f:"Oooouch!"
+:0390:"Ouch!"
+:0391:"Ouch!"
+:0392:"Hey look, your shoe is untied. Hahahahaha."
+:0393:"Hey look, your shoe is untied. Hahahahaha."
+:0394:"Come here, tasty human."
+:0395:"Come here, tasty human."
+:0396:"No, no, noooo!"
+:0397:"No, no, noooo!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:0398:SFX: Metallic ray
+:0399:SFX: Metallic ray
+:039a:SFX: Ray burst
+:039b:SFX: Ray burst
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:039c:"Greetings, earthling!"
+:039d:"Greetings, earthling!"
+:03a0:"Muahaha ha haaa!"
+:03a1:"Muahaha ha haaa!"
+:03a4:"Wroaaaggghh!"
+:03a5:"Wroaaaggghh!"
+:03a6:"Hahaha."
+:03a7:"Hahaha."
+:03a8:"More women."
+:03a9:"More women."
+:03aa:"Oh, yes!"
+:03ab:"Oh, yes!"
+:03ac:"You again?"
+:03ad:"You again?"
+:03ae:"Not you again?"
+:03af:"Not you again?"
+:03b4:"Urgh! I'm so scared!"
+:03b5:"Urgh! I'm so scared!"
+:03b6:"Missed me, ha ha!"
+:03b7:"Missed me, ha ha!"
+:03b8:"Nyanyanyahya! Pfft!"
+:03b9:"Nyanyanyahya! Pfft!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:03ba:SFX: Crowd cheer
+:03bb:SFX: Crowd cheer
+:03bc:SFX: Boing
+:03bd:SFX: Boing
+:03be:SFX: Cow screams low
+:03bf:SFX: Cow screams low
+:03c0:SFX: Cow screams high
+:03c1:SFX: Cow screams high
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:03c2:"Surprise!"
+:03c3:"Surprise!"
+# ------------
+# Effects (Duplicates)
+# ------------
+:03c4:SFX: Missile before impact
+:03c5:SFX: Missile before impact
+:03d4:SFX: Touch tone 1
+:03d5:SFX: Touch tone 2
+:03d6:SFX: Touch tone 3
+:03d7:SFX: Touch tone 4
+:03d8:SFX: Deng
+:03d9:SFX: Touch tone 5
+:03da:SFX: Touch tone 6
+:03db:SFX: Twang
+:03dc:SFX: Ball drains
+:03dd:SFX: Electronic explosion
+# ------------
+# Voice Samples: Martian (Duplicates)
+# ------------
+:044c:"Puny humans. We have four arms."
+:044d:"Puny humans. We have four arms."
+:044e:"Again!"
+:044f:"Again!"
+:0450:"Oh, baby!"
+:0451:"Oh, baby!"
+:0452:"Harrrgh!"
+:0453:"Harrrgh!"
+:0454:"Martians superior, humans pathetic. Harrgh!"
+:0455:"Martians superior, humans pathetic. Harrgh!"
+:0456:"I hate humans."
+:0457:"I hate humans."
+:0458:"Oh no!"
+:0459:"Oh no!"
+:045a:"Ha. We will not be defeated so easily."
+:045b:"Ha. We will not be defeated so easily."
+:045c:"Multiball!"
+:045d:"Multiball!"
+:045e:"You rule the universe!"
+:045f:"You rule the universe!"
+:0460:"But we'll be back."
+:0461:"But we'll be back."
+:0462:"It won't be that easy."
+:0463:"It won't be that easy."
+:0464:"Not so fast!"
+:0465:"Not so fast!"
+:0466:"Not so fast, human!"
+:0467:"Not so fast, human!"
+:0468:"Replay!"
+:0469:"Replay!"

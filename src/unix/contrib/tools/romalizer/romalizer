@@ -1,0 +1,2059 @@
+#!/usr/bin/tclsh
+#!/home/chris/work/romalizer/MAMELang-lib_0.9.5-tcl/tclang
+#   ^-- This must point to where your tclsh command is located. In order for
+#       translations to work, you must use tclang instead of tclsh.  tclang
+#       is available at http://emuhq.com/mamelang
+
+set version 0.7pre3
+
+# Changes to this version include:
+#   * Fixed a bug that would cause romalizer to crash if it was trying to
+#     rename a ROM that is zipped with a directory, and is not located in the
+#     current working zip file.  For example, a ROM found in chelnov.zip which
+#     is needed for chelnovu.zip and the ROM in chelnov.zip is zipped inside
+#     a directory.  Thanks to David Heremans for the bug report.
+#   * Changed my e-mail address in the source code from ztnet.com to
+#     retrogames.com
+#   * Added a check to see if xmame-0.56 or greater is used.
+#   * Do not prompt for next ROM set if -f is used.
+#   * Added a clarification in the help text to ensure you provide a space
+#     between an option and its value.
+#   * In verbose mode, you are now forced to type / to continue onto the next
+#     ROMset.  Let me know if you don't like this feature and I will make it
+#     optional.  It is designed to prevent you from pressing return too many
+#     times.  Use -v option if you don't like this.
+#   * Added -A option to append all ROMs found in the current working
+#     directory to the parameter list bypassing bash.  This is useful if
+#     your bash command line becomes too long for bash to handle.
+#
+# BUGS:
+#   * theend, fshark, omega:  don't seem to rename the internal ROMs correctly
+#   * darius2:  says ROM names are incorrect when checking all ROMs at once
+#
+# TODO for 0.7:
+#   * create NO GOOD DUMP KNOWN ROMs with dd if=/dev/urandom 
+#   * finish off new fix_roms routines
+#       - for romdirs that have multiple directories, the first directory
+#         is assumed to be the main ROMs directory, subsequent directories
+#         are assumed to be unnecessary.  For example, if you have multiple
+#         ROMs and the set in the main directory is valid, then the solution
+#         is to remove the set from the secondary directory.
+#   * fix known bugs
+#   * massive testing!
+
+# set default values for command line options
+
+set xmame [auto_execok xmame.x11]       ;  # default xmame executable
+set zip   [auto_execok zip]             ;  # location of zip command
+set unzip [auto_execok unzip]           ;  # location of unzip command
+set workd [file join / tmp romalizer]   ;  # working directory
+set verbose no                          ;  # sets verbosity (yes/no)
+set verbose_status yes                  ;  # sets status report verbosity
+set force   no                          ;  # autocreate new ROMs? (yes/no)
+set noex    no                          ;  # do not execute commands
+set logfile ""                          ;  # log file ("" == no logging)
+set c_level 6                           ;  # default compression level
+set cutoff  150                         ;  # cutoff value (see help file)
+set check_names yes                     ;  # check file names too?
+set merged 0                            ;  # merge clones (changed with -g/-G)
+set move_zips no                        ;  # move zips after fixing them
+set zip_empty no                        ;  # create zip files for clones w/-g
+set ignorebios yes                      ;  # ignore crcs matching bios roms
+
+##########################################################################
+#
+#  Please do not modify anything below this point unless you really know
+#  what you are doing!
+#
+##########################################################################
+
+set help "
+  romalizer(1)                                               romalizer(1)
+
+
+  NAME
+         romalizer - analyze and fix ROMs used for xmame
+
+  SYNOPSIS
+         romalizer \[-f\] \[-g\] \[-h\] \[-i\] \[-m\] \[-n\] \[-v\] \[-s\] \[-G\] \[-V\]
+         \[-c level\] \[-d workdir\] \[-l logfile\] \[-r rompath\] \[-x xmame\]
+         \[-A directory\] \[-C cutoff\] ROM ...
+
+  DESCRIPTION
+         romalizer will examine the  ROM(s) specified on the command line
+         as well as all the  clones for each ROM.  If ROM is a clone then
+         the   associated parent   ROM is used   instead, any   resulting
+         duplicate ROMs  will be ignored, thus using  wildcards such as *
+         will not result in reexamining the same ROM twice.  The ROM that
+         is specified  may be the short name  recognized by xmame, or the
+         full path name to the zip file.
+
+         During the examination process, romlizer compares the CRCs found
+         in xmame with  those in your zip files.  If any extra  files are
+         stored  in your zip files,  romalizer detects them  and issues a
+         report.  romalizer is  also capable  of  building  new zip files
+         from your existing zip files if any discrepancies are found.
+
+         romalizer  assumes that   files belonging  solely to  a clone be
+         placed in a  separate zip file with that clones name.  romalizer
+         will  not merge two  zip files,  it only analyzes  the first zip
+         file found in the rompath specified.
+
+         When specifying  options with romalizer  please always provide a
+         space between the option and it's value.   For example, use -c 9
+         instead of -c9.
+
+  OPTIONS
+         -c  level
+                This specifies the compression level  you want to use for
+                your  zip files.  0 indicates  no compression,  1 is  the
+                fastest compression,  and 9 is the  slowest.  The default
+                is 6.
+
+         -d  workdir
+                This  specifies  the  directory  where  romalizer  places
+                temporary  working files, and backs up your old ROMs when
+                building new  ones if the -M option is used.  The default,
+                if not specified, is set to /tmp/romalizer.
+
+         -l  logfile
+                This will send  output which is sent to  the console when
+                the -v option is used to a file specified by logfile.  If
+                both the -l and -v options are used, then  output will be
+                sent to both the console and the logfile specified.
+
+         -r  rompath
+                Specifies  the rompath  to use when looking  for your zip
+                files.  If  not  specified,  romalizer  uses the  rompath
+                specified in your ~/.xmamerc file.
+
+         -x  xmame
+                Specifies the location of the xmame executable to use for
+                checking  CRC values.  The default,  if not specified, is
+                xmame.x11.
+
+         -A  directory
+                Add all  ROMs found  in directory  to the parameter list.
+                This  is useful  if your list  of ROMs  specified on  the
+                parameter  list  is  too  long for  bash to  handle.  For
+                example:   -A /mylongpathtoroms  and  /mylongpathtoroms/*
+                are functionally  equilivalent,  except the -A version is 
+                not expanded by bash.
+
+         -C  cutoff
+                Specifies the  cutoff value for the  number of ROMs which
+                have to be specified on the command line before romalizer
+                checks all CRCs at once instead of one ROM at a time. The
+                default is 150.
+
+         -f     Force  creation  of  new  ROMs.  With  this  option  set,
+                romalizer will  automatically create new ROMs for you and
+                delete  your old ROMs.  This option is useful if you want
+                to automatically fix a  large number  of ROMs, and you do
+                not want  to backup your old  ROMs.  This option  is also
+                used frequently with the -n option.
+
+         -g     Tells romalizer you want  to merge your clone ROMs into a
+                single file rather than one file for each clone.
+
+         -h     Prints out this descriptive help file.
+
+         -i     Do  not ignore  bios ROMS.  The  default  behavior is  to
+                ignore CRCs which match  those of neogeo or playchoice-10
+                bios ROMs.  If you are  verifying a set  of ROMs which do
+                not  include these  bios ROMs,  you may want to  use this
+                option.
+
+         -m     Do not check file names as well as CRC values in your zip
+                files.
+
+         -n     Do not  execute commands,  but  instead just  print  what
+                commands romalizer would execute if -n option is not used.
+
+         -s     Verbose mode.  This  option  will  print  all  the  shell
+                commands it is trying to execute to stdout.
+
+         -v     Verbose mode  (status mode).  The default is to print the
+                extra verbosity  in the status reports,  use -v option to
+                lower the verbosity of the status reports.
+
+         -z     When used with the -g option,  romalizer will build empty
+                zip files  for the clone roms.  This is useful for front-
+                ends to easily  identify which clone ROMs you have.  This
+                option has no effect if the -g option is not used.
+
+         -G     Tells romalizer  that you want to have a  complete set of
+                ROMs in each zip file so that a clone may run independent
+                of the parent zip file.
+
+         -M     Move fixed  ROMs into  ROM path and  backup the  old ROMs
+                into the working directory.
+
+         -V     Prints version number and exits.
+
+  EXAMPLES
+         To verify all your ROMs that start with the letter `a' use:
+
+                romalizer /usr/local/share/xmame/roms/a*
+
+         To verify all roms in the current directory use:
+
+                romalizer -A .
+
+         To see what romalizer would do without doing anything use:
+
+                romalizer -v -n pacman
+
+         To automatically fix any ROMs that romalizer sees problems with:
+
+                romalizer -f pacman galaga joust
+
+         Here is an example I use when a new version of xmame comes out:
+
+                romalizer -f -v -n -x ~/xmame.x11 -r ~/old:~/new ~/new/roms/*
+
+         My  ~/old/roms  directory contains my old xmame ROMs, and the
+         ~/new/roms directory contains the new ROMs
+
+         In  your directory  of fixed ROMs,  you can use  this command to
+         verify that romalizer has worked properly:
+
+                for i in *;do xmame -verifyroms `basename \$i .zip`>>outf;done
+
+         Then, you can examine the file 'outf' for any errors. 
+
+  ENVIRONMENT
+         MAMELANG
+                Specify the translation file to use if you are running
+                this script with a modified version of Tcl that supports
+                MAMELANG.  (See: http://www.emuhq.com/mamelang/)
+
+         ROMPATH
+                Overrides the  rompath specified  in the ~/.xmamerc file.
+                If a rompath is  specified on the command line, then that
+                is used instead of the environment setting.
+
+         PATH
+                Used to locate zip, unzip, and xmame commands.
+
+  SEE ALSO
+         xmame(6)
+
+  AUTHOR
+         romalizer  is written by  Christopher Stone  <tkmame@retrogames.com>.
+         If you have any ideas or  suggestions on improving this software
+         please let me know.
+
+  BUGS
+         NeoGeo bios ROMs are assumed to be in neogeo.zip and will not be
+         included in NeoGeo zip files when using the -G option.
+"
+
+# create a 'fake' mamelang command if mamelang is not compiled into tcl
+# this will allow your script to work even if the user doesnt want to use
+# tclang.
+if { [lsearch [info commands] "mamelang"] == -1 } {
+    proc mamelang args {
+        foreach value $args {
+            append return_value $value
+        }
+        return $return_value
+    }
+}
+
+
+# this function is used to allow mamelang to translate the help file.
+proc print_help {} {
+    global help
+
+    catch {
+	foreach line [split $help \n] {
+	    puts [mamelang $line]
+	}
+    }
+}
+
+# procedure to print fatal errors to stdout and exit
+proc fatal_error error_text {
+    global argv0
+    set lines [split $error_text \n]
+    for { set lineno 0 } { $lineno < [llength $lines] } { incr lineno } {
+	set line [lindex $lines $lineno]
+	puts stderr "$argv0: $line"
+    }
+    exit
+}
+
+# parse command line
+if { $argc } { 
+    for { set i 0 } { $i < $argc } { incr i } {
+	set opt [lindex $argv $i]
+	switch -exact -- $opt {
+	    -h { print_help ; exit }
+	    -? { print_help ; exit }
+	    -V { puts [mamelang "$argv0" ": " "version" " $version"] ; exit }
+	    -i { global ignorebios; set ignorebios no }
+	    -s { global verbose ; set verbose yes }
+	    -v { global verbose_status ; set verbose_status no }
+	    -f { global force ; set force yes }
+            -m { global check_names ; set check_names no }
+	    -M { global move_zips ; set move_zips yes }
+	    -n { global noex ; set noex yes }
+	    -g { global merged ; set merged 1 }
+	    -G { global merged ; set merged 2 }
+	    -z { global zip_empty ; set zip_empty yes }
+	    -c { incr i ; set c_level [lindex $argv $i] }
+	    -d { incr i ; set workd [lindex $argv $i] }
+	    -l { incr i ; set logfile [lindex $argv $i] }
+	    -r { incr i ; set path  [lindex $argv $i] }
+            -x { incr i ; set xmame [lindex $argv $i] }
+	    -C { incr i ; set cutoff [lindex $argv $i] }
+	    -A { incr i ; set globpath [lindex $argv $i]
+		lappend roms [lsort [glob -directory $globpath *]] }
+	    default { lappend roms [lrange $argv $i end] ; break }
+	}
+    }
+}
+
+# check if any roms were specified on the command line
+proc printhelp {} {
+    global argv0 env
+
+    if { [info exists env(PAGER)] } {
+	set pager $env(PAGER)
+    } else {
+	set pager "more"
+    }
+    fatal_error [mamelang "Missing ROM!" "  " "Try" " `$argv0 -h | $pager' " \
+		     "for more options."]
+}
+if { ![info exists roms] || !$argc } {
+    printhelp
+}
+
+# This function is now used to replace the previous remove_zip function
+proc basename { path extension } {
+    return [eval exec basename $path $extension]
+}
+
+# convert any zipfiles on command line to romnames
+foreach romgroup $roms {
+    foreach rom [split $romgroup] {
+        lappend newroms [basename $rom .zip]
+    }
+}
+set roms [lsort $newroms]
+
+# create logfile is logging was specified
+if { $logfile != "" } { 
+    set logfiled [open $logfile w]
+}
+
+# logging routine
+proc myputs data {
+    global logfile logfiled verbose
+
+    if { $logfile != "" } {
+	puts $logfiled $data
+    }
+
+    if { $verbose } { 
+	puts $data
+    }
+}
+
+# check compression level
+if { $c_level < 0 || $c_level > 9 } {
+    puts stderr [mamelang "$argv0: " "Invalid compression level specified" \
+		     ": $c_level"]
+    exit
+}
+
+# check to see if you have zip and unzip commands
+if { $zip == "" || $unzip == "" } {
+    puts stderr [mamelang "$argv0: " \
+		     "Unable to locate zip and/or unzip commands."]
+    exit
+}
+
+# procedure to read the output of a command
+set failure_okay 0
+proc read_command command {
+    global argv0 failure_okay
+
+    set fileid ""
+    set rc [catch { set fileid [open |$command r] }]
+    if { $failure_okay != 1 && $rc == 1 } {
+	fatal_error [mamelang "Unable to execute command" ":\n$command\n" \
+			 "Please send a bug report to" " tkmame@retrogames.com"]
+    } elseif { $rc == 1 } {
+	set failure_okay 0
+	return ""
+    } else {
+	set failure_okay 0
+	if { $fileid != "" } {
+	    set data [read $fileid]
+	    catch {
+		close $fileid
+	    }
+	}
+	return $data
+    }
+}
+
+# procedure to evaluate commands which are supposed to work
+proc evalcmd { command } {
+    if { [catch { eval exec $command }] == 1 } {
+	fatal_error [mamelang "Unable to execute command" ":\n$command\n" \
+			 "Please send a bug report to" " tkmame@retrogames.com"]
+    }
+}
+
+# make sure unzip is version 5.41 or greater (y2k bug)
+set unzip_version [lindex [split [read_command "\"$unzip\" -v"] \ ] 1]
+if { $unzip_version < 5.41 } {
+    fatal_error [mamelang "Please upgrade to UnZip version 5.41 or greater" \
+		     ".\nftp://ftp.info-zip.org/pub/infozip/"]
+}
+
+# make sure we are using a recent xmame
+set version [read_command "\"$xmame\" -version"]
+set ver_index [string first "0." $version]
+set xmame_version [string range $version $ver_index [expr $ver_index + 4]]
+if { $xmame_version < 0.56 } {
+    fatal_error [mamelang "Please use xmame-0.56.2 or greater (-x option)."]
+}
+
+# create working directory
+if { ![file isdirectory $workd] } {
+    file mkdir $workd
+}
+
+# get all the clones for each rom first find the masters for each clone
+if { $verbose == "no" } {
+    puts -nonewline [mamelang "Obtaining clone information" "\t"]
+    flush stdout
+}
+set command "\"$xmame\" -listclones"
+myputs $command
+set lines [split [read_command $command] \n]
+foreach line $lines {
+    # get name of the clone
+    set clone [string trimright [string range $line 0 7]]
+    # skip header crap
+    if { [string match "Name*" $clone] || $clone == "" } {
+	continue
+    }
+    # get rom name
+    set rom [string trimright [string range $line 9 end]]
+    # make a list of non-clones that have clones (i'll call these masters)
+    if { ![info exists masters] || [lsearch $masters $rom] == -1 } {
+	lappend masters $rom
+    }
+    # make a list of clones for each master
+    lappend clones($rom) $clone
+    # create an associatve array of clones and masters
+    set master_of($clone) $rom
+}
+if { $verbose == "no" } {
+    puts [mamelang "Done"]
+}
+
+# get all non-clones
+if { $verbose == "no" } {
+    puts -nonewline [mamelang "Obtaining list of ROMs" "\t\t"]
+    flush stdout
+}
+set command "\"$xmame\" -list -noclones"
+myputs $command
+set lines [split [read_command $command] \n]
+foreach line $lines {
+    # skip header crap
+    if { [string match "xmame*" $line] } { 
+	continue
+    }
+    # blank line means we are done
+    if { $line == "" } {
+	break
+    }
+    for { set indx 0 } { $indx < 72 } { incr indx 10 } {
+	# get rom names
+	set endindx [expr $indx + 8]
+	set rom [string trimright [string range $line $indx $endindx]]
+	if { $rom != "" } {
+	    # create list of nonclones, check masters to weed out neogeos
+	    if { ![info exists master_of($rom)] } {
+		lappend nonclones $rom
+	    }
+	}
+    }
+}
+if { $verbose == "no" } { 
+    puts [mamelang "Done"] 
+}
+# remove any duplicate roms specified on command line
+for { set i 0 } { $i < [llength $roms] } { incr i } {
+    set rom [lindex $roms $i]
+    if { [lsearch -exact $nonclones $rom] == -1 } {
+        set roms [lreplace $roms $i $i]
+	if { [info exists master_of($rom)] && 
+	     [lsearch $roms $master_of($rom)] == -1 } {
+	    lappend roms $master_of($rom)
+	}
+        incr i -1
+    }
+}
+# exit if no valid roms were specified on the command line
+if { $roms == "" } {
+    puts stderr [mamelang "$argv0: " "No valid ROMs specified."]
+    printhelp
+}
+# if no path was specified on command line get it from xmame
+if { ![info exists path] } {
+    if { $verbose == "no" } {
+	puts -nonewline [mamelang "Obtaining ROM path" "\t\t"]
+	flush stdout
+    }
+    set command "\"$xmame\" -showconfig"
+    myputs $command
+    set lines [split [read_command $command] \n]
+    foreach line $lines {
+	set line [string trim $line]
+	if { [string compare [string range $line 0 6] "rompath"] == 0 } {
+	    set path [string trim [string range $line 7 end]]
+	    break
+	}
+    }
+    foreach path_element [split $path :] {
+	if { [string compare [basename $path_element ""] samples] &&
+	     [string compare [basename $path_element ""] artwork] } {
+	    append newpath "$path_element:"
+	}
+    }
+    set path $newpath
+    if { $verbose == "no" } {
+	puts [mamelang "Done"]
+    }
+}
+
+# create lookup table for short names and long names
+if { $verbose == "no" } {
+    puts -nonewline [mamelang "Obtaining game descriptions" "\t"]
+    flush stdout
+}
+set command "\"$xmame\" -listfull"
+myputs $command
+set lines [split [read_command $command] \n]
+foreach line $lines {
+    set s_name [string trimright [string range $line 0 7]]
+    if { $s_name == "name" || $s_name == "" || $s_name == "Total Su" ||
+	 $s_name == "--------" } {
+	continue
+    }
+    set l_name [string range $line 10 end]
+    # remove end-quotes from the long name if they exist
+    set l_name [string trim $l_name \"]
+
+    # Rearrange the ,The and ,Le cases
+    set index [string first ", The" $l_name]
+    if { $index != -1 } {
+	set index2 [expr $index + 5]
+        incr index -1
+	set l_name "The [string range $l_name 0 $index][string range $l_name $index2 end]"
+    }
+    set index [string first ", Le" $l_name]
+    if { $index != -1 } {
+	set index2 [expr $index + 4]
+        incr index -1
+	set l_name "Le [string range $l_name 0 $index][string range $l_name $index2 end]"
+    }
+    set name_lookup("$l_name") $s_name 
+}
+if { $verbose == "no" } {
+    puts [mamelang "Done"]
+}
+
+# As of xmame 0.37b9 we have to use -listroms for obtaining
+# crcs for individual roms, and -listcrc for a full crc list
+
+# This function removes CRCs for neogeo and playchoice bios roms
+proc remove_neopc crc {
+    # remove neogeo bios roms to support neogeos
+    # ng-sfix.rom
+    if { [string compare $crc "354029fc"] == 0 } { return 0 }
+    # neo-geo.rom
+    if { [string compare $crc "9036d879"] == 0 } { return 0 }
+    # ng-sm1.rom
+    if { [string compare $crc "97cf998b"] == 0 } { return 0 }
+    # ng-lo.rom
+    if { [string compare $crc "e09e253c"] == 0 } { return 0 }
+    # remove playch10 roms to support play choice 10 roms
+    # pch1-c.8k
+    if { [string compare $crc "9acffb30"] == 0 } { return 0 }
+    # pch1-c.8m
+    if { [string compare $crc "c1232eee"] == 0 } { return 0 }
+    # pch1-c.8p
+    if { [string compare $crc "30c15e23"] == 0 } { return 0 }
+    # pch1-c.8t
+    if { [string compare $crc "d52fa07a"] == 0 } { return 0 }
+    # 82s129.6f
+    if { [string compare $crc "e5414ca3"] == 0 } { return 0 }
+    # 82s129.6e
+    if { [string compare $crc "a2625c6e"] == 0 } { return 0 }
+    # 82s129.6d
+    if { [string compare $crc "1213ebd4"] == 0 } { return 0 }
+    return 1
+}
+
+# This procedure will return 1 if the crc is a NODUMP
+proc crc_nodump crc {
+    return [expr [string compare $crc "00000000"] ? 0 : 1]
+}
+
+# This function is used for getting crc data for a single rom
+proc getsinglecrcdata rom {
+    global xmame crcs name_indx ignorebios NODUMP
+
+    # execute xmame -listroms
+    set command "\"$xmame\" -listroms $rom"
+    myputs $command
+    set lines [split [read_command $command] \n]
+
+    # parse the output of the command
+    foreach line $lines {
+
+	# name is in first 12 chars
+	set name [string trimright [string range $line 0 12]]
+
+	# skip all junk
+	if { [string match "Name*" $line] || [string match "This*" $line] ||
+	     [string match "Total*" $line] || $line == "" } {
+	    continue
+	}
+
+	# crc is at pos. 29 to end
+	set crc [string range $line 29 end]
+
+	# handle NODUMP crcs
+	if { [string match "NO*" $crc] } {
+	    # add name to list of NODUMP names
+	    set crc "00000000"
+	    append NODUMP($rom) "$name "
+	}
+
+	# remove any neogeo or playchoice 10 bios roms
+	if { $ignorebios } {
+	    if { [remove_neopc $crc] == 0 } {
+		continue
+	    }
+	}
+
+	# add this crc to the list of crcs for this rom (we only need 1
+	# instance of a nodump crc to let us know if one exists.)
+	if { ![info exists crcs($rom)] || [lsearch $crcs($rom) $crc] == -1 } {
+	    lappend crcs($rom) $crc
+	}
+
+	# create associative array of crc's and names
+	set name_indx($rom,$crc) $name
+	set name_indx($crc) $name
+    }
+
+    # remove the tailing space from NODUMP roms list
+    if { [info exists NODUMP($rom)] } {
+	set NODUMP($rom) [string trim $NODUMP($rom)]
+    }
+}
+
+# This function is used to get CRC data for all ROMs at once.
+# place CRC information for all roms into data structures
+proc getcrcdata {} {
+    global xmame crcs name_indx name_lookup ignorebios NODUMP roms clones
+
+    # execute the xmame -listcrc command
+    set command "\"$xmame\" -listcrc"
+    myputs $command
+    set lines [split [read_command $command] \n]
+
+    # parse the output of the command
+    foreach line $lines {
+
+	# extract the romname, crc and longname from the output
+	set name [string trimright [string range $line 9 21]]
+	set crc  [string range $line 0 7]
+	set l_name [string range $line 22 end]
+
+	# ignore any header crap
+	if { $line == "" || [string match "CRC*" $line] ||
+	     [string match "Total*" $line] || [string match "--*" $line] ||
+	     [string match "Displ*" $line] } {
+	    continue
+	}
+
+	# make sure we are using a recent mame version.
+	if { ! [info exists name_lookup("$l_name")] } {
+	    fatal_error [mamelang "There seems to be a parsing error with"
+			 "xmame -listfull.  Please make sure romalizer is"
+			 "using the very latest version of xmame (see the"
+			 "-x option."]
+	}
+
+	# lookup the shortname from the longname table
+	set rom $name_lookup("$l_name")
+
+	# add romnames to the list of NODUMP rom names
+	if { [crc_nodump $crc] } {
+	    append NODUMP($rom) "$name "
+	}
+
+	# remove any neogeo or playchoice 10 bios roms
+	if { $ignorebios } {
+	    if { [remove_neopc $crc] == 0 } {
+		continue
+	    }
+	}
+
+	# Add this crc to the list of crcs for this rom (if it doesnt already
+	# exist)
+	if { ![info exists crcs($rom)] || [lsearch $crcs($rom) $crc] == -1 } {
+	    lappend crcs($rom) $crc
+	}
+
+	# create associative array of crc's and names
+	set name_indx($rom,$crc) $name
+    }
+    
+    # remove the tailing space from NODUMP roms list
+    foreach rom [split $roms] {
+	if { [info exists NODUMP($rom)] } {
+	    set NODUMP($rom) [string trim $NODUMP($rom)]
+	}
+	if { [info exists clones($rom)] } {
+	    foreach clone [split $clones($rom)] {
+		if { [info exists NODUMP($clone)] } {
+		    set NODUMP($clone) [string trim $NODUMP($clone)]
+		}
+	    }
+        }
+    }
+}
+
+if { $verbose == "no" } {
+    puts -nonewline [mamelang "Obtaining CRC information" "\t"]
+    flush stdout
+}
+# determine if we should get CRCs one at a time or all at once
+set numofroms 0
+foreach rom [split $roms] {
+    incr numofroms
+    # we need to include clones too
+    if { [info exists clones($rom)] } {
+	foreach clone [split $clones($rom)] {
+	    incr numofroms
+	}
+    }
+}
+if { $numofroms < $cutoff } {
+    set processroms [llength $roms]
+} else {
+    set processroms 0
+}
+# get the necessary CRC data
+if { $processroms == 0 } {
+    getcrcdata
+} else {
+    for { set i 0 } { $i < $processroms } { incr i } {
+	set currentrom [lindex $roms $i]
+	getsinglecrcdata $currentrom
+	if { [info exists clones($currentrom)] } {
+	    foreach clone [split $clones($currentrom)] {
+		getsinglecrcdata $clone
+	    }
+	}
+    }
+}
+if { $verbose == "no" } { puts [mamelang "Done"] }
+
+proc examine_zip { rompath rom } {
+    global unzip argv0 zip_crcs zip_name_indx zip_indx failure_okay
+    global zip_paths zip_crc_indx
+    
+    lappend zip_paths($rom) $rompath
+    set zipname [file join / $rompath ${rom}.zip]
+
+    # use -qv option to look at contents of zip file
+    set command "\"$unzip\" -qv \"$zipname\""
+    myputs "$command"
+    set failure_okay 1
+    set lines [split [read_command $command] \n]
+    if { $lines == "" } {
+	puts stderr [mamelang "$argv0: " "WARNING: " "Unable to read" \
+			 " ${rom}.zip:\t" "skipping."]
+	return -1
+    }
+    set linecount 0
+    foreach line $lines {
+	# skip the first two lines of output
+	if { [incr linecount] <= 2 } { continue }
+	# extract the CRC
+	set crc [string trim [string range $line 47 55]]
+	# ignore blank lines
+	if { $crc == "" } { continue }
+	# extract the name
+	set name [string trim [string range $line 57 end]]
+	# ignore dummy files made by romalizer
+	if { [string compare $name "dummy"   ] && [crc_nodump $crc] } {
+	    continue
+	}
+
+	# build a list of CRCs found in this zipfile
+	lappend zip_crcs($rom,$rompath) $crc
+
+	# locate the zipfile while contains a given crc and name
+	set zip_indx($rom,$crc,$name) $zipname
+	# locate the zipfile which contains a given crc
+	set zip_indx($rom,$crc) $zipname
+	# locate the zipfile if all we have is a crc
+	set zip_indx($crc) $zipname
+
+	# zip file filenames lookup table 
+	set zip_name_indx($rom,$crc) $name
+	set zip_crc_indx($rom,$name) $crc
+    }
+    return 0
+}
+
+proc examine_zips rom {
+    global path zip_paths
+
+    # rc value of -1 means no working zip file has yet been found
+    set rc -1
+    foreach rompath [split $path :] {
+	set zipname [file join / $rompath ${rom}.zip]
+	if { [file exists $zipname] } {
+	    set rc1 [examine_zip $rompath $rom]
+	    # if working zip file not yet found, and this file is read
+	    # properly, then mark rc as working zipfile found
+	    if { ($rc == -1) && ($rc1 != -1) } { set rc 0 }
+	} else {
+	    # check alternate xmame rompath
+	    set altpath [file join / $rompath roms]
+	    set zipname [file join / $altpath ${rom}.zip]
+	    if { [file exists $zipname] } {
+		set rc1 [examine_zip $altpath $rom]
+		if { ($rc == -1) && ($rc1 != -1) } { set rc 0 }
+	    }
+	}
+    }
+    return $rc
+}
+
+# this procedure will remove all CRCs found in the clones and add them to
+# the master CRC list if they do not already exist there
+proc merge_clones master {
+    global crcs clones
+
+    for { set i 0 } { $i < [llength $clones($master)] } { incr i } {
+	set clone [lindex $clones($master) $i]
+	# foreach clone in master, if crc does not exist in master add crc
+	# to master.  all crcs in the clones are removed
+	if { [info exists crcs($clone)] && [info exists crcs($master)] } {
+	    foreach clone_crc [split $crcs($clone)] {
+		set match_found 0
+		foreach master_crc [split $crcs($master)] {
+		    if { $clone_crc == $master_crc } {
+			set match_found 1
+		    }
+		}
+		if { $match_found == 0 } {
+		    # no match was found so add crc to master
+		    lappend crcs($master) $clone_crc
+		}
+		# remove crc from clone
+		set index [lsearch $crcs($clone) $clone_crc]
+		set crcs($clone) \
+		    [lreplace $crcs($clone) $index $index]
+	    }
+	}
+    }
+}
+
+# this procedure will remove the duplicate CRCs found in all the clones
+# and add them to the required CRCs for the master
+proc examine_clones master {
+    global crcs clones
+    # remove CRCs that are duplicated in clones and add them to master
+    # if master doesnt already have that CRC in its list
+    for { set i 0 } { $i < [llength $clones($master)] } { incr i } {
+	set clone [lindex $clones($master) $i]
+	# compare this one with the rest in the list
+	set j [expr $i + 1]
+	set other_clones [lrange $clones($master) $j end]
+	if { $other_clones == $clone } { continue } ; # fail safe
+	foreach other_clone [split $other_clones] {
+	    foreach clone_crc [split $crcs($clone)] {
+		foreach other_clone_crc [split $crcs($other_clone)] {
+		    if { [string compare $clone_crc "00000000"] != 0 &&
+			 $clone_crc == $other_clone_crc } {
+			# remove crc from crcs list for both clones
+			set index [lsearch $crcs($clone) $clone_crc]
+			set crcs($clone) \
+			    [lreplace $crcs($clone) $index $index]
+			set index [lsearch $crcs($other_clone) $clone_crc]
+			set crcs($other_clone) \
+			    [lreplace $crcs($other_clone) $index $index]
+			# now check if crc is also in the master
+			set match_found 0
+			foreach crc [split $crcs($master)] {
+			    if { $crc == $clone_crc } {
+				set match_found 1
+				break
+			    }
+			}
+			# if crc is not found in master, then add it!
+			if { !$match_found } {
+			    lappend crcs($master) $clone_crc
+			}
+		    }
+		}
+	    }
+	}
+    }
+    # remove CRCs in clones that are already in master
+    if { [info exists crcs($clone)] && [info exists crcs($master)] } {
+	foreach clone [split $clones($master)] {
+	    foreach clone_crc [split $crcs($clone)] {
+		foreach master_crc [split $crcs($master)] {
+		    if { [string compare $clone_crc "00000000"] != 0 &&
+			  $clone_crc == $master_crc } {
+			# remove the crc from the crcs list
+			set index [lsearch $crcs($clone) $clone_crc]
+			set crcs($clone) \
+			    [lreplace $crcs($clone) $index $index]
+			break
+		    }
+		}
+	    }
+	}
+    }
+}
+
+# now lets get all the CRC information in the user's zip files for each
+# rom specified on the command line
+if { $verbose == "no" } { puts [mamelang "Obtaining zipfile information"] }
+foreach current_rom [split $roms] {
+    if { [examine_zips $current_rom] == -1 } {
+	# the zip file was not found, so do not give a report for it
+	puts stderr [format "[mamelang "$argv0: " "WARNING: " "Unable to find"] %-13s [mamelang "skipping."]" "${current_rom}.zip:"]
+	set i [lsearch $roms $current_rom]
+        set roms [lreplace $roms $i $i]
+    }
+    # if a rom has a clone we need to get the CRCs for those too
+    if { [info exists clones($current_rom)] } {
+	foreach clone [split $clones($current_rom)] {
+	    if { [examine_zips $clone] == -1 } {
+		# the zip file was not found, so do not give a report for it
+		puts stderr [format "[mamelang "$argv0: " "WARNING: " "Unable to find"] %-13s [mamelang "skipping."]" "${clone}.zip:"]
+		set i [lsearch $roms $clone]
+		if { $i != -1 } {
+		    set roms [lreplace $roms $i $i]
+		}
+	    }
+	}
+	# here we make sure that any crcs which are required for both the
+	# clone and master are removed from the clone's required crc list.
+	# we also removed crcs duplicated across clones and add them to the
+	# required list of crcs to the master if not already present. Skip
+	# this step if you want each zip to be able to run independantly
+	# of its master.
+	if { $merged == 0 } {
+	    examine_clones $current_rom
+	}
+	# if merge type 1 is selected we want to move all the unique crcs
+	# in the clones and place them in the master.  The clones should
+	# then be removed since they have no CRCs
+	if { $merged == 1 } {
+	    merge_clones $current_rom
+	}
+	if { $merged == 2 } {
+	    ; # nothing to do
+	}
+    }
+}
+
+proc aok { rom item } {
+    puts [format "%10s: ${item}s [mamelang "GOOD"]" $rom] ; flush stdout
+}
+proc notok { rom item } {
+    puts [format "%10s: ${item}s [mamelang "BAD"]!" $rom] ; flush stdout
+}
+
+proc check_names rom {
+return
+    global crcs2 zip_crcs2 name_indx zip_name_indx imperfections_exist
+    global clones argv0
+
+    foreach crc [split $crcs2($rom)] {
+	foreach zip_crc [split $zip_crcs2($rom)] {
+	    if { $zip_crc == $crc } {
+		set a ""
+		if { [info exists name_indx($rom,$crc)] } {
+		    set a $name_indx($rom,$crc)
+		} else {
+		    foreach clone [split $clones($rom)] {
+			if { [info exists name_indx($clone,$crc)] } {
+			    set a $name_indx($clone,$crc)
+			    break
+			}
+		    }
+		}
+		set b $zip_name_indx($rom,$zip_crc)
+		if { [string compare $a $b] } {
+		    puts [mamelang "zip name" " $b " "does not match" " $a"]
+		    set imperfections_exist 1
+		}
+	    }
+	}
+    }
+    if { $imperfections_exist } {
+	notok $rom NAME 
+    } else { 
+	aok $rom NAME
+    }
+}
+
+proc remove_crc { rom crc zip_crc } {
+    global crcs2 zip_crcs2
+    set indx [lsearch $crcs2($rom) $crc]
+    set crcs2($rom) [lreplace $crcs2($rom) $indx $indx]
+    set indx [lsearch $zip_crcs2($rom) $zip_crc]
+    set zip_crcs2($rom) [lreplace $zip_crcs2($rom) $indx $indx]
+}
+
+proc show_missing_files { rom crc inverted_crc } {
+    global zip_indx name_indx title clones
+    if { $inverted_crc != 0 } {
+	set zname [basename $zip_indx($inverted_crc) .zip]
+    } else {
+	set zname [basename $zip_indx($crc) .zip]
+    }
+    if { [string compare $zname $rom] == 0 } {
+	return 
+    }
+    if { $title == 0 } {
+	puts [mamelang "The following files are missing in" " $rom"]
+	set title 1
+    }
+    if { [info exists name_indx($rom,$crc)] } {
+	puts -nonewline "$name_indx($rom,$crc) "
+    } else {
+	foreach clone [split $clones($rom)] {
+	    if { [info exists name_indx($clone,$crc)] } {
+		puts -nonewline "$name_indx($clone,$crc) "
+		break;
+	    }
+	}
+    }
+    if { $inverted_crc != 0 } {
+	puts [mamelang "(" "Found in" ": $zip_indx($inverted_crc))"]
+    } else {
+	puts [mamelang "(" "Found in" ": $zip_indx($crc))"]
+    }
+}
+
+# This procedure will return the inverse of a CRC value
+proc invert_crc crc {
+    return [format "%08x" [expr 0xFFFFFFFF - 0x$crc]]
+}
+
+proc has_clones rom {
+    global clones
+
+    return [info exists clones($rom)]
+}
+
+proc sr_puts { data newline } {
+    global verbose_status
+
+    if { $verbose_status } {
+	if { $newline } {
+	    puts $data
+	} else {
+	    puts -nonewline $data
+	    flush stdout
+	}
+    }
+}
+
+proc sr_print_header rom {
+    sr_puts "\nStatus report for $rom" yes
+    sr_puts "==================" no
+    for { set c [string length $rom] } { $c != 0 } { incr c -1 } {
+	sr_puts "=" no
+    }
+    sr_puts "\n" yes
+}
+
+proc sr_print_footer {} {
+    global force verbose_status
+
+    sr_puts "     " no
+    for { set c 0 } { $c < 7 } { incr c } {
+	sr_puts __________ no
+    }
+    if { $force == "no" && $verbose_status } {
+	flush stdout
+	gets stdin keypress
+    } else {
+	sr_puts "" yes
+    }
+}
+
+proc sr_print_master_status rom {
+    global master_of clones
+
+    if { [info exists master_of($rom)] } {
+	sr_puts "$rom is a clone of $master_of($rom)" yes
+    } else {
+	sr_puts "$rom is the master rom" no
+	if { [info exists clones($rom)] } {
+	    sr_puts ", clones for this romset are:" yes
+	    foreach clone [split $clones($rom)] {
+		sr_puts "\t$clone" yes
+	    }
+	} else {
+	    sr_puts ", there are no clones for this rom." yes
+	}
+    }
+    sr_puts "" yes
+}
+
+proc sr_print_rom_occurrances rom {
+    global zip_paths imperfections merged master_of
+
+    sr_puts "Number of occurrances of $rom.zip: " no
+    if { [info exists zip_paths($rom)] } {
+	sr_puts "[llength $zip_paths($rom)]" yes
+	foreach path [split $zip_paths($rom)] {
+	    sr_puts "\t[file join / $path $rom.zip]" yes
+	}
+	if { [llength $zip_paths($rom)] > 1 } {
+	    append imperfections "multiple_romsets "
+	}
+	if { ( $merged == 1 ) && [info exists master_of($rom)] == 1 } {
+	    if { [string match *multiple_romsets* $imperfections] == 0 } {
+		append imperfections "multiple_romsets "
+	    }
+	}
+    } else {
+	sr_puts "0" yes
+	if { $merged != 1 } {
+	    append imperfections "no_zip_file "
+	}
+    }
+}
+
+proc sr_print_crcs_raw { crc current_count } {
+    upvar 1 $current_count counter
+    if { $counter == 8 } {
+	sr_puts "\n\t" no
+	set counter 0
+    }
+    incr counter
+    sr_puts "$crc " no
+}
+
+proc sr_print_crcs rom {
+    global crcs NODUMP
+
+    sr_puts "\nList of CRCs required for $rom:" yes
+    sr_puts "\t" no
+    set counter 0
+    foreach crc [split $crcs($rom)] {
+	if { [crc_nodump $crc] } {
+	    foreach nodump [split $NODUMP($rom)] {
+		sr_print_crcs_raw $crc counter
+	    }
+	} else {
+	    sr_print_crcs_raw $crc counter
+	}
+    }
+    if { $counter != 0 } {
+	sr_puts "" yes
+    }
+}
+
+proc sr_print_crc_loc_raw { rom crc data } {
+    global imperfections
+
+    sr_puts "\t$crc: $data" yes
+    if { [string match "Not Found*" $data] == 0 } {
+	if { [basename \"$data\" .zip] != $rom } {
+	    if { [string match *roms_found* $imperfections] == 0 } {
+		append imperfections "roms_found_elsewhere "
+	    }
+	}
+    }
+}
+
+proc sr_print_crc_loc_sub { rom crc newcrc } {
+    global zip_indx imperfections
+
+    if { [info exists zip_indx($rom,$newcrc)] } {
+	sr_print_crc_loc_raw $rom $crc $zip_indx($rom,$newcrc)
+    } elseif { [info exists zip_indx($newcrc)] } {
+	sr_print_crc_loc_raw $rom $crc $zip_indx($newcrc)
+    } else {
+	set newcrc [invert_crc $crc]
+	if { [info exists zip_indx($rom,$newcrc)] } {
+	    sr_print_crc_loc_raw $rom $crc $zip_indx($rom,$newcrc)
+	} elseif { [info exists zip_indx($newcrc)] } {
+	    sr_print_crc_loc_raw $rom $crc $zip_indx($newcrc)
+	} else {
+	    sr_print_crc_loc_raw $rom $crc "Not Found in any zip file!"
+	    if { [string match *missing_roms* $imperfections] == 0 } {
+		append imperfections "missing_roms "
+	    }
+	}
+    }
+}
+
+proc sr_print_crc_loc rom {
+    global crcs zip_crc_indx NODUMP imperfections master_of clones
+
+    sr_puts "\nLocation of each CRC found:" yes
+    foreach crc [split $crcs($rom)] {
+	if { [crc_nodump $crc] } {
+	    foreach name [split $NODUMP($rom)] {
+		if { [info exists zip_crc_indx($rom,$name)] } {
+		    sr_print_crc_loc_sub $rom $crc $zip_crc_indx($rom,$name)
+		} else {
+		    if { [info exists master_of($rom)] } {
+			set master $master_of($rom)
+		    } else {
+			set master $rom
+		    }
+		    if { [info exists zip_crc_indx($master,$name)] } {
+			sr_print_crc_loc_sub $rom $crc $zip_crc_indx($master,$name)
+		    } elseif { [info exists clones($master)] } {
+			set nodump_found 0
+			foreach clone [split $clones($master)] {
+			    if { [info exists zip_crc_indx($clone,$name)] } {
+				sr_print_crc_loc_sub $rom $crc $zip_crc_indx($clone,$name)
+				set nodump_found 1
+				break
+			    }
+			}
+			if { $nodump_found == 0 } {
+			    sr_print_crc_loc_raw $rom $crc "Not Found in any zip file!!"
+			    if { [string match *missing_roms* $imperfections] == 0 } {
+				append imperfections "missing_roms "
+			    }
+			}
+		    } else {
+			sr_print_crc_loc_raw $rom $crc "Not Found in any zip file!"
+			if { [string match *missing_roms* $imperfections] == 0 } {
+			    append imperfections "missing_roms "
+			}
+		    }
+		}
+	    }
+	} else {
+	    sr_print_crc_loc_sub $rom $crc $crc
+	}
+
+    }
+}
+
+proc sr_cn_print_header {} {
+    set nz "Name in Zipfile"
+    sr_puts "\nNames for each CRC:" yes
+    sr_puts "\t[format "%-8s %-12s %-15.15s %-10s" CRC Name $nz Status]" yes
+    sr_puts "\t-------- ------------ --------------- ----------" yes
+}
+
+proc sr_cn_print_crc crc {
+    sr_puts "\t[format "%-8s " $crc]" no
+}
+
+proc zip_base crc {
+    global zip_indx
+
+    if { [info exists zip_indx($crc)] } {
+	set zipbase [basename $zip_indx($crc) .zip]
+    } else {
+	set zipbase ""
+    }
+    return $zipbase
+}
+
+proc sr_cn_print_name_data data {
+    sr_puts [format "%-12s " $data] no
+}
+
+proc sr_cn_print_name_raw data {
+    global name_indx
+
+    if { [info exists name_indx($data)] } {
+	sr_cn_print_name_data $name_indx($data)
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc sr_cn_print_name { rom crc } {
+    global clones
+
+    if { [sr_cn_print_name_raw $rom,$crc] == 0 &&
+	 [sr_cn_print_name_raw [zip_base $crc],$crc] == 0 &&
+	 [sr_cn_print_name_raw $crc] == 0 } {
+	if { [info exists clones($rom)] } {
+	    foreach clone $clones($rom) {
+		if { [sr_cn_print_name_raw $clone,$crc] } {
+		    return;
+		}
+	    }
+	    sr_cn_print_name_data N/A
+	} else {
+	    sr_cn_print_name_data N/A
+	}
+    }
+}
+
+proc sr_cn_print_zipname_data data {
+    sr_puts [format "%-15.15s " $data] no
+}
+
+proc sr_cn_print_zipname_raw { rom crc } {
+    global zip_name_indx
+
+    if { [info exists zip_name_indx($rom,$crc)] } {
+	sr_cn_print_zipname_data $zip_name_indx($rom,$crc)
+    } elseif { [info exists zip_name_indx([zip_base $crc],$crc)] } {
+	sr_cn_print_zipname_data $zip_name_indx([zip_base $crc],$crc)
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc sr_cn_print_zipname_NODUMP { rom name } {
+    global zip_crc_indx master_of clones
+
+    if { [info exists zip_crc_indx($rom,$name)] } {
+	set NODUMPcrc $zip_crc_indx($rom,$name)
+	if { [sr_cn_print_zipname_raw $rom $NODUMPcrc] == 0 } {
+	    sr_cn_print_zipname_data N/A
+	}
+    } else {
+	if { [info exists master_of($rom)] } {
+	    set master $master_of($rom)
+	} else {
+	    set master $rom
+	}
+	if { [info exists zip_crc_indx($master,$name)] } {
+	    set NODUMPcrc $zip_crc_indx($master,$name)
+	    if { [sr_cn_print_zipname_raw $rom $NODUMPcrc] == 0 } {
+		sr_cn_print_zipname_data N/A
+	    }
+	} elseif { [info exists clones($master)] } {
+	    set nodump_found 0
+	    foreach clone [split $clones($master)] {
+		if { [info exists zip_crc_indx($clone,$name)] } {
+		    set NODUMPcrc $zip_crc_indx($clone,$name)
+		    if { [sr_cn_print_zipname_raw $rom $NODUMPcrc] == 0 } {
+			sr_cn_print_zipname_data N/A
+		    }
+		    set nodump_found 1
+		    break
+		}
+	    }
+	    if { $nodump_found == 0 } {
+		sr_cn_print_zipname_data N/A
+	    }
+	} else {
+	    sr_cn_print_zipname_data N/A
+	}
+    }
+}
+
+proc sr_cn_print_zipname { rom crc } {
+    if { [sr_cn_print_zipname_raw $rom $crc] == 0 } {
+	set newcrc [invert_crc $crc]
+	if { [sr_cn_print_zipname_raw $rom $newcrc] == 0 } {
+	    sr_cn_print_zipname_data N/A
+	}
+    }
+}
+
+proc sr_cn_print_status_data status {
+    global imperfections
+
+    if { $status == "good" } {
+	sr_puts [format "%-10s" CORRECT] yes
+    } else {
+	sr_puts [format "%-10s" INCORRECT] yes
+	if { [string match *names_* $imperfections] == 0 } {
+	    append imperfections "names_incorrect "
+	}
+    }
+}
+
+proc sr_cn_print_status_raw { rom crc name } {
+    global zip_indx zip_name_indx
+
+    if { [info exists zip_name_indx($rom,$crc)] } {
+	set zipname $zip_name_indx($rom,$crc)
+    } elseif { [info exists zip_name_indx([zip_base $crc],$crc)] } {
+	set zipname $zip_name_indx([zip_base $crc],$crc)
+    } else {
+	set crc [invert_crc $crc]
+	if { [info exists zip_name_indx($rom,$crc)] } {
+	    set zipname $zip_name_indx($rom,$crc)
+	} elseif { [info exists zip_name_indx([zip_base $crc],$crc)] } {
+	    set zipname $zip_name_indx([zip_base $crc],$crc)
+	} else {
+	    sr_cn_print_status_data bad
+	    return
+	}
+    }
+    if { [string compare $zipname $name] == 0 } {
+	sr_cn_print_status_data good
+    } else {
+	sr_cn_print_status_data bad
+    }
+}
+
+proc sr_cn_print_status_sub { rom crc newcrc } {
+    global name_indx clones
+
+    if { [info exists name_indx($rom,$crc)] } {
+	sr_cn_print_status_raw $rom $newcrc $name_indx($rom,$crc)
+    } elseif { [info exists name_indx([zip_base $crc],$crc)] } {
+	sr_cn_print_status_raw $rom $newcrc $name_indx([zip_base $crc],$crc)
+    } elseif { [info exists name_indx($crc)] } {
+	sr_cn_print_status_raw $rom $newcrc $name_indx($crc)
+    } elseif { [info exists clones($rom)] } {
+	foreach clone $clones($rom) {
+	    if { [info exists name_indx($clone,$crc)] } {
+		sr_cn_print_status_raw $clone $newcrc $name_indx($clone,$crc)
+		return 0
+	    }
+	}
+	return -1
+    }
+    return 0
+}
+
+proc sr_cn_print_status_NODUMP { rom name } {
+    global zip_name_indx zip_crc_indx master_of clones
+
+    if { [info exists zip_crc_indx($rom,$name)] } {
+	set crc $zip_crc_indx($rom,$name)
+	if { [info exists zip_name_indx($rom,$crc)] } {
+	    if { [string compare $name $zip_name_indx($rom,$crc)] == 0 } {
+		sr_cn_print_status_data good
+	    } else {
+		sr_cn_print_status_data bad
+	    }
+	} else {
+	    sr_cn_print_status_data bad
+	}
+    } else {
+	if { [info exists master_of($rom)] } {
+	    set master $master_of($rom)
+	} else {
+	    set master $rom
+	}
+	if { [info exists zip_crc_indx($master,$name)] } {
+	    set crc $zip_crc_indx($master,$name)
+	    if { [info exists zip_name_indx($master,$crc)] } {
+		if { [string compare $name $zip_name_indx($master,$crc)] == 0 } {
+		    sr_cn_print_status_data good
+		}
+		set nodump_found 1
+	    }
+	} else {
+	    sr_cn_print_status_data bad
+	}
+    }
+}
+
+proc sr_cn_print_status { rom crc } {
+    if { [sr_cn_print_status_sub $rom $crc $crc] == -1 } {
+	sr_cn_print_status_data bad
+    }
+}
+
+proc sr_check_names rom {
+    global crcs NODUMP
+
+    sr_cn_print_header
+    foreach crc [split $crcs($rom)] {
+	if { [crc_nodump $crc] } {
+	    foreach nodump [split $NODUMP($rom)] {
+		sr_cn_print_crc $crc
+		sr_cn_print_name_data $nodump
+		sr_cn_print_zipname_NODUMP $rom $nodump
+		sr_cn_print_status_NODUMP $rom $nodump
+	    }
+	} else {
+	    sr_cn_print_crc $crc
+	    sr_cn_print_name $rom $crc
+	    sr_cn_print_zipname $rom $crc
+	    sr_cn_print_status $rom $crc
+	}
+    }
+}
+
+proc sr_print_imperfections {} {
+    global imperfections
+
+    if { $imperfections == "" } {
+	set imperfections none
+    }
+    sr_puts "\nImperfections found:" yes
+    foreach imperfection [split $imperfections] {
+	sr_puts "\t$imperfection" yes
+    }
+}
+
+proc sr_print_extra_files_raw { rom crc } {
+    global crcs NODUMP zip_name_indx imperfections
+
+    set match_found 0
+    set eff 0
+    foreach goodcrc [split $crcs($rom)] {
+	if { [info exists NODUMP($rom)] } {
+	    if { [string match "*$zip_name_indx($rom,$crc)*" $NODUMP($rom)] ==
+		 1 } {
+		set match_found 1
+		break
+	    }
+	} 
+	if { [string compare $crc $goodcrc] == 0 } {
+	    set match_found 1
+	    break
+	} elseif { [string compare [invert_crc $crc] $goodcrc] == 0 } {
+	    set match_found 1
+	    break
+	}
+    }
+    if { $match_found == 0 && ![crc_nodump $crc] } {
+	set eff 1
+	sr_puts "\t$crc " no
+	if { [info exists zip_name_indx($rom,$crc)] } {
+	    sr_puts $zip_name_indx($rom,$crc) yes
+	    if { [string match *extra_* $imperfections] == 0 } {
+		append imperfections "extra_files_in_zip "
+	    }
+	} else {
+	    sr_puts "" yes
+	}
+    }
+    return $eff
+}
+
+proc sr_print_extra_files rom {
+    global zip_crcs crcs zip_paths zip_name_indx NODUMP imperfections
+
+    sr_puts "\nList of extra files in zip:" yes
+    set eff 0;   # eff=extra files found
+    if { [info exists zip_paths($rom)] } {
+	foreach path [split $zip_paths($rom)] {
+	    if { [info exists zip_crcs($rom,$path)] } {
+		foreach crc [split $zip_crcs($rom,$path)] {
+		    set rc [sr_print_extra_files_raw $rom $crc]
+		    if { $eff == 0 } {
+			set eff $rc
+		    }
+		}
+	    }
+	}
+    }
+    if { $eff == 0 } {
+	sr_puts "\tNone" yes
+    }
+}
+
+proc new_status_report rom {
+    global imperfections crcs check_names
+
+    set imperfections ""
+
+    sr_print_header $rom
+    sr_print_master_status $rom
+    sr_print_rom_occurrances $rom
+    if { $crcs($rom) != "" } {
+	sr_print_crcs $rom
+	sr_print_crc_loc $rom
+	if { $check_names } {
+	    sr_check_names $rom
+	}
+    }
+    sr_print_extra_files $rom
+    sr_print_imperfections
+    sr_print_footer
+}
+
+proc fr_imperfect_raw rom {
+    global imperfect
+
+    if { [string compare $imperfect($rom) none] } {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc fr_imperfect rom {
+    global clones
+
+    if { [fr_imperfect_raw $rom] } {
+	return 1
+    } elseif { [has_clones $rom]] } {
+	foreach clone [split $clones($rom)] {
+	    if { [fr_imperfect_raw $clone] } {
+		return 1
+	    }
+	}
+    }
+    return 0
+}
+
+proc fr_prompt_yes {} {
+    global force
+
+    if { $force == "no" } {
+	puts ""
+	puts -nonewline [mamelang "Would you like me to fix your ROMs" \
+			     " \[Y/n\] ?"]
+	flush stdout
+	if { [gets stdin resp] == 0 } {
+		set resp y
+	}
+    } else {
+	return 1
+    }
+    if { $resp == "y" || $resp == "Y" || $resp == "yes" || $resp == "Yes" } {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+proc fr_create_workdir rom {
+}
+
+proc new_fix_roms_raw rom {
+    # No complex AI used in these functions
+    fr_create_workdir $rom
+}
+
+proc new_fix_roms rom {
+    global clones
+
+    if { [fr_imperfect $rom] && [fr_prompt_yes] } {
+	new_fix_roms_raw $rom
+	if { [has_clones $rom] } {
+	    foreach clone [split $clones($rom)] {
+		new_fix_roms_raw $rom
+	    }
+	}
+    }
+}
+
+
+
+
+
+# old code below this point to fix roms
+
+
+
+set title 0
+# this procedure needs comments
+proc status_report rom {
+    global crcs2 zip_crcs2 zip_name_indx zip_indx name_indx title
+    global imperfections_exist clones
+    if { [lsort $crcs2($rom)] == [lsort $zip_crcs2($rom)] } {
+	aok $rom CRC
+    } else {
+	foreach crc [split $crcs2($rom)] {
+	    foreach zip_crc [split $zip_crcs2($rom)] {
+		set inverted_crc [format "%08x" [expr 0xffffffff - 0x$crc]]
+		if { $zip_crc == $crc } {
+		    remove_crc $rom $crc $crc
+		    break
+		}
+		if { $zip_crc == $inverted_crc } {
+		    remove_crc $rom $crc $zip_crc
+		    break
+		}
+	    }
+	}
+	if { ![llength $crcs2($rom)] && ![llength $zip_crcs2($rom)]} {
+	    aok $rom CRC
+	} else {
+	    if { [llength $crcs2($rom)] } {
+		set imperfections_exist 1
+		notok $rom CRC
+		set title 0
+		foreach crc [split $crcs2($rom)] {
+		    set inverted_crc [format "%08x" [expr 0xffffffff - 0x$crc]]
+		    if { [info exists zip_indx($crc)] } {
+			show_missing_files $rom $crc 0
+		    } elseif { [info exists zip_indx($inverted_crc)] } {
+			show_missing_files $rom $crc $inverted_crc
+		    } else {
+			if { [info exists name_indx($rom,$crc)] } {
+			    puts -nonewline "$name_indx($rom,$crc) "
+			} else {
+			    foreach clone [split $clones($rom)] {
+				if { [info exists name_indx($clone,$crc)] } {
+				    puts -nonewline "$name_indx($clone,$crc) "
+				    break;
+				}
+			    }
+			}
+			puts [mamelang "Not found in any other zips!" \
+				  " (CRC:$crc)"]
+		    }
+		}
+	    }
+	    if { [llength $zip_crcs2($rom)] } {
+		set imperfections_exist 1
+		notok $rom CRC
+		puts [mamelang "The following extranous files were found in" \
+			  " $rom:"]
+		foreach crc [split $zip_crcs2($rom)] {
+		    puts "$zip_name_indx($rom,$crc) (CRC = $crc)"
+		}
+	    }
+	}
+    }
+}
+
+proc unzipem { zip_filename file_to_unzip mame_name workdir } {
+    global noex verbose workd check_names unzip
+    set command "\"$unzip\" -j -o \"$zip_filename\" \"$file_to_unzip\" -d \"$workdir\""
+    if { $noex } {
+	puts $command 
+    } else {
+	myputs $command
+	evalcmd $command
+	if { $verbose == "no" } {
+	    puts -nonewline .
+	    flush stdout
+	}
+    }
+    if { $check_names } {
+	set indx [string last / $file_to_unzip]
+	incr indx
+	set trimmed_file [string range $file_to_unzip $indx end]
+	if { $mame_name != $trimmed_file } {
+	    set file1 [file join / $workdir $trimmed_file]
+	    set file2 [file join / $workdir $mame_name]
+	    set command "mv \"$file1\" \"$file2\""
+	    if { $noex } {
+		puts $command 
+	    } else {
+		myputs $command
+		evalcmd $command
+	    }
+	}
+    }
+}
+
+# this procedure attempts to fix your ROMs
+proc fix_roms rom {
+    global workd path crcs zip_name_indx zip_indx unzip zip noex
+    global c_level verbose name_indx clones merged zip_empty
+    # this directory should not exist, if it does it means an error occurred
+    # when trying to fix the roms the last time romalizer was run.  If it 
+    # does exist, just remove the contents of directory, other
+    set romdir [file join / $workd $rom]
+    if { [file exists $romdir] } {
+	set command "rm -rf \"$romdir\""
+	if { $noex } {
+	    puts $command
+	} else { 
+	    myputs $command
+	    evalcmd $command
+	}
+    }
+    # make a directory to place roms into
+    if { $noex } {
+	puts "mkdir $romdir"
+    } else {
+	myputs "mkdir $romdir"
+	file mkdir $romdir
+    }
+    # find the zip file 
+    foreach rompath [split $path :] {
+	set zipname [file join / $rompath $rom.zip]
+	if { [file exists $zipname] } {
+	    break
+	}
+	set zipname [file join / $rompath roms $rom.zip]
+	if { [file exists $zipname] } {
+	    break
+	}
+    }
+    # this foreach loop needs comments
+    foreach crc [split $crcs($rom)] {
+	if { [crc_nodump $crc] } {
+	    continue
+	}
+	set inverted_crc [format "%08x" [expr 0xffffffff - 0x$crc]]
+	if { [info exists zip_indx($rom,$crc)] } {
+	    set b $zip_name_indx($rom,$crc)
+	    if { [info exists name_indx($rom,$crc)] } {
+		set a $name_indx($rom,$crc)
+	    } else {
+		foreach clone [split $clones($rom)] {
+		    if { [info exists name_indx($clone,$crc)] } {
+			set a $name_indx($clone,$crc)
+			break
+		    }
+		}
+	    }
+	    unzipem $zip_indx($rom,$crc) $b $a $romdir
+	} elseif { [info exists zip_indx($rom,$inverted_crc)] } {
+	    set b $zip_name_indx($rom,$inverted_crc)
+	    if { [info exists name_indx($rom,$crc)] } {
+		set a $name_indx($rom,$crc)
+	    } else {
+		foreach clone [split $clones($rom)] {
+		    if { [info exists name_indx($clone,$crc)] } {
+			set a $name_indx($clone,$crc)
+			break
+		    }
+		}
+	    }
+	    unzipem $zip_indx($rom,$inverted_crc) $b $a $romdir
+	} elseif { [info exists zip_indx($crc)] } {
+            set a [basename $zip_indx($crc) .zip]
+	    if { [info exists zip_name_indx($a,$crc)] } {
+		set b $zip_name_indx($a,$crc)
+		set indx [string last / $b]
+		incr indx
+		set trimmed_file [string range $b $indx end]
+		unzipem $zip_indx($crc) $b $trimmed_file $romdir
+	    }
+	} elseif { [info exists zip_indx($inverted_crc)] } {
+	    set a [basename $zip_indx($inverted_crc) .zip]
+	    if { [info exists zip_name_indx($a,$inverted_crc)] } {
+		set b $zip_name_indx($a,$inverted_crc)
+		set indx [string last / $b]
+		incr indx
+		set trimmed_file [string range $b $indx end]
+		unzipem $zip_indx($inverted_crc) $b $trimmed_file $romdir
+	    }
+	}
+    }
+    set zipname [file join / $workd $rom.zip]
+    set zipdir  [file join / $workd $rom]
+    # this rom needs no files, so create a dummy file to build a zip with
+    if { [catch { glob $zipdir/* }] } {
+	set dummyfile [file join / $zipdir dummy]
+	set command "touch \"$dummyfile\""
+	if { $noex == "no" } {
+	    myputs $command
+	    evalcmd $command
+	}
+    }
+    # build the zip
+    set command "\"$zip\" -mrjD -$c_level \"$zipname\" \"$zipdir\""
+    if { $noex } {
+	puts $command
+    } else {
+	myputs $command
+	evalcmd $command
+    }
+    # cleanup
+    if { $noex } {
+	puts "rmdir $zipdir"
+    } else {
+	myputs "rmdir $zipdir"
+	file delete $zipdir
+    }
+}
+
+# this makes a backup copy of your original roms and installs the new
+# roms that romalizer built
+proc move_zipfiles rom {
+    global workd path noex
+    foreach rompath [split $path :] {
+	set zipname [file join / $rompath $rom.zip]
+	if { [file exists $zipname] } {
+	    break
+	}
+	set zipname [file join / $rompath roms $rom.zip]
+	if { [file exists $zipname] } { 
+	    set rompath [file join / $rompath roms]
+	    break
+	}
+    }
+    set oldromsdir [file join / $workd oldroms]
+    if { ![file isdirectory $oldromsdir] } {
+	file delete $oldromsdir
+    }
+    if { ![file exists $oldromsdir] } {
+	if { $noex } {
+	    puts "mkdir $oldromsdir"
+	} else {
+	    myputs "mkdir $oldromsdir"
+	    file mkdir $oldromsdir
+	}
+    }
+    set command "mv \"$zipname\" \"$oldromsdir\""
+    if { $noex } {
+	puts $command
+    } else {
+	myputs $command
+	catch { eval exec $command }
+    }
+    set zipname [file join / $workd $rom.zip]
+    set command "mv \"$zipname\" \"$rompath\""
+    if { $noex } {
+	puts $command
+    } else {
+	myputs $command
+	evalcmd $command
+    }
+}
+
+# make a copy of the crcs array to use with generating a status report
+# the original copy we use for fixing the roms
+array set crcs2 [array get crcs]
+array set zip_crcs2 [array get zip_crcs]
+
+# generate a status report for each rom and fix them if something is wrong
+set title 0
+foreach rom [split $roms] {
+    set imperfections_exist 0
+    if { [info exists crcs2($rom)] } {
+	new_status_report $rom
+	set imperfect($rom) $imperfections
+    }
+    if { [info exists clones($rom)] } {
+	foreach clone [split $clones($rom)] {
+	    if { [info exists crcs2($clone)] } {
+		new_status_report $clone
+		set imperfect($clone) $imperfections
+	    }
+	}
+    }
+    if { $verbose_status == "yes" || $title == 0 } {
+	puts \n
+	puts "                         SUMMARY OF IMPERFECTIONS FOUND"
+	puts ""
+	puts [format "%-8s  %s" "Rom Name" "Imperfections Found"]
+	puts [format "%-8s  %s" "--------" "-------------------"]
+	if { $verbose_status == "no" } {
+	    set title 1
+	}
+    }
+    puts [format "%-8s  %s" $rom $imperfect($rom)]
+    if { [info exists clones($rom)] } {
+	foreach clone [split $clones($rom)] {
+	    puts [format "%-8s  %s" $clone $imperfect($clone)]
+	}
+    }
+    sr_puts "" yes
+#    new_fix_roms $rom
+    if { $force == "no" } {
+	if { $verbose_status } {
+            set keypress ""
+            while { [string compare $keypress "\\"] != 0 } {
+		sr_puts "Press \\ and Enter to continue on to the next romset:" no
+		gets stdin keypress
+	    }
+	}
+    }
+
+
+
+
+
+
+# imprefections_exist is from the old status report subroutine, you can
+# compare $imperfect($rom) with "none" and if there is a difference,
+# you can set $imperfections_exist to 1 and the old fix roms routine will
+# kick in place (as in code below):
+    
+    if { [string compare $imperfect($rom) "none"] != 0 } {
+	set imperfections_exist 1
+    } elseif { [info exists clones($rom)] } {
+	foreach clone [split $clones($rom)] {
+	    if { [string compare $imperfect($clone) "none"] != 0 } {
+		set imperfections_exist 1
+	    }
+	}
+    }
+
+
+
+
+
+
+# This is continuation of old code...
+
+
+
+    if { $imperfections_exist == 0 && $check_names } {
+	if { [info exists crcs2($rom)] } {
+	    check_names $rom
+	}
+	if { [info exists clones($rom)] } {
+	    foreach clone [split $clones($rom)] {
+		if { [info exists crcs2($clone)] } { 
+		    check_names $clone 
+		}
+	    }
+	}
+    }
+    if { $imperfections_exist } {
+	if { $force == "no" } {
+	    puts -nonewline [mamelang "Would you like me to fix your ROMs" \
+				 " \[Y/n\] ?"]
+	    flush stdout
+	    if { [gets stdin resp] == 0 } {
+		set resp y
+	    }
+	} else {
+	    set resp y
+	}
+	if { $resp == "y" || $resp == "Y" } {
+	    puts -nonewline [mamelang "fixing" "..."] ; flush stdout
+	    fix_roms $rom
+	    if { [info exists clones($rom)] } {
+		foreach clone [split $clones($rom)] { fix_roms $clone }
+	    }
+	    # make a backup copy of your old roms and install the new roms
+	    if { $move_zips } {
+		move_zipfiles $rom
+		if { [info exists clones($rom)] } {
+		    foreach clone [split $clones($rom)] {
+			move_zipfiles $clone
+		    }
+		}
+		set oldromsdir [file join / $workd oldroms]
+		puts [mamelang "\n" "Your old ROMs have been moved to" \
+			  " $oldromsdir"]
+	    } else {
+		puts [mamelang "\n" "The fixed ROMs have been placed in" \
+			  " $workd"]
+	    }
+	}
+    }
+}
+
+puts ""
+
+# cleanup before exiting
+if { $logfile != "" } {
+    close $logfiled
+}

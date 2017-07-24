@@ -1,0 +1,257 @@
+History & Milestones for PinMAME
+--------------------------------
+
+Emulator Name: WPCMAME
+Authors: Martin Adrian
+Milestone Date:  04/1999 (Not sure of actual date, but documented as early as 4/99.
+Milestone: Initial Release to public
+Emulator Notes: 
+        Only 2 games supported: Twilight Zone and Indiana Jones
+        No sound support, very basic WPC Chip emulation.
+
+Milestone Date: 10/22/2000
+Milestone: Shivasite becomes official host of WPCMAME emulator.
+
+Emulator Name: WPCMAME
+Authors: Martin Adrian
+Milestone Date: 10/22/2000
+Milestone: New version of WPCMAME (0.37-Beta8) released to public over 1 year since the original release.
+Emulator Notes: 
+        *ALL* Williams WPC games, from Dr.Dude to Cactus Canyon fully working.  
+        Full WPC Chip emulation, PIC Security Chip and YM2151 Sound Emulation
+        Preliminary DCS Sound emulated!
+
+Milestone Date: 10/28/2000
+Milestone: Steve Ellenoff becomes first member of the wpcmame developer team.
+
+Emulator Name: WPCMAME32
+Milestone Date: 10/30/2000
+Milestone: Initial Release to public
+Authors: Steve Ellenoff
+
+Milestone Date: 11/03/2000 - *Not sure of exact day here
+Milestone: Steve Ellenoff takes over as project leader of wpcmame emulation project.
+
+Emulator Name: WPCMAME & WPCMAME32
+Authors: Martin Adrian, Steve Ellenoff
+Contributors: Jarek Parchanski
+Milestone Date: 11/06/2000
+Milestone: New version of WPCMAME released
+Hardware/Games Supported: *ALL* Williams WPC games, from Dr.Dude to Cactus Canyon.
+Emulator Notes: 
+        DCS Speedups
+        Sound Support added for several games       
+        Support for saving sounds to a .wav file
+        manually triggering sound commands
+
+Milestone Date: 11/??/2000
+Milestone: Marton Larrosa joins the wpcmame developer team.
+
+Emulator Name: WPCMAME & WPCMAME32
+Authors: Martin Adrian, Steve Ellenoff, Marton Larrosa
+Milestone Date: 11/17/2000
+Milestone: New version of WPCMAME released
+Emulator Notes: 
+        New simulator support added for a # of games.
+
+Milestone Date: 12/04/2000
+Milestone: Tom Haukap joins the wpcmame developer team.
+
+Milestone Date: 01/03/2001
+Milestone: Steve first encounters Randy's Visual Pinball from post in rgp.
+
+Milestone Date: 01/05/2001
+Milestone: Tom proposes to implement a COM object to allow WPCMAME to interact with other software.
+
+Milestone Date: 01/07/2001
+Milestone: Tom finishes inital coding and runs WPCMAMECOM for the very first time.
+           Alpha version running on a simple TAF (no graphics - only flippers and bumbpers) table.
+
+Milestone Date: 01/09/2001
+Milestone: Steve finishes creating very first WPCMAMECOM table, Terminator 2.
+           Table has no graphics, but has most major playfield items. 
+           Performance is bad. Scripting is a mess.
+
+Milestone Date: 01/13/2001
+Milestone: Steve & Tom come up with some major speed improvements for WPCMAMECOM.
+
+Milestone Date: 01/14/2001
+Milestone: Tom finishes first draft of complete TZ table.
+
+Authors: Martin Adrian, Steve Ellenoff, Marton Larrosa, Tom Haukap
+Contributors: Jonathan N. Deitch
+Milestone Date: 01/17/2001
+Milestone: Last version of WPCMAME released
+Emulator Notes: 
+        DCS Speedups, Solenoid & Mechanical Sound Support via Samples
+        Sound Support added for several games for many games
+        Simulator support for many games, custom lamp layouts for many games.
+
+Milestone Date: 01/26/2001
+Milestone: Tom & Steve decide to change the WPCMAMECOM project to Visual WPCMAME.
+
+Milestone Date: 01/28/2001
+Milestone: Tom & Steve have very rough template ready for scripting VWPC tables.
+           Steve makes a basic Funhouse table for additional testing.
+
+Milestone Date: 01/29/2001
+Milestone: Steve adds Williams GI handling support for VWPC.
+
+Milestone Date: 02/03/2001
+Milestone: Shiva closes his website, WPCMAME left without an official web page.
+
+Milestone Date: 02/07/2001
+Milestone: Steve get's Williams System 3-7 working.
+
+Milestone Date: 02/08/2001
+Milestone: Martin get's Williams System 11 Emulation working.
+
+Milestone Date: 02/12/2001
+Milestone: Steve get's Data East Alphanumeric Emulation working.
+           Steve begins one man manhunt to locate all Data East sound roms (since none are on the net).
+
+Milestone Date: 02/12/2001
+Milestone: Martin get's working sound emulation for System 11.
+
+Milestone Date: 02/13/2001
+Milestone: Steve get's Williams System 9 working.
+
+Milestone Date: 02/14/2001
+Milestone: Steve, Martin, Tom decide to call the new emulator PinMAME.
+           Steve get's System 6 & 7 sound partially working.
+
+Milestone Date: 02/18/2001
+Milestone: Visual WPCMAME is renamed to Visual PinMAME.
+
+Milestone Date: 03/28/2001
+Milestone: Steve launches official PinMAME website
+
+Emulator Name: PinMAME & PinMAME32
+Authors: Martin Adrian, Steve Ellenoff, Marton Larrosa, Tom Haukap
+Contributors: Dorsola, Dave Roberts
+Milestone Date: 03/29/2001
+Milestone: Initial Release to public (Version 0.99 Beta).
+Emulator Notes: 
+        Full support for Williams WPC Hardware w/sound
+        Williams System 11, 9, 7, 6, 4, 3 Emulation w/sound
+        Data East Alphanumeric Emulation [no sound support]
+        Prelim Bally MPU-35 Support
+
+Emulator Name: Visual PinMAME
+Authors: Steve Ellenoff, Tom Haukap
+Milestone Date: 03/30/2001
+Milestone: Initial Release to public (Version 0.99 Beta).
+
+Emulator Name: PinMAME, PinMAME32, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Marton Larrosa, Tom Haukap
+Milestone Date: 03/31/2001
+Milestone: 2nd Release  (Version 0.99 Beta 1)
+Emulator Notes: Mostly bug fixes that were missed from original release.
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap
+Milestone Date: 04/22/2001
+Milestone: 3rd Release  (Version 0.99 Beta 2)
+Emulator Notes: 
+        Many bug fixes. Custom Alpha Numeric Layout support added.
+                Marton Larrosa retires from PinMAME development.
+                PinMAME32 not released due to strange display bug
+
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap
+Contributors: David Tansey
+Milestone Date: 05/04/2001
+Milestone: 4th Release (Version 0.99 Beta 3)
+Emulator Notes: 
+        Many bug fixes. Custom Alpha Numeric Layout support added.
+                Marton Larrosa retires from PinMAME development.
+
+Milestone Date: 05/09/2001
+Milestone: Martin releases version 1.0 of VBS scriping files.
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap
+Contributor: Johan S, Dorsola, Worf
+Milestone Date: 07/31/2001
+Milestone: 5th Release (Version 1.0 Beta 1)
+Emulator Notes: 
+        Gottlieb System 80,80a,80b Support w/preliminary Sound emulation. 
+                Sega/Stern Whitestar CPU Emulation [no sound emulated]
+                Data East 128x16 DMD Emulation
+                Data East,Sega,Stern 128x32 DMD Emulation
+                Data East (Pre-BSMT2000 Hardware) Sound Emulated
+                Bally MPU-17 & MPU-35 Emulation working with Sound Support for Sound Module -32
+        Bally Sound Modules -51 & -56 Preliminary Support
+        Gottlieb System 3 Preliminary Support
+                Stern MPU-200 Preliminary Support
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap
+Contributors: Destruk, Guru, Worf, Gerrit V., Andre N.
+
+Milestone Date: 09/28/2001
+Milestone: 6th Release (Version 1.0 Beta 2)
+Emulator Notes: 
+        Data East/Sega 192x64 DMD Emulation
+        Stern MPU-100 & MPU-200 Emulation working [no sound emulated]
+        Improved sound for Gottlieb Sys80/a/b games.
+        Improved sound for Bally MPU-35 games.
+        Major bug fixes and driver improvements.
+
+Milestone Date: 10/22/2001
+Milestone: Gerrit Volkenborn joins the PinMAME developer team.
+
+Milestone Date: 11/21/2001
+Milestone: Gerrit gets the pinmame source code setup on a CVS server for easier updates between 4 people.
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap, Gerrit Volkenborn
+Contributors: Aaron Giles, Destruk, Worf, DesAngel, RevenantUK, Guru
+Milestone Date: 12/23/2001
+Milestone: 7th Release (Version 1.10) AND Steve's 30th Birthday also! :)
+Emulator Notes: 
+        BSMT 2000 Emulation - Full Sound now in all Data East/Sega/Stern(post 1997) games
+        Gottlieb System 3 Emulation working w/partial sound emulation
+        Gottlieb System 80b Sound Emulation
+        Preliminary Bally Video/Pinball support (Baby Pacman)
+        Major bug fixes and driver improvements.
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap, Gerrit Volkenborn
+Milestone Date: 02/03/2002
+Milestone: 8th Release (Version 1.11). 
+Emulator Notes: 
+        Baby Pacman Emulation Working (Including Sound)
+        Hankin Emulation
+        Game Plan Emulation
+        Bally 6803 Emulation
+        Support for 9 & 10 Segments displays
+        PinMAME can now be compiled with VC++
+
+Emulator Name: PinMAME, Visual PinMAME
+Authors: Martin Adrian, Steve Ellenoff, Tom Haukap, Gerrit Volkenborn
+Contributors: Peter Hall, Jean-Rene Karr
+Milestone Date: 03/29/2002
+Milestone: 9th Release (Version 1.12).
+           PinMAME has survived his first and hardest year, and it's better than ever!
+           At about the same time, Martin puts out VBS 3.0 to support new VP6 functions.
+Emulator Notes: 
+        Switching to VS-NET 7.0 Compiler for smaller size & higher speed
+        4 different splash screens in VPinMAME
+        All Bally & Gottlieb sound boards are running as intended
+        Combined Williams System 9&11 drivers with Data East for cleaner code/easier maintenance
+        Combined Data East sound hardware drivers for cleaner code/easier maintenance
+        Granny & The Gators Emulation Working
+        Atari Emulation for Superman & Hercules
+        Jokerz! sound board emulated.
+
+Milestone Date 12/2/2007
+Milestone: Added Gottlieb System 1 Support (Working!) - bug in bonus count still exists.
+
+Milestone Date 08/1/2008
+Milestone: Visual PinMAME now completely open source, expiry date removed
+
+Milestone Date 10/11/2009
+Milestone: PinMAME/32 compiles with GCC 4.4.0
+Contributors: Zachary A. Clifford

@@ -1,0 +1,16 @@
+YAML-CPP
+========
+Library version: 0.2.5
+Library type: static
+
+Homepage: http://code.google.com/p/yaml-cpp/
+
+Reason: P-ROC configuration via YAML files (like pypinproc)
+
+
+Visual C++:
+-----------
+Build with: Visual Studio 2003 SP1
+Runtime: /MT
+
+Library does not build with VC++ before Visual Studio 2003 (e.g. VS2002, VS6).

@@ -1,0 +1,16 @@
+zlib
+====
+Homepage: http://www.zlib.net/
+Reason: Support for zipped ROM packages
+
+Visual C++
+----------
+zlib Version: 1.2.11
+Built with: Visual C++ 9.0
+
+Library type: static
+Runtime library: /MT (multi-threaded non-DLL)
+Library files: zlibstatmt(64).lib, zlibstatmtd(64).lib
+
+Library type: DLL (shared)
+DLL import library: zlib.lib

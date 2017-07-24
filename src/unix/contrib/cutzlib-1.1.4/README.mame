@@ -1,0 +1,8 @@
+This directory contains a cutdown, but further unmodified version of zlib 1.1.4
+for use with xmame.
+
+A complete version of zlib can be downloaded from:
+http://www.zlib.org
+
+For more information and the copyright under which zlib falls see:
+README in the dir.

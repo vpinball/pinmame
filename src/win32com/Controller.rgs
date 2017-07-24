@@ -1,0 +1,23 @@
+HKCR
+{
+	VPinMAME.Controller.1 = s 'Visual PinMAME Controller'
+	{
+		CLSID = s '{F389C8B7-144F-4C63-A2E3-246D168F9D39}'
+	}
+	VPinMAME.Controller = s 'Visual PinMAME Controller'
+	{
+		CLSID = s '{F389C8B7-144F-4C63-A2E3-246D168F9D39}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F389C8B7-144F-4C63-A2E3-246D168F9D39} = s 'Visual PinMAME Controller'
+		{
+			ProgID = s 'VPinMAME.Controller.1'
+			VersionIndependentProgID = s 'VPinMAME.Controller'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

@@ -1,0 +1,6 @@
+#!/bin/tcsh
+# This is a sample wrapper script for the Intel C++ compiler.  You may need to
+# adjust this for your system.
+exec /usr/opt/intel/compiler50/ia32/bin/icc ${*:q}
+-I/opt/intel/compiler50/ia32/include -I/usr/include
+-I/usr/local/lib/gcc-lib/i686-pc-linux-gnu/2.95.3/include/

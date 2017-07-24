@@ -1,0 +1,166 @@
+#!/usr/bin/perl -w
+#
+# zipcmp - Compare ZIP archives
+#
+# (c) 2000  Stefan Becker
+#
+# Compare the two ZIP archives specified on the command line. The two
+# archives are considered equal if each entry (= CRC + filesize) exists
+# in both archives.
+#
+# Returns 0 on equality, >0 (plus differences on STDOUT) otherwise
+#
+#-----------------------------------------------------------------------------
+#
+# REQUIRED PERL PACKAGES
+#
+#-----------------------------------------------------------------------------
+require 5.004;
+use     strict;
+use     IO::File;
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#
+# DATA STRUCTURES
+#
+#-----------------------------------------------------------------------------
+#
+# Hash with ZIP archive data
+#
+# $zipdata = { Key of file1 (key = crc . size) => Name
+#              ... next file
+#            };
+#
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
+#
+# SUB ROUTINES
+#
+#-----------------------------------------------------------------------------
+# Read data from one ZIP archive
+sub ReadZipData($$) {
+  my($name, $zipdata) = @_;
+  my $handle          = new IO::File;
+
+#  print "Reading from $name\n";
+
+  # Open file for reading
+  if ($handle->open("< $name")) {
+
+    # Make sure we read in binary mode
+    binmode $handle;
+
+    # For each local directory in file
+    while (1) {
+      my $ok;
+      my $data;
+
+      # Read local directory file
+      if ($handle->read($data, 30) == 30) {
+
+        #
+	# ZIP archive: Local directory structure
+	#
+	# All data is little endian and unsigned
+	#
+	#   0  char  magic[4]               "PK\x03\x04"
+	#   4  short version required
+	#   6  short flags
+	#   8  short compression method
+	#  10  long  time
+	#  14  long  CRC32 checksum of original file
+	#  18  long  compressed data size
+	#  22  long  original file size
+	#  26  short length of file name
+	#  28  short length of extension field
+	# ---
+	#  30  <local directory structure>
+	#      <file name>
+	#      <extension>
+	#      <compressed data>
+        #
+	my ($magic, $ver, $flags, $method, $time, $crc32,
+	    $compsize, $origsize, $namelen, $extlen) =
+	      unpack("a4vvvVVVVvv", $data);
+
+	# Check magic for local directory
+	if ($magic eq "PK\x03\x04") {
+
+	  # Read name from file
+	  if ($handle->read($data, $namelen) == $namelen) {
+	    my $name = unpack("a*", $data);
+
+	    # Skip extension field and compressed data
+	    $handle->seek($extlen + $compsize, SEEK_CUR);
+
+	    # Add data to hash
+	    $zipdata->{sprintf("%08x%u", $crc32, $origsize)} = $name;
+
+	    # No errors
+	    $ok = 1;
+	  }
+	}
+      }
+      
+      # EOF in data or no local directory found
+      last unless $ok;
+    }
+
+    # Close file
+    $handle->close;
+
+  } else {
+    die "Can't open ZIP file: $!";
+  }
+}
+
+# Compare two archives
+sub Compare($$$) {
+  my($name, $ref1, $ref2) = @_;
+  my $rc                  = 0;
+
+  # Find those files which are only in archive 1 but not in archive 2
+  my $string = join(' ',
+		    map  { $ref1->{$_} }
+		    grep { not exists $ref2->{$_} }
+		    keys %$ref1);
+
+  # Are there any differences?
+  if (length($string)) {
+    print "Only in $name: $string\n";
+    $rc = 1;
+  }
+
+  return($rc);
+}
+
+#-----------------------------------------------------------------------------
+#
+# MAIN PROGRAM
+#
+#-----------------------------------------------------------------------------
+
+my $rc = 10;
+
+# Check command line
+if (@ARGV == 2) {
+  my $ref1 = {};
+  my $ref2 = {};
+
+  # Read ZIP archives
+  ReadZipData($ARGV[0], $ref1);
+  ReadZipData($ARGV[1], $ref2);
+
+#  print join(' ', sort keys %$ref1), "\n";
+#  print join(' ', sort keys %$ref2), "\n";
+
+  # Compare archives
+  $rc = Compare($ARGV[0], $ref1, $ref2) + Compare($ARGV[1], $ref2, $ref1);
+
+} else {
+  print STDERR "Usage: $0 <ZIP archive 1> <ZIP archive 2>\n";
+}
+
+exit $rc;

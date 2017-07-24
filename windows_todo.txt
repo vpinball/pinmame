@@ -1,0 +1,4 @@
+* (Maddes) VC++: Check if resource changes compile with MinGW 2
+* (Maddes) PinMAME32/VPinMAME: option for MAME debugger, like "debug 1" in ROM ini
+* (Maddes) VC++: check how MAME solved the source code creation for VC++, like gcc does for M68000
+* (Maddes) Enhance simulator to play back a recorded "game play"

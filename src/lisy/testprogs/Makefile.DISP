@@ -1,0 +1,18 @@
+# lisy80NG Makefile
+# RTH 11.2015
+# for switch tester prog 2
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+LDFLAGS = -lwiringPi
+
+OBJ = DP_Test.o
+
+SW_Test: $(OBJ)
+	$(CC) $(CFLAGS) -o DP_Test $(OBJ) $(LDFLAGS)
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm *.o DP_Test

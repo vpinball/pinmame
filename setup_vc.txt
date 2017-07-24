@@ -1,0 +1,349 @@
+How to setup Visual C++ to compile PinMAME (all flavours)
+=========================================================
+
+ToDo:
+* ISO C99 and C90 issues (msc.h include), VS2008 is currently used by developmen team, but batch scripts and infos are available for older VS versions
+* Re-check first and last supported versions of WSDK, MSDN, etc. for all VS versions
+
+-------
+General
+-------
+To use a Visual C++ version for compiling the following is necessary:
+- Latest service pack for Visual Studio or Visual C++
+- Compatible Windows Platform SDK
+- Compatible DirectX SDK (with DirectInput 7)
+- Optionally a compatible MSDN Library
+  or a free MSDN Lib
+  MSDN Library für Visual Studio 2008 SP1 (April 2009)
+  http://www.microsoft.com/downloads/details.aspx?FamilyID=7bbe5eda-5062-4ebb-83c7-d3c5ff92a373
+- Checksum Integrity Verification
+  https://support.microsoft.com/kb/841290 
+
+Additionally the following is necessary:
+- NASM compiler for the assembler parts
+  a) Download the assembler compiler NASM 2.0 for Win32 to a download directory.
+     Binary package:
+     * nasm-2.02-win32 (later versions should work too)
+     Get it from http://www.nasm.us/pub/nasm/releasebuilds/
+  b) Extract NASM into a separate directory, for example c:\nasm
+     Note: If an older NASM Win32 package is used (<0.99.4), then rename the
+           executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
+  c) Add this directory to the bin directories of Visual C++.
+
+Update 2015-08: Microsoft has removed support for VS/VC 6.0 completely, all download and documentation links are now disfunctional
+
+
+----------
+Info links
+----------
+The MAME development homepage is available at http://www.mamedev.org/
+The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
+  Old versions are listed at (non-functional) http://msdn.microsoft.com/visualc/aa336447.aspx
+  Information about the VC++ macro _MSC_VER is available at
+    https://en.wikipedia.org/wiki/Microsoft_Visual_Studio#History
+    http://support.microsoft.com/kb/65472  (up to MS VC++ 6.0)
+    http://msdn.microsoft.com/library/b0084kay(VS.71).aspx  (starting from MS VS .NET 2003)
+  TechNet Security Updates are available at https://technet.microsoft.com/security/bulletin/
+The Visual Studio documentation is available at https://msdn.microsoft.com/library/aa187916.aspx
+  VS6 documentation is only available in english languages (gone as of 2015-08)
+The NASM homepage is available at http://www.nasm.us/
+The ZLib homepage is available at http://www.zlib.net/
+Additional DirectX information is available at http://www.toymaker.info/Games/html/directx_9_0c.html
+
+
+--------------
+Visual C++ 6.0 (1998, _MSC_VER = 1200)
+--------------
+- Microsoft Java Virtual Machine
+  For installing Visual Studio 6.0 and its service packs the Microsoft Java
+  Virtual Machine (MSJVM) is needed. It is recommended to install one of the
+  latest versions (3809 or 3810) first to avoid computer restarts while
+  installing the service packs.
+  As the Microsoft Java Virtual Machine is outdated and insecure it is also
+  recommended to deinstall it after installation of all service packs. For this
+  Microsoft provided the tool UNMSJVM.EXE.
+  Unfortunately the files are nomore available at Microsoft's homepage, but they
+  are all available for download at MDGx homepage:
+    http://www.mdgx.com/add.htm#JVM
+  More information about MSJVM is available at Mark Salloway's Windows Resource
+  Center and Virtualmachine:
+    http://www.mvps.org/marksxp/WindowsXP/java.php
+    http://www.xs4all.nl/~smuller/VMSite2/
+- Service Packs & Processor Pack
+  Service Pack 5 is needed to update all components of Visual Studio 6.0, the
+  Processor Pack for getting MASM and Service Pack 6 for the latest updates of
+  Visual C++ and Visual Basic.
+  a) Download SP5, the Processor Pack and SP6
+     Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
+     6.0 SP5: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718363.aspx
+              (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
+              (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
+              http://ftp.maddes.net/vs6/
+     6.0 PP: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
+             (non-functional) http://www.infinitefactors.org/jonk/pctools.html
+     6.0 SP6: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718364.aspx
+              (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
+  b) Install SP5, then the Processor Pack and at last SP6
+     The Processor Pack only installs on SP5, so it is recommended to apply SP5
+     first, then the Processor Pack and finally SP6:
+       http://support.microsoft.com/kb/872907
+     If SP6 is already installed, but you forgot to apply SP5 before and use
+     several other components of Visual Studio too, then it is recommended to do
+     a re-installation of Visual Studio.
+- Updates
+  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Basic 6.0 Service Pack 6
+- Windows Platform SDK
+  For PinMAME use the SDK coming with Visual C++ 6.0, due to the following ATL
+  issue with newer versions: http://support.microsoft.com/kb/243298/en-us
+- DirectX SDK Summer 2003 Edition
+  (folders: utilities, include, lib)
+  (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
+  (seems that Microsoft has removed it for whatever reason)
+  http://ftp.maddes.net/dxsdk/summer2003/dx90updatesdk.exe
+- Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
+- Project Files (.dsp) are maintained in the repository.
+- A template for the Workspace file is also inside the repository (PinMAME_VC60.dsw.tmpl).
+- Setting env vars:
+  "%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
+
+
+---------------
+Visual C++ 2002 (7.0, _MSC_VER = 1300, ".NET")
+Visual C++ 2003 (7.1, _MSC_VER = 1310)
+---------------
+- Service Packs
+  2002 SP1: http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2002+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+  2003 SP1: http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2003+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+- Updates
+  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Studio .NET 2002/2003 Service Pack 1
+- Windows Platform SDK for Windows Server 2003 R2 from March 2006
+  (folders: bin\winnt, bin, include, lib)
+  http://www.microsoft.com/downloads/details.aspx?familyid=E15438AC-60BE-41BD-AA14-7F1E0F19CA0D
+- Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- Last MSDN Library with Visual Studio 2002 information/integration was
+  January 2003, but January 2006 should work too.
+- Last MSDN Library with Visual Studio 2003 information/integration was
+  January 2006.
+- Project Files (.vcproj) for VC2002 are maintained in the repository
+  As the VC2003 format is the same as VC2002 (except for the version nummber)
+  just create a copy of each VC2002 project files and rename them to VC2003.
+  Then replace all occurrences of VC2002 in them with VC2003.
+  Finally convert them with VC2003.
+  A batch file is provided to assist you with the copying.
+- Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
+- Setting env vars:
+  2002: "%ProgramFiles%\Microsoft Visual Studio .NET\VC7\bin\vcvars32.bat"
+  2003: "%ProgramFiles%\Microsoft Visual Studio .NET 2003\VC7\bin\vcvars32.bat"
+
+
+---------------
+Visual C++ 2005 (8.0, _MSC_VER = 1400)
+Visual C++ 2008 (9.0, _MSC_VER = 1500)
+---------------
+- Service Packs
+  2005 SP1 (not Foundation): http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2005+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+  2008 SP1: http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2008+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+  Slipstreaming VS service packs: http://blogs.msdn.com/heaths/archive/2006/12/16/slipstreaming-visual-studio-2005-service-pack-1.aspx
+- Updates
+  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Studio 2005/2008 Service Pack 1
+- Windows [Platform] SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
+  (folders: bin, include, include\gl, lib)
+  http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
+  http://www.microsoft.com/downloads/results.aspx?freetext=Windows+SDK&sortCriteria=date
+- Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- Current MSDN Library works with both versions.
+  First MSDN Library with Visual Studio 2005 information/integration was April 2006.
+- Project Files (.vcproj)
+  As the VC2005/2008 format is similar to VC2002 just create a copy of each
+  VC2002 project file and rename them to VC2005 or VC2008.
+  Then replace all occurrences of VC2002 in them with VC2005 or VC2008 respectively.
+  Finally convert them with VC2005 or VC2008.
+  Add _CRT_SECURE_NO_WARNINGS to the C/C++ preprocessor definitions in all builds.
+  A batch file is provided to assist you with the copying.
+- Migration info is available at http://msdn.microsoft.com/visualc/aa336429.aspx
+- Info about new security enhancments and possible optimisations:
+  http://msdn.microsoft.com/library/8ef0s5kh.aspx
+  (non-functional) http://www.themssforum.com/VC/optimization-Express/
+- Setting env vars:
+  2005: "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+  2008: "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
+
+Additional notes on Express Editions:
+- Both (2005 & 2008) work fine without any changes and can compile PinMAME and PinMAME32
+  http://www.microsoft.com/express/
+  VS 2008 SP1 Express: http://www.microsoft.com/downloads/en/details.aspx?FamilyID=3254c868-bcb9-412c-95c6-d100c872ec60
+- The Express Editions are lacking the resource editors and also support for ATL
+  and MFC projects. VPinMAME is an ATL DLL project (Release = MinDependency) and
+  therefore not compilable with a normal Express Edition setup.
+  http://msdn.microsoft.com/library/hs24szh9.aspx
+- Through investigations we found out that it is possible to compile VPinMAME
+  with the Visual C++ 2008 Express Edition by using a "trick":
+  Install the 90-day Trial Version of Visual C++ 2008 *and* the Express Edition.
+  With the trial version you get all the ATL and MFC includes plus libraries.
+  The Express Edition still contains all the configuration settings to use these.
+  This way you can compile existing ATL and MFC projects, but you can not create
+  a new ATL or MFC project as the corresponding wizard definitions are missing
+  in the Express Edition.
+  Btw this "trick" failed with the Express Edition of VisualC++ 2005.
+  http://msdn.microsoft.com/evalcenter/
+  http://technet.microsoft.com/evalcenter/
+  http://www.microsoft.com/downloads/results.aspx?freetext=visual+studio+trial&sortCriteria=date
+  Trial 2008: http://www.microsoft.com/downloads/details.aspx?FamilyID=83c3a1ec-ed72-4a79-8961-25635db0192b
+              http://ftp.maddes.net/vs2008/
+- Setting env vars:
+  2005: "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+  2008: "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
+
+Known Issues:
+- Error when compiling PinMAME32 debug builds with VC++ 2005 or 2008
+  "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
+
+
+---------------
+Visual C++ 2010 (10.0, _MSC_VER = 1600)
+---------------
+<WIP>
+
+- Downloads
+  http://stackoverflow.com/questions/8894654/vs-2010-trial-version-link
+  - Difference between MSDN release and trial ISOs is only the product key in "Setup\setup.sdb", and sometimes depending on the language the DVD name.
+    So the trial ISO has the full retail content and can be unlimited with a key.
+- Service Packs
+  2010 SP1:
+  http://www.microsoft.com/en-us/download/details.aspx?id=23691  (ISO under Installation Instructions)
+  http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2010+service+pack&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+- Updates
+  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Studio 2010 Service Pack 1
+- <ToDo> Windows SDK
+http://blogs.msdn.com/b/vcblog/archive/2009/05/20/using-the-windows-7-rc-sdk-in-visual-c-2010-beta-1.aspx
+http://blogs.msdn.com/b/chuckw/archive/2010/06/15/windows-sdk-7-1.aspx
+
+2010-05-19 / Windows SDK for Windows 7 and .NET Framework 4: http://www.microsoft.com/downloads/details.aspx?FamilyID=35aeda01-421d-4ba5-b44b-543dc8c33a20
+
+2009-08-14 / Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1: http://www.microsoft.com/downloads/details.aspx?familyid=71DEB800-C591-4F97-A900-BEA146E4FAE1
+
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2010 information/integration was <Month> 201?.
+
+
+---------------
+Visual C++ 2012 (11.0, _MSC_VER = 1700)
+---------------
+<WIP>
+
+- Downloads
+  Express for Windows Desktop (Upd0): https://www.microsoft.com/en-us/download/details.aspx?id=34673 
+  Professional (Upd0): https://www.microsoft.com/en-us/download/details.aspx?id=30682
+- Updates: https://support.microsoft.com/en-us/kb/2707250
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2012 information/integration was <Month> 201?.
+
+
+---------------
+Visual C++ 2013 (12.0, _MSC_VER = 1800)
+---------------
+<WIP>
+
+- Editions: https://www.visualstudio.com/products/compare-visual-studio-products-vs
+- Downloads:
+  Checksums: https://www.visualstudio.com/en-us/downloads/visual-studio-2013-iso-sha1-vs.aspx
+  Community (Upd4): http://go.microsoft.com/?linkid=9863609
+  Community (latest): https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx 
+  Professional (Upd0):http://download.microsoft.com/download/A/F/1/AF128362-A6A8-4DB3-A39A-C348086472CC/VS2013_RTM_PRO_ENU.iso (also named en_visual_studio_professional_2013_x86_dvd_3175298.iso)
+  Professional (latest): http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=visual+studio+2013+professional&ftapplicableproducts=Developer+Tools&sortby=-availabledate
+- Updates: https://support.microsoft.com/en-us/kb/2829760
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2013 information/integration was <Month> 201?.
+
+
+---------------
+Visual C++ 2015 (14.0, _MSC_VER = 1900)
+---------------
+<WIP>
+
+- Editions: https://www.visualstudio.com/products/compare-visual-studio-2015-products-vs
+- Downloads:
+  Checksums: https://www.visualstudio.com/en-us/downloads/visual-studio-2015-iso-sha1-vs.aspx
+  Community: https://www.microsoft.com/en-us/download/details.aspx?id=48146
+  Professional: https://www.microsoft.com/en-us/download/details.aspx?id=48147
+- Updates: ./. (as of 2015-08)
+- <ToDo> Windows SDK
+- <ToDo> Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- <ToDo> Current MSDN Library works with both versions.
+  <ToDo> First MSDN Library with Visual Studio 2013 information/integration was <Month> 201?.
+
+
+-----------
+Compilation
+-----------
+- Directly load a project file (*.dsp or .vcproj), choose between Release or
+  Debug build and then compile.
+
+
+----------------
+Virtual Machines (or placing intermediate files somewhere else)
+----------------
+The project files for VC++ 2002 (and later) allow to place the intermediate
+files into a separate location. This can be very useful if you get the error
+"fatal error C1090: PDB API call failed, error code '23'", which can happen
+quite a lot in virtual machines with shared folders.
+
+To use a different location just set the environment variable VS_OUTPUT to the
+desired location plus a backslash. A trailing backslash is MANDATORY if you use it!!!
+If you set or changed the environment variable while Visual Studio was running,
+then you have to exit and restart Visual Studio for the change to take effect.
+
+If the environment variable VS_OUTPUT is not set or empty, then the OBJ folder
+will be inside the project folder as usual.
+
+
+-------------------
+Addendum: Libraries
+-------------------
+- The ZLib library for Visual C++ 6.0 is already included in the CVS repository.
+  If you want to compile it yourself then get the following package:
+  a) ZLib source code
+     * zlib-1.1.4.tar.gz
+     Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
+     Note: Newer versions of ZLib work too (currently 1.2.3).
+  b) If you want to test the assembler optimised version you also need MASM from
+     Microsoft. You can use it for free, but not for commercial use.
+     Get the Processor Pack for Visual C++ 6.0:
+     * (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
+     * (non-functional) http://www.infinitefactors.org/jonk/pctools.html
+     Extract it to a temporary directory, for example c:\masm, copy the
+     following files into a separate directory and add it to the bin directories
+     of Visual C++:
+     * H2INC.ERR
+     * H2INC.EXE
+     * ML.ERR
+     * ML.EXE
+     * MASMREF.DOC
+	 Versions:
+	 * 6.14 from Win 98 DDK
+	 * 6.15 from Processor Pack for Visual C++ 6.0
+	 * There's also a 8.0 from Microsoft Downloads
+	   http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=masm&ftapplicableproducts=Developer+Tools&sortby=-availabledate

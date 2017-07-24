@@ -1,0 +1,71 @@
+ /*
+  RTH 04.2016
+  lisy80NG eeprom tests
+*/
+
+#include <stdio.h>
+#include "../eeprom.h"
+
+//define it here
+int lisy80_gamenr = 0;
+
+int lisy80_time_to_quit_flag; //not used here
+
+
+int main (int argc, char *argv[])
+{
+ char input[256];
+ char new_buffer[256];
+ int i,j;
+ //init buffer
+ for(i=0; i<=255; i++) new_buffer[i] = '#';
+
+//init the buffer with some usefull stuff
+ i=0;
+  for(j=0; j<64; j++) input[j+64*i]='a'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='b'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='c'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='d';
+
+//write to eeprom block 0
+ lisy80_eeprom_256byte_write( input, 0 );
+//read from eeprom
+ lisy80_eeprom_256byte_read( new_buffer, 0);
+
+//and print out 64 chars per line
+ printf("first page 0x50\n\r");
+ for(i=0; i<4; i++) 
+ {
+  printf("%03d: ",i*64);
+  for(j=0; j<64; j++) printf("%c",new_buffer[j+64*i]);
+  printf("\n\r");
+ }
+
+
+ //init buffer
+ for(i=0; i<=255; i++) new_buffer[i] = '#';
+ i=0;
+  for(j=0; j<64; j++) input[j+64*i]='e'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='f'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='g'; i++;
+  for(j=0; j<64; j++) input[j+64*i]='h';
+//write to eeprom block 1
+ lisy80_eeprom_256byte_write( input, 1 );
+//read from eeprom
+ lisy80_eeprom_256byte_read( new_buffer, 1);
+
+//and print out 64 chars per line
+ printf("second  page 0x51\n\r");
+ for(i=0; i<4; i++) 
+ {
+  printf("%03d: ",i*64);
+  for(j=0; j<64; j++) printf("%c",new_buffer[j+64*i]);
+  printf("\n\r");
+ }
+
+
+
+
+
+return 0;
+}//main

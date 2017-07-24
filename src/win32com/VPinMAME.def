@@ -1,0 +1,9 @@
+; VPinMAME.def : Declares the module parameters.
+
+LIBRARY      "VPinMAME.DLL"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer	PRIVATE

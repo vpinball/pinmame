@@ -1,0 +1,103 @@
+#!/usr/bin/wish
+#
+# MAMEX - MAME front End v.2
+# 
+# Chris Sharp <sharpc@hursley.ibm.com>
+# 
+# 5/9/97
+#
+# updated by
+#
+# Matthias Brinkhoff <maxim@unity.owl.de>
+#
+# 04.08.98
+#
+
+wm title	. "M.A.M.E. selector"
+wm iconname	. "M.A.M.E. selector"
+
+set listmame xmame
+set gamemame xmame
+#set gamemame "runconsole smame"
+set joy 0
+set mouse 0
+set sound 1
+set FM 1
+set scale 0
+set cheat 0
+set throttle 1
+set frameskip 0
+set autoexit 0
+
+set mamelist [split [ exec -keepnewline $listmame 2>/dev/null -listfull | tail +2 | sort ] "\n" ]
+
+listbox .gameslist -relief raised -borderwidth 2 -yscrollcommand ".scroll set" -height 30 -width 0
+
+scrollbar .scroll -command ".gameslist yview"
+
+bind .gameslist <Double-1> "runMame" 
+
+checkbutton .sound -text sound -variable sound -anchor w 
+checkbutton .fm -text FM -variable FM -anchor w 
+checkbutton .joystick -text Joystick -variable joy -anchor w
+checkbutton .mouse -text Mouse -variable mouse -anchor w
+checkbutton .cheat -text Cheat -variable cheat -anchor w
+checkbutton .throttle -text Throttle -variable throttle -anchor w
+checkbutton .autoexit -text "Exit after launching" -variable autoexit -anchor w
+
+scale .scalefactor -label scale -from 1 -to 3 -orient horizontal -command "setScale"
+scale .frameskip -label frameskip -from 0 -to 4 -orient horizontal -command "setFrameskip"
+
+button .play -text "Play" -command "runMame"
+button .exit -text "Quit" -command exit
+
+foreach i $mamelist {
+  if {$i != "" } {
+    set titlelist [split $i { \"} ]
+    set index [string trim [lindex $titlelist 0]]
+    if {$index != "NAMES:"} {
+      set title [string trim [join [lrange $titlelist 1 end]]]
+      set allGames($title) $index
+      .gameslist insert end $title 
+    }
+  }
+}
+
+pack .gameslist -side left -fill both -expand 1
+pack .scroll -side left -fill y
+pack .sound .fm .joystick .mouse .cheat .throttle .autoexit -side top -anchor w
+pack .scalefactor -side top -anchor w
+pack .frameskip -side top -anchor w
+pack .play .exit -side left -fill x 
+
+proc runMame {} {
+  global sound FM scale frameskip allGames TB mouse joy cheat throttle autoexit gamemame
+  set game "" 
+  set game $allGames([selection get])
+  set options ""
+  if {$sound} { set options " -sound " }
+  if {$FM} { set options "$options -fm " }
+  if {$joy} { set options "$options -joy " }
+  if {$mouse} { set options "$options -mouse" }
+  if {$scale} { set options "$options -scale $scale" }
+  if {$frameskip} { set options "$options -frameskip $frameskip" }
+  if { ! $throttle} { set options "$options -nothrottle" }
+  if {$cheat} { set options "$options -cheat" }
+
+  eval exec $gamemame $game $options &
+
+  if {$autoexit} { exit }
+  
+}
+
+proc setScale value {
+  global scale
+
+  set scale [ .scalefactor get ]
+}
+
+proc setFrameskip value {
+  global frameskip 
+
+  set frameskip [ .frameskip get ]
+}

@@ -1,0 +1,420 @@
+-playback / -pb <string>       playback an input file
+-record / -rec <string>        record an input file
+
+Comments / TODO:
+================
+* yaml-cpp:
+  * Test MinGW, release and also debug builds (debug: check file name, libyaml-cpp[d].a?)
+  ~ Fix VS compilations (library names, different runtime libraries)
+    Compiles on VS 2005 and later. Older versions give lots of errors, the older the more.
+    http://code.google.com/p/yaml-cpp/issues/detail?id=87 (not committed in trunk yet, 2011-01-09)
+  ~ VS 2002 and 2003 have build issues.
+    Got VS 2003 to build library, but not VS 2002.
+    http://code.google.com/p/yaml-cpp/issues/detail?id=89
+    http://code.google.com/p/yaml-cpp/issues/detail?id=90
+    Other project with huge VS support: http://www.boost.org/doc/libs/1_41_0/boost/config/compiler/visualc.hpp
+  - Special case: create DLL (needs __declspec(dllexport/dllimport))
+    Not enough Win32 and C++ experience to solve this. Not important for PinMAME.
+    Using extern "C" to avoid the name decoration done by the compiler.
+    http://code.google.com/p/yaml-cpp/issues/detail?id=88
+    http://www.mingw.org/wiki/MSVC_and_MinGW_DLLs
+
+* pinproc:
+  * PDB creation/handling of VC6 debug build for PinMAME
+  * Test MinGW, release and also debug builds (debug: check file name, libpinproc[d].a?)
+  ? P-ROC project should provide MinGW packages of LIBPINPROC and YAML-CPP
+    (example at http://ftp.maddes.net/mingw/)
+  * Linux/OSX: -zlazyload for PinMAME or PinPROC
+  + Special case: create DLL (needs __declspec(dllexport/dllimport))
+  + Fix VS compilations (library names, different runtime libraries, external lib names)
+    (committed in dev, 2011-01-09)
+  + issues with MinGW5 / GCC 3.2.3 setup
+  + Include FTDI Lib in libpinproc, to be independent of ftd2xx.lib. Yes, works.
+    - CMakeLists.txt change. (CMake 2.8.3 doesn't support this yet).
+    + Add information how to do this manually (work of ~1 minute).
+
++ FTDI:
+  + avoid need of FTDI2XX.DLL when starting PinMAME
+    delayed load of DLL, so PinMAME works without FTDI driver installed
+
+PinMAME:
+* MSVC: Conditional libraries.
+  Does it matter when not used (without PROC_SUPPORT)? If explicitly listed, then it must be accessible.
+  Are Debug libs a must? No, there's a warning, nothing more.
+  pinproc & yaml only if PROC_SUPPORT defined.
+  #pragma comment(lib, )
+  http://support.microsoft.com/kb/153901
+  http://thedailyreviewer.com/windowsapps/view/how-to-conditionally-link-a-lib-in-embedded-vc-10982646
+  http://msdn.microsoft.com/en-us/library/7f0aews7%28v=vs.71%29.aspx
+* Faster Build with #pragma once
+#ifndef GUARD
+#define GUARD
+#if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
+#pragma once
+#endif
+...
+#endif	/* GUARD */
+* GCC: PROC nur bei PinMAME (nicht bei make WINUI) und nicht bei MAME-Debugger (make DEBUG)
+* GCC/Linux/OSX: Delayed load of DLL: dlopen("lib", RTLD_LAZY), -zlazyload not in GNU LD
++ DLL-notwendig nur wenn "-proc" gegeben? Optionale/Bedingte DLL abhängigkeit.
+  http://msdn.microsoft.com/en-us/library/yx9zd12s%28v=VS.71%29.aspx
+  /DELAYLOAD:"ftd2xx.dll" (auch wenn nicht gelinkt? nein, mit warnung ausgeschlossen)
+  http://msdn.microsoft.com/en-us/library/7f0aews7%28v=vs.71%29.aspx
+  Linker/Input/Delay Loaded DLLs: ftd2xx.dll
+  #pragma comment(lib, )
+  http://www.codemaestro.com/articles/6
+  http://support.microsoft.com/kb/2389418/en-us
+  SetDllDirectory ("");
+  SetSearchPathMode (BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
++ DLL-independent if no PROC_SUPPORT defined? Yes!
+
+* src/wpc/core.c:
+  * Use VPINMAME solution for g_fHandleKeyboard/g_fHandleMechanics generally?
+    Values depend on "-proc" switch.
+  + SEG16R array, why this difference?
+
+* src/wpc/se.c
+  * Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
+    Values depend on "-proc" switch.
+  + Fixed lamps coding as memcpy/memset were inside "if (coreGlobals.p_rocEn)"
+
+* src/wpc/wpc.c
+  * coreGlobals.solenoids?
+  * Create variables for SE_SOLSMOOTH, SE_LAMPSMOOTH, SE_DISPLAYSMOOTH
+    Values depend on "-proc" switch.
+  * Figure out how to handle upper flipper solenoids
+
+* General
+  ? Must it be .hpp instead of .h?
+  * "P-ROC" not "PROC"
+  * add "-proc" switch to generally enable P-ROC support
+  * YAML file support ./p-roc folder (configurable via ini file)
+  * changed #define's go to a variable (so they can be set differently when "-proc" switch is set)
+  * move all of the P-ROC specific functions to p-roc/*[.cpp|.hpp].
+    So it should be possible to remove the PRHandle from coreGlobals.
+    Then we could get rid of library's pinproc.h in core.h.
+    FYI - Looks like it should be safe to remove references to coreGlobals.proc.
+    coreGlobals.p_rocEn should be used instead (and is used in most places).  Then
+    pinproc.h can be removed from core.h.
+
+* Bringing P-ROC support officially to trunk
+  * Only PinMAME (not VPM, not PM32) and only in Release and Debug (not "with MAME debugger", due to stopping ROM execution and releasing coils).
+  * Need "tagged" version of pinproc (0.9.1?)
+
+
+Compilation of libraries:
+=========================
+a) MinGW
+--------
+  - General
+    * http://www.pinballcontrollers.com/wiki/Windows_build_instructions
+    * Builds will be put into MinGW installation folder, so they are accessible by all projects.
+      set MINGW_PATH=<MinGW path>
+      Example: set MINGW_PATH=D:\Programme\Coding\MinGW5
+  - CMake
+    * downloaded cmake-2.8.3-win32-x86.zip
+    * extracted to D:\Programme\Coding\cmake\
+    * added D:\Programme\Coding\cmake\bin\ to PATH
+  - libpinproc source preparation
+    * downloaded preble-libpinproc-XXXXXXX.tar.gz from dev branch at https://github.com/preble/libpinproc
+      (XXXXXXX=3ffb3b6 -> commit 3ffb3b6f5379bdde5ad35ce547461fb145df8b34; December 05, 2010)
+      (XXXXXXX=d90bf71 -> commit d90bf717bac20e07ca76b37c394da5f3fd39a939; December 30, 2010)
+    * extracted source to D:\Coding\libpinproc\
+    * set LIBPINPROC=<libpinproc>
+      Example: set LIBPINPROC=D:\Coding\libpinproc\
+  - FTDI's ftd2xx.lib
+    * downloaded "CDM20808.zip" from FTDI's D2XX [Direct] Drivers page at http://www.ftdichip.com/Drivers/D2XX.htm
+    * extracted i386/ftd2xx.lib to %MINGW_PATH%/lib, and /ftd2xx.h to %MINGW_PATH%/include
+      (does not work with static/i386/ftd2xx.lib, due to missing support in ftd2xx.h)
+  - YAML-CPP (as of 2010-12-30, version 0.2.5)
+    Static library compiles with all MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
+    Dynamic library compiles only with the following MinGW setups: MinGW5/GCC3.2.3, MinGW5/GCC4.5.0
+    * downloaded "yaml-cpp-0.2.5.tar.gz"
+    * extracted to D:\Coding\yaml-cpp-0.2.5\
+    * cd /d D:\Coding\yaml-cpp-0.2.5\
+    * CMakeLists.txt:
+      - always: change to "SET (LIB_TYPE STATIC)"
+      - GCC 3.2.3:
+        * remove -Wextra from set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra -pedantic -Wno-long-long ${CMAKE_CXX_FLAGS}")
+        * you will see lots of "warning: #pragma once is obsolete" during build, which can be ignored
+      - MinGW2 with LIB_TYPE SHARED:
+        * error: libstdc++.a(c++locale.o)(.text+0x38c): undefined reference to `strtold'
+    * set TDIR=mingw & set CMGEN="MinGW Makefiles"
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
+    * del /s /q * & rmdir /s /q .
+    * cmake -DBUILD_SHARED_LIBS=OFF
+            -DYAML_CPP_BUILD_TOOLS=OFF
+            -DCMAKE_INSTALL_PREFIX:PATH="C:/"  (allows to use DESTDIR corretcly on "[mingw32-]make install")
+            -G %CMGEN% ..\..
+    * mingw32-make
+       yaml-cpp  (use if only want to build the library)
+       1>yaml-cpp_compile.log 2>&1
+    * (make sure MINGW_PATH is set)
+      cmake.exe -DCMAKE_INSTALL_PREFIX:PATH=%MINGW_PATH% -P cmake_install.cmake
+      copies lib/libyaml-cpp[.dll].a and include/yaml-cpp/*.h
+      (Note: install dir can not be changed with "mingw32-make install DESTDIR=xyz")
+  - pinproc (as of 2010-12-30, commit d90bf717bac20e07ca76b37c394da5f3fd39a939)
+    Static library compiles only with the following MinGW setups: MinGW2/GCC3.2.3, MinGW5/GCC4.5.0
+     It does not compile with MinGW5/GCC3.2.3
+    * cd /d <libpinproc>
+    * set TDIR=mingw & set CMGEN="MinGW Makefiles"
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
+    * del /s /q * & rmdir /s /q .
+    * cmake -DBUILD_SHARED_LIBS=OFF
+            -DPINPROC_BUILD_TOOLS=OFF  (use if YAML-CPP doesn't work for the current MinGW setup)
+            -DVERBOSE=1
+            -G %CMGEN% ..\..
+    * mingw32-make
+       pinproc  (use if only want to build the library)
+       1>pinproc_compile.log 2>&1
+    * (make sure MINGW_PATH is set)
+      mingw32-make install DESTDIR="%MINGW_PATH%"
+      copies lib/libpinproc.a and include/p-roc/pinproc.h
+    * Including the FTDI DLL import lib to libpinproc is not possible like with MS VC++.
+      Tried by adding "ftd2xx.lib" to the AR.EXE command line in CMakeFiles\pinproc.dir\link.txt
+      But it is not recognized when using tje resulting static library in PinMAME or other projects.
+      http://groups.google.com/group/comp.unix.programmer/browse_thread/thread/333d41c39afd0ab5
+      http://unix.derkeiler.com/Newsgroups/comp.unix.programmer/2009-06/msg00047.html
+      http://msdn.microsoft.com/en-us/library/889z8z58.aspx
+      FTDI is linked with MSVC
+
+
+b) Visual C++
+-------------
+  - General
+    * Builds will be put into PinMAME repository, so they are accessible for PinMAME only.
+      (alternative %VCINSTALLDIR%)
+    * Add all necessary MSVC pathes and variables for CMake
+      > set TDIR=vc6 & set CMGEN="Visual Studio 6"
+        "%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
+
+      > set TDIR=vc2002 & set CMGEN="Visual Studio 7"
+        "%ProgramFiles%\Microsoft Visual Studio .NET\VC7\bin\vcvars32.bat"
+
+      > set TDIR=vc2003 & set CMGEN="Visual Studio 7 .NET 2003"
+        "%ProgramFiles%\Microsoft Visual Studio .NET 2003\VC7\bin\vcvars32.bat"
+
+      > set TDIR=vc2005 & set CMGEN="Visual Studio 8 2005"
+        "%ProgramFiles%\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+
+      > set TDIR=vc2008 & set CMGEN="Visual Studio 9 2008"
+        "%ProgramFiles%\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"
+
+  - YAML-CPP
+    * cd /d C:\Coding\yaml-cpp\yaml-cpp-0.2.5
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
+    * del /s /q * & rmdir /s /q .
+    * cmake -DBUILD_SHARED_LIBS=OFF -DMSVC_SHARED_RT=OFF
+            -G %CMGEN% ..\..
+
+  - PINPROC
+    - General
+      * Missing stdint.h for P-ROC includes
+        stdint.h is not shipped with older C++ compilers and Visual Studio C++ products prior to Visual Studio 2010
+        external source: http://en.wikipedia.org/wiki/Stdint.h#External_links
+                         -> http://msinttypes.googlecode.com/svn/trunk/stdint.h
+        With Windows Platform SDK March 2006 "Server 2003 R2" you may run into error
+        "C2733: second C linkage of overloaded function 'wmemchr' not allowed", to fix use:
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+#  include <wchar.h>
+// #ifdef __cplusplus
+// }
+// #endif
+
+    * cd /d C:\Coding\pinproc\maddes-dev
+    * mkdir bin\%TDIR%
+    * cd bin\%TDIR%
+    * del /s /q * & rmdir /s /q .
+    * cmake -DBUILD_SHARED_LIBS=OFF -DMSVC_SHARED_RT=OFF
+            -DPINPROC_BUILD_TOOLS=OFF  (use if YAML-CPP doesn't work for the current MSVC)
+            -DEXTRA_INC="<path>;<path>" -DEXTRA_LIB="<path>;<path>"
+            -G %CMGEN% ..\..
+
+    * Manual changes to include the FTDI DLL import lib to libpinproc:
+      * pinproc
+        (VC2002 and later: use "All Configurations" to do it only once)
+        * section "Librarian -> General"
+          * Additional Dependencies: add "ftd2xx.lib"
+          * Additional Library Directories: add "<path to FTDI lib>", e.g. "\usr\local\lib\$(OutDir),\usr\local\lib"
+        (VC6 and later: do this for each and every configuration)
+        * section "Library"
+          * Add to Project Options: /LIBPATH:"\usr\local\lib" ftd2xx.lib
+        * !!! DO NOT USE "REBUILD ALL" !!!
+          Use only "Build <output>" and "Clean", otherwise CMake will re-run and removes all manual changes.
+      * [optional] pinprocfw & pinproctest (do this for each and every configuration)
+        * section "Linker -> Input"
+          * Additional Dependencies: remove "ftd2xx.lib"
+
+
+
+PinMAME Revision tests for compilation:
+=======================================
+a) MinGW
+--------
+Command: mingw32-make PROC=1
+           1>build_pinmamep.log 2>&1
+
+ * MinGW 2 with GCC 3.2.3
+   libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
+   > last P-ROC branch revision tested: 3122 = build compiled (Maddes)
+   > Compilation warnings with MinGW2 / GCC 3.2.3:
+     ./.
+
+ * MinGW 5 with GCC 3.2.3
+   libyaml-cpp 0.2.5 compiled with same setup
+   a) libpinproc 2010-12-30 compiled with MinGW 2 / GCC 3.2.3 setup
+      > last P-ROC branch tested: 3123 = FAILS; doesn't link due to multiple definition of 'vsnprintf'
+   b) libpinproc 2010-12-30 compiled with MinGW 5 / GCC 4.5.0 setup
+      > last P-ROC branch tested: 3123 = FAILS; doesn't link due to undefined reference to '_Unwind_Resume' and '__gxx_personality_v0'
+
+ * MinGW 5 with GCC 4.5.0
+   libyaml-cpp 0.2.5 and libpinproc 2010-12-30 compiled with same setup
+   > last P-ROC branch tested: 3123 = build compiled (Maddes)
+   > known issues:
+     (2010-12-20) no sound with WPC pre-DCS ROMs
+   > Compilation warnings with MinGW5 / GCC 4.5.0:
+     Compiling src/p-roc/gameitems.cpp...
+     src/p-roc/gameitems.cpp: In member function 'void CoilDriver::RequestDrive(int)':
+     src/p-roc/gameitems.cpp:414:80: error: operation on '((CoilDriver*)this)->CoilDriver::numPatterOff' may be undefined
+     src/p-roc/gameitems.cpp:422:76: error: operation on '((CoilDriver*)this)->CoilDriver::numPatterOn' may be undefined
+
+b) Visual C++
+-------------
+ - General
+   * Missing stdint.h for P-ROC includes
+     stdint.h is not shipped with older C++ compilers and Visual Studio C++ products prior to Visual Studio 2010
+     external source: http://en.wikipedia.org/wiki/Stdint.h#External_links
+                      -> http://msinttypes.googlecode.com/svn/trunk/stdint.h
+     With Windows Platform SDK March 2006 "Server 2003 R2" you may run into error
+     "C2733: second C linkage of overloaded function 'wmemchr' not allowed", to fix use:
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+#  include <wchar.h>
+// #ifdef __cplusplus
+// }
+// #endif
+
+ * VS 2008
+   yaml-cpp 0.2.5 and pinproc with VS 2005
+   > last P-ROC branch tested: 3132 = Release and Debug compiled (Maddes)
+   yaml-cpp 0.2.5 from VS2003 / pinproc from VS6
+   > last P-ROC branch tested: 3147 = FAILS; due to issues with YAML-CPP library (Maddes)
+
+ * VS 2005
+   (doesn't work with VS 2008 builds of the libs)
+   yaml-cpp 0.2.5 and pinproc from VS 2005
+   > last P-ROC branch tested: 3132 = Release and Debug compiled (Maddes)
+   yaml-cpp 0.2.5 from VS2003 / pinproc from VS6
+   > last P-ROC branch tested: 3147 = FAILS; due to issues with YAML-CPP library (Maddes)
+
+ * VS 2003
+   (doesn't work with VS 2005 builds of the libs)
+   yaml-cpp 0.2.5 from VS2003 / pinproc from VS6
+   > last P-ROC branch tested: 3147 = Release and Debug compiled (Maddes)
+
+ * VS 2002
+   yaml-cpp 0.2.5 from VS2003 / pinproc from VS6
+   > last P-ROC branch tested: 3147 = FAILS; due to issues with YAML-CPP includes
+d:\Coding\PinMAME\branches\proc\external\yaml-cpp\include\yaml-cpp\traits.h(37) : error C2065: 'T' : undeclared identifier
+d:\Coding\PinMAME\branches\proc\external\yaml-cpp\include\yaml-cpp\traits.h(37) : error C2687: cannot define a nested UDT of a template class out of line
+d:\Coding\PinMAME\branches\proc\external\yaml-cpp\include\yaml-cpp\traits.h(37) : fatal error C1903: unable to recover from previous error(s); stopping compilation
+	template <class T>
+37:	struct enable_if_c<false, T> {};
+
+ * VS 6.0
+   yaml-cpp 0.2.5 from VS2003 / pinproc from VS6
+   > last P-ROC branch tested: 3132 = FAILS; due to many issues with YAML-CPP includes
+
+
+
+
+================================================================================
+================================================================================
+================================================================================
+
+Visual C++ 2003:
+  - yaml-cpp
+c:\coding\yaml-cpp\yaml-cpp-0.2.5\src\emitter.cpp(593) : fatal error C1001: INTERNAL COMPILER ERROR  (compiler file 'f:\vs70builds\6030\vc\Compiler\Utc\src\P2\main.c', line 148)
+Reason: "static" definition
+
+http://msdn.microsoft.com/en-us/library/y19zxzb2%28v=VS.71%29.aspx
+The compiler cannot generate correct code for a construct, probably due the combination of an expression and an optimization option. Try removing one or more optimization options and recompiling the function containing the line indicated in the error message.
+You can probably fix the problem by removing one or more optimization options. To determine which option is at fault, remove options one at a time and recompile until the error message goes away. The options most commonly responsible are /Og, /Oi, and /Oa. Once you determine which option is responsible, you can disable it using the optimize pragma around the function where the error occurs and continue to use the option for the rest of the module.
+Try rewriting the line where the error is reported, or several lines of code surrounding that line. If that doesn't work, contact Microsoft Product Support Services.
+
+\Coding\yaml-cpp\yaml-cpp-0.2.5\util\parse.cpp(11) : error C2446: ':' : no conversion from 'std::istream' to 'std::ifstream'
+        No constructor could take the source type, or constructor overload resolution was ambiguous
+
+
+
+
+================================================================================
+================================================================================
+================================================================================
+
+INI support ("proc_directory" similar to "rompath")
+===========
+FILETYPE_ARTWORK
+-FILETYPE_CHEAT
+FILETYPE_CONFIG
+-FILETYPE_CRC
+FILETYPE_CTRLR
+FILETYPE_end
+FILETYPE_HIGHSCORE
+-FILETYPE_HIGHSCORE_DB
+-FILETYPE_HISTORY
+-FILETYPE_IMAGE  !!!
+FILETYPE_IMAGE_DIFF
+FILETYPE_INI
+FILETYPE_INPUTLOG
+-FILETYPE_LANGUAGE
+FILETYPE_MEMCARD
+FILETYPE_NVRAM
+FILETYPE_PROC
+FILETYPE_PROC_YAML
+-FILETYPE_RAW = 0
+FILETYPE_ROM
+FILETYPE_SAMPLE
+FILETYPE_SCREENSHOT
+FILETYPE_STATE
+FILETYPE_WAVE
+
+DIRDLG_ROMS
+DIRDLG_SAMPLES
+DIRDLG_PROC
+DIRDLG_INI
+
+src/fileio.h
+src/windows/fileio.c
+
+src/fileio.c:
+	{ "rompath", "rp", rc_string, &pathlist[FILETYPE_ROM].rawpath, "roms", 0, 0, NULL, "path to romsets" },
+FILETYPE_CTRLR		/* config files */
+FILETYPE_INI			/* game specific ini files */
+
+
+src/config.c:
+parse_config() * gamedrv != NULL --> parse gamename.ini and all parent.ini's (recursively)
+cli_frontend_init() 
+  parse_config( "debug.ini", NULL))
+  /* handle playback */
+
+
+src/windows/config.c:
+parse_config() * gamedrv != NULL --> parse gamename.ini and all parent.ini's (recursively)
+
+
+src/windows/fileio.c:
+struct rc_option fileio_opts[] = {}
+	{ "rompath", "rp", rc_string, &pathlist[FILETYPE_ROM].rawpath, "roms", 0, 0, NULL, "path to romsets" },
+
+
+src/ui/option.c:
+#define UI_INI_FILENAME MAME32NAME "ui.ini"
+#define DEFAULT_OPTIONS_INI_FILENAME MAME32NAME ".ini"

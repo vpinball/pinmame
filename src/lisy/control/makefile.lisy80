@@ -1,0 +1,17 @@
+# lisy80 Makefile for socketserver
+# RTH 11.2016
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+#LDFLAGS = -lwiringPi -lSDL2 -lSDL2_mixer
+LDFLAGS = -lwiringPi
+#LDFLAGS = -lbcm2835
+
+OBJ = lisy.o fileio.o utils.o hw_lib.o switches.o displays.o coils.o eeprom.o lisy80_control.o
+
+lisy80_control: $(OBJ)
+	$(CC) $(CFLAGS) -o lisy80_control $(OBJ) $(LDFLAGS)
+
+%.o: ../%.c ../%.h
+	$(CC) $(CFLAGS) -c $<
+

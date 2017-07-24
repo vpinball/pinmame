@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+ <TITLE>XMAME/XMESS DOKUMENTATION</TITLE>
+ <LINK HREF="xmame-gdoc-1.html" REL=next>
+
+<link rel="stylesheet" href="xmame.css" type="text/css" >
+</HEAD>
+<BODY BACKGROUND="img/xmame.jpg" BGPROPERTIES="fixed" >
+<A HREF="xmame-gdoc-1.html">Weiter</A> Zurück Inhalt
+<HR>
+<H1>XMAME/XMESS DOKUMENTATION</H1>
+
+<H2>Juan Antonio Martinez <CODE>
+<A HREF="mailto:jantonio@dit.upm.es">jantonio@dit.upm.es</A>,</CODE> Hans de Goede <CODE>
+<A HREF="mailto:hans@highrise.nl">hans@highrise.nl</A>,</CODE> Rene' Herrmann
+ (4 doc/sgml) <CODE>
+<A HREF="mailto:rene.herrmann@berlin.de">rene.herrmann@berlin.de</A></CODE> und Lawrence Gold
+(kleine Änderungen) <CODE>
+<A HREF="mailto:gold@aros.net">gold@aros.net</A></CODE></H2><p><b>Deutsche
+Anleitung von Robert Hamberger <a href="mailto:rh474@bingo-ev.de">rh474@bingo-ev.de</a></b></p>v2.1.8,
+26. November 2001
+<P><HR>
+<EM>XMame/XMess Dokumentation mit einer Installationsanleitung, FAQ (häufg
+gestellte Fragen), Hinweisen, Tipps und Tricks, die Änderungen im Code und
+vieles mehr !</EM>
+<HR>
+<P>
+<H2><A NAME="toc1">1.</A>  <A HREF="xmame-gdoc-1.html">Einleitung und Links </A></H2>
+
+<UL>
+<LI><a HREF="xmame-gdoc-1.html#ss1.1" name="toc1.1">1.1 </a><A HREF="xmame-gdoc-1.html#ss1.1">Willkommen
+  bei XMame</A>
+<LI><a HREF="xmame-gdoc-1.html#ss1.2" name="toc1.2">1.2 </a><A HREF="xmame-gdoc-1.html#ss1.2">Alles
+  immer up-to-date halten!</A>
+<LI><a HREF="xmame-gdoc-1.html#ss1.3" name="toc1.3">1.3 </a><A HREF="xmame-gdoc-1.html#ss1.3"> Hängende Arbeiten - oder TODO</A>
+</UL>
+<P>
+<H2><A NAME="toc2">2.</A>  <A HREF="xmame-gdoc-2.html">Übersetzen, Einrichten
+und Starten von XMame/XMess</A></H2>
+
+<UL>
+<LI><a HREF="xmame-gdoc-2.html#ss2.1" name="toc2.1">2.1 </a><A HREF="xmame-gdoc-2.html#ss2.1"> Voraussetzungen </A>
+<LI><a HREF="xmame-gdoc-2.html#ss2.2" name="toc2.2">2.2 </a><A HREF="xmame-gdoc-2.html#ss2.2"> Schritt-für-Schritt Anleitung zum
+  Übersetzen von XMame/XMess</A>
+<LI><a HREF="xmame-gdoc-2.html#ss2.3" name="toc2.3">2.3 </a><A HREF="xmame-gdoc-2.html#ss2.3"> Bei Problemen beim Übersetzen,
+  Einrichten und Starten von XMame/XMess...</A>
+<LI><a HREF="xmame-gdoc-2.html#ss2.4" name="toc2.4">2.4 </a><A HREF="xmame-gdoc-2.html#ss2.4"> Betriebssystemabhängige Anmerkungen beim Übersetzen</A>
+</UL>
+<P>
+<H2><A NAME="toc3">3.</A> <A HREF="xmame-gdoc-3.html">XMame häufig gestellte
+Fragen (FAQ)</A></H2>
+
+<UL>
+<LI><a HREF="xmame-gdoc-3.html#ss3.1" name="toc3.1">3.1 </a><A HREF="xmame-gdoc-3.html#ss3.1"> Was ist Mame?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.2" name="toc3.2">3.2 </a><A HREF="xmame-gdoc-3.html#ss3.2"> Was ist Mess?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.3" name="toc3.3">3.3 </a><A HREF="xmame-gdoc-3.html#ss3.3"> Was sind XMame/XMess?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.4" name="toc3.4">3.4 </a><A HREF="xmame-gdoc-3.html#ss3.4"> Was sind die Unterschiede zwischen Mame/Mess
+  und XMame/XMess?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.5" name="toc3.5">3.5 </a><A HREF="xmame-gdoc-3.html#ss3.5"> Welche Hardware und welche
+  Betriebssysteme werden unterstützt? </A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.6" name="toc3.6">3.6 </a><A HREF="xmame-gdoc-3.html#ss3.6"> Mein Betriebssystem wird unterstützt,
+  aber XMame/XMess bringen Fehler und brechen ab.</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.7" name="toc3.7">3.7 </a><A HREF="xmame-gdoc-3.html#ss3.7"> Wozu brauche ich die Dateien xmamerc/xmessrc
+  ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.8" name="toc3.8">3.8 </a><A HREF="xmame-gdoc-3.html#ss3.8"> Was ist die Syntax in den Dateien
+  xmamerc/xmessrc ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.9" name="toc3.9">3.9 </a><A HREF="xmame-gdoc-3.html#ss3.9"> Wo müssen roms, images, samples, highscores, configfiles,
+  usw. hin ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.10" name="toc3.10">3.10 </a><A HREF="xmame-gdoc-3.html#ss3.10"> Wie starte ich XMess/XMame ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.11" name="toc3.11">3.11 </a><A HREF="xmame-gdoc-3.html#ss3.11"> Was sind die Kommandozeilen Parameter
+  für XMame/XMess?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.12" name="toc3.12">3.12 </a><A HREF="xmame-gdoc-3.html#ss3.12"> Welche Tasten benutzen XMame/XMess
+  ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.13" name="toc3.13">3.13 </a><A HREF="xmame-gdoc-3.html#ss3.13"> Warum haben manche Spiele keinen
+  Sound ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.14" name="toc3.14">3.14 </a><A HREF="xmame-gdoc-3.html#ss3.14"> Meine Soundausgabe ist verzögert /
+  ist abgehakt / Was bewirkt -bufsize ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.15" name="toc3.15">3.15 </a><A HREF="xmame-gdoc-3.html#ss3.15"> Warum funktioniert ein Spiel nicht ? </A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.16" name="toc3.16">3.16 </a><A HREF="xmame-gdoc-3.html#ss3.16"> Was sind PROMs? </A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.17" name="toc3.17">3.17 </a><A HREF="xmame-gdoc-3.html#ss3.17"> Warum sind XMame/XMess so langsam ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.18" name="toc3.18">3.18 </a><A HREF="xmame-gdoc-3.html#ss3.18"> Ich habe eine Dualprozessor Maschine.
+  Wie kann ich sie voll ausnutzen ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.19" name="toc3.19">3.19 </a><A HREF="xmame-gdoc-3.html#ss3.19"> Warum funktionieren bei meinem
+  Joystick die diagonalen Bewegungen nicht richtgig ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.20" name="toc3.20">3.20</a> <A HREF="xmame-gdoc-3.html#ss3.20"> Wie kann ich die XinputExtensions
+  für auf X11 basierende Joysticks in Xfree86 aktivieren ?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.21" name="toc3.21">3.21 </a><A HREF="xmame-gdoc-3.html#ss3.21"> Wie lese ich eine manual page?</A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.22" name="toc3.22">3.22 </a><A HREF="xmame-gdoc-3.html#ss3.22"> Warum bekomme ich &quot;get gz_open symbol not found&quot;
+  beim Übersetzen ? </A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.23" name="toc3.23">3.23 </a><A HREF="xmame-gdoc-3.html#ss3.23"> Warum bekomme ich &quot;get zlib.h not
+  found&quot; ? </A>
+<LI><a HREF="xmame-gdoc-3.html#ss3.24" name="toc3.24">3.24 </a><a HREF="xmame-gdoc-3.html#ss3.24"> Wenn ich xmame.x11 starte, passiert
+  nichts -- kein Fenster geht auf</a>
+<LI><a HREF="xmame-gdoc-3.html#ss3.25" name="toc3.25">3.25 </a><a HREF="xmame-gdoc-3.html#ss3.25"> Wo bekomme ich die neueste Version
+  von XMame/XMess her ?</a>
+<LI><a HREF="xmame-gdoc-3.html#ss3.26" name="toc3.26">3.26</a> <a HREF="xmame-gdoc-3.html#ss3.26">Wohin kann ich Korrekturen,
+  Fehlermeldungen, Anregungen oder Geld ;-) hinschicken ?</a>
+<LI><a HREF="xmame-gdoc-3.html#ss3.27" name="toc3.27">3.27</a> <a HREF="xmame-gdoc-3.html#ss3.27">Was kann ich tun, wenn meine Frage
+  hier noch nicht beantwortet ist ?</a>
+</UL>
+<P>
+&nbsp;
+<H2><A NAME="toc4">4.</A>   <A HREF="xmame-gdoc-4.html">Kommentare und Anmerkungen
+zu speziellen Anzeigearten</A></H2>
+
+<UL>
+<LI><a HREF="xmame-gdoc-4.html#ss4.1" name="toc4.1">4.1 </a><A HREF="xmame-gdoc-4.html#ss4.1"> FXMame, ein Glide Treiber für XMame</A>
+<LI><a HREF="xmame-gdoc-4.html#ss4.2" name="toc4.2">4.2 </a><A HREF="xmame-gdoc-4.html#ss4.2"> GLMame, ein OPENGL Treiber für XMame</A>
+</UL>
+<P>
+<H2><A NAME="toc5">5.</A> <A HREF="xmame-gdoc-5.html">Kontaktinformationen und
+Danksagungen</A></H2>
+
+<UL>
+<LI><a name="toc5.1">5.1 </a><A HREF="xmame-gdoc-5.html#ss5.1"> Mail </A>
+<LI><a HREF="xmame-gdoc-5.html#ss5.2" name="toc5.2">5.2 </a><A HREF="xmame-gdoc-5.html#ss5.2"> Danksagungen (Credits)</A>
+</UL>
+<P>
+<H2><A NAME="toc6">6.</A>  <A HREF="xmame-gdoc-6.html">Anmerkungen zur Legalität
+und Copyrights für Mame/Mess</A></H2>
+
+<P>
+<H2><A NAME="toc7">7.</A>  <A HREF="xmame-gdoc-7.html">Einige Links</A></H2>
+
+<UL>
+<LI><A NAME="toc7.1">7.1</A>  <a HREF="xmame-gdoc-7.html#ss7.1">Unix Sourcen und
+  Anleitung</a>
+<LI><A NAME="toc7.2">7.2</A>  <a HREF="xmame-gdoc-7.html#ss7.2">Unix binaries</a>
+<LI><A NAME="toc7.3">7.3</A>  <a HREF="xmame-gdoc-7.html#ss7.3">XMame/XMess
+  Mirrors zum Download</a>
+<LI><A NAME="toc7.4">7.4</A>  <a HREF="xmame-gdoc-7.html#ss7.4">(X)Mame Frontends</a>
+<LI><A NAME="toc7.5">7.5</A>  <a HREF="xmame-gdoc-7.html#ss7.5">Einige andere Links<br>
+  </a>
+</UL>
+<H2><a NAME="toc8">8.</a> <a HREF="xmame-gdoc-8.html">Änderungshistorie</a></H2>
+
+<UL>
+<LI><a name="toc8.1">8.1</a> <a href="xmame-gdoc-8.html#ss8.1"> Die Änderungshistorie von Mame/Mess</a>
+<LI><a name="toc8.2">8.2</a> <a href="xmame-gdoc-8.html#ss8.2">Die Änderungshistorie von Unix</a>
+</UL>
+<HR>
+<A HREF="xmame-gdoc-1.html"><br>
+<br>
+Weiter</A> Zurück Inhalt
+</BODY>
+</HTML>

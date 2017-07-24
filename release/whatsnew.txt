@@ -1,0 +1,2525 @@
+Version 3.0 (X X, 2017) - ""
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
+Fixed reset / NMI handling for IDSA V-1
+Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
+Fix Rescue 911 DMD brightness level mapping regression
+
+*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
+New:
+MAC: MAC Jungle
+
+Correct Dumps:
+Bally: Judge Dredd (use L3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
+Joctronic: Punky Willy
+
+Clones:
+Dirty Harry (LF-2)
+Meteor (Bugfix)
+Orbitor 1 (No Timed Game)
+
+
+
+Version 2.9 (June 11th, 2017) - "Attack of the clones"
+------------------------------------------------------------------------------
+
+*** CORE/CPU *** Thanks to DJRobX, Quench and Bontango for some of these
+Support for Bally's Boomerang prototype added!
+ Pinfixer noticed the code was available in US patent #4,198,051,
+ so we extracted it using OCR software, corrected obvious mistakes, fatal bugs and missing pieces
+ until a working version of the code emerged.
+ On top of that, there's also a bootleg version that works even a little better.
+Support for Mirco's Spirit of 76 - finally, maybe the first commercial solid-state pinball game
+Support for more Stargame games added (including new sound core for MEA 8000 emulation)
+Support for Playbar's Bloody Roller, very similar hardware to Stargame's Slalom Code 0.3
+Joctronic works now (e.g. Walkyria, yet still no good dumps for Punky Willy, and Pin Ball is missing entirely)
+Removed a nasty hack from the Alvin G. driver
+Added support for game-specific sound ROMs and correct sound bit handling for early WMS Sys3 games
+Using GTS80 gen. 2 sound on Excalibur instead of gen. 3, enabling 8910 sounds (thanks to Jim Hernandez for noticing)
+Fix some GTS3 DMD animations running too fast
+Improved DMD brightness level mapping (again :)) for Gottlieb GTS3 & Alvin G.
+Added extra display segments for some LTD-games, changed flipper enable for Sistema III
+Improve Stern SB100 sound module tone frequencies
+Add specialized Stern SB100B support
+Support for auxiliary lamps / LEDs on Scared Stiff rev. D.01R
+
+Change some more of the timing for the idle/throttle speed code
+Fix a problem when using altsound packages (like the PinSound ones) and changing the machine volume (which resulted in doubled sounds from both emulation and altsound)
+Fix some compiler issues/undefined code behavior (mainly relevant for mingw and unix/gcc builds at the moment)
+Add ALSA support for Unix builds
+
+Add LISY support (Linux for System1 & System80): one can control a Gottlieb pinball machine via PinMAME, special hardware needed, have a look at www.lisy80.com
+
+Updated to zlib 1.2.11
+Updated to latest Pin2DMD dlls
+
+*** ROM SUPPORT *** Thanks to Flipprojets.fr for all the GTS80b-sets (plus Free Play patches), ipdb.org, exegeta for all the LTD and Taito games and clones, tecnopinball.org, Juan, Corey, barakandl, Pinfixer, Effect
+New:
+Bally: Boomerang prototype (and bootleg set)
+LTD: Arizona
+     Cowboy Eight Ball (and alternate set)
+     Disco Dancing
+     Force
+     Haunted Hotel
+     Hustler
+     King Kong
+     Martian Queen (only a bad dump exists which has been patched to make things work)
+     Space Poker   (only a bad dump exists which has been patched to make things work)
+     Time Machine  (only a bad dump exists which has been patched to make things work (4p version))
+     Trick Shooter
+     Viking King
+MAC: Galaxy Play
+Mirco: Spirit of 76
+Playbar: Bloody Roller
+Stargame: Slalom Code 0.3
+          Space Ship
+          White Force
+
+Correct Dumps:
+Bally: Flash Gordon (prototype rev. 1) (missing U10 dump was rediscovered)
+Inder: Metal Man (corrected one music ROM)
+LTD: Columbia (previously supported was in fact one ROM from pecmen)
+Taito: Lady Luck (sound dumps were the ones from Vegas before)
+       Volley (formerly known as Voley Ball and also was missing main CPU dumps)
+WMS: Contact, Disco Fever, Phoenix, World Cup (correct sound ROMs)
+     Demolition Man (H-5B Coin Play), Demolition Man (DH-5B Coin Play LED Ghost Fix), Demolition Man (H-6B Coin Play) (all repatched correctly)
+
+Clones:
+Amazon Hunt II (French Free Play)
+Amazon Hunt III (French Free Play)
+Amazon Hunt III (rev. 1 French)
+Amazon Hunt III (rev. 1 French Free Play)
+Arena (Free Play)
+Arena (French)
+Arena (French Free Play)
+Arena (German)
+Arena (German Free Play)
+Arena (rev. 1 Free Play)
+Bad Girls (Free Play)
+Bad Girls (French)
+Bad Girls (French Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Bad Girls (German)
+Bad Girls (German Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Beat the Clock (with flasher support)
+Big House (Free Play)
+Big House (French)
+Big House (French Free Play)
+Big House (German)
+Big House (German Free Play)
+Black Knight 2000 (PF-1)
+Bone Busters Inc. (Free Play)
+Bone Busters Inc. (French Free Play)
+Bone Busters Inc. (German)
+Bone Busters Inc. (German Free Play)
+Bounty Hunter (Free Play)
+Bounty Hunter (German)
+Bounty Hunter (German Free Play)
+Caveman (Evolution, unofficial MOD)
+Cheetah (Blue cabinet)
+Chicago Cubs Triple Play (Free Play)
+Chicago Cubs Triple Play (rev. 1 Free Play)
+Diamond Lady (Free Play)
+Diamond Lady (French)
+Diamond Lady (French Free Play)
+Diamond Lady (German)
+Diamond Lady (German Free Play)
+Excalibur
+Excalibur (Free Play)
+Excalibur (French Free Play)
+Excalibur (German)
+Excalibur (German Free Play)
+Genesis (Free Play)
+Genesis (French)
+Genesis (French Free Play)
+Genesis (German)
+Genesis (German Free Play)
+Gold Wings (Free Play)
+Gold Wings (French)
+Gold Wings (French Free Play)
+Gold Wings (German)
+Gold Wings (German Free Play)
+Harley-Davidson (Bally, L-2 and D-2)
+Haunted House (rev. 3 unofficial MOD)
+Haunted House (rev. 3 unofficial MOD, LED)
+Haunted House (rev. 3 unofficial MOD, LED+Secret Tunnel)
+Haunted House (rev. 4 unofficial Votrax speech MOD, misses the sound dumps though!)
+Haunted House (rev. 4 unofficial Votrax speech MOD, LED, misses the sound dumps though!)
+Haunted House (rev. 4 unofficial Votrax speech MOD, LED+Secret Tunnel, misses the sound dumps though!)
+Hollywood Heat (Free Play)
+Hollywood Heat (French)
+Hollywood Heat (French Free Play)
+Hollywood Heat (German)
+Hollywood Heat (German Free Play)
+Hot Shots (Free Play)        (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Hot Shots (French)
+Hot Shots (French Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Hot Shots (German)
+Hot Shots (German Free Play) (enabled by setting the maximum number of credits to 20 (both DIP 15 and 16 ON))
+Mars - God of War (Prototype)
+Mars - God of War (rev. 2 unofficial MOD, fixes a potential startup problem)
+Monte Carlo (Free Play)
+Monte Carlo (French)
+Monte Carlo (French Free Play)
+Monte Carlo (German)
+Monte Carlo (German Free Play)
+Monte Carlo (rev. 1 Free Play)
+Monte Carlo (rev. 2)
+Monte Carlo (rev. 2 Free Play)
+MotorDome (German)
+Night Moves (Free Play)
+Pink Panther (sound correction fix)
+Raven (Free Play)
+Raven (German)
+Raven (German Free Play)
+Raven (rev. 1 Free Play)
+Road Show (Prototype P-3 Sound ROM, combined with LX-2 Game ROM for now)
+Robo-War (Free Play)
+Robo-War (French)
+Robo-War (French Free Play)
+Rock (Free Play)
+Rock (German)
+Rock (German Free Play)
+Rock Encore (Free Play)
+Rock Encore (German)
+Rock Encore (German Free Play)
+Rocky (French speech)
+Rollergames (AD-2 Prototype) (sample/prototype with 8 drop targets)
+Rollergames (LF-2 French)
+Rollergames (LF-3 French)
+Spring Break (Free Play)
+Spring Break (French)
+Spring Break (French Free Play)
+Spring Break (German)
+Spring Break (German Free Play)
+Spring Break (rev. 1 Free Play)
+Spring Break (single ball game, Free Play)
+Tag-Team Pinball (Free Play)
+Tag-Team Pinball (German)
+Tag-Team Pinball (German Free Play)
+Tag-Team Pinball (rev.2 Free Play)
+Teenage Mutant Ninja Turtles (1.04 German)
+TX-Sector (Free Play)
+TX-Sector (French)
+TX-Sector (French Free Play)
+TX-Sector (German)
+TX-Sector (German Free Play)
+U.S.A. Football (R01u)
+Victory (Free Play)
+Victory (French)
+Victory (French Free Play)
+Victory (German)
+Victory (German Free Play)
+Zephy (alternate set)
+
+
+
+Version 2.8b (December 29th, 2016)
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Optimize general sound resampling code
+Expose new option "resampling_quality" to choose between fast/low quality (mode 0) and normal (mode 1)
+
+
+
+Version 2.8 (December 24th, 2016) - "Sounds good"
+------------------------------------------------------------------------------
+
+*** CORE/CPU *** Thanks to DJRobX and lucky1 and mjr for some of these
+Improve precision/performance of general sound filtering and resampling to final output sample rate (latter using libsamplerate by Erik de Castro Lopo now)
+Improve sound pitch for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
+Further improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
+Further improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)
+ but still one should avoid high volume levels for these machines (~24 and above, for example on Nascar, or even ~20 on LOTR)
+Improved AT91 core emulation features
+ and add 'at91jit' option to disable it
+Improved FM sound emulation cores (like AY8910, YMF262 and YM2151: so a lot of Gottlieb generations, old Ballys, pre-DCS games, etc)
+Slightly improved TMS5200 core (Bally Centaur, etc), especially the wrong pitch if Zaccaria games were run after the first time from within VP
+Use reverb for all sound cores (not just TMS5200) used in Bally Centaur
+Improved M114 sound core (Mr. Game)
+Improved HC55516 CVSD sound core (Gorgar up to Twilight Zone, etc) and add some lowpass filtering (active only on older machines) to remove some of the audible noise
+Slightly lowpass filter DCS sound core (Indiana Jones and up) to remove some of the audible noise and additional sound throttling adjustments
+Improved GTS80BS/GTS3 DAC & OKI6376/ADPCM sound cores (Gottlieb DMDs, etc)
+Improved GTS80SS DAC sound core (Haunted House, Black Hole, Mars - God of War, etc)
+Improved Capcom sound core
+
+Improved DMD brightness level mapping for Gottlieb GTS3 & Alvin G.
+Retweak Pistol Poker to use the correct 12MHz clock
+
+Add support for modulated/multi-level flashers on WPC (see whatsnewVPM.txt on how to enable it)
+Add support for GI on Whitestar
+Improve NGG wheel by using the mech class to simulate the spinning wheel
+
+Reduce latency of input handling, especially on WPC and add new options around this:
+ cpu_affinity_mask (default 0, note that its really a mask: For CPU #1 only, set it to 1 (=2^(1-1)), CPU #4 only is 8 (=2^(4-1)), so CPU's 1 and 4 is 9 (=2^(1-1) + 2^(4-1)) then, etc) and
+ low_latency_throttle (default 1, will divide an emulated frame into more parts to reduce input latency)
+
+Change scaling of the window content if DirectX disabled (incl. 64bit compile) to fit the full window, incl. bilinear upsampling of the DMD/Segments (latter using BasicBitmap by skywind)
+Fix window size issues if an additional mini-DMD is in use
+
+Store DMD dumps in a DmdDump subfolder (but only if it already exists)
+
+*** ROM SUPPORT *** Thanks to pinball-broker, Juan, Timmo, Chad Hendrickson, Inkochnito, zaccaria-pinball.com, ipdb.org
+Add sound rom dump to U-Boat 65
+
+New:
+JocMatic: Rider's Surf (running on Playmatic hardware)
+
+Kinda new:
+Hook 5.00 (unofficial MOD)
+Star Wars 20th Anniversary 1.06 & 1.07
+Tommy 5.00 (unofficial MOD)
+
+Clones:
+ABC Monday Night Football 2.9 50cts (B5 ROM from IPDB has a wrong checksum)
+Back to the Future 2.8
+Dragonfist Bootleg 2 (matches drop target scoring with the instruction card/manual)
+Laser Cue L-3 (Neverending Bell Fix)
+Lost in Space 1.01 French
+Stargate rev.5
+Star God (alternate version)
+X-Files 3.03 French
+
+
+
+Version 2.7 (June 08th, 2016) - "Alive and kicking"
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+64bit compilation supported
+XMAME port for unix/linux systems
+PROC support (needs special compile with PROC_SUPPORT defined) to drive (at least) real WPC machines with PinMAME/PROC
+
+New S14001A sound core for old Sterns (Catacomb, Flight 2000, Freefall, Lightning, Orbitor 1, and Split Second)
+Improved BSMT2000 sound core for Sega, Alvin G., Data East (Batman and newer), and Stern (up to Terminator 3) DMD generation games
+Improved AT91 sound core for the rest of the Stern DMDs (Elvis, LOTR, RBION, Sopranos, Nascar/Grand Prix/Dale Jr.)
+Improved Brave Team sound core
+
+*** ROM SUPPORT *** Thanks to Inkochnito, Soren
+New:
+MAC: MAC Jungle (1995 version)
+Sleic: Bike Race (2-ball play) (not working yet)
+Sonic: Hang-On
+Unknown: Wild Texas (Firepower II Modification)
+
+Clones:
+Bram Stoker's Dracula L-2C (competition MOD)
+Creature from the Black Lagoon L-5C (competition MOD)
+Dr. Dude LA-3C (competition MOD)
+Earthshaker LA-4C (competition MOD)
+Hook 4.01p (4.01 with Prototype Sound)
+Inder Centaur (alternate version)
+Hyperball L-3
+Lethal Weapon 2.03
+Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
+Taxi LU-1
+Taxi (Lola) L-5C (competition MOD)
+Taxi (Marilyn) L-5C (competition MOD)
+Theatre of Magic 1.5C (competition MOD)
+Tales of the Arabian Nights 1.5C (competition MOD)
+World Cup Soccer LX-3C (competition MOD)
+
+
+
+Version 2.6 (December 24, 2015) - "The team awakens"
+------------------------------------------------------------------------------
+Three and a half years have gone by since the last release.
+We kept everybody happy by putting out beta versions now and then,
+but now we felt the time was right to issue a new version.
+
+This time, Visual PinMAME will also be bundled with the new VP10 in one installer package
+in order to reduce the amount of inherent knowledge needed to create a working playable setup.
+
+Have fun, and Merry Christmas everyone! :)
+
+*** CORE/CPU ***
+Set DCS sample rate to 31,250 Hz, fixes most DCS sound issues
+Optimization to DCS sound decoding for 1993-era games (STTNG, IJ, JD)
+(Optional) Separate RGB-Color selection for the 4 DMD shades
+Added driver for MAC / CICPlay games
+Correct display outputs on IDSA
+Slight digits correction for Papillon
+Different display handling for Tecnoplay "Space Team"
+Added Y8950 sound for Tecnoplay games and Astrocade sound for Midway's Rotation VIII
+Corrected Atari gen.1 & gen.2 sound (so make sure you have the 82s130.bin in the ROM set)
+Fixed display width for Black Belt (Squawk and Talk)
+Some fixes for Midnight Marauders
+Corrected CPU clock, RIOT speed, displays for GTS80B
+Corrected GTS80 SS sound clock
+Cured scratchy GTS80 sound after reset
+Corrected DMD for Strikes n' Spares
+Added new chirp table & reverb for TMS5200 (Bally Centaur, etc) (so make sure to delete an existing nvram of centaur)
+Made some Inder games sound a lot nicer then before, adjusted music / speech pitch for Metal Man
+Tweak CPU clock for Mystery Castle to make it look more correct
+Fixed single zero digit on Odin & Odin Deluxe
+Tweak IRQ4 frequency for Kingpin & Flipper Football (slightly improves lamp issues)
+Improve Solenoids on Playmatic games
+Improve Speech on Nuova Bell and Jeutel games
+Fix some/most of the general sound stutter issues by improving the throttle code
+Improve performance for all ARM7 based games (e.g. Whitestar II)
+Added mech handler for mech #0 (goalie) in WCS:
+ The goalie will assume positions between 0 (max. left) and 50 (max. right), and will close the left switch when < 10 and the right one when > 40
+ Also Mech #1 (ball) will now return the speed of the ball rather than its position, with values ranging from -120 to 120
+Changed head mech handler for PZ:
+ Head will assume varying positions between 0 and 95 that translate to test positions 0 to 6 (within small ranges)
+Updated to zlib 1.2.8
+
+*** ROM SUPPORT *** Thanks to John Lundy, Inkochnito, John Wart Jr, Mitch, John Crawford, Kelley, Juan, pinball-broker, François, PinKitty, Tim Polzin & Chad Hendrickson
+New:
+Apple Time: Thunder Man
+Atari: 4x4 (not working yet)
+Bally: Big Bat (bat game)
+Barni: Red Baron (not working yet)
+CICPlay: Galaxy Play 2,
+         Kidnap
+Data East: King Kong 1.0
+Inder: Centaur
+Joctronic: Punky Willy (not working yet, incomplete dumps),
+           Walkyria (not working yet)
+JP: support correct sound ROMs for Olympus,
+    renamed unknown jpgame to petacona (Petaco with new hardware, alternate set)
+MAC: MAC's Galaxy,
+     Space Train,
+     Space Panther,
+     NBA MAC,
+     and a yet unknown game (may be an alternate Space Panther version)
+Peyper: Sir Lancelot (incomplete sound because of undumped MCU)
+Playmatic: Flash Dragon (alternate set & sound support),
+           Miss Dicso (bingo machine, not working yet),
+           Phantom Ship (no sound yet)
+Premier: Amazon Hunt II & III
+Sleic: Bike Race (not working yet),
+       Io Moon (not working yet)
+Stargame: Iron Balls
+Stern: Dale Jr. (Nascar 5.00)
+Valley: Spectra IV (good U4 dump for correctly timed bonus countdown)
+WMS: Demolition Time 0.99 & 1.01 (FreeWPC based rewrite of Demolition Man),
+     Rush Pinball (custom MOD, no sound)
+
+Kinda new:
+Jurassic Park 6.00 (unofficial MOD)
+Last Action Hero 1.13 (unofficial MOD)
+Star Wars 20th Anniversary 1.04
+Tales from the Crypt 4.00 (unofficial MOD)
+
+Clones:
+Al's Garage Band Goes On A World Tour R06a
+Amazon Hunt (alternate set)
+Apollo 13 2.03 & 5.01/Display 4.01
+Arena (alternate set)
+Banzai Run (L-3 with changed target sounds)
+Batman Forever 1.02 & 2.02
+Baywatch 3.00 Dutch & 4.00 England & 4.00 Dutch
+Black Belt (Bally) Squawk & Talk (revision 7/10/86 and 7/16/86)
+Black Knight 2000 LA-2, PA-5 & PA-7
+Bone Busters (French)
+Breakshot 1.2
+Chicago Cubs Triple Play (alternate set)
+Continental Bingo (alternate set)
+Corvette LX-2 & LA-1
+Creature from the Black Lagoon P-3
+Cue Ball Wizard rev.2 & rev.3
+Cyclone L-1
+Devil Riders (French speech) one ROM is missing, unfortunately
+Diner LU-2
+Fire L-2
+Fish Tales L-5 & D-6 with wrong text size patch (0x6C6AA changed from 0x25 to 0x14) & LED Ghost Fix
+Flash L-2 (yellow flipper ROMs)
+Funhouse L-2
+Godzilla 0.90 & 1.00
+Grand Lizard L-3
+Guns n' Roses 3.00 French
+Guns n' Roses 3.00 Dutch
+Hyperball L-2
+Independence Day 2.01 & French/Display 2.00
+Indiana Jones P-2
+Indy 500 1.0R
+Joust L-1
+Jungle Lord L-1 & New Tricks Home ROMs by A.M. Thurnherr
+Kiss prototype v.2 (not working yet)
+Laser War 8.1
+Lethal Weapon 2.08p voices mod
+Lost in Space US display 1.01 & German display 1.02
+Mars - God of War French
+Monopoly 2.51 (Italian display)
+Monster Bash 0.5
+Monte Carlo (alternate set)
+No Fear 1.1X
+No Good Gofers 1.2
+Party Animal (German)
+Phantom of the Opera 2.9
+Pin-Bot P-4 & L-1 & L-5 mod
+Pistol Poker R01
+Pool Sharks LA-5
+Popeye LA-4 & LX-4
+Punchy the Clown R03
+Raven (alternate set)
+Riverboat Gambler PA-7
+Robocop 3.0
+Rotation VIII v.1.01 & 1.15
+STTNG P-8 & L-3
+Secret Service 4.2 (alternate sound)
+Soccer Kings (alternate set)
+Corrected display rom for South Park 0.90
+Space Jam 2.00
+Space Shuttle L-3
+Spring Break (alternate set)
+Star Trek 25th Anniversary 1.17
+Starship Troopers 2.00
+Still Crazy L-1
+Strikes n' Spares rev.2
+Swords of Fury L-1
+Taxi P-5
+Theatre of Magic 1.3 (French)
+The Shadow LH-6 with wrong text index patch (0x520AA changed from 0x69 to 0x68)
+Thunderball P-1 & P-2 & P-3
+Time Machine 1.8 German
+Tommy 1.02
+Torpedo Alley 1.6
+Viper Night Drivin' v1.02
+Volcano (Sound Only, alternate version 2)
+World Cup Soccer '94 LA-2
+X-Files 2.00
+
+
+
+Version 2.5 (June 5, 2012) - "Playmatics on the loose!"
+------------------------------------------------------------------------------
+A lot of work has been done on Playmatic.  I was happy enough to simply be able to play the games, but then Gerrit went ahead and got the sound working too!  We're still looking for roms for Playmatic Stop Ship and Playmatic Phantom Ship so if you see those, let us know please.
+With help from Matt Elder and Basillo Garcia, we managed to get working roms for Inder Metal Man and Spinball's last game - Verne's World.
+S1500 was kind enough to send us the game code for "White Force" and I hope to see it working soon.  Enjoy!
+
+*** CORE/CPU ***
+Improved segmented displays for WPC alphanumeric games
+Corrected DMD colors for Gottlieb system 3 games
+Improved DMD displays for Alvin G
+Preliminary support for IDSA SP0256 sound chip
+Playmatic System 2 sound now works and games are playable!
+Peyper/Sonic/Juegos Populares Dip Switch Handling has been changed - anyone who used dip menus for those games will need to adjust dip values
+Playmatic Lamp Numbering has changed to match the schematics
+Spectra IV - new U4 for better game operation - if you play this game, grab the new romset from vpforums.org
+
+*** ROM SUPPORT *** at least 55 new romsets!
+Alvin G Mystery Castle - 3 DMD rom "enhanced romset"
+Bally Strange Science (German) - Lee Buck
+Bell Games World Defender (Free Play)
+Funhouse 9.06H, Whitewater LH6C, Cirqus Voltaire 2.0HC (Coin Play Enabled)/T2 L-81/T2 L-82 - thanks MrGlee!
+Apollo 13 1.00
+Alternate versions of Ripleys, Sopranos, Nascar, Grand Prix, LOTR - thanks Micko!
+Alternate Stern Harley Davidson
+Stern Playboy 3.02/Simpsons Party 3.00/Terminator 3 3.01
+FreeWPC Twilight Zone 0.97/1.00/FreeWPC Corvette .61
+Cactus Canyon 1.04/1.00 - Lee Buck
+Congo 1.1, F-14 Tomcat P-5, Secret Service b26 (alternate Sound) - thanks Inkochnito
+Getaway P-B
+Johnny Mnemonic 0.5R/No Fear 1.0 - John Wart Jr.
+Judge Dredd L-4/L-5, Shadow LA-6
+Safecracker 0.91
+STTNG P-4 - Scott Charles
+IDSA V-1/Basketball
+Inder Metal Man/Moon Light
+Juegos Populares Halley Comet/Petaco 2/Pimbal "Pinball 3000"
+Peyper Nemesis/Odin - Basillo
+Playmatic Flash Dragon, Nautilus, Skill Flight, Star Fire (alternate set), The Raid
+Playmatic Megaaton (alternate set) - Didier
+Playmatic Zira - Lee Buck
+Sonic Gamatron/Sonic Star Wars (alternate set)
+Spinball Verne's World
+Videodens Ator - Basillo
+Videodens Papillon - Lee Buck
+
+
+
+Version 2.4 (August 19, 2011) - "Summertime"
+------------------------------------------------------------------------------
+Eight months is a long time to go without a release, but we wanted to make some significant progress
+with plenty of testing, so it's here now.  We thought the rom fountain had run dry, but then
+Seymour Shabow mentioned he had worked on free play roms, Micko alerted us to alternate Stern roms,
+David Gersic posted his modified Zaccaria Free Play roms, and Inkochnito told us we were missing a lot
+of roms from Oliver Okaegi... so...a whole lot of typing was required to add support for all of these!
+
+One of our goals is to archive all pinball game code, as well as code that runs on pinball hardware.
+If you think you have code we don't support, please let one of us know.
+
+Changes:
+
+*** CORE/CPU ***
+Atari sound has been improved [Gerrit Volkenborn/Pascal Janin]
+GamePlan Lady Sharpshooter's solenoids now work 100%
+Added support for Jeutel - fully emulated with sound and speech [Gerrit Volkenborn]
+Updated TMS 5220 to latest MAME core code
+Added support for Valley Manufacturing [Gerrit Volkenborn]
+Zaccaria - Added support for SenseInput line and enhanced diagnostic output [Gerrit Volkenborn/David Gersic]
+Improved speech emulation for Bally 35, Nuova Bell, and Zaccaria Generation 2 [Gerrit Volkenborn]
+
+Corrected spinners for PinMAME simulators [Steve Ellenoff]
+Added simulator for Sega Harley Davidson [Steve Ellenoff/Brian Smith]
+Improved simulator for Stern Monopoly [Brian Smith]
+
+*** ROM SUPPORT ***
+Bowlers: Aristocrat, King Tut, Pompeii, Tic-Tac-Strike L-1 and L-2
+         Corrected sound roms for Aristocrat, Pompeii, Shuffle Inn, Taurus, Topaz
+Data East: Tales from the Crypt 3.02 Dutch (thanks Inkochnito!)
+GamePlan: alternate Lady Sharpshooter set
+Inder: Mundial 90
+Juegos Populares: Halley Comet, Olympus (good game rom)
+Sega: South Park 0.96 (thanks Inkochnito!) and Stern Harley Davidson 3rd Edition 4.0 (thanks Steve Ellenoff!)
+     Cut the Cheese and Cut the Cheese Deluxe
+Taito: Zeke's Peak (Ice Cold Beer clone)
+Valley Spectra IV
+
+Added a whole bunch of Stern whitestar revisions (thanks Micko!)
+Added Oliver Okaegi sets that were missing or skipped in previous PinMAME releases
+Added FreeWPC sets that work in PinMAME/Visual PinMAME
+Added Free Play and alternate rules roms for early Stern (thanks Seymour Shabow!)
+Added Free Play roms for Zaccaria (thanks David Gersic!)
+Added a lot of WPC/WPC-95 sets including the real Scared Stiff prototype rom with working kickback! (thanks Pete Haduch!)
+
+
+
+Version 2.3 (December 24, 2010) - "Merry Christmas"
+------------------------------------------------------------------------------
+And here we are again at the end of another year for PinMAME; time flies!
+
+And it was a good year for pinball and pinball emulation in particular:
+Maddes moved the code repository from CVS to SVN on SourceForge,
+and Randall Perlow joined the crew to work on the Micropin emulation,
+which was perfect because he owns the real thing as well! :)
+
+Also, there are finally some good reads for Astro's "Black Sheep Squadron"
+(thanks to Dave from Alltek Systems), something I didn't believe I'd ever
+see in my lifetime. The game is not that great actually, but we were hunting
+for a good set of ROMs for like 10 years... ;)
+
+Also: Brian got the speech ROM for "Caribbean Cruise" from Steve Young,
+the missing DMD ROM for "Aaron Spelling" from Mike Pacak,
+and built in support for Ed Cheung's WPC "ghosting" patch ROMs, which
+should make for a clearer look in our emulated version too.
+
+Last but not least we found a sound ROM revision for Williams Space Shuttle
+that corrects a bug in the previously known U49 dump which was provided by
+WMS themselves! We're pretty sure that this ROM was patched by WMS themselves,
+and probably used for most production games, only it apparently never made it
+into WMS' official ROM database!
+
+Changes:
+
+*** CORE/CPU ***
+Added support for Micropin Pentacup [Randall Perlow]
+Added dumpframes support to export DMD data to text file [Thanks to Toxie and Highrise]
+ (disabled by default, change DUMPFRAMES to 1 in core.c and rebuild to enable)
+Added preliminary support for Stargame Mephisto (not working at all right now)
+Added Christian Tabart sound support [Gerrit Volkenborn]
+Added debugger option to access the internal RAM of I8039 CPU family [Gerrit Volkenborn]
+
+*** ROM SUPPORT ***
+Loads of new dumps here and there (see above for examples)
+Williams Funhouse 9.05H and some other WMS clones
+Bell: Super Bowl (based on Bally's X's & O's)
+Taito: Ice Cold Beer (a non-pinball skill game)
+Christian Tabart: L'Hexagone, using Gottlieb "Genie" ROM but adding a modern sound board
+ (thanks to Michel Achille, designer of that very board!)
+Jac Van Ham: Movie Masters (sound ROM not dumped yet)
+Juegos Populares: Olympus (sound ROMs only)
+Micropin: Pentacup
+Peyper: Wolf Man
+Support for more Playmatic games (thanks to Basilio Garcia and Paulo Branco)
+- Big Town / Party (those use the same ROMs as Last Lap)
+- Antar (alternate set)
+- Attack
+- Black Fever
+- Cerberus
+- Rock 2500
+- Spain '82
+- Star Fire
+- Trailer
+- UFO-X
+
+
+Version 2.2 (January 11, 2010) - "As time goes by"
+------------------------------------------------------------------------------
+At first: Happy Birthday Gaston!!!
+
+Another year slipped by and we are curious what the year 2010 will bring.
+So at the start of 2010 we finally bring you a new release. With Brian now
+working hard on Visual Pinball and putting out lots of new VP versions the
+release schedule of PinMAME looks really slow, but let us say it is just
+because PinMAME is rock solid.
+
+Changes:
+
+*** CORE/CPU ***
+Support for Capcom shaded lamps (using ChangedDMD array)
+Reduced DE DMD clock to 2 MHz, making games & sounds sync better
+Reversed EOS switches for F14 Tomcat
+Corrections for shallow Gottlieb driver prototypes
+Kiss prototype moved to own source file kissp.c
+Re-added comments to byvidpin.c
+Gottlieb 9-segment digits replaced with legible alphanumerics (in DEBUG mode only)
+Added four more key columns (triggered by Q-Z through R-V combinations, DEBUG only)
+Added support to compile PinMAME with GCC 4.0, hopefully this will create interest for someone to build a Linux version
+Replaced void* by genf* for GCC 4.0
+
+*** ROM SUPPORT ***
+Gottlieb Strikes n' Spares (rev. 1)
+Gottlieb World Challenge Soccer (disp. rev. 2)
+Gottlieb Mario Andretti (prototype rev. 4)
+Sega Wack-a-Doodle-Doo
+Williams F-14 Tomcat (P-3, P-4)
+Toptronic unknown game on Gottlieb System 3 hardware (not working?)
+Sonic Solar Wars [tecnopinball.org]
+Playmatic Chance [pinball-dreams.com]
+Williams The Machine: Bride of PinBot (L-3), thanks to Inkochnito
+Sega X-Files (rev. 2.04), thanks to Inkochnito
+WMS No Good Gofers (rev. 1.0), thanks to Steve Ellenoff
+
+
+Version 2.1 (February 1, 2009) - "Keep 'em coming!"
+------------------------------------------------------------------------------
+OK, so six months have passed yet again - amazing how time flies.
+Despite the fact that all major manufacturers are emulated by now, there's
+still enough to do to iron out all of the bugs and inaccuracies.
+
+From time to time a few new games show up unexpectedly, like the new batch
+coming in from tecnopinball.org in January: three new Juegos Populares games,
+also Inder Atleta, and another oddball: Videodens "Break".
+Some special greetings go to the makers of that invaluable resource site! :)
+
+Despite the fact there is NO manual or schematics drawing to work with yet,
+we managed to get Break working somehow - Spanish manufacturers were pretty
+much fixated on the Z80 cpu and the AY-8910 sound chip, so it wasn't
+all that hard really...
+
+Jac van Ham, a rare Dutch manufacturer, joins the club with a game called
+"Escape", adding a new CPU (TMS9980-A) to our core at the same time.
+
+Some people contributed by providing new dumps for known bad roms as well:
+David Seidman finally managed to get good reads off Black Sheep Squadron.
+Jerry Clause re-read the U6 speech rom on Flash Gordon's vocalizer set, so
+the hissing and stuttering is gone now.
+
+Thanks to all our contributors, especially to Inkochnito for locating some
+very hard to find roms over and over again all those years! What would we
+do without you? -- Hmm, a lot more vacation, I guess (just kidding)! ;)
+
+On the emulation side of it, sound was improved for Bally games using the
+old "Sounds Plus" sound board, so it plays a few more sounds now.
+Also, Gottlieb System 80B had another issue with melody playing at game start
+which wasn't supposed to happen at all.
+In the same vein, Jokerz, Pool Sharks, and Blackwater 100 had their sound
+startup issues corrected, meaning that BW100's sound is finally working BTW.
+
+Well, that's basically it. So enjoy our latest feat, and "keep 'em coming!"
+
+Changes:
+
+*** CORE/CPU ***
+Fixed a bug for Bally-51 Sounds Plus
+Fixed sound issues on Gottlieb System 80B
+Fixed Blackwater 100 sound startup
+Fixed startup sound for Jokerz / Pool Sharks
+Corrected Playmatic Last Lap, game works now
+Better working Bally 68701 prototype games
+Added TMS9980-A cpu support
+
+*** ROM SUPPORT ***
+Added Bally Party Zone L-3  [ipdb.org]
+Added WMS Banzai Run G-3 (German)  [ipdb.org]
+Added Juegos Populares: Featon, Petaco, Aqualand  [tecnopinball.org]
+Added Jac van Ham Escape  [Inkochnito / Ronald Knor]
+Added Videodens Break (NVRAM not working yet)  [tecnopinball.org]
+Added Inder Atleta  [tecnopinball.org]
+Added Flash Gordon Prototype rev. 2 (working)  [pinballjail]
+Corrected checksums for Bally Flash Gordon (vocalizer sound)  [Jerry Clause]
+Corrected checksums for Astro Black Sheep Squadron  [David Seidman]
+
+
+Version 2.0 (August 1, 2008) - "Free Play Only!"
+------------------------------------------------------------------------------
+This major version number change has nothing to do with new functionality for
+once - it was done to mark a different milestone in the PinMAME development:
+from this day on, anybody will be free to compile Visual PinMAME for himself,
+so the four formerly crypted files are available in their unencrypted version
+from our source code repository now!
+
+At the same time the expiration date was removed, so this version is both
+totally OPEN SOURCE and NEVER-EXPIRING at the same time. Well worth a 2.0,
+what do you think? ;)
+
+On a sad note, this means we won't emulate the new S.A.M. system by Stern for
+quite some time to come - because of the same reason Visual PinMAME was closed
+source before: once you're able to emulate one of the games using that
+platform, all of the other games will work instantaneously as well!
+
+However, development on all other manufacturer's platforms is continuing.
+Playmatic games are working a little by now, and we will see more improvement
+in the future for sure; sound is next on our issue list.
+
+The TMS5200 is about the most complicated piece of hardware to emulate it
+seems; Lord Nightmare spends almost all of his free time to get it right,
+and we'll keep track of the latest outcomings as used in MAME, and will port
+the updates to PinMAME as soon as they are available.
+With this release, the speech sounds no longer as "hollow" as it did before,
+and a few chirps and clicks are gone by using the TMS5200 specific emulation.
+
+Some more (Nuova) Bell games were added, and a dart-based pinball conversion
+kit for Bally machines was found by JRR (thanks!)
+Brian also came up with Alvin G.'s "USA Football". :)
+
+Changes:
+
+*** CORE/CPU ***
+Added new debugger command CODELIST
+Fixed some disassembler glitches in the 6809 debugger
+Better TMS5200 emulation for Bally / Zaccaria games that use it
+Updates CDP1802 CPU to lastest MAME core
+
+*** ROM SUPPORT ***
+Added Bell's Tiger Rag (thanks to Inkochnito & Hans Balk)
+Added Nuova Bell's World Defender (-"-)
+Added Nuova Bell's Dark Shadow (-"-)
+Added Nuova Bell's Skill Flight (-"-)
+Added Nuova Bell's Cobra (-"-)
+Added Nuova Bell's Top Pin (-"-)
+Added Nuova Bell's U-Boat 65 (-"-)
+Added Grand Products' 301/Bullseye (thanks to Inkochnito & J.R.Robertson)
+Added Alvin G.'s USA Football
+
+
+Version 1.60 (April 18, 2008) - "For Tanja"
+------------------------------------------------------------------------------
+This latest release took a little longer as originally expected because
+a good friend of Gerrit, Tanja, suddenly died at at the age of 29 years.
+It took him a while to overcome the loss...
+
+This release sees an update to the HC55516 sound chip used for speech/FX on
+all WMS games from Gorgar up to Twilight Zone. Static noise and distortion
+levels are reduced, and generally sound reproduction is clearer than before.
+At the same time, Bally's "Xenon" and "Flash Gordon" using the vocalizer
+sound board were increased in speech volume.
+
+A fix was added for "The Sopranos" so the game will not crash any longer
+after starting the "Bing!" mode, or the Boss mode.
+
+And finally, with the addition of "Hoops", the Gottlieb collection is finally
+complete in PinMAME, with the exception of some kits (like Amazon Hunt II)!
+
+Changes:
+
+*** CORE/CPU ***
+Changes applied to sound reproduction of HC55516 chip
+Fixed memory reads for Whitestar games (eg. The Sopranos)
+Added support for some Bally prototype games
+
+*** ROM SUPPORT ***
+Added Gottlieb Hoops (thanks to Ingo Kramer and Armin Bernemann)
+Added Bally Eight Ball Deluxe prototypes (thanks to Kelley)
+Added Williams Star Trax prototype (thanks to Kelley)
+Added Shuffle Inn (minus one sound rom)
+
+
+Version 1.59 (February 17, 2008) - "The lost sounds"
+------------------------------------------------------------------------------
+And yet another bugfix release - just a little more than two weeks later!
+
+Gottlieb's System 3 has now access to all of the content of the OKI chip's
+speech & sound roms, enabling some long-lost quotes like "Jackpot!" on
+Stargate, or "You need another coin" on Barb Wire.
+At the same time the sampling speed was adjusted, for it was playing too
+fast before, and made some game soundtrack sound real bad (eg. Wipeout)!
+
+Some preliminary sound was added for the Zaccaria 1-player games. It probably
+sounds nothing like the original, for lack of comparison sound clips mostly!
+
+A few clones and new games were added, for instance the "Addams Family Values"
+coin dropper, and the newly-found Rock Encore. So nothing spectacular here. ;)
+
+Changes:
+
+*** CORE/CPU ***
+Full OKI 6295 rom support for Gottlieb System 3 games
+Decreased sampling frequency by 5.6% for games using the OKI 6295 chip
+HSTD flashing in all player score panels for Gottlieb System 1 games
+Preliminary sound support for Zaccaria prototype machines
+
+*** ROM SUPPORT ***
+Added Addams Family Values (coin dropping game)
+Added Rock Encore (different sound version for Premier's "Rock")
+Added NBA Fastbreak U2 sound version 0.4 (gives a warning but still plays)
+Added Baby Pacman home roms by Okaegi
+
+
+Version 1.58 (February 1, 2008) - "The complete series"
+------------------------------------------------------------------------------
+This is more of a bugfix release. It does not implement any new features
+besides the inclusion of Zaccaria's "Ski Jump", which makes this series
+complete (with the exception of sound).
+
+The first and probably most important issue is the bug fix for the PPS-4/2
+CPU used on Gottlieb System 1 games. Version 1.57 had a bug left that kept
+the bonus from accumulating properly (or counting down, for that matter),
+and another "bug" that kept the game diagnostics / adjustment menu from
+progressing through its items. Actually if you look at the data sheets for
+the PPS-4, it seems the emulation was *correct* in 1.57 and now we had to
+deliberately introduce a bug so it works!?
+Well, never mind now - as long as it plays fine. :)
+
+Next, we are quite worried by the fact that many Gottlieb / Premier games
+have sounds missing, so some effort was put into getting these to work.
+Most notably, all of the drum sounds were missing from System80B games
+of the first generation. Well, not anymore now! ;)
+Also, the general output volume of the SP0250 sound/speech chip was too low
+so far, making most bass sounds almost inaudible, so we cranked that up!
+Finally, Gerrit turned off the channel suppression feature of the OKI6295
+ADPCM chip, so now essentially every started sound will play until it ends,
+or until it's cut short by another sound playing on the same voice channel.
+This, of course, is a step back in terms of hardware accuracy, so it won't
+last long... it was done as a quick fix to show the hardware is capable of
+producing more sounds than in did in previous releases, and maybe to find
+a way of getting it right someday.
+
+For all 6-digit display haters out there, we added support for Oliver's
+7-digit Gottlieb conversion roms. Doing so, Gerrit also extended the "bios"
+system to these games: you can now keep the System80/A system roms common to
+all of those games in the gts80 / gts80a sets, without the need to copy them
+into each and every Gottlieb rom set. Same goes for the sound PROM used on
+early System80 and late System80A games: these may go into gts80s / gts80as,
+who in turn inherit from gts80 / gts80a.
+Sounds complicated? Well - it's not.
+
+However, as MAME architecture does not support multiple inheritance for games,
+this produces one little problem: some Gottlieb games (using the sound and
+speech board) have sound-only clones with completely different roms.
+These three games (Volcano, Black Hole, and Devil's Dare) need to be split
+into different sets now, as they don't have a single rom file in common.
+Also, the new 7-digit common roms must go into their own sets (eg. spiderm7)
+because those games already inherit from their 6-digit parents, and thus can't
+inherit from a common set with support for the 7-digit system roms anymore.
+This sounds even more complicated? Erm - well, maybe a little. ;)
+
+So, have fun now and enjoy the most finite state of PinMAME there ever was.
+
+Changes:
+
+*** CORE/CPU ***
+Fixed two bugs in PPS-4 emulation (corrects Gottlieb System 1 games)
+Enabled missing drum sounds on Gottlieb System 80B games
+Increased general output volume of the SP0250 sound/speech chip
+Disabled muting option for OKI 6295 chip to produce more output in GTS3 games
+Fixed GI support for all five GI strings on Who Dunnit and JackBot
+Enabled sound solenoid outputs on Gottlieb System 1
+Removed tones from Cleopatra, Sinbad, and Joker Poker (those use chimes)
+
+*** ROM SUPPORT ***
+Added Zaccaria Ski Jump
+Added Okaegi's 7-digit conversions of Gottlieb System80 games
+Added the "machinaZOIS" clone of ShaqAttaq, created by a Czech programmer team
+
+
+Version 1.57 (December 2, 2007) - "System 1"
+------------------------------------------------------------------------------
+The year is 1987, and NASA launches the last of America's deep space probes.
+In a freak mishap, Ranger 3 and its pilot, Captain William "Buck" Rogers
+are blown out of their trajectory into an orbit which freezes his life support
+systems and returns Buck Rogers to Earth 500 years later.
+
+We had begun to think it would take 500 years to emulate Gottlieb System 1...
+but thanks to an anonymous MAACA member, we finally got good reads of the bios
+chips and they are now emulated.
+Get out your cards and backgammon boards, lucky Buck is back!
+
+1.57 - Changes Twiki says you don't want to know
+Added Stern Harley Davidson (Harley 3.0)
+Added Stern Speech emulation - sample files are no longer necessary
+Added Gottlieb System 1 emulation - still has a bonus count bug
+Improved GI dimming
+Added Inder Lap By Lap
+NBA Fastbreak Clock emulation corrected
+
+
+Version 1.56 (August 19, 2007) - "Allied Leisure"
+------------------------------------------------------------------------------
+This update finally includes support for all the Allied Leisure games
+operating on their 6504 CPU platform. It was quite some struggle to add those,
+we started as far back as 2002 in trying to locate the RRIOT 6530 chips from
+the CPU board in order to get their ROM contents dumped.
+
+We encountered several setbacks. At one point, a guy offered his chips to be
+dumped, but then suddenly vanished, and then famous community people denied
+to help up dump chips, even though they definitely had the capabilities! :(
+
+Just when we thought we'd never make it through this worldwide conspiracy
+preventing Allied Leisure to be emulated at any point, Brian suddenly managed
+to buy an Allied Leisure "Take Five" machine off eBay, and Pascal Janin of
+France was kind enough to dump the chips for us (HUGE Thanks!!!), so now this
+task is finally accomplished, and one of the last remaining well-known
+manufacturers joined our club of pinball emulated. :)
+
+Since all of those Allied Leisure games use the exact same code set, you will
+only need ONE copy of the dumps, packed up as a driver called "allied".
+All eleven games will then run off the same code, without the need to
+duplicate the rom dumps over eleven different drivers!
+
+In the same vein, you can now run all the GamePlan model 110 games (Foxy Lady
+to Chuck-A-Luck) on the same set of roms, as a driver called "gp_110".
+
+This method is based on MAME's "bios" support for some games like NEO-GEO,
+where each game is using a shared set of boot code. The difference on PinMAME
+is just that there simply aren't any additional roms for the pinball games. ;)
+
+Also thanks to JohnnyPop for providing the Titanic & Monopoly redemption roms.
+
+Changes:
+
+*** CORE/CPU ***
+Added support for Allied Leisure hardware (Brian Smith, Gerrit Volkenborn)
+Enabling "bios" files to prevent rom code duplication (Gerrit Volkenborn)
+Preventing AT91 cpu crash occurring when emulation was restarted (Steve Ellenoff)
+Removed display fading (on Gottlieb) again, as it was faulty. (Gerrit Volkenborn)
+
+*** ROM SUPPORT ***
+Added Sega Titanic / Stern Monopoly redemption games (Gerrit Volkenborn)
+Added Williams STTNG LX1, LX2, LG7 (Brian Smith)
+Added Zacaria Space City / New Star's Phoenix (Gerrit Volkenborn)
+Updated Sega Space Jam / ID4 sound with correct dumps (Steve Ellenoff)
+Updated Stern Simpsons Pinball Party to version 5.00 (Gerrit Volkenborn)
+
+
+Version 1.55 (March 30, 2007) - "Let there be Light"
+------------------------------------------------------------------------------
+Happy 6th Birthday to PinMAME & Visual PinMAME! :)
+
+After all these years, we're finally seeing the light on two of our longest
+standing missing features! In honor of the 6th year since our first release
+we bring you our latest efforts.
+
+Thanks to Aaron Giles for once again blowing us away with his
+BSMT2K emulation improvements. Full support for the 'mysterious' compressed
+samples is now a reality. Despite the numerous rewrites Steve had to do to
+convert the code from the latest MAME core into our older core, it's working
+great!
+
+There's also a small enhancement to the Votrax SC01 speech chip output,
+enabling the chip to alter its sample rate at runtime which improves sound
+on many if not all games that used it!
+To all Gottlieb System80 and Taito lovers, this is for you!
+
+A special last-minute treat by PinMAME's founder and "not so retired" developer
+Steve Ellenoff: GI circuit brightness support for WPC games is finally here!
+
+Special thanks to Steve for this tremendous addition, which would have been the
+number one event for him this month - if it wasn't the impending birth of his
+third child expected to arrive any day! :)
+
+Changes:
+
+*** SOUND ***
+Improved BSMT2000 support (Steve Ellenoff - thanks Aaron)
+Improved Votrax SC01 support (Gerrit Volkenborn)
+Correct sound support for Elvis (Steve Ellenoff)
+
+*** CORE/CPU ***
+Improved (and faster) AT91 emulation (Steve Ellenoff)
+Added GI dimming support for WPC games (Steve Ellenoff)
+
+*** ROM SUPPORT ***
+Updated Alien Poker multiball (Oliver Kaegi)
+Updated Eight Ball Deluxe clone (Oliver Kaegi)
+Added Bell Cosmic Flash (Oliver Kaegi)
+Added Nineball clone (Oliver Kaegi)
+Added Demolition Man home roms (Brian Smith/Gerrit Volkenborn)
+Added Theatre Of Magic home roms (Gerrit Volkenborn - needs to have cheats enabled to work)
+...and some other updates we just don't remember right now. :)
+
+
+Version 1.54 (December 23, 2006) - "One DLL to rule them all!"
+------------------------------------------------------------------------------
+Happy birthday Steve!
+It's been a challenging 6 months since the release of 1.53.
+We've added preliminary support for NSM, Wico, and LTD.
+LTD is closest to working for these newly supported systems.
+Also, a minor correction for the display properties -
+the off state can now be set like the other levels.
+Nuova Bell is now playable with sound - needs improvement
+Thanks to Mike McAndrew for providing the correct sound rom for Rat Race.
+
+
+Version 1.53 (June 1, 2006) - "GO FASTER!"
+------------------------------------------------------------------------------
+It's been 10 months since our last release.  Every time we thought about making
+this available, a new issue cropped up that we couldn't resist.  Just one more
+challenge around the corner to overcome.  I'd like to think this version has had
+the most testing ever, but if you do find a bug, please let us know.
+
+Changes:
+
+*** SOUND ***
+Improved Inder Sound (Gerrit Volkenborn)
+Juegos Populares Sound (Gerrit Volkenborn)
+Improved Zaccaria Sound (Gerrit Volenborn/Oliver Kaegi)
+Gameplan Sound (Oliver Kaegi)
+Added correct sound support for Pennant Fever (Gerrit Volkenborn)
+America 1492 sound now works (Gerrit Volkenborn)
+Fixed Williams Thunderball Sound (Gerrit Volkenborn)
+
+*** CORE/CPU ***
+Added keyboard inputs for Rotation 8 - setup/configuration now possible (Gerrit Volkenborn)
+Gottlieb Preliminary Display fading (Gerrit Volkenborn)
+Mr Game improvements (Steve Ellenoff/Tom Behrens/Gerrit Volkenborn)
+Corrected score displays for Peyper/Inder/Sonic (Gerrit Volkenborn)
+Added support for LTD - should be working (no sound) - Gerrit Volkenborn
+Added improved preliminary support for Playmatic (Gerrit Volkenborn)
+Corrected displays for Safecracker, and other WPC games (Tom Behrens/Brian Smith)
+Added Stern new region DMD dips (Gerrit Volkenborn)
+
+*** COM DLL ***
+VPM Display handling changes (Tom Haukaup)
+Added dual monitor support (Excentric/Tom Haukap)
+Added display rotation for vpm (Tom Haukap)
+Corrected direct draw problem for PINMame (Tom Haukap)
+
+*** ROM SUPPORT ***
+Updated Alien Poker multiball roms (Oliver Kaegi)
+Updated Firepower Custom roms (Oliver Kaegi)
+Added Attack From Mars 1.13B (Brian Smith/Wod)
+Added Austin Powers display roms for foregin languages (Brian Smith)
+Added Bell Ringer roms (Cliffy)
+Added Big Guns Prototype (Brian Smith)
+Added Data East Batman 1.06 (Brian Smith)
+Added Dinosaur Eggs sound rom (Brian Smith/Gerrit Volkenborn)
+Added Gamatron roms (Gerrit Volkenborn)
+Added High Roller Casino and Sharkey's Shootout display roms for added languages (Brian Smith)
+Added Hot Shot Basketball (Brian Smith/Gerrit Volkenborn)
+Added Hyperball (L=6) (Brian Smith/Jess Askey)
+Added Junkyard Prototype (Gerrit Volkenborn)
+Added Medieval Madness 1.09B (Brian Smith/Wod)
+Added Monopoly French, German, Italian, and Spanish Display Roms (Brian Smith)
+Added Monster Bash 1.06B (Brian Smith/Wod)
+Added Odin Deluxe (Brian Smith/Gerrit Volkenborn)
+Added Omni Sound (Brian Smith)
+Added Sonic Star Wars (Steve Ellenoff/Joxer)
+Added Sopranos 3.00
+Added Stargazer Custom rom (Oliver Kaegi)
+Added STTNG Special set (Brian Smith)
+Added Ted Estes bootleg roms for early Williams games (Brian Smith)
+Added Twilight Zone 9.4ch (Brian Smith)
+Added Volcano 1a - alternate sound only (Gerrit Volkenborn)
+Added Whitewater Home Roms (Gerrit Volkenborn)
+Corrected Zaccaria Zankor (Oliver Kaegi)
+
+
+Version 1.52 (August 1, 2005) - "The first light doesn't count!"
+------------------------------------------------------------------------------
+The PinMAME developers meeting in Atlanta (Devcon 2005) took place no more than two weeks ago,
+but already we have been able to add signficant improvements as a result of all the great sessions
+we had together! It was great getting to meet each other in person for the first time ever.
+Next time we hope Martin, Tom B, and Okaegi can join in the fun!
+
+Let me use this occasion to thank all the great pinball fans in and around the city of Atlanta, GA
+for their unparalleled enthusiasm, support and hospitality in hosting our meetings, and helping us
+to find bugs and missing features we never would have had known about otherwise. A huge thank you to
+Al, Craig, Jeff, and Jon, for tons of pinball fun and the best of times! You guys are great!!! :)
+
+We also decided as a team that there's no real need to upgrade to the latest M.A.M.E. core.
+We now have support for all the CPUs ever used on pinball hardware, and all the other type chips
+that aren't supported yet won't probably be supported by M.A.M.E. anytime soon either,
+so we'll stick with the tested, proven, reliable, and FAST older 0.76 core.
+Why break a good thing?
+
+Amazing how time flies: Okaegi and TomB joined the team a year ago this month!
+Thanks to both of them for contributing so much to the project since then!!!
+
+Much to our surprise we've added some nice improvements since the 1.52 beta release
+just six short weeks ago, so enjoy our latest version!
+
+Bugs Fixed
+----------
+- Fixes for Bally Vector switches
+- WMS-S7: Fixed multiplexed solenoids on Defender
+- WMS-S4: Defined missing special solenoids on some games
+- GamePlan: These games are now well behaved on game over/match
+- Bally-35: Fixed switch column 6 on Vector and added some missing sound diagnostic switches
+- Spinball: Some improvements and tweaks. These games should work much better now
+  (We still need to find the roms for Verne's World)
+- Overflow Interrupt handling improved on I8051 CPU core to help prevent hang-ups on Spinball emulation
+  [Thomas Behrens]
+
+- Mr. Game: Video dip switch bug resolved that permanently disabled collision detection
+- Gottlieb: System3 driver bug found that kept displays from working perfectly,
+  so now all alphanumeric games should have their correct displays
+  [Gerrit Volkenborn, Steve Ellenoff]
+
+- No Good Gofers flippers working reliably now
+  [Gerrit Volkenborn]
+
+New Features
+------------
+- Premier Strikes n' Spares: Support for 2nd DMD, fully working.
+- Mr. Game: Support for 2nd Generation Video & Sound Hardware, working very well, but still some glitches exist.
+- Mr. Game: Rom support for World Cup 90
+  [Steve Ellenoff]
+
+- Premier Strikes n' Spares: Support for Sound, fully working.
+- Added CDP1802 CPU support from MESS (for Playmatic games)
+- Working support for Peyper / Sonic (Spain) hardware
+- Added preliminary support for Playmatic, Sleic (Spain), LTD (Brazil)
+- Sound support for GamePlan Cyclopes and Inder Brave Team
+  [Gerrit Volkenborn]
+
+- Bally sound diagnostic function implemented
+  [Thomas Behrens]
+
+- Support for Gottlieb's "Bone Busters Inc." extra DAC sound board
+  [Gerrit Volkenborn, Steve Ellenoff, Tom Haukap, Brian Smith]
+
+- Added support for ROMs: RCT, Playboy (Stern), NFL, House of Diamonds,
+  Dinosaur Eggs, Mach 2, 250cc, Corsario, Night Moves, alternate sets for
+  Data East Star Wars and Mr. Game Motor Show, and some others..
+  [all]
+
+
+Version 1.51 (January 11, 2005) - "Coming of age" (Happy 36th Birthday Gerrit)
+------------------------------------------------------------------------------
+PinMAME has grown up to be a relatively stable and mature software with only little
+quirks and issues left open... a few of which are solved with this release! :)
+Hopefully, no new bugs were added.
+
+A few old bugs could be squashed, like the hangup bug on some Zaccaria games,
+thanks to the MAME guys finally fixing the opcode timing on the Signetics 2650.
+Unfortunately this means you'll get less time on your bonus ball, but that's the
+way those games really worked, unfortunately... ;)
+
+The Visual PinMAME port also received some important updates; so make sure
+to read the "whatsnewVPM.txt" File too!
+
+Bugs Fixed
+----------
+- Zaccaria: All games are working now as far as the main CPU board is concerned;
+  The switch issue for generation 1 games is fixed, as well as the lockup problem
+  on some generation 2 games.
+  A few games are missing sound, or it may still be incorrect.
+  [Thomas Behrens, Gerrit Volkenborn]
+
+- Corrected IRQ values for all games based on Bally hardware (once more).
+  I'm afraid this won't be the last time we touched this either... ;)
+  [Oliver Kaegi, Gerrit Volkenborn]
+
+- Fixed the 4094 serial decoder emulation, correcting Life Lamps on "Champion Pub".
+- Corrected CPU clock for GamePlan CPU sound boards
+- Display fixed on Nuova Bell "Formula1 GP" (game still not working though)
+- Set DCS CPU clock to 10 MHz exactly
+- Corrected "Monopoly" waterworks flipper mech
+- Corrected "Scared Stiff" spider wheel mech
+  [Gerrit Volkenborn]
+
+- Fixed the 6532 RIOT emulation
+- Added new sound board for Gottlieb System80A not using the Votrax SC-01 chip,
+  thereby fixing "Royal Flush Deluxe" and "Goin' Nuts" sound issues
+- Fixed Hankin sound issues
+  [Tom Haukap]
+
+- Fixed sound on WMS Space Shuttle
+  [Thomas Behrens]
+
+- Corrected sample support for Bally-32/-51 sound boards
+  [Oliver Kaegi]
+
+New Features
+------------
+- Emulation of alphanumeric Alvin G. games (Punchy, Soccer Ball) with sound
+  [Steve Ellenoff, Gerrit Volkenborn]
+
+- Driver for Inder (Italy) added (Bushido not working yet)
+- Driver for Juegos Populares (Spain) added (still some sound problems)
+- Added 2 prototype games: Atari "Road Runner", WMS "Rat Race"; also many clones
+- Added sound emulation for GamePlan "Andromeda"
+- Added auxiliary solenoids for Sega games
+  [Gerrit Volkenborn]
+
+- Emulation of the Stern SB-100 sound board
+  [Oliver Kaegi]
+
+- Separated ARM7 core code for easier maintenance and to allow other cpu cores to
+  be easily built using it.
+  Also optimized the ARM7 core a bit, which resulted in some decent speed ups (10-20FPS)
+- Modified AT91 CPU Emulation to use new ARM7 core
+  [Steve Ellenoff]
+
+- Automatically turning off sound if missing sound ROMs are detected
+  [Tom Haukap]
+
+
+Version 1.50 (November 1, 2004) - "Sound of the future"
+-------------------------------------------------------
+The future of PinMAME has never looked or sounded better!
+
+With new team members Thomas Behrens and Oliver Kaegi making huge and immediate contributions,
+and Steve's temporary break from retirement, this release is destined to be one of the largest and
+most significant yet. Many often requested features and bug fixes are included, as well as
+several new hardware systems. Pinball fans will definitely be pleased with this release.
+It's so much stuff, we cannot guarantee we listed all the items contained... :)
+
+Amazingly, Steve wrote an Atmel AT91 core ready to emulate the new Stern sound,
+as used on Stern's LOTR and later games. There still are some issues with it, so
+for instance, Elvis is not working correctly yet, and it's also running too slow, seems
+anything less than 3-4Ghz won't get 60 FPS. But still this is a major breakthrough,
+so we chose to add it for you to check out.
+
+BTW, this should really be the final version being built on the MAME 0.76 basis,
+but it's proven to be rather stable so far, so who knows? ;)
+
+Bugs Fixed
+----------
+- Bally 6803: improved display/lamp operation and fixed a problem with switches
+  41 to 48 for all games of this family. These games should run fine now.
+  Also flipper keys can now be used to navigate the service menue on Blackwater
+  and Truckstop.
+  [Gerrit Volkenborn, Thomas Behrens]
+
+- WMS System 11 and Data East: Fixed code to remove erraneous solenoid "spikes".
+  While this primarily fixes DE Playboy 35th Anniversary, all Sys11/DE games
+  will show more precise solenoid operation now.
+  [Martin Adrian, Thomas Behrens]
+
+- Corrected IRQ value for all games based on Bally hardware
+  [Oliver Kaegi, Gerrit Volkenborn]
+
+- Corrected half byte ram bug in Bally Video/Pin driver. (Baby Pacman attract mode lamps now working properly)
+  [Oliver Kaegi]
+
+- Fixed some bugs in 8051 cpu core
+- Adjusted CPU & FIRQ frequency on the Alvin G games
+  (Sounds much better to me now, but still need access to real machine to confirm)
+  [Steve Ellenoff]
+
+- WMS System 3 to 7: Improved solenoid smoothing method. This gives more accurate
+  flashers (e.g. on Firepower) and knockers.
+  [Martin Adrian]
+
+- WMS System 3 to 7: Fixed/Added support for game adjustment dip switches.
+  With proper scripting support, these can now be used to adjust game settings as
+  described in the manuals.
+- Stern Golden Cue and Sharkey's Shootout: These games are now working. Emulation
+  support for the upper left flipper is still missing.
+  [Thomas Behrens]
+
+New Features
+------------
+- Spinball hardware emulation including full Sound and DMD support (some strobing issues left)
+  (Big thanks to inkochnito for posting links to both the manual and rom so we could access them)
+- Mr. Game hardware emulation including sound and video support (still some video & sound issues)
+  (Thanks to Steve, who acquired two Mr.Game machines just so work on the emulation could begin)
+  [Steve Ellenoff, Gerrit Volkenborn]
+
+- Added tons of new games and clones
+  [Brian Smith, Gerrit Volkenborn]
+
+- Emulation of Stern Pinball's new Sound board - Used on LOTR and newer games.
+  (HUGE THANK YOU TO DESTRUK FOR DONATING HIS OWN $ TO BUY AN EXTREMELY EXPENSIVE
+   LOTR SOUND BOARD WITHOUT WHICH THE EMULATION COULD HAVE NEVER BEEN ACHIEVED!!)
+- Working Technoplay driver (X-Force) including display, lamps, solenoids, switches.
+  (Need sound roms to be able to begin work on sound emulation)
+- New ARM7TDMI CPU Core and Atmel 9140008 CPU Core (for new Stern Sound)
+- Added External Hardware Addressing to 8051 cpu core
+- Added support for Serial UART mode 1 to 8051
+- Emulation of the 4094 Serial shifter chip (used in Championship Pub Dual LEDS)
+- Preliminary Nuova Bell driver (F1 Grand Prix) - (not really working yet)
+  [Steve Ellenoff]
+
+- Sound support for Zaccaria games from Winter Sports to Locomotion
+  (some sounds not correct yet, need to compare to real table sounds)
+- Added AFM Saucer LEDs, and CP life lamps
+  [Gerrit Volkenborn]
+
+- Old Stern: emulation of the SB-300 and samples support for the VSU-100 Speech board
+- Bally: Samples support for early -32 and -50 sounds; much more accurate than before.
+  [Oliver Kaegi]
+
+
+Version 1.32 (May 1, 2004) - "MayDay Edition"
+-------------------------------------------------------------
+Not a lot of new stuff in here, but this release is needed to ensure people can enjoy
+PinMAME for a while without any new glitches that we might introduce by switching
+over to the new MAME core architecture started with MAME version 0.79;
+We have already ported all the drivers and self-made CPU cores, and we ran into some
+serious problems, so this might take a while...
+
+Apart from that, some improvements were made to the existing code, especially for
+the GTS80A games. Tom succeeded in emulating the Votrax chip closer to the real thing
+than we might ever get, so you will now listen to the original phonemes the chip
+produces in all their four possible intonations (try the attract mode of "Cavaleiro
+Negro" and wait for him to sing to you...)! :)
+Also, the timer bug with the 6532 RRIOT chip was corrected, so we could re-install
+the unhacked version of timer.c again. Any slowdown problems on Gottlieb games
+should be a thing of the past now, and the slam tilt is working again too.
+Tom brought back the long-lost Hankin sound emulation, too. Thanks a lot!
+
+Furthermore, there was a new CPU included that's used on the early Zaccaria
+single-player games, like Strike, or Ski Jump: The National Semiconductor SC/MP,
+or "Scamp", as it's commonly called... a most peculiar piece of Processor history.
+
+Not much more, I'm afraid. We are all pretty busy lately, and we're missing Steve's
+work a lot! Still, have fun playing around with this latest release. :)
+
+Bugs Fixed
+----------
+- Major improvement to the Votrax SC01 emulation (speech synthesis based
+  on samples from the original chip from now on!)
+- Gottlieb System 80A games working as supposed, including Slam tilt,
+  and without the need for any hacks in the timer section.
+- Fixed Hankin sound back to where it was before it was broken.
+  [Tom Haukap]
+
+- adjusted the "6" and "9" numbers in Atari & Gottlieb games to look correct
+  [Gerrit Volkenborn]
+
+- Added the 4 missing lamp columns for Williams Firepower
+  [Brian Smith, Gerrit Volkenborn]
+
+New Features
+------------
+- new CPU: National Semiconductor SC/MP, needed for early Zaccaria games
+  [Gerrit Volkenborn]
+
+- some new clones for Taito & Williams games
+- Added roms for Stern's "Ripley's Believe It or Not"
+  [Brian Smith, Gerrit Volkenborn]
+
+
+Version 1.31 (December 23, 2003) - Happy 32nd Birthday Steve
+-------------------------------------------------------------
+They say that history repeats itself, and we would have to agree!
+It was exactly 2 years ago to the day that PinMAME was released with a major new breakthrough in sound
+emulation, namely BSMT emulation, at the time.
+
+Today, the major new breakthough is fully working Capcom sound, which will no doubt make this release
+one of the best releases in the history of the project. This achievement was without question the most
+difficult challenge ever faced (even more than the original capcom emulation itself). Along with the new
+sound support, additional improvements in the capcom emulation, and a major speed increase bring
+the reality of capcom pinball emulation to life like never before.
+
+We also worked around the bug preventing the Gottlieb System 80A games from working introduced with
+the 1.30 release; it turned out they worked with the "buggy" timer system from MAME 0.75 alone,
+as opposed to all the other games. The games will still lock up on slamming, but that's minor...
+
+Bally games using the "Squalk & Talk" sound also received an update:
+Sound is no longer breaking up, or speech becoming garbled during a game.
+Maybe it's also sounding a bit closer to the original chip now, but that's not confirmed.
+
+On a bittersweet note, project leader Steve Ellenoff will be retiring from the project as of this release.
+With a new child on the way, and massive new real life job committments to meet, he simply doesn't see
+much time in his future for contributing to PinMAME. Steve would like to personally thank everyone he's
+worked with over the years who've contributed their time and effort into making PinMAME such a
+great success. He further would like to add that it's been an honor for him to have been at the healm of
+one of the coolest software projects ever, and he is thankful to have had the opportunity to help make the
+incredible advances the software has made over the years.
+
+Gerrit Volkenborn will be taking over the project lead position and will no doubt continue to
+improve this great project! Not without serious help from Tom & Brian, however... ;)
+
+Happy holidays to everyone and we hope you enjoy our latest release!
+
+
+Bugs Fixed
+----------
+- Missing 50V Solenoid Detection in Capcom Games fixed (reports as 99V but that's fine)
+- Flipper Football & Kingpin now fire 50V solenoids
+- Data East/Sega 192x64 DMD games should now be as fast as they were in version 1.12.2
+  (since the 68306 cpu core now no longer slows down the original 68000 cpu emulation)
+  [Steve Ellenoff]
+
+- TMS5220 speech emulation more reliable & accurate
+- Gottlieb System 80A games working again
+  [Gerrit Volkenborn]
+
+New Features
+------------
+- Major speed boost in the 68306 cpu core, which means Capcom emulation is now much faster!
+- Fully working Capcom Sound emulation (might still be some minor issues, but overall it's excellent)
+- Added multi chip TMS320AV120 MPG Audio Decoder Sound core
+- Upgraded 8051 CPU core to handle 8752 CPU core functionality
+- Added UART serial port support to 8051 core, plus a few new timer modes
+- Implemented 68306 DUART Serial ports & Timer functionality
+- Added mostly working X9241 Digital EPot to Capcom Sound board emulation.
+- Added multi chip capability to the 6845 CRT video driver (will be needed for Gottlieb Strikes N Spares)
+- Added some new features to the debugger (Shift+Enter command, Sound Enabling/Disabling, Stack pointer hilight)
+- Changes to allow sound commander to work in debug mode for easier testing
+  [Steve Ellenoff]
+
+- Moved to MAME .75 core (.76 for some drivers, depending on the timer implementation)
+- Added lots of clones
+  [Gerrit Volkenborn]
+
+
+Version 1.30 (October 1, 2003)
+------------------------------
+This release is probably one of the most significant releases we've ever had!
+With newly added fully working support for Alvin G & Co. and playable Capcom emulation
+we finally have support for all the "well known" manufacturers. Most of the remaining
+manufacturers games are very rare or hard to find info on, so in a sense we have pretty
+much as complete support for all games as we can get.. Sure some information may pop
+up for some of the more obscure manufacturers, and we'll be sure to add them, but most
+likely, the current supported hardware is pretty much final.
+
+Additionally, several bugs that have plaqued PinMAME for a very very long time have
+been fixed or worked around, such as the infamous Black Knight sound issues
+which are now fully working!
+
+Of course, there's still quite a lot left to do to improve PinMAME, adding Capcom sound
+support being one of them. That will be quite complicated and will surely keep us busy
+for quite awhile!
+
+Additionally, we've expanded core support for alternate rom revisions so that many older
+rom revisions can be used. This change will require some current romsets to be renamed.
+Please see the enclosed "alias.txt" file for details, and use the included "romupd.bat"
+file to update the names of all affected rom zip files which you are legally entitled to have.
+
+Unfortunately, the switch to the MAME 74 core has created a number of new bugs which we did not have
+time to correct before the release (although we tried really hard!).
+We apologize for the inconvenience and will try to correct them as quickly as possible.
+If you find any we're unaware of, please let us know immediately.
+
+One we're very well aware of - and it's driving us crazy - is all of the Gottlieb
+System80A games - Devil's Dare to Ice Fever - are NOT working! All regular System80 games
+from Spiderman to Eclipse work, however, and it's exactly the same CPU board!? :(
+
+Despite these few little issues, we hope you'll enjoy our latest release which really marks
+a very big milestone for us and for PinMAME.
+
+Bugs Fixed
+----------
+- Implemented memory protection in wpc games.
+- Fixed rom write problems in wms soundboards.
+- Fixed bug with System 7 games (e.g. Black Knight sound now works)
+- Fixed bug in .Solenoid() with solenoid 33-36 on wpc games.
+  [Martin Adrian]
+
+- Adjusted default volume levels for pre-DCS games to match my own machines levels (ex: drums were way too soft before)
+- Corrected reversed comma and period in WPC Alphanumeric games
+- Fixed (with an ugly hack) WPC Pre-DCS games that have pitch too low when music not playing
+  (This was probably one of the longest/oldest bugs ever, as it's been there since day 1 of the original wpcmame emulator)
+  [Steve Ellenoff]
+
+- Adjusted Taito sound speed
+  [Tom Haukap]
+
+- Corrected Taito speech support (still does not sound like a Votrax SC01 though)
+- Sound support for some older Zaccaria and GamePlan games (added SN76477 support)
+- Switch debuffering bug fixed on old Zaccaria games
+- Dip switch settings are stored in VPM on old Atari games now
+  [Gerrit Volkenborn]
+
+Bugs Introduced
+---------------
+- Gottlieb System80A games are not working. We have to figure out why!
+  This is one serious issue, and we'll try to get it fixed as quickly as possible.
+  [Update to the MAME .74 core]
+
+New Features
+------------
+- Moved to MAME .74 core
+  [All]
+
+- Reworked sound commander internally. No visible change
+- Simulator for Black Knight
+- Added SHA1 checksums
+- Added rom support for Stern's Terminator 3
+- Rom Alias support for VPM
+  [Martin Adrian]
+
+- Alvin G. and Co. emulation including full Sound and DMD support
+  (Big thanks to Joep for the manual and help in checking on his real machine)
+- Working and playable Capcom emulation (no sound yet),
+  but current hacks need to be removed when U16 is better understood
+- Added sound for Technoplay Scramble (still some problems with TMS7000 related sound)
+  (Thanks to Douglas Cope for help)
+- Added SP0250 support for Technoplay and GTS80B1 sound boards
+- Intel 8051 CPU Core emulation (required for Alvin G DMD)
+- Modifications to the TMS7000 core to work with Technoplay sound board
+  (Thanks to Tim Lindler for his cpu core and for his help and suggestions)
+- Added Rollover mode in Sound Commander
+  [Steve Ellenoff]
+
+- Added VPM Lamp handling for Alvin G Games
+- Added GTS3 extra LED display panels support
+- Added TMS7000 cpu core from MESS to PinMAME for Technoplay sound board
+- New romset name batch update file
+  [Gerrit Volkenborn]
+
+- Added proper Pistol Poker Lamp handling
+- Working Switch/Solenoid/Lamps in Capcom games (not all games working yet)
+  [Gerrit Volkenborn, Steve Ellenoff]
+
+- Enabled AY-8910 sound on the Taito piggy back sound board
+  [Tom Haukap]
+
+
+Version 1.21 (March 31, 2003)
+-----------------------------
+Happy late 2nd birthday greetings to PinMAME!
+Yes, 2 years and 2 days ago, PinMAME was officially released for the first time.
+Hard to believe two years have passed since but then, not so hard when you
+look at how much has changed in between!
+PinMAME 0.99 didn't have support for a single working Bally game, and look
+what it can do today: A total of 548 sets are supported, including 106 clones,
+so excluding some test sets, there are some 430 individual working games in there.
+Considering the worldwide total of solid state pinball games ever produced is
+about 900, I'd say we're right on course... :)
+
+This latest release is a much stabilized version of 1.20, only so much
+has changed since that we decided to call the new version 1.21, to avoid
+any more confusion than necessary...
+
+Bugs Fixed
+----------
+- Fixed crashes in some DCS games.
+- Removed flipper switches 5 & 7 from Dungeon & Dragons
+- Corrected flipper switches for EBC
+- Changed Mousin' around display to one row
+- Some small fixes in Bally cheap-squeek sound (Black pyramid is still strange)
+- Corrected 6809 core bug with CC register and exg + tfr instructions.
+  (if a mamedev reads this: the bug is also in mame66)
+- Fixed a small port read problem on 6803
+- Corrected 68306 cpu emulation (Capcom)
+- Merged Hankin driver with bally -35 games
+- Rewrote gts80 driver.
+- Added support for road kings' muxed slenoids
+- mini dmd support for HRC & RCT
+- bally video games now use same sound board as other bally games
+- Added "special solenoid" handling for Grand Lizard & Space Station
+- Added 8259 emulation (slightly modified from MESS source)
+  [Martin Adrian]
+
+- Greatly improved lamps in Baby Pacman, although there are still some issues.
+- Gottlieb System 3 music and speech FINALLY working!! (Requires hefty system to work perfectly unfortunately)
+  [Steve Ellenoff]
+
+- Robocop sound working 100%
+  [Martin Adrian, Steve Ellenoff]
+
+- Improved Gottlieb System 80B sound
+- Added comma segments to GTS80A games
+- Increased CPU speed for Midway's Rotation VIII
+- Finally, truly, sincerely, Caveman is really working! :)
+  [Gerrit Volkenborn]
+
+New Features
+------------
+- Added GameOn solenoid for WPC games (Sol 31)
+  Only used in games that don't use Fliptronics flippers (before TAF)
+  but it seems like many later games still activates the signal.
+  Can be used to disable bumpers/slingshots in VPM
+- Added GameOn and Tilt solenoid for GTS80 games (Sol 10 & 11)
+  GameOn is adjusted to mean "game in progress and not tilted"
+- Solenoid display now shows 4 last activated solenoids
+- Added funhouse bootleg with corrected German translation
+  [Martin Adrian]
+
+- Added rom support for The Getaway: High Speed II (L-2)
+- Added rom support for Stern Simpsons Party Machine
+- Some sound working on Zaccaria Games, but still much work to be done
+  [Steve Ellenoff]
+
+- Added skewed, anti-aliased LED digits for greater authenticity
+- Added support for alphanumeric digit display on Hyperball
+- Added lots of romsets for bowlers, shuffle alleys, prototypes, some bootlegs too.
+  [Gerrit Volkenborn]
+
+
+Version 1.20 Beta (September 29, 2002)
+--------------------------------------
+The 1.20 version was destined to be the first one to use the new MAME core
+and the new driver architecture introduced with MAME 0.58.
+We used the MAME 0.59 sources to start with and aligned our own code
+to fit this new architecture. This, however, led to massive code changes,
+and also to some problems not easily solved!
+
+One of the most prominent setbacks was the new way to trigger interrupts.
+Whereas you could simply say "cpu_cause_interrupt()" in the old core, you'd
+now have to use "cpu_set_irq_line(HOLD_LINE|ASSERT_LINE|PULSE_LINE)",
+followed by "cpu_set_irq_line(CLEAR_LINE)" in case of HOLD_LINE or
+ASSERT_LINE, yet not in every single case!
+Also there seems to be no distinction between MACHINE_RESET and MACHINE_INIT
+as MACHINE_INIT is called every time you press F3 on your keyboard!
+Confused? Well, so were we...
+On the other hand, the new driver structure is just marvellous when it comes
+to including new machine drivers, and we also still want to stick close to the
+original MAME code...
+
+Now the end result of all our changes was good, but not perfect!
+Some emulations will just freeze when reset (eg. GTS3), others will kill the
+task without warning, others will just exit if you reset once too often.
+To shorten a long story: we decided to release the new version, most notably
+not to deprive you of all the nice new and improved drivers we added! :)
+But be advised, we didn't call it a beta version without a good reason!
+We'll probably switch to the (more stable and maybe faster?) 0.61 core soon
+to see if it helps with some of the troubles we're currently experiencing.
+So stay tuned, and enjoy the new stuff!
+
+Bugs Fixed
+----------
+-Fixed dying sound in DCS games (e.g. STTNG, Shadow)
+-Fixed missing flashers in IJ
+-Inverted flipper switches now work as they should (IJ and NBA)
+ [Martin Adrian]
+
+-Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
+ [Tom Haukap]
+
+-Fixed displays & key reading on alphanumeric GTS3 games (Vegas, Silver Slugger et al.)
+-Improved GTS3 DMD brightness & speed
+ [Gerrit Volkenborn]
+
+New Features
+------------
+-new options "-dmd_only" "-dmd_compact" "-dmd_antialias xx"
+ (replaces the old MAME options translucency,antialias,flicker)
+-Mechs can now handle active low solenoids. Use negative number to specify.
+-Handles pulsed switches better in mech handler and increased size to 20 switches
+-Added mini DMD support to the whitestar hardware (monopoly)
+ [Martin Adrian]
+
+-Added support for Taito games, including sound
+ (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpful info (sound) on these machines)
+ [Tom Haukap]
+
+-Added support for early Atari games (Atarians to Space Riders), including sound
+ (Atarians isn't working first time due to a strange bug. The roms can be patched to work though...)
+-Added Gottlieb "Caveman" Video Emulation
+ (Thanks to Jean-Rene Karr, who provided me with the video board schematics)
+-Found the 10 sound solenoids on old Stern games. Assigned to Sols. 23 - 32
+-Provided Access to GTS3 aux driver / LED outputs by adding a lamp column
+-Commas work on Bally 6803 alphanumeric games
+-Old Stern games have their nvram files initialized properly now
+-Added Intel 4004 and Rockwell PPS-4 CPU cores to the code
+-Added support for "Flicker" prototype by Dave Nutting Associates (September 1974!)
+-Added Midway's "Rotation VIII"
+ [Gerrit Volkenborn]
+
+-Added support for Zaccaria games (no sound yet)
+ [Steve Ellenoff, Gerrit Volkenborn]
+
+-Added preliminary support for Capcom games (not working yet)
+ [Martin Adrian, Steve Ellenoff]
+
+
+Version 1.12.2 (September 29, 2002)
+-----------------------------------
+This is a refreshed version of 1.12.1 WITHOUT any new features or games
+(with the exception of Tag-Team Wrestling, which arrived late for the 1.12.1
+release). Only the CRCs for bad and newly released ROMs have been corrected.
+The 4 Zaccaria games supported by 1.12.1 have been removed, as they weren't
+working at all! They will, however, inside PinMAME 1.20 beta and above!
+
+This is a "safety" release to keep everybody up and running, as there are
+some unsolved problems with the new M.A.M.E. 0.59 core implementation as
+used by the 1.20 beta version. Read the "whatsnew.txt" of 1.20 beta for
+closer details!
+
+Bugs Fixed
+----------
+-Forced commas are back on all games that use them
+
+New Features
+------------
+-Added support for Gottlieb's "Tag-Team Wrestling"
+-Updated all ROM checksums to known good (or bad) values
+-Added missing display on Bally's "Medusa"
+ [Gerrit Volkenborn]
+
+
+Version 1.12.1 (April 14, 2002)
+-------------------------------
+This is just considered a bugfix release for some issues that became apparent
+with the 1.12 version. We're going to need more beta testers next time. :)
+Only one more game showed up in the meantime, GamePlan's "Vegas".
+Apart from that, everything else was a bug fix - more or less;
+as some of these "bugs" were hidden pretty deep inside the MAME core -
+like the illegal but still deliberately used 6502 opcode that crashed sound
+on some Gottlieb games!
+
+The next version will be based upon the 0.59 MAME core, which is a pretty big
+change, so it may take a while... ;)
+
+Bugs Fixed
+----------
+-Sound is back on Harley Davidson
+-S11: Solenoids 20 & 21 separated again (Rollergames etc.)
+ [Martin Adrian]
+
+-DE: Removed sound bug that crashed Secret Service (and maybe others?)
+-GTS3: Corrected key layouts for all games
+-GTS3: Natural order restored for switches & lamps
+-GTS80: Flippers are now correctly enabled / disabled
+-PinMAME display enlarged for various games (Bugs Bunny, Harley Davidson)
+ [Gerrit Volkenborn]
+
+-GTS80: Added "illegal" opcode for BlackHole and Pink Panther (and maybe others?)
+ [Tom Haukap]
+
+New Features
+------------
+-Votrax SC-01 integrated to the MAME core
+ [Tom Haukap]
+
+-Atari sound improved (noise generation & different waveforms)
+-Added correct support for GamePlan's "Vegas"
+ [Gerrit Volkenborn]
+
+-GTS80: Memory mapping and layout should now be 100%
+ [Tom Haukap]
+ [Martin Adrian]
+
+
+Version 1.12 (March 29, 2002)
+-----------------------------
+Happy Birthday to PinMAME! It's hard to believe it's been 1 year since our initial release.
+So much has been added in that time, it's really amazing to see how far we've come.
+We look forward to another year even better than this one! We'd like to thank everyone for
+their continued support and enthusiasm! It's great to see so many pinball fans come together and push to keep our hobby from dying.
+
+Bugs Fixed
+----------
+-Hankin: Switch numbering now reflect the naming used in the manual
+-Hankin: Fixed display issues
+ [Tom Haukap]
+
+-Rewrote Data East 128x16 DMD Emulation. (Now much more accurate than previous version)
+-Corrected early Stern MPU-100 CPU timing
+-Various sound fixes (e.g Firepower startup speech, Dr. Dude WPC version)
+-Bally games are back to 85Hz zero-cross frequency
+-Corrected coin door button handling for WMS S3-S11 and DE
+ [Martin Adrian]
+
+-Corrected Bally MPU-17/35 CPU timing. (Squalk N Talk games now greatly improved)
+ [Martin Adrian]
+ [Steve Ellenoff]
+
+
+New Features
+------------
+-Granny & The Gators Working Emulation (Including Sound)
+ [Steve Ellenoff]
+ [Gerrit Volkenborn]
+
+-Hankin: Full working Sound Support (Orbit 1 and FJ Holden only particially working)
+-Gottlieb System 80: Sound (not speech!) for Sound-only games now fully working
+-Gottlieb System 80: Sound & Speech board is now working
+-Gottlieb System 80: Added support for sound only PiggyBack board
+ (Thanks goes to Peter Hall for providing very helpfully info on these sound boards)
+-Gottlieb System 80: Added dips for the sound & speech board (33-40) & sound-board (41-42)
+ [Tom Haukap]
+
+-Working Atari Emulation (Including Sound - may not be perfect yet)
+ (Generation #1 not working yet)
+ [Gerrit Volkenborn]
+ [Steve Ellenoff]
+
+-Gottlieb System 80: Added preliminary speech support
+ (it is understandable, but still needs some work)
+ [Gerrit Volkenborn]
+ [Tom Haukap]
+
+-Combined Williams System 9&11 drivers with Data East for cleaner code/easier maintenance
+-Combined Data East sound hardware drivers for cleaner code/easier maintenance
+-VPM now supports up to 48 dip switches (needed for SYS80)
+ [Martin Adrian]
+ [Steve Ellenoff]
+
+-Added preliminary support for Jokerz! sound board.
+-Added extra displays to 6M$MAN
+ [Martin Adrian]
+
+
+Version 1.11 (February 3, 2002)
+------------------
+A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as
+well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to
+add working fully working Baby Pacman emulation, which has been a long standing request going back to the
+very first few versions of PinMAME.
+Finally, we close the book on missing Bally support, by adding working 6803 emulation.
+Last but not least, we hope to have solved the sound stuttering/scratchy issues introduced
+in version 1.10, but with so many possible configurations, it's hard to know for sure.
+So please post on the forum if you still have trouble, and be sure to include your setup.
+
+*IMPORTANT NOTE:
+  This release has not been beta tested and may contain many bugs!
+  We wanted to get a release out now, because for the next month or so, we won't have time,
+  and we thought we should at least get the bugs from last version fixed and out the door.
+
+Bugs Fixed
+----------
+-Fixed reversed diag & slam tilt switches in earlier Gottlieb System 3 Alphanumeric games
+ [Steve Ellenoff]
+
+-Mech Handler bugs corrected
+-Scratchy Sound issues
+-Lamp Phasing in Baby Pac
+ [Martin Adrian]
+
+New Features
+------------
+-Baby Pacman Working Emulation (Including Sound)
+-Hankin Emulation [no sound emulation yet]
+-Game Plan Emulation [no sound emulation yet]
+-Bally 6803 Turbo Cheap Squalk, Sounds Deluxe, System 11C Sound Support (may still have some issues)
+-Bally Cheap & Squeak Sound Emulation (might still have some issues)
+-Preliminary Zaccaria Emulation [not working]
+-Support for games using Bally Cheap & Squalk sound
+-Support for all Bally 6803 Games
+-Support for Granny & the Gators (not working)
+-Support for all Hanking games
+-Support for all Gameplan games [that have romsets available]
+-Missing sound rom support added for some Gottlieb System 3 games
+-Missing sound rom support added for some Bally 35 games
+-Added support for Tommy Blinder Motor
+ [Steve Ellenoff]
+
+-Bally 6803 Emulation
+ [Steve Ellenoff]
+ [Martin Adrian]
+ [Gerrit Volkenborn]
+
+- Support for 9 & 10 Segments displays
+- PinMAME can now be compiled with VC++
+- 6803 core: fixed OCF interrupt bug and added OLVL support
+- PinMAME DOS compile now works
+- Adjusted volume for Squawk'n'Talk sound chips
+- Corrected memory bug in DMD drawing
+- Speeded up Bally -17/-35 games. Let me know if it is too fast now
+ [Martin Adrian]
+
+-Updated Gottlieb games to use 9 segments displays
+ [Tom Haukap]
+
+
+Version 1.10 (December 23, 2001) - Happy 30th Birthday Steve
+------------------------------------------------------------
+This may very well be the most anticipated release of PinMAME to date: 4 Letters - BSMT.
+
+What was once thought nearly impossible has become a reality for PinMAME,
+thanks in large part to emulation wizard Aaron Giles(of MAME fame).
+35 New Games now have fully working sound!
+Thank you to the following for their help and support in trying to emulate the BSMT:
+Destruk, Worf, DesAngel, RevenantUK, Guru
+
+Gottlieb games also received a huge update: Finally solved the many issues with getting Gottlieb System 3
+games to work. In addition, sound support was added for all System 80b games as well as the newer System 3 games.
+
+As you can also see, we've realized, much like the MAME team, that using Beta naming is
+rather tedious and annoying, so we've dropped it.
+
+We know you'll enjoy this latest version of PinMAME as much as we do!!
+
+Bugs Fixed
+----------
+-Fixed Terminator 2 Knocker Sound Always Playing
+-Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
+-Fixed Chime support for System 3 Games Hot Tip & Lucky Seven
+ [Steve Ellenoff]
+
+-Corrected some s11 custom display layouts.
+-BPR debug command works again
+-Fixed 6th display in Mr. & Mrs. Pac-Man
+-Added 6th switch column to Bally -35 (switches 41-48)
+-Fixed dips 17-24 in Bally -35 and Stern MPUx00
+-Fixed sound board communication for Squawk'n'Talk board (i.e. Xenon etc now works)
+-Got Pinmame32 working again!
+-Limited the number of extra samples that can be generated per frame.
+ (If the CPU can't keep up 100% emulation speed the sound will be distorted.
+  There are two options: either slow down the sound or break it up.
+  This is something in between. It will slow down the sound up to a certain
+  limit but if that is not enough it will break it up)
+ [Martin Adrian]
+
+-Dip switches working now on Gottlieb games
+-Sped up System80 emulation by 1000 percent or so by rewriting the RIOT timers!
+ [Tom Haukap]
+
+-Corrected Grand Lizard to use the working romset
+-Fixed 7th digit on Gottlieb System80a games
+-Changed several MAME error messages to say PinMAME instead
+-Changed version number to say PinMAME version instead of MAME version
+-Removed "sound not emulated yet" error message from games with only chimes
+ (since there is no sound to emulate)
+ [Gerrit Volkenborn]
+
+
+New Features
+------------
+-BSMT 2000 Emulation
+-Sound now works for ALL DATA EAST/SEGA/STERN (post 1998) Games!!
+ (Note: Emulation is not 100% perfect. Still some problems with compressed samples).
+ [Aaron Giles]
+ [Steve Ellenoff]
+ [Martin Adrian]
+
+-Gottlieb/Premier System 3 Emulation working!!!! (Still a bunch of issues to work out, especially DMD related).
+-Gottlieb/Premier System 3 Partial Sound Support (Speech not working)
+-Gottlieb System 80b Sound Support (earlier games using speech not working).
+-Added Stereo Sound support for pre-BSMT Data East games. (still not fully emulated, but better than previous mono output).
+-Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games.
+-Added support for Gottlieb System 3 games.
+-Added preliminary support for Bally Pinball/Video combination games (not working yet)
+ [Steve Ellenoff]
+
+-New option to set the intensity of segments when they are off.
+-Changed mech handler to be asynchronous to the vblank and increased
+  polling rate by a factor 8. Riverboat Gambler wheel can now be handled.
+-Added aux solenoid board to Whirlwind
+-Dip settings are saved in the nvram file for most games.
+-Added top and bottom segment to 6 & 9 in bcd-to-segment chip emulation
+-Corrected DIP setings for S3-S6 (sound board dips were missing)
+-Added GameOn solenoid (23) to Sega/Stern games
+-Changed hardware type of Jack*Bot to the odd WPC95+DCS sound board version
+ [Martin Adrian]
+
+-Added missing Gottlieb System 80/a/b sets and clones
+-Added Pennant Fever to S9 games (sound not working)
+-Added Strike Master to WPC games (no sound)
+-Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
+-Updated several custom display layouts.
+ [Gerrit Volkenborn]
+
+
+Version 1.0 Beta 2   (September 28, 2001)
+-----------------------------------------
+This version was supposed to be a quick bug fix release for the gigantic 1.0 release.
+Instead, there was just so much added and improved that time simply flew by!
+Please take a look at the bottom of the pinmame.txt file as many people have helped to
+contribute to pinmame's success, and they deserve recognition.
+Enjoy this *huge* update to PinMAME!
+
+
+Bugs Fixed
+----------
+-Fixed bug where Knocker Sound was firing constantly.
+-Fixed diagnostic and up/down buttons for Data East DMD 128X16 games.
+-Fixed Data East Flippers not disabled during game over/tilt.
+-Sega/Stern Diagnositc Buttons now are working.
+-Sega/Stern Credit, Start, and Tilt Switches now are working (except Apollo 13).
+-Fixed bug in Data East 128x32 Games: switches were not being updated as fast as possible.
+-Fixed Flipper switches not being set for ALL Data East Games.
+-Fixed bug preventing user to get to audits menu in BTTF and Simpsons.
+-Fixed missing credit+ball display for System 3 & System 4 games when using ShowDMDOnly=True
+-System 3 & System 4 now disable flippers on game over + tilt.
+-Removed old system 3 display routine from the core.
+-Fixed Sound in System 6 games: Laser Ball & Scorpion
+-Made Data East Digital Sound play louder, because it was being overpowered by the music.
+-Fixed Data East Special Solenoids handling, so Solenoids 17-22 now work properly!
+-Fixed Sega/Stern flipper switches
+-Fixed sluggish Lamp display on Data East games (Attract modes now much nicer looking)
+-Corrected Lucky Seven CRC to support fixed Romset, game now works.
+ (Thanks to Gerrit for fixing the bad romset from Williams)
+-Updated System 3 & 4 sound code to use System 6, and now all Sys 3/4 games have working sound [except for Hot Tip & Lucky Seven - no roms]
+ (Thanks to Andre and Gerrit for giving me the idea)
+-Improved timing of Data East 128x32 DMD display. [Still not perfect]
+ [Steve Ellenoff]
+
+-Added workaround from MAME bug crashing some games with no sound.
+-W?D now works properly
+-Corrected DCS initialization
+-GetPulsedSol now returns correct value for non-smoothed solenoids
+-Corrected The Shadow Mini Kicker bug
+-Fixed Sega/Stern EOS switches and flipper solenoid smoothing
+-Cleaned up Sega/Stern Emulation code and swapped lamp row & col handling
+-Fixed some small bugs in the sound handling for VPINMAME.
+-Cleaned up NewSoundCommands support
+ [WPCMAME Author]
+
+-Corrected missing lamps bug for Gottlieb System80/a/b games.
+-Missing roms flagged with 0x000000 per Roman's(of Clrmame) request.
+ [Tom Haukap]
+
+
+New Features
+------------
+-Stern MPU-100 games emulated and working (no sound support yet)
+-Stern MPU-200 games now work (no sound support yet)
+-All Stern MPU-100 & MPU-200 drivers added
+-Data East & Sega Super Sized DMD 192x64 Emulation [still some timing issues]
+ (Thanks to Guru for the DMD schematics to Batman Forever)
+-Emulated custom Sharkey's Shootout PAL for Whitestar system. Game is now playable.
+-New VPinMAME interface function .NewSoundCommands (to manually play sounds from script)
+-Added Bumper & Slingshot sample support for TAF
+-Added sound support for Williams Champion Pub
+ [Steve Ellenoff]
+
+-Improved sound for Gottlieb Sys80/a games. [still needs work]
+-Added support for 7th Digit on Sys80a games that use it.
+-Sys80/a 6-digit bonus and timing displays are added.
+-Improved layout for all Sys80/a/b games.
+-Added preliminary "speech" support to gottlieb sound/speech board.
+ [Tom Haukap]
+
+-Improved Sound for Bally MPU 35 Games [still not perfect]
+-New VPinMAME interface function .Mech (to create mech handlers from script)
+-Removed MAME37B16 ADSP.hot file support (Not used by PinMAME).
+-Added support for filetype MEMCARD (for wpc printer outputs)
+-Display is now forced to compact if display layout > 256 width (not in VPinMAME)
+-Removed some unused refresh function in core.c
+-Added support for EOS switches without solenoids
+-Added core_nvram for generic nvram handling (includes saving mech state)
+-Added acceleration to mech handler and reworked interface
+-Updated simulators to new mech handler (t2,ss,cv,mb,ts,wd)
+-Added hybrid WPC95DCS support (such as W?D)
+-DCS sound now uses the mame resampling code
+ (should in theory make the sound better for samplerates other than 32000).
+-Added AntiAlias support for Data East/Sega DMD games [except for 128x16 games]
+ [WPCMAME Author]
+
+-Added handleMech() and GetMech() support for Corvette
+ [Steve Ellenoff]
+ [Destruk]
+
+
+Version 1.0 Beta 1   (July 31, 2001)
+------------------------------------
+Welcome to Version 1.0!
+This release had SO MANY additions, that we felt it would be a crime calling it anything other than 1.0!
+Overall we've added 3 new manufacturers to the official supported list: Sega, Stern, and Gottlieb.
+In addition, Data East support is greatly improved.
+Early Bally support got big improvements as well.
+We hope you enjoy all the great new things PINMAME 1.0 has to offer!
+
+Bugs Fixed
+----------
+-Fixed bad CRC for Algar and Alien Poker
+-Fixed display output for Algar and Alien Poker to 7 Digits
+-Adjusted Elvira layout to be same as Harley Davidson
+-Fixed System 7 sound (Games using speech still not working)
+-Reorganized/Cleaned up Data East drivers and coding.
+-Fixed Jackbot 1.0R CRC errors.
+-Fixed Mousin Around CRC errors.
+-Reversed BK2K and Earthshaker flipper switches
+-Fixed doubled missing ROM message for Bally Harley Davidson
+ [Steve Ellenoff]
+
+-Corrected switch handling in HandleMech for Indiana Jones
+-Fixed System 6 sound issues
+-Fixed Williams WPC bug causing sloppy flipper reaction
+-Corrected antialias bug if set to 0
+ [WPCMAME Author]
+
+New Features
+------------
+-Gottlieb System80, System80a, System80b emulation [still a lot to be done though]
+ [Tom Haukap]
+ [Steve Ellenoff]
+
+-Gottlieb System80, System80a Preliminary Sound emulation (two boards: sound/sound&speech)
+-Added getMech() support for BOP
+ [Tom Haukap]
+
+-Sega/Stern Whitestar System emulated [no sound support]
+-Data East Sound emulated for games not using a BSMT2000 chip
+ (Thanks to Worf for all the help!)
+-Gottlieb System 3 preliminary emulation [not working]
+-Stern MPU-200 Support [not working]
+-Driver Support for all Data East games added
+-Driver Support for all Sega/Stern games added (except Austin Powers)
+-Monster Bash sound rom support!
+-Jackbot sound rom support!
+-Jackbot Belgium/Canada clone added.
+-The Shadow sound rom support! (Thanks Ian for the roms)
+-Added correct crc for known good working Mousin Around roms.
+-Created new bugs.txt file for easier tracking and organization.
+ [Steve Ellenoff]
+
+-Data East, Sega, Stern DMD Support for games using 128x32 Display!
+ (still some minor issues)
+ [Steve Ellenoff]
+ [Tom Haukap]
+
+-Data East DMD Support for games using 128x16 Display! (Again BIG Thanks to Worf!)
+ (still some minor issues)
+ [Steve Ellenoff]
+ [Tom Haukap]
+
+-Flippers correctly disabled for Williams Non-Fliptronics Games
+ [Steve Ellenoff]
+ [WPCMAME Author]
+
+-Bally MPU-35 & MPU-17 games now working
+-Bally drivers added: Dolly Parton, Xenon, Kiss, Harlem Globetrotters, Paragon & MANY MORE!
+-New mechanics handler that simplifies addition of game mechanics
+-Core now has support for drivers that do not have a version #
+-HandleMech and GetMech support added for The Shadow
+-Improved GetMech() to return Turbo Position for Indy 500
+-Non-fliptronics flippers no longer stay up at game end or tilt
+-Segment displays no longer displays A-E
+-Core now prints last activated solenoid in simulator view
+-GI status (on/off) displayed in simulator view
+-Solenoids 37-40 now work as intended (mirror at 41-44 for compatability)
+-Williams WPC: Solenoids 33-36 now smoothed if not used for flippers.
+-Williams System 7 rewritten to use PIAs (Side effect: special solenoids and sound/speech works better)
+-Jokerz! now work (stereo soundboard not emulated)
+-Time fantasy: display layout added
+-IJ: Corrected handlemech
+-Road Show: ROM Lx4 added
+-T2: updated to new mech handler. Added non-linear movement to gun
+-ToM: Rom 1.2 added
+-WW: updated to new mech handler
+-CV: Added ringmaster mech handler
+-DM: Added ROM Px5
+-I500: Turbo index switch only updated if mech = 3
+-MB: updated to new mech handler for frankenstein, dracula and bank
+-SC: Added lights 65-112
+-TS: Added mechanics handler for mini PF
+-W?D: Added prototype mechanics handler for reels
+-Codebase updated to MAME037B16
+ [WPCMAME Author]
+
+-Bally MPU-35 & MPU-17 sound support
+-Bally Sound Modules 51 & 56 sound support [preliminary]
+ [Johan S]
+ [WPCMAME Author]
+-Expanded sounds.dat file from Dorsola, includes mapped sounds for IJ and RS.
+ [Dorsola]
+
+
+Version 0.99 Beta 3 (May 04, 2001)
+------------------------------------
+
+Bugs Fixed
+----------
+-Fixed Solenoid numbering for 37-40
+-Switch 2 is now triggered with the A/C selector in S11 games using it.
+-AFM now initialises the bank up/dn switches correctly
+ [WPCMAME Author]
+
+New Features
+------------
+
+-Option "noantialias" now controls both the DMD size and the fontsize for LCD displays.
+-Added credit and ball display to s6 games
+-Added getMech() for Black Rose
+-Added Ringmaster handleMech/getMech functionality for Circus Voltaire.
+ [WPCMAME Author]
+-Added Solenoid 41, 42 support for STTNG
+-Added getMech() & support for 3 fake solenoids for Fish Tales
+ [Steve Ellenoff]
+-New Driver for Bally Rolling Stones
+ [David Tansey]
+
+
+Version 0.99 Beta 2 (April 22, 2001)
+------------------------------------
+
+Bugs Fixed
+----------
+-Fixed no sound in DCS games when using -cheat/Skip Pinball Tests at Startup Option
+-Improved System 11 Multiplexed Solenoid Handling
+-A/C Accelerator Bug Corrected  for F-14, PB, Fire!
+-Fixed ROM Sound Length for Radical
+-Fixed RTC clock bug in WPC games
+-Fixed Upper Flipper EOS handling for TAF
+-Fixed crash if printfile cannot be opened
+-Fixed flipper hold coil bug (did not activate together with power)
+-Fixed no sound bug in System 6 games [but still not working correctly]
+ [WPCMAME Author]
+
+New Features
+------------
+-Solenoid Mask Filter added to PinMAME core (for use in Visual PinMAME).
+-Added capability for different LCD layouts to core - (Only implemented for High Speed & Comet)
+-GetMech() functionality added for STTNG, TAF, T2, JD, ToM, MM, PZ, RS, SS, WCS
+-Added Mechanics simulation for MB, Indy 500
+ [WPCMAME Author]
+
+
+
+Version 0.99 Beta 1 (March 31, 2001)
+------------------------------------
+
+Bugs Fixed
+----------
+-Solenoid Numbering Issues  [WPCMAME Author]
+
+New Simulators
+--------------
+-Time Fantasy           [Marton Larrosa]
+
+
+
+
+Version 0.99 Beta (March 29, 2001)
+----------------------------------
+Welcome to the first official release of PinMAME, the emulator formerly known as WPCMAME!
+Below you'll find the many enhancements made to WPCMAME which have transformed it into
+PinMAME.
+
+New Features
+------------
+-Modification of Core System Files to allow more hardware systems to be added easily.
+ [WPCMAME Author]
+
+-Williams/Bally System 11 Emulation
+ [WPCMAME Author]
+
+-Williams System 9 Emulation
+ [Steve Ellenoff]
+ [WPCMAME Author]
+
+-Williams System 7 Emulation
+ [Steve Ellenoff]
+
+-Williams System 6 Emulation
+ [Steve Ellenoff]
+
+-Williams System 4 Emulation
+ [Steve Ellenoff]
+
+-Williams System 3 Emulation
+ [Steve Ellenoff]
+
+-Data East AlphaNumeric System Emulation
+ [Steve Ellenoff]
+
+-Bally MPU-35 Emulation (*Preliminary)
+ [Steve Ellenoff]
+ [WPCMAME Author]
+
+-DCS Sound Speedups for *ALL DCS* Games!!!!
+ [WPCMAME Author]
+
+
+-Pulsed Solenoid Support
+ [Tom Haukap]
+
+-Additional Sound Command Mode Enhancements
+ [WPCMAME Author]
+
+-Visual PinMAME Integration
+ [Steve Ellenoff]
+ [Tom Haukap]
+ [WPCMAME Author]
+
+-Fully mapped sound command modes for several games (see sounds.dat)
+ [Dorsola]
+
+New Simulators
+--------------
+-Harley Davidson        [Marton Larrosa]
+-Millionaire            [Marton Larrosa]
+-Elivira & Party Monsters   [WPCMAME Author] *(Preliminary)
+-No Good Golphers               [Dave Roberts]
+
+New/Updated Custom Lamp Matrixes
+--------------------------------
+-No Good Golphers               [Dave Roberts]
+
+New Sound Support
+-----------------
+-Dirty Harry                    [Steve Ellenoff]
+-Congo              [Steve Ellenoff]
+-Who Dunnit         [Steve Ellenoff]
+
+
+***************************
+**** WPCMAME CHANGES ******
+***************************
+
+0.37 BETA 8 (January 17, 2001)
+-------------------------------
+WOW!! Our biggest release ever, with a whopping 70 Enhancements!!
+Happy Holidays, Happy New Year, and Happy New Millenium (for real this time)!!!
+
+New Features
+------------
+-Sound Sample Support which can play .wav files when solenoids fire during gameplay!
+ [Steve Ellenoff]
+ [Tom Haukap]
+
+-DMD Color & Intensity Can be Changed using command line or .cfg file (see wpcmame.txt)
+ [Steve Ellenoff]
+
+-DCS Sound Speedups for *ALL DCS* Games!!!!
+ [WPCMAME Author]
+
+-Reworked Sound Command Mode Functionality (see wpcmame.txt)
+ [WPCMAME Author]
+
+-PreDCS Games - Volume Control implemented
+ [WPCMAME Author]
+
+-Preliminary Simulations for *All Non-Simulated Games*
+ [Marton Larrosa]
+
+-Help Keys added to all Simulated Games
+ [Marton Larrosa]
+
+-Simulator Bug Fixes
+ [WPCMAME Author]
+
+-Colors BLUE & PURPLE added to Custom Lamp Playfield Colors
+ [Steve Ellenoff]
+
+-Custom Lamp Playfield structure modified to allow more than 1 bulb per Lamp.
+ [Steve Ellenoff]
+
+-Alpha Segments fixed to include period "." symbol for pre-DMD games!
+ [Jonathan N. Deitch]
+
+-Patch added to recreate Real time clock functionality!! The pinball games now keep accurate time and date!
+ [Jonathan N. Deitch]
+
+-Timing adjustments made to match actual measured frequency of a real wpc pinball machine.
+ [Jonathan N. Deitch]
+
+
+New Simulators
+--------------
+-Scared Stiff            [Tom Haukap]
+-Theater of Magic        [Tom Haukap]
+-Indiana Jones           [Tom Haukap]
+-Medieval Madness                [Marton Larrosa]
+-White Water                     [Marton Larrosa]
+-Dr. Dude                        [Marton Larrosa]
+-Black Rose                      [Marton Larrosa]
+-Machine:Bride of Pinbot         [Marton Larrosa]
+-Hurricane                       [Marton Larrosa]
+-Roadshow                        [Marton Larrosa]
+-Gilligan's Island               [Marton Larrosa]
+-Fish Tales                      [Steve Ellenoff]
+-The Getaway                     [Steve Ellenoff]
+-Judge Dredd                     [Steve Ellenoff]
+
+New Sound Support
+-----------------
+-Dracula                         [Steve Ellenoff]
+-Attack From Mars                [Steve Ellenoff]
+-Black Rose                      [Steve Ellenoff]
+-Indiana Jones                   [Steve Ellenoff]
+-No Good Golfers                 [Steve Ellenoff]
+-Party Zone(New 100% working Rom)[Steve Ellenoff]
+-No Fear                         [Steve Ellenoff]
+-Corvette                        [Steve Ellenoff]
+-Harley Davidson                 [Steve Ellenoff]
+-Cirqus Voltaire                 [Steve Ellenoff]
+-Indianapolis 500                [Steve Ellenoff]
+-Judge Dredd                     [Steve Ellenoff]
+
+
+New/Updated Custom Lamp Matrixes
+--------------------------------
+-Funhouse                        [Steve Ellenoff]
+-Star Trek: TNG                  [Steve Ellenoff]
+-Twilight Zone(updated)          [Steve Ellenoff]
+-The Addams Family               [Steve Ellenoff]
+-Getaway                         [Steve Ellenoff]
+-Machine:Bride of Pinbot         [Marton Larrosa]
+-Party Zone                      [Marton Larrosa]
+-Dracula                         [Marton Larrosa]
+-Gilligans Island                [Marton Larrosa]
+-Doctor Dude                     [Marton Larrosa]
+-Hurricane                       [Marton Larrosa]
+-Medieval Madness                [Marton Larrosa]
+-Theater of Magic        [Tom Haukap]
+-Indiana Jones           [Tom Haukap]
+-World Cup Soccer                [WPCMAME Author]
+
+
+New/Updated Sound Sample Support
+--------------------------------
+-Funhouse                        [Steve Ellenoff]
+-Star Trek: TNG                  [Steve Ellenoff]
+-Terminator 2                    [Steve Ellenoff]
+-Indiana Jones           [Tom Haukap]
+-Theater of Magic        [Tom Haukap]
+-Machine:Bride of Pinbot         [Marton Larrosa]
+-Black Rose                      [Marton Larrosa]
+-Creature From Black Lagoon  [Marton Larrosa]
+-Dr. Dude                        [Marton Larrosa]
+-Dracula                         [Marton Larrosa]
+-Gilligan's Island               [Marton Larrosa]
+-Hurricane                       [Marton Larrosa]
+-Medieval Madness                [Marton Larrosa]
+-Party Zone          [Marton Larrosa]
+-Road Show                       [Marton Larrosa]
+-White Water                     [Marton Larrosa]
+
+
+
+
+0.37 BETA 8 (November 17, 2000)
+-------------------------------
+
+- New Simulator for Creature From the Black Lagoon
+  [Marton Larrosa]
+
+- New Simulator for World Cup Soccer '94
+  [WPCMAME Author]
+
+- New Simulator for Star Trek Next Generation
+  [Steve Ellenoff]
+
+- New Simulator for Party Zone
+  [Marton Larrosa]
+
+- New Custom Lamp Matrix for Terminator 2
+  [Steve Ellenoff]
+
+- Solenoid numbering for flipper solenoids  updated.
+  They now match the test menu numbers.
+  [WPCMAME Author]
+
+- Corrected a bug in the spinner simulation.
+  [WPCMAME Author]
+
+- PreDCS Game Volume Support (not working)
+  [WPCMAME Author]
+
+- Minor Fix to Capturing Simulator Keypresses
+  [WPCMAME Author]
+
+- Coin Door Keys remapped to match layout of real pinball machines
+  [Steve Ellenoff]
+
+
+
+0.37 BETA 8 (November 6, 2000)
+--------------------------------
+
+- WPCMAME.TXT file updated, including a small facelift.. :)
+  [Steve Ellenoff]
+
+- Removed all mame related info from this textfile. This file's purpose whould be about
+  wpcmame, after all!
+  [Steve Ellenoff]
+
+- Added simulation.txt file so you can get keyboard layout and other simulation info there!
+  [Steve Ellenoff]
+
+- Added DCS Sound Speedups!!  (Sorry the speed ups don't work in WPC95 games!)
+  [Jarek Parchanski]
+  [Steve Ellenoff]
+
+- Fixed WPC95 DCS sound games so that the speedup code doesn't break the game!
+  [Steve Ellenoff]
+
+- Renamed Tic-Tac-Toe, to it's proper Ticket-Tac-Toe!
+  [Steve Ellenoff]
+
+- Fixed incorrect T2 ROM Checksum
+  [Steve Ellenoff]
+
+- New sound support for the following games:
+  TAF(original), Popeye, The Machine: BOP, Party Zone, Whitewater, Safe Cracker,
+  World Cup Soccer
+  [Steve Ellenoff]
+
+- New Simulators for Funhouse and Terminator 2
+  [Steve Ellenoff]
+
+- New Sound Command Mode: Allows you to trigger any sound command, thus you can play
+  any sound in the pinball game. (For some reason, digital voices don't work in
+  pre-dcs games yet)
+  [Steve Ellenoff]
+
+- Record Sound output to a Wav file (files go to your wave directory.. works similar to
+  screen shots, aka, files are named with a number after them!)
+  [Jarek Parchanski]
+  [Steve Ellenoff]
