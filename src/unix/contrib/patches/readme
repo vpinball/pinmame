@@ -1,0 +1,45 @@
+Contents of directory contrib/patches
+==========================================
+
+1)      Name:		alsa.c
+	Author:		An anonymous programmer at wwtk@mail.com
+	Description:   	Alsa sound support
+	Usage:		Copy over src/unix/sound-drivers/oss.c and
+			compile xmame as documented.
+	Notes:		Currently you can either use this, or the oss
+			driver not both. One day in the near future
+			this will be merged in and you can use both.
+
+2)	Name:		boundary-check-patch
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	A patch for an older xmame version which adds
+			certain bufferoverflow checks, this could help
+			to get some buggy games to run.
+	Notes:		This patch is probably obsolete.
+
+3)	Name:		configure.in
+	Author:		??
+	Description:	A first attempt at an autoconfigure script for xmame
+	Notes:		This is obsolote, there is currently someone working
+			on a much newer version which should eventually make
+			it into xmame. If your interested please check the
+			xmame mailinglist, for more info on the list see
+			doc/readme.unix
+
+4)	Name:		esound.diff
+	Author:		??
+	Description:	A patch to use esound for sound output
+	Notes:		This is very old patch, and currently doesn't
+			apply any more.
+
+5)	Name:		readme
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	This file
+
+6)	Name:		word-align-patch
+	Description:	In the past the cpu-cores of mame used todo some
+			unaligned word accesses making risc cpu's very
+			unhappy. This patch used to correct this, but the
+			cpu-cores have been fixed now. It might be worth
+			trying this patch if you experience problems on a 
+			risc machine (sparc/alpha etc)

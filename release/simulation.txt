@@ -1,0 +1,75 @@
+PinMAME Simulation
+------------------
+
+The ball simulator can handle up to 7 balls in the machine. The simulator
+ensures that the correct switches are activated depending on where the
+balls are.
+
+You can change the location of the simulated balls with the keyboard.
+Example: Pressing LCTRL+R will send the ball up the left ramp activating
+the switches associated with a complete ramp shot.
+The simulator will also keep track on diverters, gates and other solenoids
+to ensure that the ball ends up in the correct place.
+
+Normally the simulator prevents impossible combinations (e.g. a ball in
+the trough making a left ramp shot or a "dirty pool" in TAF). This can be
+overridden by pressing the "Ignore Ball Location" button (Alt).
+
+The general simulation keys are:
+
+Up	Move cursor to Prevoius ball in the simulator
+Down	Move cursor to Next ball in the simulator
+Alt	Ignore ball location in simulator
+Del     Toggle between simulator keys and switch keys.
+Space   Shoot ball. If the game uses a manual shooter a bar will
+        indicate the strength.
+
+General simulator settings in the DIP switch menu:
+
+Balls   Select 0 to 7 balls. Note that most games will be confused with
+        the wrong number of balls (especially if too many).
+Spinner Set the time a spinner "spinns" after a hit (not used in existing
+        simulators yet)
+
+Keys for all simulators:
+'+' means that the key must be pressed with Left or Right CTRL key.
+'Left Ctrl' + 'R' means Left Ramp, 'Right Ctrl' + 'S' means Right Spiral)
+
+--------------------
+Game specifics
+--------------------
+
+Twilight Zone(TZ)
+-----------------
+DIP settings:
+Third Magnet  - Activate third magnet switch and trap balls on magnet
+Clock Passage - Activate clock passage opto
+Big Kick      - Activate big kick opto (not implemented)
+
+I don't know which ROM versions utilises which switches.
+
+Known Bugs:
+1. The balls doesn't always stop on the magnets. Probably some bad timing
+   in the simulator.
+2. The simulated clock got a digital display :-)
+ 
+Dr. Dude (DD)
+-------------
+DD is orginally a System 11 game but a few of them were built using
+WPC hardware. This means that the game uses the coin door switches
+in a different way and that the checksum can not be disabled (game will
+not start if trying)
+
+Dr. Who (DW)
+------------
+DW is different from the other WPC games in that it has more power on
+tests. Examples are that DW performes a very detailed testing of the WPC chip
+and also uses a switch (82) to detect the playfield glass.
+Use the manual switch keys ('I' + 'S') to activate/deactivate the
+playfield glass switch.
+
+Cirqus Voltaire (CV)
+--------------------
+On startup CV will test the ringmaster and it will not go into attract mode
+if the test fails. One way to bypass it is to disable the ringmaster
+(adjustment A2 30).

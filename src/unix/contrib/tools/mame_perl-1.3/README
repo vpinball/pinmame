@@ -1,0 +1,188 @@
+MAME/Raine ROM sets manager Perl scripts 1.3                       21-Feb-2001
+
+(c) 2000 - 2001  Stefan Becker
+
+THE AUTHOR GIVES NO WARRANTY - USE AT YOUR OWN RISK!
+
+Release history:
+
+21-Feb-2000 1.3   Reads BIOS ROMs from "resource" entries (MAME 0.37 Beta 12)
+                  Created alternative parser with Parse::RecDescent (not used)
+                  Handles clones of clones correctly now, except for
+                  full-merge (see "Problems")
+07-Dec-2000 1.2   Made Perl 5.0005_03 mandatory
+                  Handles BIOS ROMs for CVS & PlayChoice-10 correctly now
+                  Replaced --clean-neogeo with the generic --clean=<parent>
+                  Corrected several errors in mame_sets
+17-May-2000 1.1   Updated for -listinfo syntax changes in MAME 0.37 Beta 2
+25-Jan-2000 1.0   Initial version
+
+I. "What - another ROM set manager???"
+======================================
+
+Yep, yet another one. Why? Because I couldn't use all those non-portable
+Win32-only ROM set managers on my UNIX boxes where I manage my ROM set 
+collection. So I started to write some small hacks to ease the work. The
+current version was developed with two goals in mind: portability and speed.
+
+Portability: I have tested these scripts with Perl installations on HP-UX,
+Solaris and Windows 95 (ActiveState). They should probably work on all
+platforms with a decent Perl installation.
+
+Speed: All ROM sets managers I have seen up to now always unzip all files and
+zip them to the new set. When I looked at the structure of a ZIP archive I
+noticed that this is totally unecessary: You can just copy the information
+from the old ZIP archive to the new one. By using this strategy these scripts
+are blazingly fast (as fast as your OS can read & write the data from/to the
+disk) although they are written in a script language :-)
+
+
+II. Usage
+=========
+
+There are five scripts included in this package:
+
+ mame_parse - Read output MAME -listinfo/ RAINE -gameinfo command from STDIN
+              and parse it
+	      Usage: see "mame_parse --help"
+
+ mame_merge - MAME/Raine ROM set manager
+	      Usage: see "mame_merge --help"
+
+ mame_sets  - Check for missing, deleted, new and changed MAME ROM sets
+	      Usage: see "mame_sets --help"
+
+ zipcmp     - Compare ZIP archives (used by mame_sets)
+
+ zipfix     - Salvage truncated zip archives
+
+Just copy the scripts into a directory which is in your $PATH. On Unix systems
+you should check if the first line (#!/usr/bin/perl) points to your perl
+executable. On Win32 systems you have to call perl with the script's name to
+execute it.
+
+To use the ROM set manager you first have to create the database from MAME or
+Raine with the one of the following commands:
+
+  > xmame -listinfo | mame_parse
+  > mame -listinfo  | perl mame_parse
+  > raine -gameinfo | perl mame_parse
+
+After that you can use the ROM set manager, e.g.
+
+  > mame_merge --full-merge          (Create fully merged ROM set collection)
+  > mame_merge --split-merge pacman  (Create a splitted merged set for PacMan)
+
+or you can check the completeness of your collection with mame_sets. I use the
+following directory structure in my home directory:
+
+ > cd $HOME/mame
+ > ls
+ artwork/             mame.exe             newroms/
+ beta/                mameinfo.db          roms/
+ mame.cfg             mameinfo.txt         samples/
+ > cd beta
+ > ls
+ artwork/  roms/     samples/
+
+In the subdirectories under "mame" I have all the files required for the
+latest official MAME release (at the time of this writing: 0.35). In the
+subdirectories under "beta" I have all the new and changed files for the
+latest MAME beta version (currently 0.36b15). mame_sets can now analyze the
+differences:
+
+ > mame_sets
+ Missing sets         :
+ Deleted non-beta sets: 3wonderj boscomd2 frogger2 frogsega gryzorb hbarrelj
+ invdelux lomakaj neogeo robocopp ropeman rthundrb stratgyb
+ Deleted beta sets    :
+ New sets             : 2020bbh 64streej 88games 99lstwar 99lstwra ...
+ Modified sets        : 2020bb 64street alexkidd alpham2 alpine ...
+ 653 changed sets = 509 new + 144 modified
+
+Please check use the "--help" option for information about all the available
+options. All of the above applies of course also to Raine ROM sets.
+
+The last two scripts are some small helpers for ZIP archives. The first one
+compares the contents of two archives and prints out any differences. Note:
+It only compares the file lengths and CRCs, not the actual file contents!
+Use it like this:
+
+ > zipcmp roms/2020bb.zip beta/roms/2020bb.zip
+ Only in roms/2020bb.zip: n046001a.1fc n046001a.538 n046001b.538 ...
+ Only in beta/roms/2020bb.zip: 2020_m1.rom 2020_c1.rom 2020_p1.rom ...
+
+Your last download aborted and your are left with a truncated ZIP archive that
+zip doesn't want to touch? Let zipfix help you! It tries to salvage as much
+information from the truncated archive as possible:
+
+ > zipfix 64streej.zip
+ Size       Compr.     CRC-32   File Name
+ --------------------------------------------------------------------
+     262144      71511 27c1f436 91105-2.bin
+     262144      36364 a211a83b 91105-3.bin
+ Next entry is not a local directory.
+ Found 2 file(s), regenerating central directory structure.
+ Zip archive salvaged!
+
+Now you can use zip/unzip on the salvaged ZIP archive. Last, but not least, 
+here is a small alias to create dummy files for those "NO GOOD DUMP KNOWN"
+ROMs:
+
+ alias create_dummy_rom='perl -e "print \$ARGV[0] x \$ARGV[1];"'
+
+Use it like this:
+
+ > create_dummy_rom a 1024 >prom1
+ > create_dummy_rom b 1024 >prom2
+ > zip -9 -m -X romxyz.zip prom?
+
+if the two 1024 byte long files "prom1" and "prom2" are missing in ROM set
+"romxyz". After that you'll never get "NOT FOUND" messages during ROM verify.
+
+
+III. Requirements
+=================
+
+You need at least Perl 5.005_03. You also need to install the following
+Perl modules
+
+ DB_File      - standard if BerkeleyDB is installed before Perl
+ MLDBM        - CPAN
+ Parse::Lex   - CPAN, at least version 2.07 required
+ Parse::Yapp  - CPAN, at least version 0.31 required       
+
+ActiveState's Perl users can install them via the ActiveState web page.
+
+
+IV. Problems
+============
+
+If a clone ROM set has clones, e.g. CVS "radarzon", then "--full-merge" will
+generate a fully merged set for the clone and its clones. This ROM set has to
+be manually merged with the parent ROM set.
+
+
+V. Thanks to...
+===============
+
+I would really like to thank all the emulator authors and web site admins for
+all their terrific work. So: DON'T FORGET TO CLICK THOSE BANNERS, it's the
+least we can do!
+
+Franky and soulman, I hope you are happy now :-)
+
+
+VI. References
+==============
+
+       MAME home page		http://www.mame.net/
+       X MAME home page		http://x.mame.net/
+       MAMEWorld page		http://www.mameworld.net/
+       Raine home page		http://www.rainemu.com/
+       Retrogames		http://www.retrogames.com/
+       Arcade ROM Heaven	http://www.arcadeheaven.com/
+       EmuViews			http://www.emuviews.com/
+       MAME DK			http://www.mame.dk/
+       Perl			http://www.perl.com/
+       CPAN			http://www.cpan.org/

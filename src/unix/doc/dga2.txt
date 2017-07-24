@@ -1,0 +1,34 @@
+Xmame DGA2 Video Driver Documentation
+
+November 27, 2001.
+
+Before reporting a bug, please
+------------------------------
+- Check the blacklist below.
+- Check at the end of this document for known bugs/behaviour.
+
+Blacklist of buggy XFree86(4.1.0) and Non-Free drivers
+------------------------------------------------------
+IMPORTANT: These are not xmame's bugs.
+mga     - DGA does not work with the Matrox HAL module.
+nvidia  - the driver before v0.96 is buggy.
+radeon  - only DGA1 works. (already fixed in XFree86 CVS.)
+s3virge - all DGA support seems broken. (Use XFree86 3.3.x.)
+tdfx    - some people reported DGA does not work with Voodoo3.
+          (fixed in XFree86 CVS?)
+
+Tips - DGA1 under XFree86 4.x
+-----------------------------
+Change the if statement in src/unix/video-drivers/xf86_dga.c at line 62
+
+"else if (i >= 2)" to "else if (0)"
+
+and xmame will now always use DGA1 instead of broken DGA2.
+(This is a kluge. Bugs should be reported to XFree86@XFree86.org.)
+
+Known Bugs/Behaviour
+--------------------
+- Switching to fullscreen DGA mode and then quitting xmame screws up the
+  keyboard.  Apparently this has something to do with xmame losing the ctrl or
+  alt release codes; pressing ctrl or alt a few times should restore the
+  keyboard to a sane state.

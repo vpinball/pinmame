@@ -1,0 +1,337 @@
+### This file configures various client-side behaviors.
+###
+### The commented-out examples below are intended to demonstrate
+### how to use this file.
+
+## (Maddes) Prepared for Subversion 1.6 on Windows
+
+### Section for authentication and authorization customizations.
+[auth]
+### Set password stores used by Subversion. They should be
+### delimited by spaces or commas. The order of values determines
+### the order in which password stores are used.
+### Valid password stores:
+###   gnome-keyring        (Unix-like systems)
+###   kwallet              (Unix-like systems)
+###   keychain             (Mac OS X)
+###   windows-cryptoapi    (Windows)
+# password-stores = windows-cryptoapi
+###
+### The rest of this section in this file has been deprecated.
+### Both 'store-passwords' and 'store-auth-creds' can now be
+### specified in the 'servers' file in your config directory.
+### Anything specified in this section is overridden by settings
+### specified in the 'servers' file.
+###
+### Set store-passwords to 'no' to avoid storing passwords in the
+### auth/ area of your config directory.  It defaults to 'yes',
+### but Subversion will never save your password to disk in
+### plaintext unless you tell it to (see the 'servers' file).
+### Note that this option only prevents saving of *new* passwords;
+### it doesn't invalidate existing passwords.  (To do that, remove
+### the cache files by hand as described in the Subversion book.)
+# store-passwords = no
+### Set store-auth-creds to 'no' to avoid storing any subversion
+### credentials in the auth/ area of your config directory.
+### It defaults to 'yes'.  Note that this option only prevents
+### saving of *new* credentials;  it doesn't invalidate existing
+### caches.  (To do that, remove the cache files by hand.)
+# store-auth-creds = no
+
+### Section for configuring external helper applications.
+[helpers]
+### Set editor-cmd to the command used to invoke your text editor.
+###   This will override the environment variables that Subversion
+###   examines by default to find this information ($EDITOR, 
+###   et al).
+# editor-cmd = editor (vi, emacs, notepad, etc.)
+### Set diff-cmd to the absolute path of your 'diff' program.
+###   This will override the compile-time default, which is to use
+###   Subversion's internal diff implementation.
+# diff-cmd = diff_program (diff, gdiff, etc.)
+### Set diff3-cmd to the absolute path of your 'diff3' program.
+###   This will override the compile-time default, which is to use
+###   Subversion's internal diff3 implementation.
+# diff3-cmd = diff3_program (diff3, gdiff3, etc.)
+### Set diff3-has-program-arg to 'yes' if your 'diff3' program
+###   accepts the '--diff-program' option.
+# diff3-has-program-arg = [yes | no]
+### Set merge-tool-cmd to the command used to invoke your external
+### merging tool of choice. Subversion will pass 4 arguments to
+### the specified command: base theirs mine merged
+# merge-tool-cmd = merge_command
+
+### Section for configuring tunnel agents.
+[tunnels]
+### Configure svn protocol tunnel schemes here.  By default, only
+### the 'ssh' scheme is defined.  You can define other schemes to
+### be used with 'svn+scheme://hostname/path' URLs.  A scheme
+### definition is simply a command, optionally prefixed by an
+### environment variable name which can override the command if it
+### is defined.  The command (or environment variable) may contain
+### arguments, using standard shell quoting for arguments with
+### spaces.  The command will be invoked as:
+###   <command> <hostname> svnserve -t
+### (If the URL includes a username, then the hostname will be
+### passed to the tunnel agent as <user>@<hostname>.)  If the
+### built-in ssh scheme were not predefined, it could be defined
+### as:
+# ssh = $SVN_SSH ssh -q
+## (Maddes) begin
+## see http://www.maddes.net/software/subversion.htm#svn+ssh_client
+#ssh = C:/Putty/plink_gui.exe -gui -C
+#ssh = C:/Putty/plink.exe -C
+## (Maddes) end
+### If you wanted to define a new 'rsh' scheme, to be used with
+### 'svn+rsh:' URLs, you could do so as follows:
+# rsh = rsh
+### Or, if you wanted to specify a full path and arguments:
+# rsh = /path/to/rsh -l myusername
+### On Windows, if you are specifying a full path to a command,
+### use a forward slash (/) or a paired backslash (\\) as the
+### path separator.  A single backslash will be treated as an
+### escape for the following character.
+
+### Section for configuring miscelleneous Subversion options.
+[miscellany]
+### Set global-ignores to a set of whitespace-delimited globs
+### which Subversion will ignore in its 'status' output, and
+### while importing or adding files and directories.
+### '*' matches leading dots, e.g. '*.rej' matches '.foo.rej'.
+## (Maddes) begin
+## line 4+5: http://support.microsoft.com/kb/156513 and http://support.microsoft.com/kb/132340/
+## line 6: gcc
+global-ignores = *.o *.lo *.la *.al .libs *.so *.so.[0-9]* *.a *.pyc *.pyo
+  *.rej *~ #*# .#* .*.swp .DS_Store
+  *.bak *.$$$ *.tmp _* .* .cvsignore CVS .svn _svn *.obj
+  *.pch *.mdp *.ncb *.clw *.obj *.exe *.aps *.cpl *.awk *.exp *.lib *.idb
+  *.opt *.pdb *.map *.res *.ilk *.scc *.bsc *.sbr *.dll *.tlb
+  *.debug
+## (Maddes) end
+### Set log-encoding to the default encoding for log messages
+# log-encoding = latin1
+### Set use-commit-times to make checkout/update/switch/revert
+### put last-committed timestamps on every file touched.
+## (Maddes) enabled
+use-commit-times = yes
+### Set no-unlock to prevent 'svn commit' from automatically
+### releasing locks on files.
+# no-unlock = yes
+### Set mime-types-file to a MIME type registry file, used to
+### provide hints to Subversion's MIME type auto-detection
+### algorithm.
+# mime-types-file = /path/to/mime.types
+### Set preserved-conflict-file-exts to a whitespace-delimited
+### list of patterns matching file extensions which should be
+### preserved in generated conflict file names.  By default,
+### conflict files use custom extensions.
+# preserved-conflict-file-exts = doc ppt xls od?
+### Set enable-auto-props to 'yes' to enable automatic properties
+### for 'svn add' and 'svn import', it defaults to 'no'.
+### Automatic properties are defined in the section 'auto-props'.
+## (Maddes) enabled
+enable-auto-props = yes
+### Set interactive-conflicts to 'no' to disable interactive
+### conflict resolution prompting.  It defaults to 'yes'.
+# interactive-conflicts = no
+
+### Section for configuring automatic properties.
+[auto-props]
+### The format of the entries is:
+###   file-name-pattern = propname[=value][;propname[=value]...]
+### The file-name-pattern can contain wildcards (such as '*' and
+### '?').  All entries which match (case-insensitively) will be
+### applied to the file.  Note that auto-props functionality
+### must be enabled, which is typically done by setting the
+### 'enable-auto-props' option.
+
+## (Maddes) Useful autoprops:
+## - svn:mime-type, see http://filext.com/ and http://www.iana.org/assignments/media-types/
+## - svn:eol-style
+## - svn:needs-lock (all binary files and other problematic files)
+## - svn:executable (for Linux/Unix scripts)
+
+## Executables
+*.com = svn:mime-type=application/octet-stream;svn:needs-lock
+*.exe = svn:mime-type=application/octet-stream;svn:needs-lock
+*.dll = svn:mime-type=application/octet-stream;svn:needs-lock
+
+## Console Scripts
+*.bash = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+*.bat = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.cmd = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.sh = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+
+## Windows Scripts
+*.wsf = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+*.vbs = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+
+## Perl
+*.pl = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+*.pm = svn:mime-type=text/plain;svn:eol-style=native
+
+## Python
+*.py = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+
+## PHP
+*.php = svn:mime-type=text/plain;svn:eol-style=native;svn:executable;svn:keywords=Author Revision Id Date HeadURL Header
+
+## Java
+*.java = svn:mime-type=text/x-java-source;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.properties = svn:mime-type=text/plain;svn:eol-style=native
+# (generated files, normally ignored)
+*.class = svn:mime-type=application/x-java-class
+*.jar = svn:mime-type=application/x-java-archive
+
+## Coding
+# >> General input files for build system (input files, includes, etc.)
+*.in = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.inc = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.manifest = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> Assembler sources
+*.asm = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+
+# >> C/C++ sources
+*.c = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.cpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.h = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.hpp = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+# (rare ones)
+*.cc = svn:mime-type=text/plain;svn:eol-style=native
+*.cxx = svn:mime-type=text/plain;svn:eol-style=native
+*.hh = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> Windows resources
+*.def = svn:mime-type=text/plain;svn:eol-style=native
+*.frm = svn:mime-type=text/plain;svn:eol-style=native
+*.frx = svn:mime-type=application/octet-stream;svn:needs-lock
+*.hm = svn:mime-type=text/plain;svn:eol-style=native
+*.idl = svn:mime-type=text/plain;svn:eol-style=native
+*.rc = svn:mime-type=text/plain;svn:eol-style=native
+*.rc2 = svn:mime-type=text/plain;svn:eol-style=native
+*.res = svn:mime-type=application/octet-stream;svn:needs-lock
+*.rgs = svn:mime-type=text/plain;svn:eol-style=native
+# (generated files, normally ignored)
+*.aps = svn:mime-type=application/octet-stream
+
+# >> Visual Studio
+*.lib = svn:mime-type=application/octet-stream;svn:needs-lock
+# (generated files, normally ignored)
+*.idb = svn:mime-type=application/octet-stream
+*.ilk = svn:mime-type=application/octet-stream
+*.ncb = svn:mime-type=application/octet-stream
+*.obj = svn:mime-type=application/octet-stream
+*.pdb = svn:mime-type=application/octet-stream
+
+# >> Visual Studio 6.0
+*.dsw = svn:mime-type=text/plain;svn:eol-style=native;svn:needs-lock
+*.dsp = svn:mime-type=text/plain;svn:eol-style=native
+# (generated files, normally ignored)
+*.opt = svn:mime-type=application/octet-stream
+*.plg = svn:mime-type=text/html;svn:eol-style=native
+
+# >> Visual Studio 2002+ (XML)
+*.sln = svn:mime-type=text/plain;svn:eol-style=native;svn:needs-lock
+*.vcproj = svn:mime-type=text/xml;svn:eol-style=native
+# (generated files, normally ignored)
+*.suo = svn:mime-type=application/octet-stream
+# (generated files VS2005, normally ignored)
+*.user = svn:mime-type=text/xml;svn:eol-style=native
+*.dep = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> Visual Basic 6.0
+*.vbp = svn:mime-type=text/plain;svn:eol-style=native
+*.vbw = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> General makefiles
+*.mak = svn:mime-type=text/plain;svn:eol-style=native
+*.mk = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> GNU make/gcc
+configure = svn:mime-type=text/plain;svn:eol-style=native;svn:executable
+configure.ac = svn:mime-type=text/plain;svn:eol-style=native
+makefile = svn:mime-type=text/plain;svn:eol-style=native
+Makefile = svn:mime-type=text/plain;svn:eol-style=native
+Makefile.am = svn:mime-type=text/plain;svn:eol-style=native
+bootstrap = svn:mime-type=text/plain;svn:eol-style=native;svn:executable
+*.a = svn:mime-type=application/octet-stream;svn:needs-lock
+# (generated files, normally ignored)
+*.o = svn:mime-type=application/octet-stream
+*.map = svn:mime-type=text/plain;svn:eol-style=native
+*.debug = svn:mime-type=application/octet-stream
+
+# >> Diff/Patch files
+*.diff = svn:mime-type=text/plain;svn:eol-style=native
+*.patch = svn:mime-type=text/plain;svn:eol-style=native
+
+# >> DASMx symbol files
+*.sym = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+
+## HTML, XML & Co.
+*.css = svn:mime-type=text/css;svn:eol-style=native
+*.htm = svn:mime-type=text/html;svn:eol-style=native
+*.html = svn:mime-type=text/html;svn:eol-style=native
+*.js = svn:mime-type=text/javascript;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.jsp = svn:mime-type=text/plain;svn:eol-style=native
+*.shtm = svn:mime-type=text/html;svn:eol-style=native
+*.shtml = svn:mime-type=text/html;svn:eol-style=native
+*.xml = svn:mime-type=text/xml;svn:eol-style=native
+*.xsd = svn:mime-type=text/plain;svn:eol-style=native
+.htaccess = svn:mime-type=text/plain;svn:eol-style=native
+.htgroup = svn:mime-type=text/plain;svn:eol-style=native
+.htpasswd = svn:mime-type=text/plain;svn:eol-style=native
+
+## Images
+*.bmp = svn:mime-type=image/bmp;svn:needs-lock
+*.cur = svn:mime-type=image/x-win-bitmap;svn:needs-lock
+*.gif = svn:mime-type=image/gif;svn:needs-lock
+*.ico = svn:mime-type=image/ico;svn:needs-lock
+*.jpeg = svn:mime-type=image/jpeg;svn:needs-lock
+*.jpg = svn:mime-type=image/jpeg;svn:needs-lock
+*.png = svn:mime-type=image/png;svn:needs-lock
+
+## Text files
+*.cfg = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.csv = svn:mime-type=text/plain;svn:eol-style=native
+*.ini = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.sql = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.tex = svn:mime-type=text/plain;svn:eol-style=native
+*.txt = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.md5 = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+*.asc = svn:mime-type=text/plain;svn:eol-style=native
+*.url = svn:mime-type=text/plain;svn:eol-style=native
+.cvsignore = svn:mime-type=text/plain;svn:eol-style=native
+AUTHORS = svn:mime-type=text/plain;svn:eol-style=native
+ChangeLog = svn:mime-type=text/plain;svn:eol-style=native
+INSTALL = svn:mime-type=text/plain;svn:eol-style=native
+NEWS = svn:mime-type=text/plain;svn:eol-style=native
+README = svn:mime-type=text/plain;svn:eol-style=native
+TODO = svn:mime-type=text/plain;svn:eol-style=native;svn:keywords=Author Revision Id Date HeadURL Header
+
+## Known Applications
+*.doc = svn:mime-type=application/msword;svn:needs-lock
+*.xls = svn:mime-type=application/msexcel;svn:needs-lock
+*.odt = svn:mime-type=application/vnd.oasis.opendocument.text;svn:needs-lock
+*.ods = svn:mime-type=application/vnd.oasis.opendocument.spreadsheet;svn:needs-lock
+*.zip = svn:mime-type=application/zip;svn:needs-lock
+*.rar = svn:mime-type=application/rar;svn:needs-lock
+*.7z = svn:mime-type=application/x-7z-compressed;svn:needs-lock
+*.pdf = svn:mime-type=application/pdf;svn:needs-lock
+
+## PinMAME
+#sounds.dat = svn:mime-type=text/plain;svn:eol-style=native
+*.crypt = svn:mime-type=application/octet-stream;svn:needs-lock
+
+## Known Binaries
+*.bin = svn:mime-type=application/octet-stream;svn:needs-lock
+*.dat = svn:mime-type=application/octet-stream;svn:needs-lock
+*.rom = svn:mime-type=application/octet-stream;svn:needs-lock
+
+## Others (ToDo: found on the internet, but not checked/assigned yet)
+# *.brk = svn:mime-type=application/octet-stream;svn:needs-lock
+# *.cnv = svn:mime-type=application/octet-stream;svn:needs-lock
+# *.icu = svn:mime-type=application/octet-stream;svn:needs-lock
+# *.nc = svn:eol-style=native
+# *.spp = svn:mime-type=application/octet-stream;svn:needs-lock
+# *.ucm = svn:eol-style=native

@@ -1,0 +1,183 @@
+messroms.txt
+------------
+
+information about
+* messroms utility
+* dumping roms
+* saving roms
+* transfering data to pc
+
+files
+-----
+main.c, roms.h, comp.h messroms tool
+dumppc.c, dumppc.txt, dumppc.exe msdos utility for dumping pc rom area 
+ (also binary, because with djgpp you can't create a 8086 based pure msdos utility)
+dumpat.c, dumpat.txt, dumpat.exe msdos utility for dumping at boot area
+read6530.c contains the info for dumping mos rriot 6530
+rddil24.c contains the info for dumping mos rom6332 or similar 24 pin roms
+read6332.c contains the info for dumping mos rom 6332
+rddil32.c this is more a bugfix for my eprommer software
+
+cbm.txt info for dumping, saving, transfering commodore computers and devices
+c64savec.prg program to copy c64 character to basic area for later saving
+
+svision.txt info for building an adapter for supervision cartridge to
+			27c4001 eprom pinout
+pc1500.txt pinout of sharp pc1500/pc1500a/trs80pc2 rom
+tc.txt pinout of TC531000 (128k x 8 rom) TC571001 (128k x 8 eprom)
+
+cvhp48.c conversion utility for hp48 ascii/romdump dumps into binary
+
+messroms utility
+----------------
+
+motivation: help identifying already known roms, bad dumps,
+and give info to convert roms into the needed format.
+
+messroms --0x0000000 
+ identify crc 
+messroms directory
+ identifies files in directory
+messroms zipfile.zip
+ identifies files in zip archiv
+
+
+dumping roms
+------------
+
+most roms are dumped with eprom burners.
+There are many variations of eprom burners outside,
+each supported a large range of eprom chip types.
+
+I will give only a few tips for special chips:
+
+Always use the romcmp utility to identify bad dumps.
+Dump several times, and compare if the dumped data is the same.
+
+Weak dumps: had different dumps with watara supervision cartridges
+ when oe, ce was not switched when reading
+
+MOS6332: rom 4 kbyte 8bit, DIL 24 package
+ for pinout look into mess/messroms/rddil24.c or read6332.c
+ to allow dumping as 2732 build an adapter exchanging pin 18 and 20
+ 
+Signetics C19081, C19082 (24 pin dil) look into rddil24.c
+
+CN45048N look into rddil24.c
+
+Bally 9316 (24 pin dil) look into rddil24.c
+
+generic 24 pin dil: you might find an idea for dumping in rddil24.c
+
+EPROM DIL 32 PIN:
+ dumping as 278001 should be save
+
+rom/eprom in epoxy:
+ often you can see the wire into the epoxy.
+ These are in the same ordering as the pinout of the chip
+ (helped finding out watara super vision cartridge pinout)
+
+soldered roms/eproms, and you can't or want unsolder them:
+ wire an adapter with 2 sockets 
+ (a cheap one to place on top of the eprom, and another one for the eprommer)
+ cut 1 of the power lines with a sharp knife
+ solder socket on 2 points over the eprom for mechanical stability
+ now you should be able to read it out
+ unsolder the piggyback socket
+ reconnect the cut pin
+
+MOS6530: rom, ram, input, output timer
+ difficult to read
+ look into mess/messroms/read6530.c
+ maybe you can wire an adapter for an eprommer and read it as 27128 (a0 simulating clock)
+ you have to identify the rom, ram, io area in the usually 8kbyte dumped data
+ ram 64 bytes 0xff, io 16 bytes misc data, rom 1kbyte, 
+ unused depends on your hardware in mine 0
+
+PIC1655
+ info at www.microchip.com: technical reference manual and programming reference manual
+ available
+
+ could be protected (you read protected data, with info lost)
+ reading of mask programmed chips?
+ PIC16C55 and PIC1655(NMOS) differences?
+
+SC61860: Sharp Pocket Computer internal rom of the cpu
+ not known if it is accessible on the pinout
+
+TC531000 (128k x 8 mask rom)
+ look into mess/tools/messroms/tc.txt
+
+TC571001 (128k x 8 eprom )
+ look into mess/tools/messroms/tc.txt
+
+Sharp PC1500, PC1500A
+Tandy TRS80 PC-2
+----------------
+ look into mess/tools/messroms/pc1500.txt for rom pinout
+
+RCA Studio 2 and cartridges
+ look at Paul Robson's Studio2 page at www.classicgaming.com/studio2
+
+Watara Supervision Cartridges
+ look into mess/tools/messroms/svision.txt for building an adapter
+
+Saving roms
+-----------
+
+Some dump roms with the help of rom sockets in computer.
+E.g. pc network adapter to plug in an 8kbyte rom in its bootrom socket
+and read it.
+
+Sometimes it is not possible to get the single chips for reading.
+* you may not or can not open the appliances
+* roms are soldered directly into the board and you cannot unsolder them
+* roms are in a smd package with very small place between pins
+....
+
+Many roms are complete visible to cpu. So you can read them out with programs.
+
+IBMPC
+-----
+most bios, graphics, harddisk, ethernet bootroms are complete visible.
+Character roms in pre EGA graphics adapters are not visible.
+Flash roms of modern pcs not complete in the small 256 kbyte PC realmode area.
+Some special roms (deskmate of tandy1000) are not visible in the small 256kbyte area.
+
+You can used msdos debug, or any other debugger to save there roms:
+c0000-c7fff typical EGA,VGA
+c8000-c9fff typical PC harddisk controller
+f6000-fdfff BASIC
+fe000-fffff PC bios
+f0000-fffff bigger bios
+
+In dumppc.zip you find a msdos utility dumping the complete c0000-fffff area.
+
+VAMPIRE warning
+vampire extracts only the basic and the bios areas,
+and therefor does incomplete dumps on many pcs!
+(ibm pcjr, ibm xt, ibm at, tandy 1000hx, tandy 2500xl, at's )
+
+IBMAT
+-----
+This saves the boot area of intel 386 compatibles at's
+(0xfff00000-0xfffffffff)
+Should work with intel 286 compable at's (0xf00000-0xffffff).
+Hopefully works with those 286 based xt's and tandy's.
+
+Sharp Pocket Computer
+---------------------
+look into src/cpu/sc61860/readpc.c
+Internal rom only accessible in machine language
+
+HP48S/SX/G/GX
+-------------
+In some emulators (x48) you can find instructions and a tool for 
+transmitting the rom to a computer with 
+rs232 (9600 8N1 with kermit? protocoll).
+cvhp48.c converts this dump into a binary.
+
+Transfering data to another computer
+------------------------------------
+
+?

@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+ <META NAME="GENERATOR" CONTENT="LinuxDoc-Tools 0.9.11">
+ <TITLE>XMAME/XMESS DOCUMENTATION</TITLE>
+ <LINK HREF="xmame-doc-1.html" REL=next>
+
+
+<link rel="stylesheet" href="xmame.css" type="text/css" >
+</HEAD>
+<BODY BACKGROUND="img/xmame.jpg" BGPROPERTIES="fixed" >
+<A HREF="xmame-doc-1.html">Next</A>
+Previous
+Contents
+<HR>
+<H1>XMAME/XMESS DOCUMENTATION</H1>
+
+<H2>Juan Antonio Martinez <CODE>
+<A HREF="mailto:jantonio@dit.upm.es">jantonio@dit.upm.es</A></CODE> and Hans de Goede <CODE>
+<A HREF="mailto:hans@highrise.nl">hans@highrise.nl</A></CODE> and Rene' Herrmann
+ (4 doc/sgml) <CODE>
+<A HREF="mailto:rene.herrmann@berlin.de">rene.herrmann@berlin.de</A></CODE> and Lawrence Gold (minor editing) <CODE>
+<A HREF="mailto:gold@aros.net">gold@aros.net</A> and David Heremans
+(minor editing)</CODE></H2>v2.1.33, 15 September 2003
+<HR>
+<EM>xmame/xmess documentation with an installation guide, the FAQ
+ (frequently asked questions), hints, tips and tricks, the changes
+ to the code, and much more!</EM>
+<HR>
+<P>
+<H2><A NAME="toc1">1.</A> <A HREF="xmame-doc-1.html">Introduction</A></H2>
+
+<UL>
+<LI><A NAME="toc1.1">1.1</A> <A HREF="xmame-doc-1.html#ss1.1">Welcome to XMAME</A>
+<LI><A NAME="toc1.2">1.2</A> <A HREF="xmame-doc-1.html#ss1.2">Keep everything up-to-date!</A>
+<LI><A NAME="toc1.3">1.3</A> <A HREF="xmame-doc-1.html#ss1.3">Pending Jobs - or TODO</A>
+</UL>
+<P>
+<H2><A NAME="toc2">2.</A> <A HREF="xmame-doc-2.html">Compiling, Setting Up and Starting Xmame/Xmess</A></H2>
+
+<UL>
+<LI><A NAME="toc2.1">2.1</A> <A HREF="xmame-doc-2.html#ss2.1">Requirements </A>
+<LI><A NAME="toc2.2">2.2</A> <A HREF="xmame-doc-2.html#ss2.2">Follow these steps to compile xmame/xmess</A>
+<LI><A NAME="toc2.3">2.3</A> <A HREF="xmame-doc-2.html#ss2.3">If you have problems compiling, installing and starting xmame/xmess...</A>
+<LI><A NAME="toc2.4">2.4</A> <A HREF="xmame-doc-2.html#ss2.4">Compile Notes for Specific Operating Systems </A>
+</UL>
+<P>
+<H2><A NAME="toc3">3.</A> <A HREF="xmame-doc-3.html">Xmame Frequently Asked Questions</A></H2>
+
+<UL>
+<LI><A NAME="toc3.1">3.1</A> <A HREF="xmame-doc-3.html#ss3.1">What is mame?</A>
+<LI><A NAME="toc3.2">3.2</A> <A HREF="xmame-doc-3.html#ss3.2">What is mess?</A>
+<LI><A NAME="toc3.3">3.3</A> <A HREF="xmame-doc-3.html#ss3.3">What is xmame/xmess?</A>
+<LI><A NAME="toc3.4">3.4</A> <A HREF="xmame-doc-3.html#ss3.4">What are the differences between mame/mess and xmame/xmess?</A>
+<LI><A NAME="toc3.5">3.5</A> <A HREF="xmame-doc-3.html#ss3.5">What hardware and operating systems are supported? </A>
+<LI><A NAME="toc3.6">3.6</A> <A HREF="xmame-doc-3.html#ss3.6">My system is supported but xmame/xmess gives me errors and fails.</A>
+<LI><A NAME="toc3.7">3.7</A> <A HREF="xmame-doc-3.html#ss3.7">What is the role of the xmamerc/xmessrc file?</A>
+<LI><A NAME="toc3.8">3.8</A> <A HREF="xmame-doc-3.html#ss3.8">What is the syntax of the xmamerc/xmessrc file.</A>
+<LI><A NAME="toc3.9">3.9</A> <A HREF="xmame-doc-3.html#ss3.9">Where do roms, images, samples, highscores, configfiles, etc</A>
+<LI><A NAME="toc3.10">3.10</A> <A HREF="xmame-doc-3.html#ss3.10">How do I start xmess/xmame ?</A>
+<LI><A NAME="toc3.11">3.11</A> <A HREF="xmame-doc-3.html#ss3.11">What are the command line parameters for xmame/xmess?</A>
+<LI><A NAME="toc3.12">3.12</A> <A HREF="xmame-doc-3.html#ss3.12">What keys does xmame/xmess use?</A>
+<LI><A NAME="toc3.13">3.13</A> <A HREF="xmame-doc-3.html#ss3.13">Why doesn't a game have sound?</A>
+<LI><A NAME="toc3.14">3.14</A> <A HREF="xmame-doc-3.html#ss3.14">My sound seems lagged. / My sound Clicks. / What does -bufsize</A>
+<LI><A NAME="toc3.15">3.15</A> <A HREF="xmame-doc-3.html#ss3.15">Why doesn't a game work? </A>
+<LI><A NAME="toc3.16">3.16</A> <A HREF="xmame-doc-3.html#ss3.16">What are PROMs? </A>
+<LI><A NAME="toc3.17">3.17</A> <A HREF="xmame-doc-3.html#ss3.17">Why is xmame/xmess slow?</A>
+<LI><A NAME="toc3.18">3.18</A> <A HREF="xmame-doc-3.html#ss3.18">I've got a dual processor machine. What can I do to take full</A>
+<LI><A NAME="toc3.19">3.19</A> <A HREF="xmame-doc-3.html#ss3.19">Why doesn't my joystick handle diagonal movement correctly on</A>
+<LI><A NAME="toc3.20">3.20</A> <A HREF="xmame-doc-3.html#ss3.20">How do I enable XinputExtensions X11 based joystick in Xfree86?</A>
+<LI><A NAME="toc3.21">3.21</A> <A HREF="xmame-doc-3.html#ss3.21">How do I read a manual page?</A>
+<LI><A NAME="toc3.22">3.22</A> <A HREF="xmame-doc-3.html#ss3.22">Why do I get gz_open symbol not found while compiling? </A>
+<LI><A NAME="toc3.23">3.23</A> <A HREF="xmame-doc-3.html#ss3.23">Why do I get zlib.h not found? </A>
+<LI><A NAME="toc3.24">3.24</A> <A HREF="xmame-doc-3.html#ss3.24">When I run xmame.x11, nothing happens---no window pops up or</A>
+<LI><A NAME="toc3.25">3.25</A> <A HREF="xmame-doc-3.html#ss3.25">Can I run xmame fullscreen?</A>
+<LI><A NAME="toc3.26">3.26</A> <A HREF="xmame-doc-3.html#ss3.26">xmame.SDL / fullscreen has a large border around the game. </A>
+<LI><A NAME="toc3.27">3.27</A> <A HREF="xmame-doc-3.html#ss3.27">I only use some of the emulation parts (Neo Geo / CPS-2 /...).</A>
+<LI><A NAME="toc3.28">3.28</A> <A HREF="xmame-doc-3.html#ss3.28">Why does xmame freeze and lock up when I hit &lt;ESC&gt; to exit</A>
+<LI><A NAME="toc3.29">3.29</A> <A HREF="xmame-doc-3.html#ss3.29">Why does xmame report &quot;can't resolve host name '/dev/dsp'</A>
+<LI><A NAME="toc3.30">3.30</A> <A HREF="xmame-doc-3.html#ss3.30">Where can I get the latest version of xmame/xmess?</A>
+<LI><A NAME="toc3.31">3.31</A> <A HREF="xmame-doc-3.html#ss3.31">I upgraded xmame and now some games do not work anymore.</A>
+<LI><A NAME="toc3.32">3.32</A> <A HREF="xmame-doc-3.html#ss3.32">Where can I send fixes, bug reports, suggestions, or money?  :-)</A>
+<LI><A NAME="toc3.33">3.33</A> <A HREF="xmame-doc-3.html#ss3.33">What if my question is still not answered?</A>
+</UL>
+<P>
+<H2><A NAME="toc4">4.</A> <A HREF="xmame-doc-4.html">Display Subsystem-Specific Comments and Notes </A></H2>
+
+<UL>
+<LI><A NAME="toc4.1">4.1</A> <A HREF="xmame-doc-4.html#ss4.1">FXmame, a glide driver for xmame</A>
+<LI><A NAME="toc4.2">4.2</A> <A HREF="xmame-doc-4.html#ss4.2">GLmame, an OpenGL driver for xmame</A>
+</UL>
+<P>
+<H2><A NAME="toc5">5.</A> <A HREF="xmame-doc-5.html">Contact Information and Credits</A></H2>
+
+<UL>
+<LI><A NAME="toc5.1">5.1</A> <A HREF="xmame-doc-5.html#ss5.1">Mail </A>
+<LI><A NAME="toc5.2">5.2</A> <A HREF="xmame-doc-5.html#ss5.2">Bugzilla</A>
+<LI><A NAME="toc5.3">5.3</A> <A HREF="xmame-doc-5.html#ss5.3">Credits</A>
+</UL>
+<P>
+<H2><A NAME="toc6">6.</A> <A HREF="xmame-doc-6.html">Legal Issues and Copyrights Concerning MAME/MESS</A></H2>
+
+<P>
+<H2><A NAME="toc7">7.</A> <A HREF="xmame-doc-7.html">Some Links</A></H2>
+
+<UL>
+<LI><A NAME="toc7.1">7.1</A> <A HREF="xmame-doc-7.html#ss7.1">Unix sources and docs</A>
+<LI><A NAME="toc7.2">7.2</A> <A HREF="xmame-doc-7.html#ss7.2">Unix binaries</A>
+<LI><A NAME="toc7.3">7.3</A> <A HREF="xmame-doc-7.html#ss7.3">Xmame/xmess download mirrors</A>
+<LI><A NAME="toc7.4">7.4</A> <A HREF="xmame-doc-7.html#ss7.4">(X)Mame front-ends</A>
+<LI><A NAME="toc7.5">7.5</A> <A HREF="xmame-doc-7.html#ss7.5">Some other links</A>
+</UL>
+<P>
+<H2><A NAME="toc8">8.</A> <A HREF="xmame-doc-8.html">ChangeLogs</A></H2>
+
+<UL>
+<LI><A NAME="toc8.1">8.1</A> <A HREF="xmame-doc-8.html#ss8.1">The MAME/MESS ChangeLogs</A>
+<LI><A NAME="toc8.2">8.2</A> <A HREF="xmame-doc-8.html#ss8.2">The Unix ChangeLog</A>
+</UL>
+<HR>
+<A HREF="xmame-doc-1.html">Next</A>
+Previous
+Contents
+</BODY>
+</HTML>

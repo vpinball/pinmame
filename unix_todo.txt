@@ -1,0 +1,131 @@
+Trying to build and run PinMAME with Brian Dominy's XPinMAME patch using Ubuntu 10.10 i386 (32-Bit).
+
+Using a VM on Windows 7 64-Bit:
+### Easier maintenance: aptitude, ssh access (open SSH port for VM)
+apt-get install aptitude
+aptitude install openssh-server
+mkdir ~/.ssh
+touch ~/.ssh/authorized_keys
+chmod -R u=rw,go= .ssh
+
+### Virtualbox support (according to manual)
+aptitude install dkms
+# >= 3.2 signing key
+wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | apt-key add -
+# < 3.2 signing key
+wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -
+# mount VirtualBox Guest Additions ISO and go to the mount point, normally /media/VBOXADDITIONS_....
+sh ./VBoxLinuxAdditions-x86.run
+# reboot guest system (clipboard exchange should work after reboot)
+
+* Dependencies Ubuntu 10 Development:
+aptitude install \
+  build-essential \
+  subversion \
+  git \
+  zlib1g-dev \
+  libx11-dev \
+  libxext-dev \
+  libxv-dev \
+  libncurses5-dev \
+  libsdl1.2-dev \
+  x11proto-video-dev
+
+* Dependencies Ubuntu 10 Runtime:
+aptitude install \
+  zlib1g \
+  libx11-6 \
+  libxext6 \
+  libxv1 \
+  libncurses5 \
+  libsdl1.2debian
+
+* Source code setup
+mkdir -p ~/pinmame/release_2_2
+cd ~/pinmame/release_2_2
+svn co https://pinmame.svn.sourceforge.net/svnroot/pinmame/tags/release_2_2 .
+wget http://oddchange.com/freewpc/pinmame-x.patch.gz
+gunzip -d -N -c pinmame-x.patch.gz >pinmame-x.patch
+patch -p1 -i pinmame-x.patch
+# not fixing any of the failed hunks)
+file changes:
+* makefile.unix:
+  @92: CC = cc  (was: CC	= gcc-3.4.6)
+fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
+* src/fileio.c
+  @1088: vsnprintf (was: _vsnprintf)
+* src/mamedbg.c
+  @1620: strnicmp (was: _strnicmp)
+
+make -f makefile.unix
+
+* Pinmame setup
+mkdir /usr/local/share/xpinmame
+cd /usr/local/share/xpinmame
+ln -s /media/E_DRIVE/Pinball/PinMAME_data/roms/ roms
+#
+cd ~/pinmame/release_2_2
+./xpinmamed.x11 ij_l7
+
+Sound (SDLMAME)
+http://ubuntuforums.org/showthread.php?t=320377
+
+http://linux.die.net/man/6/xmame
+-ldp
+-v volume, -volume volume
+    Specify audio attenuation in dB (-32 (soft) - 0 (loud)). 
+-ad device, -audiodevice device
+    Use an alternative audiodevice. 
+http://ubuntuforums.org/showthread.php?t=115021
+
+========================================
+
+HAVE_VSNPRINTF
+HAVE_SNPRINTF
+
+_vsnprintf
+_snprintf
+_stricmp
+_strcmpi
+_strnicmp
+_str
+HAS_vsnprintf
+HAS_snprintf
+
+_vsprintf
+_vnprintf
+_vprintf
+_sprintf
+
+
+Specialities:
+- src/mamedbg.c
+CONFIG_FOR_FREEWPC
+
+* src/osdepend.h
+#ifdef PINMAME
+#include "pinmame.h"
+#endif
+? What for?
+
+* src/wpc/sim.h
+#include "osdepend.h"
+? What for?
+
+* src/wpc/wpc.c
+orkin stuff (Orkin debugger)
+serial stuff (WPC_SERIAL_...)
+
+* src/wpc/wpc.h
+orkin stuff (Orkin debugger)
+serial stuff (WPC_SERIAL_...)
+ticket dispenser stuff (WPC_SERIAL_...)
+
+* src\sound\votrax.c
+-#include "windows.h"
++typedef unsigned char byte;
++
+
+* src\pinmame.mak
++DRVLIBS += $(PINOBJ)/serial.o
+removed LDFLAGS -Xlinker --cref

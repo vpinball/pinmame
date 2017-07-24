@@ -1,0 +1,158 @@
+----------snip---------
+dnl Process this file with autoconf to produce a configure script.
+dnl *** todo: check against bashisms
+AC_INIT(src/unix/FREEBSD.c)
+
+dnl Find what type of system we are
+AC_CANONICAL_HOST
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+
+dnl Checks for header files.
+AC_PATH_XTRA
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+
+dnl Checks for library functions.
+AC_TYPE_SIGNAL
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(gettimeofday socket)
+
+
+dnl ***********************
+dnl ***  Check for sound capabilities
+dnl ***********************
+dnl check for FANCY_SOUND
+dnl    todo: evaluate --- any way to autosense?
+AC_ARG_ENABLE(fancysound,
+[  --enable-fancysound     use linear interpolation (default if supported)
+  --disable-fancysound    audio does not use linear interpolation],
+[enable_fancysound="$enable_fancysound"], [enable_fancysound="yes"])
+AC_MSG_CHECKING(for fancy sound)
+if test "$enable_fancysound" = "no"; then
+  AC_MSG_RESULT(no)
+else
+  case "$host" in
+    *-aix-* | *-sun-*)
+      AC_MSG_RESULT(not on this platform)
+      ;;
+    *)
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(FANCY_SOUND)
+      ;;
+  esac
+fi
+dnl check for USE_TIMER (default unless linux or sgi)
+dnl       NB: don't bother setting DONTUSER_TIMER, it is never
+dnl           referenced by the source!
+dnl       NB: any interdependancy between USE_TIMER and FANCY_SOUND ?
+AC_ARG_ENABLE(audiotimer,
+[  --enable-audiotimer     audio uses a fixed timer
+  --disable-audiotimer    audio queries audio buffer (default if supported)],
+[enable_audiotimer="$enable_audiotimer"], [enable_audiotimer="no"])
+AC_MSG_CHECKING(for audio fixed timer)
+if test "$enable_audiotimer" = "yes"; then
+  AC_MSG_RESULT([yes, too bad])
+  AC_DEFINE(USE_TIMER)
+else
+  case "$host" in
+    *-linux-* | *-sgi-*)
+      AC_MSG_RESULT([no, will query audio buffer instead])
+      ;;
+    *)
+      AC_MSG_RESULT([yes, too bad])
+      AC_DEFINE(USE_TIMER)
+      enable_audiotimer="yes"
+      ;;
+  esac
+fi
+dnl *** todo: allow define of AUDIO_TIMER_FREQ
+dnl ***	  NB: no need to set it necessarily, allow src/unix/sound.h do that
+dnl           however, in ideal world, derive as some whole divider of the 
+dnl           system timer
+dnl *** todo: allow turning off all audio capabilities (?)
+
+dnl ***********************
+dnl ***  Check for svgalib
+dnl ***********************
+AC_ARG_ENABLE(svgalib,
+[  --enable-svgalib        SVGAlib will be used
+  --disable-svgalib       SVGAlib will not be used (default)],
+[enable_svgalib="$enableval"], [enable_svgalib="no"])
+AC_MSG_CHECKING(for SVGAlib build)
+if test "$enable_svgalib" = "no"; then
+  AC_MSG_RESULT(no)
+else
+  AC_MSG_RESULT(yes)
+  if test "$enable_audiotimer" = "yes"; then
+    AC_MSG_ERROR([SVGAlib build requested, but fixed audio timer conflicts])
+  fi
+  AC_CHECK_LIB(vga,vga_hasmode)
+  if test "$ac_cv_lib_vga_vga_hasmode" = "no"; then
+    AC_MSG_ERROR([SVGAlib build requested, but libvga cannot be found])
+  fi
+fi
+
+dnl ***********************
+dnl ***  Check for Xpm
+dnl ***********************
+AC_ARG_ENABLE(xpm,
+[  --enable-xpm            libXpm used if found (default)
+  --disable-xpm           libXpm will not be used],
+[enable_xpm="$enableval"], [enable_xpm="yes"])
+if test "$enable_xpm" = "yes" -a "$ac_cv_lib_vga_vga_hasmode" = "no"; then
+  save_cflags="$CFLAGS"
+  CFLAGS="$CFLAGS $X_CFLAGS"
+  CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+  AC_CHECK_HEADERS(X11/xpm.h)
+  CFLAGS="$save_cflags"
+  if test "$ac_cv_header_X11_xpm_h" = "yes"; then
+    save_ldflags="$LDFLAGS"
+    LDFLAGS="$LDFLAGS $X_LIBS"
+    AC_CHECK_LIB(Xpm, XpmReadFileToPixmap,
+                 [X_PRE_LIBS="-lXpm $X_PRE_LIBS"; AC_DEFINE(HAVE_LIBXPM)], [], 
+                 [$X_PRE_LIBS -lX11 $X_EXTRA_LIBS])
+    LDFLAGS="$save_ldflags"
+  fi
+fi 
+
+dnl ***********************
+dnl ***  Check for mitshm
+dnl ***********************
+dnl APH TOCHECK:  is disable overriding a cache which is already there?
+AC_ARG_ENABLE(mitshm,
+[  --enable-mitshm         MIT-Shared Memory X extension used if found (default)
+  --disable-mitshm        MIT-Shared Memory X extension will not be used],
+[enable_mitshm="$enableval"], [enable_mitshm="yes"])
+if test "$enable_mitshm" = "yes" -a "$ac_cv_lib_vga_vga_hasmode" = "no"; then
+  save_ldflags="$LDFLAGS"
+  LDFLAGS="$LDFLAGS $X_LIBS -lX11"
+  AC_CACHE_CHECK(for MIT-Shared Memory X extension, mame_cv_sys_mitshm, [AC_TRY_RUN([#if STDC_HEADERS
+# include <stdlib.h>
+#endif
+#include <X11/Xlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <X11/extensions/XShm.h>
+main() {
+   Display *display;
+   int result;
+   int i,j,k;
+   display = XOpenDisplay(":0");
+   result = XQueryExtension(display,"MIT-SHM",&i,&j,&k);
+   if ( ! result ) exit(1);
+   exit(0);
+}
+	],mame_cv_sys_mitshm=yes,mame_cv_sys_mitshm=no,mame_cv_sys_mitshm=yes)])
+  LDFLAGS="$save_ldflags"
+fi
+
+AC_OUTPUT(Makefile)
+

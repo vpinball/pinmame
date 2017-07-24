@@ -1,0 +1,18 @@
+# lisy80NG Makefile
+# RTH 11.2016
+# for poti_read tester prog
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+LDFLAGS = -lwiringPi
+
+OBJ = poti_step.o
+
+SW_Test: $(OBJ)
+	$(CC) $(CFLAGS) -o poti_step $(OBJ) $(LDFLAGS)
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm *.o poti_step

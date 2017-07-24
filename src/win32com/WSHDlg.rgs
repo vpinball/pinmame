@@ -1,0 +1,26 @@
+HKCR
+{
+	VPinMAME.WSHDlg.1 = s 'WSHDlg Class'
+	{
+		CLSID = s '{1DCAFFA5-978D-4CC0-9576-73BC0293E67C}'
+	}
+	VPinMAME.WSHDlg = s 'WSHDlg Class'
+	{
+		CLSID = s '{1DCAFFA5-978D-4CC0-9576-73BC0293E67C}'
+		CurVer = s 'Dialog.WSHDlg.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {1DCAFFA5-978D-4CC0-9576-73BC0293E67C} = s 'WSHDlg Class'
+		{
+			ProgID = s 'VPinMAME.WSHDlg.1'
+			VersionIndependentProgID = s 'VPinMAME.WSHDlg'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{EEFE1916-E8D6-4C74-BEFB-F22E1136783E}'
+		}
+	}
+}

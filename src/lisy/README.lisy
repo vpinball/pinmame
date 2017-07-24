@@ -1,0 +1,17 @@
+LISY; Linux for System1 & System80
+with LISY you can control your Gottlieb pinball machine via pinmame
+special hardware needed; have a look to www.lisy80.com
+
+to activate lisy within pinmame just uncomment two lines in makefile.unix
+
+# uncomment next line to include LISY support
+# see http://www.lisy80.com/
+LISY_X = 1
+# uncomment next line to enable support for LISY fake VIDEO driver
+# this will also select 'vid_lisy' as DISPLAY_METHOD
+LISY_X_FAKE_VIDEO = 1
+
+Compile instructions (Raspberry PI with Jessie) can be found under
+./src/unix/PI_howto.txt
+
+bontango June 2017

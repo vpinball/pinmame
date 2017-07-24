@@ -1,0 +1,108 @@
+Contents of directory contrib/tools
+==========================================
+
+1)      Name:		mame_perl-1.3
+	Author:		Stefan Becker
+	Description:	MAME/Raine ROM sets manager Perl scripts 1.3
+	Notes:		see contrib/tool/mame_perl-1.3/README
+
+2)      Name:		modelines
+	Author:		William A. Barath
+	Description:	XFree 86 modelines defining special resolutions
+			for use with xmame and DGA
+
+3)	Name:		readme
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	This file
+
+4)	Name:		romalizer
+	Author:		Christopher Stone <tkmame@ztnet.com>
+	Description:	a rom cleaner/sorting tcl script
+	Notes:		see the contents of the script, or run it with -help
+			for more info
+
+5)	Name:		romulan.pl
+	Author:		Nathan Hand <nathanh@chirp.com.au>
+	Description:	Perl script I've been working on to keep track of
+                        split romsets. Relies on xmame + unzip binaries being
+                        available, doesn't support merged sets, doesn't
+                        support unzipped sets, doesn't examine ~/.xmamerc,
+                        doesn't do a lot really. I use it personally though,
+                        and I find it useful.
+                        
+                        Has some neat routines (in perl) to get romset info
+                        out of xmame or the zipfile. Might be useful to other
+                        romset analyzer developers.
+
+6)	Name:		xlistdev.c
+	Author:		??
+	Description:	This program lists all X Input extension devices
+
+7)	Name:		xmame-screensaver
+	Author:		Hans de Goede <hans@highrise.nl>
+	Description:	A little script to run a random game in the root
+			window for 2 minutes and then run another random game
+			etc. Use this as the extern command for xscreensaver.
+	Usage:		- compile the x11 version of xmame
+			- install it somewhere in your path
+			- copy xmame-screensaver to /usr/games
+			- edit ~/.xscreensaver , and add a line:
+			  /usr/games/xmame-screensaver
+
+8)	Name:		mame-cd
+	Author:		Mario J.Barchéin Molina <mbarchein@yahoo.es>
+	Description:	A perl script which sorts MAME roms onto CDs by year and
+			puts all clones on the same CD as the parent.
+	Usage:		See the mame-cd file.  Mario also has this to add:
+			* I don't know if it will do a good job if you don't
+			  have all the roms.
+			* Edit it and configure the parameters in the beginning
+			  of the file.
+			* It's not only for .54.  I've used it from 0.37b11 and
+			  it has worked ok, but YMMV.
+			* Make your CD images  with the "Symlink farm" option or
+			  they will be 1.3 GB instead of 650 MB.
+			* It's a beta program.  Don't blame me too much if it
+			  doesn't work.
+			* Of course is GPL.
+			* I'd love feedback. :)    
+
+9)	Name:		mamecds
+	Author:		Carlos Calzada Grau
+	Description:	Another tool for sorting roms onto CDs.
+	Usage:		mamecds [-n | --neogeo] [-m | --mame]
+				 [-v | --version]
+				 [-s size | --size=size]
+				 [--nocd | -c]
+				 [--nolist | -l]
+				 [--fulllist | -f]
+				 [--help | -h]    
+
+10)     Name:		mame-listmissing
+        Author:		David Griffith
+        Description:	Lists which supported roms are missing from your 
+			collection.
+	Usage:		mame-listmissing [<options>] [<path>]
+
+			<path>	Override whatever default path you've set for 
+				where you keep your roms.  Must be a 
+				colon-seperated path.
+
+			-e	Extension.  If your rom files are contained in
+				something other than .zip files, specify here or
+				modify the default.  This option will go away
+				if/when I decide to use a hash to handle
+				extensions automatically.
+
+			-h	Help.  You're reading it now.
+
+			-v	Invert.  Cause listmissing to report roms that
+				you have installed.
+
+11)	Name:		makecd_mame2.pl
+	Author:		Luc Saillard
+	Description:	This script helps with burning ROMs, flyers, cabinets 
+			onto CDs.  All games on a CD can be played without 
+			requiring ROMs from other CDs.
+	Usage:		makecd_mame.pl gamedir burndir gameslist
+			See script for more information.

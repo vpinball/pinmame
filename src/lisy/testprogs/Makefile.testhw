@@ -1,0 +1,17 @@
+# lisy80 Makefile
+# RTH 11.2016
+# for testhw prog
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+LDFLAGS = -lwiringPi
+
+#OBJ = hw_lib.o coils.o displays.o switches.o sound.o utils.o Tester.o
+OBJ = utils.o hw_lib.o switches.o displays.o coils.o testhw.o
+
+tester: $(OBJ)
+	$(CC) $(CFLAGS) -o testhw $(OBJ) $(LDFLAGS)
+
+%.o: ../%.c ../%.h
+	$(CC) $(CFLAGS) -c $<
+

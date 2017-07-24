@@ -1,0 +1,91 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PinMAME", "PinMAME_VC2012.vcxproj", "{20DB3784-CEFD-43B8-8B62-E1E10854BF18}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PinMAME32", "PinMAME32_VC2012.vcxproj", "{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InstallVPinMAME", "InstallVPinMAME_VC2012.vcxproj", "{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Visual PinMame", "VPinMAME_VC2012.vcxproj", "{5AB254C3-9B91-4045-8A03-152A9FB1BF30}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug with MAME Debugger|Win32 = Debug with MAME Debugger|Win32
+		Debug with MAME Debugger|x64 = Debug with MAME Debugger|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release with MAME Debugger|Win32 = Release with MAME Debugger|Win32
+		Release with MAME Debugger|x64 = Release with MAME Debugger|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug with MAME Debugger|Win32.ActiveCfg = Debug with MAME Debugger|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug with MAME Debugger|Win32.Build.0 = Debug with MAME Debugger|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug with MAME Debugger|x64.ActiveCfg = Debug with MAME Debugger|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug with MAME Debugger|x64.Build.0 = Debug with MAME Debugger|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug|Win32.ActiveCfg = Debug|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug|Win32.Build.0 = Debug|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug|x64.ActiveCfg = Debug|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Debug|x64.Build.0 = Debug|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release with MAME Debugger|Win32.ActiveCfg = Release with MAME Debugger|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release with MAME Debugger|Win32.Build.0 = Release with MAME Debugger|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release with MAME Debugger|x64.ActiveCfg = Release with MAME Debugger|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release with MAME Debugger|x64.Build.0 = Release with MAME Debugger|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release|Win32.ActiveCfg = Release|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release|Win32.Build.0 = Release|Win32
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release|x64.ActiveCfg = Release|x64
+		{20DB3784-CEFD-43B8-8B62-E1E10854BF18}.Release|x64.Build.0 = Release|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug with MAME Debugger|Win32.ActiveCfg = Debug with MAME Debugger|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug with MAME Debugger|Win32.Build.0 = Debug with MAME Debugger|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug with MAME Debugger|x64.ActiveCfg = Debug with MAME Debugger|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug with MAME Debugger|x64.Build.0 = Debug with MAME Debugger|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug|Win32.Build.0 = Debug|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug|x64.ActiveCfg = Debug|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Debug|x64.Build.0 = Debug|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release with MAME Debugger|Win32.ActiveCfg = Release with MAME Debugger|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release with MAME Debugger|Win32.Build.0 = Release with MAME Debugger|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release with MAME Debugger|x64.ActiveCfg = Release with MAME Debugger|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release with MAME Debugger|x64.Build.0 = Release with MAME Debugger|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release|Win32.ActiveCfg = Release|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release|Win32.Build.0 = Release|Win32
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release|x64.ActiveCfg = Release|x64
+		{5FB38C5B-8593-43F8-B6AC-1DAA58DF7CF5}.Release|x64.Build.0 = Release|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug with MAME Debugger|Win32.ActiveCfg = Debug|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug with MAME Debugger|Win32.Build.0 = Debug|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug with MAME Debugger|x64.ActiveCfg = Debug|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug with MAME Debugger|x64.Build.0 = Debug|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug|Win32.Build.0 = Debug|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug|x64.ActiveCfg = Debug|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Debug|x64.Build.0 = Debug|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release with MAME Debugger|Win32.ActiveCfg = Release|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release with MAME Debugger|Win32.Build.0 = Release|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release with MAME Debugger|x64.ActiveCfg = Release|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release with MAME Debugger|x64.Build.0 = Release|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release|Win32.ActiveCfg = Release|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release|Win32.Build.0 = Release|Win32
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release|x64.ActiveCfg = Release|x64
+		{9A61D1F7-F96C-4529-BE6E-4ACD7E3780B7}.Release|x64.Build.0 = Release|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug with MAME Debugger|Win32.ActiveCfg = Debug with MAME Debugger|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug with MAME Debugger|Win32.Build.0 = Debug with MAME Debugger|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug with MAME Debugger|x64.ActiveCfg = Debug with MAME Debugger|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug with MAME Debugger|x64.Build.0 = Debug with MAME Debugger|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug|Win32.Build.0 = Debug|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug|x64.ActiveCfg = Debug|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Debug|x64.Build.0 = Debug|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release with MAME Debugger|Win32.ActiveCfg = Release with MAME Debugger|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release with MAME Debugger|Win32.Build.0 = Release with MAME Debugger|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release with MAME Debugger|x64.ActiveCfg = Release with MAME Debugger|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release with MAME Debugger|x64.Build.0 = Release with MAME Debugger|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release|Win32.ActiveCfg = Release|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release|Win32.Build.0 = Release|Win32
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release|x64.ActiveCfg = Release|x64
+		{5AB254C3-9B91-4045-8A03-152A9FB1BF30}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,3 @@
+rm *.o
+rm lisy1_control
+rm lisy80_control

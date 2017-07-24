@@ -1,0 +1,11 @@
+		  Pinball Simulator Template/Test Matrixes
+                  ----------------------------------------
+
+ Use the Pinball Simulator Start Template (PSST.c) to start a brand new
+ simulator. You will find help inside the code.
+
+ I've made the Pinball Solenoid Test Matrix (PSTM.c) driver when I was writing
+ the simulators for PZ, GI and a few more. The thing is that in some pins the
+ motors aren't shown on the "T4. Solenoid Test" menu, and I needed the solenoid
+ numbers to simulate their movement. PSTM.c will do the trick.
+ There are comments in the code which tell its usage.

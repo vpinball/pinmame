@@ -1,0 +1,155 @@
+Only in xmame-0.35b13.1/: cab
+Only in xmame-0.35b13.1/: contrib
+Only in xmame-0.35b13.1/doc: Changes
+Only in xmame-0.35b13.1/doc: LEEME.unix
+Only in xmame-0.35b13.1/doc: MailList.notes
+Only in xmame-0.35b13.1/doc: README.fx
+Only in xmame-0.35b13.1/doc: README.unix
+Only in xmame-0.35b13.1/doc: README.xgl
+Only in xmame-0.35b13.1/doc: TODO
+Only in xmame-0.35b13.1/doc: cheat.dat
+Only in xmame-0.35b13.1/doc: cheat.doc
+Only in xmame-0.35b13.1/doc: credits.unix
+Only in xmame-0.35b13.1/doc: history.dat
+Only in xmame-0.35b13.1/doc: liesmich.unix
+Only in xmame-0.35b13.1/doc: multiplayer-readme.txt
+Only in xmame-0.35b13.1/doc: xmame.man
+Only in xmame-0.35b13.1/doc: xmamerc.dist
+Only in xmame-0.35b13.1/: makefile.objs
+Only in xmame-0.35b13.1/: makefile.unix
+Only in xmame-0.35b13.1/: makefile.x11
+Only in xmame-0.35b13.1/: obj
+diff -ur mame-0.35b13.orig.fixed/src/cheat.c xmame-0.35b13.1/src/cheat.c
+--- mame-0.35b13.orig.fixed/src/cheat.c	Sat May 29 13:19:54 1999
++++ xmame-0.35b13.1/src/cheat.c	Thu Jun 10 14:24:11 1999
+@@ -2342,7 +2342,7 @@
+ {
+   char *ptr;
+   char str[128];
+-  char filename[16];
++  char filename[CHEAT_FILENAME_MAXLEN];
+ 
+   int pos1, pos2;
+ 
+diff -ur mame-0.35b13.orig.fixed/src/sound/adpcm.c xmame-0.35b13.1/src/sound/adpcm.c
+--- mame-0.35b13.orig.fixed/src/sound/adpcm.c	Sat May 29 13:19:54 1999
++++ xmame-0.35b13.1/src/sound/adpcm.c	Thu Jun 10 14:27:06 1999
+@@ -402,16 +402,21 @@
+ 			/* update the ADPCM voice */
+ 			ADPCM_update (voice, cpu_scalebyfcount (buffer_len));
+ 
+-			/* set up the voice to play this sample */
+-			voice->playing = 1;
+-			voice->base = &Machine->memory_region[adpcm_intf->region][sample->offset];
+-			voice->sample = 0;
+-			voice->count = sample->length;
+-
+-			/* also reset the ADPCM parameters */
+-			voice->signal = -2;
+-			voice->step = 0;
++			/* sometimes we get a wrong offset resulting in a crash
++			   so check that first and only play the smaple if we
++			   have a valid offset */
++			if (sample->offset < Machine->memory_region_length[adpcm_intf->region])
++			{
++				/* set up the voice to play this sample */
++				voice->playing = 1;
++				voice->base = &Machine->memory_region[adpcm_intf->region][sample->offset];
++				voice->sample = 0;
++				voice->count = sample->length;
+ 
++				/* also reset the ADPCM parameters */
++				voice->signal = -2;
++				voice->step = 0;
++			}
+ 			return;
+ 		}
+ 	}
+@@ -440,15 +445,21 @@
+ 	/* update the ADPCM voice */
+ 	ADPCM_update (voice, cpu_scalebyfcount (buffer_len));
+ 
+-	/* set up the voice to play this sample */
+-	voice->playing = 1;
+-	voice->base = &Machine->memory_region[adpcm_intf->region][offset];
+-	voice->sample = 0;
+-	voice->count = length;
+-
+-	/* also reset the ADPCM parameters */
+-	voice->signal = -2;
+-	voice->step = 0;
++	/* sometimes we get a wrong offset resulting in a crash
++	   so check that first and only play the sample if we
++	   have a valid offset */
++	if (offset < Machine->memory_region_length[adpcm_intf->region])
++	{
++		/* set up the voice to play this sample */
++		voice->playing = 1;
++		voice->base = &Machine->memory_region[adpcm_intf->region][offset];
++		voice->sample = 0;
++		voice->count = length;
++
++		/* also reset the ADPCM parameters */
++		voice->signal = -2;
++		voice->step = 0;
++	}
+ }
+ 
+ 
+@@ -697,15 +708,21 @@
+ 				/* update the ADPCM voice */
+ 				ADPCM_update (voice, buffer_end);
+ 
+-				/* set up the voice to play this sample */
+-				voice->playing = 1;
+-				voice->base = &Machine->memory_region[okim6295_interface->region[num]][start];
+-				voice->sample = 0;
+-				voice->count = 2 * (stop - start + 1);
+-
+-				/* also reset the ADPCM parameters */
+-				voice->signal = -2;
+-				voice->step = 0;
++				/* sometimes we get a wrong offset resulting in a crash
++				   so check that first and only play the sample if we
++				   have a valid offset */
++				if (start < Machine->memory_region_length[okim6295_interface->region[num]])
++				{
++					/* set up the voice to play this sample */
++					voice->playing = 1;
++					voice->base = &Machine->memory_region[okim6295_interface->region[num]][start];
++					voice->sample = 0;
++					voice->count = 2 * (stop - start + 1);
++
++					/* also reset the ADPCM parameters */
++					voice->signal = -2;
++					voice->step = 0;
++				}
+ 
+ 				/* volume control is entirely guesswork */
+ 				{
+Only in xmame-0.35b13.1/src: unix
+diff -ur mame-0.35b13.orig.fixed/src/vidhrdw/megasys1.c xmame-0.35b13.1/src/vidhrdw/megasys1.c
+--- mame-0.35b13.orig.fixed/src/vidhrdw/megasys1.c	Sat May 29 13:19:55 1999
++++ xmame-0.35b13.1/src/vidhrdw/megasys1.c	Thu Jun 10 14:27:06 1999
+@@ -472,11 +472,18 @@
+ 			code  =   READ_WORD(&scrollram[j][offs]) & mask[j];
+ 
+ 			if (scrollflag[j] & 0x10)
++				/* some boundary checking dunno why we needs this
++				   but other wise real os's kill mame */
++				if (code < Machine->gfx[j]->total_elements)
+ 					colmask[color] |= pen_usage[code];
+-			else{	colmask[color] |= pen_usage[code*4+0];
++			else
++				if ((code*4+3) < Machine->gfx[j]->total_elements)
++				{
++					colmask[color] |= pen_usage[code*4+0];
+ 					colmask[color] |= pen_usage[code*4+1];
+ 					colmask[color] |= pen_usage[code*4+2];
+-					colmask[color] |= pen_usage[code*4+3];}
++					colmask[color] |= pen_usage[code*4+3];
++				}
+ 		}
+ 
+ 		for (color = 0; color < 16; color++)
+Only in xmame-0.35b13.1/: xmame.x11

@@ -1,0 +1,206 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,42,0,0
+ PRODUCTVERSION 1,42,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704b0"
+        BEGIN
+            VALUE "FileDescription", "InstallVPinMAME"
+            VALUE "FileVersion", "1.42"
+            VALUE "InternalName", "InstallVPinMAME"
+            VALUE "LegalCopyright", "Copyright © 2001-2017 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn"
+            VALUE "OriginalFilename", "InstallVPinMAME.exe"
+            VALUE "ProductName", "Visual PinMAME Installer"
+            VALUE "ProductVersion", "1.42"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON                    "Res\\InstallVPinMAME.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAINDLG DIALOG  0, 0, 340, 233
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "VPinMAME Installation program (Version %s)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CTEXT           "Welcome to the Visual PinMAME Installation Program!",
+                    IDC_STATIC,7,2,326,9
+    CTEXT           "This program will allow you to install/uninstall, and change various settings of Visual PinMAME.",
+                    IDC_STATIC,13,10,320,13,SS_CENTERIMAGE
+    CTEXT           "",IDC_INSTALLEDVERSION,7,25,326,8
+    PUSHBUTTON      "&Install",IDC_REGISTER,8,42,77,20
+    LTEXT           "This will install the Visual PinMAME COM object on your computer.",
+                    IDC_STATIC,89,47,244,10
+    PUSHBUTTON      "&Uninstall",IDC_UNREGISTER,7,68,77,20
+    LTEXT           "This will uninstall the Visual PinMAME COM object from your computer.",
+                    IDC_STATIC,89,74,244,8
+    PUSHBUTTON      "Setup &Paths...",IDC_DISPLAYPATHESDLG,7,95,77,20
+    LTEXT           "This will allow you to specify and change the directories Visual PinMAME uses, such as ROM directories, and other configuration directories.",
+                    IDC_STATIC,89,96,244,16
+    PUSHBUTTON      "Setup &Defaults...",IDC_DISPLAYOPTSDIALOG,7,122,77,20
+    LTEXT           "This will allow you to setup default options for all games.",
+                    IDC_STATIC,89,127,244,8
+    PUSHBUTTON      "&Test",IDC_TESTDIALOG,7,148,77,20
+    LTEXT           "This will allow you to test your Visual PinMAME Installation.",
+                    IDC_STATIC,89,154,244,10
+    PUSHBUTTON      "&Info...",IDC_DISPLAYBAOUTDIALOG,7,179,77,20
+    LTEXT           "This will show the Visual PinMAME ""About"" Screen",
+                    IDC_STATIC,89,185,244,8
+    DEFPUSHBUTTON   "&Quit",IDCANCEL,7,206,77,20
+    LTEXT           "Ends this program.",IDC_STATIC,89,211,244,9
+END
+
+IDD_TESTDLG DIALOG  0, 0, 271, 202
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Test the installation; start a game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Games:",IDC_STATIC,7,7,25,8
+    LISTBOX         IDC_GAMESLIST,7,17,257,107,LBS_SORT | LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "State:",IDC_STATIC,7,129,20,8
+    CTEXT           "",IDC_STATE,7,139,257,10,SS_SUNKEN
+    LTEXT           "Installed Version of Visual PinMAME:",IDC_STATIC,7,153,
+                    116,8
+    CTEXT           "",IDC_VERSION,7,163,257,10,SS_SUNKEN
+    DEFPUSHBUTTON   "&Start",IDC_START,7,181,39,14
+    PUSHBUTTON      "St&op",IDC_STOP,49,181,39,14
+    PUSHBUTTON      "Game &Options",IDC_OPTIONS,91,181,58,14
+    PUSHBUTTON      "&Check ROMs",IDC_CHECKROMS,152,181,54,14
+    PUSHBUTTON      "OK",IDOK,216,181,48,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MAINDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 333
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 226
+    END
+
+    IDD_TESTDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 264
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 195
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_TITLE               "Visual PinMAME Installer (Version %s)"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

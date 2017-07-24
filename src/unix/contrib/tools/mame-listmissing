@@ -1,0 +1,264 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+#############################################################################
+#
+# mame-listmissing v1.2
+#
+# Copyright (C) 2001 David Griffith <dgriffi@cs.csubak.edu>
+#
+#  This program is intended to used with Xmame (http://x.mame.net) and is
+#  distributed under the same terms.  Nothing in this program is terribly
+#  original, so feel free to help yourselves to the algorithms.
+#
+#  The latest version of this script can be found in the latest release
+#  of Xmame or at http://www.cs.csubak.edu/~dgriffi/proj/mame
+#
+#
+#  Use at your own risk.
+#
+#
+# Requirements:
+#	1) A Unix machine of some sort.
+#		(duh)
+#	2) Perl 5 or higher.
+#		(duh)
+#	2) Xmame correctly installed.
+#		(to get all supported rom names)
+#	3) Contents of your roms directory is visible.
+#		(so we can see what you have)
+#
+#############################################################################
+#
+# List which supported roms are missing from your collection.
+# Version 1.2
+#
+# usage: mame-listmissing [<options>] [<path>]
+#
+#	<path>	Override whatever default path you've set for where you 
+#		keep your roms.  Must be a colon-seperated path.
+#
+#	-e	Extension.  If your rom files are contained in something 
+#		other than .zip files, specify here or modify the 
+#		default.  This option will go away if/when I decide to use 
+#		a hash to handle extensions automatically.
+#
+#	-h	Help.  You're reading it now.
+#
+#	-v	Invert.  Cause listmissing to report roms that you
+#		have installed.
+#
+#############################################################################
+
+# ChangeLog
+
+# 1.2 A '$' was not properly escaped in verify_path().
+#
+# 1.1 Added checking of multiple directories.
+# 
+# 1.0 Initial release.
+
+
+
+# CONFIGURATION OPTIONS.  Modify them to suit your system.
+#
+my $MAMEBIN = "xmame";
+my $def_rompath = "/usr/local/share/mame/roms";
+my $def_ext = ".zip";
+
+
+
+#
+# ----- END OF CONFIGURATION SECTION -------
+#
+#############################################################################
+#############################################################################
+
+use File::Basename;	# I assume we'll use this only on Unix.
+use vars qw($opt_e $opt_h $opt_v);
+use Getopt::Std;
+
+my ($extension, $invert, $rompath);
+my $binname = "mame-listmissing";
+
+getopts("e:hp:v");
+
+if ($opt_e) {
+	$extension = $opt_e;
+}
+else {
+	$extension = $def_ext;
+}
+
+if ($opt_h) {
+	print_help();
+	exit 0;
+}
+
+if ($opt_v) {
+	$invert = 1;
+}
+else {
+	$invert = 0;
+}
+
+if ($ARGV[0]) {
+	$rompath = $ARGV[0];
+}
+else {
+	$rompath = $def_rompath;
+}
+
+verify_path();
+
+# This is taken directly from 4.7 in the Perl Cookbook 
+#   What is in $supported_roms but not in $installed_roms?
+#
+my @supported_roms = get_supported_roms();
+my @installed_roms = get_installed_roms();
+
+my @missing_roms = ();	# answer
+
+unless ($invert) {
+	my %seen = ();		# lookup table to test membership of @B;
+
+	# build lookup table
+	foreach my $i (@installed_roms) {
+		$seen{$i} = 1; 
+	}
+
+	# find only elements in @supported_roms and not in @installed_roms
+	foreach my $i (@supported_roms) {
+		unless ($seen{$i}) {
+			# it's not in %seen, so add to @aonly
+			push(@missing_roms, $i);
+		}
+	}
+}
+else {
+	@missing_roms = @installed_roms;
+}
+
+@missing_roms = sort(@missing_roms);
+
+foreach my $i (@missing_roms) {
+	print "$i\n";
+}
+
+
+# Returns array minus all blank elements.
+#
+sub noblank (\@) {
+	my @out;
+	foreach my $i (@{$_[0]}) {
+		if ($i =~ /^\S.*$/) {
+			push(@out, $i);
+		}
+	}
+	@{$_[0]} = @out;
+	return wantarray ? @out : $out[0];
+}
+
+
+# Get a list of all files in $rompath which have the standard extension.
+# Strip the extension then return the list, which is the list of roms 
+# currently installed.
+#
+sub get_installed_roms {
+	my ($filename, $junk);
+	my (@paths, @roms);
+
+	foreach my $i (split(/:/, $rompath)) {
+		foreach my $j (glob("$i/*$extension")) {
+			($filename, $junk, $junk) = basename($j, "$extension");
+			push(@roms, $filename);
+		}
+	}
+	return @roms;
+}
+
+
+# Check $rompath to make sure all directories listed are valid.
+#
+sub verify_path {
+	foreach my $i (split(/:/, $rompath)) {
+		unless (-d $i) {
+			print STDERR "$binname: $i is not a directory!\n";
+			if ($rompath eq $def_rompath) {
+				print STDERR
+"    Make sure the variable ``\$def_rompath''\n".
+"    in $binname\'s configuration section is set correctly.\n";
+			}
+			else {
+				print STDERR  
+"    Make sure you enter a valid path on the command line.\n";
+			}
+			exit 1;
+		}
+		else {
+			unless (-x $i) {
+				print STDERR "$binname: $i cannot be searched!\n";
+				exit 2;
+			}
+		}
+	}
+}
+
+
+# Digest `$MAMEBIN -l` into an array in which each element contains a 
+# single rom name.
+#
+sub get_supported_roms {
+	my (@preout, @roms_supp);
+	my ($total_sup, $junk);
+
+	@preout = `$MAMEBIN -l 2> /dev/null`;
+
+	# This splice() call depends on xmame returning something like:
+	# "xmame currently supports:" stuff at the top which we can
+	# safely throw away.
+	#
+	splice(@preout, 0, 1);
+
+	# End of output should look something like this:
+	# "Total Supported: 3123".  We're not interested in that number.
+	# lc(1) is your friend.
+	#
+	pop(@preout);
+	noblank(@preout);
+	chomp(@preout);
+
+	foreach my $i (@preout) {
+		push(@roms_supp, split(/ /, $i));
+	}
+
+	noblank(@roms_supp);
+
+	return @roms_supp;
+}
+
+
+sub print_help {
+print <<EOF;
+
+List which roms are missing from your collection.
+Version 1.2
+
+usage: mame-listmissing [<options>] [<path>]
+
+	<path>	Override whatever default path you've set for where you 
+		keep your roms.  Must be a colon-seperated path.
+
+	-e	Extension.  If your rom files are contained in something 
+		other than a .zip file, specify it here or modify the 
+		default.  This option will go away if/when I decide to use 
+		a hash to handle extensions automatically.
+
+	-h	Help.  You're reading it now.
+
+	-v	Invert.  Cause listmissing to report roms that you
+		have installed.
+
+EOF
+}

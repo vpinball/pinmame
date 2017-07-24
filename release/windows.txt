@@ -1,0 +1,488 @@
+Using the program
+-----------------
+
+mamew [name of the game to run] [options]
+
+for example:
+
+   mamew mspacman -nosound
+
+...will run Ms Pac Man without sound
+
+Options:
+
+* -help / -?
+Displays current MAME version and copyright notice
+
+* -list / -ls
+Displays a list of currently supported games.
+
+* -listfull / -ll
+Displays a list of game directory names + descriptions.
+
+
+Configuration options
+---------------------
+
+* -createconfig / -cc
+Creates the default MAME.INI file. All the following configuration options
+can be permanently changed by editing this configuration file.
+
+* -showconfig / -sc
+Displays the current configuration settings. If you route this to a file,
+you can use it as an INI file. For example, the command:
+  mamew -showconfig >mame.ini
+is equivalent to -createconfig.
+
+* -showusage / -su
+Displays a summary of all the command line options. For options that are
+not mentioned here, the short summary given by "mamew -showusage" is
+usually sufficient.
+
+* -[no]readconfig / -[no]rc
+Enables or disables the reading of the config files. When enabled (which
+is the default), MAMEW reads the following config files in order:
+          - MAME.INI
+          - VECTOR.INI (for vector games only)
+		  - DRIVER.INI (based on the source filename of the driver)
+          - PARENT.INI (for clones only)
+          - GAMENAME.INI
+
+the settings in the later files override those in the earlier files. So, for
+example, if you wanted to disable hardware stretch in the vector games, you
+can create a VECTOR.INI with the "hwstretch 0" line in it, and it will
+override whatever hwstretch value you have in your MAME.INI.
+
+* -[no]verbose / -[no]v (default: off)
+Displays some diagnostic information at startup. IMPORTANT: when reporting
+bugs, please run with mamew -verbose and include the resulting information.
+It can be very helpful in tracking down problems.
+
+Windows path and directory options
+----------------------------------
+
+* -rompath / -rp
+You can give a path (list of directories seperated by semicolons) of
+directories to be searched for roms. The default is ROMS (that is, a directory
+"roms" in the current directory).
+
+* -samplepath / -sp
+You can give a path (list of directories seperated by semicolons) of
+directories to be searched for samples. The default is SAMPLES (that is, a
+directory "samples" in the current directory).
+
+* -cfg_directory
+After running a game, MAME stores some user changeable settings into
+cfg_directory/gamename.cfg. Additionally, on the first start of MAME a
+cfg_directory/default.cfg is created. The default is CFG.
+
+* -nvram_directory
+The original hardware of some games use non-volative ram chips to save their
+configuration. The contents of these are saved into this directory. The
+default is NVRAM.
+
+* -memcard_directory
+The original hardware of some games supports so-called memory cards. The
+contents of these are stored here. The default is MEMCARD.
+
+* -input_directory
+Input recordings created by "-record" will be saved here and loaded by
+"-playback". The default is INP.
+
+* -hiscore_directory
+If there exists a file HISCORE.DAT in the MAME directory, highscores may also
+be saved for games that do not have the original hardware to support this. The
+quality of this feature depends on the accuracy of the externally available
+file HISCORE.DAT. The default is HI.
+
+* -state_directory
+MAME supports state saving for some games. These states will be saved here.
+The default is STATE.
+
+* -artwork_directory
+Some games used extra artwork not created by electical circuits. MAME supports
+such artwork in PNG image format, located in this directory. The default is
+ARTWORK.
+
+* -snapshot_directory
+Screenshots will go here. The default is SNAP.
+
+* -history_file
+The default is HISTORY.DAT. Modifying the default may not work at the moment.
+
+* -mameinfo_file
+The default is MAMEINFO.DAT. Modifying the default may not work at the moment.
+
+* -cheat_file
+The default is CHEAT.DAT. Modifying the default may not work at the moment.
+
+Disclaimer:
+Please use the path, directory and file options ONLY in MAME.INI. Otherwise,
+the outcome may be unpredictable and not consistent across releases.
+
+
+Windows video options
+---------------------
+
+* -frameskip / -fs
+Specifies the frameskip value. This is the number of frames out of every 12
+to drop when running. For example, if you say -frameskip 2, then MAME will
+display 10 out of every 12 frames. By skipping those frames, you may be able
+to get full speed in a game that requires more horsepower than your computer
+has. The default value is -frameskip 0, which skips no frames.
+
+* -[no]autoframeskip / -[no]afs
+Automatically determines the frameskip level while you're playing the game,
+adjusting it constantly in a frantic attempt to keep the game running at
+full speed. Turning this on overrides the value you have set for -frameskip
+above. The default is ON (-autoframeskip).
+
+* -[no]waitvsync
+Waits for the refresh period on your computer's monitor to finish before
+starting to draw video to your screen. If this option is off, MAMEW will
+just draw to the screen at any old time, even in the middle of a refresh
+cycle. This can cause "tearing" artifacts, where the top portion of the
+screen is out of sync with the bottom portion. Tearing is not noticeable on
+all games, and some people hate it more than others. However, if you turn
+this option on, you will waste more of your CPU cycles waiting for the
+proper time to draw, so you will see a performance hit. The default is OFF
+(-nowaitvsync). This option requires -ddraw.
+
+* -[no]triplebuffer / -[no]tb
+Enables or disables "triple buffering". Normally, MAMEW just draws directly
+to the screen, without any fancy buffering. But with this option enabled,
+MAMEW creates three buffers to draw to, and cycles between them in order. It
+attempts to keep things flowing such that one buffer is currently displayed,
+the second buffer is waiting to be displayed, and the third buffer is being
+drawn to. Unfortunately, due to some DirectDraw issues, this doesn't always
+work out as well as it should. This is still being investigated. The default
+is OFF (-notriplebuffer). This option required -ddraw and -nowindow.
+
+* -[no]ddraw / -[no]dd
+This is really just for testing. It disables the use of DirectDraw, which
+removes a lot of the features of the video system
+(-triplebuffer, -waitvsync, -resolution, -refresh, -switchres, -switchbpp, -
+resolution, -hwstretch all won't work). It will generally run really slowly.
+If anyone has a legitimate use for this option, I'd be curious to know. The
+default is ON (-ddraw).
+
+* -resolution wxh[xd] / -r wxh[xd]
+Specifies an exact resolution to run in. In full screen mode, MAMEW will try
+to use the specific resolution you request. The width (w) and height (h) are
+required; the color depth (d) is optional. If omitted or set to 0, MAMEW
+will determine the mode auomatically. For example, -resolution 640x480 will
+force 640x480 resolution, but MAMEW is free to choose the color depth.
+Similarly, -resolution 0x0x32 will force 32-bit color depth, but allows
+MAMEW to choose the resolution. The string "auto" is also supported, and is
+equivalent to 0x0x0. In window mode, this resolution is used as a maximum
+size for the window. The default is auto (-resolution auto). This option
+requires -ddraw for full screen resolution switching.
+
+* -refresh
+Specifies a particular refresh rate to set your monitor to. If the refresh
+rate is not found, or if this parameter is 0, the default DirectDraw refresh
+rate is used. The default is -refresh 0. This option requires -ddraw
+and -nowindow.
+
+* -[no]scanlines / -[no]sl
+Enables the classic MAME "scanlines" effect. The default is OFF
+(-noscanlines). This option requires -nohwstretch. It also has some bugs in
+full screen mode in MAMEW 0.37b15.
+
+* -[no]switchres
+Enables resolution switching. This option is required for the -resolution
+option to switch resolutions in full screen mode. On many modern video cards
+with hardware stretching support, there is little performance penalty at
+higher resolutions, so it is nice to be able to get rid of the monitor
+resync time when you run in full screen mode. This is also useful on LCD
+displays with a fixed resolution. The default is ON (-switchres). This
+option requires -ddraw.
+
+* -[no]switchbpp
+Enables color depth switching. This option is required for the -resolution
+option to switch color depths in full screen mode. This option is useful if
+you normally run at 16, 24, or 32 bit color depth on your desktop, and want
+to keep that color depth when you run MAME. The default is ON (-switchbpp).
+This option requires -ddraw.
+
+* -[no]maximize / -[no]max
+Controls initial window size in windowed mode. If it is set on, the window
+will initially stretch to the maximum supported size when you start MAMEW.
+If it is turned off, the window will start out at the smallest supported
+size. The default is ON (-maximize). This option requires -window.
+
+* -[no]keepaspect / -[no]ka
+Enables aspect ratio enforcement. When this option is on, the game's proper
+aspect ratio (generally 4:3 or 3:4) is enforced, so you get the game looking
+like it should. When running in a window with this option on, you can only
+resize the window to the proper aspect ratio, unless you are holding down
+the CONTROL key. By turning the option off, the aspect ratio is allowed to
+float. In full screen mode, this means that all games will stretch to the
+full screen size (even vertical games). In window mode, it means that you
+can freely resize the window without any constraints. The default is ON
+(-keepaspect).
+
+* -[no]matchrefresh
+Enables refresh rate matching. When enabled, MAMEW will try to find the
+closest refresh rate match that is greater than the game's refresh rate. For
+example, if the game runs at 57fps, and you have 60, 70, 75Hz refresh rates,
+MAMEW will choose 60Hz. If the game runs at 61fps, then it will choose 70Hz.
+This is intended mainly for those who have tweaked their video card's
+settings to provide carefully matched refresh rate options. The default is
+OFF (-nomatchrefresh). This option requires -ddraw and -nowindow.
+
+* -[no]syncrefresh
+Enables speed throttling only to the refresh of your monitor. This means
+that the game's actual refresh rate is ignored; however, the sound code
+still attempts to keep up with the game's original refresh rate, so you may
+encounter sound problems. Again, this is intended mainly for those who have
+tweaked their video card's settings to provide carefully matched refresh
+rate options. The default is OFF (-nosyncrefresh). This option
+requires -ddraw.
+
+* -[no]dirty
+This option is mainly for testing. It enables the use of MAME's internal
+dirty pixel marking scheme, which speeds up vector games tremendously. The
+default is ON (-dirty).
+
+* -[no]throttle
+Configures the default thottling setting. When throttling is on, MAMEW
+attempts to keep the game running at the game's intended speed. When
+throttling is off, MAMEW runs the game as fast as it can. The default is ON
+(-throttle).
+
+* -full_screen_brightness / -fsb
+Some video cards adjust the brightness/gamma when they switch into full
+screen mode. To counteract this, you can specify the -full_screen_brightness
+value, which is a number between 0.1 and 2. 0.1 means 1/10th as bright as
+the default, and 2 means twice as bright. Note that the hardware support for
+this option is not present on all video cards. If you set a non-zero value,
+you may get a warning if MAMEW was unable to set the brightness on your
+card. The default is 0, which means that MAMEW will not attempt to adjust
+the brightness on your video card at all. This option requires -ddraw
+and -nowindow.
+
+* -frames_to_run / -ftr
+This option can be used for benchmarking. It tells MAMEW to stop execution
+after a fixed number of frames. By combining this with a fixed set of other
+command line options, you can set up a consistent environment for
+benchmarking MAMEW performance.
+
+* -effect
+Apply various blitting effects to emulate the look of Arcade monitors. Using
+these modes comes at the cost of reduced emulation speed, which is inherent to
+these modes. The current implementation is already as fast as possible, using
+self-modifying assembly code. For some of these, MMX is required. Possible
+values:
+  none         no effect (this is the default)
+  scan25       25% scanlines
+  scan50       50% scanlines
+  scan75       75% scanlines
+  rgb3         a certain "monitor mask"
+  rgb4         another one
+  rgb6         another one
+  rgb16        another one. Choose the one you like best.
+
+* -screen_aspect
+Give a screen aspect ration in the form X:Y where X is the horizontal and Y
+the vertical part. Examples are 4:3 for most resolution settings on computer
+monitors, 5:4 for the 1280x1024 resolution or 3:4 for turnable LCD's in the
+turned position. The default is 4:3.
+
+
+MAME core video options
+-----------------------
+
+* -bpp
+Controls the internal MAME bitmap depth. Note that this is different from
+the color depth specified in the -resolution parameter. These two values do
+not have to match. Internally, MAME uses 8, 16, or 32 bit bitmaps. If you
+specify 0, it instructs MAME to use the preferred format. Generally, you
+shouldn't need to muck with this setting at all; it is mainly for
+development. The default is -bpp 0.
+
+* -[no]norotate
+* -[no]ror
+* -[no]rol
+* -[no]flipx
+* -[no]flipy
+These are the standard MAME rotation options. They are all OFF by default.
+
+* -debug_resolution wxh / -dr wxh
+Specifies the resolution of the debugger bitmap in the debug build. This
+controls how big the debugger window will be, and therefore, how many
+rows/columns it will display. The default value is 0x0, which sets the
+automatic 640x480 default debugger size. Note that the debugger is only
+available when running in a window.
+
+* -gamma
+This controls the global gamma correction in the game. It is the same gamma
+that is applied when you bring up the on-screen-display within MAME. The
+default is 1.0.
+
+MAME core vector options
+------------------------
+
+* -[no]antialias / -[no]aa
+Antialiasing for vector games. The default is ON (-antialias).
+
+* -beam
+Sets the width in pixels of the vectors. This option expects a float in the
+range of 1.00 through 16.00 as argument. The default is 1 (1 pixel wide).
+
+* -flicker
+Makes the vectors flicker. This option requires a float argument in the
+range of 0.00 - 100.00 (0=none, 100=maximum). The default is 0.
+
+* -[no]translucency / -[no]tl
+Enables or disables vector translucency. Colors of crossing vector beams
+will be merged. The default is ON (-translucency).
+
+Input device options
+--------------------
+
+* -[no]hotrod / -[no]hotrodse
+Autoconfigures MAMEW for using the Hotrod/Hotrod SE. Default is OFF for both
+(-nohotrod -nohotrodse).
+
+* -[no]mouse
+Controls whether or not MAMEW looks for a mouse controller to use. When this
+is enabled, you will not be able to use your mouse in Windows while playing
+a game. If you want to get control of your computer back, you will need to
+pause the game, or quit. The default is OFF (-nomouse).
+
+* -[no]joystick / -[no]joy
+Controls whether or not MAMEW looks for joystick/gamepad controllers. When
+this is enabled, MAMEW will ask DirectInput about which controllers are
+connected. The default is OFF (-nojoystick).
+
+MAME core sound options
+-----------------------
+
+* -samplerate / -sr
+Sets the audio sample rate. Smaller values (e.g. 11025) cause lower audio
+quality but faster emulation speed.  Higher values (e.g. 44100) cause
+higher audio quality but slower emulation speed. The default is 44100.
+
+* -[no]samples
+Use samples if available. The default is ON (-samples).
+
+* -[no]resamplefilter
+If the samplerate of the original hardware does not match the samplerate
+actually used by an integer factor, apply a filter. This is more faithful to
+the original sound, however, the sound may not be as crisp. The default is ON
+(-resamplefilter).
+
+* -[no]sound
+Enable or disable sound alltogether. The default is ON (-sound).
+
+* -volume / -vol
+Sets the startup volume. It can later be changed with the On Screen Display
+(see Keys section). The volume is an attenuation in dB: e.g., "-volume -12"
+will start with -12dB attenuation. The default is 0.
+
+MAME core misc options
+----------------------
+* -[no]artwork / -[no]art
+Enable or disable usage of additional artwork (backdrops, overlays, etc.). The
+default is ON (-artwork).
+
+* -[no]cheat / -[no]c
+Cheats, like the speedup in Pac Man or the level-skip in many other games, are
+disabled by default. Use this switch to turn them on. The default is OFF
+(-nocheat).
+
+* -[no]debug
+Activates the integrated debugger.  During emulation, press the Tilde key
+(~) to activate the debugger. This is available only if the program is
+compiled with MAME_DEBUG defined. The default is OFF (-nodebug).
+
+* -record / -rec
+Expects a filename as parameter. All game inputs are written to the file
+INP/filename.inp.
+
+* -playback / -pb
+Expects a filename as parameter. Play back all game inputs from from file
+INP/filename.inp. The gamename is contained in this file, therefore a
+gamename needs not be given on the commandline.
+
+* -[no]log
+Creates a log of illegal memory accesses in ERROR.LOG. The default is OFF
+(-nolog).
+
+
+Other MAME frontend options
+----------------------------
+
+Note: By default, all the '-list' commands below write info to the screen. If
+you wish to write the info to a textfile instead, add this to the end of your
+command:
+
+  > filename
+
+...where 'filename' is the textfile's path and name (e.g., c:\mame\list.txt).
+
+ - - -
+
+* -list / -ls
+Displays a list of currently supported games.
+
+* -listfull / -ll
+Displays a list of game directory names + descriptions.
+
+* -listroms
+Displays ROMs required by the specified game.
+
+* -listsamples
+Displays samples required by the specified game.
+
+* -listdetails
+Displays a detailed list of drivers and the hardware they use.
+
+* -listgames
+List the supported games, year, manufacturer.
+
+* -listinfo
+List comprehensive details for all of the supported games.
+
+* -listclones
+Lists clones of the specified game. When no game is specified, this
+generates a list of all MAME-supported clones.
+
+* -noclones
+Used together with the list commands, doesn't list alternate versions of
+the same game
+
+* -verifyroms
+Checks specified game(s) for missing and invalid ROMs.  Adding * checks all
+available games.
+
+* -verifysets
+Checks specified game(s) and reports its status.  Adding * checks all
+available games.
+
+* -verifysamples
+Check selected game for missing samples.  Adding * checks all available
+samples.
+
+
+Keys
+----
+Tab          Toggles the configuration menu
+Tilde        Toggles the On Screen Display
+             Use the up and down arrow keys to select the parameter (global
+             volume, mixing level, gamma correction etc.), left and right to
+             arrow keys to modify it.
+P            Pauses the game
+Shift+P      While paused, advances to next frame
+F3           Resets the game
+F4           Shows the game graphics. Use cursor keys to change set/color,
+             F4 or Esc to return to the emulation.
+F9           Changes frame skip on the fly
+F10          Toggles speed throttling
+F11          Toggles speed display
+Shift+F11    Toggles profiler display (debug builds only)
+F12          Saves a screen snapshot. The default target directory is SNAP. You
+             must create this directory yourself; the program will not create
+             it if it doesn't exist.
+ESC          Exits emulator

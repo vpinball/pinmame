@@ -1,0 +1,2016 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{532cdeb1-8f34-4a88-afad-cb02df3b7f17}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\MAME">
+      <UniqueIdentifier>{c7a886c0-daa8-4b17-8dad-e881c261e94f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU">
+      <UniqueIdentifier>{a0961c95-f4c8-4018-bdbf-6a873b85e4f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\ADSP2100">
+      <UniqueIdentifier>{7f482038-8228-4e15-8bbf-baa6c1894acb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\M6809">
+      <UniqueIdentifier>{b3d90821-173c-428a-9a90-d884ae017bf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\M6800">
+      <UniqueIdentifier>{8904e7a3-18bd-4190-b294-020ea45b0809}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\Z80">
+      <UniqueIdentifier>{d5b32ba5-2650-4adc-a682-0736a76a6004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\M6502">
+      <UniqueIdentifier>{2e71a297-795d-450a-83af-a59991cc7576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\M68000">
+      <UniqueIdentifier>{ad00d1b3-8bc8-4a20-b7a1-4f1396e72b0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\M68000\generated_by_m68kmake">
+      <UniqueIdentifier>{d850d86e-8c7c-4c8c-9887-27ed5dedb391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\S2650">
+      <UniqueIdentifier>{c78a7b75-37ba-4aac-87f7-b493b2592721}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\I8085">
+      <UniqueIdentifier>{0baa30b6-f25b-40ae-b768-c88f5b2b8c30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\I8039">
+      <UniqueIdentifier>{b32a8da0-1da3-4dff-a954-a7a6f5a91ab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\I86">
+      <UniqueIdentifier>{0f28c47f-28a1-4315-9463-eaa181ab0d3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\I4004">
+      <UniqueIdentifier>{c1f9d4d2-27a0-48d4-a071-79750c9f3599}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\PPS4">
+      <UniqueIdentifier>{22baf064-6c88-4fa6-b1de-aeca0030c22c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\SCAMP">
+      <UniqueIdentifier>{1a83fd95-c300-4e04-835e-546846213d27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\I8051">
+      <UniqueIdentifier>{352196d6-d598-43ae-8a5f-1aab9a74808a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\TMS7000">
+      <UniqueIdentifier>{f9b55b39-13f0-4553-8a1b-c14c03e515f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\AT91">
+      <UniqueIdentifier>{fab27a7c-75b1-4fa9-b8ff-c220df9403b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\ARM7">
+      <UniqueIdentifier>{c2f914e2-29d8-47a6-9574-6d324b67ec3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\CDP1802">
+      <UniqueIdentifier>{2a710263-7fa3-403b-855b-447859de71b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\COP400">
+      <UniqueIdentifier>{e98a5895-6069-4846-b563-14b0888d4696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\CPU\TMS9900">
+      <UniqueIdentifier>{75dd39f7-049c-4f69-bda5-aa176cabdadf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\Machine">
+      <UniqueIdentifier>{6b4257f0-4b30-4ebb-9cad-ece11faa4d8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\Sound">
+      <UniqueIdentifier>{b48046f6-5012-455c-a895-953a62deb5a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\MAME\VidHrdw">
+      <UniqueIdentifier>{b15f2dc2-72ed-47cf-affe-f607fe87f89f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{850ec9ac-7c72-456f-b9d9-27638dafad09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME">
+      <UniqueIdentifier>{1ab471e6-2f37-4cf5-a064-db7a71b8b97f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims">
+      <UniqueIdentifier>{aa3808c6-0afc-49c3-847b-b5b6e31c8761}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\s11">
+      <UniqueIdentifier>{148bd585-f166-4254-ae57-93fce8901fb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\s11\full_s11">
+      <UniqueIdentifier>{ac0b9aef-c039-4ce5-b332-cb55a773acc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\s11\prelim_s11">
+      <UniqueIdentifier>{81f98efe-03d3-4b04-847b-0e2ead110e89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\wpc">
+      <UniqueIdentifier>{3b8b30bd-b2eb-4a4d-a6b1-85d8938f8d67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\wpc\full_wpc">
+      <UniqueIdentifier>{be2d8fb8-0bc9-4edb-89e5-cc3c04741070}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\wpc\prelim_wpc">
+      <UniqueIdentifier>{e8fdb4cb-b4c2-4d96-ba9f-72a83a7e738e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\s7">
+      <UniqueIdentifier>{148c851e-37be-4bde-9f69-ef28cdedcc1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\s7\full_s7">
+      <UniqueIdentifier>{7c04beac-eac2-40be-b594-d038b0dd6119}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\se">
+      <UniqueIdentifier>{6e2bea5b-5b80-4aed-980b-1cec8b6f33d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinMAME\sims\se\prelim_se">
+      <UniqueIdentifier>{20f038d0-4a56-4a1a-bb10-c1ab3f83a833}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VC">
+      <UniqueIdentifier>{0db8e67d-2716-47de-ba70-f6e606da53da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VPinMAME">
+      <UniqueIdentifier>{034f9325-e0ed-4e45-afd9-ccc4d19b5566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\external">
+      <UniqueIdentifier>{7b076845-2463-4ca5-8aee-3d999746f786}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\external\zlib">
+      <UniqueIdentifier>{4bcc24a4-1e1b-4884-a66f-89084ec30bed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{025c82ac-f73b-408e-a1bd-9fe88ad3cee9}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Source Files\external\basicbitmap">
+      <UniqueIdentifier>{04845ed9-2191-4b84-b489-705dd4c69b24}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\artwork.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\audit.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cheat.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpuexec.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpuint.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpuintrf.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\datafile.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\drawgfx.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fileio.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\filter.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\harddisk.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hash.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hiscore.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\info.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inptport.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mame.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mamedbg.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\md5.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memory.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\palette.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\png.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\profiler.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sha1.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sndintrf.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\state.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tilemap.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\timer.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui_text.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\unzip.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\usrintrf.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\version.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\window.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\adsp2100\2100dasm.c">
+      <Filter>Source Files\MAME\CPU\ADSP2100</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\adsp2100\2100ops.c">
+      <Filter>Source Files\MAME\CPU\ADSP2100</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\adsp2100\adsp2100.c">
+      <Filter>Source Files\MAME\CPU\ADSP2100</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6809\6809dasm.c">
+      <Filter>Source Files\MAME\CPU\M6809</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6809\6809ops.c">
+      <Filter>Source Files\MAME\CPU\M6809</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6809\6809tbl.c">
+      <Filter>Source Files\MAME\CPU\M6809</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6809\m6809.c">
+      <Filter>Source Files\MAME\CPU\M6809</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6800\6800dasm.c">
+      <Filter>Source Files\MAME\CPU\M6800</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6800\6800ops.c">
+      <Filter>Source Files\MAME\CPU\M6800</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6800\6800tbl.c">
+      <Filter>Source Files\MAME\CPU\M6800</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6800\m6800.c">
+      <Filter>Source Files\MAME\CPU\M6800</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\z80\z80.c">
+      <Filter>Source Files\MAME\CPU\Z80</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\z80\z80dasm.c">
+      <Filter>Source Files\MAME\CPU\Z80</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\6502dasm.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\m6502.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\t6502.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\t6510.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\t65c02.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m6502\t65sc02.c">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\m68kcpu.c">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\m68kdasm.c">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\m68kmake.c">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\m68kmame.c">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\generated_by_m68kmake\m68kopac.c">
+      <Filter>Source Files\MAME\CPU\M68000\generated_by_m68kmake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\generated_by_m68kmake\m68kopdm.c">
+      <Filter>Source Files\MAME\CPU\M68000\generated_by_m68kmake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\generated_by_m68kmake\m68kopnz.c">
+      <Filter>Source Files\MAME\CPU\M68000\generated_by_m68kmake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\m68000\generated_by_m68kmake\m68kops.c">
+      <Filter>Source Files\MAME\CPU\M68000\generated_by_m68kmake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\s2650\2650dasm.c">
+      <Filter>Source Files\MAME\CPU\S2650</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\s2650\s2650.c">
+      <Filter>Source Files\MAME\CPU\S2650</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8085\8085dasm.c">
+      <Filter>Source Files\MAME\CPU\I8085</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8085\i8085.c">
+      <Filter>Source Files\MAME\CPU\I8085</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8039\8039dasm.c">
+      <Filter>Source Files\MAME\CPU\I8039</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8039\i8039.c">
+      <Filter>Source Files\MAME\CPU\I8039</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i86\i86.c">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i86\i86dasm.c">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i86\i86time.c">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i86\instr186.c">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i86\instr86.c">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i4004\4004dasm.c">
+      <Filter>Source Files\MAME\CPU\I4004</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i4004\i4004.c">
+      <Filter>Source Files\MAME\CPU\I4004</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\pps4\pps4.c">
+      <Filter>Source Files\MAME\CPU\PPS4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\pps4\pps4dasm.c">
+      <Filter>Source Files\MAME\CPU\PPS4</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\scamp\scamp.c">
+      <Filter>Source Files\MAME\CPU\SCAMP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\scamp\scampdsm.c">
+      <Filter>Source Files\MAME\CPU\SCAMP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8051\8051dasm.c">
+      <Filter>Source Files\MAME\CPU\I8051</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8051\i8051.c">
+      <Filter>Source Files\MAME\CPU\I8051</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\i8051\i8051ops.c">
+      <Filter>Source Files\MAME\CPU\I8051</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms7000\7000dasm.c">
+      <Filter>Source Files\MAME\CPU\TMS7000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms7000\tms7000.c">
+      <Filter>Source Files\MAME\CPU\TMS7000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms7000\tms70op.c">
+      <Filter>Source Files\MAME\CPU\TMS7000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms7000\tms70tb.c">
+      <Filter>Source Files\MAME\CPU\TMS7000</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\at91\at91.c">
+      <Filter>Source Files\MAME\CPU\AT91</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\at91\at91dasm.c">
+      <Filter>Source Files\MAME\CPU\AT91</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7core.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7dasm.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7exec.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\arm7\arm7jit.c">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cdp1802\1802dasm.c">
+      <Filter>Source Files\MAME\CPU\CDP1802</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cdp1802\cdp1802.c">
+      <Filter>Source Files\MAME\CPU\CDP1802</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cop400\410ops.c">
+      <Filter>Source Files\MAME\CPU\COP400</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cop400\420ops.c">
+      <Filter>Source Files\MAME\CPU\COP400</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cop400\cop420.c">
+      <Filter>Source Files\MAME\CPU\COP400</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\cop400\cop420ds.c">
+      <Filter>Source Files\MAME\CPU\COP400</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms9900\9900dasm.c">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms9900\tms9900.c">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms9900\tms9980a.c">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu\tms9900\tms9995.c">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\4094.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\6522via.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\6530riot.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\6532riot.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\6821pia.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\8255ppi.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\eeprom.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\mathbox.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\pic8259.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\ticket.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine\z80fmly.c">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\2151intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\2203intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\3812intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\5110intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\5220intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\adpcm.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\astrocde.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\ay8910.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\bsmt2000.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\dac.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_dev.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_flt.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_inp.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_mth.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_out.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\disc_wav.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\discrete.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\fm.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\fmopl.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\hc55516.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\m114s.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\mea8000.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\mixer.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\msm5205.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\s14001a.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\samples.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\sn76477.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\sn76496.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\sp0250.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\sp0256.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\streams.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\tms320av120.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\tms5110.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\tms5110r.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\tms5220.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\tms5220r.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\votrax.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\ym2151.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\ymdeltat.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vidhrdw\avgdvg.c">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vidhrdw\crtc6845.c">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vidhrdw\generic.c">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vidhrdw\tms9928a.c">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vidhrdw\vector.c">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\blit.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\config.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\fileio.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\fronthlp.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\input.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\jit.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\jitemit.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\misc.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\rc.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\snprintf.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\sound.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\ticker.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\video.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\wind3d.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\wind3dfx.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\winddraw.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\window.c">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\allied.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\alvg.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\alvgdmd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\alvggames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\alvgs.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\atari.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\atarigames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\atarisnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\bingo.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\boomerang.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\bowarrow.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\bowlgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by35.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by35games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by35snd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by6803.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by6803games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\by68701.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\byvidgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\byvidpin.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\capcom.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\capcoms.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\capgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\core.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\dedmd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\degames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\desound.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\driver.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\flicker.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gp.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gpgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gpsnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts1.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts1games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts3.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts3dmd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts3games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts80.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts80games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\gts80s.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\hnkgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\hnks.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\icecoldbeer.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\idsa.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\inder.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\indergames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\jeutel.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\jp.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\jpgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\jvh.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\kissproto.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\ltd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\ltdgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\mac.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\mech.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\mephisto.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\micropin.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\mrgame.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\mrgamegames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\nsm.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\nuova.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\peyper.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\peypergames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\play.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\playgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\playsnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\rotation.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\rowamet.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s11.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s11games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s3games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s4.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s4games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s6.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s6games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s7.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\s7games.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\se.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\segames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sim.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\slalom.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sleic.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sleicgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\snd_cmd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sndbrd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\spectra.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\spinb.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\spinbgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\spiritof76.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\stargame.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\stgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\stsnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\tabart.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\taito.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\taitogames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\taitos.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\techno.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\vd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\vpintf.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\wico.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\wmssnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\wpc.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\wpcgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\wpcsam.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\zac.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\zacgames.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\zacproto.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\zacsnd.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\s11\full\dd.c">
+      <Filter>Source Files\PinMAME\sims\s11\full_s11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\s11\full\milln.c">
+      <Filter>Source Files\PinMAME\sims\s11\full_s11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\s11\prelim\eatpm.c">
+      <Filter>Source Files\PinMAME\sims\s11\prelim_s11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\afm.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\bop.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\br.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\cftbl.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\dd_wpc.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\drac.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\fh.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\ft.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\gi.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\gw.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\hd.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\hurr.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\ij.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\jd.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\mm.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\ngg.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\pz.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\rs.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\ss.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\sttng.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\t2.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\taf.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\tom.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\tz.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\wcs.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\full\ww.c">
+      <Filter>Source Files\PinMAME\sims\wpc\full_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\cc.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\congo.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\corv.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\cp.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\cv.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\dh.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\dm.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\dw.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\fs.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\i500.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\jb.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\jm.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\jy.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\mb.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\nbaf.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\nf.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\pop.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\sc.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\totan.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\ts.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\wpc\prelim\wd.c">
+      <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\s7\full\bk.c">
+      <Filter>Source Files\PinMAME\sims\s7\full_s7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\s7\full\tmfnt.c">
+      <Filter>Source Files\PinMAME\sims\s7\full_s7</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\se\prelim\elvis.c">
+      <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\se\prelim\harley.c">
+      <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\sims\se\prelim\monopoly.c">
+      <Filter>Source Files\PinMAME\sims\se\prelim_se</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vc\dirent.c">
+      <Filter>Source Files\VC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\Alias.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\Controller.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerDisclaimerDlg.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerGame.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerGames.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerGameSettings.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerRom.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerRoms.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerRun.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerSettings.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\ControllerSplashWnd.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\DisplayInfo.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\DisplayInfoList.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\StdAfx.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\VPinMAME.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\VPinMAMEAboutDlg.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\VPinMAMEConfig.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\WSHDlg.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\WSHDlgCtrl.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\win32com\WSHDlgCtrls.cpp">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\ymf262.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound\262intf.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\barni.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\inderp.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\joctronic.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\lancelot.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\dmddevice.cpp">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\basicbitmap\BasicBitmap.cpp">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClCompile>
+    <ClCompile Include="ext\basicbitmap\BasicBitmap_SSE2.cpp">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\artwork.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\audit.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cheat.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\config.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuexec.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuint.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuintrf.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\datafile.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\drawgfx.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\driver.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fileio.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\filter.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gfxobj.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\harddisk.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hash.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\hiscore.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\info.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inptport.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\legacy.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mame.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mamedbg.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\md5.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\memory.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\multidef.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\osdepend.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\palette.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\png.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\profiler.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sha1.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sndintrf.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sprite.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\state.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tilemap.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\timer.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui_text.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\unzip.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\usrintrf.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\window.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\adsp2100\adsp2100.h">
+      <Filter>Source Files\MAME\CPU\ADSP2100</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6809\m6809.h">
+      <Filter>Source Files\MAME\CPU\M6809</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6800\m6800.h">
+      <Filter>Source Files\MAME\CPU\M6800</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\z80\z80.h">
+      <Filter>Source Files\MAME\CPU\Z80</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\z80\z80daa.h">
+      <Filter>Source Files\MAME\CPU\Z80</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\z80\z80dasm.h">
+      <Filter>Source Files\MAME\CPU\Z80</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\ill02.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\m6502.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\m65ce02.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\ops02.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\opsc02.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m6502\opsn2a03.h">
+      <Filter>Source Files\MAME\CPU\M6502</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\cpudefs.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\m68000.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\m68k.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\m68kconf.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\m68kcpu.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\m68kmame.h">
+      <Filter>Source Files\MAME\CPU\M68000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\m68000\generated_by_m68kmake\m68kops.h">
+      <Filter>Source Files\MAME\CPU\M68000\generated_by_m68kmake</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\s2650\s2650.h">
+      <Filter>Source Files\MAME\CPU\S2650</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\s2650\s2650cpu.h">
+      <Filter>Source Files\MAME\CPU\S2650</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i8085\i8085.h">
+      <Filter>Source Files\MAME\CPU\I8085</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i8085\i8085cpu.h">
+      <Filter>Source Files\MAME\CPU\I8085</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i8085\i8085daa.h">
+      <Filter>Source Files\MAME\CPU\I8085</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i8039\i8039.h">
+      <Filter>Source Files\MAME\CPU\I8039</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\ea.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\host.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\i186intf.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\i188intf.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\i86.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\i86intf.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\i88intf.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\instr186.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\instr86.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\modrm.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\table186.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i86\table86.h">
+      <Filter>Source Files\MAME\CPU\I86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i4004\i4004.h">
+      <Filter>Source Files\MAME\CPU\I4004</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i4004\i4004cpu.h">
+      <Filter>Source Files\MAME\CPU\I4004</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i4004\i4004daa.h">
+      <Filter>Source Files\MAME\CPU\I4004</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\pps4\pps4.h">
+      <Filter>Source Files\MAME\CPU\PPS4</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\pps4\pps4cpu.h">
+      <Filter>Source Files\MAME\CPU\PPS4</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\scamp\scamp.h">
+      <Filter>Source Files\MAME\CPU\SCAMP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\i8051\i8051.h">
+      <Filter>Source Files\MAME\CPU\I8051</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\tms7000\tms7000.h">
+      <Filter>Source Files\MAME\CPU\TMS7000</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\at91\at91.h">
+      <Filter>Source Files\MAME\CPU\AT91</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\arm7\arm7.h">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\arm7\arm7core.h">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\arm7\arm7jit.h">
+      <Filter>Source Files\MAME\CPU\ARM7</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\cdp1802\cdp1802.h">
+      <Filter>Source Files\MAME\CPU\CDP1802</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\cop400\cop400.h">
+      <Filter>Source Files\MAME\CPU\COP400</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\tms9900\9900stat.h">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\tms9900\99xxcore.h">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\tms9900\99xxstat.h">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpu\tms9900\tms9900.h">
+      <Filter>Source Files\MAME\CPU\TMS9900</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\4094.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\6522via.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\6530riot.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\6532riot.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\6821pia.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\8255ppi.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\eeprom.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\mathbox.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\pic8259.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\ticket.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\machine\z80fmly.h">
+      <Filter>Source Files\MAME\Machine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\2151intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\2203intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\3812intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\5110intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\5220intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\adpcm.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\astrocde.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ay8910.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\bsmt2000.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\dac.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\discrete.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\fm.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\fmopl.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\hc55516.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\m114s.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\mea8000.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\mixer.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\msm5205.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\s14001a.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\samples.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\sn76477.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\sn76496.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\sp0250.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\sp0256.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\streams.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\tms320av120.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\tms5110.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\tms5220.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\votrax.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ym2151.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ymdeltat.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vidhrdw\avgdvg.h">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vidhrdw\crtc6845.h">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vidhrdw\generic.h">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vidhrdw\tms9928a.h">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vidhrdw\vector.h">
+      <Filter>Source Files\MAME\VidHrdw</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\blit.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\d3d_extra.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\dirty.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jit.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jitemit.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\misc.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\msc.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\osd_cpu.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\osinline.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\pattern.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\rc.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\video.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\wind3d.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\wind3dfx.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\winddraw.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\window.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\winprefix.h">
+      <Filter>Source Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\alvg.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\alvgdmd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\alvgs.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\atari.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\by35.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\by35snd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\by6803.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\byvidpin.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\capcom.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\capcoms.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\core.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\dedmd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\desound.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gen.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gp.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gpsnd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gts1.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gts3.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gts3dmd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gts80.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\gts80s.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\hnks.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\inder.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\jp.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\ltd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\mech.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\mrgame.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\peyper.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pinmame.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\play.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\s11.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\s4.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\s6.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\s7.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\se.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\sim.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\sleic.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\snd_cmd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\sndbrd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\spinb.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\stsnd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\taito.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\taitos.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\vpintf.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\wmssnd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\wpc.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\wpcsam.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\zac.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\zacsnd.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vc\dirent.h">
+      <Filter>Source Files\VC</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vc\unistd.h">
+      <Filter>Source Files\VC</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\Alias.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\Controller.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerDisclaimerDlg.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerGame.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerGames.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerGameSettings.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerRegkeys.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerRom.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerRoms.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerSettings.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\ControllerSplashWnd.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\DisplayInfo.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\DisplayInfoList.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\dlldatax.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\resource.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\StdAfx.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\VPinMAMEAboutDlg.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\VPinMAMEConfig.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\VPinMAMECP.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\WSHDlg.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\WSHDlgCtrl.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32com\WSHDlgCtrls.h">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\include\zconf.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\zlib\include\zlib.h">
+      <Filter>Source Files\external\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\262intf.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\ymf262.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wpc\dmddevice.h">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\basicbitmap\BasicBitmap.h">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\basicbitmap\BasicBitmap_C.h">
+      <Filter>Source Files\external\basicbitmap</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\sound\vtxsmpls.inc">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </None>
+    <None Include="src\win32com\VPinMAME.def">
+      <Filter>Source Files\VPinMAME</Filter>
+    </None>
+    <None Include="src\win32com\VPinMAME64.def">
+      <Filter>Source Files\VPinMAME</Filter>
+    </None>
+    <None Include="src\win32com\Controller.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="src\win32com\WSHDlg.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="src\win32com\VPinMAME.idl">
+      <Filter>Source Files\VPinMAME</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\win32com\VPinMAME.rc">
+      <Filter>Source Files\VPinMAME</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\win32com\Res\VPinMAMELogo.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="src\win32com\Res\VPinMAMESplash2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="src\win32com\Res\VPinMAMESplash3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\windows\asmblit.asm">
+      <Filter>Source Files\Windows</Filter>
+    </CustomBuild>
+    <CustomBuild Include="src\windows\asmtile.asm">
+      <Filter>Source Files\Windows</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,359 @@
+How to setup MinGW to compile PinMAME/32
+========================================
+
+-----
+Notes
+-----
+The file "src\windows\setup.txt" is the original text delivered by MAME and is
+out of date. Please ignore it.
+
+PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
+Unfortunately the GCC 3.2 update is nomore available at the official MinGW
+project homepage, so it is hosted on the PinMAME project homepage.
+It has been maintained to compile with more recent MinGW packages too, but
+although it compiles well with GCC 4.4/4.5 there a missing sounds on some ROMs.
+Note that other GCC versions are not tested and may throw some warnings or
+errors which stop the build process, hence it is recommended to use 3.2 for now.
+
+This guide shows how to setup MinGW in version 2.0 and a setup with more recent
+MinGW packages, so PinMAME and PinMAME32 can be compiled with it.
+
+
+----------
+Info links
+----------
+The MAME development homepage is available at http://www.mamedev.org/
+The MinGW homepage is available at http://www.mingw.org/
+The Allegro homepage is available at http://alleg.sourceforge.net/
+The ZLib homepage is available at http://www.zlib.net/
+The NASM homepage is available at http://www.nasm.us/
+The GCC homepage is available at http://gcc.gnu.org/
+The GDB homepage is available at http://www.gnu.org/software/gdb/
+The Make homepage is available at http://www.gnu.org/software/make/
+The 7-Zip homepage is available at http://www.7-zip.org/
+The P-ROC homepage is available at http://www.pinballcontrollers.com/
+The YAML-CPP homepage is available at http://code.google.com/p/yaml-cpp/
+The FTDI homepage is available at http://www.ftdichip.com/
+
+
+-----------------
+Step 1: Downloads
+-----------------
+- Create a directory to hold all downloads, for example c:\mingw-setup.
+
+- Choose between a MinGW 2.0 setup or a more recent one.
+  For P-ROC support either use MinGW2/GCC3.2.3 setup, or MinGW5/GCC 4.5.0 setup
+  but with sounds issues on some ROMs.
+
+  a) MinGW 2.0
+     Download MinGW-2.0.0-3.exe to the downloads directory.
+     Unfortunately it is nomore available at the official MinGW project homepage.
+     Get it from http://sourceforge.net/projects/pinmame/files/mingw/
+
+     Mandatory update: newer objcopy and strip executables.
+     * binutils-2.19.1-mingw32-bin (later versions should work too)
+     Get it from http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GNU-Binutils/
+
+     Recommended updates: Download latest versions of GCC 3.2 and GDB 5 for MinGW.
+     * gcc-3.2.3-20030504-1
+     * gdb-5.2.1-1.exe
+     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
+               and http://sourceforge.net/downloads/mingw/MinGW/BaseSystem/GDB/
+
+  b) More recent MinGW setup
+     Download the following binary packages to the downloads directory.
+     The packages carry the version numbers as of the last testing, but newer
+     packages should work too.
+
+     (MinGW 5 tested in June 2010)
+     * mingwrt-3.18-mingw32-dll        (part of the Base System)
+     * mingwrt-3.18-mingw32-dev        (part of the Base System)
+     * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
+     * w32api-3.14-mingw32-dev         (part of the Base System)
+     * gdb-7.1-2-mingw32-bin           (part of the Base System)
+       with expat: libexpat-2.0.1-1-mingw32-dll-1
+     * make-3.81-20090914-mingw32-bin
+
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
+
+     Also possible is GCC 4.5.0 but with missing sounds on some ROMs:
+     * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
+       with libgmp: libgmp-5.0.1-1-mingw32-dll-10
+               mpc: libmpc-0.8.1-1-mingw32-dll-2
+              mpfr: libmpfr-2.4.1-1-mingw32-dll-1
+
+
+     (MinGW 5 tested in October 2009)
+     * mingwrt-3.16-mingw32-dll        (part of the Base System)
+     * mingwrt-3.16-mingw32-dev        (part of the Base System)
+     * binutils-2.19.1-mingw32-bin     (part of the Base System)
+     * w32api-3.13-mingw32-dev         (part of the Base System)
+     * gdb-6.3-1.exe                   (part of the Base System)
+       (also gdb-7.0-2-mingw32-bin was tested)
+     * make-3.81-20090914-mingw32-bin
+
+     You may use GCC 3.2.3 to have sounds with all ROMs, but P-ROC support can not be build:
+     * gcc-3.2.3-20030504-1
+
+     Also possible is GCC 4.4.0 but with missing sounds on some ROMs:
+     * gcc-full-4.4.0-mingw32-bin-2    (part of the Base System)
+       gcc-c++-4.5.0-1-mingw32-bin     (part of the Base System)
+
+     (MinGW 5 tested in May 2008)
+     * mingw-runtime-3.14              (part of the Base System)
+     * binutils-2.17.50-20060824-1     (part of the Base System)
+     * w32api-3.11                     (part of the Base System)
+     * mingw32-make-3.81-20080326-2
+     * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
+     * gcc-3.2.3-20030504-1
+     * gdb-5.2.1-1.exe
+
+     Get them from http://sourceforge.net/projects/pinmame/files/mingw/
+               and http://sourceforge.net/downloads/mingw/MinGW/ (BaseSystem and make)
+
+- Download the ZLib library (libz) to the downloads directory.
+  * libz-1.2.3-1-mingw32-dev
+  Get it from http://sourceforge.net/downloads/mingw/MinGW/zlib/
+
+  For a real MinGW 2.0 setup use ZLib 1.1.4. This has to be compiled (explained
+  later in step 3), so download the ZLib source code to the downloads directory.
+  * zlib-1.1.4.tar.gz
+  Get it from http://sourceforge.net/projects/libpng/files/zlib/1.1.4/
+
+- Download the latest version of Allegro's DirectX includes for MinGW to the
+  downloads directory.
+  * dx70_mgw.zip
+  Get it from http://alleg.sourceforge.net/
+  Note: Newer versions of Allegro's DirectX includes work too (currently dx80_mgw.zip).
+
+- Download the GNU-like tools from MAME to the downloads directory.
+  * mame-gnulike.exe
+  Get it from http://www.mamedev.org/tools/#hard
+
+- Download the assembler compiler NASM 2.0 for Win32 to the downloads directory.
+  * nasm-2.02-win32 (later versions should work too)
+  Get it from http://www.nasm.us/pub/nasm/releasebuilds/
+
+For P-ROC support additional downloads are necessary:
+
+- Download the P-ROC library (libpinproc) to the downloads directory.
+  * libpinproc-20101230-mingw2-gcc323-dev
+  - or -
+  * libpinproc-20101230-mingw5-gcc450-dev
+  Get it from http://ftp.maddes.net/mingw/libpinproc/
+
+- Download the YAML-CPP library (libyaml-cpp) to the downloads directory.
+  * libyaml-cpp-0.2.5-mingw2-gcc323-dev
+  - or -
+  * libyaml-cpp-0.2.5-mingw5-gcc450-dev
+  Get it from http://ftp.maddes.net/mingw/yaml-cpp/
+
+- Download FTDI's ftd2xx library (D2XX Direct Drivers) to the downloads directory.
+  * CDM20808.zip
+  Get it from http://www.ftdichip.com/Drivers/D2XX.htm
+
+
+-------------
+Step 2: Setup
+-------------
+- Attention!!! Whenever extracting an archive then always extract it including
+               its directory structure, otherwise it won't work.
+               Use 7-Zip to unpack a lzma archive.
+
+- Depending if it is a MinGW 2.0 setup or a more recent one:
+  a) MinGW 2.0
+     Run the MinGW installer; install to a reasoned path, for example c:\mingw2.
+     It contains GCC 3.2, GDB 5.1.1, mingw32-make, w32api, etc.
+
+     Extract the objcopy and strip executables to the bin folder of the
+     installation, e.g. c:\mingw2\bin.
+     * binutils-2.19.1-mingw32-bin
+
+     Extract the recommended update for GCC to the installation directory.
+     Some files must be overwritten ("bin/*.exe", "lib/*.a").
+     * gcc-3.2.3-20030504-1
+
+     Install the recommended update for GDB by running its installer; install to
+     the installation directory.
+     * gdb-5.2.1-1.exe
+
+  b) More recent MinGW setup
+     Create a directory to hold the MinGW installation, for example c:\mingw5.
+     Extract all binary packages of MinGW to the installation directory.
+
+     (MinGW 5 tested in June 2010)
+     * mingwrt-3.18-mingw32-dll        (part of the Base System)
+     * mingwrt-3.18-mingw32-dev        (part of the Base System)
+     * binutils-2.20.1-2-mingw32-bin   (part of the Base System)
+     * w32api-3.14-mingw32-dev         (part of the Base System)
+     * gcc-core-4.5.0-1-mingw32-bin    (part of the Base System)
+       with libgmp: libgmp-5.0.1-1-mingw32-dll-10
+               mpc: libmpc-0.8.1-1-mingw32-dll-2
+              mpfr: libmpfr-2.4.1-1-mingw32-dll-1
+     * gdb-7.1-2-mingw32-bin           (part of the Base System)
+       with expat: libexpat-2.0.1-1-mingw32-dll-1
+     * make-3.81-20090914-mingw32-bin
+     * libz-1.2.3-1-mingw32-dev
+     * Allegro DirectX 8.0 Header
+     * NASM 2.07
+     * MAME GNU-like 20100102
+
+     (MinGW 5 tested in October 2009)
+     * mingwrt-3.16-mingw32-dll
+     * mingwrt-3.16-mingw32-dev
+     * binutils-2.19.1-mingw32-bin
+     * make-3.81-20090914-mingw32-bin
+     * w32api-3.13-mingw32-dev
+     * gcc-full-4.4.0-mingw32-bin-2
+     * gdb-6.3-1.exe (or gdb-7.0-2-mingw32-bin)
+
+     (MinGW 5 tested in May 2008)
+     * mingw-runtime-3.14
+     * binutils-2.17.50-20060824-1
+     * mingw32-make-3.81-20080326-2
+     * w32api-3.11
+     * (plus GCC 3.2.3 and GDB 5.2.1 from MinGW 2.0 setup above)
+
+- If the MinGW release of the ZLib library (libz) is used, then extract it to
+  the installation directory.
+  * libz-1.2.3-1-mingw32-dev
+
+  Otherwise follow the instructions later in step 3.
+
+- Extract Allegro's DirectX package to the installation directory.
+  Some files are already present ("lib/libd*.a", "include/d*.h") and are
+  normally overwritten.
+  * dx70_mgw.zip
+  Note: Newer versions of Allegro's DirectX package work too (currently dx80_mgw.zip).
+
+- Add the bin folder of the installation directory, e.g. c:\mingw5\bin, to the
+  system's path.
+
+  If multiple MinGW installations are used, then it is recommended to use batch
+  files to set the system's path temporary instead of changing it permanently.
+    Example "mingw2.bat":
+      path c:\mingw2\bin;%path%
+    Example "mingw5.bat":
+      path c:\mingw5\bin;%path%
+  Call the corresponding batch file for the needed MinGW version.
+
+For P-ROC support additional MinGW installations are necessary:
+
+- Extract the P-ROC library (libpinproc) package to the installation directory.
+  * libpinproc_20101205-mingw32-dev.tar.gz
+
+- Extract the YAML-CPP library (libyaml-cpp) package to the installation directory.
+  * libyaml-cpp-0.2.5-mingw32-dev.tar.gz
+
+- Extract the following files from FTDI's ftd2xx library (D2XX Direct Drivers)
+  to the installation directory.
+  * CDM20808.zip
+    - i386/ftd2xx.lib to MinGW's lib folder
+    - ftd2xx.h to MinGW's include folder
+
+
+The other (non-MinGW) tools can be placed into separate installation directories
+and added to the system's path separately (or also placed in the above mentioned
+MinGW batch files).
+
+- Run the MAME GNU-like tools installer; install to a separate installation
+  directory, e.g. c:\mame-gnu-like.
+  It contains Windows replacements for some typical GNU/Linux tools (rm, diff/patch, etc.).
+  * mame-gnulike.exe
+
+  Add the installation directory to the system's path (or add it to the relevant
+  MinGW batch files).
+
+- Extract NASM into a separate installation directory, e.g. c:\nasm2.
+  * nasm-2.02-win32
+
+  Add the installation directory to the system's path (or add it to the relevant
+  MinGW batch files).
+
+  Note: If an older NASM Win32 package is used (<0.99.4), then rename the
+        executables to "nasm.exe" and "ndisasm.exe" by removing the W letter.
+
+
+-----------------
+Step 3: Libraries
+-----------------
+- This step is only necessary if the MinGW release of the ZLib library (libz) is
+  *not* used.
+
+- Extract the ZLib source code into a temporary directory.
+  Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
+  Type "mingw32-make -f nt\Makefile.gcc test" to check its functionality.
+  Copy the resulting libz.a to the lib folder of the installation, e.g.
+  c:\mingw\lib, and also zlib.h and zconf.h to the include folder of the
+  installation, e.g. c:\mingw\include.
+
+  Notes for ZLib 1.2.3:
+  - The makefile is "win32\makefile.gcc".
+  - The test may fail due to normal slashes inside the makefile.
+    Just replace "./" with ".\" inside of it and it will work.
+  - Copy libzdll.a to the lib folder of the installation, e.g. c:\mingw\lib.
+    (not necessary for PinMAME, but for the sake of completeness)
+
+
+-------------------
+Step 4: Compilation
+-------------------
+- Change to the PinMAME source code directory.
+- If the pathes to MinGW and other tools are not set permanently, then call a
+  MinGW batch file to set them.
+- To compile PinMAME type "mingw32-make".
+- To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32".
+- To add the MAME ROM debugger into a build, just define "DEBUG=1".
+- To add P-ROC support into a PinMAME build, just define "PROC=1". Not available
+  for PinMAME32.
+- A symbols file ("SYMBOLS=1") and map file ("MAP=1") are always created.
+- To change the optimization level (default is 3), define "OPTIMIZE=<level>".
+- To get verbose info during compilation, define "VERBOSE=1".
+
+
+-----------------
+Step 5: Debugging
+-----------------
+Load PinMAME in GDB first, then add the symbols via "symbol-file <pinmame exe>.debug".
+Note that GDB 5.x versions can not handle symbols files from GCC 4.4, only up to GCC 3.2.
+
+Check out the following info to get started with debugging via GDB:
+* GDB manual: http://sourceware.org/gdb/onlinedocs/gdb_5.html
+* Tutorial: http://www.dirac.org/linux/gdb/
+* Tutorial: http://betterexplained.com/articles/debugging-with-gdb/
+* Tutorial: http://pixwiki.bafsoft.com/mags/9/articles/gdb/article.html
+* GCC manual: http://gcc.gnu.org/onlinedocs/gcc-4.3.3/gcc/Debugging-Options.html
+
+
+----------
+Build Bugs
+----------
+1) Builds with GCC 4.4/4.5 have several issues
+ a) Missing sounds on some ROMs.
+Known to be affected are WPC-ROMs with pre-DCS sound, that use the CPU M6809 for sound:
+* The Machine: Bride of Pinbot (bop_L7)
+* Funhouse
+* Terminator 2
+* The Addams Family (taf_l7)
+* Creature from the Black Lagoon
+* and more...
+Also Stern Whitestar was reported to be affected:
+* Lord of the Rings
+
+According to reports when those ROMs are loaded, then after the self-test sound
+there's a slight popping sound - like the sound is turned off. On working ROMs
+this sound is only heard when PinMAME quits.
+The volume can be changed from -32db to 0db, but nothing is heard regardless of that settings.
+
+ b) DMD not updated
+Known to be affected are Stern Whitestar:
+* Lord of the Rings
+
+
+This could be a problem of GCC 4.x in general or just the MinGW port of it.
+Disabling optimization does not help.
+
+As PinMAME build with GCC 4.0.1/4.5.0 on Mac OS X works fine, but not GCC 4.4.3 on Ubuntu, all hope goes to an upcoming new GCC release for MinGW.
+http://sourceforge.net/mailarchive/message.php?msg_id=26810757
