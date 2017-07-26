@@ -99,19 +99,22 @@ Of course that value is not necessarily an integer so at least a +/- 1
 adjustment is necessary to avoid drifting over time.
 */
 
-#define NB_BUFFERS 5
-int currentWritingBuffer = 0;
 int currentWritingBufferPos = 0;
-int currentStreamingBuffer = -1; // -1 means not ready
+int currentStreamingBufferPos = -1; // -1 means not ready
 int streamingBufSize = -1;
 
-INT16** streamingBufs = NULL;
-int streamingBuffersInitialized = 0;
+INT16* streamingBuf = NULL;
+int streamingBufferInitialized = 0;
 
 int osd_start_audio_stream(int stereo)
 {
 	printf("osd_start_audio_stream SampleRate:%d stereo:%d\n", Machine->sample_rate,stereo);
 	channels = stereo ? 2 : 1;
+
+	streamingBuf = (INT16*)malloc(MAX_BUFFER_SIZE * sizeof(INT16));
+	streamingBufferInitialized = 1;
+	currentStreamingBufferPos = 0;
+	currentWritingBufferPos = 0;
 
 	// determine the number of samples per frame
 	samples_per_frame = (double)Machine->sample_rate / (double)Machine->drv->frames_per_second;
@@ -128,27 +131,22 @@ int osd_start_audio_stream(int stereo)
 cycles_t lastUpdate = 0;
 int osd_update_audio_stream(INT16 *buf)
 {
-	if (!streamingBuffersInitialized)
+	if (!streamingBufferInitialized)
 		return samples_this_frame;
-
 	//cycles_t cyc = osd_cycles();
 	//printf("Updt: %d\n", (cyc - lastUpdate));
 	//lastUpdate = cyc;
 
 	for (int i = 0; i < samples_this_frame; i++)
 	{
-		streamingBufs[currentWritingBuffer][currentWritingBufferPos] = buf[i];
+		streamingBuf[currentWritingBufferPos] = buf[i];
 		currentWritingBufferPos++;
-		if (currentWritingBufferPos >  streamingBufSize)
-		{
+		if (currentWritingBufferPos >  MAX_BUFFER_SIZE)
 			currentWritingBufferPos = 0;
-			currentStreamingBuffer = currentWritingBuffer;
-			currentWritingBuffer = (currentWritingBuffer + 1) % NB_BUFFERS;
-		}
 	}
 
 	//printf("streamingBufSize : %d, currentWritingBuffer:%d, currentWritingBufferPos:%d\n", streamingBufSize, currentWritingBuffer, currentWritingBufferPos);
-	int toWrite = samples_this_frame * channels;
+	//int toWrite = samples_this_frame * channels;
 	//printf("end: %d\n",end);
 	
 	
@@ -159,7 +157,7 @@ int osd_update_audio_stream(INT16 *buf)
 
 	samples_this_frame += current_adjustment;
 
-	samples_this_frame = streamingBufSize;
+	//samples_this_frame = streamingBufSize;
 
 	// return the samples to play this next frame
 	return samples_this_frame;
@@ -173,39 +171,41 @@ cycles_t last = 0;
 int lastStreamingBuffer = -1;
 int fillAudioBuffer(float *dest, int maxSamples)
 {
-
 	int i = 0;
-	if (!streamingBuffersInitialized)
-	{
-		streamingBufSize = maxSamples;
-		streamingBufs = (INT16**)malloc(NB_BUFFERS * sizeof(INT16*));
-		for (i = 0; i < NB_BUFFERS; i++)
-			streamingBufs[i] = (INT16*)malloc(streamingBufSize * sizeof(INT16));
-		currentWritingBufferPos = 0;
-		streamingBuffersInitialized = 1;
-		return 0;
-	}
-	//return 0;
-	if (currentStreamingBuffer < 0) // Not ready
+	if (!streamingBufferInitialized)
 		return 0;
 
-	//printf("Streaming:%d\n", currentStreamingBuffer);
-	if (currentStreamingBuffer == currentStreamingBuffer)
-		printf("hum\n");
+	if (streamingBufSize < 0)
+		streamingBufSize = maxSamples;
 
 	//cycles_t cyc = osd_cycles();
 	//printf("Fill: %d\n",(cyc-last));
 	//last = cyc;
 
-	//if (writingPos < maxSamples)
-	//	return 0;
+	// Small adjustment for next frames. This wil help synchronizing
+	// TODO: handle the modulo (just started over the buff start)
+	if (currentStreamingBufferPos > currentWritingBufferPos)
+		current_adjustment = 1;
+	else
+	if (currentStreamingBufferPos < currentWritingBufferPos)
+		current_adjustment = -1;
+	else
+		current_adjustment = 0;
+
+	//if(current_adjustment!=0)
+	//	printf("syncing sound with output:%d \n", current_adjustment);
 
 	int nb = streamingBufSize;
 	if (nb > maxSamples)
 		nb = maxSamples;
 //	for (int i = readingPos; i < readingPos+ maxSamples; i++)
 	for (int i = 0; i < nb; i++)
-		dest[i] = (float)streamingBufs[currentStreamingBuffer][i] / 32768;
+	{
+		dest[i] = (float)streamingBuf[currentStreamingBufferPos] / 32768;
+		currentStreamingBufferPos++;
+		if (currentStreamingBufferPos > MAX_BUFFER_SIZE)
+			currentStreamingBufferPos = 0;
+	}
 
 	return nb;
 }
