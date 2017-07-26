@@ -4170,7 +4170,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 	if (input_ui_pressed(IPT_UI_LOAD_STATE))
 		do_loadsave(bitmap, LOADSAVE_LOAD);
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
 { extern int g_fPause;
   extern int g_fDumpFrames;
   
@@ -4193,7 +4193,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 		if (single_step == 0)
 			mame_pause(1);
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
       if ( input_ui_pressed(IPT_UI_PAUSE))
 		  g_fPause = 0;
 		while (g_fPause) {
@@ -4281,7 +4281,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 		schedule_full_refresh();
 	}
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   }
 #endif /* VPINMAME */
 
