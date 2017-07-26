@@ -296,10 +296,16 @@ int GetPendingAudioSamples(float* buffer, int maxNumber)
 }
 
 
-
-
-
-
+// Switch related functions
+// ------------------------
+bool GetSwitch(int slot)
+{
+	return vp_getSwitch(slot) != 0;
+}
+void SetSwitch(int slot, bool state)
+{
+	vp_putSwitch(slot, state ? 1 : 0);
+}
 
 
 //============================================================

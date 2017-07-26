@@ -30,4 +30,7 @@ extern "C"
 	PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer);
 
 	PINMAMEDLL_API int GetPendingAudioSamples(float* buffer, int maxNumber);
+
+	PINMAMEDLL_API bool GetSwitch(int slot);
+	PINMAMEDLL_API void SetSwitch(int slot, bool state);
 }

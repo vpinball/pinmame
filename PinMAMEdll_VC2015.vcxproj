@@ -248,8 +248,8 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "../../../pinmame_test/PinMAMETest/Assets/Plugins/PinMAMEdll/x64/PinMAMEdll.dll"
-copy "$(TargetPath)" "../../../pinmame_test/PinMAMETest/BUILD/Test_Data/Plugins"</Command>
+      <Command>copy "$(TargetPath)" "../../../pinmame_test/Assets/Plugins/PinMAMEdll/x64/PinMAMEdll.dll"
+copy "$(TargetPath)" "../../../pinmame_test/BUILD/Test_Data/Plugins"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
