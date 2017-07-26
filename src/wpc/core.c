@@ -14,7 +14,9 @@
 #endif
 #ifdef VPINMAME
  #include <windows.h>
- #include "dmddevice.h"
+#endif
+#if defined(VPINMAME) || defined(PINMAME_DLL)
+#include "dmddevice.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
@@ -36,7 +38,7 @@ int vp_getDip(int bank) { return 0; }
 void vp_setDIP(int bank, int value) { }
 #endif
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   #include "vpintf.h"
   extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
@@ -748,7 +750,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  (_strnicmp(Machine->gamedrv->name, "smb", 3) == 0) || (_strnicmp(Machine->gamedrv->name, "cueball", 7) == 0) || (_strnicmp(Machine->gamedrv->name, "rescu911", 8) == 0) ||
 	  (core_gameData->gen == GEN_ALVG_DMD2));
 
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
   static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
   static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
   static UINT8 *currbuffer = buffer1;
@@ -832,7 +834,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
 		const UINT8 col = dotCol[ii][jj];
-#ifdef VPINMAME
+#if defined(VPINMAME) || defined(PINMAME_DLL)
 		const int offs = (ii-1)*layout->length + jj;
 		currbuffer[offs] = col;
 		if(layout->length >= 128) { // Capcom hack
