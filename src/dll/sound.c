@@ -8,6 +8,7 @@
 #include "fileio.h"
 
 #include "dllsound.h"
+#include "usrintrf.h"
 
 //============================================================
 //	GLOBAL VARIABLES
@@ -16,6 +17,7 @@
 // global parameters
 int							attenuation = 0;
 
+extern int g_fPause;
 
 //============================================================
 //	PARAMETERS
@@ -171,6 +173,9 @@ cycles_t last = 0;
 int lastStreamingBuffer = -1;
 int fillAudioBuffer(float *dest, int maxSamples)
 {
+	if (g_fPause)
+		return 0;
+
 	int i = 0;
 	if (!streamingBufferInitialized)
 		return 0;

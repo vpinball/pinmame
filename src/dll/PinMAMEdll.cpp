@@ -29,7 +29,7 @@ extern "C"
 	#include "cpuexec.h"
 
 	//extern HWND win_video_window;
-	extern int g_fPause;
+
 	//extern HANDLE g_hEnterThrottle;
 	extern int g_iSyncFactor;
 	extern struct RunningMachine *Machine;
@@ -52,7 +52,8 @@ extern "C"
 	extern void win_timer_enable(int enabled);
 
 	UINT8 win_trying_to_quit;
-
+	volatile int g_fPause = 0;
+	volatile int g_fDumpFrames = 0;
 	struct rc_struct *rc;
 }
 
@@ -104,7 +105,6 @@ void OnStateChange(int nChange)
 //	GLOBAL VARIABLES
 //============================================================
 int verbose;
-int g_isPaused = false;
 
 
 //============================================================
@@ -193,7 +193,7 @@ int StartThreadedGame(char* gameName, bool showConsole)
 	options.samplerate = g_sampleRate;
 
 	win_timer_enable(1);
-	g_isPaused = false;
+	g_fPause = 0;
 
 	set_option("throttle", "1", 0);
 	set_option("sleep", "1", 0);
@@ -247,19 +247,17 @@ void ResetGame()
 
 void Pause()
 {
-	win_timer_enable(0);
-	g_isPaused = true;
+	g_fPause = 1;
 }
 
 void Continue()
 {
-	win_timer_enable(1);
-	g_isPaused = false;
+	g_fPause = 0;
 }
 
 bool IsPaused()
 {
-	return g_isPaused;
+	return g_fPause > 0;
 }
 
 
