@@ -173,8 +173,8 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 	dmd_height = height;
 
 	if ((gen == GEN_SAM) ||
-		// extended handling also for some GTS3 games (SMB, SMBMW, CBW and Rescue911):
-		(_strnicmp(GameName, "smb", 3) == 0) || (_strnicmp(GameName, "cueball", 7) == 0) || (_strnicmp(GameName, "rescu911", 8) == 0) ||
+		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
+		(_strnicmp(GameName, "smb", 3) == 0) || (_strnicmp(GameName, "cueball", 7) == 0) ||
 		(gen == GEN_ALVG_DMD2)) {
 		if (DmdDev_Render_16_Shades)
 			DmdDev_Render_16_Shades(width,height,currbuffer);
