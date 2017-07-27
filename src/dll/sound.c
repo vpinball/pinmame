@@ -10,6 +10,7 @@
 #include "dllsound.h"
 #include "usrintrf.h"
 
+#include <math.h>
 //============================================================
 //	GLOBAL VARIABLES
 //============================================================
@@ -163,19 +164,14 @@ int osd_update_audio_stream(INT16 *buf)
 	{
 		streamingBuf[currentWritingBufferPos] = buf[i];
 		currentWritingBufferPos++;
-		writingToStreamDiff++;
 		if (currentWritingBufferPos >  stream_buffer_size)
 			currentWritingBufferPos = 0;
+		writingToStreamDiff++;
 	}
 
-	currentStreamingBufferPos = (currentWritingBufferPos - streamingBufSize);// % stream_buffer_size;
-	if (currentStreamingBufferPos < 0)
-		currentStreamingBufferPos += stream_buffer_size;
-	update_sample_adjustment(writingToStreamDiff);
+	//if ((++tmp)  % 30 == 0)
+	//	printf("writingToStreamDif: %d current_adjustment: %d samples_this_frame %d\n", writingToStreamDiff, current_adjustment, samples_this_frame);
 
-	if ((++tmp) % 30 == 0)
-		printf("writingToStreamDif: %d current_adjustment: %d samples_this_frame %d\n", writingToStreamDiff, current_adjustment, samples_this_frame);
-	
 	// compute how many samples to generate next frame
 	samples_left_over += samples_per_frame;
 	samples_this_frame = (UINT32)samples_left_over;
@@ -197,7 +193,8 @@ void osd_stop_audio_stream(void)
 void forceResync()
 {
 	currentStreamingBufferPos = (currentWritingBufferPos - streamingBufSize) % stream_buffer_size;
-	writingToStreamDiff = 0;
+//	printf("Resync %d (dropped:%d samples)\n", writingToStreamDiff, (writingToStreamDiff- streamingBufSize));
+	writingToStreamDiff = streamingBufSize;
 }
 
 cycles_t last = 0;
@@ -215,91 +212,49 @@ int fillAudioBuffer(float *dest, int maxSamples)
 	{
 		streamingBufSize = maxSamples;
 		forceResync();
-		return;
+		return 0;
 	}
 	//cycles_t cyc = osd_cycles();
 	//printf("Fill: %d\n",(cyc-last));
 	//last = cyc;
 
-
 	int nb = streamingBufSize;
 	if (nb > maxSamples)
 		nb = maxSamples;
 
-	//currentStreamingBufferPos = (currentWritingBufferPos - streamingBufSize) % stream_buffer_size;
+//#define TRY_STRETCH_AUDIO
+#ifdef TRY_STRETCH_AUDIO
+	int toFill = writingToStreamDiff-nb;
+	if (toFill < 0)
+		return 0;
+
+	double inc = (double)toFill / (double)nb; // Frequency change ratio: hope to stabilize near 1.0
+	//if (inc<0.9F || inc>1.1F)
+	//	return 0;
+	//printf("toFill: %d inc: %.2f\n", toFill, inc);
+	double streamPos = currentStreamingBufferPos;
+	for (int i = 0; i < nb; i++)
+	{
+		dest[i] = (float)streamingBuf[(int)round(streamPos)] / 32768;
+		streamPos += inc;
+	}
+	currentStreamingBufferPos = (currentStreamingBufferPos+toFill)%stream_buffer_size;
+	writingToStreamDiff -= toFill;
+#else
 	for (int i = 0; i < nb; i++)
 	{
 		dest[i] = (float)streamingBuf[currentStreamingBufferPos] / 32768;
 		currentStreamingBufferPos++;
-		writingToStreamDiff--;
 		if (currentStreamingBufferPos > stream_buffer_size)
 			currentStreamingBufferPos = 0;
+		//writingToStreamDiff--;
 	}
-
+	writingToStreamDiff -= nb;
+	if (writingToStreamDiff > nb * 6 || writingToStreamDiff <0)
+		forceResync();
+#endif
 	return nb;
 }
-
-//============================================================
-//	update_sample_adjustment
-//============================================================
-
-static void update_sample_adjustment(int buffered)
-{
-	static int consecutive_lows = 0;
-	static int consecutive_mids = 0;
-	static int consecutive_highs = 0;
-
-	// if we're not throttled don't bother
-	if (!throttle)
-	{
-		consecutive_lows = 0;
-		consecutive_mids = 0;
-		consecutive_highs = 0;
-		current_adjustment = 0;
-		return;
-	}
-
-	// do we have too few samples in the buffer?
-	if (buffered < lower_thresh)
-	{
-		// keep track of how many consecutive times we get this condition
-		consecutive_lows++;
-		consecutive_mids = 0;
-		consecutive_highs = 0;
-
-		// adjust so that we generate more samples per frame to compensate
-		current_adjustment = (consecutive_lows < MAX_SAMPLE_ADJUST) ? consecutive_lows : MAX_SAMPLE_ADJUST;
-	}
-
-	// do we have too many samples in the buffer?
-	else if (buffered > upper_thresh)
-	{
-		// keep track of how many consecutive times we get this condition
-		consecutive_lows = 0;
-		consecutive_mids = 0;
-		consecutive_highs++;
-
-		// adjust so that we generate more samples per frame to compensate
-		current_adjustment = (consecutive_highs < MAX_SAMPLE_ADJUST) ? -consecutive_highs : -MAX_SAMPLE_ADJUST;
-
-	}
-
-	// otherwise, we're in the sweet spot
-	else
-	{
-		// keep track of how many consecutive times we get this condition
-		consecutive_lows = 0;
-		consecutive_mids++;
-		consecutive_highs = 0;
-
-		// after 10 or so of these, revert back to no adjustment
-		if (consecutive_mids > 10 && current_adjustment != 0)
-		{
-			current_adjustment = 0;
-		}
-	}
-}
-
 
 /*
 control master volume. attenuation is the attenuation in dB (a negative
