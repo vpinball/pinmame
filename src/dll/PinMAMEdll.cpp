@@ -240,6 +240,8 @@ void StopThreadedGame(bool locking)
 #endif
 }
 
+// Pause related functions
+// -----------------------
 void ResetGame()
 {
 	machine_reset();
