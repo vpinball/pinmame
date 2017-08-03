@@ -480,7 +480,7 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(14f86b56) SHA1(2364c284412eba719f88d50dcf47d
 						"arom1.bin",CRC(f6daa16c) SHA1(be132072b27a94f61653de0a22eecc8b90db3077),
 						"arom2.bin",CRC(59374104) SHA1(8ad7f5f0109771dd5cebe13e80f8e1a9420f4447))
 GTS3_ROMEND
-CORE_GAMEDEFNV(rescu911,"Rescue 911 (rev. 1)",1994,"Gottlieb",mGTS3DMDSA_5C, 0) // although the display test only tests 4 shades, Rescue911 actually uses 5!
+CORE_GAMEDEFNV(rescu911,"Rescue 911 (rev. 1)",1994,"Gottlieb",mGTS3DMDS_4C_a, 0)
 
 /*-------------------------------------------------------------------
 / Freddy: A Nightmare on Elm Street

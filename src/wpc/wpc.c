@@ -1008,7 +1008,7 @@ static INTERRUPT_GEN(wpc_irq) {
 				// Aux board solenoids.  Copy anything above 8 as boolean.  TZ uses this for special fake gumball eject mech.  Bleh.
 				for (i = 0; i < core_gameData->hw.custSol; i++)
 				{
-					if (i < 8)
+					if (i < 8 && wpc_modsol_aux_board > 0)
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_calc_modulated_light(wpclocals.solenoidbits[CORE_FIRSTCUSTSOL + i - 1], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][CORE_FIRSTCUSTSOL + i - 1]);
 					else
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][CORE_FIRSTCUSTSOL + i - 1] = core_getSol(CORE_FIRSTCUSTSOL + i) ? 1 :0;
