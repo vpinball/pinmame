@@ -46,4 +46,11 @@ extern "C"
 	// ------------------------
 	PINMAMEDLL_API bool GetSwitch(int slot);
 	PINMAMEDLL_API void SetSwitch(int slot, bool state);
+
+
+	// Lamps related functions
+	// -----------------------
+	PINMAMEDLL_API int GetMaxLamps();
+	PINMAMEDLL_API int GetChangedLamps(int* changedStates);
+	
 }

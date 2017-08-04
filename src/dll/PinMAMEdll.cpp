@@ -309,6 +309,23 @@ void SetSwitch(int slot, bool state)
 	vp_putSwitch(slot, state ? 1 : 0);
 }
 
+// Lamps related functions
+// -----------------------
+int GetMaxLamps() {	return CORE_MAXLAMPCOL * 8; }
+
+int GetChangedLamps(int* changedStates)
+{
+	vp_tChgLamps chgLamps;
+	int uCount = vp_getChangedLamps(chgLamps);
+
+	int* out = changedStates;
+	for (int i = 0; i < uCount; i++)
+	{
+		*(out++) = chgLamps[i].lampNo;
+		*(out++) = chgLamps[i].currStat;
+	}
+	return uCount;
+}
 
 //============================================================
 //	osd_init
