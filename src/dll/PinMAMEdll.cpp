@@ -69,6 +69,9 @@ extern "C"
 bool g_useConsole = false;
 char g_vpmPath[MAX_PATH];
 int g_sampleRate = 48000;
+bool g_isGameReady = false;
+static std::thread* pRunningGame = nullptr;
+
 
 void ShowConsole()
 {
@@ -98,6 +101,7 @@ void OnSolenoid(int nSolenoid, int IsActive)
 void OnStateChange(int nChange)
 {
 	printf("OnStateChange : %d\n", nChange);
+	g_isGameReady = nChange > 0;
 }
 
 
@@ -151,8 +155,6 @@ void gameThread(int game_index=-1)
 		return;
 	int res = run_game(game_index);
 }
-
-static std::thread* pRunningGame = nullptr;
 
 
 //============================================================
@@ -223,7 +225,8 @@ void StopThreadedGame(bool locking)
 	if (pRunningGame == nullptr)
 		return;
 	trying_to_quit = 1;
-	
+	OnStateChange(1);
+
 	if (locking)
 	{
 		printf("Waiting for clean exit...\n");
@@ -238,6 +241,11 @@ void StopThreadedGame(bool locking)
 #ifdef ENABLE_CONSOLE_DEBUG
 	CloseConsole();
 #endif
+}
+
+bool IsGameReady()
+{
+	return g_isGameReady;
 }
 
 // Pause related functions

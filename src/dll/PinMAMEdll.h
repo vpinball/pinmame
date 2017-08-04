@@ -22,6 +22,7 @@ extern "C"
 	PINMAMEDLL_API void StopThreadedGame(bool locking = true);
 	//PINMAMEDLL_API void KillThreadedGame(char* gameName);
 	PINMAMEDLL_API void ResetGame();
+	PINMAMEDLL_API bool IsGameReady();
 
 	// Pause related functions
 	// -----------------------
