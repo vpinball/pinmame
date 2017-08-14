@@ -1,14 +1,18 @@
 #include "PinMAMEdll.h"
 #include <conio.h>
-
+#include <unistd.h>
 void DisplayDMD();
+#include <windows.h>
 
 int main()
 {
-	SetVPMPath("D:/Pinball/Visual Pinball/VPinMAME/");
+	//SetVPMPath("D:/Pinball/Visual Pinball/VPinMAME/");
+	SetVPMPath("D:/_CSY/PERSO/UP/VP/VPinMAME/");
 	SetSampleRate(48000);
 
 	StartThreadedGame("taf_l7");
+
+	//Sleep(1000);
 
 	char c;
 	while ((c =_getch()) != 'q')
@@ -21,6 +25,13 @@ int main()
 
 		if (c == 'k')
 			StopThreadedGame(true);
+
+		if (c == 'l')
+		//if(IsGameReady())
+		{
+			int* cl = new int[GetMaxLamps() * 2];
+			int nb = GetChangedLamps(cl);
+		}
 
 		if (c == 'r')
 			ResetGame();
