@@ -7,7 +7,7 @@ Fixed reset / NMI handling for IDSA V-1
 Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
 Fix Rescue 911 (and more?) DMD brightness level mapping regression
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan
+*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Quench, Jubex77, JMan, Gore Daimon
 New:
 MAC: MAC Jungle
 
@@ -19,6 +19,7 @@ Clones:
 Dirty Harry (LF-2)
 Meteor (Bugfix)
 Orbitor 1 (No Timed Game)
+Star Wars (1.06 Spanish)
 
 
 
