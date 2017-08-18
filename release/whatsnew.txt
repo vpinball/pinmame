@@ -5,7 +5,7 @@ Version 3.0 (X X, 2017) - ""
 Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
 Fixed reset / NMI handling for IDSA V-1
 Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
-Fix Rescue 911 (and more?) DMD brightness level mapping regression
+Fix Rescue 911 (and maybe more: SFII, WCS, Shaq, mZOIS?) DMD brightness level mapping regression
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon
 New:
@@ -16,10 +16,10 @@ Bally: Judge Dredd (use L3 Sound ROMs for corrected Deadworld sounds on machines
 Joctronic: Punky Willy
 
 Clones:
-Dirty Harry (LF-2)
+Dirty Harry LF-2
 Meteor (Bugfix)
 Orbitor 1 (No Timed Game)
-Star Wars (1.06 Spanish)
+Star Wars 20th Anniversary 1.07 Spanish
 
 
 
