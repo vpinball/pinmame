@@ -294,7 +294,6 @@ static UINT32 timer_next;
 #define CLR_HNZC	CC&=0xd2
 #define CLR_NZVC	CC&=0xf0
 #define CLR_Z		CC&=0xfb
-#define CLR_NZC 	CC&=0xf2
 #define CLR_ZC		CC&=0xfa
 #define CLR_C		CC&=0xfe
 

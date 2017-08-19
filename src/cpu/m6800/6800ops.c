@@ -46,8 +46,10 @@ INLINE void nop( void )
 INLINE void lsrd (void)
 {
 	UINT16 t;
-	CLR_NZC; t = D; CC|=(t&0x0001);
-	t>>=1; SET_Z16(t); D=t;
+	CLR_NZVC; t = D; CC|=(t&0x0001);
+	t>>=1; SET_Z16(t);
+	if (NXORC) SEV;
+	D=t;
 }
 
 /* $05 ASLD inherent ?**** */
@@ -490,8 +492,9 @@ INLINE void coma( void )
 /* $44 LSRA inherent -0*-* */
 INLINE void lsra( void )
 {
-	CLR_NZC; CC|=(A&0x01);
+	CLR_NZVC; CC|=(A&0x01);
 	A>>=1; SET_Z8(A);
+	if (NXORC) SEV;
 }
 
 /* $45 ILLEGAL */
@@ -501,17 +504,19 @@ INLINE void rora( void )
 {
 	UINT8 r;
 	r=(CC&0x01)<<7;
-	CLR_NZC; CC|=(A&0x01);
+	CLR_NZVC; CC|=(A&0x01);
 	r |= A>>1; SET_NZ8(r);
+	if (NXORC) SEV;
 	A=r;
 }
 
 /* $47 ASRA inherent ?**-* */
 INLINE void asra( void )
 {
-	CLR_NZC; CC|=(A&0x01);
+	CLR_NZVC; CC|=(A&0x01);
 	A>>=1; A|=((A&0x40)<<1);
 	SET_NZ8(A);
+	if (NXORC) SEV;
 }
 
 /* $48 ASLA inherent ?**** */
@@ -587,8 +592,9 @@ INLINE void comb( void )
 /* $54 LSRB inherent -0*-* */
 INLINE void lsrb( void )
 {
-	CLR_NZC; CC|=(B&0x01);
+	CLR_NZVC; CC|=(B&0x01);
 	B>>=1; SET_Z8(B);
+	if (NXORC) SEV;
 }
 
 /* $55 ILLEGAL */
@@ -598,17 +604,19 @@ INLINE void rorb( void )
 {
 	UINT8 r;
 	r=(CC&0x01)<<7;
-	CLR_NZC; CC|=(B&0x01);
+	CLR_NZVC; CC|=(B&0x01);
 	r |= B>>1; SET_NZ8(r);
+	if (NXORC) SEV;
 	B=r;
 }
 
 /* $57 ASRB inherent ?**-* */
 INLINE void asrb( void )
 {
-	CLR_NZC; CC|=(B&0x01);
+	CLR_NZVC; CC|=(B&0x01);
 	B>>=1; B|=((B&0x40)<<1);
 	SET_NZ8(B);
+	if (NXORC) SEV;
 }
 
 /* $58 ASLB inherent ?**** */
@@ -704,8 +712,9 @@ INLINE void com_ix( void )
 INLINE void lsr_ix( void )
 {
 	UINT8 t;
-	IDXBYTE(t); CLR_NZC; CC|=(t&0x01);
+	IDXBYTE(t); CLR_NZVC; CC|=(t&0x01);
 	t>>=1; SET_Z8(t);
+	if (NXORC) SEV;
 	WM(EAD,t);
 }
 
@@ -725,8 +734,9 @@ INLINE void ror_ix( void )
 {
 	UINT8 t,r;
 	IDXBYTE(t); r=(CC&0x01)<<7;
-	CLR_NZC; CC|=(t&0x01);
+	CLR_NZVC; CC|=(t&0x01);
 	r |= t>>1; SET_NZ8(r);
+	if (NXORC) SEV;
 	WM(EAD,r);
 }
 
@@ -734,9 +744,10 @@ INLINE void ror_ix( void )
 INLINE void asr_ix( void )
 {
 	UINT8 t;
-	IDXBYTE(t); CLR_NZC; CC|=(t&0x01);
+	IDXBYTE(t); CLR_NZVC; CC|=(t&0x01);
 	t>>=1; t|=((t&0x40)<<1);
 	SET_NZ8(t);
+	if (NXORC) SEV;
 	WM(EAD,t);
 }
 
@@ -851,10 +862,11 @@ INLINE void lsr_ex( void )
 {
 	UINT8 t;
 	EXTBYTE(t);
-	CLR_NZC;
+	CLR_NZVC;
 	CC|=(t&0x01);
 	t>>=1;
 	SET_Z8(t);
+	if (NXORC) SEV;
 	WM(EAD,t);
 }
 
@@ -874,8 +886,9 @@ INLINE void ror_ex( void )
 {
 	UINT8 t,r;
 	EXTBYTE(t); r=(CC&0x01)<<7;
-	CLR_NZC; CC|=(t&0x01);
+	CLR_NZVC; CC|=(t&0x01);
 	r |= t>>1; SET_NZ8(r);
+	if (NXORC) SEV;
 	WM(EAD,r);
 }
 
@@ -883,9 +896,10 @@ INLINE void ror_ex( void )
 INLINE void asr_ex( void )
 {
 	UINT8 t;
-	EXTBYTE(t); CLR_NZC; CC|=(t&0x01);
+	EXTBYTE(t); CLR_NZVC; CC|=(t&0x01);
 	t>>=1; t|=((t&0x40)<<1);
 	SET_NZ8(t);
+	if (NXORC) SEV;
 	WM(EAD,t);
 }
 
