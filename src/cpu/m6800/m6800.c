@@ -423,7 +423,7 @@ static const UINT8 flags8d[256]= /* decrement */
 #define CHANGE_PC() change_pc16(PCD)
 #define BRANCH(f) {IMMBYTE(t);if(f){PC+=SIGNED(t);CHANGE_PC();}}
 #define NXORV  ((CC&0x08)^((CC&0x02)<<2))
-
+#define NXORC  ((CC&0x08)^((CC&0x01)<<3))
 
 /* Note: don't use 0 cycles here for invalid opcodes so that we don't */
 /* hang in an infinite loop if we hit one */
