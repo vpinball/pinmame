@@ -685,6 +685,14 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
 DE_ROMEND
 CORE_CLONEDEF(stwr,106,104,"Star Wars (1.06 20th Anniversary)",2016,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(stwr_107s,"starcpua.107",CRC(1a801b7e) SHA1(fef567126dff87a2cb31401b029c3050438072b7))
+DE_DMD32ROM8x(        "sw4mrom.s15",CRC(158867b9) SHA1(45a0f4d26c21e2259aeb2a726a1eac23744213a2))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,107s,104,"Star Wars (1.07 20th Anniversary, Spanish)",2016,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(stwr_107,"starcpua.107",CRC(1a801b7e) SHA1(fef567126dff87a2cb31401b029c3050438072b7))
 DE_DMD32ROM8x(        "sw4mrom.a15",CRC(00c87952) SHA1(cd2f491f03fcb3e3ceff7ee7f678aa1957a5d14b))
 DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
