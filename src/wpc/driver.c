@@ -433,6 +433,7 @@ DRIVER(lw3,208p)        //Data East MPU: 04/13 Lethal Weapon (2.08p, Voices Mod)
 DRIVER(aar,101)         //Data East MPU: 12/92 Aaron Spelling (1.01)
 DRIVER(stwr,107)        //Data East MPU: 12/16 Star Wars (1.07)
 DRIVER(stwr,106)        //Data East MPU: 05/16 Star Wars (1.06)
+DRIVER(stwr,107s)       //Data East MPU: 05/16 Star Wars (1.07 Spanish)
 DRIVER(stwr,104)        //Data East MPU: 12/12 Star Wars (1.04)
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
 DRIVER(stwr,a14)        //Data East MPU: 10/92 Star Wars (Display Rev.1.04)
@@ -2430,6 +2431,7 @@ DRIVER(gw,l3)           //          06/92 W Getaway: High Speed II, The (L-3)
 DRIVER(gw,d3)           //                  Getaway: High Speed II, The (D-3) LED Ghost Fix
 DRIVER(gw,l5)           //          12/92 W Getaway: High Speed II, The (L-5)
 DRIVER(gw,d5)           //                  Getaway: High Speed II, The (D-5) LED Ghost Fix
+DRIVER(gw,l5c)          //          08/17   Getaway: High Speed II, The (L-5C Competition MOD)
 DRIVER(br,p17)          //WPC-213:  05/92 B Black Rose (P-17)
 DRIVER(br,p18)          //                  Black Rose (P-18) LED Ghost Fix
 DRIVER(br,l1)           //          08/92 B Black Rose (L-1)
@@ -2548,6 +2550,7 @@ DRIVER(sttng,d2)        //                  Star Trek: The Next Generation (DX-2
 DRIVER(sttng,l3)        //WPC-523:  12/93 W Star Trek: The Next Generation (LX-3)
 DRIVER(sttng,l7)        //          02/94 W Star Trek: The Next Generation (LX-7)
 DRIVER(sttng,d7)        //                  Star Trek: The Next Generation (DX-7) LED Ghost Fix
+DRIVER(sttng,l7c)       //          08/17 W Star Trek: The Next Generation (LX-7C Competition MOD)
 DRIVER(sttng,x7)        //          02/94 W Star Trek: The Next Generation (LX-7 Special)
 DRIVER(sttng,dx)        //                  Star Trek: The Next Generation (DX-7 Special) LED Ghost Fix
 DRIVER(sttng,s7)        //          02/94 W Star Trek: The Next Generation (LX-7) SP1
@@ -2570,12 +2573,15 @@ DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
 DRIVER(dm,dx3)          //                  Demolition Man (DX-3) LED Ghost Fix
 DRIVER(dm,lx4)          //          05/94 W Demolition Man (LX-4)
 DRIVER(dm,dx4)          //                  Demolition Man (DX-4) LED Ghost Fix
+DRIVER(dm,lx4c)         //          08/17   Demolition Man (LX-4C Competition MOD)
 DRIVER(dm,h5)           //          02/95 W Demolition Man (H-5) with rude speech
 DRIVER(dm,h5b)          //                  Demolition Man (H-5) with rude speech (Coin Play)
+DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
 DRIVER(dm,dh5)          //                  Demolition Man (DH-5) with rude speech LED Ghost Fix
 DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude speech LED Ghost Fix (Coin Play)
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
+DRIVER(dm,h6c)          //          08/17   Demolition Man (H-6C Competition MOD) with rude speech
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  08/94 B Addams Family Special Collectors Edition, The (Home version)
@@ -2722,6 +2728,7 @@ DRIVER(ss,15)           //          02/97 B Scared Stiff (1.5)
 DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
 DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
+DRIVER(jy,12c)          //          08/17 W Junk Yard (1.2C Competition MOD)
 DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1 - S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1 - S2.0)
