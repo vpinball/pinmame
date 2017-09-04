@@ -196,7 +196,7 @@ PORT_END
 static struct AY8910interface JOCTRONIC_ay8910Int = {
   1,
   1500000,
-  { 30 },
+  { MIXER(30,MIXER_PAN_RIGHT) },
   { 0 }, { 0 },
   { 0 }, { 0 }
 };
@@ -216,9 +216,9 @@ static void ym2203_irq(int state) {
 static struct YM2203interface JOCTRONIC_ym2203Int = {
   1,
   3000000,
-  { 30 | (30 << 16) }, // uses high 16 bits for YM2203 FM volume!
+  { MIXER(30,MIXER_PAN_LEFT) },
   { NULL }, { NULL },
-  { NULL }, { NULL },
+  { DAC_0_data_w }, { DAC_1_data_w },
   { &ym2203_irq }
 };
 
@@ -263,6 +263,7 @@ static MACHINE_DRIVER_START(joctronicS2)
 
   MDRV_SOUND_ADD(AY8910, JOCTRONIC_ay8910Int)
   MDRV_SOUND_ADD(YM2203, JOCTRONIC_ym2203Int)
+  MDRV_SOUND_ADD(DAC, JOCTRONIC_dacInt)
 MACHINE_DRIVER_END
 
 // sound board interface
@@ -417,7 +418,7 @@ PORT_START /* 2 */
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
-CORE_GAMEDEFNV(punkywil, "Punky Willy", 1986, "Joctronic", joctronicS1, 0)
+CORE_GAMEDEFNV(punkywil, "Punky Willy", 1986, "Joctronic", joctronicS2, 0)
 
 /*-------------------------------------------------------------------
 / Walkyria (1986)
