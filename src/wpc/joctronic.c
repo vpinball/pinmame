@@ -417,7 +417,7 @@ PORT_START /* 2 */
     COREPORT_DIPSET(0x0000, "0" )
     COREPORT_DIPSET(0x8000, "1" )
 INPUT_PORTS_END
-CORE_GAMEDEFNV(punkywil, "Punky Willy", 1986, "Joctronic", joctronicS2, 0)
+CORE_GAMEDEFNV(punkywil, "Punky Willy", 1986, "Joctronic", joctronicS1, 0)
 
 /*-------------------------------------------------------------------
 / Walkyria (1986)
