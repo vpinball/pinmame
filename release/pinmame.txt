@@ -301,7 +301,7 @@ Changing the Look of the DMD
 Sound Command Mode
 ------------------
   PinMAME has the ability to let you trigger sound commands manually. This
-  will let you play any sound the pinball game can make. Hit the F4 key to
+  will let you play any sound the pinball game can make. Hit the 'F4' key to
   turn Sound Command Mode on or off. Follow the instructions on screen to
   generate sounds.
 
@@ -322,9 +322,9 @@ Sound Command Mode
 Recording Sounds to a Wave File
 -------------------------------
   PinMAME can record the sound output to a wave file for you to play back
-  anytime you want. Hit the F5 key to begin recording, and hit F5 again,
+  anytime you want. Hit the 'F5' key to begin recording, and hit 'F5' again,
   to stop recording.
-  The files are created in the wave directory. They begin with the name
+  The files are created in the 'wave' directory. They begin with the name
   of the game, plus a #, just like screenshots work.
 
   If you're having trouble, make sure your .cfg file points to a valid directory,
@@ -333,6 +333,14 @@ Recording Sounds to a Wave File
   Note that WAV files can become big quickly. These are not compressed like
   MP3 files, so you can easily end up with 50MB of WAV files
   for just a few minutes of recording!
+
+Recording DMD frames to a Text File
+-----------------------------------
+  By creating a folder called 'DmdDump' inside of the PinMAME folder,
+  one can then use the 'F6' key to start recording DMD frames to a text file.
+  The file is created in the 'DmdDump' directory and contains the name
+  of the game.
+
 
 Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
