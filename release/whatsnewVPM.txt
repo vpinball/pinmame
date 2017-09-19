@@ -10,7 +10,7 @@ Version 2.9 (June 11th, 2017) - "Attack of the clones"
 
 Version 2.8b (December 29th, 2016)
 ------------------------------------------------------------------------------
-- Expose new option in UI: Resampling Quality, to choose between fast/low quality (0) and normal (1)
+- Expose new option in UI: Resampling Quality, to choose between fast performance/low quality (0) and normal (1)
 
 Version 2.8 (December 24th, 2016) - "Sounds good"
 ------------------------------------------------------------------------------
