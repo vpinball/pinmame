@@ -8,7 +8,7 @@ Bugs in Pinmame that we are aware of:
  #1) Williams/Bally WPC: DCS sound still has some problems, only on high volume levels.
      (So don't use full volume (29-31) to avoid static noise)
      This seems to happen on real machines, too, but could also be just a sideeffect there of the amp and speakers.
-     (Note that disabling the low pass filter in the DCS core in addition exposes some static noise on some machines, when playing certain samples -> DCS compression itself is the cause?)
+     (Note that disabling the low pass filter in the DCS core in addition exposes some static noise on some machines, when playing certain samples -> DCS compression itself might be the cause?)
 
  #2) Not all Williams/Bally WPC functions are implemented in PinMAME.
      The most important (?!) functions missing are the ticket dispenser,
@@ -32,3 +32,8 @@ Bugs in Pinmame that we are aware of:
 
  #9) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h(c)).
      Alternately, check the "skip pinball startup test" in vpm.
+
+#10) GTS80S DAC sound is off for most of the sound effects.
+
+#11) Some setups crash when using the AT91 JIT compiled code (e.g. Whitestar II and SAM), disable AT91 JIT
+     by setting "at91jit" to 0
