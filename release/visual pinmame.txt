@@ -11,7 +11,7 @@ See the whatsnewVPM.txt for latest additions to Visual PinMAME!
 
 What is it?
 -----------
-Visual PinMAME is a totally new emulation project which is based on the current
+Visual PinMAME is an emulation project which is based on the current
 PinMAME source code. If you're new to PinMAME, check out the included pinmame.txt file.
 
 Visual PinMAME is a Windows COM object which can be controlled by scripting languages
@@ -31,15 +31,90 @@ state of the lamp matrix and the solenoid matrix during gameplay.
 
 What does it do?
 ----------------
-It allows programmers to control PinMAME emulation. Essentially PinMAME is entirely
-encapsulated into the Visual PinMAME object. Practically anything PinMAME can do,
-Visual PinMAME can do, only programmatically so the user has control over how certain
-things work.
+It allows programmers to control PinMAME emulation and read the state of the emulated components.
+Essentially PinMAME is entirely encapsulated into the Visual PinMAME object.
+Practically anything PinMAME can do, Visual PinMAME can do, only programmatically
+so the user has control over how certain things work.
 
 
-Installation:
--------------
+Installation
+------------
 See the Installation Guide.html file for step by step instructions on how to install Visual PinMAME.
+
+
+Quick Setup and Options explained
+---------------------------------
+Run the included 'Setup.exe', press the 'Install' button,
+and then the 'Setup the Defaults' button where you'll find the following options:
+
+NOTE: If you do not know what to pick, leave every setting at its default value!
+
+
+ Skip Pinball Startup Test: Will try to skip the startup/boot sequence on some machines. Should be usually safe to enable (for example not for Dr. Dude though)
+
+ Use Sound: En/Disable all sound output
+
+ Use Samples: En/Disable pre-recorded samples for some machines
+
+
+ Compact Display: Smallest window output, with no empty space inbetween dots/pixels for DMDs
+
+ Double Display Size: Double every outputted pixel in x and y direction, e.g. a very simplistic output scale
+
+
+ Ignore ROM CRC errors: Will ignore wrong/broken or modified ROMs and start the emulation anyway. Useful if using MODs that are not yet in the PinMAME list
+
+ Cabinet Mode: The output window can be placed more freely (e.g. a second/third monitor) and skips the disclaimer screens
+
+
+ Show DMD/Display Window: En/Disable the standard output window
+
+ Use external DMD (dll): If properly setup (e.g. a dmddevice.dll supporting PinDMD or similar, is placed inside the PinMAME folder), will use an external dll to drive an output window OR even an external hardware DMD (see 'External/Hardware DMD support')
+
+
+ Sound Samplerate: Samplerate that is used for outputting sound. This was previously also influencing the internal emulation quality, but not anymore since 2.8
+
+ Resampling Quality: Audiophiles can pick 1 instead of 0, but will pay with lower performance
+
+ Alt. Sound Mode: This can enable the use of alternative, external sound package recordings (like the ones on PinSound, https://www.pinsound.org/)
+  0 = standard builtin PinMAME emulation
+  1 = builtin alternate sound file support
+      (store the alternate sound files in a PinSound-like directory structure (incl. textfiles for ducking and gain),
+       within a new PinMAME directory subfolder 'altsound' and there within the machines shortname subfolder,
+       e.g. for ij_l7: 'C:\PinMAME\altsound\ij_l7\'
+       or for an example alternate sound file for tz_94h: 'C:\PinMAME\altsound\tz_94h\jingle\000064-load_gumball_pt_1\load_gum__LEGACY.ogg')
+  2 = external pinsound, 3 = external pinsound + psrec sound recording
+      (must have PinSound Studio 0.7 or newer running at the same time:
+       make sure that the windows permissions match between PinSound Studio and Visual PinMAME/Pinball, e.g.
+       if one is using admin permissions when running, then both need to be started with that (or the other way round))
+  (needs VPINMAME_ALTSOUND (also requires bass.lib/.dll) and/or VPINMAME_PINSOUND defined when compiling)
+
+
+ Emulation Fast Frames: Will emulate the first X frames as fast as possible, leading to a quicker startup, without any sideeffects (usually this value is in the 100s to 1000s range)
+
+
+ VP<->VPM synclevel: Was used to balance the processing power between VP and VPM, nowadays best leave at 0 (but if you still insist, this is the number of times that VPM will try to get control over the CPU, per second, see http://www.vpforums....?showtopic=1951)
+
+
+ Display Antialias: Simple anti-aliasing filter of the output window (0..100%)
+
+ Display Opacity: Steers the transparency of the output window (0..100%) (useful if you wanna place the window over the playfield itself)
+
+ 
+ Colorize DMD (4 colors): Allows to set 4 distinct RGB colors for each intensity of the DMD
+ 
+ Otherwise one can set one color and 4 intensity percentages from full (100%) to not at all lit
+
+
+External/Hardware DMD support
+-----------------------------
+Visual PinMAME in addition offers generalized external DMD handling via a separate dmddevice.dll (see 'Use external DMD (dll)' option).
+This allows to drive any kind of virtual or real DMD via this new interface (see ext\dmddevice\dmddevice.h).
+For now, Visual PinMAME ships with four different dll packages for PinDMD1/2/3 and Pin2DMD, so pick the one that you need:
+In case you have an external DMD connected that you want to use with VPM, please move the dlls from the respective subdirectory (Pin2DMD or PinDMD1 or PinDMD2 or PinDMD3) directly into your VPM directory!
+Same goes for the new DMDext (https://github.com/freezy/dmd-extensions) that is a unified DMD engine for all kinds of hardware DMDs, and in addition also can output to a standard monitor.
+
+NOTE: In case you experience problems on Windows 7 ("No DMD device driver found"), try installing: http://go.microsoft.com/fwlink/p/?linkid=217865
 
 
 How to Program Visual PinMAME
