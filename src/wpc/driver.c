@@ -2123,8 +2123,9 @@ DRIVER(kingt,l1)        //S5-???:   ??/79 W King Tut (Shuffle)
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(trizn,t1)        //                  TriZone /10 Scoring Ted Estes
-DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
-DRIVER(tmwrp,t2)        //                  Time Warp /10 Scoring Ted Estes
+DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp (L-2)
+DRIVER(tmwrp,t2)        //                  Time Warp (L-2) /10 Scoring Ted Estes
+DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
