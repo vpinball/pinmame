@@ -79,7 +79,7 @@ ALVGROMSTART(agfootbl,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Footall (R18u)",1993,"Alvin G",mALVGS1,0)
+CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Football (R18u)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(agfoot07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfoot07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
