@@ -55,17 +55,41 @@ static const core_tLCDLayout alvg_alpha1[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ A.G. Soccer Ball
+/ A.G. Soccer-Ball
 /-------------------------------------------------------------------*/
 INITGAME(agsoccer, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsoccer,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_GAMEDEFNV(agsoccer,"A.G. Soccer Ball",1991,"Alvin G",mALVGS1,0)
+CORE_GAMEDEFNV(agsoccer,"A.G. Soccer-Ball (R18u)",1993,"Alvin G",mALVGS1,0)
+
+INITGAME(agsocc07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(agsocc07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
+ALVGS_SOUNDROM11(       "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+                       "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_CLONEDEFNV(agsocc07,agsoccer,"A.G. Soccer-Ball (R07u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ Al's Garage Band Goes On A World Tour
+/ A.G. Football (actually the same game as Soccer-Ball sold in Europe)
+/-------------------------------------------------------------------*/
+INITGAME(agfootbl, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(agfootbl,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
+ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
+						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Footall (R18u)",1993,"Alvin G",mALVGS1,0)
+
+INITGAME(agfoot07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(agfoot07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
+ALVGS_SOUNDROM11(       "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+                       "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_CLONEDEFNV(agfoot07,agsoccer,"A.G. Football (R07u)",1992,"Alvin G",mALVGS1,0)
+
+/*-------------------------------------------------------------------
+/ Al's Garage Band Goes On a World Tour
 /-------------------------------------------------------------------*/
 INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtour,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
@@ -78,7 +102,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS2DMD1,0)
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On a World Tour (R01c)",1993,"Alvin G",mALVGS2DMD1,0)
 
 INITGAME(wrldtou2, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou2,	"cpu02b.512", CRC(1658bf40) SHA1(7af9eedab4e7d0cedaf8bfdbc1f27b989a7171cd))
@@ -91,7 +115,7 @@ ALVGDMD_SPLIT_ROM(		"dot02b.512", CRC(50e3d59d) SHA1(db6df3482fc485af6bde341750b
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour (R02b)",1992,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On a World Tour (R02b)",1993,"Alvin G",mALVGS2DMD1,0)
 
 INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou3,	"cpu03.512", CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
@@ -104,7 +128,7 @@ ALVGDMD_SPLIT_ROM(		"dot03.512", CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On A World Tour (R06a)",1992,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a)",1993,"Alvin G",mALVGS2DMD1,0)
 
 /*-------------------------------------------------------------------
 / U.S.A. Football
@@ -205,7 +229,7 @@ ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5e
 ALVGS_SOUNDROM11(		"eps071.r02", CRC(288f116c) SHA1(5d03ce66bffe39ec02173525078ff07c5005ef18),
 						"eps072.r02", CRC(780a4364) SHA1(d8a972debee669f0fe66c7407fbed5ef9cd2ce01))
 ALVG_ROMEND
-CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs",1993,"Alvin G",mALVGS2,0)
+CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs (R02)",1993,"Alvin G",mALVGS2,0)
 
 
 //Use only for testing the 8031 core emulation

@@ -17,6 +17,8 @@ Bally: Judge Dredd (use L3 Sound ROMs for corrected Deadworld sounds on machines
 Joctronic: Punky Willy
 
 Clones:
+A.G. Football (R07u & R18u)
+A.G. Soccer-Ball (R07u)
 Demolition Man LX-4C (competition MOD)
 Demolition Man H-5C (competition MOD)
 Demolition Man H-6C (competition MOD)
