@@ -34,6 +34,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+#define INITGAME2(name,sb) \
+static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0,1}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 //02/79 Apache!
 //03/79 Football
 //03/79 Hot Ball (B Eight Ball, 01/77)
@@ -170,7 +174,7 @@ CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador,GAME_IMPERFE
 /*--------------------------------
 / Lady Luck
 /-------------------------------*/
-INITGAME(ladylukt,SNDBRD_TAITO_SINTEVOX)
+INITGAME2(ladylukt,SNDBRD_TAITO_SINTEVOX)
 TAITO_ROMSTART2222(ladylukt,"lluck1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba4a21ca5c0a2e5ffa4ca5),
                             "lluck2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
                             "lluck3.bin",CRC(f22666f6) SHA1(2b92007cc4c91a2804d9f6229fa68be35be849ce),
