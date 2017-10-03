@@ -12,8 +12,8 @@
 / Taito uses four different sound boards:
 / - sintetizador
 / - sintevox (sintetizador with an additonal SC-01)
-/ - sintetizador with a daugher board installed
-/ - sintevox with a daugher board installed
+/ - sintetizador with a daughter board installed
+/ - sintevox with a daughter board installed
 /
 / cpu: 6802
 / 0x0000 - 0x007F: RAM
