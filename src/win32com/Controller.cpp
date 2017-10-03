@@ -1669,7 +1669,7 @@ STDMETHODIMP CController::put_LockDisplay(VARIANT_BOOL newVal)
 }
 
 /****************************************************************************
- * IController.SolMask property: gets/sets a mask for the solenois, i.e. 
+ * IController.SolMask property: gets/sets a mask for the solenoids, i.e. 
  * which solenoid state should be reported by ChangedSolenoids
  ****************************************************************************/
 STDMETHODIMP CController::get_SolMask(int nLow, long *pVal)
@@ -2528,6 +2528,29 @@ STDMETHODIMP CController::get_IgnoreRomCrc(VARIANT_BOOL *pVal)
 STDMETHODIMP CController::put_IgnoreRomCrc(VARIANT_BOOL newVal)
 {
 	return m_pGameSettings->put_Value(CComBSTR("ignore_rom_crc"), CComVariant(newVal));
+}
+
+/***************************************************************
+* IController.SoundMode property: get/set SoundMode
+***************************************************************/
+
+STDMETHODIMP CController::get_SoundMode(int *pVal)
+{
+	if (!pVal)
+		return E_POINTER;
+
+	VARIANT vValue;
+	VariantInit(&vValue);
+
+	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("sound_mode"), &vValue);
+	*pVal = vValue.lVal;
+
+	return hr;
+}
+
+STDMETHODIMP CController::put_SoundMode(int newVal)
+{
+	return m_pGameSettings->put_Value(CComBSTR("sound_mode"), CComVariant(newVal));
 }
 
 /*************************************************************** 

@@ -3,6 +3,11 @@ What's new in Visual PinMAME:
 
 Version 3.0 (X X, 2017) - ""
 ------------------------------------------------------------------------------
+- Extend and update some parts of the .txt documentation files
+
+- New method for the Controller object:
+	HRESULT SoundMode([out, retval] int *pVal); - Get sound processing mode, e.g. 0 = standard builtin PinMAME emulation, 1 = builtin alternate sound file support, 2 = external pinsound, 3 = external pinsound + psrec sound recording
+	HRESULT SoundMode([in] int newVal); - Set sound processing mode, e.g. 0 = standard builtin PinMAME emulation, 1 = builtin alternate sound file support, 2 = external pinsound, 3 = external pinsound + psrec sound recording
 
 Version 2.9 (June 11th, 2017) - "Attack of the clones"
 ------------------------------------------------------------------------------
