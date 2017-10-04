@@ -169,7 +169,7 @@ TAITO_SOUNDROMS222("ssh_s1.bin", CRC(acb7e92f) SHA1(103da5c87d0f1e0444575193e760
 				   "ssh_s3.bin", CRC(5e7f5275) SHA1(48eb1a499d2485b317ad769d876ec4cd57980285))
 TAITO_ROMEND
 #define input_ports_sureshot input_ports_taito
-CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador_nmi,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Lady Luck
@@ -440,7 +440,7 @@ TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204
                    "mrb_s3.bin", CRC(276fb897) SHA1(b1a4323a4d921e3ae4beefaa04cd95e18cc33b9d))
 TAITO_ROMEND
 #define input_ports_mrblack input_ports_taito
-CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintetizadorpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintetizadorpp_nmi,0)
 
 TAITO_ROMSTART22222(mrblack1,"mrb1a.bin",CRC(a97c986a) SHA1(315b3410eb495aa471da20bc199754ff0d8e9a3b),
                              "mrb2.bin", CRC(ddf2a88e) SHA1(8de67f4032811ec3b7da1655207d05e52d4e5e01),
@@ -453,7 +453,7 @@ TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204
 TAITO_ROMEND
 #define init_mrblack1 init_mrblack
 #define input_ports_mrblack1 input_ports_mrblack
-CORE_CLONEDEFNV(mrblack1,mrblack,"Mr. Black (alternate set)",1985,"Taito",taito_sintetizadorpp,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(mrblack1,mrblack,"Mr. Black (alternate set)",1985,"Taito",taito_sintetizadorpp_nmi,0)
 
 /*--------------------------------
 / Fire Action Deluxe

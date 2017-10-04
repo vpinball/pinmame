@@ -11,7 +11,7 @@
 / Taito Sound System
 / Taito uses four different sound boards:
 / - sintetizador
-/ - sintevox (sintetizador with an additonal SC-01)
+/ - sintevox (sintetizador with an additional SC-01)
 / - sintetizador with a daughter board installed
 / - sintevox with a daughter board installed
 /
@@ -66,6 +66,11 @@ static void taitos_nmi(int state) {
 	cpu_set_nmi_line(taitos_locals.brdData.cpuNo, state ? PULSE_LINE : CLEAR_LINE);
 }
 
+static void taitos_nmi_timed(int state) {
+	logerror("timed sound nmi\n");
+	cpu_set_nmi_line(taitos_locals.brdData.cpuNo, PULSE_LINE);
+}
+
 static WRITE_HANDLER(pia0a_w)
 {
 //	logerror("pia0a_w: %02x\n", data);
@@ -83,6 +88,7 @@ static WRITE_HANDLER(pia0b_w)
 
 static READ_HANDLER(pia0b_r)
 {
+	logerror("%04x: pia0b_r: %02x\n", activecpu_get_previouspc(), taitos_locals.pia_b);
 	return taitos_locals.pia_b;
 }
 
@@ -132,6 +138,7 @@ static void taitos_init(struct sndbrdData *brdData)
 	taitos_locals.brdData = *brdData;
 
 	pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
+	pia_reset();
 }
 
 struct DACinterface TAITO_dacInt =
@@ -155,12 +162,19 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 0.6 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 0.6 MHz ???
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, TAITO_dacInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taitos_sintetizador_nmi)
+  MDRV_IMPORT_FROM(taitos_sintetizador)
+
+  MDRV_CPU_REPLACE("scpu", M6802, 3579545/4) // wild guess
+  MDRV_TIMER_ADD(taitos_nmi_timed, 10) // educated guess
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(taitos_sintevox)
@@ -254,6 +268,12 @@ MACHINE_DRIVER_START(taitos_sintetizadorpp)
   MDRV_CPU_MODIFY("scpu")
   MDRV_CPU_MEMORY(taitospp_readmem, taitospp_writemem)
   MDRV_SOUND_ADD(AY8910, TAITO_ay8910Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taitos_sintetizadorpp_nmi)
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+
+  MDRV_TIMER_ADD(taitos_nmi_timed, 100)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(taitos_sintevoxpp)
