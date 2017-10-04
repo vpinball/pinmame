@@ -169,7 +169,7 @@ TAITO_SOUNDROMS222("ssh_s1.bin", CRC(acb7e92f) SHA1(103da5c87d0f1e0444575193e760
 				   "ssh_s3.bin", CRC(5e7f5275) SHA1(48eb1a499d2485b317ad769d876ec4cd57980285))
 TAITO_ROMEND
 #define input_ports_sureshot input_ports_taito
-CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador_nmi,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador_nmi,0)
 
 /*--------------------------------
 / Lady Luck
