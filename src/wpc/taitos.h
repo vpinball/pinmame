@@ -14,7 +14,9 @@
 */
 
 extern MACHINE_DRIVER_EXTERN(taitos_sintetizador);
+extern MACHINE_DRIVER_EXTERN(taitos_sintetizador_nmi);
 extern MACHINE_DRIVER_EXTERN(taitos_sintetizadorpp);
+extern MACHINE_DRIVER_EXTERN(taitos_sintetizadorpp_nmi);
 extern MACHINE_DRIVER_EXTERN(taitos_sintevox);
 extern MACHINE_DRIVER_EXTERN(taitos_sintevoxpp);
 
