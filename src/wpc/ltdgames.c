@@ -116,7 +116,7 @@ static core_tLCDLayout disp2p6[] = {
 / Space Poker
 /-------------------------------------------------------------------*/
 INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(3cf29406) SHA1(5c27bda1193077a7b99c5b2dd19adb4d917ba37d) BAD_DUMP) //!! working version created from a bad dump
+LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
