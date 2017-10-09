@@ -173,7 +173,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(taitos_sintetizador_nmi)
   MDRV_IMPORT_FROM(taitos_sintetizador)
 
-  MDRV_CPU_REPLACE("scpu", M6802, 680000) // trying to match youtube video
+  MDRV_CPU_REPLACE("scpu", M6802, 660000) // trying to match youtube video
   MDRV_TIMER_ADD(taitos_nmi_timed, -133333) // negative value = microseconds: ~7.5 Hz
 MACHINE_DRIVER_END
 
