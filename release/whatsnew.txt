@@ -18,6 +18,8 @@ MAC: MAC Jungle
 Correct Dumps:
 Bally: Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
+LTD: Space Poker (corrected one more byte in the patched ROM)
+Taito: Sure Shot (fixed bad DAC data offset in ssh_s3.bin)
 
 Clones:
 A.G. Football (R07u & R18u) (exact clone of A.G. Soccer-Ball)

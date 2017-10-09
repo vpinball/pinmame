@@ -166,7 +166,7 @@ TAITO_ROMSTART2222(sureshot,"ssh1.bin",CRC(46b96e00) SHA1(2cdbc0994bf0ff55330988
                             "ssh4.bin",CRC(ced8f9df) SHA1(ba6b50df3ad2cb28885542748a61777df2010d69))
 TAITO_SOUNDROMS222("ssh_s1.bin", CRC(acb7e92f) SHA1(103da5c87d0f1e0444575193e760b667d42fea73),
                    "ssh_s2.bin", CRC(c1351b31) SHA1(a306ff7abe5b032cd05195200fc56a97c1d2eef3),
-				   "ssh_s3.bin", CRC(5e7f5275) SHA1(48eb1a499d2485b317ad769d876ec4cd57980285))
+                   "ssh_s3.bin", CRC(4efbe537) SHA1(cd8b78433ff1f4da42482a8c6ef97d0ba36be262))
 TAITO_ROMEND
 #define input_ports_sureshot input_ports_taito
 CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintetizador_nmi,0)
