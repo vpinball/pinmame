@@ -47,6 +47,10 @@ extern char g_fShowWinDMD;
 
 // from ticker.c
 extern void uSleep(const UINT64 u);
+// from snd_alt.h
+#ifdef VPINMAME_ALTSOUND
+ extern void alt_sound_pause(BOOL pause);
+#endif
 }
 #include "alias.h"
 
@@ -436,7 +440,7 @@ STDMETHODIMP CController::put_Switch(int nSwitchNo, VARIANT_BOOL newVal)
  *************************************************/
 STDMETHODIMP CController::get_Pause(VARIANT_BOOL *pVal)
 {
-	*pVal = (WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_OBJECT_0)?(g_fPause?VARIANT_TRUE:VARIANT_FALSE):VARIANT_FALSE;
+	*pVal = (WaitForSingleObject(m_hEmuIsRunning, 0)==WAIT_OBJECT_0) ? (g_fPause?VARIANT_TRUE:VARIANT_FALSE):VARIANT_FALSE;
 	return S_OK;
 }
 
@@ -446,6 +450,10 @@ STDMETHODIMP CController::put_Pause(VARIANT_BOOL newVal)
 		return S_OK;
 
 	g_fPause = newVal;
+
+#ifdef VPINMAME_ALTSOUND
+	alt_sound_pause(g_fPause);
+#endif
 
 	return S_OK;
 }
