@@ -30,6 +30,11 @@ float alt_sound_gain(const int gain) //!! which one?
 	return (float)gain / 20.f;
 }
 
+static HSTREAM jingle_stream = 0; // includes single_stream
+static HSTREAM music_stream = 0;
+#define ALT_MAX_VOICES 16
+static HSTREAM voice_stream[ALT_MAX_VOICES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
+
 void alt_sound_handle(int boardNo, int cmd)
 {
 	if (TRUE) //!! only do search for dir as soon as sound is disabled? or even additional flag/interface call?
@@ -42,11 +47,6 @@ void alt_sound_handle(int boardNo, int cmd)
 		static unsigned int cmd_buffer[ALT_MAX_CMDS] = { ~0, ~0, ~0, ~0 };
 
 		static struct pin_samples psd;
-
-		static HSTREAM jingle_stream = 0; // includes single_stream
-		static HSTREAM music_stream = 0;
-#define ALT_MAX_VOICES 16
-		static HSTREAM voice_stream[ALT_MAX_VOICES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
 
 		static float global_vol = 1.0f;
 		static float music_vol = 1.0f;
@@ -728,5 +728,34 @@ void alt_sound_exit()
 	{
 		cached_machine_name[0] = '#';
 		BASS_Free();
+	}
+}
+
+void alt_sound_pause(BOOL pause)
+{
+	unsigned int i;
+	if (pause)
+	{
+		for (i = 0; i < ALT_MAX_VOICES; ++i)
+			if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) == BASS_ACTIVE_PLAYING)
+				BASS_ChannelPause(voice_stream[i]);
+
+		if (jingle_stream != 0 && BASS_ChannelIsActive(jingle_stream) == BASS_ACTIVE_PLAYING)
+			BASS_ChannelPause(jingle_stream);
+
+		if (music_stream != 0 && BASS_ChannelIsActive(music_stream) == BASS_ACTIVE_PLAYING)
+			BASS_ChannelPause(music_stream);
+	}
+	else
+	{
+		for (i = 0; i < ALT_MAX_VOICES; ++i)
+			if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) == BASS_ACTIVE_PAUSED)
+				BASS_ChannelPlay(voice_stream[i],0);
+
+		if (jingle_stream != 0 && BASS_ChannelIsActive(jingle_stream) == BASS_ACTIVE_PAUSED)
+			BASS_ChannelPlay(jingle_stream,0);
+
+		if (music_stream != 0 && BASS_ChannelIsActive(music_stream) == BASS_ACTIVE_PAUSED)
+			BASS_ChannelPlay(music_stream,0);
 	}
 }
