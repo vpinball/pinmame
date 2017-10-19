@@ -807,6 +807,7 @@ DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (rev.T1, never produced)
 // GRAND PRODUCTS, INC.
 // --------------------
 DRIVERNV(bullseye)      //BY35:     04/86 301/Bullseye
+DRIVERNV(bullseyn)      //BY35:     ??/?? 301/Bullseye (normal pinball scoring)
 
 // ----------------
 // HANKIN GAMES

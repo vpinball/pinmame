@@ -1631,3 +1631,19 @@ BY35_INPUT_PORTS_START(bullseye,1) \
       COREPORT_DIPSET(0x0001, "effects" ) \
 INPUT_PORTS_END
 CORE_GAMEDEFNV(bullseye,"301/Bullseye",1986,"Grand Products Inc.",by35_GP,0)
+
+INITGAME(bullseyn,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_GRAND,0)
+ROM_START(bullseyn) \
+  NORMALREGION(0x10000, BY35_CPUREGION) \
+    ROM_LOAD("301NEW_normalscoring.U2", 0x2000, 0x0800, CRC(febebc63) SHA1(9221b02bc5952203f5b2527e4c40d17d5986abdf)) \
+    ROM_CONTINUE( 0x2800, 0x0800) \
+    ROM_LOAD("301NEW_normalscoring.U6", 0x3000, 0x0800, CRC(1357cd6a) SHA1(4e02c96b141dab6cdea1a15539214976eb052838)) \
+    ROM_CONTINUE( 0x3800, 0x0800) \
+    ROM_RELOAD( 0xf000, 0x1000)
+  SOUNDREGION(0x10000, BY51_CPUREGION) \
+    ROM_LOAD("bull.snd", 0x8000, 0x0800, CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed)) \
+      ROM_RELOAD(0x8800, 0x0800) \
+      ROM_RELOAD(0xf800, 0x0800)
+BY35_ROMEND
+#define input_ports_bullseyn input_ports_bullseye
+CORE_CLONEDEFNV(bullseyn, bullseye,"301/Bullseye (normal pinball scoring)",1986,"Grand Products Inc.",by35_GP,0)
