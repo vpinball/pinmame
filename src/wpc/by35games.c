@@ -109,6 +109,19 @@ BY17_ROMEND
 #define input_ports_eightbll input_ports_by35
 CORE_GAMEDEFNV(eightbll,"Eight Ball",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
+/*
+I compared the code to the later existing Eight Ball ROM version. The interesting thing is this version and I presume the other early -17 Bally ROMs have a Tilt exploit!
+If you lift and hold the machine so the tilt switch mechanism activates but slowly allow the ball to go to the outhole, the game will serve the next ball, *clear* the tilt state and ignore the tilt switch until it's released. So long as you keep the machine lifted/tilted, you can slowly control the ball to do whatever you want and rack up points.
+
+The later ROM version fixed this tilt exploit and subsequent games will not serve a ball from the outhole unless the Tilt switch mechanism is released.
+*/
+INITGAME(eightblo,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(eightblo, "E723-17.U2",   CRC(7e7554ae) SHA1(e03c47c4a7a7352293f246ae5bff970fb53fcd88),
+                           "720-20_6.716", CRC(0c17aa4d) SHA1(729e61a29691857112579efcdb96a35e8e5b1279)) /*MAME: E720-20.U6*/
+BY17_ROMEND
+#define input_ports_eightblo input_ports_eightbll
+CORE_CLONEDEFNV(eightblo,eightbll,"Eight Ball (Old)",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
 INITGAME(eightblb,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY35_ROMSTARTx00(eightblb,"8bal2732.u2",CRC(da2da9a5) SHA1(3ee3614914bf477c74db83accf8b2f34b1eda3f0),
                           "72132fn.u6", CRC(dad6fdf1) SHA1(66046454d3b56aac52fcb303fd7bb7ef33296982))

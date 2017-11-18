@@ -116,6 +116,7 @@ DRIVERNV(nightrdb)      //BY17-721: 10/08 Night Rider (Free Play)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(evelknib)      //BY17-722: 10/08 Evel Knievel (Free Play)
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
+DRIVERNV(eightblo)      //BY17-723: 01/77 Eight Ball (Old)
 DRIVERNV(eightblb)      //BY17-723: 10/08 Eight Ball (Free Play)
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
 DRIVERNV(pwerplab)      //BY17-724: 10/08 Power Play (Free Play)
@@ -1183,7 +1184,8 @@ DRIVERNV(nugentfp)      //MPU-100: 11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
 DRIVERNV(draculfp)      //MPU-100: 01/79 Dracula (Free Play)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
-DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Free Play)
+DRIVERNV(tridenta)      //MPU-100: 03/79 Trident (Old)
+DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Old Free Play)
 DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
 DRIVERNV(hothanfp)      //MPU-100: 06/79 Hot Hand (Free Play)
 DRIVERNV(magic)         //MPU-100: 08/79 Magic
