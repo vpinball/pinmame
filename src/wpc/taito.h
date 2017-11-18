@@ -148,7 +148,9 @@
 extern MACHINE_DRIVER_EXTERN(taito);
 extern MACHINE_DRIVER_EXTERN(taito_old);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizador);
+extern MACHINE_DRIVER_EXTERN(taito_sintetizador_nmi);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp);
+extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp_nmi);
 extern MACHINE_DRIVER_EXTERN(taito_sintevox);
 extern MACHINE_DRIVER_EXTERN(taito_sintevoxpp);
 

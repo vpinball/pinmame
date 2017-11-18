@@ -221,6 +221,9 @@ public:
 	STDMETHOD(put_IgnoreRomCrc)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_CabinetMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CabinetMode)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(get_SoundMode)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_SoundMode)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_Controller_H__D2811491_40D6_4656_9AA7_8FF85FD63543__INCLUDED_)

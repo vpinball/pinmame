@@ -41,27 +41,27 @@ DRIVERNV(starshot)      // 12/79 Star Shooter
 // --------------------
 // ALVIN G. AND CO.
 // --------------------
-DRIVERNV(agsoccer)      //A.G. Soccer (1992)
-//DRIVERNV(agfootbl)    //A.G. Football (1992)
-DRIVERNV(usafoota)      //U.S.A. Football R01u (1992)
-DRIVERNV(usafootb)      //U.S.A. Football R06u (1993)
-DRIVERNV(wrldtour)      //Al's Garage Band Goes On A World Tour (1993)
-DRIVERNV(wrldtou2)      //Al's Garage Band Goes On A World Tour R02b (1993)
-DRIVERNV(wrldtou3)      //Al's Garage Band Goes On A World Tour R06a (1993)
-DRIVERNV(dinoeggs)      //Dinosaur Eggs (1993)
-//DRIVERNV(dualpool)    //Dual Pool (1993) - 1 Unit
-//DRIVERNV(maxbadaz)    //Max Badazz (1993) - 1 Unit
-DRIVERNV(mystcast)      //Mystery Castle (1993)
-DRIVERNV(mystcasa)      //Mystery Castle (alternate set, 199?)
-DRIVERNV(pstlpkr)       //Pistol Poker R02 (1993)
-DRIVERNV(pstlpkr1)      //Pistol Poker R01 (1993)
-DRIVERNV(punchy)        //Punchy the Clown R02 (1993)
-DRIVERNV(punchy3)       //Punchy the Clown R03 (1993)
-                        //A-MAZE-ING Baseball (1994) - any units?
-//DRIVERNV(slamnjam)    //Slam N Jam (1994) - 2 Units
-
+DRIVERNV(agsocc07)      // AG01:   07/92  A.G. Soccer-Ball (R07u)
+DRIVERNV(agsoccer)      //         04/93  A.G. Soccer-Ball (R18u)
+DRIVERNV(agfoot07)      // AG01:   07/92  A.G. Football (R07u)
+DRIVERNV(agfootbl)      //         04/93  A.G. Football (R18u)
+DRIVERNV(wrldtou3)      // AG03:   02/93  Al's Garage Band Goes On a World Tour (R06a)
+DRIVERNV(wrldtou2)      //         02/93  Al's Garage Band Goes On a World Tour (R02b)
+DRIVERNV(wrldtour)      //         03/93  Al's Garage Band Goes On a World Tour (R01c)
+DRIVERNV(usafoota)      // AG05:   09/92  U.S.A. Football (R01u)
+DRIVERNV(usafootb)      //         02/93  U.S.A. Football (R06u)
+DRIVERNV(punchy)        // EPC061: 08/93  Punchy the Clown (R02)
+DRIVERNV(punchy3)       //         10/93  Punchy the Clown (R03)
+DRIVERNV(dinoeggs)      // EPC071: 09/93  Dinosaur Eggs (R02)
+DRIVERNV(mystcast)      // AG08:   06/93  Mystery Castle (R02)
+DRIVERNV(mystcasa)      // EPC081: ??/9?  Mystery Castle (R03)
+DRIVERNV(pstlpkr1)      // AG10:   11/93  Pistol Poker (R01)
+DRIVERNV(pstlpkr)       //         11/93  Pistol Poker (R02)
+                        //         ??/93  Dual-Pool - proto
+                        //         ??/93  Slam 'N Jam - proto
+                        //         ??/94  A-MAZE-ING Baseball - proto
 #ifdef MAME_DEBUG
-  DRIVERNV(test8031)    //Test 8031 cpu core
+DRIVERNV(test8031)      //Test 8031 cpu core
 #endif
 
 // --------------------
@@ -116,6 +116,7 @@ DRIVERNV(nightrdb)      //BY17-721: 10/08 Night Rider (Free Play)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(evelknib)      //BY17-722: 10/08 Evel Knievel (Free Play)
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
+DRIVERNV(eightblo)      //BY17-723: 01/77 Eight Ball (Old)
 DRIVERNV(eightblb)      //BY17-723: 10/08 Eight Ball (Free Play)
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
 DRIVERNV(pwerplab)      //BY17-724: 10/08 Power Play (Free Play)
@@ -807,6 +808,7 @@ DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (rev.T1, never produced)
 // GRAND PRODUCTS, INC.
 // --------------------
 DRIVERNV(bullseye)      //BY35:     04/86 301/Bullseye
+DRIVERNV(bullseyn)      //BY35:     ??/?? 301/Bullseye (normal pinball scoring)
 
 // ----------------
 // HANKIN GAMES
@@ -1182,7 +1184,8 @@ DRIVERNV(nugentfp)      //MPU-100: 11/78 Nugent (Free Play)
 DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
 DRIVERNV(draculfp)      //MPU-100: 01/79 Dracula (Free Play)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
-DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Free Play)
+DRIVERNV(tridenta)      //MPU-100: 03/79 Trident (Old)
+DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Old Free Play)
 DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
 DRIVERNV(hothanfp)      //MPU-100: 06/79 Hot Hand (Free Play)
 DRIVERNV(magic)         //MPU-100: 08/79 Magic
@@ -2123,8 +2126,9 @@ DRIVER(kingt,l1)        //S5-???:   ??/79 W King Tut (Shuffle)
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(trizn,t1)        //                  TriZone /10 Scoring Ted Estes
-DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
-DRIVER(tmwrp,t2)        //                  Time Warp /10 Scoring Ted Estes
+DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp (L-2)
+DRIVER(tmwrp,t2)        //                  Time Warp (L-2) /10 Scoring Ted Estes
+DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball

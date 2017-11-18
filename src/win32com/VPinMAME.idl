@@ -278,6 +278,8 @@ import "ocidl.idl";
 		[propget, id(83), helpstring("property RawDmdColoredPixels")] HRESULT RawDmdColoredPixels([out, retval] VARIANT *pVal);
 		[propget, id(84), helpstring("property NVRAM")] HRESULT NVRAM([out, retval] VARIANT *pVal);
 		[propget, id(85), helpstring("property ChangedNVRAM")] HRESULT ChangedNVRAM([out, retval] VARIANT *pVal);
+		[propget, id(86), helpstring("property SoundMode")] HRESULT SoundMode([out, retval] int *pVal);
+		[propput, id(86), helpstring("property SoundMode")] HRESULT SoundMode([in] int newVal);
 	};
 
 	// WSHDlg and related interfaces
