@@ -1796,6 +1796,7 @@ static int validitychecks(void)
 					const char *hash;
 
 					last_name = c = ROM_GETNAME(romp);
+#ifndef PINMAME
 					while (*c)
 					{
 						if (tolower(*c) != *c)
@@ -1805,7 +1806,7 @@ static int validitychecks(void)
 						}
 						c++;
 					}
-
+#endif
 					c = ROM_GETNAME(romp);
 					pre = 0;
 					post = 0;

@@ -323,10 +323,26 @@ MACHINE_DRIVER_START(taito_sintetizador)
   MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(taito_sintetizador_nmi)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintetizador_nmi)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(taito_sintetizadorpp)
   MDRV_IMPORT_FROM(taito)
 
   MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_sintetizadorpp_nmi)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp_nmi)
   MDRV_SOUND_CMD(taito_sndCmd_w)
   MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
@@ -479,7 +495,9 @@ MACHINE_DRIVER_START(taitoz80)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(taitoz80)
 
-  MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp_nmi)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
 
 static core_tLCDLayout disp[] = {
@@ -499,9 +517,9 @@ TAITO_ROMSTART2222(mrblkz80, "mb01z80.dat", CRC(7f883a70) SHA1(848783123b55ade76
                              "mb02z80.dat", CRC(68de8f50) SHA1(7076297060e927da1aefae8bf75c8cda18031660),
                              "mb03z80.dat", CRC(5a8e55e8) SHA1(b93102254004d258998bd6ab7d7b333361b37830),
                              "mb04z80.dat", CRC(ecf30c2f) SHA1(404c891bc420cfe540e829a1cd05ced10ea5a09c))
-TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204e721b0da70e2),
-                   "mrb_s2.bin", CRC(34d52449) SHA1(bdd5db5e58ca997d413d18f291928ad1a45c194e),
-                   "mrb_s3.bin", CRC(276fb897) SHA1(b1a4323a4d921e3ae4beefaa04cd95e18cc33b9d))
+TAITO_SOUNDROMS444("mrbz80s1.bin", NO_DUMP,
+                   "mrbz80s2.bin", NO_DUMP,
+                   "mrbz80s3.bin", NO_DUMP)
 TAITO_ROMEND
 
 INPUT_PORTS_START(mrblkz80)
@@ -518,4 +536,4 @@ INPUT_PORTS_START(mrblkz80)
     COREPORT_BIT(   0x0040, "Statistics",   KEYCODE_9)
 INPUT_PORTS_END
 
-CORE_CLONEDEFNV(mrblkz80, mrblack, "Mr. Black (Z-80 CPU)", 198?, "Taito", taitoz80, GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(mrblkz80, mrblack, "Mr. Black (Z-80 CPU)", 198?, "Taito", taitoz80, 0)
