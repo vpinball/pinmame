@@ -510,45 +510,38 @@ MACHINE_DRIVER_START(PLAYMATICS5)
 MACHINE_DRIVER_END
 
 
+/* Zira sound board */
+
 static READ_HANDLER(in_snd_z) {
   return (~sndlocals.sndCmd >> 4) & 0x07;
 }
 
 static WRITE_HANDLER(ay_data_w) {
   sndlocals.aydata = data;
-//printf("d:%x:%02x\n", sndlocals.ayctrl, sndlocals.aydata);
 }
 
 static WRITE_HANDLER(ay_ctrl_w) {
   sndlocals.ayctrl = data & 3;
   switch (sndlocals.ayctrl) {
     case 1: AY8910_write_port_0_w(0, sndlocals.aydata); break;
-    case 2:
+    case 2: sndlocals.aydata = AY8910Read(0);
     case 3: AY8910_control_port_0_w(0, sndlocals.aydata); break;
   }
-//printf("c:%x:%02x\n", sndlocals.ayctrl, sndlocals.aydata);
 }
 
 static READ_HANDLER(ay_data_r) {
-  static int readcnt;
-  UINT8 data = AY8910Read(0);
-//printf("r:%x:%02x\n", sndlocals.ayctrl, data);
-  if (++readcnt > 750) { // to avoid CPU getting stuck forever, reset it
-    readcnt = 0;
-    cop420_reset(0);
-  }
-  return data;
+  return sndlocals.aydata;
 }
 
 static WRITE_HANDLER(ay8910_z_porta_w)	{
-  coreGlobals.lampMatrix[8] = data;
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = ~data;
 }
 static WRITE_HANDLER(ay8910_z_portb_w)	{
-  coreGlobals.solenoids2 = data;
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = ~data;
 }
 struct AY8910interface playzs_8910Int = {
 	1,			/* 1 chip */
-	2000000,	/* 2.01216 MHz quartz on pic! */
+	2012160,	/* 2.01216 MHz quartz on pic! */
 	{ 25 },		/* Volume */
 	{ 0 },
 	{ 0 },
@@ -557,13 +550,11 @@ struct AY8910interface playzs_8910Int = {
 };
 
 static WRITE_HANDLER(romsel_w) {
-  if (data & 0x08) {
-    logerror("Selecting 2nd ROM bank!\n");
-  }
+  cpu_setbank(1, memory_region(PLAYMATIC_MEMREG_SCPU) + ((data & 8) ? 0x400 : 0));
 }
 
 static MEMORY_READ_START(playsound_readmemz)
-  {0x0000,0x03ff, MRA_ROM},
+  {0x0000, 0x03ff, MRA_BANKNO(1)},
 MEMORY_END
 
 static MEMORY_WRITE_START(playsound_writememz)
@@ -580,11 +571,23 @@ static PORT_WRITE_START(playsound_writeportz)
   {COP400_PORT_D, COP400_PORT_D, romsel_w },
 MEMORY_END
 
+static void playzs_init(struct sndbrdData *brdData) {
+  cpu_setbank(1, memory_region(PLAYMATIC_MEMREG_SCPU));
+  memset(&sndlocals, 0, sizeof sndlocals);
+}
+
+static WRITE_HANDLER(playzs_ctrl_w) {
+  sndlocals.sndCmd = data;
+}
+
+const struct sndbrdIntf playzsIntf = {
+  "PLAYZ", playzs_init, NULL, NULL, playzs_ctrl_w, NULL, NULL, playzs_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
 MACHINE_DRIVER_START(PLAYMATICSZ)
-  MDRV_CPU_ADD_TAG("scpu", COP420, 2000000 / COP400_CLOCK_DIVIDER)
+  MDRV_CPU_ADD_TAG("scpu", COP420, 2012160 / 16)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmemz, playsound_writememz)
   MDRV_CPU_PORTS(playsound_readportz, playsound_writeportz)
-  MDRV_SOUND_ADD(CUSTOM, play2s_custInt)
   MDRV_SOUND_ADD(AY8910, playzs_8910Int)
 MACHINE_DRIVER_END

@@ -10,6 +10,7 @@ Fix Rescue 911 (and maybe more: SFII, WCS, Shaq, mZOIS?) DMD brightness level ma
 Improved Punky Willy sound emulation
 Fixed sound for Taito Sure Shot (sounds awful, but like the real thing :)) and Mr. Black (Z-80 version still misses sound rom dumps though) (NMI line needs to be pulsed for these games)
 Made speech work for Taito Vegas and Lady Luck - working around a strange PIA issue
+Fixed COP420 emulation, sound works now on Zira
 Add emulation pause support for alternate sound
 
 *** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon, Soren, barakandl
@@ -20,6 +21,7 @@ Correct Dumps:
 Bally: Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
 LTD: Space Poker (corrected one more byte in the patched ROM)
+Playmatic: Zira (sound ROM is actually 2K wide and contains the same code twice)
 Taito: Sure Shot (fixed bad DAC data offset in ssh_s3.bin)
 
 Clones:

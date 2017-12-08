@@ -33,7 +33,7 @@ INLINE void casc(void)
 
 INLINE void cqma(void)
 {
-	M = Q >> 4;
+	RAM(B) = Q >> 4;
 	A = Q & 0xF;
 }
 
@@ -54,7 +54,7 @@ INLINE void cop402m_inin(void) { A = IN_IN() | 0x02; }
 
 INLINE void ldd(void)
 {
-	A = RAM(ROM(PC++) & 0x3f) & 0xF;
+	A = RAM(ROM(PC-1) & 0x3f) & 0xF;
 }
 
 INLINE void ogi0(void) { WRITE_G(0); }
