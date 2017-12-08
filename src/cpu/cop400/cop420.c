@@ -9,7 +9,6 @@
     TODO:
 
     - serial I/O
-    - interrupt
 
 */
 
@@ -23,7 +22,7 @@
 /* Layout of the registers in the debugger */
 static UINT8 cop420_reg_layout[] = {
 	COP400_PC, COP400_A, COP400_B, COP400_G, COP400_EN, COP400_Q, -1,
-  COP400_SA, COP400_SB, COP400_SC, COP400_SIO, COP400_SKL, 0
+  COP400_SA, COP400_SB, COP400_SC, COP400_SIO, COP400_SKL, COP400_T, 0
 };
 
 /* Layout of the debugger windows x,y,w,h */
@@ -48,7 +47,45 @@ static int InstLen[256];
 static int LBIops[256];
 static int LBIops33[256];
 
+static mame_timer *cop420_counter_timer;
+
 #include "420ops.c"
+
+static s_opcode cop420_opcode_op23[256]=
+{
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, ldd			},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},{1, ldd		},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, xad			},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},{1, xad		},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},
+	{1, illegal 	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	},{1, illegal	}
+};
 
 static s_opcode cop420_opcode_op33[256]=
 {
@@ -86,6 +123,11 @@ static s_opcode cop420_opcode_op33[256]=
 	{1, illegal 	},{1, illegal 	},{1, illegal 	},{1, illegal 	},{1, illegal 	},{1, illegal 	},{1, illegal 	},{1, illegal 	}
 };
 
+static void cop420_op23(void)
+{
+	(*(cop420_opcode_op23[ROM(PC++)].function))();
+}
+
 static void cop420_op33(void)
 {
 	(*(cop420_opcode_op33[ROM(PC++)].function))();
@@ -95,13 +137,13 @@ static s_opcode cop420_opcode_main[256]=
 {
 	{1, clra		},{1, skmbz0	},{1, xor		},{1, skmbz2		},{1, xis0		},{1, ld0		},{1, x0		},{1, xds0		},
 	{1, lbi0_9		},{1, lbi0_10	},{1, lbi0_11	},{1, lbi0_12		},{1, lbi0_13	},{1, lbi0_14	},{1, lbi0_15	},{1, lbi0_0	},
-	{1, casc		},{1, skmbz1	},{1, xabr		},{1, skmbz3		},{1, xis0		},{1, ld1		},{1, x1		},{1, xds1		},
+	{1, casc		},{1, skmbz1	},{1, xabr		},{1, skmbz3		},{1, xis1		},{1, ld1		},{1, x1		},{1, xds1		},
 	{1, lbi1_9		},{1, lbi1_10	},{1, lbi1_11	},{1, lbi1_12		},{1, lbi1_13	},{1, lbi1_14	},{1, lbi1_15	},{1, lbi1_0	},
-	{1, skc			},{1, ske		},{1, sc		},{2, xad			},{1, xis2		},{1, ld2		},{1, x2		},{1, xds2 		},
+	{1, skc			},{1, ske		},{1, sc		},{2, cop420_op23		},{1, xis2		},{1, ld2		},{1, x2		},{1, xds2 		},
 	{1,	lbi2_9		},{1, lbi2_10	},{1, lbi2_11	},{1, lbi2_12		},{1, lbi2_13	},{1, lbi2_14	},{1, lbi2_15	},{1, lbi2_0	},
 	{1, asc			},{1, add		},{1, rc		},{2, cop420_op33  	},{1, xis3		},{1, ld3		},{1, x3		},{1, xds3		},
 	{1,	lbi3_9		},{1, lbi3_10	},{1, lbi3_11	},{1, lbi3_12		},{1, lbi3_13	},{1, lbi3_14	},{1, lbi3_15	},{1, lbi3_0	},
-	{1, comp		},{1, skt		},{1, rmb2		},{1, rmb2			},{1, nop		},{1, rmb1		},{1, smb2		},{1, smb1		},
+	{1, comp		},{1, skt		},{1, rmb2		},{1, rmb3			},{1, nop		},{1, rmb1		},{1, smb2		},{1, smb1		},
 	{1,	ret			},{1, retsk		},{1, adt		},{1, smb3			},{1, rmb0		},{1, smb0		},{1, cba		},{1, xas		},
 	{1, cab			},{1, aisc1		},{1, aisc2		},{1, aisc3			},{1, aisc4		},{1, aisc5		},{1, aisc6		},{1, aisc7		},
 	{1, aisc8		},{1, aisc9		},{1, aisc10	},{1, aisc11		},{1, aisc12	},{1, aisc13	},{1, aisc14	},{1, aisc15	},
@@ -127,6 +169,37 @@ static s_opcode cop420_opcode_main[256]=
 	{1, jp			},{1, jp		},{1, jp		},{1, jp			},{1, jp		},{1, jp		},{1, jp		},{1, jid		}
 };
 
+/* 8 bit Binary Counter */
+
+static void cop420_counter_tick(int n)
+{
+	R.counter++;
+
+	if (R.counter > 1023)
+	{
+		R.counter = 0;
+		R.timerlatch = 1;
+	}
+}
+
+/* IN Latches */
+
+static void cop420_inil_tick(int n)
+{
+	UINT8 in = IN_IN();
+	int i;
+
+	for (i = 0; i < 4; i++)
+	{
+		R.in[i] = (R.in[i] << 1) | BIT(in, i);
+
+		if ((R.in[i] & 0x07) == 0x04) // 100
+		{
+			R.IL |= (1 << i);
+		}
+	}
+}
+
 /****************************************************************************
  * Initialize emulation
  ****************************************************************************/
@@ -138,6 +211,11 @@ void cop420_init(void)
 	memset(&R, 0, sizeof(COP420_Regs));
 	R.G_mask = 0x0F;
 	R.D_mask = 0x0F;
+
+	cop420_counter_timer = timer_alloc(cop420_counter_tick);
+	timer_adjust(cop420_counter_timer, TIME_IN_HZ(Machine->drv->cpu[cpu].cpu_clock), 0, TIME_IN_HZ(Machine->drv->cpu[cpu].cpu_clock));
+
+	// serial and microbus timers not emulated
 
 	for (i=0; i<256; i++) InstLen[i]=1;
 
@@ -188,6 +266,10 @@ void cop420_reset(void *param)
 	OUT_D(0);
 	EN = 0;
 	WRITE_G(0);
+	SKL = 1;
+
+	R.counter = 0;
+	R.timerlatch = 1;
 }
 
 /****************************************************************************
@@ -253,6 +335,31 @@ int cop420_execute(int cycles)
 			(*(cop420_opcode_main[opcode].function))();
 			cop420_ICount -= inst_cycles;
 
+			// check for interrupt
+			if (BIT(EN, 1) && BIT(R.IL, 1))
+			{
+				opcode=ROM(PC);
+				if (!((opcode >= 0x80 && opcode != 0xbf && opcode != 0xff) // jp
+					|| (opcode >= 0x60 && opcode < 0x64) // jmp
+					|| (opcode >= 0x68 && opcode < 0x6c))) { // jsr
+
+					// store skip logic
+					R.last_skip = skip;
+					skip = 0;
+	
+					// push next PC
+					PUSH(PC + 1);
+	
+					// jump to interrupt service routine
+					PC = 0x0ff;
+	
+					// disable interrupt
+					EN &= ~0x02;
+				}
+
+				R.IL &= ~2;
+			}
+
 			if (skip == 1) {
 				opcode=ROM(PC);
 				if (opcode == 0xbf || opcode == 0xff) // bqid or jid
@@ -263,13 +370,7 @@ int cop420_execute(int cycles)
 				skip = 0;
 			}
 		}
-
-		/* counter handling */
- 		R.counter += cop420_opcode_main[opcode].cycles;
-		if (R.counter > 1024)	{
-			R.timerlatch = 1;
-			R.counter = 0;
-		}
+		cop420_inil_tick(0);
 	} while (cop420_ICount > 0);
 
 	return cycles - cop420_ICount;
@@ -318,6 +419,7 @@ unsigned cop420_get_reg(int regnum)
 		case COP400_SC: return SC;
 		case COP400_SIO: return SIO;
 		case COP400_SKL: return SKL;
+		case COP400_T: return R.counter;
 	}
 	return 0;
 }
@@ -343,6 +445,7 @@ void cop420_set_reg(int regnum, unsigned val)
 		case COP400_SC: SC = val; break;
 		case COP400_SIO: SIO = val; break;
 		case COP400_SKL: SKL = val; break;
+		case COP400_T: R.counter = val; break;
 	}
 }
 
@@ -374,6 +477,7 @@ const char *cop420_info(void *context, int regnum)
 		case CPU_INFO_REG + COP400_SB: sprintf(buffer[which], "SB:%03X", r->R_SB); break;
 		case CPU_INFO_REG + COP400_SC: sprintf(buffer[which], "SC:%03X", r->R_SC); break;
 		case CPU_INFO_REG + COP400_SIO: sprintf(buffer[which], "SIO:%X", r->R_SIO); break;
+		case CPU_INFO_REG + COP400_T: sprintf(buffer[which], "T:%03X", r->counter); break;
 
 		case CPU_INFO_FLAGS: sprintf(buffer[which], "%c%c",
 		  r->R_C ? 'C' : '.',
