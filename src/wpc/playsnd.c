@@ -212,9 +212,6 @@ const struct sndbrdIntf play1sIntf = {
 const struct sndbrdIntf play2sIntf = {
   "PLAY2", play2s_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-const struct sndbrdIntf playzsIntf = {
-  "PLAYZ", play2s_init, NULL, NULL, play3s_ctrl_w, play2s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
-};
 const struct sndbrdIntf play3sIntf = {
   "PLAY3", play3s_init, NULL, NULL, play3s_ctrl_w, play2s_data_w, NULL, play3s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
