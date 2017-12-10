@@ -1579,7 +1579,7 @@ DRIVER(wpt,112g)        //S.A.M.: 11/06 World Poker Tour - V1.12 (German)
 DRIVER(wpt,112gf)       //S.A.M.: 11/06 World Poker Tour - V1.12 (German, French)
 DRIVER(wpt,112i)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Italian)
 DRIVER(wpt,112l)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Spanish)
-DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
+//DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
 DRIVER(wpt,140a)        //S.A.M.: 01/08 World Poker Tour - V14.0 (English)
 DRIVER(wpt,140af)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, French)
 DRIVER(wpt,140ai)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, Italian)
@@ -1702,8 +1702,6 @@ DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
 DRIVER(sman,250)        //S.A.M.: ??/?? Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
 DRIVER(sman,261)        //S.A.M.: 05/14 Spider-Man - V2.61
-DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
-DRIVER(sman,101ve)      //S.A.M.: 06/16 Spider-Man - Vault Edition V1.01
 DRIVER(wof,100)         //S.A.M.: 11/07 Wheel of Fortune - V1.0
 DRIVER(wof,200)         //S.A.M.: 11/07 Wheel of Fortune - V2.0
 DRIVER(wof,200f)        //S.A.M.: 11/07 Wheel of Fortune - V2.0 (French)
@@ -2006,6 +2004,10 @@ DRIVER(twd,153)         //S.A.M.: 11/15 Walking Dead, The - V1.53
 DRIVER(twd,153h)        //S.A.M.: 11/15 Walking Dead, The - V1.53 Limited Edition
 DRIVER(twd,156)         //S.A.M.: 12/15 Walking Dead, The - V1.56
 DRIVER(twd,156h)        //S.A.M.: 12/15 Walking Dead, The - V1.56 Limited Edition
+DRIVER(twd,160)         //S.A.M.: 11/17 Walking Dead, The - V1.60.0
+DRIVER(twd,160h)        //S.A.M.: 11/17 Walking Dead, The - V1.60.0 Limited Edition
+DRIVER(smanve,100)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.0
+DRIVER(smanve,101)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
 #endif
 
 // ---------------
