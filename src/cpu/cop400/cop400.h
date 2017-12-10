@@ -32,7 +32,8 @@ enum {
   COP400_SB,
   COP400_SC,
   COP400_SIO,
-  COP400_SKL
+  COP400_SKL,
+  COP400_T
 };
 
 extern void cop420_init(void);
@@ -77,10 +78,13 @@ typedef struct
 	UINT1	R_SKL;
 	UINT8   R_skip, R_skipLBI;
 	UINT1	timerlatch;
-	UINT16	counter;
+	UINT10	counter;
 	UINT4	R_RAM[64];
 	UINT8	G_mask;
 	UINT8	D_mask;
+	UINT4	IL;
+	UINT4 in[4];
+	int		last_skip;
 } COP420_Regs;
 
 #endif  /* _COP400_H */
