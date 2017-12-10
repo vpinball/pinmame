@@ -152,8 +152,8 @@ static PINMAME_VIDEO_UPDATE(sam1_dmd32_update) {
   for (ii = 0; ii < 32; ii++) {
     UINT8 *line = &dotCol[ii+1][0];
     for (jj = 0; jj < 128; jj+=4) {
-      pp0  = (UINT32 *)(memory_region(REGION_CPU1) + 0x01080000 + (samlocals.video_page[0] << 12) + ii*128 + jj);
-      pp1  = (UINT32 *)(memory_region(REGION_CPU1) + 0x01080000 + (samlocals.video_page[1] << 12) + ii*128 + jj);
+      pp0  = (void *)(memory_region(REGION_CPU1) + 0x01080000 + (samlocals.video_page[0] << 12) + ii*128 + jj);
+      pp1  = (void *)(memory_region(REGION_CPU1) + 0x01080000 + (samlocals.video_page[1] << 12) + ii*128 + jj);
       for (mm = 0; mm < 4; mm++) {
         ll = 15 & (pp0[0] >> (8*mm+4));
         kk = 15 & (15 == ll ? pp1[0] >> (8*mm) : pp0[0] >> (8*mm));
@@ -956,7 +956,7 @@ MACHINE_DRIVER_END
 
 //SAM1 Display Data
 static struct core_dispLayout sam1_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update}, {0}
+  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (void *)sam1_dmd32_update}, {0}
 };
 
 static PINMAME_VIDEO_UPDATE(sam1_minidmd_update) {
@@ -984,21 +984,21 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd_update) {
 }
 
 static struct core_dispLayout sam1_wptDisp[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update},
-  {34,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {34,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
-  {43,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd_update},
+  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (void *)sam1_dmd32_update},
+  {34,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {34,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,10, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,17, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,24, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,31, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,38, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,45, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
+  {43,52, 7, 5, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd_update},
   {0}
 };
 
@@ -1024,8 +1024,8 @@ static PINMAME_VIDEO_UPDATE(sam1_minidmd2_update) {
 }
 
 static struct core_dispLayout sam1_wofDisp[] = {
-  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_dmd32_update},
-  {34,10, 5,35, CORE_DMD|CORE_DMDNOAA, (genf *)sam1_minidmd2_update},
+  {0,0, 32,128, CORE_DMD|CORE_DMDNOAA, (void *)sam1_dmd32_update},
+  {34,10, 5,35, CORE_DMD|CORE_DMDNOAA, (void *)sam1_minidmd2_update},
   {0}
 };
 
@@ -1557,6 +1557,9 @@ CORE_CLONEDEF(sman, 130af, 260, "Spiderman (V1.30 English/French)", 2007, "Stern
 SAM1_ROM32MB(sman_261,"smn261a.bin",0x18775E0,CRC(9ed2687d) SHA1(ceab8dd24b41ddc1e07f938adfd1b868027f7fb5))
 CORE_CLONEDEF(sman, 261, 260, "Spiderman (V2.61 hacked)", 2008, "Stern", sam1, 0)
 
+SAM1_ROM32MB(sman_262,"smn262a.bin",0x18775E0,CRC(9ad85331) SHA1(64a4b4087aee06b79d959e2bc9490ba269cd47a6))
+CORE_CLONEDEF(sman, 262, 260, "Spiderman (V2.62 hacked replaced music)", 2008, "Stern", sam1, 0)
+
 /*-------------------------------------------------------------------
 / Wheel of Fortune
 /-------------------------------------------------------------------*/
@@ -1575,7 +1578,6 @@ CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0 Italian)", 2007, "Stern", 
 
 SAM1_ROM32MB(wof_500l,"wof500l.bin",0x1B080B0,CRC(b8e09fcd) SHA1(522983ce75b24733a0827a2eeea3d44419c7998e))
 CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", sam1, 0)
-
 
 
 SAM1_ROM32MB(wof_401l,"wof401l.bin",0x1B080B0,CRC(4db936f4) SHA1(4af1d4642529164cb5bc0b9adbc229b131098007))
@@ -1840,6 +1842,10 @@ CORE_CLONEDEF(avr, 101h, 110, "Avatar (V1.01) Limited Edition", 2010, "Stern", s
 SAM1_ROM32MB(avr_120h,"av_120_e.bin",0x1D53CA4,CRC(85a55e02) SHA1(204d796c2cbc776c1305dabade6306527122a13e))
 CORE_CLONEDEF(avr, 120h, 110, "Avatar (V1.20) Limited Edition", 2010, "Stern", sam1, 0)
 
+//Avatar Pro FTDI-USB CPU Board Part #520-5246-02 ONLY
+SAM1_ROM32MB(avr_200,"avt200v.bin",0x1D53CA4,CRC(dc225785) SHA1(ecaba25a470bf03e6e43ab8779d14898e1b8e67f))
+CORE_CLONEDEF(avr, 200, 110, "Avatar (V2.00)", 2010, "Stern", sam1, 0)
+
 /*-------------------------------------------------------------------
 / Rolling Stones
 /-------------------------------------------------------------------*/
@@ -1863,73 +1869,215 @@ CORE_CLONEDEF(rsn, 110h, 110, "Rolling Stones (V1.10) Limited Edition", 2011, "S
 / Tron
 /-------------------------------------------------------------------*/
 SAM1_INIT(trn, sam1_dmd128x32, 2, 0)
+SAM1_ROM32MB(trn_174,"trn_174e.bin",0x1F79E70,CRC(20e44481) SHA1(88e6e75efb640a7978f4003f0df5ee1e41087f72))
+CORE_GAMEDEF(trn, 174, "Tron (V1.74)", 2011, "Stern", sam1, 0)
+
 SAM1_ROM32MB(trn_170,"trn_170e.bin",0x1F13C9C,CRC(1f3b314d) SHA1(59df759539c02600d2579b4e59a184ac3db64020))
-CORE_GAMEDEF(trn, 170, "Tron (V1.70)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 170, 174, "Tron (V1.70)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_160,"trn_160e.bin",0x1F0F314,CRC(38eb16b1) SHA1(4f18080d76e07a3308497116cf3e39a7fab4cd25))
-CORE_CLONEDEF(trn, 160, 170, "Tron (V1.60)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 160, 174, "Tron (V1.60)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_150,"trn_150e.bin",0x1F0420C,CRC(5ac4021b) SHA1(740187e7a60a32b1d21708a4194e0524211b53a7))
-CORE_CLONEDEF(trn, 150, 170, "Tron (V1.50)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 150, 174, "Tron (V1.50)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_140,"trn_140e.bin",0x1E464E8,CRC(7c9ce1bd) SHA1(c75a6a4c7f0d72460061e5532e1d604f6ea829e3))
-CORE_CLONEDEF(trn, 140, 170, "Tron (V1.40)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 140, 174, "Tron (V1.40)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_120,"trn_120e.bin",0x1C7C978,CRC(80dcb8a2) SHA1(9f0810969058222c0104f2b35d17e14bf3f5f8e8))
-CORE_CLONEDEF(trn, 120, 170, "Tron (V1.20)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 120, 174, "Tron (V1.20)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_110,"trn_110e.bin",0x1AB97D8,CRC(bdaf1803) SHA1(f32d5bfb87be85483b0486bbb6f2858efca6efe5))
-CORE_CLONEDEF(trn, 110, 170, "Tron (V1.10)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 110, 174, "Tron (V1.10)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_100h,"trnle100.bin",0x1F19368,CRC(4c2abebd) SHA1(8e22454932680351d58f863cf9644a9f3db24800))
-CORE_CLONEDEF(trn, 100h, 170, "Tron (V1.00) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 100h, 174, "Tron (V1.00) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_110h,"trnle110.bin",0x1F19368,CRC(43a7e45a) SHA1(b03798f00fe481f662ed07fbf7a14766bccbb92e))
-CORE_CLONEDEF(trn, 110h, 170, "Tron (V1.10) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 110h, 174, "Tron (V1.10) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_130h,"trnle130.bin",0x1F1ED40,CRC(adf02601) SHA1(6e3c2706e39a1c01a002ceaea839b934cdac28bc))
-CORE_CLONEDEF(trn, 130h, 170, "Tron (V1.30) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 130h, 174, "Tron (V1.30) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_140h,"trnle140.bin",0x1F286D8,CRC(7de92a4b) SHA1(87eb46e1564b8a913d6cc17a86b50828dd1273de))
-CORE_CLONEDEF(trn, 140h, 170, "Tron (V1.40) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 140h, 174, "Tron (V1.40) Limited Edition", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(trn_174h,"trnle174.bin",0x1F93B84,CRC(a45224bf) SHA1(40e36764af332175f653e8ddc2a8bb77891c1230))
+CORE_CLONEDEF(trn, 174h, 174, "Tron (V1.74) Limited Edition", 2011, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Transformers
 /-------------------------------------------------------------------*/
 SAM1_INIT(tf, sam1_dmd128x32, 2, 0)
+SAM1_ROM32MB(tf_180,"tf_v180.bin",0x1D24F34,CRC(0b6e3a4f) SHA1(62e1328e8462680694157aca266055d57347e904))
+CORE_GAMEDEF(tf, 180, "Transformers (V1.80)", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(tf_170,"tf_v170.bin",0x1D24F34,CRC(cd8707e6) SHA1(847c37988bbc12e8200a6762c2851b610a0b849f))
+CORE_CLONEDEF(tf, 170, 180, "Transformers (V1.70)", 2011, "Stern", sam1, 0)
+
 SAM1_ROM32MB(tf_160,"tf_v160.bin",0x1D0C800,CRC(1D0C800) SHA1(10dd73ade7b662bf17b95c2413d23fa942e54660))
-CORE_GAMEDEF(tf, 160, "Transformers (V1.60)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 160, 180, "Transformers (V1.60)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_150,"tf_v150.bin",0x1D0C800,CRC(130cbed2) SHA1(b299b1b25a6007cbec0ea15d2a156a197215e288))
-CORE_CLONEDEF(tf, 150, 160, "Transformers (V1.50)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 150, 180, "Transformers (V1.50)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_140,"tf_v140.bin",0x1D0C800,CRC(b41c8d33) SHA1(e96462df7481759d5c29a192766f03334b2b4562))
-CORE_CLONEDEF(tf, 140, 160, "Transformers (V1.40)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 140, 180, "Transformers (V1.40)", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_120,"tf_v120.bin",0x1E306CC,CRC(a6dbb32d) SHA1(ac1bef87278ff1ebc98d66cc062c3a7e49580a82))
-CORE_CLONEDEF(tf, 120, 160, "Transformers (V1.20)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 120, 180, "Transformers (V1.20)", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(tf_088h,"tfle_088.bin",0x1EB4CE8,CRC(a79ca893) SHA1(8f1228727422f5f99a20d60968eeca6c64f6c253))
+CORE_CLONEDEF(tf, 088h, 180, "Transformers (V0.88) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_100h,"tfle_100.bin",0x1F4CCF0,CRC(3be6ffc2) SHA1(c57d00af7ea189ea37ceed28bf85cff1054a1b8c))
-CORE_CLONEDEF(tf, 100h, 160, "Transformers (V1.00) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 100h, 180, "Transformers (V1.00) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_120h,"tfle_120.bin",0x1EB1C4C,CRC(0f750246) SHA1(7ab3c9278f443511e5e7fcf062ffc9e8d1456396))
-CORE_CLONEDEF(tf, 120h, 160, "Transformers (V1.20) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 120h, 180, "Transformers (V1.20) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_130h,"tfle_130.bin",0x1EB1C4C,CRC(8a1b676f) SHA1(d74f6060091293e6a781e129d19a408baabcf716))
-CORE_CLONEDEF(tf, 130h, 160, "Transformers (V1.30) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 130h, 180, "Transformers (V1.30) Limited Edition", 2011, "Stern", sam1, 0)
 
 SAM1_ROM32MB(tf_140h,"tfle_140.bin",0x1EB1C4C,CRC(7e7920d6) SHA1(9db41874081d5f28adb5ab23903038f5c959eb1d))
-CORE_CLONEDEF(tf, 140h, 160, "Transformers (V1.40) Limited Edition", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 140h, 180, "Transformers (V1.40) Limited Edition", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(tf_150h,"tfle_150.bin",0x1EB1E5C,CRC(5cec6bfc) SHA1(30899241c2c0a9d42aa19fa3eb4180452bdaec91))
+CORE_CLONEDEF(tf, 150h, 180, "Transformers (V1.50) Limited Edition", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(tf_180h,"tfle_180.bin",0x1EB1E04,CRC(467aeeb3) SHA1(feec42b083d81e632ef8ae402eb9f20f3104db08))
+CORE_CLONEDEF(tf, 180h, 180, "Transformers (V1.80) Limited Edition", 2011, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / AC/DC
 /-------------------------------------------------------------------*/
 SAM1_INIT(acd, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(acd_165,"acd_165e.bin",0x7223FA0,CRC(819b2b35) SHA1(f29814ba985a5887f5cd382666e7f14f8d6e3702))
+CORE_GAMEDEF(acd, 165, "AC/DC (V1.65)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_163,"acd_163e.bin",0x4E5EFE8,CRC(0bf53436) SHA1(0758d4a881ce87c9af90132741bf1e5c89fc575b))
+CORE_CLONEDEF(acd, 163, 165, "AC/DC (V1.63)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_161,"acd_161e.bin",0x4E58B6C,CRC(a0c27c59) SHA1(83d19fe6b344eb95866f7d5179b65ed26938b9da))
+CORE_CLONEDEF(acd, 161, 165, "AC/DC (V1.61)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_160,"acd_160e.bin",0x4E942C8,CRC(6b98a14c) SHA1(a34841b1e136c9647c89f83e2bf59ecdccb2a0fb))
+CORE_CLONEDEF(acd, 160, 165, "AC/DC (V1.60)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_152,"acd_152e.bin",0x4185458,CRC(78cef38c) SHA1(656acabed2241587f512cdd53a095228d9642d1b))
+CORE_CLONEDEF(acd, 152, 165, "AC/DC (V1.52)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_150,"acd_150e.bin",0x41308CC,CRC(8b4c0fae) SHA1(d973be4306a7fc1ff9f898145197081cbe823584))
+CORE_CLONEDEF(acd, 150, 165, "AC/DC (V1.50)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_140,"acd_140e.bin",0x40C4038,CRC(43bbbf54) SHA1(33e3795ab850dfab1fd8b1b4f6364a696cc62aa9))
+CORE_CLONEDEF(acd, 140, 165, "AC/DC (V1.40)", 2012, "Stern", sam2, 0)
+
 SAM1_ROM128MB(acd_130,"acd_130e.bin",0x40C4038,CRC(da97014e) SHA1(f0a2684076008b0234c089fea8f95e4f3d8816dd))
-CORE_GAMEDEF(acd, 130, "AC/DC (V1.30)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 130, 165, "AC/DC (V1.30)", 2012, "Stern", sam2, 0)
 
 SAM1_ROM128MB(acd_125,"acd_125.bin",0x3E53DEC,CRC(0307663f) SHA1(d40e3aaf94d1d314835fa59a177ce0c386399f4c))
-CORE_CLONEDEF(acd, 125, 130, "AC/DC (V1.25)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 125, 165, "AC/DC (V1.25)", 2012, "Stern", sam2, 0)
 
 SAM1_ROM128MB(acd_121,"acd_121.bin",0x3D8F40C,CRC(4f5f43e9) SHA1(19045e9cdb2522770013c24c6fed265009278dea))
-CORE_CLONEDEF(acd, 121, 130, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 121, 165, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_150h,"acle_150.bin",0x40F555C,CRC(1b8b823d) SHA1(9cda6a3f609e94d93126e105ac2945151006325b))
+CORE_CLONEDEF(acd, 150h, 165, "AC/DC (V1.50) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_152h,"acle_152.bin",0x414A0E8,CRC(bbf6b303) SHA1(8f29a5e8b5503df59ec8a6039a36e78cf7d871a9))
+CORE_CLONEDEF(acd, 152h, 165, "AC/DC (V1.52) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_160h,"acle_160.bin",0x4E942E0,CRC(733f15a4) SHA1(61e96ceac327387e84b8e24467aee2f5c0a8ce97))
+CORE_CLONEDEF(acd, 160h, 165, "AC/DC (V1.60) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_161h,"acle_161.bin",0x4E58B6C,CRC(1c66055b) SHA1(f33e5bd5753acc90202565639b6a8d22d6380054))
+CORE_CLONEDEF(acd, 161h, 165, "AC/DC (V1.61) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_163h,"acle_163.bin",0x4E5EFE8,CRC(12c404e8) SHA1(e3a5937abaa9e5b4b18b214b4f5c74f1c110247f))
+CORE_CLONEDEF(acd, 163h, 165, "AC/DC (V1.63) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_165h,"acle_165.bin",0x7223FA0,CRC(9f9c41e9) SHA1(b4a61944218ab57af128e91b032a82342c8c4ccc))
+CORE_CLONEDEF(acd, 165h, 165, "AC/DC (V1.65) Limited Edition", 2012, "Stern", sam2, 0)
+
+/*-------------------------------------------------------------------
+/ X-Men
+/-------------------------------------------------------------------*/
+SAM1_INIT(xmn, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(xmn_130,"xmen_130.bin",0x1FB887C,CRC(1fff4f39) SHA1(e8c02ab980499fbb81569ce1f191d0d2e5c13234))
+CORE_GAMEDEF(xmn, 130, "X-Men (V1.30)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_105,"xmen_105.bin",0x1FB850C,CRC(e585d64b) SHA1(6126b29c9355398bac427e1b214e58e8e407bec4))
+CORE_CLONEDEF(xmn, 105, 130, "X-Men (V1.05)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_104,"xmen_104.bin",0x1FB7DEC,CRC(59f2e106) SHA1(10e9fb0ec72462654c0e4fb53c5cc9f2cbb3dbcb))
+CORE_CLONEDEF(xmn, 104, 130, "X-Men (V1.05)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_102,"xmen_102.bin",0x1FB7DEC,CRC(5df923e4) SHA1(28f86abc792008aa816d93e91dcd9b62fd2d01ee))
+CORE_CLONEDEF(xmn, 102, 130, "X-Men (V1.02)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_120h,"xmle_120.bin",0x1FB7DEC,CRC(93da2d0b) SHA1(92c4c2e7fe6392e4ff8824d5b217dcbda8ce3a96))
+CORE_CLONEDEF(xmn, 120h, 130, "X-Men (V1.20) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_121h,"xmle_121.bin",0x1FB7DEC,CRC(7029ce71) SHA1(c7559ed963e18eecb8115214a3e154874c214f89))
+CORE_CLONEDEF(xmn, 121h, 130, "X-Men (V1.21) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_122h,"xmle_122.bin",0x1FB7DEC,CRC(3609e1be) SHA1(86d368297ec6ca3b132c6e8dab17cd1c1c18bde2))
+CORE_CLONEDEF(xmn, 122h, 130, "X-Men (V1.22) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_123h,"xmle_123.bin",0x1FB7DEC,CRC(66c74598) SHA1(c0c0cd2e8e37eba6668aaadab76325afca103b32))
+CORE_CLONEDEF(xmn, 123h, 130, "X-Men (V1.23) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_124h,"xmle_124.bin",0x1FB850C,CRC(662591e9) SHA1(1abb26c589fbb1b5a4ec5577a4a842e8a84484a3))
+CORE_CLONEDEF(xmn, 124h, 130, "X-Men (V1.24) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(xmn_130h,"xmle_130.bin",0x1FB887C,CRC(b2a7f125) SHA1(a42834c3e562c239f56c27c0cb65885fdffd261c))
+CORE_CLONEDEF(xmn, 130h, 130, "X-Men (V1.30) Limited Edition", 2012, "Stern", sam2, 0)
+
+/*-------------------------------------------------------------------
+/ Avengers
+/-------------------------------------------------------------------*/
+SAM1_INIT(avs, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(avs_140,"as_140.bin",0x1F2EDA0,CRC(92642508) SHA1(1d55cd178104b43377f079fd0209d74d1b10bea8))
+CORE_GAMEDEF(avs, 140, "Avengers (V1.40)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(avs_110,"as_110.bin",0x1D032AC,CRC(2cc01e3c) SHA1(0ae7c9ced7e1d48b0bf4afadb6db508e558a7ebb))
+CORE_CLONEDEF(avs, 110, 140, "Avengers (V1.10)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(avs_120h,"asle_120.bin",0x1E270D0,CRC(a74b28c4) SHA1(35f65691312c547ec6c6bf52d0c5e330b5d464ca))
+CORE_CLONEDEF(avs, 120h, 140, "Avengers (V1.20) Limited Edition", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(avs_140h,"asle_140.bin",0x1F2EDA0,CRC(9b7e13f8) SHA1(eb97e92013a8d1d706a119b50d36d69eb26cb273))
+CORE_CLONEDEF(avs, 140h, 140, "Avengers (V1.40) Limited Edition", 2012, "Stern", sam2, 0)
+
+/*-------------------------------------------------------------------
+/ Metallica
+/-------------------------------------------------------------------*/
+SAM1_INIT(mtl, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(mtl_120,"mtl_120.bin",0x512C72C,CRC(43028b40) SHA1(64ab9306b28f3dc59e645ce49dbf3468e7f590bd))
+CORE_GAMEDEF(mtl, 120, "Metallica (V1.20)", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_113,"mtl_113.bin",0x4FDCD28,CRC(be73c2e7) SHA1(c91bbb554aaa21520360773e1215fe80557d6c2f))
+CORE_CLONEDEF(mtl, 113, 120, "Metallica (V1.13)", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_106,"mtl_106.bin",0x4E8A214,CRC(5ac6c70a) SHA1(aaa68eebd1b894383416d2a491ac074a73be8d91))
+CORE_CLONEDEF(mtl, 106, 120, "Metallica (V1.06)", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_105,"mtl_105.bin",0x4DEDE5C,CRC(4699e2cf) SHA1(b56e85583362056b33f7b8eb6255d34d234ea5ea))
+CORE_CLONEDEF(mtl, 105, 120, "Metallica (V1.05)", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_103,"mtl_103.bin",0x4D24D04,CRC(9b073858) SHA1(129872e38d21d9d6d20f81388825113f13645bab))
+CORE_CLONEDEF(mtl, 103, 120, "Metallica (V1.03)", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_113h,"mtl_113h.bin",0x4FDCD28,CRC(3392e27c) SHA1(3cfa5c5fdc51bd6886ffe6865739cf71de145ef1))
+CORE_CLONEDEF(mtl, 113h, 120, "Metallica (V1.13) Limited Edition", 2013, "Stern", sam2, 0)
+
+SAM1_ROM128MB(mtl_120h,"mtl_120h.bin",0x512C72C,CRC(1c5b4643) SHA1(8075e7ecf1031fc89e75cc5a5487340bc3fae507))
+CORE_CLONEDEF(mtl, 120h, 120, "Metallica (V1.20) Limited Edition", 2013, "Stern", sam2, 0)
+
+/*-------------------------------------------------------------------
+/ Star Trek
+/-------------------------------------------------------------------*/
+SAM1_INIT(st, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(st_120,"st_120.bin",0x2B14CFC,CRC(dde9db23) SHA1(09e67564bce0ff7c67f1d16c4f9d8595f8130372))
+CORE_GAMEDEF(st, 120, "Star Trek (V1.20)", 2013, "Stern", sam2, 0)
