@@ -1,3 +1,35 @@
+/************************************************************************************************
+  Stern Pinball - S.A.M. Hardware System
+  initial version by Steve Ellenoff and Gerrit Volkenborn
+  (09/25/2006 - 10/18/2006)
+  with various improvements from the open source community after that
+
+  Hardware from 01/2006 (World Poker Tour) - 09/2014 (The Walking Dead) (and Spider-Man Vault Edition 02/2016)
+
+  CPU Board: S.A.M. System Board
+             SPI Part Nº: 520-5246-00
+
+  Issues:
+  -USB Interface not hooked up or emulated
+  -Serial Port Interfaces not hooked up (also requires support in the AT91 core)
+  -FlashROM not emulated (treated as a regular read only rom)
+  -Real Time Clock not hooked up or emulated
+  -We can't hook up a sound commander easily since there's no external sound command sent, it's all
+   internalized, so we'd need to look for each game's spot in RAM where they write a command,
+   and send our commands there.
+  -Not sure how the Hardware revision is read for display on the Service Screen.
+  -Still a # of unmapped / unhandled address writes (maybe reads as well)
+
+  FIRQ frequency of 4008Hz was measured on real machine.
+
+  Fixes history:
+  05/25/2008 - Finally fixed the bug (reported by Destruk 11/15/07) that was causing crashes since
+               Spiderman 1.90 and recently 1.92, as well as Indiana Jones 1.13 - (Steve Ellenoff)
+  10/24/2008 - Added on-table DMD panels and extra lamp columns for World Poker Tour, Family Guy,
+               Wheel of Fortune, Shrek, Batman, and CSI (Gerrit Volkenborn)
+  03/09/2012 - Added SAM2 generation for extended memory, and possible stereo support one day
+************************************************************************************************/
+
 #include "driver.h"
 #include "core.h"
 #include "sim.h"
