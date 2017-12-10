@@ -1536,7 +1536,6 @@ DRIVERNV(dalejr)        //Whitestar: 07/06 Dale Jr. (NASCAR 5.00)
                         //Whitestar: ??/06 The Brain (Simpsons Pinball Party conversion)
 
 // Stern S.A.M. System
-#ifdef INCLUDE_STERN_SAM
 DRIVER(sam1_flashb,0102)//S.A.M.: 02/06 S.A.M. System Flash Boot - V1.02
 DRIVER(sam1_flashb,0106)//S.A.M.: 08/06 S.A.M. System Flash Boot - V1.06
 DRIVER(sam1_flashb,0210)//S.A.M.: ??/07 S.A.M. System Flash Boot - V2.10
@@ -2008,7 +2007,6 @@ DRIVER(twd,160)         //S.A.M.: 11/17 Walking Dead, The - V1.60.0
 DRIVER(twd,160h)        //S.A.M.: 11/17 Walking Dead, The - V1.60.0 Limited Edition
 DRIVER(smanve,100)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.0
 DRIVER(smanve,101)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
-#endif
 
 // ---------------
 // TABART GAMES

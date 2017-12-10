@@ -630,16 +630,4 @@ const struct GameDriver driver_##NAME =         \
 extern const struct GameDriver *drivers[];
 extern const struct GameDriver *test_drivers[];
 
-#ifdef PINMAME
-//Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
-#ifdef VPINMAME
-        #ifdef TEST_NEW_STERN
-                #define INCLUDE_NEW_STERN 1
-//              #define INCLUDE_STERN_SAM 1
-        #endif
-#else
-        #define INCLUDE_NEW_STERN 1
-//      #define INCLUDE_STERN_SAM 1
-#endif
-#endif
 #endif
