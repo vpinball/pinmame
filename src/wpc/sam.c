@@ -1120,6 +1120,10 @@ SAM1_ROM32MB(wpt_140l,"wpt1400l.bin",0x1C7072C,CRC(00eff09c) SHA1(847203d4d2ce8d
 CORE_CLONEDEF(wpt, 140l, 140a, "World Poker Tour (V14.0 Spanish)", 2008, "Stern", sam1, 0)
 
 
+SAM1_ROM32MB(wpt_1129f,"wpt1129f.bin",0x1A46CF0,CRC(e5660763) SHA1(72b8b878aa8272f9cf54fde2c9ddc7635757e59c))
+CORE_CLONEDEF(wpt, 1129f, 140a, "World Poker Tour (V1.129 English/French)", 2006, "Stern", sam1, 0)
+
+
 SAM1_ROM32MB(wpt_112a,"wpt112a.bin",0x19BB1B0,CRC(b98b4bf9) SHA1(75257a2759978d5fc699f78e809543d1cc8c456b))
 CORE_CLONEDEF(wpt, 112a, 140a, "World Poker Tour (V1.12)", 2006, "Stern", sam1, 0)
 
@@ -1276,6 +1280,19 @@ SAM1_ROM32MB(potc_400gf,"poc400gf.bin",0x1B67104,CRC(778d02e7) SHA1(6524e56ebf6c
 CORE_CLONEDEF(potc, 400gf, 600as, "Pirates of the Caribbean (V4.0 German/French)", 2007, "Stern", sam1, 0)
 
 
+SAM1_ROM32MB(potc_300al,"poc300al.bin",0x1C88124,CRC(e5e7049d) SHA1(570125f9eb6d7a04ba97890095c15769f0e0dbd6))
+CORE_CLONEDEF(potc, 300al, 600as, "Pirates of the Caribbean (V3.0 English/Spanish)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(potc_300af,"poc300af.bin",0x1AD2B40,CRC(b6fc0c4b) SHA1(5c0d6b46dd6c4f14e03298500558f376ee342de0))
+CORE_CLONEDEF(potc, 300af, 600as, "Pirates of the Caribbean (V3.0 English/French)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(potc_300ai,"poc300ai.bin",0x1B213A8,CRC(2d3eb95e) SHA1(fea9409ffea3554ff0ec1c9ef6642465ec4120e7))
+CORE_CLONEDEF(potc, 300ai, 600as, "Pirates of the Caribbean (V3.0 English/Italian)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(potc_300gf,"poc300gf.bin",0x1B67104,CRC(52772953) SHA1(e820ca5f347ab637bee07a9d7426058b9fd6557c))
+CORE_CLONEDEF(potc, 300gf, 600as, "Pirates of the Caribbean (V3.0 German/French)", 2007, "Stern", sam1, 0)
+
+
 SAM1_ROM32MB(potc_115as,"poc115as.bin",0x1C829C8,CRC(9c107d0e) SHA1(5213246ee78c6cc082b9f895b1d1abfa52016ede))
 CORE_CLONEDEF(potc, 115as, 600as, "Pirates of the Caribbean (V1.15 English/Spanish)", 2006, "Stern", sam1, 0)
 
@@ -1304,6 +1321,16 @@ CORE_CLONEDEF(potc, 113af, 600as, "Pirates of the Caribbean (V1.13 English/Frenc
 
 SAM1_ROM32MB(potc_111as,"poc111as.bin",0x1C829B4,CRC(09903169) SHA1(e284b1dc2642337633867bac9739fdda692acb2f))
 CORE_CLONEDEF(potc, 111as, 600as, "Pirates of the Caribbean (V1.11 English/Spanish)", 2006, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(potc_110ai,"poc110ai.bin",0x1B178E8,CRC(027916d9) SHA1(0ddc0fa86da55ea0494f2095c838b41b53f568de))
+CORE_CLONEDEF(potc, 110ai, 600as, "Pirates of the Caribbean (V1.10 English/Italian)", 2006, "Stern", sam1, 0)
+
+SAM1_ROM32MB(potc_110gf,"poc110gf.bin",0x1B60464,CRC(ce29b69c) SHA1(ecc9ad8f77ab30538536631d513d25654f5a2f3c))
+CORE_CLONEDEF(potc, 110gf, 600as, "Pirates of the Caribbean (V1.10 German/French)", 2006, "Stern", sam1, 0)
+
+SAM1_ROM32MB(potc_110af,"poc110af.bin",0x1AC6550,CRC(9d87bb49) SHA1(9db04259a0b2733d6f5966a2f3e0fc1c7002cef1))
+CORE_CLONEDEF(potc, 110af, 600as, "Pirates of the Caribbean (V1.10 English/French)", 2006, "Stern", sam1, 0)
 
 
 SAM1_ROM32MB(potc_109as,"poc109as.bin",0x1C829B4,CRC(eb68b86b) SHA1(416c4bf9b4dc035b8dfed3610a4ac5ae31209ca5))
@@ -1369,6 +1396,17 @@ SAM1_ROM32MB(fg_800al,"fg800al.bin",0x1bc6cb4,CRC(b74dc3bc) SHA1(b24bab06b9f451c
 CORE_CLONEDEF(fg, 800al, 1200al, "Family Guy (V8.00 English/Spanish)", 2007, "Stern", sam1, 0)
 
 
+SAM1_ROM32MB(fg_700af,"fg700af.bin",0x1A4D3D4,CRC(bbeda480) SHA1(792c396dee1b5abe113484e1fd4c4b449d8e7d95))
+CORE_CLONEDEF(fg, 700af, 1200al, "Family Guy (V7.00 English/French)", 2007, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(fg_400a,"fg400a.bin",0x13E789C,CRC(af6c2dd4) SHA1(e3164e982c90a5300144e63e4a74dd225fe1b272))
+CORE_CLONEDEF(fg, 400a, 1200al, "Family Guy (V4.00)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(fg_400ag,"fg400ag.bin",0x1971684,CRC(3b4ae199) SHA1(4ef674badce2c90334fa7a8b6b90c32dcabc2334))
+CORE_CLONEDEF(fg, 400ag, 1200al, "Family Guy (V4.00 English/German)", 2007, "Stern", sam1, 0)
+
+
 SAM1_ROM32MB(fg_300ai,"fg300ai.bin",0x1fc0290,CRC(e2cffa79) SHA1(59dff445118ed8a3a76b6e93950802d1fec87619))
 CORE_CLONEDEF(fg, 300ai, 1200al, "Family Guy (V3.00 English/Italian)", 2007, "Stern", sam1, 0)
 
@@ -1389,17 +1427,8 @@ CORE_CLONEDEF(sman, 250, 260, "Spiderman (V2.5)", 2008, "Stern", sam1, 0)
 SAM1_ROM32MB(sman_240,"smn240a.bin",0x18775B8,CRC(dc5ee57e) SHA1(7453db81b161cdbf7be690da15ea8a78e4a4e57d))
 CORE_CLONEDEF(sman, 240, 260, "Spiderman (V2.4)", 2008, "Stern", sam1, 0)
 
-//SAM1_ROM32MB(sman_240af,"smn240af.bin",0x193CC7C,CRC(aadd1ea7) SHA1(a41b0067f7490c6df5d85e80b208c9993f806366))
-//CORE_CLONEDEF(sman, 240af, 260, "Spiderman (V2.4 English/French)", 2008, "Stern", sam1, 0
-
-//SAM1_ROM32MB(sman_240ai,"smn240ai.bin",0x193CC7C,CRC(aadd1ea7) SHA1(a41b0067f7490c6df5d85e80b208c9993f806366))
-//CORE_CLONEDEF(sman, 240ai, 260, "Spiderman (V2.4 English/Italian)", 2008, "Stern", sam1, 0)
-
-//SAM1_ROM32MB(sman_240al,"smn240al.bin",0x19A5D5C,CRC(8c441caa) SHA1(e40ac748284f65de5c444ac89d3b02dd987facd0))
-//CORE_CLONEDEF(sman, 240al, 260, "Spiderman (V2.4 English/Spanish)", 2008, "Stern", sam1, 0)
-
-//SAM1_ROM32MB(sman_240gf,"smn240gf.bin",0x1941C04,CRC(2995cb97) SHA1(0093d3f20aebbf6129854757cc10aff63fc18a4a))
-//CORE_CLONEDEF(sman, 240gf, 260, "Spiderman (V2.4 German/French)", 2008, "Stern", sam1, 0)
+SAM1_ROM32MB(sman_230,"smn230a.bin",0x18775B8,CRC(a86f1768) SHA1(72662dcf05717d3b2b335077ceddabe562738468))
+CORE_CLONEDEF(sman, 230, 260, "Spiderman (V2.3)", 2008, "Stern", sam1, 0)
 
 SAM1_ROM32MB(sman_220,"smn220a.bin",0x18775B8,CRC(44f31e8e) SHA1(4c07d01c95c5fab1955b11e4f7c65f369a91dfd7))
 CORE_CLONEDEF(sman, 220, 260, "Spiderman (V2.2)", 2008, "Stern", sam1, 0)
@@ -1419,6 +1448,10 @@ CORE_CLONEDEF(sman, 210al, 260, "Spiderman (V2.1 English/Spanish)", 2008, "Stern
 
 SAM1_ROM32MB(sman_210gf,"smn210gf.bin",0x1941C04,CRC(2995cb97) SHA1(0093d3f20aebbf6129854757cc10aff63fc18a4a))
 CORE_CLONEDEF(sman, 210gf, 260, "Spiderman (V2.1 German/French)", 2008, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(sman_200,"smn200a.bin",0x168E8A8,CRC(3b13348c) SHA1(4b5c6445d7805c0a39054bd51522751030b73162))
+CORE_CLONEDEF(sman, 200, 260, "Spiderman (V2.0)", 2008, "Stern", sam1, 0)
 
 
 SAM1_ROM32MB(sman_192,"smn192a.bin",0x1920870,CRC(a44054fa) SHA1(a0910693d13cc61dba7a2bbe9185a24b33ef20ec))
@@ -1469,7 +1502,43 @@ SAM1_ROM32MB(sman_170ai,"smn170ai.bin",0x1C90F74,CRC(ba176624) SHA1(56c847995b5a
 CORE_CLONEDEF(sman, 170ai, 260, "Spiderman (V1.70 English/Italian)", 2007, "Stern", sam1, 0)
 
 
-SAM1_ROM32MB(sman_132,"smn132.bin",0x1588E0C,CRC(c8cd8f0a) SHA1(c2e1b54de54e8bd480300054c98a4f09d723edb7))
+SAM1_ROM32MB(sman_160,"smn160a.bin",0x1725778,CRC(05425962) SHA1(a37f61239a7116e5c14a345c288f781fa6248cf8))
+CORE_CLONEDEF(sman, 160, 260, "Spiderman (V1.60)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_160al,"smn160al.bin",0x1BB15BC,CRC(776937d9) SHA1(631cadd665f895feac90c3cbc14eb8e321d19b4e))
+CORE_CLONEDEF(sman, 160al, 260, "Spiderman (V1.60 English/Spanish)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_160af,"smn160af.bin",0x1B0121C,CRC(d0b552e9) SHA1(2550baba3c4be5308779d502a2d2d01e1c2539ef))
+CORE_CLONEDEF(sman, 160af, 260, "Spiderman (V1.60 English/French)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_160gf,"smn160gf.bin",0x1B24430,CRC(1498f877) SHA1(e625a7e683035665a0a1a97e5de0947628c3f7ea))
+CORE_CLONEDEF(sman, 160gf, 260, "Spiderman (V1.60 German/French)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_160ai,"smn160ai.bin",0x1B26D28,CRC(b776f59b) SHA1(62600474b8a5e1e2d40319817505c8b5fd3df2fa))
+CORE_CLONEDEF(sman, 160ai, 260, "Spiderman (V1.60 English/Italian)", 2007, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(sman_142,"smn142a.bin",0x16E8D60,CRC(307b0163) SHA1(015c8c86763c645b43bd71a3cdb8975fcd36a99f))
+CORE_CLONEDEF(sman, 142, 260, "Spiderman (V1.42)", 2007, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(sman_140,"smn140a.bin",0x16CE3C0,CRC(48c2565d) SHA1(78f5d3242cfaa85fa0fd3937b6042f067dff535b))
+CORE_CLONEDEF(sman, 140, 260, "Spiderman (V1.40)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_140al,"smn140al.bin",0x1ADC768,CRC(fd372e14) SHA1(70f3e4d210a4da4b6122089c477b5b3f51d3593f))
+CORE_CLONEDEF(sman, 140al, 260, "Spiderman (V1.40 English/Spanish)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_140af,"smn140af.bin",0x1A50398,CRC(d181fa71) SHA1(66af219d9266b6b24e6857ad1a6b4fe539058052))
+CORE_CLONEDEF(sman, 140af, 260, "Spiderman (V1.40 English/French)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_140gf,"smn140gf.bin",0x1A70F78,CRC(f1124c86) SHA1(755f15dd566f86695c7143512d81e16af71c8853))
+CORE_CLONEDEF(sman, 140gf, 260, "Spiderman (V1.40 German/French)", 2007, "Stern", sam1, 0)
+
+SAM1_ROM32MB(sman_140ai,"smn140ai.bin",0x1A70F78,CRC(0de6937e) SHA1(f2e60b545ef278e1b7981bf0a3dc2c622205e8e1))
+CORE_CLONEDEF(sman, 140ai, 260, "Spiderman (V1.40 English/Italian)", 2007, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(sman_132,"smn132a.bin",0x1588E0C,CRC(c8cd8f0a) SHA1(c2e1b54de54e8bd480300054c98a4f09d723edb7))
 CORE_CLONEDEF(sman, 132, 260, "Spiderman (V1.32)", 2007, "Stern", sam1, 0)
 
 
@@ -1485,72 +1554,77 @@ CORE_CLONEDEF(sman, 130gf, 260, "Spiderman (V1.30 German/French)", 2007, "Stern"
 SAM1_ROM32MB(sman_130af,"smn130af.bin",0x17916C8,CRC(6aa6a03a) SHA1(f56442e84b8789f49127bf4ba97dd05c77ea7c36))
 CORE_CLONEDEF(sman, 130af, 260, "Spiderman (V1.30 English/French)", 2007, "Stern", sam1, 0)
 
+SAM1_ROM32MB(sman_261,"smn261a.bin",0x18775E0,CRC(9ed2687d) SHA1(ceab8dd24b41ddc1e07f938adfd1b868027f7fb5))
+CORE_CLONEDEF(sman, 261, 260, "Spiderman (V2.61 hacked)", 2008, "Stern", sam1, 0)
+
 /*-------------------------------------------------------------------
 / Wheel of Fortune
 /-------------------------------------------------------------------*/
 SAM1_INIT(wof, sam1_wofDisp, 8, SAM_WOF)
-SAM1_ROM32MB(wof_500,"wof0500a.bin",0x1C7DFD0,CRC(6613e864) SHA1(b6e6dcfa782720e7d0ce36f8ea33a0d05763d6bd))
+SAM1_ROM32MB(wof_500,"wof500a.bin",0x1C7DFD0,CRC(6613e864) SHA1(b6e6dcfa782720e7d0ce36f8ea33a0d05763d6bd))
 CORE_GAMEDEF(wof, 500, "Wheel of Fortune (V5.0)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_500f,"wof0500f.bin",0x1E76BA4,CRC(3aef1035) SHA1(4fa0a40fea403beef0b3ce695ff52dec3d90f7bf))
+SAM1_ROM32MB(wof_500f,"wof500f.bin",0x1E76BA4,CRC(3aef1035) SHA1(4fa0a40fea403beef0b3ce695ff52dec3d90f7bf))
 CORE_CLONEDEF(wof, 500f, 500, "Wheel of Fortune (V5.0 French)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_500g,"wof0500g.bin",0x1CDEC2C,CRC(658f8622) SHA1(31926717b5914f91b70eeba182eb219a4fd51299))
+SAM1_ROM32MB(wof_500g,"wof500g.bin",0x1CDEC2C,CRC(658f8622) SHA1(31926717b5914f91b70eeba182eb219a4fd51299))
 CORE_CLONEDEF(wof, 500g, 500, "Wheel of Fortune (V5.0 German)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_500i,"wof0500i.bin",0x1D45EE8,CRC(27fb48bc) SHA1(9a9846c84a1fc543ec2236a28991d0cd70e86b52))
+SAM1_ROM32MB(wof_500i,"wof500i.bin",0x1D45EE8,CRC(27fb48bc) SHA1(9a9846c84a1fc543ec2236a28991d0cd70e86b52))
 CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0 Italian)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_500l,"wof0500l.bin",0x1B080B0,CRC(b8e09fcd) SHA1(522983ce75b24733a0827a2eeea3d44419c7998e))
+SAM1_ROM32MB(wof_500l,"wof500l.bin",0x1B080B0,CRC(b8e09fcd) SHA1(522983ce75b24733a0827a2eeea3d44419c7998e))
 CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", sam1, 0)
 
 
-SAM1_ROM32MB(wof_400,"wof0400a.bin",0x1C7DFD0,CRC(974e6dd0) SHA1(ce4d7537e8f42ab6c3e84eac19688e2155115345))
+
+SAM1_ROM32MB(wof_401l,"wof401l.bin",0x1B080B0,CRC(4db936f4) SHA1(4af1d4642529164cb5bc0b9adbc229b131098007))
+CORE_CLONEDEF(wof, 401l, 500, "Wheel of Fortune (V4.01 Spanish)", 2007, "Stern", sam1, 0)
+
+
+SAM1_ROM32MB(wof_400,"wof400a.bin",0x1C7DFD0,CRC(974e6dd0) SHA1(ce4d7537e8f42ab6c3e84eac19688e2155115345))
 CORE_CLONEDEF(wof, 400, 500, "Wheel of Fortune (V4.0)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_400f,"wof0400f.bin",0x1E76BA4,CRC(91a793c0) SHA1(6c390ab435dc20889bccfdd11bbfc411efd1e4f9))
+SAM1_ROM32MB(wof_400f,"wof400f.bin",0x1E76BA4,CRC(91a793c0) SHA1(6c390ab435dc20889bccfdd11bbfc411efd1e4f9))
 CORE_CLONEDEF(wof, 400f, 500, "Wheel of Fortune (V4.0 French)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_400g,"wof0400g.bin",0x1CDEC2C,CRC(ee97a6f3) SHA1(17a3093f7e5d052c23b669ee8717a21a80b61813))
+SAM1_ROM32MB(wof_400g,"wof400g.bin",0x1CDEC2C,CRC(ee97a6f3) SHA1(17a3093f7e5d052c23b669ee8717a21a80b61813))
 CORE_CLONEDEF(wof, 400g, 500, "Wheel of Fortune (V4.0 German)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_400i,"wof0400i.bin",0x1D45EE8,CRC(35053d2e) SHA1(3b8d176c7b34e7eaf20f9dcf27649841c5122609))
+SAM1_ROM32MB(wof_400i,"wof400i.bin",0x1D45EE8,CRC(35053d2e) SHA1(3b8d176c7b34e7eaf20f9dcf27649841c5122609))
 CORE_CLONEDEF(wof, 400i, 500, "Wheel of Fortune (V4.0 Italian)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_400l,"wof0400l.bin",0x1B080B0,CRC(4db936f4) SHA1(4af1d4642529164cb5bc0b9adbc229b131098007))
-CORE_CLONEDEF(wof, 400l, 500, "Wheel of Fortune (V4.0 Spanish)", 2007, "Stern", sam1, 0)
 
-
-SAM1_ROM32MB(wof_300,"wof0300a.bin",0x1C7DFD0,CRC(7a8483b8) SHA1(e361eea5a01d6ba22782d34538edd05f3b068472))
+SAM1_ROM32MB(wof_300,"wof300a.bin",0x1C7DFD0,CRC(7a8483b8) SHA1(e361eea5a01d6ba22782d34538edd05f3b068472))
 CORE_CLONEDEF(wof, 300, 500, "Wheel of Fortune (V3.0)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_300f,"wof0300f.bin",0x1E76BA4,CRC(fd5c2bec) SHA1(77f6e4177df8a17f43198843f8a0a3cf5caf1704))
+SAM1_ROM32MB(wof_300f,"wof300f.bin",0x1E76BA4,CRC(fd5c2bec) SHA1(77f6e4177df8a17f43198843f8a0a3cf5caf1704))
 CORE_CLONEDEF(wof, 300f, 500, "Wheel of Fortune (V3.0 French)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_300g,"wof0300g.bin",0x1CDEC2C,CRC(54b50069) SHA1(909b98a7f5fdfa0164c7dc52e9c830eecada2a64))
+SAM1_ROM32MB(wof_300g,"wof300g.bin",0x1CDEC2C,CRC(54b50069) SHA1(909b98a7f5fdfa0164c7dc52e9c830eecada2a64))
 CORE_CLONEDEF(wof, 300g, 500, "Wheel of Fortune (V3.0 German)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_300i,"wof0300i.bin",0x1D45EE8,CRC(7528800b) SHA1(d55024935861aa8895f9604e92f0d74cb2f3827d))
+SAM1_ROM32MB(wof_300i,"wof300i.bin",0x1D45EE8,CRC(7528800b) SHA1(d55024935861aa8895f9604e92f0d74cb2f3827d))
 CORE_CLONEDEF(wof, 300i, 500, "Wheel of Fortune (V3.0 Italian)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_300l,"wof0300l.bin",0x1B080B0,CRC(12e1b3a5) SHA1(6b62e40e7b124477dc8508e39722c3444d4b39a4))
+SAM1_ROM32MB(wof_300l,"wof300l.bin",0x1B080B0,CRC(12e1b3a5) SHA1(6b62e40e7b124477dc8508e39722c3444d4b39a4))
 CORE_CLONEDEF(wof, 300l, 500, "Wheel of Fortune (V3.0 Spanish)", 2007, "Stern", sam1, 0)
 
 
-SAM1_ROM32MB(wof_200,"wof0200a.bin",0x1C7DFD0,CRC(2e56b65f) SHA1(908662261548f4b80433d58359e9ff1013bf315b))
+SAM1_ROM32MB(wof_200,"wof200a.bin",0x1C7DFD0,CRC(2e56b65f) SHA1(908662261548f4b80433d58359e9ff1013bf315b))
 CORE_CLONEDEF(wof, 200, 500, "Wheel of Fortune (V2.0)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_200f,"wof0200f.bin",0x1E76BA4,CRC(d48d4885) SHA1(25cabea55f30d86b8d6398f94e1d180377c34de6))
+SAM1_ROM32MB(wof_200f,"wof200f.bin",0x1E76BA4,CRC(d48d4885) SHA1(25cabea55f30d86b8d6398f94e1d180377c34de6))
 CORE_CLONEDEF(wof, 200f, 500, "Wheel of Fortune (V2.0 French)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_200g,"wof0200g.bin",0x1CDEC2C,CRC(81f61e6c) SHA1(395be7e0ccb9a806738fc6338b8e6dbea561986d))
+SAM1_ROM32MB(wof_200g,"wof200g.bin",0x1CDEC2C,CRC(81f61e6c) SHA1(395be7e0ccb9a806738fc6338b8e6dbea561986d))
 CORE_CLONEDEF(wof, 200g, 500, "Wheel of Fortune (V2.0 German)", 2007, "Stern", sam1, 0)
 
-SAM1_ROM32MB(wof_200i,"wof0200i.bin",0x1D45EE8,CRC(3e48eef7) SHA1(806a0313852405cd9913406201dd9e434b9b160a))
+SAM1_ROM32MB(wof_200i,"wof200i.bin",0x1D45EE8,CRC(3e48eef7) SHA1(806a0313852405cd9913406201dd9e434b9b160a))
 CORE_CLONEDEF(wof, 200i, 500, "Wheel of Fortune (V2.0 Italian)", 2007, "Stern", sam1, 0)
 
 
-SAM1_ROM32MB(wof_100,"wof0100a.bin",0x1C7DF60,CRC(f3b80429) SHA1(ab1c9752ea74b5950b51aabc6dbca4f405705240))
+SAM1_ROM32MB(wof_100,"wof100a.bin",0x1C7DF60,CRC(f3b80429) SHA1(ab1c9752ea74b5950b51aabc6dbca4f405705240))
 CORE_CLONEDEF(wof, 100, 500, "Wheel of Fortune (V1.0)", 2007, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
@@ -1646,6 +1720,12 @@ CORE_CLONEDEF(bdk, 201, 294, "Batman Dark Knight (V2.01)", 2008, "Stern", sam1, 
 SAM1_ROM32MB(bdk_200,"bdk_200.bin",0x1B04378,CRC(07b716a9) SHA1(4cde06308bb967435c7c1bf078a2cda36088e3ec))
 CORE_CLONEDEF(bdk, 200, 294, "Batman Dark Knight (V2.00)", 2008, "Stern", sam1, 0)
 
+SAM1_ROM32MB(bdk_160,"bdk_160.bin",0x1B02F70,CRC(5554ea47) SHA1(0ece4779ad9a3d6c8428306774e2bf36a20d680d))
+CORE_CLONEDEF(bdk, 160, 294, "Batman Dark Knight (V1.60)", 2008, "Stern", sam1, 0)
+
+SAM1_ROM32MB(bdk_150,"bdk_150.bin",0x18EE5E8,CRC(ed11b88c) SHA1(534224de597cbd3632b902397d945ab725e24912))
+CORE_CLONEDEF(bdk, 150, 294, "Batman Dark Knight (V1.50)", 2008, "Stern", sam1, 0)
+
 SAM1_ROM32MB(bdk_130,"bdk_130.bin",0x1BA1E94,CRC(83a32958) SHA1(0326891bc142c8b92bd4f6d29bd4301bacbed0e7))
 CORE_CLONEDEF(bdk, 130, 294, "Batman Dark Knight (V1.30)", 2008, "Stern", sam1, 0)
 
@@ -1664,6 +1744,12 @@ CORE_CLONEDEF(csi, 210, 240, "C.S.I. (V2.1)", 2009, "Stern", sam1, 0)
 
 SAM1_ROM32MB(csi_200,"csi200a.bin",0x1E21FC0,CRC(ecb25112) SHA1(385bede7955e06c1e1b7cd06e988a64b0e6ea54f))
 CORE_CLONEDEF(csi, 200, 240, "C.S.I. (V2.0)", 2008, "Stern", sam1, 0)
+
+SAM1_ROM32MB(csi_104,"csi104a.bin",0x1E21FC0,CRC(15694586) SHA1(3a6b70d43f9922d7a459e1dc4c235bcf03e7858e))
+CORE_CLONEDEF(csi, 104, 240, "C.S.I. (V1.04)", 2008, "Stern", sam1, 0)
+
+SAM1_ROM32MB(csi_103,"csi103a.bin",0x1E61C88,CRC(371bc874) SHA1(547588b85b4d6e79123178db3f3e51354e8d2229))
+CORE_CLONEDEF(csi, 103, 240, "C.S.I. (V1.03)", 2008, "Stern", sam1, 0)
 
 SAM1_ROM32MB(csi_102,"csi102a.bin",0x1E21FC0,CRC(770f4ab6) SHA1(7670022926fcf5bb8f8848374cf1a6237803100a))
 CORE_CLONEDEF(csi, 102, 240, "C.S.I. (V1.02)", 2008, "Stern", sam1, 0)
@@ -1699,6 +1785,9 @@ CORE_CLONEDEF(nba, 700, 802, "NBA (V7.0)", 2009, "Stern", sam1, 0)
 
 SAM1_ROM32MB(nba_600,"nba600a.bin",0x19112D0,CRC(af2fbcf4) SHA1(47df1992a1eb6c4cd5ec246912eab9f5636499a7))
 CORE_CLONEDEF(nba, 600, 802, "NBA (V6.0)", 2009, "Stern", sam1, 0)
+
+SAM1_ROM32MB(nba_500,"nba500a.bin",0x19112D0,CRC(01b0c27a) SHA1(d7f4f6b24630b55559a48cde4475422905811106))
+CORE_CLONEDEF(nba, 500, 802, "NBA (V5.0)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Big Buck Hunter
@@ -1748,8 +1837,8 @@ CORE_CLONEDEF(avr, 106, 110, "Avatar (V1.06)", 2010, "Stern", sam1, 0)
 SAM1_ROM32MB(avr_101h,"av_101_e.bin",0x1EE1CB8,CRC(dbdcc7e5) SHA1(bf9a79209ecdae93efb2930091d2658259a3bd03))
 CORE_CLONEDEF(avr, 101h, 110, "Avatar (V1.01) Limited Edition", 2010, "Stern", sam1, 0)
 
-SAM1_ROM32MB(avr_110h,"av_110_e.bin",0x1D53CA4,CRC(85a55e02) SHA1(204d796c2cbc776c1305dabade6306527122a13e))
-CORE_CLONEDEF(avr, 110h, 110, "Avatar (V1.10) Limited Edition", 2010, "Stern", sam1, 0)
+SAM1_ROM32MB(avr_120h,"av_120_e.bin",0x1D53CA4,CRC(85a55e02) SHA1(204d796c2cbc776c1305dabade6306527122a13e))
+CORE_CLONEDEF(avr, 120h, 110, "Avatar (V1.20) Limited Edition", 2010, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Rolling Stones
@@ -1836,8 +1925,11 @@ CORE_CLONEDEF(tf, 140h, 160, "Transformers (V1.40) Limited Edition", 2011, "Ster
 / AC/DC
 /-------------------------------------------------------------------*/
 SAM1_INIT(acd, sam1_dmd128x32, 2, 0)
-SAM1_ROM128MB(acd_121,"acd_121.bin",0x3D8F40C,CRC(4f5f43e9) SHA1(19045e9cdb2522770013c24c6fed265009278dea))
-CORE_GAMEDEF(acd, 121, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
-
 SAM1_ROM128MB(acd_130,"acd_130e.bin",0x40C4038,CRC(da97014e) SHA1(f0a2684076008b0234c089fea8f95e4f3d8816dd))
 CORE_GAMEDEF(acd, 130, "AC/DC (V1.30)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_125,"acd_125.bin",0x3E53DEC,CRC(0307663f) SHA1(d40e3aaf94d1d314835fa59a177ce0c386399f4c))
+CORE_CLONEDEF(acd, 125, 130, "AC/DC (V1.25)", 2012, "Stern", sam2, 0)
+
+SAM1_ROM128MB(acd_121,"acd_121.bin",0x3D8F40C,CRC(4f5f43e9) SHA1(19045e9cdb2522770013c24c6fed265009278dea))
+CORE_CLONEDEF(acd, 121, 130, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
