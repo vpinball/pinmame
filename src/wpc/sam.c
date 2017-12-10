@@ -2,7 +2,7 @@
   Stern Pinball - S.A.M. Hardware System
   initial version by Steve Ellenoff and Gerrit Volkenborn
   (09/25/2006 - 10/18/2006)
-  with various improvements from the open source community after that
+  with various improvements from the open source community after that (notably CarnyPriest and especially DJRobX)
 
   Hardware from 01/2006 (World Poker Tour) - 09/2014 (The Walking Dead) (and Spider-Man Vault Edition 02/2016)
 
