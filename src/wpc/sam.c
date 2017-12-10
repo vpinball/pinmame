@@ -9,7 +9,7 @@
   CPU Board: S.A.M. System Board
              SPI Part Nº: 520-5246-00
 
-  Issues:
+  Issues: (outdated?)
   -USB Interface not hooked up or emulated
   -Serial Port Interfaces not hooked up (also requires support in the AT91 core)
   -FlashROM not emulated (treated as a regular read only rom)
@@ -39,7 +39,6 @@
 #include "sndbrd.h"
 #include "dmddevice.h"
 #include "mech.h"
-//#include <assert.h>
 
 // Defines
 
@@ -54,7 +53,7 @@
 #define SAM_IRQFREQ 4008
 
 #define WAVE_OUT_RATE 24000
-#define SAM_TIMER 120
+#define SAM_TIMER 120 // was 145
 // 100ms sound buffer.
 #define BUFFSIZE (WAVE_OUT_RATE * 100 / 1000)    
 
@@ -81,29 +80,6 @@
 
 #define WOF_MINIDMD_MAX 175
 
-#if (!defined(_WIN64) && defined(_DEBUG))
-
-#include <Windows.h>
-
-void DebuggerLog ( const char * format, ... )
-{
-  char buffer[256];
-  wchar_t  ws[256]; 
-
-  va_list args;
-  va_start (args, format);
-  vsnprintf (buffer,256,format, args); 
-  // Surely there's a more direct way :) 
-  swprintf(ws, 256, L"%hs", buffer); 
-  OutputDebugStringW(ws);
-  va_end (args);
-}
-
-#define LOG(x) DebuggerLog x
-#else
-#define LOG(x)
-#endif
-
 // Variables
 struct {
 	int vblankCount;
@@ -117,8 +93,10 @@ struct {
 	char unused2[2];
 	int sampout;
 	int sampnum;
-	int msu[6];
-	int powerswitch;
+	int volume[2], mute[2];
+	UINT16 value;
+	int pass;
+	int coindoor;
 	INT16 bank;
 	char minidata[226];
 	UINT32 solenoidbits[CORE_MODSOL_MAX];
@@ -200,13 +178,13 @@ extern int at91_block_timers;
       COREPORT_DIPSET(0x001d, "Unknown (00011101)" ) \
       COREPORT_DIPSET(0x001e, "Unknown (00011110)" ) \
       COREPORT_DIPSET(0x001f, "Unknown (00011111)" ) \
-	COREPORT_DIPNAME( 0x0020, 0x0000, "Dip #6") \
+      COREPORT_DIPNAME( 0x0020, 0x0000, "Dip #6") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-	COREPORT_DIPNAME( 0x0040, 0x0000, "Dip #7") \
+      COREPORT_DIPNAME( 0x0040, 0x0000, "Dip #7") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-	COREPORT_DIPNAME( 0x0080, 0x0080, "Dip #8") \
+      COREPORT_DIPNAME( 0x0080, 0x0080, "Dip #8") \
       COREPORT_DIPSET(0x0000, "1" ) \
       COREPORT_DIPSET(0x0080, "0" )
 
@@ -235,10 +213,9 @@ const struct sndbrdIntf samIntf = {
 
 static void sam_sh_update(int num, INT16 *buffer[2], int length)
 {
-	int ii, channel;
-
 	if (length > 0)
 	{
+		int ii, channel;
 		for (ii = 0; ii < length && samlocals.sampout != samlocals.sampnum; ii++)
 		{
 			for (channel = 0; channel < 2; channel++)
@@ -280,27 +257,22 @@ static struct CustomSound_interface samCustInt =
 //Complete - Needs cleanup
 static READ32_HANDLER(samswitch_r)
 {
-	data32_t data; // eax@1
-	int v5; // edi@1
-	int ii; // esi@1
+	data32_t data = 0; // eax@1
+	int adj = 0; // edi@1
+	int ii = 0; // esi@1
 	int v7; // esi@6
 
-	
-
-	data = 0;
-	v5 = 0;
-	ii = 0;
 	while ( !((0xFF << (ii * 8)) & ~mem_mask) )
 	{
 		ii++;
 		if ( ii >= 4 )
 			goto LABEL_6;
 	}
-	v5 = ii;
+	adj = ii;
 LABEL_6:
-	v7 = v5 + 4 * offset;
-	if ( v7 >= 0 && v7 <= 6)
-    {
+	v7 = adj + 4 * offset;
+	if (v7 >= 0 && v7 <= 6)
+	{
 		switch ( v7 )
 		{
 			case 0:
@@ -331,7 +303,7 @@ LABEL_6:
 	if ( v7 == 0x80000 )
 		data = samlocals.bank | 0x10;  // 0x10  (bits 4-7, mask 0x70) is hardware rev. 
 
-	return data << 8 * v5;
+	return data << (8 * adj);
 }
 
 static READ32_HANDLER(samxilinx_r)
@@ -343,7 +315,7 @@ static READ32_HANDLER(samxilinx_r)
 		//                     works     bits:   0 0 0 zc u1 u1
 		//                                                u1 = solenoids have power - 1-32
 		//                                                   u1 = power switch
-		data = (( 7 << 3 ) | (samlocals.zc << 2) | (samlocals.powerswitch != 0 ? 3 : 0)) << 8;
+		data = (( 7 << 3 ) | (samlocals.zc << 2) | (samlocals.coindoor != 0 ? 3 : 0)) << 8;
 	}
 	return data;
 }
@@ -355,15 +327,21 @@ static READ32_HANDLER(samcpu_r)
 	if (offset == 2105)
 		return 4294967295;
 
+#if 0
 	if ( offset < 0x4000 )
 		return sam_cpu[offset];
+
 	if ( offset != 0x4240 
 		&& offset != 0x4414
 		&& offset != 0x441a
 		&& offset != 0x4420
 		&& offset != 0x4426)
 		return sam_cpu[offset];
+#endif
+
 	return sam_cpu[offset];
+
+#if 0
 	switch( offset )
 	{
 		case 0x4414:
@@ -412,6 +390,7 @@ static READ32_HANDLER(samcpu_r)
 			break;
 	}
 	return sam_cpu[offset];
+#endif
 }
 
 static MEMORY_READ32_START(sam_readmem)
@@ -453,13 +432,12 @@ static WRITE32_HANDLER(samxilinx_w)
 
 static WRITE32_HANDLER(samdmdram_w)
 {
-	int ii = 0;
-	
 	if ( offset == 2 )
 	{
-	    int result = data;
+		int ii = 0;
+		int result = data;
 		samlocals.col = 0;
-	    do
+		do
 		{
 			if ( data & (1 << ii) )
 			samlocals.col += ii;
@@ -474,18 +452,16 @@ static WRITE32_HANDLER(samdmdram_w)
 			samlocals.ram2 = data >> 16;
 		else
 			samlocals.ram1 = data;
-    }
-    else if ( offset != 0x2AAA0 )
-        logerror("error");
+	}
+	else if ( offset != 0x2AAA0 )
+		logerror("error");
 }
 
 static int sam_led(UINT32 bank)
 {
-	int result;
-	int ii;
+	int result = 0;
+	int ii = 0;
 
-	result = 0;
-	ii = 0;
 	do
 	{
 		if ( bank & 1 )
@@ -756,7 +732,7 @@ LABEL_176:
 					(core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (~bank & 0x10) ||
 					(core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~bank & 0x40))
 				{
-				for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8|SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)
+					for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & (1 << ii));
 					}
@@ -900,51 +876,62 @@ static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x07800000, 0x07FFFFFF, MWA32_RAM },
 MEMORY_END
 
-//Ports
+/*********************/
+/* Port I/O Section  */
+/*********************/
 static READ32_HANDLER(sam_port_r)
 {
 	data32_t data;
-	data = 3072;
+	//Set P10,P11 to +1 as shown in schematic since they are tied to voltage.
+	data = 0x00000C00;
+	//Eventually need to add in P16,17,18 for feedback from Real Time Clock
+	//Possibly also P23 (USB Related) & P24 (Dip #8)
+
+	//if (logit) LOG(("%08x: reading from %08x = %08x\n", activecpu_get_pc(), offset, data));
+
 	return data;
 }
 
+//P16,17,18 are connected to Real Time Clock for writing data
+//P3,P4,P5 are connected to PCM1755 DAC for controlling sound output & effects (volume and other features).
 static WRITE32_HANDLER(sam_port_w)
 {
-	double l_vol = 0.0;
-	double r_vol = 0.0;
-
-	if ( data & 0x10 )
+	// Bits 4 to 6 are used to issue a command to the PCM1755 chip as a serial 16-bit value.
+	if ((data & 0x10) && samlocals.pass >= 0)
 	{
-		if ( samlocals.msu[5] >= 0 )
-		{
-			samlocals.msu[4] |= ((data >> 5) & 1) << samlocals.msu[5];
-			samlocals.msu[5]--;
-		}
+		samlocals.value |= ((data & 0x20) >> 5) << samlocals.pass;
+		samlocals.pass--;
 	}
-	if ( data & 8 )
+	if (data & 0x08) // end of command data
 	{
-		switch ( samlocals.msu[4] >> 8 )
+		int l_vol = 0;
+		int r_vol = 0;
+
+		switch (samlocals.value >> 8) // register number is the upper command byte
 		{
-			case 0x10:
-				samlocals.msu[0] = samlocals.msu[4];
+			case 0x10: // left channel attenuation
+				samlocals.volume[0] = samlocals.value & 0xff;
 				break;
-			case 0x11:
-				samlocals.msu[1] = samlocals.msu[4];
+			case 0x11: // right channel attenuation
+				samlocals.volume[1] = samlocals.value & 0xff;
 				break;
-			case 0x12:
-				samlocals.msu[2] = samlocals.msu[3] = (samlocals.msu[4] & 1);
+			case 0x12: // soft mute
+				samlocals.mute[0] = (samlocals.value & 1);
+				samlocals.mute[1] = (samlocals.value & 2) >> 1;
 				break;
 		}
-		if (samlocals.msu[2] == 0 )
-			l_vol = (samlocals.msu[0] & 0x7F) * 0.78125;
-		if (samlocals.msu[3] == 0 )
-			r_vol = (samlocals.msu[0] & 0x7F) * 0.78125;
-		mixer_set_stereo_volume(0, (int)l_vol, 0);
-		mixer_set_stereo_volume(1, 0, (int)r_vol);
+		//Mixer set volume has volume range of 0..100, while the SAM1 hardware uses a 128 value range for volume. Volume values start @ 0x80 for some reason.
+		if (samlocals.mute[0] == 0)
+			l_vol = (samlocals.volume[0] & 0x7f) * 50 / 63;
+		if (samlocals.mute[1] == 0)
+			r_vol = (samlocals.volume[1] & 0x7f) * 50 / 63;
+		mixer_set_stereo_volume(0, l_vol, 0);
+		mixer_set_stereo_volume(1, 0, r_vol);
 
-		samlocals.msu[5] = 16;
-		samlocals.msu[4] = 0;
+		samlocals.pass = 16;
+		samlocals.value = 0;
 	}
+	//if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
 }
 
 static PORT_READ32_START(sam_readport)
@@ -975,23 +962,27 @@ static MACHINE_INIT(sam) {
 
 static MACHINE_RESET(sam) {
 	memset(&samlocals, 0, sizeof(samlocals));
-	samlocals.msu[5] = 16;
-	samlocals.powerswitch = 1;
+	samlocals.pass = 16;
+	samlocals.coindoor = 1;
 }
 
 static SWITCH_UPDATE(sam) {
 	if (inports) {
 		// 1111      .... checking 0x000X and putting into column 9
-		CORE_SETKEYSW(inports[SAM_COMINPORT], 0xF, 9);
+		/*Switch Col 9 = Coin Slots*/
+		CORE_SETKEYSW(inports[SAM_COMINPORT], 0x0f, 9);
 
 		// 1111 1111 .... checking 0x0XX0 and putting those into column 0
-		CORE_SETKEYSW(inports[SAM_COMINPORT]>>4, 0xFF, 0);
+		/*Switch Col 0 = Tilt, Slam, Coin Door Buttons*/
+		CORE_SETKEYSW(inports[SAM_COMINPORT] >> 4, 0xff, 0);
 
 		// 1100 0000 .... checking 0x8000 and 0x4000 and setting switch column 2
-		CORE_SETKEYSW(inports[SAM_COMINPORT]>>8, 0xC0, 2);
+		/*Switch Col 2 = Start */
+		CORE_SETKEYSW(inports[SAM_COMINPORT] >> 8, 0xc0, 2);
 
 		// 0x1000(coin door) >> 12
-		samlocals.powerswitch = ~(inports[SAM_COMINPORT]>>12) & 0x01;
+		/*Coin Door Switch - Not mapped to the switch matrix*/
+		samlocals.coindoor = (inports[SAM_COMINPORT] & 0x1000) ? 0 : 1;
 	}
 }
 
@@ -1001,9 +992,7 @@ int LED_hack_send_garbage = 0;
 
 static void sam_LED_hack(int usartno)
 {
-	const char *gn;
-
-	gn = Machine->gamedrv->name;
+	const char * const gn = Machine->gamedrv->name;
 
 	// Several LE games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.  
 	
@@ -1030,7 +1019,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 {
 	int i;
 
-#ifdef _DEBUG
+#if 0//def _DEBUG
 	for (i = 0; i < size; i++)
 	{
 		char s[91];
@@ -1143,7 +1132,7 @@ static INTERRUPT_GEN(sam_vblank) {
 		}
 		break;
 	case SAM_GAME_WOF:
-		//!
+		//!!
 		break;
 
 	default:
@@ -1193,7 +1182,7 @@ static MACHINE_DRIVER_START(sam)
     MDRV_CORE_INIT_RESET_STOP(sam, sam, NULL)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
-    MDRV_TIMER_ADD(sam_timer, SAM_TIMER) // was 145
+    MDRV_TIMER_ADD(sam_timer, SAM_TIMER)
     MDRV_SOUND_ADD(CUSTOM, samCustInt)
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
     MDRV_DIAGNOSTIC_LEDH(2)
@@ -1362,13 +1351,13 @@ static struct core_dispLayout sam_dmd128x32[] = {
 
 static struct core_dispLayout sammini1_dmd128x32[] = {
 	DISP_SEG_IMPORT(sam_dmd128x32),
-	{34, 10, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 17, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 24, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 31, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 38, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 45, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
-	{34, 52, 7, 5, CORE_DMD|CORE_DMDNOAA| CORE_NODISP, (void *)samminidmd_update},
+	{34, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
 	{43, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
 	{43, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
 	{43, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
@@ -2372,11 +2361,11 @@ SAM_ROMEND
 
 SAM_INPUT_PORTS_START(rsn, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(rsn, 110, "Rolling Stones Pro (V1.1)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 103, 110, "Rolling Stones Pro (V1.03)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 105, 110, "Rolling Stones Pro (V1.05)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 100h, 110, "Rolling Stones Limited/Premium Edition (V1.0)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 110h, 110, "Rolling Stones Limited/Premium Edition (V1.1)", 2011, "Stern", sam, 0)
+CORE_GAMEDEF(rsn, 110, "Rolling Stones, The Pro (V1.1)", 2011, "Stern", sam, 0)
+CORE_CLONEDEF(rsn, 103, 110, "Rolling Stones, The Pro (V1.03)", 2011, "Stern", sam, 0)
+CORE_CLONEDEF(rsn, 105, 110, "Rolling Stones, The Pro (V1.05)", 2011, "Stern", sam, 0)
+CORE_CLONEDEF(rsn, 100h, 110, "Rolling Stones, The Limited/Premium Edition (V1.0)", 2011, "Stern", sam, 0)
+CORE_CLONEDEF(rsn, 110h, 110, "Rolling Stones, The Limited/Premium Edition (V1.1)", 2011, "Stern", sam, 0)
 
 //ACDC
 
@@ -2568,14 +2557,14 @@ SAM_ROMEND
 
 SAM_INPUT_PORTS_START(avs, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(avs, 110, "Avengers Pro (V1.1)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 120h, 110, "Avengers Limited Edition (V1.2)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 140, 110, "Avengers Pro (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 140h, 110, "Avengers Limited Edition (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170, 110, "Avengers Pro (V1.7)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170c, 110, "Avengers Pro (V1.7) (Colored)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170h, 110, "Avengers Limited Edition (V1.7)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170hc, 110, "Avengers Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
+CORE_GAMEDEF(avs, 110, "Avengers, The Pro (V1.1)", 2012, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 120h, 110, "Avengers, The Limited Edition (V1.2)", 2012, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 140, 110, "Avengers, The Pro (V1.4)", 2013, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 140h, 110, "Avengers, The Limited Edition (V1.4)", 2013, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 170, 110, "Avengers, The Pro (V1.7)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 170c, 110, "Avengers, The Pro (V1.7) (Colored)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 170h, 110, "Avengers, The Limited Edition (V1.7)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 170hc, 110, "Avengers, The Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
 
 //Metallica
 
@@ -2748,6 +2737,7 @@ SAM_ROMLOAD_ST(st_161c, "st_161c.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5
 SAM_ROMEND
 SAM_ROMLOAD_ST(st_161hc, "st_161hc.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
 SAM_ROMEND
+
 SAM_INPUT_PORTS_START(st, 1) SAM_INPUT_PORTS_END
 
 CORE_GAMEDEF(st, 120, "Star Trek Pro (V1.2)", 2013, "Stern", sam, 0)
@@ -2859,29 +2849,29 @@ SAM_ROMEND
 
 SAM_INPUT_PORTS_START(twd, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(twd, 105, "The Walking Dead (V1.05)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 111, 105 , "The Walking Dead (V1.11)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 111h, 105 , "The Walking Dead LE (V1.11)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 119, 105 , "The Walking Dead (V1.19)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 119h, 105 , "The Walking Dead LE (V1.19)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 124, 105, "The Walking Dead (V1.24)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 124h, 105, "The Walking Dead LE (V1.24)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 125, 105, "The Walking Dead (V1.25)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 125h, 105, "The Walking Dead LE (V1.25)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 128, 105, "The Walking Dead (V1.28)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 128h, 105, "The Walking Dead LE (V1.28)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 141, 105, "The Walking Dead (V1.41)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 141h, 105, "The Walking Dead LE (V1.41)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 153, 105, "The Walking Dead (V1.53)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 153h, 105, "The Walking Dead LE (V1.53)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156, 105, "The Walking Dead (V1.56)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156h, 105, "The Walking Dead LE (V1.56)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156c, 105, "The Walking Dead (V1.56) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156hc, 105, "The Walking Dead LE (V1.56) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160, 105, "The Walking Dead (V1.60.0)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160h, 105, "The Walking Dead LE (V1.60.0)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160c, 105, "The Walking Dead (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160hc, 105, "The Walking Dead LE (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
+CORE_GAMEDEF(twd, 105, "Walking Dead, The (V1.05)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 111, 105 , "Walking Dead, The (V1.11)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 111h, 105 , "Walking Dead, The LE (V1.11)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 119, 105 , "Walking Dead, The (V1.19)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 119h, 105 , "Walking Dead, The LE (V1.19)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 124, 105, "Walking Dead, The (V1.24)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 124h, 105, "Walking Dead, The LE (V1.24)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 125, 105, "Walking Dead, The (V1.25)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 125h, 105, "Walking Dead, The LE (V1.25)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 128, 105, "Walking Dead, The (V1.28)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 128h, 105, "Walking Dead, The LE (V1.28)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 141, 105, "Walking Dead, The (V1.41)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 141h, 105, "Walking Dead, The LE (V1.41)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 153, 105, "Walking Dead, The (V1.53)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 153h, 105, "Walking Dead, The LE (V1.53)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156, 105, "Walking Dead, The (V1.56)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156h, 105, "Walking Dead, The LE (V1.56)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156c, 105, "Walking Dead, The (V1.56) (Colored)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156hc, 105, "Walking Dead, The LE (V1.56) (Colored)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160, 105, "Walking Dead, The (V1.60.0)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160h, 105, "Walking Dead, The LE (V1.60.0)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160c, 105, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160hc, 105, "Walking Dead, The LE (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
 
 //Spider-Man Vault Edition
 INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12);
