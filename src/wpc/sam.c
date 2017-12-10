@@ -27,18 +27,19 @@
   03/09/2012 - Added SAM2 generation for extended memory, and possible stereo support one day
 ************************************************************************************************/
 
-#define SAM1_USE_REAL_FREQ	1							// Use real cpu frequency // CSI,IJ4 needs this, but leads to slowdown/non-sync to sound on some animations (f.e. MTL match), due to non-emulated cache maybe?
+#define SAM1_USE_REAL_FREQ	1							// Use real cpu frequency //!! at least CSI and IJ4 need this, but FG timers are off/too slow (along with many other games)
 
 #if SAM1_USE_REAL_FREQ
 	#define SAM1_ARMCPU_FREQ	40000000				// 40 MHZ - Marked on the schematic
-	#define SAM1_ZC_FREQ	104	//104 for 60hz //105 for 50hz // This produces a 60Hz zero cross detection for Family Guy RoHs detection
+	#define SAM1_ZC_FREQ	    104	//104 for 60hz //105 for 50hz // This produces a 60Hz zero cross detection for Family Guy RoHs detection
+    #define SAM1_FIRQ_FREQ		4039 //(SAM1_SOUNDFREQ/12) //!! experimental 4039 found by destruk, it even fixes the async behavior of some sound/anims if using the real CPU freq // =4040, Sample rate / 12 samples per FIQ - Would be nice to confirm this # on a real machine
 #else
-  #define SAM1_ARMCPU_FREQ  55000000					// 55 MHZ - DMD Animations run closer to accurate
-  #define SAM1_ZC_FREQ    143 //143 for 60hz //144 for 50hz // This produces a 60Hz zero cross detection for Family Guy RoHs detection
+    #define SAM1_ARMCPU_FREQ    55000000				// 55 MHZ - DMD Animations run closer to accurate
+    #define SAM1_ZC_FREQ        146 //!! has changed since ALU changes in ARM7core //143 for 60hz //144 for 50hz // This produces a 60Hz zero cross detection for Family Guy RoHs detection
+    #define SAM1_FIRQ_FREQ		4040 //(SAM1_SOUNDFREQ/12) // =4040, Sample rate / 12 samples per FIQ - Would be nice to confirm this # on a real machine
 #endif
 
 #define SAM1_SOUNDFREQ		1600000/33					// Same rate used by the LOTR hardware X 2 for each channel
-#define SAM1_FIRQ_FREQ		4039 //(SAM1_SOUNDFREQ/12)	// experimental 4039 found by destruk // =4040, Sample rate / 12 samples per FIQ - Would be nice to confirm this # on a real machine
 #define SNDBUFSIZE			0x40000
 
 //Smoothing Options
@@ -53,6 +54,7 @@
 #define SAM_CSI 16
 
 //Logging Options
+#define LOGALL 0 // set to 0 to log NOTHING
 #define LOG_RAW_SOUND_DATA			0	// Set to 1 to log all raw sample data to a file
 #define LOG_TO_SCREEN				0	// Set to 1 to print log data to screen instead of logfile
 #define LOG_SWITCH_READ_HANDLER		0	// Set to 1 to log the main Switch Read Handler
@@ -157,7 +159,7 @@ static PINMAME_VIDEO_UPDATE(sam1_dmd32_update) {
       for (mm = 0; mm < 4; mm++) {
         ll = 15 & (pp0[0] >> (8*mm+4));
         kk = 15 & ((15 == ll ? pp1[0] : pp0[0]) >> (8*mm));
-        *line++ = 63+color_table[kk/*core_revnyb(((kk & 0x3) << 2) | ((kk & 0xc) >> 2))*/]; // no revnyb needed, otherwise f.e. has some issues on scoring fade (f.e. BDK) or highscore fade (f.e. FG)
+        *line++ = color_table[kk/*core_revnyb(((kk & 0x3) << 2) | ((kk & 0xc) >> 2))*/]; // no revnyb needed, otherwise f.e. has some issues on scoring fade (f.e. BDK) or highscore fade (f.e. FG)
       }
     }
   }
@@ -521,6 +523,11 @@ static WRITE32_HANDLER(sam1_sw_w) {
   }
 }
 
+static WRITE32_HANDLER(sam1_io2_w)
+{
+  LOG(("%08x: IO2 output to %05x=%02x\n", activecpu_get_pc(), offset, data));
+}
+
 static WRITE32_HANDLER(sam1_cs_w)
 {
 	int base = 0x02400000;
@@ -668,7 +675,7 @@ static WRITE32_HANDLER(sam1_port_w)
     mixer_set_volume(1, samlocals.mute[1] ? 0 : (samlocals.volume[1] & 0x7f) * 50 / 63);
     samlocals.pass = 16; samlocals.value = 0;
   }
-if (data & 0x70000) printf("%x%x%d ", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1);
+  if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
 }
 
 //Toggle Zero Cross bit
@@ -801,6 +808,7 @@ static MEMORY_WRITE32_START(sam1_writemem)
 {0x0109F000,0x010FFFFF,soundram_w},					//U13 RAM - Sound Data for output
 {0x01100000,0x01ffffff,sam1_sw_w},					//Various Output Signals
 {0x02100000,0x0211ffff,MWA32_RAM,&nvram},			//U11 NVRAM (128K) 0x02100000,0x0211ffff
+{0x02200000,0x022fffff,sam1_io2_w},					//LE versions: more I/O stuff (mostly LED lamps)
 {0x02400000,0x02ffffff,sam1_cs_w},					//I/O Related
 {0x03000000,0x030000ff,MWA32_RAM},					//USB Related
 {0x04000000,0x047FFFFF,MWA32_RAM},					//1st 8MB of Flash ROM U44 Mapped here
@@ -1905,7 +1913,7 @@ SAM1_INIT(trn, sam1_dmd128x32, 2, 0)
 SAM1_ROM32MB(trn_174,"trn_174e.bin",0x1F79E70,CRC(20e44481) SHA1(88e6e75efb640a7978f4003f0df5ee1e41087f72))
 CORE_GAMEDEF(trn, 174, "Tron: Legacy (V1.74)", 2011, "Stern", sam1, 0)
 
-SAM1_ROM32MB(trn_17402,"trn_17402e.bin",0x1F79E70,CRC(94a5946c) SHA1(5026e33a8bb00c83caf06891727b8439d1274fbb))
+SAM1_ROM32MB(trn_17402,"trn_1742.bin",0x1F79E70,CRC(94a5946c) SHA1(5026e33a8bb00c83caf06891727b8439d1274fbb))
 CORE_CLONEDEF(trn, 17402, 174, "Tron: Legacy (V1.7402)", 2014, "Stern", sam1, 0)
 
 SAM1_ROM32MB(trn_170,"trn_170e.bin",0x1F13C9C,CRC(1f3b314d) SHA1(59df759539c02600d2579b4e59a184ac3db64020))
@@ -1940,6 +1948,9 @@ CORE_CLONEDEF(trn, 140h, 174, "Tron: Legacy (V1.40) Limited Edition", 2011, "Ste
 
 SAM1_ROM32MB(trn_174h,"trnle174.bin",0x1F93B84,CRC(a45224bf) SHA1(40e36764af332175f653e8ddc2a8bb77891c1230))
 CORE_CLONEDEF(trn, 174h, 174, "Tron: Legacy (V1.74) Limited Edition", 2011, "Stern", sam1, 0)
+
+SAM1_ROM32MB(trn_1741h,"trn_1741h.bin",33110916,CRC(dbce28f1) SHA1(39cee4095964a2e73b86b1687d895d6cb367d8a5))
+CORE_CLONEDEF(trn, 1741h, 174, "Tron: Legacy (V1.741 hacked replaced music) Limited Edition", 2015, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Transformers
@@ -2043,7 +2054,7 @@ SAM1_ROM128MB(acd_168h,"acle_168.bin",0x7223FA0,CRC(5a4246a1) SHA1(725eb666ffaef
 CORE_CLONEDEF(acd, 168h, 168, "AC/DC (V1.68) Limited Edition", 2012, "Stern", sam2, 0)
 
 /*-------------------------------------------------------------------
-/ X-Men // use sam1 and SAM1_ROM32MB?
+/ X-Men // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
 /-------------------------------------------------------------------*/
 SAM1_INIT(xmn, sam1_dmd128x32, 2, 0)
 SAM1_ROM32MB(xmn_151,"xmen_151.bin",33182312,CRC(84c744a4) SHA1(db4339be7e9d47c46a13f95520dfe58da8450a19))
@@ -2063,6 +2074,9 @@ CORE_CLONEDEF(xmn, 104, 151, "X-Men (V1.04)", 2012, "Stern", sam1, 0)
 
 SAM1_ROM32MB(xmn_102,"xmen_102.bin",0x1FB7DEC,CRC(5df923e4) SHA1(28f86abc792008aa816d93e91dcd9b62fd2d01ee))
 CORE_CLONEDEF(xmn, 102, 151, "X-Men (V1.02)", 2012, "Stern", sam1, 0)
+
+SAM1_ROM32MB(xmn_100,"xmen_100.bin",0x1FB7DEC,CRC(997b2973) SHA1(68bb379860a0fe5be6a8a8f28b6fd8fe640e172a))
+CORE_CLONEDEF(xmn, 100, 151, "X-Men (V1.00)", 2012, "Stern", sam1, 0)
 
 SAM1_ROM32MB(xmn_120h,"xmle_120.bin",0x1FB7DEC,CRC(93da2d0b) SHA1(92c4c2e7fe6392e4ff8824d5b217dcbda8ce3a96))
 CORE_CLONEDEF(xmn, 120h, 151, "X-Men (V1.20) Limited Edition", 2012, "Stern", sam1, 0)
@@ -2089,7 +2103,7 @@ SAM1_ROM32MB(xmn_151h,"xmle_151.bin",33182312,CRC(21d1088f) SHA1(9a0278c0324fbf5
 CORE_CLONEDEF(xmn, 151h, 151, "X-Men (V1.51) Limited Edition", 2014, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
-/ Avengers // use sam1 and SAM1_ROM32MB?
+/ Avengers // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
 /-------------------------------------------------------------------*/
 SAM1_INIT(avs, sam1_dmd128x32, 2, 0)
 SAM1_ROM32MB(avs_140,"as_140.bin",0x1F2EDA0,CRC(92642508) SHA1(1d55cd178104b43377f079fd0209d74d1b10bea8))
@@ -2175,49 +2189,101 @@ CORE_CLONEDEF(mtl, 163h, 163, "Metallica (V1.63) Limited Edition", 2014, "Stern"
 / Star Trek
 /-------------------------------------------------------------------*/
 SAM1_INIT(st, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(st_161,"st_161.bin",58373588,CRC(e7a923ce) SHA1(d7f676a13bfa93b540af8469adb2bd20dda681a8))
+CORE_GAMEDEF(st, 161, "Star Trek (V1.61)", 2015, "Stern", sam2, 0)
+
+SAM1_ROM128MB(st_160,"st_160.bin",58373588,CRC(cf0e0b60) SHA1(d91cfcd3ea28f174d9e7a9cff85a5ba6bccb0f34))
+CORE_CLONEDEF(st, 160, 161, "Star Trek (V1.60)", 2015, "Stern", sam2, 0)
+
 SAM1_ROM128MB(st_150,"st_150.bin",56306580,CRC(979c9644) SHA1(20a89ad337690a9ab652a599a77e30ccf2018e14))
-CORE_GAMEDEF(st, 150, "Star Trek (V1.50)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 150, 161, "Star Trek (V1.50)", 2014, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_140,"st_140.bin",49791896,CRC(c4f97ce3) SHA1(ef2d7cef153b5a6e9ab90c1ea31fdf5667eb327f))
-CORE_CLONEDEF(st, 140, 150, "Star Trek (V1.40)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 140, 161, "Star Trek (V1.40)", 2014, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_130,"st_130.bin",45554328,CRC(f501eb87) SHA1(6fa2f4e30cdd397d5443dfc690463495d22d9229))
-CORE_CLONEDEF(st, 130, 150, "Star Trek (V1.30)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 130, 161, "Star Trek (V1.30)", 2013, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_120,"st_120.bin",0x2B14CFC,CRC(dde9db23) SHA1(09e67564bce0ff7c67f1d16c4f9d8595f8130372))
-CORE_CLONEDEF(st, 120, 150, "Star Trek (V1.20)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 120, 161, "Star Trek (V1.20)", 2013, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_140h,"st_140h.bin",49791896,CRC(6f84cec4) SHA1(d92391005eed3c4dcb66ac0bccd19a50c4120792))
-CORE_CLONEDEF(st, 140h, 150, "Star Trek (V1.40) Limited Edition", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 140h, 161, "Star Trek (V1.40) Limited Edition", 2014, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_141h,"st_141h.bin",0x2F7C398,CRC(ae20d360) SHA1(0a840767b4e9fee26d7a4c2a9545fa7fd818d74e))
-CORE_CLONEDEF(st, 141h, 150, "Star Trek (V1.41) Limited Edition", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 141h, 161, "Star Trek (V1.41) Limited Edition", 2014, "Stern", sam2, 0)
 
 SAM1_ROM128MB(st_142h,"st_142h.bin",49791896,CRC(01acc115) SHA1(9881ea34852890a3fc960b78db96b70f17a28e56))
-CORE_CLONEDEF(st, 142h, 150, "Star Trek (V1.42) Limited Edition", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 142h, 161, "Star Trek (V1.42) Limited Edition", 2014, "Stern", sam2, 0)
 
+SAM1_INIT(st_150h, sam1_dmd128x32, 12, 0)
 SAM1_ROM128MB(st_150h,"st_150h.bin",0x35B2B94,CRC(a187581c) SHA1(b68ca52140bafd6b309b120d38df5b3bcf633a13))
-CORE_CLONEDEF(st, 150h, 150, "Star Trek (V1.50) Limited Edition", 2014, "Stern", sam2, 0)
+CORE_CLONEDEFNV(st_150h, st_161, "Star Trek (V1.50) Limited Edition", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(st_160h,"st_160h.bin",58373588,CRC(80419698) SHA1(2c4514d1712d9503828c2f57bfbec465026ac012))
+CORE_CLONEDEF(st, 160h, 161, "Star Trek (V1.60) Limited Edition", 2015, "Stern", sam2, 0)
+
+SAM1_ROM128MB(st_161h,"st_161h.bin",58373588,CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae))
+CORE_CLONEDEF(st, 161h, 161, "Star Trek (V1.61) Limited Edition", 2015, "Stern", sam2, 0)
+
+
+SAM1_ROM128MB(st_162,"st_162.bin",58373588,CRC(d11f7501) SHA1(6a8c46a2e975d9cbfb5f52d24f238e433ce19559))
+CORE_CLONEDEF(st, 162, 161, "Star Trek (V1.62 hacked replaced music)", 2015, "Stern", sam2, 0)
+
+SAM1_ROM128MB(st_163,"st_163.bin",558373588,CRC(dceeb908) SHA1(0ff2f64e30bf969d49a0945e40c5e8ed0930192c))
+CORE_CLONEDEF(st, 163, 161, "Star Trek (V1.63 hacked replaced music)", 2015, "Stern", sam2, 0)
 
 /*-------------------------------------------------------------------
 / Mustang
 /-------------------------------------------------------------------*/
-SAM1_INIT(mt, sam1_dmd128x32, 2, 0)
+SAM1_INIT(mt, sam1_dmd128x32, 12, 0)
 SAM1_ROM128MB(mt_140,"mt_140.bin",52851520,CRC(48010b61) SHA1(1bc615a86c4718ff407116a4e637e38e8386ded0))
-CORE_GAMEDEF(mt, 140, "Mustang (V1.40)", 2014, "Stern", sam2, 0)
-
-SAM1_ROM128MB(mt_130,"mt_130.bin",52647740,CRC(b6086db1) SHA1(0a50864b0de1b4eb9a764f36474b6fddea767c0d))
-CORE_CLONEDEF(mt, 130, 140, "Mustang (V1.30)", 2014, "Stern", sam2, 0)
+CORE_GAMEDEF(mt, 140, "Mustang (V1.40)", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
 
 SAM1_ROM128MB(mt_120,"mt_120.bin",58566124,CRC(be7437ac) SHA1(5db10d7f48091093c33d522a663f13f262c08c3e))
-CORE_CLONEDEF(mt, 120, 140, "Mustang (V1.20)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 120, 140, "Mustang (V1.20)", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(mt_130,"mt_130.bin",52647740,CRC(b6086db1) SHA1(0a50864b0de1b4eb9a764f36474b6fddea767c0d))
+CORE_CLONEDEF(mt, 130, 140, "Mustang (V1.30)", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
 
 SAM1_ROM128MB(mt_130h,"mt_130h.bin",0x3BF07F0,CRC(dcb5c923) SHA1(cf9e6042ae33080368ecffac233379135bf680ae))
-CORE_CLONEDEF(mt, 130h, 140, "Mustang (V1.30) Limited Edition", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 130h, 140, "Mustang (V1.30) Limited Edition", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(mt_140h,"mtle1-40.bin",0x3C2CCC4,CRC(fcb69947) SHA1(be64b13b3c6865f4fed1a8f03e9eaf84799fa2ab))
+CORE_CLONEDEF(mt, 140h, 140, "Mustang (V1.40) Limited Edition", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
 
 /*-------------------------------------------------------------------
 / The Walking Dead
 /-------------------------------------------------------------------*/
 SAM1_INIT(twd, sam1_dmd128x32, 2, 0)
+SAM1_ROM128MB(twd_124,"twd_124.bin",94228524,CRC(9f30b0a9) SHA1(60f689717f9060260ef4ae32b11c3ca6e66004dc))
+CORE_GAMEDEF(twd, 124, "The Walking Dead (V1.24)", 2015, "Stern", sam2, 0)
+
 SAM1_ROM128MB(twd_105,"twd_105.bin",0x4F4FBF8,CRC(59b4e4d6) SHA1(642e827d58c9877a9f3c29b75784660894f045ad))
-CORE_GAMEDEF(twd, 105, "The Walking Dead (V1.05)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 105, 124, "The Walking Dead (V1.05)", 2014, "Stern", sam2, 0)
+
+SAM1_ROM128MB(twd_111,"twd_111.bin",0x512CF54,CRC(6b2faad0) SHA1(1f3dd34e5f7cd7ae539b39c0f3c87b966d2c2f45))
+CORE_CLONEDEF(twd, 111, 124, "The Walking Dead (V1.11)", 2014, "Stern", sam2, 0)
+
+SAM1_ROM128MB(twd_119,"twd_119.bin",0x579167C,CRC(5fb5529e) SHA1(cdc3def52fd00219894327520122b905fd75ad1f))
+CORE_CLONEDEF(twd, 119, 124, "The Walking Dead (V1.19)", 2014, "Stern", sam2, 0)
+
+SAM1_ROM128MB(twd_125,"twd_125.bin",94228524,CRC(2eaa2387) SHA1(15f597a839e6e9e95de34b9a4bce7efa30474f02))
+CORE_CLONEDEF(twd, 125, 124, "The Walking Dead (V1.25)", 2015, "Stern", sam2, 0)
+
+SAM1_INIT(twd_111h, sam1_dmd128x32, 12, 0)
+SAM1_ROM128MB(twd_111h,"twd111le.bin",0x512CF54,CRC(873feba1) SHA1(3b3a76c09d39550554b89b0a300f72a42722470e))
+CORE_CLONEDEFNV(twd_111h, twd_124, "The Walking Dead (V1.11) Limited Edition", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(twd_119h,"twd119le.bin",0x579167C,CRC(529089e0) SHA1(bcc5b3f6f549212dfdc36eece220af6913a22f78))
+CORE_CLONEDEF(twd, 119h, 124, "The Walking Dead (V1.19) Limited Edition", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(twd_124h,"twd124le.bin",94228524,CRC(85e24f0e) SHA1(c211676a1d202fa839f71f10e4168ffdc87a6159))
+CORE_CLONEDEF(twd, 124h, 124, "The Walking Dead (V1.24) Limited Edition", 2015, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(twd_125h,"twd125le.bin",94228524,CRC(9a3b3ee6) SHA1(46609f708fcc7c6550bae024d7afd516e7fe46ad))
+CORE_CLONEDEF(twd, 125h, 124, "The Walking Dead (V1.25) Limited Edition", 2015, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+
+SAM1_ROM128MB(twd_1191,"twd_1191.bin",91821692,CRC(f43a3f74) SHA1(b87f31ce1af8bd045d87b2c0d465e50c43138200))
+CORE_CLONEDEF(twd, 1191, 124, "The Walking Dead (V1.191 hacked replaced music)", 2014, "Stern", sam2, 0)
