@@ -333,9 +333,6 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 				LOG(("%08x:  RegShift ERROR (p36)\n",R15));
 		#endif
 
-		//see p35 for check on this
-		//k = GET_REGISTER(k >> 1)&0x1f;
-
 		//Keep only the bottom 8 bits for a Register Shift
 		k = GET_REGISTER(k >> 1)&0xff;
 
@@ -406,11 +403,19 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 	case 3:						/* ROR and RRX */
 		if (k)
 		{
-			while (k > 32)
-				k -= 32;
-			if (pCarry)
-				*pCarry = rm & (1 << (k - 1));
-			return ROR(rm, k);
+			k &= 31;
+			if (k)
+			{
+				if (pCarry)
+					*pCarry = rm & (1 << (k - 1));
+				return ROR(rm, k);
+			}
+			else
+			{
+				if (pCarry)
+					*pCarry = rm & SIGN_BIT;
+				return rm;
+			}
 		}
 		else
 		{

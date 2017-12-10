@@ -95,16 +95,17 @@ CORE_CLONEDEFNV(stingrfp,stingray,"Stingray (Free Play)",1977,"Stern",by35_mST10
 /*--------------------------------
 / Stars
 /-------------------------------*/
+// There exists a newer 'A' version, that is so far undumped (25A-ROM-P3A.U2, 25A-ROM-P4A.U6) 
 INITGAME(stars,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
-BY17_ROMSTARTx88(stars, "cpu_u2.716",CRC(630d05df) SHA1(2baa16265d524297332fa951d9eab3e0e8d26078),
-                        "cpu_u6.716",CRC(57e63d42) SHA1(619ef955553654893c3071d8b70855fee8a5e6a7))
+BY17_ROMSTARTx88(stars, "25A-ROM-P3.U2",CRC(630d05df) SHA1(2baa16265d524297332fa951d9eab3e0e8d26078), /*cpu_u2.716*/
+                        "25A-ROM-P4.U6",CRC(57e63d42) SHA1(619ef955553654893c3071d8b70855fee8a5e6a7)) /*cpu_u6.716*/
 BY35_ROMEND
 #define input_ports_stars input_ports_st
 CORE_GAMEDEFNV(stars,"Stars",1978,"Stern",by35_mST100,GAME_USES_CHIMES)
 
 INITGAME(starsfp,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
 BY17_ROMSTARTx88(starsfp, "fpstars2.716",CRC(4fe7f1aa) SHA1(9da462c0973bd9531ff38a3b6d57f69cb6a2e219),
-                        "fpstars6.716",CRC(c4560fd3) SHA1(1ee8863b57ae781a6dac9ebfc92f467b60e54138))
+                          "fpstars6.716",CRC(c4560fd3) SHA1(1ee8863b57ae781a6dac9ebfc92f467b60e54138))
 BY35_ROMEND
 #define input_ports_starsfp input_ports_st
 CORE_CLONEDEFNV(starsfp,stars,"Stars (Free Play)",1978,"Stern",by35_mST100,GAME_USES_CHIMES)

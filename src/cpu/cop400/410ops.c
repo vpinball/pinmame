@@ -29,7 +29,6 @@ extern COP420_Regs R;
 #define prevPC			R.R_PREVPC
 #define skip			R.R_skip
 #define skipLBI			R.R_skipLBI
-#define M				RAM(B)
 
 #define IN_G()			IN(COP400_PORT_G)
 #define IN_L()			IN(COP400_PORT_L)
@@ -126,7 +125,7 @@ INLINE void aisc15(void) { AISC(0xF); }
 
 INLINE void cab(void) { B = (B & 0x30) | A; }
 
-INLINE void camq(void) { WRITE_Q((A << 4) | M); }
+INLINE void camq(void) { WRITE_Q((A << 4) | RAM(B)); }
 
 INLINE void cba(void) { A = B & 0xF; }
 
@@ -145,7 +144,7 @@ INLINE void inl(void)
 
 INLINE void jid(void)
 {
-	UINT16 addr = (PC & 0x300) | (A << 4) | M;
+	UINT16 addr = (PC & 0x300) | (A << 4) | RAM(B);
 	PC = (PC & 0x300) | ROM(addr);
 }
 
@@ -162,8 +161,9 @@ INLINE void jmp3(void) { JMP(3); }
 INLINE void jp(void)
 {
 	UINT8 op = ROM(prevPC);
+	UINT8 page = PC >> 6;
 
-	if (((PC & 0x3E0) >= 0x80) && ((PC & 0x3E0) < 0x100)) //JP pages 2,3
+	if (page == 2 || page == 3)
 	{
 		PC = (UINT16)((PC & 0x380) | (op & 0x7F));
 	}
@@ -312,8 +312,8 @@ INLINE void lei15(void) { LEI(15); }
 
 INLINE void lqid(void)
 {
-	PUSH(PC + 1);
-	PC = (UINT16)((PC & 0x300) | (A << 4) | M);
+	PUSH(PC);
+	PC = (UINT16)((PC & 0x300) | (A << 4) | RAM(B));
 	WRITE_Q(ROM(PC));
 	POP();
 }
@@ -326,14 +326,14 @@ INLINE void omg(void) { WRITE_G(RAM(B)); }
 
 INLINE void rc(void) { C = 0; }
 
-INLINE void ret(void) { POP(); }
+INLINE void ret(void) { POP(); skip = R.last_skip; }
 
 INLINE void retsk(void) { POP(); skip = 1; }
 
-INLINE void rmb0(void) { RAM(B) = RAM(B) & 0xE; }
-INLINE void rmb1(void) { RAM(B) = RAM(B) & 0xD; }
-INLINE void rmb2(void) { RAM(B) = RAM(B) & 0xB; }
-INLINE void rmb3(void) { RAM(B) = RAM(B) & 0x7; }
+INLINE void rmb0(void) { RAM(B) &= 0xE; }
+INLINE void rmb1(void) { RAM(B) &= 0xD; }
+INLINE void rmb2(void) { RAM(B) &= 0xB; }
+INLINE void rmb3(void) { RAM(B) &= 0x7; }
 
 INLINE void sc(void) { C = 1; }
 
@@ -353,10 +353,10 @@ INLINE void skgbz3(void) { if ((IN_G() & 0x08) == 0) skip = 1; }
 
 INLINE void skgz(void) { if ((IN_G() & 0xF) == 0) skip = 1; }
 
-INLINE void smb0(void) { RAM(B) = RAM(B) | 0x1; }
-INLINE void smb1(void) { RAM(B) = RAM(B) | 0x2; }
-INLINE void smb2(void) { RAM(B) = RAM(B) | 0x4; }
-INLINE void smb3(void) { RAM(B) = RAM(B) | 0x8; }
+INLINE void smb0(void) { RAM(B) |= 0x1; }
+INLINE void smb1(void) { RAM(B) |= 0x2; }
+INLINE void smb2(void) { RAM(B) |= 0x4; }
+INLINE void smb3(void) { RAM(B) |= 0x8; }
 
 INLINE void STII(UINT8 y)
 {
@@ -403,7 +403,7 @@ INLINE void x3(void) { X(3); }
 
 INLINE void xad(void)
 {
-	UINT8 addr = ROM(PC++) & 0x3f;
+	UINT8 addr = ROM(PC-1) & 0x3f;
 	UINT8 t = A;
 	A = RAM(addr) & 0xF;
 	RAM(addr) = t;
@@ -420,32 +420,34 @@ INLINE void xas(void)
 
 INLINE void XDS(UINT8 r)
 {
-	UINT8 t, Bd, Br;
+	UINT8 t, Bd;
 
 	t = RAM(B);
 	RAM(B) = A;
 	A = t & 0xF;
 
-	Br = (UINT8)((B & 0x30) ^ (r << 4));
-	Bd = (UINT8)((B & 0x0F) - 1);
-	B = (UINT8)(Br | (Bd & 0x0F));
+	Bd = ((B & 0x0f) - 1) & 0x0f;
+	B = (B & 0x30) | Bd;
 
-	if (Bd == 0xFF) skip = 1;
+	B = B ^ (r << 4);
+
+	if (Bd == 0x0f) skip = 1;
 }
 
 INLINE void XIS(UINT8 r)
 {
-	UINT8 t, Bd, Br;
+	UINT8 t, Bd;
 
 	t = RAM(B);
 	RAM(B) = A;
 	A = t & 0xF;
 
-	Br = (UINT8)((B & 0x30) ^ (r << 4));
-	Bd = (UINT8)((B & 0x0F) + 1);
-	B = (UINT8)(Br | (Bd & 0x0F));
+	Bd = ((B & 0x0f) + 1) & 0x0f;
+	B = (B & 0x30) | Bd;
 
-	if (Bd == 0x10) skip = 1;
+	B = B ^ (r << 4);
+
+	if (Bd == 0x00) skip = 1;
 }
 
 INLINE void xis0(void) { XIS(0); }

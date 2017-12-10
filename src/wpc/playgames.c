@@ -177,12 +177,16 @@ CORE_GAMEDEFNV(blkfever,"Black Fever",1980,"Playmatic",gl_mPLAYMATIC2,0)
 /*-------------------------------------------------------------------
 / ??/81 Zira
 /-------------------------------------------------------------------*/
-INITGAME2(zira, play_disp6, 1, SNDBRD_PLAYZ)
+PLAYMATIC_INPUT_PORTS_START(zira, 1) PLAYMATIC_INPUT_PORTS_END
+static core_tGameData ziraGameData = {GEN_PLAYMATIC,play_disp6,{FLIP_SW(FLIP_L),0,2,0,SNDBRD_PLAYZ}};
+static void init_zira(void) {
+  core_gameData = &ziraGameData;
+}
 PLAYMATIC_ROMSTART00(zira, "zira_u8.bin", CRC(53f8bf17) SHA1(5eb74f27bc65374a85dd44bbc8f6142488c226a2),
                 "zira_u9.bin", CRC(d50a2419) SHA1(81b157f579a433389506817b1b6e02afaa2cf0d5))
-PLAYMATIC_SOUNDROMZ("zira.snd", CRC(c8a54854) SHA1(6c0367dcb2a11f0478c44b4e2115c1cb1e8052f3))
+PLAYMATIC_SOUNDROMZ("zira.snd", CRC(008cb743) SHA1(8e9677f08189638d669b265bb6943275a08ec8b4))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(zira,"Zira",1981,"Playmatic",gl_mPLAYMATIC2SZ,GAME_STATUS)
+CORE_GAMEDEFNV(zira,"Zira",1981,"Playmatic",gl_mPLAYMATIC2SZ,0)
 
 /*-------------------------------------------------------------------
 / 03/82 Cerberus
@@ -354,7 +358,7 @@ PLAYMATIC_SOUNDROM256x4("sonido1.bin", CRC(3294611d) SHA1(5f790b41bcb6d87418c80e
             "sonido3.bin", CRC(13d50f39) SHA1(70624de2dd8412c83866183a83f16cc5b8bdccb8),
             "sonido4.bin", CRC(b53f73ed) SHA1(bb928cfee418e8d9698d7bee78a32426f793c6e9))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(phntmshp,"Phantom Ship",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(phntmshp,"Phantom Ship",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / ??/87 Skill Flight
@@ -364,7 +368,7 @@ PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22
             "skflcpu2.rom", CRC(ffc497aa) SHA1(3e88539ae1688322b9268f502d8ca41cffb28df3))
 PLAYMATIC_SOUNDROM256("skflsnd.rom", CRC(926a1da9) SHA1(16c762fbfe6a55597f26ff55d380192bb8647ee0))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / ??/?? Miss Disco (Bingo machine)
