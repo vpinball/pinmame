@@ -80,17 +80,33 @@
 
 #define WOF_MINIDMD_MAX 175
 
-// Variables
+//Logging Options
+#define LOGALL 0 // set to 0 to log NOTHING
+#define LOG_RAW_SOUND_DATA			0	// Set to 1 to log all raw sample data to a file
+#define LOG_TO_SCREEN				0	// Set to 1 to print log data to screen instead of logfile
+#define LOG_SWITCH_READ_HANDLER		0	// Set to 1 to log the main Switch Read Handler
+#define LOG_SWITCH_MATRIX			0   // Set to 1 to log the Switch Matrix reads
+#define LOG_UNKNOWN1				0	// Set to 1 to log Unknown location read
+#define LOG_IO_STAT					0   // Set to 1 to log IO Status reads
+#define LOG_CS_W					0   // Set to 1 to log CS Writes
+#define LOG_IOPORT_W				0   // Set to 1 to log IO Port Writes
+#define LOG_LED1					0   // Set to 1 to log Led 1 Writes
+#define LOG_LED2					0   // Set to 1 to log Led 2? Writes
+#define LOG_ROM_BANK				0   // Set to 1 to log ROM BANK Writes
+#define LOG_PORT_READ				0   // Set to 1 to log Port Reads
+
+
+/*----------------
+/ Local variables
+/-----------------*/
 struct {
 	int vblankCount;
 	int diagnosticLed;
-	int col;
+	int sw_stb;
 	int zc;
-	data32_t ram1;
-	data32_t ram2;
+	int video_page[2];
 	INT16 samplebuf[2][BUFFSIZE];
 	INT16 lastsamp[2];
-	char unused2[2];
 	int sampout;
 	int sampnum;
 	int volume[2], mute[2];
@@ -98,14 +114,140 @@ struct {
 	int pass;
 	int coindoor;
 	INT16 bank;
-	char minidata[226];
+	UINT8 miniDMDData[14][16];
 	UINT32 solenoidbits[CORE_MODSOL_MAX];
 	UINT32 modulated_lights[WOF_MINIDMD_MAX];  // Also used by Tron ramps
 	UINT8 modulated_lights_prev_levels[WOF_MINIDMD_MAX];
 	UINT8 last_aux_line_6; 
 } samlocals;
 
-static int sam_getSol(int solNo);
+
+#if LOG_TO_SCREEN
+#if LOGALL
+#define LOG(x) printf x
+#else
+#define LOG(x)
+#endif
+#else
+#if LOGALL
+#define LOG(x) logerror x
+#else
+#define LOG(x)
+#endif
+#endif
+
+/************************************/
+/*  Helper functions & definitions  */
+/************************************/
+#define MAKE16BIT(x,y) (((x)<<8)|(y))
+
+//adjust address offset based on mask - this allows us to work with separate addresses, rather than seeing
+//read/write to various pieces of the 32 bit address.
+static int adj_offset(int mask)
+{
+	int i;
+	int offset = 0;
+	for (i = 0; i<4; i++)
+	{
+		if (0xFF << (i * 8) & mask)
+		{
+			offset = i;
+			break;
+		}
+	}
+	return offset;
+}
+
+/*****************/
+/*  I/O Section  */
+/*****************/
+
+/*
+Dedicated Switches 0-16
+------------------------
+D0  - DED #1  - Left Coin
+D1  - DED #2  - Center Coin
+D2  - DED #3  - Right Coin
+D3  - DED #4  - 4th Coin
+D4  - DED #5  - 5th Coin
+D5  - DED #6  - NA
+D6  - DED #7  - Left Post Save (UK Only)
+D7  - DED #8  - Right Post Save (UK Only)
+D8  - DED #9  - Left Flipper
+D9  - DED #10 - Left Flipper EOS
+D10 - DED #11 - Right Flipper
+D11 - DED #12 - Right Flipper EOS
+D12 - DED #13 - Upper Left Flipper
+D13 - DED #14 - Upper Left Flipper EOS
+D14 - DED #15 - Upper Right Flipper
+D15 - DED #16 - Upper Right Flipper EOS
+*/
+static int dedswitch_lower_r(void)
+{
+	/* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
+	/* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
+	/* Swap the 4 lowest bits*/
+	UINT8 cds = coreGlobals.swMatrix[9];
+	UINT8 fls = coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
+	fls = core_revnyb(fls & 0x0f) | (core_revnyb(fls >> 4) << 4);
+	return MAKE16BIT(fls, cds);
+}
+
+/*
+Dedicated Switches 17-32
+------------------------
+D16 - DED #17 - Tilt
+D17 - DED #18 - Slam Tilt
+D18 - DED #19 - Ticket Notch
+D19 - DED #20 - NA
+D20 - DED #21 - Back (Coin Door)
+D21 - DED #22 - Plus (Coin Door)
+D22 - DED #23 - Minus (Coin Door)
+D23 - DED #24 - Select (Coin Door)
+D24 - DED #25 - Dip #1
+D25 - DED #26 - Dip #2
+D26 - DED #27 - Dip #3
+D27 - DED #28 - Dip #4
+D28 - DED #29 - Dip #5
+D29 - DED #30 - Dip #6
+D30 - DED #31 - Dip #7
+D31 - DED #32 - Dip #8
+*/
+static int dedswitch_upper_r(void)
+{
+	return MAKE16BIT(core_getDip(0), coreGlobals.swMatrix[0]);
+}
+
+/*
+U19 & U20 of IOBOARD - Address decoding
+A3 A2 A1 A0 (When IOSTB = 0)
+---------------------------------------------------------------------------------------------
+0  0  0  0 - 0: SOL A Driver
+0  0  0  1 - 1: SOL B Driver
+0  0  1  0 - 2: SOL C Driver
+0  0  1  1 - 3: Flash Lamp Driver
+0  1  0  1 - 5: STATUS (read)
+0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
+0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
+1  0  0  0 - 8: Lamp Strobe *(See below)
+1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
+1  0  1  0 - a: Lamp Driver *(See below)
+1  0  1  1 - b: Additional Strobe Driver (see below)
+
+Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
+Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
+There are 10 Lamp Rows Max
+Row 0 - From Lamp Strobe, Data Bit 0
+Row 1 - From Lamp Strobe, Data Bit 1
+Row 2 - From Lamp Strobe, Data Bit 2
+Row 3 - From Lamp Strobe, Data Bit 3
+Row 4 - From Lamp Strobe, Data Bit 4
+Row 5 - From Lamp Strobe, Data Bit 5
+Row 6 - From Lamp Strobe, Data Bit 6
+Row 7 - From Lamp Strobe, Data Bit 7
+Row 8 - From Aux Lamp Strobe Line, Data Bit 0
+Row 9 - From Aux Lamp Strobe Line, Data Bit 1
+---------------------------------------------------------------------------------------------*/
 
 static data32_t *sam_reset_ram;
 static data32_t *sam_page0_ram;
@@ -257,28 +399,27 @@ static struct CustomSound_interface samCustInt =
 //Complete - Needs cleanup
 static READ32_HANDLER(samswitch_r)
 {
-	data32_t data = 0; // eax@1
-	int adj = 0; // edi@1
-	int ii = 0; // esi@1
-	int v7; // esi@6
+	data32_t data = 0;
+	int base = 0x01100000;
+	int mask = ~mem_mask;
+	int adj = adj_offset(mask);
+	int realoff = (offset * 4);
+	int addr = base + realoff + adj;
+	offset = addr;
 
-	while ( !((0xFF << (ii * 8)) & ~mem_mask) )
+	//Switch Reads - Switch Matrix (16 columns), Dedicated Switch Matrix (24 columns), DipSwitches (8 columns)
+	if (offset >= 0x1100000 && offset <= 0x1100006)
 	{
-		ii++;
-		if ( ii >= 4 )
-			goto LABEL_6;
-	}
-	adj = ii;
-LABEL_6:
-	v7 = adj + 4 * offset;
-	if (v7 >= 0 && v7 <= 6)
-	{
-		switch ( v7 )
+		switch (offset)
 		{
-			case 0:
-				data = (coreGlobals.swMatrix[2 * samlocals.col + 1] | coreGlobals.swMatrix[2 * samlocals.col + 2] << 8) ^ 0xFFFF;
+			//0x1100000 = Switch Matrix (0-16)
+			case 0x1100000:
+				//Must convert from our 8x8 matrix to a 4x16 matrix - and return 16 bits.
+				data = MAKE16BIT(coreGlobals.swMatrix[2 + samlocals.sw_stb * 2], coreGlobals.swMatrix[1 + samlocals.sw_stb * 2]);
+				data ^= 0xffff;
 				break;
-			case 2:				
+			//0x1100002 = Dedicated Switch Matrix (0-16)
+			case 0x1100002:
 				data = (coreGlobals.swMatrix[9] | ((core_swapNyb[coreGlobals.swMatrix[11] & 0xF] | (0x10 * core_swapNyb[coreGlobals.swMatrix[11] >> 4])) << 8));
 				// Copy flipper states (D8, D10, D12, D14) to EOS (Dx+1).   SAM is not 
 				// using standard VPM flipper coils, so the EOS simulation does not
@@ -286,24 +427,50 @@ LABEL_6:
 				data |= (data & ((1 << 8) | (1 << 10) | (1 << 12) | (1 << 14))) << 1;
 				data ^= 0xFFFF;
 				break;
-			case 4:
-				if ( ~mem_mask == 0xFF00 )
-					data = (core_getDip(0) ^ 0xFF) << 8;
+			//0x1100004 = Dedicated Switch Matrix (17-24) & Dips
+			case 0x1100004:
+				//Same as 0x1100005
+				if (mask == 0xff00)
+				{
+					data = core_getDip(0);
+					data ^= 0xff;
+					data <<= 8;
+				}
 				else
-					data = (coreGlobals.swMatrix[0] | (core_getDip(0) << 8)) ^ 0xFFFF;
+				{
+					data = dedswitch_upper_r();
+					data ^= 0xffff;
+				}
 				break;
-			case 5:
-				data = core_getDip(0) ^ 0xFF;
+			//Dips only
+			case 0x1100005:
+				data = core_getDip(0);
+				data ^= 0xff;
 				break;
 			default:
 				logerror("error");
 				break;
 		}
 	}
-	if ( v7 == 0x80000 )
+	
+	//5-25-08
+	//Related somehow to the bank switch write @ 258000, but not sure how. The data read from this
+	//address takes the last bank switch read and this value and keeps the 1st four bits (0xf).
+	//To see this, load up sman_192 and set break point to 0x24e50 and watch as it goes into the
+	//bank routine @ 0x102b0. Keep your eyes on R0. This address is read on line 0x102bc, and the key line
+	//is 0x102cc AND R0,R1,#$f.
+
+	//For now we simply return the last value written to the bank switch which seems to work. It fixed
+	//the bugs with Spiderman 1.90,1.92 and Indiana Jones 113 crashing, since the wrong rom bank would
+	//get set because this value was previously returning zero. It was not caught sooner because most of the
+	//earlier games always used bank 0 anyway, thus returning 0 worked. Spiderman 1.92 and beyond start their
+	//game code in bank 1, thus the crashes & problems "appeared". I hope there's nothing more to this function,
+	//although I can't understand what possible purpose it really serves. (SJE)
+
+	if (offset == 0x1180000)
 		data = samlocals.bank | 0x10;  // 0x10  (bits 4-7, mask 0x70) is hardware rev. 
 
-	return data << (8 * adj);
+	return data<<(adj*8);
 }
 
 static READ32_HANDLER(samxilinx_r)
@@ -432,29 +599,30 @@ static WRITE32_HANDLER(samxilinx_w)
 
 static WRITE32_HANDLER(samdmdram_w)
 {
-	if ( offset == 2 )
-	{
-		int ii = 0;
-		int result = data;
-		samlocals.col = 0;
-		do
-		{
-			if ( data & (1 << ii) )
-			samlocals.col += ii;
-			result >>= 1;
-			ii++;
-		}
-		while ( data >> ii );
-	}
-	else if ( offset == 8 )
-	{
-		if ( ~mem_mask & 0xFFFF0000 )
-			samlocals.ram2 = data >> 16;
-		else
-			samlocals.ram1 = data;
-	}
-	else if ( offset != 0x2AAA0 )
-		logerror("error");
+  int mask = ~mem_mask;
+
+  switch(offset)
+  {
+	// Switch Strobe
+	case 0x2:
+	  samlocals.sw_stb = core_BitColToNum(data);
+	  break;
+	// DMD Page Register
+	case 0x8:
+      if (mask & 0xffff0000)
+        samlocals.video_page[1] = data >> 16;
+	  else
+        samlocals.video_page[0] = data;
+      break;
+
+	// ?? - The code reads the dips, and if the value read is 0x76, this address is never written to, otherwise
+	//      a hardcoded value of 1 is written here (not during any interrupt code, but regular code).
+	case 0x2aaa0:
+      break;
+
+	default:
+		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),0x1100000+offset,data));
+  }
 }
 
 static int sam_led(UINT32 bank)
@@ -483,35 +651,36 @@ static int led_target;
 
 static WRITE32_HANDLER(sambank_w)
 {
-	int v24 = 0;
-	int v25 = 0;
-	int ram;
-	int bank;
+	int base = 0x02400000;
+	int mask = ~mem_mask;
+	int adj = adj_offset(mask);
+	int realoff = (offset*4);
+	int addr = base + realoff + adj;
+	int newdata = (data>>(adj*8));
+	offset = addr;
+	data = newdata;
 
-	while ( !((0xFF << (v25 * 8)) & ~mem_mask) )
+	if (offset > 0x24000FF)
 	{
-		v25++;
-		if ( v25 >= 4 )
-			goto LABEL_6;
-	}
-	v24 = v25;
-LABEL_6:
-	ram = v24 + 4 * offset + 0x2400000;
-	bank = data >> 8 * v24;
-	if ( ram > 0x24000FF )
-	{
-		switch ( ram )
+		switch (offset)
 		{
+			//1st LED?
 			case 0x2500000:
-				samlocals.diagnosticLed = (bank & 1) | samlocals.diagnosticLed & 2;
+				samlocals.diagnosticLed = (data & 1) | samlocals.diagnosticLed & 2;
 				break;
+			//Rom Bank Select:
+			//D0 = FF1(U42) -> A22
+			//D1 = FF2(U42) -> A23
+			//D2 = FF3(U42) -> A24	(Not Connected when used with a 256MBIT Flash Memory)
+			//D3 = FF4(U42) -> A25	(Not Connected when used with a 256MBIT Flash Memory)
 			case 0x2580000:
-				//was bank & 0x3
-				cpu_setbank(SAM_ROMBANK0, memory_region(154) + ((bank & 0xf) << 23) );
-				samlocals.bank = (bank & 0xf);
+				//was data & 0x3
+				cpu_setbank(SAM_ROMBANK0, memory_region(REGION_USER1) + ((data & 0xf) << 23) );
+				samlocals.bank = (data & 0xf);
 				break;
+			//2nd LED?
 			case 0x2F00000:
-				if ( !bank )
+				if (!data)
 					samlocals.diagnosticLed = samlocals.diagnosticLed & 1 | 2;
 				break;
 			default:
@@ -521,7 +690,7 @@ LABEL_6:
 	}
 	else
 	{
-		switch ( ram - 0x2400020 )
+		switch (offset - 0x2400020)
 		{
 			int ii;
 			case 0:
@@ -530,7 +699,7 @@ LABEL_6:
 				{
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 8], bank & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 8], data & (1 << ii));
 #ifdef SAM_FAST_FLIPPERS
 						if (ii + 9 >= SAM_SOL_FLIPSTART && ii + 9 <= SAM_SOL_FLIPEND)
 						{
@@ -552,7 +721,7 @@ LABEL_6:
 					// sam bank[0] check is dubious, check to see if any of the flipper bits are on, and enable them now if so.
 					for (ii = SAM_SOL_FLIPSTART; ii <= SAM_SOL_FLIPEND; ii++)
 					{
-						if (bank & (1 << (ii - 9)))
+						if (data & (1 << (ii - 9)))
 						{
 							core_update_modulated_light(&samlocals.solenoidbits[ii-1], 1);
 							coreGlobals.solenoids |= (1 << (ii - 1));
@@ -571,12 +740,12 @@ LABEL_6:
 						// VPM mech only supports a dual stepper motor.   OR 5 and 7 to 4 and 6 so we never miss these pulses.
 						// Need to put state into pulsedSolState for mech handling to see it.
 
-						coreGlobals.pulsedSolState = bank | ((bank & ((1 << 4) | (1 << 6))) >> 1);
+						coreGlobals.pulsedSolState = data | ((data & ((1 << 4) | (1 << 6))) >> 1);
 					}
 
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii], bank & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii], data & (1 << ii));
 					}
 				}
 				return;
@@ -586,7 +755,7 @@ LABEL_6:
 				{
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 16], bank & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 16], data & (1 << ii));
 					}
 				}
 				return;
@@ -596,7 +765,7 @@ LABEL_6:
 				{
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 24], bank & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 24], data & (1 << ii));
 					}
 				}
 				return;
@@ -605,18 +774,18 @@ LABEL_6:
 				{
 					if ( minidmdrow == 1 )
 					{
-						minidmdcol = led[sam_led(bank & 0x7F | ((samlocals.last_aux_line_6 & 0x7F) << 7))];
+						minidmdcol = led[sam_led(data & 0x7F | ((samlocals.last_aux_line_6 & 0x7F) << 7))];
 					}
 					else
 					{
 						if ( minidmdrow > 1 )
-							samlocals.minidata[16 * minidmdcol + minidmdrow] = bank & 0x7F;
+							samlocals.miniDMDData[minidmdcol][minidmdrow] = data & 0x7F;
 						if ( minidmdrow >= 17 )
 						{
 LABEL_157:
-							if ( (~samlocals.last_aux_line_6 & bank) >= 0x80)
+							if ( (~samlocals.last_aux_line_6 & data) >= 0x80)
 							{
-								samlocals.last_aux_line_6 = bank;
+								samlocals.last_aux_line_6 = data;
 								minidmdrow = 0;
 								return;
 							}
@@ -628,28 +797,26 @@ LABEL_157:
 				}
 				if ( core_gameData->hw.gameSpecific1 & 2 )
 				{
-					int test;
-					test = bank & ~samlocals.last_aux_line_6;
+					int test = data & ~samlocals.last_aux_line_6;
 					if (!((test < 0x80) && (test >= 0)))
 					{
 						minidmdrow = 0;
-						samlocals.last_aux_line_6 = bank;
-						minidmdcol = sam_led(bank & 3);
+						samlocals.last_aux_line_6 = data;
+						minidmdcol = sam_led(data & 3);
 						return;
 					}
 					if ( minidmdrow < 3 )
 					{
-			            coreGlobals.tmpLampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = bank & 0x7F;
-						samlocals.last_aux_line_6 = bank;
-			            coreGlobals.lampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = bank & 0x7F;
+			            coreGlobals.tmpLampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = data & 0x7F;
+						samlocals.last_aux_line_6 = data;
+			            coreGlobals.lampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = data & 0x7F;
 						minidmdrow++;
 			            return;
 					}
 				}
 				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_WOF )
 				{
-					int test;
-					test = bank & ~samlocals.last_aux_line_6;
+					int test = data & ~samlocals.last_aux_line_6;
 					if ( (test < 0x80) && (test >= 0) )
 					{
 						minidmdrow++;
@@ -670,17 +837,17 @@ LABEL_157:
 					{
 						if ( minidmdrow == 1 )
 						{
-							samlocals.last_aux_line_6 = bank;
-							minidmdcol = sam_led(bank & 0x1F);
+							samlocals.last_aux_line_6 = data;
+							minidmdcol = sam_led(data & 0x1F);
 							return;
 						}
 						if ( minidmdrow > 1 && minidmdrow < 7 )
 						{
-							samlocals.last_aux_line_6 = bank;
-							samlocals.minidata[16 * minidmdcol + minidmdrow] = bank & 0x7F;
+							samlocals.last_aux_line_6 = data;
+							samlocals.miniDMDData[minidmdcol][minidmdrow] = data & 0x7F;
 							for (int i = 0; i < 7; i++)
 							{
-								core_update_modulated_light(&samlocals.modulated_lights[(35 * minidmdcol) + ((minidmdrow-2)*7)+i], bank & (1 << (6-i)));
+								core_update_modulated_light(&samlocals.modulated_lights[(35 * minidmdcol) + ((minidmdrow-2)*7)+i], data & (1 << (6-i)));
 							}
 							return;
 						}
@@ -689,13 +856,13 @@ LABEL_157:
 					{
 						if ( minidmdrow < 6 )
 						{
-							coreGlobals.tmpLampMatrix[minidmdrow + 10] = bank & 0x7F;
-							coreGlobals.lampMatrix[minidmdrow + 10] = bank & 0x7F;
+							coreGlobals.tmpLampMatrix[minidmdrow + 10] = data & 0x7F;
+							coreGlobals.lampMatrix[minidmdrow + 10] = data & 0x7F;
 						}
 					}
 				}
 LABEL_176:
-				samlocals.last_aux_line_6 = bank;
+				samlocals.last_aux_line_6 = data;
 				break;
 			case 8:
 				sam_bank[0] = 0;
@@ -706,7 +873,7 @@ LABEL_176:
 				sam_bank[46]++;
 				if( sam_bank[46] == 1 || sam_bank[46] == 2)
 				{
-					led_target = core_BitColToNum(bank);
+					led_target = core_BitColToNum(data);
 					break;
 				}
 				return;
@@ -714,10 +881,10 @@ LABEL_176:
 				sam_bank[46] = 0;
 				sam_bank[5]++;
 				if ( sam_bank[5] == 1 )
-					coreGlobals.tmpLampMatrix[led_target] = core_revbyte(bank);
+					coreGlobals.tmpLampMatrix[led_target] = core_revbyte(data);
 				return;
 			case 11:
-				coreGlobals.gi[0] = (~bank & 0x01) ? 9 : 0;
+				coreGlobals.gi[0] = (~data & 0x01) ? 9 : 0;
 
 				// Previous versions of the code counted the number of writes to locate 
 				// the solenoid bank.  The safest way is to apply the solenoid when the target column is written here.
@@ -728,16 +895,16 @@ LABEL_176:
 				// all 8 bits for now.  Todo: Would be better to treat ACDC correctly here instead of 
 				// setting it as an aux 12 board. 
 				
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~bank & 0x20)) ||
-					(core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (~bank & 0x10) ||
-					(core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~bank & 0x40))
+				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x20)) ||
+					(core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (~data & 0x10) ||
+					(core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40))
 				{
 					for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & (1 << ii));
 					}
 				}
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~bank & 0x10)))
+				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
 				{
 					for (ii = 0; ii <= 5; ii++)
 					{
@@ -745,52 +912,52 @@ LABEL_176:
 					}
 				}
 				// Metallica LE has a special aux board just for the coffin magnet! 
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~bank & 0x08)))
+				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
 				{
 					core_update_modulated_light(&samlocals.solenoidbits[6 + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & 0x80);
 					core_update_modulated_light(&samlocals.solenoidbits[7 + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & 0x40);
 				}
 				// ACDC LE uses a special aux board for flame lights
-				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~bank & 0x08)))
+				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~data & 0x08)))
 				{
 					for (ii = 0; ii < 8; ii++)
 						sam_ext_leds[70 + ii] = (samlocals.last_aux_line_6 & (1 << ii) ? 255 : 0);
 				}
 				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_WOF )
 				{
-					if ( (bank & ~lastbank11) & 8 )
+					if ( (data & ~lastbank11) & 8 )
 						wof_minidmdflag = 0;
-					else if ( (bank & ~lastbank11) & 0x10 )
+					else if ( (data & ~lastbank11) & 0x10 )
 						wof_minidmdflag = 1;
 				}
-				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI3 && ~bank & 0x08 )
+				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI3 && ~data & 0x08 )
 					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
-				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI4 && ~bank & 0x10 )
+				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI4 && ~data & 0x10 )
 					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
 				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_TRON )
 				{
-					if ( ~bank & 0x08 )
+					if ( ~data & 0x08 )
 						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(samlocals.last_aux_line_6);
-					if ( ~bank & 0x10 )
+					if ( ~data & 0x10 )
 					{
 						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(samlocals.last_aux_line_6);
 						core_update_modulated_light(&samlocals.modulated_lights[0], samlocals.last_aux_line_6 & (1 << 3));
 						core_update_modulated_light(&samlocals.modulated_lights[1], samlocals.last_aux_line_6 & (1 << 4));
 						core_update_modulated_light(&samlocals.modulated_lights[2], samlocals.last_aux_line_6 & (1 << 5));
 					}
-					if ( ~bank & 0x20 )
+					if ( ~data & 0x20 )
 					{
 						coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
 						core_update_modulated_light(&samlocals.modulated_lights[3], samlocals.last_aux_line_6 & (1 << 3));
 						core_update_modulated_light(&samlocals.modulated_lights[4], samlocals.last_aux_line_6 & (1 << 4));
 						core_update_modulated_light(&samlocals.modulated_lights[5], samlocals.last_aux_line_6 & (1 << 5));
 					}
-					if ( ~bank & 0x40 )
+					if ( ~data & 0x40 )
 						logerror("Test");
 				}
-		        if ( (~bank & 0x40) && (samlocals.last_aux_line_6 & 3) )
+		        if ( (~data & 0x40) && (samlocals.last_aux_line_6 & 3) )
 					logerror("error");
-				lastbank11 = bank;
+				lastbank11 = data;
 				return;
 			 default:
 				logerror("error");
@@ -881,13 +1048,14 @@ MEMORY_END
 /*********************/
 static READ32_HANDLER(sam_port_r)
 {
+	int logit = LOG_PORT_READ;
 	data32_t data;
 	//Set P10,P11 to +1 as shown in schematic since they are tied to voltage.
 	data = 0x00000C00;
 	//Eventually need to add in P16,17,18 for feedback from Real Time Clock
 	//Possibly also P23 (USB Related) & P24 (Dip #8)
 
-	//if (logit) LOG(("%08x: reading from %08x = %08x\n", activecpu_get_pc(), offset, data));
+	if (logit) LOG(("%08x: reading from %08x = %08x\n", activecpu_get_pc(), offset, data));
 
 	return data;
 }
@@ -1261,23 +1429,18 @@ static UINT8 hew[16] =
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 //	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
 PINMAME_VIDEO_UPDATE(samdmd_update) {
+	int ii;
+	tDMDDot dotCol;
 
-	UINT8 *RAM1;
-	UINT8 *RAM2;
-
-	UINT8 temp;
-
-	int ii, jj;
-	tDMDDot dotCol = {{0}};
-
-	for( ii = 1; ii <= 32; ii++ )
+	for( ii = 0; ii < 32; ii++ )
 	{
-		UINT8 *line = &dotCol[ii][0];
+		UINT8 *line = &dotCol[ii+1][0];
+		int jj;
 		for( jj = 0; jj < 128; jj++ )
 		{
-			RAM1 = memory_region(129) + 0x1080000 + (samlocals.ram1 * 0x1000) + ((ii - 1)*128) + jj;
-			RAM2 = memory_region(129) + 0x1080000 + (samlocals.ram2 * 0x1000) + ((ii - 1)*128) + jj;
-			temp = *RAM1;
+			UINT8 *RAM1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii*128 + jj;
+			UINT8 *RAM2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii*128 + jj;
+			UINT8 temp = *RAM1;
 			if ((*RAM1 & 0xF0) == 0xF0)
 				temp = *RAM2;
 			*line = hew[temp];
@@ -1297,7 +1460,7 @@ PINMAME_VIDEO_UPDATE(samminidmd_update) {
 
     for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
         for (kk = 0; kk < 5; kk++)
-            dotCol[ii+1][kk] = samlocals.minidata[(dmd_y * 0x50) + (kk << 4) + dmd_x + 2] & bits ? 3 : 0;
+            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y * 5 + kk][dmd_x + 2] & bits ? 3 : 0;
 
     for (ii = 0; ii < 5; ii++) {
         bits = 0;
@@ -1330,7 +1493,7 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (jj = 0; jj < 5; jj++)
 			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
 				for (kk = 0; kk < 5; kk++)
-					dotCol[kk + 1][ii + (jj * 7)] = samlocals.minidata[(kk << 4) + jj + 2] & bits ? 15 : 0;
+					dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj + 2] & bits ? 15 : 0;
 	}
     for (ii = 0; ii < 35; ii++) {
         bits = 0;
