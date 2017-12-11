@@ -272,7 +272,10 @@ int sam_leds_per_string;
 
 extern int at91_block_timers;
 
-//SAM Input Ports
+/*-------------------------
+/ Machine driver constants
+/--------------------------*/
+/*-- Common Inports for SAM1 Games --*/
 #define SAM_COMPORTS \
   PORT_START /* 0 */ \
     COREPORT_BITDEF(  0x0010, IPT_TILT,           KEYCODE_INSERT)  \
@@ -514,7 +517,7 @@ static READ32_HANDLER(samxilinx_r)
 	int mask = ~mem_mask;
 	int logit = LOG_IO_STAT;
 	//This is read in the upper bits of the address.
-	if (mask == 0xff00)
+	if(mask == 0xff00)
 	{
 		// was ((6 | zc) << 2) | u1...   bits:   0 1 1 zc u1 u1
 		//                     works     bits:   0 0 0 zc u1 u1
@@ -689,6 +692,7 @@ static WRITE32_HANDLER(sambank_w)
 	int realoff = (offset*4);
 	int addr = base + realoff + adj;
 	int newdata = (data>>(adj*8));
+	int logit = LOG_CS_W;
 	offset = addr;
 	data = newdata;
 
@@ -698,6 +702,7 @@ static WRITE32_HANDLER(sambank_w)
 		{
 			//1st LED?
 			case 0x2500000:
+				logit = LOG_LED1;
 				samlocals.diagnosticLed = (data & 1) | samlocals.diagnosticLed & 2;
 				break;
 			//Rom Bank Select:
@@ -706,12 +711,15 @@ static WRITE32_HANDLER(sambank_w)
 			//D2 = FF3(U42) -> A24	(Not Connected when used with a 256MBIT Flash Memory)
 			//D3 = FF4(U42) -> A25	(Not Connected when used with a 256MBIT Flash Memory)
 			case 0x2580000:
+				logit = LOG_ROM_BANK;
 				//was data & 0x3
 				cpu_setbank(SAM_ROMBANK0, memory_region(REGION_USER1) + ((data & 0xf) << 23) );
 				samlocals.bank = (data & 0xf);
 				break;
 			//2nd LED?
 			case 0x2F00000:
+				logit = LOG_LED2;
+				//LED is ON when zero (pulled to gnd)
 				if (!data)
 					samlocals.diagnosticLed = samlocals.diagnosticLed & 1 | 2;
 				break;
@@ -995,6 +1003,9 @@ LABEL_176:
 				logerror("error");
 		}
 	}
+	//else logit = 1;
+
+	if(logit) LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
 }
 
 /*static WRITE32_HANDLER(nvram_w)
@@ -1098,42 +1109,41 @@ static READ32_HANDLER(sam_port_r)
 //P3,P4,P5 are connected to PCM1755 DAC for controlling sound output & effects (volume and other features).
 static WRITE32_HANDLER(sam_port_w)
 {
-	// Bits 4 to 6 are used to issue a command to the PCM1755 chip as a serial 16-bit value.
-	if ((data & 0x10) && samlocals.pass >= 0)
-	{
-		samlocals.value |= ((data & 0x20) >> 5) << samlocals.pass;
-		samlocals.pass--;
-	}
-	if (data & 0x08) // end of command data
-	{
-		int l_vol = 0;
-		int r_vol = 0;
+  // Bits 4 to 6 are used to issue a command to the PCM1755 chip as a serial 16-bit value.
+  if ((data & 0x10) && samlocals.pass >= 0)
+  {
+    samlocals.value |= ((data & 0x20) >> 5) << samlocals.pass;
+    samlocals.pass--;
+  }
+  if (data & 0x08) { // end of command data
+    int l_vol = 0;
+    int r_vol = 0;
 
-		switch (samlocals.value >> 8) // register number is the upper command byte
-		{
-			case 0x10: // left channel attenuation
-				samlocals.volume[0] = samlocals.value & 0xff;
-				break;
-			case 0x11: // right channel attenuation
-				samlocals.volume[1] = samlocals.value & 0xff;
-				break;
-			case 0x12: // soft mute
-				samlocals.mute[0] = (samlocals.value & 1);
-				samlocals.mute[1] = (samlocals.value & 2) >> 1;
-				break;
-		}
-		//Mixer set volume has volume range of 0..100, while the SAM1 hardware uses a 128 value range for volume. Volume values start @ 0x80 for some reason.
-		if (samlocals.mute[0] == 0)
-			l_vol = (samlocals.volume[0] & 0x7f) * 50 / 63;
-		if (samlocals.mute[1] == 0)
-			r_vol = (samlocals.volume[1] & 0x7f) * 50 / 63;
-		mixer_set_stereo_volume(0, l_vol, 0);
-		mixer_set_stereo_volume(1, 0, r_vol);
+    LOG(("Writing to PCM1755 register #$%02x = %02x\n", samlocals.value >> 8, samlocals.value & 0xff));
+    switch (samlocals.value >> 8) { // register number is the upper command byte
+      case 0x10: // left channel attenuation
+        samlocals.volume[0] = samlocals.value & 0xff;
+        break;
+      case 0x11: // right channel attenuation
+        samlocals.volume[1] = samlocals.value & 0xff;
+        break;
+      case 0x12: // soft mute
+        samlocals.mute[0] = (samlocals.value & 1);
+        samlocals.mute[1] = (samlocals.value & 2) >> 1;
+        break;
+    }
+    //Mixer set volume has volume range of 0..100, while the SAM1 hardware uses a 128 value range for volume. Volume values start @ 0x80 for some reason.
+    if (samlocals.mute[0] == 0)
+      l_vol = (samlocals.volume[0] & 0x7f) * 50 / 63;
+    if (samlocals.mute[1] == 0)
+      r_vol = (samlocals.volume[1] & 0x7f) * 50 / 63;
+    mixer_set_stereo_volume(0, l_vol, 0);
+    mixer_set_stereo_volume(1, 0, r_vol);
 
-		samlocals.pass = 16;
-		samlocals.value = 0;
-	}
-	if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
+    samlocals.pass = 16;
+    samlocals.value = 0;
+  }
+  if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
 }
 
 static PORT_READ32_START(sam_readport)
@@ -1144,7 +1154,9 @@ static PORT_WRITE32_START(sam_writeport)
 	{ 0x00, 0xFF, sam_port_w },
 PORT_END
 
-//Machine
+/*********************************************/
+/* S.A.M. Generation #1 - Machine Definition */
+/*********************************************/
 static MACHINE_INIT(sam) {
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
 	at91_set_transmit_serial(sam_transmit_serial);
@@ -1428,6 +1440,10 @@ MACHINE_DRIVER_END
 #define SAM_CPU2REGION	REGION_CPU2
 #define SAM_ROMREGION	REGION_USER1
 
+/**********************/
+/* ROM LOADING MACROS */
+/**********************/
+
 #define SAM_ROMLOAD_BOOT(name, n1, chk1, size) \
   ROM_START(name) \
     ROM_REGION(0x01FFFFFF, SAM_ROMREGION, 2) \
@@ -1598,8 +1614,13 @@ static struct core_dispLayout sammini2_dmd128x32[] = {
 	{0}
 };
 
-//Games
-//Boot Flash - complete
+/********************/
+/* GAME DEFINITIONS */
+/********************/
+
+/*-------------------------------------------------------------------
+/ S.A.M. Boot Flash
+/-------------------------------------------------------------------*/
 INITGAME(sam1_flashb, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM_ROMLOAD_BOOT(sam1_flashb_0102, "boot_102.bin", CRC(92c93cba) SHA1(aed7ba2f988df8c95e2ad08f70409152d5caa49a), 0x00100000)
@@ -1621,7 +1642,9 @@ CORE_CLONEDEF(sam1_flashb, 0210, 0102, "S.A.M. System Flash Boot (V2.10)", 2007,
 CORE_CLONEDEF(sam1_flashb, 0230, 0102, "S.A.M. System Flash Boot (V2.3)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sam1_flashb, 0310, 0102, "S.A.M. System Flash Boot (V3.1)", 2008, "Stern", sam, 0)
 
-//World Poker Tour - complete
+/*-------------------------------------------------------------------
+/ World Poker Tour
+/-------------------------------------------------------------------*/
 INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL, SAM_MINIDMD);
 
 SAM_ROMLOAD(wpt_103a, "wpt0103a.bin", CRC(cd5f80bc) SHA1(4aaab2bf6b744e1a3c3509dc9dd2416ff3320cdb), 0x019bb1dc)
@@ -1777,7 +1800,9 @@ CORE_CLONEDEF(wpt, 140gf, 103a, "World Poker Tour (V14.0) (German, French)", 200
 CORE_CLONEDEF(wpt, 140i, 103a, "World Poker Tour (V14.0) (Italian)", 2008, "Stern", sam, 0)
 CORE_CLONEDEF(wpt, 140l, 103a, "World Poker Tour (V14.0) (Spanish)", 2008, "Stern", sam, 0)
 
-//Simpson's Kooky Carnival Redemption - good - complete
+/*-------------------------------------------------------------------
+/ The Simpsons Kooky Carnival Redemption
+/-------------------------------------------------------------------*/
 INITGAME(scarn9nj, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 INITGAME(scarn103, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 INITGAME(scarn105, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
@@ -1802,7 +1827,9 @@ CORE_CLONEDEFNV(scarn103, scarn9nj, "Simpson's Kooky Carnival Redemption (V1.03)
 CORE_CLONEDEFNV(scarn105, scarn9nj, "Simpson's Kooky Carnival Redemption (V1.05)", 2006, "Stern", sam, 0)
 CORE_CLONEDEFNV(scarn200, scarn9nj, "Simpson's Kooky Carnival Redemption (V2.0)", 2008, "Stern", sam, 0)
 
-//Family Guy - good - complete
+/*-------------------------------------------------------------------
+/ Family Guy
+/-------------------------------------------------------------------*/
 INITGAME(fg, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_NOMINI2);
 
 SAM_ROMLOAD(fg_200a, "fg200a.bin", CRC(c72e89df) SHA1(6cac3812d733c9d030542badb9c65934ecbf8399), 0x185ea9c)
@@ -1873,7 +1900,9 @@ CORE_CLONEDEF(fg, 1200ag, 300ai, "Family Guy (V12.0) (English, German)", 2008, "
 CORE_CLONEDEF(fg, 1200ai, 300ai, "Family Guy (V12.0) (English, Italian)", 2008, "Stern", sam, 0)
 CORE_CLONEDEF(fg, 1200al, 300ai, "Family Guy (V12.0) (English, Spanish)", 2008, "Stern", sam, 0)
 
-//Pirates of the Caribbean - good - complete
+/*-------------------------------------------------------------------
+/ Pirates of the Caribbean
+/-------------------------------------------------------------------*/
 INITGAME(potc, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM_ROMLOAD(potc_108as, "potc108as.bin", CRC(6c3a3f7f) SHA1(52e97a4f479f8f3f55a72c9c104fb1335a253f1a), 0x1C61F6C)
@@ -1982,7 +2011,9 @@ CORE_CLONEDEF(potc, 600ai, 110af, "Pirates of the Caribbean (V6.0) (English, Ita
 CORE_CLONEDEF(potc, 600as, 110af, "Pirates of the Caribbean (V6.0) (English, Spanish)", 2008, "Stern", sam, 0)
 CORE_CLONEDEF(potc, 600gf, 110af, "Pirates of the Caribbean (V6.0) (German, French)", 2008, "Stern", sam, 0)
 
-//Spider-Man - good - complete
+/*-------------------------------------------------------------------
+/ Spider-Man (Stern)
+/-------------------------------------------------------------------*/
 INITGAME(sman, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM_ROMLOAD(sman_130af, "sman130af.bin", CRC(6aa6a03a) SHA1(f56442e84b8789f49127bf4ba97dd05c77ea7c36), 0x017916C8)
@@ -2118,7 +2149,9 @@ CORE_CLONEDEF(sman, 250, 130af, "Spider-Man (V2.5)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 260, 130af, "Spider-Man (V2.6)", 2010, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 261, 130af, "Spider-Man (V2.61)", 2014, "Stern", sam, 0)
 
-//Wheel Of Fortune - good - complete
+/*-------------------------------------------------------------------
+/ Wheel of Fortune
+/-------------------------------------------------------------------*/
 
 #define WOF_WHEEL_OPTO_SW 47
 // WOF wheel actually goes 4,6,5,7 ... we will do a special mapping
@@ -2219,7 +2252,9 @@ CORE_CLONEDEF(wof, 500g, 100, "Wheel of Fortune (V5.0) (German)", 2007, "Stern",
 CORE_CLONEDEF(wof, 500i, 100, "Wheel of Fortune (V5.0) (Italian)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(wof, 500l, 100, "Wheel of Fortune (V5.0) (Spanish)", 2007, "Stern", sam, 0)
 
-//Shrek - good - complete
+/*-------------------------------------------------------------------
+/ Shrek
+/-------------------------------------------------------------------*/
 INITGAME(shr, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_NOMINI2);
 
 SAM_ROMLOAD(shr_130, "shr130.bin", CRC(0c4efde5) SHA1(58e156a43fef983d48f6676e8d65fb30d45f8ec3), 0x01BB0824)
@@ -2233,7 +2268,9 @@ CORE_GAMEDEF(shr, 130, "Shrek (V1.3)", 2008, "Stern", sam, 0)
 
 CORE_CLONEDEF(shr, 141, 130, "Shrek (V1.41)", 2008, "Stern", sam, 0)
 
-//Indiana Jones - good - bugged - complete
+/*-------------------------------------------------------------------
+/ Indiana Jones (Stern)
+/-------------------------------------------------------------------*/
 INITGAME(ij4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_IJ4_SOL3);
 
 SAM_ROMLOAD(ij4_113, "ij4_113.bin", CRC(aa2bdf3e) SHA1(71fd1c970fe589cec5124237684facaae92cbf09), 0x01C6D98C)
@@ -2297,7 +2334,9 @@ CORE_CLONEDEF(ij4, 116l, 113, "Indiana Jones (V1.16) (Spanish)", 2008, "Stern", 
 CORE_CLONEDEF(ij4, 210, 113, "Indiana Jones (V2.1)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(ij4, 210f, 113, "Indiana Jones (V2.1) (French)", 2009, "Stern", sam, 0)
 
-//Batman: Dark Knight - good - complete
+/*-------------------------------------------------------------------
+/ Batman: The Dark Knight
+/-------------------------------------------------------------------*/
 INITGAME(bdk, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_NOMINI3);
 
 SAM_ROMLOAD(bdk_130, "bdk130.bin", CRC(83a32958) SHA1(0326891bc142c8b92bd4f6d29bd4301bacbed0e7), 0x01BA1E94)
@@ -2334,7 +2373,9 @@ CORE_CLONEDEF(bdk, 290, 130, "Batman: Dark Knight (V2.9)", 2010, "Stern", sam, 0
 CORE_CLONEDEF(bdk, 294, 130, "Batman: Dark Knight (V2.94)", 2010, "Stern", sam, 0)
 CORE_CLONEDEF(bdk, 300, 130, "Batman: Dark Knight (V3.00 Home Edition/Costco)", 2010, "Stern", sam, 0)
 
-//C.S.I. - good - bugged
+/*-------------------------------------------------------------------
+/ C.S.I. Crime Scene Investigation
+/-------------------------------------------------------------------*/
 INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_NOMINI4);
 
 SAM_ROMLOAD(csi_102, "csi102a.bin", CRC(770f4ab6) SHA1(7670022926fcf5bb8f8848374cf1a6237803100a), 0x01e21fc0)
@@ -2362,7 +2403,9 @@ CORE_CLONEDEF(csi, 210, 102, "C.S.I. (V2.1)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(csi, 230, 102, "C.S.I. (V2.3)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(csi, 240, 102, "C.S.I. (V2.4)", 2009, "Stern", sam, 0)
 
-//24 - ?? seems ok
+/*-------------------------------------------------------------------
+/ 24 Twenty-Four
+/-------------------------------------------------------------------*/
 INITGAME(twenty4, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM_ROMLOAD(twenty4_130, "24_130a.bin", CRC(955a5c12) SHA1(66e33fb438c831679aeb3ba68af7b4a3c59966ef), 0x01C08280)
@@ -2381,7 +2424,9 @@ CORE_CLONEDEF(twenty4, 140, 130, "24 (V1.4)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(twenty4, 144, 130, "24 (V1.44)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(twenty4, 150, 130, "24 (V1.5)", 2010, "Stern", sam, 0)
 
-//NBA - ?? seems ok
+/*-------------------------------------------------------------------
+/ NBA
+/-------------------------------------------------------------------*/
 INITGAME(nba, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_NOMINI);
 
 SAM_ROMLOAD(nba_500, "nba500.bin", CRC(01b0c27a) SHA1(d7f4f6b24630b55559a48cde4475422905811106), 0x019112d0)
@@ -2403,7 +2448,9 @@ CORE_CLONEDEF(nba, 700, 500, "NBA (V7.0)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(nba, 801, 500, "NBA (V8.01)", 2009, "Stern", sam, 0)
 CORE_CLONEDEF(nba, 802, 500, "NBA (V8.02)", 2009, "Stern", sam, 0)
 
-//Big Buck Hunter Pro - ?? seems ok
+/*-------------------------------------------------------------------
+/ Big Buck Hunter Pro
+/-------------------------------------------------------------------*/
 INITGAME(bbh, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM_ROMLOAD(bbh_140, "bbh140.bin", CRC(302e29f0) SHA1(0c500c0a5588f8476a71599be70b515ba3e19cab), 0x1bb8fa4)
@@ -2422,7 +2469,9 @@ CORE_CLONEDEF(bbh, 150, 140, "Big Buck Hunter Pro (V1.5)", 2010, "Stern", sam, 0
 CORE_CLONEDEF(bbh, 160, 140, "Big Buck Hunter Pro (V1.6)", 2010, "Stern", sam, 0)
 CORE_CLONEDEF(bbh, 170, 140, "Big Buck Hunter Pro (V1.7)", 2010, "Stern", sam, 0)
 
-//Iron Man - ?? seems ok
+/*-------------------------------------------------------------------
+/ Iron Man
+/-------------------------------------------------------------------*/
 INITGAME(im, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD(im_100, "im_100.bin", CRC(b27d12bf) SHA1(dfb497f2edaf4321823b243cced9d9e2b7bac628), 0x1b8fe44)
@@ -2455,7 +2504,9 @@ CORE_CLONEDEF(im, 182, 100, "Iron Man (V1.82)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(im, 183, 100, "Iron Man (V1.83)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(im, 183ve, 100, "Iron Man Vault Edition (V1.83)", 2014, "Stern", sam, 0)
 
-//Tron: Legacy - ?? seems ok
+/*-------------------------------------------------------------------
+/ Tron: Legacy
+/-------------------------------------------------------------------*/
 INITGAME(trn, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_TRON);
 
 SAM_ROMLOAD(trn_100h, "trn100h.bin", CRC(4c2abebd) SHA1(8e22454932680351d58f863cf9644a9f3db24800), 0x1F19368)
@@ -2501,7 +2552,9 @@ CORE_CLONEDEF(trn, 174, 160, "Tron: Legacy Pro (V1.74)", 2013, "Stern", sam, 0)
 CORE_CLONEDEF(trn, 17402, 160, "Tron: Legacy Pro (V1.7402)", 2013, "Stern", sam, 0)
 CORE_CLONEDEF(trn, 174h, 160, "Tron: Legacy Limited Edition (V1.74)", 2013, "Stern", sam, 0)
 
-//Transformers - ?? seems ok
+/*-------------------------------------------------------------------
+/ Transformers
+/-------------------------------------------------------------------*/
 INITGAME(tf, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD(tf_088h, "tf088h.bin", CRC(a79ca893) SHA1(8f1228727422f5f99a20d60968eeca6c64f6c253), 0x1EB4CE8)
@@ -2547,7 +2600,9 @@ CORE_CLONEDEF(tf, 140h, 120, "Transformers Limited Edition (V1.4)", 2011, "Stern
 CORE_CLONEDEF(tf, 150h, 120, "Transformers Limited Edition (V1.5)", 2012, "Stern", sam, 0)
 CORE_CLONEDEF(tf, 180h, 120, "Transformers Limited Edition (V1.8)", 2013, "Stern", sam, 0)
 
-//Avatar - ?? Seems ok
+/*-------------------------------------------------------------------
+/ James Cameron's Avatar
+/-------------------------------------------------------------------*/
 INITGAME(avr, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD(avr_101h, "avr101h.bin", CRC(dbdcc7e5) SHA1(bf9a79209ecdae93efb2930091d2658259a3bd03), 0x1EE1CB8)
@@ -2567,9 +2622,12 @@ CORE_GAMEDEF(avr, 106, "Avatar Pro (V1.06)", 2010, "Stern", sam, 0)
 CORE_CLONEDEF(avr, 101h, 106, "Avatar Limited/Premium Edition (V1.01)", 2010, "Stern", sam, 0)
 CORE_CLONEDEF(avr, 110, 106, "Avatar Pro (V1.1)", 2011, "Stern", sam, 0)
 CORE_CLONEDEF(avr, 120h, 106, "Avatar Limited/Premium Edition (V1.2)", 2011, "Stern", sam, 0)
+//Avatar Pro FTDI-USB CPU Board Part #520-5246-02 ONLY
 CORE_CLONEDEF(avr, 200, 106, "Avatar Pro (V2.0)", 2013, "Stern", sam, 0)
 
-//Rolling Stones - ?? Seems ok
+/*-------------------------------------------------------------------
+/ The Rolling Stones
+/-------------------------------------------------------------------*/
 INITGAME(rsn, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_NOMINI);
 
 SAM_ROMLOAD(rsn_100h, "rsn100h.bin", CRC(7cdb082a) SHA1(2f35057b80ffeec05cdbc62bc86da8a32f859425), 0x1EB50C8)
@@ -2591,7 +2649,9 @@ CORE_CLONEDEF(rsn, 105, 110, "Rolling Stones, The Pro (V1.05)", 2011, "Stern", s
 CORE_CLONEDEF(rsn, 100h, 110, "Rolling Stones, The Limited/Premium Edition (V1.0)", 2011, "Stern", sam, 0)
 CORE_CLONEDEF(rsn, 110h, 110, "Rolling Stones, The Limited/Premium Edition (V1.1)", 2011, "Stern", sam, 0)
 
-//ACDC
+/*-------------------------------------------------------------------
+/ AC/DC
+/-------------------------------------------------------------------*/
 
 #define SAM_ROMLOAD_ACDC1(name, n1, chk1, size) \
   ROM_START(name) \
@@ -2707,7 +2767,9 @@ CORE_CLONEDEF(acd, 168c, 121, "AC/DC Pro (V1.68) (Colored)", 2014, "Stern", sam,
 CORE_CLONEDEF(acd, 168h, 121, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(acd, 168hc, 121, "AC/DC Limited Edition (V1.68) (Colored)", 2014, "Stern", sam, 0)
 
-//X-Men
+/*-------------------------------------------------------------------
+/ X-Men // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
+/-------------------------------------------------------------------*/
 INITGAME(xmn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8);
 
 SAM_ROMLOAD(xmn_100, "xmn_100.bin", CRC(997b2973) SHA1(68bb379860a0fe5be6a8a8f28b6fd8fe640e172a), 0x01FB7DEC)
@@ -2759,7 +2821,9 @@ CORE_CLONEDEF(xmn, 150h, 100, "X-Men Limited Edition (V1.5)", 2014, "Stern", sam
 CORE_CLONEDEF(xmn, 151, 100, "X-Men Pro (V1.51)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(xmn, 151h, 100, "X-Men Limited Edition (V1.51)", 2014, "Stern", sam, 0)
 
-//Avengers
+/*-------------------------------------------------------------------
+/ The Avengers // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
+/-------------------------------------------------------------------*/
 INITGAME(avs, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL8);
 
 SAM_ROMLOAD(avs_110, "avs_110.bin", CRC(2cc01e3c) SHA1(0ae7c9ced7e1d48b0bf4afadb6db508e558a7ebb), 0x01D032AC)
@@ -2790,7 +2854,9 @@ CORE_CLONEDEF(avs, 170c, 110, "Avengers, The Pro (V1.7) (Colored)", 2016, "Stern
 CORE_CLONEDEF(avs, 170h, 110, "Avengers, The Limited Edition (V1.7)", 2016, "Stern", sam, 0)
 CORE_CLONEDEF(avs, 170hc, 110, "Avengers, The Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
 
-//Metallica
+/*-------------------------------------------------------------------
+/ Metallica
+/-------------------------------------------------------------------*/
 
 #define SAM_ROMLOAD_MTL1(name, n1, chk1, size) \
   ROM_START(name) \
@@ -2913,7 +2979,9 @@ CORE_CLONEDEF(mtl, 170h, 103, "Metallica Limited Edition (V1.7)", 2016, "Stern",
 CORE_CLONEDEF(mtl, 170c, 103, "Metallica Pro (V1.7) (Colored)", 2016, "Stern", sam, 0)
 CORE_CLONEDEF(mtl, 170hc, 103, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
 
-//Star Trek
+/*-------------------------------------------------------------------
+/ Star Trek (Stern)
+/-------------------------------------------------------------------*/
 
 #define SAM_ROMLOAD_ST(name, n1, chk1, size) \
   ROM_START(name) \
@@ -2979,8 +3047,9 @@ CORE_CLONEDEF(st, 160h, 120, "Star Trek Limited Edition (V1.6)", 2015, "Stern", 
 CORE_CLONEDEF(st, 161h, 120, "Star Trek Limited Edition (V1.61)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(st, 161hc, 120, "Star Trek Limited Edition (V1.61) (Colored)", 2015, "Stern", sam, 0)
 
-//Mustang
-
+/*-------------------------------------------------------------------
+/ Mustang
+/-------------------------------------------------------------------*/
 INITGAME(mt, GEN_SAM, sam_dmd128x32, SAM_8COL,SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD(mt_120, "mt_120.bin", CRC(be7437ac) SHA1(5db10d7f48091093c33d522a663f13f262c08c3e), 0x037DA5EC)													
@@ -3020,8 +3089,9 @@ CORE_CLONEDEF(mt, 145hb, 120 , "Mustang Boss (V1.45)", 2016, "Stern", sam, 0)
 CORE_CLONEDEF(mt, 145c, 120 , "Mustang (V1.45) (Colored)", 2016, "Stern", sam, 0)
 CORE_CLONEDEF(mt, 145hc, 120 , "Mustang Limited Edition (V1.45) (Colored)", 2016, "Stern", sam, 0)
 
-//Walking Dead
-
+/*-------------------------------------------------------------------
+/ The Walking Dead
+/-------------------------------------------------------------------*/
 INITGAME(twd, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD_ACDC3(twd_105, "twd_105.ebi", CRC(59b4e4d6) SHA1(642e827d58c9877a9f3c29b75784660894f045ad), 0x04F4FBF8)													
@@ -3097,7 +3167,9 @@ CORE_CLONEDEF(twd, 160h, 105, "Walking Dead, The Limited Edition (V1.60.0)", 201
 CORE_CLONEDEF(twd, 160c, 105, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 160hc, 105, "Walking Dead, The Limited Edition (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
 
-//Spider-Man Vault Edition
+/*-------------------------------------------------------------------
+/ Spider-Man Vault Edition (Stern)
+/-------------------------------------------------------------------*/
 INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12);
 
 SAM_ROMLOAD_ACDC1(smanve_100, "smanve_100.bin", CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03F2CA8C)
