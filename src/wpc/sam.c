@@ -52,10 +52,10 @@
 #define SAM_CPUFREQ	40000000
 #define SAM_IRQFREQ 4008
 
-#define WAVE_OUT_RATE 24000
+#define SAM1_SOUNDFREQ 24000
 #define SAM_TIMER 120 // was 145
 // 100ms sound buffer.
-#define BUFFSIZE (WAVE_OUT_RATE * 100 / 1000)    
+#define SNDBUFSIZE (SAM1_SOUNDFREQ * 100 / 1000)    
 
 #define SAM_CPU	0
 #define SAM_ROMBANK0 1
@@ -95,6 +95,10 @@
 #define LOG_ROM_BANK				0   // Set to 1 to log ROM BANK Writes
 #define LOG_PORT_READ				0   // Set to 1 to log Port Reads
 
+//Static Variables
+static data32_t *sam_reset_ram;
+static data32_t *sam_page0_ram;
+static data32_t *nvram;
 
 /*----------------
 / Local variables
@@ -105,7 +109,7 @@ struct {
 	int sw_stb;
 	int zc;
 	int video_page[2];
-	INT16 samplebuf[2][BUFFSIZE];
+	INT16 samplebuf[2][SNDBUFSIZE];
 	INT16 lastsamp[2];
 	int sampout;
 	int sampnum;
@@ -122,6 +126,10 @@ struct {
 } samlocals;
 
 
+#if LOG_RAW_SOUND_DATA
+FILE *fpSND = NULL;
+#endif
+
 #if LOG_TO_SCREEN
 #if LOGALL
 #define LOG(x) printf x
@@ -136,6 +144,7 @@ struct {
 #endif
 #endif
 
+
 /************************************/
 /*  Helper functions & definitions  */
 /************************************/
@@ -147,11 +156,11 @@ static int adj_offset(int mask)
 {
 	int i;
 	int offset = 0;
-	for (i = 0; i<4; i++)
+	for(i=0;i<4;i++)
 	{
-		if (0xFF << (i * 8) & mask)
+		if( 0xFF<<(i*8) & mask )
 		{
-			offset = i;
+			offset=i;
 			break;
 		}
 	}
@@ -163,98 +172,93 @@ static int adj_offset(int mask)
 /*****************/
 
 /*
-Dedicated Switches 0-16
-------------------------
-D0  - DED #1  - Left Coin
-D1  - DED #2  - Center Coin
-D2  - DED #3  - Right Coin
-D3  - DED #4  - 4th Coin
-D4  - DED #5  - 5th Coin
-D5  - DED #6  - NA
-D6  - DED #7  - Left Post Save (UK Only)
-D7  - DED #8  - Right Post Save (UK Only)
-D8  - DED #9  - Left Flipper
-D9  - DED #10 - Left Flipper EOS
-D10 - DED #11 - Right Flipper
-D11 - DED #12 - Right Flipper EOS
-D12 - DED #13 - Upper Left Flipper
-D13 - DED #14 - Upper Left Flipper EOS
-D14 - DED #15 - Upper Right Flipper
-D15 - DED #16 - Upper Right Flipper EOS
+ Dedicated Switches 0-16
+ ------------------------
+ D0  - DED #1  - Left Coin
+ D1  - DED #2  - Center Coin
+ D2  - DED #3  - Right Coin
+ D3  - DED #4  - 4th Coin
+ D4  - DED #5  - 5th Coin
+ D5  - DED #6  - NA
+ D6  - DED #7  - Left Post Save (UK Only)
+ D7  - DED #8  - Right Post Save (UK Only)
+ D8  - DED #9  - Left Flipper
+ D9  - DED #10 - Left Flipper EOS
+ D10 - DED #11 - Right Flipper
+ D11 - DED #12 - Right Flipper EOS
+ D12 - DED #13 - Upper Left Flipper
+ D13 - DED #14 - Upper Left Flipper EOS
+ D14 - DED #15 - Upper Right Flipper
+ D15 - DED #16 - Upper Right Flipper EOS
 */
 static int dedswitch_lower_r(void)
 {
-	/* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
-	/* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
-	/* Swap the 4 lowest bits*/
-	UINT8 cds = coreGlobals.swMatrix[9];
-	UINT8 fls = coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
-	fls = core_revnyb(fls & 0x0f) | (core_revnyb(fls >> 4) << 4);
-	return MAKE16BIT(fls, cds);
+  /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
+  /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
+  /* Swap the 4 lowest bits*/
+  UINT8 cds = coreGlobals.swMatrix[9];
+  UINT8 fls = coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
+  fls = core_revnyb(fls & 0x0f) | (core_revnyb(fls >> 4) << 4);
+  return MAKE16BIT(fls,cds);
 }
 
 /*
-Dedicated Switches 17-32
-------------------------
-D16 - DED #17 - Tilt
-D17 - DED #18 - Slam Tilt
-D18 - DED #19 - Ticket Notch
-D19 - DED #20 - NA
-D20 - DED #21 - Back (Coin Door)
-D21 - DED #22 - Plus (Coin Door)
-D22 - DED #23 - Minus (Coin Door)
-D23 - DED #24 - Select (Coin Door)
-D24 - DED #25 - Dip #1
-D25 - DED #26 - Dip #2
-D26 - DED #27 - Dip #3
-D27 - DED #28 - Dip #4
-D28 - DED #29 - Dip #5
-D29 - DED #30 - Dip #6
-D30 - DED #31 - Dip #7
-D31 - DED #32 - Dip #8
+ Dedicated Switches 17-32
+ ------------------------
+ D16 - DED #17 - Tilt
+ D17 - DED #18 - Slam Tilt
+ D18 - DED #19 - Ticket Notch
+ D19 - DED #20 - NA
+ D20 - DED #21 - Back (Coin Door)
+ D21 - DED #22 - Plus (Coin Door)
+ D22 - DED #23 - Minus (Coin Door)
+ D23 - DED #24 - Select (Coin Door)
+ D24 - DED #25 - Dip #1
+ D25 - DED #26 - Dip #2
+ D26 - DED #27 - Dip #3
+ D27 - DED #28 - Dip #4
+ D28 - DED #29 - Dip #5
+ D29 - DED #30 - Dip #6
+ D30 - DED #31 - Dip #7
+ D31 - DED #32 - Dip #8
 */
 static int dedswitch_upper_r(void)
 {
-	return MAKE16BIT(core_getDip(0), coreGlobals.swMatrix[0]);
+	return MAKE16BIT(core_getDip(0),coreGlobals.swMatrix[0]);
 }
 
 /*
 U19 & U20 of IOBOARD - Address decoding
 A3 A2 A1 A0 (When IOSTB = 0)
 ---------------------------------------------------------------------------------------------
-0  0  0  0 - 0: SOL A Driver
-0  0  0  1 - 1: SOL B Driver
-0  0  1  0 - 2: SOL C Driver
-0  0  1  1 - 3: Flash Lamp Driver
-0  1  0  1 - 5: STATUS (read)
-0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
-0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
-1  0  0  0 - 8: Lamp Strobe *(See below)
-1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
-1  0  1  0 - a: Lamp Driver *(See below)
-1  0  1  1 - b: Additional Strobe Driver (see below)
+ 0  0  0  0 - 0: SOL A Driver
+ 0  0  0  1 - 1: SOL B Driver
+ 0  0  1  0 - 2: SOL C Driver
+ 0  0  1  1 - 3: Flash Lamp Driver
+ 0  1  0  1 - 5: STATUS (read)
+ 0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
+ 0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
+ 1  0  0  0 - 8: Lamp Strobe *(See below)
+ 1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
+ 1  0  1  0 - a: Lamp Driver *(See below)
+ 1  0  1  1 - b: Additional Strobe Driver (see below)
 
-Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
-Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
-There are 10 Lamp Rows Max
-Row 0 - From Lamp Strobe, Data Bit 0
-Row 1 - From Lamp Strobe, Data Bit 1
-Row 2 - From Lamp Strobe, Data Bit 2
-Row 3 - From Lamp Strobe, Data Bit 3
-Row 4 - From Lamp Strobe, Data Bit 4
-Row 5 - From Lamp Strobe, Data Bit 5
-Row 6 - From Lamp Strobe, Data Bit 6
-Row 7 - From Lamp Strobe, Data Bit 7
-Row 8 - From Aux Lamp Strobe Line, Data Bit 0
-Row 9 - From Aux Lamp Strobe Line, Data Bit 1
+ Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
+ Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
+ There are 10 Lamp Rows Max
+ Row 0 - From Lamp Strobe, Data Bit 0
+ Row 1 - From Lamp Strobe, Data Bit 1
+ Row 2 - From Lamp Strobe, Data Bit 2
+ Row 3 - From Lamp Strobe, Data Bit 3
+ Row 4 - From Lamp Strobe, Data Bit 4
+ Row 5 - From Lamp Strobe, Data Bit 5
+ Row 6 - From Lamp Strobe, Data Bit 6
+ Row 7 - From Lamp Strobe, Data Bit 7
+ Row 8 - From Aux Lamp Strobe Line, Data Bit 0
+ Row 9 - From Aux Lamp Strobe Line, Data Bit 1
 ---------------------------------------------------------------------------------------------*/
 
-static data32_t *sam_reset_ram;
-static data32_t *sam_page0_ram;
-static data32_t *sam_cpu;
-
 static int sam_bank[56];
-static int sam_stream = 0;
 
 #define SAM_LEDS_MAX_STRINGS 4
 #define SAM_LED_MAX_STRING_LENGTH 65
@@ -365,9 +369,9 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 				buffer[channel][ii] = samlocals.samplebuf[channel][samlocals.sampout];
 				samlocals.lastsamp[channel] = buffer[channel][ii];
 			}
-			samlocals.sampout = (samlocals.sampout + 1) % BUFFSIZE;
+			samlocals.sampout = (samlocals.sampout + 1) % SNDBUFSIZE;
 		}
-		core_sound_throttle_adj(samlocals.sampnum, &samlocals.sampout, BUFFSIZE, WAVE_OUT_RATE);
+		core_sound_throttle_adj(samlocals.sampnum, &samlocals.sampout, SNDBUFSIZE, SAM1_SOUNDFREQ);
 		
 		for (; ii < length; ++ii)
 			for (channel = 0; channel < 2; channel++)
@@ -375,18 +379,21 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 	}
 }
 
-int sam_sh_start(const struct MachineSound *msound)
+static int sam_sh_start(const struct MachineSound *msound)
 {
-	const char *streamnames[] = { "SAM Left", "SAM Right" };
-	int mixlevels[2] = { MIXER(100,MIXER_PAN_LEFT), MIXER(100,MIXER_PAN_RIGHT) };
-
-	sam_stream = stream_init_multi(2, streamnames, mixlevels, WAVE_OUT_RATE, 0, sam_sh_update);
-	return sam_stream < 0;
+	const char *stream_name[] = { "SAM Left", "SAM Right" };
+	int volume[2] = { MIXER(100,MIXER_PAN_LEFT), MIXER(100,MIXER_PAN_RIGHT) };
+	/*-- allocate a DAC stream at fixed frequency --*/
+	return stream_init_multi
+	  (2,
+	  stream_name,
+	  volume,
+	  SAM1_SOUNDFREQ,
+	  0,
+	  sam_sh_update) < 0;
 }
 
-void sam_sh_stop(void)
-{
-}
+static void sam_sh_stop(void) { }
 
 static struct CustomSound_interface samCustInt =
 {
@@ -403,21 +410,25 @@ static READ32_HANDLER(samswitch_r)
 	int base = 0x01100000;
 	int mask = ~mem_mask;
 	int adj = adj_offset(mask);
-	int realoff = (offset * 4);
+	int realoff = (offset*4);
 	int addr = base + realoff + adj;
+	int logit = LOG_SWITCH_READ_HANDLER;
 	offset = addr;
 
 	//Switch Reads - Switch Matrix (16 columns), Dedicated Switch Matrix (24 columns), DipSwitches (8 columns)
-	if (offset >= 0x1100000 && offset <= 0x1100006)
+	if(offset >= 0x1100000 && offset <= 0x1100006)
 	{
-		switch (offset)
+		logit = LOG_SWITCH_MATRIX;
+		switch(offset)
 		{
 			//0x1100000 = Switch Matrix (0-16)
 			case 0x1100000:
+			{
 				//Must convert from our 8x8 matrix to a 4x16 matrix - and return 16 bits.
-				data = MAKE16BIT(coreGlobals.swMatrix[2 + samlocals.sw_stb * 2], coreGlobals.swMatrix[1 + samlocals.sw_stb * 2]);
+				data = MAKE16BIT(coreGlobals.swMatrix[2+samlocals.sw_stb*2], coreGlobals.swMatrix[1+samlocals.sw_stb*2]);
 				data ^= 0xffff;
 				break;
+			}
 			//0x1100002 = Dedicated Switch Matrix (0-16)
 			case 0x1100002:
 				data = (coreGlobals.swMatrix[9] | ((core_swapNyb[coreGlobals.swMatrix[11] & 0xF] | (0x10 * core_swapNyb[coreGlobals.swMatrix[11] >> 4])) << 8));
@@ -429,8 +440,9 @@ static READ32_HANDLER(samswitch_r)
 				break;
 			//0x1100004 = Dedicated Switch Matrix (17-24) & Dips
 			case 0x1100004:
+			{
 				//Same as 0x1100005
-				if (mask == 0xff00)
+				if(mask == 0xff00)
 				{
 					data = core_getDip(0);
 					data ^= 0xff;
@@ -442,6 +454,7 @@ static READ32_HANDLER(samswitch_r)
 					data ^= 0xffff;
 				}
 				break;
+			}
 			//Dips only
 			case 0x1100005:
 				data = core_getDip(0);
@@ -452,7 +465,7 @@ static READ32_HANDLER(samswitch_r)
 				break;
 		}
 	}
-	
+
 	//5-25-08
 	//Related somehow to the bank switch write @ 258000, but not sure how. The data read from this
 	//address takes the last bank switch read and this value and keeps the 1st four bits (0xf).
@@ -467,27 +480,54 @@ static READ32_HANDLER(samswitch_r)
 	//game code in bank 1, thus the crashes & problems "appeared". I hope there's nothing more to this function,
 	//although I can't understand what possible purpose it really serves. (SJE)
 
-	if (offset == 0x1180000)
+	if(offset == 0x1180000)
+	{
+		logit = LOG_UNKNOWN1;
 		data = samlocals.bank | 0x10;  // 0x10  (bits 4-7, mask 0x70) is hardware rev. 
+	}
 
-	return data<<(adj*8);
+	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),offset,data,mask));
+
+	return (data<<(adj*8));
 }
 
+/*
+ IO Status
+ ---------
+ Status Data Read
+ D0 = Interlock 20V
+ D1 = Interlock 50V
+ D2 = Zero Cross Circuit
+ D3 = Lamp 1 Stat*
+ D4 = Lamp 2 Stat*
+ D5 = NA - GND
+ D6 = NA - GND
+ D7 = NA - GND
+
+ Lamp1 Stat is tied to Lamp Column Drivers 1,3,5,7
+ Lamp2 Stat is tied to Lamp Column Drivers 2,4,6,8
+
+*/
 static READ32_HANDLER(samxilinx_r)
 {
 	data32_t data = 0;
-	if(~mem_mask == 0xFF00) 
+	int mask = ~mem_mask;
+	int logit = LOG_IO_STAT;
+	//This is read in the upper bits of the address.
+	if (mask == 0xff00)
 	{
 		// was ((6 | zc) << 2) | u1...   bits:   0 1 1 zc u1 u1
 		//                     works     bits:   0 0 0 zc u1 u1
 		//                                                u1 = solenoids have power - 1-32
 		//                                                   u1 = power switch
-		data = (( 7 << 3 ) | (samlocals.zc << 2) | (samlocals.coindoor != 0 ? 3 : 0)) << 8;
+		data = /*(0x1C & 0xFB)*/(7 << 3) | (samlocals.zc<<2) | (samlocals.coindoor != 0 ? 3:0); //!! which one is correct?
+		data = data << 8;
 	}
+	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),0x02400024+offset,data,mask));
 	return data;
 }
 
-static READ32_HANDLER(samcpu_r)
+/*static READ32_HANDLER(nvram_r)
 {
 	if (offset == 2104)
 		return 0;
@@ -496,17 +536,17 @@ static READ32_HANDLER(samcpu_r)
 
 #if 0
 	if ( offset < 0x4000 )
-		return sam_cpu[offset];
+		return nvram[offset];
 
 	if ( offset != 0x4240 
 		&& offset != 0x4414
 		&& offset != 0x441a
 		&& offset != 0x4420
 		&& offset != 0x4426)
-		return sam_cpu[offset];
+		return nvram[offset];
 #endif
 
-	return sam_cpu[offset];
+	return nvram[offset];
 
 #if 0
 	switch( offset )
@@ -515,28 +555,28 @@ static READ32_HANDLER(samcpu_r)
 		case 0x441a:
 		case 0x4420:
 		case 0x4426:
-			//sam_cpu[offset] = 0x00000001;
-			return sam_cpu[offset];
+			//nvram[offset] = 0x00000001;
+			return nvram[offset];
 		
 		case 0x4021:
-			//sam_cpu[offset] = 0x00000000;
-			return sam_cpu[offset];
+			//nvram[offset] = 0x00000000;
+			return nvram[offset];
 
 		case 0x4022:
-			//sam_cpu[offset] = 0xFFFF0000;
-			return sam_cpu[offset];
+			//nvram[offset] = 0xFFFF0000;
+			return nvram[offset];
 
 		case 0x4035:
-			//sam_cpu[offset] = 0xFFFF0022;
-			return sam_cpu[offset];
+			//nvram[offset] = 0xFFFF0022;
+			return nvram[offset];
 		//Language
 		case 0x4036:
-			//sam_cpu[offset] = 0xFFFE0100;
-			return sam_cpu[offset];
+			//nvram[offset] = 0xFFFE0100;
+			return nvram[offset];
 		//Time?
 		case 0x4037:
-			//sam_cpu[offset] = 0x34352345;
-			return sam_cpu[offset];
+			//nvram[offset] = 0x34352345;
+			return nvram[offset];
 
 		//Key pressed
 		case 0x4041:
@@ -549,30 +589,33 @@ static READ32_HANDLER(samcpu_r)
 			break;
 
 		case 0x4402:
-			//sam_cpu[offset] = 0x00000001;
+			//nvram[offset] = 0x00000001;
 			break;
 
 		default:
 			//logerror("Test");
 			break;
 	}
-	return sam_cpu[offset];
+	return nvram[offset];
 #endif
-}
+}*/
 
+/*****************************/
+/*  Memory map for SAM1 CPU  */
+/*****************************/
 static MEMORY_READ32_START(sam_readmem)
-	{ 0x00000000, 0x000FFFFF, MRA32_RAM },
-	{ 0x00300000, 0x003FFFFF, MRA32_RAM },
-	{ 0x01000000, 0x0107FFFF, MRA32_RAM },
-	{ 0x01080000, 0x0109EFFF, MRA32_RAM },
-	{ 0x0109F000, 0x010FFFFF, MRA32_RAM },
-	{ 0x01100000, 0x011FFFFF, samswitch_r },
-	{ 0x02000000, 0x020FFFFF, MRA32_RAM },
-    { 0x02100000, 0x0211FFFF, MRA32_RAM }, //samcpu_r },
-	{ 0x02400024, 0x02400027, samxilinx_r },
-	{ 0x03000000, 0x030000FF, MRA32_RAM },
-	{ 0x04000000, 0x047FFFFF, MRA32_RAM },  //U44?
-	{ 0x04800000, 0x04FFFFFF, MRA32_BANK1 },  //U45?
+	{ 0x00000000, 0x000FFFFF, MRA32_RAM },					//Boot RAM
+	{ 0x00300000, 0x003FFFFF, MRA32_RAM },					//Swapped RAM
+	{ 0x01000000, 0x0107FFFF, MRA32_RAM },					//U13 RAM - General Usage (Code is executed here sometimes)
+	{ 0x01080000, 0x0109EFFF, MRA32_RAM },					//U13 RAM - DMD Data for output
+	{ 0x0109F000, 0x010FFFFF, MRA32_RAM },					//U13 RAM - Sound Data for output
+	{ 0x01100000, 0x011FFFFF, samswitch_r },				//Various Input Signals
+	{ 0x02000000, 0x020FFFFF, MRA32_RAM },					//U9 Boot Flash Eprom
+    { 0x02100000, 0x0211FFFF, MRA32_RAM }, //nvram_r },	    //U11 NVRAM (128K)
+	{ 0x02400024, 0x02400027, samxilinx_r },				//I/O Related
+	{ 0x03000000, 0x030000FF, MRA32_RAM },					//USB Related
+	{ 0x04000000, 0x047FFFFF, MRA32_RAM }, 					//1st 8MB of Flash ROM U44 Mapped here
+	{ 0x04800000, 0x04FFFFFF, MRA32_BANK1 },				//Banked Access to Flash ROM U44 (including 1st 8MB ALSO!)
 	{ 0x05000000, 0x057FFFFF, MRA32_RAM },
 	{ 0x05800000, 0x05FFFFFF, MRA32_BANK1 },
 	{ 0x06000000, 0x067FFFFF, MRA32_RAM },
@@ -582,19 +625,23 @@ static MEMORY_READ32_START(sam_readmem)
 MEMORY_END
 
 //Memory Writes
-static data32_t prev_data;
 static WRITE32_HANDLER(samxilinx_w)
 {
 	if(~mem_mask & 0xFFFF0000) // Left ch??
 	{
 		data >>= 16;
 		samlocals.samplebuf[0][samlocals.sampnum] = data;
-		samlocals.sampnum = (samlocals.sampnum + 1) % BUFFSIZE;
+		samlocals.sampnum = (samlocals.sampnum + 1) % SNDBUFSIZE;
 	}
 	else
 	{
 		samlocals.samplebuf[1][samlocals.sampnum] = data;
 	}
+
+	#if LOG_RAW_SOUND_DATA
+	if(fpSND)
+		fwrite(&data,2,1,fpSND);
+	#endif
 }
 
 static WRITE32_HANDLER(samdmdram_w)
@@ -625,32 +672,17 @@ static WRITE32_HANDLER(samdmdram_w)
   }
 }
 
-static int sam_led(UINT32 bank)
-{
-	int result = 0;
-	int ii = 0;
-
-	do
-	{
-		if ( bank & 1 )
-			result += ii;
-		bank >>= 1;
-		ii++;
-	}
-	while ( bank );
-	return result;
-}
-
-static int led[] =
-	{ 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13};
-static char lastbank11;
-static int minidmdrow;
-static int minidmdcol;
-static int wof_minidmdflag;
-static int led_target;
-
 static WRITE32_HANDLER(sambank_w)
 {
+	// with the current technique, a maximum of 14 displayed rows is possible (WPT only uses 10),
+	// yet the amount of columns is virtually unlimited!
+	static int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
+	static char lastbank11;
+	static int wof_minidmdflag;
+	static int led_target;
+	static int miniDMDCol;
+	static int miniDMDRow;
+
 	int base = 0x02400000;
 	int mask = ~mem_mask;
 	int adj = adj_offset(mask);
@@ -772,27 +804,27 @@ static WRITE32_HANDLER(sambank_w)
 			case 6:
 				if ( core_gameData->hw.gameSpecific1 & 1 )
 				{
-					if ( minidmdrow == 1 )
+					if ( miniDMDRow == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
 					{
-						minidmdcol = led[sam_led(data & 0x7F | ((samlocals.last_aux_line_6 & 0x7F) << 7))];
+						miniDMDCol = rowMap[core_BitColToNum(data & 0x7F | ((samlocals.last_aux_line_6 & 0x7F) << 7))];
 					}
 					else
 					{
-						if ( minidmdrow > 1 )
-							samlocals.miniDMDData[minidmdcol][minidmdrow] = data & 0x7F;
-						if ( minidmdrow >= 17 )
+						if ( miniDMDRow > 1 )
+							samlocals.miniDMDData[miniDMDCol][miniDMDRow] = data & 0x7F;
+						if ( miniDMDRow >= 17 )
 						{
 LABEL_157:
 							if ( (~samlocals.last_aux_line_6 & data) >= 0x80)
 							{
 								samlocals.last_aux_line_6 = data;
-								minidmdrow = 0;
+								miniDMDRow = 0;
 								return;
 							}
 							goto LABEL_176;
 						}
 					}
-					minidmdrow++;
+					miniDMDRow++;
 					goto LABEL_157;
 				}
 				if ( core_gameData->hw.gameSpecific1 & 2 )
@@ -800,17 +832,17 @@ LABEL_157:
 					int test = data & ~samlocals.last_aux_line_6;
 					if (!((test < 0x80) && (test >= 0)))
 					{
-						minidmdrow = 0;
+						miniDMDRow = 0;
 						samlocals.last_aux_line_6 = data;
-						minidmdcol = sam_led(data & 3);
+						miniDMDCol = core_BitColToNum(data & 3);
 						return;
 					}
-					if ( minidmdrow < 3 )
+					if ( miniDMDRow < 3 )
 					{
-			            coreGlobals.tmpLampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = data & 0x7F;
+						coreGlobals.tmpLampMatrix[miniDMDCol + miniDMDRow + 2 * miniDMDCol + 10] = data & 0x7F;
 						samlocals.last_aux_line_6 = data;
-			            coreGlobals.lampMatrix[minidmdcol + minidmdrow + 2 * minidmdcol + 10] = data & 0x7F;
-						minidmdrow++;
+						coreGlobals.lampMatrix[miniDMDCol + miniDMDRow + 2 * miniDMDCol + 10] = data & 0x7F;
+						miniDMDRow++;
 			            return;
 					}
 				}
@@ -819,12 +851,12 @@ LABEL_157:
 					int test = data & ~samlocals.last_aux_line_6;
 					if ( (test < 0x80) && (test >= 0) )
 					{
-						minidmdrow++;
+						miniDMDRow++;
 					}
 					else
 					{
 						wof_minidmdflag = wof_minidmdflag == 0;
-						minidmdrow = 0;
+						miniDMDRow = 0;
 						if (options.usemodsol) // To protect the VP9 table from an onslaught of extra lights. 
 						{
 							for (int i = 0; i < WOF_MINIDMD_MAX; i++)
@@ -835,29 +867,29 @@ LABEL_157:
 					}
 					if ( wof_minidmdflag )
 					{
-						if ( minidmdrow == 1 )
+						if ( miniDMDRow == 1 )
 						{
 							samlocals.last_aux_line_6 = data;
-							minidmdcol = sam_led(data & 0x1F);
+							miniDMDCol = core_BitColToNum(data & 0x1F);
 							return;
 						}
-						if ( minidmdrow > 1 && minidmdrow < 7 )
+						if ( miniDMDRow > 1 && miniDMDRow < 7 )
 						{
 							samlocals.last_aux_line_6 = data;
-							samlocals.miniDMDData[minidmdcol][minidmdrow] = data & 0x7F;
+							samlocals.miniDMDData[miniDMDCol][miniDMDRow] = data & 0x7F;
 							for (int i = 0; i < 7; i++)
 							{
-								core_update_modulated_light(&samlocals.modulated_lights[(35 * minidmdcol) + ((minidmdrow-2)*7)+i], data & (1 << (6-i)));
+								core_update_modulated_light(&samlocals.modulated_lights[(35 * miniDMDCol) + ((miniDMDRow - 2) * 7) + i], data & (1 << (6 - i)));
 							}
 							return;
 						}
 					}
 					else
 					{
-						if ( minidmdrow < 6 )
+						if ( miniDMDRow < 6 )
 						{
-							coreGlobals.tmpLampMatrix[minidmdrow + 10] = data & 0x7F;
-							coreGlobals.lampMatrix[minidmdrow + 10] = data & 0x7F;
+							coreGlobals.tmpLampMatrix[miniDMDRow + 10] = data & 0x7F;
+							coreGlobals.lampMatrix[miniDMDRow + 10] = data & 0x7F;
 						}
 					}
 				}
@@ -965,7 +997,7 @@ LABEL_176:
 	}
 }
 
-static WRITE32_HANDLER(samcpu_w)
+/*static WRITE32_HANDLER(nvram_w)
 {
 	switch( offset )
 	{
@@ -980,7 +1012,7 @@ static WRITE32_HANDLER(samcpu_w)
 		case 0x402f:
 		case 0x4031:
 		case 0x4033:
-			//sam_cpu[offset] = 0x00000000;
+			//nvram[offset] = 0x00000000;
 			//logerror("Test");
 			return;
 		//clock??
@@ -994,7 +1026,7 @@ static WRITE32_HANDLER(samcpu_w)
 		case 0x4030:
 		case 0x4032:
 		case 0x4034:
-			//sam_cpu[offset] = 0xFFFF0000;
+			//nvram[offset] = 0xFFFF0000;
 			//logerror("Test");
 			return;
 
@@ -1021,20 +1053,22 @@ static WRITE32_HANDLER(samcpu_w)
 			logerror("Test");
 			break;
 	}
-	sam_cpu[offset] = (sam_cpu[offset] & mem_mask) | (data & ~mem_mask);
-}
+	nvram[offset] = (nvram[offset] & mem_mask) | (data & ~mem_mask);
+}*/
 
 static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x00000000, 0x000FFFFF, MWA32_RAM, &sam_page0_ram},  // Boot RAM
 	{ 0x00300000, 0x003FFFFF, MWA32_RAM, &sam_reset_ram},  // Swapped RAM
-	{ 0x01000000, 0x0109EFFF, MWA32_RAM },
-	{ 0x0109F000, 0x010FFFFF, samxilinx_w },
-	{ 0x01100000, 0x01FFFFFF, samdmdram_w },
-	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &sam_cpu },
-	{ 0x02400000, 0x02FFFFFF, sambank_w },
-	{ 0x03000000, 0x030000FF, MWA32_RAM },
-	{ 0x04000000, 0x047FFFFF, MWA32_RAM },
-	{ 0x04800000, 0x04FFFFFF, MWA32_RAM },
+	{ 0x01000000, 0x0107FFFF, MWA32_RAM },				   //U13 RAM - General Usage (Code is executed here sometimes)
+	{ 0x01080000, 0x0109EFFF, MWA32_RAM },			       //U13 RAM - DMD Data for output
+	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
+	{ 0x01100000, 0x01FFFFFF, samdmdram_w },			   //Various Output Signals
+	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		   //U11 NVRAM (128K) 0x02100000,0x0211ffff
+	//{ 0x02200000, 0x022fffff, sam1_io2_w },			   //LE versions: more I/O stuff (mostly LED lamps)
+	{ 0x02400000, 0x02FFFFFF, sambank_w },				   //I/O Related
+	{ 0x03000000, 0x030000FF, MWA32_RAM },				   //USB Related
+	{ 0x04000000, 0x047FFFFF, MWA32_RAM },				   //1st 8MB of Flash ROM U44 Mapped here
+	{ 0x04800000, 0x04FFFFFF, MWA32_RAM },				   //Banked Access to Flash ROM U44 (including 1st 8MB ALSO!)
 	{ 0x05000000, 0x057FFFFF, MWA32_RAM },
 	{ 0x05800000, 0x05FFFFFF, MWA32_RAM },
 	{ 0x06000000, 0x067FFFFF, MWA32_RAM },
@@ -1055,7 +1089,7 @@ static READ32_HANDLER(sam_port_r)
 	//Eventually need to add in P16,17,18 for feedback from Real Time Clock
 	//Possibly also P23 (USB Related) & P24 (Dip #8)
 
-	if (logit) LOG(("%08x: reading from %08x = %08x\n", activecpu_get_pc(), offset, data));
+	if(logit) LOG(("%08x: reading from %08x = %08x\n",activecpu_get_pc(),offset,data));
 
 	return data;
 }
@@ -1099,7 +1133,7 @@ static WRITE32_HANDLER(sam_port_w)
 		samlocals.pass = 16;
 		samlocals.value = 0;
 	}
-	//if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
+	if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
 }
 
 static PORT_READ32_START(sam_readport)
@@ -1126,12 +1160,24 @@ static MACHINE_INIT(sam) {
 
 	if (_strnicmp(Machine->gamedrv->name,"csi_",4)==0 || _strnicmp(Machine->gamedrv->name,"ij4_",4)==0)
 		at91_block_timers = 1;
+
+	#if LOG_RAW_SOUND_DATA
+	fpSND = fopen("sam1snd.raw","wb");
+	if(!fpSND)
+		LOG(("Unable to create sam1snd.raw file\n"));
+	#endif
 }
 
 static MACHINE_RESET(sam) {
 	memset(&samlocals, 0, sizeof(samlocals));
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
+}
+
+static MACHINE_STOP(sam) {
+	#if LOG_RAW_SOUND_DATA
+	if(fpSND) fclose(fpSND);
+	#endif
 }
 
 static SWITCH_UPDATE(sam) {
@@ -1279,15 +1325,23 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 }
 
 
+/********************/
+/*  VBLANK Section  */
+/********************/
 static INTERRUPT_GEN(sam_vblank) {
 	int i;
-	UINT8 value;
 	UINT32 solenoidupdate;
 
+	/*-------------------------------
+	/  copy local data to interface
+	/--------------------------------*/
 	samlocals.vblankCount += 1;
 	
-	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, 40);
-	if ((samlocals.vblankCount % SAM_DISPLAYSMOOTH) == 0) {
+	/*-- lamps --*/
+	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, 40); //!! sizeof(coreGlobals.tmpLampMatrix)
+
+	/*-- display --*/
+	if ((samlocals.vblankCount % (SAM_DISPLAYSMOOTH)) == 0) {
 	    coreGlobals.diagnosticLed = samlocals.diagnosticLed;
 		samlocals.diagnosticLed = 0;
 	}
@@ -1308,10 +1362,13 @@ static INTERRUPT_GEN(sam_vblank) {
 		break;
 	}
 
+	/*-- solenoids --*/
 	solenoidupdate = 0;
 	for(i=0;i<CORE_MODSOL_MAX;i++)
 	{
-		if (i==32) // Skip VPM reserved solenoids
+		UINT8 value;
+
+		if (i == 32) // Skip VPM reserved solenoids
 			i=CORE_FIRSTCUSTSOL-1;
 
 		value = core_calc_modulated_light(samlocals.solenoidbits[i], 24, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);		
@@ -1320,18 +1377,22 @@ static INTERRUPT_GEN(sam_vblank) {
 			solenoidupdate |= (1 << i);
 	}
 	coreGlobals.solenoids = solenoidupdate;
-	core_updateSw(TRUE);
+	
+	core_updateSw(1);
 }
 
+/*-----------------------------------------------
+/ Load/Save static ram
+/ Save RAM & CMOS Information
+/-------------------------------------------------*/
 static NVRAM_HANDLER(sam) {
-	core_nvram(file, read_or_write, sam_cpu, 0x20000, 0xff);
+	core_nvram(file, read_or_write, nvram, 0x20000, 0xff);		//128K NVRAM
 }
 
-void at91_clear_timer();
-
+//Toggle Zero Cross bit
 static void sam_timer(int data)
 {
-	samlocals.zc = (samlocals.zc == 0);
+	samlocals.zc = !samlocals.zc;
 }
 
 static INTERRUPT_GEN(sam_irq)
@@ -1554,11 +1615,11 @@ SAM_ROMEND
 
 SAM_INPUT_PORTS_START(sam1_flashb, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(sam1_flashb, 0102, "S.A.M Boot Flash Update (V1.02)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0106, 0102, "S.A.M System Flash Boot (V1.06)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0210, 0102, "S.A.M System Flash Boot (V2.10)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0230, 0102, "S.A.M System Flash Boot (V2.3)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0310, 0102, "S.A.M System Flash Boot (V3.1)", 2008, "Stern", sam, 0)
+CORE_GAMEDEF(sam1_flashb, 0102, "S.A.M. Boot Flash Update (V1.02)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(sam1_flashb, 0106, 0102, "S.A.M. System Flash Boot (V1.06)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(sam1_flashb, 0210, 0102, "S.A.M. System Flash Boot (V2.10)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(sam1_flashb, 0230, 0102, "S.A.M. System Flash Boot (V2.3)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(sam1_flashb, 0310, 0102, "S.A.M. System Flash Boot (V3.1)", 2008, "Stern", sam, 0)
 
 //World Poker Tour - complete
 INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL, SAM_MINIDMD);
@@ -2023,7 +2084,7 @@ CORE_CLONEDEF(sman, 140af, 130af, "Spider-Man (V1.4) (English, French)", 2007, "
 CORE_CLONEDEF(sman, 140ai, 130af, "Spider-Man (V1.4) (English, Italian)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 140al, 130af, "Spider-Man (V1.4) (English, Spanish)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 140gf, 130af, "Spider-Man (V1.4) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 142, 130af, "Spider-Man (V1.42) BETA", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(sman, 142, 130af, "Spider-Man (V1.42 BETA)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 160, 130af, "Spider-Man (V1.6)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 160af, 130af, "Spider-Man (V1.6) (English, French)", 2007, "Stern", sam, 0)
 CORE_CLONEDEF(sman, 160ai, 130af, "Spider-Man (V1.6) (English, Italian)", 2007, "Stern", sam, 0)
@@ -3014,27 +3075,27 @@ SAM_INPUT_PORTS_START(twd, 1) SAM_INPUT_PORTS_END
 
 CORE_GAMEDEF(twd, 105, "Walking Dead, The (V1.05)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 111, 105 , "Walking Dead, The (V1.11)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 111h, 105 , "Walking Dead, The LE (V1.11)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 111h, 105 , "Walking Dead, The Limited Edition (V1.11)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 119, 105 , "Walking Dead, The (V1.19)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 119h, 105 , "Walking Dead, The LE (V1.19)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 119h, 105 , "Walking Dead, The Limited Edition (V1.19)", 2014, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 124, 105, "Walking Dead, The (V1.24)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 124h, 105, "Walking Dead, The LE (V1.24)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 124h, 105, "Walking Dead, The Limited Edition (V1.24)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 125, 105, "Walking Dead, The (V1.25)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 125h, 105, "Walking Dead, The LE (V1.25)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 125h, 105, "Walking Dead, The Limited Edition (V1.25)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 128, 105, "Walking Dead, The (V1.28)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 128h, 105, "Walking Dead, The LE (V1.28)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 128h, 105, "Walking Dead, The Limited Edition (V1.28)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 141, 105, "Walking Dead, The (V1.41)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 141h, 105, "Walking Dead, The LE (V1.41)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 141h, 105, "Walking Dead, The Limited Edition (V1.41)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 153, 105, "Walking Dead, The (V1.53)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 153h, 105, "Walking Dead, The LE (V1.53)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 153h, 105, "Walking Dead, The Limited Edition (V1.53)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 156, 105, "Walking Dead, The (V1.56)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156h, 105, "Walking Dead, The LE (V1.56)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156h, 105, "Walking Dead, The Limited Edition (V1.56)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 156c, 105, "Walking Dead, The (V1.56) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156hc, 105, "Walking Dead, The LE (V1.56) (Colored)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156hc, 105, "Walking Dead, The Limited Edition (V1.56) (Colored)", 2015, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 160, 105, "Walking Dead, The (V1.60.0)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160h, 105, "Walking Dead, The LE (V1.60.0)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160h, 105, "Walking Dead, The Limited Edition (V1.60.0)", 2017, "Stern", sam, 0)
 CORE_CLONEDEF(twd, 160c, 105, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160hc, 105, "Walking Dead, The LE (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 160hc, 105, "Walking Dead, The Limited Edition (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
 
 //Spider-Man Vault Edition
 INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12);
