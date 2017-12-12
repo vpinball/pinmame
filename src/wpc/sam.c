@@ -53,7 +53,7 @@
 #define SAM_IRQFREQ 4008
 
 #define SAM1_SOUNDFREQ 24000
-#define SAM_TIMER 120 // was 145
+#define SAM1_ZC_FREQ 120 // was 145
 // 100ms sound buffer.
 #define SNDBUFSIZE (SAM1_SOUNDFREQ * 100 / 1000)    
 
@@ -278,6 +278,7 @@ extern int at91_block_timers;
 /*-- Common Inports for SAM1 Games --*/
 #define SAM_COMPORTS \
   PORT_START /* 0 */ \
+	/*Switch Col. 0*/ \
     COREPORT_BITDEF(  0x0010, IPT_TILT,           KEYCODE_INSERT)  \
     COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_HOME)  \
     COREPORT_BIT   (  0x0040, "Ticket Notch",     KEYCODE_K)  \
@@ -286,12 +287,15 @@ extern int at91_block_timers;
     COREPORT_BIT   (  0x0200, "Minus",            KEYCODE_8) \
     COREPORT_BIT   (  0x0400, "Plus",             KEYCODE_9) \
     COREPORT_BIT   (  0x0800, "Select",           KEYCODE_0) \
+	/*Switch Col. 2*/ \
     COREPORT_BIT   (  0x8000, "Start Button",     KEYCODE_1) \
     COREPORT_BIT   (  0x4000, "Tournament Start", KEYCODE_2) \
+    /*Switch Col. 9*/ \
     COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)  \
     COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)  \
     COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)  \
     COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6)  \
+	/*None*/ \
     COREPORT_BITTOG(  0x1000, "Coin Door",        KEYCODE_END) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x001f, 0x0000, "Country") \
@@ -337,6 +341,7 @@ extern int at91_block_timers;
       COREPORT_DIPSET(0x0000, "1" ) \
       COREPORT_DIPSET(0x0080, "0" )
 
+/*-- Standard input ports --*/
 #define SAM_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
@@ -1110,16 +1115,13 @@ static READ32_HANDLER(sam_port_r)
 static WRITE32_HANDLER(sam_port_w)
 {
   // Bits 4 to 6 are used to issue a command to the PCM1755 chip as a serial 16-bit value.
-  if ((data & 0x10) && samlocals.pass >= 0)
-  {
-    samlocals.value |= ((data & 0x20) >> 5) << samlocals.pass;
-    samlocals.pass--;
-  }
+  if ((data & 0x10) && samlocals.pass >= 0) samlocals.value |= ((data & 0x20) >> 5) << samlocals.pass--;
   if (data & 0x08) { // end of command data
     int l_vol = 0;
     int r_vol = 0;
 
     LOG(("Writing to PCM1755 register #$%02x = %02x\n", samlocals.value >> 8, samlocals.value & 0xff));
+
     switch (samlocals.value >> 8) { // register number is the upper command byte
       case 0x10: // left channel attenuation
         samlocals.volume[0] = samlocals.value & 0xff;
@@ -1146,6 +1148,11 @@ static WRITE32_HANDLER(sam_port_w)
   if (data & 0x70000) LOG(("SET RTC: %x%x%x\n", (data >> 18) & 1, (data >> 17) & 1, (data >> 16) & 1));
 }
 
+/*****************************/
+/*  Port map for SAM1 CPU    */
+/*****************************/
+//AT91 has only 1 port address it writes to - all 32 ports are sent via each bit of a 32 bit double word.
+//However, if I didn't use 0-0xFF as a range it crashed for some reason.
 static PORT_READ32_START(sam_readport)
 	{ 0x00, 0xFF, sam_port_r },
 PORT_END
@@ -1154,9 +1161,6 @@ static PORT_WRITE32_START(sam_writeport)
 	{ 0x00, 0xFF, sam_port_w },
 PORT_END
 
-/*********************************************/
-/* S.A.M. Generation #1 - Machine Definition */
-/*********************************************/
 static MACHINE_INIT(sam) {
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
 	at91_set_transmit_serial(sam_transmit_serial);
@@ -1412,6 +1416,9 @@ static INTERRUPT_GEN(sam_irq)
 	at91_fire_irq(AT91_FIQ_IRQ);
 }
 
+/*********************************************/
+/* S.A.M. Generation #1 - Machine Definition */
+/*********************************************/
 static MACHINE_DRIVER_START(sam)
     MDRV_IMPORT_FROM(PinMAME)
     MDRV_SWITCH_UPDATE(sam)
@@ -1420,10 +1427,10 @@ static MACHINE_DRIVER_START(sam)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_vblank, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
-    MDRV_CORE_INIT_RESET_STOP(sam, sam, NULL)
+    MDRV_CORE_INIT_RESET_STOP(sam, sam, sam)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
-    MDRV_TIMER_ADD(sam_timer, SAM_TIMER)
+    MDRV_TIMER_ADD(sam_timer, SAM1_ZC_FREQ)
     MDRV_SOUND_ADD(CUSTOM, samCustInt)
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
     MDRV_DIAGNOSTIC_LEDH(2)
@@ -1822,10 +1829,10 @@ SAM_INPUT_PORTS_START(scarn103, 1) SAM_INPUT_PORTS_END
 SAM_INPUT_PORTS_START(scarn105, 1) SAM_INPUT_PORTS_END
 SAM_INPUT_PORTS_START(scarn200, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEFNV(scarn9nj, "Simpson's Kooky Carnival Redemption (V0.90) (New Jersey)", 2006, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn103, scarn9nj, "Simpson's Kooky Carnival Redemption (V1.03)", 2006, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn105, scarn9nj, "Simpson's Kooky Carnival Redemption (V1.05)", 2006, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn200, scarn9nj, "Simpson's Kooky Carnival Redemption (V2.0)", 2008, "Stern", sam, 0)
+CORE_GAMEDEFNV(scarn9nj, "Simpsons Kooky Carnival, The (Redemption) (V0.90) (New Jersey)", 2006, "Stern", sam, 0)
+CORE_CLONEDEFNV(scarn103, scarn9nj, "Simpsons Kooky Carnival, The (Redemption) (V1.03)", 2006, "Stern", sam, 0)
+CORE_CLONEDEFNV(scarn105, scarn9nj, "Simpsons Kooky Carnival, The (Redemption) (V1.05)", 2006, "Stern", sam, 0)
+CORE_CLONEDEFNV(scarn200, scarn9nj, "Simpsons Kooky Carnival, The (Redemption) (V2.0)", 2008, "Stern", sam, 0)
 
 /*-------------------------------------------------------------------
 / Family Guy

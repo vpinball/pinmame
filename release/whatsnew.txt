@@ -3,7 +3,7 @@ Version 3.0 (X X, 2017) - ""
 Extend and update some parts of the .txt documentation files
 
 *** CORE/CPU ***
-Add support for the Stern S.A.M. platform (e.g. Stern releases from 2006-2014)
+Add support for the Stern S.A.M. platform (e.g. Stern releases from 2006-2014), special thanks for improvements to CarnyPriest and especially DJRobX
 Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
 Fixed reset / NMI handling for IDSA V-1
 Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
@@ -18,7 +18,7 @@ Add emulation pause support for alternate sound
 New:
 MAC: MAC Jungle
 Stern: S.A.M. System Flash Boot 1.02,1.06,2.10,2.3,3.1
-       World Poker Tour 1.03(English),1.05(English),1.06(English,French,German,Italian,Spanish),1.08(English,French,German,Italian,Spanish),1.09(English,French,German,Italian,Spanish),1.09.2(French),
+       World Poker Tour 1.03(English),1.05(English),1.06(English,French,German,Italian,Spanish),1.08(English,French,German,Italian,Spanish),1.09(English,French,German,Italian,Spanish),1.09-2(French),
                         1.11(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
                         1.12(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
                         14.0(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
