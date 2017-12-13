@@ -100,15 +100,9 @@ static data32_t *sam_reset_ram;
 static data32_t *sam_page0_ram;
 static data32_t *nvram;
 
-static int LED_hack_send_garbage = 0;
-
 #define SAM_LEDS_MAX_STRINGS 4
 #define SAM_LED_MAX_STRING_LENGTH 65
 #define SAM_LEDS_MAX (SAM_LED_MAX_STRING_LENGTH * SAM_LEDS_MAX_STRINGS)
-
-static data8_t sam_ext_leds[SAM_LEDS_MAX];
-static data8_t sam_tmp_leds[SAM_LED_MAX_STRING_LENGTH];
-
 
 extern int at91_block_timers;
 int at91_receive_serial(int usartno, data8_t *buf, int size);
@@ -137,6 +131,30 @@ struct {
 	UINT32 solenoidbits[CORE_MODSOL_MAX];
 	UINT32 modulated_lights[WOF_MINIDMD_MAX];  // Also used by Tron ramps
 	UINT8 modulated_lights_prev_levels[WOF_MINIDMD_MAX];
+
+	data8_t ext_leds[SAM_LEDS_MAX];
+	data8_t tmp_leds[SAM_LED_MAX_STRING_LENGTH];
+
+	// IO Board:
+	int lampcol;
+	UINT8 auxstrb;
+	UINT8 auxdata;
+	int WOF_minidmdflag; // =dataBlock in original SAM.c
+	int colWrites;
+	int dataWrites[6]; //!! [4] unused, see 0x02400026, maybe also need a [6], see 0x0240002B?
+	int miniDMDCol;
+	int miniDMDRow;
+
+	// Transmit Serial:
+	data8_t prev_ch1;
+	data8_t prev_ch2;
+	int led_col;
+	int led_row;
+	int target_row;
+	int serchar_waiting;
+	int leds_per_string;
+
+	int LED_hack_send_garbage;
 } samlocals;
 
 
@@ -315,10 +333,10 @@ static int dedswitch_upper_r(void)
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
-    SAM_COMPORTS
+    SAM_COMPORTS \
+  INPUT_PORTS_END
 
-#define SAM_INPUT_PORTS_END INPUT_PORTS_END
-#define SAM_COMINPORT       CORE_COREINPORT
+#define SAM_COMINPORT CORE_COREINPORT
 
 static void sam_LED_hack(int usartno);
 static void sam_transmit_serial(int usartno, data8_t *data, int size);
@@ -343,8 +361,7 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 		{
 			for (channel = 0; channel < 2; channel++)
 			{
-				buffer[channel][ii] = samlocals.samplebuf[channel][samlocals.sampout];
-				samlocals.lastsamp[channel] = buffer[channel][ii];
+				samlocals.lastsamp[channel] = buffer[channel][ii] = samlocals.samplebuf[channel][samlocals.sampout];
 			}
 			samlocals.sampout = (samlocals.sampout + 1) % SNDBUFSIZE;
 		}
@@ -359,7 +376,7 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 static int sam_sh_start(const struct MachineSound *msound)
 {
 	const char *stream_name[] = { "SAM Left", "SAM Right" };
-	int volume[2] = { MIXER(100,MIXER_PAN_LEFT), MIXER(100,MIXER_PAN_RIGHT) };
+	const int volume[2] = { MIXER(100,MIXER_PAN_LEFT), MIXER(100,MIXER_PAN_RIGHT) };
 	/*-- allocate a DAC stream at fixed frequency --*/
 	return stream_init_multi
 	  (2,
@@ -384,11 +401,11 @@ static struct CustomSound_interface samCustInt =
 static READ32_HANDLER(samswitch_r)
 {
 	data32_t data = 0;
-	int base = 0x01100000;
-	int mask = ~mem_mask;
-	int adj = adj_offset(mask);
-	int realoff = (offset*4);
-	int addr = base + realoff + adj;
+	const int base = 0x01100000;
+	const int mask = ~mem_mask;
+	const int adj = adj_offset(mask);
+	const int realoff = (offset*4);
+	const int addr = base + realoff + adj;
 	int logit = LOG_SWITCH_READ_HANDLER;
 	offset = addr;
 
@@ -408,13 +425,15 @@ static READ32_HANDLER(samswitch_r)
 			}
 			//0x1100002 = Dedicated Switch Matrix (0-16)
 			case 0x1100002:
+			{
 				data = (coreGlobals.swMatrix[9] | ((core_swapNyb[coreGlobals.swMatrix[11] & 0xF] | (0x10 * core_swapNyb[coreGlobals.swMatrix[11] >> 4])) << 8));
 				// Copy flipper states (D8, D10, D12, D14) to EOS (Dx+1).   SAM is not 
 				// using standard VPM flipper coils, so the EOS simulation does not
 				// take place, and the ROM reports technician errors.
 				data |= (data & ((1 << 8) | (1 << 10) | (1 << 12) | (1 << 14))) << 1;
-				data ^= 0xFFFF;
+				data ^= 0xffff;
 				break;
+			}
 			//0x1100004 = Dedicated Switch Matrix (17-24) & Dips
 			case 0x1100004:
 			{
@@ -460,7 +479,7 @@ static READ32_HANDLER(samswitch_r)
 	if(offset == 0x1180000)
 	{
 		logit = LOG_UNKNOWN1;
-		data = samlocals.bank | 0x10;  // 0x10  (bits 4-7, mask 0x70) is hardware rev. 
+		data = samlocals.bank | 0x10;  // 0x10  (bits 4-7, mask 0x70) is hardware rev.
 	}
 
 	if(logit) LOG(("%08x: reading from: %08x = %08x (mask=%x)\n",activecpu_get_pc(),offset,data,mask));
@@ -488,8 +507,8 @@ static READ32_HANDLER(samswitch_r)
 static READ32_HANDLER(samxilinx_r)
 {
 	data32_t data = 0;
-	int mask = ~mem_mask;
-	int logit = LOG_IO_STAT;
+	const int mask = ~mem_mask;
+	const int logit = LOG_IO_STAT;
 	//This is read in the upper bits of the address.
 	if(mask == 0xff00)
 	{
@@ -623,7 +642,7 @@ static WRITE32_HANDLER(samxilinx_w)
 
 static WRITE32_HANDLER(samdmdram_w)
 {
-  int mask = ~mem_mask;
+  const int mask = ~mem_mask;
 
   switch(offset)
   {
@@ -687,28 +706,17 @@ A3 A2 A1 A0 (When IOSTB = 0)
 
 static WRITE32_HANDLER(sambank_w)
 {
-	//statics for IO Board:
-
 	// with the current technique, a maximum of 14 displayed rows is possible (WPT only uses 10),
 	// yet the amount of columns is virtually unlimited!
-	const int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
-
-	static int lampcol = 0;
-	static UINT8 auxstrb = 0;
-	static UINT8 auxdata = 0;
-	static int WOF_minidmdflag = 0; // =dataBlock in original SAM.c
-	static int colWrites;
-	static int dataWrites[6]; //!! [4] unused, see 0x02400026, maybe also need a [6], see 0x0240002B?
-	static int miniDMDCol = 0;
-	static int miniDMDRow = 0;
-
+	static const int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
 
 	const int base = 0x02400000;
-	int mask = ~mem_mask;
-	int adj = adj_offset(mask);
-	int realoff = (offset*4);
-	int addr = base + realoff + adj;
-	int newdata = (data>>(adj*8));
+
+	const int mask = ~mem_mask;
+	const int adj = adj_offset(mask);
+	const int realoff = (offset*4);
+	const int addr = base + realoff + adj;
+	const int newdata = (data>>(adj*8));
 	int logit = LOG_CS_W;
 	offset = addr;
 	data = newdata;
@@ -761,7 +769,7 @@ static WRITE32_HANDLER(sambank_w)
 		switch (offset)
 		{
 			case 0x02400020:
-				if (++dataWrites[0] == 1)
+				if (++samlocals.dataWrites[0] == 1)
 				{
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
@@ -797,7 +805,7 @@ static WRITE32_HANDLER(sambank_w)
 #endif
 				break;
 			case 0x02400021:
-				if (++dataWrites[1] == 1)
+				if (++samlocals.dataWrites[1] == 1)
 				{
 					int ii;
 					if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
@@ -816,7 +824,7 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				break;
 			case 0x02400022:
-				if (++dataWrites[2] == 1)
+				if (++samlocals.dataWrites[2] == 1)
 				{
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
@@ -826,7 +834,7 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				break;
 			case 0x02400023:
-				if (++dataWrites[3] == 1)
+				if (++samlocals.dataWrites[3] == 1)
 				{
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
@@ -836,46 +844,46 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				break;
 			case 0x02400026:
-				//if (++dataWrites[4] == 1) //!! ?? or only for core_update_modulated_light case below?
+				//if (++samlocals.dataWrites[4] == 1) //!! ?? or only for core_update_modulated_light case below?
 				//{
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
-					if ( miniDMDCol == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
-						miniDMDRow = rowMap[core_BitColToNum((data & 0x7F) | ((auxdata & 0x7F) << 7))];
-					if ( miniDMDCol > 1 )
-						samlocals.miniDMDData[miniDMDRow][miniDMDCol-2] = data & 0x7F;
-					if ( miniDMDCol < 17 ) // limit the displayed column count to 16 for now
-						miniDMDCol++;
-					if ( (~auxdata & data) >= 0x80) // observe change low -> high to trigger the column reset
-						miniDMDCol = 0;
+					if ( samlocals.miniDMDCol == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
+						samlocals.miniDMDRow = rowMap[core_BitColToNum((data & 0x7F) | ((samlocals.auxdata & 0x7F) << 7))];
+					if ( samlocals.miniDMDCol > 1 )
+						samlocals.miniDMDData[samlocals.miniDMDRow][samlocals.miniDMDCol - 2] = data & 0x7F;
+					if ( samlocals.miniDMDCol < 17 ) // limit the displayed column count to 16 for now
+						samlocals.miniDMDCol++;
+					if ( (~samlocals.auxdata & data) >= 0x80) // observe change low -> high to trigger the column reset
+						samlocals.miniDMDCol = 0;
 				}
 				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
 				{
-					int test = data & ~auxdata;
+					int test = data & ~samlocals.auxdata;
 					if (!((test < 0x80) && (test >= 0))) // observe change low -> high to trigger the column reset
 					{
-						miniDMDCol = 0;
-						miniDMDRow = core_BitColToNum(data & 0x03); // 2 rows
+						samlocals.miniDMDCol = 0;
+						samlocals.miniDMDRow = core_BitColToNum(data & 0x03); // 2 rows
 					}
-					if ( miniDMDCol < 3 )
+					if ( samlocals.miniDMDCol < 3 )
 					{
-						int i = 10 + miniDMDCol + 3*miniDMDRow;
+						const int i = 10 + samlocals.miniDMDCol + 3*samlocals.miniDMDRow;
 						coreGlobals.tmpLampMatrix[i] = data & 0x7F;
 						coreGlobals.lampMatrix[i] = data & 0x7F;
-						miniDMDCol++;
+						samlocals.miniDMDCol++;
 					}
 				}
 				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
-					int test = data & ~auxdata;
+					int test = data & ~samlocals.auxdata;
 					if ( (test < 0x80) && (test >= 0) ) // observe change low -> high to trigger the column reset
 					{
-						miniDMDCol++;
+						samlocals.miniDMDCol++;
 					}
 					else
 					{
-						WOF_minidmdflag = !WOF_minidmdflag;
-						miniDMDCol = 0;
+						samlocals.WOF_minidmdflag = !samlocals.WOF_minidmdflag;
+						samlocals.miniDMDCol = 0;
 						if (options.usemodsol) // To protect the VP9 table from an onslaught of extra lights. 
 						{
 							int i;
@@ -886,49 +894,49 @@ static WRITE32_HANDLER(sambank_w)
 						}
 					}
 
-					if ( WOF_minidmdflag )
+					if ( samlocals.WOF_minidmdflag )
 					{
-						if ( miniDMDCol == 1 )
+						if ( samlocals.miniDMDCol == 1 )
 						{
-							miniDMDRow = core_BitColToNum(data & 0x1F); // 5 rows
+							samlocals.miniDMDRow = core_BitColToNum(data & 0x1F); // 5 rows
 						}
-						if ( miniDMDCol > 1 && miniDMDCol < 7 )
+						if ( samlocals.miniDMDCol > 1 && samlocals.miniDMDCol < 7 )
 						{
 							int i;
-							samlocals.miniDMDData[miniDMDRow][miniDMDCol-2] = data & 0x7F;
+							samlocals.miniDMDData[samlocals.miniDMDRow][samlocals.miniDMDCol - 2] = data & 0x7F;
 							for (i = 0; i < 7; i++) //!! <= 7 ? most likely not
 							{
-								core_update_modulated_light(&samlocals.modulated_lights[35 * miniDMDRow + (miniDMDCol - 2) * 7 + i], data & (1u << (6 - i)));
+								core_update_modulated_light(&samlocals.modulated_lights[35 * samlocals.miniDMDRow + (samlocals.miniDMDCol - 2) * 7 + i], data & (1u << (6 - i)));
 							}
 						}
 					}
 					else
 					{
-						if ( miniDMDCol < 6 )
+						if ( samlocals.miniDMDCol < 6 )
 						{
-							coreGlobals.tmpLampMatrix[miniDMDCol + 10] = data & 0x7F;
-							coreGlobals.lampMatrix[miniDMDCol + 10] = data & 0x7F;
+							coreGlobals.tmpLampMatrix[samlocals.miniDMDCol + 10] = data & 0x7F;
+							coreGlobals.lampMatrix[samlocals.miniDMDCol + 10] = data & 0x7F;
 						}
 					}
 				}
-				auxdata = data;
+				samlocals.auxdata = data;
 				//}
 				break;
 			case 0x02400028:
-				memset(dataWrites, 0, sizeof(dataWrites));
-				colWrites++;
-				if(colWrites == 1 || colWrites == 2) //!! just 2 ??
+				memset(samlocals.dataWrites, 0, sizeof(samlocals.dataWrites));
+				samlocals.colWrites++;
+				if(samlocals.colWrites == 1 || samlocals.colWrites == 2) //!! just 2 ??
 				{
-					lampcol = core_BitColToNum(data);
+					samlocals.lampcol = core_BitColToNum(data);
 				}
 				break;
 			case 0x0240002A:
-				colWrites = 0;
-				if (++dataWrites[5] == 1)
-					coreGlobals.tmpLampMatrix[lampcol] = core_revbyte(data);
+				samlocals.colWrites = 0;
+				if (++samlocals.dataWrites[5] == 1)
+					coreGlobals.tmpLampMatrix[samlocals.lampcol] = core_revbyte(data);
 				break;
 			case 0x0240002B:
-				//if (++dataWrites[6] == 1) //!! ?? or only for core_update_modulated_light cases below?
+				//if (++samlocals.dataWrites[6] == 1) //!! ?? or only for core_update_modulated_light cases below?
 				//{
 				coreGlobals.gi[0] = (~data & 0x01) ? 9 : 0;
 
@@ -942,13 +950,13 @@ static WRITE32_HANDLER(sambank_w)
 				// setting it as an aux 12 board. 
 				
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x20)) ||
-					(core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (~data & 0x10) ||
-					(core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40))
+					 (core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10) ||
+					 (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40))
 				{
 					int ii;
 					for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], auxdata & (1u << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], samlocals.auxdata & (1u << ii));
 					}
 				}
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
@@ -956,57 +964,57 @@ static WRITE32_HANDLER(sambank_w)
 					int ii;
 					for (ii = 0; ii <= 5; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL + 8 - 1], auxdata & (1u << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL + 8 - 1], samlocals.auxdata & (1u << ii));
 					}
 				}
 				// Metallica LE has a special aux board just for the coffin magnet! 
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
 				{
-					core_update_modulated_light(&samlocals.solenoidbits[6 + CORE_FIRSTCUSTSOL - 1], auxdata & 0x80);
-					core_update_modulated_light(&samlocals.solenoidbits[7 + CORE_FIRSTCUSTSOL - 1], auxdata & 0x40);
+					core_update_modulated_light(&samlocals.solenoidbits[6 + CORE_FIRSTCUSTSOL - 1], samlocals.auxdata & 0x80);
+					core_update_modulated_light(&samlocals.solenoidbits[7 + CORE_FIRSTCUSTSOL - 1], samlocals.auxdata & 0x40);
 				}
-				// ACDC LE uses a special aux board for flame lights
+				// AC/DC LE uses a special aux board for flame lights
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~data & 0x08)))
 				{
 					int ii;
 					for (ii = 0; ii < 8; ii++)
-						sam_ext_leds[70 + ii] = (auxdata & (1u << ii) ? 255 : 0);
+						samlocals.ext_leds[70 + ii] = (samlocals.auxdata & (1u << ii) ? 255 : 0);
 				}
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
-					if ( (data & ~auxstrb) & 0x08 ) // LEDs
-						WOF_minidmdflag = 0;
-					else if ( (data & ~auxstrb) & 0x10 ) // DMD
-						WOF_minidmdflag = 1;
+					if ( (data & ~samlocals.auxstrb) & 0x08 ) // LEDs
+						samlocals.WOF_minidmdflag = 0;
+					else if ( (data & ~samlocals.auxstrb) & 0x10 ) // DMD
+						samlocals.WOF_minidmdflag = 1;
 				}
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (~data & 0x08))
-					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
+					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.auxdata);
 				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (~data & 0x10))
-					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
+					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.auxdata);
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_TRON)
 				{
 					if ( ~data & 0x08 )
-						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(auxdata);
+						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(samlocals.auxdata);
 					if ( ~data & 0x10 )
 					{
-						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(auxdata);
-						core_update_modulated_light(&samlocals.modulated_lights[0], auxdata & (1u << 3));
-						core_update_modulated_light(&samlocals.modulated_lights[1], auxdata & (1u << 4));
-						core_update_modulated_light(&samlocals.modulated_lights[2], auxdata & (1u << 5));
+						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(samlocals.auxdata);
+						core_update_modulated_light(&samlocals.modulated_lights[0], samlocals.auxdata & (1u << 3));
+						core_update_modulated_light(&samlocals.modulated_lights[1], samlocals.auxdata & (1u << 4));
+						core_update_modulated_light(&samlocals.modulated_lights[2], samlocals.auxdata & (1u << 5));
 					}
 					if ( ~data & 0x20 )
 					{
-						coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
-						core_update_modulated_light(&samlocals.modulated_lights[3], auxdata & (1u << 3));
-						core_update_modulated_light(&samlocals.modulated_lights[4], auxdata & (1u << 4));
-						core_update_modulated_light(&samlocals.modulated_lights[5], auxdata & (1u << 5));
+						coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.auxdata);
+						core_update_modulated_light(&samlocals.modulated_lights[3], samlocals.auxdata & (1u << 3));
+						core_update_modulated_light(&samlocals.modulated_lights[4], samlocals.auxdata & (1u << 4));
+						core_update_modulated_light(&samlocals.modulated_lights[5], samlocals.auxdata & (1u << 5));
 					}
 					if ( ~data & 0x40 )
 						LOG(("Test"));
 				}
-				if ( (~data & 0x40) && (auxdata & 3) )
+				if ( (~data & 0x40) && (samlocals.auxdata & 3) )
 					LOG(("error"));
-				auxstrb = data;
+				samlocals.auxstrb = data;
 				//}
 				break;
 			 default:
@@ -1104,7 +1112,7 @@ MEMORY_END
 /*********************/
 static READ32_HANDLER(sam_port_r)
 {
-	int logit = LOG_PORT_READ;
+	const int logit = LOG_PORT_READ;
 	data32_t data;
 	//Set P10,P11 to +1 as shown in schematic since they are tied to voltage.
 	data = 0x00000C00;
@@ -1160,11 +1168,11 @@ static WRITE32_HANDLER(sam_port_w)
 //AT91 has only 1 port address it writes to - all 32 ports are sent via each bit of a 32 bit double word.
 //However, if I didn't use 0-0xFF as a range it crashed for some reason.
 static PORT_READ32_START(sam_readport)
-	{ 0x00, 0xFF, sam_port_r },
+	{ 0x00,0xFF, sam_port_r },
 PORT_END
 
 static PORT_WRITE32_START(sam_writeport)
-	{ 0x00, 0xFF, sam_port_w },
+	{ 0x00,0xFF, sam_port_w },
 PORT_END
 
 static MACHINE_INIT(sam1) {
@@ -1177,9 +1185,6 @@ static MACHINE_INIT(sam1) {
 		at91_init_jit(0,(options.at91jit > 1) ? options.at91jit : 0x1080000);
 	}
 #endif
-	memset(sam_ext_leds, 0, SAM_LEDS_MAX * sizeof(data8_t));
-	memset(sam_tmp_leds, 0, SAM_LED_MAX_STRING_LENGTH * sizeof(data8_t));
-
 	if (_strnicmp(Machine->gamedrv->name,"csi_",4)==0 || _strnicmp(Machine->gamedrv->name,"ij4_",4)==0)
 		at91_block_timers = 1;
 
@@ -1195,6 +1200,7 @@ static MACHINE_RESET(sam1) {
 	samlocals.samVersion = 1;
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
+	samlocals.led_row = -1;
 }
 
 static MACHINE_RESET(sam2) {
@@ -1202,6 +1208,7 @@ static MACHINE_RESET(sam2) {
 	samlocals.samVersion = 2;
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
+	samlocals.led_row = -1;
 }
 
 static MACHINE_STOP(sam1) {
@@ -1247,7 +1254,7 @@ static void sam_LED_hack(int usartno)
 	}
 	else //if (stricmp(gn, "twd_156h")==0)  // The default implementation is to blast some data at it.  This seems to work for Walking Dead and at least speeds up others. 
 	{
-		LED_hack_send_garbage = 1;
+		samlocals.LED_hack_send_garbage = 1;
 	}
 }
 
@@ -1257,14 +1264,6 @@ static void sam_LED_hack(int usartno)
 
 static void sam_transmit_serial(int usartno, data8_t *data, int size)
 {
-	static data8_t sam_prev_ch1 = 0;
-	static data8_t sam_prev_ch2 = 0;
-	static int sam_led_col = 0;
-	static int sam_led_row = -1;
-	static int sam_target_row;
-	static int sam_serchar_waiting;
-	static int sam_leds_per_string;
-
 #if 0//def _DEBUG
 	int i;
 	for (i = 0; i < size; i++)
@@ -1289,70 +1288,70 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 		// Walking Dead LE is waiting for some sort of non-zero response
 		// from the led string.  Continue sending a block of garbage in response until we see
 		// a valid LED string.   Mustang has the same issue, but we have a hack in place that skips the check.
-		if (LED_hack_send_garbage)
+		if (samlocals.LED_hack_send_garbage)
 		{
 			data8_t tmp[0x40];
 			memset(tmp, 0x01, sizeof(tmp));
 			at91_receive_serial(0, tmp, sizeof(tmp));
 		}
-		if (sam_led_row == -1)		
+		if (samlocals.led_row == -1)
 		{
 			// Looking for the header.
 			// Mustang or Star Trek
-			if ((*data) == 0x80 && sam_prev_ch1 == 0x41)
+			if ((*data) == 0x80 && samlocals.prev_ch1 == 0x41)
 			{
-				if (sam_serchar_waiting == 2)
+				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&sam_ext_leds[(sam_target_row * sam_leds_per_string)], &sam_tmp_leds[0], sam_leds_per_string);
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
 				}
-				sam_leds_per_string = sam_prev_ch1;
-				sam_led_row = sam_prev_ch2 - 0x85;
-				if (sam_led_row > SAM_LEDS_MAX_STRINGS) 
-					sam_led_row = -1;
+				samlocals.leds_per_string = samlocals.prev_ch1;
+				samlocals.led_row = samlocals.prev_ch2 - 0x85;
+				if (samlocals.led_row > SAM_LEDS_MAX_STRINGS)
+					samlocals.led_row = -1;
 			}
 			// Walking Dead LE
-			if (((*data) == 0x80 || (*data)==0xa0) && sam_prev_ch1 == 0x23 && (sam_prev_ch2 == 0x83 || sam_prev_ch2 == 0x88))
+			if (((*data) == 0x80 || (*data) == 0xa0) && samlocals.prev_ch1 == 0x23 && (samlocals.prev_ch2 == 0x83 || samlocals.prev_ch2 == 0x88))
 			{
 				// TWD sends garbage data in the led string sometimes.   Only accept if it was framed properly. 
-				if (sam_serchar_waiting == 2)
+				if (samlocals.serchar_waiting == 2)
 				{
-					memcpy(&sam_ext_leds[(sam_target_row * sam_leds_per_string)], &sam_tmp_leds[0], sam_leds_per_string);
-					LED_hack_send_garbage = 0;
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
+					samlocals.LED_hack_send_garbage = 0;
 				}
-				sam_leds_per_string = sam_prev_ch1;
-				sam_led_row = (sam_prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
+				samlocals.leds_per_string = samlocals.prev_ch1;
+				samlocals.led_row = (samlocals.prev_ch2 == 0x83) ? ((*data) == 0x80) ? 0 : 2 : ((*data) == 0x80) ? 1 : 3;
 			}	
 			// AC/DC or Metallica 
-			if ((*data) == 0x00 && sam_prev_ch1 == 0x80)
+			if ((*data) == 0x00 && samlocals.prev_ch1 == 0x80)
 			{
-				if (sam_serchar_waiting == 1)
+				if (samlocals.serchar_waiting == 1)
 				{
-					memcpy(&sam_ext_leds[(sam_target_row * sam_leds_per_string)], &sam_tmp_leds[0], sam_leds_per_string);
+					memcpy(&samlocals.ext_leds[samlocals.target_row * samlocals.leds_per_string], &samlocals.tmp_leds[0], samlocals.leds_per_string);
 				}
-				sam_leds_per_string = 56;
-				sam_led_row = 0;
+				samlocals.leds_per_string = 56;
+				samlocals.led_row = 0;
 			}	
-			sam_led_col=0;
-			sam_serchar_waiting++;
-			sam_prev_ch2 = sam_prev_ch1;
-			sam_prev_ch1 = *(data++);
+			samlocals.led_col=0;
+			samlocals.serchar_waiting++;
+			samlocals.prev_ch2 = samlocals.prev_ch1;
+			samlocals.prev_ch1 = *(data++);
 			size--;
 		} 
 		else 
 		{
-			const int count = size > (sam_leds_per_string-sam_led_col) ? sam_leds_per_string-sam_led_col : size;
+			const int count = size > (samlocals.leds_per_string - samlocals.led_col) ? samlocals.leds_per_string - samlocals.led_col : size;
 			int i;
 			for(i=0;i<count;i++)
 			{
-				sam_tmp_leds[sam_led_col++] = *(data++);
+				samlocals.tmp_leds[samlocals.led_col++] = *(data++);
 			}
 			size -= count;
-			if (sam_led_col >= sam_leds_per_string)
+			if (samlocals.led_col >= samlocals.leds_per_string)
 			{
-				sam_prev_ch1 = 0;
-				sam_target_row = sam_led_row;
-				sam_led_row = -1;
-				sam_serchar_waiting = 0;
+				samlocals.prev_ch1 = 0;
+				samlocals.target_row = samlocals.led_row;
+				samlocals.led_row = -1;
+				samlocals.serchar_waiting = 0;
 			}
 		}
 	}
@@ -1372,7 +1371,7 @@ static INTERRUPT_GEN(sam_vblank) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, 40); //!! sizeof(coreGlobals.tmpLampMatrix)
 
 	/*-- display --*/
-	if ((samlocals.vblankCount % (SAM_DISPLAYSMOOTH)) == 0) {
+	if ((samlocals.vblankCount % SAM_DISPLAYSMOOTH) == 0) {
 	    coreGlobals.diagnosticLed = samlocals.diagnosticLed;
 		samlocals.diagnosticLed = 0;
 	}
@@ -1389,11 +1388,11 @@ static INTERRUPT_GEN(sam_vblank) {
 		break;
 	}
 	case SAM_GAME_WOF:
-		//!!
+		//!! also others ?!
 		break;
 
 	default:
-		memcpy(coreGlobals.RGBlamps, sam_ext_leds, SAM_LEDS_MAX * sizeof(data8_t));
+		memcpy(coreGlobals.RGBlamps, samlocals.ext_leds, SAM_LEDS_MAX * sizeof(data8_t));
 		break;
 	}
 
@@ -1472,30 +1471,26 @@ MACHINE_DRIVER_END
 		gen, disp, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, lampcol, 16, 0, 0, hw,0, sam_getSol}}; \
 	static void init_##name(void) { core_gameData = &name##GameData; }
 
-//Memory Regions
-#define SAM_CPU1REGION	REGION_CPU1
-#define SAM_CPU2REGION	REGION_CPU2
-#define SAM_ROMREGION	REGION_USER1
-
 //Displays
-static UINT8 hew[16] =
-	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-//	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
 PINMAME_VIDEO_UPDATE(samdmd_update) {
+	static const UINT8 hew[16] =
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+	//	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
+
 	int ii;
 	tDMDDot dotCol;
 
 	for( ii = 0; ii < 32; ii++ )
 	{
 		UINT8 *line = &dotCol[ii+1][0];
+		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
+		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
 		int jj;
 		for( jj = 0; jj < 128; jj++ )
 		{
-			UINT8 *RAM1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii*128 + jj;
-			UINT8 *RAM2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii*128 + jj;
-			UINT8 temp = *RAM1;
-			if ((*RAM1 & 0xF0) == 0xF0)
-				temp = *RAM2;
+			const UINT8 * const RAM1 = offs1 + jj;
+			const UINT8 * const RAM2 = offs2 + jj;
+			const UINT8 temp = ((*RAM1 & 0xF0) == 0xF0) ? *RAM2 : *RAM1;
 			*line = hew[temp];
 			*line++;
 		}
@@ -1508,12 +1503,12 @@ PINMAME_VIDEO_UPDATE(samdmd_update) {
 PINMAME_VIDEO_UPDATE(samminidmd_update) {
     tDMDDot dotCol;
     int ii,kk,bits;
-    int dmd_x = (layout->left-10)/7;
-    int dmd_y = (layout->top-34)/9;
+    const int dmd_x = (layout->left-10)/7;
+    const int dmd_y = (layout->top-34)/9;
 
     for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
         for (kk = 0; kk < 5; kk++)
-            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y * 5 + kk][dmd_x] & bits ? 3 : 0;
+            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y*5 + kk][dmd_x] & bits ? 3 : 0;
 
     for (ii = 0; ii < 5; ii++) {
         bits = 0;
@@ -1537,7 +1532,7 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
 				for (kk = 0; kk < 5; kk++)
 				{
-					int target = (kk * 35) + (jj * 7) + ii;
+					const int target = (kk * 35) + (jj * 7) + ii;
 					dotCol[kk + 1][ii + (jj * 7)] = coreGlobals.RGBlamps[target + 60] >> 4;
 				}
 	}
@@ -1641,7 +1636,7 @@ SAM1_BOOTFLASH(sam1_flashb_0210, "boot_210.bin", CRC(0f3fd4a4) SHA1(115d0b73c40f
 SAM1_BOOTFLASH(sam1_flashb_0230, "boot_230.bin", CRC(a4258c49) SHA1(d865edf7d1c6d2c922980dd192222dc24bc092a0), 0x000f0624)
 SAM1_BOOTFLASH(sam1_flashb_0310, "boot_310.bin", CRC(de017f82) SHA1(e4a9a818fa3f1754374cd00b52b8a087d6c442a9), 0x00100000)
 
-SAM_INPUT_PORTS_START(sam1_flashb, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(sam1_flashb, 1)
 
 CORE_GAMEDEF(sam1_flashb, 0310, "S.A.M. Boot Flash Update (V3.1)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(sam1_flashb, 0102, 0310, "S.A.M. System Flash Boot (V1.02)", 2006, "Stern", sam1, 0)
@@ -1707,7 +1702,7 @@ SAM1_ROM32MB(wpt_140gf,"wpt1400gf.bin",CRC(7be526fa) SHA1(a42e5c2c1fde9ab97d7dcf
 SAM1_ROM32MB(wpt_140i, "wpt1400i.bin", CRC(9f19ed03) SHA1(4ef570be084b1e5196a19b7f516f621025c174bc), 0x01B2C740)
 SAM1_ROM32MB(wpt_140l, "wpt1400l.bin", CRC(00eff09c) SHA1(847203d4d2ce8d11a5403374f2d5b6dda8458bc9), 0x01C7072C)
 
-SAM_INPUT_PORTS_START(wpt, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(wpt, 1)
 
 CORE_GAMEDEF(wpt, 140a, "World Poker Tour (V14.0)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 103a, 140a, "World Poker Tour (V1.03)", 2006, "Stern", sam1, 0)
@@ -1775,10 +1770,10 @@ SAM1_ROM32MB(scarn103, "scarn103.bin", CRC(69f5bb8a) SHA1(436db9872d5809c7ed5fe6
 SAM1_ROM32MB(scarn105, "scarn105.bin", CRC(a09ffa33) SHA1(fab75f338a5d6c82632cd0804ddac1ab78466636), 0x0053DD14)
 SAM1_ROM32MB(scarn200, "scarn200.bin", CRC(f08a2cf0) SHA1(ae32da8b35006061d397832563b71976899625bb), 0x005479F8)
 
-SAM_INPUT_PORTS_START(scarn9nj, 1) SAM_INPUT_PORTS_END
-SAM_INPUT_PORTS_START(scarn103, 1) SAM_INPUT_PORTS_END
-SAM_INPUT_PORTS_START(scarn105, 1) SAM_INPUT_PORTS_END
-SAM_INPUT_PORTS_START(scarn200, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(scarn9nj, 1)
+SAM_INPUT_PORTS_START(scarn103, 1)
+SAM_INPUT_PORTS_START(scarn105, 1)
+SAM_INPUT_PORTS_START(scarn200, 1)
 
 CORE_GAMEDEFNV(scarn200, "Simpsons Kooky Carnival, The (Redemption) (V2.0)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEFNV(scarn9nj, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V0.90 New Jersey)", 2006, "Stern", sam1, 0)
@@ -1810,7 +1805,7 @@ SAM1_ROM32MB(fg_1200al, "fg1200al.bin", CRC(d10cff88) SHA1(e312a3b24f1b69db9f88a
 SAM1_ROM32MB(fg_1200af, "fg1200af.bin", CRC(ba6a3a2e) SHA1(78eb2e26abe00d7ce5fa998b6ec1381ac0f1db31), 0x01CE5514)
 SAM1_ROM32MB(fg_1200ag, "fg1200ag.bin", CRC(d9734f94) SHA1(d56ddf5961e5ac4c3565f9d92d6fb7e0e0af4bcb), 0x01C53678)
 
-SAM_INPUT_PORTS_START(fg, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(fg, 1)
 
 CORE_GAMEDEF(fg, 1200ag, "Family Guy (V12.0) (English, German)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(fg, 200a,   1200ag, "Family Guy (V2.00) (English)", 2007, "Stern", sam1, 0)
@@ -1881,7 +1876,7 @@ SAM1_ROM32MB(potc_600ai, "potc600ai.bin", CRC(2d7aebae) SHA1(9e383507d225859b4df
 SAM1_ROM32MB(potc_600as, "potc600as.bin", CRC(5d5e1aaa) SHA1(9c7a416ae6587a86c8d2c6350621f09580226971), 0x01C92990)
 SAM1_ROM32MB(potc_600gf, "potc600gf.bin", CRC(44eb2610) SHA1(ec1e1f7f2cd135942531e0e3f540afadb5d2f527), 0x01B67104)
 
-SAM_INPUT_PORTS_START(potc, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(potc, 1)
 
 CORE_GAMEDEF(potc, 600af, "Pirates of the Caribbean (V6.0) (English, French)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(potc, 108as, 600af, "Pirates of the Caribbean (V1.08) (English, Spanish)", 2006, "Stern", sam1, 0)
@@ -1970,7 +1965,7 @@ SAM1_ROM32MB(sman_240,   "sman240a.bin",  CRC(dc5ee57e) SHA1(7453db81b161cdbf7be
 SAM1_ROM32MB(sman_260,   "sman260a.bin",  CRC(acfc813e) SHA1(bcbb0ec2bbfc55b1256c83b0300c0c38d15a3db1), 0x018775E0)
 SAM1_ROM32MB(sman_261,   "sman261a.bin",  CRC(9900cd4c) SHA1(1b95f957f8d709bba9fb3b7dcd4bca99176a010c), 0x01718F64)
 
-SAM_INPUT_PORTS_START(sman, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(sman, 1)
 
 CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130af, 261, "Spider-Man (V1.30) (English, French)", 2007, "Stern", sam1, 0)
@@ -2073,7 +2068,7 @@ SAM1_ROM32MB(wof_500g, "wof0500g.bin", CRC(658f8622) SHA1(31926717b5914f91b70eeb
 SAM1_ROM32MB(wof_500i, "wof0500i.bin", CRC(27fb48bc) SHA1(9a9846c84a1fc543ec2236a28991d0cd70e86b52), 0x01D45EE8)
 SAM1_ROM32MB(wof_500l, "wof0500l.bin", CRC(b8e09fcd) SHA1(522983ce75b24733a0827a2eeea3d44419c7998e), 0x01B080B0)
 
-SAM_INPUT_PORTS_START(wof, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(wof, 1)
 
 CORE_GAMEDEF(wof, 500, "Wheel of Fortune (V5.0)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(wof, 100,  500, "Wheel of Fortune (V1.0)", 2007, "Stern", sam1, 0)
@@ -2107,7 +2102,7 @@ INITGAME(shr, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_FG);
 SAM1_ROM32MB(shr_130, "shr130.bin", CRC(0c4efde5) SHA1(58e156a43fef983d48f6676e8d65fb30d45f8ec3), 0x01BB0824)
 SAM1_ROM32MB(shr_141, "shr141.bin", CRC(f4f847ce) SHA1(d28f9186bb04036e9ff56d540e70a50f0816051b), 0x01C55290)
 
-SAM_INPUT_PORTS_START(shr, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(shr, 1)
 
 CORE_GAMEDEF(shr, 141, "Shrek (V1.41)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(shr, 130, 141, "Shrek (V1.3)", 2008, "Stern", sam1, 0)
@@ -2138,7 +2133,7 @@ SAM1_ROM32MB(ij4_116l, "ij4_116l.bin", CRC(833ae2fa) SHA1(cb931e473164ddfa2559f3
 SAM1_ROM32MB(ij4_210,  "ij4_210.bin",  CRC(b96e6fd2) SHA1(f59cbdefc5ab6b21662981b3eb681fd8bd7ade54), 0x01C6D9E4)
 SAM1_ROM32MB(ij4_210f, "ij4_210f.bin", CRC(d1d37248) SHA1(fd6819e0e86b83d658790ff30871596542f98c8e), 0x01C6D9E4)
 
-SAM_INPUT_PORTS_START(ij4, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(ij4, 1)
 
 CORE_GAMEDEF(ij4, 210, "Indiana Jones (V2.1)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(ij4, 113,  210, "Indiana Jones (V1.13)", 2008, "Stern", sam1, 0)
@@ -2177,7 +2172,7 @@ SAM1_ROM32MB(bdk_290, "bdk290.bin", CRC(09ce777e) SHA1(79b6d3f91aa4d42318c698a44
 SAM1_ROM32MB(bdk_294, "bdk294.bin", CRC(e087ec82) SHA1(aad2c43e6de9a520954eb50b6c824a138cd6f47f), 0x01C00844)
 SAM1_ROM32MB(bdk_300, "bdk300.bin", CRC(8325bc80) SHA1(04f20d78ad33956618e576bba108ab145e26f9aa), 0x01C6AD84)
 
-SAM_INPUT_PORTS_START(bdk, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(bdk, 1)
 
 CORE_GAMEDEF(bdk, 294, "Batman: The Dark Knight (V2.94)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 130, 294, "Batman: The Dark Knight (V1.3)", 2008, "Stern", sam1, 0)
@@ -2203,7 +2198,7 @@ SAM1_ROM32MB(csi_210, "csi210a.bin", CRC(afebb31f) SHA1(9b8179baa2f6e61852b57aaa
 SAM1_ROM32MB(csi_230, "csi230a.bin", CRC(c25ccc67) SHA1(51a21fca06db4b05bda2c7d5a09d655c97ba19c6), 0x01e21fc0)
 SAM1_ROM32MB(csi_240, "csi240a.bin", CRC(2be97fa3) SHA1(5aa231bde81f7787cc06567c8b3d28c750588071), 0x01e21fc0)
 
-SAM_INPUT_PORTS_START(csi, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(csi, 1)
 
 CORE_GAMEDEF(csi, 240, "CSI: Crime Scene Investigation (V2.4)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(csi, 102, 240, "CSI: Crime Scene Investigation (V1.02)", 2008, "Stern", sam1, 0)
@@ -2223,7 +2218,7 @@ SAM1_ROM32MB(twenty4_140, "24_140a.bin", CRC(bab92fb1) SHA1(07c8d9c28730411dd0f2
 SAM1_ROM32MB(twenty4_144, "24_144a.bin", CRC(29c47da0) SHA1(8d38e35a0df843a71cac6cd4dd6aa460347a208c), 0x01CA8E50)
 SAM1_ROM32MB(twenty4_150, "24_150a.bin", CRC(9d7d87cc) SHA1(df6b2f60b87226fdda33bdbbe03ea87d690fc563), 0x01CA8E50)
 
-SAM_INPUT_PORTS_START(twenty4, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(twenty4, 1)
 
 CORE_GAMEDEF(twenty4, 150, "24 (V1.5)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(twenty4, 130, 150, "24 (V1.3)", 2009, "Stern", sam1, 0)
@@ -2241,7 +2236,7 @@ SAM1_ROM32MB(nba_700, "nba700.bin", CRC(15ece43b) SHA1(90cc8b4c52a61da9701fcaba0
 SAM1_ROM32MB(nba_801, "nba801.bin", CRC(0f8b146e) SHA1(090d73a9bff0a0b0c17ced1557d5e63e5c986e95), 0x019112d0)
 SAM1_ROM32MB(nba_802, "nba802.bin", CRC(ba681dac) SHA1(184f3315a54b1a5295b19222c718ac38fa60d340), 0x019112d0)
 
-SAM_INPUT_PORTS_START(nba, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(nba, 1)
 
 CORE_GAMEDEF(nba, 802, "NBA (V8.02)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(nba, 500, 802, "NBA (V5.0)", 2009, "Stern", sam1, 0)
@@ -2259,7 +2254,7 @@ SAM1_ROM32MB(bbh_150, "bbh150.bin", CRC(18bad072) SHA1(16e499046107baceda6f6c934
 SAM1_ROM32MB(bbh_160, "bbh160.bin", CRC(75077f85) SHA1(c58a2ae5c1332390f0d1191ee8ff920ceec23352), 0x01BB8FA4)
 SAM1_ROM32MB(bbh_170, "bbh170.bin", CRC(0c2d3e64) SHA1(9a71959c57b9a75028e21bce9ee03871f8914138), 0x01BB8FD0)
 
-SAM_INPUT_PORTS_START(bbh, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(bbh, 1)
 
 CORE_GAMEDEF(bbh, 170, "Big Buck Hunter Pro (V1.7)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(bbh, 140, 170, "Big Buck Hunter Pro (V1.4)", 2010, "Stern", sam1, 0)
@@ -2281,7 +2276,8 @@ SAM1_ROM32MB(im_182,  "im_182.bin",  CRC(c65aff0b) SHA1(ce4d26ffdfd8539e8f7fca78
 SAM1_ROM32MB(im_183,  "im_183.bin",  CRC(cf2791a6) SHA1(eb616e3bf33024374f4e998a579bc88f63282ba6), 0x01C52C5C)
 SAM1_ROM32MB(im_183ve,"im_183ve.bin",CRC(e477183c) SHA1(6314b44b58c79889f95af1792395203dbbb36b0b), 0x01C52C5C)
 
-SAM_INPUT_PORTS_START(im, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(im, 1)
+
 CORE_GAMEDEF(im, 183ve, "Iron Man Vault Edition (V1.83)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(im, 100, 183ve, "Iron Man (V1.0)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(im, 110, 183ve, "Iron Man (V1.1)", 2010, "Stern", sam1, 0)
@@ -2311,7 +2307,7 @@ SAM1_ROM32MB(trn_174,  "trn174.bin",  CRC(20e44481) SHA1(88e6e75efb640a7978f4003
 SAM1_ROM32MB(trn_17402,"trn17402.bin",CRC(94a5946c) SHA1(5026e33a8bb00c83caf06891727b8439d1274fbb), 0x01F79E70)
 SAM1_ROM32MB(trn_174h, "trn174h.bin", CRC(a45224bf) SHA1(40e36764af332175f653e8ddc2a8bb77891c1230), 0x01F93B84)
 
-SAM_INPUT_PORTS_START(trn, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(trn, 1)
 
 CORE_GAMEDEF(trn, 174h, "TRON: Legacy Limited Edition (V1.74)", 2013, "Stern", sam1, 0)
 CORE_CLONEDEF(trn, 100h, 174h, "TRON: Legacy Limited Edition (V1.0)", 2011, "Stern", sam1, 0)
@@ -2346,7 +2342,7 @@ SAM1_ROM32MB(tf_140h, "tf140h.bin", CRC(7e7920d6) SHA1(9db41874081d5f28adb5ab239
 SAM1_ROM32MB(tf_150h, "tf150h.bin", CRC(5cec6bfc) SHA1(30899241c2c0a9d42aa19fa3eb4180452bdaec91), 0x01EB1E5C)
 SAM1_ROM32MB(tf_180h, "tf180h.bin", CRC(467aeeb3) SHA1(feec42b083d81e632ef8ae402eb9f20f3104db08), 0x01EB1E04)
 
-SAM_INPUT_PORTS_START(tf, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(tf, 1)
 
 CORE_GAMEDEF(tf, 180h, "Transformers Limited Edition (V1.8)", 2013, "Stern", sam1, 0)
 CORE_CLONEDEF(tf, 088h, 180h, "Transformers Limited Edition (V0.88)", 2011, "Stern", sam1, 0)
@@ -2373,7 +2369,7 @@ SAM1_ROM32MB(avr_110,  "avr110.bin",  CRC(e28df0a8) SHA1(7bc42d329efcb59d71af173
 SAM1_ROM32MB(avr_120h, "avr120h.bin", CRC(85a55e02) SHA1(204d796c2cbc776c1305dabade6306527122a13e), 0x01D53CA4)
 SAM1_ROM32MB(avr_200,  "avr200.bin",  CRC(dc225785) SHA1(ecaba25a470bf03e6e43ab8779d14898e1b8e67f), 0x01D53CA4)
 
-SAM_INPUT_PORTS_START(avr, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(avr, 1)
 
 CORE_GAMEDEF(avr, 120h, "Avatar Limited Edition (V1.2)", 2011, "Stern", sam1, 0)
 CORE_CLONEDEF(avr, 101h, 120h, "Avatar Limited Edition (V1.01)", 2010, "Stern", sam1, 0)
@@ -2393,7 +2389,7 @@ SAM1_ROM32MB(rsn_105,  "rsn105.bin",  CRC(58025883) SHA1(7f63bbe98f1151e0276ede1
 SAM1_ROM32MB(rsn_110,  "rsn110.bin",  CRC(f4aad67f) SHA1(f5dc335a2b9cc92b3da9a33e24cd0b155c6385aa), 0x01EB4FC4)
 SAM1_ROM32MB(rsn_110h, "rsn110h.bin", CRC(f5122852) SHA1(b92461983d7a3b55ac8be4df4def1b4ca12327af), 0x01EB50CC)
 
-SAM_INPUT_PORTS_START(rsn, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(rsn, 1)
 
 CORE_GAMEDEF(rsn, 110h, "Rolling Stones, The Limited Edition (V1.1)", 2011, "Stern", sam1, 0)
 CORE_CLONEDEF(rsn, 103,  110h, "Rolling Stones, The (V1.03)", 2011, "Stern", sam1, 0)
@@ -2429,7 +2425,7 @@ SAM1_ROM128MB(acd_168c,  "acd_168c.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd
 SAM1_ROM128MB(acd_168hc, "acd_168hc.bin",CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(acd, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(acd, 1)
 
 CORE_GAMEDEF(acd, 168h, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 121,  168h, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
@@ -2475,7 +2471,7 @@ SAM1_ROM32MB(xmn_150h, "xmn_150h.bin", CRC(8e2c3870) SHA1(ddfb4370bb4f32d440538f
 SAM1_ROM32MB(xmn_151,  "xmn_151.bin",  CRC(84c744a4) SHA1(db4339be7e9d47c46a13f95520dfe58da8450a19), 0x01FA5268)
 SAM1_ROM32MB(xmn_151h, "xmn_151h.bin", CRC(21d1088f) SHA1(9a0278c0324fbf549b5b7bcc93bc327f3eb65e19), 0x01FA5268)
 
-SAM_INPUT_PORTS_START(xmn, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(xmn, 1)
 
 CORE_GAMEDEF(xmn, 151h, "X-Men Limited Edition (V1.51)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(xmn, 100,  151h, "X-Men (V1.0)", 2012, "Stern", sam1, 0)
@@ -2509,7 +2505,7 @@ SAM1_ROM32MB(avs_170c, "avs_170c.bin", CRC(ff1a39e5) SHA1(44949f8aca36a8a1896fe2
 SAM1_ROM32MB(avs_170hc,"avs_170hc.bin",CRC(ff1a39e5) SHA1(44949f8aca36a8a1896fe253278ef7f146764d79), 0x01FFFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(avs, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(avs, 1)
 
 CORE_GAMEDEF(avs, 170h, "Avengers, The Limited Edition (V1.7)", 2016, "Stern", sam1, 0)
 CORE_CLONEDEF(avs, 110,  170h, "Avengers, The (V1.1)", 2012, "Stern", sam1, 0)
@@ -2558,7 +2554,7 @@ SAM1_ROM128MB(mtl_170c,  "mtl170c.bin",  CRC(99d42a4e) SHA1(1983a6d1cd5664cf0359
 SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(mtl, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(mtl, 1)
 
 CORE_GAMEDEF(mtl, 170h, "Metallica Limited Edition (V1.7)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 103,  170h, "Metallica (V1.03)", 2013, "Stern", sam2, 0)
@@ -2613,7 +2609,7 @@ SAM1_ROM128MB(st_161c, "st_161c.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5e
 SAM1_ROM128MB(st_161hc,"st_161hc.bin",CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(st, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(st, 1)
 
 CORE_GAMEDEF(st, 161h, "Star Trek Limited Edition (V1.61)", 2015, "Stern", sam2, 0)
 CORE_CLONEDEF(st, 120,  161h, "Star Trek (V1.2)", 2013, "Stern", sam2, 0)
@@ -2651,7 +2647,7 @@ SAM1_ROM128MB(mt_145c, "mt_145c.bin", CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b
 SAM1_ROM128MB(mt_145hc,"mt_145hc.bin",CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03FFFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(mt, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(mt, 1)
 
 CORE_GAMEDEF(mt, 145h, "Mustang Limited Edition (V1.45)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mt, 120,  145h, "Mustang (V1.2)", 2014, "Stern", sam2, 0)
@@ -2698,7 +2694,7 @@ SAM1_ROM128MB(twd_160c, "twd_160c.bin", CRC(44409cd9) SHA1(cace8725771e9fc09720a
 SAM1_ROM128MB(twd_160hc,"twd_160hc.bin",CRC(1ed7b80a) SHA1(1fbaa077ec834ff9d289008ef1169e0e7fd68271), 0x05FFFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(twd, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(twd, 1)
 
 CORE_GAMEDEF(twd, 160h, "Walking Dead, The Limited Edition (V1.60.0)", 2017, "Stern", sam2, 0)
 CORE_CLONEDEF(twd, 105,  160h, "Walking Dead, The (V1.05)", 2014, "Stern", sam2, 0)
@@ -2738,7 +2734,7 @@ SAM1_ROM128MB(smanve_100c,"smanve_100c.bin", CRC(f761fa19) SHA1(259bd6d42e742eaa
 SAM1_ROM128MB(smanve_101c,"smanve_101c.bin", CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03FFFFF0)
 #endif
 
-SAM_INPUT_PORTS_START(smanve, 1) SAM_INPUT_PORTS_END
+SAM_INPUT_PORTS_START(smanve, 1)
 
 CORE_GAMEDEF(smanve, 101, "Spider-Man Vault Edition (V1.01)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(smanve, 100,  101, "Spider-Man Vault Edition (V1.0)", 2016, "Stern", sam2, 0)
