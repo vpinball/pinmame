@@ -2,7 +2,7 @@
   Stern Pinball - S.A.M. Hardware System
   initial version by Steve Ellenoff and Gerrit Volkenborn
   (09/25/2006 - 10/18/2006)
-  with various improvements from the open source community after that (notably CarnyPriest and especially DJRobX)
+  with various improvements from the open source community after that (notably Arngrim, CarnyPriest and especially DJRobX)
 
   Hardware from 01/2006 (World Poker Tour) - 09/2014 (The Walking Dead) (and Spider-Man Vault Edition 02/2016)
 
@@ -57,21 +57,21 @@
 // 100ms sound buffer.
 #define SNDBUFSIZE (SAM1_SOUNDFREQ * 100 / 1000)    
 
-#define SAM_CPU	0
 #define SAM_ROMBANK0 1
 
-#define SAM_NOMINI	 0x00
-#define SAM_MINIDMD  0x01
-#define SAM_NOMINI2  0x02
-#define SAM_GAME_WOF 0x04
-#define SAM_NOMINI3	 0x08
-#define SAM_NOMINI4	 0x10
-#define SAM_GAME_TRON	 0x20
-#define SAM_GAME_AUXSOL8    0x40
-#define SAM_GAME_AUXSOL12    0x80
-#define SAM_GAME_METALLICA_MAGNET  0x100
-#define SAM_GAME_ACDC_FLAMES  0x200
-#define SAM_GAME_IJ4_SOL3   0x400
+#define SAM_NOMINI            0x00 // all games without special stuff
+
+#define SAM_GAME_WPT             1
+#define SAM_GAME_FG              2 // +Shrek
+#define SAM_GAME_WOF             4
+#define SAM_GAME_BDK             8
+#define SAM_GAME_CSI          0x10
+#define SAM_GAME_TRON         0x20
+#define SAM_GAME_AUXSOL8      0x40
+#define SAM_GAME_AUXSOL12     0x80
+#define SAM_GAME_METALLICA_MAGNET  0x100 // Metallica LE has a special aux board just for the coffin magnet!
+#define SAM_GAME_ACDC_FLAMES  0x200 // AC/DC LE uses a special aux board for flame lights
+#define SAM_GAME_IJ4_SOL3     0x400
 
 #define SAM_0COL 0x00
 #define SAM_2COL 0x02
@@ -100,6 +100,20 @@ static data32_t *sam_reset_ram;
 static data32_t *sam_page0_ram;
 static data32_t *nvram;
 
+static int LED_hack_send_garbage = 0;
+
+#define SAM_LEDS_MAX_STRINGS 4
+#define SAM_LED_MAX_STRING_LENGTH 65
+#define SAM_LEDS_MAX (SAM_LED_MAX_STRING_LENGTH * SAM_LEDS_MAX_STRINGS)
+
+static data8_t sam_ext_leds[SAM_LEDS_MAX];
+static data8_t sam_tmp_leds[SAM_LED_MAX_STRING_LENGTH];
+
+
+extern int at91_block_timers;
+int at91_receive_serial(int usartno, data8_t *buf, int size);
+
+
 /*----------------
 / Local variables
 /-----------------*/
@@ -114,15 +128,15 @@ struct {
 	int sampout;
 	int sampnum;
 	int volume[2], mute[2];
-	UINT16 value;
 	int pass;
 	int coindoor;
+	int samVersion; // 1 or 2
+	UINT16 value;
 	INT16 bank;
 	UINT8 miniDMDData[14][16];
 	UINT32 solenoidbits[CORE_MODSOL_MAX];
 	UINT32 modulated_lights[WOF_MINIDMD_MAX];  // Also used by Tron ramps
 	UINT8 modulated_lights_prev_levels[WOF_MINIDMD_MAX];
-	UINT8 last_aux_line_6; 
 } samlocals;
 
 
@@ -226,51 +240,6 @@ static int dedswitch_upper_r(void)
 {
 	return MAKE16BIT(core_getDip(0),coreGlobals.swMatrix[0]);
 }
-
-/*
-U19 & U20 of IOBOARD - Address decoding
-A3 A2 A1 A0 (When IOSTB = 0)
----------------------------------------------------------------------------------------------
- 0  0  0  0 - 0: SOL A Driver
- 0  0  0  1 - 1: SOL B Driver
- 0  0  1  0 - 2: SOL C Driver
- 0  0  1  1 - 3: Flash Lamp Driver
- 0  1  0  1 - 5: STATUS (read)
- 0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
- 0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
- 1  0  0  0 - 8: Lamp Strobe *(See below)
- 1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
- 1  0  1  0 - a: Lamp Driver *(See below)
- 1  0  1  1 - b: Additional Strobe Driver (see below)
-
- Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
- Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
- There are 10 Lamp Rows Max
- Row 0 - From Lamp Strobe, Data Bit 0
- Row 1 - From Lamp Strobe, Data Bit 1
- Row 2 - From Lamp Strobe, Data Bit 2
- Row 3 - From Lamp Strobe, Data Bit 3
- Row 4 - From Lamp Strobe, Data Bit 4
- Row 5 - From Lamp Strobe, Data Bit 5
- Row 6 - From Lamp Strobe, Data Bit 6
- Row 7 - From Lamp Strobe, Data Bit 7
- Row 8 - From Aux Lamp Strobe Line, Data Bit 0
- Row 9 - From Aux Lamp Strobe Line, Data Bit 1
----------------------------------------------------------------------------------------------*/
-
-static int sam_bank[56];
-
-#define SAM_LEDS_MAX_STRINGS 4
-#define SAM_LED_MAX_STRING_LENGTH 65
-#define SAM_LEDS_MAX SAM_LED_MAX_STRING_LENGTH * SAM_LEDS_MAX_STRINGS
-
-data8_t sam_ext_leds[SAM_LEDS_MAX];
-data8_t sam_tmp_leds[SAM_LED_MAX_STRING_LENGTH];
-data8_t sam_prev_ch1 = 0, sam_prev_ch2 = 0;
-int sam_led_col = 0, sam_led_row = -1, sam_target_row, sam_serchar_waiting;
-int sam_leds_per_string;
-
-extern int at91_block_timers;
 
 /*-------------------------
 / Machine driver constants
@@ -469,7 +438,7 @@ static READ32_HANDLER(samswitch_r)
 				data ^= 0xff;
 				break;
 			default:
-				logerror("error");
+				LOG(("error"));
 				break;
 		}
 	}
@@ -589,7 +558,7 @@ static READ32_HANDLER(samxilinx_r)
 		//Key pressed
 		case 0x4041:
 		case 0x408d:
-			logerror("Test");
+			LOG(("Test"));
 			break;
 
 		//Should be 01
@@ -601,7 +570,7 @@ static READ32_HANDLER(samxilinx_r)
 			break;
 
 		default:
-			//logerror("Test");
+			//LOG(("Test"));
 			break;
 	}
 	return nvram[offset];
@@ -680,18 +649,61 @@ static WRITE32_HANDLER(samdmdram_w)
   }
 }
 
+static WRITE32_HANDLER(sam1_io2_w)
+{
+  LOG(("%08x: IO2 output to %05x=%02x\n", activecpu_get_pc(), offset, data)); //!! find out what is what for LE support (but even normal TWD uses it (and more??))
+}
+
+/*
+U19 & U20 of IOBOARD - Address decoding
+A3 A2 A1 A0 (When IOSTB = 0)
+---------------------------------------------------------------------------------------------
+ 0  0  0  0 - 0: SOL A Driver
+ 0  0  0  1 - 1: SOL B Driver
+ 0  0  1  0 - 2: SOL C Driver
+ 0  0  1  1 - 3: Flash Lamp Driver
+ 0  1  0  1 - 5: STATUS (read)
+ 0  1  1  0 - 6: AUX Driver ( Activates 8 Bits Output to J2 Connector )
+ 0  1  1  1 - 7: AUX In     ( Activates 8 Bits Input from J3 Connector )
+ 1  0  0  0 - 8: Lamp Strobe *(See below)
+ 1  0  0  1 - 9: Aux Lamp   ( Activates 2 Bits (D0-D1) to drive Lamp Row Signals 8 & 9 )
+ 1  0  1  0 - a: Lamp Driver *(See below)
+ 1  0  1  1 - b: Additional Strobe Driver (see below)
+
+ Lamp Columns are driven by Lamp DRV Signal & 8 Data Bits
+ Lamp Rows are driven by the Lamp Strobe signal & Aux Lamp Signal
+ There are 10 Lamp Rows Max
+ Row 0 - From Lamp Strobe, Data Bit 0
+ Row 1 - From Lamp Strobe, Data Bit 1
+ Row 2 - From Lamp Strobe, Data Bit 2
+ Row 3 - From Lamp Strobe, Data Bit 3
+ Row 4 - From Lamp Strobe, Data Bit 4
+ Row 5 - From Lamp Strobe, Data Bit 5
+ Row 6 - From Lamp Strobe, Data Bit 6
+ Row 7 - From Lamp Strobe, Data Bit 7
+ Row 8 - From Aux Lamp Strobe Line, Data Bit 0
+ Row 9 - From Aux Lamp Strobe Line, Data Bit 1
+---------------------------------------------------------------------------------------------*/
+
 static WRITE32_HANDLER(sambank_w)
 {
+	//statics for IO Board:
+
 	// with the current technique, a maximum of 14 displayed rows is possible (WPT only uses 10),
 	// yet the amount of columns is virtually unlimited!
-	static int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
-	static char lastbank11;
-	static int wof_minidmdflag;
-	static int led_target;
-	static int miniDMDCol;
-	static int miniDMDRow;
+	const int rowMap[] = { 5, 8, 7, 6, 9, 1, 2, 3, 4, 0, 10, 11, 12, 13 };
 
-	int base = 0x02400000;
+	static int lampcol = 0;
+	static UINT8 auxstrb = 0;
+	static UINT8 auxdata = 0;
+	static int WOF_minidmdflag = 0; // =dataBlock in original SAM.c
+	static int colWrites;
+	static int dataWrites[6]; //!! [4] unused, see 0x02400026, maybe also need a [6], see 0x0240002B?
+	static int miniDMDCol = 0;
+	static int miniDMDRow = 0;
+
+
+	const int base = 0x02400000;
 	int mask = ~mem_mask;
 	int adj = adj_offset(mask);
 	int realoff = (offset*4);
@@ -701,12 +713,12 @@ static WRITE32_HANDLER(sambank_w)
 	offset = addr;
 	data = newdata;
 
-	if (offset > 0x24000FF)
+	if (offset > 0x024000FF)
 	{
 		switch (offset)
 		{
 			//1st LED?
-			case 0x2500000:
+			case 0x02500000:
 				logit = LOG_LED1;
 				samlocals.diagnosticLed = (data & 1) | samlocals.diagnosticLed & 2;
 				break;
@@ -715,46 +727,54 @@ static WRITE32_HANDLER(sambank_w)
 			//D1 = FF2(U42) -> A23
 			//D2 = FF3(U42) -> A24	(Not Connected when used with a 256MBIT Flash Memory)
 			//D3 = FF4(U42) -> A25	(Not Connected when used with a 256MBIT Flash Memory)
-			case 0x2580000:
+			case 0x02580000:
 				logit = LOG_ROM_BANK;
-				//was data & 0x3
-				cpu_setbank(SAM_ROMBANK0, memory_region(REGION_USER1) + ((data & 0xf) << 23) );
-				samlocals.bank = (data & 0xf);
+
+				//log access to A24/A25 depending on the SAM version.
+				if(data > (samlocals.samVersion > 1 ? 0x0f : 0x03))
+					LOG(("ERROR IN BANK SELECT DATA = %d\n",data));
+
+				//enforce validity to try and prevent crashes into illegal romspaces.
+				data &= (samlocals.samVersion > 1 ? 0x0f : 0x03);
+
+				//Swap bank memory
+				cpu_setbank(SAM_ROMBANK0, memory_region(REGION_USER1) + (data << 23));
+
+				//save value for read @ 1180000
+				samlocals.bank = data;
 				break;
 			//2nd LED?
-			case 0x2F00000:
+			case 0x02F00000:
 				logit = LOG_LED2;
 				//LED is ON when zero (pulled to gnd)
 				if (!data)
 					samlocals.diagnosticLed = samlocals.diagnosticLed & 1 | 2;
 				break;
 			default:
-				logerror("error");
+				LOG(("error"));
 				break;
 		}
 	}
-	else
+	else if( offset >= 0x2400000 && offset <= 0x24000ff ) //IO Board
 	{
-		switch (offset - 0x2400020)
+		logit = LOG_IOPORT_W;
+		switch (offset)
 		{
-			int ii;
-			case 0:
-				sam_bank[0]++;
-				if ( sam_bank[0] == 1 )
+			case 0x02400020:
+				if (++dataWrites[0] == 1)
 				{
+					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 8], data & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 8], data & (1u << ii));
 #ifdef SAM_FAST_FLIPPERS
 						if (ii + 9 >= SAM_SOL_FLIPSTART && ii + 9 <= SAM_SOL_FLIPEND)
 						{
-							UINT8 value;
-
-							value = core_calc_modulated_light(samlocals.solenoidbits[ii + 8], 24, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][ii + 8]);
+							UINT8 value = core_calc_modulated_light(samlocals.solenoidbits[ii + 8], 24, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][ii + 8]);
 							coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][ii+8] = value;
 							if (value > 0)
 							{
-								coreGlobals.solenoids |= (1 << (ii + 8));
+								coreGlobals.solenoids |= (1u << (ii + 8));
 							}
 						}
 #endif
@@ -763,113 +783,99 @@ static WRITE32_HANDLER(sambank_w)
 #ifdef SAM_FAST_FLIPPERS
 				else
 				{
+					int ii;
 					// sam bank[0] check is dubious, check to see if any of the flipper bits are on, and enable them now if so.
 					for (ii = SAM_SOL_FLIPSTART; ii <= SAM_SOL_FLIPEND; ii++)
 					{
-						if (data & (1 << (ii - 9)))
+						if (data & (1u << (ii - 9)))
 						{
 							core_update_modulated_light(&samlocals.solenoidbits[ii-1], 1);
-							coreGlobals.solenoids |= (1 << (ii - 1));
+							coreGlobals.solenoids |= (1u << (ii - 1));
 						}
 					}
-				}			
-#endif				
-				return;
-			case 1:
-				sam_bank[1]++;
-				if (sam_bank[1] == 1)
+				}
+#endif
+				break;
+			case 0x02400021:
+				if (++dataWrites[1] == 1)
 				{
+					int ii;
 					if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 					{
 						// Special case for Wheel of Fortune.   It has a 4-way stepper motor that goes 4,6,5,7 ... but 
 						// VPM mech only supports a dual stepper motor.   OR 5 and 7 to 4 and 6 so we never miss these pulses.
 						// Need to put state into pulsedSolState for mech handling to see it.
 
-						coreGlobals.pulsedSolState = data | ((data & ((1 << 4) | (1 << 6))) >> 1);
+						coreGlobals.pulsedSolState = data | ((data & ((1u << 4) | (1u << 6))) >> 1);
 					}
 
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii], data & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii], data & (1u << ii));
 					}
 				}
-				return;
-			case 2:
-				sam_bank[2]++;
-				if (sam_bank[2] == 1)
+				break;
+			case 0x02400022:
+				if (++dataWrites[2] == 1)
 				{
+					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 16], data & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 16], data & (1u << ii));
 					}
 				}
-				return;
-			case 3:
-				sam_bank[3]++;
-				if (sam_bank[3] == 1)
+				break;
+			case 0x02400023:
+				if (++dataWrites[3] == 1)
 				{
+					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + 24], data & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + 24], data & (1u << ii));
 					}
 				}
-				return;
-			case 6:
-				if ( core_gameData->hw.gameSpecific1 & 1 )
+				break;
+			case 0x02400026:
+				//if (++dataWrites[4] == 1) //!! ?? or only for core_update_modulated_light case below?
+				//{
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WPT)
 				{
-					if ( miniDMDRow == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
+					if ( miniDMDCol == 1 ) // the DMD row is decided by the bits set in the first two columns that are written to each column!
+						miniDMDRow = rowMap[core_BitColToNum((data & 0x7F) | ((auxdata & 0x7F) << 7))];
+					if ( miniDMDCol > 1 )
+						samlocals.miniDMDData[miniDMDRow][miniDMDCol-2] = data & 0x7F;
+					if ( miniDMDCol < 17 ) // limit the displayed column count to 16 for now
+						miniDMDCol++;
+					if ( (~auxdata & data) >= 0x80) // observe change low -> high to trigger the column reset
+						miniDMDCol = 0;
+				}
+				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
+				{
+					int test = data & ~auxdata;
+					if (!((test < 0x80) && (test >= 0))) // observe change low -> high to trigger the column reset
 					{
-						miniDMDCol = rowMap[core_BitColToNum(data & 0x7F | ((samlocals.last_aux_line_6 & 0x7F) << 7))];
+						miniDMDCol = 0;
+						miniDMDRow = core_BitColToNum(data & 0x03); // 2 rows
+					}
+					if ( miniDMDCol < 3 )
+					{
+						int i = 10 + miniDMDCol + 3*miniDMDRow;
+						coreGlobals.tmpLampMatrix[i] = data & 0x7F;
+						coreGlobals.lampMatrix[i] = data & 0x7F;
+						miniDMDCol++;
+					}
+				}
+				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
+				{
+					int test = data & ~auxdata;
+					if ( (test < 0x80) && (test >= 0) ) // observe change low -> high to trigger the column reset
+					{
+						miniDMDCol++;
 					}
 					else
 					{
-						if ( miniDMDRow > 1 )
-							samlocals.miniDMDData[miniDMDCol][miniDMDRow] = data & 0x7F;
-						if ( miniDMDRow >= 17 )
-						{
-LABEL_157:
-							if ( (~samlocals.last_aux_line_6 & data) >= 0x80)
-							{
-								samlocals.last_aux_line_6 = data;
-								miniDMDRow = 0;
-								return;
-							}
-							goto LABEL_176;
-						}
-					}
-					miniDMDRow++;
-					goto LABEL_157;
-				}
-				if ( core_gameData->hw.gameSpecific1 & 2 )
-				{
-					int test = data & ~samlocals.last_aux_line_6;
-					if (!((test < 0x80) && (test >= 0)))
-					{
-						miniDMDRow = 0;
-						samlocals.last_aux_line_6 = data;
-						miniDMDCol = core_BitColToNum(data & 3);
-						return;
-					}
-					if ( miniDMDRow < 3 )
-					{
-						coreGlobals.tmpLampMatrix[miniDMDCol + miniDMDRow + 2 * miniDMDCol + 10] = data & 0x7F;
-						samlocals.last_aux_line_6 = data;
-						coreGlobals.lampMatrix[miniDMDCol + miniDMDRow + 2 * miniDMDCol + 10] = data & 0x7F;
-						miniDMDRow++;
-			            return;
-					}
-				}
-				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_WOF )
-				{
-					int test = data & ~samlocals.last_aux_line_6;
-					if ( (test < 0x80) && (test >= 0) )
-					{
-						miniDMDRow++;
-					}
-					else
-					{
-						wof_minidmdflag = wof_minidmdflag == 0;
-						miniDMDRow = 0;
+						WOF_minidmdflag = !WOF_minidmdflag;
+						miniDMDCol = 0;
 						if (options.usemodsol) // To protect the VP9 table from an onslaught of extra lights. 
 						{
 							int i;
@@ -879,58 +885,51 @@ LABEL_157:
 							}
 						}
 					}
-					if ( wof_minidmdflag )
+
+					if ( WOF_minidmdflag )
 					{
-						if ( miniDMDRow == 1 )
+						if ( miniDMDCol == 1 )
 						{
-							samlocals.last_aux_line_6 = data;
-							miniDMDCol = core_BitColToNum(data & 0x1F);
-							return;
+							miniDMDRow = core_BitColToNum(data & 0x1F); // 5 rows
 						}
-						if ( miniDMDRow > 1 && miniDMDRow < 7 )
+						if ( miniDMDCol > 1 && miniDMDCol < 7 )
 						{
 							int i;
-							samlocals.last_aux_line_6 = data;
-							samlocals.miniDMDData[miniDMDCol][miniDMDRow] = data & 0x7F;
-							for (i = 0; i < 7; i++)
+							samlocals.miniDMDData[miniDMDRow][miniDMDCol-2] = data & 0x7F;
+							for (i = 0; i < 7; i++) //!! <= 7 ? most likely not
 							{
-								core_update_modulated_light(&samlocals.modulated_lights[(35 * miniDMDCol) + ((miniDMDRow - 2) * 7) + i], data & (1 << (6 - i)));
+								core_update_modulated_light(&samlocals.modulated_lights[35 * miniDMDRow + (miniDMDCol - 2) * 7 + i], data & (1u << (6 - i)));
 							}
-							return;
 						}
 					}
 					else
 					{
-						if ( miniDMDRow < 6 )
+						if ( miniDMDCol < 6 )
 						{
-							coreGlobals.tmpLampMatrix[miniDMDRow + 10] = data & 0x7F;
-							coreGlobals.lampMatrix[miniDMDRow + 10] = data & 0x7F;
+							coreGlobals.tmpLampMatrix[miniDMDCol + 10] = data & 0x7F;
+							coreGlobals.lampMatrix[miniDMDCol + 10] = data & 0x7F;
 						}
 					}
 				}
-LABEL_176:
-				samlocals.last_aux_line_6 = data;
+				auxdata = data;
+				//}
 				break;
-			case 8:
-				sam_bank[0] = 0;
-				sam_bank[1] = 0;
-				sam_bank[2] = 0;
-				sam_bank[3] = 0;
-				sam_bank[5] = 0;
-				sam_bank[46]++;
-				if( sam_bank[46] == 1 || sam_bank[46] == 2)
+			case 0x02400028:
+				memset(dataWrites, 0, sizeof(dataWrites));
+				colWrites++;
+				if(colWrites == 1 || colWrites == 2) //!! just 2 ??
 				{
-					led_target = core_BitColToNum(data);
-					break;
+					lampcol = core_BitColToNum(data);
 				}
-				return;
-			case 10:
-				sam_bank[46] = 0;
-				sam_bank[5]++;
-				if ( sam_bank[5] == 1 )
-					coreGlobals.tmpLampMatrix[led_target] = core_revbyte(data);
-				return;
-			case 11:
+				break;
+			case 0x0240002A:
+				colWrites = 0;
+				if (++dataWrites[5] == 1)
+					coreGlobals.tmpLampMatrix[lampcol] = core_revbyte(data);
+				break;
+			case 0x0240002B:
+				//if (++dataWrites[6] == 1) //!! ?? or only for core_update_modulated_light cases below?
+				//{
 				coreGlobals.gi[0] = (~data & 0x01) ? 9 : 0;
 
 				// Previous versions of the code counted the number of writes to locate 
@@ -946,71 +945,76 @@ LABEL_176:
 					(core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8) && (~data & 0x10) ||
 					(core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40))
 				{
+					int ii;
 					for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL - 1], auxdata & (1u << ii));
 					}
 				}
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x10)))
 				{
+					int ii;
 					for (ii = 0; ii <= 5; ii++)
 					{
-						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL + 8 - 1], samlocals.last_aux_line_6 & (1 << ii));
+						core_update_modulated_light(&samlocals.solenoidbits[ii + CORE_FIRSTCUSTSOL + 8 - 1], auxdata & (1u << ii));
 					}
 				}
 				// Metallica LE has a special aux board just for the coffin magnet! 
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_METALLICA_MAGNET) && (~data & 0x08)))
 				{
-					core_update_modulated_light(&samlocals.solenoidbits[6 + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & 0x80);
-					core_update_modulated_light(&samlocals.solenoidbits[7 + CORE_FIRSTCUSTSOL - 1], samlocals.last_aux_line_6 & 0x40);
+					core_update_modulated_light(&samlocals.solenoidbits[6 + CORE_FIRSTCUSTSOL - 1], auxdata & 0x80);
+					core_update_modulated_light(&samlocals.solenoidbits[7 + CORE_FIRSTCUSTSOL - 1], auxdata & 0x40);
 				}
 				// ACDC LE uses a special aux board for flame lights
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_ACDC_FLAMES) && (~data & 0x08)))
 				{
+					int ii;
 					for (ii = 0; ii < 8; ii++)
-						sam_ext_leds[70 + ii] = (samlocals.last_aux_line_6 & (1 << ii) ? 255 : 0);
+						sam_ext_leds[70 + ii] = (auxdata & (1u << ii) ? 255 : 0);
 				}
-				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_WOF )
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
-					if ( (data & ~lastbank11) & 8 )
-						wof_minidmdflag = 0;
-					else if ( (data & ~lastbank11) & 0x10 )
-						wof_minidmdflag = 1;
+					if ( (data & ~auxstrb) & 0x08 ) // LEDs
+						WOF_minidmdflag = 0;
+					else if ( (data & ~auxstrb) & 0x10 ) // DMD
+						WOF_minidmdflag = 1;
 				}
-				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI3 && ~data & 0x08 )
-					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
-				if ( core_gameData->hw.gameSpecific1 & SAM_NOMINI4 && ~data & 0x10 )
-					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
-				if ( core_gameData->hw.gameSpecific1 & SAM_GAME_TRON )
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (~data & 0x08))
+					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (~data & 0x10))
+					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
+				if (core_gameData->hw.gameSpecific1 & SAM_GAME_TRON)
 				{
 					if ( ~data & 0x08 )
-						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(samlocals.last_aux_line_6);
+						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(auxdata);
 					if ( ~data & 0x10 )
 					{
-						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(samlocals.last_aux_line_6);
-						core_update_modulated_light(&samlocals.modulated_lights[0], samlocals.last_aux_line_6 & (1 << 3));
-						core_update_modulated_light(&samlocals.modulated_lights[1], samlocals.last_aux_line_6 & (1 << 4));
-						core_update_modulated_light(&samlocals.modulated_lights[2], samlocals.last_aux_line_6 & (1 << 5));
+						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(auxdata);
+						core_update_modulated_light(&samlocals.modulated_lights[0], auxdata & (1u << 3));
+						core_update_modulated_light(&samlocals.modulated_lights[1], auxdata & (1u << 4));
+						core_update_modulated_light(&samlocals.modulated_lights[2], auxdata & (1u << 5));
 					}
 					if ( ~data & 0x20 )
 					{
-						coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.last_aux_line_6);
-						core_update_modulated_light(&samlocals.modulated_lights[3], samlocals.last_aux_line_6 & (1 << 3));
-						core_update_modulated_light(&samlocals.modulated_lights[4], samlocals.last_aux_line_6 & (1 << 4));
-						core_update_modulated_light(&samlocals.modulated_lights[5], samlocals.last_aux_line_6 & (1 << 5));
+						coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(auxdata);
+						core_update_modulated_light(&samlocals.modulated_lights[3], auxdata & (1u << 3));
+						core_update_modulated_light(&samlocals.modulated_lights[4], auxdata & (1u << 4));
+						core_update_modulated_light(&samlocals.modulated_lights[5], auxdata & (1u << 5));
 					}
 					if ( ~data & 0x40 )
-						logerror("Test");
+						LOG(("Test"));
 				}
-		        if ( (~data & 0x40) && (samlocals.last_aux_line_6 & 3) )
-					logerror("error");
-				lastbank11 = data;
-				return;
+				if ( (~data & 0x40) && (auxdata & 3) )
+					LOG(("error"));
+				auxstrb = data;
+				//}
+				break;
 			 default:
-				logerror("error");
+				LOG(("error"));
+				break;
 		}
 	}
-	//else logit = 1;
+	else logit = 1;
 
 	if(logit) LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
 }
@@ -1031,7 +1035,7 @@ LABEL_176:
 		case 0x4031:
 		case 0x4033:
 			//nvram[offset] = 0x00000000;
-			//logerror("Test");
+			//LOG(("Test"));
 			return;
 		//clock??
 		case 0x4022:
@@ -1045,30 +1049,30 @@ LABEL_176:
 		case 0x4032:
 		case 0x4034:
 			//nvram[offset] = 0xFFFF0000;
-			//logerror("Test");
+			//LOG(("Test"));
 			return;
 
 		case 0x4037:
-			logerror("Test");
+			LOG(("Test"));
 			return;
 
 		case 0x4041:
 		case 0x408d:
-			logerror("Test");
+			LOG(("Test"));
 			break;
 
 		case 0x4672:
 		case 0x4674:
-			logerror("Test");
+			LOG(("Test"));
 			break;
 
 		case 0x4634:
 		case 0x4636:
-			logerror("Test");
+			LOG(("Test"));
 			break;
 
 		default:
-			logerror("Test");
+			LOG(("Test"));
 			break;
 	}
 	nvram[offset] = (nvram[offset] & mem_mask) | (data & ~mem_mask);
@@ -1078,11 +1082,11 @@ static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x00000000, 0x000FFFFF, MWA32_RAM, &sam_page0_ram},  // Boot RAM
 	{ 0x00300000, 0x003FFFFF, MWA32_RAM, &sam_reset_ram},  // Swapped RAM
 	{ 0x01000000, 0x0107FFFF, MWA32_RAM },				   //U13 RAM - General Usage (Code is executed here sometimes)
-	{ 0x01080000, 0x0109EFFF, MWA32_RAM },			       //U13 RAM - DMD Data for output
+	{ 0x01080000, 0x0109EFFF, MWA32_RAM },				   //U13 RAM - DMD Data for output
 	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
 	{ 0x01100000, 0x01FFFFFF, samdmdram_w },			   //Various Output Signals
 	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		   //U11 NVRAM (128K) 0x02100000,0x0211ffff
-	//{ 0x02200000, 0x022fffff, sam1_io2_w },			   //LE versions: more I/O stuff (mostly LED lamps)
+	{ 0x02200000, 0x022fffff, sam1_io2_w },				   //LE versions: more I/O stuff (mostly LED lamps)
 	{ 0x02400000, 0x02FFFFFF, sambank_w },				   //I/O Related
 	{ 0x03000000, 0x030000FF, MWA32_RAM },				   //USB Related
 	{ 0x04000000, 0x047FFFFF, MWA32_RAM },				   //1st 8MB of Flash ROM U44 Mapped here
@@ -1163,7 +1167,7 @@ static PORT_WRITE32_START(sam_writeport)
 	{ 0x00, 0xFF, sam_port_w },
 PORT_END
 
-static MACHINE_INIT(sam) {
+static MACHINE_INIT(sam1) {
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
 	at91_set_transmit_serial(sam_transmit_serial);
 	at91_set_serial_receive_ready(sam_LED_hack);
@@ -1186,13 +1190,21 @@ static MACHINE_INIT(sam) {
 	#endif
 }
 
-static MACHINE_RESET(sam) {
+static MACHINE_RESET(sam1) {
 	memset(&samlocals, 0, sizeof(samlocals));
+	samlocals.samVersion = 1;
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
 }
 
-static MACHINE_STOP(sam) {
+static MACHINE_RESET(sam2) {
+	memset(&samlocals, 0, sizeof(samlocals));
+	samlocals.samVersion = 2;
+	samlocals.pass = 16;
+	samlocals.coindoor = 1;
+}
+
+static MACHINE_STOP(sam1) {
 	#if LOG_RAW_SOUND_DATA
 	if(fpSND) fclose(fpSND);
 	#endif
@@ -1219,9 +1231,6 @@ static SWITCH_UPDATE(sam) {
 }
 
 
-int at91_receive_serial(int usartno, data8_t *buf, int size);
-int LED_hack_send_garbage = 0;
-
 static void sam_LED_hack(int usartno)
 {
 	const char * const gn = Machine->gamedrv->name;
@@ -1244,14 +1253,20 @@ static void sam_LED_hack(int usartno)
 
 // The serial LED boards seem to receive a 3 byte header (85 + address, 41, 80), 
 // then a 65 byte long array of bytes that represent the LEDs. 
-// Walking Dead seems to use a different format, two strings (83, 88 but with only 0x23 leds). 
-
+// Walking Dead seems to use a different format, two strings (83, 88 but with only 0x23 leds).
 
 static void sam_transmit_serial(int usartno, data8_t *data, int size)
 {
-	int i;
+	static data8_t sam_prev_ch1 = 0;
+	static data8_t sam_prev_ch2 = 0;
+	static int sam_led_col = 0;
+	static int sam_led_row = -1;
+	static int sam_target_row;
+	static int sam_serchar_waiting;
+	static int sam_leds_per_string;
 
 #if 0//def _DEBUG
+	int i;
 	for (i = 0; i < size; i++)
 	{
 		char s[91];
@@ -1299,7 +1314,7 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 			if (((*data) == 0x80 || (*data)==0xa0) && sam_prev_ch1 == 0x23 && (sam_prev_ch2 == 0x83 || sam_prev_ch2 == 0x88))
 			{
 				// TWD sends garbage data in the led string sometimes.   Only accept if it was framed properly. 
-				if (sam_serchar_waiting==2)
+				if (sam_serchar_waiting == 2)
 				{
 					memcpy(&sam_ext_leds[(sam_target_row * sam_leds_per_string)], &sam_tmp_leds[0], sam_leds_per_string);
 					LED_hack_send_garbage = 0;
@@ -1325,7 +1340,8 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 		} 
 		else 
 		{
-			int count = size > (sam_leds_per_string-sam_led_col) ? sam_leds_per_string-sam_led_col : size;
+			const int count = size > (sam_leds_per_string-sam_led_col) ? sam_leds_per_string-sam_led_col : size;
+			int i;
 			for(i=0;i<count;i++)
 			{
 				sam_tmp_leds[sam_led_col++] = *(data++);
@@ -1347,9 +1363,6 @@ static void sam_transmit_serial(int usartno, data8_t *data, int size)
 /*  VBLANK Section  */
 /********************/
 static INTERRUPT_GEN(sam_vblank) {
-	int i;
-	UINT32 solenoidupdate;
-
 	/*-------------------------------
 	/  copy local data to interface
 	/--------------------------------*/
@@ -1363,14 +1376,18 @@ static INTERRUPT_GEN(sam_vblank) {
 	    coreGlobals.diagnosticLed = samlocals.diagnosticLed;
 		samlocals.diagnosticLed = 0;
 	}
+
 	switch(core_gameData->hw.gameSpecific1)
 	{
 	case SAM_GAME_TRON:
+	{
+		int i;
 		for(i=0;i<6;i++)
 		{
 			coreGlobals.RGBlamps[i+20] = core_calc_modulated_light(samlocals.modulated_lights[i], 15, &samlocals.modulated_lights_prev_levels[i]);
 		}
 		break;
+	}
 	case SAM_GAME_WOF:
 		//!!
 		break;
@@ -1381,7 +1398,9 @@ static INTERRUPT_GEN(sam_vblank) {
 	}
 
 	/*-- solenoids --*/
-	solenoidupdate = 0;
+	{
+	UINT32 solenoidupdate = 0;
+	int i;
 	for(i=0;i<CORE_MODSOL_MAX;i++)
 	{
 		UINT8 value;
@@ -1392,9 +1411,10 @@ static INTERRUPT_GEN(sam_vblank) {
 		value = core_calc_modulated_light(samlocals.solenoidbits[i], 24, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);		
 		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = value;		
 		if (value > 0 && i < 32)
-			solenoidupdate |= (1 << i);
+			solenoidupdate |= (1u << i);
 	}
 	coreGlobals.solenoids = solenoidupdate;
+	}
 	
 	core_updateSw(1);
 }
@@ -1421,7 +1441,7 @@ static INTERRUPT_GEN(sam_irq)
 /*********************************************/
 /* S.A.M. Generation #1 - Machine Definition */
 /*********************************************/
-static MACHINE_DRIVER_START(sam)
+static MACHINE_DRIVER_START(sam1)
     MDRV_IMPORT_FROM(PinMAME)
     MDRV_SWITCH_UPDATE(sam)
     MDRV_CPU_ADD(AT91, SAM_CPUFREQ)
@@ -1429,13 +1449,21 @@ static MACHINE_DRIVER_START(sam)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_vblank, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
-    MDRV_CORE_INIT_RESET_STOP(sam, sam, sam)
+    MDRV_CORE_INIT_RESET_STOP(sam1, sam1, sam1)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
     MDRV_TIMER_ADD(sam_timer, SAM1_ZC_FREQ)
     MDRV_SOUND_ADD(CUSTOM, samCustInt)
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
     MDRV_DIAGNOSTIC_LEDH(2)
+MACHINE_DRIVER_END
+
+/*********************************************/
+/* S.A.M. Generation #2 - Machine Definition */
+/*********************************************/
+MACHINE_DRIVER_START(sam2)
+  MDRV_IMPORT_FROM(sam1)
+  MDRV_CORE_INIT_RESET_STOP(sam1, sam2, sam1)
 MACHINE_DRIVER_END
 
 
@@ -1485,7 +1513,7 @@ PINMAME_VIDEO_UPDATE(samminidmd_update) {
 
     for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
         for (kk = 0; kk < 5; kk++)
-            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y * 5 + kk][dmd_x + 2] & bits ? 3 : 0;
+            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y * 5 + kk][dmd_x] & bits ? 3 : 0;
 
     for (ii = 0; ii < 5; ii++) {
         bits = 0;
@@ -1518,7 +1546,7 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (jj = 0; jj < 5; jj++)
 			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
 				for (kk = 0; kk < 5; kk++)
-					dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj + 2] & bits ? 15 : 0;
+					dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj] & bits ? 15 : 0;
 	}
     for (ii = 0; ii < 35; ii++) {
         bits = 0;
@@ -1615,16 +1643,16 @@ SAM1_BOOTFLASH(sam1_flashb_0310, "boot_310.bin", CRC(de017f82) SHA1(e4a9a818fa3f
 
 SAM_INPUT_PORTS_START(sam1_flashb, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(sam1_flashb, 0310, "S.A.M. Boot Flash Update (V3.1)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0102, 0310, "S.A.M. System Flash Boot (V1.02)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0106, 0310, "S.A.M. System Flash Boot (V1.06)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0210, 0310, "S.A.M. System Flash Boot (V2.10)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sam1_flashb, 0230, 0310, "S.A.M. System Flash Boot (V2.3)", 2007, "Stern", sam, 0)
+CORE_GAMEDEF(sam1_flashb, 0310, "S.A.M. Boot Flash Update (V3.1)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sam1_flashb, 0102, 0310, "S.A.M. System Flash Boot (V1.02)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(sam1_flashb, 0106, 0310, "S.A.M. System Flash Boot (V1.06)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(sam1_flashb, 0210, 0310, "S.A.M. System Flash Boot (V2.10)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sam1_flashb, 0230, 0310, "S.A.M. System Flash Boot (V2.3)", 2007, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / World Poker Tour
 /-------------------------------------------------------------------*/
-INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL, SAM_MINIDMD);
+INITGAME(wpt, GEN_SAM, sammini1_dmd128x32, SAM_2COL, SAM_GAME_WPT);
 
 SAM1_ROM32MB(wpt_103a, "wpt0103a.bin", CRC(cd5f80bc) SHA1(4aaab2bf6b744e1a3c3509dc9dd2416ff3320cdb), 0x019bb1dc)
 
@@ -1681,58 +1709,58 @@ SAM1_ROM32MB(wpt_140l, "wpt1400l.bin", CRC(00eff09c) SHA1(847203d4d2ce8d11a54033
 
 SAM_INPUT_PORTS_START(wpt, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(wpt, 140a, "World Poker Tour (V14.0)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 103a, 140a, "World Poker Tour (V1.03)", 2006, "Stern", sam, 0)
+CORE_GAMEDEF(wpt, 140a, "World Poker Tour (V14.0)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 103a, 140a, "World Poker Tour (V1.03)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 105a, 140a, "World Poker Tour (V1.05)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 105a, 140a, "World Poker Tour (V1.05)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 106a, 140a, "World Poker Tour (V1.06)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 106f, 140a, "World Poker Tour (V1.06) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 106g, 140a, "World Poker Tour (V1.06) (German)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 106i, 140a, "World Poker Tour (V1.06) (Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 106l, 140a, "World Poker Tour (V1.06) (Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 106a, 140a, "World Poker Tour (V1.06)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 106f, 140a, "World Poker Tour (V1.06) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 106g, 140a, "World Poker Tour (V1.06) (German)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 106i, 140a, "World Poker Tour (V1.06) (Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 106l, 140a, "World Poker Tour (V1.06) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 108a, 140a, "World Poker Tour (V1.08)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 108f, 140a, "World Poker Tour (V1.08) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 108g, 140a, "World Poker Tour (V1.08) (German)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 108i, 140a, "World Poker Tour (V1.08) (Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 108l, 140a, "World Poker Tour (V1.08) (Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 108a, 140a, "World Poker Tour (V1.08)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 108f, 140a, "World Poker Tour (V1.08) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 108g, 140a, "World Poker Tour (V1.08) (German)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 108i, 140a, "World Poker Tour (V1.08) (Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 108l, 140a, "World Poker Tour (V1.08) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 109a, 140a, "World Poker Tour (V1.09)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 109f, 140a, "World Poker Tour (V1.09) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 109f2,140a, "World Poker Tour (V1.09-2) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 109g, 140a, "World Poker Tour (V1.09) (German)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 109i, 140a, "World Poker Tour (V1.09) (Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 109l, 140a, "World Poker Tour (V1.09) (Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 109a, 140a, "World Poker Tour (V1.09)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 109f, 140a, "World Poker Tour (V1.09) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 109f2,140a, "World Poker Tour (V1.09-2) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 109g, 140a, "World Poker Tour (V1.09) (German)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 109i, 140a, "World Poker Tour (V1.09) (Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 109l, 140a, "World Poker Tour (V1.09) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 111a, 140a, "World Poker Tour (V1.11)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111af,140a, "World Poker Tour (V1.11) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111ai,140a, "World Poker Tour (V1.11) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111al,140a, "World Poker Tour (V1.11) (English, Spanish)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111f, 140a, "World Poker Tour (V1.11) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111g, 140a, "World Poker Tour (V1.11) (German)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111gf,140a, "World Poker Tour (V1.11) (German, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111i, 140a, "World Poker Tour (V1.11) (Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 111l, 140a, "World Poker Tour (V1.11) (Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 111a, 140a, "World Poker Tour (V1.11)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111af,140a, "World Poker Tour (V1.11) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111ai,140a, "World Poker Tour (V1.11) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111al,140a, "World Poker Tour (V1.11) (English, Spanish)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111f, 140a, "World Poker Tour (V1.11) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111g, 140a, "World Poker Tour (V1.11) (German)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111gf,140a, "World Poker Tour (V1.11) (German, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111i, 140a, "World Poker Tour (V1.11) (Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 111l, 140a, "World Poker Tour (V1.11) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 112a, 140a, "World Poker Tour (V1.12)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112af,140a, "World Poker Tour (V1.12) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112ai,140a, "World Poker Tour (V1.12) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112al,140a, "World Poker Tour (V1.12) (English, Spanish)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112f, 140a, "World Poker Tour (V1.12) (French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112g, 140a, "World Poker Tour (V1.12) (German)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112gf,140a, "World Poker Tour (V1.12) (German, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112i, 140a, "World Poker Tour (V1.12) (Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 112l, 140a, "World Poker Tour (V1.12) (Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 112a, 140a, "World Poker Tour (V1.12)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112af,140a, "World Poker Tour (V1.12) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112ai,140a, "World Poker Tour (V1.12) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112al,140a, "World Poker Tour (V1.12) (English, Spanish)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112f, 140a, "World Poker Tour (V1.12) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112g, 140a, "World Poker Tour (V1.12) (German)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112gf,140a, "World Poker Tour (V1.12) (German, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112i, 140a, "World Poker Tour (V1.12) (Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 112l, 140a, "World Poker Tour (V1.12) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 140af,140a, "World Poker Tour (V14.0) (English, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140ai,140a, "World Poker Tour (V14.0) (English, Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140al,140a, "World Poker Tour (V14.0) (English, Spanish)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140f, 140a, "World Poker Tour (V14.0) (French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140g, 140a, "World Poker Tour (V14.0) (German)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140gf,140a, "World Poker Tour (V14.0) (German, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140i, 140a, "World Poker Tour (V14.0) (Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(wpt, 140l, 140a, "World Poker Tour (V14.0) (Spanish)", 2008, "Stern", sam, 0)
+CORE_CLONEDEF(wpt, 140af,140a, "World Poker Tour (V14.0) (English, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140ai,140a, "World Poker Tour (V14.0) (English, Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140al,140a, "World Poker Tour (V14.0) (English, Spanish)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140f, 140a, "World Poker Tour (V14.0) (French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140g, 140a, "World Poker Tour (V14.0) (German)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140gf,140a, "World Poker Tour (V14.0) (German, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140i, 140a, "World Poker Tour (V14.0) (Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 140l, 140a, "World Poker Tour (V14.0) (Spanish)", 2008, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / The Simpsons Kooky Carnival Redemption
@@ -1752,15 +1780,15 @@ SAM_INPUT_PORTS_START(scarn103, 1) SAM_INPUT_PORTS_END
 SAM_INPUT_PORTS_START(scarn105, 1) SAM_INPUT_PORTS_END
 SAM_INPUT_PORTS_START(scarn200, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEFNV(scarn200, "Simpsons Kooky Carnival, The (Redemption) (V2.0)", 2008, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn9nj, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V0.90 New Jersey)", 2006, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn103, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V1.03)", 2006, "Stern", sam, 0)
-CORE_CLONEDEFNV(scarn105, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V1.05)", 2006, "Stern", sam, 0)
+CORE_GAMEDEFNV(scarn200, "Simpsons Kooky Carnival, The (Redemption) (V2.0)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEFNV(scarn9nj, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V0.90 New Jersey)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEFNV(scarn103, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V1.03)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEFNV(scarn105, scarn200, "Simpsons Kooky Carnival, The (Redemption) (V1.05)", 2006, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Family Guy
 /-------------------------------------------------------------------*/
-INITGAME(fg, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_NOMINI2);
+INITGAME(fg, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_FG);
 
 SAM1_ROM32MB(fg_200a,   "fg200a.bin",   CRC(c72e89df) SHA1(6cac3812d733c9d030542badb9c65934ecbf8399), 0x0185ea9c)
 SAM1_ROM32MB(fg_300ai,  "fg300ai.bin",  CRC(e2cffa79) SHA1(59dff445118ed8a3a76b6e93950802d1fec87619), 0x01FC0290)
@@ -1784,32 +1812,32 @@ SAM1_ROM32MB(fg_1200ag, "fg1200ag.bin", CRC(d9734f94) SHA1(d56ddf5961e5ac4c3565f
 
 SAM_INPUT_PORTS_START(fg, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(fg, 1200ag, "Family Guy (V12.0) (English, German)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 200a,   1200ag, "Family Guy (V2.00) (English)", 2007, "Stern", sam, 0)
+CORE_GAMEDEF(fg, 1200ag, "Family Guy (V12.0) (English, German)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 200a,   1200ag, "Family Guy (V2.00) (English)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 300ai,  1200ag, "Family Guy (V3.00) (English, Italian)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 300ai,  1200ag, "Family Guy (V3.00) (English, Italian)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 400a,   1200ag, "Family Guy (V4.00) (English)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 400ag,  1200ag, "Family Guy (V4.00) (English, German)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 400a,   1200ag, "Family Guy (V4.00) (English)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 400ag,  1200ag, "Family Guy (V4.00) (English, German)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 700af,  1200ag, "Family Guy (V7.00) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 700al,  1200ag, "Family Guy (V7.00) (English, Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 700af,  1200ag, "Family Guy (V7.00) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 700al,  1200ag, "Family Guy (V7.00) (English, Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 800al,  1200ag, "Family Guy (V8.00) (English, Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 800al,  1200ag, "Family Guy (V8.00) (English, Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 1000af, 1200ag, "Family Guy (V10.00) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1000ag, 1200ag, "Family Guy (V10.00) (English, German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1000ai, 1200ag, "Family Guy (V10.00) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1000al, 1200ag, "Family Guy (V10.00) (English, Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 1000af, 1200ag, "Family Guy (V10.00) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1000ag, 1200ag, "Family Guy (V10.00) (English, German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1000ai, 1200ag, "Family Guy (V10.00) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1000al, 1200ag, "Family Guy (V10.00) (English, Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 1100af, 1200ag, "Family Guy (V11.0) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1100ag, 1200ag, "Family Guy (V11.0) (English, German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1100ai, 1200ag, "Family Guy (V11.0) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1100al, 1200ag, "Family Guy (V11.0) (English, Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 1100af, 1200ag, "Family Guy (V11.0) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1100ag, 1200ag, "Family Guy (V11.0) (English, German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1100ai, 1200ag, "Family Guy (V11.0) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1100al, 1200ag, "Family Guy (V11.0) (English, Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(fg, 1200af, 1200ag, "Family Guy (V12.0) (English, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1200ai, 1200ag, "Family Guy (V12.0) (English, Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(fg, 1200al, 1200ag, "Family Guy (V12.0) (English, Spanish)", 2008, "Stern", sam, 0)
+CORE_CLONEDEF(fg, 1200af, 1200ag, "Family Guy (V12.0) (English, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1200ai, 1200ag, "Family Guy (V12.0) (English, Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(fg, 1200al, 1200ag, "Family Guy (V12.0) (English, Spanish)", 2008, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Disney's Pirates of the Caribbean
@@ -1855,43 +1883,43 @@ SAM1_ROM32MB(potc_600gf, "potc600gf.bin", CRC(44eb2610) SHA1(ec1e1f7f2cd13594253
 
 SAM_INPUT_PORTS_START(potc, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(potc, 600af, "Pirates of the Caribbean (V6.0) (English, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 108as, 600af, "Pirates of the Caribbean (V1.08) (English, Spanish)", 2006, "Stern", sam, 0)
+CORE_GAMEDEF(potc, 600af, "Pirates of the Caribbean (V6.0) (English, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 108as, 600af, "Pirates of the Caribbean (V1.08) (English, Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 109af, 600af, "Pirates of the Caribbean (V1.09) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 109ai, 600af, "Pirates of the Caribbean (V1.09) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 109as, 600af, "Pirates of the Caribbean (V1.09) (English, Spanish)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 109gf, 600af, "Pirates of the Caribbean (V1.09) (German, French)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 109af, 600af, "Pirates of the Caribbean (V1.09) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 109ai, 600af, "Pirates of the Caribbean (V1.09) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 109as, 600af, "Pirates of the Caribbean (V1.09) (English, Spanish)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 109gf, 600af, "Pirates of the Caribbean (V1.09) (German, French)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 110af, 600af, "Pirates of the Caribbean (V1.10) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 110ai, 600af, "Pirates of the Caribbean (V1.10) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 110gf, 600af, "Pirates of the Caribbean (V1.10) (German, French)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 110af, 600af, "Pirates of the Caribbean (V1.10) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 110ai, 600af, "Pirates of the Caribbean (V1.10) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 110gf, 600af, "Pirates of the Caribbean (V1.10) (German, French)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 111as, 600af, "Pirates of the Caribbean (V1.11) (English, Spanish)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 111as, 600af, "Pirates of the Caribbean (V1.11) (English, Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 113af, 600af, "Pirates of the Caribbean (V1.13) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 113ai, 600af, "Pirates of the Caribbean (V1.13) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 113as, 600af, "Pirates of the Caribbean (V1.13) (English, Spanish)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 113gf, 600af, "Pirates of the Caribbean (V1.13) (German, French)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 113af, 600af, "Pirates of the Caribbean (V1.13) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 113ai, 600af, "Pirates of the Caribbean (V1.13) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 113as, 600af, "Pirates of the Caribbean (V1.13) (English, Spanish)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 113gf, 600af, "Pirates of the Caribbean (V1.13) (German, French)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 115af, 600af, "Pirates of the Caribbean (V1.15) (English, French)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 115ai, 600af, "Pirates of the Caribbean (V1.15) (English, Italian)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 115as, 600af, "Pirates of the Caribbean (V1.15) (English, Spanish)", 2006, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 115gf, 600af, "Pirates of the Caribbean (V1.15) (German, French)", 2006, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 115af, 600af, "Pirates of the Caribbean (V1.15) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 115ai, 600af, "Pirates of the Caribbean (V1.15) (English, Italian)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 115as, 600af, "Pirates of the Caribbean (V1.15) (English, Spanish)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 115gf, 600af, "Pirates of the Caribbean (V1.15) (German, French)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 300af, 600af, "Pirates of the Caribbean (V3.00) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 300ai, 600af, "Pirates of the Caribbean (V3.00) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 300al, 600af, "Pirates of the Caribbean (V3.00) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 300gf, 600af, "Pirates of the Caribbean (V3.00) (German, French)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 300af, 600af, "Pirates of the Caribbean (V3.00) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 300ai, 600af, "Pirates of the Caribbean (V3.00) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 300al, 600af, "Pirates of the Caribbean (V3.00) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 300gf, 600af, "Pirates of the Caribbean (V3.00) (German, French)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 400af, 600af, "Pirates of the Caribbean (V4.00) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 400ai, 600af, "Pirates of the Caribbean (V4.00) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 400al, 600af, "Pirates of the Caribbean (V4.00) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 400gf, 600af, "Pirates of the Caribbean (V4.00) (German, French)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 400af, 600af, "Pirates of the Caribbean (V4.00) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 400ai, 600af, "Pirates of the Caribbean (V4.00) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 400al, 600af, "Pirates of the Caribbean (V4.00) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 400gf, 600af, "Pirates of the Caribbean (V4.00) (German, French)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 600ai, 600af, "Pirates of the Caribbean (V6.0) (English, Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 600as, 600af, "Pirates of the Caribbean (V6.0) (English, Spanish)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(potc, 600gf, 600af, "Pirates of the Caribbean (V6.0) (German, French)", 2008, "Stern", sam, 0)
+CORE_CLONEDEF(potc, 600ai, 600af, "Pirates of the Caribbean (V6.0) (English, Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 600as, 600af, "Pirates of the Caribbean (V6.0) (English, Spanish)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(potc, 600gf, 600af, "Pirates of the Caribbean (V6.0) (German, French)", 2008, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Spider-Man (Stern)
@@ -1944,49 +1972,49 @@ SAM1_ROM32MB(sman_261,   "sman261a.bin",  CRC(9900cd4c) SHA1(1b95f957f8d709bba9f
 
 SAM_INPUT_PORTS_START(sman, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 130af, 261, "Spider-Man (V1.30) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 130ai, 261, "Spider-Man (V1.30) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 130al, 261, "Spider-Man (V1.30) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 130gf, 261, "Spider-Man (V1.30) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 132,   261, "Spider-Man (V1.32)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 140,   261, "Spider-Man (V1.4)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 140af, 261, "Spider-Man (V1.4) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 140ai, 261, "Spider-Man (V1.4) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 140al, 261, "Spider-Man (V1.4) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 140gf, 261, "Spider-Man (V1.4) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 142,   261, "Spider-Man (V1.42 BETA)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 160,   261, "Spider-Man (V1.6)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 160af, 261, "Spider-Man (V1.6) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 160ai, 261, "Spider-Man (V1.6) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 160al, 261, "Spider-Man (V1.6) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 160gf, 261, "Spider-Man (V1.6) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 170,   261, "Spider-Man (V1.7)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 170af, 261, "Spider-Man (V1.7) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 170ai, 261, "Spider-Man (V1.7) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 170al, 261, "Spider-Man (V1.7) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 170gf, 261, "Spider-Man (V1.7) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 190,   261, "Spider-Man (V1.9)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 190af, 261, "Spider-Man (V1.9) (English, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 190ai, 261, "Spider-Man (V1.9) (English, Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 190al, 261, "Spider-Man (V1.9) (English, Spanish)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 190gf, 261, "Spider-Man (V1.9) (German, French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 192,   261, "Spider-Man (V1.92)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 192af, 261, "Spider-Man (V1.92) (English, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 192ai, 261, "Spider-Man (V1.92) (English, Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 192al, 261, "Spider-Man (V1.92) (English, Spanish)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 192gf, 261, "Spider-Man (V1.92) (German, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 200,   261, "Spider-Man (V2.0)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 210,   261, "Spider-Man (V2.1)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 210af, 261, "Spider-Man (V2.1) (English, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 210ai, 261, "Spider-Man (V2.1) (English, Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 210al, 261, "Spider-Man (V2.1) (English, Spanish)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 210gf, 261, "Spider-Man (V2.1) (German, French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 220,   261, "Spider-Man (V2.2)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 230,   261, "Spider-Man (V2.3)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 240,   261, "Spider-Man (V2.4)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 250,   261, "Spider-Man (V2.5)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(sman, 260,   261, "Spider-Man (V2.6)", 2010, "Stern", sam, 0)
+CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 130af, 261, "Spider-Man (V1.30) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 130ai, 261, "Spider-Man (V1.30) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 130al, 261, "Spider-Man (V1.30) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 130gf, 261, "Spider-Man (V1.30) (German, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 132,   261, "Spider-Man (V1.32)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 140,   261, "Spider-Man (V1.4)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 140af, 261, "Spider-Man (V1.4) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 140ai, 261, "Spider-Man (V1.4) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 140al, 261, "Spider-Man (V1.4) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 140gf, 261, "Spider-Man (V1.4) (German, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 142,   261, "Spider-Man (V1.42 BETA)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 160,   261, "Spider-Man (V1.6)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 160af, 261, "Spider-Man (V1.6) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 160ai, 261, "Spider-Man (V1.6) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 160al, 261, "Spider-Man (V1.6) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 160gf, 261, "Spider-Man (V1.6) (German, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 170,   261, "Spider-Man (V1.7)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 170af, 261, "Spider-Man (V1.7) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 170ai, 261, "Spider-Man (V1.7) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 170al, 261, "Spider-Man (V1.7) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 170gf, 261, "Spider-Man (V1.7) (German, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 190,   261, "Spider-Man (V1.9)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 190af, 261, "Spider-Man (V1.9) (English, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 190ai, 261, "Spider-Man (V1.9) (English, Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 190al, 261, "Spider-Man (V1.9) (English, Spanish)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 190gf, 261, "Spider-Man (V1.9) (German, French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 192,   261, "Spider-Man (V1.92)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 192af, 261, "Spider-Man (V1.92) (English, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 192ai, 261, "Spider-Man (V1.92) (English, Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 192al, 261, "Spider-Man (V1.92) (English, Spanish)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 192gf, 261, "Spider-Man (V1.92) (German, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 200,   261, "Spider-Man (V2.0)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 210,   261, "Spider-Man (V2.1)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 210af, 261, "Spider-Man (V2.1) (English, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 210ai, 261, "Spider-Man (V2.1) (English, Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 210al, 261, "Spider-Man (V2.1) (English, Spanish)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 210gf, 261, "Spider-Man (V2.1) (German, French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 220,   261, "Spider-Man (V2.2)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 230,   261, "Spider-Man (V2.3)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 240,   261, "Spider-Man (V2.4)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 250,   261, "Spider-Man (V2.5)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 260,   261, "Spider-Man (V2.6)", 2010, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Wheel of Fortune
@@ -2047,42 +2075,42 @@ SAM1_ROM32MB(wof_500l, "wof0500l.bin", CRC(b8e09fcd) SHA1(522983ce75b24733a0827a
 
 SAM_INPUT_PORTS_START(wof, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(wof, 500, "Wheel of Fortune (V5.0)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 100,  500, "Wheel of Fortune (V1.0)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 200,  500, "Wheel of Fortune (V2.0)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 200f, 500, "Wheel of Fortune (V2.0) (French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 200g, 500, "Wheel of Fortune (V2.0) (German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 200i, 500, "Wheel of Fortune (V2.0) (Italian)", 2007, "Stern", sam, 0)
+CORE_GAMEDEF(wof, 500, "Wheel of Fortune (V5.0)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 100,  500, "Wheel of Fortune (V1.0)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 200,  500, "Wheel of Fortune (V2.0)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 200f, 500, "Wheel of Fortune (V2.0) (French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 200g, 500, "Wheel of Fortune (V2.0) (German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 200i, 500, "Wheel of Fortune (V2.0) (Italian)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wof, 300,  500, "Wheel of Fortune (V3.0)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 300f, 500, "Wheel of Fortune (V3.0) (French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 300g, 500, "Wheel of Fortune (V3.0) (German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 300i, 500, "Wheel of Fortune (V3.0) (Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 300l, 500, "Wheel of Fortune (V3.0) (Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(wof, 300,  500, "Wheel of Fortune (V3.0)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 300f, 500, "Wheel of Fortune (V3.0) (French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 300g, 500, "Wheel of Fortune (V3.0) (German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 300i, 500, "Wheel of Fortune (V3.0) (Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 300l, 500, "Wheel of Fortune (V3.0) (Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wof, 400,  500, "Wheel of Fortune (V4.0)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 400f, 500, "Wheel of Fortune (V4.0) (French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 400g, 500, "Wheel of Fortune (V4.0) (German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 400i, 500, "Wheel of Fortune (V4.0) (Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 401l, 500, "Wheel of Fortune (V4.01) (Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(wof, 400,  500, "Wheel of Fortune (V4.0)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 400f, 500, "Wheel of Fortune (V4.0) (French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 400g, 500, "Wheel of Fortune (V4.0) (German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 400i, 500, "Wheel of Fortune (V4.0) (Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 401l, 500, "Wheel of Fortune (V4.01) (Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wof, 500f, 500, "Wheel of Fortune (V5.0) (French)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 500g, 500, "Wheel of Fortune (V5.0) (German)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0) (Italian)", 2007, "Stern", sam, 0)
-CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0) (Spanish)", 2007, "Stern", sam, 0)
+CORE_CLONEDEF(wof, 500f, 500, "Wheel of Fortune (V5.0) (French)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 500g, 500, "Wheel of Fortune (V5.0) (German)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0) (Italian)", 2007, "Stern", sam1, 0)
+CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0) (Spanish)", 2007, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Shrek
 /-------------------------------------------------------------------*/
-INITGAME(shr, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_NOMINI2);
+INITGAME(shr, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_FG);
 
 SAM1_ROM32MB(shr_130, "shr130.bin", CRC(0c4efde5) SHA1(58e156a43fef983d48f6676e8d65fb30d45f8ec3), 0x01BB0824)
 SAM1_ROM32MB(shr_141, "shr141.bin", CRC(f4f847ce) SHA1(d28f9186bb04036e9ff56d540e70a50f0816051b), 0x01C55290)
 
 SAM_INPUT_PORTS_START(shr, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(shr, 141, "Shrek (V1.41)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(shr, 130, 141, "Shrek (V1.3)", 2008, "Stern", sam, 0)
+CORE_GAMEDEF(shr, 141, "Shrek (V1.41)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(shr, 130, 141, "Shrek (V1.3)", 2008, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Indiana Jones (Stern)
@@ -2112,31 +2140,31 @@ SAM1_ROM32MB(ij4_210f, "ij4_210f.bin", CRC(d1d37248) SHA1(fd6819e0e86b83d658790f
 
 SAM_INPUT_PORTS_START(ij4, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(ij4, 210, "Indiana Jones (V2.1)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 113,  210, "Indiana Jones (V1.13)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 113f, 210, "Indiana Jones (V1.13) (French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 113g, 210, "Indiana Jones (V1.13) (German)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 113i, 210, "Indiana Jones (V1.13) (Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 113l, 210, "Indiana Jones (V1.13) (Spanish)", 2008, "Stern", sam, 0)
+CORE_GAMEDEF(ij4, 210, "Indiana Jones (V2.1)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 113,  210, "Indiana Jones (V1.13)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 113f, 210, "Indiana Jones (V1.13) (French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 113g, 210, "Indiana Jones (V1.13) (German)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 113i, 210, "Indiana Jones (V1.13) (Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 113l, 210, "Indiana Jones (V1.13) (Spanish)", 2008, "Stern", sam1, 0)
 
-CORE_CLONEDEF(ij4, 114,  210, "Indiana Jones (V1.14)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 114f, 210, "Indiana Jones (V1.14) (French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 114g, 210, "Indiana Jones (V1.14) (German)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 114i, 210, "Indiana Jones (V1.14) (Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 114l, 210, "Indiana Jones (V1.14) (Spanish)", 2008, "Stern", sam, 0)
+CORE_CLONEDEF(ij4, 114,  210, "Indiana Jones (V1.14)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 114f, 210, "Indiana Jones (V1.14) (French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 114g, 210, "Indiana Jones (V1.14) (German)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 114i, 210, "Indiana Jones (V1.14) (Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 114l, 210, "Indiana Jones (V1.14) (Spanish)", 2008, "Stern", sam1, 0)
 
-CORE_CLONEDEF(ij4, 116,  210, "Indiana Jones (V1.16)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 116f, 210, "Indiana Jones (V1.16) (French)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 116g, 210, "Indiana Jones (V1.16) (German)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 116i, 210, "Indiana Jones (V1.16) (Italian)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(ij4, 116l, 210, "Indiana Jones (V1.16) (Spanish)", 2008, "Stern", sam, 0)
+CORE_CLONEDEF(ij4, 116,  210, "Indiana Jones (V1.16)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 116f, 210, "Indiana Jones (V1.16) (French)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 116g, 210, "Indiana Jones (V1.16) (German)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 116i, 210, "Indiana Jones (V1.16) (Italian)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(ij4, 116l, 210, "Indiana Jones (V1.16) (Spanish)", 2008, "Stern", sam1, 0)
 
-CORE_CLONEDEF(ij4, 210f, 210, "Indiana Jones (V2.1) (French)", 2009, "Stern", sam, 0)
+CORE_CLONEDEF(ij4, 210f, 210, "Indiana Jones (V2.1) (French)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Batman: The Dark Knight
 /-------------------------------------------------------------------*/
-INITGAME(bdk, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_NOMINI3);
+INITGAME(bdk, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_BDK);
 
 SAM1_ROM32MB(bdk_130, "bdk130.bin", CRC(83a32958) SHA1(0326891bc142c8b92bd4f6d29bd4301bacbed0e7), 0x01BA1E94)
 SAM1_ROM32MB(bdk_150, "bdk150.bin", CRC(ed11b88c) SHA1(534224de597cbd3632b902397d945ab725e24912), 0x018EE5E8)
@@ -2151,21 +2179,21 @@ SAM1_ROM32MB(bdk_300, "bdk300.bin", CRC(8325bc80) SHA1(04f20d78ad33956618e576bba
 
 SAM_INPUT_PORTS_START(bdk, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(bdk, 294, "Batman: The Dark Knight (V2.94)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 130, 294, "Batman: The Dark Knight (V1.3)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 150, 294, "Batman: The Dark Knight (V1.5)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 160, 294, "Batman: The Dark Knight (V1.6)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 200, 294, "Batman: The Dark Knight (V2.0)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 210, 294, "Batman: The Dark Knight (V2.1)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 220, 294, "Batman: The Dark Knight (V2.2)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 240, 294, "Batman: The Dark Knight (V2.4)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 290, 294, "Batman: The Dark Knight (V2.9)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam, 0)
+CORE_GAMEDEF(bdk, 294, "Batman: The Dark Knight (V2.94)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 130, 294, "Batman: The Dark Knight (V1.3)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 150, 294, "Batman: The Dark Knight (V1.5)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 160, 294, "Batman: The Dark Knight (V1.6)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 200, 294, "Batman: The Dark Knight (V2.0)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 210, 294, "Batman: The Dark Knight (V2.1)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 220, 294, "Batman: The Dark Knight (V2.2)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 240, 294, "Batman: The Dark Knight (V2.4)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 290, 294, "Batman: The Dark Knight (V2.9)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
 /-------------------------------------------------------------------*/
-INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_NOMINI4);
+INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_CSI);
 
 SAM1_ROM32MB(csi_102, "csi102a.bin", CRC(770f4ab6) SHA1(7670022926fcf5bb8f8848374cf1a6237803100a), 0x01e21fc0)
 SAM1_ROM32MB(csi_103, "csi103a.bin", CRC(371bc874) SHA1(547588b85b4d6e79123178db3f3e51354e8d2229), 0x01E61C88)
@@ -2177,13 +2205,13 @@ SAM1_ROM32MB(csi_240, "csi240a.bin", CRC(2be97fa3) SHA1(5aa231bde81f7787cc06567c
 
 SAM_INPUT_PORTS_START(csi, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(csi, 240, "CSI: Crime Scene Investigation (V2.4)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 102, 240, "CSI: Crime Scene Investigation (V1.02)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 103, 240, "CSI: Crime Scene Investigation (V1.03)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 104, 240, "CSI: Crime Scene Investigation (V1.04)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 200, 240, "CSI: Crime Scene Investigation (V2.0)", 2008, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 210, 240, "CSI: Crime Scene Investigation (V2.1)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(csi, 230, 240, "CSI: Crime Scene Investigation (V2.3)", 2009, "Stern", sam, 0)
+CORE_GAMEDEF(csi, 240, "CSI: Crime Scene Investigation (V2.4)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 102, 240, "CSI: Crime Scene Investigation (V1.02)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 103, 240, "CSI: Crime Scene Investigation (V1.03)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 104, 240, "CSI: Crime Scene Investigation (V1.04)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 200, 240, "CSI: Crime Scene Investigation (V2.0)", 2008, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 210, 240, "CSI: Crime Scene Investigation (V2.1)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(csi, 230, 240, "CSI: Crime Scene Investigation (V2.3)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / 24
@@ -2197,10 +2225,10 @@ SAM1_ROM32MB(twenty4_150, "24_150a.bin", CRC(9d7d87cc) SHA1(df6b2f60b87226fdda33
 
 SAM_INPUT_PORTS_START(twenty4, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(twenty4, 150, "24 (V1.5)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(twenty4, 130, 150, "24 (V1.3)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(twenty4, 140, 150, "24 (V1.4)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(twenty4, 144, 150, "24 (V1.44)", 2009, "Stern", sam, 0)
+CORE_GAMEDEF(twenty4, 150, "24 (V1.5)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(twenty4, 130, 150, "24 (V1.3)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(twenty4, 140, 150, "24 (V1.4)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(twenty4, 144, 150, "24 (V1.44)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / NBA
@@ -2215,11 +2243,11 @@ SAM1_ROM32MB(nba_802, "nba802.bin", CRC(ba681dac) SHA1(184f3315a54b1a5295b19222c
 
 SAM_INPUT_PORTS_START(nba, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(nba, 802, "NBA (V8.02)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(nba, 500, 802, "NBA (V5.0)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(nba, 600, 802, "NBA (V6.0)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(nba, 700, 802, "NBA (V7.0)", 2009, "Stern", sam, 0)
-CORE_CLONEDEF(nba, 801, 802, "NBA (V8.01)", 2009, "Stern", sam, 0)
+CORE_GAMEDEF(nba, 802, "NBA (V8.02)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(nba, 500, 802, "NBA (V5.0)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(nba, 600, 802, "NBA (V6.0)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(nba, 700, 802, "NBA (V7.0)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(nba, 801, 802, "NBA (V8.01)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Big Buck Hunter Pro
@@ -2233,10 +2261,10 @@ SAM1_ROM32MB(bbh_170, "bbh170.bin", CRC(0c2d3e64) SHA1(9a71959c57b9a75028e21bce9
 
 SAM_INPUT_PORTS_START(bbh, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(bbh, 170, "Big Buck Hunter Pro (V1.7)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(bbh, 140, 170, "Big Buck Hunter Pro (V1.4)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(bbh, 150, 170, "Big Buck Hunter Pro (V1.5)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(bbh, 160, 170, "Big Buck Hunter Pro (V1.6)", 2010, "Stern", sam, 0)
+CORE_GAMEDEF(bbh, 170, "Big Buck Hunter Pro (V1.7)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bbh, 140, 170, "Big Buck Hunter Pro (V1.4)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bbh, 150, 170, "Big Buck Hunter Pro (V1.5)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bbh, 160, 170, "Big Buck Hunter Pro (V1.6)", 2010, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Iron Man
@@ -2254,15 +2282,15 @@ SAM1_ROM32MB(im_183,  "im_183.bin",  CRC(cf2791a6) SHA1(eb616e3bf33024374f4e998a
 SAM1_ROM32MB(im_183ve,"im_183ve.bin",CRC(e477183c) SHA1(6314b44b58c79889f95af1792395203dbbb36b0b), 0x01C52C5C)
 
 SAM_INPUT_PORTS_START(im, 1) SAM_INPUT_PORTS_END
-CORE_GAMEDEF(im, 183ve, "Iron Man Vault Edition (V1.83)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(im, 100, 183ve, "Iron Man (V1.0)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(im, 110, 183ve, "Iron Man (V1.1)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(im, 120, 183ve, "Iron Man (V1.2)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(im, 140, 183ve, "Iron Man (V1.4)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(im, 160, 183ve, "Iron Man (V1.6)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(im, 181, 183ve, "Iron Man (V1.81)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(im, 182, 183ve, "Iron Man (V1.82)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(im, 183, 183ve, "Iron Man (V1.83)", 2014, "Stern", sam, 0)
+CORE_GAMEDEF(im, 183ve, "Iron Man Vault Edition (V1.83)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 100, 183ve, "Iron Man (V1.0)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 110, 183ve, "Iron Man (V1.1)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 120, 183ve, "Iron Man (V1.2)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 140, 183ve, "Iron Man (V1.4)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 160, 183ve, "Iron Man (V1.6)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 181, 183ve, "Iron Man (V1.81)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 182, 183ve, "Iron Man (V1.82)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(im, 183, 183ve, "Iron Man (V1.83)", 2014, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / TRON: Legacy
@@ -2285,19 +2313,19 @@ SAM1_ROM32MB(trn_174h, "trn174h.bin", CRC(a45224bf) SHA1(40e36764af332175f653e8d
 
 SAM_INPUT_PORTS_START(trn, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(trn, 174h, "TRON: Legacy Limited Edition (V1.74)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 100h, 174h, "TRON: Legacy Limited Edition (V1.0)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 110,  174h, "TRON: Legacy (V1.1)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 110h, 174h, "TRON: Legacy Limited Edition (V1.1)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 120,  174h, "TRON: Legacy (V1.2)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 130h, 174h, "TRON: Legacy Limited Edition (V1.3)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 140,  174h, "TRON: Legacy (V1.4)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 140h, 174h, "TRON: Legacy Limited Edition (V1.4)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 150,  174h, "TRON: Legacy (V1.5)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 160,  174h, "TRON: Legacy (V1.6)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 170,  174h, "TRON: Legacy (V1.7)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 174,  174h, "TRON: Legacy (V1.74)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(trn, 17402,174h, "TRON: Legacy (V1.7402)", 2013, "Stern", sam, 0)
+CORE_GAMEDEF(trn, 174h, "TRON: Legacy Limited Edition (V1.74)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 100h, 174h, "TRON: Legacy Limited Edition (V1.0)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 110,  174h, "TRON: Legacy (V1.1)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 110h, 174h, "TRON: Legacy Limited Edition (V1.1)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 120,  174h, "TRON: Legacy (V1.2)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 130h, 174h, "TRON: Legacy Limited Edition (V1.3)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 140,  174h, "TRON: Legacy (V1.4)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 140h, 174h, "TRON: Legacy Limited Edition (V1.4)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 150,  174h, "TRON: Legacy (V1.5)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 160,  174h, "TRON: Legacy (V1.6)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 170,  174h, "TRON: Legacy (V1.7)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 174,  174h, "TRON: Legacy (V1.74)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(trn, 17402,174h, "TRON: Legacy (V1.7402)", 2013, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Transformers
@@ -2320,19 +2348,19 @@ SAM1_ROM32MB(tf_180h, "tf180h.bin", CRC(467aeeb3) SHA1(feec42b083d81e632ef8ae402
 
 SAM_INPUT_PORTS_START(tf, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(tf, 180h, "Transformers Limited Edition (V1.8)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 088h, 180h, "Transformers Limited Edition (V0.88)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 100h, 180h, "Transformers Limited Edition (V1.0)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 120,  180h, "Transformers (V1.2)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 120h, 180h, "Transformers Limited Edition (V1.2)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 130h, 180h, "Transformers Limited Edition (V1.3)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 140,  180h, "Transformers (V1.4)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 140h, 180h, "Transformers Limited Edition (V1.4)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 150,  180h, "Transformers (V1.5)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 150h, 180h, "Transformers Limited Edition (V1.5)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 160,  180h, "Transformers (V1.6)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 170,  180h, "Transformers (V1.7)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(tf, 180,  180h, "Transformers (V1.8)", 2013, "Stern", sam, 0)
+CORE_GAMEDEF(tf, 180h, "Transformers Limited Edition (V1.8)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 088h, 180h, "Transformers Limited Edition (V0.88)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 100h, 180h, "Transformers Limited Edition (V1.0)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 120,  180h, "Transformers (V1.2)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 120h, 180h, "Transformers Limited Edition (V1.2)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 130h, 180h, "Transformers Limited Edition (V1.3)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 140,  180h, "Transformers (V1.4)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 140h, 180h, "Transformers Limited Edition (V1.4)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 150,  180h, "Transformers (V1.5)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 150h, 180h, "Transformers Limited Edition (V1.5)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 160,  180h, "Transformers (V1.6)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 170,  180h, "Transformers (V1.7)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(tf, 180,  180h, "Transformers (V1.8)", 2013, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / James Cameron's Avatar
@@ -2347,12 +2375,12 @@ SAM1_ROM32MB(avr_200,  "avr200.bin",  CRC(dc225785) SHA1(ecaba25a470bf03e6e43ab8
 
 SAM_INPUT_PORTS_START(avr, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(avr, 120h, "Avatar Limited Edition (V1.2)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(avr, 101h, 120h, "Avatar Limited Edition (V1.01)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(avr, 106,  120h, "Avatar (V1.06)", 2010, "Stern", sam, 0)
-CORE_CLONEDEF(avr, 110,  120h, "Avatar (V1.1)", 2011, "Stern", sam, 0)
+CORE_GAMEDEF(avr, 120h, "Avatar Limited Edition (V1.2)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(avr, 101h, 120h, "Avatar Limited Edition (V1.01)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(avr, 106,  120h, "Avatar (V1.06)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(avr, 110,  120h, "Avatar (V1.1)", 2011, "Stern", sam1, 0)
 //Avatar Pro FTDI-USB CPU Board Part #520-5246-02 ONLY
-CORE_CLONEDEF(avr, 200,  120h, "Avatar (V2.0)", 2013, "Stern", sam, 0)
+CORE_CLONEDEF(avr, 200,  120h, "Avatar (V2.0)", 2013, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / The Rolling Stones
@@ -2367,11 +2395,11 @@ SAM1_ROM32MB(rsn_110h, "rsn110h.bin", CRC(f5122852) SHA1(b92461983d7a3b55ac8be4d
 
 SAM_INPUT_PORTS_START(rsn, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(rsn, 110h, "Rolling Stones, The Limited Edition (V1.1)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 103,  110h, "Rolling Stones, The (V1.03)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 105,  110h, "Rolling Stones, The (V1.05)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 100h, 110h, "Rolling Stones, The Limited Edition (V1.0)", 2011, "Stern", sam, 0)
-CORE_CLONEDEF(rsn, 110,  110h, "Rolling Stones, The (V1.1)", 2011, "Stern", sam, 0)
+CORE_GAMEDEF(rsn, 110h, "Rolling Stones, The Limited Edition (V1.1)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(rsn, 103,  110h, "Rolling Stones, The (V1.03)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(rsn, 105,  110h, "Rolling Stones, The (V1.05)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(rsn, 100h, 110h, "Rolling Stones, The Limited Edition (V1.0)", 2011, "Stern", sam1, 0)
+CORE_CLONEDEF(rsn, 110,  110h, "Rolling Stones, The (V1.1)", 2011, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / AC/DC
@@ -2403,27 +2431,27 @@ SAM1_ROM128MB(acd_168hc, "acd_168hc.bin",CRC(5a4246a1) SHA1(725eb666ffaef894d2bd
 
 SAM_INPUT_PORTS_START(acd, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(acd, 168h, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 121,  168h, "AC/DC (V1.21)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 125,  168h, "AC/DC (V1.25)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 130,  168h, "AC/DC (V1.3)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 140,  168h, "AC/DC (V1.4)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 150,  168h, "AC/DC (V1.5)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 150h, 168h, "AC/DC Limited Edition (V1.5)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 152,  168h, "AC/DC (V1.52)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 152h, 168h, "AC/DC Limited Edition (V1.52)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 160,  168h, "AC/DC (V1.6)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 160h, 168h, "AC/DC Limited Edition (V1.6)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 161,  168h, "AC/DC (V1.61)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 161h, 168h, "AC/DC Limited Edition (V1.61)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 163,  168h, "AC/DC (V1.63)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 163h, 168h, "AC/DC Limited Edition (V1.63)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 165,  168h, "AC/DC (V1.65)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 165h, 168h, "AC/DC Limited Edition (V1.65)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 168,  168h, "AC/DC (V1.68)", 2014, "Stern", sam, 0)
+CORE_GAMEDEF(acd, 168h, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 121,  168h, "AC/DC (V1.21)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 125,  168h, "AC/DC (V1.25)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 130,  168h, "AC/DC (V1.3)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 140,  168h, "AC/DC (V1.4)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 150,  168h, "AC/DC (V1.5)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 150h, 168h, "AC/DC Limited Edition (V1.5)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 152,  168h, "AC/DC (V1.52)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 152h, 168h, "AC/DC Limited Edition (V1.52)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 160,  168h, "AC/DC (V1.6)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 160h, 168h, "AC/DC Limited Edition (V1.6)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 161,  168h, "AC/DC (V1.61)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 161h, 168h, "AC/DC Limited Edition (V1.61)", 2012, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 163,  168h, "AC/DC (V1.63)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 163h, 168h, "AC/DC Limited Edition (V1.63)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 165,  168h, "AC/DC (V1.65)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 165h, 168h, "AC/DC Limited Edition (V1.65)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 168,  168h, "AC/DC (V1.68)", 2014, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(acd, 168c, 168h, "AC/DC (V1.68) (Colored)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(acd, 168hc,168h, "AC/DC Limited Edition (V1.68) (Colored)", 2014, "Stern", sam, 0)
+CORE_CLONEDEF(acd, 168c, 168h, "AC/DC (V1.68) (Colored)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 168hc,168h, "AC/DC Limited Edition (V1.68) (Colored)", 2014, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2449,21 +2477,21 @@ SAM1_ROM32MB(xmn_151h, "xmn_151h.bin", CRC(21d1088f) SHA1(9a0278c0324fbf549b5b7b
 
 SAM_INPUT_PORTS_START(xmn, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(xmn, 151h, "X-Men Limited Edition (V1.51)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 100,  151h, "X-Men (V1.0)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 102,  151h, "X-Men Limited Edition (V1.02)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 104,  151h, "X-Men (V1.04)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 105,  151h, "X-Men (V1.05)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 120h, 151h, "X-Men Limited Edition (V1.2)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 121h, 151h, "X-Men Limited Edition (V1.21)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 122h, 151h, "X-Men Limited Edition (V1.22)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 123h, 151h, "X-Men Limited Edition (V1.23)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 124h, 151h, "X-Men Limited Edition (V1.24)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 130,  151h, "X-Men (V1.3)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 130h, 151h, "X-Men Limited Edition (V1.3)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 150,  151h, "X-Men (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 150h, 151h, "X-Men Limited Edition (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(xmn, 151,  151h, "X-Men (V1.51)", 2014, "Stern", sam, 0)
+CORE_GAMEDEF(xmn, 151h, "X-Men Limited Edition (V1.51)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 100,  151h, "X-Men (V1.0)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 102,  151h, "X-Men Limited Edition (V1.02)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 104,  151h, "X-Men (V1.04)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 105,  151h, "X-Men (V1.05)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 120h, 151h, "X-Men Limited Edition (V1.2)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 121h, 151h, "X-Men Limited Edition (V1.21)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 122h, 151h, "X-Men Limited Edition (V1.22)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 123h, 151h, "X-Men Limited Edition (V1.23)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 124h, 151h, "X-Men Limited Edition (V1.24)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 130,  151h, "X-Men (V1.3)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 130h, 151h, "X-Men Limited Edition (V1.3)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 150,  151h, "X-Men (V1.5)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 150h, 151h, "X-Men Limited Edition (V1.5)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 151,  151h, "X-Men (V1.51)", 2014, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / The Avengers // uses sam1 and SAM1_ROM32MB instead of sam2 and SAM1_ROM128MB, should be okay
@@ -2483,15 +2511,15 @@ SAM1_ROM32MB(avs_170hc,"avs_170hc.bin",CRC(ff1a39e5) SHA1(44949f8aca36a8a1896fe2
 
 SAM_INPUT_PORTS_START(avs, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(avs, 170h, "Avengers, The Limited Edition (V1.7)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 110,  170h, "Avengers, The (V1.1)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 120h, 170h, "Avengers, The Limited Edition (V1.2)", 2012, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 140,  170h, "Avengers, The (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 140h, 170h, "Avengers, The Limited Edition (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170,  170h, "Avengers, The (V1.7)", 2016, "Stern", sam, 0)
+CORE_GAMEDEF(avs, 170h, "Avengers, The Limited Edition (V1.7)", 2016, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 110,  170h, "Avengers, The (V1.1)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 120h, 170h, "Avengers, The Limited Edition (V1.2)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 140,  170h, "Avengers, The (V1.4)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 140h, 170h, "Avengers, The Limited Edition (V1.4)", 2013, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 170,  170h, "Avengers, The (V1.7)", 2016, "Stern", sam1, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(avs, 170c, 170h, "Avengers, The (V1.7) (Colored)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(avs, 170c, 170h, "Avengers, The (V1.7) (Colored)", 2016, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored)", 2016, "Stern", sam1, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2532,35 +2560,35 @@ SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", CRC(99d42a4e) SHA1(1983a6d1cd5664cf0359
 
 SAM_INPUT_PORTS_START(mtl, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(mtl, 170h, "Metallica Limited Edition (V1.7)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 103,  170h, "Metallica (V1.03)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 105,  170h, "Metallica (V1.05)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 106,  170h, "Metallica (V1.06)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 112,  170h, "Metallica (V1.12)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 113,  170h, "Metallica (V1.13)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 113h, 170h, "Metallica Limited Edition (V1.13)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 116,  170h, "Metallica (V1.16)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 116h, 170h, "Metallica Limited Edition (V1.16)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 120,  170h, "Metallica (V1.2)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 120h, 170h, "Metallica Limited Edition (V1.2)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 122,  170h, "Metallica (V1.22)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 122h, 170h, "Metallica Limited Edition (V1.22)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 150,  170h, "Metallica (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 150h, 170h, "Metallica Limited Edition (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 151,  170h, "Metallica (V1.51)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 151h, 170h, "Metallica Limited Edition (V1.51)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 160,  170h, "Metallica (V1.6)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 160h, 170h, "Metallica Limited Edition (V1.6)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 163,  170h, "Metallica (V1.63)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 163d, 170h, "Metallica (V1.63 LED)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 163h, 170h, "Metallica Limited Edition (V1.63)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 164,  170h, "Metallica (V1.64)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 164h, 170h, "Metallica Limited Edition (V1.64)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 170,  170h, "Metallica (V1.7)", 2016, "Stern", sam, 0)
+CORE_GAMEDEF(mtl, 170h, "Metallica Limited Edition (V1.7)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 103,  170h, "Metallica (V1.03)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 105,  170h, "Metallica (V1.05)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 106,  170h, "Metallica (V1.06)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 112,  170h, "Metallica (V1.12)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 113,  170h, "Metallica (V1.13)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 113h, 170h, "Metallica Limited Edition (V1.13)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 116,  170h, "Metallica (V1.16)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 116h, 170h, "Metallica Limited Edition (V1.16)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 120,  170h, "Metallica (V1.2)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 120h, 170h, "Metallica Limited Edition (V1.2)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 122,  170h, "Metallica (V1.22)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 122h, 170h, "Metallica Limited Edition (V1.22)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 150,  170h, "Metallica (V1.5)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 150h, 170h, "Metallica Limited Edition (V1.5)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 151,  170h, "Metallica (V1.51)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 151h, 170h, "Metallica Limited Edition (V1.51)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 160,  170h, "Metallica (V1.6)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 160h, 170h, "Metallica Limited Edition (V1.6)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 163,  170h, "Metallica (V1.63)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 163d, 170h, "Metallica (V1.63 LED)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 163h, 170h, "Metallica Limited Edition (V1.63)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 164,  170h, "Metallica (V1.64)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 164h, 170h, "Metallica Limited Edition (V1.64)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 170,  170h, "Metallica (V1.7)", 2016, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(mtl, 164c, 170h, "Metallica (V1.64) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 170c, 170h, "Metallica (V1.7) (Colored)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(mtl, 170hc,170h, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(mtl, 164c, 170h, "Metallica (V1.64) (Colored)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 170c, 170h, "Metallica (V1.7) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 170hc,170h, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2587,21 +2615,21 @@ SAM1_ROM128MB(st_161hc,"st_161hc.bin",CRC(74ad8a31) SHA1(18c940d021441ba87854f5e
 
 SAM_INPUT_PORTS_START(st, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(st, 161h, "Star Trek Limited Edition (V1.61)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(st, 120,  161h, "Star Trek (V1.2)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(st, 130,  161h, "Star Trek (V1.3)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(st, 140,  161h, "Star Trek (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(st, 140h, 161h, "Star Trek Limited Edition (V1.4)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(st, 141h, 161h, "Star Trek Limited Edition (V1.41)", 2013, "Stern", sam, 0)
-CORE_CLONEDEF(st, 142h, 161h, "Star Trek Limited Edition (V1.42)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(st, 150,  161h, "Star Trek (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(st, 150h, 161h, "Star Trek Limited Edition (V1.5)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(st, 160,  161h, "Star Trek (V1.6)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(st, 160h, 161h, "Star Trek Limited Edition (V1.6)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(st, 161,  161h, "Star Trek (V1.61)", 2015, "Stern", sam, 0)
+CORE_GAMEDEF(st, 161h, "Star Trek Limited Edition (V1.61)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 120,  161h, "Star Trek (V1.2)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 130,  161h, "Star Trek (V1.3)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 140,  161h, "Star Trek (V1.4)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 140h, 161h, "Star Trek Limited Edition (V1.4)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 141h, 161h, "Star Trek Limited Edition (V1.41)", 2013, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 142h, 161h, "Star Trek Limited Edition (V1.42)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 150,  161h, "Star Trek (V1.5)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 150h, 161h, "Star Trek Limited Edition (V1.5)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 160,  161h, "Star Trek (V1.6)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 160h, 161h, "Star Trek Limited Edition (V1.6)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 161,  161h, "Star Trek (V1.61)", 2015, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(st, 161c, 161h, "Star Trek (V1.61) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(st, 161hc,161h, "Star Trek Limited Edition (V1.61) (Colored)", 2015, "Stern", sam, 0)
+CORE_CLONEDEF(st, 161c, 161h, "Star Trek (V1.61) (Colored)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 161hc,161h, "Star Trek Limited Edition (V1.61) (Colored)", 2015, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2609,34 +2637,34 @@ CORE_CLONEDEF(st, 161hc,161h, "Star Trek Limited Edition (V1.61) (Colored)", 201
 /-------------------------------------------------------------------*/
 INITGAME(mt, GEN_SAM, sam_dmd128x32, SAM_8COL,SAM_GAME_AUXSOL12);
 
-SAM1_ROM32MB(mt_120,  "mt_120.bin",  CRC(be7437ac) SHA1(5db10d7f48091093c33d522a663f13f262c08c3e), 0x037DA5EC)													
-SAM1_ROM32MB(mt_130,  "mt_130.bin",  CRC(b6086db1) SHA1(0a50864b0de1b4eb9a764f36474b6fddea767c0d), 0x0323573C)													
-SAM1_ROM32MB(mt_130h, "mt_130h.bin", CRC(dcb5c923) SHA1(cf9e6042ae33080368ecffac233379135bf680ae), 0x03BF07F0)													
-SAM1_ROM32MB(mt_140,  "mt_140.bin",  CRC(48010b61) SHA1(1bc615a86c4718ff407116a4e637e38e8386ded0), 0x03267340)													
-SAM1_ROM32MB(mt_140h, "mt_140h.bin", CRC(FCB69947) SHA1(be64b13b3c6865f4fed1a8f03e9eaf84799fa2ab), 0x03C2CCC4)													
-SAM1_ROM32MB(mt_140hb,"mt_140hb.bin",CRC(64B660E9) SHA1(01d0f0e61e99bc53ccde853f1604cec5ab0c59cf), 0x03C2CCC4)													
-SAM1_ROM32MB(mt_145,  "mt_145.bin",  CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b97ed84ce1a6705955), 0x03267340)													
-SAM1_ROM32MB(mt_145h, "mt_145h.bin", CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03C2CCC4)													
-SAM1_ROM32MB(mt_145hb,"mt_145hb.bin",CRC(91fd5615) SHA1(0dbd7f3fc68218bcb10c893069d35447a445bc11), 0x03C2CCC4)													
+SAM1_ROM128MB(mt_120,  "mt_120.bin",  CRC(be7437ac) SHA1(5db10d7f48091093c33d522a663f13f262c08c3e), 0x037DA5EC)													
+SAM1_ROM128MB(mt_130,  "mt_130.bin",  CRC(b6086db1) SHA1(0a50864b0de1b4eb9a764f36474b6fddea767c0d), 0x0323573C)													
+SAM1_ROM128MB(mt_130h, "mt_130h.bin", CRC(dcb5c923) SHA1(cf9e6042ae33080368ecffac233379135bf680ae), 0x03BF07F0)													
+SAM1_ROM128MB(mt_140,  "mt_140.bin",  CRC(48010b61) SHA1(1bc615a86c4718ff407116a4e637e38e8386ded0), 0x03267340)													
+SAM1_ROM128MB(mt_140h, "mt_140h.bin", CRC(FCB69947) SHA1(be64b13b3c6865f4fed1a8f03e9eaf84799fa2ab), 0x03C2CCC4)													
+SAM1_ROM128MB(mt_140hb,"mt_140hb.bin",CRC(64B660E9) SHA1(01d0f0e61e99bc53ccde853f1604cec5ab0c59cf), 0x03C2CCC4)													
+SAM1_ROM128MB(mt_145,  "mt_145.bin",  CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b97ed84ce1a6705955), 0x03267340)													
+SAM1_ROM128MB(mt_145h, "mt_145h.bin", CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03C2CCC4)													
+SAM1_ROM128MB(mt_145hb,"mt_145hb.bin",CRC(91fd5615) SHA1(0dbd7f3fc68218bcb10c893069d35447a445bc11), 0x03C2CCC4)													
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM32MB(mt_145c, "mt_145c.bin", CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b97ed84ce1a6705955), 0x037FFFF0)
-SAM1_ROM32MB(mt_145hc,"mt_145hc.bin",CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03FFFFF0)
+SAM1_ROM128MB(mt_145c, "mt_145c.bin", CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b97ed84ce1a6705955), 0x037FFFF0)
+SAM1_ROM128MB(mt_145hc,"mt_145hc.bin",CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(mt, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(mt, 145h, "Mustang Limited Edition (V1.45)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 120,  145h, "Mustang (V1.2)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 130,  145h, "Mustang (V1.3)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 130h, 145h, "Mustang Limited Edition (V1.3)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 140,  145h, "Mustang (V1.4)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 140h, 145h, "Mustang Limited Edition (V1.4)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 140hb,145h, "Mustang Boss (V1.4)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 145,  145h, "Mustang (V1.45)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 145hb,145h, "Mustang Boss (V1.45)", 2016, "Stern", sam, 0)
+CORE_GAMEDEF(mt, 145h, "Mustang Limited Edition (V1.45)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 120,  145h, "Mustang (V1.2)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 130,  145h, "Mustang (V1.3)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 130h, 145h, "Mustang Limited Edition (V1.3)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 140,  145h, "Mustang (V1.4)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 140h, 145h, "Mustang Limited Edition (V1.4)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 140hb,145h, "Mustang Boss (V1.4)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 145,  145h, "Mustang (V1.45)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 145hb,145h, "Mustang Boss (V1.45)", 2016, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(mt, 145c, 145h, "Mustang (V1.45) (Colored)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(mt, 145hc,145h, "Mustang Limited Edition (V1.45) (Colored)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(mt, 145c, 145h, "Mustang (V1.45) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 145hc,145h, "Mustang Limited Edition (V1.45) (Colored)", 2016, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2672,30 +2700,30 @@ SAM1_ROM128MB(twd_160hc,"twd_160hc.bin",CRC(1ed7b80a) SHA1(1fbaa077ec834ff9d2890
 
 SAM_INPUT_PORTS_START(twd, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(twd, 160h, "Walking Dead, The Limited Edition (V1.60.0)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 105,  160h, "Walking Dead, The (V1.05)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 111,  160h, "Walking Dead, The (V1.11)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 111h, 160h, "Walking Dead, The Limited Edition (V1.11)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 119,  160h, "Walking Dead, The (V1.19)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 119h, 160h, "Walking Dead, The Limited Edition (V1.19)", 2014, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 124,  160h, "Walking Dead, The (V1.24)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 124h, 160h, "Walking Dead, The Limited Edition (V1.24)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 125,  160h, "Walking Dead, The (V1.25)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 125h, 160h, "Walking Dead, The Limited Edition (V1.25)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 128,  160h, "Walking Dead, The (V1.28)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 128h, 160h, "Walking Dead, The Limited Edition (V1.28)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 141,  160h, "Walking Dead, The (V1.41)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 141h, 160h, "Walking Dead, The Limited Edition (V1.41)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 153,  160h, "Walking Dead, The (V1.53)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 153h, 160h, "Walking Dead, The Limited Edition (V1.53)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156,  160h, "Walking Dead, The (V1.56)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156h, 160h, "Walking Dead, The Limited Edition (V1.56)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160,  160h, "Walking Dead, The (V1.60.0)", 2017, "Stern", sam, 0)
+CORE_GAMEDEF(twd, 160h, "Walking Dead, The Limited Edition (V1.60.0)", 2017, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 105,  160h, "Walking Dead, The (V1.05)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 111,  160h, "Walking Dead, The (V1.11)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 111h, 160h, "Walking Dead, The Limited Edition (V1.11)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 119,  160h, "Walking Dead, The (V1.19)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 119h, 160h, "Walking Dead, The Limited Edition (V1.19)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 124,  160h, "Walking Dead, The (V1.24)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 124h, 160h, "Walking Dead, The Limited Edition (V1.24)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 125,  160h, "Walking Dead, The (V1.25)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 125h, 160h, "Walking Dead, The Limited Edition (V1.25)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 128,  160h, "Walking Dead, The (V1.28)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 128h, 160h, "Walking Dead, The Limited Edition (V1.28)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 141,  160h, "Walking Dead, The (V1.41)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 141h, 160h, "Walking Dead, The Limited Edition (V1.41)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 153,  160h, "Walking Dead, The (V1.53)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 153h, 160h, "Walking Dead, The Limited Edition (V1.53)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 156,  160h, "Walking Dead, The (V1.56)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 156h, 160h, "Walking Dead, The Limited Edition (V1.56)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 160,  160h, "Walking Dead, The (V1.60.0)", 2017, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(twd, 156c, 160h, "Walking Dead, The (V1.56) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 156hc,160h, "Walking Dead, The Limited Edition (V1.56) (Colored)", 2015, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160c, 160h, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
-CORE_CLONEDEF(twd, 160hc,160h, "Walking Dead, The Limited Edition (V1.60.0) (Colored)", 2017, "Stern", sam, 0)
+CORE_CLONEDEF(twd, 156c, 160h, "Walking Dead, The (V1.56) (Colored)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 156hc,160h, "Walking Dead, The Limited Edition (V1.56) (Colored)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 160c, 160h, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 160hc,160h, "Walking Dead, The Limited Edition (V1.60.0) (Colored)", 2017, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2712,9 +2740,9 @@ SAM1_ROM128MB(smanve_101c,"smanve_101c.bin", CRC(f761fa19) SHA1(259bd6d42e742eaa
 
 SAM_INPUT_PORTS_START(smanve, 1) SAM_INPUT_PORTS_END
 
-CORE_GAMEDEF(smanve, 101, "Spider-Man Vault Edition (V1.01)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(smanve, 100,  101, "Spider-Man Vault Edition (V1.0)", 2016, "Stern", sam, 0)
+CORE_GAMEDEF(smanve, 101, "Spider-Man Vault Edition (V1.01)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(smanve, 100,  101, "Spider-Man Vault Edition (V1.0)", 2016, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(smanve, 100c, 101, "Spider-Man Vault Edition (V1.0) (Colored)", 2016, "Stern", sam, 0)
-CORE_CLONEDEF(smanve, 101c, 101, "Spider-Man Vault Edition (V1.01) (Colored)", 2016, "Stern", sam, 0)
+CORE_CLONEDEF(smanve, 100c, 101, "Spider-Man Vault Edition (V1.0) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(smanve, 101c, 101, "Spider-Man Vault Edition (V1.01) (Colored)", 2016, "Stern", sam2, 0)
 #endif
