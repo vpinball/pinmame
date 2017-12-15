@@ -539,7 +539,7 @@ DE2S_SOUNDROM18888("sxsndf.u7" ,CRC(e68b0607) SHA1(cd3a5ff51932914e977fe866f7ab5
 SE_ROMEND
 #define input_ports_strxt_fr input_ports_strikext
 #define init_strxt_fr init_strikext
-CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 French)",1999,"2000",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 French)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_it,"sxcpui.102", CRC(f955d0ef) SHA1(0f4ee87715bc085e2fb05e9ebdc89403f6bac444))
 DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
