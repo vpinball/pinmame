@@ -49,13 +49,13 @@
 #define SAM_SOL_FLIPSTART 13 
 #define SAM_SOL_FLIPEND 16
 
-#define SAM_CPUFREQ	40000000
+#define SAM_CPUFREQ 40000000
 #define SAM_IRQFREQ 4008
 
-#define SAM1_SOUNDFREQ 24000
-#define SAM1_ZC_FREQ 120 // was 145
+#define SAM_SOUNDFREQ 24000
+#define SAM_ZC_FREQ 120 // was 145
 // 100ms sound buffer.
-#define SNDBUFSIZE (SAM1_SOUNDFREQ * 100 / 1000)    
+#define SNDBUFSIZE (SAM_SOUNDFREQ * 100 / 1000)    
 
 #define SAM_ROMBANK0 1
 
@@ -121,7 +121,7 @@ struct {
 	INT16 lastsamp[2];
 	int sampout;
 	int sampnum;
-	int volume[2], mute[2];
+	UINT8 volume[2], mute[2], DAC_mute[2]; //0..127, 0/1
 	int pass;
 	int coindoor;
 	int samVersion; // 1 or 2
@@ -262,7 +262,7 @@ static int dedswitch_upper_r(void)
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-/*-- Common Inports for SAM1 Games --*/
+/*-- Common Inports for SAM Games --*/
 #define SAM_COMPORTS \
   PORT_START /* 0 */ \
 	/*Switch Col. 0*/ \
@@ -348,7 +348,7 @@ static int sam_getSol(int solNo)
 
 //Sound Interface
 const struct sndbrdIntf samIntf = {
-	"SAM1", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
+	"SAM", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
 
@@ -365,7 +365,7 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 			}
 			samlocals.sampout = (samlocals.sampout + 1) % SNDBUFSIZE;
 		}
-		core_sound_throttle_adj(samlocals.sampnum, &samlocals.sampout, SNDBUFSIZE, SAM1_SOUNDFREQ);
+		core_sound_throttle_adj(samlocals.sampnum, &samlocals.sampout, SNDBUFSIZE, SAM_SOUNDFREQ);
 		
 		for (; ii < length; ++ii)
 			for (channel = 0; channel < 2; channel++)
@@ -382,7 +382,7 @@ static int sam_sh_start(const struct MachineSound *msound)
 	  (2,
 	  stream_name,
 	  volume,
-	  SAM1_SOUNDFREQ,
+	  SAM_SOUNDFREQ,
 	  0,
 	  sam_sh_update) < 0;
 }
@@ -426,7 +426,7 @@ static READ32_HANDLER(samswitch_r)
 			//0x1100002 = Dedicated Switch Matrix (0-16)
 			case 0x1100002:
 			{
-				data = (coreGlobals.swMatrix[9] | ((core_swapNyb[coreGlobals.swMatrix[11] & 0xF] | (0x10 * core_swapNyb[coreGlobals.swMatrix[11] >> 4])) << 8));
+				data = dedswitch_lower_r();
 				// Copy flipper states (D8, D10, D12, D14) to EOS (Dx+1).   SAM is not 
 				// using standard VPM flipper coils, so the EOS simulation does not
 				// take place, and the ROM reports technician errors.
@@ -597,7 +597,7 @@ static READ32_HANDLER(samxilinx_r)
 }*/
 
 /*****************************/
-/*  Memory map for SAM1 CPU  */
+/*  Memory map for SAM CPU  */
 /*****************************/
 static MEMORY_READ32_START(sam_readmem)
 	{ 0x00000000, 0x000FFFFF, MRA32_RAM },					//Boot RAM
@@ -668,7 +668,7 @@ static WRITE32_HANDLER(samdmdram_w)
   }
 }
 
-static WRITE32_HANDLER(sam1_io2_w)
+static WRITE32_HANDLER(sam_io2_w)
 {
   LOG(("%08x: IO2 output to %05x=%02x\n", activecpu_get_pc(), offset, data)); //!! find out what is what for LE support (but even normal TWD uses it (and more??))
 }
@@ -859,7 +859,7 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
 				{
-					int test = data & ~samlocals.auxdata;
+					const int test = data & ~samlocals.auxdata;
 					if (!((test < 0x80) && (test >= 0))) // observe change low -> high to trigger the column reset
 					{
 						samlocals.miniDMDCol = 0;
@@ -875,7 +875,7 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_WOF)
 				{
-					int test = data & ~samlocals.auxdata;
+					const int test = data & ~samlocals.auxdata;
 					if ( (test < 0x80) && (test >= 0) ) // observe change low -> high to trigger the column reset
 					{
 						samlocals.miniDMDCol++;
@@ -987,9 +987,9 @@ static WRITE32_HANDLER(sambank_w)
 					else if ( (data & ~samlocals.auxstrb) & 0x10 ) // DMD
 						samlocals.WOF_minidmdflag = 1;
 				}
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (~data & 0x08))
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_BDK) && (~data & 0x08)) // extra lamp column
 					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.auxdata);
-				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (~data & 0x10))
+				if ((core_gameData->hw.gameSpecific1 & SAM_GAME_CSI) && (~data & 0x10)) // extra lamp column
 					coreGlobals.lampMatrix[10] = coreGlobals.tmpLampMatrix[10] = core_revbyte(samlocals.auxdata);
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_TRON)
 				{
@@ -1012,8 +1012,9 @@ static WRITE32_HANDLER(sambank_w)
 					if ( ~data & 0x40 )
 						LOG(("Test"));
 				}
-				if ( (~data & 0x40) && (samlocals.auxdata & 3) )
-					LOG(("error"));
+				if ( (~data & 0x40) // writes to beta-brite connector
+					&& (samlocals.auxdata & 0x03) )
+					LOG(("%08x: writing to betabrite: %x\n",activecpu_get_pc(),auxdata & 0x03));
 				samlocals.auxstrb = data;
 				//}
 				break;
@@ -1094,7 +1095,7 @@ static MEMORY_WRITE32_START(sam_writemem)
 	{ 0x0109F000, 0x010FFFFF, samxilinx_w },			   //U13 RAM - Sound Data for output
 	{ 0x01100000, 0x01FFFFFF, samdmdram_w },			   //Various Output Signals
 	{ 0x02100000, 0x0211FFFF, MWA32_RAM, &nvram },		   //U11 NVRAM (128K) 0x02100000,0x0211ffff
-	{ 0x02200000, 0x022fffff, sam1_io2_w },				   //LE versions: more I/O stuff (mostly LED lamps)
+	{ 0x02200000, 0x022fffff, sam_io2_w },				   //LE versions: more I/O stuff (mostly LED lamps)
 	{ 0x02400000, 0x02FFFFFF, sambank_w },				   //I/O Related
 	{ 0x03000000, 0x030000FF, MWA32_RAM },				   //USB Related
 	{ 0x04000000, 0x047FFFFF, MWA32_RAM },				   //1st 8MB of Flash ROM U44 Mapped here
@@ -1113,9 +1114,8 @@ MEMORY_END
 static READ32_HANDLER(sam_port_r)
 {
 	const int logit = LOG_PORT_READ;
-	data32_t data;
 	//Set P10,P11 to +1 as shown in schematic since they are tied to voltage.
-	data = 0x00000C00;
+	const data32_t data = 0x00000C00;
 	//Eventually need to add in P16,17,18 for feedback from Real Time Clock
 	//Possibly also P23 (USB Related) & P24 (Dip #8)
 
@@ -1143,16 +1143,23 @@ static WRITE32_HANDLER(sam_port_w)
       case 0x11: // right channel attenuation
         samlocals.volume[1] = samlocals.value & 0xff;
         break;
-      case 0x12: // soft mute
+      case 0x12: // soft mute //!! according to datasheet this should actually fade in(0->samlocals.volume)/out(samlocals.volume->0) 1 step every 8/fS timestep and not kick in immediately to avoid pops
         samlocals.mute[0] = (samlocals.value & 1);
         samlocals.mute[1] = (samlocals.value & 2) >> 1;
         break;
+      case 0x13: // DAC off
+        samlocals.DAC_mute[0] = (samlocals.value & 1);
+        samlocals.DAC_mute[1] = (samlocals.value & 2) >> 1;
+        break;
+      default: // Filters and the like, nothing serious
+        LOG(("Unhandled PCM1755 command"));
+        break;
     }
-    //Mixer set volume has volume range of 0..100, while the SAM1 hardware uses a 128 value range for volume. Volume values start @ 0x80 for some reason.
-    if (samlocals.mute[0] == 0)
-      l_vol = (samlocals.volume[0] & 0x7f) * 50 / 63;
-    if (samlocals.mute[1] == 0)
-      r_vol = (samlocals.volume[1] & 0x7f) * 50 / 63;
+    // Mixer set volume has volume range of 0..100, while the SAM hardware uses 0..127 value range for volume. "Real" volume values start @ 0x80: For ATx[7:0]DEC = 0 through 128, attenuation is set to infinite attenuation (=mute)
+    if (samlocals.mute[0] == 0 && samlocals.DAC_mute[0] == 0)
+      l_vol = (samlocals.volume[0] <= 0x80) ? 0 : ((int)(samlocals.volume[0] & 0x7f) * 100 / 0x7f);
+    if (samlocals.mute[1] == 0 && samlocals.DAC_mute[1] == 0)
+      r_vol = (samlocals.volume[1] <= 0x80) ? 0 : ((int)(samlocals.volume[1] & 0x7f) * 100 / 0x7f);
     mixer_set_stereo_volume(0, l_vol, 0);
     mixer_set_stereo_volume(1, 0, r_vol);
 
@@ -1163,7 +1170,7 @@ static WRITE32_HANDLER(sam_port_w)
 }
 
 /*****************************/
-/*  Port map for SAM1 CPU    */
+/*  Port map for SAM CPU    */
 /*****************************/
 //AT91 has only 1 port address it writes to - all 32 ports are sent via each bit of a 32 bit double word.
 //However, if I didn't use 0-0xFF as a range it crashed for some reason.
@@ -1175,7 +1182,7 @@ static PORT_WRITE32_START(sam_writeport)
 	{ 0x00,0xFF, sam_port_w },
 PORT_END
 
-static MACHINE_INIT(sam1) {
+static MACHINE_INIT(sam) {
 	at91_set_ram_pointers(sam_reset_ram, sam_page0_ram);
 	at91_set_transmit_serial(sam_transmit_serial);
 	at91_set_serial_receive_ready(sam_LED_hack);
@@ -1189,9 +1196,9 @@ static MACHINE_INIT(sam1) {
 		at91_block_timers = 1;
 
 	#if LOG_RAW_SOUND_DATA
-	fpSND = fopen("sam1snd.raw","wb");
+	fpSND = fopen("sam_snd.raw","wb");
 	if(!fpSND)
-		LOG(("Unable to create sam1snd.raw file\n"));
+		LOG(("Unable to create sam_snd.raw file\n"));
 	#endif
 }
 
@@ -1211,9 +1218,10 @@ static MACHINE_RESET(sam2) {
 	samlocals.led_row = -1;
 }
 
-static MACHINE_STOP(sam1) {
+static MACHINE_STOP(sam) {
 	#if LOG_RAW_SOUND_DATA
 	if(fpSND) fclose(fpSND);
+	fpSND = NULL;
 	#endif
 }
 
@@ -1448,10 +1456,10 @@ static MACHINE_DRIVER_START(sam1)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_vblank, 1)
     MDRV_CPU_PERIODIC_INT(sam_irq, SAM_IRQFREQ)
-    MDRV_CORE_INIT_RESET_STOP(sam1, sam1, sam1)
+    MDRV_CORE_INIT_RESET_STOP(sam, sam1, sam)
     MDRV_DIPS(8)
     MDRV_NVRAM_HANDLER(sam)
-    MDRV_TIMER_ADD(sam_timer, SAM1_ZC_FREQ)
+    MDRV_TIMER_ADD(sam_timer, SAM_ZC_FREQ)
     MDRV_SOUND_ADD(CUSTOM, samCustInt)
 	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
     MDRV_DIAGNOSTIC_LEDH(2)
@@ -1462,7 +1470,7 @@ MACHINE_DRIVER_END
 /*********************************************/
 MACHINE_DRIVER_START(sam2)
   MDRV_IMPORT_FROM(sam1)
-  MDRV_CORE_INIT_RESET_STOP(sam1, sam2, sam1)
+  MDRV_CORE_INIT_RESET_STOP(sam, sam2, sam)
 MACHINE_DRIVER_END
 
 
@@ -1471,7 +1479,16 @@ MACHINE_DRIVER_END
 		gen, disp, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, lampcol, 16, 0, 0, hw,0, sam_getSol}}; \
 	static void init_##name(void) { core_gameData = &name##GameData; }
 
-//Displays
+/*****************/
+/*  DMD Section  */
+/*****************/
+
+/*-- SAM DMD display uses 32 x 128 pixels by accessing 0x1000 bytes per page.
+     That's 8 bits for each pixel, but they are distributed into 4 brightness
+     bits (16 colors), and 4 translucency bits that perform the masking of the
+     secondary or "background" page that will "shine through" if the mask bits
+     of the foreground are set.
+--*/
 PINMAME_VIDEO_UPDATE(samdmd_update) {
 	static const UINT8 hew[16] =
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
@@ -1490,7 +1507,9 @@ PINMAME_VIDEO_UPDATE(samdmd_update) {
 		{
 			const UINT8 * const RAM1 = offs1 + jj;
 			const UINT8 * const RAM2 = offs2 + jj;
-			const UINT8 temp = ((*RAM1 & 0xF0) == 0xF0) ? *RAM2 : *RAM1;
+			const UINT8 temp = ((*RAM1 & 0xF0) == 0xF0) ? *RAM2 : *RAM1; //!! check if there are also other cases where (*RAM1 & 0xF0) != 0 (e.g. only few bits set -> then mix more finegrained??)
+			if(((*RAM1 & 0xF0) != 0xF0) && ((*RAM1 & 0xF0) != 0x00))
+				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4);
 			*line = hew[temp];
 			*line++;
 		}
@@ -1506,14 +1525,14 @@ PINMAME_VIDEO_UPDATE(samminidmd_update) {
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
 
-    for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
+    for (ii = 1, bits = 0x40; ii < 8; ii++, bits >>= 1)
         for (kk = 0; kk < 5; kk++)
-            dotCol[ii+1][kk] = samlocals.miniDMDData[dmd_y*5 + kk][dmd_x] & bits ? 3 : 0;
+            dotCol[ii][kk] = samlocals.miniDMDData[dmd_y*5 + kk][dmd_x] & bits ? 3 : 0;
 
     for (ii = 0; ii < 5; ii++) {
         bits = 0;
-        for (kk = 0; kk < 7; kk++)
-            bits = (bits<<1) | (dotCol[kk+1][ii] ? 1 : 0);
+        for (kk = 1; kk < 8; kk++)
+            bits = (bits<<1) | (dotCol[kk][ii] ? 1 : 0);
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
     }
 
@@ -1532,8 +1551,8 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
 				for (kk = 0; kk < 5; kk++)
 				{
-					const int target = (kk * 35) + (jj * 7) + ii;
-					dotCol[kk + 1][ii + (jj * 7)] = coreGlobals.RGBlamps[target + 60] >> 4;
+					const int target = ((jj * 7) + ii) + (kk * 35);
+					dotCol[kk + 1][(jj * 7) + ii] = coreGlobals.RGBlamps[target + 60] >> 4;
 				}
 	}
 	else
@@ -1545,8 +1564,8 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 	}
     for (ii = 0; ii < 35; ii++) {
         bits = 0;
-        for (kk = 0; kk < 5; kk++)
-            bits = (bits<<1) | (dotCol[kk+1][ii] ? 1 : 0);
+        for (kk = 1; kk < 6; kk++)
+            bits = (bits<<1) | (dotCol[kk][ii] ? 1 : 0);
         coreGlobals.drawSeg[ii] = bits;
     }
 
