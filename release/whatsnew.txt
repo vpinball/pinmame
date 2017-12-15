@@ -14,7 +14,7 @@ Made speech work for Taito Vegas and Lady Luck - working around a strange PIA is
 Fixed COP420 emulation, sound works now on Zira
 Add emulation pause support for alternate sound
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon, Soren, barakandl
+*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon, Soren, barakandl, inkochnito
 New:
 MAC: MAC Jungle
 Stern: S.A.M. System Flash Boot 1.02,1.06,2.10,2.3,3.1
@@ -60,7 +60,8 @@ Stern: S.A.M. System Flash Boot 1.02,1.06,2.10,2.3,3.1
        Walking Dead, The 1.05,1.11,1.11LE,1.19,1.19LE,1.24,1.24LE,1.25,1.25LE,1.28,1.28LE,1.41,1.41LE,1.53,1.53LE,1.56,1.56LE,1.60.0,1.60.0LE
 
 Correct Dumps:
-Bally: Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
+Bally: Creature from the Black Lagoon (L-3 and D-3 use SL-1 sound ROMs)
+       Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
 LTD: Space Poker (corrected one more byte in the patched ROM)
 Playmatic: Zira (sound ROM is actually 2K wide and contains the same code twice)
@@ -70,6 +71,7 @@ Clones:
 301/Bullseye (normal pinball scoring)
 A.G. Football (R07u & R18u) (exact clone of A.G. Soccer-Ball)
 A.G. Soccer-Ball (R07u)
+Creature from the Black Lagoon (L-2, D-2)
 Demolition Man LX-4C (competition MOD)
 Demolition Man H-5C (competition MOD)
 Demolition Man H-6C (competition MOD)
@@ -81,6 +83,7 @@ Meteor (Bugfix)
 Orbitor 1 (No Timed Game)
 Star Trek: The Next Generation LX-7C (competition MOD)
 Star Wars 20th Anniversary 1.07 Spanish
+Striker Xtreme (1.01 Italian)
 Time Warp L-3
 Trident (Newer version, previous trident set was renamed to tridenta)
 

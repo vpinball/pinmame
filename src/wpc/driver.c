@@ -1249,12 +1249,13 @@ DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
 // Whitestar System
-DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
-DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
-DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (German)
-DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spanish)
-DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (French)
-DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italian)
+DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme (1.02)
+DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (1.02 UK)
+DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (1.03 German)
+DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (1.02 Spanish)
+DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (1.02 French)
+DRIVERNV(strxt_it_101)  //Whitestar: ??/00 Striker Extreme (1.01 Italian)
+DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (1.02 Italian)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
 DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (2.11 German)
 DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (2.11 French)
@@ -2489,9 +2490,11 @@ DRIVER(dw,l1)           //          10/92 B Doctor Who (L-1)
 DRIVER(dw,d1)           //                  Doctor Who (D-1) LED Ghost Fix
 DRIVER(dw,l2)           //          11/92 B Doctor Who (L-2)
 DRIVER(dw,d2)           //                  Doctor Who (D-2) LED Ghost Fix
-DRIVER(cftbl,p3)        //WPC:      01/93 B Creature from the Black Lagoon (P-3)
-DRIVER(cftbl,l3)        //WPC-218:  01/93 B Creature from the Black Lagoon (L-3, Sound P-1)
-DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3, Sound P-1) LED Ghost Fix
+DRIVER(cftbl,p3)        //WPC-218:  12/92 B Creature from the Black Lagoon (P-3) - game itself says 1991!
+DRIVER(cftbl,l2)        //          01/93 B Creature from the Black Lagoon (L-2)
+DRIVER(cftbl,d2)        //          01/93 B Creature from the Black Lagoon (D-2) LED Ghost Fix
+DRIVER(cftbl,l3)        //          01/93 B Creature from the Black Lagoon (L-3)
+DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3) LED Ghost Fix
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //                  Creature from the Black Lagoon (D-4) LED Ghost Fix
 DRIVER(cftbl,l5c)       //          04/16 B Creature from the Black Lagoon (L-5C)
