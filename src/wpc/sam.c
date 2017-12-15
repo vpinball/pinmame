@@ -925,7 +925,7 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400028:
 				memset(samlocals.dataWrites, 0, sizeof(samlocals.dataWrites));
 				samlocals.colWrites++;
-				if(samlocals.colWrites == 1 || samlocals.colWrites == 2) //!! just 2 ??
+				if(samlocals.colWrites == 1 || samlocals.colWrites == 2) //!! just the 2 case ??
 				{
 					samlocals.lampcol = core_BitColToNum(data);
 				}
@@ -1509,7 +1509,7 @@ PINMAME_VIDEO_UPDATE(samdmd_update) {
 			const UINT8 * const RAM2 = offs2 + jj;
 			const UINT8 temp = ((*RAM1 & 0xF0) == 0xF0) ? *RAM2 : *RAM1; //!! check if there are also other cases where (*RAM1 & 0xF0) != 0 (e.g. only few bits set -> then mix more finegrained??)
 			if(((*RAM1 & 0xF0) != 0xF0) && ((*RAM1 & 0xF0) != 0x00))
-				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4);
+				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4));
 			*line = hew[temp];
 			*line++;
 		}
