@@ -393,13 +393,25 @@ WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6
 WPC_ROMEND
 
 WPC_ROMSTART(cftbl,l3,"cftbl_l3.u6",0x80000,CRC(11280230) SHA1(98ce0777cd7dc91d1d2b7016b2e44bdf60ec2c08))
-WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e87acadeda4),
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
 WPC_ROMSTART(cftbl,d3,"cftbl_d3.u6",0x80000,CRC(acbe8c59) SHA1(157c8f59bce9c77f1478c97329deb77cdc61c976))
-WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e87acadeda4),
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
+WPC_ROMEND
+
+WPC_ROMSTART(cftbl,l2,"cftbl_l2.u6",0x80000,CRC(f3097f42) SHA1(f15cda9c74b806f13b81aa1e99588ba9139b2969))
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
+WPC_ROMEND
+
+WPC_ROMSTART(cftbl,d2,"cftbl_d2.u6",0x80000,CRC(dee87805) SHA1(79003bffb0932351f440c2ea5825654d30d97978))
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
@@ -416,9 +428,11 @@ WPC_ROMEND
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,l5c,l4,"Creature from the Black Lagoon (L-5C Competition MOD)",2016,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3, SP-1)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3, SP-1 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l2,l4,"Creature from the Black Lagoon (L-2)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,d2,l4,"Creature from the Black Lagoon (D-2 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3, SP-1)",1992,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
