@@ -20,7 +20,7 @@ MAC: MAC Jungle
 Stern: S.A.M. System Flash Boot 1.02,1.06,2.10,2.3,3.1
        World Poker Tour 1.03(English),1.05(English),1.06(English,French,German,Italian,Spanish),1.08(English,French,German,Italian,Spanish),1.09(English,French,German,Italian,Spanish),1.09-2(French),
                         1.11(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
-                        1.12(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
+                        1.12(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish),1.129(French)
                         14.0(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
        Simpsons Kooky Carnival (Redemption) 0.90 New Jersey,1.03,1.05,2.0
        Pirates of the Caribbean 1.08([English,Spanish]),1.09([English,French],[English,Italian],[English,Spanish],[German,French],
