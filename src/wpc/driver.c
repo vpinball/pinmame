@@ -1905,6 +1905,10 @@ DRIVER(xmn,150)         //S.A.M.: 02/14 X-Men - V1.5
 DRIVER(xmn,150h)        //S.A.M.: 02/14 X-Men - V1.5 Limited Edition
 DRIVER(xmn,151)         //S.A.M.: 02/14 X-Men - V1.51
 DRIVER(xmn,151h)        //S.A.M.: 02/14 X-Men - V1.51 Limited Edition
+#ifdef SAM_INCLUDE_COLORED
+DRIVER(xmn,151c)        // pinball browser colorized using extend memory
+DRIVER(xmn,151hc)       // pinball browser colorized using extend memory
+#endif
 //DRIVER(avs,100)         //S.A.M.: 11/12 Avengers - V1.0
 //DRIVER(avs,100h)        //S.A.M.: 12/12 Avengers - V1.0 Limited Edition
 DRIVER(avs,110)         //S.A.M.: 11/12 Avengers - V1.1
