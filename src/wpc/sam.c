@@ -1710,7 +1710,7 @@ SAM1_ROM32MB(wpt_112g, "wpt0112g.bin", CRC(2fbac57d) SHA1(fb19e7a4a5384fc8c91e16
 SAM1_ROM32MB(wpt_112gf,"wpt0112gf.bin",CRC(a6b933b3) SHA1(72a36a427527c3c5cb455a74afbbb43f2bee6480), 0x01A74B94)
 SAM1_ROM32MB(wpt_112i, "wpt0112i.bin", CRC(0ba02986) SHA1(db1cbe0611d40c334205d0a8b9f5c6147b259549), 0x01B2C704)
 SAM1_ROM32MB(wpt_112l, "wpt0112l.bin", CRC(203c3a05) SHA1(6173f6a6110e2a226beb566371b2821b0a5b8609), 0x01C706F0)
-
+SAM1_ROM32MB(wpt_1129f,"wpt1129f.bin", CRC(e5660763) SHA1(72b8b878aa8272f9cf54fde2c9ddc7635757e59c), 0x01A46CF0)
 SAM1_ROM32MB(wpt_140a, "wpt1400a.bin", CRC(4b287770) SHA1(e19b60a08de9067a2b4c4dd71783fc812b3c7648), 0x019BB1EC)
 SAM1_ROM32MB(wpt_140af,"wpt1400af.bin",CRC(bed3e3f1) SHA1(43b9cd6deccc8e516e2f5e99295b751ccadbac29), 0x01A46D40)
 SAM1_ROM32MB(wpt_140ai,"wpt1400ai.bin",CRC(12a62641) SHA1(680283a7493921904f7fe9fae10d965db839f986), 0x01A8C908)
@@ -1766,6 +1766,8 @@ CORE_CLONEDEF(wpt, 112g, 140a, "World Poker Tour (V1.12) (German)", 2006, "Stern
 CORE_CLONEDEF(wpt, 112gf,140a, "World Poker Tour (V1.12) (German, French)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 112i, 140a, "World Poker Tour (V1.12) (Italian)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 112l, 140a, "World Poker Tour (V1.12) (Spanish)", 2006, "Stern", sam1, 0)
+
+CORE_CLONEDEF(wpt, 1129f,140a, "World Poker Tour (V1.129) (French)", 2006, "Stern", sam1, 0)
 
 CORE_CLONEDEF(wpt, 140af,140a, "World Poker Tour (V14.0) (English, French)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 140ai,140a, "World Poker Tour (V14.0) (English, Italian)", 2008, "Stern", sam1, 0)

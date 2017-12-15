@@ -1535,8 +1535,7 @@ DRIVERNV(gpr301f)       //Whitestar: 09/05 Grand Prix (3.01 French)
 DRIVERNV(gpr301i)       //Whitestar: 09/05 Grand Prix (3.01 Italian)
 DRIVERNV(dalejr)        //Whitestar: 07/06 Dale Jr. (NASCAR 5.00)
                         //Whitestar: ??/06 The Brain (Simpsons Pinball Party conversion)
-
-// Stern S.A.M. System
+// S.A.M. System
 DRIVER(sam1_flashb,0102)//S.A.M.: 02/06 S.A.M. System Flash Boot - V1.02
 DRIVER(sam1_flashb,0106)//S.A.M.: 08/06 S.A.M. System Flash Boot - V1.06
 DRIVER(sam1_flashb,0210)//S.A.M.: ??/07 S.A.M. System Flash Boot - V2.10
@@ -1579,7 +1578,7 @@ DRIVER(wpt,112g)        //S.A.M.: 11/06 World Poker Tour - V1.12 (German)
 DRIVER(wpt,112gf)       //S.A.M.: 11/06 World Poker Tour - V1.12 (German, French)
 DRIVER(wpt,112i)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Italian)
 DRIVER(wpt,112l)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Spanish)
-//DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
+DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
 DRIVER(wpt,140a)        //S.A.M.: 01/08 World Poker Tour - V14.0 (English)
 DRIVER(wpt,140af)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, French)
 DRIVER(wpt,140ai)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, Italian)
@@ -1669,7 +1668,7 @@ DRIVER(sman,140af)      //S.A.M.: ??/07 Spider-Man - V1.4 (English, French)
 DRIVER(sman,140ai)      //S.A.M.: ??/07 Spider-Man - V1.4 (English, Italian)
 DRIVER(sman,140al)      //S.A.M.: ??/07 Spider-Man - V1.4 (English, Spanish)
 DRIVER(sman,140gf)      //S.A.M.: ??/07 Spider-Man - V1.4 (German, French)
-DRIVER(sman,142)        //S.A.M.: ??/07 Spider-Man - V1.42
+DRIVER(sman,142)        //S.A.M.: ??/07 Spider-Man - V1.42 BETA
 DRIVER(sman,160)        //S.A.M.: ??/07 Spider-Man - V1.6
 DRIVER(sman,160af)      //S.A.M.: ??/07 Spider-Man - V1.6 (English, French)
 DRIVER(sman,160ai)      //S.A.M.: ??/07 Spider-Man - V1.6 (English, Italian)
@@ -1683,7 +1682,7 @@ DRIVER(sman,170gf)      //S.A.M.: ??/07 Spider-Man - V1.7 (German, French)
 DRIVER(sman,190)        //S.A.M.: 11/07 Spider-Man - V1.9
 DRIVER(sman,190af)      //S.A.M.: 11/07 Spider-Man - V1.9 (English, French)
 DRIVER(sman,190ai)      //S.A.M.: 11/07 Spider-Man - V1.9 (English, Italian)
-DRIVER(sman,190al)      //S.A.M.: 11/07 Spider-Man - V1.9  (English, Spanish)
+DRIVER(sman,190al)      //S.A.M.: 11/07 Spider-Man - V1.9 (English, Spanish)
 DRIVER(sman,190gf)      //S.A.M.: 11/07 Spider-Man - V1.9 (German, French)
 DRIVER(sman,192)        //S.A.M.: 01/08 Spider-Man - V1.92
 DRIVER(sman,192af)      //S.A.M.: 01/08 Spider-Man - V1.92 (English, French)
@@ -1945,7 +1944,7 @@ DRIVER(mtl,151h)        //S.A.M.: 03/14 Metallica - V1.51 Limited Edition
 DRIVER(mtl,160)         //S.A.M.: 06/14 Metallica - V1.6
 DRIVER(mtl,160h)        //S.A.M.: 06/14 Metallica - V1.6 Limited Edition
 DRIVER(mtl,163)         //S.A.M.: 09/14 Metallica - V1.63
-DRIVER(mtl,163d)        // LED version
+DRIVER(mtl,163d)        //                                    LED version
 DRIVER(mtl,163h)        //S.A.M.: 09/14 Metallica - V1.63 Limited Edition
 DRIVER(mtl,164)         //S.A.M.: 04/15 Metallica - V1.64
 DRIVER(mtl,164h)        //S.A.M.: 04/15 Metallica - V1.64 Limited Edition
