@@ -654,7 +654,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirolcat input_ports_hirolcas
 #define init_hirolcat init_hirolcas
-CORE_CLONEDEFNV(hirolcat,hirolcas,"High Roller Casino (3.00 TEST)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirolcat,hirolcas,"High Roller Casino (3.00 TEST BUILD)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(hirol_g3,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
 DE_DMD32ROM8x(        "hrcdispg.300",CRC(a880903a) SHA1(4049f50ceaeb6c9e869150ec3d903775cdd865ff))
