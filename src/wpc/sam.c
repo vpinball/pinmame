@@ -19,6 +19,8 @@
    and send our commands there.
   -Not sure how the Hardware revision is read for display on the Service Screen.
   -Still a # of unmapped / unhandled address writes (maybe reads as well)
+  -sam_LED_hack() triggers specialized hacks to get LED updates going
+  -IJ/CSI still have timinig issues that are worked around for now, see at91_block_timers
 
   FIRQ frequency of 4008Hz was measured on real machine.
 
@@ -228,7 +230,7 @@ static int dedswitch_lower_r(void)
   /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
   /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
   /* Swap the 4 lowest bits*/
-  UINT8 cds = coreGlobals.swMatrix[9];
+  const UINT8 cds = coreGlobals.swMatrix[9];
   UINT8 fls = coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
   fls = core_revnyb(fls & 0x0f) | (core_revnyb(fls >> 4) << 4);
   return MAKE16BIT(fls,cds);
@@ -346,9 +348,13 @@ static int sam_getSol(int solNo)
 	return coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][solNo - 1] > 0;
 }
 
+static WRITE_HANDLER(scmd_w) { }
+static WRITE_HANDLER(man3_w) { }
+static void samsnd_init(struct sndbrdData *brdData) { }
+
 //Sound Interface
 const struct sndbrdIntf samIntf = {
-	"SAM", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
+	"SAM", samsnd_init, NULL, NULL, man3_w, scmd_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
 
@@ -363,7 +369,8 @@ static void sam_sh_update(int num, INT16 *buffer[2], int length)
 			{
 				samlocals.lastsamp[channel] = buffer[channel][ii] = samlocals.samplebuf[channel][samlocals.sampout];
 			}
-			samlocals.sampout = (samlocals.sampout + 1) % SNDBUFSIZE;
+			if (++samlocals.sampout == SNDBUFSIZE)
+				samlocals.sampout = 0;
 		}
 		core_sound_throttle_adj(samlocals.sampnum, &samlocals.sampout, SNDBUFSIZE, SAM_SOUNDFREQ);
 		
@@ -623,11 +630,12 @@ MEMORY_END
 //Memory Writes
 static WRITE32_HANDLER(samxilinx_w)
 {
-	if(~mem_mask & 0xFFFF0000) // Left ch??
+	if(~mem_mask & 0xFFFF0000) // Left channel??
 	{
 		data >>= 16;
 		samlocals.samplebuf[0][samlocals.sampnum] = data;
-		samlocals.sampnum = (samlocals.sampnum + 1) % SNDBUFSIZE;
+		if (++samlocals.sampnum == SNDBUFSIZE)
+			samlocals.sampnum = 0;
 	}
 	else
 	{
@@ -670,6 +678,7 @@ static WRITE32_HANDLER(samdmdram_w)
 
 static WRITE32_HANDLER(sam_io2_w)
 {
+  // DJRobX: The new LED stuff is all done by serial IO, so I'm not sure what that would be. Would be interested if it's related to the delay getting TWD and Mustang to start sending LED data though.
   LOG(("%08x: IO2 output to %05x=%02x\n", activecpu_get_pc(), offset, data)); //!! find out what is what for LE support (but even normal TWD uses it (and more??))
 }
 
@@ -1156,10 +1165,10 @@ static WRITE32_HANDLER(sam_port_w)
         break;
     }
     // Mixer set volume has volume range of 0..100, while the SAM hardware uses 0..127 value range for volume. "Real" volume values start @ 0x80: For ATx[7:0]DEC = 0 through 128, attenuation is set to infinite attenuation (=mute)
-    if (samlocals.mute[0] == 0 && samlocals.DAC_mute[0] == 0)
-      l_vol = (samlocals.volume[0] <= 0x80) ? 0 : ((int)(samlocals.volume[0] & 0x7f) * 100 / 0x7f);
-    if (samlocals.mute[1] == 0 && samlocals.DAC_mute[1] == 0)
-      r_vol = (samlocals.volume[1] <= 0x80) ? 0 : ((int)(samlocals.volume[1] & 0x7f) * 100 / 0x7f);
+    if (samlocals.mute[0] == 0 && samlocals.DAC_mute[0] == 0 && samlocals.volume[0] > 0x80)
+      l_vol = (int)(samlocals.volume[0] & 0x7f) * 100 / 0x7f;
+    if (samlocals.mute[1] == 0 && samlocals.DAC_mute[1] == 0 && samlocals.volume[1] > 0x80)
+      r_vol = (int)(samlocals.volume[1] & 0x7f) * 100 / 0x7f;
     mixer_set_stereo_volume(0, l_vol, 0);
     mixer_set_stereo_volume(1, 0, r_vol);
 
@@ -1192,6 +1201,7 @@ static MACHINE_INIT(sam) {
 		at91_init_jit(0,(options.at91jit > 1) ? options.at91jit : 0x1080000);
 	}
 #endif
+	//!! timing hacks for CSI and IJ
 	if (_strnicmp(Machine->gamedrv->name,"csi_",4)==0 || _strnicmp(Machine->gamedrv->name,"ij4_",4)==0)
 		at91_block_timers = 1;
 
@@ -1250,7 +1260,7 @@ static void sam_LED_hack(int usartno)
 {
 	const char * const gn = Machine->gamedrv->name;
 
-	// Several LE games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.  
+	// Several games do not transmit data for a really long time.  These are ROM hacks that force the issue to get things moving.  
 	
 	if (_strnicmp(gn, "mt_145h", 7)==0)
 	{
@@ -1376,7 +1386,7 @@ static INTERRUPT_GEN(sam_vblank) {
 	samlocals.vblankCount += 1;
 	
 	/*-- lamps --*/
-	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, 40); //!! sizeof(coreGlobals.tmpLampMatrix)
+	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
 
 	/*-- display --*/
 	if ((samlocals.vblankCount % SAM_DISPLAYSMOOTH) == 0) {
@@ -1468,7 +1478,7 @@ MACHINE_DRIVER_END
 /*********************************************/
 /* S.A.M. Generation #2 - Machine Definition */
 /*********************************************/
-MACHINE_DRIVER_START(sam2)
+static MACHINE_DRIVER_START(sam2)
   MDRV_IMPORT_FROM(sam1)
   MDRV_CORE_INIT_RESET_STOP(sam, sam2, sam)
 MACHINE_DRIVER_END
@@ -1489,7 +1499,7 @@ MACHINE_DRIVER_END
      secondary or "background" page that will "shine through" if the mask bits
      of the foreground are set.
 --*/
-PINMAME_VIDEO_UPDATE(samdmd_update) {
+static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	static const UINT8 hew[16] =
 	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 	//	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
@@ -1519,7 +1529,7 @@ PINMAME_VIDEO_UPDATE(samdmd_update) {
 	return 0;
 }
 
-PINMAME_VIDEO_UPDATE(samminidmd_update) {
+static PINMAME_VIDEO_UPDATE(samminidmd_update) {
     tDMDDot dotCol;
     int ii,kk,bits;
     const int dmd_x = (layout->left-10)/7;
@@ -1541,7 +1551,7 @@ PINMAME_VIDEO_UPDATE(samminidmd_update) {
     return 0;
 }
 
-PINMAME_VIDEO_UPDATE(samminidmd2_update) {
+static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
     tDMDDot dotCol;
     int ii,jj,kk,bits;
 
@@ -1575,32 +1585,32 @@ PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 }
 
 static struct core_dispLayout sam_dmd128x32[] = {
-	{0, 0, 32, 128, CORE_DMD|CORE_DMDNOAA, (void *)samdmd_update},
+	{0, 0, 32, 128, CORE_DMD|CORE_DMDNOAA, (genf *)samdmd_update},
 	{0}
 };
 
 static struct core_dispLayout sammini1_dmd128x32[] = {
 	DISP_SEG_IMPORT(sam_dmd128x32),
-	{34, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{34, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
-	{43, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd_update},
+	{34, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{34, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 10, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 17, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 24, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 31, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 38, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 45, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
+	{43, 52, 7, 5, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd_update},
 	{0}
 };
 
 static struct core_dispLayout sammini2_dmd128x32[] = {
 	DISP_SEG_IMPORT(sam_dmd128x32),
-	{34, 10, 5, 35, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (void *)samminidmd2_update},
+	{34, 10, 5, 35, CORE_DMD|CORE_DMDNOAA | CORE_NODISP, (genf *)samminidmd2_update},
 	{0}
 };
 
