@@ -635,6 +635,7 @@ DRIVERNV(raveng)        //                Raven (German)
 DRIVERNV(ravengfp)      //                Raven (German Free Play)
 DRIVERNV(ravena)        //                Raven (alternate set)
 DRIVERNV(ravenafp)      //                Raven (rev. 1 Free Play)
+DRIVERNV(rambo)         //                Rambo (Raven unofficial MOD)
 DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(rock_efp)      //                Rock Encore (Free Play)
 DRIVERNV(rock_eg)       //                Rock Encore (German)

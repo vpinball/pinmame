@@ -431,7 +431,7 @@ GTS80SS22_ROMSTART("668-s1.snd", CRC(23d5045d) SHA1(a20bf02ece97e8238d1dbe8d35ca
                    "668-s2.snd", CRC(d63da498) SHA1(84dd87783f47fbf64b1830284c168501f9b455e2))
 GTS80_ROMEND
 #define input_ports_blckhole input_ports_gts80
-CORE_CLONEDEFNV(blckhole,gts80,"Black Hole",1981,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(blckhole,gts80,"Black Hole (rev. 4)",1981,"Gottlieb",gl_mGTS80SS,0)
 
 INIT_S80D7(blkhole7, dispNumeric4, SNDBRD_GTS80SS_VOTRAX)
 GTS80_1_ROMSTART  ("668-4.cpu",  CRC(01b53045) SHA1(72d73bbb09358b331696cd1cc44fc4958feffbe2))
@@ -1112,6 +1112,15 @@ GTS80_ROMEND
 #define init_ravenafp init_raven
 #define input_ports_ravenafp input_ports_raven
 CORE_CLONEDEFNV(ravenafp, raven, "Raven (rev. 1 Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
+
+GTS80B_2K_ROMSTART(rambo, "prom2a.cpu", CRC(a693785e) SHA1(7c8878f1c3c5205b3ae46a78c881bbd2b722838d),
+                          "prom1r.cpu", CRC(51629598) SHA1(a5408fad2baec43633f407665f006fae74f3d9aa))
+GTS80BSSOUND88(           "drom1.snd",  CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881),
+                          "yrom1.snd",  CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55))
+GTS80_ROMEND
+#define init_rambo init_raven
+#define input_ports_rambo input_ports_raven
+CORE_CLONEDEFNV(rambo, raven, "Rambo (Raven unofficial MOD)",1986,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Rock Encore (#704)
