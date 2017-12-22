@@ -2395,6 +2395,9 @@ CORE_CLONEDEF(twd, 153, 124, "Walking Dead, The (1.53)", 2015, "Stern", sam2, 0)
 SAM1_ROM128MB(twd_156, "twd_156.bin", 96994376, CRC(4bd62b0f) SHA1(b1d5e7d96f45fb3e076bc993b09a7eae9c73f610))
 CORE_CLONEDEF(twd, 156, 124, "Walking Dead, The (1.56)", 2015, "Stern", sam2, 0)
 
+SAM1_ROM128MB(twd_160, "twd_160.bin", 96994376, CRC(44409cd9) SHA1(cace8725771e9fc09720a7a79f95abac44325232))
+CORE_CLONEDEF(twd, 160, 124, "Walking Dead, The (1.60)", 2017, "Stern", sam2, 0)
+
 SAM1_INIT(twd_111h, sam1_dmd128x32, 12, 0)
 SAM1_ROM128MB(twd_111h,"twd111le.bin",0x512CF54,CRC(873feba1) SHA1(3b3a76c09d39550554b89b0a300f72a42722470e))
 CORE_CLONEDEFNV(twd_111h, twd_124, "Walking Dead, The (1.11 Limited Edition)", 2014, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
@@ -2419,6 +2422,9 @@ CORE_CLONEDEF(twd, 153h, 124, "Walking Dead, The (1.53 Limited Edition)", 2015, 
 
 SAM1_ROM128MB(twd_156h, "twd156le.bin", 0x05C80448, CRC(4594a287) SHA1(1e1a3b94bacf54a0c20cfa978db1284008c0e0a1))
 CORE_CLONEDEF(twd, 156h, 124, "Walking Dead, The (1.56 Limited Edition)", 2015, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
+
+SAM1_ROM128MB(twd_160h, "twd160le.bin", 0x05C80448, CRC(1ed7b80a) SHA1(1fbaa077ec834ff9d289008ef1169e0e7fd68271))
+CORE_CLONEDEF(twd, 160h, 124, "Walking Dead, The (1.60 Limited Edition)", 2017, "Stern", sam2, GAME_IMPERFECT_GRAPHICS)
 
 
 SAM1_ROM128MB(twd_1191,"twd_1191.bin",91821692,CRC(f43a3f74) SHA1(b87f31ce1af8bd045d87b2c0d465e50c43138200))

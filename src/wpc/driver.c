@@ -1701,6 +1701,10 @@ DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
 DRIVER(sman,250)        //S.A.M.: ??/?? Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
 DRIVER(sman,261)        //S.A.M.: 05/14 Spider-Man - V2.61
+#ifdef SAM_ORIGINAL
+DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
+DRIVER(sman,101ve)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
+#endif
 DRIVER(wof,100)         //S.A.M.: 11/07 Wheel of Fortune - V1.0
 DRIVER(wof,200)         //S.A.M.: 11/07 Wheel of Fortune - V2.0
 DRIVER(wof,200f)        //S.A.M.: 11/07 Wheel of Fortune - V2.0 (French)
@@ -2036,11 +2040,13 @@ DRIVER(twd,156hc)       // pinball browser colorized using extend memory
 DRIVER(twd,160c)        // pinball browser colorized using extend memory
 DRIVER(twd,160hc)       // pinball browser colorized using extend memory
 #endif
+#ifndef SAM_ORIGINAL
 DRIVER(smanve,100)      //S.A.M.: 02/16 Spider-Man - V1.0 Vault Edition
 DRIVER(smanve,101)      //S.A.M.: 05/16 Spider-Man - V1.01 Vault Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(smanve,100c)     // pinball browser colorized using extend memory
 DRIVER(smanve,101c)     // pinball browser colorized using extend memory
+#endif
 #endif
 
 // ---------------
