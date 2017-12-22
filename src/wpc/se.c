@@ -780,5 +780,9 @@ static NVRAM_HANDLER(se) {
 int se_m2sw(int col, int row) { return col*8+(7-row)+1; }
 #endif
 
-//Stern S.A.M Hardware support
-#include "sam.c"
+//Stern S.A.M. Hardware support
+#ifndef SAM_ORIGINAL
+#include "sam.c" // vastly improved variant of the leaked/hacked version
+#else
+#include "sam_original.c" // original internal version (for reference/deprecated)
+#endif
