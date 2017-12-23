@@ -181,9 +181,9 @@ private:
 		BOOL        bResult = FALSE;
 		LPMALLOC	piMalloc;
 		BROWSEINFO  Info;
-		ITEMIDLIST* pItemIDList = NULL;
+		LPITEMIDLIST pItemIDList = NULL;
 		char        buf[MAX_PATH];
-    
+
 		if (!SUCCEEDED(SHGetMalloc(&piMalloc)))
 			return FALSE;
 
