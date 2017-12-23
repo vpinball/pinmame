@@ -1227,6 +1227,16 @@ GTS80_ROMEND
 #define input_ports_hlywhffp input_ports_hlywoodh
 CORE_CLONEDEFNV(hlywhffp,hlywoodh, "Hollywood Heat (French Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
+INITGAME(bubba, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(bubba, "prom2.cpu",   CRC(a465e5f3) SHA1(56afa2f67aebcd17345bba76ecb814653719ee7b),
+                          "prom1_b.cpu", CRC(6556d711) SHA1(9d0ccaf05d0aa5a68e5514a2ade7773959868bbb))
+GTS80BSSOUND888(          "drom1.snd",   CRC(a698ec33) SHA1(e7c1d28279ec4f12095c3a106c6cefcc2a84b31e),
+                          "yrom1.snd",   CRC(9232591e) SHA1(72883e0c542c572226c6c654bea14749cc9e351f),
+                          "yrom2.snd",   CRC(51709c2f) SHA1(5834d7b72bd36e30c87377dc7c3ad0cf26ff303a))
+GTS80_ROMEND
+#define input_ports_bubba input_ports_hlywoodh
+CORE_CLONEDEFNV(bubba,hlywoodh, "Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)",2017,"HauntFreaks",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Genesis (#705)
 /-------------------------------------------------------------------*/
