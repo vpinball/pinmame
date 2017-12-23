@@ -1,24 +1,68 @@
-Version 3.0 (X X, 2017) - ""
+Version 3.0 (December 24th, 2017) - "11 years in the making"
 ------------------------------------------------------------------------------
+*** GENERAL ***
 Extend and update some parts of the .txt documentation files
 
 *** CORE/CPU ***
+Add support for the Stern S.A.M. platform (e.g. Stern releases from 2006-2014), special thanks for improvements to the community, notably to Arngrim, CarnyPriest and especially DJRobX
 Correct SP0256 speech for IDSA games (needs additional sp0256-al2.bin file to work (for Basketball and V-1, only the latter features speech though))
-Fixed reset / NMI handling for IDSA V-1
+Fix reset / NMI handling for IDSA V-1
 Fix Stern SB300 noise generator regression (and slightly improve sound over older implementation, but still not accurate)
 Fix Rescue 911 (and maybe more: SFII, WCS, Shaq, mZOIS?) DMD brightness level mapping regression
-Improved Punky Willy sound emulation
-Fixed sound for Taito Sure Shot (sounds awful, but like the real thing :)) and Mr. Black (Z-80 version still misses sound rom dumps though) (NMI line needs to be pulsed for these games)
-Made speech work for Taito Vegas and Lady Luck - working around a strange PIA issue
-Fixed COP420 emulation, sound works now on Zira
+Improve Punky Willy sound emulation
+Fix sound for Taito Sure Shot (sounds awful, but like the real thing :)) and Mr. Black (Z-80 version still misses sound rom dumps though) (NMI line needs to be pulsed for these games)
+Make speech work for Taito Vegas and Lady Luck - working around a strange PIA issue
+Fix COP420 emulation, sound works now on Zira
 Add emulation pause support for alternate sound
 
-*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon, Soren, barakandl
+*** ROM SUPPORT *** Thanks to ipdb.org, Effect, Juan, Jubex77, JMan, Gore Daimon, Soren, barakandl, inkochnito
 New:
 MAC: MAC Jungle
+Stern: S.A.M. System Flash Boot 1.02,1.06,2.10,2.3,3.1
+       World Poker Tour 1.03(English),1.05(English),1.06(English,French,German,Italian,Spanish),1.08(English,French,German,Italian,Spanish),1.09(English,French,German,Italian,Spanish),1.09-2(French),
+                        1.11(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
+                        1.12(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish),1.129(French)
+                        14.0(English,[English,French],[English,Italian],[English,Spanish],French,German,[German,French],Italian,Spanish)
+       Simpsons Kooky Carnival (Redemption) 0.90 New Jersey,1.03,1.05,2.0
+       Pirates of the Caribbean 1.08([English,Spanish]),1.09([English,French],[English,Italian],[English,Spanish],[German,French],
+                                1.10([English,French],[English,Italian],[German,French]),1.11([English,Spanish]),
+                                1.13([English,French],[English,Italian],[English,Spanish],[German,French]),
+                                1.15([English,French],[English,Italian],[English,Spanish],[German,French]),
+                                3.00([English,French],[English,Italian],[English,Spanish],[German,French]),
+                                4.00([English,French],[English,Italian],[English,Spanish],[German,French]),
+                                6.0 ([English,French],[English,Italian],[English,Spanish],[German,French])
+       Family Guy 2.00(English),3.00([English,Italian]),4.00(English,[English,German],7.00([English,French],[English,Spanish]),8.00([English,Spanish])
+                                10.00([English,French],[English,German],[English,Italian],[English,Spanish]),
+                                11.0 ([English,French],[English,German],[English,Italian],[English,Spanish]),
+                                12.0 ([English,French],[English,German],[English,Italian],[English,Spanish])
+       Spider-Man 1.30([English,French],[English,Italian],[English,Spanish],[German,French]),1.32,1.4(+[English,French],[English,Italian],[English,Spanish],[German,French]),
+                  1.42 BETA,1.6(+[English,French],[English,Italian],[English,Spanish],[German,French]),1.7(+[English,French],[English,Italian],[English,Spanish],[German,French]),
+                  1.9(+[English,French],[English,Italian],[English,Spanish],[German,French]),1.92(+[English,French],[English,Italian],[English,Spanish],[German,French]),
+                  2.0,2.1(+[English,French],[English,Italian],[English,Spanish],[German,French]),2.2,2.3,2.4,2.5,2.6,2.61,Vault Edition 1.00,Vault Edition 1.01
+       Wheel of Fortune 1.0,2.0(+French,German,Italian),3.0(+French,German,Italian,Spanish),4.0(+French,German,Italian),4.01(Spanish),5.0(+French,German,Italian,Spanish)
+       Shrek 1.3,1.41
+       Indiana Jones 1.13(+French,German,Italian,Spanish),1.14(+French,German,Italian,Spanish),1.16(+French,German,Italian,Spanish),2.1(+French)
+       Batman - The Dark Knight 1.5,1.6,2.0,2.1,2.2,2.4,2.9,2.94,3.00 Home Edition/Costco
+       CSI: Crime Scene Investigation 1.02,1.03,1.04,2.0,2.1,2.3,2.4
+       24 1.3,1.4,1.44,1.5
+       NBA 5.0,6.0,7.0,8.01,8.02
+       Big Buck Hunter Pro 1.4,1.5,1.6,1.7
+       Iron Man 1.0,1.1,1.2,1.4,1.6,1.81,1.82,1.83(+Vault Edition)
+       Avatar 1.01LE,1.06,1.1,1.2LE,2.0 New CPU
+       Rolling Stones, The 1.0LE,1.03,1.05,1.1,1.1LE
+       TRON: Legacy 1.0LE,1.10,1.1LE,1.2,1.3LE,1.4,1.4LE,1.5,1.6,1.7,1.74,1.74LE,1.7402 New CPU
+       Transformers 0.88LE,1.0LE,1.2,1.2LE,1.3LE,1.4,1.4LE,1.5,1.5LE,1.6,1.7,1.8,1.8LE
+       AC/DC 1.21,1.25,1.3,1.4,1.5,1.5LE,1.52,1.52LE,1.6,1.6LE,1.61,1.61LE,1.63,1.63LE,1.65,1.65LE,1.68,1.68LE
+       X-Men 1.0,1.02,1.04,1.05,1.2LE,1.21LE,1.22LE,1.23LE,1.24LE,1.3,1.3LE,1.5,1.5LE,1.51,1.51LE
+       Avengers, The 1.1,1.2LE,1.4,1.4LE,1.7,1.7LE
+       Metallica 1.03,1.05,1.06,1.12,1.13,1.13LE,1.16,1.16LE,1.2,1.2LE,1.22,1.22LE,1.5,1.5LE,1.51,1.51LE,1.6,1.6LE,1.63(+LED),1.63LE,1.64,1.64LE,1.7,1.7LE
+       Star Trek 1.2,1.3,1.4,1.4LE,1.41LE,1.42LE,1.5,1.5LE,1.6,1.6LE,1.61,1.61LE
+       Mustang 1.2,1.3,1.3LE,1.4,1.4LE(+Boss),1.45,1.45LE(+Boss)
+       Walking Dead, The 1.05,1.11,1.11LE,1.19,1.19LE,1.24,1.24LE,1.25,1.25LE,1.28,1.28LE,1.41,1.41LE,1.53,1.53LE,1.56,1.56LE,1.60.0,1.60.0LE
 
 Correct Dumps:
-Bally: Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
+Bally: Creature from the Black Lagoon (L-3 and D-3 use SL-1 sound ROMs)
+       Judge Dredd (use L-3 Sound ROMs for corrected Deadworld sounds on machines without working/modified lock)
 Joctronic: Punky Willy
 LTD: Space Poker (corrected one more byte in the patched ROM)
 Playmatic: Zira (sound ROM is actually 2K wide and contains the same code twice)
@@ -28,6 +72,8 @@ Clones:
 301/Bullseye (normal pinball scoring)
 A.G. Football (R07u & R18u) (exact clone of A.G. Soccer-Ball)
 A.G. Soccer-Ball (R07u)
+Bubba the Redneck Werewolf (unofficial MOD of Hollywood Heat)
+Creature from the Black Lagoon L-2 & D-2
 Demolition Man LX-4C (competition MOD)
 Demolition Man H-5C (competition MOD)
 Demolition Man H-6C (competition MOD)
@@ -37,8 +83,10 @@ Getaway: High Speed II, The L-5C (competition MOD)
 Junk Yard 1.2C (competition MOD)
 Meteor (Bugfix)
 Orbitor 1 (No Timed Game)
+Rambo (unofficial MOD of Raven)
 Star Trek: The Next Generation LX-7C (competition MOD)
 Star Wars 20th Anniversary 1.07 Spanish
+Striker Xtreme 1.01 Italian
 Time Warp L-3
 Trident (Newer version, previous trident set was renamed to tridenta)
 

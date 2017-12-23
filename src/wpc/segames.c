@@ -503,7 +503,7 @@ DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f7
                   "sxsnda.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
 SE_ROMEND
 #define input_ports_strikext input_ports_se
-CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",1999,"Stern",de_mSES2,0)
+CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_uk,"sxcpue.101", CRC(eac29785) SHA1(42e01c501b4a0a7eaae244040777be8ba69860d5))
 DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
@@ -515,7 +515,7 @@ DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f7
 SE_ROMEND
 #define input_ports_strxt_uk input_ports_strikext
 #define init_strxt_uk init_strikext
-CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (1.01 English)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (1.01 English)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_gr,"sxcpug.103", CRC(d73b9020) SHA1(491cd9db172db0a35870524ed4f1b15fb67f2e78))
 DE_DMD32ROM8x(     "sxdispg.103",CRC(eb656489) SHA1(476315a5d22b6d8c63e9a592167a00f0c87e86c9))
@@ -527,7 +527,7 @@ DE2S_SOUNDROM18888("sxsndg.u7" ,CRC(b38ec07d) SHA1(239a3a51c049b007d4c16c3bd1e00
 SE_ROMEND
 #define input_ports_strxt_gr input_ports_strikext
 #define init_strxt_gr init_strikext
-CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (1.03 German)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (1.03 German)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", CRC(2804bc9f) SHA1(3c75d8cc4d2833baa163d99c709dcb9475ba0831))
 DE_DMD32ROM8x(     "sxdispf.103",CRC(4b4b5c19) SHA1(d2612a2b8099b45cb67ac9b55c88b5b10519d49b))
@@ -539,7 +539,7 @@ DE2S_SOUNDROM18888("sxsndf.u7" ,CRC(e68b0607) SHA1(cd3a5ff51932914e977fe866f7ab5
 SE_ROMEND
 #define input_ports_strxt_fr input_ports_strikext
 #define init_strxt_fr init_strikext
-CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 French)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (1.02 French)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_it,"sxcpui.102", CRC(f955d0ef) SHA1(0f4ee87715bc085e2fb05e9ebdc89403f6bac444))
 DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
@@ -551,7 +551,19 @@ DE2S_SOUNDROM18888("sxsndi.u7" ,CRC(81caf0a7) SHA1(5bb05c5bb49d12417b3ad49398623
 SE_ROMEND
 #define input_ports_strxt_it input_ports_strikext
 #define init_strxt_it init_strikext
-CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (1.02 Italian)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (1.02 Italian)",2000,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(strxt_it_101,"sxcpui.101", CRC(121e04de) SHA1(90c222106c3422a7cd10a493b2290315d8d7009f))
+DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
+DE2S_SOUNDROM18888("sxsndi.u7" ,CRC(81caf0a7) SHA1(5bb05c5bb49d12417b3ad49398623c3c222fd63b),
+                  "sxsndi.u17",CRC(d0b21193) SHA1(2e5f92a67f0f18913e5d0af9936ab8694d095c66),
+                  "sxsndi.u21",CRC(5ab3f8f4) SHA1(44982725eb31b0b144e3ad6549734b5fc46cd8c5),
+                  "sxsndi.u36",CRC(4ee21ade) SHA1(1887f81b5f6753ce75ddcd0d7557c1644a925fcf),
+                  "sxsndi.u37",CRC(4427e364) SHA1(7046b65086aafc4c14793d7036bc5130fe1e7dbc))
+SE_ROMEND
+#define input_ports_strxt_it_101 input_ports_strikext
+#define init_strxt_it_101 init_strikext
+CORE_CLONEDEFNV(strxt_it_101,strikext,"Striker Xtreme (1.01 Italian)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_sp,"sxcpul.102", CRC(6b1e417f) SHA1(b87e8659bc4481384913a28c1cb2d7c96532b8e3))
 DE_DMD32ROM8x(     "sxdispl.103",CRC(3efd4a18) SHA1(64f6998f82947a5bd053ad8dd56682adb239b676))
@@ -563,7 +575,7 @@ DE2S_SOUNDROM18888("sxsndl.u7" ,CRC(a03131cf) SHA1(e50f665eb15cef799fdc0d1d88bc7
 SE_ROMEND
 #define input_ports_strxt_sp input_ports_strikext
 #define init_strxt_sp init_strikext
-CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (1.02 Spanish)",1999,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (1.02 Spanish)",2000,"Stern",de_mSES2,0)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout
@@ -642,7 +654,7 @@ HIROL_SND
 SE_ROMEND
 #define input_ports_hirolcat input_ports_hirolcas
 #define init_hirolcat init_hirolcas
-CORE_CLONEDEFNV(hirolcat,hirolcas,"High Roller Casino (3.00 TEST)",2001,"Stern",de_mSES2,0)
+CORE_CLONEDEFNV(hirolcat,hirolcas,"High Roller Casino (3.00 TEST BUILD)",2001,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(hirol_g3,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
 DE_DMD32ROM8x(        "hrcdispg.300",CRC(a880903a) SHA1(4049f50ceaeb6c9e869150ec3d903775cdd865ff))

@@ -108,8 +108,8 @@ void mixer_set_lowpass_frequency(int ch, int freq);
 
 /* private functions for user interface only - don't call them from drivers! */
 void mixer_set_mixing_level(int channel,int level);
-int mixer_get_mixing_level(int level);
-int mixer_get_default_mixing_level(int level);
+int mixer_get_mixing_level(int channel);
+int mixer_get_default_mixing_level(int channel);
 
 /* configuration functions */
 
