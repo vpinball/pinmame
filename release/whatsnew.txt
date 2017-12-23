@@ -72,6 +72,7 @@ Clones:
 301/Bullseye (normal pinball scoring)
 A.G. Football (R07u & R18u) (exact clone of A.G. Soccer-Ball)
 A.G. Soccer-Ball (R07u)
+Bubba the Redneck Werewolf (unofficial MOD of Hollywood Heat)
 Creature from the Black Lagoon L-2 & D-2
 Demolition Man LX-4C (competition MOD)
 Demolition Man H-5C (competition MOD)
