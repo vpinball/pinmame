@@ -23,17 +23,14 @@ Important steps to take before a release:
 - execute "mingw32-make" to build PinMAME.
 - Make sure to regenerate gamelist and include it (I believe it's regenerated automatically on a build)
 - execute "mingw32-make WINUI=1 SUFFIX=32" to build PinMAME32.
-- build VPinMAME.DLL (right now with VC++ .NET 2002)
+- build VPinMAME.DLL
 - optionally: do revision tests for compilation with all supported environments (MinGW/GCC, etc.)
 
-#3 Test
-- MAKE SURE STERN GAMES CANNOT WORK, and that TEST_STERN_GAMES FLAG, NO_TIME_LIMIT are not defined!
-
-#4 Tag repository
+#3 Tag repository
 - Tag the new version
   svn copy https://svn.code.sf.net/p/pinmame/code/trunk https://svn.code.sf.net/p/pinmame/code/tags/release_x_y -m "Tag release X.Y"
 
-#5 Create zip packages
+#4 Create zip packages
 - Pack everything together nicely, using max. compression
 - Make sure all default folders are included in the VPM zip
   (these are: artwork, cfg, hi, ini, inp, memcard, nvram, roms, samples, snap, sta, wave)
@@ -43,7 +40,7 @@ Important steps to take before a release:
 If anything of the above fails, forget about a release and correct the errors first!
 If it worked out ok, however, do a release!
 
-#6 Release
+#5 Release
 - Upload the zips to pinmame.com and sourceforge.net, update the news & download pages.
 - Release it to VPForums' upload page, and tell all the forum people what has happened!
 - Shut down your computer! Go and have a drink. You deserve one now!
@@ -55,31 +52,7 @@ If it worked out ok, however, do a release!
 
 Revision tests for compilation:
 ===============================
-Test MSVC 6.0 and GCC 3.2.3 first, as MSVC 6 gives the most error messages (e.g.
-variable placement at top) and GCC 3.2.3 is quite old.
-At last test MSVC 2002 as this is used for the release build.
-
- * MinGW 2.0 with GCC 3.2.3
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-
- * (Optional) MinGW 5 with recent packages and GCC 4.5.0
-   > last trunk revision tested: 3102 = all builds compiled (Maddes)
-   > known issues:
-     (2010-12-20) no sound with WPC pre-DCS ROMs
-
- * Visual C++ 6.0
-   > last trunk revision tested: 3111 = all builds compiled (Maddes)
-
- * Visual C++ 2002 .NET (RELEASE!!!)
-   > last trunk revision tested: 3111 = all builds compiled (Maddes)
-
- * Visual C++ 2008
-Known Issues:
-   > known issues:
-     (2008) Errors when compiling PinMAME32 VC debug builds
-            "CVTRES : fatal error CVT1100: duplicate resource.  type:MANIFEST, name:1, language:0x0409"
-   > last trunk revision tested: 3264 = all release builds compiled, but no VC debug builds (Maddes)
-
+At least test MSVC 2013 as this is used for the release build.
 
 
 Revision tests for emulated hardware platforms:
