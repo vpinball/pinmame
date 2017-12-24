@@ -1,4 +1,4 @@
-******  As of Version Version 3.0 (December 24th, 2017) ******
+******  As of Version Version 3.1 (X X, 2018) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
