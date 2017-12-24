@@ -1,6 +1,9 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 3.1 (X X, 2018) - ""
+------------------------------------------------------------------------------
+
 Version 3.0 (December 24th, 2017) - "11 years in the making"
 ------------------------------------------------------------------------------
 - Extend and update some parts of the .txt documentation files
