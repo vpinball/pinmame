@@ -21,7 +21,7 @@ Important steps to take before a release:
 - export EVERYTHING again in an empty(!) separate folder. Only this way you may ensure nothing was forgotten!
   (use "release_export_current_source.bat X:\Path\To\Empty\Folder" or just drag the empty folder onto it)
 - execute "mingw32-make" to build PinMAME.
-- Make sure to regenerate gamelist and include it (I believe it's regenerated automatically on a build)
+- Make sure to regenerate gamelist and include it (It's regenerated automatically when building PinMAME, for list including all clones use options '-gamelist -sortname' instead)
 - execute "mingw32-make WINUI=1 SUFFIX=32" to build PinMAME32.
 - build VPinMAME.DLL
 - optionally: do revision tests for compilation with all supported environments (MinGW/GCC, etc.)
