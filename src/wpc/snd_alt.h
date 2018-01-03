@@ -630,7 +630,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							}
 							else
 							{
-								BASS_ChannelSetAttribute(voice_stream[idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
+								BASS_ChannelSetAttribute(voice_stream[voice_idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
 
 								BASS_ChannelPlay(voice_stream[voice_idx], 0);
 							}
