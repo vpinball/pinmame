@@ -1,5 +1,7 @@
 Version 3.1 (X X, 2018) - ""
 ------------------------------------------------------------------------------
+*** CORE/CPU ***
+Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (e.g. builtin alternate sound file support)
 
 
 Version 3.0 (December 24th, 2017) - "11 years in the making"
