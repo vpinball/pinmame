@@ -200,7 +200,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -267,7 +267,7 @@ echo regsvr32 exec.time &gt; "$(OutDir)regsvr32.trg"
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -330,7 +330,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -383,7 +383,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -437,7 +437,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -488,7 +488,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -540,7 +540,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -593,7 +593,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;src\win32com;ext\zlib\include;$(IntDir)MIDL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VPINMAME_ALTSOUND;VPINMAME_PINSOUND;DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LSB_FIRST;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;PROCESSOR_ARCHITECTURE=x86;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_NO_UNUSED;VPINMAME;MAME_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
