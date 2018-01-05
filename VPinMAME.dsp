@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -93,7 +93,7 @@ BuildCmds= \
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -132,7 +132,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
@@ -171,7 +171,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "src" /I "src\wpc" /I "src\windows" /I "src\vc" /I "src\win32com" /I "ext\zlib\include" /I "$(OUTDIR)\Intermediate\MIDL" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LSB_FIRST" /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0700 /D DIRECTDRAW_VERSION=0x0300 /D PROCESSOR_ARCHITECTURE=x86 /D "ZLIB_WINAPI" /D MAMEVER=7300 /D "PINMAME" /D "PINMAME_NO_UNUSED" /D "VPINMAME" /D "MAME_DEBUG" /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /out "$(OUTDIR)\Intermediate\MIDL" /win32
