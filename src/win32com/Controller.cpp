@@ -213,7 +213,7 @@ CController::~CController() {
 /*****************************************
  * IController.Run method: start emulation
  *****************************************/
-STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]*/ int nMinVersion)
+STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(100)]*/ int nMinVersion)
 {
 	/*Make sure GameName Specified!*/
 	if (!m_szROM)
@@ -258,7 +258,7 @@ STDMETHODIMP CController::Run(/*[in]*/ long hParentWnd, /*[in,defaultvalue(100)]
 
 	int iCheckVal = IDOK;
 
-	m_pGame->ShowInfoDlg(0x8000|CHECKOPTIONS_SHOWRESULTSIFFAIL|((vValue.boolVal==VARIANT_TRUE)?0x0000:CHECKOPTIONS_IGNORESOUNDROMS), (long) m_hParentWnd, &iCheckVal);
+	m_pGame->ShowInfoDlg(0x8000|CHECKOPTIONS_SHOWRESULTSIFFAIL|((vValue.boolVal==VARIANT_TRUE)?0x0000:CHECKOPTIONS_IGNORESOUNDROMS), (LONG_PTR) m_hParentWnd, &iCheckVal);
 	if ( iCheckVal==IDCANCEL ) {
 		sprintf(szTemp, "Game ROMs for '%s' (%s) invalid!", m_szROM, drivers[m_nGameNo]->description);
 		return Error(TEXT(szTemp));
@@ -1396,16 +1396,16 @@ STDMETHODIMP CController::get_ChangedLEDsState(int nHigh, int nLow, int nnHigh, 
 /******************************************************
  * IController.ShowAboutDialog: shows the About dialog
  ******************************************************/
-STDMETHODIMP CController::ShowAboutDialog(long hParentWnd)
+STDMETHODIMP CController::ShowAboutDialog(LONG_PTR hParentWnd)
 {
 	switch ( hParentWnd ) {
 	case 0:
 		break;
 
 	case 1:
-		hParentWnd = (long) ::GetActiveWindow();
+		hParentWnd = (LONG_PTR) ::GetActiveWindow();
 		if ( !hParentWnd )
-			hParentWnd = (long) GetForegroundWindow();
+			hParentWnd = (LONG_PTR) GetForegroundWindow();
 		break;
 
 	default:
@@ -1908,7 +1908,7 @@ STDMETHODIMP CController::get_InstallDir(BSTR *pVal)
  *   Controller.Games("name").Settings.SetDisplayPosition(x,y,hwnd)
  * instead
  ***************************************************************/
-STDMETHODIMP CController::SetDisplayPosition(int x, int y, long hParentWindow)
+STDMETHODIMP CController::SetDisplayPosition(int x, int y, LONG_PTR hParentWindow)
 {
 	if ( IsWindow((HWND) hParentWindow)) {
 		RECT rect;
@@ -2041,7 +2041,7 @@ STDMETHODIMP CController::put_ImgDir(BSTR newVal)
  * Deprecated:
  * use Controller.Games("name").Settings.ShowSettingsDlg instead
  *****************************************************************/
-STDMETHODIMP CController::ShowOptsDialog(long hParentWnd)
+STDMETHODIMP CController::ShowOptsDialog(LONG_PTR hParentWnd)
 {
 	return m_pGameSettings->ShowSettingsDlg(hParentWnd);
 }
@@ -2230,7 +2230,7 @@ STDMETHODIMP CController::put_Antialias(VARIANT_BOOL newVal)
  * Deprecated:
  * use Controller.Games("name").ShowInfoDlg instead
  *********************************************************************/
-STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ long hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
+STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal)
 {
 	if ( !pVal )
 		return S_FALSE;
@@ -2249,16 +2249,16 @@ STDMETHODIMP CController::CheckROMS(/*[in,defaultvalue(0)]*/ int nShowOptions, /
  * Deprecated:
  * use Controller.Settings.ShowSettingsDlg instead
  ****************************************************************************/
-STDMETHODIMP CController::ShowPathesDialog(long hParentWnd)
+STDMETHODIMP CController::ShowPathesDialog(LONG_PTR hParentWnd)
 {
 	switch ( hParentWnd ) {
 	case 0:
 		break;
 
 	case 1:
-		hParentWnd = (long) ::GetActiveWindow();
+		hParentWnd = (LONG_PTR) ::GetActiveWindow();
 		if ( !hParentWnd )
-			hParentWnd = (long) GetForegroundWindow();
+			hParentWnd = (LONG_PTR) GetForegroundWindow();
 		break;
 
 	default:
@@ -2332,7 +2332,7 @@ STDMETHODIMP CController::put_MechSamples(VARIANT_BOOL newVal)
  * function GetWindowRect. Returns the rctangle in the from of a safearray
  * with for entries: left, top, right, bottom
  ****************************************************************************/
-STDMETHODIMP CController::GetWindowRect(long hWnd, VARIANT *pVal)
+STDMETHODIMP CController::GetWindowRect(LONG_PTR hWnd, VARIANT *pVal)
 {
 	RECT rect;
 	if ( IsWindow((HWND) hWnd)) 
@@ -2368,7 +2368,7 @@ STDMETHODIMP CController::GetWindowRect(long hWnd, VARIANT *pVal)
  * coordinates. Returns the rctangle in the from of a safearray
  * with for entries: left, top, right, bottom
  ****************************************************************************/
-STDMETHODIMP CController::GetClientRect(long hWnd, VARIANT *pVal)
+STDMETHODIMP CController::GetClientRect(LONG_PTR hWnd, VARIANT *pVal)
 {
 	RECT rect;
 	if ( IsWindow((HWND) hWnd)) {

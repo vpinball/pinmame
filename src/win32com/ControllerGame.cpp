@@ -457,7 +457,7 @@ void SetGameWasStarted(char* pszROMName)
 	WriteRegistry(szKey, "", 1);
 }
 
-STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, int *pVal)
+STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, LONG_PTR hParentWnd, int *pVal)
 {
 	if ( !pVal )
 		return S_FALSE;
