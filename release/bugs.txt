@@ -41,3 +41,6 @@ Bugs in Pinmame that we are aware of:
 #12) AT91 JIT is 32-bit only. The non-JIT core doesn't have tight IRQ timing, and that results in the SAM serial ports freezing
      ("slow DMD/CPU disease" on SAM LE tables). It would be possible to tighten up the timing in the interpreted core,
      but it causes a huge performance hit (have to keep checking on memory writes whether an IRQ needs to fire).
+
+#13) x64 compilation will turn off all DirectX 7 usage via the DISABLE_DX7 define, e.g. this would all need to be rewritten for a newer DirectX version
+     to be able to regain DirectDraw and Direct3D functionalities
