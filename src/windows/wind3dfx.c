@@ -4,6 +4,8 @@
 //
 //============================================================
 
+#ifndef DISABLE_DX7
+
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -958,3 +960,5 @@ static void win_ddrawsurf_plot_pixel(const LPDDSURFACEDESC2 surface_desc, int x,
 		}
 	}
 }
+
+#endif
