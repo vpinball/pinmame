@@ -158,7 +158,7 @@ STDMETHODIMP CWSHDlg::get_Ctrls(IWSHDlgCtrls **ppVal)
 
 INT_PTR _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-STDMETHODIMP CWSHDlg::Show(long hParentWnd, VARIANT *RetVal)
+STDMETHODIMP CWSHDlg::Show(LONG_PTR hParentWnd, VARIANT *RetVal)
 {
 	if ( !RetVal )
 		return S_FALSE;

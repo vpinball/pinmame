@@ -329,7 +329,7 @@ CControllerSettings::CControllerSettings()
 {
 }
 
-STDMETHODIMP CControllerSettings::ShowSettingsDlg(long hParentWnd)
+STDMETHODIMP CControllerSettings::ShowSettingsDlg(LONG_PTR hParentWnd)
 {
 	CControllerSettingsDlg ControllerSettingsDlg;
 	ControllerSettingsDlg.DoModal((HWND) hParentWnd, (LPARAM) this);
