@@ -1872,7 +1872,6 @@ INITGAME(potc, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI);
 
 SAM1_ROM32MB(potc_108as, "potc108as.bin", CRC(6c3a3f7f) SHA1(52e97a4f479f8f3f55a72c9c104fb1335a253f1a), 0x01C61F6C)
 
-SAM1_ROM32MB(potc_109af, "potc109af.bin", CRC(9d87bb49) SHA1(9db04259a0b2733d6f5966a2f3e0fc1c7002cef1), 0x01AC6550)
 SAM1_ROM32MB(potc_109ai, "potc109ai.bin", CRC(a8baad2d) SHA1(f2f2a4a16f646a57cc191f8ae2e483e036edb1e7), 0x01B178E8)
 SAM1_ROM32MB(potc_109as, "potc109as.bin", CRC(eb68b86b) SHA1(416c4bf9b4dc035b8dfed3610a4ac5ae31209ca5), 0x01C829B4)
 SAM1_ROM32MB(potc_109gf, "potc109gf.bin", CRC(9866b803) SHA1(c7bef6220cc865614974d02406f109e851a86714), 0x01B60464)
@@ -1912,7 +1911,6 @@ SAM_INPUT_PORTS_START(potc, 1)
 CORE_GAMEDEF(potc, 600af, "Pirates of the Caribbean (V6.0) (English, French)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(potc, 108as, 600af, "Pirates of the Caribbean (V1.08) (English, Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(potc, 109af, 600af, "Pirates of the Caribbean (V1.09) (English, French)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(potc, 109ai, 600af, "Pirates of the Caribbean (V1.09) (English, Italian)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(potc, 109as, 600af, "Pirates of the Caribbean (V1.09) (English, Spanish)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(potc, 109gf, 600af, "Pirates of the Caribbean (V1.09) (German, French)", 2006, "Stern", sam1, 0)
