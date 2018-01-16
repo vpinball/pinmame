@@ -1580,7 +1580,7 @@ DRIVER(wpt,112g)        //S.A.M.: 11/06 World Poker Tour - V1.12 (German)
 DRIVER(wpt,112gf)       //S.A.M.: 11/06 World Poker Tour - V1.12 (German, French)
 DRIVER(wpt,112i)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Italian)
 DRIVER(wpt,112l)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Spanish)
-DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
+DRIVER(wpt,1129f)       //S.A.M.: 09/06 World Poker Tour - V1.129 (English, French)
 DRIVER(wpt,140a)        //S.A.M.: 01/08 World Poker Tour - V14.0 (English)
 DRIVER(wpt,140af)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, French)
 DRIVER(wpt,140ai)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, Italian)
@@ -1699,9 +1699,10 @@ DRIVER(sman,210gf)      //S.A.M.: 12/08 Spider-Man - V2.1  (German, French)
 DRIVER(sman,220)        //S.A.M.: 04/09 Spider-Man - V2.2
 DRIVER(sman,230)        //S.A.M.: 08/09 Spider-Man - V2.3
 DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
-DRIVER(sman,250)        //S.A.M.: ??/?? Spider-Man - V2.5
+DRIVER(sman,250)        //S.A.M.: 08/10 Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
-DRIVER(sman,261)        //S.A.M.: 05/14 Spider-Man - V2.61
+DRIVER(sman,261)        //S.A.M.: 12/12 Spider-Man - V2.61
+DRIVER(sman,262)        //S.A.M.: 04/14 Spider-Man - V2.62 (bootleg with replaced music)
 #ifdef SAM_ORIGINAL
 DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
 DRIVER(sman,101ve)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
