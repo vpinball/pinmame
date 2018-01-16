@@ -1720,7 +1720,9 @@ SAM1_ROM32MB(wpt_112g, "wpt0112g.bin", CRC(2fbac57d) SHA1(fb19e7a4a5384fc8c91e16
 SAM1_ROM32MB(wpt_112gf,"wpt0112gf.bin",CRC(a6b933b3) SHA1(72a36a427527c3c5cb455a74afbbb43f2bee6480), 0x01A74B94)
 SAM1_ROM32MB(wpt_112i, "wpt0112i.bin", CRC(0ba02986) SHA1(db1cbe0611d40c334205d0a8b9f5c6147b259549), 0x01B2C704)
 SAM1_ROM32MB(wpt_112l, "wpt0112l.bin", CRC(203c3a05) SHA1(6173f6a6110e2a226beb566371b2821b0a5b8609), 0x01C706F0)
+
 SAM1_ROM32MB(wpt_1129f,"wpt1129f.bin", CRC(e5660763) SHA1(72b8b878aa8272f9cf54fde2c9ddc7635757e59c), 0x01A46CF0)
+
 SAM1_ROM32MB(wpt_140a, "wpt1400a.bin", CRC(4b287770) SHA1(e19b60a08de9067a2b4c4dd71783fc812b3c7648), 0x019BB1EC)
 SAM1_ROM32MB(wpt_140af,"wpt1400af.bin",CRC(bed3e3f1) SHA1(43b9cd6deccc8e516e2f5e99295b751ccadbac29), 0x01A46D40)
 SAM1_ROM32MB(wpt_140ai,"wpt1400ai.bin",CRC(12a62641) SHA1(680283a7493921904f7fe9fae10d965db839f986), 0x01A8C908)
@@ -1777,7 +1779,7 @@ CORE_CLONEDEF(wpt, 112gf,140a, "World Poker Tour (V1.12) (German, French)", 2006
 CORE_CLONEDEF(wpt, 112i, 140a, "World Poker Tour (V1.12) (Italian)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 112l, 140a, "World Poker Tour (V1.12) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 1129f,140a, "World Poker Tour (V1.129) (French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 1129f,140a, "World Poker Tour (V1.129) (English, French)", 2006, "Stern", sam1, 0)
 
 CORE_CLONEDEF(wpt, 140af,140a, "World Poker Tour (V14.0) (English, French)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 140ai,140a, "World Poker Tour (V14.0) (English, Italian)", 2008, "Stern", sam1, 0)
@@ -1901,6 +1903,7 @@ SAM1_ROM32MB(potc_400af, "potc400af.bin", CRC(03cfed21) SHA1(947fff6bf3ed69cb346
 SAM1_ROM32MB(potc_400ai, "potc400ai.bin", CRC(5382440b) SHA1(01d8258b98e256fc54565afd9915fd5079201973), 0x01B213A8)
 SAM1_ROM32MB(potc_400al, "potc400al.bin", CRC(f739474d) SHA1(43bf3fbd23498e2cbeac3d87f5da727e7c05eb86), 0x01C88124)
 SAM1_ROM32MB(potc_400gf, "potc400gf.bin", CRC(778d02e7) SHA1(6524e56ebf6c5c0effc4cb0521e3a463540ceac4), 0x01B67104)
+
 SAM1_ROM32MB(potc_600af, "potc600af.bin", CRC(39a51873) SHA1(9597d356a3283c5a4e488a399196a51bf5ed16ca), 0x01AD2B40)
 SAM1_ROM32MB(potc_600ai, "potc600ai.bin", CRC(2d7aebae) SHA1(9e383507d225859b4df276b21525f500ba98d600), 0x01B24CC8)
 SAM1_ROM32MB(potc_600as, "potc600as.bin", CRC(5d5e1aaa) SHA1(9c7a416ae6587a86c8d2c6350621f09580226971), 0x01C92990)
@@ -1996,7 +1999,7 @@ SAM1_ROM32MB(sman_261,   "sman261a.bin",  CRC(9900cd4c) SHA1(1b95f957f8d709bba9f
 
 SAM_INPUT_PORTS_START(sman, 1)
 
-CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2014, "Stern", sam1, 0)
+CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2012, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130af, 261, "Spider-Man (V1.30) (English, French)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130ai, 261, "Spider-Man (V1.30) (English, Italian)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130al, 261, "Spider-Man (V1.30) (English, Spanish)", 2007, "Stern", sam1, 0)
@@ -2037,8 +2040,9 @@ CORE_CLONEDEF(sman, 210gf, 261, "Spider-Man (V2.1) (German, French)", 2008, "Ste
 CORE_CLONEDEF(sman, 220,   261, "Spider-Man (V2.2)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 230,   261, "Spider-Man (V2.3)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 240,   261, "Spider-Man (V2.4)", 2009, "Stern", sam1, 0)
-CORE_CLONEDEF(sman, 250,   261, "Spider-Man (V2.5)", 2009, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 250,   261, "Spider-Man (V2.5)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 260,   261, "Spider-Man (V2.6)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 262,   261, "Spider-Man (V2.62) (bootleg with replaced music)", 2014, "Stern/Destruk", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Wheel of Fortune
