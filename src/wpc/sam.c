@@ -1778,7 +1778,7 @@ CORE_CLONEDEF(wpt, 112gf,140a, "World Poker Tour (V1.12) (German, French)", 2006
 CORE_CLONEDEF(wpt, 112i, 140a, "World Poker Tour (V1.12) (Italian)", 2006, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 112l, 140a, "World Poker Tour (V1.12) (Spanish)", 2006, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wpt, 1129f,140a, "World Poker Tour (V1.129) (English, French)", 2006, "Stern", sam1, 0)
+CORE_CLONEDEF(wpt, 1129af,140a,"World Poker Tour (V1.129) (English, French)", 2006, "Stern", sam1, 0)
 
 CORE_CLONEDEF(wpt, 140af,140a, "World Poker Tour (V14.0) (English, French)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(wpt, 140ai,140a, "World Poker Tour (V14.0) (English, Italian)", 2008, "Stern", sam1, 0)
