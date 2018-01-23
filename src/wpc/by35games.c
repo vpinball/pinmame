@@ -1015,6 +1015,15 @@ BY35_ROMEND
 #define init_embryond init_embryonb
 CORE_CLONEDEFNV(embryond,embryon ,"Embryon (7-digit conversion rev. 9)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
+BY35_ROMSTARTx00(embryone,"emb2xsp.u2",  CRC(9e721fd7) SHA1(83e1d081a48e68bb4a61833156c539bcd04c9505),
+                          "emb2xsp.u6",  CRC(a421784b) SHA1(9997805abeb8877b96eb0587a56f2f89fbf7fa55))
+BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491150e346d815005948b68),
+                          "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
+BY35_ROMEND
+#define input_ports_embryone input_ports_embryon
+#define init_embryone init_embryonb
+CORE_CLONEDEFNV(embryone,embryon ,"Embryon (7-digit conversion rev. 92)",2011,"Bally",by35_mBY35_61BS,0) // also done by Oliver??
+
 /*--------------------------------
 / Fathom
 /-------------------------------*/
