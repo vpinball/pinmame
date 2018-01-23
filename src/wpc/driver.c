@@ -216,6 +216,7 @@ DRIVERNV(embryona)      //BY35      10/08 Embryon (Free Play)
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
+DRIVERNV(embryone)      //BY35      08/11 Embryon (7-digit conversion rev.92)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(fathoma )      //BY35      10/04 Fathom (Free Play)
 DRIVERNV(fathomb )      //BY35      10/04 Fathom (modified rules)
