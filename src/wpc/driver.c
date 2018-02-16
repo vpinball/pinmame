@@ -1893,9 +1893,13 @@ DRIVER(acd,165)         //S.A.M.: 03/13 AC/DC - V1.65
 DRIVER(acd,165h)        //S.A.M.: 03/13 AC/DC - V1.65 Limited Edition
 DRIVER(acd,168)         //S.A.M.: 06/14 AC/DC - V1.68
 DRIVER(acd,168h)        //S.A.M.: 06/14 AC/DC - V1.68 Limited Edition
+DRIVER(acd,170)         //S.A.M.: 02/18 AC/DC - V1.70.0
+DRIVER(acd,170h)        //S.A.M.: 02/18 AC/DC - V1.70.0 Limited Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(acd,168c)        // pinball browser colorized using extend memory
 DRIVER(acd,168hc)       // pinball browser colorized using extend memory
+DRIVER(acd,170c)        // pinball browser colorized using extend memory
+DRIVER(acd,170hc)       // pinball browser colorized using extend memory
 #endif
 DRIVER(xmn,100)         //S.A.M.: 0?/12 X-Men - V1.0
 DRIVER(xmn,102)         //S.A.M.: 09/12 X-Men - V1.02

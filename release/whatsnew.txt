@@ -5,7 +5,8 @@ Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (e.g. builtin alte
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito
 Clones:
-Stern: Spider-Man 2.62 (bootleg with replaced music)
+Stern: AC/DC 1.70.0,1.70.0LE
+       Spider-Man 2.62 (bootleg with replaced music)
 Bally: Embryon v92 (7-digit conversion and more)
 
 
