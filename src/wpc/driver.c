@@ -247,6 +247,7 @@ DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man Pinball
 DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man Pinball (Free Play)
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
+DRIVERNV(babypaca)      //BY35      07/83 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
 DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
@@ -1703,7 +1704,7 @@ DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
 DRIVER(sman,250)        //S.A.M.: 08/10 Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
 DRIVER(sman,261)        //S.A.M.: 12/12 Spider-Man - V2.61 (actually released to the public much later though: 05/14)
-DRIVER(sman,262)        //S.A.M.: 04/14 Spider-Man - V2.62 (bootleg with replaced music)
+DRIVER(sman,262)        //S.A.M.: 04/14 Spider-Man - V2.62 (bootleg with replaced music) I was always disappointed that Stern Spiderman didn't use Danny Elfman's theme music. So I hacked it into this rom revision. It plays during the game for one of the sandman modes now.
 #ifdef SAM_ORIGINAL
 DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
 DRIVER(sman,101ve)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
