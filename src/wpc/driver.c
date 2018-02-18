@@ -2338,9 +2338,8 @@ DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
 DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (L-1)
-DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (Europe)
+DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 / Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (L-4)
-DRIVER(mousn,lx)        //          03/90 B Mousin' Around! (L-X)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
