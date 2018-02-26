@@ -640,6 +640,14 @@ S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e6
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 
+S11_ROMSTART48(esha,pa4,"eshk_u26.pa4",CRC(9ffe5ee8) SHA1(533e5e90f6ce1ee4ca69463158860c7fef6b8e05),
+                        "eshk_u27.pa4",CRC(a1795d11) SHA1(1797aa566e7e490bca6b00891fed65ac1f115280))
+S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
+                        "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
+S11CS_SOUNDROM88(       "u4-p1.rom",   CRC(7219ffc2) SHA1(b8585b7d12f401d8ba4d95a5e2f20d35ff0ac26a),
+                        "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
+S11_ROMEND
+
 S11_ROMSTART48(esha,pa1,"u26-pa1.rom", CRC(08c0b0d6) SHA1(36c23655e1ae07a3a5c91f68fdb27a78ca272683),
                         "u27-pa1.rom", CRC(ddd6e8bb) SHA1(b46da424f9c4ac70e65af3ee7b4e08df38ffdb26))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
@@ -656,6 +664,7 @@ CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Willia
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
