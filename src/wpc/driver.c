@@ -2305,7 +2305,8 @@ DRIVER(taxi,l5cm)       //          04/16 W Taxi (Marilyn L-5C)
 DRIVER(taxi,l5c)        //          04/16 W Taxi (Lola L-5C)
 DRIVER(jokrz,l3)        //S11-567:  12/88 W Jokerz! (L-3)
 DRIVER(jokrz,l6)        //          12/88 W Jokerz! (L-6)
-DRIVER(esha,pa1)        //S11-568:  02/89 W Earthshaker Prototype version
+DRIVER(esha,pa1)        //S11-568:  02/89 W Earthshaker PA-1
+DRIVER(esha,pa4)        //          02/89 W Earthshaker PA-4
 DRIVER(esha,la1)        //          02/89 W Earthshaker LA-1
 DRIVER(esha,lg1)        //          02/89 W Earthshaker LG-1 (German)
 DRIVER(esha,lg2)        //          02/89 W Earthshaker LG-2 (German)

@@ -8,10 +8,11 @@ Correct Dumps:
 Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, remove the LX-1 from PinMAME)
 
 Clones:
-Stern: AC/DC 1.70.0,1.70.0LE
-       Spider-Man 2.62 (bootleg with replaced music)
-Bally: Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
-       Embryon v92 (7-digit conversion and more)
+AC/DC 1.70.0,1.70.0LE
+Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
+Earthshaker (PA-4)
+Embryon v92 (7-digit conversion and more)
+Spider-Man 2.62 (bootleg with replaced music)
 
 
 
