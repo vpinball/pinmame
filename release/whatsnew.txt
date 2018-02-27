@@ -10,8 +10,11 @@ Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this match
 Clones:
 AC/DC 1.70.0,1.70.0LE
 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
-Earthshaker (PA-4)
+Earthshaker PA-4
 Embryon v92 (7-digit conversion and more)
+Frontier (Gate Fix)
+Galaxy (Planet Skillshot)
+Meteor (No Background Sound)
 Spider-Man 2.62 (bootleg with replaced music)
 
 

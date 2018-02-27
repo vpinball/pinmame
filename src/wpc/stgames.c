@@ -306,11 +306,12 @@ BY35_ROMEND
 #define input_ports_meteora input_ports_st
 CORE_GAMEDEFNV(meteora,"Meteor (Bugfix)",1979,"Stern",by35_mST200,0)
 
+// Fixes a rare bug where the bonus seems to countdown endlessly
 INITGAME(meteorbf,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorbf,"cpu_u1.716",  CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
                             "cpu_u5.716",  CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
-						    "cpu_u2bf.716",CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
-						    "cpu_u6bf.716",CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
+                            "cpu_u2bf.716",CRC(8d1a4a0b) SHA1(12c75b613fba34c4db87afb78f598c8cd9989bf4),
+                            "cpu_u6bf.716",CRC(e185ca50) SHA1(b82521d2dd97a9af2a522745256f6ebc2db95eab))
 BY35_ROMEND
 #define input_ports_meteorbf input_ports_st
 CORE_CLONEDEFNV(meteorbf,meteor,"Meteor (Bonus Count Fix)",1979,"Stern",by35_mST200,0)
@@ -323,6 +324,22 @@ ST200_ROMSTART8888(meteorfp,"fpmet_u1.716",CRC(7a5472ce) SHA1(7e3be954b66e5f61cf
 BY35_ROMEND
 #define input_ports_meteorfp input_ports_st
 CORE_CLONEDEFNV(meteorfp,meteor,"Meteor (Free Play)",1979,"Stern",by35_mST200,0)
+
+/* From rec.games.pinball, No background sound in Meteor:
+In Rom U1, offset A6 change 57 to 2f. Change offset A9 from 2f to 57.
+In Rom U2, offset CC - CD change fe 02 to 39 c7.
+Test it out and let me know how it sounds I can only tell so far in
+pinmame. It will no longer play the add a player sound as far as I can
+tell but the background sound should be off. */
+INITGAME(meteorns,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteorns,"cpu_u1ns.716",CRC(579aa7ce) SHA1(71b6b749aeb22064bbaf632a5129ab512b69b982),
+                            "cpu_u5.716",  CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
+                            "cpu_u2ns.716",CRC(1680af01) SHA1(e9dd51e0cbe87ff55963ca1c57ee765c10630eed),
+                            "cpu_u6.716",  CRC(03fa346c) SHA1(51c04123cb433e90920c241e2d1f89db4643427b))
+BY35_ROMEND
+#define input_ports_meteorns input_ports_st
+CORE_CLONEDEFNV(meteorns,meteor,"Meteor (No Background Sound)",2011,"Stern / Scott",by35_mST200,0)
+
 
 /*--------------------------------
 / Meteor (7-digit conversion)
@@ -366,11 +383,33 @@ BY35_ROMEND
 #define input_ports_galaxy input_ports_st
 CORE_GAMEDEFNV(galaxy,"Galaxy",1980,"Stern",by35_mST200,0)
 
+/* From rec.games.pinball:
+OK, because I'm a masochist who likes a challenge, spots planet
+including giving you the score for it and multiplier:
+Spot next planet when you go into saucer:
+
+Rom U6, offset $FA:
+Change 3b 00 5b
+TO: 27 5f 00
+
+Offset 700-706:
+should be all $FF at this point
+change to:
+700: 3b 00 5b 27 6b e7 0a*/
+INITGAME(galaxyps,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(galaxyps,"cpu_u1.716",  CRC(35656b67) SHA1(e1ad9456c561d19220f8607576cb505588512179),
+                            "cpu_u5.716",  CRC(12be0601) SHA1(d651b834348c071dda660f37b4e359bf01cbd8d3),
+                            "cpu_u2.716",  CRC(08bdb285) SHA1(7984835ac151e5dac05628f3d5146d20e3623c38),
+                            "cpu_u6ps.716",CRC(de4af8c0) SHA1(ed10dc48045cd8e3d6996eeca6baf695ccd3fcfd))
+BY35_ROMEND
+#define input_ports_galaxyps input_ports_st
+CORE_CLONEDEFNV(galaxyps,galaxy,"Galaxy (Planet Skillshot)",2011,"Stern / Scott",by35_mST200,0)
+
 INITGAME(galaxyfp,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(galaxyfp,"cpu_u1.716",CRC(35656b67) SHA1(e1ad9456c561d19220f8607576cb505588512179),
-                          "cpu_u5.716",CRC(12be0601) SHA1(d651b834348c071dda660f37b4e359bf01cbd8d3),
-                          "fpgal_u2.716",CRC(c41ce9e8) SHA1(15e344cb72ce80fa5baa0136f2ca461b1d7d39ac),
-                          "fpgal_u6.716",CRC(a5ab7492) SHA1(b7c2635ab721d50f87e87cbf779cab7c787be222))
+ST200_ROMSTART8888(galaxyfp,"cpu_u1.716",  CRC(35656b67) SHA1(e1ad9456c561d19220f8607576cb505588512179),
+                            "cpu_u5.716",  CRC(12be0601) SHA1(d651b834348c071dda660f37b4e359bf01cbd8d3),
+                            "fpgal_u2.716",CRC(c41ce9e8) SHA1(15e344cb72ce80fa5baa0136f2ca461b1d7d39ac),
+                            "fpgal_u6.716",CRC(a5ab7492) SHA1(b7c2635ab721d50f87e87cbf779cab7c787be222))
 BY35_ROMEND
 #define input_ports_galaxyfp input_ports_st
 CORE_CLONEDEFNV(galaxyfp,galaxy,"Galaxy (Free Play)",1980,"Stern",by35_mST200,0)
