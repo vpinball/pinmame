@@ -191,6 +191,7 @@ DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(skatebla)      //BY35-823: 10/08 Skateball (Free Play)
 DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
+DRIVERNV(frontieg)      //BY35-819: 08/11 Frontier (Gate Fix)
 DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
@@ -1201,10 +1202,12 @@ DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
 DRIVERNV(meteora)       //MPU-200: ??/?? Meteor (Bugfix)
 DRIVERNV(meteorbf)      //MPU-200: 05/09 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
 DRIVERNV(meteorfp)      //MPU-200: 09/79 Meteor (Free Play)
+DRIVERNV(meteorns)      //MPU-200: 08/11 Meteor (No Background Sound)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
 DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
 DRIVERNV(meteord)       //MPU-200: 05/05 Meteor (/10 Scoring)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(galaxyps)      //MPU-200: 08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //MPU-200: ??/04 Galaxy (7-Digit conversion)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
