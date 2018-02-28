@@ -4,6 +4,9 @@ Version 3.1 (X X, 2018) - ""
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (e.g. builtin alternate sound file support)
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito
+New:
+Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
+
 Correct Dumps:
 Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, remove the LX-1 from PinMAME)
 

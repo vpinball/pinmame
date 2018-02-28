@@ -2535,6 +2535,7 @@ DRIVER(ww,d5)           //                  White Water (D-5) LED Ghost Fix
 DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
 DRIVER(ww,lh6)          //          12/05 W White Water (LH-6)
 DRIVER(ww,lh6c)         //                  White Water (LH-6 Coin Play)
+DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
