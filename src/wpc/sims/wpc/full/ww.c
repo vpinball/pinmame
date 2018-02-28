@@ -414,6 +414,7 @@ WPC_ROMSTART(ww,l3,"u6-l3.rom",   0x80000,CRC(b8ff04d9) SHA1(a7b16306bf050ee9614
 WPC_ROMSTART(ww,d3,"u6-d3.rom",   0x80000,CRC(b1a31204) SHA1(67f1d3a335291cfeb3e09aab0d83c4e39f2f228e)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l2,"ww_l2.u6",    0x80000,CRC(2738acf8) SHA1(1554dd497d6aae53934e2e4a2e42bda1f87aaa02)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,d2,"ww_d2.u6",    0x80000,CRC(ce283e11) SHA1(81d147c82c14426b39159b63815b69faad99d316)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,bfr01,"bigfoot_r01.rom",0x80000,CRC(e4a46acd) SHA1(315162667fcb58b99b940ef34a55adad027e83d8)) WW_SOUND WPC_ROMEND
 
 WPC_ROMSTART(ww,p8,"ww_p8.u6",    0x80000,CRC(251a7f14) SHA1(8e36efc9a14d3cd31967f072bfc185461022864d))
 WPCS_SOUNDROM248("ww_u18.p2",CRC(7a9ace30) SHA1(996cb73504ef73675c596e6f811047f16fbff0dd), \
@@ -455,18 +456,19 @@ CORE_CLONEDEF(ww,p8,l5,"White Water (P-8, Sound P-2)",1992,"Williams",wpc_mFlipt
 CORE_CLONEDEF(ww,p9,l5,"White Water (P-9, Sound P-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,p1,l5,"White Water (P-8, Sound P-1)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,p2,l5,"White Water (P-9, Sound P-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,bfr01,l5,"White Water (FreeWPC/Bigfoot R0.1)",2016,"Aeneas Verhe",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData wwSimData = {
   2,    				/* 2 game specific input ports */
-  ww_stateDef,				/* Definition of all states */
-  ww_inportData,			/* Keyboard Entries */
+  ww_stateDef,			/* Definition of all states */
+  ww_inportData,		/* Keyboard Entries */
   { stRTrough, stCTrough, stLTrough, stDrain, stDrain, stDrain, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
   NULL, 				/* no init */
-  ww_handleBallState,			/*Function to handle ball state changes*/
-  ww_drawStatic,			/*Function to handle mechanical state changes*/
+  ww_handleBallState,	/*Function to handle ball state changes*/
+  ww_drawStatic,		/*Function to handle mechanical state changes*/
   TRUE, 				/* Simulate manual shooter? */
   NULL  				/* Custom key conditions? */
 };
