@@ -245,14 +245,18 @@ CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (Beta 1.8 US)",1996,"Capcom",cc2,0)
 /*-------------------------------------------------------------------
 / Kingpin (12/96)
 /-------------------------------------------------------------------*/
-//Beta Version 1.5 (There should be a regular version 1.6 according to Pfutz!)
-INITGAME(kpv106, 11, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
-CC_ROMSTART_2X(kpv106, "u1hu1l.bin",  CRC(d2d42121) SHA1(c731e0b5c9b211574dda8aecbad799bc180a59db),
-                       "u2hu2l.bin",  CRC(9cd91371) SHA1(197a06a0ed6b661d798ed18b1db72215c28e1bc2))
+//Old comment: Beta Version 1.5 (There should be a regular version 1.6 according to Pfutz!)
+//New comment from the readme coming with the ROMs:
+//With the help of other people, I have found out that this is really version
+//"B1.05", not "V1.0".If you find a version 1.0, please contact me at
+//pfutz@mediaone.net
+INITGAME(kpb105, 11, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+CC_ROMSTART_2X(kpb105, "u1hu1l.bin", CRC(d2d42121) SHA1(c731e0b5c9b211574dda8aecbad799bc180a59db),
+                       "u2hu2l.bin", CRC(9cd91371) SHA1(197a06a0ed6b661d798ed18b1db72215c28e1bc2))
 CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				   "u28_b11.bin", CRC(aa480506) SHA1(4fbf384bc5e2d0eec4d1137784006d63091974ca), \
 				   "u29_b11.bin", CRC(33345446) SHA1(d229d45228e13e2f02b73ce125eab4f2dd91db6e), \
 				   "u30_b11.bin", CRC(fa35a177) SHA1(3c54c12db8e17a8c316a22b9b7ac80b6b3af8474), \
 				   "u31_b18.bin", CRC(07a7d514) SHA1(be8cb4b6d70ccae7821110689b714612c8a0b460))
 CC_ROMEND
-CORE_GAMEDEFNV(kpv106,"Kingpin",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(kpb105,"Kingpin (Beta 1.05)",1996,"Capcom",cc2,0)
