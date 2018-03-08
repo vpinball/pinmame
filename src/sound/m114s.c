@@ -72,9 +72,9 @@
 struct M114STable
 {
 		UINT8			reread;						/* # of times to re-read each byte from table */
-        UINT32          position;                   /* current reading position for table */
-        UINT32          start_address;				/* start address (offset into ROM) for table */
-        UINT32          stop_address;				/* stop address (offset into ROM) for table */
+		UINT32          position;                   /* current reading position for table */
+		UINT32          start_address;				/* start address (offset into ROM) for table */
+		UINT32          stop_address;				/* stop address (offset into ROM) for table */
 		UINT16			length;						/* length in bytes of the table */
 		UINT16			total_length;				/* total length in bytes of the table (including repetitions) */
 };
@@ -82,7 +82,7 @@ struct M114STable
 /* struct describing the registers for a single channel */
 struct M114SChannelRegs
 {
-        UINT8			atten;							/* Attenuation Register */
+		UINT8			atten;							/* Attenuation Register */
 		UINT8			outputs;						/* Output Pin Register */
 		UINT8			table1_addr;					/* Table 1 MSB Starting Address Register */
 		UINT8			table2_addr;					/* Table 2 MSB Starting Address Register */
@@ -150,7 +150,7 @@ static const int mode_to_rep[8][2] = {
   {1,2},	//Mode 4
   {1,1},	//Mode 5
   {1,4},	//Mode 6
-  {1,1}	    //Mode 7
+  {1,1}		//Mode 7
 };
 
 /* Table 1 Length Values based on Mode */
@@ -308,7 +308,7 @@ static INT16 read_sample(struct M114SChannel *channel, UINT32 length)
 
 /**********************************************************************************************
 
-     read_table -- Reads the two tables of rom data into a temporary buffer,
+	 read_table -- Reads the two tables of rom data into a temporary buffer,
 	 mixes the samples using the chip's internal interpolation equation,
 	 applies the volume, and writes the single mixed sample to the output buffer for the channel.
 	 It processes the entire table1 length of data.
@@ -427,7 +427,7 @@ static void m114s_update(int num,
 ***********************************************************************************************/
 
 INLINE void init_channel(struct M114SChannel *channel)
- {
+{
 	//set all internal registers to 0!
 	channel->active = 0;
 	channel->outpos = 0;
@@ -435,16 +435,16 @@ INLINE void init_channel(struct M114SChannel *channel)
 	memset(&channel->regs,0,sizeof(channel->regs));
 	memset(&channel->table1,0,sizeof(channel->table1));
 	memset(&channel->table2,0,sizeof(channel->table2));
- }
+}
 
 
 INLINE void init_all_channels(struct M114SChip *chip)
- {
- 	int i;
+{
+	int i;
 
- 	/* init the channels */
- 	for (i = 0; i < M114S_CHANNELS; i++)
- 		init_channel(&chip->channels[i]);
+	/* init the channels */
+	for (i = 0; i < M114S_CHANNELS; i++)
+		init_channel(&chip->channels[i]);
 
 	//Chip init stuff
 	memset(&chip->tempch_regs,0,sizeof(chip->tempch_regs));
@@ -452,7 +452,7 @@ INLINE void init_all_channels(struct M114SChip *chip)
 	chip->bytes_read = 0;
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
- }
+}
 
 
 int M114S_sh_start(const struct MachineSound *msound)

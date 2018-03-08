@@ -19,12 +19,12 @@
 #endif
 
 //If set to 1, we mix down the 16 channels into the 4 appropriate output channels
-//If set to 0, we simply output each 16 channel independantly (which is not how the real chip works)
+//If set to 0, we simply output each 16 channel independently (which is not how the real chip works)
 #define USE_REAL_OUTPUTS 1
 //Test the volume envelope
 #define USE_VOL_ENVELOPE 1
 
-#if USE_REAL_OUTPUTS
+#if USE_REAL_OUTPUTS //!! code does not distinguish between the two at all anymore!
 #define M114S_OUTPUT_CHANNELS 4
 #else
 #define M114S_OUTPUT_CHANNELS 16
@@ -38,7 +38,7 @@ struct M114Sinterface
         int baseclock[MAX_M114S];            /* input clock - Allowed values are 4Mhz & 6Mhz only! */
         int region[MAX_M114S];               /* memory region where the sample ROM lives */
         int mixing_level[MAX_M114S];         /* master volume */
-		int cpunum[MAX_M114S];				 /* # of the cpu controlling the M114S */
+        int cpunum[MAX_M114S];               /* # of the cpu controlling the M114S */
 };
 
 int M114S_sh_start(const struct MachineSound *msound);
