@@ -748,7 +748,7 @@ static WRITE32_HANDLER(sambank_w)
 				logit = LOG_ROM_BANK;
 
 				//log access to A24/A25 depending on the SAM version.
-				if(data > (samlocals.samVersion > 1 ? 0x0f : 0x03))
+				if(data > (samlocals.samVersion > 1 ? (data32_t)0x0f : (data32_t)0x03))
 					LOG(("ERROR IN BANK SELECT DATA = %d\n",data));
 
 				//enforce validity to try and prevent crashes into illegal romspaces.
