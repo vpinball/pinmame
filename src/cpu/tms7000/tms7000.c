@@ -512,7 +512,7 @@ UINT8 tms7000_calculate_timer1_decrementator( void )
 	double prescalertimer = TIME_IN_CYCLES(16,cpuNum) *
 													(tms7000.pf[0x03] & 0x1f);
 	
-	result = (tms7000.time_timer1 - timer_get_time()) / prescalertimer;
+	result = (UINT8)((tms7000.time_timer1 - timer_get_time()) / prescalertimer);
 
 	return result;
 }
