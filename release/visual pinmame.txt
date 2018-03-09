@@ -106,6 +106,18 @@ NOTE: If you do not know what to pick, leave every setting at its default value!
  Otherwise one can set one color and 4 intensity percentages from full (100%) to not at all lit
 
 
+ Note that games that emulate a 'standard' (like a TV) display (Granny and the Gators, Baby Pac-Man, Dakar, etc) can also enable fake scanlines/masks via the 'effect' registry setting
+ Values:
+  none         no effect (this is the default)
+  scan25       25% scanlines
+  scan50       50% scanlines
+  scan75       75% scanlines
+  rgb3         a certain "monitor mask"
+  rgb4         another one
+  rgb6         another one
+  rgb16        another one. Choose the one you like best.
+
+
 External/Hardware DMD support
 -----------------------------
 Visual PinMAME in addition offers generalized external DMD handling via a separate dmddevice.dll (see 'Use external DMD (dll)' option).

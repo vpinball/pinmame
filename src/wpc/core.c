@@ -755,6 +755,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
   static UINT8 *currbuffer = buffer1;
   static UINT8 *oldbuffer = NULL;
+  static UINT32 raw_dmdoffs = 0;
 
   const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
   const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
@@ -812,10 +813,10 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 
   for (ii = 0; ii < 4; ++ii)
-	  palette32_4[ii] = (UINT32)palette[ii][0] | (((UINT32)palette[ii][1]) << 8) | (((UINT32)palette[ii][2]) << 16);
+     palette32_4[ii] = (UINT32)palette[ii][0] | (((UINT32)palette[ii][1]) << 8) | (((UINT32)palette[ii][2]) << 16);
 
   for(ii = 0; ii < 16; ++ii)
-	  palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
+     palette32_16[ii] = (rStart*level[ii]/100) | ((gStart*level[ii]/100) << 8) | ((bStart*level[ii]/100) << 16);
 
   //
 
@@ -823,6 +824,17 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   {
       g_raw_dmdx = layout->length;
       g_raw_dmdy = layout->start;
+
+      // Strikes N' Spares has 2 standard DMDs
+      if (_strnicmp(Machine->gamedrv->name, "snspare", 7) == 0)
+      {
+          g_raw_dmdy = 64;
+          // shift offset into the raw DMDs, depending on which display is updated in here
+          if (layout->top != 0)
+              raw_dmdoffs = 128 * 32;
+          else
+              raw_dmdoffs = 0;
+      }
   }
 #endif
 
@@ -838,8 +850,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 		const int offs = (ii-1)*layout->length + jj;
 		currbuffer[offs] = col;
 		if(layout->length >= 128) { // Capcom hack
-			g_raw_dmdbuffer[offs] = shade_16_enabled ? raw_16[col] : raw_4[col];
-			g_raw_colordmdbuffer[offs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
+			g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
+			g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
 		}
 #endif
 		if (shade_16_enabled)
@@ -970,13 +982,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #ifdef VPINMAME
-  	  disp_lens[total_disp++] = ii;
+      disp_lens[total_disp++] = ii;
 #endif
 
 #ifdef PROC_SUPPORT
-		static UINT16 proc_top[16];
-		static UINT16 proc_bottom[16];
-		int char_width = locals.segData[layout->type & 0x0f].cols+1;
+      static UINT16 proc_top[16];
+      static UINT16 proc_bottom[16];
+      int char_width = locals.segData[layout->type & 0x0f].cols+1;
 #endif
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
@@ -985,8 +997,8 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         int tmpType = layout->type & CORE_SEGMASK;
 
 #ifdef VPINMAME
-		//SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
-		if(1) {
+        //SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
+        if(1) {
 #else
         if ((tmpSeg != *lastSeg) ||
             inRect(cliprect,left,top,locals.segData[layout->type & CORE_SEGALL].cols,locals.segData[layout->type & CORE_SEGALL].rows)) {
@@ -1697,7 +1709,7 @@ static MACHINE_INIT(core) {
           locals.timers[ii] = timer_alloc(coreData->timers[ii].callback);
           if (coreData->timers[ii].rate > 0) {
             timer_adjust(locals.timers[ii], TIME_IN_HZ(coreData->timers[ii].rate), 0, TIME_IN_HZ(coreData->timers[ii].rate));
-          } else {
+          } else { // negative = fractional hz value, e.g. as usec
             timer_adjust(locals.timers[ii], TIME_IN_USEC(-coreData->timers[ii].rate), 0, TIME_IN_USEC(-coreData->timers[ii].rate));
           }
         }

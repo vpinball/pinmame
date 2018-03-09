@@ -14,13 +14,13 @@ BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
 / Baby Pac-Man (Video/Pinball Combo) (BY133-891:  10/82)
 /-----------------------------------------------------*/
 INITGAMEVP(babypac,byVP_dispBabyPac,FLIP_SWNO(0,1),SNDBRD_BY45BP,0)
-BYVP_ROMSTARTx00(babypac, "891-u2.732", CRC(7f7242d1) SHA1(213a697bb7fc69f93ea04621f0fcfdd796f35196),
-                          "891-u6.732", CRC(6136d636) SHA1(c01a0a2fcad3bdabd649128e012ab558b1c90cd3),
-                          "891-u9.764", CRC(7fa570f3) SHA1(423ad9266b1ded00fa52ce4180d518874142a203),
-                          "891-u10.764",CRC(28f4df8b) SHA1(bd6a3598c2c90b5a3a59327616d2f5b9940d98bc),
-                          "891-u11.764",CRC(0a5967a4) SHA1(26d56ddea3f39d41e382449007bf7ba113c0285f),
-                          "891-u12.764",CRC(58cfe542) SHA1(e024d14019866bd460d1da6b901f9b786a76a181),
-                          "891-u29.764",CRC(0b57fd5d) SHA1(43a03e6d16c87c3305adb04722484f992f23a1bd))
+BYVP_ROMSTARTx00(babypac, "891-u2.732", CRC(7f7242d1) SHA1(213a697bb7fc69f93ea04621f0fcfdd796f35196), // 891-08
+                          "891-u6.732", CRC(6136d636) SHA1(c01a0a2fcad3bdabd649128e012ab558b1c90cd3), // 891-15
+                          "891-u9.764", CRC(7fa570f3) SHA1(423ad9266b1ded00fa52ce4180d518874142a203), // 891-13
+                          "891-u10.764",CRC(28f4df8b) SHA1(bd6a3598c2c90b5a3a59327616d2f5b9940d98bc), // 891-11
+                          "891-u11.764",CRC(0a5967a4) SHA1(26d56ddea3f39d41e382449007bf7ba113c0285f), // 891-05
+                          "891-u12.764",CRC(58cfe542) SHA1(e024d14019866bd460d1da6b901f9b786a76a181), // 891-06
+                          "891-u29.764",CRC(0b57fd5d) SHA1(43a03e6d16c87c3305adb04722484f992f23a1bd)) // 891-12
 BYVP_ROMEND
 CORE_GAMEDEFNVR90(babypac,"Baby Pac-Man (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
 
@@ -35,6 +35,19 @@ BYVP_ROMEND
 #define init_babypacn init_babypac
 #define input_ports_babypacn input_ports_babypac
 GAMEX(2006,babypacn,babypac,byVP1,babypac,babypac,ROT90,"Bally / Oliver","Baby Pac-Man (Video/Pinball Combo, Home Rom)",0)
+
+// Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983
+BYVP_ROMSTARTx00(babypaca,"891-u2.732", CRC(7f7242d1) SHA1(213a697bb7fc69f93ea04621f0fcfdd796f35196),  // 891-08
+                          "891-u6.732", CRC(6136d636) SHA1(c01a0a2fcad3bdabd649128e012ab558b1c90cd3),  // 891-15
+                          "891-16-u9.764",CRC(781E90E9) SHA1(940047CC875AE531A825AF069BB650D59C9495A6),// 891-16
+                          "891-u10.764",CRC(28f4df8b) SHA1(bd6a3598c2c90b5a3a59327616d2f5b9940d98bc),  // 891-11
+                          "891-u11.764",CRC(0a5967a4) SHA1(26d56ddea3f39d41e382449007bf7ba113c0285f),  // 891-05
+                          "891-u12.764",CRC(58cfe542) SHA1(e024d14019866bd460d1da6b901f9b786a76a181),  // 891-06
+                          "891-u29.764",CRC(0b57fd5d) SHA1(43a03e6d16c87c3305adb04722484f992f23a1bd))  // 891-12
+BYVP_ROMEND
+#define init_babypaca init_babypac
+#define input_ports_babypaca input_ports_babypac
+GAMEX(1983,babypaca,babypac,byVP1,babypac,babypac,ROT90,"Bally","Baby Pac-Man (Video/Pinball Combo, Updated U9)",0)
 
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)

@@ -191,6 +191,7 @@ DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(skatebla)      //BY35-823: 10/08 Skateball (Free Play)
 DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
+DRIVERNV(frontieg)      //BY35-819: 08/11 Frontier (Gate Fix)
 DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
@@ -216,6 +217,7 @@ DRIVERNV(embryona)      //BY35      10/08 Embryon (Free Play)
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
+DRIVERNV(embryone)      //BY35      08/11 Embryon (7-digit conversion rev.92)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(fathoma )      //BY35      10/04 Fathom (Free Play)
 DRIVERNV(fathomb )      //BY35      10/04 Fathom (modified rules)
@@ -246,6 +248,7 @@ DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man Pinball
 DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man Pinball (Free Play)
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
+DRIVERNV(babypaca)      //BY35      07/83 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
 DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
@@ -360,9 +363,9 @@ DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
 DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
 DRIVERNV(ffv101)        // 10/96    Flipper Football (1.01)
 DRIVERNV(ffv104)        // 10/96    Flipper Football (1.04)
-DRIVERNV(bbb108)        // 11/96    Big Bang Bar (Beta, 1.8)
-DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
-DRIVERNV(kpv106)        // 12/96    Kingpin
+DRIVERNV(bbb108)        // 11/96    Big Bang Bar (Beta 1.8)
+DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta 1.9)
+DRIVERNV(kpb105)        // 12/96    Kingpin (Beta 1.05)
 
 // ----------------
 // CICPLAY GAMES
@@ -1199,10 +1202,12 @@ DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
 DRIVERNV(meteora)       //MPU-200: ??/?? Meteor (Bugfix)
 DRIVERNV(meteorbf)      //MPU-200: 05/09 Meteor (Bonus Count Fix, 'Fixes a rare bug where the bonus seems to countdown endlessly')
 DRIVERNV(meteorfp)      //MPU-200: 09/79 Meteor (Free Play)
+DRIVERNV(meteorns)      //MPU-200: 08/11 Meteor (No Background Sound)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
 DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
 DRIVERNV(meteord)       //MPU-200: 05/05 Meteor (/10 Scoring)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(galaxyps)      //MPU-200: 08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
 DRIVERNV(galaxyb)       //MPU-200: ??/04 Galaxy (7-Digit conversion)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
@@ -1580,7 +1585,7 @@ DRIVER(wpt,112g)        //S.A.M.: 11/06 World Poker Tour - V1.12 (German)
 DRIVER(wpt,112gf)       //S.A.M.: 11/06 World Poker Tour - V1.12 (German, French)
 DRIVER(wpt,112i)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Italian)
 DRIVER(wpt,112l)        //S.A.M.: 11/06 World Poker Tour - V1.12 (Spanish)
-DRIVER(wpt,1129f)       //S.A.M.: 11/06 World Poker Tour - V1.129 (French)
+DRIVER(wpt,1129af)      //S.A.M.: 09/06 World Poker Tour - V1.129 (English, French) (might be a beta of the 1.12 build?)
 DRIVER(wpt,140a)        //S.A.M.: 01/08 World Poker Tour - V14.0 (English)
 DRIVER(wpt,140af)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, French)
 DRIVER(wpt,140ai)       //S.A.M.: 01/08 World Poker Tour - V14.0 (English, Italian)
@@ -1604,7 +1609,6 @@ DRIVERNV(scarn200)      //S.A.M.: 02/08 Simpsons Kooky Carnival (Redemption) - V
 //DRIVER(potc,106as)      //S.A.M.: 07/06 Pirates of the Caribbean - V1.06 (English, Spanish)
 //DRIVER(potc,107as)      //S.A.M.: 07/06 Pirates of the Caribbean - V1.07 (English, Spanish)
 DRIVER(potc,108as)      //S.A.M.: 07/06 Pirates of the Caribbean - V1.08 (English, Spanish)
-DRIVER(potc,109af)      //S.A.M.: 08/06 Pirates of the Caribbean - V1.09 (English, French)
 DRIVER(potc,109ai)      //S.A.M.: 08/06 Pirates of the Caribbean - V1.09 (English, Italian)
 DRIVER(potc,109as)      //S.A.M.: 08/06 Pirates of the Caribbean - V1.09 (English, Spanish)
 DRIVER(potc,109gf)      //S.A.M.: 08/06 Pirates of the Caribbean - V1.09 (German, French)
@@ -1700,9 +1704,10 @@ DRIVER(sman,210gf)      //S.A.M.: 12/08 Spider-Man - V2.1  (German, French)
 DRIVER(sman,220)        //S.A.M.: 04/09 Spider-Man - V2.2
 DRIVER(sman,230)        //S.A.M.: 08/09 Spider-Man - V2.3
 DRIVER(sman,240)        //S.A.M.: 11/09 Spider-Man - V2.4
-DRIVER(sman,250)        //S.A.M.: ??/?? Spider-Man - V2.5
+DRIVER(sman,250)        //S.A.M.: 08/10 Spider-Man - V2.5
 DRIVER(sman,260)        //S.A.M.: 11/10 Spider-Man - V2.6
-DRIVER(sman,261)        //S.A.M.: 05/14 Spider-Man - V2.61
+DRIVER(sman,261)        //S.A.M.: 12/12 Spider-Man - V2.61 (actually released to the public much later though: 05/14)
+DRIVER(sman,262)        //S.A.M.: 04/14 Spider-Man - V2.62 (bootleg with replaced music) I was always disappointed that Stern Spiderman didn't use Danny Elfman's theme music. So I hacked it into this rom revision. It plays during the game for one of the sandman modes now.
 #ifdef SAM_ORIGINAL
 DRIVER(sman,100ve)      //S.A.M.: 02/16 Spider-Man - Vault Edition V1.00
 DRIVER(sman,101ve)      //S.A.M.: 05/16 Spider-Man - Vault Edition V1.01
@@ -1892,9 +1897,13 @@ DRIVER(acd,165)         //S.A.M.: 03/13 AC/DC - V1.65
 DRIVER(acd,165h)        //S.A.M.: 03/13 AC/DC - V1.65 Limited Edition
 DRIVER(acd,168)         //S.A.M.: 06/14 AC/DC - V1.68
 DRIVER(acd,168h)        //S.A.M.: 06/14 AC/DC - V1.68 Limited Edition
+DRIVER(acd,170)         //S.A.M.: 02/18 AC/DC - V1.70.0
+DRIVER(acd,170h)        //S.A.M.: 02/18 AC/DC - V1.70.0 Limited Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(acd,168c)        // pinball browser colorized using extend memory
 DRIVER(acd,168hc)       // pinball browser colorized using extend memory
+DRIVER(acd,170c)        // pinball browser colorized using extend memory
+DRIVER(acd,170hc)       // pinball browser colorized using extend memory
 #endif
 DRIVER(xmn,100)         //S.A.M.: 0?/12 X-Men - V1.0
 DRIVER(xmn,102)         //S.A.M.: 09/12 X-Men - V1.02
@@ -2299,7 +2308,8 @@ DRIVER(taxi,l5cm)       //          04/16 W Taxi (Marilyn L-5C)
 DRIVER(taxi,l5c)        //          04/16 W Taxi (Lola L-5C)
 DRIVER(jokrz,l3)        //S11-567:  12/88 W Jokerz! (L-3)
 DRIVER(jokrz,l6)        //          12/88 W Jokerz! (L-6)
-DRIVER(esha,pa1)        //S11-568:  02/89 W Earthshaker Prototype version
+DRIVER(esha,pa1)        //S11-568:  02/89 W Earthshaker PA-1
+DRIVER(esha,pa4)        //          02/89 W Earthshaker PA-4
 DRIVER(esha,la1)        //          02/89 W Earthshaker LA-1
 DRIVER(esha,lg1)        //          02/89 W Earthshaker LG-1 (German)
 DRIVER(esha,lg2)        //          02/89 W Earthshaker LG-2 (German)
@@ -2332,9 +2342,8 @@ DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
 DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (L-1)
-DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (Europe)
+DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 / Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (L-4)
-DRIVER(mousn,lx)        //          03/90 B Mousin' Around! (L-X)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
@@ -2526,6 +2535,7 @@ DRIVER(ww,d5)           //                  White Water (D-5) LED Ghost Fix
 DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
 DRIVER(ww,lh6)          //          12/05 W White Water (LH-6)
 DRIVER(ww,lh6c)         //                  White Water (LH-6 Coin Play)
+DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)

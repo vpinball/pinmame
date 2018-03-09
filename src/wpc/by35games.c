@@ -739,9 +739,26 @@ BY35_ROMEND
 #define input_ports_frontier input_ports_by35
 CORE_GAMEDEFNV(frontier,"Frontier",1980,"Bally",by35_mBY35_51S,0)
 
+/* From rec.games.pinball:
+U6 offset zero (checksum): change from AB to BB
+U6 offset $289 change from FE 50 90 AD 00 to 86 EF BD 5E EB
+
+adds what some might consider to be another bug though - say you're on
+ball one, you get the gate open.  Decide to add another player - the
+gate's gonna close.  The hack above shuts the gate regardless of status
+when you start a game/add a player. */
+INITGAME2(frontieg,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTART880(frontieg,"819-08_1.716", CRC(e2f8ce9d) SHA1(03b38486e12f1677dcabcd0f14d194c59b3bd214),
+                          "819-07_2.716", CRC(af023a85) SHA1(95df232ba654293066beccbad158146259a764b7),
+                          "720-40_6g.732",CRC(8ffb8c27) SHA1(caf44646d29211ddc5c2eea17ebb4a2e94eaa0f4))
+BY51_SOUNDROM8(           "819-09_4.716", CRC(a62059ca) SHA1(75e139ea2573a8c3b666c9a1024d9308da9875c7))
+BY35_ROMEND
+#define input_ports_frontieg input_ports_frontier
+CORE_CLONEDEFNV(frontieg,frontier,"Frontier (Gate Fix)",2011,"Bally / Scott",by35_mBY35_51S,0)
+
 INITGAME2(frontiea,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
-BY35_ROMSTARTx00(frontiea,"frnt2732.u2",  CRC(d866b2da) SHA1(d16cd346886149d7a19d3be8f0a626c34827242a),
-                          "7406fn.u6",  CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
+BY35_ROMSTARTx00(frontiea,"frnt2732.u2", CRC(d866b2da) SHA1(d16cd346886149d7a19d3be8f0a626c34827242a),
+                          "7406fn.u6",   CRC(43a5f459) SHA1(3c8326df8a363d9bd64863a467b6988c3608e9f8))
 BY51_SOUNDROM8(           "819-09_4.716",CRC(a62059ca) SHA1(75e139ea2573a8c3b666c9a1024d9308da9875c7))
 BY35_ROMEND
 #define input_ports_frontiea input_ports_frontier
@@ -1014,6 +1031,15 @@ BY35_ROMEND
 #define input_ports_embryond input_ports_embryon
 #define init_embryond init_embryonb
 CORE_CLONEDEFNV(embryond,embryon ,"Embryon (7-digit conversion rev. 9)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
+
+BY35_ROMSTARTx00(embryone,"emb2xsp.u2",  CRC(9e721fd7) SHA1(83e1d081a48e68bb4a61833156c539bcd04c9505),
+                          "emb2xsp.u6",  CRC(a421784b) SHA1(9997805abeb8877b96eb0587a56f2f89fbf7fa55))
+BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491150e346d815005948b68),
+                          "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
+BY35_ROMEND
+#define input_ports_embryone input_ports_embryon
+#define init_embryone init_embryonb
+CORE_CLONEDEFNV(embryone,embryon ,"Embryon (7-digit conversion rev. 92)",2011,"Bally",by35_mBY35_61BS,0) // also done by Oliver??
 
 /*--------------------------------
 / Fathom

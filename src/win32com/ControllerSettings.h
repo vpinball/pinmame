@@ -38,7 +38,7 @@ public:
 	STDMETHOD(get_Value)(/*[in]*/ BSTR sName, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(put_Value)(/*[in]*/ BSTR sName, /*[in]*/ VARIANT newVal);
 	STDMETHOD(Clear)();
-	STDMETHOD(ShowSettingsDlg)(long hParentWnd);
+	STDMETHOD(ShowSettingsDlg)(LONG_PTR hParentWnd);
 };
 
 #endif //__CONTROLLERSETTINGS_H_

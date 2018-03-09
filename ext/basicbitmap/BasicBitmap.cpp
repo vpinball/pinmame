@@ -1548,6 +1548,28 @@ BasicBitmap::BasicBitmap(int width, int height, PixelFmt fmt, void *mem, long pi
 
 
 //---------------------------------------------------------------------
+// copy constructor
+//---------------------------------------------------------------------
+BasicBitmap::BasicBitmap(const BasicBitmap &src)
+{
+	_bits = NULL;
+	_lines = NULL;
+	_w = _h = _bpp = 0;
+	_pitch = 0;
+	_borrow = false;
+	int hr = Initialize(src._w, src._h, src._fmt, NULL, -1);
+	if (hr != 0) {
+	#ifndef PIXEL_USE_EXCEPTION
+		assert(hr == 0);
+	#else
+		throw BasicError("Initialize bitmap error", hr);
+	#endif
+	}
+	Blit(0, 0, &src, NULL);
+}
+
+
+//---------------------------------------------------------------------
 // Destructor
 //---------------------------------------------------------------------
 BasicBitmap::~BasicBitmap()

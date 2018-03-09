@@ -84,7 +84,7 @@
 
 #ifndef __IINT8_DEFINED
     #define __IINT8_DEFINED
-    typedef char IINT8;
+    typedef signed char IINT8;
 #endif
 
 #ifndef __IUINT8_DEFINED
@@ -99,7 +99,7 @@
 
 #ifndef __IINT16_DEFINED
     #define __IINT16_DEFINED
-    typedef short IINT16;
+    typedef signed short IINT16;
 #endif
 
 #ifndef __IINT32_DEFINED
@@ -179,7 +179,7 @@ typedef unsigned long long IUINT64;
 #endif
 #endif
 
-#ifndef inline
+#if (!defined(inline)) && (!defined(__cplusplus))
 #define inline INLINE
 #endif
 
@@ -523,6 +523,13 @@ public:
 	// create new bitmap with external bit buffer, 
 	// you must free external mem manually after destructor
 	BasicBitmap(int width, int height, PixelFmt fmt, void *mem, long pitch);
+
+	// copy constructor
+	BasicBitmap(const BasicBitmap &src);
+
+private:
+	// copy assignment is not allowed here
+	BasicBitmap& operator=(const BasicBitmap &);	
 
 public:
 

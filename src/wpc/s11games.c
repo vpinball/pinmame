@@ -640,6 +640,14 @@ S11CS_SOUNDROM88(       "eshk_u4.l1",  CRC(40069f8c) SHA1(aafdc189259fa9c8dc49e6
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 
+S11_ROMSTART48(esha,pa4,"eshk_u26.pa4",CRC(9ffe5ee8) SHA1(533e5e90f6ce1ee4ca69463158860c7fef6b8e05),
+                        "eshk_u27.pa4",CRC(a1795d11) SHA1(1797aa566e7e490bca6b00891fed65ac1f115280))
+S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
+                        "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
+S11CS_SOUNDROM88(       "u4-p1.rom",   CRC(7219ffc2) SHA1(b8585b7d12f401d8ba4d95a5e2f20d35ff0ac26a),
+                        "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
+S11_ROMEND
+
 S11_ROMSTART48(esha,pa1,"u26-pa1.rom", CRC(08c0b0d6) SHA1(36c23655e1ae07a3a5c91f68fdb27a78ca272683),
                         "u27-pa1.rom", CRC(ddd6e8bb) SHA1(b46da424f9c4ac70e65af3ee7b4e08df38ffdb26))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
@@ -656,6 +664,7 @@ CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Willia
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
@@ -820,11 +829,11 @@ CORE_CLONEDEF(bcats,l2,l5,"Bad Cats (LA-2)", 1989, "Williams", s11_mS11BS,0)
 INITGAME(mousn,GEN_S11B,disp16oneline,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", CRC(a540edc1) SHA1(c0b208369ac770f0d4cd7decfce5f8401ded082f),
                         "mous_u27.l4", CRC(ff108148) SHA1(32b44286d43a39d5677c6582c5b09fc3b9833806))
-S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
+S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7), // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
-                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
+S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
+                        "mous_u19.l2", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
+                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7)) // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
 S11_ROMEND
 #define input_ports_mousn input_ports_s11
 
@@ -832,8 +841,8 @@ S11_ROMSTART48(mousn,l1,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f93110
                         "u27-la1.rom", CRC(a440192b) SHA1(837a9eb290f46d792f7307c569dfc627507420b8))
 S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
+S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
+                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 
@@ -841,24 +850,14 @@ S11_ROMSTART48(mousn,lu,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f93110
                         "u27-lu1.rom", CRC(6e5b692c) SHA1(20c4b8d105d5df6e1b540c02c1c54bca08ec42e8))
 S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
-                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
-S11_ROMEND
-
-S11_ROMSTART48(mousn,lx,"mous_u26.l4", CRC(a540edc1) SHA1(c0b208369ac770f0d4cd7decfce5f8401ded082f),
-                        "mous_u27.l4", CRC(ff108148) SHA1(32b44286d43a39d5677c6582c5b09fc3b9833806))
-S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
-                        "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.lx",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
-                        "mous_u19.lx", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
+S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
+                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 
 CORE_GAMEDEF(mousn,l4,"Mousin' Around (LA-4)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,l1,l4,"Mousin' Around (LA-1)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,lu,l4,"Mousin' Around (LU-1)", 1989, "Bally", s11a_one,0)
-CORE_CLONEDEF(mousn,lx,l4,"Mousin' Around (LX-1)", 1989, "Bally", s11a_one,0)
 
 /*-----------------------
 / Whirlwind 4/90
