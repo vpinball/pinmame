@@ -18,18 +18,6 @@
 #pragma once
 #endif
 
-//If set to 1, we mix down the 16 channels into the 4 appropriate output channels
-//If set to 0, we simply output each 16 channel independently (which is not how the real chip works)
-#define USE_REAL_OUTPUTS 1
-//Test the volume envelope
-#define USE_VOL_ENVELOPE 1
-
-#if USE_REAL_OUTPUTS //!! code does not distinguish between the two at all anymore!
-#define M114S_OUTPUT_CHANNELS 4
-#else
-#define M114S_OUTPUT_CHANNELS 16
-#endif
-
 #define MAX_M114S 1
 
 struct M114Sinterface
