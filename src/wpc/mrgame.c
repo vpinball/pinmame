@@ -37,7 +37,7 @@
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip emulated but might need to be further improved for better accuracy
   #4) Generation #2 Video - some corrupt sprites appear on the soccer screen (right hand side)
-
+  #5) percussion sounds not completely correct, hear https://www.youtube.com/watch?v=n7yO2D5a4Xs
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -59,9 +59,6 @@
 #define DISABLE_INTST
 
 #define FIX_CMOSINIT 1		// fix nvram-initialization
-
-//Define Total # of Mixing Channels Used ( 2 for the DAC, 1 for the TMS5220, and whatever else for the M114S )
-#define MRGAME_TOTCHANNELS 3 + M114S_OUTPUT_CHANNELS
 
 #define MRGAME_CPUFREQ 6000000
 
@@ -502,9 +499,10 @@ static WRITE_HANDLER(soundg1_1_port_w) {
 		case 0:
 		{
 			//Adjust volume on all channels
-			int i;
-			for(i=0;i<MRGAME_TOTCHANNELS;i++)
-				mixer_set_volume(i,data);
+			int ch;
+			for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++)
+				if (mixer_get_name(ch) != NULL)
+					mixer_set_volume(ch, data);
 			break;
 		}
 		case 2:
