@@ -3,6 +3,9 @@ What's new in Visual PinMAME:
 
 Version 3.1 (X X, 2018) - ""
 ------------------------------------------------------------------------------
+- Switch to VS2015 for the release builds (tested in the wild and seemingly faster, thanks to CarnyPriest)
+
+- RawDmdPixels and RawDmdColoredPixels will now work correctly for Strikes N' Spares
 
 Version 3.0 (December 24th, 2017) - "11 years in the making"
 ------------------------------------------------------------------------------

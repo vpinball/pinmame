@@ -8005,7 +8005,7 @@ static void SetSearchRegionDefaultName(SearchRegion * region)
 				if(	(handlerAddress >= ((size_t)MWA_BANK1)) &&
 					(handlerAddress <= ((size_t)MWA_BANK24)))
 				{
-					sprintf(desc, "BANK%.2d", (handlerAddress - ((size_t)MWA_BANK1)) + 1);
+					sprintf(desc, "BANK%.2d", (unsigned int)(handlerAddress - ((size_t)MWA_BANK1)) + 1);
 				}
 				else
 					if(handlerAddress == (size_t)MWA_NOP)

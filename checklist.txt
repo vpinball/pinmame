@@ -52,7 +52,7 @@ If it worked out ok, however, do a release!
 
 Revision tests for compilation:
 ===============================
-At least test MSVC 2013 as this is used for the release build.
+At least test MSVC 2015 as this is used for the release build.
 
 
 Revision tests for emulated hardware platforms:

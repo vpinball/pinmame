@@ -41,7 +41,7 @@ END_COM_MAP()
 // IWSHDlg
 public:
 	STDMETHOD(get_Ctrls)(/*[out, retval]*/ IWSHDlgCtrls **ppVal);
-	STDMETHOD(Show)(long hParentWnd, /*[out, retval]*/ VARIANT *RetVal);
+	STDMETHOD(Show)(LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT *RetVal);
 	STDMETHOD(AddCtrl)(/*[in]*/ BSTR sType, /*[in]*/ long x, /*[in]*/ long y, /*[in]*/ long w, /*[in]*/ long h, /*[in]*/ BSTR sTitle, /*[out,retval]*/ IUnknown **pRetVal);
 	STDMETHOD(get_Title)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Title)(/*[in]*/ BSTR newVal);

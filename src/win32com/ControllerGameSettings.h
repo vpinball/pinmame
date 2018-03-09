@@ -38,8 +38,8 @@ public:
 	STDMETHOD(get_Value)(/*[in]*/ BSTR sName, /*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(put_Value)(/*[in]*/ BSTR sName, /*[in]*/ VARIANT newVal);
 	STDMETHOD(Clear)();
-	STDMETHOD(ShowSettingsDlg)(/* [in,defaultvalue(0)] */ long hParentWnd);
-	STDMETHOD(SetDisplayPosition)(/*[in]*/ VARIANT newValX, /*[in]*/ VARIANT newValY,/* [in,defaultvalue(0)] */ long hWnd);
+	STDMETHOD(ShowSettingsDlg)(/* [in,defaultvalue(0)] */ LONG_PTR hParentWnd);
+	STDMETHOD(SetDisplayPosition)(/*[in]*/ VARIANT newValX, /*[in]*/ VARIANT newValY,/* [in,defaultvalue(0)] */ LONG_PTR hWnd);
 	void Init(IGame * pGame);
 
 private:

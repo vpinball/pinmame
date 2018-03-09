@@ -225,7 +225,9 @@ struct rc_option video_opts[] =
 	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow " APPNAME " to give back time to the system when it's not needed" },
 	{ "rdtsc", NULL, rc_bool, &win_force_rdtsc, "0", 0, 0, NULL, "prefer RDTSC over QueryPerformanceCounter for timing" },
 	{ "high_priority", NULL, rc_bool, &win_high_priority, "0", 0, 0, NULL, "increase thread priority" },
+#ifndef DISABLE_DX7
 	{ NULL, NULL, rc_link, win_d3d_opts, NULL, 0, 0, NULL, NULL },
+#endif
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 

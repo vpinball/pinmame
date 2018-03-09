@@ -129,7 +129,7 @@ void fprint_colums(FILE *f, const char *text1, const char *text2)
            if(!to_print)
               to_print = width[i]-1;
          }
-         fprintf(f, "%-*.*s", width[i], to_print, text[i]);
+         fprintf(f, "%-*.*s", width[i], (int)to_print, text[i]);
 
          /* adjust ptr */
          text[i] += to_print;
