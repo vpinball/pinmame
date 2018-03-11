@@ -1046,6 +1046,7 @@ DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein, Mary Shelley's
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein, Mary Shelley's (German)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch 4.00
+DRIVER  (bay,401)       //DE/Sega MPU: 12/17 Baywatch 4.01 (unofficial MOD)
 DRIVER  (bay,d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch)
 DRIVER  (bay,e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (English)
 DRIVER  (bay,d300)      //DE/Sega MPU: 03/95 Baywatch 3.00 (Dutch)

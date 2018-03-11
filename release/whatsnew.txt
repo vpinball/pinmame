@@ -2,14 +2,18 @@ Version 3.1 (X X, 2018) - ""
 ------------------------------------------------------------------------------
 *** CORE/CPU ***
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
+Slightly improve M114 sound core (Mr. Game)
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson
 New:
 Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
 
+Kinda new:
+Baywatch 4.01 (unofficial MOD)
+
 Correct Dumps:
-Capcom: Kingpin 1.05 Beta (rename kpv106 to kpb105)
-Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, remove the LX-1 from PinMAME)
+Capcom: Kingpin 1.05 Beta (simple rename of kpv106 to kpb105)
+Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, LX-1 was removed from PinMAME)
 
 Clones:
 AC/DC 1.70.0,1.70.0LE
