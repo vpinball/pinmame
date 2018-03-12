@@ -25,7 +25,7 @@ struct M114Sinterface
         int num;                             /* total number of chips */
         int baseclock[MAX_M114S];            /* input clock - Allowed values are 4Mhz & 6Mhz only! */
         int region[MAX_M114S];               /* memory region where the sample ROM lives */
-        int mixing_level[MAX_M114S];         /* master volume */
+        int mixing_level[MAX_M114S][4];      /* master volume, one for each output sample */
         int cpunum[MAX_M114S];               /* # of the cpu controlling the M114S */
 };
 
