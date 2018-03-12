@@ -147,7 +147,7 @@ struct M114Sinterface mrgame_m114sInt = {
 	1,					/* # of chips */
 	{4000000},			/* Clock Frequency 4Mhz */
 	{REGION_USER1},		/* ROM Region for samples */
-	{{800,100,50,100}},	/* Volume Level (boosts first channel by a factor of 8!) */
+	{{500,100,50,100}},	/* Volume Level (boosts first channel by a factor of 5!) */
 	{2},				/* cpu # controlling M114S */
 };
 
