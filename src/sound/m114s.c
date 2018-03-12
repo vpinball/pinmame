@@ -129,6 +129,7 @@ struct M114SChip
 	int							channel;					/* Which channel is being programmed via the data bus */
 	struct M114SChannelRegs		tempch_regs;				/* temporary channel register data for gathering the data programming */
 	struct M114SChannel			channels[M114S_CHANNELS];	/* All the chip's internal channels */
+	int							channel_volume[4];			/* scale for the HW/chip outputs */
 	/* static vars, ie do not reset values */
 	int							stream;						/* which stream are we using */
 	INT8 *						region_base;				/* pointer to the base of the ROM region */
@@ -488,26 +489,24 @@ static void m114s_update(int num,
 		{
 			struct M114SChannel *channel = &chip->channels[c];
 			/* Grab the next sample from the table data if the channel is active */
-			INT32 sample = 0; //!! INT16 if MR_GAME_VOLUME_HACK would be off
-			if(channel->active)
+			if (channel->active)
+			{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
-				sample = read_sample(channel, channel->table1.total_length);
+				INT32 sample = read_sample(channel, channel->table1.total_length); //!! INT16 if MR_GAME_VOLUME_HACK would be off
 
 #ifdef MR_GAME_VOLUME_HACK
-			if (channel->regs.outputs == 0)
-				sample *= 8; // boost percussion on Dakar
-			else if(channel->regs.outputs == 2)
-				sample /= 2; // penalty some of the other instruments
+				sample = sample*chip->channel_volume[channel->regs.outputs] / 100; // boost percussion on Dakar, penalty some of the other instruments
 #endif
-			//Mix the output of this channel to the appropriate output channel
+				//Mix the output of this channel to the appropriate output channel
 #if M114S_OUTPUT_CHANNELS == 1
-			accum
+				accum
 #elif M114S_OUTPUT_CHANNELS == 4
-			accum[channel->regs.outputs]
+				accum[channel->regs.outputs]
 #else
-			accum[c]
+				accum[c]
 #endif
-			+= sample;
+				+= sample;
+			}
 		}
 
 		/* Update the buffer & Ensure we don't clip */
@@ -567,10 +566,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 	const char *stream_name_ptrs[M114S_OUTPUT_CHANNELS];
 	int vol[M114S_OUTPUT_CHANNELS];
 #endif
-	int i;
-#if M114S_OUTPUT_CHANNELS != 1
-	int j;
-#endif
+	int i,j;
 
 	/* initialize the chips */
 	memset(&m114schip, 0, sizeof(m114schip));
@@ -617,6 +613,8 @@ int M114S_sh_start(const struct MachineSound *msound)
 
 		/* init the channels */
 		init_all_channels(&m114schip[i]);
+		for(j = 0; j < 4; j++)
+			m114schip[i].channel_volume[j] = intf->mixing_level[i][j];
 	}
 
 	/* success */
