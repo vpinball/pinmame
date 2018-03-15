@@ -6,6 +6,7 @@ Slightly improve M114 sound core (Mr. Game)
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson
 New:
+Mirco: Lucky Draw
 Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
 
 Kinda new:
