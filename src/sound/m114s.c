@@ -352,7 +352,7 @@ static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 ***********************************************************************************************/
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
 {
-	int i, j;
+	int i, j, l;
 	const INT8 * const rom = &chip->region_base[0];
 	const int t1start = channel->table1.start_address;
 	const int t2start = channel->table2.start_address;
@@ -444,10 +444,10 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // 
 #endif
 		//write to output buffer
 #ifdef DO_FULL_PRECISION_MIXING
-		const int l = (int)tb1[i] * (intp + 1) + (int)tb2[i] * (15 - intp);
+		l = (int)tb1[i] * (intp + 1) + (int)tb2[i] * (15 - intp);
 		channel->output[i] = (INT16)(0x6f * l * (channel->current_volume + 1) / (1024*16)); // Max Volume would be 256 for an INT16 value (so why was 0x6f chosen??)
 #else
-		const int l = ((int)tb1[i] * (intp + 1) / 16) + ((int)tb2[i] * (15 - intp) / 16); // formula seen in datasheet, but unclear what this means precision wise (i.e. is this only meant as real number pseudo code?)
+		l = ((int)tb1[i] * (intp + 1) / 16) + ((int)tb2[i] * (15 - intp) / 16); // formula seen in datasheet, but unclear what this means precision wise (i.e. is this only meant as real number pseudo code?)
 		channel->output[i] = (INT16)(0x6f * l * (channel->current_volume + 1) / 1024); // Max Volume would be 256 for an INT16 value (so why was 0x6f chosen??) //!! do 0x6f scale AFTER division??
 #endif
 	}
@@ -727,8 +727,6 @@ static void process_channel_data(struct M114SChip *chip)
 	else
 	//Process this channel
 	{
-		//Calculate new volume
-		channel->target_volume = channel->regs.atten < 32 ? v_linear[channel->regs.atten] : 0; // channel must be kept active, but is it really 0? Or is the last value used (v_linear[31])? Or something inbetween??
 		//Calculate # of repetitions for Table 1 & Table 2
 		const int rep1 = mode_to_rep[channel->regs.read_meth][0];
 		const int rep2 = mode_to_rep[channel->regs.read_meth][1];
@@ -745,6 +743,9 @@ static void process_channel_data(struct M114SChip *chip)
 
 		//Calculate initial frequency of both tables
 		double freq = chip->is_M114A ? freqtable4Mhz[channel->regs.frequency] : freqtable6Mhz[channel->regs.frequency];
+
+		//Calculate new volume
+		channel->target_volume = channel->regs.atten < 32 ? v_linear[channel->regs.atten] : 0; // channel must be kept active, but is it really 0? Or is the last value used (v_linear[31])? Or something inbetween??
 
 		//Adjust frequency if octave divisor set
 		if (channel->regs.oct_divisor)
