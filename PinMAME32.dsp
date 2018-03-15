@@ -2476,6 +2476,10 @@ SOURCE=.\src\wpc\ltdgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\luckydraw.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\mac.c
 # End Source File
 # Begin Source File

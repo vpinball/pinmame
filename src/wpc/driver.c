@@ -956,6 +956,7 @@ DRIVERNV(rotation)      //Rotation VIII (v. 1.17, 1978?)
 // MIRCO GAMES
 // ----------------
 DRIVERNV(spirit76)      //Spirit of 76 (1975)
+DRIVERNV(lckydraw)      //Lucky Draw (1979)
 
 // ----------------
 // MONROE BOWLING CO.
