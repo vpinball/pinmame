@@ -177,9 +177,9 @@ MACHINE_DRIVER_START(mirco)
 MACHINE_DRIVER_END
 
 static const core_tLCDLayout disp[] = {
-  {0, 0, 0,6,CORE_SEG7}, {0,16, 8,6,CORE_SEG7},
-  {3, 0,16,6,CORE_SEG7}, {3,16,24,6,CORE_SEG7},
-  {6, 8,32,2,CORE_SEG7}, {6,16,36,2,CORE_SEG7},
+  {0, 0, 0,6,CORE_SEG7}, {0,28, 8,6,CORE_SEG7},
+  {5, 0,16,6,CORE_SEG7}, {5,28,24,6,CORE_SEG7},
+  {3,14,32,2,CORE_SEG7}, {3,22,36,2,CORE_SEG7},
   {0}
 };
 static core_tGameData mircoGameData = {0,disp,{FLIP_SWNO(32,31),0,1}};
@@ -273,4 +273,4 @@ ROM_START(lckydraw)
     ROM_LOAD("lckydrw2.rom", 0x0400, 0x0400, CRC(816b9e20) SHA1(0dd8acc633336f250960ebe89cc707fd115afeee))
     ROM_LOAD("lckydrw3.rom", 0x0800, 0x0400, CRC(464155bb) SHA1(5bbf784dba9149575444e6b1250ac9b5c2bced87))
 ROM_END
-CORE_GAMEDEFNV(lckydraw,"Lucky Draw",1978,"Mirco",mirco,0)
+CORE_GAMEDEFNV(lckydraw,"Lucky Draw",1978,"Mirco",mirco,GAME_USES_CHIMES)
