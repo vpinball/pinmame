@@ -69,13 +69,13 @@ static WRITE_HANDLER(port_w) {
     case 0:
     case 0x0e:
       ram[offset] = data;
-      return;
+      break;
     case 1:
       solBank = data;
       if (!solBank) {
         locals.solenoids = 0;
       }
-      return;
+      break;
     case 2:
       if (solBank) {
         locals.vblankCount = 0;
@@ -89,26 +89,26 @@ static WRITE_HANDLER(port_w) {
           coreGlobals.solenoids = locals.solenoids;
         }
       }
-      return;
+      break;
     case 3:
       dispBlank = 0xff ^ data;
-      return;
+      break;
     // case 5/6: unused by code, possible expansion (J4-14, J4-13)
     case 8:
       segData[0] = data;
-      return;
+      break;
     case 9:
       segData[1] = data;
-      return;
+      break;
     case 0x0a:
       segData[2] = data;
-      return;
+      break;
     case 0x0b:
       segData[3] = data;
-      return;
+      break;
     case 0x0c:
       lampData = data;
-      return;
+      break;
     case 0x0d:
       col = core_BitColToNum(data);
       coreGlobals.lampMatrix[col] = lampData;
@@ -120,7 +120,9 @@ static WRITE_HANDLER(port_w) {
       coreGlobals.segments[40 + col].w = dispBlank & 0x20 ? 0 : core_bcd2seg7[segData[2] >> 4];
       coreGlobals.segments[48 + col].w = dispBlank & 0x40 ? 0 : core_bcd2seg7[segData[3] & 0x0f];
       coreGlobals.segments[56 + col].w = dispBlank & 0x80 ? 0 : core_bcd2seg7[segData[3] >> 4];
-      return;
+      break;
+    default:
+      printf("%03x: W%x %02x: %02x\n", activecpu_get_previouspc(), locals.p2 >> 4, offset, data);
   }
 }
 
@@ -177,7 +179,7 @@ MACHINE_DRIVER_END
 static const core_tLCDLayout disp[] = {
   {0, 0, 0,6,CORE_SEG7}, {0,16, 8,6,CORE_SEG7},
   {3, 0,16,6,CORE_SEG7}, {3,16,24,6,CORE_SEG7},
-  {6, 8,32,6,CORE_SEG7},
+  {6, 8,32,2,CORE_SEG7}, {6,16,36,2,CORE_SEG7},
   {0}
 };
 static core_tGameData mircoGameData = {0,disp,{FLIP_SWNO(32,31),0,1}};
@@ -197,15 +199,17 @@ INPUT_PORTS_START(lckydraw)
       COREPORT_DIPSET(0x0101, "3/2" ) \
       COREPORT_DIPSET(0x0001, "2/1" ) \
       COREPORT_DIPSET(0x0100, "3/1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0002, "S2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0202, 0x0202, "Max. replays") \
+      COREPORT_DIPSET(0x0000, "5" ) \
+      COREPORT_DIPSET(0x0002, "10" ) \
+      COREPORT_DIPSET(0x0200, "15" ) \
+      COREPORT_DIPSET(0x0202, "20" ) \
     COREPORT_DIPNAME( 0x0004, 0x0004, "S3") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "Match feature") \
+      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
+      COREPORT_DIPSET(0x0008, DEF_STR(On) ) \
     COREPORT_DIPNAME( 0x0010, 0x0000, "Balls per game") \
       COREPORT_DIPSET(0x0000, "3" ) \
       COREPORT_DIPSET(0x0010, "5" ) \
@@ -218,15 +222,12 @@ INPUT_PORTS_START(lckydraw)
     COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0200, 0x0200, "S10") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0200, "1" ) \
     COREPORT_DIPNAME( 0x0400, 0x0400, "S11") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0400, "1" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0800, "Allow Specials") \
-      COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
-      COREPORT_DIPSET(0x0800, DEF_STR(On) ) \
+    COREPORT_DIPNAME( 0x0800, 0x0800, "Special award") \
+      COREPORT_DIPSET(0x0000, "Extra Ball" ) \
+      COREPORT_DIPSET(0x0800, "Replay" ) \
     COREPORT_DIPNAME( 0x1000, 0x1000, "Startup tune") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x1000, DEF_STR(On) ) \
@@ -272,4 +273,4 @@ ROM_START(lckydraw)
     ROM_LOAD("lckydrw2.rom", 0x0400, 0x0400, CRC(816b9e20) SHA1(0dd8acc633336f250960ebe89cc707fd115afeee))
     ROM_LOAD("lckydrw3.rom", 0x0800, 0x0400, CRC(464155bb) SHA1(5bbf784dba9149575444e6b1250ac9b5c2bced87))
 ROM_END
-CORE_GAMEDEFNV(lckydraw,"Lucky Draw",1979,"Mirco",mirco,0)
+CORE_GAMEDEFNV(lckydraw,"Lucky Draw",1978,"Mirco",mirco,0)
