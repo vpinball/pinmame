@@ -108,7 +108,8 @@ DRIVERNV(boomrang)      //          11/75 Boomerang (Engineering prototype)
 DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
 
 //MPU-17
-DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
+DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
+DRIVERNV(bowarroa)      //          08/76 Bow & Arrow (Prototype, rev. 22)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
 DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
 DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)

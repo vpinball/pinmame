@@ -27,11 +27,10 @@
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKs */
 
 static struct {
-  int a0, a1, b1, ca20, cb10, cb21;
+  int a0, a1, b1, ca10, ca11, ca20, cb21;
   int bcd[7], lastbcd;
   UINT32 solenoids;
   core_tSeg segments,pseg;
-  int diagnosticLed;
   int vblankCount;
 } locals;
 
@@ -63,21 +62,6 @@ static void by35_dispStrobe(int mask) {
   }
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static void by35_lampStrobe(int board, int lampadr) {
-  if (lampadr != 0x0f) {
-    int lampdata = (locals.a0>>4)^0x0f;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
-    int bit = 1<<(lampadr & 0x07);
-
-    while (lampdata) {
-      if (lampdata & 0x01) *matrix |= bit;
-      lampdata >>= 1; matrix += 2;
-    }
-  }
-}
-#endif
-
 static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -100,9 +84,6 @@ static INTERRUPT_GEN(by35_vblank) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
-
-    coreGlobals.diagnosticLed = locals.diagnosticLed;
-    locals.diagnosticLed = 0;
   }
   core_updateSw(core_getSol(18));
 }
@@ -136,13 +117,18 @@ static WRITE_HANDLER(piap0a_w) {
 
 // switches & dips (inverted)
 static READ_HANDLER(piap0b_r) {
-  UINT8 sw = 0;
+  UINT8 sw = core_revbyte(memory_region(REGION_CPU1)[0x200]); // reads back credits if locals.a0 is 0 (at game start)
   if (locals.a0 & 0x10) sw = core_getDip(0); // DIP#1 1-8
   else if (locals.a0 & 0x20) sw = core_getDip(1); // DIP#2 9-16
   else if (locals.a0 & 0x40) sw = core_getDip(2); // DIP#3 17-24
   else if (locals.a0 & 0x80) sw = core_getDip(3); // DIP#4 25-32
-  else sw = core_getSwCol(locals.a0 & 0x0f);
+  else if (locals.a0) sw = core_getSwCol(locals.a0 & 0x0f);
   return core_revbyte(sw);
+}
+
+// writes out credits when NMI is fired, so buffer it
+static WRITE_HANDLER(piap0b_w) {
+  memory_region(REGION_CPU1)[0x200] = data;
 }
 
 // display strobe
@@ -174,7 +160,7 @@ static WRITE_HANDLER(piap1b_w) {
 
 //diag. LED
 static WRITE_HANDLER(piap1ca2_w) {
-  locals.diagnosticLed = data;
+  coreGlobals.diagnosticLed = data;
 }
 
 // solenoid control?
@@ -182,34 +168,32 @@ static WRITE_HANDLER(piap1cb2_w) {
   locals.cb21 = data;
 }
 
+static READ_HANDLER(piap0ca1_r) {
+  return locals.ca10;
+}
+
+static READ_HANDLER(piap1ca1_r) {
+  return locals.ca11;
+}
+
 static struct pia6821_interface by35Proto_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, 0,0, 0,0,
-/* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, piap0ca1_r,0, 0,0,
+/* O:  A/B,CA2/B2        */  piap0a_w,piap0b_w, piap0ca2_w,0,
 /* IRQ: A/B              */  piaIrq0,0
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, 0, 0,0, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, 0, piap1ca1_r,0, 0,0,
 /* O:  A/B,CA2/B2        */  piap1a_w,piap1b_w, piap1ca2_w,piap1cb2_w,
 /* IRQ: A/B              */  piaIrq1,0
 }};
 
 static INTERRUPT_GEN(byProto_irq) {
-  pia_set_input_ca1(BY35_PIA0, 0); pia_set_input_ca1(BY35_PIA0, 1);
+  locals.ca10 = !locals.ca10;
+  pia_set_input_ca1(BY35_PIA0, locals.ca10);
 }
 
 static void by35p_zeroCross(int data) {
-  pia_set_input_ca1(BY35_PIA1, 0); pia_set_input_ca1(BY35_PIA1, 1);
-}
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static UINT8 *by35_CMOS;
-
-static NVRAM_HANDLER(by35) {
-  core_nvram(file, read_or_write, by35_CMOS, 0x100, 0x00);
-}
-static WRITE_HANDLER(by35_CMOS_w) {
-  by35_CMOS[offset] = data;
+  locals.ca11 = !locals.ca11;
+  pia_set_input_ca1(BY35_PIA1, locals.ca11);
 }
 
 static MACHINE_INIT(by35Proto) {
@@ -221,8 +205,21 @@ static MACHINE_INIT(by35Proto) {
 }
 
 static MACHINE_RESET(by35) {
+  static int afterInit;
+  if (afterInit) {
+    cpu_set_nmi_line(0, PULSE_LINE); // NMI routine saves the credits!
+    run_one_timeslice(); // wait two timeslices before reset so the NMI routine can finish
+    run_one_timeslice();
+  }
   pia_reset();
   locals.vblankCount = 1;
+  afterInit = 1;
+}
+
+static MACHINE_STOP(by35Proto) {
+  cpu_set_nmi_line(0, PULSE_LINE); // NMI routine saves the credits!
+  run_one_timeslice(); // wait two timeslices before shutdown so the NMI routine can finish
+  run_one_timeslice();
 }
 
 /*-----------------------------------
@@ -232,7 +229,7 @@ static MEMORY_READ_START(by35_readmem)
   { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
+  { 0x0200, 0x0200, MRA_RAM }, /* one byte for keeping credits */
   { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
@@ -240,21 +237,21 @@ static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
+  { 0x0200, 0x0200, MWA_RAM, &generic_nvram, &generic_nvram_size }, /* one byte for keeping credits */
 MEMORY_END
 
 MACHINE_DRIVER_START(byProto)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
+  MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,by35Proto)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 560000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byProto_irq, 317)
-  MDRV_NVRAM_HANDLER(by35)
+  MDRV_CPU_PERIODIC_INT(byProto_irq, 317 * 2)
+  MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35p_zeroCross, 120) // won't work with 100Hz, ie. not in Europe!
+  MDRV_TIMER_ADD(by35p_zeroCross, 120 * 2) // won't work with 100Hz, ie. not in Europe!
 MACHINE_DRIVER_END
 
 #define BY35PROTO_COMPORTS \
@@ -396,4 +393,18 @@ INPUT_PORTS_START(bowarrow) \
   SIM_PORTS(1) \
   BY35PROTO_COMPORTS \
 INPUT_PORTS_END
-CORE_GAMEDEFNV(bowarrow,"Bow & Arrow (Prototype)",1976,"Bally",byProto,GAME_USES_CHIMES)
+CORE_GAMEDEFNV(bowarrow,"Bow & Arrow (Prototype, rev. 23)",1976,"Bally",byProto,GAME_USES_CHIMES)
+
+ROM_START(bowarroa) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("u42704", 0x1400, 0x0200, CRC(b2ccd455) SHA1(07ba19ce2bcd0d2d0d27cab5aafd510423d2e8fe)) \
+    ROM_LOAD("u32704", 0x1600, 0x0200, CRC(ec673d77) SHA1(f350df32182da4958b4607db6952ffce89cda18f)) \
+    ROM_LOAD("u22704", 0x1800, 0x0200, CRC(4b4512da) SHA1(b427c504667769bd3b5c78ad3866c750cb7b1ed4)) \
+    ROM_LOAD("u12704", 0x1a00, 0x0200, CRC(a35e7473) SHA1(d5cadd968cad931dfe92d6ba4f013844f5b5d244)) \
+    ROM_LOAD("u62704", 0x1c00, 0x0200, CRC(8c421ae4) SHA1(93fcf26667308467215d35685c1acb04b0555d6b)) \
+    ROM_LOAD("u52704", 0x1e00, 0x0200, CRC(a6644eee) SHA1(8afa941d1dd94308272bbc1874603d3ed41d3b89)) \
+      ROM_RELOAD( 0xfe00, 0x0200) \
+ROM_END
+#define init_bowarroa init_bowarrow
+#define input_ports_bowarroa input_ports_bowarrow
+CORE_CLONEDEFNV(bowarroa,bowarrow,"Bow & Arrow (Prototype, rev. 22)",1976,"Bally",byProto,GAME_USES_CHIMES)

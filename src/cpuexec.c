@@ -232,7 +232,11 @@ static void compute_perfect_interleave(void);
 
 static void handle_loadsave(void);
 
-
+#ifdef PINMAME
+void run_one_timeslice(void) {
+	cpu_timeslice();
+}
+#endif
 
 #if 0
 #pragma mark CORE CPU
