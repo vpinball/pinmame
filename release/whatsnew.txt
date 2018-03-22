@@ -3,8 +3,9 @@ Version 3.1 (X X, 2018) - ""
 *** CORE/CPU ***
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
 Slightly improve M114 sound core (Mr. Game)
+Added save credits support for Bow & Arrow
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr
 New:
 Mirco: Lucky Draw
 Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
@@ -19,6 +20,7 @@ Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this match
 Clones:
 AC/DC 1.70.0,1.70.0LE
 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
+Bow & Arrow (Prototype rev. 22)
 Earthshaker PA-4
 Embryon v92 (7-digit conversion and more)
 Frontier (Gate Fix)
