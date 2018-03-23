@@ -2,7 +2,7 @@ Version 3.1 (X X, 2018) - ""
 ------------------------------------------------------------------------------
 *** CORE/CPU ***
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
-Slightly improve M114 sound core (Mr. Game)
+Further improve M114 sound core (Mr. Game)
 Added save credits support for Bow & Arrow
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr
@@ -12,6 +12,7 @@ Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
 
 Kinda new:
 Baywatch 4.01 (unofficial MOD)
+Hook 5.01 (unofficial MOD)
 
 Correct Dumps:
 Capcom: Kingpin 1.05 Beta (simple rename of kpv106 to kpb105)
