@@ -20,8 +20,6 @@
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
-#define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKs */
 #define BY35_SOLSMOOTH       2 /* Smooth the solenoids over this numer of VBLANKs */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKs */
@@ -31,7 +29,7 @@ static struct {
   int bcd[7], lastbcd;
   UINT32 solenoids;
   core_tSeg segments,pseg;
-  int vblankCount;
+  int vblankCount, resetSw;
 } locals;
 
 static void piaIrq(int num, int state) {
@@ -90,9 +88,11 @@ static INTERRUPT_GEN(by35_vblank) {
 
 static SWITCH_UPDATE(by35) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0x01,3);
-    CORE_SETKEYSW(inports[CORE_COREINPORT],   0x1f,4);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>12,0x01,0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x01,3);
+    CORE_SETKEYSW(inports[CORE_COREINPORT],    0x1f,4);
   }
+  locals.resetSw = coreGlobals.swMatrix[0];
 }
 
 static void by35p_lampStrobe(void) {
@@ -117,7 +117,9 @@ static WRITE_HANDLER(piap0a_w) {
 
 // switches & dips (inverted)
 static READ_HANDLER(piap0b_r) {
-  UINT8 sw = core_revbyte(memory_region(REGION_CPU1)[0x200]); // reads back credits if locals.a0 is 0 (at game start)
+  UINT8 sw = 0xff;
+  if (!locals.resetSw)
+    sw = core_revbyte(memory_region(REGION_CPU1)[0x200]); // reads back credits if locals.a0 is 0 (at game start)
   if (locals.a0 & 0x10) sw = core_getDip(0); // DIP#1 1-8
   else if (locals.a0 & 0x20) sw = core_getDip(1); // DIP#2 9-16
   else if (locals.a0 & 0x40) sw = core_getDip(2); // DIP#3 17-24
@@ -197,23 +199,19 @@ static void by35p_zeroCross(int data) {
 }
 
 static MACHINE_INIT(by35Proto) {
+  static int afterInit;
+  int resetSw = afterInit ? locals.resetSw : 0;
   memset(&locals, 0, sizeof(locals));
+  locals.resetSw = resetSw;
 
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35Proto_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35Proto_pia[1]);
-  locals.vblankCount = 1;
+  afterInit = 1;
 }
 
 static MACHINE_RESET(by35) {
-  static int afterInit;
-  if (afterInit) {
-    cpu_set_nmi_line(0, PULSE_LINE); // NMI routine saves the credits!
-    run_one_timeslice(); // wait two timeslices before reset so the NMI routine can finish
-    run_one_timeslice();
-  }
   pia_reset();
   locals.vblankCount = 1;
-  afterInit = 1;
 }
 
 static MACHINE_STOP(by35Proto) {
@@ -256,6 +254,8 @@ MACHINE_DRIVER_END
 
 #define BY35PROTO_COMPORTS \
   PORT_START /* 0 */ \
+    /* Switch Column 0 */ \
+    COREPORT_BIT(     0x1000, "Clear Credits",    KEYCODE_0) \
     /* Switch Column 3 */ \
     COREPORT_BIT(     0x0100, "Ball Tilt",        KEYCODE_INSERT) \
     /* Switch Column 4 */ \
