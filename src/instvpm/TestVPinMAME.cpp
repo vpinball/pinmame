@@ -189,7 +189,7 @@ BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 				lstrcpy(pGameInfo->szGameName, szGameName);
 				lstrcpy(pGameInfo->szGameDescription, szGameName);
 				pGameInfo->fROMAvailable = true;
-				SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
+				SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (LPARAM) pGameInfo);
 			}
 		}
 	}
@@ -209,7 +209,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	const int sTabStops[] = {190, 230};
 
 	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
-	SendMessage(hGamesList, LB_SETTABSTOPS, 2, (WPARAM) &sTabStops);
+	SendMessage(hGamesList, LB_SETTABSTOPS, 2, (LPARAM) &sTabStops);
 
 	IGames* pGames = NULL;
 
@@ -246,7 +246,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	/* enumerate to all the games, uFetched will be 0 if the end is reached */
 	/* I will increase the number of fetches game in a while, don't have the time now */
 	while ( SUCCEEDED(pEnumGames->Next(1, &vGame, &uFetched)) && uFetched ) {
-		/* same as the IEnumInterface, we will get a interface to IDisptach */
+		/* same as the IEnumInterface, we will get a interface to IDispatch */
 		/* not to IGame, don't wan't to use IDispatch */
 		hr = vGame.pdispVal->QueryInterface(__uuidof(IGame), (void**) &pGame);
 
@@ -294,7 +294,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 
 		/* put it to the list */
 		size_t nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
-		SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
+		SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (LPARAM) pGameInfo);
 	}
 
 	/* don't forget this */
