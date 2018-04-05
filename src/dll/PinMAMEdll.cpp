@@ -54,6 +54,9 @@ extern "C"
 	UINT8 win_trying_to_quit;
 	volatile int g_fPause = 0;
 	volatile int g_fDumpFrames = 0;
+
+	extern int channels;
+
 	struct rc_struct *rc;
 }
 
@@ -300,9 +303,14 @@ int GetRawDMDPixels(unsigned char* buffer)
 
 // Audio related functions
 // -----------------------
-int GetPendingAudioSamples(float* buffer, int maxNumber)
+int GetAudioChannels()
 {
-	return fillAudioBuffer(buffer, maxNumber);
+	return channels;
+}
+
+int GetPendingAudioSamples(float* buffer,int outChannels, int maxNumber)
+{
+	return fillAudioBuffer(buffer, outChannels, maxNumber);
 }
 
 
