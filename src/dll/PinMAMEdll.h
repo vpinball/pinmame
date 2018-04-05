@@ -41,7 +41,8 @@ extern "C"
 
 	// Audio related functions
 	// -----------------------
-	PINMAMEDLL_API int GetPendingAudioSamples(float* buffer, int maxNumber);
+	PINMAMEDLL_API int GetAudioChannels();
+	PINMAMEDLL_API int GetPendingAudioSamples(float* buffer, int outChannels, int maxNumber);
 
 	// Switch related functions
 	// ------------------------
