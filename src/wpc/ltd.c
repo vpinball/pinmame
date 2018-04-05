@@ -29,8 +29,8 @@
    ---------
 		CPU:	 M6802 for system III, M6803 for system 4 with NTSC quartz
 		DISPLAY: 7-segment LED panels, direct segment access on system 4
-		SOUND:	 - discrete (4 tones, like Zaccaria's 1311) on system III, maybe something better on Zephy
-				 - 2 x AY8910 (separated for left & right speaker) for system 4 games
+		SOUND:	 - discrete (4 tones, like Zaccaria's 1311) on system III
+				 - 2 x AY8910 (separated for left & right speaker) for Cowboy, Zephy, and system 4 games
  ************************************************************************************************/
 
 #include "driver.h"
@@ -57,17 +57,10 @@ static struct {
 
 static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
-static WRITE_HANDLER(ay8910_0_reset)  { AY8910_reset(0); }
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static READ_HANDLER (ay8910_0_r)      { return AY8910Read(0); }
-#endif
-
 static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
-static WRITE_HANDLER(ay8910_1_reset)  { AY8910_reset(1); }
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static READ_HANDLER (ay8910_1_r)      { return AY8910Read(1); }
-#endif
+static WRITE_HANDLER(ay8910_01_ctrl_w) { ay8910_0_ctrl_w(offset, data); ay8910_1_ctrl_w(offset, data); }
+static WRITE_HANDLER(ay8910_01_data_w) { ay8910_0_data_w(offset, data); ay8910_1_data_w(offset, data); }
 
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
@@ -147,30 +140,6 @@ static WRITE_HANDLER(peri_w) {
   }
 }
 
-static WRITE_HANDLER(auxlamp1_w) {
-  coreGlobals.tmpLampMatrix[8] = data;
-}
-
-static WRITE_HANDLER(auxlamp2_w) {
-  coreGlobals.tmpLampMatrix[9] = data;
-}
-
-static WRITE_HANDLER(auxlamp3_w) {
-  coreGlobals.tmpLampMatrix[10] = data;
-}
-
-static WRITE_HANDLER(auxlamp4_w) {
-  coreGlobals.tmpLampMatrix[11] = data;
-}
-
-static WRITE_HANDLER(auxlamp5_w) {
-  coreGlobals.tmpLampMatrix[12] = data;
-}
-
-static WRITE_HANDLER(auxlamp6_w) {
-  coreGlobals.tmpLampMatrix[13] = data;
-}
-
 static WRITE_HANDLER(ram_w) {
   generic_nvram[offset] = data;
   if (offset >= 0x60 && offset < 0x78) peri_w(offset-0x60, data);
@@ -189,21 +158,21 @@ static MACHINE_INIT(LTD) {
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem)
   {0x0000,0x007f, MRA_RAM},
-  {0x0080,0x00ff, sw_r},
+  {0x0080,0x0087, sw_r},
   {0xc000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(LTD_writemem)
   {0x0000,0x007f, ram_w, &generic_nvram, &generic_nvram_size},
-  {0x0800,0x0800, auxlamp1_w},
-  {0x0c00,0x0c00, auxlamp4_w},
-  {0x1800,0x1800, auxlamp2_w},
-  {0x1c00,0x1c00, auxlamp5_w},
-  {0x2800,0x2800, auxlamp3_w},
-  {0x2c00,0x2c00, auxlamp6_w},
+  {0x0800,0x0800, ay8910_01_data_w},
+  {0x0c00,0x0c00, ay8910_01_ctrl_w},
+  {0x1800,0x1800, ay8910_0_data_w},
+  {0x1c00,0x1c00, ay8910_0_ctrl_w},
+  {0x2800,0x2800, ay8910_1_data_w},
+  {0x2c00,0x2c00, ay8910_1_ctrl_w},
 MEMORY_END
 
-MACHINE_DRIVER_START(LTD)
+MACHINE_DRIVER_START(LTD3)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", M6802, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
@@ -213,6 +182,15 @@ MACHINE_DRIVER_START(LTD)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(LTD)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(LTD3A)
+  MDRV_IMPORT_FROM(LTD3)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(LTD_irq, 1000)
+
+  MDRV_SOUND_ADD(AY8910, LTD_ay8910Int)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
 
@@ -326,9 +304,9 @@ static MEMORY_WRITE_START(LTD4_writemem)
   {0x0100,0x01ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x0800,0x0800, cycle_reset_w},
   {0x2800,0x2800, auxlamps_w},
-  {0x0c00,0x0c00, ay8910_1_reset},
+  {0x0c00,0x0c00, ay8910_01_data_w},
   {0x1000,0x1000, ay8910_0_ctrl_w},
-  {0x1400,0x1400, ay8910_0_reset},
+  {0x1400,0x1400, ay8910_01_ctrl_w},
   {0x1800,0x1800, ay8910_1_ctrl_w},
   {0x3000,0x3000, ay8910_0_data_w},
   {0x3800,0x3800, ay8910_1_data_w},

@@ -4,6 +4,7 @@ Version 3.1 (X X, 2018) - ""
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
 Further improve M114 sound core (Mr. Game)
 Added save credits support for Bow & Arrow
+Added sound support for LTD Cowboy Eight Ball and Zephy (not 100% correct yet though)
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr
 New:
