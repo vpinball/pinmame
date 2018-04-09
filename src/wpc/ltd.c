@@ -61,6 +61,7 @@ static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
 static WRITE_HANDLER(ay8910_01_ctrl_w) { ay8910_0_ctrl_w(offset, data); ay8910_1_ctrl_w(offset, data); }
 static WRITE_HANDLER(ay8910_01_data_w) { ay8910_0_data_w(offset, data); ay8910_1_data_w(offset, data); }
+static WRITE_HANDLER(ay8910_01_reset) { AY8910_reset(0); AY8910_reset(1); }
 
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
@@ -97,7 +98,7 @@ static INTERRUPT_GEN(LTD_vblank) {
 }
 
 static INTERRUPT_GEN(LTD_irq) {
-  cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE);
+  cpu_set_irq_line(LTD_CPU, M6800_IRQ_LINE, PULSE_LINE);
 }
 
 static SWITCH_UPDATE(LTD) {
@@ -170,6 +171,7 @@ static MEMORY_WRITE_START(LTD_writemem)
   {0x1c00,0x1c00, ay8910_0_ctrl_w},
   {0x2800,0x2800, ay8910_1_data_w},
   {0x2c00,0x2c00, ay8910_1_ctrl_w},
+  {0xb000,0xb000, ay8910_01_reset},
 MEMORY_END
 
 MACHINE_DRIVER_START(LTD3)
@@ -187,7 +189,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(LTD3A)
   MDRV_IMPORT_FROM(LTD3)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_PERIODIC_INT(LTD_irq, 1000)
+  MDRV_CPU_PERIODIC_INT(LTD_irq, 1111)
 
   MDRV_SOUND_ADD(AY8910, LTD_ay8910Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
@@ -308,6 +310,7 @@ static MEMORY_WRITE_START(LTD4_writemem)
   {0x1000,0x1000, ay8910_0_ctrl_w},
   {0x1400,0x1400, ay8910_01_ctrl_w},
   {0x1800,0x1800, ay8910_1_ctrl_w},
+  {0x1c00,0x1c00, ay8910_01_reset},
   {0x3000,0x3000, ay8910_0_data_w},
   {0x3800,0x3800, ay8910_1_data_w},
 MEMORY_END
