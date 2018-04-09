@@ -142,12 +142,12 @@ static core_tLCDLayout disp3p6[] = {
 INITGAME(cowboy3p, disp3p6, 1, 0, 0)
 LTD_4_ROMSTART(cowboy3p, "cowboy3p.bin", CRC(5afa29af) SHA1(a5ccf5cd17c63d4292222b792535187b1bcfa786))
 LTD_ROMEND
-CORE_GAMEDEFNV(cowboy3p,"Cowboy Eight Ball",1981,"LTD",gl_mLTD3A,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cowboy3p,"Cowboy Eight Ball",1981,"LTD",gl_mLTD3A,0)
 
 INITGAME(cowboy3a, disp3p6, 1, 0, 0)
 LTD_4_ROMSTART(cowboy3a, "cowboy3a.bin", CRC(48278d77) SHA1(4102a2be10b48d0edb2b636e10696cbb2cd3a4c4))
 LTD_ROMEND
-CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD",gl_mLTD3A,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD",gl_mLTD3A,0)
 
 /*-------------------------------------------------------------------
 / Zephy
@@ -155,12 +155,12 @@ CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD"
 INITGAME(zephy, disp3p6, 2, 0, 0)
 LTD_4_ROMSTART(zephy, "zephy.l2", CRC(8dd11287) SHA1(8133d0c797eb0fdb56d83fc55da91bfc3cddc9e3))
 LTD_ROMEND
-CORE_GAMEDEFNV(zephy,"Zephy",1982,"LTD",gl_mLTD3A,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(zephy,"Zephy",1982,"LTD",gl_mLTD3A,0)
 
 INITGAME(zephya, disp3p6, 2, 0, 0)
 LTD_4_ROMSTART(zephya, "zephy1.bin", CRC(ae189c8a) SHA1(c309b436ef94cd5c266c88fe5f222261e083e4eb))
 LTD_ROMEND
-CORE_CLONEDEFNV(zephya,zephy,"Zephy (alternate set)",1982,"LTD",gl_mLTD3A,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(zephya,zephy,"Zephy (alternate set)",1982,"LTD",gl_mLTD3A,0)
 
 // Sistema 4 games below
 
@@ -187,7 +187,7 @@ INITGAME4(cowboy, disp4p6, 1)
 LTD_44_ROMSTART(cowboy, "cowboy_l.bin", CRC(87befe2a) SHA1(93fdf40b10e53d7d95e5dc72923b6be887411fc0),
                         "cowboy_h.bin", CRC(105e5d7b) SHA1(75edeab8c8ba19f334479133802acbc25f405763))
 LTD_ROMEND
-CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball 2",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball 2",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Haunted Hotel
@@ -201,7 +201,7 @@ INITGAME4(hhotel, dispHH, 1)
 LTD_44_ROMSTART(hhotel, "hh1.bin", CRC(a107a683) SHA1(5bb79d9a0a6b33f067cdd54942784c67ab557909),
                         "hh2.bin", CRC(e0c2ebc1) SHA1(131240589162c7b3f44a2bb951945c7d64f89c8d))
 LTD_ROMEND
-CORE_GAMEDEFNV(hhotel,"Haunted Hotel",198?,"LTD",gl_mLTD4HH,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(hhotel,"Haunted Hotel",198?,"LTD",gl_mLTD4HH,0)
 
 /*-------------------------------------------------------------------
 / Mr. & Mrs. Pec-Men
@@ -215,7 +215,7 @@ INITGAME4(pecmen, dispPec, 1)
 LTD_44_ROMSTART(pecmen, "pecmen_l.bin", CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
                         "pecmen_h.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
 LTD_ROMEND
-CORE_GAMEDEFNV(pecmen,"Mr. & Mrs. Pec-Men",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(pecmen,"Mr. & Mrs. Pec-Men",198?,"LTD",gl_mLTD4,0)
 
 static core_tLCDLayout disp4p7[] = {
   { 0, 0,24,7,CORE_SEG7 },
@@ -233,7 +233,7 @@ INITGAME4(alcapone, disp4p7, 1)
 LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(c4270ba8) SHA1(f3d80af9900c94df2d43f2755341a346a0b64c87),
                           "alcapo_h.bin", CRC(279f766d) SHA1(453c58e44c4ef8f1f9eb752b6163c61ebed70b27))
 LTD_ROMEND
-CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Alien Warrior
@@ -242,7 +242,7 @@ INITGAME4(alienwar, disp4p7, 1)
 LTD_44_ROMSTART(alienwar, "alwar_l.bin", NO_DUMP, // existing dump was falsely trimmed to 2K
                           "alwar_h.bin", NO_DUMP) // existing dump was falsely trimmed to 2K
 LTD_ROMEND
-CORE_GAMEDEFNV(alienwar,"Alien Warrior",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(alienwar,"Alien Warrior",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Columbia
@@ -251,7 +251,7 @@ INITGAME4(columbia, disp4p7, 1)
 LTD_44_ROMSTART(columbia, "columb_l.bin", CRC(ac345dee) SHA1(14f03fa8059de5cd69cc83638aa6533fbcead37e),
                           "columb_h.bin", CRC(acd2a85b) SHA1(30889ee4230ce05f6060f926b2137bbf5939db2d))
 LTD_ROMEND
-CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Time Machine
@@ -260,13 +260,13 @@ INITGAME4(tmacltd4, disp4p7, 1)
 LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(69691662) SHA1(3d86314967075e3f5b168c8d7bf6b26bbbb957bd) BAD_DUMP, //!! working version created from a bad dump
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
-CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,0)
 
 INITGAME4(tmacltd2, disp4p7, 1)
 LTD_44_ROMSTART(tmacltd2, "tm2_l.bin", NO_DUMP, // existing dump has LSB set to high for all bytes
                           "tm2_h.bin", CRC(f717c9db) SHA1(9ca5819b707fa20edfc289734e1aa189ae242aa3))
 LTD_ROMEND
-CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players)(LTD)",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players)(LTD)",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Trick Shooter
@@ -275,4 +275,4 @@ INITGAME4(tricksht, disp4p7, 1)
 LTD_44_ROMSTART(tricksht, "tricks_l.bin", CRC(951413ff) SHA1(f4a28f7b41cb077377433dc7bfb6647e5d392481),
                           "tricks_h.bin", CRC(2e4efb51) SHA1(3dd20addecf4b47bd68b05d557c378d1dbbbd892))
 LTD_ROMEND
-CORE_GAMEDEFNV(tricksht,"Trick Shooter",198?,"LTD",gl_mLTD4,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(tricksht,"Trick Shooter",198?,"LTD",gl_mLTD4,0)
