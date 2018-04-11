@@ -343,6 +343,40 @@ int GetChangedLamps(int* changedStates)
 	return uCount;
 }
 
+// Solenoids related functions
+// ---------------------------
+int GetMaxSolenoids() { return 64; }
+int GetChangedSolenoids(int* changedStates)
+{
+	vp_tChgSols chgSols;
+	int uCount = vp_getChangedSolenoids(chgSols);
+
+	int* out = changedStates;
+	for (int i = 0; i < uCount; i++)
+	{
+		*(out++) = chgSols[i].solNo;
+		*(out++) = chgSols[i].currStat;
+	}
+	return uCount;
+}
+
+// GI strings related functions
+// ----------------------------
+int GetMaxGIStrings() { return CORE_MAXGI; }
+int GetChangedGIs(int* changedStates)
+{
+	vp_tChgGIs chgGIs;
+	int uCount = vp_getChangedGI(chgGIs);
+
+	int* out = changedStates;
+	for (int i = 0; i < uCount; i++)
+	{
+		*(out++) = chgGIs[i].giNo;
+		*(out++) = chgGIs[i].currStat;
+	}
+	return uCount;
+}
+
 //============================================================
 //	osd_init
 //============================================================

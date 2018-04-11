@@ -1759,5 +1759,6 @@
     <None Include="src\sound\vtxsmpls.inc">
       <Filter>Source Files\MAME\Sound</Filter>
     </None>
+    <None Include="VPinMAME_VC2015.vcxproj" />
   </ItemGroup>
 </Project>
