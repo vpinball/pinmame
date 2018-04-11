@@ -236,7 +236,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>zlibstatmt64.lib;winmm.lib;dxguid.lib;dinput64.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlibstatmt64.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;D:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -248,8 +248,8 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "../../../UP2/sources/UP2/"
-copy "$(TargetPath)" "../../../UP2/sources/UP2Build/"</Command>
+      <Command>copy "$(TargetPath)" "../../../UP2Dev/UP2Unity/"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -1278,6 +1278,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   </ItemGroup>
   <ItemGroup>
     <None Include="src\sound\vtxsmpls.inc" />
+    <None Include="VPinMAME_VC2015.vcxproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

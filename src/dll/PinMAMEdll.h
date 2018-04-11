@@ -54,5 +54,14 @@ extern "C"
 	// -----------------------
 	PINMAMEDLL_API int GetMaxLamps();
 	PINMAMEDLL_API int GetChangedLamps(int* changedStates);
-	
+
+	// Solenoids related functions
+	// ---------------------------
+	PINMAMEDLL_API int GetMaxSolenoids();
+	PINMAMEDLL_API int GetChangedSolenoids(int* changedStates);
+
+	// GI strings related functions
+	// ----------------------------
+	PINMAMEDLL_API int GetMaxGIStrings();
+	PINMAMEDLL_API int GetChangedGIs(int* changedStates);
 }
