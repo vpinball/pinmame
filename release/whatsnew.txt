@@ -6,7 +6,7 @@ Further improve M114 sound core (Mr. Game)
 Added save credits support for Bow & Arrow
 Fixed neverending sounds on LTD system 4 games, added sound support for Cowboy Eight Ball and Zephy
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren
 New:
 Mirco: Lucky Draw
 Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
@@ -27,7 +27,9 @@ Earthshaker PA-4
 Embryon v92 (7-digit conversion and more)
 Frontier (Gate Fix)
 Galaxy (Planet Skillshot)
+High Speed L-4C (competition MOD)
 Meteor (No Background Sound)
+Pool Sharks LA-7C (competition MOD)
 Spider-Man 2.62 (bootleg with replaced music)
 
 
