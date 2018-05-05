@@ -6,10 +6,10 @@ Further improve M114 sound core (Mr. Game)
 Added save credits support for Bow & Arrow
 Fixed neverending sounds on LTD system 4 games, added sound support for Cowboy Eight Ball and Zephy
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop
 New:
 Mirco: Lucky Draw
-Williams: Bigfoot R0.1 (FreeWPC based rewrite of White Water)
+Williams: Bigfoot R0.1 & R0.1b & R0.1c (FreeWPC based rewrite of White Water)
 
 Kinda new:
 Baywatch 4.01 (unofficial MOD)
@@ -22,6 +22,7 @@ Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this match
 Clones:
 AC/DC 1.70.0,1.70.0LE
 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
+Black Jack (Saucer points modification)
 Bow & Arrow (Prototype rev. 22)
 Earthshaker PA-4
 Embryon v92 (7-digit conversion and more)
