@@ -21,7 +21,7 @@ const struct GameDriver *test_drivers[] = { 0 };
 #endif
 #else /* DRIVER_RECURSIVE */
 
-DRIVERNV(st_game)       //Unknown game running on old Stern hardware
+DRIVERNV(st_game)       // Unknown game running on old Stern hardware
 DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 
@@ -126,8 +126,9 @@ DRIVERNV(stk_sprb)      //BY17-740: 10/08 Strikes and Spares (Free Play)
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
 DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
 DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
-DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
-DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack  (Free Play)
+DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack (EM release date)
+DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack (Free Play)
+DRIVERNV(blackjcc)      //BY17-728: 04/18 Black Jack (Saucer points modification)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
@@ -2543,6 +2544,8 @@ DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
 DRIVER(ww,lh6)          //          12/05 W White Water (LH-6)
 DRIVER(ww,lh6c)         //                  White Water (LH-6 Coin Play)
 DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
+DRIVER(ww,bfr01b)       //          03/18 W White Water (FreeWPC/Bigfoot R0.1b)
+DRIVER(ww,bfr01c)       //          04/18 W White Water (FreeWPC/Bigfoot R0.1c)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
