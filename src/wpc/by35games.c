@@ -220,9 +220,9 @@ DSW29
  On       Dealer wins subtract score rule is disabled (liberal)
 */
 INITGAME(blackjcc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
-BY35_ROMSTARTx00(blackjcc,"728-32_2c.716",CRC(92ea5a4a) SHA1(1a81a64904e54140a65778d2d10af48ef75b9a59),
+BY17_ROMSTARTx88(blackjcc,"728-32_2c.716",CRC(92ea5a4a) SHA1(1a81a64904e54140a65778d2d10af48ef75b9a59),
                           "720-20_6.716", CRC(0c17aa4d) SHA1(729e61a29691857112579efcdb96a35e8e5b1279))
-BY35_ROMEND
+BY17_ROMEND
 #define input_ports_blackjcc input_ports_blackjck
 CORE_CLONEDEFNV(blackjcc,blackjck,"Black Jack (Saucer points modification)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
