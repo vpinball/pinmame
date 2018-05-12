@@ -16,6 +16,7 @@
 UINT16	seg_data2[50] = {};
 UINT16	dmd_width = 128;
 UINT16	dmd_height = 32;
+bool    dmd_hasDMD = false;
 
 HMODULE hModule;
 
@@ -127,6 +128,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 		dmd_width = 128; // set default DMD size
 		dmd_height = 32;
+		dmd_hasDMD = false;
 
 		rgb24 color0,color33,color66,color100;
 
@@ -171,6 +173,7 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 
 	dmd_width = width; // store for DeInit
 	dmd_height = height;
+	dmd_hasDMD = true;
 
 	if ((gen == GEN_SAM) ||
 		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
@@ -185,6 +188,11 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 } 
 
 void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens){
+
+	// Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
+	// block this from running.
+	if (dmd_hasDMD)
+		return;
 
 	layout_t layout = None;
 	bool hasExtraData = false;
