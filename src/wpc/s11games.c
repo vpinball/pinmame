@@ -135,8 +135,17 @@ S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d
 S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
 S11_ROMEND
 
-S11_ROMSTART28(hs,l4c,"High Speed U26 game ROM rev L-4 patch 6b05.rom", CRC(348ff1ba) SHA1(2843ee72267de414535d8bbd6a18fa38aa59fbfc),
+/* older competition MOD (6b05)
+S11_ROMSTART28(hs,l4c,"High Speed U26 game ROM rev L-4 patch f43c.rom", CRC(348ff1ba) SHA1(2843ee72267de414535d8bbd6a18fa38aa59fbfc),
                       "High Speed U27 game ROM rev L-4 patch 6b05.rom", CRC(67515eff) SHA1(3bb7c6e29229480bca07e45a38aa194fc045bc04))
+S11XS_SOUNDROM88(     "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
+                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
+S11CS_SOUNDROM8(      "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
+S11_ROMEND
+*/
+// newer competition MOD (f43c)
+S11_ROMSTART28(hs,l4c,"High Speed U26 game ROM rev L-4 patch f43c.rom", CRC(348ff1ba) SHA1(2843ee72267de414535d8bbd6a18fa38aa59fbfc),
+                      "High Speed U27 game ROM rev L-4 patch f43c.rom", CRC(684cbfbd) SHA1(19b56aa62018b9ec89c113e222ca80643a5ce35a))
 S11XS_SOUNDROM88(     "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
                       "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
 S11CS_SOUNDROM8(      "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
