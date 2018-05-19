@@ -9,7 +9,7 @@ Fixed neverending sounds on LTD system 4 games, added sound support for Cowboy E
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop
 New:
 Mirco: Lucky Draw
-Williams: Bigfoot R0.1 & R0.1b & R0.1c (FreeWPC based rewrite of White Water)
+Williams: Bigfoot R0.1 & R0.1b & R0.1c & R0.1d (FreeWPC based rewrite of White Water)
 
 Kinda new:
 Baywatch 4.01 (unofficial MOD)

@@ -2546,6 +2546,7 @@ DRIVER(ww,lh6c)         //                  White Water (LH-6 Coin Play)
 DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
 DRIVER(ww,bfr01b)       //          03/18 W White Water (FreeWPC/Bigfoot R0.1b)
 DRIVER(ww,bfr01c)       //          04/18 W White Water (FreeWPC/Bigfoot R0.1c)
+DRIVER(ww,bfr01d)       //          05/18 W White Water (FreeWPC/Bigfoot R0.1d)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
