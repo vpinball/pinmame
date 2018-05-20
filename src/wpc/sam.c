@@ -11,13 +11,11 @@
 
   Issues: (outdated?)
   -USB Interface not hooked up or emulated
-  -Serial Port Interfaces not hooked up (also requires support in the AT91 core)
   -FlashROM not emulated (treated as a regular read only rom)
   -Real Time Clock not hooked up or emulated
   -We can't hook up a sound commander easily since there's no external sound command sent, it's all
    internalized, so we'd need to look for each game's spot in RAM where they write a command,
    and send our commands there.
-  -Not sure how the Hardware revision is read for display on the Service Screen.
   -Still a # of unmapped / unhandled address writes (maybe reads as well)
   -sam_LED_hack() triggers specialized hacks to get LED updates going
   -IJ/CSI still have timinig issues that are worked around for now, see at91_block_timers
@@ -1483,11 +1481,11 @@ static INTERRUPT_GEN(sam_vblank) {
 	coreGlobals.solenoids = solenoidupdate;
 	}
 	coreGlobals.solenoids2 = 0;
-	coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL] = 0;
+	coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 0;
 	if (samlocals.fastflipaddr > 0 && cpu_readmem32ledw(samlocals.fastflipaddr) == 0x01)
 	{
 		coreGlobals.solenoids2 = 0x10;
-		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL] = 255;
+		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 255;
 	}	
 	core_updateSw(1);
 }
