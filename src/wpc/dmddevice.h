@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct rgb24 {
 	UINT8 red;
 	UINT8 green;

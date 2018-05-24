@@ -21,7 +21,7 @@ const struct GameDriver *test_drivers[] = { 0 };
 #endif
 #else /* DRIVER_RECURSIVE */
 
-DRIVERNV(st_game)       //Unknown game running on old Stern hardware
+DRIVERNV(st_game)       // Unknown game running on old Stern hardware
 DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
 
@@ -108,7 +108,8 @@ DRIVERNV(boomrang)      //          11/75 Boomerang (Engineering prototype)
 DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
 
 //MPU-17
-DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype)
+DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
+DRIVERNV(bowarroa)      //          08/76 Bow & Arrow (Prototype, rev. 22)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
 DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
 DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)
@@ -125,8 +126,9 @@ DRIVERNV(stk_sprb)      //BY17-740: 10/08 Strikes and Spares (Free Play)
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
 DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
 DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
-DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
-DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack  (Free Play)
+DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack (EM release date)
+DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack (Free Play)
+DRIVERNV(blackjcc)      //BY17-728: 04/18 Black Jack (Saucer points modification)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
@@ -414,6 +416,7 @@ DRIVER(tmnt,104g)       //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.0
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
+DRIVER(btmn,f13)        //Data East MPU: 09/91 Batman (1.03 French)
 DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 German)
 DRIVER(btmn,106)        //Data East MPU: ??/91 Batman (1.06)
 DRIVER(trek,11a)        //Data East MPU: 11/91 Star Trek 25th Anniversary (1.10 Alpha Display)
@@ -426,7 +429,8 @@ DRIVER(hook,401p)       //Data East MPU: 11/91 Hook (4.01 with Prototype Sound)
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
-DRIVER(hook,500)        //Data East MPU: 12/16 Hook (5.00)
+DRIVER(hook,500)        //Data East MPU: 12/16 Hook (5.00 unofficial MOD)
+DRIVER(hook,501)        //Data East MPU: 03/18 Hook (5.01 unofficial MOD)
 //DMD 128 x 32
 DRIVER(lw3,200)         //Data East MPU: 06/92 Lethal Weapon (2.00)
 DRIVER(lw3,203)         //Data East MPU: 07/92 Lethal Weapon (2.03)
@@ -956,6 +960,7 @@ DRIVERNV(rotation)      //Rotation VIII (v. 1.17, 1978?)
 // MIRCO GAMES
 // ----------------
 DRIVERNV(spirit76)      //Spirit of 76 (1975)
+DRIVERNV(lckydraw)      //Lucky Draw (1978)
 
 // ----------------
 // MONROE BOWLING CO.
@@ -1046,6 +1051,7 @@ DRIVER  (mav,402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein, Mary Shelley's
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein, Mary Shelley's (German)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch 4.00
+DRIVER  (bay,401)       //DE/Sega MPU: 12/17 Baywatch 4.01 (unofficial MOD)
 DRIVER  (bay,d400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (Dutch)
 DRIVER  (bay,e400)      //DE/Sega MPU: 03/95 Baywatch 4.00 (English)
 DRIVER  (bay,d300)      //DE/Sega MPU: 03/95 Baywatch 3.00 (Dutch)
@@ -1877,6 +1883,7 @@ DRIVER(tf,160)          //S.A.M.: 01/12 Transformers - V1.6
 DRIVER(tf,170)          //S.A.M.: 03/12 Transformers - V1.7
 DRIVER(tf,180)          //S.A.M.: 03/13 Transformers - V1.8
 DRIVER(tf,180h)         //S.A.M.: 03/13 Transformers - V1.8 Limited Edition
+// Note that AC/DC vault edition has no special ROM like the previous VEs
 DRIVER(acd,121)         //S.A.M.: 02/12 AC/DC - V1.21
 //DRIVER(acd,121h)        //S.A.M.: 02/12 AC/DC - V1.21 Limited Edition
 DRIVER(acd,125)         //S.A.M.: 0?/12 AC/DC - V1.25
@@ -2259,6 +2266,7 @@ DRIVER(comet,l5)        //          06/85 W Comet (L-5)
 DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
 DRIVER(hs,l4)           //          01/86 W High Speed (L-4)
+DRIVER(hs,l4c)          //          05/18 W High Speed (L-4C Competition MOD (f43c))
 DRIVER(grand,l3)        //S11-523:  04/86 W Grand Lizard (L-3)
 DRIVER(grand,l4)        //          04/86 W Grand Lizard (L-4)
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
@@ -2366,6 +2374,7 @@ DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
 DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
+DRIVER(pool,l7c)        //          04/18 B Pool Sharks (LA-7C Competition MOD)
 DRIVER(diner,l1)        //S11-571:  06/90 W Diner (LU-1)
 DRIVER(diner,l2)        //          06/90 W Diner (LU-2)
 DRIVER(diner,l3)        //          06/90 W Diner (LA-3)
@@ -2536,6 +2545,9 @@ DRIVER(ww,lh5)          //          10/00 W White Water (LH-5)
 DRIVER(ww,lh6)          //          12/05 W White Water (LH-6)
 DRIVER(ww,lh6c)         //                  White Water (LH-6 Coin Play)
 DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
+DRIVER(ww,bfr01b)       //          03/18 W White Water (FreeWPC/Bigfoot R0.1b)
+DRIVER(ww,bfr01c)       //          04/18 W White Water (FreeWPC/Bigfoot R0.1c)
+DRIVER(ww,bfr01d)       //          05/18 W White Water (FreeWPC/Bigfoot R0.1d)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)

@@ -70,7 +70,7 @@ public:
 		int i = 0;
 
 		while ( m_lCurrent<m_lMax && celt ) {
-			CComVariant varCelt(m_lCurrent++);
+			CComVariant varCelt(++m_lCurrent);
 			VariantInit(&rgVar[i]);
 
 			IGame* pGame;

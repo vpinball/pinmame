@@ -819,6 +819,9 @@
     <ClCompile Include="src\wpc\ltdgames.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\wpc\luckydraw.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\wpc\mac.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>

@@ -415,6 +415,9 @@ WPC_ROMSTART(ww,d3,"u6-d3.rom",   0x80000,CRC(b1a31204) SHA1(67f1d3a335291cfeb3e
 WPC_ROMSTART(ww,l2,"ww_l2.u6",    0x80000,CRC(2738acf8) SHA1(1554dd497d6aae53934e2e4a2e42bda1f87aaa02)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,d2,"ww_d2.u6",    0x80000,CRC(ce283e11) SHA1(81d147c82c14426b39159b63815b69faad99d316)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,bfr01,"bigfoot_r01.rom",0x80000,CRC(e4a46acd) SHA1(315162667fcb58b99b940ef34a55adad027e83d8)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,bfr01b,"bigfoot_r01b.rom",0x80000,CRC(1482b28d) SHA1(47929ac7b0e9df27a5f7636cfb32f26a1b024b94)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,bfr01c,"bigfoot_r01c.rom",0x80000,CRC(7d1fea50) SHA1(6018c1346489f97162e04cd1789f13e9af98ef8f)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,bfr01d,"bigfoot_r01d.rom",0x80000,CRC(9bd4289d) SHA1(cdc4e26fed8066f62597220cfd7480c4ec100aa8)) WW_SOUND WPC_ROMEND
 
 WPC_ROMSTART(ww,p8,"ww_p8.u6",    0x80000,CRC(251a7f14) SHA1(8e36efc9a14d3cd31967f072bfc185461022864d))
 WPCS_SOUNDROM248("ww_u18.p2",CRC(7a9ace30) SHA1(996cb73504ef73675c596e6f811047f16fbff0dd), \
@@ -441,22 +444,26 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF (ww,l5,   "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d5,l5,"White Water (D-5 LED Ghost Fix)",2000,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,lh6,l5,"White Water (LH-6)",2000,"Williams",wpc_mFliptronS,0)
+CORE_GAMEDEF (ww,l5,     "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d5,l5,  "White Water (D-5 LED Ghost Fix)",2000,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,lh6,l5, "White Water (LH-6)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh6c,l5,"White Water (LH-6 Coin Play)",2000,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,lh5,l5,"White Water (LH-5)",2000,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,l4,l5,"White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d4,l5,"White Water (D-4 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,l3,l5,"White Water (L-3)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d3,l5,"White Water (D-3 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,l2,l5,"White Water (L-2)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,d2,l5,"White Water (D-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p8,l5,"White Water (P-8, Sound P-2)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p9,l5,"White Water (P-9, Sound P-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p1,l5,"White Water (P-8, Sound P-1)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,p2,l5,"White Water (P-9, Sound P-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ww,bfr01,l5,"White Water (FreeWPC/Bigfoot R0.1)",2016,"Aeneas Verhe",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,lh5,l5, "White Water (LH-5)",2000,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l4,l5,  "White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d4,l5,  "White Water (D-4 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l3,l5,  "White Water (L-3)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d3,l5,  "White Water (D-3 LED Ghost Fix)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l2,l5,  "White Water (L-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,d2,l5,  "White Water (D-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p8,l5,  "White Water (P-8, Sound P-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p9,l5,  "White Water (P-9, Sound P-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p1,l5,  "White Water (P-8, Sound P-1)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p2,l5,  "White Water (P-9, Sound P-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
+// The following three builds are almost identical
+CORE_CLONEDEF(ww,bfr01,l5, "White Water (FreeWPC/Bigfoot R0.1)" ,2016,"Aeneas Verhe",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,bfr01b,l5,"White Water (FreeWPC/Bigfoot R0.1b)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,bfr01c,l5,"White Water (FreeWPC/Bigfoot R0.1c)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,bfr01d,l5,"White Water (FreeWPC/Bigfoot R0.1d)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

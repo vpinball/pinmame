@@ -135,8 +135,25 @@ S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d
 S11CS_SOUNDROM8(     "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
 S11_ROMEND
 
+/* older competition MOD (6b05)
+S11_ROMSTART28(hs,l4c,"High Speed U26 game ROM rev L-4 patch f43c.rom", CRC(348ff1ba) SHA1(2843ee72267de414535d8bbd6a18fa38aa59fbfc),
+                      "High Speed U27 game ROM rev L-4 patch 6b05.rom", CRC(67515eff) SHA1(3bb7c6e29229480bca07e45a38aa194fc045bc04))
+S11XS_SOUNDROM88(     "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
+                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
+S11CS_SOUNDROM8(      "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
+S11_ROMEND
+*/
+// newer competition MOD (f43c)
+S11_ROMSTART28(hs,l4c,"High Speed U26 game ROM rev L-4 patch f43c.rom", CRC(348ff1ba) SHA1(2843ee72267de414535d8bbd6a18fa38aa59fbfc),
+                      "High Speed U27 game ROM rev L-4 patch f43c.rom", CRC(684cbfbd) SHA1(19b56aa62018b9ec89c113e222ca80643a5ce35a))
+S11XS_SOUNDROM88(     "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
+                      "hs_u22.l2", CRC(c03be631) SHA1(53823e0f55377a45aa181882c310dd307cf368f5))
+S11CS_SOUNDROM8(      "hs_u4.l1",  CRC(0f96e094) SHA1(58650705a02a71ced85f5c2a243722a35282cbf7))
+S11_ROMEND
+
 CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11XS,0)
 CORE_CLONEDEF(hs,l3,l4, "High Speed (L-3)", 1986, "Williams", s11_mS11XS,0)
+CORE_CLONEDEF(hs,l4c,l4, "High Speed (L-4C Competition MOD)", 2018, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Grand Lizard 04/86
@@ -1055,6 +1072,14 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
 CORE_CLONEDEF(pool,p7,l7,"Pool Sharks (PA-7)", 1989, "Bally", s11c_one,0)
+
+S11_ROMSTART48(pool,l7c,"Pool Sharks U26 game ROM rev LA-7 patch E586.rom",CRC(b4f78b93) SHA1(bb27e4dde0ebf7f9a9d04d9cdb34d39d25ade69b),
+                        "Pool Sharks U27 game ROM rev LA-7 patch E586.rom",CRC(5b228b8f) SHA1(18d612154cda00c8f735305b475baf6de153919d))
+S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
+                        "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
+                        "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
+S11_ROMEND
+CORE_CLONEDEF(pool,l7c,l7,"Pool Sharks (LA-7C Competition MOD)", 2018, "Bally", s11c_one,0)
 
 /*--------------------
 / Diner 8/90

@@ -120,7 +120,7 @@ BY17_ROMSTARTx88(eightblo, "E723-17.U2",   CRC(7e7554ae) SHA1(e03c47c4a7a7352293
                            "720-20_6.716", CRC(0c17aa4d) SHA1(729e61a29691857112579efcdb96a35e8e5b1279)) /*MAME: E720-20.U6*/
 BY17_ROMEND
 #define input_ports_eightblo input_ports_eightbll
-CORE_CLONEDEFNV(eightblo,eightbll,"Eight Ball (Old)",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
+CORE_CLONEDEFNV(eightblo,eightbll,"Eight Ball (Old/Tilt Bug)",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 INITGAME(eightblb,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY35_ROMSTARTx00(eightblb,"8bal2732.u2",CRC(da2da9a5) SHA1(3ee3614914bf477c74db83accf8b2f34b1eda3f0),
@@ -203,6 +203,28 @@ BY35_ROMSTARTx00(blackjcb,"blkj2732.u2",CRC(38f1baf4) SHA1(703a6da990355a8f165ae
 BY35_ROMEND
 #define input_ports_blackjcb input_ports_blackjck
 CORE_CLONEDEFNV(blackjcb,blackjck,"Black Jack (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
+
+/* by Robotworkshop on pinside, rule changes:
+If the player wins when landing in the dealer saucer all is normal.
+However, if the ball lands in the saucer when the dealer is winning:
+- Any pending points are lost and a short loss tune is played
+- Player score decreases by 5000 in 1000 decrements (and chimes)
+- If player score reaches 0 or lower then the score is reset to 0 and another dirge tune is played.
+
+If the ball reaches the spinner before scoring any other points on the players ball, the game is designed to tilt.
+This unusual tilt behavior has been removed.
+
+Dip Switch 29 enables/disables the new dealer saucer rule change:
+DSW29
+ Off      Dealer wins subtract score rule is enabled (conservative)
+ On       Dealer wins subtract score rule is disabled (liberal)
+*/
+INITGAME(blackjcc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(blackjcc,"728-32_2c.716",CRC(92ea5a4a) SHA1(1a81a64904e54140a65778d2d10af48ef75b9a59),
+                          "720-20_6.716", CRC(0c17aa4d) SHA1(729e61a29691857112579efcdb96a35e8e5b1279))
+BY17_ROMEND
+#define input_ports_blackjcc input_ports_blackjck
+CORE_CLONEDEFNV(blackjcc,blackjck,"Black Jack (Saucer points modification)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -32 */

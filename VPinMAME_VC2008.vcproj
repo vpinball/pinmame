@@ -3796,6 +3796,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\wpc\luckydraw.c"
+					>
+				</File>
+				<File
 					RelativePath=".\src\wpc\mac.c"
 					>
 				</File>

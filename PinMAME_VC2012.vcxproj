@@ -1272,6 +1272,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\lancelot.c" />
     <ClCompile Include="src\wpc\ltd.c" />
     <ClCompile Include="src\wpc\ltdgames.c" />
+    <ClCompile Include="src\wpc\luckydraw.c" />
     <ClCompile Include="src\wpc\mac.c" />
     <ClCompile Include="src\wpc\mech.c" />
     <ClCompile Include="src\wpc\mephisto.c" />

@@ -11,13 +11,11 @@
 
   Issues: (outdated?)
   -USB Interface not hooked up or emulated
-  -Serial Port Interfaces not hooked up (also requires support in the AT91 core)
   -FlashROM not emulated (treated as a regular read only rom)
   -Real Time Clock not hooked up or emulated
   -We can't hook up a sound commander easily since there's no external sound command sent, it's all
    internalized, so we'd need to look for each game's spot in RAM where they write a command,
    and send our commands there.
-  -Not sure how the Hardware revision is read for display on the Service Screen.
   -Still a # of unmapped / unhandled address writes (maybe reads as well)
   -sam_LED_hack() triggers specialized hacks to get LED updates going
   -IJ/CSI still have timinig issues that are worked around for now, see at91_block_timers
@@ -50,6 +48,7 @@
 #define SAM_FAST_FLIPPERS 1
 #define SAM_SOL_FLIPSTART 13 
 #define SAM_SOL_FLIPEND 16
+#define SAM_FASTFLIPSOL 33
 
 #define SAM_CPUFREQ 40000000
 #define SAM_IRQFREQ 4008
@@ -157,6 +156,8 @@ struct {
 	int leds_per_string;
 
 	int LED_hack_send_garbage;
+	
+	UINT32 fastflipaddr;
 } samlocals;
 
 
@@ -1201,10 +1202,6 @@ static MACHINE_INIT(sam) {
 		at91_init_jit(0,(options.at91jit > 1) ? options.at91jit : 0x1080000);
 	}
 #endif
-	//!! timing hacks for CSI and IJ
-	if (_strnicmp(Machine->gamedrv->name,"csi_",4)==0 || _strnicmp(Machine->gamedrv->name,"ij4_",4)==0)
-		at91_block_timers = 1;
-
 	#if LOG_RAW_SOUND_DATA
 	fpSND = fopen("sam_snd.raw","wb");
 	if(!fpSND)
@@ -1212,20 +1209,71 @@ static MACHINE_INIT(sam) {
 	#endif
 }
 
-static MACHINE_RESET(sam1) {
+void sam_init()
+{
 	memset(&samlocals, 0, sizeof(samlocals));
-	samlocals.samVersion = 1;
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
 	samlocals.led_row = -1;
+
+	//!! timing hacks for CSI and IJ
+
+	const char * const gn = Machine->gamedrv->name;
+
+	if (_strnicmp(gn, "csi_", 4) == 0 || _strnicmp(gn, "ij4_", 4) == 0)
+		at91_block_timers = 1;
+
+	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
+	// Load the balls in trough (E+SDFG), start the game.  
+	// Use CheatEngine to find memory locations that are 1
+	// Enter service menu.  Use cheatengine to find memory locations that are 0.
+	// Exit service menu, *quickly* search for items that changed back to 1. 
+	// Enter service menu once again.  Use cheat engine to poke "1" into 0 values until you find the one
+	// that lets solenoid 15 (left flipper) fire when you hit the left shift key (usually its near the last one). 
+	// Now you know the dynamic memory address - break PinMame32 in VC debugger.  
+	// Add a memory breakpoint on that address.   Resume debugging.  Exit/enter the service menu, 
+	// breakpoint will hit.  Walk back up the stack one step to find the arm7core write.  This will have the 
+	// arm7 memory addr as the parameter.  This is the value you need here.  
+
+	if (_strnicmp(gn, "trn_174h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107ad24;
+	else if (_strnicmp(gn, "acd_168h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107cd82;
+	else if (_strnicmp(gn, "mtl_170h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f646;
+	else if (_strnicmp(gn, "twd_160h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f7d2;
+	else if (_strnicmp(gn, "wof_500", 7) == 0)
+		samlocals.fastflipaddr = 0x0106e7e6;
+	else if (_strnicmp(gn, "st_161h", 7) == 0)
+		samlocals.fastflipaddr = 0x0107d7a2;
+	else if (_strnicmp(gn, "xmn_151h", 7) == 0)
+		samlocals.fastflipaddr = 0x0107b222;
+	else if (_strnicmp(gn, "fg_1200", 7) == 0)
+		samlocals.fastflipaddr = 0x010681d6;
+	else if (_strnicmp(gn, "potc_600", 7) == 0)
+		samlocals.fastflipaddr = 0x0105a7fe;
+	else if (_strnicmp(gn, "im_183ve", 8) == 0)
+		samlocals.fastflipaddr = 0x01055bf6;
+	else if (_strnicmp(gn, "avr_200", 7) == 0)
+		samlocals.fastflipaddr = 0x01056afa;
+	else if (_strnicmp(gn, "avs_170", 7) == 0)
+		samlocals.fastflipaddr = 0x0106db1e;
+	else if (_strnicmp(gn, "wpt_140a", 8) == 0)
+		samlocals.fastflipaddr = 0x01075712;
+	else if (_strnicmp(gn, "tf_180h", 7) == 0)
+		samlocals.fastflipaddr = 0x0107472e;
+}
+
+
+static MACHINE_RESET(sam1) {
+	sam_init();
+	samlocals.samVersion = 1;
 }
 
 static MACHINE_RESET(sam2) {
-	memset(&samlocals, 0, sizeof(samlocals));
+	sam_init();
 	samlocals.samVersion = 2;
-	samlocals.pass = 16;
-	samlocals.coindoor = 1;
-	samlocals.led_row = -1;
 }
 
 static MACHINE_STOP(sam) {
@@ -1432,7 +1480,13 @@ static INTERRUPT_GEN(sam_vblank) {
 	}
 	coreGlobals.solenoids = solenoidupdate;
 	}
-	
+	coreGlobals.solenoids2 = 0;
+	coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 0;
+	if (samlocals.fastflipaddr > 0 && cpu_readmem32ledw(samlocals.fastflipaddr) == 0x01)
+	{
+		coreGlobals.solenoids2 = 0x10;
+		coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][SAM_FASTFLIPSOL-1] = 255;
+	}	
 	core_updateSw(1);
 }
 
