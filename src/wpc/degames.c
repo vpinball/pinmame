@@ -453,7 +453,16 @@ DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e
 DE_ROMEND
 CORE_CLONEDEF(btmn,101,103,"Batman (1.01)",1991,"Data East",de_mDEDMD16S2A,0)
 
-DE_ROMSTART48(btmn_g13,"batbcpug.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
+DE_ROMSTART48(btmn_f13,"batcpub5.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
+                    "batccpuf.103",CRC(6f654fb4) SHA1(4901326f92aab1f5a2cdf9032511bef8b197f7e4))
+DE_DMD16ROM2(       "bat_dspf.103",CRC(747be2e6) SHA1(47ac64b91eabc24be57e376035ef8da95259587d))
+DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+                    "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
+                    "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
+DE_ROMEND
+CORE_CLONEDEF(btmn,f13,103,"Batman (1.03 French)",1991,"Data East",de_mDEDMD16S2A,0)
+
+DE_ROMSTART48(btmn_g13,"batcpub5.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
                     "batccpug.103",CRC(a199ab0f) SHA1(729dab10fee708a18b7be5a2b9b904aa211b233a))
 DE_DMD16ROM2(       "bat_dspg.104",CRC(1581819f) SHA1(88facfad2e74dd44b71fd19df685a4c2378d26de))
 DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
@@ -562,6 +571,14 @@ DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a5965473849062
                     "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
 DE_ROMEND
 CORE_CLONEDEF(hook,500,408,"Hook (5.00 unofficial MOD)",2016,"Data East",de_mDEDMD16S2A,0)
+
+DE_ROMSTARTx0(hook_501,"hokcpua.501",CRC(9aa504a5) SHA1(fa5d09b513916f7f738b88eb83cc1e9e62c7864a))
+DE_DMD16ROM2(       "hokdspa.500",CRC(ed6a134b) SHA1(775975b629312f7f1151d878d40723ad4a79928c))
+DE2S_SOUNDROM022(   "hooksnd.u7" ,CRC(642f45b3) SHA1(a4b2084f32e52a596547384906281d04424332fc),
+                    "hook-voi.u17" ,CRC(6ea9fcd2) SHA1(bffc66df542e06dedddaa403b5513446d9d6fc8c),
+                    "hook-voi.u21" ,CRC(b5c275e2) SHA1(ff51c2007132a1310ac53b5ab2a4af7d0ab15948))
+DE_ROMEND
+CORE_CLONEDEF(hook,501,408,"Hook (5.01 unofficial MOD)",2018,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTARTx0(hook_401p,"hokcpua.401",CRC(20223298) SHA1(a8063765db947b059eadaad6654ed0c5cad9198d))
 DE_DMD16ROM2(       "hokdspa.401",CRC(59a07eb5) SHA1(d1ca41ce417f1772fe4da1eb37077f924b66ad36))
@@ -1132,6 +1149,17 @@ DE2S_SOUNDROM144(       "bayw.u7"  ,   CRC(90d6d8a8) SHA1(482c5643453f21a078257a
 DE_ROMEND
 #define input_ports_baywatch input_ports_des112
 CORE_GAMEDEFNV(baywatch,"Baywatch (4.00)",1995,"Sega",de_mDEDMD64S2A,0)
+
+#define init_bay_401 init_baywatch
+DE_ROMSTARTx0(bay_401,  "baycpua.401", CRC(0c69e71e) SHA1(ccc75dac14e0b0b5e6b8258bab2adbdf284dde4b))
+DE_DMD64ROM88(          "bayrom0a.400",CRC(43d615c6) SHA1(7c843b6d5215305b02a55c9fa1d62375ef0766ea),
+                        "bayrom3a.400",CRC(41bcb66b) SHA1(e6f0a9236e14c2e919881ca1ffe3356aaa121730))
+DE2S_SOUNDROM144(       "bayw.u7"  ,   CRC(90d6d8a8) SHA1(482c5643453f21a078257aa13398845ef19cab3c),
+                        "bayw.u17" ,   CRC(b20fde56) SHA1(2f2db49245e4a6a8251cbe896b2437fcec88d42d),
+                        "bayw.u21" ,   CRC(b7598881) SHA1(19d1dde1cb6634a7c7b5cdb4fa01cd09cc7d7777))
+DE_ROMEND
+#define input_ports_bay_401 input_ports_baywatch
+CORE_CLONEDEFNV(bay_401,baywatch,"Baywatch (4.01 unofficial MOD)",2017,"Sega",de_mDEDMD64S2A,0)
 
 #define init_bay_d400 init_baywatch
 DE_ROMSTARTx0(bay_d400, "baycpud.400", CRC(45019616) SHA1(5a1e04cdfa00f179f010c09fae52d090553cd82e))

@@ -112,11 +112,13 @@
          ROM_RELOAD(0xf000, 0x1000)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern MACHINE_DRIVER_EXTERN(LTD);
+extern MACHINE_DRIVER_EXTERN(LTD3);
+extern MACHINE_DRIVER_EXTERN(LTD3A);
 extern MACHINE_DRIVER_EXTERN(LTD4);
 extern MACHINE_DRIVER_EXTERN(LTD4HH);
 
-#define gl_mLTD    LTD
+#define gl_mLTD3   LTD3
+#define gl_mLTD3A  LTD3A
 #define gl_mLTD4   LTD4
 #define gl_mLTD4HH LTD4HH
 

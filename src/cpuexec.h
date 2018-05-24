@@ -323,7 +323,9 @@ void cpu_yielduntil_time(double duration);
    that the interrupt handler will be called once. */
 int cpu_getiloops(void);
 
-
+#ifdef PINMAME
+void run_one_timeslice(void);
+#endif
 
 /*************************************
  *

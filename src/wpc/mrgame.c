@@ -36,8 +36,9 @@
   Issues/Todo:
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip emulated but might need to be further improved for better accuracy
+      -> percussion sounds too calm by default, compare f.e. to https://www.youtube.com/watch?v=n7yO2D5a4Xs
+      -> thus M114S core has a special define for now that tweaks certain channels (maybe this is even correct as the real HW has some filter networks connected to the 4 chip outputs that could be the reason for the volume change?!)
   #4) Generation #2 Video - some corrupt sprites appear on the soccer screen (right hand side)
-  #5) percussion sounds not completely correct, hear https://www.youtube.com/watch?v=n7yO2D5a4Xs
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -146,7 +147,7 @@ struct M114Sinterface mrgame_m114sInt = {
 	1,					/* # of chips */
 	{4000000},			/* Clock Frequency 4Mhz */
 	{REGION_USER1},		/* ROM Region for samples */
-	{100},				/* Volume Level */
+	{{500,100,50,100}},	/* Volume Level (boosts first channel by a factor of 5!) */
 	{2},				/* cpu # controlling M114S */
 };
 

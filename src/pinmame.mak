@@ -83,6 +83,7 @@ DRVLIBS += $(PINOBJ)/stargame.o
 DRVLIBS += $(PINOBJ)/slalom.o
 DRVLIBS += $(PINOBJ)/boomerang.o
 DRVLIBS += $(PINOBJ)/spiritof76.o
+DRVLIBS += $(PINOBJ)/luckydraw.o
 #
 # Games
 #

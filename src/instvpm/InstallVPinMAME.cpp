@@ -201,7 +201,7 @@ void DisplayInstalledVersion(HWND hWnd)
 		wsprintf(szVersionText, "* Visual PinMAME Version %s is currently installed on your computer *", szInstalledVersion);
 	else
 		wsprintf(szVersionText, "* Visual PinMAME is not currently installed on your computer *");
-	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (WPARAM) szVersionText);
+	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (LPARAM) szVersionText);
 }
 
 INT_PTR PASCAL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -24,7 +24,7 @@ static core_tLCDLayout disp2p5[] = {
 INITGAME(arizona, disp2p5, 1, 5, 0x3f3)
 LTD_1_ROMSTART(arizona, "arizltd.bin", CRC(908f00d8) SHA1(98f28f1aedbad43e0e096959fdef45e038405473))
 LTD_ROMEND
-CORE_GAMEDEFNV(arizona,"Arizona",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(arizona,"Arizona",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Atlantis
@@ -37,7 +37,7 @@ static core_tLCDLayout dispAtla[] = {
 INITGAME(atla_ltd, dispAtla, 1, 5, 0xf3)
 LTD_2_ROMSTART(atla_ltd, "atlantis.bin", CRC(c61be043) SHA1(e6c4463f59a5743fa34aa55beeb6f536ad9f1b56))
 LTD_ROMEND
-CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(atla_ltd,"Atlantis (LTD)",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Disco Dancing
@@ -50,7 +50,7 @@ static core_tLCDLayout dispDisco[] = {
 INITGAME(discodan, dispDisco, 1, 5, 0x1f3)
 LTD_2_ROMSTART(discodan, "disco.bin", CRC(83c79157) SHA1(286fd0c984870639fcd7d7b8f6a5a5ddabcddcf5))
 LTD_ROMEND
-CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Hustler
@@ -58,7 +58,7 @@ CORE_GAMEDEFNV(discodan,"Disco Dancing",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 INITGAME(hustler, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(hustler, "hustler_1.bin", CRC(43f323f5) SHA1(086b81699bea08b10b4231e398f4f689395355b0))
 LTD_ROMEND
-CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Martian Queen
@@ -71,7 +71,7 @@ static core_tLCDLayout dispMarqn[] = {
 INITGAME(marqueen, dispMarqn, 1, 5, 0x373)
 LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
-CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / King Kong
@@ -79,7 +79,7 @@ CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 INITGAME(kkongltd, dispDisco, 1, 5, 0x1f3)
 LTD_2_ROMSTART(kkongltd, "kong.bin", CRC(5b2a3123) SHA1(eee417d17d3272ee63c728915af84da33f1f73a2))
 LTD_ROMEND
-CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Viking King
@@ -87,7 +87,7 @@ CORE_GAMEDEFNV(kkongltd,"King Kong (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 INITGAME(vikngkng, disp2p5, 1, 5, 0x3f3)
 LTD_2_ROMSTART(vikngkng, "vikking.bin", CRC(aa32d158) SHA1(b24294ae4ecb2ab3119ad7fe79ef567b19ac792a))
 LTD_ROMEND
-CORE_GAMEDEFNV(vikngkng,"Viking King",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(vikngkng,"Viking King",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Force
@@ -103,7 +103,7 @@ static core_tLCDLayout dispForce[] = {
 INITGAME(force, dispForce, 1, 1, 0x03)
 LTD_2_ROMSTART(force, "forceltd.bin", CRC(48f9ebbe) SHA1(8aaab352fb21263b1b93ffefd9b5169284083beb))
 LTD_ROMEND
-CORE_GAMEDEFNV(force,"Force",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(force,"Force",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 static core_tLCDLayout disp2p6[] = {
   { 1, 0,10,2,CORE_SEG7 }, { 1, 4,14,2,CORE_SEG7 }, { 1, 8,18,2,CORE_SEG7 },
@@ -118,7 +118,7 @@ static core_tLCDLayout disp2p6[] = {
 INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
 LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) //!! working version created from a bad dump
 LTD_ROMEND
-CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Black Hole
@@ -126,7 +126,7 @@ CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 INITGAME(bhol_ltd, disp2p6, 1, 4, 0xf3)
 LTD_2_ROMSTART(bhol_ltd, "blackhol.bin", CRC(9f6ae35e) SHA1(c17bf08a41c6cf93550671b0724c58e8ac302c33))
 LTD_ROMEND
-CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
 static core_tLCDLayout disp3p6[] = {
   { 0, 0,14,6,CORE_SEG7 },
@@ -139,28 +139,28 @@ static core_tLCDLayout disp3p6[] = {
 /*-------------------------------------------------------------------
 / Cowboy Eight Ball
 /-------------------------------------------------------------------*/
-INITGAME(cowboy3p, disp3p6, 1, 6, 0)
+INITGAME(cowboy3p, disp3p6, 1, 0, 0)
 LTD_4_ROMSTART(cowboy3p, "cowboy3p.bin", CRC(5afa29af) SHA1(a5ccf5cd17c63d4292222b792535187b1bcfa786))
 LTD_ROMEND
-CORE_GAMEDEFNV(cowboy3p,"Cowboy Eight Ball",1981,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(cowboy3p,"Cowboy Eight Ball",1981,"LTD",gl_mLTD3A,0)
 
-INITGAME(cowboy3a, disp3p6, 1, 6, 0)
+INITGAME(cowboy3a, disp3p6, 1, 0, 0)
 LTD_4_ROMSTART(cowboy3a, "cowboy3a.bin", CRC(48278d77) SHA1(4102a2be10b48d0edb2b636e10696cbb2cd3a4c4))
 LTD_ROMEND
-CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_CLONEDEFNV(cowboy3a,cowboy3p,"Cowboy Eight Ball (alternate set)",1981,"LTD",gl_mLTD3A,0)
 
 /*-------------------------------------------------------------------
 / Zephy
 /-------------------------------------------------------------------*/
-INITGAME(zephy, disp3p6, 2, 6, 0)
+INITGAME(zephy, disp3p6, 2, 0, 0)
 LTD_4_ROMSTART(zephy, "zephy.l2", CRC(8dd11287) SHA1(8133d0c797eb0fdb56d83fc55da91bfc3cddc9e3))
 LTD_ROMEND
-CORE_GAMEDEFNV(zephy,"Zephy",1982,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(zephy,"Zephy",1982,"LTD",gl_mLTD3A,0)
 
-INITGAME(zephya, disp3p6, 2, 6, 0)
+INITGAME(zephya, disp3p6, 2, 0, 0)
 LTD_4_ROMSTART(zephya, "zephy1.bin", CRC(ae189c8a) SHA1(c309b436ef94cd5c266c88fe5f222261e083e4eb))
 LTD_ROMEND
-CORE_CLONEDEFNV(zephya,zephy,"Zephy (alternate set)",1982,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_CLONEDEFNV(zephya,zephy,"Zephy (alternate set)",1982,"LTD",gl_mLTD3A,0)
 
 // Sistema 4 games below
 

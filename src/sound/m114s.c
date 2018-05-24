@@ -20,14 +20,13 @@
  *
  *   Some ideas were taken from the source from BSMT2000 & AY8910
  *
- *   The mixer can optionally mix every (internal) channel into a separate stream for testing (undef SINGLE_CHANNEL_MIXER and set M114S_OUTPUT_CHANNELS to 16)
+ *   Heavily modified/extended by Carsten Waechter later-on
+ *
+ *   The mixer can optionally mix every (internal) channel into a separate stream for testing (set M114S_OUTPUT_CHANNELS to 16)
  *
  *   TODO: No full/tested support for the M114AF 6Mhz version of the chip (but seems at least to work 'good enough')
  **********************************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "driver.h"
 #include "m114s.h"
 
@@ -36,24 +35,27 @@
 #endif
 
 #define SAMPLE_RATE 48000
-#define SINGLE_CHANNEL_MIXER // mix all channels into one stream for efficiency reasons, undef for debugging purpose
 
-#ifndef SINGLE_CHANNEL_MIXER
- #define M114S_OUTPUT_CHANNELS 4 // if set to 16 instead, we simply output each (internal) channel independently (which is not how the real chip works, as that one mixes the 16 down to 4 outputs)
-#endif
+// by default mix all 4 HW channels into 1 stream for efficiency reasons:
+#define M114S_OUTPUT_CHANNELS 1/*4*//*16*/ // HW uses 4, but if set to 16 instead, we simply output each (internal) channel independently (which is not how the real chip works, as that one mixes the 16 down to 4 outputs)
 
-#define USE_FREQTABLE_FROM_MANUAL // undef to use a generated freqtable with 'correct' semitones (i.e. unlike the real chip)
+#define USE_FREQTABLE_FROM_MANUAL // undef to use a generated freqtable with 'correct' semitones (i.e. unlike the real chip) for the M114A 4MHz
 
-#define USE_VOL_ENVELOPE 1 // to test no volume envelope (=blend new volume set in), set to 0
+//!! unsure how the actual vol envelope actually works internally and at what precision -> spec says 'either immediate' (=no envelope) or 'gradual increments of 1/256 of maximum amplitude'
+// BUT THEN also mentions: only 8 MSBits from the 10 of v_linear are influenced! -> simple increase/decrease of the 8 MSBits with same frequency as table read (if diff > 128, every 2nd read if diff > 64, every 4th read if diff > 32 or every 8th read if diff <= 32)
+#define USE_VOL_ENVELOPE // to test no volume envelope (=no smooth blending in of new volume that is set), set to 0
+
+#define DO_FULL_PRECISION_MIXING // unclear how the mixing of channels and interpolation of channels works internally, so this allows to switch between two modes (use highest precision vs a lower precision/interpretation of the datasheet text)
+#define USE_LERP_FOR_REPEATED_SAMPLES // unclear how repeated table reads really work, datasheet can be interpreted either way
+
+#define MR_GAME_VOLUME_HACK // rather do this for specific machines only!? (i.e. is this only due to the filter network of output channels of Mr.Game??!)
 
 #if 0
+#include <stdio.h>
+#include <stdlib.h>
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
-#endif
-
-#ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
 #endif
 
 /**********************************************************************************************
@@ -78,9 +80,9 @@
 struct M114STable
 {
 		UINT8			reread;						/* # of times to re-read each byte from table */
-		UINT32          position;                   /* current reading position for table */
-		UINT32          start_address;				/* start address (offset into ROM) for table */
-		UINT32          stop_address;				/* stop address (offset into ROM) for table */
+		//UINT32			position;					/* current reading position for table */
+		UINT32			start_address;				/* start address (offset into ROM) for table */
+		//UINT32			stop_address;				/* stop address (offset into ROM) for table */
 		UINT16			length;						/* length in bytes of the table */
 		UINT16			total_length;				/* total length in bytes of the table (including repetitions) */
 };
@@ -109,9 +111,10 @@ struct M114SChannel
 		UINT8			active;							/* is the channel active */
 		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
 		UINT32			outpos;							/* Index into output samples */
-		double			last_volume;					/* Holds the last volume code set for the channel */
-		double			sample_vol;						/* Volume to apply to each sample output */
-		double			vol_step;						/* Volume step for volume envelope */
+		int				prev_volume;					/* Holds the last volume code set for the channel */
+		int				current_volume;					/* Volume to apply to each sample output */
+		int				target_volume;					/* Target to match for volume envelope */
+		int				step_rate_volume_env;			/* Volume step for volume envelope */
 		//int				end_of_table;					/* End of Table Flag */
 		struct M114STable table1;						/* Table 1 Data */
 		struct M114STable table2;						/* Table 2 Data */
@@ -126,6 +129,7 @@ struct M114SChip
 	int							channel;					/* Which channel is being programmed via the data bus */
 	struct M114SChannelRegs		tempch_regs;				/* temporary channel register data for gathering the data programming */
 	struct M114SChannel			channels[M114S_CHANNELS];	/* All the chip's internal channels */
+	int							channel_volume[4];			/* scale for the HW/chip outputs */
 	/* static vars, ie do not reset values */
 	int							stream;						/* which stream are we using */
 	INT8 *						region_base;				/* pointer to the base of the ROM region */
@@ -144,10 +148,6 @@ struct M114SChip
 ***********************************************************************************************/
 static struct M114SChip m114schip[MAX_M114S];		//Each M114S chip
 
-static double VolTable[63];							//Store Volume Adjustment Table
-static INT8 tb1[4096];								//Temp buffer for Table 1
-static INT8 tb2[4096];								//Temp buffer for Table 2
-
 /* Table 1 & Table 2 Repetition Values based on Mode */
 static const int mode_to_rep[8][2] = {
   {2,2},	//Mode 0
@@ -160,7 +160,7 @@ static const int mode_to_rep[8][2] = {
   {1,1}		//Mode 7
 };
 
-/* Table 1 Length Values based on Mode */
+/* Table 1 Length Values based on Mode */ // these are always larger as table 2 values! (thus mixing code below makes sense to not handle the other case)
 static const int mode_to_len_t1[8][8] = {
 {16,32,64,128,256,512,1024,2048 },	//Mode 0
 {16,32,64,128,256,512,1024,2048 },	//Mode 1
@@ -174,7 +174,7 @@ static const int mode_to_len_t1[8][8] = {
 
 /* Table 2 Length Values based on Mode */
 static const int mode_to_len_t2[8][8] = {
-{16,32,64,128,256,512,1024,2048 },	//Mode 0 //datasheet has last value = 1048
+{16,32,64,128,256,512,1024,2048 },	//Mode 0 //datasheet has last value = 1048 //!! -> try 1024 instead??
 {16,32,64,128,256,512,1024,2048 },	//Mode 1
 {16,32,64,128,256,512,1024,1024 },	//Mode 2
 {16,32,64,128,256,512,1024,2048 },	//Mode 3
@@ -185,22 +185,22 @@ static const int mode_to_len_t2[8][8] = {
 };
 
 /* Attenuation Table */
-/*static const int v_linear[32] = {
+static const int v_linear[32] = {
 1023,939,863,791,727,667,611,559,515,471,431,
  395,363,335,307,283,259,235,215,199,183,166,
  152,140,128,117,107, 98, 90, 83, 76, 69
-};*/
+};
 // a_decibel = 20 * log((v_linear+1)/1024)
-static const double a_decibel[32] = {
+/*static const double a_decibel[32] = {
  0.00, 0.74, 1.48, 2.23, 2.96, 3.71, 4.47, 5.24, 5.95,
  6.73, 7.50, 8.25, 8.98, 9.68,10.43,11.14,11.91,12.75,
 13.52,14.19,14.91,15.75,16.51,17.22,17.99,18.77,19.54,
 20.29,21.03,21.72,22.48,23.30
-};
+};*/
 
 #ifdef USE_FREQTABLE_FROM_MANUAL
 /* Frequency Table for a 4Mhz Clocked Chip */
-static const double freqtable4Mhz[0xff] = {
+static const double freqtable4Mhz[256] = {
  1016.78,1021.45,1026.69,1031.46,1036.27,1041.67,1044.39,1045.48,
  1046.57,1047.67,1048.77,1051.52,1056.52,1061.57,1066.67,1071.81,	//0x00 - 0x0F
  1077.01,1082.25,1087.55,1092.90,1098.30,1103.14,1106.81,1107.42,
@@ -231,12 +231,12 @@ static const double freqtable4Mhz[0xff] = {
  2217.29,2219.76,2222.22,2227.17,2239.64,2249.72,2259.89,2272.73,	//0xD0 - 0xDF
  2283.11,2293.58,2304.15,2314.81,2325.58,2339.18,2344.67,2347.42,
  2350.18,2352.94,2355.71,2361.28,2372.48,2383.79,2395.21,2406.74,	//0xE0 - 0xEF
- 0,0,0,0,0,0,0,
- 0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
+ 0,0,0,0,0,0,0,0,
+ 0,0,0,0,0,0,0,0,													//0xF0 - 0xFF (Special codes)
 };
 
 /* Frequency Table for a 6Mhz Clocked Chip */
-static const double freqtable6Mhz[0xff] = {
+static const double freqtable6Mhz[256] = {
  1523.78,1523.79,1538.64,1545.79,1552.99,1561.08,1565.16,1566.80,
  1568.44,1570.08,1571.73,1575.86,1583.35,1590.91,1598.55,1606.26,	//0x00 - 0x0F
  1614.04,1621.90,1629.84,1637.86,1645.95,1653.22,1658.71,1659.62,
@@ -267,15 +267,15 @@ static const double freqtable6Mhz[0xff] = {
  3322.93,3326.61,3330.31,3337.73,3356.42,3371.52,3386.76,3406.00,	//0xD0 - 0xDF
  3421.55,3437.25,3453.09,3469.07,3485.21,3505.59,3513.81,3517.93,
  3522.07,3526.21,3530.37,3538.70,3555.49,3572.44,3589.56,3606.84,	//0xE0 - 0xEF
- 0,0,0,0,0,0,0,
- 0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
+ 0,0,0,0,0,0,0,0,
+ 0,0,0,0,0,0,0,0,													//0xF0 - 0xFF (Special codes)
 };
 #else
 /* Frequency Table for a 4Mhz Clocked Chip
    Note: Only the 1st set of frequencies came from the manual, the rest were calculated using 1 semitone increments
    using a program called Test Tone Generator 3.91
 */
-static const double freqtable4Mhz[0xff] = {
+static const double freqtable4Mhz[256] = {
  1016.78,1021.45,1026.69,1031.46,1036.27,1041.67,1044.39,1045.48,
  1046.57,1047.67,1048.77,1051.52,1056.52,1061.57,1066.67,1071.81,	//0x00 - 0x0F
  1077.24,1082.19,1087.74,1092.79,1097.89,1103.61,1106.49,1107.65,
@@ -306,39 +306,10 @@ static const double freqtable4Mhz[0xff] = {
  2217.60,2219.94,2222.27,2228.09,2238.69,2249.39,2260.20,2271.09,	//0xD0 - 0xDF
  2282.59,2293.08,2304.84,2315.55,2326.35,2338.47,2344.58,2347.02,
  2349.47,2351.94,2354.41,2360.58,2371.80,2383.14,2394.59,2406.13,	//0xE0 - 0xEF
- 0,0,0,0,0,0,0,
- 0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
+ 0,0,0,0,0,0,0,0,
+ 0,0,0,0,0,0,0,0,													//0xF0 - 0xFF (Special codes)
 };
 #endif
-/**********************************************************************************************
-
-     build_vol_table -- Create volume table for each of the 62 possible volume codes
-
-***********************************************************************************************/
-static void build_vol_table(void)
-{
-	int i;
-
-#if 0
-	/* calculate the volume->voltage conversion table */
-	/* The M114S has 62 levels, in a logarithmic scale (0.75 dB per step) */
-
-	//double out = 0x7f;		//Max Volume is 0x7F for an INT16 value
-	double out = 0x6f;		//Max Volume is 0x7F for an INT16 value
-	for (i = 0;i < 62;i++)
-	{
-		VolTable[i] = out;			/* round to nearest */
-		out /= 1.090184492;			/* = 10 ^ (0.75/20) = 0.75dB */
-	}
-	//Max Attenuation
-	VolTable[62] = 0;
-#else
-	for (i = 0; i < 32; i++)
-		VolTable[i] = /*0x7f*/0x6f * pow(10., -a_decibel[i] / 20.0); // convert from decibels to scale
-	for (i = 32; i < 63; i++)
-		VolTable[i] = 0.; // is this correct or should it set a channel to non-active like value 63 does?
-#endif
-}
 
 /**********************************************************************************************
 
@@ -346,17 +317,17 @@ static void build_vol_table(void)
 	 as necessary to match the Machine driver's output sample rate.
 
 ***********************************************************************************************/
-static INT16 read_sample(struct M114SChannel *channel, UINT32 length)
+static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 {
-	UINT32 pos = channel->outpos >> FRAC_BITS;
+	const UINT32 pos = channel->outpos >> FRAC_BITS;
 	if (pos < length)
 	{
-		INT32 frac = channel->outpos & FRAC_MASK;
+		const INT32 frac = channel->outpos & FRAC_MASK;
 
 		// interpolate
-		INT16 val1 = channel->output[pos];
-		INT16 val2 = channel->output[MIN(pos + 1, length - 1)];
-		INT16 sample = (val1 * (INT32)(FRAC_ONE - frac) + val2 * frac) >> FRAC_BITS;
+		const INT16 val1 = channel->output[pos];
+		const INT16 val2 = channel->output[pos+1 < length ? pos : 0]; // wrap around to 0 (see code below!)?
+		const INT16 sample = (val1 * ((INT32)FRAC_ONE - frac) + val2 * frac) >> FRAC_BITS;
 
 		channel->outpos += channel->incr;
 		return sample;
@@ -364,8 +335,8 @@ static INT16 read_sample(struct M114SChannel *channel, UINT32 length)
 	else {
 		//LOG(("End of Table\n"));
 		//channel->end_of_table++;
-		channel->outpos = 0;
-		return 0;
+		channel->outpos = 0; // related to cyclic reading of tables //!! rather wrap over including exact FRAC_BITS instead of just nulling it?
+		return channel->output[0]; //!! dto. would need interpolation then
 	}
 }
 
@@ -379,23 +350,67 @@ static INT16 read_sample(struct M114SChannel *channel, UINT32 length)
 	 Note: Eventually this should flag an End of Table, and should process new table data
 
 ***********************************************************************************************/
-static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
+static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
 {
-	int t1start, t2start, lent1,lent2, rep1, rep2, i,j,intp;
-	INT8 *rom = &chip->region_base[0];
-	t1start = channel->table1.start_address;
-	t2start = channel->table2.start_address;
-	lent1 = channel->table1.length;
-	lent2 = channel->table2.length;
-	rep1 = channel->table1.reread;
-	rep2 = channel->table2.reread;
-	intp = channel->regs.interp;
+	int i, j, l;
+	const INT8 * const rom = &chip->region_base[0];
+	const int t1start = channel->table1.start_address;
+	const int t2start = channel->table2.start_address;
+	const int lent1 = channel->table1.length;
+	const int lent2 = channel->table2.length;
+	const int rep1 = channel->table1.reread;
+	const int rep2 = channel->table2.reread;
+	const int intp = channel->regs.interp;
+
+	INT8 tb1[4096];	// Temp copy buffer for Table 1 // long enough to hold max sizes of 2048*2 or 1024*4
+	INT8 tb2[4096];	// Temp copy buffer for Table 2 // dto.
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
 
 	//LOG(("t1s = %d t2s = %d, l1=%d l2=%d, r1=%d, r2=%d, int = %d\n",t1start,t2start,lent1,lent2,rep1,rep2,intp));
 
-	//Table1 is always larger, so use that as the size
+	// datasheet says: multiple reading permits interpolation between two adjoining samples on the same table, so do we really need to lerp instead of just repeating same values here?
+#ifdef USE_LERP_FOR_REPEATED_SAMPLES
+	//Scan Table 1
+	if(rep1 == 1)
+		memcpy(tb1,&rom[t1start],lent1);
+	else if(rep1 == 2)
+		for(i=0; i<lent1; i++)
+		{
+			tb1[i*2+0] =       rom[i+t1start];
+			tb1[i*2+1] = ((int)rom[i+t1start] + (int)rom[t1start + ((i < lent1-1) ? i+1 : i)])/2;
+		}
+	else //if(rep1 == 4)
+		for(i=0; i<lent1; i++)
+		{
+			int val1 = (int)rom[i+t1start];
+			int val2 = (int)rom[t1start + ((i < lent1-1) ? i+1 : i)];
+			tb1[i*4+0] =    rom[i+t1start];
+			tb1[i*4+1] = (val1*3 + val2  )/4;
+			tb1[i*4+2] = (val1   + val2  )/2;
+			tb1[i*4+3] = (val1   + val2*3)/4;
+		}
+		
+	//Scan Table 2
+	if (rep2 == 1)
+		memcpy(tb2,&rom[t2start+0x2000],lent2); //A13 is toggled high on Table 2 reading (Implementation specific - ie, Mr. Game)
+	else if(rep2 == 2)
+		for(i=0; i<lent2; i++)
+		{
+			tb2[i*2+0] =       rom[i+t2start+0x2000];
+			tb2[i*2+1] = ((int)rom[i+t2start+0x2000] + (int)rom[t2start+0x2000 + ((i < lent2-1) ? i+1 : i)])/2;
+		}
+	else //if(rep2 == 4)
+		for(i=0; i<lent2; i++)
+		{
+			int val1 = (int)rom[i+t2start+0x2000];
+			int val2 = (int)rom[t2start+0x2000 + ((i < lent2-1) ? i+1 : i)];
+			tb2[i*4+0] =    rom[i+t2start+0x2000];
+			tb2[i*4+1] = (val1*3 + val2  )/4;
+			tb2[i*4+2] = (val1   + val2  )/2;
+			tb2[i*4+3] = (val1   + val2*3)/4;
+		}
+#else
 	//Scan Table 1
 	for(i=0; i<lent1; i++)
 		for(j=0; j<rep1; j++)
@@ -404,22 +419,37 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	for(i=0; i<lent2; i++)
 		for(j=0; j<rep2; j++)
 			tb2[j+(i*rep2)] = rom[i+t2start+0x2000];		//A13 is toggled high on Table 2 reading (Implementation specific - ie, Mr. Game)
-	// Make up difference with zero?
-	for(i=lent2*rep2; i<lent1*rep1; i++)
-		tb2[i] = 0;
+#endif
 
-	//Now Mix based on Interpolation Bits
+	// Table1 is always larger, so use that as the size
+
+	// How to make up difference (table 2 can be shorter than table 1)? -> was memset above already, so zero for now
+	/*for(i=lent2*rep2; i<lent1*rep1; i++)
+		tb2[i] = ?;*/
+
+	// Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
-		double d = ((int)tb1[i] * (intp+1) / 16) + ((int)tb2[i] * (15-intp) / 16); //!! increase precision?? -> not from the datasheet specs, but..
-
-		//Apply volume - If envelope - use volume step to calculate sample volume, otherwise, apply directly
-#if USE_VOL_ENVELOPE
-		if(channel->regs.env_enable) {
-			channel->sample_vol += channel->vol_step;
+		//Apply volume - If envelope - inc/dec volume to calculate sample volume (only 8 most significant bits from the 10 bits, thus +/-4), otherwise, apply directly
+#ifdef USE_VOL_ENVELOPE
+		if(channel->regs.env_enable && ((i & (abs(channel->step_rate_volume_env)-1)) == abs(channel->step_rate_volume_env)/2)) { // check if we match the frequency that the value must be updated
+			channel->current_volume += channel->step_rate_volume_env > 0 ? 4 : -4; // dependent on sign inc/dec by 4
+			if(channel->step_rate_volume_env > 0)
+			{
+				if(channel->current_volume > channel->target_volume)
+					channel->current_volume = channel->target_volume;
+			}
+			else if(channel->current_volume < channel->target_volume)
+				channel->current_volume = channel->target_volume;
 		}
 #endif
 		//write to output buffer
-		channel->output[i] = (INT16)(d * channel->sample_vol);
+#ifdef DO_FULL_PRECISION_MIXING
+		l = (int)tb1[i] * (intp + 1) + (int)tb2[i] * (15 - intp);
+		channel->output[i] = (INT16)(0x6f * l * (channel->current_volume + 1) / (1024*16)); // Max Volume would be 256 for an INT16 value (so why was 0x6f chosen??)
+#else
+		l = ((int)tb1[i] * (intp + 1) / 16) + ((int)tb2[i] * (15 - intp) / 16); // formula seen in datasheet, but unclear what this means precision wise (i.e. is this only meant as real number pseudo code?)
+		channel->output[i] = (INT16)(0x6f * l * (channel->current_volume + 1) / 1024); // Max Volume would be 256 for an INT16 value (so why was 0x6f chosen??) //!! do 0x6f scale AFTER division??
+#endif
 	}
 }
 
@@ -430,7 +460,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 ***********************************************************************************************/
 //Seems this sometimes still produces some static, but I don't know why!
 static void m114s_update(int num,
-#ifdef SINGLE_CHANNEL_MIXER 
+#if M114S_OUTPUT_CHANNELS == 1
 	INT16 *buffer,
 #else
 	INT16 **buffer,
@@ -441,14 +471,14 @@ static void m114s_update(int num,
 
 	while (samples > 0)
 	{
-#ifdef SINGLE_CHANNEL_MIXER 
+#if M114S_OUTPUT_CHANNELS == 1
 		INT32 accum = 0;
 #else
 		INT32 accum[M114S_OUTPUT_CHANNELS];
 #endif
 		int c;
 
-#ifndef SINGLE_CHANNEL_MIXER 
+#if M114S_OUTPUT_CHANNELS != 1
 		/* clear accum */
 		for(c = 0; c < M114S_OUTPUT_CHANNELS; c++)
 			accum[c] = 0;
@@ -459,23 +489,28 @@ static void m114s_update(int num,
 		{
 			struct M114SChannel *channel = &chip->channels[c];
 			/* Grab the next sample from the table data if the channel is active */
-			if(channel->active)
+			if (channel->active)
+			{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
+				INT32 sample = read_sample(channel, channel->table1.total_length); //!! INT16 if MR_GAME_VOLUME_HACK would be off
+
+#ifdef MR_GAME_VOLUME_HACK
+				sample = sample*chip->channel_volume[channel->regs.outputs] / 100; // boost percussion on Dakar, penalty some of the other instruments
+#endif
 				//Mix the output of this channel to the appropriate output channel
-#ifdef SINGLE_CHANNEL_MIXER
+#if M114S_OUTPUT_CHANNELS == 1
 				accum
-#else
-#if M114S_OUTPUT_CHANNELS == 4
+#elif M114S_OUTPUT_CHANNELS == 4
 				accum[channel->regs.outputs]
 #else
 				accum[c]
 #endif
-#endif
-				+= read_sample(channel, channel->table1.total_length);
+				+= sample;
+			}
 		}
 
 		/* Update the buffer & Ensure we don't clip */
-#ifdef SINGLE_CHANNEL_MIXER
+#if M114S_OUTPUT_CHANNELS == 1
 		accum /= 4;
 		*buffer++ = (accum < -32768) ? -32768 : ((accum > 32767) ? 32767 : accum);
 #else
@@ -498,9 +533,9 @@ INLINE void init_channel(struct M114SChannel *channel)
 	//set all internal registers to 0!
 	channel->active = 0;
 	channel->outpos = 0;
-	channel->last_volume = 0.;
+	channel->prev_volume = 0;
 	memset(&channel->output,0,sizeof(channel->output));
-	memset(&channel->regs,0,sizeof(channel->regs));
+	memset(&channel->regs,  0,sizeof(channel->regs));
 	memset(&channel->table1,0,sizeof(channel->table1));
 	memset(&channel->table2,0,sizeof(channel->table2));
 }
@@ -518,28 +553,20 @@ INLINE void init_all_channels(struct M114SChip *chip)
 	memset(&chip->tempch_regs,0,sizeof(chip->tempch_regs));
 	chip->channel = 0;
 	chip->bytes_read = 0;
-	memset(&tb1,0,sizeof(tb1));
-	memset(&tb2,0,sizeof(tb2));
 }
 
 
 int M114S_sh_start(const struct MachineSound *msound)
 {
 	const struct M114Sinterface *intf = msound->sound_interface;
-#ifdef SINGLE_CHANNEL_MIXER 
+#if M114S_OUTPUT_CHANNELS == 1 
 	char stream_name[40];
 #else
 	char stream_name[M114S_OUTPUT_CHANNELS][40];
 	const char *stream_name_ptrs[M114S_OUTPUT_CHANNELS];
 	int vol[M114S_OUTPUT_CHANNELS];
 #endif
-	int i;
-#ifndef SINGLE_CHANNEL_MIXER
-	int j;
-#endif
-
-	/* create the volume table */
-	build_vol_table();
+	int i,j;
 
 	/* initialize the chips */
 	memset(&m114schip, 0, sizeof(m114schip));
@@ -565,7 +592,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 		}
 
 		/* generate the name and create the stream */
-#ifdef SINGLE_CHANNEL_MIXER 
+#if M114S_OUTPUT_CHANNELS == 1
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
 		m114schip[i].stream = stream_init(stream_name, 100, SAMPLE_RATE, i, m114s_update);
 #else
@@ -586,6 +613,8 @@ int M114S_sh_start(const struct MachineSound *msound)
 
 		/* init the channels */
 		init_all_channels(&m114schip[i]);
+		for(j = 0; j < 4; j++)
+			m114schip[i].channel_volume[j] = intf->mixing_level[i][j];
 	}
 
 	/* success */
@@ -601,8 +630,6 @@ int M114S_sh_start(const struct MachineSound *msound)
 void M114S_sh_stop(void)
 {
 }
-
-
 
 /**********************************************************************************************
 
@@ -640,6 +667,7 @@ static void process_freq_codes(struct M114SChip *chip)
 			break;
 		//RSS - Reverse Syncro Status
 		case 0xfa:
+			// check if used, as this will force frequency changes to wait until table ends
 			LOG(("* * Channel: %02d: Frequency Code: %02x - RSS * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//RSG - Reset Syncro Global
@@ -654,7 +682,7 @@ static void process_freq_codes(struct M114SChip *chip)
 		//FFT - Forced Table Termination
 		case 0xff:
 			//Stop whatever output from playing by simulating an end of table event!
-			channel->outpos = 0;
+			channel->outpos = 0; // but this will just put the cyclic counter back to the beginning!?!
 			//LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->regs.frequency));
 			break;
 		default:
@@ -683,9 +711,8 @@ static void process_channel_data(struct M114SChip *chip)
 	//Copy data to the appropriate channel registers from our temp channel registers
 	memcpy(channel,&chip->tempch_regs,sizeof(chip->tempch_regs));
 
-
-	//Look for the 16 special frequency codes starting from 0xff
-	if(channel->regs.frequency > (0xff-16)) {
+	//Look for the 16 special frequency codes
+	if(channel->regs.frequency >= 0xf0) {
 			process_freq_codes(chip);
 			//FFT & PSF are the only codes that should continue to process channel data AFAIK
 			if(channel->regs.frequency != 0xff && channel->regs.frequency != 0xfc)
@@ -700,40 +727,32 @@ static void process_channel_data(struct M114SChip *chip)
 	else
 	//Process this channel
 	{
-		//Calculate new volume
-		double newvol = VolTable[channel->regs.atten];
 		//Calculate # of repetitions for Table 1 & Table 2
-		int rep1 = mode_to_rep[channel->regs.read_meth][0];
-		int rep2 = mode_to_rep[channel->regs.read_meth][1];
+		const int rep1 = mode_to_rep[channel->regs.read_meth][0];
+		const int rep2 = mode_to_rep[channel->regs.read_meth][1];
 		//Calculate Table Length for Table 1 & Table 2
-		int lent1 = mode_to_len_t1[channel->regs.read_meth][channel->regs.table_len];
-		int lent2 = mode_to_len_t2[channel->regs.read_meth][channel->regs.table_len];
+		const int lent1 = mode_to_len_t1[channel->regs.read_meth][channel->regs.table_len];
+		const int lent2 = mode_to_len_t2[channel->regs.read_meth][channel->regs.table_len];
+		//Start & Stop Address - Note the special case for table length of 16 - Bit 5 always 1 in this case // but also for special cases 8 and 4 for table 2?!?
 		//Calculate Table 1 Start & End Address in ROM
-		int t1start = (channel->regs.table1_addr<<5) & (~(lent1-1)&0x1fff);		//T1 Addr is upper 8 bits, but masked by length
-		int t1end = t1start + (lent1-1);
+		const int t1start = ((channel->regs.table1_addr<<5) & (~(lent1-1)&0x1fff)) | (lent1 == 16 ? 0x10 : 0); //T1 Addr is only upper 8 bits, but masked by length
+		//const int t1end = t1start | (lent1-1);
 		//Calculate Table 2 Start & End Address in ROM
-		int t2start = (channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff);		//T2 Addr is upper 8 bits, but masked by length
-		int t2end = t2start + (lent2-1);
+		const int t2start = ((channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff)) | (lent2 <= 16 ? 0x10 : 0); //T2 Addr is only upper 8 bits, but masked by length
+		//const int t2end = t2start | (lent2-1);
+
 		//Calculate initial frequency of both tables
 		double freq = chip->is_M114A ? freqtable4Mhz[channel->regs.frequency] : freqtable6Mhz[channel->regs.frequency];
 
-		//Adjust Start & Stop Address - Special case for table length of 16 - Bit 5 always 1 in this case
-		if(lent1 == 16) {
-			t1start |= 0x10;
-			t1end |= 0x10;
-		}
-		if(lent2 == 16) {
-			t2start |= 0x10;
-			t2end |= 0x10;
-		}
-
-		//Channel is now active!
-		channel->active = 1;
+		//Calculate new volume
+		channel->target_volume = channel->regs.atten < 32 ? v_linear[channel->regs.atten] : 0; // channel must be kept active, but is it really 0? Or is the last value used (v_linear[31])? Or something inbetween??
 
 		//Adjust frequency if octave divisor set
 		if (channel->regs.oct_divisor)
-			freq /= 2.; // or must the lookup above be divided instead??:
-			//freq = chip->is_M114A ? freqtable4Mhz[channel->regs.frequency/2] : freqtable6Mhz[channel->regs.frequency/2];
+			freq /= 2.; // maybe new frequency must be clamped to freqtable[0]??
+
+		//Channel is now active!
+		channel->active = 1;
 
 		// Setup Sample Rate/Step size increase
 		channel->incr = (UINT32)(freq * ((double)(16u << FRAC_BITS) / SAMPLE_RATE));
@@ -741,8 +760,8 @@ static void process_channel_data(struct M114SChip *chip)
 		//Assign start & stop address offsets to ROM
 		channel->table1.start_address = t1start;
 		channel->table2.start_address = t2start;
-		channel->table1.stop_address = t1end;
-		channel->table2.stop_address = t2end;
+		//channel->table1.stop_address = t1end;
+		//channel->table2.stop_address = t2end;
 
 		//Assign # of times to re-read & Length
 		channel->table1.reread = rep1;
@@ -755,19 +774,21 @@ static void process_channel_data(struct M114SChip *chip)
 		//Calculate Sample Volume
 		//- If Envelope should be used, Take the difference in new volume & current volume, and break it into the # of samples in the table
 		//- If No Envelope should be used, Volume is simply based on the Volume Table
-#if USE_VOL_ENVELOPE
+#ifdef USE_VOL_ENVELOPE
 		if(channel->regs.env_enable) {
-			double voldiff = newvol - channel->last_volume;
-			channel->vol_step = voldiff / channel->table1.total_length;
-			channel->sample_vol = channel->last_volume;
+			const int diff = channel->target_volume - channel->prev_volume;
+			channel->step_rate_volume_env = abs(diff) > 128 ? 1 : abs(diff) > 64 ? 2 : abs(diff) > 32 ? 4 : 8;
+			if(channel->target_volume < channel->prev_volume)
+				channel->step_rate_volume_env = -channel->step_rate_volume_env;
+			channel->current_volume = channel->prev_volume;
 		}
 		else
 #endif
 		{
-			channel->sample_vol = newvol;
+			channel->current_volume = channel->target_volume;
 		}
 		//Update Last Volume
-		channel->last_volume = newvol;
+		channel->prev_volume = channel->target_volume;
 
 		//Temp hack to ensure we only generate the ouput data 1x - this is WRONG and needs to be addressed eventually!
 		//if(channel->output[0] == 0)
@@ -834,7 +855,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	/*  BYTE #2 -
 		Bits 0-1: Table 2 Address (Bits 6-7)
 		Bits 2-3: Table 1 Address (Bits 6-7)
-		Bits 3-5: Output Pin Selection (0-3)  */
+		Bits 4-5: Output Pin Selection (0-3)  */
 		case 2:
 			chip->tempch_regs.table2_addr = (data & 0x03)<<6;
 			chip->tempch_regs.table1_addr = (data & 0x0c)<<4;
@@ -864,7 +885,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	/*	BYTE #6 -
 		Bits 0  : Octave Divisor
 		Bits 1  : Envelope Enable/Disable
-		Bits 2-5: Interpolation Value (0-4)	*/
+		Bits 2-5: Interpolation Value (0-15) */
 		case 6:
 			chip->tempch_regs.oct_divisor = (data & 0x01);
 			chip->tempch_regs.env_enable = (data & 0x02)>>1;

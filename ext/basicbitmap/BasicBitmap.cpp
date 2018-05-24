@@ -4605,13 +4605,13 @@ void BasicBitmap::Shuffle(int b0, int b1, int b2, int b3)
 	if (_bpp != 32) return;
 	for (int j = 0; j < _h; j++) {
 		IUINT8 *src = (IUINT8*)Line(j);
-		IUINT8 QUAD[4];
+		union { IUINT8 quad[4]; IUINT32 color; } cc;
 		for (int i = _w; i > 0; src += 4, i--) {
-			*(IUINT32*)QUAD = *(IUINT32*)src;
-			src[0] = QUAD[b0];
-			src[1] = QUAD[b1];
-			src[2] = QUAD[b2];
-			src[3] = QUAD[b3];
+			cc.color = *((IUINT32*)src);
+			src[0] = cc.quad[b0];
+			src[1] = cc.quad[b1];
+			src[2] = cc.quad[b2];
+			src[3] = cc.quad[b3];
 		}
 	}
 }
