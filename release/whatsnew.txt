@@ -5,8 +5,10 @@ Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alte
 Further improve M114 sound core (Mr. Game)
 Added save credits support for Bow & Arrow
 Fixed neverending sounds on LTD system 4 games, added sound support for Cowboy Eight Ball and Zephy
+Implement 'fast flips' support for some S.A.M. games: Recommended table implementation is to use direct/fast flipper flips when solenoid 33 is on, but to respond to the standard flipper solenoids when 33 is off
+ (trn_174h, acd_168h, mtl_170h, twd_160h, wof_500, st_161h, xmn_151h, fg_1200, potc_600, im_183ve, avr_200, avs_170, wpt_140a, tf_180h)
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL
 New:
 Mirco: Lucky Draw
 Williams: Bigfoot R0.1 & R0.1b & R0.1c & R0.1d (FreeWPC based rewrite of White Water)
@@ -22,6 +24,7 @@ Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this match
 Clones:
 AC/DC 1.70.0,1.70.0LE
 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
+Batman 1.03 (French)
 Black Jack (Saucer points modification)
 Bow & Arrow (Prototype rev. 22)
 Earthshaker PA-4
