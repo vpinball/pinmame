@@ -416,6 +416,7 @@ DRIVER(tmnt,104g)       //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.0
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
+DRIVER(btmn,f13)        //Data East MPU: 09/91 Batman (1.03 French)
 DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 German)
 DRIVER(btmn,106)        //Data East MPU: ??/91 Batman (1.06)
 DRIVER(trek,11a)        //Data East MPU: 11/91 Star Trek 25th Anniversary (1.10 Alpha Display)
