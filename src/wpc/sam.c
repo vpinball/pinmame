@@ -781,6 +781,8 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400020:
 				if (++samlocals.dataWrites[0] == 1)
 				{
+					coreGlobals.pulsedSolState &= ~(0xFF << 8);
+					coreGlobals.pulsedSolState |= data << 8;
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
@@ -826,7 +828,11 @@ static WRITE32_HANDLER(sambank_w)
 
 						coreGlobals.pulsedSolState = data | ((data & ((1u << 4) | (1u << 6))) >> 1);
 					}
-
+					else
+					{
+						coreGlobals.pulsedSolState &= ~(0xFF);
+						coreGlobals.pulsedSolState |= data;
+					}
 					for (ii = 0; ii <= 7; ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii], data & (1u << ii));
@@ -836,6 +842,9 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400022:
 				if (++samlocals.dataWrites[2] == 1)
 				{
+					coreGlobals.pulsedSolState &= ~(0xFF << 16);
+					coreGlobals.pulsedSolState |= data << 16;
+
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
@@ -846,6 +855,8 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400023:
 				if (++samlocals.dataWrites[3] == 1)
 				{
+					coreGlobals.pulsedSolState &= ~(0xFF << 24);
+					coreGlobals.pulsedSolState |= data << 24;
 					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
@@ -1263,6 +1274,8 @@ void sam_init()
 		samlocals.fastflipaddr = 0x01075712;
 	else if (_strnicmp(gn, "tf_180h", 7) == 0)
 		samlocals.fastflipaddr = 0x0107472e;
+	else if (_strnicmp(gn, "bdk_294", 7) == 0)
+		samlocals.fastflipaddr = 0x010791be;
 }
 
 
