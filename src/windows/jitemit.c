@@ -644,8 +644,14 @@ void jit_emit_commit(struct jit_ctl *jit)
 		// with 5+1 bytes.  This doesn't apply if the label points to an 
 		// opcode that's already been translated, since we can jump directly
 		// to the emulated code in that case.
-		if (i->lbl != 0 && i->lbl->i != 0)
-			len += 1;
+		// Some special conditions generate an additional MOV EAX, <retaddr>.   Allocate 5 extra bytes in case.
+		if (i->lbl != 0)
+		{
+			if (i->lbl->i != 0)
+				len += 1;
+			else
+				len += 5;
+		}
 	}
 
 	// add room for a NOP at the end, just in case
@@ -916,8 +922,10 @@ void jit_emit_commit(struct jit_ctl *jit)
 		}
 	}
 	while (mod);
-
 	// save each instruction
+#ifdef JIT_DEBUG
+	int totallen = 0;
+#endif
 	emuaddr = stktop->ihead->emuaddr - 1;
 	for (i = stktop->ihead ; i != 0 ; i = i->nxt)
 	{
@@ -965,7 +973,13 @@ void jit_emit_commit(struct jit_ctl *jit)
 		}
 		
 		// copy this instruction to the JIT executable code page
+
+#ifdef JIT_DEBUG
+		totallen += i->len;
+#endif
+
 		jit_store_native_from_reserved(jit, i->b, i->len, pg, i->nataddr);
+
 
 		// if this is the first native instruction for this emulated opcode,
 		// set the address mapping
@@ -974,6 +988,10 @@ void jit_emit_commit(struct jit_ctl *jit)
 			JIT_NATIVE(jit, emuaddr) = i->nataddr;
 		}
 	}
+
+#ifdef JIT_DEBUG
+	ASSERT(totallen <= reslen);
+#endif
 
 	// end the store-native operation
 	jit_close_native(jit, resp, reslen);
