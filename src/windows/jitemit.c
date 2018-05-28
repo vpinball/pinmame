@@ -923,7 +923,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 	}
 	while (mod);
 	// save each instruction
-#ifdef JIT_DEBUG
+#if JIT_DEBUG
 	int totallen = 0;
 #endif
 	emuaddr = stktop->ihead->emuaddr - 1;
@@ -974,7 +974,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 		
 		// copy this instruction to the JIT executable code page
 
-#ifdef JIT_DEBUG
+#if JIT_DEBUG
 		totallen += i->len;
 #endif
 
@@ -989,7 +989,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 		}
 	}
 
-#ifdef JIT_DEBUG
+#if JIT_DEBUG
 	ASSERT(totallen <= reslen);
 #endif
 
