@@ -880,17 +880,15 @@ static WRITE32_HANDLER(sambank_w)
 				}
 				else if (core_gameData->hw.gameSpecific1 & SAM_GAME_FG)
 				{
-					const int test = data & ~samlocals.auxdata;
-					if (!((test < 0x80) && (test >= 0))) // observe change low -> high to trigger the column reset
-					{
+					if (data & ~samlocals.auxdata & 0x80) 
+					{ // observe change low -> high to trigger the column reset
 						samlocals.miniDMDCol = 0;
 						samlocals.miniDMDRow = core_BitColToNum(data & 0x03); // 2 rows
 					}
-					if ( samlocals.miniDMDCol < 3 )
+					else if (samlocals.miniDMDCol < 3) 
 					{
-						const int i = 10 + samlocals.miniDMDCol + 3*samlocals.miniDMDRow;
-						coreGlobals.tmpLampMatrix[i] = data & 0x7F;
-						coreGlobals.lampMatrix[i] = data & 0x7F;
+						const int i = 10 + samlocals.miniDMDCol + 3 * samlocals.miniDMDRow;
+						coreGlobals.lampMatrix[i] = coreGlobals.tmpLampMatrix[i] = data & 0x7f;
 						samlocals.miniDMDCol++;
 					}
 				}
@@ -1474,7 +1472,7 @@ static INTERRUPT_GEN(sam_vblank) {
 		break;
 	}
 	case SAM_GAME_WOF:
-		//!! also others ?!
+	case SAM_GAME_FG:
 		break;
 
 	default:
