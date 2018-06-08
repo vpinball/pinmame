@@ -1231,6 +1231,8 @@ void sam_init()
 
 	if (_strnicmp(gn, "csi_", 4) == 0 || _strnicmp(gn, "ij4_", 4) == 0)
 		at91_block_timers = 1;
+	else
+		at91_block_timers = 0;
 
 	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
 	// Load the balls in trough (E+SDFG), start the game.  
