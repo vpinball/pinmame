@@ -74,9 +74,9 @@
 #define SAM_GAME_ACDC_FLAMES  0x200 // AC/DC LE uses a special aux board for flame lights
 #define SAM_GAME_IJ4_SOL3     0x400
 
-#define SAM_0COL 0x00
 #define SAM_2COL 0x02
 #define SAM_3COL 0x03
+#define SAM_5COL 0x05
 #define SAM_8COL 0x08
 
 #define WOF_MINIDMD_MAX 175
@@ -1013,10 +1013,10 @@ static WRITE32_HANDLER(sambank_w)
 				if (core_gameData->hw.gameSpecific1 & SAM_GAME_TRON)
 				{
 					if ( ~data & 0x08 )
-						coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = core_revbyte(samlocals.auxdata);
+						coreGlobals.lampMatrix[12] = coreGlobals.tmpLampMatrix[12] = core_revbyte(samlocals.auxdata);
 					if ( ~data & 0x10 )
 					{
-						coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = core_revbyte(samlocals.auxdata);
+						coreGlobals.lampMatrix[11] = coreGlobals.tmpLampMatrix[11] = core_revbyte(samlocals.auxdata);
 						core_update_modulated_light(&samlocals.modulated_lights[0], samlocals.auxdata & (1u << 3));
 						core_update_modulated_light(&samlocals.modulated_lights[1], samlocals.auxdata & (1u << 4));
 						core_update_modulated_light(&samlocals.modulated_lights[2], samlocals.auxdata & (1u << 5));
@@ -2333,7 +2333,7 @@ CORE_CLONEDEF(twenty4, 144, 150, "24 (V1.44)", 2009, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / NBA
 /-------------------------------------------------------------------*/
-INITGAME(nba, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_NOMINI)
+INITGAME(nba, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
 
 SAM1_ROM32MB(nba_500, "nba_500.bin", CRC(01b0c27a) SHA1(d7f4f6b24630b55559a48cde4475422905811106), 0x019112d0)
 SAM1_ROM32MB(nba_600, "nba_600.bin", CRC(af2fbcf4) SHA1(47df1992a1eb6c4cd5ec246912eab9f5636499a7), 0x019112d0)
@@ -2369,7 +2369,7 @@ CORE_CLONEDEF(bbh, 160, 170, "Big Buck Hunter Pro (V1.6)", 2010, "Stern", sam1, 
 /*-------------------------------------------------------------------
 / Iron Man
 /-------------------------------------------------------------------*/
-INITGAME(im, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_GAME_AUXSOL12)
+INITGAME(im, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM32MB(im_100,  "im_100.bin",  CRC(b27d12bf) SHA1(dfb497f2edaf4321823b243cced9d9e2b7bac628), 0x01b8fe44)
 SAM1_ROM32MB(im_110,  "im_110.bin",  CRC(3140cb7c) SHA1(20b0e84b61069e09f189d79e6b4d5abf0369a893), 0x01b8fe44)
@@ -2396,7 +2396,7 @@ CORE_CLONEDEF(im, 183, 183ve, "Iron Man (V1.83)", 2014, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / TRON: Legacy
 /-------------------------------------------------------------------*/
-INITGAME(trn, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_TRON)
+INITGAME(trn, GEN_SAM, sam_dmd128x32, SAM_5COL, SAM_GAME_TRON)
 
 SAM1_ROM32MB(trn_100h, "trn_100h.bin", CRC(4c2abebd) SHA1(8e22454932680351d58f863cf9644a9f3db24800), 0x01F19368)
 SAM1_ROM32MB(trn_110,  "trn_110.bin",  CRC(bdaf1803) SHA1(f32d5bfb87be85483b0486bbb6f2858efca6efe5), 0x01AB97D8)
@@ -2431,7 +2431,7 @@ CORE_CLONEDEF(trn, 17402,174h, "TRON: Legacy (V1.7402)", 2013, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / Transformers
 /-------------------------------------------------------------------*/
-INITGAME(tf, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_AUXSOL12)
+INITGAME(tf, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM32MB(tf_088h, "tf_088h.bin", CRC(a79ca893) SHA1(8f1228727422f5f99a20d60968eeca6c64f6c253), 0x01EB4CE8)
 SAM1_ROM32MB(tf_100h, "tf_100h.bin", CRC(3be6ffc2) SHA1(c57d00af7ea189ea37ceed28bf85cff1054a1b8c), 0x01F4CCF0)
@@ -2466,7 +2466,7 @@ CORE_CLONEDEF(tf, 180,  180h, "Transformers (V1.8)", 2013, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / James Cameron's Avatar
 /-------------------------------------------------------------------*/
-INITGAME(avr, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_GAME_AUXSOL12)
+INITGAME(avr, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM32MB(avr_101h, "avr_101h.bin", CRC(dbdcc7e5) SHA1(bf9a79209ecdae93efb2930091d2658259a3bd03), 0x01EE1CB8)
 SAM1_ROM32MB(avr_106,  "avr_106.bin",  CRC(695799e5) SHA1(3e216fd4273adb7417294b3e648befd69350ab25), 0x01ED31B4)
@@ -2486,7 +2486,7 @@ CORE_CLONEDEF(avr, 200,  120h, "Avatar (V2.0)", 2013, "Stern", sam1, 0)
 /*-------------------------------------------------------------------
 / The Rolling Stones
 /-------------------------------------------------------------------*/
-INITGAME(rsn, GEN_SAM, sam_dmd128x32, SAM_0COL, SAM_NOMINI)
+INITGAME(rsn, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
 
 SAM1_ROM32MB(rsn_100h, "rsn_100h.bin", CRC(7cdb082a) SHA1(2f35057b80ffeec05cdbc62bc86da8a32f859425), 0x01EB50C8)
 SAM1_ROM32MB(rsn_103,  "rsn_103.bin",  CRC(2039ac97) SHA1(4cbcc758fc74dd32f5804b9548645fba3431bdce), 0x01D38788)
@@ -2711,7 +2711,7 @@ CORE_CLONEDEF(mtl, 170hc,170h, "Metallica Limited Edition (V1.7) (Colored)", 201
 /*-------------------------------------------------------------------
 / Star Trek (Stern)
 /-------------------------------------------------------------------*/
-INITGAME(st, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12)
+INITGAME(st, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM128MB(st_120,  "st_120.bin",  CRC(dde9db23) SHA1(09e67564bce0ff7c67f1d16c4f9d8595f8130372), 0x02B14CFC)													
 SAM1_ROM128MB(st_130,  "st_130.bin",  CRC(f501eb87) SHA1(6fa2f4e30cdd397d5443dfc690463495d22d9229), 0x02B71A98)													
@@ -2756,7 +2756,7 @@ CORE_CLONEDEF(st, 161hc,162h, "Star Trek Limited Edition (V1.61) (Colored)", 201
 /*-------------------------------------------------------------------
 / Mustang
 /-------------------------------------------------------------------*/
-INITGAME(mt, GEN_SAM, sam_dmd128x32, SAM_8COL,SAM_GAME_AUXSOL12)
+INITGAME(mt, GEN_SAM, sam_dmd128x32, SAM_2COL,SAM_GAME_AUXSOL12)
 
 SAM1_ROM128MB(mt_120,  "mt_120.bin",  CRC(be7437ac) SHA1(5db10d7f48091093c33d522a663f13f262c08c3e), 0x037DA5EC)													
 SAM1_ROM128MB(mt_130,  "mt_130.bin",  CRC(b6086db1) SHA1(0a50864b0de1b4eb9a764f36474b6fddea767c0d), 0x0323573C)													
@@ -2791,7 +2791,7 @@ CORE_CLONEDEF(mt, 145hc,145h, "Mustang Limited Edition (V1.45) (Colored)", 2016,
 /*-------------------------------------------------------------------
 / The Walking Dead
 /-------------------------------------------------------------------*/
-INITGAME(twd, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12)
+INITGAME(twd, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM128MB(twd_105,  "twd_105.ebi",  CRC(59b4e4d6) SHA1(642e827d58c9877a9f3c29b75784660894f045ad), 0x04F4FBF8)													
 SAM1_ROM128MB(twd_111,  "twd_111.bin",  CRC(6b2faad0) SHA1(1f3dd34e5f7cd7ae539b39c0f3c87b966d2c2f45), 0x0512CF54)													
@@ -2850,7 +2850,7 @@ CORE_CLONEDEF(twd, 160hc,160h, "Walking Dead, The Limited Edition (V1.60.0) (Col
 /*-------------------------------------------------------------------
 / Spider-Man Vault Edition (Stern)
 /-------------------------------------------------------------------*/
-INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_8COL, SAM_GAME_AUXSOL12)
+INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 
 SAM1_ROM128MB(smanve_100, "smanve_100.bin",  CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03F2CA8C)
 SAM1_ROM128MB(smanve_101, "smanve_101.bin",  CRC(b7a525e8) SHA1(43fd9520225b11ba8ba5f9e8055689a652237983), 0x03F2CA8C)
