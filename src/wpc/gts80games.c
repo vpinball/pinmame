@@ -841,7 +841,7 @@ CORE_CLONEDEFNV(jack2opn,gts80as,"Jacks to Open",1984,"Gottlieb",gl_mGTS80S,0)
 / Alien Star (#689)
 /-------------------------------------------------------------------*/
 INIT_S80A(alienstr, dispNumeric3, SNDBRD_GTS80SP,0)
-GTS80_1_ROMSTART ("689.cpu",   CRC(4262006b) SHA1(66520b66c31efd0dc654630b2d3567da799b4d89))
+GTS80_1_ROMSTART ("689a.cpu",  CRC(4262006b) SHA1(66520b66c31efd0dc654630b2d3567da799b4d89))
 GTS80S2K_ROMSTART("689-s.snd", CRC(e1e7a610) SHA1(d4eddfc970127cf3a7d086ad46cbc7b95fdc269d))
 GTS80_ROMEND
 #define input_ports_alienstr input_ports_gts80
@@ -1042,17 +1042,6 @@ GTS80BSSOUND88(             "drom1.snd",     CRC(03830e81) SHA1(786f85eba5a8f5e9
 GTS80_ROMEND
 #define input_ports_rockgfp input_ports_rock
 CORE_CLONEDEFNV(rockgfp,rock, "Rock (German Free Play)",1985,"Flipprojets",gl_mGTS80BS1,0)
-
-/*-------------------------------------------------------------------
-/ System 80B Test Fixture
-/-------------------------------------------------------------------*/
-INITGAME(s80btest, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
-GTS80B_2K_ROMSTART(s80btest, "test2.cpu", CRC(6199c002) SHA1(d997e7a2f10b1780532aea689ee00e0c60e1cc64),
-                             "test1.cpu", CRC(032ccbff) SHA1(e6703bd061d7c8c7e8917371d253647cf1320356))
-GTS80BSSOUND8 (              "testd.snd", CRC(5d04a6d9) SHA1(f83bd8692146af7d234c1a32d0b688e76d1b2b85))
-GTS80_ROMEND
-#define input_ports_s80btest input_ports_gts80
-CORE_GAMEDEFNV(s80btest, "System 80B Test",198?,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Raven (#702)
@@ -2212,28 +2201,6 @@ GTS80_ROMEND
 #define input_ports_bonebffp input_ports_bonebstr
 CORE_CLONEDEFNV(bonebffp,bonebstr, "Bone Busters Inc. (French Free Play)",1989,"Flipprojets",gl_mGTS80BS3A,0)
 
-// Game produced by Premier for International Concepts
-/*-------------------------------------------------------------------
-/ Night Moves (C-101)
-/-------------------------------------------------------------------*/
-INITGAME(nmoves, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
-GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
-                           "nmovsp1.764",  CRC(36837146) SHA1(88312ae1d1fe76defc4aa2d0a0570c5bb56253e9))
-GTS80BSSOUND3232(          "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
-                           "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
-GTS80_ROMEND
-#define input_ports_nmoves input_ports_gts80
-CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,0)
-
-INITGAME(nmovesfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
-GTS80B_4K_ROMSTART(nmovesfp, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
-                             "prom1_fp.cpu", CRC(1cd28cac) SHA1(304139bcd4d496f913399d9945a46aadf32078f9))
-GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
-                             "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
-GTS80_ROMEND
-#define input_ports_nmovesfp input_ports_nmoves
-CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
-
 /*-------------------------------------------------------------------
 / Amazon Hunt III (#684D)
 /-------------------------------------------------------------------*/
@@ -2264,3 +2231,37 @@ GTS80BSSOUND32(              "684d-snd.rom",      CRC(a660f233) SHA1(3b80629696a
 GTS80_ROMEND
 #define input_ports_amaz3afp input_ports_amazonh3
 CORE_CLONEDEFNV(amaz3afp,amazonh3, "Amazon Hunt III (rev. 1 French Free Play)",1991,"Flipprojets",gl_mGTS80BS3,0)
+
+/*-------------------------------------------------------------------
+/ System 80B Test Fixture
+/-------------------------------------------------------------------*/
+INITGAME(s80btest, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(s80btest, "test2.cpu", CRC(6199c002) SHA1(d997e7a2f10b1780532aea689ee00e0c60e1cc64),
+                             "test1.cpu", CRC(032ccbff) SHA1(e6703bd061d7c8c7e8917371d253647cf1320356))
+GTS80BSSOUND88(              "testd.snd", CRC(5d04a6d9) SHA1(f83bd8692146af7d234c1a32d0b688e76d1b2b85),
+                             "testy.snd", NO_DUMP)
+GTS80_ROMEND
+#define input_ports_s80btest input_ports_gts80
+CORE_GAMEDEFNV(s80btest, "System 80B Test",198?,"Gottlieb",gl_mGTS80BS1,0)
+
+// Game produced by Premier for International Concepts
+/*-------------------------------------------------------------------
+/ Night Moves (C-101)
+/-------------------------------------------------------------------*/
+INITGAME(nmoves, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
+                           "nmovsp1.764",  CRC(36837146) SHA1(88312ae1d1fe76defc4aa2d0a0570c5bb56253e9))
+GTS80BSSOUND3232(          "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
+                           "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
+GTS80_ROMEND
+#define input_ports_nmoves input_ports_gts80
+CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,0)
+
+INITGAME(nmovesfp, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(nmovesfp, "nmovsp2.732",  CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
+                             "prom1_fp.cpu", CRC(1cd28cac) SHA1(304139bcd4d496f913399d9945a46aadf32078f9))
+GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
+                             "nmovyrom.256", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
+GTS80_ROMEND
+#define input_ports_nmovesfp input_ports_nmoves
+CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
