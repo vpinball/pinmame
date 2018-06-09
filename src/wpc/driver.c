@@ -2002,6 +2002,8 @@ DRIVER(st,160)          //S.A.M.: 03/15 Star Trek - V1.6
 DRIVER(st,160h)         //S.A.M.: 03/15 Star Trek - V1.6 Limited Edition
 DRIVER(st,161)          //S.A.M.: 03/15 Star Trek - V1.61
 DRIVER(st,161h)         //S.A.M.: 03/15 Star Trek - V1.61 Limited Edition
+DRIVER(st,162)          //S.A.M.: 06/18 Star Trek - V1.62
+DRIVER(st,162h)         //S.A.M.: 06/18 Star Trek - V1.62 Limited Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(st,161c)         // pinball browser colorized using extend memory
 DRIVER(st,161hc)        // pinball browser colorized using extend memory
