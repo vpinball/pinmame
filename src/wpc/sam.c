@@ -792,9 +792,9 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400020:
 				if (++samlocals.dataWrites[0] == 1)
 				{
+					int ii;
 					coreGlobals.pulsedSolState &= ~(0xFF << 8);
 					coreGlobals.pulsedSolState |= data << 8;
-					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii + 8], data & (1u << ii));
@@ -853,10 +853,10 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400022:
 				if (++samlocals.dataWrites[2] == 1)
 				{
+					int ii;
 					coreGlobals.pulsedSolState &= ~(0xFF << 16);
 					coreGlobals.pulsedSolState |= data << 16;
 
-					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii + 16], data & (1u << ii));
@@ -866,9 +866,9 @@ static WRITE32_HANDLER(sambank_w)
 			case 0x02400023:
 				if (++samlocals.dataWrites[3] == 1)
 				{
+					int ii;
 					coreGlobals.pulsedSolState &= ~(0xFF << 24);
 					coreGlobals.pulsedSolState |= data << 24;
-					int ii;
 					for (ii = 0; ii <= 7; ii++)
 					{
 						core_update_modulated_light(&samlocals.solenoidbits[ii + 24], data & (1u << ii));
@@ -1231,15 +1231,14 @@ static MACHINE_INIT(sam) {
 
 void sam_init()
 {
+	const char * const gn = Machine->gamedrv->name;
+
 	memset(&samlocals, 0, sizeof(samlocals));
 	samlocals.pass = 16;
 	samlocals.coindoor = 1;
 	samlocals.led_row = -1;
 
 	//!! timing hacks for CSI and IJ
-
-	const char * const gn = Machine->gamedrv->name;
-
 	if (_strnicmp(gn, "csi_", 4) == 0 || _strnicmp(gn, "ij4_", 4) == 0)
 		at91_block_timers = 1;
 	else
