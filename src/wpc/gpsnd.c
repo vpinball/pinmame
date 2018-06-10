@@ -437,8 +437,8 @@ static WRITE_HANDLER(pia1a_w)
 // pia1 a channels 0 - 3 emulated
 	int indexq3,indexn;
 	logerror("pia1a_w: %02x\n", data);
-	indexq3 = data  & 0x0f;
-	indexn = (data  & 0xf0) >> 4;
+	indexq3 = data & 0x0f;
+	indexn = (data & 0xf0) >> 4;
   	mixer_set_volume(gps_locals.channel+2,volumemsu1[indexq3]);       // q3
 // pia a channels 4 - 7 seems to be volume of the noise generator
   	mixer_set_volume(gps_locals.channel+3,volumemsu1[indexn]);       // noise
@@ -458,13 +458,12 @@ static WRITE_HANDLER(pia1b_w)
 {
 	int startnoise;
 	logerror("pia1b_w: %02x\n", data);
-// pia1 b channels 0 - 2 don't know, you can have a wav file from the autor (okaegi) with the
-// orignal wav sound (sharpshooter 2, soundcmd 05)
+// pia1 b channels 0 - 2 don't know, you can have a wav file from the author (okaegi) with the
+// original wav sound (sharpshooter 2, soundcmd 05)
 // pia1 b channels 3 - 7 seems to be start value from noise generator
-	startnoise = (data  & 0xf8) >> 3;
+	startnoise = (data & 0xf8) >> 3;
 	if (startnoise) playnoise(startnoise);
 }
-
 
 
 static WRITE_HANDLER(pia1ca2_w)
@@ -476,8 +475,6 @@ static WRITE_HANDLER(pia1cb2_w)
 {
 	logerror("pia1cb2_w: %02x\n", data);
 }
-
-
 
 
 static const struct pia6821_interface gps_pia[] = {
@@ -514,7 +511,6 @@ static WRITE_HANDLER(gpsm_data_w)
 static  INT16  sineWaveinp[] = {
 0, 8192,  16384,  24576, 32767,  24576,  16384,  8192,	0,-8192, -16384, -24576,-32767,	-24576,	-16384,	-8192
 }; // 6840 wave
-
 
 
 static void oneshoot (int param) {
@@ -639,13 +635,13 @@ static void gpsm_init(struct sndbrdData *brdData)
   	mixer_set_volume(gps_locals.channel+1,0);  
   	mixer_set_name  (gps_locals.channel+2,"MC6840 #Q3");  // 6840 Output timer 3 (q3) is easy wave
   	mixer_set_volume(gps_locals.channel+2,0);  
-  	mixer_set_name  (gps_locals.channel+3,"Noise");  // Noise generator
+  	mixer_set_name  (gps_locals.channel+3,"Noise");       // Noise generator
   	mixer_set_volume(gps_locals.channel+3,0);  
    	mixer_play_sample_16(gps_locals.channel+3,sineWaveext, sizeof(sineWaveext), 625000 , 1);
         gps_locals.stateca1 = 0;
         timer_set(TIME_IN_NSEC(814000000),0,oneshoot); // fire ca1 only once
 //
-// this time should run to emulate the 6840 correctly, but it is not needed for gampelan games i think
+// this time should run to emulate the 6840 correctly, but it is not needed for gameplan games i think
 // because the sound rum never reads back the decreased values from the m6840
 //
 //        timer_pulse(TIME_IN_HZ(MSU1_INTCLOCK),0x02,m6840_pulse); // start internal clock 6840
@@ -934,20 +930,14 @@ const struct sndbrdIntf gpMSU3Intf = {
 
 
 static int msu1_sh_start(const struct MachineSound *msound)  {
-
-
   return 0;
 }
-
-
-
 
 static void msu1_sh_stop(void) {
 	mixer_stop_sample(gps_locals.channel);
 	mixer_stop_sample(gps_locals.channel+1);
 	mixer_stop_sample(gps_locals.channel+2);	
 	mixer_stop_sample(gps_locals.channel+3);
-
 }
 
 static struct CustomSound_interface msu1_custInt = {msu1_sh_start, msu1_sh_stop};

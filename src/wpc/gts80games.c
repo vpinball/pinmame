@@ -1006,6 +1006,20 @@ GTS80_ROMEND
 #define input_ports_tagtem2f input_ports_tagteam
 CORE_CLONEDEFNV(tagtem2f,tagteam,"Tag-Team Pinball (rev. 2 Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
+/* These games carry a SP0250 sound chip, but none features speech from it:
+- Rock (Encore)
+- Raven
+- Hollywood Heat
+- Genesis
+- Gold Wings
+- Monte Carlo
+- Spring Break
+- Arena
+also Amazon Hunt II, technically, but it doesn't sport a Y-ROM.
+
+Only the System 80B Test Fixture has one speech command for the SP0250.
+*/
+
 /*-------------------------------------------------------------------
 / Rock (#697)
 /-------------------------------------------------------------------*/
@@ -2239,7 +2253,7 @@ INITGAME(s80btest, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA
 GTS80B_2K_ROMSTART(s80btest, "test2.cpu", CRC(6199c002) SHA1(d997e7a2f10b1780532aea689ee00e0c60e1cc64),
                              "test1.cpu", CRC(032ccbff) SHA1(e6703bd061d7c8c7e8917371d253647cf1320356))
 GTS80BSSOUND88(              "testd.snd", CRC(5d04a6d9) SHA1(f83bd8692146af7d234c1a32d0b688e76d1b2b85),
-                             "testy.snd", NO_DUMP)
+                             "testy.snd", CRC(bd998860) SHA1(8a23376cc646c9854af204e32034bf40ebe23656) BAD_DUMP) // only a bad/patched dump exists, try 03 in sound commander for a surprise (SP0250)
 GTS80_ROMEND
 #define input_ports_s80btest input_ports_gts80
 CORE_GAMEDEFNV(s80btest, "System 80B Test",198?,"Gottlieb",gl_mGTS80BS1,0)

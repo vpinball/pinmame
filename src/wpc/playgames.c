@@ -436,3 +436,7 @@ ROM_START(ironball)
     ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
 ROM_END
 CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
+
+/*-------------------------------------------------------------------
+/ ??/88 Slalom, etc are in separate file
+/-------------------------------------------------------------------*/
