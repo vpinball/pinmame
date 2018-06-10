@@ -204,7 +204,7 @@ static int adj_offset(int mask)
 	int offset = 0;
 	for(i=0;i<4;i++)
 	{
-		if( 0xFF<<(i*8) & mask )
+		if( 0xFFu<<(i*8) & mask )
 		{
 			offset=i;
 			break;
@@ -793,7 +793,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (++samlocals.dataWrites[0] == 1)
 				{
 					int ii;
-					coreGlobals.pulsedSolState &= ~(0xFF << 8);
+					coreGlobals.pulsedSolState &= ~(0xFFu << 8);
 					coreGlobals.pulsedSolState |= data << 8;
 					for (ii = 0; ii <= 7; ii++)
 					{
@@ -841,7 +841,7 @@ static WRITE32_HANDLER(sambank_w)
 					}
 					else
 					{
-						coreGlobals.pulsedSolState &= ~(0xFF);
+						coreGlobals.pulsedSolState &= ~(0xFFu);
 						coreGlobals.pulsedSolState |= data;
 					}
 					for (ii = 0; ii <= 7; ii++)
@@ -854,7 +854,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (++samlocals.dataWrites[2] == 1)
 				{
 					int ii;
-					coreGlobals.pulsedSolState &= ~(0xFF << 16);
+					coreGlobals.pulsedSolState &= ~(0xFFu << 16);
 					coreGlobals.pulsedSolState |= data << 16;
 
 					for (ii = 0; ii <= 7; ii++)
@@ -867,7 +867,7 @@ static WRITE32_HANDLER(sambank_w)
 				if (++samlocals.dataWrites[3] == 1)
 				{
 					int ii;
-					coreGlobals.pulsedSolState &= ~(0xFF << 24);
+					coreGlobals.pulsedSolState &= ~(0xFFu << 24);
 					coreGlobals.pulsedSolState |= data << 24;
 					for (ii = 0; ii <= 7; ii++)
 					{
@@ -1553,7 +1553,7 @@ static INTERRUPT_GEN(sam_irq)
 static MACHINE_DRIVER_START(sam1)
     MDRV_IMPORT_FROM(PinMAME)
     MDRV_SWITCH_UPDATE(sam)
-    MDRV_CPU_ADD(AT91, SAM_CPUFREQ)
+    MDRV_CPU_ADD(AT91, SAM_CPUFREQ) // AT91R40008
     MDRV_CPU_MEMORY(sam_readmem, sam_writemem)
     MDRV_CPU_PORTS(sam_readport, sam_writeport)
     MDRV_CPU_VBLANK_INT(sam_vblank, 1)
