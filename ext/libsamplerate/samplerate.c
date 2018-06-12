@@ -54,6 +54,34 @@ src_new (int converter_type, int channels, int *error)
 } /* src_new */
 
 SRC_STATE*
+src_clone (SRC_STATE* orig, int *error)
+{
+	SRC_PRIVATE	*psrc ;
+	int copy_error ;
+
+	if (error)
+		*error = SRC_ERR_NO_ERROR ;
+
+	if ((psrc = calloc (1, sizeof (*psrc))) == NULL)
+	{	if (error)
+			*error = SRC_ERR_MALLOC_FAILED ;
+		return NULL ;
+		} ;
+
+	SRC_PRIVATE *orig_priv = (SRC_PRIVATE*) orig ;
+	memcpy (psrc, orig_priv, sizeof (SRC_PRIVATE)) ;
+
+	if ((copy_error = orig_priv->copy (orig_priv, psrc)) != SRC_ERR_NO_ERROR)
+	{	if (error)
+			*error = copy_error ;
+		free (psrc) ;
+		psrc = NULL ;
+		} ;
+
+	return (SRC_STATE*) psrc ;
+}
+
+SRC_STATE*
 src_callback_new (src_callback_t func, int converter_type, int channels, int *error, void* cb_data)
 {	SRC_STATE	*src_state ;
 
@@ -113,7 +141,8 @@ src_process (SRC_STATE *state, SRC_DATA *data)
 		return SRC_ERR_BAD_DATA ;
 
 	/* And that data_in and data_out are valid. */
-	if ((data->data_in == NULL && data->input_frames > 0) || data->data_out == NULL)
+	if ((data->data_in == NULL && data->input_frames > 0)
+			|| (data->data_out == NULL && data->output_frames > 0))
 		return SRC_ERR_BAD_DATA_PTR ;
 
 	/* Check src_ratio is in range. */
