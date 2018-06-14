@@ -1292,7 +1292,8 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106acae;
 	else if (_strnicmp(gn, "smanve_101", 10) == 0)
 		samlocals.fastflipaddr = 0x0106d61e;
-
+	else if (_strnicmp(gn, "nba_802", 7) == 0)
+		samlocals.fastflipaddr = 0x010609be;
 }
 
 
