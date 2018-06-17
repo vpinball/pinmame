@@ -2361,18 +2361,20 @@ DRIVER(whirl,l2)        //S11-574:  01/90 W Whirlwind (L-2)
 DRIVER(whirl,l3)        //          01/90 W Whirlwind (L-3)
 DRIVER(whirl,g3)        //          01/90 W Whirlwind (LG-3)
 DRIVER(gs,l3)           //S11-985:  02/90 B Game Show (L-3)
+DRIVER(gs,lu3)          //          ??/90 B Game Show (LU-3 Europe)
 DRIVER(gs,l4)           //          02/90 B Game Show (L-4)
+DRIVER(gs,lg6)          //          ??/90 B Game Show (LG-6 German)
 DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
-DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1) Europe
+DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Europe)
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
-DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3) Europe
-DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3) German
-DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2) French
-DRIVER(rollr,f3)        //          ??/90 W Rollergames (LF-3) French
-DRIVER(rollr,d2)        //          ??/?? W Rollergames (AD-2) Prototype
-DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7) Prototype
-DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2) Europe
+DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3 Europe)
+DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3 German)
+DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2 French)
+DRIVER(rollr,f3)        //          ??/90 W Rollergames (LF-3 French)
+DRIVER(rollr,d2)        //          ??/?? W Rollergames (AD-2 Prototype)
+DRIVER(pool,p7)         //S11-1848: 09/89?B Pool Sharks (PA-7 Prototype)
+DRIVER(pool,le2)        //          03/90?B Pool Sharks (LE-2 Europe)
 DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
@@ -2384,7 +2386,7 @@ DRIVER(diner,l4)        //          09/90 W Diner (LA-4)
 DRIVER(radcl,p3)        //S11-1904: 06/90 B Radical! (P-3)
 DRIVER(radcl,l1)        //          06/90 B Radical!
 DRIVER(radcl,g1)        //          06/90 B Radical! (G-1)
-DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (domestic prototype)
+DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (Domestic Prototype)
 DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (P-6)
 DRIVER(dd,l2)           //          09/90 B Dr. Dude (L-2)
 DRIVER(dd,l3c)          //          04/16 B Dr. Dude (L-3C)
