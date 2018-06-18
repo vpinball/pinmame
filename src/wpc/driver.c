@@ -2310,8 +2310,8 @@ DRIVER(bnzai,t3)        //          10/11 W Banzai Run (L-3 Target sound fix)
 DRIVER(swrds,l1)        //S11-559:  06/88 W Swords of Fury (L-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury (L-2)
 DRIVER(taxi,p5)         //S11-553:  08/88 W Taxi (P-5)
-DRIVER(taxi,lu1)        //S11-553:  08/88 W Taxi (Marilyn LU-1)
-DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1) German
+DRIVER(taxi,lu1)        //S11-553:  08/88 W Taxi (Marilyn LU-1 Europe)
+DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn LG-1 German)
 DRIVER(taxi,l3)         //          08/88 W Taxi (Marilyn)
 DRIVER(taxi,l4)         //          08/88 W Taxi (Lola)
 DRIVER(taxi,l5cm)       //          04/16 W Taxi (Marilyn L-5C)
@@ -2327,10 +2327,10 @@ DRIVER(esha,la3)        //          02/89 W Earthshaker LA-3
 DRIVER(esha,l4c)        //          06/16 W Earthshaker LA-4C
 DRIVER(esha,ma3)        //                  Earthshaker LA-3 (Metallica)
 DRIVER(esha,pr4)        //          02/89 W Earthshaker Family version
-DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1)
+DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1 Europe)
 DRIVER(bk2k,pf1)        //          04/89 W Black Knight 2000 (PF-1)
-DRIVER(bk2k,lg1)        //          04/89 W Black Knight 2000 (LG-1)
-DRIVER(bk2k,lg3)        //          04/89 W Black Knight 2000 (LG-3)
+DRIVER(bk2k,lg1)        //          04/89 W Black Knight 2000 (LG-1 German)
+DRIVER(bk2k,lg3)        //          04/89 W Black Knight 2000 (LG-3 German)
 DRIVER(bk2k,l4)         //          04/89 W Black Knight 2000 (L-4)
 DRIVER(bk2k,la2)        //          04/89 W Black Knight 2000 (LA-2)
 DRIVER(bk2k,pa7)        //          04/89 W Black Knight 2000 (PA-7)
@@ -2345,24 +2345,24 @@ DRIVER(eatpm,p7)        //S11-782:  09/89 B Elvira and the Party Monsters (PA-7)
 DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (L-1)
 DRIVER(eatpm,l2)        //          10/89 B Elvira and the Party Monsters (L-2)
 DRIVER(eatpm,l4)        //          10/89 B Elvira and the Party Monsters (L-4)
-DRIVER(eatpm,4u)        //          10/89 B Elvira and the Party Monsters (L-4 European)
-DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (L-4 German)
+DRIVER(eatpm,4u)        //          10/89 B Elvira and the Party Monsters (LU-4 Europe)
+DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (LG-4 German)
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(bcats,l5)        //          11/89 W Bad Cats (L-5)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler (L-3)
 DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (L-1)
-DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 / Europe)
+DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (L-4)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
 DRIVER(whirl,l2)        //S11-574:  01/90 W Whirlwind (L-2)
 DRIVER(whirl,l3)        //          01/90 W Whirlwind (L-3)
-DRIVER(whirl,g3)        //          01/90 W Whirlwind (LG-3)
-DRIVER(gs,l3)           //S11-985:  02/90 B Game Show (L-3)
+DRIVER(whirl,g3)        //          01/90 W Whirlwind (LG-3 German)
+DRIVER(gs,la3)          //S11-985:  02/90 B Game Show (LA-3)
 DRIVER(gs,lu3)          //          ??/90 B Game Show (LU-3 Europe)
-DRIVER(gs,l4)           //          02/90 B Game Show (L-4)
+DRIVER(gs,lu4)          //          02/90 B Game Show (LU-4 Europe)
 DRIVER(gs,lg6)          //          ??/90 B Game Show (LG-6 German)
 DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
 DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Europe)
@@ -2379,8 +2379,8 @@ DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
 DRIVER(pool,l7c)        //          04/18 B Pool Sharks (LA-7C Competition MOD)
-DRIVER(diner,l1)        //S11-571:  06/90 W Diner (LU-1)
-DRIVER(diner,l2)        //          06/90 W Diner (LU-2)
+DRIVER(diner,l1)        //S11-571:  06/90 W Diner (LU-1 Europe)
+DRIVER(diner,l2)        //          06/90 W Diner (LU-2 Europe)
 DRIVER(diner,l3)        //          06/90 W Diner (LA-3)
 DRIVER(diner,l4)        //          09/90 W Diner (LA-4)
 DRIVER(radcl,p3)        //S11-1904: 06/90 B Radical! (P-3)
@@ -2391,7 +2391,7 @@ DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (P-6)
 DRIVER(dd,l2)           //          09/90 B Dr. Dude (L-2)
 DRIVER(dd,l3c)          //          04/16 B Dr. Dude (L-3C)
 DRIVER(bbnny,l2)        //S11-209:  12/90 B Bugs Bunny's Birthday Ball (L-2)
-DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2) European
+DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2 Europe)
 //WPC
 DRIVER(dd,p06)          //WPC-2016: 08/90 B Dr. Dude (P-6 WPC)
 DRIVER(dd,p7)           //          09/90 B Dr. Dude (P-7 WPC)
@@ -2598,7 +2598,7 @@ DRIVER(ij,l6)           //          10/93 W Indiana Jones: The Pinball Adventure
 DRIVER(ij,d6)           //                  Indiana Jones: The Pinball Adventure (D-6) LED Ghost Fix
 DRIVER(ij,l7)           //          11/93 W Indiana Jones: The Pinball Adventure (L-7)
 DRIVER(ij,d7)           //                  Indiana Jones: The Pinball Adventure (D-7) LED Ghost Fix
-DRIVER(ij,lg7)          //          11/93 W Indiana Jones: The Pinball Adventure (LG-7)
+DRIVER(ij,lg7)          //          11/93 W Indiana Jones: The Pinball Adventure (LG-7 German)
 DRIVER(ij,dg7)          //                  Indiana Jones: The Pinball Adventure (DG-7) LED Ghost Fix
 DRIVER(ij,h1)           //                  Indiana Jones: The Pinball Adventure (HK-1) Family no hate speech version
 DRIVER(ij,i1)           //                  Indiana Jones: The Pinball Adventure (I-1) Family no hate LED Ghost Fix
@@ -2630,7 +2630,7 @@ DRIVER(sttng,x7)        //          02/94 W Star Trek: The Next Generation (LX-7
 DRIVER(sttng,dx)        //                  Star Trek: The Next Generation (DX-7 Special) LED Ghost Fix
 DRIVER(sttng,s7)        //          02/94 W Star Trek: The Next Generation (LX-7) SP1
 DRIVER(sttng,ds)        //                  Star Trek: The Next Generation (DX-7) SP1 LED Ghost Fix
-DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7)
+DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7 German)
 DRIVER(sttng,h7)        //                  Star Trek: The Next Generation (HG-7) LED Ghost Fix
 DRIVER(pop,pa3)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-3)
 DRIVER(pop,pa4)         //                  Popeye Saves the Earth (PA-4) LED Ghost Fix
@@ -2667,14 +2667,14 @@ DRIVER(tafg,la2)        //          10/94 B Addams Family Special Collectors Edi
 DRIVER(tafg,da2)        //                  Addams Family Special Collectors Edition, The (DA-2) LED Ghost Fix
 DRIVER(tafg,la3)        //          10/94 B Addams Family Special Collectors Edition, The (LA-3)
 DRIVER(tafg,da3)        //                  Addams Family Special Collectors Edition, The (DA-3) LED Ghost Fix
-DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (Lx-2)
-DRIVER(wcs,d2)          //                  World Cup Soccer (Dx-2) LED Ghost Fix
-DRIVER(wcs,l3c)         //WPC-531:  06/16 B World Cup Soccer (Lx-3C)
-DRIVER(wcs,la2)         //WPC-531:  02/94 B World Cup Soccer (La-2)
-DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (Pa-2)
-DRIVER(wcs,p5)          //                  World Cup Soccer (Pa-5) LED Ghost Fix
-DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (Px-3)
-DRIVER(wcs,p6)          //                  World Cup Soccer (Px-6) LED Ghost Fix
+DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (LX-2)
+DRIVER(wcs,d2)          //                  World Cup Soccer (DX-2) LED Ghost Fix
+DRIVER(wcs,l3c)         //WPC-531:  06/16 B World Cup Soccer (LX-3C)
+DRIVER(wcs,la2)         //WPC-531:  02/94 B World Cup Soccer (LA-2)
+DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (PA-2)
+DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5) LED Ghost Fix
+DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (PX-3)
+DRIVER(wcs,p6)          //                  World Cup Soccer (PX-6) LED Ghost Fix
 DRIVER(wcs,f10)         //          ??/??   World Cup Soccer (FreeWPC 0.10)
 DRIVER(wcs,f50)         //          ??/??   World Cup Soccer (FreeWPC 0.50)
 DRIVER(wcs,f62)         //          ??/??   World Cup Soccer (FreeWPC 0.62)
@@ -2687,28 +2687,28 @@ DRIVER(fs,lx4)          //          09/94 W Flintstones, The (LX-4)
 DRIVER(fs,dx4)          //                  Flintstones, The (DX-4) LED Ghost Fix
 DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
 DRIVER(fs,dx5)          //                  Flintstones, The (DX-5) LED Ghost Fix
-DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
-DRIVER(corv,px5)        //                  Corvette (PX5) LED Ghost Fix
-DRIVER(corv,la1)        //WPC-536:  08/94 B Corvette (LA1)
-DRIVER(corv,lx1)        //          09/94 B Corvette (LX1)
-DRIVER(corv,dx1)        //                  Corvette (DX1) LED Ghost Fix
-DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX2)
+DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX-4)
+DRIVER(corv,px5)        //                  Corvette (PX-5) LED Ghost Fix
+DRIVER(corv,la1)        //WPC-536:  08/94 B Corvette (LA-1)
+DRIVER(corv,lx1)        //          09/94 B Corvette (LX-1)
+DRIVER(corv,dx1)        //                  Corvette (DX-1) LED Ghost Fix
+DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX-2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)
-DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
-DRIVER(rs,lx2p3)        //          10/94 W Red & Ted's Road Show (Lx_2, Sound P-3)
-DRIVER(rs,lx2)          //          10/94 W Red & Ted's Road Show (Lx_2)
-DRIVER(rs,dx2)          //                  Red & Ted's Road Show (Dx_2) LED Ghost Fix
-DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (Lx_3)
-DRIVER(rs,dx3)          //                  Red & Ted's Road Show (Dx_3) LED Ghost Fix
-DRIVER(rs,la4)          //          10/94 W Red & Ted's Road Show (La_4)
-DRIVER(rs,da4)          //                  Red & Ted's Road Show (Da_4) LED Ghost Fix
-DRIVER(rs,lx4)          //          10/94 W Red & Ted's Road Show (Lx-4)
-DRIVER(rs,dx4)          //                  Red & Ted's Road Show (Dx-4) LED Ghost Fix
-DRIVER(rs,la5)          //          10/94 W Red & Ted's Road Show (La_5)
-DRIVER(rs,da5)          //                  Red & Ted's Road Show (Da_5) LED Ghost Fix
-DRIVER(rs,lx5)          //          10/94 W Red & Ted's Road Show (Lx_5)
-DRIVER(rs,dx5)          //                  Red & Ted's Road Show (Dx_5) LED Ghost Fix
+DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L-6)
+DRIVER(rs,lx2p3)        //          10/94 W Red & Ted's Road Show (LX-2, Sound P-3)
+DRIVER(rs,lx2)          //          10/94 W Red & Ted's Road Show (LX-2)
+DRIVER(rs,dx2)          //                  Red & Ted's Road Show (DX-2) LED Ghost Fix
+DRIVER(rs,lx3)          //          10/94 W Red & Ted's Road Show (LX-3)
+DRIVER(rs,dx3)          //                  Red & Ted's Road Show (DX-3) LED Ghost Fix
+DRIVER(rs,la4)          //          10/94 W Red & Ted's Road Show (LA-4)
+DRIVER(rs,da4)          //                  Red & Ted's Road Show (DA-4) LED Ghost Fix
+DRIVER(rs,lx4)          //          10/94 W Red & Ted's Road Show (LX-4)
+DRIVER(rs,dx4)          //                  Red & Ted's Road Show (DX-4) LED Ghost Fix
+DRIVER(rs,la5)          //          10/94 W Red & Ted's Road Show (LA-5)
+DRIVER(rs,da5)          //                  Red & Ted's Road Show (DA-5) LED Ghost Fix
+DRIVER(rs,lx5)          //          10/94 W Red & Ted's Road Show (LX-5)
+DRIVER(rs,dx5)          //                  Red & Ted's Road Show (DX-5) LED Ghost Fix
 DRIVER(ts,pa1)          //WPC-532:  11/94 B Shadow, The (PA-1)
 DRIVER(ts,pa2)          //                  Shadow, The (PA-2) LED Ghost Fix
 DRIVER(ts,la2)          //          12/94 B Shadow, The (LA-2)
@@ -2804,15 +2804,15 @@ DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
 DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
 DRIVER(jy,12c)          //          08/17 W Junk Yard (1.2C Competition MOD)
-DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1 - S0.4)
+DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1, Sound S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
-DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1 - S2.0)
+DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1, Sound S2.0)
 DRIVER(nbaf,115)        //          05/97 B NBA Fastbreak (1.15)
 DRIVER(nbaf,21)         //          05/97 B NBA Fastbreak (2.1)
 DRIVER(nbaf,22)         //          05/97 B NBA Fastbreak (2.2)
 DRIVER(nbaf,23)         //          06/97 B NBA Fastbreak (2.3)
-DRIVER(nbaf,31)         //          09/97 B NBA Fastbreak (3.1)
-DRIVER(nbaf,31a)        //          09/97 B NBA Fastbreak (3.1a)
+DRIVER(nbaf,31)         //          09/97 B NBA Fastbreak (3.1, Sound S3.0)
+DRIVER(nbaf,31a)        //          09/97 B NBA Fastbreak (3.1, Sound S1.0)
 DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5)
 DRIVER(mm,10)           //          07/97 W Medieval Madness (1.0)
 DRIVER(mm,10u)          //          07/97 W Medieval Madness (1.0 Ultrapin)

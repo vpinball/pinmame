@@ -262,8 +262,8 @@ MACHINE_DRIVER_END
 CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (LA-4)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (LA-1)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (LA-2)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (LG-4)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (LU-4)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (LG-4 German)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (LU-4 Europe)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,p7,l4, "Elvira and the Party Monsters (PA-7)", 1989, "Bally", elvira, 0)
 
 /*-----------------------
