@@ -383,12 +383,12 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(corv,21,"Corvette (2.1)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,px4,21,"Corvette (PX4)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,px5,21,"Corvette (PX5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,la1,21,"Corvette (LA1)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,lx1,21,"Corvette (LX1)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,dx1,21,"Corvette (DX1 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,lx2,21,"Corvette (LX2)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,px4,21,"Corvette (PX-4)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,px5,21,"Corvette (PX-5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,la1,21,"Corvette (LA-1)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,lx1,21,"Corvette (LX-1)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,dx1,21,"Corvette (DX-1 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,lx2,21,"Corvette (LX-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,f61,21,"Corvette (FreeWPC 0.61)",1994,"FreeWPC",wpc_mSecurityS,0)
 
 /*-----------------------

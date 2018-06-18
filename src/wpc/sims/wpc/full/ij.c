@@ -748,7 +748,7 @@ CORE_GAMEDEF(ij,l7,"Indiana Jones: The Pinball Adventure (L-7)",1993,"Williams",
 CORE_CLONEDEF(ij,d7,l7,"Indiana Jones: The Pinball Adventure (D-7 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,h1,l7,"Indiana Jones: The Pinball Adventure (HK-1 No Hate Speech)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,i1,l7,"Indiana Jones: The Pinball Adventure (I-1 No Hate Speech LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,lg7,l7,"Indiana Jones: The Pinball Adventure (LG-7)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,lg7,l7,"Indiana Jones: The Pinball Adventure (LG-7 German)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,dg7,l7,"Indiana Jones: The Pinball Adventure (DG-7 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l6,l7,"Indiana Jones: The Pinball Adventure (L-6)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,d6,l7,"Indiana Jones: The Pinball Adventure (D-6 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)

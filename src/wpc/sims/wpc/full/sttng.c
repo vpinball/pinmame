@@ -644,7 +644,7 @@ CORE_CLONEDEF(sttng,p6,l7,"Star Trek: The Next Generation (P-6 LED Ghost Fix)",1
 CORE_CLONEDEF(sttng,p8,l7,"Star Trek: The Next Generation (P-8)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7 SP1)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,ds,l7,"Star Trek: The Next Generation (DX-7 SP1 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,g7,l7,"Star Trek: The Next Generation (LG-7)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,g7,l7,"Star Trek: The Next Generation (LG-7 German)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,h7,l7,"Star Trek: The Next Generation (HG-7 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l1,l7,"Star Trek: The Next Generation (LX-1)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,d1,l7,"Star Trek: The Next Generation (DX-1 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
