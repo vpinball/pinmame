@@ -747,7 +747,7 @@ BY35_ROMSTARTx00(skatebla,"skat2732.u2",  CRC(448bf439) SHA1(ec3224b166f159f60e2
 BY51_SOUNDROM8(           "823-02_4.716",CRC(d1037b20) SHA1(8784728540573be5e8ebb940ec0046b778f9413b))
 BY35_ROMEND
 #define input_ports_skatebla input_ports_skatebll
-CORE_CLONEDEFNV(skatebla,skatebll,"Skateball (Free Play rev. 1)",2004,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(skatebla,skatebll,"Skateball (Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 1
 
 /*--------------------------------
 / Frontier
@@ -1091,7 +1091,7 @@ BY61_SOUNDROMxx00(       "842-01_4.532",CRC(2ac02093) SHA1(a89c1d24f4f3e1f58ca4e
                          "842-02_5.532",CRC(736800bc) SHA1(2679d4d76e7258ad18ffe05cf333f21c35adfe0e))
 BY35_ROMEND
 #define input_ports_fathomb input_ports_fathom
-CORE_CLONEDEFNV(fathomb,fathom,"Fathom (modified rules)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(fathomb,fathom,"Fathom (modified rules rev. 5)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 
 /*--------------------------------
 / Medusa
@@ -1248,7 +1248,7 @@ BY61_SOUNDROM0000(       "858-01_2.532",CRC(bd2edef9) SHA1(8f129016440bad5e78d4b
                          "858-06_5.532",CRC(3050edf6) SHA1(e028192d9a8c17123b07566c6d73302cec07b440))
 BY35_ROMEND
 #define input_ports_vectorb input_ports_vector
-CORE_CLONEDEFNV(vectorb,vector,"Vector (modified rules)",2004,"Bally / Oliver",by35_mBY35_61S,0)
+CORE_CLONEDEFNV(vectorb,vector,"Vector (modified rules rev. 5)",2004,"Bally / Oliver",by35_mBY35_61S,0)
 
 /*--------------------------------
 / Spectrum

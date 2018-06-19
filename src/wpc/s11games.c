@@ -1,3 +1,26 @@
+/*
+System 9 games have the software revision identified with an "L" to signify the Level of software release.
+To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.
+You will see "2GGG" in the player 1 display, where GGG is the game number.
+The player 2 display will show the number of the installed game revision.
+
+//
+
+System 11 games have the software revision identified with either an "L" or "P" followed by a revision number, such as L-1 or P-1.
+The "L" signifies a production ("Level") release, while the "P" signifies a Prototype version of software.
+
+Sometimes contained within the revision label is a version identifier, such as LX-1 or LA-1.
+The possible version identifiers are described below. Not all versions exist for all games.
+
+No suffix : Unrestricted. This version supports all text languages, can be priced for any country, and contains the custom pricing editor.
+A : USA and Canada(domestic). This version does not contain the custom pricing editor, and does USA and Canada pricing modes only.
+X : Export.  This version contains the custom pricing editor, as well as the built - in pricing presets for all countries.
+R : Regular. This version does all pricing modes, as well as the custom pricing editor, but does not contain French text.
+F : France.  This version is the same as the R version, with the addition of French text.
+B : Belgium / Switzerland. This version contains French text, does not have the custom pricing editor, and does Belgium, Switzerland, and Canada pricing modes only.
+G : Germany. This version contains support for special German functionality, such as German speech.
+*/
+
 #include "driver.h"
 #include "core.h"
 #include "wmssnd.h"
@@ -274,10 +297,10 @@ CORE_CLONEDEF(pb,l5h,l5, "Pin-Bot (L-5, Free Play / Solar Value Mod)", 2012, "Fr
 CORE_CLONEDEF(pb,l3,l5, "Pin-Bot (L-3)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l2,l5, "Pin-Bot (L-2)", 1986, "Williams", s11_mS11XSL,0)
 CORE_CLONEDEF(pb,l1,l5, "Pin-Bot (L-1)", 1986, "Williams", s11_mS11XSL,0)
-CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4)", 1986, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4 Prototype)", 1986, "Williams", s11_mS11XSL,0)
 
 /*--------------------
-/ F14 Tomcat 5/87
+/ F-14 Tomcat 5/87
 /--------------------*/
 INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 14, FLIP_SWNO(63,15),
              0,0,0, 57, 58, 0, 28, 0, 0)
@@ -314,10 +337,10 @@ S11CS_SOUNDROM88(     "f14_u4.l1",  CRC(43ecaabf) SHA1(64b50dbff03cd556130d0cff4
                       "f14_u19.l1", CRC(d0de4a7c) SHA1(46ecd5786653add47751cc56b38d9db7c4622377))
 S11_ROMEND
 
-CORE_GAMEDEF(f14, l1, "F14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
-CORE_CLONEDEF(f14, p3, l1, "F14 Tomcat (P-3)", 1987, "Williams", s11_mS11AS,0)
-CORE_CLONEDEF(f14, p4, l1, "F14 Tomcat (P-4)", 1987, "Williams", s11_mS11AS,0)
-CORE_CLONEDEF(f14, p5, l1, "F14 Tomcat (P-5)", 1987, "Williams", s11_mS11AS,0)
+CORE_GAMEDEF(f14, l1, "F-14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
+CORE_CLONEDEF(f14, p3, l1, "F-14 Tomcat (P-3 Prototype)", 1987, "Williams", s11_mS11AS,0)
+CORE_CLONEDEF(f14, p4, l1, "F-14 Tomcat (P-4 Prototype)", 1987, "Williams", s11_mS11AS,0)
+CORE_CLONEDEF(f14, p5, l1, "F-14 Tomcat (P-5 Prototype)", 1987, "Williams", s11_mS11AS,0)
 
 /*--------------------
 / Fire! 8/87
@@ -382,7 +405,7 @@ S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
 S11_ROMEND
-CORE_CLONEDEF(bguns,p1,l8,"Big Guns (P-1)", 1987, "Williams", s11_mS11AS,0)
+CORE_CLONEDEF(bguns,p1,l8,"Big Guns (P-1 Prototype)", 1987, "Williams", s11_mS11AS,0)
 
 /*--------------------
 / Space Station 1/88
@@ -481,10 +504,10 @@ S11CS_SOUNDROM888(      "u4-p7.rom",   CRC(630d1ce9) SHA1(fb7f6004b94bf202812165
 S11_ROMEND
 
 CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,t3,l3,"Banzai Run (L-3 Target sound fix)", 2011, "Williams / Francis", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (L-3 German)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,t3,l3,"Banzai Run (L-3 Target sound fix)", 2011, "Williams / Francis", s11_mS11BS,0) // yellow, green, red, and blue target sounds have been changed
+CORE_CLONEDEF(bnzai,g3,l3,"Banzai Run (G-3 German)", 1988, "Williams", s11_mS11BS,0) // actually reports as G-3, not LG-3
 CORE_CLONEDEF(bnzai,l1,l3,"Banzai Run (L-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,pa,l3,"Banzai Run (P-A)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,pa,l3,"Banzai Run (P-A Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Swords of Fury 8/88
@@ -574,7 +597,7 @@ CORE_CLONEDEF(taxi , l5cm, l4, "Taxi (Marilyn) (L-5C Competition MOD)", 2016, "W
 CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marilyn) (L-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lu1, l4, "Taxi (Marilyn) (LU-1 Europe)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(taxi , lg1, l4, "Taxi (Marilyn) (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(taxi , p5, l4, "Taxi (P-5)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(taxi , p5, l4, "Taxi (P-5 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
 / Jokerz 1/89
@@ -677,7 +700,7 @@ S11_ROMEND
 CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, l4c, la3, "Earthshaker (LA-4C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, ma3, la3, "Earthshaker (LA-3 Metallica MOD)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0) // Prototype ??
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
@@ -1001,7 +1024,7 @@ S11CS_SOUNDROM000(      "rolr_u4.pa1",  CRC(324df946) SHA1(e7ba2b9434baea20a0cf3
                         "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
                         "rolr_u20.pa1", CRC(8ddaaad1) SHA1(33f58c6a9b0e509b7c9a460a687d6e2c388b4b54))
 S11_ROMEND
-CORE_CLONEDEF(rollr,p2,l2, "Rollergames (PA-2, PA-1 Sound)", 1991, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(rollr,p2,l2, "Rollergames (PA-2 Prototype, PA-1 Sound)", 1991, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,l3,"rolr-u26.lu3", CRC(7d71ed50) SHA1(092aa13706a7fe58ad80e88c1c4a5c1d7d712546),
                         "rolr_u27.l2",  CRC(f3bac2b8) SHA1(9f0ff32ea83e43097de42065909137a362b29d49))
@@ -1154,7 +1177,7 @@ S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42
                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
 S11_ROMEND
-CORE_CLONEDEF(radcl,g1,l1, "Radical (G-1)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(radcl,g1,l1, "Radical (LG-1 German)", 1990, "Bally", s11c_one,0)
 
 S11_ROMSTART48(radcl,p3,"rad_u26.p1", CRC(7d736ae9) SHA1(4ea6945fa5cfbd33fcdf780814b0bf5cb3faa388),
                         "u27-p1.rom", CRC(83b1d928) SHA1(b1bd5d8a93f1ab9fb9bf5c268d8530be438448e6))
@@ -1162,7 +1185,7 @@ S11CS_SOUNDROM008(      "rad_u4.p3",  CRC(d31b7744) SHA1(7ebcc1503fc322909d32c7c
                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
                         "rad_u20.p3", CRC(82f8369c) SHA1(0691a80672fc11d46359f710bd211de7a59de346))
 S11_ROMEND
-CORE_CLONEDEF(radcl,p3,l1, "Radical (P-3)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(radcl,p3,l1, "Radical (P-3 Prototype)", 1990, "Bally", s11c_one,0)
 
 /*-----------------------
 / Star Trax 9/90

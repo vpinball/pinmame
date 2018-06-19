@@ -1,3 +1,10 @@
+/*
+System 3, 4, 6:
+To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.
+You will see "1GGG" in the player 1 display, where GGG is the game number.
+The player 2 display will show the number of the installed game revision.
+*/
+
 #include "driver.h"
 #include "core.h"
 #include "wmssnd.h"

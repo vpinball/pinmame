@@ -270,7 +270,7 @@ S9_ROMSTART12(pfevr,p3,"cpu_u19.732", CRC(03796c6d) SHA1(38c95fcce9d0f357a74f041
                        "cpu_u20.764", CRC(3a3acb39) SHA1(7844cc30a9486f718a556850fc9cef3be82f26b7))
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
-CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9PS, 0)
+CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3 Prototype)", 1984, "Williams", s9_mS9PS, 0)
 
 /*--------------------
 / Still Crazy (#534)
@@ -452,7 +452,7 @@ WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebd
                  "hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f))
 WPC_ROMEND
 WPC_INPUT_PORTS_START(hshot, 0) WPC_INPUT_PORTS_END
-CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8)",1992,"Midway",wpc_mFliptronS,0)
+CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8 Prototype)",1992,"Midway",wpc_mFliptronS,0)
 
 WPC_ROMSTART(hshot,p9,"hshot_p9.u6",0x80000,CRC(fa4d05df) SHA1(235aa096f2983f77ade6b257fd8544d91b5f6b28))
 WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb),

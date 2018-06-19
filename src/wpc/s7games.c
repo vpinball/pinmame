@@ -1,3 +1,10 @@
+/*
+System 7 games have the software revision identified with an "L" to signify the Level of software release.
+To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.
+You will see "2GGG" in the player 1 display, where GGG is the game number.
+The player 2 display will show the number of the installed game revision.
+*/
+
 #include "driver.h"
 #include "core.h"
 #include "wmssnd.h"
@@ -209,7 +216,7 @@ S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071
                           "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
 S7_ROMEND
 #define input_ports_thund input_ports_s7
-CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7SND,0) // dated 6/22
+CORE_GAMEDEF(thund,p1,"Thunderball (P-1 Prototype)",1982,"Williams",s7_mS7SND,0) // dated 6/22
 
 S7_ROMSTART000x(thund,p2, "ic14_831.532", CRC(873ccf24) SHA1(2723aa7d059a111374d8145391fbef0c81043e4b),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
@@ -220,7 +227,7 @@ S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071
                           "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
                           "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
 S7_ROMEND
-CORE_CLONEDEF(thund,p2,p1,"Thunderball (P-2)",1982,"Williams",s7_mS7SND,0) // dated 8/31
+CORE_CLONEDEF(thund,p2,p1,"Thunderball (P-2 Prototype)",1982,"Williams",s7_mS7SND,0) // dated 8/31
 
 S7_ROMSTART000x(thund,p3, "ic14_908.532", CRC(099e798e) SHA1(38d79622b4d68c69308ee109f47509e0733828ba),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
@@ -231,7 +238,7 @@ S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071
                           "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
                           "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
 S7_ROMEND
-CORE_CLONEDEF(thund,p3,p1,"Thunderball (P-3)",1982,"Williams",s7_mS7SND,0) // dated 9/08
+CORE_CLONEDEF(thund,p3,p1,"Thunderball (P-3 Prototype)",1982,"Williams",s7_mS7SND,0) // dated 9/08
 
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
