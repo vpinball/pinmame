@@ -383,7 +383,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(corv,21,"Corvette (2.1)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(corv,px4,21,"Corvette (PX-4)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(corv,px4,21,"Corvette (PX-4 Prototype)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,px5,21,"Corvette (PX-5 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,la1,21,"Corvette (LA-1)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(corv,lx1,21,"Corvette (LX-1)",1994,"Bally",wpc_mSecurityS,0)
