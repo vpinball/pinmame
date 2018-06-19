@@ -304,7 +304,7 @@ CORE_CLONEDEF(ts,la4,lx5,"Shadow, The (LA-4)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,da4,lx5,"Shadow, The (DA-4 LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,la2,lx5,"Shadow, The (LA-2)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,da2,lx5,"Shadow, The (DA-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(ts,pa1,lx5,"Shadow, The (PA-1)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(ts,pa1,lx5,"Shadow, The (PA-1 Prototype)",1994,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(ts,pa2,lx5,"Shadow, The (PA-2 LED Ghost Fix)",1994,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------

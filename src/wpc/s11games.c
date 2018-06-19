@@ -723,7 +723,7 @@ S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
-CORE_CLONEDEF(bk2k,pu1,l4,"Black Knight 2000 (PU-1)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bk2k,pu1,l4,"Black Knight 2000 (PU-1 Prototype Europe)", 1989, "Williams", s11_mS11BS,0)
 
 S11_ROMSTART48(bk2k,la2,"u26-pu1.rom", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
                         "bk2k_u27.la2",CRC(531e7752) SHA1(e51a93d40bc316876488ae0a7691ff5fd514472d))
@@ -741,7 +741,7 @@ S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
-CORE_CLONEDEF(bk2k,pa7,l4, "Black Knight 2000 (PA-7)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bk2k,pa7,l4, "Black Knight 2000 (PA-7 Prototype)", 1989, "Williams", s11_mS11BS,0)
 
 S11_ROMSTART48(bk2k,pa5,"bk2k_u26.pa5",CRC(0012fe41) SHA1(06031684839268fdb73491626ec5bff6daacbf4c),
                         "bk2k_u27.pa5",CRC(2e40e173) SHA1(7d961bb0bd03e836ebfe705b8895dd2e9704e6e1))
@@ -750,7 +750,7 @@ S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
-CORE_CLONEDEF(bk2k,pa5,l4, "Black Knight 2000 (PA-5)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bk2k,pa5,l4, "Black Knight 2000 (PA-5 Prototype)", 1989, "Williams", s11_mS11BS,0)
 
 S11_ROMSTART48(bk2k,pf1,"bk2k_u26.pf7",CRC(79a77d26) SHA1(dfecd3f1fa80f0e7a84cafe7f45a96dd1c847090),
                         "bk2k_u27.pf1",CRC(2a84db98) SHA1(58438763ec702c1a1e73ab853c58352fe97c27e7)) // The 2 roms are u26 and u27 from the same cpu board from a working bk2k
@@ -759,7 +759,7 @@ S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0
 S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
                         "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
 S11_ROMEND
-CORE_CLONEDEF(bk2k,pf1,l4, "Black Knight 2000 (PF-1)", 1989, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bk2k,pf1,l4, "Black Knight 2000 (PF-1 Prototype French)", 1989, "Williams", s11_mS11BS,0)
 
 /*-----------------------
 / Police Force 9/89
@@ -993,7 +993,7 @@ S11CS_SOUNDROM000(      "rolr_u4.pe1",  CRC(8c383b24) SHA1(5c738e5ec566f7fa5706c
                         "rolr_u19.pe1", CRC(c6880cff) SHA1(c8ce23d68297d36ef62e508855a478434ff9a592),
                         "rolr_u20.pe1", CRC(4220812b) SHA1(7071565f1087020d1e1738e801dafb509ea37622))
 S11_ROMEND
-CORE_CLONEDEF(rollr,e1,l2, "Rollergames (PU-1)", 1991, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(rollr,e1,l2, "Rollergames (PU-1 Prototype Europe)", 1991, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,p2,"rolr_u26.pa2", CRC(11d96b1c) SHA1(e96991bdef8b14043285feeb4cacc182a6e9dcbd),
                         "rolr_u27.pa2", CRC(ee547bd5) SHA1(db45bf7a25321ac041f58404f7512bded9ebf11e))
@@ -1087,7 +1087,7 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
-CORE_CLONEDEF(pool,p7,l7,"Pool Sharks (PA-7)", 1989, "Bally", s11c_one,0)
+CORE_CLONEDEF(pool,p7,l7,"Pool Sharks (PA-7 Prototype)", 1989, "Bally", s11c_one,0)
 
 S11_ROMSTART48(pool,l7c,"Pool Sharks U26 game ROM rev LA-7 patch E586.rom",CRC(b4f78b93) SHA1(bb27e4dde0ebf7f9a9d04d9cdb34d39d25ade69b),
                         "Pool Sharks U27 game ROM rev LA-7 patch E586.rom",CRC(5b228b8f) SHA1(18d612154cda00c8f735305b475baf6de153919d))
@@ -1203,7 +1203,7 @@ S11CS_SOUNDROM000(      "gamb_u4.l2",  CRC(c0cfa9be) SHA1(352df9a4dcbc131ae24941
                         "gamb_u19.l1", CRC(04a3a8c8) SHA1(e72ef767f13282d2335cda3288037610d9bfedf2),
                         "gamb_u20.l1", CRC(a60c734d) SHA1(76cfcf96276ca4f6b5eee0e0402fab5ee9685366))
 S11_ROMEND
-CORE_CLONEDEF(rvrbt, p7, l3, "Riverboat Gambler (PA-7)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(rvrbt, p7, l3, "Riverboat Gambler (PA-7 Prototype)", 1990, "Williams", s11_mS11CS,0)
 
 /*--------------------
 / Bugs Bunny's Birthday Ball 11/90
