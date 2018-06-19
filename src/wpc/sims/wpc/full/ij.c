@@ -758,7 +758,7 @@ CORE_CLONEDEF(ij,l4,l7,"Indiana Jones: The Pinball Adventure (L-4)",1993,"Willia
 CORE_CLONEDEF(ij,d4,l7,"Indiana Jones: The Pinball Adventure (D-4 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l3,l7,"Indiana Jones: The Pinball Adventure (L-3)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,d3,l7,"Indiana Jones: The Pinball Adventure (D-3 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(ij,p2,l7,"Indiana Jones: The Pinball Adventure (P-2)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,p2,l7,"Indiana Jones: The Pinball Adventure (P-2 Prototype)",1993,"Williams",wpc_mDCSS,0)
 
 /*----------
 / Game Data

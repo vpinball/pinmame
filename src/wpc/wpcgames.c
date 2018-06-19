@@ -56,7 +56,7 @@ static core_tGameData tfdmdGameData = {
 INITGAME(tfdmd)
 WPC_ROMSTART(tfdmd,l3,"u6_l3.rom",0x20000,CRC(bd43e28c) SHA1(df0a64a9fddbc59e3edde56ae12b68f76e44ba2e)) WPC_ROMEND
 #define input_ports_tfdmd input_ports_wpc
-CORE_GAMEDEF(tfdmd,l3,"WPC Test Fixture: DMD (L-3)",1991,"Bally",wpc_mDMD,GAME_NO_SOUND)
+CORE_GAMEDEF(tfdmd,l3,"WPC Test Fixture: DMD (L-3)",1991,"Bally",wpc_mDMD,GAME_NO_SOUND) // Slugfest to Demolition Man
 
 /*--------------
 / Test Fixture Security generation
@@ -79,7 +79,7 @@ WPC_ROMSTART(tfs,12,"u6_12.rom",0x80000,CRC(12687d19) SHA1(bcc3116328a8c6f0ed430
 DCS_SOUNDROM1x("u2_10.rom",CRC(d705b41e) SHA1(a7811b4bb1b2b5f7e3d1a809da3363b97dfca680))
 WPC_ROMEND
 #define input_ports_tfs input_ports_wpc
-CORE_GAMEDEF(tfs,12,"WPC Test Fixture: Security (1.2)",1994,"Bally",wpc_mSecurityS,0)
+CORE_GAMEDEF(tfs,12,"WPC Test Fixture: Security (1.2)",1994,"Bally",wpc_mSecurityS,0) // World Cup Soccer '94 to WhoDunnit
 
 /*--------------
 / Test Fixture WPC95
@@ -102,7 +102,7 @@ WPC_ROMSTART(tf95,12,"g11_12.rom",0x80000,CRC(259a2b23) SHA1(16f8c15e046809e0b15
 DCS_SOUNDROM1m("s2_10.rom",CRC(ceff7fe4) SHA1(ff2574f65e09d446b9e446abd58159a7d100059b))
 WPC_ROMEND
 #define input_ports_tf95 input_ports_wpc
-CORE_GAMEDEF(tf95,12,"WPC 95 Test Fixture (1.2)",1996,"Bally",wpc_m95S,0)
+CORE_GAMEDEF(tf95,12,"WPC Test Fixture: WPC-95 (1.2)",1996,"Bally",wpc_m95S,0) // Congo to the present
 
 /*===========
 /  Test Fixture Alphanumeric
@@ -122,7 +122,7 @@ static core_tGameData tfaGameData = {
 INITGAME(tfa)
 WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,CRC(bf4a37b5) SHA1(91b8bba6182e818a34252a4b2a0b86a2a44d9c42)) WPC_ROMEND
 #define input_ports_tfa input_ports_wpc
-CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (1.3)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND)
+CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (L-3)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND) // Funhouse and The Machine:Bride of Pinbot
 
 // games by other manufacturers
 

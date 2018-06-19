@@ -621,7 +621,7 @@ CORE_CLONEDEF(t2,l81,l8,"Terminator 2: Judgement Day (L-81 Attract Sound patch)"
 CORE_CLONEDEF(t2,l82,l8,"Terminator 2: Judgement Day (L-82 Attract Routines patch)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d6,l8,"Terminator 2: Judgement Day (D-6 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
-CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F Profanity)",1991,"Williams",wpc_mDMDS,0) // Prototype ??
 CORE_CLONEDEF(t2,p2g,l8,"Terminator 2: Judgement Day (P-2G Profanity LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgement Day (L-4)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,d4,l8,"Terminator 2: Judgement Day (D-4 LED Ghost Fix)",1991,"Williams",wpc_mDMDS,0)
