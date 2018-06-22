@@ -274,7 +274,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(dh,lx2,"Dirty Harry (LX-2)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(dh,dx2,lx2,"Dirty Harry (DX-2 LED Ghost Fix)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(dh,lf2,lx2,"Dirty Harry (LF-2)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(dh,lf2,lx2,"Dirty Harry (LF-2 French)",1995,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions

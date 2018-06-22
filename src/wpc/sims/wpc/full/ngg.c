@@ -557,36 +557,36 @@ static const char* SlamText[] = {"Down","Up"};
 /------------------*/
 WPC_ROMSTART(ngg,13,"go_g11.1_3",0x80000,CRC(64e73117) SHA1(ce7ba5a6d309677e51dcbc9e3058f98e69d1e917))
 DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d) SHA1(c72a2f176aa24e91ecafe1704affd16b86d671e2),
-                "nggsndl1.s3",	CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
-                "nggsndl1.s4",	CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
-                "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
-                "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
+                "nggsndl1.s3",  CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
+                "nggsndl1.s4",  CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
+                "nggsndl1.s5",  CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
+                "nggsndl1.s6",  CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
 WPC_ROMEND
 
 WPC_ROMSTART(ngg,12,"go_g11.1_2",0x80000,CRC(fdd03749) SHA1(a6c3c7a3173a5fe721597d0ba2fbfe485b2d1ae6))
 DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d) SHA1(c72a2f176aa24e91ecafe1704affd16b86d671e2),
-                "nggsndl1.s3",	CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
-                "nggsndl1.s4",	CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
-                "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
-                "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
+                "nggsndl1.s3",  CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
+                "nggsndl1.s4",  CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
+                "nggsndl1.s5",  CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
+                "nggsndl1.s6",  CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
 WPC_ROMEND
 
 WPC_ROMSTART(ngg,10,"ngg_10.rom",0x80000,CRC(6680f6c1) SHA1(8ac37e3ea427c998f84a0c9c55e3f1e1da395870))
 DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d) SHA1(c72a2f176aa24e91ecafe1704affd16b86d671e2),
-                "nggsndl1.s3",	CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
-                "nggsndl1.s4",	CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
-                "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
-                "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
+                "nggsndl1.s3",  CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
+                "nggsndl1.s4",  CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
+                "nggsndl1.s5",  CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
+                "nggsndl1.s6",  CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
 WPC_ROMEND
 // No Good Gofers prototype roms
 // s2 v0.2 rom is identical to l1 rom except for version string
 // even the checksum (non CRC32) is the same!
 WPC_ROMSTART(ngg,p06,"ngg0_6.rom",0x80000,CRC(e0e0d331) SHA1(e1b91eccec6034bcd2029c15596aa0b129c9e53f))
 DCS_SOUNDROM5xm("ngg_s2.0_2",  CRC(dde128d5) SHA1(214ee807d2323ecb407a3d116b038e15c60e5580),
-                "nggsndl1.s3",	CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
-                "nggsndl1.s4",	CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
-                "nggsndl1.s5",	CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
-                "nggsndl1.s6",	CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
+                "nggsndl1.s3", CRC(6871b20d) SHA1(0109c02282806016a6b22f7dfe3ac964931ba609),
+                "nggsndl1.s4", CRC(86ed8f5a) SHA1(231f6313adff89ef4cec0d9f25b13e69ea96213d),
+                "nggsndl1.s5", CRC(ea2062f0) SHA1(f8e45c1fcc6b8677a0745a5d83ca93b77fbde752),
+                "nggsndl1.s6", CRC(b1b8b514) SHA1(e16651bcb2eae747987dc3c13a5dc20a33c0a1f8))
 WPC_ROMEND
 
 
@@ -594,7 +594,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ngg,13,"No Good Gofers (1.3)",1997,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(ngg,p06,13,"No Good Gofers (p0.6)",1997,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(ngg,p06,13,"No Good Gofers (p0.6 Prototype)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(ngg,10,13,"No Good Gofers (1.0)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(ngg,12,13,"No Good Gofers (1.2)",1997,"Williams",wpc_m95S,0)
 
@@ -603,10 +603,10 @@ CORE_CLONEDEF(ngg,12,13,"No Good Gofers (1.2)",1997,"Williams",wpc_m95S,0)
 / Simulation Definitions
 /-----------------------*/
 static sim_tSimData nggSimData = {
-  2,    				/* 2 game specific input ports */
-  ngg_stateDef,				/* Definition of all states */
-  ngg_inportData,			/* Keyboard Entries */
-  { stTrough1, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stDrain },	/*Position where balls start.. Max 7 Balls Allowed*/
+  2,                                    /* 2 game specific input ports */
+  ngg_stateDef,                         /* Definition of all states */
+  ngg_inportData,                       /* Keyboard Entries */
+  { stTrough1, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stDrain }, /*Position where balls start.. Max 7 Balls Allowed*/
   ngg_initSim,                          /* init */
   ngg_handleBallState,                  /* Function to handle ball state changes*/
   ngg_drawStatic,                       /* Function to handle mechanical state changes*/
