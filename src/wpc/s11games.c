@@ -624,7 +624,7 @@ CORE_CLONEDEF(jokrz,l3,l6,"Jokerz (L-3)", 1989, "Williams", s11_mS11B2S,GAME_IMP
 / Earthshaker 4/89
 /--------------------*/
 INITGAME(esha,GEN_S11B, s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
-S11_ROMSTART48(esha,pr4,"eshk_u26.f1", CRC(15e2bfe3) SHA1(57ce7f017a6f9ab88f221870efde91e97efbc8a6),
+S11_ROMSTART48(esha,pr4,"eshk_u26.f1", CRC(15e2bfe3) SHA1(57ce7f017a6f9ab88f221870efde91e97efbc8a6), // says PR 4, not F-1
                         "eshk_u27.f1", CRC(ddfa8edd) SHA1(e59ba6c1e8a0087abda218a8922d83ebefd84666))
 S11XS_SOUNDROM88(       "eshk_u21.l1", CRC(feac68e5) SHA1(2f12a78398bc3a468e3e0656da91260d45b0663b),
                         "eshk_u22.l1", CRC(44f50fe1) SHA1(a8e24dbb0f5cf300118e1ebdcd2bb6b274d87936))
@@ -700,7 +700,7 @@ S11_ROMEND
 CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, l4c, la3, "Earthshaker (LA-4C Competition MOD)", 2016, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, ma3, la3, "Earthshaker (LA-3 Metallica MOD)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0) // Prototype ??
+CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Williams", s11_mS11BS,0) // Prototype ?? also known as F-1
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
@@ -1102,7 +1102,7 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
-CORE_CLONEDEF(pool,le2,l7,"Pool Sharks (LE-2)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(pool,le2,l7,"Pool Sharks (LE-2 Europe)", 1990, "Bally", s11c_one,0)
 
 S11_ROMSTART48(pool,p7, "pool_u26.pa7",CRC(91d2aae9) SHA1(b3dbc80809bca8b0435c3d8a0ceb504acab4a04a),
                         "pool_u27.pa7",CRC(eff6b940) SHA1(e0c3858803bbc5cacedefe57681efc2dc339e16d))
