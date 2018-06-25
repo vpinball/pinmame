@@ -620,6 +620,14 @@ S11JS_SOUNDROM(         "jokeru5.l2" , CRC(e9dc0095) SHA1(23a99555e50461ccc8e67d
 S11_ROMEND
 CORE_CLONEDEF(jokrz,l3,l6,"Jokerz (L-3)", 1989, "Williams", s11_mS11B2S,GAME_IMPERFECT_SOUND)
 
+S11_ROMSTART48(jokrz,lg4,"u26-l3.rom", CRC(3bf963df) SHA1(9f7757d96deca8638dbc1fe3669eee78dc222ebb),
+                        "jokerz_U27.lg4", CRC(3f3fe7ef) SHA1(afd17cea8442948b5aa0bb842dfbc17442b06a1d))
+S11XS_SOUNDROM88(       "jokeru21.l1", CRC(9e2be4f6) SHA1(6e26b55935d0c8138176b54a11c1a9ab58366628),
+                        "jokeru22.l1", CRC(2f67160c) SHA1(f1e179fde41f9bf8226069c24b0bd5152a13e518))
+S11JS_SOUNDROM(         "jokeru5.l2" , CRC(e9dc0095) SHA1(23a99555e50461ccc8e67de01796642c080294c2))
+S11_ROMEND
+CORE_CLONEDEF(jokrz,lg4,l6,"Jokerz (LG-4 German)", 1989, "Williams", s11_mS11B2S,GAME_IMPERFECT_SOUND)
+
 /*--------------------
 / Earthshaker 4/89
 /--------------------*/
