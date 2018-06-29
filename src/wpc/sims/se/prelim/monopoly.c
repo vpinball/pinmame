@@ -395,7 +395,7 @@ SE_ROMEND
 #define init_monop251 init_monopoly
 
 /*-------------------------------------------------------------------
-/ Monopoly (2.51 Italian display)
+/ Monopoly (2.51 Italian)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monoi251,"moncpu.251",CRC(0645cfae) SHA1(d979234150b7fb62718debbeeeca1466a6c0344f))
 DE_DMD32ROM8x(        "mondsp-i.206",CRC(12f21301) SHA1(8eef3858c2083330e731015b088425aac7201064))
@@ -447,7 +447,7 @@ CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (3.20 Spanish)",2002,"Stern",de_mSES
 CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (3.03)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop301,monopoly,"Monopoly (3.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop251,monopoly,"Monopoly (2.51)",2002,"Stern",de_mSES1,GAME_NOCRC)
-CORE_CLONEDEFNV(monoi251,monopoly,"Monopoly (2.51 Italian display)",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monoi251,monopoly,"Monopoly (2.51 Italian)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monop233,monopoly,"Monopoly (2.33)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-----------------------

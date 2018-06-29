@@ -578,7 +578,10 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(pz,f4,"Party Zone (F-4)",1991,"Bally",wpc_mFliptronS,0)
+/* F-4: This is a special revision intended for use with the Fliptronic
+Solid-State flipper system. DO NOT USE this revision on games that
+use conventional flippers, use revision L-3 instead. */
+CORE_GAMEDEF(pz, f4, "Party Zone (F-4 Fliptronic)", 1991, "Bally", wpc_mFliptronS, 0)
 CORE_CLONEDEF(pz,f5,f4,"Party Zone (F-5 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,l1,f4,"Party Zone (L-1)",1991,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(pz,d1,f4,"Party Zone (D-1 LED Ghost Fix)",1991,"Bally",wpc_mFliptronS,0)
