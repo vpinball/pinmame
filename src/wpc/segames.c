@@ -396,7 +396,7 @@ DE_DMD32ROM8x("lisdspa.101",CRC(a8bfa71f) SHA1(45886ae8edcfd26a2225914aaf96eb960
 LIS_SND
 SE_ROMEND
 #define input_ports_lostspc1 input_ports_lostspc
-CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01)",1998,"Sega",de_mSES1,0)
+CORE_CLONEDEFNV(lostspc1,lostspc,"Lost in Space (1.01, Display 1.01)",1998,"Sega",de_mSES1,0)
 
 /*-------------------------------------------------------------------
 / Golden Cue
@@ -449,7 +449,7 @@ DE2S_SOUNDROM14444("gdzu7.090" ,CRC(076401a9) SHA1(17aa63c2b26e6fc4849a5101ff970
                   "gdzu37.090",CRC(1410ae6b) SHA1(28d025403fd60b1bb132cffcc14be21be48d808c))
 SE_ROMEND
 #define input_ports_godz_090 input_ports_se
-CORE_CLONEDEFNV(godz_090, godzilla,"Godzilla (0.90)", 1998, "Sega", de_mSES1, 0)
+CORE_CLONEDEFNV(godz_090, godzilla,"Godzilla (0.90 Prototype)", 1998, "Sega", de_mSES1, 0)
 
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 
@@ -476,7 +476,7 @@ DE2S_SOUNDROM18888("spku7.090",CRC(19937fbd) SHA1(ebd7c8f1604accbeb7c00066ecf811
                   "spku36.090",CRC(727d4624) SHA1(9019014e6057d279a37cc3ce269a1c68baeb9673),
                   "spku37.090",CRC(0c01b0c7) SHA1(76b5af50514d110b49721e6916dd16b3e3a2f5fa))
 SE_ROMEND
-CORE_CLONEDEF(sprk,096,103,"South Park (0.96)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(sprk,096,103,"South Park (0.96 Prototype)",1999,"Sega",de_mSES1,0)
 
 SE128_ROMSTART(sprk_090,"spkcpu.090",CRC(bc3f8531) SHA1(5408e008c4f545bb4f82308b118d15525f8a263a))
 DE_DMD32ROM8x(    "spdspa.090",CRC(c333dd48) SHA1(fe2be9274c06b2f39fa2e14e0d44ce7213282f3b))
@@ -486,7 +486,7 @@ DE2S_SOUNDROM18888("spku7.090",CRC(19937fbd) SHA1(ebd7c8f1604accbeb7c00066ecf811
                   "spku36.090",CRC(727d4624) SHA1(9019014e6057d279a37cc3ce269a1c68baeb9673),
                   "spku37.090",CRC(0c01b0c7) SHA1(76b5af50514d110b49721e6916dd16b3e3a2f5fa))
 SE_ROMEND
-CORE_CLONEDEF(sprk,090,103,"South Park (0.90)",1999,"Sega",de_mSES1,0)
+CORE_CLONEDEF(sprk,090,103,"South Park (0.90 Prototype)",1999,"Sega",de_mSES1,0)
 
 // Harley Davidson moved to its own sim file (bds)
 
@@ -2199,15 +2199,15 @@ SE_ROMEND
 CORE_CLONEDEFNV(sopr300,sopranos, "Sopranos, The (3.00)",2005,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
-/ The Sopranos (3.00) alternative sound
+/ The Sopranos (3.00) alternative sound feat a unique U7
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(soprano3, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
 DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
 DE3SC_SOUNDROM18888("sopsnd3.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a8b5bf6579e94e0),
                     "sopsnda.u17", CRC(21e0cfd2) SHA1(d2ff1242f1f4a206e0b2884c079ef2be5df143ac),
-                    "sopsnd3.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
-                    "sopsnd3.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
-                    "sopsnd3.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
+                    "sopsnd1.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
+                    "sopsnd1.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
+                    "sopsnd1.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
 SE_ROMEND
 #define input_ports_soprano3 input_ports_sopranos
 #define init_soprano3 init_sopranos

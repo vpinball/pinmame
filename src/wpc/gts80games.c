@@ -580,7 +580,7 @@ GTS80SS22_ROMSTART("80tst-s1.snd", CRC(b9dbdd21) SHA1(dfe42c9e6e02f82ffd0cafe164
                    "80tst-s2.snd", CRC(1a4b1e9d) SHA1(18e7ffbdbdaf83ab1c8daa5fa5201d9f54390758))
 GTS80_ROMEND
 #define input_ports_s80tst input_ports_gts80
-CORE_CLONEDEFNV(s80tst,gts80,"System 80 Test",1981,"Gottlieb",gl_mGTS80SS,0)
+CORE_CLONEDEFNV(s80tst,gts80,"System 80 Test Fixture",1981,"Gottlieb",gl_mGTS80SS,0)
 
 // System 80a
 
@@ -2256,7 +2256,7 @@ GTS80BSSOUND88(              "testd.snd", CRC(5d04a6d9) SHA1(f83bd8692146af7d234
                              "testy.snd", CRC(bd998860) SHA1(8a23376cc646c9854af204e32034bf40ebe23656) BAD_DUMP) // only a bad/patched dump exists, try 03 in sound commander for a surprise (SP0250)
 GTS80_ROMEND
 #define input_ports_s80btest input_ports_gts80
-CORE_GAMEDEFNV(s80btest, "System 80B Test",198?,"Gottlieb",gl_mGTS80BS1,0)
+CORE_GAMEDEFNV(s80btest, "System 80B Test Fixture",198?,"Gottlieb",gl_mGTS80BS1,0)
 
 // Game produced by Premier for International Concepts
 /*-------------------------------------------------------------------
