@@ -14,6 +14,8 @@ Fix some (unfortunately not all) AT91 JIT crashes (i.e. S.A.M. and Whitestar II)
 New:
 Inder: Topaz
 Mirco: Lucky Draw
+Sonic: Night Fever (uses same ROMs as Playmatic Big Town)
+       Third World (uses same ROMs as Playmatic Big Town)
 Williams: Bigfoot R0.1 & R0.1b & R0.1c & R0.1d (FreeWPC based rewrite of White Water)
 
 Kinda new:

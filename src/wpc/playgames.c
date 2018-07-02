@@ -414,6 +414,24 @@ CORE_GAMEDEFNV(msdisco,"Miss Disco (Bingo)",19??,"Playmatic",gl_mPLAYMATICBINGO,
 // games by other manufacturers below
 
 /*-------------------------------------------------------------------
+/ ??/78 Third World (Sonic)
+/-------------------------------------------------------------------*/
+INITGAME1(thrdwrld, play_dispOld, 1)
+PLAYMATIC_ROMSTART88(thrdwrld, "3rdwrlda.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "3rdwrldb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(thrdwrld,"Third World",1978,"Sonic (Spain)",gl_mPLAYMATIC1,0)
+
+/*-------------------------------------------------------------------
+/ ??/79 Night Fever (Sonic)
+/-------------------------------------------------------------------*/
+INITGAME1(ngtfever, play_dispOld, 1)
+PLAYMATIC_ROMSTART88(ngtfever, "nfevera.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "nfeverb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(ngtfever,"Night Fever",1979,"Sonic (Spain)",gl_mPLAYMATIC1,0)
+
+/*-------------------------------------------------------------------
 / ??/86 Rider's Surf (JocMatic)
 /-------------------------------------------------------------------*/
 INITGAME4(ridersrf, play_disp7, 1)
@@ -436,7 +454,3 @@ ROM_START(ironball)
     ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
 ROM_END
 CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
-
-/*-------------------------------------------------------------------
-/ ??/88 Slalom, etc are in separate file
-/-------------------------------------------------------------------*/
