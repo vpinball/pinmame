@@ -95,11 +95,11 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(bigtown,"Big Town",1978,"Playmatic",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
-/ 09/78 Last Lap
+/ 09/78 Last Lap // same ROMs as Big Town
 /-------------------------------------------------------------------*/
 INITGAME1(lastlap, play_dispOld, 1)
-PLAYMATIC_ROMSTART88(lastlap, "lastlapa.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
-            "lastlapb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMSTART88(lastlap, "bigtowna.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "bigtownb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC1,0)
 
@@ -114,11 +114,11 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(chance,"Chance",1978,"Playmatic",gl_mPLAYMATIC1A,0)
 
 /*-------------------------------------------------------------------
-/ 05/79 Party
+/ 05/79 Party // same ROMs as Big Town
 /-------------------------------------------------------------------*/
 INITGAME1(party, play_dispOld, 1)
-PLAYMATIC_ROMSTART88(party, "party_a.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
-            "party_b.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMSTART88(party, "bigtowna.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "bigtownb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(party,"Party",1979,"Playmatic",gl_mPLAYMATIC1,0)
 
@@ -414,20 +414,20 @@ CORE_GAMEDEFNV(msdisco,"Miss Disco (Bingo)",19??,"Playmatic",gl_mPLAYMATICBINGO,
 // games by other manufacturers below
 
 /*-------------------------------------------------------------------
-/ ??/78 Third World (Sonic)
+/ ??/78 Third World (Sonic) // same ROMs as Big Town
 /-------------------------------------------------------------------*/
 INITGAME1(thrdwrld, play_dispOld, 1)
-PLAYMATIC_ROMSTART88(thrdwrld, "3rdwrlda.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
-            "3rdwrldb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMSTART88(thrdwrld, "bigtowna.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "bigtownb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(thrdwrld,"Third World",1978,"Sonic (Spain)",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
-/ ??/79 Night Fever (Sonic)
+/ ??/79 Night Fever (Sonic) // same ROMs as Big Town
 /-------------------------------------------------------------------*/
 INITGAME1(ngtfever, play_dispOld, 1)
-PLAYMATIC_ROMSTART88(ngtfever, "nfevera.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
-            "nfeverb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMSTART88(ngtfever, "bigtowna.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+            "bigtownb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(ngtfever,"Night Fever",1979,"Sonic (Spain)",gl_mPLAYMATIC1,0)
 
