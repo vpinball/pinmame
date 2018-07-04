@@ -532,6 +532,7 @@ static void init_ft(void) {
   core_gameData = &ftGameData;
   /*Gate starts as closed!*/
   locals.gatePos = CLOSED;
+  wpc_set_fastflip_addr(0x7b);
 }
 
 /*-- return status of custom solenoids --*/
