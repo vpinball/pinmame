@@ -517,6 +517,7 @@ static void init_afm(void) {
   HC4094_oe_w(1, 1);
   HC4094_strobe_w(0, 1);
   HC4094_strobe_w(1, 1);
+  wpc_set_fastflip_addr(0x80);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = afm_wpc_proc_solenoid_handler;
   // clock on C37, data on C38

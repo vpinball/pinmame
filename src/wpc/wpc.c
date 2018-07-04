@@ -126,6 +126,7 @@ static struct {
 
 // Have to put this here, instead of wpclocals, since wpclocals is cleared/initialized AFTER game specific init.   Grrr.
 static int wpc_modsol_aux_board = 0;
+static int wpc_fastflip_addr = 0;
 
 static struct {
   UINT8 *DMDFrames[DMD_FRAMES];
@@ -181,6 +182,11 @@ static void wpc_zc(int data) {
 void wpc_set_modsol_aux_board(int board)
 {
 	wpc_modsol_aux_board = board;
+}
+
+void wpc_set_fastflip_addr(int addr)
+{
+	wpc_fastflip_addr = addr;
 }
 
 #ifdef PROC_SUPPORT
@@ -443,6 +449,15 @@ static INTERRUPT_GEN(wpc_vblank) {
       coreGlobals.solenoids2 |= wpclocals.solFlip;
       wpclocals.solFlip = wpclocals.solFlipPulse;
     }
+	// If fastflipaddr is set, we want sol31 to be triggered by a nonzero value
+	// in that location
+	if (wpc_fastflip_addr > 0)
+	{
+		coreGlobals.solenoids2 &= ~(0x400);
+		if (wpc_ram[wpc_fastflip_addr] > 0)
+			coreGlobals.solenoids2 |= 0x400;
+	}
+
   }
   else if (((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) &&
            (core_gameData->gen & GENWPC_HASFLIPTRON)) {
