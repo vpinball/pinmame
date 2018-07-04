@@ -8,7 +8,10 @@ Fix neverending sounds on LTD system 4 games, added sound support for Cowboy Eig
 Fix S.A.M. PulseSolState (needed for mech) and bug in Family Guy mini-playfield lights and move the (non-modulated) LED outputs in Tron LE that occupied columns 8 and 9 so far (i.e. disabling the start button lamps) to cols 11 and 12
 Implement 'fast flips' support for some S.A.M. games: Recommended table implementation is to use direct/fast flipper flips when solenoid 33 is on, but to respond to the standard flipper solenoids when 33 is off
  (trn_174h, acd_168h, mtl_170h, twd_160h, wof_500, st_161h, xmn_151h, fg_1200, potc_600, im_183ve, avr_200, avs_170, wpt_140a, tf_180h, bdk_294, shr_141, bbh_170, smanve_101, nba_802)
+Implement 'fast flips' for some WPC-95 games: Takes over solenoid 31, so is compatible with the existing VP core scribts UseSolenoids=2 implementation
+ (Attack from Mars, Fish Tales, Medieval Madness, Monster Bash)
 Fix some (unfortunately not all) AT91 JIT crashes (i.e. S.A.M. and Whitestar II)
+Cleanup, unify and clarify some of the game names/variants
 
 *** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball
 New:
@@ -39,9 +42,10 @@ Frontier (Gate Fix)
 Galaxy (Planet Skillshot)
 Game Show LU-3 (Europe),LG-6 (German)
 High Speed L-4C (competition MOD)
-Jokerz! LG-4 (German)
+Jokerz! G-4 (German)
 Meteor (No Background Sound)
 Pool Sharks LA-7C (competition MOD)
+Safe Cracker 1.0,1.8 with Sound 1.1,1.8 No Percentaging with Sound 1.1,1.8 No Percentaging with German Sound 2.4
 Spider-Man 2.62 (bootleg with replaced music)
 Star Trek (Stern) 1.62,1.62LE
 
