@@ -489,6 +489,7 @@ static void init_ss(void) {
   mech_add(0,&ss_wheelMech);
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ss_wpc_w);
   HC4094_init(&hc4094ss);
+  wpc_set_fastflip_addr(0x81);
 }
 
 static void ss_handleMech(int mech) {
