@@ -317,5 +317,6 @@ static core_tGameData congoGameData = {
 /----------------*/
 static void init_congo(void) {
   core_gameData = &congoGameData;
+  wpc_set_fastflip_addr(0x80);
 }
 
