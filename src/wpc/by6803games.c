@@ -157,8 +157,8 @@ BY6803_ROMEND
 #define input_ports_strngsci input_ports_by6803
 CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
 
-BY6803_ROMSTART44(strngscg, "cpub_u2.128",  CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
-                            "cpub_u3.128",  CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
+BY6803_ROMSTART44(strngscg, "cpub_u2.128", CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
+                            "cpub_u3.128", CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
 BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
 BY6803_ROMEND
 #define init_strngscg init_strngsci
