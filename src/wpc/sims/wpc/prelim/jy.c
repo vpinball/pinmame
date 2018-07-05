@@ -318,5 +318,6 @@ static core_tGameData jyGameData = {
 /----------------*/
 static void init_jy(void) {
   core_gameData = &jyGameData;
+  wpc_set_fastflip_addr(0x80);
 }
 

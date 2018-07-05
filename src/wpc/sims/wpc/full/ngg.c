@@ -536,7 +536,8 @@ static const char* SlamText[] = {"Down","Up"};
 
   core_textOutf(30, 30,BLACK,"Centre Ramp: %-10s", showramp(0));
   core_textOutf(30, 40,BLACK,"Right Ramp: %-10s", showramp(1));
-  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(NGG_WHEEL_POS)/4]);
+  if ((NGG_WHEEL_POS) / 4 < sizeof(WheelText)/ sizeof(WheelText[0]))
+	core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(NGG_WHEEL_POS)/4]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
   static void ngg_drawStatic(BMTYPE **line) {
@@ -714,6 +715,7 @@ static void init_ngg(void) {
   locals.slamdelay = 0;
   wpc_set_modsol_aux_board(2);
   mech_add(0, &mechnggWheel);
+  wpc_set_fastflip_addr(0x84);
 }
 
 static void ngg_handleMech(int mech) {

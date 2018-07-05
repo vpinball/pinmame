@@ -398,4 +398,5 @@ static void init_sc(void) {
   HC4094_oe_w(3, 1);
   HC4094_oe_w(4, 1);
   HC4094_oe_w(5, 1);
+  wpc_set_fastflip_addr(0x86);
 }
