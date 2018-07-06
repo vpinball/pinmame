@@ -12,8 +12,9 @@ Implement 'fast flips' for some WPC-95 games: Takes over solenoid 31, so is comp
  (Attack from Mars, Fish Tales, Medieval Madness, Monster Bash)
 Fix some (unfortunately not all) AT91 JIT crashes (i.e. S.A.M. and Whitestar II)
 Cleanup, unify and clarify some of the game names/variants
+Fixed Cheap Squeak sound ROM loading for 8K sized ROMs, Space Hawks sound works now
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles
 New:
 Inder: Topaz
 Mirco: Lucky Draw
@@ -28,6 +29,7 @@ Hook 5.01 (unofficial MOD)
 Correct Dumps:
 Bally: Game Show LU-4 (Europe) (simple rename of gs_l4 to gs_lu4), LA-3 (simple rename of gs_l3 to gs_la3)
 Capcom: Kingpin 1.05 Beta (simple rename of kpv106 to kpb105)
+Nuova Bell: Space Hawks
 Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, LX-1 was removed from PinMAME)
 
 Clones:
@@ -46,6 +48,7 @@ Jokerz! G-4 (German)
 Meteor (No Background Sound)
 Pool Sharks LA-7C (competition MOD)
 Safe Cracker 1.0,1.8 with Sound 1.1,1.8 No Percentaging with Sound 1.1,1.8 No Percentaging with German Sound 2.4
+Space Hawks (Free Play)
 Spider-Man 2.62 (bootleg with replaced music)
 Star Trek (Stern) 1.62,1.62LE
 

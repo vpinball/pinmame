@@ -574,10 +574,7 @@ static void cs_init(struct sndbrdData *brdData);
 static void cs_diag(int button);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
-static READ_HANDLER(cs_port1_r);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(cs_port2_r);
-#endif
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
@@ -587,19 +584,15 @@ static struct DACinterface cs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(cs_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
   { 0x0080, 0x00ff, MRA_RAM },	/*Internal RAM*/
-  { 0xb000, 0xdfff, MRA_ROM },
-  { 0xe000, 0xffff, MRA_ROM },
+  { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 static MEMORY_WRITE_START(cs_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0080, 0x00ff, MWA_RAM },	/*Internal RAM*/
-  { 0xb000, 0xdfff, MWA_ROM },
-  { 0xe000, 0xffff, MWA_ROM },
+  { 0x8000, 0xffff, MWA_NOP },
 MEMORY_END
 static PORT_READ_START(cs_readport)
-{ M6803_PORT2, M6803_PORT2, cs_port1_r },
-  //{ M6803_PORT1, M6803_PORT1, cs_port1_r },
-  //{ M6803_PORT2, M6803_PORT2, cs_port2_r },
+  { M6803_PORT2, M6803_PORT2, cs_port2_r },
 PORT_END
 static PORT_WRITE_START(cs_writeport)
   { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
@@ -617,7 +610,7 @@ MACHINE_DRIVER_END
 
 static struct {
   struct sndbrdData brdData;
-  int cmd, ctrl;
+  int cmd, ctrl, p21;
 } cslocals;
 
 static void cs_init(struct sndbrdData *brdData) {
@@ -634,43 +627,32 @@ static WRITE_HANDLER(cs_ctrl_w) {
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static int p21 = 0;
-
 void by45snd_reset(void)
 {
-	p21 = 1;
+	cslocals.p21 = 1;
 }
 
 void by45_p21_w(int data)
 {
-	p21 = 0;
+	cslocals.p21 = 0;
 }
 
-static READ_HANDLER(cs_port1_r) {
+static READ_HANDLER(cs_port2_r) {
 	static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
-	if(p21) data |= 0x02;
+	if (cslocals.p21) data |= 0x02;
 #if 0
 	if(last !=data)
-		printf("cs_port1_r = %x\n",data);
+		printf("cs_port2_r = %x\n",data);
 #endif
 	last = data;
 	return data;
 }
 
-static int port2 = 0;
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static READ_HANDLER(cs_port2_r) {
-	int data = port2;
-	printf("reading cs_port2_r data = %x\n",data);
-	return data;
-}
-#endif
 static WRITE_HANDLER(cs_port2_w) {
-	port2 = data;
 	//printf("MPU: port write = %x\n",data);
-	sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
+	sndbrd_ctrl_cb(cslocals.brdData.boardNo,data & 0x01);
+} // diag led
 
 /*----------------------------------------
 /    Turbo Cheap Squeak
