@@ -368,5 +368,5 @@ static WRITE_HANDLER(nbaf_wpc_w) {
 static void init_nbaf(void) {
   core_gameData = &nbafGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, nbaf_wpc_w);
-  wpc_set_fastflip_addr(0x3af);
+  wpc_set_fastflip_addr(0x7a);
 }
