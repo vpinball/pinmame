@@ -323,7 +323,7 @@ DRIVERNV(redbaron)      // Red Baron (1985)
 // Bell Coin Matics
                         //          ??/78 The King
                         //BY35      ??/79 Sexy Girl (Bally Playboy clone with image projector)
-                        //          ??/80 The Hunter
+                        //          ??/80 The Hunter (uses Bally Strikes & Spares ROMs) 
                         //          ??/80 White Shark
                         //          ??/80 Cosmodrome
 // Bell Games
@@ -339,15 +339,16 @@ DRIVERNV(newwave)       //BY35      04/85 New Wave (Bally Black Pyramid clone)
 DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
                         //          ??/?? World Cup / World Championship (redemption game)
 // Nuova Bell Games
-DRIVERNV(worlddef)      //BY35      11/85 World Defender (Laser Cue clone)
+DRIVERNV(worlddef)      //BY35      11/85 World Defender (Laser Cue clone but no-clone driver)
 DRIVERNV(worlddfp)      //BY35      11/85 World Defender (Free Play)
-DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
+DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone but no-clone driver)
+DRIVERNV(spchawfp)      //BY35      04/86 Space Hawks (Free Play - dips 25 & 26 must be on!)
 DRIVERNV(darkshad)      //BY35      ??/86 Dark Shadow
 DRIVERNV(skflight)      //BY35      09/86 Skill Flight
 DRIVERNV(cobra)         //BY35      02/87 Cobra
 DRIVERNV(futrquen)      //BY35      07/87 Future Queen
 DRIVERNV(f1gp)          //BY35ALPHA 12/87 F1 Grand Prix
-DRIVERNV(toppin)        //BY35      01/88 Top Pin (WMS Pin*Bot conversion)
+DRIVERNV(toppin)        //BY35      01/88 Top Pin (WMS Pin*Bot conversion but no-clone driver)
 DRIVERNV(uboat65)       //BY35ALPHA 04/88 U-Boat 65
 
 // ----------------
