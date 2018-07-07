@@ -41,6 +41,36 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 		core_gameData = &name##GameData; \
 	}
 
+
+// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
+// Load the balls in trough (I+SDF for pinball magic, e+fghj for big bang bar), start the game.  
+// Use CheatEngine to find memory locations that are 1
+// Tilt (INSERT key)
+//  Use CheatEngine to find memory locations that are 0.
+// Repeat until game end.   Ensure stays 0 in attract mode
+// Now you know the dynamic memory address - break PinMame32 in VC debugger.  
+// Add a memory breakpoint on that address.   Resume debugging.  Exit/enter the service menu, 
+// breakpoint will hit.  Walk back up the stack one step to find the write.  This will have the 
+// memory "address" as the parameter.   If you are in the _word write routine
+// add one to the address as this checks a byte.   This is the value you need for fastflipaddr.  
+//
+// If you end up in capcoms.c you're in the sound hardware.  Look for values
+// at a higher address.   If you're in a 32 bit memory write, you're probably in the wrong place, the 1 
+// might be the hiword of a longer value.  Check address/data.
+//
+// Pinball Magic seems to have 4 candidates. 0x5e175, 0x5E1EF, 0x5E1F2 are also possibilities
+// Big Bang Bar sets a whole bunch of values to 8.  I went with the first. 
+
+#define INITGAMEFF(name, gameno, disp, balls, sb, lamps, fastflipaddr) \
+	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
+	static int name##_getsol(int solNo) { \
+		return (cpu_readmem32bew(fastflipaddr) > 0); \
+	}\
+	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0,##name##_getsol},NULL,{"", capInvSw##gameno}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+	
 /*-------------------------------------------------------------------
 / Goofy Hoops (Romstar game) (??/95)
 /-------------------------------------------------------------------*/
@@ -62,7 +92,7 @@ CORE_GAMEDEFNV(ghv101,"Goofy Hoops",1995,"Romstar",cc1,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Pinball Magic (10/95)
 /-------------------------------------------------------------------*/
-INITGAME(pmv112, 1, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+INITGAMEFF(pmv112, 1, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x9f3f)
 //Version 1.0.12
 CC_ROMSTART_4(pmv112,  "u1l_v112.bin",CRC(c8362623) SHA1(ebe37d3273e5cefd4fbc041ea3b15d59010b8160),
                        "u1h_v112.bin",CRC(f6232c74) SHA1(28bab61de2ece27aff4cbdd36b10c136a4b7c936),
@@ -76,7 +106,7 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 CC_ROMEND
 CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc2,0)
 //Redemption Version 1.0.12I
-INITGAME(pmv112r, 2, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+INITGAMEFF(pmv112r, 2, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x9f3f)
 CC_ROMSTART_4(pmv112r, "u1lv112i.bin",CRC(28d35969) SHA1(e19856402855847286db73c17510614d8b40c882),
                        "u1hv112i.bin",CRC(f70da65c) SHA1(0f98c95edd6f2821e3a67ff1805aa752a4d018c0),
                        "u2l_v10.bin", CRC(d3e4241d) SHA1(fe480ea2b3901e2e571f8871a0ebe63fbf152e28),
@@ -216,7 +246,7 @@ CORE_CLONEDEFNV(ffv101,ffv104,"Flipper Football (1.01)",1996,"Capcom",cc2,0)
 / Big Bang Bar - Beta (11/96)
 /-------------------------------------------------------------------*/
 //Beta Version 1.9
-INITGAME(bbb109, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+INITGAMEFF(bbb109, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x178b)
 CC_ROMSTART_4(bbb109,  "u1l_b19.bin", CRC(32be6cb0) SHA1(e6c73366d5b85c0e96878e275320f82004bb97b5),
                        "u1h_b19.bin", CRC(2bd1c06d) SHA1(ba81faa07b9d53f51bb981a82aa8684905516420),
                        "u2l_b17.bin", CRC(9bebf271) SHA1(01c85396b96ffb04e445c03d6d2d88cce7835664),
