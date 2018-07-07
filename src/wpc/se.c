@@ -84,6 +84,7 @@ struct {
 #endif
   UINT8  curBank;                   /* current bank select */
   #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
+  int fastflipaddr;
 } selocals;
 
 #ifdef PROC_SUPPORT
@@ -132,6 +133,10 @@ static INTERRUPT_GEN(se_vblank) {
   coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xfff0) | selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
   if ((selocals.vblankCount % SE_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = selocals.solenoids;
+	// Fast flips.   Use Solenoid 15, this is the left flipper solenoid that is 
+	// unused because it is remapped to VPM flipper constants.  
+	if (selocals.fastflipaddr > 0 && memory_region(SE_CPUREGION)[selocals.fastflipaddr-1] > 0)  
+		coreGlobals.solenoids |= 0x4000;
     selocals.solenoids = coreGlobals.pulsedSolState;
 #ifdef PROC_SUPPORT
 		if (coreGlobals.p_rocEn) {
@@ -202,11 +207,47 @@ static SWITCH_UPDATE(se) {
 static MACHINE_INIT(se3) {
 	sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
 	sndbrd_1_init(SNDBRD_DE3S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
+	const char * const gn = Machine->gamedrv->name;
+	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
+	// Debug and break on this line:
+	//  return memory_region(SE_CPUREGION)[offset];
+	//
+	// Add "&memory_region(0x81)[0]" to watch.  This will give you the current memory 
+	// location of the WhiteStar RAM block where it goes, narrows things down a lot!
+	//
+	// Use CheatEngine to find memory locations that are 0 starting at the address
+	// you got from the last step, through a couple KB more. 
+	//
+	// Load the balls in trough (W+SDFGHJ), start the game.   Usually have to futz with
+	// W+SDF before the table moves onto BALL 1 and the flippers activate.
+	// You can see when the flippers are active when four sets of dots change
+	// on the bottom two blocks of dots.  When they are not active only 
+	// the switches (middle block) flicker
+	// Use CheatEngine to find memory locations that is 192 (so far all change to this)
+	// Validation:
+	// Enter service menu.  Value should change back to 0.
+	// Force value to be 192, the flippers should activate in service menu. 
+	// Fastflipaddr is "+1" because a few were found at location 0!  
+
+	if (_strnicmp(gn, "sopranos", 8) == 0)
+		selocals.fastflipaddr = 0x04 + 1;
+	else if (_strnicmp(gn, "simpprty", 8) == 0)
+		selocals.fastflipaddr =  0x04 + 1;
 }
 
 static MACHINE_INIT(se) {
   sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
+  
+  const char * const gn = Machine->gamedrv->name;
+  if (_strnicmp(gn, "sprk_103", 8) == 0)
+	  selocals.fastflipaddr = 0x0 + 1;
+  else if (_strnicmp(gn, "austin", 8) == 0)
+	  selocals.fastflipaddr = 0x0 + 1;
+  else if (_strnicmp(gn, "monopoly", 8) == 0)
+	  selocals.fastflipaddr = 0xf0 + 1;
+  else if (_strnicmp(gn, "twst_405", 8) == 0)
+	  selocals.fastflipaddr = 0x14d + 1;
 
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1) {
