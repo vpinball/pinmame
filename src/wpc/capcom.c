@@ -55,6 +55,8 @@
       The PowerMeter in King Pin works that way. The lower the power is on the display the lower the strength the flippers is applied.
       Also see https://m.facebook.com/story.php?story_fbid=2088173937889558&id=1034214746618821
       -> suggestion: Find mem location (as it's only one machine/ROM version after all!) and use that directly instead of trying to track/map it?
+  #11) Flippers are not implemented.  VPinMame appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
+       seem to give one very latent pulse instead of staying on.
 **************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
