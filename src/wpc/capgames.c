@@ -51,8 +51,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 // Now you know the dynamic memory address - break PinMame32 in VC debugger.  
 // Add a memory breakpoint on that address.   Resume debugging.  Exit/enter the service menu, 
 // breakpoint will hit.  Walk back up the stack one step to find the write.  This will have the 
-// memory "address" as the parameter.   If you are in the _word write routine
-// add one to the address as this checks a byte.   This is the value you need for fastflipaddr.  
+// memory "address" as the parameter.   This is the value you need for fastflipaddr.  
 //
 // If you end up in capcoms.c you're in the sound hardware.  Look for values
 // at a higher address.   If you're in a 32 bit memory write, you're probably in the wrong place, the 1 
@@ -60,6 +59,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 //
 // Pinball Magic seems to have 4 candidates. 0x9f3e, 0x3a16, 0x5e175, 0x5E1EF, 0x5E1F2 are also possibilities
 // Big Bang Bar sets a whole bunch of values to 8.  I went with the first. 
+// KingPin had lots of values that changed, but only one value that goes from 128 to 0 during the bonus collection sequence
 
 #define INITGAMEFF(name, gameno, disp, balls, sb, lamps, fastflipaddr) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
@@ -280,7 +280,7 @@ CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (Beta 1.8 US)",1996,"Capcom",cc2,0)
 //With the help of other people, I have found out that this is really version
 //"B1.05", not "V1.0".If you find a version 1.0, please contact me at
 //pfutz@mediaone.net
-INITGAME(kpb105, 11, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+INITGAMEFF(kpb105, 11, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x70d5)
 CC_ROMSTART_2X(kpb105, "u1hu1l.bin", CRC(d2d42121) SHA1(c731e0b5c9b211574dda8aecbad799bc180a59db),
                        "u2hu2l.bin", CRC(9cd91371) SHA1(197a06a0ed6b661d798ed18b1db72215c28e1bc2))
 CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
