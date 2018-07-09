@@ -222,7 +222,7 @@ static core_tLCDLayout dispAlpha[] = {
 };
 
 /*--------------------------------
-/ Super Bowl (X's & O's Clone)
+/ Super Bowl (X's & O's Clone without aux lamps board)
 /-------------------------------*/
 INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
 BY35_ROMSTARTx00(suprbowl,"sbowlu2.732",CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
@@ -230,7 +230,18 @@ BY35_ROMSTARTx00(suprbowl,"sbowlu2.732",CRC(bc497a13) SHA1(f428373bde72f0302c45c
 BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(suprbowl,xsandos,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
+/ Super Bowl (Free Play)
+/-------------------------------*/
+INITGAMENB(sprbwlfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+BY35_ROMSTARTx00(sprbwlfp,"sbwlfpu2.732",CRC(94be32b4) SHA1(a20d645ab48b58cc5e009aa0ba39172b1a2e98e7),
+                          "sbwlfpu6.732",CRC(691db61b) SHA1(270b63d6945f29d5fb3086e7a14dff69b7d310e0))
+BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(sprbwlfp, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Tiger Rag (Kings Of Steel Clone)
@@ -250,7 +261,7 @@ BY35_INPUT_PORTS_START(tigerrag, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(tigerrag,kosteel,"Tiger Rag",1984,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Cosmic Flash (Flash Gordon Clone)
+/ Cosmic Flash (ROMs almost the same as Flash Gordon but different gameplay)
 /-------------------------------*/
 INITGAMENB(cosflash,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
 BY35_ROMSTARTx00(cosflash,"cf2d.532",    CRC(939e941d) SHA1(889862043f351762e8c866aefb36a9ea75cbf828),
@@ -259,7 +270,7 @@ BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b5
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(cosflash, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(cosflash,flashgdn,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61S,0)
+CORE_GAMEDEFNV(cosflash,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61S,0)
 
 /*--------------------------------
 / Saturn 2 (Spy Hunter Clone)
@@ -358,9 +369,9 @@ ROM_START(darkshad)
     ROM_COPY(REGION_CPU1, 0xe800, 0x1800,0x0800)
     ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x0800)
     ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
-BY45_SOUNDROMx2("darkshad.snd", NO_DUMP)
+BY45_SOUNDROM2x("darkshad.snd", CRC(9fd6ee82) SHA1(6486fa56c663152e565e160b8f517be824338a9a))
 ROM_END
-INITGAME(darkshad,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,BY35GD_NOSOUNDE)
+INITGAME(darkshad,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
 BY35_INPUT_PORTS_START(darkshad, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(darkshad,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
@@ -388,7 +399,7 @@ ROM_START(skflight)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
+INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(skflight, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -416,7 +427,7 @@ ROM_START(cobra)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
+INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(cobra, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -604,7 +615,7 @@ static void tf0(int data) {
   if (timeout)
     i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) & 0x7f); // prevent all irqs temporarily
   else
-  	i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) | 0x80); // reenable irqs
+    i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) | 0x80); // reenable irqs
 }
 
 static void int1(int data) {
