@@ -715,7 +715,7 @@ static void init_ngg(void) {
   locals.slamdelay = 0;
   wpc_set_modsol_aux_board(2);
   mech_add(0, &mechnggWheel);
-  wpc_set_fastflip_addr(0x84);
+  wpc_set_fastflip_addr(0x87);
 }
 
 static void ngg_handleMech(int mech) {
