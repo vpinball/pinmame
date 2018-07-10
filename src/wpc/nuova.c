@@ -233,7 +233,7 @@ BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Super Bowl (Free Play)
+/ Super Bowl (Free Play) (uses a modified -53 version of Bally U6 ROM)
 /-------------------------------*/
 INITGAMENB(sprbwlfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
 BY35_ROMSTARTx00(sprbwlfp,"sbwlfpu2.732",CRC(94be32b4) SHA1(a20d645ab48b58cc5e009aa0ba39172b1a2e98e7),
@@ -344,7 +344,7 @@ BY35_INPUT_PORTS_START(spacehaw, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(spacehaw,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Space Hawks (Free Play)
+/ Space Hawks (Free Play) (dips 25 & 26 must be on)
 /-------------------------------*/
 ROM_START(spchawfp)
   NORMALREGION(0x10000, REGION_CPU1)
