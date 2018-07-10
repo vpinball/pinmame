@@ -712,7 +712,7 @@ CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Willia
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0) // supports collapsable building
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
