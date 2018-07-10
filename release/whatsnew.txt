@@ -19,7 +19,7 @@ Cleanup, unify and clarify some of the game names/variants
 Fixed Cheap Squeak sound ROM loading for 8K sized ROMs, Space Hawks's and Dark Shadow's original sound ROMs are working now
 Un-cloned some Bell games (different gameplay, different solenoid assignment, missing aux lamps etc.)
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench, eriki
 New:
 Inder: Topaz
 Mirco: Lucky Draw
