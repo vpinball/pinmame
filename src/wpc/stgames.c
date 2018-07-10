@@ -911,7 +911,7 @@ ST200_ROMSTART8888(cue,"cpu_u1.716",NO_DUMP,
                        "cpu_u6.716",NO_DUMP)
 BY35_ROMEND
 #define input_ports_cue input_ports_st
-CORE_GAMEDEFNV(cue,"Cue",1982,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(cue,"Cue (Prototype)",1982,"Stern",by35_mST200,0)
 
 /*----------------------------------------
 / Lazer Lord (Proto - Never released)
@@ -923,4 +923,4 @@ ST200_ROMSTART8888(lazrlord,"cpu_u1.716",CRC(32a6f341) SHA1(75922c6831463d240fe0
                             "cpu_u6.716",CRC(395327a3) SHA1(e2a3a8ea696bcc4b5e11b08b6c7a6d9a991aa4af))
 BY35_ROMEND
 #define input_ports_lazrlord input_ports_st
-CORE_GAMEDEFNV(lazrlord,"Lazer Lord",1984,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(lazrlord,"Lazer Lord (Prototype)",1984,"Stern",by35_mST200,0)
