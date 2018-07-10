@@ -228,11 +228,24 @@ static MACHINE_INIT(se3) {
 	// Enter service menu.  Value should change back to 0.
 	// Force value to be 192, the flippers should activate in service menu. 
 	// Fastflipaddr is "+1" because a few were found at location 0!  
+	// It appears all systems of se3 generation are the same... :) 
 
-	if (_strnicmp(gn, "sopranos", 8) == 0)
+	selocals.fastflipaddr = 0x04 + 1;
+
+/*	if (_strnicmp(gn, "sopranos", 8) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
 	else if (_strnicmp(gn, "simpprty", 8) == 0)
 		selocals.fastflipaddr =  0x04 + 1;
+	else if (_strnicmp(gn, "elvis", 5) == 0)
+		selocals.fastflipaddr = 0x04 + 1;
+	else if (_strnicmp(gn, "gprix", 5) == 0)
+		selocals.fastflipaddr = 0x04 + 1;
+	else if (_strnicmp(gn, "nascar", 6) == 0)
+		selocals.fastflipaddr = 0x04 + 1;
+	else if (_strnicmp(gn, "ripleys", 7) == 0)
+		selocals.fastflipaddr = 0x04 + 1;
+	else if (_strnicmp(gn, "lotr", 4) == 0)
+		selocals.fastflipaddr = 0x04 + 1;*/
 }
 
 static MACHINE_INIT(se) {
@@ -248,6 +261,18 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0xf0 + 1;
   else if (_strnicmp(gn, "twst_405", 8) == 0)
 	  selocals.fastflipaddr = 0x14d + 1;
+  else if (_strnicmp(gn, "shrkysht", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "harl_a30", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "hirolcas", 8) == 0)
+	  selocals.fastflipaddr = 0x04 + 1;
+  else if (_strnicmp(gn, "term3", 5) == 0)
+	  selocals.fastflipaddr = 0x04 + 1;
+  else if (_strnicmp(gn, "playboys", 8) == 0)
+	  selocals.fastflipaddr = 0x04 + 1;
+  else if (_strnicmp(gn, "rctycn", 6) == 0)
+	  selocals.fastflipaddr = 0x04 + 1;
 
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1) {

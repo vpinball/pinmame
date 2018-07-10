@@ -983,7 +983,9 @@ static INTERRUPT_GEN(wpc_irq) {
 			else
 			{
 				wpclocals.modsol_count  = 0;
-				for (i = 0; i < 32; i++)
+				// TODO: Does GEN_ALLWPC apply to everything in this driver?  If yes this check is not needed here, but I can
+				// see the same check is made in the P-ROC stuff above?
+				for (i = 0; i < ((core_gameData->gen & GEN_ALLWPC) ? 28 : 32); i++)
 				{
 					coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(wpclocals.solenoidbits[i], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i]);
 				}
@@ -1002,7 +1004,7 @@ static INTERRUPT_GEN(wpc_irq) {
 				{
 					for (i = 36; i < 40; i++)
 					{
-						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i - 8];
+						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_calc_modulated_light(wpclocals.solenoidbits[i - 8], WPC_MODSOLSMOOTH, &coreGlobals.modulatedSolenoids[CORE_MODSOL_PREV][i - 8]);
 					}
 				}
 				else
@@ -1012,7 +1014,7 @@ static INTERRUPT_GEN(wpc_irq) {
 						coreGlobals.modulatedSolenoids[CORE_MODSOL_CUR][i] = core_getSol(i + 1) ? 1 : 0;
 					}
 				}
-				// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.
+				// Now that we've copied 29-32 to 37-41, we can replace 29-32 if needed.   Also see above TODO
 				if (core_gameData->gen & GEN_ALLWPC)
 				{
 					for(i=28;i<32;i++)
