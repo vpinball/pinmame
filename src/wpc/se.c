@@ -234,8 +234,6 @@ static MACHINE_INIT(se3) {
 
 /*	if (_strnicmp(gn, "sopranos", 8) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "simpprty", 8) == 0)
-		selocals.fastflipaddr =  0x04 + 1;
 	else if (_strnicmp(gn, "elvis", 5) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
 	else if (_strnicmp(gn, "gprix", 5) == 0)
@@ -267,6 +265,8 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0x00 + 1;
   else if (_strnicmp(gn, "hirolcas", 8) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
+  else if (_strnicmp(gn, "simpprty", 8) == 0)
+	  selocals.fastflipaddr =  0x04 + 1;
   else if (_strnicmp(gn, "term3", 5) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "playboys", 8) == 0)
