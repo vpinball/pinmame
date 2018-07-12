@@ -1296,6 +1296,14 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106d61e;
 	else if (_strnicmp(gn, "nba_802", 7) == 0)
 		samlocals.fastflipaddr = 0x010609be;
+	else if (_strnicmp(gn, "rsn_110h", 8) == 0)
+		samlocals.fastflipaddr = 0x01070716;
+	else if (_strnicmp(gn, "csi_240", 7) == 0)
+		samlocals.fastflipaddr = 0x0106475e;
+	else if (_strnicmp(gn, "ij4_210", 7) == 0)
+		samlocals.fastflipaddr = 0x01072dea;
+	else if (_strnicmp(gn, "twenty4_150", 7) == 0)
+		samlocals.fastflipaddr = 0x0106ec1e;
 }
 
 
