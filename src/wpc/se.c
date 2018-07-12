@@ -254,7 +254,7 @@ static MACHINE_INIT(se) {
   const char * const gn = Machine->gamedrv->name;
   if (_strnicmp(gn, "sprk_103", 8) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
-  else if (_strnicmp(gn, "austin", 8) == 0)
+  else if (_strnicmp(gn, "austin", 6) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
   else if (_strnicmp(gn, "monopoly", 8) == 0)
 	  selocals.fastflipaddr = 0xf0 + 1;
@@ -274,7 +274,7 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "rctycn", 6) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
-  else if (_strnicmp(gn, "apollo13", 6) == 0)
+  else if (_strnicmp(gn, "apollo13", 8) == 0)
 	  selocals.fastflipaddr = 0x122 + 1;
 
 

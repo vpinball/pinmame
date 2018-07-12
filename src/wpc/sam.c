@@ -1270,11 +1270,11 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106e7e6;
 	else if (_strnicmp(gn, "st_161h", 7) == 0)
 		samlocals.fastflipaddr = 0x0107d7a2;
-	else if (_strnicmp(gn, "xmn_151h", 7) == 0)
+	else if (_strnicmp(gn, "xmn_151h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107b222;
 	else if (_strnicmp(gn, "fg_1200", 7) == 0)
 		samlocals.fastflipaddr = 0x010681d6;
-	else if (_strnicmp(gn, "potc_600", 7) == 0)
+	else if (_strnicmp(gn, "potc_600", 8) == 0)
 		samlocals.fastflipaddr = 0x0105a7fe;
 	else if (_strnicmp(gn, "im_183ve", 8) == 0)
 		samlocals.fastflipaddr = 0x01055bf6;
@@ -1302,7 +1302,7 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106475e;
 	else if (_strnicmp(gn, "ij4_210", 7) == 0)
 		samlocals.fastflipaddr = 0x01072dea;
-	else if (_strnicmp(gn, "twenty4_150", 7) == 0)
+	else if (_strnicmp(gn, "twenty4_150", 11) == 0)
 		samlocals.fastflipaddr = 0x0106ec1e;
 }
 
