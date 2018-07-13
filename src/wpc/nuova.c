@@ -224,24 +224,24 @@ static core_tLCDLayout dispAlpha[] = {
 /*--------------------------------
 / Super Bowl (X's & O's Clone without aux lamps board)
 /-------------------------------*/
-INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(suprbowl,"sbowlu2.732",CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
-                          "sbowlu6.732",CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
-BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
+INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY61B,BY35GD_NOSOUNDE)
+BY35_ROMSTARTx00(suprbowl,"sbowlu2.732", CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
+                          "sbowlu6.732", CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
+BY61_SOUNDROMxxx0(        "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_61BS,0)
 
 /*--------------------------------
 / Super Bowl (Free Play) (uses a modified -53 version of Bally U6 ROM)
 /-------------------------------*/
-INITGAMENB(sprbwlfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+INITGAMENB(sprbwlfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY61B,BY35GD_NOSOUNDE)
 BY35_ROMSTARTx00(sprbwlfp,"sbwlfpu2.732",CRC(94be32b4) SHA1(a20d645ab48b58cc5e009aa0ba39172b1a2e98e7),
                           "sbwlfpu6.732",CRC(691db61b) SHA1(270b63d6945f29d5fb3086e7a14dff69b7d310e0))
-BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
+BY61_SOUNDROMxxx0(        "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(sprbwlfp, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_45S,0)
+CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_61BS,0)
 
 /*--------------------------------
 / Tiger Rag (Kings Of Steel Clone)

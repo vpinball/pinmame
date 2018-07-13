@@ -474,6 +474,7 @@ MACHINE_DRIVER_START(by61)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(snt_pia0a_r);
+static READ_HANDLER(snt_pia0b_r);
 static WRITE_HANDLER(snt_pia0a_w);
 static WRITE_HANDLER(snt_pia0b_w);
 static READ_HANDLER(snt_pia1a_r);
@@ -490,7 +491,7 @@ static struct {
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, snt_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
@@ -521,6 +522,9 @@ static READ_HANDLER(snt_pia0a_r) {
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
+static READ_HANDLER(snt_pia0b_r) {
+  return sntlocals.pia0b;
+}
 static WRITE_HANDLER(snt_pia0a_w) {
   sntlocals.pia0a = data;
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
@@ -549,6 +553,9 @@ static READ_HANDLER(snt_pia1cb1_r) {
 
 static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
+  if (sntlocals.brdData.subType == 1 && data != 0x0f) { // force IRQ, enables sounds on Super Bowl
+    snt_irq(1); snt_irq(0);
+  }
 }
 static WRITE_HANDLER(snt_ctrl_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
