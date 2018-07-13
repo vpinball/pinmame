@@ -371,6 +371,7 @@ static void init_wd(void) {
   mech_add(0, &wd_reelMech[0]);
   mech_add(1, &wd_reelMech[1]);
   mech_add(2, &wd_reelMech[2]);
+  wpc_set_fastflip_addr(0x80);
 }
 
 

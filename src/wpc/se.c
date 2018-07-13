@@ -267,7 +267,7 @@ static MACHINE_INIT(se) {
   else if (_strnicmp(gn, "hirolcas", 8) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "simpprty", 8) == 0)
-	  selocals.fastflipaddr =  0x04 + 1;
+	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "term3", 5) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "playboys", 8) == 0)
@@ -276,8 +276,30 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "apollo13", 8) == 0)
 	  selocals.fastflipaddr = 0x122 + 1;
-
-
+  else if (_strnicmp(gn, "godzilla", 8) == 0)
+	  selocals.fastflipaddr = 0x0 + 1;
+  else if (_strnicmp(gn, "id4", 3) == 0)
+	  selocals.fastflipaddr = 0x150 + 1;
+  else if (_strnicmp(gn, "lostspc", 7) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "jplstw22", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "spacejam", 8) == 0)
+	  selocals.fastflipaddr = 0x14d + 1;
+  else if (_strnicmp(gn, "swtril43", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "vipr_102", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "xfiles", 6) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "nfl", 3) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "startrp2", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "strikext", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
+  else if (_strnicmp(gn, "strxt_uk", 8) == 0)
+	  selocals.fastflipaddr = 0x00 + 1;
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1) {
     selocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
