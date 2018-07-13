@@ -36,6 +36,7 @@ Bally: Game Show LU-4 (Europe) (simple rename of gs_l4 to gs_lu4), LA-3 (simple 
 Capcom: Kingpin 1.05 Beta (simple rename of kpv106 to kpb105)
 Nuova Bell: Dark Shadow
             Space Hawks
+            Super Bowl
 Williams: Mousin' Around! LA-4 (now uses the 'real' L2 sound roms. As this matches the LX-1 set then, LX-1 was removed from PinMAME)
 
 Clones:
