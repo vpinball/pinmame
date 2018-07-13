@@ -518,7 +518,7 @@ static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(snt_pia0a_r) {
-  if (sntlocals.brdData.subType == 1)   return snt_8910a_r(0); // -61B
+  if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B, -61N
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
@@ -553,7 +553,7 @@ static READ_HANDLER(snt_pia1cb1_r) {
 
 static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
-  if (sntlocals.brdData.subType == 1 && data != 0x0f) { // force IRQ, enables sounds on Super Bowl
+  if (sntlocals.brdData.subType == 2 && data != 0x0f) { // force IRQ, enables sounds on Super Bowl
     snt_irq(1); snt_irq(0);
   }
 }
