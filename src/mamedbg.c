@@ -80,12 +80,12 @@ static int dbg_sound_disable = 0;	/*for disabling/enabling sound with debugger w
 #define DBG_WINDOWS 5
 
 /* Some convenience macros to address the cpu'th window */
-#define WIN_CMDS(cpu)	(cpu*DBG_WINDOWS+EDIT_CMDS)
-#define WIN_REGS(cpu)	(cpu*DBG_WINDOWS+EDIT_REGS)
-#define WIN_DASM(cpu)	(cpu*DBG_WINDOWS+EDIT_DASM)
-#define WIN_MEM(cpu,n)	(cpu*DBG_WINDOWS+EDIT_MEM1+n)
-#define WIN_MEM1(cpu)	(cpu*DBG_WINDOWS+EDIT_MEM1)
-#define WIN_MEM2(cpu)	(cpu*DBG_WINDOWS+EDIT_MEM2)
+#define WIN_CMDS(cpu)	((cpu)*DBG_WINDOWS+EDIT_CMDS)
+#define WIN_REGS(cpu)	((cpu)*DBG_WINDOWS+EDIT_REGS)
+#define WIN_DASM(cpu)	((cpu)*DBG_WINDOWS+EDIT_DASM)
+#define WIN_MEM(cpu,n)	((cpu)*DBG_WINDOWS+EDIT_MEM1+(n))
+#define WIN_MEM1(cpu)	((cpu)*DBG_WINDOWS+EDIT_MEM1)
+#define WIN_MEM2(cpu)	((cpu)*DBG_WINDOWS+EDIT_MEM2)
 #define WIN_HELP		(MAX_WINDOWS-1)
 #define WIN_MSGBOX		(MAX_WINDOWS-2)
 

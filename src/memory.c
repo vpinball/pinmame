@@ -1763,7 +1763,7 @@ void register_banks(void)
 			int active = 0;
 			while (e)
 			{
-				if(e && (e->flags & (RG_SAVE_READ|RG_SAVE_WRITE)))
+				if(e->flags & (RG_SAVE_READ|RG_SAVE_WRITE))
 				{
 					if (!active)
 					{

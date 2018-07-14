@@ -88,8 +88,8 @@ static int valid_header(int chipnum);
 ***********************************************************************************************/
 #define MPG_HEADERSIZE				4			//Mpeg1 - Layer 2 Header Size
 #define MPG_FRAMESIZE				140			//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps (excluding header)
-#define CAP_PCMBUFFER_SIZE			1152*10 	//# of Samples to hold (1 Frame = 1152 Samples)
-#define CAP_PREBUFFER_SIZE			1152*2		//# of decoded samples needed before we begin to output pcm
+#define CAP_PCMBUFFER_SIZE			(1152*10)	//# of Samples to hold (1 Frame = 1152 Samples)
+#define CAP_PREBUFFER_SIZE			(1152*2)	//# of decoded samples needed before we begin to output pcm
 
 #define	LOG_DATA_IN					0			//Set to 1 to log data input to an mp3 file
 

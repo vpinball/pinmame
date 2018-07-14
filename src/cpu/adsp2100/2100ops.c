@@ -46,11 +46,11 @@
 #define CLR_FLAGS		(adsp2100.astat &= adsp2100.astat_clear)
 
 /* compute flags */
-#define CALC_Z(r)		(adsp2100.astat |= ((r & 0xffff) == 0))
-#define CALC_N(r)		(adsp2100.astat |= (r >> 14) & 0x02)
-#define CALC_V(s,d,r)	(adsp2100.astat |= ((s ^ d ^ r ^ (r >> 1)) >> 13) & 0x04)
-#define CALC_C(r)		(adsp2100.astat |= (r >> 13) & 0x08)
-#define CALC_C_SUB(r)	(adsp2100.astat |= (~r >> 13) & 0x08)
+#define CALC_Z(r)		(adsp2100.astat |= (((r) & 0xffff) == 0))
+#define CALC_N(r)		(adsp2100.astat |= ((r) >> 14) & 0x02)
+#define CALC_V(s,d,r)	(adsp2100.astat |= (((s) ^ (d) ^ (r) ^ ((r) >> 1)) >> 13) & 0x04)
+#define CALC_C(r)		(adsp2100.astat |= ((r) >> 13) & 0x08)
+#define CALC_C_SUB(r)	(adsp2100.astat |= (~(r) >> 13) & 0x08)
 #define CALC_NZ(r) 		CLR_FLAGS; CALC_N(r); CALC_Z(r)
 #define CALC_NZV(s,d,r) CLR_FLAGS; CALC_N(r); CALC_Z(r); CALC_V(s,d,r)
 #define CALC_NZVC(s,d,r) CLR_FLAGS; CALC_N(r); CALC_Z(r); CALC_V(s,d,r); CALC_C(r)
