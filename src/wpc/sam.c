@@ -980,8 +980,8 @@ static WRITE32_HANDLER(sambank_w)
 				// setting it as an aux 12 board. 
 				
 				if (((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL12) && (~data & 0x20)) ||
-					 (core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10) ||
-					 (core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40))
+					((core_gameData->hw.gameSpecific1 & SAM_GAME_AUXSOL8)  && (~data & 0x10)) ||
+					((core_gameData->hw.gameSpecific1 & SAM_GAME_IJ4_SOL3) && (~data & 0x40)))
 				{
 					int ii;
 					for (ii = 0; ii <= ((core_gameData->hw.gameSpecific1 & (SAM_GAME_AUXSOL8 | SAM_GAME_ACDC_FLAMES)) ? 7 : 5); ii++)

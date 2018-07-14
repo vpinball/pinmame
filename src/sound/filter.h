@@ -77,8 +77,6 @@ INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
 #define FILTER_HIGHPASS		1
 #define FILTER_BANDPASS		2
 
-#define Q_TO_DAMP(q)	(1.0/q)
-
 typedef struct filter2_context_struct {
 	double x0, x1, x2;	/* x[k], x[k-1], x[k-2], current and previous 2 input values */
 	double y0, y1, y2;	/* y[k], y[k-1], y[k-2], current and previous 2 output values */

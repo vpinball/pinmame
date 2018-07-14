@@ -635,17 +635,17 @@
 	#define CFLAG_ADD_32(S, D, R) ((R)>>24)
 	#define CFLAG_SUB_32(S, D, R) ((R)>>24)
 #else
-	#define CFLAG_ADD_32(S, D, R) (((S & D) | (~R & (S | D)))>>23)
-	#define CFLAG_SUB_32(S, D, R) (((S & R) | (~D & (S | R)))>>23)
+	#define CFLAG_ADD_32(S, D, R) ((((S) & (D)) | (~(R) & ((S) | (D))))>>23)
+	#define CFLAG_SUB_32(S, D, R) ((((S) & (R)) | (~(D) & ((S) | (R))))>>23)
 #endif /* M68K_INT_GT_32_BIT */
 
-#define VFLAG_ADD_8(S, D, R) ((S^R) & (D^R))
-#define VFLAG_ADD_16(S, D, R) (((S^R) & (D^R))>>8)
-#define VFLAG_ADD_32(S, D, R) (((S^R) & (D^R))>>24)
+#define VFLAG_ADD_8(S, D, R) (((S)^(R)) & ((D)^(R)))
+#define VFLAG_ADD_16(S, D, R) ((((S)^(R)) & ((D)^(R)))>>8)
+#define VFLAG_ADD_32(S, D, R) ((((S)^(R)) & ((D)^(R)))>>24)
 
-#define VFLAG_SUB_8(S, D, R) ((S^D) & (R^D))
-#define VFLAG_SUB_16(S, D, R) (((S^D) & (R^D))>>8)
-#define VFLAG_SUB_32(S, D, R) (((S^D) & (R^D))>>24)
+#define VFLAG_SUB_8(S, D, R) (((S)^(D)) & ((R)^(D)))
+#define VFLAG_SUB_16(S, D, R) ((((S)^(D)) & ((R)^(D)))>>8)
+#define VFLAG_SUB_32(S, D, R) ((((S)^(D)) & ((R)^(D)))>>24)
 
 #define NFLAG_8(A) (A)
 #define NFLAG_16(A) ((A)>>8)
