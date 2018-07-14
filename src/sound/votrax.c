@@ -1154,6 +1154,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 					default:
 						break;
 				}
+				break;
 
 			case PT_VS:
 			case PT_FS:
