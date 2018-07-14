@@ -274,6 +274,8 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0x04 + 1;
   else if (_strnicmp(gn, "rctycn", 6) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
+  // For apollo13, fast flips is not really necessary: The flipper "solenoids" are enable/disable flags and act just like the fast flip solenoid!
+  // I'll leave it in there for consistency though since it makes the VP table counter part easier to code.
   else if (_strnicmp(gn, "apollo13", 8) == 0)
 	  selocals.fastflipaddr = 0x122 + 1;
   else if (_strnicmp(gn, "godzilla", 8) == 0)
