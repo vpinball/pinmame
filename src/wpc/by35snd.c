@@ -552,17 +552,27 @@ static READ_HANDLER(snt_pia1cb1_r) {
 }
 
 static WRITE_HANDLER(snt_data_w) {
-  sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
-  if (sntlocals.brdData.subType == 2 && data != 0x0f) { // force IRQ, enables sounds on Super Bowl
-    snt_irq(1); snt_irq(0);
+  if (sntlocals.brdData.subType == 2) { // -61N
+    sntlocals.lastcmd = data;
+    if ((sntlocals.lastctrl & 1) && data != 0x0f) {
+      snt_irq(1); snt_irq(0);
+    }
+  } else {
+    sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
   }
 }
 static WRITE_HANDLER(snt_ctrl_w) {
-  sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
+  if (sntlocals.brdData.subType != 2) { // -61N
+    sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
+    pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
+  }
+  sntlocals.lastctrl = data;
 }
 static WRITE_HANDLER(snt_manCmd_w) {
   sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+  if (sntlocals.brdData.subType == 2) { // -61N
+    snt_irq(1); snt_irq(0);
+  }
 }
 static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 
