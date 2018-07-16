@@ -1284,10 +1284,10 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106db1e;
 	else if (_strnicmp(gn, "wpt_140a", 8) == 0)
 		samlocals.fastflipaddr = 0x01075712;
-	else if (_stricmp(gn, "tf_180") == 0)
-		samlocals.fastflipaddr = 0x0106ea72;
 	else if (_strnicmp(gn, "tf_180h", 7) == 0)
 		samlocals.fastflipaddr = 0x0107472e;
+	else if (_strnicmp(gn, "tf_180", 6) == 0)
+		samlocals.fastflipaddr = 0x0106ea72;
 	else if (_strnicmp(gn, "bdk_294", 7) == 0)
 		samlocals.fastflipaddr = 0x010791be;
 	else if (_strnicmp(gn, "shr_141", 7) == 0)
@@ -2314,7 +2314,7 @@ SAM1_ROM32MB(bdk_300, "bdk_300.bin", CRC(8325bc80) SHA1(04f20d78ad33956618e576bb
 
 SAM_INPUT_PORTS_START(bdk, 1)
 
-CORE_GAMEDEF(bdk, 294, "Batman: The Dark Knight (V2.94)", 2010, "Stern", sam1, 0)
+CORE_GAMEDEF(bdk, 294, "Batman: The Dark Knight (V2.94)", 2010, "Stern", sam1, 0) // Pro model in Stern terms
 CORE_CLONEDEF(bdk, 130, 294, "Batman: The Dark Knight (V1.3)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 150, 294, "Batman: The Dark Knight (V1.5)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 160, 294, "Batman: The Dark Knight (V1.6)", 2008, "Stern", sam1, 0)
@@ -2323,7 +2323,7 @@ CORE_CLONEDEF(bdk, 210, 294, "Batman: The Dark Knight (V2.1)", 2008, "Stern", sa
 CORE_CLONEDEF(bdk, 220, 294, "Batman: The Dark Knight (V2.2)", 2008, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 240, 294, "Batman: The Dark Knight (V2.4)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 290, 294, "Batman: The Dark Knight (V2.9)", 2010, "Stern", sam1, 0)
-CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam1, 0)
+CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam1, 0) // Standard model in Stern terms
 
 /*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
