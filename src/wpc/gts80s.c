@@ -689,8 +689,8 @@ static void nmi_callback(int param)
 	cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
 	cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
 	interval = (250000>>8);
-	if(cl1>0)	interval /= cl1;
-	if(cl2>0)	interval /= cl2;
+	/*if(cl1>0)*/	interval /= cl1;
+	/*if(cl2>0)*/	interval /= cl2;
 
 	//Set up timer to fire again
 	timer_set(TIME_IN_HZ(interval), 0, nmi_callback);
@@ -1401,8 +1401,8 @@ static void techno_nmi_callback(int param)
 	cl1 = 16-(techno_locals.nmi_rate&0x0f);
 	cl2 = 16-((techno_locals.nmi_rate&0xf0)>>4);
 	interval = (250000>>8);
-	if(cl1>0)	interval /= cl1;
-	if(cl2>0)	interval /= cl2;
+	/*if(cl1>0)*/	interval /= cl1;
+	/*if(cl2>0)*/	interval /= cl2;
 
 	//Set up timer to fire again
 	timer_set(TIME_IN_HZ(interval), 0, techno_nmi_callback);
