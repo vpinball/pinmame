@@ -1009,7 +1009,7 @@ static void AY8910Update(int chip,
 		}
 
 #ifdef SINGLE_CHANNEL_MIXER
-		tmp_buf = (vola * PSG->VolA * PSG->mix_vol[0] + volb * PSG->VolB * PSG->mix_vol[1] + volc * PSG->VolC * PSG->mix_vol[2])/(100*STEP);
+		tmp_buf = (vola * (int)PSG->VolA * (int)PSG->mix_vol[0] + volb * (int)PSG->VolB * (int)PSG->mix_vol[1] + volc * (int)PSG->VolC * (int)PSG->mix_vol[2])/(int)(100*STEP);
 		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
 #else
 		*(buf1++) = (vola * PSG->VolA) / STEP;
