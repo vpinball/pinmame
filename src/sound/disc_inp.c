@@ -188,6 +188,7 @@ int  discrete_sh_adjuster_count(struct discrete_sound_block *dsintf)
 {
 	int node_counter=0;
 	int count=0;
+	int sanity_abort=0;
 
 	if(dss_adjustment_map!=NULL) free(dss_adjustment_map);
 
@@ -197,7 +198,6 @@ int  discrete_sh_adjuster_count(struct discrete_sound_block *dsintf)
 	count=0;
 	while(1)
 	{
-		int sanity_abort=0;
 		/* Check the node parameter is a valid node */
 		if(dsintf[count].node<NODE_START || dsintf[count].node>NODE_END) return -1;
 		if(sanity_abort++>255) return -1;
