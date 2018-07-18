@@ -241,7 +241,7 @@ BY35_ROMSTARTx00(sprbwlfp,"sbwlfpu2.732",CRC(94be32b4) SHA1(a20d645ab48b58cc5e00
 BY61_SOUNDROMxxx0(        "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(sprbwlfp, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_61NS,0)
 
 /*--------------------------------
 / Tiger Rag (Kings Of Steel Clone)
