@@ -473,6 +473,14 @@ MACHINE_DRIVER_START(by61)
   MDRV_SOUND_ADD(AY8910,  snt_ay8910Int)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(by61N)
+  MDRV_CPU_ADD(M6802, 3579545/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(DAC,     snt_dacInt)
+MACHINE_DRIVER_END
+
 static READ_HANDLER(snt_pia0a_r);
 static READ_HANDLER(snt_pia0b_r);
 static WRITE_HANDLER(snt_pia0a_w);
@@ -527,15 +535,18 @@ static READ_HANDLER(snt_pia0b_r) {
 }
 static WRITE_HANDLER(snt_pia0a_w) {
   sntlocals.pia0a = data;
+  if (sntlocals.brdData.subType == 2) return; // -61N, no AY chip
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
 static WRITE_HANDLER(snt_pia0b_w) {
   sntlocals.pia0b = data;
+  if (sntlocals.brdData.subType == 2) return; // -61N, no AY chip
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
 static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a; }
 static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
+  if (sntlocals.brdData.subType == 2) return; // -61N, no TMS chip
   if (sntlocals.pia1b & ~data & 0x01) { // read, overrides write command!
     sntlocals.pia1a = tms5220_status_r(0);
   } else if (sntlocals.pia1b & ~data & 0x02) { // write

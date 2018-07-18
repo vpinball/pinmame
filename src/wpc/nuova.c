@@ -230,7 +230,7 @@ BY35_ROMSTARTx00(suprbowl,"sbowlu2.732", CRC(bc497a13) SHA1(f428373bde72f0302c45
 BY61_SOUNDROMxxx0(        "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_61BS,0)
+CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_61NS,0)
 
 /*--------------------------------
 / Super Bowl (Free Play) (uses a modified -53 version of Bally U6 ROM)

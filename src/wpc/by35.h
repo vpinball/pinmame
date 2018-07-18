@@ -342,6 +342,7 @@ extern MACHINE_DRIVER_EXTERN(by35_32S);
 extern MACHINE_DRIVER_EXTERN(by35_51S);
 extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
+extern MACHINE_DRIVER_EXTERN(by35_61NS);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st100s);
@@ -358,8 +359,8 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_51S  by35_51S
 #define by35_mBY35_61S  by35_61S
 #define by35_mBY35_61BS by35_61S
-#define by35_mBY35_81S  by35_61S
-#define by35_mBY35_56S  by35_56S // XENON
+#define by35_mBY35_61NS by35_61NS // Super Bowl
+#define by35_mBY35_56S  by35_56S  // Xenon & early Flash Gordon
 #define by35_mBY35_45S  by35_45S
 #define by35_m6802_45S  by6802_45S
 #define by35_mBowling   st100bs
@@ -370,7 +371,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mST100s    st100s
 #define by35_mST100bs   st100bs
 #define by35_mST200     st200
-#define by35_mST200v	st200v
+#define by35_mST200v    st200v
 
 #ifdef MAME_DEBUG
 extern MACHINE_DRIVER_EXTERN(by6802_61S);
