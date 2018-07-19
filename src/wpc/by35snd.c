@@ -273,18 +273,12 @@ const struct sndbrdIntf by51Intf = {
 };
 
 static struct AY8910interface   sp_ay8910Int  = { 1, 3579545/4, {20}, {sp_8910a_r} };
-static struct hc55516_interface sp_hc55516Int = { 1, {75}};
+
 static MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x00ff, pia_r(SP_PIA0) },
   { 0x1000, 0x1fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_READ_START(sp56_readmem)
-  { 0x0000, 0x007f, MRA_RAM },
-  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
-  { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sp_writemem)
@@ -294,21 +288,42 @@ static MEMORY_WRITE_START(sp_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static INTERRUPT_GEN(sp555_timer) {
-  static int cb1;
-  pia_set_input_cb1(SP_PIA0, cb1 = !cb1);
-}
-#endif
-
 MACHINE_DRIVER_START(by51)
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
-//MDRV_CPU_PERIODIC_INT(sp555_timer, 250)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(AY8910, sp_ay8910Int)
 MACHINE_DRIVER_END
+
+static struct DACinterface sp_dacInt = { 1, { 20 }};
+
+static MEMORY_READ_START(sp51N_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
+  { 0xf000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(sp51N_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0080, 0x00ff, pia_w(SP_PIA0) },
+  { 0x1000, 0x1000, DAC_0_data_w },
+MEMORY_END
+
+MACHINE_DRIVER_START(by51N)
+  MDRV_IMPORT_FROM(by51)
+  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_MEMORY(sp51N_readmem, sp51N_writemem)
+  MDRV_SOUND_ADD(DAC, sp_dacInt)
+MACHINE_DRIVER_END
+
+static struct hc55516_interface sp_hc55516Int = { 1, {75}};
+
+static MEMORY_READ_START(sp56_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
 
 MACHINE_DRIVER_START(by56)
   MDRV_IMPORT_FROM(by51)
@@ -318,13 +333,14 @@ MACHINE_DRIVER_START(by56)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sp_8910r);
+static READ_HANDLER(sp_pia0b_r);
 static WRITE_HANDLER(sp_pia0a_w);
 static WRITE_HANDLER(sp_pia0b_w);
 static WRITE_HANDLER(sp_pia0cb2_w);
 static void sp_irq(int state);
 
 static const struct pia6821_interface sp_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, sp_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ sp_pia0a_w, sp_pia0b_w, 0, sp_pia0cb2_w,
   /*irq: A/B           */ sp_irq, sp_irq
 };
@@ -348,12 +364,16 @@ static void sp_diag(int button) {
   cpu_set_nmi_line(splocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(sp_8910r) {
+  if (splocals.brdData.subType == 2) return ~splocals.lastcmd; // -51N
   if ((splocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
 static WRITE_HANDLER(sp_pia0a_w) {
   splocals.pia0a = data;
   if (splocals.pia0b & 0x02) AY8910Write(0, splocals.pia0b ^ 0x01, splocals.pia0a);
+}
+static READ_HANDLER(sp_pia0b_r) {
+  return splocals.pia0b;
 }
 static WRITE_HANDLER(sp_pia0b_w) {
   splocals.pia0b = data;
@@ -370,14 +390,27 @@ static WRITE_HANDLER(sp_pia0cb2_w) {
 }
 
 static WRITE_HANDLER(sp51_data_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
+  if (splocals.brdData.subType == 2) { // -51N
+    splocals.lastcmd = data & 0x0f;
+    if ((splocals.lastctrl & 1) && data != 0x0f) {
+      sp_irq(1); sp_irq(0);
+    }
+  } else {
+    splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
+  }
 }
 static WRITE_HANDLER(sp51_ctrl_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) << 3);
+  if (splocals.brdData.subType != 2) { // not -51N
+    splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) << 3);
+  }
   pia_set_input_ca1(SP_PIA0, data & 0x01);
+  splocals.lastctrl = data;
 }
 static WRITE_HANDLER(sp51_manCmd_w) {
   splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
+  if (splocals.brdData.subType == 2) { // -51N
+    sp_irq(1); sp_irq(0);
+  }
 }
 
 static READ_HANDLER(sp_8910a_r) {
@@ -473,14 +506,6 @@ MACHINE_DRIVER_START(by61)
   MDRV_SOUND_ADD(AY8910,  snt_ay8910Int)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(by61N)
-  MDRV_CPU_ADD(M6802, 3579545/4)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
-  MDRV_INTERLEAVE(500)
-  MDRV_SOUND_ADD(DAC,     snt_dacInt)
-MACHINE_DRIVER_END
-
 static READ_HANDLER(snt_pia0a_r);
 static READ_HANDLER(snt_pia0b_r);
 static WRITE_HANDLER(snt_pia0a_w);
@@ -526,7 +551,7 @@ static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(snt_pia0a_r) {
-  if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B, -61N
+  if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
@@ -535,18 +560,15 @@ static READ_HANDLER(snt_pia0b_r) {
 }
 static WRITE_HANDLER(snt_pia0a_w) {
   sntlocals.pia0a = data;
-  if (sntlocals.brdData.subType == 2) return; // -61N, no AY chip
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
 static WRITE_HANDLER(snt_pia0b_w) {
   sntlocals.pia0b = data;
-  if (sntlocals.brdData.subType == 2) return; // -61N, no AY chip
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
 static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a; }
 static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
-  if (sntlocals.brdData.subType == 2) return; // -61N, no TMS chip
   if (sntlocals.pia1b & ~data & 0x01) { // read, overrides write command!
     sntlocals.pia1a = tms5220_status_r(0);
   } else if (sntlocals.pia1b & ~data & 0x02) { // write
@@ -563,27 +585,14 @@ static READ_HANDLER(snt_pia1cb1_r) {
 }
 
 static WRITE_HANDLER(snt_data_w) {
-  if (sntlocals.brdData.subType == 2) { // -61N
-    sntlocals.lastcmd = data;
-    if ((sntlocals.lastctrl & 1) && data != 0x0f) {
-      snt_irq(1); snt_irq(0);
-    }
-  } else {
-    sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
-  }
+  sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
 }
 static WRITE_HANDLER(snt_ctrl_w) {
-  if (sntlocals.brdData.subType != 2) { // -61N
-    sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-    pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
-  }
-  sntlocals.lastctrl = data;
+  sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
+  pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
 }
 static WRITE_HANDLER(snt_manCmd_w) {
   sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
-  if (sntlocals.brdData.subType == 2) { // -61N
-    snt_irq(1); snt_irq(0);
-  }
 }
 static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 
