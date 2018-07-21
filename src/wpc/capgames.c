@@ -123,7 +123,7 @@ CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption)",1995,"Capcom",cc2,0)
 / Airborne (03/96)
 /-------------------------------------------------------------------*/
 //Version 1.6
-INITGAME(abv106, 3, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+INITGAMEFF(abv106, 3, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x0a7c6)
 CC_ROMSTART_4(abv106,  "u1l_v16.bin", CRC(59b258f1) SHA1(764496114609d65648e1c7b12409ec582037d8df),
                        "u1h_v16.bin", CRC(a4571905) SHA1(62fabc45e81c49125c047c6e5d268d4093b860bc),
                        "u2l_v10.bin", CRC(a15b1ec0) SHA1(673a283ddf670109a9728fefac2bcf493d70f23d),
@@ -208,7 +208,9 @@ CORE_CLONEDEFNV(bsb105,bsv103,"Break Shot (Beta)",1996,"Capcom",cc1,0)
 / Flipper Football (10/96)
 /-------------------------------------------------------------------*/
 //Version 1.04
-INITGAME(ffv104, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
+// Not 100% clear on FF address for this one.   Goes 0-255 at seemingly appropriate times,
+// but will disale flips for a short period on a tilt warning ("yellow card" on DMD).
+INITGAMEFF(ffv104, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8, 0x010af)
 CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79),
                        "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be),
                        "u2l_v104.bin",CRC(b74175ae) SHA1(dd0279e20a2ccb03dbea0087ab9d15a973543553),
