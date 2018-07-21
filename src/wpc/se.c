@@ -207,7 +207,6 @@ static SWITCH_UPDATE(se) {
 static MACHINE_INIT(se3) {
 	sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
 	sndbrd_1_init(SNDBRD_DE3S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
-	const char * const gn = Machine->gamedrv->name;
 	// Fast flips support.   My process for finding these is to load them in pinmame32 in VC debugger.  
 	// Debug and break on this line:
 	//  return memory_region(SE_CPUREGION)[offset];
@@ -248,10 +247,10 @@ static MACHINE_INIT(se3) {
 }
 
 static MACHINE_INIT(se) {
+  const char * const gn = Machine->gamedrv->name;
   sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
   
-  const char * const gn = Machine->gamedrv->name;
   if (_strnicmp(gn, "sprk_103", 8) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
   else if (_strnicmp(gn, "austin", 6) == 0)
