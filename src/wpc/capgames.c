@@ -152,7 +152,7 @@ CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc2,0)
 / Break Shot (05/96)
 /-------------------------------------------------------------------*/
 //Version 1.3
-INITGAME(bsv103, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
+INITGAMEFF(bsv103, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0, 0xa7da)
 CC_ROMSTART_2(bsv103,  "u1l_v13.bin", CRC(f8932dcc) SHA1(dab34e6c412655c60abeedc1f62254dce5ebb202),
                        "u1h_v13.bin", CRC(508c145d) SHA1(b019d445f87bca203646c616fdc295066da90921))
 //I'm told BS can run with the U24 from FF
