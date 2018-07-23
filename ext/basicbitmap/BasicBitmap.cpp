@@ -1833,7 +1833,7 @@ int BasicBitmap::BlitNormal(int bpp, void *dbits, long dpitch, int dx, const
 		break;
 	}
 
-	return mask - mask;
+	return 0;
 }
 
 
@@ -3741,7 +3741,6 @@ void BasicBitmap::RowFetchWithPalette(int x, int y, IUINT32 *card, int w,
 void BasicBitmap::RowStoreWithPalette(int x, int y, IUINT32 *card, int w, 
 	const BasicColor *pal)
 {
-	IUINT32 r, g, b, a = 0;
 	if (_bpp != 8) return;
 	if (y >= 0 && y < _h) {
 		IUINT8 *ptr = _lines[y];
@@ -3756,11 +3755,11 @@ void BasicBitmap::RowStoreWithPalette(int x, int y, IUINT32 *card, int w,
 			if (w < 0) return;
 		}
 		for (ptr = ptr + x; w > 0; card++, ptr++, w--) {
+			IUINT32 r, g, b, a;
 			_pixel_load_card(card, r, g, b, a);
 			ptr[0] = (IUINT8)BestfitColor(pal, r, g, b, 256);
 		}
 	}
-	r = a;
 }
 
 
@@ -5307,14 +5306,14 @@ void BasicBitmap::InitDIBInfo(void *ptr, int width, int height, PixelFmt fmt)
 
 	if (palette) {
 		int i;
-		if (palette != NULL) {
+		//if (palette != NULL) {
 			for (i = 0; i < 256; i++) {
 				palette[i].rgbBlue = i;
 				palette[i].rgbGreen = i;
 				palette[i].rgbRed = i;
 				palette[i].rgbReserved = 0;
 			}
-		}
+		//}
 	}
 }
 

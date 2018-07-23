@@ -244,7 +244,7 @@ static void by6803_lampStrobe(void) {
     int bit = 1<<(lampadr & 0x07);
 
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
-    if (bit) for (i=0; i < 3; i++) {
+    /*if (bit)*/ for (i=0; i < 3; i++) {
       if (lampdata & 0x01) *matrix |= bit; else *matrix &= (0xff ^ bit);
       lampdata >>= 1; matrix += 2;
     }
