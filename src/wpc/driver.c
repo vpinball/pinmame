@@ -235,7 +235,9 @@ DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
 DRIVERNV(elektraa)      //BY35      10/04 Elektra (Free Play)
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
 DRIVERNV(vectora )      //BY35      10/04 Vector (Free Play)
-DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules)
+DRIVERNV(vector4 )      //BY35      04/04 Vector (modified rules rev. 4)
+DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules rev. 5)
+DRIVERNV(vectorc )      //BY35      02/08 Vector (modified rules rev. 10)
 DRIVERNV(spectrum)      //BY35-868: 04/81 Spectrum
 DRIVERNV(spectrua)      //BY35      10/04 Spectrum (Free Play)
 DRIVERNV(spectru4)      //BY35      04/81 Spectrum (Rev. 4)

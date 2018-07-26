@@ -23,7 +23,7 @@ Cleanup, unify and clarify some of the game names/variants
 Fixed Cheap Squeak sound ROM loading for 8K sized ROMs, Space Hawks's and Dark Shadow's original sound ROMs are working now
 Un-cloned some Bell games (different gameplay, different solenoid assignment, missing aux lamps etc.)
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench, eriki
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench, eriki, okaegi
 New:
 Inder: Topaz
 Mirco: Lucky Draw
@@ -63,6 +63,7 @@ Space Hawks (Free Play, Dips 25 & 26 must be on)
 Spider-Man 2.62 (bootleg with replaced music)
 Star Trek (Stern) 1.62,1.62LE
 Super Bowl (Free Play)
+Vector (modified rules) rev.4,rev.10
 
 
 
