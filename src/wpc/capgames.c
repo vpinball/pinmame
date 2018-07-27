@@ -209,7 +209,7 @@ CORE_CLONEDEFNV(bsb105,bsv103,"Break Shot (Beta)",1996,"Capcom",cc1,0)
 /-------------------------------------------------------------------*/
 //Version 1.04
 // Not 100% clear on FF address for this one.   Goes 0-255 at seemingly appropriate times,
-// but will disale flips for a short period on a tilt warning ("yellow card" on DMD).
+// but will disable flips for a short period on a tilt warning ("yellow card" on DMD).
 INITGAMEFF(ffv104, 9, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8, 0x010af)
 CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3) SHA1(0e3845afccf51a2d20e01afb371b8b7076a1ea79),
                        "u1h_v104.bin",CRC(2133fc8e) SHA1(b4296f890a11aefdd09083636f416112e64fb0be),
