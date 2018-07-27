@@ -23,7 +23,7 @@ Cleanup, unify and clarify some of the game names/variants
 Fixed Cheap Squeak sound ROM loading for 8K sized ROMs, Space Hawks's and Dark Shadow's original sound ROMs are working now
 Un-cloned some Bell games (different gameplay, different solenoid assignment, missing aux lamps etc.)
 
-*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench, eriki, okaegi
+*** ROM SUPPORT *** Thanks to Destruk, ipdb.org, inkochnito, Chad Hendrickson, John Mohr, Soren, Robotworkshop, mIKL, STR Pinball, Scott Charles, Quench, eriki, okaegi, watacaractr
 New:
 Inder: Topaz
 Mirco: Lucky Draw
@@ -47,6 +47,7 @@ Clones:
 AC/DC 1.70.0,1.70.0LE
 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
 Batman 1.03 (French)
+Beach Bums (unofficial MOD of Hollywood Heat)
 Black Jack (Saucer points modification)
 Bow & Arrow (Prototype rev. 22)
 Earthshaker PA-4

@@ -1240,6 +1240,16 @@ GTS80_ROMEND
 #define input_ports_bubba input_ports_hlywoodh
 CORE_CLONEDEFNV(bubba,hlywoodh, "Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)",2017,"HauntFreaks",gl_mGTS80BS1,0)
 
+INITGAME(beachbms, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(beachbms, "prom2.cpu",   CRC(a465e5f3) SHA1(56afa2f67aebcd17345bba76ecb814653719ee7b),
+                             "prom1_bb.cpu",CRC(a035eb2d) SHA1(0f467b506bd514129e4175af3e35a666e09ec41b))
+GTS80BSSOUND888(             "drom1.snd",   CRC(a698ec33) SHA1(e7c1d28279ec4f12095c3a106c6cefcc2a84b31e),
+                             "yrom1.snd",   CRC(9232591e) SHA1(72883e0c542c572226c6c654bea14749cc9e351f),
+                             "yrom2.snd",   CRC(51709c2f) SHA1(5834d7b72bd36e30c87377dc7c3ad0cf26ff303a))
+GTS80_ROMEND
+#define input_ports_beachbms input_ports_hlywoodh
+CORE_CLONEDEFNV(beachbms,hlywoodh, "Beach Bums (Hollywood Heat unofficial MOD)",2018,"watacaractr",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Genesis (#705)
 /-------------------------------------------------------------------*/
