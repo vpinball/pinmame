@@ -248,7 +248,7 @@ CORE_CLONEDEFNV(ffv101,ffv104,"Flipper Football (1.01)",1996,"Capcom",cc2,0)
 / Big Bang Bar - Beta (11/96)
 /-------------------------------------------------------------------*/
 //Beta Version 1.9
-INITGAMEFF(bbb109, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x2d3a)
+INITGAMEFF(bbb109, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x6234d)
 CC_ROMSTART_4(bbb109,  "u1l_b19.bin", CRC(32be6cb0) SHA1(e6c73366d5b85c0e96878e275320f82004bb97b5),
                        "u1h_b19.bin", CRC(2bd1c06d) SHA1(ba81faa07b9d53f51bb981a82aa8684905516420),
                        "u2l_b17.bin", CRC(9bebf271) SHA1(01c85396b96ffb04e445c03d6d2d88cce7835664),
