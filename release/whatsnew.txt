@@ -1,4 +1,4 @@
-Version 3.1 (X X, 2018) - ""
+Version 3.1 (July 29th, 2018) - "Flippin' fast"
 ------------------------------------------------------------------------------
 *** CORE/CPU ***
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
