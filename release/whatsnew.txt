@@ -7,15 +7,15 @@ Add save credits support for Bow & Arrow
 Fix neverending sounds on LTD system 4 games, added sound support for Cowboy Eight Ball and Zephy
 Fix S.A.M. PulseSolState (needed for mech) and bug in Family Guy mini-playfield lights and move the (non-modulated) LED outputs in Tron LE that occupied columns 8 and 9 so far (i.e. disabling the start button lamps) to cols 11 and 12
 Implement 'fast flips' support for some S.A.M. games: Recommended table implementation is to use direct/fast flipper flips when solenoid 33 is on, but to respond to the standard flipper solenoids when 33 is off
- (acd_168h, acd_170h, avr_200, avs_170, bbh_170, bdk_294, csi_240, fg_1200, ij4_210, im_183ve, mt_145h, mtl_170h, nba_802, potc_600, rsn_110h, shr_141, smanve_101, st_161h, tf_180, tf_180h, trn_174h, twd_160h, twenty4_150, wof_500, wpt_140a, xmn_151h)
+ (acd_168h, acd_170, acd_170h, avr_200, avs_170, bbh_170, bdk_294, csi_240, fg_1200, ij4_210, im_183ve, mt_145h, mtl_170h, nba_802, potc_600, rsn_110h, shr_141, smanve_101, st_161h, tf_180, tf_180h, trn_174h, twd_160, twd_160h, twenty4_150, wof_500, wpt_140a, xmn_151h)
 Implement proper 'fast flips' support for some WPC-S games: Still uses solenoid 31
  (WHO Dunnit)
 Implement 'fast flips' support for most WPC-95 games: Takes over solenoid 31, so is compatible with the existing VP core scribts UseSolenoids=2 implementation
  (Attack from Mars, Cactus Canyon, Champion Pub, Cirqus Voltaire, Congo, Fish Tales, Junk Yard, Medieval Madness, Monster Bash, NBA Fastbreak, No Good Go(l)fers, Safe Cracker, Scared Stiff, Tales of the Arabian Nights)
 Implement 'fast flips' support for most Whitestar games: Uses solenoid 15
  (apollo13, austin, Dale Jr., Elvis, godzilla, Grand Prix, harl_a30, hirolcas, id4, jplstw22, Lord of the Rings, lostspc, monopoly, NASCAR, nfl, playboys, rctycn, Ripley's Believe It or Not!, shrkysht, simpprty, Sopranos, spacejam, sprk_103, startrp2, strikext, strxt_uk, swtril43, term3, twst_405, vipr_102, xfiles)
-Implement 'fast flips' support for some Capcom games: Uses solenoid 51
- (bbb109, Kingpin, Pinball Magic)
+Implement 'fast flips' support for most Capcom games: Uses solenoid 51
+ (abv106, bbb109, bsv103, ffv104, Kingpin, Pinball Magic)
 Fix some (unfortunately not all) AT91 JIT crashes (i.e. S.A.M. and Whitestar II)
 Fix GameOn solenoid instability when ModSol is in use
  This should remove the need for tweaks in tables that use the VPMModSol=1 flag (a multi-threading problem - the code temporarily was juggling solenoids 28-32 (as they get moved to 37+ in some cases), but VPM can be used to read the values while the calculation was still updating solenoids)
