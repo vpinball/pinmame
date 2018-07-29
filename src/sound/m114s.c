@@ -353,7 +353,10 @@ static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 ***********************************************************************************************/
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
 {
-	int i, j, l;
+	int i, l;
+#ifndef USE_LERP_FOR_REPEATED_SAMPLES
+	int j;
+#endif
 	const INT8 * const rom = &chip->region_base[0];
 	const int t1start = channel->table1.start_address;
 	const int t2start = channel->table2.start_address;
