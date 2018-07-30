@@ -65,13 +65,13 @@
 #define MIXER_PAN_CENTER  0
 #define MIXER_PAN_LEFT    1
 #define MIXER_PAN_RIGHT   2
-#define MIXER(level,pan) ((level & 0xff) | ((pan & 0x03) << 8))
+#define MIXER(level,pan) (((level) & 0xff) | (((pan) & 0x03) << 8))
 
 #define MIXER_GAIN_1x  0
 #define MIXER_GAIN_2x  1
 #define MIXER_GAIN_4x  2
 #define MIXER_GAIN_8x  3
-#define MIXERG(level,gain,pan) ((level & 0xff) | ((gain & 0x03) << 10) | ((pan & 0x03) << 8))
+#define MIXERG(level,gain,pan) (((level) & 0xff) | (((gain) & 0x03) << 10) | (((pan) & 0x03) << 8))
 
 #define MIXER_GET_LEVEL(mixing_level)  ((mixing_level) & 0xff)
 #define MIXER_GET_PAN(mixing_level)    (((mixing_level) >> 8) & 0x03)

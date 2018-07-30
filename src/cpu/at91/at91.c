@@ -156,7 +156,7 @@ static void timer_trigger_event(int timer_num);
 #define TC_OVRFL_IRQ_ENABLED(x)		(at91.tc_clock[(x)].tc_irq_mask & 1)
 #define TC_WAVEMODE(x)				(at91.tc_clock[(x)].tc_chan_mode & 0x8000)		//bit 15 of Channel Mode = 1 for Wave Mode
 #define TC_RC_TRIGGER(x)			(at91.tc_clock[(x)].tc_chan_mode & 0x4000)		//bit 14 of Channel Mode = 1 for RC Compare Trigger
-#define AT91_USART_IRQ(x)			(2+(1-x))
+#define AT91_USART_IRQ(x)			(2+(1-(x)))
 /* Private Data */
 
 typedef struct
@@ -1514,9 +1514,8 @@ INLINE data32_t at91_cpu_read32( int addr )
 	if(addr >= 0xFFC00000)
 		result = internal_read(addr);
 	else
-
 	//Handle through normal 32 bit handler
-	result = cpu_readmem32ledw_dword(addr);
+		result = cpu_readmem32ledw_dword(addr);
 
 	/* Unaligned reads rotate the word, they never combine words */
 	if (addr&3) {

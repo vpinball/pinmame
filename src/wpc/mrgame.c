@@ -648,7 +648,7 @@ static const struct rectangle screen_visible_area =
 //Video Update - Generation #1
 PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
     static int scrollers[32];
-	int offs = 0;
+	size_t offs = 0;
 	int color = 0;
 	int colorindex = 0;
 	int tile = 0;

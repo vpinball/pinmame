@@ -244,7 +244,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					f = fopen(PATHG, "r");
 					if (f)
 					{
-						fscanf(f, "%u", &default_ducking);
+						fscanf(f, "%d", &default_ducking);
 						fclose(f);
 					}
 					free(PATHG);
@@ -295,7 +295,7 @@ void alt_sound_handle(int boardNo, int cmd)
 						  f = fopen(PATHG, "r");
 						  if (f)
 						  {
-							  fscanf(f, "%u", &ducking);
+							  fscanf(f, "%d", &ducking);
 							  fclose(f);
 						  }
 						  free(PATHG);

@@ -197,7 +197,7 @@ CORE_CLONEDEFNV(astannie,gts1s,"Asteroid Annie and the Aliens",1980,"Gottlieb",g
 INIT_S1(sys1test, sys1_disp)
 GTS1_1_ROMSTART(sys1test,"test.cpu", CRC(8b0704bb) SHA1(5f0eb8d5af867b815b6012c9d078927398efe6d8))
 GTS1_ROMEND
-CORE_CLONEDEFNV(sys1test,gts1,"System 1 Test prom",19??,"Gottlieb",gl_mGTS1C,GAME_USES_CHIMES)
+CORE_CLONEDEFNV(sys1test,gts1,"System 1 'T' Test Fixture",19??,"Gottlieb",gl_mGTS1C,GAME_USES_CHIMES)
 
 // other manufacturers
 

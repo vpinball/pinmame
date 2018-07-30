@@ -48,7 +48,6 @@ typedef	long	int32_t ;
 #	define WARN_UNUSED
 #endif
 
-
 #include "samplerate.h"
 
 enum
@@ -109,6 +108,9 @@ typedef struct SRC_PRIVATE_tag
 
 	/* State reset. */
 	void	(*reset) (struct SRC_PRIVATE_tag *psrc) ;
+
+	/* State clone. */
+	int		(*copy) (struct SRC_PRIVATE_tag *from, struct SRC_PRIVATE_tag *to) ;
 
 	/* Data specific to SRC_MODE_CALLBACK. */
 	src_callback_t	callback_func ;

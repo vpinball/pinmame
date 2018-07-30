@@ -98,9 +98,13 @@ DMDDEV void Render_4_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 		}
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
-		SelectObject(src, map);
+		HGDIOBJ oldbmp = SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height,SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC
+		
+		// clean up the GDI objects
+		SelectObject(src, oldbmp);
+		DeleteObject(map);
+		DeleteDC(src);
 	}
 }
 
@@ -111,9 +115,13 @@ DMDDEV void Render_16_Shades(UINT16 width, UINT16 height, UINT8 *currbuffer)
 			arr[i] = colors[currbuffer[i]];
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
-		SelectObject(src, map);
+		HGDIOBJ oldbmp = SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC
+
+		// clean up the GDI objects
+		SelectObject(src, oldbmp);
+		DeleteObject(map);
+		DeleteDC(src);
 	}
 }
 
@@ -194,9 +202,13 @@ DMDDEV void Render_RGB24(UINT16 width, UINT16 height, rgb24 *currbuffer)
 		}
 		HBITMAP map = CreateBitmap(width, height, 1, 32, (void*)arr);
 		HDC src = CreateCompatibleDC(hdc);
-		SelectObject(src, map);
+		HGDIOBJ oldbmp = SelectObject(src, map);
 		StretchBlt(hdc, 0, 0, 512, 128, src, 0, 0, width, height, SRCCOPY);
-		DeleteDC(src); // Deleting temp HDC
+
+		// Clean up GDI objects
+		SelectObject(src, oldbmp);
+		DeleteObject(map);
+		DeleteDC(src);
 	}
 }
 

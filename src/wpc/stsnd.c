@@ -573,7 +573,7 @@ static float brown_noise(const float scale)
 
 static int st300_sh_start(const struct MachineSound *msound) {
 	int mixing_levels[3] = {30,30,30};
-	int i,j,k;
+	int i,j;
 	//int s = 0;
 
 	memset(&st300loc, 0, sizeof(st300loc));
@@ -601,6 +601,7 @@ static int st300_sh_start(const struct MachineSound *msound) {
 	for (j = 1; j < 16; ++j) {
 		for (i = 0; i < 32000; ++i) {
 			int tmp = 0;
+			int k;
 			for (k = -j*2; k <= j*2; ++k) // magic, filter down to something that loosely matches the original
 			{
 				int ofs;

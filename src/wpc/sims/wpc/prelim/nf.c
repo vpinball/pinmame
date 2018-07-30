@@ -314,7 +314,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(nf,23x,"No Fear: Dangerous Sports (2.3X)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,23,23x,"No Fear: Dangerous Sports (2.3)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(nf,23f,23x,"No Fear: Dangerous Sports (2.3F)",1995,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(nf,23f,23x,"No Fear: Dangerous Sports (2.3F French)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,22,23x,"No Fear: Dangerous Sports (2.2)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,20,23x,"No Fear: Dangerous Sports (2.0)",1995,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(nf,11x,23x,"No Fear: Dangerous Sports (1.1X)",1995,"Williams",wpc_mSecurityS,0)

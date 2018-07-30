@@ -393,8 +393,8 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
   {
 
   /* Ball in RIGHT Shooter Lane */
-        /* Note: Sim supports max of 50 speed for manual plunger */
-      case stRBallLane:
+  /* Note: Sim supports max of 50 speed for manual plunger */
+  case stRBallLane:
     if (ball->speed < 20)
       return setState(stRNotEnough,3);  /*Ball not plunged hard enough*/
     if (ball->speed < 25)
@@ -402,16 +402,16 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
     if (ball->speed < 30)
       return setState(stDropHole,20);   /*Ball landed in Drop Hole*/
     if (ball->speed < 35)
-                        return setState(stJet1,20);              /*Ball Hit Bumper!*/
+      return setState(stJet1,20);       /*Ball Hit Bumper!*/
     if (ball->speed < 40)
       return setState(stRudyHideout,35);  /*Skill Shot - Landed in Rudy Hideout*/
-    if (ball->speed >= 40)
+    else
       return setState(stRLoopUp,30);    /*Shot missed hideout, but triggered Right Loop!*/
-    break;
+  break;
 
   /* Ball in LEFT Shooter Lane */
-        /* Note: Sim supports max of 50 speed for manual plunger */
-      case stLBallLane:
+  /* Note: Sim supports max of 50 speed for manual plunger */
+  case stLBallLane:
     if (ball->speed < 25)
       return setState(stLNotEnough,3);  /*Ball not plunged hard enough*/
     if (ball->speed < 30)
@@ -420,27 +420,27 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
       return setState(stAwardEB,20);    /*Ball landed in Steps Award Extra Ball*/
     if (ball->speed < 40)
       return setState(stAwardPTS,25);   /*Ball landed in Steps Award Points*/
-    if (ball->speed >= 40)
+    else
       return setState(stAwardDog,30);   /*Shot Awards Super Dog*/
-    break;
+  break;
 
   /* Rudy Hit */
-      case stRudyHit:
+  case stRudyHit:
     /*Is Rudy's Mouth Open?*/
     if (locals.rudymouthPos)
       return setState(stRudyJaw1,10);   /*Yes, ball goes into rudy's mouth*/
     else
       return setState(stRudyJaw,10);    /*Ball hits Rudy's Jaw!!*/
-    break;
+  break;
 
   /* Trap Door */
-      case stTrapDoorLoop:
+  case stTrapDoorLoop:
     /*Is the Trap Door Open?*/
     if (locals.trapdoorPos)
       return setState(stBallInTrap,10); /*Trap Door is Open, Ball Lands in Trap Door!*/
     else
       return setState(stUpperLoop,10);  /*Trap Door is Closed, Make Upper Loop Shot!*/
-    break;
+  break;
 
   /* Left Outlane - Drain or Go to Left Shooter? */
   case stLOut2:
@@ -451,8 +451,8 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
       }
     else
       return setState(stDrain,15);
-    break;
-    }
+  break;
+  }
   return 0;
 }
 

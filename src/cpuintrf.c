@@ -902,7 +902,7 @@ int cpuintrf_init(void)
 		/* make sure the index in the array matches the current index */
 		if (cpuintrf[cputype].cpu_num != cputype)
 		{
-			printf("CPU #%d [%s] wrong ID %d: check enum CPU_... in src/cpuintrf.h!\n", cputype, cputype_name(cputype), cpuintrf[cputype].cpu_num);
+			printf("CPU #%d [%s] wrong ID %u: check enum CPU_... in src/cpuintrf.h!\n", cputype, cputype_name(cputype), cpuintrf[cputype].cpu_num);
 			exit(1);
 		}
 

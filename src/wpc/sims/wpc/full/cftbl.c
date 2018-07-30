@@ -432,7 +432,7 @@ CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3)",1993,"Bally",w
 CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,l2,l4,"Creature from the Black Lagoon (L-2)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d2,l4,"Creature from the Black Lagoon (D-2 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3, SP-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,p3,l4,"Creature from the Black Lagoon (P-3 Prototype, SP-1)",1992,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

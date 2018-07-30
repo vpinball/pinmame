@@ -520,6 +520,7 @@ static core_tGameData mmGameData = {
 /----------------*/
 static void init_mm(void) {
   core_gameData = &mmGameData;
+  wpc_set_fastflip_addr(0x81);
 }
 
 static void mm_handleMech(int mech) {

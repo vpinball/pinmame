@@ -186,15 +186,15 @@ enum { IPT_END=1,IPT_PORT,
 
 
 /* The "arg" field contains 4 bytes fields */
-#define IPF_SENSITIVITY(percent)	((percent & 0xff) << 8)
-#define IPF_DELTA(val)				((val & 0xff) << 16)
+#define IPF_SENSITIVITY(percent)	(((percent) & 0xff) << 8)
+#define IPF_DELTA(val)				(((val) & 0xff) << 16)
 
 #define IP_GET_PLAYER(port) (((port)->type >> 16) & 7)
 #define IP_GET_IMPULSE(port) (((port)->type >> 8) & 0xff)
 #define IP_GET_SENSITIVITY(port) ((((port)+1)->type >> 8) & 0xff)
-#define IP_SET_SENSITIVITY(port,val) ((port)+1)->type = ((port+1)->type & 0xffff00ff)|((val&0xff)<<8)
+#define IP_SET_SENSITIVITY(port,val) ((port)+1)->type = ((port+1)->type & 0xffff00ff)|(((val)&0xff)<<8)
 #define IP_GET_DELTA(port) ((((port)+1)->type >> 16) & 0xff)
-#define IP_SET_DELTA(port,val) ((port)+1)->type = ((port+1)->type & 0xff00ffff)|((val&0xff)<<16)
+#define IP_SET_DELTA(port,val) ((port)+1)->type = ((port+1)->type & 0xff00ffff)|(((val)&0xff)<<16)
 #define IP_GET_MIN(port) (((port)+1)->mask)
 #define IP_GET_MAX(port) (((port)+1)->default_value)
 #define IP_GET_CODE_OR1(port) ((port)->mask)
@@ -230,7 +230,7 @@ enum { IPT_END=1,IPT_PORT,
 
 /* impulse input bit definition */
 #define PORT_BIT_IMPULSE_NAME(mask,default,type,duration,name) \
-	PORT_BIT_NAME(mask, default, type | IPF_IMPULSE | ((duration & 0xff) << 8), name)
+	PORT_BIT_NAME(mask, default, type | IPF_IMPULSE | (((duration) & 0xff) << 8), name)
 #define PORT_BIT_IMPULSE(mask,default,type,duration) \
 	PORT_BIT_IMPULSE_NAME(mask, default, type, duration, IP_NAME_DEFAULT)
 
@@ -268,7 +268,7 @@ enum { IPT_END=1,IPT_PORT,
 	PORT_DIPSETTING(    mask &~default, DEF_STR( On ) )
 
 #define PORT_SERVICE_NO_TOGGLE(mask,default)	\
-	PORT_BITX(    mask, mask & default, IPT_SERVICE, DEF_STR( Service_Mode ), KEYCODE_F2, IP_JOY_NONE )
+	PORT_BITX(    mask, (mask) & default, IPT_SERVICE, DEF_STR( Service_Mode ), KEYCODE_F2, IP_JOY_NONE )
 
 #define MAX_DEFSTR_LEN 20
 extern const char ipdn_defaultstrings[][MAX_DEFSTR_LEN];

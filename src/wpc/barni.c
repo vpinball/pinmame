@@ -118,11 +118,11 @@ static WRITE_HANDLER(ram_w) {
     coreGlobals.lampMatrix[offset - 0x63] = data;
   } else if (offset != 0xab) {
     locals.strobe1 = 1 + core_BitColToNum(data);
-  } else if (offset != 0xac) {
+  } else /*if (offset != 0xac)*/ {
     locals.strobe2 = data;
-  } else if (offset != 0xe1 && offset != 0xe2 && offset != 0xe3) {
+  } /*else if (offset != 0xe1 && offset != 0xe2 && offset != 0xe3) {
     logerror("W %02x: %02x\n", offset, data);
-  }
+  }*/
 }
 
 static MEMORY_READ_START(barni_readmem1)

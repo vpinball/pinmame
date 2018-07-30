@@ -204,6 +204,7 @@ extern const core_tLCDLayout wpc_dispDMD[];
 
 /*-- the internal state of the WPC chip. Should only be used in memory handlers --*/
 extern UINT8 *wpc_data;
+extern UINT8 *wpc_ram;
 
 /*---------------------
 /  Exported functions
@@ -244,6 +245,7 @@ extern MACHINE_DRIVER_EXTERN(wpc_95S);
 
 int wpc_m2sw(int col, int row);
 void wpc_set_modsol_aux_board(int board);
+void wpc_set_fastflip_addr(int addr);
 
 #ifdef PROC_SUPPORT
   typedef void (*wpc_proc_solenoid_handler_t)(int solNum, int enabled, int smoothed);

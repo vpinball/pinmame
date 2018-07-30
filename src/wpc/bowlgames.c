@@ -270,7 +270,7 @@ S9_ROMSTART12(pfevr,p3,"cpu_u19.732", CRC(03796c6d) SHA1(38c95fcce9d0f357a74f041
                        "cpu_u20.764", CRC(3a3acb39) SHA1(7844cc30a9486f718a556850fc9cef3be82f26b7))
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
-CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9PS, 0)
+CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3 Prototype)", 1984, "Williams", s9_mS9PS, 0)
 
 /*--------------------
 / Still Crazy (#534)
@@ -452,7 +452,7 @@ WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebd
                  "hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f))
 WPC_ROMEND
 WPC_INPUT_PORTS_START(hshot, 0) WPC_INPUT_PORTS_END
-CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8)",1992,"Midway",wpc_mFliptronS,0)
+CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8 Prototype)",1992,"Midway",wpc_mFliptronS,0)
 
 WPC_ROMSTART(hshot,p9,"hshot_p9.u6",0x80000,CRC(fa4d05df) SHA1(235aa096f2983f77ade6b257fd8544d91b5f6b28))
 WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb),
@@ -650,7 +650,7 @@ DE2S_SOUNDROM144("titau7.101" ,CRC(544fe1ac) SHA1(5c62eef6a42660b13e626d1a6bb8cd
                  "titau21.100",CRC(76ca05f8) SHA1(3e1c56fe37393c345111665fd8ab730d53cb6970))
 SE_ROMEND
 SE_INPUT_PORTS_START(titanic, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,0)
+CORE_GAMEDEFNV(titanic,"Titanic (Coin Dropper)",1998,"Sega",de_mSES2T,0)
 
 /*-------------------------------------------------------------------
 / Monopoly (Coin dropper)
@@ -662,4 +662,4 @@ DE2S_SOUNDROM18("monopred.u7" ,CRC(1ca0cf63) SHA1(c4ce78718e3e3f1a8451b134f2869d
                 "monopred.u17",CRC(467dca62) SHA1(c727748b6b0b39ead19ce98bddd89fd05fb62d00))
 SE_ROMEND
 SE_INPUT_PORTS_START(monopred, 1) SE_INPUT_PORTS_END
-CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,0)
+CORE_GAMEDEFNV(monopred,"Monopoly (Coin Dropper)",2002,"Stern",de_mSES1,0)

@@ -40,4 +40,9 @@ copy jplstwld.zip jplstw22.zip > nul
 
 copy bnzai_p1.zip bnzai_pa.zip > nul
 
+copy gs_l4.zip gs_lu4.zip > nul
+copy gs_l3.zip gs_la3.zip > nul
+copy kpv106.zip kpb105.zip > nul
+copy mousn_lx.zip mousn_l4.zip > nul
+
 cd ..

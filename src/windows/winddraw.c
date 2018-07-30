@@ -593,7 +593,12 @@ static int create_surfaces(void)
 		primary_desc.ddsCaps.dwCaps |= DDSCAPS_FLIP | DDSCAPS_COMPLEX;
 		primary_desc.dwBackBufferCount = 2;
 	}
-
+	if (ddraw == NULL)
+	{
+		if (verbose)
+			fprintf(stderr, "Failed to create directdraw interface");
+		goto cant_create_primary;
+	}
 	// then create the primary surface
 	result = IDirectDraw_CreateSurface(ddraw, &primary_desc, &primary_surface, NULL);
 	if (result != DD_OK)

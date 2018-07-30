@@ -367,5 +367,6 @@ static core_tGameData ccGameData = {
 /----------------*/
 static void init_cc(void) {
   core_gameData = &ccGameData;
+  wpc_set_fastflip_addr(0x87);
 }
 

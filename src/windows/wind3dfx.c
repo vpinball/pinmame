@@ -518,8 +518,8 @@ int win_d3d_effects_in_use(void)
 	if (win_d3d_use_auto_effect ||
 		use_effect_preset ||
 		use_scanlines != -1 ||
-		use_feedback ||
-		(use_prescale < -1 && use_prescale > 0x11))
+		use_feedback /*||
+		(use_prescale < -1 && use_prescale > 0x11)*/)
 	{
 		return 1;
 	}
