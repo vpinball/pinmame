@@ -486,7 +486,7 @@ CORE_CLONEDEF(ft,d6,l5,"Fish Tales (D-6 Text size patch LED Ghost Fix)",2015,"In
 CORE_CLONEDEF(ft,d5,l5,"Fish Tales (D-5 LED Ghost Fix)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,l3,l5,"Fish Tales (L-3)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,l4,l5,"Fish Tales (L-4)",1992, "Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(ft,p4,l5,"Fish Tales (P-4)",1992, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ft,p4,l5,"Fish Tales (P-4 Prototype)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,p5,l5,"Fish Tales (P-5 LED Ghost Fix)",1992, "Williams",wpc_mFliptronS,0)
 
 /*-----------------------
@@ -532,6 +532,7 @@ static void init_ft(void) {
   core_gameData = &ftGameData;
   /*Gate starts as closed!*/
   locals.gatePos = CLOSED;
+  wpc_set_fastflip_addr(0x7b);
 }
 
 /*-- return status of custom solenoids --*/

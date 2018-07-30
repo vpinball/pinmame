@@ -62,3 +62,18 @@ old name                new name for romset
 -------------------------------------------
 swtril           =      swtril43
 jplstwld         =      jplstw22
+
+since version 2.1:
+
+old name                new name for romset
+-------------------------------------------
+bnzai_p1         =      bnzai_pa
+
+since version 3.1:
+
+old name                new name for romset
+-------------------------------------------
+gs_l4            =      gs_lu4
+gs_l3            =      gs_la3
+kpv106           =      kpb105
+mousn_lx         =      mousn_l4 (actually mousn_lx seems to have never existed to begin with)

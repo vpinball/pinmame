@@ -681,6 +681,7 @@ static void harley_handleMech(int mech)
 					locals.motodir = MOTO_DIR_UP;
 				else
 					locals.motodir = MOTO_DIR_DOWN;
+				break;
 			case MOTO_DIR_UP:
 				locals.motopos++;
 				//stop at top

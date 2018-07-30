@@ -40,7 +40,7 @@
 
   Hacks & Issues that need to be looked into:
   #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
-  #2) U16 Needs to be better understood and emulated more accurrately (should fix IRQ4 timing problems)
+  #2) U16 Needs to be better understood and emulated more accurately (should fix IRQ4 timing problems)
   #3) IRQ4 appears to somehow control timing for 50V solenoids & Lamps in FF&KP, unknown effect in other games
   #4) Handle opto switches internally? Is this needed?
   #5) Handle EOS switches internally? Is this needed?
@@ -48,6 +48,15 @@
   #7) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Faster IRQ4 timing will improve response time ( cycles of 2000 for example, but screws up solenoids )
   #8) Not sure best way to emulate 50V line, see TEST50V_TRYx macros below
   #9) Firing of 50V solenoids seems sometimes inconsistent in FF&KP, but IRQ4 timing helps correct it
+  #10)How to get varying flipper solenoid strength included and wired to the outside? 
+      i.e. KingPin power meter: http://www.krellan.com/pinball/kingpin/ & http://www.freepatentsonline.com/5655770.html
+      Capcom only used one single type of coils and was able to set the strength by software: It was a nice feature to ease maintenance.
+      This was way better than B/W used to do because you always needed one type of coils and not 5 or 6 different ones.
+      The PowerMeter in King Pin works that way. The lower the power is on the display the lower the strength the flippers is applied.
+      Also see https://m.facebook.com/story.php?story_fbid=2088173937889558&id=1034214746618821
+      -> suggestion: Find mem location (as it's only one machine/ROM version after all!) and use that directly instead of trying to track/map it?
+  #11) Flippers are not implemented.  VPinMame appears to pass flipper switches through to flipper solenoids (always on).   Actual flipper solenoids
+       seem to give one very latent pulse instead of staying on.
 **************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"

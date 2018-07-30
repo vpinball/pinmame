@@ -350,4 +350,4 @@ ROM_START(boomranb)
 ROM_END
 #define init_boomranb init_boomrang
 #define input_ports_boomranb input_ports_boomrang
-CORE_CLONEDEFNV(boomranb,boomrang,"Boomerang (Bootleg with bugfixes)",2017,"Bally / Gaston",boomerang,GAME_USES_CHIMES)
+CORE_CLONEDEFNV(boomranb,boomrang,"Boomerang (Bugfixes patch)",2017,"Bally / Gaston",boomerang,GAME_USES_CHIMES)

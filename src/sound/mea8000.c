@@ -276,7 +276,7 @@ static int mea8000_compute_sample( void )
 
 	if (out > 32767)
 		out = 32767;
-	if (out < -32767)
+	else if (out < -32767)
 		out = -32767;
   return out;
 }

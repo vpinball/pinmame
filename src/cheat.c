@@ -9780,7 +9780,6 @@ static void AddActionWatch(CheatAction * action, CheatEntry * entry)
 		info->linkedCheat =		entry;
 		info->numElements =		1;
 		info->skip =			0;
-		info->linkedCheat =		entry;
 
 		if(EXTRACT_FIELD(action->type, Type) == kType_Watch)
 		{

@@ -357,7 +357,7 @@ static const UINT8 flags8d[256]= /* decrement */
 #define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
 /* for treating an UINT8 as a signed INT16 */
-#define SIGNED(b) ((INT16)(b&0x80?b|0xff00:b))
+#define SIGNED(b) ((INT16)((b)&0x80?(b)|0xff00:(b)))
 
 /* Macros for addressing modes */
 #define DIRECT IMMBYTE(EAD)

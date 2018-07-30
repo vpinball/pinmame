@@ -450,10 +450,12 @@ static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription
 }
 #endif
 
-
 //============================================================
 //	osd_create_display
 //============================================================
+#ifdef VPINMAME
+extern char g_fShowWinDMD;
+#endif
 
 int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_components)
 {
@@ -489,6 +491,10 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	// proper screen
 
 	screen_guid_ptr = NULL;
+#ifdef VPINMAME
+	if (g_fShowWinDMD == 0)
+		win_use_ddraw = 0;
+#endif 
 #ifndef DISABLE_DX7
  	if (win_use_ddraw)
 		DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);

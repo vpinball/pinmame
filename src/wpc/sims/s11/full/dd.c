@@ -407,7 +407,7 @@ static MACHINE_DRIVER_START(s11c_one)
 MACHINE_DRIVER_END
 CORE_GAMEDEF(dd, l2, "Dr. Dude (LA-2)", 1990, "Bally", s11c_one,0)
 CORE_CLONEDEF(dd,l3c,l2, "Dr. Dude (LA-3C Competition MOD)", 2016,"Bally", s11c_one,0)
-CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (PA-6)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (PA-6 Prototype)", 1990, "Bally", s11c_one,0)
 
 /*-----------------------
 / Simulation Definitions

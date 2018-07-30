@@ -124,7 +124,8 @@ static MEMORY_WRITE_START(INDERP_writemem)
   {0x00ab,0x00ab, strobe_w},
   {0x0000,0x00ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x0180,0x01ff, MWA_RAM},
-  {0x0201,0x0205, disp_w},
+  {0x0200,0x0204, disp_w},
+  {0x0205,0x030f, MWA_NOP},
   {0x0310,0x0310, sol0_w},
   {0x0320,0x0320, sol1_w},
   {0x0330,0x0337, lamp_w},
@@ -178,8 +179,8 @@ MACHINE_DRIVER_START(INDERP)
 MACHINE_DRIVER_END
 
 static core_tLCDLayout inderDispP1[] = {
-  {0, 0, 0,6,CORE_SEG9},
-  {1,24,10,2,CORE_SEG7S},{1,30,12,2,CORE_SEG7S},
+  {0, 0,10,6,CORE_SEG9},
+  {1,24,20,2,CORE_SEG7S},{1,30,22,2,CORE_SEG7S},
   {0}
 };
 
@@ -188,14 +189,14 @@ static core_tLCDLayout inderDispP4[] = {
   {3, 0,10,6,CORE_SEG9},
   {6, 0,20,6,CORE_SEG9},
   {9, 0,30,6,CORE_SEG9},
-  {1,24,40,2,CORE_SEG7S},{1,30,42,2,CORE_SEG7S},
+  {1,24,40,2,CORE_SEG7S},{1,30,44,2,CORE_SEG7S},
   {0}
 };
 
 static core_tLCDLayout inderDispP4a[] = {
   {0, 0, 0,6,CORE_SEG9}, {2, 0,10,6,CORE_SEG9},
   {7, 0,20,6,CORE_SEG9}, {9, 0,30,6,CORE_SEG9},
-  {5, 3,40,2,CORE_SEG7S},{5, 9,42,2,CORE_SEG7S},
+  {5, 3,40,2,CORE_SEG7S},{5, 9,44,2,CORE_SEG7S},
   {0}
 };
 
@@ -205,9 +206,9 @@ INPUT_PORTS_START(name) \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
     COREPORT_BITDEF(0x0008, IPT_START1,    IP_KEY_DEFAULT) \
-    COREPORT_BIT   (0x0001, "Coin 1",      KEYCODE_3) \
-    COREPORT_BIT   (0x0002, "Coin 2",      KEYCODE_4) \
-    COREPORT_BIT   (0x0004, "Coin 3",      KEYCODE_5) \
+    PORT_BITX      (0x0001, IP_ACTIVE_LOW, IPT_BUTTON1, "Coin 1", KEYCODE_3, IP_JOY_NONE) \
+    PORT_BITX      (0x0002, IP_ACTIVE_LOW, IPT_BUTTON1, "Coin 2", KEYCODE_4, IP_JOY_NONE) \
+    PORT_BITX      (0x0004, IP_ACTIVE_LOW, IPT_BUTTON1, "Coin 3", KEYCODE_5, IP_JOY_NONE) \
     COREPORT_BIT   (0x0040, "Tilt",        KEYCODE_INSERT) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0001, "S1") \
@@ -315,9 +316,12 @@ static void init_topazi(void) {
 	core_gameData = &topaziGameData;
 }
 INDERP_INPUT_PORTS(topazi)
-INDER_ROMSTARTP(topazi,	"topaz2.bin", NO_DUMP,
-						"topaz3.bin", NO_DUMP,
-						"topaz4.bin", NO_DUMP)
+ROM_START(topazi)
+  NORMALREGION(0x10000, INDER_MEMREG_CPU)
+    ROM_LOAD("topaz0.bin", 0x8400, 0x0400, CRC(d047aee0) SHA1(b2bc2e9fb088006fd3b7eb080feaa1eac479af58))
+    ROM_LOAD("topaz1.bin", 0x8800, 0x0400, CRC(72a423c2) SHA1(e3ba5d581739fc0871901f861a7692fd86e0f6aa))
+    ROM_LOAD("topaz2.bin", 0x8c00, 0x0400, CRC(b8d2e7c6) SHA1(e19bec04fab15536fea51c4298c6a4cb3817630c))
+      ROM_RELOAD(0xfc00, 0x0400)
 INDER_ROMEND
 CORE_GAMEDEFNV(topazi,"Topaz (Inder)",1979,"Inder (Spain)",INDERP,0)
 

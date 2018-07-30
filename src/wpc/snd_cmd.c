@@ -233,15 +233,11 @@ BOOL readSlot(const HANDLE hFile, char * msg)
 		buffer = (LPTSTR) GlobalAlloc(GPTR, msgSize); //Combines GMEM_FIXED and GMEM_ZEROINIT.
 		if( NULL == buffer )
 		{
+			LOG(("PinSound: readSlot / error GlobalAlloc: %d\n", GetLastError()));
 			return FALSE;
 		}
 		buffer[0] = '\0';
 
-		if (!buffer)
-		{
-			LOG(("PinSound: readSlot / error GlobalAlloc: %d\n", GetLastError()));
-		}
-		else
 		{
 			// Read the message
 			err = ReadFile(hFile, buffer, msgSize, &numRead, 0);

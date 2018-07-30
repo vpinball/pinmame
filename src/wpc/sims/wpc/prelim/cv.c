@@ -372,5 +372,6 @@ static core_tGameData cvGameData = {
 static void init_cv(void) {
   core_gameData = &cvGameData;
   mech_add(0, &cv_ringMech);
+  wpc_set_fastflip_addr(0x80);
 }
 

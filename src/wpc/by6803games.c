@@ -157,8 +157,8 @@ BY6803_ROMEND
 #define input_ports_strngsci input_ports_by6803
 CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
 
-BY6803_ROMSTART44(strngscg, "cpub_u2.128",  CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
-                            "cpub_u3.128",  CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
+BY6803_ROMSTART44(strngscg, "cpub_u2.128", CRC(48ef1052) SHA1(afcb0520ab834c0d6ef4a73f615c48653ccedc24),
+                            "cpub_u3.128", CRC(da5b4b3b) SHA1(ff9babf2efc6622803db9ba8712dd8b76c8412b8))
 BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e) SHA1(5231d8f01a107742acee2d13580a461063018a11))
 BY6803_ROMEND
 #define init_strngscg init_strngsci
@@ -304,7 +304,7 @@ CORE_CLONEDEFNV(black10s,black100,"Blackwater 100 (Single Ball Play)",1988,"Ball
 
 //Games below use 6803 MPU & Williams System 11C Sound Hardware
 /*-------------------------------------------------------------
-/ Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
+/ Truck Stop (6803-2001: 12/88) - There are only ProtoType ROMS?
 /-------------------------------------------------------------*/
 INITGAME6803(trucksp3,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(trucksp3,"u2_p3.128",   CRC(79b2a5b1) SHA1(d3de91bfadc9684302b2367cfcb30ed0d6faa020),
@@ -314,7 +314,7 @@ S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f) SHA1(51b3b45eb7ea63758b2
                            "u20sndp1.256",CRC(93ac5c33) SHA1(f6dc84eca4678188a58ba3c8ef18975164dd29b0))
 BY6803_ROMEND
 #define input_ports_trucksp3 input_ports_by6803a
-CORE_GAMEDEFNV(trucksp3,"Truck Stop (P-3)",1988,"Bally",by_mBY6803_S11CS,0)
+CORE_GAMEDEFNV(trucksp3,"Truck Stop (P-3 Prototype)",1988,"Bally",by_mBY6803_S11CS,0)
 
 BY6803_ROMSTART44(trucksp2,"u2_p2.128",   CRC(3c397dec) SHA1(2fc86ad39c935ce8615eafd67e571ac94c938cd7),
                            "u3_p2.128",   CRC(d7ac519a) SHA1(612bf9fee0d54e8b1215508bd6c1ea61dcb99951))
@@ -324,7 +324,7 @@ S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f) SHA1(51b3b45eb7ea63758b2
 BY6803_ROMEND
 #define init_trucksp2 init_trucksp3
 #define input_ports_trucksp2 input_ports_trucksp3
-CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2)",1988,"Bally",by_mBY6803_S11CS,0)
+CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2 Prototype)",1988,"Bally",by_mBY6803_S11CS,0)
 
 /*-----------------------------------------------------------
 / Atlantis (6803-2006: 03/89)

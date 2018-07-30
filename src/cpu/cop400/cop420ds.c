@@ -211,7 +211,7 @@ int DasmCOP420(char *buffer, unsigned pc)
 			{
 				sprintf(buffer,"LBI 0%x",op2 & 0xF);
 			}
-			else if (op2 >= 0x91 && op2 <= 0x8)
+			else if (op2 >= 0x91 && op2 <= 0x98)
 			{
 				sprintf(buffer,"LBI 1%x",op2 & 0xF);
 			}

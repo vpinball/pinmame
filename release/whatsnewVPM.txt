@@ -1,7 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 3.1 (X X, 2018) - ""
+Version 3.2 (X X, 2018) - ""
+------------------------------------------------------------------------------
+
+Version 3.1 (July 29th, 2018) - "Flippin' fast"
 ------------------------------------------------------------------------------
 - Switch to VS2015 for the release builds (tested in the wild and seemingly faster, thanks to CarnyPriest)
 

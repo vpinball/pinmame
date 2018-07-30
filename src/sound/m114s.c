@@ -24,7 +24,8 @@
  *
  *   The mixer can optionally mix every (internal) channel into a separate stream for testing (set M114S_OUTPUT_CHANNELS to 16)
  *
- *   TODO: No full/tested support for the M114AF 6Mhz version of the chip (but seems at least to work 'good enough')
+ *   TODO: - No full/tested support for the M114AF 6Mhz version of the chip (but seems at least to work 'good enough')
+ *         - Maybe also low pass filter heavily/some channels only?? (some channels sound too high frequency heavy (clicks, pops), for example on Dakar)
  **********************************************************************************************/
 
 #include "driver.h"
@@ -352,7 +353,10 @@ static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 ***********************************************************************************************/
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
 {
-	int i, j, l;
+	int i, l;
+#ifndef USE_LERP_FOR_REPEATED_SAMPLES
+	int j;
+#endif
 	const INT8 * const rom = &chip->region_base[0];
 	const int t1start = channel->table1.start_address;
 	const int t2start = channel->table2.start_address;
@@ -511,7 +515,7 @@ static void m114s_update(int num,
 
 		/* Update the buffer & Ensure we don't clip */
 #if M114S_OUTPUT_CHANNELS == 1
-		accum /= 4;
+		accum /= (INT32)4;
 		*buffer++ = (accum < -32768) ? -32768 : ((accum > 32767) ? 32767 : accum);
 #else
 		for (c = 0; c < M114S_OUTPUT_CHANNELS; c++)

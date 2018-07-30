@@ -1100,7 +1100,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 			// Logical operators with the S flag save the carry from the shift to CPSR.
 			// We can do so now in this case, since the rest of the operation won't affect
 			// the carry bit.
-			if (need_shift_carry_out)
+			//if (need_shift_carry_out) //already checked above
 			{
 				carry_to_cpsr();
 			}

@@ -536,10 +536,12 @@ void jit_store_native_from_reserved(struct jit_ctl *jit, const byte *code, int l
 
 static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 {
+#if JIT_DEBUG
 	DWORD prvPro;
+	BOOL res;
+#endif
 	int siz;
 	struct jit_page *p;
-	BOOL res;
 
 	// Figure the page size.  Allocate at least the minimum size requested
 	// (plus the header structure overhead), or a default minimum if they didn't

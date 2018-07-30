@@ -342,5 +342,6 @@ static core_tGameData totanGameData = {
 /----------------*/
 static void init_totan(void) {
   core_gameData = &totanGameData;
+  wpc_set_fastflip_addr(0x7b);
 }
 

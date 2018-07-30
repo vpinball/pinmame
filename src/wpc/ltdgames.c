@@ -69,7 +69,7 @@ static core_tLCDLayout dispMarqn[] = {
   {0}
 };
 INITGAME(marqueen, dispMarqn, 1, 5, 0x373)
-LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) //!! working version created from a bad dump
+LTD_2_ROMSTART(marqueen, "mqueen.bin", CRC(cb664001) SHA1(00152f89e58bc11567a8de32ccaaa47146dace0d) BAD_DUMP) // patched from bad dump (internal checksum matches)
 LTD_ROMEND
 CORE_GAMEDEFNV(marqueen,"Martian Queen",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
@@ -116,7 +116,7 @@ static core_tLCDLayout disp2p6[] = {
 / Space Poker
 /-------------------------------------------------------------------*/
 INITGAME(spcpoker, disp2p6, 1, 4, 0xf3)
-LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) //!! working version created from a bad dump
+LTD_2_ROMSTART(spcpoker, "spoker.bin", CRC(98918b19) SHA1(b1bb3f408dae9fc77d396894c3c4ef08bce8c345) BAD_DUMP) // patched from bad dump (internal checksum matches)
 LTD_ROMEND
 CORE_GAMEDEFNV(spcpoker,"Space Poker",198?,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
@@ -257,16 +257,16 @@ CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 / Time Machine
 /-------------------------------------------------------------------*/
 INITGAME4(tmacltd4, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(69691662) SHA1(3d86314967075e3f5b168c8d7bf6b26bbbb957bd) BAD_DUMP, //!! working version created from a bad dump
+LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(69691662) SHA1(3d86314967075e3f5b168c8d7bf6b26bbbb957bd) BAD_DUMP, // patched from bad dump (internal checksum matches)
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
-CORE_GAMEDEFNV(tmacltd4,"Time Machine (4 players)(LTD)",198?,"LTD",gl_mLTD4,0)
+CORE_GAMEDEFNV(tmacltd4,"Time Machine (LTD) (4 Players)",198?,"LTD",gl_mLTD4,0)
 
 INITGAME4(tmacltd2, disp4p7, 1)
 LTD_44_ROMSTART(tmacltd2, "tm2_l.bin", NO_DUMP, // existing dump has LSB set to high for all bytes
                           "tm2_h.bin", CRC(f717c9db) SHA1(9ca5819b707fa20edfc289734e1aa189ae242aa3))
 LTD_ROMEND
-CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (2 players)(LTD)",198?,"LTD",gl_mLTD4,0)
+CORE_CLONEDEFNV(tmacltd2,tmacltd4,"Time Machine (LTD) (2 Players)",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
 / Trick Shooter

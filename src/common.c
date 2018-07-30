@@ -126,7 +126,7 @@ void showdisclaimer(void)   /* MAURY_BEGIN: dichiarazione */
 #ifdef LSB_FIRST
 #define intelLong(x) (x)
 #else
-#define intelLong(x) (((x << 24) | (((unsigned long) x) >> 24) | (( x & 0x0000ff00) << 8) | (( x & 0x00ff0000) >> 8)))
+#define intelLong(x) ((((x) << 24) | (((unsigned long) (x)) >> 24) | (( (x) & 0x0000ff00) << 8) | (( (x) & 0x00ff0000) >> 8)))
 #endif
 
 /*-------------------------------------------------
@@ -1854,7 +1854,7 @@ int rom_load(const struct RomModule *romp)
 		/* allocate memory for the region */
 		if (new_memory_region(regiontype, ROMREGION_GETLENGTH(region), ROMREGION_GETFLAGS(region)))
 		{
-			printf("Error: unable to allocate memory for region %d\n", regiontype);
+			printf("Error: unable to allocate memory for region %u\n", regiontype);
 			return 1;
 		}
 

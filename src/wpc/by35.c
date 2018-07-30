@@ -76,7 +76,7 @@ static void piaIrq(int num, int state) {
   locals.irqstates[num] = state;
   irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
   if (oldstate != irqstate) {
-    logerror("IRQ state: %d\n", irqstate);
+//    logerror("IRQ state: %d\n", irqstate);
     cpu_set_irq_line(0, M6800_IRQ_LINE, irqstate ? ASSERT_LINE : CLEAR_LINE);
   }
   oldstate = irqstate;
@@ -582,6 +582,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(by35_51S)
   MDRV_IMPORT_FROM(by35)
   MDRV_IMPORT_FROM(by51)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_51NS)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by51N)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_56S)

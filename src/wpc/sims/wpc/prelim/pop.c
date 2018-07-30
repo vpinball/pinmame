@@ -276,11 +276,11 @@ WPC_ROMSTART(pop,pa4,"peye_pa4.rom",0x80000,CRC(0be7a0bc) SHA1(584ff8876114277d8
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(pop,lx5,"Popeye Saves The Earth (LX-5)",1994,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(pop,dx5,lx5,"Popeye Saves The Earth (DX-5) LED Ghost Fix",1994,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,dx5,lx5,"Popeye Saves The Earth (DX-5 LED Ghost Fix)",1994,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(pop,lx4,lx5,"Popeye Saves The Earth (LX-4)",1994,"Bally",wpc_mDCSS,0)
 CORE_CLONEDEF(pop,la4,lx5,"Popeye Saves The Earth (LA-4)",1994,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(pop,pa3,lx5,"Popeye Saves The Earth (PA-3)",1993,"Bally",wpc_mDCSS,0)
-CORE_CLONEDEF(pop,pa4,lx5,"Popeye Saves The Earth (PA-4) LED Ghost Fix",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,pa3,lx5,"Popeye Saves The Earth (PA-3 Prototype)",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(pop,pa4,lx5,"Popeye Saves The Earth (PA-4 LED Ghost Fix)",1993,"Bally",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

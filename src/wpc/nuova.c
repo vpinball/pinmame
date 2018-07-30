@@ -12,6 +12,7 @@
 *******************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
+#include "cpu/i8051/i8051.h"
 #include "machine/6821pia.h"
 #include "sound/tms5220.h"
 #include "core.h"
@@ -78,12 +79,21 @@ static const struct pia6821_interface nuova_pia[] = {{
   /*irq: A/B           */ nuova_irq, nuova_irq
 }};
 
+void tx_cb(int data);
+int rx_cb(void);
+
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
   pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia[0]);
   tms5220_reset();
   tms5220_set_variant(TMS5220_IS_5220C);
+
+  if (cpu_gettotalcpu() > 2) {
+    //Setup serial line call backs, needs to be set before CPU reset by design!
+    i8051_set_serial_tx_callback(tx_cb);
+    i8051_set_serial_rx_callback(rx_cb);
+  }
 }
 
 static void nuova_diag(int button) {
@@ -212,15 +222,26 @@ static core_tLCDLayout dispAlpha[] = {
 };
 
 /*--------------------------------
-/ Super Bowl (X's & O's Clone)
+/ Super Bowl (X's & O's Clone without aux lamps board)
 /-------------------------------*/
-INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(suprbowl,"sbowlu2.732",CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
-                          "sbowlu6.732",CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
-BY45_SOUNDROMx2(          "720_u3.snd", CRC(5d8e2adb) SHA1(901a26f5e598386295a1298ee3a634941bd58b3e))
+INITGAMENB(suprbowl,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY51N,BY35GD_NOSOUNDE)
+BY35_ROMSTARTx00(suprbowl,"sbowlu2.732", CRC(bc497a13) SHA1(f428373bde72f0302c45c326aebbe56e8b09c2d6),
+                          "sbowlu6.732", CRC(a9c92719) SHA1(972da0cf87863b637b88575c329f1d8162098d6f))
+BY56_SOUNDROM(            "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(suprbowl, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(suprbowl,xsandos,"Super Bowl",1984,"Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(suprbowl,"Super Bowl",1984,"Bell Games",by35_mBY35_51NS,0)
+
+/*--------------------------------
+/ Super Bowl (Free Play) (uses a modified -53 version of Bally U6 ROM)
+/-------------------------------*/
+INITGAMENB(sprbwlfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY51N,BY35GD_NOSOUNDE)
+BY35_ROMSTARTx00(sprbwlfp,"sbwlfpu2.732",CRC(94be32b4) SHA1(a20d645ab48b58cc5e009aa0ba39172b1a2e98e7),
+                          "sbwlfpu6.732",CRC(691db61b) SHA1(270b63d6945f29d5fb3086e7a14dff69b7d310e0))
+BY56_SOUNDROM(            "suprbowl.snd",CRC(97fc0f7a) SHA1(595aa080a6d2c1ab7e718974c4d01e846e142cc1))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(sprbwlfp, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(sprbwlfp,suprbowl,"Super Bowl (Free Play)",2018,"Bell Games / Quench",by35_mBY35_51NS,0)
 
 /*--------------------------------
 / Tiger Rag (Kings Of Steel Clone)
@@ -240,7 +261,7 @@ BY35_INPUT_PORTS_START(tigerrag, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(tigerrag,kosteel,"Tiger Rag",1984,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Cosmic Flash (Flash Gordon Clone)
+/ Cosmic Flash (ROMs almost the same as Flash Gordon but different gameplay)
 /-------------------------------*/
 INITGAMENB(cosflash,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
 BY35_ROMSTARTx00(cosflash,"cf2d.532",    CRC(939e941d) SHA1(889862043f351762e8c866aefb36a9ea75cbf828),
@@ -249,7 +270,7 @@ BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b5
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(cosflash, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(cosflash,flashgdn,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61S,0)
+CORE_GAMEDEFNV(cosflash,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61S,0)
 
 /*--------------------------------
 / Saturn 2 (Spy Hunter Clone)
@@ -286,9 +307,9 @@ ROM_START(worlddef)
     ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
 BY45_SOUNDROMx2("wodefsnd.764", CRC(b8d4dc20) SHA1(5aecac4a2deb7ea8e0ff0600ea459ef272dcd5f0))
 ROM_END
-INITGAMENB(worlddef,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+INITGAMENB(worlddef,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(worlddef, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(worlddef,"World Defender",1985,"Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(worlddef,"World Defender",1985,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
 / World Defender (Free Play)
@@ -302,20 +323,41 @@ ROM_START(worlddfp)
     ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
 BY45_SOUNDROMx2("wodefsnd.764", CRC(b8d4dc20) SHA1(5aecac4a2deb7ea8e0ff0600ea459ef272dcd5f0))
 ROM_END
-INITGAMENB(worlddfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+INITGAMENB(worlddfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(worlddfp, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(worlddfp,"World Defender (Free Play)",1985,"Bell Games",by35_mBY35_45S,0)
+CORE_CLONEDEFNV(worlddfp,worlddef,"World Defender (Free Play)",1985,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
-/ Space Hawks (Cybernaut Clone)
+/ Space Hawks
 /-------------------------------*/
-INITGAMENB(spacehaw,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(spacehaw,"cybe2732.u2g",CRC(d4a5e2f6) SHA1(841e940632993919a68c905546f533ff38a0ce31),
-                          "spacehaw.u6",CRC(b154a3a3) SHA1(d632c5eddd0582ba2ca778ab03e11ca3f6f4e1ed))
-BY45_SOUNDROMx2(          "cybu3.snd",  CRC(a3c1f6e7) SHA1(35a5e828a6f2dd9009e165328a005fa079bad6cb))
-BY35_ROMEND
+ROM_START(spacehaw)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("spacehaw.bin", 0xe000, 0x2000, CRC(f070b2c3) SHA1(405d959e6e3976d50470594deadd3e3625fc1791))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROM2x("sh_sound.264", CRC(2b548d24) SHA1(83ac9b75ae9c1960ad73abcf40adc2bc46827568))
+ROM_END
+INITGAMENB(spacehaw,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(spacehaw, 1) BY35_INPUT_PORTS_END
-CORE_CLONEDEFNV(spacehaw,cybrnaut,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
+CORE_GAMEDEFNV(spacehaw,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
+/ Space Hawks (Free Play) (dips 25 & 26 must be on)
+/-------------------------------*/
+ROM_START(spchawfp)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("spacehfp.rom", 0xe000, 0x2000, CRC(7369638d) SHA1(6ad5a60aea18752dc4083c9e41278b173584c173))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROM2x("sh_sound.264", CRC(2b548d24) SHA1(83ac9b75ae9c1960ad73abcf40adc2bc46827568))
+ROM_END
+INITGAMENB(spchawfp,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,BY35GD_NOSOUNDE)
+BY35_INPUT_PORTS_START(spchawfp, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(spchawfp,spacehaw,"Space Hawks (Free Play)",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Dark Shadow
@@ -327,8 +369,7 @@ ROM_START(darkshad)
     ROM_COPY(REGION_CPU1, 0xe800, 0x1800,0x0800)
     ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x0800)
     ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
-BY45_SOUNDROM11(         "bp_u3.532",  CRC(a5005067) SHA1(bd460a20a6e8f33746880d72241d6776b85126cf),
-                         "bp_u4.532",  CRC(57978b4a) SHA1(4995837790d81b02325d39b548fb882a591769c5))
+BY45_SOUNDROM2x("darkshad.snd", CRC(9fd6ee82) SHA1(6486fa56c663152e565e160b8f517be824338a9a))
 ROM_END
 INITGAME(darkshad,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
 BY35_INPUT_PORTS_START(darkshad, 1) BY35_INPUT_PORTS_END
@@ -358,7 +399,7 @@ ROM_START(skflight)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
+INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(skflight, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -386,7 +427,7 @@ ROM_START(cobra)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
+INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(cobra, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
@@ -503,8 +544,103 @@ BY35_INPUT_PORTS_START(toppin, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
-/ U-Boat 65
+/ U-Boat 65 - additional "CSC 387.1" music board with 8032 MCU
 /-------------------------------*/
+
+static MEMORY_READ_START(snd_readmem2)
+  { 0x00000, 0x0ffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(snd_writemem2)
+MEMORY_END
+
+static READ_HANDLER(port_r) {
+  static UINT8 val, cnt;
+  cnt++;
+  if (cnt % 32 == 0) val++;
+//printf("%02x ", val);
+  // no idea what enables the internal timers, but they need to remain off!
+  if (i8752_internal_r(0x80 + TCON) & 0x50) {
+    i8752_internal_w(0x80 + TCON, i8752_internal_r(0x80 + TCON) & 0x0f);
+  }
+  switch (offset) {
+    case 2: logerror(" port  2 R\n"); break;
+    case 3: logerror("  port 3 R\n"); break;
+  }
+  return offset == 3 ? val : 0;
+}
+
+static WRITE_HANDLER(port_w) {
+  // no idea what enables the internal timers, but they need to remain off!
+  if (i8752_internal_r(0x80 + TCON) & 0x50) {
+    i8752_internal_w(0x80 + TCON, i8752_internal_r(0x80 + TCON) & 0x0f);
+  }
+//printf("snd data: %x: %02x\n", offset, data);
+  switch (offset) {
+    case 1: logerror("port   1 W %02x\n", data); break;
+    case 2: logerror(" port  2 W %02x\n", data); break;
+    case 3: logerror("  port 3 W %02x\n", data); break;
+  }
+}
+
+static PORT_READ_START(snd_readport2)
+  { 0, 3, port_r },
+PORT_END
+
+static PORT_WRITE_START(snd_writeport2)
+  { 0, 3, port_w },
+PORT_END
+
+void tx_cb(int data) {
+//printf("TX:%02x ", data);
+}
+
+int rx_cb(void) {
+  static UINT8 byte;
+  byte++;
+//printf("RX:%02x ", byte);
+  return byte;
+}
+
+static void serial(int data) {
+  static int rx;
+  rx = !rx;
+  cpu_set_irq_line(2, I8051_RX_LINE, rx ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static void tf0(int data) {
+  static int timeout;
+  timeout = !timeout;
+  cpu_set_irq_line(2, I8051_T0_LINE, timeout ? ASSERT_LINE : CLEAR_LINE);
+  if (timeout)
+    i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) & 0x7f); // prevent all irqs temporarily
+  else
+    i8752_internal_w(0x80 + IE, i8752_internal_r(0x80 + IE) | 0x80); // reenable irqs
+}
+
+static void int1(int data) {
+  static int irq;
+  irq = !irq;
+  cpu_set_irq_line(2, I8051_INT1_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static INTERRUPT_GEN(odd) {
+  // nothing done here, but sound is more accurate once this callback is in place!?
+}
+
+MACHINE_DRIVER_START(uboat)
+  MDRV_IMPORT_FROM(nuova)
+
+  MDRV_CPU_ADD_TAG("scpu2", I8752, 12000000) // I8032 actually (no internal ROM, 256 bytes internal RAM)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem2, snd_writemem2)
+  MDRV_CPU_PORTS(snd_readport2, snd_writeport2)
+  MDRV_CPU_PERIODIC_INT(odd, 500)
+  MDRV_TIMER_ADD(int1, 200)
+  MDRV_TIMER_ADD(tf0, 100)
+  MDRV_TIMER_ADD(serial, 10)
+MACHINE_DRIVER_END
+
 ROM_START(uboat65)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("cpu_u7.256", 0x8000, 0x8000, CRC(f0fa1cbc) SHA1(4373bb37927dde01f5a4da5ef6094424909e9bc6))
@@ -515,19 +651,15 @@ ROM_START(uboat65)
   ROM_COPY(REGION_CPU1, 0xb000, 0xd000,0x1000)
   ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
-    ROM_LOAD("snd_ic3.256", 0x0000, 0x8000, CRC(c7811983) SHA1(7924248dcc08b05c34d3ddf2e488b778215bc7ea))
-      ROM_RELOAD(0x10000, 0x8000)
-      ROM_RELOAD(0x20000, 0x8000)
-      ROM_RELOAD(0x30000, 0x8000)
-    ROM_LOAD("snd_ic5.256", 0x8000, 0x8000, CRC(bc35e5cf) SHA1(a809b0056c576416aa76ead0437e036c2cdbd1ef))
-      ROM_RELOAD(0x18000, 0x8000)
-      ROM_RELOAD(0x28000, 0x8000)
-      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
     ROM_LOAD("snd_u8.bin", 0x8000, 0x8000, CRC(d00fd4fd) SHA1(23f6b7c5d60821eb7fa2fdcfc85caeb536eef99a))
+  NORMALREGION(0x20000, REGION_CPU3)
+    ROM_LOAD("snd_ic3.256", 0x10000, 0x4000, CRC(c7811983) SHA1(7924248dcc08b05c34d3ddf2e488b778215bc7ea))
+      ROM_CONTINUE(0x00000, 0x4000)
+    ROM_LOAD("snd_ic5.256", 0x14000, 0x4000, CRC(bc35e5cf) SHA1(a809b0056c576416aa76ead0437e036c2cdbd1ef))
+      ROM_CONTINUE(0x04000, 0x4000)
 ROM_END
 
 INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(uboat65, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(uboat65, "U-Boat 65", 1988, "Nuova Bell Games", uboat, GAME_IMPERFECT_SOUND)

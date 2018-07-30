@@ -278,7 +278,7 @@ static void cpu_empty_event_queue(int cpunum)
 		LOG(("cpu_empty_event_queue %d,%d,%d\n",cpunum,irqline,state));
 
 	/* set the IRQ line state and vector */
-	if (irqline >= 0 && irqline < MAX_IRQ_LINES)
+	if (/*irqline >= 0 &&*/ irqline < MAX_IRQ_LINES) // see above
 	{
 		irq_line_state[cpunum][irqline] = state;
 			irq_line_vector[cpunum][irqline] = vector;

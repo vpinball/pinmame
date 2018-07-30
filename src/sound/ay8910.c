@@ -9,6 +9,348 @@
   Tatsuyuki Satoh, Fabrice Frances, Nicola Salmoria.
 
 ***************************************************************************/
+/*
+ * Couriersud, July 2014:
+ *
+ * This documents recent work on the AY8910. A YM2149 is now on it's way from
+ * Hong Kong as well.
+ *
+ * TODO:
+ *
+ * - Create a true sound device nAY8910 driver.
+ * - implement approach outlined below in this driver.
+ *
+ * For years I had a AY8910 in my drawer. Arduinos were around as well.
+ * Using the approach documented in this blog post
+ *    http://www.986-studio.com/2014/05/18/another-ay-entry/#more-476
+ * I measured the output voltages using a Extech 520.
+ *
+ * Measurement Setup
+ *
+ * Laptop <--> Arduino <---> AY8910
+ *
+ * AY8910 Registers:
+ * 0x07: 3f
+ * 0x08: RV
+ * 0x09: RV
+ * 0x0A: RV
+ *
+ * Output was measured on Analog Output B with a resistor RD to
+ * ground.
+ *
+ * Measurement results:
+ *
+ * RD      983  9.830k   99.5k  1.001M    open
+ *
+ * RV        B       B       B       B       B
+ *  0   0.0000  0.0000  0.0001  0.0011  0.0616
+ *  1   0.0106  0.0998  0.6680  1.8150  2.7260
+ *  2   0.0150  0.1377  0.8320  1.9890  2.8120
+ *  3   0.0222  0.1960  1.0260  2.1740  2.9000
+ *  4   0.0320  0.2708  1.2320  2.3360  2.9760
+ *  5   0.0466  0.3719  1.4530  2.4880  3.0440
+ *  6   0.0665  0.4938  1.6680  2.6280  3.1130
+ *  7   0.1039  0.6910  1.9500  2.7900  3.1860
+ *  8   0.1237  0.7790  2.0500  2.8590  3.2340
+ *  9   0.1986  1.0660  2.3320  3.0090  3.3090
+ * 10   0.2803  1.3010  2.5050  3.0850  3.3380
+ * 11   0.3548  1.4740  2.6170  3.1340  3.3590
+ * 12   0.4702  1.6870  2.7340  3.1800  3.3730
+ * 13   0.6030  1.8870  2.8410  3.2300  3.4050
+ * 14   0.7530  2.0740  2.9280  3.2580  3.4170
+ * 15   0.9250  2.2510  3.0040  3.2940  3.4380
+ *
+ * Using an equivalent model approach with two resistors
+ *
+ *      5V
+ *       |
+ *       Z
+ *       Z Resistor Value for RV
+ *       Z
+ *       |
+ *       +---> Output signal
+ *       |
+ *       Z
+ *       Z External RD
+ *       Z
+ *       |
+ *      GND
+ *
+ * will NOT work out of the box since RV = RV(RD).
+ *
+ * The following approach will be used going forward based on die pictures
+ * of the AY8910 done by Dr. Stack van Hay:
+ *
+ *
+ *              5V
+ *             _| D
+ *          G |      NMOS
+ *     Vg ---||               Kn depends on volume selected
+ *            |_  S Vs
+ *               |
+ *               |
+ *               +---> VO Output signal
+ *               |
+ *               Z
+ *               Z External RD
+ *               Z
+ *               |
+ *              GND
+ *
+ *  Whilst conducting, the FET operates in saturation mode:
+ *
+ *  Id = Kn * (Vgs - Vth)^2
+ *
+ *  Using Id = Vs / RD
+ *
+ *  Vs = Kn * RD  * (Vg - Vs - Vth)^2
+ *
+ *  finally using Vg' = Vg - Vth
+ *
+ *  Vs = Vg' + 1 / (2 * Kn * RD) - sqrt((Vg' + 1 / (2 * Kn * RD))^2 - Vg'^2)
+ *
+ *  and finally
+ *
+ *  VO = Vs
+ *
+ *  and this can be used to re-Thenevin to 5V
+ *
+ *  RVequiv = RD * ( 5V / VO - 1)
+ *
+ *  The RV and Kn parameter are derived using least squares to match
+ *  calculation results with measurements.
+ *
+ *  FIXME:
+ *  There is voltage of 60 mV measured with the EX520 (Ri ~ 10M). This may
+ *  be induced by cutoff currents from the 15 FETs.
+ *
+ */
+
+
+/***************************************************************************
+
+  ay8910.c
+
+  Emulation of the AY-3-8910 / YM2149 sound chip.
+
+  Based on various code snippets by Ville Hallik, Michael Cuddy,
+  Tatsuyuki Satoh, Fabrice Frances, Nicola Salmoria.
+
+  Mostly rewritten by couriersud in 2008
+
+  Public documentation:
+
+  - http://privatfrickler.de/blick-auf-den-chip-soundchip-general-instruments-ay-3-8910/
+    Die pictures of the AY8910
+
+  - US Patent 4933980
+
+  Games using ADSR: gyruss
+
+  A list with more games using ADSR can be found here:
+        http://mametesters.org/view.php?id=3043
+
+  TODO:
+  * The AY8930 has an extended mode which is currently
+    not emulated.
+  * YM2610 & YM2608 will need a separate flag in their config structures
+    to distinguish between legacy and discrete mode.
+
+  The rewrite also introduces a generic model for the DAC. This model is
+  not perfect, but allows channel mixing based on a parametrized approach.
+  This model also allows to factor in different loads on individual channels.
+  If a better model is developped in the future or better measurements are
+  available, the driver should be easy to change. The model is described
+  later.
+
+  In order to not break hundreds of existing drivers by default the flag
+  AY8910_LEGACY_OUTPUT is used by drivers not changed to take into account the
+  new model. All outputs are normalized to the old output range (i.e. 0 .. 7ffff).
+  In the case of channel mixing, output range is 0...3 * 7fff.
+
+  The main difference between the AY-3-8910 and the YM2149 is, that the
+  AY-3-8910 datasheet mentions, that fixed volume level 0, which is set by
+  registers 8 to 10 is "channel off". The YM2149 mentions, that the generated
+  signal has a 2V DC component. This is confirmed by measurements. The approach
+  taken here is to assume the 2V DC offset for all outputs for the YM2149.
+  For the AY-3-8910, an offset is used if envelope is active for a channel.
+  This is backed by oscilloscope pictures from the datasheet. If a fixed volume
+  is set, i.e. envelope is disabled, the output voltage is set to 0V. Recordings
+  I found on the web for gyruss indicate, that the AY-3-8910 offset should
+  be around 0.2V. This will also make sound levels more compatible with
+  user observations for scramble.
+
+  The Model:
+                     5V     5V
+                      |      |
+                      /      |
+  Volume Level x >---|       Z
+                      >      Z Pullup Resistor RU
+                       |     Z
+                       Z     |
+                    Rx Z     |
+                       Z     |
+                       |     |
+                       '-----+-------->  >---+----> Output signal
+                             |               |
+                             Z               Z
+               Pulldown RD   Z               Z Load RL
+                             Z               Z
+                             |               |
+                            GND             GND
+
+Each Volume level x will select a different resistor Rx. Measurements from fpgaarcade.com
+where used to calibrate channel mixing for the YM2149. This was done using
+a least square approach using a fixed RL of 1K Ohm.
+
+For the AY measurements cited in e.g. openmsx as "Hacker Kay" for a single
+channel were taken. These were normalized to 0 ... 65535 and consequently
+adapted to an offset of 0.2V and a VPP of 1.3V. These measurements are in
+line e.g. with the formula used by pcmenc for the volume: vol(i) = exp(i/2-7.5).
+
+The following is documentation from the code moved here and amended to reflect
+the changes done:
+
+Careful studies of the chip output prove that the chip counts up from 0
+until the counter becomes greater or equal to the period. This is an
+important difference when the program is rapidly changing the period to
+modulate the sound. This is worthwhile noting, since the datasheets
+say, that the chip counts down.
+Also, note that period = 0 is the same as period = 1. This is mentioned
+in the YM2203 data sheets. However, this does NOT apply to the Envelope
+period. In that case, period = 0 is half as period = 1.
+
+Envelope shapes:
+    C AtAlH
+    0 0 x x  \___
+    0 1 x x  /___
+    1 0 0 0  \\\\
+    1 0 0 1  \___
+    1 0 1 0  \/\/
+    1 0 1 1  \```
+    1 1 0 0  ////
+    1 1 0 1  /```
+    1 1 1 0  /\/\
+    1 1 1 1  /___
+
+The envelope counter on the AY-3-8910 has 16 steps. On the YM2149 it
+has twice the steps, happening twice as fast.
+
+****************************************************************************
+
+    The bus control and chip selection signals of the AY PSGs and their
+    pin-compatible clones such as YM2149 are somewhat unconventional and
+    redundant, having been designed for compatibility with GI's CP1610
+    series of microprocessors. Much of the redundancy can be finessed by
+    tying BC2 to Vcc; AY-3-8913 and AY8930 do this internally.
+
+                            /A9   A8    /CS   BDIR  BC2   BC1
+                AY-3-8910   24    25    n/a   27    28    29
+                AY-3-8912   n/a   17    n/a   18    19    20
+                AY-3-8913   22    23    24    2     n/a   3
+                            ------------------------------------
+                Inactive            NACT      0     0     0
+                Latch address       ADAR      0     0     1
+                Inactive            IAB       0     1     0
+                Read from PSG       DTB       0     1     1
+                Latch address       BAR       1     0     0
+                Inactive            DW        1     0     1
+                Write to PSG        DWS       1     1     0
+                Latch address       INTAK     1     1     1
+
+***************************************************************************/
+
+/**
+AY-3-8910/8914/YM2149 (YM3439? others?)
+                               _______    _______
+                             _|*      \__/       |_
+          [4] VSS (GND) --  |_|1               40|_|  -- VCC (+5v)
+                             _|                  |_
+                    [5] NC  |_|2               39|_|  <- TEST 1 [1]
+                             _|                  |_
+       ANALOG CHANNEL B <-  |_|3               38|_|  -> ANALOG CHANNEL C
+                             _|                  |_
+       ANALOG CHANNEL A <-  |_|4               37|_|  <> DA0
+                             _|                  |_
+                    [5] NC  |_|5               36|_|  <> DA1
+                             _|                  |_
+                   IOB7 <>  |_|6               35|_|  <> DA2
+                             _|                  |_
+                   IOB6 <>  |_|7               34|_|  <> DA3
+                             _|   /---\          |_
+                   IOB5 <>  |_|8  \-/ |   A    33|_|  <> DA4
+                             _|   .   .   Y      |_
+                   IOB4 <>  |_|9  |---|   - S  32|_|  <> DA5
+                             _|   '   '   3 O    |_
+                   IOB3 <>  |_|10   8     - U  31|_|  <> DA6
+                             _|     3     8 N    |_
+                   IOB2 <>  |_|11   0     9 D  30|_|  <> DA7
+                             _|     8     1      |_
+                   IOB1 <>  |_|12         0    29|_|  <- BC1
+                             _|     P            |_
+                   IOB0 <>  |_|13              28|_|  <- BC2
+                             _|                  |_
+                   IOA7 <>  |_|14              27|_|  <- BDIR
+                             _|                  |_
+                   IOA6 <>  |_|15              26|_|  <- TEST 2 [2]
+                             _|                  |_
+                   IOA5 <>  |_|16              25|_|  <- A8 [3]
+                             _|                  |_
+                   IOA4 <>  |_|17              24|_|  <- /A9 [3]
+                             _|                  |_
+                   IOA3 <>  |_|18              23|_|  <- /RESET
+                             _|                  |_
+                   IOA2 <>  |_|19              22|_|  == CLOCK
+                             _|                  |_
+                   IOA1 <>  |_|20              21|_|  <> IOA0
+                              |__________________|
+
+[1] Based on the decap, TEST 1 affects the Envelope Generator and/or the
+    frequency divider somehow.
+[2] The TEST 2 input connects to the same selector as A8 and /A9 do on the 8910
+    and appears to act as just another active high enable like A8(pin 25) and
+    has an internal pull-up so if left NC the chip remains enabled.
+    On the 8914, it performs the same above function but additionally ?disables?
+    the DA0-7 bus if pulled low/active. This additional function was removed
+    on the 8910.
+    on YM2149 and YM3439 this pin is /SEL, if low, clock input is /2
+[3] It is possible for A8 and /A9 pins to be mask programmed to have different
+    active polarities. This might be true on the AY-3-8916/17 parts used on the
+    Intellivision ECS module? (not the Keyboard module?)
+[4] The bond wire for the VSS pin goes to the substrate frame, and then a
+    separate bond wire connects it to a pad between pins 21 and 22
+[5] These pins lack internal bond wires entirely.
+
+AY-3-8910/A: 2 I/O ports
+AY-3-8912/A: 1 I/O port; /A9 doesn't exist and is considered pulled low.
+AY-3-8913/A: 0 I/O port; BC2 pin doesn't exist and is considered pulled high.
+  Factory default for these three types when writing address data to them is:
+  /A9 must be low, A8 must be high, A7 thru A4 must be low.
+  A7 thru A4 enable state can be changed with a factory mask adjustment but
+  default was 0000 for the "common" part shipped.
+  The 'A' version of the 3 above have a re-laid out die, unclear if there are
+  any behavior changes vs the non-'A' version.
+AY-3-8914:  same as 8910 except for different register mapping and two bit
+  envelope enable / volume field.
+  Factory default for these three types when writing address data to them is:
+  /A9 must be low, A8 must be high, A7 thru A4 must be low.
+  A7 thru A4 enable state can be changed with a factory mask adjustment but
+  are unknown for the one known part shipped, used in the Intellivision.
+AY8930: mostly backwards compatible with 8910, except like the AY-3-8913, the
+  BC2 pin is considered tied high/permanently '1'.
+  If the AY8930's extended mode is enabled, it gains higher resolution
+  frequency and volume control, separate volume per-channel, and the duty
+  cycle can be adjusted for the 3 channels. If the mode is not enabled, it
+  behaves exactly(?) like an AY-3-8910.
+YM2149: The envelope register has 5 bits of resolution internally, allowing for
+  smoother volume ramping, though the register for setting its direct value
+  remains 4 bits wide. The chip also has a selectable clock divider on pin 26
+  (/SEL), which was /TEST2 on the AY-3-8910. If low, the input clock is halved.
+YM3439: limited info: CMOS version of YM2149?
+YMZ284: limited info: 0 I/O port, different clock divider
+YMZ294: limited info: 0 I/O port
+OKI M5255, Winbond WF19054, JFC 95101, File KC89C72, Toshiba T7766A : differences to be listed
+*/
 
 #include "driver.h"
 #include "ay8910.h"
@@ -667,7 +1009,7 @@ static void AY8910Update(int chip,
 		}
 
 #ifdef SINGLE_CHANNEL_MIXER
-		tmp_buf = (vola * PSG->VolA * PSG->mix_vol[0] + volb * PSG->VolB * PSG->mix_vol[1] + volc * PSG->VolC * PSG->mix_vol[2])/(100*STEP);
+		tmp_buf = (vola * (int)PSG->VolA * (int)PSG->mix_vol[0] + volb * (int)PSG->VolB * (int)PSG->mix_vol[1] + volc * (int)PSG->VolC * (int)PSG->mix_vol[2])/(int)(100*STEP);
 		*(buf1++) = (tmp_buf < -32768) ? -32768 : ((tmp_buf > 32767) ? 32767 : tmp_buf);
 #else
 		*(buf1++) = (vola * PSG->VolA) / STEP;

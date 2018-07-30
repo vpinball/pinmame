@@ -273,18 +273,12 @@ const struct sndbrdIntf by51Intf = {
 };
 
 static struct AY8910interface   sp_ay8910Int  = { 1, 3579545/4, {20}, {sp_8910a_r} };
-static struct hc55516_interface sp_hc55516Int = { 1, {75}};
+
 static MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x00ff, pia_r(SP_PIA0) },
   { 0x1000, 0x1fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_READ_START(sp56_readmem)
-  { 0x0000, 0x007f, MRA_RAM },
-  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
-  { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sp_writemem)
@@ -294,21 +288,42 @@ static MEMORY_WRITE_START(sp_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static INTERRUPT_GEN(sp555_timer) {
-  static int cb1;
-  pia_set_input_cb1(SP_PIA0, cb1 = !cb1);
-}
-#endif
-
 MACHINE_DRIVER_START(by51)
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
-//MDRV_CPU_PERIODIC_INT(sp555_timer, 250)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(AY8910, sp_ay8910Int)
 MACHINE_DRIVER_END
+
+static struct DACinterface sp_dacInt = { 1, { 20 }};
+
+static MEMORY_READ_START(sp51N_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
+  { 0xf000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(sp51N_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0080, 0x00ff, pia_w(SP_PIA0) },
+  { 0x1000, 0x1000, DAC_0_data_w },
+MEMORY_END
+
+MACHINE_DRIVER_START(by51N)
+  MDRV_IMPORT_FROM(by51)
+  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_MEMORY(sp51N_readmem, sp51N_writemem)
+  MDRV_SOUND_ADD(DAC, sp_dacInt)
+MACHINE_DRIVER_END
+
+static struct hc55516_interface sp_hc55516Int = { 1, {75}};
+
+static MEMORY_READ_START(sp56_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
 
 MACHINE_DRIVER_START(by56)
   MDRV_IMPORT_FROM(by51)
@@ -318,13 +333,14 @@ MACHINE_DRIVER_START(by56)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sp_8910r);
+static READ_HANDLER(sp_pia0b_r);
 static WRITE_HANDLER(sp_pia0a_w);
 static WRITE_HANDLER(sp_pia0b_w);
 static WRITE_HANDLER(sp_pia0cb2_w);
 static void sp_irq(int state);
 
 static const struct pia6821_interface sp_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sp_8910r, sp_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ sp_pia0a_w, sp_pia0b_w, 0, sp_pia0cb2_w,
   /*irq: A/B           */ sp_irq, sp_irq
 };
@@ -348,12 +364,16 @@ static void sp_diag(int button) {
   cpu_set_nmi_line(splocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(sp_8910r) {
+  if (splocals.brdData.subType == 2) return ~splocals.lastcmd; // -51N
   if ((splocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
 static WRITE_HANDLER(sp_pia0a_w) {
   splocals.pia0a = data;
   if (splocals.pia0b & 0x02) AY8910Write(0, splocals.pia0b ^ 0x01, splocals.pia0a);
+}
+static READ_HANDLER(sp_pia0b_r) {
+  return splocals.pia0b;
 }
 static WRITE_HANDLER(sp_pia0b_w) {
   splocals.pia0b = data;
@@ -370,14 +390,27 @@ static WRITE_HANDLER(sp_pia0cb2_w) {
 }
 
 static WRITE_HANDLER(sp51_data_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
+  if (splocals.brdData.subType == 2) { // -51N
+    splocals.lastcmd = data & 0x0f;
+    if ((splocals.lastctrl & 1) && data != 0x0f) {
+      sp_irq(1); sp_irq(0);
+    }
+  } else {
+    splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
+  }
 }
 static WRITE_HANDLER(sp51_ctrl_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) << 3);
+  if (splocals.brdData.subType != 2) { // not -51N
+    splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) << 3);
+  }
   pia_set_input_ca1(SP_PIA0, data & 0x01);
+  splocals.lastctrl = data;
 }
 static WRITE_HANDLER(sp51_manCmd_w) {
   splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
+  if (splocals.brdData.subType == 2) { // -51N
+    sp_irq(1); sp_irq(0);
+  }
 }
 
 static READ_HANDLER(sp_8910a_r) {
@@ -474,6 +507,7 @@ MACHINE_DRIVER_START(by61)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(snt_pia0a_r);
+static READ_HANDLER(snt_pia0b_r);
 static WRITE_HANDLER(snt_pia0a_w);
 static WRITE_HANDLER(snt_pia0b_w);
 static READ_HANDLER(snt_pia1a_r);
@@ -490,7 +524,7 @@ static struct {
   UINT8 cmd[2], lastcmd, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, snt_pia0b_r, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
@@ -517,9 +551,12 @@ static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(snt_pia0a_r) {
-  if (sntlocals.brdData.subType == 1)   return snt_8910a_r(0); // -61B
+  if (sntlocals.brdData.subType) return snt_8910a_r(0); // -61B
   if ((sntlocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
+}
+static READ_HANDLER(snt_pia0b_r) {
+  return sntlocals.pia0b;
 }
 static WRITE_HANDLER(snt_pia0a_w) {
   sntlocals.pia0a = data;
@@ -574,10 +611,7 @@ static void cs_init(struct sndbrdData *brdData);
 static void cs_diag(int button);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
-static READ_HANDLER(cs_port1_r);
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
 static READ_HANDLER(cs_port2_r);
-#endif
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
@@ -587,19 +621,15 @@ static struct DACinterface cs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(cs_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
   { 0x0080, 0x00ff, MRA_RAM },	/*Internal RAM*/
-  { 0xb000, 0xdfff, MRA_ROM },
-  { 0xe000, 0xffff, MRA_ROM },
+  { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 static MEMORY_WRITE_START(cs_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0080, 0x00ff, MWA_RAM },	/*Internal RAM*/
-  { 0xb000, 0xdfff, MWA_ROM },
-  { 0xe000, 0xffff, MWA_ROM },
+  { 0x8000, 0xffff, MWA_NOP },
 MEMORY_END
 static PORT_READ_START(cs_readport)
-{ M6803_PORT2, M6803_PORT2, cs_port1_r },
-  //{ M6803_PORT1, M6803_PORT1, cs_port1_r },
-  //{ M6803_PORT2, M6803_PORT2, cs_port2_r },
+  { M6803_PORT2, M6803_PORT2, cs_port2_r },
 PORT_END
 static PORT_WRITE_START(cs_writeport)
   { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
@@ -617,7 +647,7 @@ MACHINE_DRIVER_END
 
 static struct {
   struct sndbrdData brdData;
-  int cmd, ctrl;
+  int cmd, ctrl, p21;
 } cslocals;
 
 static void cs_init(struct sndbrdData *brdData) {
@@ -634,43 +664,32 @@ static WRITE_HANDLER(cs_ctrl_w) {
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static int p21 = 0;
-
 void by45snd_reset(void)
 {
-	p21 = 1;
+	cslocals.p21 = 1;
 }
 
 void by45_p21_w(int data)
 {
-	p21 = 0;
+	cslocals.p21 = 0;
 }
 
-static READ_HANDLER(cs_port1_r) {
+static READ_HANDLER(cs_port2_r) {
 	static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
-	if(p21) data |= 0x02;
+	if (cslocals.p21) data |= 0x02;
 #if 0
 	if(last !=data)
-		printf("cs_port1_r = %x\n",data);
+		printf("cs_port2_r = %x\n",data);
 #endif
 	last = data;
 	return data;
 }
 
-static int port2 = 0;
-
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static READ_HANDLER(cs_port2_r) {
-	int data = port2;
-	printf("reading cs_port2_r data = %x\n",data);
-	return data;
-}
-#endif
 static WRITE_HANDLER(cs_port2_w) {
-	port2 = data;
 	//printf("MPU: port write = %x\n",data);
-	sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
+	sndbrd_ctrl_cb(cslocals.brdData.boardNo,data & 0x01);
+} // diag led
 
 /*----------------------------------------
 /    Turbo Cheap Squeak

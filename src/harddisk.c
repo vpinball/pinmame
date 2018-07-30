@@ -1404,7 +1404,7 @@ static int read_sector_map(struct hard_disk_info *info)
 	return HDERR_NONE;
 
 cleanup:
-	if (info->map)
+	//if (info->map)
 		free(info->map);
 	info->map = NULL;
 	return err;

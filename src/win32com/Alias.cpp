@@ -40,6 +40,11 @@ static const struct tAliasTable { const char* alias; const char* real; } aliasTa
   { "harley", "harl_a10" },
   { "swtril", "swtril43" },
   { "jplstwld", "jplstw22" },
+  { "bnzai_p1", "bnzai_pa" },
+  { "gs_l4", "gs_lu4" },
+  { "gs_l3", "gs_la3" },
+  { "kpv106", "kpb105" },
+  { "mousn_lx", "mousn_l4" },
   { NULL, NULL }
 };
 

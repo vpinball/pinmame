@@ -373,5 +373,6 @@ static void init_mb(void) {
   mech_add(0, &mb_mech[0]);
   mech_add(1, &mb_mech[1]);
   mech_add(2, &mb_mech[2]);
+  wpc_set_fastflip_addr(0x87);
 }
 

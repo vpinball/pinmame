@@ -411,8 +411,8 @@ static MACHINE_DRIVER_START(wpc_a1_one)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
-CORE_CLONEDEF(dd,p7,l2,"Dr. Dude (PA-7 WPC)",1990,"Bally",wpc_a1_one,0)
-CORE_CLONEDEF(dd,p06,l2,"Dr. Dude (PA-6 WPC)",1990,"Bally",wpc_a1_one,0)
+CORE_CLONEDEF(dd,p7,l2,"Dr. Dude (PA-7 WPC Prototype)",1990,"Bally",wpc_a1_one,0)
+CORE_CLONEDEF(dd,p06,l2,"Dr. Dude (PA-6 WPC Prototype)",1990,"Bally",wpc_a1_one,0)
 
 /*-----------------------
 / Simulation Definitions

@@ -473,10 +473,10 @@ static int index_datafile (struct tDatafileIndex **_index)
 										idx->offset = tell;
 										idx++;
 										count++;
-										/* done = 1;  Not done, as we must process other clones in list */
+										/* done = 1;  Not done, as we must process other clones in list, see below */
 
 									}
-									if (!done)
+									//if (!done) // see above
 									{
 										token = GetNextToken (&s, &tell);
 

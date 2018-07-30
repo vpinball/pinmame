@@ -66,13 +66,13 @@ CORE_GAMEDEFNV(agsoccer,"A.G. Soccer-Ball (R18u)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(agsocc07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsocc07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
-ALVGS_SOUNDROM11(       "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+ALVGS_SOUNDROM11(      "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
                        "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
 CORE_CLONEDEFNV(agsocc07,agsoccer,"A.G. Soccer-Ball (R07u)",1992,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
-/ A.G. Football (actually the same game as Soccer-Ball sold in Europe)
+/ A.G. Football (actually the same ROMs as Soccer-Ball sold in Europe)
 /-------------------------------------------------------------------*/
 INITGAME(agfootbl, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfootbl,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
@@ -83,7 +83,7 @@ CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Football (R18u)",1993,"Alvin G",mALVGS1,
 
 INITGAME(agfoot07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfoot07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
-ALVGS_SOUNDROM11(       "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+ALVGS_SOUNDROM11(      "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
                        "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
 CORE_CLONEDEFNV(agfoot07,agsoccer,"A.G. Football (R07u)",1992,"Alvin G",mALVGS1,0)
