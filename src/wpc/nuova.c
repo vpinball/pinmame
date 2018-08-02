@@ -8,13 +8,13 @@
   A few games use alpha displays, this is implemented in by35.c
 
   Issues/Todo:
-  Sound Board with 6803 CPU and DAC, some games also use an additional TMS5220C speech chip.
+  - Skill Flight schematics show an additional TMS5220C speech chip which is not used?!
+  - U-Boat 65 has an additional music board, no info available
 *******************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/i8051/i8051.h"
 #include "machine/6821pia.h"
-#include "sound/tms5220.h"
 #include "core.h"
 #include "sim.h"
 #include "sndbrd.h"
@@ -47,37 +47,9 @@ MEMORY_END
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 sndCmd[2];
-  UINT8 pia_a, pia_b;
-  int bank, LED, mute, enable, sndCount;
+  UINT8 sndCmd;
+  int bank, bank2, mute, mute2, enable, enable2;
 } locals;
-
-static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
-static WRITE_HANDLER(nuova_pia_a_w) { locals.pia_a = data; }
-static WRITE_HANDLER(nuova_pia_b_w) {
-  if (~data & 0x02) // write
-    tms5220_data_w(0, locals.pia_a);
-  if (~data & 0x01) // read
-    locals.pia_a = tms5220_status_r(0);
-  pia_set_input_ca2(2, 1);
-  locals.pia_b = data;
-}
-static READ_HANDLER(nuova_pia_cb1_r) {
-  return !tms5220_int_r();
-}
-static READ_HANDLER(nuova_pia_ca2_r) {
-  return !tms5220_ready_r();
-}
-static void nuova_irq(int state) {
-  cpu_set_irq_line(1, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
-static void nuova_5220Irq(int state) { pia_set_input_cb1(2, !state); }
-
-static const struct pia6821_interface nuova_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ nuova_pia_a_r, 0, PIA_UNUSED_VAL(1), nuova_pia_cb1_r, nuova_pia_ca2_r, PIA_UNUSED_VAL(0),
-  /*o: A/B,CA/B2       */ nuova_pia_a_w, nuova_pia_b_w, 0, 0,
-  /*irq: A/B           */ nuova_irq, nuova_irq
-}};
 
 void tx_cb(int data);
 int rx_cb(void);
@@ -85,12 +57,9 @@ int rx_cb(void);
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
-  pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia[0]);
-  tms5220_reset();
-  tms5220_set_variant(TMS5220_IS_5220C);
 
-  if (cpu_gettotalcpu() > 2) {
-    //Setup serial line call backs, needs to be set before CPU reset by design!
+  if (!_strnicmp(Machine->gamedrv->name, "uboat65", 7)) {
+    //Setup serial line callbacks, needs to be set before CPU reset by design!
     i8051_set_serial_tx_callback(tx_cb);
     i8051_set_serial_rx_callback(rx_cb);
   }
@@ -101,19 +70,31 @@ static void nuova_diag(int button) {
 }
 
 static WRITE_HANDLER(nuova_data_w) {
-  locals.sndCmd[locals.sndCount] = (locals.sndCmd[locals.sndCount] & 0x01) | ((~data & 0x0f) << 1);
-  locals.sndCount = 1 - locals.sndCount;
+  locals.sndCmd = data & 0x0f;
 }
 
 static WRITE_HANDLER(nuova_ctrl_w) {
-  locals.sndCmd[locals.sndCount] = (locals.sndCmd[locals.sndCount] & 0x1e) | (~data & 1);
-  cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
+  if (data & 1) {
+    cpu_boost_interleave(TIME_IN_USEC(4), TIME_IN_USEC(500));
+    cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
+    if (!_strnicmp(Machine->gamedrv->name, "f1gp", 4)) {
+      cpu_set_irq_line(2, M6803_TIN_LINE, PULSE_LINE);
+    }
+  }
 }
 
+// The Nuova Bell sound board needs two nybbles sent in perfect sync with the main CPU!
 static WRITE_HANDLER(nuova_man_w) {
-  locals.sndCmd[locals.sndCount] = data;
-  locals.sndCount = 1 - locals.sndCount;
-  if (locals.sndCount) cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
+  int i;
+  cpu_boost_interleave(TIME_IN_USEC(4), TIME_IN_USEC(500));
+  cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
+  if (!_strnicmp(Machine->gamedrv->name, "f1gp", 4)) {
+    cpu_set_irq_line(2, M6803_TIN_LINE, PULSE_LINE);
+  }
+  locals.sndCmd = data >> 4;
+  for (i = 0; i < 50; i++)
+    run_one_timeslice();
+  locals.sndCmd = data & 0x0f;
 }
 
 static WRITE_HANDLER(dac_w) {
@@ -126,35 +107,38 @@ static WRITE_HANDLER(enable_w) {
 }
 
 static WRITE_HANDLER(bank_w) {
+  static int lastBank;
   if (locals.enable) {
     locals.bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
-//  logerror("bank: %d\n", locals.bank);
     cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
+    if (locals.bank) {
+      if (locals.bank != lastBank)
+        logerror("bank:%02x\n", locals.bank);
+      lastBank = locals.bank;
+    }
     locals.mute = (data >> 6) & 1;
-    locals.LED = ~data >> 7;
-    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | (locals.LED << 1);
+    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x05) | ((~data >> 7) << 1);
   }
 }
 
 static READ_HANDLER(snd_cmd_r) {
-  UINT8 port2 = locals.sndCmd[locals.sndCount];
-  logerror("PORT2 read: %02x\n", port2);
-  locals.sndCount = 1 - locals.sndCount;
-  return port2;
+  return ((~locals.sndCmd & 0x07) << 1) | ((~locals.sndCmd & 0x08) >> 3);
 }
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0020, 0x007f, MRA_NOP },
   { 0x0080, 0x00ff, MRA_RAM },
-  { 0x4000, 0x4003, pia_r(2) },
+  { 0x0100, 0x7fff, MRA_NOP },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0020, 0x007f, MWA_NOP },
   { 0x0080, 0x00ff, MWA_RAM },
-  { 0x4000, 0x4003, pia_w(2) },
-  { 0xc000, 0xc000, bank_w },
+  { 0x0100, 0x7fff, MWA_NOP },
+  { 0x8000, 0xffff, bank_w },
 MEMORY_END
 
 static PORT_READ_START(snd_readport)
@@ -166,8 +150,7 @@ static PORT_WRITE_START(snd_writeport)
   { M6803_PORT2, M6803_PORT2, enable_w },
 PORT_END
 
-static struct DACinterface nuova_dacInt = { 1, { 50 }};
-static struct TMS5220interface nuova_tms5220Int = { 640000, 75, nuova_5220Irq };
+static struct DACinterface nuova_dacInt = { 1, { 30 }};
 
 /*-------------------
 / exported interface
@@ -188,7 +171,12 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
-  MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
+MACHINE_DRIVER_END
+
+// some games have a higher main CPU clock (soundboard needs data bits accurately clocked in)
+MACHINE_DRIVER_START(nuovaFast)
+  MDRV_IMPORT_FROM(nuova)
+  MDRV_CPU_REPLACE("mcpu", M6800, 1500000) // guessed, seems to work OK for all 3 games using it
 MACHINE_DRIVER_END
 
 // games below
@@ -378,6 +366,21 @@ CORE_GAMEDEFNV(darkshad,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 /*--------------------------------
 / Skill Flight
 /-------------------------------*/
+// uses non-inverted sound bits, same hardware otherwise (TMS speech chip not being used)
+static READ_HANDLER(snd_cmd_r_skflight) {
+  return ((locals.sndCmd & 0x07) << 1) | ((locals.sndCmd & 0x08) >> 3);
+}
+
+static PORT_READ_START(snd_readport_skflight)
+  { M6803_PORT2, M6803_PORT2, snd_cmd_r_skflight },
+PORT_END
+
+MACHINE_DRIVER_START(skflight)
+  MDRV_IMPORT_FROM(nuova)
+  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_PORTS(snd_readport_skflight, snd_writeport)
+MACHINE_DRIVER_END
+
 ROM_START(skflight)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("game_u7.64", 0xe000, 0x2000, CRC(fe5001eb) SHA1(f7d56d484141ba8ec82664b6aebbf3a683547d20))
@@ -386,22 +389,18 @@ ROM_START(skflight)
     ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x1000)
     ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x1000)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
+  NORMALREGION(0x20000, REGION_SOUND1)
     ROM_LOAD("snd_u3.256", 0x0000, 0x8000, CRC(43424fb1) SHA1(428d2f7444cd71b6c49c04749b42263e3c185856))
       ROM_RELOAD(0x10000, 0x8000)
-      ROM_RELOAD(0x20000, 0x8000)
-      ROM_RELOAD(0x30000, 0x8000)
     ROM_LOAD("snd_u4.256", 0x8000, 0x8000, CRC(10378feb) SHA1(5da2b9c530167c80b9d411da159e4b6e95b76647))
       ROM_RELOAD(0x18000, 0x8000)
-      ROM_RELOAD(0x28000, 0x8000)
-      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(skflight, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", skflight, 0)
 
 /*--------------------------------
 / Cobra
@@ -414,22 +413,18 @@ ROM_START(cobra)
     ROM_COPY(REGION_CPU1, 0xe000, 0x9000,0x1000)
     ROM_COPY(REGION_CPU1, 0xf000, 0xd000,0x1000)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
+  NORMALREGION(0x20000, REGION_SOUND1)
     ROM_LOAD("snd_u8.256", 0x00000,0x8000, CRC(cdf2a28d) SHA1(d4969370109b4c7f31f48a3ebd8925268caf9c44))
-      ROM_RELOAD(0x20000, 0x8000)
     ROM_LOAD("snd_u9.256", 0x08000,0x8000, CRC(08bd0db9) SHA1(af851b8c993649b61645a414459000c206516bec))
-      ROM_RELOAD(0x28000, 0x8000)
     ROM_LOAD("snd_u10.256",0x10000,0x8000, CRC(634bc64c) SHA1(8389fda08ee7bf0e5002153cec22e219bf786993))
-      ROM_RELOAD(0x30000, 0x8000)
     ROM_LOAD("snd_u11.256",0x18000,0x8000, CRC(d4da383c) SHA1(032a4a425936d5c822fba6e46483f03a87c1a6ec))
-      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(cobra, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuovaFast, 0)
 
 /*--------------------------------
 / Future Queen
@@ -446,22 +441,18 @@ ROM_START(futrquen)
   ROM_COPY(REGION_CPU1, 0xe800, 0xd000,0x0800)
   ROM_COPY(REGION_CPU1, 0xf800, 0xd800,0x0800)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
+  NORMALREGION(0x20000, REGION_SOUND1)
     ROM_LOAD("snd_u8.bin", 0x00000,0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
-      ROM_RELOAD(0x20000, 0x8000)
     ROM_LOAD("snd_u9.bin", 0x08000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
-      ROM_RELOAD(0x28000, 0x8000)
     ROM_LOAD("snd_u10.bin",0x10000,0x8000, CRC(70f440bc) SHA1(9fa4d33cc6174ce8f43f030487171bfbacf65537))
-      ROM_RELOAD(0x30000, 0x8000)
     ROM_LOAD("snd_u11.bin",0x18000,0x8000, CRC(71d98d17) SHA1(9575b80a91a67b1644e909f70d364e0a75f73b02))
-      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(futrquen, 2) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, 0)
 
 /*--------------------------------
 / F1 Grand Prix
@@ -484,6 +475,75 @@ CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, GAME_I
 // Check - Data @ 0xD000 = 0xD5 (found @ 3000) (A15->A13, A14=0)
 // Check - Data @ 0xF000 = 0xFA (found @ 7000) (A15->A13, A12->A14, A14->A12)
 
+// gv 08/02/18: f1gp uses two complete soundboards, one for fx and one for music!
+
+static WRITE_HANDLER(bank_w_f1gp) {
+  static int lastBank;
+  if (locals.enable2) {
+    locals.bank2 = core_BitColToNum((~data & 0x0f) ^ 0x01);
+    cpu_setbank(2, memory_region(REGION_SOUND2) + 0x8000 * locals.bank2);
+    if (locals.bank2) {
+      if (locals.bank2 != lastBank)
+        logerror("bank2:%02x\n", locals.bank2);
+      lastBank = locals.bank2;
+    }
+    locals.mute2 = (data >> 6) & 1;
+    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x03) | ((~data >> 7) << 2);
+  }
+}
+
+static WRITE_HANDLER(dac_w_f1gp) {
+  if (!locals.mute2) DAC_1_data_w(0, data);
+}
+
+static WRITE_HANDLER(enable_w_f1gp) {
+  locals.enable2 = data & 0x10 ? 0 : 1;
+  logerror("enable2:%d\n", locals.enable2);
+}
+
+static MEMORY_READ_START(snd_readmem_f1gp)
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0020, 0x007f, MRA_NOP },
+  { 0x0080, 0x00ff, MRA_RAM },
+  { 0x0100, 0x7fff, MRA_NOP },
+  { 0x8000, 0xffff, MRA_BANKNO(2) },
+MEMORY_END
+
+static MEMORY_WRITE_START(snd_writemem_f1gp)
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0020, 0x007f, MWA_NOP },
+  { 0x0080, 0x00ff, MWA_RAM },
+  { 0x0100, 0x7fff, MWA_NOP },
+  { 0x8000, 0xffff, bank_w_f1gp },
+MEMORY_END
+
+static PORT_WRITE_START(snd_writeport_f1gp)
+  { M6803_PORT1, M6803_PORT1, dac_w_f1gp },
+  { M6803_PORT2, M6803_PORT2, enable_w_f1gp },
+PORT_END
+
+static struct DACinterface nuova_dacInt2 = { 2, { 30, 50 }};
+
+MACHINE_DRIVER_START(f1gp)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu", M6800, 1500000)
+  MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
+  MDRV_NVRAM_HANDLER(nuova)
+  MDRV_DIAGNOSTIC_LEDH(3)
+
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
+  MDRV_CPU_PORTS(snd_readport, snd_writeport)
+
+  MDRV_CPU_ADD_TAG("scpu2", M6803, 3579545/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem_f1gp, snd_writemem_f1gp)
+  MDRV_CPU_PORTS(snd_readport, snd_writeport_f1gp)
+
+  MDRV_SOUND_ADD(DAC, nuova_dacInt2)
+MACHINE_DRIVER_END
+
 ROM_START(f1gp)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("cpu_u7", 0x8000, 0x8000, CRC(2287dea1) SHA1(5438752bf63aadaa6b6d71bbf56a72d8b67b545a))
@@ -494,22 +554,26 @@ ROM_START(f1gp)
   ROM_COPY(REGION_CPU1, 0xb000, 0xd000,0x1000)
   ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
-    ROM_LOAD("snd_u8a", 0x20000,0x8000, CRC(3a2af90b) SHA1(f6eeae74b3bfb1cfd9235c5214f7c029e0ad14d6))
-    ROM_LOAD("snd_u8b", 0x00000,0x8000, CRC(14cddb29) SHA1(667b54174ad5dd8aa45037574916ecb4ee996a94))
-    ROM_LOAD("snd_u9a", 0x28000,0x8000, CRC(681ee99c) SHA1(955cd782073a1ce0be7a427c236d47fcb9cccd20))
-    ROM_LOAD("snd_u9b", 0x08000,0x8000, CRC(726920b5) SHA1(002e7a072a173836c89746cceca7e5d2ac26356d))
-    ROM_LOAD("snd_u10a",0x30000,0x8000, CRC(4d3fc9bb) SHA1(d43cd134f399e128a678b86e57b1917fad70df76))
-    ROM_LOAD("snd_u10b",0x10000,0x8000, CRC(9de359fb) SHA1(ce75a78dc4ed747421a386d172fa0f8a1369e860))
-    ROM_LOAD("snd_u11a",0x38000,0x8000, CRC(884dc754) SHA1(b121476ea621eae7a7ba0b9a1b5e87051e1e9e3d))
-    ROM_LOAD("snd_u11b",0x18000,0x8000, CRC(2394b498) SHA1(bf0884a6556a27791e7e801051be5975dd6b95c4))
+  NORMALREGION(0x20000, REGION_SOUND1)
+    ROM_LOAD("snd_u8a", 0x00000,0x8000, CRC(3a2af90b) SHA1(f6eeae74b3bfb1cfd9235c5214f7c029e0ad14d6))
+    ROM_LOAD("snd_u9a", 0x08000,0x8000, CRC(681ee99c) SHA1(955cd782073a1ce0be7a427c236d47fcb9cccd20))
+    ROM_LOAD("snd_u10a",0x10000,0x8000, CRC(4d3fc9bb) SHA1(d43cd134f399e128a678b86e57b1917fad70df76))
+    ROM_LOAD("snd_u11a",0x18000,0x8000, CRC(884dc754) SHA1(b121476ea621eae7a7ba0b9a1b5e87051e1e9e3d))
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+
+  NORMALREGION(0x20000, REGION_SOUND2)
+    ROM_LOAD("snd_u8b", 0x00000,0x8000, CRC(14cddb29) SHA1(667b54174ad5dd8aa45037574916ecb4ee996a94))
+    ROM_LOAD("snd_u9b", 0x08000,0x8000, CRC(726920b5) SHA1(002e7a072a173836c89746cceca7e5d2ac26356d))
+    ROM_LOAD("snd_u10b",0x10000,0x8000, CRC(9de359fb) SHA1(ce75a78dc4ed747421a386d172fa0f8a1369e860))
+    ROM_LOAD("snd_u11b",0x18000,0x8000, CRC(2394b498) SHA1(bf0884a6556a27791e7e801051be5975dd6b95c4))
+  NORMALREGION(0x10000, REGION_CPU3)
+  ROM_COPY(REGION_SOUND2, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(f1gp, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, 0)
 
 /*--------------------------------
 / Top Pin
@@ -526,22 +590,18 @@ ROM_START(toppin)
   ROM_COPY(REGION_CPU1, 0xe800, 0xd000,0x0800)
   ROM_COPY(REGION_CPU1, 0xf800, 0xd800,0x0800)
 
-  NORMALREGION(0x40000, REGION_SOUND1)
+  NORMALREGION(0x20000, REGION_SOUND1)
     ROM_LOAD("snd_u8.bin", 0x00000,0x8000, CRC(2cb9c931) SHA1(2537976c890ceff857b9aaf204c48ab014aad94e))
-      ROM_RELOAD(0x20000, 0x8000)
     ROM_LOAD("snd_u9.bin", 0x08000,0x8000, CRC(72690344) SHA1(c2a13aa59f0c605eb616256cd288b79cceca003b))
-      ROM_RELOAD(0x28000, 0x8000)
     ROM_LOAD("snd_u10.bin",0x10000,0x8000, CRC(bca9a805) SHA1(0deb3172b5c8fc91c4b02b21b1e3794ed7adef13))
-      ROM_RELOAD(0x30000, 0x8000)
     ROM_LOAD("snd_u11.bin",0x18000,0x8000, CRC(1814a50d) SHA1(6fe22e774fa90725d0db9f1020bad88bae0ef85c))
-      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAMENB(toppin,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_NUOVA,BY35GD_NOSOUNDE)
 BY35_INPUT_PORTS_START(toppin, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, 0)
 
 /*--------------------------------
 / U-Boat 65 - additional "CSC 387.1" music board with 8032 MCU
@@ -629,7 +689,7 @@ static INTERRUPT_GEN(odd) {
 }
 
 MACHINE_DRIVER_START(uboat)
-  MDRV_IMPORT_FROM(nuova)
+  MDRV_IMPORT_FROM(nuovaFast)
 
   MDRV_CPU_ADD_TAG("scpu2", I8752, 12000000) // I8032 actually (no internal ROM, 256 bytes internal RAM)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
