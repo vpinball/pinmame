@@ -135,10 +135,10 @@ MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0020, 0x007f, MWA_NOP },
   { 0x0080, 0x00ff, MWA_RAM },
-  { 0x0100, 0x7fff, MWA_NOP },
-  { 0x8000, 0xffff, bank_w },
+  { 0x8000, 0xbfff, MWA_NOP },
+  { 0xc000, 0xc000, bank_w },
+  { 0xc001, 0xffff, MWA_NOP },
 MEMORY_END
 
 static PORT_READ_START(snd_readport)
@@ -503,17 +503,13 @@ static WRITE_HANDLER(enable_w_f1gp) {
 
 static MEMORY_READ_START(snd_readmem_f1gp)
   { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x0020, 0x007f, MRA_NOP },
   { 0x0080, 0x00ff, MRA_RAM },
-  { 0x0100, 0x7fff, MRA_NOP },
   { 0x8000, 0xffff, MRA_BANKNO(2) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem_f1gp)
   { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0020, 0x007f, MWA_NOP },
   { 0x0080, 0x00ff, MWA_RAM },
-  { 0x0100, 0x7fff, MWA_NOP },
   { 0x8000, 0xffff, bank_w_f1gp },
 MEMORY_END
 
