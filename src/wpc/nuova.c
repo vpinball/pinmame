@@ -176,7 +176,7 @@ MACHINE_DRIVER_END
 // some games have a higher main CPU clock (soundboard needs data bits accurately clocked in)
 MACHINE_DRIVER_START(nuovaFast)
   MDRV_IMPORT_FROM(nuova)
-  MDRV_CPU_REPLACE("mcpu", M6800, 1500000) // guessed, seems to work OK for all 3 games using it
+  MDRV_CPU_REPLACE("mcpu", M6800, 5000000/4) // guessed, seems to work OK for all 3 games using it
 MACHINE_DRIVER_END
 
 // games below
@@ -522,7 +522,7 @@ static struct DACinterface nuova_dacInt2 = { 2, { 30, 50 }};
 
 MACHINE_DRIVER_START(f1gp)
   MDRV_IMPORT_FROM(by35)
-  MDRV_CPU_REPLACE("mcpu", M6800, 1500000)
+  MDRV_CPU_REPLACE("mcpu", M6800, 5000000/4) // faster clock needed, see above
   MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(3)
