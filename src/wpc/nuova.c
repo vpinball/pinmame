@@ -88,6 +88,7 @@ static void nuova_init(struct sndbrdData *brdData) {
   locals.brdData = *brdData;
 
   if (!_strnicmp(Machine->gamedrv->name, "skflight", 8)) {
+    memset(memory_region(REGION_CPU2), 0xff, 0x100);
     pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia);
     tms5220_reset();
     tms5220_set_variant(TMS5220_IS_5220C);
@@ -452,7 +453,6 @@ ROM_START(skflight)
     ROM_LOAD("snd_u3.256", 0x0000, 0x8000, CRC(43424fb1) SHA1(428d2f7444cd71b6c49c04749b42263e3c185856))
     ROM_LOAD("snd_u4.256", 0x8000, 0x8000, CRC(10378feb) SHA1(5da2b9c530167c80b9d411da159e4b6e95b76647))
   NORMALREGION(0x10000, REGION_CPU2)
-  ROM_COPY(REGION_SOUND1, 0x8000, 0x0000,0x8000)
   ROM_COPY(REGION_SOUND1, 0x8000, 0x8000,0x8000)
 ROM_END
 
