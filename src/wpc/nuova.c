@@ -404,7 +404,6 @@ static READ_HANDLER(snd_cmd_r_skflight) {
 static WRITE_HANDLER(enable_w_skflight) {
   locals.bank = data & 0x10 ? 0 : 1;
   cpu_setbank(1, memory_region(REGION_SOUND1) + (locals.bank ? 0x8000 : 0));
-  if (data & 1) cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
 }
 
 static MEMORY_READ_START(snd_readmem_skflight)
@@ -453,6 +452,7 @@ ROM_START(skflight)
     ROM_LOAD("snd_u3.256", 0x0000, 0x8000, CRC(43424fb1) SHA1(428d2f7444cd71b6c49c04749b42263e3c185856))
     ROM_LOAD("snd_u4.256", 0x8000, 0x8000, CRC(10378feb) SHA1(5da2b9c530167c80b9d411da159e4b6e95b76647))
   NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x8000, 0x0000,0x8000)
   ROM_COPY(REGION_SOUND1, 0x8000, 0x8000,0x8000)
 ROM_END
 
