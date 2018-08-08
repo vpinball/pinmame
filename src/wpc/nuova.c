@@ -15,6 +15,7 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/i8051/i8051.h"
 #include "machine/6821pia.h"
+#include "sound/tms5220.h"
 #include "core.h"
 #include "sim.h"
 #include "sndbrd.h"
@@ -48,8 +49,36 @@ MEMORY_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
+  UINT8 pia_a, pia_b;
   int bank, bank2, mute, mute2, enable, enable2;
 } locals;
+
+static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
+static WRITE_HANDLER(nuova_pia_a_w) { locals.pia_a = data; }
+static WRITE_HANDLER(nuova_pia_b_w) {
+  if (~data & 0x02) // write
+    tms5220_data_w(0, locals.pia_a);
+  if (~data & 0x01) // read
+    locals.pia_a = tms5220_status_r(0);
+  pia_set_input_ca2(2, 1);
+  locals.pia_b = data;
+}
+static READ_HANDLER(nuova_pia_cb1_r) {
+  return !tms5220_int_r();
+}
+static READ_HANDLER(nuova_pia_ca2_r) {
+  return !tms5220_ready_r();
+}
+static void nuova_irq(int state) {
+  cpu_set_irq_line(1, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+static void nuova_5220Irq(int state) { pia_set_input_cb1(2, !state); }
+
+static const struct pia6821_interface nuova_pia = {
+  /*i: A/B,CA/B1,CA/B2 */ nuova_pia_a_r, 0, PIA_UNUSED_VAL(1), nuova_pia_cb1_r, nuova_pia_ca2_r, PIA_UNUSED_VAL(0),
+  /*o: A/B,CA/B2       */ nuova_pia_a_w, nuova_pia_b_w, 0, 0,
+  /*irq: A/B           */ nuova_irq, nuova_irq
+};
 
 void tx_cb(int data);
 int rx_cb(void);
@@ -57,6 +86,12 @@ int rx_cb(void);
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
+
+  if (!_strnicmp(Machine->gamedrv->name, "skflight", 8)) {
+    pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia);
+    tms5220_reset();
+    tms5220_set_variant(TMS5220_IS_5220C);
+  }
 
   if (!_strnicmp(Machine->gamedrv->name, "uboat65", 7)) {
     //Setup serial line callbacks, needs to be set before CPU reset by design!
@@ -127,18 +162,14 @@ static READ_HANDLER(snd_cmd_r) {
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x0020, 0x007f, MRA_NOP },
   { 0x0080, 0x00ff, MRA_RAM },
-  { 0x0100, 0x7fff, MRA_NOP },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0080, 0x00ff, MWA_RAM },
-  { 0x8000, 0xbfff, MWA_NOP },
-  { 0xc000, 0xc000, bank_w },
-  { 0xc001, 0xffff, MWA_NOP },
+  { 0x8000, 0xffff, bank_w },
 MEMORY_END
 
 static PORT_READ_START(snd_readport)
@@ -366,19 +397,48 @@ CORE_GAMEDEFNV(darkshad,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 /*--------------------------------
 / Skill Flight
 /-------------------------------*/
-// uses non-inverted sound bits, same hardware otherwise (TMS speech chip not being used)
 static READ_HANDLER(snd_cmd_r_skflight) {
-  return ((locals.sndCmd & 0x07) << 1) | ((locals.sndCmd & 0x08) >> 3);
+  return ((locals.sndCmd & 0x0f) << 1) | ((locals.sndCmd & 0x10) >> 4);
 }
+
+static WRITE_HANDLER(enable_w_skflight) {
+  locals.bank = data & 0x10 ? 0 : 1;
+  cpu_setbank(1, memory_region(REGION_SOUND1) + (locals.bank ? 0x8000 : 0));
+  if (data & 1) cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
+}
+
+static MEMORY_READ_START(snd_readmem_skflight)
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0000, 0x00ff, MRA_RAM },
+  { 0x4000, 0x4003, pia_r(2) },
+  { 0x8000, 0xffff, MRA_BANKNO(1) },
+MEMORY_END
+
+static MEMORY_WRITE_START(snd_writemem_skflight)
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0000, 0x00ff, MWA_RAM },
+  { 0x4000, 0x4003, pia_w(2) },
+  { 0x8000, 0xffff, MWA_NOP },
+MEMORY_END
 
 static PORT_READ_START(snd_readport_skflight)
   { M6803_PORT2, M6803_PORT2, snd_cmd_r_skflight },
 PORT_END
 
+static PORT_WRITE_START(snd_writeport_skflight)
+  { M6803_PORT1, M6803_PORT1, dac_w },
+  { M6803_PORT2, M6803_PORT2, enable_w_skflight },
+PORT_END
+
+static struct TMS5220interface skflight_tms5220Int = { 640000, 75 };
+
 MACHINE_DRIVER_START(skflight)
   MDRV_IMPORT_FROM(nuova)
   MDRV_CPU_MODIFY("scpu")
-  MDRV_CPU_PORTS(snd_readport_skflight, snd_writeport)
+  MDRV_CPU_MEMORY(snd_readmem_skflight, snd_writemem_skflight)
+  MDRV_CPU_PORTS(snd_readport_skflight, snd_writeport_skflight)
+
+  MDRV_SOUND_ADD(TMS5220, skflight_tms5220Int)
 MACHINE_DRIVER_END
 
 ROM_START(skflight)
@@ -389,13 +449,11 @@ ROM_START(skflight)
     ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x1000)
     ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x1000)
 
-  NORMALREGION(0x20000, REGION_SOUND1)
+  NORMALREGION(0x10000, REGION_SOUND1)
     ROM_LOAD("snd_u3.256", 0x0000, 0x8000, CRC(43424fb1) SHA1(428d2f7444cd71b6c49c04749b42263e3c185856))
-      ROM_RELOAD(0x10000, 0x8000)
     ROM_LOAD("snd_u4.256", 0x8000, 0x8000, CRC(10378feb) SHA1(5da2b9c530167c80b9d411da159e4b6e95b76647))
-      ROM_RELOAD(0x18000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
-  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+  ROM_COPY(REGION_SOUND1, 0x8000, 0x8000,0x8000)
 ROM_END
 
 INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
