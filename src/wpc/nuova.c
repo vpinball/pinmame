@@ -590,12 +590,12 @@ MACHINE_DRIVER_START(f1gp)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(3)
 
-  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu", M6803, 1000000) // faster clock to match sound samples
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
 
-  MDRV_CPU_ADD_TAG("scpu2", M6803, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu2", M6803, 1000000) // faster clock to match sound samples
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem_f1gp, snd_writemem_f1gp)
   MDRV_CPU_PORTS(snd_readport, snd_writeport_f1gp)
@@ -662,7 +662,7 @@ MEMORY_END
 
 MACHINE_DRIVER_START(toppin)
   MDRV_IMPORT_FROM(nuova)
-  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_REPLACE("scpu", M6803, 1000000) // faster clock to match sound samples
   MDRV_CPU_MEMORY(snd_readmem_toppin, snd_writemem_toppin)
 MACHINE_DRIVER_END
 
@@ -778,6 +778,7 @@ static INTERRUPT_GEN(odd) {
 
 MACHINE_DRIVER_START(uboat)
   MDRV_IMPORT_FROM(nuovaFast)
+  MDRV_CPU_REPLACE("scpu", M6803, 1000000) // faster clock to match sound samples
 
   MDRV_CPU_ADD_TAG("scpu2", I8752, 12000000) // I8032 actually (no internal ROM, 256 bytes internal RAM)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
