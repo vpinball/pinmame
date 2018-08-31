@@ -540,8 +540,37 @@ static void bop_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls)
 /*------------------
 /  Handle Mechanics
 /-------------------*/
-static void bop_handleMech(int mech) {
 
+extern int g_fHandleMechanics;
+
+static void bop_handleMech(int mech) {
+	// This is a bit of a hack, but seems to be the best way to keep this localized
+	// to bop.c and keep things fully backwards compatible..   We need a way for a table 
+	// to let VPinmame know that we want to reset the internal NVRAM head position value to 0, 
+	// at table startup.
+	//
+	// We cannot do this in init_bop, NVRAM hasn't loaded yet. 
+    // However we may NOT want to use the built in mech handling (the below code would have 
+	// been simpler as an actual mech and doesn't relay the motion).   
+	//
+	// So if g_fHandleMechanics is -1, reset the head position to 0,
+	// and then disable the internal mech handling.   If it is -2, then continue using the mech handling
+	// after reset. 
+
+	if (g_fHandleMechanics < 0)
+	{
+		if (_stricmp(Machine->gamedrv->name, "bop_l7") == 0)
+		{
+			// Reset Bride of Pinbot face to 0. 
+			wpc_ram[0x1fc9] = 0x01;
+		}
+		if (g_fHandleMechanics == -1)
+		{
+			g_fHandleMechanics = 0;
+			return;
+		}
+		g_fHandleMechanics = 1;
+	}
   /* ----------------------------------------------
      --	Head Position - SH*T, this was a PAIN!!! --
      --  BTW: Thanks to The Doc for giving help  --

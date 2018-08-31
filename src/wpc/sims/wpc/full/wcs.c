@@ -270,11 +270,11 @@ static int wcs_getSol(int solNo) {
 }
 
 static mech_tInitData wcs_goalieMech = {
-  sGoalieMot, 0, MECH_LINEAR|MECH_REVERSE|MECH_ONESOL, WCS_GOALIETIME, WCS_GOALIETIME, {{0}}
+  sGoalieMot, 0, MECH_LINEAR|MECH_REVERSE|MECH_ONESOL, WCS_GOALIETIME, WCS_GOALIETIME, {{0}}, 0
 };
 
 static mech_tInitData wcs_ballMech = {
-  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(2), 4, 4, {{0}}
+  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(2), 4, 4, {{0}}, 0
 };
 
 static void wcs_handleMech(int mech) {

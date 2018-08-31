@@ -215,6 +215,7 @@ void vp_setMechData(int para, int data) {
   else if (para == 5) locals.md.type   = (locals.md.type & 0xfffffe00) | data;
   else if (para == 6) locals.md.type   = (locals.md.type & 0xff0001ff) | (data<<9);
   else if (para == 7) locals.md.type   = (locals.md.type & 0x00ffffff) | (data<<24);
+  else if (para == 8) locals.md.initialpos = data + 1;
   else if (para % 10 == 0) locals.md.sw[para/10-1].swNo     = data;
   else if (para % 10 == 1) locals.md.sw[para/10-1].startPos = data;
   else if (para % 10 == 2) locals.md.sw[para/10-1].endPos   = data;

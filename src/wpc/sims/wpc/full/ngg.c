@@ -660,7 +660,7 @@ static mech_tInitData mechnggWheel = {
 	{ swOuterWheel,52 * NGG_WHEELRES,53 * NGG_WHEELRES },
 	{ swOuterWheel, 56 * NGG_WHEELRES,57 * NGG_WHEELRES },
 	{ swOuterWheel, 60 * NGG_WHEELRES, 61 * NGG_WHEELRES }
-	}
+	}, 0
 };
 
 static WRITE_HANDLER(ngg_wpc_w) {

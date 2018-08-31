@@ -674,7 +674,7 @@ static void init_t2(void) {
   static mech_tSwData gunSw[] = {{swGunHome, 0, 3},{swGunMark, 75, 85},{0}};
   core_gameData = &t2GameData;
   mech_addLong(0, sGunMotor, 0, MECH_NONLINEAR|MECH_REVERSE|MECH_ONESOL,
-               200,200, gunSw);
+               200,200, gunSw,0);
 }
 
 /***************************************************************************************************

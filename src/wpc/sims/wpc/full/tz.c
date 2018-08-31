@@ -601,7 +601,8 @@ static mech_tInitData mechClock = {
    {swClockM0,  0,  2,60}, //  0 min
    {swClockM15,15, 17,60}, // 15 min
    {swClockM30,30, 32,60}, // 30 min
-   {swClockM45,45, 47,60}} // 45 min
+   {swClockM45,45, 47,60}}, // 45 min
+   0
 };
 
 static void init_tz(void) {

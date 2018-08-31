@@ -455,6 +455,7 @@ static core_tGameData ssGameData = {
     /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
     { swStart, swTilt, swSlamTilt, swCoinDoor, 0},
   }
+  ,0
 };
 
 static mech_tInitData ss_wheelMech = {
