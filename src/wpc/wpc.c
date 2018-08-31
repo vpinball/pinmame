@@ -135,7 +135,7 @@ static struct {
 
 /*-- pointers --*/
 static mame_file *wpc_printfile = NULL;
-static UINT8 *wpc_ram = NULL;
+UINT8 *wpc_ram = NULL;
 
 /*---------------------------
 /  Memory map for CPU board

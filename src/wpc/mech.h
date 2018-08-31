@@ -47,12 +47,13 @@ typedef struct {
   int type;
   int length, steps;
   mech_tSwData sw[20];
+  int initialpos; 
 } mech_tInitData, *mech_ptInitData;
 
 extern void mech_init(void);
 extern void mech_emuInit(void);
 extern void mech_emuExit(void);
-extern void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[]);
+extern void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[], int initialpos);
 extern void mech_add(int mechNo, mech_ptInitData id);
 extern int  mech_getPos(int mechNo);
 extern int  mech_getSpeed(int mechNo);

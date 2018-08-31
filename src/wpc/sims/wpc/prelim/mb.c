@@ -349,7 +349,7 @@ static mech_tInitData mb_mech[] = {{
 },{
   41,42,MECH_LINEAR | MECH_STOPEND | MECH_TWODIRSOL, DRACTIME, DRACTIME,
   {{78, 0, 5},{77, 18, 23},{76,36,51},{75,64,69},{74,85,89}}
-}};
+},0};
 
 static void mb_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Bank: %3d", mech_getPos(0));

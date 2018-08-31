@@ -349,7 +349,7 @@ static core_tGameData tsGameData = {
 #define TS_MINIPFPOS 20
 static mech_tInitData ts_paddleMech = {
   19, 20, MECH_LINEAR|MECH_STOPEND|MECH_TWODIRSOL, TS_MINIPFPOS+1, TS_MINIPFPOS-1,
-  {{37, 0, 0},{38, TS_MINIPFPOS-2, TS_MINIPFPOS-2}}
+  {{37, 0, 0},{38, TS_MINIPFPOS-2, TS_MINIPFPOS-2},0}
 };
 
 static void ts_handleMech(int mech) {
