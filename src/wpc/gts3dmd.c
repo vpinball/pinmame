@@ -24,6 +24,9 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 //static int level5[19] = { 0, 3, 3, 4, 5, 5, 5, 7, 8, 9, 11, 11, 11, 12, 13, 14, 15, 15, 15 };
 //static int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
 
+extern UINT8 *g_raw_gtswpc_dmd;
+extern UINT8 g_raw_gtswpc_dmdframes;
+
 //DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   tDMDDot dotCol;
@@ -72,6 +75,8 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
 
+  g_raw_gtswpc_dmdframes = frames;
+
 #ifdef DEBUGSWAP
   char temp[250];
   sprintf(temp,"location=%04x   %04x",0x1000+(crtc6845_start_addr>>2), crtc6845_start_addr);
@@ -82,9 +87,9 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
   memset(dotCol,0,sizeof(tDMDDot));
   for (ii = 0; ii < frames; ii++) {
-    for (jj = 1; jj <= 32; jj++) {           // 32 lines
+    for (jj = 1; jj <= 32; jj++) {          // 32 lines
       UINT8 *line = &dotCol[jj][0];
-      for (kk = 0; kk < 16; kk++) {      // 16 columns/line
+      for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
         for (ll = 0; ll < 8; ll++)          // 8 pixels/column
           { (*line++) += (data>>7); data <<= 1; }
@@ -92,10 +97,12 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
     }
   }
 
+  memcpy(g_raw_gtswpc_dmd, DMDFrames, g_raw_gtswpc_dmdframes * 0x200);
+
   // detect special case for some otherwise flickering frames
   if (frames == GTS3DMD_FRAMES_4C_a) {
 	  for (ii = 1; ii <= 32; ii++)               // 32 lines
-		  for (jj = 0; jj < 128; jj++) {		// 128 pixels/line
+		  for (jj = 0; jj < 128; jj++) {         // 128 pixels/line
 			  if (dotCol[ii][jj] == 4){
 				  level = level4_a2;
 				  break;
@@ -103,7 +110,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
 		  }
   }
   
-  for (ii = 1; ii <= 32; ii++)               // 32 lines
+  for (ii = 1; ii <= 32; ii++)              // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
       dotCol[ii][jj] = level[data];
