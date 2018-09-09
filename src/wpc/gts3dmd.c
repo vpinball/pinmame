@@ -24,8 +24,10 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 //static int level5[19] = { 0, 3, 3, 4, 5, 5, 5, 7, 8, 9, 11, 11, 11, 12, 13, 14, 15, 15, 15 };
 //static int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
 
+#ifdef VPINMAME
 extern UINT8  g_raw_gtswpc_dmd[];
 extern UINT32 g_raw_gtswpc_dmdframes;
+#endif
 
 //DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
@@ -75,7 +77,9 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
 
+#ifdef VPINMAME
   g_raw_gtswpc_dmdframes = frames;
+#endif
 
 #ifdef DEBUGSWAP
   char temp[250];
@@ -97,7 +101,9 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
     }
   }
 
+#ifdef VPINMAME
   memcpy(g_raw_gtswpc_dmd, DMDFrames, g_raw_gtswpc_dmdframes * 0x200);
+#endif
 
   // detect special case for some otherwise flickering frames
   if (frames == GTS3DMD_FRAMES_4C_a) {
