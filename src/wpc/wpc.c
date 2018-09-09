@@ -84,8 +84,10 @@ static SWITCH_UPDATE(wpc);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 
+#ifdef VPINMAME
 extern UINT8  g_raw_gtswpc_dmd[];
 extern UINT32 g_raw_gtswpc_dmdframes;
+#endif
 
 const struct core_dispLayout wpc_dispAlpha[] = {
   {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},
@@ -1208,7 +1210,9 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   tDMDDot dotCol;
   int ii,jj,kk;
 
+#ifdef VPINMAME
   g_raw_gtswpc_dmdframes = DMD_FRAMES;
+#endif
 
   /* Create a temporary buffer with all pixels */
   for (kk = 0, ii = 1; ii < 33; ii++) {
@@ -1223,9 +1227,11 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
                                     (dmdlocals.DMDFrames[1][kk] & 0xaa) +
                                     (dmdlocals.DMDFrames[2][kk] & 0xaa));
 
+#ifdef VPINMAME
       g_raw_gtswpc_dmd[kk        ] = dmdlocals.DMDFrames[0][kk];
       g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
       g_raw_gtswpc_dmd[kk + 0x400] = dmdlocals.DMDFrames[2][kk];
+#endif
 
       *line++ = (intens1)    & 0x03;
       *line++ = (intens2>>1) & 0x03;
