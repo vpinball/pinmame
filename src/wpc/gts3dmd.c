@@ -24,8 +24,8 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 //static int level5[19] = { 0, 3, 3, 4, 5, 5, 5, 7, 8, 9, 11, 11, 11, 12, 13, 14, 15, 15, 15 };
 //static int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
 
-extern UINT8 *g_raw_gtswpc_dmd;
-extern UINT8 g_raw_gtswpc_dmdframes;
+extern UINT8  g_raw_gtswpc_dmd[];
+extern UINT32 g_raw_gtswpc_dmdframes;
 
 //DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
