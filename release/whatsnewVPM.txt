@@ -10,6 +10,8 @@ Version 3.2 (X X, 2018) - ""
 
 - Allow window position (x,y) to be less than 0 in cabinet mode, so primary monitor can be put "below" the DMD monitor
 
+- Add additional .raw/non-averaged file output if dumping DMD frames from GTS3 and WPC machines
+
 Version 3.1 (July 29th, 2018) - "Flippin' fast"
 ------------------------------------------------------------------------------
 - Switch to VS2015 for the release builds (tested in the wild and seemingly faster, thanks to CarnyPriest)
