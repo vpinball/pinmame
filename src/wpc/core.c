@@ -21,6 +21,10 @@
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
+ #include "gts3dmd.h"
+ UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
+ UINT8  g_raw_gtswpc_dmdframes = 0;
+
  UINT32 g_needs_DMD_update = 1;
 #endif
 
@@ -891,10 +895,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
 			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
 			  {
-				  FILE *f;
+				  FILE *f,*fr = NULL;
 				  char *ptr;
 				  char* DumpFilename = (char*)malloc(MAX_PATH);
+				  char* RawFilename = (char*)malloc(MAX_PATH);
 
+				  const DWORD tick = GetTickCount();
 #ifndef _WIN64
 				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
@@ -904,12 +910,41 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  ptr = strrchr(DumpFilename, '\\');
 				  strcpy_s(ptr + 1, 11, "DmdDump\\");
 				  strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
+				  strcpy_s(RawFilename, MAX_PATH, DumpFilename);
 				  strcat_s(DumpFilename, MAX_PATH, ".txt");
+				  strcat_s(RawFilename, MAX_PATH, ".raw");
 
 				  f = fopen(DumpFilename, "a");
 				  free(DumpFilename);
+
+				  if (g_raw_gtswpc_dmdframes != 0) {
+					  fr = fopen(RawFilename, "rb");
+					  if (fr) {
+						  fclose(fr);
+						  fr = fopen(RawFilename, "ab");
+					  }
+					  else {
+						  fr = fopen(RawFilename, "ab");
+						  fputc(0x52, fr);
+						  fputc(0x41, fr);
+						  fputc(0x57, fr);
+						  fputc(0x00, fr);
+						  fputc(0x01, fr);
+						  fputc(layout->length, fr);
+						  fputc(layout->start, fr);
+						  fputc(g_raw_gtswpc_dmdframes, fr);
+					  }
+				  }
+
+				  free(RawFilename);
+
+				  if (fr) {
+					  fwrite(&tick, 1, 4, fr);
+					  fwrite(g_raw_gtswpc_dmd, 1, (layout->length * layout->start / 8 * g_raw_gtswpc_dmdframes), fr);
+					  fclose(fr);
+				  }
+
 				  if (f) {
-					  const DWORD tick = GetTickCount();
 					  fprintf(f, "0x%08x\n", tick);
 					  for (jj = 0; jj < layout->start; jj++) {
 						  for (ii = 0; ii < layout->length; ii++)
@@ -925,6 +960,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			  }
 		  }
 	  }
+
+	  g_raw_gtswpc_dmdframes = 0;
 
 	  // swap buffers
 	  if (currbuffer == buffer1) {

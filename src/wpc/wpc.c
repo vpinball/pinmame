@@ -83,6 +83,10 @@ static SWITCH_UPDATE(wpc);
 /  Global variables
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
+
+extern UINT8 *g_raw_gtswpc_dmd;
+extern UINT8 g_raw_gtswpc_dmdframes;
+
 const struct core_dispLayout wpc_dispAlpha[] = {
   {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},
   {4,0,20,13,CORE_SEG16R},{4,26,33,2,CORE_SEG16D},{4,30,35,1,CORE_SEG16N},
@@ -1204,18 +1208,24 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   tDMDDot dotCol;
   int ii,jj,kk;
 
+  g_raw_gtswpc_dmdframes = DMD_FRAMES;
+
   /* Create a temporary buffer with all pixels */
   for (kk = 0, ii = 1; ii < 33; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < 16; jj++) {
       /* Intensity depends on how many times the pixel */
       /* been on in the last 3 frames                  */
-      unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
-                              (dmdlocals.DMDFrames[1][kk] & 0x55) +
-                              (dmdlocals.DMDFrames[2][kk] & 0x55));
-      unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
-                              (dmdlocals.DMDFrames[1][kk] & 0xaa) +
-                              (dmdlocals.DMDFrames[2][kk] & 0xaa));
+      const unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
+                                    (dmdlocals.DMDFrames[1][kk] & 0x55) +
+                                    (dmdlocals.DMDFrames[2][kk] & 0x55));
+      const unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
+                                    (dmdlocals.DMDFrames[1][kk] & 0xaa) +
+                                    (dmdlocals.DMDFrames[2][kk] & 0xaa));
+
+      g_raw_gtswpc_dmd[kk        ] = dmdlocals.DMDFrames[0][kk];
+      g_raw_gtswpc_dmd[kk + 0x200] = dmdlocals.DMDFrames[1][kk];
+      g_raw_gtswpc_dmd[kk + 0x400] = dmdlocals.DMDFrames[2][kk];
 
       *line++ = (intens1)    & 0x03;
       *line++ = (intens2>>1) & 0x03;
@@ -1225,7 +1235,8 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
       *line++ = (intens2>>5) & 0x03;
       *line++ = (intens1>>6) & 0x03;
       *line++ = (intens2>>7) & 0x03;
-      kk +=1;
+
+      kk++;
     }
     *line = 0; /* to simplify antialiasing */
   }
