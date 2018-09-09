@@ -84,8 +84,8 @@ static SWITCH_UPDATE(wpc);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 
-extern UINT8 *g_raw_gtswpc_dmd;
-extern UINT8 g_raw_gtswpc_dmdframes;
+extern UINT8  g_raw_gtswpc_dmd[];
+extern UINT32 g_raw_gtswpc_dmdframes;
 
 const struct core_dispLayout wpc_dispAlpha[] = {
   {0,0, 0,13,CORE_SEG16R},{0,26,13,2,CORE_SEG16D},{0,30,15,1,CORE_SEG16N},

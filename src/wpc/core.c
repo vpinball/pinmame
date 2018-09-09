@@ -23,7 +23,7 @@
 
  #include "gts3dmd.h"
  UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
- UINT8  g_raw_gtswpc_dmdframes = 0;
+ UINT32 g_raw_gtswpc_dmdframes = 0;
 
  UINT32 g_needs_DMD_update = 1;
 #endif
