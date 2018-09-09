@@ -1140,14 +1140,21 @@ S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfa
 S11_ROMEND
 #define input_ports_diner input_ports_s11
 
-S11_ROMSTART48(diner,l3,"u26-la3.rom", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
+S11_ROMSTART48(diner,l3,"dinr_u26.l2", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
                         "u27-la3.rom", CRC(4171451a) SHA1(818e330245691d9ef3181b885c9342880f89d912))
 S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
                         "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
                         "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
 S11_ROMEND
 
-S11_ROMSTART48(diner,l2,"u26-la3.rom", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
+S11_ROMSTART48(diner,f2,"dinr_u26.l2", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
+                        "dinr_u27.lf2",CRC(343af291) SHA1(ecf30dd828537cd68dc6c9f97256a38c820b9afc))
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
+S11_ROMSTART48(diner,l2,"dinr_u26.l2", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
                         "dinr_u27.lu2",CRC(ea72f6aa) SHA1(58df02e8353dd9be2ecfbcdc78fc54981dd001e1))
 S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
                         "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
@@ -1163,6 +1170,7 @@ S11_ROMEND
 
 CORE_GAMEDEF(diner, l4, "Diner (LA-4)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l3,l4, "Diner (LA-3)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,f2,l4, "Diner (LF-2 French)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l2,l4, "Diner (LU-2 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l1,l4, "Diner (LU-1 Europe)", 1990, "Williams", s11_mS11CS,0)
 
