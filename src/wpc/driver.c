@@ -1791,7 +1791,7 @@ DRIVER(bdk,240)         //S.A.M.: 11/09 Batman - The Dark Knight - V2.4  (scarec
 DRIVER(bdk,290)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
 DRIVER(bdk,294)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
 #ifdef SAM_INCLUDE_COLORED
-DRIVER(bdk, 294c)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
+DRIVER(bdk,294c)        //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
 #endif
 DRIVER(bdk,300)         //S.A.M.: ??/1? Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.00
@@ -2494,6 +2494,7 @@ DRIVER(taf,l4)          //          05/92 B Addams Family, The (L-4)
 DRIVER(taf,d4)          //                  Addams Family, The (D-4) LED Ghost Fix
 DRIVER(taf,l5)          //          12/92 B Addams Family, The (L-5)
 DRIVER(taf,d5)          //                  Addams Family, The (D-5) LED Ghost Fix
+DRIVER(taf,l5c)         //          08/18 B Addams Family, The (L-5C Competition MOD)
 DRIVER(taf,l6)          //          03/93 B Addams Family, The (L-6)
 DRIVER(taf,d6)          //                  Addams Family, The (D-6) LED Ghost Fix
 DRIVER(taf,l7)          //          10/92 B Addams Family, The (L-7) (Prototype L-5)
