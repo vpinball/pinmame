@@ -3,9 +3,10 @@ Version 3.2 (X X, 2018) - ""
 *** CORE/CPU ***
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
 Fix NBA Fastbreak fast flips so that the million dollar shot works
+Fixed Barni emulation
 
 *** ROM SUPPORT *** Thanks to inkochnito, Soren
-Top Pin's U11 sound ROM is bad, thus the music sound loop on this game
+Top Pin's U11 sound ROM is bad, look out for a good dump!
 
 Clones:
 Addams Family, The L-5 (competition MOD)
