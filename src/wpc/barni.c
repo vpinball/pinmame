@@ -26,13 +26,15 @@
 static struct {
   UINT8 strobe1;
   UINT8 strobe2;
+  UINT8 via_a;
+  int bitCount;
 } locals;
 
 /*-------------------------------
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(barni_vblank) {
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(17));
 }
 
 static SWITCH_UPDATE(barni) {
@@ -58,7 +60,11 @@ static READ_HANDLER(gram_r) {
 }
 
 static WRITE_HANDLER(pal_w) {
-  logerror("PAL pulse: %02x\n", data);
+  logerror("PAL: %02x\n", data);
+  // this is probably wrong but I didn't find any other output to control game enable
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 1) << 16);
+  // this is most certainly wrong; the fake zero should be controlled by another output
+  coreGlobals.segments[32].w = core_bcd2seg7[data ? 0 : 0x0f];
 }
 
 static READ_HANDLER(firq_set) {
@@ -72,43 +78,8 @@ static READ_HANDLER(firq_clr) {
 }
 
 static READ_HANDLER(cswd_r) {
-	// watchdog, periodically resets zc circuit which would hang the machine by tiggering the NMI line
+  // watchdog, periodically resets zc circuit which would hang the machine by triggering the NMI line
   return 0;
-}
-
-// HACK: remove this write handler once the VIA handling is done
-static WRITE_HANDLER(nvram_w) {
-  static UINT16 core_ascii2seg[] = {
-  /* 0x00-0x07 */ 0x00, 0x3f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x08-0x0f */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x10-0x17 */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x18-0x1f */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x20-0x27 */ 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x28-0x2f */ 0xff, 0xff, 0xff, 0xff, 0xff, 0x40, 0xff, 0xff,
-  /* 0x30-0x37 */ 0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07,
-  /* 0x38-0x3f */ 0x7f ,0x6f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x40-0x47 */ 0xff, 0x77, 0x7c, 0x58, 0x5e, 0x79, 0x71, 0x3d,
-  /* 0x48-0x4f */ 0x76, 0x10, 0x1e, 0x75, 0x38, 0x37, 0x54, 0x5c,
-  /* 0x50-0x57 */ 0x73, 0x47, 0x50, 0x6D, 0x78, 0x3E, 0x3c, 0x1c,
-  /* 0x58-0x5f */ 0x64, 0x6e, 0x5b, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x60-0x67 */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x68-0x6f */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x70-0x77 */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  /* 0x78-0x7f */ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-  };
-
-  memory_region(REGION_CPU1)[0xa000 + offset] = data;
-  if (offset < 0x20) {
-    coreGlobals.segments[offset].w = core_ascii2seg[data & 0x7f];
-  } else if (offset > 0x62 && offset < 0x6d) {
-    coreGlobals.lampMatrix[offset - 0x63] = data;
-  } else if (offset == 0x76) {
-    coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ff) | (data << 8);
-  } else if (offset == 0x77) {
-    coreGlobals.solenoids = (coreGlobals.solenoids & 0xff00) | data;
-  } else if (offset == 0x146) {
-    sndbrd_manCmd(0, data);
-  }
 }
 
 static WRITE_HANDLER(pia0a_w) {
@@ -134,19 +105,60 @@ static READ_HANDLER(pia1b_r) {
 }
 
 static WRITE_HANDLER(via0a_w) {
-  logerror("VIA A: %02x\n", data);
+  locals.via_a = data;
+  locals.bitCount = 0;
 }
 
 static WRITE_HANDLER(via0b_w) {
-  logerror("VIA B: %02x\n", data);
+  static UINT8 lampData;
+  int num;
+  switch (locals.via_a >> 4) {
+    case 0:
+      sndbrd_manCmd(0, ~data);
+      break;
+    case 1:
+      if (!(locals.bitCount % 8)) {
+      	num = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
+        coreGlobals.segments[num].w = (data & 0x80) ? data & 0x7f : 0;
+      }
+      locals.bitCount++;
+      break;
+    case 5:
+      switch (~locals.via_a & 0x0f) {
+        case 0:
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((data ^ 0xff) << 8);
+          break;
+        case 1:
+          coreGlobals.solenoids = (coreGlobals.solenoids & 0x1ff00) | (~data & 0xff);
+          break;
+        case 2:
+          if (data != 0xff) {
+            coreGlobals.lampMatrix[core_BitColToNum(data ^ 0xff)] = lampData;
+          }
+          break;
+        case 3:
+          lampData = ~data;
+          break;
+        default:
+          logerror("VIA A/B: %02x/%02x\n", locals.via_a, data);
+      }
+      break;
+    case 7:
+      if (locals.via_a == 0x7f) {
+        coreGlobals.diagnosticLed = data ^ 1;
+        break;
+      } // else fall through to log
+    default:
+      logerror("VIA A/B: %02x/%02x\n", locals.via_a, data);
+  }
 }
 
 static WRITE_HANDLER(via0ca2_w) {
-  logerror("VIA CA2: %x\n", data);
+  // we can do without this signal
 }
 
 static WRITE_HANDLER(via0cb2_w) {
-  logerror("VIA CB2: %x\n", data);
+  // we can do without this signal
 }
 
 static void via_irq(int state) {
@@ -182,7 +194,6 @@ static MEMORY_WRITE_START(barni_writemem1)
   {0x0000,0x03ff, gram_w},
   {0x2000,0x2000, pal_w},
   {0x8000,0x800f, via_0_w},
-  {0xa000,0xa1ff, nvram_w},
   {0xa000,0xa7ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
@@ -317,6 +328,7 @@ MACHINE_DRIVER_START(barni)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(16)
   MDRV_SWITCH_UPDATE(barni)
+  MDRV_DIAGNOSTIC_LEDH(1)
 
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -343,15 +355,15 @@ ROM_START(redbaron)
 ROM_END
 
 static core_tLCDLayout dispAlpha[] = {
-  {0, 0, 0,6,CORE_SEG7},{0,12,31,1,CORE_SEG7}, {0,26,18,6,CORE_SEG7},{0,38,31,1,CORE_SEG7},
-  {3, 0, 6,6,CORE_SEG7},{3,12,31,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,31,1,CORE_SEG7},
+  {0, 0, 0,6,CORE_SEG7},{0,12,32,1,CORE_SEG7}, {0,26,18,6,CORE_SEG7},{0,38,32,1,CORE_SEG7},
+  {3, 0, 6,6,CORE_SEG7},{3,12,32,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,32,1,CORE_SEG7},
   {2,20,12,2,CORE_SEG7S},{2,25,14,2,CORE_SEG7S},{2,30,16,2,CORE_SEG7S},
 #ifdef MAME_DEBUG
   {4,25,30,2,CORE_SEG7S},
 #endif
   {0}
 };
-static core_tGameData redbaronGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,0,0,SNDBRD_BARNI,0,0}};
+static core_tGameData redbaronGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,0,0,SNDBRD_BARNI}};
 static void init_redbaron(void) {
   core_gameData = &redbaronGameData;
 }
