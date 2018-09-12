@@ -63,8 +63,6 @@ static WRITE_HANDLER(pal_w) {
   logerror("PAL: %02x\n", data);
   // this is probably wrong but I didn't find any other output to control game enable
   coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 1) << 16);
-  // this is most certainly wrong; the fake zero should be controlled by another output
-  coreGlobals.segments[32].w = core_bcd2seg7[data ? 0 : 0x0f];
 }
 
 static READ_HANDLER(firq_set) {
@@ -109,17 +107,26 @@ static WRITE_HANDLER(via0a_w) {
   locals.bitCount = 0;
 }
 
+static void showSegment(int num, UINT8 data) {
+  int seg = 32 + num / 6;
+  UINT8 bit = 1 << (num % 6);
+  coreGlobals.segments[num].w = data & 0x7f;
+  if (data & 0x80) {
+    coreGlobals.segments[seg].w |= bit;
+  } else {
+    coreGlobals.segments[seg].w &= 0x3f ^ bit;
+  }
+}
+
 static WRITE_HANDLER(via0b_w) {
   static UINT8 lampData;
-  int num;
   switch (locals.via_a >> 4) {
     case 0:
       sndbrd_manCmd(0, ~data);
       break;
     case 1:
       if (!(locals.bitCount % 8)) {
-      	num = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
-        coreGlobals.segments[num].w = (data & 0x80) ? data & 0x7f : 0;
+        showSegment(31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f), data);
       }
       locals.bitCount++;
       break;
@@ -355,11 +362,11 @@ ROM_START(redbaron)
 ROM_END
 
 static core_tLCDLayout dispAlpha[] = {
-  {0, 0, 0,6,CORE_SEG7},{0,12,32,1,CORE_SEG7}, {0,26,18,6,CORE_SEG7},{0,38,32,1,CORE_SEG7},
-  {3, 0, 6,6,CORE_SEG7},{3,12,32,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,32,1,CORE_SEG7},
+  {0, 0, 0,6,CORE_SEG7},{0,12,32,1,CORE_SEG7}, {0,26,18,6,CORE_SEG7},{0,38,35,1,CORE_SEG7},
+  {3, 0, 6,6,CORE_SEG7},{3,12,33,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,36,1,CORE_SEG7},
   {2,20,12,2,CORE_SEG7S},{2,25,14,2,CORE_SEG7S},{2,30,16,2,CORE_SEG7S},
 #ifdef MAME_DEBUG
-  {4,25,30,2,CORE_SEG7S},
+  {4,24,30,2,CORE_SEG7S},{4,28,34,1,CORE_SEG7S},
 #endif
   {0}
 };
@@ -424,4 +431,4 @@ INPUT_PORTS_END
 
 #define input_ports_redbaron input_ports_barni
 
-CORE_GAMEDEFNV(redbaron, "Red Baron", 1985, "Barni", barni, GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(redbaron, "Red Baron", 1985, "Barni", barni, 0)
