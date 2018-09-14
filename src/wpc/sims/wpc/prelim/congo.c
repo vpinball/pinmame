@@ -270,6 +270,15 @@ DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b135
                "cgs4v1_0.rom",CRC(2a1980e7) SHA1(0badf27c2b8bc7b0074dc5e606d64490470bc108))
 WPC_ROMEND
 
+WPC_ROMSTART(congo,11s10,"cong1_10.rom",0x80000,CRC(b0b0ffd9) SHA1(26343f3bfbacf85b3f4db5aa3dad39216311a2da))
+DCS_SOUNDROM6x("su2-100.rom", CRC(c4b59ac9) SHA1(a0bc5150120777c771a181496ced71bd3f92a311),
+               "su3-100.rom", CRC(1d4dbc9a) SHA1(3fac6ffb1af806d1dfcf71d85b0be21e7ea4b8d2),
+               "su4-100.rom", CRC(a3e9fd93) SHA1(7d767ddf22080f9886621a5130929d7afce90472),
+               "su5-100.rom", CRC(c397b3f6) SHA1(ef4cc5a08a55ae941f42d2b02213cc5c85d67b43),
+               "su6-100.rom", CRC(f89a29a2) SHA1(63f69ae6a886d9eac44627edd5ee561bdb3dd418),
+               "su7-100.rom", CRC(d1244d35) SHA1(7c5b3fcf8a35c417c778cd9bc741b92aaffeb444))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -277,6 +286,7 @@ CORE_GAMEDEF (congo,21,"Congo (2.1)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,20,21,"Congo (2.0)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,13,21,"Congo (1.3)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,11,21,"Congo (1.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF (congo,11s10,21,"Congo (1.1, sound 1.0)",1995,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -312,11 +322,31 @@ static core_tGameData congoGameData = {
   }
 };
 
+static core_tGameData congoDCSGameData = {
+  GEN_WPC95DCS, wpc_dispDMD,
+  {
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
+    0,0,0,0,0,1
+  },
+  &congoSimData,
+  {
+    "550 123456 12345 123",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x00, 0x00, 0x3f, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* inverted switches */
+    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor, swLaunch},
+  }
+};
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_congo(void) {
-  core_gameData = &congoGameData;
+  if (_strnicmp(Machine->gamedrv->name, "congo_11s10", 11)) {
+    core_gameData = &congoGameData;
+  } else {
+    core_gameData = &congoDCSGameData;
+  }
   wpc_set_fastflip_addr(0x80);
 }
 
