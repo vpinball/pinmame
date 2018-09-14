@@ -10,7 +10,7 @@ Top Pin's U11 sound ROM is bad, look out for a good dump!
 
 Clones:
 Addams Family, The L-5 (competition MOD)
-Diner LF-2 (French)
+Diner PA-0 (Prototype), LF-2 (French)
 
 
 
