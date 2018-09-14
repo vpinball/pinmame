@@ -1168,11 +1168,19 @@ S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfa
                         "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
 S11_ROMEND
 
+S11_ROMSTART48(diner,p0,"dinr_u26.pa0",CRC(dbf5de09) SHA1(55ca30bdf6e6e482f3ce5891b866103492fa3754),
+                        "dinr_u27.pa0",CRC(9875d16e) SHA1(fbbab61cc9e8e3f7a1bf1428ad50ad3c13f0f120))
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
 CORE_GAMEDEF(diner, l4, "Diner (LA-4)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l3,l4, "Diner (LA-3)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,f2,l4, "Diner (LF-2 French)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l2,l4, "Diner (LU-2 Europe)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l1,l4, "Diner (LU-1 Europe)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,p0,l4, "Diner (PA-0 Prototype)", 1989, "Williams", s11_mS11CS,0)
 
 /*--------------------
 / Radical 9/90
