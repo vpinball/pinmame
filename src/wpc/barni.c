@@ -39,7 +39,7 @@ static INTERRUPT_GEN(barni_vblank) {
 
 static SWITCH_UPDATE(barni) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x70, 9);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xf0, 9);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x06, 8);
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 0);
   }
@@ -98,8 +98,19 @@ static READ_HANDLER(pia1a_r) {
 }
 
 static READ_HANDLER(pia1b_r) {
-  UINT8 data = core_getDip(locals.strobe2 / 2);
-  return (coreGlobals.swMatrix[9] & 0xf0) | (locals.strobe2 % 2 ? data >> 4 : data & 0x0f);
+  static UINT8 lastSw9;
+  UINT8 retVal;
+  UINT8 sw9 = coreGlobals.swMatrix[9] & 0xf0;
+  UINT8 newSw9 = sw9;
+  UINT8 dips = core_getDip(locals.strobe2 / 2);
+  // HACK that will close both coin switches at the same time so the credits don't keep adding up!
+  // Unfortunately this means both coins are amounted to the credits for now.
+  if (~lastSw9 & sw9 & 0x30) {
+    newSw9 |= 0x30;
+  }
+  retVal = (newSw9 ^ 0x30) | (locals.strobe2 % 2 ? dips >> 4 : dips & 0x0f);
+  lastSw9 = sw9;
+  return retVal;
 }
 
 static WRITE_HANDLER(via0a_w) {
@@ -382,11 +393,12 @@ INPUT_PORTS_START(barni)
     COREPORT_BIT(   0x0040, "Partida",	KEYCODE_1)
     COREPORT_BIT(   0x0010, "25 Ptas",	KEYCODE_3)
     COREPORT_BIT(   0x0020, "100 Ptas",	KEYCODE_5)
+    COREPORT_BIT(   0x0080, "Tilt",	KEYCODE_DEL)
     COREPORT_BIT(   0x0002, "Test +",	KEYCODE_7)
     COREPORT_BIT(   0x0004, "Test -",	KEYCODE_8)
     COREPORT_BIT(   0x0001, "Sound test",	KEYCODE_0)
   PORT_START /* 1 */
-    COREPORT_DIPNAME( 0x2000, 0x0000, "800.000 puntos partida")
+    COREPORT_DIPNAME( 0x2000, 0x0000, "  800.000 puntos partida")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x2000, DEF_STR(On))
     COREPORT_DIPNAME( 0x0200, 0x0200, "1.000.000 puntos partida")
@@ -411,10 +423,10 @@ INPUT_PORTS_START(barni)
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x1000, DEF_STR(On))
     COREPORT_DIPNAME( 0x8484, 0x0080, "Monedero")
-      COREPORT_DIPSET(0x8000, "0,5/25, 3/100" )
-      COREPORT_DIPSET(0x0004, "1/25, 4/100" )
-      COREPORT_DIPSET(0x0080, "1/25, 5/100" )
-      COREPORT_DIPSET(0x0400, "2/25, 8/100" )
+      COREPORT_DIPSET(0x8000, "0,5/25 Ptas, 3/100 Ptas" )
+      COREPORT_DIPSET(0x0004, "  1/25 Ptas, 4/100 Ptas" )
+      COREPORT_DIPSET(0x0080, "  1/25 Ptas, 5/100 Ptas" )
+      COREPORT_DIPSET(0x0400, "  2/25 Ptas, 8/100 Ptas" )
     COREPORT_DIPNAME( 0x0008, 0x0008, "Musica Fondo")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x0008, DEF_STR(On))
