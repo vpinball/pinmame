@@ -286,7 +286,7 @@ CORE_GAMEDEF (congo,21,"Congo (2.1)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,20,21,"Congo (2.0)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,13,21,"Congo (1.3)",1995,"Williams",wpc_m95S,0)
 CORE_CLONEDEF (congo,11,21,"Congo (1.1)",1995,"Williams",wpc_m95S,0)
-CORE_CLONEDEF (congo,11s10,21,"Congo (1.1, Sound 1.0)",1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF (congo,11s10,21,"Congo (1.1, Sound 1.0)",1995,"Williams",wpc_m95DCSS,GAME_IMPERFECT_SOUND)
 
 /*-----------------------
 / Simulation Definitions
