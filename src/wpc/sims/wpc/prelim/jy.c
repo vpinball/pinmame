@@ -277,7 +277,7 @@ WPC_ROMEND
 CORE_GAMEDEF(jy,12,"Junk Yard (1.2)",1996,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(jy,12c,12,"Junk Yard (1.2C Competition MOD)",2017,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(jy,11,12,"Junk Yard (1.1)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(jy,03,12,"Junk Yard (0.3)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(jy,03,12,"Junk Yard (0.3 Prototype)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
