@@ -5,12 +5,13 @@ Fixed the Nuova Bell sound board. This had various issues, and information is qu
 Fix NBA Fastbreak fast flips so that the million dollar shot works
 Fixed Barni emulation
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox
 Correct Dumps:
 Top Pin's U11 sound ROM is bad, please all look out for a good dump!
 
 Clones:
 Addams Family, The L-5 (competition MOD)
+Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
 Diner PA-0 (Prototype), LF-2 (French)
 Jack*Bot 0.4A (Prototype)
