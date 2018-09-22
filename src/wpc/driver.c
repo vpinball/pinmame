@@ -651,6 +651,7 @@ DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(rock_efp)      //                Rock Encore (Free Play)
 DRIVERNV(rock_eg)       //                Rock Encore (German)
 DRIVERNV(rockegfp)      //                Rock Encore (German Free Play)
+DRIVERNV(clash)         //                Clash, The (Rock Encore unofficial MOD)
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(hlywdhfp)      //                Hollywood Heat (Free Play)
 DRIVERNV(hlywodhg)      //                Hollywood Heat (German)
