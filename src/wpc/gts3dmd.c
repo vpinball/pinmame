@@ -25,7 +25,7 @@ static int level5[13] = { 0, 3, 3, 7, 7, 7, 11, 11, 11, 11, 11, 11, 15 }; // 5 c
 //static int level[25]  = { 0, 0, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15 }; // temporary mapping for both 4 and 5 color roms // deprecated
 
 #ifdef VPINMAME
-extern UINT8  g_raw_gtswpc_dmd[];
+extern UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
 extern UINT32 g_raw_gtswpc_dmdframes;
 #endif
 
@@ -102,7 +102,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   }
 
 #ifdef VPINMAME
-  memcpy(g_raw_gtswpc_dmd, DMDFrames, g_raw_gtswpc_dmdframes * 0x200);
+  memcpy(g_raw_gtswpc_dmd, &DMDFrames[0][0], g_raw_gtswpc_dmdframes * 0x200);
 #endif
 
   // detect special case for some otherwise flickering frames
