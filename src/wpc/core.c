@@ -856,10 +856,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
 		}
 #endif
-		if (shade_16_enabled)
-			*line++ = dmdColor[col+63];
-		else
-			*line++ = dmdColor[col];
+		*line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
@@ -895,10 +892,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
 			  if ((g_fShowPinDMD && g_fShowWinDMD) || g_fDumpFrames)	// output dump frame to .txt
 			  {
-				  FILE *f,*fr = NULL;
+				  FILE *f;
 				  char *ptr;
-				  char* DumpFilename = (char*)malloc(MAX_PATH);
-				  char* RawFilename = (char*)malloc(MAX_PATH);
+				  char DumpFilename[MAX_PATH];
 
 				  const DWORD tick = GetTickCount();
 #ifndef _WIN64
@@ -910,14 +906,12 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  ptr = strrchr(DumpFilename, '\\');
 				  strcpy_s(ptr + 1, 11, "DmdDump\\");
 				  strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-				  strcpy_s(RawFilename, MAX_PATH, DumpFilename);
-				  strcat_s(DumpFilename, MAX_PATH, ".txt");
-				  strcat_s(RawFilename, MAX_PATH, ".raw");
-
-				  f = fopen(DumpFilename, "a");
-				  free(DumpFilename);
 
 				  if (g_raw_gtswpc_dmdframes != 0) {
+					  FILE* fr;
+					  char RawFilename[MAX_PATH];
+					  strcpy_s(RawFilename, MAX_PATH, DumpFilename);
+					  strcat_s(RawFilename, MAX_PATH, ".raw");
 					  fr = fopen(RawFilename, "rb");
 					  if (fr) {
 						  fclose(fr);
@@ -925,25 +919,28 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 					  }
 					  else {
 						  fr = fopen(RawFilename, "ab");
-						  fputc(0x52, fr);
-						  fputc(0x41, fr);
-						  fputc(0x57, fr);
-						  fputc(0x00, fr);
-						  fputc(0x01, fr);
-						  fputc(layout->length, fr);
-						  fputc(layout->start, fr);
-						  fputc(g_raw_gtswpc_dmdframes, fr);
+						  if(fr)
+						  {
+							  fputc(0x52, fr);
+							  fputc(0x41, fr);
+							  fputc(0x57, fr);
+							  fputc(0x00, fr);
+							  fputc(0x01, fr);
+							  fputc(layout->length, fr);
+							  fputc(layout->start, fr);
+							  fputc(g_raw_gtswpc_dmdframes, fr);
+						  }
+					  }
+					  if(fr)
+					  {
+						  fwrite(&tick, 1, 4, fr);
+						  fwrite(g_raw_gtswpc_dmd, 1, (layout->length * layout->start / 8 * g_raw_gtswpc_dmdframes), fr);
+						  fclose(fr);
 					  }
 				  }
 
-				  free(RawFilename);
-
-				  if (fr) {
-					  fwrite(&tick, 1, 4, fr);
-					  fwrite(g_raw_gtswpc_dmd, 1, (layout->length * layout->start / 8 * g_raw_gtswpc_dmdframes), fr);
-					  fclose(fr);
-				  }
-
+				  strcat_s(DumpFilename, MAX_PATH, ".txt");
+				  f = fopen(DumpFilename, "a");
 				  if (f) {
 					  fprintf(f, "0x%08x\n", tick);
 					  for (jj = 0; jj < layout->start; jj++) {
@@ -1842,6 +1839,13 @@ static MACHINE_STOP(core) {
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdDeInit();
+
+  g_raw_dmdx = ~0u;
+  g_raw_dmdy = ~0u;
+
+  g_raw_gtswpc_dmdframes = 0;
+  
+  g_needs_DMD_update = 1;
 #endif
 
   mech_emuExit();
