@@ -21,6 +21,12 @@
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
+ static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
+ static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
+ static UINT8 *currbuffer = buffer1;
+ static UINT8 *oldbuffer = NULL;
+ static UINT32 raw_dmdoffs = 0;
+
  #include "gts3dmd.h"
  UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
  UINT32 g_raw_gtswpc_dmdframes = 0;
@@ -753,11 +759,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  (core_gameData->gen == GEN_ALVG_DMD2));
 
 #ifdef VPINMAME
-  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
-  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-  static UINT8 *currbuffer = buffer1;
-  static UINT8 *oldbuffer = NULL;
-  static UINT32 raw_dmdoffs = 0;
 
   const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
   const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
@@ -1842,6 +1843,10 @@ static MACHINE_STOP(core) {
 
   g_raw_dmdx = ~0u;
   g_raw_dmdy = ~0u;
+
+  currbuffer = buffer1;
+  oldbuffer = NULL;
+  raw_dmdoffs = 0;
 
   g_raw_gtswpc_dmdframes = 0;
   
