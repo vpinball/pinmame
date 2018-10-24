@@ -302,6 +302,7 @@ DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01:05/87 Party Animal
 DRIVERNV(prtyanig)      //6803      05/87 Party Animal (German)
 DRIVERNV(hvymetal)      //6803-0H03:08/87 Heavy Metal Meltdown
+DRIVERNV(hvymetag)      //6803      08/87 Heavy Metal Meltdown (German)
 DRIVERNV(dungdrag)      //6803-0H06:10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05:12/87 Escape from the Lost World
 DRIVERNV(esclwrlg)      //6803      12/87 Escape from the Lost World (German)
