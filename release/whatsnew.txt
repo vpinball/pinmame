@@ -4,7 +4,7 @@ Version 3.2 (X X, 2018) - ""
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
 Fix NBA Fastbreak fast flips so that the million dollar shot works
 Fixed Barni emulation
-Increased main CPU IRQ clock for Spinball games, makes at least Jolly Park work without "bola perdida" messages.
+Increased main CPU IRQ clock for Inder/Spinball games, makes at least Jolly Park work without "bola perdida" messages
 
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox
 Correct Dumps:
@@ -17,7 +17,7 @@ Congo 1.1 with DCS-Sound rev. 1.0
 Diner PA-0 (Prototype), LF-2 (French)
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
-Medieval Madness 1.0 (PFX mod)
+Medieval Madness 1.0 (Pinball FX MOD)
 
 
 
