@@ -1,8 +1,17 @@
 How to setup Visual C++ to compile PinMAME (all flavours)
 =========================================================
 
+------------------------------
+Quick Setup for Advanced Users
+------------------------------
+- Pick your favorite Visual Studio version, and call the respective 'create_vc20XX_from_vc20XX.bat' to create the sln and vcproj files
+- For 32bit: - In Visual Studio set an additional include path to the DX7a-SDK include folder, and an additional library path to the DX7a-SDK lib\x86 folder
+             - Also set an additional executable path to a NASM folder
+- For 64bit: - In Visual Studio set an additional library path to the DX(June 2010)-SDK lib\x64 folder
+
+
+
 ToDo:
-* ISO C99 and C90 issues (msc.h include), VS2008 is currently used by developmen team, but batch scripts and infos are available for older VS versions
 * Re-check first and last supported versions of WSDK, MSDN, etc. for all VS versions
 
 -------
@@ -49,62 +58,6 @@ The Visual Studio documentation is available at https://msdn.microsoft.com/libra
 The NASM homepage is available at http://www.nasm.us/
 The ZLib homepage is available at http://www.zlib.net/
 Additional DirectX information is available at http://www.toymaker.info/Games/html/directx_9_0c.html
-
-
---------------
-Visual C++ 6.0 (1998, _MSC_VER = 1200)
---------------
-- Microsoft Java Virtual Machine
-  For installing Visual Studio 6.0 and its service packs the Microsoft Java
-  Virtual Machine (MSJVM) is needed. It is recommended to install one of the
-  latest versions (3809 or 3810) first to avoid computer restarts while
-  installing the service packs.
-  As the Microsoft Java Virtual Machine is outdated and insecure it is also
-  recommended to deinstall it after installation of all service packs. For this
-  Microsoft provided the tool UNMSJVM.EXE.
-  Unfortunately the files are nomore available at Microsoft's homepage, but they
-  are all available for download at MDGx homepage:
-    http://www.mdgx.com/add.htm#JVM
-  More information about MSJVM is available at Mark Salloway's Windows Resource
-  Center and Virtualmachine:
-    http://www.mvps.org/marksxp/WindowsXP/java.php
-    http://www.xs4all.nl/~smuller/VMSite2/
-- Service Packs & Processor Pack
-  Service Pack 5 is needed to update all components of Visual Studio 6.0, the
-  Processor Pack for getting MASM and Service Pack 6 for the latest updates of
-  Visual C++ and Visual Basic.
-  a) Download SP5, the Processor Pack and SP6
-     Update Homepage: (non-functional) http://msdn.microsoft.com/visualc/aa336441.aspx
-     6.0 SP5: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718363.aspx
-              (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
-              (seems that Microsoft has removed Service Pack 5 although it is needed for the Processor Pack)
-              http://ftp.maddes.net/vs6/
-     6.0 PP: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
-             (non-functional) http://www.infinitefactors.org/jonk/pctools.html
-     6.0 SP6: (non-functional) http://msdn.microsoft.com/en-us/vstudio/aa718364.aspx
-              (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
-  b) Install SP5, then the Processor Pack and at last SP6
-     The Processor Pack only installs on SP5, so it is recommended to apply SP5
-     first, then the Processor Pack and finally SP6:
-       http://support.microsoft.com/kb/872907
-     If SP6 is already installed, but you forgot to apply SP5 before and use
-     several other components of Visual Studio too, then it is recommended to do
-     a re-installation of Visual Studio.
-- Updates
-  https://technet.microsoft.com/security/bulletin/ filter on Microsoft Visual Basic 6.0 Service Pack 6
-- Windows Platform SDK
-  For PinMAME use the SDK coming with Visual C++ 6.0, due to the following ATL
-  issue with newer versions: http://support.microsoft.com/kb/243298/en-us
-- DirectX SDK Summer 2003 Edition
-  (folders: utilities, include, lib)
-  (non-functional) http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
-  (seems that Microsoft has removed it for whatever reason)
-  http://ftp.maddes.net/dxsdk/summer2003/dx90updatesdk.exe
-- Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
-- Project Files (.dsp) are maintained in the repository.
-- A template for the Workspace file is also inside the repository (PinMAME_VC60.dsw.tmpl).
-- Setting env vars:
-  "%ProgramFiles%\Microsoft Visual Studio\VC98\Bin\vcvars32.bat"
 
 
 ---------------
@@ -296,10 +249,17 @@ Visual C++ 2015 (14.0, _MSC_VER = 1900)
   <ToDo> First MSDN Library with Visual Studio 2013 information/integration was <Month> 201?.
 
 
+---------------
+Visual C++ 2017
+---------------
+<WIP>
+
+
+
 -----------
 Compilation
 -----------
-- Directly load a project file (*.dsp or .vcproj), choose between Release or
+- Directly load a project file (*.dsp/.sln or .vcproj), choose between Release or
   Debug build and then compile.
 
 
@@ -323,6 +283,8 @@ will be inside the project folder as usual.
 -------------------
 Addendum: Libraries
 -------------------
+<Outdated>
+
 - The ZLib library for Visual C++ 6.0 is already included in the CVS repository.
   If you want to compile it yourself then get the following package:
   a) ZLib source code
