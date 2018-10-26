@@ -302,6 +302,7 @@ DRIVERNV(hardbdyg)      //6803      03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01:05/87 Party Animal
 DRIVERNV(prtyanig)      //6803      05/87 Party Animal (German)
 DRIVERNV(hvymetal)      //6803-0H03:08/87 Heavy Metal Meltdown
+DRIVERNV(hvymetag)      //6803      08/87 Heavy Metal Meltdown (German)
 DRIVERNV(dungdrag)      //6803-0H06:10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05:12/87 Escape from the Lost World
 DRIVERNV(esclwrlg)      //6803      12/87 Escape from the Lost World (German)
@@ -651,6 +652,7 @@ DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(rock_efp)      //                Rock Encore (Free Play)
 DRIVERNV(rock_eg)       //                Rock Encore (German)
 DRIVERNV(rockegfp)      //                Rock Encore (German Free Play)
+DRIVERNV(clash)         //                Clash, The (Rock Encore unofficial MOD)
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(hlywdhfp)      //                Hollywood Heat (Free Play)
 DRIVERNV(hlywodhg)      //                Hollywood Heat (German)
@@ -1790,6 +1792,9 @@ DRIVER(bdk,220)         //S.A.M.: 08/08 Batman - The Dark Knight - V2.2
 DRIVER(bdk,240)         //S.A.M.: 11/09 Batman - The Dark Knight - V2.4  (scarecrow sometimes 2 balls, sometimes 3 balls)
 DRIVER(bdk,290)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.9  (with 3 ball scarecrow multiball)
 DRIVER(bdk,294)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
+#ifdef SAM_INCLUDE_COLORED
+DRIVER(bdk,294c)        //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
+#endif
 DRIVER(bdk,300)         //S.A.M.: ??/1? Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.00
 //DRIVER(csi,101)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.01
@@ -2388,8 +2393,10 @@ DRIVER(pool,l5)         //          05/90 B Pool Sharks (LA-5)
 DRIVER(pool,l6)         //          05/90 B Pool Sharks (LA-6)
 DRIVER(pool,l7)         //          01/91 B Pool Sharks (LA-7)
 DRIVER(pool,l7c)        //          04/18 B Pool Sharks (LA-7C Competition MOD)
-DRIVER(diner,l1)        //S11-571:  06/90 W Diner (LU-1 Europe)
+DRIVER(diner,p0)        //S11-571:  11/89 W Diner (PA-0 Prototype)
+DRIVER(diner,l1)        //          06/90 W Diner (LU-1 Europe)
 DRIVER(diner,l2)        //          06/90 W Diner (LU-2 Europe)
+DRIVER(diner,f2)        //          06/90 W Diner (LF-2 French)
 DRIVER(diner,l3)        //          06/90 W Diner (LA-3)
 DRIVER(diner,l4)        //          09/90 W Diner (LA-4)
 DRIVER(radcl,p3)        //S11-1904: 06/90 B Radical! (P-3)
@@ -2490,6 +2497,7 @@ DRIVER(taf,l4)          //          05/92 B Addams Family, The (L-4)
 DRIVER(taf,d4)          //                  Addams Family, The (D-4) LED Ghost Fix
 DRIVER(taf,l5)          //          12/92 B Addams Family, The (L-5)
 DRIVER(taf,d5)          //                  Addams Family, The (D-5) LED Ghost Fix
+DRIVER(taf,l5c)         //          08/18 B Addams Family, The (L-5C Competition MOD)
 DRIVER(taf,l6)          //          03/93 B Addams Family, The (L-6)
 DRIVER(taf,d6)          //                  Addams Family, The (D-6) LED Ghost Fix
 DRIVER(taf,l7)          //          10/92 B Addams Family, The (L-7) (Prototype L-5)
@@ -2762,10 +2770,11 @@ DRIVER(nf,23x)          //          05/95 W No Fear: Dangerous Sports (2.3 Expor
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500 (1.1)
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (1.1 Belgian)
 DRIVER(i500,10r)        //WPC-526:  06/95 B Indianapolis 500 (1.0)
-DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0)
-DRIVER(jb,101r)         //                  Jack*Bot (1.0) LED Ghost Fix
-DRIVER(jb,10b)          //          10/95 W Jack*Bot (1.0) Belgish/Canadian
-DRIVER(jb,101b)         //                  Jack*Bot (1.0) Belgish/Canadian LED Ghost Fix
+DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot (1.0R)
+DRIVER(jb,101r)         //                  Jack*Bot (1.01R LED Ghost Fix)
+DRIVER(jb,10b)          //          10/95 W Jack*Bot (1.0B Belgish/Canadian)
+DRIVER(jb,101b)         //                  Jack*Bot (1.01B Belgish/Canadian LED Ghost Fix)
+DRIVER(jb,04a)          //                  Jack*Bot (0.4A Prototype)
 DRIVER(jm,05r)          //WPC-542:  09/95 W Johnny Mnemonic (0.5R)
 DRIVER(jm,12r)          //          10/95 W Johnny Mnemonic (1.2R)
 DRIVER(jm,12b)          //          10/95 W Johnny Mnemonic (1.2 Belgian)
@@ -2777,7 +2786,8 @@ DRIVER(wd,10f)          //          11/95 B Who dunnit (1.0 French)
 DRIVER(wd,11)           //         ?04/96 B Who dunnit (1.1)
 DRIVER(wd,12)           //         ?05/96 B Who dunnit (1.2)
 DRIVER(wd,12g)          //         ?05/96 B Who dunnit (1.2 German)
-DRIVER(congo,11)        //WPC-550:  11/95 W Congo (1.1)
+DRIVER(congo,11s10)     //WPC-550:  11/95 W Congo (1.1, DCS-Sound 1.0)
+DRIVER(congo,11)        //          11/95 W Congo (1.1)
 DRIVER(congo,13)        //          11/95 W Congo (1.3)
 DRIVER(congo,20)        //          02/96 W Congo (2.0)
 DRIVER(congo,21)        //          10/96 W Congo (2.1)
@@ -2826,12 +2836,13 @@ DRIVER(nbaf,22)         //          05/97 B NBA Fastbreak (2.2)
 DRIVER(nbaf,23)         //          06/97 B NBA Fastbreak (2.3)
 DRIVER(nbaf,31)         //          09/97 B NBA Fastbreak (3.1, Sound S3.0)
 DRIVER(nbaf,31a)        //          09/97 B NBA Fastbreak (3.1, Sound S1.0)
-DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5)
+DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5 Prototype)
 DRIVER(mm,10)           //          07/97 W Medieval Madness (1.0)
-DRIVER(mm,10u)          //          07/97 W Medieval Madness (1.0 Ultrapin)
-DRIVER(mm,109)          //          06/99 W Medieval Madness (1.09, Home version)
-DRIVER(mm,109b)         //                  Medieval Madness (1.09B, Home version Coin Play)
-DRIVER(mm,109c)         //                  Medieval Madness (1.09C, Home version w/ profanity speech)
+DRIVER(mm,10u)          //          ??/06 W Medieval Madness (1.0 Ultrapin)
+DRIVER(mm,10pfx)        //          10/18 W Medieval Madness (1.0 Pinball FX)
+DRIVER(mm,109)          //          06/99 W Medieval Madness (1.09 Home version)
+DRIVER(mm,109b)         //                  Medieval Madness (1.09B Home version Coin Play)
+DRIVER(mm,109c)         //                  Medieval Madness (1.09C Home version w/ profanity speech)
 DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
 DRIVER(cv,11)           //          11/97 B Cirqus Voltaire (1.1)
 DRIVER(cv,13)           //          04/98 B Cirqus Voltaire (1.3)

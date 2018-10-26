@@ -23,6 +23,16 @@
  UINT32 g_raw_dmdx = ~0u;
  UINT32 g_raw_dmdy = ~0u;
 
+ static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
+ static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
+ static UINT8 *currbuffer = buffer1;
+ static UINT8 *oldbuffer = NULL;
+ static UINT32 raw_dmdoffs = 0;
+
+ #include "gts3dmd.h"
+ UINT8  g_raw_gtswpc_dmd[GTS3DMD_FRAMES_5C*0x200];
+ UINT32 g_raw_gtswpc_dmdframes = 0;
+
  UINT32 g_needs_DMD_update = 1;
 #endif
 
@@ -751,11 +761,6 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 	  (core_gameData->gen == GEN_ALVG_DMD2));
 
 #if defined(VPINMAME) || defined(PINMAME_DLL)
-  static UINT8 buffer1[DMD_MAXY*DMD_MAXX];
-  static UINT8 buffer2[DMD_MAXY*DMD_MAXX];
-  static UINT8 *currbuffer = buffer1;
-  static UINT8 *oldbuffer = NULL;
-  static UINT32 raw_dmdoffs = 0;
 
   const UINT8 perc0 = (pmoptions.dmd_perc0  > 0) ? pmoptions.dmd_perc0  : 20;
   const UINT8 perc1 = (pmoptions.dmd_perc33 > 0) ? pmoptions.dmd_perc33 : 33;
@@ -854,10 +859,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
 		}
 #endif
-		if (shade_16_enabled)
-			*line++ = dmdColor[col+63];
-		else
-			*line++ = dmdColor[col];
+		*line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
       }
@@ -895,8 +897,9 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			  {
 				  FILE *f;
 				  char *ptr;
-				  char* DumpFilename = (char*)malloc(MAX_PATH);
+				  char DumpFilename[MAX_PATH];
 
+				  const DWORD tick = GetTickCount();
 #ifndef _WIN64
 				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
@@ -906,12 +909,42 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  ptr = strrchr(DumpFilename, '\\');
 				  strcpy_s(ptr + 1, 11, "DmdDump\\");
 				  strcat_s(DumpFilename, MAX_PATH, Machine->gamedrv->name);
-				  strcat_s(DumpFilename, MAX_PATH, ".txt");
 
+				  if (g_raw_gtswpc_dmdframes != 0) {
+					  FILE* fr;
+					  char RawFilename[MAX_PATH];
+					  strcpy_s(RawFilename, MAX_PATH, DumpFilename);
+					  strcat_s(RawFilename, MAX_PATH, ".raw");
+					  fr = fopen(RawFilename, "rb");
+					  if (fr) {
+						  fclose(fr);
+						  fr = fopen(RawFilename, "ab");
+					  }
+					  else {
+						  fr = fopen(RawFilename, "ab");
+						  if(fr)
+						  {
+							  fputc(0x52, fr);
+							  fputc(0x41, fr);
+							  fputc(0x57, fr);
+							  fputc(0x00, fr);
+							  fputc(0x01, fr);
+							  fputc(layout->length, fr);
+							  fputc(layout->start, fr);
+							  fputc(g_raw_gtswpc_dmdframes, fr);
+						  }
+					  }
+					  if(fr)
+					  {
+						  fwrite(&tick, 1, 4, fr);
+						  fwrite(g_raw_gtswpc_dmd, 1, (layout->length * layout->start / 8 * g_raw_gtswpc_dmdframes), fr);
+						  fclose(fr);
+					  }
+				  }
+
+				  strcat_s(DumpFilename, MAX_PATH, ".txt");
 				  f = fopen(DumpFilename, "a");
-				  free(DumpFilename);
 				  if (f) {
-					  const DWORD tick = GetTickCount();
 					  fprintf(f, "0x%08x\n", tick);
 					  for (jj = 0; jj < layout->start; jj++) {
 						  for (ii = 0; ii < layout->length; ii++)
@@ -927,6 +960,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 			  }
 		  }
 	  }
+
+	  g_raw_gtswpc_dmdframes = 0;
 
 	  // swap buffers
 	  if (currbuffer == buffer1) {
@@ -1807,6 +1842,17 @@ static MACHINE_STOP(core) {
   // DMD USB Kill
   if(g_fShowPinDMD && !time_to_reset)
 	pindmdDeInit();
+
+  g_raw_dmdx = ~0u;
+  g_raw_dmdy = ~0u;
+
+  currbuffer = buffer1;
+  oldbuffer = NULL;
+  raw_dmdoffs = 0;
+
+  g_raw_gtswpc_dmdframes = 0;
+  
+  g_needs_DMD_update = 1;
 #endif
 
   mech_emuExit();

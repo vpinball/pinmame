@@ -245,7 +245,7 @@ static void cv_drawStatic(BMTYPE **line) {
 
 static mech_tInitData cv_ringMech = {
   22, 43, MECH_LINEAR|MECH_REVERSE|MECH_ONEDIRSOL, 128, 128,
-  {{42, 0, 4},{43, 33, 38},{44,123,127}}
+  {{42, 0, 4},{43, 33, 38},{44,123,127}},0
 };
 
 static void cv_handleMech(int mech) {

@@ -239,7 +239,7 @@ static mech_tInitData wd_reelMech[] = {{
 },{
   27,28, MECH_LINEAR | MECH_CIRCLE | MECH_TWOSTEPSOL,50, 50,
   {{12, 0, 2}}
-}};
+},0};
 
 static void wd_handleMech(int mech) {
 //  if (mech & 0x01) mech_update(0);

@@ -229,7 +229,7 @@ extern "C" int osd_init(void)
 		maxX = (maxX+40)*2 + 40;
 	int maxY = GetSystemMetrics(cabinetMode ? 79/*SM_CYVIRTUALSCREEN*/ : SM_CYSCREEN) - windowRect.bottom + (cabinetMode ? 40 : 0);
 
-	if ( dmd_pos_x<0 )
+	if ( !cabinetMode && dmd_pos_x<0 )
 		dmd_pos_x = 0;
 	else if ( dmd_pos_x>maxX )
 		dmd_pos_x = maxX;
@@ -237,7 +237,7 @@ extern "C" int osd_init(void)
 	CComVariant vValueX(dmd_pos_x);
 	m_pController->m_pGameSettings->put_Value(CComBSTR("dmd_pos_x"), vValueX);
 
-	if ( dmd_pos_y<0 )
+	if (!cabinetMode && dmd_pos_y<0 )
 		dmd_pos_y = 0;
 	else if ( dmd_pos_y>maxY )
 		dmd_pos_y = maxY;
