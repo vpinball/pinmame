@@ -116,6 +116,9 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 	DmdDev_Console_Input_Ptr = (Console_Input_Ptr_t)GetProcAddress(hModule, "Console_Input_Ptr");
 
+	dmd_width = 128; // set default DMD size
+	dmd_height = 32;
+
 	if ( !DmdDev_Open || !DmdDev_Close || !DmdDev_PM_GameSettings || !DmdDev_Render_4_Shades || !DmdDev_Render_16_Shades || !DmdDev_render_PM_Alphanumeric_Frame ) {
 		MessageBox(NULL, "DMD device driver functions not found", filename, MB_ICONERROR);
 		return 0;
@@ -126,9 +129,8 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 		if (DmdDev_Console_Input_Ptr)
 			DmdDev_Console_Input_Ptr(RcvConsoleInput);
 
-		dmd_width = 128; // set default DMD size
-		dmd_height = 32;
 		dmd_hasDMD = false;
+		memset(seg_data2, 0, 50 * sizeof(UINT16));
 
 		rgb24 color0,color33,color66,color100;
 

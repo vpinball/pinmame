@@ -1165,6 +1165,15 @@ GTS80_ROMEND
 #define input_ports_rockegfp input_ports_rock
 CORE_CLONEDEFNV(rockegfp, rock, "Rock Encore (German Free Play)",1986,"Flipprojets",gl_mGTS80BS1,0)
 
+INITGAME(clash, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_8K_ROMSTART(clash,    "prom1c.cpu", CRC(410d02f6) SHA1(87968576bf5dcca886bcadd4ab379fff080e6eeb))
+GTS80BSSOUND888(             "drom1a.snd", CRC(b8aa8912) SHA1(abff690256c0030807b2d4dfa0516496516384e8),
+                             "yrom1a.snd", CRC(a62e3b94) SHA1(59636c2ac7ebbd116a0eb39479c97299ba391906),
+                             "yrom2a.snd", CRC(66645a3f) SHA1(f06261af81e6b1829d639933297d2461a8c993fc))
+GTS80_ROMEND
+#define input_ports_clash input_ports_rock
+CORE_CLONEDEFNV(clash, rock, "Clash, The (Rock Encore unofficial MOD)",2018,"Onevox",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Hollywood Heat (#703)
 /-------------------------------------------------------------------*/

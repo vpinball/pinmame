@@ -440,6 +440,9 @@ WPC_ROMEND
 WPC_ROMSTART(taf,d5,  "taf_d5.rom",0x80000,CRC(10136ffa) SHA1(15ff1fd6528422c194f5027ccb798276f1b37229))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
+WPC_ROMSTART(taf,l5c, "The Addams Family U6 game ROM rev L-5 patch a656.rom",0x80000,CRC(2c924647) SHA1(b2bf0bb713df210186fd8e547ce3eb8cfa9f6a51))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
 
 WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65) SHA1(ce6f9cc45df08f50f5ece2a4c9376ecf67b0466a))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
@@ -507,6 +510,7 @@ WPC_ROMEND
 
 CORE_GAMEDEF(taf,l5,       "Addams Family, The (L-5)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,d5,l5,   "Addams Family, The (D-5 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l5c,l5,  "Addams Family, The (L-5C Competition MOD)",2018,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p2,l5,   "Addams Family, The (P-2 Prototype)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p3,l5,   "Addams Family, The (P-3 Prototype LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l1,l5,   "Addams Family, The (L-1)",1992,"Bally",wpc_mFliptronS,0)
@@ -517,13 +521,18 @@ CORE_CLONEDEF(taf,l3,l5,   "Addams Family, The (L-3)",1992,"Bally",wpc_mFliptron
 CORE_CLONEDEF(taf,d3,l5,   "Addams Family, The (D-3 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l4,l5,   "Addams Family, The (L-4)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,d4,l5,   "Addams Family, The (D-4 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,l7,l5,   "Addams Family, The (L-5 Prototype L-7)",1992,"Bally",wpc_mFliptronS,0)
+// L-5 Prototype missing
+// L-5 Prototype L-6 missing
+CORE_CLONEDEF(taf,l7,l5,   "Addams Family, The (L-5 Prototype L-7)",1992,"Bally",wpc_mFliptronS,0) // internal name was apparently L-7, but later-on they released the official L-5 that includes all the changes up to the internal L-5 prototype named L-8
 CORE_CLONEDEF(taf,d7,l5,   "Addams Family, The (L-5 Prototype D-7 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition Gold, The (LX-3)", 1994,"Bally",wpc_mFliptronS,0)
+// L-5 Prototype L-8 missing
+CORE_CLONEDEF(taf,l6,l5,   "Addams Family, The (L-6)",1993,"Bally",wpc_mFliptronS,0) // Released only to a German distributor
+CORE_CLONEDEF(taf,d6,l5,   "Addams Family, The (D-6 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+// H-3 is missing
+CORE_CLONEDEF(taf,h4,l5,   "Addams Family, The (H-4)",1994,"Bally",wpc_mFliptronS,0) //!! make this the GAMEDEF instead of L-5, apparently this is the recommended version with additional home settings?
+CORE_CLONEDEF(taf,i4,l5,   "Addams Family, The (I-4 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
+// 6.0H is missing
+CORE_GAMEDEF(tafg,lx3,     "Addams Family Special Collectors Edition Gold, The (LX-3)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,dx3,lx3,"Addams Family Special Collectors Edition, The (DX-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3, "Addams Family Special Collectors Edition, The (H-3)",1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,i3,lx3, "Addams Family Special Collectors Edition, The (I-3 LED Ghost Fix)",1994,"Bally",wpc_mFliptronS,0)

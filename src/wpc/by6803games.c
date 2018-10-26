@@ -236,6 +236,15 @@ BY6803_ROMEND
 #define input_ports_hvymetal input_ports_by6803
 CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803_SDS,0)
 
+INITGAME6803(hvymetag,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
+BY6803_ROMSTART44(hvymetag,"u2g.rom",CRC(e50b500a) SHA1(c4f3502bf8afaa94610e008ce6b719ab4c4be712),
+                           "u3g.rom",CRC(7d018d0d) SHA1(07ba3bd5c15b96d6fc72e0a1de3b5d8defcc53b9))
+BYSD_SOUNDROM00xx(         "u12.rom",CRC(77933258) SHA1(42a01e97440dbb7d3da92dbfbad2516f4b553a5f),
+                           "u11.rom",CRC(b7e4de7d) SHA1(bcc89e10c368cdbc5137d8f585e109c0be25522d))
+BY6803_ROMEND
+#define input_ports_hvymetag input_ports_hvymetal
+CORE_CLONEDEFNV(hvymetag,hvymetal,"Heavy Metal Meltdown (German)",1987,"Bally",by_mBY6803_SDS,0)
+
 /*------------------------------------
 / Dungeons & Dragons (6803-0H06: 10/87)
 /------------------------------------*/
