@@ -8,7 +8,7 @@ Increased main CPU IRQ clock for Inder/Spinball games, makes at least Jolly Park
 
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox
 Correct Dumps:
-Top Pin's U11 sound ROM is bad, please all look out for a good dump!
+Nuova Bell: Top Pin
 
 Clones:
 Addams Family, The L-5 (competition MOD)
