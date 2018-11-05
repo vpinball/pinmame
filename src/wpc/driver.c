@@ -381,6 +381,11 @@ DRIVERNV(glxplay)       //Galaxy Play (1985)
 DRIVERNV(kidnap)        //Kidnap (1986)
 DRIVERNV(glxplay2)      //Galaxy Play 2 (1987)
 
+// ---------------
+// CIRSA GAMES
+// ---------------
+DRIVERNV(sport2k)       //Sport 2000 (1988)
+
 // -------------------
 // DATA EAST GAMES
 // -------------------

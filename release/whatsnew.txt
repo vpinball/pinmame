@@ -6,7 +6,10 @@ Fix NBA Fastbreak fast flips so that the million dollar shot works
 Fixed Barni emulation
 Increased main CPU IRQ clock for Inder/Spinball games, makes at least Jolly Park work without "bola perdida" messages
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan
+New:
+Cirsa: Sport 2000
+
 Correct Dumps:
 Inder: Clown
 Nuova Bell: Top Pin
