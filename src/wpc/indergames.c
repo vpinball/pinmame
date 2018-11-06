@@ -87,7 +87,7 @@ CORE_GAMEDEFNV(moonlght,"Moon Light",1987,"Inder (Spain)",gl_mINDERS0,0)
 /-------------------------------------------------------------------*/
 INITGAME(pinclown, inderDisp7, 0, 0,0,0,0,0)
 INDER_ROMSTART1(pinclown,"clown_a.bin", CRC(b7c3f9ab) SHA1(89ede10d9e108089da501b28f53cd7849f791a00))
-INDER_SNDROM4(			"clown_b.bin", CRC(81a66302) SHA1(3d1243ae878747f20e54cd3322c5a54ded45ce21),
+INDER_SNDROM4(			"clown_b.bin", CRC(c223c961) SHA1(ed5180505b6ebbfb9451f67a44d07df3555c8f8d),
 						"clown_c.bin", CRC(dff89319) SHA1(3745a02c3755d11ea7fb552f7a5df2e8bbee2c29),
 						"clown_d.bin", CRC(cce4e1dc) SHA1(561c9331d2d110d34cf250cd7b25be16a72a1d79),
 						"clown_e.bin", CRC(98263526) SHA1(509764e65847637824ba93f7e6ce926501c431ce),

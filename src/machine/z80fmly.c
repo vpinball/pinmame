@@ -179,7 +179,7 @@ void z80ctc_reset (int which)
 
 void z80ctc_0_reset (void) { z80ctc_reset (0); }
 void z80ctc_1_reset (void) { z80ctc_reset (1); }
-
+void z80ctc_2_reset (void) { z80ctc_reset (2); }
 
 void z80ctc_w (int which, int offset, int data)
 {
@@ -268,7 +268,7 @@ void z80ctc_w (int which, int offset, int data)
 
 WRITE_HANDLER( z80ctc_0_w ) { z80ctc_w (0, offset, data); }
 WRITE_HANDLER( z80ctc_1_w ) { z80ctc_w (1, offset, data); }
-
+WRITE_HANDLER( z80ctc_2_w ) { z80ctc_w (2, offset, data); }
 
 int z80ctc_r (int which, int ch)
 {
@@ -299,7 +299,7 @@ int z80ctc_r (int which, int ch)
 
 READ_HANDLER( z80ctc_0_r ) { return z80ctc_r (0, offset); }
 READ_HANDLER( z80ctc_1_r ) { return z80ctc_r (1, offset); }
-
+READ_HANDLER( z80ctc_2_r ) { return z80ctc_r (2, offset); }
 
 int z80ctc_interrupt( int which )
 {
@@ -431,7 +431,10 @@ WRITE_HANDLER( z80ctc_1_trg0_w ) { z80ctc_trg_w (1, 0, offset, data); }
 WRITE_HANDLER( z80ctc_1_trg1_w ) { z80ctc_trg_w (1, 1, offset, data); }
 WRITE_HANDLER( z80ctc_1_trg2_w ) { z80ctc_trg_w (1, 2, offset, data); }
 WRITE_HANDLER( z80ctc_1_trg3_w ) { z80ctc_trg_w (1, 3, offset, data); }
-
+WRITE_HANDLER( z80ctc_2_trg0_w ) { z80ctc_trg_w (2, 0, offset, data); }
+WRITE_HANDLER( z80ctc_2_trg1_w ) { z80ctc_trg_w (2, 1, offset, data); }
+WRITE_HANDLER( z80ctc_2_trg2_w ) { z80ctc_trg_w (2, 2, offset, data); }
+WRITE_HANDLER( z80ctc_2_trg3_w ) { z80ctc_trg_w (2, 3, offset, data); }
 
 /*---------------------- Z80 PIO ---------------------------------*/
 

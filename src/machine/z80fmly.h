@@ -1,7 +1,7 @@
 /*  Z80 FMLY.H   Z80 FAMILY IC EMURATION */
 
 
-#define MAX_CTC 2
+#define MAX_CTC 3
 
 #define NOTIMER_0 (1<<0)
 #define NOTIMER_1 (1<<1)
@@ -26,14 +26,17 @@ double z80ctc_getperiod (int which, int ch);
 void z80ctc_reset (int which);
 void z80ctc_0_reset (void);
 void z80ctc_1_reset (void);
+void z80ctc_2_reset (void);
 
 void z80ctc_w (int which, int offset, int data);
 WRITE_HANDLER( z80ctc_0_w );
 WRITE_HANDLER( z80ctc_1_w );
+WRITE_HANDLER( z80ctc_2_w );
 
 int z80ctc_r (int which, int offset);
 READ_HANDLER( z80ctc_0_r );
 READ_HANDLER( z80ctc_1_r );
+READ_HANDLER( z80ctc_2_r );
 
 void z80ctc_trg_w (int which, int trg, int offset, int data);
 WRITE_HANDLER( z80ctc_0_trg0_w );
@@ -44,6 +47,10 @@ WRITE_HANDLER( z80ctc_1_trg0_w );
 WRITE_HANDLER( z80ctc_1_trg1_w );
 WRITE_HANDLER( z80ctc_1_trg2_w );
 WRITE_HANDLER( z80ctc_1_trg3_w );
+WRITE_HANDLER( z80ctc_2_trg0_w );
+WRITE_HANDLER( z80ctc_2_trg1_w );
+WRITE_HANDLER( z80ctc_2_trg2_w );
+WRITE_HANDLER( z80ctc_2_trg3_w );
 
 /* Z80 DaisyChain controll */
 int z80ctc_interrupt( int which );
