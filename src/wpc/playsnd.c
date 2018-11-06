@@ -154,55 +154,6 @@ static WRITE_HANDLER(play4s_man_w) {
   play4s_ctrl_w(0, 0);
 }
 
-static void ctc_interrupt(int state) {
-  logerror("ctc_irq: %x\n", state);
-}
-
-static WRITE_HANDLER(zc0_0_w) {
-  logerror("zc0_0_w: %02x\n", data);
-}
-
-static WRITE_HANDLER(zc1_0_w) {
-  logerror("zc1_0_w: %02x\n", data);
-}
-
-static WRITE_HANDLER(zc2_0_w) {
-  logerror("zc2_0_w: %02x\n", data);
-}
-
-static WRITE_HANDLER(zc0_1_w) {
-  logerror("zc0_1_w: %02x\n", data);
-}
-
-static WRITE_HANDLER(zc1_1_w) {
-  logerror("zc1_1_w: %02x\n", data);
-}
-
-static WRITE_HANDLER(zc2_1_w) {
-  logerror("zc2_1_w: %02x\n", data);
-}
-
-static z80ctc_interface ctc_intf = {
-	2,								/* 2 chips */
-	{ 4000000, 4000000 },							/* clock */
-	{ 0, 0 },		/* timer disables */
-	{ ctc_interrupt, ctc_interrupt },				/* interrupt handler */
-	{ zc0_0_w, zc0_1_w },							/* ZC/TO0 callback */
-	{ zc1_0_w, zc1_1_w },							/* ZC/TO1 callback */
-	{ zc2_0_w, zc2_1_w }							/* ZC/TO2 callback */
-};
-
-static void play5s_init(struct sndbrdData *brdData) {
-  memset(&sndlocals, 0, sizeof sndlocals);
-  z80ctc_init(&ctc_intf);
-}
-
-static WRITE_HANDLER(play5s_data_w) {
-//  printf("snd data: %02x\n", data);
-  sndlocals.sndCmd = data;
-  cpu_set_irq_line(PLAYMATIC_SCPU, 0, PULSE_LINE);
-}
-
 /*-------------------
 / exported interfaces
 /--------------------*/
@@ -217,9 +168,6 @@ const struct sndbrdIntf play3sIntf = {
 };
 const struct sndbrdIntf play4sIntf = {
   "PLAY4", play4s_init, NULL, NULL, play4s_man_w, play4s_data_w, NULL, play4s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
-};
-const struct sndbrdIntf play5sIntf = {
-  "PLAY5", play5s_init, NULL, NULL, play5s_data_w, play5s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 static UINT8 snd_mode(void) { return CDP1802_MODE_RUN; }
@@ -429,80 +377,6 @@ MACHINE_DRIVER_START(PLAYMATICS4)
   MDRV_CPU_MEMORY(playsound_readmem4, playsound_writemem4)
   MDRV_CPU_PORTS(playsound_readport4, playsound_writeport4)
   MDRV_SOUND_ADD(AY8910, play4s_8910Int)
-  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
-MACHINE_DRIVER_END
-
-
-static READ_HANDLER(snd_r) {
-  return sndlocals.sndCmd;
-}
-
-static MEMORY_READ_START(playsound_readmem5)
-  {0x0000,0x6fff, MRA_ROM},
-  {0x7000,0x7000, snd_r},
-  {0x7000,0x77ff, MRA_RAM},
-MEMORY_END
-
-static MEMORY_WRITE_START(playsound_writemem5)
-  {0x7000,0x77ff, MWA_RAM},
-MEMORY_END
-
-static PORT_READ_START(playsound_readport5)
-  {0x14,0x14, z80ctc_0_r},
-MEMORY_END
-
-static PORT_WRITE_START(playsound_writeport5)
-  {0x00,0x03, z80ctc_0_w},
-  {0x04,0x07, z80ctc_1_w},
-  {0x0c,0x0d, ay0_w},
-  {0x10,0x11, ay1_w},
-MEMORY_END
-
-static void play5s_msmIrq(int data) {
-	MSM5205_reset_w(0, 0);
-  MSM5205_data_w(0, data & 0x0f);
-}
-
-static struct MSM5205interface play5s_msm5205Int = {
-	1,					//# of chips
-	384000,				//384Khz Clock Frequency?
-	{play5s_msmIrq},	//VCLK Int. Callback
-	{MSM5205_S48_4B},	//Sample Mode
-	{100}				//Volume
-};
-
-static WRITE_HANDLER(ay8910_0_a_w)	{
-  UINT8 control = data & 0x7f;
-  logerror("snd_ctrl: %02x\n", control);
-}
-
-static WRITE_HANDLER(ay8910_1_a_w)	{
-  logerror("AY1: %02x\n", data);
-}
-
-struct AY8910interface play5s_8910Int = {
-	2,			/* 2 chips */
-	2000000,	/* 2 MHz */
-	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
-	{ 0, 0 },
-	{ 0, 0 },
-	{ ay8910_0_a_w, ay8910_1_a_w }
-};
-
-static Z80_DaisyChain play5s_DaisyChain[] = {
-  {z80ctc_reset, z80ctc_interrupt, z80ctc_reti, 0},
-  {z80ctc_reset, z80ctc_interrupt, z80ctc_reti, 0},
-  {0,0,0,-1}
-};
-
-MACHINE_DRIVER_START(PLAYMATICS5)
-  MDRV_CPU_ADD_TAG("scpu", Z80, 4000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(playsound_readmem5, playsound_writemem5)
-  MDRV_CPU_PORTS(playsound_readport5, playsound_writeport5)
-  MDRV_CPU_CONFIG(play5s_DaisyChain)
-  MDRV_SOUND_ADD(AY8910, play5s_8910Int)
-  MDRV_SOUND_ADD(MSM5205, play5s_msm5205Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
