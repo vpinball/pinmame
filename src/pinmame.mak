@@ -84,6 +84,7 @@ DRVLIBS += $(PINOBJ)/slalom.o
 DRVLIBS += $(PINOBJ)/boomerang.o
 DRVLIBS += $(PINOBJ)/spiritof76.o
 DRVLIBS += $(PINOBJ)/luckydraw.o
+DRVLIBS += $(PINOBJ)/efo.o $(PINOBJ)/efosnd.o
 #
 # Games
 #
@@ -244,6 +245,7 @@ SOUNDS += Y8950@
 SOUNDS += ASTROCADE@
 SOUNDS += YMF262@
 SOUNDS += MEA8000@
+SOUNDS += SAA1099@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims

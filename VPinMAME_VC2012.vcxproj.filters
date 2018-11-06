@@ -560,6 +560,9 @@
     <ClCompile Include="src\sound\s14001a.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\saa1099.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
     <ClCompile Include="src\sound\samples.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -750,6 +753,12 @@
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\driver.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\efo.c">
+      <Filter>Source Files\PinMAME</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wpc\efosnd.c">
       <Filter>Source Files\PinMAME</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\flicker.c">
@@ -1625,6 +1634,9 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\s14001a.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\saa1099.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\samples.h">

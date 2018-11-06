@@ -955,6 +955,11 @@ DRIVERNV(macjungn)      //New MAC Jungle (1995)
 DRIVERNV(nbamac)        //NBA MAC (1996)
 
 // ----------------
+// MAIBESA
+// ----------------
+DRIVERNV(ebalchmb)      //Eight Ball Champ (198?)
+
+// ----------------
 // MICROPIN GAMES
 // ----------------
 DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
@@ -989,6 +994,11 @@ DRIVERNV(macattck)      //Mac Attack (1989?)
 DRIVERNV(wcup90)        //World Cup '90 (1990)
 
 // ----------------
+// NONDUM / CIFA
+// ----------------
+DRIVERNV(comeback)      //Come Back (198?)
+
+// ----------------
 // NSM GAMES
 // ----------------
                         //Cosmic Flash (10/1985)
@@ -1012,7 +1022,7 @@ DRIVERNV(gamatron)      // Gamatron (December 85)
 // PLAYBAR
 // ----------------
 DRIVERNV(blroller)      // Bloody Roller (1987)
-                        // Cobra (1987)
+DRIVERNV(cobrapb)       // Cobra (1987)
 
 // ----------------
 // PLAYMATIC

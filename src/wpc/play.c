@@ -21,7 +21,7 @@
 
  Sound started out with 4 simple tones (with fading option), and evolved through a CPU-driven
  oscillator circuit on to complete sound boards with another 1802 CPU,
- and also a completely new sound board design for their latest two games!
+ and they also used the E.F.O. ZSU sound board for their latest two games.
 
  Hardware:
  ---------
@@ -33,7 +33,7 @@
            ZIRA:  like gen.2, plus an additional COP402 @ 2 MHz with 1 x AY8910 sound chip
            gen.3: like gen.2, plus an additional CDP1802 @ 2.95 MHz with 1 x TMS5220 speech chip
            gen.4: CDP1802 @ NTSC clock with 2 x AY8910 @ NTSC/2
-           gen.5: Z80 @ 4 MHz clock with 2 x CTC chip, 2 x AY8910, MSM5205
+           gen.5: E.F.O. ZSU sound board
 
 MAME INFO:
 The IOS board common to all games provides sound effects through the CDP1863.
@@ -267,7 +267,7 @@ static WRITE_HANDLER(out2_n) {
         locals.sndCmd = locals.lampCol;
         sndbrd_0_data_w(0, locals.sndCmd);
         sndbrd_0_ctrl_w(0, locals.enSn);
-      } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY5 && !locals.enSn) {
+      } else if (core_gameData->hw.soundBoard == SNDBRD_ZSU && !locals.enSn) {
         locals.sndCmd = locals.lampCol;
         sndbrd_0_data_w(0, locals.sndCmd);
       }
@@ -497,12 +497,12 @@ MACHINE_DRIVER_START(PLAYMATIC4)
   MDRV_IMPORT_FROM(PLAYMATICS4)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(PLAYMATIC4S5)
+MACHINE_DRIVER_START(PLAYMATIC4SZSU)
   MDRV_IMPORT_FROM(PLAYMATIC3)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,PLAYMATIC)
   MDRV_CPU_REPLACE("mcpu", CDP1802, 3579545)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 3579545/8192)
-  MDRV_IMPORT_FROM(PLAYMATICS5)
+  MDRV_IMPORT_FROM(ZSU)
 MACHINE_DRIVER_END
 
 

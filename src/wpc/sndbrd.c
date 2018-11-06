@@ -45,8 +45,6 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
     if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
       b->init(&brdData);
   }
-
-  reinit_pinSound();
 }
 
 int sndbrd_exists(int board) {
@@ -81,10 +79,7 @@ void sndbrd_data_w(int board, int data) {
     if (b->flags & SNDBRD_NODATASYNC)
       b->data_w(board, data);
     else
-    {
       sndbrd_sync_w(b->data_w, board, data);
-      //snd_cmd_log(board, data);
-    }
   }
 }
 int sndbrd_data_r(int board) {
@@ -244,7 +239,7 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(play2s)
   SNDBRDINTF(play3s)
   SNDBRDINTF(play4s)
-  SNDBRDINTF(play5s)
+  SNDBRDINTF(zsu)
   SNDBRDINTF(playzs)
   SNDBRDINTF(tecnoplay)
   SNDBRDINTF(joctronic)
