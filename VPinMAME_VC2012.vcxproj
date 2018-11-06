@@ -997,6 +997,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\sound\mixer.c" />
     <ClCompile Include="src\sound\msm5205.c" />
     <ClCompile Include="src\sound\s14001a.c" />
+    <ClCompile Include="src\sound\saa1099.c" />
     <ClCompile Include="src\sound\samples.c" />
     <ClCompile Include="src\sound\sn76477.c" />
     <ClCompile Include="src\sound\sn76496.c" />
@@ -1379,6 +1380,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\desound.c" />
     <ClCompile Include="src\wpc\dmddevice.cpp" />
     <ClCompile Include="src\wpc\driver.c" />
+    <ClCompile Include="src\wpc\efo.c" />
+    <ClCompile Include="src\wpc\efosnd.c" />
     <ClCompile Include="src\wpc\flicker.c" />
     <ClCompile Include="src\wpc\gp.c" />
     <ClCompile Include="src\wpc\gpgames.c" />
@@ -1669,6 +1672,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\sound\mixer.h" />
     <ClInclude Include="src\sound\msm5205.h" />
     <ClInclude Include="src\sound\s14001a.h" />
+    <ClInclude Include="src\sound\saa1099.h" />
     <ClInclude Include="src\sound\samples.h" />
     <ClInclude Include="src\sound\sn76477.h" />
     <ClInclude Include="src\sound\sn76496.h" />

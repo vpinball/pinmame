@@ -35,7 +35,7 @@
 
 #define INITGAME5(name, disptype, balls) \
   PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY5}}; \
+  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ZSU}}; \
   static void init_##name(void) { \
     core_gameData = &name##GameData; \
   }
@@ -358,7 +358,7 @@ PLAYMATIC_SOUNDROM256x4("sonido1.bin", CRC(3294611d) SHA1(5f790b41bcb6d87418c80e
             "sonido3.bin", CRC(13d50f39) SHA1(70624de2dd8412c83866183a83f16cc5b8bdccb8),
             "sonido4.bin", CRC(b53f73ed) SHA1(bb928cfee418e8d9698d7bee78a32426f793c6e9))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(phntmshp,"Phantom Ship",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_STATUS)
+CORE_GAMEDEFNV(phntmshp,"Phantom Ship",1987,"Playmatic",gl_mPLAYMATIC4SZSU,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / ??/87 Skill Flight
@@ -368,7 +368,7 @@ PLAYMATIC_ROMSTART64_2(sklflite,"skflcpu1.rom", CRC(8f833b55) SHA1(1729203582c22
             "skflcpu2.rom", CRC(ffc497aa) SHA1(3e88539ae1688322b9268f502d8ca41cffb28df3))
 PLAYMATIC_SOUNDROM256("skflsnd.rom", CRC(926a1da9) SHA1(16c762fbfe6a55597f26ff55d380192bb8647ee0))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4S5,GAME_STATUS)
+CORE_GAMEDEFNV(sklflite,"Skill Flight (Playmatic)",1987,"Playmatic",gl_mPLAYMATIC4SZSU,GAME_STATUS)
 
 /*-------------------------------------------------------------------
 / ??/?? Miss Disco (Bingo machine)

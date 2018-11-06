@@ -2337,6 +2337,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\saa1099.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\saa1099.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\samples.c"
 						>
 					</File>
@@ -3623,6 +3631,14 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\driver.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\efo.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\efosnd.c"
 					>
 				</File>
 				<File

@@ -1106,6 +1106,14 @@ SOURCE=.\src\sound\s14001a.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\saa1099.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\saa1099.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\samples.c
 # End Source File
 # Begin Source File
@@ -2324,6 +2332,14 @@ SOURCE=.\src\wpc\desound.h
 # Begin Source File
 
 SOURCE=.\src\wpc\driver.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\efo.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\efosnd.c
 # End Source File
 # Begin Source File
 
