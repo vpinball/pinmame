@@ -5,7 +5,7 @@ Fixed the Nuova Bell sound board. This had various issues, and information is qu
 Fix NBA Fastbreak fast flips so that the million dollar shot works
 Fixed Barni emulation
 Added preliminary E.F.O. hardware support
-Increased main CPU IRQ clock for Inder/Spinball games, makes at least Jolly Park work without "bola perdida" messages
+Increased main CPU IRQ clock for Inder/Spinball games (Bushido,Mach 2,Jolly Park), makes at least Jolly Park work without "bola perdida" messages
 
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org
 New:
@@ -27,6 +27,7 @@ Diner PA-0 (Prototype), LF-2 (French)
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
 Medieval Madness 1.0 (Pinball FX MOD)
+Radical! L-1 (competition MOD)
 
 
 

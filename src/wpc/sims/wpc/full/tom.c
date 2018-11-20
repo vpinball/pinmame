@@ -561,13 +561,13 @@ WPC_ROMSTART(tom,061,"u6-061.rom", 0x80000,CRC(b4e8045d) SHA1(f53fc7b8616d3a3208
 /---------------*/
 CORE_GAMEDEF(tom,13,"Theatre of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,13f,13,"Theatre of Magic (1.3 French)",2005,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,15c,13,"Theatre of Magic (1.5C Competition MOD)",2016,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,15c,13,"Theatre of Magic (1.5C Competition MOD)",2016,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H
 CORE_CLONEDEF(tom,14h,13,"Theatre of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,14hb,13,"Theatre of Magic (1.4H Coin Play)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,12,13,"Theatre of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,121,13,"Theatre of Magic (1.21X LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,10f,13,"Theatre of Magic (1.0 French)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,101f,13,"Theatre of Magic (1.01 French) LED Ghost Fix",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,101f,13,"Theatre of Magic (1.01 French LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,06,13,"Theatre of Magic (0.6a)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,061,13,"Theatre of Magic (0.61a LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 

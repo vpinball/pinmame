@@ -1193,15 +1193,15 @@ S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42
                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
 S11_ROMEND
 #define input_ports_radcl input_ports_s11
-CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11c_one,0)
+CORE_GAMEDEF(radcl, l1, "Radical! (L-1)", 1990, "Bally", s11c_one,0)
 
 S11_ROMSTART48(radcl,g1,"rad_u26.l1", CRC(84b1a125) SHA1(dd01fb9189acd2620c57149921aadb051f7a2412),
-                        "u27-lg1.rom", CRC(4f2eca4b) SHA1(ff44deded1686cfa0351c4499485d6eb4561cbc1))
+                        "u27-lg1.rom",CRC(4f2eca4b) SHA1(ff44deded1686cfa0351c4499485d6eb4561cbc1))
 S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
 S11_ROMEND
-CORE_CLONEDEF(radcl,g1,l1, "Radical (LG-1 German)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(radcl,g1,l1, "Radical! (LG-1 German)", 1990, "Bally", s11c_one,0)
 
 S11_ROMSTART48(radcl,p3,"rad_u26.p1", CRC(7d736ae9) SHA1(4ea6945fa5cfbd33fcdf780814b0bf5cb3faa388),
                         "u27-p1.rom", CRC(83b1d928) SHA1(b1bd5d8a93f1ab9fb9bf5c268d8530be438448e6))
@@ -1209,7 +1209,25 @@ S11CS_SOUNDROM008(      "rad_u4.p3",  CRC(d31b7744) SHA1(7ebcc1503fc322909d32c7c
                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
                         "rad_u20.p3", CRC(82f8369c) SHA1(0691a80672fc11d46359f710bd211de7a59de346))
 S11_ROMEND
-CORE_CLONEDEF(radcl,p3,l1, "Radical (P-3 Prototype)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(radcl,p3,l1, "Radical! (P-3 Prototype)", 1990, "Bally", s11c_one,0)
+
+/* original competition patch:
+S11_ROMSTART48(radcl,l1c,"Radical U26 game ROM rev LA-1 patch 8351.rom", CRC(aa09bd45) SHA1(c35890f0ed51cbb040a4d573e38e67485f06ba79),
+                         "Radical U27 game ROM rev LA-1 patch 8351.rom", CRC(6261dfc2) SHA1(e5f549f4cd349fba3fc5edf65fc3a3b7c07481e1))
+S11CS_SOUNDROM008(       "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
+                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
+                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
+S11_ROMEND
+CORE_CLONEDEF(radcl,l1c,l1, "Radical! (L-1 Competition MOD)", 2018, "Bally", s11c_one,0)*/
+
+// new one with additional fixes:
+S11_ROMSTART48(radcl,l1c,"Radical U26 game ROM rev LA-1 patch aa9e.rom", CRC(64833ec2) SHA1(8479bafd31940c901a819ca2347dadaf005aad17),
+                         "Radical U27 game ROM rev LA-1 patch aa9e.rom", CRC(09084b7d) SHA1(f930b215e34ccac119b49d9781adca113bf0a3d4))
+S11CS_SOUNDROM008(       "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
+                         "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
+                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
+S11_ROMEND
+CORE_CLONEDEF(radcl,l1c,l1, "Radical! (L-1 Competition MOD)", 2018, "Bally", s11c_one,0)
 
 /*-----------------------
 / Star Trax 9/90

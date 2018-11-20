@@ -319,7 +319,7 @@ WPC_ROMSTART(dm,dt101,"dm_dt101.rom",0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2b
 /---------------*/
 CORE_GAMEDEF (dm,lx4,       "Demolition Man (LX-4)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dx4,  lx4, "Demolition Man (DX-4 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition MOD)",2017,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-4X patch be55
 CORE_CLONEDEF(dm,pa2,  lx4, "Demolition Man (PA-2 Prototype)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,pa3,  lx4, "Demolition Man (PA-3 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,px5,  lx4, "Demolition Man (PX-5 Prototype)",1994,"Williams",wpc_mDCSS,0)
@@ -332,10 +332,10 @@ CORE_CLONEDEF(dm,h5,   lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dh5,  lx4, "Demolition Man (DH-5 LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5b,  lx4, "Demolition Man (H-5B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dh5b, lx4, "Demolition Man (DH-5B Coin Play LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h5c,  lx4, "Demolition Man (H-5C Competition MOD)",2017,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h5c,  lx4, "Demolition Man (H-5C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-5H patch 634e
 CORE_CLONEDEF(dm,h6,   lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6b,  lx4, "Demolition Man (H-6B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2017,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-6H patch 9e24
 CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)", 2014,"FreeWPC",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 2014,"FreeWPC",wpc_mDCSS,0)
 

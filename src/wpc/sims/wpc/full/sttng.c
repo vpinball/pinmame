@@ -635,7 +635,7 @@ WPC_ROMSTART(sttng,l3,"trek_lx3.rom",0x80000,CRC(400e7887) SHA1(23d5e9796f0c3c66
 /---------------*/
 CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,d7,l7,"Star Trek: The Next Generation (DX-7 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,l7c,l7,"Star Trek: The Next Generation (LX-7C Competition MOD)",2017,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,l7c,l7,"Star Trek: The Next Generation (LX-7C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //rev. L-7X patch b804
 CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7 Special Sound)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,dx,l7,"Star Trek: The Next Generation (DX-7 Special Sound LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p4,l7,"Star Trek: The Next Generation (P-4 Prototype)",1993,"Williams",wpc_mDCSS,0)
