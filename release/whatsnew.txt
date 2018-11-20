@@ -10,6 +10,7 @@ Increased main CPU IRQ clock for Inder/Spinball games, makes at least Jolly Park
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org
 New:
 Cirsa: Sport 2000
+Inder: Skate Board
 Maibesa: Eight Ball Champ
 Nondum / CIFA: Come Back
 Playbar: Cobra
