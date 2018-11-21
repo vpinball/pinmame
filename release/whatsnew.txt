@@ -27,6 +27,7 @@ Diner PA-0 (Prototype), LF-2 (French)
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
 Medieval Madness 1.0 (Pinball FX MOD)
+Metallica 1.80.0,1.80.0LE
 Radical! L-1 (competition MOD)
 
 
