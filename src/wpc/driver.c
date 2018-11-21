@@ -2002,6 +2002,8 @@ DRIVER(mtl,164)         //S.A.M.: 04/15 Metallica - V1.64
 DRIVER(mtl,164h)        //S.A.M.: 04/15 Metallica - V1.64 Limited Edition
 DRIVER(mtl,170)         //S.A.M.: 06/16 Metallica - V1.7
 DRIVER(mtl,170h)        //S.A.M.: 06/16 Metallica - V1.7 Limited Edition
+DRIVER(mtl,180)         //S.A.M.: 11/18 Metallica - V1.80.0
+DRIVER(mtl,180h)        //S.A.M.: 11/18 Metallica - V1.80.0 Limited Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(mtl,164c)        // pinball browser colorized using extend memory
 DRIVER(mtl,170c)        // pinball browser colorized using extend memory
