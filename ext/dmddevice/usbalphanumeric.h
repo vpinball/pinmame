@@ -217,7 +217,7 @@ void _2x16Alpha(const UINT16 *const seg_data)
 //*****************************************************
 void _2x20Alpha(const UINT16 *const seg_data)
 {
-	for (int i=0; i<16; i++) {
+	for (int i=0; i<16; i++) { //!! misses 4 chars in each row
 		for (int j=0; j<16; j++) {
 			if ((seg_data[i] >> j) & 0x1) 
 				drawSegment(i*8, 2, 0, j, 3);
