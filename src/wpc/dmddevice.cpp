@@ -13,9 +13,9 @@
  #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 #endif
 
-UINT16	seg_data2[50] = {};
-UINT16	dmd_width = 128;
-UINT16	dmd_height = 32;
+UINT16  seg_data2[CORE_SEGCOUNT] = {};
+UINT16  dmd_width = 128;
+UINT16  dmd_height = 32;
 bool    dmd_hasDMD = false;
 
 HMODULE hModule;
@@ -49,7 +49,10 @@ Render_4_Shades_t DmdDev_Render_4_Shades;
 typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
 
-void FwdConsoleData(UINT8 data){
+typedef void(*render_PM_Alphanumeric_Dim_Frame_t)(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2);
+render_PM_Alphanumeric_Dim_Frame_t DmdDev_render_PM_Alphanumeric_Dim_Frame;
+
+void FwdConsoleData(UINT8 data) {
 	if (DmdDev_Console_Data)
 		DmdDev_Console_Data(data);
 }
@@ -65,7 +68,7 @@ int RcvConsoleInput(UINT8 *buf, int size)
 }
 
 int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options) {
-	
+
 	// look for the DmdDevice(64).dll in the path of vpinmame.dll
 	char filename[MAX_PATH];
 
@@ -109,6 +112,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 	DmdDev_Render_16_Shades = (Render_16_Shades_t) GetProcAddress(hModule, "Render_16_Shades");
 
 	DmdDev_render_PM_Alphanumeric_Frame = (render_PM_Alphanumeric_Frame_t) GetProcAddress(hModule, "Render_PM_Alphanumeric_Frame");
+	DmdDev_render_PM_Alphanumeric_Dim_Frame = (render_PM_Alphanumeric_Dim_Frame_t)GetProcAddress(hModule, "Render_PM_Alphanumeric_Dim_Frame");
 
 	DmdDev_Set_4_Colors_Palette = (Set_4_Colors_Palette_t) GetProcAddress(hModule, "Set_4_Colors_Palette");
 
@@ -130,7 +134,7 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 			DmdDev_Console_Input_Ptr(RcvConsoleInput);
 
 		dmd_hasDMD = false;
-		memset(seg_data2, 0, 50 * sizeof(UINT16));
+		memset(seg_data2, 0, CORE_SEGCOUNT * sizeof(UINT16));
 
 		rgb24 color0,color33,color66,color100;
 
@@ -189,7 +193,7 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 	}
 } 
 
-void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens){
+void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs) {
 
 	// Some GTS3 games like Teed Off update both empty alpha and real DMD.   If a DMD frame has been seen, 
 	// block this from running.
@@ -200,9 +204,9 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 	bool hasExtraData = false;
 	
 	// Medusa fix
-	if((gen == GEN_BY35) && (disp_lens[0] == 2))
+	if((gen == GEN_BY35) && (disp_num_segs[0] == 2))
 	{
-		memcpy(seg_data2,seg_data,50*sizeof(UINT16));
+		memcpy(seg_data2,seg_data, CORE_SEGCOUNT * sizeof(UINT16));
 		hasExtraData = true;
 		return;
 	}
@@ -217,7 +221,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 			layout = _2x6Num_2x6Num_4x1Num;
 			break;
 		case GEN_S7:
-			//_2x7Num_4x1Num_1x16Alpha(seg_data);		hmm i did this for a reason??
+			//_2x7Num_4x1Num_1x16Alpha;		//!! hmm i did this for a reason??
 			layout = _2x7Num_2x7Num_4x1Num_gen7;
 			break;
 		case GEN_S9:
@@ -269,7 +273,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 		// gottlieb
 		case GEN_GTS1:
 		case GEN_GTS80:
-			switch(disp_lens[0]){
+			switch(disp_num_segs[0]){
 				case 6:
 					layout = _2x6Num10_2x6Num10_4x1Num;
 					break;
@@ -279,16 +283,14 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 			}
 			break;
 		case GEN_GTS80B:
-			break;
 		case GEN_GTS3:
-			// 2 many digits :(
 			layout = _2x20Alpha;
 			break;
 
 		// stern
 		case GEN_STMPU100:
 		case GEN_STMPU200:
-			switch(disp_lens[0]){
+			switch(disp_num_segs[0]){
 				case 6:
 					layout = _2x6Num_2x6Num_4x1Num;
 					break;
@@ -302,9 +304,9 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 		case GEN_BY35:
 			// check for   total:8 = 6x6num + 4x1num
 			if(total_disp==8){
-
+				//!! ??
 			}else{
-				switch(disp_lens[0]){
+				switch(disp_num_segs[0]){
 					case 6:
 						layout = _2x6Num_2x6Num_4x1Num;
 						break;
@@ -324,6 +326,7 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 		case GEN_BYPROTO:
 			layout = _2x6Num_2x6Num_4x1Num;
 			break;
+		//!! unsupported so far:
 		// astro
 		case GEN_ASTRO:
 			break;
@@ -339,7 +342,8 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UIN
 			break;
 	}
 
-	if (DmdDev_render_PM_Alphanumeric_Frame)
+	if (DmdDev_render_PM_Alphanumeric_Dim_Frame)
+		DmdDev_render_PM_Alphanumeric_Dim_Frame (layout, seg_data, seg_dim, seg_data2);
+	else if (DmdDev_render_PM_Alphanumeric_Frame) // older interface without dimming
 		DmdDev_render_PM_Alphanumeric_Frame (layout, seg_data, seg_data2);
-
-}   // legacy pinMame
+}

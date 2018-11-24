@@ -32,8 +32,8 @@ extern "C"
 
 int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options);
 void pindmdDeInit();
-void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName); // legacy pinMame
-void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, UINT8 total_disp, UINT8 *disp_lens);   // legacy pinMame
+void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName);
+void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs);
 void FwdConsoleData(UINT8 data);
 
 #ifdef __cplusplus
