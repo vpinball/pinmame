@@ -989,9 +989,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
                           const struct core_dispLayout *layout, int *pos)
 {
 #ifdef VPINMAME
-  UINT16 seg_data[CORE_SEGCOUNT];
-  char seg_dim[CORE_SEGCOUNT];
-  UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
+  static UINT16 seg_data[CORE_SEGCOUNT]; // use static, in case a dmddevice.dll keeps the pointers around
+  static char seg_dim[CORE_SEGCOUNT];
+  static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
   int seg_idx=0;
   int total_disp=0;
 #endif
