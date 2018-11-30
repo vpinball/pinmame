@@ -180,9 +180,8 @@ SND CPU #2 8255 PPI
 #define DMD_FROM_RAM 0
 
 #define SPINB_Z80CPU_FREQ   5000000 /* should be  2500000 2.5 MHz, tweaked for playability */
-#define SPINB_8051CPU_FREQ 24000000 /* should be 16000000  16 MHz, tweaked for playability */
+#define SPINB_8051CPU_FREQ 20000000 /* should be 16000000  16 MHz, tweaked for playability */
 
-//#define SPINB_INTFREQ      210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
 #define INTCYCLES             90 /* keep irq high for this many cycles */
 #define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) (should probably be INTFRQ*8=2000) */
 
@@ -656,7 +655,7 @@ WRITE_HANDLER(ci21_portb_w) {
   if (!SPINBlocals.nmiSeries)
     coreGlobals.tmpLampMatrix[0] |= data;
   else
-    if (data) solenoid_w(2,data ^ ~SPINBlocals.solInv2);
+    solenoid_w(2,data ^ ~SPINBlocals.solInv2);
 }
 /*
 CI-21 8255 PPI

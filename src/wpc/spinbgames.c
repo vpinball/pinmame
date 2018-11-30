@@ -75,7 +75,7 @@ CORE_GAMEDEFNV(mach2,"Mach 2",1995,"Spinball (Spain)",mSPINBS,0)
 /*-------------------------------------------------------------------
 / Jolly Park (1996)
 /-------------------------------------------------------------------*/
-INITGAME(jolypark, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3, SPINB_GS1(0x11,0,0xF7,TRUE), 175)
+INITGAME(jolypark, spinb_dispDMD, FLIP_SWNO(0,0), 4, SNDBRD_SPINB, SPINB_DSP3, SPINB_GS1(0x11,0,0xff,TRUE), 175)
 SPINB_ROMSTART(jolypark,	"jpcpu0.rom", CRC(061967af) SHA1(45048e1d9f17efa3382460fd474a5aeb4191d617),
 							"jpcpu1.rom", CRC(ea99202f) SHA1(e04825e73fd25f6469b3315f063f598ea1ab44c7))
 SPINB_DMDROM2(			    "jpdmd0.rom", CRC(b57565cb) SHA1(3fef66d298893029de78fdb6ecdb562c33d76180),
