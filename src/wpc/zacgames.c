@@ -788,7 +788,7 @@ ZAC_ROMSTART1820(poolcfp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46
 							"poolcfp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
 ZAC_SOUNDROM_f(				"poolcham.1f", CRC(efe33926) SHA1(30444a2ee7f453f46c74fff8365d80fc4f0a277f))
 ZAC_ROMEND
-CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,0)
+CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME(poolcifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(poolcifp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
@@ -796,14 +796,14 @@ ZAC_ROMSTART1820(poolcifp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa4
 ZAC_SOUNDROM_e2f2(			"poolc_it.1f",CRC(1dc8308c) SHA1(a69f1e5fe9db5ff9fbcd08504e79ab39009efb85),
                             "poolc_it.1e",CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177))
 ZAC_ROMEND
-CORE_CLONEDEFNV(poolcifp,poolcham,"Pool Champion (Italian Speech, Free Play)",1985,"Zaccaria",mZAC2XS,0)
+CORE_CLONEDEFNV(poolcifp,poolcham,"Pool Champion (Italian Speech, Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME(poolcafp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(poolcafp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
 							"poolcfp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
 ZAC_SOUNDROM_f(				"sound1.f",    CRC(b4b4e31e) SHA1(bcd1c4c7f6f079655a9c37d0b978d997f95b93ad))
 ZAC_ROMEND
-CORE_CLONEDEFNV(poolcafp,poolcham,"Pool Champion (alternate sound, Free Play)",1985,"Zaccaria",mZAC2XS,0)
+CORE_CLONEDEFNV(poolcafp,poolcham,"Pool Champion (alternate sound, Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Black Belt (03/86)
@@ -822,7 +822,7 @@ ZAC_ROMSTART1820(bbeltzfp,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba
 ZAC_SOUNDROM_e2f4(			"bbz-e.snd",CRC(1fe045d2) SHA1(d17d7dbcafe9f8644cbe393a56ff6b45d9d40155),
 							"bbz-f.snd",CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
 ZAC_ROMEND
-CORE_CLONEDEFNV(bbeltzfp,bbeltzac,"Black Belt (Zaccaria, Free Play)",1986,"Zaccaria",mZAC2XS,0)
+CORE_CLONEDEFNV(bbeltzfp,bbeltzac,"Black Belt (Zaccaria, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Mexico '86 (07/86)
@@ -841,7 +841,7 @@ ZAC_ROMSTART1820(mexicofp,	"mex86fp.ic1",CRC(1efaf9bf) SHA1(efcc822aa6af3674196d
 ZAC_SOUNDROM_e2f4(			"mex86_e.snd",CRC(a985e8db) SHA1(11f91179fa1d46c1c83cdd4fbcf8ebdfd2a41f3f),
 							"mex86_f.snd",CRC(301c2b63) SHA1(df4a4cb48d28d53c3728066d3e3fa9eac17c78c5))
 ZAC_ROMEND
-CORE_CLONEDEFNV(mexicofp,mexico,"Mexico '86 (German Speech, Free Play)",1986,"Zaccaria",mZAC2XS,0)
+CORE_CLONEDEFNV(mexicofp,mexico,"Mexico '86 (German Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Zankor (12/86)
@@ -868,7 +868,7 @@ ZAC_SOUNDROM_456(			"zan_ic4.128",CRC(f34a2aaa) SHA1(5e415874f68586aa30dba9fff0d
 							"zan_ic5.128",CRC(bf61aab0) SHA1(939266696d0562f255f0fa5068280fe6a4cf8267),
 							"zan_ic6.128",CRC(13a5b8d4) SHA1(d8c976b3f5e9c7cded0922feefa1531c59432515))
 ZAC_ROMEND
-CORE_CLONEDEFNV(zankorfp,zankor,"Zankor (Italian Speech, Free Play)",1986,"Zaccaria",mZAC2XS2,0)
+CORE_CLONEDEFNV(zankorfp,zankor,"Zankor (Italian Speech, Free Play)",1986,"Zaccaria",mZAC2XS2,SOUNDFLAG)
 
 /*--------------------------------
 / Spooky (04/87)
@@ -901,7 +901,7 @@ ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93) SHA1(3cc127956a6df1a4fd55182606
 ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4) SHA1(4a9dd9d571f958c270b437a1665e6d3dd3eef598),
 							"spook_6.snd",CRC(d4320bc7) SHA1(30b959f5df44d097baffc2de70b12fc767f5663b))
 ZAC_ROMEND
-CORE_CLONEDEFNV(spookyfp,spooky,"Spooky (Free Play)",1987,"Zaccaria",mZAC2XS2A,0)
+CORE_CLONEDEFNV(spookyfp,spooky,"Spooky (Free Play)",1987,"Zaccaria",mZAC2XS2A,SOUNDFLAG)
 
 INITGAME(spookifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,366)
 ZAC_ROMSTART1820(spookifp,	"spookyfp.ic1",CRC(c78e1535) SHA1(583ec5a0b999f353d6d679a83555834105ee3c1c),
@@ -911,7 +911,7 @@ ZAC_SOUNDROM_e2f4(			"spook_it.1e",CRC(cdbe248e) SHA1(2337836e01622b3fc3f31272fa
 ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4) SHA1(4a9dd9d571f958c270b437a1665e6d3dd3eef598),
 							"spook_6.snd",CRC(d4320bc7) SHA1(30b959f5df44d097baffc2de70b12fc767f5663b))
 ZAC_ROMEND
-CORE_CLONEDEFNV(spookifp,spooky,"Spooky (Italian Speech, Free Play)",1987,"Zaccaria",mZAC2XS2A,0)
+CORE_CLONEDEFNV(spookifp,spooky,"Spooky (Italian Speech, Free Play)",1987,"Zaccaria",mZAC2XS2A,SOUNDFLAG)
 
 /*--------------------------------
 / Star's Phoenix (07/87)
