@@ -127,6 +127,27 @@ static WRITE_HANDLER(play3s_data_w) {
   sndlocals.ef[2] = 0;
 }
 
+static void delay(int x) {
+  int i;
+  for (i = 0; i < x; i++)
+    run_one_timeslice();
+}
+
+static WRITE_HANDLER(play3s_man_w) {
+  if (!_strnicmp(Machine->gamedrv->name, "cerberus", 8)) {
+    cpu_boost_interleave(TIME_IN_USEC(40), TIME_IN_USEC(1000));
+    play3s_data_w(offset, data >> 4);
+    delay(3);
+    play3s_data_w(offset, 0);
+    delay(3);
+    play3s_data_w(offset, data & 0x0f);
+    delay(12);
+    play3s_data_w(offset, 0);
+  } else {
+    play3s_data_w(offset, data);
+  }
+}
+
 static void play4s_timer_callback(int n) {
   cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
   cpu_set_irq_line(PLAYMATIC_SCPU, CDP1802_INPUT_LINE_INT, ASSERT_LINE);
@@ -163,7 +184,7 @@ const struct sndbrdIntf play2sIntf = {
   "PLAY2", play2s_init, NULL, NULL, play2s_man_w, play2s_data_w, NULL, play2s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play3sIntf = {
-  "PLAY3", play3s_init, NULL, NULL, play3s_data_w, play3s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "PLAY3", play3s_init, NULL, NULL, play3s_man_w, play3s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf play4sIntf = {
   "PLAY4", play4s_init, NULL, NULL, play4s_man_w, play4s_data_w, NULL, play4s_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
