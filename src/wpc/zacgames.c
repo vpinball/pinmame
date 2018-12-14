@@ -768,6 +768,14 @@ ZAC_SOUNDROM_f(				"poolcham.1f", CRC(efe33926) SHA1(30444a2ee7f453f46c74fff8365
 ZAC_ROMEND
 CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
+INITGAME(poolchai,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART020(poolchai,	"poolchai.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153) BAD_DUMP,
+							"poolchai.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c) BAD_DUMP)
+ZAC_SOUNDROM_e2f4(			"poolc_it.1e", CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177),
+							"poolc_it.1f", NO_DUMP)
+ZAC_ROMEND
+CORE_CLONEDEFNV(poolchai,poolcham,"Pool Champion (Italian Speech)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
 INITGAME(poolchap,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART020(poolchap,	"poolcham.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153),
 							"poolcham.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c))
