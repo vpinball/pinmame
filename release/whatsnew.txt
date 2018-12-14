@@ -8,10 +8,10 @@ Added preliminary E.F.O. hardware support
 Increased main CPU IRQ rate for Bushido, Mach 2, and Jolly Park
 Decreased DMD CPU clock for Bushido, Mach 2, Jolly Park, and Verne's World
 Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
-Stabilize speech on (at least) Zaccarias Mexico '86 and Black Belt
+Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org, David Gersic
 New:
 Cirsa: Sport 2000
 Inder: Skate Board
@@ -26,6 +26,7 @@ Nuova Bell: Top Pin
 Clones:
 Addams Family, The L-5C (competition MOD)
 Attack From Mars 1.1 (Pinball FX MOD)
+Black Belt (Zaccaria) (Italian, German, and French Speech)
 Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
 Diner PA-0 (Prototype), LF-2 (French)

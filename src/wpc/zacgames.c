@@ -768,14 +768,6 @@ ZAC_SOUNDROM_f(				"poolcham.1f", CRC(efe33926) SHA1(30444a2ee7f453f46c74fff8365
 ZAC_ROMEND
 CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
-INITGAME(poolchai,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
-ZAC_ROMSTART020(poolchai,	"poolcham.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153),
-							"poolcham.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c))
-ZAC_SOUNDROM_e2f2(			"poolc_it.1f",CRC(1dc8308c) SHA1(a69f1e5fe9db5ff9fbcd08504e79ab39009efb85),
-                            "poolc_it.1e",CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177))
-ZAC_ROMEND
-CORE_CLONEDEFNV(poolchai,poolcham,"Pool Champion (Italian Speech)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
-
 INITGAME(poolchap,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART020(poolchap,	"poolcham.ic1",CRC(fca2a2b2) SHA1(9a0d9c495e38628c5e0bc10f6335100eb934f153),
 							"poolcham.ic2",CRC(267a2a02) SHA1(049ada7bfcf0d8560ac03effd3fbb02ead51933c))
@@ -789,14 +781,6 @@ ZAC_ROMSTART1820(poolcfp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46
 ZAC_SOUNDROM_f(				"poolcham.1f", CRC(efe33926) SHA1(30444a2ee7f453f46c74fff8365d80fc4f0a277f))
 ZAC_ROMEND
 CORE_CLONEDEFNV(poolcfp,poolcham,"Pool Champion (Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
-
-INITGAME(poolcifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
-ZAC_ROMSTART1820(poolcifp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
-							"poolcfp.ic2",CRC(e5a4afb7) SHA1(e9ca17239decbb951152abeb332853bc0f9503ed))
-ZAC_SOUNDROM_e2f2(			"poolc_it.1f",CRC(1dc8308c) SHA1(a69f1e5fe9db5ff9fbcd08504e79ab39009efb85),
-                            "poolc_it.1e",CRC(28a3e5ee) SHA1(c090c81c78d3296e91ce12e1170ee2c71ba07177))
-ZAC_ROMEND
-CORE_CLONEDEFNV(poolcifp,poolcham,"Pool Champion (Italian Speech, Free Play)",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME(poolcafp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(poolcafp,	"poolcfp.ic1",CRC(1cc1514d) SHA1(63dd4c11856453b1aaa46144c5e631fbd17ad390),
@@ -816,6 +800,30 @@ ZAC_SOUNDROM_e2f4(			"bbz-e.snd",CRC(1fe045d2) SHA1(d17d7dbcafe9f8644cbe393a56ff
 ZAC_ROMEND
 CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
+INITGAME(bbeltzai,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltzai,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_it.1e", CRC(fab5b89f) SHA1(9a2c2ae0a2035762b11cbd84fe3cddbde4572f18),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltzai,bbeltzac,"Black Belt (Zaccaria, Italian Speech)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
+INITGAME(bbeltzag,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltzag,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_de.1e", CRC(f343103d) SHA1(d0ee91c873a10049f9aae6e762637d0384ff052a),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltzag,bbeltzac,"Black Belt (Zaccaria, German Speech)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
+INITGAME(bbeltzaf,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltzaf,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_fr.1e", CRC(81e89d96) SHA1(f38610ffc2b12601b2b2f6871645bd4186d9b229),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltzaf,bbeltzac,"Black Belt (Zaccaria, French Speech)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
 INITGAME(bbeltzfp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(bbeltzfp,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
 							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
@@ -824,8 +832,32 @@ ZAC_SOUNDROM_e2f4(			"bbz-e.snd",CRC(1fe045d2) SHA1(d17d7dbcafe9f8644cbe393a56ff
 ZAC_ROMEND
 CORE_CLONEDEFNV(bbeltzfp,bbeltzac,"Black Belt (Zaccaria, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
+INITGAME(bbeltifp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltifp,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_it.1e", CRC(fab5b89f) SHA1(9a2c2ae0a2035762b11cbd84fe3cddbde4572f18),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltifp,bbeltzac,"Black Belt (Zaccaria, Italian Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
+INITGAME(bbeltgfp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltgfp,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_de.1e", CRC(f343103d) SHA1(d0ee91c873a10049f9aae6e762637d0384ff052a),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltgfp,bbeltzac,"Black Belt (Zaccaria, German Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
+INITGAME(bbeltffp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+ZAC_ROMSTART1820(bbeltffp,	"bkbeltfp.ic1",CRC(b22e3696) SHA1(b37313aa2d91ed697ba8c9316feb327560d9e8ab),
+							"bkbeltfp.ic2",CRC(e058ac50) SHA1(5f0b1f3d5160c20d2a7e4c3c3b8614066121d282))
+ZAC_SOUNDROM_e2f4(			"bbelt_fr.1e", CRC(81e89d96) SHA1(f38610ffc2b12601b2b2f6871645bd4186d9b229),
+							"bbz-f.snd",   CRC(9f58f369) SHA1(32472d93284c0f1fc2875714b40428406dcf6325))
+ZAC_ROMEND
+CORE_CLONEDEFNV(bbeltffp,bbeltzac,"Black Belt (Zaccaria, French Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+
 /*--------------------------------
-/ Mexico '86 (07/86)
+/ Mexico 86 (07/86)
 /-------------------------------*/
 INITGAME(mexico,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",CRC(60d559b1) SHA1(1097f32dd0c89b6e3653a620e39696d8ab1289fc),
@@ -833,7 +865,7 @@ ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",CRC(60d559b1) SHA1(1097f32dd0c89b6e3653a6
 ZAC_SOUNDROM_e2f4(			"mex86_e.snd",CRC(a985e8db) SHA1(11f91179fa1d46c1c83cdd4fbcf8ebdfd2a41f3f),
 							"mex86_f.snd",CRC(301c2b63) SHA1(df4a4cb48d28d53c3728066d3e3fa9eac17c78c5))
 ZAC_ROMEND
-CORE_GAMEDEFNV(mexico,"Mexico '86 (German Speech)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+CORE_GAMEDEFNV(mexico,"Mexico 86 (German Speech)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 INITGAME(mexicofp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
 ZAC_ROMSTART1820(mexicofp,	"mex86fp.ic1",CRC(1efaf9bf) SHA1(efcc822aa6af3674196d501518dc4b1cb376bbba),
@@ -841,7 +873,7 @@ ZAC_ROMSTART1820(mexicofp,	"mex86fp.ic1",CRC(1efaf9bf) SHA1(efcc822aa6af3674196d
 ZAC_SOUNDROM_e2f4(			"mex86_e.snd",CRC(a985e8db) SHA1(11f91179fa1d46c1c83cdd4fbcf8ebdfd2a41f3f),
 							"mex86_f.snd",CRC(301c2b63) SHA1(df4a4cb48d28d53c3728066d3e3fa9eac17c78c5))
 ZAC_ROMEND
-CORE_CLONEDEFNV(mexicofp,mexico,"Mexico '86 (German Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
+CORE_CLONEDEFNV(mexicofp,mexico,"Mexico 86 (German Speech, Free Play)",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Zankor (12/86)
