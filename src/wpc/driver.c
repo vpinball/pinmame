@@ -2969,9 +2969,7 @@ DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(clownfp)       //      Clown (Free Play)
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(poolchai)      //      Pool Champion (Italian Speech)
-DRIVERNV(poolchap)      //      Pool Champion (alternate sound)
 DRIVERNV(poolcfp)       //      Pool Champion (Free Play)
-DRIVERNV(poolcafp)      //      Pool Champion (alternate sound Free Play)
 DRIVERNV(myststar)      //??/86 Mystic Star
 DRIVERNV(bbeltzac)      //03/86 Black Belt
 DRIVERNV(bbeltzai)      //      Black Belt (Italian Speech)
