@@ -2988,8 +2988,12 @@ DRIVERNV(spookyi)       //      Spooky (Italian Speech)
 DRIVERNV(spookyfp)      //      Spooky (Free Play)
 DRIVERNV(spookifp)      //      Spooky (Italian Speech Free Play)
 DRIVERNV(strsphnx)      //07/87 Star's Phoenix
+DRIVERNV(strsphnf)      //      Star's Phoenix (French Speech)
 DRIVERNV(strsphfp)      //      Star's Phoenix (Free Play)
+DRIVERNV(strspffp)      //      Star's Phoenix (French Speech Free Play)
 DRIVERNV(nstrphnx)      //08/87 New Star's Phoenix (same roms as strsphnx)
+DRIVERNV(nstrphnf)      //      New Star's Phoenix (French Speech)
 DRIVERNV(nstrphfp)      //      New Star's Phoenix (Free Play)
+DRIVERNV(nstrpffp)      //      New Star's Phoenix (French Speech Free Play)
 
 #endif /* DRIVER_RECURSIVE */
