@@ -201,12 +201,6 @@ void gts80s_init(struct sndbrdData *brdData) {
     riot6530_config(0, &GTS80S_riot6530_intf);
 	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 	riot6530_reset();
-
-	if (stream_locals.stream) {
-	  stream_free(stream_locals.stream);
-	}
-	stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
-	set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000, 11025);
 }
 
 /*--------------
@@ -245,10 +239,24 @@ static WRITE_HANDLER(gts80s_data_w)
   }
 }
 
-/* only in at the moment for the pinmame startup information */
-struct CustomSound_interface GTS80S_customsoundinterface = {
-	NULL, NULL, NULL
-};
+static int s80s_sh_start(const struct MachineSound *msound) {
+  if (Machine->gamedrv->flags & GAME_NO_SOUND) {
+    return -1;
+  }
+
+  stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
+  set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000, 11025);
+
+  return 0;
+}
+
+static void s80s_sh_stop(void) {
+  if (stream_locals.stream) {
+    stream_free(stream_locals.stream);
+  }
+}
+
+struct CustomSound_interface GTS80S_customsoundinterface = { s80s_sh_start, s80s_sh_stop };
 
 const struct sndbrdIntf gts80sIntf = {
   "GTS80", gts80s_init, gts80s_exit, gts80s_diag, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -564,12 +572,6 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	for(i = 0; i<8; i++)
 		memcpy(mr+0x8000+0x1000*i, mr+0x7000, 0x1000);
 	}
-
-	if (stream_locals.stream) {
-	  stream_free(stream_locals.stream);
-	}
-	stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
-	//set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE);
 }
 
 /*--------------
@@ -604,10 +606,24 @@ WRITE_HANDLER(gts80ss_data_w)
 	riot6532_set_input_a(3, GTS80SS_locals.riot3a);
 }
 
-/* only in at the moment for the pinmame startup information */
-struct CustomSound_interface GTS80SS_customsoundinterface = {
-	NULL, NULL, NULL
-};
+static int s80ss_sh_start(const struct MachineSound *msound) {
+  if (Machine->gamedrv->flags & GAME_NO_SOUND) {
+    return -1;
+  }
+
+  stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
+  //set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE);
+
+  return 0;
+}
+
+static void s80ss_sh_stop(void) {
+  if (stream_locals.stream) {
+    stream_free(stream_locals.stream);
+  }
+}
+
+struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s80ss_sh_stop };
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
