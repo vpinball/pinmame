@@ -136,7 +136,7 @@ DMDDEV void Render_PM_Alphanumeric_Frame(layout_t layout, const UINT16 *const se
 				_2x16Alpha(seg_data);
 				break;
 			case __2x20Alpha :
-				_2x20Alpha(seg_data);
+				_2x20Alpha(seg_data); //!! misses 4 chars in each row
 				break;
 			case __2x7Alpha_2x7Num :
 				_2x7Alpha_2x7Num(seg_data);

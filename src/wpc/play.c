@@ -63,7 +63,6 @@ enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP };
 static struct {
   int    vblankCount;
   UINT32 solenoids;
-  UINT8  sndCmd;
   int    enRl; // Out 3 Bit 4
   int    enDy; // Out 3 Bit 5
   int    enSn; // Out 3 Bit 6
@@ -259,17 +258,19 @@ static WRITE_HANDLER(out2_n) {
           coreGlobals.solenoids = locals.solenoids;
         }
       }
-      if (core_gameData->hw.soundBoard == SNDBRD_PLAY3 || core_gameData->hw.soundBoard == SNDBRD_PLAYZ) {
-//if (locals.sndCmd != (data & 0x70)) printf("\nc:%02x\n", data & 0x70);
-        locals.sndCmd = data & 0x70;
-        sndbrd_0_ctrl_w(0, locals.sndCmd);
+      if (core_gameData->hw.soundBoard == SNDBRD_PLAYZ) {
+        sndbrd_0_ctrl_w(0, data & 0x70);
+      } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY3) {
+        if (locals.cpuType < 2) {
+          if (!enable) sndbrd_0_data_w(0, (data & 0x70) >> 4);
+        } else { // ENSN is never triggered on spain82, only why not? m8020_w used to fix sound for now
+          if (locals.enSn) sndbrd_0_data_w(0, locals.lampCol);
+        }
       } else if (core_gameData->hw.soundBoard == SNDBRD_PLAY4 && !locals.enSn) {
-        locals.sndCmd = locals.lampCol;
-        sndbrd_0_data_w(0, locals.sndCmd);
+        sndbrd_0_data_w(0, locals.lampCol);
         sndbrd_0_ctrl_w(0, locals.enSn);
       } else if (core_gameData->hw.soundBoard == SNDBRD_ZSU && !locals.enSn) {
-        locals.sndCmd = locals.lampCol;
-        sndbrd_0_data_w(0, locals.sndCmd);
+        sndbrd_0_data_w(0, locals.lampCol);
       }
       cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, CLEAR_LINE);
       locals.ef[2] = 1;
@@ -341,8 +342,16 @@ static MACHINE_INIT(PLAYMATIC2) {
   init_common(1);
 }
 
+// HACK to make sound work on Spain 82!
+static WRITE_HANDLER(m8020_w) {
+  sndbrd_0_data_w(0, data);
+}
+
 static MACHINE_INIT(PLAYMATIC3) {
   init_common(2);
+  if (!_strnicmp(Machine->gamedrv->name, "spain82", 7)) {
+    install_mem_write_handler(0, 0x8020, 0x8020, m8020_w);
+  }
 }
 
 static MACHINE_INIT(PLAYMATIC4) {

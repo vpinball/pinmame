@@ -534,7 +534,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF(gw,l5,"Getaway: High Speed II, The (L-5)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,d5,l5,"Getaway: High Speed II, The (D-5 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,l5c,l5,"Getaway: High Speed II, The (L-5C Competition MOD)",2017,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l5c,l5,"Getaway: High Speed II, The (L-5C Competition MOD)",2017,"Williams",wpc_mFliptronS,0) //rev. L-5 patch bc43
 CORE_CLONEDEF(gw,pb,l5,"Getaway: High Speed II, The (P-B Prototype)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,pc,l5,"Getaway: High Speed II, The (P-C Prototype)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,pd,l5,"Getaway: High Speed II, The (P-D LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)

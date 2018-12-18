@@ -333,8 +333,8 @@ static void init_skatebrd(void) {
 	core_gameData = &skatebrdGameData;
 }
 INDERP_INPUT_PORTS(skatebrd)
-INDER_ROMSTARTP(skatebrd,	"skate2.bin", NO_DUMP,
-						"skate3.bin", NO_DUMP,
-						"skate4.bin", NO_DUMP)
+INDER_ROMSTARTP(skatebrd,	"skate2.bin", CRC(ee9b4c4c) SHA1(1a8b2ef8dfead18bfc62e85474dab2838b73ce08),
+						"skate3.bin", CRC(58e181fe) SHA1(f54c8099100d0c96dc2ddbae8db9293f8581d459),
+						"skate4.bin", CRC(fcdccffe) SHA1(a2db53f7bc555d705aa894e62307590fd74067dd))
 INDER_ROMEND
 CORE_GAMEDEFNV(skatebrd,"Skate Board",1980,"Inder (Spain)",INDERP,0)

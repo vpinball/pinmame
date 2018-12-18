@@ -991,16 +991,19 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
                           const struct core_dispLayout *layout, int *pos)
 {
 #ifdef VPINMAME
-  static UINT16 seg_data[50];
-  static UINT8 disp_lens[50];
-  int idx=0;
+  static UINT16 seg_data[CORE_SEGCOUNT]; // use static, in case a dmddevice.dll keeps the pointers around
+  static char seg_dim[CORE_SEGCOUNT];
+  static UINT8 disp_num_segs[64]; // actually max seen was 48 so far, but.. // segments per display
+  int seg_idx=0;
   int total_disp=0;
 #endif
 
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
 #ifdef VPINMAME
-  memset(seg_data, 0, 50*sizeof(UINT16));
+  memset(seg_data, 0, CORE_SEGCOUNT*sizeof(UINT16));
+  memset(seg_dim, 0, CORE_SEGCOUNT*sizeof(char));
+  disp_num_segs[0] = 0;
 #endif
 
   for (; layout->length; layout += 1) {
@@ -1017,7 +1020,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
 #ifdef VPINMAME
-      disp_lens[total_disp++] = ii;
+      disp_num_segs[total_disp++] = ii;
 #endif
 
 #ifdef PROC_SUPPORT
@@ -1062,9 +1065,10 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             break;
           }
 #ifdef VPINMAME
-		  seg_data[idx++] = tmpSeg;
+          seg_dim[seg_idx] = coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos];
+          seg_data[seg_idx++] = tmpSeg;
 #endif
-		  if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
+          if (!pmoptions.dmd_only || !(layout->fptr || layout->lptr)) {
 
             drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos] > 15 ? 15 : coreGlobals.segDim[*pos]);
 #ifdef PROC_SUPPORT
@@ -1087,7 +1091,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
           }
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
-		(*pos)++;
+        (*pos)++;
         left += locals.segData[layout->type & CORE_SEGALL].cols+1;
         seg += step; lastSeg += step;
       }
@@ -1106,7 +1110,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
 #ifdef VPINMAME
   //alpha frame
   if(g_fShowPinDMD)
-  	renderAlphanumericFrame(core_gameData->gen, seg_data, total_disp, disp_lens);
+    renderAlphanumericFrame(core_gameData->gen, seg_data, seg_dim, total_disp, disp_num_segs);
 #endif
 }
 
