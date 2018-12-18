@@ -314,7 +314,7 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
-#define TMS11178_IRQFREQ (3579545.0/8192.0)
+#define TMS11178_IRQFREQ (3579545.0/8192.0*4.1)
 
 #define SW_TRUE 1
 
@@ -487,19 +487,19 @@ static const UINT8 sawtoothWave[] = {
 static  UINT8 sawtoothWaver[64];
 
 static const struct pia6821_interface sns_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
 #if SHOW_MAME_BUG
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,		// ok modified
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, PIA_UNUSED_VAL(1), sns_pia1cb1_r, sns_pia1ca2_r, PIA_UNUSED_VAL(0),		// ok modified
 #else
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, sns_pia1b_r, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, sns_pia1b_r, PIA_UNUSED_VAL(1), sns_pia1cb1_r, sns_pia1ca2_r, PIA_UNUSED_VAL(0),
 #endif
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
 },{
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia2a_r, 0, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia2a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ sns_pia2a_w, sns_pia2b_w, sns_pia2ca2_w, 0,
   /*irq: A/B           */ 0, 0
 }};
@@ -597,7 +597,7 @@ static void sns_init(struct sndbrdData *brdData) {
   // reset tms5220
   snslocals.tmsPitch = -1;
   tms5220_reset();
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     tms5220_set_variant(TMS5220_IS_5200);
   } else {
     tms5220_set_variant(TMS5220_IS_5220); //!! 5220C (also see below) ?
@@ -764,7 +764,7 @@ static WRITE_HANDLER(sns_data_w) {
   if ((core_gameData->hw.gameSpecific2 & 1) && (data & 0x80)) // some of the speech would be garbled otherwise!
   {
       tms5220_reset();
-      if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+      if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178 || core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
         tms5220_set_variant(TMS5220_IS_5200);
       }
       else {

@@ -197,14 +197,14 @@ PLAYMATIC_ROMSTART000(cerberus, "cerb8.cpu", CRC(021d0452) SHA1(496010e6892311b1
                 "cerb10.cpu", CRC(785602e0) SHA1(f38df3156cd14ab21752dbc849c654802079eb33))
 PLAYMATIC_SOUNDROM64("cerb.snd", CRC(8af53a23) SHA1(a80b57576a1eb1b4544b718b9abba100531e3942))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S3,GAME_STATUS)
+CORE_GAMEDEFNV(cerberus,"Cerberus",1982,"Playmatic",gl_mPLAYMATIC2S3,0)
 
 /*-------------------------------------------------------------------
-/ 10/82 Spain '82
+/ 10/82 Spain 82
 /-------------------------------------------------------------------*/
 INPUT_PORTS_START(spain82)
   CORE_PORTS
-  SIM_PORTS(1)
+  SIM_PORTS(3)
   PLAYMATIC2_COMPORTS
 INPUT_PORTS_END
 static core_tGameData spain82GameData = {GEN_PLAYMATIC,play_disp6,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY3}};
@@ -215,7 +215,7 @@ PLAYMATIC_ROMSTART320(spain82,  "spaic12.bin", CRC(cd37ecdc) SHA1(ff2d406b6ac150
                 "spaic11.bin", CRC(c86c0801) SHA1(1b52539538dae883f9c8fe5bc6454f9224780d11))
 PLAYMATIC_SOUNDROM64("spasnd.bin", CRC(62412e2e) SHA1(9e48dc3295e78e1024f726906be6e8c3fe3e61b1))
 PLAYMATIC_ROMEND
-CORE_GAMEDEFNV(spain82,"Spain '82",1982,"Playmatic",gl_mPLAYMATIC3S3,GAME_STATUS)
+CORE_GAMEDEFNV(spain82,"Spain 82",1982,"Playmatic",gl_mPLAYMATIC3S3,0)
 
 /*-------------------------------------------------------------------
 / Mad Race
