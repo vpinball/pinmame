@@ -82,6 +82,13 @@ BY35_ROMEND
 #define input_ports_nightrdb input_ports_nightrdr
 CORE_CLONEDEFNV(nightrdb,nightrdr,"Night Rider (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
 
+#define init_nightrdc init_nightrdr
+BY17_ROMSTART8x8(nightrdc,"NightRider_U2.2716", CRC(90014566) SHA1(19365e3cdab26c51d2bf9b08d85143f9be441cdb),
+                          "System-17_U6.2716",  CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_nightrdc input_ports_nightrdr
+CORE_CLONEDEFNV(nightrdc,nightrdr,"Night Rider (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES) // also features for example 'Remove Tilt exploit bug'
+
 /*--------------------------------
 / Evel Knievel
 /-------------------------------*/
@@ -98,6 +105,13 @@ BY35_ROMSTARTx00(evelknib,"evel2732.u2",CRC(d17b6869) SHA1(f095adbdd0a9be34fc320
 BY35_ROMEND
 #define input_ports_evelknib input_ports_evelknie
 CORE_CLONEDEFNV(evelknib,evelknie,"Evel Knievel (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(evelknic,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(evelknic,"EvelKnievel_U2.2716", CRC(e9effa70) SHA1(6691fad3f5b17111c9fb15c15a88f4b19735b3e7),
+                          "System-17_U6.2716",   CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_evelknic input_ports_evelknie
+CORE_CLONEDEFNV(evelknic,evelknie,"Evel Knievel (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES) // also features for example 'Remove Tilt exploit bug'
 
 /*--------------------------------
 / Eight Ball
@@ -129,6 +143,13 @@ BY35_ROMEND
 #define input_ports_eightblb input_ports_eightbll
 CORE_CLONEDEFNV(eightblb,eightbll,"Eight Ball (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
 
+INITGAME(eightblc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(eightblc, "EightBall_U2.2716", CRC(3af0a16c) SHA1(518f6c76d08ff65ba02c158e862bdce3eb28dec7),
+                           "System-17_U6.2716", CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_eightblc input_ports_eightbll
+CORE_CLONEDEFNV(eightblc,eightbll,"Eight Ball (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Power Play
 /-------------------------------*/
@@ -145,6 +166,13 @@ BY35_ROMSTARTx00(pwerplab,"powr2732.u2",CRC(6d18b4a2) SHA1(4750e7b4a07b3e5552bb5
 BY35_ROMEND
 #define input_ports_pwerplab input_ports_pwerplay
 CORE_CLONEDEFNV(pwerplab,pwerplay,"Power Play (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(pwerplac,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(pwerplac,"PowerPlay_U2.2716", CRC(ed6a58d5) SHA1(13251ea7c89fbc7c3205fed4539faef23733c409),
+                          "System-17_U6.2716", CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_pwerplac input_ports_pwerplay
+CORE_CLONEDEFNV(pwerplac,pwerplay,"Power Play (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Mata Hari
@@ -170,6 +198,13 @@ BY35_ROMEND
 #define input_ports_mataharb input_ports_matahari
 CORE_CLONEDEFNV(mataharb,matahari,"Mata Hari (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
 
+INITGAME(mataharc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(mataharc,"MataHari_U2.2716",  CRC(e60ee602) SHA1(14b80dfed018a65cc6034a373cf8d3f10d0d758d),
+                          "System-17_U6.2716", CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_mataharc input_ports_matahari
+CORE_CLONEDEFNV(mataharc,matahari,"Mata Hari (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Strikes and Spares
 /-------------------------------*/
@@ -186,6 +221,13 @@ BY35_ROMSTARTx00(stk_sprb,"st&s2732.u2",CRC(7b44ab80) SHA1(e399756512c1368fff42d
 BY35_ROMEND
 #define input_ports_stk_sprb input_ports_stk_sprs
 CORE_CLONEDEFNV(stk_sprb,stk_sprs,"Strikes and Spares (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(stk_sprc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(stk_sprc,"StrikesAndSpares_U2.2716", CRC(8991df1e) SHA1(efd66d5ef1d078052a4ef74816b0a49c71dd3479),
+                          "System-17_U6.2716",        CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_stk_sprc input_ports_stk_sprs
+CORE_CLONEDEFNV(stk_sprc,stk_sprs,"Strikes and Spares (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Black Jack
@@ -225,6 +267,13 @@ BY17_ROMSTARTx88(blackjcc,"728-32_2c.716",CRC(92ea5a4a) SHA1(1a81a64904e54140a65
 BY17_ROMEND
 #define input_ports_blackjcc input_ports_blackjck
 CORE_CLONEDEFNV(blackjcc,blackjck,"Black Jack (Saucer points modification)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(blackjcd,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(blackjcd,"BlackJack_U2.2716", CRC(3c9b14a0) SHA1(18c98ee172fc59c1bf8d1a86352c5697898790b9),
+                          "System-17_U6.2716", CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
+BY17_ROMEND
+#define input_ports_blackjcd input_ports_blackjck
+CORE_CLONEDEFNV(blackjcd,blackjck,"Black Jack (Free Play+)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -32 */
