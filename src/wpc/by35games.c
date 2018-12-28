@@ -56,7 +56,21 @@ BY17_ROMSTART228(freedom,"720-08_1.474",CRC(b78bceeb) SHA1(acf6f1a497ada344211f1
                          "720-07_6.716",CRC(0f4e8b83) SHA1(faa05dde24eb60be0cdc4456ae2e660a15ed85ac))
 BY17_ROMEND
 #define input_ports_freedom input_ports_by35
-CORE_GAMEDEFNV(freedom,"Freedom",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
+CORE_GAMEDEFNV(freedom,"Freedom",1976,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
+#define init_freedoma init_freedom
+BY17_ROMSTART8x8(freedoma,"Freedom_U2.2716",CRC(d9bc70f0) SHA1(c84a23a9ff3e60156defd2046db648adadd3ae04),
+                          "Freedom_U6.2716",CRC(464bb2aa) SHA1(ebae87fb7e5307fa295ec6a13fb21956b72b81d3))
+BY17_ROMEND
+#define input_ports_freedoma input_ports_freedom
+CORE_CLONEDEFNV(freedoma,freedom,"Freedom (Free Play+ rev. 07)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES) // also features for example 'Remove Tilt exploit bug'
+
+#define init_freedomb init_freedom
+BY17_ROMSTART8x8(freedomb,"Freedom20_U2.2716",CRC(83c7b8a0) SHA1(e59de50fbc2c9b050f94275f174ab7a82ed6f99f),
+                          "Freedom20_U6.2716",CRC(536bed9f) SHA1(2d45ee00406a36fd30cc43298b6052e69f3e0da2))
+BY17_ROMEND
+#define input_ports_freedomb input_ports_freedom
+CORE_CLONEDEFNV(freedomb,freedom,"Freedom (Free Play+ rev. 20)",2018,"Bally",by35_mBY17,GAME_USES_CHIMES) // audits order aligned to other Bally machines, also features for example 'Remove Tilt exploit bug'
 
 /*--------------------------------
 / Night Rider
