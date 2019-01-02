@@ -1,3 +1,7 @@
+Add Ultimarc Ultimate I/O support, currently hardcoded to drive a real Baby Pac-Man machine (see core.c (update_hW()) and pacdrive.c to configure for other setups!)
+(use new command line option 'ultimateio' to enable it)
+
+
 Version 2.6 (X X, 2015) - "We're not dead (yet)"
 ------------------------------------------------------------------------------
 
