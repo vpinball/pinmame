@@ -319,6 +319,7 @@ static REG_OPTION regGameOpts[] =
         { "dmd_red66",              RO_INT,     &gOpts.dmd_red66,         0, 0},
         { "dmd_green66",            RO_INT,     &gOpts.dmd_green66,       0, 0},
         { "dmd_blue66",             RO_INT,     &gOpts.dmd_blue66,        0, 0},
+        { "ultimateio",             RO_BOOL,    &gOpts.ultimateio,        0, 0},
 #endif /* PINMAME */
 
 };

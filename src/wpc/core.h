@@ -463,6 +463,11 @@ extern UINT64 core_getAllSol(void);
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init);
 
+/*-- ultraio support --*/
+void update_hW(void);
+
+void update_hw_byte(int outputStart, unsigned char value);
+
 /* makes it easier to swap bits */
 extern const UINT8 core_swapNyb[16];
 INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf]<<4)|(core_swapNyb[x>>4]); }

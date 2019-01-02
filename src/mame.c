@@ -117,6 +117,7 @@
 #include "vidhrdw/vector.h"
 #include "palette.h"
 #include "harddisk.h"
+#include "pacdrive.h"
 
 
 /***************************************************************************
@@ -344,6 +345,16 @@ int run_game(int game)
 
 static int init_machine(void)
 {
+	if (pmoptions.ultimateio)
+	{
+		if (LoadPacDrive())
+		{
+			logerror("Unable to communicate with Ultimate IO.");
+			printf("\nUnable to communicate with Ultimate IO.\n");
+			exit(1);
+		}
+	}
+
 	/* load the localization file */
 	if (uistring_init(options.language_file) != 0)
 	{

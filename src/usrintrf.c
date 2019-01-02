@@ -1708,14 +1708,14 @@ static int setdipswitches(struct mame_bitmap *bitmap, int selected)
 /* it's used byt setdefkeysettings, setdefjoysettings, setkeysettings, setjoysettings */
 static int record_first_insert = 1;
 
-static char menu_subitem_buffer[500][96];
+static char menu_subitem_buffer[600][96];
 
 static int setdefcodesettings(struct mame_bitmap *bitmap,int selected)
 {
-	const char *menu_item[500];
-	const char *menu_subitem[500];
-	struct ipd *entry[500];
-	char flag[500];
+	const char *menu_item[600];
+	const char *menu_subitem[600];
+	struct ipd *entry[600];
+	char flag[600];
 	int i,sel;
 	struct ipd *in;
 	int total;

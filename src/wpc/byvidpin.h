@@ -413,4 +413,3 @@ extern MACHINE_DRIVER_EXTERN(byVP2);
 #define byVP_mVP2		byVP2
 
 #endif /* INC_BYVP */
-

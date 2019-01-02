@@ -75,6 +75,7 @@ struct rc_option pinmame_opts[] = {
         { "dmd_red0", NULL, rc_int, &pmoptions.dmd_red0, "0", 0, 0, NULL, "Colorized DMD: 0%: Red" },
         { "dmd_green0", NULL, rc_int, &pmoptions.dmd_green0, "0", 0, 0, NULL, "Colorized DMD: 0%: Green" },
         { "dmd_blue0", NULL, rc_int, &pmoptions.dmd_blue0, "0", 0, 0, NULL, "Colorized DMD: 0%: Blue" },
+        { "ultimateio", NULL, rc_bool, &pmoptions.ultimateio, "0", 0, 0, NULL, "Ultimate IO Support" },
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 #endif /* PINMAME */

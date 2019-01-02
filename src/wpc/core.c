@@ -7,6 +7,8 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
+#include "pacdrive.h"
+#include "stdbool.h"
 
 #ifdef VPINMAME
  #include "../pindmd/pindmd.h"
@@ -1072,6 +1074,9 @@ void core_updateSw(int flipEn) {
     if (keyboard_pressed(KEYCODE_C)) col = 11;
     if (keyboard_pressed(KEYCODE_V)) col = 12;
 #endif
+
+if (!pmoptions.ultimateio)
+{
     if (!col && (((inports[CORE_MANSWINPORT] & CORE_MANSWCOLUMNS) == 0) ||
         ((inports[CORE_MANSWINPORT] & CORE_MANSWROWS) == 0)))
       lastRow = lastCol = 0;
@@ -1088,7 +1093,24 @@ void core_updateSw(int flipEn) {
         lastCol = col; lastRow = row;
       }
     }
+}
+else /* using real hardware, so each matrix input can be handled individually */
+{
+    	col = 0;
+
+    	for (ii = IPT_MATRIXHW1; ii < IPT_MATRIXHW1 + 64; ii++)
+    	{
+    		if (input_ui_pressed_repeat(ii,0))
+                	coreGlobals.swMatrix[col] |= (1<<(row));
+
+                else
+                	coreGlobals.swMatrix[col] &= ~(1<<(row));
+
+        	row++;
+        	if (row > 7) { row = 0; col++; }
+        }
   }
+}
 
 #ifdef MAME_DEBUG /* Press W and E at the same time to insert a mark in logfile */
   if (g_fHandleKeyboard && ((inports[CORE_MANSWINPORT] & 0x06) == 0x06))
@@ -1146,7 +1168,15 @@ static VIDEO_UPDATE(core_status) {
   /*-- anything to do ? --*/
   if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) ||
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
+  {
+  	if (pmoptions.ultimateio)
+        	update_hW();
+
     return;
+  }
+     
+  if (pmoptions.ultimateio)
+     update_hW();
 
   dotColor[0] = CORE_COLOR(COL_DMDOFF); dotColor[1] = CORE_COLOR(COL_DMDON);
   /*--  Draw lamps --*/
@@ -1681,6 +1711,47 @@ void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int),
     ;
   machine->pinmame.timers[ii].callback = func;
   machine->pinmame.timers[ii].rate = rate;
+}
+
+//controls real pinball hardware via Ultimarc Ultimate I/O board
+void update_hW()
+{ 
+     UINT64 allSol = core_getAllSol();
+
+     int outputNum = 1;
+     int i;
+
+     // map lamps for outputs
+     for (i = 0; i < 8; i++) 
+     {
+		update_hw_byte(outputNum, coreGlobals.lampMatrix[i]);
+		outputNum += 8;
+     }
+
+     // map solenoids
+     PacDriveSetOutput(88, allSol >> 46 & 0x01); // left flipper
+     PacDriveSetOutput(89, allSol >> 44 & 0x01); // right flipper
+     PacDriveSetOutput(90, allSol >>  0 & 0x01); // Out hole
+     PacDriveSetOutput(91, allSol >>  8 & 0x01); // Left Maze Saucer
+     PacDriveSetOutput(92, allSol >>  9 & 0x01); // Right Maze Saucer
+     PacDriveSetOutput(93, allSol >>  1 & 0x01); // Drop Target Reset
+     PacDriveSetOutput(94, allSol >>  2 & 0x01); // #1 Drop Target (Left) 
+     PacDriveSetOutput(95, allSol >>  4 & 0x01); // #3 Drop Target (Center)
+     PacDriveSetOutput(96, allSol >>  6 & 0x01); // #5 Drop Target (Right)
+
+     UpdateOutputs();
+}
+
+void update_hw_byte(int outputStart, unsigned char value)
+{
+	PacDriveSetOutput(outputStart + 0, value >> 0 & 0x01); 
+	PacDriveSetOutput(outputStart + 1, value >> 1 & 0x01); 
+	PacDriveSetOutput(outputStart + 2, value >> 2 & 0x01); 
+	PacDriveSetOutput(outputStart + 3, value >> 3 & 0x01); 
+	PacDriveSetOutput(outputStart + 4, value >> 4 & 0x01); 
+	PacDriveSetOutput(outputStart + 5, value >> 5 & 0x01); 
+	PacDriveSetOutput(outputStart + 6, value >> 6 & 0x01); 
+	PacDriveSetOutput(outputStart + 7, value >> 7 & 0x01); 
 }
 
 /*---------------------------------------

@@ -23,6 +23,7 @@ COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/profiler.o \
 	$(OBJ)/hash.o $(OBJ)/sha1.o \
 	$(OBJ)/harddisk.o $(OBJ)/md5.o $(OBJ)/machine/idectrl.o \
+	$(OBJ)/pacdrive.o \
 	$(sort $(DBGOBJS))
 
 TOOLS = romcmp$(EXE) hdcomp$(EXE) xml2info$(EXE)
