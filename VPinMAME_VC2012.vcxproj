@@ -322,6 +322,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\mamedbg.c" />
     <ClCompile Include="src\md5.c" />
     <ClCompile Include="src\memory.c" />
+    <ClCompile Include="src\pacdrive.c" />
     <ClCompile Include="src\palette.c" />
     <ClCompile Include="src\png.c" />
     <ClCompile Include="src\profiler.c" />
@@ -978,6 +979,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\memory.h" />
     <ClInclude Include="src\multidef.h" />
     <ClInclude Include="src\osdepend.h" />
+    <ClInclude Include="src\pacdrive.h" />
     <ClInclude Include="src\palette.h" />
     <ClInclude Include="src\png.h" />
     <ClInclude Include="src\profiler.h" />

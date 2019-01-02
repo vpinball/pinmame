@@ -204,6 +204,9 @@
     <ClCompile Include="src\memory.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
+    <ClCompile Include="src\pacdrive.c">
+      <Filter>Source Files\MAME</Filter>
+    </ClCompile>
     <ClCompile Include="src\palette.c">
       <Filter>Source Files\MAME</Filter>
     </ClCompile>
@@ -1218,6 +1221,9 @@
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\osdepend.h">
+      <Filter>Source Files\MAME</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pacdrive.h">
       <Filter>Source Files\MAME</Filter>
     </ClInclude>
     <ClInclude Include="src\palette.h">

@@ -596,6 +596,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\pacdrive.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\pacdrive.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\palette.c"
 					>
 				</File>

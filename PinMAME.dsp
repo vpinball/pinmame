@@ -1451,6 +1451,14 @@ SOURCE=.\src\osdepend.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\pacdrive.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\pacdrive.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\palette.c
 # End Source File
 # Begin Source File

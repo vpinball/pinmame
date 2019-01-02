@@ -7,8 +7,10 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
+
+// in update_hW() there are specific mappings to control a Baby PacMan real pinball machine via an Ultimarc Ultimate I/O board
+// in order to control other machines, change the mappings in there
 #include "pacdrive.h"
-#include "stdbool.h"
 
 #ifdef VPINMAME
  #include "../pindmd/pindmd.h"
@@ -1713,22 +1715,22 @@ void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int),
   machine->pinmame.timers[ii].rate = rate;
 }
 
-//controls real pinball hardware via Ultimarc Ultimate I/O board
+//controls real Baby PacMan pinball hardware via Ultimarc Ultimate I/O board
 void update_hW()
-{ 
-     UINT64 allSol = core_getAllSol();
+{
+     const UINT64 allSol = core_getAllSol();
 
      int outputNum = 1;
      int i;
 
-     // map lamps for outputs
+     // map lamps for Baby PacMan outputs
      for (i = 0; i < 8; i++) 
      {
 		update_hw_byte(outputNum, coreGlobals.lampMatrix[i]);
 		outputNum += 8;
      }
 
-     // map solenoids
+     // map solenoids for Baby PacMan
      PacDriveSetOutput(88, allSol >> 46 & 0x01); // left flipper
      PacDriveSetOutput(89, allSol >> 44 & 0x01); // right flipper
      PacDriveSetOutput(90, allSol >>  0 & 0x01); // Out hole
