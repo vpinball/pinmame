@@ -673,6 +673,7 @@ DRIVERNV(hlywodhf)      //                Hollywood Heat (French)
 DRIVERNV(hlywhffp)      //                Hollywood Heat (French Free Play)
 DRIVERNV(bubba)         //                Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)
 DRIVERNV(beachbms)      //                Beach Bums (Hollywood Heat unofficial MOD)
+DRIVERNV(tomjerry)      //          01/19 Tom & Jerry (Hollywood Heat unofficial MOD)
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(genesifp)      //                Genesis (Free Play)
 DRIVERNV(genesisg)      //                Genesis (German)

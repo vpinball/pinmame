@@ -11,7 +11,7 @@ Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
 Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org, David Gersic, Quench
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org, David Gersic, Quench, watacaractr
 New:
 Cirsa: Sport 2000
 Inder: Skate Board
@@ -48,6 +48,7 @@ Power Play (Free Play+)
 Radical! L-1C (competition MOD)
 Star's Phoenix (French Speech and corresponding Free Play variant)
 Strikes and Spares (Free Play+)
+Tom & Jerry (unofficial MOD of Hollywood Heat)
 
 
 
