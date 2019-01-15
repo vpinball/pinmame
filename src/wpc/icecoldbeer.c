@@ -203,13 +203,6 @@ static void ice_30hz(int data) {
   pia_set_input_ca1(1, locals.ca11);
 }
 
-#define INITGAME(name, disptype) \
-	INPUT_PORTS_START(name) INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,icb_disp,{FLIP_SW(FLIP_L),0,-5}}; \
-	static void init_##name(void) { \
-		core_gameData = &name##GameData; \
-	}
-
 MACHINE_DRIVER_START(icecold)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ICE,ICE,ICE)
@@ -223,9 +216,10 @@ MACHINE_DRIVER_START(icecold)
   MDRV_SOUND_ADD(AY8910, ice_ay8910Int)
 MACHINE_DRIVER_END
 
-INPUT_PORTS_START(icecold)
-  CORE_PORTS
-  SIM_PORTS(1)
+#define INITGAME(name, disptype) \
+  INPUT_PORTS_START(name) \
+  CORE_PORTS \
+  SIM_PORTS(1) \
   PORT_START /* 0 */ \
     COREPORT_BIT(     0x0040, "Left Up Limit", KEYCODE_Z) \
     COREPORT_BIT(     0x0080, "Left Joystick Up", KEYCODE_X) \
@@ -287,18 +281,19 @@ INPUT_PORTS_START(icecold)
     COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
-INPUT_PORTS_END
+  INPUT_PORTS_END \
+  static core_tGameData name##GameData = {0,icb_disp,{FLIP_SW(FLIP_L),0,-5}}; \
+  static void init_##name(void) { \
+    core_gameData = &name##GameData; \
+  }
 
 core_tLCDLayout icb_disp[] = {
   {0, 0, 7, 1, CORE_SEG7},
   {3, 0, 4, 3, CORE_SEG7},
   {6, 0, 0, 4, CORE_SEG7}, {0}
 };
-static core_tGameData icecoldGameData = {0,icb_disp,{FLIP_SW(FLIP_L),0,-5}};
-static void init_icecold(void) {
-  core_gameData = &icecoldGameData;
-}
 
+INITGAME(icecold, icb_disp)
 ROM_START(icecold)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("icb23b.bin", 0xe000, 0x2000, CRC(b5b69d0a) SHA1(86f5444700adebb7b2d9da702b6d5425c8d682e3))
@@ -312,7 +307,6 @@ ROM_START(icecoldf)
     ROM_LOAD("icb23b_f.bin", 0xe000, 0x2000, CRC(6fe73c9d) SHA1(24b60da1fc791844601bd9a7628fde195e9e9644))
     ROM_LOAD("icb24.bin",  0xc000, 0x2000, CRC(2d1e7282) SHA1(6f170e24f71d1504195face5f67176b55c933eef))
 ROM_END
-#define input_ports_icecoldf input_ports_icecold
 CORE_CLONEDEFNV(icecoldf,icecold,"Ice Cold Beer (Free Play)",1983,"Taito",icecold,GAME_NOT_WORKING)
 
 INITGAME(zekepeak, icb_disp)
@@ -321,5 +315,4 @@ ROM_START(zekepeak)
     ROM_LOAD("zp23.bin", 0xe000, 0x2000, CRC(ef959586) SHA1(7f8a4787b340bfa34180164806b181b5fb4e5cfa))
     ROM_LOAD("zp24.bin", 0xc000, 0x2000, CRC(ee90c8f5) SHA1(27a513000e90536e485ccdf43786b415b3c95bd7))
 ROM_END
-#define input_ports_zekepeak input_ports_icecold
-CORE_CLONEDEFNV(zekepeak,icecold,"Zeke's Peak",1983,"Taito",icecold,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(zekepeak,icecold,"Zeke's Peak",1984,"Taito",icecold,GAME_NOT_WORKING)
