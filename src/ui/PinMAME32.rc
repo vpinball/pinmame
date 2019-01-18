@@ -257,7 +257,7 @@ BEGIN
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
             VALUE "FileVersion", "3, 2, 0, 0"
             VALUE "InternalName", "PinMAME32"
-            VALUE "LegalCopyright", "Copyright 2001-2018 by the PinMAME team"
+            VALUE "LegalCopyright", "Copyright 2001-2019 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
             VALUE "ProductVersion", "3.2"
@@ -319,7 +319,7 @@ BEGIN
     CTEXT           "Multiple Pinball Machine Emulator",IDC_STATIC,147,7,142,
                     11,NOT WS_GROUP
     CTEXT           "Version 0",IDC_VERSION,147,18,142,11,NOT WS_GROUP
-    CTEXT           "Copyright (C) 2001-2018 PinMAME Team",IDC_STATIC,147,29,
+    CTEXT           "Copyright (C) 2001-2019 PinMAME Team",IDC_STATIC,147,29,
                     142,10,NOT WS_GROUP
     CTEXT           "PinMAME32 version by Martin Adrian",IDC_STATIC,147,51,
                     142,10,NOT WS_GROUP
