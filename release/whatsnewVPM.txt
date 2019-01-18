@@ -1,7 +1,7 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 3.2 (X X, 2018) - ""
+Version 3.2 (X X, 2019) - ""
 ------------------------------------------------------------------------------
 - New (backwards compatible) parameter to allow for mech configuration/specifying an initial position, instead of always loading it from NVRAM
   Add special "handlemech" modes to Bride of Pinbot (bop_l7)
@@ -11,6 +11,8 @@ Version 3.2 (X X, 2018) - ""
 - Allow window position (x,y) to be less than 0 in cabinet mode, so primary monitor can be put "below" the DMD monitor
 
 - Add additional .raw/non-averaged file output if dumping DMD frames from GTS3 and WPC machines
+
+- update BASS library to 2.4.14
 
 Version 3.1 (July 29th, 2018) - "Flippin' fast"
 ------------------------------------------------------------------------------
