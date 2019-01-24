@@ -12,6 +12,9 @@ Version 3.2 (X X, 2019) - ""
 
 - Add additional .raw/non-averaged file output if dumping DMD frames from GTS3 and WPC machines
 
+- Fix for external dmddevice.dll: map GEN_GTS80B to _2x20Alpha layout
+- Also introduce new function to dmddevice interface: void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2); which includes dimming of segments
+
 - update BASS library to 2.4.14
 
 Version 3.1 (July 29th, 2018) - "Flippin' fast"
