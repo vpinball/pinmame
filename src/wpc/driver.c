@@ -1769,6 +1769,7 @@ DRIVER(wof,500f)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (French)
 DRIVER(wof,500g)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (German)
 DRIVER(wof,500i)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (Italian)
 DRIVER(wof,500l)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (Spanish)
+DRIVER(wof,602h)        //S.A.M.: 03/09 Wheel of Fortune - V6.02 (Home Edition)
 DRIVER(shr,130)         //S.A.M.: 03/08 Shrek - V1.3
 //DRIVER(shr,140)         //S.A.M.: 04/08 Shrek - V1.40
 DRIVER(shr,141)         //S.A.M.: 04/08 Shrek - V1.41
