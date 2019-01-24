@@ -1,5 +1,6 @@
 Version 3.2 (X X, 2019) - ""
 ------------------------------------------------------------------------------
+
 *** CORE/CPU ***
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
 Fix NBA Fastbreak fast flips so that the million dollar shot works
@@ -49,12 +50,13 @@ Radical! L-1C (competition MOD)
 Star's Phoenix (French Speech and corresponding Free Play variant)
 Strikes and Spares (Free Play+)
 Tom & Jerry (unofficial MOD of Hollywood Heat)
-Wheel Of Fortune (V6.02 Home Edition)
+Wheel of Fortune 6.02 (Home Rom)
 
 
 
 Version 3.1 (July 29th, 2018) - "Flippin' fast"
 ------------------------------------------------------------------------------
+
 *** CORE/CPU ***
 Fix wrong gain/volume of voices/sound effects in Sound Mode 1 (i.e. builtin alternate sound file support)
 Further improve M114 sound core (Mr. Game)
@@ -125,6 +127,7 @@ Vector (modified rules) rev.4,rev.10
 
 Version 3.0 (December 24th, 2017) - "11 years in the making"
 ------------------------------------------------------------------------------
+
 *** GENERAL ***
 Extend and update some parts of the .txt documentation files
 
