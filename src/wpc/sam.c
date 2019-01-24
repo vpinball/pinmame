@@ -2211,6 +2211,7 @@ SAM1_ROM32MB(wof_500f, "wof_500f.bin", CRC(3aef1035) SHA1(4fa0a40fea403beef0b3ce
 SAM1_ROM32MB(wof_500g, "wof_500g.bin", CRC(658f8622) SHA1(31926717b5914f91b70eeba182eb219a4fd51299), 0x01CDEC2C)
 SAM1_ROM32MB(wof_500i, "wof_500i.bin", CRC(27fb48bc) SHA1(9a9846c84a1fc543ec2236a28991d0cd70e86b52), 0x01D45EE8)
 SAM1_ROM32MB(wof_500l, "wof_500l.bin", CRC(b8e09fcd) SHA1(522983ce75b24733a0827a2eeea3d44419c7998e), 0x01B080B0)
+SAM1_ROM32MB(wof_602h, "wof_602h.bin", CRC(89ebffc5) SHA1(49d2bf1abf40ddc15a1f66c9fa27605e60148473), 0x01B07E10)
 
 SAM_INPUT_PORTS_START(wof, 1)
 
@@ -2237,6 +2238,8 @@ CORE_CLONEDEF(wof, 500f, 500, "Wheel of Fortune (V5.0 French)", 2007, "Stern", s
 CORE_CLONEDEF(wof, 500g, 500, "Wheel of Fortune (V5.0 German)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0 Italian)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", sam1, 0)
+
+CORE_CLONEDEF(wof, 602h, 500, "Wheel of Fortune (V6.02 Home Edition)", 2009, "Stern", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Shrek
