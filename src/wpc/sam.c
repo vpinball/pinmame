@@ -2239,7 +2239,42 @@ CORE_CLONEDEF(wof, 500g, 500, "Wheel of Fortune (V5.0 German)", 2007, "Stern", s
 CORE_CLONEDEF(wof, 500i, 500, "Wheel of Fortune (V5.0 Italian)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(wof, 500l, 500, "Wheel of Fortune (V5.0 Spanish)", 2007, "Stern", sam1, 0)
 
-CORE_CLONEDEF(wof, 602h, 500, "Wheel of Fortune (V6.02 Home Edition)", 2009, "Stern", sam1, 0)
+// V6.00I missing, compiled by Keith for tournaments/IFPA:
+/*
+I released a version of software, “6.00I” (for IFPA, I don’t remember what tournament it was for) or some such,
+that basically added some competition mode stuff (derandomized wild card and big spin).
+Those are the ONLY changes from 5.00 which is the last public release I did while at Stern.
+6.00I was circulated a fair amount amongst tournament types, mostly those running tournaments.
+*/
+
+CORE_CLONEDEF(wof, 602h, 500, "Wheel of Fortune (V6.02 Home Rom)", 2009, "Stern", sam1, 0) // unofficial version, but apparently compiled by Stern
+/*
+As someone stated, the main gameplay change that is noticeable is that there are “mode goals.”
+The goal is simply to score x points before time runs out. If you get the goal, you won, great.
+The next mode, the goal would be higher. If you didn’t win, oh well, the next mode, the goal would be lower.
+Also, you could replay the mode you failed, at 2x points.
+If you failed the same mode twice, you could play it a 3rd time for 3x points.
+If you failed 3 times, the game gave up. Oh, also for each mode you won, you got a “winnings x” for that ball’s bonus.
+IIRC there’s no logic for completing the wheel yet, but the reward was going to be something like 10M for each mode won on try #1,
+5M for each on try #2, 2.5M for each on try #3, and 1M for failed modes.
+If by some unfathomable stroke of luck you completed every mode on the first try, you’d get a bonus to round up the total to 100M.
+*/
+/*
+The mode stuff is basically there’s a common goal of points (starts at 5M).
+If you finish a mode, the goal goes up, if you lose a mode, the goal goes down.
+If you don’t finish a mode, it stays in the rotation, and if you play it again it scores 2x, and if you fail and play again it’s 3x.
+If you don’t hit the goal after 3x, it stops trying. Winning a mode also gives you a winnings x for that ball.
+This was all meant to lead up to a payout for hitting the goal in every mode:
+10M/5M/2.5M/1M for finishing in 1 try / 2 tries / 3 tries / DNF.
+If you finished every goal on the first try (somehow), the bonus would get augmented to 100M.
+*/
+/*
+Lamp test was extended so the wheel LEDs are now tested in lamps test,
+in six additional columns!
+
+Included in the lamp test are also two formerly undocumented LEDs:
+GI upper left and right.
+*/
 
 /*-------------------------------------------------------------------
 / Shrek
@@ -2338,8 +2373,7 @@ CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00
 CORE_CLONEDEF(bdk, 294c, 294, "Batman: The Dark Knight (V2.9 Colored)", 2010, "Stern", sam1, 0)
 #endif 
 
-																											
-																											/*-------------------------------------------------------------------
+/*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
 /-------------------------------------------------------------------*/
 INITGAME(csi, GEN_SAM, sam_dmd128x32, SAM_3COL, SAM_GAME_CSI)
@@ -2724,6 +2758,8 @@ SAM1_ROM128MB(mtl_180h,  "mtl180h.bin",  CRC(e37bc6e2) SHA1(1f2d74a4c22a369717cb
 SAM1_ROM128MB(mtl_164c,  "mtl164c.bin",  CRC(ebbf5845) SHA1(4411279b3e4ea9621638bb81e47dc8753bfc0a05), 0x05FFFFF0)
 SAM1_ROM128MB(mtl_170c,  "mtl170c.bin",  CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
 SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
+SAM1_ROM128MB(mtl_180c,  "mtl180c.bin",  CRC(2d2e8cdc) SHA1(a426e71f5673dab5e2d36260d0e8edbbbcd4d34a), 0x05FFFFF0)
+SAM1_ROM128MB(mtl_180hc, "mtl180hc.bin", CRC(e37bc6e2) SHA1(1f2d74a4c22a369717cbbcfc4e9702fc03a52c7e), 0x05FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(mtl, 1)
@@ -2759,6 +2795,8 @@ CORE_CLONEDEF(mtl, 180,  180h, "Metallica (V1.80.0)", 2018, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 164c, 180h, "Metallica (V1.64) (Colored)", 2015, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 170c, 180h, "Metallica (V1.7) (Colored)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 170hc,180h, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 180c, 180h, "Metallica (V1.80.0) (Colored)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 180hc,180h, "Metallica Limited Edition (V1.80.0) (Colored)", 2018, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
