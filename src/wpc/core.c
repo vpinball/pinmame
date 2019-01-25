@@ -8,9 +8,11 @@
 #include "mech.h"
 #include "core.h"
 
-// in update_hW() there are specific mappings to control a Baby PacMan real pinball machine via an Ultimarc Ultimate I/O board
+// in update_PacDrive() there are specific mappings to control a Baby PacMan real pinball machine via an Ultimarc Ultimate I/O and/or PacDrive board
 // in order to control other machines, change the mappings in there
-#include "pacdrive.h"
+#ifdef _WIN32
+ #include "pacdrive.h"
+#endif
 
 #ifdef VPINMAME
  #include "../pindmd/pindmd.h"
@@ -1171,14 +1173,18 @@ static VIDEO_UPDATE(core_status) {
   if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) ||
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
   {
-  	if (pmoptions.ultimateio)
-        	update_hW();
+#ifdef _WIN32
+    if (pmoptions.ultimateio)
+        update_PacDrive();
+#endif
 
     return;
   }
-     
+
+#ifdef _WIN32
   if (pmoptions.ultimateio)
-     update_hW();
+    update_PacDrive();
+#endif
 
   dotColor[0] = CORE_COLOR(COL_DMDOFF); dotColor[1] = CORE_COLOR(COL_DMDON);
   /*--  Draw lamps --*/
@@ -1195,12 +1201,12 @@ static VIDEO_UPDATE(core_status) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
-	for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
-	  int color = drawData->lamps[num].lamppos[qq].color;
-	  int lampx = drawData->lamps[num].lamppos[qq].x;
-	  int lampy = drawData->lamps[num].lamppos[qq].y;
-	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
-	}
+        for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
+          int color = drawData->lamps[num].lamppos[qq].color;
+          int lampx = drawData->lamps[num].lamppos[qq].x;
+          int lampy = drawData->lamps[num].lamppos[qq].y;
+          line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+        }
         bits >>= 1;
         num++;
       }
@@ -1716,35 +1722,36 @@ void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int),
 }
 
 //controls real Baby PacMan pinball hardware via Ultimarc Ultimate I/O board
-void update_hW()
+#ifdef _WIN32
+static void update_PacDrive()
 {
-     const UINT64 allSol = core_getAllSol();
+	const UINT64 allSol = core_getAllSol();
 
-     int outputNum = 1;
-     int i;
+	int outputStart = 1;
+	int i;
 
-     // map lamps for Baby PacMan outputs
-     for (i = 0; i < 8; i++) 
-     {
-		update_hw_byte(outputNum, coreGlobals.lampMatrix[i]);
-		outputNum += 8;
-     }
+	// map lamps for Baby PacMan outputs
+	for (i = 0; i < 8; i++)
+	{
+		update_PacDrive_byte(outputStart, coreGlobals.lampMatrix[i]);
+		outputStart += 8;
+	}
 
-     // map solenoids for Baby PacMan
-     PacDriveSetOutput(88, allSol >> 46 & 0x01); // left flipper
-     PacDriveSetOutput(89, allSol >> 44 & 0x01); // right flipper
-     PacDriveSetOutput(90, allSol >>  0 & 0x01); // Out hole
-     PacDriveSetOutput(91, allSol >>  8 & 0x01); // Left Maze Saucer
-     PacDriveSetOutput(92, allSol >>  9 & 0x01); // Right Maze Saucer
-     PacDriveSetOutput(93, allSol >>  1 & 0x01); // Drop Target Reset
-     PacDriveSetOutput(94, allSol >>  2 & 0x01); // #1 Drop Target (Left) 
-     PacDriveSetOutput(95, allSol >>  4 & 0x01); // #3 Drop Target (Center)
-     PacDriveSetOutput(96, allSol >>  6 & 0x01); // #5 Drop Target (Right)
+	// map solenoids for Baby PacMan
+	PacDriveSetOutput(97 , allSol >> 46 & 0x01); // Left flipper
+	PacDriveSetOutput(98 , allSol >> 44 & 0x01); // Right flipper
+	PacDriveSetOutput(99 , allSol >>  0 & 0x01); // Out hole
+	PacDriveSetOutput(100, allSol >>  8 & 0x01); // Left Maze Saucer
+	PacDriveSetOutput(101, allSol >>  9 & 0x01); // Right Maze Saucer
+	PacDriveSetOutput(102, allSol >>  1 & 0x01); // Drop Target Reset
+	PacDriveSetOutput(103, allSol >>  2 & 0x01); // #1 Drop Target (Left) 
+	PacDriveSetOutput(104, allSol >>  4 & 0x01); // #3 Drop Target (Center)
+	PacDriveSetOutput(105, allSol >>  6 & 0x01); // #5 Drop Target (Right)
 
-     UpdateOutputs();
+	PacDriveUpdateOutputs();
 }
 
-void update_hw_byte(int outputStart, unsigned char value)
+static void update_PacDrive_byte(const int outputStart, const unsigned char value)
 {
 	PacDriveSetOutput(outputStart + 0, value >> 0 & 0x01); 
 	PacDriveSetOutput(outputStart + 1, value >> 1 & 0x01); 
@@ -1755,6 +1762,7 @@ void update_hw_byte(int outputStart, unsigned char value)
 	PacDriveSetOutput(outputStart + 6, value >> 6 & 0x01); 
 	PacDriveSetOutput(outputStart + 7, value >> 7 & 0x01); 
 }
+#endif
 
 /*---------------------------------------
 /  Default machine driver for all games

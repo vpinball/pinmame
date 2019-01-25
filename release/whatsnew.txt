@@ -1,5 +1,6 @@
-Add Ultimarc Ultimate I/O support, currently hardcoded to drive a real Baby Pac-Man machine (see core.c (update_hW()) and pacdrive.c to configure for other setups!)
-(use new command line option 'ultimateio' to enable it)
+Add Ultimarc Ultimate I/O and/or PacDrive support, currently hardcoded to drive a real Baby Pac-Man machine (see core.c (update_PacDrive()) and pacdrive.c to configure for other setups!)
+ - use new command line option 'ultimateio' to enable it
+ - also note that if you try this with a PacDrive, make sure you get the "Special" version of the PacDrive that defaults to all outputs OFF when power is turned on, and that you will need to connect a ground wire to the USB connector housing to get it to work since there is no ground connector on the PacDrive
 
 
 Version 2.6 (X X, 2015) - "We're not dead (yet)"
