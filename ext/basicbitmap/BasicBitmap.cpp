@@ -4601,16 +4601,31 @@ void BasicBitmap::Scale(const BasicRect *rect, const BasicBitmap *src,
 //---------------------------------------------------------------------
 void BasicBitmap::Shuffle(int b0, int b1, int b2, int b3)
 {
-	if (_bpp != 32) return;
-	for (int j = 0; j < _h; j++) {
-		IUINT8 *src = (IUINT8*)Line(j);
-		union { IUINT8 quad[4]; IUINT32 color; } cc;
-		for (int i = _w; i > 0; src += 4, i--) {
-			cc.color = *((IUINT32*)src);
-			src[0] = cc.quad[b0];
-			src[1] = cc.quad[b1];
-			src[2] = cc.quad[b2];
-			src[3] = cc.quad[b3];
+	if (_bpp == 32) {
+		for (int j = 0; j < _h; j++) {
+			IUINT8 *src = (IUINT8*)Line(j);
+			union { IUINT8 quad[4]; IUINT32 color; } cc;
+			for (int i = _w; i > 0; src += 4, i--) {
+				cc.color = *((IUINT32*)src);
+				src[0] = cc.quad[b0];
+				src[1] = cc.quad[b1];
+				src[2] = cc.quad[b2];
+				src[3] = cc.quad[b3];
+			}
+		}
+	}
+	else if (_bpp == 24) {
+		for (int j = 0; j < _h; j++) {
+			IUINT8 *src = (IUINT8*)Line(j);
+			IUINT8 col[4];
+			for (int i = _w; i > 0; src += 3, i--) {
+				col[0] = src[0];
+				col[1] = src[1];
+				col[2] = src[2];
+				src[0] = col[b0];
+				src[1] = col[b1];
+				src[2] = col[b2];
+			}
 		}
 	}
 }
