@@ -76,7 +76,9 @@ static int GetNumLEDGroups()
 	return NUM_LED_GROUPS;
 }
 
-void UnloadPacDrive()
+static void PacDriveInitOutputs();
+
+void UnloadPacDrive(void)
 {
 	if (PacInitialize() > 0)
 		PacDriveInitOutputs();
@@ -97,10 +99,7 @@ int LoadPacDrive()
 	printf("\nPlayfield control started.\n");
 #endif
 
-	Outputs = malloc(GetNumOutputs());
-	OutputsPrevious = malloc(GetNumGroups());
-
-	hio = LoadLibrary("pacdrive32");
+	hio = LoadLibrary("PacDrive32");
 	if (hio == NULL) return 1;
 	
 	PacInitialize = (PACINITIALIZE)GetProcAddress(hio, "PacInitialize");
@@ -109,8 +108,13 @@ int LoadPacDrive()
 	Pac64SetLEDState = (PAC64SETLEDSTATE)GetProcAddress(hio, "Pac64SetLEDState");
 	PacSetLEDStates = (PACSETLEDSTATES)GetProcAddress(hio, "PacSetLEDStates");
 
+	if (!PacInitialize || !PacShutdown || !Pac64SetLEDStates || !Pac64SetLEDState || !PacSetLEDStates) return 1;
+
 	atexit(UnloadPacDrive);
-	
+
+	Outputs = malloc(GetNumOutputs());
+	OutputsPrevious = malloc(GetNumGroups());
+
 	if (PacInitialize() == 0)
 		return 2;
 

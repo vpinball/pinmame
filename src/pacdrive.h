@@ -12,7 +12,7 @@ extern PAC64SETLEDSTATES Pac64SetLEDStates;
 extern PAC64SETLEDSTATE Pac64SetLEDState;
 extern PACSETLEDSTATES PacSetLEDStates;
 
-int LoadPacDrive(void);
+int LoadPacDrive();
 void UnloadPacDrive(void);
 void PacDriveSetOutput(const int outputNum, const unsigned char Value);
-void PacDriveUpdateOutputs(void);
+void PacDriveUpdateOutputs();

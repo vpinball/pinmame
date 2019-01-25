@@ -12,6 +12,8 @@
 // in order to control other machines, change the mappings in there
 #ifdef _WIN32
  #include "pacdrive.h"
+ static void update_PacDrive();
+ static void update_PacDrive_byte(const int outputStart, const unsigned char value);
 #endif
 
 #ifdef VPINMAME

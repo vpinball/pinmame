@@ -213,13 +213,16 @@ typedef struct
 	BOOL   old_timing;
 	BOOL   leds;
 	int bios;
-#ifdef PINMAME
-        int dmd_red,    dmd_green,   dmd_blue;
-        int dmd_perc66, dmd_perc33,  dmd_perc0;
-        int dmd_only,   dmd_compact, dmd_antialias;
 
-		int dmd_colorize;
-		int dmd_red0, dmd_green0, dmd_blue0, dmd_red33, dmd_green33, dmd_blue33, dmd_red66, dmd_green66, dmd_blue66; 
+#ifdef PINMAME
+	int dmd_red,    dmd_green,   dmd_blue;
+	int dmd_perc66, dmd_perc33,  dmd_perc0;
+	int dmd_only,   dmd_compact, dmd_antialias;
+
+	int dmd_colorize;
+	int dmd_red0, dmd_green0, dmd_blue0, dmd_red33, dmd_green33, dmd_blue33, dmd_red66, dmd_green66, dmd_blue66; 
+
+	int ultimateio; //!! not properly initialized
 #endif /* PINMAME */
 
 } options_type;
@@ -227,10 +230,10 @@ typedef struct
 // per-game data we store, not to pass to mame, but for our own use.
 typedef struct
 {
-    int play_count;
+	int play_count;
 	int play_time;
-    int rom_audit_results;
-    int samples_audit_results;
+	int rom_audit_results;
+	int samples_audit_results;
 
 	BOOL options_loaded; // whether or not we've loaded the game options yet
 	BOOL use_default; // whether or not we should just use default options
