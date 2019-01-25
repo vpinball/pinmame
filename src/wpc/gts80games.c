@@ -1259,6 +1259,16 @@ GTS80_ROMEND
 #define input_ports_beachbms input_ports_hlywoodh
 CORE_CLONEDEFNV(beachbms,hlywoodh, "Beach Bums (Hollywood Heat unofficial MOD)",2018,"watacaractr",gl_mGTS80BS1,0)
 
+INITGAME(tomjerry, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_2K_ROMSTART(tomjerry, "prom2.cpu",   CRC(a465e5f3) SHA1(56afa2f67aebcd17345bba76ecb814653719ee7b),
+                             "prom1_tj.cpu",CRC(45164b17) SHA1(40cf8bd6725d2e7d5e15cfaf8215e36c0d32183d))
+GTS80BSSOUND888(             "drom1.snd",   CRC(a698ec33) SHA1(e7c1d28279ec4f12095c3a106c6cefcc2a84b31e),
+                             "yrom1.snd",   CRC(9232591e) SHA1(72883e0c542c572226c6c654bea14749cc9e351f),
+                             "yrom2.snd",   CRC(51709c2f) SHA1(5834d7b72bd36e30c87377dc7c3ad0cf26ff303a))
+GTS80_ROMEND
+#define input_ports_tomjerry input_ports_hlywoodh
+CORE_CLONEDEFNV(tomjerry,hlywoodh, "Tom & Jerry (Hollywood Heat unofficial MOD)",2019,"watacaractr",gl_mGTS80BS1,0)
+
 /*-------------------------------------------------------------------
 / Genesis (#705)
 /-------------------------------------------------------------------*/

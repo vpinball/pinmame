@@ -110,100 +110,107 @@ DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
 DRIVERNV(bowarroa)      //          08/76 Bow & Arrow (Prototype, rev. 22)
-DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
-DRIVERNV(nightr20)      //BY17-721: 01/76 Night Rider (rev. 20, EM release date)
-DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (rev. 21)
-DRIVERNV(nightrdb)      //BY17-721: 10/08 Night Rider (Free Play)
-DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
-DRIVERNV(evelknib)      //BY17-722: 10/08 Evel Knievel (Free Play)
-DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
-DRIVERNV(eightblo)      //BY17-723: 01/77 Eight Ball (Old)
-DRIVERNV(eightblb)      //BY17-723: 10/08 Eight Ball (Free Play)
-DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
-DRIVERNV(pwerplab)      //BY17-724: 10/08 Power Play (Free Play)
-DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
-DRIVERNV(stk_sprb)      //BY17-740: 10/08 Strikes and Spares (Free Play)
-DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
-DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (new game rules)
+DRIVERNV(freedom )      //BY17-720: 12/76 Freedom
+DRIVERNV(freedoma)      //BY17      12/18 Freedom (Free Play+ rev. 07)
+DRIVERNV(freedomb)      //BY17      12/18 Freedom (Free Play+ rev. 20)
+DRIVERNV(nightr20)      //BY17-721: 02/77 Night Rider (rev. 20)
+DRIVERNV(nightrdr)      //BY17      02/77 Night Rider (rev. 21)
+DRIVERNV(nightrdb)      //BY17      10/08 Night Rider (Free Play)
+DRIVERNV(nightrdc)      //BY17      12/18 Night Rider (Free Play+)
+DRIVERNV(evelknie)      //BY17-722: 06/77 Evel Knievel
+DRIVERNV(evelknib)      //BY17      10/08 Evel Knievel (Free Play)
+DRIVERNV(evelknic)      //BY17      12/18 Evel Knievel (Free Play+)
+DRIVERNV(eightbll)      //BY17-723: 09/77 Eight Ball
+DRIVERNV(eightblo)      //BY17      09/77 Eight Ball (Old)
+DRIVERNV(eightblb)      //BY17      10/08 Eight Ball (Free Play)
+DRIVERNV(eightblc)      //BY17      12/18 Eight Ball (Free Play+)
+DRIVERNV(pwerplay)      //BY17-724: 01/78 Power Play
+DRIVERNV(pwerplab)      //BY17      10/08 Power Play (Free Play)
+DRIVERNV(pwerplac)      //BY17      12/18 Power Play (Free Play+)
+DRIVERNV(matahari)      //BY17-725: 04/78 Mata Hari
+DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (New game rules)
 DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
-DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack (EM release date)
-DRIVERNV(blackjcb)      //BY17-728: 10/08 Black Jack (Free Play)
-DRIVERNV(blackjcc)      //BY17-728: 04/18 Black Jack (Saucer points modification)
+DRIVERNV(mataharc)      //BY17      12/18 Mata Hari (Free Play+)
+DRIVERNV(blackjck)      //BY17-728: 06/78 Black Jack
+DRIVERNV(blackjcb)      //BY17      10/08 Black Jack (Free Play)
+DRIVERNV(blackjcc)      //BY17      04/18 Black Jack (Saucer points modification)
+DRIVERNV(blackjcd)      //BY17      12/18 Black Jack (Free Play+)
+DRIVERNV(stk_sprs)      //BY17-740: 06/78 Strikes and Spares
+DRIVERNV(stk_sprb)      //BY17      10/08 Strikes and Spares (Free Play)
+DRIVERNV(stk_sprc)      //BY17      12/18 Strikes and Spares (Free Play+)
 //MPU-35
-DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
-DRIVERNV(lostwldb)      //BY35-729: 10/08 Lost World (Free Play)
-DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic (EM "Star Ship" release date)
-DRIVERNV(sstb    )      //BY35      05/05 Supersonic (7-digit conversion)
-DRIVERNV(sstc    )      //BY35      10/08 Supersonic (7-digit Rev3 Free Play)
-DRIVERNV(sstd    )      //BY35      10/08 Supersonic (/10 Free Play)
-DRIVERNV(smman   )      //BY35-742: 08/77 Six Million Dollar Man, The
+DRIVERNV(lostwrld)      //BY35-729: 08/78 Lost World
+DRIVERNV(lostwldb)      //BY35      10/08 Lost World (Free Play)
+DRIVERNV(smman   )      //BY35-742: 10/78 Six Million Dollar Man, The
 DRIVERNV(smmanb  )      //BY35      05/05 Six Million Dollar Man, The (7-digit conversion)
 DRIVERNV(smmanc  )      //BY35      10/08 Six Million Dollar Man, The (7-digit Rev3 Free Play)
 DRIVERNV(smmand  )      //BY35      10/08 Six Million Dollar Man, The (/10 Free Play)
-DRIVERNV(playboy )      //BY35-743: 09/76 Playboy (release date is wrong!)
+DRIVERNV(playboy )      //BY35-743: 12/78 Playboy
 DRIVERNV(playboyb)      //BY35      05/05 Playboy (7-digit conversion)
 DRIVERNV(playboyc)      //BY35      10/08 Playboy (7-digit Rev3 Free Play)
 DRIVERNV(playboyd)      //BY35      10/08 Playboy (/10 Free Play)
-                        //??        ??/78 Big Foot
-DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
+DRIVERNV(voltan  )      //BY35-744: 02/79 Voltan Escapes Cosmic Doom
 DRIVERNV(voltanb )      //BY35      05/05 Voltan Escapes Cosmic Doom (7-digit conversion)
 DRIVERNV(voltanc )      //BY35      10/08 Voltan Escapes Cosmic Doom (7-digit Rev3 Free Play)
 DRIVERNV(voltand )      //BY35      10/08 Voltan Escapes Cosmic Doom (/10 Free Play)
-DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
+DRIVERNV(sst     )      //BY35-741: 03/79 Supersonic
+DRIVERNV(sstb    )      //BY35      05/05 Supersonic (7-digit conversion)
+DRIVERNV(sstc    )      //BY35      10/08 Supersonic (7-digit Rev3 Free Play)
+DRIVERNV(sstd    )      //BY35      10/08 Supersonic (/10 Free Play)
+DRIVERNV(startrek)      //BY35-745: 04/79 Star Trek
 DRIVERNV(startreb)      //BY35      05/05 Star Trek (7-digit conversion)
 DRIVERNV(startrec)      //BY35      10/08 Star Trek (7-digit Rev3 Free Play)
 DRIVERNV(startred)      //BY35      10/08 Star Trek (/10 Free Play)
-                        //??        02/78 Skateball (Prototype)
-DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
+DRIVERNV(kiss    )      //BY35-746: 06/79 Kiss
 DRIVERNV(kissb   )      //BY35      05/05 Kiss (7-digit conversion)
 DRIVERNV(kissc   )      //BY35      10/08 Kiss (7-digit Rev3 Free Play)
 DRIVERNV(kissd   )      //BY35      10/08 Kiss (/10 Free Play)
 DRIVERNV(kissp   )      //BY35      ??/?? Kiss (prototype)
 DRIVERNV(kissp2  )      //BY35      ??/?? Kiss (prototype v.2)
-DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
-DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
-DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
-DRIVERNV(slbmanib)      //BY35      11/02 Silverball Mania (7-digit conversion)
-DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
-DRIVERNV(hglbtrtb)      //BY35      11/02 Harlem Globetrotters On Tour (7-digit conversion)
-DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
-DRIVERNV(dollyptb)      //BY35      11/02 Dolly Parton (7-digit conversion)
-DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
+DRIVERNV(paragon )      //BY35-748: 06/79 Paragon
 DRIVERNV(paragonb)      //BY35      05/05 Paragon (7-digit conversion)
 DRIVERNV(paragonc)      //BY35      10/08 Paragon (7-digit Rev3 Free Play)
 DRIVERNV(paragond)      //BY35      10/08 Paragon (/10 Free Play)
-DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
+DRIVERNV(hglbtrtr)      //BY35-750: 09/79 Harlem Globetrotters On Tour
+DRIVERNV(hglbtrtb)      //BY35      11/02 Harlem Globetrotters On Tour (7-digit conversion)
+DRIVERNV(dollyptn)      //BY35-777: 11/79 Dolly Parton
+DRIVERNV(dollyptb)      //BY35      11/02 Dolly Parton (7-digit conversion)
+DRIVERNV(futurspa)      //BY35-781: 12/79 Future Spa
 DRIVERNV(futurspb)      //BY35      11/02 Future Spa (7-digit conversion)
-DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
+DRIVERNV(ngndshkr)      //BY35-776: 01/80 Nitro Ground Shaker
+DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
+DRIVERNV(slbmania)      //BY35-786: 02/80 Silverball Mania
+DRIVERNV(slbmanib)      //BY35      11/02 Silverball Mania (7-digit conversion)
+DRIVERNV(spaceinv)      //BY35-792: 04/80 Space Invaders
 DRIVERNV(spaceinb)      //BY35      11/02 Space Invaders (7-digit conversion)
-DRIVERNV(rollston)      //BY35-796: 06/79 Rolling Stones
+DRIVERNV(rollston)      //BY35-796: 05/80 Rolling Stones
 DRIVERNV(rollstob)      //BY35      11/02 Rolling Stones (7-digit conversion)
-DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
+DRIVERNV(mystic  )      //BY35-798: 06/80 Mystic
 DRIVERNV(mysticb )      //BY35      11/02 Mystic (7-digit conversion)
-DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
-DRIVERNV(xenona  )      //BY35-811: 10/08 Xenon (Free Play)
-DRIVERNV(xenonf  )      //BY35      11/79 Xenon (French)
-DRIVERNV(xenonfa )      //BY35      10/08 Xenon (French Free Play)
-DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
+DRIVERNV(viking  )      //BY35-802: 07/80 Viking
+DRIVERNV(vikingb )      //BY35      11/02 Viking (7-digit conversion)
+DRIVERNV(hotdoggn)      //BY35-809: 07/80 Hotdoggin'
 DRIVERNV(hotdogga)      //BY35      11/02 Hotdoggin' (Free Play)
 DRIVERNV(hotdoggb)      //BY35      11/02 Hotdoggin' (7-digit conversion)
-DRIVERNV(viking  )      //BY35-802: 12/79 Viking
-DRIVERNV(vikingb )      //BY35      11/02 Viking (7-digit conversion)
-DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
-DRIVERNV(skatebla)      //BY35-823: 10/08 Skateball (Free Play)
+DRIVERNV(skatebll)      //BY35-823: 09/80 Skateball
+DRIVERNV(skatebla)      //BY35      10/08 Skateball (Free Play)
 DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
-DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
-DRIVERNV(frontieg)      //BY35-819: 08/11 Frontier (Gate Fix)
-DRIVERNV(frontiea)      //BY35-819: 10/08 Frontier (Free Play)
-DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
+DRIVERNV(frontier)      //BY35-819: 11/80 Frontier
+DRIVERNV(frontiea)      //BY35      10/08 Frontier (Free Play)
+DRIVERNV(frontieg)      //BY35      08/11 Frontier (Gate Fix)
+DRIVERNV(xenon   )      //BY35-811: 11/80 Xenon
+DRIVERNV(xenonf  )      //BY35      11/80 Xenon (French)
+DRIVERNV(xenona  )      //BY35      10/08 Xenon (Free Play)
+DRIVERNV(xenonfa )      //BY35      10/08 Xenon (French Free Play)
+DRIVERNV(flashgdn)      //BY35-834: 02/81 Flash Gordon
+DRIVERNV(flashgdv)      //BY35      02/81 Flash Gordon (Vocalizer sound)
+DRIVERNV(flashgdf)      //BY35      02/81 Flash Gordon (French)
 DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
-DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgva)      //BY35      10/08 Flash Gordon (Vocalizer sound Free Play)
-DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
 DRIVERNV(flashgfa)      //BY35      10/08 Flash Gordon (French Free Play)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
-DRIVERNV(eballd14)      //BY35-838: 09/80 Eight Ball Deluxe (rev. 14)
+DRIVERNV(eballd14)      //BY35-838: 04/81 Eight Ball Deluxe (rev. 14)
 DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
 DRIVERNV(eballdla)      //BY35      10/08 Eight Ball Deluxe (Free Play)
 DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe custom rom rev.29
@@ -212,79 +219,79 @@ DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prot
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
 DRIVERNV(eballdp4)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 4)
-DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
+DRIVERNV(fball_ii)      //BY35-839: 06/81 Fireball II
 DRIVERNV(fball_ia)      //BY35      10/08 Fireball II (Free Play)
-DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
+DRIVERNV(embryon )      //BY35-841: 06/81 Embryon
 DRIVERNV(embryona)      //BY35      10/08 Embryon (Free Play)
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35      05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(embryond)      //BY35      10/04 Embryon (7-digit conversion rev.9)
 DRIVERNV(embryone)      //BY35      08/11 Embryon (7-digit conversion rev.92)
-DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
+DRIVERNV(fathom  )      //BY35-842: 08/81 Fathom
 DRIVERNV(fathoma )      //BY35      10/04 Fathom (Free Play)
 DRIVERNV(fathomb )      //BY35      10/04 Fathom (modified rules)
-DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
+DRIVERNV(medusa  )      //BY35-845: 09/81 Medusa
 DRIVERNV(medusaa )      //BY35      10/04 Medusa (Free Play)
 #ifdef MAME_DEBUG
 DRIVERNV(medusaf )      //BY35      02/81 Medusa (6802 board)
 #endif
-DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
+DRIVERNV(centaur )      //BY35-848: 10/81 Centaur
 DRIVERNV(centaura)      //BY35      10/04 Centaur (Free Play)
 DRIVERNV(centaurb)      //BY35      10/08 Centaur (Free Play Rev. 27)
-DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
+DRIVERNV(elektra )      //BY35-857: 12/81 Elektra
 DRIVERNV(elektraa)      //BY35      10/04 Elektra (Free Play)
-DRIVERNV(vector  )      //BY35-858: 03/81 Vector
+DRIVERNV(vector  )      //BY35-858: 02/82 Vector
 DRIVERNV(vectora )      //BY35      10/04 Vector (Free Play)
 DRIVERNV(vector4 )      //BY35      04/04 Vector (modified rules rev. 4)
 DRIVERNV(vectorb )      //BY35      10/04 Vector (modified rules rev. 5)
 DRIVERNV(vectorc )      //BY35      02/08 Vector (modified rules rev. 10)
-DRIVERNV(spectrum)      //BY35-868: 04/81 Spectrum
-DRIVERNV(spectrua)      //BY35      10/04 Spectrum (Free Play)
-DRIVERNV(spectru4)      //BY35      04/81 Spectrum (Rev. 4)
-DRIVERNV(spectr4a)      //BY35      10/04 Spectrum (Rev. 4 Free Play)
-DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
-DRIVERNV(speakesa)      //BY35      10/04 Speakeasy (Free Play)
-DRIVERNV(speakes4)      //BY35      08/82 Speakeasy 4 (4 player)
-DRIVERNV(speake4a)      //BY35      10/04 Speakeasy 4 (4 player Free Play)
-DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
+DRIVERNV(rapidfir)      //BY35-869: 04/82 Rapid Fire
 DRIVERNV(rapidfia)      //BY35      09/05 Rapid Fire (Free Play)
-DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man Pinball
+DRIVERNV(m_mpac  )      //BY35-872: 04/82 Mr. & Mrs. Pac-Man Pinball
 DRIVERNV(m_mpaca )      //BY35      10/04 Mr. & Mrs. Pac-Man Pinball (Free Play)
-/*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
-DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
+DRIVERNV(spectrum)      //BY35-868: 06/82 Spectrum
+DRIVERNV(spectru4)      //BY35      06/82 Spectrum (Rev. 4)
+DRIVERNV(spectrua)      //BY35      10/04 Spectrum (Free Play)
+DRIVERNV(spectr4a)      //BY35      10/04 Spectrum (Rev. 4 Free Play)
+/*same as eballdlx*/    //BY35      08/82 Eight Ball Deluxe Limited Edition
+DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
+DRIVERNV(speakes4)      //BY35      09/82 Speakeasy 4 (4 player)
+DRIVERNV(speakesa)      //BY35      10/04 Speakeasy (Free Play)
+DRIVERNV(speake4a)      //BY35      10/04 Speakeasy 4 (4 player Free Play)
+DRIVERNV(babypac )      //BY35-891: 10/82 Baby Pac-Man
 DRIVERNV(babypaca)      //BY35      07/83 Baby Pac-Man (Vidiot U9 ROM Update 891-16 per Service-Bulletin dated July 11 1983)
-DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
-DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
+DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (Home Rom)
+DRIVERNV(bmx     )      //BY35-888: 01/83 BMX
 DRIVERNV(bmxa    )      //BY35      10/04 BMX (Free Play)
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
+DRIVERNV(gransla4)      //BY35      03/83 Grand Slam (4 player)
 DRIVERNV(granslaa)      //BY35      12/04 Grand Slam (Free Play)
-DRIVERNV(gransla4)      //BY35      01/83 Grand Slam (4 player)
 DRIVERNV(gransl4a)      //BY35      12/04 Grand Slam (4 player Free Play)
 /*same as centaur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
+DRIVERNV(goldbaln)      //BY35      10/83 Gold Ball (alternate)
 DRIVERNV(goldbalb)      //BY35      03/04 Gold Ball (7-digit conversion)
 DRIVERNV(goldbalc)      //BY35      03/05 Gold Ball (6/7-digit alternate set rev.10)
-DRIVERNV(goldbaln)      //BY35      10/83 Gold Ball (alternate)
-DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
+DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
+DRIVERNV(xsandos )      //BY35-1391:02/84 X's & O's
 DRIVERNV(xsandosa)      //BY35      10/04 X's & O's (Free Play)
                         //??        ??/84 Mysterian
-DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
-DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
+DRIVERNV(kosteel )      //BY35-1390:03/84 Kings of Steel
 DRIVERNV(kosteela)      //BY35      10/04 Kings of Steel (Free Play)
-DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
-DRIVERNV(blakpyrb)      //BY35      10/04 Black Pyramid (Free Play)
 DRIVERNV(mdntmrdr)      //          05/84 Midnight Marauders (gun game)
-DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
+DRIVERNV(blakpyra)      //BY35-0A44 07/84 Black Pyramid
+DRIVERNV(blakpyrb)      //BY35      10/04 Black Pyramid (Free Play)
+DRIVERNV(spyhuntr)      //BY35-0A17:10/84 Spy Hunter
 DRIVERNV(spyhunta)      //BY35      10/04 Spy Hunter (Free Play)
                         //??        ??/85 Hot Shotz
-DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
+DRIVERNV(fbclass )      //BY35-0A40 02/85 Fireball Classic
 DRIVERNV(fbclassa)      //BY35      10/04 Fireball Classic (Free Play)
-DRIVERNV(cybrnaut)      //BY35-0B42 02/85 Cybernaut
+DRIVERNV(cybrnaut)      //BY35-0B42 05/85 Cybernaut
 DRIVERNV(cybrnaua)      //BY35      10/04 Cybernaut (Free Play)
 DRIVERNV(bigbat)        //BY35-848: ??/84 Big Bat
 //MPU-6803
-DRIVERNV(eballchp)      //6803-0B38:09/85 Eight Ball Champ
-DRIVERNV(eballch2)      //6803      09/85 Eight Ball Champ (cheap squeak)
+DRIVERNV(eballchp)      //6803-0B38:08/85 Eight Ball Champ
+DRIVERNV(eballch2)      //6803      08/85 Eight Ball Champ (cheap squeak)
 DRIVERNV(beatclck)      //6803-0C70:10/85 Beat the Clock
 DRIVERNV(beatclc2)      //          11/85 Beat the Clock (with flasher support)
 DRIVERNV(ladyluck)      //6803-0E34:02/86 Lady Luck
@@ -666,6 +673,7 @@ DRIVERNV(hlywodhf)      //                Hollywood Heat (French)
 DRIVERNV(hlywhffp)      //                Hollywood Heat (French Free Play)
 DRIVERNV(bubba)         //                Bubba the Redneck Werewolf (Hollywood Heat unofficial MOD)
 DRIVERNV(beachbms)      //                Beach Bums (Hollywood Heat unofficial MOD)
+DRIVERNV(tomjerry)      //          01/19 Tom & Jerry (Hollywood Heat unofficial MOD)
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(genesifp)      //                Genesis (Free Play)
 DRIVERNV(genesisg)      //                Genesis (German)
@@ -1761,6 +1769,7 @@ DRIVER(wof,500f)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (French)
 DRIVER(wof,500g)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (German)
 DRIVER(wof,500i)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (Italian)
 DRIVER(wof,500l)        //S.A.M.: 12/07 Wheel of Fortune - V5.0 (Spanish)
+DRIVER(wof,602h)        //S.A.M.: 03/09 Wheel of Fortune - V6.02 (Home Rom)
 DRIVER(shr,130)         //S.A.M.: 03/08 Shrek - V1.3
 //DRIVER(shr,140)         //S.A.M.: 04/08 Shrek - V1.40
 DRIVER(shr,141)         //S.A.M.: 04/08 Shrek - V1.41
@@ -2008,6 +2017,8 @@ DRIVER(mtl,180h)        //S.A.M.: 11/18 Metallica - V1.80.0 Limited Edition
 DRIVER(mtl,164c)        // pinball browser colorized using extend memory
 DRIVER(mtl,170c)        // pinball browser colorized using extend memory
 DRIVER(mtl,170hc)       // pinball browser colorized using extend memory
+DRIVER(mtl,180c)        // pinball browser colorized using extend memory
+DRIVER(mtl,180hc)       // pinball browser colorized using extend memory
 #endif
 //DRIVER(st,100)          //S.A.M.: 09/13 Star Trek - V1.0
 //DRIVER(st,101)          //S.A.M.: 09/13 Star Trek - V1.01

@@ -140,6 +140,53 @@
       COREPORT_DIPSET(0x00e0, "714 kHz" ) \
       COREPORT_DIPSET(0x00f0, "720 kHz" )
 
+#define ZAC_COMPORTS_NOSNDDIAG \
+  PORT_START /* 0 */ \
+    /* These are put in switch column 0 */ \
+    COREPORT_BITTOG(0x0100, "Sense Input", KEYCODE_PGDN) \
+    /* These are put in switch column 1 */ \
+    COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
+    COREPORT_BIT   (0x0020, "Coin 2", KEYCODE_4) \
+    COREPORT_BIT   (0x0040, "Coin 3", KEYCODE_5) \
+    COREPORT_BIT   (0x0008, "Service Coin", KEYCODE_6) \
+    COREPORT_BIT   (0x0001, "Diag. Up", KEYCODE_7) \
+    COREPORT_BIT   (0x0002, "Diag. Down", KEYCODE_8) \
+    COREPORT_BIT   (0x0004, "Slam Tilt", KEYCODE_HOME) \
+    /* These are put in switch column 2 */ \
+    COREPORT_BIT   (0x0200, "Start", KEYCODE_1) \
+    COREPORT_BIT   (0x0400, "Ball Tilt", KEYCODE_INSERT) \
+    COREPORT_BIT   (0x8000, "Printer Log", KEYCODE_0) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "S1 cmos defaults") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "S2    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4 prog enable") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x00f0, 0x0030, "Speech clock speed") \
+      COREPORT_DIPSET(0x0000, "620 kHz" ) \
+      COREPORT_DIPSET(0x0010, "626 kHz" ) \
+      COREPORT_DIPSET(0x0020, "634 kHz" ) \
+      COREPORT_DIPSET(0x0030, "640 kHz" ) \
+      COREPORT_DIPSET(0x0040, "646 kHz" ) \
+      COREPORT_DIPSET(0x0050, "654 kHz" ) \
+      COREPORT_DIPSET(0x0060, "660 kHz" ) \
+      COREPORT_DIPSET(0x0070, "666 kHz" ) \
+      COREPORT_DIPSET(0x0080, "674 kHz" ) \
+      COREPORT_DIPSET(0x0090, "680 kHz" ) \
+      COREPORT_DIPSET(0x00a0, "686 kHz" ) \
+      COREPORT_DIPSET(0x00b0, "694 kHz" ) \
+      COREPORT_DIPSET(0x00c0, "700 kHz" ) \
+      COREPORT_DIPSET(0x00d0, "706 kHz" ) \
+      COREPORT_DIPSET(0x00e0, "714 kHz" ) \
+      COREPORT_DIPSET(0x00f0, "720 kHz" )
+
 /*-- Standard input ports --*/
 #define ZACOLD_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
@@ -152,6 +199,12 @@
     CORE_PORTS \
     SIM_PORTS(balls) \
     ZAC_COMPORTS
+
+#define ZAC_INPUT_PORTS_NOSNDDIAG_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    ZAC_COMPORTS_NOSNDDIAG
 
 #define ZAC_INPUT_PORTS_END INPUT_PORTS_END
 

@@ -19,9 +19,6 @@
 #define ZAC_SOLSMOOTH      2
 #define ZAC_DISPLAYSMOOTH  2
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static WRITE_HANDLER(ZAC_soundCmd) { }
-#endif
 static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);
@@ -548,8 +545,6 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_SWITCH_UPDATE(ZAC1)
   MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
-  MDRV_SOUND_CMD(ZAC_soundCmd)
-  MDRV_SOUND_CMDHEADING("ZAC")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC0)
@@ -595,8 +590,6 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_SWITCH_UPDATE(ZAC2)
   MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
-  MDRV_SOUND_CMD(ZAC_soundCmd)
-  MDRV_SOUND_CMDHEADING("ZAC")
 MACHINE_DRIVER_END
 
 //Sound board 1370
