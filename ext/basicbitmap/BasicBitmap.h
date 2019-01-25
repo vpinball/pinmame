@@ -1,6 +1,10 @@
 //=====================================================================
 //
 // BasicBitmap.h - Simple Bitmap Library
+// https://github.com/skywind3000/BasicBitmap
+//
+// Created by: skywind, 2011, 2012, 2015, 2018
+// Last Modified: 2018/03/15 14:54
 //
 // As the purpose of providing a simple, high-performance and platform
 // independent Bitmap library, this file is created based on a subset
@@ -18,7 +22,7 @@
 // As a platform independent implementation, this class is written 
 // in pure C/C++. But all the core routines can be replaced by
 // external implementations (sse2 eg.) using SetDriver/SetFunction.
-// 
+//
 // HISTORY:
 // 2011.2.9   skywind  create this file based on a subset of pixellib
 // 2011.2.11  skywind  immigrate blitting/blending/convertion/scaling
@@ -595,7 +599,7 @@ public:
 	// to raw pixel format then set to position
 	void SetColor(int x, int y, IUINT32 RGBA);
 
-	// Shuffle 32 bits
+	// Shuffle 32/24 bits, b3 is unused in 24 bits
 	void Shuffle(int b0, int b1, int b2, int b3);
 
 public:
