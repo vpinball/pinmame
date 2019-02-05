@@ -14,6 +14,7 @@ Made sound/speech work for Cerberus and Spain 82 - the only sound device on thes
 
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org, David Gersic, Quench, watacaractr
 New:
+Barni: Champion
 Cirsa: Sport 2000
 Inder: Skate Board
 Maibesa: Eight Ball Champ

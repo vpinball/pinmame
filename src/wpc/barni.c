@@ -129,8 +129,20 @@ static void showSegment(int num, UINT8 data) {
   }
 }
 
+static int countBits(UINT8 data) {
+  int cnt = 0;
+  int i;
+  for (i = 0; i < 8; i++) {
+    if (data & (1 << i)) {
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
 static WRITE_HANDLER(via0b_w) {
-  static UINT8 lampData;
+  static UINT8 lampData, lampRow, col4[3];
+  static int colNum;
   switch (locals.via_a >> 4) {
     case 0:
       sndbrd_manCmd(0, ~data);
@@ -144,14 +156,30 @@ static WRITE_HANDLER(via0b_w) {
     case 5:
       switch (~locals.via_a & 0x0f) {
         case 0:
-          coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((data ^ 0xff) << 8);
+          if (core_gameData->hw.lampCol) {
+          	// champion uses two solenoid outputs to control 12 extra lamps
+            coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0x9f) << 8);
+            if (~data & 0x20) coreGlobals.lampMatrix[8] = lampRow;
+            if (~data & 0x40) coreGlobals.lampMatrix[9] = lampRow;
+          } else {
+            coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0xff) << 8);
+          }
           break;
         case 1:
           coreGlobals.solenoids = (coreGlobals.solenoids & 0x1ff00) | (~data & 0xff);
           break;
         case 2:
-          if (data != 0xff) {
-            coreGlobals.lampMatrix[core_BitColToNum(data ^ 0xff)] = lampData;
+          lampRow = ~data;
+          if (countBits(lampRow) == 1) {
+          	colNum = core_BitColToNum(lampRow);
+            coreGlobals.lampMatrix[colNum] = lampData;
+            // column 4 is additionally fed with all 0 on champion, so buffer the previous value a while
+            if (core_gameData->hw.lampCol && colNum == 4) {
+              col4[0] = col4[1];
+              col4[1] = col4[2];
+              col4[2] = lampData;
+              coreGlobals.lampMatrix[4] |= col4[0] | col4[1];
+            }
           }
           break;
         case 3:
@@ -442,5 +470,28 @@ INPUT_PORTS_START(barni)
 INPUT_PORTS_END
 
 #define input_ports_redbaron input_ports_barni
-
 CORE_GAMEDEFNV(redbaron, "Red Baron", 1985, "Barni", barni, 0)
+
+/*--------------------------------
+/ Champion
+/-------------------------------*/
+ROM_START(champion)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("che.bin", 0xe000, 0x2000, CRC(c5dc9228) SHA1(5306980a9c73118cfb843dbce0d56f516d054220))
+    ROM_LOAD("chc.bin", 0xc000, 0x2000, CRC(6ab0f232) SHA1(0638d33f86c62ee93dff924a16a5b9309392d9e8))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("chan.bin", 0xe000, 0x2000, CRC(3f148587) SHA1(e44dc9cce15830f522dc781aaa13c659a43371f3))
+  NORMALREGION(0x10000, REGION_CPU3)
+    ROM_LOAD("voz1.bin", 0xf000, 0x1000, CRC(48665778) SHA1(c295dfe7f4a98756f508391eb326f37a5aac37ff))
+    ROM_LOAD("voz2.bin", 0xe000, 0x1000, CRC(30e7da5e) SHA1(3054cf9b09e0f89c242e1ad35bb31d9bd77248e4))
+    ROM_LOAD("voz3.bin", 0xd000, 0x1000, CRC(3cd8058e) SHA1(fa4fd0cf4124263d4021c5a86033af9e5aa66eed))
+    ROM_LOAD("voz4.bin", 0xc000, 0x1000, CRC(0d00d8cc) SHA1(10f64d2fc3fc3e276bbd0e108815a3b395dcf0c9))
+ROM_END
+
+static core_tGameData championGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,2,0,SNDBRD_BARNI}};
+static void init_champion(void) {
+  core_gameData = &championGameData;
+}
+
+#define input_ports_champion input_ports_barni
+CORE_GAMEDEFNV(champion, "Champion", 1985, "Barni", barni, 0)
