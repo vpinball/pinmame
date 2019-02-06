@@ -62,7 +62,7 @@ static READ_HANDLER(gram_r) {
 static WRITE_HANDLER(pal_w) {
   logerror("PAL: %02x\n", data);
   // this is probably wrong but I didn't find any other output to control game enable
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 1) << 16);
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | (data & core_gameData->hw.gameSpecific1 ? 0x10000 : 0);
 }
 
 static READ_HANDLER(firq_set) {
@@ -157,7 +157,7 @@ static WRITE_HANDLER(via0b_w) {
       switch (~locals.via_a & 0x0f) {
         case 0:
           if (core_gameData->hw.lampCol) {
-          	// champion uses two solenoid outputs to control 12 extra lamps
+            // champion uses two solenoid outputs to control 12 extra lamps
             coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0x9f) << 8);
             if (~data & 0x20) coreGlobals.lampMatrix[8] = lampRow;
             if (~data & 0x40) coreGlobals.lampMatrix[9] = lampRow;
@@ -171,7 +171,7 @@ static WRITE_HANDLER(via0b_w) {
         case 2:
           lampRow = ~data;
           if (countBits(lampRow) == 1) {
-          	colNum = core_BitColToNum(lampRow);
+            colNum = core_BitColToNum(lampRow);
             coreGlobals.lampMatrix[colNum] = lampData;
             // column 4 is additionally fed with all 0 on champion, so buffer the previous value a while
             if (core_gameData->hw.lampCol && colNum == 4) {
@@ -409,7 +409,7 @@ static core_tLCDLayout dispAlpha[] = {
 #endif
   {0}
 };
-static core_tGameData redbaronGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,0,0,SNDBRD_BARNI}};
+static core_tGameData redbaronGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,0,0,SNDBRD_BARNI,0,0x01}};
 static void init_redbaron(void) {
   core_gameData = &redbaronGameData;
 }
@@ -488,7 +488,7 @@ ROM_START(champion)
     ROM_LOAD("voz4.bin", 0xc000, 0x1000, CRC(0d00d8cc) SHA1(10f64d2fc3fc3e276bbd0e108815a3b395dcf0c9))
 ROM_END
 
-static core_tGameData championGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,2,0,SNDBRD_BARNI}};
+static core_tGameData championGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,2,0,SNDBRD_BARNI,0,0x40}};
 static void init_champion(void) {
   core_gameData = &championGameData;
 }
