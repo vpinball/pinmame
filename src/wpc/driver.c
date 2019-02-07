@@ -325,9 +325,12 @@ DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis
 // ---------------
 // BARNI
 // ---------------
-DRIVERNV(redbaron)      // Red Baron (1985)
-DRIVERNV(champion)      // Champion (1985)
                         // Shield (1985)
+DRIVERNV(champion)      // Champion (1985)
+DRIVERNV(redbaron)      // Red Baron (1985)
+                        // Comando (1986)
+                        // Saturno (1986)
+                        // Fighter (1986)
 
 // ------------------
 // (NUOVA) BELL GAMES
