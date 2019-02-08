@@ -141,14 +141,15 @@ static int countBits(UINT8 data) {
 
 static WRITE_HANDLER(via0b_w) {
   static UINT8 lampData, lampRow, col4[3];
-  static int colNum;
+  static int colNum, segNum;
   switch (locals.via_a >> 4) {
     case 0:
       sndbrd_0_data_w(0, ~data);
       break;
     case 1:
       if (!(locals.bitCount % 8)) {
-        showSegment(31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f), data);
+        segNum = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
+        showSegment(segNum, data);
       }
       locals.bitCount++;
       break;
@@ -189,10 +190,11 @@ static WRITE_HANDLER(via0b_w) {
       }
       break;
     case 7:
-      if (locals.via_a == 0x7f) {
-        coreGlobals.diagnosticLed = data ^ 1;
-        break;
-      } // else fall through to log
+      if (core_getDip(2) && !data) {
+        showSegment(segNum-1, 0);
+        showSegment(segNum, 0);
+      }
+      break;
     default:
       logerror("VIA A/B: %02x/%02x\n", locals.via_a, data);
   }
@@ -365,9 +367,8 @@ MACHINE_DRIVER_START(barni)
   MDRV_CPU_VBLANK_INT(barni_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(barni,NULL,barni)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_DIPS(16)
+  MDRV_DIPS(17)
   MDRV_SWITCH_UPDATE(barni)
-  MDRV_DIAGNOSTIC_LEDH(1)
 
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -398,7 +399,7 @@ static core_tLCDLayout dispAlpha[] = {
   {3, 0, 6,6,CORE_SEG7},{3,12,33,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,36,1,CORE_SEG7},
   {2,20,12,2,CORE_SEG7S},{2,25,14,2,CORE_SEG7S},{2,30,16,2,CORE_SEG7S},
 #ifdef MAME_DEBUG
-  {4,24,30,2,CORE_SEG7S},{4,28,34,1,CORE_SEG7S},
+  {4,25,30,2,CORE_SEG7S},
 #endif
   {0}
 };
@@ -460,6 +461,10 @@ INPUT_PORTS_START(barni)
     COREPORT_DIPNAME( 0x4000, 0x4000, "Voz Presentacion")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x4000, DEF_STR(On))
+  PORT_START /* 2 */
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Display blanking")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 #define input_ports_redbaron input_ports_barni
