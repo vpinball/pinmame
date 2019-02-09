@@ -1024,7 +1024,7 @@ CORE_CLONEDEFNV(eballd14,eballdlx,"Eight Ball Deluxe (rev. 14)",1981,"Bally",by3
 
 #define init_eballdla init_eballdlx
 BY35_ROMSTARTx00(eballdla,"838-15_2.732",CRC(68d92acc) SHA1(f37b16d2953677cd779073bc3eac4b586d62fad8),
-                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+                          "7526fn.u6",   CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
 BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                           "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                           "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
@@ -1033,8 +1033,8 @@ BY35_ROMEND
 CORE_CLONEDEFNV(eballdla,eballdlx,"Eight Ball Deluxe (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0) // rev. 1
 
 #define init_eballdlb init_eballdlx
-BY35_ROMSTARTx00(eballdlb,"8bd029.u2",CRC(ebc65a0d) SHA1(cb0bdb8750362e4e822dd6b41ad45ee8c9fb1452),
-                          "8bd029.u6",CRC(6977de87) SHA1(5986337b7a75f8212f16d3d704ab8c1a8a828d0c))
+BY35_ROMSTARTx00(eballdlb,"8bd029.u2",   CRC(ebc65a0d) SHA1(cb0bdb8750362e4e822dd6b41ad45ee8c9fb1452),
+                          "8bd029.u6",   CRC(6977de87) SHA1(5986337b7a75f8212f16d3d704ab8c1a8a828d0c))
 BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                           "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                           "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
@@ -1043,14 +1043,25 @@ BY35_ROMEND
 CORE_CLONEDEFNV(eballdlb,eballdlx,"Eight Ball Deluxe (modified rules rev. 29)",2007,"Bally / Oliver",by35_mBY35_61S,0)
 
 #define init_eballdlc init_eballdlx
-BY35_ROMSTARTx00(eballdlc,"8bdhun.u2",CRC(12f5f247) SHA1(b447f886826a4ad2ddc8c8be42db03930474cbc2),
-                          "8bdhun.u6",CRC(a4916eb8) SHA1(cfbbc035a747d7db72f42af35a5832487ea72b13))
+BY35_ROMSTARTx00(eballdlc,"8bdhun.u2",   CRC(12f5f247) SHA1(b447f886826a4ad2ddc8c8be42db03930474cbc2),
+                          "8bdhun.u6",   CRC(a4916eb8) SHA1(cfbbc035a747d7db72f42af35a5832487ea72b13))
 BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                           "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                           "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
 BY35_ROMEND
 #define input_ports_eballdlc input_ports_eballdlx
 CORE_CLONEDEFNV(eballdlc,eballdlx,"Eight Ball Deluxe (modified rules rev. 32)",2007,"Bally / Oliver",by35_mBY35_61S,0)
+
+// fixes player 2 and player 4 bonus countdown bug
+#define init_eballdld init_eballdlx
+BY35_ROMSTARTx00(eballdld,"838-fix2.732",CRC(1d9350f4) SHA1(c4ff2e896846420798e89024aa1d5ed4cc28a228),
+                          "720-52_6.732",CRC(2a43d9fb) SHA1(9ff903c32b80780383578a9abaa3ef9d3bcecbc7))
+BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
+                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
+                          "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
+BY35_ROMEND
+#define input_ports_eballdld input_ports_eballdlx
+CORE_CLONEDEFNV(eballdld,eballdlx,"Eight Ball Deluxe (P2/4 Bonus Bugfix)",2019,"Bally / idleman",by35_mBY35_61S,0)
 
 /*--------------------------------
 / Fireball II

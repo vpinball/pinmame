@@ -213,8 +213,9 @@ DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
 DRIVERNV(eballd14)      //BY35-838: 04/81 Eight Ball Deluxe (rev. 14)
 DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
 DRIVERNV(eballdla)      //BY35      10/08 Eight Ball Deluxe (Free Play)
-DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe custom rom rev.29
-DRIVERNV(eballdlc)      //BY35      10/07 Eight Ball Deluxe custom rom rev.32
+DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe (modified rules rev.29)
+DRIVERNV(eballdlc)      //BY35      10/07 Eight Ball Deluxe (modified rules rev.32)
+DRIVERNV(eballdld)      //BY35      02/19 Eight Ball Deluxe (P2/4 Bonus Bugfix)
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
