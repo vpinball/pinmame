@@ -59,7 +59,7 @@ BY17_ROMEND
 CORE_GAMEDEFNV(freedom,"Freedom",1976,"Bally",by35_mBY17,GAME_USES_CHIMES)
 
 #define init_freedoma init_freedom
-BY17_ROMSTART8x8(freedoma,"Freedom_U2.2716",CRC(9f6e4df4) SHA1(59e2e8ef3942efc697621e525bfe1356faa596e8),
+BY17_ROMSTART8x8(freedoma,"Freedom_U2.2716",CRC(f3ca1bc8) SHA1(5fcbd0e20a140310b01fb8bb4778715c62c05582),
                           "Freedom_U6.2716",CRC(f0fb205d) SHA1(c29221918b293874fdc5caf7fa8f23941fb0de6a))
 BY17_ROMEND
 #define input_ports_freedoma input_ports_freedom
@@ -97,7 +97,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(nightrdb,nightrdr,"Night Rider (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
 
 #define init_nightrdc init_nightrdr
-BY17_ROMSTART8x8(nightrdc,"NightRider_U2.2716", CRC(f74831f3) SHA1(eb61e2dbb9e6fc566eb0f105355deb1d336a739d),
+BY17_ROMSTART8x8(nightrdc,"NightRider_U2.2716", CRC(4128e648) SHA1(c499f99eceb6560c5c9e6b8b81b0461045aabfff),
                           "System-17_U6.2716",  CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
 BY17_ROMEND
 #define input_ports_nightrdc input_ports_nightrdr
@@ -213,7 +213,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(mataharb,matahari,"Mata Hari (Free Play)",2008,"Bally / Oliver",by35_mBY17,GAME_USES_CHIMES)
 
 INITGAME(mataharc,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
-BY17_ROMSTARTx88(mataharc,"MataHari_U2.2716",  CRC(508b968b) SHA1(ab53b878d2e970c0a3aafb4599b76c075bd81ba5),
+BY17_ROMSTARTx88(mataharc,"MataHari_U2.2716",  CRC(5794ecfb) SHA1(a8e9b7366d79685a96b7552e6c76ba0efafc3124),
                           "System-17_U6.2716", CRC(7171d600) SHA1(7997a8733a29d0f2f883e02f9b635799f8d679f5))
 BY17_ROMEND
 #define input_ports_mataharc input_ports_matahari
