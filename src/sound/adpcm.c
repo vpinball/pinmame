@@ -641,8 +641,11 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 
 		/* generate the name and create the stream */
 #ifdef PINMAME
-		if (intf->num < 1) adpcm[i].is6376 = 1;
-		if (intf->num < 1) sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice); else
+		if (intf->num < 1) {
+			adpcm[i].is6376 = 1;
+			sprintf(stream_name, "MSM6376 #%d (voice %d)", chip, voice);
+		}
+		else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
 		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)intf->frequency[chip], i, adpcm_update);

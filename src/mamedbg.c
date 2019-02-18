@@ -661,10 +661,9 @@ static void get_screen_size( unsigned *width, unsigned *height )
 
 static int readkey(void)
 {
-	int i, k;
+	int k;
 	int cursor_flash = 0;
 
-	i = 0;
 	debugger_idle = 0;
 	do
 	{
@@ -1201,12 +1200,12 @@ INLINE unsigned rshift( unsigned offset )
  **************************************************************************/
 INLINE unsigned dtou( char **parg, int *size)
 {
-	unsigned val = 0, digit;
+	unsigned val = 0;
 
 	if (size) *size = 0;
 	while( isdigit( *(*parg) ) )
 	{
-		digit = *(*parg) - '0';
+		unsigned digit = *(*parg) - '0';
 		val = (val * 10) + digit;
 		if( size ) (*size)++;
 		(*parg) += 1;
@@ -1224,12 +1223,12 @@ INLINE unsigned dtou( char **parg, int *size)
  **************************************************************************/
 INLINE unsigned xtou( char **parg, int *size)
 {
-	unsigned val = 0, digit;
+	unsigned val = 0;
 
 	if (size) *size = 0;
 	while( isxdigit( *(*parg) ) )
 	{
-		digit = toupper(*(*parg)) - '0';
+		unsigned digit = toupper(*(*parg)) - '0';
 		if( digit > 9 ) digit -= 7;
 		val = (val << 4) | digit;
 		if( size ) (*size)++;
@@ -1627,10 +1626,10 @@ const char *get_ea_info( unsigned pc )
  **************************************************************************/
 static unsigned get_register_id( char **parg, int *size )
 {
-	int i, l;
+	int i;
 	for( i = 0; i < DBGREGS.count; i++ )
 	{
-		l = strlen( DBGREGS.name[i] );
+		int l = strlen( DBGREGS.name[i] );
 		if( l > 0 && !stringcasecmp( *parg, DBGREGS.name[i] ) )
 		{
 			if( !isalnum( (*parg)[l] ) )
@@ -2337,7 +2336,6 @@ INLINE void dbg_set_rect( struct rectangle *r, int x, int y, int w, int h )
  **************************************************************************/
 static void dbg_open_windows( void )
 {
-	UINT32 flags;
 	UINT32 i, w, h, aw, ah;
 
 	/* Initialize windowing engine */
@@ -2350,6 +2348,7 @@ static void dbg_open_windows( void )
 
 	for( i = 0; i < total_cpu; i++ )
 	{
+		UINT32 flags;
 		const UINT8 *win_layout = (UINT8*)cpunum_win_layout(i);
 		struct rectangle regs, dasm, mem1, mem2, cmds;
 
@@ -2549,7 +2548,6 @@ static void dump_regs( void )
 	s_edit *pedit = regs->edit;
 	UINT32 *old = regs->backup;
 	UINT32 *val = regs->newval;
-	UINT32 width;
 	const char *name = activecpu_name(), *flags = activecpu_flags();
 	int w = win_get_w(win);
 	int h = win_get_h(win);
@@ -2562,6 +2560,7 @@ static void dump_regs( void )
 	{
 		for(i = 0; reg[i]; i++)
 		{
+			UINT32 width;
 			if( reg[i] == -1 )
 				continue;		/* skip row breaks */
 			width = strlen( activecpu_dump_reg(reg[i]) );
@@ -2895,7 +2894,7 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 	int h = win_get_h(win);
 	UINT8 *old = DBGMEM[which].backup;
 	UINT8 *val = DBGMEM[which].newval;
-	UINT8 color, dim_bright = 0;
+	UINT8 dim_bright = 0;
 	UINT8 spc_left = 0; 	/* assume no space left of address */
 	UINT8 spc_addr = 0; 	/* assume no space after address */
 	UINT8 spc_data = 1; 	/* assume one space between adjacent data elements */
@@ -2942,7 +2941,7 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 
 	for( offs = 0, column = 0; offs < DBGMEM[which].size; offs++, old++, val++ )
 	{
-		color = cur_col[E_MEM1+which];
+		UINT8 color = cur_col[E_MEM1+which];
 		switch( len_data )
 		{
 		case 2: /* UINT8 mode */
@@ -3065,7 +3064,7 @@ static void edit_regs( void )
 	UINT32 win = WIN_REGS(active_cpu);
 	s_regs *regs = &DBGREGS;
 	s_edit *pedit = regs->edit;
-	unsigned shift, mask, val;
+	unsigned shift, mask;
 	const char *k;
 	int i, x, y;
 
@@ -3094,6 +3093,7 @@ static void edit_regs( void )
 
 	if( strlen(k) == 1 )
 	{
+		unsigned val;
 		switch( k[0] )
 		{
 		case '0': case '1': case '2': case '3':
@@ -3261,7 +3261,7 @@ static void edit_mem( int which )
 	UINT32 win = WIN_MEM(active_cpu,which);
 	s_edit *pedit = DBGMEM[which].edit;
 	const char *k;
-	unsigned shift, mask, val;
+	unsigned shift, mask;
 	int i, update_window = 0;
 
 	/* Eventually update the cmdline window caption */
@@ -3293,6 +3293,7 @@ static void edit_mem( int which )
 
 	if( strlen(k) == 1 )
 	{
+		unsigned val;
 		switch( k[0] )
 		{
 		case '0': case '1': case '2': case '3':
@@ -3441,7 +3442,6 @@ static int edit_cmds_info( void )
 {
 	char *cmd = CMD;
 	char hist_info[31+1];
-	int i, l;
 
 	hist_info[0] = '\0';
 	if( DBG.hist_cnt )
@@ -3449,9 +3449,10 @@ static int edit_cmds_info( void )
 
 	if( strlen(cmd) )
 	{
+		int i;
 		for( i = 0; commands[i].name; i++ )
 		{
-			l = strlen(cmd);
+			int l = strlen(cmd);
 			if( strlen(commands[i].name) < l )
 				l = strlen(commands[i].name);
 			if( strncmp( cmd, commands[i].name, l ) == 0 && !isalnum(cmd[l]) )
@@ -3639,7 +3640,7 @@ static void cmd_help( void )
 	const char *src;
 	unsigned w, h;
 	int cmd = INVALID;
-	int i, k, l, top, lines;
+	int i, k, top, lines;
 
 	if( !help )
 	{
@@ -3764,6 +3765,7 @@ static void cmd_help( void )
 	top = 0;
 	do
 	{
+		int l;
 		for( src = help, i = top; *src && i > 0; src += strlen(src) + 1 )
 			i--;
 		win_set_curpos( win, 0, 0 );
@@ -3842,16 +3844,16 @@ static void cmd_default( int code )
 static void cmd_set_element_color( void )
 {
 	char *cmd = CMD;
-	unsigned element, fg, bg, win;
+	unsigned element, win;
 	int length;
 
 	element = get_option_or_value( &cmd, &length, ELEMENT_NAMES );
 	if( length )
 	{
-		fg = get_option_or_value( &cmd, &length, COLOR_NAMES );
+		unsigned fg = get_option_or_value( &cmd, &length, COLOR_NAMES );
 		if( length )
 		{
-			bg = get_option_or_value( &cmd, &length, COLOR_NAMES );
+			unsigned bg = get_option_or_value( &cmd, &length, COLOR_NAMES );
 			if( !length ) bg = 0;	/* BLACK is default background */
 		}
 		else
@@ -3892,12 +3894,12 @@ static void cmd_set_element_color( void )
 static void cmd_brk_regs_set( void )
 {
 	char *cmd = CMD;
-	unsigned data;
 	int length;
 
 	DBG.brk_regs = get_register_id( &cmd, &length );
 	if( DBG.brk_regs > 0 )
 	{
+		unsigned data;
 		DBG.brk_regs_oldval = activecpu_get_reg(DBG.brk_regs);
 		data = get_register_or_value( &cmd, &length );
 		if( length )
@@ -3950,7 +3952,6 @@ static void cmd_brk_regs_clear( void )
 static void cmd_brk_data_set( void )
 {
 	char *cmd = CMD;
-	unsigned data;
 	int length;
 
 	DBG.brk_data = get_register_or_value( &cmd, &length );
@@ -3959,6 +3960,7 @@ static void cmd_brk_data_set( void )
 
 	if( length )
 	{
+		unsigned data;
 //Make WP work if viewing internal data
 #ifdef PINMAME
 		if( DBGMEM->internal )
@@ -4007,13 +4009,12 @@ static void cmd_brk_data_clear( void )
 static void cmd_brk_exec_set( void )
 {
 	char *cmd = CMD;
-	unsigned times;
 	int length;
 
 	DBG.brk_exec = get_register_or_value( &cmd, &length );
 	if( length )
 	{
-		times = get_register_or_value( &cmd, &length );
+		unsigned times = get_register_or_value( &cmd, &length );
 		if( length )
 		{
 			DBG.brk_exec_times = times;
@@ -4058,13 +4059,13 @@ static void cmd_brk_exec_clear( void )
 static void cmd_display_memory( void )
 {
 	char *cmd = CMD;
-	unsigned which, address;
+	unsigned which;
 	int length;
 
 	which = xtou( &cmd, &length );
 	if( length )
 	{
-		address = get_register_or_value( &cmd, &length );
+		unsigned address = get_register_or_value( &cmd, &length );
 		if( length )
 		{
 			which = (which - 1) % MAX_MEM;
@@ -4091,7 +4092,7 @@ static void cmd_dasm_to_file( void )
 	const char *filename;
 	int length;
 	FILE *file;
-	unsigned i, pc, size, start, end, width, opcodes;
+	unsigned i, pc, start, end, width, opcodes;
 
 	filename = get_file_name( &cmd, &length );
 	if( !length )
@@ -4134,9 +4135,8 @@ static void cmd_dasm_to_file( void )
 	for( pc = start; pc <= end; /* */ )
 	{
 		unsigned p = rshift(pc);
-		unsigned s;
-		size = activecpu_dasm( buffer, pc );
-		s = rshift(size);
+		unsigned size = activecpu_dasm( buffer, pc );
+		unsigned s = rshift(size);
 
 		fprintf(file, "%0*X: ", width, pc );
 		if( opcodes )
@@ -4303,9 +4303,9 @@ static void cmd_dump_to_file( void )
 		fprintf(file, "%02X", buffer[offs & 15] );
 		if( (offs & 15) == 15 )
 		{
-			unsigned o;
 			if( asciimode )
 			{
+				unsigned o;
 				fputc( ' ', file );
 				if( asciimode == 1 )
 					for( o = 0; o < 16; o++ )
@@ -4403,12 +4403,13 @@ static void cmd_save_to_file( void )
 static void cmd_edit_memory( void )
 {
 	char *cmd = CMD;
-	unsigned which, address;
+	unsigned which;
 	int length;
 
 	which = xtou( &cmd, &length );
 	if( length )
 	{
+		unsigned address;
 		which = (which - 1) % MAX_MEM;
 		address = get_register_or_value( &cmd, &length );
 		address = rshift(address) & AMASK;
@@ -4439,7 +4440,7 @@ static void cmd_search_memory(void)
 	UINT32 win = MAX_WINDOWS-3;
 	unsigned which = (DBG.window == EDIT_MEM1) ? 0 : 1;
 	unsigned w, h;
-	unsigned shift, mask, val;
+	unsigned mask, val;
 	const char *k;
 	int i, offset, nibble;
 
@@ -4455,6 +4456,8 @@ static void cmd_search_memory(void)
 
 	do
 	{
+		unsigned shift;
+
 		win_set_curpos( win, 0, 0 );
 		for( i = 0; i < search_count; i++ )
 			win_printf( win, "%02X ", search_data[i] );
@@ -4712,13 +4715,14 @@ static void cmd_set_ignore( void )
 {
 	char *cmd = CMD;
 	unsigned cpunum;
-	int i, length, already_ignored;
+	int length;
 
 	cpunum = xtou( &cmd, &length );
 	if( cpunum < total_cpu )
 	{
 		if( !dbg[cpunum].ignore )
 		{
+			int i, already_ignored;
 			for( i = 0, already_ignored = 0; i < total_cpu; i++ )
 				if(dbg[i].ignore) ++already_ignored;
 			if( already_ignored + 1 >= total_cpu )
@@ -4795,13 +4799,13 @@ static void cmd_jump( void )
 static void cmd_replace_register( void )
 {
 	char *cmd = CMD;
-	unsigned regnum, address;
+	unsigned regnum;
 	int length;
 
 	regnum = get_register_id( &cmd, &length );
 	if( regnum > 0 )
 	{
-		address = get_register_or_value( &cmd, &length );
+		unsigned address = get_register_or_value( &cmd, &length );
 		if( length )
 		{
 			activecpu_set_reg( regnum, address );
@@ -4835,12 +4839,13 @@ static void cmd_replace_register( void )
 static void cmd_set_memory_mode( void )
 {
 	char *cmd = CMD;
-	unsigned which, mode;
+	unsigned which;
 	int length;
 
 	which = dtou( &cmd, &length );
 	if( length )
 	{
+		unsigned mode;
 		which = (which - 1) % 2;
 		mode = get_option_or_value( &cmd, &length, "BYTE\0WORD\0DWORD\0" );
 		if( !length ) mode = 0; /* default to BYTE */
@@ -4879,7 +4884,6 @@ static void cmd_trace_to_file( void )
 {
 	char *cmd = CMD;
 	const char *filename;
-	UINT8 regs[MAX_REGS], regcnt = 0;
 	int length;
 
 	filename = get_file_name( &cmd, &length );
@@ -4890,6 +4894,8 @@ static void cmd_trace_to_file( void )
 	}
 	else
 	{
+		UINT8 regcnt = 0;
+		UINT8 regs[MAX_REGS];
 		while( *cmd )
 		{
 			regs[regcnt] = get_register_id( &cmd, &length );
@@ -4983,7 +4989,6 @@ static void cmd_dasm_down( void )
  **************************************************************************/
 static void cmd_dasm_page_up( void )
 {
-	UINT32 i;
 	/*
 	 * This uses a 'rolling window' of start addresses to work out
 	 * the best address to use to generate the previous pagefull of
@@ -5001,6 +5006,7 @@ static void cmd_dasm_page_up( void )
 		}
 		else
 		{
+			UINT32 i;
 			for( i= 0; dasm_pc_tmp < DBGDASM.pc_top; i++ )
 			{
 				dasm_pc_row[i % h] = dasm_pc_tmp;
@@ -5061,10 +5067,9 @@ static void cmd_dasm_end( void )
 {
 	unsigned h = win_get_h(WIN_DASM(active_cpu));
 	unsigned tmp_address = lshift(AMASK - h * INSTL + 1);
-	unsigned end_address;
 	for( ; ; )
 	{
-		end_address = dasm_line( tmp_address, h );
+		unsigned end_address = dasm_line( tmp_address, h );
 		if( end_address < tmp_address )
 			break;
 		tmp_address += ALIGN;
@@ -5110,7 +5115,7 @@ static void cmd_brk_exec_toggle( void )
  **************************************************************************/
 static void cmd_dasm_hist_follow( void )
 {
-	unsigned i, address, access = EA_NONE;
+	unsigned address, access = EA_NONE;
 
 	address = INVALID;
 	DBGDASM.dst_ea_value = INVALID;
@@ -5132,7 +5137,7 @@ static void cmd_dasm_hist_follow( void )
 	{
 		if( DBG.hist_cnt < MAX_HIST )
 		{
-			i = DBG.hist_cnt;
+			unsigned i = DBG.hist_cnt;
 			/* Save some current values */
 			DBG.hist[i].dasm_top = DBGDASM.pc_top;
 			DBG.hist[i].dasm_cur = DBGDASM.pc_cur;
@@ -5166,10 +5171,9 @@ static void cmd_dasm_hist_follow( void )
  **************************************************************************/
 static void cmd_dasm_hist_back( void )
 {
-	unsigned i;
 	if( DBG.hist_cnt > 0)
 	{
-		i = --DBG.hist_cnt;
+		unsigned i = --DBG.hist_cnt;
 		DBGDASM.pc_top = DBG.hist[i].dasm_top;
 		DBGDASM.pc_cur = DBG.hist[i].dasm_cur;
 		DBGDASM.pc_end = dump_dasm( DBGDASM.pc_top );

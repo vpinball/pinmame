@@ -517,18 +517,17 @@ static void z80pio_interrupt_check( z80pio *pio )
 static void z80pio_check_irq( z80pio *pio , int ch )
 {
 	int irq = 0;
-	int data;
 	int old_state;
 
 	if( pio->enable[ch] & PIO_INT_ENABLE )
 	{
 		if( pio->mode[ch] == PIO_MODE3 )
 		{
-			data  =  pio->in[ch] & pio->dir[ch]; /* input data only */
-			data &= ~pio->mask[ch];              /* mask follow     */
-			if( !(pio->enable[ch]&PIO_INT_HIGH) )/* active level    */
-				data ^= pio->mask[ch];             /* active low  */
-			if( pio->enable[ch]&PIO_INT_AND )    /* logic      */
+			int data = pio->in[ch] & pio->dir[ch]; /* input data only */
+			data &= ~pio->mask[ch];              /* mask follow */
+			if( !(pio->enable[ch]&PIO_INT_HIGH) )/* active level */
+				data ^= pio->mask[ch];           /* active low  */
+			if( pio->enable[ch]&PIO_INT_AND )    /* logic */
 			     { if( data == pio->mask[ch] ) irq = 1; }
 			else { if( data == 0             ) irq = 1; }
 			/* if portB , portA mode 2 check */

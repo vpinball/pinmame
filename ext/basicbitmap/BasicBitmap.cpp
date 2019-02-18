@@ -1802,9 +1802,8 @@ int BasicBitmap::BlitNormal(int bpp, void *dbits, long dpitch, int dx, const
 		} 
 		endx = dx + w; 
 		for (y = 0; y < h; y++) { 
-			IUINT32 cc; 
 			for (x1 = dx, x2 = sx0; x1 < endx; x1++, x2 += sxd) { 
-				cc = _pixel_fetch(24, sbits, x2); 
+				IUINT32 cc = _pixel_fetch(24, sbits, x2);
 				_pixel_store(24, dbits, x1, cc); 
 			} 
 			dbits = (IUINT8*)dbits + dpitch; 
@@ -1918,9 +1917,8 @@ int BasicBitmap::BlitMask(int bpp, void *dbits, long dpitch, int dx, const
 		} 
 		endx = dx + w; 
 		for (y = 0; y < h; y++) { 
-			IUINT32 cc; 
 			for (x1 = dx, x2 = sx0; x1 < endx; x1++, x2 += sxd) { 
-				cc = _pixel_fetch(24, sbits, x2); 
+				IUINT32 cc = _pixel_fetch(24, sbits, x2);
 				if (cc != mask) _pixel_store(24, dbits, x1, cc); 
 			} 
 			dbits = (IUINT8*)dbits + dpitch; 
@@ -2728,11 +2726,11 @@ void BasicBitmap::Fetch(PixelFmt fmt, const void * const __restrict bits, int x,
 //---------------------------------------------------------------------
 void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w, const IUINT32 * __restrict buffer)
 {
-	IUINT32 r, g, b, a;
 	switch (fmt) {
 	case G8: {
 			IUINT8 * __restrict dst = (IUINT8*)bits + x;
 			for (; w > 0; w--) {
+				IUINT32 r, g, b, a;
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
 				*dst++ = (IUINT8)_pixel_to_gray(r, g, b);
@@ -2742,6 +2740,7 @@ void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w
 	case A1R5G5B5: {
 			IUINT16 * __restrict dst = (IUINT16*)bits + x;
 			for (; w > 0; w--) {
+				IUINT32 r, g, b, a;
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
 				*dst++ = (IUINT16)_pixel_asm_1555(a, r, g, b);
@@ -2751,6 +2750,7 @@ void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w
 	case A4R4G4B4: {
 			IUINT16 * __restrict dst = (IUINT16*)bits + x;
 			for (; w > 0; w--) {
+				IUINT32 r, g, b, a;
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
 				*dst++ = (IUINT16)_pixel_asm_4444(a, r, g, b);
@@ -2760,6 +2760,7 @@ void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w
 	case R5G6B5: {
 			IUINT16 * __restrict dst = (IUINT16*)bits + x;
 			for (; w > 0; w--) {
+				IUINT32 r, g, b, a;
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
 				*dst++ = (IUINT16)_pixel_asm_565(r, g, b);
@@ -2782,6 +2783,7 @@ void BasicBitmap::Store(PixelFmt fmt, void * const __restrict bits, int x, int w
 			}
 #endif
 			for (; w > 0; w--) {
+				IUINT32 r, g, b, a;
 				_pixel_load_card(buffer, r, g, b, a);
 				buffer++;
 				*dst++ = (IUINT16)_pixel_asm_1555(0, r, g, b);
@@ -2905,9 +2907,8 @@ int BasicBitmap::Fmt2Bpp(PixelFmt fmt)
 void BasicBitmap::CardReverse(IUINT32 *card, int size)
 {
 	IUINT32 *p1, *p2;
-	IUINT32 value;
 	for (p1 = card, p2 = card + size - 1; p1 < p2; p1++, p2--) {
-		value = *p1;
+		IUINT32 value = *p1;
 		*p1 = *p2;
 		*p2 = value;
 	}
@@ -3620,9 +3621,8 @@ void BasicBitmap::FlipHorizontal()
 		switch (_pixelsize) {
 		case 1: {
 				IUINT8 *ptr = (IUINT8*)Line(y);
-				IUINT8 cc;
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					cc = ptr[x1];
+					IUINT8 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3630,9 +3630,8 @@ void BasicBitmap::FlipHorizontal()
 			break;
 		case 2: {
 				IUINT16 *ptr = (IUINT16*)Line(y);
-				IUINT16 cc;
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					cc = ptr[x1];
+					IUINT16 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3640,10 +3639,9 @@ void BasicBitmap::FlipHorizontal()
 			break;
 		case 3: {
 				IUINT8 *ptr = (IUINT8*)Line(y);
-				IUINT32 c1, c2;
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					c1 = _pixel_fetch(24, ptr, x1);
-					c2 = _pixel_fetch(24, ptr, x2);
+					IUINT32 c1 = _pixel_fetch(24, ptr, x1);
+					IUINT32 c2 = _pixel_fetch(24, ptr, x2);
 					_pixel_store(24, ptr, x1, c2);
 					_pixel_store(24, ptr, x2, c1);
 				}
@@ -3651,9 +3649,8 @@ void BasicBitmap::FlipHorizontal()
 			break;
 		case 4: {
 				IUINT32 *ptr = (IUINT32*)Line(y);
-				IUINT32 cc;
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					cc = ptr[x1];
+					IUINT32 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3770,7 +3767,7 @@ int BasicBitmap::BestfitColor(const BasicColor *pal, int r, int g, int b, int si
 {
 	static IUINT32 diff_lookup[512 * 3] = { 0 };
 	long lowest = 0x7FFFFFFF, bestfit = 0;
-	long coldiff, i;
+	long i;
 	const BasicColor *rgb;
 
 	if (diff_lookup[0] == 0) {
@@ -3789,7 +3786,7 @@ int BasicBitmap::BestfitColor(const BasicColor *pal, int r, int g, int b, int si
 	b = b & 255;
 
 	for (i = size, rgb = pal; i > 0; rgb++, i--) {
-		coldiff  = diff_lookup[ 768 + rgb->g - g];
+		long coldiff  = diff_lookup[ 768 + rgb->g - g];
 		if (coldiff >= lowest) continue;
 
 		coldiff += diff_lookup[ 256 + rgb->r - r];
@@ -3829,7 +3826,7 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 	const BasicBitmap *src, int sx, int sy, int sw, int sh, int mode)
 {
 	int dstwidth, dstheight, dstwidth2, dstheight2, srcwidth2, srcheight2;
-	int werr, herr, incx, incy, i, j, nbytes; 
+	int herr, incy, i, j, nbytes; 
 	IUINT32 mask;
 
 	if (src->Bpp() != Bpp())
@@ -3886,18 +3883,17 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 		unsigned char *dstrow = (unsigned char*)this->Line(dy);
 		const unsigned char *srcpix = srcrow + nbytes * sx;
 		unsigned char *dstpix = dstrow + nbytes * dx;
-		incx = nbytes;
+		int incx = nbytes;
 		if (mode & PIXEL_FLAG_HFLIP) {
 			srcpix += (sw - 1) * nbytes;
 			incx = -nbytes;
 		}
-		werr = srcwidth2 - dstwidth2;
+		int werr = srcwidth2 - dstwidth2;
 
 		switch (nbytes)
 		{
 		case 1:
 			{
-				unsigned char mask8;
 				if ((mode & PIXEL_FLAG_MASK) == 0) {
 					for (i = dstwidth; i > 0; i--) {
 						*dstpix++ = *srcpix;
@@ -3907,7 +3903,7 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 						werr += srcwidth2;
 					}
 				}   else {
-					mask8 = (unsigned char)(src->_mask & 0xff);
+					unsigned char mask8 = (unsigned char)(src->_mask & 0xff);
 					for (i = dstwidth; i > 0; i--) {
 						if (*srcpix != mask8) *dstpix = *srcpix;
 						dstpix++;
@@ -3922,7 +3918,6 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 
 		case 2:
 			{
-				unsigned short mask16;
 				if ((mode & PIXEL_FLAG_MASK) == 0) {
 					for (i = dstwidth; i > 0; i--) {
 						*((unsigned short*)dstpix) = 
@@ -3934,7 +3929,7 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 						werr += srcwidth2;
 					}
 				}   else {
-					mask16 = (unsigned short)(src->_mask & 0xffff);
+					unsigned short mask16 = (unsigned short)(src->_mask & 0xffff);
 					for (i = dstwidth; i > 0; i--) {
 						if (*((unsigned short*)srcpix) != mask16) 
 							*((unsigned short*)dstpix) = 
@@ -3963,9 +3958,8 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 				}
 			}
 			else {
-				IUINT32 k;
 				for (i = dstwidth; i > 0; i--) {
-					k = _pixel_read_24(srcpix);
+					IUINT32 k = _pixel_read_24(srcpix);
 					if (k != mask) {
 						dstpix[0] = srcpix[0];
 						dstpix[1] = srcpix[1];
@@ -5063,7 +5057,7 @@ BasicBitmap *BasicBitmap::LoadTgaFromMemory(const void *buffer, long size, Basic
 	unsigned char image_palette[256][4];
 	unsigned char id_length, palette_type, image_type, palette_entry_size;
 	unsigned char bpp, descriptor_bits;
-	IUINT32 c = 0, i, y, yc, n, x;
+	IUINT32 c = 0, i, y, n, x;
 	IUINT16 palette_colors;
 	IUINT16 image_width, image_height;
 	unsigned char *lptr;
@@ -5174,7 +5168,7 @@ BasicBitmap *BasicBitmap::LoadTgaFromMemory(const void *buffer, long size, Basic
 	}
 
 	for (y = image_height; y; y--) {
-		yc = (descriptor_bits & 0x20) ? image_height - y : y - 1;
+		IUINT32 yc = (descriptor_bits & 0x20) ? image_height - y : y - 1;
 		lptr = (unsigned char*)(bmp->Line(yc));
 		if (compressed == 0) {
 			ptr = PixelTgaReadn(ptr, lptr, image_width, bpp);
@@ -5409,7 +5403,6 @@ int BasicBitmap::GdiPlusInit(int startup)
 	static HINSTANCE hDLL = NULL;
 	static ULONG token = 0;
 	static int inited = 0;
-	int retval;
 
 	if (hDLL == NULL) {
 		hDLL = LoadLibraryA("gdiplus.dll");
@@ -5446,7 +5439,7 @@ int BasicBitmap::GdiPlusInit(int startup)
 		GStartupInput.SuppressBackgroundThread = 0;
 		GStartupInput.SuppressExternalCodecs = 0;
 
-		retval = GdiPlusStartup_o(&token, &GStartupInput, &GStartupOutput);
+		int retval = GdiPlusStartup_o(&token, &GStartupInput, &GStartupOutput);
 
 		if (retval != 0) {
 			return -3;
@@ -5930,7 +5923,7 @@ bool BasicBitmap::TransparentBlt(void *hdcDst, int nXOriginDest, int nYOriginDes
 	BOOL hr = TransparentBlt_o((HDC)hdcDst, nXOriginDest, nYOriginDest, nWidthDest,
 		nHeightDest, (HDC)hdcSrc, nXOriginSrc, nYOriginSrc, nWidthSrc, 
 		nHeightSrc, (UINT)crTransparent);
-	return (hr)? true : false;
+	return (hr) ? true : false;
 }
 
 
@@ -6828,12 +6821,10 @@ int BasicBitmap_ResampleAvg(BasicBitmap *dst, int dx, int dy, int dw, int dh,
 	int srcheight = sh;
 	int dstwidth = dw;
 	int dstheight = dh;
-	const IUINT8 *ss;
-	IUINT8 *dd;
 
 	if (src->Bpp() == 32 && dst->Bpp() == 32 && sfmt == dfmt) {
-		dd = (IUINT8*)dst->Address32(dx, dy);
-		ss = (const IUINT8*)src->Address32(sx, sy);
+		IUINT8 *dd = (IUINT8*)dst->Address32(dx, dy);
+		const IUINT8 *ss = (const IUINT8*)src->Address32(sx, sy);
 		return BasicBitmap_ResampleSmooth(dd, ss, dstwidth, srcwidth, dstheight,
 			srcheight, dst->Pitch(), src->Pitch());
 	}
