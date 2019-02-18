@@ -731,7 +731,7 @@ int	dss_lfsr_function(int myfunc,int in0,int in1,int bitmask)
 			break;
 		case DISC_LFSR_REPLACE:
 			retval=in0&~in1;
-			retval=in0|in1;
+			retval=retval|in1;
 			break;
 		default:
 			discrete_log("dss_lfsr_function - Invalid function type passed");
@@ -748,7 +748,7 @@ int dss_lfsr_step(struct node_description *node)
 {
 	struct dss_lfsr_context *context;
 	double shiftAmount;
-	int fb0,fb1,fbresult,i;
+	int i;
 	struct discrete_lfsr_desc *lfsr_desc;
 	context=(struct dss_lfsr_context*)node->context;
 
@@ -767,6 +767,8 @@ int dss_lfsr_step(struct node_description *node)
 	context->t = (shiftAmount - (int)shiftAmount) * context->shiftStep;    /* left over amount of time */
 	while(i<(int)shiftAmount)
 	{
+		int fb0, fb1, fbresult;
+
 		i++;
 		/* Now clock the LFSR by 1 cycle and output */
 
@@ -883,8 +885,8 @@ int dss_lfsr_init(struct node_description *node)
 /************************************************************************/
 int dss_adsrenv_step(struct node_description *node)
 {
-	struct dss_adsr_context *context;
-	context=(struct dss_adsr_context*)node->context;
+	//struct dss_adsr_context *context;
+	//context=(struct dss_adsr_context*)node->context;
 
 	//if(node->input[0])
 	//{
