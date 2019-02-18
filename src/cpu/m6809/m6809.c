@@ -329,7 +329,7 @@ CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N,CC_N
 #define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
 /* for treating an unsigned byte as a signed word */
-#define SIGNED(b) ((UINT16)(b&0x80?b|0xff00:b))
+#define SIGNED(b) ((UINT16)(((b)&0x80)?(b)|0xff00:(b)))
 
 /* macros for addressing modes (postbytes have their own code) */
 #define DIRECT	EAD = DPD; IMMBYTE(ea.b.l)
@@ -632,14 +632,14 @@ const char *m6809_info(void *context, int regnum)
 
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->cc & 0x80 ? 'E':'.',
-				r->cc & 0x40 ? 'F':'.',
-                r->cc & 0x20 ? 'H':'.',
-                r->cc & 0x10 ? 'I':'.',
-                r->cc & 0x08 ? 'N':'.',
-                r->cc & 0x04 ? 'Z':'.',
-                r->cc & 0x02 ? 'V':'.',
-                r->cc & 0x01 ? 'C':'.');
+				(r->cc & 0x80) ? 'E':'.',
+				(r->cc & 0x40) ? 'F':'.',
+                (r->cc & 0x20) ? 'H':'.',
+                (r->cc & 0x10) ? 'I':'.',
+                (r->cc & 0x08) ? 'N':'.',
+                (r->cc & 0x04) ? 'Z':'.',
+                (r->cc & 0x02) ? 'V':'.',
+                (r->cc & 0x01) ? 'C':'.');
             break;
 		case CPU_INFO_REG+M6809_PC: sprintf(buffer[which], "PC:%04X", r->pc.w.l); break;
 		case CPU_INFO_REG+M6809_S: sprintf(buffer[which], "S:%04X", r->s.w.l); break;
