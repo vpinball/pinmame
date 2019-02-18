@@ -1159,8 +1159,8 @@ static void PREFIX86(_ds)(void)    /* Opcode 0x3e */
 
 static void PREFIX86(_aas)(void)    /* Opcode 0x3f */
 {
-	UINT8 ALcarry=1;
-	if (I.regs.b[AL]>0xf9) ALcarry=2;
+	//UINT8 ALcarry=1; //!! never used
+	//if (I.regs.b[AL]>0xf9) ALcarry=2;
 
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
     {
