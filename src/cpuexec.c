@@ -478,13 +478,14 @@ void machine_reset(void)
 static void handle_save(void)
 {
 	mame_file *file;
-	int cpunum;
 
 	/* open the file */
 	file = mame_fopen(Machine->gamedrv->name, loadsave_schedule_name, FILETYPE_STATE, 1);
 
 	if (file)
 	{
+		int cpunum;
+
 		/* write the save state */
 		state_save_save_begin(file);
 
@@ -531,7 +532,6 @@ static void handle_save(void)
 static void handle_load(void)
 {
 	mame_file *file;
-	int cpunum;
 
 	/* open the file */
 	file = mame_fopen(Machine->gamedrv->name, loadsave_schedule_name, FILETYPE_STATE, 0);
@@ -542,6 +542,8 @@ static void handle_load(void)
 		/* start loading */
 		if (!state_save_load_begin(file))
 		{
+			int cpunum;
+
 			/* read tag 0 */
 			state_save_set_current_tag(0);
 			state_save_load_continue();

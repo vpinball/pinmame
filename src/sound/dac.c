@@ -20,13 +20,12 @@ static int SignedVolTable[256];
 
 static void DAC_update(int num,INT16 *buffer,int length)
 {
-	int i;
-
 	/* zero-length? bail */
 	if (length == 0)
 		return;
 	else
 	{
+		int i;
 #ifdef DAC_ENABLE_INTERPOLATION
 		INT32 data = curr_output[num];
 		INT32 slope = ((output[num] - data) << 15) / length;

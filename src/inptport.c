@@ -2940,7 +2940,6 @@ void seq_set_string(InputSeq* a, const char *buf)
 	char *arg = NULL;
 	int j;
 	struct ik *pik;
-	int found;
 
 	// create a locale buffer to be parsed by strtok
 	lbuf = malloc (strlen(buf)+1);
@@ -2955,7 +2954,7 @@ void seq_set_string(InputSeq* a, const char *buf)
 	j = 0;
 	while( arg != NULL )
 	{
-		found = 0;
+		int found = 0;
 
 		pik = input_keywords;
 

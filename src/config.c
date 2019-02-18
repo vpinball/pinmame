@@ -347,7 +347,7 @@ void config_close(config_file *cfg)
 
 int config_read_ports(config_file *cfg, struct InputPort *input_ports_default, struct InputPort *input_ports)
 {
-	unsigned int total;
+	//unsigned int total;
 	unsigned int saved_total;
 	struct InputPort *in;
 	struct InputPort saved;
@@ -361,7 +361,7 @@ int config_read_ports(config_file *cfg, struct InputPort *input_ports_default, s
 	read_input_port = cfg->format->read_input_port;
 
 	/* calculate the size of the array */
-	total = count_input_ports(input_ports_default);
+	/*total =*/ count_input_ports(input_ports_default);
 
 	/* read array size */
 	if (readint(cfg->file, &saved_total) != 0)
@@ -409,7 +409,6 @@ int config_read_default_ports(config_file *cfg, struct ipd *input_ports_default)
 	UINT32 type;
 	InputSeq def_seq;
 	InputSeq seq;
-	int i;
 	int (*read_seq)(mame_file *, InputSeq *);
 
 	if (cfg->is_write || !cfg->is_default)
@@ -421,6 +420,8 @@ int config_read_default_ports(config_file *cfg, struct ipd *input_ports_default)
 
 	for (;;)
 	{
+		int i;
+
 		if (readint(cfg->file, &type) != 0)
 			break;
 

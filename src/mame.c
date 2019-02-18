@@ -2090,9 +2090,7 @@ static int validitychecks(void)
 			{
 				for (j = 0;j < MAX_GFX_ELEMENTS && drv.gfxdecodeinfo[j].memory_region != -1;j++)
 				{
-					int len,avail,k,start;
 					int type = drv.gfxdecodeinfo[j].memory_region;
-
 
 /*
 					if (type && (type >= REGION_MAX || type <= REGION_INVALID))
@@ -2104,6 +2102,7 @@ static int validitychecks(void)
 
 					if (!IS_FRAC(drv.gfxdecodeinfo[j].gfxlayout->total))
 					{
+						int len, avail, k, start;
 						start = 0;
 						for (k = 0;k < MAX_GFX_PLANES;k++)
 						{

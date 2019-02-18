@@ -981,7 +981,6 @@ void process_opcode_handlers(void)
 	int  oper_size;
 	char oper_spec_proc[MAX_LINE_LENGTH+1];
 	char oper_spec_ea[MAX_LINE_LENGTH+1];
-	opcode_struct* opinfo;
 	replace_struct* replace = malloc(sizeof(replace_struct));
 	body_struct* body = malloc(sizeof(body_struct));
 
@@ -990,6 +989,8 @@ void process_opcode_handlers(void)
 
 	for(;;)
 	{
+		opcode_struct* opinfo;
+
 		/* Find the first line of the function */
 		func_name[0] = 0;
 		while(strstr(func_name, ID_OPHANDLER_NAME) == NULL)

@@ -296,14 +296,14 @@ const char *tms7000_info(void *context, int regnum)
 		case CPU_INFO_WIN_LAYOUT: return (const char*)tms7000_win_layout;
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->sr & 0x80 ? 'C':'c',
-				r->sr & 0x40 ? 'N':'n',
-				r->sr & 0x20 ? 'Z':'z',
-				r->sr & 0x10 ? 'I':'i',
-				r->sr & 0x08 ? '?':'.',
-				r->sr & 0x04 ? '?':'.',
-				r->sr & 0x02 ? '?':'.',
-				r->sr & 0x01 ? '?':'.' );
+				(r->sr & 0x80) ? 'C':'c',
+				(r->sr & 0x40) ? 'N':'n',
+				(r->sr & 0x20) ? 'Z':'z',
+				(r->sr & 0x10) ? 'I':'i',
+				(r->sr & 0x08) ? '?':'.',
+				(r->sr & 0x04) ? '?':'.',
+				(r->sr & 0x02) ? '?':'.',
+				(r->sr & 0x01) ? '?':'.' );
 			break;
 		case CPU_INFO_REG+TMS7000_PC: sprintf(buffer[which], "PC:%04X", r->pc.w.l); break;
 		case CPU_INFO_REG+TMS7000_SP: sprintf(buffer[which], "SP:%02X", r->sp); break;
@@ -423,7 +423,6 @@ tms7000_interrupt:
 
 int tms7000_execute(int cycles)
 {
-	int op;
 	if (checkIrqs) {
 		checkIrqs = 0;
 		tms7000_check_IRQ_lines();
@@ -433,6 +432,7 @@ int tms7000_execute(int cycles)
 
 	do
 	{
+		int op;
 		CALL_MAME_DEBUG;
 		op = cpu_readop(pPC);
 		pPC++;

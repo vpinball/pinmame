@@ -402,7 +402,7 @@ static char *hexstring (int address)
 
 unsigned Dasm6809 (char *buffer, unsigned pc)
 {
-	int i, j, k, page, opcode, numoperands, mode, size, access;
+	int i, j, opcode, numoperands, mode, size, access;
 	UINT8 operandarray[4];
 	const char *sym1, *sym2;
 	int rel, pb, offset, reg, pb2;
@@ -420,6 +420,7 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 	{
 		if( pg1opcodes[i].mode >= PG2 )
 		{
+			int k, page;
 			opcode = cpu_readop(pc+(p++));
 			page = pg1opcodes[i].mode - PG2 + 1;          /* get page # */
 			for( k = 0; k < numops[page]; k++ )
