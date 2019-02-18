@@ -357,7 +357,7 @@ static const UINT8 flags8d[256]= /* decrement */
 #define SET_FLAGS16(a,b,r)	{SET_N16(r);SET_Z16(r);SET_V16(a,b,r);SET_C16(r);}
 
 /* for treating an UINT8 as a signed INT16 */
-#define SIGNED(b) ((INT16)((b)&0x80?(b)|0xff00:(b)))
+#define SIGNED(b) ((INT16)(((b)&0x80)?(b)|0xff00:(b)))
 
 /* Macros for addressing modes */
 #define DIRECT IMMBYTE(EAD)
@@ -750,7 +750,7 @@ void m6800_set_irq_line(int irqline, int state)
 	}
 	else
 	{
-		int eddge;
+		//int eddge; //!! never used
 
 		if (m6800.irq_state[irqline] == state) return;
 		LOG(("M6800#%d set_irq_line %d,%d\n", cpu_getactivecpu(), irqline, state));
@@ -762,7 +762,7 @@ void m6800_set_irq_line(int irqline, int state)
 			if (state == CLEAR_LINE) return;
 			break;
 		case M6800_TIN_LINE:
-			eddge = (state == CLEAR_LINE ) ? 2 : 0;
+			//eddge = (state == CLEAR_LINE ) ? 2 : 0;
 			if( ((m6800.tcsr&TCSR_IEDG) ^ (state==CLEAR_LINE ? TCSR_IEDG : 0))==0 )
 				return;
 			/* active edge in */
@@ -1121,14 +1121,14 @@ const char *m6800_info(void *context, int regnum)
 //		case CPU_INFO_REG+M6800_TIN_STATE: sprintf(buffer[which], "TIN:%X", r->irq_state[M6800_TIN_LINE]); break;
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->cc & 0x80 ? '?':'.',
-				r->cc & 0x40 ? '?':'.',
-				r->cc & 0x20 ? 'H':'.',
-				r->cc & 0x10 ? 'I':'.',
-				r->cc & 0x08 ? 'N':'.',
-				r->cc & 0x04 ? 'Z':'.',
-				r->cc & 0x02 ? 'V':'.',
-				r->cc & 0x01 ? 'C':'.');
+				(r->cc & 0x80) ? '?':'.',
+				(r->cc & 0x40) ? '?':'.',
+				(r->cc & 0x20) ? 'H':'.',
+				(r->cc & 0x10) ? 'I':'.',
+				(r->cc & 0x08) ? 'N':'.',
+				(r->cc & 0x04) ? 'Z':'.',
+				(r->cc & 0x02) ? 'V':'.',
+				(r->cc & 0x01) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "M6800";
 		case CPU_INFO_FAMILY: return "Motorola 6800";
