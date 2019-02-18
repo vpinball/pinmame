@@ -21,6 +21,11 @@
 static UINT8  *dmd32RAM;
 static UINT8 level[5] = { 0, 3, 7, 11, 15 }; // brightness mapping 0,25,50,75,100%
 
+#ifdef VPINMAME
+extern UINT8  g_raw_gtswpc_dmd[];
+extern UINT32 g_raw_gtswpc_dmdframes;
+#endif
+
 static struct {
   struct sndbrdData brdData;
   int cmd, planenable, disenable, setsync;
@@ -339,7 +344,15 @@ static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
   int ii,jj;
   RAM += dmdlocals.vid_page << 11;
 
+#ifdef VPINMAME
+  g_raw_gtswpc_dmdframes = 4;
+#endif
+
   if (dmdlocals.planenable) {
+#ifdef VPINMAME
+	  memcpy (g_raw_gtswpc_dmd, RAM, 0x800);
+#endif
+
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
@@ -356,6 +369,13 @@ static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
 		*line = 0;
 	  }
   } else {
+#ifdef VPINMAME
+	  memcpy (g_raw_gtswpc_dmd, RAM, 0x200);
+	  memcpy (g_raw_gtswpc_dmd+0x200, RAM, 0x200);
+	  memcpy (g_raw_gtswpc_dmd+0x400, RAM, 0x200);
+	  memcpy (g_raw_gtswpc_dmd+0x600, RAM, 0x200);
+#endif
+
 	  for (ii = 1; ii <= 32; ii++) {
 		UINT8 *line = &dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
