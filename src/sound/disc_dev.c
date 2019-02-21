@@ -64,12 +64,12 @@ struct dsd_566_context
 int dsd_555_astbl_step(struct node_description *node)
 {
 	struct dsd_555_astbl_context *context=(struct dsd_555_astbl_context*)node->context;
-	double cv, cWaveNext, trigger, t, vC;
-	int *astblOutTypePTR;
 
 	/* RESET? */
 	if(node->input[0])
 	{
+		double cv,t,vC,cWaveNext;
+		int *astblOutTypePTR;
 
 		/* Fetch the output type descriptor in a local for quick ref */
 		astblOutTypePTR = (int*)(node->custom);
@@ -122,6 +122,7 @@ int dsd_555_astbl_step(struct node_description *node)
 			}
 			else
 			{
+				double trigger;
 				/* Discharging */
 				cWaveNext = vC - (vC * (1 - exp(-(t / (node->input[3] * node->input[4])))));
 				t = 0;

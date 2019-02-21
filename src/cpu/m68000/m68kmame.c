@@ -425,22 +425,22 @@ const char *m68000_info(void *context, int regnum)
 		case CPU_INFO_FLAGS:
 			sr = m68k_get_reg(context, M68K_REG_SR);
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				sr & 0x8000 ? 'T':'.',
-				sr & 0x4000 ? '?':'.',
-				sr & 0x2000 ? 'S':'.',
-				sr & 0x1000 ? '?':'.',
-				sr & 0x0800 ? '?':'.',
-				sr & 0x0400 ? 'I':'.',
-				sr & 0x0200 ? 'I':'.',
-				sr & 0x0100 ? 'I':'.',
-				sr & 0x0080 ? '?':'.',
-				sr & 0x0040 ? '?':'.',
-				sr & 0x0020 ? '?':'.',
-				sr & 0x0010 ? 'X':'.',
-				sr & 0x0008 ? 'N':'.',
-				sr & 0x0004 ? 'Z':'.',
-				sr & 0x0002 ? 'V':'.',
-				sr & 0x0001 ? 'C':'.');
+				(sr & 0x8000) ? 'T':'.',
+				(sr & 0x4000) ? '?':'.',
+				(sr & 0x2000) ? 'S':'.',
+				(sr & 0x1000) ? '?':'.',
+				(sr & 0x0800) ? '?':'.',
+				(sr & 0x0400) ? 'I':'.',
+				(sr & 0x0200) ? 'I':'.',
+				(sr & 0x0100) ? 'I':'.',
+				(sr & 0x0080) ? '?':'.',
+				(sr & 0x0040) ? '?':'.',
+				(sr & 0x0020) ? '?':'.',
+				(sr & 0x0010) ? 'X':'.',
+				(sr & 0x0008) ? 'N':'.',
+				(sr & 0x0004) ? 'Z':'.',
+				(sr & 0x0002) ? 'V':'.',
+				(sr & 0x0001) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "68000";
 		case CPU_INFO_FAMILY: return "Motorola 68K";
@@ -679,22 +679,22 @@ const char *m68010_info(void *context, int regnum)
 		case CPU_INFO_FLAGS:
 			sr = m68k_get_reg(context, M68K_REG_SR);
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				sr & 0x8000 ? 'T':'.',
-				sr & 0x4000 ? '?':'.',
-				sr & 0x2000 ? 'S':'.',
-				sr & 0x1000 ? '?':'.',
-				sr & 0x0800 ? '?':'.',
-				sr & 0x0400 ? 'I':'.',
-				sr & 0x0200 ? 'I':'.',
-				sr & 0x0100 ? 'I':'.',
-				sr & 0x0080 ? '?':'.',
-				sr & 0x0040 ? '?':'.',
-				sr & 0x0020 ? '?':'.',
-				sr & 0x0010 ? 'X':'.',
-				sr & 0x0008 ? 'N':'.',
-				sr & 0x0004 ? 'Z':'.',
-				sr & 0x0002 ? 'V':'.',
-				sr & 0x0001 ? 'C':'.');
+				(sr & 0x8000) ? 'T':'.',
+				(sr & 0x4000) ? '?':'.',
+				(sr & 0x2000) ? 'S':'.',
+				(sr & 0x1000) ? '?':'.',
+				(sr & 0x0800) ? '?':'.',
+				(sr & 0x0400) ? 'I':'.',
+				(sr & 0x0200) ? 'I':'.',
+				(sr & 0x0100) ? 'I':'.',
+				(sr & 0x0080) ? '?':'.',
+				(sr & 0x0040) ? '?':'.',
+				(sr & 0x0020) ? '?':'.',
+				(sr & 0x0010) ? 'X':'.',
+				(sr & 0x0008) ? 'N':'.',
+				(sr & 0x0004) ? 'Z':'.',
+				(sr & 0x0002) ? 'V':'.',
+				(sr & 0x0001) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "68010";
 		case CPU_INFO_FAMILY: return "Motorola 68K";
@@ -947,22 +947,22 @@ const char *m68ec020_info(void *context, int regnum)
 		case CPU_INFO_FLAGS:
 			sr = m68k_get_reg(context, M68K_REG_SR);
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				sr & 0x8000 ? 'T':'.',
-				sr & 0x4000 ? 't':'.',
-				sr & 0x2000 ? 'S':'.',
-				sr & 0x1000 ? 'M':'.',
-				sr & 0x0800 ? '?':'.',
-				sr & 0x0400 ? 'I':'.',
-				sr & 0x0200 ? 'I':'.',
-				sr & 0x0100 ? 'I':'.',
-				sr & 0x0080 ? '?':'.',
-				sr & 0x0040 ? '?':'.',
-				sr & 0x0020 ? '?':'.',
-				sr & 0x0010 ? 'X':'.',
-				sr & 0x0008 ? 'N':'.',
-				sr & 0x0004 ? 'Z':'.',
-				sr & 0x0002 ? 'V':'.',
-				sr & 0x0001 ? 'C':'.');
+				(sr & 0x8000) ? 'T':'.',
+				(sr & 0x4000) ? 't':'.',
+				(sr & 0x2000) ? 'S':'.',
+				(sr & 0x1000) ? 'M':'.',
+				(sr & 0x0800) ? '?':'.',
+				(sr & 0x0400) ? 'I':'.',
+				(sr & 0x0200) ? 'I':'.',
+				(sr & 0x0100) ? 'I':'.',
+				(sr & 0x0080) ? '?':'.',
+				(sr & 0x0040) ? '?':'.',
+				(sr & 0x0020) ? '?':'.',
+				(sr & 0x0010) ? 'X':'.',
+				(sr & 0x0008) ? 'N':'.',
+				(sr & 0x0004) ? 'Z':'.',
+				(sr & 0x0002) ? 'V':'.',
+				(sr & 0x0001) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "68EC020";
 		case CPU_INFO_FAMILY: return "Motorola 68K";
@@ -1209,22 +1209,22 @@ const char *m68020_info(void *context, int regnum)
 		case CPU_INFO_FLAGS:
 			sr = m68k_get_reg(context, M68K_REG_SR);
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				sr & 0x8000 ? 'T':'.',
-				sr & 0x4000 ? 't':'.',
-				sr & 0x2000 ? 'S':'.',
-				sr & 0x1000 ? 'M':'.',
-				sr & 0x0800 ? '?':'.',
-				sr & 0x0400 ? 'I':'.',
-				sr & 0x0200 ? 'I':'.',
-				sr & 0x0100 ? 'I':'.',
-				sr & 0x0080 ? '?':'.',
-				sr & 0x0040 ? '?':'.',
-				sr & 0x0020 ? '?':'.',
-				sr & 0x0010 ? 'X':'.',
-				sr & 0x0008 ? 'N':'.',
-				sr & 0x0004 ? 'Z':'.',
-				sr & 0x0002 ? 'V':'.',
-				sr & 0x0001 ? 'C':'.');
+				(sr & 0x8000) ? 'T':'.',
+				(sr & 0x4000) ? 't':'.',
+				(sr & 0x2000) ? 'S':'.',
+				(sr & 0x1000) ? 'M':'.',
+				(sr & 0x0800) ? '?':'.',
+				(sr & 0x0400) ? 'I':'.',
+				(sr & 0x0200) ? 'I':'.',
+				(sr & 0x0100) ? 'I':'.',
+				(sr & 0x0080) ? '?':'.',
+				(sr & 0x0040) ? '?':'.',
+				(sr & 0x0020) ? '?':'.',
+				(sr & 0x0010) ? 'X':'.',
+				(sr & 0x0008) ? 'N':'.',
+				(sr & 0x0004) ? 'Z':'.',
+				(sr & 0x0002) ? 'V':'.',
+				(sr & 0x0001) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "68020";
 		case CPU_INFO_FAMILY: return "Motorola 68K";

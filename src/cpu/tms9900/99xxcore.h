@@ -1356,22 +1356,22 @@ const char *TMS99XX_INFO(void *context, int regnum)
 #endif
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				r->WP & 0x8000 ? 'L':'.',
-				r->WP & 0x4000 ? 'A':'.',
-				r->WP & 0x2000 ? 'E':'.',
-				r->WP & 0x1000 ? 'C':'.',
-				r->WP & 0x0800 ? 'V':'.',
-				r->WP & 0x0400 ? 'P':'.',
-				r->WP & 0x0200 ? 'X':'.',
-				r->WP & 0x0100 ? '?':'.',
-				r->WP & 0x0080 ? '?':'.',
-				r->WP & 0x0040 ? '?':'.',
-				r->WP & 0x0020 ? '?':'.',
-				r->WP & 0x0010 ? '?':'.',
-				r->WP & 0x0008 ? 'I':'.',
-				r->WP & 0x0004 ? 'I':'.',
-				r->WP & 0x0002 ? 'I':'.',
-				r->WP & 0x0001 ? 'I':'.');
+				(r->WP & 0x8000) ? 'L':'.',
+				(r->WP & 0x4000) ? 'A':'.',
+				(r->WP & 0x2000) ? 'E':'.',
+				(r->WP & 0x1000) ? 'C':'.',
+				(r->WP & 0x0800) ? 'V':'.',
+				(r->WP & 0x0400) ? 'P':'.',
+				(r->WP & 0x0200) ? 'X':'.',
+				(r->WP & 0x0100) ? '?':'.',
+				(r->WP & 0x0080) ? '?':'.',
+				(r->WP & 0x0040) ? '?':'.',
+				(r->WP & 0x0020) ? '?':'.',
+				(r->WP & 0x0010) ? '?':'.',
+				(r->WP & 0x0008) ? 'I':'.',
+				(r->WP & 0x0004) ? 'I':'.',
+				(r->WP & 0x0002) ? 'I':'.',
+				(r->WP & 0x0001) ? 'I':'.');
 			break;
 		case CPU_INFO_NAME: return TMS99XX_CPU_NAME;
 		case CPU_INFO_FAMILY: return "Texas Instruments 9900";

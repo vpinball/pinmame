@@ -3443,8 +3443,8 @@ void m68k_op_roxr_32_r(void)
 	uint orig_shift = DX & 0x3f;
 	uint shift = orig_shift % 33;
 	uint src = *r_dst;
-	uint res = MASK_OUT_ABOVE_32((ROR_33(src, shift) & ~(1 << (32 - shift))) | (XFLAG_AS_1() << (32 - shift)));
-	uint new_x_flag = src & (1 << (shift - 1));
+	uint res = MASK_OUT_ABOVE_32((ROR_33(src, shift) & ~(1u << (32 - shift))) | (XFLAG_AS_1() << (32 - shift)));
+	uint new_x_flag = src & (1u << (shift - 1));
 
 	if(orig_shift != 0)
 		USE_CYCLES(orig_shift<<CYC_SHIFT);

@@ -733,7 +733,7 @@ static int Timer_IRQ(void)
  ****************************************************************************/
 int i8039_execute(int cycles)
 {
-	unsigned opcode, T1;
+	unsigned T1;
 	int count;
 
 	i8039_ICount = (cycles - R.irq_extra_cycles);
@@ -745,7 +745,7 @@ int i8039_execute(int cycles)
 
 		CALL_MAME_DEBUG;
 
-		opcode=M_RDOP(R.PC.w.l);
+		unsigned opcode=M_RDOP(R.PC.w.l);
 
 /*      logerror("I8039:  PC = %04x,  opcode = %02x\n", R.PC.w.l, opcode); */
 
@@ -951,14 +951,14 @@ const char *i8039_info(void *context, int regnum)
 		case CPU_INFO_REG+I8039_R7: sprintf(buffer[which], "R7:%02X", r->RAM[r->regPtr+7]); break;
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->PSW & 0x80 ? 'C':'.',
-				r->PSW & 0x40 ? 'A':'.',
-				r->PSW & 0x20 ? 'F':'.',
-				r->PSW & 0x10 ? 'B':'.',
-				r->PSW & 0x08 ? '?':'.',
-				r->PSW & 0x04 ? '4':'.',
-				r->PSW & 0x02 ? '2':'.',
-				r->PSW & 0x01 ? '1':'.');
+				(r->PSW & 0x80) ? 'C':'.',
+				(r->PSW & 0x40) ? 'A':'.',
+				(r->PSW & 0x20) ? 'F':'.',
+				(r->PSW & 0x10) ? 'B':'.',
+				(r->PSW & 0x08) ? '?':'.',
+				(r->PSW & 0x04) ? '4':'.',
+				(r->PSW & 0x02) ? '2':'.',
+				(r->PSW & 0x01) ? '1':'.');
 			break;
 		case CPU_INFO_NAME: return "I8039";
 		case CPU_INFO_FAMILY: return "Intel 8039";

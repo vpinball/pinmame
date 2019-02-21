@@ -258,15 +258,15 @@ static void discrete_stream_update_mono(int ch,INT16 *buffer, int length)
 
 void discrete_sh_reset(void)
 {
-	struct node_description *node;
-
 	/* Reset all of the objects */
-	int loop=0,loop2=0;
+	int loop;
 
 	if(!init_ok) return;
 
 	for(loop=0;loop<node_count;loop++)
 	{
+		int loop2;
+		struct node_description *node;
 		/* Pick the first node to process */
 		node=running_order[loop];
 

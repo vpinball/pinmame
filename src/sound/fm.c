@@ -1004,10 +1004,10 @@ INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm)
 /* advance LFO to next sample */
 INLINE void advance_lfo(FM_OPN *OPN)
 {
-	UINT8 pos;
-
 	if (OPN->lfo_inc)	/* LFO enabled ? */
 	{
+		UINT8 pos;
+
 		OPN->lfo_cnt += OPN->lfo_inc;
 
 		pos = (OPN->lfo_cnt >> LFO_SH) & 127;
@@ -1044,13 +1044,14 @@ INLINE void advance_lfo(FM_OPN *OPN)
 /* changed from INLINE to static here to work around gcc 4.2.1 codegen bug */
 static void advance_eg_channel(FM_OPN *OPN, FM_SLOT *SLOT)
 {
-	unsigned int out;
-	unsigned int swap_flag = 0;
 	unsigned int i;
 
 	i = 4; /* four operators per channel */
 	do
 	{
+		unsigned int out;
+		unsigned int swap_flag;
+
 		/* reset SSG-EG swap flag */
 		swap_flag = 0;
 
@@ -1396,7 +1397,7 @@ static int init_tables(void)
 {
 	signed int i,x;
 	signed int n;
-	double o,m;
+	double m;
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
@@ -1433,6 +1434,7 @@ static int init_tables(void)
 
 	for (i=0; i<SIN_LEN; i++)
 	{
+		double o;
 		/* non-standard sinus */
 		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* checked against the real chip */
 
@@ -1461,7 +1463,6 @@ static int init_tables(void)
 		UINT8 fnum;
 		for (fnum=0; fnum<128; fnum++) /* 7 bits meaningful of F-NUMBER */
 		{
-			UINT8 value;
 			UINT8 step;
 			UINT32 offset_depth = i;
 			UINT32 offset_fnum_bit;
@@ -1469,6 +1470,7 @@ static int init_tables(void)
 
 			for (step=0; step<8; step++)
 			{
+				UINT8 value;
 				value = 0;
 				for (bit_tmp=0; bit_tmp<7; bit_tmp++) /* 7 bits */
 				{

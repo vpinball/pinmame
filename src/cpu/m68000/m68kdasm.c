@@ -3193,7 +3193,6 @@ static int DECL_SPEC compare_nof_true_bits(const void *aptr, const void *bptr)
 static void build_opcode_table(void)
 {
 	uint i;
-	uint opcode;
 	opcode_struct* ostruct;
 	uint opcode_info_length = 0;
 
@@ -3204,6 +3203,7 @@ static void build_opcode_table(void)
 
 	for(i=0;i<0x10000;i++)
 	{
+		uint opcode;
 		g_instruction_table[i] = d68000_illegal; /* default to illegal */
 		opcode = i;
 		/* search through opcode info for a match */

@@ -12,8 +12,9 @@ Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
 Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan, tecnopinball.org, David Gersic, Quench, watacaractr
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman
 New:
+Barni: Champion
 Cirsa: Sport 2000
 Inder: Skate Board
 Maibesa: Eight Ball Champ
@@ -34,6 +35,7 @@ Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
 Diner PA-0 (Prototype), LF-2 (French)
 Eight Ball (Free Play+)
+Eight Ball Deluxe (Player 2/4 Bonus Countdown Bugfix)
 Evel Knievel (Free Play+)
 Freedom (Free Play+ rev. 07 and 20)
 Heavy Metal Meltdown (German)

@@ -268,34 +268,34 @@ INLINE const struct PROCInfo* internal_code_find_proc(InputCode code)
 /* Check if a code is pressed */
 static int internal_code_pressed(InputCode code)
 {
-	const struct KeyboardInfo *keyinfo;
-	const struct JoystickInfo *joyinfo;
-#if defined(PINMAME) && defined(PROC_SUPPORT)
-	const struct PROCInfo *procinfo;
-#endif /* PINMAME && PROC_SUPPORT */
-
 	assert( code < code_mac );
 
 	if (code < __code_max)
 	{
 		switch (code_map[code].type)
 		{
-			case CODE_TYPE_KEYBOARD :
+			case CODE_TYPE_KEYBOARD : {
+				const struct KeyboardInfo *keyinfo;
 				keyinfo = internal_code_find_keyboard(code);
 				if (keyinfo)
 					return osd_is_key_pressed(keyinfo->code);
 				break;
-			case CODE_TYPE_JOYSTICK :
+				}
+			case CODE_TYPE_JOYSTICK : {
+				const struct JoystickInfo *joyinfo;
 				joyinfo = internal_code_find_joystick(code);
 				if (joyinfo)
 					return osd_is_joy_pressed(joyinfo->code);
 				break;
+				}
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-			case CODE_TYPE_PROC :
+			case CODE_TYPE_PROC : {
+				const struct PROCInfo *procinfo;
 				procinfo = internal_code_find_proc(code);
 				if (procinfo)
 					return osd_is_proc_pressed(procinfo->code);
 				break;
+				}
 #endif /* PINMAME && PROC_SUPPORT */
 		}
 	} else {
@@ -998,14 +998,13 @@ int input_ui_pressed_repeat(int code,int speed)
 
 int is_joystick_axis_code(unsigned code)
 {
-	const struct JoystickInfo *joyinfo;
-
 	assert( code < code_mac );
 
 	if (code_map[code].type == CODE_TYPE_JOYSTICK)
 	{
 		if (code < __code_max)
 		{
+			const struct JoystickInfo *joyinfo;
 			joyinfo = internal_code_find_joystick(code);
 			if (joyinfo)
 				return osd_is_joystick_axis_code(joyinfo->code);
@@ -1021,14 +1020,13 @@ int is_joystick_axis_code(unsigned code)
 
 int return_os_joycode(InputCode code)
 {
-	const struct JoystickInfo *joyinfo;
-
 	assert( code < code_mac );
 
 	if (code < __code_max)
 	{
 		if (code_map[code].type == CODE_TYPE_JOYSTICK)
 		{
+			const struct JoystickInfo *joyinfo;
 			joyinfo = internal_code_find_joystick(code);
 			if (joyinfo)
 				return joyinfo->code;

@@ -642,7 +642,6 @@ UINT64 mame_ftell(mame_file *file)
 UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length)
 {
 	UINT8 *buf;
-	UINT8 temp;
 	int res, i;
 
 	/* standard read first */
@@ -652,7 +651,7 @@ UINT32 mame_fread_swap(mame_file *file, void *buffer, size_t length)
 	buf = buffer;
 	for (i = 0; i < res; i += 2)
 	{
-		temp = buf[i];
+		UINT8 temp = buf[i];
 		buf[i] = buf[i + 1];
 		buf[i + 1] = temp;
 	}

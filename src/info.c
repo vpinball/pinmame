@@ -416,7 +416,7 @@ static void print_game_rom(int OUTPUT_XML, FILE* out, const struct GameDriver* g
 	for (region = rom_first_region(game); region; region = rom_next_region(region))
 		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 		{
-			int offset, length, in_parent, is_disk, is_bios, found_bios, i;
+			int offset, length, in_parent, is_disk, is_bios, found_bios;
 			char name[100], bios_name[100];
 
 			strcpy(name,ROM_GETNAME(rom));
@@ -478,6 +478,7 @@ static void print_game_rom(int OUTPUT_XML, FILE* out, const struct GameDriver* g
 			/* dump checksum information only if there is a known dump */
 			if (!hash_data_has_info(ROM_GETHASHDATA(rom), HASH_INFO_NO_DUMP))
 			{
+				int i;
 				for (i=0;i<HASH_NUM_FUNCTIONS;i++)
 				{
 					int func = 1<<i;

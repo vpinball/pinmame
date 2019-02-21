@@ -733,7 +733,7 @@ void artwork_update_video_and_audio(struct mame_display *display)
 {
 	static struct rectangle ui_changed_bounds;
 	static int ui_changed;
-	int artwork_changed = 0, ui_visible = 0;
+	int artwork_changed = 0;
 
 	/* do nothing if no artwork */
 	if (!artwork_list && !uioverlay)
@@ -752,7 +752,7 @@ void artwork_update_video_and_audio(struct mame_display *display)
 	if (display->changed_flags & GAME_BITMAP_CHANGED)
 	{
 		/* see if there's any UI to display this frame */
-		ui_visible = (uibounds.max_x != 0);
+		int ui_visible = (uibounds.max_x != 0);
 
 		/* if the UI bounds changed, refresh everything */
 		if (last_uibounds.min_x != uibounds.min_x || last_uibounds.min_y != uibounds.min_y ||
@@ -884,7 +884,6 @@ void artwork_mark_ui_dirty(int minx, int miny, int maxx, int maxy)
 	if (uioverlayhint)
 	{
 		struct rectangle rect;
-		int y;
 
 		/* clip to visible */
 		if (minx < 0)
@@ -905,8 +904,11 @@ void artwork_mark_ui_dirty(int minx, int miny, int maxx, int maxy)
 
 		/* add hints for each scanline */
 		if (minx <= maxx)
+		{
+			int y;
 			for (y = miny; y <= maxy; y++)
 				add_range_to_hint(uioverlayhint, y, minx, maxx);
+		}
 	}
 }
 
@@ -1003,7 +1005,6 @@ void artwork_show(const char *tag, int show)
 
 static int update_layers(void)
 {
-	struct artwork_piece *piece = artwork_list;
 	struct rectangle combined;
 	int changed = 0;
 
@@ -1012,6 +1013,7 @@ static int update_layers(void)
 	{
 		sect_rect(&underlay_invalid, &screenrect);
 		erase_rect(underlay, &underlay_invalid, 0);
+		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer == LAYER_BACKDROP && piece->visible && piece->prebitmap)
 				alpha_blend_intersecting_rect(underlay, &underlay_invalid, piece->prebitmap, &piece->bounds, piece->scanlinehint);
@@ -1023,6 +1025,7 @@ static int update_layers(void)
 		sect_rect(&overlay_invalid, &screenrect);
 		erase_rect(overlay, &overlay_invalid, transparent_color);
 		erase_rect(overlay_yrgb, &overlay_invalid, ASSEMBLE_ARGB(0,0xff,0xff,0xff));
+		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer == LAYER_OVERLAY && piece->visible && piece->prebitmap)
 				cmy_blend_intersecting_rect(overlay, overlay_yrgb, &overlay_invalid, piece->prebitmap, piece->yrgbbitmap, &piece->bounds, piece->blendflags);
@@ -1033,6 +1036,7 @@ static int update_layers(void)
 	{
 		sect_rect(&bezel_invalid, &screenrect);
 		erase_rect(bezel, &bezel_invalid, transparent_color);
+		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer >= LAYER_BEZEL && piece->visible && piece->prebitmap)
 				alpha_blend_intersecting_rect(bezel, &bezel_invalid, piece->prebitmap, &piece->bounds, piece->scanlinehint);
@@ -1891,11 +1895,10 @@ static void render_ui_overlay(struct mame_bitmap *bitmap, UINT32 *dirty, const r
 	int srcrowpixels = bitmap->rowpixels;
 	int dstrowpixels = final->rowpixels;
 	void *srcbase, *dstbase;
-	int width, height;
+	int height;
 	int x, y, h;
 
 	/* compute common parameters */
-	width = bitmap->width;
 	height = bitmap->height;
 	srcbase = bitmap->base;
 	dstbase = final->base;
@@ -1998,7 +2001,6 @@ static int artwork_load(const struct GameDriver *driver, int width, int height, 
 	const struct overlay_piece *list = overlay_list;
 	struct artwork_piece *piece;
 	mame_file *artfile;
-	int result;
 
 	/* reset the list of artwork */
 	num_pieces = 0;
@@ -2023,7 +2025,7 @@ static int artwork_load(const struct GameDriver *driver, int width, int height, 
 	/* parse the file into pieces */
 	if (artfile)
 	{
-		result = parse_art_file(artfile);
+		int result = parse_art_file(artfile);
 		mame_fclose(artfile);
 		if (!result)
 			return 0;
@@ -2338,7 +2340,7 @@ static int artwork_prep(void)
 
 static int scale_bitmap(struct artwork_piece *piece, int newwidth, int newheight)
 {
-	UINT32 sx, sxfrac, sxstep, sy, syfrac, systep;
+	UINT32 sxstep, sy, syfrac, systep;
 	UINT32 global_brightness, global_alpha;
 	int x, y;
 
@@ -2365,8 +2367,6 @@ static int scale_bitmap(struct artwork_piece *piece, int newwidth, int newheight
 	/* compute the step values */
 	sxstep = (UINT32)((double)piece->rawbitmap->width * (double)(1 << 24) / (double)newwidth);
 	systep = (UINT32)((double)piece->rawbitmap->height * (double)(1 << 24) / (double)newheight);
-	sxfrac = (sxstep / 2) & FRAC_MASK;
-	sx = (sxstep / 2) >> FRAC_BITS;
 	syfrac = (systep / 2) & FRAC_MASK;
 	sy = (systep / 2) >> FRAC_BITS;
 
@@ -2375,8 +2375,8 @@ static int scale_bitmap(struct artwork_piece *piece, int newwidth, int newheight
 	{
 		int prevstate = 0, statex = 0;
 
-		sxfrac = (sxstep / 2) & FRAC_MASK;
-		sx = (sxstep / 2) >> FRAC_BITS;
+		UINT32 sxfrac = (sxstep / 2) & FRAC_MASK;
+		UINT32 sx = (sxstep / 2) >> FRAC_BITS;
 
 		/* loop over columns */
 		for (x = 0; x < newwidth; x++)
@@ -2889,12 +2889,12 @@ static int generate_disk_piece(struct artwork_piece *piece, const struct overlay
 
 static int generate_overlay(const struct overlay_piece *list, int width, int height)
 {
-	struct artwork_piece *piece;
 	int priority = 0;
 
 	/* loop until done */
 	while (list->type != OVERLAY_TYPE_END)
 	{
+		struct artwork_piece *piece;
 		/* first create a new piece to use */
 		piece = create_new_piece(OVERLAY_TAG);
 		if (!piece)
@@ -3025,14 +3025,14 @@ static int parse_tag_value(struct artwork_piece *piece, const char *tag, const c
 static int parse_art_file(mame_file *file)
 {
 	struct artwork_piece *current = NULL;
-	char *tag, *value, *p;
+	char *tag, *value;
 	char buffer[1000];
 
 	/* loop until we run out of lines */
 	while (mame_fgets(buffer, sizeof(buffer), file))
 	{
 		/* strip off any comments */
-		p = strstr(buffer, "//");
+		char* p = strstr(buffer, "//");
 		if (p)
 			*p = 0;
 

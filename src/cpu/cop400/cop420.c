@@ -292,8 +292,6 @@ void cop420_set_irq_callback(int (*callback)(int)) {
  ****************************************************************************/
 int cop420_execute(int cycles)
 {
-	unsigned opcode;
-
 	cop420_ICount = cycles;
 
 	do
@@ -302,7 +300,7 @@ int cop420_execute(int cycles)
 
 		CALL_MAME_DEBUG;
 
-		opcode = ROM(PC);
+		unsigned opcode = ROM(PC);
 
 		if (skipLBI == 1)
 		{

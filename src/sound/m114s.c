@@ -353,7 +353,7 @@ static INT16 read_sample(struct M114SChannel *channel, const UINT32 length)
 ***********************************************************************************************/
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // get rid of this and write directly to output buffer?!
 {
-	int i, l;
+	int i;
 #ifndef USE_LERP_FOR_REPEATED_SAMPLES
 	int j;
 #endif
@@ -433,6 +433,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel) // 
 
 	// Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
+		int l;
 		//Apply volume - If envelope - inc/dec volume to calculate sample volume (only 8 most significant bits from the 10 bits, thus +/-4), otherwise, apply directly
 #ifdef USE_VOL_ENVELOPE
 		if(channel->regs.env_enable && ((i & (abs(channel->step_rate_volume_env)-1)) == abs(channel->step_rate_volume_env)/2)) { // check if we match the frequency that the value must be updated

@@ -826,7 +826,6 @@ INLINE void advance(FM_OPL *OPL)
 		/* Phase Generator */
 		if(op->vib)
 		{
-			UINT8 block;
 			unsigned int block_fnum = CH->block_fnum;
 
 			unsigned int fnum_lfo   = (block_fnum&0x0380) >> 7;
@@ -835,6 +834,7 @@ INLINE void advance(FM_OPL *OPL)
 
 			if (lfo_fn_table_index_offset)	/* LFO phase modulation active */
 			{
+				UINT8 block;
 				block_fnum += lfo_fn_table_index_offset;
 				block = (block_fnum&0x1c00) >> 10;
 				op->Cnt += (OPL->fn_tab[block_fnum&0x03ff] >> (7-block)) * op->mul;
@@ -1146,7 +1146,7 @@ static int init_tables(void)
 {
 	signed int i,x;
 	signed int n;
-	double o,m;
+	double m;
 
 	for (x=0; x<TL_RES_LEN; x++)
 	{
@@ -1183,6 +1183,7 @@ static int init_tables(void)
 
 	for (i=0; i<SIN_LEN; i++)
 	{
+		double o;
 		/* non-standard sinus */
 		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* checked against the real chip */
 
@@ -1711,7 +1712,7 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 		/* FB,C */
 		if( (r&0x0f) > 8) return;
 		CH = &OPL->P_CH[r&0x0f];
-		CH->SLOT[SLOT1].FB  = (v>>1)&7 ? ((v>>1)&7) + 7 : 0;
+		CH->SLOT[SLOT1].FB  = ((v>>1)&7) ? ((v>>1)&7) + 7 : 0;
 		CH->SLOT[SLOT1].CON = v&1;
 		CH->SLOT[SLOT1].connect1 = CH->SLOT[SLOT1].CON ? &OPL->output[0] : &OPL->phase_modulation;
 		break;

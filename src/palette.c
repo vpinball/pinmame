@@ -267,7 +267,6 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 	static int oldclip;
 
 	UINT32 *table_ptr32;
-	int i, fl, ov, r, g, b, d32;
 
 	if (mode < 0 || mode >= MAX_SHADOW_PRESETS) return;
 
@@ -301,17 +300,18 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 		}
 		else
 		{
-			d32 = (colormode == DIRECT_32BIT);
+			int d32 = (colormode == DIRECT_32BIT);
 
 			if (factor <= 1.0)
 			{
-				fl = (int)(factor * (1<<FP));
+				int fl = (int)(factor * (1<<FP));
 
+				int i;
 				for (i=0; i<32768; i++)
 				{
-					r = (i & 0x7c00) * fl;
-					g = (i & 0x03e0) * fl;
-					b = (i & 0x001f) * fl;
+					int r = (i & 0x7c00) * fl;
+					int g = (i & 0x03e0) * fl;
+					int b = (i & 0x001f) * fl;
 
 					r = r>>FP & 0x7c00;
 					g = g>>FP & 0x03e0;
@@ -327,13 +327,14 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 			{
 				if (highlight_method == 0)
 				{
-					fl = (int)(factor * (1<<FP));
+					int fl = (int)(factor * (1<<FP));
 
+					int i;
 					for (i=0; i<32768; i++)
 					{
-						r = (i>>10 & 0x1f) * fl;
-						g = (i>>5  & 0x1f) * fl;
-						b = (i     & 0x1f) * fl;
+						int r = (i>>10 & 0x1f) * fl;
+						int g = (i>>5  & 0x1f) * fl;
+						int b = (i     & 0x1f) * fl;
 
 						if (r >= FMAX) r = 0x7c00; else r = r>>(FP-10) & 0x7c00;
 						if (g >= FMAX) g = 0x03e0; else g = g>>(FP-5)  & 0x03e0;
@@ -347,13 +348,15 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 				}
 				else if (highlight_method == 1)
 				{
-					fl = (int)(factor * (1<<FP));
+					int fl = (int)(factor * (1<<FP));
 
+					int i;
 					for (i=0; i<32768; i++)
 					{
-						r = (i>>10 & 0x1f) * fl;
-						g = (i>>5  & 0x1f) * fl;
-						b = (i     & 0x1f) * fl;
+						int ov;
+						int r = (i>>10 & 0x1f) * fl;
+						int g = (i>>5  & 0x1f) * fl;
+						int b = (i     & 0x1f) * fl;
 						ov = 0;
 
 						if (r > FMAX) ov += r - FMAX;
@@ -374,16 +377,17 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 				}
 				else
 				{
-					fl = (int)(factor * 31 - 31);
+					int i;
+					int fl = (int)(factor * 31 - 31);
 					dr = fl<<10;
 					dg = fl<<5;
 					db = fl;
 
 					for (i=0; i<32768; i++)
 					{
-						r = (i & 0x7c00) + dr;
-						g = (i & 0x03e0) + dg;
-						b = (i & 0x001f) + db;
+						int r = (i & 0x7c00) + dr;
+						int g = (i & 0x03e0) + dg;
+						int b = (i & 0x001f) + db;
 
 						if (r > 0x7c00) r = 0x7c00;
 						if (g > 0x03e0) g = 0x03e0;
@@ -404,6 +408,8 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 	}
 	else // color shadows or highlights(style 0)
 	{
+		int d32;
+
 		if (!(colormode & DIRECT_RGB)) return;
 
 		if (dr < -0xff) dr = -0xff; else if (dr > 0xff) dr = 0xff;
@@ -426,11 +432,12 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 
 		if (noclip)
 		{
+			int i;
 			for (i=0; i<32768; i++)
 			{
-				r = (i & 0x7c00) + dr;
-				g = (i & 0x03e0) + dg;
-				b = (i & 0x001f) + db;
+				int r = (i & 0x7c00) + dr;
+				int g = (i & 0x03e0) + dg;
+				int b = (i & 0x001f) + db;
 
 				r &= 0x7c00;
 				g &= 0x03e0;
@@ -444,11 +451,12 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 		}
 		else
 		{
+			int i;
 			for (i=0; i<32768; i++)
 			{
-				r = (i & 0x7c00) + dr;
-				g = (i & 0x03e0) + dg;
-				b = (i & 0x001f) + db;
+				int r = (i & 0x7c00) + dr;
+				int g = (i & 0x03e0) + dg;
+				int b = (i & 0x001f) + db;
 
 				if (r < 0) r = 0; else if (r > 0x7c00) r = 0x7c00;
 				if (g < 0) g = 0; else if (g > 0x03e0) g = 0x03e0;
@@ -605,8 +613,6 @@ static int palette_alloc(void)
 	}
 #else
 	{
-		UINT16 *table_ptr16;
-		UINT32 *table_ptr32;
 		int c = Machine->drv->total_colors;
 		int cx2 = c << 1;
 
@@ -616,6 +622,7 @@ static int palette_alloc(void)
 		{
 			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
 			{
+				UINT16 *table_ptr16;
 				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
 
 				shadow_table_base[0] = shadow_table_base[2] = (UINT32*)table_ptr16;
@@ -628,6 +635,7 @@ static int palette_alloc(void)
 
 			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
 			{
+				UINT16 *table_ptr16;
 				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
 
 				shadow_table_base[1] = shadow_table_base[3] = (UINT32*)table_ptr16;
@@ -642,6 +650,7 @@ static int palette_alloc(void)
 		{
 			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
 			{
+				UINT32 *table_ptr32;
 				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
 
 				shadow_table_base[0] = table_ptr32;
@@ -652,6 +661,7 @@ static int palette_alloc(void)
 
 			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
 			{
+				UINT32 *table_ptr32;
 				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
 
 				shadow_table_base[1] = table_ptr32;
@@ -876,8 +886,6 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 {
 #define FMAX (0xff<<PEN_BRIGHTNESS_BITS)
 
-	int r, g, b, fl, ov;
-
 	/* first modify the base pen */
 	internal_modify_single_pen(pen, color, pen_bright);
 
@@ -891,13 +899,14 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 
 			if (shadow_factor > (1 << PEN_BRIGHTNESS_BITS) && highlight_method) // luminance > 1.0
 			{
-				r = color>>16 & 0xff;
-				g = color>>8  & 0xff;
-				b = color     & 0xff;
+				int r = color>>16 & 0xff;
+				int g = color>>8  & 0xff;
+				int b = color     & 0xff;
 
 				if (highlight_method == 1)
 				{
-					fl = shadow_factor;
+					int ov;
+					int fl = shadow_factor;
 
 					r *= fl;  g *= fl;  b *= fl;
 					ov = 0;
@@ -914,7 +923,7 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 				}
 				else
 				{
-					fl = ((shadow_factor - (1 << PEN_BRIGHTNESS_BITS)) * 255) >> PEN_BRIGHTNESS_BITS;
+					int fl = ((shadow_factor - (1 << PEN_BRIGHTNESS_BITS)) * 255) >> PEN_BRIGHTNESS_BITS;
 
 					r += fl;  g += fl;  b += fl;
 
@@ -936,13 +945,14 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 
 			if (highlight_factor > (1 << PEN_BRIGHTNESS_BITS) && highlight_method) // luminance > 1.0
 			{
-				r = color>>16 & 0xff;
-				g = color>>8  & 0xff;
-				b = color     & 0xff;
+				int r = color>>16 & 0xff;
+				int g = color>>8  & 0xff;
+				int b = color     & 0xff;
 
 				if (highlight_method == 1)
 				{
-					fl = highlight_factor;
+					int ov;
+					int fl = highlight_factor;
 
 					r *= fl;  g *= fl;  b *= fl;
 					ov = 0;
@@ -959,7 +969,7 @@ static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new 
 				}
 				else
 				{
-					fl = ((highlight_factor - (1 << PEN_BRIGHTNESS_BITS)) * 255) >> PEN_BRIGHTNESS_BITS;
+					int fl = ((highlight_factor - (1 << PEN_BRIGHTNESS_BITS)) * 255) >> PEN_BRIGHTNESS_BITS;
 
 					r += fl;  g += fl;  b += fl;
 

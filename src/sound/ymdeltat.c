@@ -472,15 +472,13 @@ extern const INT32 ym_deltat_decode_tableB2[];
 
 INLINE void YM_DELTAT_synthesis_from_external_memory(YM_DELTAT *DELTAT)
 {
-	UINT32 step;
-	int data;
-
 	DELTAT->now_step += DELTAT->step;
 	if ( DELTAT->now_step >= (1<<YM_DELTAT_SHIFT) )
 	{
-		step = DELTAT->now_step >> YM_DELTAT_SHIFT;
+		UINT32 step = DELTAT->now_step >> YM_DELTAT_SHIFT;
 		DELTAT->now_step &= (1<<YM_DELTAT_SHIFT)-1;
 		do{
+			int data;
 			if ( DELTAT->now_addr == (DELTAT->limit<<1) )
 				DELTAT->now_addr = 0;
 
@@ -553,15 +551,13 @@ INLINE void YM_DELTAT_synthesis_from_external_memory(YM_DELTAT *DELTAT)
 
 INLINE void YM_DELTAT_synthesis_from_CPU_memory(YM_DELTAT *DELTAT)
 {
-	UINT32 step;
-	int data;
-
 	DELTAT->now_step += DELTAT->step;
 	if ( DELTAT->now_step >= (1<<YM_DELTAT_SHIFT) )
 	{
-		step = DELTAT->now_step >> YM_DELTAT_SHIFT;
+		UINT32 step = DELTAT->now_step >> YM_DELTAT_SHIFT;
 		DELTAT->now_step &= (1<<YM_DELTAT_SHIFT)-1;
 		do{
+			int data;
 			if( DELTAT->now_addr&1 )
 			{
 				data = DELTAT->now_data & 0x0f;

@@ -1670,14 +1670,14 @@ const char *i8051_info(void *context, int regnum)
 
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->psw & 0x80 ? 'C':'.',
-				r->psw & 0x40 ? 'A':'.',
-				r->psw & 0x20 ? 'F':'.',
-				r->psw & 0x10 ? '0':'.',
-				r->psw & 0x08 ? '1':'.',
-				r->psw & 0x04 ? 'V':'.',
-				r->psw & 0x02 ? '?':'.',
-				r->psw & 0x01 ? 'P':'.');
+				(r->psw & 0x80) ? 'C':'.',
+				(r->psw & 0x40) ? 'A':'.',
+				(r->psw & 0x20) ? 'F':'.',
+				(r->psw & 0x10) ? '0':'.',
+				(r->psw & 0x08) ? '1':'.',
+				(r->psw & 0x04) ? 'V':'.',
+				(r->psw & 0x02) ? '?':'.',
+				(r->psw & 0x01) ? 'P':'.');
 			break;
 		case CPU_INFO_NAME: return "I8051";
 		case CPU_INFO_FAMILY: return "Intel 8051";
@@ -1714,8 +1714,8 @@ static WRITE_HANDLER(sfr_write)
 			break;
 
 		case SP:
-			if(offset > 0xff)
-				LOG(("i8051 #%d: attemping to write value to SP past 256 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
+			//if(offset > 0xff) //!! wrong check
+			//	LOG(("i8051 #%d: attemping to write value to SP past 256 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
 			R_SP = data&0xff; //keep sp w/in 256 bytes
 			break;
 

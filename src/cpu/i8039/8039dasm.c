@@ -148,15 +148,13 @@ static int OpInizialized = 0;
 
 static void InitDasm8039(void)
 {
-	const char *p, **ops;
-	byte mask, bits;
-	int bit;
+	const char **ops;
 	int i;
 
 	ops = Formats; i = 0;
 	while (*ops) {
-	p = *ops;
-	mask = 0; bits = 0; bit = 7;
+	const char *p = *ops;
+	byte mask = 0; byte bits = 0; int bit = 7;
 	while (*p && bit >= 0) {
 		switch (*p++) {
 			case '1': mask |= 1<<bit; bits |= 1<<bit; bit--; break;

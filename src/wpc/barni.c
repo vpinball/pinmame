@@ -60,9 +60,8 @@ static READ_HANDLER(gram_r) {
 }
 
 static WRITE_HANDLER(pal_w) {
-  logerror("PAL: %02x\n", data);
   // this is probably wrong but I didn't find any other output to control game enable
-  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | ((data & 1) << 16);
+  coreGlobals.solenoids = (coreGlobals.solenoids & 0x0ffff) | (data & 0x40 ? 0x10000 : 0);
 }
 
 static READ_HANDLER(firq_set) {
@@ -129,29 +128,58 @@ static void showSegment(int num, UINT8 data) {
   }
 }
 
+static int countBits(UINT8 data) {
+  int cnt = 0;
+  int i;
+  for (i = 0; i < 8; i++) {
+    if (data & (1 << i)) {
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
 static WRITE_HANDLER(via0b_w) {
-  static UINT8 lampData;
+  static UINT8 lampData, lampRow, col4[3];
+  static int colNum, segNum;
   switch (locals.via_a >> 4) {
     case 0:
-      sndbrd_manCmd(0, ~data);
+      sndbrd_0_data_w(0, ~data);
       break;
     case 1:
       if (!(locals.bitCount % 8)) {
-        showSegment(31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f), data);
+        segNum = 31 - (locals.bitCount ? 0 : 1) - 2 * (locals.via_a & 0x0f);
+        showSegment(segNum, data);
       }
       locals.bitCount++;
       break;
     case 5:
       switch (~locals.via_a & 0x0f) {
         case 0:
-          coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((data ^ 0xff) << 8);
+          if (core_gameData->hw.lampCol) {
+            // champion uses two solenoid outputs to control 12 extra lamps
+            coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0x9f) << 8);
+            if (~data & 0x20) coreGlobals.lampMatrix[8] = lampRow;
+            if (~data & 0x40) coreGlobals.lampMatrix[9] = lampRow;
+          } else {
+            coreGlobals.solenoids = (coreGlobals.solenoids & 0x100ff) | ((~data & 0xff) << 8);
+          }
           break;
         case 1:
           coreGlobals.solenoids = (coreGlobals.solenoids & 0x1ff00) | (~data & 0xff);
           break;
         case 2:
-          if (data != 0xff) {
-            coreGlobals.lampMatrix[core_BitColToNum(data ^ 0xff)] = lampData;
+          lampRow = ~data;
+          if (countBits(lampRow) == 1) {
+            colNum = core_BitColToNum(lampRow);
+            coreGlobals.lampMatrix[colNum] = lampData;
+            // column 4 is additionally fed with all 0 on champion, so buffer the previous value a while
+            if (core_gameData->hw.lampCol && colNum == 4) {
+              col4[0] = col4[1];
+              col4[1] = col4[2];
+              col4[2] = lampData;
+              coreGlobals.lampMatrix[4] |= col4[0] | col4[1];
+            }
           }
           break;
         case 3:
@@ -162,10 +190,11 @@ static WRITE_HANDLER(via0b_w) {
       }
       break;
     case 7:
-      if (locals.via_a == 0x7f) {
-        coreGlobals.diagnosticLed = data ^ 1;
-        break;
-      } // else fall through to log
+      if (core_getDip(2) && !data) {
+        showSegment(segNum-1, 0);
+        showSegment(segNum, 0);
+      }
+      break;
     default:
       logerror("VIA A/B: %02x/%02x\n", locals.via_a, data);
   }
@@ -194,9 +223,9 @@ static const struct pia6821_interface pia[] = {{
 }};
 
 static struct via6522_interface via = {
-	/*i: A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
-	/*o: A/B,CA2/B2        */ via0a_w, via0b_w, via0ca2_w, via0cb2_w, 
-	/*irq:                 */ via_irq
+  /*i: A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
+  /*o: A/B,CA2/B2        */ via0a_w, via0b_w, via0ca2_w, via0cb2_w, 
+  /*irq:                 */ via_irq
 };
 
 static MEMORY_READ_START(barni_readmem1)
@@ -275,23 +304,17 @@ static void snd_init(struct sndbrdData *brdData) {
   pia_config(2, PIA_STANDARD_ORDERING, &snd_pia[0]);
   pia_config(3, PIA_STANDARD_ORDERING, &snd_pia[1]);
   tms5220_reset();
-  tms5220_set_variant(TMS5220_IS_5220); // schematics say TMS5200 but that sounds terrible!
+  tms5220_set_variant(TMS5220_IS_5220C); // schematics say TMS5200 but 5220C is used - verified with real game
 }
 static void snd_diag(int button) {
   cpu_set_nmi_line(2, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static WRITE_HANDLER(snd_data_w) {
-  sndlocals.lastcmd = (sndlocals.lastcmd & 0x10) | (data & 0x0f);
-}
-static WRITE_HANDLER(snd_ctrl_w) {
-  sndlocals.lastcmd = (sndlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  pia_set_input_cb1(2, ~data & 0x01);
-}
-static WRITE_HANDLER(snd_manCmd_w) {
-  sndlocals.lastcmd = data;  pia_set_input_cb1(2, 1); pia_set_input_cb1(2, 0);
+  sndlocals.lastcmd = data;
+  pia_set_input_cb1(2, 1); pia_set_input_cb1(2, 0);
 }
 const struct sndbrdIntf barniIntf = {
-  "BARNI", snd_init, NULL, snd_diag, snd_manCmd_w, snd_data_w, NULL, snd_ctrl_w, NULL, 0
+  "BARNI", snd_init, NULL, snd_diag, snd_data_w, snd_data_w, NULL, NULL, NULL, 0
 };
 static READ_HANDLER(snd_cmd_r) {
   return sndlocals.lastcmd;
@@ -344,9 +367,8 @@ MACHINE_DRIVER_START(barni)
   MDRV_CPU_VBLANK_INT(barni_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(barni,NULL,barni)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_DIPS(16)
+  MDRV_DIPS(17)
   MDRV_SWITCH_UPDATE(barni)
-  MDRV_DIAGNOSTIC_LEDH(1)
 
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -377,7 +399,7 @@ static core_tLCDLayout dispAlpha[] = {
   {3, 0, 6,6,CORE_SEG7},{3,12,33,1,CORE_SEG7}, {3,26,24,6,CORE_SEG7},{3,38,36,1,CORE_SEG7},
   {2,20,12,2,CORE_SEG7S},{2,25,14,2,CORE_SEG7S},{2,30,16,2,CORE_SEG7S},
 #ifdef MAME_DEBUG
-  {4,24,30,2,CORE_SEG7S},{4,28,34,1,CORE_SEG7S},
+  {4,25,30,2,CORE_SEG7S},
 #endif
   {0}
 };
@@ -439,8 +461,35 @@ INPUT_PORTS_START(barni)
     COREPORT_DIPNAME( 0x4000, 0x4000, "Voz Presentacion")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x4000, DEF_STR(On))
+  PORT_START /* 2 */
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Display blanking")
+      COREPORT_DIPSET(0x0000, DEF_STR(Off))
+      COREPORT_DIPSET(0x0001, DEF_STR(On))
 INPUT_PORTS_END
 
 #define input_ports_redbaron input_ports_barni
-
 CORE_GAMEDEFNV(redbaron, "Red Baron", 1985, "Barni", barni, 0)
+
+/*--------------------------------
+/ Champion
+/-------------------------------*/
+ROM_START(champion)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("che.bin", 0xe000, 0x2000, CRC(c5dc9228) SHA1(5306980a9c73118cfb843dbce0d56f516d054220))
+    ROM_LOAD("chc.bin", 0xc000, 0x2000, CRC(6ab0f232) SHA1(0638d33f86c62ee93dff924a16a5b9309392d9e8))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("chan.bin", 0xe000, 0x2000, CRC(3f148587) SHA1(e44dc9cce15830f522dc781aaa13c659a43371f3))
+  NORMALREGION(0x10000, REGION_CPU3)
+    ROM_LOAD("voz1.bin", 0xf000, 0x1000, CRC(48665778) SHA1(c295dfe7f4a98756f508391eb326f37a5aac37ff))
+    ROM_LOAD("voz2.bin", 0xe000, 0x1000, CRC(30e7da5e) SHA1(3054cf9b09e0f89c242e1ad35bb31d9bd77248e4))
+    ROM_LOAD("voz3.bin", 0xd000, 0x1000, CRC(3cd8058e) SHA1(fa4fd0cf4124263d4021c5a86033af9e5aa66eed))
+    ROM_LOAD("voz4.bin", 0xc000, 0x1000, CRC(0d00d8cc) SHA1(10f64d2fc3fc3e276bbd0e108815a3b395dcf0c9))
+ROM_END
+
+static core_tGameData championGameData = {0,dispAlpha,{FLIP_SWNO(0,0),0,2,0,SNDBRD_BARNI}};
+static void init_champion(void) {
+  core_gameData = &championGameData;
+}
+
+#define input_ports_champion input_ports_barni
+CORE_GAMEDEFNV(champion, "Champion", 1985, "Barni", barni, 0)

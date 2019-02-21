@@ -46,6 +46,12 @@ Render_16_Shades_t DmdDev_Render_16_Shades;
 typedef void (*Render_4_Shades_t)(UINT16 width, UINT16 height, UINT8 *currbuffer);
 Render_4_Shades_t DmdDev_Render_4_Shades;
 
+typedef void(*Render_16_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
+Render_16_Shades_with_Raw_t DmdDev_Render_16_Shades_with_Raw;
+
+typedef void(*Render_4_Shades_with_Raw_t)(UINT16 width, UINT16 height, UINT8 *currbuffer, UINT32 noOfRawFrames, UINT8 *rawbuffer);
+Render_4_Shades_with_Raw_t DmdDev_Render_4_Shades_with_Raw;
+
 typedef void (*render_PM_Alphanumeric_Frame_t)(layout_t layout, const UINT16 *const seg_data, const UINT16 *const seg_data2);
 render_PM_Alphanumeric_Frame_t DmdDev_render_PM_Alphanumeric_Frame;
 
@@ -111,6 +117,10 @@ int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions
 
 	DmdDev_Render_16_Shades = (Render_16_Shades_t) GetProcAddress(hModule, "Render_16_Shades");
 
+	DmdDev_Render_4_Shades_with_Raw = (Render_4_Shades_with_Raw_t)GetProcAddress(hModule, "Render_4_Shades_with_Raw");
+
+	DmdDev_Render_16_Shades_with_Raw = (Render_16_Shades_with_Raw_t)GetProcAddress(hModule, "Render_16_Shades_with_Raw");
+
 	DmdDev_render_PM_Alphanumeric_Frame = (render_PM_Alphanumeric_Frame_t) GetProcAddress(hModule, "Render_PM_Alphanumeric_Frame");
 	DmdDev_render_PM_Alphanumeric_Dim_Frame = (render_PM_Alphanumeric_Dim_Frame_t)GetProcAddress(hModule, "Render_PM_Alphanumeric_Dim_Frame");
 
@@ -175,7 +185,7 @@ void pindmdDeInit() {
 	FreeLibrary(hModule);
 }
 
-void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName) {
+void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8 *rawbuffer) {
 
 	dmd_width = width; // store for DeInit
 	dmd_height = height;
@@ -185,13 +195,35 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
 		(_strnicmp(GameName, "smb", 3) == 0) || (_strnicmp(GameName, "cueball", 7) == 0) ||
 		(gen == GEN_ALVG_DMD2)) {
-		if (DmdDev_Render_16_Shades)
-			DmdDev_Render_16_Shades(width,height,currbuffer);
+		if (noOfRawFrames != 0) {
+			if (DmdDev_Render_16_Shades_with_Raw) {
+				DmdDev_Render_16_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
+			}
+			else {
+				if (DmdDev_Render_16_Shades)
+					DmdDev_Render_16_Shades(width, height, currbuffer);
+			}
+		}
+		else {
+			if (DmdDev_Render_16_Shades)
+				DmdDev_Render_16_Shades(width, height, currbuffer);
+		}
 	} else {
-		if (DmdDev_Render_4_Shades)
-			DmdDev_Render_4_Shades(width,height,currbuffer);
+		if (noOfRawFrames != 0) {
+			if (DmdDev_Render_4_Shades_with_Raw) {
+				DmdDev_Render_4_Shades_with_Raw(width, height, currbuffer, noOfRawFrames, rawbuffer);
+			}
+			else {
+				if (DmdDev_Render_4_Shades)
+					DmdDev_Render_4_Shades(width, height, currbuffer);
+			}
+		}
+		else {
+			if (DmdDev_Render_4_Shades)
+				DmdDev_Render_4_Shades(width, height, currbuffer);
+		}
 	}
-} 
+}
 
 void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs) {
 

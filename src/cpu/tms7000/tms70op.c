@@ -3263,7 +3263,7 @@ void sbb_ba( void )
 {
 	UINT16	t;
 	
-	t = RDB - RDA - (pSR & SR_C ? 1 : 0);
+	t = RDB - RDA - ((pSR & SR_C) ? 1 : 0);
 	WRA(t);
 
 	CLR_NZC;
@@ -3281,7 +3281,7 @@ void sbb_ra( void )
 	UINT8	r;
 	
 	IMMBYTE(r);
-	t = RM(r) - RDA - (pSR & SR_C ? 1 : 0);
+	t = RM(r) - RDA - ((pSR & SR_C) ? 1 : 0);
 	WRA(t);
 
 	CLR_NZC;
@@ -3299,7 +3299,7 @@ void sbb_rb( void )
 	UINT8	r;
 	
 	IMMBYTE(r);
-	t = RM(r) - RDB - (pSR & SR_C ? 1 : 0);
+	t = RM(r) - RDB - ((pSR & SR_C) ? 1 : 0);
 	WRB(t);
 
 	CLR_NZC;
@@ -3318,7 +3318,7 @@ void sbb_rr( void )
 	
 	IMMBYTE(s);
 	IMMBYTE(r);
-	t = RM(s) - RM(r) - (pSR & SR_C ? 1 : 0);
+	t = RM(s) - RM(r) - ((pSR & SR_C) ? 1 : 0);
 	WM(r,t);
 
 	CLR_NZC;
@@ -3336,7 +3336,7 @@ void sbb_ia( void )
 	UINT8	i;
 	
 	IMMBYTE(i);
-	t = i - RDA - (pSR & SR_C ? 1 : 0);
+	t = i - RDA - ((pSR & SR_C) ? 1 : 0);
 	WRA(t);
 
 	CLR_NZC;
@@ -3354,7 +3354,7 @@ void sbb_ib( void )
 	UINT8	i;
 	
 	IMMBYTE(i);
-	t = i - RDB - (pSR & SR_C ? 1 : 0);
+	t = i - RDB - ((pSR & SR_C) ? 1 : 0);
 	WRB(t);
 
 	CLR_NZC;
@@ -3373,7 +3373,7 @@ void sbb_ir( void )
 	
 	IMMBYTE(i);
 	IMMBYTE(r);
-	t = i - RM(r) - (pSR & SR_C ? 1 : 0);
+	t = i - RM(r) - ((pSR & SR_C) ? 1 : 0);
 	WM(r,t);
 
 	CLR_NZC;

@@ -111,15 +111,15 @@ DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
 DRIVERNV(bowarroa)      //          08/76 Bow & Arrow (Prototype, rev. 22)
 DRIVERNV(freedom )      //BY17-720: 12/76 Freedom
-DRIVERNV(freedoma)      //BY17      12/18 Freedom (Free Play+ rev. 07)
-DRIVERNV(freedomb)      //BY17      12/18 Freedom (Free Play+ rev. 20)
+DRIVERNV(freedoma)      //BY17      02/19 Freedom (Free Play+ rev. 07)
+DRIVERNV(freedomb)      //BY17      01/19 Freedom (Free Play+ rev. 20)
 DRIVERNV(nightr20)      //BY17-721: 02/77 Night Rider (rev. 20)
 DRIVERNV(nightrdr)      //BY17      02/77 Night Rider (rev. 21)
 DRIVERNV(nightrdb)      //BY17      10/08 Night Rider (Free Play)
-DRIVERNV(nightrdc)      //BY17      12/18 Night Rider (Free Play+)
+DRIVERNV(nightrdc)      //BY17      02/19 Night Rider (Free Play+)
 DRIVERNV(evelknie)      //BY17-722: 06/77 Evel Knievel
 DRIVERNV(evelknib)      //BY17      10/08 Evel Knievel (Free Play)
-DRIVERNV(evelknic)      //BY17      12/18 Evel Knievel (Free Play+)
+DRIVERNV(evelknic)      //BY17      01/19 Evel Knievel (Free Play+)
 DRIVERNV(eightbll)      //BY17-723: 09/77 Eight Ball
 DRIVERNV(eightblo)      //BY17      09/77 Eight Ball (Old)
 DRIVERNV(eightblb)      //BY17      10/08 Eight Ball (Free Play)
@@ -130,7 +130,7 @@ DRIVERNV(pwerplac)      //BY17      12/18 Power Play (Free Play+)
 DRIVERNV(matahari)      //BY17-725: 04/78 Mata Hari
 DRIVERNV(matatest)      //BY17      ??/06 Mata Hari (New game rules)
 DRIVERNV(mataharb)      //BY17      10/08 Mata Hari (Free Play)
-DRIVERNV(mataharc)      //BY17      12/18 Mata Hari (Free Play+)
+DRIVERNV(mataharc)      //BY17      02/19 Mata Hari (Free Play+)
 DRIVERNV(blackjck)      //BY17-728: 06/78 Black Jack
 DRIVERNV(blackjcb)      //BY17      10/08 Black Jack (Free Play)
 DRIVERNV(blackjcc)      //BY17      04/18 Black Jack (Saucer points modification)
@@ -213,8 +213,9 @@ DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
 DRIVERNV(eballd14)      //BY35-838: 04/81 Eight Ball Deluxe (rev. 14)
 DRIVERNV(eballdlx)      //BY35      02/05 Eight Ball Deluxe (rev. 15)
 DRIVERNV(eballdla)      //BY35      10/08 Eight Ball Deluxe (Free Play)
-DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe custom rom rev.29
-DRIVERNV(eballdlc)      //BY35      10/07 Eight Ball Deluxe custom rom rev.32
+DRIVERNV(eballdlb)      //BY35      02/07 Eight Ball Deluxe (modified rules rev.29)
+DRIVERNV(eballdlc)      //BY35      10/07 Eight Ball Deluxe (modified rules rev.32)
+DRIVERNV(eballdld)      //BY35      02/19 Eight Ball Deluxe (P2/4 Bonus Bugfix)
 DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
 DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
 DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
@@ -325,7 +326,12 @@ DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis
 // ---------------
 // BARNI
 // ---------------
+                        // Shield (1985)
+DRIVERNV(champion)      // Champion (1985)
 DRIVERNV(redbaron)      // Red Baron (1985)
+                        // Comando (1986)
+                        // Saturno (1986)
+                        // Fighter (1986)
 
 // ------------------
 // (NUOVA) BELL GAMES
