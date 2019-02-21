@@ -238,9 +238,6 @@ data8_t ppi8255_peek( int which, offs_t offset )
 		return 0xff;
 	}
 
-
-	chip = &chips[which];
-
 	return chip->latch[offset];
 }
 #endif

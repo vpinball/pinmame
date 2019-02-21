@@ -1205,7 +1205,6 @@ INLINE void internal_write (int addr, data32_t data)
 //READ FROM  - Atmel AT91 CPU On Chip Periperhals
 INLINE data32_t internal_read (int addr)
 {
-	int i;
 	data32_t data = 0;
 	int offset2 = (addr & 0xFF000) >> 12;
 
@@ -1390,9 +1389,10 @@ INLINE data32_t internal_read (int addr)
 			switch(offset3)
 			{
 				//IRQ Based on current IRQ source 0-31, returns value of Source Vector
-				case 0x100:  // IVR
+				case 0x100: { // IVR
 					// Find the highest ranked vector that's set in irqpending
 
+					int i;
 					for (i = 0; i < 31; i++)
 					{
 						if (( at91.aic_irqpending & at91.aic_irqmask) & (1 << at91_priority_map[i]))
@@ -1416,6 +1416,7 @@ INLINE data32_t internal_read (int addr)
 					}
 					ARM7.pendingIrq = 0;
 //					arm7_core_set_irq_line(ARM7_IRQ_LINE, 0);
+					}
 					break;
 
 				//FIQ - Has it's own register address

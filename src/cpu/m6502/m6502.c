@@ -443,14 +443,14 @@ const char *m6502_info(void *context, int regnum)
 		case CPU_INFO_REG+M6502_SO_STATE: sprintf(buffer[which], "SO:%X", r->so_state); break;
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->p & 0x80 ? 'N':'.',
-				r->p & 0x40 ? 'V':'.',
-				r->p & 0x20 ? 'R':'.',
-				r->p & 0x10 ? 'B':'.',
-				r->p & 0x08 ? 'D':'.',
-				r->p & 0x04 ? 'I':'.',
-				r->p & 0x02 ? 'Z':'.',
-				r->p & 0x01 ? 'C':'.');
+				(r->p & 0x80) ? 'N':'.',
+				(r->p & 0x40) ? 'V':'.',
+				(r->p & 0x20) ? 'R':'.',
+				(r->p & 0x10) ? 'B':'.',
+				(r->p & 0x08) ? 'D':'.',
+				(r->p & 0x04) ? 'I':'.',
+				(r->p & 0x02) ? 'Z':'.',
+				(r->p & 0x01) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "M6502";
 		case CPU_INFO_FAMILY: return "Motorola 6502";

@@ -75,10 +75,11 @@ static void astrocade_update(int num, int newpos)
 	INT16 *buffer = astrocade_buffer[num];
 
 	int pos = sample_pos[num];
-	int i, data, data16, noise_plus_osc, vib_plus_osc;
+	int i, noise_plus_osc, vib_plus_osc;
 
 	for(i=pos; i<newpos; i++)
 	{
+		int data, data16;
 		if (current_count_N[i] == 0)
 		{
 			randbyte = rand() & 0xff;

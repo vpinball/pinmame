@@ -141,13 +141,14 @@ static char *print_arg (int mode, int arg)
 int Dasm9900 (char *buffer, int pc)
 {
 	int	OP, opc;
-	int sarg, darg, smode, dmode;
+	int sarg, darg, smode;
 
 	PC = pc;
 	OP = RDOP(PC); PC+=2;
 
 	if ((opc = ops0to3[BITS_0to3]) != _ill)
 	{
+		int dmode;
 		smode = OPBITS(10,11);
 		sarg = OPBITS(12,15);
 		dmode = OPBITS(4,5);

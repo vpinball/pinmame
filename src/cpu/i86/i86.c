@@ -383,22 +383,22 @@ const char *i86_info(void *context, int regnum)
 	case CPU_INFO_FLAGS:
 		r->flags = CompressFlags();
 		sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				r->flags & 0x8000 ? '?' : '.',
-				r->flags & 0x4000 ? '?' : '.',
-				r->flags & 0x2000 ? '?' : '.',
-				r->flags & 0x1000 ? '?' : '.',
-				r->flags & 0x0800 ? 'O' : '.',
-				r->flags & 0x0400 ? 'D' : '.',
-				r->flags & 0x0200 ? 'I' : '.',
-				r->flags & 0x0100 ? 'T' : '.',
-				r->flags & 0x0080 ? 'S' : '.',
-				r->flags & 0x0040 ? 'Z' : '.',
-				r->flags & 0x0020 ? '?' : '.',
-				r->flags & 0x0010 ? 'A' : '.',
-				r->flags & 0x0008 ? '?' : '.',
-				r->flags & 0x0004 ? 'P' : '.',
-				r->flags & 0x0002 ? 'N' : '.',
-				r->flags & 0x0001 ? 'C' : '.');
+				(r->flags & 0x8000) ? '?' : '.',
+				(r->flags & 0x4000) ? '?' : '.',
+				(r->flags & 0x2000) ? '?' : '.',
+				(r->flags & 0x1000) ? '?' : '.',
+				(r->flags & 0x0800) ? 'O' : '.',
+				(r->flags & 0x0400) ? 'D' : '.',
+				(r->flags & 0x0200) ? 'I' : '.',
+				(r->flags & 0x0100) ? 'T' : '.',
+				(r->flags & 0x0080) ? 'S' : '.',
+				(r->flags & 0x0040) ? 'Z' : '.',
+				(r->flags & 0x0020) ? '?' : '.',
+				(r->flags & 0x0010) ? 'A' : '.',
+				(r->flags & 0x0008) ? '?' : '.',
+				(r->flags & 0x0004) ? 'P' : '.',
+				(r->flags & 0x0002) ? 'N' : '.',
+				(r->flags & 0x0001) ? 'C' : '.');
 		break;
 	case CPU_INFO_NAME: 		return "I8086";
 	case CPU_INFO_FAMILY:		return "Intel 80x86";
@@ -654,22 +654,22 @@ const char *v30_info(void *context, int regnum)
 	case CPU_INFO_FLAGS:
 		I.flags = CompressFlags();
 		sprintf(buffer, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				I.flags & 0x8000 ? 'M' : '.',
-				I.flags & 0x4000 ? '?' : '.',
-				I.flags & 0x2000 ? '?' : '.',
-				I.flags & 0x1000 ? '?' : '.',
-				I.flags & 0x0800 ? 'O' : '.',
-				I.flags & 0x0400 ? 'D' : '.',
-				I.flags & 0x0200 ? 'I' : '.',
-				I.flags & 0x0100 ? 'T' : '.',
-				I.flags & 0x0080 ? 'S' : '.',
-				I.flags & 0x0040 ? 'Z' : '.',
-				I.flags & 0x0020 ? '?' : '.',
-				I.flags & 0x0010 ? 'A' : '.',
-				I.flags & 0x0008 ? '?' : '.',
-				I.flags & 0x0004 ? 'P' : '.',
-				I.flags & 0x0002 ? 'N' : '.',
-				I.flags & 0x0001 ? 'C' : '.');
+				(I.flags & 0x8000) ? 'M' : '.',
+				(I.flags & 0x4000) ? '?' : '.',
+				(I.flags & 0x2000) ? '?' : '.',
+				(I.flags & 0x1000) ? '?' : '.',
+				(I.flags & 0x0800) ? 'O' : '.',
+				(I.flags & 0x0400) ? 'D' : '.',
+				(I.flags & 0x0200) ? 'I' : '.',
+				(I.flags & 0x0100) ? 'T' : '.',
+				(I.flags & 0x0080) ? 'S' : '.',
+				(I.flags & 0x0040) ? 'Z' : '.',
+				(I.flags & 0x0020) ? '?' : '.',
+				(I.flags & 0x0010) ? 'A' : '.',
+				(I.flags & 0x0008) ? '?' : '.',
+				(I.flags & 0x0004) ? 'P' : '.',
+				(I.flags & 0x0002) ? 'N' : '.',
+				(I.flags & 0x0001) ? 'C' : '.');
 		break;
 	}
 	return i86_info(context, regnum);

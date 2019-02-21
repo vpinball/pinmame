@@ -1370,14 +1370,13 @@ int i8085_execute(int cycles)
  ****************************************************************************/
 static void init_tables (void)
 {
-	UINT8 zs;
-	int i, p;
+	int i;
 	for (i = 0; i < 256; i++)
 	{
-		zs = 0;
+		UINT8 zs = 0;
+		int p = 0;
 		if (i==0) zs |= ZF;
 		if (i&128) zs |= SF;
-		p = 0;
 		if (i&1) ++p;
 		if (i&2) ++p;
 		if (i&4) ++p;
@@ -1742,14 +1741,14 @@ const char *i8085_info(void *context, int regnum)
 		case CPU_INFO_REG+I8085_RST75_STATE: sprintf(buffer[which], "RST75:%X", I.irq_state[I8085_RST75_LINE]); break;
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->AF.b.l & 0x80 ? 'S':'.',
-				r->AF.b.l & 0x40 ? 'Z':'.',
-				r->AF.b.l & 0x20 ? 'X':'.', // X5
-				r->AF.b.l & 0x10 ? 'H':'.',
-				r->AF.b.l & 0x08 ? '?':'.',
-				r->AF.b.l & 0x04 ? 'P':'.',
-				r->AF.b.l & 0x02 ? 'V':'.',
-				r->AF.b.l & 0x01 ? 'C':'.');
+				(r->AF.b.l & 0x80) ? 'S':'.',
+				(r->AF.b.l & 0x40) ? 'Z':'.',
+				(r->AF.b.l & 0x20) ? 'X':'.', // X5
+				(r->AF.b.l & 0x10) ? 'H':'.',
+				(r->AF.b.l & 0x08) ? '?':'.',
+				(r->AF.b.l & 0x04) ? 'P':'.',
+				(r->AF.b.l & 0x02) ? 'V':'.',
+				(r->AF.b.l & 0x01) ? 'C':'.');
 			break;
 		case CPU_INFO_NAME: return "8085A";
 		case CPU_INFO_FAMILY: return "Intel 8080";

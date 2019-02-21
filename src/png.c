@@ -37,7 +37,7 @@ static UINT32 convert_from_network_order (UINT8 *v)
 
 int png_unfilter(struct png_info *p)
 {
-	int i, j, bpp, filter;
+	int i, j, bpp;
 	INT32 prediction, pA, pB, pC, dA, dB, dC;
 	UINT8 *src, *dst;
 
@@ -54,7 +54,7 @@ int png_unfilter(struct png_info *p)
 
 	for (i=0; i<p->height; i++)
 	{
-		filter = *src++;
+		int filter = *src++;
 		if (!filter)
 		{
 			memcpy (dst, src, p->rowbytes);
@@ -147,7 +147,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 	/* translates color_type to bytes per pixel */
 	const int samples[] = {1, 0, 3, 1, 2, 0, 4};
 
-	UINT32 chunk_length, chunk_type=0, chunk_crc, crc;
+	UINT32 chunk_type=0;
 	UINT8 *chunk_data, *temp;
 	UINT8 str_chunk_type[5], v[4];
 
@@ -174,6 +174,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 
 	while (chunk_type != PNG_CN_IEND)
 	{
+		UINT32 chunk_length, chunk_crc, crc;
 		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_length=convert_from_network_order(v);
@@ -345,7 +346,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 
 int png_read_info(mame_file *fp, struct png_info *p)
 {
-	UINT32 chunk_length, chunk_type=0, chunk_crc, crc;
+	UINT32 chunk_type=0;
 	UINT8 *chunk_data;
 	UINT8 str_chunk_type[5], v[4];
 	int res = 0;
@@ -355,6 +356,7 @@ int png_read_info(mame_file *fp, struct png_info *p)
 
 	while (chunk_type != PNG_CN_IEND)
 	{
+		UINT32 chunk_length, chunk_crc, crc;
 		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_length=convert_from_network_order(v);
@@ -421,13 +423,12 @@ int png_read_info(mame_file *fp, struct png_info *p)
 		case PNG_CN_tEXt:
 			{
 				char *text = (char *)chunk_data;
-				int c;
 
 				while(*text++) ;
 				chunk_data[chunk_length]=0;
 				if (strcmp ((const char *)chunk_data, "Screen") == 0)
 				{
-					c = sscanf (text, "%i%i%i%i", &p->screen.min_x, &p->screen.max_x,
+					int c = sscanf (text, "%i%i%i%i", &p->screen.min_x, &p->screen.max_x,
 								&p->screen.min_y, &p->screen.max_y);
 					if (c == 4)
 					{
@@ -455,11 +456,11 @@ int png_read_info(mame_file *fp, struct png_info *p)
 /*	Expands a p->image from p->bit_depth to 8 bit */
 int png_expand_buffer_8bit (struct png_info *p)
 {
-	int i,j, k;
-	UINT8 *inp, *outp, *outbuf;
-
 	if (p->bit_depth < 8)
 	{
+		int i;
+		UINT8 *inp, *outp, *outbuf;
+
 		if ((outbuf = (UINT8 *)malloc(p->width*p->height))==NULL)
 		{
 			logerror("Out of memory\n");
@@ -471,14 +472,17 @@ int png_expand_buffer_8bit (struct png_info *p)
 
 		for (i = 0; i < p->height; i++)
 		{
+			int j;
 			for(j = 0; j < p->width / ( 8 / p->bit_depth); j++)
 			{
+				int k;
 				for (k = 8 / p->bit_depth-1; k >= 0; k--)
 					*outp++ = (*inp >> k * p->bit_depth) & (0xff >> (8 - p->bit_depth));
 				inp++;
 			}
 			if (p->width % (8 / p->bit_depth))
 			{
+				int k;
 				for (k = p->width % (8 / p->bit_depth)-1; k >= 0; k--)
 					*outp++ = (*inp >> k * p->bit_depth) & (0xff >> (8 - p->bit_depth));
 				inp++;
@@ -715,17 +719,18 @@ int png_deflate_image(struct png_info *p)
 
 static int png_pack_buffer (struct png_info *p)
 {
-	UINT8 *outp, *inp;
-	int i,j,k;
-
-	outp = inp = p->image;
-
 	if (p->bit_depth < 8)
 	{
+		int i;
+		UINT8 *outp, *inp;
+
+		outp = inp = p->image;
 		for (i=0; i<p->height; i++)
 		{
+			int j;
 			for(j=0; j<p->width/(8/p->bit_depth); j++)
 			{
+				int k;
 				for (k=8/p->bit_depth-1; k>=0; k--)
 					*outp |= *inp++ << k * p->bit_depth;
 				outp++;
@@ -733,6 +738,7 @@ static int png_pack_buffer (struct png_info *p)
 			}
 			if (p->width % (8/p->bit_depth))
 			{
+				int k;
 				for (k=p->width%(8/p->bit_depth)-1; k>=0; k--)
 					*outp |= *inp++ << k * p->bit_depth;
 				outp++;
@@ -755,9 +761,6 @@ static int png_pack_buffer (struct png_info *p)
 static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 {
 	int i, j;
-	int r, g, b;
-	UINT32 color;
-	UINT8 *ip;
 	struct png_info p;
 
 	memset (&p, 0, sizeof (struct png_info));
@@ -799,6 +802,8 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 	}
 	else
 	{
+		UINT8 *ip;
+
 		p.color_type = 2;
 		p.rowbytes = p.width * 3;
 		p.bit_depth = 8;
@@ -824,6 +829,8 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 			for (i = 0; i < p.height; i++)
 				for (j = 0; j < p.width; j++)
 				{
+					int r, g, b;
+					UINT32 color;
 					color = ((UINT16 *)bitmap->line[i])[j];
 
 					r = (color & direct_rgb_components[0]) / (direct_rgb_components[0] / 0x1f);
@@ -839,6 +846,8 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 			for (i = 0; i < p.height; i++)
 				for (j = 0; j < p.width; j++)
 				{
+					int r, g, b;
+					UINT32 color;
 					color = ((UINT32 *)bitmap->line[i])[j];
 
 					r = (color & direct_rgb_components[0]) / (direct_rgb_components[0] / 0xff);

@@ -321,7 +321,7 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 
 	if ((insn & INSN_OP2_RM)==0xf) {
 		// "If a register is used to specify the shift amount the PC will be 12 bytes ahead." (instead of 8)
-		rm += t & 1 ? 12 : 8;
+		rm += (t & 1) ? 12 : 8;
 	}
 
 	/* All shift types ending in 1 are Rk, not #k */
@@ -360,7 +360,7 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 			{
 			//LSL      0   = Result = RM, Carry = Old Contents of CPSR C Bit
 			//LSL (0,31)   = Result shifted, least significant bit is in carry out
-			*pCarry = k ? (rm & (1 << (32 - k))) : (GET_CPSR & C_MASK);
+			*pCarry = k ? (rm & (1u << (32 - k))) : (GET_CPSR & C_MASK);
 			}
 			return k ? LSL(rm, k) : rm;
 		}
@@ -379,7 +379,7 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 		}
 		else
 		{
-			if (pCarry) *pCarry = (rm & (1 << (k - 1)));
+			if (pCarry) *pCarry = (rm & (1u << (k - 1)));
 			return LSR(rm, k);
 		}
 		break;
@@ -388,9 +388,9 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 		if (k == 0 || k > 32)
 			k = 32;
 
-		if (pCarry) *pCarry = (rm & (1 << (k - 1)));
+		if (pCarry) *pCarry = (rm & (1u << (k - 1)));
 		if (k >= 32)
-			return rm & SIGN_BIT ? 0xffffffffu : 0;
+			return (rm & SIGN_BIT) ? 0xffffffffu : 0;
 		else
 		{
 			if (rm & SIGN_BIT)
@@ -407,7 +407,7 @@ INLINE data32_t decodeShift( data32_t insn, data32_t *pCarry)
 			if (k)
 			{
 				if (pCarry)
-					*pCarry = rm & (1 << (k - 1));
+					*pCarry = rm & (1u << (k - 1));
 				return ROR(rm, k);
 			}
 			else
@@ -916,7 +916,7 @@ static void HandleCoProcDT(data32_t insn)
 	{
 		//Up - Down bit
 		if(insn&0x800000)
-			rnv+=off;
+			rnv+=off; //!! rnv never used again??!
 		else
 			rnv-=off;
 	}
@@ -1556,7 +1556,7 @@ static void HandlePSRTransfer( data32_t insn )
 static void HandleALU( data32_t insn )
 {
 	data32_t op2, sc=0, rd, rn, opcode;
-	data32_t by, rdn;
+	data32_t rdn;
 
 	// Normal Data Processing : 1S
 	// Data Processing with register specified shift : 1S + 1I
@@ -1575,7 +1575,7 @@ static void HandleALU( data32_t insn )
 	/* Immediate constant */
 	if (insn & INSN_I)
 	{
-		by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
+		data32_t by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
 		if (by)
 		{
 			op2 = ROR(insn & INSN_OP2_IMM, by << 1);
@@ -1606,7 +1606,7 @@ static void HandleALU( data32_t insn )
 	{
 		if ((rn = (insn & INSN_RN) >> INSN_RN_SHIFT) == eR15)
 		{
-			int addpc = (insn&INSN_I?8:insn&0x10u?12:8);
+			int addpc = ((insn&INSN_I)?8:(insn&0x10u)?12:8);
 			#if ARM7_DEBUG_CORE
 				LOG(("%08x:  Pipelined R15 (Shift %d)\n",R15,addpc));
 			#endif
@@ -1625,7 +1625,7 @@ static void HandleALU( data32_t insn )
 	{
 	/* Arithmetic operations */
 	case OPCODE_SBC:
-		rd = (rn - op2 - (GET_CPSR & C_MASK ? 0 : 1));
+		rd = (rn - op2 - ((GET_CPSR & C_MASK) ? 0 : 1));
 		HandleALUSubFlags(rd, rn, op2);
 		break;
 	case OPCODE_CMP:
@@ -1634,7 +1634,7 @@ static void HandleALU( data32_t insn )
 		HandleALUSubFlags(rd, rn, op2);
 		break;
 	case OPCODE_RSC:
-		rd = (op2 - rn - (GET_CPSR & C_MASK ? 0 : 1));
+		rd = (op2 - rn - ((GET_CPSR & C_MASK) ? 0 : 1));
 		HandleALUSubFlags(rd, op2, rn);
 		break;
 	case OPCODE_RSB:

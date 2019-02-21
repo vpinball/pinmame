@@ -1899,14 +1899,14 @@ const char *adsp2100_info( void *context, int regnum )
 
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
-				r->astat & 0x80 ? 'X':'.',
-				r->astat & 0x40 ? 'M':'.',
-				r->astat & 0x20 ? 'Q':'.',
-				r->astat & 0x10 ? 'S':'.',
-				r->astat & 0x08 ? 'C':'.',
-				r->astat & 0x04 ? 'V':'.',
-				r->astat & 0x02 ? 'N':'.',
-				r->astat & 0x01 ? 'Z':'.');
+				(r->astat & 0x80) ? 'X':'.',
+				(r->astat & 0x40) ? 'M':'.',
+				(r->astat & 0x20) ? 'Q':'.',
+				(r->astat & 0x10) ? 'S':'.',
+				(r->astat & 0x08) ? 'C':'.',
+				(r->astat & 0x04) ? 'V':'.',
+				(r->astat & 0x02) ? 'N':'.',
+				(r->astat & 0x01) ? 'Z':'.');
 			break;
 		case CPU_INFO_NAME: return "ADSP2100";
 		case CPU_INFO_FAMILY: return "ADSP2100";

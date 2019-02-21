@@ -417,7 +417,7 @@ static int offs(INT8 offset)
 unsigned DasmZ80( char *buffer, unsigned pc )
 {
     z80dasm *d;
-	const char *symbol, *src;
+	const char *symbol;
 	const char *ixy;
 	char *dst;
 	unsigned PC = pc;
@@ -475,6 +475,7 @@ unsigned DasmZ80( char *buffer, unsigned pc )
 
     if( d->arguments )
 	{
+		const char *src;
 		dst += sprintf(dst, "%-4s ", s_mnemonic[d->mnemonic]);
 		src = d->arguments;
 		while( *src )

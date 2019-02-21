@@ -1374,8 +1374,8 @@ static int allocate_memory(void)
 		/* keep going until we break out */
 		while (1)
 		{
-			const struct Memory_ReadAddress *mra = Machine->drv->cpu[cpunum].memory_read;
-			const struct Memory_WriteAddress *mwa = Machine->drv->cpu[cpunum].memory_write;
+			const struct Memory_ReadAddress *mra;
+			const struct Memory_WriteAddress *mwa;
 			offs_t lowest = ~0, end, lastend;
 
 			/* find the base of the lowest memory region that extends past the end */
@@ -1456,12 +1456,13 @@ static int populate_memory(void)
 	/* loop over CPUs */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		const struct Memory_ReadAddress *mra, *mra_start = Machine->drv->cpu[cpunum].memory_read;
-		const struct Memory_WriteAddress *mwa, *mwa_start = Machine->drv->cpu[cpunum].memory_write;
+		const struct Memory_ReadAddress *mra_start = Machine->drv->cpu[cpunum].memory_read;
+		const struct Memory_WriteAddress *mwa_start = Machine->drv->cpu[cpunum].memory_write;
 
 		/* install the read handlers */
 		if (mra_start)
 		{
+			const struct Memory_ReadAddress *mra;
 			/* first find the end and check for address bits */
 			for (mra = mra_start; !IS_MEMPORT_END(mra); mra++)
 				if (IS_MEMPORT_MARKER(mra) && (mra->end & MEMPORT_ABITS_MASK))
@@ -1476,6 +1477,7 @@ static int populate_memory(void)
 		/* install the write handlers */
 		if (mwa_start)
 		{
+			const struct Memory_WriteAddress *mwa;
 			/* first find the end and check for address bits */
 			for (mwa = mwa_start; !IS_MEMPORT_END(mwa); mwa++)
 				if (IS_MEMPORT_MARKER(mwa) && (mwa->end & MEMPORT_ABITS_MASK))
@@ -1507,12 +1509,13 @@ static int populate_ports(void)
 	/* loop over CPUs */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		const struct IO_ReadPort *mra, *mra_start = Machine->drv->cpu[cpunum].port_read;
-		const struct IO_WritePort *mwa, *mwa_start = Machine->drv->cpu[cpunum].port_write;
+		const struct IO_ReadPort *mra_start = Machine->drv->cpu[cpunum].port_read;
+		const struct IO_WritePort *mwa_start = Machine->drv->cpu[cpunum].port_write;
 
 		/* install the read handlers */
 		if (mra_start)
 		{
+			const struct IO_ReadPort *mra;
 			/* first find the end and check for address bits */
 			for (mra = mra_start; !IS_MEMPORT_END(mra); mra++)
 				if (IS_MEMPORT_MARKER(mra) && (mra->end & MEMPORT_ABITS_MASK))
@@ -1527,6 +1530,7 @@ static int populate_ports(void)
 		/* install the write handlers */
 		if (mwa_start)
 		{
+			const struct IO_WritePort *mwa;
 			/* first find the end and check for address bits */
 			for (mwa = mwa_start; !IS_MEMPORT_END(mwa); mwa++)
 				if (IS_MEMPORT_MARKER(mwa) && (mwa->end & MEMPORT_ABITS_MASK))

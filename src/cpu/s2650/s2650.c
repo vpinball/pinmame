@@ -1601,23 +1601,23 @@ const char *s2650_info(void *context, int regnum)
 		case CPU_INFO_REG+S2650_SI: sprintf(buffer[which], "SI:%X", (r->psu & SI) ? 1 : 0); break;
 		case CPU_INFO_REG+S2650_FO: sprintf(buffer[which], "FO:%X", (r->psu & FO) ? 1 : 0); break;
 		case CPU_INFO_FLAGS: sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%s",
-			r->psu & 0x80 ? 'S':'.',
-			r->psu & 0x40 ? 'O':'.',
-			r->psu & 0x20 ? 'I':'.',
-			r->psu & 0x10 ? '?':'.',
-			r->psu & 0x08 ? '?':'.',
-			r->psu & 0x04 ? 's':'.',
-			r->psu & 0x02 ? 's':'.',
-			r->psu & 0x01 ? 's':'.',
-			r->psl & 0x80 ? 'M':'.',
-			r->psl & 0x40 ? 'P':'.',
-			r->psl & 0x20 ? 'H':'.',
-			r->psl & 0x10 ? 'R':'.',
-			r->psl & 0x08 ? 'W':'.',
-			r->psl & 0x04 ? 'V':'.',
-			r->psl & 0x02 ? '2':'.',
-			r->psl & 0x01 ? 'C':'.',
-			r->halt ? " HALT" : "");
+			(r->psu & 0x80) ? 'S':'.',
+			(r->psu & 0x40) ? 'O':'.',
+			(r->psu & 0x20) ? 'I':'.',
+			(r->psu & 0x10) ? '?':'.',
+			(r->psu & 0x08) ? '?':'.',
+			(r->psu & 0x04) ? 's':'.',
+			(r->psu & 0x02) ? 's':'.',
+			(r->psu & 0x01) ? 's':'.',
+			(r->psl & 0x80) ? 'M':'.',
+			(r->psl & 0x40) ? 'P':'.',
+			(r->psl & 0x20) ? 'H':'.',
+			(r->psl & 0x10) ? 'R':'.',
+			(r->psl & 0x08) ? 'W':'.',
+			(r->psl & 0x04) ? 'V':'.',
+			(r->psl & 0x02) ? '2':'.',
+			(r->psl & 0x01) ? 'C':'.',
+			 r->halt        ? " HALT" : "");
 			break;
 		case CPU_INFO_NAME: return "S2650";
 		case CPU_INFO_FAMILY: return "Signetics 2650";

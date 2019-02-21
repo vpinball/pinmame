@@ -1260,8 +1260,6 @@ static int AltKeyPressed(void)
 	re-implementation of osd_readkey_unicode */
 static int ReadKeyAsync(int flush)
 {
-	int	code;
-
 	if(flush)
 	{
 		while(code_read_async() != CODE_NONE) ;
@@ -1271,7 +1269,7 @@ static int ReadKeyAsync(int flush)
 
 	while(1)
 	{
-		code = code_read_async();
+		int code = code_read_async();
 
 		if(code == CODE_NONE)
 		{
@@ -1462,7 +1460,7 @@ static int UIPressedRepeatThrottle(int code, int baseSpeed)
 	static int	lastCode = -1;
 	static int	lastSpeed = -1;
 	static int	incrementTimer = 0;
-	int			pressed = 0;
+	//int			pressed = 0;
 
 	const int	kDelayRampTimer = 10;
 
@@ -1486,7 +1484,7 @@ static int UIPressedRepeatThrottle(int code, int baseSpeed)
 				if(lastSpeed < 1)
 					lastSpeed = 1;
 
-				pressed = 1;
+				//pressed = 1;
 			}
 		}
 	}
@@ -4601,7 +4599,7 @@ static int DoSearchMenuClassic(struct mame_bitmap * bitmap, int selection, int s
 		kMenu_Max
 	};
 
-	INT32			sel = selection - 1;
+	INT32			sel;
 	const char		* menu_item[kMenu_Max + 2] = { 0 };
 	const char		* menu_subitem[kMenu_Max + 2] = { 0 };
 	//char			flagBuf[kMenu_Max + 2] = { 0 };
@@ -4950,7 +4948,7 @@ static int DoSearchMenu(struct mame_bitmap * bitmap, int selection, int startNew
 		kMenu_Max
 	};
 
-	INT32			sel = selection - 1;
+	INT32			sel;
 	static INT32	submenuChoice = 0;
 	const char		* menu_item[kMenu_Max + 2] =	{ 0 };
 	const char		* menu_subitem[kMenu_Max + 2] =	{ 0 };
@@ -5497,7 +5495,6 @@ static int ViewSearchResults(struct mame_bitmap * bitmap, int selection, int fir
 	UINT32			traverse;
 	UINT8			hadResults = 0;
 	INT32			numToSkip;
-	UINT32			resultsFound = 0;
 	UINT32			selectedAddress = 0;
 	UINT32			selectedOffset = 0;
 	UINT8			selectedAddressGood = 0;
@@ -5567,6 +5564,7 @@ static int ViewSearchResults(struct mame_bitmap * bitmap, int selection, int fir
 	}
 	else
 	{
+		UINT32 resultsFound = 0;
 		for(i = 0; (i < resultsPerPage) && (traverse < region->length) && (resultsFound < region->numResults);)
 		{
 			while(	!IsRegionOffsetValid(search, region, traverse) &&
@@ -5731,7 +5729,7 @@ static int ViewSearchResults(struct mame_bitmap * bitmap, int selection, int fir
 				SearchRegion	* newRegion = &search->regionList[search->currentRegionIdx];
 				UINT32			nextNumPages = (newRegion->numResults / kSearchByteIncrementTable[search->bytes] + resultsPerPage - 1) / resultsPerPage;
 
-				if(nextNumPages <= 0)
+				if(nextNumPages == 0)
 					nextNumPages = 1;
 
 				search->currentResultsPage = nextNumPages - 1;
@@ -7129,16 +7127,17 @@ void DisplayWatches(struct mame_bitmap * bitmap)
 
 	for(i = 0; i < watchListLength; i++)
 	{
-		int			j;
 		WatchInfo	* info = &watchList[i];
-		char		buf[1024];
 		UINT32		address = info->address;
-		int			xOffset = 0, yOffset = 0;
-		int			numChars;
-		int			lineElements = 0;
 
 		if(info->numElements)
 		{
+			int	 j;
+			char buf[1024];
+			int	 xOffset = 0, yOffset = 0;
+			int	 numChars;
+			int	 lineElements = 0;
+
 			switch(info->labelType)
 			{
 				case kWatchLabel_Address:
@@ -8675,10 +8674,9 @@ static void LoadCheatDatabase(void)
 
 static void DisposeCheatDatabase(void)
 {
-	int	i;
-
 	if(cheatList)
 	{
+		int i;
 		for(i = 0; i < cheatListLength; i++)
 		{
 			DisposeCheat(&cheatList[i]);
@@ -9184,17 +9182,14 @@ static void DoSearch(SearchInfo * search)
 
 			for(j = 0; j < lastAddress; j += increment)
 			{
-				UINT32	address;
-				UINT32	lhs, rhs;
-
-				address = region->address + j;
+				UINT32	address = region->address + j;
 
 				if(IsRegionOffsetValidBit(search, region, j))
 				{
 					UINT32	validBits;
 
-					lhs = ReadSearchOperandBit(search->lhs, search, region, address);
-					rhs = ReadSearchOperandBit(search->rhs, search, region, address);
+					UINT32 lhs = ReadSearchOperandBit(search->lhs, search, region, address);
+					UINT32 rhs = ReadSearchOperandBit(search->rhs, search, region, address);
 
 					validBits = DoSearchComparisonBit(search, lhs, rhs);
 
@@ -9227,15 +9222,12 @@ static void DoSearch(SearchInfo * search)
 
 			for(j = 0; j < lastAddress; j += increment)
 			{
-				UINT32	address;
-				UINT32	lhs, rhs;
-
-				address = region->address + j;
+				UINT32	address = region->address + j;
 
 				if(IsRegionOffsetValid(search, region, j))
 				{
-					lhs = ReadSearchOperand(search->lhs, search, region, address);
-					rhs = ReadSearchOperand(search->rhs, search, region, address);
+					UINT32 lhs = ReadSearchOperand(search->lhs, search, region, address);
+					UINT32 rhs = ReadSearchOperand(search->rhs, search, region, address);
 
 					if(!DoSearchComparison(search, lhs, rhs))
 					{
@@ -9902,15 +9894,13 @@ static void DoCheatOperation(CheatAction * action)
 	{
 		case kOperation_WriteMask:
 		{
-			UINT32	temp;
-
 			if(action->flags & kActionFlag_IgnoreMask)
 			{
 				WriteData(action, action->data);
 			}
 			else
 			{
-				temp = ReadData(action);
+				UINT32 temp = ReadData(action);
 
 				temp = (action->data & action->extendData) | (temp & ~action->extendData);
 
@@ -10117,8 +10107,6 @@ static void DoCheatAction(CheatAction * action)
 
 static void DoCheatEntry(CheatEntry * entry)
 {
-	int	i;
-
 	// special handling for select cheats
 	if(entry->flags & kCheatFlag_Select)
 	{
@@ -10171,6 +10159,8 @@ static void DoCheatEntry(CheatEntry * entry)
 	}
 	else
 	{
+		int	i;
+
 		if(	(entry->flags & kCheatFlag_HasActivationKey) &&
 			!(entry->flags & kCheatFlag_UserSelect))
 		{
@@ -10254,7 +10244,7 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 	for(i = 0; i < entry->actionListLength; i++)
 	{
 		CheatAction	* action =		&entry->actionList[i];
-		int			isActionNull =	0;
+		//int			isActionNull =	0;
 		UINT32		size;
 		UINT32		operation;
 		UINT32		actionFlags = action->flags & kActionFlag_PersistentMask;
@@ -10265,7 +10255,7 @@ static void UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime)
 		if(	(EXTRACT_FIELD(action->type, LocationType) == kLocation_Custom) &&
 			(EXTRACT_FIELD(action->type, LocationParameter) == kCustomLocation_Comment))
 		{
-			isActionNull = 1;
+			//isActionNull = 1;
 		}
 		else
 		{
@@ -10349,7 +10339,7 @@ static void BuildCPUInfoList(void)
 					// build address mask
 					for(i = 0; i < 32; i++)
 					{
-						UINT32	mask = 1 << (31 - i);
+						UINT32 mask = 1u << (31 - i);
 
 						if(bitState)
 						{

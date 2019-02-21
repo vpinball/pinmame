@@ -163,7 +163,7 @@ int DasmCOP420(char *buffer, unsigned pc)
 
 		case 0x23:
 			addr = (UINT16)(oprom[1] & 0x3F);
-			sprintf(buffer, (oprom[1] & 0x80 ? "XAD %02x" : "LDD %02x"), addr);
+			sprintf(buffer, ((oprom[1] & 0x80) ? "XAD %02x" : "LDD %02x"), addr);
 			cnt = 2;
 			break;
 

@@ -169,7 +169,6 @@ static const char regbank[][6] = {
 
 const char *get_data_address( UINT8 arg )
 {
-	const char *sym;
 	static char buffer[8][63+1];
 	static int which = 0;
 	which = (which+1) % 8;
@@ -180,7 +179,7 @@ const char *get_data_address( UINT8 arg )
 			sprintf(buffer[which],"%s",regbank[arg]);
 		else 
 		{
-		sym = set_ea_info(EA_SRC, arg, EA_UINT8, EA_VALUE);
+		const char *sym = set_ea_info(EA_SRC, arg, EA_UINT8, EA_VALUE);
 		sprintf(buffer[which],"%s",sym);
 		}
 	}
@@ -191,7 +190,6 @@ const char *get_data_address( UINT8 arg )
 
 const char *get_bit_address( UINT8 arg )
 {
-	const char *sym;
 	static char buffer[8][63+1];
 	static int which = 0;
 	which = (which+1) % 8;
@@ -202,7 +200,7 @@ const char *get_bit_address( UINT8 arg )
 			sprintf(buffer[which],"%s",membits[arg]);
 		else 
 		{
-		sym = set_ea_info(EA_SRC, arg, EA_UINT8, EA_VALUE);
+		const char *sym = set_ea_info(EA_SRC, arg, EA_UINT8, EA_VALUE);
 		sprintf(buffer[which],"%s",sym);
 		}
 	}

@@ -166,7 +166,7 @@ static char *WriteDataProcessingOperand( char *pBuf, data32_t opcode, int printO
 static char *WriteRegisterOperand1( char *pBuf, data32_t opcode )
 {
 	/* ccccctttmmmm */
-	const char *pRegOp[4] = { "LSL","LSR","ASR","ROR" };
+	static const char *pRegOp[4] = { "LSL","LSR","ASR","ROR" };
 
 	pBuf += sprintf(
 		pBuf,

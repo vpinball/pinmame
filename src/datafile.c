@@ -135,11 +135,10 @@ static UINT32 GetNextToken(char **ppszTokenText, UINT64 *pdwPosition)
         UINT32 dwLength;                                                /* Length of symbol */
         UINT64 dwPos;                                                             /* Temporary position */
         UINT8 *pbTokenPtr = bToken;                             /* Point to the beginning */
-        UINT8 bData;                                                    /* Temporary data byte */
 
         while (1)
         {
-                bData = mame_fgetc(fp);                                  /* Get next character */
+                UINT8 bData = mame_fgetc(fp);                                  /* Temporary data byte */ /* Get next character */
 
                 /* If we're at the end of the file, bail out */
 
@@ -405,10 +404,9 @@ static int ci_strcmp (const char *s1, const char *s2)
  **************************************************************************/
 static int ci_strncmp (const char *s1, const char *s2, size_t n)
 {
-        int c1, c2;
-
         while (n)
         {
+                int c1, c2;
                 if ((c1 = tolower (*s1)) != (c2 = tolower (*s2)))
                         return (c1 - c2);
                 else if (!c1)
@@ -533,7 +531,6 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
         while (TOKEN_INVALID != token)
         {
                 char *s;
-                int len;
                 UINT64 tell;
 
                 token = GetNextToken (&s, &tell);
@@ -541,6 +538,7 @@ static int load_datafile_text (const struct GameDriver *drv, char *buffer, int b
 
                 if (found)
                 {
+                        int len;
                         /* end entry when a tag is encountered */
                         if (TOKEN_SYMBOL == token && DATAFILE_TAG == s[0] && TOKEN_LINEBREAK == prev_token) break;
 

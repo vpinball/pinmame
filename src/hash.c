@@ -277,14 +277,13 @@ static int hash_data_add_binary_checksum(char* d, unsigned int function, UINT8* 
 
 static int hash_compare_checksum(const char* chk1, const char* chk2, int length)
 {
-	char c1, c2;
-
 	// The printable format is twice as longer
 	length *= 2;
 
 	// This is basically a case-insensitive string compare
 	while (length--)
 	{
+		char c1, c2;
 		c1 = *chk1++;
 		c2 = *chk2++;
 
@@ -629,7 +628,7 @@ int hash_verify_string(const char *hash)
 			len = hash_descs[i].size * 2;
 			hash += 2;
 			
-			for (i = 0; (hash[i] != '#') && (i < len); i++)
+			for (i = 0; (i < len) && (hash[i] != '#'); i++)
 			{
 				if (!isxdigit(hash[i]))
 					return FALSE;

@@ -886,7 +886,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 
 	  //external dmd
 	  if (g_fShowPinDMD)
-		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name);
+		  renderDMDFrame(core_gameData->gen, layout->length, layout->start, currbuffer, g_fDumpFrames, Machine->gamedrv->name, g_raw_gtswpc_dmdframes, g_raw_gtswpc_dmd);
 
 	  if (oldbuffer != NULL) {	  // detect if same frame again
 		  if (memcmp(oldbuffer, currbuffer, (layout->length * layout->start)))

@@ -346,7 +346,7 @@ static void gen_test_abort(struct jit_ctl *jit, data32_t addr, int sp_inc)
 
 static void gen_test_irq(struct jit_ctl *jit, data32_t addr)
 {
-	data8_t *abt = &ARM7.pendingIrq;
+	//data8_t *abt = &ARM7.pendingIrq;
 	struct jit_label *lbl;
 
 	// If no pending IRQ, skip IRQ check. Probably should also
@@ -553,8 +553,7 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	int siz, sx;
 	data32_t immOfs;
 	int ddinstr;
-	int sp_inc = 0;
-	int non_priv_access_mode = 0;   // flag: the memory transfer uses non-privileged memory mode (documentary only)
+	int non_priv_access_mode;   // flag: the memory transfer uses non-privileged memory mode (documentary only)
 
 	// Decode the instruction fields
 	ld = (insn & INSN_SDT_L);
@@ -665,6 +664,8 @@ static int LDRHB_STRHB(struct jit_ctl *jit, data32_t addr, data32_t insn, int *i
 	// If pre-indexing, we have the adjusted index, so do the memory operation
 	if (preIdx)
 	{
+		int sp_inc = 0;
+
 		// If we're going to do a write-back of the index register, save it on the stack.
 		// We can't just do the write-back first, because the memory operation could trigger
 		// an ABORT, in which case the write-back is skipped.
@@ -1005,8 +1006,6 @@ static void emit_jump(struct jit_ctl *jit, data32_t dest_addr, int *cycles)
 static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, int *cycles)
 {
 	data32_t opcode;
-	data32_t rd = 0;
-	data32_t by;
 	int result_reg;
 	int is_logical_op;
 	int is_sub_op;
@@ -1054,7 +1053,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 		data32_t op2;
 
 		// get the shift-by amount
-		by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
+		data32_t by = (insn & INSN_OP2_ROTATE) >> INSN_OP2_ROTATE_SHIFT;
 		if (by)
 		{
 			// shifted immediate - apply the shift
@@ -1116,7 +1115,7 @@ static int ALU(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br, in
 	{
 		int rn = (insn & INSN_RN) >> INSN_RN_SHIFT;
 		if (rn == 15) {
-			int addpc = (insn & INSN_I ? 8 : insn & 0x10u ? 12 : 8);
+			int addpc = ((insn & INSN_I) ? 8 : (insn & 0x10u) ? 12 : 8);
 			emit(MOV, EBX, Imm, addr + addpc);
 		}
 		else {
@@ -1355,8 +1354,7 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	int pre = insn & (1 << 24);     // pre/post bit (true -> pre, add offset before transfer)
 	int oty = insn & (1 << 25);     // offset type: 0=immediate offset, 1=register with shift
 	data32_t ofs = (oty == 0 ? insn & 0xfff : 0);    // immediate offset, if oty == 0
-	int sp_inc = 0;                 // bytes of temps we've saved on the stack
-	int non_priv_access_mode = 0;   // the memory transfer uses non-privileged memory mode (documentary only)
+	int non_priv_access_mode;       // the memory transfer uses non-privileged memory mode (documentary only)
 
 	// The W bit has a special meaning in post-indexing mode: it sets non-privileged
 	// memory access if the CPU is running in a privileged mode.  The MAME ARM7
@@ -1450,6 +1448,7 @@ static int LDR_STR(struct jit_ctl *jit, data32_t addr, data32_t insn, int *is_br
 	// the value, so now it's time to do the memory access
 	if (pre)
 	{
+		int sp_inc = 0;                 // bytes of temps we've saved on the stack
 		// if writing back the index register, save the updated index for
 		// the duration of the call - we'll need it to write back afterwards
 		// (we can't do ahead of time because of the possibility of an ABORT)
