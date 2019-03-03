@@ -2,8 +2,6 @@
 #include <unistd.h>
 #include "..\ext\bass\bass.h"
 
-//#define ALT_LOG
-
 #define VERBOSE 0
 
 #if VERBOSE
@@ -12,11 +10,14 @@
  #define LOG(x)
 #endif
 
-
-typedef struct pin_samples { // holds data for all sound files found
+typedef struct _pin_samples { // holds data for all sound files found
+	int * ID;
 	char ** files_with_subpath;
+	signed char * channel;
 	float * gain;
 	signed char * ducking;
+	unsigned char * loop;
+	unsigned char * stop;
 	unsigned int num_files;
 } Pin_samples;
 
@@ -62,12 +63,56 @@ float alt_sound_gain(const int gain) //!! which one?
 	return (float)gain / 20.f;
 }
 
-static HSTREAM jingle_stream = 0; // includes single_stream
-static HSTREAM music_stream = 0;
-#define ALT_MAX_VOICES 16
-static HSTREAM voice_stream[ALT_MAX_VOICES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
+static HSTREAM channel_0 = 0; 
+static HSTREAM channel_1 = 0; // includes single_stream
+#define ALT_MAX_CHANNELS 16
+static HSTREAM channel_x[ALT_MAX_CHANNELS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
+static signed char channel_1_ducking = 100;
+static signed char channel_x_ducking[ALT_MAX_CHANNELS] = { 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+static float channel_0_vol = 1.0f;
+static signed char min_ducking = 100;
 
-int open_altsound_table(char* filename, Pin_samples* psd);
+CsvReader* csv_open(const char* const filename, const int delimiter);
+int csv_read_header(CsvReader* const c);
+void csv_close(CsvReader* const c);
+int csv_read_record(CsvReader* const c);
+
+void CALLBACK ducking_callback(HSYNC handle, DWORD channel, DWORD data, void *user)
+{
+	if (channel == channel_1) {
+		BASS_StreamFree(channel_1);
+		channel_1 = 0;
+		channel_1_ducking = 100;
+	}
+
+	if (channel == channel_x[(int)user]) {
+		BASS_StreamFree(channel_x[(int)user]);
+		channel_x[(int)user] = 0;
+		channel_x_ducking[(int)user] = 100;
+	}
+
+	if (channel_0 != 0)
+	{
+		unsigned int i;
+		float new_val;
+
+		min_ducking = 100;
+		if (channel_1 != 0 && channel_1_ducking < min_ducking)
+			min_ducking = channel_1_ducking;
+		for (i = 0; i < ALT_MAX_CHANNELS; ++i) {
+			if (channel_x[i] != 0 && channel_x_ducking[i] < min_ducking)
+				min_ducking = channel_x_ducking[i];
+		}
+
+		new_val = channel_0_vol*(float)((double)min_ducking / 100.);
+		if (channel_0_vol != new_val)
+			BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, new_val);
+		
+		// if channel 0 was stopped continue
+		if (BASS_ChannelIsActive(channel_0) != BASS_ACTIVE_PLAYING)
+			BASS_ChannelPlay(channel_0, 0);
+	}
+}
 
 void alt_sound_handle(int boardNo, int cmd)
 {
@@ -83,9 +128,7 @@ void alt_sound_handle(int boardNo, int cmd)
 		static Pin_samples psd;
 
 		static float global_vol = 1.0f;
-		static float music_vol = 1.0f;
-		static signed char jingle_ducking = -1;
-		static signed char voice_ducking[ALT_MAX_VOICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+
 		unsigned int i;
 
 		int	attenuation = osd_get_mastervolume();
@@ -105,16 +148,16 @@ void alt_sound_handle(int boardNo, int cmd)
 			free(cached_machine_name);
 			cached_machine_name = 0;
 
-			jingle_stream = 0;
-			music_stream = 0;
-			for (i = 0; i < ALT_MAX_VOICES; ++i)
-				voice_stream[i] = 0;
+			channel_0 = 0;
+			channel_1 = 0;
+			for (i = 0; i < ALT_MAX_CHANNELS; ++i)
+				channel_x[i] = 0;
 
 			global_vol = 1.0f;
-			music_vol = 1.0f;
-			jingle_ducking = -1;
-			for (i = 0; i < ALT_MAX_VOICES; ++i)
-				voice_ducking[i] = -1;
+			channel_0_vol = 1.0f;
+			channel_1_ducking = 100;
+			for (i = 0; i < ALT_MAX_CHANNELS; ++i)
+				channel_x_ducking[i] = 100;
 
 			BASS_Free();
 
@@ -125,15 +168,25 @@ void alt_sound_handle(int boardNo, int cmd)
 					free(psd.files_with_subpath[i]);
 					psd.files_with_subpath[i] = 0;
 				}
+				free(psd.ID);
+				psd.ID = 0;
 				free(psd.files_with_subpath);
 				psd.files_with_subpath = 0;
 				free(psd.gain);
 				psd.gain = 0;
 				free(psd.ducking);
 				psd.ducking = 0;
+				free(psd.channel);
+				psd.channel = 0;
+				free(psd.loop);
+				psd.loop = 0;
+				free(psd.stop);
+				psd.stop = 0;
+				psd.num_files = 0;
 			}
 		}
 
+		// load sample information and init
 		if (cmd_storage == -1)
 		{
 			char cwd[1024];
@@ -142,6 +195,10 @@ void alt_sound_handle(int boardNo, int cmd)
 			char *lpHelp = cvpmd;
 			char *lpSlash = NULL;
 			DIR* dir;
+
+			CsvReader* c;
+			unsigned int PATH_LEN;
+			char* PATH;
 
 			cached_machine_name = (char*)malloc(strlen(Machine->gamedrv->name) + 1);
 			strcpy(cached_machine_name, Machine->gamedrv->name);
@@ -167,14 +224,99 @@ void alt_sound_handle(int boardNo, int cmd)
 			psd.num_files = 0;
 
 			// try to load altsound lookup table/csv if available
-			const unsigned int PATH_LEN = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(path_table) + 1;
-			char* PATH = (char*)malloc(PATH_LEN);
+			PATH_LEN = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(path_table) + 1;
+			PATH = (char*)malloc(PATH_LEN);
 			strcpy_s(PATH, PATH_LEN, cvpmd);
 			strcat_s(PATH, PATH_LEN, path_main);
 			strcat_s(PATH, PATH_LEN, Machine->gamedrv->name);
 			strcat_s(PATH, PATH_LEN, path_table);
 
-			psd.num_files = open_altsound_table(PATH, &psd);
+			c = csv_open(PATH, ',');
+
+			if (c) {
+				int colID,colCHANNEL,colDUCK,colGAIN,colLOOP,colSTOP,colFNAME;
+				csv_read_header(c);
+				LOG(("n_headers: %d\n", c->n_header_fields));
+				colID = csv_get_colnumber_for_field(c, "ID");
+				colCHANNEL = csv_get_colnumber_for_field(c, "CHANNEL");
+				colDUCK = csv_get_colnumber_for_field(c, "DUCK");
+				colGAIN = csv_get_colnumber_for_field(c, "GAIN");
+				colLOOP = csv_get_colnumber_for_field(c, "LOOP");
+				colSTOP = csv_get_colnumber_for_field(c, "STOP");
+				colFNAME = csv_get_colnumber_for_field(c, "FNAME");
+
+				long pos = ftell(c->f);
+
+				while (csv_read_record(c) == 0) {
+					int val;
+					csv_get_hex_field(c, colID, &val);
+					csv_get_int_field(c, colCHANNEL, &val);
+					csv_get_int_field(c, colDUCK, &val);
+					csv_get_int_field(c, colGAIN, &val);
+					csv_get_int_field(c, colLOOP, &val);
+					csv_get_int_field(c, colSTOP, &val);
+					psd.num_files++;
+				}
+
+				if (psd.num_files > 0)
+				{
+					psd.ID = (int*)malloc(psd.num_files*sizeof(int));
+					psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
+					psd.channel = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.gain = (float*)malloc(psd.num_files*sizeof(float));
+					psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
+					psd.loop = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.stop = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
+				}
+				else
+					psd.files_with_subpath = NULL;
+
+				fseek(c->f, pos, SEEK_SET);
+
+				for (i = 0; i < psd.num_files; ++i) {
+					char* filePath;
+					char* tmpPath;
+
+					int val = 0;
+					csv_read_record(c);
+					csv_get_hex_field(c, colID, &val);
+					psd.ID[i] = val;
+					val = 0;
+					if (csv_get_int_field(c, colCHANNEL, &val))
+						psd.channel[i] = -1;
+					else
+						psd.channel[i] = val;
+					val = 0;
+					csv_get_int_field(c, colDUCK, &val);
+					psd.ducking[i] = min(val, (int)100);
+					val = 0;
+					csv_get_int_field(c, colGAIN, &val);
+					psd.gain[i] = val / 100.f;
+					val = 0;
+					csv_get_int_field(c, colLOOP, &val);
+					psd.loop[i] = val;
+					val = 0;
+					csv_get_int_field(c, colSTOP, &val);
+					psd.stop[i] = val;
+
+					tmpPath = (char*)malloc(4096);
+					filePath = (char*)malloc(4096);
+					strcpy_s(filePath, 4096, cvpmd);
+					strcat_s(filePath, 4096, path_main);
+					strcat_s(filePath, 4096, Machine->gamedrv->name);
+					strcat_s(filePath, 4096, "\\");
+					strcat_s(filePath, 4096, c->fields[colFNAME]);
+					GetFullPathName(filePath, 4096, tmpPath, NULL);
+					psd.files_with_subpath[i] = (char*)malloc(strlen(tmpPath)+1);
+					strcpy(psd.files_with_subpath[i], tmpPath);
+					free(tmpPath);
+					free(filePath);
+					LOG(("ID = %d, ", psd.ID[i])); LOG(("CHANNEL = %d, ", psd.channel[i])); LOG(("DUCK = %d, ", psd.ducking[i])); LOG(("GAIN = %.2f, ", psd.gain[i])); LOG(("LOOP = %d, ", psd.loop[i])); LOG(("STOP = %d, ", psd.stop[i])); LOG(("FNAME = '%s'\n", psd.files_with_subpath[i]));
+				}
+
+				csv_close(c);
+				LOG(("found %d samples\n ", psd.num_files));
+			}
 
 			free(PATH);
 
@@ -239,9 +381,13 @@ void alt_sound_handle(int boardNo, int cmd)
 
 				if (psd.num_files > 0)
 				{
+					psd.ID = (int*)malloc(psd.num_files*sizeof(int));
 					psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
+					psd.channel = (signed char*)malloc(psd.num_files*sizeof(signed char));
 					psd.gain = (float*)malloc(psd.num_files*sizeof(float));
 					psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
+					psd.loop = (unsigned char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.stop = (unsigned char*)malloc(psd.num_files*sizeof(unsigned char));
 					psd.num_files = 0;
 				}
 				else
@@ -254,7 +400,18 @@ void alt_sound_handle(int boardNo, int cmd)
 					char* PATH = (char*)malloc(PATHl);
 					DIR *dir;
 					unsigned int default_gain = 10;
-					int default_ducking = -1; //!! default depends on type??
+					int default_ducking = 100; //!! default depends on type??
+
+					if (subpath == path_jingle || subpath == path_single) {
+						default_ducking = 10;
+					}
+					if (subpath == path_sfx) {
+						default_ducking = 80;
+					}
+					if (subpath == path_voice) {
+						default_ducking = 65;
+					}
+
 					struct dirent *entry;
 
 					strcpy_s(PATH, PATHl, cvpmd);
@@ -332,22 +489,22 @@ void alt_sound_handle(int boardNo, int cmd)
 								}
 								free(PATHG);
 							}
-						  {
-							  const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
-							  char* PATHG = (char*)malloc(PATHGl);
-							  FILE *f;
+							{
+								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
+								char* PATHG = (char*)malloc(PATHGl);
+								FILE *f;
 
-							  strcpy_s(PATHG, PATHGl, PATH2);
-							  strcat_s(PATHG, PATHGl, "\\");
-							  strcat_s(PATHG, PATHGl, "ducking.txt");
-							  f = fopen(PATHG, "r");
-							  if (f)
-							  {
-								  fscanf(f, "%d", &ducking);
-								  fclose(f);
-							  }
-							  free(PATHG);
-						  }
+								strcpy_s(PATHG, PATHGl, PATH2);
+								strcat_s(PATHG, PATHGl, "\\");
+								strcat_s(PATHG, PATHGl, "ducking.txt");
+								f = fopen(PATHG, "r");
+								if (f)
+								{
+									fscanf(f, "%d", &ducking);
+									fclose(f);
+								}
+								free(PATHG);
+							}
 
 						  dir2 = opendir(PATH2);
 						  entry2 = readdir(dir2);
@@ -356,15 +513,39 @@ void alt_sound_handle(int boardNo, int cmd)
 							  if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
 							  {
 								  const unsigned int PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
+								  char* const ptr = strrchr(PATH2, '\\');
+								  char id[7] = { 0, 0, 0, 0, 0, 0, 0 };
 
 								  psd.files_with_subpath[psd.num_files] = (char*)malloc(PATH3l);
 								  strcpy_s(psd.files_with_subpath[psd.num_files], PATH3l, PATH2);
 								  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, "\\");
 								  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, entry2->d_name);
 
+								  memcpy(id, ptr + 1, 6);
+								  sscanf(id, "%6d", &psd.ID[psd.num_files]);
+
 								  psd.gain[psd.num_files] = alt_sound_gain(gain);
 								  psd.ducking[psd.num_files] = min(ducking, (int)100);
 
+								  if (subpath == path_music) {
+									  psd.channel[psd.num_files] = 0;
+									  psd.loop[psd.num_files] = 100;
+									  psd.stop[psd.num_files] = 0;
+								  }
+
+								  if (subpath == path_jingle || subpath == path_single) {
+									  psd.channel[psd.num_files] = 1;
+									  psd.loop[psd.num_files] = 0;
+									  psd.stop[psd.num_files] = (subpath[psd.num_files] == path_single) ? 1 : 0;
+								  }
+
+								  if (subpath == path_sfx || subpath == path_voice) {
+									  psd.channel[psd.num_files] = -1;
+									  psd.loop[psd.num_files] = 0;
+									  psd.stop[psd.num_files] = 0;
+								  }
+
+								  LOG(("ID = %d, ", psd.ID[psd.num_files])); LOG(("CHANNEL = %d, ", psd.channel[psd.num_files])); LOG(("DUCK = %d, ", psd.ducking[psd.num_files])); LOG(("GAIN = %.2f, ", psd.gain[psd.num_files])); LOG(("LOOP = %d, ", psd.loop[psd.num_files])); LOG(("STOP = %d, ", psd.stop[psd.num_files])); LOG(("FNAME = '%s'\n", psd.files_with_subpath[psd.num_files]));
 								  psd.num_files++;
 							  }
 							  entry2 = readdir(dir2);
@@ -380,13 +561,8 @@ void alt_sound_handle(int boardNo, int cmd)
 					closedir(dir);
 					free(PATH);
 				}
+				LOG(("found %d samples\n ", psd.num_files));
 			}
-#ifdef ALT_LOG
-			FILE* f = fopen("C:\\Pinmame\\altsound_files.txt", "a");
-			for (unsigned int i = 0; i < psd.num_files; ++i)
-			    fprintf(f, "%s\n", psd.files_with_subpath[i]);
-			fclose(f);
-#endif
 
 			//
 			dir = opendir(cwd);
@@ -413,6 +589,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			else
 				cmd_storage = 0;
 		}
+		// end of load sample information and init
 
 		if (psd.num_files > 0)
 		{
@@ -429,10 +606,6 @@ void alt_sound_handle(int boardNo, int cmd)
 				cmd_buffer[i] = cmd_buffer[i - 1];
 			cmd_buffer[0] = cmd;
 
-#ifdef ALT_LOG
-			FILE* f = fopen("C:\\Pinmame\\altsound_commands.txt", "a");
-#endif
-
 			if ((core_gameData->gen == GEN_WPCDCS) ||
 				(core_gameData->gen == GEN_WPCSECURITY) ||
 				(core_gameData->gen == GEN_WPC95DCS) ||
@@ -445,16 +618,14 @@ void alt_sound_handle(int boardNo, int cmd)
 					if ((cmd_buffer[3] == 0x55) && (cmd_buffer[2] == 0xAA) && (cmd_buffer[1] == (cmd_buffer[0]^0xFF))) // change volume op (following first byte = volume, second = ~volume, if these don't match: ignore)
 					{
 						global_vol = min((float)cmd_buffer[1] / 127.f, 1.0f);
-						if (music_stream != 0)
-							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, music_vol * global_vol * master_vol);
-#ifdef ALT_LOG
-						fprintf(f, "change volume %.2f\n", global_vol);
-#endif
+						if (channel_0 != 0)
+							BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, channel_0_vol * global_vol * master_vol);
+
+						LOG(("change volume %.2f\n", global_vol));
 					}
-#ifdef ALT_LOG
 					else
-						fprintf(f, "filtered command %02X %02X %02X %02X\n", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]);
-#endif
+						LOG(("filtered command %02X %02X %02X %02X\n", cmd_buffer[3], cmd_buffer[2], cmd_buffer[1], cmd_buffer[0]));
+
 					for (i = 0; i < ALT_MAX_CMDS; ++i)
 						cmd_buffer[i] = ~0;
 
@@ -524,10 +695,9 @@ void alt_sound_handle(int boardNo, int cmd)
 				unsigned int cmd_combined = (cmd_storage << 8) | cmd;
 
 				unsigned int idx = -1;
-				char cmd_str[9];
-				sprintf(cmd_str, "\\%06u-", cmd_combined);
+
 				for (i = 0; i < psd.num_files; ++i)
-					if (strstr(psd.files_with_subpath[i], cmd_str) != 0)
+					if (psd.ID[i] == cmd_combined)
 					{
 						// check if more samples are there for this command and randomly pick one
 						unsigned int rnd = 0;
@@ -536,7 +706,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							rnd++;
 							if (i + rnd >= psd.num_files)
 								break;
-						} while (strstr(psd.files_with_subpath[i + rnd], cmd_str) != 0);
+						} while (psd.ID[i+rnd] == cmd_combined);
 
 						idx = i + rand() % rnd;
 						break;
@@ -544,143 +714,146 @@ void alt_sound_handle(int boardNo, int cmd)
 
 				if (idx != -1)
 				{
-					if ((strstr(psd.files_with_subpath[idx], path_jingle) != 0) || (strstr(psd.files_with_subpath[idx], path_single) != 0))
+					// play jingle or single
+					if (psd.channel[idx] == 1)
 					{
-#ifdef ALT_LOG
-						if ((strstr(psd.files_with_subpath[idx], path_jingle) != 0))
-							fprintf(f, "%04X %s jingle %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
-						else
-							fprintf(f, "%04X %s single %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
-#endif
-						//
+						channel_1_ducking = 100;
 
-						jingle_ducking = -1;
-
-						if (music_stream != 0)
+						if (channel_0 != 0)
 						{
-							if (strstr(psd.files_with_subpath[idx], path_jingle) != 0)
+							if (psd.stop[idx] == 0)
 							{
 								if (psd.ducking[idx] < 0)
-									BASS_ChannelPause(music_stream);
+									BASS_ChannelPause(channel_0);
 								else
-									jingle_ducking = psd.ducking[idx];
+									channel_1_ducking = psd.ducking[idx];
 							}
 							else
 							{
-								BASS_ChannelStop(music_stream);
-								BASS_StreamFree(music_stream);
-								music_stream = 0;
-								music_vol = 1.0f;
+								BASS_ChannelStop(channel_0);
+								BASS_StreamFree(channel_0);
+								channel_0 = 0;
+								channel_0_vol = 1.0f;
 							}
 						}
 
 						//
 
-						if (jingle_stream != 0)
+						if (channel_1 != 0)
 						{
-							BASS_ChannelStop(jingle_stream);
-							BASS_StreamFree(jingle_stream);
-							jingle_stream = 0;
+							BASS_ChannelStop(channel_1);
+							BASS_StreamFree(channel_1);
+							channel_1 = 0;
 						}
 
-						jingle_stream = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, 0);
-						if (jingle_stream == 0)
+						channel_1 = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, (psd.loop[idx] == 100) ? BASS_SAMPLE_LOOP : 0);
+
+						if (channel_1 == 0)
 						{
-							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
+							LOG(("BASS music/sound library cannot load %s\n", psd.files_with_subpath[idx]));
 						}
 						else
 						{
-							BASS_ChannelSetAttribute(jingle_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
-
-							BASS_ChannelPlay(jingle_stream, 0);
+							BASS_ChannelSetAttribute(channel_1, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
+							BASS_ChannelSetSync(channel_1, BASS_SYNC_END | BASS_SYNC_ONETIME, 0, ducking_callback, 0);
+							LOG(("playing CH1: cmd %04X gain %.2f duck %d %s\n", cmd_combined, psd.gain[idx], psd.ducking[idx], psd.files_with_subpath[idx]));
+							BASS_ChannelPlay(channel_1, 0);
+							if (psd.ducking[idx] > 0 && psd.ducking[idx] < min_ducking) {
+								float new_val;
+								min_ducking = psd.ducking[idx];
+								new_val = channel_0_vol*(float)((double)psd.ducking[idx] / 100.);
+								if (channel_0_vol != new_val)
+									BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, new_val);
+							}
 						}
 					}
 
-					if (strstr(psd.files_with_subpath[idx], path_music) != 0)
+					// play music 
+					if (psd.channel[idx] == 0)
 					{
-#ifdef ALT_LOG
-						fprintf(f, "%04X %s music %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
-#endif
-						//
-
-						if (music_stream != 0)
+						if (channel_0 != 0)
 						{
-							BASS_ChannelStop(music_stream);
-							BASS_StreamFree(music_stream);
-							music_stream = 0;
-							music_vol = 1.0f;
+							BASS_ChannelStop(channel_0);
+							BASS_StreamFree(channel_0);
+							channel_0 = 0;
+							channel_0_vol = 1.0f;
 						}
 
-						music_stream = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, BASS_SAMPLE_LOOP);
-						if (music_stream == 0)
+						channel_0 = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, (psd.loop[idx] == 100) ? BASS_SAMPLE_LOOP : 0);
+
+						if (channel_0 == 0)
 						{
-							//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
+							LOG(("BASS music/sound library cannot load %s\n", psd.files_with_subpath[idx]));
 						}
 						else
 						{
-							music_vol = psd.gain[idx];
-							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
-
-							BASS_ChannelPlay(music_stream, 0);
+							channel_0_vol = psd.gain[idx];
+							BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
+							LOG(("playing CH0: cmd %04X gain %.2f duck %d %s\n", cmd_combined, psd.gain[idx], psd.ducking[idx], psd.files_with_subpath[idx]));
+							BASS_ChannelPlay(channel_0, 0);
 						}
 					}
 
-					if ((strstr(psd.files_with_subpath[idx], path_voice) != 0) || (strstr(psd.files_with_subpath[idx], path_sfx) != 0))
+					// play voice or sfx
+					if (psd.channel[idx] == -1)
 					{
-#ifdef ALT_LOG
-						if (strstr(psd.files_with_subpath[idx], path_voice) != 0)
-							fprintf(f, "%04X %s voice %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
-						else
-							fprintf(f, "%04X %s sfx %.2f %u\n", cmd_combined, psd.files_with_subpath[idx], psd.gain[idx], psd.ducking[idx]);
-#endif
-						//
-
-						unsigned int voice_idx = -1;
-						for (i = 0; i < ALT_MAX_VOICES; ++i)
-							if (voice_stream[i] == 0 || BASS_ChannelIsActive(voice_stream[i]) != BASS_ACTIVE_PLAYING)
+						unsigned int channel_x_idx = -1;
+						for (i = 0; i < ALT_MAX_CHANNELS; ++i)
+							if (channel_x[i] == 0 || BASS_ChannelIsActive(channel_x[i]) != BASS_ACTIVE_PLAYING)
 							{
-								if (voice_stream[i] != 0)
+								if (channel_x[i] != 0)
 								{
-									BASS_StreamFree(voice_stream[i]);
-									voice_stream[i] = 0;
+									BASS_StreamFree(channel_x[i]);
+									channel_x[i] = 0;
 								}
 
-								voice_idx = i;
+								channel_x_idx = i;
 								break;
 							}
 
-						/*if (voice_idx == -1) //!! kill off the longest playing channel as f.e. LAH has helicopter sound that isn't stopped it seems!
+						/*if (channel_x_idx == -1) //!! kill off the longest playing channel as f.e. LAH has helicopter sound that isn't stopped it seems!
 						{
 							double max_pos = 0;
-							for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i)
+							unsigned int i;
+							for (i = 0; i < ALT_MAX_CHANNELS; ++i)
 							{
-								const double pos = BASS_ChannelBytes2Seconds(voice_stream[voice_idx], BASS_ChannelGetPosition(voice_stream[voice_idx], BASS_POS_BYTE));
+								const double pos = BASS_ChannelBytes2Seconds(channel_x[channel_x_idx], BASS_ChannelGetPosition(channel_x[channel_x_idx], BASS_POS_BYTE));
 								if (pos > max_pos)
 								{
 									max_pos = pos;
-									voice_idx = i;
+									channel_x_idx = i;
 								}
 							}
 
-							BASS_ChannelStop(voice_stream[voice_idx]);
-							BASS_StreamFree(voice_stream[voice_idx]);
-							voice_stream[voice_idx] = 0;
+							BASS_ChannelStop(channel_x[channel_x_idx]);
+							BASS_StreamFree(channel_x[channel_x_idx]);
+							channel_x[channel_x_idx] = 0;
 						}*/
 
-						if (voice_idx != -1)
+						if (channel_x_idx != -1)
 						{
-							voice_ducking[voice_idx] = psd.ducking[idx];
+							channel_x_ducking[channel_x_idx] = psd.ducking[idx];
 
-							voice_stream[voice_idx] = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, 0);
-							if (voice_stream[voice_idx] == 0)
+							channel_x[channel_x_idx] = BASS_StreamCreateFile(FALSE, psd.files_with_subpath[idx], 0, 0, (psd.loop[idx] == 100) ? BASS_SAMPLE_LOOP : 0);
+
+							if (channel_x[channel_x_idx] == 0)
 							{
-								//sprintf_s(bla, "BASS music/sound library cannot load %s", psd.files_with_subpath[idx]);
+								LOG(("BASS music/sound library cannot load %s\n", psd.files_with_subpath[idx]));
 							}
 							else
 							{
-								BASS_ChannelSetAttribute(voice_stream[voice_idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
+								BASS_ChannelSetAttribute(channel_x[channel_x_idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
+								BASS_ChannelSetSync(channel_x[channel_x_idx], BASS_SYNC_END | BASS_SYNC_ONETIME, 0, ducking_callback, channel_x_idx);
+								LOG(("playing CHX: cmd %04X gain %.2f duck %d %s\n", cmd_combined, psd.gain[idx], psd.ducking[idx], psd.files_with_subpath[idx]));
+								BASS_ChannelPlay(channel_x[channel_x_idx], 0);
+							}
 
-								BASS_ChannelPlay(voice_stream[voice_idx], 0);
+							if (psd.ducking[idx] > 0 && psd.ducking[idx] < min_ducking){
+								float new_val;
+								min_ducking = psd.ducking[idx];
+								new_val = channel_0_vol*(float)((double)psd.ducking[idx] / 100.);
+								if (channel_0_vol != new_val)
+									BASS_ChannelSetAttribute(channel_0, BASS_ATTRIB_VOL, new_val);
 							}
 						}
 					}
@@ -689,21 +862,20 @@ void alt_sound_handle(int boardNo, int cmd)
 				//!! gain=10 is normallevel not gain=20 (but then it would also be clipped, so meh)
 
 				{
-#ifdef ALT_LOG
 					if (idx == -1)
-						fprintf(f, "%04X unknown %u\n", cmd_combined, boardNo);
-#endif
+						LOG(("%04X unknown %u\n", cmd_combined, boardNo));
+
 					if ((core_gameData->gen == GEN_WPCDCS) ||
 						(core_gameData->gen == GEN_WPCSECURITY) ||
 						(core_gameData->gen == GEN_WPC95DCS) ||
 						(core_gameData->gen == GEN_WPC95))
 					{
-						if (cmd_combined == 0x03E3 && music_stream != 0) // stop music
+						if (cmd_combined == 0x03E3 && channel_0 != 0) // stop music
 						{
-							BASS_ChannelStop(music_stream);
-							BASS_StreamFree(music_stream);
-							music_stream = 0;
-							music_vol = 1.0f;
+							BASS_ChannelStop(channel_0);
+							BASS_StreamFree(channel_0);
+							channel_0 = 0;
+							channel_0_vol = 1.0f;
 						}
 					}
 
@@ -711,58 +883,15 @@ void alt_sound_handle(int boardNo, int cmd)
 
 					if (core_gameData->gen == GEN_DEDMD32)
 					{
-						if ((cmd_combined == 0x0018 || cmd_combined == 0x0023) && music_stream != 0) // stop music //!! ???? 0x0019??
+						if ((cmd_combined == 0x0018 || cmd_combined == 0x0023) && channel_0 != 0) // stop music //!! ???? 0x0019??
 						{
-							BASS_ChannelStop(music_stream);
-							BASS_StreamFree(music_stream);
-							music_stream = 0;
-							music_vol = 1.0f;
+							BASS_ChannelStop(channel_0);
+							BASS_StreamFree(channel_0);
+							channel_0 = 0;
+							channel_0_vol = 1.0f;
 						}
 					}
-
-					//
-					//
-					//
-
-					for (i = 0; i < ALT_MAX_VOICES; ++i) // clean up already finished voices
-						if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) != BASS_ACTIVE_PLAYING)
-						{
-							BASS_StreamFree(voice_stream[i]);
-							voice_stream[i] = 0;
-							voice_ducking[i] = -1;
-						}
-
-					// if jingle stopped, continue with music
-					if (jingle_stream != 0 && BASS_ChannelIsActive(jingle_stream) != BASS_ACTIVE_PLAYING)
-					{
-						BASS_StreamFree(jingle_stream);
-						jingle_stream = 0;
-						jingle_ducking = -1;
-
-						if (music_stream != 0)
-							BASS_ChannelPlay(music_stream, 0);
-					}
-
-#if 0 // needs callback/timer to function properly!
-					if (music_stream != 0)
-					{
-						signed char min_ducking = 100;
-						if (jingle_stream != 0 && jingle_ducking >= 0 && jingle_ducking < min_ducking)
-							min_ducking = jingle_ducking;
-						for (unsigned int i = 0; i < ALT_MAX_VOICES; ++i)
-							if (voice_stream != 0 && voice_ducking[i] >= 0 && voice_ducking[i] < min_ducking)
-								min_ducking = voice_ducking[i];
-
-						float new_val = music_vol*((double)min_ducking / 100.);
-						if (music_vol != new_val)
-							BASS_ChannelSetAttribute(music_stream, BASS_ATTRIB_VOL, new_val);
-					}
-#endif
 				}
-
-#ifdef ALT_LOG
-				fclose(f);
-#endif
 			}
 			else
 				cmd_storage = cmd;
@@ -784,27 +913,27 @@ void alt_sound_pause(BOOL pause)
 	unsigned int i;
 	if (pause)
 	{
-		for (i = 0; i < ALT_MAX_VOICES; ++i)
-			if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) == BASS_ACTIVE_PLAYING)
-				BASS_ChannelPause(voice_stream[i]);
+		for (i = 0; i < ALT_MAX_CHANNELS; ++i)
+			if (channel_x[i] != 0 && BASS_ChannelIsActive(channel_x[i]) == BASS_ACTIVE_PLAYING)
+				BASS_ChannelPause(channel_x[i]);
 
-		if (jingle_stream != 0 && BASS_ChannelIsActive(jingle_stream) == BASS_ACTIVE_PLAYING)
-			BASS_ChannelPause(jingle_stream);
+		if (channel_1 != 0 && BASS_ChannelIsActive(channel_1) == BASS_ACTIVE_PLAYING)
+			BASS_ChannelPause(channel_1);
 
-		if (music_stream != 0 && BASS_ChannelIsActive(music_stream) == BASS_ACTIVE_PLAYING)
-			BASS_ChannelPause(music_stream);
+		if (channel_0 != 0 && BASS_ChannelIsActive(channel_0) == BASS_ACTIVE_PLAYING)
+			BASS_ChannelPause(channel_0);
 	}
 	else
 	{
-		for (i = 0; i < ALT_MAX_VOICES; ++i)
-			if (voice_stream[i] != 0 && BASS_ChannelIsActive(voice_stream[i]) == BASS_ACTIVE_PAUSED)
-				BASS_ChannelPlay(voice_stream[i],0);
+		for (i = 0; i < ALT_MAX_CHANNELS; ++i)
+			if (channel_x[i] != 0 && BASS_ChannelIsActive(channel_x[i]) == BASS_ACTIVE_PAUSED)
+				BASS_ChannelPlay(channel_x[i],0);
 
-		if (jingle_stream != 0 && BASS_ChannelIsActive(jingle_stream) == BASS_ACTIVE_PAUSED)
-			BASS_ChannelPlay(jingle_stream,0);
+		if (channel_1 != 0 && BASS_ChannelIsActive(channel_1) == BASS_ACTIVE_PAUSED)
+			BASS_ChannelPlay(channel_1,0);
 
-		if (music_stream != 0 && BASS_ChannelIsActive(music_stream) == BASS_ACTIVE_PAUSED)
-			BASS_ChannelPlay(music_stream,0);
+		if (channel_0 != 0 && BASS_ChannelIsActive(channel_0) == BASS_ACTIVE_PAUSED)
+			BASS_ChannelPlay(channel_0,0);
 	}
 }
 
@@ -815,7 +944,7 @@ void alt_sound_pause(BOOL pause)
 /**
 * init struct and open file
 */
-static CsvReader* csv_open(const char* filename, const int delimiter) {
+static CsvReader* csv_open(const char* const filename, const int delimiter) {
 	CsvReader* const c = malloc(sizeof(CsvReader));
 	c->f = fopen(filename, "r");
 	if (c->f == NULL) {
@@ -877,9 +1006,11 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 	while (*p) {
 		// realloc field array
 		if (field_number == capacity) {
+			int i;
 			int size = (capacity + 10)*sizeof(char*);
 			fields = capacity == 0 ? malloc(size) : realloc(fields, size);
 			capacity += 10;
+			for (i = field_number; i<capacity; i++) fields[i] = NULL;
 		}
 		// allocate field
 		if (allocField) {
@@ -1053,51 +1184,3 @@ static int csv_read_record(CsvReader* const c) {
 	return 0;
 }
 
-static int open_altsound_table(char* const filename, Pin_samples* const psd) {
-	CsvReader* const c = csv_open(filename, ',');
-	if (c) {
-		int i;
-		csv_read_header(c);
-		LOG(("n_headers: %d\n", c->n_header_fields));
-		for (i = 0; i< c->n_header_fields; i++) {
-			LOG(("header[%d]: '%s'\n", i, c->header_fields[i]));
-		}
-		{
-		int colID = csv_get_colnumber_for_field(c, "ID");
-		int colBACKGND = csv_get_colnumber_for_field(c, "BACKGND");
-		int colDUCK = csv_get_colnumber_for_field(c, "DUCK");
-		int colGAIN = csv_get_colnumber_for_field(c, "GAIN");
-		int colLOOP = csv_get_colnumber_for_field(c, "LOOP");
-		int colSTOP = csv_get_colnumber_for_field(c, "STOP");
-		int colFNAME = csv_get_colnumber_for_field(c, "FNAME");
-
-		int row = 0;
-		while (csv_read_record(c) == 0) {
-			int val = 0;
-			csv_get_hex_field(c, colID, &val);
-			LOG(("ID = %d, ", val));
-			val = 0;
-			csv_get_int_field(c, colBACKGND, &val);
-			LOG(("BACKGND = %d, ", val));
-			val = 0;
-			csv_get_int_field(c, colDUCK, &val);
-			LOG(("DUCK = %d, ", val));
-			val = 0;
-			csv_get_int_field(c, colGAIN, &val);
-			LOG(("GAIN = %d, ", val));
-			val = 0;
-			csv_get_int_field(c, colLOOP, &val);
-			LOG(("LOOP = %d, ", val));
-			val = 0;
-			csv_get_int_field(c, colSTOP, &val);
-			LOG(("STOP = %d, ", val));
-			LOG(("FNAME = '%s'\n", c->fields[colFNAME]));
-			row++;
-		}
-		}
-
-		csv_close(c);
-		return row;
-	}
-	return 0;
-}
