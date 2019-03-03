@@ -4,12 +4,41 @@
 
 //#define ALT_LOG
 
-struct pin_samples { // holds data for all sound files found
+#define VERBOSE 0
+
+#if VERBOSE
+ #define LOG(x) logerror x
+#else
+ #define LOG(x)
+#endif
+
+
+typedef struct pin_samples { // holds data for all sound files found
 	char ** files_with_subpath;
 	float * gain;
 	signed char * ducking;
 	unsigned int num_files;
-};
+} Pin_samples;
+
+
+typedef struct _csvreader { // to read the data via a csv file
+	FILE* f;
+	int delimiter;
+	int n_header_fields;
+	char** header_fields;	// header split in fields
+	int n_fields;
+	char** fields;			// current row split in fields
+} CsvReader;
+
+#define CSV_MAX_LINE_LENGTH 512
+#define CSV_SUCCESS 0
+#define CSV_ERROR_NO_SUCH_FIELD -1
+#define CSV_ERROR_HEADER_NOT_FOUND -2
+#define CSV_ERROR_NO_MORE_RECORDS -3
+#define CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE -4
+#define CSV_ERROR_FILE_NOT_FOUND -5
+#define CSV_ERROR_LINE_FORMAT -6
+
 
 const char* path_main = "\\altsound\\";
 const char* path_jingle = "jingle\\";
@@ -17,6 +46,9 @@ const char* path_music = "music\\";
 const char* path_sfx = "sfx\\";
 const char* path_single = "single\\";
 const char* path_voice = "voice\\";
+
+const char* path_table = "\\altsound.csv";
+
 
 static char* cached_machine_name = 0;
 
@@ -35,6 +67,8 @@ static HSTREAM music_stream = 0;
 #define ALT_MAX_VOICES 16
 static HSTREAM voice_stream[ALT_MAX_VOICES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // includes sfx_stream (or must this be separated to only have 2 channels for sfx?)
 
+int open_altsound_table(char* filename, Pin_samples* psd);
+
 void alt_sound_handle(int boardNo, int cmd)
 {
 	if (TRUE) //!! only do search for dir as soon as sound is disabled? or even additional flag/interface call?
@@ -46,7 +80,7 @@ void alt_sound_handle(int boardNo, int cmd)
 #define ALT_MAX_CMDS 4
 		static unsigned int cmd_buffer[ALT_MAX_CMDS] = { ~0, ~0, ~0, ~0 };
 
-		static struct pin_samples psd;
+		static Pin_samples psd;
 
 		static float global_vol = 1.0f;
 		static float music_vol = 1.0f;
@@ -132,207 +166,221 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			psd.num_files = 0;
 
-			for (i = 0; i < 5; ++i)
-			{
-				const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
+			// try to load altsound lookup table/csv if available
+			const unsigned int PATH_LEN = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(path_table) + 1;
+			char* PATH = (char*)malloc(PATH_LEN);
+			strcpy_s(PATH, PATH_LEN, cvpmd);
+			strcat_s(PATH, PATH_LEN, path_main);
+			strcat_s(PATH, PATH_LEN, Machine->gamedrv->name);
+			strcat_s(PATH, PATH_LEN, path_table);
 
-				const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
-				char* PATH = (char*)malloc(PATHl);
-				DIR *dir;
-				struct dirent *entry;
+			psd.num_files = open_altsound_table(PATH, &psd);
 
-				strcpy_s(PATH, PATHl, cvpmd);
-				strcat_s(PATH, PATHl, path_main);
-				strcat_s(PATH, PATHl, Machine->gamedrv->name);
-				strcat_s(PATH, PATHl, "\\");
-				strcat_s(PATH, PATHl, subpath);
+			free(PATH);
 
-				dir = opendir(PATH);
-				if (!dir)
+			// OTHERWISE scan folders for old folder-based structure of the alternate sound package
+			if (psd.num_files == 0) { 
+				for (i = 0; i < 5; ++i)
 				{
-					free(PATH);
-					continue;
-				}
+					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 
-				entry = readdir(dir);
-				while (entry != NULL)
-				{
-					if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
+					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
+					PATH = (char*)malloc(PATHl);
+					DIR *dir;
+					struct dirent *entry;
+
+					strcpy_s(PATH, PATHl, cvpmd);
+					strcat_s(PATH, PATHl, path_main);
+					strcat_s(PATH, PATHl, Machine->gamedrv->name);
+					strcat_s(PATH, PATHl, "\\");
+					strcat_s(PATH, PATHl, subpath);
+
+					dir = opendir(PATH);
+					if (!dir)
 					{
-						DIR backup_dir = *dir;
-						DIR *dir2;
-						struct dirent backup_entry = *entry;
-						struct dirent *entry2;
-
-						const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
-						char* PATH2 = (char*)malloc(PATH2l);
-						strcpy_s(PATH2, PATH2l, PATH);
-						strcat_s(PATH2, PATH2l, entry->d_name);
-
-						dir2 = opendir(PATH2);
-						entry2 = readdir(dir2);
-						while (entry2 != NULL)
-						{
-							if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
-								psd.num_files++;
-							entry2 = readdir(dir2);
-						}
-						closedir(dir2);
-						free(PATH2);
-
-						*dir = backup_dir;
-						*entry = backup_entry;
+						free(PATH);
+						continue;
 					}
+
 					entry = readdir(dir);
-				}
-				closedir(dir);
-				free(PATH);
-			}
+					while (entry != NULL)
+					{
+						if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
+						{
+							DIR backup_dir = *dir;
+							DIR *dir2;
+							struct dirent backup_entry = *entry;
+							struct dirent *entry2;
 
-			if (psd.num_files > 0)
-			{
-				psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
-				psd.gain = (float*)malloc(psd.num_files*sizeof(float));
-				psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
-				psd.num_files = 0;
-			}
-			else
-				psd.files_with_subpath = NULL;
+							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
+							char* PATH2 = (char*)malloc(PATH2l);
+							strcpy_s(PATH2, PATH2l, PATH);
+							strcat_s(PATH2, PATH2l, entry->d_name);
 
-			for (i = 0; i < 5; ++i)
-			{
-				const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
-				const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
-				char* PATH = (char*)malloc(PATHl);
-				DIR *dir;
-				unsigned int default_gain = 10;
-				int default_ducking = -1; //!! default depends on type??
-				struct dirent *entry;
+							dir2 = opendir(PATH2);
+							entry2 = readdir(dir2);
+							while (entry2 != NULL)
+							{
+								if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
+									psd.num_files++;
+								entry2 = readdir(dir2);
+							}
+							closedir(dir2);
+							free(PATH2);
 
-				strcpy_s(PATH, PATHl, cvpmd);
-				strcat_s(PATH, PATHl, path_main);
-				strcat_s(PATH, PATHl, Machine->gamedrv->name);
-				strcat_s(PATH, PATHl, "\\");
-				strcat_s(PATH, PATHl, subpath);
-
-				dir = opendir(PATH);
-				if (!dir)
-				{
+							*dir = backup_dir;
+							*entry = backup_entry;
+						}
+						entry = readdir(dir);
+					}
+					closedir(dir);
 					free(PATH);
-					continue;
 				}
+
+				if (psd.num_files > 0)
 				{
-					const unsigned int PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
-					char* PATHG = (char*)malloc(PATHGl);
-					FILE *f;
-					strcpy_s(PATHG, PATHGl, PATH);
-					strcat_s(PATHG, PATHGl, "gain.txt");
-					f = fopen(PATHG, "r");
-					if (f)
-					{
-						fscanf(f, "%u", &default_gain);
-						fclose(f);
-					}
-					free(PATHG);
+					psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
+					psd.gain = (float*)malloc(psd.num_files*sizeof(float));
+					psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
+					psd.num_files = 0;
 				}
+				else
+					psd.files_with_subpath = NULL;
+
+				for (i = 0; i < 5; ++i)
 				{
-					const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
-					char* PATHG = (char*)malloc(PATHGl);
-					FILE *f;
-					strcpy_s(PATHG, PATHGl, PATH);
-					strcat_s(PATHG, PATHGl, "ducking.txt");
-					f = fopen(PATHG, "r");
-					if (f)
+					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
+					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
+					char* PATH = (char*)malloc(PATHl);
+					DIR *dir;
+					unsigned int default_gain = 10;
+					int default_ducking = -1; //!! default depends on type??
+					struct dirent *entry;
+
+					strcpy_s(PATH, PATHl, cvpmd);
+					strcat_s(PATH, PATHl, path_main);
+					strcat_s(PATH, PATHl, Machine->gamedrv->name);
+					strcat_s(PATH, PATHl, "\\");
+					strcat_s(PATH, PATHl, subpath);
+
+					dir = opendir(PATH);
+					if (!dir)
 					{
-						fscanf(f, "%d", &default_ducking);
-						fclose(f);
+						free(PATH);
+						continue;
 					}
-					free(PATHG);
-				}
+					{
+						const unsigned int PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
+						char* PATHG = (char*)malloc(PATHGl);
+						FILE *f;
+						strcpy_s(PATHG, PATHGl, PATH);
+						strcat_s(PATHG, PATHGl, "gain.txt");
+						f = fopen(PATHG, "r");
+						if (f)
+						{
+							fscanf(f, "%u", &default_gain);
+							fclose(f);
+						}
+						free(PATHG);
+					}
+					{
+						const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
+						char* PATHG = (char*)malloc(PATHGl);
+						FILE *f;
+						strcpy_s(PATHG, PATHGl, PATH);
+						strcat_s(PATHG, PATHGl, "ducking.txt");
+						f = fopen(PATHG, "r");
+						if (f)
+						{
+							fscanf(f, "%d", &default_ducking);
+							fclose(f);
+						}
+						free(PATHG);
+					}
 
-			  entry = readdir(dir);
-			  while (entry != NULL)
-			  {
-				  if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
-				  {
-					  DIR backup_dir = *dir;
-					  struct dirent backup_entry = *entry;
+					entry = readdir(dir);
+					while (entry != NULL)
+					{
+						if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
+						{
+							DIR backup_dir = *dir;
+							struct dirent backup_entry = *entry;
 
-					  const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
-					  char* PATH2 = (char*)malloc(PATH2l);
-					  unsigned int gain = default_gain;
-					  int ducking = default_ducking;
-					  DIR *dir2;
-					  struct dirent *entry2;
+							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
+							char* PATH2 = (char*)malloc(PATH2l);
+							unsigned int gain = default_gain;
+							int ducking = default_ducking;
+							DIR *dir2;
+							struct dirent *entry2;
 
-					  strcpy_s(PATH2, PATH2l, PATH);
-					  strcat_s(PATH2, PATH2l, entry->d_name);
+							strcpy_s(PATH2, PATH2l, PATH);
+							strcat_s(PATH2, PATH2l, entry->d_name);
 
-					  {
-						  const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
-						  char* PATHG = (char*)malloc(PATHGl);
-						  FILE *f;
+							{
+								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
+								char* PATHG = (char*)malloc(PATHGl);
+								FILE *f;
 
-						  strcpy_s(PATHG, PATHGl, PATH2);
-						  strcat_s(PATHG, PATHGl, "\\");
-						  strcat_s(PATHG, PATHGl, "gain.txt");
-						  f = fopen(PATHG, "r");
-						  if (f)
+								strcpy_s(PATHG, PATHGl, PATH2);
+								strcat_s(PATHG, PATHGl, "\\");
+								strcat_s(PATHG, PATHGl, "gain.txt");
+								f = fopen(PATHG, "r");
+								if (f)
+								{
+									fscanf(f, "%u", &gain);
+									fclose(f);
+								}
+								free(PATHG);
+							}
 						  {
-							  fscanf(f, "%u", &gain);
-							  fclose(f);
+							  const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
+							  char* PATHG = (char*)malloc(PATHGl);
+							  FILE *f;
+
+							  strcpy_s(PATHG, PATHGl, PATH2);
+							  strcat_s(PATHG, PATHGl, "\\");
+							  strcat_s(PATHG, PATHGl, "ducking.txt");
+							  f = fopen(PATHG, "r");
+							  if (f)
+							  {
+								  fscanf(f, "%d", &ducking);
+								  fclose(f);
+							  }
+							  free(PATHG);
 						  }
-						  free(PATHG);
-					  }
-					  {
-						  const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
-						  char* PATHG = (char*)malloc(PATHGl);
-						  FILE *f;
 
-						  strcpy_s(PATHG, PATHGl, PATH2);
-						  strcat_s(PATHG, PATHGl, "\\");
-						  strcat_s(PATHG, PATHGl, "ducking.txt");
-						  f = fopen(PATHG, "r");
-						  if (f)
-						  {
-							  fscanf(f, "%d", &ducking);
-							  fclose(f);
-						  }
-						  free(PATHG);
-					  }
-
-					  dir2 = opendir(PATH2);
-					  entry2 = readdir(dir2);
-					  while (entry2 != NULL)
-					  {
-						  if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
-						  {
-							  const unsigned int PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
-
-							  psd.files_with_subpath[psd.num_files] = (char*)malloc(PATH3l);
-							  strcpy_s(psd.files_with_subpath[psd.num_files], PATH3l, PATH2);
-							  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, "\\");
-							  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, entry2->d_name);
-
-							  psd.gain[psd.num_files] = alt_sound_gain(gain);
-							  psd.ducking[psd.num_files] = min(ducking, (int)100);
-
-							  psd.num_files++;
-						  }
+						  dir2 = opendir(PATH2);
 						  entry2 = readdir(dir2);
-					  }
-					  closedir(dir2);
-					  free(PATH2);
+						  while (entry2 != NULL)
+						  {
+							  if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
+							  {
+								  const unsigned int PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
 
-					  *dir = backup_dir;
-					  *entry = backup_entry;
-				  }
-				  entry = readdir(dir);
-			  }
-			  closedir(dir);
-			  free(PATH);
+								  psd.files_with_subpath[psd.num_files] = (char*)malloc(PATH3l);
+								  strcpy_s(psd.files_with_subpath[psd.num_files], PATH3l, PATH2);
+								  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, "\\");
+								  strcat_s(psd.files_with_subpath[psd.num_files], PATH3l, entry2->d_name);
+
+								  psd.gain[psd.num_files] = alt_sound_gain(gain);
+								  psd.ducking[psd.num_files] = min(ducking, (int)100);
+
+								  psd.num_files++;
+							  }
+							  entry2 = readdir(dir2);
+						  }
+						  closedir(dir2);
+						  free(PATH2);
+
+						  *dir = backup_dir;
+						  *entry = backup_entry;
+						}
+						entry = readdir(dir);
+					}
+					closedir(dir);
+					free(PATH);
+				}
 			}
-
 #ifdef ALT_LOG
 			FILE* f = fopen("C:\\Pinmame\\altsound_files.txt", "a");
 			for (unsigned int i = 0; i < psd.num_files; ++i)
@@ -758,4 +806,298 @@ void alt_sound_pause(BOOL pause)
 		if (music_stream != 0 && BASS_ChannelIsActive(music_stream) == BASS_ACTIVE_PAUSED)
 			BASS_ChannelPlay(music_stream,0);
 	}
+}
+
+//
+// CSV parsing
+//
+
+/**
+* init struct and open file
+*/
+static CsvReader* csv_open(const char* filename, const int delimiter) {
+	CsvReader* const c = malloc(sizeof(CsvReader));
+	c->f = fopen(filename, "r");
+	if (c->f == NULL) {
+		free(c);
+		return NULL;
+	}
+
+	c->delimiter = delimiter;
+	c->n_header_fields = 0;
+	c->n_fields = 0;
+
+	return c;
+}
+
+/**
+* trim field buffer from end to start
+*/
+static void trim(const char* const start, char* end) {
+	while (end > start) {
+		end--;
+		if (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\n') {
+			*end = 0;
+		}
+		else {
+			break;
+		}
+	}
+}
+
+/* Get a line of text from a file, discarding any end-of-line characters */
+static int fgetline(char* const buff, const int nchars, FILE* const file)
+{
+	int length;
+
+	if (fgets(buff, nchars, file) == NULL)
+		return -1;
+	if (buff[0] == '\r')
+		memcpy(buff, buff + 1, nchars - 1);
+
+	length = strlen(buff);
+	while (length && (buff[length - 1] == '\r' || buff[length - 1] == '\n'))
+		length--;
+	buff[length] = 0;
+
+	return length;
+}
+
+static int parse_line(CsvReader* const c, char* line, const int header) {
+	char* p = line;
+	char* d, *f;
+	int capacity = 0;
+	int field_number = 0;
+	int enclosed_in_quotes = 0;
+	int escaped = 0;
+	int allocField = 1;
+	int justAfterDelim = 1; 		// if set skip whitespace
+	char** fields = header ? c->header_fields : c->fields;
+
+	while (*p) {
+		// realloc field array
+		if (field_number == capacity) {
+			int size = (capacity + 10)*sizeof(char*);
+			fields = capacity == 0 ? malloc(size) : realloc(fields, size);
+			capacity += 10;
+		}
+		// allocate field
+		if (allocField) {
+			allocField = 0;
+			fields[field_number] = strdup(p);
+			f = d = fields[field_number];
+		}
+		if (enclosed_in_quotes) {
+			if (*p == '"' && !escaped) {
+				enclosed_in_quotes = 0;
+			}
+			else if (*p == '\\' && !escaped) {
+				escaped = 1;
+			}
+			else {
+				if (justAfterDelim && (*p == ' ' || *p == '\t')) {
+					justAfterDelim = 0;
+				}
+				else {
+					*d++ = *p;	// copy char to target
+					escaped = 0;
+					justAfterDelim = 0;
+				}
+			}
+		}
+		else { // not in quotes
+			if (*p == '"' && !escaped) {
+				enclosed_in_quotes = 1;
+			}
+			else if (*p == c->delimiter && !escaped) {
+				// terminate current field
+				*d = 0;
+				trim(f, d);
+				// next field
+				field_number++;
+				allocField = 1;
+				justAfterDelim = 1;
+			}
+			else if (*p == '\\' && !escaped) {
+				escaped = 1;
+			}
+			else {
+				if (justAfterDelim && (*p == ' ' || *p == '\t')) {
+					justAfterDelim = 0;
+				}
+				else {
+					*d++ = *p;	// copy char to target
+					escaped = 0;
+					justAfterDelim = 0;
+				}
+			}
+		}
+
+		p++;
+	}
+
+	*d = 0;
+	trim(f, d);
+
+	if (enclosed_in_quotes) return CSV_ERROR_LINE_FORMAT; // quote still open
+	if (escaped) return CSV_ERROR_LINE_FORMAT; // esc still open
+
+	if (header) {
+		c->header_fields = fields;
+		c->n_header_fields = field_number + 1;
+	}
+	else {
+		c->fields = fields;
+		c->n_fields = field_number + 1;
+	}
+
+	return CSV_SUCCESS;
+}
+
+static int csv_read_header(CsvReader* const c) {
+	char* const buf = (char*)malloc(CSV_MAX_LINE_LENGTH);
+	size_t size = 0;
+	const int len = fgetline(buf, &size, c->f);
+	if (len < 0) {
+		if (buf) free(buf);
+		return CSV_ERROR_HEADER_NOT_FOUND;
+	}
+
+	// parse line and look for headers
+	parse_line(c, buf, 1);
+	if (buf) free(buf);
+
+	return 0;
+}
+
+static int csv_get_colnumber_for_field(CsvReader* c, const char* fieldname) {
+	int i;
+	for (i = 0; i < c->n_header_fields; i++) {
+		if (strcmp(c->header_fields[i], fieldname) == 0) return i;
+	}
+
+	return CSV_ERROR_NO_SUCH_FIELD;
+}
+
+static void free_record(CsvReader* const c) {
+	int i;
+	for (i = 0; i < c->n_fields; i++) {
+		free(c->fields[i]);
+	}
+	if (c->n_fields) free(c->fields);
+}
+
+static int csv_get_int_field(CsvReader* const c, const int field_index, int* pValue) {
+	if (field_index >= 0 && field_index < c->n_fields) {
+		if (sscanf(c->fields[field_index], "%d", pValue) == 1) return 0;
+		return CSV_ERROR_LINE_FORMAT;
+	}
+
+	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
+}
+
+static int csv_get_hex_field(CsvReader* const c, const int field_index, int* pValue) {
+	if (field_index >= 0 && field_index < c->n_fields) {
+		if (sscanf(c->fields[field_index], "0x%x", pValue) == 1) return 0;
+		return CSV_ERROR_LINE_FORMAT;
+	}
+
+	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
+}
+
+
+static int csv_get_float_field(CsvReader* const c, const int field_index, float* pValue) {
+	if (field_index >= 0 && field_index < c->n_fields) {
+		if (sscanf(c->fields[field_index], "%f", pValue) == 1) return 0;
+		return CSV_ERROR_LINE_FORMAT;
+	}
+
+	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
+}
+
+static int csv_get_str_field(CsvReader* const c, const int field_index, char** pValue) {
+	if (field_index >= 0 && field_index < c->n_fields) {
+		*pValue = c->fields[field_index];
+	}
+
+	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
+}
+
+static void csv_close(CsvReader* const c) {
+	if (c) {
+		int i;
+		free_record(c);
+		for (i = 0; i < c->n_header_fields; i++) {
+			if (c->header_fields[i]) free(c->header_fields[i]);
+		}
+		if (c->n_header_fields > 0) free(c->header_fields);
+		if (c->f) fclose(c->f);
+		free(c);
+	}
+}
+
+static int csv_read_record(CsvReader* const c) {
+	char* const buf = (char*)malloc(CSV_MAX_LINE_LENGTH);
+	size_t size = 0;
+	const int len = fgetline(buf, &size, c->f);
+	if (len < 0) {
+		if (buf) free(buf);
+		return CSV_ERROR_NO_MORE_RECORDS;
+	}
+
+	free_record(c);
+	// parse line and look for headers
+	parse_line(c, buf, 0);
+	if (buf) free(buf);
+
+	return 0;
+}
+
+static int open_altsound_table(char* const filename, Pin_samples* const psd) {
+	CsvReader* const c = csv_open(filename, ',');
+	if (c) {
+		int i;
+		csv_read_header(c);
+		LOG(("n_headers: %d\n", c->n_header_fields));
+		for (i = 0; i< c->n_header_fields; i++) {
+			LOG(("header[%d]: '%s'\n", i, c->header_fields[i]));
+		}
+		{
+		int colID = csv_get_colnumber_for_field(c, "ID");
+		int colBACKGND = csv_get_colnumber_for_field(c, "BACKGND");
+		int colDUCK = csv_get_colnumber_for_field(c, "DUCK");
+		int colGAIN = csv_get_colnumber_for_field(c, "GAIN");
+		int colLOOP = csv_get_colnumber_for_field(c, "LOOP");
+		int colSTOP = csv_get_colnumber_for_field(c, "STOP");
+		int colFNAME = csv_get_colnumber_for_field(c, "FNAME");
+
+		int row = 0;
+		while (csv_read_record(c) == 0) {
+			int val = 0;
+			csv_get_hex_field(c, colID, &val);
+			LOG(("ID = %d, ", val));
+			val = 0;
+			csv_get_int_field(c, colBACKGND, &val);
+			LOG(("BACKGND = %d, ", val));
+			val = 0;
+			csv_get_int_field(c, colDUCK, &val);
+			LOG(("DUCK = %d, ", val));
+			val = 0;
+			csv_get_int_field(c, colGAIN, &val);
+			LOG(("GAIN = %d, ", val));
+			val = 0;
+			csv_get_int_field(c, colLOOP, &val);
+			LOG(("LOOP = %d, ", val));
+			val = 0;
+			csv_get_int_field(c, colSTOP, &val);
+			LOG(("STOP = %d, ", val));
+			LOG(("FNAME = '%s'\n", c->fields[colFNAME]));
+			row++;
+		}
+		}
+
+		csv_close(c);
+		return row;
+	}
+	return 0;
 }
