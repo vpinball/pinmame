@@ -210,7 +210,7 @@ void alt_sound_handle(int boardNo, int cmd)
 #else
 			hInst = GetModuleHandle("VPinMAME64.dll");
 #endif
-			GetModuleFileName(hInst, cvpmd, 1024);
+			GetModuleFileName(hInst, cvpmd, sizeof(cvpmd));
 
 			while (*lpHelp) {
 				if (*lpHelp == '\\')
@@ -262,11 +262,11 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					psd.ID = (int*)malloc(psd.num_files*sizeof(int));
 					psd.files_with_subpath = (char**)malloc(psd.num_files*sizeof(char*));
-					psd.channel = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.channel = (signed char*)malloc(psd.num_files*sizeof(signed char));
 					psd.gain = (float*)malloc(psd.num_files*sizeof(float));
 					psd.ducking = (signed char*)malloc(psd.num_files*sizeof(signed char));
-					psd.loop = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
-					psd.stop = (signed char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.loop = (unsigned char*)malloc(psd.num_files*sizeof(unsigned char));
+					psd.stop = (unsigned char*)malloc(psd.num_files*sizeof(unsigned char));
 				}
 				else
 					psd.files_with_subpath = NULL;
@@ -274,18 +274,15 @@ void alt_sound_handle(int boardNo, int cmd)
 				fseek(c->f, pos, SEEK_SET);
 
 				for (i = 0; i < psd.num_files; ++i) {
-					char* filePath;
-					char* tmpPath;
+					char filePath[4096];
+					char tmpPath[4096];
 
 					int val = 0;
 					csv_read_record(c);
 					csv_get_hex_field(c, colID, &val);
 					psd.ID[i] = val;
 					val = 0;
-					if (csv_get_int_field(c, colCHANNEL, &val))
-						psd.channel[i] = -1;
-					else
-						psd.channel[i] = val;
+					psd.channel[i] = csv_get_int_field(c, colCHANNEL, &val) ? - 1 : val;
 					val = 0;
 					csv_get_int_field(c, colDUCK, &val);
 					psd.ducking[i] = min(val, (int)100);
@@ -299,18 +296,14 @@ void alt_sound_handle(int boardNo, int cmd)
 					csv_get_int_field(c, colSTOP, &val);
 					psd.stop[i] = val;
 
-					tmpPath = (char*)malloc(4096);
-					filePath = (char*)malloc(4096);
-					strcpy_s(filePath, 4096, cvpmd);
-					strcat_s(filePath, 4096, path_main);
-					strcat_s(filePath, 4096, Machine->gamedrv->name);
-					strcat_s(filePath, 4096, "\\");
-					strcat_s(filePath, 4096, c->fields[colFNAME]);
-					GetFullPathName(filePath, 4096, tmpPath, NULL);
+					strcpy_s(filePath, sizeof(filePath), cvpmd);
+					strcat_s(filePath, sizeof(filePath), path_main);
+					strcat_s(filePath, sizeof(filePath), Machine->gamedrv->name);
+					strcat_s(filePath, sizeof(filePath), "\\");
+					strcat_s(filePath, sizeof(filePath), c->fields[colFNAME]);
+					GetFullPathName(filePath, sizeof(filePath), tmpPath, NULL);
 					psd.files_with_subpath[i] = (char*)malloc(strlen(tmpPath)+1);
 					strcpy(psd.files_with_subpath[i], tmpPath);
-					free(tmpPath);
-					free(filePath);
 					LOG(("ID = %d, ", psd.ID[i])); LOG(("CHANNEL = %d, ", psd.channel[i])); LOG(("DUCK = %d, ", psd.ducking[i])); LOG(("GAIN = %.2f, ", psd.gain[i])); LOG(("LOOP = %d, ", psd.loop[i])); LOG(("STOP = %d, ", psd.stop[i])); LOG(("FNAME = '%s'\n", psd.files_with_subpath[i]));
 				}
 
@@ -324,7 +317,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			if (psd.num_files == 0) { 
 				for (i = 0; i < 5; ++i)
 				{
-					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
+					const char* const subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 
 					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
 					PATH = (char*)malloc(PATHl);
@@ -349,13 +342,13 @@ void alt_sound_handle(int boardNo, int cmd)
 					{
 						if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
 						{
-							DIR backup_dir = *dir;
+							const DIR backup_dir = *dir;
 							DIR *dir2;
 							struct dirent backup_entry = *entry;
 							struct dirent *entry2;
 
 							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
-							char* PATH2 = (char*)malloc(PATH2l);
+							char* const PATH2 = (char*)malloc(PATH2l);
 							strcpy_s(PATH2, PATH2l, PATH);
 							strcat_s(PATH2, PATH2l, entry->d_name);
 
@@ -397,7 +390,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
-					char* PATH = (char*)malloc(PATHl);
+					char* const PATH = (char*)malloc(PATHl);
 					DIR *dir;
 					unsigned int default_gain = 10;
 					int default_ducking = 100; //!! default depends on type??
@@ -428,7 +421,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					}
 					{
 						const unsigned int PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
-						char* PATHG = (char*)malloc(PATHGl);
+						char* const PATHG = (char*)malloc(PATHGl);
 						FILE *f;
 						strcpy_s(PATHG, PATHGl, PATH);
 						strcat_s(PATHG, PATHGl, "gain.txt");
@@ -442,7 +435,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					}
 					{
 						const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
-						char* PATHG = (char*)malloc(PATHGl);
+						char* const PATHG = (char*)malloc(PATHGl);
 						FILE *f;
 						strcpy_s(PATHG, PATHGl, PATH);
 						strcat_s(PATHG, PATHGl, "ducking.txt");
@@ -460,11 +453,11 @@ void alt_sound_handle(int boardNo, int cmd)
 					{
 						if (entry->d_name[0] != '.' && strstr(entry->d_name, ".txt") == 0)
 						{
-							DIR backup_dir = *dir;
+							const DIR backup_dir = *dir;
 							struct dirent backup_entry = *entry;
 
 							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
-							char* PATH2 = (char*)malloc(PATH2l);
+							char* const PATH2 = (char*)malloc(PATH2l);
 							unsigned int gain = default_gain;
 							int ducking = default_ducking;
 							DIR *dir2;
@@ -475,7 +468,7 @@ void alt_sound_handle(int boardNo, int cmd)
 
 							{
 								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
-								char* PATHG = (char*)malloc(PATHGl);
+								char* const PATHG = (char*)malloc(PATHGl);
 								FILE *f;
 
 								strcpy_s(PATHG, PATHGl, PATH2);
@@ -491,7 +484,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							}
 							{
 								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
-								char* PATHG = (char*)malloc(PATHGl);
+								char* const PATHG = (char*)malloc(PATHGl);
 								FILE *f;
 
 								strcpy_s(PATHG, PATHGl, PATH2);
@@ -536,7 +529,7 @@ void alt_sound_handle(int boardNo, int cmd)
 								  if (subpath == path_jingle || subpath == path_single) {
 									  psd.channel[psd.num_files] = 1;
 									  psd.loop[psd.num_files] = 0;
-									  psd.stop[psd.num_files] = (subpath[psd.num_files] == path_single) ? 1 : 0;
+									  psd.stop[psd.num_files] = (subpath == path_single) ? 1 : 0;
 								  }
 
 								  if (subpath == path_sfx || subpath == path_voice) {
@@ -843,12 +836,12 @@ void alt_sound_handle(int boardNo, int cmd)
 							else
 							{
 								BASS_ChannelSetAttribute(channel_x[channel_x_idx], BASS_ATTRIB_VOL, psd.gain[idx] * global_vol * master_vol);
-								BASS_ChannelSetSync(channel_x[channel_x_idx], BASS_SYNC_END | BASS_SYNC_ONETIME, 0, ducking_callback, channel_x_idx);
+								BASS_ChannelSetSync(channel_x[channel_x_idx], BASS_SYNC_END | BASS_SYNC_ONETIME, 0, ducking_callback, (void*)channel_x_idx);
 								LOG(("playing CHX: cmd %04X gain %.2f duck %d %s\n", cmd_combined, psd.gain[idx], psd.ducking[idx], psd.files_with_subpath[idx]));
 								BASS_ChannelPlay(channel_x[channel_x_idx], 0);
 							}
 
-							if (psd.ducking[idx] > 0 && psd.ducking[idx] < min_ducking){
+							if (psd.ducking[idx] > 0 && psd.ducking[idx] < min_ducking) {
 								float new_val;
 								min_ducking = psd.ducking[idx];
 								new_val = channel_0_vol*(float)((double)psd.ducking[idx] / 100.);
@@ -982,7 +975,7 @@ static int fgetline(char* const buff, const int nchars, FILE* const file)
 	if (fgets(buff, nchars, file) == NULL)
 		return -1;
 	if (buff[0] == '\r')
-		memcpy(buff, buff + 1, nchars - 1);
+		memmove(buff, buff + 1, nchars - 1);
 
 	length = strlen(buff);
 	while (length && (buff[length - 1] == '\r' || buff[length - 1] == '\n'))
@@ -1086,26 +1079,22 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 }
 
 static int csv_read_header(CsvReader* const c) {
-	char* const buf = (char*)malloc(CSV_MAX_LINE_LENGTH);
-	size_t size = 0;
-	const int len = fgetline(buf, &size, c->f);
-	if (len < 0) {
-		if (buf) free(buf);
+	char buf[CSV_MAX_LINE_LENGTH];
+	const int len = fgetline(buf, CSV_MAX_LINE_LENGTH, c->f);
+	if (len < 0)
 		return CSV_ERROR_HEADER_NOT_FOUND;
-	}
 
 	// parse line and look for headers
 	parse_line(c, buf, 1);
-	if (buf) free(buf);
 
 	return 0;
 }
 
 static int csv_get_colnumber_for_field(CsvReader* c, const char* fieldname) {
 	int i;
-	for (i = 0; i < c->n_header_fields; i++) {
-		if (strcmp(c->header_fields[i], fieldname) == 0) return i;
-	}
+	for (i = 0; i < c->n_header_fields; i++)
+		if (strcmp(c->header_fields[i], fieldname) == 0)
+			return i;
 
 	return CSV_ERROR_NO_SUCH_FIELD;
 }
@@ -1168,19 +1157,14 @@ static void csv_close(CsvReader* const c) {
 }
 
 static int csv_read_record(CsvReader* const c) {
-	char* const buf = (char*)malloc(CSV_MAX_LINE_LENGTH);
-	size_t size = 0;
-	const int len = fgetline(buf, &size, c->f);
-	if (len < 0) {
-		if (buf) free(buf);
+	char buf[CSV_MAX_LINE_LENGTH];
+	const int len = fgetline(buf, CSV_MAX_LINE_LENGTH, c->f);
+	if (len < 0)
 		return CSV_ERROR_NO_MORE_RECORDS;
-	}
 
 	free_record(c);
 	// parse line and look for headers
 	parse_line(c, buf, 0);
-	if (buf) free(buf);
 
 	return 0;
 }
-
