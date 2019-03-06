@@ -1138,6 +1138,7 @@ static int csv_get_float_field(CsvReader* const c, const int field_index, float*
 static int csv_get_str_field(CsvReader* const c, const int field_index, char** pValue) {
 	if (field_index >= 0 && field_index < c->n_fields) {
 		*pValue = c->fields[field_index];
+		return 0;
 	}
 
 	return CSV_ERROR_FIELD_INDEX_OUT_OF_RANGE;
