@@ -724,16 +724,25 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
-CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1992,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_a14,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
-DE_DMD32ROM44(     "swrom1.a14",CRC(4d577828) SHA1(8b1f302621fe2ee13a067b9c97e3dc33f4519cea),
-                   "swrom0.a14",CRC(104e5a6b) SHA1(b6a9e32f8aec078665faf2ba9ba4f9f51f68cea8))
+DE_DMD32ROM44(        "swrom1.a14", CRC(4d577828) SHA1(8b1f302621fe2ee13a067b9c97e3dc33f4519cea),
+                      "swrom0.a14", CRC(104e5a6b) SHA1(b6a9e32f8aec078665faf2ba9ba4f9f51f68cea8))
 DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
 CORE_CLONEDEF(stwr,a14,104,"Star Wars (1.03, Display 1.04)",1992,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(stwr_a046,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
+DE_DMD32ROM44(        "swrom1.a046",CRC(5ceac219) SHA1(76b7acf378f83bacf6c4adb020d6e544eacbac7a),
+                      "swrom0.a046",CRC(305e45be) SHA1(fbdc90175467a9ee59dc11c5ccbe83130b3644c8))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,a046,104,"Star Wars (1.03, Display A0.46)",1992,"Data East",de_mDEDMD32S2A,0)
 
 /* USA CPU 1.02 (11/20/92) */
 DE_ROMSTARTx0(stwr_102,"starcpua.102",CRC(8b9d90d6) SHA1(2fb7594e6f4aae1dc3a07192546fabd2901acbed))
