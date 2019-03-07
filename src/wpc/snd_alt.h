@@ -189,6 +189,8 @@ void alt_sound_handle(int boardNo, int cmd)
 		// load sample information and init
 		if (cmd_storage == -1)
 		{
+			srand(time(NULL)); // randomize random number generator seed
+
 			char cwd[1024];
 			char cvpmd[1024];
 			HINSTANCE hInst;
