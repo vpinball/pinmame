@@ -22,9 +22,11 @@ Version 3.2 (X X, 2019) - ""
    FNAME: string, actual filepath/filename of the sample. Can contain any path prefixes if one likes to organize sound files in directories.
   The only fields that need to be specified are id, name and fname, the rest can optionally be left empty and will be filled in with defaults.
 
-  If the table contains more than one record for a certain ID, the sound engine will pick one of these randomly.
+  If the table contains more than one record for a certain ID, the sound engine will pick one of these randomly. These same IDs must be grouped together one after another in a sequence.
 
   Note that the old folder based structure is still fully supported for backwards compatibility
+
+- Add Whitestar support to the builtin alternate sound file support (Sound Mode 1)
 
 - New (backwards compatible) parameter to allow for mech configuration/specifying an initial position, instead of always loading it from NVRAM
   Add special "handlemech" modes to Bride of Pinbot (bop_l7)
