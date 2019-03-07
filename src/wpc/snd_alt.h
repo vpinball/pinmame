@@ -683,6 +683,19 @@ void alt_sound_handle(int boardNo, int cmd)
 				}
 			}
 
+			if ((core_gameData->gen == GEN_WS) || 
+				(core_gameData->gen == GEN_WS_1) || 
+				(core_gameData->gen == GEN_WS_2))
+			{
+				if (((cmd_buffer[2] & 0xF0) == 0xF0 && cmd_buffer[1] == 0x26 && (cmd & 0xF0) == 0xF0) || 
+					((cmd_buffer[2] & 0xF0) == 0xF0 && cmd_buffer[1] == 0x25 && (cmd & 0xF0) == 0xF0) || 
+					((cmd_buffer[2] & 0xF0) == 0xF0 && cmd_buffer[1] == 0x01 && (cmd & 0xF0) == 0xF0))
+				{
+					cmd_storage = 0;
+					cmd_counter = 0;
+				}
+			}
+
 			if (!cmd_filter && (cmd_counter & 1) == 0) // collect 16bits from two 8bit commands
 			{
 				unsigned int cmd_combined = (cmd_storage << 8) | cmd;
@@ -877,6 +890,19 @@ void alt_sound_handle(int boardNo, int cmd)
 					if (core_gameData->gen == GEN_DEDMD32)
 					{
 						if ((cmd_combined == 0x0018 || cmd_combined == 0x0023) && channel_0 != 0) // stop music //!! ???? 0x0019??
+						{
+							BASS_ChannelStop(channel_0);
+							BASS_StreamFree(channel_0);
+							channel_0 = 0;
+							channel_0_vol = 1.0f;
+						}
+					}
+
+					if ((core_gameData->gen == GEN_WS) ||
+						(core_gameData->gen == GEN_WS_1) ||
+						(core_gameData->gen == GEN_WS_2))
+					{
+						if (((cmd_combined == 0x0000 || (cmd_combined & 0xf0ff) == 0xf000)) && channel_0 != 0) // stop music
 						{
 							BASS_ChannelStop(channel_0);
 							BASS_StreamFree(channel_0);
