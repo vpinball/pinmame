@@ -254,11 +254,21 @@ DCS_SOUNDROM6xm("cp_s2.bin",CRC(e0b67f6f) SHA1(48fbf01eca4fd6250df18bb5f35959100
 				"cp_s7.bin",CRC(be619157) SHA1(b18acde4f683b5f8b2248b46bb3dc7c3e0ab1c26))
 WPC_ROMEND
 
+WPC_ROMSTART(cp,16pfx,"cp_pfx_g11.1_6",0x80000,CRC(97086087) SHA1(5ded9dc4351c345febd38c1f32dccc04d2c35200)) // some bytes differ from 1.6
+DCS_SOUNDROM6xm("cp_s2.bin",CRC(e0b67f6f) SHA1(48fbf01eca4fd6250df18bb5f35959100f40f6e0),
+				"cp_s3.bin",CRC(68accf24) SHA1(9f86ac84ef8130592e471f1da0e05ba811dbc38b),
+				"cp_s4.bin",CRC(50d1c920) SHA1(00b247853ef1f91c6245746c9311f8463b9335d1),
+				"cp_s5.bin",CRC(69af347a) SHA1(d15683e6297603104e4ba777224331c24565be7c),
+				"cp_s6.bin",CRC(76ca4fed) SHA1(8995e518c8dafbdd8bf994533b71f42172057b27),
+				"cp_s7.bin",CRC(be619157) SHA1(b18acde4f683b5f8b2248b46bb3dc7c3e0ab1c26))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(cp,16,"Champion Pub, The (1.6)",1998,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cp,15,16,"Champion Pub, The (1.5)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cp,16pfx,16,"Champion Pub, The (1.6 Pinball FX)",2019,"Zen Studios",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
