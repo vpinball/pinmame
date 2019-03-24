@@ -13,11 +13,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -25,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "1 TYPELIB ""VPINMAME.tlb""\r\n"
     "\0"
@@ -51,13 +53,9 @@ END
 //
 
 IDB_LOGO                BITMAP                  "Res\\VPinMAMELogo.bmp"
-
 IDB_SPLASH2             BITMAP                  "Res\\VPinMAMESplash2.bmp"
-
 IDB_SPLASH3             BITMAP                  "Res\\VPinMAMESplash3.bmp"
-
 IDB_EASTEREGG           BITMAP                  "Res\\VPinMAMEEasterEgg.bmp"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -65,9 +63,7 @@ IDB_EASTEREGG           BITMAP                  "Res\\VPinMAMEEasterEgg.bmp"
 //
 
 IDR_CONTROLLER          REGISTRY                "Controller.rgs"
-
 IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -95,7 +91,11 @@ BEGIN
             VALUE "FileVersion", "3, 2, 0, 0"
             VALUE "InternalName", "VPinMAME"
             VALUE "LegalCopyright", "© 2000-2019 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
+#ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
+#else
+            VALUE "OriginalFilename", "VPinMAME64.DLL"
+#endif
             VALUE "ProductName", "Visual PinMAME"
             VALUE "ProductVersion", "3.2"
         END
@@ -179,7 +179,7 @@ CAPTION "About Visual PinMAME..."
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,204,167,50,14
-    CONTROL         IDS_PROJNAME,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
+    CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
     CTEXT           "Visual PinMAME\n",IDC_STATIC,148,6,160,8
     CTEXT           "Version %s",IDC_VERSION,150,16,160,8
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,160,8
@@ -337,9 +337,11 @@ BEGIN
     BEGIN
         MENUITEM "&Restore window size",        ID_CTRLCTXMENU_DISPLAY_RESTORESIZE
         MENUITEM "Restore &window position",    ID_CTRLCTXMENU_DISPLAY_RESTOREPOS
+
         MENUITEM SEPARATOR
         MENUITEM "Show window &title",          ID_CTRLCTXMENU_DISPLAY_TITLE
         MENUITEM "&Show window &border",        ID_CTRLCTXMENU_DISPLAY_BORDER
+
         MENUITEM SEPARATOR
         MENUITEM "Game &settings...",           ID_CTRLCTXMENU_GAMEOPTIONS
         MENUITEM "&Paths...",                   ID_CTRLCTXMENU_PATHES
@@ -375,7 +377,7 @@ BEGIN
     IDS_EXPIREDTITLE        "This version has expired..."
 END
 
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
