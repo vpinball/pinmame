@@ -2510,7 +2510,8 @@ DRIVER(gi,l4)           //          07/91 B Gilligan's Island (L-4)
 DRIVER(gi,d4)           //                  Gilligan's Island (D-4) LED Ghost Fix
 DRIVER(gi,l6)           //          08/91 B Gilligan's Island (L-6)
 DRIVER(gi,d6)           //                  Gilligan's Island (D-6) LED Ghost Fix
-DRIVER(gi,l9)           //          12/92 B Gilligan's Island (L-9)
+DRIVER(gi,l8)           //          ??/9? B Gilligan's Island (L-8)
+DRIVER(gi,l9)           //          12/92 B Gilligan's Island (L-9) // Revision history says 11/94 ??
 DRIVER(gi,d9)           //                  Gilligan's Island (D-9) LED Ghost Fix
 DRIVER(pz,l1)           //WPC-204:  10/91 B Party Zone, The (L-1)
 DRIVER(pz,d1)           //                  Party Zone, The (D-1 LED Ghost Fix)
