@@ -724,7 +724,7 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
-CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1992,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_a14,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
 DE_DMD32ROM44(        "swrom1.a14", CRC(4d577828) SHA1(8b1f302621fe2ee13a067b9c97e3dc33f4519cea),
@@ -856,6 +856,14 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
 CORE_CLONEDEF(lah,l104,112,"Last Action Hero (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(lah_c106,"lahcpuc.106",CRC(d4be4178) SHA1(ea2d9c780f6636a8768164d3a1bb33b050c3a2a7))
+DE_DMD32ROM8x(      "lahdispa.104",CRC(baf4e7b3) SHA1(78924d992c0e206bfbf4a6fcc62ea7f91e995260))
+DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
+                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
+                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
+DE_ROMEND
+CORE_CLONEDEF(lah,c106,112,"Last Action Hero (1.06 Canadian)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_l108,"lahcpua.108",CRC(8942794b) SHA1(f023ca040d6d4c6da80b58a162f1d217e571ed81))
 DE_DMD32ROM8x(      "lahdispl.104",CRC(6b1e51a7) SHA1(ad17507b63f2da8aa0651401ccb8d449c15aa46c))
