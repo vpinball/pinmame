@@ -214,6 +214,15 @@ S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b9
                         "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
 S11_ROMEND
 
+S11_ROMSTART48(eatpm,f1,"u26-lf1.rom", CRC(d479fae4) SHA1(488890fa3ef185499d6f0d620e054cdc96548c40),
+                        "u27-la1.rom", CRC(d1c80549) SHA1(ab7dd88c460102e7db095a2df58c567ba43d81af))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
+
 S11_ROMSTART48(eatpm,l2,"u26-la2.rom", CRC(c4dc967d) SHA1(e12d06282176d231ffa0e2895499ebd8dd8e6e4f),
                         "u27-la2.rom", CRC(01e7aef5) SHA1(82c07635285ff9efb584043601ff5d811a1ab28b))
 S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
@@ -259,8 +268,9 @@ static MACHINE_DRIVER_START(elvira)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 
-CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (LA-4)", 1989, "Bally", elvira, 0)
+CORE_GAMEDEF (eatpm,   l4, "Elvira and the Party Monsters (LA-4)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (LA-1)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,f1,l4, "Elvira and the Party Monsters (LF-1 French)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (LA-2)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (LG-4 German)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (LU-4 Europe)", 1989, "Bally", elvira, 0)
