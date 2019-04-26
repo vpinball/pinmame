@@ -3,7 +3,8 @@ Version 3.2 (X X, 2019) - ""
 
 *** CORE/CPU ***
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
-Fix NBA Fastbreak fast flips so that the million dollar shot works
+Implement 'fast flips' support for Jack*Bot
+Fix NBA Fastbreak 'fast flips' so that the million dollar shot works
 Fixed Barni emulation
 Added preliminary E.F.O. hardware support
 Increased main CPU IRQ rate for Bushido, Mach 2, and Jolly Park
