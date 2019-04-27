@@ -183,8 +183,8 @@ typedef unsigned long long IUINT64;
 #endif
 #endif
 
-#if (!defined(inline)) && (!defined(__cplusplus))
-#define inline INLINE
+#if (!defined(bb_inline))
+#define bb_inline INLINE
 #endif
 
 
@@ -467,10 +467,10 @@ struct BasicRect
 	int right;
 	int bottom;
 
-	inline BasicRect(int l, int t, int r, int b):
+	bb_inline BasicRect(int l, int t, int r, int b):
 		left(l), top(t), right(r), bottom(b) {}
 
-	inline BasicRect(): 
+	bb_inline BasicRect():
 		left(0), top(0), right(0), bottom(0) {}
 };
 
@@ -603,32 +603,32 @@ public:
 	void Shuffle(int b0, int b1, int b2, int b3);
 
 public:
-	inline int Width() const { return _w; }
-	inline int Height() const { return _h; }
-	inline int Bpp() const { return _bpp; }
-	inline long Pitch() const { return _pitch; }
-	inline PixelFmt Format() const { return _fmt; }
+	bb_inline int Width() const { return _w; }
+	bb_inline int Height() const { return _h; }
+	bb_inline int Bpp() const { return _bpp; }
+	bb_inline long Pitch() const { return _pitch; }
+	bb_inline PixelFmt Format() const { return _fmt; }
 
-	inline unsigned char *Bits() { return _bits; }
-	inline const unsigned char *Bits() const { return _bits; }
+	bb_inline unsigned char *Bits() { return _bits; }
+	bb_inline const unsigned char *Bits() const { return _bits; }
 
-	inline unsigned char *Line(int n) { return _lines[n]; }
-	inline const unsigned char *Line(int n) const { return _lines[n]; }
+	bb_inline unsigned char *Line(int n) { return _lines[n]; }
+	bb_inline const unsigned char *Line(int n) const { return _lines[n]; }
 
-	inline IUINT32 GetMask() const { return _mask; }
+	bb_inline IUINT32 GetMask() const { return _mask; }
 
 	// set the transparent color, work in Transparent Blit
 	// with flag PIXEL_FLAG_MASK to turn it on (in Blit & BresenhamStretch)
-	inline void SetMask(IUINT32 transparent) { _mask = transparent; }
+	bb_inline void SetMask(IUINT32 transparent) { _mask = transparent; }
 
-	inline IUINT8 *Address8(int x, int y) { return Line(y) + x; }
-	inline IUINT16 *Address16(int x, int y) { return ((IUINT16*)Line(y)) + x; }
-	inline IUINT32 *Address32(int x, int y) { return ((IUINT32*)Line(y)) + x; }
-	inline IUINT8 *Address24(int x, int y) { return Line(y) + x * 3; }
-	inline const IUINT8 *Address8(int x, int y) const { return Line(y) + x; }
-	inline const IUINT16 *Address16(int x, int y) const { return ((const IUINT16*)Line(y)) + x; }
-	inline const IUINT32 *Address32(int x, int y) const { return ((const IUINT32*)Line(y)) + x; }
-	inline const IUINT8 *Address24(int x, int y) const { return Line(y) + x * 3; }
+	bb_inline IUINT8 *Address8(int x, int y) { return Line(y) + x; }
+	bb_inline IUINT16 *Address16(int x, int y) { return ((IUINT16*)Line(y)) + x; }
+	bb_inline IUINT32 *Address32(int x, int y) { return ((IUINT32*)Line(y)) + x; }
+	bb_inline IUINT8 *Address24(int x, int y) { return Line(y) + x * 3; }
+	bb_inline const IUINT8 *Address8(int x, int y) const { return Line(y) + x; }
+	bb_inline const IUINT16 *Address16(int x, int y) const { return ((const IUINT16*)Line(y)) + x; }
+	bb_inline const IUINT32 *Address32(int x, int y) const { return ((const IUINT32*)Line(y)) + x; }
+	bb_inline const IUINT8 *Address24(int x, int y) const { return Line(y) + x * 3; }
 
 public:
 
