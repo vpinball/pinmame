@@ -67,30 +67,26 @@
 #endif
 #endif
 
-#ifdef inline
-#undef inline
-#endif
-
-#define inline INLINE
+#define bb_inline INLINE
 
 
 
 //---------------------------------------------------------------------
 // fast copy for different sizes
 //---------------------------------------------------------------------
-static inline void memcpy_sse2_16(void *dst, const void *src) {
+static bb_inline void memcpy_sse2_16(void *dst, const void *src) {
 	__m128i m0 = _mm_loadu_si128(((const __m128i*)src) + 0);
 	_mm_storeu_si128(((__m128i*)dst) + 0, m0);
 }
 
-static inline void memcpy_sse2_32(void *dst, const void *src) {
+static bb_inline void memcpy_sse2_32(void *dst, const void *src) {
 	__m128i m0 = _mm_loadu_si128(((const __m128i*)src) + 0);
 	__m128i m1 = _mm_loadu_si128(((const __m128i*)src) + 1);
 	_mm_storeu_si128(((__m128i*)dst) + 0, m0);
 	_mm_storeu_si128(((__m128i*)dst) + 1, m1);
 }
 
-static inline void memcpy_sse2_64(void *dst, const void *src) {
+static bb_inline void memcpy_sse2_64(void *dst, const void *src) {
 	__m128i m0 = _mm_loadu_si128(((const __m128i*)src) + 0);
 	__m128i m1 = _mm_loadu_si128(((const __m128i*)src) + 1);
 	__m128i m2 = _mm_loadu_si128(((const __m128i*)src) + 2);
@@ -101,7 +97,7 @@ static inline void memcpy_sse2_64(void *dst, const void *src) {
 	_mm_storeu_si128(((__m128i*)dst) + 3, m3);
 }
 
-static inline void memcpy_sse2_128(void *dst, const void *src) {
+static bb_inline void memcpy_sse2_128(void *dst, const void *src) {
 	__m128i m0 = _mm_loadu_si128(((const __m128i*)src) + 0);
 	__m128i m1 = _mm_loadu_si128(((const __m128i*)src) + 1);
 	__m128i m2 = _mm_loadu_si128(((const __m128i*)src) + 2);
@@ -124,7 +120,7 @@ static inline void memcpy_sse2_128(void *dst, const void *src) {
 //---------------------------------------------------------------------
 // tiny memory copy with jump table optimized
 //---------------------------------------------------------------------
-static inline void *memcpy_tiny(void *dst, const void *src, size_t size) {
+static bb_inline void *memcpy_tiny(void *dst, const void *src, size_t size) {
 	unsigned char *dd = ((unsigned char*)dst) + size;
 	const unsigned char *ss = ((const unsigned char*)src) + size;
 
@@ -1034,35 +1030,35 @@ static const __m128i _pixel_mask_4x000000ff = _mm_set1_epi32(0xff);
 //---------------------------------------------------------------------
 
 // (x + ((x + 257) >> 8)) >> 8
-static inline __m128i _mm_fast_div_255_epu16(__m128i x) {
+static bb_inline __m128i _mm_fast_div_255_epu16(__m128i x) {
 	return _mm_srli_epi16(_mm_adds_epu16(x, 
 		_mm_srli_epi16(_mm_adds_epu16(x, _pixel_mask_8x0101), 8)), 8);
 }
 
 // alpha = 00 a1 00 a1 00 a2 00 a2 00 a3 00 a3 00 a4 00 a4
-static inline __m128i _mm_expand_alpha(__m128i color) {
+static bb_inline __m128i _mm_expand_alpha(__m128i color) {
 	__m128i alpha = _mm_srli_epi32(color, 24);
 	return _mm_or_si128(_mm_slli_epi32(alpha, 16), alpha);
 }
 
 // 255 - alpha
-static inline __m128i _mm_expand_inverse_alpha(__m128i color) {
+static bb_inline __m128i _mm_expand_inverse_alpha(__m128i color) {
 	__m128i alpha = _mm_subs_epu8(_pixel_mask_4x000000ff, _mm_srli_epi32(color, 24));
 	return _mm_or_si128(_mm_slli_epi32(alpha, 16), alpha);
 }
 
 // 00 rr 00 bb
-static inline __m128i _mm_pixel_rb(__m128i color) {
+static bb_inline __m128i _mm_pixel_rb(__m128i color) {
 	return _mm_and_si128(color, _pixel_mask_8x00ff);
 }
 
 // 00 aa 00 gg
-static inline __m128i _mm_pixel_ag(__m128i color) {
+static bb_inline __m128i _mm_pixel_ag(__m128i color) {
 	return _mm_srli_epi16(color, 8);
 }
 
 // color = (src * sa + dst * (255 - sa)) / 255
-static inline __m128i _mm_blend_with_quad(__m128i src, __m128i dst) {
+static bb_inline __m128i _mm_blend_with_quad(__m128i src, __m128i dst) {
 	__m128i as = _mm_expand_alpha(src);
 	__m128i ad = _mm_subs_epu8(_pixel_mask_8x00ff, as);
 	__m128i rb_src = _mm_mullo_epi16(_mm_pixel_rb(src), as);
@@ -1075,7 +1071,7 @@ static inline __m128i _mm_blend_with_quad(__m128i src, __m128i dst) {
 }
 
 // color = src + dst * (255 - sa) / 255
-static inline __m128i _mm_blend_over_quad(__m128i src, __m128i dst) {
+static bb_inline __m128i _mm_blend_over_quad(__m128i src, __m128i dst) {
 	__m128i alpha = _mm_expand_inverse_alpha(src);
 	__m128i rb = _mm_pixel_rb(dst);
 	__m128i ag = _mm_pixel_ag(dst);
@@ -1164,7 +1160,7 @@ static int PixelDraw_SSE2_SRCOVER_A8R8G8B8(void *bits, int offset, int w, const 
 //---------------------------------------------------------------------
 
 // color = (c1 * f1 + c2 * f2) >> 8
-static inline __m128i _mm_interp_row_quad(__m128i c1, __m128i c2, __m128i &f1, __m128i &f2)
+static bb_inline __m128i _mm_interp_row_quad(__m128i c1, __m128i c2, __m128i &f1, __m128i &f2)
 {
 	__m128i rb1 = _mm_pixel_rb(c1);
 	__m128i rb2 = _mm_pixel_rb(c2);
@@ -1179,7 +1175,7 @@ static inline __m128i _mm_interp_row_quad(__m128i c1, __m128i c2, __m128i &f1, _
 	return _mm_or_si128(_mm_slli_epi32(ag1, 8), rb1);
 }
 
-static inline __m128i _mm_interp_row_half(__m128i c1, __m128i c2) 
+static bb_inline __m128i _mm_interp_row_half(__m128i c1, __m128i c2)
 {
 	__m128i rb1 = _mm_pixel_rb(c1);
 	__m128i rb2 = _mm_pixel_rb(c2);
