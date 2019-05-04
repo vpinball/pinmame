@@ -1,3 +1,12 @@
+// TO DO:  Set the sample rate in the machine driver parameters for each game
+// using this chip.  In the absence of a known sample rate, we have to infer the
+// rate by observing the clock used for actual data sent to the chip.  We can
+// get a good read on the clock within about 1 second of sample output, but
+// if the actual sample rate isn't fairly close to the default initial rate,
+// there's an audible glitch when we make the first adjustment.  It would be
+// better to know the expected rate from the outset so that we don't have to
+// hear that initial glitch every time.
+
 #include "driver.h"
 #include "filter.h"
 #include <math.h>
@@ -9,37 +18,34 @@
 // #define M_E 2.7182818284590452353602874713527
 //#endif
 
-#define SAMPLE_RATE (4*48000) // 4x oversampling of standard output rate
+// Output filter type.  In principle, the FIR filter should have a
+// steeper cutoff wall and therefore should do a better job of
+// filtering out the quantization noise.  But the single-pole
+// filter sounds a little better to my ear.
+#define FIR_OUTPUT_FILTER  1   // low-pass FIR filter
+#define SP_OUTPUT_FILTER   2   // simple single-pole low-pass filter
+#define OUTPUT_FILTER_TYPE FIR_OUTPUT_FILTER
 
-#define SHIFTMASK 0x07 // = hc55516 and mc3417 //!! At least Xenon and Flash Gordon, and early Williams' (C-8226, but NOT the C-8228 so maybe does not matter overall??) had a MC3417
-//#define SHIFTMASK 0x0F // = mc3418 //!! also features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the simpler chips above!
+// Syllabic filter shift mask.  The HC55516 and MC3417 use a 3-bit shift
+// register (mask binary 111 = 0x07).
+#define SHIFTMASK 0x07 
 
-#define	FILTER_MAX				1.0954 // 0 dbmo sine wave peak value volts from MC3417 datasheet
+// Syllabic filter high/low inputs.  These aren't documented in the HC55516
+// data sheet, so we're guessing based on the audio signal specs.  The data
+// sheet says that the audio signal output voltage at 0dB is 1.2V RMS, which
+// implies a peak DC voltage of 1.7VDC.  The "low" input to the filter is
+// usually 0V.  So we'll use 1.7 and 0 as the syllabic filter voltage charge 
+// range.
+#define V_HIGH  1.7
+#define V_LOW   0
+
 #ifdef PINMAME
- // from exidy440, not really better or worse from quick testings
- //#define INTEGRATOR_LEAK_TC		0.001
- //#define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
- //#define FILTER_DECAY_TC         ((18e3 + 3.3e3) * 0.33e-6)
- //#define decay  0.99114768031730635396012114691053
- //#define FILTER_CHARGE_TC        (18e3 * 0.33e-6)
- //#define charge 0.9895332758787504236814964839343
 
- #define leak   0.96875
- #define decay  0.9990234375
- #define charge 0.9990234375
-
- #define ENABLE_LOWPASS_ESTIMATE 1
- #define SAMPLE_GAIN			6500.0
+#define SAMPLE_GAIN			6500.0
 #else
- //#define	INTEGRATOR_LEAK_TC		0.001
- #define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
- //#define	FILTER_DECAY_TC			0.004
- #define decay  0.984496437005408405986988829697020369707861003180350567476 //=pow(1.0/M_E, 1.0/(FILTER_DECAY_TC * 16000.0));
- //#define	FILTER_CHARGE_TC		0.004
- #define charge 0.984496437005408405986988829697020369707861003180350567476 //=pow(1.0/M_E, 1.0/(FILTER_CHARGE_TC * 16000.0));
-
- #define FILTER_MIN				0.0416 // idle voltage (0/1 alternating input on each clock) from MC3417 datasheet
- #define SAMPLE_GAIN			10000.0
+ #define V_HIGH              1.7
+ #define V_LOW				0.0416 // idle voltage (0/1 alternating input on each clock) from MC3417 datasheet
+ #define SAMPLE_GAIN		10000.0
 #endif
 
 #ifndef MIN
@@ -51,27 +57,106 @@
 
 struct hc55516_data
 {
+	// mixer channel
 	INT8 	channel;
+	
+	// last clock level and data bit input from host
 	UINT8	last_clock;
 	UINT8	databit;
-	UINT8	shiftreg;
 
-	INT16	curr_value;
-	INT16	next_value;
+	// Syllabic filter parameters.  The syllabic filter is nominally specified
+	// in terms of its time constant, which is independent of the data clock 
+	// rate.  (The HC55516 data sheet actually has a note to the effect that 
+	// the time constant is inversely proportional to the clock, but this does
+	// not appear to be true in practice: we get audibly better results by
+	// assuming an invariant time constant.)  Our internal parameters, on the
+	// other hand, are functions of the data clock. For optimal playback, we
+	// we have to observe the actual data clock rate and then calculate the
+	// filter parameters based on that.
+	double   charge;            // syllabic filter charge rate
+	double   decay;             // syllabic filter decay rate
+	
+	// Syllabic filter status
+	UINT8	shiftreg;           // last few data bits (determined by SHIFTMASK)
+	double 	syl_level;          // simulated voltage on the syllabic filter
+	double	integrator;         // simulated voltage on integrator output
 
-	double 	filter;
-	double	integrator;
-	double  gain;
+	// Gain - conversion factor from a simulated voltage level on the
+	// integrator to an INT16 PCM sample
+	double  gain; 
 
-#ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks, f.e. Flash Gordon has (multiple) Sallen-Key Active Low-pass at the end (at least ~3Khz), TZ has (multiple) Multiple Feedback Active Low-pass at the end (~3.5KHz))
-	int     last_sound;
+	// Output sample ring buffer.  With a real HC55516 chip, the output is an
+	// analog signal, so the sound boards using this chip handled the rest of
+	// the audio chain in the analog domain, feeding the signal into op amps,
+	// mixing with other analog signals, and ultimately sending it out to the
+	// speakers.  For our simulation, the output from our integrator goes into
+	// a PCM stream, to be mixed with other PCM streams and ultimately to go
+	// out to a DAC.  So our output chain is all in the digital domain.  We
+	// *could* try to simulate an analog level coming out of our chip and
+	// resample that, and indeed, that's what earlier versions of this code
+	// did.  But the results were terrible, since that's not the right way to
+	// resample a signal that's already in the digital domain.  The right way
+	// is to keep everything in the digital domain.  The complication is that
+	// the HC55516 doesn't have a fixed clock rate: instead, the host sets
+	// the clock.  The data clock rate is simply how fast the host sends us
+	// samples.  So we can't know in advance what kind of stream to set up.
+	// More problematically, the actual pinball machine hosts that we're
+	// using in the emulation don't have perfectly consistent clocks, as they
+	// generate their samples from software.  The time between samples can be
+	// slightly variable as a result.  That's a huge problem for MAME's design
+	// in that MAME wants a fixed-rate stream coming out of each device.  To
+	// bridge the gap, we use a ring buffer for our outputs.  Each time the
+	// host clocks out an output, we put it in the ring.  Each time the MAME 
+	// stream asks for an input, we pull it from the ring.  As long as the
+	// MAME stream and host are generating and consuming samples at nearly
+	// the same rate, this evens out any small variations in the sample-to-
+	// sample timing of individual bits coming out of the host.
+	struct
+	{
+		// note: the buffer is empty when read == write
+		INT16   buf[1000];      // ring buffer
+		int     read;           // read pointer - index of next sample to read
+		int     write;          // write pointer - index of next free slot
+	}
+	samples_out;
 
-#if ENABLE_LOWPASS_ESTIMATE
-	filter* filter_f;           /* filter used, ==0 if none */
-	filter_state* filter_state; /* state of the filter */
+	// Sample clock statistics.  This keeps track of the time between clock
+	// signals from the host so that we can estimate the overall sample rate.
+	// To do a proper sample rate conversion in the digital domain from the
+	// original data stream to the PC's PCM stream, we have to know the clock
+	// rate we're converting FROM.
+	struct
+	{
+		// observed sample rate in Hz, and its inverse (the sample time)
+		int freq;
+		double T;
 
-	UINT32  length_estimate;    // for estimating the clock rate/'default' sample playback rate of the machine
-	UINT32  length_estimate_runs;
+		// global time of last clock rising edge
+		double t_rise;
+
+		// number of samples collected
+		INT64 n_samples;
+
+		// sample count for next filter adjustment 
+		INT64 next_filter_adjustment;
+
+		// sum of measured sample times
+		double t_sum;
+	} clock;
+
+
+#ifdef PINMAME
+#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
+	// Low-pass filter.  This is absolutely required for a CVSD decoder, since
+	// these chips are invariably used with low sample rates, which results in
+	// a Nyquist limit that's well within the audible range and thus a LOT of
+	// audible quantization noise.
+	filter* filter_f;
+	filter_state* filter_state;
+#elif OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
+	// Filter state and single-pole low-pass filter alpha parameter
+	INT32   out_filter_sample;
+	double  out_filter_alpha;
 #endif
 #endif
 };
@@ -81,6 +166,61 @@ static struct hc55516_data hc55516[MAX_HC55516];
 
 static void hc55516_update(int num, INT16 *buffer, int length);
 
+static void calc_syllabic_filter_params(struct hc55516_data *chip, double sample_time)
+{
+	// Save the new frequency value
+	chip->clock.T = sample_time;
+	chip->clock.freq = (int)(1.0 / sample_time);
+
+	// Figure the syllabic filter parameters.
+	//
+	// The charge constant is e^(-2*pi*T/Tc), where T is the 
+	// time per sample (1 / the bit clock frequency) and Tc 
+	// is the syllabic filter time constant (4ms for the 
+	// HC55516, per the data sheet).
+	//
+	// Note that the HC55516 data sheet has a note saying that
+	// the syllabic filter time constant is inversely 
+	// proportional to the bit clock, which suggests that 4ms
+	// is only the value for the "typical" 16 kHz clock rate
+	// used as the reference point in the data sheet table.
+	// However, empirically this does not seem to be the case;
+	// we seem to get better results if we treat this as a
+	// fixed 4ms value.  And information elsewhere in the data
+	// sheet suggests that the filter really is fixed at 4ms.
+	// 
+	// Sample values for common pinball machine clock rates
+	//
+	// 2500Hz/4ms = .5334881     (early voice machines - Black Knight, Xenon)
+	// 8kHz/4ms   = .85463600    (System 11 machines)
+	// 12kHz/4ms  = .87730577    (Twilight Zone)
+	// 20kHz/4ms  = .92446525    (Addams Family)
+	//
+	const double SYLLABIC_FILTER_TIME = .004;
+	const int ROLLOFF_FREQ = 1000;
+	chip->charge = exp(-2.0 * PI * chip->clock.T * (1.0 / SYLLABIC_FILTER_TIME));
+
+	// figure the integrator decay factor
+	chip->decay = exp(-2.0 * PI * chip->clock.T * ROLLOFF_FREQ);
+
+	// Calculate the low-pass filter alpha.  Nominally, we have to
+	// filter out noise above the Nyquist limit, which is 1/2 the
+	// sample frequency.  But this is a simple low-pass filter, not
+	// a brick-wall filter, so we need to start attenuating below
+	// the desired cutoff.  There's a sweet spot here.  If we make
+	// the cutoff too low, we'll filter out too much of the original
+	// signal's high-frequency component, and it'll sound muffled.
+	// If the cutoff is too high, the filter will pass through too
+	// much of the quantization noise.  The cutoff has to be 
+	// chosen empirically to make the result "sound right".
+#if OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
+	{
+		double cutoff = chip->clock.freq * 0.4;
+		double RC = 1.0 / (2 * PI * cutoff);
+		chip->out_filter_alpha = chip->clock.T / (RC + chip->clock.T);
+	}
+#endif
+}
 
 int hc55516_sh_start(const struct MachineSound *msound)
 {
@@ -93,19 +233,42 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		struct hc55516_data *chip = &hc55516[i];
 		char name[40];
 
-		/* reset the channel */
+		/* reset the chip struct */
 		memset(chip, 0, sizeof(*chip));
+
+		/* set the default clock rate and set default syllabic filter parameters */
+		calc_syllabic_filter_params(chip, 1.0 / 12000.0);
+
+		/* update the filter after collecting enough samples to have a good read on the actual rate */
+		chip->clock.next_filter_adjustment = 2000;
 
 		/* create the stream */
 		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], SAMPLE_RATE, i, hc55516_update);
+		chip->channel = stream_init(name, intf->volume[i], chip->clock.freq, i, hc55516_update);
 		chip->gain = SAMPLE_GAIN;
 		/* bail on fail */
 		if (chip->channel == -1)
 			return 1;
 
+		// Set up a low-pass FIR filter, to filter out quantization noise
+		// above the Nyquist limit.  The FIR filter implementation works
+		// inherently in terms of the sampling rate, so the filter will
+		// naturally adjust to our sample rate updates as we collect clock
+		// data.  That means we can set up the filter up front, before we
+		// even know the sample rate.  Note that older versions tried to
+		// guess whether a filter was needed based on sampling rate, but
+		// in reality the filter is ALWAYS needed, since CVSD bit rates
+		// are always low enough that there's a ton of audible quantization
+		// noise in the decoded signal.  This is true for every historical
+		// game using this chip, so there's no good reason to make the
+		// existence of the filter conditional on the rate.
+#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
+		chip->filter_f = filter_lp_fir_alloc(0.21, FILTER_ORDER_MAX);
+		chip->filter_state = filter_state_alloc();
+		filter_state_reset(chip->filter_f, chip->filter_state);
+#endif
+
 #ifdef PINMAME
-		chip->last_sound = 0;
 #if ENABLE_LOWPASS_ESTIMATE
 		chip->filter_f = 0;
 		chip->length_estimate = 0;
@@ -121,102 +284,61 @@ int hc55516_sh_start(const struct MachineSound *msound)
 
 void hc55516_update(int num, INT16 *buffer, int length)
 {
-	struct hc55516_data *chip = &hc55516[num];
-	int i;
-
 	/* zero-length? bail */
 	if (length == 0)
 		return;
 
-#ifdef PINMAME
-#if ENABLE_LOWPASS_ESTIMATE
-	// 'detect' clock rate and guesstimate low pass filtering from this
-	// not perfect, as some machines vary the clock rate, depending on the sample played  :/
- #define LOWPASS_ESTIMATE_CYCLES 666
-	if (chip->last_sound == 0 // is update coming from clock?
-		&& length < SAMPLE_RATE/12000 // and no outlier?
-		&& chip->length_estimate_runs < LOWPASS_ESTIMATE_CYCLES) // and we are still tracking the clock?
+	/* add samples until the request is fulfilled */
+	struct hc55516_data *chip = &hc55516[num];
+	for (; length != 0; --length)
 	{
-		chip->length_estimate += length;
-		chip->length_estimate_runs++;
-	}
-	else if (chip->length_estimate_runs == LOWPASS_ESTIMATE_CYCLES) // enough tracking of the clock -> enable filter and estimate for which cut frequency
-	{
-		double freq_scale;
-		
-		chip->length_estimate /= LOWPASS_ESTIMATE_CYCLES;
+		INT16 sample;
 
-		freq_scale = ((INT32)chip->length_estimate - SAMPLE_RATE/48000) / (double)(SAMPLE_RATE/12000-1 - SAMPLE_RATE/48000); // estimate to end up within 0..1 (with all tested machines)
-		freq_scale = MAX(MIN(freq_scale, 1.), 0.); // make sure to be in 0..1
-		freq_scale = 1.-sqrt(sqrt(freq_scale));    // penalty for low clock rates -> even more of the lower frequencies removed then
-
-		if (freq_scale < 0.45) // assume that high clock rates/most modern machines (that would end up at ~12000Hz filtering, see below) do not need to be filtered at all (improves clarity at the price of some noise)
+		/* if a sample is available, add it; otherwise decay the last sample */
+		if (chip->samples_out.read != chip->samples_out.write)
 		{
-			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, FILTER_ORDER_MAX); // magic, majority of modern machines up to TZ = ~12000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
-			chip->filter_state = filter_state_alloc(); //!! leaks
-			filter_state_reset(chip->filter_f, chip->filter_state);
+			/* sample available - pull it */
+			sample = chip->samples_out.buf[chip->samples_out.read++];
+			if (chip->samples_out.read >= _countof(chip->samples_out.buf))
+				chip->samples_out.read = 0;
+		}
+		else
+		{
+			/* no more samples available - decay the last sample */
+			sample = (chip->samples_out.buf[chip->samples_out.read] /= 2);
 		}
 
-		chip->length_estimate_runs++;
+		/* apply the low-pass filter */
+#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
+		filter_insert(chip->filter_f, chip->filter_state, (filter_real)sample);
+		*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
+#elif OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
+		chip->out_filter_sample = (INT16)(chip->out_filter_sample + chip->out_filter_alpha*(sample - chip->out_filter_sample));
+		*buffer++ = (INT16)chip->out_filter_sample;
+#endif
 	}
-#endif
-#endif
-
-	/* track how many samples we've updated without a clock, e.g. if its too many, then chip got no data = silence */
-	if (length > SAMPLE_RATE/2048  //!! magic // PINMAME: be less conservative/more precise
-		&& chip->last_sound != 0)  // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
-	{
-		float tmp = chip->curr_value;
-		for (i = 0; i < length; i++, tmp *= 0.95f)
-			*buffer++ = (INT16)tmp;
-
-		chip->next_value = (INT16)tmp; // update next_value with the faded value
-
-		chip->integrator = 0.; // PINMAME: Reset all chip state
-		chip->filter = 0.;
-		chip->shiftreg = 0;
-	}
-	else
-	{
-		/* compute the interpolation slope */
-		// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
-		// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
-		INT32 data = chip->curr_value;
-		INT32 slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
-		data <<= 15;
-
-#ifdef PINMAME
-#if ENABLE_LOWPASS_ESTIMATE
-		if (chip->filter_f)
-			for (i = 0; i < length; i++, data += slope)
-			{
-				filter_insert(chip->filter_f, chip->filter_state,
-#ifdef FILTER_USE_INT
-					data >> 15);
-#else
-					(filter_real)data * (filter_real)(1.0/32768.0));
-#endif
-				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
-			}
-		else
-#endif
-#endif
-			for (i = 0; i < length; i++, data += slope)
-				*buffer++ = data >> 15;
-	}
-
-	chip->curr_value = chip->next_value;
-
-	chip->last_sound = 1;
 }
 
+static void add_sample_out(struct hc55516_data *chip, INT16 sample)
+{
+	/* add the sample at the write pointer */
+	chip->samples_out.buf[chip->samples_out.write++] = sample;
+	if (chip->samples_out.write >= _countof(chip->samples_out.buf))
+		chip->samples_out.write = 0;
+
+	/* if the write pointer bumped into the read pointer, drop the oldest sample */
+	if (chip->samples_out.write == chip->samples_out.read) {
+		if (chip->samples_out.read >= _countof(chip->samples_out.buf))
+			chip->samples_out.write = 0;
+	}
+}
 
 void hc55516_clock_w(int num, int state)
 {
 	struct hc55516_data *chip = &hc55516[num];
-	int clock = state & 1, diffclock;
 
 	/* update the clock */
+	int clock = state & 1, diffclock;
 	diffclock = clock ^ chip->last_clock;
 	chip->last_clock = clock;
 
@@ -225,41 +347,33 @@ void hc55516_clock_w(int num, int state)
 	{
 		double temp;
 
-		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & SHIFTMASK;
-
 		/* move the estimator up or down a step based on the bit */
 		if (chip->databit)
-			chip->integrator += chip->filter;
+			chip->integrator += chip->syl_level;
 		else
-			chip->integrator -= chip->filter;
+			chip->integrator -= chip->syl_level;
 
 		/* simulate leakage */
-		chip->integrator *= leak;
+		chip->integrator *= chip->decay;
 
-		/* if we got all 0's or all 1's in the last n bits, bump the step up by charging the filter */
-		if (chip->shiftreg == 0 || chip->shiftreg == SHIFTMASK)
-		{
-			chip->filter = (1.-charge) * FILTER_MAX + chip->filter * charge;
-#ifndef PINMAME // cannot happen
-			if (chip->filter > FILTER_MAX)
-				chip->filter = FILTER_MAX;
-#endif
-		}
-		/* simulate decay */
+		/* add/subtract the syllabic filter output to/from the integrator */
+		double di = (1.0 - chip->decay)*chip->syl_level;
+		if (chip->databit != 0)
+			chip->integrator += di;
 		else
-		{
-			chip->filter *= decay;
-#ifndef PINMAME //!! should not be needed from chip spec, as it will either alternate 0/1 databits or output 'real' silence
-			if (chip->filter < FILTER_MIN)
-				chip->filter = FILTER_MIN;
-#endif
-		}
+			chip->integrator -= di;
+
+		/* shift the bit into the shift register */
+		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & SHIFTMASK;
+
+		/* figure the new syllabic filter output */
+		chip->syl_level *= chip->charge;
+		chip->syl_level += (1.0 - chip->charge) * ((chip->shiftreg == 0 || chip->shiftreg == SHIFTMASK) ? V_HIGH : V_LOW);
 
 		/* compute the sample as a 16-bit word */
 		temp = chip->integrator * chip->gain;
 
 #ifdef PINMAME
-#if 1
 		/* compress the sample range to fit better in a 16-bit word */
 		// Pharaoh: up to 109000, 'normal' max around 45000-50000, so find a balance between compression and clipping
 		if (temp < 0.)
@@ -267,36 +381,21 @@ void hc55516_clock_w(int num, int state)
 		else
 			temp = temp / (temp *  (1.0 / 32768.0) + 1.0) + temp*0.15;
 
-		if (chip->last_sound == 0) // missed a soundupdate: lerp data in here directly
-			temp = (temp + chip->next_value)*0.5;
-
+		/* clip to INT16 range */
 		if(temp <= -32768.)
-			chip->next_value = -32768;
+			temp = -32768;
 		else if(temp >= 32767.)
-			chip->next_value = 32767;
-		else
-			chip->next_value = (INT16)temp;
-#else
-		/* Cut off extreme peaks produced by bad speech data (eg. Pharaoh) */
-		if (temp < -80000.) temp = -80000.;
-		else if (temp > 80000.) temp = 80000.;
-		/* Just wrap to prevent clipping */
-		if (temp < -32768.) chip->next_value = (INT16)(-65536. - temp);
-		else if (temp > 32767.) chip->next_value = (INT16)(65535. - temp);
-		else chip->next_value = (INT16)temp;
-#endif
+			temp = 32767;
 #else
 		/* compress the sample range to fit better in a 16-bit word */
 		if (temp < 0.)
-			chip->next_value = (int)(temp / (temp * -(1.0 / 32768.0) + 1.0));
+			temp = (temp / (temp * -(1.0 / 32768.0) + 1.0));
 		else
-			chip->next_value = (int)(temp / (temp *  (1.0 / 32768.0) + 1.0));
+			temp = (temp / (temp *  (1.0 / 32768.0) + 1.0));
 #endif
-		/* clear the update count */
-		chip->last_sound = 0;
 
-		/* update the output buffer before changing the registers */
-		stream_update(chip->channel, 0);
+		/* add the sample to the ring buffer */
+		add_sample_out(chip, (INT16)temp);
 	}
 }
 
@@ -319,9 +418,67 @@ void hc55516_clock_clear_w(int num, int data)
 	hc55516_clock_w(num, 0);
 }
 
+// collect clock statistics on each rising clock edge
+static void collect_clock_stats(int num)
+{
+	struct hc55516_data *chip = &hc55516[num];
+
+	// note the time since the last update
+	double now = timer_get_time();
+	
+	// check if the last clock was recent enough that we can assume that the
+	// clock has been running since the previous sample
+	double dt = now - chip->clock.t_rise;
+	if (dt < .001)
+	{
+		// The clock is running.  Collect the timing sample.
+		chip->clock.t_sum += dt;
+		chip->clock.n_samples++;
+
+		// If we've passed the next threshold for adjusting the filter
+		// based on the collected clock data, make the adjustment.
+		if (chip->clock.n_samples >= chip->clock.next_filter_adjustment)
+		{
+			// recalculate the syllabic filter parameters based on the
+			// new sample rate
+			calc_syllabic_filter_params(chip, chip->clock.t_sum / chip->clock.n_samples);
+
+			// change the output stream to match the observed sample rate
+			stream_set_sample_rate(chip->channel, chip->clock.freq);
+
+			// set the next update threshold to (much) longer, as we 
+			// usually converge on the actual clock rate within a few
+			// iterations
+			chip->clock.next_filter_adjustment *= 8;
+			if (chip->clock.next_filter_adjustment == 0)
+				chip->clock.next_filter_adjustment = 1000000000000LL;
+		}
+	}
+	else
+	{
+		int i;
+		INT16 s;
+
+		// The previous clock time was too long ago for this to be part of
+		// the same clock run.  That means that the clock has newly started,
+		// so we've probably just started playing back a new track.  Stuff
+		// a few silent samples into the buffer, so that we can keep the
+		// simulated sample stream ahead of the actual output sound stream.
+		// That will better accommodate slight variations in the clock rate
+		// from the sound board host by keeping a small backlog of samples
+		// in the buffer for times when the host gets a tiny bit behind.
+		s = chip->samples_out.buf[chip->samples_out.read];
+		for (i = 0; i < 16; ++i)
+			add_sample_out(chip, s /= 2);
+	}
+
+	// remember the last time
+	chip->clock.t_rise = now;
+}
 
 void hc55516_clock_set_w(int num, int data)
 {
+	collect_clock_stats(num);
 	hc55516_clock_w(num, 1);
 }
 
