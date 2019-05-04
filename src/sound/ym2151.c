@@ -119,6 +119,43 @@ typedef struct
 	UINT32		timer_A_index_old;		/* timer A previous index */
 	UINT32		timer_B_index_old;		/* timer B previous index */
 
+	/*
+	*   IRQ reset timer.  When the host sends us a register 0x14 command to
+	*   clear the IRQ line, we set this timer to defer the IRQ change for a
+	*   short time rather than carrying it out immediately.  This simulates
+	*   the "busy time" of the real hardware chip, which doesn't carry out
+	*   the IRQ change instantaneously but rather carries it out after the
+	*   register update propagates through an internal shift register.  This
+	*   might seem like an incredibly irrelevant bit of hair-splitting, but
+	*   it turns out that at least one known pinball host actually depends
+	*   upon a slight delay in the IRQ line change: specifically, the WPC89
+	*   sound board software.  If the IRQ line changes instantaneously, it
+	*   triggers the bug that led to the infamous PREDCS_FIRQ_HACK - see
+	*   wpc/wmssnd.c for details on that old hack, the bug, and an 
+	*   explanation of how the previously faulty, instantaneous IRQ change
+	*   in the YM2151 emulation was the root cause.
+	*
+	*   How long is the propagation delay in the REAL chip?  That's not
+	*   clear; it's not mentioned anywhere in the YM2151 data sheet or
+	*   application guide.  What IS documented is the overall time it takes
+	*   to complete a register write operation: 68 ticks of the 3.58MHz main
+	*   clock, or about 19us.  The change to the IRQ output pin could happen
+	*   at any time during that 68-clock period (as some internal registers
+	*   might get updated partway through the process), or it could happen
+	*   a couple of clocks later still (as the output pin might be a couple
+	*   of gate stages removed from the register).  If we look to the WPC89
+	*   software as our guide, that depends upon an absolute minimum of 2us
+	*   (4 clocks on the 2MHz 6809).  Since that software has no provision
+	*   for timing variability, it would only have been reliable if the
+	*   actual observed delay time were much longer than the 2us minimum,
+	*   so that clock errors and variations in phase and (as we're talking 
+	*   about two separate clocks here) wouldn't ever push us out of the
+	*   safe envelope.  A factor of 5X should be an adequate margin.  So
+	*   let's say 10us.
+	*/
+	void		*IRQ_clear_timer;
+#define IRQ_CLEAR_DELAY_TIME_US  10.0
+
 	/*	Frequency-deltas to get the closest frequency possible.
 	*	There are 11 octaves because of DT2 (max 950 cents over base frequency)
 	*	and LFO phase modulation (max 800 cents below AND over base frequency)
@@ -710,6 +747,8 @@ static void timer_callback_a (int n)
 	}
 	if (chip->irq_enable & 0x80)
 		chip->csm_req = 2;		/* request KEY ON / KEY OFF sequence */
+
+	timer_enable(chip->IRQ_clear_timer, 0);  /* cancel any pending delayed IRQ clear */
 }
 
 static void timer_callback_b (int n)
@@ -723,7 +762,18 @@ static void timer_callback_b (int n)
 		chip->status |= 2;
 		if ((!oldstate) && (chip->irqhandler)) (*chip->irqhandler)(1);
 	}
+
+	timer_enable(chip->IRQ_clear_timer, 0);  /* cancel any pending delayed IRQ clear */
 }
+
+static void irq_clear_timer_callback(int n)
+{
+	/* notify the host's IRQ callback that the IRQ line has been cleared */
+	YM2151 *chip = &YMPSG[n];
+	if (chip->irqhandler != NULL) 
+		(*chip->irqhandler)(0);
+}
+
 
 #if 0
 static void timer_callback_chip_busy (int n)
@@ -975,48 +1025,55 @@ void YM2151WriteReg(int n, int r, int v)
 			break;
 
 		case 0x14:	/* CSM, irq flag reset, irq enable, timer start/stop */
-
-			chip->irq_enable = v;	/* bit 3-timer B, bit 2-timer A, bit 7 - CSM */
-
-			if (v&0x20)	/* reset timer B irq flag */
 			{
-				int oldstate = chip->status & 3;
-				chip->status &= ~2;
-				if ((oldstate==2) && (chip->irqhandler)) (*chip->irqhandler)(0);
-			}
+				chip->irq_enable = v;	/* bit 3-timer B, bit 2-timer A, bit 7 - CSM */
 
-			if (v&0x10)	/* reset timer A irq flag */
-			{
-				int oldstate = chip->status & 3;
-				chip->status &= ~1;
-				if ((oldstate==1) && (chip->irqhandler)) (*chip->irqhandler)(0);
+				int oldstatus = chip->status & 3;
 
-			}
+				if (v&0x20) {	/* reset timer B irq flag */
+					chip->status &= ~2;
+				}
 
-			if (v&0x02){	/* load and start timer B */
-				/* ASG 980324: added a real timer */
-				/* start timer _only_ if it wasn't already started (it will reload time value next round) */
-					if (!timer_enable(chip->timer_B, 1))
-					{
-						timer_adjust(chip->timer_B, chip->timer_B_time[ chip->timer_B_index ], n, 0);
-						chip->timer_B_index_old = chip->timer_B_index;
-					}
-			}else{		/* stop timer B */
-				/* ASG 980324: added a real timer */
-					timer_enable(chip->timer_B, 0);
-			}
+				if (v&0x10) {	/* reset timer A irq flag */
+					chip->status &= ~1;
+				}
 
-			if (v&0x01){	/* load and start timer A */
-				/* ASG 980324: added a real timer */
-				/* start timer _only_ if it wasn't already started (it will reload time value next round) */
-					if (!timer_enable(chip->timer_A, 1))
-					{
-						timer_adjust(chip->timer_A, chip->timer_A_time[ chip->timer_A_index ], n, 0);
-						chip->timer_A_index_old = chip->timer_A_index;
-					}
-			}else{		/* stop timer A */
-				/* ASG 980324: added a real timer */
-					timer_enable(chip->timer_A, 0);
+				/*
+				*   If the IRQ status changed from ON to OFF, notify the host, but
+				*   do so on a delay.  The change to the register takes a finite time
+				*   to propagate to the physical IRQ pin on the real hardware chip, and
+				*   at least one host (the WPC89 sound board) actually depends upon the
+				*   timing being non-instantaneous.
+				*/
+				if (oldstatus != 0 && (chip->status & 0x03) == 0) {
+					timer_adjust(chip->IRQ_clear_timer, IRQ_CLEAR_DELAY_TIME_US/1.0e6, n, 0);
+				}
+
+				if (v&0x02){	/* load and start timer B */
+					/* ASG 980324: added a real timer */
+					/* start timer _only_ if it wasn't already started (it will reload time value next round) */
+						if (!timer_enable(chip->timer_B, 1))
+						{
+							timer_adjust(chip->timer_B, chip->timer_B_time[ chip->timer_B_index ], n, 0);
+							chip->timer_B_index_old = chip->timer_B_index;
+						}
+				}else{		/* stop timer B */
+					/* ASG 980324: added a real timer */
+						timer_enable(chip->timer_B, 0);
+				}
+
+				if (v&0x01){	/* load and start timer A */
+					/* ASG 980324: added a real timer */
+					/* start timer _only_ if it wasn't already started (it will reload time value next round) */
+						if (!timer_enable(chip->timer_A, 1))
+						{
+							timer_adjust(chip->timer_A, chip->timer_A_time[ chip->timer_A_index ], n, 0);
+							chip->timer_A_index_old = chip->timer_A_index;
+						}
+				}else{		/* stop timer A */
+					/* ASG 980324: added a real timer */
+						timer_enable(chip->timer_A, 0);
+				}
 			}
 			break;
 
@@ -1385,6 +1442,7 @@ int YM2151Init(int num, int clock, int rate)
 		/* this must be done _before_ a call to YM2151ResetChip() */
 		YMPSG[i].timer_A = timer_alloc(timer_callback_a);
 		YMPSG[i].timer_B = timer_alloc(timer_callback_b);
+		YMPSG[i].IRQ_clear_timer = timer_alloc(irq_clear_timer_callback);
 
 		YM2151ResetChip(i);
 		/*logerror("YM2151[init] clock=%i sampfreq=%i\n", YMPSG[i].clock, YMPSG[i].sampfreq);*/
