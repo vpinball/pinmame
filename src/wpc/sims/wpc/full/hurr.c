@@ -380,6 +380,7 @@ static core_tGameData hurrGameData = {
 /----------------*/
 static void init_hurr(void) {
   core_gameData = &hurrGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void hurr_handleMech(int mech) {
