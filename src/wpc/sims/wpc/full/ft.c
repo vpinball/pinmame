@@ -533,6 +533,7 @@ static void init_ft(void) {
   /*Gate starts as closed!*/
   locals.gatePos = CLOSED;
   wpc_set_fastflip_addr(0x7b);
+  hc55516_set_sample_clock(0, 22372);
 }
 
 /*-- return status of custom solenoids --*/

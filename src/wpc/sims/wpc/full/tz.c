@@ -610,6 +610,7 @@ static void init_tz(void) {
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            tz_swRowRead);
   wpc_set_modsol_aux_board(1);
+  hc55516_set_sample_clock(0, 22372);
   mech_add(0,&mechClock);
 }
 

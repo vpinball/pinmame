@@ -485,6 +485,7 @@ static WRITE_HANDLER(cftbl_wpc_w) {
 static void init_cftbl(void) {
   core_gameData = &cftblGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, cftbl_wpc_w);
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void cftbl_handleMech(int mech) {
