@@ -5,7 +5,7 @@
 // init_GAME() routine (e.g., init_taf() for The Addams Family) with
 // a call to hc55516_set_sample_clock() that sets the correct initial
 // rate for the game.
-//#define LOG_SAMPLE_RATE
+// #define LOG_SAMPLE_RATE
 
 #include "driver.h"
 #include "filter.h"
@@ -242,7 +242,10 @@ int hc55516_sh_start(const struct MachineSound *msound)
 
 	// if desired, create a log file
 #ifdef LOG_SAMPLE_RATE
-	logfp = fopen("vpm_hc55516.log", "w");
+	char tmp[_MAX_PATH];
+	strcpy_s(tmp, sizeof(tmp), Machine->gamedrv->name);
+	strcat_s(tmp, sizeof(tmp), ".vpm_hc55516.log");
+	logfp = fopen(tmp, "a");
 #endif
 
 	// loop over HC55516 chips
