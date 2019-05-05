@@ -588,6 +588,7 @@ static core_tGameData gwGameData = {
 /----------------*/
 static void init_gw(void) {
   core_gameData = &gwGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 /***************************************************************************************************

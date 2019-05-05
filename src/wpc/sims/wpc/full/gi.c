@@ -525,6 +525,7 @@ static core_tGameData giGameData = {
 /----------------*/
 static void init_gi(void) {
   core_gameData = &giGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void gi_handleMech(int mech) {

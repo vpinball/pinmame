@@ -552,6 +552,7 @@ static void init_ww(void) {
   HC4094_oe_w(1, 1);
   HC4094_strobe_w(0, 1);
   HC4094_strobe_w(1, 1);
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void ww_handleMech(int mech) {
