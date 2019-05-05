@@ -587,6 +587,7 @@ static core_tGameData tafGameData = {
 /----------------*/
 static void init_taf(void) {
   core_gameData = &tafGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void taf_handleMech(int mech) {
