@@ -1,27 +1,31 @@
-// TO DO:  Set the sample rate in the machine driver parameters for each game
-// using this chip.  In the absence of a known sample rate, we have to infer the
-// rate by observing the clock used for actual data sent to the chip.  We can
-// get a good read on the clock within about 1 second of sample output, but
-// if the actual sample rate isn't fairly close to the default initial rate,
-// there's an audible glitch when we make the first adjustment.  It would be
-// better to know the expected rate from the outset so that we don't have to
-// hear that initial glitch every time.
+// Un-comment the following line to create a test build that writes the
+// measured sample rate to a log file (vpm_hc55516.log) while the game
+// runs.  This lets you collect the actual sample rate for a game whose
+// clock rate isn't yet known.  You can then patch up the game's
+// init_GAME() routine (e.g., init_taf() for The Addams Family) with
+// a call to hc55516_set_sample_clock() that sets the correct initial
+// rate for the game.
+//#define LOG_SAMPLE_RATE
 
 #include "driver.h"
 #include "filter.h"
 #include <math.h>
+#include <stdio.h>
 #ifdef __MINGW32__
  #include <windef.h>
 #endif
 
-//#ifndef M_E
-// #define M_E 2.7182818284590452353602874713527
-//#endif
+// Log file for sample rate data, for testing builds
+static FILE *logfp;
 
-// Output filter type.  In principle, the FIR filter should have a
-// steeper cutoff wall and therefore should do a better job of
-// filtering out the quantization noise.  But the single-pole
-// filter sounds a little better to my ear.
+// Final low-pass output filter type.  A CVSD decoder pretty much requires 
+// a low-pass filter to reduce quantization noise above the Nyquist limit
+// (which is half the sampling rate).  The code can be configured with a
+// couple of different filters here.  In principle, the best option should
+// be a FIR filter, as that should have a nice steep wall at the cutoff
+// frequency.  A simple single-pole low-pass filter actually sounds a
+// little better to my ear.
+#define NO_OUTPUT_FILTER   0   // no filtering - not recommended
 #define FIR_OUTPUT_FILTER  1   // low-pass FIR filter
 #define SP_OUTPUT_FILTER   2   // simple single-pole low-pass filter
 #define OUTPUT_FILTER_TYPE FIR_OUTPUT_FILTER
@@ -140,8 +144,13 @@ struct hc55516_data
 		// sample count for next filter adjustment 
 		INT64 next_filter_adjustment;
 
-		// sum of measured sample times
+		// sum of measured sample times over the whole run
 		double t_sum;
+
+		// sum of measured sample times since the last checkpoint (to check
+		// for convergence)
+		int n_samples_cur;
+		double t_sum_cur;
 	} clock;
 
 
@@ -161,9 +170,13 @@ struct hc55516_data
 #endif
 };
 
-
+// chip structures
 static struct hc55516_data hc55516[MAX_HC55516];
 
+// pre-set sample rates
+static int hc55516_clock_rate[MAX_HC55516];
+
+// foward declarations
 static void hc55516_update(int num, INT16 *buffer, int length);
 
 static void calc_syllabic_filter_params(struct hc55516_data *chip, double sample_time)
@@ -227,24 +240,44 @@ int hc55516_sh_start(const struct MachineSound *msound)
 	const struct hc55516_interface *intf = msound->sound_interface;
 	int i;
 
-	/* loop over HC55516 chips */
+	// if desired, create a log file
+#ifdef LOG_SAMPLE_RATE
+	logfp = fopen("vpm_hc55516.log", "w");
+#endif
+
+	// loop over HC55516 chips
 	for (i = 0; i < intf->num; i++)
 	{
 		struct hc55516_data *chip = &hc55516[i];
 		char name[40];
+		int freq;
 
-		/* reset the chip struct */
+		// reset the chip struct
 		memset(chip, 0, sizeof(*chip));
 
-		/* set the default clock rate and set default syllabic filter parameters */
-		calc_syllabic_filter_params(chip, 1.0 / 12000.0);
+		// assume that the game driver pre-set the sample rate so that we don't have
+		// to figure it out ourselves
+		chip->clock.next_filter_adjustment = 1000000000000LL;
 
-		/* update the filter after collecting enough samples to have a good read on the actual rate */
-		chip->clock.next_filter_adjustment = 2000;
+		// Set the initial frequency.  If the game driver set a known  frequency via
+		// hc55516_set_clock_rate(), use that, otherwise use a default.
+		freq = hc55516_clock_rate[i];
+		if (freq == 0)
+		{
+			// set a default sample rate
+			freq = 12000;
 
-		/* create the stream */
+			// we need to collect sample rate data and adjust the filter once we have
+			// enough data to determine the actual rate
+			chip->clock.next_filter_adjustment = 250;
+		}
+
+		// set the initial syllabic filter parameters
+		calc_syllabic_filter_params(chip, 1.0 / freq);
+
+		// create the output stream
 		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], chip->clock.freq, i, hc55516_update);
+		chip->channel = stream_init(name, intf->volume[i], freq, i, hc55516_update);
 		chip->gain = SAMPLE_GAIN;
 		/* bail on fail */
 		if (chip->channel == -1)
@@ -308,13 +341,15 @@ void hc55516_update(int num, INT16 *buffer, int length)
 			sample = (chip->samples_out.buf[chip->samples_out.read] /= 2);
 		}
 
-		/* apply the low-pass filter */
+		/* apply the low-pass filter (if any) */
 #if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
 		filter_insert(chip->filter_f, chip->filter_state, (filter_real)sample);
 		*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 #elif OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
 		chip->out_filter_sample = (INT16)(chip->out_filter_sample + chip->out_filter_alpha*(sample - chip->out_filter_sample));
 		*buffer++ = (INT16)chip->out_filter_sample;
+#else
+		*buffer++ = sample;
 #endif
 	}
 }
@@ -333,6 +368,90 @@ static void add_sample_out(struct hc55516_data *chip, INT16 sample)
 	}
 }
 
+// collect clock statistics on each rising clock edge
+static void collect_clock_stats(int num)
+{
+	struct hc55516_data *chip = &hc55516[num];
+
+	// note the time since the last update
+	double now = timer_get_time();
+
+	// check if the last clock was recent enough that we can assume that the
+	// clock has been running since the previous sample
+	double dt = now - chip->clock.t_rise;
+	if (dt < .001)
+	{
+		// The clock is running.  Collect the timing sample.
+		chip->clock.t_sum += dt;
+		chip->clock.n_samples++;
+
+#ifdef LOG_SAMPLE_RATE
+		chip->clock.n_samples_cur++;
+		chip->clock.t_sum_cur += dt;
+		if (logfp != NULL && chip->clock.n_samples_cur >= 2000)
+		{
+			// for logging purposes, collect a separate sum since the last log point, to
+			// make sure there's not a lot of short-term fluctuation, which might indicate
+			// a bug in the emulation or, more problematically, a game that uses a mix of
+			// different rates for different clips
+
+			// log the data
+			fprintf(logfp, "Chip #%d  # samples: %10I64d   current: %6d Hz   average:  %6d Hz\n",
+				num, chip->clock.n_samples,
+				(int)(chip->clock.n_samples_cur / chip->clock.t_sum_cur),
+				(int)(chip->clock.n_samples / chip->clock.t_sum));
+			fflush(logfp);
+
+			// reset the local counters
+			chip->clock.n_samples_cur = 0;
+			chip->clock.t_sum_cur = 0;
+		}
+#endif
+
+		// If we've passed the next threshold for adjusting the filter
+		// based on the collected clock data, make the adjustment.
+		if (chip->clock.n_samples >= chip->clock.next_filter_adjustment)
+		{
+			// recalculate the syllabic filter parameters based on the
+			// new sample rate
+			calc_syllabic_filter_params(chip, chip->clock.t_sum / chip->clock.n_samples);
+
+			// change the output stream to match the observed sample rate
+			stream_set_sample_rate(chip->channel, chip->clock.freq);
+
+			// Set the next update threshold.  The reading usually converges
+			// pretty quickly, so we don't need to keep this up for too many
+			// iterations.
+			if (chip->clock.next_filter_adjustment < 5000)
+				chip->clock.next_filter_adjustment = 5000;
+			else if (chip->clock.next_filter_adjustment < 5000)
+				chip->clock.next_filter_adjustment = 30000;
+			else
+				chip->clock.next_filter_adjustment = 1000000000000LL;  // basically "never again"
+		}
+	}
+	else
+	{
+		int i;
+		INT16 s;
+
+		// The previous clock time was too long ago for this to be part of
+		// the same clock run.  That means that the clock has newly started,
+		// so we've probably just started playing back a new track.  Stuff
+		// a few silent samples into the buffer, so that we can keep the
+		// simulated sample stream ahead of the actual output sound stream.
+		// That will better accommodate slight variations in the clock rate
+		// from the sound board host by keeping a small backlog of samples
+		// in the buffer for times when the host gets a tiny bit behind.
+		s = chip->samples_out.buf[chip->samples_out.read];
+		for (i = 0; i < 16; ++i)
+			add_sample_out(chip, s /= 2);
+	}
+
+	// remember the last time
+	chip->clock.t_rise = now;
+}
+
 void hc55516_clock_w(int num, int state)
 {
 	struct hc55516_data *chip = &hc55516[num];
@@ -346,6 +465,9 @@ void hc55516_clock_w(int num, int state)
 	if (diffclock && clock) //!! mc341x would need !clock
 	{
 		double temp;
+
+		// collect clock timing data on each rising edge
+		collect_clock_stats(num);
 
 		/* move the estimator up or down a step based on the bit */
 		if (chip->databit)
@@ -418,67 +540,8 @@ void hc55516_clock_clear_w(int num, int data)
 	hc55516_clock_w(num, 0);
 }
 
-// collect clock statistics on each rising clock edge
-static void collect_clock_stats(int num)
-{
-	struct hc55516_data *chip = &hc55516[num];
-
-	// note the time since the last update
-	double now = timer_get_time();
-	
-	// check if the last clock was recent enough that we can assume that the
-	// clock has been running since the previous sample
-	double dt = now - chip->clock.t_rise;
-	if (dt < .001)
-	{
-		// The clock is running.  Collect the timing sample.
-		chip->clock.t_sum += dt;
-		chip->clock.n_samples++;
-
-		// If we've passed the next threshold for adjusting the filter
-		// based on the collected clock data, make the adjustment.
-		if (chip->clock.n_samples >= chip->clock.next_filter_adjustment)
-		{
-			// recalculate the syllabic filter parameters based on the
-			// new sample rate
-			calc_syllabic_filter_params(chip, chip->clock.t_sum / chip->clock.n_samples);
-
-			// change the output stream to match the observed sample rate
-			stream_set_sample_rate(chip->channel, chip->clock.freq);
-
-			// set the next update threshold to (much) longer, as we 
-			// usually converge on the actual clock rate within a few
-			// iterations
-			chip->clock.next_filter_adjustment *= 8;
-			if (chip->clock.next_filter_adjustment == 0)
-				chip->clock.next_filter_adjustment = 1000000000000LL;
-		}
-	}
-	else
-	{
-		int i;
-		INT16 s;
-
-		// The previous clock time was too long ago for this to be part of
-		// the same clock run.  That means that the clock has newly started,
-		// so we've probably just started playing back a new track.  Stuff
-		// a few silent samples into the buffer, so that we can keep the
-		// simulated sample stream ahead of the actual output sound stream.
-		// That will better accommodate slight variations in the clock rate
-		// from the sound board host by keeping a small backlog of samples
-		// in the buffer for times when the host gets a tiny bit behind.
-		s = chip->samples_out.buf[chip->samples_out.read];
-		for (i = 0; i < 16; ++i)
-			add_sample_out(chip, s /= 2);
-	}
-
-	// remember the last time
-	chip->clock.t_rise = now;
-}
-
 void hc55516_clock_set_w(int num, int data)
 {
-	collect_clock_stats(num);
 	hc55516_clock_w(num, 1);
 }
 
@@ -489,6 +552,19 @@ void hc55516_digit_clock_clear_w(int num, int data)
 	hc55516_clock_w(num, 0);
 }
 
+// Set a known sampling rate for the game.  The init_GAME() function for the
+// specific game can call this during initialization to preset the clock rate
+// for the HC55516 chip, if known.  In the absence of this information, we
+// have to infer the sample rate by observing the actual data that the game's
+// emulated sound board sends us.  It takes a few moments to get a good read
+// on the sample rate, so there tends to be some glitching during the first
+// couple of seconds of playback.  Initializing the game with the correct
+// value makes for a more seamless startup.
+void hc55516_set_sample_clock(int num, int frequency)
+{
+	if (num >= 0 && num < MAX_HC55516)
+		hc55516_clock_rate[num] = frequency;
+}
 
 WRITE_HANDLER( hc55516_0_digit_w )	{ hc55516_digit_w(0,data); }
 WRITE_HANDLER( hc55516_0_clock_w )	{ hc55516_clock_w(0,data); }

@@ -88,11 +88,11 @@
 //
 //     ORCC $50    ; IF|II (inhibit FIRQ + IRQ)
 // L0: LDA [2401]  ; YM2151 status register
-//     BMI DF46    ; loop until ready
+//     BMI L0      ; loop until ready
 //     LDA $14     ; register $14 - clock settings
 //     STA [2400]  ; write YM2151 address
 // L1: LDA [2401]  ; read YM2151 status
-//     BMI DF50    ; loop until ready
+//     BMI L1      ; loop until ready
 //     LDA $15     ; start timer A, enable timer A IRQ, clear timer A IRQ
 //     STA [2401]  ; write YM2151 data register
 //     ANDCC $AF   ; IF|II (enable FIRQ + IRQ)
@@ -149,7 +149,7 @@
 // written.  Plus it would be a huge amount of work to find the right code
 // section and patch it in all of the different ROMs.  So we want to fix the
 // emulator, not the "emulatee".  More importantly, perhaps, we can see that
-// the emulator is actually at fault here, not the original code, beacuse this
+// the emulator is actually at fault here, not the original code, because this
 // problem obviously didn't happen on the real hardware.  People would have 
 // noticed.  So given that it doesn't happen on the hardware, why does it
 // happen in the emulator?  Because the emulator, being an emulator, is an 
@@ -188,7 +188,7 @@
 // some big internal shift register, so my bet is that the new registers are
 // all latched at once 68 cycles after a write, and the EFFECTS of those new
 // register settings propagate out to the rest of the chip some number of 
-// clocks after that.  But even if some register update faster than others, 
+// clocks after that.  But even if some registers update faster than others, 
 // I think we can safely infer from the Williams code that the IRQ change
 // must take much longer than 2us - long enough that there's no risk from
 // little clock wobbles that it'll sometimes be shorter than 2us.  Would
@@ -198,7 +198,7 @@
 // 10us delay on an IRQ CLEAR change taking effect.  With this change in
 // effect, we can drop the 2400 Hz timer hack.
 //
-// Let's take a moment to look at why that 2400 Hz hack helped in the 
+// Let's take a moment to look at why that 2400 Hz hack helped in the first
 // place.  The problem is that we're losing a lot of interrupts.  The
 // hack helped by forcing in a bunch of new ones to compensate for the
 // original ones that got lost.  The YM interrupts happen every 178us, or
