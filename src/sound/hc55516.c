@@ -15,6 +15,10 @@
  #include <windef.h>
 #endif
 
+#ifndef _countof
+#define _countof(a) (sizeof(a)/sizeof(a[0]))
+#endif
+
 // Log file for sample rate data, for testing builds
 static FILE *logfp;
 
@@ -243,8 +247,12 @@ int hc55516_sh_start(const struct MachineSound *msound)
 	// if desired, create a log file
 #ifdef LOG_SAMPLE_RATE
 	char tmp[_MAX_PATH];
+#ifdef strcpy_s
 	strcpy_s(tmp, sizeof(tmp), Machine->gamedrv->name);
 	strcat_s(tmp, sizeof(tmp), ".vpm_hc55516.log");
+#else
+	sprintf(tmp, "vpm_hc55516.log");
+#endif
 	logfp = fopen(tmp, "a");
 #endif
 
