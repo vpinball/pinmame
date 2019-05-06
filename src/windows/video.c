@@ -43,7 +43,6 @@ extern struct rc_option win_d3d_opts[];
 
 // from ticker.c
 extern void uSleep(const UINT64 u);
-extern void uSleepApproximate(const UINT64 u);
 extern void uOverSleep(const UINT64 u);
 extern void uUnderSleep(const UINT64 u);
 
@@ -807,17 +806,9 @@ void throttle_speed_part(int part, int totalparts)
 			//if((INT64)((target - curr)/(ticks_per_sleep_msec*1.1))-1 > 0) // pessimistic estimate of stuff below, but still stutters then
 			//	uSleep((UINT64)((target - curr)*1000/(ticks_per_sleep_msec*1.1))-1);
 			if (totalparts > 1)
-#ifdef uUnderSleep
 				uUnderSleep((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec)); // will sleep too short
-#else
-				uSleepApproximate((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec)); // will sleep too short
-#endif
 			else
-#ifdef uOverSleep
 				uOverSleep((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec)); // will sleep too long
-#else
-				uSleep((UINT64)((target - curr) * 1000 / ticks_per_sleep_msec)); // will sleep too long
-#endif
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind
