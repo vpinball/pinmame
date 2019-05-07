@@ -2305,6 +2305,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\sound\mc3417.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\sound\mc3417.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\sound\mea8000.c"
 						>
 					</File>

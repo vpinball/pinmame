@@ -1081,6 +1081,14 @@ SOURCE=.\src\sound\m114s.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\mc3417.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\mc3417.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\mea8000.c
 # End Source File
 # Begin Source File
