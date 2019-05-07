@@ -107,6 +107,9 @@ struct MachineSound
 #if (HAS_HC55516)
 #include "sound/hc55516.h"
 #endif
+#if (HAS_MC3417)
+#include "sound/mc3417.h"
+#endif
 #if (HAS_K005289)
 #include "sound/k005289.h"
 #endif
@@ -317,6 +320,9 @@ enum
 #endif
 #if (HAS_HC55516)
 	SOUND_HC55516,
+#endif
+#if (HAS_MC3417)
+	SOUND_MC3417,
 #endif
 #if (HAS_K005289)
 	SOUND_K005289,

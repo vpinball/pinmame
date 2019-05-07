@@ -20,7 +20,8 @@
   ------------------------------
   M6802/M6808
   AY8910 Sound Generator
-  HC55516 DAC
+  MC3417
+  DAC
 
   Squalk N Talk -61
   -------------

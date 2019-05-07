@@ -85,6 +85,7 @@ DRVLIBS += $(PINOBJ)/boomerang.o
 DRVLIBS += $(PINOBJ)/spiritof76.o
 DRVLIBS += $(PINOBJ)/luckydraw.o
 DRVLIBS += $(PINOBJ)/efo.o $(PINOBJ)/efosnd.o
+DRVLIBS += $(PINOBJ)/recel.o
 #
 # Games
 #
@@ -220,6 +221,7 @@ ifdef ISVER6100
 SOUNDS += YM2610@ #to avoid compile errors
 endif
 SOUNDS += HC55516@
+SOUNDS += MC3417@
 SOUNDS += SAMPLES@
 SOUNDS += TMS5220@
 SOUNDS += AY8910@
