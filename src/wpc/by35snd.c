@@ -317,7 +317,7 @@ MACHINE_DRIVER_START(by51N)
   MDRV_SOUND_ADD(DAC, sp_dacInt)
 MACHINE_DRIVER_END
 
-static struct hc55516_interface sp_mc3417Int = { 1, {75}};
+static struct mc3417_interface sp_mc3417Int = { 1, {75}};
 
 static MEMORY_READ_START(sp56_readmem)
   { 0x0000, 0x007f, MRA_RAM },
