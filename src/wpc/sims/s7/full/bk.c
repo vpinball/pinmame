@@ -307,4 +307,4 @@ static core_tGameData bkGameData = {
 /*---------------
 /  Game handling
 /----------------*/
-static void init_bk(void) { core_gameData = &bkGameData; }
+static void init_bk(void) { core_gameData = &bkGameData; hc55516_set_sample_clock(0, 15167); }
