@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 // Un-comment the following line to create a test build that writes the
 // measured sample rate to a log file (vpm_hc55516.log) while the game
 // runs.  This lets you collect the actual sample rate for a game whose

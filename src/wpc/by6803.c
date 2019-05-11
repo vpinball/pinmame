@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /* Bally MPU-6803 Hardware
   6803 vectors:
   RES: FFFE-F
