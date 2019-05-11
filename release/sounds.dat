@@ -27,7 +27,7 @@
 ; Note that DCS requires an even number of bytes in the command.
 ;-----------------------------------------------------------------------
 
-kpv106:
+kpb105:
 :da0407010112:Trixy Death
 :da0407010178:Take a right loop
 :da0407010185:So you're the kid
