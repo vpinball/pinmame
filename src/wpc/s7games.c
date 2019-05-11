@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
 System 7 games have the software revision identified with an "L" to signify the Level of software release.
 To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.
