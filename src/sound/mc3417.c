@@ -212,8 +212,8 @@ void mc3417_clock_w(int num, int state)
 	diffclock = clock ^ chip->last_clock;
 	chip->last_clock = clock;
 
-	/* speech clock changing (active on rising edge) */
-	if (diffclock && clock) //!! mc341x would need !clock
+	/* speech clock changing (active on falling edge) */
+	if (diffclock && !clock)
 	{
 		double temp;
 
