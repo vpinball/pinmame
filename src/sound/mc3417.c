@@ -58,10 +58,9 @@ struct mc3417_data
 #ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks, f.e. Flash Gordon has (multiple) Sallen-Key Active Low-pass at the end (at least ~3Khz))
 	int     last_sound;
 
-#if ENABLE_LOWPASS_ESTIMATE
 	filter* filter_f;           /* filter used, ==0 if none */
 	filter_state* filter_state; /* state of the filter */
-
+#if ENABLE_LOWPASS_ESTIMATE
 	UINT32  length_estimate;    // for estimating the clock rate/'default' sample playback rate of the machine
 	UINT32  length_estimate_runs;
 #endif
@@ -102,6 +101,10 @@ int mc3417_sh_start(const struct MachineSound *msound)
 		chip->filter_f = 0;
 		chip->length_estimate = 0;
 		chip->length_estimate_runs = 0;
+#else
+		chip->filter_f = filter_lp_fir_alloc(0.04, FILTER_ORDER_MAX);
+		chip->filter_state = filter_state_alloc();
+		filter_state_reset(chip->filter_f, chip->filter_state);
 #endif
 #endif
 	}
@@ -191,10 +194,19 @@ void mc3417_update(int num, INT16 *buffer, int length)
 				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 			}
 		else
-#endif
-#endif
 			for (i = 0; i < length; i++, data += slope)
 				*buffer++ = data >> 15;
+#else // ENABLE_LOWPASS_ESTIMATE
+		for (i = 0; i < length; i++, data += slope)
+		{
+			filter_insert(chip->filter_f, chip->filter_state, (filter_real)data * (filter_real)(1.0/32768.0));
+			*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
+		}
+#endif
+#else // PINMAME
+		for (i = 0; i < length; i++, data += slope)
+			*buffer++ = data >> 15;
+#endif
 	}
 
 	chip->curr_value = chip->next_value;
