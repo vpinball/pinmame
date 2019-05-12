@@ -5,14 +5,10 @@
  #include <windef.h>
 #endif
 
-//#ifndef M_E
-// #define M_E 2.7182818284590452353602874713527
-//#endif
-
 #define SAMPLE_RATE (4*48000) // 4x oversampling of standard output rate
 
-#define SHIFTMASK 0x07 // = hc55516 and mc3417 //!! At least Xenon and Flash Gordon, and early Williams' (C-8226, but NOT the C-8228 so maybe does not matter overall??) had a MC3417
-//#define SHIFTMASK 0x0F // = mc3418 //!! also features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the simpler chips above!
+#define SHIFTMASK 0x07 // = mc3417 // at least Xenon and Flash Gordon
+//#define SHIFTMASK 0x0F // = mc3418 // features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the simpler chips above!
 
 #define	FILTER_MAX				1.0954 // 0 dbmo sine wave peak value volts from MC3417 datasheet
 #ifdef PINMAME
@@ -49,7 +45,7 @@
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #endif
 
-struct hc55516_data
+struct mc3417_data
 {
 	INT8 	channel;
 	UINT8	last_clock;
@@ -63,7 +59,7 @@ struct hc55516_data
 	double	integrator;
 	double  gain;
 
-#ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks, f.e. Flash Gordon has (multiple) Sallen-Key Active Low-pass at the end (at least ~3Khz), TZ has (multiple) Multiple Feedback Active Low-pass at the end (~3.5KHz))
+#ifdef PINMAME // add low pass filtering like chip spec suggests, and like real machines also had (=extreme filtering networks, f.e. Flash Gordon has (multiple) Sallen-Key Active Low-pass at the end (at least ~3Khz))
 	int     last_sound;
 
 #if ENABLE_LOWPASS_ESTIMATE
@@ -77,28 +73,28 @@ struct hc55516_data
 };
 
 
-static struct hc55516_data hc55516[MAX_HC55516];
+static struct mc3417_data mc3417[MAX_MC3417];
 
-static void hc55516_update(int num, INT16 *buffer, int length);
+static void mc3417_update(int num, INT16 *buffer, int length);
 
 
-int hc55516_sh_start(const struct MachineSound *msound)
+int mc3417_sh_start(const struct MachineSound *msound)
 {
-	const struct hc55516_interface *intf = msound->sound_interface;
+	const struct mc3417_interface *intf = msound->sound_interface;
 	int i;
 
-	/* loop over HC55516 chips */
+	/* loop over MC3417 chips */
 	for (i = 0; i < intf->num; i++)
 	{
-		struct hc55516_data *chip = &hc55516[i];
+		struct mc3417_data *chip = &mc3417[i];
 		char name[40];
 
 		/* reset the channel */
 		memset(chip, 0, sizeof(*chip));
 
 		/* create the stream */
-		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], SAMPLE_RATE, i, hc55516_update);
+		sprintf(name, "MC3417 #%d", i);
+		chip->channel = stream_init(name, intf->volume[i], SAMPLE_RATE, i, mc3417_update);
 		chip->gain = SAMPLE_GAIN;
 		/* bail on fail */
 		if (chip->channel == -1)
@@ -119,9 +115,9 @@ int hc55516_sh_start(const struct MachineSound *msound)
 }
 
 
-void hc55516_update(int num, INT16 *buffer, int length)
+void mc3417_update(int num, INT16 *buffer, int length)
 {
-	struct hc55516_data *chip = &hc55516[num];
+	struct mc3417_data *chip = &mc3417[num];
 	int i;
 
 	/* zero-length? bail */
@@ -131,7 +127,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 #ifdef PINMAME
 #if ENABLE_LOWPASS_ESTIMATE
 	// 'detect' clock rate and guesstimate low pass filtering from this
-	// not perfect, as some machines vary the clock rate, depending on the sample played  :/
+	// not perfect, as the clock rate varies depending on the sample played
  #define LOWPASS_ESTIMATE_CYCLES 666
 	if (chip->last_sound == 0 // is update coming from clock?
 		&& length < SAMPLE_RATE/12000 // and no outlier?
@@ -152,7 +148,7 @@ void hc55516_update(int num, INT16 *buffer, int length)
 
 		if (freq_scale < 0.45) // assume that high clock rates/most modern machines (that would end up at ~12000Hz filtering, see below) do not need to be filtered at all (improves clarity at the price of some noise)
 		{
-			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, FILTER_ORDER_MAX); // magic, majority of modern machines up to TZ = ~12000Hz then, older/low sampling rates = ~7000Hz, down to ~2500Hz for Black Knight //!! Xenon should actually end up at lower Hz, so maybe handle that one specifically?
+			chip->filter_f = filter_lp_fir_alloc((2000 + 22000*freq_scale)/SAMPLE_RATE, FILTER_ORDER_MAX); // magic, Xenon uses about 22 kHz
 			chip->filter_state = filter_state_alloc(); //!! leaks
 			filter_state_reset(chip->filter_f, chip->filter_state);
 		}
@@ -211,9 +207,9 @@ void hc55516_update(int num, INT16 *buffer, int length)
 }
 
 
-void hc55516_clock_w(int num, int state)
+void mc3417_clock_w(int num, int state)
 {
-	struct hc55516_data *chip = &hc55516[num];
+	struct mc3417_data *chip = &mc3417[num];
 	int clock = state & 1, diffclock;
 
 	/* update the clock */
@@ -277,7 +273,7 @@ void hc55516_clock_w(int num, int state)
 		else
 			chip->next_value = (INT16)temp;
 #else
-		/* Cut off extreme peaks produced by bad speech data (eg. Pharaoh) */
+		/* Cut off extreme peaks produced by bad speech data */
 		if (temp < -80000.) temp = -80000.;
 		else if (temp > 80000.) temp = 80000.;
 		/* Just wrap to prevent clipping */
@@ -300,47 +296,45 @@ void hc55516_clock_w(int num, int state)
 	}
 }
 
-#ifdef PINMAME
-void hc55516_set_gain(int num, double gain)
+void mc3417_set_gain(int num, double gain)
 {
-	hc55516[num].gain = gain;
-}
-#endif
-
-
-void hc55516_digit_w(int num, int data)
-{
-	hc55516[num].databit = data & 1;
+	mc3417[num].gain = gain;
 }
 
 
-void hc55516_clock_clear_w(int num, int data)
+void mc3417_digit_w(int num, int data)
 {
-	hc55516_clock_w(num, 0);
+	mc3417[num].databit = data & 1;
 }
 
 
-void hc55516_clock_set_w(int num, int data)
+void mc3417_clock_clear_w(int num, int data)
 {
-	hc55516_clock_w(num, 1);
+	mc3417_clock_w(num, 0);
 }
 
 
-void hc55516_digit_clock_clear_w(int num, int data)
+void mc3417_clock_set_w(int num, int data)
 {
-	hc55516[num].databit = data & 1;
-	hc55516_clock_w(num, 0);
+	mc3417_clock_w(num, 1);
 }
 
 
-WRITE_HANDLER( hc55516_0_digit_w )	{ hc55516_digit_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_w )	{ hc55516_clock_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_clear_w )	{ hc55516_clock_clear_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_set_w )		{ hc55516_clock_set_w(0,data); }
-WRITE_HANDLER( hc55516_0_digit_clock_clear_w )	{ hc55516_digit_clock_clear_w(0,data); }
+void mc3417_digit_clock_clear_w(int num, int data)
+{
+	mc3417[num].databit = data & 1;
+	mc3417_clock_w(num, 0);
+}
 
-WRITE_HANDLER( hc55516_1_digit_w ) { hc55516_digit_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_w ) { hc55516_clock_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_clear_w ) { hc55516_clock_clear_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_set_w )  { hc55516_clock_set_w(1,data); }
-WRITE_HANDLER( hc55516_1_digit_clock_clear_w ) { hc55516_digit_clock_clear_w(1,data); }
+
+WRITE_HANDLER( mc3417_0_digit_w )	{ mc3417_digit_w(0,data); }
+WRITE_HANDLER( mc3417_0_clock_w )	{ mc3417_clock_w(0,data); }
+WRITE_HANDLER( mc3417_0_clock_clear_w )	{ mc3417_clock_clear_w(0,data); }
+WRITE_HANDLER( mc3417_0_clock_set_w )		{ mc3417_clock_set_w(0,data); }
+WRITE_HANDLER( mc3417_0_digit_clock_clear_w )	{ mc3417_digit_clock_clear_w(0,data); }
+
+WRITE_HANDLER( mc3417_1_digit_w ) { mc3417_digit_w(1,data); }
+WRITE_HANDLER( mc3417_1_clock_w ) { mc3417_clock_w(1,data); }
+WRITE_HANDLER( mc3417_1_clock_clear_w ) { mc3417_clock_clear_w(1,data); }
+WRITE_HANDLER( mc3417_1_clock_set_w )  { mc3417_clock_set_w(1,data); }
+WRITE_HANDLER( mc3417_1_digit_clock_clear_w ) { mc3417_digit_clock_clear_w(1,data); }
