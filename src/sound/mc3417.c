@@ -8,23 +8,19 @@
 #define SAMPLE_RATE (4*48000) // 4x oversampling of standard output rate
 
 #define SHIFTMASK 0x07 // = mc3417 // at least Xenon and Flash Gordon
-//#define SHIFTMASK 0x0F // = mc3418 // features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the simpler chips above!
+//#define SHIFTMASK 0x0F // = mc3418 // features a more advanced syllabic filter (fancier lowpass filter for the step adaption) than the mc3417!
 
 #define	FILTER_MAX				1.0954 // 0 dbmo sine wave peak value volts from MC3417 datasheet
 #ifdef PINMAME
- // from exidy440, not really better or worse from quick testings
+ // from exidy440
  //#define INTEGRATOR_LEAK_TC		0.001
- //#define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
+ #define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
  //#define FILTER_DECAY_TC         ((18e3 + 3.3e3) * 0.33e-6)
- //#define decay  0.99114768031730635396012114691053
+ #define decay  0.99114768031730635396012114691053
  //#define FILTER_CHARGE_TC        (18e3 * 0.33e-6)
- //#define charge 0.9895332758787504236814964839343
+ #define charge 0.9895332758787504236814964839343
 
- #define leak   0.96875
- #define decay  0.9990234375
- #define charge 0.9990234375
-
- #define ENABLE_LOWPASS_ESTIMATE 1
+ #define ENABLE_LOWPASS_ESTIMATE 0 // don't use it for now, it sounds too muffled
  #define SAMPLE_GAIN			6500.0
 #else
  //#define	INTEGRATOR_LEAK_TC		0.001
@@ -257,7 +253,6 @@ void mc3417_clock_w(int num, int state)
 #ifdef PINMAME
 #if 1
 		/* compress the sample range to fit better in a 16-bit word */
-		// Pharaoh: up to 109000, 'normal' max around 45000-50000, so find a balance between compression and clipping
 		if (temp < 0.)
 			temp = temp / (temp * -(1.0 / 32768.0) + 1.0) + temp*0.15;
 		else
