@@ -550,13 +550,13 @@ static void bop_handleMech(int mech) {
 	// at table startup.
 	//
 	// We cannot do this in init_bop, NVRAM hasn't loaded yet. 
-    // However we may NOT want to use the built in mech handling (the below code would have 
+	// However we may NOT want to use the built in mech handling (the below code would have 
 	// been simpler as an actual mech and doesn't relay the motion).   
 	//
 	// So if g_fHandleMechanics is -1, reset the head position to 0,
 	// and then disable the internal mech handling.   If it is -2, then continue using the mech handling
 	// after reset. 
-
+#ifdef VPINMAME
 	if (g_fHandleMechanics < 0)
 	{
 		if (_stricmp(Machine->gamedrv->name, "bop_l7") == 0)
@@ -571,6 +571,7 @@ static void bop_handleMech(int mech) {
 		}
 		g_fHandleMechanics = 1;
 	}
+#endif
   /* ----------------------------------------------
      --	Head Position - SH*T, this was a PAIN!!! --
      --  BTW: Thanks to The Doc for giving help  --
