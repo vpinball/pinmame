@@ -14,7 +14,7 @@
 /* #define SOUND_DEBUG */
 
 static int sound_fake = 0;
-static int sound_samplerate = 22050;
+static int sound_samplerate = 48000;
 static float sound_bufsize = 3.0;
 static int sound_attenuation = -3;
 static char *sound_dsp_device = NULL;
@@ -58,7 +58,7 @@ struct rc_option sound_opts[] = {
      NULL,		1,			0,		sound_set_options,
      "Generate sound even when sound is disabled, this is needed for some games which won't run without sound" },
    { "samplefreq",	"sf",			rc_int,		&sound_samplerate,
-     "22050",		8000,			48000,		sound_set_options,
+     "48000",		8000,			96000,		sound_set_options,
      "Set the playback sample-frequency/rate" },
    { "bufsize", 	"bs",			rc_float,	&sound_bufsize,
      "3.0",		1.0,			30.0,		NULL,
