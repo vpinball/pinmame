@@ -66,7 +66,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 	static int name##_getsol(int solNo) { \
 		return (memory_region(REGION_CPU1)[fastflipaddr] > 0); \
 	} \
-	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0, ##name##_getsol},NULL,{"", capInvSw##gameno}}; \
+	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0, name##_getsol},NULL,{"", capInvSw##gameno}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
