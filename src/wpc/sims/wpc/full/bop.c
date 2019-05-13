@@ -55,6 +55,11 @@
 #include "wmssnd.h"
 #include "machine/4094.h"
 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+ #include <strings.h>
+ #define _stricmp strcasecmp
+#endif
+
 /*------------------
 /  Local functions
 /-------------------*/
@@ -556,7 +561,6 @@ static void bop_handleMech(int mech) {
 	// So if g_fHandleMechanics is -1, reset the head position to 0,
 	// and then disable the internal mech handling.   If it is -2, then continue using the mech handling
 	// after reset. 
-#ifdef VPINMAME
 	if (g_fHandleMechanics < 0)
 	{
 		if (_stricmp(Machine->gamedrv->name, "bop_l7") == 0)
@@ -571,7 +575,7 @@ static void bop_handleMech(int mech) {
 		}
 		g_fHandleMechanics = 1;
 	}
-#endif
+
   /* ----------------------------------------------
      --	Head Position - SH*T, this was a PAIN!!! --
      --  BTW: Thanks to The Doc for giving help  --
@@ -692,7 +696,6 @@ static void bop_handleMech(int mech) {
     }
     /* Those were all the possible movements that the head can make */
   }
-
 }
 
 static int bop_getMech(int mechNo) {
