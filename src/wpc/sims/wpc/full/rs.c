@@ -548,6 +548,16 @@ DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed
                "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
 
+WPC_ROMSTART(rs,l6c,"Road Show U6 game ROM rev L-6 patch ccd1.rom",0x80000,CRC(d5b83269) SHA1(1b413100005efd63cb0344ff921e5d544abed6e4))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
+WPC_ROMEND
+
 WPC_ROMSTART(rs,la5,"u6_la5.rom",0x80000,CRC(61e63268) SHA1(79e32f489c51e7e79e892d36f586af14ab9aa2a5))
 DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
                "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
@@ -674,6 +684,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(rs,l6,       "Red and Ted's Road Show (L-6)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(rs,l6c,l6,  "Red and Ted's Road Show (L-6C Competition MOD)",2019,"Williams",wpc_mSecurityS,0) //rev. L-6 patch ccd1
 CORE_CLONEDEF(rs,la5,l6,  "Red and Ted's Road Show (LA-5)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,da5,l6,  "Red and Ted's Road Show (DA-5 LED Ghost Fix)",1994,"Williams",wpc_mSecurityS,0)
 CORE_CLONEDEF(rs,lx5,l6,  "Red and Ted's Road Show (LX-5)",1994,"Williams",wpc_mSecurityS,0)
