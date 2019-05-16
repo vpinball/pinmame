@@ -22,6 +22,8 @@ Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
 Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
 
+Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
+
 *** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin
 New:
 Barni: Champion
