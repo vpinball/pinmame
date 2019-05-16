@@ -1,43 +1,218 @@
 // license:BSD-3-Clause
+//
+// HC55516/HC55536/HC55564 - a CVSD voice decoder chip
+//
 
-// Un-comment the following line to create a test build that writes the
-// measured sample rate to a log file (vpm_hc55516.log) while the game
-// runs.  This lets you collect the actual sample rate for a game whose
-// clock rate isn't yet known.  You can then patch up the game's
-// init_GAME() routine (e.g., init_taf() for The Addams Family) with
-// a call to hc55516_set_sample_clock() that sets the correct initial
-// rate for the game.
-// #define LOG_SAMPLE_RATE
+// ---------------------------------------------------------------------------
+//
+// Overview
+//
+// The HC55516 is a CVSD (continuously variable slope delta) modulation 
+// encoder/decoder chip.  CVSD modulation was popular in the 1980s for digital
+// voice encoding, because it provides decent fidelity for voice audio at low
+// bit rates.  CVSD happens to work particularly well with the spectrum
+// properties of human voice signals, so it was mostly used for that, and in
+// fact you still see CVSD encoding (although not this particular chip) used
+// in some modern applications, especially military communications devices.
+// It's also one of the codec types included in the Bluetooth specs.
+//
+// The core of a CVSD encoder/decoder is a "syllabic filter".  This isn't the
+// sort of filter that removes unwanted frequency components from the output
+// signal; rather, it's essentially an analog computing element that helps
+// compute the output signal.  The syllabic filter is characterized by a
+// time constant (4ms in the case of the HC55516), which is one of the key
+// parameters controlling the CVSD's behavior, along with a pair of voltage
+// levels feeding into the filter (the "high" and "low" syllabic filter
+// inputs).  The data sheet for the HC55564 can still be found on the Web
+// as of this writing, although the chip has been out of production for a
+// very long time.
+//
+// The HC55516 was part of a family of nearly identical chips that also 
+// included the HC55536 and HC55564.  Apparently the only difference among
+// these variations was the maximum sample clock rate supported, so they're 
+// essentially interchangeable.  There's an unrelated family of CVSD decoders
+// used in some older pinball machines, the MC3417 and MC3418, which have
+// similar properties (in that they're also based on CVSD modulation) but
+// aren't compatible with the HC555xx chips and had a somewhat different
+// electrical setup (in particular, the MC341x chips used external analog
+// components for the syllabic filter and estimator filter, whereas the
+// HC555xx uses internal components and a purely digital implementation).
+// The software emulations for the two chips are quite similar, and earlier
+// versions of PinMAME used the same code for both, but we've separated
+// them into their own modules now so that we can use the optimal numerical
+// parameters and logic for each chip type.
+//
+// The chief difficulty in implementing a good HC555xx decoder for PinMAME
+// comes from the way the sample rate is handled in the original pinball
+// machine hardware.  In particular, the original sound boards didn't use
+// a fixed clock to generate the sample data.  Instead, they sent bits to
+// the hardware on an ad hoc basis from the software.  That means that,
+// first, the sample rate can't be determined by studying the hardware
+// schematics, as the clock rate is purely at the whim of the software,
+// and second, that the clock rate isn't perfectly uniform from bit to bit,
+// as the software source can't be relied upon to generate bits with equal
+// timing.  In practice, the actual elapsed time from bit to bit in the
+// same clip can vary by as much as a factor of two.  A corollary to the
+// first point - that the rate is controlled by the software - is that the
+// rate on one pinball machine can vary from clip to clip, and in practice
+// this actually happens on many games (e.g., most System 11 games have
+// two different sample rates).
+//
+// Our strategy for handling the sample rate clock is to delay the decoding
+// step as long as possible.  The MAME audio stream mechanism gives us some
+// inherent backlogging, so we take advantage of that.  Rather than decoding
+// the input bits as we receive them from the pinball sound board emulation,
+// we collect them in a buffer, with timestamps.  When MAME calls upon us
+// to fill its PCM stream buffer, we use the buffered samples to determine
+// the HC55516 clock rate for that run of samples retrospectively.  That
+// lets us average the clock rate over a large number of bits, smoothing
+// out the highly variable per-bit timing.  In practice, we *can* rely on
+// the average timing over a large number of bits being stable, because the
+// original machines would have sounded terrible if they didn't accomplish
+// that.
+//
+// Another aspect of the ad hoc sample rate that makes this difficult to
+// implement in MAME is that MAME further processes our output in the 
+// digital domain.  On the original pinball hardware, the output from the
+// HC55516 chip was an analog signal that was processed from that point on 
+// in the analog domain, so the sample rate that went into generating that 
+// signal was irrelevant from that point forward.  But for our setup, we
+// can't emulate the rest of the pipeline as though it were analog; we
+// produce a digital PCM sample and have to hand off a PCM sample to our 
+// next stage, the MAME stream.  The snag is that variable timing again!
+// The MAME stream has its own clock rate, and we have an ad hoc clock
+// rate from sample to sample.  We have to match the rates when handing
+// the samples off to MAME by digitally resampling at the MAME rate. 
+// Converting between dissimilar PCM rates is a tricky problem, but
+// fortunately MAME already incorporates libsamplerate, which exists
+// specifically to solve the resampling problem.  The solution to our
+// clock rate mismatch is to use libamplerate as an intermediary.  We
+// take each sample from our HC55516 output, feed it to a libsamplerate
+// converter, and pass the resulting resampled signal to MAME.
 
 #include "driver.h"
 #include "filter.h"
+#include "streams.h"
+#include "core.h"
 #include <math.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include "../../ext/libsamplerate/samplerate.h"
 #ifdef __MINGW32__
- #include <windef.h>
+#include <windef.h>
 #endif
 
 #ifndef _countof
 #define _countof(a) (sizeof(a)/sizeof(a[0]))
 #endif
 
-// Log file for sample rate data, for testing builds
-static FILE *logfp;
 
-// Final low-pass output filter type.  A CVSD decoder pretty much requires 
-// a low-pass filter to reduce quantization noise above the Nyquist limit
-// (which is half the sampling rate).  The code can be configured with a
-// couple of different filters here.  In principle, the best option should
-// be a FIR filter, as that should have a nice steep wall at the cutoff
-// frequency.  A simple single-pole low-pass filter actually sounds a
-// little better to my ear.
-#define NO_OUTPUT_FILTER   0   // no filtering - not recommended
-#define FIR_OUTPUT_FILTER  1   // low-pass FIR filter
-#define SP_OUTPUT_FILTER   2   // simple single-pole low-pass filter
-#define OUTPUT_FILTER_TYPE FIR_OUTPUT_FILTER
+// ---------------------------------------------------------------------------
+//
+// ***** CLOCK RATE MEASUREMENT AND LOGGING *****
+//
+// The HC55516 doesn't have a fixed sample data rate; the rate is simply
+// the speed at which the host sends samples.  If you want to determine the
+// rate for a given pinball machine, this code has a rate logging feature
+// you can enable.  This requires a special debug build:
+//
+// 1. Un-comment the line beneath this comment block
+// 2. Rebuild PinMAME
+// 3. Run the game you want to measure
+// 4. Look through the file <ROM>.vpm_hc55516_bitrate.log
+// 5. Add a call to hc55516_set_sample_clock() in init_GAME()
+//
+// The file <ROM>.vpm.hc55516.log will contain information on the clock
+// rate as samples are played.  WPC89 games all use the same fixed clock
+// rate (22372 Hz).  Most System 11 games use two different clock rates,
+// with some clips playing at one rate and some at the other.  In
+// principle, each clip could even have a unique rate.
+//
+// In the first iteration of the 2019 revamp of this code, we thought it 
+// was going to be necessary (or would at least improve playback) to 
+// pre-set the clock rate per game, so we added a routine to do this
+// (hc55516_set_sample_clock()) and added corresponding calls to this
+// routine to some init_GAME().  This didn't turn out to be needed after
+// reworking the hc55516 code some more, but we left the routine and
+// calls intact to preserve the sample rate measurements, in case they
+// become useful again in the future.  At the moment, there's no need to
+// add more of these, as the information is ignored if provided at all.
+//
+//#define LOG_SAMPLE_RATE
 
-// Syllabic filter shift mask.  The HC55516 and MC3417 use a 3-bit shift
-// register (mask binary 111 = 0x07).
+#ifdef LOG_SAMPLE_RATE
+
+// Log file for sample rate data
+static FILE *sample_log_fp;
+
+#endif // LOG_SAMPLE_RATE
+
+// ---------------------------------------------------------------------------
+// Gain Selection
+//
+// The HC55516 emulation works in terms of a simulated analog voltage level 
+// at the HC55516 analog output pin (pin 3, AO, on the real chips).  MAME,
+// in contrast, works in terms of 16-bit PCM samples.  So we have to convert
+// from the simulated analog voltage to a 16-bit PCM level.  
+//
+// Both formats represent linear wave amplitudes, so the general-purpose way 
+// to select the gain is to choose the value that preserves the identical 
+// dynamic range:  that is, the gain that maps the maximum analog voltage to 
+// the maximum PCM value.  We use loudness compression curve with an input
+// dynamic range of -DYN_RANGE_MAX to +DYN_RANGE_MAX (see below).  We 
+// ultimately convert this to the INT16 range in the range compression step,
+// but the initial gain calculation targes the wider range before compression.
+// So the default gain is DYN_RANGE_MAX/V_HIGH.
+//
+// In practice, some games don't use all of the available dynamic range on
+// the CVSD side.  It can be more pleasing in these cases to use a higher 
+// than default gain that converts all of the actually used dynamic range on
+// the CVSD side to the full scale on the PCM side, or (DYN_RANGE_MAX /
+// highest actual voltage level).
+//
+// To aid in selecting an ideal per-game gain, you can enable dynamic range
+// logging by #define'ing LOG_DYN_RANGE below.  That will generate a log file
+// (<ROM NAME>.vpm_hc55516_dynrange.log) containing periodic updates with
+// the maximum sample level seen so far, and the computed "max non-clipping 
+// gain" (the gain that maps the maximum sample level to PCM full scale).
+// 
+//#define LOG_DYN_RANGE
+
+#ifdef LOG_DYN_RANGE
+
+// log file for dynamic range data
+static FILE *dynrange_log_fp;
+
+#endif // LOG_DYN_RANGE
+
+// ---------------------------------------------------------------------------
+// Syllabic filter constants.  For an RC filter, the charge factor per
+// clock period is given by:
+//
+//   exp(-clock_period/time_constant)
+//
+// where clock_period = 1/frequency and time_constant is the filter's RC
+// time constant.  For normal analog filters, this would make the charge
+// factor dependent upon the data clock frequency.  However, the HC55516
+// data sheet has a note claiming that both of its filter time constants
+// (syllabic filter and signal estimator, aka integrator) are inversely
+// proportional to the data clock frequency.  That effectively makes the
+// charge factors independent of the clock frequency, because:
+//
+//    time_constant = P / frequency  [where P is some constant value]
+//    -> clock_period / time_constant = 1/frequency / (P/frequency) = 1/P
+//    -> charge factor = exp(-1/P)
+//
+// The data sheet quotes the time constant values for a 16kHz rate, so we
+// can recover the P value for each filter by plugging the quoted time 
+// constants and 16kHz into the proportionality formula above, yielding 
+// the following fixed charging factors:
+//
+#define CHARGE  0.984496437005408453   // syllabic filter - 4ms at 16kHz
+#define DECAY   0.939413062813475808   // estimator filter - 1ms at 16kHz
+
+// Syllabic filter shift mask.  The HC55516 uses a 3-bit shift register
+// (mask binary 111 = 0x07).
 #define SHIFTMASK 0x07 
 
 // Syllabic filter high/low inputs.  These aren't documented in the HC55516
@@ -47,89 +222,144 @@ static FILE *logfp;
 // usually 0V.  So we'll use 1.7 and 0 as the syllabic filter voltage charge 
 // range.
 #define V_HIGH  1.7
-#define V_LOW   0
+#define V_LOW   0.0
 
-#ifdef PINMAME
+// Maximum value for INT16 dynamic range after applying the gain.  This is 
+// the maximum value for our compression curve (see below), which is to say,
+// the input value to the compression function that yields INT16_MAX as the
+// result.
+#define DYN_RANGE_MAX 69790.0
 
-#define SAMPLE_GAIN			6500.0
-#else
- #define V_HIGH              1.7
- #define V_LOW				0.0416 // idle voltage (0/1 alternating input on each clock) from MC3417 datasheet
- #define SAMPLE_GAIN		10000.0
-#endif
+// Loudness compression function.  This takes a sample in linear space form
+// -DYN_RANGE_MAX to +DYN_RANGE_MAX and compresses it to fit an INT16 value.
+// The curve is linear at low volumes and flattens at higher volumes, which
+// tends to make the overall signal sound louder.
+static double compress_loudness(double sample)
+{
+	// apply compression
+	sample = sample / (1.0 + fabs(sample)*(1.0 / 32768.0)) + sample*0.15;
 
-#ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#endif
-#ifndef MAX
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#endif
+	// clip to INT16 range
+	if (sample <= -32768.0)
+		sample = -32768.0;
+	else if (sample >= 32767.0)
+		sample = 32767.0;
 
+	// return the compressed and clipped result
+	return sample;
+}
+
+// Default gain.  This is the scaling factor to convert from the simulated
+// analog output voltage from the HC55516 to a signed 16-bit PCM level.  Both
+// representations are linear in wave amplitude, so preserving the identical
+// dynamic range is simply a matter of multiplying by the PCM maximum value
+// divided by the maximum analog voltage.  The maximum analog output voltage
+// from a CVSD decoder is the same as the "high" input to the syllabic filter.
+// (The physical HC55516 technically doesn't quite work that way, as it uses
+// a digital implementation of the signal estimator filter, just like we do,
+// and uses an internal DAC to convert that modeled filter to a true analog
+// signal.  But our model omits that stage, as it's an implementation detail
+// of the physical chip, so for the purposes of our mathematical model, the
+// estimator filter is analog.)
+//
+// This is only the default gain.  The actual gain can be set at run-time
+// per chip.  That allows tweaking the gain to take better advantage of the
+// full dynamic range for games that don't use the full analog voltage range
+// of the chip for actual output data.
+//
+#define DEFAULT_GAIN    (DYN_RANGE_MAX/V_HIGH)
+
+
+//
+// HC55536 chip state
+//
 struct hc55516_data
 {
 	// mixer channel
 	INT8 	channel;
-	
-	// last clock level and data bit input from host
-	UINT8	last_clock;
-	UINT8	databit;
 
-	// Syllabic filter parameters.  The syllabic filter is nominally specified
-	// in terms of its time constant, which is independent of the data clock 
-	// rate.  (The HC55516 data sheet actually has a note to the effect that 
-	// the time constant is inversely proportional to the clock, but this does
-	// not appear to be true in practice: we get audibly better results by
-	// assuming an invariant time constant.)  Our internal parameters, on the
-	// other hand, are functions of the data clock. For optimal playback, we
-	// we have to observe the actual data clock rate and then calculate the
-	// filter parameters based on that.
-	double   charge;            // syllabic filter charge rate
-	double   decay;             // syllabic filter decay rate
-	
 	// Syllabic filter status
 	UINT8	shiftreg;           // last few data bits (determined by SHIFTMASK)
 	double 	syl_level;          // simulated voltage on the syllabic filter
 	double	integrator;         // simulated voltage on integrator output
 
-	// Gain - conversion factor from a simulated voltage level on the
-	// integrator to an INT16 PCM sample
-	double  gain; 
+	// Output gain.  This is the conversion factor from the simulated voltage
+	// level on the integrator to an INT16 PCM sample for the MAME stream.
+	double  gain;
 
-	// Output sample ring buffer.  With a real HC55516 chip, the output is an
-	// analog signal, so the sound boards using this chip handled the rest of
-	// the audio chain in the analog domain, feeding the signal into op amps,
-	// mixing with other analog signals, and ultimately sending it out to the
-	// speakers.  For our simulation, the output from our integrator goes into
-	// a PCM stream, to be mixed with other PCM streams and ultimately to go
-	// out to a DAC.  So our output chain is all in the digital domain.  We
-	// *could* try to simulate an analog level coming out of our chip and
-	// resample that, and indeed, that's what earlier versions of this code
-	// did.  But the results were terrible, since that's not the right way to
-	// resample a signal that's already in the digital domain.  The right way
-	// is to keep everything in the digital domain.  The complication is that
-	// the HC55516 doesn't have a fixed clock rate: instead, the host sets
-	// the clock.  The data clock rate is simply how fast the host sends us
-	// samples.  So we can't know in advance what kind of stream to set up.
-	// More problematically, the actual pinball machine hosts that we're
-	// using in the emulation don't have perfectly consistent clocks, as they
-	// generate their samples from software.  The time between samples can be
-	// slightly variable as a result.  That's a huge problem for MAME's design
-	// in that MAME wants a fixed-rate stream coming out of each device.  To
-	// bridge the gap, we use a ring buffer for our outputs.  Each time the
-	// host clocks out an output, we put it in the ring.  Each time the MAME 
-	// stream asks for an input, we pull it from the ring.  As long as the
-	// MAME stream and host are generating and consuming samples at nearly
-	// the same rate, this evens out any small variations in the sample-to-
-	// sample timing of individual bits coming out of the host.
+	// last clock state
+	UINT8   last_clock;
+
+	// last data bit from the host
+	UINT8   databit;
+
+	// Final output filter.
+	//
+	// In hardware, the HC555xx chip requires a low-pass filter on the analog 
+	// output to remove quantization noise.  All of the original sound boards 
+	// that used this chip (that I'm aware of) had two stages of active low-pass 
+	// filters, so we can model them all with two IIR filter stages.  The 
+	// analog parameters vary by system, so we'll set up the appropriate 
+	// generation-specific parameters during nitialization, using the type 
+	// information passed in from the sound board host code.
 	struct
 	{
-		// note: the buffer is empty when read == write
-		INT16   buf[1000];      // ring buffer
-		int     read;           // read pointer - index of next sample to read
-		int     write;          // write pointer - index of next free slot
-	}
-	samples_out;
+		// filter type - one of the HC55516_FILTER_xxx constants
+		int type;
+		
+		// first filter stage
+		struct filter2_context_struct f1;
 
+		// second filter stage
+		struct filter2_context_struct f2;
+	} output_filter;
+
+	// Input bit ring buffer.  When the pinball sound board emulator clocks a
+	// data bit out to the HC55516, we add it to this buffer for later decoding.
+	// We read bits back out of this ring when MAME calls upon us to fill its
+	// stream with PCM samples.
+	struct
+	{
+		// bit buffer
+		struct
+		{
+			UINT8 bit;     // CVSD stream bit
+			double t;      // time of rising edge of HC55516 clock for this bit
+		} bits[1000];
+
+		// Read/write indices.  The buffer is empty when read == write.
+		int read;
+		int write;
+	} bits_in;
+
+	// Last output stream update time.  We use this to determine where the
+	// next buffered input bit goes in the stream timeline.
+	double stream_update_time;
+
+	// MAME output stream sample time (1/sample rate)
+	double output_dt;
+
+	// libresample stream.  We use this to convert from the current clip's
+	// sample rate to the output stream rate.
+	SRC_STATE *resample_state;
+
+	// Buffered PCM output samples.  The HC55516 data clock runs slower than
+	// the PC sound sample rate (22kHz or less for the HC55516 clock, vs 44.1
+	// or 48 kHz for the PC rate), so each HC55516 bit will generate more than
+	// one PCM sample as we translate the slower HC55516 samples through
+	// libsamplerate to generate PC samples.  We buffer the samples coming
+	// out of libsamplerate here.  This is a circular buffer.
+	struct
+	{
+		// PCM samples, scaled to HC55516 simulated voltage output level
+		float pcm[1000];
+
+		// Read/write indices.  The buffer is empty when read == write.
+		int read;
+		int write;
+	} pcm_out;
+
+#ifdef LOG_SAMPLE_RATE
 	// Sample clock statistics.  This keeps track of the time between clock
 	// signals from the host so that we can estimate the overall sample rate.
 	// To do a proper sample rate conversion in the digital domain from the
@@ -137,271 +367,350 @@ struct hc55516_data
 	// rate we're converting FROM.
 	struct
 	{
-		// observed sample rate in Hz, and its inverse (the sample time)
-		int freq;
-		double T;
-
-		// global time of last clock rising edge
+		// last clock rise time
 		double t_rise;
 
 		// number of samples collected
 		INT64 n_samples;
 
-		// sample count for next filter adjustment 
-		INT64 next_filter_adjustment;
-
 		// sum of measured sample times over the whole run
 		double t_sum;
 
-		// sum of measured sample times since the last checkpoint (to check
-		// for convergence)
+		// sum of measured sample times since the last checkpoint
 		int n_samples_cur;
 		double t_sum_cur;
-	} clock;
 
+	} clock_history;
+#endif // LOG_SAMPLE_RATE
 
-#ifdef PINMAME
-#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
-	// Low-pass filter.  This is absolutely required for a CVSD decoder, since
-	// these chips are invariably used with low sample rates, which results in
-	// a Nyquist limit that's well within the audible range and thus a LOT of
-	// audible quantization noise.
-	filter* filter_f;
-	filter_state* filter_state;
-#elif OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
-	// Filter state and single-pole low-pass filter alpha parameter
-	INT32   out_filter_sample;
-	double  out_filter_alpha;
-#endif
+#ifdef LOG_DYN_RANGE
+	// dynamic range measurements, if desired
+	struct
+	{
+		// min and max measures seen so far
+		double vmin, vmax;
+
+		// number of samples collected since the last log file update
+		long nsamples;
+	} dynrange;
 #endif
 };
 
-// chip structures
+// chip state structures
 static struct hc55516_data hc55516[MAX_HC55516];
 
-// pre-set sample rates
-static int hc55516_clock_rate[MAX_HC55516];
-
-// foward declarations
-static void hc55516_update(int num, INT16 *buffer, int length);
-
-static void calc_syllabic_filter_params(struct hc55516_data *chip, double sample_time)
+// ---------------------------------------------------------------------------
+//
+// Initialize the output filter
+//
+static void init_output_filter(struct hc55516_data *chip)
 {
-	// Save the new frequency value
-	chip->clock.T = sample_time;
-	chip->clock.freq = (int)(1.0 / sample_time);
+	// we process samples on the way to the MAME output stream, so use
+	// the MAME stream rate
+	int freq = stream_get_sample_rate(chip->channel);
 
-	// Figure the syllabic filter parameters.
-	//
-	// The charge constant is e^(-2*pi*T/Tc), where T is the 
-	// time per sample (1 / the bit clock frequency) and Tc 
-	// is the syllabic filter time constant (4ms for the 
-	// HC55516, per the data sheet).
-	//
-	// Note that the HC55516 data sheet has a note saying that
-	// the syllabic filter time constant is inversely 
-	// proportional to the bit clock, which suggests that 4ms
-	// is only the value for the "typical" 16 kHz clock rate
-	// used as the reference point in the data sheet table.
-	// However, empirically this does not seem to be the case;
-	// we seem to get better results if we treat this as a
-	// fixed 4ms value.  And information elsewhere in the data
-	// sheet suggests that the filter really is fixed at 4ms.
-	// 
-	// Sample values for common pinball machine clock rates
-	//
-	// 2500Hz/4ms = .5334881     (early voice machines - Black Knight, Xenon)
-	// 8kHz/4ms   = .85463600    (System 11 machines)
-	// 12kHz/4ms  = .87730577    (Twilight Zone)
-	// 20kHz/4ms  = .92446525    (Addams Family)
-	//
-	const double SYLLABIC_FILTER_TIME = .004;
-	const int ROLLOFF_FREQ = 1000;
-	chip->charge = exp(-2.0 * PI * chip->clock.T * (1.0 / SYLLABIC_FILTER_TIME));
-
-	// figure the integrator decay factor
-	chip->decay = exp(-2.0 * PI * chip->clock.T * ROLLOFF_FREQ);
-
-	// Calculate the low-pass filter alpha.  Nominally, we have to
-	// filter out noise above the Nyquist limit, which is 1/2 the
-	// sample frequency.  But this is a simple low-pass filter, not
-	// a brick-wall filter, so we need to start attenuating below
-	// the desired cutoff.  There's a sweet spot here.  If we make
-	// the cutoff too low, we'll filter out too much of the original
-	// signal's high-frequency component, and it'll sound muffled.
-	// If the cutoff is too high, the filter will pass through too
-	// much of the quantization noise.  The cutoff has to be 
-	// chosen empirically to make the result "sound right".
-#if OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
+	// set up the filter according to the sound board type
+	switch (chip->output_filter.type)
 	{
-		double cutoff = chip->clock.freq * 0.4;
-		double RC = 1.0 / (2 * PI * cutoff);
-		chip->out_filter_alpha = chip->clock.T / (RC + chip->clock.T);
+	case HC55516_FILTER_C8228:
+		// Williams Speech Board Type 2 (part number C-8228), used in System 9
+		// through System 9 games.  This used a 2-stage multiple feedback 
+		// filter.  Note that there's a third op-amp stage as well, but that's
+		// the actual output amplifier rather than another filter, so we don't
+		// include it here.
+		// [Note: I'm assuming they're meant to be MF filters, even though the
+		// schematics I found are marked with the op-amp inputs at the opposite
+		// polarities of what's used in a standard MF filter.  I'm assuming 
+		// this is an error in the schematics and not some other type of
+		// filter by intention; I'm pretty sure a positive feedback topology 
+		// like that marked on the schematics would just blow up rather than
+		// work as a filter. The schematics I found are second-hand, from
+		// from www.firepowerpinball.com, not original Williams schematics,
+		// so I'm guessing this was just a transcription error. --mjr]
+		filter_mf_lp_setup(43000, 36000, 180000, 1800e-12, 180e-12, &chip->output_filter.f1, freq);
+		filter_mf_lp_setup(27000, 15000, 27000, 4700e-12, 1200e-12, &chip->output_filter.f2, freq);
+		break;
+
+	case HC55516_FILTER_SYS11:
+		// System 11 sound board.  This uses a single-pole active low-pass filter
+		// as the first stage, and a multiple feedback filter as the second stage.
+		filter_active_lp_setup(43000, 36000, 180000, 180e-12, &chip->output_filter.f1, freq);
+		filter_mf_lp_setup(47000, 22000, 15000, 1800e-12, 330e-12, &chip->output_filter.f2, freq);
+		break;
+
+	case HC55516_FILTER_WPC89:
+	default:
+		// Pre-DCS WPC sound boards.  Use the two-stage multiple feedback filter
+		// found in the WPC89 schematics.
+		filter_mf_lp_setup(150000, 22000, 150000, 1800e-12, 330e-12, &chip->output_filter.f1, freq);
+		filter_mf_lp_setup(47000, 22000, 150000, 1800e-12, 330e-12, &chip->output_filter.f2, freq);
+		break;
 	}
-#endif
-}
+};
 
-int hc55516_sh_start(const struct MachineSound *msound)
+// ---------------------------------------------------------------------------
+//
+// Add a decoded output sample.  This takes a raw sample from the CVSD 
+// decoder, runs it through our low-pass filter to reduce quantization noise,
+// resamples it using the PCM sample rate of the MAME output stream, and adds
+// it to our output buffer to eventually pass to the MAME stream.
+//
+static void add_sample_out(struct hc55516_data *chip, double sample, double output_rate_ratio)
 {
-	const struct hc55516_interface *intf = msound->sound_interface;
-	int i;
+	float fIn, fOut[128];
+	SRC_DATA sd;
+	long i;
 
-	// if desired, create a log file
-#ifdef LOG_SAMPLE_RATE
-	char tmp[_MAX_PATH];
-#ifdef strcpy_s
-	strcpy_s(tmp, sizeof(tmp), Machine->gamedrv->name);
-	strcat_s(tmp, sizeof(tmp), ".vpm_hc55516.log");
-#else
-	sprintf(tmp, "vpm_hc55516.log");
-#endif
-	logfp = fopen(tmp, "a");
-#endif
+	// resample at the MAME stream rate
+	fIn = (float)sample;
+	sd.data_in = &fIn;
+	sd.input_frames = 1;
+	sd.data_out = fOut;
+	sd.output_frames = _countof(fOut);
+	sd.end_of_input = 0;
+	sd.src_ratio = output_rate_ratio;
+	src_process(chip->resample_state, &sd);
 
-	// loop over HC55516 chips
-	for (i = 0; i < intf->num; i++)
+	// Add the resampled output(s) to the PCM sample buffer.  Note that the HC55516
+	// clock rates are in the 20kHz range (the exact rate varies by game and even
+	// clip), whereas the MAME stream will be at the PC sound card hardware rate,
+	// typically 44.1 kHz or 48 kHz.  Each HC55516 sample therefore turns into 
+	// approximately two MAME samples.  That's the main reason we need this extra
+	// buffering step - MAME might not be ready to accept all the PCM samples that
+	// convert from the current single HC55516 sample, so we need to be prepared
+	// to stash extras for the next MAME buffer refill.
+	for (i = 0; i < sd.output_frames_gen; ++i)
 	{
-		struct hc55516_data *chip = &hc55516[i];
-		char name[40];
-		int freq;
+		/* add the sample at the write pointer */
+		chip->pcm_out.pcm[chip->pcm_out.write++] = fOut[i];
+		if (chip->pcm_out.write >= _countof(chip->pcm_out.pcm))
+			chip->pcm_out.write = 0;
 
-		// reset the chip struct
-		memset(chip, 0, sizeof(*chip));
-
-		// assume that the game driver pre-set the sample rate so that we don't have
-		// to figure it out ourselves
-		chip->clock.next_filter_adjustment = 1000000000000LL;
-
-		// Set the initial frequency.  If the game driver set a known  frequency via
-		// hc55516_set_clock_rate(), use that, otherwise use a default.
-		freq = hc55516_clock_rate[i];
-		if (freq == 0)
-		{
-			// set a default sample rate
-			freq = 12000;
-
-			// we need to collect sample rate data and adjust the filter once we have
-			// enough data to determine the actual rate
-			chip->clock.next_filter_adjustment = 250;
+		/* if the write pointer bumped into the read pointer, drop the oldest sample */
+		if (chip->pcm_out.write == chip->pcm_out.read) {
+			if (++chip->pcm_out.read >= _countof(chip->pcm_out.pcm))
+				chip->pcm_out.write = 0;
 		}
-
-		// set the initial syllabic filter parameters
-		calc_syllabic_filter_params(chip, 1.0 / freq);
-
-		// create the output stream
-		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], freq, i, hc55516_update);
-		chip->gain = SAMPLE_GAIN;
-		/* bail on fail */
-		if (chip->channel == -1)
-			return 1;
-
-		// Set up a low-pass FIR filter, to filter out quantization noise
-		// above the Nyquist limit.  The FIR filter implementation works
-		// inherently in terms of the sampling rate, so the filter will
-		// naturally adjust to our sample rate updates as we collect clock
-		// data.  That means we can set up the filter up front, before we
-		// even know the sample rate.  Note that older versions tried to
-		// guess whether a filter was needed based on sampling rate, but
-		// in reality the filter is ALWAYS needed, since CVSD bit rates
-		// are always low enough that there's a ton of audible quantization
-		// noise in the decoded signal.  This is true for every historical
-		// game using this chip, so there's no good reason to make the
-		// existence of the filter conditional on the rate.
-#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
-		chip->filter_f = filter_lp_fir_alloc(0.21, FILTER_ORDER_MAX);
-		chip->filter_state = filter_state_alloc();
-		filter_state_reset(chip->filter_f, chip->filter_state);
-#endif
-
-#ifdef PINMAME
-#if ENABLE_LOWPASS_ESTIMATE
-		chip->filter_f = 0;
-		chip->length_estimate = 0;
-		chip->length_estimate_runs = 0;
-#endif
-#endif
 	}
-
-	/* success */
-	return 0;
 }
 
+// ---------------------------------------------------------------------------
+//
+// Process an input bit to the CVSD decoder.  This applies the CVSD decoding
+// algorithm to the bit to produce the next PCM sample.  The PCM sample is at
+// the CVSD clock rate, so it must be resampled to the MAME output stream rate
+// before being passed to MAME.
+//
+static void process_bit(struct hc55516_data *chip, UINT8 bit, double output_rate_ratio)
+{
+	// add/subtract the syllabic filter output to/from the integrator
+	double di = (1.0 - DECAY)*chip->syl_level;
+	if (bit != 0)
+		chip->integrator += di;
+	else
+		chip->integrator -= di;
 
+	// simulate leakage
+	chip->integrator *= DECAY;
+
+	// shift the new data bit into the syllabic filter's shift register
+	chip->shiftreg = ((chip->shiftreg << 1) | bit) & SHIFTMASK;
+
+	// figure the new syllabic filter output level
+	chip->syl_level *= CHARGE;
+	chip->syl_level += (1.0 - CHARGE) * ((chip->shiftreg == 0 || chip->shiftreg == SHIFTMASK) ? V_HIGH : V_LOW);
+
+	// buffer the sample
+	add_sample_out(chip, chip->integrator, output_rate_ratio);
+}
+
+// ---------------------------------------------------------------------------
+//
+// Apply the final output filter
+//
+static INT16 apply_filter(struct hc55516_data *chip, float sample)
+{
+	double scaled;
+	int stream_freq = stream_get_sample_rate(chip->channel);
+
+	// run the sample through the two-stage filter
+	double filtered = filter2_step_with(&chip->output_filter.f2, filter2_step_with(&chip->output_filter.f1, sample));
+
+	// apply the gain and apply loudness compression
+	scaled = compress_loudness(filtered * chip->gain);
+
+#ifdef LOG_DYN_RANGE
+	// update the min/max range 
+	if (sample < chip->dynrange.vmin)
+		chip->dynrange.vmin = sample;
+	if (sample > chip->dynrange.vmax)
+		chip->dynrange.vmax = sample;
+
+	// update the log file periodically
+	if (++chip->dynrange.nsamples > 100000 && dynrange_log_fp != NULL)
+	{
+		// figure the maximum gain that won't clip for the current range
+		double maxgain1 = -DYN_RANGE_MAX / chip->dynrange.vmin;
+		double maxgain2 = DYN_RANGE_MAX / chip->dynrange.vmax;
+		double maxgain = maxgain1 < maxgain2 ? maxgain1 : maxgain2;
+
+		// log the data
+		fprintf(dynrange_log_fp, "HC55516 #%d range [%lf..+%lf] -> max gain w/o clipping %d\n",
+			(int)(chip - hc55516), chip->dynrange.vmin, chip->dynrange.vmax, (int)maxgain);
+
+		// make sure the new hits the file immediately, in case the program
+		// exits before the next update (as we won't have a chance to close
+		// the file properly on exit)
+		fflush(dynrange_log_fp);
+
+		// reset the log sample counter
+		chip->dynrange.nsamples = 0;
+	}
+#endif // LOG_LOUDNESS
+
+	// return the scaled result
+	return (INT16)scaled;
+}
+
+//
+// Update the MAME output stream.  
+//
+// This takes the buffered CVSD input bit stream, and converts it to a PCM
+// sample stream at the MAME stream rate.
+//
 void hc55516_update(int num, INT16 *buffer, int length)
 {
-	/* zero-length? bail */
-	if (length == 0)
-		return;
-
-	/* add samples until the request is fulfilled */
 	struct hc55516_data *chip = &hc55516[num];
-	for (; length != 0; --length)
+	const double work_ahead = 0.0025;
+	const double max_gap = .0005;
+	double now = timer_get_time();
+	double t = chip->stream_update_time;
+	int orig_length = length;
+
+	// Start a tiny bit early, so that we (hopefully) end a little early,
+	// leaving a little CVSD input to carry over to next time.  This helps
+	// avoid audible "seams" between adjacent frames.
+	t -= work_ahead;
+
+	// generate samples
+	for (;;)
 	{
-		INT16 sample;
+		int i, n;
+		double tprv;
+		double ratio;
 
-		/* if a sample is available, add it; otherwise decay the last sample */
-		if (chip->samples_out.read != chip->samples_out.write)
+		// transfer any buffered PCM samples
+		for (; chip->pcm_out.read != chip->pcm_out.write && length != 0; --length, t += chip->output_dt)
 		{
-			/* sample available - pull it */
-			sample = chip->samples_out.buf[chip->samples_out.read++];
-			if (chip->samples_out.read >= _countof(chip->samples_out.buf))
-				chip->samples_out.read = 0;
-		}
-		else
-		{
-			/* no more samples available - decay the last sample */
-			sample = (chip->samples_out.buf[chip->samples_out.read] /= 2);
+			*buffer++ = apply_filter(chip, chip->pcm_out.pcm[chip->pcm_out.read++]);
+			if (chip->pcm_out.read >= _countof(chip->pcm_out.pcm))
+				chip->pcm_out.read = 0;
 		}
 
-		/* apply the low-pass filter (if any) */
-#if OUTPUT_FILTER_TYPE == FIR_OUTPUT_FILTER
-		filter_insert(chip->filter_f, chip->filter_state, (filter_real)sample);
-		*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
-#elif OUTPUT_FILTER_TYPE == SP_OUTPUT_FILTER
-		chip->out_filter_sample = (INT16)(chip->out_filter_sample + chip->out_filter_alpha*(sample - chip->out_filter_sample));
-		*buffer++ = (INT16)chip->out_filter_sample;
-#else
-		*buffer++ = sample;
-#endif
+		// stop if we're out of buffer space
+		if (length == 0)
+			break;
+
+		// if the input bit buffer is empty, we have no more data, so satisfy the
+		// rest of the buffer request with silence
+		if (chip->bits_in.read == chip->bits_in.write)
+		{
+			// add silence
+			for (; length != 0; --length, t += chip->output_dt)
+				*buffer++ = apply_filter(chip, 0.0f);
+
+			// done
+			break;
+		}
+
+		// fill any gap to the next input bit with silence
+		for (; length != 0 && t < chip->bits_in.bits[chip->bits_in.read].t - max_gap; --length, t += chip->output_dt)
+			*buffer++ = apply_filter(chip, 0.0f);
+
+		// stop if we're out of space
+		if (length == 0)
+			break;
+
+		// We're at the start of a section of samples.  Find the run of continuously
+		// clocked bits, with no breaks in the clock of longer than a few times the
+		// clock rate.  We'll assume that any period of clock inactivity longer than
+		// a few times the current clock tick represents a quiet period between clips.
+		// Also stop when we reach the last sample.
+		for (n = 0, i = chip->bits_in.read, tprv = t; i != chip->bits_in.write;)
+		{
+			// figure the length of time between samples
+			double tcur = chip->bits_in.bits[i].t;
+			double dt = tcur - tprv;
+
+			// if it's too long, consider this the end of the current run
+			if (dt > max_gap)
+				break;
+
+			// this sample is a keeper - count it
+			++n;
+
+			// advance to the next sample
+			tprv = tcur;
+			if (++i >= _countof(chip->bits_in.bits))
+				i = 0;
+		}
+
+		// We've found the end of the run of continuous bits.
+		//
+		// - i points to the next sample after the last one in the current run
+		// - tprv is the timestamp of the last bit included in the run
+		// - t is the output stream time of the start of the run
+		// - n is the number of HC55516 input bits in the run
+		//
+		// That means we're going to use n bits fill the time interval (tprv - t),
+		// hence the effective clock rate of these bits is n/(tprv - t).  The
+		// MAME stream needs PCM samples at its own rate, so we have to convert
+		// from frequency n/(tprv - t) to the MAME stream frequency.  That will
+		// translate from the n HC55516 input bits to the number of samples that
+		// will fill the same time in the MAME stream.  Figure the resampling
+		// rate ratio.
+		ratio = stream_get_sample_rate(chip->channel) * (tprv - t) / n;
+
+		// generate these samples
+		for (i = chip->bits_in.read; n > 0; --n)
+		{
+			// process this bit
+			process_bit(chip, chip->bits_in.bits[i++].bit, ratio);
+			if (i >= _countof(chip->bits_in.bits))
+				i = 0;
+		}
+
+		// update the read pointer
+		chip->bits_in.read = i;
 	}
+
+	// set the new stream update time
+	chip->stream_update_time = now;
 }
 
-static void add_sample_out(struct hc55516_data *chip, INT16 sample)
-{
-	/* add the sample at the write pointer */
-	chip->samples_out.buf[chip->samples_out.write++] = sample;
-	if (chip->samples_out.write >= _countof(chip->samples_out.buf))
-		chip->samples_out.write = 0;
-
-	/* if the write pointer bumped into the read pointer, drop the oldest sample */
-	if (chip->samples_out.write == chip->samples_out.read) {
-		if (chip->samples_out.read >= _countof(chip->samples_out.buf))
-			chip->samples_out.write = 0;
-	}
-}
-
+// ---------------------------------------------------------------------------
+#ifdef LOG_SAMPLE_RATE
+#define LOG_CLOCK_UPDATE(chip) collect_clock_stats(chip)
+//
 // collect clock statistics on each rising clock edge
-static void collect_clock_stats(int num)
+//
+static void collect_clock_stats(struct hc55516_data *chip)
 {
-	struct hc55516_data *chip = &hc55516[num];
-
 	// note the time since the last update
 	double now = timer_get_time();
 
 	// check if the last clock was recent enough that we can assume that the
 	// clock has been running since the previous sample
-	double dt = now - chip->clock.t_rise;
+	double dt = now - chip->clock_history.t_rise;
 	if (dt < .001)
 	{
 		// The clock is running.  Collect the timing sample.
-		chip->clock.t_sum += dt;
-		chip->clock.n_samples++;
+		chip->clock_history.t_sum += dt;
+		chip->clock_history.n_samples++;
 
-#ifdef LOG_SAMPLE_RATE
-		chip->clock.n_samples_cur++;
-		chip->clock.t_sum_cur += dt;
-		if (logfp != NULL && chip->clock.n_samples_cur >= 2000)
+		chip->clock_history.n_samples_cur++;
+		chip->clock_history.t_sum_cur += dt;
+		if (sample_log_fp != NULL && chip->clock_history.n_samples_cur >= 2000)
 		{
 			// for logging purposes, collect a separate sum since the last log point, to
 			// make sure there's not a lot of short-term fluctuation, which might indicate
@@ -409,184 +718,193 @@ static void collect_clock_stats(int num)
 			// different rates for different clips
 
 			// log the data
-			fprintf(logfp, "Chip #%d  # samples: %10I64d   current: %6d Hz   average:  %6d Hz\n",
-				num, chip->clock.n_samples,
-				(int)(chip->clock.n_samples_cur / chip->clock.t_sum_cur),
-				(int)(chip->clock.n_samples / chip->clock.t_sum));
-			fflush(logfp);
+			fprintf(sample_log_fp, "Chip #%d  # samples: %10I64d   current: %6d Hz   average:  %6d Hz\n",
+				(int)(chip - hc55516), chip->clock_history.n_samples,
+				(int)(chip->clock_history.n_samples_cur / chip->clock_history.t_sum_cur),
+				(int)(chip->clock_history.n_samples / chip->clock_history.t_sum));
+			fflush(sample_log_fp);
 
 			// reset the local counters
-			chip->clock.n_samples_cur = 0;
-			chip->clock.t_sum_cur = 0;
+			chip->clock_history.n_samples_cur = 0;
+			chip->clock_history.t_sum_cur = 0;
 		}
-#endif
-
-		// If we've passed the next threshold for adjusting the filter
-		// based on the collected clock data, make the adjustment.
-		if (chip->clock.n_samples >= chip->clock.next_filter_adjustment)
-		{
-			// recalculate the syllabic filter parameters based on the
-			// new sample rate
-			calc_syllabic_filter_params(chip, chip->clock.t_sum / chip->clock.n_samples);
-
-			// change the output stream to match the observed sample rate
-			stream_set_sample_rate(chip->channel, chip->clock.freq);
-
-			// Set the next update threshold.  The reading usually converges
-			// pretty quickly, so we don't need to keep this up for too many
-			// iterations.
-			if (chip->clock.next_filter_adjustment < 5000)
-				chip->clock.next_filter_adjustment = 5000;
-			else if (chip->clock.next_filter_adjustment < 5000)
-				chip->clock.next_filter_adjustment = 30000;
-			else
-				chip->clock.next_filter_adjustment = 1000000000000LL;  // basically "never again"
-		}
-	}
-	else
-	{
-		int i;
-		INT16 s;
-
-		// The previous clock time was too long ago for this to be part of
-		// the same clock run.  That means that the clock has newly started,
-		// so we've probably just started playing back a new track.  Stuff
-		// a few silent samples into the buffer, so that we can keep the
-		// simulated sample stream ahead of the actual output sound stream.
-		// That will better accommodate slight variations in the clock rate
-		// from the sound board host by keeping a small backlog of samples
-		// in the buffer for times when the host gets a tiny bit behind.
-		s = chip->samples_out.buf[chip->samples_out.read];
-		for (i = 0; i < 16; ++i)
-			add_sample_out(chip, s /= 2);
 	}
 
 	// remember the last time
-	chip->clock.t_rise = now;
+	chip->clock_history.t_rise = now;
 }
+#else // LOG_SAMPLE_RATE
+#define LOG_CLOCK_UPDATE(chip)
+#endif // LOG_SAMPLE_RATE
 
+// ---------------------------------------------------------------------------
+//
+// Process a clock edge
+//
 void hc55516_clock_w(int num, int state)
 {
 	struct hc55516_data *chip = &hc55516[num];
 
-	/* update the clock */
-	int clock = state & 1, diffclock;
-	diffclock = clock ^ chip->last_clock;
+	// update the clock
+	int clock = state & 1;
+	int diffclock = clock ^ chip->last_clock;
 	chip->last_clock = clock;
 
-	/* speech clock changing (active on rising edge) */
-	if (diffclock && clock) //!! mc341x would need !clock
+	// clock out sample bits on the rising edge
+	if (diffclock && clock)
 	{
-		double temp;
+		// log the clock update if desired
+		LOG_CLOCK_UPDATE(chip);
 
-		// collect clock timing data on each rising edge
-		collect_clock_stats(num);
+		// add the bit to the bit buffer
+		chip->bits_in.bits[chip->bits_in.write].bit = chip->databit;
+		chip->bits_in.bits[chip->bits_in.write].t = timer_get_time();
 
-		/* move the estimator up or down a step based on the bit */
-		if (chip->databit)
-			chip->integrator += chip->syl_level;
-		else
-			chip->integrator -= chip->syl_level;
+		// update the write pointer
+		if (++chip->bits_in.write >= _countof(chip->bits_in.bits))
+			chip->bits_in.write = 0;
 
-		/* simulate leakage */
-		chip->integrator *= chip->decay;
-
-		/* add/subtract the syllabic filter output to/from the integrator */
-		double di = (1.0 - chip->decay)*chip->syl_level;
-		if (chip->databit != 0)
-			chip->integrator += di;
-		else
-			chip->integrator -= di;
-
-		/* shift the bit into the shift register */
-		chip->shiftreg = ((chip->shiftreg << 1) | chip->databit) & SHIFTMASK;
-
-		/* figure the new syllabic filter output */
-		chip->syl_level *= chip->charge;
-		chip->syl_level += (1.0 - chip->charge) * ((chip->shiftreg == 0 || chip->shiftreg == SHIFTMASK) ? V_HIGH : V_LOW);
-
-		/* compute the sample as a 16-bit word */
-		temp = chip->integrator * chip->gain;
-
-#ifdef PINMAME
-		/* compress the sample range to fit better in a 16-bit word */
-		// Pharaoh: up to 109000, 'normal' max around 45000-50000, so find a balance between compression and clipping
-		if (temp < 0.)
-			temp = temp / (temp * -(1.0 / 32768.0) + 1.0) + temp*0.15;
-		else
-			temp = temp / (temp *  (1.0 / 32768.0) + 1.0) + temp*0.15;
-
-		/* clip to INT16 range */
-		if(temp <= -32768.)
-			temp = -32768;
-		else if(temp >= 32767.)
-			temp = 32767;
-#else
-		/* compress the sample range to fit better in a 16-bit word */
-		if (temp < 0.)
-			temp = (temp / (temp * -(1.0 / 32768.0) + 1.0));
-		else
-			temp = (temp / (temp *  (1.0 / 32768.0) + 1.0));
-#endif
-
-		/* add the sample to the ring buffer */
-		add_sample_out(chip, (INT16)temp);
+		// if we bumped into the read pointer, drop the last sample
+		if (chip->bits_in.write == chip->bits_in.read && ++chip->bits_in.read >= _countof(chip->bits_in.bits))
+			chip->bits_in.read = 0;
 	}
 }
 
-#ifdef PINMAME
+// Set the gain
 void hc55516_set_gain(int num, double gain)
 {
 	hc55516[num].gain = gain;
 }
-#endif
 
-
+// Set the data bit input.  This just latches the bit for later processing,
+// on the next rising clock edge.
 void hc55516_digit_w(int num, int data)
 {
 	hc55516[num].databit = data & 1;
 }
 
-
+// Clear the clock (take it low)
 void hc55516_clock_clear_w(int num, int data)
 {
 	hc55516_clock_w(num, 0);
 }
 
+// Set the clock (take it high).  The HC55516 reads the latest data bit
+// on the rising clock edge, so this processes the latched bit from the
+// last data write.
 void hc55516_clock_set_w(int num, int data)
 {
 	hc55516_clock_w(num, 1);
 }
 
-
+// Clear the clock and set the data bit input.  This is a convenience
+// function for the sake of the WPC89 sound board hardware, which is wired
+// so that a data port write to the HC55516 also takes the clock low.
+// This latches the data bit and updates the clock status.
 void hc55516_digit_clock_clear_w(int num, int data)
 {
 	hc55516[num].databit = data & 1;
 	hc55516_clock_w(num, 0);
 }
 
+// MAME port handlers.  The HC55516 ports are write-only.
+WRITE_HANDLER(hc55516_0_digit_w)	{ hc55516_digit_w(0, data); }
+WRITE_HANDLER(hc55516_0_clock_w)	{ hc55516_clock_w(0, data); }
+WRITE_HANDLER(hc55516_0_clock_clear_w)	{ hc55516_clock_clear_w(0, data); }
+WRITE_HANDLER(hc55516_0_clock_set_w)		{ hc55516_clock_set_w(0, data); }
+WRITE_HANDLER(hc55516_0_digit_clock_clear_w)	{ hc55516_digit_clock_clear_w(0, data); }
+
+WRITE_HANDLER(hc55516_1_digit_w) { hc55516_digit_w(1, data); }
+WRITE_HANDLER(hc55516_1_clock_w) { hc55516_clock_w(1, data); }
+WRITE_HANDLER(hc55516_1_clock_clear_w) { hc55516_clock_clear_w(1, data); }
+WRITE_HANDLER(hc55516_1_clock_set_w)  { hc55516_clock_set_w(1, data); }
+WRITE_HANDLER(hc55516_1_digit_clock_clear_w) { hc55516_digit_clock_clear_w(1, data); }
+
+
 // Set a known sampling rate for the game.  The init_GAME() function for the
 // specific game can call this during initialization to preset the clock rate
-// for the HC55516 chip, if known.  In the absence of this information, we
-// have to infer the sample rate by observing the actual data that the game's
-// emulated sound board sends us.  It takes a few moments to get a good read
-// on the sample rate, so there tends to be some glitching during the first
-// couple of seconds of playback.  Initializing the game with the correct
-// value makes for a more seamless startup.
-void hc55516_set_sample_clock(int num, int frequency)
+// for the HC55516 chip, if known.  (This isn't required, and in fact the
+// information isn't currently used for anything, as we instead adapt to the
+// de facto playback rate at run time.)
+void hc55516_set_sample_clock(int chipno, int frequency)
 {
-	if (num >= 0 && num < MAX_HC55516)
-		hc55516_clock_rate[num] = frequency;
+	// This information isn't currently used, so we just ignore the call.
+	// We're keeping this function around (along with the calls to it made 
+	// in various game drivers) in case it becomes useful in the future.
 }
 
-WRITE_HANDLER( hc55516_0_digit_w )	{ hc55516_digit_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_w )	{ hc55516_clock_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_clear_w )	{ hc55516_clock_clear_w(0,data); }
-WRITE_HANDLER( hc55516_0_clock_set_w )		{ hc55516_clock_set_w(0,data); }
-WRITE_HANDLER( hc55516_0_digit_clock_clear_w )	{ hc55516_digit_clock_clear_w(0,data); }
+// 
+// Start the HC55516 emulation
+//
+int hc55516_sh_start(const struct MachineSound *msound)
+{
+	const struct hc55516_interface *intf = msound->sound_interface;
+	int i;
+	int lsrerr;
 
-WRITE_HANDLER( hc55516_1_digit_w ) { hc55516_digit_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_w ) { hc55516_clock_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_clear_w ) { hc55516_clock_clear_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_set_w )  { hc55516_clock_set_w(1,data); }
-WRITE_HANDLER( hc55516_1_digit_clock_clear_w ) { hc55516_digit_clock_clear_w(1,data); }
+	// if desired, create a log file
+#ifdef LOG_SAMPLE_RATE
+	{
+		char tmp[_MAX_PATH];
+		strcpy_s(tmp, sizeof(tmp), Machine->gamedrv->name);
+		strcat_s(tmp, sizeof(tmp), ".vpm_hc55516_bitrate.log");
+		sample_log_fp = fopen(tmp, "a");
+	}
+#endif
+
+	// if desired, initialize dynamic range logging
+#ifdef LOG_DYN_RANGE
+	{
+		// create the log file
+		char tmp[_MAX_PATH];
+		strcpy_s(tmp, sizeof(tmp), Machine->gamedrv->name);
+		strcat_s(tmp, sizeof(tmp), ".vpm_hc55516_dynrange.log");
+		dynrange_log_fp = fopen(tmp, "a");
+	}
+#endif
+
+	// loop over HC55516 chips
+	for (i = 0; i < intf->num; i++)
+	{
+		struct hc55516_data *chip = &hc55516[i];
+		char name[40];
+		SRC_DATA sd;
+		float sd_in[32], sd_out[128];
+		int j;
+
+		// reset the chip struct
+		memset(chip, 0, sizeof(*chip));
+
+		// create the output stream
+		sprintf(name, "HC55516 #%d", i);
+		chip->channel = stream_init(name, intf->volume[i], Machine->sample_rate, i, hc55516_update);
+		chip->stream_update_time = timer_get_time();
+		chip->output_dt = 1.0 / Machine->sample_rate;
+		chip->gain = DEFAULT_GAIN;
+		if (chip->channel == -1)
+			return 1;
+
+		// set up the output filters
+		chip->output_filter.type = intf->output_filter_type;
+		init_output_filter(chip);
+
+		// create our libsamplerate stream
+		chip->resample_state = src_new(SRC_SINC_MEDIUM_QUALITY, 1, &lsrerr);
+		if (lsrerr != 0)
+			return 1;
+
+		// Prime the libsamplerate stream with some silence, so that we get
+		// samples out of it immediately when we start feeding it live data.
+		for (j = 0; j < _countof(sd_in); sd_in[j++] = 0);
+		sd.data_in = sd_in;
+		sd.input_frames = _countof(sd_in);
+		sd.data_out = sd_out;
+		sd.output_frames = _countof(sd_out);
+		sd.end_of_input = 0;
+		sd.src_ratio = stream_get_sample_rate(chip->channel) / 20000.0;
+		src_process(chip->resample_state, &sd);
+	}
+
+	/* success */
+	return 0;
+}

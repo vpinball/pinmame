@@ -105,6 +105,11 @@ void filter2_reset(filter2_context *filter2);
  */
 void filter2_step(filter2_context *filter2);
 
+/* 
+ *  Step the filter with a given input, returning the new output.
+ */
+double filter2_step_with(filter2_context *filter2, double input);
+
 
 /* Setup a filter2 structure based on an op-amp multipole bandpass circuit.
  * NOTE: If r2 is not used then set to 0.
@@ -126,5 +131,112 @@ void filter2_step(filter2_context *filter2);
  */
 void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, double c2,
 					filter2_context *filter2, unsigned int sample_rate);
+
+
+// Multiple Feedback Low-pass Filter
+//
+// This implements a low-pass filter of the type found in many Williams sound 
+// boards.  This is a standard design known as a multiple feedback low pass 
+// filter.  It's good for removing high-frequency noise, particularly 
+// quantization noise from playing back digitized sounds, so Williams used
+// it at the output stage of DACs and HC55516 chips.
+//
+// You can find these filters in the WPC89 and System 11 schematics.  The
+// filter's pass band is a function of the resistor and capacitor values, so
+// to model a particular machine's filter, find the corresponding components
+// in the machine's sound board schematic and plug in the values to the
+// initialization function.
+//
+//               +--- R3 ---+------------+
+//               |          |            |
+//               |         C2   |\       |
+//               |          |   | \      |
+// Vin --- R1 ---+--- R2 ---+---|- \     |
+//               |              |   \____|_____ Vout
+//               |              |   /
+//              C1          +---|+ /
+//               |          |   | /
+//               |         Rb   |/
+//               |          |
+//              GND        GND
+//
+// Circuit variations: In the Williams schematics, Rb might or might not be
+// present.  This is a bias correction resistor for the op-amp, which is a
+// detail of the analog circuit design that doesn't affect the digital
+// version, it can be ignored either way.  The Williams schematics also
+// typically place a capacitor in series between Vin and R1.  That's there
+// to decouple the DAC output and remove any DC offset (it's essentially a
+// high-pass filter with a very low cutoff frequency of 1-10 Hz or so). 
+// That's another analog detail we can ignore for the digital version.
+//
+// In analog form, these filters typically have non-unity gain (that is, 
+// they amplify or reduce the signal).  Our digital version of the filter 
+// normalizes to unity gain to preserve the caller's control over the gain
+// level.
+//
+// The Williams boards often used two stages of this filter in series.  
+// You can do the same thing with the digital filter by setting up two
+// virtual filters, and feeding the output of the first stage into the
+// input of the second stage.
+//
+// Specify resistor values in Ohms and capacitors in Farads.
+//
+void filter_mf_lp_setup(double r1, double r2, double r3, double c1, double c2, 
+	struct filter2_context_struct *context, int sample_rate);
+
+
+// Active single-pole low-pass filter
+//
+// This is another type of active (op-amp) low-pass filter found in some
+// Williams sound boards.  This differs only slightly from the multiple 
+// feedback filter above: the only difference is that C1 from the MF filter
+// (the capacitor that connects the input signal to ground) isn't present.
+//
+//               +--- R3 ---+------------+
+//               |          |            |
+//               |         C1   |\       |
+//               |          |   | \      |
+// Vin --- R1 ---+--- R2 ---+---|- \     |
+//                              |   \____|_____ Vout
+//                              |   /
+//                          +---|+ /
+//                          |   | /
+//                         Rb   |/
+//                          |
+//                         GND
+//
+// As with the MF filter, Rb isn't needed for the digital filter, and any
+// capacitor between Vin and R1 can be ignored.  Any DC gain in the analog
+// incarnation is normalized to unity gain in the digital simulation.
+//
+// Specify resistor values in Ohms and capacitors in Farads.
+//
+void filter_active_lp_setup(double r1, double r2, double r3, double c1,
+	struct filter2_context_struct *context, int sample_rate);
+
+// Sallen-Key low-pass filter
+//
+// This is yet another type of active low-pass filter.  This one is found
+// in early Bally voice games (Xenon), and is also used in the DCS boards.
+// This is similar to the multiple feedback filter, but has the special 
+// feature of unity gain (that is, no amplification or attenutation).
+//
+//               +------------ C1 ------------+
+//               |                            |
+//               |                   |\       |
+//               |                   | \      |
+// Vin --- R1 ---+--- R2 ---+--------|+ \     |
+//                          |        |   \----+-+------ Vout
+//                          |        |   /    |
+//                         C2    +---|- /     |
+//                          |    |   | /      |
+//                          |    |   |/       |
+//                         GND   |            |
+//                               +------------+
+//
+// Specify resistor values in Ohms and capacitors in Farads.
+//
+void filter_sallen_key_lp_setup(double r1, double r2, double c1, double c2,
+	struct filter2_context_struct *context, int sample_rate);
 
 #endif

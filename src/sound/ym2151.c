@@ -13,7 +13,6 @@
 #include "state.h"
 #include "ym2151.h"
 
-
 /*#define LOG_CYM_FILE*/
 #ifdef LOG_CYM_FILE
 	FILE * cymfile = NULL;
@@ -2338,7 +2337,6 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 
 		SAVE_ALL_CHANNELS
 
-
 #ifdef PINMAME
 		//Flag if any output coming out of the 2151
 		{
@@ -2377,3 +2375,4 @@ int YM2151ReadOutputFlag(int n)
 	return YMPSG[n].output;
 }
 #endif
+
