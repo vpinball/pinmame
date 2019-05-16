@@ -2769,6 +2769,7 @@ DRIVER(rs,la5)          //          10/94 W Red & Ted's Road Show (LA-5)
 DRIVER(rs,da5)          //                  Red & Ted's Road Show (DA-5) LED Ghost Fix
 DRIVER(rs,lx5)          //          10/94 W Red & Ted's Road Show (LX-5)
 DRIVER(rs,dx5)          //                  Red & Ted's Road Show (DX-5) LED Ghost Fix
+DRIVER(rs,l6c)          //          05/19 W Red & Ted's Road Show (L6-C Competition MOD)
 DRIVER(ts,pa1)          //WPC-532:  11/94 B Shadow, The (PA-1 Prototype)
 DRIVER(ts,pa2)          //                  Shadow, The (PA-2) LED Ghost Fix
 DRIVER(ts,la2)          //          12/94 B Shadow, The (LA-2)
