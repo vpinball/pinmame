@@ -15,7 +15,22 @@
  #include <windef.h>
 #endif
 
-#define DCS_LOWPASS // enables some subtle low pass on the DCS output to avoid a bit of noise. As the real HW also has a bunch of lowpass filters, it would be interesting to check the direct output of the DCS chip on real hardware if it also features a bit of noise or not at that stage (e.g. before all the filters).
+// Enables some subtle low pass on the DCS output to avoid a bit of noise. 
+// As the real HW also has a bunch of lowpass filters, it would be interesting to 
+// check the direct output of the DCS chip on real hardware if it also features a 
+// bit of noise or not at that stage (e.g. before all the filters).
+//
+// [MJR - Yes, it would definitely have lots of noise, namely quantization noise,
+// given that a DAC is involved and the sampling rate is fairly low.  The real 
+// boards have a chain of four Sallen-Key low-pass filters with a cutoff frequency
+// of 18875 Hz.  "Cutoff" in this context doesn't mean a brick wall; it's just the
+// corner frequency in the low-pass rolloff curve, which is pretty shallow for 
+// Sallen-Key filters.  They use four chained filters to steepen the curve, to cut
+// out most of the output above 18875 Hz, which is probably right around the Nyquist
+// limit for the sampling rate they're using.  We should try substituting an IIR 
+// Sallen-Key for the current FIR, as it would probably sound a lot better.  See
+// filter.h.]
+#define DCS_LOWPASS 
 
 #ifdef DCS_LOWPASS
  #include "sound/filter.h"
@@ -274,7 +289,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579545/4)
@@ -400,7 +415,7 @@ static MEMORY_WRITE_START(s9s_writemem)
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }};
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -426,13 +441,8 @@ MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
 static struct DACinterface      s11xs_dacInt2     = { 2, { 50,50 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 80 }};
-static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 80,80 }};
-static struct YM2151interface   s11cs_ym2151Int  = {
-  1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
-  { s11cs_ym2151IRQ }
-};
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
 
 MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -494,15 +504,21 @@ static struct {
 } s11slocals;
 
 static void s11s_init(struct sndbrdData *brdData) {
+  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+  int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  if (core_gameData->hw.gameSpecific2) {
-    hc55516_set_gain(0, core_gameData->hw.gameSpecific2);
-  }
+  if (hcgain != 0)
+	hc55516_set_gain(0, hcgain);
+  if (ymvol != 0)
+	YM2151_set_mixing_levels(0, ymvol, ymvol);
+  if (dacvol != 0)
+	DAC_set_mixing_level(0, dacvol);
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
@@ -636,8 +652,29 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x9c00, 0x9cff, odd_w },
 MEMORY_END
 
+// Mixing volume levels for System 11, based on schematics for the original
+// hardware.  The HC55516 has 1.7V peak output and goes through an op-amp
+// stage with 4.19 gain -> 7.1V peak.  The YM2151 outputs 2.5V peak and
+// goes straight through to the output, so it's mixed at about 35% of the
+// HC volume.  The DAC (IC1408) outputs 4.98V peak and connects straight 
+// through as well, so it's mixed at 70% relative to the HC.  
+//
+// [mjr 5/2019] PinMAME has traditionally mixed these at 50% DAC and 20% YM, 
+// so the perceived loudness of the actual HC clips is probably lower than 
+// you'd guess from the hardware analog mixing levels alone.  I'm lowering
+// the YM mix a little further still to 15% because the new filtering on
+// the HC reduces its apparent volume a bit vs the old scratchy version.
+//
+// Note that the mix levels can be overridden per game, in case the defaults
+// don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
+// for instructions.
 static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }};
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct YM2151interface   s11cs_ym2151Int = {
+	1, 3579545, /* Hz */
+	{ YM3012_VOL(15, MIXER_PAN_CENTER, 15, MIXER_PAN_CENTER) },
+	{ s11cs_ym2151IRQ }
+};
 
 MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_CPU_ADD(M6809, 2000000)
@@ -796,9 +833,9 @@ static void s11js_ym2151IRQ(int state) {
 }
 
 
-/*------------------
-/  WPC sound board
-/-------------------*/
+/*----------------------------------------
+/  WPC sound board (pre-DCS, aka WPC89)
+/----------------------------------------*/
 #define WPCS_BANK0  4
 
 /*-- internal sound interface --*/
@@ -826,9 +863,9 @@ static struct {
 } locals;
 
 static WRITE_HANDLER(wpcs_rombank_w) {
-  /* the hardware can actually handle 1M chip but no games uses it */
-  /* if such ROM appear the region must be doubled and mask set to 0x1f */
-  /* this would be much easier if the region was filled in opposit order */
+  /* the hardware can actually handle 1M chip but no games used it */
+  /* if such ROM appears the region must be doubled and mask set to 0x1f */
+  /* this would be much easier if the region was filled in opposite order */
   /* but I don't want to change it now */
   int bankBase = data & 0x0f;
 #ifdef MAME_DEBUG
@@ -925,9 +962,25 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
 MEMORY_END
-//NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)
-static struct DACinterface      wpcs_dacInt     = { 1, { 100 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }};
+
+// Relative mixing volumes for the WPC89 sound devices.  [mjr 5/2019] Adjusted the levels
+// based on the original analog mixing levels inferred from the WPC89 schematics:
+//
+//  - HC55516 outputs 1.7V peak and goes through a 3.19 gain op-amp stage, for 5.4V peak
+//  - YM2151 outputs 2.5V peak and goes through a 0.35 gain op-amp stage, for .86V peak
+//  - DAC (AD7524) outputs 3.8V peak (Vref, 12V at 10k/4.7k divider), unity gain op-amp, 3.8V peak
+//
+// Taking the HC55516 as the 100% reference point, the YM2151 peak voltage is 16% and the
+// DAC peak is 70%.  This seems about right subjectively, except that 16% for YM makes the
+// music a little too loud relative to the others, so let's keep that at 15%.
+//
+// Note that we can individually override any games where this doesn't sound right, as the
+// DAC and YM relative volume levels can be independently adjusted per game.  See
+// WPCSND_HC55516_LEVELS() in wmssnd.h to see how.
+//
+//[OLD: NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)]
+static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 };
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
@@ -969,11 +1022,19 @@ static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
 }
 
 static void wpcs_init(struct sndbrdData *brdData) {
+  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+  int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
   locals.brdData = *brdData;
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
-  hc55516_set_gain(0, 4250);
+  if (hcgain != 0)
+	hc55516_set_gain(0, hcgain);
+  if (ymvol != 0)
+	YM2151_set_mixing_levels(0, ymvol, ymvol);
+  if (dacvol != 0)
+	DAC_set_mixing_level(0, dacvol);
 }
 
 /*--------------------
@@ -1170,7 +1231,7 @@ static data8_t *dcs_getBootROM(int soft) {
 }
 
 /*static*/ WRITE16_HANDLER(dcs_latch_w) {
-  soundlatch2_w(0, data);
+  soundlatch2_w(0, (data8_t)data);
   dcslocals.replyAvail = TRUE;
   sndbrd_data_cb(dcslocals.brdData.boardNo, data);
 }

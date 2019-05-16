@@ -50,6 +50,7 @@ WRITE16_HANDLER( YM2151_data_port_2_lsb_w );
 int YM2151_sh_start(const struct MachineSound *msound);
 void YM2151_sh_stop(void);
 void YM2151_sh_reset(void);
+void YM2151_set_mixing_levels(int chip, int l, int r);
 
 void YM2151UpdateRequest(int chip);
 #endif
