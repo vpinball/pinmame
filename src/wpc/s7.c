@@ -8,6 +8,11 @@
 #include "wmssnd.h"
 #include "s7.h"
 
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+ #include "lisy/lisy_w.h"
+#endif /* PINMAME && LISY_SUPPORT */
+
+
 #define S7_VBLANKFREQ    60 /* VBLANK frequency */
 #define S7_IRQFREQ     1000
 #define S7_PIA0  0
@@ -77,6 +82,9 @@ static INTERRUPT_GEN(s7_vblank) {
   /*-- lamps --*/
   if ((s7locals.vblankCount % S7_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+#if defined(LISY_SUPPORT)
+    lisy_w_lamp_handler( );
+#endif
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
@@ -94,11 +102,17 @@ static INTERRUPT_GEN(s7_vblank) {
 #  error "Need to update smooth formula"
 #endif
   coreGlobals.solenoids = s7locals.solsmooth[0] | s7locals.solsmooth[1];
+#if defined(LISY_SUPPORT)
+  lisy_w_solenoid_handler( );
+#endif
   s7locals.solenoids = coreGlobals.pulsedSolState;
 
   /*-- display --*/
   if ((s7locals.vblankCount % S7_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s7locals.segments, sizeof(coreGlobals.segments));
+#if defined(LISY_SUPPORT)
+    lisy_w_display_handler( );
+#endif
     memset(s7locals.segments,0,sizeof(s7locals.segments));
     coreGlobals.diagnosticLed = s7locals.diagnosticLed;
   }
@@ -273,8 +287,20 @@ static READ_HANDLER(s7_dips_r) {
 /*---------------
 / Switch reading
 /----------------*/
-static WRITE_HANDLER(pia4b_w) { s7locals.swCol = data; }
-static READ_HANDLER(pia4a_r)  { return core_getSwCol(s7locals.swCol); }
+static WRITE_HANDLER(pia4b_w) {
+  s7locals.swCol = data;
+#if defined(LISY_SUPPORT)
+  lisy_w_throttle();
+#endif
+}
+
+static READ_HANDLER(pia4a_r) {
+#ifndef LISY_SUPPORT
+  return core_getSwCol(s7locals.swCol);
+#else
+  return lisy_w_switch_handler(s7locals.swCol); //get the switches from LISY_W
+#endif
+}
 
 /*---------------
 /  Sound command

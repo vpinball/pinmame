@@ -17,12 +17,17 @@ typedef union {
         } content;
     } eeprom_block_t;
 
-int lisy80_eeprom_256byte_write( char *wbuf, int block);
-int lisy80_eeprom_256byte_read( char *rbuf, int block);
-int lisy80_eeprom_init(void);
-int lisy80_eeprom_printstats(void);
-eeprom_block_t lisy80_eeprom_getstats(void);
-int lisy80_eeprom_checksignature(void);
+int lisy_eeprom_256byte_write( char *wbuf, int block);
+int lisy_eeprom_256byte_read( char *rbuf, int block);
+int lisy_eeprom_init(void);
+int lisy_eeprom_printstats(void);
+eeprom_block_t lisy_eeprom_getstats(void);
+int lisy_eeprom_checksignature(void);
+
+//PIC eeprom routines
+int lisy_eeprom_1byte_read( unsigned char address, int block);
+int lisy_eeprom_1byte_write( unsigned char address, unsigned char data,  int block);
+
 
 #define LISY80_EEPROM_I2C_BUS      "/dev/i2c-1"
 #define LISY1_EEPROM_ADDR1  0x52         	/* the 24C16 sits on i2c address 0x52 */
@@ -31,6 +36,8 @@ int lisy80_eeprom_checksignature(void);
 #define LISY80_HW311_EEPROM_ADDR2  0x51         /* and 0x51 for harwware 311 */
 #define LISY80_HW320_EEPROM_ADDR1  0x54         /* the 24C16 sits on i2c address 0x54 */
 #define LISY80_HW320_EEPROM_ADDR2  0x55         /* and 0x55 for hardware 320 */
+#define LISY35_EEPROM_ADDR1  0x56         	/* the 24C16 sits on i2c address 0x56 */
+#define LISY35_EEPROM_ADDR2  0x57         	/* and 0x57 for lisy1 */
 #define BYTES_PER_PAGE       256          /* one eeprom page is 256 byte */
 #define MAX_BYTES            16            /* max number of bytes to write in one chunk */
        /* ... note: 24C02 and 24C01 only allow 8 bytes to be written in one chunk.   *

@@ -16,7 +16,7 @@ typedef union {
 typedef union {
     unsigned char byte;
     struct {
-    unsigned freeplay:1, JustBoom_sound:1, watchdog:1, coil_protection:1, slam:1, test:1, debug:1, autostart:1;
+    unsigned freeplay:1, JustBoom_sound:1, watchdog:1, sevendigit:1, slam:1, test:1, debug:1, autostart:1;
     //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
         } bitv;
     } ls80opt_t;
@@ -31,28 +31,30 @@ typedef union {
    } switchdata_t;
 
 void lisy80_hwlib_wiringPI_init(void);
-void lisy80_hwlib_init(void);
+void lisy_hwlib_init( void );
+void lisymini_hwlib_init( void );
 void lisy80_hwlib_shutdown(void);
 
 int lisy80_write_byte_pic( int fd, unsigned char buf);
 int lisy80_write_byte_disp_pic( unsigned char buf);
 int lisy80_write_multibyte_disp_pic( char *buf, int no);
 int lisy80_write_byte_coil_pic( unsigned char buf);
+int lisy80_write_multibyte_coil_pic( char *buf, int no);
 
 int lisy80_read_byte_pic(int fd);
 unsigned char lisy80_read_byte_disp_pic(void);
 unsigned char lisy80_read_byte_coil_pic(void);
 unsigned char lisy80_read_byte_sw_pic(void);
 
-void lisy80_coil_set( int coil, int action);
-void lisy1_coil_set( int coil, int action);
 void lisy80_sound_set(int sound);
 void lisy1_sound_set(int sound);
+//void lisy35_sound_set(int sound);
 
 int lisy80_switch_readycheck( void );
 int lisy80_switch_pic_init( void );
 int lisy80_switch_reader( unsigned char *action );
 int lisy1_switch_reader( unsigned char *action );
+int lisy35_switch_reader( unsigned char *action );
 
 void lisy80_get_dips(void);
 int lisy80_dip1_debug_option(void);
@@ -64,6 +66,11 @@ void lisy80_set_yellow_led( int value );
 void lisy80_set_red_led( int value );
 
 int  lisy80_get_poti_val(void);
+
+void lisy35_switch_pic_init(unsigned char variant);
+
+unsigned char lisymini_get_dip( char* wantdip);
+
 
 //vars
 //remeber the flip_flop settings of each
@@ -159,6 +166,7 @@ struct {
 #define LISY80_HW320_DATA_D3   13    // Data from Pic ( D3 & D7)
 //others changed in 320
 #define LISY80_HW320_LED_RED 14	//LED to signal errors
+#define LISY_MINI_LED_RED 6	//LED to signal errors LISY_Mini
 
 //sound settings
 #define LISY80_A_PIN     7    //GPIO 4 (7)

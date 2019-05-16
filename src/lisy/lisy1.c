@@ -1,9 +1,11 @@
 /*
  LISY1.c
- April 2017
+ May 2018
  bontango
 */
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
@@ -22,6 +24,7 @@
 #include "eeprom.h"
 #include "sound.h"
 #include "lisy.h"
+#include "lisy_mame.h"
 #include "lisyversion.h"
 
 
@@ -40,6 +43,9 @@ unsigned char swMatrixLISY1[7] = { 0,0,0,0,0,0,0 };
 //global flag for nvram write
 static int lisy1_nvram_delayed_write = 0;
 
+//global var for coil min pulse time option, always activated for lisy1
+int lisy1_coil_min_pulse_time[8] = { 0,0,0,0,0,0,0,0};
+
 
 //all the lamps (36)
 //initial value is 7 to indicate first chnage in routine
@@ -50,6 +56,11 @@ unsigned char lisy1_lamp[37] =
        7,7,7,7,7,7,7,7,7,7,
        7,7,7,7,7,7,7,7,7,7,
        7,7,7,7,7,7,7, };
+
+//global var for sound options
+unsigned char lisy1_has_soundcard = 0;  //there is a pHat soundcard installed
+unsigned char lisy1_has_own_sounds = 0;  //play own sounds rather then usinig piname sound emulation
+
 
 //init SW portion of lisy1
 void lisy1_init( void )
@@ -71,16 +82,72 @@ void lisy1_init( void )
  //show the 'boot' message
  display_show_boot_message_lisy1(s_lisy_software_version,lisy1_game.rom_id,lisy1_game.gamename);
 
- //RTH: we may add sound here
+ //check sound options
+ if ( ls80opt.bitv.JustBoom_sound )
+   {
+     lisy1_has_soundcard = 1;
+     if ( ls80dbg.bitv.sound) lisy80_debug("internal soundcard to be activated");
+     //do we want to use pinamme sounds?
+     if ( ls80opt.bitv.test )
+      {
+       if ( ls80dbg.bitv.sound) lisy80_debug("we try to use pinmame sounds");
+      }
+      else
+      {
+        lisy1_has_own_sounds = 1;
+        if ( ls80dbg.bitv.sound) lisy80_debug("we try to use our own sounds");
+      }
+   }
 
-//show green ligth for now, lisy1 is running
+ // try say something about LISY80 if soundcard is installed
+ if ( lisy1_has_soundcard )
+ {
+  //set volume according to poti
+  lisy_adjust_volume();
+  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s\" | /usr/bin/festival --tts",s_lisy_software_version);
+  system(debugbuf);
+ }
+
+ //show green ligth for now, lisy1 is running
  lisy80_set_red_led(0);
  lisy80_set_yellow_led(0);
  lisy80_set_green_led(1);
 
+ //check for coil min_pulse parameter
+ //option is active if value is either 0 or 1
+  fprintf(stderr,"Info: checking for Coil min pulse time extension config\n");
+  //first try to read coil opts, for current game
+  if ( lisy1_file_get_coilopts() < 0 )
+   {
+     fprintf(stderr,"Info: no coil opts file; or error occured, using defaults\n");
+   }
+  else
+   {
+     fprintf(stderr,"Info: coil opt file read OK, min pulse time set\n");
+
+     if ( ls80dbg.bitv.coils) {
+     int i;
+     for(i=0; i<=7; i++)
+       fprintf(stderr,"coil No [%d]: %d msec minimum pulse time\n",i,lisy1_coil_min_pulse_time[i]);
+    }
+   }
+
+
+ if ( lisy1_has_own_sounds )
+ {
+  //now open soundcard, and init soundstream
+  if ( lisy1_sound_stream_init() < 0 )
+   {
+     fprintf(stderr,"sound init failed, sound emulation disabled\n");
+     lisy1_has_own_sounds = 0;
+   }
+ else
+   fprintf(stderr,"info: sound init done\n");
+ }
+
 }
 
-//read the csv file on /boot partition and the DIP switch setting
+//read the csv file on /lisy partition and the DIP switch setting
 //give back gamename accordently and line number
 // -1 in case we had an error
 //this is called early from unix/main.c
@@ -165,38 +232,38 @@ if ( value != myvalue[index] )
    {
      case 12 ... 17: //system1 player 1 
 	index = 29 - index; //new order 17 ... 12
-	display_show_int( 1, index-12, value);
+	display1_show_int( 1, index-12, value);
 	break;
      case 18 ... 23: //system1 player 2 
 	index = 41 - index; //new order 23 ... 18
-	display_show_int( 2, index-18, value);
+	display1_show_int( 2, index-18, value);
 	break;
      case 0 ... 5: //system1 player 3 
 	index = 5 - index; //new order 5 ... 0
-	display_show_int( 3, index, value);
+	display1_show_int( 3, index, value);
 	break;
      case 6 ... 11: //system1 player 4 
 	index = 17 - index; //new order 11 ... 6
-	display_show_int( 4, index-6, value);
+	display1_show_int( 4, index-6, value);
 	break;
      case 32: //system1 status display credits -> 'digits 3&4'
-	display_show_int( 0, 3, value);
+	display1_show_int( 0, 3, value);
 	break;
      case 33: //system1 status display credits -> 'digits 3&4'
-	display_show_int( 0, 2, value);
+	display1_show_int( 0, 2, value);
 	break;
      case 40: //system1 status display  'ball in play' -> 'digits 0&1'
-	display_show_int( 0, 1, value);
+	display1_show_int( 0, 1, value);
 	break;
      case 41: //system1 status display  'ball in play' -> 'digits 0&1'
-	display_show_int( 0, 0, value);
+	display1_show_int( 0, 0, value);
 	break;
    }//switch
 
   }
 
 
-
+/* now in displays.c
 if ( ls80dbg.bitv.displays )
 {
   if ( has_changed )
@@ -204,7 +271,8 @@ if ( ls80dbg.bitv.displays )
     printf("----- Index %d changed to %d -----\n",index,value);
 
     printf("Player1:");
-    for (i=17; i>=12; i--) printf("%c",my_datchar(myvalue[i]));
+    //for (i=17; i>=12; i--) printf("%c",my_datchar(myvalue[i]));
+    for (i=12; i<=17; i++) printf("%c",my_datchar(myvalue[i]));
     printf("\n");
     printf("Player2:");
     for (i=23; i>=18; i--) printf("%c",my_datchar(myvalue[i]));
@@ -229,6 +297,7 @@ if ( ls80dbg.bitv.displays )
   }
 
  }
+*/
 }
 
 
@@ -361,9 +430,15 @@ switch(ioport)
  {
    case 0: lisy1_coil_set( Q_OUTH, !enable); break;
    case 1: lisy1_coil_set( Q_KNOCK, !enable); break;
-   case 2: lisy1_coil_set( Q_TENS, !enable); break;
-   case 3: lisy1_coil_set( Q_HUND, !enable); break;
-   case 4: lisy1_coil_set( Q_TOUS, !enable); break;
+   case 2: lisy1_coil_set( Q_TENS, !enable);
+           if ( ( lisy1_has_own_sounds ) && ( enable == 0)) lisy1_play_wav(1);
+           break;
+   case 3: lisy1_coil_set( Q_HUND, !enable);
+           if ( ( lisy1_has_own_sounds ) && ( enable == 0)) lisy1_play_wav(2);
+           break;
+   case 4: lisy1_coil_set( Q_TOUS, !enable);
+           if ( ( lisy1_has_own_sounds ) && ( enable == 0)) lisy1_play_wav(3);
+           break;
    case 5: lisy1_coil_set( Q_SYS1_SOL6, !enable); break;
    case 6: lisy1_coil_set( Q_SYS1_SOL7, !enable); break;
    case 7: lisy1_coil_set( Q_SYS1_SOL8, !enable); break;
@@ -409,6 +484,8 @@ void lisy1_lamp_handler( int data, int isld)
   unsigned char new_lamp[4];
   int offset,i,flip_flop_no;
   static int current_LD = 15;
+  static unsigned char Q1_first_time = 1;
+  static unsigned char Q2_first_time = 1;
 
   if(isld) //just store th LD value, wie will set the lamp with the DS
     {
@@ -444,6 +521,19 @@ void lisy1_lamp_handler( int data, int isld)
 
        //remember
        lisy1_lamp[i+offset] = new_lamp[i];
+       //check special cases RTH: will need to moved ot an event handler
+       //Q1==Game Over; Q2==Tilt; Q3==HGTD; Q4==Shoot Again fix for all system1
+       switch( i+1+offset) //This is the transistor number
+        {
+         case 1: if ( Q1_first_time ) { Q1_first_time = 0; break; }
+                 if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(4);
+	         break;
+         case 2: if ( Q2_first_time ) { Q2_first_time = 0; break; }
+                 if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(5);
+	         break;
+        }
+
+
        //and set the lamp/coil
        if ( new_lamp[i] ) lisy1_coil_set(i+1+offset, 1); else  lisy1_coil_set(i+1+offset, 0);
     }
@@ -464,7 +554,8 @@ void lisy1TickleWatchdog( void )
     //do it via timer 3; 0,5 secs after buffered write
      if ( lisy_timer( 500, 0, 3))
        {
-	lisy1_nvram_handler( 2, 0, 0);  
+	//lisy1_nvram_handler( 2, 0, 0);  
+	lisy_nvram_write_to_file();
 	lisy1_nvram_delayed_write = 0;
        }
  }
@@ -580,9 +671,9 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
   first_time = 0;
   //do we have a valid signature in block 1? -> 1 =yes
   //if not init eeprom note:gane nr is 80 here
-  if ( !lisy80_eeprom_checksignature())
+  if ( !lisy_eeprom_checksignature())
      {
-       ret = lisy80_eeprom_init();
+       ret = lisy_eeprom_init();
  	if ( ls80dbg.bitv.basic )
   	{
         	sprintf(debugbuf,"write nvram INIT done:%d",ret);
@@ -591,14 +682,14 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
 
      }
   //read lisy80 block
-  lisy80_eeprom_256byte_read( lisy1_block.byte, 1);
+  lisy_eeprom_256byte_read( lisy1_block.byte, 1);
 
   //if the stored game number is not the current one
   //initialize nvram block with zeros and write to eeprom
   if(lisy1_block.content.gamenr != lisy1_game.gamenr)
    {
     for(i=0;i<=255; i++) nvram_block.byte[i] = '\0';
-    ret = lisy80_eeprom_256byte_write( nvram_block.byte, 0);
+    ret = lisy_eeprom_256byte_write( nvram_block.byte, 0);
     if ( ls80dbg.bitv.basic )
      {
         sprintf(debugbuf,"stored game nr not current one, we init with zero:%d",ret);
@@ -615,7 +706,7 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
    lisy1_block.content.counts[lisy1_game.gamenr]++;
    lisy1_block.content.Software_Main = LISY_SOFTWARE_MAIN;
    lisy1_block.content.Software_Sub = LISY_SOFTWARE_SUB;
-   ret = lisy80_eeprom_256byte_write( lisy1_block.byte, 1);
+   ret = lisy_eeprom_256byte_write( lisy1_block.byte, 1);
    if ( ls80dbg.bitv.basic )
    {
         sprintf(debugbuf,"nvram statistics updated for game:%d",lisy1_block.content.gamenr);
@@ -623,7 +714,7 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
    }
 
    //read the eeprom into the internal buffer (will be used for following reads)
-   ret = lisy80_eeprom_256byte_read( nvram_block.byte, 0);
+   ret = lisy_eeprom_256byte_read( nvram_block.byte, 0);
 
  } //first time only
 
@@ -638,7 +729,7 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
 	  return 0;
 	  break;	  	
 	case 2:  //delayed write
-  	  ret = lisy80_eeprom_256byte_write( nvram_block.byte, 0);
+  	  ret = lisy_eeprom_256byte_write( nvram_block.byte, 0);
 	  if ( ls80dbg.bitv.basic )
 	  {
 	          sprintf(debugbuf,"LISY80 write nvram done:%d",ret);
