@@ -1,2 +1,4 @@
-sudo cp lisy80_control /boot/lisy80/bin
-sudo cp lisy1_control /boot/lisy1/bin
+sudo cp lisy80_control /usr/local/bin
+sudo cp lisy1_control /usr/local/bin
+sudo cp lisy35_control /usr/local/bin
+sudo cp picpgm_control /usr/local/bin

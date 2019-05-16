@@ -7,7 +7,7 @@ CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
 LDFLAGS = -lwiringPi
 #LDFLAGS = -lbcm2835
 
-OBJ = lisy.o fileio.o utils.o hw_lib.o switches.o displays.o coils.o eeprom.o lisy1_control.o
+OBJ = lisy.o fileio.o utils.o hw_lib.o switches.o displays.o coils.o eeprom.o opc.o fadecandy.o lisy1_control.o
 
 lisy1_control: $(OBJ)
 	$(CC) $(CFLAGS) -o lisy1_control $(OBJ) $(LDFLAGS)

@@ -1,0 +1,17 @@
+# Makefile for picgm control socketserver
+# RTH 11.2018
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+#LDFLAGS = -lwiringPi -lSDL2 -lSDL2_mixer
+LDFLAGS = -lwiringPi
+#LDFLAGS = -lbcm2835
+
+OBJ = picpgm_control.o
+
+picpgm_control: $(OBJ)
+	$(CC) $(CFLAGS) -o picpgm_control $(OBJ) $(LDFLAGS)
+
+%.o: ../%.c ../%.h
+	$(CC) $(CFLAGS) -c $<
+

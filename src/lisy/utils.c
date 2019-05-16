@@ -1,11 +1,18 @@
 /*
   utils.c
   part of lisy80
-  bontango 04.2016
+  bontango 01.2019
 */
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include<string.h>
 #include<signal.h>
 #include<errno.h>
@@ -16,6 +23,7 @@
 #include "hw_lib.h"
 #include "displays.h"
 #include "utils.h"
+#include "fadecandy.h"
 #include "externals.h"
 
 struct stru_lisy80_error
@@ -94,12 +102,42 @@ else
 }
 
 //init SW portion of lisy80 or LISY1
+//caled by mame.c routine 'run_game'
 void lisy_init( void )
 {
+ unsigned char system;
+
+  //no LISY HW detected?
+  if (  lisy_hardware_revision == 0 ) return;
+  
+//do system specific init
+  if ( lisy_hardware_revision == 100 ) system=1;
+  else if ( lisy_hardware_revision == 350 ) system=35;
+  else if ( lisy_hardware_revision == LISY_HW_LISY_W ) system=121; //RTH where is System used ?? fadecandy only?
+     else system=80;
+
+ //init the fadecandy HW ( if told present via K3 )
+ if ( lisy_K3_value <= 1 )
+ {
+  if ( lisy_fadecandy_init(system) )
+   {
+    lisy_has_fadecandy = 0;
+    if (ls80dbg.bitv.basic == 1 ) fprintf(stderr,"Info: No fadecandy HW or no LED configured\n");
+   }
+  else
+   {
+    lisy_has_fadecandy = 1;
+    if (ls80dbg.bitv.basic == 1 ) fprintf(stderr,"Info: We have a fadecandy with config\n");
+   }
+}//K3 value
+
+
+  //do system specific init
   if ( lisy_hardware_revision == 100 ) lisy1_init( );
+  else if ( lisy_hardware_revision == 350 ) lisy35_init( );
+  else if ( lisy_hardware_revision == 121 ) lisy_w_init();
      else lisy80_init( );
 }
-
 
 //debug output with timestamp
 void lisy80_debug(char *message)
@@ -108,11 +146,13 @@ void lisy80_debug(char *message)
   static struct timeval last;
   long seconds, useconds;
   static int first = 1;
+  char str_seconds[20];
+  char my_str_seconds[20];
 
 if (first)
  {
   first = 0;
-  //store start time in global var
+  //store start time in local static  var
   gettimeofday(&last,(struct timezone *)0);
  }
 
@@ -126,10 +166,17 @@ if (first)
         seconds--;
   }   
 
- fprintf(stderr,"[%ld.%03ld] %s\n\r",seconds,useconds,message);
-
  // store time we had last time
- gettimeofday(&last,(struct timezone *)0);
+ //gettimeofday(&last,(struct timezone *)0);
+ last = now;
+
+ //we want only the last three digits of seconds
+ sprintf(str_seconds,"%ld",now.tv_sec);
+ sprintf(my_str_seconds,"%s",&str_seconds[strlen(str_seconds)]-3);
+ 
+ //we print seconds plus MICROseconds, first elapsed time, second time elapsed since last debug output
+ fprintf(stderr,"[%s.%06ld][%ld.%06ld] %s\n\r", my_str_seconds,now.tv_usec,seconds,useconds,message);
+
 
 }
 
@@ -233,17 +280,23 @@ unsigned char parity( unsigned char val )
 
 //handle internal timer
 //duration in millisecs
-//command is  0->start or ask timerstatus 1->reset timer
-//index 0..9, we do handle 10 timers here
+//command is  0->start or ask timerstatus
+//            1->reset timer
+//index 0..19, we do handle 19 timers here
+// 0..9 for internal ( e.g. freeplay )
+// 10..19 for coils lisy80
 //return is 0 when init and timer is 'in range'
 //return is 1 when time is over
 int lisy_timer( unsigned int duration, int command, int index)
 {
   unsigned int now;
   int millis_to_go;
-  static unsigned int timerstatus[10] = { 0,0,0,0,0,0,0,0,0,0 };
-  static unsigned int timer_last_on[10];
-  static unsigned int timer_duration[10];
+  static unsigned int timerstatus[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+  static unsigned int timer_last_on[20];
+  static unsigned int timer_duration[20];
+
+  //range check
+  if ( index > 19 ) return (1);
 
   if (command == 0)
    {
@@ -270,4 +323,121 @@ int lisy_timer( unsigned int duration, int command, int index)
     timerstatus[index] = 0;
     return 0;
    }
+}
+
+/**
+	
+ * Ansi C "itoa" based on Kernighan & Ritchie's "Ansi C":
+	
+ */
+	
+void strreverse(char* begin, char* end) {
+	
+	char aux;
+	
+	while(end>begin)
+	
+		aux=*end, *end--=*begin, *begin++=aux;
+	
+}
+	
+void my_itoa(int value, char* str, int base) {
+	
+	static char num[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+	
+	char* wstr=str;
+	
+	int sign;
+	
+
+
+	
+	// Validate base
+	
+	if (base<2 || base>35){ *wstr='\0'; return; }
+	
+
+	
+	// Take care of sign
+	
+	if ((sign=value) < 0) value = -value;
+	
+
+
+	
+	// Conversion. Number is reversed.
+	
+	do *wstr++ = num[value%base]; while(value/=base);
+	
+	if(sign<0) *wstr++='-';
+	
+	*wstr='\0';
+	
+
+	
+	// Reverse string
+
+	
+	strreverse(str,wstr-1);
+	
+}
+
+//LISY udp server
+//used to receive bytes which are interpreted as switch settings
+//start in debug mode only
+int lisy_udp_switch_reader( unsigned char *action, unsigned char do_only_init  )
+{
+
+  static int s; 
+  int rc, n, flags;
+  socklen_t len;
+  struct sockaddr_in cliAddr, servAddr;
+  unsigned char data;
+  const int y = 1;
+
+
+ if (!do_only_init) //this is with do_only_init==0, and needs to be polled by normal switchreader
+  {
+   // try to receive messages
+    len = sizeof (cliAddr);
+    n = recvfrom ( s, &data, 1, 0, (struct sockaddr *) &cliAddr, &len );
+    if (n < 0) {
+       if ( errno == EWOULDBLOCK ) return (80);  //return 80 indicates no data
+       printf ("could not receive data ... %d\n", n );
+       return (-1);
+      }
+
+   //only switchnumbers here, we interprete numbers <100 as OFF
+   // and >100 as put to ON
+   if ( data < 100) *action=0;  
+   else { data -= 100; *action=1;}
+
+   return data;
+  }
+ else //we create the socket and set it on nonblocking; port is lISY standard port( birthday of bontanto) 5963
+  {
+  //create socket
+  s = socket (AF_INET, SOCK_DGRAM, 0);
+  if (s < 0) {
+     fprintf (stderr,"cannot create socket for udp switch server ...(%s)\n",strerror(errno));
+     return (-1);
+  }
+  //bind the local port
+  servAddr.sin_family = AF_INET;
+  servAddr.sin_addr.s_addr = htonl (INADDR_ANY);
+  servAddr.sin_port = htons (5963);
+  setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int));
+  //set to nonblocking
+  flags = fcntl(s,F_GETFL,0);
+  fcntl(s, F_SETFL, flags | O_NONBLOCK);
+
+  rc = bind ( s, (struct sockaddr *) &servAddr,
+              sizeof (servAddr));
+  if (rc < 0) {
+     fprintf (stderr,"cannot bind port for udp switch server ...(%s)\n",strerror(errno));
+     return (-1);
+  }
+ }//init
+
+ return 0;
 }

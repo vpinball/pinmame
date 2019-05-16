@@ -1,5 +1,5 @@
-# lisy80 makefile for lisycontrol
-# bontango 05.2019
+# lisy35 makefile for lisycontrol
+# bontango 12.2018
 
 CC      = /usr/bin/gcc
 CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
@@ -26,10 +26,10 @@ OBJ = $(LOP)lisy80.o \
       $(LOP)usbserial.o \
       $(LOP)lisy_home.o \
       $(LOP)lisy_w.o \
-      lisy80_control.o
+      lisy35_control.o
 
-lisy80_control: $(OBJ)
-	$(CC) $(CFLAGS) -o lisy80_control $(OBJ) $(LDFLAGS)
+lisy35_control: $(OBJ)
+	$(CC) $(CFLAGS) -o lisy35_control $(OBJ) $(LDFLAGS)
 
 %.o: ../%.c ../%.h
 	$(CC) $(CFLAGS) -c $<

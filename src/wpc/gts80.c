@@ -517,7 +517,7 @@ static NVRAM_HANDLER(gts80) {
   core_nvram(file, read_or_write, GTS80_pRAM, 0x100, 0x00);
 #ifdef LISY_SUPPORT
   // 0 = read; 1 = write
-  lisy80_nvram_handler(read_or_write, GTS80_pRAM);
+  //lisy80_nvram_handler(read_or_write, GTS80_pRAM);
 #endif
   //if it is a read copy 256bytes to mirrored sections also
   if (!read_or_write) {

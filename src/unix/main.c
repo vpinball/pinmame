@@ -10,9 +10,8 @@
 #endif
 
 #if defined(LISY_SUPPORT)
- #include "lisy/lisy80.h"
- #include "lisy/lisy1.h"
- #include "lisy/lisyversion.h"
+extern int lisy_set_gamename( char *arg_from_main, char *lisy_gamename);
+#include "lisy/lisyversion.h"
 #endif
 
 /* From video.c. */
@@ -64,37 +63,12 @@ int main(int argc, char **argv)
             return(LISY_SOFTWARE_SUB);
            }
 
+        //otherwise lets check what game we need to emulate (lisy.c)
         char lisy_gamename[20];
 
-        //LISY80
-        //get the gamename from DIP Switch on LISY80 in case gamename (last arg) is 'lisy80'
-        if ( strcmp(argv[argc-1],"lisy80") == 0)
-        {
-            //do init of LISY80 hardware first, as we need to read dip switch from the board to identify game to emulate
-            lisy80_hw_init();
-                if ( (res=lisy80_get_gamename(lisy_gamename)) >= 0)
-                  {
-                   strcpy(argv[argc-1],lisy_gamename);
-                   fprintf(stderr,"LISY80: we are emulating Game No:%d %s\n\r",res,lisy_gamename);
-                  }
-                else
-                   fprintf(stderr,"LISY80: no matching game or other error\n\r");
-        }
-	
-	//LISY1
-        //get the gamename from DIP Switch on LISY1 in case gamename (last arg) is 'lisy1'
-        if ( strcmp(argv[argc-1],"lisy1") == 0)
-        {
-            //do init of LISY80 hardware first, as we need to read dip switch from the board to identify game to emulate
-            lisy80_hw_init();
-                if ( (res=lisy1_get_gamename(lisy_gamename)) >= 0)
-                  {
-                   strcpy(argv[argc-1],lisy_gamename);
-                   fprintf(stderr,"LISY1: we are emulating Game No:%d %s\n\r",res,lisy_gamename);
-                  }
-                else
-                   fprintf(stderr,"LISY1: no matching game or other error\n\r");
-        }
+        if ( lisy_set_gamename(argv[argc-1], lisy_gamename) < 0) return (-1);
+        //modify arg (length?)
+        strcpy(argv[argc-1],lisy_gamename);
 #endif
 
 

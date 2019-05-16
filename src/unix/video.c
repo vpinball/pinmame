@@ -1251,10 +1251,8 @@ int osd_create_display(const struct osd_create_params *params,
 /* Update the display. */
 void osd_update_video_and_audio(struct mame_display *display)
 {
-
-	//RTH: we do sound update in lisy80
-	//if (sound_stream && sound_enabled)
-	//sound_stream_update(sound_stream);
+	if (sound_stream && sound_enabled)
+	  sound_stream_update(sound_stream);
 }
 
 void osd_video_initpre()
