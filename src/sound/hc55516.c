@@ -679,11 +679,29 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		ratio = stream_get_sample_rate(chip->channel) * (tprv - t) / n;
 
 		// In rare cases, the ratio can be zero or even negative.  This can happen
-		// when the game outputs a very small group of bits (1-3).  The difference
-		// in clock steps between the input and output streams can cause the output
-		// clock to get ahead of the input clock in such cases.  A few bits won't
-		// be audible as anything more than a click (if at all), so force the
-		// rate ratio to 1 by fiat.
+		// when the game outputs a very small group of bits (1-3), which has been
+		// observed in at least one game (F-14 Tomcat).  The difference in clock 
+		// steps between the input and output streams can cause the output clock 
+		// to get ahead of the input clock in such cases.  The same clock leapfrog
+		// can happen in any group of bits, of course, but it doesn't cause trouble
+		// if we have a more typical block of hundreds of bits, since the combined
+		// time in the run will overwhelm the leapfrog effect, and the little bit
+		// of jitter will get subsumed organically into the rate conversion.
+		//
+		// So what to do when we encounter this oddball case?  A handful of bits
+		// in isolation will just sound like a click or tiny burst of noise, if
+		// it's audible at all, so we could probably get away with dropping the
+		// samples entirely without anyone missing them.  However, just in case
+		// the game really intended to output a little click or short burst of
+		// noise, we'll retain them.  We obviously can't output them in negative
+		// time, but we can at least pack them into a short time by converting
+		// them at the output stream sample rate.  Remember, this only happens
+		// when we have a handful of samples in the group, so we're only using
+		// a handful of slots in the output stream.  To do this, force the rate
+		// ratio to 1:1 by fiat.  This will make the little bit group sound sped
+		// up (by a factor of 2 or so for most games), but the loss of fidelity
+		// shouldn't be noticeable because a few bits in isolation just sounds
+		// like noise anyway.
 		if (ratio < 0.5)
 			ratio = 1.0;
 
