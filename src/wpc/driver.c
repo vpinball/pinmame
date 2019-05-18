@@ -2405,7 +2405,7 @@ DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)
 DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (LA-4)
-DRIVER(mousn,l4c)       //          12/18 B Mousin' Around! (LA-4C Competition MOD)
+DRIVER(mousn,l4c)       //          01/19 B Mousin' Around! (LA-4C Competition MOD)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
@@ -2420,6 +2420,7 @@ DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
 DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Prototype Europe)
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
+DRIVER(rollr,l2c)       //          04/19 W Rollergames (L-2C Competition MOD)
 DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3 Europe)
 DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3 German)
 DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2 French)
@@ -2589,7 +2590,8 @@ DRIVER(cftbl,l3)        //          01/93 B Creature from the Black Lagoon (L-3)
 DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3) LED Ghost Fix
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //                  Creature from the Black Lagoon (D-4) LED Ghost Fix
-DRIVER(cftbl,l5c)       //          04/16 B Creature from the Black Lagoon (L-5C)
+//DRIVER(cftbl,l5c)     //          04/16 B Creature from the Black Lagoon (L-5C) //outdated patch
+DRIVER(cftbl,l4c)       //          05/19 B Creature from the Black Lagoon (L-4C) //patch 8c6a
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //                  Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
@@ -2802,7 +2804,8 @@ DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
-DRIVER(tom,15c)         //          06/16 B Theatre of Magic (1.5C)
+//DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
+DRIVER(tom,13c)         //          01/19 B Theatre of Magic (1.3XC Competition MOD) //patch 5bc8
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)

@@ -548,7 +548,8 @@ WPC_ROMSTART(tom,14h,"1_40h.u6",  0x80000,CRC(4181db9b) SHA1(027ada8518207d5a841
 WPC_ROMSTART(tom,14hb,"1_40hb.u6",  0x80000,CRC(93fc2b7b) SHA1(8b180f7e92ab4f9daabb648ad3e64c6005869083)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c) SHA1(9896f3034bb7a59c9e241d16bf231fefc0ae1fd0)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,13f,"tom1_3f.rom",0x80000,CRC(8a87756b) SHA1(c1f600ed1b88880b5cfd0ae0cc3f1ed1cffbf8ea)) TOM_SOUND WPC_ROMEND
-WPC_ROMSTART(tom,15c,"tom1_5c.rom",0x80000,CRC(fd029a7d) SHA1(52c74a1977b45915d82bb42d3788daad1e382adc)) TOM_SOUND WPC_ROMEND
+WPC_ROMSTART(tom,13c,"Theatre Of Magic U6 game ROM rev 13x patch 5bc8.rom",0x80000,CRC(3e870f40) SHA1(d2aece3d12d4aed63599f92395296f675bc7ee53)) TOM_SOUND WPC_ROMEND //current patch
+//WPC_ROMSTART(tom,15c,"tom1_5c.rom",0x80000,CRC(fd029a7d) SHA1(52c74a1977b45915d82bb42d3788daad1e382adc)) TOM_SOUND WPC_ROMEND //outdated patch
 WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884) SHA1(2cb74ae5082d8ceaf89b8ef4df86f78cb5ba6463)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,121,"tom1_21.rom",0x80000,CRC(d578ba58) SHA1(cbc195935a0ffad282941e605fd94c1b095d17de)) TOM_SOUND WPC_ROMEND
 WPC_ROMSTART(tom,10f,"tom1.0f",0x80000,CRC(be7626ad) SHA1(2f7918b9d2d0618671d7a8676cf69ee76e86bcb9)) TOM_SOUND WPC_ROMEND
@@ -561,7 +562,8 @@ WPC_ROMSTART(tom,061,"u6-061.rom", 0x80000,CRC(b4e8045d) SHA1(f53fc7b8616d3a3208
 /---------------*/
 CORE_GAMEDEF(tom,13,"Theatre of Magic (1.3X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,13f,13,"Theatre of Magic (1.3 French)",2005,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,15c,13,"Theatre of Magic (1.5C Competition MOD)",2016,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H
+CORE_CLONEDEF(tom,13c,13,"Theatre of Magic (1.3XC Competition MOD)",2019,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H
+//CORE_CLONEDEF(tom,15c,13,"Theatre of Magic (1.5C Competition MOD)",2016,"Bally",wpc_mSecurityS,0) //based on 1.3X, NOT the "Tiger saw" rev. 1.4H, outdated patch
 CORE_CLONEDEF(tom,14h,13,"Theatre of Magic (1.4H)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,14hb,13,"Theatre of Magic (1.4H Coin Play)",2005,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,12,13,"Theatre of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)

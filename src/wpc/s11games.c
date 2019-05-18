@@ -896,9 +896,18 @@ S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c
                          "mous_u19.l2", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
                          "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7)) // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
 S11_ROMEND*/
-
+/* next competition patch:
 S11_ROMSTART48(mousn,l4c,"Mousin Around U26 game ROM rev LA-4 patch f51e.rom", CRC(43a9c68f) SHA1(2501a23059261a8b561ce1a8d9c9b72435ad26e6),
                          "Mousin Around U27 game ROM rev LA-4 patch f51e.rom", CRC(b7af50c1) SHA1(b17ff36eeca62cafca63f368990e23aca9b573f3))
+S11XS_SOUNDROM88(        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7), // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
+                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
+S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
+                         "mous_u19.l2", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
+                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7)) // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
+S11_ROMEND
+*/
+S11_ROMSTART48(mousn,l4c,"Mousin Around U26 game ROM rev LA-4 patch d87f.rom", CRC(36b74a67) SHA1(350113f5249a4dc888d80de4537958370f4328ca),
+                         "Mousin Around U27 game ROM rev LA-4 patch d87f.rom", CRC(6d584bf8) SHA1(755fc5be8f405b6364492fac2c7763c32e5ad9f3))
 S11XS_SOUNDROM88(        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7), // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
                          "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
 S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
@@ -925,7 +934,7 @@ S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dd
 S11_ROMEND
 
 CORE_GAMEDEF(mousn,l4,"Mousin' Around! (LA-4)", 1989, "Bally", s11a_one,0)
-CORE_CLONEDEF(mousn,l4c,l4,"Mousin' Around! (LA-4C Competition MOD)", 2018, "Bally", s11a_one,0)
+CORE_CLONEDEF(mousn,l4c,l4,"Mousin' Around! (LA-4C Competition MOD)", 2019, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,l1,l4,"Mousin' Around! (LA-1)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,lu,l4,"Mousin' Around! (LU-1 Europe)", 1989, "Bally", s11a_one,0)
 
@@ -1031,6 +1040,14 @@ S11CS_SOUNDROM000(      "rolr_u4.l3",  CRC(d366c705) SHA1(76018305b5040b2e5d8c45
 S11_ROMEND
 #define input_ports_rollr input_ports_s11
 CORE_GAMEDEF(rollr, l2, "Rollergames (L-2)", 1990, "Williams", s11_mS11CS,0)
+
+S11_ROMSTART48(rollr,l2c,"Rollergames U26 game ROM rev LA-2 patch a06e.rom", CRC(1b056830) SHA1(398974ef60b37e5b3acf44f3c91332f781a801cc),
+                         "Rollergames U27 game ROM rev LA-2 patch a06e.rom", CRC(d25a95ea) SHA1(ae0499add94dbad6a458f8af7841a8d0d0e21762))
+S11CS_SOUNDROM000(       "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c45cc81a18f13e1a8f8da),
+                         "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
+                         "rolr_u20.l3",  CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
+S11_ROMEND
+CORE_CLONEDEF(rollr,l2c,l2, "Rollergames (L-2C Competition MOD)", 2019, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,ex,"rolr-u26.ea3", CRC(78c3c1ad) SHA1(04e4370548b3ba85c49634402a0ea166e3643f68),
                         "rolr_u27.ea3", CRC(18685158) SHA1(d1a79fbe1185fb9e1ae1d9e2b2751429f487bb4c))
