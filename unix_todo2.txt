@@ -1,0 +1,36 @@
+The build was done on a Ubuntu 18.04 Virtual machine
+
+makefile.unix:
+TARGET   = pinmame
+LIBS     = -L/usr/lib/X11 -L/usr/lib
+INCLUDES = -I/usr/include/X11 -I/usr/include
+ARCH     = linux
+DISPLAY_METHOD = x11
+X11INC   = -I/usr/include/X11
+X11LIB   = -L/usr/lib/X11
+ 
+
+Since using X11 for my output testing I made sure I have the X11 debian packages.
+
+Here is the list of the packages I made sure were present for a successful compile
+(There are some sound packages that I neglected to note what they were)
+zlib1g-dev
+libx11-dev
+libxext-dev
+libxv-dev
+x11proto-video-dev
+libsdl2-dev
+libsdl1.2-dev
+
+ 
+To launch the compile ...
+
+make -f makefile.unix
+ 
+
+To clean up after failed compile
+
+make clean -f makefile.unix
+ 
+
+The completed object file is xpinmame.x11
