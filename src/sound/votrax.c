@@ -48,7 +48,7 @@ tp1 = phi clock (tied to f2q rom access)
 #endif
 #include "math.h"
 
-typedef unsigned char byte;	/* do not use windows.h to keep source OS independent */
+typedef unsigned char byte;
 
 #define VERBOSE 0
 
