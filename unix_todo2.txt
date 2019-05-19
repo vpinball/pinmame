@@ -34,3 +34,36 @@ make clean -f makefile.unix
  
 
 The completed object file is xpinmame.x11
+
+
+
+Now lets review what sound related parameters we should set in makefile.unix
+Notice I enabled both ALSA and SDL:
+
+###########################################################################
+# Sound Devices
+###########################################################################
+
+# Choose any additonal sound drivers you want to include, besides the
+# native sound driver for your system.
+# SOUND_ESOUND = 1
+SOUND_ALSA = 1
+# SOUND_ARTS_TEIRA = 1
+# SOUND_ARTS_SMOTEK = 1
+SOUND_SDL = 1
+# SOUND_WAVEOUT = 1
+
+Now lets confirm what sound devices we have
+
+$./xpinmame.x11 -ldp
+
+Digital sound plugins:
+
+oss                            Open Sound System DSP plugin                    
+alsa                           Alsa Sound System DSP plugin                    
+sdl                            Simple Direct Library DSP plugin
+
+
+OK let try to see if we can get some sound using Creature from the Black Lagoon (lets force it to use alsa)
+
+./xpinmame.x11 -audiodevice alsa cftbl_l4
