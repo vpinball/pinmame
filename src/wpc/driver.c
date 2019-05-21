@@ -422,6 +422,7 @@ DRIVER(mnfb,c29)        //Data East MPU: 09/89 ABC Monday Night Football (2.9, 5
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
+DRIVER(poto,a31)        //Data East MPU: 01/90 Phantom of the Opera (3.1)
 DRIVER(poto,a29)        //Data East MPU: 01/90 Phantom of the Opera (2.9)
 DRIVER(kiko,a10)        //Data East MPU: 01/90 King Kong (1.0)
 DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
