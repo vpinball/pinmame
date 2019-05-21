@@ -24,7 +24,7 @@ Made sound/speech work for Cerberus and Spain 82 - the only sound device on thes
 
 Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY
 New:
 Barni: Champion
 Cirsa: Sport 2000
@@ -65,6 +65,7 @@ Mousin' Around! LA-4C (competition MOD)
 New Star's Phoenix (French Speech and corresponding Free Play variant)
 Night Rider (Free Play+)
 Party Zone F-4 (Pinball FX MOD)
+Phantom of the Opera 3.1
 Power Play (Free Play+)
 Radical! L-1C (competition MOD)
 Road Show L-6C (competition MOD)
