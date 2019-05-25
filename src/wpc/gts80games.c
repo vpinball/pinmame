@@ -3,6 +3,7 @@
 #include "sim.h"
 #include "gts80.h"
 #include "gts80s.h"
+#include "machine/6532riot.h"
 
 #define INITGAME(name, gen, flip, disptype, sb, disp, inv) \
   static core_tGameData name##GameData = {gen, disptype, {flip,0,0,0,sb,disp},NULL,{{0},{inv}}}; \
@@ -2308,3 +2309,52 @@ GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843
 GTS80_ROMEND
 #define input_ports_nmovesfp input_ports_nmoves
 CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl_mGTS80BS3,0)
+
+
+// Games by other manufacturers
+
+/*-------------------------------------------------------------------
+/ ManilaMatic: Master (1988)
+/-------------------------------------------------------------------*/
+static MEMORY_READ_START(manila_readmem)
+  {0x0000,0x017f, MRA_RAM},      /*combined RIOT RAM space*/
+  {0x0200,0x027f, riot6532_0_r}, /*U4 - I/O*/
+  {0x0280,0x02ff, riot6532_1_r}, /*U5 - I/O*/
+  {0x0300,0x037f, riot6532_2_r}, /*U6 - I/O*/
+  {0x1000,0x17ff, MRA_ROM},      /*Game Prom*/
+  {0x1800,0x1fff, MRA_RAM},      /*RAM - 2KBytes*/
+  {0x2000,0xffff, MRA_ROM},      /*Game Prom (continued)*/
+MEMORY_END
+
+static MEMORY_WRITE_START(manila_writemem)
+  {0x0000,0x017f, MWA_RAM},      /*combined RIOT RAM space*/
+  {0x0200,0x027f, riot6532_0_w}, /*U4 - I/O*/
+  {0x0280,0x02ff, riot6532_1_w}, /*U5 - I/O*/
+  {0x0300,0x037f, riot6532_2_w}, /*U6 - I/O*/
+  {0x1000,0x17ff, MWA_NOP},      /*Game Prom*/
+  {0x1800,0x1fff, MWA_RAM, &generic_nvram, &generic_nvram_size}, /*RAM - 2KBytes*/
+  {0x2000,0xffff, MWA_NOP},      /*Game Prom (continued)*/
+MEMORY_END
+
+extern MACHINE_DRIVER_EXTERN(gts80);
+static MACHINE_DRIVER_START(manila)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(manila_readmem, manila_writemem)
+  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_SCREEN_SIZE(320, 200)
+  MDRV_VISIBLE_AREA(0, 319, 0, 199)
+  MDRV_IMPORT_FROM(gts80s_b1)
+MACHINE_DRIVER_END
+
+INITGAME(mmmaster, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+ROM_START(mmmaster)
+  NORMALREGION(0x10000, GTS80_MEMREG_CPU)
+    ROM_LOAD("gprom.cpu", 0x0000, 0x8000, CRC(0ffacb1d) SHA1(c609f49e0933ceb3d7eb1725a3ba0f1486978bd6))
+      ROM_RELOAD         (0x8000, 0x8000) // reset vector
+  GTS80BSSOUND888(           "drom.snd",  CRC(758e1743) SHA1(6df3011c044796afcd88e52d1ca69692cb489ff4),
+                             "yrom1.snd", CRC(4869b0ec) SHA1(b8a56753257205af56e06105515b8a700bb1935b),
+                             "yrom2.snd", CRC(0528c024) SHA1(d24ff7e088b08c1f35b54be3c806f8a8757d96c7))
+GTS80_ROMEND
+#define input_ports_mmmaster input_ports_gts80
+CORE_GAMEDEFNV(mmmaster,"Master",1988,"ManilaMatic",manila,0)
