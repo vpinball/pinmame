@@ -977,6 +977,11 @@ DRIVERNV(nbamac)        //NBA MAC (1996)
 DRIVERNV(ebalchmb)      //Eight Ball Champ (198?)
 
 // ----------------
+// MANILAMATIC
+// ----------------
+DRIVERNV(mmmaster)      //Master (1988)
+
+// ----------------
 // MICROPIN GAMES
 // ----------------
 DRIVERNV(pentacup)      //Pentacup (rev. 1, 1978)
