@@ -48,14 +48,6 @@ wget http://oddchange.com/freewpc/pinmame-x.patch.gz
 gunzip -d -N -c pinmame-x.patch.gz >pinmame-x.patch
 patch -p1 -i pinmame-x.patch
 # not fixing any of the failed hunks)
-file changes:
-* makefile.unix:
-  @92: CC = cc  (was: CC	= gcc-3.4.6)
-fileio.c:(.text+0x690): undefined reference to `_vsnprintf'
-* src/fileio.c
-  @1088: vsnprintf (was: _vsnprintf)
-* src/mamedbg.c
-  @1620: strnicmp (was: _strnicmp)
 
 make -f makefile.unix
 
@@ -120,11 +112,6 @@ serial stuff (WPC_SERIAL_...)
 orkin stuff (Orkin debugger)
 serial stuff (WPC_SERIAL_...)
 ticket dispenser stuff (WPC_SERIAL_...)
-
-* src\sound\votrax.c
--#include "windows.h"
-+typedef unsigned char byte;
-+
 
 * src\pinmame.mak
 +DRVLIBS += $(PINOBJ)/serial.o

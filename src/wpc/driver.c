@@ -422,6 +422,7 @@ DRIVER(mnfb,c29)        //Data East MPU: 09/89 ABC Monday Night Football (2.9, 5
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
+DRIVER(poto,a31)        //Data East MPU: 01/90 Phantom of the Opera (3.1)
 DRIVER(poto,a29)        //Data East MPU: 01/90 Phantom of the Opera (2.9)
 DRIVER(kiko,a10)        //Data East MPU: 01/90 King Kong (1.0)
 DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
@@ -479,10 +480,11 @@ DRIVER(jupk,501)        //Data East MPU: 09/93 Jurassic Park (5.01)
 DRIVER(jupk,g51)        //Data East MPU: 09/93 Jurassic Park (5.01 German)
 DRIVER(jupk,513)        //Data East MPU: 09/93 Jurassic Park (5.13)
 DRIVER(jupk,600)        //Data East MPU: 10/15 Jurassic Park (6.00 unofficial MOD)
-DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spanish)
-DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spanish)
-DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
-DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
+DRIVER(lah,l104)        //Data East MPU: 09/93 Last Action Hero (1.04 Spanish)
+DRIVER(lah,c106)        //Data East MPU: 09/93 Last Action Hero (1.06 Canadian)
+DRIVER(lah,l108)        //Data East MPU: 09/93 Last Action Hero (1.08 Spanish)
+DRIVER(lah,110)         //Data East MPU: 10/93 Last Action Hero (1.10)
+DRIVER(lah,112)         //Data East MPU: 11/93 Last Action Hero (1.12)
 DRIVER(lah,113)         //Data East MPU: 11/14 Last Action Hero (1.13 unofficial MOD)
 DRIVER(tftc,104)        //Data East MPU: 11/93 Tales From the Crypt (1.04 Spanish)
 DRIVER(tftc,200)        //Data East MPU: 11/93 Tales From the Crypt (2.00)
@@ -973,6 +975,11 @@ DRIVERNV(nbamac)        //NBA MAC (1996)
 // MAIBESA
 // ----------------
 DRIVERNV(ebalchmb)      //Eight Ball Champ (198?)
+
+// ----------------
+// MANILAMATIC
+// ----------------
+DRIVERNV(mmmaster)      //Master (1988)
 
 // ----------------
 // MICROPIN GAMES
@@ -2391,9 +2398,10 @@ DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //          09/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //          10/89 W Police Force (LA-4)
 DRIVER(eatpm,p7)        //S11-782:  09/89 B Elvira and the Party Monsters (PA-7 Prototype)
-DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (L-1)
-DRIVER(eatpm,l2)        //          10/89 B Elvira and the Party Monsters (L-2)
-DRIVER(eatpm,l4)        //          10/89 B Elvira and the Party Monsters (L-4)
+DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (LA-1)
+DRIVER(eatpm,f1)        //          09/89 B Elvira and the Party Monsters (LF-1 French)
+DRIVER(eatpm,l2)        //          10/89 B Elvira and the Party Monsters (LA-2)
+DRIVER(eatpm,l4)        //          10/89 B Elvira and the Party Monsters (LA-4)
 DRIVER(eatpm,4u)        //          10/89 B Elvira and the Party Monsters (LU-4 Europe)
 DRIVER(eatpm,4g)        //          10/89 B Elvira and the Party Monsters (LG-4 German)
 DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
@@ -2403,7 +2411,7 @@ DRIVER(rvrbt,p7)        //S11-1966: 11/89 W Riverboat Gambler (PA-7 Prototype)
 DRIVER(mousn,l1)        //S11-1635: 11/89 B Mousin' Around! (LA-1)
 DRIVER(mousn,lu)        //          11/89 B Mousin' Around! (LU-1 Europe)
 DRIVER(mousn,l4)        //          03/90 B Mousin' Around! (LA-4)
-DRIVER(mousn,l4c)       //          12/18 B Mousin' Around! (LA-4C Competition MOD)
+DRIVER(mousn,l4c)       //          01/19 B Mousin' Around! (LA-4C Competition MOD)
                         //S11-???:  ??/90 B Mazatron
                         //S11-???:  ??/90 B Player's Choice
                         //S11-???:  ??/90 B Ghost Gallery
@@ -2418,6 +2426,7 @@ DRIVER(rollr,ex)        //S11-576:  01/90 W Rollergames (EXPERIMENTAL)
 DRIVER(rollr,e1)        //          01/90 W Rollergames (PU-1 Prototype Europe)
 DRIVER(rollr,p2)        //          01/90 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(rollr,l2)        //          04/90 W Rollergames (L-2)
+DRIVER(rollr,l2c)       //          04/19 W Rollergames (L-2C Competition MOD)
 DRIVER(rollr,l3)        //          05/90 W Rollergames (LU-3 Europe)
 DRIVER(rollr,g3)        //          05/90 W Rollergames (LG-3 German)
 DRIVER(rollr,f2)        //          ??/90 W Rollergames (LF-2 French)
@@ -2440,9 +2449,10 @@ DRIVER(radcl,l1)        //          06/90 B Radical! (L-1)
 DRIVER(radcl,g1)        //          06/90 B Radical! (LG-1)
 DRIVER(radcl,l1c)       //          11/18 B Radical! (L-1C Competition MOD)
 DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (Domestic Prototype)
-DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (P-6)
-DRIVER(dd,l2)           //          09/90 B Dr. Dude (L-2)
-DRIVER(dd,l3c)          //          04/16 B Dr. Dude (L-3C)
+DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (PA-6 Prototype)
+DRIVER(dd,lu1)          //          08/90 B Dr. Dude (LU-1 Europe)
+DRIVER(dd,l2)           //          09/90 B Dr. Dude (LA-2)
+DRIVER(dd,l3c)          //          04/16 B Dr. Dude (LA-3C)
 DRIVER(bbnny,l2)        //S11-209:  12/90 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2 Europe)
 //WPC
@@ -2510,7 +2520,8 @@ DRIVER(gi,l4)           //          07/91 B Gilligan's Island (L-4)
 DRIVER(gi,d4)           //                  Gilligan's Island (D-4) LED Ghost Fix
 DRIVER(gi,l6)           //          08/91 B Gilligan's Island (L-6)
 DRIVER(gi,d6)           //                  Gilligan's Island (D-6) LED Ghost Fix
-DRIVER(gi,l9)           //          12/92 B Gilligan's Island (L-9)
+DRIVER(gi,l8)           //          ??/9? B Gilligan's Island (L-8)
+DRIVER(gi,l9)           //          12/92 B Gilligan's Island (L-9) // Revision history says 11/94 ??
 DRIVER(gi,d9)           //                  Gilligan's Island (D-9) LED Ghost Fix
 DRIVER(pz,l1)           //WPC-204:  10/91 B Party Zone, The (L-1)
 DRIVER(pz,d1)           //                  Party Zone, The (D-1 LED Ghost Fix)
@@ -2585,7 +2596,8 @@ DRIVER(cftbl,l3)        //          01/93 B Creature from the Black Lagoon (L-3)
 DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3) LED Ghost Fix
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //                  Creature from the Black Lagoon (D-4) LED Ghost Fix
-DRIVER(cftbl,l5c)       //          04/16 B Creature from the Black Lagoon (L-5C)
+//DRIVER(cftbl,l5c)     //          04/16 B Creature from the Black Lagoon (L-5C) //outdated patch
+DRIVER(cftbl,l4c)       //          05/19 B Creature from the Black Lagoon (L-4C) //patch 8c6a
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //                  Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
@@ -2672,19 +2684,20 @@ DRIVER(afv,d4)          //                  Addams Family Values (D-4 Redemption
 DRIVER(sttng,p4)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-4)
 DRIVER(sttng,p5)        //          11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,p6)        //                  Star Trek: The Next Generation (P-6) LED Ghost Fix
-DRIVER(sttng,p8)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-8)
+DRIVER(sttng,p8)        //          11/93 W Star Trek: The Next Generation (P-8)
 DRIVER(sttng,l1)        //          11/93 W Star Trek: The Next Generation (LX-1)
 DRIVER(sttng,d1)        //                  Star Trek: The Next Generation (DX-1) LED Ghost Fix
 DRIVER(sttng,l2)        //          12/93 W Star Trek: The Next Generation (LX-2)
 DRIVER(sttng,d2)        //                  Star Trek: The Next Generation (DX-2) LED Ghost Fix
-DRIVER(sttng,l3)        //WPC-523:  12/93 W Star Trek: The Next Generation (LX-3)
+DRIVER(sttng,l3)        //          12/93 W Star Trek: The Next Generation (LX-3)
+DRIVER(sttng,l5)        //          12/93 W Star Trek: The Next Generation (LX-5)
 DRIVER(sttng,l7)        //          02/94 W Star Trek: The Next Generation (LX-7)
 DRIVER(sttng,d7)        //                  Star Trek: The Next Generation (DX-7) LED Ghost Fix
 DRIVER(sttng,l7c)       //          08/17 W Star Trek: The Next Generation (LX-7C Competition MOD)
 DRIVER(sttng,x7)        //          02/94 W Star Trek: The Next Generation (LX-7 Special)
 DRIVER(sttng,dx)        //                  Star Trek: The Next Generation (DX-7 Special) LED Ghost Fix
-DRIVER(sttng,s7)        //          02/94 W Star Trek: The Next Generation (LX-7) SP1
-DRIVER(sttng,ds)        //                  Star Trek: The Next Generation (DX-7) SP1 LED Ghost Fix
+DRIVER(sttng,s7)        //          02/94 W Star Trek: The Next Generation (LX-7 SP1)
+DRIVER(sttng,ds)        //                  Star Trek: The Next Generation (DX-7 SP1) LED Ghost Fix
 DRIVER(sttng,g7)        //          02/94 W Star Trek: The Next Generation (LG-7 German)
 DRIVER(sttng,h7)        //                  Star Trek: The Next Generation (HG-7) LED Ghost Fix
 DRIVER(pop,pa3)         //WPC-522:  12/93 B Popeye Saves the Earth (PA-3 Prototype)
@@ -2724,8 +2737,8 @@ DRIVER(tafg,la3)        //          10/94 B Addams Family Special Collectors Edi
 DRIVER(tafg,da3)        //                  Addams Family Special Collectors Edition, The (DA-3) LED Ghost Fix
 DRIVER(wcs,l2)          //WPC-531:  05/94 B World Cup Soccer (LX-2)
 DRIVER(wcs,d2)          //                  World Cup Soccer (DX-2) LED Ghost Fix
-DRIVER(wcs,l3c)         //WPC-531:  06/16 B World Cup Soccer (LX-3C)
-DRIVER(wcs,la2)         //WPC-531:  02/94 B World Cup Soccer (LA-2)
+DRIVER(wcs,l3c)         //          06/16 B World Cup Soccer (LX-3C)
+DRIVER(wcs,la2)         //          02/94 B World Cup Soccer (LA-2)
 DRIVER(wcs,p2)          //          ??/?? B World Cup Soccer (PA-2 Prototype)
 DRIVER(wcs,p5)          //                  World Cup Soccer (PA-5) LED Ghost Fix
 DRIVER(wcs,p3)          //          ??/?? B World Cup Soccer (PX-3 Prototype)
@@ -2764,6 +2777,7 @@ DRIVER(rs,la5)          //          10/94 W Red & Ted's Road Show (LA-5)
 DRIVER(rs,da5)          //                  Red & Ted's Road Show (DA-5) LED Ghost Fix
 DRIVER(rs,lx5)          //          10/94 W Red & Ted's Road Show (LX-5)
 DRIVER(rs,dx5)          //                  Red & Ted's Road Show (DX-5) LED Ghost Fix
+DRIVER(rs,l6c)          //          05/19 W Red & Ted's Road Show (L6-C Competition MOD)
 DRIVER(ts,pa1)          //WPC-532:  11/94 B Shadow, The (PA-1 Prototype)
 DRIVER(ts,pa2)          //                  Shadow, The (PA-2) LED Ghost Fix
 DRIVER(ts,la2)          //          12/94 B Shadow, The (LA-2)
@@ -2796,7 +2810,8 @@ DRIVER(tom,13)          //          08/95 B Theatre of Magic (1.3X)
 DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
-DRIVER(tom,15c)         //          06/16 B Theatre of Magic (1.5C)
+//DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
+DRIVER(tom,13c)         //          01/19 B Theatre of Magic (1.3XC Competition MOD) //patch 5bc8
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)
@@ -2851,6 +2866,7 @@ DRIVER(sc,18s11)        //          04/98 B Safe Cracker (1.8, Sound S1.1)
 DRIVER(sc,18n11)        //          04/98 B Safe Cracker (1.8 No Percentaging, Sound S1.1)
 DRIVER(sc,18s2)         //          04/98 B Safe Cracker (1.8, German Sound S2.4)
 DRIVER(sc,18ns2)        //          04/98 B Safe Cracker (1.8 No Percentaging, German Sound S2.4)
+DRIVER(sc,18pfx)        //          03/19 B Safe Cracker (1.8 Pinball FX, Sound S1.0)
 DRIVER(totan,04)        //WPC-547:  05/96 W Tales of the Arabian Nights (0.4)
 DRIVER(totan,12)        //          06/96 W Tales of the Arabian Nights (1.2)
 DRIVER(totan,13)        //          07/96 W Tales of the Arabian Nights (1.3)
@@ -2894,6 +2910,7 @@ DRIVER(ngg,12)          //WPC-561:  12/97 W No Good Gofers (1.2)
 DRIVER(ngg,13)          //          04/98 W No Good Gofers (1.3)
 DRIVER(cp,15)           //WPC-563:  07/98 B Champion Pub, The (1.5)
 DRIVER(cp,16)           //          07/98 B Champion Pub, The (1.6)
+DRIVER(cp,16pfx)        //          03/19 B Champion Pub, The (1.6 Pinball FX)
 DRIVER(mb,05)           //WPC-565:  07/98 W Monster Bash (0.5)
 DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash (1.0)
 DRIVER(mb,106)                            // (1.06 Home version)

@@ -11,6 +11,7 @@
 #include "hw_lib.h"
 #include "switches.h"
 #include "utils.h"
+#include "fadecandy.h"
 #include "externals.h"
 
 
@@ -25,15 +26,26 @@ unsigned char strobe, returnval, action;
 int switch_no;
 
 
+
 //debug
 if( ls80dbg.bitv.switches )
  {
-	strobe = mydata.bitv.STROBE;
-	returnval = mydata.bitv.RETURN;
-	action = mydata.bitv.ONOFF;
+  strobe = mydata.bitv.STROBE;
+  returnval = mydata.bitv.RETURN;
+  action = mydata.bitv.ONOFF;
+   if ( lisy_hardware_revision == 100 )  //switch numbering for system1
+   {
+	switch_no = returnval * 10 + strobe;
+        sprintf(debugbuf,"LISY1 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
+        lisy80_debug(debugbuf);
+
+   } 
+   else  //switch numbering for System80
+   {
 	switch_no = returnval + strobe *10;
         sprintf(debugbuf,"LISY80 Switch_reader: Switch%d, action:%d\n\r",switch_no,action);
         lisy80_debug(debugbuf);
+   } 
  }
 
 
@@ -83,6 +95,8 @@ void monitor_switches(void)
 	{
 	 if ( lisy_hardware_revision == 100 )
            ret = lisy1_switch_reader( &action );
+	 else if ( lisy_hardware_revision == 350 )
+           ret = lisy35_switch_reader( &action );
 	 else
            ret = lisy80_switch_reader( &action );
 

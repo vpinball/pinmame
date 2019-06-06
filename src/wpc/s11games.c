@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
 System 9 games have the software revision identified with an "L" to signify the Level of software release.
 To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.
@@ -36,10 +38,10 @@ static core_tGameData name##GameData = { \
   gen, disp, {flip,0,0,0,0,db,gs1}, NULL, {{0}}, {mux} }; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAMEFULL(name, gen, disp, mux, flip, db, gs1, gs2,ss17,ss18,ss19,ss20,ss21,ss22) \
+#define INITGAMEFULL(name, gen, disp, mux, flip, db, gs1, gs2, sc, ss17,ss18,ss19,ss20,ss21,ss22) \
 static core_tGameData name##GameData = { \
   gen, disp, {flip,0,0,0,0,db,gs1,gs2}, NULL, {{0}}, {mux,{ss17,ss18,ss19,ss20,ss21,ss22}}}; \
-static void init_##name(void) { core_gameData = &name##GameData; }
+static void init_##name(void) { core_gameData = &name##GameData; hc55516_set_sample_clock(0, sc); }
 
 S11_INPUT_PORTS_START(s11, 1) S11_INPUT_PORTS_END
 
@@ -70,7 +72,7 @@ static core_tLCDLayout dispSshtl[] = { \
   { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
 };
 INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
-             S11_BCDDIAG|S11_BCDDISP,0,3750, 39, 40, 27, 26, 25, 0)
+             S11_BCDDIAG|S11_BCDDISP,0,3750,18867, 39, 40, 27, 26, 25, 0)
 S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", CRC(848ad54c) SHA1(4e4ce5fb970da37706472f94a27fd912e1ecb1a0))
 S9S_SOUNDROM4111(      "cpu_u49.128", CRC(8050ae27) SHA1(e3f5e9398f61b075620ecd075617a8dac3c07d0e),
                        "spch_u4.732", CRC(b0d03c5e) SHA1(46b952f71a7ecc03e22e427875f6e16a9d124067),
@@ -92,7 +94,7 @@ CORE_CLONEDEF(sshtl, l3, l7, "Space Shuttle (L-3)", 1984, "Williams", s9_mS9S,0)
 / Sorcerer (S9) 03/85
 /--------------------*/
 INITGAMEFULL(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,44),
-             S11_BCDDIAG|S11_BCDDISP,0,0,32,33,21,22,23,0)
+             S11_BCDDIAG|S11_BCDDISP,0,0,18181, 32,33,21,22,23,0)
 S9_ROMSTART12(sorcr,l1,"cpu_u19.732", CRC(88b6837d) SHA1(d26b06342741443406a72ba48a70e82df62bb26e),
                        "cpu_u20.764", CRC(c235b692) SHA1(d3b97fad2d501c894570601b387933c7644f64e6))
 S9S_SOUNDROM41111(     "cpu_u49.128", CRC(a0bae1e4) SHA1(dc5172aa1d59191d4119da20757cb2c2469f8fe3),
@@ -118,7 +120,7 @@ CORE_GAMEDEF(sorcr, l2, "Sorcerer (L-2)", 1985, "Williams", s9_mS9S,0)
 / Comet (S9) 06/85
 /--------------------*/
 INITGAMEFULL(comet, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,30),
-             S11_BCDDIAG|S11_BCDDISP,0,0,47,48,40,41,42,0)
+             S11_BCDDIAG|S11_BCDDISP,0,0,18181, 47,48,40,41,42,0)
 S9_ROMSTARTx4(comet,l4,"cpu_u20.128", CRC(36193600) SHA1(efdc44ef26c2def8f860a0296e27b2c3dac55ec8))
 S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe) SHA1(59b7f36fb2003b90b288abeff56df62ce50f10c6),
                        "spch_u4.732", CRC(d0215c49) SHA1(4f0925a826199b6e8baa5e7fbff5cde9e31d505b),
@@ -142,7 +144,7 @@ CORE_GAMEDEF(comet, l5, "Comet (L-5)", 1985, "Williams", s9_mS9S,0)
 / High Speed 01/86
 /--------------------*/
 INITGAMEFULL(hs, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(37,38),
-             S11_BCDDIAG,0,0,49,50,35,34,33,0)
+             S11_BCDDIAG,0,0,0, 49,50,35,34,33,0)
 S11_ROMSTART28(hs,l4,"hs_u26.l4", CRC(38b73830) SHA1(df89670f3df2b657dcf1f8ee08e506e54e016028),
                      "hs_u27.l4", CRC(24c6f7f0) SHA1(bb0058650ec0908f88b6a202df79e971b46f8594))
 S11XS_SOUNDROM88(    "hs_u21.l2", CRC(c0580037) SHA1(675ca65a6a20f8607232c532b4d127641f77d837),
@@ -182,7 +184,7 @@ CORE_CLONEDEF(hs,l4c,l4, "High Speed (L-4C Competition MOD)", 2018, "Williams", 
 / Grand Lizard 04/86
 /--------------------*/
 INITGAMEFULL(grand, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(0,48),
-             S11_BCDDIAG,0,0,43,44,0,0,0,0)
+             S11_BCDDIAG,0,0,0, 43,44,0,0,0,0)
 S11_ROMSTART28(grand,l4,"lzrd_u26.l3", CRC(5fe50db6) SHA1(7e2adfefce5c33ad605606574dbdfb2642aa0e85),
                         "lzrd_u27.l4", CRC(6462ca55) SHA1(0ebfa998d3cefc213ada9ed815d44977120e5d6d))
 S11XS_SOUNDROM44(       "lzrd_u21.l1", CRC(98859d37) SHA1(08429b9e6a3b3007815373dc280b985e3441aa9f),
@@ -204,7 +206,7 @@ CORE_CLONEDEF(grand, l3, l4, "Grand Lizard (L-3)", 1986, "Williams", s11_mS11XS,
 / Road Kings 07/86
 /--------------------*/
 INITGAMEFULL(rdkng, GEN_S11X, s11_dispS11,12, FLIP_SWNO(47,48),
-             S11_BCDDIAG,S11_RKMUX,0,43,44,24,25,26,27)
+             S11_BCDDIAG,S11_RKMUX,0,0, 43,44,24,25,26,27)
 S11_ROMSTART48(rdkng,l4,"road_u26.l4", CRC(4ea27d67) SHA1(cf46e8c5e417999150403d6d40adf8c36b1c0347),
                         "road_u27.l4", CRC(5b88e755) SHA1(6438505bb335f670e0892126764819a48eec9b88))
 S11XS_SOUNDROM88(       "road_u21.l1", CRC(f34efbf4) SHA1(cb5ffe9818994f4681e3492a5cd46f410d2e5353),
@@ -242,7 +244,7 @@ CORE_CLONEDEF(rdkng,l3,l4,"Road Kings (L-3)", 1986, "Williams", s11_mS11XS,0)
 / Pin-Bot 10/86
 /--------------------*/
 INITGAMEFULL(pb, GEN_S11X, s11_dispS11, 14, FLIP_SWNO(10,11),
-             0,0,0, 53, 0, 48, 54, 55,52)
+             0,0,0,0, 53, 0, 48, 54, 55,52)
 S11_ROMSTART48(pb,l5,"pbot_u26.l5", CRC(daa0c8e4) SHA1(47289b350eb0d84aa0d37e53383e18625451bbe8),
                      "pbot_u27.l5", CRC(e625d6ce) SHA1(1858dc2183954342b8e2e5eb9a14edcaa8dad5ae))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
@@ -303,7 +305,7 @@ CORE_CLONEDEF(pb,p4,l5, "Pin-Bot (P-4 Prototype)", 1986, "Williams", s11_mS11XSL
 / F-14 Tomcat 5/87
 /--------------------*/
 INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 14, FLIP_SWNO(63,15),
-             0,0,0, 57, 58, 0, 28, 0, 0)
+             0,0,0,0, 57, 58, 0, 28, 0, 0)
 S11_ROMSTART48(f14,p3,"f14_l3.u26", CRC(cd607556) SHA1(2ec95085784370a071cbf5df7ae5c6b4749605e2),
                       "f14_l3.u27", CRC(72951fd1) SHA1(b5f3fe1859e0abf9ab558b4b4f6754134d528c23))
 S11XS_SOUNDROM88(     "f14_u21.l1", CRC(e412300c) SHA1(382d0cfa47abea295f0c7501bc0a010473e9d73b),
@@ -346,7 +348,7 @@ CORE_CLONEDEF(f14, p5, l1, "F-14 Tomcat (P-5 Prototype)", 1987, "Williams", s11_
 / Fire! 8/87
 /--------------------*/
 INITGAMEFULL(fire, GEN_S11A, s11_dispS11a, 12, FLIP_SWNO(23,24),
-             0,0,0, 0,0, 61, 62, 57, 58)
+             0,0,0,0, 0,0, 61, 62, 57, 58)
 S11_ROMSTART48(fire,l3,"fire_u26.l3", CRC(48abae33) SHA1(00ce24316aa007eec090ae74818003e11a141214),
                        "fire_u27.l3", CRC(4ebf4888) SHA1(45dc0231404ed70be2ab5d599a673aac6271550e))
 S11XS_SOUNDROM88(      "fire_u21.l2", CRC(2edde0a4) SHA1(de292a340a3a06b0b996fc69fee73eb7bbfbbe64),
@@ -411,7 +413,7 @@ CORE_CLONEDEF(bguns,p1,l8,"Big Guns (P-1 Prototype)", 1987, "Williams", s11_mS11
 / Space Station 1/88
 /--------------------*/
 INITGAMEFULL(spstn, GEN_S11B,s11_dispS11b1,12, FLIP_SWNO(55,56),
-             0,0,0,0,63,61,64,60,62)
+             0,0,0,0, 0,63,61,64,60,62)
 S11_ROMSTART48(spstn,l5,"sstn_u26.l5", CRC(614c8528) SHA1(4f177e3d72a5cc302c62c756ec778ae2a98c8f2e),
                         "sstn_u27.l5", CRC(4558d963) SHA1(be317310978cca4ddd616d76fe892dcf7c980473))
 S11XS_SOUNDROM88(       "sstn_u21.l1", CRC(a2ceccaa) SHA1(4c23713543e06458e49e3f2d472543c4a4246a93),
@@ -894,9 +896,18 @@ S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c
                          "mous_u19.l2", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
                          "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7)) // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
 S11_ROMEND*/
-
+/* next competition patch:
 S11_ROMSTART48(mousn,l4c,"Mousin Around U26 game ROM rev LA-4 patch f51e.rom", CRC(43a9c68f) SHA1(2501a23059261a8b561ce1a8d9c9b72435ad26e6),
                          "Mousin Around U27 game ROM rev LA-4 patch f51e.rom", CRC(b7af50c1) SHA1(b17ff36eeca62cafca63f368990e23aca9b573f3))
+S11XS_SOUNDROM88(        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7), // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
+                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
+S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
+                         "mous_u19.l2", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
+                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7)) // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
+S11_ROMEND
+*/
+S11_ROMSTART48(mousn,l4c,"Mousin Around U26 game ROM rev LA-4 patch d87f.rom", CRC(36b74a67) SHA1(350113f5249a4dc888d80de4537958370f4328ca),
+                         "Mousin Around U27 game ROM rev LA-4 patch d87f.rom", CRC(6d584bf8) SHA1(755fc5be8f405b6364492fac2c7763c32e5ad9f3))
 S11XS_SOUNDROM88(        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7), // actually = U20.L1/U21.L1 (U20 and U21 are equal)?!
                          "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
 S11CS_SOUNDROM888(       "mous_u4.l2",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
@@ -923,7 +934,7 @@ S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dd
 S11_ROMEND
 
 CORE_GAMEDEF(mousn,l4,"Mousin' Around! (LA-4)", 1989, "Bally", s11a_one,0)
-CORE_CLONEDEF(mousn,l4c,l4,"Mousin' Around! (LA-4C Competition MOD)", 2018, "Bally", s11a_one,0)
+CORE_CLONEDEF(mousn,l4c,l4,"Mousin' Around! (LA-4C Competition MOD)", 2019, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,l1,l4,"Mousin' Around! (LA-1)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,lu,l4,"Mousin' Around! (LU-1 Europe)", 1989, "Bally", s11a_one,0)
 
@@ -1029,6 +1040,14 @@ S11CS_SOUNDROM000(      "rolr_u4.l3",  CRC(d366c705) SHA1(76018305b5040b2e5d8c45
 S11_ROMEND
 #define input_ports_rollr input_ports_s11
 CORE_GAMEDEF(rollr, l2, "Rollergames (L-2)", 1990, "Williams", s11_mS11CS,0)
+
+S11_ROMSTART48(rollr,l2c,"Rollergames U26 game ROM rev LA-2 patch a06e.rom", CRC(1b056830) SHA1(398974ef60b37e5b3acf44f3c91332f781a801cc),
+                         "Rollergames U27 game ROM rev LA-2 patch a06e.rom", CRC(d25a95ea) SHA1(ae0499add94dbad6a458f8af7841a8d0d0e21762))
+S11CS_SOUNDROM000(       "rolr_u4.l3",   CRC(d366c705) SHA1(76018305b5040b2e5d8c45cc81a18f13e1a8f8da),
+                         "rolr_u19.l3",  CRC(45a89e55) SHA1(3aff897514d242c83a8e7575d430d594a873736e),
+                         "rolr_u20.l3",  CRC(77f89aff) SHA1(dcd9fe233f33ef8f97cdeaaa365532e485a28944))
+S11_ROMEND
+CORE_CLONEDEF(rollr,l2c,l2, "Rollergames (L-2C Competition MOD)", 2019, "Williams", s11_mS11CS,0)
 
 S11_ROMSTART48(rollr,ex,"rolr-u26.ea3", CRC(78c3c1ad) SHA1(04e4370548b3ba85c49634402a0ea166e3643f68),
                         "rolr_u27.ea3", CRC(18685158) SHA1(d1a79fbe1185fb9e1ae1d9e2b2751429f487bb4c))

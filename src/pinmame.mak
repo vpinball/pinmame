@@ -220,6 +220,7 @@ ifdef ISVER6100
 SOUNDS += YM2610@ #to avoid compile errors
 endif
 SOUNDS += HC55516@
+SOUNDS += MC3417@
 SOUNDS += SAMPLES@
 SOUNDS += TMS5220@
 SOUNDS += AY8910@

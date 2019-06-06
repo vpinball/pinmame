@@ -15,6 +15,7 @@
 #include "displays.h"
 #include "hw_lib.h"
 #include "utils.h"
+#include "fadecandy.h"
 #include "externals.h"
 
 //globale var, used in most routines
@@ -34,6 +35,207 @@ union three {
         } bitv3;   //for 80B 
     } mydata_display;
 
+
+
+/*
+ System1
+ set one digit on display, dat is int in this case
+ display 0 is status display
+ others are 1..4 for player 1..4
+ with debugging and 7digit support
+*/
+void display1_show_int( int display, int digit, int dat)
+{
+int i;
+char datchar;
+static unsigned char first_time = 1;
+//we store what is on the displays
+static char player[4][8] = { "       ", "       ","       ","       "};
+
+   //convert dat(int) to datchar for PIC
+   switch (dat) {
+      case 0: datchar = '0'; break;
+      case 1: datchar = '1'; break;
+      case 2: datchar = '2'; break;
+      case 3: datchar = '3'; break;
+      case 4: datchar = '4'; break;
+      case 5: datchar = '5'; break;
+      case 6: datchar = '6'; break;
+      case 7: datchar = '7'; break;
+      case 8: datchar = '8'; break;
+      case 9: datchar = '9'; break;
+      default : datchar = ' '; break;
+	}
+
+  //with 6digit support just store value for possible debugging
+  if (!ls80opt.bitv.sevendigit )
+  {
+    if ( display != 0) //not for status display at the moment //RTH
+      player[display-1][digit] = datchar;
+
+  }
+
+  //with 7digit support we need to modify things
+  if (ls80opt.bitv.sevendigit )
+  {
+  //first time sys1 sets something to the displays we need to blank
+  //all digit five ( first digit at diplay) as this is not
+  //under control of sys1 program anymore
+  if(first_time)
+   {
+	/* build control byte */
+	mydata_display.bitv2.DIGIT = 5;  //#digit is five ( outer left)
+        mydata_display.bitv2.IS_CMD = 0;
+      //do it for all 4 displays
+      for( i=1; i<=4; i++)
+       {
+	mydata_display.bitv2.DISPLAY = i;
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( ' ' );
+       }
+    //only once
+    first_time = 0;
+   }
+
+    //digit moves one to the right, which dec by 1 for system1
+    //original digit order is from left to right: 5,4,3,2,1,0
+    //new digit order is from left to right:    5,4,3,2,1,0,6
+    //so digit 5 is under LISY1 control
+
+    //do also storing value in string for easy compare
+    //OLD:          5,4,3,2,1,0,6
+    //order here is 0,1,2,3,4,5,6
+    //so player[display-1][0] is the one under lISY1 control
+    if ( display != 0) //not for status display
+     {
+      switch (digit) {
+        case 0:
+		 digit = 6;
+	         player[display-1][6] = datchar;
+		 break;
+        case 1:
+		 --digit;
+	         player[display-1][5] = datchar;
+		 break;
+        case 2:
+		 --digit;
+	         player[display-1][4] = datchar;
+		 break;
+        case 3:
+		 --digit;
+	         player[display-1][3] = datchar;
+		 break;
+        case 4:
+		 --digit;
+	         player[display-1][2] = datchar;
+		 break;
+        case 5:
+		 --digit;
+	         player[display-1][1] = datchar;
+		 break;
+       }
+     }
+
+
+    //and add a zero or a blank if needed to outmost left digit player[x][0]
+    //do we need a blank?
+    if ( ( strcmp( &player[display-1][1],"      ") == 0) & ( player[display-1][0] != ' '))
+      {
+
+        if ( ls80dbg.bitv.displays ) lisy80_debug("7digit: add a space outmost left");
+
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = 5; //outmost left is index 5
+        mydata_display.bitv2.IS_CMD = 0;
+
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( ' ' );
+
+	//store new value 
+	player[display-1][0] = ' ';
+      }
+    //do we need a zero?
+    if ( ( strcmp( &player[display-1][1],"000000") == 0) & ( player[display-1][0] != '0'))
+      {
+        if ( ls80dbg.bitv.displays ) lisy80_debug("7digit: add a ZERO outmost left");
+
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = 5; //outmost left is index 5
+        mydata_display.bitv2.IS_CMD = 0;
+
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( '0' );
+
+	//store new value 
+	player[display-1][0] = '0';
+      }
+
+    //we do want a 'double zero' blinking for first ball
+    //do we need a blank?
+    if ( ( player[display-1][6] == ' ') & ( player[display-1][5] != ' '))
+      {
+        if ( ls80dbg.bitv.displays ) lisy80_debug("7digit: add a space secind digit");
+
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = 0; //second digit is index 0
+        mydata_display.bitv2.IS_CMD = 0;
+
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( ' ' );
+
+	//store new value 
+	player[display-1][5] = ' ';
+      }
+    //do we need a zero?
+    if ( ( player[display-1][6] == '0') & ( player[display-1][5] != '0'))
+      {
+        if ( ls80dbg.bitv.displays ) lisy80_debug("7digit: add a ZERO secind digit");
+
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = 0; //second digit is index 0
+        mydata_display.bitv2.IS_CMD = 0;
+
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( '0' );
+
+	//store new value 
+	player[display-1][5] = '0';
+      }
+  }//for sevendigit option
+
+
+        /* send it to the display */
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = digit;
+        mydata_display.bitv2.IS_CMD = 0;
+
+	//write to PIC
+	lisy80_write_byte_disp_pic( mydata_display.byte );
+	lisy80_write_byte_disp_pic( datchar );
+
+
+   //debug?
+   if ( ls80dbg.bitv.displays )
+    {
+     printf(" digit  :0123456\n");
+     printf("Player 1:%s\n",player[0]);
+     printf("Player 2:%s\n",player[1]);
+     printf("Player 3:%s\n",player[2]);
+     printf("Player 4:%s\n",player[3]);
+     }
+}
+
+
 /*
  80&80A only, need to be extended to 80B
  set one digit on display, dat is int in this case
@@ -45,6 +247,8 @@ union three {
 void display_show_int( int display, int digit, int dat)
 {
 char datchar;
+static char player[5][9] = { "        ", "        ","        ","        ","        "};
+
 
 switch (dat) {
       case 0: datchar = '0'; break;
@@ -57,10 +261,25 @@ switch (dat) {
       case 7: datchar = '7'; break;
       case 8: datchar = '8'; break;
       case 9: datchar = '9'; break;
-      case 15: datchar = ' '; break;
+      default : datchar = ' '; break;
 	}
  if ( lisy_hardware_revision == 311) toggle_dp_led(); //show activity
  display_show_char( display, digit, datchar);
+
+  //with just store value for possible debugging
+  if (!ls80opt.bitv.sevendigit )
+  {
+    //if ( display != 0) //not for status display at the moment //RTH
+      player[display][digit] = datchar;
+
+     printf(" digit  :0123456\n");
+     printf("Player 1:%s\n",player[1]);
+     printf("Player 2:%s\n",player[2]);
+     printf("Player 3:%s\n",player[3]);
+     printf("Player 4:%s\n",player[4]);
+     printf("status:%s\n",player[0]);
+  }
+
 }
 
 
@@ -95,7 +314,33 @@ else
 	//write to PIC
 	lisy80_write_byte_disp_pic( mydata_display.byte );
 	lisy80_write_byte_disp_pic( data );
+
 }
+}
+
+
+/*
+ For Bally/LISY35 only 0..9 and space BCD decoded
+ will be filtered by display PIC
+ set one digit on display, dat is int in this case
+ display 0 is status display
+ others are 1..6, with 1..4 for player 1..4
+*/
+void display35_show_int( int display, int digit, unsigned char dat)
+{
+
+ char buf[2];
+
+	/* build control byte */
+	mydata_display.bitv2.DISPLAY = display;
+	mydata_display.bitv2.DIGIT = digit;
+        mydata_display.bitv2.IS_CMD = 0;
+
+  buf[0] = mydata_display.byte;
+  buf[1] = dat;
+
+  //write data to PIC
+  lisy80_write_multibyte_disp_pic( buf, 2 );
 
 }
 
@@ -131,6 +376,31 @@ void display_show_str( int display, char *data)
   }
 }
 
+/*
+  display string on display Bally/LISY35 version
+  0==status display
+  1..4 == player 1..4
+  player5, player 6 special displays
+  uses display35_show_int, so no characters possible
+  
+  we decide with the length of the string if we have a 6 or a 7digit display
+*/
+void display35_show_str( int display, char *data)
+{
+
+	int i,len;
+
+	len = strlen(data);
+
+        for(i=0; i<len; i++)
+                {
+		 // -48 to get an int out of the ascii code ( 0..9)
+		 //for 6-digit input we start at index 2
+		 //for 7digit at index 1
+		 if (len <= 6) display35_show_int( display, i+2, data[i] - 48);
+		  else display35_show_int( display, i+1, data[i] - 48);
+                }
+}
 
 
 /*
@@ -247,6 +517,17 @@ int display_get_sw_version(void)
  ver_sub = display_cmd2pic(LS80DPCMD_GET_SW_VERSION_SUB);
 
  return( ver_main * 100 + ver_sub);
+}
+
+
+//get the hw revision stored in the PIC ( PIC SW >= 4.x needed)
+int display_get_hw_revision(void)
+{
+ int hw_rev;
+
+ hw_rev = display_cmd2pic(LS80DPCMD_GET_HW_REV);
+
+ return( hw_rev );
 }
 
 //get the DIP Switch value read by the PIC
@@ -422,7 +703,11 @@ else
 			 display_send_row_torow( row1, 1, 0); //10 = first row
 			 memcpy(oldrow1,row1,20*sizeof(char));
 		  	 //if (debug) fprintf(stderr,"[1][01234567890123456789]\n\r");
-			 if (debug) {  sprintf(debugbuf,"[row 1 changed][%s]\n\r",row1); lisy80_debug(debugbuf); }
+			 if (debug) {  sprintf(debugbuf,"[row 1 changed][%s]\n\r",row1);
+					 lisy80_debug(debugbuf);
+				        //int ii;
+					//for( ii=0; ii<=19; ii++) printf("%c ( %d )\n",row1[ii],row1[ii]);
+					 }
 			}
 		}
 	 //error?
@@ -439,7 +724,11 @@ else
 			 display_send_row_torow( row2, 0, 1); //01=second row
 			 memcpy(oldrow2,row2,20*sizeof(char));
 			 //if (debug) fprintf(stderr,"[2][01234567890123456789]\n\r");
-	 		 if (debug) { sprintf(debugbuf,"[row 2 changed][%s]\n\r",row2);lisy80_debug(debugbuf); }
+	 		 if (debug) { 
+					sprintf(debugbuf,"[row 2 changed][%s]\n\r",row2);
+					lisy80_debug(debugbuf); }
+				        //int ii;
+					//for( ii=0; ii<=19; ii++) printf("%c ( %d )\n",row2[ii],row2[ii]);
 			}
 		}
 	 //error?
@@ -471,6 +760,40 @@ if (lisy80_game.is80B)
  }
 
 
+
+}
+
+//show sw version of pic on status display (LISY35 only at the moment)
+void display_show_pic_sw_version(int pic_no, int sw_version)
+{
+
+ char str_sw_version[10];
+
+ if ( lisy_hardware_revision == 350 )
+ {
+  //not on digit 1 & 4, because they are covered by backglas
+  sprintf(str_sw_version," %d%d %02d",pic_no,sw_version/100,sw_version%100);
+  display35_show_str( 0, str_sw_version);
+ }
+}
+
+
+//this is the boot message for lis35y
+void display_show_boot_message_lisy35(char *s_lisy35_software_version)
+{
+
+  //show 'gamename' on display one
+  //sprintf(buf,"%-6s",lisy1_gamename);
+  //display_show_str( 1, buf);
+  //show Gottlieb internal ROM ID  on display two
+  //sprintf(buf,"GTB %-2s",rom_id);
+  //display_show_str( 2, buf);
+
+  //show 'boot' (6001) on display three
+  display35_show_str( 3, "6001  ");
+
+  //show Version number on Display 4
+  display35_show_str( 4, s_lisy35_software_version);
 
 }
 
@@ -562,5 +885,42 @@ else
  {
   display_show_str( 3, "SHUT   ");
  }
+}
+
+//control the soundE line which is
+//used also for display 7. digit in some cases
+void lisy35_display_set_soundE( unsigned char value)
+{
+ if (value)  display_cmd2pic_noansw(LS35_SOUNDE_1);
+  else display_cmd2pic_noansw(LS35_SOUNDE_0);
+}
+
+//set the display variant
+/* different variants
+ * 0 default: 4 player display plus 1 status (6-digit)
+ * 1: 4 player display plus 1 status (7-digit)
+ * 2 status display via J4-PIN5 ( PIA1-PB4) Medusa
+ *  extra output: RD2 -> J4PIN5
+ * 3 status display via J4-PIN8 ( PIA1-PB7) Elektra,Vector,Pac Man
+ * *  extra output: RD3 -> J4PIN8
+ * 4 two extra displays J4-PIN8 ( PIA1-PB7) & J1-PIN8 (Lamp strobe 2) Six million dollar man
+ * *  extra outputs: RD3 -> J4PIN8 & RD6 -> J1PIN8
+ */
+
+void lisy35_display_set_variant( unsigned char variant)
+{
+
+ if ( ls80dbg.bitv.basic)
+     {
+       sprintf(debugbuf,"display variant set to:%d",variant);
+       lisy80_debug(debugbuf);
+     }
+ switch (variant) {
+        case 0: display_cmd2pic_noansw(LS35DPCMD_VARIANT_0); break;
+        case 1: display_cmd2pic_noansw(LS35DPCMD_VARIANT_1); break;
+        case 2: display_cmd2pic_noansw(LS35DPCMD_VARIANT_2); break;
+        case 3: display_cmd2pic_noansw(LS35DPCMD_VARIANT_3); break;
+        case 4: display_cmd2pic_noansw(LS35DPCMD_VARIANT_4); break;
+	}
 }
 

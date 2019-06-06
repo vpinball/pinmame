@@ -183,45 +183,30 @@ BEGIN
     CTEXT           "Visual PinMAME\n",IDC_STATIC,148,6,160,8
     CTEXT           "Version %s",IDC_VERSION,150,16,160,8
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,160,8
-    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,
-                    103,160,8
+    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,103,160,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
-    CTEXT           "Copyright © 1997-2019 by the authors of MAME, MAME32, MAMEW and PinMAME",
-                    IDC_STATIC,148,116,160,16
-    CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
-                    IDC_STATIC,7,135,134,24
-    CTEXT           "Copyright © 2001-2019 by the authors.",IDC_STATIC,150,
-                    78,160,8
-    CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",
-                    IDC_STATIC,149,139,160,24
+    CTEXT           "Copyright © 1997-2019 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,160,16
+    CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",IDC_STATIC,7,135,134,24
+    CTEXT           "Copyright © 2001-2019 by the authors.",IDC_STATIC,150,78,160,8
+    CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",IDC_STATIC,149,139,160,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,
-                    162,1
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,90,
-                    162,1
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,136,
-                    162,1
-    CONTROL         "For the latest info:",IDC_STATIC,"Static",
-                    SS_LEFTNOWORDWRAP,8,168,55,9
-    CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
-                    SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, Matthias Bücher and Carsten Wächter",
-                    IDC_STATIC,152,51,154,24
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,162,1
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,90,162,1
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,136,162,1
+    CONTROL         "For the latest info:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP,8,168,55,9
+    CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, Thomas Behrens, Matthias Bücher and Carsten Wächter",IDC_STATIC,152,51,154,24
 END
 
-IDD_DISCLAIMERDLG DIALOG  0, 0, 218, 158
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION |
-    WS_SYSMENU
+IDD_DISCLAIMERDLG DIALOG 0, 0, 218, 158
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Please answer and press OK..."
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,83,137,50,14,WS_GROUP
-    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON |
-                    WS_GROUP | WS_TABSTOP,55,114,45,10
-    CONTROL         "No, I am not",IDC_NOIAMNOT,"Button",BS_AUTORADIOBUTTON,
-                    110,114,55,10
-    CTEXT           "Usage of emulators in conjuction with ROM images you are not legally entitled to own is forbidden by copyright law.\n\n\nNOTICE: Visual PinMAME is FREEWARE!\nIt is ILLEGAL to charge money for this program.",
-                    IDC_STATIC,6,8,205,49
+    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,55,114,45,10
+    CONTROL         "No, I am not",IDC_NOIAMNOT,"Button",BS_AUTORADIOBUTTON,110,114,55,10
+    CTEXT           "Usage of emulators in conjuction with ROM images you are not legally entitled to own is forbidden by copyright law.\n\n\nNOTICE: Visual PinMAME is FREEWARE!\nIt is ILLEGAL to charge money for this program.",IDC_STATIC,6,8,205,49
     CTEXT           "Game Description here",IDC_DISGAMESPEC,7,83,204,8
     CTEXT           "ARE YOU LEGALLY ENTITLED TO PLAY",IDC_STATIC,7,72,204,8
     CTEXT           "ON THIS EMULATOR?",IDC_STATIC,7,96,204,8
@@ -240,10 +225,8 @@ BEGIN
     LTEXT           "Static",IDC_ROMSETNAME,7,40,379,10,SS_SUNKEN
     LTEXT           "ROM directory(s)",IDC_STATIC,7,55,54,8
     LTEXT           "",IDC_ROMDIRS,7,64,379,18,SS_SUNKEN
-    LTEXT           "VPinMAME is looking in the ROM directory(s) for a zip file or a subdirectory with the name of the ROM set. Inside there the following files are expected to be found:",
-                    IDC_STATIC,7,87,379,16
-    LISTBOX         IDC_ROMLIST,7,115,379,77,LBS_USETABSTOPS |
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "VPinMAME is looking in the ROM directory(s) for a zip file or a subdirectory with the name of the ROM set. Inside there the following files are expected to be found:",IDC_STATIC,7,87,379,16
+    LISTBOX         IDC_ROMLIST,7,115,379,77,LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Name",IDC_STATIC,9,105,20,8
     LTEXT           "Type",IDC_STATIC,79,105,17,8
     LTEXT           "Length",IDC_STATIC,109,105,23,8
@@ -253,42 +236,42 @@ BEGIN
     LTEXT           "State",IDC_STATIC,328,105,18,8
     LTEXT           "State:",IDC_STATIC,7,195,379,8
     LTEXT           "Static",IDC_STATE,7,204,379,20,SS_SUNKEN
-    PUSHBUTTON      "Don't care results, continue anyway",IDC_DONTCARE,7,234,
-                    155,14
+    PUSHBUTTON      "Don't care results, continue anyway",IDC_DONTCARE,7,234,155,14
 END
 
-IDD_CONTROLLERSETTINGSDLG DIALOGEX 0, 0, 312, 166
+IDD_CONTROLLERSETTINGSDLG DIALOGEX 0, 0, 313, 179
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Global Settings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     RTEXT           "R&oms:",IDC_STATIC,7,8,50,8
     EDITTEXT        IDC_ROMDIRS,60,7,225,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDDIRBUTTONROM,290,7,14,12
+    PUSHBUTTON      "...",IDDIRBUTTONROM,291,7,14,12
     RTEXT           "Con&figuration:",IDC_STATIC,7,22,50,8
     EDITTEXT        IDC_CFGDIR,60,20,225,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDDIRBUTTONCFG,290,20,14,12
+    PUSHBUTTON      "...",IDDIRBUTTONCFG,291,20,14,12
     RTEXT           "&NVRAM:",IDC_STATIC,7,36,50,8
     EDITTEXT        IDC_NVRAMDIR,60,35,225,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDDIRBUTTONNVRAM,290,34,14,12
+    PUSHBUTTON      "...",IDDIRBUTTONNVRAM,291,34,14,12
     RTEXT           "S&amples:",IDC_STATIC,7,50,50,8
     EDITTEXT        IDC_SAMPLEDIRS,60,50,225,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDDIRBUTTONSAMPLE,290,50,14,12
-    RTEXT           "Screens&hots:",IDC_STATIC,7,66,50,8
-    EDITTEXT        IDC_IMGDIR,60,65,225,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDDIRBUTTONIMG,290,65,14,12
-    CONTROL         "Allow &write access to Game.Settings and Controller.Settings",
-                    IDC_ALLOWWRITEACCESS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,60,123,203,10
-    PUSHBUTTON      "&Info...",IDABOUT,7,145,50,14
-    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,145,50,14
-    DEFPUSHBUTTON   "OK",IDOK,199,145,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,254,145,50,14
+    PUSHBUTTON      "...",IDDIRBUTTONSAMPLE,291,50,14,12
+    RTEXT           "Memcard:",IDC_STATIC,7,64,50,8
+    EDITTEXT        IDC_MEMCARDDIRS,60,64,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONMEMCARD,291,64,14,12
+    RTEXT           "Screens&hots:",IDC_STATIC,7,80,50,8
+    EDITTEXT        IDC_IMGDIR,60,79,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONIMG,291,79,14,12
+    COMBOBOX        IDC_DISPLAYLIST,59,101,226,54,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "&Display:",IDC_STATIC,7,103,50,8
     CONTROL         "Always run &full-screen on this display",IDC_FULLSCREEN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,102,130,10
-    COMBOBOX        IDC_DISPLAYLIST,59,87,226,54,CBS_DROPDOWNLIST |
-                    WS_VSCROLL | WS_TABSTOP
-    RTEXT           "&Display:",IDC_STATIC,7,89,50,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,116,130,10
+    CONTROL         "Allow &write access to Game.Settings and Controller.Settings",IDC_ALLOWWRITEACCESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,137,203,10
+    PUSHBUTTON      "&Info...",IDABOUT,7,158,50,14
+    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,158,50,14
+    DEFPUSHBUTTON   "OK",IDOK,199,158,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,255,158,50,14
 END
 
 
@@ -335,9 +318,9 @@ BEGIN
     IDD_CONTROLLERSETTINGSDLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 304
+        RIGHTMARGIN, 305
         TOPMARGIN, 7
-        BOTTOMMARGIN, 159
+        BOTTOMMARGIN, 172
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -367,6 +350,17 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&About Visual PinMAME...",    ID_CTRLCTXMENU_INFO
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_CONTROLLERSETTINGSDLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

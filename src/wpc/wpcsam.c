@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /********************************/
 /* PINMAME SOUND SAMPLE SUPPORT */
 /********************************/

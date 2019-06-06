@@ -146,6 +146,12 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 	return 1;
 }
 
+void YM2151_set_mixing_levels(int chip, int l, int r)
+{
+	mixer_set_mixing_level(stream[chip], l);
+	mixer_set_mixing_level(stream[chip] + 1, r);
+}
+
 #if (HAS_YM2151)
 int YM2151_sh_start(const struct MachineSound *msound)
 {

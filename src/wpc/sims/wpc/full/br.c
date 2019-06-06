@@ -511,6 +511,7 @@ static core_tGameData brGameData = {
 /----------------*/
 static void init_br(void) {
   core_gameData = &brGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void br_handleMech(int mech) {

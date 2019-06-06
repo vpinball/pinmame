@@ -6,6 +6,7 @@ Originally Downloaded from http://www.lm-sensors.org/browser/i2c-tools/trunk/eep
 Downloaded for lisy80 from http://www.gallot.be/?p=180
 
 Modified for lisy80 bontango April 2016
+added pic eeprom routines bontango January 2018
 
 */
 #include <sys/ioctl.h>
@@ -17,12 +18,24 @@ Modified for lisy80 bontango April 2016
 #include <string.h>
 #include <time.h>
 #include <linux/i2c-dev.h>
+#include <wiringPi.h>
+#include "utils.h"
 #include "eeprom.h"
 #include "fileio.h"
 #include "hw_lib.h"
+#include "displays.h"
+#include "coils.h"
+#include "fadecandy.h"
 #include "externals.h"
 
 #define MAX_EEPROM_WRITE_RETRIES 30
+
+//global blockbuffer for eeprom content, used to optimize read/write
+// read is done always from buffer (except first time)
+// write is done to buffer AND to eeprom in case content changed
+// used only for eeprom of pic, as 24c04 does block write anyway
+unsigned char lisy_eeprom_buf_block0[256];
+unsigned char lisy_eeprom_buf_block1[256];
 
 
 /* write len bytes (stored in buf) to eeprom at address addr, page-offset offset */
@@ -112,12 +125,10 @@ int eeprom_read(int fd,
 
 
 
-
-
 //write buffer of 256 bytes to eeprom to block 0 or 1
 //for 24c04 only block 0 or 1 is possible
 //0 on success, <0 on error
-int lisy80_eeprom_256byte_write( char *wbuf, int block)
+int lisy_eeprom_256byte_write_24c04( char *wbuf, int block)
 {
 
  int j;
@@ -165,10 +176,64 @@ int lisy80_eeprom_256byte_write( char *wbuf, int block)
  return(0);
 } //256byte_write
 
+
+//write buffer of 256 bytes to eeprom at pic
+//0 on success, <0 on error
+int lisy_eeprom_256byte_write_pic( char *wbuf, int block)
+{
+  int i,bytes_written;
+
+  unsigned char *old_eeprom_content;
+
+
+  //assign the rigth block
+  if ( block == 0) old_eeprom_content = lisy_eeprom_buf_block0;
+   else old_eeprom_content = lisy_eeprom_buf_block1;
+
+  //check if the byte has changed, and if so write to eeprom
+  bytes_written = 0;
+  for ( i=0; i<=255; i++)
+  {
+   //has it changed?
+   if ( *wbuf != *old_eeprom_content )
+     {
+	 //yes, change it
+         //write number of writes in debug
+         if (ls80dbg.bitv.basic == 1 )
+         {
+          sprintf(debugbuf,"eeprom: write to PIC: Position:%d changed from %d to %d",i,*old_eeprom_content,*wbuf);
+          lisy80_debug(debugbuf);
+         }
+	 lisy_eeprom_1byte_write( i, *wbuf, block);
+         *old_eeprom_content = *wbuf;
+	 bytes_written++;
+     }
+	 //next byte to compare
+         old_eeprom_content++;
+         wbuf++;
+  }
+
+
+ return 0;
+}
+
+
+int lisy_eeprom_256byte_write( char *wbuf, int block)
+{
+
+ if (lisy_has24c04)
+   return ( lisy_eeprom_256byte_write_24c04( wbuf, block) );
+ else
+   return ( lisy_eeprom_256byte_write_pic( wbuf, block) );
+
+}
+
+
+
 //read buffer of 256 bytes from eeprom block 0 or 1 into buffer
 //for 24c04 only block 0 or 1 is possible
 //0 on success, <0 on error
-int lisy80_eeprom_256byte_read( char *rbuf, int block)
+int lisy_eeprom_256byte_read_24c04( char *rbuf, int block)
 {
 
  int j;
@@ -203,9 +268,58 @@ int lisy80_eeprom_256byte_read( char *rbuf, int block)
  return(0);
 } //256 byte read
 
+
+//read buffer of 256 bytes from eeprom of pic into buffer
+//0 on success, <0 on error
+int lisy_eeprom_256byte_read_pic( char *rbuf, int block)
+{
+ int i;
+ static unsigned char first_time = 1;
+
+ //need to read content into bufer?
+ if ( first_time )
+  {
+   first_time = 0;
+
+   //read both blocks into buffer
+   for ( i=0; i<=255; i++)
+    {
+      lisy_eeprom_buf_block0[i] = lisy_eeprom_1byte_read ( i, 0);
+      lisy_eeprom_buf_block1[i] = lisy_eeprom_1byte_read ( i, 1);
+    }
+
+
+
+  } //only first time
+
+  //fill rbuf from buffer
+  if ( block == 0)
+  {
+   for ( i=0; i<=255; i++) { *rbuf = lisy_eeprom_buf_block0[i]; rbuf++; };
+  }
+  else
+  {
+   for ( i=0; i<=255; i++) { *rbuf = lisy_eeprom_buf_block1[i]; rbuf++; };
+  }
+
+ return 0;
+
+}
+
+
+int lisy_eeprom_256byte_read( char *rbuf, int block)
+{
+
+ if (lisy_has24c04)
+  return ( lisy_eeprom_256byte_read_24c04( rbuf, block) );
+ else
+  return ( lisy_eeprom_256byte_read_pic( rbuf, block) );
+
+}
+
 //initialize the content the second blockof the eeprom
 //returns 0 on success
-int lisy80_eeprom_init(void)
+int lisy_eeprom_init(void)
 {
 
  int i;
@@ -219,7 +333,7 @@ int lisy80_eeprom_init(void)
  myblock.content.Software_Main = 0;
  myblock.content.Software_Sub = 0;
 
- return(  lisy80_eeprom_256byte_write ( myblock.byte, 1));
+ return(  lisy_eeprom_256byte_write ( myblock.byte, 1));
 
 }
 
@@ -227,13 +341,13 @@ int lisy80_eeprom_init(void)
 //check signature of second block of eeprom
 // returns 1 if signature is OK
 //-1 in case of errror
-int lisy80_eeprom_checksignature(void)
+int lisy_eeprom_checksignature(void)
 {
 
  eeprom_block_t myblock;
 
  //read second block
- if ( lisy80_eeprom_256byte_read( myblock.byte, 1) != 0)
+ if ( lisy_eeprom_256byte_read( myblock.byte, 1) != 0)
    return -1;
 
  if (strncmp(myblock.content.signature,"LISY80 by bontango - www.lisy80.com",35) == 0)
@@ -244,12 +358,12 @@ int lisy80_eeprom_checksignature(void)
 }
 
 //print out the content of the second blockof the eeprom
-eeprom_block_t lisy80_eeprom_getstats(void)
+eeprom_block_t lisy_eeprom_getstats(void)
 {
  eeprom_block_t myblock;
 
  //read second block
- lisy80_eeprom_256byte_read ( myblock.byte, 1);
+ lisy_eeprom_256byte_read ( myblock.byte, 1);
 
  return myblock;
 
@@ -257,14 +371,14 @@ eeprom_block_t lisy80_eeprom_getstats(void)
 
 //print out the content of the second block of the eeprom
 //in case signature is valid
-int lisy80_eeprom_printstats(void)
+int lisy_eeprom_printstats(void)
 {
 
  int i;
  eeprom_block_t myblock;
 
  //is the signature valid?
- if ( !lisy80_eeprom_checksignature())
+ if ( !lisy_eeprom_checksignature())
  {
    fprintf(stderr, "no valid signature in content of second block of eeprom\n\r");
  }
@@ -272,7 +386,7 @@ int lisy80_eeprom_printstats(void)
  {
 
  //read second block
- if ( lisy80_eeprom_256byte_read ( myblock.byte, 1) != 0)
+ if ( lisy_eeprom_256byte_read ( myblock.byte, 1) != 0)
    return -1;
 
 
@@ -291,3 +405,108 @@ int lisy80_eeprom_printstats(void)
 
 return 0;
 }
+
+//read one byte from PIC eeprom
+//block 0 means displaypic, block one coilpic
+int lisy_eeprom_1byte_read( unsigned char address, int block)
+{
+
+  char buf[2];
+
+  union eeprom_two {
+    unsigned char byte;
+    struct {
+    unsigned COMMAND_BYTE:7, IS_CMD:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv;
+    struct {
+    unsigned COMMAND:3, SOUNDS:4, IS_CMD:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv2;
+    } eeprom_cmd;
+
+ if ( block == 0) //display pic
+ {
+  eeprom_cmd.bitv.IS_CMD = 1;        //we are sending a command here
+  eeprom_cmd.bitv.COMMAND_BYTE = LS80DPCMD_READ_EEPROM;
+
+  buf[0] = eeprom_cmd.byte;
+  buf[1] = address;
+
+  //write data to PIC
+  lisy80_write_multibyte_disp_pic( buf, 2 );
+
+  //wait a bit, PIC migth be slow
+  delay(10); //wait 10ms secs
+
+  //read answer and send back
+  return( lisy80_read_byte_disp_pic());
+ }
+ else //coil pic
+ {
+  eeprom_cmd.bitv2.IS_CMD = 1;        //we are sending a command here
+  eeprom_cmd.bitv2.COMMAND = LS80COILCMD_EXT_CMD_ID;
+  eeprom_cmd.bitv2.SOUNDS = LISY_EXT_CMD_EEPROM_READ;
+
+  buf[0] = eeprom_cmd.byte;
+  buf[1] = address;
+
+  //write data to PIC
+  lisy80_write_multibyte_coil_pic( buf, 2 );
+
+  //wait a bit, PIC migth be slow
+  delay(10); //wait 10ms secs
+
+  //read answer and send back
+  return( lisy80_read_byte_coil_pic());
+ }
+
+}
+
+//write one byte to PIC eeprom
+//block 0 means displaypic, block one coilpic
+int lisy_eeprom_1byte_write( unsigned char address, unsigned char data,  int block)
+{
+
+  char buf[3];
+
+  union eeprom_two {
+    unsigned char byte;
+    struct {
+    unsigned COMMAND_BYTE:7, IS_CMD:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv;
+    struct {
+    unsigned COMMAND:3, SOUNDS:4, IS_CMD:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv2;
+    } eeprom_cmd;
+
+ if ( block == 0) //display pic
+ {
+  eeprom_cmd.bitv.IS_CMD = 1;        //we are sending a command here
+  eeprom_cmd.bitv.COMMAND_BYTE = LS80DPCMD_WRITE_EEPROM; 
+
+
+  buf[0] = eeprom_cmd.byte;
+  buf[1] = address;
+  buf[2] = data;
+
+  //write data to PIC
+  return ( lisy80_write_multibyte_disp_pic( buf, 3 ));
+ }
+ else //coil pic
+ {
+  eeprom_cmd.bitv2.IS_CMD = 1;        //we are sending a command here
+  eeprom_cmd.bitv2.COMMAND = LS80COILCMD_EXT_CMD_ID; 
+  eeprom_cmd.bitv2.SOUNDS = LISY_EXT_CMD_EEPROM_WRITE;
+
+  buf[0] = eeprom_cmd.byte;
+  buf[1] = address;
+  buf[2] = data;
+
+  //write data to PIC
+  return ( lisy80_write_multibyte_coil_pic( buf, 3 ));
+ }
+}
+

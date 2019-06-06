@@ -638,6 +638,7 @@ static core_tGameData pzGameData = {
  ----------------*/
 static void init_pz(void) {
   core_gameData = &pzGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static int trick = 44;

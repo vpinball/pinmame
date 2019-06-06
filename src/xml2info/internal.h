@@ -64,7 +64,7 @@
 #endif
 #endif /* XML_MIN_SIZE */
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && _MSC_VER < 1920
 #define inline inline
 #else
 #ifndef inline

@@ -1,0 +1,139 @@
+
+                 M.A.M.E.  -  Multiple Arcade Machine Emulator
+          Copyright (C) 1997-2001 by Nicola Salmoria and The MAME Team
+
+Many people have helped with this project--directly, or by releasing the source
+code for the drivers they have written. We are not trying to take credit that
+isn't ours. See the Acknowledgments section for a list of contributors. Please
+note, however, that the list is largely incomplete. Also see the comments in
+the source code to see the people who contributed to specific drivers. That
+list, too, may be incomplete. We apologize for any omission.
+
+All trademarks cited in this document are property of their respective owners.
+
+
+For usage instructions, please consult the corresponding readme.
+
+MS-DOS:   msdos.txt
+Windows:  windows.txt
+
+
+
+Usage and Distribution License
+------------------------------
+
+See license.txt
+
+
+
+How to Contact Us
+-----------------
+
+The official MAME homepage is http://www.mame.net/  You can always find the
+latest release there, including beta versions and information on things being
+worked on. Also, a totally legal and free ROM set of Robby Roto is available
+on the same page.
+
+If you have bugs to report, check the MAME Testing Project at
+http://www.mametesters.com
+
+Here are some of the people contributing to MAME. If you have comments,
+suggestions, or bug reports about an existing driver, check the driver's
+source code to find who has worked on it, and send comments to that person.
+If you are not sure who to contact, write to Nicola. If you have comments
+specific to a system other than DOS (e.g. Mac, Win32, Unix), they should be
+sent to the respective port maintainer (check the documentation to know who he
+is). DON'T SEND THEM TO NICOLA - they will be ignored.
+
+Nicola Salmoria    MC6489@mclink.it
+
+Mike Balfour       mab22@po.cwru.edu
+Aaron Giles        agiles@sirius.com
+Chris Moore        chris.moore@writeme.com
+Brad Oliver        bradman@pobox.com
+Andrew Scott       ascott@utkux.utcc.utk.edu
+Zsolt Vasvari      vaszs01@banet.net
+Luca Elia          l.elia@tin.it
+
+DON'T SEND BINARY ATTACHMENTS WITHOUT ASKING FIRST, *ESPECIALLY* ROM IMAGES.
+
+THESE ARE NOT SUPPORT ADDRESSES. Support questions sent to these addresses
+*will* be ignored. Please understand that this is a *free* project, mostly
+targeted at experienced users. We don't have the resources to provide end user
+support. Basically, if you can't get the emulator to work, you are on your own.
+First of all, read the docs carefully. If you still can't find an answer to
+your question, try checking the beginner's sections that many emulation pages
+have, or ask on the appropriate Usenet newsgroups (e.g. comp.emulators.misc) or
+on the official MAME message board at http://www.mame.net/msg/
+
+For help in compiling MAME, check these pages:
+http://www.mame.net/compile.html
+http://www.mameworld.net
+
+Also, DO NOT SEND REQUESTS FOR NEW GAMES TO ADD, unless you have some original
+info on the game hardware or, even better, own the board and have the technical
+expertise needed to help us.
+Please don't send us information widely available on the Internet - we are
+perfectly capable of finding it ourselves, thank you.
+
+
+
+Acknowledgments
+---------------
+
+First of all, thanks to Allard van der Bas (avdbas@wi.leidenuniv.nl) for
+starting the Arcade Emulation Programming Repository at
+http://valhalla.ph.tn.tudelft.nl/emul8
+Without the Repository, I would never have even tried to write an emulator.
+Unfortunately, the original Repository is now closed, but its spirit lives
+on in MAME.
+
+Z80 emulator Copyright (c) 1998 Juergen Buchmueller, all rights reserved.
+M6502 emulator Copyright (c) 1998 Juergen Buchmueller, all rights reserved.
+Hu6280 Copyright (c) 1999 Bryan McPhail, mish@tendril.force9.net
+I86 emulator by David Hedley, modified by Fabrice Frances (frances@ensica.fr)
+M6809 emulator by John Butler, based on L.C. Benschop's 6809 Simulator V09.
+M6808 based on L.C. Benschop's 6809 Simulator V09.
+M68000 emulator Copyright 1999 Karl Stenerud.  All rights reserved.
+80x86 M68000 emulator Copyright 1998, Mike Coates, Darren Olafson.
+8039 emulator by Mirko Buffoni, based on 8048 emulator by Dan Boris.
+T-11 emulator Copyright (C) Aaron Giles 1998
+TMS34010 emulator by Alex Pasadyn and Zsolt Vasvari.
+TMS9900 emulator by Andy Jones, based on original code by Ton Brouwer.
+Cinematronics CPU emulator by Jeff Mitchell, Zonn Moore, Neil Bradley.
+Atari AVG/DVG emulation based on VECSIM by Hedley Rainnie, Eric Smith and
+Al Kossow.
+
+TMS5220 emulator by Frank Palazzolo.
+AY-3-8910 emulation based on various code snippets by Ville Hallik,
+  Michael Cuddy, Tatsuyuki Satoh, Fabrice Frances, Nicola Salmoria.
+YM-2203, YM-2151, YM3812 emulation by Tatsuyuki Satoh.
+POKEY emulator by Ron Fries (rfries@aol.com).
+Many thanks to Eric Smith, Hedley Rainnie and Sean Trowbridge for information
+   on the Pokey random number generator.
+NES sound hardware info by Jeremy Chadwick and Hedley Rainne.
+YM2610 emulation by Hiromitsu Shioya.
+
+Background art by Peter Hirschberg (PeterH@cronuscom.com).
+
+Allegro library by Shawn Hargreaves, 1994/97
+SEAL Synthetic Audio Library API Interface Copyright (C) 1995, 1996
+   Carlos Hasan. All Rights Reserved.
+Video modes created using Tweak 1.6b by Robert Schmidt, who also wrote
+   TwkUser.c.
+"inflate" code for zip file support by Mark Adler.
+
+DOS executable compressed with UPX by Markus F.X.J. Oberhumer & Laszlo Molnar,
+    http://upx.tsx.org/
+
+Big thanks to Gary Walton (garyw@excels-w.demon.co.uk) for too many things
+   to mention.
+
+Thanks to Brian Deuel, Neil Bradley, and the Retrocade dev team for allowing us
+to use Retrocade's game history database.
+
+Thanks to Richard Bush for info on several games.
+
+Thanks to Dave (www.finalburn.com) for info on After Burner.
+
+and thanks to everyone else I forgot.

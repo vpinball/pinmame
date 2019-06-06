@@ -1383,6 +1383,14 @@ else
 SOUNDDEFS += -DHAS_HC55516=0
 endif
 
+SOUND=$(strip $(findstring MC3417@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_MC3417=1
+SOUNDOBJS += $(OBJ)/sound/mc3417.o
+else
+SOUNDDEFS += -DHAS_MC3417=0
+endif
+
 SOUND=$(strip $(findstring K005289@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_K005289=1

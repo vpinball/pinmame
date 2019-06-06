@@ -10,7 +10,9 @@ DEFS += -DLISY_SUPPORT
 LISYOBJS = \
  $(OBJ)/lisy/lisy.o \
  $(OBJ)/lisy/lisy1.o \
+ $(OBJ)/lisy/lisy35.o \
  $(OBJ)/lisy/lisy80.o \
+ $(OBJ)/lisy/lisy_w.o \
  $(OBJ)/lisy/hw_lib.o \
  $(OBJ)/lisy/utils.o \
  $(OBJ)/lisy/switches.o \
@@ -18,7 +20,12 @@ LISYOBJS = \
  $(OBJ)/lisy/displays.o \
  $(OBJ)/lisy/fileio.o \
  $(OBJ)/lisy/sound.o \
- $(OBJ)/lisy/eeprom.o
+ $(OBJ)/lisy/eeprom.o \
+ $(OBJ)/lisy/opc.o \
+ $(OBJ)/lisy/fadecandy.o \
+ $(OBJ)/lisy/usbserial.o \
+ $(OBJ)/lisy/lisy_mame.o \
+ $(OBJ)/lisy/lisy_home.o
 
 
 # LISY functions

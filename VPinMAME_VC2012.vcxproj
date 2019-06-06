@@ -993,6 +993,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\sound\fmopl.c" />
     <ClCompile Include="src\sound\hc55516.c" />
     <ClCompile Include="src\sound\m114s.c" />
+    <ClCompile Include="src\sound\mc3417.c" />
     <ClCompile Include="src\sound\mea8000.c" />
     <ClCompile Include="src\sound\mixer.c" />
     <ClCompile Include="src\sound\msm5205.c" />
@@ -1668,6 +1669,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClInclude Include="src\sound\fmopl.h" />
     <ClInclude Include="src\sound\hc55516.h" />
     <ClInclude Include="src\sound\m114s.h" />
+    <ClInclude Include="src\sound\mc3417.h" />
     <ClInclude Include="src\sound\mea8000.h" />
     <ClInclude Include="src\sound\mixer.h" />
     <ClInclude Include="src\sound\msm5205.h" />

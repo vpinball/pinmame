@@ -1206,21 +1206,21 @@ static void *internal_memcpy(void *dst, const void *src, size_t size)
 //---------------------------------------------------------------------
 
 /* encode 8 bits unsigned int */
-static inline char *basic_encode_8u(char *p, IUINT8 c)
+static bb_inline char *basic_encode_8u(char *p, IUINT8 c)
 {
 	*(unsigned char*)p++ = c;
 	return p;
 }
 
 /* decode 8 bits unsigned int */
-static inline const char *basic_decode_8u(const char *p, IUINT8 *c)
+static bb_inline const char *basic_decode_8u(const char *p, IUINT8 *c)
 {
 	*c = *(unsigned char*)p++;
 	return p;
 }
 
 /* encode 16 bits unsigned int (lsb) */
-static inline char *basic_encode_16u(char *p, IUINT16 w)
+static bb_inline char *basic_encode_16u(char *p, IUINT16 w)
 {
 #if IWORDS_BIG_ENDIAN
 	*(unsigned char*)(p + 0) = (w & 255);
@@ -1233,7 +1233,7 @@ static inline char *basic_encode_16u(char *p, IUINT16 w)
 }
 
 /* decode 16 bits unsigned int (lsb) */
-static inline const char *basic_decode_16u(const char *p, IUINT16 *w)
+static bb_inline const char *basic_decode_16u(const char *p, IUINT16 *w)
 {
 #if IWORDS_BIG_ENDIAN
 	*w = *(const unsigned char*)(p + 1);
@@ -1246,7 +1246,7 @@ static inline const char *basic_decode_16u(const char *p, IUINT16 *w)
 }
 
 /* encode 32 bits unsigned int (lsb) */
-static inline char *basic_encode_32u(char *p, IUINT32 l)
+static bb_inline char *basic_encode_32u(char *p, IUINT32 l)
 {
 #if IWORDS_BIG_ENDIAN
 	*(unsigned char*)(p + 0) = (unsigned char)((l >>  0) & 0xff);
@@ -1261,7 +1261,7 @@ static inline char *basic_encode_32u(char *p, IUINT32 l)
 }
 
 /* decode 32 bits unsigned int (lsb) */
-static inline const char *basic_decode_32u(const char *p, IUINT32 *l)
+static bb_inline const char *basic_decode_32u(const char *p, IUINT32 *l)
 {
 #if IWORDS_BIG_ENDIAN
 	*l = *(const unsigned char*)(p + 3);
@@ -6280,7 +6280,7 @@ void BasicBitmap::SetAlphaForAllPixel(int alpha)
 //---------------------------------------------------------------------
 // BilinearSampler
 //---------------------------------------------------------------------
-static inline IUINT32 _pixel_biline_interp (IUINT32 tl, IUINT32 tr,
+static bb_inline IUINT32 _pixel_biline_interp (IUINT32 tl, IUINT32 tr,
 	IUINT32 bl, IUINT32 br, IINT32 distx, IINT32 disty)
 {
     IINT32 distxy, distxiy, distixy, distixiy;
@@ -6355,17 +6355,17 @@ IUINT32 BasicBitmap::SampleBilinear(float x, float y, bool repeat) const
 //---------------------------------------------------------------------
 // BicubicSampler
 //---------------------------------------------------------------------
-static inline int _pixel_middle(int x, int xmin, int xmax) {
+static bb_inline int _pixel_middle(int x, int xmin, int xmax) {
 	if (x < xmin) return xmin;
 	if (x > xmax) return xmax;
 	return x;
 }
 
-inline int _pixel_abs(int x) {
+bb_inline int _pixel_abs(int x) {
 	return (x < 0)? (-x) : x;
 }
 
-static inline float _pixel_bicubic(float x) {
+static bb_inline float _pixel_bicubic(float x) {
 	if (x == 0.0f) return 1.0f;
 	if (x < 0.0f) x = -x;
 	float a = -0.5f;

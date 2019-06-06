@@ -55,6 +55,11 @@
 #include "wmssnd.h"
 #include "machine/4094.h"
 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+ #include <strings.h>
+ #define _stricmp strcasecmp
+#endif
+
 /*------------------
 /  Local functions
 /-------------------*/
@@ -514,7 +519,8 @@ static core_tGameData bopGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha,
   {
     FLIP_SWNO(12,11),
-    0,2,0,0,0,0,0, // 2 extra lamp columns for the helmet lights
+	0, 2, // 2 extra lamp columns for the helmet lights
+	0, 0, 0, 0, 0,
     NULL, bop_handleMech, bop_getMech, bop_drawMech,
     &bop_lampPos, bop_samsolmap
   },
@@ -550,13 +556,12 @@ static void bop_handleMech(int mech) {
 	// at table startup.
 	//
 	// We cannot do this in init_bop, NVRAM hasn't loaded yet. 
-    // However we may NOT want to use the built in mech handling (the below code would have 
+	// However we may NOT want to use the built in mech handling (the below code would have 
 	// been simpler as an actual mech and doesn't relay the motion).   
 	//
 	// So if g_fHandleMechanics is -1, reset the head position to 0,
 	// and then disable the internal mech handling.   If it is -2, then continue using the mech handling
 	// after reset. 
-
 	if (g_fHandleMechanics < 0)
 	{
 		if (_stricmp(Machine->gamedrv->name, "bop_l7") == 0)
@@ -571,6 +576,7 @@ static void bop_handleMech(int mech) {
 		}
 		g_fHandleMechanics = 1;
 	}
+
   /* ----------------------------------------------
      --	Head Position - SH*T, this was a PAIN!!! --
      --  BTW: Thanks to The Doc for giving help  --
@@ -691,7 +697,6 @@ static void bop_handleMech(int mech) {
     }
     /* Those were all the possible movements that the head can make */
   }
-
 }
 
 static int bop_getMech(int mechNo) {

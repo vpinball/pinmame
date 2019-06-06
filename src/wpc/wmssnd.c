@@ -15,18 +15,245 @@
  #include <windef.h>
 #endif
 
-#define DCS_LOWPASS // enables some subtle low pass on the DCS output to avoid a bit of noise. As the real HW also has a bunch of lowpass filters, it would be interesting to check the direct output of the DCS chip on real hardware if it also features a bit of noise or not at that stage (e.g. before all the filters).
+// Enables some subtle low pass on the DCS output to avoid a bit of noise. 
+// As the real HW also has a bunch of lowpass filters, it would be interesting to 
+// check the direct output of the DCS chip on real hardware if it also features a 
+// bit of noise or not at that stage (e.g. before all the filters).
+//
+// [MJR - Yes, it would definitely have lots of noise, namely quantization noise,
+// given that a DAC is involved and the sampling rate is fairly low.  The real 
+// boards have a chain of four Sallen-Key low-pass filters with a cutoff frequency
+// of 18875 Hz.  "Cutoff" in this context doesn't mean a brick wall; it's just the
+// corner frequency in the low-pass rolloff curve, which is pretty shallow for 
+// Sallen-Key filters.  They use four chained filters to steepen the curve, to cut
+// out most of the output above 18875 Hz, which is probably right around the Nyquist
+// limit for the sampling rate they're using.  We should try substituting an IIR 
+// Sallen-Key for the current FIR, as it would probably sound a lot better.  See
+// filter.h.]
+#define DCS_LOWPASS 
 
 #ifdef DCS_LOWPASS
  #include "sound/filter.h"
 #endif
+
+
+// The PREDCS_FIRQ_HACK explained and fixed - MJR 5/3/2019
+//
+// It took 16 years for someone to look into this, but someone finally did!
+//
+// The reason for the pitch change observed in the pre-DCS hack (see below) was NOT that
+// the FIRQ interrupt rate changed in the absence of YM2151 music.  The YM2151 emulation
+// kept cranking out timer A interrupts at a steady pace, as it should have.  The problem,
+// rather, was that a certain percentage of the properly generated interrupts were 
+// "missed".
+//
+// What's a missed interrupt?  To understand that, we have to understand how the 6809
+// processes interrupts.  The 6809 handles IRQ and FIRQ lines by latching them at the 
+// start of each instruction cycle.  If IRQ or FIRQ is ON (in hardware, low), AND the 
+// corresponding CC "inhibit interrupt" flag bit is CLEAR, the processor takes the 
+// interrupt.  If a line is ON and the corresponding CC inhibit interrupt flag bit is 
+// SET, the processor ignores the interrupt line status for the duration of this 
+// instruction cycle.  It checks again at the start of the next instruction cycle, 
+// latching the new status of the line.  The latch status is renewed on each instruction
+// cycle.  That means that if an interrupt line turns ON during a section of code where
+// the "inhibit" flag is SET, and then turns OFF again before the "inhibit" flag is 
+// CLEARed, the signal on the line will never cause a CPU interrupt.  The interrupt
+// is missed.  It's as though the electrical IRQ/FIRQ signal never happened.
+//
+// That's *what* was happening.  In the absence of FM music, we missed about 15% of
+// timer A interrupts from the YM2151.  When FM music *was* playing, we missed about 
+// 1% of them.  The slow-down effect was actually occurring ALL THE TIME; it was just
+// so small when FM music was playing that it was practically inaudible and no one
+// noticed.  I only noticed because I instrumented the code and observed the ratio of
+// missed interrupts directly.
+//
+// *Why* it was happening is pretty subtle, but once you see the reason, it becomes
+// clear why the missed interrupt ratio depends on whether or not FM music playing.
+// The problem isn't a core MAME timing bug as SJE supposed; it's an inaccuracy in 
+// the YM2151 emulation, specifically a tiny detail of the original hardware's timing 
+// that wasn't faithfully reproduced in the emulation.  It turns out that the Williams 
+// DCS89 sound board software is written in such a way that it relies on this particular
+// tiny detail.  I think it's arguable that the bug is actually in the Williams DCS89 
+// sound board software, because to modern eyes it looks like a classic race condition. 
+// I'd be willing to believe that the Williams programmer who wrote this code wrote 
+// this part intentionally, based on the known timing of the YM2151 hardware, but I 
+// tend to think not; I tend to think that it was just a bad bit of design that
+// happened to work because of the hardware timing.
+//
+// Let's look at the Williams sound board code in question.  In the Williams code,
+// the main idle loop looks something like this:
+//
+//  do
+//    check for and process any commands received from the main board
+//    process FM command output
+//    reset the YM2115 clock settings
+//  forever
+//
+// That "reset the YM2115 clock settings" part is responsible for all of our woes.
+// I'm not entirely sure why that's even there, but I'm guessing it was for fault 
+// tolerance, to make sure that the YM clock keeps running even if something gets 
+// screwed up elsewhere in the software and we somehow manage to get the YM chip
+// into a wedged state.  The YM chip has some twitchy command timing rules, so maybe
+// they found that commands would sometimes get lost on the wire, and they wanted 
+// to make sure that the clock kept running come hell or high water.  The YM clock
+// is critical to the whole sound system, since it drives the sample output process 
+// for the DAC and HC55516 streams; if it stops, pretty much everything else stops.
+//
+// Drilling down into the "reset" code, we have this 6809 snippet:
+//
+//     ORCC $50    ; IF|II (inhibit FIRQ + IRQ)
+// L0: LDA [2401]  ; YM2151 status register
+//     BMI L0      ; loop until ready
+//     LDA $14     ; register $14 - clock settings
+//     STA [2400]  ; write YM2151 address
+// L1: LDA [2401]  ; read YM2151 status
+//     BMI L1      ; loop until ready
+//     LDA $15     ; start timer A, enable timer A IRQ, clear timer A IRQ
+//     STA [2401]  ; write YM2151 data register
+//     ANDCC $AF   ; IF|II (enable FIRQ + IRQ)
+//
+// As you can see, this section of code runs with the CC "inhibit interrupts"
+// flags set.   They're turning off interrupts beacuse it's absolutely required
+// that we do these register writes to the YM chip atomically.  We have to make
+// two writes, one to send the register address and one to send the data byte.
+// If we got interrupted in the middle of this, the interrupt handler could
+// send its own address/data sequence, which would leave the YM chip in a state
+// where it's not ready to receive the second half of our write.  So we have to
+// make sure that we can't get interrupted during this write.  They got this
+// part right via the ORCC $50 at the top, which disables interrupts until
+// further notice.   As discussed above, this means that the processor will 
+// ignore any IRQ or FIRQ electrical signals during this stretch of code.
+//
+// The second-to-last instruction, STA [2401], is where we do the actual clock 
+// reset: that writes $15 to the clock control register on the YM, which does 
+// three things to timer A.  It starts the timer (or simply leaves it running,
+// if it was running already), enables the timer's interrupt signal (so that
+// the timer interrupt occurs whenever the timer rolls over, which is really
+// the whole point), and clears its current interrupt flag (which turns off the
+// IRQ output from the YM chip, and thus the FIRQ input to the 6809, if it was
+// previously on).
+//
+// Now, suppose that YM timer A fires *while this code is running*.  The YM turns
+// on its IRQ output line, which is connected to the 6809's FIRQ input line.  
+// Normally, this would send us directly into the FIRQ interrupt handler code in
+// the Williams software.  But during this little block, interrupts are disabled,
+// so as each instruction starts, the CPU will observe the FIRQ line but will do
+// nothing about it, since it sees that IF (inhibit FIRQ) is set in CC.  When
+// we reach that penultimate instruction, STA [2401], we're telling the YM to
+// clear its Timer A interrupt flag, which in turns makes the YM turn OFF its
+// IRQ output and our FIRQ input.  We then reach the next instruction, where we
+// re-enable interrupts.  At that point, the CPU will be ready to take the FIRQ.
+// But we just turned it off!!!  That interrupt is missed.  Sorry, have to wait
+// for the next one!
+//
+// What are the odds, though, right?  Well, it turns out that they're pretty
+// good - about 15% when no FM commands are being sent.  And it even happens
+// when FM samples AREN'T being sent, but it drops to about 1% probability.
+// The reason for the difference - and why this APPEARED to be related to the
+// FM playback - is pretty simple now that we see how the main loop is laid out. 
+// When FM is idle, the main loop really doesn't have much else to do other 
+// than executing that timer reset code over and over, so we spend A LOT of
+// time there.  When FM is running, the part of the loop that says "process
+// FM command output" takes up a lot more time, so the portion of time we 
+// spend in the clock reset block decreases, and our ratio of missed interrupts
+// drops accordingly.
+//
+// Okay, now that we understand the problem, the fix is clear: we just have to
+// fix the original Williams code!  Um... no.  That defeats the whole purpose
+// of emulation, which is to run the original software exactly as it was
+// written.  Plus it would be a huge amount of work to find the right code
+// section and patch it in all of the different ROMs.  So we want to fix the
+// emulator, not the "emulatee".  More importantly, perhaps, we can see that
+// the emulator is actually at fault here, not the original code, because this
+// problem obviously didn't happen on the real hardware.  People would have 
+// noticed.  So given that it doesn't happen on the hardware, why does it
+// happen in the emulator?  Because the emulator, being an emulator, is an 
+// imperfect imitation of the real thing.  Some of the details aren't perfect
+// replicas.  In this case, the little detail that the emulator gets wrong is
+// the finite amount of time that the STA [2401] operation takes before the
+// change in FIRQ status propagates to the physical pin.  In the emulation, 
+// this occurred instantaneously.  In the real hardware, there's a delay
+// time.  It's not due to the time it takes electrons to go down the wire
+// or anything silly like that; it's due to the internal architecture of
+// the YM2151 chip and the amount of time it takes to process commands.
+//
+// Why does a delay in the IRQ output response matter here?  Because the
+// Williams software clearly depends on there being a delay.  The ROM code
+// enables interrupts on the next instruction after writing the register.  If 
+// we count clock cycles, we see that it takes 3 clocks to perform the ANDCC, 
+// so we can expect the CPU to sample the FIRQ input line again about 2us 
+// after the register write.  As long as the YM doesn't drop the IRQ output
+// signal for 2us or longer after the register write, the 6809 will see any
+// FIRQ signal that came into effect while the "interrupts off" section was
+// running, so we won't lose such FIRQs.  The immediate juxtaposition of the
+// register write and interrupt restore makes it believable that this was
+// actually intentional.  (My friend the chip designer tells me that it was
+// quite common back in the 8-bit days for software engineers to take this
+// kind of cavalier approach to race conditions, because the hardware back
+// then was so preditable about timing and clocks were relatively slow.
+// To modern eyes, accustomed as we are to pipelined architectures with
+// timing that even the designers can't precisely predict, it looks like a
+// blatant race condition bug.  But the 80s were a simpler time.)
+//
+// I can't find anything in the YM data sheet or application guide about the
+// timing of the IRQ output signal change after writing register $14.  But
+// the data sheet does document the amount of time it takes for the chip to
+// finish processing ANY register write: 68 cycles of its 3.58MHz clock, or
+// about 19us.  This is probably the time it takes for the thing to process
+// some big internal shift register, so my bet is that the new registers are
+// all latched at once 68 cycles after a write, and the EFFECTS of those new
+// register settings propagate out to the rest of the chip some number of 
+// clocks after that.  But even if some registers update faster than others, 
+// I think we can safely infer from the Williams code that the IRQ change
+// must take much longer than 2us - long enough that there's no risk from
+// little clock wobbles that it'll sometimes be shorter than 2us.  Would
+// a 5X margin be safe enough?  Okay, good, let's call it 10us.  
+//
+// The correct fix, then, is to change the YM2151 emulator code to add a 
+// 10us delay on an IRQ CLEAR change taking effect.  With this change in
+// effect, we can drop the 2400 Hz timer hack.
+//
+// Let's take a moment to look at why that 2400 Hz hack helped in the first
+// place.  The problem is that we're losing a lot of interrupts.  The
+// hack helped by forcing in a bunch of new ones to compensate for the
+// original ones that got lost.  The YM interrupts happen every 178us, or
+// about 5600 Hz, and the 2400 Hz timer was really just a 1200 Hz "set"
+// cycle (as the "clear" half of its cycle had no effect).  Just like
+// the original interrupts, some number of the "fake" interrupts got 
+// lost, for the same reasons.  So the hack effectively added back maybe
+// 850 Hz worth of interrupts.  You can see how the combination of the 
+// real and fake interrupts averaged out to close to the original number 
+// of interrupts that the Williams software was actually written for. 
+//
+// Given that the hack more or less restores the right interrupt count,
+// why bother with something more elaborate?  Well, for one thing, it's
+// just cleaner from a software design perspective to fix the problem at
+// its source, in the YM code.  And it's more faithful to the hardware
+// we're trying to emulate, which is surely a good thing.  But the real
+// advantage of the YM fix is that it gets the interrupt PACING right.
+// The hack got the total interrupt COUNT right, averaged over time,
+// but due to the random nature of the missed interrupts, the timing
+// of the interrupts as wildly erratic.  The hack didn't get rid of
+// the missed interrupts; it just jammed in a bunch of new ones to
+// make up for the missed ones.  The result was that the clock that
+// drove the DAC and HC55516 was inconsistent.  I observed a range of
+// a factor of about 30 in sample clock times to those chips.  That was
+// part of the reason that the HC55516 output sounded so terrible in the
+// past.  (A small part, though, as it turns out; the real culprit there
+// is a whole different story, which you can find more about in the 
+// HC55516 emulation code.)  Fixing the problem in the YM code makes
+// the clock consistent like it was designed to be.
+//
+#define PREDCS_FIRQ_HACK_FIXED
 
 //This awful hack is here to prevent the bug where the speech pitch is too low on pre-dcs games when
 //the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
 //The 6809 will output CVSD speech data based on the speed of the FIRQ. The faster the speed, the higher the
 //pitch. For some reason, when the YM2151 is not outputting sound, the FIRQ rate goes down.. Def. some kind of
 //MAME core bug with timing, but I can't find it. I really hope someone can fix this hack someday..SJE 09/17/03
-#define PREDCS_FIRQ_HACK
+#ifndef PREDCS_FIRQ_HACK_FIXED
+#define PREDCS_FIRQ_HACK  // no longer needed! see above
+#endif
 
 #ifndef MIN
 #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -62,7 +289,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579545/4)
@@ -188,7 +415,7 @@ static MEMORY_WRITE_START(s9s_writemem)
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }};
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -214,13 +441,8 @@ MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
 static struct DACinterface      s11xs_dacInt2     = { 2, { 50,50 }};
-static struct hc55516_interface s11b2s_hc55516Int = { 1, { 80 }};
-static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 80,80 }};
-static struct YM2151interface   s11cs_ym2151Int  = {
-  1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
-  { s11cs_ym2151IRQ }
-};
+static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
 
 MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -282,15 +504,21 @@ static struct {
 } s11slocals;
 
 static void s11s_init(struct sndbrdData *brdData) {
+  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+  int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  if (core_gameData->hw.gameSpecific2) {
-    hc55516_set_gain(0, core_gameData->hw.gameSpecific2);
-  }
+  if (hcgain != 0)
+	hc55516_set_gain(0, hcgain);
+  if (ymvol != 0)
+	YM2151_set_mixing_levels(0, ymvol, ymvol);
+  if (dacvol != 0)
+	DAC_set_mixing_level(0, dacvol);
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
@@ -424,8 +652,29 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x9c00, 0x9cff, odd_w },
 MEMORY_END
 
+// Mixing volume levels for System 11, based on schematics for the original
+// hardware.  The HC55516 has 1.7V peak output and goes through an op-amp
+// stage with 4.19 gain -> 7.1V peak.  The YM2151 outputs 2.5V peak and
+// goes straight through to the output, so it's mixed at about 35% of the
+// HC volume.  The DAC (IC1408) outputs 4.98V peak and connects straight 
+// through as well, so it's mixed at 70% relative to the HC.  
+//
+// [mjr 5/2019] PinMAME has traditionally mixed these at 50% DAC and 20% YM, 
+// so the perceived loudness of the actual HC clips is probably lower than 
+// you'd guess from the hardware analog mixing levels alone.  I'm lowering
+// the YM mix a little further still to 15% because the new filtering on
+// the HC reduces its apparent volume a bit vs the old scratchy version.
+//
+// Note that the mix levels can be overridden per game, in case the defaults
+// don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
+// for instructions.
 static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }};
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 };
+static struct YM2151interface   s11cs_ym2151Int = {
+	1, 3579545, /* Hz */
+	{ YM3012_VOL(15, MIXER_PAN_CENTER, 15, MIXER_PAN_CENTER) },
+	{ s11cs_ym2151IRQ }
+};
 
 MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_CPU_ADD(M6809, 2000000)
@@ -584,9 +833,9 @@ static void s11js_ym2151IRQ(int state) {
 }
 
 
-/*------------------
-/  WPC sound board
-/-------------------*/
+/*----------------------------------------
+/  WPC sound board (pre-DCS, aka WPC89)
+/----------------------------------------*/
 #define WPCS_BANK0  4
 
 /*-- internal sound interface --*/
@@ -614,9 +863,9 @@ static struct {
 } locals;
 
 static WRITE_HANDLER(wpcs_rombank_w) {
-  /* the hardware can actually handle 1M chip but no games uses it */
-  /* if such ROM appear the region must be doubled and mask set to 0x1f */
-  /* this would be much easier if the region was filled in opposit order */
+  /* the hardware can actually handle 1M chip but no games used it */
+  /* if such ROM appears the region must be doubled and mask set to 0x1f */
+  /* this would be much easier if the region was filled in opposite order */
   /* but I don't want to change it now */
   int bankBase = data & 0x0f;
 #ifdef MAME_DEBUG
@@ -713,9 +962,25 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
 MEMORY_END
-//NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)
-static struct DACinterface      wpcs_dacInt     = { 1, { 100 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }};
+
+// Relative mixing volumes for the WPC89 sound devices.  [mjr 5/2019] Adjusted the levels
+// based on the original analog mixing levels inferred from the WPC89 schematics:
+//
+//  - HC55516 outputs 1.7V peak and goes through a 3.19 gain op-amp stage, for 5.4V peak
+//  - YM2151 outputs 2.5V peak and goes through a 0.35 gain op-amp stage, for .86V peak
+//  - DAC (AD7524) outputs 3.8V peak (Vref, 12V at 10k/4.7k divider), unity gain op-amp, 3.8V peak
+//
+// Taking the HC55516 as the 100% reference point, the YM2151 peak voltage is 16% and the
+// DAC peak is 70%.  This seems about right subjectively, except that 16% for YM makes the
+// music a little too loud relative to the others, so let's keep that at 15%.
+//
+// Note that we can individually override any games where this doesn't sound right, as the
+// DAC and YM relative volume levels can be independently adjusted per game.  See
+// WPCSND_HC55516_LEVELS() in wmssnd.h to see how.
+//
+//[OLD: NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)]
+static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 };
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
@@ -757,11 +1022,19 @@ static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
 }
 
 static void wpcs_init(struct sndbrdData *brdData) {
+  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+  int dacvol = ((core_gameData->hw.gameSpecific2) >> 25) & 0x7f;
   locals.brdData = *brdData;
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
-  hc55516_set_gain(0, 4250);
+  if (hcgain != 0)
+	hc55516_set_gain(0, hcgain);
+  if (ymvol != 0)
+	YM2151_set_mixing_levels(0, ymvol, ymvol);
+  if (dacvol != 0)
+	DAC_set_mixing_level(0, dacvol);
 }
 
 /*--------------------
@@ -958,7 +1231,7 @@ static data8_t *dcs_getBootROM(int soft) {
 }
 
 /*static*/ WRITE16_HANDLER(dcs_latch_w) {
-  soundlatch2_w(0, data);
+  soundlatch2_w(0, (data8_t)data);
   dcslocals.replyAvail = TRUE;
   sndbrd_data_cb(dcslocals.brdData.boardNo, data);
 }

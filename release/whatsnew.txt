@@ -1,9 +1,19 @@
+What's new in PinMAME:
+----------------------
+(see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
+
+
 Version 3.2 (X X, 2019) - ""
 ------------------------------------------------------------------------------
 
+Initial efforts to start converting the PinMAME source base over to the 3-Clause BSD License (not completed yet, so for the full binary package the old license stays in place for now!)
+
 *** CORE/CPU ***
+Improved HC55516 CVSD sound emulation (Gorgar up to Twilight Zone, etc)
+Improved YM2151 sound/timing emulation (mainly WPC pre-DCS machines, maybe improves even other manufacturers)
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
-Fix NBA Fastbreak fast flips so that the million dollar shot works
+Implement 'fast flips' support for Jack*Bot
+Fix NBA Fastbreak 'fast flips' so that the million dollar shot works
 Fixed Barni emulation
 Added preliminary E.F.O. hardware support
 Increased main CPU IRQ rate for Bushido, Mach 2, and Jolly Park
@@ -12,12 +22,15 @@ Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
 Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha
+Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
+
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY, Stefan Fettes
 New:
 Barni: Champion
 Cirsa: Sport 2000
 Inder: Skate Board
 Maibesa: Eight Ball Champ
+ManilaMatic: Master
 Nondum / CIFA: Come Back
 Playbar: Cobra
 
@@ -31,15 +44,21 @@ Addams Family, The L-5C (competition MOD)
 Attack From Mars 1.1 (Pinball FX MOD)
 Black Belt (Zaccaria) (Italian, German, and French Speech and corresponding Free Play variants)
 Black Jack (Free Play+)
+Champion Pub, The 1.6 (Pinball FX MOD)
 Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
+Creature from the Black Lagoon L-4C (competition MOD) (replaces older Creature from the Black Lagoon L-5C (competition MOD))
 Diner PA-0 (Prototype), LF-2 (French)
+Dr. Dude LU-1 (Europe)
 Eight Ball (Free Play+)
 Eight Ball Deluxe (Player 2/4 Bonus Countdown Bugfix)
+Elvira and the Party Monsters LF-1 (French)
 Evel Knievel (Free Play+)
 Freedom (Free Play+ rev. 07 and 20)
+Gilligan's Island L-8
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
+Last Action Hero 1.06 (Canadian)
 Mata Hari (Free Play+)
 Medieval Madness 1.0 (Pinball FX MOD)
 Metallica 1.80.0,1.80.0LE
@@ -47,11 +66,17 @@ Mousin' Around! LA-4C (competition MOD)
 New Star's Phoenix (French Speech and corresponding Free Play variant)
 Night Rider (Free Play+)
 Party Zone F-4 (Pinball FX MOD)
+Phantom of the Opera 3.1
 Power Play (Free Play+)
 Radical! L-1C (competition MOD)
+Road Show L-6C (competition MOD)
+Rollergames L-2C (competition MOD)
+Safe Cracker 1.8 (Pinball FX MOD)
+Star Trek: The Next Generation LX-5
 Star's Phoenix (French Speech and corresponding Free Play variant)
-Star Wars (1.03, Display A0.46)
+Star Wars 1.03 with Display A0.46
 Strikes and Spares (Free Play+)
+Theatre of Magic 1.3XC (competition MOD) (replaces older Theatre of Magic 1.5C (competition MOD))
 Tom & Jerry (unofficial MOD of Hollywood Heat)
 Wheel of Fortune 6.02 (Home Rom)
 

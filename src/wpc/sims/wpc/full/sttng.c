@@ -629,6 +629,7 @@ WPC_ROMSTART(sttng,d1,"trek_dx1.rom",0x80000,CRC(925005af) SHA1(cfdf289c5a12f890
 WPC_ROMSTART(sttng,l2,"trek_lx2.rom",0x80000,CRC(e2557554) SHA1(7d8502ab9df340d60fd72e6964740bc7a2da2065)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,d2,"trek_dx2.rom",0x80000,CRC(d0002381) SHA1(9dfe5aca4ce06a6adf6a4edec54e22aba93c0a12)) ST_SND WPC_ROMEND
 WPC_ROMSTART(sttng,l3,"trek_lx3.rom",0x80000,CRC(400e7887) SHA1(23d5e9796f0c3c66121da53088df6f5275348f4a)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,l5,"trek_lx5.rom",0x80000,CRC(e004f3a7) SHA1(c724641106115e3f14bbe3998771823d0ac12d69)) ST_SND WPC_ROMEND
 
 /*--------------
 /  Game drivers
@@ -651,6 +652,7 @@ CORE_CLONEDEF(sttng,d1,l7,"Star Trek: The Next Generation (DX-1 LED Ghost Fix)",
 CORE_CLONEDEF(sttng,l2,l7,"Star Trek: The Next Generation (LX-2)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,d2,l7,"Star Trek: The Next Generation (DX-2 LED Ghost Fix)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,l3,l7,"Star Trek: The Next Generation (LX-3)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,l5,l7,"Star Trek: The Next Generation (LX-5)",1993,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

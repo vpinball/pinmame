@@ -1,0 +1,69 @@
+The build was done on a Ubuntu 18.04 Virtual machine
+
+makefile.unix:
+TARGET   = pinmame
+LIBS     = -L/usr/lib/X11 -L/usr/lib
+INCLUDES = -I/usr/include/X11 -I/usr/include
+ARCH     = linux
+DISPLAY_METHOD = x11
+X11INC   = -I/usr/include/X11
+X11LIB   = -L/usr/lib/X11
+ 
+
+Since using X11 for my output testing I made sure I have the X11 debian packages.
+
+Here is the list of the packages I made sure were present for a successful compile
+(There are some sound packages that I neglected to note what they were)
+zlib1g-dev
+libx11-dev
+libxext-dev
+libxv-dev
+x11proto-video-dev
+libsdl2-dev
+libsdl1.2-dev
+
+ 
+To launch the compile ...
+
+make -f makefile.unix
+ 
+
+To clean up after failed compile
+
+make clean -f makefile.unix
+ 
+
+The completed object file is xpinmame.x11
+
+
+
+Now lets review what sound related parameters we should set in makefile.unix
+Notice I enabled both ALSA and SDL:
+
+###########################################################################
+# Sound Devices
+###########################################################################
+
+# Choose any additonal sound drivers you want to include, besides the
+# native sound driver for your system.
+# SOUND_ESOUND = 1
+SOUND_ALSA = 1
+# SOUND_ARTS_TEIRA = 1
+# SOUND_ARTS_SMOTEK = 1
+SOUND_SDL = 1
+# SOUND_WAVEOUT = 1
+
+Now lets confirm what sound devices we have
+
+$./xpinmame.x11 -ldp
+
+Digital sound plugins:
+
+oss                            Open Sound System DSP plugin                    
+alsa                           Alsa Sound System DSP plugin                    
+sdl                            Simple Direct Library DSP plugin
+
+
+OK let try to see if we can get some sound using Creature from the Black Lagoon (lets force it to use alsa)
+
+./xpinmame.x11 -audiodevice alsa cftbl_l4
