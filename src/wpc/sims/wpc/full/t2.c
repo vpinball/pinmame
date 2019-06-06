@@ -675,6 +675,7 @@ static void init_t2(void) {
   core_gameData = &t2GameData;
   mech_addLong(0, sGunMotor, 0, MECH_NONLINEAR|MECH_REVERSE|MECH_ONESOL,
                200,200, gunSw,0);
+  hc55516_set_sample_clock(0, 22372);
 }
 
 /***************************************************************************************************

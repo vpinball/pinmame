@@ -3681,16 +3681,16 @@ static void onscrd_vector_intensity(struct mame_bitmap *bitmap,int increment,int
 	{
 		intensity_correction = vector_get_intensity();
 
-		intensity_correction += 0.05 * increment;
-		if (intensity_correction < 0.5) intensity_correction = 0.5;
-		if (intensity_correction > 3.0) intensity_correction = 3.0;
+		intensity_correction += (float)(0.05 * increment);
+		if (intensity_correction < 0.5f) intensity_correction = 0.5f;
+		if (intensity_correction > 3.0f) intensity_correction = 3.0f;
 
 		vector_set_intensity(intensity_correction);
 	}
 	intensity_correction = vector_get_intensity();
 
 	sprintf(buf,"%s %1.2f", ui_getstring (UI_vectorintensity), intensity_correction);
-	displayosd(bitmap,buf,100*(intensity_correction-0.5)/(3.0-0.5),100*(1.5-0.5)/(3.0-0.5));
+	displayosd(bitmap,buf,(int)(100.f*(intensity_correction-0.5f)/(float)(3.0-0.5)),(int)(100.*(1.5-0.5)/(3.0-0.5)));
 }
 
 

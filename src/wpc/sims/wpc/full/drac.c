@@ -556,6 +556,7 @@ static core_tGameData dracGameData = {
 /----------------*/
 static void init_drac(void) {
   core_gameData = &dracGameData;
+  hc55516_set_sample_clock(0, 22372);
 }
 
 static void drac_handleMech(int mech) {

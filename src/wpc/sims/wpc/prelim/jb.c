@@ -338,5 +338,6 @@ static core_tGameData jbGameData = {
 /----------------*/
 static void init_jb(void) {
   core_gameData = &jbGameData;
+  wpc_set_fastflip_addr(0x7b);
 }
 

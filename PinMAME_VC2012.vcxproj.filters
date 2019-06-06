@@ -537,6 +537,9 @@
     <ClCompile Include="src\sound\m114s.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="src\sound\mc3417.c">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClCompile>
     <ClCompile Include="src\sound\mea8000.c">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClCompile>
@@ -1539,6 +1542,9 @@
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\m114s.h">
+      <Filter>Source Files\MAME\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound\mc3417.h">
       <Filter>Source Files\MAME\Sound</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\mea8000.h">

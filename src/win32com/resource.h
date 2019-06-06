@@ -64,7 +64,8 @@
 #define IDDIRBUTTONNVRAM                204
 #define IDB_SPLASH5                     204
 #define IDDIRBUTTONSAMPLE               205
-#define IDDIRBUTTONIMG                  206
+#define IDDIRBUTTONMEMCARD              206
+#define IDDIRBUTTONIMG                  207
 #define IDGETCOLOR                      207
 #define IDD_DISCLAIMERDLG               208
 #define IDD_GAMEINFODLG                 209
@@ -85,6 +86,7 @@
 #define IDC_HOMEPAGELINK                240
 #define IDC_COMBO1                      241
 #define IDC_DISPLAYLIST                 241
+#define IDC_MEMCARDDIRS                 242
 #define ID_CTRLCTXMENU_GAMEOPTIONS      32771
 #define ID_CTRLCTXMENU_PATHES           32772
 #define ID_CTRLCTXMENU_DISPLAY_TITLE    32773
@@ -101,7 +103,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        214
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         242
+#define _APS_NEXT_CONTROL_VALUE         243
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

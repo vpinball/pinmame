@@ -3850,10 +3850,10 @@ static void cmd_set_element_color( void )
 	element = get_option_or_value( &cmd, &length, ELEMENT_NAMES );
 	if( length )
 	{
-		unsigned fg = get_option_or_value( &cmd, &length, COLOR_NAMES );
+		unsigned bg, fg = get_option_or_value( &cmd, &length, COLOR_NAMES );
 		if( length )
 		{
-			unsigned bg = get_option_or_value( &cmd, &length, COLOR_NAMES );
+			bg = get_option_or_value( &cmd, &length, COLOR_NAMES );
 			if( !length ) bg = 0;	/* BLACK is default background */
 		}
 		else

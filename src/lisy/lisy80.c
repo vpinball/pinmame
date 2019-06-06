@@ -1,9 +1,11 @@
 /*
  LISY80.c
- February 2017
+ Mai 2018
  bontango
 */
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
@@ -21,12 +23,13 @@
 #include "utils.h"
 #include "eeprom.h"
 #include "sound.h"
+#include "lisy_home.h"
 #include "lisy.h"
+#include "lisy_mame.h"
 #include "lisyversion.h"
 
 
 //global vars for timing & speed
-struct timeval lisy80_start_t;
 long no_of_tickles = 0;
 long no_of_throttles = 0;
 int g_lisy80_throttle_val = 1000;
@@ -36,8 +39,15 @@ int g_lisy80_throttle_val = 1000;
 t_stru_lisy80_games_csv lisy80_game;
 
 //global var for sound options
+unsigned char lisy80_has_soundcard = 0;  //there is a pHat soundcard installed
+unsigned char lisy80_has_own_sounds = 0;  //play own sounds rather then usinig piname sound emulation
+
 t_stru_lisy80_sounds_csv lisy80_sound_stru[32];
-int lisy80_volume = 80; //SDL range from 0..128
+int lisy_volume = 80; //SDL range from 0..128
+
+//global var for coil min pulse time option
+int lisy80_coil_min_pulse_time[10] = { 0,0,0,0,0,0,0,0,0,0};
+int lisy80_coil_min_pulse_mod = 0; //deaktivated by default
 
 //global counter for nvram write
 static int nvram_delayed_write = 0;
@@ -107,38 +117,8 @@ union u_Z28 {
 int lisy80_SOL9;		//we spend an int for SOL9
 unsigned char lisy80_lamp[48];	//all the lamps (48)
 int lisy80_flip_flop[12];
-int old_sounds;			//remember sound settings
+int old_sounds;		//remember sound settings
 
-
-//init the Hardware
-void lisy80_hw_init()
-{
-
-//store start time in global var
-gettimeofday(&lisy80_start_t,(struct timezone *)0);
-
-//init th wiringPI library first
-lisy80_hwlib_wiringPI_init();
-
-//any options?
-//at this stage only look for basic debug option here
-//ls80opt.byte = lisy80_get_dip1();
-if ( lisy80_dip1_debug_option() )
-{
- fprintf(stderr,"LISY80 basic DEBUG activ\n");
- ls80dbg.bitv.basic = 1;
- lisy80_debug("LISY80 DEBUG timer set"); //first message sets print timer to zero
-}
-else ls80dbg.bitv.basic = 0;
-
-//do init the hardware
-//this also sets the debug options by reading jumpers via switch pic
-lisy80_hwlib_init();
-
-//now look for the other dips and for extended debug options
-lisy80_get_dips();
-
-}
 
 //init SW portion of lisy80
 void lisy80_init( void )
@@ -150,7 +130,7 @@ void lisy80_init( void )
  solenoid_state.byte = 0;
  lisy80_Z28.byte = 0;
  lisy80_SOL9 = 0;
- old_sounds = 0;
+ old_sounds = 15; //because of negated outputs
  for (i=0; i<=47; i++) lisy80_lamp[i]=0;
  for (i=0; i<=11; i++) lisy80_flip_flop[i]=0;
 
@@ -164,12 +144,28 @@ void lisy80_init( void )
  //show the 'boot' message
  display_show_boot_message(s_lisy_software_version,lisy80_game.gtb_no,lisy80_game.gamename);
 
-
- // try say something about LISY80 if sound is requested
+ //check sound options
  if ( ls80opt.bitv.JustBoom_sound )
+   {
+     lisy80_has_soundcard = 1;
+     if ( ls80dbg.bitv.sound) lisy80_debug("internal soundcard to be activated"); 
+     //do we want to use pinamme sounds?
+     if ( ls80opt.bitv.test )
+      {
+       if ( ls80dbg.bitv.sound) lisy80_debug("we try to use pinmame sounds"); 
+      }
+      else
+      {
+        lisy80_has_own_sounds = 1;
+        if ( ls80dbg.bitv.sound) lisy80_debug("we try to use our own sounds"); 
+      }
+   }
+ 
+ // try say something about LISY80 if soundcard is installed
+ if ( lisy80_has_soundcard )
  {
   //set volume according to poti
-  lisy80_adjust_volume();
+  lisy_adjust_volume();
   sprintf(debugbuf,"/bin/echo \"Welcome to LISY 80 Version %s\" | /usr/bin/festival --tts",s_lisy_software_version);
   system(debugbuf);
  }
@@ -179,14 +175,35 @@ void lisy80_init( void )
  lisy80_set_yellow_led(0);
  lisy80_set_green_led(1);
 
- //init the sound if requested
- if ( ls80opt.bitv.JustBoom_sound )
+ //check for coil min_pulse parameter
+ //option is active if value is either 0 or 1
+  fprintf(stderr,"Info: checking for Coil min pulse time extension config\n");
+  //first try to read coil opts, for currebt game
+  if ( lisy80_file_get_coilopts() < 0 )
+   {
+     fprintf(stderr,"Info: no coil opts file; or error occured, min pulse time extension disabled\n");
+   }
+  else
+   {
+     fprintf(stderr,"Info: coil opt file read OK, min pulse time extension activated\n");
+     lisy80_coil_min_pulse_mod = 1; //activation via gloabl var
+   
+     if ( ls80dbg.bitv.coils) {
+     int i;
+     for(i=1; i<=9; i++)
+       fprintf(stderr,"coil No [%d]: %d msec minimum pulse time\n",i,lisy80_coil_min_pulse_time[i]);
+    }
+   }
+
+
+ //init own sounds if requested
+ if ( lisy80_has_own_sounds )
  {
   //first try to read sound opts, as we NEED them
   if ( lisy80_file_get_soundopts() < 0 )
    {
      fprintf(stderr,"no sound opts file; sound init failed, sound emulation disabled\n");
-     ls80opt.bitv.JustBoom_sound = 0;
+     lisy80_has_own_sounds = 0;
    }
   else
    {
@@ -202,19 +219,24 @@ void lisy80_init( void )
    }
  }
 
- if ( ls80opt.bitv.JustBoom_sound )
+ if ( lisy80_has_own_sounds )
  {
   //now open soundcard, and init soundstream
   if ( lisy80_sound_stream_init() < 0 )
    {
      fprintf(stderr,"sound init failed, sound emulation disabled\n");
-     ls80opt.bitv.JustBoom_sound = 0;
+     lisy80_has_own_sounds = 0;
    }
  else
    fprintf(stderr,"info: sound init done\n");
  }
   
-
+ //init LISY_Home if we are running on it
+ if ( lisy_hardware_ID == LISY_HOME_HW_ID) 
+   {
+     if ( lisy_home_init_event() < 0)
+       fprintf(stderr,"LISY HOME init failed, sound emulation disabled\n");
+   }
 
 }  //lisy80_init
 
@@ -228,7 +250,7 @@ void lisy80_shutdown(void)
  //see what time is now
  gettimeofday(&now,(struct timezone *)0);
  //calculate how many seconds passed 
- seconds_passed = now.tv_sec - lisy80_start_t.tv_sec;
+ seconds_passed = now.tv_sec - lisy_start_t.tv_sec;
  //and calculate how many tickles per second we had
  tickles_per_second = no_of_tickles / seconds_passed;
 
@@ -262,9 +284,9 @@ int lisy80_special_function(int myswitch, int action)
 
        //set volume in case position of poti has chnaged
        //AND we do emulate sound with pi soundcard
-       if ( ls80opt.bitv.JustBoom_sound )
+       if ( lisy80_has_soundcard )
          {
-          lisy80_adjust_volume();
+          lisy_adjust_volume();
           if ( ls80dbg.bitv.basic) lisy80_debug("Volume setting initiated by REPLAY Switch");
          }
      }
@@ -318,6 +340,11 @@ void lisy80TickleWatchdog( void )
  static int replay_was_pushed = 0;
  static int testbut_interval = 0;
 
+//do update the soundstream  RTH: replaced with SDL queue ?
+//        if (sound_stream && sound_enabled)
+//             	sound_stream_update(sound_stream);
+
+
  //count the tickles
  no_of_tickles++;
 
@@ -325,7 +352,8 @@ void lisy80TickleWatchdog( void )
  switch (nvram_delayed_write)
   {
     case 0: break;
-    case 1: lisy80_nvram_handler(1, NULL);
+    case 1: //lisy80_nvram_handler(1, NULL);
+	    lisy_nvram_write_to_file();
 	    nvram_delayed_write--;
 	    break;
    default: nvram_delayed_write--;
@@ -458,6 +486,17 @@ unsigned char mystrobe,myreturnval;
 //read values from pic
 //check if there is an update first
 ret = lisy80_switch_reader( &action );
+//if debug mode is set we get our reedings from udp switchreader in additon
+//but do not overwrite real switches
+if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
+ {
+   if ( ( ret = lisy_udp_switch_reader( &action, 0 )) != 80)
+   {
+     sprintf(debugbuf,"LISY35_SWITCH_READER (UDP Server Data received: %d",ret);
+     lisy80_debug(debugbuf);
+   }
+ }
+
 
 //do we need a 'special' routine to handle that switch?
 // switch 47 (Replay) could mean to add credits in case of Freeplay
@@ -684,7 +723,7 @@ if ( a_or_b == 1)
    if ( portb.bitv.RESET == 1 )
     {
       display_reset();
-      if ( ls80dbg.bitv.basic) lisy80_debug("RESET = 1");
+      if ( ls80dbg.bitv.displays) lisy80_debug("RESET = 1");
     }
 
    //falling edge of LD1? If yes send the collected byte to PIC to set row 1
@@ -838,7 +877,7 @@ if (lisy80_SOL9 != lisy80_riot2_porta.bitv1.SOL9 ) {
 		 }
 
 //we check for sounds here
-//Note: Output is negated because of LS04 at PA0..PA4
+//Note: Output is negated because of LS04 at PA0..PA4 (Z27)
 if ( lisy80_riot2_porta.bitv2.SOUND_EN == 0) // Z31 (7408 'AND') sound control enabled
 	 {
 	  if (old_sounds != lisy80_riot2_porta.bitv2.SOUND ) {
@@ -847,11 +886,17 @@ if ( lisy80_riot2_porta.bitv2.SOUND_EN == 0) // Z31 (7408 'AND') sound control e
 		lisy80_sound.bitv3.S2 = ~lisy80_riot2_porta.bitv3.S2;
 		lisy80_sound.bitv3.S4 = ~lisy80_riot2_porta.bitv3.S4;
 		lisy80_sound.bitv3.S8 = ~lisy80_riot2_porta.bitv3.S8;
+		if ( ls80dbg.bitv.sound )
+  		{
+        		sprintf(debugbuf,"setting sound to:%d" ,lisy80_sound.bitv2.SOUND + sound16 );
+        		lisy80_debug(debugbuf);
+  		}
 	  	lisy80_sound_set(lisy80_sound.bitv2.SOUND);  //set to new value
 
 		//JustBoom Sound? we may want to play wav files here
 		//need to add separate sound line here! for sound >16
-       		if ( ls80opt.bitv.JustBoom_sound ) lisy80_play_wav(lisy80_sound.bitv2.SOUND + sound16);
+		//RTH: need to be changed to 'sndbrd_0_data_w' 
+       		if ( lisy80_has_own_sounds ) lisy80_play_wav(lisy80_sound.bitv2.SOUND + sound16);
 
 	        //remember old value
 		old_sounds = lisy80_riot2_porta.bitv2.SOUND;
@@ -860,8 +905,9 @@ if ( lisy80_riot2_porta.bitv2.SOUND_EN == 0) // Z31 (7408 'AND') sound control e
 else //not enabled, so value is '1111' and output is zero
 	 {
 	  //only if sound changed
-	  if (old_sounds != 0 ) {
-	      old_sounds = 0;
+	  if (old_sounds != 15 ) {
+	      old_sounds = 15;
+	      if ( ls80dbg.bitv.sound ) lisy80_debug("setting sound to:0");
 	      lisy80_sound_set(0);  // zero
 	   }
 	}
@@ -937,7 +983,7 @@ void lisy80_coil_handler_b( int data)
 
 } //coil_handler_b
 
-//read the csv file on /boot partition and the DIP switch setting
+//read the csv file on /lisy partition and the DIP switch setting
 //give back gamename accordently and line number
 // -1 in case we had an error
 //this is called early from unix/main.c
@@ -998,7 +1044,7 @@ int lisy80_get_mpudips( int switch_nr )
 
 //handling of nvram via eeprom
 //read_or_write = 0 means read
-int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
+int lisy80_nvram_handler_old(int read_or_write, UINT8 *GTS80_pRAM_GTB)
 {
  static unsigned char first_time = 1;
  static eeprom_block_t nvram_block;
@@ -1018,9 +1064,9 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
   first_time = 0;
   //do we have a valid signature in block 1? -> 1 =yes
   //if not init eeprom note:gane nr is 80 here
-  if ( !lisy80_eeprom_checksignature()) 
+  if ( !lisy_eeprom_checksignature()) 
      { 
-       ret = lisy80_eeprom_init();
+       ret = lisy_eeprom_init();
  if ( ls80dbg.bitv.basic )
   {
         sprintf(debugbuf,"write nvram INIT done:%d",ret);
@@ -1029,14 +1075,14 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
 
      }
   //read lisy80 block 
-  lisy80_eeprom_256byte_read( lisy80_block.byte, 1);
+  lisy_eeprom_256byte_read( lisy80_block.byte, 1);
 
   //if the stored game number is not the current one
   //initialize nvram block with zeros and write to eeprom
   if(lisy80_block.content.gamenr != lisy80_game.gamenr)
    {
     for(i=0;i<=255; i++) nvram_block.byte[i] = '\0';
-    ret = lisy80_eeprom_256byte_write( nvram_block.byte, 0);
+    ret = lisy_eeprom_256byte_write( nvram_block.byte, 0);
  if ( ls80dbg.bitv.basic )
   {
         sprintf(debugbuf,"stored game nr not current one, we init with zero:%d",ret);
@@ -1053,7 +1099,7 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
    lisy80_block.content.counts[lisy80_game.gamenr]++;
    lisy80_block.content.Software_Main = LISY_SOFTWARE_MAIN;
    lisy80_block.content.Software_Sub = LISY_SOFTWARE_SUB;
-   ret = lisy80_eeprom_256byte_write( lisy80_block.byte, 1);
+   ret = lisy_eeprom_256byte_write( lisy80_block.byte, 1);
    if ( ls80dbg.bitv.basic )
    {
         sprintf(debugbuf,"nvram statistics updated for game:%d",lisy80_block.content.gamenr);
@@ -1068,7 +1114,7 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
   // if (memcmp( nvram_block.byte,  GTS80_pRAM, 0x100) != 0)
   //memcpy(nvram_block.byte,(char*)GTS80_pRAM, 0x100);
   
-  ret = lisy80_eeprom_256byte_write( (char*)GTS80_pRAM, 0);
+  ret = lisy_eeprom_256byte_write( (char*)GTS80_pRAM, 0);
  if ( ls80dbg.bitv.basic )
   {
         sprintf(debugbuf,"LISY80 write nvram done:%d",ret);
@@ -1077,7 +1123,7 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
  }
  else //we want to read
  {
-  ret = lisy80_eeprom_256byte_read( nvram_block.byte, 0);
+  ret = lisy_eeprom_256byte_read( nvram_block.byte, 0);
   //cop to mem if success
   if (ret == 0)  memcpy((char*)GTS80_pRAM, nvram_block.byte, 256);
  if ( ls80dbg.bitv.basic )
@@ -1088,106 +1134,4 @@ int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM_GTB)
  }
 
  return (ret);
-}
-
-//
-//sound handling
-//
-
-
-//get postion of poti and give it back
-//RTH: number of times to read to adjust
-int lisy80_get_position(void)
-{
-  
-  int i,pos;
-  long poti_val;
-
-  //first time fake read
-  poti_val = lisy80_get_poti_val();
-  poti_val = 0;
-
-  //read 100 times
-  for(i=1; i<=10; i++) poti_val = poti_val + lisy80_get_poti_val();
- 
-  //divide result
-  pos = poti_val / 10;
-
-
-  return( pos );
-}
-
-
-
-//set new volume in case postion of poti have changed
-int lisy80_adjust_volume(void)
-{
-  static int first = 1;
-  static int old_position;
-  int position,diff,sdl_volume,amix_volume;
-
-  //no poti for hardware 3.11
-  if ( lisy_hardware_revision == 311) return(0);
-
-
-  //read position
-  position = lisy80_get_position();
-
-  //we assume pos is in range 600 ... 7500
-  //and translate that to the SDL range of 0..128
-  //we use steps of 54
-  sdl_volume =  ( position / 54 ) - 10;
-  if ( sdl_volume > 128 ) sdl_volume = 128; //limit
-
-  if ( first)  //first time called, set volume
-  {
-    first = 0;
-    old_position = position;
-    if ( ls80dbg.bitv.sound)
-    {
-     sprintf(debugbuf,"Volume first setting: position of poti is:%d",position);
-     lisy80_debug(debugbuf);
-    }
-    lisy80_volume = sdl_volume; //set global var for SDL
- 
-    // first setting, we do it with amixer for now; range here is 0..100
-     amix_volume = (sdl_volume*100) / 128;
-     sprintf(debugbuf,"/usr/bin/amixer sset Digital %d percent",amix_volume);
-    // first setting, we announce here the volume setting
-     sprintf(debugbuf,"/bin/echo \"Volume set to %d\" | /usr/bin/festival --tts",amix_volume);
-     system(debugbuf);
-     if ( ls80dbg.bitv.sound)
-     {
-      sprintf(debugbuf,"first Volume setting initiated via amixer: %d percent",amix_volume);
-      lisy80_debug(debugbuf);
-     }
-  }
-  else
-  {
-
-    //is there a significantge change? otherwise it is just because linux is not soo accurate
-    if( (diff = abs(old_position - position )) > 300)
-    {
-     lisy80_volume = sdl_volume; //set global var for SDL
-     if ( ls80dbg.bitv.sound)
-     {
-      sprintf(debugbuf,"new Volume setting initiated: %d",sdl_volume);
-      lisy80_debug(debugbuf);
-     }
-    }
-    else
-    {
-     if ( ls80dbg.bitv.sound)
-     {
-      sprintf(debugbuf,"new Volume setting initiated, but no significant change:%d",diff);
-      lisy80_debug(debugbuf);
-     }
-    }
-
-    old_position = position;
-
-  }
-
-  return(1);
-
 }

@@ -1,14 +1,15 @@
-#include "driver.h"
 #include <math.h>
+#include "driver.h"
 
 #define DAC_SAMPLE_RATE (4*48000)
 //#define DAC_ENABLE_INTERPOLATION // if used, machines like Centaur sound way too muffled and crackle, most likely due to the really low sample rate these machines have and this simple upsample mechanism
 
+static int n_chips;
 static int channel[MAX_DAC];
 static int output[MAX_DAC];
 
 #ifdef DAC_ENABLE_INTERPOLATION
- static int curr_output[MAX_DAC];
+static int curr_output[MAX_DAC];
 #endif
 
 // DC offset correction:
@@ -33,6 +34,7 @@ static void DAC_update(int num,INT16 *buffer,int length)
 
 		for (i = 0; i < length; i++, data += slope)
 			*buffer++ = data >> 15;
+	}
 
 		curr_output[num] = output[num];
 #else
@@ -137,7 +139,8 @@ int DAC_sh_start(const struct MachineSound *msound)
 
 	DAC_build_voltable();
 
-	for (i = 0;i < intf->num;i++)
+	n_chips = intf->num;
+	for (i = 0; i < n_chips; i++)
 	{
 		char name[40];
 
@@ -150,7 +153,7 @@ int DAC_sh_start(const struct MachineSound *msound)
 		output[i] = 0;
 #ifdef DAC_ENABLE_INTERPOLATION
 		curr_output[i] = 0;
-#endif
+#endif		
 		integrator[i] = 0.;
 		prev_data[i] = 0;
 	}
@@ -163,6 +166,11 @@ void DAC_set_reverb_filter(int num, float delay, float force)
 {
 	//stream_update(channel[num], 0); //!!?
 	mixer_set_reverb_filter(channel[num], delay, force);
+}
+
+void DAC_set_mixing_level(int num, int pctvol)
+{
+	mixer_set_mixing_level(channel[num], pctvol);
 }
 #endif
 

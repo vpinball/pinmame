@@ -111,6 +111,7 @@
 #define HAS_YM2151     1
 #endif /* MAMEVER */
 #define HAS_HC55516    1
+#define HAS_MC3417     1
 #define HAS_SAMPLES    1
 #define HAS_TMS5220    1
 #define HAS_AY8910     1

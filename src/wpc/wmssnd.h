@@ -7,6 +7,29 @@
 /* DCS sound needs this one */
 #include "cpu/adsp2100/adsp2100.h"
 
+
+/*----------------------------------------------------------------------
+/ For System 11C and WPC89 (pre-DCS) sound boards, optionally fill
+/ in core_tGameData.hw.gameSpecific2 with this macro to set the
+/ HC55516 gain and/or YM2151 relative mixing volume:
+/
+/ - Set the HC55516 gain according to observed max analog level of
+/   the game's speech clips (gain factor, 0..131071; ~50000 is typical)
+/
+/ - Set the YM2151 relative volume to equalize loudness between FM
+/   music and speech clips (percent volume, 0..100; ~30 is typical)
+/
+/ - Set the DAC relative volume level to equalize loudness between
+/   the DAC and HC55516
+/
+/ See hc55516.c for details, including how to create an instrumented
+/ build that logs information useful to select the parameters for a
+/ given game.
+/
+/ Use 0 for either parameter to keep the defaults.
+/-------------------------------------------------------------------- */
+#define WPCSND_HC55516_LEVELS(hcgain, ymvol, dacvol) ((hcgain) | ((ymvol) << 18) | ((dacvol) << 25))
+
 /*-------------------------
 /  S3-S7 sound board
 /--------------------------*/

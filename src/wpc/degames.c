@@ -288,6 +288,14 @@ DE_ROMEND
 #define input_ports_poto input_ports_des11
 CORE_GAMEDEF(poto,a32,"Phantom of the Opera, The (3.2)",1990,"Data East",de_mDEAS1,0)
 
+DE_ROMSTART48(poto_a31,"potob5.3-1",CRC(b7be6fa8) SHA1(3ef77daafaf31e2388ac207275aa060f854bd4b9),
+                   "potoc5.3-1",CRC(4ce1d254) SHA1(4d24a230ae3a37674cc25ab5ae40c57acbdf5f04))
+DE1S_SOUNDROM244(  "potof7.rom",CRC(2e60b2e3) SHA1(0be89fc9b2c6548392febb35c1ace0eb912fc73f),       //7f
+                   "potof6.rom",CRC(62b8f74b) SHA1(f82c706b88f49341bab9014bd83371259eb53b47),       //6f
+                   "potof5.rom",CRC(5a0537a8) SHA1(26724441d7e2edd7725337b262d95448499151ad))       //4f
+DE_ROMEND
+CORE_CLONEDEF(poto,a31,a32,"Phantom of the Opera, The (3.1)",1990,"Data East",de_mDEAS1,0)
+
 DE_ROMSTART48(poto_a29,"potob5.2-9",CRC(f01b5510) SHA1(90c632ee74a2dbf877cfe013a69067b1771f1d67),
                    "potoc5.2-9",CRC(c34975b3) SHA1(c9c57126a5da6d78b4066b1d316ffc840660689d))
 DE1S_SOUNDROM244(  "potof7.rom",CRC(2e60b2e3) SHA1(0be89fc9b2c6548392febb35c1ace0eb912fc73f),       //7f
@@ -724,7 +732,7 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
                       "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
                       "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
 DE_ROMEND
-CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(stwr,103,104,"Star Wars (1.03, Display 1.05)",1992,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(stwr_a14,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
 DE_DMD32ROM44(        "swrom1.a14", CRC(4d577828) SHA1(8b1f302621fe2ee13a067b9c97e3dc33f4519cea),
@@ -856,6 +864,14 @@ DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240
                     "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
 DE_ROMEND
 CORE_CLONEDEF(lah,l104,112,"Last Action Hero (1.04 Spanish)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(lah_c106,"lahcpuc.106",CRC(d4be4178) SHA1(ea2d9c780f6636a8768164d3a1bb33b050c3a2a7))
+DE_DMD32ROM8x(      "lahdispa.104",CRC(baf4e7b3) SHA1(78924d992c0e206bfbf4a6fcc62ea7f91e995260))
+DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
+                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
+                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
+DE_ROMEND
+CORE_CLONEDEF(lah,c106,112,"Last Action Hero (1.06 Canadian)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(lah_l108,"lahcpua.108",CRC(8942794b) SHA1(f023ca040d6d4c6da80b58a162f1d217e571ed81))
 DE_DMD32ROM8x(      "lahdispl.104",CRC(6b1e51a7) SHA1(ad17507b63f2da8aa0651401ccb8d449c15aa46c))

@@ -41,8 +41,10 @@ What is it?
   record/playback, command line switches etc.).
 
   In addition, there is special compile time support for the P-ROC (http://www.pinballcontrollers.com,
-  to drive (at least) real WPC machines with PinMAME/P-ROC) and LISY (http://www.lisy80.com,
-  to drive real Gottlieb Sys1 and Sys80 machines) platforms (see PROC and LISY_X defines in makefile.unix).
+  to drive (at least) real WPC machines with PinMAME/P-ROC) and LISY (Linux for Gottlieb System1 &
+  System80, Bally, Atari, Williams and 'HOme' Pinballs, to drive real pinball machines via
+  PinMAME and special hardware, see http://www.lisy80.com & http://www.lisy.dev, also README.lisy)
+  platforms (see PROC and LISY_X defines in makefile.unix).
 
 What does it do?
 ----------------

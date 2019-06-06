@@ -59,14 +59,14 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 //
 // Pinball Magic seems to have 4 candidates. 0x9f3e, 0x3a16, 0x5e175, 0x5E1EF, 0x5E1F2 are also possibilities
 // Big Bang Bar sets a whole bunch of values to 8.  I went with the first. 
-// KingPin had lots of values that changed, but only one value that goes from 128 to 0 during the bonus collection sequence
+// Kingpin had lots of values that changed, but only one value that goes from 128 to 0 during the bonus collection sequence
 
 #define INITGAMEFF(name, gameno, disp, balls, sb, lamps, fastflipaddr) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
 	static int name##_getsol(int solNo) { \
 		return (memory_region(REGION_CPU1)[fastflipaddr] > 0); \
-	}\
-	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0,##name##_getsol},NULL,{"", capInvSw##gameno}}; \
+	} \
+	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,1,sb,0,gameno,0, name##_getsol},NULL,{"", capInvSw##gameno}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}

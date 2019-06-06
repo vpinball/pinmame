@@ -10,7 +10,7 @@ copy /V /-Y "VPinMAME_VC2012.vcxproj.filters" "VPinMAME_VC2017.vcxproj.filters"
 
 @cscript "simplereplace.wsf" //nologo /search:"VC2012" /replace:"VC2017" /in:"PinMAME_VC2017.sln" /out:"PinMAME_VC2017.sln"
 @if errorlevel 1 goto manual
-@cscript "simplereplace.wsf" //nologo /search:"Visual Studio 2012" /replace:"Visual Studio 2017" /in:"PinMAME_VC2017.sln" /out:"PinMAME_VC2017.sln"
+@cscript "simplereplace.wsf" //nologo /search:"Visual Studio 2012" /replace:"Visual Studio Version 15" /in:"PinMAME_VC2017.sln" /out:"PinMAME_VC2017.sln"
 @if errorlevel 1 goto manual
 @cscript "simplereplace.wsf" //nologo /search:"Format Version 12.00" /replace:"Format Version 14.00" /in:"PinMAME_VC2017.sln" /out:"PinMAME_VC2017.sln"
 @if errorlevel 1 goto manual

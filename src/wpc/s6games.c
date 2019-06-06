@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /*
 System 3, 4, 6:
 To see what version your game is running, set your test switch to AUTO/UP and press ADVANCE while in Game Over mode.

@@ -342,6 +342,13 @@ void filter2_step(filter2_context *filter2)
 	filter2->y1 = filter2->y0;
 }
 
+/* Step the filter with an input, returning the output */
+double filter2_step_with(filter2_context *filter2, double input)
+{
+	filter2->x0 = input;
+	filter2_step(filter2);
+	return filter2->y0;
+}
 
 /* Setup a filter2 structure based on an op-amp multipole bandpass circuit. */
 void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, double c2,
@@ -372,3 +379,175 @@ void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, d
 
 	filter2_setup(FILTER_BANDPASS, fc, d, gain, filter2, sample_rate);
 }
+
+//
+// Multiple feedback active low pass filter
+//
+//               +--- R3 ---+------------+
+//               |          |            |
+//               |         C2   |\       |
+//               |          |   | \      |
+// Vin --- R1 ---+--- R2 ---+---|- \     |
+//               |              |   \____|_____ Vout
+//               |              |   /
+//              C1          +---|+ /
+//               |          |   | /
+//               |         Rb   |/
+//               |          |
+//              GND        GND
+//
+void filter_mf_lp_setup(double R1, double R2, double R3, double C1, double C2, 
+	struct filter2_context_struct *context, int sample_rate)
+{
+	// Continuous-time transfer function for the analog version of
+	// this filter:
+	//
+	//                         -1/(C1*C2*R1*R2)
+	//  H(s) = -----------------------------------------------------
+	//         s^2 + (1/C1)*(1/R1 + 1/R2 + 1/R3)*s + 1/(C1*C2*R2*R3)
+	//
+	// Refactor that to the canonical form:
+	//
+	//                    1
+	//  H(s) = K * -----------------
+	//             1 + c1*s + c2*s^2
+	//
+	// ...and calculate the coefficients c1 and c2.  K is the analog
+	// filter's DC gain; for the digital filter, we want unit gain, so
+	// after factoring into the form above, we replace K with 1.0.
+	//
+	//double K = -R3/R1;  // analog filter's DC gain
+	double c1 = C2*R2*R3*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
+	double c2 = C1*C2*R2*R3;
+
+	// calculate the cutoff frequency for the filter
+	double Fc = 1.0 / (2.0 * PI * sqrt(R2*R3*C1*C2));
+
+	// calculate the time step factor
+	double g = 1.0 / tan(PI * Fc / sample_rate);
+	double gn = g * 2.0 * PI * Fc;
+
+	// Now we can calculate the difference equation coefficients from
+	// the continuous-time transfer function coefficients.
+	double cc = 1.0 + gn*c1 + gn*gn*c2;
+	context->b0 = 1.0 / cc;
+	context->b1 = 2.0 / cc;
+	context->b2 = 1.0 / cc;
+	context->a1 = 2 * (1.0 - gn*gn*c2) / cc;
+	context->a2 = (1.0 - gn*c1 + gn*gn*c2) / cc;
+
+	// reset the filter inputs
+	filter2_reset(context);
+}
+
+// 
+// Single-pole active low-pass filter
+//
+//               +--- R3 ---+------------+
+//               |          |            |
+//               |         C1   |\       |
+//               |          |   | \      |
+// Vin --- R1 ---+--- R2 ---+---|- \     |
+//                              |   \____|_____ Vout
+//                              |   /
+//                          +---|+ /
+//                          |   | /
+//                         Rb   |/
+//                          |
+//                         GND
+//
+void filter_active_lp_setup(double R1, double R2, double R3, double C1, 
+	struct filter2_context_struct *context, int sample_rate)
+{
+	// Continuous-time transfer function for the analog filter:
+	//
+	//                     -1/(R1*R2*C1)
+	//   H(s) = --------------------------------------
+	//           (1/R1 + 1/R2 + 1/R3)*s + 1/(R2*R3*C1)
+	// 
+	// Refactor to canonical form:
+	//
+	//                 1
+	//   H(s) = K * --------
+	//              1 + c1*s
+	//
+	// ... and calculate the coefficient c1.  K is the analog filter's
+	// DC gain, which we replace (after refactoring into the form above)
+	// with 1 for unit gain in the digital implementation.
+	//
+	// double K = -R3/R1;   // analog filter DC gain
+	double c1 = R2*R3*C1*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
+
+	// calculate the cutoff frequency for the filter
+	double Fc = 1.0 / (2.0 * PI * c1);
+
+	// calculate the time step factor
+	double g = 1.0 / tan(PI * Fc / sample_rate);
+	double gn = g * 2.0 * PI * Fc;
+
+	// calculate the difference equation coefficients
+	double cc = 1.0 + gn*c1;
+	context->b0 = 1.0 / cc;
+	context->b1 = 2.0 / cc;
+	context->b2 = 1.0 / cc;
+	context->a1 = 2.0 / cc;
+	context->a2 = (1.0 - gn*c1) / cc;
+
+	// reset the inputs
+	filter2_reset(context);
+}
+
+// Sallen-Key low-pass filter
+//
+//               +------------ C1 ------------+
+//               |                            |
+//               |                   |\       |
+//               |                   | \      |
+// Vin --- R1 ---+--- R2 ---+--------|+ \     |
+//                          |        |   \----+-+------ Vout
+//                          |        |   /    |
+//                         C2    +---|- /     |
+//                          |    |   | /      |
+//                          |    |   |/       |
+//                         GND   |            |
+//                               +------------+
+//
+void filter_sallen_key_lp_setup(double R1, double R2, double C1, double C2,
+	struct filter2_context_struct *context, int sample_rate)
+{
+	// Continuous-time transfer function for the analog filter:
+	//
+	//                       1/(R1*R2*C1*C2)
+	//   H(s) = ----------------------------------------------
+	//          s^2 + (1/C1)*(1/R2 + 1/R1)*s + 1/(R1*R2*C1*C2)
+	// 
+	// Refactor to canonical form:
+	//
+	//                  1
+	//   H(s) =  -----------------
+	//           1 + c1*s + c2*s^2
+	//
+	// ... and calculate the coefficients c1 and c2.
+	//
+	double c1 = C2*(R1 + R2);
+	double c2 = R1*C1*R2*C2;
+
+	// calculate the cutoff frequency for the filter
+	double Fc = 1.0 / (2.0 * PI * c1);
+
+	// calculate the time step factor
+	double g = 1.0 / tan(PI * Fc / sample_rate);
+	double gn = g * 2.0 * PI * Fc;
+
+	// calculate the difference equation coefficients
+	double cc = 1.0 + gn*c1;
+	context->b0 = 1.0 / cc;
+	context->b1 = 2.0 / cc;
+	context->b2 = 1.0 / cc;
+	context->a1 = 2.0 / cc;
+	context->a2 = (1.0 - gn*c1) / cc;
+
+	// reset the inputs
+	filter2_reset(context);
+}
+

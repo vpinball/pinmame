@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /* Williams System 9, 11, and All Data East Hardware */
 #include <stdarg.h>
 #include <time.h>

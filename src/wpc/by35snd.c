@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #include "driver.h"
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
@@ -317,7 +319,7 @@ MACHINE_DRIVER_START(by51N)
   MDRV_SOUND_ADD(DAC, sp_dacInt)
 MACHINE_DRIVER_END
 
-static struct hc55516_interface sp_hc55516Int = { 1, {75}};
+static struct mc3417_interface sp_mc3417Int = { 1, {75}};
 
 static MEMORY_READ_START(sp56_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -329,7 +331,7 @@ MACHINE_DRIVER_START(by56)
   MDRV_IMPORT_FROM(by51)
   MDRV_CPU_MODIFY("scpu")
   MDRV_CPU_MEMORY(sp56_readmem, sp_writemem)
-  MDRV_SOUND_ADD(HC55516, sp_hc55516Int)
+  MDRV_SOUND_ADD(MC3417, sp_mc3417Int)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sp_8910r);
@@ -356,7 +358,7 @@ static void sp_init(struct sndbrdData *brdData) {
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
   if (splocals.brdData.subType == 1) { // -56 board
-    hc55516_set_gain(0, 40000);
+    mc3417_set_gain(0, 40000);
   }
   for (i=0; i < 0x80; i++) memory_region(BY51_CPUREGION)[i] = 0xff;
 }
@@ -378,8 +380,8 @@ static READ_HANDLER(sp_pia0b_r) {
 static WRITE_HANDLER(sp_pia0b_w) {
   splocals.pia0b = data;
   if (splocals.brdData.subType == 1) { // -56 board
-    hc55516_digit_w(0,(data & 0x80)>0);
-    hc55516_clock_w(0,(data & 0x40)>0);
+    mc3417_digit_w(0,(data & 0x80)>0);
+    mc3417_clock_w(0,(data & 0x40)>0);
   }
   if (splocals.pia0b & 0x02) AY8910Write(0, splocals.pia0b ^ 0x01, splocals.pia0a);
 }

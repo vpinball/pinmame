@@ -454,6 +454,8 @@ extern const int core_bcd2seg9a[]; /* BCD to 9 segment display, missing 6 top li
 extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
 extern const int core_bcd2seg7a[]; /* BCD to 7 segment display, missing 6 top line */
 extern const int core_bcd2seg7e[]; /* BCD to 7 segment display with A to E letters */
+extern const UINT16 core_ascii2seg16[]; /* BCD to regular 16 segment display */
+extern const UINT16 core_ascii2seg16s[]; /* BCD to 16 segment display with split top / botom lines */
 #define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/

@@ -6,7 +6,6 @@
 
 // Generic LISY80 functions.
 int  lisy80_get_gamename(char *gamename);
-void lisy80_hw_init(void);
 void  lisy80_init(void );
 void lisy80_shutdown(void);
 void lisy80TickleWatchdog( void );
@@ -22,8 +21,6 @@ void lisy80_simulate_switch( int myswitch, int action );
 int lisy80_special_function(int myswitch, int action);
 int lisy80_simulated_switch_reader( unsigned char *action );
 int lisy80_nvram_handler(int read_or_write, UINT8 *GTS80_pRAM);
-int lisy80_get_volume();
-int lisy80_adjust_volume(void);
 
 
 #define NVRAM_DELAY 500  //delay counter for nvram write
