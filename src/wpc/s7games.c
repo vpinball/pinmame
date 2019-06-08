@@ -185,6 +185,18 @@ S7_ROMEND
 #define input_ports_pharo input_ports_s7
 CORE_GAMEDEF(pharo,l2,"Pharaoh (L-2)",1981,"Williams",s7_mS7S,0)
 
+S7_ROMSTART8088(pharo,l2b,"ic14.716",   CRC(cef00088) SHA1(e0c6b776eddc060c42a483de6cc96a1c9f2afcf7),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                          "ic26.716",   CRC(2afbcd1f) SHA1(98bb3a74548b7d9c5d7b8432369658ed32e8be07))
+S67S_SOUNDROMS8(          "sound12.716",CRC(b0e3a04b) SHA1(eac54376fe77acf46e485ab561a01220910c1fd6))
+S67S_SPEECHROMS0000(      "speech7.532",CRC(3472255e) SHA1(fb7d9613eead268af43f4c8066e9f4e5d60cf49f),
+                          "speech5.532",CRC(d72863dc) SHA1(e24ad970ed202165230fab999be42bea0f861fdd),
+                          "speech6.532",CRC(d29830bd) SHA1(88f6c508f2a7000bbf6c9c26e1029cf9a241d5ca),
+                          "speech4.532",CRC(9ecc23fd) SHA1(bf5947d186141504fd182065533d4efbfd27441d))
+S7_ROMEND
+CORE_CLONEDEF(pharo,l2b,l2,"Pharaoh (L-2 tomb sound fix MOD)",2019,"Williams",s7_mS7S,0)
+
 /*-----------------------------------
 / Solar Fire - Sys.7 (Game #507)
 /-----------------------------------*/
@@ -275,14 +287,14 @@ S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
                           "ic20_fix.532",    CRC(48958d77) SHA1(ddfec991ef99606b866ced08b59e205a0b2cadd1))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Jess M. Askey (High score bootleg)",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5 Bootleg High score save)",1998,"Jess M. Askey",s7_mS7S,0)
 
 S7_ROMSTART000x(hypbl,l6, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51efeb8be7c20d6465239e),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
                           "ic20_l6.532",    CRC(e40c27cd) SHA1(337bd8450be305796e52c1b7d3ae3cc8cc972525))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6)",2006,"Jess M. Askey (High score bootleg)",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6 Bootleg High score save)",2006,"Jess M. Askey",s7_mS7S,0)
 
 /*----------------------------
 / Barracora- Sys.7 (Game #510)

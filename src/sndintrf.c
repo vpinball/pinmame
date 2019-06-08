@@ -1431,7 +1431,7 @@ int sound_clock(const struct MachineSound *msound)
 
 int sound_scalebufferpos(int value)
 {
-    int result;
+	int result;
 	double elapsed = timer_timeelapsed(sound_update_timer);
 	if(elapsed < 0.)
 		elapsed = 0.;

@@ -563,7 +563,7 @@ static void init_tables(void)
 	for (i=0; i<SIN_LEN; i++)
 	{
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* verified on the real chip */
+		m = sin( ((i*2)+1) * (M_PI / SIN_LEN) ); /* verified on the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 
@@ -2375,4 +2375,3 @@ int YM2151ReadOutputFlag(int n)
 	return YMPSG[n].output;
 }
 #endif
-
