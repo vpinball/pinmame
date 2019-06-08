@@ -31,8 +31,8 @@ void hc55516_set_sample_clock(int num, int frequency);
 int hc55516_sh_start(const struct MachineSound *msound);
 
 // Low-pass output filter types
-#define HC55516_FILTER_C8228   1        // Williams speech board Type 2 (C-8228), system 3 through system 9
-#define HC55516_FILTER_SYS11   2        // Williams System 11 
+#define HC55516_FILTER_C8228   1        // Williams speech board Type 2 (C-8228), system 6/7 (optionally, otherwise C-8226 with a MC3417) and system 9
+#define HC55516_FILTER_SYS11   2        // Williams System 11
 #define HC55516_FILTER_WPC89   3        // Pre-DCS WPC sound boards
 
 struct hc55516_interface

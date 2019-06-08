@@ -234,19 +234,19 @@ static FILE *dynrange_log_fp;
 // -DYN_RANGE_MAX to +DYN_RANGE_MAX and compresses it to fit an INT16 value.
 // The curve is linear at low volumes and flattens at higher volumes, which
 // tends to make the overall signal sound louder.
-static double compress_loudness(double sample)
+static INT16 compress_loudness(double sample)
 {
 	// apply compression
 	sample = sample / (1.0 + fabs(sample)*(1.0 / 32768.0)) + sample*0.15;
 
 	// clip to INT16 range
 	if (sample <= -32768.0)
-		sample = -32768.0;
+		return -32768;
 	else if (sample >= 32767.0)
-		sample = 32767.0;
-
-	// return the compressed and clipped result
-	return sample;
+		return 32767;
+	else
+		// return the compressed and clipped result
+		return (INT16)sample;
 }
 
 // Default gain.  This is the scaling factor to convert from the simulated
@@ -407,14 +407,15 @@ static void init_output_filter(struct hc55516_data *chip)
 {
 	// we process samples on the way to the MAME output stream, so use
 	// the MAME stream rate
-	int freq = stream_get_sample_rate(chip->channel);
+	const int freq = stream_get_sample_rate(chip->channel);
 
 	// set up the filter according to the sound board type
 	switch (chip->output_filter.type)
 	{
 	case HC55516_FILTER_C8228:
 		// Williams Speech Board Type 2 (part number C-8228), used in System 9
-		// through System 9 games.  This used a 2-stage multiple feedback 
+		// and optionally (otherwise C-8226 with MC3417) in System 6/7 games.
+		// This used a 2-stage multiple feedback
 		// filter.  Note that there's a third op-amp stage as well, but that's
 		// the actual output amplifier rather than another filter, so we don't
 		// include it here.
@@ -424,7 +425,7 @@ static void init_output_filter(struct hc55516_data *chip)
 		// this is an error in the schematics and not some other type of
 		// filter by intention; I'm pretty sure a positive feedback topology 
 		// like that marked on the schematics would just blow up rather than
-		// work as a filter. The schematics I found are second-hand, from
+		// work as a filter. The schematics I found are second-hand,
 		// from www.firepowerpinball.com, not original Williams schematics,
 		// so I'm guessing this was just a transcription error. --mjr]
 		filter_mf_lp_setup(43000, 36000, 180000, 1800e-12, 180e-12, &chip->output_filter.f1, freq);
@@ -455,14 +456,14 @@ static void init_output_filter(struct hc55516_data *chip)
 // resamples it using the PCM sample rate of the MAME output stream, and adds
 // it to our output buffer to eventually pass to the MAME stream.
 //
-static void add_sample_out(struct hc55516_data *chip, double sample, double output_rate_ratio)
+static void add_sample_out(struct hc55516_data *chip, const double sample, const double output_rate_ratio)
 {
-	float fIn, fOut[128];
+	float fOut[128];
 	SRC_DATA sd;
 	long i;
 
 	// resample at the MAME stream rate
-	fIn = (float)sample;
+	const float fIn = (float)sample;
 	sd.data_in = &fIn;
 	sd.input_frames = 1;
 	sd.input_frames_used = 0;
@@ -508,10 +509,10 @@ static void add_sample_out(struct hc55516_data *chip, double sample, double outp
 // the CVSD clock rate, so it must be resampled to the MAME output stream rate
 // before being passed to MAME.
 //
-static void process_bit(struct hc55516_data *chip, UINT8 bit, double output_rate_ratio)
+static void process_bit(struct hc55516_data *chip, const UINT8 bit, const double output_rate_ratio)
 {
 	// add/subtract the syllabic filter output to/from the integrator
-	double di = (1.0 - DECAY)*chip->syl_level;
+	const double di = (1.0 - DECAY)*chip->syl_level;
 	if (bit != 0)
 		chip->integrator += di;
 	else
@@ -535,16 +536,15 @@ static void process_bit(struct hc55516_data *chip, UINT8 bit, double output_rate
 //
 // Apply the final output filter
 //
-static INT16 apply_filter(struct hc55516_data *chip, float sample)
+static INT16 apply_filter(struct hc55516_data *chip, const float sample)
 {
-	double scaled;
-	int stream_freq = stream_get_sample_rate(chip->channel);
+	const int stream_freq = stream_get_sample_rate(chip->channel);
 
 	// run the sample through the two-stage filter
-	double filtered = filter2_step_with(&chip->output_filter.f2, filter2_step_with(&chip->output_filter.f1, sample));
+	const double filtered = filter2_step_with(&chip->output_filter.f2, filter2_step_with(&chip->output_filter.f1, sample));
 
 	// apply the gain and apply loudness compression
-	scaled = compress_loudness(filtered * chip->gain);
+	const INT16 scaled = compress_loudness(filtered * chip->gain);
 
 #ifdef LOG_DYN_RANGE
 	// update the min/max range 
@@ -557,9 +557,9 @@ static INT16 apply_filter(struct hc55516_data *chip, float sample)
 	if (++chip->dynrange.nsamples > 100000 && dynrange_log_fp != NULL)
 	{
 		// figure the maximum gain that won't clip for the current range
-		double maxgain1 = -DYN_RANGE_MAX / chip->dynrange.vmin;
-		double maxgain2 = DYN_RANGE_MAX / chip->dynrange.vmax;
-		double maxgain = maxgain1 < maxgain2 ? maxgain1 : maxgain2;
+		const double maxgain1 = -DYN_RANGE_MAX / chip->dynrange.vmin;
+		const double maxgain2 = DYN_RANGE_MAX / chip->dynrange.vmax;
+		const double maxgain = maxgain1 < maxgain2 ? maxgain1 : maxgain2;
 
 		// log the data
 		fprintf(dynrange_log_fp, "HC55516 #%d range [%lf..+%lf] -> max gain w/o clipping %d\n",
@@ -576,7 +576,7 @@ static INT16 apply_filter(struct hc55516_data *chip, float sample)
 #endif // LOG_LOUDNESS
 
 	// return the scaled result
-	return (INT16)scaled;
+	return scaled;
 }
 
 //
@@ -590,9 +590,9 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	struct hc55516_data *chip = &hc55516[num];
 	const double work_ahead = 0.0025;
 	const double max_gap = .0005;
-	double now = timer_get_time();
+	const double now = timer_get_time();
 	double t = chip->stream_update_time;
-	int orig_length = length;
+	const int orig_length = length;
 
 	// Start a tiny bit early, so that we (hopefully) end a little early,
 	// leaving a little CVSD input to carry over to next time.  This helps
@@ -646,8 +646,8 @@ void hc55516_update(int num, INT16 *buffer, int length)
 		for (n = 0, i = chip->bits_in.read, tprv = t; i != chip->bits_in.write;)
 		{
 			// figure the length of time between samples
-			double tcur = chip->bits_in.bits[i].t;
-			double dt = tcur - tprv;
+			const double tcur = chip->bits_in.bits[i].t;
+			const double dt = tcur - tprv;
 
 			// if it's too long, consider this the end of the current run
 			if (dt > max_gap)
@@ -731,11 +731,11 @@ void hc55516_update(int num, INT16 *buffer, int length)
 static void collect_clock_stats(struct hc55516_data *chip)
 {
 	// note the time since the last update
-	double now = timer_get_time();
+	const double now = timer_get_time();
 
 	// check if the last clock was recent enough that we can assume that the
 	// clock has been running since the previous sample
-	double dt = now - chip->clock_history.t_rise;
+	const double dt = now - chip->clock_history.t_rise;
 	if (dt < .001)
 	{
 		// The clock is running.  Collect the timing sample.
@@ -780,8 +780,8 @@ void hc55516_clock_w(int num, int state)
 	struct hc55516_data *chip = &hc55516[num];
 
 	// update the clock
-	int clock = state & 1;
-	int diffclock = clock ^ chip->last_clock;
+	const int clock = state & 1;
+	const int diffclock = clock ^ chip->last_clock;
 	chip->last_clock = clock;
 
 	// clock out sample bits on the rising edge
