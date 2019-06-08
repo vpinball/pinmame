@@ -25,7 +25,7 @@ What is it?
   Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
   Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
   Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
-  Splin Bingo, Playbar.
+  Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic.
 
   *Note: Emulation is not 100% working and correct for all hardware.
 
