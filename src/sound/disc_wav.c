@@ -102,7 +102,7 @@ int dss_sinewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
 
 	return 0;
 }
@@ -187,7 +187,7 @@ int dss_squarewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
 
 	return 0;
 }
@@ -471,7 +471,7 @@ int dss_trianglewave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
 
 	return 0;
 }
@@ -550,7 +550,7 @@ int dss_sawtoothwave_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
 
 	return 0;
 }
@@ -639,7 +639,7 @@ int dss_noise_step(struct node_description *node)
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
 	/* Also keep the new phasor in the 2Pi range.                */
-	context->phase=fmod((context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate)),2.0*M_PI);
+	context->phase=fmod((context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate)),2.0*M_PI);
 
 	return 0;
 }

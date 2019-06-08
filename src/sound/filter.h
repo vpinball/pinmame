@@ -36,11 +36,11 @@ typedef struct filter_state_struct {
 } filter_state;
 
 /* Allocate a FIR Low Pass filter */
-filter* filter_lp_fir_alloc(double freq, int order);
+filter* filter_lp_fir_alloc(double freq, const int order);
 void filter_free(filter* f);
 
 /* Allocate a filter state */
-filter_state* filter_state_alloc(void);
+filter_state* filter_state_alloc();
 
 /* Free the filter state */
 void filter_state_free(filter_state* s);
@@ -63,7 +63,7 @@ INLINE void filter_insert(const filter* f, filter_state* s, const filter_real x)
 filter_real filter_compute(const filter* f, const filter_state* s);
 
 INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
-	filter_real tmp = filter_compute(f, s);
+	const filter_real tmp = filter_compute(f, s);
 	if (tmp < (filter_real)-32768)
 		return -32768;
 	else if (tmp > (filter_real)32767)
@@ -91,8 +91,8 @@ typedef struct filter2_context_struct {
  * d    - damp = 1/Q
  * gain - overall filter gain. Set to 1 if not needed.
  */
-void filter2_setup(int type, double fc, double d, double gain,
-					filter2_context *filter2, unsigned int sample_rate);
+void filter2_setup(const int type, const double fc, const double d, const double gain,
+					filter2_context *filter2, const unsigned int sample_rate);
 
 
 /* Reset the input/output voltages to 0. */
@@ -181,8 +181,8 @@ void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, d
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_mf_lp_setup(double r1, double r2, double r3, double c1, double c2, 
-	struct filter2_context_struct *context, int sample_rate);
+void filter_mf_lp_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
+	struct filter2_context_struct *context, const int sample_rate);
 
 
 // Active single-pole low-pass filter
@@ -211,8 +211,8 @@ void filter_mf_lp_setup(double r1, double r2, double r3, double c1, double c2,
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_active_lp_setup(double r1, double r2, double r3, double c1,
-	struct filter2_context_struct *context, int sample_rate);
+void filter_active_lp_setup(const double r1, const double r2, const double r3, const double c1,
+	struct filter2_context_struct *context, const int sample_rate);
 
 // Sallen-Key low-pass filter
 //
@@ -236,7 +236,7 @@ void filter_active_lp_setup(double r1, double r2, double r3, double c1,
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_sallen_key_lp_setup(double r1, double r2, double c1, double c2,
-	struct filter2_context_struct *context, int sample_rate);
+void filter_sallen_key_lp_setup(const double r1, const double r2, const double c1, const double c2,
+	struct filter2_context_struct *context, const int sample_rate);
 
 #endif
