@@ -14,6 +14,7 @@ Improved YM2151 sound/timing emulation (mainly WPC pre-DCS machines, maybe impro
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
 Implement 'fast flips' support for Jack*Bot
 Fix NBA Fastbreak 'fast flips' so that the million dollar shot works
+Fix Champion Pub 'fast flips' support
 Fixed Barni emulation
 Added preliminary E.F.O. hardware support
 Increased main CPU IRQ rate for Bushido, Mach 2, and Jolly Park
