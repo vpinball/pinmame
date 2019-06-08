@@ -662,10 +662,10 @@ void build_standard_filter(double *a, double *b,
 	double k2 = c4 * c2b / (votraxsc01_locals.cclock * votraxsc01_locals.cclock * c1b * c3);
 
 	// Estimate the filter cutoff frequency
-	double fpeak = sqrt(fabs(k0*k1 - k2))/((2*M_PI)*k2);
+	double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
 
 	// Turn that into a warp multiplier
-	double zc = (2*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
 	double m0 = zc*k0;
@@ -708,10 +708,10 @@ void build_lowpass_filter(double *a, double *b,
 	double k = c1b / (votraxsc01_locals.cclock * c1t);
 
 	// Compute the filter cutoff frequency
-	double fpeak = 1/((2*M_PI)*k);
+	double fpeak = 1./((2.*M_PI)*k);
 
 	// Turn that into a warp multiplier
-	double zc = (2*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
 	double m = zc*k;
@@ -763,10 +763,10 @@ void build_noise_shaper_filter(double *a, double *b,
 	double k2 = c1*c2t*c3/(votraxsc01_locals.cclock * c4);
 
 	// Estimate the filter cutoff frequency
-	double fpeak = sqrt(1/k2)/(2*M_PI);
+	double fpeak = sqrt(1./k2)/(2.*M_PI);
 
 	// Turn that into a warp multiplier
-	double zc = (2*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
 	double m0 = zc*k0;
@@ -1202,7 +1202,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeOut = 1.0;
 
 			if ( !doMix )
-				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*(M_PI/2));
+				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*(M_PI/2.));
 
 			if ( !votraxsc01_locals.iRemainingSamples ) {
 				votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation];

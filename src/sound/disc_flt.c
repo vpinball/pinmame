@@ -442,7 +442,7 @@ int dst_rcdisc2_init(struct node_description *node)
 
 int dst_rcfilterN_init(struct node_description *node)
 {
-	double f=1.0/(2*M_PI*node->input[2]*node->input[3]);
+	double f=1.0/((2.*M_PI)*node->input[2]*node->input[3]);
 
 	node->input[2] = f;
 	node->input[3] = DISC_FILTER_LOWPASS;
@@ -468,7 +468,7 @@ int dst_rcfilterN_init(struct node_description *node)
 
 int dst_rcdiscN_init(struct node_description *node)
 {
-	double f=1.0/(2*M_PI*node->input[2]*node->input[3]);
+	double f=1.0/((2.*M_PI)*node->input[2]*node->input[3]);
 
 	node->input[2] = f;
 	node->input[3] = DISC_FILTER_LOWPASS;
@@ -565,8 +565,8 @@ int dst_rcdisc2N_init(struct node_description *node)
 	}
 	context=(struct dss_rcdisc2_context*)node->context;
 
-	f1=1.0/(2*M_PI*node->input[2]*node->input[5]);
-	f2=1.0/(2*M_PI*node->input[4]*node->input[5]);
+	f1=1.0/((2.*M_PI)*node->input[2]*node->input[5]);
+	f2=1.0/((2.*M_PI)*node->input[4]*node->input[5]);
 
 	calculate_filter1_coefficients(f1, DISC_FILTER_LOWPASS, &context->a1_0, &context->b0_0, &context->b1_0);
 	calculate_filter1_coefficients(f2, DISC_FILTER_LOWPASS, &context->a1_1, &context->b0_1, &context->b1_1);
