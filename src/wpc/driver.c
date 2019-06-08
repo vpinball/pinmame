@@ -2280,7 +2280,8 @@ DRIVER(bk,f4)           //          11/80 W Black Knight (L-4 French Speech)
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
 DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
 DRIVER(jngld,nt)        //          09/13 W Jungle Lord New Tricks
-DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
+DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh (L-2)
+DRIVER(pharo,l2b)       //          05/19 W Pharaoh (L-2 'tomb' sample sound fix MOD)
                         //S7-506:   06/81 W Black Knight Limited Edition
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora

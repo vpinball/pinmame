@@ -519,8 +519,8 @@ static core_tGameData bopGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha,
   {
     FLIP_SWNO(12,11),
-	0, 2, // 2 extra lamp columns for the helmet lights
-	0, 0, 0, 0, 0,
+    0, 2, // 2 extra lamp columns for the helmet lights
+    0, 0, 0, 0, 0,
     NULL, bop_handleMech, bop_getMech, bop_drawMech,
     &bop_lampPos, bop_samsolmap
   },
