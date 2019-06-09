@@ -1011,9 +1011,9 @@ static int update_layers(void)
 	/* update the underlays */
 	if (underlay_invalid.max_x != 0)
 	{
+		struct artwork_piece *piece;
 		sect_rect(&underlay_invalid, &screenrect);
 		erase_rect(underlay, &underlay_invalid, 0);
-		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer == LAYER_BACKDROP && piece->visible && piece->prebitmap)
 				alpha_blend_intersecting_rect(underlay, &underlay_invalid, piece->prebitmap, &piece->bounds, piece->scanlinehint);
@@ -1022,10 +1022,10 @@ static int update_layers(void)
 	/* update the overlays */
 	if (overlay_invalid.max_x != 0)
 	{
+		struct artwork_piece *piece;
 		sect_rect(&overlay_invalid, &screenrect);
 		erase_rect(overlay, &overlay_invalid, transparent_color);
 		erase_rect(overlay_yrgb, &overlay_invalid, ASSEMBLE_ARGB(0,0xff,0xff,0xff));
-		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer == LAYER_OVERLAY && piece->visible && piece->prebitmap)
 				cmy_blend_intersecting_rect(overlay, overlay_yrgb, &overlay_invalid, piece->prebitmap, piece->yrgbbitmap, &piece->bounds, piece->blendflags);
@@ -1034,9 +1034,9 @@ static int update_layers(void)
 	/* update the bezels */
 	if (bezel_invalid.max_x != 0)
 	{
+		struct artwork_piece *piece;
 		sect_rect(&bezel_invalid, &screenrect);
 		erase_rect(bezel, &bezel_invalid, transparent_color);
-		struct artwork_piece *piece;
 		for (piece = artwork_list; piece; piece = piece->next)
 			if (piece->layer >= LAYER_BEZEL && piece->visible && piece->prebitmap)
 				alpha_blend_intersecting_rect(bezel, &bezel_invalid, piece->prebitmap, &piece->bounds, piece->scanlinehint);
