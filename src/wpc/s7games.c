@@ -190,7 +190,7 @@ S7_ROMSTART8088(pharo,l2b,"ic14.716",   CRC(cef00088) SHA1(e0c6b776eddc060c42a48
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
                           "ic26.716",   CRC(2afbcd1f) SHA1(98bb3a74548b7d9c5d7b8432369658ed32e8be07))
 S67S_SOUNDROMS8(          "sound12.716",CRC(b0e3a04b) SHA1(eac54376fe77acf46e485ab561a01220910c1fd6))
-S67S_SPEECHROMS0000(      "speech7.532",CRC(3472255e) SHA1(fb7d9613eead268af43f4c8066e9f4e5d60cf49f),
+S67S_SPEECHROMS0000(      "speech7f.532",CRC(3472255e) SHA1(fb7d9613eead268af43f4c8066e9f4e5d60cf49f),
                           "speech5.532",CRC(d72863dc) SHA1(e24ad970ed202165230fab999be42bea0f861fdd),
                           "speech6.532",CRC(d29830bd) SHA1(88f6c508f2a7000bbf6c9c26e1029cf9a241d5ca),
                           "speech4.532",CRC(9ecc23fd) SHA1(bf5947d186141504fd182065533d4efbfd27441d))
