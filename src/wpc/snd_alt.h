@@ -189,8 +189,6 @@ void alt_sound_handle(int boardNo, int cmd)
 		// load sample information and init
 		if (cmd_storage == -1)
 		{
-			srand(time(NULL)); // randomize random number generator seed
-
 			char cwd[1024];
 			char cvpmd[1024];
 			HINSTANCE hInst;
@@ -201,6 +199,8 @@ void alt_sound_handle(int boardNo, int cmd)
 			CsvReader* c;
 			unsigned int PATH_LEN;
 			char* PATH;
+
+			srand(time(NULL)); // randomize random number generator seed
 
 			cached_machine_name = (char*)malloc(strlen(Machine->gamedrv->name) + 1);
 			strcpy(cached_machine_name, Machine->gamedrv->name);
@@ -237,6 +237,7 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			if (c) {
 				int colID,colCHANNEL,colDUCK,colGAIN,colLOOP,colSTOP,colFNAME;
+				long pos;
 				csv_read_header(c);
 				LOG(("n_headers: %d\n", c->n_header_fields));
 				colID = csv_get_colnumber_for_field(c, "ID");
@@ -247,7 +248,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				colSTOP = csv_get_colnumber_for_field(c, "STOP");
 				colFNAME = csv_get_colnumber_for_field(c, "FNAME");
 
-				long pos = ftell(c->f);
+				pos = ftell(c->f);
 
 				while (csv_read_record(c) == 0) {
 					int val;
@@ -322,9 +323,9 @@ void alt_sound_handle(int boardNo, int cmd)
 					const char* const subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 
 					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
-					PATH = (char*)malloc(PATHl);
 					DIR *dir;
 					struct dirent *entry;
+					PATH = (char*)malloc(PATHl);
 
 					strcpy_s(PATH, PATHl, cvpmd);
 					strcat_s(PATH, PATHl, path_main);
@@ -394,6 +395,7 @@ void alt_sound_handle(int boardNo, int cmd)
 					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
 					char* const PATH = (char*)malloc(PATHl);
 					DIR *dir;
+					struct dirent *entry;
 					unsigned int default_gain = 10;
 					int default_ducking = 100; //!! default depends on type??
 
@@ -406,8 +408,6 @@ void alt_sound_handle(int boardNo, int cmd)
 					if (subpath == path_voice) {
 						default_ducking = 65;
 					}
-
-					struct dirent *entry;
 
 					strcpy_s(PATH, PATHl, cvpmd);
 					strcat_s(PATH, PATHl, path_main);

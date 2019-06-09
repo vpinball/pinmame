@@ -1025,9 +1025,10 @@ void YM2151WriteReg(int n, int r, int v)
 
 		case 0x14:	/* CSM, irq flag reset, irq enable, timer start/stop */
 			{
+				int oldstatus;
 				chip->irq_enable = v;	/* bit 3-timer B, bit 2-timer A, bit 7 - CSM */
 
-				int oldstatus = chip->status & 3;
+				oldstatus = chip->status & 3;
 
 				if (v&0x20) {	/* reset timer B irq flag */
 					chip->status &= ~2;
