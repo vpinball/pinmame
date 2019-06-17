@@ -48,7 +48,7 @@ Black Jack (Free Play+)
 Champion Pub, The 1.6 (Pinball FX MOD)
 Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
-Corvette PX-3
+Corvette PX-3 (also changed PX-4 and PX-5 to use the su2-sl1.rom sound instead of the final one)
 Creature from the Black Lagoon L-4C (competition MOD) (replaces older Creature from the Black Lagoon L-5C (competition MOD))
 Diner PA-0 (Prototype), LF-2 (French)
 Dr. Dude LU-1 (Europe)
