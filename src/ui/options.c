@@ -705,7 +705,7 @@ BOOL OptionsInit()
         global.wait_vsync        = FALSE;
         global.use_triplebuf     = FALSE;
         global.window_mode       = FALSE;
-        global.use_ddraw         = TRUE;
+        global.use_ddraw         = FALSE;
         global.ddraw_stretch     = TRUE;
         global.resolution        = _strdup("auto");
         global.gfx_refresh       = 0;
