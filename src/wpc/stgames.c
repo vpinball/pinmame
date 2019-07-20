@@ -904,11 +904,15 @@ CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (Bootleg No Timed Game)",1982,"Ster
 /*--------------------------------
 / Cue (Proto - Never released)
 /-------------------------------*/
-INITGAME(cue,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(cue,"cpu_u1.716",NO_DUMP,
-                       "cpu_u5.716",NO_DUMP,
-                       "cpu_u2.716",NO_DUMP,
-                       "cpu_u6.716",NO_DUMP)
+static const core_tLCDLayout dispCue[] = {
+  {0,16, 1,7,CORE_SEG87F},
+  {3, 3,34,1,CORE_SEG7}, {3, 6,35,1,CORE_SEG7}, {3, 9,36,2,CORE_SEG7}, {3, 14,38,2,CORE_SEG7},{0}
+};
+INITGAME(cue,GEN_STMPU200,dispCue,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cue,"cpu_u1.716",CRC(0e1b4136) SHA1(ce69436a8cd30e2056df2ef86339f2e98e749774),
+                       "cpu_u5.716",CRC(65e15866) SHA1(a5f0d156b7429e2565da762d53decf8bc1589a5e),
+                       "cpu_u2.716",CRC(7a30ea8e) SHA1(5c8b1ad0add887c5986559c640d620971739e9a1),
+                       "cpu_u6.716",CRC(412d4592) SHA1(2bcc8832875bd6be49e17328069c19c955f35f8d))
 BY35_ROMEND
 #define input_ports_cue input_ports_st
 CORE_GAMEDEFNV(cue,"Cue (Prototype)",1982,"Stern",by35_mST200,0)
