@@ -25,7 +25,7 @@ Made sound/speech work for Cerberus and Spain 82 - the only sound device on thes
 
 Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
 
-*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY, Stefan Fettes, The Sanctum
+*** ROM SUPPORT *** Thanks to inkochnito, Soren, ipdb.org, Onevox, Juan José Cordero, Juan (Akiles), tecnopinball.org, David Gersic, Quench, watacaractr, idleman, Gore Daimon, Alexandre Rocha, Matt Morin, COY, Stefan Fettes, The Sanctum, Bob Kane
 New:
 Barni: Champion
 Cirsa: Sport 2000
@@ -51,6 +51,7 @@ Clash, The (unofficial MOD of Rock Encore)
 Congo 1.1 with DCS-Sound rev. 1.0
 Corvette PX-3 (also changed PX-4 and PX-5 to use the su2-sl1.rom sound instead of the final one)
 Creature from the Black Lagoon L-4C (competition MOD) (replaces older Creature from the Black Lagoon L-5C (competition MOD))
+Cyclopes (11/85)
 Diner PA-0 (Prototype), LF-2 (French)
 Dr. Dude LU-1 (Europe)
 Eight Ball (Free Play+)
