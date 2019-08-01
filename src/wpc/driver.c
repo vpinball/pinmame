@@ -543,7 +543,8 @@ DRIVERNV(ladyshot)      //Lady Sharpshooter (May 1985)
 DRIVERNV(ldyshot2)      //Lady Sharpshooter (May 1985, alternate set)
 DRIVERNV(andromed)      //Andromeda (August 1985)
 DRIVERNV(andromea)      //Andromeda (alternate set)
-DRIVERNV(cyclopes)      //Cyclopes (November 1985)
+DRIVERNV(cyclope1)      //Cyclopes (November 1985)
+DRIVERNV(cyclopes)      //Cyclopes (December 1985)
                         //Loch Ness Monster (November 1985)
 
 // ------------------
