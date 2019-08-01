@@ -813,6 +813,15 @@ S11_ROMEND
 #define input_ports_polic input_ports_s11
 CORE_GAMEDEF(polic,l4, "Police Force (LA-4)", 1989, "Williams", s11_mS11BS,0)
 
+S11_ROMSTART48(polic,g4,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
+                        "pfrc_u27.lg4",CRC(058322e7) SHA1(87847065c0785dbd4dff61cc256ed73ff929c40d))
+S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
+                        "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+CORE_CLONEDEF(polic,g4,l4,"Police Force (LG-4 German)", 1989, "Williams", s11_mS11BS,0)
+
 S11_ROMSTART48(polic,l3,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
                         "pfrc_u27.lx3",CRC(ef5d4808) SHA1(89cf62640e39397899776ab1d132645a5eab9e0e))
 S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
