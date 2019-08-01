@@ -1029,6 +1029,15 @@ DE_ROMEND
 #define input_ports_wwfr input_ports_des11
 CORE_GAMEDEF(wwfr,106,"WWF Royal Rumble (1.06)",1994,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(wwfr_103f,"wwfcpuf.103"  ,CRC(0e211494) SHA1(c601a075636f84ad12ec0693772a8759049077d5))
+DE_DMD32ROM8x(          "wwfdspf.101"  ,CRC(4c39bda9) SHA1(2ea61a2020a4a4e3f23853ab8780d6999053e8ae))
+DE2S_SOUNDROM1444(      "wfsndu7.512"  ,CRC(eb01745c) SHA1(7222e39c52ed298b737aadaa5b57d2068d39287e),
+                        "wfsndu17.400" ,CRC(7d9c2ca8) SHA1(5d84559455fe7e27634b28bcab81d54f2676390e),
+                        "wfsndu21.400" ,CRC(242dcdcb) SHA1(af7220e14b0956ef40f75b2749eb1b9d715a1af0),
+                        "wfsndu36.400" ,CRC(39db8d85) SHA1(a55dd88fd4d9154b523dca9160bf96119af1f94d))
+DE_ROMEND
+CORE_CLONEDEF(wwfr,103f,106,"WWF Royal Rumble (1.03 French)",1994,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(wwfr_103, "wfcpuc5.512"  ,CRC(7e9ead89) SHA1(6cfd64899128b5f9b4ccc37b7bfdbb0a2a75a3a5))
 DE_DMD32ROM8x(          "wfdisp0.400"  ,CRC(e190b90f) SHA1(a0e73ce0b241a81e935e6790e04ea5e1fccf3742))
 DE2S_SOUNDROM1444(      "wfsndu7.512"  ,CRC(eb01745c) SHA1(7222e39c52ed298b737aadaa5b57d2068d39287e),
