@@ -956,6 +956,36 @@ BY35_ROMEND
 #define input_ports_flashgva input_ports_by35
 CORE_CLONEDEFNV(flashgva,flashgdn,"Flash Gordon (Vocalizer Sound Free Play)",2004,"Bally / Oliver",by35_mBY35_56S,0) // rev. 1
 
+INITGAME2(flashgvf,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY56,0)
+BY35_ROMSTARTx00(flashgvf,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "720-52_6.732",CRC(2a43d9fb) SHA1(9ff903c32b80780383578a9abaa3ef9d3bcecbc7))
+BY56_SOUNDROM(            "834-37_4.532",CRC(c4687fe1) SHA1(104a44fd05d7ca0640971cc52152ac7a03349fc7))
+BY57_SOUNDROM(            "834-27_1.532",CRC(2152efff) SHA1(07d2af3e1f9077548e3932fd1d104275de889eae),
+                          "834-28_2.532",CRC(01d0bb0f) SHA1(77a35f357d712e9d24e56b45d04dc28b372d8634),
+                          "834-29_3.532",CRC(8beb4a87) SHA1(bd415303e73950a19b02226d35ee5c12fe58e300),
+                          "834-30_4.532",CRC(35040596) SHA1(3167d29f6346aef8ce3bdf51652ba248c1b7bdf0),
+                          "834-31_5.532",CRC(a2e4cfd3) SHA1(ba1501d9d1d7af406affd53e80eb08afa6219036),
+                          "834-32_6.532",CRC(d18c6803) SHA1(a24a8a63280ed365618592de8690985ed1797cfd),
+                          "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
+BY35_ROMEND
+#define input_ports_flashgvf input_ports_by35
+CORE_CLONEDEFNV(flashgvf,flashgdn,"Flash Gordon (French Vocalizer Sound)",1981,"Bally",by35_mBY35_56S,0)
+
+INITGAME2(flashgvffp,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY56,0)
+BY35_ROMSTARTx00(flashgvffp,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
+BY56_SOUNDROM(            "834-37_4.532",CRC(c4687fe1) SHA1(104a44fd05d7ca0640971cc52152ac7a03349fc7))
+BY57_SOUNDROM(            "834-27_1.532",CRC(2152efff) SHA1(07d2af3e1f9077548e3932fd1d104275de889eae),
+                          "834-28_2.532",CRC(01d0bb0f) SHA1(77a35f357d712e9d24e56b45d04dc28b372d8634),
+                          "834-29_3.532",CRC(8beb4a87) SHA1(bd415303e73950a19b02226d35ee5c12fe58e300),
+                          "834-30_4.532",CRC(35040596) SHA1(3167d29f6346aef8ce3bdf51652ba248c1b7bdf0),
+                          "834-31_5.532",CRC(a2e4cfd3) SHA1(ba1501d9d1d7af406affd53e80eb08afa6219036),
+                          "834-32_6.532",CRC(d18c6803) SHA1(a24a8a63280ed365618592de8690985ed1797cfd),
+                          "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
+BY35_ROMEND
+#define input_ports_flashgvffp input_ports_by35
+CORE_CLONEDEFNV(flashgvffp,flashgdn,"Flash Gordon (French Vocalizer Sound Free Play)",2004,"Bally / Oliver",by35_mBY35_56S,0)
+
 /* -----------------------------------------------------------*/
 /* All games below use Squalk N Talk -61 (except where noted) */
 /* -----------------------------------------------------------*/
