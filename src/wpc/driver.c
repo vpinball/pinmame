@@ -421,6 +421,7 @@ DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
 DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football (2.7, 50cts)
 DRIVER(mnfb,c29)        //Data East MPU: 09/89 ABC Monday Night Football (2.9, 50cts)
+DRIVER(robo,a29)        //Data East MPU: 11/89 Robocop (2.9)
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
@@ -2401,6 +2402,7 @@ DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue
 DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //          09/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //          10/89 W Police Force (LA-4)
+DRIVER(polic,g4)        //          10/89 W Police Force (LG-4)
 DRIVER(eatpm,p7)        //S11-782:  09/89 B Elvira and the Party Monsters (PA-7 Prototype)
 DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (LA-1)
 DRIVER(eatpm,f1)        //          09/89 B Elvira and the Party Monsters (LF-1 French)
@@ -2579,7 +2581,8 @@ DRIVER(br,l3)           //          01/93 B Black Rose (L-3)
 DRIVER(br,d3)           //                  Black Rose (D-3) LED Ghost Fix
 DRIVER(br,l4)           //          11/93 B Black Rose (L-4)
 DRIVER(br,d4)           //                  Black Rose (D-4) LED Ghost Fix
-DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
+DRIVER(ft,p2)           //WPC-505:  06/92 W Fish Tales (P-2)
+DRIVER(ft,p4)           //          07/92 W Fish Tales (P-4)
 DRIVER(ft,p5)           //                  Fish Tales (P-5) LED Ghost Fix
 DRIVER(ft,l3)           //          09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //          09/92 W Fish Tales (L-4)
