@@ -16,7 +16,7 @@ Implement 'fast flips' support for Jack*Bot
 Fix NBA Fastbreak 'fast flips' so that the million dollar shot works
 Fix Champion Pub 'fast flips' support
 Fixed Barni emulation
-Added preliminary E.F.O. hardware support
+Added preliminary E.F.O. hardware support (games will crash after a few seconds due to protection)
 Increased main CPU IRQ rate for Bushido, Mach 2, and Jolly Park
 Decreased DMD CPU clock for Bushido, Mach 2, Jolly Park, and Verne's World
 Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
@@ -62,6 +62,7 @@ Fish Tales P-2 (Prototype)
 Flash Gordon (French Vocalizer Sound and Free Play variant)
 Freedom (Free Play+ rev. 07 and 20)
 Gilligan's Island L-8
+Gorgar (Lane Change Mod) (uses slam switch as lane change contact)
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
 Last Action Hero 1.06 (Canadian)
