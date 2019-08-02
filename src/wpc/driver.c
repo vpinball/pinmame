@@ -2253,6 +2253,7 @@ DRIVER(tmwrp,t2)        //                  Time Warp (L-2) /10 Scoring Ted Este
 DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
+DRIVER(grgar,c1)        //                  Gorgar (Lane Change Mod)
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //                  Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)

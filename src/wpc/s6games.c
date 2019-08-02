@@ -116,7 +116,7 @@ CORE_GAMEDEF(grgar,l1,"Gorgar (L-1)",1979,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(grgar,t1,  "gamerom.716", CRC(1c6f3e48) SHA1(ba5536e6fbcaf3709277fe27827d7f75c1889ba3),
                        "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
-                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+                       "green2a.716", CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e8eb1322ec9e7cc9d6),
                        "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
@@ -124,6 +124,17 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
 S6_ROMEND
 #define input_ports_grgar_t1 input_ports_s6
 CORE_CLONEDEF(grgar,t1,l1,"Gorgar (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(grgar,c1,  "gameromc.716",CRC(8997edb7) SHA1(f3808ee0a32c38a60fe5566d415cd7a4e66709a5),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e8eb1322ec9e7cc9d6),
+                       "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
+                       "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
+S6_ROMEND
+#define input_ports_grgar_c1 input_ports_s6
+CORE_CLONEDEF(grgar,c1,l1,"Gorgar (C-1 Lane Change Mod)",1979,"Williams / Francis",s6_mS6S,0)
 
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
