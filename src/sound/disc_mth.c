@@ -464,8 +464,8 @@ int dst_oneshot_init(struct node_description *node)
 /************************************************************************/
 int dst_clamp_step(struct node_description *node)
 {
-	struct dss_ramp_context *context;
-	context=(struct dss_ramp_context*)node->context;
+	//struct dss_ramp_context *context;
+	//context=(struct dss_ramp_context*)node->context;
 
 	if(node->input[0])
 	{
@@ -497,7 +497,7 @@ int dst_ladder_step(struct node_description *node)
 {
 	struct dst_ladder_context *context;
 	int select,loop;
-	double onres,demand,diff;
+	double onres,demand;
 	context=(struct dst_ladder_context*)node->context;
 
 	/* Work out which resistors are "ON" and then use this sum as a ratio to total resistance */
@@ -525,7 +525,7 @@ int dst_ladder_step(struct node_description *node)
 	/* Now discrete RC filter it if required */
 	if(((struct discrete_ladder*)node->custom)->smoothing_res != 0.0)
 	{
-		diff = demand-node->output;
+		double diff = demand-node->output;
 		diff = diff -(diff * exp(context->step/context->exponent));
 		node->output+=diff;
 	}

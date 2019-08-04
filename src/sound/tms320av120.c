@@ -156,7 +156,7 @@ typedef struct{
 // 11 active subbands
 // Mono requires 38 bits for allocation table
 // Used at lowest bit rates 
-Layer2BitAllocationTableEntry Layer2AllocationB2d[32] = {
+static Layer2BitAllocationTableEntry Layer2AllocationB2d[32] = {
    { 4, l2allocationE },   { 4, l2allocationE },   { 3, l2allocationE },
    { 3, l2allocationE },   { 3, l2allocationE },   { 3, l2allocationE },
    { 3, l2allocationE },   { 3, l2allocationE },   { 3, l2allocationE },
@@ -243,7 +243,6 @@ static const struct TMS320AV120interface *intf;					// Pointer to the interface
 static long layer1ScaleFactors[64];								// MPG Layer 1 Scale Factors
 static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};		// Bit reading masks
 //Matrix stuff
-static const double MYPI=3.1415926535897932384626433832795;
 static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
                              1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
 static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
@@ -606,10 +605,10 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 			layer1ScaleFactors[i] = (long)(32767.0 * pow(2.0, 1.0 - i/3.0));
 		// For speed, precompute all of the phase shift values
 	    for(i=0;i<32;i++) { // 1.14
-         phaseShiftsR[i] = (long)(16384.0*cos(i*(MYPI/32.0)));
-         phaseShiftsI[i] = (long)(16384.0*sin(i*(MYPI/32.0)));
-         vShiftR[i] = (long)(16384.0*cos((32+i)*(MYPI/64.0)));
-         vShiftI[i] = (long)(16384.0*sin((32+i)*(MYPI/64.0)));
+         phaseShiftsR[i] = (long)(16384.0*cos(i*(M_PI/32.0)));
+         phaseShiftsI[i] = (long)(16384.0*sin(i*(M_PI/32.0)));
+         vShiftR[i] = (long)(16384.0*cos((32+i)*(M_PI/64.0)));
+         vShiftI[i] = (long)(16384.0*sin((32+i)*(M_PI/64.0)));
 		}
 		// Rearrange synthesis window coefficients into a more
 		// useful order, and scale them to 3.12

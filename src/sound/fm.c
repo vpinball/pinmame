@@ -5397,7 +5397,7 @@ int OPMInit(int num, int clock, int rate,
 		FMOPM[i].ST.rate = rate;
 		/* FMOPM[i].ST.irq  = 0; */
 		/* FMOPM[i].ST.status = 0; */
-		FMOPM[i].ST.freqbase  = rate ? ((double)clock / rate) / 64 : 0;
+		FMOPM[i].ST.freqbase  = rate ? ((double)clock / rate) / 64.0 : 0;
 		FMOPM[i].ST.TimerBase = 1.0/((double)clock / 64.0);
 		/* Extend handler */
 		FMOPM[i].ST.Timer_Handler = TimerHandler;
