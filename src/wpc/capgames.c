@@ -278,7 +278,7 @@ CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (Beta 1.8 US)",1996,"Capcom",cc2,0)
 / Kingpin (12/96)
 /-------------------------------------------------------------------*/
 //Old comment: Beta Version 1.5 (There should be a regular version 1.6 according to Pfutz!)
-//New comment from the readme coming with the ROMs:
+//New comment, from the newest readme coming with the ROMs:
 //With the help of other people, I have found out that this is really version
 //"B1.05", not "V1.0".If you find a version 1.0, please contact me at
 //pfutz@mediaone.net
@@ -291,4 +291,4 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_b11.bin", CRC(fa35a177) SHA1(3c54c12db8e17a8c316a22b9b7ac80b6b3af8474), \
 				   "u31_b18.bin", CRC(07a7d514) SHA1(be8cb4b6d70ccae7821110689b714612c8a0b460))
 CC_ROMEND
-CORE_GAMEDEFNV(kpb105,"Kingpin (Beta 1.05)",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(kpb105,"Kingpin (Beta 1.05)",1996,"Capcom",cc2,0) // previously known as V1.0 or B1.06

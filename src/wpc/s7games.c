@@ -195,7 +195,7 @@ S67S_SPEECHROMS0000(      "speech7f.532",CRC(3472255e) SHA1(fb7d9613eead268af43f
                           "speech6.532",CRC(d29830bd) SHA1(88f6c508f2a7000bbf6c9c26e1029cf9a241d5ca),
                           "speech4.532",CRC(9ecc23fd) SHA1(bf5947d186141504fd182065533d4efbfd27441d))
 S7_ROMEND
-CORE_CLONEDEF(pharo,l2b,l2,"Pharaoh (L-2 tomb sound fix MOD)",2019,"Williams",s7_mS7S,0)
+CORE_CLONEDEF(pharo,l2b,l2,"Pharaoh (L-2 Tomb Sound Fix MOD)",2019,"Williams",s7_mS7S,0)
 
 /*-----------------------------------
 / Solar Fire - Sys.7 (Game #507)

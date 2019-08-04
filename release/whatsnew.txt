@@ -62,7 +62,7 @@ Fish Tales P-2 (Prototype)
 Flash Gordon (French Vocalizer Sound and Free Play variant)
 Freedom (Free Play+ rev. 07 and 20)
 Gilligan's Island L-8
-Gorgar (Lane Change Mod) (uses slam switch as lane change contact)
+Gorgar (Lane Change MOD) (uses slam switch as lane change contact)
 Heavy Metal Meltdown (German)
 Jack*Bot 0.4A (Prototype)
 Last Action Hero 1.06 (Canadian)
@@ -89,7 +89,7 @@ Strikes and Spares (Free Play+)
 Theatre of Magic 1.3XC (competition MOD) (replaces older Theatre of Magic 1.5C (competition MOD))
 Tom & Jerry (unofficial MOD of Hollywood Heat)
 Wheel of Fortune 6.02 (Home Rom)
-WWF Royal Rumble (1.03 French)
+WWF Royal Rumble 1.03 (French)
 
 
 

@@ -714,7 +714,7 @@ CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Willia
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0) // supports collapsable building
+CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0) // supports collapsable building, aka Phil Dixons version
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
@@ -929,7 +929,7 @@ S11_ROMSTART48(mousn,l1,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f93110
 S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
 S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
+                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91), // labeled as PA1 (?)
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 

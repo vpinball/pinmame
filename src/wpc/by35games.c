@@ -1084,7 +1084,7 @@ BY35_ROMEND
 #define input_ports_eballdlc input_ports_eballdlx
 CORE_CLONEDEFNV(eballdlc,eballdlx,"Eight Ball Deluxe (modified rules rev. 32)",2007,"Bally / Oliver",by35_mBY35_61S,0)
 
-// fixes player 2 and player 4 bonus countdown bug
+// fixes player 2 and player 4 bonus countdown bug, based on rev. 15
 #define init_eballdld init_eballdlx
 BY35_ROMSTARTx00(eballdld,"838-fix2.732",CRC(1d9350f4) SHA1(c4ff2e896846420798e89024aa1d5ed4cc28a228),
                           "720-52_6.732",CRC(2a43d9fb) SHA1(9ff903c32b80780383578a9abaa3ef9d3bcecbc7))
