@@ -146,7 +146,7 @@ static void calculate_filter2_coefficients(double fc, double d, double type,
 
 	/* calculate digital filter coefficents */
     /*w = 2.0*M_PI*fc; no pre-warping */
-    w = Machine->sample_rate*2.0*tan(M_PI*fc/Machine->sample_rate); /* pre-warping */
+    w = two_over_T*tan(M_PI*fc/Machine->sample_rate); /* pre-warping */
 	w_squared = w*w;
 
     den = two_over_T_squared + d*w*two_over_T + w_squared;

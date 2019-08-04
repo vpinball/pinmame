@@ -223,7 +223,6 @@ int riot6530_read(int which, int offset)
 {
 	struct riot6530 *p = riot + which;
 	int val = 0;
-	int old_timer_enabled;
 
 	/* adjust offset for 16-bit */
 	offset &= 0x0f;
@@ -263,8 +262,8 @@ int riot6530_read(int which, int offset)
 	}
 	else {
 		switch ( offset&0x01 ) {
-		case RIOT6530_TIMER:
-			old_timer_enabled = timer_enable(p->t, 0);
+		case RIOT6530_TIMER: {
+			int old_timer_enabled = timer_enable(p->t, 0);
 			if ( old_timer_enabled ) // was timer enabled? re-enable it
 				timer_enable(p->t, 1);
 
@@ -287,6 +286,7 @@ int riot6530_read(int which, int offset)
 
 			// LOG(("RIOT6530-%d read timer = %02X %02X\n", which, val, offset&0x08));
 			break;
+			}
 
 		case RIOT6530_IRF:
 			val = p->irq_state;

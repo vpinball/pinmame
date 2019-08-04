@@ -160,9 +160,7 @@ void streams_sh_update(void)
 			{
 				if (buflen > 0)
 				{
-					INT16 *buf;
-
-					buf = stream_buffer[channel] + stream_buffer_pos[channel];
+					INT16 *buf = stream_buffer[channel] + stream_buffer_pos[channel];
 
 					(*stream_callback[channel])(stream_param[channel],buf,buflen);
 				}
@@ -312,9 +310,7 @@ void stream_update(int channel,int min_interval)
 		}
 		else
 		{
-			INT16 *buf;
-
-			buf = stream_buffer[channel] + stream_buffer_pos[channel];
+			INT16 *buf = stream_buffer[channel] + stream_buffer_pos[channel];
 
 			profiler_mark(PROFILER_SOUND);
 			(*stream_callback[channel])(stream_param[channel],buf,buflen);
