@@ -33,7 +33,7 @@
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
 #define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
 #define WPC_MODSOLSMOOTH   28 /* Modulated solenoids - History length to smooth over */
-#define WPC_MODSOLSAMPLE   2  /* Modulated solenodi sampling rate (every n IRQs) */
+#define WPC_MODSOLSAMPLE   2  /* Modulated solenoid sampling rate (every n IRQs) */
 #endif
 
 

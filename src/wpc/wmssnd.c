@@ -1081,7 +1081,7 @@ static void dcs_init(struct sndbrdData *brdData);
 /*-- local data --*/
 #define DCS_BUFFER_SIZE	  8192  // Must be power of 2 because of how circular buffer works
 #define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
-#define DCS_DEFAULT_SAMPLE_RATE 31250
+#define DCS_DEFAULT_SAMPLE_RATE 31250 // as found in Ask Uncle Willy #3: July 7, 1995
 
 static struct {
  int     status;   // 0 = disabled, 1 playing, > 1 startup silence samples remaining

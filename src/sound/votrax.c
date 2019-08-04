@@ -1202,7 +1202,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeOut = 1.0;
 
 			if ( !doMix )
-				dFadeOut = 1.0-sin((1.0*iFadeOutPos/iFadeOutSamples)*(M_PI/2.));
+				dFadeOut = 1.0-sin((double)iFadeOutPos/(double)iFadeOutSamples * (M_PI/2.));
 
 			if ( !votraxsc01_locals.iRemainingSamples ) {
 				votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation];
@@ -1221,7 +1221,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			double dFadeIn = 1.0;
 
 			if ( iFadeInPos<iFadeInSamples ) {
-				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*(3.1415926535897932384626433832795/2));
+				dFadeIn = sin((double)iFadeInPos/(double)iFadeInSamples * (M_PI/2.));
 				iFadeInPos++;
 			}
 

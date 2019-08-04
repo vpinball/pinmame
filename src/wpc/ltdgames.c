@@ -60,6 +60,32 @@ LTD_2_ROMSTART(hustler, "hustler_1.bin", CRC(43f323f5) SHA1(086b81699bea08b10b42
 LTD_ROMEND
 CORE_GAMEDEFNV(hustler,"Hustler",19??,"LTD",gl_mLTD3,GAME_NO_SOUND)
 
+/*
+Gaston: I mapped the "Hustler" switches a while ago with exegeta:
+
+2 – 100 or 500 pts
+3 – 100 or 500 pts
+4 – 100 or 500 pts
+5 – 100 pts + solenoid 3
+6 – 100 pts + solenoid 4
+9 – 10 pts
+10 – 100 or 500 pts
+11 – 100 or 500 pts
+12 – 300 pts
+13 – 1,000 pts
+14 – 100 or 500 pts
+17 – 100 or 500 pts
+18 – 10 pts + solenoid 5
+19 – 10 pts + solenoid 6
+33 – 300 pts (but only once)
+34 – 300 pts (but only once, as long as switch #33 STAYS on!)
+35 – see above, and so on
+ 
+So the 100 + 500 pts targets are the 7 wire rollover switches, 13 is the outlane, and 33 and above are the drop targets which need to remain closed when down (logical).
+ 
+When the correct amount of drop targets is down, a solenoid (8, 9, 10, I don’t know exactly) will fire to push them up and release the switches!
+*/
+
 /*-------------------------------------------------------------------
 / Martian Queen
 /-------------------------------------------------------------------*/
