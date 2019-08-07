@@ -16,15 +16,11 @@
 #ifdef PINMAME
  // from exidy440
  //#define INTEGRATOR_LEAK_TC		0.001
- //#define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
+ #define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
  //#define FILTER_DECAY_TC         ((18e3 + 3.3e3) * 0.33e-6)
- //#define decay  0.99114768031730635396012114691053
+ #define decay  0.99114768031730635396012114691053
  //#define FILTER_CHARGE_TC        (18e3 * 0.33e-6)
- //#define charge 0.9895332758787504236814964839343
-
- #define leak   0.96875
- #define decay  0.9990234375
- #define charge 0.9990234375
+ #define charge 0.9895332758787504236814964839343
 
  #define ENABLE_LOWPASS_ESTIMATE 0 // don't use it for now, it sounds too muffled
  #define SAMPLE_GAIN			6500.0
@@ -108,7 +104,7 @@ int mc3417_sh_start(const struct MachineSound *msound)
 		chip->length_estimate = 0;
 		chip->length_estimate_runs = 0;
 #else
-		chip->filter_f = filter_lp_fir_alloc(0.04, FILTER_ORDER_MAX);
+		chip->filter_f = filter_lp_fir_alloc(0.05, FILTER_ORDER_MAX);
 		chip->filter_state = filter_state_alloc();
 		filter_state_reset(chip->filter_f, chip->filter_state);
 #endif
