@@ -593,10 +593,34 @@ static WRITE_HANDLER(snt_ctrl_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
 }
+
+int manualSoundcmd = 0;
 static WRITE_HANDLER(snt_manCmd_w) {
-  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+	manualSoundcmd = 1;  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
 }
-static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
+static READ_HANDLER(snt_8910a_r) {
+	static UINT8 first = 1;
+	UINT8 cmd;
+
+	if (!manualSoundcmd)
+		return ~sntlocals.lastcmd;
+	else //S&T needs special handling for sound command mode
+	{
+		if (first) //first nibble/least significant 4-bits
+		{
+			cmd = sntlocals.lastcmd & 0x0f;
+			first = 0;
+			return ~cmd;
+		}
+		else //second nibble/most significant 4-bits
+		{
+			cmd = sntlocals.lastcmd >> 4;
+			first = 1;
+			manualSoundcmd = 0; //manual soundcommand finished		  
+			return ~cmd;
+		}
+	}
+}
 
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
 
