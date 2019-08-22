@@ -139,7 +139,7 @@ int
 sinc_set_converter (SRC_PRIVATE *psrc, int src_enum)
 {	SINC_FILTER *filter, temp_filter ;
 	increment_t count ;
-	int bits ;
+	unsigned int bits ;
 
 	/* Quick sanity check. */
 	if (SHIFT_BITS >= sizeof (increment_t) * 8 - 1)
@@ -900,24 +900,31 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 			{	default :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 7 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 6 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 5 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 4 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 3 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 2 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 1 :
 					ch -- ;
 					left [ch] += icoeff * filter->buffer [data_index + ch] ;
@@ -950,24 +957,31 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 			{	default :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 7 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 6 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 5 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 4 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 3 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 2 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
+					/* Falls through. */
 				case 1 :
 					ch -- ;
 					right [ch] += icoeff * filter->buffer [data_index + ch] ;
@@ -987,24 +1001,31 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 		{	default :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 7 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 6 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 5 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 4 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 3 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 2 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
+				/* Falls through. */
 			case 1 :
 				ch -- ;
 				output [ch] = scale * (left [ch] + right [ch]) ;
@@ -1116,6 +1137,9 @@ prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len)
 
 	if (filter->b_real_end >= 0)
 		return 0 ;	/* Should be terminating. Just return. */
+
+	if (data->data_in == NULL)
+		return 0 ;
 
 	if (filter->b_current == 0)
 	{	/* Initial state. Set up zeros at the start of the buffer and

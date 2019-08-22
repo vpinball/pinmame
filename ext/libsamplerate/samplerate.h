@@ -25,7 +25,7 @@ typedef struct SRC_STATE_tag SRC_STATE ;
 /* SRC_DATA is used to pass data to src_simple() and src_process(). */
 typedef struct
 {	const float	*data_in ;
-	float	 *data_out ;
+	float	*data_out ;
 
 	long	input_frames, output_frames ;
 	long	input_frames_used, output_frames_gen ;
