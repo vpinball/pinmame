@@ -2253,7 +2253,7 @@ DRIVER(tmwrp,t2)        //                  Time Warp (L-2) /10 Scoring Ted Este
 DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
-DRIVER(grgar,c1)        //                  Gorgar (Lane Change Mod)
+DRIVER(grgar,c1)        //                  Gorgar (Lane Change MOD)
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //                  Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
@@ -2287,7 +2287,7 @@ DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
 DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
 DRIVER(jngld,nt)        //          09/13 W Jungle Lord New Tricks
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh (L-2)
-DRIVER(pharo,l2b)       //          05/19 W Pharaoh (L-2 'tomb' sample sound fix MOD)
+DRIVER(pharo,l2b)       //          05/19 W Pharaoh (L-2 'Tomb' Sample Sound Fix MOD)
                         //S7-506:   06/81 W Black Knight Limited Edition
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
@@ -2356,6 +2356,7 @@ DRIVER(fire,l2)         //S11-556:  08/87 W Fire! (L-2)
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire! (L-3)
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1)
 DRIVER(bguns,la)        //          10/87 W Big Guns (L-A)
+DRIVER(bguns,lac)       //          07/19 W Big Guns (L-AC Competition MOD) // patch 7472
 DRIVER(bguns,l7)        //          10/87 W Big Guns (L-7)
 DRIVER(bguns,l8)        //          10/87 W Big Guns (L-8)
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
@@ -2405,7 +2406,7 @@ DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue
 DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //          09/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //          10/89 W Police Force (LA-4)
-DRIVER(polic,g4)        //          10/89 W Police Force (LG-4)
+DRIVER(polic,g4)        //          10/89 W Police Force (LG-4 German)
 DRIVER(eatpm,p7)        //S11-782:  09/89 B Elvira and the Party Monsters (PA-7 Prototype)
 DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (LA-1)
 DRIVER(eatpm,f1)        //          09/89 B Elvira and the Party Monsters (LF-1 French)
@@ -2822,7 +2823,7 @@ DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
 //DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
-DRIVER(tom,13c)         //          01/19 B Theatre of Magic (1.3XC Competition MOD) //patch 5bc8
+DRIVER(tom,13c)         //          06/19 B Theatre of Magic (1.3XC Competition MOD) //patch 34ee
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)

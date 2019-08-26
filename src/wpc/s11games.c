@@ -374,7 +374,7 @@ CORE_CLONEDEF(fire, l2, l3, "Fire! (L-2)", 1987, "Williams", s11_mS11AS,0)
 INITGAME(bguns, GEN_S11A,s11_dispS11a,12, FLIP_SWNO(52,53) ,0,0)
 S11_ROMSTART48(bguns,l8,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
                         "guns_u27.l8", CRC(ac4a1a51) SHA1(d48b5e5b550107df8c6edc2d5f78777d7d408959))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
@@ -384,7 +384,7 @@ CORE_GAMEDEF(bguns, l8, "Big Guns (L-8)", 1987, "Williams", s11_mS11AS,0)
 
 S11_ROMSTART48(bguns,l7,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
                         "guns_u27.l7", CRC(8ff26d24) SHA1(eab732b401144ad7efc80d336299beae85ca7d24))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
@@ -393,16 +393,25 @@ CORE_CLONEDEF(bguns,l7,l8,"Big Guns (L-7)", 1987, "Williams", s11_mS11AS,0)
 
 S11_ROMSTART48(bguns,la,"u26-l-a.rom", CRC(613b4d5c) SHA1(7eed4ddb661cd03839a9a89ca695de9cbd1c4d45),
                         "u27-l-a.rom", CRC(eee9e1cc) SHA1(32fbade5cbc9047a61d4ce0ec1e616d5324d507f))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
 S11_ROMEND
 CORE_CLONEDEF(bguns,la,l8,"Big Guns (L-A)", 1987, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(bguns,la,"u26-l-a.rom", CRC(613b4d5c) SHA1(7eed4ddb661cd03839a9a89ca695de9cbd1c4d45),
+                        "Big Guns U27 game ROM rev L-A patch 7472.rom", CRC(b245f72e) SHA1(f4dc750445c06f6aa67c961f53cb1fcadacd4ee9))
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
+S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
+                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
+S11_ROMEND
+CORE_CLONEDEF(bguns,lac,l8,"Big Guns (L-AC Competition MOD)", 2019, "Williams", s11_mS11AS,0)
+
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
