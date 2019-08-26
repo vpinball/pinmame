@@ -22,6 +22,7 @@ Decreased DMD CPU clock for Bushido, Mach 2, Jolly Park, and Verne's World
 Inverted solenoid #20 on Jolly Park, fixes ball release from magnetic house
 Stabilize speech on (at least) Zaccaria's Mexico 86 and Black Belt
 Made sound/speech work for Cerberus and Spain 82 - the only sound device on these games is an EFO90503 (TMS5200 clone)
+Fix sound command mode for Bally Squawk n Talk
 
 Updated LISY support (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs): one can control real pinball machines via PinMAME, special hardware needed, have a look at http://www.lisy80.com & http://www.lisy.dev, also README.lisy
 
@@ -44,6 +45,7 @@ Zaccaria: Pool Champion (Italian Speech)  (was fused with the also incorrect 'Po
 Clones:
 Addams Family, The L-5C (competition MOD)
 Attack From Mars 1.1 (Pinball FX MOD)
+Big Guns L-AC (competition MOD)
 Black Belt (Zaccaria) (Italian, German, and French Speech and corresponding Free Play variants)
 Black Jack (Free Play+)
 Champion Pub, The 1.6 (Pinball FX MOD)
