@@ -8,11 +8,11 @@ apt-get install subversion
 svn checkout https://svn.code.sf.net/p/pinmame/code/trunk pinmame-code
 
 
-3) install missing X11 parts
-sudo apt-get install libx11-dev
-sudo apt-get install libxext-dev
-sudo apt-get install x11proto-video-dev
-sudo apt-get install libxv-dev
+3) install dependencies
+sudo apt-get install libx11-dev libxext-dev x11proto-video-dev libxv-dev libsdl1.2-dev
+
+For ALSA
+sudo apt-get install libasound2-dev
 
 4) compile
 cd pinmame-code

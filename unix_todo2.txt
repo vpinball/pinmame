@@ -39,6 +39,8 @@ The completed object file is xpinmame.x11
 
 Now lets review what sound related parameters we should set in makefile.unix
 Notice I enabled both ALSA and SDL:
+(during my experiments, using the default sound my FPS was between 8 - 12 FPS, when I switched to ALSA it was a solid 60 FPS and perfect audio and video)
+
 
 ###########################################################################
 # Sound Devices
@@ -64,6 +66,13 @@ alsa                           Alsa Sound System DSP plugin
 sdl                            Simple Direct Library DSP plugin
 
 
-OK let try to see if we can get some sound using Creature from the Black Lagoon (lets force it to use alsa)
+OK lets try to see if we can get some sound using Creature from the Black Lagoon (lets force it to use alsa)
 
 ./xpinmame.x11 -audiodevice alsa cftbl_l4
+
+
+The virtual machine (8gb memory and 4 cpus) running ubuntu 18.04 is running pinmame perfectly.
+The sound is good, the FPS is 60.
+My optimal command line to get the best sound and FPS:
+
+./xpinmame.x11 -dp alsa -timer cftbl_l4
