@@ -546,8 +546,85 @@ static struct jit_page *jit_add_page(struct jit_ctl *jit, int min_siz)
 	// Figure the page size.  Allocate at least the minimum size requested
 	// (plus the header structure overhead), or a default minimum if they didn't
 	// request more.
+	//
+	// [TO DO!  The mystery factor of 17 should be removed as soon as possible.
+	// But read the note below before doing so.
+	// 
+	// Note: the factor of 17 was an attempt to fix a jit crash bug, but it
+	// unfortunately didn't help.  There's a mysterious crash that shows up on
+	// some people's machines in specific configurations.  It's so configuration-
+	// dependent that none of the developers have been unable to reproduce so far.
+	// The bug remains a mystery as of this writing (8/2019).  In my estimation
+	// it's some kind of stray pointer error, but beyond that I don't have any
+	// more specific theory.  I'm leaving the factor of 17 in place for now,
+	// NOT because it does any good towards solving the bug (it doesn't), but
+	// rather because the bug is so configuration-sensitive that it's certainly
+	// sensitive to this x17 randomness, just like it's sensitive to whether you
+	// launch a VP game by pressing F5 or by double-clicking in Explorer.  If
+	// I removed the x17, the bug would suddenly disappear on one person's
+	// machine and show up on some random other person's machine.  If I changed
+	// it to x19 it would pop up on a third random person's machine.  So I'm
+	// just leaving bad enough alone because a crappy status quo is always
+	// better than some fresh hell.  But if and when anyone ever manages to 
+	// track down the actual problem, the factor of 17 should be removed post
+	// haste, and the minimum allocation size should be restored to some more 
+	// reasonable amount of memory, like the original 128K. 
+	//
+	// (The main reason that the smaller allocation unit size should be restored
+	// isn't that 2GB vs 128K is all that big a deal these days.  Rather, it's
+	// for the sake of exercising the code and making it more solid over time.
+	// To that end, it would be BETTER to have MORE fragmentation, to give the 
+	// assumptions behind this aspect of the JIT design more exercise.  I don't
+	// think there are in fact any bugs related to multiple memory allocations, 
+	// but if there are, they sure won't be easy to find if we're not exercising 
+	// this part of the code.  Any such bugs will just stay in there longer.
+	// Another reason to remove the x17 is just plain aesthetics; this kind of
+	// abortive thought-it-might-help-but-didn't-oh-well-can't-change-it-now 
+	// cruft always becomes a permanent relic in open source projects, and it's 
+	// just sloppy.)
+	//
+	// The original attempt at the factor of 17 wasn't just random shooting in
+	// the dark, by the way.  It's worth understanding why it was tried and why
+	// it does no good.  The original intent was stated as:  "Make the code 
+	// page artificially 17x larger to avoid unsafe jumps and memory references 
+	// later".  What he meant by "unsafe jumps" was a JMP instruction that
+	// tried to reference a location further than 2GB away in absolute memory.
+	// The JMP instructions we generate use self-relative addressing, meaning
+	// that they express the target address as an offset from the address of
+	// the JMP itself.  The x17 coder's reasoning was thus: suppose that we
+	// have allocation unit A at some very low address in memory, and then
+	// some time later we have allocation unit B at some very high address in
+	// memory, more than 2GB higher than unit A's location.  Now suppose that 
+	// unit A contains a JMP that resolves to a target address in unit B.  The
+	// JMP, being self-relative, would have to express an offset greater than
+	// 2GB because of the distance between the two locations.  That's impossible
+	// (the original coder's reasoning continues) because the self-relative 
+	// addressing mode uses a signed 32-bit offset, which is limited to 
+	// +/- 2GB distances, ergo the JMP instruction generated will be invalid
+	// and will cause a crash.  The error in this reasoning is that the self-
+	// relative addressing mode uses signed offsets.  It ACTS like the offsets
+	// are signed, but in fact the calculation is actually done by treating
+	// the address and offset as unsigned values, with the result taken
+	// modulo 2^32.  It's the mod 2^32 step that makes the offset act like a
+	// signed value when it's convenient for it to look that way - e.g., when
+	// you're trying to address a target 5 bytes below the JMP.  In that
+	// case you can look at the offset as a 2's complement signed value of -5,
+	// but that's just a matter of convenience; you can also look at it as
+	// adding unsigned 0xFFFFFFFB and taking the result mod 2^32.  The 2's 
+	// complement representation has become the almost universal signed int
+	// format precisely because it has this equivalence.  In this case, though,
+	// it's confusing and misleading to think about the offset as signed,
+	// because it leads you to this erroneous notion that you can't use it to 
+	// express offsets over +/- 2GB.  It's better to think about it in terms
+	// of what's really going on inside the CPU - unsigned addition mod 2^32.
+	// That leads to the correct conclusion that a 32-bit self-relative JMP 
+	// can reach any address in the 4GB space, no matter how far away.  So
+	// this is why the x17 never fixed anything - there never was such a
+	// thing as a JMP that was too far away, so there was no point in making
+	// JMP targets closer.
+	//
+	// --mjr]
 	min_siz += sizeof(struct jit_page);
-	//!! Make code page (artifically by *17) larger to avoid unsafe jumps and memory references later.
 	siz = 128*1024*17;
 	if (siz < min_siz)
 		siz = min_siz;
