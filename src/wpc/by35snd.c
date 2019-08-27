@@ -594,32 +594,30 @@ static WRITE_HANDLER(snt_ctrl_w) {
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
 }
 
-int manualSoundcmd = 0;
+static int manualSoundcmd = 0; // only for sound command mode
 static WRITE_HANDLER(snt_manCmd_w) {
-	manualSoundcmd = 1;  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+  manualSoundcmd = 1;  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
 }
 static READ_HANDLER(snt_8910a_r) {
-	static UINT8 first = 1;
-	UINT8 cmd;
-
-	if (!manualSoundcmd)
-		return ~sntlocals.lastcmd;
-	else //S&T needs special handling for sound command mode
-	{
-		if (first) //first nibble/least significant 4-bits
-		{
-			cmd = sntlocals.lastcmd & 0x0f;
-			first = 0;
-			return ~cmd;
-		}
-		else //second nibble/most significant 4-bits
-		{
-			cmd = sntlocals.lastcmd >> 4;
-			first = 1;
-			manualSoundcmd = 0; //manual soundcommand finished		  
-			return ~cmd;
-		}
-	}
+  if (!manualSoundcmd)
+    return ~sntlocals.lastcmd;
+  else // S&T needs special handling for sound command mode
+  {
+    static UINT8 first = 1;
+    if (first) // first nibble/least significant 4-bits
+    {
+      const UINT8 cmd = sntlocals.lastcmd & 0x0f;
+      first = 0;
+      return ~cmd;
+    }
+    else // second nibble/most significant 4-bits
+    {
+      const UINT8 cmd = sntlocals.lastcmd >> 4;
+      first = 1;
+      manualSoundcmd = 0; // manual soundcommand finished
+      return ~cmd;
+    }
+  }
 }
 
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
