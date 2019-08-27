@@ -413,7 +413,7 @@ static void init_output_filter(struct hc55516_data *chip)
 	switch (chip->output_filter.type)
 	{
 	case HC55516_FILTER_C8228:
-		// Williams Speech Board Type 2 (part number C-8228), used in System 9
+		// Williams Speech Board Type 2 (part number C-8228), used in System 3
 		// and optionally (otherwise C-8226 with MC3417) in System 6/7 games.
 		// This used a 2-stage multiple feedback
 		// filter.  Note that there's a third op-amp stage as well, but that's
@@ -452,9 +452,8 @@ static void init_output_filter(struct hc55516_data *chip)
 // ---------------------------------------------------------------------------
 //
 // Add a decoded output sample.  This takes a raw sample from the CVSD 
-// decoder, runs it through our low-pass filter to reduce quantization noise,
-// resamples it using the PCM sample rate of the MAME output stream, and adds
-// it to our output buffer to eventually pass to the MAME stream.
+// decoder, resamples it using the PCM sample rate of the MAME output stream,
+// and adds it to our output buffer to eventually pass to the MAME stream.
 //
 static void add_sample_out(struct hc55516_data *chip, const double sample, const double output_rate_ratio)
 {
