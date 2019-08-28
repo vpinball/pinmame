@@ -445,7 +445,7 @@ static MEMORY_WRITE_START(s11s_writemem)
 MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
-static struct DACinterface      s11xs_dacInt2     = { 2, { 50,50 }};
+static struct DACinterface      s11xs_dacInt2     = { 2, { 15, 15 }};
 static struct hc55516_interface s11b2s_hc55516Int = { 1, { 100 }, HC55516_FILTER_SYS11 };
 static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 100, 100 }, HC55516_FILTER_SYS11 };
 
@@ -518,8 +518,8 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  if (hcgain != 0)
-	hc55516_set_gain(0, hcgain);
+  // The system 11 games sound better with the HC gain turned up a bit by default
+  hc55516_set_gain(0, (hcgain == 0 ? 150 : hcgain) / 100.0);
   if (ymvol != 0)
 	YM2151_set_mixing_levels(0, ymvol, ymvol);
   if (dacvol != 0)
@@ -657,27 +657,44 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x9c00, 0x9cff, odd_w },
 MEMORY_END
 
-// Mixing volume levels for System 11, based on schematics for the original
-// hardware.  The HC55516 has 1.7V peak output and goes through an op-amp
-// stage with 4.19 gain -> 7.1V peak.  The YM2151 outputs 2.5V peak and
-// goes straight through to the output, so it's mixed at about 35% of the
-// HC volume.  The DAC (IC1408) outputs 4.98V peak and connects straight 
-// through as well, so it's mixed at 70% relative to the HC.  
+// Mixing volume levels for System 11. [mjr 8/2019]
 //
-// [mjr 5/2019] PinMAME has traditionally mixed these at 50% DAC and 20% YM, 
-// so the perceived loudness of the actual HC clips is probably lower than 
-// you'd guess from the hardware analog mixing levels alone.  I'm lowering
-// the YM mix a little further still to 15% because the new filtering on
-// the HC reduces its apparent volume a bit vs the old scratchy version.
+// PinMAME's traditional mixing levels are 100% volume on the HC55516 (so 
+// it's effectively the baseline), 50% on the DAC, and 20% on the YM2151.
+//
+// However, with the 5/2019 changes to the HC55516 emulator, the HC sounds
+// quieter than it used to, so those values are no longer in balance, at
+// least subjectively by ear.  My first pass at this had them at 100/50/15,
+// but at least a few examples are way too quiet on the HC voice audio with
+// those settings.  So I'm cranking the DAC and YM2151 down further to
+// make the HC55516 sound relatively louder.  It also seems to help to
+// crank up the HC55516 gain in s11s_init() - that's a separate way of
+// increasing the loudness of the HC55516, by mapping the native dynamic
+// range of the HC55516 pulse stream to the MAME PCM stream at greater 
+// than 1:1 gain.
+//
+// (If we picked the levels based on schematics for the original hardware,
+// judging by the voltages coming out of the op amp stages, it would look 
+// something like this.  The HC55516 has 1.7V peak output and goes through an 
+// op-amp stage with 4.19 gain -> 7.1V peak.  The YM2151 outputs 2.5V peak 
+// and goes straight through to the output, so it's mixed at about 35% of the 
+// HC voltage.  The DAC (IC1408) outputs 4.98V peak and connects straight 
+// through as well, so it's mixed at 70% relative to the HC.  So in the
+// actual hardware, it seems that the mixing levels relative to the HC are
+// actually a bit higher than works for us.  The same analysis seems to 
+// yield about the right results subjectively for WPC89, so I'm not sure
+// why it doesn't work as well for System 11; maybe I'm misunderstanding
+// the schematics, or missing some extra element in the audio chain that
+// throws off the balance from what I see at the op-amp level.)
 //
 // Note that the mix levels can be overridden per game, in case the defaults
 // don't sound good for a given game.  See WPCSND_HC55516_LEVELS in wmssnd.h
 // for instructions.
-static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
+static struct DACinterface      s11cs_dacInt      = { 1, { 15 }};
 static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }, HC55516_FILTER_SYS11 };
 static struct YM2151interface   s11cs_ym2151Int = {
 	1, 3579545, /* Hz */
-	{ YM3012_VOL(15, MIXER_PAN_CENTER, 15, MIXER_PAN_CENTER) },
+	{ YM3012_VOL(8, MIXER_PAN_CENTER, 8, MIXER_PAN_CENTER) },
 	{ s11cs_ym2151IRQ }
 };
 
@@ -1035,7 +1052,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
   if (hcgain != 0)
-	hc55516_set_gain(0, hcgain);
+	hc55516_set_gain(0, hcgain / 100.0);
   if (ymvol != 0)
 	YM2151_set_mixing_levels(0, ymvol, ymvol);
   if (dacvol != 0)

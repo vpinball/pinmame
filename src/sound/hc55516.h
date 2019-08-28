@@ -44,12 +44,23 @@ struct hc55516_interface
 
 #ifdef PINMAME
 /* 
- *  Set the gain.  The default gain maps the full dynamic range of the HC55516
- *  output to the full dynamic range of the 16-bit PCM MAME stream.  This can
- *  be overridden per game as needed to adjust the gain according to the 
- *  dynamic range actually used in the game's audio clips.  See the loudness
- *  metering comments in hc55516.c for more details and tips on selecting the
- *  gain for a given game.
+ *  Set the gain, as a multiple of the HC55516 default gain.  Setting the gain
+ *  here to 1.0 selects the default gain, 0.5 is half the default gain, 2.0 is
+ *  twice the default gain.
+ *
+ *  The default gain linearly maps the full dynamic range of the HC55516 output 
+ *  to the full dynamic range of the 16-bit PCM MAME stream.
+ *
+ *  The main reason to set a non-default gain is to select a higher gain for a
+ *  game who actual audio clips don't use the full dynamic range of the chip.
+ *  For example, if the loudest sample level in any clip defined for a given
+ *  game is only at half volume, you might choose a gain of 2.0, to expand
+ *  the game's audio playback volume to use the full dynamic range of the MAME
+ *  stream.
+ *
+ *  Increasing the gain above 1.0 will cause clipping if any samples in the game
+ *  exceed (1.0/gain) of the HC55516 dynamic range.  Clipping might be an 
+ *  acceptable tradeoff for some games to increase the apparent loudness.
  */
 void hc55516_set_gain(int num, double gain);
 #endif
