@@ -509,21 +509,38 @@ static struct {
 } s11slocals;
 
 static void s11s_init(struct sndbrdData *brdData) {
-  int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
-  int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
-  int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  // The system 11 games sound better with the HC gain turned up a bit by default
-  hc55516_set_gain(0, (hcgain == 0 ? 150 : hcgain) / 100.0);
-  if (ymvol != 0)
-	YM2151_set_mixing_levels(0, ymvol, ymvol);
-  if (dacvol != 0)
-	DAC_set_mixing_level(0, dacvol);
+
+  if (core_gameData->gen == GEN_S9) {
+	// For S9 games, turn up the HC gain slightly. Note that we can't use
+	// hw.gameSpecific2 to encode custom equalization for S9, because it's
+    // already used for other purposes.  (Or at least was at some point; Space 
+	// Shuttle defines a non-zero value there.  I suspect this is vestigial
+	// because I can't find any references anywhere that actually use it.)
+	hc55516_set_gain(0, 1.5);
+  }
+  else {
+    // For S11 games, use hw.gameSpecific2 to encode game-specific custom equalization.
+	int hcgain = (core_gameData->hw.gameSpecific2 & 0x1ffff);
+	int ymvol = ((core_gameData->hw.gameSpecific2) >> 18) & 0x7f;
+	int dacvol = ((core_gameData->hw.gameSpecific1) >> 25) & 0x7f;
+
+	// The system 11 games sound better with the HC gain turned up a bit by default.
+	if (hcgain == 0)
+	  hcgain = 150;
+
+    if (hcgain != 0)
+      hc55516_set_gain(0, hcgain / 100.0);
+    if (ymvol != 0)
+	  YM2151_set_mixing_levels(0, ymvol, ymvol);
+    if (dacvol != 0)
+	  DAC_set_mixing_level(0, dacvol);
+  }
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
