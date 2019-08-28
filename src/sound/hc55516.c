@@ -803,10 +803,12 @@ void hc55516_clock_w(int num, int state)
 	}
 }
 
-// Set the gain
+// Set the gain, as a mutiple of the default gain.  The default gain
+// yields a 1:1 mapping from the full dynamic range of the HC55516 to
+// the full dynamic range of the MAME stream.
 void hc55516_set_gain(int num, double gain)
 {
-	hc55516[num].gain = gain;
+	hc55516[num].gain = gain * DEFAULT_GAIN;
 }
 
 // Set the data bit input.  This just latches the bit for later processing,

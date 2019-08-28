@@ -140,14 +140,16 @@ typedef struct
 	*   on the sound board's 2MHz 6809), because the sound board code clearly
 	*   depends upon the interrupt NOT arriving for at least 4 clocks after
 	*   the port write.  We can also deduce an upper bound, from an unrelated
-	*   set of game: the music playback timing gets screwed up on Jokerz! and 
+	*   set of games: the music playback timing gets screwed up on Jokerz! and 
 	*   a couple of Data East games from the same period if the IRQ takes 
 	*   more than 9us to fire.  I haven't gone through the same exercise
-	*   with Jokerz! and the DE games to analyze the precise nature of the
-	*   6809 code's timing dependency, since I didn't have to do that to
-	*   track it down - it was just obvious because Jokerz! started acting 
-	*   wrong with my initial random guess at a 10us IRQ response time.
-	*   For those, it was enough to probe the upper bound empirically.
+	*   with Jokerz! and the DE games to analyze the precise nature of their
+	*   6809 code's timing dependency, since that wasn't necessary to track
+	*   down the bug - it was just obvious because Jokerz! started acting 
+	*   wrong with my first random guess at an IRQ response time, of 10us.
+	*   So for Jokerz! and the others, I just empirically probed for the
+	*   shortest delay time where they started acting up, and that turned 
+	*   out to be 9us.
 	* 
 	*   We could just split the difference between the observed upper and
 	*   lower bounds, but I think it might be better to pull towards the
