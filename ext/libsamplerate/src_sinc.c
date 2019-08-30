@@ -139,7 +139,7 @@ int
 sinc_set_converter (SRC_PRIVATE *psrc, int src_enum)
 {	SINC_FILTER *filter, temp_filter ;
 	increment_t count ;
-	unsigned int bits ;
+	uint32_t bits ;
 
 	/* Quick sanity check. */
 	if (SHIFT_BITS >= sizeof (increment_t) * 8 - 1)
@@ -210,9 +210,10 @@ sinc_set_converter (SRC_PRIVATE *psrc, int src_enum)
 	** a better way. Need to look at prepare_data () at the same time.
 	*/
 
-	temp_filter.b_len = (int) lrint (2.5 * temp_filter.coeff_half_len / (temp_filter.index_inc * 1.0) * SRC_MAX_RATIO) ;
+	temp_filter.b_len = 3 * (int) lrint ((temp_filter.coeff_half_len + 2.0) / temp_filter.index_inc * SRC_MAX_RATIO + 1) ;
 	temp_filter.b_len = MAX (temp_filter.b_len, 4096) ;
 	temp_filter.b_len *= temp_filter.channels ;
+	temp_filter.b_len += 1 ; // There is a <= check against samples_in_hand requiring a buffer bigger than the calculation above
 
 	if ((filter = calloc (1, sizeof (SINC_FILTER) + sizeof (filter->buffer [0]) * (temp_filter.b_len + temp_filter.channels))) == NULL)
 		return SRC_ERR_MALLOC_FAILED ;
@@ -274,12 +275,14 @@ calc_output_single (SINC_FILTER *filter, increment_t increment, increment_t star
 
 	left = 0.0 ;
 	do
-	{	fraction = fp_to_double (filter_index) ;
-		indx = fp_to_int (filter_index) ;
+	{	if (data_index >= 0) /* Avoid underflow access to filter->buffer. */
+		{	fraction = fp_to_double (filter_index) ;
+			indx = fp_to_int (filter_index) ;
 
-		icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
+			icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
 
-		left += icoeff * filter->buffer [data_index] ;
+			left += icoeff * filter->buffer [data_index] ;
+			}  ;
 
 		filter_index -= increment ;
 		data_index = data_index + 1 ;
@@ -419,13 +422,15 @@ calc_output_stereo (SINC_FILTER *filter, increment_t increment, increment_t star
 
 	left [0] = left [1] = 0.0 ;
 	do
-	{	fraction = fp_to_double (filter_index) ;
-		indx = fp_to_int (filter_index) ;
+	{	if (data_index >= 0) /* Avoid underflow access to filter->buffer. */
+		{	fraction = fp_to_double (filter_index) ;
+			indx = fp_to_int (filter_index) ;
 
-		icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
+			icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
 
-		left [0] += icoeff * filter->buffer [data_index] ;
-		left [1] += icoeff * filter->buffer [data_index + 1] ;
+			left [0] += icoeff * filter->buffer [data_index] ;
+			left [1] += icoeff * filter->buffer [data_index + 1] ;
+			} ;
 
 		filter_index -= increment ;
 		data_index = data_index + 2 ;
@@ -566,15 +571,17 @@ calc_output_quad (SINC_FILTER *filter, increment_t increment, increment_t start_
 
 	left [0] = left [1] = left [2] = left [3] = 0.0 ;
 	do
-	{	fraction = fp_to_double (filter_index) ;
-		indx = fp_to_int (filter_index) ;
+	{	if (data_index >= 0) /* Avoid underflow access to filter->buffer. */
+		{	fraction = fp_to_double (filter_index) ;
+			indx = fp_to_int (filter_index) ;
 
-		icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
+			icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
 
-		left [0] += icoeff * filter->buffer [data_index] ;
-		left [1] += icoeff * filter->buffer [data_index + 1] ;
-		left [2] += icoeff * filter->buffer [data_index + 2] ;
-		left [3] += icoeff * filter->buffer [data_index + 3] ;
+			left [0] += icoeff * filter->buffer [data_index] ;
+			left [1] += icoeff * filter->buffer [data_index + 1] ;
+			left [2] += icoeff * filter->buffer [data_index + 2] ;
+			left [3] += icoeff * filter->buffer [data_index + 3] ;
+			} ;
 
 		filter_index -= increment ;
 		data_index = data_index + 4 ;
@@ -719,17 +726,19 @@ calc_output_hex (SINC_FILTER *filter, increment_t increment, increment_t start_f
 
 	left [0] = left [1] = left [2] = left [3] = left [4] = left [5] = 0.0 ;
 	do
-	{	fraction = fp_to_double (filter_index) ;
-		indx = fp_to_int (filter_index) ;
+	{	if (data_index >= 0) /* Avoid underflow access to filter->buffer. */
+		{	fraction = fp_to_double (filter_index) ;
+			indx = fp_to_int (filter_index) ;
 
-		icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
+			icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
 
-		left [0] += icoeff * filter->buffer [data_index] ;
-		left [1] += icoeff * filter->buffer [data_index + 1] ;
-		left [2] += icoeff * filter->buffer [data_index + 2] ;
-		left [3] += icoeff * filter->buffer [data_index + 3] ;
-		left [4] += icoeff * filter->buffer [data_index + 4] ;
-		left [5] += icoeff * filter->buffer [data_index + 5] ;
+			left [0] += icoeff * filter->buffer [data_index] ;
+			left [1] += icoeff * filter->buffer [data_index + 1] ;
+			left [2] += icoeff * filter->buffer [data_index + 2] ;
+			left [3] += icoeff * filter->buffer [data_index + 3] ;
+			left [4] += icoeff * filter->buffer [data_index + 4] ;
+			left [5] += icoeff * filter->buffer [data_index + 5] ;
+			} ;
 
 		filter_index -= increment ;
 		data_index = data_index + 6 ;
@@ -889,48 +898,49 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 
 		icoeff = filter->coeffs [indx] + fraction * (filter->coeffs [indx + 1] - filter->coeffs [indx]) ;
 
-		/*
-		**	Duff's Device.
-		**	See : http://en.wikipedia.org/wiki/Duff's_device
-		*/
-		ch = channels ;
-		do
-		{
-			switch (ch % 8)
-			{	default :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 7 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 6 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 5 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 4 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 3 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 2 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-					/* Falls through. */
-				case 1 :
-					ch -- ;
-					left [ch] += icoeff * filter->buffer [data_index + ch] ;
-				} ;
-			}
-		while (ch > 0) ;
+		if (data_index >= 0) /* Avoid underflow access to filter->buffer. */
+		{	/*
+			**	Duff's Device.
+			**	See : http://en.wikipedia.org/wiki/Duff's_device
+			*/
+			ch = channels ;
+			do
+			{	switch (ch % 8)
+				{	default :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 7 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 6 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 5 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 4 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 3 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 2 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+						/* Falls through. */
+					case 1 :
+						ch -- ;
+						left [ch] += icoeff * filter->buffer [data_index + ch] ;
+					} ;
+				}
+			while (ch > 0) ;
+			} ;
 
 		filter_index -= increment ;
 		data_index = data_index + channels ;
