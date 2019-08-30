@@ -4,6 +4,7 @@ Library version: 0.2.5
 Library type: static
 
 Homepage: http://code.google.com/p/yaml-cpp/
+https://github.com/jbeder/yaml-cpp
 
 Reason: P-ROC configuration via YAML files (like pypinproc)
 
