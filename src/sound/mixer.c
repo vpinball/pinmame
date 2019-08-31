@@ -20,7 +20,7 @@
 /* Also, undefining it misses the new reverb filter (Centaur,..) */
 #define USE_LIBSAMPLERATE
 
-/* Undefine it to turn off clipping (helpful to find cases where we max out */
+/* Undefine it to turn off clipping (helpful to find cases where we max out) */
 #define MIXER_USE_CLIPPING
 
 /* Define it to enable the logerror output */
@@ -138,12 +138,15 @@ static int is_stereo;
 
 /* 32-bit accumulators */
 static unsigned accum_base;
-static int left_accum[ACCUMULATOR_SAMPLES];
-static int right_accum[ACCUMULATOR_SAMPLES];
 
 #ifdef USE_LIBSAMPLERATE
+static float left_accum[ACCUMULATOR_SAMPLES];
+static float right_accum[ACCUMULATOR_SAMPLES];
 static float in_f[ACCUMULATOR_SAMPLES*25]; //!! 25=magic, should be able to handle all cases where src sample rate is far far larger than dst sample rate (e.g. 4x48000 -> 8000), if changing also change asserts and overflow check in below code (search for ACCUMULATOR_MASK*25)
 static float out_f[ACCUMULATOR_SAMPLES];
+#else
+static int left_accum[ACCUMULATOR_SAMPLES];
+static int right_accum[ACCUMULATOR_SAMPLES];
 #endif
 
 /* 16-bit mix buffers */
@@ -294,17 +297,24 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 #else
 	filter_state* state,
 #endif
-	int volume, int* const __restrict dst, unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
+	int volume,
+#ifdef USE_LIBSAMPLERATE
+	float* const __restrict dst,
+#else
+	int* const __restrict dst,
+#endif
+	unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
-	INT16* __restrict src = *psrc;
+	const INT16* __restrict src = *psrc;
 
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
-	const double scale = volume * (8.0 * 0x10000000 / 256.0);
+	const float scale_copy = (float)(volume / 256.0 / 0x8000);
+	const float scale_volume = (float)(volume / 256.0);
 
 	//limit src_len input length, roughly same as old code did basically:
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
@@ -320,53 +330,18 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
 	{
-		unsigned len;
-		INT16* src_end;
-		if (src_len > dst_len)
-			len = dst_len;
-		else
-			len = src_len;
-
-#ifdef X86_ASM /* this is very hardware dependant */
-		/* optimized version (a small but measurable speedup) */
-		while (len) {
-			unsigned run;
-			int* rundst;
-
-			run = ACCUMULATOR_MASK + 1 - dst_pos;
-			if (run > len)
-				run = len;
-			len -= run;
-
-			src_end = src + (run & 3);
-			while (src != src_end) {
-				dst[dst_pos] += (*src * volume) >> 8;
-				dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-				++src;
-			}
-
-			rundst = dst + dst_pos;
-			src_end = src + (run & ~3);
-			dst_pos = (dst_pos + (run & ~3)) & ACCUMULATOR_MASK;
-			while (src != src_end) {
-				rundst[0] += (src[0] * volume) >> 8;
-				rundst[1] += (src[1] * volume) >> 8;
-				rundst[2] += (src[2] * volume) >> 8;
-				rundst[3] += (src[3] * volume) >> 8;
-				rundst += 4;
-				src += 4;
-			}
-		}
-#else
-		/* reference version */
-		src_end = src + len;
+		const unsigned len = (src_len > dst_len) ? dst_len : src_len;
+		INT16* const src_end = src + len;
 		while (src != src_end)
 		{
-			dst[dst_pos] += (*src * volume) >> 8;
+#ifdef USE_LIBSAMPLERATE
+			dst[dst_pos] += (float)*src * scale_copy;
+#else
+			dst[dst_pos] += ((int)*src * volume) >> 8;
+#endif
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			++src;
 		}
-#endif
 
 		*psrc = src;
 		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
@@ -393,17 +368,17 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	if (channel->legacy_resample || channel->lr_silence[left_right])
 	{
 		/* end address */
-		INT16* src_end = src + src_len;
-		unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
+		INT16* const src_end = src + src_len;
+		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
-		int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
+		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
 		int frac = channel->frac;
 		src += frac >> FRACTION_BITS;
 		frac &= FRACTION_MASK;
 
 		while (src < src_end && dst_pos != dst_pos_end)
 		{
-			dst[dst_pos] += (*src * volume) >> 8;
+			dst[dst_pos] += (float)*src * scale_copy;
 			frac += step;
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			src += frac >> FRACTION_BITS;
@@ -424,28 +399,22 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	// Normal libsamplerate code-path:
 
-	src_short_to_float_array(src, in_f, src_len); //!! opt.?
+	src_short_to_float_array(src, in_f, src_len);
 
 	data.data_in = in_f;
 	data.data_out = out_f;
 	data.input_frames = src_len;
 	data.output_frames = dst_len;
 	data.end_of_input = 0;
-	data.src_ratio = (double)channel->to_frequency/channel->from_frequency;
+	data.src_ratio = (double)channel->to_frequency / (double)channel->from_frequency;
 
 	src_process(src_state, &data);
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
-	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
+	for (i = 0; i < data.output_frames_gen; ++i)
 	{
-		double scaled_value = out_f[i] * scale;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-			dst[dst_pos] += 32767;
-		else if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-			dst[dst_pos] += -32768;
-		else
-			dst[dst_pos] += (lrint(scaled_value) >> 16);
+		dst[dst_pos] += out_f[i] * scale_volume;
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
@@ -552,17 +521,24 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 #else
 	filter_state* state,
 #endif
-	int volume, int* const __restrict dst, unsigned dst_len, INT8** psrc, unsigned src_len, unsigned left_right)
+	int volume,
+#ifdef USE_LIBSAMPLERATE
+	float* const __restrict dst,
+#else
+	int* const __restrict dst,
+#endif
+	unsigned dst_len, INT8** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
-	INT8* __restrict src = *psrc;
+	const INT8* __restrict src = *psrc;
 
 #ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
-	const double scale = volume * (8.0 * 0x10000000 / 256.0);
+	const float scale_copy = (float)(volume / 256.0 / 0x80);
+	const float scale_volume = (float)(volume / 256.0);
 
 	//limit src_len input length, roughly same as old code did basically:
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
@@ -579,17 +555,15 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
 	{
 		/* copy */
-		unsigned len;
-		INT8* src_end;
-		if (src_len > dst_len)
-			len = dst_len;
-		else
-			len = src_len;
-
-		src_end = src + len;
+		const unsigned len = (src_len > dst_len) ? dst_len : src_len;
+		INT8* const src_end = src + len;
 		while (src != src_end)
 		{
-			dst[dst_pos] += *src * volume;
+#ifdef USE_LIBSAMPLERATE
+			dst[dst_pos] += (float)*src * scale_copy;
+#else
+			dst[dst_pos] += (int)*src * volume;
+#endif
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			++src;
 		}
@@ -604,17 +578,17 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	if (channel->legacy_resample)
 	{
 		/* end address */
-		INT8* src_end = src + src_len;
-		unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
+		INT8* const src_end = src + src_len;
+		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
-		int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
+		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
 		int frac = channel->frac;
 		src += frac >> FRACTION_BITS;
 		frac &= FRACTION_MASK;
 
 		while (src < src_end && dst_pos != dst_pos_end)
 		{
-			dst[dst_pos] += *src * volume;
+			dst[dst_pos] += (float)*src * scale_copy;
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			frac += step;
 			src += frac >> FRACTION_BITS;
@@ -635,28 +609,22 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	// Normal libsamplerate code-path:
 	
-	src_char_to_float_array(src, in_f, src_len); //!! opt.?
+	src_char_to_float_array(src, in_f, src_len);
 
 	data.data_in = in_f;
 	data.data_out = out_f;
 	data.input_frames = src_len;
 	data.output_frames = dst_len;
 	data.end_of_input = 0;
-	data.src_ratio = (double)channel->to_frequency / channel->from_frequency;
+	data.src_ratio = (double)channel->to_frequency / (double)channel->from_frequency;
 
 	src_process(src_state, &data);
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
-	for (i = 0; i < data.output_frames_gen; ++i) //!! opt.?
+	for (i = 0; i < data.output_frames_gen; ++i)
 	{
-		double scaled_value = out_f[i] * scale;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-			dst[dst_pos] += 32767;
-		else if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-			dst[dst_pos] += -32768;
-		else
-			dst[dst_pos] += (lrint(scaled_value) >> 16);
+		dst[dst_pos] += out_f[i] * scale_volume;
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
@@ -1008,7 +976,7 @@ int mixer_sh_start(void)
 #endif
 
 	/* reset all channels to their defaults */
-	memset(&mixer_channel, 0, sizeof(mixer_channel));
+	memset(mixer_channel, 0, sizeof(mixer_channel));
 	for (i = 0, channel = mixer_channel; i < MIXER_MAX_CHANNELS; i++, channel++)
 	{
 		channel->mixing_level 					= 0xff;
@@ -1092,7 +1060,7 @@ void mixer_update_channel(struct mixer_channel_data *channel, int total_sample_c
 	if (samples_to_generate <= 0)
 		return;
 
-        /* if we're playing, mix in the data */
+	/* if we're playing, mix in the data */
 	if (channel->is_playing)
 	{
 		if (channel->is_16bit)
@@ -1112,9 +1080,7 @@ void mixer_update_channel(struct mixer_channel_data *channel, int total_sample_c
 void mixer_sh_update(void)
 {
 	struct mixer_channel_data* channel;
-	unsigned accum_pos = accum_base;
-	INT16 *mix;
-	int sample;
+	unsigned int accum_pos = accum_base;
 	int i;
 
 	profiler_mark(PROFILER_MIXER);
@@ -1138,20 +1104,36 @@ void mixer_sh_update(void)
 	/* copy the mono 32-bit data to a 16-bit buffer, clipping along the way */
 	if (!is_stereo)
 	{
-		mix = mix_buffer;
+		INT16* __restrict mix = mix_buffer;
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the sample */
-			sample = left_accum[accum_pos];
+#ifdef USE_LIBSAMPLERATE
+			INT16 samplei;
+#if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+#else
+			const float sample = left_accum[accum_pos] * 32768.f;
 #ifdef MIXER_USE_CLIPPING
-			if (sample < -32768)
-				sample = -32768;
-			else if (sample > 32767)
-				sample = 32767;
+			if (sample <= -32768.f)
+				samplei = -32768;
+			else if (sample >= 32767.f)
+				samplei = 32767;
+			else
 #endif
-
+			samplei = (INT16)(lrintf(sample));
+#endif
+#else
+			int samplei = left_accum[accum_pos];
+#ifdef MIXER_USE_CLIPPING
+			if (samplei < -32768)
+				samplei = -32768;
+			else if (samplei > 32767)
+				samplei = 32767;
+#endif
+#endif
 			/* store and zero out behind us */
-			*mix++ = sample;
+			*mix++ = samplei;
 			left_accum[accum_pos] = 0;
 
 			/* advance to the next sample */
@@ -1162,32 +1144,64 @@ void mixer_sh_update(void)
 	/* copy the stereo 32-bit data to a 16-bit buffer, clipping along the way */
 	else
 	{
-		mix = mix_buffer;
+		INT16* __restrict mix = mix_buffer;
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the left sample */
-			sample = left_accum[accum_pos];
+#ifdef USE_LIBSAMPLERATE
+			INT16 samplei;
+#if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+#else
+			float sample = left_accum[accum_pos] * 32768.f;
 #ifdef MIXER_USE_CLIPPING
-			if (sample < -32768)
-				sample = -32768;
-			else if (sample > 32767)
-				sample = 32767;
+			if (sample <= -32768.f)
+				samplei = -32768;
+			else if (sample >= 32767.f)
+				samplei = 32767;
+			else
+#endif
+			samplei = (INT16)(lrintf(sample));
+#endif
+#else
+			int samplei = left_accum[accum_pos];
+#ifdef MIXER_USE_CLIPPING
+			if (samplei < -32768)
+				samplei = -32768;
+			else if (samplei > 32767)
+				samplei = 32767;
+#endif
 #endif
 			/* store and zero out behind us */
-			*mix++ = sample;
+			*mix++ = samplei;
 			left_accum[accum_pos] = 0;
 
 			/* fetch and clip the right sample */
-			sample = right_accum[accum_pos];
+#ifdef USE_LIBSAMPLERATE
+#if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
+			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(right_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+#else
+			sample = right_accum[accum_pos] * 32768.f;
 #ifdef MIXER_USE_CLIPPING
-			if (sample < -32768)
-				sample = -32768;
-			else if (sample > 32767)
-				sample = 32767;
+			if (sample <= -32768.f)
+				samplei = -32768;
+			else if (sample >= 32767.f)
+				samplei = 32767;
+			else
 #endif
-
+			samplei = (INT16)(lrintf(sample));
+#endif
+#else
+			samplei = right_accum[accum_pos];
+#ifdef MIXER_USE_CLIPPING
+			if (samplei < -32768)
+				samplei = -32768;
+			else if (samplei > 32767)
+				samplei = 32767;
+#endif
+#endif
 			/* store and zero out behind us */
-			*mix++ = sample;
+			*mix++ = samplei;
 			right_accum[accum_pos] = 0;
 
 			/* advance to the next sample */
