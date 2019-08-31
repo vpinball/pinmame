@@ -16,6 +16,11 @@
 #include	"float_cast.h"
 #include	"common.h"
 
+#ifdef RESAMPLER_SSE_OPT
+ #include <xmmintrin.h>
+ #include <emmintrin.h>
+#endif
+
 static int psrc_set_converter (SRC_PRIVATE	*psrc, int converter_type) ;
 
 
@@ -484,31 +489,38 @@ src_simple (SRC_DATA *src_data, int converter, int channels)
 } /* src_simple */
 
 void
-src_char_to_float_array(const char *in, float *out, int len)
+src_char_to_float_array(const char * const __restrict in, float * const __restrict out, int len)
 {
 	while (len)
 	{
 		len--;
-		out[len] = (float)(in[len] / (1.0 * 0x80));
+		out[len] = (float)in[len] * (float)(1.0 / 0x80); // (float)(in[len] / (1.0 * 0x80));
 	};
 
 	return;
 } /* src_char_to_float_array */
 
 void
-src_short_to_float_array (const short *in, float *out, int len)
+src_short_to_float_array (const short * const __restrict in, float * const __restrict out, int len)
 {
 	while (len)
 	{	len -- ;
-		out [len] = (float) (in [len] / (1.0 * 0x8000)) ;
+		out [len] = (float)in[len] * (float)(1.0 / 0x8000); // (float) (in [len] / (1.0 * 0x8000)) ;
 		} ;
 
 	return ;
 } /* src_short_to_float_array */
 
 void
-src_float_to_short_array (const float *in, short *out, int len)
+src_float_to_short_array (const float * const __restrict in, short * const __restrict out, int len)
 {
+#ifdef RESAMPLER_SSE_OPT
+	while (len)
+	{
+		len -- ;
+		out[len] = (short)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(in[len] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
+	}
+#else
 	while (len)
 	{	float scaled_value ;
 		len -- ;
@@ -520,39 +532,46 @@ src_float_to_short_array (const float *in, short *out, int len)
 		else
 			out [len] = (short) (lrintf (scaled_value)) ;
 	}
+#endif
 } /* src_float_to_short_array */
 
 void
-src_int_to_float_array (const int *in, float *out, int len)
+src_int_to_float_array (const int * const __restrict in, float * const __restrict out, int len)
 {
 	while (len)
 	{	len -- ;
-		out [len] = (float) (in [len] / (8.0 * 0x10000000)) ;
+		out [len] = (float)in[len] * (float)(1.0 / (8.0 * 0x10000000)); // (float) (in [len] / (8.0 * 0x10000000)) ;
 		} ;
 
 	return ;
 } /* src_int_to_float_array */
 
 void
-src_float_to_int_array (const float *in, int *out, int len)
-{	double scaled_value ;
-
+src_float_to_int_array (const float * const __restrict in, int * const __restrict out, int len)
+{
+#ifdef RESAMPLER_SSE_OPT
 	while (len)
-	{	len -- ;
-
+	{
+		len -- ;
+		out[len] = _mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(in[len] * (float)(8.0 * 0x10000000)), _mm_set_ss(2147483520.f)), _mm_set_ss((float)(-8.0 * 0x10000000)))); //!! cannot output INT_MAX like this (max is 2147483520 instead of 2147483647), but who cares!
+	}
+#else
+	while (len)
+	{	double scaled_value;
+		len -- ;
 		scaled_value = in [len] * (8.0 * 0x10000000) ;
 		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
 		{	out [len] = 0x7fffffff ;
 			continue ;
-			} ;
+			}
 		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
 		{	out [len] = -1 - 0x7fffffff ;
 			continue ;
-			} ;
+			}
 
 		out [len] = (int) lrint (scaled_value) ;
-		} ;
-
+		}
+#endif
 } /* src_float_to_int_array */
 
 /*==============================================================================
@@ -573,4 +592,3 @@ psrc_set_converter (SRC_PRIVATE	*psrc, int converter_type)
 
 	return SRC_ERR_BAD_CONVERTER ;
 } /* psrc_set_converter */
-
