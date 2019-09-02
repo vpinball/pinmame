@@ -64,9 +64,9 @@ filter_real filter_compute(const filter* f, const filter_state* s);
 
 INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
 	const filter_real tmp = filter_compute(f, s);
-	if (tmp < (filter_real)-32768)
+	if (tmp <= (filter_real)-32768)
 		return -32768;
-	else if (tmp > (filter_real)32767)
+	else if (tmp >= (filter_real)32767)
 		return 32767;
 	else
 		return (INT16)tmp;
@@ -103,12 +103,20 @@ void filter2_reset(filter2_context *filter2);
  * x0 is the new input, which needs to be set before stepping.
  * y0 is the new filter output.
  */
-void filter2_step(filter2_context *filter2);
+INLINE void filter2_step(filter2_context * const __restrict filter2)
+{
+	filter2->y0 = -filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2 +
+	               filter2->b0 * filter2->x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2;
+	filter2->x2 = filter2->x1;
+	filter2->x1 = filter2->x0;
+	filter2->y2 = filter2->y1;
+	filter2->y1 = filter2->y0;
+}
 
 /* 
  *  Step the filter with a given input, returning the new output.
  */
-double filter2_step_with(filter2_context *filter2, double input);
+double filter2_step_with(filter2_context * const __restrict filter2, double input);
 
 
 /* Setup a filter2 structure based on an op-amp multipole bandpass circuit.

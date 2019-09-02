@@ -277,18 +277,15 @@ filter* filter_lp_fir_alloc(double freq, const int order) {
 void filter2_setup(const int type, const double fc, const double d, const double gain,
 					filter2_context *filter2, const unsigned int sample_rate)
 {
-	double w;	/* cutoff freq, in radians/sec */
-	double w_squared;
-	double den;	/* temp variable */
 	const double two_over_T = 2*sample_rate;
 	const double two_over_T_squared = (double)((long long)(2*sample_rate) * (long long)(2*sample_rate));
 
 	/* calculate digital filter coefficents */
 	/*w = (2.0*M_PI)*fc; no pre-warping */
-	w = two_over_T*tan(M_PI*fc/sample_rate); /* pre-warping */
-	w_squared = w*w;
+	const double w = two_over_T*tan(M_PI*fc/sample_rate); /* pre-warping */ /* cutoff freq, in radians/sec */
+	const double w_squared = w*w;
 
-	den = two_over_T_squared + d*w*two_over_T + w_squared;
+	const double den = two_over_T_squared + d*w*two_over_T + w_squared; /* temp variable */
 
 	filter2->a1 = 2.0*(-two_over_T_squared + w_squared)/den;
 	filter2->a2 = (two_over_T_squared - d*w*two_over_T + w_squared)/den;
@@ -332,18 +329,9 @@ void filter2_reset(filter2_context *filter2)
 
 
 /* Step the filter. */
-void filter2_step(filter2_context *filter2)
-{
-	filter2->y0 = -filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2 +
-	               filter2->b0 * filter2->x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2;
-	filter2->x2 = filter2->x1;
-	filter2->x1 = filter2->x0;
-	filter2->y2 = filter2->y1;
-	filter2->y1 = filter2->y0;
-}
 
 /* Step the filter with an input, returning the output */
-double filter2_step_with(filter2_context *filter2, double input)
+double filter2_step_with(filter2_context * const __restrict filter2, double input)
 {
 	filter2->x0 = input;
 	filter2_step(filter2);
