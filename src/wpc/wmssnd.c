@@ -832,7 +832,7 @@ MEMORY_END
 
 static struct YM2151interface   s11js_ym2151Int  = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) },
+  { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) }, // Jokerz features a unique stereo board
   { s11js_ym2151IRQ }
 };
 

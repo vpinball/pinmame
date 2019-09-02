@@ -92,7 +92,12 @@ static void sinc_reset (SRC_PRIVATE *psrc) ;
 
 static inline increment_t
 double_to_fp (double x)
-{	return (increment_t) (lrint ((x) * FP_ONE)) ;
+{
+#ifdef RESAMPLER_SSE_OPT
+    return _mm_cvtsd_si32(_mm_set_sd(x * FP_ONE));
+#else
+    return (increment_t) (lrint (x * FP_ONE)) ;
+#endif
 } /* double_to_fp */
 
 static inline increment_t
@@ -450,9 +455,8 @@ calc_output_single (SINC_FILTER *filter, const increment_t increment, const incr
 static int
 sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
-	double		input_index, src_ratio, count, float_increment, terminate, rem ;
-	increment_t	increment, start_filter_index ;
-	int			half_filter_chan_len, samples_in_hand ;
+	double		input_index, src_ratio, count, terminate, rem ;
+	int			half_filter_chan_len ;
 
 	if (psrc->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
@@ -483,7 +487,7 @@ sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	input_index = psrc->last_position ;
 
 	rem = fmod_one (input_index) ;
-	filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+	filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 	input_index = rem ;
 
 	terminate = 1.0 / src_ratio + 1e-20 ;
@@ -491,8 +495,10 @@ sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	/* Main processing loop. */
 	while (filter->out_gen < filter->out_count)
 	{
+		double float_increment;
+		increment_t increment, start_filter_index;
 		/* Need to reload buffer? */
-		samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
+		int samples_in_hand = (filter->b_end - filter->b_current + filter->b_len) % filter->b_len ;
 
 		if (samples_in_hand <= half_filter_chan_len)
 		{	if ((psrc->error = prepare_data (filter, data, half_filter_chan_len)) != 0)
@@ -525,7 +531,7 @@ sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+		filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 		input_index = rem ;
 		} ;
 
@@ -633,7 +639,7 @@ sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	input_index = psrc->last_position ;
 
 	rem = fmod_one (input_index) ;
-	filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+	filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 	input_index = rem ;
 
 	terminate = 1.0 / src_ratio + 1e-20 ;
@@ -674,7 +680,7 @@ sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+		filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 		input_index = rem ;
 		} ;
 
@@ -788,7 +794,7 @@ sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	input_index = psrc->last_position ;
 
 	rem = fmod_one (input_index) ;
-	filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+	filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 	input_index = rem ;
 
 	terminate = 1.0 / src_ratio + 1e-20 ;
@@ -829,7 +835,7 @@ sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+		filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 		input_index = rem ;
 		} ;
 
@@ -949,7 +955,7 @@ sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	input_index = psrc->last_position ;
 
 	rem = fmod_one (input_index) ;
-	filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+	filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 	input_index = rem ;
 
 	terminate = 1.0 / src_ratio + 1e-20 ;
@@ -990,7 +996,7 @@ sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+		filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 		input_index = rem ;
 		} ;
 
@@ -1217,7 +1223,7 @@ sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	input_index = psrc->last_position ;
 
 	rem = fmod_one (input_index) ;
-	filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+	filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 	input_index = rem ;
 
 	terminate = 1.0 / src_ratio + 1e-20 ;
@@ -1258,7 +1264,7 @@ sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		filter->b_current = (filter->b_current + filter->channels * lrint (input_index - rem)) % filter->b_len ;
+		filter->b_current = (filter->b_current + filter->channels * (int)floor(input_index)) % filter->b_len ;
 		input_index = rem ;
 		} ;
 
