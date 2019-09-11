@@ -40,6 +40,7 @@ Version 3.2 (X X, 2019) - "Sounds good II"
 - Allow window position (x,y) to be less than 0 in cabinet mode, so primary monitor can be put "below" the DMD monitor
 
 - Add additional .raw/non-averaged file output if dumping DMD frames from GTS3 and WPC machines
+- Improve timing precision of DMD frame dumps
 
 - Fix for external dmddevice(64).dll: map GEN_GTS80B to _2x20Alpha layout
 - Also introduce new function to dmddevice interface: void Render_PM_Alphanumeric_Dim_Frame(layout_t layout, const UINT16 *const seg_data, const char *const seg_dim, const UINT16 *const seg_data2); which includes dimming of segments
