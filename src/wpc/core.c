@@ -937,7 +937,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  char *ptr;
 				  char DumpFilename[MAX_PATH];
 
-				  const DWORD tick = GetTickCount();
+				  const DWORD tick = timeGetTime();
 #ifndef _WIN64
 				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
