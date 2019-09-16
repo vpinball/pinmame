@@ -12,7 +12,7 @@ Initial efforts to start converting the PinMAME source base over to the 3-Clause
 Improved HC55516 CVSD sound emulation (most Williams/Bally machines in the Gorgar up to Twilight Zone range)
 Improved YM2151 sound/timing emulation (mainly WPC pre-DCS machines, maybe improves even other manufacturers)
 Fixed the Nuova Bell sound board. This had various issues, and information is quite sparse
-Implement 'fast flips' support for Jack*Bot
+Implement 'fast flips' support for Jack*Bot and Metallica 1.80.0LE
 Fix NBA Fastbreak 'fast flips' so that the million dollar shot works
 Fix Champion Pub 'fast flips' support
 Fixed Barni emulation
