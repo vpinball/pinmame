@@ -1266,6 +1266,8 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106e1b6;
 	else if (_strnicmp(gn, "mtl_170h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f646;
+	else if (_strnicmp(gn, "mtl_180h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f676;
 	else if (_strnicmp(gn, "twd_160h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f7d2;
 	else if (_strnicmp(gn, "twd_160", 7) == 0)
