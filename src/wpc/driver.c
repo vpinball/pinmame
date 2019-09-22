@@ -649,8 +649,9 @@ DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(triplyfp)      //                Chicago Cubs Triple Play (Free Play)
-DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (alternate set)
+DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (rev. 1)
 DRIVERNV(triplyf1)      //                Chicago Cubs Triple Play (rev. 1 Free Play)
+DRIVERNV(triplgfp)      //                Chicago Cubs Triple Play (German Free Play)
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(bounthfp)      //                Bounty Hunter (Free Play)
 DRIVERNV(bountyhg)      //                Bounty Hunter (German)
