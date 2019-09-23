@@ -651,6 +651,7 @@ DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(triplyfp)      //                Chicago Cubs Triple Play (Free Play)
 DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (rev. 1)
 DRIVERNV(triplyf1)      //                Chicago Cubs Triple Play (rev. 1 Free Play)
+DRIVERNV(triplayg)      //                Chicago Cubs Triple Play (German)
 DRIVERNV(triplgfp)      //                Chicago Cubs Triple Play (German Free Play)
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(bounthfp)      //                Bounty Hunter (Free Play)

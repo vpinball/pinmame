@@ -922,6 +922,13 @@ GTS80_ROMEND
 #define input_ports_triplyf1 input_ports_triplay
 CORE_CLONEDEFNV(triplyf1, triplay, "Chicago Cubs Triple Play (rev. 1 Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
+GTS80B_8K_ROMSTART(triplayg, "prom1g.cpu", CRC(5e2bf7a9) SHA1(fdbec615b22416bb4b2e712d47c54c945d849252))
+GTS80S2K_ROMSTART(           "696-s.snd",  CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80_ROMEND
+#define init_triplayg init_triplay
+#define input_ports_triplayg input_ports_triplay
+CORE_CLONEDEFNV(triplayg, triplay, "Chicago Cubs Triple Play (German)",1985,"Gottlieb",gl_mGTS80B,0)
+
 GTS80B_8K_ROMSTART(triplgfp, "prom1g_fp.cpu",CRC(7b6e6819) SHA1(ca2a739301a8be1ff7dd139171cd28f29d5aad59))
 GTS80S2K_ROMSTART(           "696-s.snd",    CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
 GTS80_ROMEND
