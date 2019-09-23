@@ -124,8 +124,8 @@ BY6803_ROMEND
 CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 
 INITGAME6803(blackbl2,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BY61, BY6803_DISPALPHA)
-BY6803_ROMSTART44(blackbl2,"cpu_u2.cpu",     CRC(b86d16ec) SHA1(2e4601e725261aca67e4d706f310b14eb7578d8b),
-                           "cpu_u3.cpu",     CRC(c63e3e6f) SHA1(cd3f66c3796eaf64c36cabba9d74cc8c690d9d8b))
+BY6803_ROMSTART44(blackbl2,"cpu_u2.cpu", CRC(b86d16ec) SHA1(2e4601e725261aca67e4d706f310b14eb7578d8b),
+                           "cpu_u3.cpu", CRC(c63e3e6f) SHA1(cd3f66c3796eaf64c36cabba9d74cc8c690d9d8b))
 BY61_SOUNDROM0000(         "blb_u2.snd",NO_DUMP,
                            "blb_u3.snd",NO_DUMP,
                            "blb_u4.snd",NO_DUMP,
