@@ -986,6 +986,7 @@ DRIVERNV(ebalchmb)      //Eight Ball Champ (198?)
 // ----------------
 // MANILAMATIC
 // ----------------
+DRIVERNV(topsound)      //Top Sound (1988)
 DRIVERNV(mmmaster)      //Master (1988)
 
 // ----------------
@@ -1214,6 +1215,11 @@ DRIVERNV(vrnwrld)       //1996 - Verne's World
 // ---------------
 DRIVERNV(goldgame)      //19?? - Golden Game
 DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
+
+// ---------------
+// SPORT MATIC
+// ---------------
+DRIVERNV(terrlake)      //1987 - Terrific Lake
 
 // ---------------
 // STARGAME GAMES

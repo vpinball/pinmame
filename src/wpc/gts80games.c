@@ -2328,7 +2328,7 @@ CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl
 // Games by other manufacturers
 
 /*-------------------------------------------------------------------
-/ ManilaMatic: Master (1988)
+/ ManilaMatic: using entire address space, no multiple mapping needed
 /-------------------------------------------------------------------*/
 static MEMORY_READ_START(manila_readmem)
   {0x0000,0x017f, MRA_RAM},      /*combined RIOT RAM space*/
@@ -2361,6 +2361,25 @@ static MACHINE_DRIVER_START(manila)
   MDRV_IMPORT_FROM(gts80s_b1)
 MACHINE_DRIVER_END
 
+/*-------------------------------------------------------------------
+/ Top Sound (1988)
+/-------------------------------------------------------------------*/
+INITGAME(topsound, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+ROM_START(topsound)
+  NORMALREGION(0x10000, GTS80_MEMREG_CPU)
+    ROM_LOAD("mm_ts_1.cpu", 0x6000, 0x2000, CRC(8ade048f) SHA1(f8527d99461b61a865023e0576ac5a9d33e4f0b0))
+    ROM_LOAD("mm_ts_2.cpu", 0x2000, 0x2000, CRC(a525aac8) SHA1(9389688e053beb7db45278524c4d62cf067f817d))
+      ROM_RELOAD         (0xe000, 0x2000) // reset vector
+  GTS80BSSOUND888(           "drom1a.snd", CRC(b8aa8912) SHA1(abff690256c0030807b2d4dfa0516496516384e8),
+                             "yrom1a.snd", CRC(a62e3b94) SHA1(59636c2ac7ebbd116a0eb39479c97299ba391906),
+                             "yrom2a.snd", CRC(66645a3f) SHA1(f06261af81e6b1829d639933297d2461a8c993fc))
+GTS80_ROMEND
+#define input_ports_topsound input_ports_gts80
+CORE_GAMEDEFNV(topsound,"Top Sound (French)",1988,"ManilaMatic",manila,0)
+
+/*-------------------------------------------------------------------
+/ Master (1988)
+/-------------------------------------------------------------------*/
 INITGAME(mmmaster, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 ROM_START(mmmaster)
   NORMALREGION(0x10000, GTS80_MEMREG_CPU)
@@ -2371,4 +2390,4 @@ ROM_START(mmmaster)
                              "yrom2.snd", CRC(0528c024) SHA1(d24ff7e088b08c1f35b54be3c806f8a8757d96c7))
 GTS80_ROMEND
 #define input_ports_mmmaster input_ports_gts80
-CORE_GAMEDEFNV(mmmaster,"Master",1988,"ManilaMatic",manila,0)
+CORE_GAMEDEFNV(mmmaster,"Master (Italian)",1988,"ManilaMatic",manila,0)

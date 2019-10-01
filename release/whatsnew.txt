@@ -32,9 +32,11 @@ Barni: Champion
 Cirsa: Sport 2000
 Inder: Skate Board
 Maibesa: Eight Ball Champ
-ManilaMatic: Master
+ManilaMatic: Master (Italian),
+             Top Sound (French)
 Nondum / CIFA: Come Back
 Playbar: Cobra
+Sport Matic: Terrific Lake
 Stern: Cue (Prototype)
 
 Correct Dumps:
