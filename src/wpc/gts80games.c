@@ -922,6 +922,20 @@ GTS80_ROMEND
 #define input_ports_triplyf1 input_ports_triplay
 CORE_CLONEDEFNV(triplyf1, triplay, "Chicago Cubs Triple Play (rev. 1 Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
 
+GTS80B_8K_ROMSTART(triplayg, "prom1g.cpu", CRC(5e2bf7a9) SHA1(fdbec615b22416bb4b2e712d47c54c945d849252))
+GTS80S2K_ROMSTART(           "696-s.snd",  CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80_ROMEND
+#define init_triplayg init_triplay
+#define input_ports_triplayg input_ports_triplay
+CORE_CLONEDEFNV(triplayg, triplay, "Chicago Cubs Triple Play (German)",1985,"Gottlieb",gl_mGTS80B,0)
+
+GTS80B_8K_ROMSTART(triplgfp, "prom1g_fp.cpu",CRC(7b6e6819) SHA1(ca2a739301a8be1ff7dd139171cd28f29d5aad59))
+GTS80S2K_ROMSTART(           "696-s.snd",    CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
+GTS80_ROMEND
+#define init_triplgfp init_triplay
+#define input_ports_triplgfp input_ports_triplay
+CORE_CLONEDEFNV(triplgfp, triplay, "Chicago Cubs Triple Play (German Free Play)",1985,"Flipprojets",gl_mGTS80B,0)
+
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
@@ -2314,7 +2328,7 @@ CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl
 // Games by other manufacturers
 
 /*-------------------------------------------------------------------
-/ ManilaMatic: Master (1988)
+/ ManilaMatic: using entire address space, no multiple mapping needed
 /-------------------------------------------------------------------*/
 static MEMORY_READ_START(manila_readmem)
   {0x0000,0x017f, MRA_RAM},      /*combined RIOT RAM space*/
@@ -2347,6 +2361,25 @@ static MACHINE_DRIVER_START(manila)
   MDRV_IMPORT_FROM(gts80s_b1)
 MACHINE_DRIVER_END
 
+/*-------------------------------------------------------------------
+/ Top Sound (1988)
+/-------------------------------------------------------------------*/
+INITGAME(topsound, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+ROM_START(topsound)
+  NORMALREGION(0x10000, GTS80_MEMREG_CPU)
+    ROM_LOAD("mm_ts_1.cpu", 0x6000, 0x2000, CRC(8ade048f) SHA1(f8527d99461b61a865023e0576ac5a9d33e4f0b0))
+    ROM_LOAD("mm_ts_2.cpu", 0x2000, 0x2000, CRC(a525aac8) SHA1(9389688e053beb7db45278524c4d62cf067f817d))
+      ROM_RELOAD         (0xe000, 0x2000) // reset vector
+  GTS80BSSOUND888(           "drom1a.snd", CRC(b8aa8912) SHA1(abff690256c0030807b2d4dfa0516496516384e8),
+                             "yrom1a.snd", CRC(a62e3b94) SHA1(59636c2ac7ebbd116a0eb39479c97299ba391906),
+                             "yrom2a.snd", CRC(66645a3f) SHA1(f06261af81e6b1829d639933297d2461a8c993fc))
+GTS80_ROMEND
+#define input_ports_topsound input_ports_gts80
+CORE_GAMEDEFNV(topsound,"Top Sound (French)",1988,"ManilaMatic",manila,0)
+
+/*-------------------------------------------------------------------
+/ Master (1988)
+/-------------------------------------------------------------------*/
 INITGAME(mmmaster, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 ROM_START(mmmaster)
   NORMALREGION(0x10000, GTS80_MEMREG_CPU)
@@ -2357,4 +2390,4 @@ ROM_START(mmmaster)
                              "yrom2.snd", CRC(0528c024) SHA1(d24ff7e088b08c1f35b54be3c806f8a8757d96c7))
 GTS80_ROMEND
 #define input_ports_mmmaster input_ports_gts80
-CORE_GAMEDEFNV(mmmaster,"Master",1988,"ManilaMatic",manila,0)
+CORE_GAMEDEFNV(mmmaster,"Master (Italian)",1988,"ManilaMatic",manila,0)

@@ -306,7 +306,7 @@ static int MUL32(struct jit_ctl *jit, data32_t addr, data32_t insn, int *cycles)
 // This generates code to test the ARM7 pending-ABORT flag to see if a data abort has
 // occurred.  If so, we immediately return to the emulator, aborting the current
 // instruction processing.  Before returning, we zero the cycle counter.  This causes
-// the emulator to exit its main loop and return to the MAME schedule.  When the MAME
+// the emulator to exit its main loop and return to the MAME scheduler.  When the MAME
 // scheduler re-schedules this CPU, we'll check for the pending abort, and trap to the
 // ABORT interrupt handler.
 //
@@ -492,7 +492,7 @@ static void gen_mem(struct jit_ctl *jit, int rd, int ld, int siz, int sx, int ad
 				else
 					emit(MOVZX, EAX, AX);
 			}
-			else if (siz ==8)
+			else if (siz == 8)
 			{
 				// 8 bits - sign-extend or zero-extend AL to EAX 
 				if (sx)

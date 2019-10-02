@@ -177,8 +177,8 @@ void jit_emit_process_queue(struct jit_ctl *jit, int (*func)(struct jit_ctl *jit
  *   to allow editing of the list when finalizing jump distances.  The Intel
  *   conditional jump instructions can only encode 8-bit offsets, so if a
  *   conditional jump exceeds +/-127 bytes, we need to rewrite it as a
- *   conditional jump (wtih the opposite condition) around a long jump that
- *   does the actual jump to the distance location.  For example, if we have
+ *   conditional jump (with the opposite condition) around a long jump that
+ *   does the actual jump to the distant location.  For example, if we have
  *   "JZ $1", and label $1 is 1000 bytes away, we have to rewrite this as
  *   "JNZ $+5; JMP $1", where the second jump is the 32-bit operand form that
  *   allows us to make the more distance branch.
@@ -597,9 +597,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 	byte *nataddr;
 	byte *resp;
 	struct instr *i;
-	//byte *p;
 	struct jit_page *pg;
-
 
 	// if there's no code, there's nothing to do
 	if (stktop->ihead == 0)
@@ -644,7 +642,9 @@ void jit_emit_commit(struct jit_ctl *jit)
 		// with 5+1 bytes.  This doesn't apply if the label points to an 
 		// opcode that's already been translated, since we can jump directly
 		// to the emulated code in that case.
-		// Some special conditions generate an additional MOV EAX, <retaddr>.   Allocate 5 extra bytes in case.
+		//
+		// Some special conditions generate an additional MOV EAX, <retaddr>. 
+		// Allocate 5 extra bytes in case.
 		if (i->lbl != 0)
 		{
 			if (i->lbl->i != 0)
@@ -771,11 +771,11 @@ void jit_emit_commit(struct jit_ctl *jit)
 						}
 						else
 						{
-							// No proxy is needed, so we can use the more efficient ofs3
+							// No proxy is needed, so we can use the more efficient ofs32
 							// form of the conditional jump.  Change from
 							//       J<cond> <ofs8> (7x oo)
 							// to
-							//       J<cond> <ofs32) (0F 8x oooooooo)
+							//       J<cond> <ofs32> (0F 8x oooooooo)
 							//
 							// Note that we already pre-allocated space for the expansion
 							// when we created the instruction structure, so we can overwrite
@@ -922,6 +922,7 @@ void jit_emit_commit(struct jit_ctl *jit)
 		}
 	}
 	while (mod);
+
 	// save each instruction
 #if JIT_DEBUG
 	int totallen = 0;
@@ -979,7 +980,6 @@ void jit_emit_commit(struct jit_ctl *jit)
 #endif
 
 		jit_store_native_from_reserved(jit, i->b, i->len, pg, i->nataddr);
-
 
 		// if this is the first native instruction for this emulated opcode,
 		// set the address mapping

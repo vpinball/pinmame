@@ -296,11 +296,13 @@ int cop420_execute(int cycles)
 
 	do
 	{
+		unsigned opcode;
+
 		prevPC = PC;
 
 		CALL_MAME_DEBUG;
 
-		unsigned opcode = ROM(PC);
+		opcode = ROM(PC);
 
 		if (skipLBI == 1)
 		{

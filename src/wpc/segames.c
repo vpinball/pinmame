@@ -488,7 +488,7 @@ DE2S_SOUNDROM18888("spku7.090",CRC(19937fbd) SHA1(ebd7c8f1604accbeb7c00066ecf811
 SE_ROMEND
 CORE_CLONEDEF(sprk,090,103,"South Park (0.90 Prototype)",1999,"Sega",de_mSES1,0)
 
-// Harley Davidson moved to its own sim file (bds)
+// Harley Davidson moved to its own sim file (harley)
 
 /*-------------------------------------------------------------------
 / Striker Extreme
@@ -762,7 +762,7 @@ SE_ROMEND
 #define init_aust201 init_austin
 CORE_CLONEDEFNV(aust201,austin,"Austin Powers (2.01)",2001,"Stern",de_mSES2,0)
 
-// Monopoly moved to its own sim file (gv)
+// Monopoly moved to its own sim file (monopoly)
 
 /*-------------------------------------------------------------------
 / NFL
@@ -2070,7 +2070,7 @@ SE_ROMEND
 #define init_rip300l init_ripleys
 CORE_CLONEDEFNV(rip300l,ripleys,"Ripley's Believe It or Not! (3.00 Spanish)",2004,"Stern",de_mSES3,0)
 
-// Elvis moved to its own sim file (gv)
+// Elvis moved to its own sim file (elvis)
 
 /*-------------------------------------------------------------------
 / The Sopranos

@@ -1436,7 +1436,7 @@ static int init_tables(void)
 	{
 		double o;
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* checked against the real chip */
+		m = sin( ((i*2)+1) * (M_PI / SIN_LEN) ); /* checked against the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 
@@ -2467,11 +2467,12 @@ INLINE void ADPCMA_calc_chan( YM2610 *F2610, ADPCM_CH *ch )
 
 			ch->adpcm_acc += jedi_table[ch->adpcm_step + data];
 
+			/* the 12-bit accumulator wraps on the ym2610 and ym2608 (like the msm5205), it does not saturate (like the msm5218) */
+			ch->adpcm_acc &= 0xfff;
+
 			/* extend 12-bit signed int */
-			if (ch->adpcm_acc & ~0x7ff)
+			if (ch->adpcm_acc & 0x800)
 				ch->adpcm_acc |= ~0xfff;
-			else
-				ch->adpcm_acc &= 0xfff;
 
 			ch->adpcm_step += step_inc[data & 7];
 			Limit( ch->adpcm_step, 48*16, 0*16 );
@@ -5397,7 +5398,7 @@ int OPMInit(int num, int clock, int rate,
 		FMOPM[i].ST.rate = rate;
 		/* FMOPM[i].ST.irq  = 0; */
 		/* FMOPM[i].ST.status = 0; */
-		FMOPM[i].ST.freqbase  = rate ? ((double)clock / rate) / 64 : 0;
+		FMOPM[i].ST.freqbase  = rate ? ((double)clock / rate) / 64.0 : 0;
 		FMOPM[i].ST.TimerBase = 1.0/((double)clock / 64.0);
 		/* Extend handler */
 		FMOPM[i].ST.Timer_Handler = TimerHandler;

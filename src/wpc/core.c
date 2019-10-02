@@ -939,7 +939,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 				  char *ptr;
 				  char DumpFilename[MAX_PATH];
 
-				  const DWORD tick = GetTickCount();
+				  const DWORD tick = timeGetTime();
 #ifndef _WIN64
 				  const HINSTANCE hInst = GetModuleHandle("VPinMAME.dll");
 #else
@@ -1756,7 +1756,7 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
     }
   }
   for (kk = 0; kk < s->rows; kk++) {
-    BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
+    BMTYPE * __restrict line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
 

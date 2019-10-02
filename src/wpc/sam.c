@@ -1266,6 +1266,8 @@ void sam_init()
 		samlocals.fastflipaddr = 0x0106e1b6;
 	else if (_strnicmp(gn, "mtl_170h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f646;
+	else if (_strnicmp(gn, "mtl_180h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f676;
 	else if (_strnicmp(gn, "twd_160h", 8) == 0)
 		samlocals.fastflipaddr = 0x0107f7d2;
 	else if (_strnicmp(gn, "twd_160", 7) == 0)
@@ -2756,6 +2758,7 @@ SAM1_ROM128MB(mtl_180,   "mtl180.bin",   CRC(2d2e8cdc) SHA1(a426e71f5673dab5e2d3
 SAM1_ROM128MB(mtl_180h,  "mtl180h.bin",  CRC(e37bc6e2) SHA1(1f2d74a4c22a369717cbbcfc4e9702fc03a52c7e), 0x05DFB40C)
 #ifdef SAM_INCLUDE_COLORED
 SAM1_ROM128MB(mtl_164c,  "mtl164c.bin",  CRC(ebbf5845) SHA1(4411279b3e4ea9621638bb81e47dc8753bfc0a05), 0x05FFFFF0)
+SAM1_ROM128MB(mtl_164hc, "mtl164hc.bin", CRC(ebbf5845) SHA1(4411279b3e4ea9621638bb81e47dc8753bfc0a05), 0x05FFFFF0)
 SAM1_ROM128MB(mtl_170c,  "mtl170c.bin",  CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
 SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
 SAM1_ROM128MB(mtl_180c,  "mtl180c.bin",  CRC(2d2e8cdc) SHA1(a426e71f5673dab5e2d36260d0e8edbbbcd4d34a), 0x05FFFFF0)
@@ -2793,6 +2796,7 @@ CORE_CLONEDEF(mtl, 170h, 180h, "Metallica Limited Edition (V1.7)", 2016, "Stern"
 CORE_CLONEDEF(mtl, 180,  180h, "Metallica (V1.80.0)", 2018, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
 CORE_CLONEDEF(mtl, 164c, 180h, "Metallica (V1.64) (Colored)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 164hc,180h, "Metallica Limited Edition (V1.64) (Colored)", 2015, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 170c, 180h, "Metallica (V1.7) (Colored)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 170hc,180h, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 180c, 180h, "Metallica (V1.80.0) (Colored)", 2018, "Stern", sam2, 0)

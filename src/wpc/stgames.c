@@ -207,7 +207,7 @@ BY17_ROMSTARTx88(trident,"25AROM_P11A.U2", CRC(6dcd6ad3) SHA1(f748acc8628c5013b6
                          "25AROM_P12AU.U6",CRC(fb955a6f) SHA1(387080d5af318463475797fecff026d6db776a0c)) // U6 is the same as the one from Magic/Hot Hand/Cosmic Princess
 BY35_ROMEND
 #define input_ports_trident input_ports_st
-CORE_GAMEDEFNV(trident,"Trident",1979,"Stern",by35_mST100bs,0)
+CORE_GAMEDEFNV(trident,"Trident",1979,"Stern",by35_mST100bs,0) // Game ROM 'A'
 
 INITGAME(tridenta,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
 BY17_ROMSTARTx88(tridenta,"cpu_u2.716",CRC(934e49dd) SHA1(cbf6ca2759166f522f651825da0c75cf7248d3da),
@@ -298,7 +298,7 @@ The bug isn't necessarily dependent on the spinner, but does have to do with the
 As I understand it, the 'Collect All Rockets' routine saves data to a RAM location that is right adjacent to the Bonus 'X' save location. If something CPU intensive happens, a race condition will occur where the 'Collect All Rockets' code will save and then clear a value as another thread is trying to read the Bonus X. The Bonus X thread will then get an incorrect number (255), and think that's your bonus. It will then count down your rockets (even if you have none) from 255x. Interestingly, how the lights are stored in RAM, you can watch the 'Game Over' light on the backbox switch on and off - that light, essentially, is your '8x' bonus light.
 The ROM set listed as 'Alternate' is officially released from Stern, and it changes the RAM location for one of those two functions, avoiding the collision. */
 INITGAME(meteora,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(meteora,"cpu_u1a.716",CRC(9ee33909) SHA1(5f58e4e72af47047c8f060f98706ed9607720705),
+ST200_ROMSTART8888(meteora,"cpu_u1a.716",CRC(9ee33909) SHA1(5f58e4e72af47047c8f060f98706ed9607720705), // U1A is Stern's factory bug-fixed version of their original buggy U1
                            "cpu_u5.716", CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
                            "cpu_u2.716", CRC(fd396792) SHA1(b5d051a7ce7e7c2f9c4a0d900cef4f9ef2089476),
                            "cpu_u6.716", CRC(03fa346c) SHA1(51c04123cb433e90920c241e2d1f89db4643427b))
@@ -634,6 +634,9 @@ BY35_ROMEND
 #define input_ports_ninebafp input_ports_st
 CORE_CLONEDEFNV(ninebafp,nineball,"Nine Ball (Free Play)",1980,"Stern",by35_mST200,0)
 
+// When you have a 2 ball multiball, the multiplier 2x flashes and all scores are 2x
+// When you have a 3 ball multiball, the multiplier 4x flashes and all scores are 4x
+// Checksum validation is now correct. Limitation: Selftest is not complete. Freegame only.
 INITGAME(ninebalb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ROM_START(ninebalb)
   NORMALREGION(0x10000, BY35_CPUREGION)
@@ -904,11 +907,15 @@ CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (Bootleg No Timed Game)",1982,"Ster
 /*--------------------------------
 / Cue (Proto - Never released)
 /-------------------------------*/
-INITGAME(cue,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(cue,"cpu_u1.716",NO_DUMP,
-                       "cpu_u5.716",NO_DUMP,
-                       "cpu_u2.716",NO_DUMP,
-                       "cpu_u6.716",NO_DUMP)
+static const core_tLCDLayout dispCue[] = {
+  {0,16, 1,7,CORE_SEG87F},
+  {3, 3,34,1,CORE_SEG7}, {3, 6,35,1,CORE_SEG7}, {3, 9,36,2,CORE_SEG7}, {3, 14,38,2,CORE_SEG7},{0}
+};
+INITGAME(cue,GEN_STMPU200,dispCue,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cue,"cpu_u1.716",CRC(0e1b4136) SHA1(ce69436a8cd30e2056df2ef86339f2e98e749774),
+                       "cpu_u5.716",CRC(65e15866) SHA1(a5f0d156b7429e2565da762d53decf8bc1589a5e),
+                       "cpu_u2.716",CRC(7a30ea8e) SHA1(5c8b1ad0add887c5986559c640d620971739e9a1),
+                       "cpu_u6.716",CRC(412d4592) SHA1(2bcc8832875bd6be49e17328069c19c955f35f8d))
 BY35_ROMEND
 #define input_ports_cue input_ports_st
 CORE_GAMEDEFNV(cue,"Cue (Prototype)",1982,"Stern",by35_mST200,0)

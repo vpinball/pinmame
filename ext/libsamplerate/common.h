@@ -143,13 +143,14 @@ int zoh_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
 
 static inline double
 fmod_one (double x)
-{	double res ;
+{	return x-floor(x);
+	/*double res ;
 
 	res = x - lrint (x) ;
 	if (res < 0.0)
 		return res + 1.0 ;
 
-	return res ;
+	return res ;*/
 } /* fmod_one */
 
 static inline int

@@ -741,11 +741,12 @@ int i8039_execute(int cycles)
 
 	do
 	{
+		unsigned opcode;
 		R.PREVPC = R.PC;
 
 		CALL_MAME_DEBUG;
 
-		unsigned opcode=M_RDOP(R.PC.w.l);
+		opcode = M_RDOP(R.PC.w.l);
 
 /*      logerror("I8039:  PC = %04x,  opcode = %02x\n", R.PC.w.l, opcode); */
 
