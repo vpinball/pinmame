@@ -85,7 +85,7 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		} ;
 
 	rem = fmod_one (input_index) ;
-	priv->in_used += priv->channels * lrint (input_index - rem) ;
+	priv->in_used += priv->channels * (int)floor(input_index) ;
 	input_index = rem ;
 
 	/* Main processing loop. */
@@ -103,7 +103,7 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		priv->in_used += priv->channels * lrint (input_index - rem) ;
+		priv->in_used += priv->channels * (int)floor(input_index) ;
 		input_index = rem ;
 		} ;
 

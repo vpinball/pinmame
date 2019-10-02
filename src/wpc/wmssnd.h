@@ -14,13 +14,14 @@
 / HC55516 gain and/or YM2151 relative mixing volume:
 /
 / - Set the HC55516 gain according to observed max analog level of
-/   the game's speech clips (gain factor, 0..131071; ~50000 is typical)
+/   the game's speech clips.  Set this as a percentage of the default
+/   gain, 0..1000, where 100 = the normal gain.
 /
 / - Set the YM2151 relative volume to equalize loudness between FM
 /   music and speech clips (percent volume, 0..100; ~30 is typical)
 /
 / - Set the DAC relative volume level to equalize loudness between
-/   the DAC and HC55516
+/   the DAC and HC55516 (percent volume, 0..100)
 /
 / See hc55516.c for details, including how to create an instrumented
 / build that logs information useful to select the parameters for a

@@ -267,6 +267,14 @@ DE_ROMEND
 #define input_ports_robo input_ports_des11
 CORE_GAMEDEF(robo,a34,"Robocop (3.4)",1989,"Data East",de_mDEAS1,0)
 
+DE_ROMSTART88(robo_a29,"robob5.a29",CRC(72497d0b) SHA1(8a970c879cd0aaef5970a77778f71c0f3d6da049),
+                   "roboc5.a29",CRC(b251b0b6) SHA1(3d340070494b102703e282ae3a7970f6f8aaede9))
+DE1S_SOUNDROM244(  "robof7.rom",CRC(fa0891bd) SHA1(332d03c7802989abf717564230993b54819ebc0d),       //F7 on schem (sound)
+                   "robof6.rom",CRC(9246e107) SHA1(e8e72c0d099b17ea9e59ea7794011bad4c072c5e),       //F6 on schem (voice1)
+                   "robof4.rom",CRC(27d31df3) SHA1(1611a508ce74eb62a07296d69782ea4fa14503fc))       //F4 on schem (voice2)
+DE_ROMEND
+CORE_CLONEDEF(robo,a29,a34,"Robocop (2.9)",1989,"Data East",de_mDEAS1,0)
+
 DE_ROMSTART88(robo_a30,"b5.256",CRC(6870f3ae) SHA1(f02cace5f1d1922aed52c84efe60a46e5297865c),
                    "c5.256",CRC(f2de58cf) SHA1(0b5dd14761b4c64c1b01faad923ab671573499c5))
 DE1S_SOUNDROM244(  "robof7.rom",CRC(fa0891bd) SHA1(332d03c7802989abf717564230993b54819ebc0d),       //F7 on schem (sound)
@@ -409,7 +417,7 @@ INITGAMES11(tmnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD1
 DE_ROMSTART48(tmnt_104,"tmntb5a.104",CRC(f508eeee) SHA1(5e67fde49f6e7d5d563645df9036d5691be076cf),
                    "tmntc5a.104",CRC(a33d18d4) SHA1(41cf815c1f3d117efe0ddd14ad84076dcb80318a))
 DE_DMD16ROM1(      "tmntdsp.104",CRC(545686b7) SHA1(713df7820d024db3406f5e171f62a53e34474f70))
-DE1S_SOUNDROM288(   "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
+DE1S_SOUNDROM288(  "tmntf7.rom",CRC(59ba0153) SHA1(e7b02a656c67a0d866020a60ee90e30bef77f67f),        //7f
                    "tmntf6.rom",CRC(5668d45a) SHA1(65766cb47791ec0a2243015d487f1156a2819fe6),        //6f
                    "tmntf4.rom",CRC(6c38cd84) SHA1(bbe8797fe1622cb8f0842c4d7159760fed080880))        //4f
 DE_ROMEND
@@ -1020,6 +1028,15 @@ DE2S_SOUNDROM1444(     "wfsndu7.512", CRC(eb01745c) SHA1(7222e39c52ed298b737aada
 DE_ROMEND
 #define input_ports_wwfr input_ports_des11
 CORE_GAMEDEF(wwfr,106,"WWF Royal Rumble (1.06)",1994,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(wwfr_103f,"wwfcpuf.103"  ,CRC(0e211494) SHA1(c601a075636f84ad12ec0693772a8759049077d5))
+DE_DMD32ROM8x(          "wwfdspf.101"  ,CRC(4c39bda9) SHA1(2ea61a2020a4a4e3f23853ab8780d6999053e8ae))
+DE2S_SOUNDROM1444(      "wfsndu7.512"  ,CRC(eb01745c) SHA1(7222e39c52ed298b737aadaa5b57d2068d39287e),
+                        "wfsndu17.400" ,CRC(7d9c2ca8) SHA1(5d84559455fe7e27634b28bcab81d54f2676390e),
+                        "wfsndu21.400" ,CRC(242dcdcb) SHA1(af7220e14b0956ef40f75b2749eb1b9d715a1af0),
+                        "wfsndu36.400" ,CRC(39db8d85) SHA1(a55dd88fd4d9154b523dca9160bf96119af1f94d))
+DE_ROMEND
+CORE_CLONEDEF(wwfr,103f,106,"WWF Royal Rumble (1.03 French)",1994,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(wwfr_103, "wfcpuc5.512"  ,CRC(7e9ead89) SHA1(6cfd64899128b5f9b4ccc37b7bfdbb0a2a75a3a5))
 DE_DMD32ROM8x(          "wfdisp0.400"  ,CRC(e190b90f) SHA1(a0e73ce0b241a81e935e6790e04ea5e1fccf3742))

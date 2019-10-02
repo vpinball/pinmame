@@ -25,7 +25,7 @@ typedef struct SRC_STATE_tag SRC_STATE ;
 /* SRC_DATA is used to pass data to src_simple() and src_process(). */
 typedef struct
 {	const float	*data_in ;
-	float	 *data_out ;
+	float	*data_out ;
 
 	long	input_frames, output_frames ;
 	long	input_frames_used, output_frames_gen ;
@@ -168,12 +168,12 @@ enum
 ** back again.
 */
 
-void src_char_to_float_array(const char *in, float *out, int len);
-void src_short_to_float_array(const short *in, float *out, int len);
-void src_float_to_short_array (const float *in, short *out, int len) ;
+void src_char_to_float_array(const char * const __restrict in, float * const __restrict out, int len);
+void src_short_to_float_array(const short * const __restrict in, float * const __restrict out, int len);
+void src_float_to_short_array(const float * const __restrict in, short * const __restrict out, int len);
 
-void src_int_to_float_array (const int *in, float *out, int len) ;
-void src_float_to_int_array (const float *in, int *out, int len) ;
+void src_int_to_float_array(const int * const __restrict in, float * const __restrict out, int len);
+void src_float_to_int_array(const float * const __restrict in, int * const __restrict out, int len);
 
 
 #ifdef __cplusplus

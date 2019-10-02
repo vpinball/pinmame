@@ -326,7 +326,7 @@ int dsd_squarew566_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
-	newphase = context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate);
+	newphase = context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate);
 	/* Keep the new phasor in the 2Pi range.*/
 	context->phase=fmod(newphase,2.0*M_PI);
 
@@ -411,7 +411,7 @@ int dsd_trianglew566_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
-	newphase=context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate);
+	newphase=context->phase+(((2.0*M_PI)*node->input[1])/Machine->sample_rate);
 	/* Keep the new phasor in the 2Pi range.*/
 	newphase=fmod(newphase,2.0*M_PI);
 	context->phase=newphase;

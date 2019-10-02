@@ -1305,13 +1305,13 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 	if (datawidth > 1 && littleendian)
 #endif
 	{
-		debugload("+ Byte swapping region\n");
 		int i;
+		debugload("+ Byte swapping region\n");
 		for (i = 0, base = romdata->regionbase; i < romdata->regionlength; i += datawidth)
 		{
 			UINT8 temp[8];
-			memcpy(temp, base, datawidth);
 			int j;
+			memcpy(temp, base, datawidth);
 			for (j = datawidth - 1; j >= 0; j--)
 				*base++ = temp[j];
 		}

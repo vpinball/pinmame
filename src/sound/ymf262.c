@@ -61,7 +61,7 @@ differences between OPL2 and OPL3 shown in datasheets:
 #include "ymf262.h"
 
 #ifndef PI
-#define PI 3.14159265358979323846
+#define PI 3.1415926535897932384626433832795
 #endif
 
 // old code that had rate not necessarily meet clock/(8*36)
@@ -1190,7 +1190,7 @@ static int init_tables(void)
 	for (i=0; i<SIN_LEN; i++)
 	{
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * PI / SIN_LEN ); /* checked against the real chip */
+		m = sin( ((i*2)+1) * (PI / SIN_LEN) ); /* checked against the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 

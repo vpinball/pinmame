@@ -134,26 +134,35 @@ typedef struct
 	*   explanation of how the previously faulty, instantaneous IRQ change
 	*   in the YM2151 emulation was the root cause.
 	*
-	*   How long is the propagation delay in the REAL chip?  That's not
-	*   clear; it's not mentioned anywhere in the YM2151 data sheet or
-	*   application guide.  What IS documented is the overall time it takes
-	*   to complete a register write operation: 68 ticks of the 3.58MHz main
-	*   clock, or about 19us.  The change to the IRQ output pin could happen
-	*   at any time during that 68-clock period (as some internal registers
-	*   might get updated partway through the process), or it could happen
-	*   a couple of clocks later still (as the output pin might be a couple
-	*   of gate stages removed from the register).  If we look to the WPC89
-	*   software as our guide, that depends upon an absolute minimum of 2us
-	*   (4 clocks on the 2MHz 6809).  Since that software has no provision
-	*   for timing variability, it would only have been reliable if the
-	*   actual observed delay time were much longer than the 2us minimum,
-	*   so that clock errors and variations in phase and (as we're talking 
-	*   about two separate clocks here) wouldn't ever push us out of the
-	*   safe envelope.  A factor of 5X should be an adequate margin.  So
-	*   let's say 10us.
+	*   How long is the propagation delay in the REAL chip?  That's an
+	*   undocumented detail, as far as I can tell.  From the WPC89 sound
+	*   board code, we can deduce a definite lower bound of 2us (4 clocks
+	*   on the sound board's 2MHz 6809), because the sound board code clearly
+	*   depends upon the interrupt NOT arriving for at least 4 clocks after
+	*   the port write.  We can also deduce an upper bound, from an unrelated
+	*   set of games: the music playback timing gets screwed up on Jokerz! and 
+	*   a couple of Data East games from the same period if the IRQ takes 
+	*   more than 9us to fire.  I haven't gone through the same exercise
+	*   with Jokerz! and the DE games to analyze the precise nature of their
+	*   6809 code's timing dependency, since that wasn't necessary to track
+	*   down the bug - it was just obvious because Jokerz! started acting 
+	*   wrong with my first random guess at an IRQ response time, of 10us.
+	*   So for Jokerz! and the others, I just empirically probed for the
+	*   shortest delay time where they started acting up, and that turned 
+	*   out to be 9us.
+	* 
+	*   We could just split the difference between the observed upper and
+	*   lower bounds, but I think it might be better to pull towards the
+	*   lower end, because this represents the minimum change from the status
+	*   quo ante, where the WPC89 FIRQ issue was the only known timing issue.
+	*   Since we now also know that other games can be affected by making the
+	*   delay longer than the old instantaneous response, it seems safer to
+	*   keep it as close to the old instantaneous response as we can while
+	*   still solving the WPC89 problem.  So I'm going to build in a very
+	*   slight margin of error and make it 3us.
 	*/
 	void		*IRQ_clear_timer;
-#define IRQ_CLEAR_DELAY_TIME_US  10.0
+#define IRQ_CLEAR_DELAY_TIME_US  3.0
 
 	/*	Frequency-deltas to get the closest frequency possible.
 	*	There are 11 octaves because of DT2 (max 950 cents over base frequency)
@@ -563,7 +572,7 @@ static void init_tables(void)
 	for (i=0; i<SIN_LEN; i++)
 	{
 		/* non-standard sinus */
-		m = sin( ((i*2)+1) * M_PI / SIN_LEN ); /* verified on the real chip */
+		m = sin( ((i*2)+1) * (M_PI / SIN_LEN) ); /* verified on the real chip */
 
 		/* we never reach zero here due to ((i*2)+1) */
 
@@ -1025,9 +1034,10 @@ void YM2151WriteReg(int n, int r, int v)
 
 		case 0x14:	/* CSM, irq flag reset, irq enable, timer start/stop */
 			{
+				int oldstatus;
 				chip->irq_enable = v;	/* bit 3-timer B, bit 2-timer A, bit 7 - CSM */
 
-				int oldstatus = chip->status & 3;
+				oldstatus = chip->status & 3;
 
 				if (v&0x20) {	/* reset timer B irq flag */
 					chip->status &= ~2;
@@ -2375,4 +2385,3 @@ int YM2151ReadOutputFlag(int n)
 	return YMPSG[n].output;
 }
 #endif
-

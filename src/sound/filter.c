@@ -17,7 +17,7 @@
  #endif
 #endif
 
-static filter* filter_alloc(void) {
+static filter* filter_alloc() {
 	filter* f = malloc(sizeof(filter));
 	return f;
 }
@@ -34,9 +34,9 @@ void filter_state_reset(filter* f, filter_state* s) {
 	}
 }
 
-filter_state* filter_state_alloc(void) {
+filter_state* filter_state_alloc() {
 	int i;
-        filter_state* s = malloc(sizeof(filter_state));
+	filter_state* s = malloc(sizeof(filter_state));
 	s->prev_mac = 0;
 	for(i=0;i<FILTER_ORDER_MAX;++i)
 		s->xprev[i] = 0;
@@ -67,8 +67,8 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
 	const filter_real * const __restrict xcoeffs = f->xcoeffs;
 	const filter_real * const __restrict xprev = s->xprev;
 
-	int order = f->order;
-	int midorder = f->order / 2;
+	const int order = f->order;
+	const int midorder = f->order / 2;
 #ifdef FILTER_USE_INT
 	filter_real //!! long long??! -> not needed, as long as signal is balanced around 0 and/or number of coefficients low (i guess, at least for random values this works with plain int!)
 #else
@@ -209,9 +209,9 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
 #endif
 }
 
-filter* filter_lp_fir_alloc(double freq, int order) {
+filter* filter_lp_fir_alloc(double freq, const int order) {
 	filter* f = filter_alloc();
-	unsigned midorder = (order - 1) / 2;
+	const unsigned midorder = (order - 1) / 2;
 	unsigned i;
 	double gain;
 	double xcoeffs[(FILTER_ORDER_MAX+1)/2];
@@ -220,7 +220,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	assert( order % 2 == 1 );
 	assert( 0 < freq && freq <= 0.5 );
 
-	/* Compute the antitrasform of the perfect low pass filter */
+	/* Compute the antitransform of the perfect low pass filter */
 	gain = 2.*freq;
 	xcoeffs[0] = gain;
 
@@ -228,7 +228,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 
 	for(i=1;i<=midorder;++i) {
 		/* number of the sample starting from 0 to (order-1) included */
-		unsigned n = i + midorder;
+		const unsigned n = i + midorder;
 
 		/* sample value */
 		double c = sin(freq*i) / (M_PI*i);
@@ -238,7 +238,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 		//double w = 0.5 * (1. - cos((2.*M_PI)*n/(order-1))); /* Hann(ing) */
 		//double w = 0.54 - 0.46 * cos((2.*M_PI)*n/(order-1)); /* Hamming */
 		//double w = 0.42 - 0.5 * cos((2.*M_PI)*n/(order-1)) + 0.08 * cos((4.*M_PI)*n/(order-1)); /* Blackman */
-		double w = 0.355768 - 0.487396 * cos((2.*M_PI)*n/(order - 1)) + 0.144232 * cos((4.*M_PI)*n/(order - 1)) - 0.012604 * cos((6.*M_PI)*n/(order - 1)); /* Nutall */
+		const double w = 0.355768 - 0.487396 * cos((2.*M_PI)*n/(order - 1)) + 0.144232 * cos((4.*M_PI)*n/(order - 1)) - 0.012604 * cos((6.*M_PI)*n/(order - 1)); /* Nutall */
 		//double w = 0.35875 - 0.48829 * cos((2.*M_PI)*n/(order - 1)) + 0.14128 * cos((4.*M_PI)*n/(order - 1)) - 0.01168 * cos((6.*M_PI)*n/(order - 1)); /* Blackman-Harris */
 
 		/* apply the window */
@@ -274,21 +274,18 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 }
 
 
-void filter2_setup(int type, double fc, double d, double gain,
-					filter2_context *filter2, unsigned int sample_rate)
+void filter2_setup(const int type, const double fc, const double d, const double gain,
+					filter2_context *filter2, const unsigned int sample_rate)
 {
-	double w;	/* cutoff freq, in radians/sec */
-	double w_squared;
-	double den;	/* temp variable */
-	double two_over_T = 2*sample_rate;
-	double two_over_T_squared = (double)((long long)(2*sample_rate) * (long long)(2*sample_rate));
+	const double two_over_T = 2*sample_rate;
+	const double two_over_T_squared = (double)((long long)(2*sample_rate) * (long long)(2*sample_rate));
 
 	/* calculate digital filter coefficents */
 	/*w = (2.0*M_PI)*fc; no pre-warping */
-	w = (2*sample_rate)*tan(M_PI*fc/sample_rate); /* pre-warping */
-	w_squared = w*w;
+	const double w = two_over_T*tan(M_PI*fc/sample_rate); /* pre-warping */ /* cutoff freq, in radians/sec */
+	const double w_squared = w*w;
 
-	den = two_over_T_squared + d*w*two_over_T + w_squared;
+	const double den = two_over_T_squared + d*w*two_over_T + w_squared; /* temp variable */
 
 	filter2->a1 = 2.0*(-two_over_T_squared + w_squared)/den;
 	filter2->a2 = (two_over_T_squared - d*w*two_over_T + w_squared)/den;
@@ -332,18 +329,9 @@ void filter2_reset(filter2_context *filter2)
 
 
 /* Step the filter. */
-void filter2_step(filter2_context *filter2)
-{
-	filter2->y0 = -filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2 +
-	               filter2->b0 * filter2->x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2;
-	filter2->x2 = filter2->x1;
-	filter2->x1 = filter2->x0;
-	filter2->y2 = filter2->y1;
-	filter2->y1 = filter2->y0;
-}
 
 /* Step the filter with an input, returning the output */
-double filter2_step_with(filter2_context *filter2, double input)
+double filter2_step_with(filter2_context * const __restrict filter2, double input)
 {
 	filter2->x0 = input;
 	filter2_step(filter2);
@@ -396,8 +384,8 @@ void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, d
 //               |          |
 //              GND        GND
 //
-void filter_mf_lp_setup(double R1, double R2, double R3, double C1, double C2, 
-	struct filter2_context_struct *context, int sample_rate)
+void filter_mf_lp_setup(const double R1, const double R2, const double R3, const double C1, const double C2,
+	struct filter2_context_struct *context, const int sample_rate)
 {
 	// Continuous-time transfer function for the analog version of
 	// this filter:
@@ -417,23 +405,23 @@ void filter_mf_lp_setup(double R1, double R2, double R3, double C1, double C2,
 	// after factoring into the form above, we replace K with 1.0.
 	//
 	//double K = -R3/R1;  // analog filter's DC gain
-	double c1 = C2*R2*R3*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
-	double c2 = C1*C2*R2*R3;
+	const double c1 = C2*R2*R3*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
+	const double c2 = C1*C2*R2*R3;
 
 	// calculate the cutoff frequency for the filter
-	double Fc = 1.0 / (2.0 * PI * sqrt(R2*R3*C1*C2));
+	const double Fc = 1.0 / ((2.0 * PI) * sqrt(R2*R3*C1*C2));
 
 	// calculate the time step factor
-	double g = 1.0 / tan(PI * Fc / sample_rate);
-	double gn = g * 2.0 * PI * Fc;
+	const double g = 1.0 / tan(PI * Fc / sample_rate);
+	const double gn = g * (2.0 * PI) * Fc;
 
 	// Now we can calculate the difference equation coefficients from
 	// the continuous-time transfer function coefficients.
-	double cc = 1.0 + gn*c1 + gn*gn*c2;
+	const double cc = 1.0 + gn*c1 + gn*gn*c2;
 	context->b0 = 1.0 / cc;
 	context->b1 = 2.0 / cc;
 	context->b2 = 1.0 / cc;
-	context->a1 = 2 * (1.0 - gn*gn*c2) / cc;
+	context->a1 = 2.0 * (1.0 - gn*gn*c2) / cc;
 	context->a2 = (1.0 - gn*c1 + gn*gn*c2) / cc;
 
 	// reset the filter inputs
@@ -456,8 +444,8 @@ void filter_mf_lp_setup(double R1, double R2, double R3, double C1, double C2,
 //                          |
 //                         GND
 //
-void filter_active_lp_setup(double R1, double R2, double R3, double C1, 
-	struct filter2_context_struct *context, int sample_rate)
+void filter_active_lp_setup(const double R1, const double R2, const double R3, const double C1,
+	struct filter2_context_struct *context, const int sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//
@@ -476,17 +464,17 @@ void filter_active_lp_setup(double R1, double R2, double R3, double C1,
 	// with 1 for unit gain in the digital implementation.
 	//
 	// double K = -R3/R1;   // analog filter DC gain
-	double c1 = R2*R3*C1*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
+	const double c1 = R2*R3*C1*(1.0 / R1 + 1.0 / R2 + 1.0 / R3);
 
 	// calculate the cutoff frequency for the filter
-	double Fc = 1.0 / (2.0 * PI * c1);
+	const double Fc = 1.0 / ((2.0 * PI) * c1);
 
 	// calculate the time step factor
-	double g = 1.0 / tan(PI * Fc / sample_rate);
-	double gn = g * 2.0 * PI * Fc;
+	const double g = 1.0 / tan(PI * Fc / sample_rate);
+	const double gn = g * (2.0 * PI) * Fc;
 
 	// calculate the difference equation coefficients
-	double cc = 1.0 + gn*c1;
+	const double cc = 1.0 + gn*c1;
 	context->b0 = 1.0 / cc;
 	context->b1 = 2.0 / cc;
 	context->b2 = 1.0 / cc;
@@ -512,8 +500,8 @@ void filter_active_lp_setup(double R1, double R2, double R3, double C1,
 //                         GND   |            |
 //                               +------------+
 //
-void filter_sallen_key_lp_setup(double R1, double R2, double C1, double C2,
-	struct filter2_context_struct *context, int sample_rate)
+void filter_sallen_key_lp_setup(const double R1, const double R2, const double C1, const double C2,
+	struct filter2_context_struct *context, const int sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//
@@ -529,18 +517,18 @@ void filter_sallen_key_lp_setup(double R1, double R2, double C1, double C2,
 	//
 	// ... and calculate the coefficients c1 and c2.
 	//
-	double c1 = C2*(R1 + R2);
-	double c2 = R1*C1*R2*C2;
+	const double c1 = C2*(R1 + R2);
+	const double c2 = R1*C1*R2*C2;
 
 	// calculate the cutoff frequency for the filter
-	double Fc = 1.0 / (2.0 * PI * c1);
+	const double Fc = 1.0 / ((2.0 * PI) * c1);
 
 	// calculate the time step factor
-	double g = 1.0 / tan(PI * Fc / sample_rate);
-	double gn = g * 2.0 * PI * Fc;
+	const double g = 1.0 / tan(PI * Fc / sample_rate);
+	const double gn = g * (2.0 * PI) * Fc;
 
 	// calculate the difference equation coefficients
-	double cc = 1.0 + gn*c1;
+	const double cc = 1.0 + gn*c1;
 	context->b0 = 1.0 / cc;
 	context->b1 = 2.0 / cc;
 	context->b2 = 1.0 / cc;
@@ -550,4 +538,3 @@ void filter_sallen_key_lp_setup(double R1, double R2, double C1, double C2,
 	// reset the inputs
 	filter2_reset(context);
 }
-

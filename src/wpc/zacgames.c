@@ -994,7 +994,7 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(strspffp,strsphnx,"Star's Phoenix (French Speech, Free Play)",1987,"Zaccaria",mZAC2XS3,0)
 
 /*--------------------------------
-/ New Star's Phoenix (08/87)
+/ New Star's Phoenix (08/87) (same ROMs as Star's Phoenix, but slightly different playfield, etc)
 /-------------------------------*/
 INITGAME(nstrphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13181x3,366)
 ZAC_ROMSTART1820(nstrphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),

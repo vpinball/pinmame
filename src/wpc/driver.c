@@ -205,9 +205,11 @@ DRIVERNV(xenonfa )      //BY35      10/08 Xenon (French Free Play)
 DRIVERNV(flashgdn)      //BY35-834: 02/81 Flash Gordon
 DRIVERNV(flashgdv)      //BY35      02/81 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35      02/81 Flash Gordon (French)
+DRIVERNV(flashgvf)      //BY35      02/81 Flash Gordon (French Vocalizer sound)
 DRIVERNV(flashgda)      //BY35      10/08 Flash Gordon (Free Play)
 DRIVERNV(flashgva)      //BY35      10/08 Flash Gordon (Vocalizer sound Free Play)
 DRIVERNV(flashgfa)      //BY35      10/08 Flash Gordon (French Free Play)
+DRIVERNV(flashgvffp)    //BY35      10/08 Flash Gordon (French Vocalizer sound Free Play)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(flashgp2)      //BY35      ??/8? Flash Gordon (6801 hardware prototype)
 DRIVERNV(eballd14)      //BY35-838: 04/81 Eight Ball Deluxe (rev. 14)
@@ -419,6 +421,7 @@ DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
 DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football (2.7, 50cts)
 DRIVER(mnfb,c29)        //Data East MPU: 09/89 ABC Monday Night Football (2.9, 50cts)
+DRIVER(robo,a29)        //Data East MPU: 11/89 Robocop (2.9)
 DRIVER(robo,a30)        //Data East MPU: 11/89 Robocop (3.0)
 DRIVER(robo,a34)        //Data East MPU: 11/89 Robocop (3.4)
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera (3.2)
@@ -497,6 +500,7 @@ DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Dutch)
 DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
 DRIVER(tomy,500)        //Data East MPU: 05/16 Tommy (5.00 unofficial MOD)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
+DRIVER(wwfr,103f)       //Data East MPU: 05/94 WWF Royal Rumble (1.03 French)
 DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
 DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N' Roses (3.00)
 DRIVER(gnr,300f)        //Data East MPU: 07/94 Guns N' Roses (3.00 French)
@@ -540,7 +544,8 @@ DRIVERNV(ladyshot)      //Lady Sharpshooter (May 1985)
 DRIVERNV(ldyshot2)      //Lady Sharpshooter (May 1985, alternate set)
 DRIVERNV(andromed)      //Andromeda (August 1985)
 DRIVERNV(andromea)      //Andromeda (alternate set)
-DRIVERNV(cyclopes)      //Cyclopes (November 1985)
+DRIVERNV(cyclope1)      //Cyclopes (November 1985)
+DRIVERNV(cyclopes)      //Cyclopes (December 1985)
                         //Loch Ness Monster (November 1985)
 
 // ------------------
@@ -644,8 +649,10 @@ DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(triplyfp)      //                Chicago Cubs Triple Play (Free Play)
-DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (alternate set)
+DRIVERNV(triplaya)      //                Chicago Cubs Triple Play (rev. 1)
 DRIVERNV(triplyf1)      //                Chicago Cubs Triple Play (rev. 1 Free Play)
+DRIVERNV(triplayg)      //                Chicago Cubs Triple Play (German)
+DRIVERNV(triplgfp)      //                Chicago Cubs Triple Play (German Free Play)
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(bounthfp)      //                Bounty Hunter (Free Play)
 DRIVERNV(bountyhg)      //                Bounty Hunter (German)
@@ -979,6 +986,7 @@ DRIVERNV(ebalchmb)      //Eight Ball Champ (198?)
 // ----------------
 // MANILAMATIC
 // ----------------
+DRIVERNV(topsound)      //Top Sound (1988)
 DRIVERNV(mmmaster)      //Master (1988)
 
 // ----------------
@@ -1207,6 +1215,11 @@ DRIVERNV(vrnwrld)       //1996 - Verne's World
 // ---------------
 DRIVERNV(goldgame)      //19?? - Golden Game
 DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
+
+// ---------------
+// SPORT MATIC
+// ---------------
+DRIVERNV(terrlake)      //1987 - Terrific Lake
 
 // ---------------
 // STARGAME GAMES
@@ -2029,6 +2042,7 @@ DRIVER(mtl,180)         //S.A.M.: 11/18 Metallica - V1.80.0
 DRIVER(mtl,180h)        //S.A.M.: 11/18 Metallica - V1.80.0 Limited Edition
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(mtl,164c)        // pinball browser colorized using extend memory
+DRIVER(mtl,164hc)       // pinball browser colorized using extend memory
 DRIVER(mtl,170c)        // pinball browser colorized using extend memory
 DRIVER(mtl,170hc)       // pinball browser colorized using extend memory
 DRIVER(mtl,180c)        // pinball browser colorized using extend memory
@@ -2247,6 +2261,7 @@ DRIVER(tmwrp,t2)        //                  Time Warp (L-2) /10 Scoring Ted Este
 DRIVER(tmwrp,l3)        //                  Time Warp (L-3)
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
+DRIVER(grgar,c1)        //                  Gorgar (Lane Change MOD)
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(lzbal,t2)        //                  Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
@@ -2279,7 +2294,8 @@ DRIVER(bk,f4)           //          11/80 W Black Knight (L-4 French Speech)
 DRIVER(jngld,l1)        //S7-503:   02/81 W Jungle Lord (L-1)
 DRIVER(jngld,l2)        //          02/81 W Jungle Lord (L-2)
 DRIVER(jngld,nt)        //          09/13 W Jungle Lord New Tricks
-DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh
+DRIVER(pharo,l2)        //S7-504:   05/81 W Pharaoh (L-2)
+DRIVER(pharo,l2b)       //          05/19 W Pharaoh (L-2 'Tomb' Sample Sound Fix MOD)
                         //S7-506:   06/81 W Black Knight Limited Edition
 DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
@@ -2348,6 +2364,7 @@ DRIVER(fire,l2)         //S11-556:  08/87 W Fire! (L-2)
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire! (L-3)
 DRIVER(bguns,p1)        //S11-557:  10/87 W Big Guns (P-1)
 DRIVER(bguns,la)        //          10/87 W Big Guns (L-A)
+DRIVER(bguns,lac)       //          07/19 W Big Guns (L-AC Competition MOD) // patch 7472
 DRIVER(bguns,l7)        //          10/87 W Big Guns (L-7)
 DRIVER(bguns,l8)        //          10/87 W Big Guns (L-8)
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
@@ -2397,6 +2414,7 @@ DRIVER(tsptr,l3)        //S11-2630: 07/89 B Transporter the Rescue
 DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //          09/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //          10/89 W Police Force (LA-4)
+DRIVER(polic,g4)        //          10/89 W Police Force (LG-4 German)
 DRIVER(eatpm,p7)        //S11-782:  09/89 B Elvira and the Party Monsters (PA-7 Prototype)
 DRIVER(eatpm,l1)        //          09/89 B Elvira and the Party Monsters (LA-1)
 DRIVER(eatpm,f1)        //          09/89 B Elvira and the Party Monsters (LF-1 French)
@@ -2575,7 +2593,8 @@ DRIVER(br,l3)           //          01/93 B Black Rose (L-3)
 DRIVER(br,d3)           //                  Black Rose (D-3) LED Ghost Fix
 DRIVER(br,l4)           //          11/93 B Black Rose (L-4)
 DRIVER(br,d4)           //                  Black Rose (D-4) LED Ghost Fix
-DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
+DRIVER(ft,p2)           //WPC-505:  06/92 W Fish Tales (P-2)
+DRIVER(ft,p4)           //          07/92 W Fish Tales (P-4)
 DRIVER(ft,p5)           //                  Fish Tales (P-5) LED Ghost Fix
 DRIVER(ft,l3)           //          09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //          09/92 W Fish Tales (L-4)
@@ -2755,12 +2774,13 @@ DRIVER(fs,lx4)          //          09/94 W Flintstones, The (LX-4)
 DRIVER(fs,dx4)          //                  Flintstones, The (DX-4) LED Ghost Fix
 DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
 DRIVER(fs,dx5)          //                  Flintstones, The (DX-5) LED Ghost Fix
-DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX-4 Prototype)
+DRIVER(corv,px3)        //WPC-536:  08/94 B Corvette (PX-3 Prototype)
+DRIVER(corv,px4)        //          09/94 B Corvette (PX-4 Prototype)
 DRIVER(corv,px5)        //                  Corvette (PX-5) LED Ghost Fix
-DRIVER(corv,la1)        //WPC-536:  08/94 B Corvette (LA-1)
+DRIVER(corv,la1)        //          09/94 B Corvette (LA-1)
 DRIVER(corv,lx1)        //          09/94 B Corvette (LX-1)
 DRIVER(corv,dx1)        //                  Corvette (DX-1) LED Ghost Fix
-DRIVER(corv,lx2)        //WPC-536:  08/94 B Corvette (LX-2)
+DRIVER(corv,lx2)        //          10/94 B Corvette (LX-2)
 DRIVER(corv,21)         //          01/96 B Corvette (2.1)
 DRIVER(corv,f61)        //          ??/??   Corvette (FreeWPC 0.61)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L-6)
@@ -2811,7 +2831,7 @@ DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
 //DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
-DRIVER(tom,13c)         //          01/19 B Theatre of Magic (1.3XC Competition MOD) //patch 5bc8
+DRIVER(tom,13c)         //          06/19 B Theatre of Magic (1.3XC Competition MOD) //patch 34ee
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)

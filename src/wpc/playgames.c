@@ -454,3 +454,23 @@ ROM_START(ironball)
     ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
 ROM_END
 CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
+
+/*-------------------------------------------------------------------
+/ ??/87 Terrific Lake (Sport Matic)
+/-------------------------------------------------------------------*/
+core_tLCDLayout dispSM[] = {
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
+  { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 }, { 3,12,51,1,CORE_SEG7 },
+  { 6, 0,21,1,CORE_SEG7 }, { 6, 2,16,5,CORE_SEG7 }, { 6,12,50,1,CORE_SEG7 },
+  { 3,20,13,1,CORE_SEG7 }, { 3,22, 8,5,CORE_SEG7 }, { 3,32,49,1,CORE_SEG7 },
+  {10, 0, 5,1,CORE_SEG7 }, {10, 2, 0,1,CORE_SEG7 }, {10, 5, 1,1,CORE_SEG7 }, {10, 8, 2,1,CORE_SEG7 }, {10,11, 3,2,CORE_SEG7 },
+  {0}
+};
+INITGAME5(terrlake, dispSM, 1)
+PLAYMATIC_ROMSTART64(terrlake,"jtl_2a3.u9", CRC(f6d3cedd) SHA1(31e0daac1e9215ad0e1557d31d520745ead0f396))
+NORMALREGION(0x10000, REGION_CPU2)
+  ROM_LOAD("stl_1a0.u3", 0x0000, 0x8000, CRC(b5afdc39) SHA1(fb74de453dfc66b87f3d64508802b3de46d14631))
+NORMALREGION(0x20000, REGION_SOUND1)
+  ROM_LOAD("stl_1b0.u4", 0x0000, 0x8000, CRC(3bbdd791) SHA1(68cd86cb96a278538d18ca0a77b372309829edf4))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(terrlake,"Terrific Lake",1987,"Sport Matic",gl_mPLAYMATIC4SZSU,GAME_STATUS)

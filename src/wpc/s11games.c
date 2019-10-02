@@ -374,7 +374,7 @@ CORE_CLONEDEF(fire, l2, l3, "Fire! (L-2)", 1987, "Williams", s11_mS11AS,0)
 INITGAME(bguns, GEN_S11A,s11_dispS11a,12, FLIP_SWNO(52,53) ,0,0)
 S11_ROMSTART48(bguns,l8,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
                         "guns_u27.l8", CRC(ac4a1a51) SHA1(d48b5e5b550107df8c6edc2d5f78777d7d408959))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
@@ -384,7 +384,7 @@ CORE_GAMEDEF(bguns, l8, "Big Guns (L-8)", 1987, "Williams", s11_mS11AS,0)
 
 S11_ROMSTART48(bguns,l7,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
                         "guns_u27.l7", CRC(8ff26d24) SHA1(eab732b401144ad7efc80d336299beae85ca7d24))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
@@ -393,16 +393,25 @@ CORE_CLONEDEF(bguns,l7,l8,"Big Guns (L-7)", 1987, "Williams", s11_mS11AS,0)
 
 S11_ROMSTART48(bguns,la,"u26-l-a.rom", CRC(613b4d5c) SHA1(7eed4ddb661cd03839a9a89ca695de9cbd1c4d45),
                         "u27-l-a.rom", CRC(eee9e1cc) SHA1(32fbade5cbc9047a61d4ce0ec1e616d5324d507f))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
 S11_ROMEND
 CORE_CLONEDEF(bguns,la,l8,"Big Guns (L-A)", 1987, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(bguns,lac,"u26-l-a.rom", CRC(613b4d5c) SHA1(7eed4ddb661cd03839a9a89ca695de9cbd1c4d45),
+                        "Big Guns U27 game ROM rev L-A patch 7472.rom", CRC(b245f72e) SHA1(f4dc750445c06f6aa67c961f53cb1fcadacd4ee9))
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
+S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
+                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
+S11_ROMEND
+CORE_CLONEDEF(bguns,lac,l8,"Big Guns (L-AC Competition MOD)", 2019, "Williams", s11_mS11AS,0)
+
 S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
                         "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
-S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+S11XS_SOUNDROM88(       "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
                         "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
 S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
                         "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
@@ -714,7 +723,7 @@ CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (PR-4 Family version)", 1989, "Willia
 CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (LG-1 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg2, la3, "Earthshaker (LG-2 German)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0) // supports collapsable building
+CORE_CLONEDEF(esha, pa4, la3, "Earthshaker (PA-4 Prototype)", 1988, "Williams", s11_mS11BS,0) // supports collapsable building, aka Phil Dixons version
 CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (PA-1 Prototype)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
@@ -812,6 +821,15 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
 S11_ROMEND
 #define input_ports_polic input_ports_s11
 CORE_GAMEDEF(polic,l4, "Police Force (LA-4)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(polic,g4,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
+                        "pfrc_u27.lg4",CRC(058322e7) SHA1(87847065c0785dbd4dff61cc256ed73ff929c40d))
+S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
+                        "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+CORE_CLONEDEF(polic,g4,l4,"Police Force (LG-4 German)", 1989, "Williams", s11_mS11BS,0)
 
 S11_ROMSTART48(polic,l3,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
                         "pfrc_u27.lx3",CRC(ef5d4808) SHA1(89cf62640e39397899776ab1d132645a5eab9e0e))
@@ -920,7 +938,7 @@ S11_ROMSTART48(mousn,l1,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f93110
 S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
 S11CS_SOUNDROM888(      "mous_u4.l1",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
+                        "mous_u19.l1", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91), // labeled as PA1 (?)
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 

@@ -104,7 +104,7 @@ int mc3417_sh_start(const struct MachineSound *msound)
 		chip->length_estimate = 0;
 		chip->length_estimate_runs = 0;
 #else
-		chip->filter_f = filter_lp_fir_alloc(0.04, FILTER_ORDER_MAX);
+		chip->filter_f = filter_lp_fir_alloc(0.05, FILTER_ORDER_MAX);
 		chip->filter_state = filter_state_alloc();
 		filter_state_reset(chip->filter_f, chip->filter_state);
 #endif
