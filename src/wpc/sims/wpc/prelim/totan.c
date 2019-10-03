@@ -288,7 +288,7 @@ DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5b
 WPC_ROMEND
 
 WPC_ROMSTART(totan,04,"an_g11.0_4",0x80000,CRC(20da3800) SHA1(c8c048f35b1828f9ee1e7fc3201f1a316974b924))
-DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5bc91e0e9ef0),
+DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5bc91e0e9ef0), // version history indicates that previous sound ROM versions existed for sample games
                 "ans3v1_0.rom",CRC(3f677813) SHA1(b1e67c74b927c0c8cb76be8794a04a53fdf643d4),
                 "ans4v1_0.rom",CRC(c26dff5f) SHA1(d86323f0df15cf7abd4480d173e6b217ef715396),
                 "ans5v1_0.rom",CRC(32ca1602) SHA1(e4c7235b5d387bdde16ebef4d3aeeb7276c69d6d))
@@ -301,7 +301,7 @@ CORE_GAMEDEF(totan,14,"Tales of the Arabian Nights (1.4)",1996,"Williams",wpc_m9
 CORE_CLONEDEF(totan,15c,14,"Tales of the Arabian Nights (1.5C Competition MOD)",2016,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(totan,13,14,"Tales of the Arabian Nights (1.3)",1996,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(totan,12,14,"Tales of the Arabian Nights (1.2)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(totan,04,14,"Tales of the Arabian Nights (0.4)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,04,14,"Tales of the Arabian Nights (0.4 Prototype)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
