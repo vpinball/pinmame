@@ -324,8 +324,8 @@ CORE_CLONEDEF(wd,11,12, "WHO Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10r,12,"WHO Dunnit (1.0R)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10g,12,"WHO Dunnit (1.0 German Sound)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10f,12,"WHO Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,03r,12,"WHO Dunnit (0.3R)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,048r,12,"WHO Dunnit (0.48R)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,03r,12,"WHO Dunnit (0.3R Prototype)",1995,"Bally",wpc_m95DCSS,0) // according to version history this pre-dates the sample games even
+CORE_CLONEDEF(wd,048r,12,"WHO Dunnit (0.48R Prototype)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -373,5 +373,3 @@ static void init_wd(void) {
   mech_add(2, &wd_reelMech[2]);
   wpc_set_fastflip_addr(0x80);
 }
-
-
