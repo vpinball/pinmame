@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.2 (X X, 2019) - "Sounds good II"
+Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
 
 Initial efforts to start converting the PinMAME source base over to the 3-Clause BSD License (not completed yet, so for the full binary package the old license stays in place for now!)
