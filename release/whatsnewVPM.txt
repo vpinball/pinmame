@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.2 (X X, 2019) - "Sounds good II"
+Version 3.3 (X X, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
 - Change the default of the 'ddraw' option to 0, which means that the faster (but less compatible nowadays) Direct Draw implementation of the window display is by default disabled
 
