@@ -310,7 +310,7 @@ IDI_HEADER_DOWN         ICON                    "res\\header_down.ico"
 // Dialog
 //
 
-IDD_ABOUT DIALOG  0, 0, 296, 129
+IDD_ABOUT DIALOG  0, 0, 296, 138
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About PinMAME32"
 FONT 8, "MS Sans Serif"
