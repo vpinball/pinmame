@@ -6,6 +6,9 @@ What's new in PinMAME:
 Version 3.3 (X X, 2019) - ""
 ------------------------------------------------------------------------------
 
+*** CORE/CPU ***
+Sped up Video Dens games, found more dip switches
+
 
 
 Version 3.2 (October 6th, 2019) - "Sounds good II"
