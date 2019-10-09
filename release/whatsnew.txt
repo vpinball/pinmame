@@ -9,6 +9,10 @@ Version 3.3 (X X, 2019) - ""
 *** CORE/CPU ***
 Sped up Video Dens games, found more dip switches
 
+*** ROM SUPPORT *** Thanks to Soren
+Clones:
+Theatre of Magic 1.3XC (competition MOD) (updated)
+
 
 
 Version 3.2 (October 6th, 2019) - "Sounds good II"

@@ -2831,7 +2831,7 @@ DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
 //DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
-DRIVER(tom,13c)         //          06/19 B Theatre of Magic (1.3XC Competition MOD) //patch 34ee
+DRIVER(tom,13c)         //          10/19 B Theatre of Magic (1.3XC Competition MOD) //patch f0f8
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)
