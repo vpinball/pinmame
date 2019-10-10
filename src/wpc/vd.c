@@ -52,11 +52,11 @@ static INTERRUPT_GEN(VD_vblank) {
 
 static SWITCH_UPDATE(VD) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xc0, 1);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>4, 0x01, 2);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>5, 0x01, 3);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>6, 0x01, 4);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>7, 0x01, 5);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x40, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>1, 0x01, 2);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>2, 0x01, 3);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>3, 0x01, 4);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x51, 5);
   }
 }
 
@@ -141,12 +141,19 @@ static MACHINE_INIT(VD) {
     CORE_PORTS \
     SIM_PORTS(balls) \
   PORT_START /* 0 */ \
-    COREPORT_BITDEF(0x0010, IPT_START1,      IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(0x0040, IPT_COIN1,       IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(0x0080, IPT_COIN2,       IP_KEY_DEFAULT) \
-    COREPORT_BIT(   0x0020, "Ball Tilt",     KEYCODE_INSERT) \
-    COREPORT_BIT(   0x4000, "Reset",         KEYCODE_7) \
-    COREPORT_BITTOG(0x8000, DEF_STR(Unknown),KEYCODE_END)
+    COREPORT_BITDEF(0x0002, IPT_START1,      IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(0x0008, IPT_COIN1,       IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(0x0001, IPT_COIN2,       IP_KEY_DEFAULT) \
+    COREPORT_BIT   (0x0004, "Ball Tilt",     KEYCODE_INSERT) \
+    COREPORT_BIT   (0x0010, "Enter Initial", KEYCODE_ENTER) \
+    COREPORT_BITTOG(0x0040, "Test",          KEYCODE_7) \
+    COREPORT_BIT   (0x4000, "Reset",         KEYCODE_0)
+
+static MACHINE_STOP(VD) {
+  cpu_set_nmi_line(0, PULSE_LINE); // NMI routine makes sure the NVRAM is valid!
+  run_one_timeslice(); // wait two timeslices before shutdown so the NMI routine can finish
+  run_one_timeslice();
+}
 
 static MACHINE_DRIVER_START(VD)
   MDRV_IMPORT_FROM(PinMAME)
@@ -155,7 +162,7 @@ static MACHINE_DRIVER_START(VD)
   MDRV_CPU_PORTS(VD_readport, VD_writeport)
   MDRV_CPU_VBLANK_INT(VD_vblank, 1)
   MDRV_CPU_PERIODIC_INT(VD_irq, JP_IRQFREQ)
-  MDRV_CORE_INIT_RESET_STOP(VD,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(VD,NULL,VD)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(VD)
   MDRV_DIAGNOSTIC_LEDH(1)
