@@ -43,7 +43,9 @@ static INTERRUPT_GEN(VD_vblank) {
   /*-- lamps --*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
+  if (locals.vblankCount) {
+    coreGlobals.solenoids = locals.solenoids;
+  }
   /*-- display --*/
   memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
 
@@ -102,8 +104,11 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(sol_w) {
-  if (data) locals.solenoids = (locals.solenoids & 0x10000) | (1 << (data-1));
-  else locals.solenoids = locals.solenoids & 0x10000;
+  locals.vblankCount = -1;
+  if (data) {
+    locals.solenoids = (locals.solenoids & 0x10000) | (1 << (data-1));
+    coreGlobals.solenoids |= locals.solenoids;
+  } else locals.solenoids = locals.solenoids & 0x10000;
 }
 
 static MEMORY_READ_START(VD_readmem)
@@ -229,10 +234,10 @@ VD_INPUT_PORTS_START(break, 1)
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x0800, DEF_STR(On))
     COREPORT_DIPNAME( 0x3000, 0x0000, "Bumper power")
-      COREPORT_DIPSET(0x0000, "4")
-      COREPORT_DIPSET(0x1000, "6")
-      COREPORT_DIPSET(0x2000, "8")
-      COREPORT_DIPSET(0x3000, "10")
+      COREPORT_DIPSET(0x3000, "4")
+      COREPORT_DIPSET(0x2000, "6")
+      COREPORT_DIPSET(0x1000, "8")
+      COREPORT_DIPSET(0x0000, "10")
     COREPORT_DIPNAME( 0xc000, 0x0000, "Bonus balls")
       COREPORT_DIPSET(0xc000, "6")
       COREPORT_DIPSET(0x8000, "8")
@@ -296,12 +301,11 @@ VD_INPUT_PORTS_START(papillon, 1)
     COREPORT_DIPNAME( 0x0800, 0x0000, "S12")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x0800, DEF_STR(On))
-    COREPORT_DIPNAME( 0x1000, 0x0000, "S13")
-      COREPORT_DIPSET(0x0000, DEF_STR(Off))
-      COREPORT_DIPSET(0x1000, DEF_STR(On))
-    COREPORT_DIPNAME( 0x2000, 0x0000, "S14")
-      COREPORT_DIPSET(0x0000, DEF_STR(Off))
-      COREPORT_DIPSET(0x2000, DEF_STR(On))
+    COREPORT_DIPNAME( 0x3000, 0x0000, "Bumper power")
+      COREPORT_DIPSET(0x3000, "4")
+      COREPORT_DIPSET(0x2000, "6")
+      COREPORT_DIPSET(0x1000, "8")
+      COREPORT_DIPSET(0x0000, "10")
     COREPORT_DIPNAME( 0x4000, 0x0000, "S15")
       COREPORT_DIPSET(0x0000, DEF_STR(Off))
       COREPORT_DIPSET(0x4000, DEF_STR(On))
