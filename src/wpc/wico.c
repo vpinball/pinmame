@@ -89,10 +89,10 @@ static INTERRUPT_GEN(WICO_vblank) {
 
 static SWITCH_UPDATE(WICO) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x0b, 0);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x80, 12);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x0b, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x80, 0);
     //hack to keep the game progressing - the start button enables it!
-    if (coreGlobals.swMatrix[0] & 0x08) locals.keepGoingHack = 1;
+    if (coreGlobals.swMatrix[1] & 0x08) locals.keepGoingHack = 1;
   }
 }
 
@@ -111,10 +111,10 @@ static READ_HANDLER(io_r) {
       if (locals.swCol > 11) {
         ret = core_getDip(locals.swCol - 12);
         if (locals.swCol == 15) {
-          ret |= coreGlobals.swMatrix[12] & 0x80; // include self test button (same input line as dip #32)
+          ret |= coreGlobals.swMatrix[0] & 0x80; // include self test button (same input line as dip #32)
         }
       } else {
-        ret = coreGlobals.swMatrix[locals.swCol];
+        ret = coreGlobals.swMatrix[1 + locals.swCol];
       }
       break;
   }
@@ -380,7 +380,7 @@ static core_tLCDLayout dispAftor[] = {
   {4,16,34,2,CORE_SEG9},
   {0}
 };
-static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),1,8}};
+static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),4,8}};
 static void init_aftor(void) { core_gameData = &aftorGameData; }
 
 CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_NOT_WORKING)
