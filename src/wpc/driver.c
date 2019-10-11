@@ -2770,6 +2770,7 @@ DRIVER(fs,lx2)          //WPC-529:  07/94 W Flintstones, The (LX-2)
 DRIVER(fs,dx2)          //                  Flintstones, The (DX-2) LED Ghost Fix
 DRIVER(fs,sp2)          //          07/94 W Flintstones, The (SP-2)
 DRIVER(fs,sp2d)         //                  Flintstones, The (SP-2D) LED Ghost Fix
+DRIVER(fs,lx3)          //          08/94 W Flintstones, The (LX-3)
 DRIVER(fs,lx4)          //          09/94 W Flintstones, The (LX-4)
 DRIVER(fs,dx4)          //                  Flintstones, The (DX-4) LED Ghost Fix
 DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
