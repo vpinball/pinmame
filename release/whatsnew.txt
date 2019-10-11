@@ -9,8 +9,9 @@ Version 3.3 (X X, 2019) - ""
 *** CORE/CPU ***
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
 
-*** ROM SUPPORT *** Thanks to Soren
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org
 Clones:
+Flintstones, The LX-3
 Theatre of Magic 1.3XC (competition MOD) (updated)
 
 
