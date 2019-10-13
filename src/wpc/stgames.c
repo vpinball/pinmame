@@ -423,7 +423,7 @@ ST200_ROMSTART8888(galaxyb,"cpu_u1b.716",CRC(53f7c0c9) SHA1(c3ee8bbdd1eca7a044c7
                            "cpu_u6b.716",CRC(be4eacc1) SHA1(3d95e8e859312ef0a7ed52356dabe35ed0bebdef))
 BY35_ROMEND
 #define input_ports_galaxyb input_ports_galaxy
-CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,0) // rev. 2
+CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit conversion)",2003,"Stern / Oliver",by35_mST200,0) // rev. 2
 
 /*--------------------------------
 / Ali
@@ -829,7 +829,7 @@ ST200_ROMSTART8888(dragfisb,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a330010
                             "bcpu_u6.716",CRC(7e8db47b) SHA1(4a42636c1baf39072bbe123855c9cc5f20ca6888))
 BY35_ROMEND
 #define input_ports_dragfisb input_ports_st
-CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (Drop Target Score patch)",1982,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(dragfisb,dragfist,"Dragonfist (MOD Drop Target Score patch)",1982,"Stern",by35_mST200,0)
 
 // This one from ipdb patches some more additional bytes from dragfisb, but no more documentation found
 INITGAME(dragfib2,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
@@ -839,7 +839,7 @@ ST200_ROMSTART8888(dragfib2,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a330010
                             "b2cpu_u6.716",CRC(90b3baad) SHA1(ac2982baff3c4d61d38b39d446a3b8aa012acb30))
 BY35_ROMEND
 #define input_ports_dragfib2 input_ports_st
-CORE_CLONEDEFNV(dragfib2,dragfist,"Dragonfist (Drop Target Score patch 2)",1982,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(dragfib2,dragfist,"Dragonfist (MOD Drop Target Score patch 2)",1982,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Orbitor 1
@@ -880,7 +880,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a3
                            "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
 BY35_ROMEND
 #define input_ports_orbitora input_ports_st
-CORE_CLONEDEFNV(orbitora,orbitor1,"Orbitor 1 (Bootleg)",1982,"Stern",by35_mST200v,0)
+CORE_CLONEDEFNV(orbitora,orbitor1,"Orbitor 1 (MOD)",1982,"Stern",by35_mST200v,0)
 
 INITGAME(orbitorb,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(orbitorb,"o1v4u1.716",CRC(fcf502bd) SHA1(f1c84d5b29e20eada1aa35e811bd9fec451099f7),
@@ -891,7 +891,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a3
                            "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
 BY35_ROMEND
 #define input_ports_orbitorb input_ports_st
-CORE_CLONEDEFNV(orbitorb,orbitor1,"Orbitor 1 (Bootleg Free Play)",1982,"Stern",by35_mST200v,0)
+CORE_CLONEDEFNV(orbitorb,orbitor1,"Orbitor 1 (MOD Free Play)",1982,"Stern",by35_mST200v,0)
 
 INITGAME(orbitorc,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(orbitorc,"o1v3_u1.716",CRC(31677402) SHA1(5814c4eaa8c36842b6a9c3bbafed1efff39c7b3a), // called MOD1.716 on ipdb.org
@@ -902,7 +902,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a3
                            "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
 BY35_ROMEND
 #define input_ports_orbitorc input_ports_st
-CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (Bootleg No Timed Game)",1982,"Stern",by35_mST200v,0)
+CORE_CLONEDEFNV(orbitorc,orbitor1,"Orbitor 1 (MOD No Timed Game)",1982,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Cue (Proto - Never released)
