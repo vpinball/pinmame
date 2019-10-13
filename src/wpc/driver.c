@@ -105,7 +105,7 @@ DRIVERNV(cntintl2)      //          10/80 Continental (Bingo, alternate version)
 
 //Boomerang prototype
 DRIVERNV(boomrang)      //          11/75 Boomerang (Engineering prototype)
-DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
+DRIVERNV(boomranb)      //          04/17 Boomerang (MOD with code fixes)
 
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
@@ -1309,16 +1309,16 @@ DRIVERNV(viper)         //MPU-200: 12/81 Viper
 DRIVERNV(viperfp)       //MPU-200: 12/81 Viper (Free Play)
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
-DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
-DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (Bootleg 2 - modified to match instruction card/manual)
+DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (MOD - modified to match instruction card/manual)
+DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (MOD 2 - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
-DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (Bootleg)
-DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor 1 (Bootleg Free Play)
-DRIVERNV(orbitorc)      //MPU-200: 04/82 Orbitor 1 (Bootleg No Timed Game)
-DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
+DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (MOD)
+DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor 1 (MOD Free Play)
+DRIVERNV(orbitorc)      //MPU-200: 04/82 Orbitor 1 (MOD No Timed Game)
+DRIVERNV(cue)           //MPU-200: ??/82 Cue (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
-DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
+DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord (Proto - Never released)
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme (1.02)
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (1.01 English)

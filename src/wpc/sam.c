@@ -2155,7 +2155,7 @@ CORE_CLONEDEF(sman, 230,   261, "Spider-Man (V2.3)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 240,   261, "Spider-Man (V2.4)", 2009, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 250,   261, "Spider-Man (V2.5)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 260,   261, "Spider-Man (V2.6)", 2010, "Stern", sam1, 0)
-CORE_CLONEDEF(sman, 262,   261, "Spider-Man (V2.62) (bootleg with replaced music)", 2014, "Stern/Destruk", sam1, 0)
+CORE_CLONEDEF(sman, 262,   261, "Spider-Man (V2.62) (MOD with replaced music)", 2014, "Stern/Destruk", sam1, 0)
 
 /*-------------------------------------------------------------------
 / Wheel of Fortune

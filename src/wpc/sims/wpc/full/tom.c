@@ -572,7 +572,7 @@ CORE_CLONEDEF(tom,12,13,"Theatre of Magic (1.2X)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,121,13,"Theatre of Magic (1.21X LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,10f,13,"Theatre of Magic (1.0 French)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,101f,13,"Theatre of Magic (1.01 French LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
-CORE_CLONEDEF(tom,06,13,"Theatre of Magic (0.6a)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(tom,06,13,"Theatre of Magic (0.6a Prototype)",1995,"Bally",wpc_mSecurityS,0)
 CORE_CLONEDEF(tom,061,13,"Theatre of Magic (0.61a LED Ghost Fix)",1995,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------

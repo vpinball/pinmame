@@ -287,14 +287,14 @@ S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
                           "ic20_fix.532",    CRC(48958d77) SHA1(ddfec991ef99606b866ced08b59e205a0b2cadd1))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5 Bootleg High score save)",1998,"Jess M. Askey",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5 MOD High score save)",1998,"Jess M. Askey",s7_mS7S,0)
 
 S7_ROMSTART000x(hypbl,l6, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51efeb8be7c20d6465239e),
                           "ic17.532",    CRC(6f4c0c4c) SHA1(1036067e2c85da867983e6e51ee2a7b5135000df),
                           "ic20_l6.532",    CRC(e40c27cd) SHA1(337bd8450be305796e52c1b7d3ae3cc8cc972525))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6 Bootleg High score save)",2006,"Jess M. Askey",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6 MOD High score save)",2006,"Jess M. Askey",s7_mS7S,0)
 
 /*----------------------------
 / Barracora- Sys.7 (Game #510)
