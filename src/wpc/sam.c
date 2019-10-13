@@ -2372,8 +2372,8 @@ CORE_CLONEDEF(bdk, 240, 294, "Batman: The Dark Knight (V2.4)", 2009, "Stern", sa
 CORE_CLONEDEF(bdk, 290, 294, "Batman: The Dark Knight (V2.9)", 2010, "Stern", sam1, 0)
 CORE_CLONEDEF(bdk, 300, 294, "Batman: The Dark Knight Home Edition/Costco (V3.00)", 2010, "Stern", sam1, 0) // Standard model in Stern terms
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(bdk, 294c, 294, "Batman: The Dark Knight (V2.9 Colored)", 2010, "Stern", sam1, 0)
-#endif 
+CORE_CLONEDEF(bdk, 294c, 294, "Batman: The Dark Knight (V2.9) (Colored MOD)", 2010, "Stern", sam1, 0)
+#endif
 
 /*-------------------------------------------------------------------
 / CSI: Crime Scene Investigation
@@ -2613,10 +2613,10 @@ SAM1_ROM128MB(acd_168h,  "acd_168h.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd
 SAM1_ROM128MB(acd_170,   "acd_170.bin",  CRC(f44e175c) SHA1(8d355511bc22a489f7820057d3b32e1548864612), 0x07228E48)
 SAM1_ROM128MB(acd_170h,  "acd_170h.bin", CRC(c2979275) SHA1(581db92af267095d2fc92bdc8aa9ff6595219ffe), 0x07228E48)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(acd_168c,  "acd_168c.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
-SAM1_ROM128MB(acd_168hc, "acd_168hc.bin",CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
-SAM1_ROM128MB(acd_170c,  "acd_170c.bin", CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
-SAM1_ROM128MB(acd_170hc, "acd_170hc.bin",CRC(5a4246a1) SHA1(725eb666ffaef894d2bd694d412658395c7fa7f9), 0x077FFFF0)
+SAM1_ROM128MB(acd_168c,  "acd_168c.bin", NO_DUMP, 0x077FFFF0)
+SAM1_ROM128MB(acd_168hc, "acd_168hc.bin",NO_DUMP, 0x077FFFF0)
+SAM1_ROM128MB(acd_170c,  "acd_170c.bin", NO_DUMP, 0x077FFFF0)
+SAM1_ROM128MB(acd_170hc, "acd_170hc.bin",NO_DUMP, 0x077FFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(acd, 1)
@@ -2642,10 +2642,10 @@ CORE_CLONEDEF(acd, 168,  170h, "AC/DC (V1.68)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 168h, 170h, "AC/DC Limited Edition (V1.68)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(acd, 170,  170h, "AC/DC (V1.70.0)", 2018, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(acd, 168c, 170h, "AC/DC (V1.68) (Colored)", 2014, "Stern", sam2, 0)
-CORE_CLONEDEF(acd, 168hc,170h, "AC/DC Limited Edition (V1.68) (Colored)", 2014, "Stern", sam2, 0)
-CORE_CLONEDEF(acd, 170c, 170h, "AC/DC (V1.70.0) (Colored)", 2018, "Stern", sam2, 0)
-CORE_CLONEDEF(acd, 170hc,170h, "AC/DC Limited Edition (V1.70.0) (Colored)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 168c, 170h, "AC/DC (V1.68) (Colored MOD)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 168hc,170h, "AC/DC Limited Edition (V1.68) (Colored MOD)", 2014, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 170c, 170h, "AC/DC (V1.70.0) (Colored MOD)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(acd, 170hc,170h, "AC/DC Limited Edition (V1.70.0) (Colored MOD)", 2018, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2669,8 +2669,8 @@ SAM1_ROM32MB(xmn_150h,  "xmn_150h.bin", CRC(8e2c3870) SHA1(ddfb4370bb4f32d440538
 SAM1_ROM32MB(xmn_151,   "xmn_151.bin",  CRC(84c744a4) SHA1(db4339be7e9d47c46a13f95520dfe58da8450a19), 0x01FA5268)
 SAM1_ROM32MB(xmn_151h,  "xmn_151h.bin", CRC(21d1088f) SHA1(9a0278c0324fbf549b5b7bcc93bc327f3eb65e19), 0x01FA5268)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM32MB(xmn_151c,  "xmn_151c.bin", CRC(84c744a4) SHA1(db4339be7e9d47c46a13f95520dfe58da8450a19), 0x01FFFFF0)
-SAM1_ROM32MB(xmn_151hc, "xmn_151hc.bin",CRC(21d1088f) SHA1(9a0278c0324fbf549b5b7bcc93bc327f3eb65e19), 0x01FFFFF0)
+SAM1_ROM32MB(xmn_151c,  "xmn_151c.bin", NO_DUMP, 0x01FFFFF0)
+SAM1_ROM32MB(xmn_151hc, "xmn_151hc.bin",NO_DUMP, 0x01FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(xmn, 1)
@@ -2691,8 +2691,8 @@ CORE_CLONEDEF(xmn, 150,  151h, "X-Men (V1.5)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(xmn, 150h, 151h, "X-Men Limited Edition (V1.5)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(xmn, 151,  151h, "X-Men (V1.51)", 2014, "Stern", sam1, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(xmn, 151c, 151h, "X-Men (V1.51) (Colored)", 2014, "Stern", sam1, 0)
-CORE_CLONEDEF(xmn, 151hc,151h, "X-Men Limited Edition (V1.51) (Colored)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 151c, 151h, "X-Men (V1.51) (Colored MOD)", 2014, "Stern", sam1, 0)
+CORE_CLONEDEF(xmn, 151hc,151h, "X-Men Limited Edition (V1.51) (Colored MOD)", 2014, "Stern", sam1, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2707,8 +2707,8 @@ SAM1_ROM32MB(avs_140h, "avs_140h.bin", CRC(9b7e13f8) SHA1(eb97e92013a8d1d706a119
 SAM1_ROM32MB(avs_170,  "avs_170.bin",  CRC(AA4A7203) SHA1(f2f4a9851097a07291f3469f94362f4cb1f7a127), 0x01F5C990)
 SAM1_ROM32MB(avs_170h, "avs_170h.bin", CRC(07FEB01C) SHA1(25cca6c2f8fc2e3a38a72263cb25cefaf7f3b832), 0x01F5C990)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM32MB(avs_170c, "avs_170c.bin", CRC(ff1a39e5) SHA1(44949f8aca36a8a1896fe253278ef7f146764d79), 0x01FFFFF0)
-SAM1_ROM32MB(avs_170hc,"avs_170hc.bin",CRC(ff1a39e5) SHA1(44949f8aca36a8a1896fe253278ef7f146764d79), 0x01FFFFF0)
+SAM1_ROM32MB(avs_170c, "avs_170c.bin", NO_DUMP, 0x01FFFFF0)
+SAM1_ROM32MB(avs_170hc,"avs_170hc.bin",NO_DUMP, 0x01FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(avs, 1)
@@ -2720,8 +2720,8 @@ CORE_CLONEDEF(avs, 140,  170h, "Avengers, The (V1.4)", 2013, "Stern", sam1, 0)
 CORE_CLONEDEF(avs, 140h, 170h, "Avengers, The Limited Edition (V1.4)", 2013, "Stern", sam1, 0)
 CORE_CLONEDEF(avs, 170,  170h, "Avengers, The (V1.7)", 2016, "Stern", sam1, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(avs, 170c, 170h, "Avengers, The (V1.7) (Colored)", 2016, "Stern", sam1, 0)
-CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored)", 2016, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 170c, 170h, "Avengers, The (V1.7) (Colored MOD)", 2016, "Stern", sam1, 0)
+CORE_CLONEDEF(avs, 170hc,170h, "Avengers, The Limited Edition (V1.7) (Colored MOD)", 2016, "Stern", sam1, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2757,12 +2757,12 @@ SAM1_ROM128MB(mtl_170h,  "mtl170h.bin",  CRC(99d42a4e) SHA1(1983a6d1cd5664cf0359
 SAM1_ROM128MB(mtl_180,   "mtl180.bin",   CRC(2d2e8cdc) SHA1(a426e71f5673dab5e2d36260d0e8edbbbcd4d34a), 0x05DFB40C)
 SAM1_ROM128MB(mtl_180h,  "mtl180h.bin",  CRC(e37bc6e2) SHA1(1f2d74a4c22a369717cbbcfc4e9702fc03a52c7e), 0x05DFB40C)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(mtl_164c,  "mtl164c.bin",  CRC(ebbf5845) SHA1(4411279b3e4ea9621638bb81e47dc8753bfc0a05), 0x05FFFFF0)
-SAM1_ROM128MB(mtl_164hc, "mtl164hc.bin", CRC(ebbf5845) SHA1(4411279b3e4ea9621638bb81e47dc8753bfc0a05), 0x05FFFFF0)
-SAM1_ROM128MB(mtl_170c,  "mtl170c.bin",  CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
-SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", CRC(99d42a4e) SHA1(1983a6d1cd5664cf03599b035f520e0c6aa33632), 0x05FFFFF0)
-SAM1_ROM128MB(mtl_180c,  "mtl180c.bin",  CRC(2d2e8cdc) SHA1(a426e71f5673dab5e2d36260d0e8edbbbcd4d34a), 0x05FFFFF0)
-SAM1_ROM128MB(mtl_180hc, "mtl180hc.bin", CRC(e37bc6e2) SHA1(1f2d74a4c22a369717cbbcfc4e9702fc03a52c7e), 0x05FFFFF0)
+SAM1_ROM128MB(mtl_164c,  "mtl164c.bin",  NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(mtl_164hc, "mtl164hc.bin", NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(mtl_170c,  "mtl170c.bin",  NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(mtl_170hc, "mtl170hc.bin", NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(mtl_180c,  "mtl180c.bin",  NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(mtl_180hc, "mtl180hc.bin", NO_DUMP, 0x05FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(mtl, 1)
@@ -2795,12 +2795,12 @@ CORE_CLONEDEF(mtl, 170,  180h, "Metallica (V1.7)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 170h, 180h, "Metallica Limited Edition (V1.7)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mtl, 180,  180h, "Metallica (V1.80.0)", 2018, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(mtl, 164c, 180h, "Metallica (V1.64) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(mtl, 164hc,180h, "Metallica Limited Edition (V1.64) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(mtl, 170c, 180h, "Metallica (V1.7) (Colored)", 2016, "Stern", sam2, 0)
-CORE_CLONEDEF(mtl, 170hc,180h, "Metallica Limited Edition (V1.7) (Colored)", 2016, "Stern", sam2, 0)
-CORE_CLONEDEF(mtl, 180c, 180h, "Metallica (V1.80.0) (Colored)", 2018, "Stern", sam2, 0)
-CORE_CLONEDEF(mtl, 180hc,180h, "Metallica Limited Edition (V1.80.0) (Colored)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 164c, 180h, "Metallica (V1.64) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 164hc,180h, "Metallica Limited Edition (V1.64) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 170c, 180h, "Metallica (V1.7) (Colored MOD)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 170hc,180h, "Metallica Limited Edition (V1.7) (Colored MOD)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 180c, 180h, "Metallica (V1.80.0) (Colored MOD)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(mtl, 180hc,180h, "Metallica Limited Edition (V1.80.0) (Colored MOD)", 2018, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2823,10 +2823,10 @@ SAM1_ROM128MB(st_161h, "st_161h.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5e
 SAM1_ROM128MB(st_162,  "st_162.bin",  CRC(49cd0105) SHA1(48e040eb05e7cb781edacab6d04dd444ef5459a0), 0x037ab474)
 SAM1_ROM128MB(st_162h, "st_162h.bin", CRC(2b42c5bb) SHA1(6190583b889f258afbdc0f99597823b18912d480), 0x037ab474)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(st_161c, "st_161c.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
-SAM1_ROM128MB(st_161hc,"st_161hc.bin",CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
-SAM1_ROM128MB(st_162c, "st_162c.bin", CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
-SAM1_ROM128MB(st_162hc,"st_162hc.bin",CRC(74ad8a31) SHA1(18c940d021441ba87854f5eb6edb84aeffabdaae), 0x037FFFF0)
+SAM1_ROM128MB(st_161c, "st_161c.bin", NO_DUMP, 0x037FFFF0)
+SAM1_ROM128MB(st_161hc,"st_161hc.bin",NO_DUMP, 0x037FFFF0)
+SAM1_ROM128MB(st_162c, "st_162c.bin", NO_DUMP, 0x037FFFF0)
+SAM1_ROM128MB(st_162hc,"st_162hc.bin",NO_DUMP, 0x037FFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(st, 1)
@@ -2846,10 +2846,10 @@ CORE_CLONEDEF(st, 161,  162h, "Star Trek (Stern) (V1.61)", 2015, "Stern", sam2, 
 CORE_CLONEDEF(st, 161h, 162h, "Star Trek (Stern) Limited Edition (V1.61)", 2015, "Stern", sam2, 0)
 CORE_CLONEDEF(st, 162,  162h, "Star Trek (Stern) (V1.62)", 2018, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(st, 161c, 162h, "Star Trek (Stern) (V1.61) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(st, 161hc,162h, "Star Trek (Stern) Limited Edition (V1.61) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(st, 162c, 162h, "Star Trek (Stern) (V1.62) (Colored)", 2018, "Stern", sam2, 0)
-CORE_CLONEDEF(st, 162hc,162h, "Star Trek (Stern) Limited Edition (V1.62) (Colored)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 161c, 162h, "Star Trek (Stern) (V1.61) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 161hc,162h, "Star Trek (Stern) Limited Edition (V1.61) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 162c, 162h, "Star Trek (Stern) (V1.62) (Colored MOD)", 2018, "Stern", sam2, 0)
+CORE_CLONEDEF(st, 162hc,162h, "Star Trek (Stern) Limited Edition (V1.62) (Colored MOD)", 2018, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2867,8 +2867,8 @@ SAM1_ROM128MB(mt_145,  "mt_145.bin",  CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b
 SAM1_ROM128MB(mt_145h, "mt_145h.bin", CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03C2CCC4)													
 SAM1_ROM128MB(mt_145hb,"mt_145hb.bin",CRC(91fd5615) SHA1(0dbd7f3fc68218bcb10c893069d35447a445bc11), 0x03C2CCC4)													
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(mt_145c, "mt_145c.bin", CRC(67a38387) SHA1(31626b54a5b2dd7fbc98c4b97ed84ce1a6705955), 0x037FFFF0)
-SAM1_ROM128MB(mt_145hc,"mt_145hc.bin",CRC(20ec78b3) SHA1(95443dd1d545de409a692793ad609ed651cb61d8), 0x03FFFFF0)
+SAM1_ROM128MB(mt_145c, "mt_145c.bin", NO_DUMP, 0x037FFFF0)
+SAM1_ROM128MB(mt_145hc,"mt_145hc.bin",NO_DUMP, 0x03FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(mt, 1)
@@ -2883,8 +2883,8 @@ CORE_CLONEDEF(mt, 140hb,145h, "Mustang Boss (V1.4)", 2014, "Stern", sam2, 0)
 CORE_CLONEDEF(mt, 145,  145h, "Mustang (V1.45)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(mt, 145hb,145h, "Mustang Boss (V1.45)", 2016, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(mt, 145c, 145h, "Mustang (V1.45) (Colored)", 2016, "Stern", sam2, 0)
-CORE_CLONEDEF(mt, 145hc,145h, "Mustang Limited Edition (V1.45) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 145c, 145h, "Mustang (V1.45) (Colored MOD)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(mt, 145hc,145h, "Mustang Limited Edition (V1.45) (Colored MOD)", 2016, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2912,10 +2912,10 @@ SAM1_ROM128MB(twd_156h, "twd_156h.bin", CRC(4594a287) SHA1(1e1a3b94bacf54a0c20cf
 SAM1_ROM128MB(twd_160,  "twd_160.bin",  CRC(44409cd9) SHA1(cace8725771e9fc09720a7a79f95abac44325232), 0x05C80448)
 SAM1_ROM128MB(twd_160h, "twd_160h.bin", CRC(1ed7b80a) SHA1(1fbaa077ec834ff9d289008ef1169e0e7fd68271), 0x05C80448)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(twd_156c, "twd_156c.bin", CRC(DC6699CF) SHA1(93f0759243c815f55c2e52db8dfc3b3faa94a28d), 0x05FFFFF0)
-SAM1_ROM128MB(twd_156hc,"twd_156hc.bin",CRC(4594a287) SHA1(1e1a3b94bacf54a0c20cfa978db1284008c0e0a1), 0x05FFFFF0)
-SAM1_ROM128MB(twd_160c, "twd_160c.bin", CRC(44409cd9) SHA1(cace8725771e9fc09720a7a79f95abac44325232), 0x05FFFFF0)
-SAM1_ROM128MB(twd_160hc,"twd_160hc.bin",CRC(1ed7b80a) SHA1(1fbaa077ec834ff9d289008ef1169e0e7fd68271), 0x05FFFFF0)
+SAM1_ROM128MB(twd_156c, "twd_156c.bin", NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(twd_156hc,"twd_156hc.bin",NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(twd_160c, "twd_160c.bin", NO_DUMP, 0x05FFFFF0)
+SAM1_ROM128MB(twd_160hc,"twd_160hc.bin",NO_DUMP, 0x05FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(twd, 1)
@@ -2940,10 +2940,10 @@ CORE_CLONEDEF(twd, 156,  160h, "Walking Dead, The (V1.56)", 2015, "Stern", sam2,
 CORE_CLONEDEF(twd, 156h, 160h, "Walking Dead, The Limited Edition (V1.56)", 2015, "Stern", sam2, 0)
 CORE_CLONEDEF(twd, 160,  160h, "Walking Dead, The (V1.60.0)", 2017, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(twd, 156c, 160h, "Walking Dead, The (V1.56) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(twd, 156hc,160h, "Walking Dead, The Limited Edition (V1.56) (Colored)", 2015, "Stern", sam2, 0)
-CORE_CLONEDEF(twd, 160c, 160h, "Walking Dead, The (V1.60.0) (Colored)", 2017, "Stern", sam2, 0)
-CORE_CLONEDEF(twd, 160hc,160h, "Walking Dead, The Limited Edition (V1.60.0) (Colored)", 2017, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 156c, 160h, "Walking Dead, The (V1.56) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 156hc,160h, "Walking Dead, The Limited Edition (V1.56) (Colored MOD)", 2015, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 160c, 160h, "Walking Dead, The (V1.60.0) (Colored MOD)", 2017, "Stern", sam2, 0)
+CORE_CLONEDEF(twd, 160hc,160h, "Walking Dead, The Limited Edition (V1.60.0) (Colored MOD)", 2017, "Stern", sam2, 0)
 #endif
 
 /*-------------------------------------------------------------------
@@ -2954,8 +2954,8 @@ INITGAME(smanve, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_GAME_AUXSOL12)
 SAM1_ROM128MB(smanve_100, "smanve_100.bin",  CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03F2CA8C)
 SAM1_ROM128MB(smanve_101, "smanve_101.bin",  CRC(b7a525e8) SHA1(43fd9520225b11ba8ba5f9e8055689a652237983), 0x03F2CA8C)
 #ifdef SAM_INCLUDE_COLORED
-SAM1_ROM128MB(smanve_100c,"smanve_100c.bin", CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03FFFFF0)
-SAM1_ROM128MB(smanve_101c,"smanve_101c.bin", CRC(f761fa19) SHA1(259bd6d42e742eaad1b7b50f9b5e4830c81084b0), 0x03FFFFF0)
+SAM1_ROM128MB(smanve_100c,"smanve_100c.bin", NO_DUMP, 0x03FFFFF0)
+SAM1_ROM128MB(smanve_101c,"smanve_101c.bin", NO_DUMP, 0x03FFFFF0)
 #endif
 
 SAM_INPUT_PORTS_START(smanve, 1)
@@ -2963,6 +2963,6 @@ SAM_INPUT_PORTS_START(smanve, 1)
 CORE_GAMEDEF(smanve, 101, "Spider-Man Vault Edition (V1.01)", 2016, "Stern", sam2, 0)
 CORE_CLONEDEF(smanve, 100,  101, "Spider-Man Vault Edition (V1.0)", 2016, "Stern", sam2, 0)
 #ifdef SAM_INCLUDE_COLORED
-CORE_CLONEDEF(smanve, 100c, 101, "Spider-Man Vault Edition (V1.0) (Colored)", 2016, "Stern", sam2, 0)
-CORE_CLONEDEF(smanve, 101c, 101, "Spider-Man Vault Edition (V1.01) (Colored)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(smanve, 100c, 101, "Spider-Man Vault Edition (V1.0) (Colored MOD)", 2016, "Stern", sam2, 0)
+CORE_CLONEDEF(smanve, 101c, 101, "Spider-Man Vault Edition (V1.01) (Colored MOD)", 2016, "Stern", sam2, 0)
 #endif
