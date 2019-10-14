@@ -31,11 +31,8 @@ static struct {
   UINT32 solenoids;
   UINT8  swCol;
   UINT8  lampCol;
-  UINT8	 zcIRQEnable;
   UINT8	 gtIRQEnable;
   UINT8	 diagnosticLed;
-
-  int    keepGoingHack;
 } locals;
 
 static int wico_data2seg[0x80] = {
@@ -45,18 +42,15 @@ static int wico_data2seg[0x80] = {
   0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
   0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
   0,     0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71,  0x3d,  0x76,  0x309, 0x1e,  0x374, 0x38,  0x337, 0x37,  0x3f, // 4  ABCDEFGHIJKLMNO
-  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x362, 0x5b,  0x39,  0x64,  0x0f,  0x63,  0x08, // 5 PQRSTUVWXYZ[\]°_
-  0,     0,     0,     0x58,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0x5c, // 6    c           o
+  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x6e,  0x5b,  0x39,  0x64,  0x0f,  0x63,  0x08, // 5 PQRSTUVWXYZ[\]°_
+  0x20,  0,     0,     0x58,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0x5c, // 6 `  c           o
   0,     0,     0x50,  0,     0,     0,     0x1c                                                                 // 7   r   v
 };
 
 static UINT8 *shared_ram;
 
 static INTERRUPT_GEN(WICO_irq_housekeeping) {
-  //hack to keep the game progressing! Find the reason why RAM @$00AF is never decreased and remove again!
-  if (locals.keepGoingHack && shared_ram[0xaf]) shared_ram[0xaf]--;
-
-  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, locals.zcIRQEnable ? HOLD_LINE : CLEAR_LINE);
+  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, HOLD_LINE);
 }
 
 static void WICO_firq_housekeeping(int data) {
@@ -90,9 +84,8 @@ static INTERRUPT_GEN(WICO_vblank) {
 static SWITCH_UPDATE(WICO) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0x0b, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x07, 11);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x80, 0);
-    //hack to keep the game progressing - the start button enables it!
-    if (coreGlobals.swMatrix[1] & 0x08) locals.keepGoingHack = 1;
   }
 }
 
@@ -139,7 +132,19 @@ static WRITE_HANDLER(io_w) {
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
       break;
     case 4: // momentary solenoids
-      locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+      if (data < 0x10) {
+      	if (data & 0x0f) {
+          locals.solenoids = (locals.solenoids & 0xffff00ff) | (0x100 << (data - 9));
+        } else {
+          locals.solenoids = (locals.solenoids & 0xffff00ff);
+        }
+      } else {
+      	if (data & 0x0f) {
+          coreGlobals.tmpLampMatrix[8 + (data >> 4)] = data & 0x0f;
+        } else {
+          coreGlobals.tmpLampMatrix[8 + (data >> 4)] = 0;
+        }
+      }
       break;
     case 5: // sound
       SN76494_0_w(0, data);
@@ -154,9 +159,8 @@ static WRITE_HANDLER(io_w) {
       }
       break;
     case 7: // zero crossing interrupt reset
-      locals.zcIRQEnable = data; // enable/disable zero crossing interrupt
-      if (!locals.zcIRQEnable) cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
-      logerror("io_w: ZC INT ENABLE offset %x, data %02x\n", offset, data);
+      cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
+      logerror("io_w: ZC INT RESET offset %x, data %02x\n", offset, data);
       break;
     case 9: // enable/disable general timing interrupt
       locals.gtIRQEnable = data;
@@ -217,12 +221,14 @@ static MACHINE_INIT(WICO) {
   memset(&locals, 0, sizeof locals);  
   memset(shared_ram, 0x12, 0x800);  
   cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
+  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
 }
 
 static MACHINE_RESET(WICO) {
   memset(&locals, 0, sizeof locals);  
   memset(shared_ram, 0x12, 0x800);  
   cpunum_set_reset_line(HOUSEKEEPING, ASSERT_LINE);
+  cpu_set_irq_line(HOUSEKEEPING, M6809_IRQ_LINE, CLEAR_LINE);
 }
 
 struct SN76494interface WICO_sn76494Int = {
@@ -261,6 +267,9 @@ INPUT_PORTS_START(aftor) \
   COREPORT_BITDEF(0x0008, IPT_START1, IP_KEY_DEFAULT) \
   COREPORT_BITDEF(0x0001, IPT_COIN1, IP_KEY_DEFAULT) \
   COREPORT_BITDEF(0x0002, IPT_COIN2, IP_KEY_DEFAULT) \
+  COREPORT_BIT   (0x0100, "Slam Tilt", KEYCODE_HOME) \
+  COREPORT_BIT   (0x0200, "Playfield Tilt", KEYCODE_INSERT) \
+  COREPORT_BIT   (0x0400, "Pendulum Tilt", KEYCODE_DEL) \
   COREPORT_BITTOG(0x8000, "Service", KEYCODE_9) \
 
   PORT_START /* 1 */ \
@@ -383,4 +392,4 @@ static core_tLCDLayout dispAftor[] = {
 static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),4,8}};
 static void init_aftor(void) { core_gameData = &aftorGameData; }
 
-CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_IMPERFECT_GRAPHICS)
