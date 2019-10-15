@@ -28,17 +28,15 @@
 static struct {
   int    vblankCount;
   int    firqtimer;
-  UINT32 solenoids;
-  UINT8  swCol;
-  UINT8  lampCol;
+  UINT32 solenoids, solenoids2;
   UINT8	 gtIRQEnable;
   UINT8	 diagnosticLed;
 } locals;
 
 static int wico_data2seg[0x80] = {
 // 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-  0,     0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0x77,  0x34f, 0x39,  0x30f, 0x79,  0x00, // 0 0123456789ABCDE
-  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    // 1
+  0,     0x01,  0x02,  0x04,  0x08,  0x10,  0x20,  0x40,  0x100, 0x200, 0,     0,     0,     0,     0,     0,    // 0  single segments
+  0x37f, 0x37e, 0x37d, 0x37b, 0x377, 0x36f, 0x35f, 0x33f, 0x27f, 0x17f, 0x37f, 0x37f, 0x37f, 0x37f, 0x37f, 0,    // 1 inverted segs?
   0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
   0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
   0,     0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71,  0x3d,  0x76,  0x309, 0x1e,  0x374, 0x38,  0x337, 0x37,  0x3f, // 4  ABCDEFGHIJKLMNO
@@ -78,7 +76,7 @@ static INTERRUPT_GEN(WICO_vblank) {
   /*-- diag. LED --*/
   coreGlobals.diagnosticLed = locals.diagnosticLed;
 
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(8));
 }
 
 static SWITCH_UPDATE(WICO) {
@@ -90,24 +88,28 @@ static SWITCH_UPDATE(WICO) {
 }
 
 static READ_HANDLER(io_r) {
-  UINT8 ret = 0;
+  UINT8 swCol, ret = 0;
   switch (offset) {
     case 0x0a:
 //      locals.gtIRQEnable = 1;
       ret = 0xff;
       break;
     case 0x0b:
-      locals.lampCol = shared_ram[0x0095] % 16;
+//      locals.lampCol = shared_ram[0x0095] % 16;
+      break;
+    case 0x0e:
+      locals.gtIRQEnable = 0;
+      ret = 0xff;
       break;
     case 0x0f:
-      locals.swCol = shared_ram[0x0095] % 16;
-      if (locals.swCol > 11) {
-        ret = core_getDip(locals.swCol - 12);
-        if (locals.swCol == 15) {
+      swCol = shared_ram[0x0095] % 16;
+      if (swCol > 11) {
+        ret = core_getDip(swCol - 12);
+        if (swCol == 15) {
           ret |= coreGlobals.swMatrix[0] & 0x80; // include self test button (same input line as dip #32)
         }
       } else {
-        ret = coreGlobals.swMatrix[1 + locals.swCol];
+        ret = coreGlobals.swMatrix[1 + swCol];
       }
       break;
   }
@@ -116,13 +118,11 @@ static READ_HANDLER(io_r) {
 }
 
 static WRITE_HANDLER(io_w) {
-  static int lampCol;
   switch (offset) {
     case 0: // fire NMI? marked MUXLD, enables write to 0x1fe1 on cpu #1
       cpu_set_nmi_line(COMMAND, PULSE_LINE);
       break;
-    case 1: // lamps? marked STORE
-      coreGlobals.tmpLampMatrix[lampCol = ((lampCol+1) % 5)] = data;
+    case 1: // STORE, enables NVRAM
       break;
     case 2: // diagnostic 7-seg digit
       locals.diagnosticLed = core_bcd2seg7[data >> 4];
@@ -131,19 +131,27 @@ static WRITE_HANDLER(io_w) {
     case 3: // continuous solenoids
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
       break;
-    case 4: // momentary solenoids
-      if (data < 0x10) {
-      	if (data & 0x0f) {
-          locals.solenoids = (locals.solenoids & 0xffff00ff) | (0x100 << (data - 9));
-        } else {
-          locals.solenoids = (locals.solenoids & 0xffff00ff);
-        }
+    case 4: // matrix solenoids, 42 in total!
+      if (!data) {
+        locals.solenoids &= 0x000000ff;
+        locals.solenoids2 = coreGlobals.tmpLampMatrix[16] = coreGlobals.tmpLampMatrix[17] = coreGlobals.tmpLampMatrix[18] = 0;
+      } else if (data < 0x10) {
+        locals.solenoids = (locals.solenoids & 0xffffc0ff) | (0x100 << (data - 0x09));
+      } else if (data < 0x18) {
+        locals.solenoids = (locals.solenoids & 0xfff03fff) | (0x4000 << (data - 0x11));
+      } else if (data < 0x20) {
+        locals.solenoids = (locals.solenoids & 0xfc0fffff) | (0x100000 << (data - 0x19));
+      } else if (data < 0x28) {
+        locals.solenoids = (locals.solenoids & 0x03ffffff) | (0x4000000 << (data - 0x21));
+      } else if (data < 0x30) {
+        coreGlobals.tmpLampMatrix[16] = 1 << (data - 0x29);
+        locals.solenoids2 = (locals.solenoids2 & 0xffffffc0) | (1 << (data - 0x29));
+      } else if (data < 0x38) {
+        coreGlobals.tmpLampMatrix[17] = 1 << (data - 0x31);
+        locals.solenoids2 = (locals.solenoids2 & 0xfffff03f) | (0x40 << (data - 0x31));
       } else {
-      	if (data & 0x0f) {
-          coreGlobals.tmpLampMatrix[8 + (data >> 4)] = data & 0x0f;
-        } else {
-          coreGlobals.tmpLampMatrix[8 + (data >> 4)] = 0;
-        }
+        coreGlobals.tmpLampMatrix[18] = 1 << (data - 0x39);
+        locals.solenoids2 = (locals.solenoids2 & 0xfffc0fff) | (0x1000 << (data - 0x39));
       }
       break;
     case 5: // sound
@@ -154,8 +162,6 @@ static WRITE_HANDLER(io_w) {
         cpunum_set_reset_line(HOUSEKEEPING, CLEAR_LINE); // release reset line so housekeeping (cpu0) starts
       } else {
         if (data) logerror("io_w: offset %x, data %02x not handled\n", offset, data);
-//        locals.diagnosticLed = locals.diagnosticLed ^ 0x01;
-        // cpu_set_irq_line(COMMAND, M6809_FIRQ_LINE, ASSERT_LINE);
       }
       break;
     case 7: // zero crossing interrupt reset
@@ -177,6 +183,8 @@ static WRITE_HANDLER(shared_ram_w) {
   shared_ram[offset] = data;
   if (offset > 0x09 && offset < 0x2e) {
     coreGlobals.segments[offset - 0x0a].w = wico_data2seg[data];
+  } else if (offset > 0x45 && offset < 0x56) {
+  	coreGlobals.tmpLampMatrix[offset - 0x46] = data;
   }
 }
 
@@ -389,7 +397,11 @@ static core_tLCDLayout dispAftor[] = {
   {4,16,34,2,CORE_SEG9},
   {0}
 };
-static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),4,8}};
+
+static int aftor_getSol(int solNo) {
+  return locals.solenoids2 & (1 << (solNo - 51));
+}
+static core_tGameData aftorGameData = {GEN_WICO,dispAftor,{FLIP_SW(FLIP_L),4,11,18,0,0,0,0,aftor_getSol}};
 static void init_aftor(void) { core_gameData = &aftorGameData; }
 
-CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(aftor,"Af-Tor",1984,"Wico",aftor,0)

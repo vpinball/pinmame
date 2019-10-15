@@ -7,6 +7,7 @@ Version 3.3 (X X, 2019) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***
+Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org
