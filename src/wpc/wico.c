@@ -26,6 +26,8 @@
 /  Local variables
 /-----------------*/
 static struct {
+  core_tSeg segments;
+  int    dispBlank[5];
   int    vblankCount;
   int    firqtimer;
   UINT32 solenoids, solenoids2;
@@ -38,9 +40,9 @@ static int wico_data2seg[0x80] = {
   0,     0x01,  0x02,  0x04,  0x08,  0x10,  0x20,  0x40,  0x100, 0x200, 0,     0,     0,     0,     0,     0,    // 0  single segments
   0x37f, 0x37e, 0x37d, 0x37b, 0x377, 0x36f, 0x35f, 0x33f, 0x27f, 0x17f, 0x37f, 0x37f, 0x37f, 0x37f, 0x37f, 0,    // 1 inverted segs?
   0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
-  0x3f,  0x300, 0x5b,  0x4f,  0x360, 0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
+  0x3f,  0x300, 0x5b,  0x4f,  0x66,  0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
   0,     0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71,  0x3d,  0x76,  0x309, 0x1e,  0x374, 0x38,  0x337, 0x37,  0x3f, // 4  ABCDEFGHIJKLMNO
-  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x364, 0x6e,  0x5b,  0x39,  0x64,  0x0f,  0x63,  0x08, // 5 PQRSTUVWXYZ[\]°_
+  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x352, 0x6e,  0x5b,  0x39,  0x64,  0x0f,  0x63,  0x08, // 5 PQRSTUVWXYZ[\]°_
   0x20,  0,     0,     0x58,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0x5c, // 6 `  c           o
   0,     0,     0x50,  0,     0,     0,     0x1c                                                                 // 7   r   v
 };
@@ -180,9 +182,22 @@ static READ_HANDLER(shared_ram_r) {
   return shared_ram[offset];
 }
 static WRITE_HANDLER(shared_ram_w) {
+  int i, num;
   shared_ram[offset] = data;
-  if (offset > 0x09 && offset < 0x2e) {
-    coreGlobals.segments[offset - 0x0a].w = wico_data2seg[data];
+  if (offset > 0x04 && offset < 0x0a) {
+  	num = offset - 0x05;
+    locals.dispBlank[num] = !data;
+    for (i = 0; i < 8; i++) {
+      coreGlobals.segments[8 * num + i].w = locals.dispBlank[num] ? 0 : locals.segments[8 * num + i].w;
+    }
+  } else if (offset > 0x09 && offset < 0x2a) {
+    num = (offset - 0x0a) / 8;
+    locals.segments[offset - 0x0a].w = wico_data2seg[data];
+    if (!locals.dispBlank[num]) {
+      coreGlobals.segments[offset - 0x0a] = locals.segments[offset - 0x0a];
+    }
+  } else if (offset > 0x29 && offset < 0x2e) {
+    coreGlobals.segments[offset - 0x0a].w = locals.segments[offset - 0x0a].w = wico_data2seg[data] | ((wico_data2seg[data] & 0x300) ? 0x06 : 0);
   } else if (offset > 0x45 && offset < 0x56) {
   	coreGlobals.tmpLampMatrix[offset - 0x46] = data;
   }
@@ -264,8 +279,6 @@ MACHINE_DRIVER_START(aftor)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
   MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_SOUND_ADD(SN76494, WICO_sn76494Int)
-
-//  MDRV_TIMER_ADD(WICO_firq_command, 1) // watchdog reset trigger
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(aftor) \
@@ -390,11 +403,11 @@ ROM_END
 
 static core_tLCDLayout dispAftor[] = {
   {0, 0, 1,7,CORE_SEG9},
-  {0,16, 9,7,CORE_SEG9},
+  {0,24, 9,7,CORE_SEG9},
   {2, 0,17,7,CORE_SEG9},
-  {2,16,25,7,CORE_SEG9},
-  {4,10,32,2,CORE_SEG9},
-  {4,16,34,2,CORE_SEG9},
+  {2,24,25,7,CORE_SEG9},
+  {1,21,32,2,CORE_SEG7S},
+  {1,26,34,2,CORE_SEG7S},
   {0}
 };
 
