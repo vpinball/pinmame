@@ -26,26 +26,13 @@
 /  Local variables
 /-----------------*/
 static struct {
-  core_tSeg segments;
-  int    dispBlank[5];
+  int    dispBlank;
   int    vblankCount;
   int    firqtimer;
   UINT32 solenoids, solenoids2;
   UINT8	 gtIRQEnable;
   UINT8	 diagnosticLed;
 } locals;
-
-static int wico_data2seg[0x80] = {
-// 0      1      2      3      4      5      6      7      8      9      A      B      C      D      E      F
-  0,     0x01,  0x02,  0x04,  0x08,  0x10,  0x20,  0x40,  0x100, 0x200, 0,     0,     0,     0,     0,     0,    // 0  single segments
-  0x37f, 0x37e, 0x37d, 0x37b, 0x377, 0x36f, 0x35f, 0x33f, 0x27f, 0x17f, 0x37f, 0x37f, 0x37f, 0x37f, 0x37f, 0,    // 1 inverted segs?
-  0,     0,     0x22,  0,     0,     0,     0,     0x02,  0x39,  0x0f,  0,     0x340, 0x10,  0x40,  0,     0x52, // 2   "    '() +,- /
-  0x3f,  0x300, 0x5b,  0x4f,  0x66,  0x6d,  0x7d,  0x07,  0x7f,  0x6f,  0,     0,     0,     0x48,  0,     0x53, // 3 0123456789   = ?
-  0,     0x77,  0x34f, 0x39,  0x30f, 0x79,  0x71,  0x3d,  0x76,  0x309, 0x1e,  0x374, 0x38,  0x337, 0x37,  0x3f, // 4  ABCDEFGHIJKLMNO
-  0x73,  0x36b, 0x347, 0x6d,  0x301, 0x3e,  0x338, 0x33e, 0x352, 0x6e,  0x5b,  0x39,  0x64,  0x0f,  0x63,  0x08, // 5 PQRSTUVWXYZ[\]°_
-  0x20,  0,     0,     0x58,  0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0x5c, // 6 `  c           o
-  0,     0,     0x50,  0,     0,     0,     0x1c                                                                 // 7   r   v
-};
 
 static UINT8 *shared_ram;
 
@@ -90,14 +77,22 @@ static SWITCH_UPDATE(WICO) {
 }
 
 static READ_HANDLER(io_r) {
-  UINT8 swCol, ret = 0;
+  UINT8 swCol, dispCol, i, ret = 0;
   switch (offset) {
     case 0x0a:
 //      locals.gtIRQEnable = 1;
       ret = 0xff;
       break;
-    case 0x0b:
-//      locals.lampCol = shared_ram[0x0095] % 16;
+    case 0x0b: // LAMPST, reads display digits from RAM
+      dispCol = shared_ram[0x0096] & 7;
+      for (i = 0; i < 5; i++) {
+        if (locals.dispBlank) {
+          coreGlobals.segments[8 * i + dispCol].w = 0;
+        } else {
+          coreGlobals.segments[8 * i + dispCol].w = (shared_ram[0x7f9 + i] & 0x7f) | ((shared_ram[0x7f9 + i] & 0x80) ? 0x300 : 0);
+        }
+      }
+      ret = 0xff;
       break;
     case 0x0e:
       locals.gtIRQEnable = 0;
@@ -126,9 +121,9 @@ static WRITE_HANDLER(io_w) {
       break;
     case 1: // STORE, enables NVRAM
       break;
-    case 2: // diagnostic 7-seg digit
+    case 2: // diagnostic 7-seg digit, display blanking
       locals.diagnosticLed = core_bcd2seg7[data >> 4];
-      if ((data >> 4) == 0x08) logerror("CPU0 SELF TEST DONE -------------------\n");
+      locals.dispBlank = !(data & 1);
       break;
     case 3: // continuous solenoids
       locals.solenoids = (locals.solenoids & 0xffffff00) | data;
@@ -182,23 +177,9 @@ static READ_HANDLER(shared_ram_r) {
   return shared_ram[offset];
 }
 static WRITE_HANDLER(shared_ram_w) {
-  int i, num;
   shared_ram[offset] = data;
-  if (offset > 0x04 && offset < 0x0a) {
-  	num = offset - 0x05;
-    locals.dispBlank[num] = !data;
-    for (i = 0; i < 8; i++) {
-      coreGlobals.segments[8 * num + i].w = locals.dispBlank[num] ? 0 : locals.segments[8 * num + i].w;
-    }
-  } else if (offset > 0x09 && offset < 0x2a) {
-    num = (offset - 0x0a) / 8;
-    locals.segments[offset - 0x0a].w = wico_data2seg[data];
-    if (!locals.dispBlank[num]) {
-      coreGlobals.segments[offset - 0x0a] = locals.segments[offset - 0x0a];
-    }
-  } else if (offset > 0x29 && offset < 0x2e) {
-    coreGlobals.segments[offset - 0x0a].w = locals.segments[offset - 0x0a].w = wico_data2seg[data] | ((wico_data2seg[data] & 0x300) ? 0x06 : 0);
-  } else if (offset > 0x45 && offset < 0x56) {
+
+  if (offset > 0x45 && offset < 0x56) {
   	coreGlobals.tmpLampMatrix[offset - 0x46] = data;
   }
 }
@@ -402,12 +383,12 @@ ROM_START(aftor) \
 ROM_END
 
 static core_tLCDLayout dispAftor[] = {
-  {0, 0, 1,7,CORE_SEG9},
-  {0,24, 9,7,CORE_SEG9},
-  {2, 0,17,7,CORE_SEG9},
-  {2,24,25,7,CORE_SEG9},
-  {1,21,32,2,CORE_SEG7S},
-  {1,26,34,2,CORE_SEG7S},
+  {0, 0, 8,7,CORE_SEG9},
+  {0,24,24,7,CORE_SEG9},
+  {2, 0,16,7,CORE_SEG9},
+  {2,24,32,7,CORE_SEG9},
+  {1,21, 0,2,CORE_SEG7S},
+  {1,26, 2,2,CORE_SEG7S},
   {0}
 };
 
