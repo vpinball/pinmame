@@ -70,7 +70,7 @@ static WRITE_HANDLER(ay8910_1_data_w) { setVolume(1, 50); AY8910Write(1,1,data);
 static WRITE_HANDLER(ay8910_1_mute) { setVolume(1, 0); }
 static WRITE_HANDLER(ay8910_01_ctrl_w) { ay8910_0_ctrl_w(offset, data); ay8910_1_ctrl_w(offset, data); }
 static WRITE_HANDLER(ay8910_01_data_w) { ay8910_0_data_w(offset, data); ay8910_1_data_w(offset, data); }
-static WRITE_HANDLER(ay8910_01_reset) { setVolume(0, 0); setVolume(1, 0); }
+static WRITE_HANDLER(ay8910_01_reset) { AY8910_reset(0); AY8910_reset(1); }
 
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
