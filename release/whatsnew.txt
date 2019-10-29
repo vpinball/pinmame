@@ -9,6 +9,8 @@ Version 3.3 (X X, 2019) - ""
 *** CORE/CPU ***
 Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
+More sound found for LTD system 4 games, 2nd sound chip is accessed at the same time as extra lamp data!
+Increased IRQ for LTD system III, seems to help with ball detection in outhole
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org
 Clones:

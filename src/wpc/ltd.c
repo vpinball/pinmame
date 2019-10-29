@@ -55,13 +55,22 @@ static struct {
 
 #define LTD_CPUFREQ	3579545/4
 
-static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
-static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
-static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
-static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
+static void setVolume(int chip, int level) {
+  int ch;
+  for (ch = 0; ch < 3; ch++) {
+    AY8910_set_volume(chip, ch, level);
+  }
+}
+
+static WRITE_HANDLER(ay8910_0_ctrl_w) { setVolume(0, 50); AY8910Write(0,0,data); }
+static WRITE_HANDLER(ay8910_0_data_w) { setVolume(0, 50); AY8910Write(0,1,data); }
+static WRITE_HANDLER(ay8910_0_mute) { setVolume(0, 0);  }
+static WRITE_HANDLER(ay8910_1_ctrl_w) { setVolume(1, 50); AY8910Write(1,0,data); }
+static WRITE_HANDLER(ay8910_1_data_w) { setVolume(1, 50); AY8910Write(1,1,data); }
+static WRITE_HANDLER(ay8910_1_mute) { setVolume(1, 0); }
 static WRITE_HANDLER(ay8910_01_ctrl_w) { ay8910_0_ctrl_w(offset, data); ay8910_1_ctrl_w(offset, data); }
 static WRITE_HANDLER(ay8910_01_data_w) { ay8910_0_data_w(offset, data); ay8910_1_data_w(offset, data); }
-static WRITE_HANDLER(ay8910_01_reset) { AY8910_reset(0); AY8910_reset(1); }
+static WRITE_HANDLER(ay8910_01_reset) { setVolume(0, 0); setVolume(1, 0); }
 
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
@@ -179,7 +188,7 @@ MACHINE_DRIVER_START(LTD3)
   MDRV_CPU_ADD_TAG("mcpu", M6802, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(LTD_irq, 120)
+  MDRV_CPU_PERIODIC_INT(LTD_irq, 250)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
@@ -284,10 +293,12 @@ static WRITE_HANDLER(cycle_w) {
 
 static WRITE_HANDLER(cycle_reset_w) {
   locals.cycle = 0;
+  ay8910_1_ctrl_w(0, data);
 }
 
 static WRITE_HANDLER(auxlamps_w) {
   locals.auxData = data;
+  ay8910_1_data_w(0, data);
 }
 
 /*-----------------------------------------
@@ -305,14 +316,14 @@ static MEMORY_WRITE_START(LTD4_writemem)
   {0x0080,0x00ff, MWA_RAM},
   {0x0100,0x01ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x0800,0x0800, cycle_reset_w},
-  {0x2800,0x2800, auxlamps_w},
-  {0x0c00,0x0c00, ay8910_01_data_w},
+  {0x0c00,0x0c00, ay8910_1_mute},
   {0x1000,0x1000, ay8910_0_ctrl_w},
-  {0x1400,0x1400, ay8910_01_ctrl_w},
-  {0x1800,0x1800, ay8910_1_ctrl_w},
+  {0x1400,0x1400, ay8910_0_mute},
+  {0x1800,0x1800, ay8910_01_ctrl_w},
   {0x1c00,0x1c00, ay8910_01_reset},
+  {0x2800,0x2800, auxlamps_w},
   {0x3000,0x3000, ay8910_0_data_w},
-  {0x3800,0x3800, ay8910_1_data_w},
+  {0x3800,0x3800, ay8910_01_data_w},
 MEMORY_END
 
 static PORT_READ_START(LTD4_readport)
