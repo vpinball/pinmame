@@ -18,9 +18,7 @@
  CPU ports were suddenly available (imagine me slapping my forehead at that point)! ;)
 
  I had a manual for system 4 written in Portuguese that was a bit of a help,
- but I still had to guess most of the data; it seems to work fairly good now,
- only whenever a sound is played, this seems to interfere with the displays, which is
- odd because they run on completely different outputs!?
+ but I still had to guess most of the data; it seems to work fairly good now.
 
  Fun fact: LTD obviously didn't use any IRQ or NMI timing on system 4 at all!
  They also drive the flipper coils directly by two pulsed solenoid outputs.
@@ -55,19 +53,12 @@ static struct {
 
 #define LTD_CPUFREQ	3579545/4
 
-static void setVolume(int chip, int level) {
-  int ch;
-  for (ch = 0; ch < 3; ch++) {
-    AY8910_set_volume(chip, ch, level);
-  }
-}
-
-static WRITE_HANDLER(ay8910_0_ctrl_w) { setVolume(0, 50); AY8910Write(0,0,data); }
-static WRITE_HANDLER(ay8910_0_data_w) { setVolume(0, 50); AY8910Write(0,1,data); }
-static WRITE_HANDLER(ay8910_0_mute) { setVolume(0, 0);  }
-static WRITE_HANDLER(ay8910_1_ctrl_w) { setVolume(1, 50); AY8910Write(1,0,data); }
-static WRITE_HANDLER(ay8910_1_data_w) { setVolume(1, 50); AY8910Write(1,1,data); }
-static WRITE_HANDLER(ay8910_1_mute) { setVolume(1, 0); }
+static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910_set_volume(0, ALL_8910_CHANNELS, 50); AY8910Write(0,0,data); }
+static WRITE_HANDLER(ay8910_0_data_w) { AY8910_set_volume(0, ALL_8910_CHANNELS, 50); AY8910Write(0,1,data); }
+static WRITE_HANDLER(ay8910_0_mute) { AY8910_set_volume(0, ALL_8910_CHANNELS, 0);  }
+static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910_set_volume(1, ALL_8910_CHANNELS, 50); AY8910Write(1,0,data); }
+static WRITE_HANDLER(ay8910_1_data_w) { AY8910_set_volume(1, ALL_8910_CHANNELS, 50); AY8910Write(1,1,data); }
+static WRITE_HANDLER(ay8910_1_mute) { AY8910_set_volume(1, ALL_8910_CHANNELS, 0); }
 static WRITE_HANDLER(ay8910_01_ctrl_w) { ay8910_0_ctrl_w(offset, data); ay8910_1_ctrl_w(offset, data); }
 static WRITE_HANDLER(ay8910_01_data_w) { ay8910_0_data_w(offset, data); ay8910_1_data_w(offset, data); }
 static WRITE_HANDLER(ay8910_01_reset) { AY8910_reset(0); AY8910_reset(1); }
@@ -291,11 +282,6 @@ static WRITE_HANDLER(cycle_w) {
   locals.port2 = data;
 }
 
-static WRITE_HANDLER(cycle_reset_w) {
-  locals.cycle = 0;
-  ay8910_1_ctrl_w(0, data);
-}
-
 static WRITE_HANDLER(auxlamps_w) {
   locals.auxData = data;
   ay8910_1_data_w(0, data);
@@ -315,7 +301,7 @@ static MEMORY_WRITE_START(LTD4_writemem)
   {0x0000,0x001f, m6803_internal_registers_w},
   {0x0080,0x00ff, MWA_RAM},
   {0x0100,0x01ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  {0x0800,0x0800, cycle_reset_w},
+  {0x0800,0x0800, ay8910_1_ctrl_w},
   {0x0c00,0x0c00, ay8910_1_mute},
   {0x1000,0x1000, ay8910_0_ctrl_w},
   {0x1400,0x1400, ay8910_0_mute},
