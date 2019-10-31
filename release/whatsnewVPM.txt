@@ -6,6 +6,12 @@ What's new in Visual PinMAME:
 Version 3.3 (X X, 2019) - ""
 ------------------------------------------------------------------------------
 - New logos by tictox
+- If you create a VPMAlias.txt file in the Vpinmame folder, it will alias an input rom name to the specified (real) rom.   Format example:
+
+mytallica,mtl_180hc
+myacdc,acd_170hc
+
+This can be used to allow different PUP or DOF profiles (for reskins and such). 
 
 Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
