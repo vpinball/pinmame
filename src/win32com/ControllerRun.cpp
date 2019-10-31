@@ -25,7 +25,6 @@ int	g_fHandleMechanics  = FALSE;	// Signals wpc core to handle the mechanics for
 int g_fMechSamples      = TRUE;		// Signal the common library to load the mech samples
 HANDLE g_hGameRunning	= INVALID_HANDLE_VALUE;
 int volatile g_fPause   = 0;		// referenced in usrintf.c to pause the game
-
 char g_fShowPinDMD		= FALSE;	// pinDMD not active by default
 int g_fDumpFrames		= FALSE;	// dump frames
 
@@ -36,6 +35,7 @@ BOOL cabinetMode		= FALSE;
 int    g_iSyncFactor     = 0;
 HANDLE g_hEnterThrottle  = INVALID_HANDLE_VALUE;
 extern int g_iSyncFactor;
+char g_szGameName[256] = "";			// String containing requested game name (may be different from ROM if aliased)
 }
 
 extern int dmd_border;
