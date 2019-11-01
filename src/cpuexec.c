@@ -226,7 +226,6 @@ static void cpu_inittimers(void);
 static void cpu_vblankreset(void);
 static void cpu_vblankcallback(int param);
 static void cpu_updatecallback(int param);
-static void cpu_throttlecallback(int param);
 static void end_interleave_boost(int param);
 static void compute_perfect_interleave(void);
 

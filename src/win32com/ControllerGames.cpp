@@ -1,5 +1,5 @@
 // ControllerGames.cpp : Implementation of CGames
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "ControllerGame.h"
 #include "ControllerGames.h"
@@ -29,7 +29,7 @@ public:
 		if ( m_pGames )
 			m_pGames->Release();
 		m_pGames = NULL;
- 	}
+	}
 
 
 DECLARE_NO_REGISTRY()

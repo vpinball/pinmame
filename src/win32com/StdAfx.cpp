@@ -2,7 +2,7 @@
 //  stdafx.pch will be the pre-compiled header
 //  stdafx.obj will contain the pre-compiled type information
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #if _ATL_VER<0x0700
 #ifdef _ATL_STATIC_REGISTRY

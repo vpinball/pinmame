@@ -211,8 +211,8 @@
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
 
 /* Shortcuts for some common display sizes */
-#define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
-#define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
+#define DISP_SEG_16(row,type)    {4*(row), 0, 20*(row), 16, type}
+#define DISP_SEG_7(row,col,type) {4*(row),16*(col),(row)*20+(col)*8+1,7,type}
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
 #define DISP_SEG_IMPORT(x) {0,0,0,1,CORE_IMPORT,NULL,x}
@@ -311,7 +311,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 
 /*-- create a custom switch number --*/
 /* example: #define swCustom CORE_CUSTSWNO(1,2)  // custom column 1 row 2 */
-#define CORE_CUSTSWNO(c,r) ((CORE_CUSTSWCOL-1+c)*10+r)
+#define CORE_CUSTSWNO(c,r) ((CORE_CUSTSWCOL-1+(c))*10+(r))
 
 /*-------------------
 /  Flipper Switches

@@ -481,14 +481,14 @@ PROTOTYPES(Z80xycb,xycb);
 /* Burn an odd amount of cycles, that is instructions taking something		*/
 /* different from 4 T-states per opcode (and R increment)					*/
 /****************************************************************************/
-INLINE void BURNODD(int cycles, int opcodes, int cyclesum)
+/*INLINE void BURNODD(int cycles, int opcodes, int cyclesum)
 {
 	if( cycles > 0 )
 	{
 		_R += (cycles / cyclesum) * opcodes;
 		Z80_ICOUNT -= (cycles / cyclesum) * cyclesum;
 	}
-}
+}*/
 
 /***************************************************************
  * define an opcode function

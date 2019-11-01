@@ -89,7 +89,7 @@ static z80ctc_interface ctc_intf = {
   { zc2_0_w, zc2_1_w }
 };
 
-static void clock_pulse(int dummy) {
+/*static void clock_pulse(int dummy) {
   static int mod2, modDiv, mod32;
   z80ctc_0_trg1_w(0, 1); // 2 MHz
   z80ctc_0_trg1_w(0, 0);
@@ -101,7 +101,7 @@ static void clock_pulse(int dummy) {
   z80ctc_1_trg1_w(0, mod2);
   z80ctc_1_trg2_w(0, mod2);
   mod2 = (mod2 + 1) % 2;
-}
+}*/
 
 static void zsu_init(struct sndbrdData *brdData) {
   memset(&sndlocals, 0, sizeof sndlocals);

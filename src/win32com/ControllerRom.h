@@ -46,7 +46,7 @@ public:
 	STDMETHOD(get_Length)(/*[out, retval]*/ long *pVal);
 
 private:
-	long m_lGameNum;
+	//long m_lGameNum;
 	const struct GameDriver *m_gamedrv;
 	const struct RomModule *m_rom;
 	const struct RomModule *m_region;

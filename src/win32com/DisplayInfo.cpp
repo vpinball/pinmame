@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include ".\displayinfo.h"
+#include ".\DisplayInfo.h"
 
 #include <Windows.h>
 
@@ -119,7 +119,7 @@ void CDisplayInfo::InitData()
 	mDriverName = NULL;
 	mFriendlyName = NULL;
 	mID = GUID(GUID_NULL);
-	BOOL mIsDefault = TRUE;
+	mIsDefault = TRUE;
 }
 
 /************************************************
