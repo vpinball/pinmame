@@ -1,10 +1,10 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
 #include "windows.h"
 #include "VPinMAMEConfig.h"
-#include "ControllerRegKeys.h"
+#include "ControllerRegkeys.h"
 
 #ifdef _MSC_VER
 #include "msc.h"
@@ -515,12 +515,12 @@ bool RegSaveOpts(HKEY hKey, rc_option *pOpt, void* pValue)
 		break;
 
 	case rc_int:
-		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_DWORD, (LPBYTE) pValue, sizeof DWORD)!=ERROR_SUCCESS);
+		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_DWORD, (LPBYTE) pValue, sizeof(DWORD))!=ERROR_SUCCESS);
 		break;
 
 	case rc_bool:
 		dwValue = *(int*) pValue?1:0;
-		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_DWORD, (LPBYTE) &dwValue, sizeof dwValue)!=ERROR_SUCCESS);
+		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_DWORD, (LPBYTE) &dwValue, sizeof(dwValue))!=ERROR_SUCCESS);
 		break;
 
 	case rc_float:

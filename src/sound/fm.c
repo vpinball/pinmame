@@ -1001,6 +1001,7 @@ INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm)
 	return tl_tab[p];
 }
 
+#if (BUILD_YM2610||BUILD_YM2610B||BUILD_YM2608)
 /* advance LFO to next sample */
 INLINE void advance_lfo(FM_OPN *OPN)
 {
@@ -1040,6 +1041,7 @@ INLINE void advance_lfo(FM_OPN *OPN)
 		LFO_PM = 0;
 	}
 }
+#endif
 
 /* changed from INLINE to static here to work around gcc 4.2.1 codegen bug */
 static void advance_eg_channel(FM_OPN *OPN, FM_SLOT *SLOT)

@@ -1,12 +1,12 @@
 // ControllerRun.cpp : Implementation of the Controller.Run method
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "atlwin.h"
 #include "mmsystem.h"
 
 extern "C" {
 #include "mame.h"
 #include "driver.h"
-#include "./windows/Window.h"
+#include "./windows/window.h"
 }
 
 #include "VPinMAME_h.h"
@@ -14,10 +14,10 @@ extern "C" {
 #include "VPinMAMEConfig.h"
 
 #include "Controller.h"
-#include "ControllerRegKeys.h"
+#include "ControllerRegkeys.h"
 #include "ControllerGameSettings.h"
 #include "ControllerSplashWnd.h"
-#include "Resource.h"
+#include "resource.h"
 
 extern "C" {
 int	g_fHandleKeyboard   = TRUE;		// Signals wpc core to handle the keyboard

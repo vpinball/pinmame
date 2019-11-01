@@ -230,7 +230,7 @@ enum { IPT_END=1,IPT_PORT,
 
 /* impulse input bit definition */
 #define PORT_BIT_IMPULSE_NAME(mask,default,type,duration,name) \
-	PORT_BIT_NAME(mask, default, type | IPF_IMPULSE | (((duration) & 0xff) << 8), name)
+	PORT_BIT_NAME(mask, default, (type) | IPF_IMPULSE | (((duration) & 0xff) << 8), name)
 #define PORT_BIT_IMPULSE(mask,default,type,duration) \
 	PORT_BIT_IMPULSE_NAME(mask, default, type, duration, IP_NAME_DEFAULT)
 

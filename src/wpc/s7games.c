@@ -99,7 +99,8 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
-CORE_CLONEDEF(frpwr,d7,l6,"Firepower (Sys.7/7-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
+#define input_ports_frpwr_d7 input_ports_s7
+CORE_GAMEDEFNV(frpwr_d7,"Firepower (Sys.7/7-digit Custom rev. 31)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-------------------------------
 / Firepower - Sys.7 7-Digit conversion, rev. 38

@@ -1,11 +1,11 @@
 // Settings.cpp : Implementation of CGameSettings
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
 #include "ControllerGameSettings.h"
 
-#include "ControllerRegKeys.h"
+#include "ControllerRegkeys.h"
 #include "ControllerGame.h"
 
 #include <atlwin.h>

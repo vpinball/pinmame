@@ -19,7 +19,7 @@
 #ifdef RESAMPLER_SSE_OPT
  #include <xmmintrin.h>
  #include <emmintrin.h>
- #if !defined(_MSC_VER) || !defined(_WIN32) 
+ #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128i
      {
          __m128i m128i;

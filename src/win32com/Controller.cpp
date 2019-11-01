@@ -12,7 +12,7 @@
 
 // Controller.cpp : Implementation of Controller and DLL registration.
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
@@ -53,7 +53,7 @@ extern void uSleep(const UINT64 u);
  extern void alt_sound_pause(BOOL pause);
 #endif
 }
-#include "alias.h"
+#include "Alias.h"
 
 extern int fAllowWriteAccess;
 extern int synclevel;
@@ -173,7 +173,8 @@ CController::CController() {
 		m_pGames->AddRef();
 
 	// get a pointer to the settings object for the "default" game
-	m_pGames->get_Item(&CComVariant(m_szROM), &m_pGame);
+	CComVariant szROM(m_szROM);
+	m_pGames->get_Item(&szROM, &m_pGame);
 	m_pGame->get_Settings((IGameSettings**) &m_pGameSettings);
 
 	// these value are not stored to the registry
@@ -420,10 +421,12 @@ STDMETHODIMP CController::get_Solenoid(int nSolenoid, VARIANT_BOOL *pVal)
  ************************************************************************/
 STDMETHODIMP CController::get_Switch(int nSwitchNo, VARIANT_BOOL *pVal) {
   if (pVal)
+  {
     if (WaitForSingleObject(m_hEmuIsRunning, 0) == WAIT_TIMEOUT)
       *pVal = false;
     else 
       *pVal = vp_getSwitch(nSwitchNo)?VARIANT_TRUE:VARIANT_FALSE;
+  }
   return S_OK;
 }
 
@@ -1156,7 +1159,8 @@ STDMETHODIMP CController::put_GameName(BSTR newVal)
 	m_nGameNo = nGameNo;
 
 	// get a pointer to the settings object
-	m_pGames->get_Item(&CComVariant(m_szROM), &m_pGame);
+	CComVariant szROM(m_szROM);
+	m_pGames->get_Item(&szROM, &m_pGame);
 	m_pGame->get_Settings((IGameSettings**) &m_pGameSettings);
 
 	return S_OK;
@@ -2089,7 +2093,7 @@ STDMETHODIMP CController::get_UseSamples(VARIANT_BOOL *pVal)
 	HRESULT hr = m_pGameSettings->get_Value(CComBSTR("samples"), &vValue);
 	*pVal = vValue.boolVal;
 
-	return S_OK;
+	return hr;
 }
 
 STDMETHODIMP CController::put_UseSamples(VARIANT_BOOL newVal)

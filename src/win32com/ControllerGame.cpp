@@ -1,5 +1,5 @@
 // ControllerGame.cpp : Implementation of CGame
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "ControllerGame.h"
 #include "ControllerGameSettings.h"
@@ -12,7 +12,7 @@ extern "C" {
 #include "audit.h"
 }
 
-#include "alias.h"
+#include "Alias.h"
 #include <atlwin.h>
 
 
@@ -93,7 +93,7 @@ private:
 		fMaybeOK = true;
 
 		while ( SUCCEEDED(pEnumRoms->Next(1, &vRom, &uFetched)) && uFetched ) {
-			HRESULT hr = vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
+			/*HRESULT hr =*/ vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
 			VariantClear(&vRom);
 
 			CComBSTR sName;

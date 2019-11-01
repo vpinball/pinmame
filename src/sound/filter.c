@@ -6,7 +6,7 @@
 
 #if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
  #include <xmmintrin.h>
- #if !defined(_MSC_VER) || !defined(_WIN32)
+ #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128
      {
          __m128 v;

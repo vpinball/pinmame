@@ -61,7 +61,9 @@ static LPDIRECTDRAWSURFACE blit_surface;
 static LPDIRECTDRAWCLIPPER primary_clipper;
 
 // DirectDraw object info
+#ifndef DISABLE_DX7
 static DDCAPS ddraw_caps;
+#endif
 static DDSURFACEDESC primary_desc;
 static DDSURFACEDESC blit_desc;
 static int changed_resolutions;
@@ -436,7 +438,7 @@ static double compute_mode_score(int width, int height, int depth, int refresh)
 	}
 
 	// compute initial score based on difference between target and current
-	size_score = 1.0 / (1.0 + fabs(width - target_width) + fabs(height - target_height));
+	size_score = 1.0 / (1.0 + abs(width - target_width) + abs(height - target_height));
 
 	// if we're looking for a particular mode, make sure it matches
 	if (win_gfx_width && win_gfx_height && (width != win_gfx_width || height != win_gfx_height))

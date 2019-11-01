@@ -749,7 +749,7 @@ static WRITE32_HANDLER(sambank_w)
 			//1st LED?
 			case 0x02500000:
 				logit = LOG_LED1;
-				samlocals.diagnosticLed = (data & 1) | samlocals.diagnosticLed & 2;
+				samlocals.diagnosticLed = (data & 1) | (samlocals.diagnosticLed & 2);
 				break;
 			//Rom Bank Select:
 			//D0 = FF1(U42) -> A22
@@ -777,7 +777,7 @@ static WRITE32_HANDLER(sambank_w)
 				logit = LOG_LED2;
 				//LED is ON when zero (pulled to gnd)
 				if (!data)
-					samlocals.diagnosticLed = samlocals.diagnosticLed & 1 | 2;
+					samlocals.diagnosticLed = (samlocals.diagnosticLed & 1) | 2;
 				break;
 			default:
 				LOG(("error"));
@@ -1634,7 +1634,7 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 			if(((*RAM1 & 0xF0) != 0xF0) && ((*RAM1 & 0xF0) != 0x00))
 				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4));
 			*line = hew[temp];
-			*line++;
+			line++;
 		}
 	}
 

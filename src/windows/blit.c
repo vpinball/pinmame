@@ -1278,9 +1278,11 @@ static void check_for_mmx(void)
 
 static void expand_blitter(int which, const struct win_blit_params *blit, UINT8 **dest, int update)
 {
+#ifndef _WIN64
 	int srcdepth_index = (blit->srcdepth + 7) / 8 - 1;
 	int dstdepth_index = (blit->dstdepth + 7) / 8 - 1;
 	int xscale_index = blit->dstxscale - 1;
+#endif
 	UINT8 *blitter = NULL;
 	int i;
 

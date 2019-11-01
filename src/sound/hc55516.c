@@ -537,8 +537,6 @@ static void process_bit(struct hc55516_data *chip, const UINT8 bit, const double
 //
 static INT16 apply_filter(struct hc55516_data *chip, const float sample)
 {
-	const int stream_freq = stream_get_sample_rate(chip->channel);
-
 	// run the sample through the two-stage filter
 	const double filtered = filter2_step_with(&chip->output_filter.f2, filter2_step_with(&chip->output_filter.f1, sample));
 
@@ -591,7 +589,6 @@ void hc55516_update(int num, INT16 *buffer, int length)
 	const double max_gap = .0005;
 	const double now = timer_get_time();
 	double t = chip->stream_update_time;
-	const int orig_length = length;
 
 	// Start a tiny bit early, so that we (hopefully) end a little early,
 	// leaving a little CVSD input to carry over to next time.  This helps

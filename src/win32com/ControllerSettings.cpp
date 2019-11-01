@@ -1,5 +1,5 @@
 // ControllerSettings.cpp : Implementation of CControllerSettings
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #if _MSC_VER >= 1700
  #ifdef inline
@@ -12,7 +12,7 @@
 #include "VPinMAMEConfig.h"
 #include "VPinMAMEAboutDlg.h"
 
-#include "ControllerRegKeys.h"
+#include "ControllerRegkeys.h"
 
 #include <atlwin.h>
 #include <shlobj.h>

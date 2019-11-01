@@ -644,9 +644,9 @@ static mech_tInitData mechnggWheel = {
 	-sWheelRev, -sWheelFwd, MECH_CIRCLE | MECH_LINEAR | MECH_TWODIRSOL | MECH_FAST | MECH_ACC(48) | MECH_RET(6),12 * NGG_WHEELRES,96 * NGG_WHEELRES,
 	{ { swInnerWheel, (MARKER_POS_START-1)*NGG_WHEELRES, (MARKER_POS_END+1)*NGG_WHEELRES},
 	{ swInnerWheel, (0)*NGG_WHEELRES, ((MARKER_POS_END-64) + 1)*NGG_WHEELRES},
-	{ swOuterWheel,0 * NGG_WHEELRES,1 * NGG_WHEELRES }, 
-	{ swOuterWheel,4 * NGG_WHEELRES,5 * NGG_WHEELRES }, 
-	{ swOuterWheel,8 * NGG_WHEELRES,9 * NGG_WHEELRES }, 
+	{ swOuterWheel,0  * NGG_WHEELRES,1  * NGG_WHEELRES }, 
+	{ swOuterWheel,4  * NGG_WHEELRES,5  * NGG_WHEELRES }, 
+	{ swOuterWheel,8  * NGG_WHEELRES,9  * NGG_WHEELRES }, 
 	{ swOuterWheel,12 * NGG_WHEELRES,13 * NGG_WHEELRES }, 
 	{ swOuterWheel,16 * NGG_WHEELRES,17 * NGG_WHEELRES }, 
 	{ swOuterWheel,20 * NGG_WHEELRES,21 * NGG_WHEELRES }, 
@@ -658,8 +658,8 @@ static mech_tInitData mechnggWheel = {
 	{ swOuterWheel,44 * NGG_WHEELRES,45 * NGG_WHEELRES },
 	{ swOuterWheel,48 * NGG_WHEELRES,49 * NGG_WHEELRES },
 	{ swOuterWheel,52 * NGG_WHEELRES,53 * NGG_WHEELRES },
-	{ swOuterWheel, 56 * NGG_WHEELRES,57 * NGG_WHEELRES },
-	{ swOuterWheel, 60 * NGG_WHEELRES, 61 * NGG_WHEELRES }
+	{ swOuterWheel,56 * NGG_WHEELRES,57 * NGG_WHEELRES },
+	{ swOuterWheel,60 * NGG_WHEELRES,61 * NGG_WHEELRES }
 	}, 0
 };
 

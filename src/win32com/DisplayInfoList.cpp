@@ -6,7 +6,7 @@
  #endif
 #endif
 
-#include ".\displayinfolist.h"
+#include ".\DisplayInfoList.h"
 #ifndef DISABLE_DX7
  #include <ddraw.h>
 #endif
@@ -21,10 +21,10 @@ static BOOL WINAPI DDEnumCallbackEx(GUID FAR *lpGUID, LPSTR lpDriverDescription,
     // Context is a pointer to a display list
     CDisplayInfoList* displayList = (CDisplayInfoList*)lpContext;
 
-	// Add the info to the list
-	displayList->AddDisplay(lpGUID, lpDriverDescription, lpDriverName);
+    // Add the info to the list
+    displayList->AddDisplay(lpGUID, lpDriverDescription, lpDriverName);
 
-	// Continue enumeration (to find other cards)
+    // Continue enumeration (to find other cards)
     return TRUE;
 }
 
