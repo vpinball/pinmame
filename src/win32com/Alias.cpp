@@ -69,7 +69,7 @@ const char* checkGameAlias(const char* aRomName) {
 	ptr = strrchr(AliasFilename, '\\');
 	if (ptr != NULL)
 	{
-		strcpy_s(ptr + 1, 13, "vpmalias.txt");
+		strcpy_s(ptr + 1, 13, "VPMAlias.txt");
 
 		FILE *f = fopen(AliasFilename, "r");
 
