@@ -15,6 +15,7 @@ Increased IRQ for LTD system III, seems to help with ball detection in outhole
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org
 Clones:
 Flintstones, The LX-3
+Space Train (old hardware)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 
 

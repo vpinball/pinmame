@@ -972,7 +972,8 @@ DRIVERNV(tricksht)      //Trick Shooter
 // ----------------
 DRIVERNV(macgalxy)      //MAC Galaxy (1986)
 DRIVERNV(macjungl)      //MAC Jungle (1986)
-DRIVERNV(spctrain)      //Space Train (1987)
+DRIVERNV(spctrai0)      //Space Train (1987, old hardware)
+DRIVERNV(spctrain)      //Space Train (1987, new hardware)
 DRIVERNV(spcpnthr)      //Space Panther (1988)
 DRIVERNV(mac_1808)      //Unknown MAC game #1808 (19??)
 DRIVERNV(macjungn)      //New MAC Jungle (1995)

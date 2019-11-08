@@ -498,6 +498,15 @@ INITGAME(spctrain,dispMAC,FLIP_SW(FLIP_L),2)
 MAC_COMPORTS(spctrain, 1)
 CORE_GAMEDEFNV(spctrain, "Space Train", 1987, "MAC S.A.", mac, 0)
 
+ROM_START(spctrai0)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("1717-c2.bin", 0x0000, 0x2000, CRC(ca8be787) SHA1(4091921013429c6104da698625391c575e30b8e1))
+    ROM_LOAD("1717-c8.bin", 0x2000, 0x2000, CRC(c7f499f5) SHA1(6564cab0c70fb66a95b24c05b427239b4b886f1e))
+ROM_END
+INITGAME(spctrai0,dispMAC,FLIP_SW(FLIP_L),2)
+MAC_COMPORTS(spctrai0, 1)
+CORE_CLONEDEFNV(spctrai0, spctrain, "Space Train (old hardware)", 1987, "MAC S.A.", mac0, 0)
+
 ROM_START(spcpnthr)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("sp_game.bin", 0x0000, 0x8000, CRC(0428563c) SHA1(45b9daf12f8384101450f1e529491812f73d88bd))
@@ -608,35 +617,17 @@ static WRITE_HANDLER(i8279_w_cic) {
   }
 }
 
-static MEMORY_READ_START(cic_readmem)
-  {0x0000, 0x3fff, MRA_ROM},
-  {0x4000, 0x47ff, MRA_RAM},
-  {0x6000, 0x6000, i8279_r},
-MEMORY_END
-
 static MEMORY_WRITE_START(cic_writemem)
   {0x0000, 0x3fff, MWA_NOP},
   {0x4000, 0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000, 0x6001, i8279_w_cic},
 MEMORY_END
 
-static PORT_READ_START(cic_readport)
-  {0x09,0x09, ay8910_0_r},
-  {0x19,0x19, ay8910_1_r},
-PORT_END
-
-static PORT_WRITE_START(cic_writeport)
-  {0x08,0x08, ay8910_0_ctrl_w},
-  {0x0a,0x0a, ay8910_0_data_w},
-  {0x18,0x18, ay8910_1_ctrl_w},
-  {0x1a,0x1a, ay8910_1_data_w},
-PORT_END
-
 MACHINE_DRIVER_START(cic)
   MDRV_IMPORT_FROM(mac)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(cic_readmem, cic_writemem)
-  MDRV_CPU_PORTS(cic_readport, cic_writeport)
+  MDRV_CPU_MEMORY(mac0_readmem, cic_writemem)
+  MDRV_CPU_PORTS(mac0_readport, mac0_writeport)
   MDRV_CORE_INIT_RESET_STOP(NULL, CIC, NULL)
 MACHINE_DRIVER_END
 
