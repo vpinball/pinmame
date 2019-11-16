@@ -2736,15 +2736,15 @@ DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
 DRIVER(dm,dx3)          //                  Demolition Man (DX-3) LED Ghost Fix
 DRIVER(dm,lx4)          //          05/94 W Demolition Man (LX-4)
 DRIVER(dm,dx4)          //                  Demolition Man (DX-4) LED Ghost Fix
-DRIVER(dm,lx4c)         //          08/17   Demolition Man (LX-4C Competition MOD)
+DRIVER(dm,lx4c)         //          11/19   Demolition Man (LX-4C Competition MOD)
 DRIVER(dm,h5)           //          02/95 W Demolition Man (H-5) with rude speech
 DRIVER(dm,h5b)          //                  Demolition Man (H-5) with rude speech (Coin Play)
-DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
+//DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
 DRIVER(dm,dh5)          //                  Demolition Man (DH-5) with rude speech LED Ghost Fix
 DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude speech LED Ghost Fix (Coin Play)
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
-DRIVER(dm,h6c)          //          08/17   Demolition Man (H-6C Competition MOD) with rude speech
+DRIVER(dm,h6c)          //          11/19   Demolition Man (H-6C Competition MOD) with rude speech
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  08/94 B Addams Family Special Collectors Edition, The (Home version)

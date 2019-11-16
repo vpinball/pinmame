@@ -17,6 +17,8 @@ Increased IRQ for LTD system III, seems to help with ball detection in outhole
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org
 Clones:
+Demolition Man LX-4C (competition MOD) (updated)
+Demolition Man H-6C (competition MOD) (updated)
 Flintstones, The LX-3
 Space Train (old hardware)
 Theatre of Magic 1.3XC (competition MOD) (updated)
