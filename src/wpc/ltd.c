@@ -158,7 +158,8 @@ static WRITE_HANDLER(peri_w) {
       locals.solenoids = (locals.solenoids & 0x0ffff) | ((data & 0x40) || (~data & 0x10) ? 0 : 0x10000);
       locals.diagnosticLed = data >> 7;
     }
-  } else if (offset == 0x06) {
+  } else if (offset == 0x06) { // either lamps or solenoids, or a mix of both!
+    coreGlobals.tmpLampMatrix[6] = data;
     locals.solenoids = (locals.solenoids & 0x100ff) | (data << 8);
   } else if (offset == 0x07) {
     locals.solenoids = (locals.solenoids & 0x1ff00) | data;
@@ -310,11 +311,11 @@ static WRITE_HANDLER(peri4_w) {
     switch (locals.cycle) {
       case  0: clear = data != 0xff; if (clear) lampCol = (1 + core_BitColToNum(data)) % 8; break;
       case  1: if (locals.isHH) {
-             	   if ((data & 0x0f) != 0x0f) locals.solenoids |= 0x10 << (data & 0x0f);
-             	   if ((data & 0xf0) != 0xf0) locals.solenoids |= 0x4000 << (data >> 4);
+                 if ((data & 0x0f) != 0x0f) locals.solenoids |= 0x10 << (data & 0x0f);
+                 if ((data & 0xf0) != 0xf0) locals.solenoids |= 0x4000 << (data >> 4);
                  coreGlobals.solenoids = locals.solenoids;
                } else
-               	 solBank = core_BitColToNum(data);
+                 solBank = core_BitColToNum(data);
                break;
       case  2: locals.solenoids |= (data >> 4) << (solBank * 4);
                locals.solenoids2 |= (data & 0x0f) << 4;
