@@ -2156,8 +2156,9 @@ DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
                         //??/78 Roman Victory (Redemption)
                         //??/78 Space Patrol
-DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
-DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
+DRIVERNV(obaoba  )      //??/80 Oba-Oba (B Playboy, 10/77)
+DRIVERNV(obaoba1 )      //??/80 Oba-Oba alternate set
+DRIVERNV(obaobao )      //??/80 Oba-Oba (old hardware)
 DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
 DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
 DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
