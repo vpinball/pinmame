@@ -44,15 +44,10 @@ extern void ctc_interrupt_1(int state);
 static void ctc_interrupt_2(int state) {
   cpu_set_irq_line_and_vector(0, 0, state ? ASSERT_LINE : CLEAR_LINE, Z80_VECTOR(0, state));
 }
-extern WRITE_HANDLER(zc0_0_w);
-extern WRITE_HANDLER(zc0_1_w);
 static WRITE_HANDLER(zc0_2_w) {
   z80ctc_2_trg1_w(0, data);
 }
-extern WRITE_HANDLER(zc1_0_w);
-extern WRITE_HANDLER(zc1_1_w);
 extern WRITE_HANDLER(zc2_0_w);
-extern WRITE_HANDLER(zc2_1_w);
 
 // keep the CTCs for the sound board in place and add the one for the main CPU as #2
 static z80ctc_interface ctc_intf = {
@@ -60,9 +55,9 @@ static z80ctc_interface ctc_intf = {
   { 4000000, 4000000, 0 },
   { 0, 0, 0 },
   { ctc_interrupt_0, ctc_interrupt_1, ctc_interrupt_2 },
-  { zc0_0_w, zc0_1_w, zc0_2_w },
-  { zc1_0_w, zc1_1_w, 0 },
-  { zc2_0_w, zc2_1_w, 0 }
+  { 0, 0, zc0_2_w },
+  { 0, 0, 0 },
+  { zc2_0_w, 0, 0 }
 };
 
 static Z80_DaisyChain EFO_DaisyChain[] = {
@@ -226,11 +221,11 @@ static void init_ebalchmb(void) { core_gameData = &ebalchmbGameData; }
 ROM_START(ebalchmb)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("jeb_5a0.u18", 0x0000, 0x8000, CRC(87615a7d) SHA1(b27ca2d863040a2641f88f9bd3143467a83f181b))
-  NORMALREGION(0x10000, REGION_CPU2)
+  SOUNDREGION(0x10000, REGION_CPU2)
     ROM_LOAD("ebe_2a0.u3", 0x0000, 0x8000, CRC(34be32ee) SHA1(ce0271540164639f28d617753760ecc479b6b0d0))
-  NORMALREGION(0x20000, REGION_SOUND1)
-    ROM_LOAD("ebe_1b0.u4", 0x0000, 0x8000, CRC(d696c4e8) SHA1(501e18c258e6d42819d25d72e1907984a6cfeecb))
-    ROM_LOAD("ebe_1c0.u5", 0x8000, 0x8000, CRC(fe78d7ef) SHA1(ed91c51dd230854a007f88446011f786759687ca))
+  SOUNDREGION(0x20000, REGION_USER1)
+    ROM_LOAD("ebe_1b0.u4", 0x00000, 0x8000, CRC(d696c4e8) SHA1(501e18c258e6d42819d25d72e1907984a6cfeecb))
+    ROM_LOAD("ebe_1c0.u5", 0x08000, 0x8000, CRC(fe78d7ef) SHA1(ed91c51dd230854a007f88446011f786759687ca))
     ROM_LOAD("ebe_2d0.u6", 0x10000, 0x8000, CRC(a507081b) SHA1(72d025852a12f455981c61a405f97eaaac9c6fac))
 ROM_END
 EFO_COMPORTS(ebalchmb, 1)
@@ -241,11 +236,11 @@ static void init_comeback(void) { core_gameData = &comebackGameData; }
 ROM_START(comeback)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("jeb_5a0.u18", 0x0000, 0x8000, CRC(87615a7d) SHA1(b27ca2d863040a2641f88f9bd3143467a83f181b))
-  NORMALREGION(0x10000, REGION_CPU2)
+  SOUNDREGION(0x10000, REGION_CPU2)
     ROM_LOAD("cbs_3a0.u3", 0x0000, 0x8000, CRC(d0f55dc9) SHA1(91186e2cbe248323380418911240a9a5887063fb))
-  NORMALREGION(0x20000, REGION_SOUND1)
-    ROM_LOAD("cbs_3b0.u4", 0x0000, 0x8000, CRC(1da16d36) SHA1(9f7a27ae23064c1183a346ff042e6cba148257c7))
-    ROM_LOAD("cbs_1c0.u5", 0x8000, 0x8000, CRC(794ae588) SHA1(adaa5e69232523369a6a2da865ac05102cc04ec8))
+  SOUNDREGION(0x20000, REGION_USER1)
+    ROM_LOAD("cbs_3b0.u4", 0x00000, 0x8000, CRC(1da16d36) SHA1(9f7a27ae23064c1183a346ff042e6cba148257c7))
+    ROM_LOAD("cbs_1c0.u5", 0x08000, 0x8000, CRC(794ae588) SHA1(adaa5e69232523369a6a2da865ac05102cc04ec8))
 ROM_END
 EFO_COMPORTS(comeback, 1)
 CORE_GAMEDEFNV(comeback, "Come Back", 198?, "Nondum / CIFA", EFO, GAME_NOT_WORKING)
@@ -266,11 +261,11 @@ static void init_cobrapb(void) { core_gameData = &cobrapbGameData; }
 ROM_START(cobrapb)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("jcb_4a0.u18", 0x0000, 0x8000, CRC(c663910e) SHA1(c38692343f114388259c4e7b7943e5be934189ca))
-  NORMALREGION(0x10000, REGION_CPU2)
+  SOUNDREGION(0x10000, REGION_CPU2)
     ROM_LOAD("scb_1a0.u3", 0x0000, 0x8000, CRC(d3675770) SHA1(882ce748308f2d78cccd28fc8cd64fe69bd223e3))
-  NORMALREGION(0x20000, REGION_SOUND1)
-    ROM_LOAD("scb_1b0.u4", 0x0000, 0x8000, CRC(e8e1bdbb) SHA1(215bdfab751cb0ea47aa529df0ac30976de4f772))
-    ROM_LOAD("scb_1c0.u5", 0x8000, 0x8000, CRC(c36340ab) SHA1(cd662457959de3a929ba02779e2046ed18b797e2))
+  SOUNDREGION(0x20000, REGION_USER1)
+    ROM_LOAD("scb_1b0.u4", 0x00000, 0x8000, CRC(e8e1bdbb) SHA1(215bdfab751cb0ea47aa529df0ac30976de4f772))
+    ROM_LOAD("scb_1c0.u5", 0x08000, 0x8000, CRC(c36340ab) SHA1(cd662457959de3a929ba02779e2046ed18b797e2))
 ROM_END
 EFO_COMPORTS(cobrapb, 1)
 CORE_GAMEDEFNV(cobrapb, "Cobra (Playbar)", 1987, "Playbar", EFO, GAME_NOT_WORKING)
