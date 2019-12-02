@@ -3260,7 +3260,11 @@ static void take_interrupt(void)
 			{
 				/* Clear both interrupt flip flops */
 				_IFF1 = _IFF2 = 0;
-				irq_vector = Z80.irq[Z80.request_irq].interrupt_entry(Z80.irq[Z80.request_irq].irq_param);
+#ifdef PINMAME
+				irq_vector = (*Z80.irq_callback)(0); // if the callback returns ff, use that vector (EFO sound hardware needs it)
+				if (0xff != irq_vector)
+#endif
+					irq_vector = Z80.irq[Z80.request_irq].interrupt_entry(Z80.irq[Z80.request_irq].irq_param);
 				LOG(("Z80 #%d daisy chain irq_vector $%02x\n", cpu_getactivecpu(), irq_vector));
 				Z80.request_irq = -1;
 			} else return;
