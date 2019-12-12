@@ -2665,6 +2665,7 @@ DRIVER(tz,h7)           //          10/94 B Twilight Zone (H-7)
 DRIVER(tz,i7)           //                  Twilight Zone (I-7) LED Ghost Fix
 DRIVER(tz,h8)           //          11/94 B Twilight Zone (H-8)
 DRIVER(tz,i8)           //                  Twilight Zone (I-8) LED Ghost Fix
+DRIVER(tz,la9)          //          01/95 B Twilight Zone (LA-9, PAPA Tournament Version 9.0)
 DRIVER(tz,92)           //          01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //                  Twilight Zone (9.3) LED Ghost Fix
 DRIVER(tz,94h)          //          10/98 B Twilight Zone (9.4H - Home version)
