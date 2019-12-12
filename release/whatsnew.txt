@@ -24,6 +24,11 @@ Flintstones, The LX-3
 Oba-Oba (old hardware)
 Space Train (old hardware)
 Theatre of Magic 1.3XC (competition MOD) (updated)
+Twilight Zone LA-9 (aka PAPA Tournament Version 9.0)
+
+Correct Dumps:
+Time Machine (LTD, 4 players) - confirmed that currently supported ROMs are correct
+Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
 
 
 

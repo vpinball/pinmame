@@ -283,7 +283,7 @@ CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
 / Time Machine
 /-------------------------------------------------------------------*/
 INITGAME4(tmacltd4, disp4p7, 1)
-LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(69691662) SHA1(3d86314967075e3f5b168c8d7bf6b26bbbb957bd) BAD_DUMP, // patched from bad dump (internal checksum matches)
+LTD_44_ROMSTART(tmacltd4, "tm4_l.bin", CRC(69691662) SHA1(3d86314967075e3f5b168c8d7bf6b26bbbb957bd),
                           "tm4_h.bin", CRC(f5f97992) SHA1(ba31f71a600e7061b500e0750f50643503e52a80))
 LTD_ROMEND
 CORE_GAMEDEFNV(tmacltd4,"Time Machine (LTD) (4 Players)",198?,"LTD",gl_mLTD4,0)
