@@ -182,10 +182,10 @@ int i;
 	if (M0_callback)
 	{
 		int data = (*M0_callback)();
-		    if (DEBUG_5110) logerror("TMS5110 performing dummy read; value read = %1i\n", data&1);
+		if (DEBUG_5110) logerror("TMS5110 performing dummy read; value read = %1i\n", data&1);
 	}
-		else
-		    if (DEBUG_5110) logerror("-->ERROR: TMS5110 missing M0 callback function\n");
+	else
+		if (DEBUG_5110) logerror("-->ERROR: TMS5110 missing M0 callback function\n");
 }*/
 
 /**********************************************************************************************

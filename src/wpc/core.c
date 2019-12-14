@@ -1794,7 +1794,7 @@ static MACHINE_INIT(core) {
       }
     }
     /*-- init switch matrix --*/
-    memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
+    memcpy(coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
 #ifdef PROC_SUPPORT

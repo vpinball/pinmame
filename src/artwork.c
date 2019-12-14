@@ -2038,8 +2038,8 @@ static int artwork_load(const struct GameDriver *driver, int width, int height, 
 	for (piece = artwork_list; piece; piece = piece->next)
 	{
 		/* convert from pixel coordinates if necessary */
-		if (fabs(piece->left) > 4.0f || fabs(piece->right) > 4.0f ||
-			fabs(piece->top) > 4.0f || fabs(piece->bottom) > 4.0f)
+		if (fabsf(piece->left) > 4.0f || fabsf(piece->right) > 4.0f ||
+			fabsf(piece->top) > 4.0f || fabsf(piece->bottom) > 4.0f)
 		{
 			piece->left /= (float)width;
 			piece->right /= (float)width;
@@ -2773,8 +2773,8 @@ static int generate_rect_piece(struct artwork_piece *piece, const struct overlay
 	piece->right = data->right;
 
 	/* convert from pixel coordinates if necessary */
-	if (fabs(piece->left) > 4.0f || fabs(piece->right) > 4.0f ||
-		fabs(piece->top) > 4.0f || fabs(piece->bottom) > 4.0f)
+	if (fabsf(piece->left) > 4.0f || fabsf(piece->right) > 4.0f ||
+		fabsf(piece->top) > 4.0f || fabsf(piece->bottom) > 4.0f)
 	{
 		piece->left /= (float)width;
 		piece->right /= (float)width;

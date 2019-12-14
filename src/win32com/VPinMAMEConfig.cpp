@@ -116,7 +116,7 @@ static struct rc_option opts[] = {
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
-static char* GlobalSettings[] = {
+static const char* GlobalSettings[] = {
 	// fileio_opts
 	"rompath",
 	"samplepath",
@@ -152,7 +152,7 @@ static char* GlobalSettings[] = {
 	NULL
 };
 
-static char* PathOrFileSettings[] = {
+const static char* PathOrFileSettings[] = {
 	// fileio_opts
 	"rompath",
 	"samplepath",
@@ -173,7 +173,7 @@ static char* PathOrFileSettings[] = {
 	NULL
 };
 
-static char* IgnoredSettings[] = {
+const static char* IgnoredSettings[] = {
 	"resolution",
 	"debug_resolution",
 	"maximize",
@@ -184,7 +184,7 @@ static char* IgnoredSettings[] = {
 	NULL
 };
 
-static char* RunningGameSettings[] = {
+const static char* RunningGameSettings[] = {
 	// fileio_opts
 	"dmd_pos_x",
 	"dmd_pos_y",
@@ -370,19 +370,19 @@ void CLIB_DECL logerror(const char *text,...) {
 }
 #endif /* PINMAME DEBUG */
 
-int set_option(const char *name, const char *arg, int priority)
+int set_option(const char * const name, const char * const arg, int priority)
 {
 	return rc_set_option(rc, name, arg, priority);
 }
 
-void *get_option(const char *name)
+void *get_option(const char * const name)
 {
 	return *(char**) rc_get_option(rc, name)->dest;
 
 //	return Value;
 }
 
-BOOL FindSettingInList(char* pList[], const char* pszName)
+BOOL FindSettingInList(const char* pList[], const char* const pszName)
 {
 	if ( !pszName || !*pszName )
 		return FALSE;
@@ -396,22 +396,22 @@ BOOL FindSettingInList(char* pList[], const char* pszName)
 	return false;
 }
 
-BOOL IsGlobalSetting(const char* pszName)
+BOOL IsGlobalSetting(const char* const pszName)
 {
 	return FindSettingInList(GlobalSettings, pszName);
 }
 
-BOOL IsPathOrFile(const char* pszName)
+BOOL IsPathOrFile(const char* const pszName)
 {
 	return FindSettingInList(PathOrFileSettings, pszName);
 }
 
-BOOL IgnoreSetting(const char* pszName)
+BOOL IgnoreSetting(const char* const pszName)
 {
 	return FindSettingInList(IgnoredSettings, pszName);
 }
 
-BOOL SettingAffectsRunningGame(const char* pszName)
+BOOL SettingAffectsRunningGame(const char* const pszName)
 {
 	return FindSettingInList(RunningGameSettings, pszName);
 }
@@ -654,7 +654,7 @@ void DeleteGlobalSettings()
 	RegCloseKey(hKey);
 }
 
-void SaveGameSettings(char* pszGameName)
+void SaveGameSettings(const char* const pszGameName)
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -701,7 +701,7 @@ void SaveGameSettings(char* pszGameName)
 	RegCloseKey(hKey);
 }
 
-void LoadGameSettings(char* pszGameName)
+void LoadGameSettings(const char* const pszGameName)
 {
 	bool fNew = false;
 
@@ -770,7 +770,7 @@ void LoadGameSettings(char* pszGameName)
 		SaveGameSettings(pszGameName);
 }
 
-void DeleteGameSettings(char *pszGameName)
+void DeleteGameSettings(const char * const pszGameName)
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -787,7 +787,7 @@ void DeleteGameSettings(char *pszGameName)
 	RegCloseKey(hKey);
 }
 
-BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal)
+BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIANT *pVal)
 {
 	if ( !pszName && !*pszName )
 		return FALSE;
@@ -862,7 +862,7 @@ BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal)
 	return TRUE;
 }
 
-BOOL PutSetting(char* pszGameName, char* pszName, VARIANT vValue)
+BOOL PutSetting(const char* const pszGameName, const char* const pszName, VARIANT vValue)
 {
 	if ( !pszName && !*pszName )
 		return FALSE;
@@ -933,7 +933,7 @@ BOOL PutSetting(char* pszGameName, char* pszName, VARIANT vValue)
 /* Registry function */
 
 /* Writes a DWORD to the Registry! Opens the Registry Key Specified & Closes When Done*/
-BOOL WriteRegistry(char* pszKey, char* pszName, DWORD dwValue) {
+BOOL WriteRegistry(const char* const pszKey, const char* const pszName, DWORD dwValue) {
 	HKEY hKey;
 	DWORD dwDisposition;
 
@@ -953,7 +953,7 @@ BOOL WriteRegistry(char* pszKey, char* pszName, DWORD dwValue) {
 }
 
 /* Reads a DWORD from the Registry! Opens the Registry Key Specified & Closes When Done*/
-DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault) {
+DWORD ReadRegistry(const char* const pszKey, const char* const pszName, DWORD dwDefault) {
 	DWORD dwValue = dwDefault;
 	HKEY hKey;
 	DWORD dwType;
@@ -974,7 +974,7 @@ DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault) {
 	return dwValue;
 }
 
-char* GetInstallDir(char *pszInstallDir, int iSize)
+char* GetInstallDir(char * const pszInstallDir, int iSize)
 {
 	if ( !pszInstallDir )
 		return NULL;

@@ -168,7 +168,7 @@ enum
 ** back again.
 */
 
-void src_char_to_float_array(const char * const __restrict in, float * const __restrict out, int len);
+void src_char_to_float_array(const signed char * const __restrict in, float * const __restrict out, int len);
 void src_short_to_float_array(const short * const __restrict in, float * const __restrict out, int len);
 void src_float_to_short_array(const float * const __restrict in, short * const __restrict out, int len);
 

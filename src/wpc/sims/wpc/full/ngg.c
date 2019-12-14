@@ -664,7 +664,8 @@ static mech_tInitData mechnggWheel = {
 };
 
 static WRITE_HANDLER(ngg_wpc_w) {
-  static int lastFlip, lastWheel = 0;
+  static int lastFlip = 0;
+  //static int lastWheel = 0;
 // writes to the flippers have to be delayed 1 cycle to not interfere with the flashers.
 // also, an intermittent 0 byte write has to be avoided.
   if (offset == WPC_FLIPPERCOIL95) {

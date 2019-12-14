@@ -1511,7 +1511,7 @@ static INTERRUPT_GEN(sam_vblank) {
 		break;
 
 	default:
-		memcpy(coreGlobals.RGBlamps, samlocals.ext_leds, SAM_LEDS_MAX * sizeof(data8_t));
+		memcpy(coreGlobals.RGBlamps, samlocals.ext_leds, sizeof(samlocals.ext_leds));
 #ifdef MAME_DEBUG
 		for (i = 0; i < core_gameData->hw.lampCol - 2; i++) {
 			coreGlobals.lampMatrix[10 + i] = (coreGlobals.RGBlamps[8 * i] ? 1 : 0) | (coreGlobals.RGBlamps[8 * i + 1] ? 2 : 0)

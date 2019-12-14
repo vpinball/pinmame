@@ -72,12 +72,15 @@ static int forced_updates;
 // video bounds
 static int max_width;
 static int max_height;
+#ifndef DISABLE_DX7
 static int pref_depth;
+#endif
 static int effect_min_xscale;
 static int effect_min_yscale;
 static struct rectangle last_bounds;
 
 // mode finding
+#ifndef DISABLE_DX7
 static double best_score;
 static int best_width;
 static int best_height;
@@ -87,6 +90,7 @@ static int best_refresh;
 // derived attributes
 static int needs_6bpp_per_gun;
 static int pixel_aspect_ratio;
+#endif
 
 
 
@@ -94,11 +98,13 @@ static int pixel_aspect_ratio;
 //	PROTOTYPES
 //============================================================
 
+#ifndef DISABLE_DX7
 static double compute_mode_score(int width, int height, int depth, int refresh);
 static int set_resolution(void);
+static void set_brightness(void);
+#endif
 static int create_surfaces(void);
 static int create_blit_surface(void);
-static void set_brightness(void);
 static int create_clipper(void);
 static void erase_surfaces(void);
 static void release_surfaces(void);
@@ -338,6 +344,7 @@ void win_ddraw_kill(void)
 //	enum_callback
 //============================================================
 
+#ifndef DISABLE_DX7
 static HRESULT WINAPI enum_callback(LPDDSURFACEDESC desc, LPVOID context)
 {
 	int depth = desc->ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
@@ -386,13 +393,14 @@ static HRESULT WINAPI enum2_callback(LPDDSURFACEDESC2 desc, LPVOID context)
 	}
 	return DDENUMRET_OK;
 }
-
+#endif
 
 
 //============================================================
 //	compute_mode_score
 //============================================================
 
+#ifndef DISABLE_DX7
 static double compute_mode_score(int width, int height, int depth, int refresh)
 {
 	static const double depth_matrix[4][2][4] =
@@ -478,6 +486,7 @@ static double compute_mode_score(int width, int height, int depth, int refresh)
 	final_score = (size_score * 100.0 + depth_score * 10.0 + refresh_score) / 111.0;
 	return final_score;
 }
+#endif
 
 
 
@@ -485,6 +494,7 @@ static double compute_mode_score(int width, int height, int depth, int refresh)
 //	set_resolution
 //============================================================
 
+#ifndef DISABLE_DX7
 static int set_resolution(void)
 {
 	DDSURFACEDESC currmode = { sizeof(DDSURFACEDESC) };
@@ -571,7 +581,7 @@ cant_get_mode:
 cant_enumerate_modes:
 	return 0;
 }
-
+#endif
 
 
 //============================================================
@@ -622,8 +632,10 @@ static int create_surfaces(void)
 	compute_color_masks(&primary_desc);
 
 	// if this is a full-screen mode, attempt to create a color control object
+#ifndef DISABLE_DX7
 	if (!win_window_mode && win_gfx_brightness != 0.0)
 		set_brightness();
+#endif
 
 	// print out the good stuff
 	if (verbose)
@@ -789,9 +801,9 @@ cant_create_blit:
 //	set_brightness
 //============================================================
 
+#ifndef DISABLE_DX7
 static void set_brightness(void)
 {
-#ifndef DISABLE_DX7
 	HRESULT result;
 	LPDIRECTDRAWGAMMACONTROL *gamma_controladdr = &gamma_control;
 
@@ -824,8 +836,8 @@ static void set_brightness(void)
 		if (result != DD_OK)
 			fprintf(stderr, "Error setting gamma ramp: %08x\n", (UINT32)result);
 	}
-#endif
 }
+#endif
 
 
 
