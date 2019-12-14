@@ -1124,7 +1124,7 @@ static void dcs_init(struct sndbrdData *brdData);
 
 static struct {
  int     status;   // 0 = disabled, 1 playing, > 1 startup silence samples remaining
- UINT32  sOut, sIn;
+ int     sOut, sIn; // positions in sound buffer
  INT16  *buffer;
  int     stream;
 #ifdef DCS_LOWPASS

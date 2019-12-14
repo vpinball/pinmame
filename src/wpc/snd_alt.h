@@ -205,7 +205,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			cached_machine_name = (char*)malloc(strlen(g_szGameName) + 1);
 			strcpy(cached_machine_name, g_szGameName);
 
-			getcwd(cwd, sizeof(cwd));
+			_getcwd(cwd, sizeof(cwd));
 
 #ifndef _WIN64
 			hInst = GetModuleHandle("VPinMAME.dll");
@@ -1036,7 +1036,7 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 		// allocate field
 		if (allocField) {
 			allocField = 0;
-			fields[field_number] = strdup(p);
+			fields[field_number] = _strdup(p);
 			f = d = fields[field_number];
 		}
 		if (enclosed_in_quotes) {

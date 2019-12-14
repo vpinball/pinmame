@@ -383,7 +383,7 @@ STDMETHODIMP CGame::get_Settings(IGameSettings **pVal)
 /* some helper functions */
 
 /* Determine Game # from Given GameName String */
-int GetGameNumFromString(char *name)
+int GetGameNumFromString(const char * const name)
 {
 	int gamenum = 0;
 	while (drivers[gamenum]) {
@@ -397,7 +397,7 @@ int GetGameNumFromString(char *name)
 		return gamenum;
 }
 
-char* GetGameRegistryKey(char *pszRegistryKey, char* pszROMName)
+char* GetGameRegistryKey(char *pszRegistryKey, const char* const pszROMName)
 {
 	if ( !pszRegistryKey )
 		return NULL;
@@ -416,7 +416,7 @@ char* GetGameRegistryKey(char *pszRegistryKey, char* pszROMName)
 	return pszRegistryKey;
 }
 
-BOOL GameUsedTheFirstTime(char* pszROMName)
+BOOL GameUsedTheFirstTime(const char* const pszROMName)
 {
 	char szKey[MAX_PATH];
 	GetGameRegistryKey(szKey, pszROMName);

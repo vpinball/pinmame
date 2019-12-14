@@ -158,7 +158,7 @@ CController::CController() {
 	m_hEmuIsRunning = CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventWnd = 0;
 
-	lstrcpy(m_szROM,"");
+	m_szROM[0] = '\0';
 	m_nGameNo = -1;
 
 	LoadGlobalSettings();
@@ -218,7 +218,7 @@ CController::~CController() {
 STDMETHODIMP CController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,defaultvalue(100)]*/ int nMinVersion)
 {
 	/*Make sure GameName Specified!*/
-	if (!m_szROM)
+	if (m_szROM[0] == '\0')
 		return Error(TEXT("Game name not specified!"));
 
 	int nVersionNo0, nVersionNo1;
