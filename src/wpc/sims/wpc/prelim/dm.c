@@ -302,15 +302,17 @@ WPC_ROMSTART(dm,lx3,  "dman_lx3.rom",0x80000, CRC(5aa57674) SHA1(e02d91a70579986
 WPC_ROMSTART(dm,dx3,  "dman_dx3.rom",0x80000, CRC(aede7ca6) SHA1(874aca191ca7bbee108f2f0204a060966b66623e)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,lx4,  "dman_lx4.rom",0x80000, CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,dx4,  "dman_dx4.rom",0x80000, CRC(6974789d) SHA1(9cf2c49f879fa1f2547e1e7c853e12dc4a35b97d)) DM_SOUND_L2 WPC_ROMEND
-WPC_ROMSTART(dm,lx4c, "dman_lx4c.rom",0x80000,CRC(d05d3bd6) SHA1(eb99dfbc43e299b7ecfe3208905c70d89886be55)) DM_SOUND_L2 WPC_ROMEND
+//WPC_ROMSTART(dm,lx4c, "dman_lx4c.rom",0x80000,CRC(d05d3bd6) SHA1(eb99dfbc43e299b7ecfe3208905c70d89886be55)) DM_SOUND_L2 WPC_ROMEND //L-4X patch be55
+WPC_ROMSTART(dm,lx4c, "Demolition Man U6 game ROM rev LX-4 patch c53f.rom",0x80000,CRC(b4df0ac3) SHA1(5f8498b066d02fbd64a01ae3da352f976b67059a)) DM_SOUND_L2 WPC_ROMEND //L-4X patch c53f
 WPC_ROMSTART(dm,h5,   "dman_h5.rom", 0x80000, CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dh5,  "dman_dh5.rom",0x80000, CRC(91388e13) SHA1(b09a628afd921e34b99d0db3005ab12bbec189b5)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h5b,  "dman_h5b.rom",0x80000, CRC(b7d0e138) SHA1(5533f36f9eab8626bc1240bdea11ae7757db5244)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dh5b, "dmandh5b.rom",0x80000, CRC(e2e77372) SHA1(df1384f57339c077d98bda5e6ad8ca1d38e3e6ce)) DM_SOUND_H1 WPC_ROMEND
-WPC_ROMSTART(dm,h5c,  "dman_h5c.rom",0x80000, CRC(de77e678) SHA1(886da8b79baff2403fb66c2e5b4278fbc39d634e)) DM_SOUND_H1 WPC_ROMEND
+//WPC_ROMSTART(dm,h5c,  "dman_h5c.rom",0x80000, CRC(de77e678) SHA1(886da8b79baff2403fb66c2e5b4278fbc39d634e)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h6,   "dman_h6.rom", 0x80000, CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h6b,  "dman_h6b.rom",0x80000, CRC(047711de) SHA1(7a62b5862f7b5414e3eabe75f117866e6921efaf)) DM_SOUND_H1 WPC_ROMEND
-WPC_ROMSTART(dm,h6c,  "dman_h6c.rom",0x80000, CRC(57de32fd) SHA1(b3ec3b3b2e1136989d92347a22ba38a44bf29e24)) DM_SOUND_H1 WPC_ROMEND
+//WPC_ROMSTART(dm,h6c,  "dman_h6c.rom",0x80000, CRC(57de32fd) SHA1(b3ec3b3b2e1136989d92347a22ba38a44bf29e24)) DM_SOUND_H1 WPC_ROMEND //L-6H patch 9e24
+WPC_ROMSTART(dm,h6c,  "Demolition Man U6 game ROM rev LH-6 patch 4d2b.rom",0x80000,CRC(19e764a9) SHA1(333e422d2f641952a3e4fddf2a70fdba7268b4e0)) DM_SOUND_H1 WPC_ROMEND //L-6H patch 4d2b
 WPC_ROMSTART(dm,dt099,"dm_dt099.rom",0x100000,CRC(64428b78) SHA1(ac0b0174dcecd1b1cd467c4369cb78c2430e9e4b)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dt101,"dm_dt101.rom",0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2bff95d0c7f65e0f80c4c17b8f2)) DM_SOUND_H1 WPC_ROMEND
 
@@ -319,7 +321,7 @@ WPC_ROMSTART(dm,dt101,"dm_dt101.rom",0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2b
 /---------------*/
 CORE_GAMEDEF (dm,lx4,       "Demolition Man (LX-4)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dx4,  lx4, "Demolition Man (DX-4 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-4X patch be55
+CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition MOD)",2019,"Williams",wpc_mDCSS,0) //L-4X patch c53f
 CORE_CLONEDEF(dm,pa2,  lx4, "Demolition Man (PA-2 Prototype)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,pa3,  lx4, "Demolition Man (PA-3 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,px5,  lx4, "Demolition Man (PX-5 Prototype)",1994,"Williams",wpc_mDCSS,0)
@@ -332,10 +334,10 @@ CORE_CLONEDEF(dm,h5,   lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dh5,  lx4, "Demolition Man (DH-5 LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5b,  lx4, "Demolition Man (H-5B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dh5b, lx4, "Demolition Man (DH-5B Coin Play LED Ghost Fix)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h5c,  lx4, "Demolition Man (H-5C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-5H patch 634e
+//CORE_CLONEDEF(dm,h5c,  lx4, "Demolition Man (H-5C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-5H patch 634e // as there was no newer, updated version released for this variant again, disable it to avoid confusion
 CORE_CLONEDEF(dm,h6,   lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h6b,  lx4, "Demolition Man (H-6B Coin Play)", 1995,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2017,"Williams",wpc_mDCSS,0) //L-6H patch 9e24
+CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2019,"Williams",wpc_mDCSS,0) //L-6H patch 4d2b
 CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)", 2014,"FreeWPC",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 2014,"FreeWPC",wpc_mDCSS,0)
 

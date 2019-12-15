@@ -50,7 +50,7 @@ const char* path_voice = "voice\\";
 
 const char* path_table = "\\altsound.csv";
 
-
+extern char g_szGameName[256];
 static char* cached_machine_name = 0;
 
 float alt_sound_gain(const int gain) //!! which one?
@@ -136,7 +136,7 @@ void alt_sound_handle(int boardNo, int cmd)
 		while (attenuation++ < 0)
 			master_vol /= 1.122018454f; // = (10 ^ (1/20)) = 1dB
 
-		if (cached_machine_name != 0 && strstr(Machine->gamedrv->name, cached_machine_name) == 0) // another game has been loaded? -> previous data has to be free'd
+		if (cached_machine_name != 0 && strstr(g_szGameName, cached_machine_name) == 0) // another game has been loaded? -> previous data has to be free'd
 		{
 			cmd_counter = 0;
 			cmd_storage = -1;
@@ -202,10 +202,10 @@ void alt_sound_handle(int boardNo, int cmd)
 
 			srand(time(NULL)); // randomize random number generator seed
 
-			cached_machine_name = (char*)malloc(strlen(Machine->gamedrv->name) + 1);
-			strcpy(cached_machine_name, Machine->gamedrv->name);
+			cached_machine_name = (char*)malloc(strlen(g_szGameName) + 1);
+			strcpy(cached_machine_name, g_szGameName);
 
-			getcwd(cwd, sizeof(cwd));
+			_getcwd(cwd, sizeof(cwd));
 
 #ifndef _WIN64
 			hInst = GetModuleHandle("VPinMAME.dll");
@@ -226,11 +226,11 @@ void alt_sound_handle(int boardNo, int cmd)
 			psd.num_files = 0;
 
 			// try to load altsound lookup table/csv if available
-			PATH_LEN = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(path_table) + 1;
+			PATH_LEN = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(path_table) + 1;
 			PATH = (char*)malloc(PATH_LEN);
 			strcpy_s(PATH, PATH_LEN, cvpmd);
 			strcat_s(PATH, PATH_LEN, path_main);
-			strcat_s(PATH, PATH_LEN, Machine->gamedrv->name);
+			strcat_s(PATH, PATH_LEN, g_szGameName);
 			strcat_s(PATH, PATH_LEN, path_table);
 
 			c = csv_open(PATH, ',');
@@ -301,7 +301,7 @@ void alt_sound_handle(int boardNo, int cmd)
 
 					strcpy_s(filePath, sizeof(filePath), cvpmd);
 					strcat_s(filePath, sizeof(filePath), path_main);
-					strcat_s(filePath, sizeof(filePath), Machine->gamedrv->name);
+					strcat_s(filePath, sizeof(filePath), g_szGameName);
 					strcat_s(filePath, sizeof(filePath), "\\");
 					strcat_s(filePath, sizeof(filePath), c->fields[colFNAME]);
 					GetFullPathName(filePath, sizeof(filePath), tmpPath, NULL);
@@ -322,14 +322,14 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					const char* const subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 
-					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
+					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
 					DIR *dir;
 					struct dirent *entry;
 					PATH = (char*)malloc(PATHl);
 
 					strcpy_s(PATH, PATHl, cvpmd);
 					strcat_s(PATH, PATHl, path_main);
-					strcat_s(PATH, PATHl, Machine->gamedrv->name);
+					strcat_s(PATH, PATHl, g_szGameName);
 					strcat_s(PATH, PATHl, "\\");
 					strcat_s(PATH, PATHl, subpath);
 
@@ -392,7 +392,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				for (i = 0; i < 5; ++i)
 				{
 					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
-					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(Machine->gamedrv->name) + 1 + strlen(subpath) + 1;
+					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
 					char* const PATH = (char*)malloc(PATHl);
 					DIR *dir;
 					struct dirent *entry;
@@ -411,7 +411,7 @@ void alt_sound_handle(int boardNo, int cmd)
 
 					strcpy_s(PATH, PATHl, cvpmd);
 					strcat_s(PATH, PATHl, path_main);
-					strcat_s(PATH, PATHl, Machine->gamedrv->name);
+					strcat_s(PATH, PATHl, g_szGameName);
 					strcat_s(PATH, PATHl, "\\");
 					strcat_s(PATH, PATHl, subpath);
 
@@ -1036,7 +1036,7 @@ static int parse_line(CsvReader* const c, char* line, const int header) {
 		// allocate field
 		if (allocField) {
 			allocField = 0;
-			fields[field_number] = strdup(p);
+			fields[field_number] = _strdup(p);
 			f = d = fields[field_number];
 		}
 		if (enclosed_in_quotes) {

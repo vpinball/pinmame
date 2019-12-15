@@ -4290,8 +4290,13 @@ int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IU
 #ifdef _DEBUG
             icoeff0 = icoeff2 = _mm_setzero_ps();
 #endif
+#ifndef __clang__
             icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(src + xi.m128i_i32[0])), (__m64*)(src + xi.m128i_i32[1]));
             icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(src + xi.m128i_i32[2])), (__m64*)(src + xi.m128i_i32[3]));
+#else
+            icoeff0 = _mm_loadh_pi(_mm_loadl_pi(icoeff0, (__m64*)(src + ((__int32*)&xi)[0])), (__m64*)(src + ((__int32*)&xi)[1]));
+            icoeff2 = _mm_loadh_pi(_mm_loadl_pi(icoeff2, (__m64*)(src + ((__int32*)&xi)[2])), (__m64*)(src + ((__int32*)&xi)[3]));
+#endif
 
             const __m128i c1 = _mm_castps_si128(_mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(2, 0, 2, 0)));
             const __m128i c2 = _mm_castps_si128(_mm_shuffle_ps(icoeff0, icoeff2, _MM_SHUFFLE(3, 1, 3, 1)));
@@ -4309,7 +4314,11 @@ int BasicBitmap::InterpolateCol(IUINT32 * __restrict card, const int w, const IU
             card += 4;
         }
 
+#ifndef __clang__
         x = x128.m128i_i32[0];
+#else
+        x = ((__int32*)&x128)[0];
+#endif
         for (unsigned long i = 0; i < (__width & 3); ++i)
         {
             const IINT32 xi = x >> 16;
@@ -4347,17 +4356,26 @@ int BasicBitmap::InterpolateColNearest(IUINT32 * __restrict card, int w, const I
 	const __m128i dx128 = _mm_set1_epi32(dx * 4);
 	for (; w > 3; w -= 4) {
 		const __m128i xi = _mm_srli_epi32(x128, 16);
-
+#ifndef __clang__
 		card[0] = src[xi.m128i_i32[0]];
 		card[1] = src[xi.m128i_i32[1]];
 		card[2] = src[xi.m128i_i32[2]];
 		card[3] = src[xi.m128i_i32[3]];
-
+#else
+		card[0] = src[((__int32*)&xi)[0]];
+		card[1] = src[((__int32*)&xi)[1]];
+		card[2] = src[((__int32*)&xi)[2]];
+		card[3] = src[((__int32*)&xi)[3]];
+#endif
 		x128 = _mm_add_epi32(x128, dx128);
 		card += 4;
 	}
 
+#ifndef __clang__
 	x = x128.m128i_i32[0];
+#else
+	x = ((__int32*)&x128)[0];
+#endif
 #endif
 	for (; w > 0; w--) {
 		*card++ = src[x >> 16];

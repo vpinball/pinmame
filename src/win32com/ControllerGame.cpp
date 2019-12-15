@@ -1,5 +1,5 @@
 // ControllerGame.cpp : Implementation of CGame
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "ControllerGame.h"
 #include "ControllerGameSettings.h"
@@ -12,7 +12,7 @@ extern "C" {
 #include "audit.h"
 }
 
-#include "alias.h"
+#include "Alias.h"
 #include <atlwin.h>
 
 
@@ -93,7 +93,7 @@ private:
 		fMaybeOK = true;
 
 		while ( SUCCEEDED(pEnumRoms->Next(1, &vRom, &uFetched)) && uFetched ) {
-			HRESULT hr = vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
+			/*HRESULT hr =*/ vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
 			VariantClear(&vRom);
 
 			CComBSTR sName;
@@ -383,7 +383,7 @@ STDMETHODIMP CGame::get_Settings(IGameSettings **pVal)
 /* some helper functions */
 
 /* Determine Game # from Given GameName String */
-int GetGameNumFromString(char *name)
+int GetGameNumFromString(const char * const name)
 {
 	int gamenum = 0;
 	while (drivers[gamenum]) {
@@ -397,7 +397,7 @@ int GetGameNumFromString(char *name)
 		return gamenum;
 }
 
-char* GetGameRegistryKey(char *pszRegistryKey, char* pszROMName)
+char* GetGameRegistryKey(char *pszRegistryKey, const char* const pszROMName)
 {
 	if ( !pszRegistryKey )
 		return NULL;
@@ -416,7 +416,7 @@ char* GetGameRegistryKey(char *pszRegistryKey, char* pszROMName)
 	return pszRegistryKey;
 }
 
-BOOL GameUsedTheFirstTime(char* pszROMName)
+BOOL GameUsedTheFirstTime(const char* const pszROMName)
 {
 	char szKey[MAX_PATH];
 	GetGameRegistryKey(szKey, pszROMName);

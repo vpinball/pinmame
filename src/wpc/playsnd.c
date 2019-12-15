@@ -408,7 +408,7 @@ static WRITE_HANDLER(ay_ctrl_w) {
   sndlocals.ayctrl = data & 3;
   switch (sndlocals.ayctrl) {
     case 1: AY8910_write_port_0_w(0, sndlocals.aydata); break;
-    case 2: sndlocals.aydata = AY8910Read(0);
+    case 2: sndlocals.aydata = AY8910Read(0); break;
     case 3: AY8910_control_port_0_w(0, sndlocals.aydata); break;
   }
 }

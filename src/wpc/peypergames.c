@@ -165,3 +165,15 @@ PEYPER_ROMSTART(hangon, "hangon1.bin", CRC(b0672137) SHA1(e0bd0808a3a8c6df200b0e
 						"hangon3.bin", CRC(26949f2f) SHA1(e3e1a436ce59c7f1c2904cd8f50f2ba4a4e37638))
 PEYPER_ROMEND
 CORE_GAMEDEFNV(hangon,"Hang-On",1988,"Sonic (Spain)",gl_mPEYPER,0)
+
+
+// Games by other manufacturers below
+
+/*-------------------------------------------------------------------
+/ Video Dens: Ator (1985)
+/-------------------------------------------------------------------*/
+INITGAME(ator, disp6f, 1, 4)
+PEYPER_ROMSTART2(ator, "ator_1.bin", NO_DUMP,
+                       "ator_2.bin", CRC(21aad5c4) SHA1(e78da5d80682710db34cbbfeae5af54241c73371))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(ator,"Ator",1985,"Video Dens",gl_mPEYPER,0)

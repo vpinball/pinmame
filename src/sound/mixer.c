@@ -331,7 +331,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
 	{
 		const unsigned len = (src_len > dst_len) ? dst_len : src_len;
-		INT16* const src_end = src + len;
+		const INT16* const __restrict src_end = src + len;
 		while (src != src_end)
 		{
 #ifdef USE_LIBSAMPLERATE
@@ -368,7 +368,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	if (channel->legacy_resample || channel->lr_silence[left_right])
 	{
 		/* end address */
-		INT16* const src_end = src + src_len;
+		const INT16* const __restrict src_end = src + src_len;
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
 		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
@@ -556,7 +556,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	{
 		/* copy */
 		const unsigned len = (src_len > dst_len) ? dst_len : src_len;
-		INT8* const src_end = src + len;
+		const INT8* const __restrict src_end = src + len;
 		while (src != src_end)
 		{
 #ifdef USE_LIBSAMPLERATE
@@ -578,7 +578,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	if (channel->legacy_resample)
 	{
 		/* end address */
-		INT8* const src_end = src + src_len;
+		const INT8* const __restrict src_end = src + src_len;
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
 		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
@@ -930,7 +930,7 @@ void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
 ***************************************************************************/
 
 /* Silence samples */
-static unsigned char silence_data[FILTER_FLUSH];
+static INT8 silence_data[FILTER_FLUSH];
 
 /* Flush the state of the filter playing some 0 samples */
 static void mixer_flush(struct mixer_channel_data *channel)
@@ -949,8 +949,8 @@ static void mixer_flush(struct mixer_channel_data *channel)
 	mixing_volume[1] = 0;
 
 	/* null data */
-	source_begin = (INT8*)silence_data;
-	source_end = (INT8*)silence_data + FILTER_FLUSH;
+	source_begin = silence_data;
+	source_end = silence_data + FILTER_FLUSH;
 
 	/* save the number of samples availables */
 	save_available = channel->samples_available;
@@ -974,6 +974,7 @@ int mixer_sh_start(void)
 #ifdef USE_LIBSAMPLERATE
 	int error;
 #endif
+	memset(silence_data, 0, sizeof(silence_data));
 
 	/* reset all channels to their defaults */
 	memset(mixer_channel, 0, sizeof(mixer_channel));

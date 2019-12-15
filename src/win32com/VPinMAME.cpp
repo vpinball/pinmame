@@ -21,7 +21,7 @@
 //          dlldata.c
 //      To build a separate proxy/stub DLL,
 //      run nmake -f PinMAMEps.mk in the project directory.
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "resource.h"
 #include <initguid.h>
 #include "VPinMAME_h.h"
@@ -95,7 +95,6 @@ BOOL IsSingleThreadedApartment()
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
-    lpReserved;
 #ifdef _MERGE_PROXYSTUB
     if (!PrxDllMain(hInstance, dwReason, lpReserved))
         return FALSE;
@@ -183,6 +182,4 @@ STDAPI DllUnregisterServer(void)
 #endif
     return _Module.UnregisterServer(TRUE);
 }
-
-
 

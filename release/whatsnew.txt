@@ -3,7 +3,36 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.3 (X X, 2019) - "Sounds good II"
+Version 3.3 (X X, 2019) - ""
+------------------------------------------------------------------------------
+
+*** CORE/CPU ***
+Wico's Af-Tor fully working now
+Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
+E.F.O. sound board mostly working - speech output would still stall the board for now however
+Sound support for early LTD system III
+More sound found for LTD system 4, extra lamp data is handled by sound chip port write!
+More solenoids found for LTD's Force & Haunted Hotel
+More lamps found for LTD's Space Poker
+Increased IRQ for LTD system III, seems to help with ball detection in outhole
+
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti
+Clones:
+Demolition Man LX-4C (competition MOD) (updated)
+Demolition Man H-6C (competition MOD) (updated)
+Flintstones, The LX-3
+Oba-Oba (old hardware)
+Space Train (old hardware)
+Theatre of Magic 1.3XC (competition MOD) (updated)
+Twilight Zone LA-9 (aka PAPA Tournament Version 9.0)
+
+Correct Dumps:
+Time Machine (LTD, 4 players) - confirmed that currently supported ROMs are correct
+Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
+
+
+
+Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
 
 Initial efforts to start converting the PinMAME source base over to the 3-Clause BSD License (not completed yet, so for the full binary package the old license stays in place for now!)

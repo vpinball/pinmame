@@ -6,7 +6,7 @@
 
 #if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
  #include <xmmintrin.h>
- #if !defined(_MSC_VER) || !defined(_WIN32)
+ #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128
      {
          __m128 v;
@@ -528,12 +528,12 @@ void filter_sallen_key_lp_setup(const double R1, const double R2, const double C
 	const double gn = g * (2.0 * PI) * Fc;
 
 	// calculate the difference equation coefficients
-	const double cc = 1.0 + gn*c1;
+	const double cc = 1.0 + gn*c1 + gn*gn*c2;
 	context->b0 = 1.0 / cc;
 	context->b1 = 2.0 / cc;
 	context->b2 = 1.0 / cc;
-	context->a1 = 2.0 / cc;
-	context->a2 = (1.0 - gn*c1) / cc;
+	context->a1 = 2.0 * (1.0 - gn*gn*c2) / cc;
+	context->a2 = (1.0 - gn*c1 + gn*gn*c2) / cc;
 
 	// reset the inputs
 	filter2_reset(context);

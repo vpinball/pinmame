@@ -9,7 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Resource.h"       // main symbols
+#include "resource.h"       // main symbols
 #include "VPinMAMECP.h"
 
 #include "ControllerSettings.h"
@@ -59,8 +59,8 @@ public:
 	CComObject<CGames>				*m_pGames;
 	CComObject<CControllerSettings>	*m_pControllerSettings;
 
-	CController::CController();
-	CController::~CController();
+	CController();
+	~CController();
 
 private:
 	void GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVersionNo2, int *nVersionNo3);

@@ -951,6 +951,7 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
+#ifdef WPC_MODSOLSAMPLE
 	if (options.usemodsol)
 	{
 		if (wpclocals.modsol_sample < WPC_MODSOLSAMPLE-1)
@@ -1041,6 +1042,7 @@ static INTERRUPT_GEN(wpc_irq) {
 			}
 		}
 	}
+#endif
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 

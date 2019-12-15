@@ -3,7 +3,16 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.3 (X X, 2019) - "Sounds good II"
+Version 3.3 (X X, 2019) - ""
+------------------------------------------------------------------------------
+- New logos by tictox
+
+- If you create a VPMAlias.txt file in the VPinMAME folder, it will alias an input rom name to the specified (real) rom. Format example:
+   mytallica,mtl_180hc
+   myacdc,acd_170hc
+  This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
+
+Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
 - Change the default of the 'ddraw' option to 0, which means that the faster (but less compatible nowadays) Direct Draw implementation of the window display is by default disabled
 
