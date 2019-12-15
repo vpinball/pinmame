@@ -12,23 +12,23 @@ extern void vpm_frontend_exit(void);
 void vpm_game_init(int game_index);
 void vpm_game_exit(int game_index);
 
-int set_option(const char *name, const char *arg, int priority);
-void *get_option(const char *name);
+int set_option(const char* const name, const char * const arg, int priority);
+void *get_option(const char* const name);
 
-BOOL  WriteRegistry(char* pszKey, char* pszName, DWORD dwValue);
-DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault);
+BOOL  WriteRegistry(const char* const pszKey, const char* const pszName, DWORD dwValue);
+DWORD ReadRegistry(const char* const pszKey, const char* const pszName, DWORD dwDefault);
 
 void LoadGlobalSettings();
 void DeleteGlobalSettings();
 
-void LoadGameSettings(char* pszGameName);
-void DeleteGameSettings(char *pszGameName);
+void LoadGameSettings(const char* const pszGameName);
+void DeleteGameSettings(const char* const pszGameName);
 
-char* GetInstallDir(char *pszInstallDir, int iSize);
+char* GetInstallDir(char * const pszInstallDir, int iSize);
 
-BOOL PutSetting(char* pszGameName, char* pszName, VARIANT vValue);
-BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal);
+BOOL PutSetting(const char* const pszGameName, const char* const pszName, VARIANT vValue);
+BOOL GetSetting(const char* const pszGameName, const char* const pszName, VARIANT *pVal);
 
-BOOL SettingAffectsRunningGame(const char* pszName);
+BOOL SettingAffectsRunningGame(const char* const pszName);
 
 #endif // VPINMAMECONFIG_H

@@ -268,6 +268,7 @@ INLINE int wnd_extra_height(void)
 //	wnd_extra_left
 //============================================================
 
+#ifndef PINMAME
 INLINE int wnd_extra_left(void)
 {
 	RECT window = { 100, 100, 200, 200 };
@@ -276,7 +277,7 @@ INLINE int wnd_extra_left(void)
 	AdjustWindowRectEx(&window, WINDOW_STYLE, win_has_menu(), WINDOW_STYLE_EX);
 	return 100 - window.left;
 }
-
+#endif
 
 
 //============================================================
@@ -369,6 +370,7 @@ INLINE void set_aligned_window_pos(HWND wnd, HWND insert, int x, int y, int cx, 
 //	erase_outer_rect
 //============================================================
 
+#ifndef VPINMAME
 INLINE void erase_outer_rect(RECT *outer, RECT *inner, HDC dc)
 {
 	HBRUSH brush = GetStockObject(BLACK_BRUSH);
@@ -410,7 +412,7 @@ INLINE void erase_outer_rect(RECT *outer, RECT *inner, HDC dc)
 			FillRect(dc, &clear, brush);
 	}
 }
-
+#endif
 
 
 //============================================================

@@ -489,7 +489,7 @@ src_simple (SRC_DATA *src_data, int converter, int channels)
 } /* src_simple */
 
 void
-src_char_to_float_array(const char * const __restrict in, float * const __restrict out, int len)
+src_char_to_float_array(const signed char * const __restrict in, float * const __restrict out, int len)
 {
 	while (len)
 	{

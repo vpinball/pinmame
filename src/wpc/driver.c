@@ -105,7 +105,7 @@ DRIVERNV(cntintl2)      //          10/80 Continental (Bingo, alternate version)
 
 //Boomerang prototype
 DRIVERNV(boomrang)      //          11/75 Boomerang (Engineering prototype)
-DRIVERNV(boomranb)      //          04/17 Boomerang (Bootleg with code fixes)
+DRIVERNV(boomranb)      //          04/17 Boomerang (MOD with code fixes)
 
 //MPU-17
 DRIVERNV(bowarrow)      //          08/76 Bow & Arrow (Prototype, rev. 23)
@@ -972,7 +972,8 @@ DRIVERNV(tricksht)      //Trick Shooter
 // ----------------
 DRIVERNV(macgalxy)      //MAC Galaxy (1986)
 DRIVERNV(macjungl)      //MAC Jungle (1986)
-DRIVERNV(spctrain)      //Space Train (1987)
+DRIVERNV(spctrai0)      //Space Train (1987, old hardware)
+DRIVERNV(spctrain)      //Space Train (1987, new hardware)
 DRIVERNV(spcpnthr)      //Space Panther (1988)
 DRIVERNV(mac_1808)      //Unknown MAC game #1808 (19??)
 DRIVERNV(macjungn)      //New MAC Jungle (1995)
@@ -1309,16 +1310,16 @@ DRIVERNV(viper)         //MPU-200: 12/81 Viper
 DRIVERNV(viperfp)       //MPU-200: 12/81 Viper (Free Play)
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
-DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (Bootleg - modified to match instruction card/manual)
-DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (Bootleg 2 - modified to match instruction card/manual)
+DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (MOD - modified to match instruction card/manual)
+DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (MOD 2 - modified to match instruction card/manual)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
-DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (Bootleg)
-DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor 1 (Bootleg Free Play)
-DRIVERNV(orbitorc)      //MPU-200: 04/82 Orbitor 1 (Bootleg No Timed Game)
-DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
+DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (MOD)
+DRIVERNV(orbitorb)      //MPU-200: 04/82 Orbitor 1 (MOD Free Play)
+DRIVERNV(orbitorc)      //MPU-200: 04/82 Orbitor 1 (MOD No Timed Game)
+DRIVERNV(cue)           //MPU-200: ??/82 Cue (Proto - Never released)
 DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
-DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
+DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord (Proto - Never released)
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme (1.02)
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (1.01 English)
@@ -1846,7 +1847,7 @@ DRIVER(bdk,294)         //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back t
 #ifdef SAM_INCLUDE_COLORED
 DRIVER(bdk,294c)        //S.A.M.: 05/10 Batman - The Dark Knight - V2.94 (back to 2 ball scarecrow multiball)
 #endif
-DRIVER(bdk,300)         //S.A.M.: ??/1? Batman - The Dark Knight - V3.00 Home Edition/Costco
+DRIVER(bdk,300)         //S.A.M.: ??/10 Batman - The Dark Knight - V3.00 Home Edition/Costco
 //DRIVER(csi,100)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.00
 //DRIVER(csi,101)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.01
 DRIVER(csi,102)         //S.A.M.: 11/08 CSI: Crime Scene Investigation - V1.02
@@ -2155,8 +2156,9 @@ DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
                         //??/78 Roman Victory (Redemption)
                         //??/78 Space Patrol
-DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
-DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
+DRIVERNV(obaoba  )      //??/80 Oba-Oba (B Playboy, 10/77)
+DRIVERNV(obaoba1 )      //??/80 Oba-Oba alternate set
+DRIVERNV(obaobao )      //??/80 Oba-Oba (old hardware)
 DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
 DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
 DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
@@ -2663,6 +2665,7 @@ DRIVER(tz,h7)           //          10/94 B Twilight Zone (H-7)
 DRIVER(tz,i7)           //                  Twilight Zone (I-7) LED Ghost Fix
 DRIVER(tz,h8)           //          11/94 B Twilight Zone (H-8)
 DRIVER(tz,i8)           //                  Twilight Zone (I-8) LED Ghost Fix
+DRIVER(tz,la9)          //          01/95 B Twilight Zone (LA-9, PAPA Tournament Version 9.0)
 DRIVER(tz,92)           //          01/95 B Twilight Zone (9.2)
 DRIVER(tz,93)           //                  Twilight Zone (9.3) LED Ghost Fix
 DRIVER(tz,94h)          //          10/98 B Twilight Zone (9.4H - Home version)
@@ -2735,15 +2738,15 @@ DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
 DRIVER(dm,dx3)          //                  Demolition Man (DX-3) LED Ghost Fix
 DRIVER(dm,lx4)          //          05/94 W Demolition Man (LX-4)
 DRIVER(dm,dx4)          //                  Demolition Man (DX-4) LED Ghost Fix
-DRIVER(dm,lx4c)         //          08/17   Demolition Man (LX-4C Competition MOD)
+DRIVER(dm,lx4c)         //          11/19   Demolition Man (LX-4C Competition MOD)
 DRIVER(dm,h5)           //          02/95 W Demolition Man (H-5) with rude speech
 DRIVER(dm,h5b)          //                  Demolition Man (H-5) with rude speech (Coin Play)
-DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
+//DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
 DRIVER(dm,dh5)          //                  Demolition Man (DH-5) with rude speech LED Ghost Fix
 DRIVER(dm,dh5b)         //                  Demolition Man (DH-5) with rude speech LED Ghost Fix (Coin Play)
 DRIVER(dm,h6)           //          08/95 W Demolition Man (H-6) with rude speech
 DRIVER(dm,h6b)          //                  Demolition Man (H-6) with rude speech (Coin Play)
-DRIVER(dm,h6c)          //          08/17   Demolition Man (H-6C Competition MOD) with rude speech
+DRIVER(dm,h6c)          //          11/19   Demolition Man (H-6C Competition MOD) with rude speech
 DRIVER(dm,dt099)        //          04/14   Demolition Man (FreeWPC/Demolition Time 0.99)
 DRIVER(dm,dt101)        //          09/14   Demolition Man (FreeWPC/Demolition Time 1.01)
 DRIVER(tafg,h3)         //WPC-538:  08/94 B Addams Family Special Collectors Edition, The (Home version)
@@ -2770,6 +2773,7 @@ DRIVER(fs,lx2)          //WPC-529:  07/94 W Flintstones, The (LX-2)
 DRIVER(fs,dx2)          //                  Flintstones, The (DX-2) LED Ghost Fix
 DRIVER(fs,sp2)          //          07/94 W Flintstones, The (SP-2)
 DRIVER(fs,sp2d)         //                  Flintstones, The (SP-2D) LED Ghost Fix
+DRIVER(fs,lx3)          //          08/94 W Flintstones, The (LX-3)
 DRIVER(fs,lx4)          //          09/94 W Flintstones, The (LX-4)
 DRIVER(fs,dx4)          //                  Flintstones, The (DX-4) LED Ghost Fix
 DRIVER(fs,lx5)          //          11/94 W Flintstones, The (LX-5)
@@ -2831,7 +2835,7 @@ DRIVER(tom,13f)         //          08/95 B Theatre of Magic (1.3 French)
 DRIVER(tom,14h)         //          10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(tom,14hb)        //                  Theatre of Magic (1.4 Home version Coin Play)
 //DRIVER(tom,15c)       //          06/16 B Theatre of Magic (1.5C Competition MOD)  //outdated patch
-DRIVER(tom,13c)         //          06/19 B Theatre of Magic (1.3XC Competition MOD) //patch 34ee
+DRIVER(tom,13c)         //          10/19 B Theatre of Magic (1.3XC Competition MOD) //patch f0f8
 DRIVER(nf,10)           //WPC-525:  05/95 W No Fear: Dangerous Sports (1.0)
 DRIVER(nf,101)          //                  No Fear: Dangerous Sports (1.01) LED Ghost Fix
 DRIVER(nf,11x)          //WPC-525:  05/95 W No Fear: Dangerous Sports (1.1 Export)

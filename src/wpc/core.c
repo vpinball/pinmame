@@ -54,6 +54,7 @@ void vp_setDIP(int bank, int value) { }
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern char g_fShowWinDMD;
   extern char g_fShowPinDMD; /* pinDMD */
+  extern char g_szGameName[256];
   extern int time_to_reset;  /* pinDMD */
   extern int g_fDumpFrames;
   extern void OnSolenoid(int nSolenoid, int IsActive);
@@ -1185,7 +1186,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2)) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG | GEN_ALVG_DMD2 | GEN_WICO)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;
@@ -1795,7 +1796,7 @@ static MACHINE_INIT(core) {
       }
     }
     /*-- init switch matrix --*/
-    memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
+    memcpy(coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
 #ifdef PROC_SUPPORT
@@ -1875,7 +1876,7 @@ static MACHINE_INIT(core) {
 #ifdef VPINMAME
   // DMD USB Init
   if(g_fShowPinDMD && !time_to_reset)
-	pindmdInit(Machine->gamedrv->name, core_gameData->gen, &pmoptions);
+	pindmdInit(g_szGameName, core_gameData->gen, &pmoptions);
 #endif
 }
 

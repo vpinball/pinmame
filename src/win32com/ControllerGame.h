@@ -63,9 +63,9 @@ private:
 
 /* some helper functions */
 
-int	  GetGameNumFromString(char *name);
-char* GetGameRegistryKey(char *pszRegistryKey, char* pszGameName);
-BOOL  GameUsedTheFirstTime(char* pszROMName);
+int	  GetGameNumFromString(const char * const name);
+char* GetGameRegistryKey(char *pszRegistryKey, const char* const pszGameName);
+BOOL  GameUsedTheFirstTime(const char* const pszROMName);
 
 BOOL GameWasNeverStarted(char* pszROMName);
 void SetGameWasStarted(char* pszROMName);

@@ -573,7 +573,7 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 			UINT8* __restrict dstc2 = dst;
 			for (c2 = 0; c2 < blit->srcwidth; c2 += 2, dstc2 += blit->dstxscale * (int)(2*sizeof(UINT16)))
 			{
-				UINT16* __restrict dstsy = dstc2;
+				UINT16* __restrict dstsy = (UINT16*)dstc2;
 				const UINT16 col = blit->srclookup[((UINT16*)src)[c2]];
 				for (sy = 0; sy < blit->dstyscale * 2; ++sy, dstsy += blit->dstpitch/2)
 				{
@@ -743,6 +743,7 @@ static int snippet_length(void *snippet)
 //	emit_snippet_pair
 //============================================================
 
+#ifndef _WIN64
 static void emit_snippet(void *snippet, UINT8 **dest)
 {
 	// emit a snippet as-is
@@ -750,7 +751,7 @@ static void emit_snippet(void *snippet, UINT8 **dest)
 	memcpy(*dest, snippet, length);
 	*dest += length;
 }
-
+#endif
 
 
 //============================================================
@@ -1276,11 +1277,14 @@ static void check_for_mmx(void)
 //	expand_blitter
 //============================================================
 
+#ifndef _WIN64
 static void expand_blitter(int which, const struct win_blit_params *blit, UINT8 **dest, int update)
 {
+#ifndef _WIN64
 	int srcdepth_index = (blit->srcdepth + 7) / 8 - 1;
 	int dstdepth_index = (blit->dstdepth + 7) / 8 - 1;
 	int xscale_index = blit->dstxscale - 1;
+#endif
 	UINT8 *blitter = NULL;
 	int i;
 
@@ -1425,7 +1429,7 @@ static void expand_blitter(int which, const struct win_blit_params *blit, UINT8 
 			*(*dest)++ = *blitter++;
 	}
 }
-
+#endif
 
 
 //============================================================

@@ -16,12 +16,12 @@ public:
 		T* pT = static_cast<T*>(this);
 		int nConnectionIndex;
 		CComVariant* pvars = new CComVariant[2];
-		int nConnections = m_vec.GetSize();
+		int nConnections = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetSize();
 		
 		for (nConnectionIndex = 0; nConnectionIndex < nConnections; nConnectionIndex++)
 		{
 			pT->Lock();
-			CComPtr<IUnknown> sp = m_vec.GetAt(nConnectionIndex);
+			CComPtr<IUnknown> sp = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetAt(nConnectionIndex);
 			pT->Unlock();
 			IDispatch* pDispatch = reinterpret_cast<IDispatch*>(sp.p);
 			if (pDispatch != NULL)
@@ -43,12 +43,12 @@ public:
 		T* pT = static_cast<T*>(this);
 		int nConnectionIndex;
 		CComVariant* pvars = new CComVariant[1];
-		int nConnections = m_vec.GetSize();
+		int nConnections = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetSize();
 		
 		for (nConnectionIndex = 0; nConnectionIndex < nConnections; nConnectionIndex++)
 		{
 			pT->Lock();
-			CComPtr<IUnknown> sp = m_vec.GetAt(nConnectionIndex);
+			CComPtr<IUnknown> sp = IConnectionPointImpl<T, &DIID__IControllerEvents, CComDynamicUnkArray>::m_vec.GetAt(nConnectionIndex);
 			pT->Unlock();
 			IDispatch* pDispatch = reinterpret_cast<IDispatch*>(sp.p);
 			if (pDispatch != NULL)

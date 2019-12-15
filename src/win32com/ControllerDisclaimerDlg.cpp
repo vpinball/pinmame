@@ -18,7 +18,7 @@ public:
 	enum { IDD = IDD_DISCLAIMERDLG };
 
 private:
-	Controller*	m_pController;
+	//Controller*	m_pController;
 
 	LRESULT OnInitDialog(UINT, WPARAM, LPARAM lParam, BOOL&) {
 		CenterWindow();

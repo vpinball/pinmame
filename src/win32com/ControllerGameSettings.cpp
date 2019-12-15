@@ -1,11 +1,11 @@
 // Settings.cpp : Implementation of CGameSettings
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "VPinMAME_h.h"
 #include "VPinMAMEAboutDlg.h"
 #include "VPinMAMEConfig.h"
 #include "ControllerGameSettings.h"
 
-#include "ControllerRegKeys.h"
+#include "ControllerRegkeys.h"
 #include "ControllerGame.h"
 
 #include <atlwin.h>
@@ -492,7 +492,7 @@ private:
 
 		HKEY hKey;
 		if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_WRITE, &hKey)==ERROR_SUCCESS ) {
-			if ( !m_szROM )
+			if (m_szROM[0] == '\0')
 				RegDeleteKey(hKey, REG_DEFAULT);
 			else
 				RegDeleteKey(hKey, m_szROM);

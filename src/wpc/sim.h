@@ -88,7 +88,7 @@ typedef struct {
 /------------------- */
 #define SIM_STATES     256
 #define SIM_FIRSTSTATE (SIM_STATES+3)
-#define SIM_STATENO(x) (x & 0xff)
+#define SIM_STATENO(x) ((x) & 0xff)
 
 /*-- common for all games --*/
 #define stNotInst (0)                 /* ball is not installed in the game */

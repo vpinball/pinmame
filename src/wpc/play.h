@@ -257,17 +257,15 @@ ROM_START(name) \
 #define PLAYMATIC_SOUNDROM256(n1, chk1) \
   SOUNDREGION(0x10000, PLAYMATIC_MEMREG_SCPU) \
     ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
-  SOUNDREGION(0x20000, REGION_USER1) \
-    ROM_LOAD(n1, 0x00000, 0x8000, chk1)
+  SOUNDREGION(0x20000, REGION_USER1)
 
 #define PLAYMATIC_SOUNDROM256x4(n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
   SOUNDREGION(0x10000, PLAYMATIC_MEMREG_SCPU) \
     ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
   SOUNDREGION(0x20000, REGION_USER1) \
-    ROM_LOAD(n1, 0x00000, 0x8000, chk1) \
-    ROM_LOAD(n2, 0x08000, 0x8000, chk2) \
-    ROM_LOAD(n3, 0x10000, 0x8000, chk3) \
-    ROM_LOAD(n4, 0x18000, 0x8000, chk4)
+    ROM_LOAD(n2, 0x00000, 0x8000, chk2) \
+    ROM_LOAD(n3, 0x08000, 0x8000, chk3) \
+    ROM_LOAD(n4, 0x10000, 0x8000, chk4)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(PLAYMATIC1);

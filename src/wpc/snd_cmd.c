@@ -148,7 +148,7 @@ void getPinSoundDirectory(char path_pinsound_cwd[2048])
 	sprintf(path_pinsound_cwd,"%s\\PinSound\\", tmp_path);
 }
 
-BOOL WriteSlot(const HANDLE hFile, const LPTSTR lpszMessage)
+BOOL WriteSlot(const HANDLE hFile, const LPTSTR const lpszMessage)
 {
 	DWORD cbWritten;
 	const BOOL fResult = WriteFile(hFile,

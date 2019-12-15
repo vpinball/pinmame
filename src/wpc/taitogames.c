@@ -82,6 +82,18 @@ TAITO_ROMEND
 #define input_ports_obaoba1 input_ports_obaoba
 CORE_CLONEDEFNV(obaoba1,obaoba,"Oba-Oba (alternate set)",1980,"Taito",taito_sintetizador,0)
 
+TAITO_ROMSTART11111(obaobao,"oba01.bin", CRC(fd5d5b73) SHA1(06996254637a71a0543b66e87516372ccea1cfd6),
+                            "oba02.bin", CRC(068b84c7) SHA1(622bd3b24df175cd783cdf46e5b7e910159d2bea),
+                            "oba03.bin", CRC(a7f0e116) SHA1(bdb5d6120f7802ce4e1dad434158010b3150233a),
+                            "oba04.bin", CRC(efede794) SHA1(7efb5e13f8dd631a65bc47e2d765308fe7d1a82b),
+                            "oba05.bin", CRC(838f7323) SHA1(84636a237014231c056e7eb80bd3f4013f4c6579))
+TAITO_SOUNDROMS22("ob_s1.bin", CRC(812a362b) SHA1(22b5f5f2d467ca1b0ab55db2e01ef6579f8ee390),
+                  "ob_s2.bin", CRC(f7dbb715) SHA1(70d1331612fe497f48520726c5f39accdcbdb205))
+TAITO_ROMEND
+#define init_obaobao init_obaoba
+#define input_ports_obaobao input_ports_obaoba
+CORE_CLONEDEFNV(obaobao,obaoba,"Oba-Oba (old hardware)",1980,"Taito",taito_old,0)
+
 /*--------------------------------
 / Drakor
 /-------------------------------*/
