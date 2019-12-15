@@ -407,8 +407,6 @@ void riot6530_set_input_a(int which, int data)
 
 	p->in_a = data;
 
-	if ( data & 0x80 )
-		data = data;
 	check_pa7_interrupt(p, old_port_a, data);
 }
 
