@@ -172,8 +172,8 @@ static MEMORY_READ_START(PEYPER_readmem)
   {0x6000,0x67ff, MRA_RAM},
 MEMORY_END
 
-// NVRAM works, but not always?
 static MEMORY_WRITE_START(PEYPER_writemem)
+  {0x0000,0x5fff, MRA_NOP},
   {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
