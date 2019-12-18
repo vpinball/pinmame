@@ -15,6 +15,7 @@ More sound found for LTD system 4, extra lamp data is handled by sound chip port
 More solenoids found for LTD's Force & Haunted Hotel
 More lamps found for LTD's Space Poker
 Increased IRQ for LTD system III, seems to help with ball detection in outhole
+Corrected CPU clock for Peyper / Sonic games, helps speeding up Gamatron game start
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti
 Clones:
