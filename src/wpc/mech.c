@@ -108,6 +108,8 @@ static void mech_updateAll(int param) {
     }
 }
 
+#include <windows.h>
+
 static void mech_update(int mechNo) {
   ptMechData md = &locals.mechData[mechNo];
   int speed = md->speed;
@@ -115,15 +117,38 @@ static void mech_update(int mechNo) {
   int currPos, ii;
 
   { /*-- check power direction -1, 0, 1 --*/
-    int sol = ((core_getPulsedSol(md->sol1) != 0) +
-              (md->sol2 ? 2*(core_getPulsedSol(md->sol2) != 0) : 0)) ^ md->solinv;
-    if (md->type & MECH_TWOSTEPSOL)
-      dir = (sol != md->last);
-    else if (md->type & MECH_TWODIRSOL)
-      dir = (sol == 1) - (sol == 2);
-    else /* MECH_ONEDIRSOL | MECH_ONESOL */
-      dir = (sol == 1) - (sol == 3);
-    md->last = sol;
+     if (md->type & MECH_FOURSTEPSOL)
+     {
+        int sol = 0;
+        for (ii = 0; ii < 4; ii++)
+        {
+           sol = (sol << 1) | (core_getPulsedSol(md->sol1 + ii) != 0) ^ md->solinv;
+        }
+
+        if (sol)
+        {
+           int lsol = (sol << 1 & 0x0F) | (sol & 0x08) >> 3;
+           int rsol = (sol >> 1) | (sol & 0x1) << 3;
+
+           if (md->last == rsol)
+              dir = 1;
+           else if (md->last == lsol)
+              dir = -1;
+           md->last = sol;
+        }
+     } 
+     else
+     {
+        int sol = ((core_getPulsedSol(md->sol1) != 0) +
+           (md->sol2 ? 2 * (core_getPulsedSol(md->sol2) != 0) : 0)) ^ md->solinv;
+        if (md->type & MECH_TWOSTEPSOL)
+           dir = (sol != md->last);
+        else if (md->type & MECH_TWODIRSOL)
+           dir = (sol == 1) - (sol == 2);
+        else /* MECH_ONEDIRSOL | MECH_ONESOL */
+           dir = (sol == 1) - (sol == 3);
+        md->last = sol;
+     }
   }
   { /*-- update speed --*/
     if (dir == 0) {
