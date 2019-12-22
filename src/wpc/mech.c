@@ -108,8 +108,6 @@ static void mech_updateAll(int param) {
     }
 }
 
-#include <windows.h>
-
 static void mech_update(int mechNo) {
   ptMechData md = &locals.mechData[mechNo];
   int speed = md->speed;
