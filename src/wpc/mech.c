@@ -115,7 +115,7 @@ static void mech_update(int mechNo) {
   int currPos, ii;
 
   { /*-- check power direction -1, 0, 1 --*/
-     if (md->type & MECH_FOURSTEPSOL)
+     if ((md->type & 0x70) == MECH_FOURSTEPSOL)
      {
         int sol = 0;
         for (ii = 0; ii < 4; ii++)
