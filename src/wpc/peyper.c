@@ -176,7 +176,7 @@ static MEMORY_READ_START(PEYPER_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(PEYPER_writemem)
-  {0x0000,0x5fff, MRA_NOP},
+  {0x0000,0x5fff, MWA_NOP},
   {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
