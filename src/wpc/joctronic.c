@@ -35,7 +35,7 @@ static INTERRUPT_GEN(slalom_zc) {
 }
 
 static WRITE_HANDLER(to0_w) {
-  cpu_set_irq_line(1, 0, data ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(1, 0, data ? HOLD_LINE : CLEAR_LINE);
 }
 
 static void ctc_interrupt(int state) {
@@ -239,7 +239,7 @@ static MACHINE_DRIVER_START(joctronic)
   MDRV_CPU_MEMORY(cpu_readmem, cpu_writemem)
   MDRV_CPU_PORTS(cpu_readport, cpu_writeport)
   MDRV_CPU_VBLANK_INT(joctronic_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(slalom_zc, 100)
+  MDRV_CPU_PERIODIC_INT(slalom_zc, 200)
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 6000000)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
