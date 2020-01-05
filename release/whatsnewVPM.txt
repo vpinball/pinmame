@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 (see whatsnew.txt for the PinMAME core changes!)
 
 
-Version 3.3 (X X, 2019) - ""
+Version 3.3 (X X, 2020) - ""
 ------------------------------------------------------------------------------
 - New logos by tictox
 
