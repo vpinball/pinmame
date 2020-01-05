@@ -11,12 +11,13 @@ Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
 E.F.O. sound board mostly working - speech output would still stall the board for now however
 Sound support for early LTD system III
-More sound found for LTD system 4, extra lamp data is handled by sound chip port write!
+More sound found for LTD system 4 (extra lamp data is handled by sound chip port write!)
 More solenoids found for LTD's Force & Haunted Hotel
 More lamps found for LTD's Space Poker
-Increased IRQ for LTD system III, seems to help with ball detection in outhole
+Increased IRQ for LTD system III, helps with ball detection in outhole
 Corrected CPU clock for Peyper / Sonic games, helps speeding up Gamatron game start
 Doubled ZC frequency for Joctronic games, saving NVRAM
+Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti
 Clones:
