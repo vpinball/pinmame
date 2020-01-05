@@ -90,7 +90,7 @@ BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
             VALUE "FileVersion", "3, 3, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2019 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
+            VALUE "LegalCopyright", "© 2000-2020 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, T. Behrens, M. Buecher, D. Rodriguez, R. Perlow and C. Waechter"
 #ifndef _WIN64
             VALUE "OriginalFilename", "VPinMAME.DLL"
 #else
@@ -185,9 +185,9 @@ BEGIN
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,160,8
     CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,103,160,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
-    CTEXT           "Copyright © 1997-2019 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,160,16
+    CTEXT           "Copyright © 1997-2020 by the authors of MAME, MAME32, MAMEW and PinMAME",IDC_STATIC,148,116,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",IDC_STATIC,7,135,134,24
-    CTEXT           "Copyright © 2001-2019 by the authors.",IDC_STATIC,150,78,160,8
+    CTEXT           "Copyright © 2001-2020 by the authors.",IDC_STATIC,150,78,160,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",IDC_STATIC,149,139,160,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,162,1

@@ -3,7 +3,7 @@ What's new in PinMAME:
 (see whatsnewVPM.txt for the Visual PinMAME exclusive changes!)
 
 
-Version 3.3 (X X, 2019) - ""
+Version 3.3 (X X, 2020) - ""
 ------------------------------------------------------------------------------
 
 *** CORE/CPU ***

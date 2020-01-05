@@ -1,4 +1,4 @@
-******  As of Version Version 3.3 (X X, 2019) ******
+******  As of Version Version 3.3 (X X, 2020) ******
 
 Bugs in PinMAME that we are aware of:
 -------------------------------------
