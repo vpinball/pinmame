@@ -28,7 +28,7 @@ static INTERRUPT_GEN(joctronic_vblank) {
   core_updateSw(TRUE); // game enables flippers directly
 }
 
-static INTERRUPT_GEN(slalom_zc) {
+static INTERRUPT_GEN(joctronic_zc) {
   static int zc;
   z80ctc_0_trg3_w(0, zc);
   zc = !zc;
@@ -66,6 +66,14 @@ static MACHINE_INIT(JOCTRONIC) {
 
 static MACHINE_RESET(JOCTRONIC) {
   memset(&locals, 0x00, sizeof(locals));
+}
+
+static MACHINE_STOP(JOCTRONIC) {
+  int i;
+  cpu_set_nmi_line(0, PULSE_LINE); // NMI routine makes sure the NVRAM is valid!
+  for (i = 0; i < 70; i++) { // run some timeslices before shutdown so the NMI routine can finish
+    run_one_timeslice();
+  }
 }
 
 static SWITCH_UPDATE(JOCTRONIC) {
@@ -229,7 +237,7 @@ static struct DACinterface JOCTRONIC_dacInt = {
 
 static MACHINE_DRIVER_START(joctronic)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(JOCTRONIC,JOCTRONIC,NULL)
+  MDRV_CORE_INIT_RESET_STOP(JOCTRONIC,JOCTRONIC,JOCTRONIC)
   MDRV_SWITCH_UPDATE(JOCTRONIC)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(32)
@@ -239,7 +247,7 @@ static MACHINE_DRIVER_START(joctronic)
   MDRV_CPU_MEMORY(cpu_readmem, cpu_writemem)
   MDRV_CPU_PORTS(cpu_readport, cpu_writeport)
   MDRV_CPU_VBLANK_INT(joctronic_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(slalom_zc, 200)
+  MDRV_CPU_PERIODIC_INT(joctronic_zc, 200)
 
   MDRV_CPU_ADD_TAG("scpu", Z80, 6000000)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
