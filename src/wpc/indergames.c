@@ -45,6 +45,13 @@ INDER_ROMSTART(brvteam,	"brv-tea.m0", CRC(1fa72160) SHA1(0fa779ce2604599adff1e12
 INDER_ROMEND
 CORE_GAMEDEFNV(brvteam,"Brave Team",1985,"Inder (Spain)",gl_mINDER0,0)
 
+#define init_brvteafp init_brvteam
+#define input_ports_brvteafp input_ports_brvteam
+INDER_ROMSTART(brvteafp,	"brvteam.fp0", CRC(e10a5800) SHA1(48311b354089531a50de3ee8a2f0f507ade5509e),
+						"brvteam.fp1", CRC(368b5a28) SHA1(8545897ced58a81b0bee097445535e01c50b14e6))
+INDER_ROMEND
+CORE_CLONEDEFNV(brvteafp,brvteam,"Brave Team (Free Play)",1985,"Inder (Spain)",gl_mINDER0,0)
+
 /*-------------------------------------------------------------------
 / Canasta '86' (1986)
 /-------------------------------------------------------------------*/
@@ -53,6 +60,13 @@ INDER_ROMSTART(canasta,	"c860.bin", CRC(b1f79e52) SHA1(8e9c616f9be19d056da2f8677
 						"c861.bin", CRC(25ae3994) SHA1(86dcda3278fbe0e57b8ff4858b955d067af414ce))
 INDER_ROMEND
 CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
+
+#define init_canastfp init_canasta
+#define input_ports_canastfp input_ports_canasta
+INDER_ROMSTART(canastfp,	"c860.bin", CRC(b1f79e52) SHA1(8e9c616f9be19d056da2f86778539d62c0885bac),
+						"c861_fp.bin", CRC(673c2592) SHA1(f1cc931e5c54e01f41025fafb87e91acc0828adf))
+INDER_ROMEND
+CORE_CLONEDEFNV(canastfp,canasta,"Canasta '86' (Free Play)",1986,"Inder (Spain)",gl_mINDER1,0)
 
 /*-------------------------------------------------------------------
 / Lap By Lap (1986)
@@ -69,6 +83,14 @@ INDER_SNDROM(			"lblsr0.bin",CRC(cbaddf02) SHA1(8207eebc414d90328bfd521190d508b8
 INDER_ROMEND
 CORE_GAMEDEFNV(lapbylap,"Lap By Lap",1986,"Inder (Spain)",gl_mINDER2,0)
 
+#define init_lapbylfp init_lapbylap
+#define input_ports_lapbylfp input_ports_lapbylap
+INDER_ROMSTART(lapbylfp,"lblr0.bin", CRC(2970f31a) SHA1(01fb774de19944bb3a19577921f84ab5b6746afb),
+						"lblr1_fp.bin", CRC(633f6348) SHA1(7577ecf185ae67fcb24b0008635be135177443b6))
+INDER_SNDROM(			"lblsr0.bin",CRC(cbaddf02) SHA1(8207eebc414d90328bfd521190d508b88bb870a2))
+INDER_ROMEND
+CORE_CLONEDEFNV(lapbylfp,lapbylap,"Lap By Lap (Free Play)",1986,"Inder (Spain)",gl_mINDER2,0)
+
 /*-------------------------------------------------------------------
 / Moon Light (1987)
 /-------------------------------------------------------------------*/
@@ -81,6 +103,17 @@ INDER_SNDROM4(			"ci-11.bin", CRC(a0732fe4) SHA1(54f62cd81bdb7e1924acb67ddbe43eb
 						"ci-21.bin", CRC(0febb4a7) SHA1(e6cc1b26ddfe9cd58da29de2a50a83ce50afe323))
 INDER_ROMEND
 CORE_GAMEDEFNV(moonlght,"Moon Light",1987,"Inder (Spain)",gl_mINDERS0,0)
+
+#define init_moonlifp init_moonlght
+#define input_ports_moonlifp input_ports_moonlght
+INDER_ROMSTART1(moonlifp,"ci-3-fp.bin", CRC(7affab1e) SHA1(e31b35a7abd2921468ebcb4057e4e91c6731c1e3))
+INDER_SNDROM4(			"ci-11.bin", CRC(a0732fe4) SHA1(54f62cd81bdb7e1924acb67ddbe43eb3d0a4eab0),
+						"ci-24.bin", CRC(6406bd18) SHA1(ae45ed9e8b1fd278a36a68b780352dbbb6ee781e),
+						"ci-23.bin", CRC(eac346da) SHA1(7c4c26ae089dda0dcd7300fd1ecabf5a91099c41),
+						"ci-22.bin", CRC(379740da) SHA1(83ad13ab7f1f37c78397d8e830bd74c5a7aea758),
+						"ci-21.bin", CRC(0febb4a7) SHA1(e6cc1b26ddfe9cd58da29de2a50a83ce50afe323))
+INDER_ROMEND
+CORE_CLONEDEFNV(moonlifp,moonlght,"Moon Light (Free Play)",1987,"Inder (Spain)",gl_mINDERS0,0)
 
 /*-------------------------------------------------------------------
 / Clown (1988)
@@ -95,6 +128,17 @@ INDER_SNDROM4(			"clown_b.bin", CRC(c223c961) SHA1(ed5180505b6ebbfb9451f67a44d07
 INDER_ROMEND
 CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS1,0)
 
+#define init_pinclofp init_pinclown
+#define input_ports_pinclofp input_ports_pinclown
+INDER_ROMSTART1(pinclofp,"clown_fp.bin", CRC(f020a0e3) SHA1(5a4abc58d5e21b602082bcd2d67947266cae41b6))
+INDER_SNDROM4(			"clown_b.bin", CRC(c223c961) SHA1(ed5180505b6ebbfb9451f67a44d07df3555c8f8d),
+						"clown_c.bin", CRC(dff89319) SHA1(3745a02c3755d11ea7fb552f7a5df2e8bbee2c29),
+						"clown_d.bin", CRC(cce4e1dc) SHA1(561c9331d2d110d34cf250cd7b25be16a72a1d79),
+						"clown_e.bin", CRC(98263526) SHA1(509764e65847637824ba93f7e6ce926501c431ce),
+						"clown_f.bin", CRC(5f01b531) SHA1(116b1670ef4d5c054bb09dc55aa7d5d3ca047079))
+INDER_ROMEND
+CORE_CLONEDEFNV(pinclofp,pinclown,"Clown (Inder, Free Play)",1988,"Inder (Spain)",gl_mINDERS1,0)
+
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
@@ -108,6 +152,17 @@ INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba48
 INDER_ROMEND
 CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS1,0)
 
+#define init_corsarfp init_corsario
+#define input_ports_corsarfp input_ports_corsario
+INDER_ROMSTART1(corsarfp,"fpcorsar.bin", CRC(d7df80f0) SHA1(073eb24137d3510e89b08e42716c955d81de0ce1))
+INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
+						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
+						"c-corsar.bin", CRC(047fd722) SHA1(2385507459f85c68141adc7084cb51dfa02462f6),
+						"d-corsar.bin", CRC(10d8b448) SHA1(ed1918e6c55eba07dde31b9755c9403e073cad98),
+						"e-corsar.bin", CRC(918ee349) SHA1(17cded8b5626c91e400d26332a160704f2fd2b55))
+INDER_ROMEND
+CORE_CLONEDEFNV(corsarfp,corsario,"Corsario (Free Play)",1989,"Inder (Spain)",gl_mINDERS1,0)
+
 /*-------------------------------------------------------------------
 / Mundial 90 (1990)
 /-------------------------------------------------------------------*/
@@ -120,6 +175,17 @@ INDER_SNDROM4(			"snd11.bin", CRC(2cebc1a5) SHA1(e0dae2b1ce31ff436b55ceb1ec71d39
 						"snd21.bin", CRC(7a8f7402) SHA1(39666ba2634fe9c720c2c9bcc9ccc73874ed85e7))
 INDER_ROMEND
 CORE_GAMEDEFNV(mundial,"Mundial 90",1990,"Inder (Spain)",gl_mINDERS1,0)
+
+#define init_mundiafp init_mundial
+#define input_ports_mundiafp input_ports_mundial
+INDER_ROMSTART1(mundiafp,"mundiafp.cpu", CRC(f335411c) SHA1(65d75c7f53f4793d5b5bbf16984e20950c6eae7c))
+INDER_SNDROM4(			"snd11.bin", CRC(2cebc1a5) SHA1(e0dae2b1ce31ff436b55ceb1ec71d39fc56694da),
+						"snd24.bin", CRC(603bfc3c) SHA1(8badd9731243270ce5b8003373ed09ec7eac6ca6),
+						"snd23.bin", CRC(2868ce6f) SHA1(317457763f764be08cbe6a5dd4008ba2257c9d78),
+						"snd22.bin", CRC(2559f874) SHA1(cbf57f29e394d5dc320e7dcbd2625f6c96412a06),
+						"snd21.bin", CRC(7a8f7402) SHA1(39666ba2634fe9c720c2c9bcc9ccc73874ed85e7))
+INDER_ROMEND
+CORE_CLONEDEFNV(mundiafp,mundial,"Mundial 90 (Free Play)",1990,"Inder (Spain)",gl_mINDERS1,0)
 
 /*-------------------------------------------------------------------
 / Atleta (1991)
