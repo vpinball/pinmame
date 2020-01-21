@@ -21,7 +21,7 @@
 
 #define INITGAME2(name, disptype, balls, sb) \
     PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
-    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,sb,0}}; \
+    static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,sb}}; \
     static void init_##name(void) { \
         core_gameData = &name##GameData; \
     }
@@ -29,6 +29,13 @@
 #define INITGAME4(name, disptype, balls) \
   PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
   static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY4}}; \
+  static void init_##name(void) { \
+    core_gameData = &name##GameData; \
+  }
+
+#define INITGAME4FM(name, disptype, balls) \
+  PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+  static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_PLAY4,0,1}}; \
   static void init_##name(void) { \
     core_gameData = &name##GameData; \
   }
@@ -432,27 +439,39 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(ngtfever,"Night Fever",1979,"Sonic (Spain)",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
+/ ??/84 Flashman (Sport Matic)
+/-------------------------------------------------------------------*/
+core_tLCDLayout dispFM[] = {
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
+  { 0,18,29,1,CORE_SEG7 }, { 0,20,24,5,CORE_SEG7 }, { 0,30,51,1,CORE_SEG7 },
+  { 3,18,21,1,CORE_SEG7 }, { 3,20,16,5,CORE_SEG7 }, { 3,30,50,1,CORE_SEG7 },
+  { 6,18,13,1,CORE_SEG7 }, { 6,20, 8,5,CORE_SEG7 }, { 6,30,49,1,CORE_SEG7 },
+  {10, 0, 5,1,CORE_SEG7 }, {10, 2, 0,1,CORE_SEG7 }, {10, 5, 1,1,CORE_SEG7 }, {10, 8, 2,1,CORE_SEG7 }, {10,11, 3,2,CORE_SEG7 },
+  {0}
+};
+INITGAME4FM(flashman, dispFM, 1)
+PLAYMATIC_ROMSTART64(flashman,"pf7-1a0.u9", CRC(2cd16521) SHA1(bf9aa293e2ded3f5b1e61a10e6a8ebb8b4e9d4e1))
+PLAYMATIC_SOUNDROM6416("mfm-1a0.u3", CRC(456fd555) SHA1(e91d6df15fdfc330ee9edb691ff925ad24afea35),
+            "mfm-1b0.u4", CRC(90256257) SHA1(c7f2554e500c4e512999b4edc54c86f3335a2b30))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(flashman,"Flashman",1984,"Sport Matic",gl_mPLAYMATIC4,0)
+
+/*-------------------------------------------------------------------
 / ??/86 Rider's Surf (JocMatic)
 /-------------------------------------------------------------------*/
 INITGAME4(ridersrf, play_disp7, 1)
-ROM_START(ridersrf)
-  NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("cpu.bin", 0x0000, 0x2000, CRC(4941938e) SHA1(01e44054e65166d68602d6a38217eda7ea669761))
-  SOUNDREGION(0x10000, REGION_CPU2)
-    ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(2db2ecb2) SHA1(365fcac208607acc3e134affeababd6c89dbc74d))
-ROM_END
+PLAYMATIC_ROMSTART64(ridersrf,"cpu.bin", CRC(4941938e) SHA1(01e44054e65166d68602d6a38217eda7ea669761))
+PLAYMATIC_SOUNDROM64("sound.bin", CRC(2db2ecb2) SHA1(365fcac208607acc3e134affeababd6c89dbc74d))
+PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(ridersrf,"Rider's Surf",1986,"JocMatic",gl_mPLAYMATIC4,0)
 
 /*-------------------------------------------------------------------
 / ??/87 Iron Balls (Stargame)
 /-------------------------------------------------------------------*/
 INITGAME4(ironball, play_disp7, 1)
-ROM_START(ironball)
-  NORMALREGION(0x10000, REGION_CPU1)
-    ROM_LOAD("video.bin", 0x0000, 0x2000, CRC(1867ebff) SHA1(485e46c742d914febcbdd58cb5a886f1d773282a))
-  SOUNDREGION(0x10000, REGION_CPU2)
-    ROM_LOAD("sound.bin", 0x0000, 0x2000, CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
-ROM_END
+PLAYMATIC_ROMSTART64(ironball,"video.bin", CRC(1867ebff) SHA1(485e46c742d914febcbdd58cb5a886f1d773282a))
+PLAYMATIC_SOUNDROM64("sound.bin", CRC(83165483) SHA1(5076e5e836105d69c4ba606d8b995ecb16f88504))
+PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(ironball,"Iron Balls",1987,"Stargame",gl_mPLAYMATIC4,0)
 
 /*-------------------------------------------------------------------

@@ -142,7 +142,19 @@ static SWITCH_UPDATE(PLAYMATIC2) {
   locals.resetDone = 1;
 }
 
+static UINT8 conv(UINT8 data) {
+  return ((data & 0x01) << 7) // 80
+    | ((data & 0x02) << 4)    // 20
+    | ((data & 0x04) >> 1)    // 02
+    | ((data & 0x08) << 3)    // 40
+    | ((data & 0x10) >> 2)    // 04
+    | ((data & 0x20) >> 5)    // 01
+    | ((data & 0x40) >> 3)    // 08
+    | ((data & 0x80) >> 3);   // 10
+}
+
 static WRITE_HANDLER(disp_w) {
+  if (core_gameData->hw.gameSpecific1) data = conv(data);
   coreGlobals.segments[offset].w = data & 0x7f;
   coreGlobals.segments[48 + offset / 8].w = data & 0x80 ? core_bcd2seg7[0] : 0;
 }

@@ -19,7 +19,10 @@ Corrected CPU clock for Peyper / Sonic games, helps speeding up Gamatron game st
 Doubled ZC frequency for Joctronic games, saving NVRAM
 Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
+New:
+Sport Matic: Flashman
+
 Clones:
 Brave Team (Free Play)
 Canasta '86' (Free Play)
@@ -29,6 +32,7 @@ Demolition Man LX-4C (competition MOD) (updated)
 Demolition Man H-6C (competition MOD) (updated)
 Flintstones, The LX-3
 Lap By Lap (Free Play)
+Lord of the Rings, The 3.00
 Moon Light (Free Play)
 Mundial 90 (Free Play)
 Oba-Oba (old hardware)
