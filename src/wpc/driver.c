@@ -1227,6 +1227,7 @@ DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 // ---------------
 // SPORT MATIC
 // ---------------
+DRIVERNV(flashman)      //1984 - Flashman
 DRIVERNV(terrlake)      //1987 - Terrific Lake
 
 // ---------------
@@ -1494,6 +1495,7 @@ DRIVERNV(lotr_gr4)      //Whitestar: 11/03 Lord of the Rings (4.01 German)
 DRIVERNV(lotr_sp4)      //Whitestar: 11/03 Lord of the Rings (4.01 Spanish)
 DRIVERNV(lotr_fr4)      //Whitestar: 11/03 Lord of the Rings (4.01 French)
 DRIVERNV(lotr_it4)      //Whitestar: 11/03 Lord of the Rings (4.01 Italian)
+DRIVERNV(lotr3)         //Whitestar: 11/03 Lord of the Rings (3.00)
 DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.20)
 DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 German)
 DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 Spanish)
