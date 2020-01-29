@@ -900,8 +900,10 @@ DRIVERNV(metalman)      //Metal Man (1992)
 // ----------------
 // JAC VAN HAM
 // ----------------
+DRIVERNV(icemania)      //Ice Mania (??/1986)
 DRIVERNV(escape)        //Escape (10/1987)
 DRIVERNV(movmastr)      //Movie Masters (??/19??)
+DRIVERNV(formula1)      //Formula 1 (??/1988)
 
 // ----------------
 // JEUTEL OF FRANCE

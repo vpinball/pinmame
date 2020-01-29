@@ -18,10 +18,14 @@ Increased IRQ for LTD system III, helps with ball detection in outhole
 Corrected CPU clock for Peyper / Sonic games, helps speeding up Gamatron game start
 Doubled ZC frequency for Joctronic games, saving NVRAM
 Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
+Fixed a bug in the TMS9995 emulation concerning port data writes
+Fixed a default volume issue with the AY8910 / YM2203
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
 New:
 Sport Matic: Flashman
+Jac van Ham: Ice Mania,
+             Formula 1 (no schematics available, so work in progress but looking good already)
 
 Clones:
 Brave Team (Free Play)
