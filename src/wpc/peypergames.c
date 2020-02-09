@@ -65,7 +65,9 @@ CORE_GAMEDEFNV(nemesis,"Nemesis",1986,"Peyper (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Wolf Man (1987)
 /-------------------------------------------------------------------*/
-INITGAME(wolfman, peyperDisp7, 1, 4)
+WOLFMAN_INPUT_PORTS_START PEYPER_INPUT_PORTS_END
+static core_tGameData wolfmanGameData = {GEN_PEYPER,peyperDisp7,{FLIP_SW(FLIP_L),0,4,0,SNDBRD_NONE}};
+static void init_wolfman(void) { core_gameData = &wolfmanGameData; }
 PEYPER_ROMSTART(wolfman,	"memoriaa.bin", CRC(1fec83fe) SHA1(5dc887d0fa00129ae31451c03bfe442f87dd2f54),
 						"memoriab.bin", CRC(62a1e3ec) SHA1(dc472c7c9d223820f8f1031c92e36890c1fcba7d),
 						"memoriac.bin", CRC(468f16f0) SHA1(66ce0464d82331cfc0ac1f6fbd871066e4e57262))
@@ -75,7 +77,9 @@ CORE_GAMEDEFNV(wolfman,"Wolf Man",1987,"Peyper (Spain)",gl_mPEYPER,0)
 /*-------------------------------------------------------------------
 / Odisea Paris-Dakar (1987)
 /-------------------------------------------------------------------*/
-INITGAME(odisea, peyperDisp7, 1, 4)
+ODISEA_INPUT_PORTS_START PEYPER_INPUT_PORTS_END
+static core_tGameData odiseaGameData = {GEN_PEYPER,peyperDisp7,{FLIP_SW(FLIP_L),0,4,0,SNDBRD_NONE}};
+static void init_odisea(void) { core_gameData = &odiseaGameData; }
 PEYPER_ROMSTART(odisea,	"odiseaa.bin", CRC(29a40242) SHA1(321e8665df424b75112589fc630a438dc6f2f459),
 						"odiseab.bin", CRC(8bdf7c17) SHA1(7202b4770646fce5b2ba9e3b8ca097a993123b14),
 						"odiseac.bin", CRC(832dee5e) SHA1(9b87ffd768ab2610f2352adcf22c4a7880de47ab))
@@ -98,7 +102,8 @@ static core_tLCDLayout sonicDisp7[] = {
   {0}
 };
 
-// Night Fever (1979)
+// Third World (1978) - using Playmatic hardware
+// Night Fever (1979) - using Playmatic hardware
 // Storm (1979)
 
 /*-------------------------------------------------------------------

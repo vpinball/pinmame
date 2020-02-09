@@ -48,7 +48,7 @@ typedef void genf(void);
 #ifdef PINMAME
 #undef APPNAME
 #undef APPLONGNAME
-#define APPNAME					"PINMAME"
+#define APPNAME					"PinMAME"
 #define APPLONGNAME				"Pinball M.A.M.E."
 #endif
 

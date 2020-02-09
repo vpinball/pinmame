@@ -16,6 +16,7 @@
 #include "sim.h"
 #include "sndbrd.h"
 #include "cpu/m6800/m6800.h"
+#include "cpu/m6809/m6809.h"
 #include "machine/6522via.h"
 
 static struct {
@@ -244,7 +245,7 @@ PORT_END
 static MACHINE_INIT(jvh) {
   memset(&locals, 0, sizeof(locals));
   cpu_set_irq_callback(0, irq_callback);
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
 }
 
 static MACHINE_RESET(jvh) {
@@ -262,7 +263,7 @@ static SWITCH_UPDATE(jvh) {
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 cmd, via_b;
+  UINT8 cmd, via_b, cmd2;
 } sndlocals;
 
 static READ_HANDLER(jvh_via_a_r) {
@@ -280,6 +281,13 @@ static WRITE_HANDLER(jvh_via_b_w) {
 static WRITE_HANDLER(jvh_data_w) {
   UINT8 cmd;
 
+  if (sndlocals.brdData.subType) { // Formula 1
+    sndlocals.cmd = data;
+    cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+    cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
+    return;
+  }
+
   sndlocals.cmd = data & 0x3f;
   cmd = sndlocals.cmd ^ 0x3f;
   via_set_input_a(0, cmd ? cmd : 0xff); // avoid passing in 0x00 as a command because it stops all sound forever
@@ -296,10 +304,10 @@ static const struct via6522_interface jvh_via = {
 };
 
 static void jvh_init(struct sndbrdData *brdData) {
-  int i;
-  for (i=0; i < 0x80; i++) memory_region(REGION_CPU2)[i] = 0xff;
-  via_reset();
-  via_config(0, &jvh_via);
+  if (!brdData->subType) { // Formula 1 does not have a sound VIA
+    via_reset();
+    via_config(0, &jvh_via);
+  }
   memset(&sndlocals, 0, sizeof(sndlocals));
   sndlocals.brdData = *brdData;
 }
@@ -335,6 +343,9 @@ static int jvh_m2sw(int col, int row) {
 MACHINE_DRIVER_START(jvh)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(jvh,jvh,NULL)
+  MDRV_SCREEN_SIZE(640,400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+
   MDRV_CPU_ADD_TAG("mcpu", TMS9980, 1000000) // ~8MHz, divided by 8?
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_PORTS(readport, writeport)
@@ -360,20 +371,26 @@ MACHINE_DRIVER_START(jvh2)
   MDRV_CPU_PORTS(readport, writeport2)
 MACHINE_DRIVER_END
 
+static core_tLCDLayout dispJVH0[] = {
+  {0, 0, 0,7,CORE_SEG7}, {0,27, 8,7,CORE_SEG7},
+  {3, 0,16,7,CORE_SEG7}, {3,27,24,7,CORE_SEG7},
+  {3,16,33,2,CORE_SEG7}, {3,21,35,2,CORE_SEG7}, {0}
+};
+
 static core_tLCDLayout dispJVH[] = {
-  {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,18,15,1,CORE_SEG7}, {0,20, 8,7,CORE_SEG7},
-  {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,18,31,1,CORE_SEG7}, {3,20,24,7,CORE_SEG7},
-  {6,12,33,2,CORE_SEG7}, {6,18,35,2,CORE_SEG7}, {0}
+  {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,29,15,1,CORE_SEG7}, {0,31, 8,7,CORE_SEG7},
+  {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,29,31,1,CORE_SEG7}, {3,31,24,7,CORE_SEG7},
+  {3,18,33,2,CORE_SEG7}, {3,23,35,2,CORE_SEG7}, {0}
 };
 
 static core_tLCDLayout dispJVH2[] = {
-  {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,18,15,1,CORE_SEG7}, {0,20, 8,7,CORE_SEG7},
-  {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,18,31,1,CORE_SEG7}, {3,20,24,7,CORE_SEG7},
-  {6,12,34,2,CORE_SEG7}, {6,18,37,2,CORE_SEG7}, {0}
+  {0, 0, 7,1,CORE_SEG7}, {0, 2, 0,7,CORE_SEG7}, {0,29,15,1,CORE_SEG7}, {0,31, 8,7,CORE_SEG7},
+  {3, 0,23,1,CORE_SEG7}, {3, 2,16,7,CORE_SEG7}, {3,29,31,1,CORE_SEG7}, {3,31,24,7,CORE_SEG7},
+  {3,18,34,2,CORE_SEG7}, {3,23,37,2,CORE_SEG7}, {0}
 };
 
-#define INITGAME_JVH(name, lamps, disp) \
-static core_tGameData name##GameData = {GEN_ZAC1, disp, {FLIP_SW(FLIP_L), 0, lamps, 0, SNDBRD_JVH}}; \
+#define INITGAME_JVH(name, lamps, disp, sb) \
+static core_tGameData name##GameData = {GEN_ZAC1, disp, {FLIP_SW(FLIP_L), 0, lamps, 0, sb}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 }
@@ -516,7 +533,19 @@ INPUT_PORTS_START(jvh) \
       COREPORT_DIPSET(0x0080, DEF_STR(Yes) ) \
 INPUT_PORTS_END
 
-INITGAME_JVH(escape, 0, dispJVH)
+INITGAME_JVH(icemania, 0, dispJVH0, SNDBRD_JVH)
+ROM_START(icemania) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("1c1_ic1.bin", 0x0000, 0x2000, CRC(eae16d52) SHA1(9151e0ccec938d268a157cea30b4a23b69e194b8)) \
+    ROM_LOAD("2b1_ic7.bin", 0x2000, 0x2000, CRC(7b5fc604) SHA1(22c1c1a030877df99c3db50e7dd41dffe6c21dec)) \
+  NORMALREGION(0x10000, REGION_CPU2) \
+    ROM_LOAD("im_snd.bin",  0xc000, 0x2000, CRC(0d861f65) SHA1(6c17d1f674c95a4c877b42100ab6e0ae8213264b)) \
+    ROM_RELOAD(0xe000, 0x2000) \
+ROM_END
+#define input_ports_icemania input_ports_jvh
+CORE_GAMEDEFNV(icemania,"Ice Mania",1986,"Jac Van Ham (Royal)",jvh,0)
+
+INITGAME_JVH(escape, 0, dispJVH, SNDBRD_JVH)
 ROM_START(escape) \
   NORMALREGION(0x10000, REGION_CPU1) \
     ROM_LOAD("cpu_ic1.bin", 0x0000, 0x2000, CRC(fadb8f9a) SHA1(b7e7ea8e33847c14a3414f5e367e304f12c0bc00)) \
@@ -528,7 +557,7 @@ ROM_END
 #define input_ports_escape input_ports_jvh
 CORE_GAMEDEFNV(escape,"Escape",1987,"Jac Van Ham (Royal)",jvh,0)
 
-INITGAME_JVH(movmastr, 2, dispJVH2)
+INITGAME_JVH(movmastr, 2, dispJVH2, SNDBRD_JVH)
 ROM_START(movmastr) \
   NORMALREGION(0x10000, REGION_CPU1) \
     ROM_LOAD("mm_ic1.764", 0x0000, 0x2000, CRC(fb59920d) SHA1(05536c4c036a8d73516766e14f4449665b2ec180)) \
@@ -539,3 +568,336 @@ ROM_START(movmastr) \
 ROM_END
 #define input_ports_movmastr input_ports_jvh
 CORE_GAMEDEFNV(movmastr,"Movie Masters",19??,"Jac Van Ham (Royal)",jvh2,0)
+
+
+/*
+ Formula 1 uses different hardware:
+ ---------
+ CPU:   TMS9995
+ IO:    CPU ports
+ SOUND: 2x M6809 CPU, AY2203 including its FM channel, AY3812, DAC for percussion samples
+*/
+static MACHINE_INIT(jvh3) {
+  memset(&locals, 0, sizeof(locals));
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
+}
+
+static INTERRUPT_GEN(vblank3) {
+  core_updateSw(core_getSol(4));
+}
+
+static INTERRUPT_GEN(irq3) {
+  cpu_set_irq_line(0, 1, PULSE_LINE);
+}
+
+static SWITCH_UPDATE(jvh3) {
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT],    0x3f, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT],    0x80, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x80, 2);
+    cpu_set_irq_line(0, 0, coreGlobals.swMatrix[0] & 0x20 ? ASSERT_LINE : CLEAR_LINE);
+  }
+}
+
+static WRITE_HANDLER(disp_w) {
+  memory_region(REGION_CPU1)[0xf980 + offset] = data;
+  coreGlobals.segments[offset].w = core_ascii2seg16[data];
+}
+
+static WRITE_HANDLER(disp3_w) {
+  UINT16 digit = core_ascii2seg16[data];
+  memory_region(REGION_CPU1)[0xf8b8 + offset] = data;
+  coreGlobals.segments[16 + offset].w = (digit & 0x3f) | (digit & 0x0840 ? 0x40 : 0) | (digit & 0x0300 ? 0x06 : 0);
+}
+
+static MEMORY_WRITE_START(writemem3)
+  { 0xf8b8, 0xf8bf, disp3_w },
+  { 0xf980, 0xf98f, disp_w },
+  { 0xf800, 0xffff, MWA_RAM, &generic_nvram, &generic_nvram_size },
+MEMORY_END
+
+static MEMORY_READ_START(readmem3)
+  { 0x0000, 0x7fff, MRA_ROM },
+  { 0xf800, 0xffff, MRA_RAM },
+MEMORY_END
+
+static WRITE_HANDLER(port_w) {
+  if (offset >= 0x20 && offset <= 0x5f)
+    coreGlobals.lampMatrix[(offset - 0x20) / 8] = (coreGlobals.lampMatrix[(offset - 0x20) / 8] & ~(1 << (offset % 8))) | (data << (offset % 8));
+  else if (offset >= 0x60 && offset <= 0x7f)
+    coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (offset - 0x60))) | (data << (offset - 0x60));
+  else if (offset >= 0x80 && offset <= 0x82)
+    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & ~(1 << (offset - 0x80))) | (data << (offset - 0x80));
+  else if (offset == 0x85 && data)
+    sndbrd_0_data_w(0, locals.snd);
+  else if (offset >= 0x88 && offset <= 0x8f)
+    locals.snd = (locals.snd & ~(1 << (offset - 0x88))) | (data << (offset - 0x88));
+  else if (offset >= 0x90 && offset <= 0x96)
+    locals.col = (locals.col & ~(1 << (offset - 0x90))) | (data << (offset - 0x90));
+  else
+    logerror("Port %02x: %x\n", offset, data);
+}
+
+static READ_HANDLER(port_r) {
+  switch (offset) {
+    case 4: return coreGlobals.swMatrix[0];
+    case 5: return coreGlobals.swMatrix[1 + core_BitColToNum(~locals.col & 0x7f)];
+    case 6: return 0; // no idea about this one, maybe reserved for future use / more switches?
+    default: return core_getDip(offset);
+  }
+}
+
+static PORT_WRITE_START(writeport3)
+  { 0x00, 0xff, port_w },
+PORT_END
+
+static PORT_READ_START(readport3)
+  { 0x00, 0x06, port_r },
+PORT_END
+
+// sound section
+
+static INTERRUPT_GEN(firq1) {
+  cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
+}
+
+static READ_HANDLER(sndcmd_r) {
+  return sndlocals.cmd;
+}
+
+static READ_HANDLER(ready_r) {
+  return YM2203_status_port_0_r(0) | YM3812_status_port_0_r(0);
+}
+
+static MEMORY_WRITE_START(snd_writemem3)
+  { 0x2000, 0x2000, YM2203_control_port_0_w },
+  { 0x2001, 0x2001, YM2203_write_port_0_w },
+  { 0x4000, 0x4000, YM3812_control_port_0_w },
+  { 0x4001, 0x4001, YM3812_write_port_0_w },
+  { 0x6000, 0x63ff, MWA_RAM },
+  { 0x8000, 0xffff, MWA_NOP },
+MEMORY_END
+
+static MEMORY_READ_START(snd_readmem3)
+  { 0x0000, 0x0000, sndcmd_r },
+  { 0x6000, 0x63ff, MRA_RAM },
+  { 0xc000, 0xc000, ready_r },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static INTERRUPT_GEN(firq2) {
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_FIRQ_LINE, PULSE_LINE);
+}
+
+static WRITE_HANDLER(vol_w) {
+  static UINT16 vol;
+  if (offset) vol = (vol & 0x00ff) | (data << 8); else vol = (vol & 0xff00) | data;
+  mixer_set_volume(4, vol * 2 / 9);
+}
+
+static READ_HANDLER(sndcmd2_r) {
+  return sndlocals.cmd2;
+}
+
+static MEMORY_WRITE_START(snd_writemem4)
+  { 0x0004, 0x0005, vol_w },
+  { 0x000f, 0x000f, DAC_0_data_w },
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0080, 0x009f, MWA_RAM },
+  { 0x2000, 0xffff, MWA_NOP },
+MEMORY_END
+
+static MEMORY_READ_START(snd_readmem4)
+  { 0x0010, 0x0010, sndcmd2_r },
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x009f, MRA_RAM },
+  { 0x2000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static WRITE_HANDLER(ym2203_a_w) {
+  sndlocals.cmd2 = data;
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, PULSE_LINE);
+}
+
+static WRITE_HANDLER(ym2203_b_w) {
+  static UINT8 old;
+  if (old != data) {
+    logerror("YM2203 port B: %02x\n", data);
+  }
+  old = data;
+}
+
+static void ym2203_irq(int state) {
+// not used?
+}
+
+static struct YM2203interface ym2203_interface = {
+  1, 2000000, { YM2203_VOL(30,30) },
+  { NULL },	{ NULL },
+  { ym2203_a_w }, { ym2203_b_w },
+  { ym2203_irq }
+};
+
+static struct YM3812interface ym3812_interface = { 1, 1000000, { 60 }};
+
+static struct DACinterface dac_interface = { 1, { 30 }};
+
+// driver section
+
+MACHINE_DRIVER_START(jvh3)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(jvh3,jvh,NULL)
+
+  MDRV_CPU_ADD_TAG("mcpu", TMS9995, 12000000)
+  MDRV_CPU_MEMORY(readmem3, writemem3)
+  MDRV_CPU_PORTS(readport3, writeport3)
+  MDRV_CPU_VBLANK_INT(vblank3, 1)
+  MDRV_CPU_PERIODIC_INT(irq3, 100)
+  MDRV_DIAGNOSTIC_LEDH(3)
+  MDRV_SWITCH_UPDATE(jvh3)
+  MDRV_DIPS(32)
+  MDRV_NVRAM_HANDLER(generic_1fill)
+
+  MDRV_CPU_ADD_TAG("scpu", M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem3, snd_writemem3)
+  MDRV_CPU_PERIODIC_INT(firq1, 133)
+  MDRV_SOUND_ADD(YM2203, ym2203_interface)
+  MDRV_SOUND_ADD(YM3812, ym3812_interface)
+  MDRV_INTERLEAVE(500)
+
+  MDRV_CPU_ADD_TAG("scpu2", M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snd_readmem4, snd_writemem4)
+  MDRV_CPU_PERIODIC_INT(firq2, 8000)
+  MDRV_SOUND_ADD(DAC, dac_interface)
+MACHINE_DRIVER_END
+
+INPUT_PORTS_START(formula1) \
+  CORE_PORTS \
+  SIM_PORTS(1) \
+  PORT_START /* 0 */ \
+    COREPORT_BITDEF(0x0004, IPT_COIN1,   IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(0x0002, IPT_COIN2,   IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(0x0001, IPT_COIN3,   KEYCODE_3) \
+    COREPORT_BITDEF(0x0010, IPT_START1,  IP_KEY_DEFAULT)  \
+    COREPORT_BIT   (0x0020, "Reset",     KEYCODE_0) \
+    COREPORT_BIT   (0x0008, "Self Test", KEYCODE_7) \
+    COREPORT_BIT   (0x0080, "LDIR",      KEYCODE_8) \
+    COREPORT_BIT   (0x8000, "RDIR",      KEYCODE_9) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S10") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S11") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S12") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S13") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "S14") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "S15") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S20") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S25") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S26") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S27") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S28") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S29") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "S30") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "S31") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" )
+INPUT_PORTS_END
+
+static core_tLCDLayout dispJVH3[] = {
+  {0, 0, 0,8,CORE_SEG16}, {0,18, 8,8,CORE_SEG16},
+  {3, 0,16,8,CORE_SEG7},  {3,18,24,8,CORE_SEG7},
+  {0}
+};
+
+INITGAME_JVH(formula1, 0, dispJVH3, SNDBRD_JVH2)
+ROM_START(formula1)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("f1_ic4.bin", 0x0000, 0x4000, CRC(6ca345da) SHA1(5532c5786d304744a69c7e892924edd03abe8209))
+  NORMALREGION(0x10000, REGION_CPU2)
+    ROM_LOAD("f1_snd.bin", 0x8000, 0x8000, CRC(00562594) SHA1(3325ad4c0ec04457f4d5b78b9ac48218d6c7aef3))
+  NORMALREGION(0x10000, REGION_CPU3)
+    ROM_LOAD("f1_samples.bin", 0x0000, 0x10000, CRC(ecb7ff04) SHA1(1c11c8ce62ec2f0a4f7dae3b1661baddb04ad55a))
+ROM_END
+CORE_GAMEDEFNV(formula1,"Formula 1",1988,"Jac Van Ham (Royal)",jvh3,GAME_IMPERFECT_GRAPHICS)

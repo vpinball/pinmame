@@ -1752,7 +1752,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr41 input_ports_lotr
 #define init_lotr41 init_lotr
-CORE_CLONEDEFNV(lotr41,lotr,"Lord of the Rings, The (4.10)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr41,lotr,"Lord of the Rings, The (4.10)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_g41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspg.404", CRC(b78975e5) SHA1(33d9f4d29a83ce0f68e654c15973dfdeee4d224d))
@@ -1760,7 +1760,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_g41 input_ports_lotr
 #define init_lotr_g41 init_lotr
-CORE_CLONEDEFNV(lotr_g41,lotr,"Lord of the Rings, The (4.10 German)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_g41,lotr,"Lord of the Rings, The (4.10 German)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_f41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspf.404", CRC(ebf4bb43) SHA1(5e392c3363db3d56b2ec66fcc43a59b5e8cdf944))
@@ -1768,7 +1768,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_f41 input_ports_lotr
 #define init_lotr_f41 init_lotr
-CORE_CLONEDEFNV(lotr_f41,lotr,"Lord of the Rings, The (4.10 French)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_f41,lotr,"Lord of the Rings, The (4.10 French)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_i41, "lotrcpu.410", CRC(458af09a) SHA1(2680f16d7f33ffc70b64bfb7d35cccf6989c70e2))
 DE_DMD32ROM8x(          "lotrdspi.404", CRC(05db2615) SHA1(0146abd3681d351ef6c1160b85be8bed2886fb27))
@@ -1776,7 +1776,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_i41 input_ports_lotr
 #define init_lotr_i41 init_lotr
-CORE_CLONEDEFNV(lotr_i41,lotr,"Lord of the Rings, The (4.10 Italian)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_i41,lotr,"Lord of the Rings, The (4.10 Italian)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspa.403", CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
@@ -1784,7 +1784,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr4 input_ports_lotr
 #define init_lotr4 init_lotr
-CORE_CLONEDEFNV(lotr4,lotr,"Lord of the Rings, The (4.01)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr4,lotr,"Lord of the Rings, The (4.01)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_sp4, "lotrcpul.401", CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
 DE_DMD32ROM8x(          "lotrdspl.403", CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
@@ -1800,7 +1800,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_gr4 input_ports_lotr
 #define init_lotr_gr4 init_lotr
-CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord of the Rings, The (4.01 German)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_gr4,lotr,"Lord of the Rings, The (4.01 German)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_fr4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspf.403", CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
@@ -1808,7 +1808,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_fr4 input_ports_lotr
 #define init_lotr_fr4 init_lotr
-CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord of the Rings, The (4.01 French)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_fr4,lotr,"Lord of the Rings, The (4.01 French)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_it4, "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(          "lotrdspi.403", CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
@@ -1816,7 +1816,7 @@ LOTR_SND
 SE_ROMEND
 #define input_ports_lotr_it4 input_ports_lotr
 #define init_lotr_it4 init_lotr
-CORE_CLONEDEFNV(lotr_it4,lotr,"Lord of the Rings, The (4.01 Italian)",2004,"Stern",de_mSES3,0)
+CORE_CLONEDEFNV(lotr_it4,lotr,"Lord of the Rings, The (4.01 Italian)",2003,"Stern",de_mSES3,0)
 
 SE128_ROMSTART(lotr_le, "lotrcpua.a02", CRC(f732aeb1) SHA1(8c28e91d37525b3e356bddf2cf1be42ea44f3629))
 DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
@@ -1825,6 +1825,14 @@ SE_ROMEND
 #define input_ports_lotr_le input_ports_lotr
 #define init_lotr_le init_lotr
 CORE_CLONEDEFNV(lotr_le,lotr,"Lord of the Rings, The (10.02 Limited Edition)",2008,"Stern",de_mSES3,0)
+
+SE128_ROMSTART(lotr3, "lotrcpu.300", CRC(fdc5351d) SHA1(92d58bcdd21026d278b5534d1a6ab299f6fffc60))
+DE_DMD32ROM8x(          "lotrdspa.300", CRC(522e3e33) SHA1(11987872604e2a3e2c9567f8f9313c36e6c08cc7))
+LOTR_SND
+SE_ROMEND
+#define input_ports_lotr3 input_ports_lotr
+#define init_lotr3 init_lotr
+CORE_CLONEDEFNV(lotr3,lotr,"Lord of the Rings, The (3.00)",2003,"Stern",de_mSES3,0)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not!
