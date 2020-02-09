@@ -3076,7 +3076,7 @@ static void ldcr_stcr(UINT16 opcode)
 #else
 			/* just for once, tms9995 behaves like earlier 8-bit tms99xx chips */
 			/* this must be because instruction decoding is too complex */
-			value = readword(addr);
+			value = readword(addr & ~1);
 			if (addr & 1)
 				value &= 0xFF;
 			else

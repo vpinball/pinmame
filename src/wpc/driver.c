@@ -880,12 +880,19 @@ DRIVERNV(centaurj)      //Centaur (1979, alternate set)
 DRIVERNV(topazi)        //Topaz (1979)
 DRIVERNV(skatebrd)      //Skate Board (1980)
 DRIVERNV(brvteam )      //Brave Team (1985)
+DRIVERNV(brvteafp)      //Brave Team (Free Play)
 DRIVERNV(canasta )      //Canasta '86' (1986)
+DRIVERNV(canastfp)      //Canasta '86' (Free Play)
 DRIVERNV(lapbylap)      //Lap By Lap (1986)
+DRIVERNV(lapbylfp)      //Lap By Lap (Free Play)
 DRIVERNV(moonlght)      //Moon Light (1987)
+DRIVERNV(moonlifp)      //Moon Light (Free Play)
 DRIVERNV(pinclown)      //Clown (1988)
+DRIVERNV(pinclofp)      //Clown (Free Play)
 DRIVERNV(corsario)      //Corsario (1989)
+DRIVERNV(corsarfp)      //Corsario (Free Play)
 DRIVERNV(mundial )      //Mundial 90 (1990)
+DRIVERNV(mundiafp)      //Mundial 90 (Free Play)
 DRIVERNV(atleta  )      //Atleta (1991)
 DRIVERNV(ind250cc)      //250 CC (1992)
 DRIVERNV(metalman)      //Metal Man (1992)
@@ -893,8 +900,10 @@ DRIVERNV(metalman)      //Metal Man (1992)
 // ----------------
 // JAC VAN HAM
 // ----------------
+DRIVERNV(icemania)      //Ice Mania (??/1986)
 DRIVERNV(escape)        //Escape (10/1987)
 DRIVERNV(movmastr)      //Movie Masters (??/19??)
+DRIVERNV(formula1)      //Formula 1 (??/1988)
 
 // ----------------
 // JEUTEL OF FRANCE
@@ -1220,6 +1229,7 @@ DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 // ---------------
 // SPORT MATIC
 // ---------------
+DRIVERNV(flashman)      //1984 - Flashman
 DRIVERNV(terrlake)      //1987 - Terrific Lake
 
 // ---------------
@@ -1487,6 +1497,7 @@ DRIVERNV(lotr_gr4)      //Whitestar: 11/03 Lord of the Rings (4.01 German)
 DRIVERNV(lotr_sp4)      //Whitestar: 11/03 Lord of the Rings (4.01 Spanish)
 DRIVERNV(lotr_fr4)      //Whitestar: 11/03 Lord of the Rings (4.01 French)
 DRIVERNV(lotr_it4)      //Whitestar: 11/03 Lord of the Rings (4.01 Italian)
+DRIVERNV(lotr3)         //Whitestar: 11/03 Lord of the Rings (3.00)
 DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not! (3.20)
 DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 German)
 DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (3.20 Spanish)

@@ -18,6 +18,7 @@
 / MECH_ONEDIRSOL  = One motor and one direction solenoid
 / MECH_TWODIRSOL  = Two motor solenoids=one in each direction
 / MECH_TWOSTEPSOL = Two step motor solenoids
+/ MECH_FOURSTEPSOL = Four step motor solenoids (sol1 = first of four)
 /---------------------------------------------------------------*/
 #define MECH_LINEAR     0x00 // Default
 #define MECH_NONLINEAR  0x01
@@ -31,6 +32,7 @@
 #define MECH_ONEDIRSOL  0x10
 #define MECH_TWODIRSOL  0x20
 #define MECH_TWOSTEPSOL 0x40
+#define MECH_FOURSTEPSOL (MECH_TWODIRSOL | MECH_TWOSTEPSOL)
 
 #define MECH_SLOW       0x00 // Default
 #define MECH_FAST       0x80

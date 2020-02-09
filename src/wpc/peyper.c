@@ -3,8 +3,8 @@
  --------------
    Hardware:
    ---------
-		CPU:     Z80 @ 2.5 MHz
-			INT: IRQ @ ~1800 Hz (R/C timer, needs to be measured on real machine)
+		CPU:     Z80B @ 5 MHz
+			INT: IRQ @ ~1600 Hz (R/C timer, needs to be measured on real machine)
 		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910 @ 2.5 MHz
@@ -16,8 +16,8 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
-#define PEYPER_IRQFREQ    1800 /* IRQ frequency */
-#define PEYPER_CPUFREQ 2500000 /* CPU clock frequency */
+#define PEYPER_IRQFREQ    1600 /* IRQ frequency */
+#define PEYPER_CPUFREQ 5000000 /* CPU clock frequency */
 
 /*----------------
 /  Local variables
@@ -32,7 +32,7 @@ static struct {
 } locals;
 
 static INTERRUPT_GEN(PEYPER_irq) {
-  cpu_set_irq_line(PEYPER_CPU, 0, PULSE_LINE);
+  cpu_set_irq_line(PEYPER_CPU, 0, HOLD_LINE);
 }
 
 /*-------------------------------
@@ -89,7 +89,10 @@ static WRITE_HANDLER(lamp7_w) {
 
 // the right decoder provided, you could access up to 255 solenoids this way; I guess only 16 are used though
 static WRITE_HANDLER(sol_w) {
-  if (data) locals.solenoids |= (1 << (data-1));
+  if (data) {
+    locals.solenoids |= (1 << (data-1));
+    locals.vblankCount = 0;
+  }
 }
 
 static WRITE_HANDLER(ay8910_0_ctrl_w)   { AY8910Write(0,0,data); }
@@ -172,8 +175,8 @@ static MEMORY_READ_START(PEYPER_readmem)
   {0x6000,0x67ff, MRA_RAM},
 MEMORY_END
 
-// NVRAM works, but not always?
 static MEMORY_WRITE_START(PEYPER_writemem)
+  {0x0000,0x5fff, MWA_NOP},
   {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
