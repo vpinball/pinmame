@@ -250,7 +250,8 @@ DCS_SOUNDROM4xm("jy_s2.rom",CRC(1a1bc2ca) SHA1(db949d49560a26fc280cd9e746aa99dfa
                 "jy_s5.rom",CRC(f18ad10b) SHA1(1d02a388b43d3863030e01bf567f30337d37b2e8))
 WPC_ROMEND
 
-WPC_ROMSTART(jy,12c,"jy_g11.1_2c",0x80000,CRC(8c02d599) SHA1(c09b7d9a9964aac016e2956ba86a9c7659732fb5))
+//WPC_ROMSTART(jy,12c,"jy_g11.1_2c",0x80000,CRC(8c02d599) SHA1(c09b7d9a9964aac016e2956ba86a9c7659732fb5)) //rev. 1.2 patch 2fb5
+WPC_ROMSTART(jy,12c,"Junk Yard G11 game ROM rev 12 patch 41d7.rom",0x80000,CRC(f007b120) SHA1(4e0d82bbbc9d11a7f6f6222b176e8680e7fd716e)) //rev. 1.2 patch 41d7
 DCS_SOUNDROM4xm("jy_s2.rom",CRC(1a1bc2ca) SHA1(db949d49560a26fc280cd9e746aa99dfafbd6daa),
                 "jy_s3.rom",CRC(0fc36a8e) SHA1(335013ebe08d34a24b0b472c6d5f042e455facee),
                 "jy_s4.rom",CRC(0aebcd77) SHA1(62aee2685c0ae4bc1df8e4a4515ca34a078c72ad),
@@ -275,7 +276,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jy,12,"Junk Yard (1.2)",1996,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(jy,12c,12,"Junk Yard (1.2C Competition MOD)",2017,"Williams",wpc_m95S,0) //rev. 1.2 patch 2fb5
+CORE_CLONEDEF(jy,12c,12,"Junk Yard (1.2C Competition MOD)",2020,"Williams",wpc_m95S,0) //rev. 1.2 patch 41d7
 CORE_CLONEDEF(jy,11,12,"Junk Yard (1.1)",1996,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(jy,03,12,"Junk Yard (0.3 Prototype)",1996,"Williams",wpc_m95S,0)
 
