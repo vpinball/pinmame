@@ -440,7 +440,8 @@ WPC_ROMEND
 WPC_ROMSTART(taf,d5,  "taf_d5.rom",0x80000,CRC(10136ffa) SHA1(15ff1fd6528422c194f5027ccb798276f1b37229))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
-WPC_ROMSTART(taf,l5c, "The Addams Family U6 game ROM rev L-5 patch a656.rom",0x80000,CRC(2c924647) SHA1(b2bf0bb713df210186fd8e547ce3eb8cfa9f6a51))
+//WPC_ROMSTART(taf,l5c, "The Addams Family U6 game ROM rev L-5 patch a656.rom",0x80000,CRC(2c924647) SHA1(b2bf0bb713df210186fd8e547ce3eb8cfa9f6a51))
+WPC_ROMSTART(taf,l5c, "The Addams Family U6 game ROM rev L-5 patch 3901.rom",0x80000,CRC(1e0b0757) SHA1(baecc50f7cb1f34df9cf6660bfb6fe5bce43c33f))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
@@ -510,7 +511,7 @@ WPC_ROMEND
 
 CORE_GAMEDEF(taf,l5,       "Addams Family, The (L-5)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,d5,l5,   "Addams Family, The (D-5 LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(taf,l5c,l5,  "Addams Family, The (L-5C Competition MOD)",2018,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l5c,l5,  "Addams Family, The (L-5C Competition + LED Ghost MOD)",2020,"Bally",wpc_mFliptronS,0) // patch 3901
 CORE_CLONEDEF(taf,p2,l5,   "Addams Family, The (P-2 Prototype)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,p3,l5,   "Addams Family, The (P-3 Prototype LED Ghost Fix)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l1,l5,   "Addams Family, The (L-1)",1992,"Bally",wpc_mFliptronS,0)

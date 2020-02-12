@@ -21,6 +21,23 @@ const struct GameDriver *test_drivers[] = { 0 };
 #endif
 #else /* DRIVER_RECURSIVE */
 
+/* A comment on the "LED Ghost Fix" MODs from https://emmytech.com/arcade/led_ghost_busting/index.html :
+What is Ghosting ?
+When talking about pinball machines and LED's, the term 'ghosting' is frequently used to describe the behavior of an LED that should be off glowing dimly when another LED is turned on.
+
+What causes ghosting ?
+Anything that can cause an LED or incandescent lamp to briefly receive current when it should not can cause ghosting.The effect is much more pronounced with LED's because of their quick turn on time relative to incandescent lamps.
+The predominant cause for Williams / Bally WPC Era pins is a mixture of a lamp matrix software driver timing issue and what appears to be an issue with the WPC ASIC.
+
+How can LED ghosting be eliminated ?
+In the 1995 timeframe, the Williams software designers modified the lamp matrix device driver code to work around the WPC ASIC
+issue and to modify the timing with how matrix is controlled.
+For 'most' cases this appears to have eliminated the ghosting issue.
+I say most because I have read a number of posts where people say they still have LED ghosting issues even when they are running
+ROM's with the updated driver code.
+I have also read posts stating that the ghosting issue is more prevalent when Rotten Dog power/driver boards are used.
+*/
+
 DRIVERNV(st_game)       // Unknown game running on old Stern hardware
 DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 DRIVERNV(wldtexas)      // Wild Texas (Firepower II clone)
@@ -2577,7 +2594,7 @@ DRIVER(taf,l4)          //          05/92 B Addams Family, The (L-4)
 DRIVER(taf,d4)          //                  Addams Family, The (D-4) LED Ghost Fix
 DRIVER(taf,l5)          //          12/92 B Addams Family, The (L-5)
 DRIVER(taf,d5)          //                  Addams Family, The (D-5) LED Ghost Fix
-DRIVER(taf,l5c)         //          08/18 B Addams Family, The (L-5C Competition MOD)
+DRIVER(taf,l5c)         //          02/20 B Addams Family, The (L-5C Competition MOD)
 DRIVER(taf,l6)          //          03/93 B Addams Family, The (L-6)
 DRIVER(taf,d6)          //                  Addams Family, The (D-6) LED Ghost Fix
 DRIVER(taf,l7)          //          10/92 B Addams Family, The (L-7) (Prototype L-5)
@@ -2629,7 +2646,7 @@ DRIVER(cftbl,d3)        //                  Creature from the Black Lagoon (D-3)
 DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //                  Creature from the Black Lagoon (D-4) LED Ghost Fix
 //DRIVER(cftbl,l5c)     //          04/16 B Creature from the Black Lagoon (L-5C) //outdated patch
-DRIVER(cftbl,l4c)       //          05/19 B Creature from the Black Lagoon (L-4C) //patch 8c6a
+DRIVER(cftbl,l4c)       //          02/20 B Creature from the Black Lagoon (L-4C) //patch eccc
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //                  Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
@@ -2749,7 +2766,7 @@ DRIVER(dm,lx3)          //          04/94 W Demolition Man (LX-3)
 DRIVER(dm,dx3)          //                  Demolition Man (DX-3) LED Ghost Fix
 DRIVER(dm,lx4)          //          05/94 W Demolition Man (LX-4)
 DRIVER(dm,dx4)          //                  Demolition Man (DX-4) LED Ghost Fix
-DRIVER(dm,lx4c)         //          11/19   Demolition Man (LX-4C Competition MOD)
+DRIVER(dm,lx4c)         //          02/20   Demolition Man (LX-4C Competition MOD)
 DRIVER(dm,h5)           //          02/95 W Demolition Man (H-5) with rude speech
 DRIVER(dm,h5b)          //                  Demolition Man (H-5) with rude speech (Coin Play)
 //DRIVER(dm,h5c)          //          08/17   Demolition Man (H-5C Competition MOD) with rude speech
@@ -2916,7 +2933,7 @@ DRIVER(ss,15)           //          02/97 B Scared Stiff (1.5)
 DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
 DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
-DRIVER(jy,12c)          //          08/17 W Junk Yard (1.2C Competition MOD)
+DRIVER(jy,12c)          //          02/20 W Junk Yard (1.2C Competition MOD)
 DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1, Sound S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1, Sound S2.0)

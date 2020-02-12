@@ -380,13 +380,10 @@ WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
-/*WPC_ROMSTART(cftbl,l5c,"creat_l5c.rom",0x80000,CRC(9cb6f4b3) SHA1(310b125935694d9c5ef040340e1608006e27a214)) //old patch
-WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
-                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
-                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
-WPC_ROMEND*/
-WPC_ROMSTART(cftbl,l4c,"Creature From The Black Lagoon U6 game ROM rev L-4 patch 8c6a.rom",0x80000,CRC(20fc538f) SHA1(688f6663c985b02550df0c06ccd4b6f1ec32a38a)) //patch 8c6a
-WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
+//WPC_ROMSTART(cftbl,l5c,"creat_l5c.rom",0x80000,CRC(9cb6f4b3) SHA1(310b125935694d9c5ef040340e1608006e27a214)) //old patch
+//WPC_ROMSTART(cftbl,l4c,"Creature From The Black Lagoon U6 game ROM rev L-4 patch 8c6a.rom",0x80000,CRC(20fc538f) SHA1(688f6663c985b02550df0c06ccd4b6f1ec32a38a)) //patch 8c6a
+WPC_ROMSTART(cftbl,l4c,"Creature From The Black Lagoon U6 game ROM rev L-4 patch eccc.rom",0x80000,CRC(14a1d90a) SHA1(864acf529fbf953c47feecd9a98810fa04a0223c)) //patch eccc
+WPCS_SOUNDROM288("bl_u18.l1", CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
@@ -432,7 +429,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1993,"Bally",wpc_mFliptronS,0)
 //CORE_CLONEDEF (cftbl,l5c,l4,"Creature from the Black Lagoon (L-5C Competition MOD)",2016,"Bally",wpc_mFliptronS,0) //outdated
-CORE_CLONEDEF (cftbl,l4c,l4,"Creature from the Black Lagoon (L-4C Competition MOD)",2019,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l4c,l4,"Creature from the Black Lagoon (L-4C Competition + LED Ghost MOD)",2020,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d4,l4,"Creature from the Black Lagoon (D-4 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,l3,l4,"Creature from the Black Lagoon (L-3)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (cftbl,d3,l4,"Creature from the Black Lagoon (D-3 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
