@@ -303,8 +303,9 @@ WPC_ROMSTART(dm,dx3,  "dman_dx3.rom",0x80000, CRC(aede7ca6) SHA1(874aca191ca7bbe
 WPC_ROMSTART(dm,lx4,  "dman_lx4.rom",0x80000, CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,dx4,  "dman_dx4.rom",0x80000, CRC(6974789d) SHA1(9cf2c49f879fa1f2547e1e7c853e12dc4a35b97d)) DM_SOUND_L2 WPC_ROMEND
 //WPC_ROMSTART(dm,lx4c, "dman_lx4c.rom",0x80000,CRC(d05d3bd6) SHA1(eb99dfbc43e299b7ecfe3208905c70d89886be55)) DM_SOUND_L2 WPC_ROMEND //L-4X patch be55
-WPC_ROMSTART(dm,lx4c, "Demolition Man U6 game ROM rev LX-4 patch c53f.rom",0x80000,CRC(b4df0ac3) SHA1(5f8498b066d02fbd64a01ae3da352f976b67059a)) DM_SOUND_L2 WPC_ROMEND //L-4X patch c53f
-WPC_ROMSTART(dm,h5,   "dman_h5.rom", 0x80000, CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
+//WPC_ROMSTART(dm,lx4c, "Demolition Man U6 game ROM rev LX-4 patch c53f.rom",0x80000,CRC(b4df0ac3) SHA1(5f8498b066d02fbd64a01ae3da352f976b67059a)) DM_SOUND_L2 WPC_ROMEND //L-4X patch c53f
+WPC_ROMSTART(dm,lx4c, "Demolition Man U6 game ROM rev LX-4 patch 00c6.rom",0x80000,CRC(f669f92d) SHA1(0dc1c746c8a6ebcbcbc3866bbdcd5471a1d626ba)) DM_SOUND_L2 WPC_ROMEND //L-4X patch 00c6
+WPC_ROMSTART(dm, h5,  "dman_h5.rom", 0x80000, CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dh5,  "dman_dh5.rom",0x80000, CRC(91388e13) SHA1(b09a628afd921e34b99d0db3005ab12bbec189b5)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,h5b,  "dman_h5b.rom",0x80000, CRC(b7d0e138) SHA1(5533f36f9eab8626bc1240bdea11ae7757db5244)) DM_SOUND_H1 WPC_ROMEND
 WPC_ROMSTART(dm,dh5b, "dmandh5b.rom",0x80000, CRC(e2e77372) SHA1(df1384f57339c077d98bda5e6ad8ca1d38e3e6ce)) DM_SOUND_H1 WPC_ROMEND
@@ -321,7 +322,7 @@ WPC_ROMSTART(dm,dt101,"dm_dt101.rom",0x100000,CRC(ce36910f) SHA1(45902edd6d8ac2b
 /---------------*/
 CORE_GAMEDEF (dm,lx4,       "Demolition Man (LX-4)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dx4,  lx4, "Demolition Man (DX-4 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition MOD)",2019,"Williams",wpc_mDCSS,0) //L-4X patch c53f
+CORE_CLONEDEF(dm,lx4c, lx4, "Demolition Man (LX-4C Competition + LED Ghost MOD)",2020,"Williams",wpc_mDCSS,0) //L-4X patch 00c6
 CORE_CLONEDEF(dm,pa2,  lx4, "Demolition Man (PA-2 Prototype)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,pa3,  lx4, "Demolition Man (PA-3 LED Ghost Fix)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,px5,  lx4, "Demolition Man (PX-5 Prototype)",1994,"Williams",wpc_mDCSS,0)

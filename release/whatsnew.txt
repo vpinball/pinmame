@@ -24,22 +24,26 @@ Fixed a default volume issue with the AY8910 / YM2203
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
 New:
 Sport Matic: Flashman
-Jac van Ham: Ice Mania,
+Jac van Ham: Ice Mania
              Formula 1 (no schematics available, so work in progress but looking good already)
 
 Clones:
+Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
 Brave Team (Free Play)
 Canasta '86' (Free Play)
 Clown (Inder, Free Play)
 Corsario (Free Play)
-Demolition Man LX-4C (competition MOD) (updated)
+Creature from the Black Lagoon L-4C (competition MOD) (updated with LED Ghost Fix)
+Demolition Man LX-4C (competition MOD) (updated and also now includes LED Ghost Fix)
 Demolition Man H-6C (competition MOD) (updated)
 Flintstones, The LX-3
+Junk Yard 1.2C (competition MOD) (updated)
 Lap By Lap (Free Play)
 Lord of the Rings, The 3.00
 Moon Light (Free Play)
 Mundial 90 (Free Play)
 Oba-Oba (old hardware)
+Pool Sharks LA-7C (competition MOD) (updated)
 Space Train (old hardware)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Twilight Zone LA-9 (aka PAPA Tournament Version 9.0)

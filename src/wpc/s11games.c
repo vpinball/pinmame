@@ -1177,13 +1177,15 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
 S11_ROMEND
 CORE_CLONEDEF(pool,p7,l7,"Pool Sharks (PA-7 Prototype)", 1989, "Bally", s11c_one,0)
 
-S11_ROMSTART48(pool,l7c,"Pool Sharks U26 game ROM rev LA-7 patch E586.rom",CRC(b4f78b93) SHA1(bb27e4dde0ebf7f9a9d04d9cdb34d39d25ade69b),
-                        "Pool Sharks U27 game ROM rev LA-7 patch E586.rom",CRC(5b228b8f) SHA1(18d612154cda00c8f735305b475baf6de153919d))
+//S11_ROMSTART48(pool,l7c,"Pool Sharks U26 game ROM rev LA-7 patch E586.rom",CRC(b4f78b93) SHA1(bb27e4dde0ebf7f9a9d04d9cdb34d39d25ade69b),
+//                        "Pool Sharks U27 game ROM rev LA-7 patch E586.rom",CRC(5b228b8f) SHA1(18d612154cda00c8f735305b475baf6de153919d))
+S11_ROMSTART48(pool,l7c,"Pool Sharks U26 game ROM rev LA-7 patch fa03.rom",CRC(28b0a4eb) SHA1(df827093c51c38ad64dc27ad3421edcc5cdb08c6),
+                        "Pool Sharks U27 game ROM rev LA-7 patch fa03.rom",CRC(53e57796) SHA1(a3e359c954868600c2d7a94138c36e0e2ba9bf04))
 S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
                         "pool_u19.l2", CRC(0f45d02b) SHA1(58bbfdb3b98c43b66e11808cec7cd65a7f2dce6d),
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
-CORE_CLONEDEF(pool,l7c,l7,"Pool Sharks (LA-7C Competition MOD)", 2018, "Bally", s11c_one,0)
+CORE_CLONEDEF(pool,l7c,l7,"Pool Sharks (LA-7C Competition MOD)", 2019, "Bally", s11c_one,0)
 
 /*--------------------
 / Diner 8/90
