@@ -860,6 +860,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\sound\fmopl.c" />
     <ClCompile Include="src\sound\hc55516.c" />
     <ClCompile Include="src\sound\m114s.c" />
+    <ClCompile Include="src\sound\mc3417.c" />
     <ClCompile Include="src\sound\mea8000.c" />
     <ClCompile Include="src\sound\mixer.c" />
     <ClCompile Include="src\sound\msm5205.c" />
@@ -1204,6 +1205,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\sound\fmopl.h" />
     <ClInclude Include="src\sound\hc55516.h" />
     <ClInclude Include="src\sound\m114s.h" />
+    <ClInclude Include="src\sound\mc3417.h" />
     <ClInclude Include="src\sound\mea8000.h" />
     <ClInclude Include="src\sound\mixer.h" />
     <ClInclude Include="src\sound\msm5205.h" />
