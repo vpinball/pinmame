@@ -132,9 +132,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental />
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>$(ProjectName)64</TargetName>
     <OutDir>$(VS_OUTPUT)obj\VC2015\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);D:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</IncludePath>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -145,10 +144,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>$(ProjectName)_VC2015vcd</TargetName>
+    <TargetName>$(ProjectName)64</TargetName>
     <OutDir>$(VS_OUTPUT)obj\VC2015\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);D:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Include</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);D:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">
     <OutDir>$(VS_OUTPUT)obj\VC2015\$(ProjectName)\$(Platform)\ReleaseMD\</OutDir>
