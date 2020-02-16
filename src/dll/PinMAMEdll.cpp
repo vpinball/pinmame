@@ -256,7 +256,7 @@ PINMAMEDLL_API bool IsPaused()
 
 PINMAMEDLL_API bool NeedsDMDUpdate()
 {
-	return g_needs_DMD_update;
+	return !!g_needs_DMD_update;
 }
 
 PINMAMEDLL_API int GetRawDMDWidth()
