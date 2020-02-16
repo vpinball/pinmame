@@ -1164,6 +1164,12 @@
     <ClCompile Include="src\dll\PinMAMEdll.cpp">
       <Filter>Source Files\dll</Filter>
     </ClCompile>
+    <ClCompile Include="src\windows\jit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\windows\jitemit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1774,6 +1780,12 @@
     </ClInclude>
     <ClInclude Include="src\dll\dllsound.h">
       <Filter>Source Files\dll</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jit.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\windows\jitemit.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
