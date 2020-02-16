@@ -82,7 +82,7 @@ struct _osd_file
 static struct pathdata pathlist[FILETYPE_end];
 static osd_file openfile[MAX_OPEN_FILES];
 
-void setPath(int type, char* path)
+void setPath(int type, const char* path)
 {
 	pathlist[type].rawpath = path;
 }
@@ -568,15 +568,14 @@ int osd_feof(osd_file *file)
 UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 {
 	UINT32 bytes_left = length;
-	int bytes_to_copy;
 	DWORD result;
 
 	// handle data from within the buffer
 	if (file->offset >= file->bufferbase && file->offset < file->bufferbase + file->bufferbytes)
 	{
 		// copy as much as we can
-		bytes_to_copy = file->bufferbase + file->bufferbytes - file->offset;
-		if (bytes_to_copy > length)
+		int bytes_to_copy = (int)(file->bufferbase + file->bufferbytes - file->offset); //!!
+		if (bytes_to_copy > (int)length)
 			bytes_to_copy = length;
 		memcpy(buffer, &file->buffer[file->offset - file->bufferbase], bytes_to_copy);
 
@@ -606,6 +605,7 @@ UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
 	// if we have a small read remaining, do it to the buffer and copy out the results
 	if (length < FILE_BUFFER_SIZE/2)
 	{
+		unsigned int bytes_to_copy;
 		// read as much of the buffer as we can
 		file->bufferbase = file->offset;
 		file->bufferbytes = 0;

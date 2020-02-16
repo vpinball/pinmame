@@ -1,13 +1,13 @@
 #include "PinMAMEdll.h"
+
+#include <stdio.h>
 #include <conio.h>
-#include <unistd.h>
+
 void DisplayDMD();
-#include <windows.h>
 
 int main()
 {
-	//SetVPMPath("D:/Pinball/Visual Pinball/VPinMAME/");
-	SetVPMPath("D:/_CSY/PERSO/UP/VP/VPinMAME/");
+	SetVPMPath("C:/PinMAME/");
 	SetSampleRate(48000);
 
 	StartThreadedGame("taf_l7");
@@ -41,6 +41,7 @@ int main()
 }
 
 unsigned char* rawDmd = nullptr;
+
 void DisplayDMD()
 {
 	int w = GetRawDMDWidth();

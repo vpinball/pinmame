@@ -749,7 +749,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
          {
             int x;
             x = strtol(arg, &end, 0);
-            if (*end || rc_verify(option, x))
+            if (*end || rc_verify(option, (float)x))
             {
                fprintf(stderr, "error invalid value for %s: %s\n", option->name, arg);
                return -1;
@@ -760,7 +760,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
       case rc_float:
          {
             float x;
-            x = strtod(arg, &end);
+            x = strtof(arg, &end);
             if (*end || rc_verify(option, x))
             {
                fprintf(stderr, "error invalid value for %s: %s\n", option->name, arg);
@@ -770,7 +770,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
          }
          break;
       case rc_set_int:
-         *(int*)option->dest = option->min;
+         *(int*)option->dest = (int)option->min;
          break;
       case rc_file:
          {
