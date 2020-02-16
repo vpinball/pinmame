@@ -1,16 +1,12 @@
 #pragma once
 
-// standard includes
-#include <thread>
-
-#ifdef PINMAMEDLL_API
-#define PINMAMEDLL_API __declspec(dllexport) 
+#if 1
+#define PINMAMEDLL_API extern "C" __declspec(dllexport) 
 #else
-#define PINMAMEDLL_API __declspec(dllimport) 
+#define PINMAMEDLL_API extern "C" __declspec(dllimport) 
 #endif
 
-extern "C"
-{
+
 	// Setup related functions
 	// -----------------------
 	PINMAMEDLL_API void SetVPMPath(char* path);
@@ -64,4 +60,3 @@ extern "C"
 	// ----------------------------
 	PINMAMEDLL_API int GetMaxGIStrings();
 	PINMAMEDLL_API int GetChangedGIs(int* changedStates);
-}

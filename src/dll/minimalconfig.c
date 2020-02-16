@@ -24,8 +24,6 @@
 
 #include <stdarg.h>
 #include <ctype.h>
-#include <time.h>
-//#include <windows.h>
 #include "driver.h"
 #include "rc.h"
 #include "misc.h"
@@ -87,8 +85,9 @@ struct rc_option pinmame_opts[] = {
         { "virtual_dmd",  NULL, rc_bool, &pmoptions.virtual_dmd,  "1",  0, 0, NULL, "Enable DMD emulation" },
 #endif /* PROC_SUPPORT */
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
-};
+}; //!! some missing?
 #endif /* PINMAME */
+
 extern int frontend_help(char *gamename);
 static int config_handle_arg(char *arg);
 
@@ -101,7 +100,7 @@ static int showconfig;
 static int showusage;
 static int readconfig;
 static int createconfig;
-extern int verbose;
+static int verbose;
 
 struct rc_struct *rc;
 
@@ -282,7 +281,7 @@ struct rc_option core_opts[] = {
         { "readconfig", "rc", rc_bool, &readconfig, "1", 0, 0, NULL, "enable/disable loading of configfiles" },
         { "verbose", "v", rc_bool, &verbose, "0", 0, 0, NULL, "display additional diagnostic information" },
         { NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
-};
+}; //!! some missing?
 
 /*
  * Penalty string compare, the result _should_ be a measure on

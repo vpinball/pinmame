@@ -118,8 +118,8 @@ int osd_start_audio_stream(int stereo)
 	channels = stereo ? 2 : 1;
 
 	// compute the buffer sizes
-	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate)) / 44100;
-	stream_buffer_size = (stream_buffer_size * 30) / Machine->drv->frames_per_second;
+	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)(Machine->sample_rate)) / 44100; //!! 44100 ?!
+	stream_buffer_size = (int)((double)(stream_buffer_size * 30) / Machine->drv->frames_per_second);
 	stream_buffer_size = (stream_buffer_size / 1024) * 1024;
 	stream_buffer_size *= channels;
 	// compute the upper/lower thresholds
@@ -139,7 +139,7 @@ int osd_start_audio_stream(int stereo)
 	samples_this_frame = (UINT32)samples_left_over;
 	samples_left_over -= (double)samples_this_frame;
 
-	writing_advance = samples_per_frame * channels * 3;
+	writing_advance = (int)(samples_per_frame * channels * 3);
 
 	printf("stream_buffer_size: %d lower_thresh:%d upper_thresh: %d\n", stream_buffer_size, lower_thresh, upper_thresh);
 
@@ -147,11 +147,15 @@ int osd_start_audio_stream(int stereo)
 	return samples_this_frame;
 }
 
-cycles_t lastUpdate = 0;
-int tmp = 0;
+//cycles_t lastUpdate = 0;
+//int tmp = 0;
+
 void update_sample_adjustment(int buffered);
+
 int osd_update_audio_stream(INT16 *buf)
 {
+	unsigned int i;
+
 	if (!streamingBufferInitialized)
 		return samples_this_frame;
 	//cycles_t cyc = osd_cycles();
@@ -160,7 +164,7 @@ int osd_update_audio_stream(INT16 *buf)
 
 	//printf("samples_this_frame: %d\n", samples_this_frame);
 
-	for (int i = 0; i < samples_this_frame*channels; i++)
+	for (i = 0; i < samples_this_frame*channels; i++)
 	{
 		streamingBuf[currentWritingBufferPos] = buf[i];
 		currentWritingBufferPos++;

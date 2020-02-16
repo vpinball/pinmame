@@ -194,8 +194,6 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 {
 	printf("osd_create_display: %.2f fps\n", params->fps);
 
-	int r, g, b;
-
 	//	logerror("width %d, height %d depth %d\n", params->width, params->height, params->depth);
 
 	// copy the parameters into globals for later use

@@ -1,18 +1,39 @@
+#undef inline //!! meh, do via proj preprocessor settings instead!
 #include "PinMAMEdll.h"
 
 //============================================================
-//
-//	winmain.c - Win32 main program
-//
+// Console Debugging Section (Optional)
 //============================================================
 
-#define MAX_PATH          1024
+#if defined(_WIN32)
+#define ENABLE_CONSOLE_DEBUG
+#ifdef ENABLE_CONSOLE_DEBUG
 
-// standard includes
-#include <time.h>
-#include <ctype.h>
+#define WIN32_LEAN_AND_MEAN
+#include <stdio.h>
+#include <windows.h>
+
+bool g_useConsole = false;
+
+void ShowConsole()
+{
+	g_useConsole = true;
+	FILE* pConsole;
+	AllocConsole();
+	freopen_s(&pConsole, "CONOUT$", "wb", stdout);
+}
+
+void CloseConsole()
+{
+	if (g_useConsole)
+		FreeConsole();
+}
+#endif
+#else
+#define MAX_PATH          1024
+#endif
+
 #include <thread>
-#include <conio.h>
 
 extern "C"
 {
@@ -28,24 +49,13 @@ extern "C"
 	#include "dllsound.h"
 	#include "cpuexec.h"
 
-	//extern HWND win_video_window;
-
-	//extern HANDLE g_hEnterThrottle;
-	extern int g_iSyncFactor;
-	extern struct RunningMachine *Machine;
-	extern struct mame_display *current_display_ptr;
-
-	extern unsigned char  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
+	extern unsigned char g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
 	extern unsigned int g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
 	extern unsigned int g_raw_dmdx;
 	extern unsigned int g_raw_dmdy;
 	extern unsigned int g_needs_DMD_update;
-	extern int g_cpu_affinity_mask;
-
-	extern char g_fShowWinDMD;
 
 	int g_fHandleKeyboard = 0, g_fHandleMechanics = 0;
-	extern int verbose;
 	extern int trying_to_quit;
 	void OnSolenoid(int nSolenoid, int IsActive);
 	void OnStateChange(int nChange);
@@ -60,37 +70,10 @@ extern "C"
 	struct rc_struct *rc;
 }
 
-//============================================================
-// Console Debugging Section (Optionnal)
-//============================================================
-
-#define ENABLE_CONSOLE_DEBUG
-#ifdef ENABLE_CONSOLE_DEBUG
-#include <windows.h>
-#include <WinCon.h>
-
-bool g_useConsole = false;
 char g_vpmPath[MAX_PATH];
 int g_sampleRate = 48000;
 bool g_isGameReady = false;
 static std::thread* pRunningGame = nullptr;
-
-
-void ShowConsole()
-{
-	g_useConsole = true;
-	FILE * pConsole;
-	AllocConsole();
-	freopen_s(&pConsole, "CONOUT$", "wb", stdout);
-}
-
-void CloseConsole()
-{
-	if (g_useConsole)
-		FreeConsole();
-}
-#endif
-
 
 //============================================================
 // Callback tests Section
@@ -106,12 +89,6 @@ void OnStateChange(int nChange)
 	printf("OnStateChange : %d\n", nChange);
 	g_isGameReady = nChange > 0;
 }
-
-
-//============================================================
-//	GLOBAL VARIABLES
-//============================================================
-int verbose;
 
 
 //============================================================
@@ -134,8 +111,8 @@ int GetGameNumFromString(char *name)
 
 char* composePath(char* path, char* file)
 {
-	int pathl = strlen(path);
-	int filel = strlen(file);
+	size_t pathl = strlen(path);
+	size_t filel = strlen(file);
 	char *r = (char*)malloc(pathl + filel + 4);
 
 	strcpy(r, path);
@@ -167,12 +144,12 @@ void gameThread(int game_index=-1)
 // Setup Functions
 // ---------------
 
-void SetVPMPath(char* path)
+PINMAMEDLL_API void SetVPMPath(char* path)
 {
 	strcpy(g_vpmPath, path);
 }
 
-void SetSampleRate(int sampleRate)
+PINMAMEDLL_API void SetSampleRate(int sampleRate)
 {
 	g_sampleRate = sampleRate;
 }
@@ -181,7 +158,7 @@ void SetSampleRate(int sampleRate)
 // Game related functions
 // ---------------------
 
-int StartThreadedGame(char* gameName, bool showConsole)
+PINMAMEDLL_API int StartThreadedGame(char* gameName, bool showConsole)
 {
 #ifdef ENABLE_CONSOLE_DEBUG
 	if (showConsole)
@@ -246,29 +223,29 @@ void StopThreadedGame(bool locking)
 #endif
 }
 
-bool IsGameReady()
+PINMAMEDLL_API bool IsGameReady()
 {
 	return g_isGameReady;
 }
 
 // Pause related functions
 // -----------------------
-void ResetGame()
+PINMAMEDLL_API void ResetGame()
 {
 	machine_reset();
 }
 
-void Pause()
+PINMAMEDLL_API void Pause()
 {
 	g_fPause = 1;
 }
 
-void Continue()
+PINMAMEDLL_API void Continue()
 {
 	g_fPause = 0;
 }
 
-bool IsPaused()
+PINMAMEDLL_API bool IsPaused()
 {
 	return g_fPause > 0;
 }
@@ -277,22 +254,22 @@ bool IsPaused()
 // DMD related functions
 // ---------------------
 
-bool NeedsDMDUpdate()
+PINMAMEDLL_API bool NeedsDMDUpdate()
 {
 	return g_needs_DMD_update;
 }
 
-int GetRawDMDWidth()
+PINMAMEDLL_API int GetRawDMDWidth()
 {
 	return g_raw_dmdx;
 }
 
-int GetRawDMDHeight()
+PINMAMEDLL_API int GetRawDMDHeight()
 {
 	return g_raw_dmdy;
 }
 
-int GetRawDMDPixels(unsigned char* buffer)
+PINMAMEDLL_API int GetRawDMDPixels(unsigned char* buffer)
 {
 	if (g_raw_dmdx < 0 || g_raw_dmdy < 0)
 		return -1;
@@ -303,12 +280,12 @@ int GetRawDMDPixels(unsigned char* buffer)
 
 // Audio related functions
 // -----------------------
-int GetAudioChannels()
+PINMAMEDLL_API int GetAudioChannels()
 {
 	return channels;
 }
 
-int GetPendingAudioSamples(float* buffer,int outChannels, int maxNumber)
+PINMAMEDLL_API int GetPendingAudioSamples(float* buffer,int outChannels, int maxNumber)
 {
 	return fillAudioBuffer(buffer, outChannels, maxNumber);
 }
@@ -316,20 +293,21 @@ int GetPendingAudioSamples(float* buffer,int outChannels, int maxNumber)
 
 // Switch related functions
 // ------------------------
-bool GetSwitch(int slot)
+PINMAMEDLL_API bool GetSwitch(int slot)
 {
 	return vp_getSwitch(slot) != 0;
 }
-void SetSwitch(int slot, bool state)
+
+PINMAMEDLL_API void SetSwitch(int slot, bool state)
 {
 	vp_putSwitch(slot, state ? 1 : 0);
 }
 
 // Lamps related functions
 // -----------------------
-int GetMaxLamps() {	return CORE_MAXLAMPCOL * 8; }
+PINMAMEDLL_API int GetMaxLamps() {	return CORE_MAXLAMPCOL * 8; }
 
-int GetChangedLamps(int* changedStates)
+PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 {
 	vp_tChgLamps chgLamps;
 	int uCount = vp_getChangedLamps(chgLamps);
@@ -345,8 +323,9 @@ int GetChangedLamps(int* changedStates)
 
 // Solenoids related functions
 // ---------------------------
-int GetMaxSolenoids() { return 64; }
-int GetChangedSolenoids(int* changedStates)
+PINMAMEDLL_API int GetMaxSolenoids() { return 64; }
+
+PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
 {
 	vp_tChgSols chgSols;
 	int uCount = vp_getChangedSolenoids(chgSols);
@@ -362,8 +341,9 @@ int GetChangedSolenoids(int* changedStates)
 
 // GI strings related functions
 // ----------------------------
-int GetMaxGIStrings() { return CORE_MAXGI; }
-int GetChangedGIs(int* changedStates)
+PINMAMEDLL_API int GetMaxGIStrings() { return CORE_MAXGI; }
+
+PINMAMEDLL_API int GetChangedGIs(int* changedStates)
 {
 	vp_tChgGIs chgGIs;
 	int uCount = vp_getChangedGI(chgGIs);

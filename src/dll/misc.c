@@ -29,9 +29,9 @@ Version 0.2, May 2000
 /* Todo ?
 -rename uclock to sysdep_clock (Hans de Goede)
 */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 #ifndef _MSC_VER
@@ -71,7 +71,7 @@ uclock_t uclock(void)
 
 uclock_t uclock(void)
 {
-   return (clock() * (1000000 / CLOCKS_PER_SEC));
+   return (clock() * (1000000 / CLOCKS_PER_SEC)); //!! use high res timer
 }
 
 #endif

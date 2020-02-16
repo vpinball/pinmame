@@ -16,7 +16,7 @@
 //	MACROS
 //============================================================
 
-#ifdef _WIN64
+#if defined(_WIN64) || defined(PINMAME_DLL) //!!
 #define pdo16		NULL
 #define pdt16		NULL
 #define pdt16np		NULL
