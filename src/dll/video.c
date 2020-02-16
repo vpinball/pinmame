@@ -4,13 +4,12 @@
 //
 //============================================================
 // standard C headers
-#include <math.h>
 
 // MAME headers
 #include "driver.h"
 #include "mamedbg.h"
-#include "vidhrdw/vector.h"
-#include "blit.h"
+//#include "vidhrdw/vector.h"
+//#include "blit.h"
 #include "video.h"
 //#include "window.h"
 #include "rc.h"
@@ -25,10 +24,7 @@
 //============================================================
 
 // from input.c
-extern void win_poll_input(void);
-extern void win_pause_input(int pause);
 extern UINT8 win_trying_to_quit;
-extern int verbose;
 
 // from ticker.c
 extern void uSleep(const UINT64 u);
