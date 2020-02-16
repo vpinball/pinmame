@@ -74,7 +74,7 @@
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v140_xp</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
@@ -128,7 +128,7 @@
     <OutDir>$(VS_OUTPUT)obj\VC2015\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)Intermediate\</IntDir>
     <LinkIncremental />
-    <TargetName>$(ProjectName)_VC2015</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental />
@@ -181,9 +181,9 @@
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_DLL;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_DX7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_DLL;PINMAME_NO_UNUSED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -193,14 +193,17 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>zlibstatmt.lib;winmm.lib;dxguid.lib;ddraw.lib;dinput.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)$(ProjectName)_VC2015.exe</OutputFile>
+      <AdditionalDependencies>zlibstatmt.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -209,6 +212,8 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -218,7 +223,7 @@
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>src;src\wpc;src\windows;src\vc;src\cpu\m68000\generated_by_m68kmake;ext\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DISABLE_DX7;__LP64__;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_MBCS;LSB_FIRST;CLIB_DECL=__cdecl;DECL_SPEC=__cdecl;inline=__inline;__inline__=__inline;INLINE=__inline;DIRECTINPUT_VERSION=0x0700;DIRECTDRAW_VERSION=0x0300;NONAMELESSUNION;_WINDOWS;ZLIB_WINAPI;MAMEVER=7300;PINMAME;PINMAME_DLL;PINMAME_NO_UNUSED;_XKEYCHECK_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -230,6 +235,9 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -239,13 +247,15 @@
       <AdditionalDependencies>zlibstatmt64.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>ext\dinput;ext\zlib\lib_vc9;D:\Program Files (x86)\Microsoft DirectX SDK (August 2007)\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>ext\zlib\lib_vc9;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "../../../UP2Dev/UP2Unity/"
@@ -904,6 +914,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\vidhrdw\tms9928a.c" />
     <ClCompile Include="src\vidhrdw\vector.c" />
     <ClCompile Include="src\windows\fronthlp.c" />
+    <ClCompile Include="src\windows\jit.c" />
+    <ClCompile Include="src\windows\jitemit.c" />
     <ClCompile Include="src\windows\rc.c" />
     <ClCompile Include="src\windows\ticker.c" />
     <ClCompile Include="src\wpc\allied.c" />
@@ -1228,6 +1240,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\vidhrdw\generic.h" />
     <ClInclude Include="src\vidhrdw\tms9928a.h" />
     <ClInclude Include="src\vidhrdw\vector.h" />
+    <ClInclude Include="src\windows\jit.h" />
+    <ClInclude Include="src\windows\jitemit.h" />
     <ClInclude Include="src\windows\rc.h" />
     <ClInclude Include="src\wpc\alvg.h" />
     <ClInclude Include="src\wpc\alvgdmd.h" />
@@ -1285,7 +1299,6 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   </ItemGroup>
   <ItemGroup>
     <None Include="src\sound\vtxsmpls.inc" />
-    <None Include="VPinMAME_VC2015.vcxproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
