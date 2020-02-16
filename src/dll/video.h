@@ -50,8 +50,6 @@ extern UINT8		blit_swapxy;
 //	PROTOTYPES
 //============================================================
 
-void win_orient_rect(struct rectangle *rect);
-void win_disorient_rect(struct rectangle *rect);
 void throttle_speed_part(int part, int totalparts);
 void SetThrottleAdj(int Adj);
 

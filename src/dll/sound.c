@@ -1,16 +1,9 @@
-#include <stdarg.h>
-#include <ctype.h>
-#include <time.h>
+#include <stdio.h>
 #include "driver.h"
-//#include "misc.h"
-#include "video.h"
 #include "rc.h"
-#include "fileio.h"
 
 #include "dllsound.h"
-#include "usrintrf.h"
 
-#include <math.h>
 //============================================================
 //	GLOBAL VARIABLES
 //============================================================
@@ -103,14 +96,14 @@ Of course that value is not necessarily an integer so at least a +/- 1
 adjustment is necessary to avoid drifting over time.
 */
 
-int currentWritingBufferPos = 0;
-int currentStreamingBufferPos = -1; // -1 means not ready
-int streamingBufSize = -1; // Hold the data to be out using get pending
-int stream_buffer_size;
+static int currentWritingBufferPos = 0;
+static int currentStreamingBufferPos = -1; // -1 means not ready
+static int streamingBufSize = -1; // Hold the data to be out using get pending
+static int stream_buffer_size;
 
-INT16* streamingBuf = NULL;
-int streamingBufferInitialized = 0;
-int writingToStreamDiff = 0;
+static INT16* streamingBuf = NULL;
+static int streamingBufferInitialized = 0;
+static int writingToStreamDiff = 0;
 
 int osd_start_audio_stream(int stereo)
 {
@@ -147,10 +140,8 @@ int osd_start_audio_stream(int stereo)
 	return samples_this_frame;
 }
 
-//cycles_t lastUpdate = 0;
-//int tmp = 0;
-
-void update_sample_adjustment(int buffered);
+//static cycles_t lastUpdate = 0;
+//static int tmp = 0;
 
 int osd_update_audio_stream(INT16 *buf)
 {
@@ -213,14 +204,15 @@ void forceResync()
 	writingToStreamDiff = writing_advance;
 }
 
-cycles_t last = 0;
-int lastStreamingBuffer = -1;
-int fillAudioBuffer(float *dest, int outChannels, int maxSamples)
+//static cycles_t last = 0;
+
+int fillAudioBuffer(float *const __restrict dest, const int outChannels, const int maxSamples)
 {
+	int nbOut = streamingBufSize;
+
 	if (g_fPause)
 		return 0;
 
-	int i = 0;
 	if (!streamingBufferInitialized)
 		return 0;
 
@@ -234,15 +226,15 @@ int fillAudioBuffer(float *dest, int outChannels, int maxSamples)
 	//printf("Fill: %d\n",(cyc-last));
 	//last = cyc;
 
-	int nbOut = streamingBufSize;
 	if (nbOut > maxSamples)
 		nbOut = maxSamples;
 
 	if (channels == outChannels) // stereo to stereo or mono to mono
 	{
-		for (int i = 0; i < nbOut; i++)
+		int i;
+		for (i = 0; i < nbOut; i++)
 		{
-			dest[i] = ((float)streamingBuf[currentStreamingBufferPos] / 32768.0f);
+			dest[i] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
 			currentStreamingBufferPos++;
 			if (currentStreamingBufferPos > stream_buffer_size)
 				currentStreamingBufferPos = 0;
@@ -253,11 +245,12 @@ int fillAudioBuffer(float *dest, int outChannels, int maxSamples)
 	else
 	if(channels == 1 && outChannels == 2) // Mono to stereo
 	{
-		int nbToRead = nbOut / 2;
+		const int nbToRead = nbOut / 2;
 		int outPos = 0;
-		for (int i = 0; i < nbToRead; i++)
+		int i;
+		for (i = 0; i < nbToRead; i++)
 		{
-			dest[outPos] = ((float)streamingBuf[currentStreamingBufferPos] / 32768.0f);
+			dest[outPos    ] = (float)streamingBuf[currentStreamingBufferPos] * (float)(1./32768.0);
 			dest[outPos + 1] = dest[outPos]; // Copy the mono on both out left and right
 			outPos += 2;
 			currentStreamingBufferPos++;

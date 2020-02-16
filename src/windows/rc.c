@@ -29,6 +29,7 @@ Version 0.3, Februari 2000
 -Reworked and cleaned up the interface, broke backward compatibility (Hans
  de Goede)
 */
+
 #include <stdlib.h>
 #include <string.h>
 //#include <pwd.h>
