@@ -17,7 +17,7 @@
 #include "BasicBitmap.h"
 #include "BasicBitmap_C.h"
 
-#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(__LP64__)
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
 	#define _COMPILE_WITH_SSE2
 #endif
 
