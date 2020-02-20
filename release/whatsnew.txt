@@ -20,12 +20,13 @@ Doubled ZC frequency for Joctronic games, saving NVRAM
 Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
 Fixed a bug in the TMS9995 emulation concerning port data writes
 Fixed a default volume issue with the AY8910 / YM2203
+Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
 New:
 Sport Matic: Flashman
 Jac van Ham: Ice Mania
-             Formula 1 (no schematics available, so work in progress but looking good already)
+             Formula 1 (sound sometimes slows down during game)
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
