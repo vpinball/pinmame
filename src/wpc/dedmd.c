@@ -498,9 +498,9 @@ PINMAME_VIDEO_UPDATE(dedmd16_update) {
       UINT32 tmp2 = frame[2];
       UINT32 tmp3 = frame[3];
       for (kk = 0; kk < 32; kk++) {
-		//If both dots are lit, we use color 3, but if only 1, we use 1.
-        *line++ = (tmp2 & 0x01) + (tmp0 & 0x01) + 1*(tmp2 & tmp0 & 0x01);
-        *line++ = (tmp3 & 0x01) + (tmp1 & 0x01) + 1*(tmp3 & tmp1 & 0x01);
+        //If both dots are lit, we use color 3, but if only 1, we use 1.
+        *line++ = (tmp2 & 0x01) + (2 * (tmp0 & 0x01));
+        *line++ = (tmp3 & 0x01) + (2 * (tmp1 & 0x01));
         tmp0 >>= 1; tmp1 >>= 1; tmp2 >>= 1; tmp3 >>= 1;
       }
       frame += 4;
