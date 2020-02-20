@@ -34,7 +34,7 @@
 ** Normal #defines follow.
 */
 
-#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(__LP64__)
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64)
  #define RESAMPLER_SSE_OPT
 #else
  #pragma message ( "Warning: No SSE2 optimizations for Resampler enabled" )
