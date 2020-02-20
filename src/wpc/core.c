@@ -16,7 +16,7 @@
  #include <windows.h>
 #endif
 #if defined(VPINMAME) || defined(PINMAME_DLL)
-#include "dmddevice.h"
+ #include "dmddevice.h"
 
  UINT8  g_raw_dmdbuffer[DMD_MAXY*DMD_MAXX];
  UINT32 g_raw_colordmdbuffer[DMD_MAXY*DMD_MAXX];
