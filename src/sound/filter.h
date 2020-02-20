@@ -19,7 +19,7 @@ typedef int filter_real;
 typedef float filter_real;
 #endif
 
-#if (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(__LP64__)
+#if (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(_M_X64) || defined(_M_AMD64)
  #define SSE_FILTER_OPT
 #else
  #pragma message ( "Warning: No SSE optimizations for Filter enabled" )
