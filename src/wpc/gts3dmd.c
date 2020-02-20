@@ -45,11 +45,11 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   int ii,jj,kk,ll;
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
-
-  memset(dotCol,0,sizeof(tDMDDot));
 #ifdef VPINMAME
   int i = 0;
 #endif
+
+  memset(dotCol,0,sizeof(tDMDDot));
   for (ii = 0; ii < frames; ii++) {
     for (jj = 1; jj <= 32; jj++) {           // 32 lines
       UINT8 *line = &dotCol[jj][0];
@@ -94,6 +94,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   int *level = GTS3_dmdlocals[0].color_mode == 0 ? level4_a : (GTS3_dmdlocals[0].color_mode == 1 ? level4_b : level5);
 
 #ifdef VPINMAME
+  int i = 0;
   g_raw_gtswpc_dmdframes = frames;
 #endif
 
@@ -106,9 +107,6 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   /* Drawing is not optimised so just clear everything */
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
   memset(dotCol,0,sizeof(tDMDDot));
-#ifdef VPINMAME
-  int i = 0;
-#endif
   for (ii = 0; ii < frames; ii++) {
     for (jj = 1; jj <= 32; jj++) {          // 32 lines
       UINT8 *line = &dotCol[jj][0];
