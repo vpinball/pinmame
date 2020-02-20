@@ -1,4 +1,3 @@
-#undef inline //!! meh, do via proj preprocessor settings instead!
 #include "PinMAMEdll.h"
 
 //============================================================
