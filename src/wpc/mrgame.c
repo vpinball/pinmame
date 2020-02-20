@@ -654,8 +654,6 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
 	int tile = 0;
 	int flipx=0;
 	int flipy=0;
-	int sx=0;
-	int sy=0;
 
 #ifdef MAME_DEBUG
 
@@ -688,8 +686,8 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 		{
 //			dirtybuffer[offs] = 0;
 
-			sx = offs % 32;
-			sy = offs / 32;
+			unsigned int sx = (unsigned int)offs % 32;
+			unsigned int sy = (unsigned int)offs / 32;
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
@@ -713,8 +711,8 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
 	for (offs = 0x40; offs < 0x60; offs += 4)
 	{
-		sx = mrgame_objectram[offs + 3] + 1;
-		sy = 240 - mrgame_objectram[offs];
+		unsigned int sx = mrgame_objectram[offs + 3] + 1;
+		unsigned int sy = 240 - mrgame_objectram[offs];
 		flipx = mrgame_objectram[offs + 1] & 0x40;
 		flipy = mrgame_objectram[offs + 1] & 0x80;
 		tile = (mrgame_objectram[offs + 1] & 0x3f) +
