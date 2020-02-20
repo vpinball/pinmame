@@ -24,6 +24,7 @@ static struct {
   UINT8 digit, latch, snd;
   int irq, irqenable, irqlevel, zc, zcenable;
   int bcd, col;
+  UINT16 dispAddr[8];
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -574,7 +575,7 @@ CORE_GAMEDEFNV(movmastr,"Movie Masters",19??,"Jac Van Ham (Royal)",jvh2,0)
  Formula 1 uses different hardware:
  ---------
  CPU:   TMS9995
- IO:    CPU ports
+ IO:    CPU ports, only display seems to use DMA
  SOUND: 2x M6809 CPU, AY2203 including its FM channel, AY3812, DAC for percussion samples
 */
 static MACHINE_INIT(jvh3) {
@@ -583,7 +584,29 @@ static MACHINE_INIT(jvh3) {
 }
 
 static INTERRUPT_GEN(vblank3) {
+  static int dispCnt;
+  static int killFastSols;
+  UINT16 segs;
+  int i;
+
+  if (killFastSols && !(--killFastSols)) {
+    coreGlobals.solenoids &= 0xfffffff8;
+  }
+  if (!killFastSols && coreGlobals.solenoids & 0x7) {
+    killFastSols = 3;
+  }
+
   core_updateSw(core_getSol(4));
+
+  for (i = 0; i < 32; i++) {
+    segs = core_ascii2seg16[memory_region(REGION_CPU1)[locals.dispAddr[(dispCnt < 8 ? 0 : 1) + 2 * (i / 8)] + i % 8]];
+#ifdef MAME_DEBUG
+    coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x3f) | (segs & 0x0840 ? 0x40 : 0) | (segs & 0x2200 ? 0x06 : 0);
+#else
+    coreGlobals.segments[i].w = segs;
+#endif
+  }
+  dispCnt++; if (dispCnt > 16) dispCnt = 0;
 }
 
 static INTERRUPT_GEN(irq3) {
@@ -599,20 +622,17 @@ static SWITCH_UPDATE(jvh3) {
   }
 }
 
-static WRITE_HANDLER(disp_w) {
-  memory_region(REGION_CPU1)[0xf980 + offset] = data;
-  coreGlobals.segments[offset].w = core_ascii2seg16[data];
-}
-
 static WRITE_HANDLER(disp3_w) {
-  UINT16 digit = core_ascii2seg16[data];
-  memory_region(REGION_CPU1)[0xf8b8 + offset] = data;
-  coreGlobals.segments[16 + offset].w = (digit & 0x3f) | (digit & 0x0840 ? 0x40 : 0) | (digit & 0x0300 ? 0x06 : 0);
+  memory_region(REGION_CPU1)[0xf8a0 + offset] = data;
+  if (offset & 1) {
+    locals.dispAddr[offset / 2] = (locals.dispAddr[offset / 2] & 0xff00) | data;
+  } else {
+    locals.dispAddr[offset / 2] = (locals.dispAddr[offset / 2] & 0x00ff) | (data << 8);
+  }
 }
 
 static MEMORY_WRITE_START(writemem3)
-  { 0xf8b8, 0xf8bf, disp3_w },
-  { 0xf980, 0xf98f, disp_w },
+  { 0xf8a0, 0xf8af, disp3_w },
   { 0xf800, 0xffff, MWA_RAM, &generic_nvram, &generic_nvram_size },
 MEMORY_END
 
@@ -622,15 +642,22 @@ static MEMORY_READ_START(readmem3)
 MEMORY_END
 
 static WRITE_HANDLER(port_w) {
-  if (offset >= 0x20 && offset <= 0x5f)
+  static UINT8 latch;
+  if (offset <= 0x07)
+    latch = (latch & ~(1 << offset)) | (data << offset);
+  else if (offset == 0x08 || offset == 0x09)
+    logerror("Port %02x: %x latch %02x\n", offset, data, latch);
+  else if (offset >= 0x11 && offset <= 0x13) // very short pulses, maybe flashers?
+    coreGlobals.solenoids |= data << (offset - 0x11);
+  else if (offset >= 0x20 && offset <= 0x5f)
     coreGlobals.lampMatrix[(offset - 0x20) / 8] = (coreGlobals.lampMatrix[(offset - 0x20) / 8] & ~(1 << (offset % 8))) | (data << (offset % 8));
-  else if (offset >= 0x60 && offset <= 0x7f)
+  else if (offset >= 0x63 && offset <= 0x7f)
     coreGlobals.solenoids = (coreGlobals.solenoids & ~(1 << (offset - 0x60))) | (data << (offset - 0x60));
   else if (offset >= 0x80 && offset <= 0x82)
     coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & ~(1 << (offset - 0x80))) | (data << (offset - 0x80));
-  else if (offset == 0x85 && data)
-    sndbrd_0_data_w(0, locals.snd);
-  else if (offset >= 0x88 && offset <= 0x8f)
+  else if (offset == 0x85) {
+    if (data) sndbrd_0_data_w(0, locals.snd);
+  } else if (offset >= 0x88 && offset <= 0x8f)
     locals.snd = (locals.snd & ~(1 << (offset - 0x88))) | (data << (offset - 0x88));
   else if (offset >= 0x90 && offset <= 0x96)
     locals.col = (locals.col & ~(1 << (offset - 0x90))) | (data << (offset - 0x90));
@@ -887,7 +914,11 @@ INPUT_PORTS_END
 
 static core_tLCDLayout dispJVH3[] = {
   {0, 0, 0,8,CORE_SEG16}, {0,18, 8,8,CORE_SEG16},
+#ifdef MAME_DEBUG
   {3, 0,16,8,CORE_SEG7},  {3,18,24,8,CORE_SEG7},
+#else
+  {3, 0,16,8,CORE_SEG16}, {3,18,24,8,CORE_SEG16},
+#endif
   {0}
 };
 
@@ -900,4 +931,4 @@ ROM_START(formula1)
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("f1_samples.bin", 0x0000, 0x10000, CRC(ecb7ff04) SHA1(1c11c8ce62ec2f0a4f7dae3b1661baddb04ad55a))
 ROM_END
-CORE_GAMEDEFNV(formula1,"Formula 1",1988,"Jac Van Ham (Royal)",jvh3,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(formula1,"Formula 1",1988,"Jac Van Ham (Royal)",jvh3,GAME_IMPERFECT_SOUND)
