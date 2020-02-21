@@ -1170,6 +1170,9 @@
     <ClCompile Include="src\windows\jitemit.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\win32com\Alias.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
