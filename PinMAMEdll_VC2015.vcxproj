@@ -175,11 +175,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CustomBuildStep>
-      <Message>Copying to root and generating gamelist.txt...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-"$(ProjectDir)$(TargetFileName)" -gamelist -noclones -sortname &gt;"$(ProjectDir)$(TargetName)_gamelist.txt"
-</Command>
-      <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
+      <Message>Copying to root...</Message>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
+      <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -229,9 +227,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildStep>
-      <Message>Copying to root and generating gamelist.txt...</Message>
+      <Message>Copying to root...</Message>
       <Command>copy /Y "$(TargetPath)" "$(ProjectDir)"</Command>
-      <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName)_gamelist.txt;%(Outputs)</Outputs>
+      <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -286,9 +284,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -326,9 +322,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -367,8 +361,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -405,8 +398,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with MAME Debugger|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -443,9 +435,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|Win32'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -483,9 +473,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with MAME Debugger|x64'">
     <CustomBuildStep>
       <Message>Copying to root...</Message>
-      <Command>copy "$(TargetPath)" "$(ProjectDir)"
-copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
-</Command>
+      <Command>copy "$(TargetPath)" "$(ProjectDir)"</Command>
       <Outputs>$(ProjectDir)$(TargetFileName);$(ProjectDir)$(TargetName).pdb;%(Outputs)</Outputs>
     </CustomBuildStep>
     <ClCompile>
@@ -565,6 +553,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\unzip.c" />
     <ClCompile Include="src\usrintrf.c" />
     <ClCompile Include="src\version.c" />
+    <ClCompile Include="src\win32com\Alias.cpp" />
     <ClCompile Include="src\window.c" />
     <ClCompile Include="src\cpu\adsp2100\2100dasm.c" />
     <ClCompile Include="src\cpu\adsp2100\2100ops.c">

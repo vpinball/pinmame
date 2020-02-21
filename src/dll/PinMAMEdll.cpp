@@ -33,6 +33,7 @@ void CloseConsole()
 #endif
 
 #include <thread>
+#include <../win32com/Alias.h> //!! move that one to some platform independent section
 
 extern "C"
 {
@@ -63,6 +64,8 @@ extern "C"
 	UINT8 win_trying_to_quit;
 	volatile int g_fPause = 0;
 	volatile int g_fDumpFrames = 0;
+
+	char g_szGameName[256] = "";			// String containing requested game name (may be different from ROM if aliased)
 
 	extern int channels;
 
@@ -157,7 +160,7 @@ PINMAMEDLL_API void SetSampleRate(int sampleRate)
 // Game related functions
 // ---------------------
 
-PINMAMEDLL_API int StartThreadedGame(char* gameName, bool showConsole)
+PINMAMEDLL_API int StartThreadedGame(char* gameNameOrg, bool showConsole)
 {
 #ifdef ENABLE_CONSOLE_DEBUG
 	if (showConsole)
@@ -165,7 +168,10 @@ PINMAMEDLL_API int StartThreadedGame(char* gameName, bool showConsole)
 #endif
 	rc = cli_rc_create();
 
-	int game_index = GetGameNumFromString(gameName);
+	strcpy_s(g_szGameName, gameNameOrg);
+	const char* const gameName = checkGameAlias(g_szGameName);
+
+	const int game_index = GetGameNumFromString(const_cast<char*>(gameName));
 	if (game_index < 0)
 		return -1;
 
@@ -192,7 +198,6 @@ PINMAMEDLL_API int StartThreadedGame(char* gameName, bool showConsole)
 	setPath(FILETYPE_MEMCARD, composePath(g_vpmPath, "memcard"));
 	setPath(FILETYPE_STATE, composePath(g_vpmPath, "sta"));
 
-
 	printf("GameIndex: %d\n", game_index);
 	pRunningGame = new std::thread(gameThread, game_index);
 
@@ -211,8 +216,6 @@ void StopThreadedGame(bool locking)
 		printf("Waiting for clean exit...\n");
 		pRunningGame->join();
 	}
-
- 
 
 	delete(pRunningGame);
 	pRunningGame = nullptr;
@@ -309,7 +312,7 @@ PINMAMEDLL_API int GetMaxLamps() {	return CORE_MAXLAMPCOL * 8; }
 PINMAMEDLL_API int GetChangedLamps(int* changedStates)
 {
 	vp_tChgLamps chgLamps;
-	int uCount = vp_getChangedLamps(chgLamps);
+	const int uCount = vp_getChangedLamps(chgLamps);
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
@@ -327,7 +330,7 @@ PINMAMEDLL_API int GetMaxSolenoids() { return 64; }
 PINMAMEDLL_API int GetChangedSolenoids(int* changedStates)
 {
 	vp_tChgSols chgSols;
-	int uCount = vp_getChangedSolenoids(chgSols);
+	const int uCount = vp_getChangedSolenoids(chgSols);
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
@@ -345,7 +348,7 @@ PINMAMEDLL_API int GetMaxGIStrings() { return CORE_MAXGI; }
 PINMAMEDLL_API int GetChangedGIs(int* changedStates)
 {
 	vp_tChgGIs chgGIs;
-	int uCount = vp_getChangedGI(chgGIs);
+	const int uCount = vp_getChangedGI(chgGIs);
 
 	int* out = changedStates;
 	for (int i = 0; i < uCount; i++)
@@ -365,8 +368,6 @@ int osd_init(void)
 	printf("osd_init\n");
 	return 0;
 }
-
-
 
 //============================================================
 //	osd_exit

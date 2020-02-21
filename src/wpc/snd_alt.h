@@ -1,3 +1,4 @@
+#include <time.h>
 #include <dirent.h>
 #include <unistd.h>
 #include "..\ext\bass\bass.h"
@@ -30,6 +31,10 @@ typedef struct _csvreader { // to read the data via a csv file
 	int n_fields;
 	char** fields;			// current row split in fields
 } CsvReader;
+
+int csv_get_colnumber_for_field(CsvReader* c, const char* fieldname);
+int csv_get_hex_field(CsvReader* const c, const int field_index, int* pValue);
+int csv_get_int_field(CsvReader* const c, const int field_index, int* pValue);
 
 #define CSV_MAX_LINE_LENGTH 512
 #define CSV_SUCCESS 0
