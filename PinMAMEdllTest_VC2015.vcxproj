@@ -234,7 +234,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>PinMAMEdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PinMAMEdll64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)_VC2015.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>obj\VC2015\PinMAMEdll\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
