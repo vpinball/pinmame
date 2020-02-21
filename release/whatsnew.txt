@@ -24,9 +24,9 @@ Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
 New:
+Jac van Ham: Formula 1 (sound sometimes slows down during game)
+             Ice Mania
 Sport Matic: Flashman
-Jac van Ham: Ice Mania
-             Formula 1 (sound sometimes slows down during game)
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)

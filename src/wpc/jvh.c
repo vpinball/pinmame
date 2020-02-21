@@ -24,7 +24,6 @@ static struct {
   UINT8 digit, latch, snd;
   int irq, irqenable, irqlevel, zc, zcenable;
   int bcd, col;
-  UINT16 dispAddr[8];
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -598,15 +597,17 @@ static INTERRUPT_GEN(vblank3) {
 
   core_updateSw(core_getSol(4));
 
-  for (i = 0; i < 32; i++) {
-    segs = core_ascii2seg16[memory_region(REGION_CPU1)[locals.dispAddr[(dispCnt < 8 ? 0 : 1) + 2 * (i / 8)] + i % 8]];
+  for (i = 0; i < 40; i++) {
+  	segs = 0xf8a0 + 4 * (i / 8) + (dispCnt < 8 ? 0 : 2);
+  	segs = (memory_region(REGION_CPU1)[segs] << 8) | memory_region(REGION_CPU1)[segs + 1];
+    segs = core_ascii2seg16[0x7f & memory_region(REGION_CPU1)[segs + i % 8]];
 #ifdef MAME_DEBUG
-    coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x3f) | (segs & 0x0840 ? 0x40 : 0) | (segs & 0x2200 ? 0x06 : 0);
+    coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x3f) | (segs & 0x840 ? 0x40 : 0) | ((segs & 0x200) >> 8) | ((segs & 0x2000) >> 11);
 #else
     coreGlobals.segments[i].w = segs;
 #endif
   }
-  dispCnt++; if (dispCnt > 16) dispCnt = 0;
+  dispCnt = (dispCnt + 1) % 16;
 }
 
 static INTERRUPT_GEN(irq3) {
@@ -622,17 +623,7 @@ static SWITCH_UPDATE(jvh3) {
   }
 }
 
-static WRITE_HANDLER(disp3_w) {
-  memory_region(REGION_CPU1)[0xf8a0 + offset] = data;
-  if (offset & 1) {
-    locals.dispAddr[offset / 2] = (locals.dispAddr[offset / 2] & 0xff00) | data;
-  } else {
-    locals.dispAddr[offset / 2] = (locals.dispAddr[offset / 2] & 0x00ff) | (data << 8);
-  }
-}
-
 static MEMORY_WRITE_START(writemem3)
-  { 0xf8a0, 0xf8af, disp3_w },
   { 0xf800, 0xffff, MWA_RAM, &generic_nvram, &generic_nvram_size },
 MEMORY_END
 
@@ -916,6 +907,7 @@ static core_tLCDLayout dispJVH3[] = {
   {0, 0, 0,8,CORE_SEG16}, {0,18, 8,8,CORE_SEG16},
 #ifdef MAME_DEBUG
   {3, 0,16,8,CORE_SEG7},  {3,18,24,8,CORE_SEG7},
+  {6, 0,32,8,CORE_SEG7},
 #else
   {3, 0,16,8,CORE_SEG16}, {3,18,24,8,CORE_SEG16},
 #endif
