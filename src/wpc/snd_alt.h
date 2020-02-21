@@ -202,7 +202,7 @@ void alt_sound_handle(int boardNo, int cmd)
 			DIR* dir;
 
 			CsvReader* c;
-			unsigned int PATH_LEN;
+			size_t PATH_LEN;
 			char* PATH;
 
 			srand(time(NULL)); // randomize random number generator seed
@@ -327,7 +327,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				{
 					const char* const subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
 
-					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
+					const size_t PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
 					DIR *dir;
 					struct dirent *entry;
 					PATH = (char*)malloc(PATHl);
@@ -355,7 +355,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							struct dirent backup_entry = *entry;
 							struct dirent *entry2;
 
-							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
+							const size_t PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
 							char* const PATH2 = (char*)malloc(PATH2l);
 							strcpy_s(PATH2, PATH2l, PATH);
 							strcat_s(PATH2, PATH2l, entry->d_name);
@@ -397,7 +397,7 @@ void alt_sound_handle(int boardNo, int cmd)
 				for (i = 0; i < 5; ++i)
 				{
 					const char* subpath = (i == 0) ? path_jingle : ((i == 1) ? path_music : ((i == 2) ? path_sfx : ((i == 3) ? path_single : path_voice)));
-					const unsigned int PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
+					const size_t PATHl = strlen(cvpmd) + strlen(path_main) + strlen(g_szGameName) + 1 + strlen(subpath) + 1;
 					char* const PATH = (char*)malloc(PATHl);
 					DIR *dir;
 					struct dirent *entry;
@@ -427,7 +427,7 @@ void alt_sound_handle(int boardNo, int cmd)
 						continue;
 					}
 					{
-						const unsigned int PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
+						const size_t PATHGl = strlen(PATH) + strlen("gain.txt") + 1;
 						char* const PATHG = (char*)malloc(PATHGl);
 						FILE *f;
 						strcpy_s(PATHG, PATHGl, PATH);
@@ -441,7 +441,7 @@ void alt_sound_handle(int boardNo, int cmd)
 						free(PATHG);
 					}
 					{
-						const unsigned int PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
+						const size_t PATHGl = strlen(PATH) + strlen("ducking.txt") + 1;
 						char* const PATHG = (char*)malloc(PATHGl);
 						FILE *f;
 						strcpy_s(PATHG, PATHGl, PATH);
@@ -463,7 +463,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							const DIR backup_dir = *dir;
 							struct dirent backup_entry = *entry;
 
-							const unsigned int PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
+							const size_t PATH2l = strlen(PATH) + strlen(entry->d_name) + 1;
 							char* const PATH2 = (char*)malloc(PATH2l);
 							unsigned int gain = default_gain;
 							int ducking = default_ducking;
@@ -474,7 +474,7 @@ void alt_sound_handle(int boardNo, int cmd)
 							strcat_s(PATH2, PATH2l, entry->d_name);
 
 							{
-								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
+								const size_t PATHGl = strlen(PATH2) + 1 + strlen("gain.txt") + 1;
 								char* const PATHG = (char*)malloc(PATHGl);
 								FILE *f;
 
@@ -490,7 +490,7 @@ void alt_sound_handle(int boardNo, int cmd)
 								free(PATHG);
 							}
 							{
-								const unsigned int PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
+								const size_t PATHGl = strlen(PATH2) + 1 + strlen("ducking.txt") + 1;
 								char* const PATHG = (char*)malloc(PATHGl);
 								FILE *f;
 
@@ -512,7 +512,7 @@ void alt_sound_handle(int boardNo, int cmd)
 						  {
 							  if (entry2->d_name[0] != '.' && strstr(entry2->d_name, ".txt") == 0)
 							  {
-								  const unsigned int PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
+								  const size_t PATH3l = strlen(PATH2) + 1 + strlen(entry2->d_name) + 1;
 								  char* const ptr = strrchr(PATH2, '\\');
 								  char id[7] = { 0, 0, 0, 0, 0, 0, 0 };
 
@@ -1010,7 +1010,7 @@ static int fgetline(char* const buff, const int nchars, FILE* const file)
 	if (buff[0] == '\r')
 		memmove(buff, buff + 1, nchars - 1);
 
-	length = strlen(buff);
+	length = (int)strlen(buff);
 	while (length && (buff[length - 1] == '\r' || buff[length - 1] == '\n'))
 		length--;
 	buff[length] = 0;
