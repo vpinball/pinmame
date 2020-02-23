@@ -12,6 +12,8 @@ Version 3.3 (X X, 2020) - ""
    myacdc,acd_170hc
   This can be used to allow to use different PUP or DOF profiles per game (for reskins and such).
 
+- fix the additional .raw/non-averaged file output dumping of GTS3 DMDs
+
 Version 3.2 (October 6th, 2019) - "Sounds good II"
 ------------------------------------------------------------------------------
 - Change the default of the 'ddraw' option to 0, which means that the faster (but less compatible nowadays) Direct Draw implementation of the window display is by default disabled
