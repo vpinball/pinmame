@@ -161,6 +161,7 @@ static WRITE_HANDLER(solenoid_w)
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
 	}
+   alvglocals.solenoids |= coreGlobals.pulsedSolState;
 }
 
 //See U7-PB Read for more info
@@ -526,17 +527,17 @@ static INTERRUPT_GEN(alvg_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids = alvglocals.solenoids;
   if ((alvglocals.vblankCount % ALVG_SOLSMOOTH) == 0) {
-	if (alvglocals.ssEn) {
-	  int ii;
-	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-	  /*-- special solenoids updated based on switches --*/
-	  for (ii = 0; ii < 6; ii++)
-		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-	}
-	alvglocals.solenoids = coreGlobals.pulsedSolState;
+     alvglocals.solenoids = coreGlobals.pulsedSolState;
+  }
+  coreGlobals.solenoids = alvglocals.solenoids;
+  if (alvglocals.ssEn) {
+     int ii;
+     coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+     /*-- special solenoids updated based on switches --*/
+     for (ii = 0; ii < 6; ii++)
+        if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+           coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL + ii);
   }
 
   /*update leds*/
