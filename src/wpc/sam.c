@@ -2065,6 +2065,7 @@ CORE_CLONEDEF(potc, 600gf, 600af, "Pirates of the Caribbean (V6.0 German, French
 /-------------------------------------------------------------------*/
 INITGAME(sman, GEN_SAM, sam_dmd128x32, SAM_2COL, SAM_NOMINI)
 
+SAM1_ROM32MB(sman_102af, "sman_102af.bin", CRC(1e77651c) SHA1(fbce7dbe4ce70cd8bd1c01279a774f410f5aaeff), 0x00fbb834)
 SAM1_ROM32MB(sman_130af, "sman_130af.bin", CRC(6aa6a03a) SHA1(f56442e84b8789f49127bf4ba97dd05c77ea7c36), 0x017916C8)
 SAM1_ROM32MB(sman_130ai, "sman_130ai.bin", CRC(92aab158) SHA1(51662102da54e7e7c0f63689fffbf70653ee8f11), 0x017B7960)
 SAM1_ROM32MB(sman_130al, "sman_130al.bin", CRC(33004e72) SHA1(3bc30200945d896aefbff51c7b427595885a23c4), 0x0180AAA0)
@@ -2113,6 +2114,7 @@ SAM1_ROM32MB(sman_262,   "sman_262a.bin",  CRC(9ad85331) SHA1(64a4b4087aee06b79d
 SAM_INPUT_PORTS_START(sman, 1)
 
 CORE_GAMEDEF(sman, 261, "Spider-Man (V2.61)", 2012, "Stern", sam1, 0)
+CORE_CLONEDEF(sman, 102af, 261, "Spider-Man (V1.02 English, French)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130af, 261, "Spider-Man (V1.30 English, French)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130ai, 261, "Spider-Man (V1.30 English, Italian)", 2007, "Stern", sam1, 0)
 CORE_CLONEDEF(sman, 130al, 261, "Spider-Man (V1.30 English, Spanish)", 2007, "Stern", sam1, 0)
