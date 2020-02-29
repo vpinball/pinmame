@@ -1757,11 +1757,12 @@ DRIVER(fg,1200af)       //S.A.M.: 01/08 Family Guy - V12.0 (English, French)
 DRIVER(fg,1200ag)       //S.A.M.: 01/08 Family Guy - V12.0 (English, German)
 DRIVER(fg,1200ai)       //S.A.M.: 01/08 Family Guy - V12.0 (English, Italian)
 DRIVER(fg,1200al)       //S.A.M.: 01/08 Family Guy - V12.0 (English, Spanish)
+DRIVER(sman,102af)      //S.A.M.: 05/07 Spider-Man - V1.02 (English, French)
 DRIVER(sman,130af)      //S.A.M.: 06/07 Spider-Man - V1.30 (English, French)
 DRIVER(sman,130ai)      //S.A.M.: 06/07 Spider-Man - V1.30 (English, Italian)
 DRIVER(sman,130al)      //S.A.M.: 06/07 Spider-Man - V1.30 (English, Spanish)
 DRIVER(sman,130gf)      //S.A.M.: 06/07 Spider-Man - V1.30 (German, French)
-DRIVER(sman,132)        //S.A.M.: ??/07 Spider-Man - V1.32
+DRIVER(sman,132)        //S.A.M.: 06/07 Spider-Man - V1.32
 DRIVER(sman,140)        //S.A.M.: ??/07 Spider-Man - V1.4
 DRIVER(sman,140af)      //S.A.M.: ??/07 Spider-Man - V1.4 (English, French)
 DRIVER(sman,140ai)      //S.A.M.: ??/07 Spider-Man - V1.4 (English, Italian)
