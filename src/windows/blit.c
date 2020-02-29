@@ -533,9 +533,9 @@ int win_perform_blit(const struct win_blit_params *blit, int update)
 		blit->swapxy != active_blitter_params.swapxy)
 	{
 		// allocate memory for the blitter code and mark it as executable to avoid an access violation
-		if (active_fast_blitter == NULL) active_fast_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (active_fast_blitter == NULL) active_fast_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		else VirtualProtect(active_fast_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE_READWRITE, &dw);
-		if (active_update_blitter == NULL) active_update_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (active_update_blitter == NULL) active_update_blitter = VirtualAlloc(NULL, MAX_BLITTER_SIZE, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		else VirtualProtect(active_update_blitter, MAX_BLITTER_SIZE, PAGE_EXECUTE_READWRITE, &dw);
 
 		generate_blitter(blit);

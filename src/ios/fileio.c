@@ -541,4 +541,3 @@ UINT64 osd_ftell(osd_file *file) {
 int osd_feof(osd_file *file) {
 	return (file->offset >= file->end);
 }
-
