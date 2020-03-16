@@ -22,9 +22,9 @@ Fixed a bug in the TMS9995 emulation concerning port data writes
 Fixed a default volume issue with the AY8910 / YM2203
 Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin
 New:
-Jac van Ham: Formula 1 (sound sometimes slows down during game)
+Jac van Ham: Formula 1
              Ice Mania
 Sport Matic: Flashman
 
@@ -32,6 +32,7 @@ Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
 Brave Team (Free Play)
 Canasta '86' (Free Play)
+Cirqus Voltaire (D.52 Prototype w/ support for old Ringmaster voice) - sound ROMs missing however
 Clown (Inder, Free Play)
 Corsario (Free Play)
 Creature from the Black Lagoon L-4C (competition MOD) (updated with LED Ghost Fix)

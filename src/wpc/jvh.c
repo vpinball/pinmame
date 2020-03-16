@@ -264,6 +264,8 @@ static SWITCH_UPDATE(jvh) {
 static struct {
   struct sndbrdData brdData;
   UINT8 cmd, via_b, cmd2;
+  mame_timer *timer;
+  int ignore;
 } sndlocals;
 
 static READ_HANDLER(jvh_via_a_r) {
@@ -283,6 +285,7 @@ static WRITE_HANDLER(jvh_data_w) {
 
   if (sndlocals.brdData.subType) { // Formula 1
     sndlocals.cmd = data;
+    sndlocals.ignore = 2;
     cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
     cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
     return;
@@ -297,17 +300,31 @@ static void jvh_irq(int state) {
   cpu_set_irq_line(sndlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static const struct via6522_interface jvh_via = {
+static void jvh_firq(int state) {
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static WRITE_HANDLER(vol2_w) {
+  static UINT8 last;
+  if (last != data) {
+    mixer_set_volume(4, (data & 0x0f) * 8);
+    last = data;
+  }
+}
+
+static const struct via6522_interface jvh_via[] = {{
   /*i: A/B,CA/B1,CA/B2 */ jvh_via_a_r, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ jvh_via_a_w, jvh_via_b_w, 0, 0,
   /*irq                */ jvh_irq
-};
+},{
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+  /*o: A/B,CA/B2       */ DAC_0_data_w, vol2_w, 0, 0,
+  /*irq                */ jvh_firq
+}};
 
 static void jvh_init(struct sndbrdData *brdData) {
-  if (!brdData->subType) { // Formula 1 does not have a sound VIA
-    via_reset();
-    via_config(0, &jvh_via);
-  }
+  via_reset();
+  via_config(0, &jvh_via[brdData->subType ? 1 : 0]);
   memset(&sndlocals, 0, sizeof(sndlocals));
   sndlocals.brdData = *brdData;
 }
@@ -582,6 +599,11 @@ static MACHINE_INIT(jvh3) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, NULL, NULL, NULL);
 }
 
+static MACHINE_RESET(jvh3) {
+  sndlocals.cmd = 0xff;
+  sndlocals.ignore = 2;
+}
+
 static INTERRUPT_GEN(vblank3) {
   static int dispCnt;
   static int killFastSols;
@@ -598,14 +620,10 @@ static INTERRUPT_GEN(vblank3) {
   core_updateSw(core_getSol(4));
 
   for (i = 0; i < 40; i++) {
-  	segs = 0xf8a0 + 4 * (i / 8) + (dispCnt < 8 ? 0 : 2);
-  	segs = (memory_region(REGION_CPU1)[segs] << 8) | memory_region(REGION_CPU1)[segs + 1];
+    segs = 0xf8a0 + 4 * (i / 8) + (dispCnt < 8 ? 0 : 2);
+    segs = (memory_region(REGION_CPU1)[segs] << 8) | memory_region(REGION_CPU1)[segs + 1];
     segs = core_ascii2seg16[0x7f & memory_region(REGION_CPU1)[segs + i % 8]];
-#ifdef MAME_DEBUG
-    coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x3f) | (segs & 0x840 ? 0x40 : 0) | ((segs & 0x200) >> 8) | ((segs & 0x2000) >> 11);
-#else
-    coreGlobals.segments[i].w = segs;
-#endif
+    coreGlobals.segments[i].w = i < 16 ? segs : (segs & 0x7f) | ((segs & 0x200) >> 8) | ((segs & 0x2000) >> 11);
   }
   dispCnt = (dispCnt + 1) % 16;
 }
@@ -675,10 +693,6 @@ PORT_END
 
 // sound section
 
-static INTERRUPT_GEN(firq1) {
-  cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
-}
-
 static READ_HANDLER(sndcmd_r) {
   return sndlocals.cmd;
 }
@@ -698,55 +712,73 @@ MEMORY_END
 
 static MEMORY_READ_START(snd_readmem3)
   { 0x0000, 0x0000, sndcmd_r },
+  { 0x2000, 0x2000, YM2203_status_port_0_r },
+  { 0x4000, 0x4000, YM3812_status_port_0_r },
   { 0x6000, 0x63ff, MRA_RAM },
   { 0xc000, 0xc000, ready_r },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
-static INTERRUPT_GEN(firq2) {
-  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_FIRQ_LINE, PULSE_LINE);
-}
-
+// keep code for nostalgic / documentary reasons: volume is determined by a 16-bit value composed by VIA registers
+/*
 static WRITE_HANDLER(vol_w) {
   static UINT16 vol;
   if (offset) vol = (vol & 0x00ff) | (data << 8); else vol = (vol & 0xff00) | data;
   mixer_set_volume(4, vol * 2 / 9);
 }
-
+*/
 static READ_HANDLER(sndcmd2_r) {
-  return sndlocals.cmd2;
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, CLEAR_LINE);
+  UINT8 cmd = sndlocals.cmd2;
+  sndlocals.cmd2 = 0xff;
+  return cmd;
 }
 
 static MEMORY_WRITE_START(snd_writemem4)
+  { 0x0000, 0x000f, via_0_w },
+/*
   { 0x0004, 0x0005, vol_w },
   { 0x000f, 0x000f, DAC_0_data_w },
-  { 0x0000, 0x007f, MWA_RAM },
-  { 0x0080, 0x009f, MWA_RAM },
+*/
+  { 0x0000, 0x00ff, MWA_RAM },
   { 0x2000, 0xffff, MWA_NOP },
 MEMORY_END
 
 static MEMORY_READ_START(snd_readmem4)
+  { 0x0000, 0x000f, via_0_r },
   { 0x0010, 0x0010, sndcmd2_r },
-  { 0x0000, 0x007f, MRA_RAM },
-  { 0x0080, 0x009f, MRA_RAM },
+  { 0x0000, 0x00ff, MRA_RAM },
   { 0x2000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static WRITE_HANDLER(ym2203_a_w) {
   sndlocals.cmd2 = data;
-  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, PULSE_LINE);
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, ASSERT_LINE);
+}
+
+static void snd_stop(int param) {
+  discrete_sound_w(2, 0);
 }
 
 static WRITE_HANDLER(ym2203_b_w) {
+  static int ignore = 1;
   static UINT8 old;
   if (old != data) {
-    logerror("YM2203 port B: %02x\n", data);
+    if (!ignore && !sndlocals.ignore) {
+      discrete_sound_w(1, data);
+      discrete_sound_w(2, 1);
+      if (!sndlocals.timer) sndlocals.timer = timer_alloc(snd_stop);
+      timer_reset(sndlocals.timer, 0.05);
+    } else {
+      if (ignore) ignore--;
+      else if (sndlocals.ignore) sndlocals.ignore--;
+    }
   }
   old = data;
 }
 
 static void ym2203_irq(int state) {
-// not used?
+  cpu_set_irq_line(sndlocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static struct YM2203interface ym2203_interface = {
@@ -760,11 +792,20 @@ static struct YM3812interface ym3812_interface = { 1, 1000000, { 60 }};
 
 static struct DACinterface dac_interface = { 1, { 30 }};
 
+static DISCRETE_SOUND_START(discInt)
+	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
+	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
+	DISCRETE_MULTADD(NODE_03,1,NODE_01,1,200)
+	DISCRETE_TRIANGLEWAVE(NODE_04,NODE_02,NODE_03,20000,10000,0)
+	DISCRETE_GAIN(NODE_05,NODE_04,1)
+	DISCRETE_OUTPUT(NODE_05,20)
+DISCRETE_SOUND_END
+
 // driver section
 
 MACHINE_DRIVER_START(jvh3)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(jvh3,jvh,NULL)
+  MDRV_CORE_INIT_RESET_STOP(jvh3,jvh3,NULL)
 
   MDRV_CPU_ADD_TAG("mcpu", TMS9995, 12000000)
   MDRV_CPU_MEMORY(readmem3, writemem3)
@@ -779,15 +820,13 @@ MACHINE_DRIVER_START(jvh3)
   MDRV_CPU_ADD_TAG("scpu", M6809, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem3, snd_writemem3)
-  MDRV_CPU_PERIODIC_INT(firq1, 133)
   MDRV_SOUND_ADD(YM2203, ym2203_interface)
   MDRV_SOUND_ADD(YM3812, ym3812_interface)
-  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(DISCRETE, discInt)
 
   MDRV_CPU_ADD_TAG("scpu2", M6809, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem4, snd_writemem4)
-  MDRV_CPU_PERIODIC_INT(firq2, 8000)
   MDRV_SOUND_ADD(DAC, dac_interface)
 MACHINE_DRIVER_END
 
@@ -905,11 +944,9 @@ INPUT_PORTS_END
 
 static core_tLCDLayout dispJVH3[] = {
   {0, 0, 0,8,CORE_SEG16}, {0,18, 8,8,CORE_SEG16},
-#ifdef MAME_DEBUG
   {3, 0,16,8,CORE_SEG7},  {3,18,24,8,CORE_SEG7},
+#ifdef MAME_DEBUG
   {6, 0,32,8,CORE_SEG7},
-#else
-  {3, 0,16,8,CORE_SEG16}, {3,18,24,8,CORE_SEG16},
 #endif
   {0}
 };
@@ -923,4 +960,4 @@ ROM_START(formula1)
   NORMALREGION(0x10000, REGION_CPU3)
     ROM_LOAD("f1_samples.bin", 0x0000, 0x10000, CRC(ecb7ff04) SHA1(1c11c8ce62ec2f0a4f7dae3b1661baddb04ad55a))
 ROM_END
-CORE_GAMEDEFNV(formula1,"Formula 1",1988,"Jac Van Ham (Royal)",jvh3,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(formula1,"Formula 1",1988,"Jac Van Ham (Royal)",jvh3,0)

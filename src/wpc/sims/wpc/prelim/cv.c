@@ -296,6 +296,14 @@ DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee) SHA1(f76c0db93b89beaf1e90c5f2199262e2
                 "s6v0_4.rom",CRC(36ca43d3) SHA1(b599f88649c220143aa44cd5213e725e62afb0bc))
 WPC_ROMEND
 
+WPC_ROMSTART(cv,d52, "cv_g11_d52.rom", 0x100000, CRC(2b6b2822) SHA1(177ddd826b7dee060d090cd79f972836a23d6df9))
+DCS_SOUNDROM5xm("s2v0_1.rom",NO_DUMP,
+                "s3v0_1.rom",NO_DUMP,
+                "s4v0_1.rom",NO_DUMP,
+                "s5v0_1.rom",NO_DUMP,
+                "s6v0_1.rom",NO_DUMP)
+WPC_ROMEND
+
 WPC_ROMSTART(cv,10, "g11_100.rom", 0x100000, CRC(00028589) SHA1(46639c45abbdc59ca0f861824eca3efa10547123))
 DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee) SHA1(f76c0db93b89beaf1e90c5f2199262e296fb1b78),
                 "s3v0_4.rom",CRC(8c6c0c56) SHA1(792431cc5b06c3d5028168297614f5eb7e8af34f),
@@ -326,6 +334,7 @@ WPC_ROMEND
 CORE_GAMEDEF(cv,14,"Cirqus Voltaire (1.4)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cv,20h, 14, "Cirqus Voltaire (2.0H)", 1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cv,20hc, 14, "Cirqus Voltaire (2.0H Coin Play)", 1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cv,d52, 14, "Cirqus Voltaire (D.52 Prototype)", 1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cv,10, 14, "Cirqus Voltaire (1.0)", 1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cv,11, 14, "Cirqus Voltaire (1.1)", 1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(cv,13, 14, "Cirqus Voltaire (1.3)", 1997,"Bally",wpc_m95S,0)
