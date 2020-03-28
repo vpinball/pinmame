@@ -30,7 +30,7 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ 80
+#define DMD32_FIRQFREQ 78.07 // real HW
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
@@ -173,7 +173,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 /*-----------------------------*/
 /*Data East 192x64 DMD Handling*/
 /*-----------------------------*/
-#define DMD64_IRQ2FREQ 150
+#define DMD64_IRQ2FREQ 74.72 // real HW
 
 static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
@@ -206,7 +206,7 @@ static MEMORY_WRITE16_START(dmd64_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(de_dmd64)
-  MDRV_CPU_ADD(M68000, 6000000)
+  MDRV_CPU_ADD(M68000, 12000000) // schematics
   MDRV_CPU_MEMORY(dmd64_readmem, dmd64_writemem)
   MDRV_CPU_PERIODIC_INT(dmd64_irq2, DMD64_IRQ2FREQ)
   MDRV_INTERLEAVE(50)

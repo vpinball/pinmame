@@ -1713,14 +1713,14 @@ static void cpu_timedintcallback(int param)
 
 --------------------------------------------------------------*/
 
-static double cpu_computerate(int value)
+static double cpu_computerate(double value)
 {
 	/* values equal to zero are zero */
-	if (value <= 0)
+	if (value <= 0.0)
 		return 0.0;
 
 	/* values above between 0 and 50000 are in Hz */
-	if (value < 50000)
+	if (value < 50000.0)
 		return TIME_IN_HZ(value);
 
 	/* values greater than 50000 are in nanoseconds */
@@ -1803,12 +1803,13 @@ static void cpu_inittimers(void)
 {
 	double first_time;
 	int cpunum, max, ipf;
+	double ipfd;
 
 	/* allocate a dummy timer at the minimum frequency to break things up */
 	ipf = Machine->drv->cpu_slices_per_frame;
 	if (ipf <= 0)
 		ipf = 1;
-	timeslice_period = TIME_IN_HZ(Machine->drv->frames_per_second * ipf);
+	timeslice_period = TIME_IN_HZ(Machine->drv->frames_per_second * (double)ipf);
 	timeslice_timer = timer_alloc(cpu_timeslicecallback);
 	timer_adjust(timeslice_timer, timeslice_period, 0, timeslice_period);
 	
@@ -1878,14 +1879,14 @@ static void cpu_inittimers(void)
 		/* compute the average number of cycles per interrupt */
 		if (ipf <= 0)
 			ipf = 1;
-		cpu[cpunum].vblankint_period = TIME_IN_HZ(Machine->drv->frames_per_second * ipf);
+		cpu[cpunum].vblankint_period = TIME_IN_HZ(Machine->drv->frames_per_second * (double)ipf);
 		cpu[cpunum].vblankint_timer = timer_alloc(NULL);
 
 		/* see if we need to allocate a CPU timer */
-		ipf = Machine->drv->cpu[cpunum].timed_interrupts_per_second;
-		if (ipf)
+		ipfd = Machine->drv->cpu[cpunum].timed_interrupts_per_second;
+		if (ipfd > 0.)
 		{
-			cpu[cpunum].timedint_period = cpu_computerate(ipf);
+			cpu[cpunum].timedint_period = cpu_computerate(ipfd);
 			cpu[cpunum].timedint_timer = timer_alloc(cpu_timedintcallback);
 			timer_adjust(cpu[cpunum].timedint_timer, cpu[cpunum].timedint_period, cpunum, cpu[cpunum].timedint_period);
 		}
