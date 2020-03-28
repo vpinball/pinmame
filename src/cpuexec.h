@@ -51,7 +51,7 @@ struct MachineCPU
 	void 		(*vblank_interrupt)(void);	/* for interrupts tied to VBLANK */
 	int 		vblank_interrupts_per_frame;/* usually 1 */
 	void 		(*timed_interrupt)(void);	/* for interrupts not tied to VBLANK */
-	int 		timed_interrupts_per_second;
+	double 		timed_interrupts_per_second;
 	void *		reset_param;				/* parameter for cpu_reset */
 	const char *tag;
 };
