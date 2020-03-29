@@ -116,12 +116,16 @@ static WRITE_HANDLER(motor_w) {
 }
 
 static READ_HANDLER(ay_r) {
+#if 0
   printf("r%d ", offset);
+#endif
   return 0;
 }
 
 static WRITE_HANDLER(ay_w) {
+#if 0
   printf("w%d:%02x ", offset, data);
+#endif
 }
 
 static MEMORY_WRITE_START(ice_writemem)

@@ -7,6 +7,8 @@
 #include "sim.h"
 #include "cpu/z80/z80.h"
 
+//#define VERBOSE_OUTPUT
+
 static struct {
   int    i8279cmd;
   int    i8279reg;
@@ -67,9 +69,12 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
     coreGlobals.lampMatrix[0] = data;
   else if (col > 7)
     coreGlobals.lampMatrix[1 + col - 8] = data;
+#ifdef VERBOSE_OUTPUT
   else if (data)
     printf("s %02x=%02x\n", locals.strobe, data);
+#endif
 }
+
 static WRITE_HANDLER(ay8910_1_portb_w)	{
   if (GET_BIT4) {
     cpu_set_irq_line(0, 0, ASSERT_LINE);
@@ -161,7 +166,9 @@ static WRITE_HANDLER(i8279_w) {
       cpu_set_irq_line(0, 0, CLEAR_LINE);
     } else if ((locals.i8279cmd & 0xe0) == 0)
       logerror("I8279 set modes: display %x, keyboard %x\n", (data >> 3) & 0x03, data & 0x07);
+#ifdef VERBOSE_OUTPUT
     else printf("i8279 w%d:%02x\n", offset, data);
+#endif
     if (locals.i8279cmd & 0x10) locals.i8279reg = data & 0x0f; // reset data for auto-increment
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
@@ -182,7 +189,10 @@ static WRITE_HANDLER(i8279_w) {
         coreGlobals.segments[16 + locals.i8279reg].w = core_bcd2seg7[data >> 4];
       }
       locals.cycle = (locals.cycle + 1) % 32;
-    } else printf("i8279 w%d:%02x\n", offset, data);
+    }
+#ifdef VERBOSE_OUTPUT
+    else printf("i8279 w%d:%02x\n", offset, data);
+#endif
     if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
   }
 }
@@ -580,7 +590,9 @@ static WRITE_HANDLER(i8279_w_cic) {
       cpu_set_irq_line(0, 0, CLEAR_LINE);
     } else if ((locals.i8279cmd & 0xe0) == 0)
       logerror("I8279 set modes: display %x, keyboard %x\n", (data >> 3) & 0x03, data & 0x07);
+#ifdef VERBOSE_OUTPUT
     else printf("i8279 w%d:%02x\n", offset, data);
+#endif
     locals.i8279reg = data & 0x0f; // set the data register even if the reset flag was not set!?
   } else { // data
     if ((locals.i8279cmd & 0xe0) == 0x80) { // write display ram
@@ -612,7 +624,10 @@ static WRITE_HANDLER(i8279_w_cic) {
       } else if (locals.i8279reg == 13) {
         coreGlobals.solenoids = (coreGlobals.solenoids & 0xf0fff) | ((data & 0x0f) << 12);
       }
-    } else printf("i8279 w%d:%02x\n", offset, data);
+    }
+#ifdef VERBOSE_OUTPUT
+    else printf("i8279 w%d:%02x\n", offset, data);
+#endif
     if (locals.i8279cmd & 0x10) locals.i8279reg = (locals.i8279reg+1) % 16; // auto-increase if register is set
   }
 }

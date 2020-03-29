@@ -192,7 +192,7 @@ UINT32 m_uNVoiced;
 UINT32 m_uNControlWords;
 
 // diagnostic output
-UINT32 m_uPrintLevel;
+static const UINT32 m_uPrintLevel = 0;
 
 UINT8 readmem(UINT16 offset, BOOL phase);
 BOOL Clock(void); // called once to toggle external clock twice
@@ -265,7 +265,7 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	m_uNPitchPeriods = 0;
 	m_uNVoiced = 0;
 	m_uNControlWords = 0;
-	m_uPrintLevel = 0;
+	//m_uPrintLevel = 0;
 
 	m_uOutputP1 = m_uOutputP2 = 7;
 
