@@ -728,8 +728,8 @@ static WRITE_HANDLER(vol_w) {
 }
 */
 static READ_HANDLER(sndcmd2_r) {
-  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, CLEAR_LINE);
   UINT8 cmd = sndlocals.cmd2;
+  cpu_set_irq_line(sndlocals.brdData.cpuNo + 1, M6809_IRQ_LINE, CLEAR_LINE);
   sndlocals.cmd2 = 0xff;
   return cmd;
 }

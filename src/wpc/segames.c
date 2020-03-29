@@ -505,6 +505,18 @@ SE_ROMEND
 #define input_ports_strikext input_ports_se
 CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",2000,"Stern",de_mSES2,0)
 
+SE128_ROMSTART(strxt100,"sxcpua.100", CRC(ee4742dd) SHA1(1b334f857ccb34f09eba69f3a40b589f6a712811))
+DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
+DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
+                  "sxsnda.u17",CRC(aeeed88f) SHA1(e150fd243feffcdc5d66487e840cefdfb50213da),
+                  "sxsnda.u21",CRC(62c9bfe3) SHA1(14a65a673a33b7e3d3005f76acf3098dc37958f8),
+                  "sxsnda.u36",CRC(a0bc0edb) SHA1(1025a28fe9a0e3681e8e99b513da29ec294da045),
+                  "sxsnda.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
+SE_ROMEND
+#define init_strxt100 init_strikext
+#define input_ports_strxt100 input_ports_se
+CORE_CLONEDEFNV(strxt100,strikext,"Striker Xtreme (1.00)",2000,"Stern",de_mSES2,0)
+
 SE128_ROMSTART(strxt_uk,"sxcpue.101", CRC(eac29785) SHA1(42e01c501b4a0a7eaae244040777be8ba69860d5))
 DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
 DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
