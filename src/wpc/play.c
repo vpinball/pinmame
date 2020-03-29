@@ -55,6 +55,8 @@ The IOS board common to all games provides sound effects through the CDP1863.
 #include "sndbrd.h"
 #include "cpu/cdp1802/cdp1802.h"
 
+//#define VERBOSE_OUTPUT
+
 enum { DISPCOL=1, DISPLAY, SOUND, SWITCH, DIAG, LAMPCOL, LAMP };
 
 /*----------------
@@ -295,8 +297,10 @@ static READ_HANDLER(in2_n) {
     case SWITCH:
       if (locals.digitSel < 6)
         return coreGlobals.swMatrix[locals.digitSel+2];
+#ifdef VERBOSE_OUTPUT
       else
         printf("digitSel = %d!\n", locals.digitSel);
+#endif
       break;
     case DIAG:
       if (locals.cpuType > 1) {
@@ -561,7 +565,9 @@ static READ_HANDLER(in_bingo) {
     case 2:
       return ~coreGlobals.swMatrix[1 + bitColToNum(locals.lampCol & 0x1f)];
     default:
+#ifdef VERBOSE_OUTPUT
       printf("unknown in %d\n", offset);
+#endif
       return 0;
   }
 }
@@ -579,7 +585,10 @@ static WRITE_HANDLER(out_bingo) {
       coreGlobals.tmpLampMatrix[0] = data;
       break;
     default:
+#ifdef VERBOSE_OUTPUT
       printf("%d:%02x ", offset, data);
+#endif
+      break;
   }
 }
 

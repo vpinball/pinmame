@@ -4,6 +4,8 @@
 #include "core.h"
 #include "cpu/i8039/i8039.h"
 
+//#define VERBOSE_OUTPUT
+
 static struct {
   int vblankCount;
   UINT8 p1, p2;
@@ -41,7 +43,11 @@ static READ_HANDLER(port_r) {
     // case 1: unused by code, possible expansion (J4-7)
     case 4: retVal = core_getDip(0); break;
     case 5: retVal = core_getDip(1); break;
-    case 6: retVal = core_getDip(3); printf("DIP3 used!!!"); break; // unused, so place it at the end and don't map it
+    case 6: retVal = core_getDip(3);
+#ifdef VERBOSE_OUTPUT
+      printf("DIP3 used!!!");
+#endif
+      break; // unused, so place it at the end and don't map it
     case 7: retVal = core_getDip(2); break;
   }
   return retVal;
@@ -122,7 +128,10 @@ static WRITE_HANDLER(port_w) {
       coreGlobals.segments[56 + col].w = dispBlank & 0x80 ? 0 : core_bcd2seg7[segData[3] >> 4];
       break;
     default:
+#ifdef VERBOSE_OUTPUT
       printf("%03x: W%x %02x: %02x\n", activecpu_get_previouspc(), locals.p2 >> 4, offset, data);
+#endif
+      break;
   }
 }
 

@@ -165,7 +165,7 @@ SND CPU #2 8255 PPI
 #include "sndbrd.h"
 #include "spinb.h"
 
-//#define VERBOSE 1
+//#define VERBOSE
 
 #ifdef VERBOSE
 #define LOG(x)	logerror x
