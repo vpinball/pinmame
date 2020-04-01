@@ -32,10 +32,11 @@
 // This length is determined by the settings of the W14 and W15 jumpers
 // It can be 0x300, 0x380, 0x700 or 0x780 cycles long.
 // IRQ length is always 32 cycles
-//#define S11_IRQCYCLES     0x380
+//#define S11_IRQ_CYCLES     0x380
 // PinWiki: 1ms IRQ signal (W14 in) or 2ms IRQ signal (W15 in), Data East seems to be the same (J7a and J7b, where J7b corresponds to W14)
 //          Sys11: W14 in, DE: J7b in (except for Laser War CPU Rev 1, where J7a in)
-#define S11_IRQFREQ     1116 // =1MHz/0x380
+// Ed Cheung: The IRQ on System 3-11 fires every 928 usec, which perfectly matches MAMEs 0x380+32!
+#define S11_IRQFREQ     (1000000.0/928.0)
 /*-- Smoothing values --*/
 #ifdef PROC_SUPPORT
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
