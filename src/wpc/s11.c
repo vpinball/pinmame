@@ -28,9 +28,14 @@
 #define S11_PIA4 4
 #define S11_PIA5 5
 
-#define S11_VBLANKFREQ    60 /* VBLANK frequency */
-
-#define S11_IRQFREQ     1000
+// MAME: Length of time in cycles between IRQs on the main 6808 CPU
+// This length is determined by the settings of the W14 and W15 jumpers
+// It can be 0x300, 0x380, 0x700 or 0x780 cycles long.
+// IRQ length is always 32 cycles
+//#define S11_IRQCYCLES     0x380
+// PinWiki: 1ms IRQ signal (W14 in) or 2ms IRQ signal (W15 in), Data East seems to be the same (J7a and J7b, where J7b corresponds to W14)
+//          Sys11: W14 in, DE: J7b in (except for Laser War CPU Rev 1, where J7a in)
+#define S11_IRQFREQ     1116 // =1MHz/0x380
 /*-- Smoothing values --*/
 #ifdef PROC_SUPPORT
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
@@ -116,6 +121,7 @@ static void s11_piaMainIrq(int state) {
 static INTERRUPT_GEN(s11_irq) {
   s11_irqline(1); timer_set(TIME_IN_CYCLES(32,0),0,s11_irqline);
 }
+
 static INTERRUPT_GEN(s11_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -530,7 +536,18 @@ static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 5); }
 /*---------------
 / Switch reading
 /----------------*/
-static WRITE_HANDLER(pia4b_w) { locals.swCol = data; }
+static WRITE_HANDLER(pia4b_w)
+{
+  if (locals.deGame) {
+    int x;
+    for (x=0; x<8; x++)
+      if (data & (1u << x))
+        break;
+    locals.swCol = data & (1u << x);
+  }
+  else
+    locals.swCol = data;
+}
 static READ_HANDLER(pia4a_r)  { return core_getSwCol(locals.swCol); }
 
 /*-------
