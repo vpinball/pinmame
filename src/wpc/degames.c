@@ -27,7 +27,7 @@
 		b) -01 generation: (Tales from the Crypt to Guns N' Roses)
 
 	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
-	   (Maveric to Batman Forever)
+	   (Maverick to Batman Forever)
 
    Sound Board Revisions:
 	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
@@ -112,6 +112,7 @@ static struct core_dispLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
 static struct core_dispLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */
   {0,0,64,192,CORE_DMD,(genf *)dedmd64_update,NULL}, {0}
 };
+
 /***************************************************/
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 /***************************************************/
@@ -797,7 +798,7 @@ DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
 #define input_ports_rab input_ports_des11
-CORE_GAMEDEF(rab,320,"Adventures of Rocky and Bullwinkle and Friends, The (3.20)",1983,"Data East",de_mDEDMD32S2A,0)
+CORE_GAMEDEF(rab,320,"Adventures of Rocky and Bullwinkle and Friends, The (3.20)",1993,"Data East",de_mDEDMD32S2A,0)
 
 DE_ROMSTARTx0(rab_130,"rabcpua.130",CRC(f59b1a53) SHA1(046cd0eaee6e646286f3dfa73eeacfd93c2be273))
 DE_DMD32ROM8x(     "rbdspa.130",CRC(b6e2176e) SHA1(9ccbb30dc0f386fcf5e5255c9f80c720e601565f))
@@ -1018,7 +1019,7 @@ CORE_CLONEDEF(tomy,102,400,"Tommy (1.02)",1994,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(wwfr,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32,S11_PRINTERLINE)
+INITGAMES11(wwfr,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(wwfr_106,"wwfcpua.106", CRC(5f1c7da2) SHA1(9188e0b9c26e4b6c92c63a58b52ee42bd3b77ca0))
 DE_DMD32ROM8x(         "wwfdispa.102",CRC(4b629a4f) SHA1(c301d0c785f7bc4d3c23cbda76ff955c742eaeef))
 DE2S_SOUNDROM1444(     "wfsndu7.512", CRC(eb01745c) SHA1(7222e39c52ed298b737aadaa5b57d2068d39287e),
@@ -1112,7 +1113,7 @@ CORE_CLONEDEF(gnr,300d,300,"Guns N' Roses (3.00 Dutch)",1994,"Data East",de_mDED
 /*-------------------------------------------------------------
 / Maverick - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(mav, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
+INITGAMES11(mav, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64, S11_PRINTERLINE)
 DE_ROMSTARTx0(mav_402, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
 DE_DMD64ROM88(   "mavdisp0.402",CRC(4e643525) SHA1(30b91c91c2f1295cdd018023c5ac783570a0aeea),
                  "mavdisp3.402",CRC(8c5f9460) SHA1(6369b4c98ec6fd5e769275b44631b2b6dd5c411b))
@@ -1153,7 +1154,7 @@ CORE_CLONEDEF(mav,100,402,"Maverick (1.00)",1994,"Sega",de_mDEDMD64S2A,0)
 /*-------------------------------------------------------------
 / Mary Shelley's Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(frankst,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
+INITGAMES11(frankst,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64, S11_PRINTERLINE)
 DE_ROMSTARTx0(frankst,"franka.103",  CRC(a9aba9be) SHA1(1cc22fcbc0f51a17037637c04e606579956c9cba))
 DE_DMD64ROM88(        "frdspr0a.103",CRC(9dd09c7d) SHA1(c5668e53d6c914667a59538f82222ec2efc6f187),
                       "frdspr3a.103",CRC(73b538bb) SHA1(07d7ae21f062d15711d72af03bfcd52608f75a5f))
@@ -1181,7 +1182,7 @@ CORE_CLONEDEFNV(frankstg,frankst,"Frankenstein, Mary Shelley's (German)",1995,"S
 /*-------------------------------------------------------------
 / Baywatch - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(baywatch,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
+INITGAMES11(baywatch,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64, S11_PRINTERLINE)
 DE_ROMSTARTx0(baywatch, "baycpua.400", CRC(89facfda) SHA1(71720b1da227752b0e276390abd08c742bca9090))
 DE_DMD64ROM88(          "bayrom0a.400",CRC(43d615c6) SHA1(7c843b6d5215305b02a55c9fa1d62375ef0766ea),
                         "bayrom3a.400",CRC(41bcb66b) SHA1(e6f0a9236e14c2e919881ca1ffe3356aaa121730))
@@ -1240,7 +1241,7 @@ CORE_CLONEDEFNV(bay_d300,baywatch,"Baywatch (3.00 Dutch)",1995,"Sega",de_mDEDMD6
 /*-------------------------------------------------------------
 / Batman Forever 4.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(batmanf, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
+INITGAMES11(batmanf, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64, S11_PRINTERLINE)
 DE_ROMSTARTx0(batmanf, "batnova.401", CRC(4e62df4e) SHA1(6c3be65fc8825f47cd08755b58fdcf3652ede702))
 DE_DMD64ROM88(         "bfdrom0a.401",CRC(8a3c20ad) SHA1(37415ac7ba178981dffce3a17502f39ab29d90ea),
                        "bfdrom3a.401",CRC(5ef46847) SHA1(a80f241db3d309f0bcb455051e33fc2b74e2ddcd))
@@ -1381,7 +1382,7 @@ CORE_CLONEDEFNV(bmf_ch,batmanf,"Batman Forever (4.0 Swiss)",1995,"Sega",de_mDEDM
 / Batman Forever (DE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 DE_ROMSTARTx0(bmf_de, "batnovg.401",CRC(dd37e99a) SHA1(7949ed43df38849d927f6ed0afa8c3f77cd74b6a))
-DE_DMD64ROM88(          "bfdrom0g.401",CRC(3a2d7d53) SHA1(340107290d58bfb8b9a6613215eb556626fe2461),
+DE_DMD64ROM88(        "bfdrom0g.401",CRC(3a2d7d53) SHA1(340107290d58bfb8b9a6613215eb556626fe2461),
                       "bfdrom3g.401",CRC(94e424f1) SHA1(3a6daf9cbd38e21e2c6447ff1fb0e86b4c03f971))
 DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
                       "bmfu17.bin" ,CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
@@ -1465,7 +1466,7 @@ CORE_CLONEDEFNV(bmf_sp,batmanf,"Batman Forever (4.0 Spanish)",1995,"Sega",de_mDE
 / Batman Forever (JP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 DE_ROMSTARTx0(bmf_jp, "batnovj.401",CRC(eef9bef0) SHA1(ac37ae12673351be939a969ecbc5b68c3995dca0))
-DE_DMD64ROM88(       "bfdrom0a.401",CRC(8a3c20ad) SHA1(37415ac7ba178981dffce3a17502f39ab29d90ea),
+DE_DMD64ROM88(        "bfdrom0a.401",CRC(8a3c20ad) SHA1(37415ac7ba178981dffce3a17502f39ab29d90ea),
                       "bfdrom3a.401",CRC(5ef46847) SHA1(a80f241db3d309f0bcb455051e33fc2b74e2ddcd))
 DE2S_SOUNDROM144(     "bmfu7.bin"  ,CRC(58c0d144) SHA1(88a404d3625c7c154892282598b4949ac97de12b),
                       "bmfu17.bin" ,CRC(edcd5c10) SHA1(561f22fb7817f64e09ef6adda646f58f31b80bf4),
