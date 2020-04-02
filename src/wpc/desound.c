@@ -81,7 +81,7 @@ static struct {
 } de1slocals;
 
 MACHINE_DRIVER_START(de1s)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 2000000) // XTAL(8'000'000) / 4 // MC68B09E
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(de1s_readmem, de1s_writemem)
   MDRV_INTERLEAVE(50)
@@ -262,7 +262,7 @@ static MEMORY_WRITE_START(de2s_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(de2as)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 2000000) // XTAL(24'000'000) / 12 // 68B09E U6 (E & Q = 2 MHz according to manual)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(de2s_readmem, de2s_writemem)
   MDRV_CPU_PERIODIC_INT(de2s_firq, 489) /* Fixed FIRQ of 489Hz as measured on real machine (new T3 manual says toggling at 976Hz) */
@@ -750,14 +750,11 @@ static void at91_sh_update(int num, INT16 *buffer[2], int length)
 		break;	//drop out of loop
 	}
 
-	//Send next pcm sample to output buffer
-	buffer[jj][ii] = samplebuf[jj][sampout[jj]];
+	//Send next pcm sample to output buffer and store last output
+	lastsamp[jj] = buffer[jj][ii] = samplebuf[jj][sampout[jj]];
 
 	//Loop to beginning if we reach end of pcm buffer
 	sampout[jj] = (sampout[jj] + 1) % BUFFSIZE;
-
-	//Store last output
-	lastsamp[jj] = buffer[jj][ii];
  }
 
  // Will adjust throttling to keep sound buffers at a desired place.

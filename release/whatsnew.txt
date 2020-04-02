@@ -25,9 +25,9 @@ Fixed a bug in the TMS9995 emulation concerning port data writes
 Fixed a default volume issue with the AY8910 / YM2203
 Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 Fix an old regression of Alvin G. solenoids not firing consistently (most notably breaking Mystery Castle)
-Improve DMD timings for the Sega 192x64 one, matching the real one more closely (also a slight improvement for the DE/Sega/Stern 128x32 one)
-Improve IRQ timings of Sys 11, DE/Sega/Sterns
-Change switch writing of DE/Sega/Sterns
+Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely (also a slight improvement for the DE/Sega/Stern 128x32 one)
+Improve IRQ timings of Sys 11, DE and Sega 192x64 DMD-machines
+Change switch writing of DE and Sega 192x64 DMD-machines
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin
 New:

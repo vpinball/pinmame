@@ -68,7 +68,7 @@ static MEMORY_WRITE_START(dmd32_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(de_dmd32)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 2000000) // 8000000/4
   MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
@@ -151,8 +151,8 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
-      UINT8 intens1 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
-      UINT8 intens2 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
+      const UINT8 intens1 = 2*(*RAM & 0x55) + (*RAM2 & 0x55);
+      const UINT8 intens2 =   (*RAM & 0xaa) + (*RAM2 & 0xaa)/2;
       *line++ = (intens2>>6) & 0x03;
       *line++ = (intens1>>6) & 0x03;
       *line++ = (intens2>>4) & 0x03;
@@ -161,7 +161,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
       *line++ = (intens1>>2) & 0x03;
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
-      RAM += 1; RAM2 += 1;
+      RAM++; RAM2++;
     }
     *line = 0;
   }
@@ -510,4 +510,3 @@ PINMAME_VIDEO_UPDATE(dedmd16_update) {
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
 }
-
