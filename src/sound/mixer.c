@@ -28,9 +28,9 @@
 
 #include "../../ext/libsamplerate/samplerate.h"
 #include "../../ext/libsamplerate/samplerate.c"
-//#include "../../ext/libsamplerate/src_linear.c"
+#include "../../ext/libsamplerate/src_linear.c" //!! not really needed, but linking error otherwise
 #include "../../ext/libsamplerate/src_sinc_opt.c"
-//#include "../../ext/libsamplerate/src_zoh.c"
+#include "../../ext/libsamplerate/src_zoh.c" //!! not really needed, but linking error otherwise
 
 /* Internal log */
 #ifdef MIXER_USE_LOGERROR
