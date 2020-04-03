@@ -1,3 +1,7 @@
+// license:GPL-2.0+
+// copyright-holders:Jarek Burczynski
+
+
 /*****************************************************************************
 *
 *	Yamaha YM2151 driver (version 2.150 final beta)
@@ -2342,8 +2346,8 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 			else if (outl < MINOUT) outl = MINOUT;
 		if (outr > MAXOUT) outr = MAXOUT;
 			else if (outr < MINOUT) outr = MINOUT;
-		((SAMP*)bufL)[i] = (SAMP)outl;
-		((SAMP*)bufR)[i] = (SAMP)outr;
+		bufL[i] = (SAMP)outl;
+		bufR[i] = (SAMP)outr;
 
 		SAVE_ALL_CHANNELS
 
