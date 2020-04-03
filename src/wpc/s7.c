@@ -13,8 +13,8 @@
 #endif /* PINMAME && LISY_SUPPORT */
 
 
-#define S7_VBLANKFREQ    60 /* VBLANK frequency */
-#define S7_IRQFREQ     1000
+#define S7_IRQFREQ         (3579545.0/4.0/(0x380+32))
+
 #define S7_PIA0  0
 #define S7_PIA1  1
 #define S7_PIA2  2
@@ -459,7 +459,7 @@ MEMORY_END
 MACHINE_DRIVER_START(s7)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(s7,s7,s7)
-  MDRV_CPU_ADD_TAG("mcpu", M6808, 3579545/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6808, 3579545/4) // MAME: 3580000
   MDRV_CPU_MEMORY(s7_readmem, s7_writemem)
   MDRV_CPU_VBLANK_INT(s7_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s7_irq, S7_IRQFREQ)

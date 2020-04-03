@@ -18,8 +18,7 @@
 #define S4_PIA2 2
 #define S4_PIA3 3
 
-#define S4_VBLANKFREQ    60 /* VBLANK frequency */
-#define S4_IRQFREQ    1000  /* IRQ Frequency*/
+#define S4_IRQFREQ         923 // NE556 Timer with 12 kOhm / 1.8 kOhm / 0.1 uF ~923 Hz
 
 #define S4_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #ifdef PROC_SUPPORT
@@ -449,7 +448,7 @@ MEMORY_END
 MACHINE_DRIVER_START(s4)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(s4,s4,s4)
-  MDRV_CPU_ADD(M6800, 3579545/4)
+  MDRV_CPU_ADD(M6800, 3579545/4) // MAME: 3580000
   MDRV_CPU_MEMORY(s4_readmem, s4_writemem)
   MDRV_CPU_VBLANK_INT(s4_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s4_irq, S4_IRQFREQ)
