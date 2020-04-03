@@ -207,7 +207,7 @@ static void alvgs1_init(struct sndbrdData *brdData) {
 ******************************************************************************************************************/
 
 #define ALVGS2_SNDCPU_FREQ  2000000						//Schem shows an 8Mhz clock, but often we need to divide by 4 to make it work in MAME.
-#define ALVGS_SNDFIRQ_FREQ (ALVGS2_SNDCPU_FREQ / 4096)	//Mystery Castle manual shows Jumper J103 set - which divides E signal from 6809 by 4096.
+#define ALVGS_SNDFIRQ_FREQ (ALVGS2_SNDCPU_FREQ / 4096.)	//Mystery Castle manual shows Jumper J103 set - which divides E signal from 6809 by 4096.
 
 /*Declarations*/
 extern WRITE_HANDLER(alvg_sndCmd_w);
