@@ -13,8 +13,7 @@
 #define S6_PIA2 2
 #define S6_PIA3 3
 
-#define S6_VBLANKFREQ    60 /* VBLANK frequency */
-#define S6_IRQFREQ     1000 /* IRQ Frequency*/
+#define S6_IRQFREQ         (3579545.0/4.0/(0x380+32))
 
 #define S6_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define S6_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -336,7 +335,7 @@ MEMORY_END
 MACHINE_DRIVER_START(s6)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(s6,s6,s6)
-  MDRV_CPU_ADD(M6808, 3579545/4)
+  MDRV_CPU_ADD(M6808, 3579545/4) // MAME: 3580000
   MDRV_CPU_MEMORY(s6_readmem, s6_writemem)
   MDRV_CPU_VBLANK_INT(s6_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s6_irq, S6_IRQFREQ)
