@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /***************************************************************************
 
   mixer.c
@@ -7,7 +9,6 @@
 ***************************************************************************/
 
 #include "driver.h"
-#include "filter.h"
 
 #include <math.h>
 #include <limits.h>
@@ -15,10 +16,6 @@
 
 /***************************************************************************/
 /* Options */
-
-/* Undefine to use builtin lowpass filter/resampling code, way less quality though, and also not faster anymore */
-/* Also, undefining it misses the new reverb filter (Centaur,..) */
-#define USE_LIBSAMPLERATE
 
 /* Undefine it to turn off clipping (helpful to find cases where we max out) */
 #define MIXER_USE_CLIPPING
@@ -29,13 +26,11 @@
 /***************************************************************************/
 /* Config */
 
-#ifdef USE_LIBSAMPLERATE
- #include "../../ext/libsamplerate/samplerate.h"
- #include "../../ext/libsamplerate/samplerate.c"
- #include "../../ext/libsamplerate/src_linear.c"
- #include "../../ext/libsamplerate/src_sinc_opt.c"
- #include "../../ext/libsamplerate/src_zoh.c"
-#endif
+#include "../../ext/libsamplerate/samplerate.h"
+#include "../../ext/libsamplerate/samplerate.c"
+//#include "../../ext/libsamplerate/src_linear.c"
+#include "../../ext/libsamplerate/src_sinc_opt.c"
+//#include "../../ext/libsamplerate/src_zoh.c"
 
 /* Internal log */
 #ifdef MIXER_USE_LOGERROR
@@ -60,7 +55,7 @@
 /***************************************************************************/
 /* Static data */
 
-static int mixer_sound_enabled;
+static UINT8 mixer_sound_enabled;
 
 /* holds all the data for the a mixer channel */
 struct mixer_channel_data
@@ -83,49 +78,35 @@ struct mixer_channel_data
 	unsigned samples_available;
 
 	/* resample state */
-	unsigned from_frequency; /* current source frequency */
-	unsigned to_frequency; /* current destination frequency */
-	int is_reset_requested; /* state reset requested */
+	unsigned from_frequency; // current source frequency
+	unsigned to_frequency;   // current destination frequency
+
+	int lr_silent_value[2];  // detect complete silence of a channel
+	UINT8 lr_silence[2];
+
+	UINT8 legacy_resample;   // fallback to old legacy samples playback
+
+	UINT8 is_reset_requested;// resample state reset requested
 
 	/* state of non-streamed playback */
-	int is_stream;
-	int is_playing;
-	int is_looping;
-	int is_16bit;
+	UINT8 is_stream;
+	UINT8 is_playing;
+	UINT8 is_looping;
+	UINT8 is_16bit;
 	void* data_start;
 	void* data_end;
 	void* data_current;
 
-	int frac; /* resample fixed point state (used if filter is not active or in case of USE_LIBSAMPLERATE for the samples playback) */
+	int frac; // resample fixed point state (used if filter is not active or for the oldskool-path of samples playback)
 
-#ifdef USE_LIBSAMPLERATE
 	SRC_STATE* src_left;
 	SRC_STATE* src_right;
 
-	int lr_silent_value[2]; // detect complete silence of a channel
-	int lr_silence[2];
-
-	int legacy_resample; // fallback to old legacy samples playback
-#else
-	int pivot; /* resample brehesnam state (used if filter is active) */
-	int step; /* fixed point increment */
-
-	/* lowpass filter request */
-	unsigned request_lowpass_frequency; /* request for the lowpass arbitrary cut frequency, 0 if default */
-	unsigned lowpass_frequency; /* current lowpass arbitrary cut frequency, 0 if default */
-
-	filter* filter; /* filter used, ==0 if none */
-	filter_state* left; /* state of the filter for the left/mono channel */
-	filter_state* right; /* state of the filter for the right channel */
-#endif
-
-#ifdef PINMAME
 	int reverbPos[2];
 	float reverbDelay[2];
 	float reverbForce[2];
 #define REVERB_LENGTH 100000
 	float reverbBuffer[2][REVERB_LENGTH];
-#endif
 };
 
 /* channel data */
@@ -133,21 +114,16 @@ static struct mixer_channel_data mixer_channel[MIXER_MAX_CHANNELS];
 static unsigned config_mixing_level[MIXER_MAX_CHANNELS];
 static unsigned config_default_mixing_level[MIXER_MAX_CHANNELS];
 static int first_free_channel = 0;
-static int is_config_invalid;
-static int is_stereo;
+static UINT8 is_config_invalid;
+static UINT8 is_stereo;
 
 /* 32-bit accumulators */
 static unsigned accum_base;
 
-#ifdef USE_LIBSAMPLERATE
 static float left_accum[ACCUMULATOR_SAMPLES];
 static float right_accum[ACCUMULATOR_SAMPLES];
 static float in_f[ACCUMULATOR_SAMPLES*25]; //!! 25=magic, should be able to handle all cases where src sample rate is far far larger than dst sample rate (e.g. 4x48000 -> 8000), if changing also change asserts and overflow check in below code (search for ACCUMULATOR_MASK*25)
 static float out_f[ACCUMULATOR_SAMPLES];
-#else
-static int left_accum[ACCUMULATOR_SAMPLES];
-static int right_accum[ACCUMULATOR_SAMPLES];
-#endif
 
 /* 16-bit mix buffers */
 static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2]; /* *2 for stereo */
@@ -155,7 +131,6 @@ static INT16 mix_buffer[ACCUMULATOR_SAMPLES*2]; /* *2 for stereo */
 /* global sample tracking */
 static unsigned samples_this_frame;
 
-#ifdef PINMAME
 static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, float * const __restrict buf, const int len, const unsigned left_right)
 {
 	if (channel->reverbDelay[left_right] != 0.f && len) {
@@ -174,111 +149,35 @@ static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, 
 		channel->reverbPos[left_right] = rev_pos;
 	}
 }
-#endif
 
 /***************************************************************************
 	mixer_channel_resample
 ***************************************************************************/
 
-/* Window size of the FIR filter in samples (must be odd) */
-/* Greater values are more precise, lesser values are faster. */
-#define FILTER_WIDTH FILTER_ORDER_MAX
-
-/* The number of samples that need to be played to flush the filter state */
-/* For the FIR filters it's equal to the filter width */
-#define FILTER_FLUSH FILTER_WIDTH
-
 /* Setup the resample information
 	from_frequency - input frequency
-	lowpass_frequency - lowpass frequency, use 0 to automatically compute it from the resample operation
 	restart - restart the resample state
 */
-static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsigned from_frequency,
-#ifndef USE_LIBSAMPLERATE
-	unsigned lowpass_frequency,
-#endif
-	int restart)
+static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsigned from_frequency,	int restart)
 {
 	unsigned to_frequency;
 	to_frequency = Machine->sample_rate;
 
-#ifdef USE_LIBSAMPLERATE
 	mixerlogerror(("Mixer:mixer_channel_resample_set(%s,%d,%d)\n", channel->name, from_frequency, restart));
 
 	if (restart)
 		channel->frac = 0;
-#else
-	mixerlogerror(("Mixer:mixer_channel_resample_set(%s,%d,%d,%d)\n", channel->name, from_frequency, lowpass_frequency, restart));
-
-	if (restart)
-	{
-		mixerlogerror(("\tpivot=0\n"));
-		channel->pivot = 0;
-		channel->frac = 0;
-	}
-
-	/* only if the filter change */
-	if (from_frequency != channel->from_frequency
-		|| to_frequency != channel->to_frequency
-		|| lowpass_frequency != channel->lowpass_frequency)
-	{
-		/* delete the previous filter */
-		if (channel->filter)
-		{
-			filter_free(channel->filter);
-			channel->filter = 0;
-		}
-
-		/* make a new filter */
-		//if (options.use_filter)
-		if ((from_frequency != 0 && to_frequency != 0 && (from_frequency != to_frequency || lowpass_frequency != 0)))
-		{
-			double cut;
-			unsigned cut_frequency;
-
-			if (from_frequency < to_frequency) {
-				/* upsampling */
-				cut_frequency = from_frequency / 2;
-				if (lowpass_frequency != 0 && cut_frequency > lowpass_frequency)
-					cut_frequency = lowpass_frequency;
-				cut = (double)cut_frequency / to_frequency;
-			} else {
-				/* downsampling */
-				cut_frequency = to_frequency / 2;
-				if (lowpass_frequency != 0 && cut_frequency > lowpass_frequency)
-					cut_frequency = lowpass_frequency;
-				cut = (double)cut_frequency / from_frequency;
-			}
-
-			channel->filter = filter_lp_fir_alloc(cut, FILTER_WIDTH);
-
-			mixerlogerror(("\tfilter from %d Hz, to %d Hz, cut %f, cut %d Hz\n",from_frequency,to_frequency,cut,cut_frequency));
-		}
-	}
-
-	channel->lowpass_frequency = lowpass_frequency;
-	channel->step = ((unsigned long long)from_frequency << FRACTION_BITS) / to_frequency;
-#endif
 
 	channel->from_frequency = from_frequency;
 	channel->to_frequency = to_frequency;
 
 	/* reset the filter state */
-	if (
-#ifndef USE_LIBSAMPLERATE
-		channel->filter &&
-#endif
-		channel->is_reset_requested)
+	if (channel->is_reset_requested)
 	{
 		mixerlogerror(("\tstate clear\n"));
 		channel->is_reset_requested = 0;
-#ifdef USE_LIBSAMPLERATE
 		src_reset(channel->src_left);
 		src_reset(channel->src_right);
-#else
-		filter_state_reset(channel->filter,channel->left);
-		filter_state_reset(channel->filter,channel->right);
-#endif
 	}
 }
 
@@ -291,26 +190,13 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, unsig
 	src - source vector, (updated at the exit)
 	src_len - max number of source samples
 */
-static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
-#ifdef USE_LIBSAMPLERATE
-	SRC_STATE* src_state,
-#else
-	filter_state* state,
-#endif
-	int volume,
-#ifdef USE_LIBSAMPLERATE
-	float* const __restrict dst,
-#else
-	int* const __restrict dst,
-#endif
-	unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
+static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SRC_STATE* src_state,	int volume,	float* const __restrict dst, unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
 	const INT16* __restrict src = *psrc;
 
-#ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
 	const float scale_copy = (float)(volume / 256.0 / 0x8000);
@@ -325,7 +211,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 	assert(src_len <= ACCUMULATOR_MASK*25); //!! magic see in_f
 
 	src_len = MIN(src_len, ACCUMULATOR_MASK*25);
-#endif
+
 	assert( dst_len <= ACCUMULATOR_MASK );
 
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
@@ -334,11 +220,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 		const INT16* const __restrict src_end = src + len;
 		while (src != src_end)
 		{
-#ifdef USE_LIBSAMPLERATE
 			dst[dst_pos] += (float)*src * scale_copy;
-#else
-			dst[dst_pos] += ((int)*src * volume) >> 8;
-#endif
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			++src;
 		}
@@ -347,7 +229,6 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 	}
 
-#ifdef USE_LIBSAMPLERATE
 	// Detect complete silence to skip the resampling of such an unused channel
 	if (!channel->legacy_resample && channel->lr_silence[left_right])
 	{
@@ -420,121 +301,15 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel,
 
 	*psrc = src+data.input_frames_used;
 	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
-
-#else
-
-	if (!channel->filter)
-	{
-			/* end address */
-			INT16* src_end = src + src_len;
-			unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-
-			int step = channel->step;
-			int frac = channel->frac;
-			src += frac >> FRACTION_BITS;
-			frac &= FRACTION_MASK;
-
-			while (src < src_end && dst_pos != dst_pos_end)
-			{
-				dst[dst_pos] += (*src * volume) >> 8;
-				frac += step;
-				dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-				src += frac >> FRACTION_BITS;
-				frac &= FRACTION_MASK;
-			}
-
-			/* adjust the end if it's too big */
-			if (src > src_end) {
-				frac += (int)(src - src_end) << FRACTION_BITS;
-				src = src_end;
-			}
-
-			channel->frac = frac;
-	} else if (!channel->from_frequency) {
-		dst_pos = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-	} else {
-		int pivot = channel->pivot;
-
-		/* end address */
-		INT16* src_end = src + src_len;
-		unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-
-		/* volume */
-		filter_real v = volume;
-
-		if (channel->from_frequency < channel->to_frequency)
-		{
-			/* upsampling */
-			while (src != src_end && dst_pos != dst_pos_end)
-			{
-				/* source */
-				filter_insert(channel->filter,state,
-#ifdef FILTER_USE_INT
-					(*src * v) >> 8);
-#else
-					(*src * v) * (1./256.));
-#endif
-				pivot += channel->from_frequency;
-				if (pivot > 0)
-				{
-					pivot -= channel->to_frequency;
-					++src;
-				}
-				/* dest */
-				dst[dst_pos] += filter_compute(channel->filter,state);
-				dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-			}
-		} else {
-			/* downsampling */
-			while (src != src_end && dst_pos != dst_pos_end)
-			{
-				/* source */
-				filter_insert(channel->filter,state,
-#ifdef FILTER_USE_INT
-					(*src * v) >> 8);
-#else
-					(*src * v) * (1./256.));
-#endif
-				pivot -= channel->to_frequency;
-				++src;
-				/* dest */
-				if (pivot < 0)
-				{
-					pivot += channel->from_frequency;
-					dst[dst_pos] += filter_compute(channel->filter,state);
-					dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-				}
-			}
-		}
-
-		channel->pivot = pivot;
-	}
-
-	*psrc = src;
-	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
-#endif
 }
 
-static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
-#ifdef USE_LIBSAMPLERATE
-	SRC_STATE* src_state,
-#else
-	filter_state* state,
-#endif
-	int volume,
-#ifdef USE_LIBSAMPLERATE
-	float* const __restrict dst,
-#else
-	int* const __restrict dst,
-#endif
-	unsigned dst_len, INT8** psrc, unsigned src_len, unsigned left_right)
+static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC_STATE* src_state, int volume, float* const __restrict dst,	unsigned dst_len, INT8** psrc, unsigned src_len, unsigned left_right)
 {
 	unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
 
 	const INT8* __restrict src = *psrc;
 
-#ifdef USE_LIBSAMPLERATE
 	SRC_DATA data;
 	long i;
 	const float scale_copy = (float)(volume / 256.0 / 0x80);
@@ -549,7 +324,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 	assert(src_len <= ACCUMULATOR_MASK*25); //!! magic see in_f
 
 	src_len = MIN(src_len, ACCUMULATOR_MASK*25);
-#endif
+
 	assert( dst_len <= ACCUMULATOR_MASK );
 
 	if (channel->from_frequency == channel->to_frequency) // raw copy, no filtering
@@ -559,11 +334,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 		const INT8* const __restrict src_end = src + len;
 		while (src != src_end)
 		{
-#ifdef USE_LIBSAMPLERATE
 			dst[dst_pos] += (float)*src * scale_copy;
-#else
-			dst[dst_pos] += (int)*src * volume;
-#endif
 			dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 			++src;
 		}
@@ -572,7 +343,6 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 		return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 	}
 
-#ifdef USE_LIBSAMPLERATE
 	// Special/Legacy samples playback code-path:
 
 	if (channel->legacy_resample)
@@ -630,89 +400,6 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel,
 
 	*psrc = src + data.input_frames_used;
 	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
-
-#else
-
-	if (!channel->filter)
-	{
-		 	/* end address */
-			INT8* src_end = src + src_len;
-			unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-
-			int step = channel->step;
-			int frac = channel->frac;
-			src += frac >> FRACTION_BITS;
-			frac &= FRACTION_MASK;
-
-			while (src < src_end && dst_pos != dst_pos_end)
-			{
-				dst[dst_pos] += *src * volume;
-				dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-				frac += step;
-				src += frac >> FRACTION_BITS;
-				frac &= FRACTION_MASK;
-			}
-
-			/* adjust the end if it's too big */
-			if (src > src_end) {
-				frac += (int)(src - src_end) << FRACTION_BITS;
-				src = src_end;
-			}
-
-			channel->frac = frac;
-	} else if (!channel->from_frequency) {
-		dst_pos = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-	} else {
-		int pivot = channel->pivot;
-
-		/* end address */
-		INT8* src_end = src + src_len;
-		unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-
-		/* volume */
-		int v = volume;
-
-		if (channel->from_frequency < channel->to_frequency)
-		{
-			/* upsampling */
-			while (src != src_end && dst_pos != dst_pos_end)
-			{
-				/* source */
-				filter_insert(channel->filter,state,*src * v);
-				pivot += channel->from_frequency;
-				if (pivot > 0)
-				{
-					pivot -= channel->to_frequency;
-					++src;
-				}
-				/* dest */
-				dst[dst_pos] += filter_compute(channel->filter,state);
-				dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-			}
-		} else {
-			/* downsampling */
-			while (src != src_end && dst_pos != dst_pos_end)
-			{
-				/* source */
-				filter_insert(channel->filter,state,*src * v);
-				pivot -= channel->to_frequency;
-				++src;
-				/* dest */
-				if (pivot < 0)
-				{
-					pivot += channel->from_frequency;
-					dst[dst_pos] += filter_compute(channel->filter,state);
-					dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
-				}
-			}
-		}
-
-		channel->pivot = pivot;
-	}
-
-	*psrc = src;
-	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
-#endif
 }
 
 /* Mix a 8 bit channel */
@@ -720,31 +407,8 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 {
 	unsigned count;
 
-#ifdef MMSND
-	if( mmsnd_stereomono ){
-	  /**** all sound mono mode ****/
-	  /* save */
-	  unsigned save_pivot = channel->pivot;
-	  unsigned save_frac = channel->frac;
-	  INT8* save_src = *src;
-	  count = mixer_channel_resample_8(channel, channel->left, volume[0], left_accum, dst_len, src, src_len, 0);
-	  /* restore */
-	  channel->pivot = save_pivot;
-	  channel->frac = save_frac;
-	  *src = save_src;
-	  mixer_channel_resample_8(channel, channel->right, volume[1], right_accum, dst_len, src, src_len, 1);
-	  channel->samples_available += count;
-	  return count;
-	}
-#endif
-
-#ifdef USE_LIBSAMPLERATE
 	SRC_STATE *cl = channel->src_left;
 	SRC_STATE *cr = channel->src_right;
-#else
-	filter_state *cl = channel->left;
-	filter_state *cr = channel->right;
-#endif
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
 		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
@@ -752,16 +416,10 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 		count = mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	} else {
 		/* save */
-#ifndef USE_LIBSAMPLERATE
-		unsigned save_pivot = channel->pivot;
-#endif
 		unsigned save_frac = channel->frac;
 		INT8* save_src = *src;
 		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 		/* restore */
-#ifndef USE_LIBSAMPLERATE
-		channel->pivot = save_pivot;
-#endif
 		channel->frac = save_frac;
 		*src = save_src;
 		mixer_channel_resample_8(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
@@ -776,31 +434,8 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 {
 	unsigned count;
 
-#ifdef MMSND
-	if( mmsnd_stereomono ){
-	  /**** all sound mono mode ****/
-	  /* save */
-	  unsigned save_pivot = channel->pivot;
-	  unsigned save_frac = channel->frac;
-	  INT16* save_src = *src;
-	  count = mixer_channel_resample_16(channel, channel->left, volume[0], left_accum, dst_len, src, src_len, 0);
-	  /* restore */
-	  channel->pivot = save_pivot;
-	  channel->frac = save_frac;
-	  *src = save_src;
-	  mixer_channel_resample_16(channel, channel->right, volume[1], right_accum, dst_len, src, src_len, 1);
-	  channel->samples_available += count;
-	  return count;
-	}
-#endif
-
-#ifdef USE_LIBSAMPLERATE
 	SRC_STATE *cl = channel->src_left;
 	SRC_STATE *cr = channel->src_right;
-#else
-	filter_state *cl = channel->left;
-	filter_state *cr = channel->right;
-#endif
 
 	if (!is_stereo || channel->pan == MIXER_PAN_LEFT) {
 		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
@@ -808,16 +443,10 @@ static unsigned mixer_channel_resample_16_pan(struct mixer_channel_data *channel
 		count = mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
 	} else {
 		/* save */
-#ifndef USE_LIBSAMPLERATE
-		unsigned save_pivot = channel->pivot;
-#endif
 		unsigned save_frac = channel->frac;
 		INT16* save_src = *src;
 		count = mixer_channel_resample_16(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 		/* restore */
-#ifndef USE_LIBSAMPLERATE
-		channel->pivot = save_pivot;
-#endif
 		channel->frac = save_frac;
 		*src = save_src;
 		mixer_channel_resample_16(channel, cr, volume[1], right_accum, dst_len, src, src_len, 1);
@@ -930,6 +559,9 @@ void mix_sample_16(struct mixer_channel_data *channel, int samples_to_generate)
 ***************************************************************************/
 
 /* Silence samples */
+/* The number of samples that need to be played to flush the filter state */
+/* For the FIR filters it's equal to the filter width */
+#define FILTER_FLUSH 501 //!! this should use the SRC filter width nowadays
 static INT8 silence_data[FILTER_FLUSH];
 
 /* Flush the state of the filter playing some 0 samples */
@@ -971,21 +603,18 @@ int mixer_sh_start(void)
 	struct mixer_channel_data *channel;
 	int i;
 	int r;
-#ifdef USE_LIBSAMPLERATE
-	int error;
-#endif
 	memset(silence_data, 0, sizeof(silence_data));
 
 	/* reset all channels to their defaults */
 	memset(mixer_channel, 0, sizeof(mixer_channel));
 	for (i = 0, channel = mixer_channel; i < MIXER_MAX_CHANNELS; i++, channel++)
 	{
+		int error;
 		channel->mixing_level 					= 0xff;
 		channel->default_mixing_level 			= 0xff;
 		channel->config_mixing_level 			= config_mixing_level[i];
 		channel->config_default_mixing_level 	= config_default_mixing_level[i];
 
-#ifdef USE_LIBSAMPLERATE
 		channel->src_left  = src_new((pmoptions.resampling_quality == 0) ? SRC_SINC_FASTEST : SRC_SINC_MEDIUM_QUALITY, 1, &error); //!! if changing quality, change src_sinc_opt again to include the other table (search for //!! there)
 		channel->src_right = src_new((pmoptions.resampling_quality == 0) ? SRC_SINC_FASTEST : SRC_SINC_MEDIUM_QUALITY, 1, &error);
 
@@ -993,10 +622,6 @@ int mixer_sh_start(void)
 		channel->lr_silence[0] = 1;
 		channel->lr_silent_value[1] = INT_MAX;
 		channel->lr_silence[1] = 1;
-#else
-		channel->left = filter_state_alloc();
-		channel->right = filter_state_alloc();
-#endif
 	}
 
 	/* determine if we're playing in stereo or not */
@@ -1033,15 +658,8 @@ void mixer_sh_stop(void)
 
 	for (i = 0, channel = mixer_channel; i < MIXER_MAX_CHANNELS; i++, channel++)
 	{
-#ifdef USE_LIBSAMPLERATE
 		src_delete(channel->src_left);
 		src_delete(channel->src_right);
-#else
-		if (channel->filter)
-			filter_free(channel->filter);
-		filter_state_free(channel->left);
-		filter_state_free(channel->right);
-#endif
 	}
 }
 
@@ -1086,10 +704,6 @@ void mixer_sh_update(void)
 
 	profiler_mark(PROFILER_MIXER);
 
-#ifdef MMSND
-	WaveDataOutStart();
-#endif
-
 	/* update all channels (for streams this is a no-op) */
 	for (i = 0, channel = mixer_channel; i < first_free_channel; i++, channel++)
 	{
@@ -1109,7 +723,6 @@ void mixer_sh_update(void)
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the sample */
-#ifdef USE_LIBSAMPLERATE
 			INT16 samplei;
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
 			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
@@ -1123,15 +736,6 @@ void mixer_sh_update(void)
 			else
 #endif
 			samplei = (INT16)(lrintf(sample));
-#endif
-#else
-			int samplei = left_accum[accum_pos];
-#ifdef MIXER_USE_CLIPPING
-			if (samplei < -32768)
-				samplei = -32768;
-			else if (samplei > 32767)
-				samplei = 32767;
-#endif
 #endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
@@ -1149,7 +753,6 @@ void mixer_sh_update(void)
 		for (i = 0; (unsigned int)i < samples_this_frame; i++)
 		{
 			/* fetch and clip the left sample */
-#ifdef USE_LIBSAMPLERATE
 			INT16 samplei;
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
 			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(left_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
@@ -1164,21 +767,11 @@ void mixer_sh_update(void)
 #endif
 			samplei = (INT16)(lrintf(sample));
 #endif
-#else
-			int samplei = left_accum[accum_pos];
-#ifdef MIXER_USE_CLIPPING
-			if (samplei < -32768)
-				samplei = -32768;
-			else if (samplei > 32767)
-				samplei = 32767;
-#endif
-#endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
 			left_accum[accum_pos] = 0;
 
 			/* fetch and clip the right sample */
-#ifdef USE_LIBSAMPLERATE
 #if defined(RESAMPLER_SSE_OPT) && defined(MIXER_USE_CLIPPING)
 			samplei = (INT16)_mm_cvtss_si32(_mm_max_ss(_mm_min_ss(_mm_set_ss(right_accum[accum_pos] * 32768.f), _mm_set_ss(32767.f)), _mm_set_ss(-32768.f)));
 #else
@@ -1192,15 +785,6 @@ void mixer_sh_update(void)
 #endif
 			samplei = (INT16)(lrintf(sample));
 #endif
-#else
-			samplei = right_accum[accum_pos];
-#ifdef MIXER_USE_CLIPPING
-			if (samplei < -32768)
-				samplei = -32768;
-			else if (samplei > 32767)
-				samplei = 32767;
-#endif
-#endif
 			/* store and zero out behind us */
 			*mix++ = samplei;
 			right_accum[accum_pos] = 0;
@@ -1211,15 +795,11 @@ void mixer_sh_update(void)
 	}
 
 	/* play the result */
-#ifdef MMSND
-	WaveDataOutEnd( mix_buffer, samples_this_frame, is_stereo );
-#endif
-#ifdef PINMAME
     {
     extern void pm_wave_record(INT16 *buffer, int samples);
     pm_wave_record(mix_buffer, samples_this_frame);
     }
-#endif /* PINMAME */
+
 	samples_this_frame = osd_update_audio_stream(mix_buffer);
 
 	accum_base = accum_pos;
@@ -1245,7 +825,7 @@ int mixer_allocate_channel(int default_mixing_level)
 
 int mixer_allocate_channels(int channels, const int *default_mixing_levels)
 {
-	int i, j;
+	int i;
 
 	mixerlogerror(("Mixer:mixer_allocate_channels(%d)\n",channels));
 
@@ -1283,15 +863,14 @@ int mixer_allocate_channels(int channels, const int *default_mixing_levels)
 			/* otherwise, invalidate all channels that have been created so far */
 			else
 			{
+				int j;
 				is_config_invalid = 1;
 				for (j = 0; j < first_free_channel + i; j++)
 					mixer_set_mixing_level(j, mixer_channel[j].default_mixing_level);
 			}
 		}
 
-#ifdef USE_LIBSAMPLERATE
 		channel->legacy_resample = 1;
-#endif
 
 		/* set the default name */
 		mixer_set_name(first_free_channel + i, 0);
@@ -1504,11 +1083,7 @@ void mixer_play_streamed_sample_16(int ch, INT16 *data, int len, int freq)
 		mixing_volume[1] = 0;
 	}
 
-	mixer_channel_resample_set(channel,freq,
-#ifndef USE_LIBSAMPLERATE
-		channel->request_lowpass_frequency,
-#endif
-		0);
+	mixer_channel_resample_set(channel,freq,0);
 
 	/* compute the length in fractional form */
 	len = len / 2; /* convert len from byte to word */
@@ -1547,7 +1122,7 @@ int mixer_need_samples_this_frame(int channel,int freq)
 	mixer_play_sample
 ***************************************************************************/
 
-void mixer_play_sample(int ch, INT8 *data, int len, int freq, int loop)
+void mixer_play_sample(int ch, INT8 *data, int len, int freq, UINT8 loop)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
@@ -1560,11 +1135,7 @@ void mixer_play_sample(int ch, INT8 *data, int len, int freq, int loop)
 	/* update the state of this channel */
 	mixer_update_channel(channel, sound_scalebufferpos(samples_this_frame));
 
-	mixer_channel_resample_set(channel,freq,
-#ifndef USE_LIBSAMPLERATE
-		channel->request_lowpass_frequency,
-#endif
-		1);
+	mixer_channel_resample_set(channel,freq,1);
 
 	/* now determine where to mix it */
 	channel->data_start = data;
@@ -1580,7 +1151,7 @@ void mixer_play_sample(int ch, INT8 *data, int len, int freq, int loop)
 	mixer_play_sample_16
 ***************************************************************************/
 
-void mixer_play_sample_16(int ch, INT16 *data, int len, int freq, int loop)
+void mixer_play_sample_16(int ch, INT16 *data, int len, int freq, UINT8 loop)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
@@ -1593,11 +1164,7 @@ void mixer_play_sample_16(int ch, INT16 *data, int len, int freq, int loop)
 	/* update the state of this channel */
 	mixer_update_channel(channel, sound_scalebufferpos(samples_this_frame));
 
-	mixer_channel_resample_set(channel,freq,
-#ifndef USE_LIBSAMPLERATE
-		channel->request_lowpass_frequency,
-#endif
-		1);
+	mixer_channel_resample_set(channel,freq,1);
 
 	/* now determine where to mix it */
 	channel->data_start = data;
@@ -1658,11 +1225,7 @@ void mixer_set_sample_frequency(int ch, int freq)
 
 		mixer_update_channel(channel, sound_scalebufferpos(samples_this_frame));
 
-		mixer_channel_resample_set(channel,freq,
-#ifndef USE_LIBSAMPLERATE
-			channel->request_lowpass_frequency,
-#endif
-			0);
+		mixer_channel_resample_set(channel,freq,0);
 	}
 }
 
@@ -1683,19 +1246,14 @@ void mixer_set_lowpass_frequency(int ch, int freq)
 
 	assert(!channel->is_playing && !channel->is_stream);
 
-#ifdef USE_LIBSAMPLERATE
 	mixerlogerror(("Mixer:mixer_set_lowpass_frequency(%s,%d) NOT supported anymore\n", channel->name, freq));
-#else
-	mixerlogerror(("Mixer:mixer_set_lowpass_frequency(%s,%d)\n", channel->name, freq));
-	channel->request_lowpass_frequency = freq;
-#endif
 }
 
 /***************************************************************************
 	mixer_sound_enable_global_w
 ***************************************************************************/
 
-void mixer_sound_enable_global_w(int enable)
+void mixer_sound_enable_global_w(UINT8 enable)
 {
 	int i;
 	struct mixer_channel_data *channel;
@@ -1712,7 +1270,6 @@ void mixer_sound_enable_global_w(int enable)
 	mixer_sound_enabled = enable;
 }
 
-#ifdef PINMAME
 void mixer_set_reverb_filter(int ch, float delay, float force)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
@@ -1722,17 +1279,10 @@ void mixer_set_reverb_filter(int ch, float delay, float force)
 	channel->reverbForce[0] = channel->reverbForce[1] = force;
 	memset(channel->reverbBuffer, 0, sizeof(channel->reverbBuffer[0][0])*2*REVERB_LENGTH);
 }
-#endif
 
-#ifdef USE_LIBSAMPLERATE
-void mixer_set_channel_legacy_resample(int ch, int enable)
+void mixer_set_channel_legacy_resample(int ch, UINT8 enable)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
 	channel->legacy_resample = enable;
 }
-#else
-void mixer_set_channel_legacy_resample(int ch, int enable)
-{
-}
-#endif
