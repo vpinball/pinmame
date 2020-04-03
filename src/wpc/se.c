@@ -39,9 +39,8 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #include "p-roc/p-roc.h"
 #endif
 
-#define SE_VBLANKFREQ      60 /* VBLANK frequency */
-#define SE_FIRQFREQ       976 /* FIRQ Frequency according to Theory of Operation */
-#define SE_ROMBANK0         1
+#define SE_FIRQFREQ        976 /* FIRQ Frequency according to Theory of Operation */
+#define SE_ROMBANK0        1
 
 #ifdef PROC_SUPPORT
 // TODO/PROC: Make variables out of these defines. Values depend on "-proc" switch.
@@ -566,7 +565,7 @@ static WRITE_HANDLER(giaux_w) {
 
 #if 0
   if(GET_BIT4 == 0)
-  printf("giaux = %x, (GI=%x A=%x B=%x C=%x D=%x E=%x), aux = %x (%c)\n",data,GET_BIT0,GET_BIT7,GET_BIT3,GET_BIT4,GET_BIT5,GET_BIT6,selocals.auxdata,selocals.auxdata);
+    printf("giaux = %x, (GI=%x A=%x B=%x C=%x D=%x E=%x), aux = %x (%c)\n",data,GET_BIT0,GET_BIT7,GET_BIT3,GET_BIT4,GET_BIT5,GET_BIT6,selocals.auxdata,selocals.auxdata);
 #endif
   coreGlobals.gi[0]=(~data & 0x01) ? 9 : 0;
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
@@ -809,7 +808,7 @@ MEMORY_END
 
 static MACHINE_DRIVER_START(se)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 2000000) // MC6809E
   MDRV_CORE_INIT_RESET_STOP(se,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, 1)

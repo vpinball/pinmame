@@ -1,5 +1,5 @@
 #include "driver.h"
-#include "vidhrdw/crtc6845.h"
+#include "vidhrdw/crtc6845.h" //!! use MAME mc6845? -> much more complex
 #include "cpu/m6809/m6809.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
@@ -30,7 +30,7 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ 78.07 // real HW
+#define DMD32_FIRQFREQ 80 // real DE HW 78.07, Whitestar 77.77, but this leads to (at least?) LW3 and R&B and SW glitching!
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
@@ -118,10 +118,10 @@ static INTERRUPT_GEN(dmd32_firq) {
 }
 
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
-  UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_address_r(0) & 0x0100)<<2);
-  UINT8 *RAM2 = RAM + 0x200;
+  const UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_address_r(0) & 0x0100)<<2);
+  const UINT8 *RAM2 = RAM + 0x200;
   tDMDDot dotCol;
-  int ii,jj;
+  int ii;
 
 #ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
@@ -150,6 +150,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
+    int jj;
     for (jj = 0; jj < (128/8); jj++) {
       const UINT8 intens1 = 2*(*RAM & 0x55) + (*RAM2 & 0x55);
       const UINT8 intens2 =   (*RAM & 0xaa) + (*RAM2 & 0xaa)/2;
@@ -246,16 +247,17 @@ static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_0_r(o
 
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
-  UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_address_r(0) & 0x400)<<2);
-  UINT8 *RAM2 = RAM + 0x800;
+  const UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_address_r(0) & 0x400)<<2);
+  const UINT8 *RAM2 = RAM + 0x800;
   tDMDDot dotCol;
-  int ii,jj;
+  int ii;
 
   for (ii = 1; ii <= 64; ii++) {
     UINT8 *line = &dotCol[ii][0];
+    int jj;
     for (jj = 0; jj < (192/16); jj++) {
-      UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
-      UINT8 intens2 =   (RAM[1] & 0xaa) + (RAM2[1] & 0xaa)/2;
+      const UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
+      const UINT8 intens2 =   (RAM[1] & 0xaa) + (RAM2[1] & 0xaa)/2;
       *line++ = (intens2>>6) & 0x03;
       *line++ = (intens1>>6) & 0x03;
       *line++ = (intens2>>4) & 0x03;
@@ -264,16 +266,16 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
       *line++ = (intens1>>2) & 0x03;
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
-      intens1 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
-      intens2 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
+      const UINT8 intens3 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
+      const UINT8 intens4 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
+      *line++ = (intens4>>6) & 0x03;
+      *line++ = (intens3>>6) & 0x03;
+      *line++ = (intens4>>4) & 0x03;
+      *line++ = (intens3>>4) & 0x03;
+      *line++ = (intens4>>2) & 0x03;
+      *line++ = (intens3>>2) & 0x03;
+      *line++ = (intens4)    & 0x03;
+      *line++ = (intens3)    & 0x03;
       RAM += 2; RAM2 += 2;
     }
     *line = 0;
@@ -486,17 +488,19 @@ static INTERRUPT_GEN(dmd16_nmi) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULS
 
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd16_update) {
-  UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
+  const UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
   tDMDDot dotCol;
-  int ii,jj,kk;
+  int ii;
 
   for (ii = 1; ii <= 16; ii++) {
     UINT8 *line = &dotCol[ii][0];
+    int jj;
     for (jj = 0; jj < 2; jj++) {
       UINT32 tmp0 = frame[0];
       UINT32 tmp1 = frame[1];
       UINT32 tmp2 = frame[2];
       UINT32 tmp3 = frame[3];
+      int kk;
       for (kk = 0; kk < 32; kk++) {
         //If both dots are lit, we use color 3, but if only 1, we use 1.
         *line++ = (tmp2 & 0x01) + (2 * (tmp0 & 0x01));
