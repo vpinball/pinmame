@@ -80,10 +80,6 @@
 #include "network.h"
 #endif /* MAME_NET */
 
-#ifdef MMSND
-#include "mmsnd/mmsnd.h"
-#endif
-
 #ifdef PINMAME
 typedef struct {
   int dmd_red, dmd_green, dmd_blue;
