@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /**********************************************************************
 
 	Motorola 6821 PIA interface and emulation
