@@ -1,15 +1,12 @@
+// license:BSD-3-Clause
+
 #ifndef MIXER_H
 #define MIXER_H
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
 #pragma once
 #endif
 
-#ifdef PINMAME
-/* PinMAME needs 17 channels for some games with SC-01 support. */
 #define MIXER_MAX_CHANNELS 25
-#else
-#define MIXER_MAX_CHANNELS 16
-#endif
 
 /*
   When you allocate a channel, you pass a default mixing level setting.
@@ -59,9 +56,6 @@
 
 */
 
-
-
-
 #define MIXER_PAN_CENTER  0
 #define MIXER_PAN_LEFT    1
 #define MIXER_PAN_RIGHT   2
@@ -94,12 +88,12 @@ const char *mixer_get_name(int channel);
 */
 void mixer_set_volume(int channel,int volume);
 
-void mixer_play_sample(int channel,INT8 *data,int len,int freq,int loop);
-void mixer_play_sample_16(int channel,INT16 *data,int len,int freq,int loop);
+void mixer_play_sample(int channel,INT8 *data,int len,int freq,UINT8 loop);
+void mixer_play_sample_16(int channel,INT16 *data,int len,int freq,UINT8 loop);
 void mixer_stop_sample(int channel);
 int mixer_is_sample_playing(int channel);
 void mixer_set_sample_frequency(int channel,int freq);
-void mixer_sound_enable_global_w(int enable);
+void mixer_sound_enable_global_w(UINT8 enable);
 
 void mixer_play_streamed_sample_16(int channel,INT16 *data,int len,int freq);
 int mixer_samples_this_frame(void);
@@ -126,10 +120,8 @@ void mixer_write_config(mame_file *f);
 
 void mixer_set_stereo_volume(int ch, int l_vol, int r_vol );
 
-#ifdef PINMAME
 void mixer_set_reverb_filter(int ch, float delay, float force);
-#endif
 
-void mixer_set_channel_legacy_resample(int ch, int enable);
+void mixer_set_channel_legacy_resample(int ch, UINT8 enable);
 
 #endif
