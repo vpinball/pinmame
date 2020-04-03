@@ -137,7 +137,7 @@ static INTERRUPT_GEN(s11_vblank) {
     procTickleWatchdog();
   }
 #endif
-  locals.vblankCount += 1;
+  locals.vblankCount++;
   /*-- lamps --*/
   if ((locals.vblankCount % S11_LAMPSMOOTH) == 0) {
 #ifdef PROC_SUPPORT
@@ -721,6 +721,8 @@ int s11_m2sw(int col, int row) { return col*8+row-7; } // needed to map
 static MACHINE_INIT(s11) {
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
     locals.deGame = 1;
+  else
+    locals.deGame = 0;
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
   pia_config(S11_PIA1, PIA_STANDARD_ORDERING, &s11_pia[1]);
   pia_config(S11_PIA2, PIA_STANDARD_ORDERING, &s11_pia[2]);
