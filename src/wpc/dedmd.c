@@ -258,6 +258,8 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
     for (jj = 0; jj < (192/16); jj++) {
       const UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
       const UINT8 intens2 =   (RAM[1] & 0xaa) + (RAM2[1] & 0xaa)/2;
+      const UINT8 intens3 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
+      const UINT8 intens4 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
       *line++ = (intens2>>6) & 0x03;
       *line++ = (intens1>>6) & 0x03;
       *line++ = (intens2>>4) & 0x03;
@@ -266,8 +268,6 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
       *line++ = (intens1>>2) & 0x03;
       *line++ = (intens2)    & 0x03;
       *line++ = (intens1)    & 0x03;
-      const UINT8 intens3 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
-      const UINT8 intens4 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
       *line++ = (intens4>>6) & 0x03;
       *line++ = (intens3>>6) & 0x03;
       *line++ = (intens4>>4) & 0x03;
