@@ -1256,34 +1256,38 @@ void sam_init()
 	// breakpoint will hit.  Walk back up the stack one step to find the arm7core write.  This will have the 
 	// arm7 memory addr as the parameter.  This is the value you need here.  
 
-	if (_strnicmp(gn, "trn_174h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107ad24;
-	else if (_strnicmp(gn, "acd_168h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107cd82;
-	else if (_strnicmp(gn, "acd_170h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107af62;
-	else if (_strnicmp(gn, "acd_170", 7) == 0)
-		samlocals.fastflipaddr = 0x0106e1b6;
-	else if (_strnicmp(gn, "mtl_170h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107f646;
-	else if (_strnicmp(gn, "mtl_180h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107f676;
-	else if (_strnicmp(gn, "twd_160h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107f7d2;
-	else if (_strnicmp(gn, "twd_160", 7) == 0)
-		samlocals.fastflipaddr = 0x01074d4a;
-	else if (_strnicmp(gn, "wof_500", 7) == 0)
-		samlocals.fastflipaddr = 0x0106e7e6;
-	else if (_strnicmp(gn, "st_161h", 7) == 0)
-		samlocals.fastflipaddr = 0x0107d7a2;
-	else if (_strnicmp(gn, "xmn_151h", 8) == 0)
-		samlocals.fastflipaddr = 0x0107b222;
-	else if (_strnicmp(gn, "fg_1200", 7) == 0)
-		samlocals.fastflipaddr = 0x010681d6;
-	else if (_strnicmp(gn, "potc_600", 8) == 0)
-		samlocals.fastflipaddr = 0x0105a7fe;
-	else if (_strnicmp(gn, "im_183ve", 8) == 0)
-		samlocals.fastflipaddr = 0x01055bf6;
+   if (_strnicmp(gn, "trn_174h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107ad24;
+   else if (_strnicmp(gn, "acd_168h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107cd82;
+   else if (_strnicmp(gn, "acd_170h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107af62;
+   else if (_strnicmp(gn, "acd_170", 7) == 0)
+      samlocals.fastflipaddr = 0x0106e1b6;
+   else if (_strnicmp(gn, "mtl_170h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107f646;
+   else if (_strnicmp(gn, "mtl_180h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107f676;
+   else if (_strnicmp(gn, "twd_160h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107f7d2;
+   else if (_strnicmp(gn, "twd_160", 7) == 0)
+      samlocals.fastflipaddr = 0x01074d4a;
+   else if (_strnicmp(gn, "wof_500", 7) == 0)
+      samlocals.fastflipaddr = 0x0106e7e6;
+   else if (_strnicmp(gn, "st_161h", 7) == 0)
+      samlocals.fastflipaddr = 0x0107d7a2;
+   else if (_strnicmp(gn, "xmn_151h", 8) == 0)
+      samlocals.fastflipaddr = 0x0107b222;
+   else if (_strnicmp(gn, "fg_1200", 7) == 0)
+      samlocals.fastflipaddr = 0x010681d6;
+   else if (_strnicmp(gn, "potc_600", 8) == 0)
+      samlocals.fastflipaddr = 0x0105a7fe;
+   else if (_strnicmp(gn, "im_183ve", 8) == 0)
+      samlocals.fastflipaddr = 0x01055bf6;
+   else if (_strnicmp(gn, "im_185ve", 6) == 0)
+      samlocals.fastflipaddr = 0x01053ed6;
+   else if (_strnicmp(gn, "im_185", 6) == 0)
+      samlocals.fastflipaddr = 0x01068bde;
 	else if (_strnicmp(gn, "avr_200", 7) == 0)
 		samlocals.fastflipaddr = 0x01056afa;
 	else if (_strnicmp(gn, "avs_170", 7) == 0)
