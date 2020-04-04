@@ -491,7 +491,7 @@ CORE_CLONEDEF(sprk,090,103,"South Park (0.90 Prototype)",1999,"Sega",de_mSES1,0)
 // Harley Davidson moved to its own sim file (harley)
 
 /*-------------------------------------------------------------------
-/ Striker Extreme
+/ Striker Xtreme
 /-------------------------------------------------------------------*/
 INITGAME(strikext,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strikext,"sxcpua.102", CRC(5e5f0fb8) SHA1(1425d66064e59193ce7cacb496c12ae956670435))
@@ -504,18 +504,6 @@ DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f7
 SE_ROMEND
 #define input_ports_strikext input_ports_se
 CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",2000,"Stern",de_mSES2,0)
-
-SE128_ROMSTART(strxt100,"sxcpua.100", CRC(ee4742dd) SHA1(1b334f857ccb34f09eba69f3a40b589f6a712811))
-DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
-DE2S_SOUNDROM18888("sxsnda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
-                  "sxsnda.u17",CRC(aeeed88f) SHA1(e150fd243feffcdc5d66487e840cefdfb50213da),
-                  "sxsnda.u21",CRC(62c9bfe3) SHA1(14a65a673a33b7e3d3005f76acf3098dc37958f8),
-                  "sxsnda.u36",CRC(a0bc0edb) SHA1(1025a28fe9a0e3681e8e99b513da29ec294da045),
-                  "sxsnda.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
-SE_ROMEND
-#define init_strxt100 init_strikext
-#define input_ports_strxt100 input_ports_se
-CORE_CLONEDEFNV(strxt100,strikext,"Striker Xtreme (1.00)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_uk,"sxcpue.101", CRC(eac29785) SHA1(42e01c501b4a0a7eaae244040777be8ba69860d5))
 DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
@@ -576,6 +564,18 @@ SE_ROMEND
 #define input_ports_strxt_it_101 input_ports_strikext
 #define init_strxt_it_101 init_strikext
 CORE_CLONEDEFNV(strxt_it_101,strikext,"Striker Xtreme (1.01 Italian)",2000,"Stern",de_mSES2,0)
+
+SE128_ROMSTART(strxt_it_100,"sxcpui.100", CRC(ee4742dd) SHA1(1b334f857ccb34f09eba69f3a40b589f6a712811))
+DE_DMD32ROM8x(     "sxdispi.103",CRC(40be3fe2) SHA1(a5e37ecf3b9772736ac88256c470f785dc113aa1))
+DE2S_SOUNDROM18888("s00.u7" ,CRC(80625d23) SHA1(3956744f20c5a3281715ff813a8fd37cd8179342),
+                  "sxsndi.u17",CRC(d0b21193) SHA1(2e5f92a67f0f18913e5d0af9936ab8694d095c66),
+                  "sxsndi.u21",CRC(5ab3f8f4) SHA1(44982725eb31b0b144e3ad6549734b5fc46cd8c5),
+                  "sxsndi.u36",CRC(4ee21ade) SHA1(1887f81b5f6753ce75ddcd0d7557c1644a925fcf),
+                  "sxsndi.u37",CRC(4427e364) SHA1(7046b65086aafc4c14793d7036bc5130fe1e7dbc))
+SE_ROMEND
+#define input_ports_strxt_it_100 input_ports_strikext
+#define init_strxt_it_100 init_strikext
+CORE_CLONEDEFNV(strxt_it_100,strikext,"Striker Xtreme (1.00 Italian)",2000,"Stern",de_mSES2,0)
 
 SE128_ROMSTART(strxt_sp,"sxcpul.102", CRC(6b1e417f) SHA1(b87e8659bc4481384913a28c1cb2d7c96532b8e3))
 DE_DMD32ROM8x(     "sxdispl.103",CRC(3efd4a18) SHA1(64f6998f82947a5bd053ad8dd56682adb239b676))
