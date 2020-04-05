@@ -2392,13 +2392,13 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 		if (Machine->drv->cpu[i].cpu_clock >= 1000000)
 			sprintf(&buf[strlen(buf)],"%s %d.%06d MHz",
 					cputype_name(Machine->drv->cpu[i].cpu_type),
-					Machine->drv->cpu[i].cpu_clock / 1000000,
-					Machine->drv->cpu[i].cpu_clock % 1000000);
+					(UINT32)Machine->drv->cpu[i].cpu_clock / 1000000,
+					(UINT32)Machine->drv->cpu[i].cpu_clock % 1000000);
 		else
 			sprintf(&buf[strlen(buf)],"%s %d.%03d kHz",
 					cputype_name(Machine->drv->cpu[i].cpu_type),
-					Machine->drv->cpu[i].cpu_clock / 1000,
-					Machine->drv->cpu[i].cpu_clock % 1000);
+					(UINT32)Machine->drv->cpu[i].cpu_clock / 1000,
+					(UINT32)Machine->drv->cpu[i].cpu_clock % 1000);
 
 		if (Machine->drv->cpu[i].cpu_flags & CPU_AUDIO_CPU)
 		{

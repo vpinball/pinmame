@@ -297,7 +297,7 @@ static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
 static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }, HC55516_FILTER_C8228 };
 
 MACHINE_DRIVER_START(wmssnd_s67s)
-  MDRV_CPU_ADD(M6808, 3579545/4)
+  MDRV_CPU_ADD(M6808, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s67s_readmem, s67s_writemem)
   MDRV_INTERLEAVE(50)
@@ -508,7 +508,7 @@ static struct {
   struct sndbrdData brdData;
 } s11slocals;
 
-static void s11s_init(struct sndbrdData *brdData) {
+static void s11s_init(struct sndbrdData *brdData) { // also Sys9 games use this one!
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
@@ -1017,7 +1017,7 @@ MEMORY_END
 // DAC and YM relative volume levels can be independently adjusted per game.  See
 // WPCSND_HC55516_LEVELS() in wmssnd.h to see how.
 //
-//[OLD: NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)]
+//[OLD NOTE, before HC55516 rewrite: These volume levels sound really good compared to my own Funhouse and T2: Dac=100%,CVSD=80%,2151=15%]
 static struct DACinterface      wpcs_dacInt     = { 1, { 70 }};
 static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }, HC55516_FILTER_WPC89 };
 static struct YM2151interface   wpcs_ym2151Int  = {

@@ -335,7 +335,7 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
         }                                                                                                                                       \
 
 
-struct MachineCPU *machine_add_cpu(struct InternalMachineDriver *machine, const char *tag, int type, int cpuclock);
+struct MachineCPU *machine_add_cpu(struct InternalMachineDriver *machine, const char *tag, int type, double cpuclock);
 struct MachineCPU *machine_find_cpu(struct InternalMachineDriver *machine, const char *tag);
 void machine_remove_cpu(struct InternalMachineDriver *machine, const char *tag);
 

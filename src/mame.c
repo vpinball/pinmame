@@ -1454,7 +1454,7 @@ int mame_find_cpu_index(const char *tag)
 	driver expansion
 -------------------------------------------------*/
 
-struct MachineCPU *machine_add_cpu(struct InternalMachineDriver *machine, const char *tag, int type, int cpuclock)
+struct MachineCPU *machine_add_cpu(struct InternalMachineDriver *machine, const char *tag, int type, double cpuclock)
 {
 	int cpunum;
 

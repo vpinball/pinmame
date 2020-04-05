@@ -499,7 +499,7 @@ static MEMORY_WRITE_START(snt_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(by61)
-  MDRV_CPU_ADD(M6802, 3579545/4)
+  MDRV_CPU_ADD(M6802, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
   MDRV_INTERLEAVE(500)
@@ -661,7 +661,7 @@ static PORT_WRITE_START(cs_writeport)
 PORT_END
 
 MACHINE_DRIVER_START(by45)
-  MDRV_CPU_ADD(M6803, 3579545/4)
+  MDRV_CPU_ADD(M6803, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(cs_readmem, cs_writemem)
   MDRV_CPU_PORTS(cs_readport, cs_writeport)
@@ -703,10 +703,10 @@ static READ_HANDLER(cs_port2_r) {
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
 	if (cslocals.p21) data |= 0x02;
 #if 0
-	if(last !=data)
+	if(last != data)
 		printf("cs_port2_r = %x\n",data);
-#endif
 	last = data;
+#endif
 	return data;
 }
 

@@ -43,7 +43,7 @@ struct MachineCPU
 {
 	int			cpu_type;					/* index for the CPU type */
 	int			cpu_flags;					/* flags; see #defines below */
-	int			cpu_clock;					/* in Hertz */
+	double		cpu_clock;					/* in Hertz */
 	const void *memory_read;				/* struct Memory_ReadAddress */
 	const void *memory_write;				/* struct Memory_WriteAddress */
 	const void *port_read;
