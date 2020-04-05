@@ -1256,38 +1256,38 @@ void sam_init()
 	// breakpoint will hit.  Walk back up the stack one step to find the arm7core write.  This will have the 
 	// arm7 memory addr as the parameter.  This is the value you need here.  
 
-   if (_strnicmp(gn, "trn_174h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107ad24;
-   else if (_strnicmp(gn, "acd_168h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107cd82;
-   else if (_strnicmp(gn, "acd_170h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107af62;
-   else if (_strnicmp(gn, "acd_170", 7) == 0)
-      samlocals.fastflipaddr = 0x0106e1b6;
-   else if (_strnicmp(gn, "mtl_170h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107f646;
-   else if (_strnicmp(gn, "mtl_180h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107f676;
-   else if (_strnicmp(gn, "twd_160h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107f7d2;
-   else if (_strnicmp(gn, "twd_160", 7) == 0)
-      samlocals.fastflipaddr = 0x01074d4a;
-   else if (_strnicmp(gn, "wof_500", 7) == 0)
-      samlocals.fastflipaddr = 0x0106e7e6;
-   else if (_strnicmp(gn, "st_161h", 7) == 0)
-      samlocals.fastflipaddr = 0x0107d7a2;
-   else if (_strnicmp(gn, "xmn_151h", 8) == 0)
-      samlocals.fastflipaddr = 0x0107b222;
-   else if (_strnicmp(gn, "fg_1200", 7) == 0)
-      samlocals.fastflipaddr = 0x010681d6;
-   else if (_strnicmp(gn, "potc_600", 8) == 0)
-      samlocals.fastflipaddr = 0x0105a7fe;
-   else if (_strnicmp(gn, "im_183ve", 8) == 0)
-      samlocals.fastflipaddr = 0x01055bf6;
-   else if (_strnicmp(gn, "im_185ve", 6) == 0)
-      samlocals.fastflipaddr = 0x01053ed6;
-   else if (_strnicmp(gn, "im_185", 6) == 0)
-      samlocals.fastflipaddr = 0x01068bde;
+	if (_strnicmp(gn, "trn_174h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107ad24;
+	else if (_strnicmp(gn, "acd_168h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107cd82;
+	else if (_strnicmp(gn, "acd_170h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107af62;
+	else if (_strnicmp(gn, "acd_170", 7) == 0)
+		samlocals.fastflipaddr = 0x0106e1b6;
+	else if (_strnicmp(gn, "mtl_170h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f646;
+	else if (_strnicmp(gn, "mtl_180h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f676;
+	else if (_strnicmp(gn, "twd_160h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107f7d2;
+	else if (_strnicmp(gn, "twd_160", 7) == 0)
+		samlocals.fastflipaddr = 0x01074d4a;
+	else if (_strnicmp(gn, "wof_500", 7) == 0)
+		samlocals.fastflipaddr = 0x0106e7e6;
+	else if (_strnicmp(gn, "st_161h", 7) == 0)
+		samlocals.fastflipaddr = 0x0107d7a2;
+	else if (_strnicmp(gn, "xmn_151h", 8) == 0)
+		samlocals.fastflipaddr = 0x0107b222;
+	else if (_strnicmp(gn, "fg_1200", 7) == 0)
+		samlocals.fastflipaddr = 0x010681d6;
+	else if (_strnicmp(gn, "potc_600", 8) == 0)
+		samlocals.fastflipaddr = 0x0105a7fe;
+	else if (_strnicmp(gn, "im_183ve", 8) == 0)
+		samlocals.fastflipaddr = 0x01055bf6;
+	else if (_strnicmp(gn, "im_185ve", 6) == 0)
+		samlocals.fastflipaddr = 0x01053ed6;
+	else if (_strnicmp(gn, "im_185", 6) == 0)
+		samlocals.fastflipaddr = 0x01068bde;
 	else if (_strnicmp(gn, "avr_200", 7) == 0)
 		samlocals.fastflipaddr = 0x01056afa;
 	else if (_strnicmp(gn, "avs_170", 7) == 0)
@@ -1487,7 +1487,7 @@ static INTERRUPT_GEN(sam_vblank) {
 	/*-------------------------------
 	/  copy local data to interface
 	/--------------------------------*/
-	samlocals.vblankCount += 1;
+	samlocals.vblankCount++;
 	
 	/*-- lamps --*/
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
@@ -1632,10 +1632,10 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 		int jj;
 		for( jj = 0; jj < 128; jj++ )
 		{
-			const UINT8 * const RAM1 = offs1 + jj;
-			const UINT8 * const RAM2 = offs2 + jj;
-			const UINT8 temp = ((*RAM1 & 0xF0) == 0xF0) ? *RAM2 : *RAM1; //!! check if there are also other cases where (*RAM1 & 0xF0) != 0 (e.g. only few bits set -> then mix more finegrained??)
-			if(((*RAM1 & 0xF0) != 0xF0) && ((*RAM1 & 0xF0) != 0x00))
+			const UINT8 RAM1 = offs1[jj];
+			const UINT8 RAM2 = offs2[jj];
+			const UINT8 temp = ((RAM1 & 0xF0) == 0xF0) ? RAM2 : RAM1; //!! check if there are also other cases where (RAM1 & 0xF0) != 0 (e.g. only few bits set -> then mix more finegrained??)
+			if (((RAM1 & 0xF0) != 0xF0) && ((RAM1 & 0xF0) != 0x00))
 				LOG(("DMD Bitmask %01x",(*RAM1 & 0xF0)>>4));
 			*line = hew[temp];
 			line++;
@@ -2471,8 +2471,8 @@ SAM1_ROM32MB(im_181,  "im_181.bin",  CRC(915d972b) SHA1(0d29929ae304bc4bbdbab781
 SAM1_ROM32MB(im_182,  "im_182.bin",  CRC(c65aff0b) SHA1(ce4d26ffdfd8539e8f7fca78dfa55f80247f9334), 0x01C52C5C)
 SAM1_ROM32MB(im_183,  "im_183.bin",  CRC(cf2791a6) SHA1(eb616e3bf33024374f4e998a579bc88f63282ba6), 0x01C52C5C)
 SAM1_ROM32MB(im_183ve,"im_183ve.bin",CRC(e477183c) SHA1(6314b44b58c79889f95af1792395203dbbb36b0b), 0x01C52C5C)
-SAM1_ROM32MB(im_185,  "im_185.bin", CRC(fc93c3e0) SHA1(41a89a77b60d831231f5b4c66e6ddfa542225013), 0x01C52CDC)
-SAM1_ROM32MB(im_185ve,"im_185ve.bin", CRC(3f1529f1) SHA1(a3654efa93a70f40fe718b31d8c0d40ccc99df6b), 0x01C52CDC)
+SAM1_ROM32MB(im_185,  "im_185.bin",  CRC(fc93c3e0) SHA1(41a89a77b60d831231f5b4c66e6ddfa542225013), 0x01C52CDC)
+SAM1_ROM32MB(im_185ve,"im_185ve.bin",CRC(3f1529f1) SHA1(a3654efa93a70f40fe718b31d8c0d40ccc99df6b), 0x01C52CDC)
 SAM_INPUT_PORTS_START(im, 1)
 
 CORE_GAMEDEF(im, 185ve, "Iron Man Vault Edition (V1.85)", 2020, "Stern", sam1, 0)
@@ -2486,6 +2486,7 @@ CORE_CLONEDEF(im, 182, 185ve, "Iron Man (V1.82)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(im, 183, 185ve, "Iron Man (V1.83)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(im, 183ve, 185ve, "Iron Man Vault Edition (V1.83)", 2014, "Stern", sam1, 0)
 CORE_CLONEDEF(im, 185, 185ve, "Iron Man (V1.85)", 2020, "Stern", sam1, 0)
+
 /*-------------------------------------------------------------------
 / TRON: Legacy
 /-------------------------------------------------------------------*/
