@@ -30,7 +30,9 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ 80 // real DE HW 78.07, Whitestar 77.77, but this leads to (at least?) LW3 and R&B and SW glitching!
+#define DMD32_FIRQFREQ_HACK 86.20689655172414 // real DE HW 78.07 (measured on LW3), Whitestar 77.77, but this leads to (at least?) LW3 and R&B and SW glitching, thus use the old/working 80Hz * the changes to IRQ freq in Sys11 for these (and Aaron Spelling)
+#define DMD32_FIRQFREQ_DE 78.07 // real DE HW (measured on LW3)
+#define DMD32_FIRQFREQ_SE 77.77 // real Whitestar HW
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
@@ -67,10 +69,24 @@ static MEMORY_WRITE_START(dmd32_writemem)
   { 0x4001, 0xffff, MWA_NOP },
 MEMORY_END
 
+MACHINE_DRIVER_START(de_dmd32_hack)
+  MDRV_CPU_ADD(M6809, 2000000) // 8000000/4
+  MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ_HACK)
+  MDRV_INTERLEAVE(50)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(de_dmd32)
   MDRV_CPU_ADD(M6809, 2000000) // 8000000/4
   MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ_DE)
+  MDRV_INTERLEAVE(50)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(se_dmd32)
+  MDRV_CPU_ADD(M6809, 2000000) // 8000000/4
+  MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ_SE)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
