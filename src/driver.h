@@ -117,7 +117,7 @@ struct pinMachine {
   void (*reset)(void);
   void (*stop)(void);
 };
-extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), int rate);
+extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), double rate);
 #define DIAGLED_VERTICAL        0x100   /* Flag indicated DIAG LEDS are Vertically Positioned */
 #define MDRV_DIPS(no) \
   machine->pinmame.coreDips = (no);
