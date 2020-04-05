@@ -107,7 +107,7 @@ void riot6530_unconfig(void)
 
 /******************* configuration *******************/
 
-void riot6530_set_clock(int which, int clock)
+void riot6530_set_clock(int which, double clock)
 {
 	riot[which].sec_to_cycles = clock;
 	riot[which].cycles_to_sec = 1.0 / riot[which].sec_to_cycles;

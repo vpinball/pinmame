@@ -1787,7 +1787,7 @@ static MACHINE_INIT(core) {
       for (ii = 0; ii < 5; ii++) {
         if (coreData->timers[ii].callback) {
           locals.timers[ii] = timer_alloc(coreData->timers[ii].callback);
-          if (coreData->timers[ii].rate > 0) {
+          if (coreData->timers[ii].rate > 0.) {
             timer_adjust(locals.timers[ii], TIME_IN_HZ(coreData->timers[ii].rate), 0, TIME_IN_HZ(coreData->timers[ii].rate));
           } else { // negative = fractional hz value, e.g. as usec
             timer_adjust(locals.timers[ii], TIME_IN_USEC(-coreData->timers[ii].rate), 0, TIME_IN_USEC(-coreData->timers[ii].rate));
@@ -2087,7 +2087,7 @@ void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
 /*----------------------------------------------
 /  Add a timer when building the machine driver
 /-----------------------------------------------*/
-void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), int rate) {
+void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), double rate) {
   int ii;
   for (ii = 0; machine->pinmame.timers[ii].callback; ii++)
     ;
