@@ -30,7 +30,7 @@ extern "C" {
 
 void riot6532_unconfig(void);
 void riot6532_config(int which, const struct riot6532_interface *intf);
-void riot6532_set_clock(int which, int clock);
+void riot6532_set_clock(int which, double clock);
 void riot6532_reset(void);
 int  riot6532_read(int which, int offset);
 void riot6532_write(int which, int offset, int data);

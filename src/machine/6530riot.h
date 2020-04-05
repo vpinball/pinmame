@@ -38,7 +38,7 @@ extern "C" {
 
 void riot6530_unconfig(void);
 void riot6530_config(int which, const struct riot6530_interface *intf);
-void riot6530_set_clock(int which, int clock);
+void riot6530_set_clock(int which, double clock);
 void riot6530_reset(void);
 int  riot6530_read(int which, int offset);
 void riot6530_write(int which, int offset, int data);

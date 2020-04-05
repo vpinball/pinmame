@@ -159,7 +159,7 @@ static struct via6522 via[MAX_VIA];
 
 /******************* configuration *******************/
 
-void via_set_clock(int which,int clock)
+void via_set_clock(int which,double clock)
 {
 	via[which].sec_to_cycles = clock;
 	via[which].cycles_to_sec = 1.0 / via[which].sec_to_cycles;

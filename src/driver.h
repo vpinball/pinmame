@@ -111,7 +111,7 @@ struct pinMachine {
   int (*m2lamp)(int col, int row);
   struct {
     void (*callback)(int);
-    int  rate;
+    double rate;
   } timers[5];
   void (*init)(void);
   void (*reset)(void);
