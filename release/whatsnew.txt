@@ -25,7 +25,7 @@ Fixed a bug in the TMS9995 emulation concerning port data writes
 Fixed a default volume issue with the AY8910 / YM2203
 Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 Fix an old regression of Alvin G. solenoids not firing consistently (most notably breaking Mystery Castle)
-Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely
+Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely (also a slight improvement for the DE/Sega/Stern 128x32 ones)
 Improve IRQ timings of Sys3/4/6/7/11, DE and the Sega 192x64 DMD-machines
 Change switch writing of DE and Sega 192x64 DMD-machines
 
@@ -46,6 +46,7 @@ Creature from the Black Lagoon L-4C (competition MOD) (updated with LED Ghost Fi
 Demolition Man LX-4C (competition MOD) (updated and also now includes LED Ghost Fix)
 Demolition Man H-6C (competition MOD) (updated)
 Flintstones, The LX-3
+Iron Man 1.85(+Vault Edition)
 Junk Yard 1.2C (competition MOD) (updated)
 Lap By Lap (Free Play)
 Lord of the Rings, The 3.00
