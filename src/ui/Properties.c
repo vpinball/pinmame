@@ -498,20 +498,17 @@ static char *GameInfoCPU(UINT nIndex)
 	while (i < MAX_CPU && drv.cpu[i].cpu_type)
 	{
 		if (drv.cpu[i].cpu_clock >= 1000000000)
-			sprintf(&buf[strlen(buf)], "%s %lld.%09lld GHz",
+			sprintf(&buf[strlen(buf)], "%s %3.09lf GHz",
 					cputype_name(drv.cpu[i].cpu_type),
-					(UINT64)drv.cpu[i].cpu_clock / 1000000000,
-					(UINT64)drv.cpu[i].cpu_clock % 1000000000);
+					drv.cpu[i].cpu_clock / 1000000000.);
 		else if (drv.cpu[i].cpu_clock >= 1000000)
-			sprintf(&buf[strlen(buf)], "%s %lld.%06lld MHz",
+			sprintf(&buf[strlen(buf)], "%s %3.06lf MHz",
 					cputype_name(drv.cpu[i].cpu_type),
-					(UINT64)drv.cpu[i].cpu_clock / 1000000,
-					(UINT64)drv.cpu[i].cpu_clock % 1000000);
+					drv.cpu[i].cpu_clock / 1000000.);
 		else
-			sprintf(&buf[strlen(buf)], "%s %lld.%03lld kHz",
+			sprintf(&buf[strlen(buf)], "%s %3.03lf kHz",
 					cputype_name(drv.cpu[i].cpu_type),
-					(UINT64)drv.cpu[i].cpu_clock / 1000,
-					(UINT64)drv.cpu[i].cpu_clock % 1000);
+					drv.cpu[i].cpu_clock / 1000.);
 
 		if (drv.cpu[i].cpu_flags & CPU_AUDIO_CPU)
 			strcat(buf, " (sound)");
