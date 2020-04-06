@@ -3556,7 +3556,7 @@ static void onscrd_mixervol(struct mame_bitmap *bitmap,int increment,int arg)
 			{
 				if (mixer_get_name(ch) != 0)
 				{
-					volume = ratio * old_vol[ch];
+					volume = (int)(ratio * old_vol[ch]);
 					if (volume < 0 || volume > 100)
 						overflow = 1;
 				}
@@ -3566,7 +3566,7 @@ static void onscrd_mixervol(struct mame_bitmap *bitmap,int increment,int arg)
 			{
 				for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++)
 				{
-					volume = ratio * old_vol[ch];
+					volume = (int)(ratio * old_vol[ch]);
 					mixer_set_mixing_level(ch,volume);
 				}
 			}
@@ -3710,7 +3710,7 @@ static void onscrd_overclock(struct mame_bitmap *bitmap,int increment,int arg)
 			timer_set_overclock(arg, overclock);
 	}
 
-	oc = 100 * timer_get_overclock(arg) + 0.5;
+	oc = (int)(100. * timer_get_overclock(arg) + 0.5);
 
 	if( doallcpus )
 		sprintf(buf,"%s %s %3d%%", ui_getstring (UI_allcpus), ui_getstring (UI_overclock), oc);
@@ -3886,7 +3886,7 @@ void CLIB_DECL usrintf_showmessage(const char *text,...)
 	va_start(arg,text);
 	vsprintf(messagetext,text,arg);
 	va_end(arg);
-	messagecounter = 2 * Machine->drv->frames_per_second;
+	messagecounter = (int)(2. * Machine->drv->frames_per_second);
 }
 
 void CLIB_DECL usrintf_showmessage_secs(int seconds, const char *text,...)
@@ -3895,7 +3895,7 @@ void CLIB_DECL usrintf_showmessage_secs(int seconds, const char *text,...)
 	va_start(arg,text);
 	vsprintf(messagetext,text,arg);
 	va_end(arg);
-	messagecounter = seconds * Machine->drv->frames_per_second;
+	messagecounter = (int)((double)seconds * Machine->drv->frames_per_second);
 }
 
 void do_loadsave(struct mame_bitmap *bitmap, int request_loadsave)
