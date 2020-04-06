@@ -29,7 +29,7 @@ Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely 
 Improve IRQ timings of Sys3/4/6/7/11, DE and the Sega 192x64 DMD-machines
 Change switch writing of DE and Sega 192x64 DMD-machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson
 New:
 Jac van Ham: Formula 1
              Ice Mania
@@ -56,6 +56,7 @@ Oba-Oba (old hardware)
 Pool Sharks LA-7C (competition MOD) (updated)
 Space Train (old hardware)
 Spider-Man 1.02 (English, French)
+Star Trek 25th Anniversary 3.00 (unofficial MOD)
 Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Twilight Zone LA-9 (aka PAPA Tournament Version 9.0)
