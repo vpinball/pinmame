@@ -1,10 +1,12 @@
+// license:BSD-3-Clause
+
 #include "filter.h"
 
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
-#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+#if defined(SSE_FILTER_OPT)
  #include <xmmintrin.h>
  #if !defined(_MSC_VER) || !defined(_WIN32) || defined(__clang__)
      typedef union __attribute__ ((aligned (16))) Windows__m128
@@ -29,13 +31,12 @@ void filter_free(filter* f) {
 void filter_state_reset(filter* f, filter_state* s) {
 	unsigned int i;
 	s->prev_mac = 0;
-	for(i=0;i<f->order;++i) {
+	for(i=0;i<f->order;++i)
 		s->xprev[i] = 0;
-	}
 }
 
 filter_state* filter_state_alloc() {
-	int i;
+	unsigned int i;
 	filter_state* s = malloc(sizeof(filter_state));
 	s->prev_mac = 0;
 	for(i=0;i<FILTER_ORDER_MAX;++i)
@@ -50,7 +51,7 @@ void filter_state_free(filter_state* s) {
 /****************************************************************************/
 /* FIR */
 
-#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+#if defined(SSE_FILTER_OPT)
 INLINE __m128 horizontal_add(const __m128 a)
 {
 #if 0 //!! needs SSE3
@@ -63,22 +64,18 @@ INLINE __m128 horizontal_add(const __m128 a)
 }
 #endif
 
-filter_real filter_compute(const filter* f, const filter_state* s) {
-	const filter_real * const __restrict xcoeffs = f->xcoeffs;
-	const filter_real * const __restrict xprev = s->xprev;
+float filter_compute(const filter* f, const filter_state* s) {
+	const float * const __restrict xcoeffs = f->xcoeffs;
+	const float * const __restrict xprev = s->xprev;
 
 	const int order = f->order;
 	const int midorder = f->order / 2;
-#ifdef FILTER_USE_INT
-	filter_real //!! long long??! -> not needed, as long as signal is balanced around 0 and/or number of coefficients low (i guess, at least for random values this works with plain int!)
-#else
  #ifdef SSE_FILTER_OPT
 	__m128 y128;
 	float
  #else
 	double
  #endif
-#endif
 	y = 0;
 	int i,j,k;
 
@@ -92,7 +89,7 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
 	/* x */
 	k = 0;
 
-#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+#if defined(SSE_FILTER_OPT)
         y128 = _mm_setzero_ps();
         for (; k<midorder-3; k+=4) {
             __m128 coeffs = _mm_loadu_ps(xcoeffs + (midorder - (k + 3)));
@@ -197,16 +194,12 @@ filter_real filter_compute(const filter* f, const filter_state* s) {
         }
 
         y += 
-#if defined(SSE_FILTER_OPT) && !defined(FILTER_USE_INT)
+#if defined(SSE_FILTER_OPT)
 			_mm_cvtss_f32(horizontal_add(y128)) +
 #endif
 			xcoeffs[0] * xprev[i];
 
-#ifdef FILTER_USE_INT
-	return y >> FILTER_INT_FRACT;
-#else
-	return (filter_real)y;
-#endif
+	return (float)y;
 }
 
 filter* filter_lp_fir_alloc(double freq, const int order) {
@@ -253,19 +246,11 @@ filter* filter_lp_fir_alloc(double freq, const int order) {
 
 	/* adjust the gain to be exact 1.0 */
 	for (i = 0; i <= midorder; ++i)
-#ifdef FILTER_USE_INT
-		f->xcoeffs[i] = (filter_real)((xcoeffs[i] / gain) * (1 << FILTER_INT_FRACT));
-#else
-		f->xcoeffs[i] = (filter_real)(xcoeffs[i] / gain);
-#endif
+		f->xcoeffs[i] = (float)(xcoeffs[i] / gain);
 
 	/* decrease the order if the last coeffs are 0 */
 	i = midorder;
-#ifdef FILTER_USE_INT
-	while (i > 0 && f->xcoeffs[i] == 0)
-#else
-	while (i > 0 && (int)(fabs(f->xcoeffs[i])*32767) == 0) // cutoff low coefficients similar to integer case
-#endif
+	while (i > 0 && (int)(fabs(f->xcoeffs[i])*32767) == 0) // cutoff low coefficients similar to the old integer case
 		--i;
 
 	f->order = i * 2 + 1;

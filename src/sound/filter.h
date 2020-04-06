@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #ifndef __FILTER_H
 #define __FILTER_H
 #if !defined(__GNUC__) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || (__GNUC__ >= 4)	// GCC supports "pragma once" correctly since 3.4
@@ -9,16 +11,6 @@
 /* Max filter order */
 #define FILTER_ORDER_MAX 501
 
-/* Define to use integer calculation */
-//#define FILTER_USE_INT
-
-#ifdef FILTER_USE_INT
-typedef int filter_real;
-#define FILTER_INT_FRACT 15 /* fractional bits */
-#else
-typedef float filter_real;
-#endif
-
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(_M_X64) || defined(_M_AMD64)
  #define SSE_FILTER_OPT
 #else
@@ -26,22 +18,22 @@ typedef float filter_real;
 #endif
 
 typedef struct filter_struct {
-	filter_real xcoeffs[(FILTER_ORDER_MAX+1)/2];
+	float xcoeffs[(FILTER_ORDER_MAX+1)/2];
 	unsigned order;
 } filter;
 
 typedef struct filter_state_struct {
 	unsigned prev_mac;
-	filter_real xprev[FILTER_ORDER_MAX];
+	float xprev[FILTER_ORDER_MAX];
 } filter_state;
 
 /* Allocate a FIR Low Pass filter */
 filter* filter_lp_fir_alloc(double freq, const int order);
+/* Free the filter */
 void filter_free(filter* f);
 
 /* Allocate a filter state */
 filter_state* filter_state_alloc();
-
 /* Free the filter state */
 void filter_state_free(filter_state* s);
 
@@ -49,7 +41,7 @@ void filter_state_free(filter_state* s);
 void filter_state_reset(filter* f, filter_state* s);
 
 /* Insert a value in the filter state */
-INLINE void filter_insert(const filter* f, filter_state* s, const filter_real x) {
+INLINE void filter_insert(const filter* f, filter_state* s, const float x) {
 	/* next state */
 	++s->prev_mac;
 	if (s->prev_mac >= f->order)
@@ -60,13 +52,13 @@ INLINE void filter_insert(const filter* f, filter_state* s, const filter_real x)
 }
 
 /* Compute the filter output */
-filter_real filter_compute(const filter* f, const filter_state* s);
+float filter_compute(const filter* f, const filter_state* s);
 
 INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
-	const filter_real tmp = filter_compute(f, s);
-	if (tmp <= (filter_real)-32768)
+	const float tmp = filter_compute(f, s);
+	if (tmp <= -32768.f)
 		return -32768;
-	else if (tmp >= (filter_real)32767)
+	else if (tmp >= 32767.f)
 		return 32767;
 	else
 		return (INT16)tmp;

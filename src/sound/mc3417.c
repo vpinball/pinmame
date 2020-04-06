@@ -187,12 +187,7 @@ void mc3417_update(int num, INT16 *buffer, int length)
 		if (chip->filter_f)
 			for (i = 0; i < length; i++, data += slope)
 			{
-				filter_insert(chip->filter_f, chip->filter_state,
-#ifdef FILTER_USE_INT
-					data >> 15);
-#else
-					(filter_real)data * (filter_real)(1.0/32768.0));
-#endif
+				filter_insert(chip->filter_f, chip->filter_state, (float)data * (float)(1.0/32768.0));
 				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 			}
 		else
@@ -201,7 +196,7 @@ void mc3417_update(int num, INT16 *buffer, int length)
 #else // ENABLE_LOWPASS_ESTIMATE
 		for (i = 0; i < length; i++, data += slope)
 		{
-			filter_insert(chip->filter_f, chip->filter_state, (filter_real)data * (filter_real)(1.0/32768.0));
+			filter_insert(chip->filter_f, chip->filter_state, (float)data * (float)(1.0/32768.0));
 			*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
 		}
 #endif
