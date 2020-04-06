@@ -520,7 +520,7 @@ static core_tGameData trekGameData = {
 };
 static void init_trek(void) { core_gameData = &trekGameData; }
 DE_ROMSTARTx0(trek_201,"trekcpuu.201",CRC(ea0681fe) SHA1(282c8181e60da6358ef320358575a538aa4abe8c))
-DE_DMD16ROM2(      "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
+DE_DMD16ROM2(   "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
 DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
                    "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
                    "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
@@ -529,7 +529,7 @@ DE_ROMEND
 CORE_GAMEDEF(trek,201,"Star Trek 25th Anniversary (2.01)",1992,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTARTx0(trek_200,"trekcpuu.200",CRC(4528e803) SHA1(0ebb16ab8b95f04a19fa4510e58c01493393d48c))
-DE_DMD16ROM2(      "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
+DE_DMD16ROM2(   "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
 DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
                    "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
                    "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
@@ -545,7 +545,7 @@ DE_ROMEND
 CORE_CLONEDEF(trek,120,201,"Star Trek 25th Anniversary (1.20)",1992,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTARTx0(trek_117,"trekcpu.117",CRC(534ebb09) SHA1(96f343fcc7b0f39e0a8ec7df47cea433ad2c9119))
-DE_DMD16ROM2(      "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
+DE_DMD16ROM2(   "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
 DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
                    "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
                    "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
@@ -561,12 +561,20 @@ DE_ROMEND
 CORE_CLONEDEF(trek,110,201,"Star Trek 25th Anniversary (1.10)",1992,"Data East",de_mDEDMD16S2A,0)
 
 DE_ROMSTARTx0(trek_11a,"trekcpu.110",CRC(06e0f87b) SHA1(989d70e067cd322351768550549a4e2c8923132c))
-DE_DMD16ROM2(    "trekadsp.bin",CRC(54681627) SHA1(4251fa0568d2e869b44358471a3d4a4e88443954))
+DE_DMD16ROM2(   "trekadsp.bin",CRC(54681627) SHA1(4251fa0568d2e869b44358471a3d4a4e88443954))
 DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
                    "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
                    "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
 DE_ROMEND
-CORE_CLONEDEF(trek,11a,201,"Star Trek 25th Anniversary (1.10 Alpha Display)",1992,"Data East",de_mDEDMD16S2A,0)
+CORE_CLONEDEF(trek,11a,201,"Star Trek 25th Anniversary (1.10, Alpha Display)",1992,"Data East",de_mDEDMD16S2A,0)
+
+DE_ROMSTARTx0(trek_300,"trekcpuu.300",CRC(3859939e) SHA1(a453208a7640a39cb96947e8d3d3b2f71f85e613))
+DE_DMD16ROM2(   "trekdspa.300",CRC(d312f92e) SHA1(eebcc697b89bbe62b0450fdec6226a8396308f37))
+DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
+                   "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
+                   "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
+DE_ROMEND
+CORE_CLONEDEF(trek,300,201,"Star Trek 25th Anniversary (3.00 unofficial MOD)",2020,"Data East",de_mDEDMD16S2A,0)
 
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
