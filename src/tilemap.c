@@ -1803,7 +1803,7 @@ DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 
 			if (startx >= srcbitmap->width)
 			{
-				sx += -startx;
+				sx -= startx;
 				startx = 0;
 			}
 

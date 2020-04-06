@@ -5385,7 +5385,7 @@ DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct mame_bitmap *srcbi
 
 			if (startx >= srcbitmap->width)
 			{
-				sx += -startx;
+				sx -= startx;
 				startx = 0;
 			}
 

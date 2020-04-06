@@ -499,7 +499,7 @@ SE128_ROMSTART(harl_l13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f781
 DE_DMD32ROM8x("hddisps.104",CRC(2d26514a) SHA1(f15b22cad6329f29cd5cccfb91a2ba7ca2cd6d59)) HARLEY_SOUND
 SE_ROMEND
 
-CORE_GAMEDEF(harl,a13,"Harley-Davidson (Sega, 1.03)",1999,"Sega",de_mSES1,0)
+CORE_GAMEDEF(harl,a13,"Harley-Davidson (Sega, 1.03, Display 1.04)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,u13,a13,"Harley-Davidson (Sega, 1.03 English)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,a10,a13,"Harley-Davidson (Sega, 1.03, Display 1.00)",1999,"Sega",de_mSES1,0)
 CORE_CLONEDEF(harl,f13,a13,"Harley-Davidson (Sega, 1.03 French)",1999,"Sega",de_mSES1,0)
