@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /***************************************************************************
 
   streams.c
@@ -85,7 +87,6 @@ static void apply_RC_filter(int channel,INT16 *buf,int len)
 int streams_sh_start(void)
 {
 	int i;
-
 	for (i = 0;i < MIXER_MAX_CHANNELS;i++)
 	{
 		stream_joined_channels[i] = 1;
@@ -102,7 +103,6 @@ int streams_sh_start(void)
 void streams_sh_stop(void)
 {
 	int i;
-
 	for (i = 0;i < MIXER_MAX_CHANNELS;i++)
 	{
 		free(stream_buffer[i]);
@@ -113,7 +113,7 @@ void streams_sh_stop(void)
 
 void streams_sh_update(void)
 {
-	int channel,i;
+	int channel;
 
 	if (Machine->sample_rate == 0) return;
 
@@ -122,12 +122,8 @@ void streams_sh_update(void)
 	{
 		if (stream_buffer[channel])
 		{
-			int newpos;
-			int buflen;
-
-			newpos = SAMPLES_THIS_FRAME(channel);
-
-			buflen = newpos - stream_buffer_pos[channel];
+			int newpos = SAMPLES_THIS_FRAME(channel);
+			int buflen = newpos - stream_buffer_pos[channel];
 
 			assert(buflen + stream_buffer_pos[channel] < BUFFER_LEN);
 
@@ -140,6 +136,7 @@ void streams_sh_update(void)
 
 				if (buflen > 0)
 				{
+					int i;
 					for (i = 0;i < stream_joined_channels[channel];i++)
 					{
 						assert(buflen + stream_buffer_pos[channel+i] < BUFFER_LEN);
@@ -150,6 +147,7 @@ void streams_sh_update(void)
 					(*stream_callback_multi[channel])(stream_param[channel],buf,buflen);
 				}
 
+				int i;
 				for (i = 0;i < stream_joined_channels[channel];i++)
 					stream_buffer_pos[channel+i] = 0;
 
@@ -176,6 +174,7 @@ void streams_sh_update(void)
 	{
 		if (stream_buffer[channel])
 		{
+			int i;
 			for (i = 0;i < stream_joined_channels[channel];i++)
 				mixer_play_streamed_sample_16(channel+i,
 						stream_buffer[channel+i],sizeof(INT16)*SAMPLES_THIS_FRAME(channel+i),
@@ -188,9 +187,7 @@ int stream_init(const char *name,int default_mixing_level,
 		int sample_rate,
 		int param,void (*callback)(int param,INT16 *buffer,int length))
 {
-	int channel;
-
-	channel = mixer_allocate_channel(default_mixing_level);
+	const int channel = mixer_allocate_channel(default_mixing_level);
 
 	stream_joined_channels[channel] = 1;
 
@@ -214,7 +211,6 @@ int stream_init(const char *name,int default_mixing_level,
 	return channel;
 }
 
-#ifdef PINMAME
 void stream_set_sample_rate(int channel, int sample_rate) {
 	if (stream_sample_rate[channel] == sample_rate)
 		return;
@@ -239,15 +235,13 @@ void stream_free(int channel) {
 	free(stream_buffer[channel]);
 	stream_buffer[channel] = 0;
 }
-#endif /* PINMAME */
 
 int stream_init_multi(int channels,const char **names,const int *default_mixing_levels,
 		int sample_rate,
 		int param,void (*callback)(int param,INT16 **buffer,int length))
 {
-	int channel,i;
-
-	channel = mixer_allocate_channels(channels,default_mixing_levels);
+	int i;
+	const int channel = mixer_allocate_channels(channels,default_mixing_levels);
 
 	stream_joined_channels[channel] = channels;
 
@@ -297,7 +291,6 @@ void stream_update(int channel,int min_interval)
 		{
 			INT16 *buf[MIXER_MAX_CHANNELS];
 			int i;
-
 			for (i = 0;i < stream_joined_channels[channel];i++)
 				buf[i] = stream_buffer[channel+i] + stream_buffer_pos[channel+i];
 
