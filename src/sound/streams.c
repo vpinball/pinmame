@@ -9,7 +9,6 @@
 ***************************************************************************/
 
 #include "driver.h"
-#include <math.h>
 #include <assert.h>
 
 #define BUFFER_LEN 16384
@@ -26,64 +25,6 @@ static int stream_param[MIXER_MAX_CHANNELS];
 static void (*stream_callback[MIXER_MAX_CHANNELS])(int param,INT16 *buffer,int length);
 static void (*stream_callback_multi[MIXER_MAX_CHANNELS])(int param,INT16 **buffer,int length);
 
-static int memory[MIXER_MAX_CHANNELS];
-static int K[MIXER_MAX_CHANNELS];
-static double K_tmp[MIXER_MAX_CHANNELS];
-
-/*
-signal >--R1--+--R2--+
-              |      |
-              C      R3---> amp
-              |      |
-             GND    GND
-*/
-
-/* R1, R2, R3 in Ohm; C in pF */
-/* set C = 0 to disable the filter */
-void set_RC_filter(int channel, int R1, int R2, int R3, int C, int sample_rate)
-{
-	double Req;
-
-	memory[channel] = 0;
-
-	if (C == 0)
-	{
-		K[channel] = 0x10000;
-		K_tmp[channel] = 0.;
-
-		return;
-	}
-
-	/* Cut Frequency = 1/(2*Pi*Req*C) */
-
-	Req = (R2 + R3 > 0) ? ((long long)R1*(long long)(R2 + R3)) / (double)(R1 + R2 + R3) : R1;
-
-	K_tmp[channel] = Req * (C * 1E-12); /* 1E-12: convert pF to F */
-
-	K[channel] = 0x10000 - (int)(0x10000 * exp(-1. / (K_tmp[channel] * sample_rate)));
-}
-
-static void set_RC_filter_sample_rate(int channel, int sample_rate)
-{
-	if (K_tmp[channel] == 0.)
-		return;
-
-	K[channel] = (int)(0x10000 - 0x10000 * exp(-1. / (K_tmp[channel] * sample_rate)));
-}
-
-static void apply_RC_filter(int channel,INT16 *buf,int len)
-{
-	int i;
-
-	if (K[channel] == 0x10000) return;	/* filter disabled */
-
-	for (i = 0; i < len; i++)
-	{
-		memory[channel] += (buf[i] - memory[channel]) * K[channel] / 0x10000;
-		buf[i] = memory[channel];
-	}
-}
-
 int streams_sh_start(void)
 {
 	int i;
@@ -91,9 +32,6 @@ int streams_sh_start(void)
 	{
 		stream_joined_channels[i] = 1;
 		stream_buffer[i] = 0;
-
-		K[i] = 0x10000;
-		K_tmp[i] = 0.;
 	}
 
 	return 0;
@@ -122,7 +60,7 @@ void streams_sh_update(void)
 	{
 		if (stream_buffer[channel])
 		{
-			int newpos = SAMPLES_THIS_FRAME(channel);
+			const int newpos = SAMPLES_THIS_FRAME(channel);
 			int buflen = newpos - stream_buffer_pos[channel];
 
 			assert(buflen + stream_buffer_pos[channel] < BUFFER_LEN);
@@ -132,10 +70,10 @@ void streams_sh_update(void)
 
 			if (stream_joined_channels[channel] > 1)
 			{
-				INT16 *buf[MIXER_MAX_CHANNELS];
-
 				if (buflen > 0)
 				{
+					INT16 *buf[MIXER_MAX_CHANNELS];
+
 					int i;
 					for (i = 0;i < stream_joined_channels[channel];i++)
 					{
@@ -150,9 +88,6 @@ void streams_sh_update(void)
 				int i;
 				for (i = 0;i < stream_joined_channels[channel];i++)
 					stream_buffer_pos[channel+i] = 0;
-
-				for (i = 0;i < stream_joined_channels[channel];i++)
-					apply_RC_filter(channel+i,stream_buffer[channel+i],buflen);
 			}
 			else
 			{
@@ -164,8 +99,6 @@ void streams_sh_update(void)
 				}
 
 				stream_buffer_pos[channel] = 0;
-
-				apply_RC_filter(channel,stream_buffer[channel],buflen);
 			}
 		}
 	}
@@ -206,12 +139,12 @@ int stream_init(const char *name,int default_mixing_level,
 		stream_sample_length[channel] = 0;
 	stream_param[channel] = param;
 	stream_callback[channel] = callback;
-	set_RC_filter(channel,0,0,0,0,sample_rate);
 
 	return channel;
 }
 
-void stream_set_sample_rate(int channel, int sample_rate) {
+void stream_set_sample_rate(int channel, int sample_rate)
+{
 	if (stream_sample_rate[channel] == sample_rate)
 		return;
 
@@ -220,18 +153,17 @@ void stream_set_sample_rate(int channel, int sample_rate) {
 		stream_sample_length[channel] = 1000000 / sample_rate;
 	else
 		stream_sample_length[channel] = 0;
- 	if (stream_buffer_pos[channel] >= stream_sample_length[channel]) {
+	if (stream_buffer_pos[channel] >= stream_sample_length[channel])
 		stream_buffer_pos[channel] = 0;
-	}
-
-	set_RC_filter_sample_rate(channel,sample_rate);
 }
 
-int stream_get_sample_rate(int channel) {
+int stream_get_sample_rate(int channel)
+{
 	return stream_sample_rate[channel];
 }
 
-void stream_free(int channel) {
+void stream_free(int channel)
+{
 	free(stream_buffer[channel]);
 	stream_buffer[channel] = 0;
 }
@@ -260,8 +192,6 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 			stream_sample_length[channel+i] = 1000000 / sample_rate;
 		else
 			stream_sample_length[channel+i] = 0;
-
-		set_RC_filter(channel+i,0,0,0,0,sample_rate);
 	}
 
 	stream_param[channel] = param;

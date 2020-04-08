@@ -1585,7 +1585,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 	for (i=0; i<=3; i++) {
 		sprintf(s, "Votrax-SC01 #%d Int %d", 0, i);
 		votraxsc01_locals.channels[i] = stream_init(s, votraxsc01_locals.intf->mixing_level[0], sample_rate[i], i, Votrax_Update);
-//		set_RC_filter(votraxsc01_locals.channels[i], 270000, 15000, 0, 10000);
+//		set_RC_filter(votraxsc01_locals.channels[i], 270000, 15000, 0, 10000); // if reactivated, replace with filter.c
 	}
 
 //	if ( votraxsc01_locals.intf->BusyCallback[0] )

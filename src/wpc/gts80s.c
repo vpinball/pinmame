@@ -10,6 +10,7 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "snd_cmd.h"
+#include "sound/filter.h"
 
 #include "gts80.h"
 #include "gts80s.h"
@@ -62,6 +63,9 @@ static struct {
 	INT16  buffer[GTS80S_BUFFER_SIZE+1];
 	double clock[GTS80S_BUFFER_SIZE+1];
 	int    buf_pos;
+
+	filter *filter_f;
+	filter_state *filter_state;
 
 	int    dips;
 	UINT8* pRIOT6530_0_ram;
@@ -129,18 +133,16 @@ MEMORY_END
 
 static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
-	double dActClock, dInterval, dCurrentClock;
-	int i;
+	double dCurrentClock = GTS80S_locals.clock[0];
 
-	dCurrentClock = GTS80S_locals.clock[0];
+	const double dActClock = timer_get_time();
+	const double dInterval = (dActClock-GTS80S_locals.clock[0]) / length;
 
-	dActClock = timer_get_time();
-	dInterval = (dActClock-GTS80S_locals.clock[0]) / length;
-
-	i = 0;
+	int i = 0;
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = 9e99;
 	while ( length ) {
-		*buffer++ = GTS80S_locals.buffer[i];
+		filter_insert(GTS80S_locals.filter_f, GTS80S_locals.filter_state, GTS80S_locals.buffer[i]);
+		*buffer++ = filter_compute_clamp16(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
 		length--;
 		dCurrentClock += dInterval;
 
@@ -176,6 +178,9 @@ void gts80s_init(struct sndbrdData *brdData) {
 	GTS80S_locals.clock[0]  = 0;
 	GTS80S_locals.buffer[0] = 0;
 	GTS80S_locals.buf_pos   = 1;
+	GTS80S_locals.filter_f = filter_lp_fir_alloc(0.3, FILTER_ORDER_MAX); // 0.3 = magic
+	GTS80S_locals.filter_state = filter_state_alloc(); //!! leaks!
+	filter_state_reset(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
 
 	if ( GTS80S_locals.boardData.subType==0 ) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */
@@ -245,7 +250,6 @@ static int s80s_sh_start(const struct MachineSound *msound) {
   }
 
   stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
-  set_RC_filter(stream_locals.stream, 270000, 15000, 0, 33000, 11025);
 
   return 0;
 }
@@ -480,7 +484,7 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0xf000, 0xffff, empty_w}, // the soundboard does fake writes to the ROM area (used for a delay function)
 MEMORY_END
 
-static void GTS80_ss_Update(int num, INT16 *buffer, int length) // Mars - God of War, Black Hole, Haunted House, etc
+static void GTS80SS_Update(int num, INT16 *buffer, int length) // Mars - God of War, Black Hole, Haunted House, etc
 {
 	int i;
 
@@ -611,8 +615,8 @@ static int s80ss_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80_ss_Update);
-  //set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE);
+  stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80SS_Update);
+  //set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE); // if reactivated, replace with filter.c
 
   return 0;
 }

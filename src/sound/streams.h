@@ -10,8 +10,6 @@
 extern "C" {
 #endif
 
-void set_RC_filter(int channel,int R1,int R2,int R3,int C,int sample_rate); //!! get rid of this and replace with filter.c code
-
 int streams_sh_start(void);
 void streams_sh_stop(void);
 void streams_sh_update(void);
