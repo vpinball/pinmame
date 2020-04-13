@@ -307,24 +307,14 @@ void filter2_setup(const int type, const double fc, const double d, const double
 /* Reset the input/output voltages to 0. */
 void filter2_reset(filter2_context * const __restrict filter2)
 {
-	filter2->x0 = 0;
 	filter2->x1 = 0;
 	filter2->x2 = 0;
-	filter2->y0 = 0;
 	filter2->y1 = 0;
 	filter2->y2 = 0;
 }
 
 
 /* Step the filter. */
-
-/* Step the filter with an input, returning the output */
-double filter2_step_with(filter2_context * const __restrict filter2, const double input)
-{
-	filter2->x0 = input;
-	filter2_step(filter2);
-	return filter2->y0;
-}
 
 // directly set digital coefficients
 void filter_setup(const double b0, const double b1, const double b2, const double a1, const double a2, // a0 = 1
