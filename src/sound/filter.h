@@ -73,9 +73,9 @@ INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
 #define FILTER_HIGHPASS		1
 #define FILTER_BANDPASS		2
 
-typedef struct filter2_context_struct {
-	double x0, x1, x2;	/* x[k], x[k-1], x[k-2], current and previous 2 input values */
-	double y0, y1, y2;	/* y[k], y[k-1], y[k-2], current and previous 2 output values */
+typedef struct filter2_context_struct { // could also be reduced to only 2 history regs: https://en.wikipedia.org/wiki/Digital_biquad_filter#Direct_form_2, but Form 1 has better characteristics apparently
+	double /*x0,*/ x1, x2;	/* x[k], x[k-1], x[k-2], current and previous 2 input values */
+	double /*y0,*/ y1, y2;	/* y[k], y[k-1], y[k-2], current and previous 2 output values */
 	double a1, a2;		/* digital filter coefficients, denominator */
 	double b0, b1, b2;	/* digital filter coefficients, numerator */
 } filter2_context;
@@ -95,18 +95,16 @@ void filter2_setup(const int type, const double fc, const double d, const double
 void filter2_reset(filter2_context * const __restrict filter2);
 
 
-/* Step the filter.
- * x0 is the new input, which needs to be set before stepping.
- * y0 is the new filter output.
- */
-INLINE void filter2_step(filter2_context * const __restrict filter2)
+/* Step the filter with input x0. */
+INLINE double filter2_step_with(filter2_context * const __restrict filter2, const double x0)
 {
-	filter2->y0 = -filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2 +
-	               filter2->b0 * filter2->x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2;
+	// Form 1 Biquad Section Calc
+	const double y0 = /*a0**/(filter2->b0 * x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2) - filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2;
 	filter2->x2 = filter2->x1;
-	filter2->x1 = filter2->x0;
+	filter2->x1 = x0;
 	filter2->y2 = filter2->y1;
-	filter2->y1 = filter2->y0;
+	filter2->y1 = y0;
+	return y0;
 }
 
 /* 
