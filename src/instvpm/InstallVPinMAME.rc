@@ -99,39 +99,39 @@ IDI_MAIN                ICON                    "Res\\InstallVPinMAME.ico"
 // Dialog
 //
 
-IDD_MAINDLG DIALOG  0, 0, 340, 233
+IDD_MAINDLG DIALOGEX 0, 0, 340, 233
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "VPinMAME Installation program (Version %s)"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CTEXT           "Welcome to the Visual PinMAME Installation Program!",
                     IDC_STATIC,7,2,326,9
     CTEXT           "This program will allow you to install/uninstall, and change various settings of Visual PinMAME.",
                     IDC_STATIC,13,10,320,13,SS_CENTERIMAGE
     CTEXT           "",IDC_INSTALLEDVERSION,7,25,326,8
-    PUSHBUTTON      "&Install",IDC_REGISTER,8,42,77,20
-    LTEXT           "This will install the Visual PinMAME COM object on your computer.",
+    PUSHBUTTON      "&Install",IDC_REGISTER,7,42,77,20
+    LTEXT           "Installs the Visual PinMAME COM object on your computer.",
                     IDC_STATIC,89,47,244,10
     PUSHBUTTON      "&Uninstall",IDC_UNREGISTER,7,68,77,20
-    LTEXT           "This will uninstall the Visual PinMAME COM object from your computer.",
+    LTEXT           "Uninstalls the Visual PinMAME COM object from your computer.",
                     IDC_STATIC,89,74,244,8
     PUSHBUTTON      "Setup &Paths...",IDC_DISPLAYPATHESDLG,7,95,77,20
-    LTEXT           "This will allow you to specify and change the directories Visual PinMAME uses, such as ROM directories, and other configuration directories.",
+    LTEXT           "Allows to specify or change the directories Visual PinMAME uses, such as ROM directories, and other configuration directories.",
                     IDC_STATIC,89,96,244,16
     PUSHBUTTON      "Setup &Defaults...",IDC_DISPLAYOPTSDIALOG,7,122,77,20
-    LTEXT           "This will allow you to setup default options for all games.",
+    LTEXT           "Allows to setup default options for all games.",
                     IDC_STATIC,89,127,244,8
     PUSHBUTTON      "&Test",IDC_TESTDIALOG,7,148,77,20
-    LTEXT           "This will allow you to test your Visual PinMAME Installation.",
+    LTEXT           "Allows to test your Visual PinMAME Installation.",
                     IDC_STATIC,89,154,244,10
     PUSHBUTTON      "&Info...",IDC_DISPLAYBAOUTDIALOG,7,179,77,20
-    LTEXT           "This will show the Visual PinMAME ""About"" Screen",
+    LTEXT           "Shows the Visual PinMAME ""About"" Screen.",
                     IDC_STATIC,89,185,244,8
     DEFPUSHBUTTON   "&Quit",IDCANCEL,7,206,77,20
     LTEXT           "Ends this program.",IDC_STATIC,89,211,244,9
 END
 
-IDD_TESTDLG DIALOG  0, 0, 271, 202
+IDD_TESTDLG DIALOG 0, 0, 271, 202
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Test the installation; start a game"
 FONT 8, "MS Sans Serif"
@@ -158,7 +158,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAINDLG, DIALOG
     BEGIN
@@ -184,7 +184,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TITLE               "Visual PinMAME Installer (Version %s)"
 END
