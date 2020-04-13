@@ -1128,8 +1128,14 @@ static struct {
  INT16  *buffer;
  int     stream;
 #ifdef DCS_LOWPASS
- filter *filter_f;
- filter_state *filter_state;
+ #define SALLEN_KEY // like real HW/sound board uses, 4x 3rd order Sallen-Key low pass filters
+ #ifdef SALLEN_KEY
+  // filter stages
+  filter2_context f[8];
+ #else
+  filter *filter_f;
+  filter_state *filter_state;
+ #endif
 #endif
 } dcs_dac;
 
@@ -1276,6 +1282,8 @@ static data8_t *dcs_getBootROM(int soft) {
 }
 
 static int dcs_custStart(const struct MachineSound *msound) {
+  int i,fi;
+
   /*-- clear DAC data --*/
   memset(&dcs_dac,0,sizeof(dcs_dac));
 
@@ -1287,9 +1295,53 @@ static int dcs_custStart(const struct MachineSound *msound) {
   memset(dcs_dac.buffer, 0, DCS_BUFFER_SIZE * sizeof(INT16));
 
 #ifdef DCS_LOWPASS
+#ifdef SALLEN_KEY
+  fi = 0;
+  if (core_gameData->gen & (GEN_WPC95 /*| GEN_WPC95DCS*/)) // WHO Dunnit still has the 16-9472 (according to schematics on ipdb at least)
+  {
+  //WPC-95 Schematics 16-10011 sheet 4 of 4:
+  // misses one highpass at the beginning
+  for (i = 0; i < 3; ++i)
+  {
+    //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+    filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
+    //filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+    filter_setup(.535091623810354,1.07018324762071,.535091623810354,.680012213108756,.460354282132661, &dcs_dac.f[fi++]);
+
+    if (i == 1)
+    {
+      //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+      filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
+      //filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+      filter_setup(.514502498468169,1.02900499693634,.514502498468169,.576891355074468,.481118638798207, &dcs_dac.f[fi++]);
+    }
+  }
+  }
+  else
+  {
+  //WPC Schematics Sound Board 16-9472 sheet 4 of 5:
+  // misses one highpass at the beginning: R=47k,C=4.7u
+  for (i = 0; i < 3; ++i)
+  {
+    //filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_setup(.729195126212757,1.45839025242551,.729195126212757,1.45839025242551,.458390252425514, &dcs_dac.f[fi++]);
+    //filter_sallen_key_lp_setup(6200, 6200, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_setup(.534521431013207,1.06904286202641,.534521431013207,.678027269748316,.460058454304511, &dcs_dac.f[fi++]);
+
+    if (i == 1)
+    {
+      //filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_setup(.729195126212757,1.45839025242551,.729195126212757,1.45839025242551,.458390252425514, &dcs_dac.f[fi++]);
+      //filter_sallen_key_lp_setup(6200, 6200, 6800e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_setup(.466677045846047,.933354091692094,.466677045846047,.338117393295723,.528590790088464, &dcs_dac.f[fi++]);
+    }
+  }
+  }
+#else
   dcs_dac.filter_f = filter_lp_fir_alloc(0.275, FILTER_ORDER_MAX); // magic, resolves noise on scared stiff for example, while not cutting off too much else -> is this due to DCS compression itself?
   dcs_dac.filter_state = filter_state_alloc();
   filter_state_reset(dcs_dac.filter_f, dcs_dac.filter_state);
+#endif
 #endif
 
   return (dcs_dac.buffer == 0);
@@ -1299,8 +1351,10 @@ static void dcs_custStop(void) {
   if (dcs_dac.buffer)
     { free(dcs_dac.buffer); dcs_dac.buffer = NULL;
 #ifdef DCS_LOWPASS
+ #ifndef SALLEN_KEY
       filter_state_free(dcs_dac.filter_state);
       filter_free(dcs_dac.filter_f);
+ #endif
 #endif
     }
 }
@@ -1313,10 +1367,25 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++)
     {
+      double v;
+      int iii;
       if (dcs_dac.sOut == dcs_dac.sIn) break;
 #ifdef DCS_LOWPASS
+ #ifdef SALLEN_KEY
+      // run the sample through the staged filter
+      v = dcs_dac.buffer[dcs_dac.sOut];
+      for(iii = 0; iii < 8; iii++) //!! opt.!?
+        v = filter2_step_with(&dcs_dac.f[iii], v);
+      if (v <= -32768.)
+        buffer[ii] = -32768;
+      else if (v >= 32767.)
+        buffer[ii] = 32767;
+      else
+        buffer[ii] = (INT16)v;
+ #else
       filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[dcs_dac.sOut]);
       buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+ #endif
 #else
       buffer[ii] = dcs_dac.buffer[dcs_dac.sOut];
 #endif
@@ -1329,8 +1398,22 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
     for ( ; ii < length; ii++)
     {
 #ifdef DCS_LOWPASS
+ #ifdef SALLEN_KEY
+      // run the sample through the staged filter
+      double v = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
+      int iii;
+      for(iii = 0; iii < 8; iii++) //!! opt.!?
+        v = filter2_step_with(&dcs_dac.f[iii], v);
+      if (v <= -32768.)
+        buffer[ii] = -32768;
+      else if (v >= 32767.)
+        buffer[ii] = 32767;
+      else
+        buffer[ii] = (INT16)v;
+ #else
       filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK]);
       buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+ #endif
 #else
       buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
 #endif
