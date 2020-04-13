@@ -1,6 +1,7 @@
 //=====================================================================
 //
 // BasicBitmap.cpp - Simple Bitmap Library
+// https://github.com/skywind3000/BasicBitmap
 //
 // As the purpose of providing a simple, high-performance and platform
 // independent Bitmap library, this file is created based on a subset
@@ -1569,6 +1570,36 @@ BasicBitmap::BasicBitmap(const BasicBitmap &src)
 	}
 	Blit(0, 0, &src, NULL);
 }
+
+
+//---------------------------------------------------------------------
+// move constructor
+//---------------------------------------------------------------------
+#if __cplusplus >= 201103 || (defined(_MSC_VER) && _MSC_VER >= 1900)
+BasicBitmap::BasicBitmap(BasicBitmap &&src)
+{
+	_bits = src._bits;
+	_lines = src._lines;
+	_w = src._w;
+	_h = src._h;
+	_bpp = src._bpp;
+	_pixelsize = src._pixelsize;
+	_pitch = src._pitch;
+	_borrow = src._borrow;
+	_fmt = src._fmt;
+	_mask = src._mask;
+	src._bits = NULL;
+	src._lines = NULL;
+	src._w = 0;
+	src._h = 0;
+	src._bpp = 32;
+	src._pixelsize = 4;
+	src._pitch = 0;
+	src._mask = 0;
+	src._fmt = A8R8G8B8;
+	src._borrow = false;
+}
+#endif
 
 
 //---------------------------------------------------------------------

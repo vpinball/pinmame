@@ -531,9 +531,14 @@ public:
 	// copy constructor
 	BasicBitmap(const BasicBitmap &src);
 
+	// move constructor
+	#if __cplusplus >= 201103 || (defined(_MSC_VER) && _MSC_VER >= 1900)
+	BasicBitmap(BasicBitmap &&src);
+	#endif
+
 private:
 	// copy assignment is not allowed here
-	BasicBitmap& operator=(const BasicBitmap &);	
+	BasicBitmap& operator=(const BasicBitmap &src);
 
 public:
 
