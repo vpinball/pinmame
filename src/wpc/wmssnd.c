@@ -27,9 +27,7 @@
 // corner frequency in the low-pass rolloff curve, which is pretty shallow for 
 // Sallen-Key filters.  They use four chained filters to steepen the curve, to cut
 // out most of the output above 18875 Hz, which is probably right around the Nyquist
-// limit for the sampling rate they're using.  We should try substituting an IIR 
-// Sallen-Key for the current FIR, as it would probably sound a lot better.  See
-// filter.h.]
+// limit for the sampling rate they're using.
 #define DCS_LOWPASS 
 
 #ifdef DCS_LOWPASS
