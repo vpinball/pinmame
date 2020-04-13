@@ -8,7 +8,7 @@
 
 #include "osd_cpu.h"
 
-/* Max filter order */
+/* Max FIR filter order */
 #define FILTER_ORDER_MAX 501
 
 #if (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(__SSE__) || defined(_M_X64) || defined(_M_AMD64)
@@ -64,6 +64,10 @@ INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
 		return (INT16)tmp;
 }
 
+//
+// The following IIR filter is much lower computational overhead, but is more restricted to what can be done with filters that are based on it
+//
+
 /* Filter types */
 #define FILTER_LOWPASS		0
 #define FILTER_HIGHPASS		1
@@ -84,11 +88,11 @@ typedef struct filter2_context_struct {
  * gain - overall filter gain. Set to 1 if not needed.
  */
 void filter2_setup(const int type, const double fc, const double d, const double gain,
-					filter2_context *filter2, const unsigned int sample_rate);
+	filter2_context * const __restrict filter2, const unsigned int sample_rate);
 
 
 /* Reset the input/output voltages to 0. */
-void filter2_reset(filter2_context *filter2);
+void filter2_reset(filter2_context * const __restrict filter2);
 
 
 /* Step the filter.
@@ -108,7 +112,12 @@ INLINE void filter2_step(filter2_context * const __restrict filter2)
 /* 
  *  Step the filter with a given input, returning the new output.
  */
-double filter2_step_with(filter2_context * const __restrict filter2, double input);
+double filter2_step_with(filter2_context * const __restrict filter2, const double input);
+
+
+// directly set digital coefficients
+void filter_setup(const double b0, const double b1, const double b2, const double a1, const double a2, // a0 = 1
+	filter2_context * const __restrict filter2);
 
 
 /* Setup a filter2 structure based on an op-amp multipole bandpass circuit.
@@ -129,8 +138,8 @@ double filter2_step_with(filter2_context * const __restrict filter2, double inpu
  *                  gnd        vRef >---'  |/
  *
  */
-void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, double c2,
-					filter2_context *filter2, unsigned int sample_rate);
+void filter_opamp_m_bandpass_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
+					filter2_context * const __restrict filter2, const unsigned int sample_rate);
 
 
 // Multiple Feedback Low-pass Filter
@@ -181,8 +190,8 @@ void filter_opamp_m_bandpass_setup(double r1, double r2, double r3, double c1, d
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_mf_lp_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
-	struct filter2_context_struct *context, const int sample_rate);
+void filter_mf_lp_setup(const double R1, const double R2, const double R3, const double C1, const double C2,
+	filter2_context * const __restrict context, const int sample_rate);
 
 
 // Active single-pole low-pass filter
@@ -211,8 +220,8 @@ void filter_mf_lp_setup(const double r1, const double r2, const double r3, const
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_active_lp_setup(const double r1, const double r2, const double r3, const double c1,
-	struct filter2_context_struct *context, const int sample_rate);
+void filter_active_lp_setup(const double R1, const double R2, const double R3, const double C1,
+	filter2_context * const __restrict context, const int sample_rate);
 
 // Sallen-Key low-pass filter
 //
@@ -236,7 +245,7 @@ void filter_active_lp_setup(const double r1, const double r2, const double r3, c
 //
 // Specify resistor values in Ohms and capacitors in Farads.
 //
-void filter_sallen_key_lp_setup(const double r1, const double r2, const double c1, const double c2,
-	struct filter2_context_struct *context, const int sample_rate);
+void filter_sallen_key_lp_setup(const double R1, const double R2, const double C1, const double C2,
+	filter2_context * const __restrict context, const int sample_rate);
 
 #endif
