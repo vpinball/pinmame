@@ -205,8 +205,8 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 		// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
 		INT32 data = chip->curr_value;
 		INT32 slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
-		data <<= 15;
 		int i;
+		data <<= 15;
 
 #ifdef PINMAME
 #if ENABLE_LOWPASS_ESTIMATE

@@ -70,11 +70,11 @@ void streams_sh_update(void)
 
 			if (stream_joined_channels[channel] > 1)
 			{
+				int i;
 				if (buflen > 0)
 				{
 					INT16 *buf[MIXER_MAX_CHANNELS];
 
-					int i;
 					for (i = 0;i < stream_joined_channels[channel];i++)
 					{
 						assert(buflen + stream_buffer_pos[channel+i] < BUFFER_LEN);
@@ -85,7 +85,6 @@ void streams_sh_update(void)
 					(*stream_callback_multi[channel])(stream_param[channel],buf,buflen);
 				}
 
-				int i;
 				for (i = 0;i < stream_joined_channels[channel];i++)
 					stream_buffer_pos[channel+i] = 0;
 			}
