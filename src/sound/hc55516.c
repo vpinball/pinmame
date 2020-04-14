@@ -234,19 +234,10 @@ static FILE *dynrange_log_fp;
 // -DYN_RANGE_MAX to +DYN_RANGE_MAX and compresses it to fit an INT16 value.
 // The curve is linear at low volumes and flattens at higher volumes, which
 // tends to make the overall signal sound louder.
-static INT16 compress_loudness(double sample)
+static float compress_loudness(const double sample)
 {
 	// apply compression
-	sample = sample / (1.0 + fabs(sample)*(1.0 / 32768.0)) + sample*0.15;
-
-	// clip to INT16 range
-	if (sample <= -32768.0)
-		return -32768;
-	else if (sample >= 32767.0)
-		return 32767;
-	else
-		// return the compressed and clipped result
-		return (INT16)sample;
+	return (float)((sample / (1.0 + fabs(sample)*(1.0 / 32768.0)) + sample*0.15) * (1.0 / 32768.0));
 }
 
 // Default gain.  This is the scaling factor to convert from the simulated
@@ -308,10 +299,10 @@ struct hc55516_data
 		int type;
 		
 		// first filter stage
-		struct filter2_context_struct f1;
+		filter2_context f1;
 
 		// second filter stage
-		struct filter2_context_struct f2;
+		filter2_context f2;
 	} output_filter;
 
 	// Input bit ring buffer.  When the pinball sound board emulator clocks a
@@ -535,13 +526,13 @@ static void process_bit(struct hc55516_data *chip, const UINT8 bit, const double
 //
 // Apply the final output filter
 //
-static INT16 apply_filter(struct hc55516_data *chip, const float sample)
+static float apply_filter(struct hc55516_data *chip, const float sample)
 {
 	// run the sample through the two-stage filter
 	const double filtered = filter2_step_with(&chip->output_filter.f2, filter2_step_with(&chip->output_filter.f1, sample));
 
 	// apply the gain and apply loudness compression
-	const INT16 scaled = compress_loudness(filtered * chip->gain);
+	const float scaled = compress_loudness(filtered * chip->gain);
 
 #ifdef LOG_DYN_RANGE
 	// update the min/max range 
@@ -582,13 +573,14 @@ static INT16 apply_filter(struct hc55516_data *chip, const float sample)
 // This takes the buffered CVSD input bit stream, and converts it to a PCM
 // sample stream at the MAME stream rate.
 //
-void hc55516_update(int num, INT16 *buffer, int length)
+static void hc55516_update(int num, INT16 *buffer_ptr, int length)
 {
 	struct hc55516_data *chip = &hc55516[num];
 	const double work_ahead = 0.0025;
 	const double max_gap = .0005;
 	const double now = timer_get_time();
 	double t = chip->stream_update_time;
+	float * __restrict buffer = (float*)buffer_ptr;
 
 	// Start a tiny bit early, so that we (hopefully) end a little early,
 	// leaving a little CVSD input to carry over to next time.  This helps
@@ -909,7 +901,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 
 		// create the output stream
 		sprintf(name, "HC55516 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], Machine->sample_rate, i, hc55516_update);
+		chip->channel = stream_init_float(name, intf->volume[i], Machine->sample_rate, i, hc55516_update, 1); // pick output sample rate for max quality, also saves an additional filtering step in the mixer!
 		chip->stream_update_time = timer_get_time();
 		chip->output_dt = 1.0 / Machine->sample_rate;
 		chip->gain = DEFAULT_GAIN;
