@@ -28,7 +28,7 @@
  //#define charge 0.9990234375
 
  #define ENABLE_LOWPASS_ESTIMATE 0 // don't use it for now, it sounds too muffled
- #define SAMPLE_GAIN			6500.0
+ #define SAMPLE_GAIN			0.92 // ~0..1
 #else
  //#define	INTEGRATOR_LEAK_TC		0.001
  #define leak   0.939413062813475786119710824622305084524680890549441822009 //=pow(1.0/M_E, 1.0/(INTEGRATOR_LEAK_TC * 16000.0));
@@ -38,7 +38,7 @@
  #define charge 0.984496437005408405986988829697020369707861003180350567476 //=pow(1.0/M_E, 1.0/(FILTER_CHARGE_TC * 16000.0));
 
  #define FILTER_MIN				0.0416 // idle voltage (0/1 alternating input on each clock) from MC3417 datasheet
- #define SAMPLE_GAIN			10000.0
+ #define SAMPLE_GAIN			(10000.0/32768.) // ~0..1
 #endif
 
 #if ENABLE_LOWPASS_ESTIMATE
@@ -57,8 +57,8 @@ struct mc3417_data
 	UINT8	databit;
 	UINT8	shiftreg;
 
-	INT16	curr_value;
-	INT16	next_value;
+	double	curr_value;
+	double	next_value;
 
 	double 	filter;
 	double	integrator;
@@ -105,7 +105,7 @@ int mc3417_sh_start(const struct MachineSound *msound)
 
 		/* create the stream */
 		sprintf(name, "MC3417 #%d", i);
-		chip->channel = stream_init(name, intf->volume[i], SAMPLE_RATE, i, mc3417_update);
+		chip->channel = stream_init_float(name, intf->volume[i], SAMPLE_RATE, i, mc3417_update, 1);
 		/* bail on fail */
 		if (chip->channel == -1)
 			return 1;
@@ -144,6 +144,7 @@ int mc3417_sh_start(const struct MachineSound *msound)
 static void mc3417_update(int num, INT16 *buffer, int length)
 {
 	struct mc3417_data *chip = &mc3417[num];
+	float* __restrict buffer_f = (float*)buffer;
 
 	/* zero-length? bail */
 	if (length == 0)
@@ -190,9 +191,9 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 		float tmp = chip->curr_value;
 		int i;
 		for (i = 0; i < length; i++, tmp *= 0.95f)
-			*buffer++ = (INT16)tmp;
+			buffer_f[i] = tmp;
 
-		chip->next_value = (INT16)tmp; // update next_value with the faded value
+		chip->next_value = tmp; // update next_value with the faded value
 
 		chip->integrator = 0.; // PINMAME: Reset all chip state
 		chip->filter = 0.;
@@ -203,46 +204,40 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 		/* compute the interpolation slope */
 		// as the clock drives the update (99% of the time), we can interpolate only within the current update phase
 		// for the remaining cases where the output drives the update, length is rather small (1 or very low 2 digit range): then the last sample will simply be repeated
-		INT32 data = chip->curr_value;
-		INT32 slope = (((INT32)chip->next_value - data) << 15) / length; // PINMAME: increase/fix precision issue!
+		double data = chip->curr_value;
+		const double slope = (chip->next_value - data) / (double)length;
 		int i;
-		data <<= 15;
 
 #ifdef PINMAME
 #if ENABLE_LOWPASS_ESTIMATE
 		if (chip->filter_f)
 			for (i = 0; i < length; i++, data += slope)
 			{
-				filter_insert(chip->filter_f, chip->filter_state, (float)data * (float)(1.0/32768.0));
-				*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
+				filter_insert(chip->filter_f, chip->filter_state, (float)data);
+				buffer_f[i] = filter_compute(chip->filter_f, chip->filter_state);
 			}
 		else
 			for (i = 0; i < length; i++, data += slope)
-				*buffer++ = data >> 15;
+				buffer_f[i] = (float)data;
 #else // ENABLE_LOWPASS_ESTIMATE
 		for (i = 0; i < length; i++, data += slope)
 		{
 #ifdef SALLEN_KEY
 			// run the sample through the staged filter
-			double v = (double)data * (1.0/32768.0);
+			double v = data;
 			int iii;
 			for(iii = 0; iii < 4; iii++) //!! opt.!?
 				v = filter2_step_with(&chip->f[iii], v);
-			if (v <= -32768.)
-				*buffer++ = -32768;
-			else if (v >= 32767.)
-				*buffer++ = 32767;
-			else
-				*buffer++ = (INT16)v;
+			buffer_f[i] = (float)v;
 #else
-			filter_insert(chip->filter_f, chip->filter_state, (float)data * (float)(1.0/32768.0));
-			*buffer++ = filter_compute_clamp16(chip->filter_f, chip->filter_state);
+			filter_insert(chip->filter_f, chip->filter_state, (float)data);
+			buffer_f[i] = filter_compute(chip->filter_f, chip->filter_state);
 #endif
 		}
 #endif
 #else // PINMAME
 		for (i = 0; i < length; i++, data += slope)
-			*buffer++ = data >> 15;
+			buffer_f[i] = (float)data;
 #endif
 	}
 
@@ -303,34 +298,34 @@ void mc3417_clock_w(int num, int state)
 #if 1
 		/* compress the sample range, sounds better */
 		if (temp < 0.)
-			temp = temp / (temp * -(1.0 / 32768.0) + 1.0) + temp*0.15;
+			temp = temp / (-temp + 1.0) + temp*0.15;
 		else
-			temp = temp / (temp *  (1.0 / 32768.0) + 1.0) + temp*0.15;
+			temp = temp / ( temp + 1.0) + temp*0.15;
 
 		if (chip->last_sound == 0) // missed a soundupdate: lerp data in here directly
 			temp = (temp + chip->next_value)*0.5;
 
-		if(temp <= -32768.)
-			chip->next_value = -32768;
-		else if(temp >= 32767.)
-			chip->next_value = 32767;
+		if(temp <= -1.)
+			chip->next_value = -1.;
+		else if(temp >= 1.)
+			chip->next_value = 1.;
 		else
-			chip->next_value = (INT16)temp;
+			chip->next_value = temp;
 #else
 		/* Cut off extreme peaks produced by bad speech data */
-		if (temp < -80000.) temp = -80000.;
-		else if (temp > 80000.) temp = 80000.;
+		if (temp < -80000./32768.) temp = -80000./32768.;
+		else if (temp > 80000./32768.) temp = 80000./32768.;
 		/* Just wrap to prevent clipping */
-		if (temp < -32768.) chip->next_value = (INT16)(-65536. - temp);
-		else if (temp > 32767.) chip->next_value = (INT16)(65535. - temp);
-		else chip->next_value = (INT16)temp;
+		if (temp < -1.) chip->next_value = (-2. - temp);
+		else if (temp > 1.) chip->next_value = (2. - temp);
+		else chip->next_value = temp;
 #endif
 #else
 		/* compress the sample range to fit better in a 16-bit word */
 		if (temp < 0.)
-			chip->next_value = (int)(temp / (temp * -(1.0 / 32768.0) + 1.0));
+			chip->next_value = (temp / (-temp + 1.0));
 		else
-			chip->next_value = (int)(temp / (temp *  (1.0 / 32768.0) + 1.0));
+			chip->next_value = (temp / ( temp + 1.0));
 #endif
 		/* clear the update count */
 		chip->last_sound = 0;
