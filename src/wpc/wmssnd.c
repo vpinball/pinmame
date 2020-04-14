@@ -1286,7 +1286,12 @@ static int dcs_custStart(const struct MachineSound *msound) {
   memset(&dcs_dac,0,sizeof(dcs_dac));
 
   /*-- allocate a DAC stream --*/
-  dcs_dac.stream = stream_init("DCS DAC", 100, DCS_DEFAULT_SAMPLE_RATE, 0, dcs_dacUpdate);
+  dcs_dac.stream = stream_init_float("DCS DAC", 100, DCS_DEFAULT_SAMPLE_RATE, 0, dcs_dacUpdate,
+#ifdef DCS_LOWPASS
+      1);
+#else
+      0);
+#endif
 
   /*-- allocate memory for our buffer --*/
   dcs_dac.buffer = malloc(DCS_BUFFER_SIZE * sizeof(INT16));
@@ -1301,16 +1306,16 @@ static int dcs_custStart(const struct MachineSound *msound) {
   // misses one highpass at the beginning
   for (i = 0; i < 3; ++i)
   {
-    //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+    //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
-    //filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+    //filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     filter_setup(.535091623810354,1.07018324762071,.535091623810354,.680012213108756,.460354282132661, &dcs_dac.f[fi++]);
 
     if (i == 1)
     {
-      //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+      //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
       filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
-      //filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[0], DCS_DEFAULT_SAMPLE_RATE);
+      //filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
       filter_setup(.514502498468169,1.02900499693634,.514502498468169,.576891355074468,.481118638798207, &dcs_dac.f[fi++]);
     }
   }
@@ -1361,6 +1366,9 @@ static void dcs_custStop(void) {
 static void dcs_dacUpdate(int num, INT16 *buffer, int length)
 {
     int ii;
+#ifdef DCS_LOWPASS
+    float* __restrict const buffer_f = (float*)buffer;
+#endif
 
     /* fill in with samples until we hit the end or run out */
     for (ii = 0; ii < length; ii++)
@@ -1371,18 +1379,13 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
 #ifdef DCS_LOWPASS
  #ifdef SALLEN_KEY
       // run the sample through the staged filter
-      v = dcs_dac.buffer[dcs_dac.sOut];
+      v = (double)(1.0/32768.0)*(double)dcs_dac.buffer[dcs_dac.sOut];
       for(iii = 0; iii < 8; iii++) //!! opt.!?
         v = filter2_step_with(&dcs_dac.f[iii], v);
-      if (v <= -32768.)
-        buffer[ii] = -32768;
-      else if (v >= 32767.)
-        buffer[ii] = 32767;
-      else
-        buffer[ii] = (INT16)v;
+      buffer_f[ii] = (float)v;
  #else
-      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[dcs_dac.sOut]);
-      buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, (float)(1.0/32768.0)*(float)dcs_dac.buffer[dcs_dac.sOut]);
+      buffer_f[ii] = filter_compute(dcs_dac.filter_f, dcs_dac.filter_state);
  #endif
 #else
       buffer[ii] = dcs_dac.buffer[dcs_dac.sOut];
@@ -1398,19 +1401,14 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length)
 #ifdef DCS_LOWPASS
  #ifdef SALLEN_KEY
       // run the sample through the staged filter
-      double v = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
+      double v = (double)(1.0/32768.0)*(double)dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
       int iii;
       for(iii = 0; iii < 8; iii++) //!! opt.!?
         v = filter2_step_with(&dcs_dac.f[iii], v);
-      if (v <= -32768.)
-        buffer[ii] = -32768;
-      else if (v >= 32767.)
-        buffer[ii] = 32767;
-      else
-        buffer[ii] = (INT16)v;
+      buffer_f[ii] = (float)v;
  #else
-      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK]);
-      buffer[ii] = filter_compute_clamp16(dcs_dac.filter_f, dcs_dac.filter_state);
+      filter_insert(dcs_dac.filter_f, dcs_dac.filter_state, (float)(1.0/32768.0)*(float)dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK]);
+      buffer_f[ii] = filter_compute(dcs_dac.filter_f, dcs_dac.filter_state);
  #endif
 #else
       buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
