@@ -354,7 +354,7 @@ BY35_ROMSTARTx00(smmand,"6mi$2732.u2", CRC(52a6bcd4) SHA1(d7be836776ff5be8d69472
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_smmand input_ports_by35
-CORE_CLONEDEFNV(smmand,smman,"Six Million Dollar Man, The (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(smmand,smman,"Six Million Dollar Man, The (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /*--------------------------------
 / Playboy
@@ -390,7 +390,7 @@ BY35_ROMSTARTx00(playboyd,"play2732.u2", CRC(da49e8ce) SHA1(fa2b7731e6ade119b1c1
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_playboyd input_ports_by35
-CORE_CLONEDEFNV(playboyd,playboy, "Playboy (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(playboyd,playboy, "Playboy (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /*--------------------------------
 / Voltan Escapes Cosmic Doom
@@ -426,7 +426,7 @@ BY35_ROMSTARTx00(voltand, "volt2732.u2", CRC(a4670a54) SHA1(7bb792e388d52bd350e3
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_voltand input_ports_by35
-CORE_CLONEDEFNV(voltand,voltan, "Voltan Escapes Cosmic Doom (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(voltand,voltan, "Voltan Escapes Cosmic Doom (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /*--------------------------------
 / Supersonic
@@ -462,7 +462,7 @@ BY35_ROMSTARTx00(sstd,    "surp2732.u2", CRC(4987f46e) SHA1(a32984f29ba41c8c0388
 BY32_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_sstd input_ports_by35
-CORE_CLONEDEFNV(sstd,sst, "Supersonic (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
+CORE_CLONEDEFNV(sstd,sst, "Supersonic (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_32S,0)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -50 */
@@ -501,7 +501,7 @@ BY35_ROMSTARTx00(startred,"star2732.u2", CRC(34dd99c3) SHA1(86dd5b46873c19103115
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_startred input_ports_by35
-CORE_CLONEDEFNV(startred,startrek, "Star Trek (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(startred,startrek, "Star Trek (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 /*--------------------------------
 / Paragon
@@ -537,7 +537,7 @@ BY35_ROMSTARTx00(paragond,"para2732.u2", CRC(b3c990a1) SHA1(cb90c5fa52fefc29574a
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_paragond input_ports_by35
-CORE_CLONEDEFNV(paragond,paragon, "Paragon (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(paragond,paragon, "Paragon (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 /*--------------------------------
 / Harlem Globetrotters
@@ -613,7 +613,7 @@ BY35_ROMSTARTx00(kissd,   "kiss2732.u2", CRC(716adcfd) SHA1(048e3142cfa307ea4552
 BY50_SOUNDROM(            "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
 BY35_ROMEND
 #define input_ports_kissd input_ports_by35
-CORE_CLONEDEFNV(kissd,kiss,"Kiss (/10 Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(kissd,kiss,"Kiss (/10 Scoring Free Play)",2008,"Bally / Oliver",by35_mBY35_50S,0)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -51 */

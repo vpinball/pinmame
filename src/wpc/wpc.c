@@ -386,7 +386,7 @@ static INTERRUPT_GEN(wpc_vblank) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+      dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
 #ifdef PROC_SUPPORT
 			if (coreGlobals.p_rocEn) {
 				/* looks like P-ROC uses the last 3 subframes sent rather than the first 3 */
@@ -401,7 +401,7 @@ static INTERRUPT_GEN(wpc_vblank) {
   }
 
   /*--------------------------------------------------------
-  /  Most solonoids don't have a holding coil so the software
+  /  Most solenoids don't have a holding coil so the software
   /  simulates it by pulsing the power to the main (and only) coil.
   /  (I assume this is why the Auto Fire diverter in TZ seems to flicker.)
   /  I simulate the coil position by looking over WPC_SOLSMOOTH vblanks
@@ -1212,7 +1212,7 @@ static VIDEO_START(wpc_dmd) {
 //static VIDEO_UPDATE(wpc_dmd) {
 PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   tDMDDot dotCol;
-  int ii,jj,kk;
+  int ii,kk;
 
 #ifdef VPINMAME
   g_raw_gtswpc_dmdframes = DMD_FRAMES;
@@ -1221,6 +1221,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   /* Create a temporary buffer with all pixels */
   for (kk = 0, ii = 1; ii < 33; ii++) {
     UINT8 *line = &dotCol[ii][0];
+    int jj;
     for (jj = 0; jj < 16; jj++) {
       /* Intensity depends on how many times the pixel */
       /* been on in the last 3 frames                  */

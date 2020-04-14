@@ -101,6 +101,7 @@ static WRITE_HANDLER(control_w)
 			break;
 		default:
 			LOG(("WARNING! Reading invalid control address %x\n", offset));
+			break;
 	}
 	//Setsync line goes hi for all address except it's own(0xf000)
 	if(offset != 0xf000) {
@@ -279,8 +280,9 @@ static INTERRUPT_GEN(dmd32_firq) {
 		LOG(("INT1 Pulse\n"));
 		cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
 	}
-	else
-		printf("Skipping INT1\n");
+	else {
+		LOG(("Skipping INT1\n"));
+	}
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {

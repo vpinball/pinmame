@@ -123,6 +123,7 @@ static WRITE_HANDLER(dmd32_status_w) {
 static WRITE_HANDLER(dmd32_bank_w) {
   cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + (data & 0x1f)*0x4000);
 }
+
 static READ_HANDLER(dmd32_latch_r) {
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
@@ -365,6 +366,7 @@ static void dmd16_init(struct sndbrdData *brdData) {
   dmd16_setbank(0x07, 0x07);
   dmd16_setbusy(BUSY_SET|BUSY_CLR,0);
 }
+
 /*--- Port decoding ----
   76543210
   10-001-- Bank0 (stat)
@@ -379,8 +381,8 @@ static void dmd16_init(struct sndbrdData *brdData) {
   11-101-- Row Clock (stat)
   0----1-- CLATCH (mom)
   0----0-- COCLK (mom)
-
 --------------------*/
+
 static READ_HANDLER(dmd16_port_r) {
   if ((offset & 0x84) == 0x80) {
     dmd16_setbusy(BUSY_CLR, 0); dmd16_setbusy(BUSY_CLR,1);
@@ -442,7 +444,7 @@ static WRITE_HANDLER(dmd16_port_w) {
         case 0xcc: // Row data
           dmdlocals.rowdata = data; break;
         case 0xd4: // Row clock
-          if (~data & dmdlocals.rowclk) // negative edge;
+          if (~data & dmdlocals.rowclk) // negative edge
             dmdlocals.hv5222 = (dmdlocals.hv5222<<1) | (dmdlocals.rowdata);
           dmdlocals.rowclk = data;
           break;
@@ -469,7 +471,7 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
 
 static void dmd16_setbusy(int bit, int value) {
   static int laststat = 0;
-  int newstat = (laststat & ~bit) | (value ? bit : 0);
+  const int newstat = (laststat & ~bit) | (value ? bit : 0);
 #if 1
   /* In the data-sheet for the HC74 flip-flop is says that SET & CLR are _not_
      edge triggered. For some strange reason, the DMD doesn't work unless we

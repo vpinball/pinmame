@@ -507,16 +507,16 @@ ST200_ROMSTART8888(cheetahb,"CHEETAH__X_B16.U1",CRC(2f736a0a) SHA1(e0dc14215d901
                             "CHEETAH__X_B16.U6",CRC(c7eba210) SHA1(ced377e53f30b371e74c26527e5f8bebcc10ee59)) /*cheetah.u6*/
 BY35_ROMEND
 #define input_ports_cheetahb input_ports_st
-CORE_CLONEDEFNV(cheetahb,cheetah,"Cheetah (Blue cabinet)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(cheetahb,cheetah,"Cheetah (Blue cabinet)",1980,"Stern",by35_mST200,0) // different sounds and bonus countdown
 
 INITGAME(cheetafp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetafp,"fpch_u1.716",CRC(af26e00e) SHA1(9573cf5a56bbd7a534022b43752c7c25042d707b),
-                           "fpch_u5.716",CRC(f6c34e1d) SHA1(732b94196a45c0a818fe5613c106f9aad5eae53e),
-                           "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
-                           "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
+                            "fpch_u5.716",CRC(f6c34e1d) SHA1(732b94196a45c0a818fe5613c106f9aad5eae53e),
+                            "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
+                            "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
 #define input_ports_cheetafp input_ports_st
-CORE_CLONEDEFNV(cheetafp,cheetah,"Cheetah (Free Play)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(cheetafp,cheetah,"Cheetah (Black cabinet Free Play)",1980,"Stern",by35_mST200,0)
 
 INITGAME(cheetah1,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetah1,"CHEETAH__R_B20.U1",CRC(6a845d94) SHA1(c272d5895edf2270f5f06fc33345bb4911abbee4),
@@ -525,7 +525,7 @@ ST200_ROMSTART8888(cheetah1,"CHEETAH__R_B20.U1",CRC(6a845d94) SHA1(c272d5895edf2
                            "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
 #define input_ports_cheetah1 input_ports_st
-CORE_CLONEDEFNV(cheetah1,cheetah,"Cheetah (Bonus shot 1/game)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(cheetah1,cheetah,"Cheetah (Black cabinet Bonus shot 1/game)",1980,"Stern",by35_mST200,0)
 
 INITGAME(cheetah2,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetah2,"bbcpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
@@ -534,7 +534,7 @@ ST200_ROMSTART8888(cheetah2,"bbcpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a
                            "bbcpu_u6.716",CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
 BY35_ROMEND
 #define input_ports_cheetah2 input_ports_st
-CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Bonus shot 1/ball)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Black cabinet Bonus shot 1/ball)",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Quicksilver
