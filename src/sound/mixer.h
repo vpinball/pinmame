@@ -76,6 +76,8 @@ void mixer_sh_stop();
 void mixer_sh_update();
 int mixer_allocate_channel(const int default_mixing_level);
 int mixer_allocate_channels(const int channels,const int *default_mixing_levels);
+int mixer_allocate_channel_float(const int default_mixing_level, const UINT8 is_float);
+int mixer_allocate_channels_float(const int channels, const int *default_mixing_levels, const UINT8 is_float);
 void mixer_set_name(const int channel, const char *name);
 const char *mixer_get_name(const int channel);
 
