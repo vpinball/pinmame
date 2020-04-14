@@ -231,13 +231,13 @@ static FILE *dynrange_log_fp;
 #define DYN_RANGE_MAX 69790.0
 
 // Loudness compression function.  This takes a sample in linear space form
-// -DYN_RANGE_MAX to +DYN_RANGE_MAX and compresses it to fit an INT16 value.
+// -DYN_RANGE_MAX to +DYN_RANGE_MAX and compresses it to fit -1..1.
 // The curve is linear at low volumes and flattens at higher volumes, which
 // tends to make the overall signal sound louder.
-static float compress_loudness(const double sample)
+INLINE float compress_loudness(const double sample)
 {
 	// apply compression
-	return (float)((sample / (1.0 + fabs(sample)*(1.0 / 32768.0)) + sample*0.15) * (1.0 / 32768.0));
+	return (float)(sample / (32768.0 + fabs(sample)) + sample * (0.15 * (1.0 / 32768.0)));
 }
 
 // Default gain.  This is the scaling factor to convert from the simulated

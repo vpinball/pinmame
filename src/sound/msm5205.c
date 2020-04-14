@@ -131,12 +131,10 @@ static void MSM5205_update(int chip,INT16 *buffer,int length)
 	/* if this voice is active */
 	if(voice->signal)
 	{
-		short val = voice->signal * 16;
-		while (length)
-		{
-			*buffer++ = val;
-			length--;
-		}
+		const INT16 val = voice->signal * 16;
+		int i;
+		for (i = 0; i < length; i++)
+			buffer[i] = val;
 	}
 	else
 		memset (buffer,0,length*sizeof(INT16));
