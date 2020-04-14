@@ -87,7 +87,6 @@
 	#define CPU_CLOCK		16670000	/* Animation speed is more accurate at this speed, strange.. */
 #endif
 
-#define CC_VBLANKFREQ     60 /* VBLANK frequency */
 #define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
@@ -128,7 +127,7 @@ static INTERRUPT_GEN(cc_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
+  locals.vblankCount++;
 
   /*-- lamps --*/
   if ((locals.vblankCount % CC_LAMPSMOOTH) == 0) {

@@ -202,8 +202,6 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_PROTMEMCTRL   (0x3ffe - WPC_BASE) /* xxxxxx W: Set protected memory area */
 #define WPC_WATCHDOG      (0x3fff - WPC_BASE) /* xxxxxx W: Watchdog */
 
-#define WPC_VBLANKFREQ    60 /* VBLANK frequency */
-
 /*-- the internal state of the WPC chip. Should only be used in memory handlers --*/
 extern UINT8 *wpc_data;
 extern UINT8 *wpc_ram;

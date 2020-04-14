@@ -194,7 +194,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_a6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_a6,frpwr_l6,"Firepower (Sys.6/6-digit conversion rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_d6,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTMOD(frpwr_d6, "fir6d614.732", CRC(b9274332) SHA1(53dd65dcda566b2b000928ff32a8256e6054ebb5),
@@ -238,7 +238,7 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_c6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-digit Custom rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-digit conversion rev. 31)",2008,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 
