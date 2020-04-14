@@ -324,6 +324,6 @@ void astrocade_sh_update(void)
 		/* reset position , step , count */
 		sample_pos[num] = 0;
 		/* play sound */
-		mixer_play_streamed_sample_16(channel+num,astrocade_buffer[num],2*buffer_len,emulation_rate);
+		mixer_play_streamed_sample_16(channel+num,astrocade_buffer[num],buffer_len,emulation_rate);
 	}
 }

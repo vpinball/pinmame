@@ -15,7 +15,7 @@
 #include <assert.h>
 
 #ifndef FLT_MAX
-#define FLT_MAX         3.402823466e+38F        /* max value */
+ #define FLT_MAX         3.402823466e+38F        /* max value */
 #endif
 
 /***************************************************************************/
@@ -206,7 +206,6 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	SRC_DATA data;
 	long i;
 	const float scale_copy = channel->is_float ? volume : (float)(volume / 0x8000);
-	const float scale_volume = volume;
 
 	//limit src_len input length, roughly same as old code did basically:
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / (double)channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
@@ -358,7 +357,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 
 	for (i = 0; i < data.output_frames_gen; ++i)
 	{
-		dst[dst_pos] += out_f[i] * scale_volume;
+		dst[dst_pos] += out_f[i] * volume;
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
@@ -376,7 +375,6 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 	SRC_DATA data;
 	long i;
 	const float scale_copy = (float)(volume / 0x80);
-	const float scale_volume = volume;
 
 	//limit src_len input length, roughly same as old code did basically:
 	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / (double)channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
@@ -457,7 +455,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 
 	for (i = 0; i < data.output_frames_gen; ++i)
 	{
-		dst[dst_pos] += out_f[i] * scale_volume;
+		dst[dst_pos] += out_f[i] * volume;
 		dst_pos = (dst_pos + 1) & ACCUMULATOR_MASK;
 	}
 
@@ -1139,7 +1137,7 @@ void mixer_play_streamed_sample_16(const int ch, INT16 *data, int len, const int
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 	float mixing_volume[2];
 
-	mixerlogerror(("Mixer:mixer_play_streamed_sample_16(%s,,%d,%d)\n",channel->name,len/2,freq));
+	mixerlogerror(("Mixer:mixer_play_streamed_sample_16(%s,,%d,%d)\n",channel->name,len,freq));
 
 	/* skip if sound is off */
 	if (Machine->sample_rate == 0)
@@ -1158,9 +1156,6 @@ void mixer_play_streamed_sample_16(const int ch, INT16 *data, int len, const int
 	}
 
 	mixer_channel_resample_set(channel,freq,0);
-
-	/* compute the length in fractional form */
-	len = len / 2; /* convert len from byte to word */
 
 	mixer_channel_resample_16_pan(channel,mixing_volume,ACCUMULATOR_MASK,&data,len);
 
