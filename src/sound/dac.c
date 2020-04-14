@@ -19,7 +19,7 @@ static double integrator[MAX_DAC];
 static int UnsignedVolTable[256];
 static int SignedVolTable[256];
 
-static void DAC_update(int num,INT16 *buffer,int length)
+static void DAC_update(int num,INT16 *const buffer,int length)
 {
 	/* zero-length? bail */
 	if (length == 0)
@@ -33,12 +33,12 @@ static void DAC_update(int num,INT16 *buffer,int length)
 		data <<= 15;
 
 		for (i = 0; i < length; i++, data += slope)
-			*buffer++ = data >> 15;
+			buffer[i] = data >> 15;
 
 		curr_output[num] = output[num];
 #else
 		for (i = 0; i < length; i++)
-			*buffer++ = output[num];
+			buffer[i] = output[num];
 #endif
 	}
 }

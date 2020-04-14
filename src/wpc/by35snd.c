@@ -319,7 +319,7 @@ MACHINE_DRIVER_START(by51N)
   MDRV_SOUND_ADD(DAC, sp_dacInt)
 MACHINE_DRIVER_END
 
-static struct mc3417_interface sp_mc3417Int = { 1, {75}};
+static struct mc3417_interface sp_mc3417Int = { 1, {100}};
 
 static MEMORY_READ_START(sp56_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -357,9 +357,9 @@ static void sp_init(struct sndbrdData *brdData) {
   int i;
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
-  if (splocals.brdData.subType == 1) { // -56 board
-    mc3417_set_gain(0, 40000);
-  }
+  //if (splocals.brdData.subType == 1) { // -56 board
+  //  mc3417_set_gain(0, 0.92);
+  //}
   for (i=0; i < 0x80; i++) memory_region(BY51_CPUREGION)[i] = 0xff;
 }
 static void sp_diag(int button) {

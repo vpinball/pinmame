@@ -161,7 +161,7 @@ static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City 
 extern void stream_free(int channel);
 
 void gts80s_init(struct sndbrdData *brdData) {
-	int i = 0;
+	int i;
 	UINT8 *pMem;
 
 	memset(&GTS80S_locals, 0x00, sizeof GTS80S_locals);
@@ -289,8 +289,8 @@ static struct {
 	int    dips;
 	UINT8* pRIOT6532_3_ram;
 
-	INT16  curr_value;
-	INT16  next_value;
+	float  curr_value;
+	float  next_value;
 	int    last_sound;
 
 	double last_clock;
@@ -332,12 +332,12 @@ static WRITE_HANDLER(GTS80SS_riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 //	logerror("da1_w: 0x%02x\n", data);
 
-	INT32 tmp = ((INT32)data << 8) - (INT32)0x7F80;
+	float tmp = (((INT32)data << 8) - (INT32)0x7F80)*(float)(1.0/32768.0);
 
 //	logerror("%s %.8f %d\n", (GTS80SS_locals.last_sound == 0) ? "c2" : "c ", timer_get_time(), tmp);
 
 	if (GTS80SS_locals.last_sound == 0) // missed a soundupdate: lerp data in here directly
-		tmp = (tmp + GTS80SS_locals.next_value) / 2;
+		tmp = (tmp + GTS80SS_locals.next_value) * 0.5f;
 
 	GTS80SS_locals.next_value = tmp;
 	GTS80SS_locals.last_sound = 0;
@@ -484,9 +484,9 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0xf000, 0xffff, empty_w}, // the soundboard does fake writes to the ROM area (used for a delay function)
 MEMORY_END
 
-static void GTS80SS_Update(int num, INT16 *buffer, int length) // Mars - God of War, Black Hole, Haunted House, etc
+static void GTS80SS_Update(int num, INT16 * const buffer, int length) // Mars - God of War, Black Hole, Haunted House, etc
 {
-	int i;
+	float* const __restrict buffer_f = (float*)buffer;
 
 	//logerror("%s %.8f %d\n", (GTS80SS_locals.last_sound == 0) ? "sc" : "s ", timer_get_time(), length);
 
@@ -499,28 +499,30 @@ static void GTS80SS_Update(int num, INT16 *buffer, int length) // Mars - God of 
 		if (GTS80SS_locals.last_sound != 0) // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
 		{
 			float tmp = GTS80SS_locals.curr_value;
+			int i;
 			for (i = 0; i < length; i++, tmp *= 0.95f)
-				*buffer++ = (INT16)tmp;
+				buffer_f[i] = tmp;
 
-			GTS80SS_locals.next_value = (INT16)tmp; // update next_value with the faded value
+			GTS80SS_locals.next_value = tmp; // update next_value with the faded value
 		}
 		else // clock did update next_value just now, so we now need to fade/lerp from silence to next_value
 		{
-			INT32 data = (INT32)GTS80SS_locals.curr_value;
-			INT32 slope = (((INT32)GTS80SS_locals.next_value - data) << 15) / length;
-			data <<= 15;
+			double data = GTS80SS_locals.curr_value;
+			const double slope = (GTS80SS_locals.next_value - data) / (double)length;
 
+			int i;
 			for (i = 0; i < length; i++, data += slope)
-				*buffer++ = data >> 15;
+				buffer_f[i] = (float)data;
 		}
 	}
 	else // clock does the update (or the sound buffer catches up) -> fill buffer with curr_value, then next_value
 	{
-		double diff = (timer_get_time() - GTS80SS_locals.last_soundupdate) / length;
+		const double diff = (timer_get_time() - GTS80SS_locals.last_soundupdate) / length;
 		double t = GTS80SS_locals.last_soundupdate;
 
+		int i;
 		for (i = 0; i < length; i++, t += diff)
-			*buffer++ = (t < GTS80SS_locals.last_clock) ? GTS80SS_locals.curr_value : GTS80SS_locals.next_value; // lerping between the values leads to noise for whatever reason, so raw values only!
+			buffer_f[i] = (t < GTS80SS_locals.last_clock) ? GTS80SS_locals.curr_value : GTS80SS_locals.next_value; // lerping between the values leads to noise for whatever reason, so raw values only!
 	}
 
 	GTS80SS_locals.curr_value = GTS80SS_locals.next_value;
@@ -566,8 +568,8 @@ void gts80ss_init(struct sndbrdData *brdData) {
     riot6532_config(3, &GTS80SS_riot6532_intf);
     riot6532_set_clock(3, 905000);
 
-	GTS80SS_locals.curr_value = 0;
-	GTS80SS_locals.next_value = 0;
+	GTS80SS_locals.curr_value = 0.f;
+	GTS80SS_locals.next_value = 0.f;
 	GTS80SS_locals.last_sound = 0;
 	GTS80SS_locals.last_clock = GTS80SS_locals.last_soundupdate = 0.;
 
@@ -615,7 +617,7 @@ static int s80ss_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80SS_Update);
+  stream_locals.stream = stream_init_float("SND DAC", 50, DAC_SAMPLE_RATE, 0, GTS80SS_Update, 1);
   //set_RC_filter(stream_locals.stream, 270000, 15000, 0, 10000, DAC_SAMPLE_RATE); // if reactivated, replace with filter.c
 
   return 0;

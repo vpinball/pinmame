@@ -54,16 +54,6 @@ INLINE void filter_insert(const filter* f, filter_state* s, const float x) {
 /* Compute the filter output */
 float filter_compute(const filter* f, const filter_state* s);
 
-INLINE INT16 filter_compute_clamp16(const filter* f, const filter_state* s) {
-	const float tmp = filter_compute(f, s);
-	if (tmp <= -32768.f)
-		return -32768;
-	else if (tmp >= 32767.f)
-		return 32767;
-	else
-		return (INT16)tmp;
-}
-
 //
 // The following IIR filter is much lower computational overhead, but is more restricted to what can be done with filters that are based on it
 //
