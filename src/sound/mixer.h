@@ -71,13 +71,13 @@
 #define MIXER_GET_PAN(mixing_level)    (((mixing_level) >> 8) & 0x03)
 #define MIXER_GET_GAIN(mixing_level)   (((mixing_level) >> 10) & 0x03)
 
-int mixer_sh_start(void);
-void mixer_sh_stop(void);
-void mixer_sh_update(void);
-int mixer_allocate_channel(int default_mixing_level);
-int mixer_allocate_channels(int channels,const int *default_mixing_levels);
-void mixer_set_name(int channel,const char *name);
-const char *mixer_get_name(int channel);
+int mixer_sh_start();
+void mixer_sh_stop();
+void mixer_sh_update();
+int mixer_allocate_channel(const int default_mixing_level);
+int mixer_allocate_channels(const int channels,const int *default_mixing_levels);
+void mixer_set_name(const int channel, const char *name);
+const char *mixer_get_name(const int channel);
 
 /*
   This function sets the volume of a channel. This is *NOT* the mixing level,
@@ -86,24 +86,23 @@ const char *mixer_get_name(int channel);
   external circuitry which can alter the volume of the sound source, you can
   use this function to emulate that.
 */
-void mixer_set_volume(int channel,int volume);
+void mixer_set_volume(const int channel, const int volume);
 
-void mixer_play_sample(int channel,INT8 *data,int len,int freq,UINT8 loop);
-void mixer_play_sample_16(int channel,INT16 *data,int len,int freq,UINT8 loop);
-void mixer_stop_sample(int channel);
-int mixer_is_sample_playing(int channel);
-void mixer_set_sample_frequency(int channel,int freq);
-void mixer_sound_enable_global_w(UINT8 enable);
+void mixer_play_sample(const int channel, INT8 *data, const int len, const int freq, const UINT8 loop);
+void mixer_play_sample_16(const int channel, INT16 *data, const int len, const int freq, const UINT8 loop);
+void mixer_stop_sample(const int channel);
+int mixer_is_sample_playing(const int channel);
+void mixer_set_sample_frequency(const int channel, const int freq);
+void mixer_sound_enable_global_w(const UINT8 enable);
 
-void mixer_play_streamed_sample_16(int channel,INT16 *data,int len,int freq);
-int mixer_samples_this_frame(void);
-int mixer_need_samples_this_frame(int channel,int freq);
-void mixer_set_lowpass_frequency(int ch, int freq);
+void mixer_play_streamed_sample_16(const int channel, INT16 *data, int len, const int freq);
+int mixer_samples_this_frame();
+int mixer_need_samples_this_frame(const int channel, const int freq);
 
 /* private functions for user interface only - don't call them from drivers! */
-void mixer_set_mixing_level(int channel,int level);
-int mixer_get_mixing_level(int channel);
-int mixer_get_default_mixing_level(int channel);
+void mixer_set_mixing_level(const int channel,const int level);
+int mixer_get_mixing_level(const int channel);
+int mixer_get_default_mixing_level(const int channel);
 
 /* configuration functions */
 
@@ -118,10 +117,10 @@ void mixer_save_config(struct mixer_config *config);
 void mixer_read_config(mame_file *f);
 void mixer_write_config(mame_file *f);
 
-void mixer_set_stereo_volume(int ch, int l_vol, int r_vol );
+void mixer_set_stereo_volume(const int ch, const int l_vol, const int r_vol);
 
-void mixer_set_reverb_filter(int ch, float delay, float force);
+void mixer_set_reverb_filter(const int ch, const float delay, const float force);
 
-void mixer_set_channel_legacy_resample(int ch, UINT8 enable);
+void mixer_set_channel_legacy_resample(const int ch, const UINT8 enable);
 
 #endif
