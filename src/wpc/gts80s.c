@@ -133,6 +133,8 @@ MEMORY_END
 
 static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
+	float* __restrict buffer_f = (float*)buffer;
+
 	double dCurrentClock = GTS80S_locals.clock[0];
 
 	const double dActClock = timer_get_time();
@@ -141,8 +143,8 @@ static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City 
 	int i = 0;
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = 9e99;
 	while ( length ) {
-		filter_insert(GTS80S_locals.filter_f, GTS80S_locals.filter_state, GTS80S_locals.buffer[i]);
-		*buffer++ = filter_compute_clamp16(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
+		filter_insert(GTS80S_locals.filter_f, GTS80S_locals.filter_state, GTS80S_locals.buffer[i]*(float)(1.0/32768.0));
+		*buffer_f++ = filter_compute(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
 		length--;
 		dCurrentClock += dInterval;
 
@@ -249,7 +251,7 @@ static int s80s_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
+  stream_locals.stream = stream_init_float("SND DAC", 100, 11025, 0, GTS80S_Update, 1);
 
   return 0;
 }
