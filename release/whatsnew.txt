@@ -29,7 +29,7 @@ Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely 
 Improve IRQ timings of Sys3/4/6/7/11, DE and the Sega 192x64 DMD-machines
 Change switch writing of DE and Sega 192x64 DMD-machines
 Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machines, matching the real one more closely
-Improve timings for GTS80 machines
+Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson
 New:
