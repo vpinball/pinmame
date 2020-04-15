@@ -269,7 +269,7 @@ const struct sndbrdIntf gts80sIntf = {
 };
 
 MACHINE_DRIVER_START(gts80s_s)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 1000000)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80S_readmem, GTS80S_writemem)
   MDRV_INTERLEAVE(50)
@@ -568,7 +568,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	/* init RIOT */
     riot6532_config(3, &GTS80SS_riot6532_intf);
-    riot6532_set_clock(3, 905000);
+    riot6532_set_clock(3, 3579545./4.);
 
 	GTS80SS_locals.curr_value = 0.f;
 	GTS80SS_locals.next_value = 0.f;
@@ -645,7 +645,7 @@ const struct sndbrdIntf gts80ssIntf = {
 };
 
 MACHINE_DRIVER_START(gts80s_ss)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
   MDRV_INTERLEAVE(50)

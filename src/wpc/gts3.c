@@ -13,6 +13,8 @@
   GV 07/27/05: Fixed the missing sound in Strikes And Spares
   SE 07/27/05: Finally got that DAMN 2nd DMD working
 
+  TODO: Segment dimming
+
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -427,7 +429,7 @@ static INTERRUPT_GEN(GTS3_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  GTS3locals.vblankCount += 1;
+  GTS3locals.vblankCount++;
 
   /*-- lamps --*/
   if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
@@ -684,7 +686,7 @@ static WRITE_HANDLER(alpha_display){
 		switch ( offset ) {
 		case 0:
 			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
-/*          // commented out segments dimming as it needs more work
+/*			// commented out segments dimming as it needs more work
 			if (GTS3locals.pseg[20+GTS3locals.acol].w) {
 				coreGlobals.segDim[20+GTS3locals.acol] /=2;
 			} else {
@@ -703,7 +705,7 @@ static WRITE_HANDLER(alpha_display){
 
 		case 2:
 			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
-/*          // commented out segments dimming as it needs more work
+/*			// commented out segments dimming as it needs more work
 			if (GTS3locals.pseg[GTS3locals.acol].w) {
 				coreGlobals.segDim[GTS3locals.acol] /=2;
 			} else {
@@ -990,7 +992,7 @@ MEMORY_END
 
 MACHINE_DRIVER_START(gts3)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD(M65C02, 2000000)
+  MDRV_CPU_ADD(M65C02, 2000000) // XTAL(4'000'000) / 2
   MDRV_CPU_MEMORY(GTS3_readmem, GTS3_writemem)
   MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKFREQ)
   MDRV_CPU_PERIODIC_INT(alphanmi, GTS3_ALPHANMIFREQ)
