@@ -205,7 +205,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 		cpu_setbank(i, memory_region(STATIC_BANK1));
 
 	/* init the RIOT */
-    riot6530_config(0, &GTS80S_riot6530_intf);
+	riot6530_config(0, &GTS80S_riot6530_intf);
 	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 	riot6530_reset();
 }
@@ -251,7 +251,7 @@ static int s80s_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init_float("SND DAC", 100, 11025, 0, GTS80S_Update, 1);
+  stream_locals.stream = stream_init_float("SND DAC", 50, 11025, 0, GTS80S_Update, 1);
 
   return 0;
 }
@@ -269,12 +269,17 @@ const struct sndbrdIntf gts80sIntf = {
 };
 
 MACHINE_DRIVER_START(gts80s_s)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80S_readmem, GTS80S_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, GTS80S_customsoundinterface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s_sp)
+  MDRV_IMPORT_FROM(gts80s_s)
+  MDRV_CPU_REPLACE("scpu", M6502, 714285.714)
 MACHINE_DRIVER_END
 
 
@@ -567,8 +572,8 @@ void gts80ss_init(struct sndbrdData *brdData) {
 		cpu_setbank(i, memory_region(STATIC_BANK1));
 
 	/* init RIOT */
-    riot6532_config(3, &GTS80SS_riot6532_intf);
-    riot6532_set_clock(3, 3579545./4.);
+	riot6532_config(3, &GTS80SS_riot6532_intf);
+	riot6532_set_clock(3, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 
 	GTS80SS_locals.curr_value = 0.f;
 	GTS80SS_locals.next_value = 0.f;
