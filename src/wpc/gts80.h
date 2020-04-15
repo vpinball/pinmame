@@ -296,6 +296,7 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts80s);
 extern MACHINE_DRIVER_EXTERN(gts80ss);
+extern MACHINE_DRIVER_EXTERN(gts80sp);
 extern MACHINE_DRIVER_EXTERN(gts80vid);
 extern MACHINE_DRIVER_EXTERN(gts80b);
 extern MACHINE_DRIVER_EXTERN(gts80bs1);
@@ -304,6 +305,7 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3);
 extern MACHINE_DRIVER_EXTERN(gts80bs3a);
 
 #define gl_mGTS80S		gts80s
+#define gl_mGTS80SP		gts80sp
 #define gl_mGTS80SS		gts80ss
 #define gl_mGTS80VID	gts80vid
 #define gl_mGTS80B		gts80b

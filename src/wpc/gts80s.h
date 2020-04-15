@@ -35,7 +35,7 @@
     ROM_RELOAD(  0xf800,  0x0800)
 
 extern MACHINE_DRIVER_EXTERN(gts80s_s);
-
+extern MACHINE_DRIVER_EXTERN(gts80s_sp);
 
 /* Gottlieb System 80/80A Sound & Speech Board */
 
