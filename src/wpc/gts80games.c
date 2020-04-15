@@ -816,7 +816,7 @@ GTS80_1_ROMSTART ("685.cpu",   CRC(4754d68d) SHA1(2af743287c1a021f3e130d3d6e191e
 GTS80S2K_ROMSTART("685-s.snd", CRC(d4219987) SHA1(7385d8723bdc937e7c9d6bf7f26ca06f64a9a212))
 GTS80_ROMEND
 #define input_ports_rackemup input_ports_gts80
-CORE_CLONEDEFNV(rackemup,gts80as,"Rack 'Em Up",1983,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(rackemup,gts80as,"Rack 'Em Up",1983,"Gottlieb",gl_mGTS80SP,0)
 
 /*-------------------------------------------------------------------
 / Ready...Aim...Fire! (#686)
@@ -826,7 +826,7 @@ GTS80_1_ROMSTART ("686.cpu",   CRC(d1e7a0de) SHA1(b9af2fcaadc55d37c7d9d22621c381
 GTS80S2K_ROMSTART("686-s.snd", CRC(09740682) SHA1(4f36d78207bd5b8e7abb7118f03acbb3885173c2))
 GTS80_ROMEND
 #define input_ports_raimfire input_ports_gts80
-CORE_CLONEDEFNV(raimfire,gts80as,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(raimfire,gts80as,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mGTS80SP,0)
 
 /*-------------------------------------------------------------------
 / Jacks To Open (#687)
@@ -836,7 +836,7 @@ GTS80_1_ROMSTART ("687.cpu",   CRC(0080565e) SHA1(c08412ba24d2ffccf11431e80bd2fc
 GTS80S2K_ROMSTART("687-s.snd", CRC(f9d10b7a) SHA1(db255711ed6cb46d183c0ae3894df447f3d8a8e3))
 GTS80_ROMEND
 #define input_ports_jack2opn input_ports_gts80
-CORE_CLONEDEFNV(jack2opn,gts80as,"Jacks to Open",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(jack2opn,gts80as,"Jacks to Open",1984,"Gottlieb",gl_mGTS80SP,0)
 
 /*-------------------------------------------------------------------
 / Alien Star (#689)
