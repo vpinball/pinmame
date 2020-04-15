@@ -268,6 +268,17 @@ const struct sndbrdIntf gts80sIntf = {
   "GTS80", gts80s_init, gts80s_exit, gts80s_diag, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+// Both CPUs do not feature a "clean" clock, but get it from a R/C,
+// at roughly R * C * ~5 in milliseconds.
+
+// Old board:
+// C = 10 pF
+// R = 22,1 kOhm
+
+// New board:
+// C = 10 pF
+// R = 28 kOhm
+
 MACHINE_DRIVER_START(gts80s_s)
   MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -277,7 +288,7 @@ MACHINE_DRIVER_START(gts80s_s)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(gts80s_sp)
+MACHINE_DRIVER_START(gts80s_sp) // with Piggyback
   MDRV_IMPORT_FROM(gts80s_s)
   MDRV_CPU_REPLACE("scpu", M6502, 714285.714)
 MACHINE_DRIVER_END
