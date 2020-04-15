@@ -473,9 +473,9 @@ static MACHINE_INIT(gts80) {
     riot6532_config(1, &GTS80_riot6532_intf[1]); // BCD Seg
   riot6532_config(2, &GTS80_riot6532_intf[3]); // Lamp + Sol
 
-  riot6532_set_clock(0, 905000);
-  riot6532_set_clock(1, 905000);
-  riot6532_set_clock(2, 905000);
+  riot6532_set_clock(0, 3579545./4.);
+  riot6532_set_clock(1, 3579545./4.);
+  riot6532_set_clock(2, 3579545./4.);
 
   GTS80locals.slamSw = 0x80;
 
@@ -510,7 +510,7 @@ static NVRAM_HANDLER(gts80) {
 
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 3579545/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 3579545./4.)
   MDRV_CPU_MEMORY(GTS80_readmem, GTS80_writemem)
   MDRV_CPU_VBLANK_INT(GTS80_vblank, 1)
   MDRV_SWITCH_UPDATE(GTS80)
