@@ -506,6 +506,13 @@ UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length) {
     return result;
 }
 
+
+UINT64 osd_fsize(osd_file *file)
+{
+	return file->end;
+}
+
+
 /**
  * osd_fseek
  */
