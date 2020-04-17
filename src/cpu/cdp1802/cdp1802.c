@@ -33,7 +33,7 @@ static UINT8 cdp1802_reg_layout[] = {
 	CDP1802_R5,
 	CDP1802_R6,
 	CDP1802_R7,
-	-1,
+	0xFF,
 
 	CDP1802_R8,
 	CDP1802_R9,
@@ -43,7 +43,7 @@ static UINT8 cdp1802_reg_layout[] = {
 	CDP1802_Rd,
 	CDP1802_Re,
 	CDP1802_Rf,
-	-1,
+	0xFF,
 
 	CDP1802_P,
 	CDP1802_X,
@@ -1037,7 +1037,7 @@ const char *cdp1802_info(void *context, int regnum)
 {
 	static char buffer[16][47+1];
 	static int which = 0;
-    CDP1802_Regs *r = context;
+	CDP1802_Regs *r = (CDP1802_Regs*)context;
 
 	which = (which + 1) % 16;
 	buffer[which][0] = '\0';

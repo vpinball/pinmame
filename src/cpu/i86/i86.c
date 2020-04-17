@@ -24,7 +24,7 @@
 
 static UINT8 i86_reg_layout[] =
 {
-	I86_AX, I86_BX, I86_DS, I86_ES, I86_SS, I86_FLAGS, I86_CS, I86_VECTOR, -1,
+	I86_AX, I86_BX, I86_DS, I86_ES, I86_SS, I86_FLAGS, I86_CS, I86_VECTOR, 0xFF,
 	I86_CX, I86_DX, I86_SI, I86_DI, I86_SP, I86_BP, I86_IP,
 	0
 };
@@ -353,7 +353,7 @@ const char *i86_info(void *context, int regnum)
 {
 	static char buffer[32][63 + 1];
 	static int which = 0;
-	i86_Regs *r = context;
+	i86_Regs *r = (i86_Regs*)context;
 
 	which = (which+1) % 32;
 	buffer[which][0] = '\0';

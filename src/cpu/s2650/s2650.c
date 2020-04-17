@@ -34,8 +34,8 @@
 #define INLINE_EA	1
 
 static UINT8 s2650_reg_layout[] = {
-	S2650_PC, S2650_PS, S2650_R0, S2650_R1, S2650_R2, S2650_R3, -1,
-	S2650_SI, S2650_FO, S2650_R1A, S2650_R2A, S2650_R3A, -1,
+	S2650_PC, S2650_PS, S2650_R0, S2650_R1, S2650_R2, S2650_R3, 0xFF,
+	S2650_SI, S2650_FO, S2650_R1A, S2650_R2A, S2650_R3A, 0xFF,
 	S2650_HALT, 0
 };
 
@@ -1577,15 +1577,15 @@ const char *s2650_info(void *context, int regnum)
 {
 	static char buffer[14][47+1];
 	static int which = 0;
-	s2650_Regs *r = context;
+	s2650_Regs *r = (s2650_Regs*)context;
 
 	which = (which+1) % 14;
 	buffer[which][0] = '\0';
 
-    if( !context )
+	if( !context )
 		r = &S;
 
-    switch( regnum )
+	switch( regnum )
 	{
 		case CPU_INFO_REG+S2650_PC: sprintf(buffer[which], "PC:%04X", r->page + r->iar); break;
 		case CPU_INFO_REG+S2650_PS: sprintf(buffer[which], "PS:%02X%02X", r->psu, r->psl); break;

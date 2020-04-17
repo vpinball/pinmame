@@ -587,18 +587,18 @@ static void ft_handleMech(int mech) {
   /*------ REEL LOGIC ----------------------
      Totally Guessed - with help from Ari
   ------------------------------------------
-   	Position: 00-10: Ball 1 Up: Opto #1: Closed: Opto #2: Closed
-	Position: 11-24: In Between: Opto #1: Open: Opto #2: Open
-   	Position: 25-35: Ball 3 Down: Opto #1: Closed: Opto #2: Open
-	Position: 36-49: In Between: Opto #1: Open: Opto #2: Open
-   	Position: 50-60: Ball 2 Up: Opto #1: Closed: Opto #2: Open
-	Position: 61-74: In Between: Opto #1: Open: Opto #2: Open
-   	Position: 75-85: Ball 1 Down: Opto #1: Closed: Opto #2: Open
-	Position: 86-99: In Between: Opto #1: Open: Opto #2: Open
-   	Position: 100-110: Ball 3 Up: Opto #1: Closed: Opto #2: Open
-	Position: 111-124: In Between: Opto #1: Open: Opto #2: Open
-   	Position: 125-135: Ball 2 Down: Opto #1: Closed: Opto #2: Open
-	Position: 136-149: In Between: Opto #1: Open: Opto #2: Open
+	Position: 00-10: Ball 1 Up:     Opto #1: Closed: Opto #2: Closed
+	Position: 11-24: In Between:    Opto #1: Open:   Opto #2: Open
+	Position: 25-35: Ball 3 Down:   Opto #1: Closed: Opto #2: Open
+	Position: 36-49: In Between:    Opto #1: Open:   Opto #2: Open
+	Position: 50-60: Ball 2 Up:     Opto #1: Closed: Opto #2: Open
+	Position: 61-74: In Between:    Opto #1: Open:   Opto #2: Open
+	Position: 75-85: Ball 1 Down:   Opto #1: Closed: Opto #2: Open
+	Position: 86-99: In Between:    Opto #1: Open:   Opto #2: Open
+	Position: 100-110: Ball 3 Up:   Opto #1: Closed: Opto #2: Open
+	Position: 111-124: In Between:  Opto #1: Open:   Opto #2: Open
+	Position: 125-135: Ball 2 Down: Opto #1: Closed: Opto #2: Open
+	Position: 136-149: In Between:  Opto #1: Open:   Opto #2: Open
 	Back to 00!
   ----------------------------------------------------------------*/
 

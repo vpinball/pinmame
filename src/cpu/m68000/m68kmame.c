@@ -217,9 +217,6 @@ static const struct m68k_memory_interface interface_a32_d32 =
 };
 #endif
 
-/* global access */
-struct m68k_memory_interface m68k_memory_intf;
-
 #endif // A68K2
 
 /****************************************************************************
@@ -229,15 +226,15 @@ struct m68k_memory_interface m68k_memory_intf;
 #ifndef A68K0
 
 static UINT8 m68000_reg_layout[] = {
-	M68K_PC, M68K_ISP, -1,
-	M68K_SR, M68K_USP, -1,
-	M68K_D0, M68K_A0, -1,
-	M68K_D1, M68K_A1, -1,
-	M68K_D2, M68K_A2, -1,
-	M68K_D3, M68K_A3, -1,
-	M68K_D4, M68K_A4, -1,
-	M68K_D5, M68K_A5, -1,
-	M68K_D6, M68K_A6, -1,
+	M68K_PC, M68K_ISP, 0xFF,
+	M68K_SR, M68K_USP, 0xFF,
+	M68K_D0, M68K_A0, 0xFF,
+	M68K_D1, M68K_A1, 0xFF,
+	M68K_D2, M68K_A2, 0xFF,
+	M68K_D3, M68K_A3, 0xFF,
+	M68K_D4, M68K_A4, 0xFF,
+	M68K_D5, M68K_A5, 0xFF,
+	M68K_D6, M68K_A6, 0xFF,
 	M68K_D7, M68K_A7, 0
 };
 

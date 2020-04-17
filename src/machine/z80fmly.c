@@ -17,6 +17,7 @@ pending:
 ***************************************************************************/
 
 #include <stdio.h>
+#include "timer.h"
 #include "driver.h"
 #include "z80fmly.h"
 #include "cpu/z80/z80.h"
@@ -44,7 +45,7 @@ typedef struct
 	int tconst[4];              /* time constant */
 	int down[4];                /* down counter (clock mode only) */
 	int extclk[4];              /* current signal from the external clock */
-	void *timer[4];             /* array of active timers */
+	mame_timer *timer[4];       /* array of active timers */
 
 	int int_state[4];           /* interrupt status (for daisy chain) */
 } z80ctc;

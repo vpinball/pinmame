@@ -49,26 +49,6 @@
 
 
 /*-------------------------------------------------
-	internal timer structure
--------------------------------------------------*/
-
-struct _mame_timer
-{
-	struct _mame_timer *next;
-	struct _mame_timer *prev;
-	void (*callback)(int);
-	int callback_param;
-	int tag;
-	UINT8 enabled;
-	UINT8 temporary;
-	double period;
-	double start;
-	double expire;
-};
-
-
-
-/*-------------------------------------------------
 	global variables
 -------------------------------------------------*/
 

@@ -124,7 +124,7 @@ typedef struct
 	UINT8		pf[0x100];		/* Perpherial file */
 	int 		(*irq_callback)(int irqline);
 	UINT8		idle_state;		/* Set after the execution of an idle instruction */
-	void		*timer1;		/* Timer 1 (triggers int 2) */
+	mame_timer	*timer1;		/* Timer 1 (triggers int 2) */
 	double		time_timer1;	/* Absloute time when timer 1 started */
 	UINT8		timer1_decrementator,
 				timer1_prescaler,
@@ -278,7 +278,7 @@ const char *tms7000_info(void *context, int regnum)
 {
 	static char buffer[16][47+1];
 	static int which = 0;
-	tms7000_Regs *r = context;
+	tms7000_Regs *r = (tms7000_Regs*)context;
 
 	which = (which+1) % 16;
 	buffer[which][0] = '\0';

@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "timer.h"
 #include "driver.h"
 #include "6530riot.h"
 
@@ -40,11 +41,11 @@ struct riot6530
 	UINT8 timer_start;
 	UINT16 timer_divider;
 	UINT8 timer_irq_enabled;
-  
+
 	UINT8 irq_state;
 	UINT8 irq;
 
-	void *t;
+	mame_timer *t;
 	double time;
 
 	double cycles_to_sec;
