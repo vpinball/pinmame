@@ -310,7 +310,7 @@ void wpc_set_fastflip_addr(int addr)
 static MACHINE_DRIVER_START(wpc)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(wpc,NULL,wpc)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 2000000) // XTAL8/4
   MDRV_CPU_MEMORY(wpc_readmem, wpc_writemem)
   MDRV_CPU_VBLANK_INT(wpc_vblank, WPC_VBLANKDIV)
   MDRV_CPU_PERIODIC_INT(wpc_irq, WPC_IRQFREQ)
@@ -714,6 +714,8 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
+    /* case WPC_EXTBOARD4:
+    case WPC_EXTBOARD5: */
     case WPC_ALPHA2HI:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
@@ -775,11 +777,6 @@ WRITE_HANDLER(wpc_w) {
     case WPC_EXTBOARD3:
       if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
-      break;
-    /* case WPC_EXTBOARD4: */
-    case WPC_EXTBOARD5:
-      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
-        wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
     case WPC_SHIFTADRH:
     case WPC_SHIFTADRL:
