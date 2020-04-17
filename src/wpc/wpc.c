@@ -714,6 +714,10 @@ WRITE_HANDLER(wpc_w) {
       else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
+    case WPC_ALPHA2HI:
+      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
+        wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
+      break;
     case WPC_LAMPROW: /* row and column can be written in any order */
       core_setLamp(coreGlobals.tmpLampMatrix,wpc_data[WPC_LAMPCOLUMN],data);
       break;
