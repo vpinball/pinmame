@@ -21,7 +21,7 @@
 
 /* Layout of the registers in the debugger */
 static UINT8 cop420_reg_layout[] = {
-	COP400_PC, COP400_A, COP400_B, COP400_G, COP400_EN, COP400_Q, -1,
+	COP400_PC, COP400_A, COP400_B, COP400_G, COP400_EN, COP400_Q, 0xFF,
   COP400_SA, COP400_SB, COP400_SC, COP400_SIO, COP400_SKL, COP400_T, 0
 };
 
@@ -135,7 +135,7 @@ static void cop420_op33(void)
 
 static s_opcode cop420_opcode_main[256]=
 {
-	{1, clra		},{1, skmbz0	},{1, xor		},{1, skmbz2		},{1, xis0		},{1, ld0		},{1, x0		},{1, xds0		},
+	{1, clra		},{1, skmbz0	},{1, x_o_r		},{1, skmbz2		},{1, xis0		},{1, ld0		},{1, x0		},{1, xds0		},
 	{1, lbi0_9		},{1, lbi0_10	},{1, lbi0_11	},{1, lbi0_12		},{1, lbi0_13	},{1, lbi0_14	},{1, lbi0_15	},{1, lbi0_0	},
 	{1, casc		},{1, skmbz1	},{1, xabr		},{1, skmbz3		},{1, xis1		},{1, ld1		},{1, x1		},{1, xds1		},
 	{1, lbi1_9		},{1, lbi1_10	},{1, lbi1_11	},{1, lbi1_12		},{1, lbi1_13	},{1, lbi1_14	},{1, lbi1_15	},{1, lbi1_0	},
@@ -458,7 +458,7 @@ const char *cop420_info(void *context, int regnum)
 	static char buffer[12][47+1];
 	static int which = 0;
 
-	COP420_Regs *r = context;
+	COP420_Regs *r = (COP420_Regs*)context;
 
 	which = (which+1) % 12;
 	buffer[which][0] = '\0';

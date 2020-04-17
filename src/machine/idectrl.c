@@ -5,6 +5,7 @@
 ***************************************************************************/
 
 #include "idectrl.h"
+#include "timer.h"
 #include "state.h"
 
 
@@ -151,8 +152,8 @@ struct ide_state
 
 	struct ide_interface *intf;
 	void *	disk;
-	void *	last_status_timer;
-	void *	reset_timer;
+	mame_timer *last_status_timer;
+	mame_timer *reset_timer;
 
 	int	master_password_enable;
 	int	user_password_enable;

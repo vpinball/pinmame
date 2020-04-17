@@ -12,6 +12,7 @@
 ***************************************************************************/
 
 #include "driver.h"
+#include "timer.h"
 #include "machine/ticket.h"
 
 /*#define DEBUG_TICKET*/
@@ -24,7 +25,7 @@ struct ticket_state
 {
 	int status;
 	int power;
-	void *timer;
+	mame_timer *timer;
 };
 
 static int active_bit = 0x80;

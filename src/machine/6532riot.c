@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "driver.h"
+#include "timer.h"
 #include "6532riot.h"
 
 #define VERBOSE 0
@@ -53,7 +54,7 @@ struct riot6532
 	UINT8 irq_state;
 	UINT8 irq;
 
-	void *t;
+	mame_timer *t;
 	double time;
 
 	double cycles_to_sec;
