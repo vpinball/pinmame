@@ -61,7 +61,7 @@ Spider-Man 1.02 (English, French)
 Star Trek 25th Anniversary 3.00 (unofficial MOD)
 Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
-Twilight Zone LA-9 (aka PAPA Tournament Version 9.0)
+Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
 
 Correct Dumps:
 Time Machine (LTD, 4 players) - confirmed that currently supported ROMs are correct
