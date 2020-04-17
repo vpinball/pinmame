@@ -460,4 +460,4 @@ INLINE void xds1(void) { XDS(1); }
 INLINE void xds2(void) { XDS(2); }
 INLINE void xds3(void) { XDS(3); }
 
-INLINE void xor(void) { A = (RAM(B) ^ A) & 0xF; }
+INLINE void x_o_r(void) { A = (RAM(B) ^ A) & 0xF; }

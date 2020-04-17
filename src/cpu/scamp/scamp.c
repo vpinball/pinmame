@@ -912,7 +912,7 @@ const char *SCAMP_info(void *context, int regnum)
 {
 	static char buffer[12][47+1];
 	static int which = 0;
-	SCAMP_Regs *r = context;
+	SCAMP_Regs *r = (SCAMP_Regs*)context;
 
 	which = (which+1) % 12;
 	buffer[which][0] = '\0';

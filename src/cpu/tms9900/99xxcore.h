@@ -76,6 +76,7 @@ Tons of thanks to the guy who posted these, whoever he is...
 #endif
 
 #include "memory.h"
+#include "timer.h"
 #include "mamedbg.h"
 #include "tms9900.h"
 #include <math.h>
@@ -392,7 +393,7 @@ typedef struct
 	int decrementer_enabled;
 	UINT16 decrementer_interval;
 	UINT16 decrementer_count;	/* used in event counter mode*/
-	void *timer;  /* used in timer mode */
+	mame_timer *timer;  /* used in timer mode */
 #endif
 
 #if (TMS99XX_MODEL == TMS9995_ID)
@@ -1322,7 +1323,7 @@ const char *TMS99XX_INFO(void *context, int regnum)
 {
 	static char buffer[32][47+1];
 	static int which = 0;
-	tms99xx_Regs *r = context;
+	tms99xx_Regs *r = (tms99xx_Regs*)context;
 
 	which = (which+1) % 32;
 	buffer[which][0] = '\0';
