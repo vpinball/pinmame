@@ -2694,6 +2694,7 @@ DRIVER(tz,ifpa)         //          05/93 B Twilight Zone (IFPA)
 DRIVER(tz,ifpa2)        //                  Twilight Zone (IFPA) LED Ghost Fix
 DRIVER(tz,l4)           //          06/93 B Twilight Zone (L-4)
 DRIVER(tz,d4)           //                  Twilight Zone (D-4) LED Ghost Fix
+DRIVER(tz,l5)           //          08/93 B Twilight Zone (L-5)
 DRIVER(tz,h7)           //          10/94 B Twilight Zone (H-7)
 DRIVER(tz,i7)           //                  Twilight Zone (I-7) LED Ghost Fix
 DRIVER(tz,h8)           //          11/94 B Twilight Zone (H-8)

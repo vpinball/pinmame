@@ -446,6 +446,7 @@ WPC_ROMSTART(tz,l3,  "tz_l3.u6",    0x80000,CRC(c35fe03c) SHA1(44d2267ab278d0923
 WPC_ROMSTART(tz,d3,  "tz_d3.u6",    0x80000,CRC(414b8306) SHA1(cc4cf773a2bdc26152b087984331069fb2d91f0e)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,l4,  "tz_l4.u6",    0x80000,CRC(4baf5acd) SHA1(1edef7de6c3d24ef61e59b688d7b6871d88fd3b5)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,d4,  "tz_d4.u6",    0x80000,CRC(93490429) SHA1(04c99d62cde206833f5023ca687be2fbf7d52e85)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,l5,  "tz_l5.u6",    0x80000,CRC(a0b2f052) SHA1(d09376dd6df9dc7afd8448b211bda18125ada2ba)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,ifpa,"u6-ifpa.040", 0x80000,CRC(57f4c514) SHA1(17064a76e1037d439639ebbc9e64ca4fd1e5e62d)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,ifpa2,"u6-ifpa2.040", 0x80000,CRC(688c5109) SHA1(82f2465cf2c2b6e810eb2ed38e72d01f23bd1fda)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,h7,  "u6-h7.040",   0x80000,CRC(84f29e46) SHA1(744c7e64418c8d95972470e4aafe42e96d2ea9cf)) TZ_SOUND WPC_ROMEND
@@ -526,6 +527,7 @@ CORE_CLONEDEF(tz,l3,  92,"Twilight Zone (L-3)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,d3,  92,"Twilight Zone (D-3 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l4,  92,"Twilight Zone (L-4)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,d4,  92,"Twilight Zone (D-4 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l5,  92,"Twilight Zone (L-5)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,h7,  92,"Twilight Zone (H-7)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,i7,  92,"Twilight Zone (I-7 LED Ghost Fix)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,h8,  92,"Twilight Zone (H-8)", 1994,"Bally",wpc_mFliptronS,0)
