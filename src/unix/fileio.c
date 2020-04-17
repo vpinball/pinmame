@@ -499,6 +499,11 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 }
 
 
+UINT64 osd_fsize(osd_file *file)
+{
+	return file->end;
+}
+
 
 /*============================================================ */
 /*	osd_fseek */
