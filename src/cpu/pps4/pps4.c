@@ -573,7 +573,7 @@ const char *PPS4_info(void *context, int regnum)
 {
 	static char buffer[12][47+1];
 	static int which = 0;
-	PPS4_Regs *r = context;
+	PPS4_Regs *r = (PPS4_Regs*)context;
 
 	which = (which+1) % 12;
 	buffer[which][0] = '\0';

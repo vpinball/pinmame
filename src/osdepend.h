@@ -19,7 +19,7 @@ extern "C" {
 #define CLIB_DECL
 #endif
 
-#ifdef __LP64__
+#if defined __LP64__ || defined _WIN64
 #define FPTR unsigned long long  /* 64bit: sizeof(void *) is sizeof(long long)  */
 #else
 #define FPTR unsigned int
@@ -355,6 +355,8 @@ int osd_get_path_info(int pathtype, int pathindex, const char *filename);
 
 /* Attempt to open a file with the given name and mode using the specified path type */
 osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const char *mode);
+
+UINT64 osd_fsize(osd_file *file);
 
 /* Seek within a file */
 int osd_fseek(osd_file *file, INT64 offset, int whence);

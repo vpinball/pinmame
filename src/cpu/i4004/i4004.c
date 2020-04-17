@@ -19,7 +19,7 @@ static const UINT8 kbp_table[] = { 0x00,0x01,0x02,0x0f,0x03,0x0f,0x0f,0x0f,0x04,
 
 /* Layout of the registers in the debugger */
 static UINT8 i4004_reg_layout[] = {
-	I4004_PC, I4004_S1, I4004_S2, I4004_S3, I4004_RAM,I4004_A, /* I4004_C, */ I4004_T, -1,
+	I4004_PC, I4004_S1, I4004_S2, I4004_S3, I4004_RAM,I4004_A, /* I4004_C, */ I4004_T, 0xFF,
 	I4004_01, I4004_23, I4004_45, I4004_67, I4004_89, I4004_AB, I4004_CD, I4004_EF, 0
 };
 
@@ -960,7 +960,7 @@ const char *i4004_info(void *context, int regnum)
 {
 	static char buffer[17][47+1];
 	static int which = 0;
-	i4004_Regs *r = context;
+	i4004_Regs *r = (i4004_Regs*)context;
 
 	which = (which+1) % 17;
 	buffer[which][0] = '\0';

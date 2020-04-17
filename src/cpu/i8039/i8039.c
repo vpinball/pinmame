@@ -66,7 +66,7 @@
 
 /* Layout of the registers in the debugger */
 static UINT8 i8039_reg_layout[] = {
-	I8039_PC, I8039_SP, I8039_PSW, I8039_A, I8039_TC, I8039_P1, I8039_P2, -1,
+	I8039_PC, I8039_SP, I8039_PSW, I8039_A, I8039_TC, I8039_P1, I8039_P2, 0xFF,
 	I8039_R0, I8039_R1, I8039_R2, I8039_R3, I8039_R4, I8039_R5, I8039_R6, I8039_R7, 0
 };
 
@@ -926,7 +926,7 @@ const char *i8039_info(void *context, int regnum)
 {
 	static char buffer[17][47+1];
 	static int which = 0;
-	I8039_Regs *r = context;
+	I8039_Regs *r = (I8039_Regs*)context;
 
 	which = (which+1) % 17;
 	buffer[which][0] = '\0';

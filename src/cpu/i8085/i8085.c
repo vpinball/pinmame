@@ -138,8 +138,8 @@
 
 /* Layout of the registers in the debugger */
 static UINT8 i8085_reg_layout[] = {
-	I8085_PC,I8085_SP,I8085_AF,I8085_BC,I8085_DE,I8085_HL, -1,
-	I8085_HALT,I8085_IM,I8085_IREQ,I8085_ISRV,I8085_VECTOR, -1,
+	I8085_PC,I8085_SP,I8085_AF,I8085_BC,I8085_DE,I8085_HL, 0xFF,
+	I8085_HALT,I8085_IM,I8085_IREQ,I8085_ISRV,I8085_VECTOR, 0xFF,
 	I8085_TRAP_STATE,I8085_INTR_STATE,I8085_RST55_STATE,I8085_RST65_STATE,I8085_RST75_STATE,
 	0 };
 
@@ -268,7 +268,7 @@ static	void illegal(void)
 
 INLINE void execute_one(int opcode)
 {
-        i8085_ICount -= I.cputype ? i8085_lut_cycles_8085[opcode] : i8085_lut_cycles_8080[opcode];
+	i8085_ICount -= I.cputype ? i8085_lut_cycles_8085[opcode] : i8085_lut_cycles_8080[opcode];
 
 	switch (opcode)
 	{
@@ -1714,7 +1714,7 @@ const char *i8085_info(void *context, int regnum)
 {
 	static char buffer[16][47+1];
 	static int which = 0;
-	i8085_Regs *r = context;
+	i8085_Regs *r = (i8085_Regs*)context;
 
 	which = (which+1) % 16;
 	buffer[which][0] = '\0';

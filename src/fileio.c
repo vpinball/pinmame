@@ -444,12 +444,13 @@ UINT64 mame_fsize(mame_file *file)
 	{
 		case PLAIN_FILE:
 		{
-			int size, offs;
+/*			int size, offs;
 			offs = osd_ftell(file->file);
 			osd_fseek(file->file, 0, SEEK_END);
 			size = osd_ftell(file->file);
 			osd_fseek(file->file, offs, SEEK_SET);
-			return size;
+			return size;*/
+			return osd_fsize(file->file);
 		}
 
 		case RAM_FILE:

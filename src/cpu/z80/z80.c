@@ -138,9 +138,9 @@
 #endif
 
 static UINT8 z80_reg_layout[] = {
-	Z80_PC, Z80_SP, Z80_AF, Z80_BC, Z80_DE, Z80_HL, -1,
-	Z80_IX, Z80_IY, Z80_AF2,Z80_BC2,Z80_DE2,Z80_HL2,-1,
-	Z80_R,	Z80_I,	Z80_IM, Z80_IFF1,Z80_IFF2, -1,
+	Z80_PC, Z80_SP, Z80_AF, Z80_BC, Z80_DE, Z80_HL, 0xFF,
+	Z80_IX, Z80_IY, Z80_AF2,Z80_BC2,Z80_DE2,Z80_HL2,0xFF,
+	Z80_R,	Z80_I,	Z80_IM, Z80_IFF1,Z80_IFF2, 0xFF,
 	Z80_NMI_STATE,Z80_IRQ_STATE,Z80_DC0,Z80_DC1,Z80_DC2,Z80_DC3, 0
 };
 
@@ -1484,6 +1484,7 @@ INLINE UINT8 SET(UINT8 bit, UINT8 value)
  * opcodes with CB prefix
  * rotate, shift and bit operations
  **********************************************************/
+
 OP(cb,00) { _B = RLC(_B);											} /* RLC  B 		  */
 OP(cb,01) { _C = RLC(_C);											} /* RLC  C 		  */
 OP(cb,02) { _D = RLC(_D);											} /* RLC  D 		  */
@@ -3561,7 +3562,7 @@ const void *z80_get_cycle_table (int which)
 void z80_set_cycle_table (int which, void *new_table)
 {
 	if (which >= 0 && which <= Z80_TABLE_ex)
-		cc[which] = new_table;
+		cc[which] = (UINT8*)new_table;
 }
 
 /****************************************************************************
@@ -3741,7 +3742,7 @@ const char *z80_info(void *context, int regnum)
 {
 	static char buffer[32][47+1];
 	static int which = 0;
-	Z80_Regs *r = context;
+	Z80_Regs *r = (Z80_Regs*)context;
 
 	which = (which+1) % 32;
 	buffer[which][0] = '\0';
