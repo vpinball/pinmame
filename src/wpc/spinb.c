@@ -1399,7 +1399,6 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 #endif
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   UINT8 *RAM2;
-  tDMDDot dotCol;
   int ii,jj;
 
   RAM = RAM + SPINBlocals.DMDPage;
@@ -1407,7 +1406,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 
 #ifdef MAME_DEBUG
   core_textOutf(50,20,1,"offset=%08x", offset);
-  memset(&dotCol,0,sizeof(dotCol));
+  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
 
   if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
@@ -1434,7 +1433,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 #endif
 
   for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
 	  UINT8 intens1, intens2, dot1, dot2;
 	  dot1 = core_revbyte(RAM[0]);
@@ -1454,7 +1453,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -1463,7 +1462,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 //DRAW DMD FROM SERIAL PORT DATA
 
 // translate dot intensities
-static int intens[3][4]= {
+static const int intens[3][4]= {
  {0,3,3,3},
  {0,1,3,3},
  {0,1,2,3}
@@ -1472,12 +1471,12 @@ static int intens[3][4]= {
 PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   int     row,col,bit,dot;
   UINT8   *line;
-  tDMDDot dotCol={{0}};
   UINT8   d1,d2,d3;
 
+  memset(coreGlobals.dotCol, 0, sizeof(coreGlobals.dotCol));
   for (row=0; row < 32; row++)
   {
-    line = &dotCol[row+1][0];
+    line = &coreGlobals.dotCol[row+1][0];
     for (col=0; col < 16; col++)
     {
       d1=dmd32RAM[0][row][col];
@@ -1493,7 +1492,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 
 }

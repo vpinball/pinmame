@@ -186,7 +186,6 @@ static READ_HANDLER(i8039_read_test) {
   return 0;
 }
 
-static tDMDDot dotCol;
 static WRITE_HANDLER(i8039_write_port) {
 /*
   static UINT8 pos = 1;
@@ -324,7 +323,7 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
 
   RAM = (void *)(memory_region(SLEIC_MEMREG_CPU) + 0x60410);
   for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     for (jj = 0; jj < 16; jj++) {
       for (kk = 7; kk >= 0; kk--) {
         *line++ = (RAM[0]>>kk) & 1 ? 3 : 0;
@@ -337,6 +336,6 @@ PINMAME_VIDEO_UPDATE(sleic_dmd_update) {
     *line = 0;
   }
 
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }

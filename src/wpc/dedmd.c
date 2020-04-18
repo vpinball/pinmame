@@ -137,7 +137,6 @@ static INTERRUPT_GEN(dmd32_firq) {
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
   const UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_address_r(0) & 0x0100)<<2);
   const UINT8 *RAM2 = RAM + 0x200;
-  tDMDDot dotCol;
   int ii;
 
 #ifdef PROC_SUPPORT
@@ -166,7 +165,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
 #endif
 
   for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     int jj;
     for (jj = 0; jj < (128/8); jj++) {
       const UINT8 intens1 = 2*(*RAM & 0x55) + (*RAM2 & 0x55);
@@ -184,7 +183,7 @@ PINMAME_VIDEO_UPDATE(dedmd32_update) {
     *line = 0;
   }
 
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -266,11 +265,10 @@ static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_0_r(o
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
   const UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_address_r(0) & 0x400)<<2);
   const UINT8 *RAM2 = RAM + 0x800;
-  tDMDDot dotCol;
   int ii;
 
   for (ii = 1; ii <= 64; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     int jj;
     for (jj = 0; jj < (192/16); jj++) {
       const UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
@@ -297,7 +295,7 @@ PINMAME_VIDEO_UPDATE(dedmd64_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -507,11 +505,10 @@ static INTERRUPT_GEN(dmd16_nmi) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULS
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd16_update) {
   const UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
-  tDMDDot dotCol;
   int ii;
 
   for (ii = 1; ii <= 16; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     int jj;
     for (jj = 0; jj < 2; jj++) {
       UINT32 tmp0 = frame[0];
@@ -529,6 +526,6 @@ PINMAME_VIDEO_UPDATE(dedmd16_update) {
     }
     *line++ = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }

@@ -721,14 +721,13 @@ MACHINE_DRIVER_END
 /*** 128 X 32 NORMAL SIZE DMD ***/
 /********************************/
 PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
-  tDMDDot dotCol;
   int ii, jj, kk;
   UINT16 *RAM;
 
   UINT32 offset = 0x800*locals.visible_page-0x10;
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
       for (kk = 0; kk < 16; kk++) {
 		UINT16 intens1 = RAM[0];
 		for(jj=0;jj<8;jj++) {
@@ -740,7 +739,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
     *line++ = 0;
 	RAM+=16;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -748,15 +747,14 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 /*** 256 X 64 SUPER HUGE DMD ***/
 /*******************************/
 PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
-  tDMDDot dotCol;
   int ii, jj, kk;
   UINT16 *RAM;
 
   UINT32 offset = 0x800*locals.visible_page-0x20;
   RAM = ramptr+offset;
   for (ii = 0; ii <= 64; ii++) {
-    UINT8 *linel = &dotCol[ii][0];
-	UINT8 *liner = &dotCol[ii][128];
+    UINT8 *linel = &coreGlobals.dotCol[ii][0];
+    UINT8 *liner = &coreGlobals.dotCol[ii][128];
       for (kk = 0; kk < 16; kk++) {
 		UINT16 intensl = RAM[0];
 		UINT16 intensr = RAM[0x10];
@@ -770,7 +768,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 	  }
 	RAM+=16;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
@@ -779,20 +777,19 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
 /********************************/
 PINMAME_VIDEO_UPDATE(cc_lamp16x8) {
   UINT16 *seg = &coreGlobals.drawSeg[0];
-  tDMDDot dotCol;
   int ii, jj;
 
   for (ii = 0; ii < 8; ii++) {
     for (jj = 0; jj < 16; jj++) {
-      UINT8 *line = &dotCol[1+ii][jj];
+      UINT8 *line = &coreGlobals.dotCol[1+ii][jj];
       *line = 63+locals.lamps[jj*8+ii]/16;
     }
   }
   for (jj = 0; jj < 16; jj++) {
     for (ii = 0; ii < 8; ii+=4) {
-      *seg++ = (dotCol[1+ii][jj]-63) | ((dotCol[2+ii][jj]-63)<<4) | ((dotCol[3+ii][jj]-63)<<8) | ((dotCol[4+ii][jj]-63)<<12);
+      *seg++ = (coreGlobals.dotCol[1+ii][jj]-63) | ((coreGlobals.dotCol[2+ii][jj]-63)<<4) | ((coreGlobals.dotCol[3+ii][jj]-63)<<8) | ((coreGlobals.dotCol[4+ii][jj]-63)<<12);
     }
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }

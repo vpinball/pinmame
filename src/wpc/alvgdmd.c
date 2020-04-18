@@ -291,14 +291,13 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 #endif
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   UINT8 *RAM2;
-  tDMDDot dotCol;
   int ii,jj;
   RAM += dmdlocals.vid_page << 11;
   RAM2 = RAM + dmdlocals.planenable*0x200;
 
 #ifdef MAME_DEBUG
 //  core_textOutf(50,20,1,"offset=%08x", offset);
-//  memset(&dotCol,0,sizeof(dotCol));
+//  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
 
   if (!debugger_focus) {
 //  if (keyboard_pressed_memory_repeat(KEYCODE_Z,2))
@@ -323,7 +322,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 #endif
 
   for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
       *line++ = ((RAM[0]>>7 & 0x01) | (RAM2[0]>>6 & 0x02));
       *line++ = ((RAM[0]>>6 & 0x01) | (RAM2[0]>>5 & 0x02));
@@ -337,11 +336,11 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
-static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
+static void pistol_poker__mystery_castle_dmd() {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   int ii,jj;
   RAM += dmdlocals.vid_page << 11;
@@ -356,7 +355,7 @@ static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
 #endif
 
 	  for (ii = 1; ii <= 32; ii++) {
-		UINT8 *line = &dotCol[ii][0];
+		UINT8 *line = &coreGlobals.dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
 		  *line++ = level[((RAM[0] >> 7 & 0x01) + (RAM[0x200] >> 7 & 0x01) + (RAM[0x400] >> 7 & 0x01) + (RAM[0x600] >> 7 & 0x01))];
 		  *line++ = level[((RAM[0] >> 6 & 0x01) + (RAM[0x200] >> 6 & 0x01) + (RAM[0x400] >> 6 & 0x01) + (RAM[0x600] >> 6 & 0x01))];
@@ -379,7 +378,7 @@ static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
 #endif
 
 	  for (ii = 1; ii <= 32; ii++) {
-		UINT8 *line = &dotCol[ii][0];
+		UINT8 *line = &coreGlobals.dotCol[ii][0];
 		for (jj = 0; jj < (128/8); jj++) {
 		  *line++ = level[(RAM[0] >> 5 & 0x04)];
 		  *line++ = level[(RAM[0] >> 4 & 0x04)];
@@ -397,15 +396,13 @@ static void pistol_poker__mystery_castle_dmd(tDMDDot dotCol) {
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update2) {
-	tDMDDot dotCol;
-	pistol_poker__mystery_castle_dmd(dotCol);
-	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+	pistol_poker__mystery_castle_dmd();
+	video_update_core_dmd(bitmap, cliprect, layout);
 	return 0;
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update3) {
-	tDMDDot dotCol;
-	pistol_poker__mystery_castle_dmd(dotCol);
-	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+	pistol_poker__mystery_castle_dmd();
+	video_update_core_dmd(bitmap, cliprect, layout);
 	return 0;
 }

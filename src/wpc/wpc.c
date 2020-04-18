@@ -1212,7 +1212,6 @@ static VIDEO_START(wpc_dmd) {
 
 //static VIDEO_UPDATE(wpc_dmd) {
 PINMAME_VIDEO_UPDATE(wpcdmd_update) {
-  tDMDDot dotCol;
   int ii,kk;
 
 #ifdef VPINMAME
@@ -1221,7 +1220,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
 
   /* Create a temporary buffer with all pixels */
   for (kk = 0, ii = 1; ii < 33; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *line = &coreGlobals.dotCol[ii][0];
     int jj;
     for (jj = 0; jj < 16; jj++) {
       /* Intensity depends on how many times the pixel */
@@ -1252,6 +1251,6 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
     }
     *line = 0; /* to simplify antialiasing */
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }

@@ -229,7 +229,7 @@ typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 
 #define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
 typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
-extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout);
+extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
 
 /*----------------------
 / WPC driver constants
@@ -395,6 +395,7 @@ typedef struct {
   volatile UINT8  RGBlamps[CORE_MAXRGBLAMPS];
   core_tSeg segments;     /* segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT]; /* segments drawn */
+  tDMDDot dotCol; /* raw DMD dots */
   volatile UINT32 solenoids;       /* on power driver bord */
   volatile UINT32 solenoids2;      /* flipper solenoids */
   volatile UINT8  modulatedSolenoids[2][CORE_MODSOL_MAX];
