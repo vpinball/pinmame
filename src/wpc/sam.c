@@ -1229,7 +1229,7 @@ static MACHINE_INIT(sam) {
 	#endif
 }
 
-void sam_init()
+void sam_init(void)
 {
 	const char * const gn = Machine->gamedrv->name;
 

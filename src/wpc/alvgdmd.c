@@ -340,7 +340,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   return 0;
 }
 
-static void pistol_poker__mystery_castle_dmd() {
+static void pistol_poker__mystery_castle_dmd(void) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   int ii,jj;
   RAM += dmdlocals.vid_page << 11;

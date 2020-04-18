@@ -725,7 +725,7 @@ void SetThrottleAdj(int adj)
 	g_iThrottleAdj = adj;
 }
 
-static void throttle_speed()
+static void throttle_speed(void)
 {
 	throttle_speed_part(1,1);
 }

@@ -438,7 +438,7 @@ static void init_output_filter(struct hc55516_data *chip)
 		filter_mf_lp_setup(47000, 22000, 150000, 1800e-12, 330e-12, &chip->output_filter.f2, freq);
 		break;
 	}
-};
+}
 
 // ---------------------------------------------------------------------------
 //

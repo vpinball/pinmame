@@ -19,7 +19,7 @@
  #endif
 #endif
 
-static filter* filter_alloc() {
+static filter* filter_alloc(void) {
 	filter* f = malloc(sizeof(filter));
 	return f;
 }
@@ -35,7 +35,7 @@ void filter_state_reset(filter* f, filter_state* s) {
 		s->xprev[i] = 0;
 }
 
-filter_state* filter_state_alloc() {
+filter_state* filter_state_alloc(void) {
 	unsigned int i;
 	filter_state* s = malloc(sizeof(filter_state));
 	s->prev_mac = 0;
