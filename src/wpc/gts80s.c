@@ -251,7 +251,7 @@ static int s80s_sh_start(const struct MachineSound *msound) {
     return -1;
   }
 
-  stream_locals.stream = stream_init_float("SND DAC", 50, 11025, 0, GTS80S_Update, 1);
+  stream_locals.stream = stream_init_float("SND DAC", 50, 22050, 0, GTS80S_Update, 1);
 
   return 0;
 }
@@ -290,7 +290,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s_sp) // with Piggyback
   MDRV_IMPORT_FROM(gts80s_s)
-  MDRV_CPU_REPLACE("scpu", M6502, 714285.714)
+  MDRV_CPU_REPLACE("scpu", M6502, 960000) // should actually be 714285.714 Hz if schematic is correct but real games play a lot faster!)
 MACHINE_DRIVER_END
 
 

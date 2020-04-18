@@ -33,7 +33,7 @@ extern "C"
 #endif
 
 int pindmdInit(const char* GameName, UINT64 HardwareGeneration, const tPMoptions *Options);
-void pindmdDeInit();
+void pindmdDeInit(void);
 void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, UINT8 doDumpFrame, const char* GameName, UINT32 noOfRawFrames, UINT8 *rawbuffer);
 void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 total_disp, UINT8 *disp_num_segs);
 void FwdConsoleData(UINT8 data);

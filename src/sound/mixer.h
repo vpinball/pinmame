@@ -71,9 +71,9 @@
 #define MIXER_GET_PAN(mixing_level)    (((mixing_level) >> 8) & 0x03)
 #define MIXER_GET_GAIN(mixing_level)   (((mixing_level) >> 10) & 0x03)
 
-int mixer_sh_start();
-void mixer_sh_stop();
-void mixer_sh_update();
+int mixer_sh_start(void);
+void mixer_sh_stop(void);
+void mixer_sh_update(void);
 int mixer_allocate_channel(const int default_mixing_level);
 int mixer_allocate_channels(const int channels,const int *default_mixing_levels);
 int mixer_allocate_channel_float(const int default_mixing_level, const UINT8 is_float);
@@ -98,7 +98,7 @@ void mixer_set_sample_frequency(const int channel, const int freq);
 void mixer_sound_enable_global_w(const UINT8 enable);
 
 void mixer_play_streamed_sample_16(const int channel, INT16 *data, int len, const int freq);
-int mixer_samples_this_frame();
+int mixer_samples_this_frame(void);
 int mixer_need_samples_this_frame(const int channel, const int freq);
 
 /* private functions for user interface only - don't call them from drivers! */

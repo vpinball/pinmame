@@ -119,7 +119,7 @@ void riot6532_unconfig(void)
 
 void riot6532_set_clock(int which, double clock)
 {
-	riot[which].sec_to_cycles = clock;
+	riot[which].sec_to_cycles = clock * 1.01;
 	riot[which].cycles_to_sec = 1.0 / riot[which].sec_to_cycles;
 }
 

@@ -33,7 +33,7 @@ filter* filter_lp_fir_alloc(double freq, const int order);
 void filter_free(filter* f);
 
 /* Allocate a filter state */
-filter_state* filter_state_alloc();
+filter_state* filter_state_alloc(void);
 /* Free the filter state */
 void filter_state_free(filter_state* s);
 
