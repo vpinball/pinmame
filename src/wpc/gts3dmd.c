@@ -40,7 +40,6 @@ INLINE UINT8 reverse(UINT8 n) {
 
 //DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
-  tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames2[0][0];
   int ii,jj,kk,ll;
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
@@ -49,11 +48,11 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   int i = 0;
 #endif
 
-  memset(dotCol,0,sizeof(tDMDDot));
+  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
   for (ii = 0; ii < frames; ii++) {
     for (jj = 1; jj <= 32; jj++) {           // 32 lines
-      UINT8 *line = &dotCol[jj][0];
-      for (kk = 0; kk < 16; kk++) {      // 16 columns/line
+      UINT8 *line = &coreGlobals.dotCol[jj][0];
+      for (kk = 0; kk < 16; kk++) {          // 16 columns/line
         UINT8 data = *frameData++;
 #ifdef VPINMAME
         g_raw_gtswpc_dmd[i] = reverse(data);
@@ -68,8 +67,8 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   // detect special case for some otherwise flickering frames
   if (frames == GTS3DMD_FRAMES_4C_a) {
 	  for (ii = 1; ii <= 32; ii++)               // 32 lines
-		  for (jj = 0; jj < 128; jj++) {		// 128 pixels/line
-			  if (dotCol[ii][jj] == 4){
+		  for (jj = 0; jj < 128; jj++) {         // 128 pixels/line
+			  if (coreGlobals.dotCol[ii][jj] == 4){
 				  level = level4_a2;
 				  break;
 			  }
@@ -77,17 +76,16 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   }
 
   for (ii = 1; ii <= 32; ii++)               // 32 lines
-    for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
-      UINT8 data = dotCol[ii][jj];
-      dotCol[ii][jj] = level[data];
+    for (jj = 0; jj < 128; jj++) {           // 128 pixels/line
+      UINT8 data = coreGlobals.dotCol[ii][jj];
+      coreGlobals.dotCol[ii][jj] = level[data];
   }
 
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }
 
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
-  tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames[0][0];
   int ii,jj,kk,ll;
   int frames = GTS3_dmdlocals[0].color_mode == 0 ? GTS3DMD_FRAMES_4C_a : (GTS3_dmdlocals[0].color_mode == 1 ? GTS3DMD_FRAMES_4C_b : GTS3DMD_FRAMES_5C);
@@ -106,10 +104,10 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
 
   /* Drawing is not optimised so just clear everything */
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-  memset(dotCol,0,sizeof(tDMDDot));
+  memset(coreGlobals.dotCol,0,sizeof(coreGlobals.dotCol));
   for (ii = 0; ii < frames; ii++) {
     for (jj = 1; jj <= 32; jj++) {          // 32 lines
-      UINT8 *line = &dotCol[jj][0];
+      UINT8 *line = &coreGlobals.dotCol[jj][0];
       for (kk = 0; kk < 16; kk++) {         // 16 columns/line
         UINT8 data = *frameData++;
 #ifdef VPINMAME
@@ -127,7 +125,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   if (frames == GTS3DMD_FRAMES_4C_a) {
 	  for (ii = 1; ii <= 32; ii++)               // 32 lines
 		  for (jj = 0; jj < 128; jj++) {         // 128 pixels/line
-			  if (dotCol[ii][jj] == 4) {
+			  if (coreGlobals.dotCol[ii][jj] == 4) {
 				  level = level4_a2;
 				  break;
 			  }
@@ -136,10 +134,10 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
 
   for (ii = 1; ii <= 32; ii++)              // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
-      UINT8 data = dotCol[ii][jj];
-      dotCol[ii][jj] = level[data];
+      UINT8 data = coreGlobals.dotCol[ii][jj];
+      coreGlobals.dotCol[ii][jj] = level[data];
   }
 
-  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  video_update_core_dmd(bitmap, cliprect, layout);
   return 0;
 }

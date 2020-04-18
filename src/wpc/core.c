@@ -787,7 +787,7 @@ static PALETTE_INIT(core) {
 /*-----------------------------------
 /    Generic DMD display handler
 /------------------------------------*/
-void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout) {
+void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout) {
 
   UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
   UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
@@ -884,32 +884,32 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   }
 #endif
 
-  memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
-  memset(&dotCol[0][0], 0, sizeof(dotCol[0][0])*layout->length+1); // clear above
+  memset(&coreGlobals.dotCol[layout->start+1][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1);
+  memset(&coreGlobals.dotCol[0][0], 0, sizeof(coreGlobals.dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
     BMTYPE *line = (*lines++) + (layout->left*locals.displaySize);
-    dotCol[ii][layout->length] = 0;
+    coreGlobals.dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
-		const UINT8 col = dotCol[ii][jj];
+        const UINT8 col = coreGlobals.dotCol[ii][jj];
 #if defined(VPINMAME) || defined(PINMAME_DLL)
-		const int offs = (ii-1)*layout->length + jj;
-		currbuffer[offs] = col;
-		if(layout->length >= 128) { // Capcom hack
-			g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
-			g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
-		}
+        const int offs = (ii-1)*layout->length + jj;
+        currbuffer[offs] = col;
+        if(layout->length >= 128) { // Capcom hack
+          g_raw_dmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? raw_16[col] : raw_4[col];
+          g_raw_colordmdbuffer[offs + raw_dmdoffs] = shade_16_enabled ? palette32_16[col] : palette32_4[col];
+        }
 #endif
-		*line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
+        *line++ = shade_16_enabled ? dmdColor[col+63] : dmdColor[col];
         if (locals.displaySize > 1 && jj < layout->length-1)
-          *line++ = noaa ? 0 : aaColor[col + dotCol[ii][jj+1]];
+          *line++ = noaa ? 0 : aaColor[col + coreGlobals.dotCol[ii][jj+1]];
       }
     }
     if (locals.displaySize > 1) {
-      int col1 = dotCol[ii][0] + dotCol[ii+1][0];
+      int col1 = coreGlobals.dotCol[ii][0] + coreGlobals.dotCol[ii+1][0];
       line = (*lines++) + (layout->left*locals.displaySize);
       for (jj = 0; jj < layout->length; jj++) {
-        int col2 = dotCol[ii][jj+1] + dotCol[ii+1][jj+1];
+        int col2 = coreGlobals.dotCol[ii][jj+1] + coreGlobals.dotCol[ii+1][jj+1];
         *line++ = noaa ? 0 : aaColor[col1];
         if (jj < layout->length-1)
           *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
@@ -1400,22 +1400,22 @@ static VIDEO_UPDATE(core_status) {
   if ((core_gameData->hw.lampData) &&
       (startRow + core_gameData->hw.lampData->startpos.x + core_gameData->hw.lampData->size.x < locals.maxSimRows)) {
     core_tLampDisplay *drawData = core_gameData->hw.lampData;
-    int startx = drawData->startpos.x;
-    int starty = drawData->startpos.y + thisCol;
+    const int startx = drawData->startpos.x;
+    const int starty = drawData->startpos.y + thisCol;
     BMTYPE **line = &lines[locals.firstSimRow + startRow + startx];
     int num = 0;
-    int qq;
 
     for (ii = 0; ii < CORE_CUSTLAMPCOL+core_gameData->hw.lampCol; ii++) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
-	for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
-	  int color = drawData->lamps[num].lamppos[qq].color;
-	  int lampx = drawData->lamps[num].lamppos[qq].x;
-	  int lampy = drawData->lamps[num].lamppos[qq].y;
-	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
-	}
+        int qq;
+        for (qq = 0; qq < drawData->lamps[num].totnum; qq++) {
+          const int color = drawData->lamps[num].lamppos[qq].color;
+          const int lampx = drawData->lamps[num].lamppos[qq].x;
+          const int lampy = drawData->lamps[num].lamppos[qq].y;
+          line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
+        }
         bits >>= 1;
         num++;
       }

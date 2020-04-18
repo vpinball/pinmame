@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include <windows.h>
 #include "driver.h"
 #include "gen.h"
@@ -474,3 +476,5 @@ void renderAlphanumericFrame(UINT64 gen, UINT16 *seg_data, char *seg_dim, UINT8 
 	else if (DmdScr_render_PM_Alphanumeric_Frame) // older interface without dimming
 		DmdScr_render_PM_Alphanumeric_Frame(layout, seg_data, seg_data2);
 }
+
+#endif
