@@ -411,8 +411,8 @@ static void initTMS(void) {
   tms5220_reset();
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370
     || core_gameData->hw.soundBoard == SNDBRD_ZAC11178
-    || !_strnicmp(Machine->gamedrv->name, "tmac", 4)
-    || !_strnicmp(Machine->gamedrv->name, "zankor", 6)) {
+    || !strncasecmp(Machine->gamedrv->name, "tmac", 4)
+    || !strncasecmp(Machine->gamedrv->name, "zankor", 6)) {
     // Pinball Champ ('82), Soccer Kings, Time Machine, Pool Champion, Black Belt, Mexico 86, Zankor
     tms5220_set_variant(TMS5220_IS_5200);
   } else {

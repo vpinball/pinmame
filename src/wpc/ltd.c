@@ -142,7 +142,7 @@ static WRITE_HANDLER(peri_w) {
   static int lampStrobe;
   int seg;
   if (offset < 0x06) {
-    if (!_strnicmp(Machine->gamedrv->name, "spcpoker", 8)) {
+    if (!strncasecmp(Machine->gamedrv->name, "spcpoker", 8)) {
       if (offset == 5) { // extra strobe for more lamps
         if (data & 0x08) lampStrobe = 0;
         else if (data & 0x80) lampStrobe = 1;
@@ -186,7 +186,7 @@ static WRITE_HANDLER(peri_w) {
       discrete_sound_w(2, 1);
       timer_set(0.1, 2, snd_stop);
     }
-  } else if (offset == 0x0d && !_strnicmp(Machine->gamedrv->name, "force", 5)) { // drop target single reset solenoids
+  } else if (offset == 0x0d && !strncasecmp(Machine->gamedrv->name, "force", 5)) { // drop target single reset solenoids
     locals.solenoids = (locals.solenoids & 0x1ffff) | (0x10000 << data);
   } else if (offset == 0x0f) {
     logerror("CLR\n");

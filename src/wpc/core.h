@@ -16,8 +16,8 @@
   #define TRUE (1)
 #endif
 
-#ifdef UNIX
-  #define _strnicmp(x,y,z) strncasecmp(x,y,z)
+#ifdef _WIN32
+  #define strncasecmp _strnicmp
 #endif
 
 #ifdef MAME_DEBUG

@@ -365,7 +365,7 @@ static WRITE_HANDLER(m8020_w) {
 
 static MACHINE_INIT(PLAYMATIC3) {
   init_common(2);
-  if (!_strnicmp(Machine->gamedrv->name, "spain82", 7)) {
+  if (!strncasecmp(Machine->gamedrv->name, "spain82", 7)) {
     install_mem_write_handler(0, 0x8020, 0x8020, m8020_w);
   }
 }
