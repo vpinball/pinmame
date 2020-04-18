@@ -169,7 +169,11 @@
  * NOTE: not enabling inline functions will SEVERELY slow down emulation.
  */
 #ifndef INLINE
+#ifdef PX_ZEN
+#define INLINE static
+#else
 #define INLINE static __inline__
+#endif
 #endif /* INLINE */
 
 #endif /* M68K_COMPILE_FOR_MAME */

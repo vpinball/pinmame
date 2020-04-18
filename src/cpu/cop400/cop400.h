@@ -8,7 +8,11 @@
 #define _COP400_H
 
 #ifndef INLINE
+#ifdef PX_ZEN
+#define INLINE static
+#else
 #define INLINE static inline
+#endif
 #endif
 
 #define COP400_CLOCK_DIVIDER	4
