@@ -1622,11 +1622,10 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 	//	{ 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15, 15};
 
 	int ii;
-	tDMDDot dotCol;
 
 	for( ii = 0; ii < 32; ii++ )
 	{
-		UINT8 *line = &dotCol[ii+1][0];
+		UINT8 *line = &coreGlobals.dotCol[ii+1][0];
 		const UINT8* const offs1 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[0] << 12) + ii * 128;
 		const UINT8* const offs2 = memory_region(REGION_CPU1) + 0x1080000 + (samlocals.video_page[1] << 12) + ii * 128;
 		int jj;
@@ -1642,34 +1641,32 @@ static PINMAME_VIDEO_UPDATE(samdmd_update) {
 		}
 	}
 
-	video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+	video_update_core_dmd(bitmap, cliprect, layout);
 	return 0;
 }
 
 static PINMAME_VIDEO_UPDATE(samminidmd_update) {
-    tDMDDot dotCol;
     int ii,kk,bits;
     const int dmd_x = (layout->left-10)/7;
     const int dmd_y = (layout->top-34)/9;
 
     for (ii = 1, bits = 0x40; ii < 8; ii++, bits >>= 1)
         for (kk = 0; kk < 5; kk++)
-            dotCol[ii][kk] = samlocals.miniDMDData[dmd_y*5 + kk][dmd_x] & bits ? 3 : 0;
+            coreGlobals.dotCol[ii][kk] = samlocals.miniDMDData[dmd_y*5 + kk][dmd_x] & bits ? 3 : 0;
 
     for (ii = 0; ii < 5; ii++) {
         bits = 0;
         for (kk = 1; kk < 8; kk++)
-            bits = (bits<<1) | (dotCol[kk][ii] ? 1 : 0);
+            bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
         coreGlobals.drawSeg[5*dmd_x + 35*dmd_y + ii] = bits;
     }
 
     if (!pmoptions.dmd_only)
-        video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+        video_update_core_dmd(bitmap, cliprect, layout);
     return 0;
 }
 
 static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
-    tDMDDot dotCol;
     int ii,jj,kk,bits;
 
 	if (options.usemodsol)
@@ -1679,7 +1676,7 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 				for (kk = 0; kk < 5; kk++)
 				{
 					const int target = ((jj * 7) + ii) + (kk * 35);
-					dotCol[kk + 1][(jj * 7) + ii] = coreGlobals.RGBlamps[target + 60] >> 4;
+					coreGlobals.dotCol[kk + 1][(jj * 7) + ii] = coreGlobals.RGBlamps[target + 60] >> 4;
 				}
 	}
 	else
@@ -1687,17 +1684,17 @@ static PINMAME_VIDEO_UPDATE(samminidmd2_update) {
 		for (jj = 0; jj < 5; jj++)
 			for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1)
 				for (kk = 0; kk < 5; kk++)
-					dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj] & bits ? 15 : 0;
+					coreGlobals.dotCol[kk + 1][ii + (jj * 7)] = samlocals.miniDMDData[kk][jj] & bits ? 15 : 0;
 	}
     for (ii = 0; ii < 35; ii++) {
         bits = 0;
         for (kk = 1; kk < 6; kk++)
-            bits = (bits<<1) | (dotCol[kk][ii] ? 1 : 0);
+            bits = (bits<<1) | (coreGlobals.dotCol[kk][ii] ? 1 : 0);
         coreGlobals.drawSeg[ii] = bits;
     }
 
     if (!pmoptions.dmd_only)
-        video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+        video_update_core_dmd(bitmap, cliprect, layout);
     return 0;
 }
 
