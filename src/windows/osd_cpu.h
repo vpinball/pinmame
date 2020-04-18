@@ -42,6 +42,11 @@
 //#define INLINE static inline
 #endif
 
+#ifdef PX_ZEN
+#undef INLINE
+#define INLINE static
+#endif
+
 typedef unsigned char						UINT8;
 typedef signed char 						INT8;
 typedef unsigned short						UINT16;
