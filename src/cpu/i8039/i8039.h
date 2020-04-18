@@ -14,7 +14,11 @@
 #endif
 
 #ifndef INLINE
+#ifdef PX_ZEN
+#define INLINE static
+#else
 #define INLINE static inline
+#endif
 #endif
 
 #include "osd_cpu.h"

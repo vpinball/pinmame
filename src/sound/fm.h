@@ -93,7 +93,11 @@ typedef signed int		INT32;   /* signed 32bit   */
 #endif
 
 #ifndef INLINE
+#ifdef PX_ZEN
+#define INLINE static
+#else
 #define INLINE static __inline__
+#endif
 #endif
 
 

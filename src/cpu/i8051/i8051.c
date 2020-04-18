@@ -421,9 +421,7 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #define V_TF1	0x01b	/* Timer 1 Overflow */
 #define V_RITI	0x023	/* Serial Receive/Transmit */
 
-#if (HAS_I8052 || HAS_I8752)
 #define V_TF2	0x02b	/* Timer 2 Overflow */
-#endif
 
 /* Any pending IRQ */
 #define SERIALPORT_IRQ    ((R_SCON & 0x03) && GET_ES)
@@ -2314,7 +2312,7 @@ INLINE void serial_transmit(UINT8 data)
 }
 
 //Check and update status of serial port
-INLINE void	update_serial(int cyc)
+INLINE void update_serial(int cyc)
 {
 	//Any bits left to send?
 	if(uart.bits_to_send) {
