@@ -798,7 +798,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   // prepare all brightness & color/palette tables for mappings from internal DMD representation:
   const int shade_16_enabled = ((core_gameData->gen == GEN_SAM) ||
 	  // extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-	  (_strnicmp(Machine->gamedrv->name, "smb", 3) == 0) || (_strnicmp(Machine->gamedrv->name, "cueball", 7) == 0) ||
+	  (strncasecmp(Machine->gamedrv->name, "smb", 3) == 0) || (strncasecmp(Machine->gamedrv->name, "cueball", 7) == 0) ||
 	  (core_gameData->gen == GEN_ALVG_DMD2));
 
 #if defined(VPINMAME) || defined(PINMAME_DLL)
@@ -872,7 +872,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       g_raw_dmdy = layout->start;
 
       // Strikes N' Spares has 2 standard DMDs
-      if (_strnicmp(Machine->gamedrv->name, "snspare", 7) == 0)
+      if (strncasecmp(Machine->gamedrv->name, "snspare", 7) == 0)
       {
           g_raw_dmdy = 64;
           // shift offset into the raw DMDs, depending on which display is updated in here

@@ -263,7 +263,7 @@ void renderDMDFrame(UINT64 gen, UINT16 width, UINT16 height, UINT8 *currbuffer, 
 
 	if ((gen == GEN_SAM) ||
 		// extended handling also for some GTS3 games (SMB, SMBMW and CBW):
-		(_strnicmp(GameName, "smb", 3) == 0) || (_strnicmp(GameName, "cueball", 7) == 0) ||
+		(strncasecmp(GameName, "smb", 3) == 0) || (strncasecmp(GameName, "cueball", 7) == 0) ||
 		(gen == GEN_ALVG_DMD2)) {
 		if (noOfRawFrames != 0) {
 			if (DmdDev_Render_16_Shades_with_Raw) {

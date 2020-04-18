@@ -233,17 +233,17 @@ static MACHINE_INIT(se3) {
 	// It appears all systems of se3 generation are the same... :) 
 	selocals.fastflipaddr = 0x04 + 1;
 
-/*	if (_strnicmp(gn, "sopranos", 8) == 0)
+/*	if (strncasecmp(gn, "sopranos", 8) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "elvis", 5) == 0)
+	else if (strncasecmp(gn, "elvis", 5) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "gprix", 5) == 0)
+	else if (strncasecmp(gn, "gprix", 5) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "nascar", 6) == 0)
+	else if (strncasecmp(gn, "nascar", 6) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "ripleys", 7) == 0)
+	else if (strncasecmp(gn, "ripleys", 7) == 0)
 		selocals.fastflipaddr = 0x04 + 1;
-	else if (_strnicmp(gn, "lotr", 4) == 0)
+	else if (strncasecmp(gn, "lotr", 4) == 0)
 		selocals.fastflipaddr = 0x04 + 1;*/
 }
 
@@ -253,55 +253,55 @@ static MACHINE_INIT(se) {
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
   // for description on Fast flips, see above
-  if (_strnicmp(gn, "sprk_103", 8) == 0)
+  if (strncasecmp(gn, "sprk_103", 8) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
-  else if (_strnicmp(gn, "austin", 6) == 0)
+  else if (strncasecmp(gn, "austin", 6) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
-  else if (_strnicmp(gn, "monopoly", 8) == 0)
+  else if (strncasecmp(gn, "monopoly", 8) == 0)
 	  selocals.fastflipaddr = 0xf0 + 1;
-  else if (_strnicmp(gn, "twst_405", 8) == 0)
+  else if (strncasecmp(gn, "twst_405", 8) == 0)
 	  selocals.fastflipaddr = 0x14d + 1;
-  else if (_strnicmp(gn, "shrkysht", 8) == 0)
+  else if (strncasecmp(gn, "shrkysht", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "harl_a30", 8) == 0)
+  else if (strncasecmp(gn, "harl_a30", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "hirolcas", 8) == 0)
+  else if (strncasecmp(gn, "hirolcas", 8) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
-  else if (_strnicmp(gn, "simpprty", 8) == 0)
+  else if (strncasecmp(gn, "simpprty", 8) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
-  else if (_strnicmp(gn, "term3", 5) == 0)
+  else if (strncasecmp(gn, "term3", 5) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
-  else if (_strnicmp(gn, "playboys", 8) == 0)
+  else if (strncasecmp(gn, "playboys", 8) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
-  else if (_strnicmp(gn, "rctycn", 6) == 0)
+  else if (strncasecmp(gn, "rctycn", 6) == 0)
 	  selocals.fastflipaddr = 0x04 + 1;
   // For apollo13, fast flips is not really necessary: The flipper "solenoids" are enable/disable flags and act just like the fast flip solenoid!
   // I'll leave it in there for consistency though since it makes the VP table counter part easier to code.
-  else if (_strnicmp(gn, "apollo13", 8) == 0)
+  else if (strncasecmp(gn, "apollo13", 8) == 0)
 	  selocals.fastflipaddr = 0x122 + 1;
-  else if (_strnicmp(gn, "godzilla", 8) == 0)
+  else if (strncasecmp(gn, "godzilla", 8) == 0)
 	  selocals.fastflipaddr = 0x0 + 1;
-  else if (_strnicmp(gn, "id4", 3) == 0)
+  else if (strncasecmp(gn, "id4", 3) == 0)
 	  selocals.fastflipaddr = 0x150 + 1;
-  else if (_strnicmp(gn, "lostspc", 7) == 0)
+  else if (strncasecmp(gn, "lostspc", 7) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "jplstw22", 8) == 0)
+  else if (strncasecmp(gn, "jplstw22", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "spacejam", 8) == 0)
+  else if (strncasecmp(gn, "spacejam", 8) == 0)
 	  selocals.fastflipaddr = 0x14d + 1;
-  else if (_strnicmp(gn, "swtril43", 8) == 0)
+  else if (strncasecmp(gn, "swtril43", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "vipr_102", 8) == 0)
+  else if (strncasecmp(gn, "vipr_102", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "xfiles", 6) == 0)
+  else if (strncasecmp(gn, "xfiles", 6) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "nfl", 3) == 0)
+  else if (strncasecmp(gn, "nfl", 3) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "startrp2", 8) == 0)
+  else if (strncasecmp(gn, "startrp2", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "strikext", 8) == 0)
+  else if (strncasecmp(gn, "strikext", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (_strnicmp(gn, "strxt_uk", 8) == 0)
+  else if (strncasecmp(gn, "strxt_uk", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1) {

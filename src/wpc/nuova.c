@@ -86,14 +86,14 @@ static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
 
-  if (!_strnicmp(Machine->gamedrv->name, "skflight", 8)) {
+  if (!strncasecmp(Machine->gamedrv->name, "skflight", 8)) {
     memset(memory_region(REGION_CPU2), 0xff, 0x100);
     pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia);
     tms5220_reset();
     tms5220_set_variant(TMS5220_IS_5220C);
   }
 
-  if (!_strnicmp(Machine->gamedrv->name, "uboat65", 7)) {
+  if (!strncasecmp(Machine->gamedrv->name, "uboat65", 7)) {
     //Setup serial line callbacks, needs to be set before CPU reset by design!
     i8051_set_serial_tx_callback(tx_cb);
     i8051_set_serial_rx_callback(rx_cb);
@@ -112,11 +112,11 @@ static WRITE_HANDLER(nuova_ctrl_w) {
   if (data & 1) {
     cpu_boost_interleave(TIME_IN_USEC(4), TIME_IN_USEC(500));
     cpu_set_irq_line(1, M6803_TIN_LINE, PULSE_LINE);
-    if (!_strnicmp(Machine->gamedrv->name, "f1gp", 4)) {
+    if (!strncasecmp(Machine->gamedrv->name, "f1gp", 4)) {
       cpu_set_irq_line(2, M6803_TIN_LINE, PULSE_LINE);
     }
   }
-  if (!_strnicmp(Machine->gamedrv->name, "skflight", 8)) {
+  if (!strncasecmp(Machine->gamedrv->name, "skflight", 8)) {
     coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x01) | ((data & 1) << 1);
   }
 }
