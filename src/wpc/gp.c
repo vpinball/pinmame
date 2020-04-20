@@ -339,9 +339,21 @@ static WRITE_HANDLER(ppi0_pc_w) {
 	//Display Enabled only when this value is 0
 	locals.disp_enable = !((data>>4)&1);
 
-	if ((data>>7)&1) locals.solenoids |= 0x8000; else locals.solenoids &= ~0x8000;
-	if ((data>>5)&1) locals.solenoids |= 0x40000000; else locals.solenoids &= ~0x40000000;
-	if ((data>>6)&1) locals.solenoids |= 0x80000000; else locals.solenoids &= ~0x80000000;
+	if ((data>>7)&1) {
+		locals.solenoids |= 0x8000; coreGlobals.pulsedSolState |= 0x8000;
+	} else {
+		locals.solenoids &= ~0x8000; coreGlobals.pulsedSolState &= ~0x8000;
+	}
+	if ((data>>5)&1) {
+		locals.solenoids |= 0x40000000; coreGlobals.pulsedSolState |= 0x40000000;
+	} else {
+		locals.solenoids &= ~0x40000000; coreGlobals.pulsedSolState &= ~0x40000000;
+	}
+	if ((data>>6)&1) {
+		locals.solenoids |= 0x80000000; coreGlobals.pulsedSolState |= 0x80000000;
+	} else {
+		locals.solenoids &= ~0x80000000; coreGlobals.pulsedSolState &= ~0x80000000;
+	}
 }
 
 /*
