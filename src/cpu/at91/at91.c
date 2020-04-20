@@ -89,7 +89,7 @@ INLINE data32_t at91_cpu_read32( int addr );
 INLINE data16_t at91_cpu_read16( int addr );
 INLINE data8_t at91_cpu_read8( int addr );
 void at91_fire_irq(int irqline);
-void at91_irq_assert_if_greater();
+void at91_irq_assert_if_greater(void);
 void (*at91_transmit_serial)(int usartno, data8_t *data, int size) = NULL;
 void (*at91_serial_receive_ready)(int usartno) = NULL;
 
@@ -374,7 +374,7 @@ char *GetUARTOffset(int addr)
 	return temp;
 }
 
-void at91_build_priority_map()
+void at91_build_priority_map(void)
 {
 	int i, c=0, j;
 
@@ -414,7 +414,7 @@ mame_timer* at91_serial_timer=NULL;
 
 static void serial_timer_event(int timer_num);
 
-void at91_irqcheck()
+void at91_irqcheck(void)
 {
 	arm7_check_irq_state();
 }
@@ -1737,7 +1737,7 @@ void at91_set_nmi_line(int state)
 {
 }
 
-void at91_irq_assert_if_greater()
+void at91_irq_assert_if_greater(void)
 {
 	if (at91.aic_irqstatus > 0)
 	{
