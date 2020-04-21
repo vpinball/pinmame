@@ -131,9 +131,9 @@ MEMORY_WRITE_START(GTS80S_writemem)
 { 0xf800, 0xffff, MWA_ROM},
 MEMORY_END
 
-static void GTS80S_Update(int num, INT16 *buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
+static void GTS80S_Update(int num, INT16 * const buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
-	float* __restrict buffer_f = (float*)buffer;
+	float * __restrict buffer_f = (float*)buffer;
 
 	double dCurrentClock = GTS80S_locals.clock[0];
 
@@ -273,11 +273,11 @@ const struct sndbrdIntf gts80sIntf = {
 
 // Old board:
 // C = 10 pF
-// R = 22,1 kOhm
+// R = 22.1 kOhm
 
 // New board:
 // C = 10 pF
-// R = 28 kOhm
+// R = 28 kOhm (or if one assumes a typo, see below: 20.8 kOhm)
 
 MACHINE_DRIVER_START(gts80s_s)
   MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376)
@@ -290,7 +290,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s_sp) // with Piggyback
   MDRV_IMPORT_FROM(gts80s_s)
-  MDRV_CPU_REPLACE("scpu", M6502, 960000) // should actually be 714285.714 Hz if schematic is correct but real games play a lot faster!)
+  MDRV_CPU_REPLACE("scpu", M6502, 961538.462) // should actually be 714285.714 Hz if schematic is correct but real games play a lot faster!)
 MACHINE_DRIVER_END
 
 
@@ -1749,7 +1749,7 @@ MACHINE_DRIVER_START(techno)
   MDRV_SOUND_ADD(DAC, techno_6502dacInt)
 
   //MDRV_CPU_ADD(TMS7000, 4000000)
-  MDRV_CPU_ADD(TMS7000, 1500000)		//Sounds much better at 1.5Mhz than 4Mhz
+  MDRV_CPU_ADD(TMS7000, 1500000) //!! Sounds much better at 1.5Mhz than 4Mhz
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
   MDRV_CPU_PORTS(tms_readport, tms_writeport)
