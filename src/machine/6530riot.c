@@ -110,7 +110,7 @@ void riot6530_unconfig(void)
 
 void riot6530_set_clock(int which, double clock)
 {
-	riot[which].sec_to_cycles = clock * 1.01;
+	riot[which].sec_to_cycles = clock;
 	riot[which].cycles_to_sec = 1.0 / riot[which].sec_to_cycles;
 }
 
@@ -270,7 +270,7 @@ int riot6530_read(int which, int offset)
 
 			if ( old_timer_enabled ) {
 				if ( p->irq_state & RIOT_TIMERIRQ ) {
-					val = 255 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
+					val = 254 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
 				}
 				else
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
