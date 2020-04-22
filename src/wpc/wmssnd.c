@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/m6809/m6809.h"
@@ -1303,40 +1304,39 @@ static int dcs_custStart(const struct MachineSound *msound) {
   if (core_gameData->gen & (GEN_WPC95 /*| GEN_WPC95DCS*/)) // WHO Dunnit still has the 16-9472 (according to schematics on ipdb at least)
   {
   //WPC-95 Schematics 16-10011 sheet 4 of 4:
-  // misses one highpass at the beginning
+  // This omits one high-pass filter between the DAC and the low-pass filter
+  // series (C=4.7u, R=47K, corner frequency 7.2 Hz).  This is just there to
+  // decouple the filter from the DAC output's DC offset, which is a feature
+  // of the analog design that isn't relevant to the digital version.  It can
+  // be omitted without loss of fidelity.
   for (i = 0; i < 3; ++i)
   {
-    //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-    filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
-    //filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-    filter_setup(.535091623810354,1.07018324762071,.535091623810354,.680012213108756,.460354282132661, &dcs_dac.f[fi++]);
+    filter_rc_lp_setup(6190, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
 
     if (i == 1)
     {
-      //filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-      filter_setup(.729513764733700,1.45902752946740,.729513764733700,1.45902752946740,.459027529467401, &dcs_dac.f[fi++]);
-      //filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-      filter_setup(.514502498468169,1.02900499693634,.514502498468169,.576891355074468,.481118638798207, &dcs_dac.f[fi++]);
+      filter_rc_lp_setup(6190, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     }
   }
   }
   else
   {
   //WPC Schematics Sound Board 16-9472 sheet 4 of 5:
-  // misses one highpass at the beginning: R=47k,C=4.7u
+  // Omits one high-pass stage between the DAC and the first low-pass stage (R=47K, C=4.7u,
+  // corner frequency 0.72 Hz).  This is present in the analog circuit to decouple the
+  // filters from the DC offset from the DAC; it isn't relevant to the digital version
+  // and can be omitted without loss of fidelity.
   for (i = 0; i < 3; ++i)
   {
-    //filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-    filter_setup(.729195126212757,1.45839025242551,.729195126212757,1.45839025242551,.458390252425514, &dcs_dac.f[fi++]);
-    //filter_sallen_key_lp_setup(6200, 6200, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-    filter_setup(.534521431013207,1.06904286202641,.534521431013207,.678027269748316,.460058454304511, &dcs_dac.f[fi++]);
+    filter_rc_lp_setup(6200, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_sallen_key_lp_setup(6200, 6200, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
 
     if (i == 1)
     {
-      //filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-      filter_setup(.729195126212757,1.45839025242551,.729195126212757,1.45839025242551,.458390252425514, &dcs_dac.f[fi++]);
-      //filter_sallen_key_lp_setup(6200, 6200, 6800e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
-      filter_setup(.466677045846047,.933354091692094,.466677045846047,.338117393295723,.528590790088464, &dcs_dac.f[fi++]);
+      filter_rc_lp_setup(6200, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_sallen_key_lp_setup(6200, 6200, 6800e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     }
   }
   }
@@ -1506,7 +1506,19 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
 //  stream_update(dcs_dac.stream, 0);
   if (size == 0) /* No data, stop playing */
     { dcs_dac.status = 0; return; }
-  if (dcs_dac.status==0) stream_set_sample_rate(dcs_dac.stream,sRate); // unnecessary as sample rate seems to be always 31250
+  if (dcs_dac.status == 0)
+  {
+	  // We have a hard assumption that the rate is always DCS_DEFALT_SAMPLE_RATE,
+	  // because we have IIR filters constructed using that rate.  The filters
+	  // would need to be reconfigured here if the sample rate were actually
+	  // changing.  In practice it never does change, but we'll assert it just
+	  // in case someone does something crazy like writing a custom DCS ROM.
+	  // If this assert ever fails, here's what you have to do:
+	  //  - call stream_set_sample_rate(dcs_dac.stream, sRate) to update the rate
+	  //  - reinitialize all of the stream filters with the new rate (by reiterating
+	  //    all of the filter setup code in dcs_custStart)
+	  assert(stream_get_sample_rate(dcs_dac.stream) == sRate);
+  }
 
   // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
   if (dcs_dac.status == 0)
@@ -1679,8 +1691,8 @@ static void adsp_txCallback(int port, INT32 data) {
     adsp_aBufData.size  = activecpu_get_reg(ADSP2100_L0 + ireg);
     /*-- assume that the first sample comes from the memory position before --*/
     adsp_aBufData.start = activecpu_get_reg(ADSP2100_I0 + ireg) - adsp_aBufData.step;
-    adsp_aBufData.sRate = Machine->drv->cpu[dcslocals.brdData.cpuNo].cpu_clock /
-                          (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16;
+    adsp_aBufData.sRate = (int)(Machine->drv->cpu[dcslocals.brdData.cpuNo].cpu_clock /
+                                (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16);
     adsp_aBufData.iReg = ireg;
     adsp_aBufData.irqCount = adsp_aBufData.last = 0;
     adsp_irqGen(0); /* first part, rest is handled via the timer */

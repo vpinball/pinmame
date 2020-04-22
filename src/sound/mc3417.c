@@ -122,11 +122,9 @@ int mc3417_sh_start(const struct MachineSound *msound)
 		fi = 0;
 		// Xenon & Flash Gordon:
 		for (ii = 0; ii < 2; ++ii)
-		  //filter_sallen_key_lp_setup(36000, 36000, 2200e-12, 1000e-12, &chip->f[fi++], SAMPLE_RATE);
-		  filter_setup(2.23151838311376E-03,4.46303676622753E-03,2.23151838311376E-03,-1.86781481370649,.876740887238946, &chip->f[fi++]);
+		  filter_sallen_key_lp_setup(36000, 36000, 2200e-12, 1000e-12, &chip->f[fi++], SAMPLE_RATE);
 		for (ii = 0; ii < 2; ++ii)
-		  //filter_sallen_key_lp_setup(56000, 56000, 1000e-12,  470e-12, &chip->f[fi++], SAMPLE_RATE);
-		  filter_setup(4.20071066000835E-03,8.40142132001669E-03,4.20071066000835E-03,-1.81355854102765,.830361383667684, &chip->f[fi++]);
+		  filter_sallen_key_lp_setup(56000, 56000, 1000e-12,  470e-12, &chip->f[fi++], SAMPLE_RATE);
 #else
 		chip->filter_f = filter_lp_fir_alloc(0.05, FILTER_ORDER_MAX);
 		chip->filter_state = filter_state_alloc();
@@ -188,7 +186,7 @@ static void mc3417_update(int num, INT16 *buffer, int length)
 	if (length > SAMPLE_RATE/2048  //!! magic // PINMAME: be less conservative/more precise
 		&& chip->last_sound != 0)  // clock did not update next_value since the last update -> fade to silence (resolves clicks and simulates real DAC kinda)
 	{
-		float tmp = chip->curr_value;
+		float tmp = (float)chip->curr_value;
 		int i;
 		for (i = 0; i < length; i++, tmp *= 0.95f)
 			buffer_f[i] = tmp;
