@@ -108,7 +108,7 @@ void filter_setup(const double b0, const double b1, const double b2, const doubl
 	filter2_context * const __restrict filter2);
 
 
-/* Setup a filter2 structure based on an op-amp multipole bandpass circuit.
+/* Set up a filter2 structure based on an op-amp multipole bandpass circuit.
  * NOTE: If r2 is not used then set to 0.
  *       vRef is not needed to setup filter.
  *
@@ -128,6 +128,16 @@ void filter_setup(const double b0, const double b1, const double b2, const doubl
  */
 void filter_opamp_m_bandpass_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
 					filter2_context * const __restrict filter2, const unsigned int sample_rate);
+
+// Passive RC low-pass filter
+//
+//  In >---- R1 ---+----> Out
+//                 |
+//                C1
+//                 |
+//                GND
+//
+void filter_rc_lp_setup(const double R1, const double C1, filter2_context * const __restrict context, const int sample_rate);
 
 
 // Multiple Feedback Low-pass Filter
