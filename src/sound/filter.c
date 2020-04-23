@@ -375,7 +375,7 @@ void filter_opamp_m_bandpass_setup(const double r1, const double r2, const doubl
 static void filter2_biquad_setup(const double f0, const double c1, const double c2, filter2_context * const __restrict context, const int sample_rate)
 {
 	// figure radians from frequency
-	double w0 = f0 * 2.0 * PI;
+	double w0 = f0 * (2.0 * PI);
 
 	// keep it in -PI/T .. PI/T
 	double wdMax = PI * sample_rate;
@@ -383,7 +383,7 @@ static void filter2_biquad_setup(const double f0, const double c1, const double 
 		w0 -= 2.0 * wdMax;
 
 	// calculate the time step factor, pre-warping to f0
-	const double gn = w0 / tan(w0 / 2.0 / sample_rate);
+	const double gn = w0 / tan(w0 / (2 * sample_rate));
 
 	// calculate the difference equation coefficients
 	const double cc = 1.0 + gn*c1 + gn*gn*c2;
@@ -398,15 +398,17 @@ static void filter2_biquad_setup(const double f0, const double c1, const double 
 }
 
 //
-// Passive RC low-pass filter
+// Passive RC low-pass filter (set R2 & R3 = 0 for first variant)
 //
-//  In >---- R1 ---+----> Out
-//                 |
-//                C1
-//                 |
-//                GND
 //
-void filter_rc_lp_setup(const double R1, const double C1, filter2_context * const __restrict context, const int sample_rate)
+// Vin --- R1 --- + --- Vout   or    Vin --- R1 --- + --- R2 --- +
+//                |                                 |            |
+//                C1                                C1           R3 --- Vout
+//                |                                 |            |
+//               GND                               GND          GND
+//
+void filter_rc_lp_setup(const double R1, const double R2, const double R3, const double C1,
+	filter2_context * const __restrict context, const int sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//
@@ -416,12 +418,12 @@ void filter_rc_lp_setup(const double R1, const double C1, filter2_context * cons
 	//
 	// Refactoring to canonical form:
 	//
-	//                1
-	//  H(s) = --------------
-	//          (C1*R1)*s + 1
+	//             1
+	//   H(s) = ---------
+	//          1 + c1*s
 	//
-	// 
-	const double c1 = C1*R1;
+	const double R = (R2 + R3 > 0.) ? (R1*(R2 + R3)) / (R1 + R2 + R3) : R1;
+	const double c1 = C1*R;
 
 	// calculate the cutoff frequency for the filter
 	const double Fc = 1.0 / ((2.0 * PI) * c1);
@@ -559,7 +561,7 @@ void filter_sallen_key_lp_setup(const double R1, const double R2, const double C
 	const double c2 = R1*R2*C1*C2;
 
 	// calculate the cutoff frequency for the filter
-	const double Fc = 1.0 / (2.0 * PI * sqrt(c2));
+	const double Fc = 1.0 / ((2.0 * PI) * sqrt(c2));
 
 	// set up the biquad parameters
 	filter2_biquad_setup(Fc, c1, c2, context, sample_rate);

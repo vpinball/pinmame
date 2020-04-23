@@ -129,15 +129,18 @@ void filter_setup(const double b0, const double b1, const double b2, const doubl
 void filter_opamp_m_bandpass_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
 					filter2_context * const __restrict filter2, const unsigned int sample_rate);
 
-// Passive RC low-pass filter
+// 
+// Passive RC low-pass filter (set R2 & R3 = 0 for first variant)
 //
-//  In >---- R1 ---+----> Out
-//                 |
-//                C1
-//                 |
-//                GND
 //
-void filter_rc_lp_setup(const double R1, const double C1, filter2_context * const __restrict context, const int sample_rate);
+// Vin --- R1 --- + --- Vout   or    Vin --- R1 --- + --- R2 --- +
+//                |                                 |            |
+//                C1                                C1           R3 --- Vout
+//                |                                 |            |
+//               GND                               GND          GND
+//
+void filter_rc_lp_setup(const double R1, const double R2, const double R3, const double C1,
+	filter2_context * const __restrict context, const int sample_rate);
 
 
 // Multiple Feedback Low-pass Filter

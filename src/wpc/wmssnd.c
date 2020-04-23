@@ -1311,12 +1311,12 @@ static int dcs_custStart(const struct MachineSound *msound) {
   // be omitted without loss of fidelity.
   for (i = 0; i < 3; ++i)
   {
-    filter_rc_lp_setup(6190, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     filter_sallen_key_lp_setup(6190, 6190, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
 
     if (i == 1)
     {
-      filter_rc_lp_setup(6190, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_rc_lp_setup(6190, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
       filter_sallen_key_lp_setup(6190, 6190, 4700e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     }
   }
@@ -1330,12 +1330,12 @@ static int dcs_custStart(const struct MachineSound *msound) {
   // and can be omitted without loss of fidelity.
   for (i = 0; i < 3; ++i)
   {
-    filter_rc_lp_setup(6200, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+    filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     filter_sallen_key_lp_setup(6200, 6200, 3900e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
 
     if (i == 1)
     {
-      filter_rc_lp_setup(6200, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
+      filter_rc_lp_setup(6200, 0, 0, 1000e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
       filter_sallen_key_lp_setup(6200, 6200, 6800e-12, 680e-12, &dcs_dac.f[fi++], DCS_DEFAULT_SAMPLE_RATE);
     }
   }
