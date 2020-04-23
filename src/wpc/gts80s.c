@@ -274,13 +274,17 @@ const struct sndbrdIntf gts80sIntf = {
 // Old board:
 // C = 10 pF
 // R = 22.1 kOhm
+// = 870 kHz to 920 kHz (flipprojets: tested via 50 ceramic capacitators, majority at 890-900kHz), reverse engineering the 6530 code determines an expected frequency of 893kHz
+// additional single datapoint: measured as ~800kHz by Bontango
 
 // New board:
 // C = 10 pF
-// R = 28 kOhm (or if one assumes a typo, see below: 20.8 kOhm)
+// R = 28 kOhm (Bontango: 28.8 via a 24.1 + 4.7 in row)
+// = 660 kHz to 710 kHz (flipprojets: tested via 50 ceramic capacitators, majority at 675-685kHz)
+// additional single datapoint: measured as ~675kHz by Bontango
 
 MACHINE_DRIVER_START(gts80s_s)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376) //!! 893000
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80S_readmem, GTS80S_writemem)
   MDRV_INTERLEAVE(50)
@@ -290,7 +294,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s_sp) // with Piggyback
   MDRV_IMPORT_FROM(gts80s_s)
-  MDRV_CPU_REPLACE("scpu", M6502, 961538.462) // should actually be 714285.714 Hz if schematic is correct but real games play a lot faster!)
+  MDRV_CPU_REPLACE("scpu", M6502, 961538.462) //!! 680000
 MACHINE_DRIVER_END
 
 
@@ -661,7 +665,7 @@ const struct sndbrdIntf gts80ssIntf = {
 };
 
 MACHINE_DRIVER_START(gts80s_ss)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 3579545./4.) // verified by Bontango on real HW (~892KHz)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
   MDRV_INTERLEAVE(50)
