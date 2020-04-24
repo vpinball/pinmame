@@ -1284,6 +1284,7 @@ DRIVERNV(draculfp)      //MPU-100: 01/79 Dracula (Free Play)
 DRIVERNV(trident)       //MPU-100: 03/79 Trident
 DRIVERNV(tridenta)      //MPU-100: 03/79 Trident (Old)
 DRIVERNV(tridenfp)      //MPU-100: 03/79 Trident (Old Free Play)
+DRIVERNV(tridentb)      //MPU-100: 01/09 Trident (MOD rev. 23c)
 DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
 DRIVERNV(hothanfp)      //MPU-100: 06/79 Hot Hand (Free Play)
 DRIVERNV(magic)         //MPU-100: 08/79 Magic
@@ -1299,6 +1300,9 @@ DRIVERNV(meteorns)      //MPU-200: 08/11 Meteor (No Background Sound)
 DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
 DRIVERNV(meteorc)       //MPU-200: 11/03 Meteor (7-Digit conversion Free Play)
 DRIVERNV(meteord)       //MPU-200: 05/05 Meteor (/10 Scoring)
+DRIVERNV(meteora2)      //MPU-200: 08/19 Meteor (Bonus Count and Sound Fix)
+DRIVERNV(meteore)       //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, Free Play rev. 64)
+DRIVERNV(meteore7)      //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(galaxyps)      //MPU-200: 08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
@@ -1307,6 +1311,7 @@ DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(alifp)         //MPU-200: 03/80 Ali (Free Play)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
+DRIVERNV(biggameb)      //MPU-200: 11/19 Big Game (MOD rev. 7)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
@@ -1321,8 +1326,10 @@ DRIVERNV(stargzfp)      //MPU-200: 08/80 Star Gazer (Free Play)
 DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev. 9)
 DRIVERNV(flight2k)      //MPU-200: 10/80 Flight 2000
 DRIVERNV(flightfp)      //MPU-200: 10/80 Flight 2000 (Free Play)
+DRIVERNV(flight2m)      //MPU-200: 04/20 Flight 2000 (modified rules rev. 3335)
 DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
 DRIVERNV(ninebafp)      //MPU-200: 12/80 Nine Ball (Free Play)
+DRIVERNV(ninebala)      //MPU-200: 04/20 Nine Ball (Ball handling MOD beta18)
 DRIVERNV(ninebalb)      //MPU-200: 01/07 Nine Ball (modified rules rev. 85)
 DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
 DRIVERNV(freefafp)      //MPU-200: 01/81 Freefall (Free Play)
@@ -1340,6 +1347,7 @@ DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
 DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (MOD - modified to match instruction card/manual)
 DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (MOD 2 - modified to match instruction card/manual)
+DRIVERNV(dragfis3)      //MPU-200: 03/20 Dragonfist (MOD 3 rev. 1105)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
 DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (MOD)

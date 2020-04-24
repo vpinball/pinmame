@@ -32,7 +32,7 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman
 New:
 Jac van Ham: Formula 1
              Ice Mania
@@ -40,6 +40,7 @@ Sport Matic: Flashman
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
+Big Game (MOD rev. 7)
 Brave Team (Free Play)
 Canasta '86' (Free Play)
 Cirqus Voltaire (D.52 Prototype w/ support for old Ringmaster voice) - sound ROMs missing however
@@ -48,13 +49,19 @@ Corsario (Free Play)
 Creature from the Black Lagoon L-4C (competition MOD) (updated with LED Ghost Fix)
 Demolition Man LX-4C (competition MOD) (updated and also now includes LED Ghost Fix)
 Demolition Man H-6C (competition MOD) (updated)
+Dragonfist (MOD 3 rev. 1105)
+Flight 2000 (modified rules rev. 3335)
 Flintstones, The LX-3
 Iron Man 1.85(+Vault Edition)
 Junk Yard 1.2C (competition MOD) (updated)
 Lap By Lap (Free Play)
 Lord of the Rings, The 3.00
+Meteor (Bonus Count and Sound Fix)
+Meteor (Bonus Count Fix, MOD, Free Play rev. 64)
+Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)
 Moon Light (Free Play)
 Mundial 90 (Free Play)
+Nine Ball (Ball handling MOD beta18)
 Oba-Oba (old hardware)
 Pool Sharks LA-7C (competition MOD) (updated)
 Space Train (old hardware)
@@ -62,6 +69,7 @@ Spider-Man 1.02 (English, French)
 Star Trek 25th Anniversary 3.00 (unofficial MOD)
 Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
+Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
 
 Correct Dumps:
