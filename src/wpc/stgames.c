@@ -302,10 +302,45 @@ BY35_ROMEND
 #define input_ports_meteor input_ports_st
 CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,0)
 
-/* From pinside, maybe this is about this ROM:
+/*pinside:
 The bug isn't necessarily dependent on the spinner, but does have to do with the Bonus X and the 'Collect All Rockets' light on the outlanes -
 As I understand it, the 'Collect All Rockets' routine saves data to a RAM location that is right adjacent to the Bonus 'X' save location. If something CPU intensive happens, a race condition will occur where the 'Collect All Rockets' code will save and then clear a value as another thread is trying to read the Bonus X. The Bonus X thread will then get an incorrect number (255), and think that's your bonus. It will then count down your rockets (even if you have none) from 255x. Interestingly, how the lights are stored in RAM, you can watch the 'Game Over' light on the backbox switch on and off - that light, essentially, is your '8x' bonus light.
 The ROM set listed as 'Alternate' is officially released from Stern, and it changes the RAM location for one of those two functions, avoiding the collision. */
+
+/*rec.games.pinball:
+If you have all rockets lit on the outlanes, AND you have a lot of other
+scoring things going on(usually related to a spinner hit since that
+keeps repeating) you can overload the thread engine in the game, such
+that the 'collect all rockets' thread(which unnecessarily gives a sound
+effect and scores for each rocket instead of just scoring it at
+once...i.e.there are delays built into the thread which turn out to
+cause the error.).
+
+Once the collect all rockets thread is running AND the thread starts
+that collects the bonus in the outhole, you will get a zero inserted
+into the bonus multiplier....which will count down 255x (if you wait
+long enough).It's not infinite, and has nothing to do with the speed
+of the game.Its simply because the collect all rockets thread isn't
+finished when the collect bonus thread starts....and the error is
+because the multiplier in the collect bonus thread is stored in the same
+memory location that the collect all rockets thread uses as well.  2
+threads that were never intended to run at the same time using the same
+memory location is sure to cause errors.
+
+It's more likely to happen the more rockets you have (since that extends
+out the collect all rockets thread execution) and with the spinner as it
+keeps adding another thread onto the execution(the spinner thread is
+exceptionally long as it has almost 2k (that's 25% of the entire
+codebase!) dedicated to seeing which lamps are lit, what multiplier you
+have, and moving those lamps around.)  This is extremely sloppy in
+stern's thread language and really could be changed to inline assembly
+to save TONS of space.
+
+Stern's fix from way back when was to utilize the lower part of the
+stack to do the same thing.I don't think that way is 100% safe (they
+didn't use the BOTTOM of the stack - they used somewhere in the middle)
+- but it's probably safe enough.  Put enough extra threads in play
+though and you'd probably clobber it.*/
 INITGAME(meteora,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteora,"cpu_u1a.716",CRC(9ee33909) SHA1(5f58e4e72af47047c8f060f98706ed9607720705), // U1A is Stern's factory bug-fixed version of their original buggy U1
                            "cpu_u5.716", CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),
@@ -313,9 +348,9 @@ ST200_ROMSTART8888(meteora,"cpu_u1a.716",CRC(9ee33909) SHA1(5f58e4e72af47047c8f0
                            "cpu_u6.716", CRC(03fa346c) SHA1(51c04123cb433e90920c241e2d1f89db4643427b))
 BY35_ROMEND
 #define input_ports_meteora input_ports_st
-CORE_GAMEDEFNV(meteora,"Meteor (Bugfix)",1979,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(meteora,"Meteor (Bonus Count Offical Fix)",1979,"Stern",by35_mST200,0)
 
-// Fixes a rare bug where the bonus seems to countdown endlessly
+// see above, differently fixed version (before it was known what meteora actually fixed)
 INITGAME(meteorbf,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorbf,"cpu_u1.716",  CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
                             "cpu_u5.716",  CRC(43a46997) SHA1(2c74ca10cf9091db10542960f499f39f3da277ee),

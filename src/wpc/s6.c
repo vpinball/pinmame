@@ -13,7 +13,7 @@
 #define S6_PIA2 2
 #define S6_PIA3 3
 
-#define S6_IRQFREQ         (3579545.0/4.0/(0x380+32))
+#define S6_IRQFREQ         (3579545./4./(0x380+32)) // CPU clock / (Length of time in cycles between IRQs + length of IRQ)
 
 #define S6_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define S6_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
