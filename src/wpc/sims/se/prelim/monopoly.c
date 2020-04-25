@@ -292,6 +292,22 @@ static void monopoly_drawStatic(BMTYPE **line) {
 /  ROM definitions
 /------------------*/
 
+/* Notes on 3.20 (which was pulled by Stern later-on), as it has a problem with its randomness, e.g. dice always is 3:
+	While it is interesting to have the dice roll on 3 always, since you
+	can now plan what you will score off of a dice roll (hitting bumpers
+	and targets still advances your token around the board, but only a
+	dice roll scores a property), it WILL crash the game when the dice
+	roll causes it to land on community chest, free parking, or go to
+	jail. When the dice - roll lands onto a space with no code to jump to,
+	it goes into the Whitestar crash light flash(where all the
+	controlled lights flash extremely bright back and forth with all the
+	GI lights, the displays go dead, and nothing but a power cycle will
+	stop it.) It's not good for the machine, and you can't stop it from
+	happening to people who are playing.
+
+	If you put the settings to tournament - then the dice rolls always advance you to the nearest unlit set of properties.
+	I like this alot better since you can actually plan out which ones you want to start.
+*/
 /*-------------------------------------------------------------------
 / Monopoly (3.20)
 /-------------------------------------------------------------------*/
