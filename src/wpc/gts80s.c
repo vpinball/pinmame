@@ -180,7 +180,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 	GTS80S_locals.clock[0]  = 0;
 	GTS80S_locals.buffer[0] = 0;
 	GTS80S_locals.buf_pos   = 1;
-	GTS80S_locals.filter_f = filter_lp_fir_alloc(0.3, FILTER_ORDER_MAX); // 0.3 = magic
+	GTS80S_locals.filter_f = filter_lp_fir_alloc(0.15, FILTER_ORDER_MAX); // 0.15 = magic
 	GTS80S_locals.filter_state = filter_state_alloc(); //!! leaks!
 	filter_state_reset(GTS80S_locals.filter_f, GTS80S_locals.filter_state);
 
