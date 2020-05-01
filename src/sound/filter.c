@@ -314,7 +314,7 @@ void filter2_reset(filter2_context * const __restrict filter2)
 }
 
 
-// directly set digital coefficients
+// directly set digital coefficients, for example by using a tool like https://www.beis.de/Elektronik/Filter/AnaDigFilt/AnaDigFilt.html#AnaDigFilt
 void filter_setup(const double b0, const double b1, const double b2, const double a1, const double a2, // a0 = 1
 	filter2_context * const __restrict context)
 {
@@ -374,20 +374,22 @@ void filter_opamp_m_bandpass_setup(const double r1, const double r2, const doubl
 //
 static void filter2_biquad_setup(const double f0, const double c1, const double c2, filter2_context * const __restrict context, const int sample_rate)
 {
+	double gn, cc;
+
 	// figure radians from frequency
 	double w0 = f0 * (2.0 * PI);
 
-	// calculate the time step factor, pre-warping to f0
-	const double gn = w0 / tan(w0 / (2 * sample_rate));
-
-	// calculate the difference equation coefficients
-	const double cc = 1.0 + gn*c1 + gn*gn*c2;
-
 	// keep it in -PI/T .. PI/T
-	double wdMax = PI * sample_rate;
+	const double wdMax = PI * sample_rate;
 	if (w0 > wdMax)
 		w0 -= 2.0 * wdMax;
 
+	// calculate the time step factor, pre-warping to f0
+	gn = w0 / tan(w0 / (2 * sample_rate));
+	//gn = 2 * sample_rate; // without pre-warping
+
+	// calculate the difference equation coefficients
+	cc = 1.0 + gn*c1 + gn*gn*c2;
 	context->b0 = 1.0 / cc;
 	context->b1 = 2.0 / cc;
 	context->b2 = 1.0 / cc;
