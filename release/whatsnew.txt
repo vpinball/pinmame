@@ -73,9 +73,9 @@ Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
 
 Correct Dumps:
-Doctor Who P-5, P-6 (using P-4 sound ROM for U18)
-Time Machine (LTD, 4 players) - confirmed that currently supported ROMs are correct
-Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
+Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
+       Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
+LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
 
 
 
