@@ -300,7 +300,7 @@ static sim_tInportData dw_inportData[] = {
 /  ROM definitions
 /------------------*/
 WPC_ROMSTART(dw,l2,"drwho_l2.rom",0x80000,CRC(988c2deb) SHA1(e1f703a03f8fc594ae324c46ca77a54ead956094))
-WPCS_SOUNDROM288("dw_u18.l2",CRC(b9120ce9) SHA1(a2bb7443939358590ce1cb56d739fafbad4baf4d),
+WPCS_SOUNDROM288("dw_u18.l2",CRC(b9120ce9) SHA1(a2bb7443939358590ce1cb56d739fafbad4baf4d), // this one actually came from an otherwise prototype machine that had the dw_p5.u6 on it! unknown why that one also had this L2 sound ROM
                  "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
                  "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
 WPC_ROMEND
@@ -323,8 +323,8 @@ WPC_ROMEND
 
 WPC_ROMSTART(dw,p5,"dw_p5.u6",0x80000,CRC(2756a3ed) SHA1(ffeb2d303804c0a4ca4cbc2eb20b552529b5aabf))
 WPCS_SOUNDROM288("dw_u18.p4",CRC(357e0b6f) SHA1(9e65823dc001b9347776e4e806d11f094f60c259),
-                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
-                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64), // a dumped u15 p4 was the same as l1
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3)) // a dumped u14 p4 was the same as l1
 WPC_ROMEND
 WPC_ROMSTART(dw,p6,"dw_p6.u6",0x80000,CRC(de94b79a) SHA1(3225f4b5e4fe822c403269f0f66f244f0dec1f96))
 WPCS_SOUNDROM288("dw_u18.p4",CRC(357e0b6f) SHA1(9e65823dc001b9347776e4e806d11f094f60c259),
