@@ -1384,7 +1384,7 @@ DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (3.02 Italian)
 DRIVERNV(aust301)       //Whitestar: 05/01 Austin Powers (3.01)
 DRIVERNV(aust300)       //Whitestar: 05/01 Austin Powers (3.00)
 DRIVERNV(aust201)       //Whitestar: 05/01 Austin Powers (2.01)
-DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.20)
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.20) // 3.20 has the broken dice
 DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (3.20 German)
 DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (3.20 Spanish)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (3.20 French)
