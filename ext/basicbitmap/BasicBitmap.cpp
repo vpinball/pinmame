@@ -3547,12 +3547,12 @@ int BasicBitmap::SplitChannel(BasicBitmap *R, BasicBitmap *G, BasicBitmap *B, Ba
 #endif
 
 	for (int j = 0; j < h; j++) {
-		IUINT8 *ptr = (IUINT8*)buffer;
+		const IUINT8 *ptr = (IUINT8*)buffer;
 		Fetch(fmt, Line(j), 0, w, buffer);
 		for (int i = 0; i < 4; i++) {
 			BasicBitmap *bmp = vector[i];
 			if (bmp != NULL) {
-				IUINT8 *src = ptr + i;
+				const IUINT8 *src = ptr + i;
 				IUINT8 *dst = bmp->Line(j);
 				for (int x = w; x > 0; x++) {
 					*dst = *src;
