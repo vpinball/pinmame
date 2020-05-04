@@ -268,23 +268,32 @@ const struct sndbrdIntf gts80sIntf = {
   "GTS80", gts80s_init, gts80s_exit, gts80s_diag, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-// Both CPUs do not feature a "clean" clock, but get it from a R/C,
+// Both CPUs do not feature a "clean" clock, but get it from a (crappy) R/C,
 // at roughly R * C * ~5 in milliseconds.
 
-// Old board:
+// Old board (some GTS1, and GTS80):
 // C = 10 pF
 // R = 22.1 kOhm
-// = 870 kHz to 920 kHz (flipprojets: tested via 50 ceramic capacitators, majority at 890-900kHz), reverse engineering the 6530 code determines an expected frequency of 893kHz
-// additional single datapoint: measured as ~800kHz by Bontango
+// = these components should produce 870 kHz to 920 kHz in a clean environment/modern components (flipprojets: tested via 50 ceramic capacitors, majority at 890-900kHz)
+// additional single datapoint from a real board: measured as ~800kHz by Bontango
 
-// New board:
+// New board/Piggyback:
 // C = 10 pF
 // R = 28 kOhm (Bontango: 28.8 via a 24.1 + 4.7 in row)
-// = 660 kHz to 710 kHz (flipprojets: tested via 50 ceramic capacitators, majority at 675-685kHz)
-// additional single datapoint: measured as ~675kHz by Bontango
+// = these components should produce 660 kHz to 710 kHz in a clean environment/modern components (flipprojets: tested via 50 ceramic capacitors, majority at 675-685kHz)
+// additional single datapoint from a real board: measured as ~675kHz by Bontango
+
+// BUT:
+// according to the flipprojets guys:
+// several tested earlier old boards even ran at ~1MHz in practice! (maybe due to crappy capacitors?) Also PinMAME previously used this 1MHz!
+// thus, apparently the R was replaced with the 28 one in the piggybacks to slow down the ~1MHz to be closer to ~895kHz!
+// and reverse engineering the 6530 code (Sys1 & Sys80) also determines an expected frequency of ~893kHz
+// so their recommendation is to rather use the intended ~895kHz (like later sound boards did, and what also the main Sys80 CPU uses) everywhere
+
+// note that due to all of that madness with the R/C clock, comparing to videos from real life is always fuzzy as it is unknown which components are used in the board of the videos!
 
 MACHINE_DRIVER_START(gts80s_s)
-  MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376) //!! 893000
+  MDRV_CPU_ADD_TAG("scpu", M6502, 904977.376) //!! somewhere between 893000 - 1000000, maybe even make this dependent on release date of game?? (earlier = higher)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80S_readmem, GTS80S_writemem)
   MDRV_INTERLEAVE(50)
@@ -294,7 +303,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s_sp) // with Piggyback
   MDRV_IMPORT_FROM(gts80s_s)
-  MDRV_CPU_REPLACE("scpu", M6502, 961538.462) //!! 680000
+  MDRV_CPU_REPLACE("scpu", M6502, 961538.462) //!! somewhere between 680000 - 895000, but weirdly 960kHz also sounds good for some games?!?
 MACHINE_DRIVER_END
 
 

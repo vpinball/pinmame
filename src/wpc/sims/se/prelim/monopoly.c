@@ -313,7 +313,7 @@ static void monopoly_drawStatic(BMTYPE **line) {
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopoly,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
 DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -324,7 +324,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopolf,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
 DE_DMD32ROM8x(        "mondsp-f.301",CRC(e78b1998) SHA1(bd022dc90b55374baed17360fad7bf0f89e2ee33))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -337,7 +337,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopolg,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
 DE_DMD32ROM8x(        "mondsp-g.301",CRC(aab48728) SHA1(b9ed8574ac463a5fc21dc5f41d090cf0ad3f8362))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -350,7 +350,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopoli,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
 DE_DMD32ROM8x(        "mondsp-i.301",CRC(32431b3c) SHA1(6266e17e705bd50d2358d9f7c0168de51aa13750))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -363,7 +363,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopoll,"moncpu.320",CRC(6c107c8b) SHA1(236d85b971c70a30e663787d643e6d589591d582))
 DE_DMD32ROM8x(        "mondsp-s.301",CRC(9f70dad6) SHA1(bf4b1c579b4bdead51e6b34de81fe65c45b6596a))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -376,7 +376,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
 DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -389,7 +389,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monop301,"moncpu.301",CRC(24978872) SHA1(48ef94fd720cdafc61f8de5efd5c6b6731237b18))
 DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -402,7 +402,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monop251,"moncpu.251",CRC(0645cfae) SHA1(d979234150b7fb62718debbeeeca1466a6c0344f))
 DE_DMD32ROM8x(        "mondsp-a.206",CRC(6df6e158) SHA1(d3a9be2dc189b44b9e4b9f77f5011ed931df5634))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -415,7 +415,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monoi251,"moncpu.251",CRC(0645cfae) SHA1(d979234150b7fb62718debbeeeca1466a6c0344f))
 DE_DMD32ROM8x(        "mondsp-i.206",CRC(12f21301) SHA1(8eef3858c2083330e731015b088425aac7201064))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
@@ -428,7 +428,7 @@ SE_ROMEND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(monop233,"moncpu.233",CRC(f20a5ca6) SHA1(12ae56bd149aa6635c19f4dd73580db550b26963))
 DE_DMD32ROM8x(        "mondsp-a.203",CRC(6e4678fb) SHA1(c0f41f01e9e20e741f1b13d3bd6e824486ba9a0a))
-DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+DE2S_SOUNDROM1888(    "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
