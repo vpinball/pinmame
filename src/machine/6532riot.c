@@ -89,7 +89,7 @@ struct riot6532
 #define C2_OUTPUT(c)			(c & 0x20)
 #define C2_INPUT(c)				(!(c & 0x20))
 
-#define IFR_DELAY 3
+#define IFR_DELAY 3 // 1 in MAME
 
 /******************* static variables *******************/
 
@@ -127,7 +127,7 @@ void riot6532_config(int which, const struct riot6532_interface *intf)
 {
 	if (which >= MAX_RIOT_6532) return;
 
-	memset(&riot[which], 0x00, sizeof riot[which]);
+	memset(&riot[which], 0x00, sizeof(riot[which]));
 	riot[which].inUse = 0x01;
 
 	riot[which].intf = intf;
@@ -272,12 +272,12 @@ int riot6532_read(int which, int offset)
 			/* combine input and output values */
 			val = (p->out_b & p->ddr_b) + (p->in_b & ~p->ddr_b);
 
-			// LOG(("RIOT%d read port B = %02X\n", which, val));
+			//LOG(("RIOT%d read port B = %02X\n", which, val));
 			break;
 
 		case RIOT6532_DDRB:
 			val = p->ddr_b;
-			//  LOG(("RIOT%d read DDR B = %02X\n", which, val));
+			//LOG(("RIOT%d read DDR B = %02X\n", which, val));
 			break;
 		}
 	}
