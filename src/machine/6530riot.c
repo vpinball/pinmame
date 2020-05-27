@@ -142,9 +142,9 @@ void riot6530_config(int which, const struct riot6530_interface *intf)
 
 void riot6530_reset(void)
 {
-	LOG(("RIOT6530-all reset\n"));
-
 	int i;
+
+	LOG(("RIOT6530-all reset\n"));
 
 	/* zap each structure, preserving the interface and swizzle */
 	for (i = 0; i < MAX_RIOT_6530; i++)

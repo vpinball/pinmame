@@ -277,6 +277,12 @@ PLAYMATIC_SOUNDROM64("theraid.snd", CRC(e33f8363) SHA1(e7f251c334b15e12b1eb7e079
 PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(theraid,"Raid, The",1984,"Playmatic",gl_mPLAYMATIC4,0)
 
+INITGAME4(theraida, play_disp7, 1)
+PLAYMATIC_ROMSTART64(theraida, "ph_6_1a0.u13", CRC(cc2b1872) SHA1(e61071450cc6b0fa5e6297f75bca0391039dca10))
+PLAYMATIC_SOUNDROM64("theraid.snd", CRC(e33f8363) SHA1(e7f251c334b15e12b1eb7e079c2e9a5f64338052))
+PLAYMATIC_ROMEND
+CORE_CLONEDEFNV(theraida,theraid,"Raid, The (alternate set)",1984,"Playmatic",gl_mPLAYMATIC4,0)
+
 /*-------------------------------------------------------------------
 / 11/84 UFO-X
 /-------------------------------------------------------------------*/

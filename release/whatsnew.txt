@@ -32,11 +32,16 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip
 New:
 Jac van Ham: Formula 1
              Ice Mania
 Sport Matic: Flashman
+
+Correct Dumps:
+Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
+       Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
+LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
@@ -64,6 +69,7 @@ Mundial 90 (Free Play)
 Nine Ball (Ball handling MOD beta18)
 Oba-Oba (old hardware)
 Pool Sharks LA-7C (competition MOD) (updated)
+Raid, The (alternate set)
 Space Train (old hardware)
 Spider-Man 1.02 (English, French)
 Star Trek 25th Anniversary 3.00 (unofficial MOD)
@@ -71,11 +77,6 @@ Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
-
-Correct Dumps:
-Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
-       Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
-LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
 
 
 

@@ -1104,6 +1104,7 @@ DRIVERNV(megaaton)      // 04/84 Meg-Aaton
 DRIVERNV(megaatoa)      //       Meg-Aaton (alternate set)
 DRIVERNV(nautilus)      // ??/84 Nautilus
 DRIVERNV(theraid)       // ??/84 The Raid
+DRIVERNV(theraida)      // ??/84 The Raid (alternate set)
 DRIVERNV(ufo_x)         // 11/84 UFO-X
 DRIVERNV(kz26)          // ??/85 KZ-26
 DRIVERNV(rock2500)      // ??/85 Rock 2500
