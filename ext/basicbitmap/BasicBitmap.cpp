@@ -8,6 +8,7 @@
 // of my vector graphic library: https://code.google.com/p/pixellib
 // 
 // FEATURES:
+//
 //  - common pixel format supported (from A8R8G8B8 to A4R4G4B4)
 //  - blitting with or without a transparent color
 //  - converting between different pixel formats
@@ -19,8 +20,39 @@
 // As a platform independent implementation, this class is written 
 // in pure C/C++. But all the core routines can be replaced by
 // external implementations (sse2 eg.) using SetDriver/SetFunction.
+//
+// INTERFACES:
+//
+//  - Fill: fill color in rectangle
+//  - Clear: clear the whole bitmap
+//  - Blit: blit from source bitmap with same bpp
+//  - Convert: convert from different pixel-format
+//  - SetPixel: draw pixel in raw color
+//  - GetPixel: read pixel in raw color
+//  - SetColor: draw pixel in A8R8G8B8
+//  - GetColor: read pixel in A8R8G8B8
+//  - Scale: scale bitmap using different filter and blend op
+//  - DrawLine: draw a line
+//  - QuickText: draw text with internal mini-8x8 ascii font
+//  - SampleBilinear: sample pixel with bilinear
+//  - SampleBicubic: sample pixel with bicubic
+//  - Resample: resample bitmap
+//  - LoadBmpFromMemory: load bmp file from memory
+//  - LoadTgaFromMemory: load tga file from memory
+//  - LoadBmp: load bmp file
+//  - LoadTga: load tga file
+//  - SaveBmp: save bmp file
+//  - SavePPM: save ppm file
+//  - DownSampleBy2: down sample 2x2 pixels into one pixel
+//  - SetDIBitsToDevice: (windows) draw bitmap to hdc
+//  - GetDIBits: (windows) get DIB bits to bitmap
+//  - GdiPlusInit: (windows) initialize gdiplus
+//  - GdiPlusLoadImageFromMemory: (windows) load jpg/png from memory
+//  - GdiPlusLoadImage: (windows) use gdiplus to load jpg/png
+//  - CreateBitmapInDIB: (windows) create bitmap with DIB section
 // 
 // HISTORY:
+//
 // 2011.2.9   skywind  create this file based on a subset of pixellib
 // 2011.2.11  skywind  immigrate blitting/blending/convertion/scaling
 // 2011.2.13  skywind  immigrate tga/bmp loader
@@ -40,6 +72,9 @@
 
 #ifndef PIXEL_NO_SYSTEM
 #if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #ifndef _WIN32
 #define _WIN32 
@@ -1821,8 +1856,8 @@ int BasicBitmap::BlitNormal(int bpp, void *dbits, long dpitch, int dx, const
 				for (x = w; x > 0; x--) *dst++ = *src--; 
 				dbits = (IUINT8*)dbits + dpitch; 
 				sbits = (const IUINT8*)sbits + spitch; 
-			} 
-		} 
+			}
+		}
 		break;
 
 	case 3:
@@ -1832,16 +1867,16 @@ int BasicBitmap::BlitNormal(int bpp, void *dbits, long dpitch, int dx, const
 		}	else { 
 			sx0 = sx; 
 			sxd = 1; 
-		} 
+		}
 		endx = dx + w; 
 		for (y = 0; y < h; y++) { 
 			for (x1 = dx, x2 = sx0; x1 < endx; x1++, x2 += sxd) { 
-				IUINT32 cc = _pixel_fetch(24, sbits, x2);
+				const IUINT32 cc = _pixel_fetch(24, sbits, x2);
 				_pixel_store(24, dbits, x1, cc); 
-			} 
+			}
 			dbits = (IUINT8*)dbits + dpitch; 
 			sbits = (const IUINT8*)sbits + spitch; 
-		} 
+		}
 		break;
 
 	case 4:
@@ -1852,16 +1887,16 @@ int BasicBitmap::BlitNormal(int bpp, void *dbits, long dpitch, int dx, const
 					(const IUINT32*)sbits + sx, size);
 				dbits = (IUINT8*)dbits + dpitch; 
 				sbits = (const IUINT8*)sbits + spitch; 
-			} 
-		}	else { 
+			}
+		}	else {
 			for (y = 0; y < h; y++) { 
 				const IUINT32 *src = (const IUINT32*)sbits + sx + w - 1; 
 				IUINT32 *dst = (IUINT32*)dbits + dx; 
 				for (x = w; x > 0; x--) *dst++ = *src--; 
 				dbits = (IUINT8*)dbits + dpitch; 
 				sbits = (const IUINT8*)sbits + spitch; 
-			} 
-		} 
+			}
+		}
 		break;
 	}
 
@@ -1951,9 +1986,9 @@ int BasicBitmap::BlitMask(int bpp, void *dbits, long dpitch, int dx, const
 		endx = dx + w; 
 		for (y = 0; y < h; y++) { 
 			for (x1 = dx, x2 = sx0; x1 < endx; x1++, x2 += sxd) { 
-				IUINT32 cc = _pixel_fetch(24, sbits, x2);
+				const IUINT32 cc = _pixel_fetch(24, sbits, x2);
 				if (cc != mask) _pixel_store(24, dbits, x1, cc); 
-			} 
+			}
 			dbits = (IUINT8*)dbits + dpitch; 
 			sbits = (const IUINT8*)sbits + spitch; 
 		} 
@@ -2941,7 +2976,7 @@ void BasicBitmap::CardReverse(IUINT32 *card, int size)
 {
 	IUINT32 *p1, *p2;
 	for (p1 = card, p2 = card + size - 1; p1 < p2; p1++, p2--) {
-		IUINT32 value = *p1;
+		const IUINT32 value = *p1;
 		*p1 = *p2;
 		*p2 = value;
 	}
@@ -3655,7 +3690,7 @@ void BasicBitmap::FlipHorizontal()
 		case 1: {
 				IUINT8 *ptr = (IUINT8*)Line(y);
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					IUINT8 cc = ptr[x1];
+					const IUINT8 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3664,7 +3699,7 @@ void BasicBitmap::FlipHorizontal()
 		case 2: {
 				IUINT16 *ptr = (IUINT16*)Line(y);
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					IUINT16 cc = ptr[x1];
+					const IUINT16 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3673,8 +3708,8 @@ void BasicBitmap::FlipHorizontal()
 		case 3: {
 				IUINT8 *ptr = (IUINT8*)Line(y);
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					IUINT32 c1 = _pixel_fetch(24, ptr, x1);
-					IUINT32 c2 = _pixel_fetch(24, ptr, x2);
+					const IUINT32 c1 = _pixel_fetch(24, ptr, x1);
+					const IUINT32 c2 = _pixel_fetch(24, ptr, x2);
 					_pixel_store(24, ptr, x1, c2);
 					_pixel_store(24, ptr, x2, c1);
 				}
@@ -3683,7 +3718,7 @@ void BasicBitmap::FlipHorizontal()
 		case 4: {
 				IUINT32 *ptr = (IUINT32*)Line(y);
 				for (x1 = 0, x2 = _w - 1; x1 < x2; x1++, x2--) {
-					IUINT32 cc = ptr[x1];
+					const IUINT32 cc = ptr[x1];
 					ptr[x1] = ptr[x2];
 					ptr[x2] = cc;
 				}
@@ -3992,7 +4027,7 @@ void BasicBitmap::BresenhamStretch(int dx, int dy, int dw, int dh,
 			}
 			else {
 				for (i = dstwidth; i > 0; i--) {
-					IUINT32 k = _pixel_read_24(srcpix);
+					const IUINT32 k = _pixel_read_24(srcpix);
 					if (k != mask) {
 						dstpix[0] = srcpix[0];
 						dstpix[1] = srcpix[1];
@@ -6830,7 +6865,7 @@ int BasicBitmap_ResampleSmooth(IUINT8 *dstpix, const IUINT8 *srcpix, int dstwidt
 			assert(0);
 		}
 		delete [] temp;
-		return 0;	
+		return 0;
 	}
 
 	if (dstwidth < srcwidth) {
