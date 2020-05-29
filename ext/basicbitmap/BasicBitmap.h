@@ -11,6 +11,7 @@
 // of my vector graphic library: https://code.google.com/p/pixellib
 // 
 // FEATURES:
+//
 //  - common pixel format supported (from A8R8G8B8 to A4R4G4B4)
 //  - blitting with or without a transparent color
 //  - converting between different pixel formats
@@ -23,14 +24,45 @@
 // in pure C/C++. But all the core routines can be replaced by
 // external implementations (sse2 eg.) using SetDriver/SetFunction.
 //
+// INTERFACES:
+//
+//  - Fill: fill color in rectangle
+//  - Clear: clear the whole bitmap
+//  - Blit: blit from source bitmap with same bpp
+//  - Convert: convert from different pixel-format
+//  - SetPixel: draw pixel in raw color
+//  - GetPixel: read pixel in raw color
+//  - SetColor: draw pixel in A8R8G8B8
+//  - GetColor: read pixel in A8R8G8B8
+//  - Scale: scale bitmap using different filter and blend op
+//  - DrawLine: draw a line
+//  - QuickText: draw text with internal mini-8x8 ascii font
+//  - SampleBilinear: sample pixel with bilinear
+//  - SampleBicubic: sample pixel with bicubic
+//  - Resample: resample bitmap
+//  - LoadBmpFromMemory: load bmp file from memory
+//  - LoadTgaFromMemory: load tga file from memory
+//  - LoadBmp: load bmp file
+//  - LoadTga: load tga file
+//  - SaveBmp: save bmp file
+//  - SavePPM: save ppm file
+//  - DownSampleBy2: down sample 2x2 pixels into one pixel
+//  - SetDIBitsToDevice: (windows) draw bitmap to hdc
+//  - GetDIBits: (windows) get DIB bits to bitmap
+//  - GdiPlusInit: (windows) initialize gdiplus
+//  - GdiPlusLoadImageFromMemory: (windows) load jpg/png from memory
+//  - GdiPlusLoadImage: (windows) use gdiplus to load jpg/png
+//  - CreateBitmapInDIB: (windows) create bitmap with DIB section
+//
 // HISTORY:
+//
 // 2011.2.9   skywind  create this file based on a subset of pixellib
 // 2011.2.11  skywind  immigrate blitting/blending/convertion/scaling
 // 2011.2.13  skywind  immigrate tga/bmp loader
 //
 //=====================================================================
-#ifndef __BASIC_BITMAP_H__
-#define __BASIC_BITMAP_H__
+#ifndef _BASIC_BITMAP_H_
+#define _BASIC_BITMAP_H_
 
 #include <stddef.h>
 #include <stdlib.h>
