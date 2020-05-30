@@ -76,6 +76,7 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
+#include <ObjBase.h>
 #ifndef _WIN32
 #define _WIN32 
 #endif

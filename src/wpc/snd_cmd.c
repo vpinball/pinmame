@@ -38,7 +38,11 @@
  #include "snd_alt.h"
 #endif
 #ifdef VPINMAME_PINSOUND // for PinSound support
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN
+ #endif
  #include <windows.h>
+ #include <timeapi.h>
  //#include <Shlwapi.h>
  #include <tchar.h>
 
@@ -316,12 +320,12 @@ void reinit_pinSound(void)
 
 	// send game rom name and sound system to PSStudio
 	sprintf(game_rom_system, "#ROM%s#SYSTEM%s", Machine->gamedrv->name, sndbrd_typestr(0) ? sndbrd_typestr(0) : sndbrd_typestr(1));
-	
+
 	sendToSlot(hFilePinSound, game_rom_system);
 
 	// wait for the answer from the PinSound Studio
 	Sleep(500);
-	
+
 	// read response from PinSoundStudio
 	response = readSlot(hFilePinMAME, buffer_msg);
 	if(response != TRUE)
