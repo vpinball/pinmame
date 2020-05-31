@@ -23,6 +23,9 @@ int	gUnzipQuiet = 0;		/* flag controls error messages */
 //Special handling for Visual PinMAME
 #ifdef VPINMAME
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 /* Display an error message to user via a windows MessageBox! */
 void errormsg(const char* extmsg, const char* usermsg, const char* zipname) {
