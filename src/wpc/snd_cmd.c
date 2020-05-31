@@ -39,10 +39,10 @@
 #endif
 #ifdef VPINMAME_PINSOUND // for PinSound support
  #ifndef WIN32_LEAN_AND_MEAN
- #define WIN32_LEAN_AND_MEAN
+ //#define WIN32_LEAN_AND_MEAN
  #endif
  #include <windows.h>
- #include <timeapi.h>
+ //#include <timeapi.h>
  //#include <Shlwapi.h>
  #include <tchar.h>
 
