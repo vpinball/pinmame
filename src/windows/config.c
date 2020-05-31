@@ -25,6 +25,9 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #include "driver.h"
 #include "rc.h"
