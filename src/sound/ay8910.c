@@ -1058,7 +1058,6 @@ static void AY8910Update(int chip,
 		int vola,volb,volc;
 		int left;
 
-
 		/* vola, volb and volc keep track of how long each square wave stays */
 		/* in the 1 position during the sample period. */
 		vola = volb = volc = 0;
@@ -1373,7 +1372,7 @@ static int AY8910_init(const char *chip_name,int chip,
 	for (i = 0;i < 3;i++)
 		PSG->mix_vol[i] = MIXER_GET_LEVEL(volume);
 	sprintf(buf,"%s #%d",chip_name,chip);
-	PSG->Channel = stream_init(buf,MIXERG(volume,gain,pan),sample_rate,chip,AY8910Update);
+	PSG->Channel = stream_init(buf,MIXERG(100,gain,pan),sample_rate,chip,AY8910Update);
 #else
 	for (i = 0;i < 3;i++)
 	{
