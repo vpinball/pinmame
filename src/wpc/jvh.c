@@ -782,7 +782,7 @@ static void ym2203_irq(int state) {
 }
 
 static struct YM2203interface ym2203_interface = {
-  1, 2000000, { YM2203_VOL(30,30) },
+  1, 2000000, { YM2203_VOL(10,10) },
   { NULL },	{ NULL },
   { ym2203_a_w }, { ym2203_b_w },
   { ym2203_irq }
