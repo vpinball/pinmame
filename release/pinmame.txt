@@ -25,7 +25,7 @@ What is it?
   Nuova Bell, Inder, Juegos Populares, LTD, Peyper, Sonic, Allied Leisure, Fascination, Int.,
   Sleic, Playmatic, NSM, Grand Products, Jac van Ham, Videodens, Astro, Micropin,
   Christian Tabart, Jeutel, Valley Manufacturing, MAC / CICPlay, Stargame, Barni,
-  Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic.
+  Splin Bingo, Playbar, Cirsa, Nondum / CIFA, Maibesa, ManilaMatic, Joctronic, Mirco, Sport Matic, Regama.
 
   *Note: Emulation is not 100% working and correct for all hardware.
 
@@ -61,7 +61,7 @@ What does it do?
   Note however, that you can still activate switches with your keyboard, see the display animations,
   and listen to/record the pinball game sounds with the pure PinMAME package itself.
 
-Games supported
+Games supported (a bit outdated, at least since version 2.1 :/ )
 ---------------
   Williams/Bally WPC:  All games from Dr. Dude (1990) to Cactus Canyon (1998)
   Williams/Bally System 11: All games from High Speed (1986) to Dr.Dude (1990)
@@ -122,11 +122,21 @@ Games supported
   Barni: Red Baron (1985)
   Splin Bingo: Golden Game
   Playbar: Bloody Roller
-  Prototype games:
+  Cirsa:
+  Nondum / CIFA:
+  Maibesa:
+  ManilaMatic:
+  Joctronic:
+  Mirco:
+  Sport Matic:
+  Regama: Trebol
+  Prototype games and modifications:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),
     Williams Rat Race (Jan 1983),
-    and some more...
+    Wild Texas (Firepower II Modification),
+    machinaZOIS,
+    and many more...
 
   'Supported' usually means that the game loads and the display(s) start up along with lamps etc. All games
   enter attract mode and you can use the Coin Door switches to enter the menus.
@@ -425,6 +435,8 @@ TecnoPinball       (www.tecnopinball.org)
 Peter Hall         (peter.hall at tele2.ch)
 Basilio Garcia     (basi_garcia at hergar.com)
 Paulo Branco       (paulovtec at gmail.com)
+Mike Roberts/mjr
+Rob Raper/djrobx
 
 
 Note from the PinMAME Development team
