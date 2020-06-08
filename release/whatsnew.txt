@@ -10,6 +10,7 @@ Compiling for iOS is now possible.
 Also a new platform independent lib/dll is now available with a new, simple interface to request (some of) the internal data.
 
 *** CORE/CPU ***
+Added Regama driver
 Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
 E.F.O. sound board mostly working - speech output would still stall the board for now however
@@ -21,6 +22,7 @@ Increased IRQ for LTD system III, helps with ball detection in outhole
 Corrected CPU clock for Peyper / Sonic games, helps speeding up Gamatron game start
 Doubled ZC frequency for Joctronic games, saving NVRAM
 Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
+Fixed 8085A DSUB instruction for the H register
 Fixed a bug in the TMS9995 emulation concerning port data writes
 Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 Fix an old regression of Alvin G. solenoids not firing consistently (most notably breaking Mystery Castle)
@@ -31,10 +33,11 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles)
 New:
 Jac van Ham: Formula 1
              Ice Mania
+Regama: Trebol
 Sport Matic: Flashman
 
 Correct Dumps:
@@ -72,6 +75,7 @@ Raid, The (alternate set)
 Space Train (old hardware)
 Spider-Man 1.02 (English, French)
 Star Trek 25th Anniversary 3.00 (unofficial MOD)
+Star Wars 1.01
 Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Trident (MOD rev. 23c)

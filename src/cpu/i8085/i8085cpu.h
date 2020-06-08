@@ -124,6 +124,7 @@
 		((I.HL.b.h^q^I.BC.b.h)&HF)|                                 \
 		(((I.BC.b.h^I.HL.b.h)&(I.HL.b.h^q)&SF)>>5);         \
 	if (I.HL.b.l!=0) I.AF.b.l&=~ZF;                                 \
+	I.HL.b.h=q;                                                             \
 }
 
 #define M_PUSH(R) {                                             \

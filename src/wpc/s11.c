@@ -131,6 +131,8 @@ static INTERRUPT_GEN(s11_vblank) {
   int ii;
 
 #ifdef PROC_SUPPORT
+  //TODO/PROC: Check implemenatation
+  UINT64 allSol = core_getAllSol();
   // Keep the P-ROC tickled each time we run around the interrupt
   // so it knows we are still alive
   if (coreGlobals.p_rocEn) {
@@ -169,11 +171,6 @@ static INTERRUPT_GEN(s11_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-#ifdef PROC_SUPPORT
-		//TODO/PROC: Check implemenatation
-		UINT64 allSol = core_getAllSol();
-#endif
-
   if (locals.ssEn) { // set gameon and special solenoids
     locals.solenoids |= CORE_SOLBIT(S11_GAMEONSOL);
 
