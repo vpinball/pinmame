@@ -1925,6 +1925,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\machine\i8155.c"
+						>
+					</File>
+					<File
+						RelativePath=".\src\machine\i8155.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\machine\mathbox.c"
 						>
 					</File>
@@ -3883,6 +3891,10 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\playsnd.c"
+					>
+				</File>
+				<File
+					RelativePath=".\src\wpc\regama.c"
 					>
 				</File>
 				<File

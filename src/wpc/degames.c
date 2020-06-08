@@ -787,6 +787,15 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
 DE_ROMEND
 CORE_CLONEDEF(stwr,e12,104,"Star Wars (1.02 English)",1992,"Data East",de_mDEDMD32S2A_hack,0)
 
+DE_ROMSTARTx0(stwr_101,"starcpu.101",CRC(6efc7b14) SHA1(f669669fbd8733d06b386ea352fdb2041bf98362))
+DE_DMD32ROM44(        "stardisp_u14.102", CRC(f8087364) SHA1(4cd66b72cf430018cfb7ac8306b96a8499d41896),
+                      "stardisp_u12.102", CRC(fde126c6) SHA1(0a3eacfd4589ee0f26c4212ba9948dff061f3338))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,101,104,"Star Wars (1.01)",1992,"Data East",de_mDEDMD32S2A_hack,0)
+
 DE_ROMSTARTx0(stwr_g11,"starcpug.101",CRC(c74b4576) SHA1(67db9294cd802be8d62102fe756648f750821960))
 DE_DMD32ROM8x(        "swdsp_g.102",CRC(afdfbfc4) SHA1(1c3cd90b9cd4f88ee2b556abef863a0ae9a10056))
 DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),

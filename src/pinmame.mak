@@ -85,6 +85,7 @@ DRVLIBS += $(PINOBJ)/boomerang.o
 DRVLIBS += $(PINOBJ)/spiritof76.o
 DRVLIBS += $(PINOBJ)/luckydraw.o
 DRVLIBS += $(PINOBJ)/efo.o $(PINOBJ)/efosnd.o
+DRVLIBS += $(PINOBJ)/regama.o
 #
 # Games
 #

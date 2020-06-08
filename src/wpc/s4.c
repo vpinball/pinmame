@@ -307,12 +307,12 @@ static INTERRUPT_GEN(s4_vblank) {
   if ((s4locals.vblankCount % S4_LAMPSMOOTH) == 0) {
 #ifdef PROC_SUPPORT
     if (coreGlobals.p_rocEn) {
+      int col, row, procLamp;
       // Keep the P-ROC tickled each time we run around the interrupt
       // so it knows we are still alive
       procTickleWatchdog();
 
       // Loop through the lamp matrix, looking for any which have changed state
-      int col, row, procLamp;
       for (col = 0; col < CORE_STDLAMPCOLS; col++) {
         UINT8 chgLamps = coreGlobals.lampMatrix[col] ^ coreGlobals.tmpLampMatrix[col];
         UINT8 tmpLamps = coreGlobals.tmpLampMatrix[col];

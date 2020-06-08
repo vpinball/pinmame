@@ -801,6 +801,7 @@
     <ClCompile Include="src\machine\6821pia.c" />
     <ClCompile Include="src\machine\8255ppi.c" />
     <ClCompile Include="src\machine\eeprom.c" />
+    <ClCompile Include="src\machine\i8155.c" />
     <ClCompile Include="src\machine\mathbox.c" />
     <ClCompile Include="src\machine\pic8259.c" />
     <ClCompile Include="src\machine\ticket.c" />
@@ -1001,6 +1002,7 @@
     <ClCompile Include="src\wpc\play.c" />
     <ClCompile Include="src\wpc\playgames.c" />
     <ClCompile Include="src\wpc\playsnd.c" />
+    <ClCompile Include="src\wpc\regama.c" />
     <ClCompile Include="src\wpc\rotation.c" />
     <ClCompile Include="src\wpc\rowamet.c" />
     <ClCompile Include="src\wpc\s11.c" />
@@ -1208,6 +1210,7 @@
     <ClInclude Include="src\machine\6821pia.h" />
     <ClInclude Include="src\machine\8255ppi.h" />
     <ClInclude Include="src\machine\eeprom.h" />
+    <ClInclude Include="src\machine\i8155.h" />
     <ClInclude Include="src\machine\mathbox.h" />
     <ClInclude Include="src\machine\pic8259.h" />
     <ClInclude Include="src\machine\ticket.h" />

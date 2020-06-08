@@ -881,6 +881,14 @@ SOURCE=.\src\machine\eeprom.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\machine\i8155.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\i8155.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\machine\mathbox.c
 # End Source File
 # Begin Source File
@@ -2577,6 +2585,10 @@ SOURCE=.\src\wpc\playgames.c
 # Begin Source File
 
 SOURCE=.\src\wpc\playsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\regama.c
 # End Source File
 # Begin Source File
 

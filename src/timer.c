@@ -587,4 +587,8 @@ int timer_param(mame_timer *which)
 {
 	return which->callback_param;
 }
+int timer_enabled(mame_timer *which)
+{
+  return which->enabled;
+}
 #endif

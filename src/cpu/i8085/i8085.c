@@ -256,16 +256,6 @@ static void WM(UINT32 a, UINT8 v)
 	cpu_writemem16(a, v);
 }
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 3.4)
-static	void illegal(void)
-{
-#if VERBOSE
-	UINT16 pc = I.PC.w.l - 1;
-	LOG(("i8085 illegal instruction %04X $%02X\n", pc, cpu_readop(pc)));
-#endif
-}
-#endif
-
 INLINE void execute_one(int opcode)
 {
 	i8085_ICount -= I.cputype ? i8085_lut_cycles_8085[opcode] : i8085_lut_cycles_8080[opcode];
@@ -1550,7 +1540,7 @@ void i8085_set_SID(int state)
 /****************************************************************************/
 /* Set a callback to be called at SOD output change 						*/
 /****************************************************************************/
-void i8085_set_sod_callback(void (*callback)(int state))
+void i8085_set_SOD_callback(void (*callback)(int state))
 {
 	I.sod_callback = callback;
 }
