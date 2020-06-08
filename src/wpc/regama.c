@@ -115,9 +115,9 @@ static MACHINE_RESET(regama) {
 static SWITCH_UPDATE(regama) {
   static UINT8 lastSw7;
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x1c, 6);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>> 8, 0x80, 1);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>> 8, 0x07, 7);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x80, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT],      0x1c, 6);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x07, 7);
   }
   i8085_set_SID(coreGlobals.swMatrix[7] & 1 ? 0 : 1); // clear and verify RAM on reset when SID line is low
   // HACK to make coin switches work. No idea what feeds these values but I don't think it's done by manipulating the RAM directly!
@@ -187,18 +187,18 @@ INPUT_PORTS_START(trebol)
   CORE_PORTS
   SIM_PORTS(1)
   PORT_START /* 0 */
-    COREPORT_BIT(     0x0200, "Coin #1", KEYCODE_3)
-    COREPORT_BIT(     0x0400, "Coin #2", KEYCODE_5)
-    COREPORT_BIT(     0x0004, "Start", KEYCODE_1)
-    COREPORT_BITTOG(  0x0008, "Coin Door", KEYCODE_END)
+    COREPORT_BIT(     0x0200, "Coin #1",     KEYCODE_3)
+    COREPORT_BIT(     0x0400, "Coin #2",     KEYCODE_5)
+    COREPORT_BIT(     0x0004, "Start",       KEYCODE_1)
+    COREPORT_BIT(     0x8000, "Tilt",        KEYCODE_DEL)
+    COREPORT_BITTOG(  0x0008, "Coin Door",   KEYCODE_END)
     COREPORT_BIT(     0x0010, "Bookkeeping", KEYCODE_7)
-    COREPORT_BIT(     0x8000, "Tilt", KEYCODE_DEL)
     COREPORT_BIT(     0x0100, "Clear NVRAM", KEYCODE_0)
   PORT_START /* 1 */
-    COREPORT_DIPNAME( 0x0001, 0x0001, "Credits for coin #1")
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Credits for coin #1")
       COREPORT_DIPSET(0x0000, "1" )
       COREPORT_DIPSET(0x0001, "2" )
-    COREPORT_DIPNAME( 0x0006, 0x0006, "Credits for coin #2")
+    COREPORT_DIPNAME( 0x0006, 0x0000, "Credits for coin #2")
       COREPORT_DIPSET(0x0000, "4" )
       COREPORT_DIPSET(0x0002, "5" )
       COREPORT_DIPSET(0x0004, "6" )
