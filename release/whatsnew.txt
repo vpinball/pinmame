@@ -10,6 +10,8 @@ Compiling for iOS is now possible.
 Also a new platform independent lib/dll is now available with a new, simple interface to request (some of) the internal data.
 
 *** CORE/CPU ***
+Improved Atari Generation 1 sound emulation, rewritten similar to the style of the Gen 2 one
+Tweaks to Atari Generation 2 emulation, too
 Added Regama driver
 Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
