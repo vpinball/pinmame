@@ -1,9 +1,5 @@
 /*----------------------------------------
 /              Atari sound
-/
-/ TODO: Middle Earth plays the sounds but these get stuck afterwards.
-/       I have no idea how it's supposed to turn the sound off, it doesn't change anything on the audio reset addresses during gameplay.
-/
 /-----------------------------------------*/
 #include <stdlib.h>
 #include "driver.h"

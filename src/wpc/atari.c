@@ -363,12 +363,16 @@ static WRITE_HANDLER(lamp_w) {
 /* sound */
 // Gen 1
 static WRITE_HANDLER(soundg1_w) { // enable
-
+	if (core_gameData->hw.gameSpecific1 & 2) { // spcrider / midearth
+		locals.snd1Enable = 1;
+		sndbrd_0_ctrl_w(0, (latch[0] & 0xF) | 0x10);
+	}
 }
 
 static WRITE_HANDLER(audiog1_w) { // reset
 	locals.snd1Enable = (data) ? 1 : 0; 
-	if (data == 0x5b) locals.snd1Enable = 0; // MAME does this, fixes spcrider
+	if (core_gameData->hw.gameSpecific1 & 2) // spcrider / midearth
+		locals.snd1Enable = 0;
 	sndbrd_0_ctrl_w(0, (latch[0] & 0xF) | ((locals.snd1Enable & 1) << 4));
 }
 // Gen 2
