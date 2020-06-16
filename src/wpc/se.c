@@ -297,8 +297,8 @@ static MACHINE_INIT(se) {
 	  selocals.fastflipaddr = 0x00 + 1;
   else if (strncasecmp(gn, "nfl", 3) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
-  else if (strncasecmp(gn, "startrp2", 8) == 0)
-	  selocals.fastflipaddr = 0x00 + 1;
+  else if (strncasecmp(gn, "startrp", 7) == 0)
+      selocals.fastflipaddr = 0x00 + 1;
   else if (strncasecmp(gn, "strikext", 8) == 0)
 	  selocals.fastflipaddr = 0x00 + 1;
   else if (strncasecmp(gn, "strxt_uk", 8) == 0)
