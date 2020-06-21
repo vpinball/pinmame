@@ -87,7 +87,7 @@ static void init_lzbal_l2sp(void) { core_gameData = &lzbal_l2spGameData; }
 S6_ROMSTART(lzbal,l2sp, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8("483_s0_laser_ball.716",CRC(726c06eb) SHA1(33bbf6ce3629e933863ac85eac03fd3a906d9de5))
+S67S_SOUNDROMS8("493_s0_laser_ball.716",CRC(726c06eb) SHA1(33bbf6ce3629e933863ac85eac03fd3a906d9de5))
 S6_ROMEND
 CORE_CLONEDEF(lzbal,l2sp,l2,"Laser Ball (L-2, PROM Sound)",1979,"Williams",s6_mS6S,0)
 
