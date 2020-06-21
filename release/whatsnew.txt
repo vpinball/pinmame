@@ -35,7 +35,7 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles)
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl
 New:
 Jac van Ham: Formula 1
              Ice Mania
@@ -46,6 +46,7 @@ Correct Dumps:
 Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
        Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
 LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
+Williams: Pokerino (correct sound PROM)
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
@@ -64,6 +65,7 @@ Flintstones, The LX-3
 Iron Man 1.85,1.86(+Vault Editions)
 Junk Yard 1.2C (competition MOD) (updated)
 Lap By Lap (Free Play)
+Laser Ball L-2 (PROM Sound)
 Lord of the Rings, The 3.00
 Meteor (Bonus Count and Sound Fix)
 Meteor (Bonus Count Fix, MOD, Free Play rev. 64)

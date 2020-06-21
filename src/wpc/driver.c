@@ -2315,6 +2315,7 @@ DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(grgar,t1)        //                  Gorgar /10 Scoring Ted Estes
 DRIVER(grgar,c1)        //                  Gorgar (Lane Change MOD)
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
+DRIVER(lzbal,l2sp)      //                  Laser Ball (L-2, PROM sound)
 DRIVER(lzbal,t2)        //                  Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
 DRIVER(frpwr,l6)        //          02/80 W Firepower (L-6)

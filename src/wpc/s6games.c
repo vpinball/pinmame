@@ -11,6 +11,7 @@ The player 2 display will show the number of the installed game revision.
 #include "core.h"
 #include "wmssnd.h"
 #include "s6.h"
+#include "sndbrd.h"
 
 #define INITGAME(name, disp) \
 static core_tGameData name##GameData = { GEN_S6, disp }; \
@@ -24,6 +25,51 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 S6_INPUT_PORTS_START(s6, 1) S6_INPUT_PORTS_END
 
 /*--------------------------------
+/ Tri Zone - Sys.6 (Game #487)
+/-------------------------------*/
+INITGAMEFULL(trizn,s6_6digit_disp,0,0,13,14,15,26,24,0)
+S6_ROMSTART(trizn,l1,"gamerom.716", CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
+                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+#define input_ports_trizn input_ports_s6
+CORE_GAMEDEF(trizn,l1,"Tri Zone (L-1)",1979,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(trizn,t1,"gamerom.716", CRC(757091c5) SHA1(00dac6c19b08d2528ea293619c4a39499a1a02c2),
+                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
+
+/*--------------------------------
+/ Time Warp - Sys.6 (Game #489)
+/-------------------------------*/
+INITGAMEFULL(tmwrp,s6_6digit_disp,0,0,19,20,21,22,23,0)
+S6_ROMSTART(tmwrp,l3,"twarp_l3.716", CRC(1234710a) SHA1(a33e9edb79b6ea4c5982d28a55289897f82b7b3c),
+                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+#define input_ports_tmwrp input_ports_s6
+CORE_GAMEDEF(tmwrp,l3,"Time Warp (L-3)",1979,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(tmwrp,l2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
+                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2.716", CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+CORE_CLONEDEF(tmwrp,l2,l3,"Time Warp (L-2)",1979,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(tmwrp,t2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
+                     "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                     "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+CORE_CLONEDEF(tmwrp,t2,l3,"Time Warp (T-2 Ted Estes)",1979,"Williams",s6_mS6S,0)
+
+/*--------------------------------
 / Laser Ball - Sys.6 (Game #493)
 /-------------------------------*/
 INITGAMEFULL(lzbal,s6_6digit_disp,0,0,45,46,47,44,0,13)
@@ -35,12 +81,21 @@ S6_ROMEND
 #define input_ports_lzbal input_ports_s6
 CORE_GAMEDEF(lzbal,l2,"Laser Ball (L-2)",1979,"Williams",s6_mS6S,0)
 
+static core_tGameData lzbal_l2spGameData = { GEN_S6, s6_6digit_disp, {FLIP_SWNO(0,0),0,0,0,SNDBRD_S3S}, \
+ NULL, {{0}},{0,{45,46,47,44,0,13}}};
+static void init_lzbal_l2sp(void) { core_gameData = &lzbal_l2spGameData; }
+S6_ROMSTART(lzbal,l2sp, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
+                      "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                      "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
+S67S_SOUNDROMS8("483_s0_laser_ball.716",CRC(726c06eb) SHA1(33bbf6ce3629e933863ac85eac03fd3a906d9de5))
+S6_ROMEND
+CORE_CLONEDEF(lzbal,l2sp,l2,"Laser Ball (L-2, PROM Sound)",1979,"Williams",s6_mS6S,0)
+
 S6_ROMSTART(lzbal,t2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
 S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S6_ROMEND
-#define input_ports_lzbal_t2 input_ports_s6
 CORE_CLONEDEF(lzbal,t2,l2,"Laser Ball (T-2 Ted Estes)",1980,"Williams",s6_mS6S,0)
 
 /*-----------------------------
@@ -122,7 +177,6 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
                        "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
                        "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
 S6_ROMEND
-#define input_ports_grgar_t1 input_ports_s6
 CORE_CLONEDEF(grgar,t1,l1,"Gorgar (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
 
 S6_ROMSTART(grgar,c1,  "gameromc.716",CRC(8997edb7) SHA1(f3808ee0a32c38a60fe5566d415cd7a4e66709a5),
@@ -133,7 +187,6 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
                        "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
                        "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
 S6_ROMEND
-#define input_ports_grgar_c1 input_ports_s6
 CORE_CLONEDEF(grgar,c1,l1,"Gorgar (C-1 Lane Change MOD)",1979,"Williams / Francis",s6_mS6S,0)
 
 /*-------------------------------
@@ -243,7 +296,7 @@ CORE_CLONEDEFNV(frpwr_c6,frpwr_l6,"Firepower (Sys.6/7-digit conversion rev. 31)"
 /* Following games used a 7 segment display */
 
 /*--------------------------
-/ Algar - Sys.6 (Game #499)
+/ Algar - Sys.6A (Game #499)
 /-------------------------*/
 INITGAMEFULL(algar,s6_7digit_disp,0,50,47,48,49,10,38,36)
 S6_ROMSTART(algar,l1, "gamerom.716", CRC(6711da23) SHA1(80a46f5a2630977bc1c6e17466e8865083eb9a18),
@@ -255,7 +308,7 @@ S6_ROMEND
 CORE_GAMEDEF(algar,l1,"Algar (L-1)",1980,"Williams",s6_mS6S,0)
 
 /*-------------------------------
-/ Alien Poker - Sys.6 (Game #501)
+/ Alien Poker - Sys.6A (Game #501)
 /-------------------------------*/
 INITGAMEFULL(alpok,s6_7digit_disp,0,43,35,37,36,38,0,13)
 S6_ROMSTART(alpok,l6, "gamerom6.716",CRC(20538a4a) SHA1(6cdd6b7ded76b3cbd954d371e126e1bbd95a6219),
