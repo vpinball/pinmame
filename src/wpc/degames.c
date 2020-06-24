@@ -707,6 +707,19 @@ DE_ROMEND
 CORE_GAMEDEF(aar,101,"Aaron Spelling (1.01)",1992,"Data East",de_mDEDMD32S2A_hack,0)
 
 /*-------------------------------------------------------------
+/ Michael Jordan - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAMES11(mj,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
+DE_ROMSTARTx0(mj_130,"MJcpuc5.bin", CRC(311ab1d1) SHA1(062b02aab851f9f2ca64c24b8faa7dd293cacd22))
+DE_DMD32ROM8x(       "MJdsp0.bin",  CRC(1e2f27e8) SHA1(bfc567d6d3a7cecf7623ceb383350c78c14baef3))
+DE2S_SOUNDROM144(    "MJsndu7.bin" ,CRC(a32237f5) SHA1(0fc106429af320c4a30a99c67b45f44cb9a45644),
+                     "MJsndu17.bin",CRC(8b11d7b9) SHA1(bb84b1650b253a433e947137256e4bc34a6ceac4),
+                     "MJsndu21.bin",CRC(addfe20e) SHA1(3a6862640f81493da1beddca11011090d8b7cab0))
+DE_ROMEND
+#define input_ports_mj input_ports_des11
+CORE_GAMEDEF(mj,130,"Michael Jordan (1.30)",1992,"Data East",de_mDEDMD32S2A_hack,0)
+
+/*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(stwr,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)

@@ -8,6 +8,7 @@ Version 3.3 (X X, 2020) - "20 years already?"
 
 Compiling for iOS is now possible.
 Also a new platform independent lib/dll is now available with a new, simple interface to request (some of) the internal data.
+Fix -listxml for strings that contain embedded tags
 
 *** CORE/CPU ***
 Improved Atari Generation 1 sound emulation, rewritten similar to the style of the Gen 2 one
@@ -35,8 +36,9 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500
 New:
+Data East: Michael Jordan 1.30
 Jac van Ham: Formula 1
              Ice Mania
 Regama: Trebol
