@@ -55,7 +55,7 @@ core_tLCDLayout atari_disp2[] = {
 INITGAME1(atarians, atari_disp1, FLIP_SWNO(36,37), 1, 0)
 ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
 							"atarian.e00",	CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
+ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) //!! wrong?? "Atarians & Time 2000 have a ROM marked 007028 and the rest have 020252"
 ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
@@ -65,7 +65,7 @@ CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING
 INITGAME1(atarianb, atari_disp1, FLIP_SWNO(36,37), 1, 0)
 ATARI_2_ROMSTART(atarianb,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
 							"atarianb.e00",	CRC(74fc86e4) SHA1(135d75e5c03feae0929fa84caa3c802353cdd94e))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
+ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) //!! wrong?? "Atarians & Time 2000 have a ROM marked 007028 and the rest have 020252"
 ATARI_ROMEND
 CORE_CLONEDEFNV(atarianb,atarians,"Atarians, The (MOD working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
 
@@ -75,7 +75,7 @@ CORE_CLONEDEFNV(atarianb,atarians,"Atarians, The (MOD working bootleg)",2002,"At
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1, 0)
 ATARI_2_ROMSTART(time2000,	"time.e0",	CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0),
 							"time.e00",	CRC(e380f35c) SHA1(f2b4c508c8b7a2ce9924da97c05fb31d5115f36f))
-ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b))
+ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) //!! wrong?? "Atarians & Time 2000 have a ROM marked 007028 and the rest have 020252"
 ATARI_ROMEND
 CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
 
