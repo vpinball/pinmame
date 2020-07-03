@@ -6,7 +6,7 @@
  *      1978  |  1980
  * CPU: 6800  |  8085
  * I/O: PIAs, |  CPU ports
- *      DMA   |
+ *      DMA   |  DMA
  * Snd: 566   |  ?
  */
 
@@ -350,122 +350,226 @@ CORE_GAMEDEFNV(pentacup,"Pentacup (rev. 1)",1978,"Micropin",pentacup,0)
 
 /* 1980 Version */
 
-#ifndef PINMAME_NO_UNUSED	// currently unused function (GCC 4.)
-static INTERRUPT_GEN(mp2_irq) {
-  cpu_set_irq_line(0, I8085_INTR_LINE, PULSE_LINE);
+static INTERRUPT_GEN(mp2_vblank) {
+  int i;
+  UINT8 mem;
+  for (i = 0; i < 32; i++) {
+    mem = memory_region(REGION_CPU1)[0x23c0 + i];
+    coreGlobals.segments[62 - i * 2].w = core_bcd2seg7[mem >> 4];
+    coreGlobals.segments[63 - i * 2].w = core_bcd2seg7[mem & 0x0f];
+  }
+  coreGlobals.lampMatrix[16] = (memory_region(REGION_CPU1)[0x23d6] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] >> 4);
+  coreGlobals.lampMatrix[17] = (memory_region(REGION_CPU1)[0x23cc] & 0xf0) | (memory_region(REGION_CPU1)[0x23de] & 0x0f);
+
+  core_updateSw(TRUE);
 }
-#endif
+
+static INTERRUPT_GEN(mp2_irq) {
+  static int irq;
+  static UINT8 swData;
+
+  cpu_set_irq_line(0, I8085_RST55_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(0, I8085_RST65_LINE, !irq ? ASSERT_LINE : CLEAR_LINE);
+  irq = !irq;
+
+  if (~swData & coreGlobals.swMatrix[3] & 0x01) { // 25 pts, inverted
+    memory_region(REGION_CPU1)[0x2193] &= 0xfe;
+  }
+  swData = coreGlobals.swMatrix[3];
+  if (coreGlobals.swMatrix[4] & 0x20) { // end of ball
+    memory_region(REGION_CPU1)[0x21a0] = 1;
+  }
+  if (coreGlobals.swMatrix[6] & 0x08) { // bonus collect & end of ball
+    memory_region(REGION_CPU1)[0x21ae] = 1;
+  }
+}
 
 static SWITCH_UPDATE(MICROPIN2) {
+  static UINT8 swData[4];
+  int i, sw, offset;
+
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0x01, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xf0, 9);
   }
-//  cpu_set_irq_line(0, I8085_INTR_LINE, (coreGlobals.swMatrix[0] & 1) ? ASSERT_LINE : CLEAR_LINE);
   cpu_set_nmi_line(0, (coreGlobals.swMatrix[0] & 1) ? ASSERT_LINE : CLEAR_LINE);
+
+  for (sw = 0; sw < 4; sw++) {
+    for (i = 0; i < 8; i++) {
+      offset = 0x2193 + sw * 8 + i;
+      if (offset < 0x2194 || (offset > 0x219f && offset < 0x21a4)) continue;
+      if (~swData[sw] & coreGlobals.swMatrix[3 + sw] & (1 << i)) {
+        memory_region(REGION_CPU1)[offset] |= 1;
+      } else {
+        memory_region(REGION_CPU1)[offset] &= 0xfe;
+      }
+    }
+    swData[sw] = coreGlobals.swMatrix[3 + sw];
+  }
 }
 
-static READ_HANDLER(m21a6_r) {
-  return 0;
+static WRITE_HANDLER(mxxxx_w) {
+  logerror("%04x: Write to %04x: %02x\n", activecpu_get_pc(), offset, data);
 }
 
 static MEMORY_WRITE_START(mp2_writemem)
-  { 0x0000, 0x1fff, MWA_NOP },
-  { 0x2000, 0x23ff, MWA_RAM },
+  { 0x0000, 0x1fff, mxxxx_w },
+  { 0x2000, 0x23ff, MWA_RAM, &generic_nvram, &generic_nvram_size },
 MEMORY_END
 
 static MEMORY_READ_START(mp2_readmem)
   { 0x0000, 0x1fff, MRA_ROM },
-  { 0x21a6, 0x21a6, m21a6_r },
   { 0x2000, 0x23ff, MRA_RAM },
 MEMORY_END
 
 static WRITE_HANDLER(mp2_out) {
-  coreGlobals.lampMatrix[offset] = data;
-  logerror("out %x: %02x\n", offset, data);
+  static UINT8 out[16];
+  coreGlobals.lampMatrix[offset] = ~data;
+  if (out[offset] != data) logerror("out %x: %02x\n", offset, data);
+  out[offset] = data;
+#ifdef MAME_DEBUG
+  if (offset == 0x0d) {
+    coreGlobals.segments[64].w = core_bcd2seg7[data ^ 0xff];
+  }
+  if (offset == 0x0e) {
+    coreGlobals.segments[65].w = core_bcd2seg7[data ^ 0xff];
+  }
+  if (offset == 0x0f) {
+    coreGlobals.segments[66].w = core_bcd2seg7[data >> 4];
+    coreGlobals.segments[67].w = core_bcd2seg7[data & 0x0f];
+  }
+#endif
 }
 
-static READ_HANDLER(mp2_in) {
-  logerror("in %x\n", offset);
-  return ~coreGlobals.swMatrix[offset];
+static READ_HANDLER(mp2_sw) {
+  if (coreGlobals.swMatrix[1 + offset]) {
+    if (coreGlobals.swMatrix[1 + offset] == 1)
+      return 0;
+    return coreGlobals.swMatrix[1 + offset];
+  }
+  return 1;
 }
 
-static WRITE_HANDLER(col_out) {
-  locals.col = data;
-  logerror("col %02x\n", locals.col);
+static READ_HANDLER(mp2_dip) {
+  switch(offset + 2) {
+    case 2: // 1..7 cents, unknown switch
+      return ~(core_getDip(4) | (coreGlobals.swMatrix[9] & 1));
+    case 3: // 10..70 cents, unknown diagnostic switch
+      return ~(core_getDip(2) | (coreGlobals.swMatrix[10] & 1));
+    case 4: // 8+9 cents, 80+90 cents, coin, show previous, NVRAM protect, unknown switch
+      return ~((core_getDip(5) & 0x03) | (core_getDip(3) & 0x0c) | (coreGlobals.swMatrix[9] & 0xf0));
+    default: // dips, 1+2 set balls per game
+      return ~core_getDip(0);
+  }
 }
 
 static PORT_WRITE_START(mp2_writeport)
-  { 0x00, 0x0e, mp2_out },
-  { 0x0f, 0x0f, col_out },
+  { 0x00, 0x0f, mp2_out },
 PORT_END
 
 static PORT_READ_START(mp2_readport)
-  { 0x00, 0x05, mp2_in },
+  { 0x00, 0x01, mp2_sw },
+  { 0x02, 0x05, mp2_dip },
 PORT_END
 
 MACHINE_DRIVER_START(pentacp2)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(NULL,NULL,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", 8085A, 2000000)
+  MDRV_CPU_ADD_TAG("mcpu", 8085A, 2500000)
   MDRV_CPU_MEMORY(mp2_readmem, mp2_writemem)
   MDRV_CPU_PORTS(mp2_readport, mp2_writeport)
-//  MDRV_CPU_PERIODIC_INT(mp2_irq, 500)
-  MDRV_CPU_VBLANK_INT(mp_vblank, 1)
-//  MDRV_TIMER_ADD(mp_nmi, 2)
+  MDRV_CPU_PERIODIC_INT(mp2_irq, 120)
+  MDRV_CPU_VBLANK_INT(mp2_vblank, 1)
   MDRV_SWITCH_UPDATE(MICROPIN2)
-  MDRV_DIPS(8)
-  MDRV_SOUND_ADD(DISCRETE, mp_discInt)
+  MDRV_DIPS(48)
+  MDRV_NVRAM_HANDLER(generic_1fill)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
+
+#define COREPORT_BITINV(mask, name, key) \
+  PORT_BITX(mask,IP_ACTIVE_LOW,IPT_BUTTON1,name,key,IP_JOY_NONE)
 
 INPUT_PORTS_START(pentacp2)
   CORE_PORTS
   SIM_PORTS(1)
   PORT_START /* 0 */
-    COREPORT_BIT   (0x0100, "Reset",    KEYCODE_0)
+    COREPORT_BIT   (0x0001, "Reset",         KEYCODE_HOME)
+    COREPORT_BIT   (0x0010, "Coin",          KEYCODE_5)
+    COREPORT_BITINV(0x0020, "Keep NVRAM",    KEYCODE_0)
+    COREPORT_BITINV(0x0040, "Show previous", KEYCODE_9)
+    COREPORT_BIT   (0x0080, "Tilt",          KEYCODE_DEL)
   PORT_START /* 1 */
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0001, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0001, "1" )
     COREPORT_DIPNAME( 0x0002, 0x0000, "S2")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0002, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
     COREPORT_DIPNAME( 0x0004, 0x0000, "S3")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0004, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0004, "1" )
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0008, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0008, "1" )
     COREPORT_DIPNAME( 0x0010, 0x0000, "S5")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0010, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0010, "1" )
     COREPORT_DIPNAME( 0x0020, 0x0000, "S6")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0020, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0020, "1" )
     COREPORT_DIPNAME( 0x0040, 0x0000, "S7")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0040, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0040, "1" )
     COREPORT_DIPNAME( 0x0080, 0x0000, "S8")
-    COREPORT_DIPSET(0x0000, "0" )
-    COREPORT_DIPSET(0x0080, "1" )
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0080, "1" )
+  PORT_START /* 2 */
+    COREPORT_DIPNAME( 0xffff, 0x0004, "10 cents x")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+      COREPORT_DIPSET(0x0004, "2" )
+      COREPORT_DIPSET(0x0008, "3" )
+      COREPORT_DIPSET(0x0010, "4" )
+      COREPORT_DIPSET(0x0020, "5" )
+      COREPORT_DIPSET(0x0040, "6" )
+      COREPORT_DIPSET(0x0080, "7" )
+      COREPORT_DIPSET(0x0400, "8" )
+      COREPORT_DIPSET(0x0800, "9" )
+  PORT_START /* 3 */
+    COREPORT_DIPNAME( 0xffff, 0x0020, " 1 cent  x")
+      COREPORT_DIPSET(0x0000, "0" )
+      COREPORT_DIPSET(0x0002, "1" )
+      COREPORT_DIPSET(0x0004, "2" )
+      COREPORT_DIPSET(0x0008, "3" )
+      COREPORT_DIPSET(0x0010, "4" )
+      COREPORT_DIPSET(0x0020, "5" )
+      COREPORT_DIPSET(0x0040, "6" )
+      COREPORT_DIPSET(0x0080, "7" )
+      COREPORT_DIPSET(0x0100, "8" )
+      COREPORT_DIPSET(0x0200, "9" )
 INPUT_PORTS_END
 
 core_tLCDLayout mp2_disp[] = {
-  {0, 0, 0,16, CORE_SEG7},
-  {3, 0,16,16, CORE_SEG7},
-  {6, 0,32,16, CORE_SEG7},
-  {9, 0,48,16, CORE_SEG7},
+  { 0, 6,58,3,CORE_SEG7}, { 0,13,61,3,CORE_SEG7}, { 0,27,12,3,CORE_SEG7}, { 0,34,15,3,CORE_SEG7},
+  { 3, 0, 0,2,CORE_SEG7}, { 3, 7,10,2,CORE_SEG7}, { 3,14, 9,1,CORE_SEG7},
+  { 3,19,46,3,CORE_SEG7}, { 3,26,49,3,CORE_SEG7}, { 3,35,32,3,CORE_SEG7}, { 3,42,35,3,CORE_SEG7},
+  { 6,19,52,3,CORE_SEG7}, { 6,26,55,3,CORE_SEG7}, { 6,35,26,3,CORE_SEG7}, { 6,42,29,3,CORE_SEG7},
+  { 9,16, 4,1,CORE_SEG7}, { 9,19, 5,3,CORE_SEG7}, { 9,35,20,3,CORE_SEG7}, { 9,42,23,3,CORE_SEG7},
+#ifdef MAME_DEBUG
+  {12,14,39,7,CORE_SEG7}, {12,28,19,1,CORE_SEG7}, {12,30, 8,1,CORE_SEG7},
+  {12, 0,64,1,CORE_SEG7}, {12, 4,65,1,CORE_SEG7}, {12, 8,66,2,CORE_SEG7},
+#endif
   {0}
 };
-static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(6,3),0,8}};
+static core_tGameData pentacup2GameData = {0,mp2_disp,{FLIP_SWNO(73,65),0,10}};
 static void init_pentacp2(void) {
   core_gameData = &pentacup2GameData;
 }
 
 ROM_START(pentacp2)
   NORMALREGION(0x10000, REGION_CPU1)
-  ROM_LOAD("micro_1.bin", 0x0000, 0x0800, CRC(4d6dc218) SHA1(745c553f3a42124f925ca8f2e52fd08d05999594))
-  ROM_LOAD("micro_2.bin", 0x0800, 0x0800, CRC(33cd226d) SHA1(d1dff8445a0f35da09d560a16038c969845ff21f))
-  ROM_LOAD("micro_3.bin", 0x1000, 0x0800, CRC(997bde74) SHA1(c3ea33f7afbdc7f2a22798a13ec323d7c6628dd4))
-  ROM_LOAD("micro_4.bin", 0x1800, 0x0800, CRC(a804e7d6) SHA1(f414d6a5308266744645849940c00cd422e920d2))
+  ROM_LOAD("micro_1.bin", 0x0000, 0x0800, CRC(62d04111) SHA1(f0ce705c06a43a81293d8610394ce7c4143148e9))
+  ROM_LOAD("micro_2.bin", 0x0800, 0x0800, CRC(832e4223) SHA1(1409b0c7de35012b9d0eba9bb73b52aecc93c0f2))
+  ROM_LOAD("micro_3.bin", 0x1000, 0x0800, CRC(9d5d04d1) SHA1(1af32c418b73ee457f06ee9a8362cfec75e61f30))
+  ROM_LOAD("micro_4.bin", 0x1800, 0x0800, CRC(358ffd6a) SHA1(f5299e39d991bf882f827a62a1d9bb18e46dbcfc))
 ROM_END
 CORE_GAMEDEFNV(pentacp2,"Pentacup (rev. 2)",1980,"Micropin",pentacp2,GAME_NOT_WORKING)
