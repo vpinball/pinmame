@@ -66,7 +66,7 @@ CORE_GAMEDEFNV(agsoccer,"A.G. Soccer-Ball (R18u)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(agsocc07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsocc07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
-ALVGS_SOUNDROM11(      "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+ALVGS_SOUNDROM11(      "ags_snd.v14",  CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
                        "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
 CORE_CLONEDEFNV(agsocc07,agsoccer,"A.G. Soccer-Ball (R07u)",1992,"Alvin G",mALVGS1,0)
@@ -83,7 +83,7 @@ CORE_CLONEDEFNV(agfootbl,agsoccer,"A.G. Football (R18u)",1993,"Alvin G",mALVGS1,
 
 INITGAME(agfoot07, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agfoot07, "ags_cpu_r07u", CRC(009ef717) SHA1(d770ce8fd032f4f1d96b9792509cceebbfaebbd9))
-ALVGS_SOUNDROM11(      "ags_snd.v14", CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
+ALVGS_SOUNDROM11(      "ags_snd.v14",  CRC(2544e468) SHA1(d49e2fc91cbb80fdf96f436c614c6f305efafb6f),
                        "ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
 CORE_CLONEDEFNV(agfoot07,agsoccer,"A.G. Football (R07u)",1992,"Alvin G",mALVGS1,0)
@@ -102,7 +102,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On a World Tour (R01c)",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On a World Tour (R01c)",1993,"Alvin G",mALVGS2DMD1,0) // release 03/30/93
 
 INITGAME(wrldtou2, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtou2,	"cpu02b.512", CRC(1658bf40) SHA1(7af9eedab4e7d0cedaf8bfdbc1f27b989a7171cd))
@@ -115,20 +115,22 @@ ALVGDMD_SPLIT_ROM(		"dot02b.512", CRC(50e3d59d) SHA1(db6df3482fc485af6bde341750b
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On a World Tour (R02b)",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On a World Tour (R02b)",1993,"Alvin G",mALVGS2DMD1,0) // beta 02/19/93
 
 INITGAME(wrldtou3, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
-ALVGROMSTART(wrldtou3,	"cpu03.512", CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
+ALVGROMSTART(wrldtou3,	"cpu03.512",  CRC(56dee967) SHA1(f7b1f69d96c72b0cf738bdf45701502f7306a4a0))
 ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
 						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
 						"samp_1.c21", CRC(621533c6) SHA1(ca0ed9e89c340cb3b08f9a9002af9997372c1cbf),
 						"samp_2.c21", CRC(454a5cca) SHA1(66b1a5832134365fd762fcba4cf4d666f60ebd65),
 						"samp_3.c21", CRC(1f4928f4) SHA1(9949ab96644984fab8037224f52ec28d7d7cc967))
-ALVGDMD_SPLIT_ROM(		"dot03.512", CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c9ed5c1770ca4),
+ALVGDMD_SPLIT_ROM(		"dot03.512",  CRC(f8a084bb) SHA1(30eb344ad96b5605693d3a7c703c9ed5c1770ca4),
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a)",1993,"Alvin G",mALVGS2DMD1,0)
+CORE_CLONEDEFNV(wrldtou3,wrldtour,"Al's Garage Band Goes On a World Tour (R06a Prototype)",1993,"Alvin G",mALVGS2DMD1,0) // alpha 02/05/93, supports an additional VUK/top lock at the end of the horseshoe ramp
+
+// even earlier alpha AG03/R01A 1/15/93 exists
 
 /*-------------------------------------------------------------------
 / U.S.A. Football
@@ -141,7 +143,7 @@ ALVG_ROMEND
 CORE_GAMEDEFNV(usafootb,"U.S.A. Football (R06u)",1993,"Alvin G",mALVGS1,0)
 
 INITGAME(usafoota, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
-ALVGROMSTART(usafoota,	"usa_cpu1.bin", CRC(3b64a6e9) SHA1(65535bc17395416181bafddc61c0fac177eeba2f))
+ALVGROMSTART(usafoota,	"usa_cpu1.bin",CRC(3b64a6e9) SHA1(65535bc17395416181bafddc61c0fac177eeba2f))
 ALVGS_SOUNDROM11(		"usa_snd.bin", CRC(9d509cbc) SHA1(0be629945b5102adf75e88661e0f956e32ca77da),
 						"usa_vox.bin", CRC(baae0aa3) SHA1(7933bffcf1509ceeea58a4449268c10c9fac554c))
 ALVG_ROMEND
@@ -169,7 +171,7 @@ ALVGS_SOUNDROM(			"mcastle.103", CRC(bd4849ac) SHA1(f477ea369539a65c0960be1f1c3b
 						"mcastle.sr1", CRC(3b5d76e0) SHA1(b2e1bca3c596eba89feda868fa56c71a6b22414c),
 						"mcastle.sr2", CRC(c3ffd277) SHA1(d16d1b22089b89bbf0db7d2b66c9745a56034322),
 						"mcastle.sr3", CRC(740858bb) SHA1(d2e9a0a178977dcc873368b042cea7052578df66))
-ALVGDMD_ROM("u4.bin", CRC(a6969efc) SHA1(82da976cb3d30d6fb1576e4c67febd7235f73f51),
+ALVGDMD_ROM(			"u4.bin", CRC(a6969efc) SHA1(82da976cb3d30d6fb1576e4c67febd7235f73f51),
 						"u5.bin", CRC(e5126980) SHA1(2c6d412c87bf27098dae4351958d84e8f9348423),
 						"u6.bin", CRC(eb241633) SHA1(8e5db75b32ed2ea74088615bbe1403d4c8feafbd))
 ALVG_ROMEND
@@ -192,7 +194,7 @@ ALVG_ROMEND
 CORE_GAMEDEFNV(pstlpkr,"Pistol Poker (R02)",1993,"Alvin G",mALVGS2DMD2,0)
 
 INITGAME2(pstlpkr1, DMD2, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
-ALVGROMSTART(pstlpkr1,	"u2-ddff.512", CRC(83fa0595) SHA1(d6ebb0e63fd964ccaee3979a7fc13b6adf7b837c))
+ALVGROMSTART(pstlpkr1,	"u2-ddff.512",  CRC(83fa0595) SHA1(d6ebb0e63fd964ccaee3979a7fc13b6adf7b837c))
 ALVGS_SOUNDROM(			"p_pu102.512" , CRC(b8fb806e) SHA1(c2dc19820ea22bbcf5808db2fb4be76a4033d6ea),
 						"p_parom0.c20", CRC(99986af2) SHA1(52fa7d2979f7f2d6d65ab6d4f7bbfbed16303991),
 						"p_parom1.c20", CRC(ae2af238) SHA1(221d3a0e3fb1daad261d723e873ef0727b88889e),
@@ -226,8 +228,8 @@ CORE_CLONEDEFNV(punchy3,punchy,"Punchy The Clown (R03)",1993,"Alvin G",mALVGS1,0
 /-------------------------------------------------------------------*/
 INITGAME(dinoeggs, alvg_alpha1, FLIP78, 3/*?*/, SNDBRD_ALVGS2, 0, 0)
 ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5eb2c1006769d3325c8b))
-ALVGS_SOUNDROM11(		"eps071.r02", CRC(288f116c) SHA1(5d03ce66bffe39ec02173525078ff07c5005ef18),
-						"eps072.r02", CRC(780a4364) SHA1(d8a972debee669f0fe66c7407fbed5ef9cd2ce01))
+ALVGS_SOUNDROM11(		"eps071.r02",   CRC(288f116c) SHA1(5d03ce66bffe39ec02173525078ff07c5005ef18),
+						"eps072.r02",   CRC(780a4364) SHA1(d8a972debee669f0fe66c7407fbed5ef9cd2ce01))
 ALVG_ROMEND
 CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs (R02)",1993,"Alvin G",mALVGS2,0)
 
