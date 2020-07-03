@@ -896,6 +896,14 @@ DE_ROMEND
 #define input_ports_lah input_ports_des11
 CORE_GAMEDEF(lah,112,"Last Action Hero (1.12)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lah_f104,"lahcpua.104",CRC(49b9e5e9) SHA1(cf6198e4c93ce839dc6e5231090d4ca56e9bdea2))
+DE_DMD32ROM8x(      "lahdispf.101",CRC(826a0a8b) SHA1(daad062edd8b6f468991d941e40d86711f8505df))
+DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
+                    "lahsnd.u17" ,CRC(d0c15fa6) SHA1(5dcd13b578fa53c82353cda5aa774ca216c5ddfe),
+                    "lahsnd.u21" ,CRC(4571dc2e) SHA1(a1068cb080c30dbc07d164eddfc5dfd0afd52d3b))
+DE_ROMEND
+CORE_CLONEDEF(lah,f104,112,"Last Action Hero (1.04 French)",1993,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(lah_l104,"lahcpua.104",CRC(49b9e5e9) SHA1(cf6198e4c93ce839dc6e5231090d4ca56e9bdea2))
 DE_DMD32ROM8x(      "lahdispl.102",CRC(3482c349) SHA1(8f03ba28132ea5159d3193b3adb7b4a6a43046c6))
 DE2S_SOUNDROM142(   "lahsnd.u7"  ,CRC(0279c45b) SHA1(14daf6b711d1936352209e90240f51812ebe76e0),
