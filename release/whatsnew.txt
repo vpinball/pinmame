@@ -36,6 +36,7 @@ Improve sound filtering of Flash Gordon, Xenon and all Williams/Bally DCS machin
 Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1983-85 era)
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
+Slightly improve YM2151 noise
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown
 New:
