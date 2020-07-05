@@ -191,8 +191,6 @@ typedef struct
 	*/
 	INT32		dt1_freq[8*32];			/* 8 DT1 levels, 32 KC values */
 
-	UINT32		noise_tab[32];			/* 17bit Noise Generator periods */
-
 	void (*irqhandler)(int irq);		/* IRQ function handler */
 	mem_write_handler porthandler;		/* port write function handler */
 
@@ -681,16 +679,6 @@ static void init_chip_tables(YM2151 *chip)
 		/* ASG 980324: changed to compute both tim_B_tab and timer_B_time */
 		chip->timer_B_time[i] = ( 1024 * (256-i)  / (double)chip->clock );
 	}
-
-	/* calculate noise periods table */
-	for (i=0; i<32; i++)
-	{
-		j = (i!=31 ? i : 30);				/* rate 30 and 31 are the same */
-		j = 32-j;
-		j = 65536 / (j*32);	/* number of samples per one shift of the shift register */
-		chip->noise_tab[i] = j * 64;
-		/*logerror("noise_tab[%02x]=%08x\n", i, chip->noise_tab[i]);*/
-	}
 }
 
 #define KEY_ON(op, key_set){									\
@@ -1021,7 +1009,7 @@ void YM2151WriteReg(int n, int r, int v)
 
 		case 0x0f:	/* noise mode enable, noise period */
 			chip->noise = v;
-			chip->noise_f = chip->noise_tab[ v & 0x1f ];
+			chip->noise_f = max(2u, 32u - (UINT32)(v & 0x1f)); /* rate 30 and 31 are the same */
 			break;
 
 		case 0x10:	/* timer A hi */
@@ -1547,9 +1535,9 @@ void YM2151ResetChip(int num)
 	chip->noise     = 0;
 	chip->noise_rng = 0;
 	chip->noise_p   = 0;
-	chip->noise_f   = chip->noise_tab[0];
+	chip->noise_f   = 32;
 
-	chip->csm_req	= 0;
+	chip->csm_req   = 0;
 	chip->status    = 0;
 
 	YM2151WriteReg(num, 0x1b, 0);	/* only because of CT1, CT2 output pins */
@@ -2088,15 +2076,13 @@ INLINE void advance(void)
 	*	Output of the register is negated (bit0 XOR bit3).
 	*	Simply use bit16 as the noise output.
 	*/
-	PSG->noise_p += PSG->noise_f;
-	i = (PSG->noise_p>>16);		/* number of events (shifts of the shift register) */
-	PSG->noise_p &= 0xffff;
-	while (i)
+	PSG->noise_p += 2; // 32 clock per noise (2 * sample rate)
+	while (PSG->noise_p >= PSG->noise_f)
 	{
 		UINT32 j;
 		j = ( (PSG->noise_rng ^ (PSG->noise_rng>>3) ) & 1) ^ 1;
 		PSG->noise_rng = (j<<16) | (PSG->noise_rng>>1);
-		i--;
+		PSG->noise_p -= PSG->noise_f;
 	}
 
 

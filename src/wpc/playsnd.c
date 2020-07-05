@@ -7,7 +7,7 @@
 #include "cpu/z80/z80.h"
 #include "machine/z80fmly.h"
 #include "sound/tms5220.h"
-#include "sound/msm5205.h"
+//#include "sound/msm5205.h"
 
 /*----------------
 /  Local variables
