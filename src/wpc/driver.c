@@ -529,6 +529,7 @@ DRIVER(gnr,300f)        //Data East MPU: 07/94 Guns N' Roses (3.00 French)
 DRIVER(gnr,300d)        //Data East MPU: 07/94 Guns N' Roses (3.00 Dutch)
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
+DRIVERNV(deleontest4)   //Data East MPU: ??/0? DE Leon Test Chip (version 4)
 
 // --------------------
 // FASCINATION INTERNATIONAL, INC.

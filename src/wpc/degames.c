@@ -1550,3 +1550,9 @@ DE_ROMSTARTx0(detest,"de_test.512",CRC(bade8ca8) SHA1(e7e9d6622b9c9b9381ba279329
 DE_ROMEND
 #define input_ports_detest input_ports_des11
 CORE_GAMEDEFNV(detest,"Data East Test Chip",1998,"Data East",de_mDEA,0)
+
+INITGAMES11(deleontest4, GEN_DE, de_NoOutput, FLIP1516, 0, 0, 0)
+DE_ROMSTARTx0(deleontest4,"deleon4.512",CRC(ca3018df) SHA1(f7bf29d3827b9be7ff088fc70fbd710ce6e54a60))
+DE_ROMEND
+#define input_ports_deleontest4 input_ports_des11
+CORE_GAMEDEFNV(deleontest4,"Data East Leon Test Chip (version 4)",200?,"Leon",de_mDEA,0) // 2005?
