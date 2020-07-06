@@ -17,6 +17,10 @@
 #include "state.h"
 #include "ym2151.h"
 
+#ifndef max
+#define max(x,y) ((x)>(y)?(x):(y))
+#endif
+
 /*#define LOG_CYM_FILE*/
 #ifdef LOG_CYM_FILE
 	FILE * cymfile = NULL;
