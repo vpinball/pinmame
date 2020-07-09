@@ -38,7 +38,7 @@ Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
 Slightly improve YM2151 noise
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari
 New:
 Data East: Michael Jordan 1.30
            Data East Leon Test Chip (version 4)
@@ -48,6 +48,12 @@ Regama: Trebol
 Sport Matic: Flashman
 
 Correct Dumps:
+Atari: Atarians, The (and bootleg) (using 07028 sound PROM)
+       Hercules (using 20967 sound PROM)
+       Road Runner (using 20967 sound PROM)
+       Space Riders (using 20967 sound PROM)
+       Superman (using 20967 sound PROM)
+       Time 2000 (using 07028 sound PROM)
 Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
        Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
 LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
