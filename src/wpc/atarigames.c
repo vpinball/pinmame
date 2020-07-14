@@ -64,7 +64,7 @@ ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
-/ The Atarians (working bootleg)
+/ The Atarians (working bootleg, one byte differs)
 /-------------------------------------------------------------------*/
 INITGAME1(atarianb, atari_disp1, FLIP_SWNO(36,37), 1, 0)
 ATARI_2_ROMSTART(atarianb,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
@@ -103,9 +103,18 @@ ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6A
 ATARI_ROMEND
 CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
 
-// pre-production/white main cabinet has different CPU PROMs & sound, too (020248-01) -> contact http://nuatari.com/ ??
+// pre-production / white main cabinet has different CPU PROMs
+// also a german CPU-PROMs variant exist (which seems to be the same as the pre-production according to nuatari?!)
 
-// also a german CPU-PROMs variant exist
+/*-------------------------------------------------------------------
+/ Middle Earth (pre-production and/or german)
+/-------------------------------------------------------------------*/
+INITGAME1(mideartp, atari_disp1, FLIPSW1920, 1, 2)
+ATARI_2_ROMSTART(mideartp,	"c.e0",	BAD_DUMP,
+							"c.e00",BAD_DUMP)
+ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) //!! correct? nuatari mentions a nonsense ROM (game PROM used in Airborne Avengers)
+ATARI_ROMEND
+CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Atari",gl_mATARI1A,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Space Riders (09/1978)
