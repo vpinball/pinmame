@@ -1,17 +1,16 @@
 YAML-CPP
 ========
-Library version: 0.2.5
+Library version: 0.6.3
 Library type: static
+Source: https://github.com/tomlogic/yaml-cpp/tree/enable-MSVC_RUNTIME_LIBRARY-target-property
+Commit: b86dc961c86c2a8d6ca9111cb08fa0c78d5ecf00
 
-Homepage: http://code.google.com/p/yaml-cpp/
-https://github.com/jbeder/yaml-cpp
+Homepage: https://github.com/jbeder/yaml-cpp
 
 Reason: P-ROC configuration via YAML files (like pypinproc)
 
 
 Visual C++:
 -----------
-Build with: Visual Studio 2003 SP1
+Build with: Visual Studio 2019
 Runtime: /MT
-
-Library does not build with VC++ before Visual Studio 2003 (e.g. VS2002, VS6).

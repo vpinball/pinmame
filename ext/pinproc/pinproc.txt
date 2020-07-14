@@ -1,15 +1,17 @@
 pinproc
 =======
-Library version: git branch "dev", commit 1a82212cb48eb20bb53f10377349f66c3708244b (2011-01-02)
+Library version: git branch "tomlogic/libpinproc/tree/remove-yaml-dependency",
+			commit 0c6d6fbef766b4ffddf85f3db17b80debe918722 (2020-06-26)
 Library type: static
 
-Homepage: http://www.pinballcontrollers.com/
+Code: https://github.com/preble/libpinproc
+Product Homepage: http://www.multimorphic.com/
 
 Reason: P-ROC support
 
 
 Visual C++:
 -----------
-Build with: Visual Studio 6.0 SP6
+Build with: Visual Studio 2019
 Runtime: /MT
-Specials: FTDI's DLL import lib ftd2xx.lib already linked in
+Specials: FTDI's DLL import lib ftd2xx.lib already linked in(?)
