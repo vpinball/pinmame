@@ -84,6 +84,261 @@ typedef int32_t PRResult; /**< See: #kPRSuccess and #kPRFailure. */
 typedef void * PRHandle;     /**< Opaque type used to reference an individual P-ROC device.  Created with PRCreate() and destroyed with PRDelete().  This value is used as the first parameter to all P-ROC API function calls. */
 #define kPRHandleInvalid (0) /**< Value returned by PRCreate() on failure.  Indicates an invalid #PRHandle. */
 
+#define P_ROC_INIT_PATTERN_A                                    0x801F1122
+#define P_ROC_INIT_PATTERN_B                                    0x345678AB
+#define P_ROC_CHIP_ID                                           0xfeedbeef
+#define P3_ROC_CHIP_ID                                          0xf33db33f
+
+#define P_ROC_VER_REV_FIXED_SWITCH_STATE_READS                  0x10013 // 1.19
+
+#define P_ROC_AUTO_STERN_DETECT_SHIFT                           8
+#define P_ROC_AUTO_STERN_DETECT_MASK                            0x00000100
+#define P_ROC_AUTO_STERN_DETECT_VALUE                           0x1
+#define P_ROC_MANUAL_STERN_DETECT_SHIFT                         0
+#define P_ROC_MANUAL_STERN_DETECT_MASK                          0x00000001
+#define P_ROC_MANUAL_STERN_DETECT_VALUE                         0x00000000
+#define P_ROC_BOARD_VERSION_SHIFT                               7
+#define P_ROC_BOARD_VERSION_MASK                                0x00000080
+
+#define P_ROC_ADDR_MASK                                         0x000FFFFF
+#define P_ROC_HEADER_LENGTH_MASK                                0x7FF00000
+#define P_ROC_COMMAND_MASK                                      0x80000000
+
+#define P_ROC_ADDR_SHIFT                                        0
+#define P_ROC_HEADER_LENGTH_SHIFT                               20
+#define P_ROC_COMMAND_SHIFT                                     31
+
+#define P_ROC_READ                                              0
+#define P_ROC_WRITE                                             1
+#define P_ROC_REQUESTED_DATA                                    0
+#define P_ROC_UNREQUESTED_DATA                                  1
+
+#define P_ROC_REG_ADDR_MASK                                     0x0000FFFF
+#define P_ROC_MODULE_SELECT_MASK                                0x000F0000
+
+#define P_ROC_REG_ADDR_SHIFT                                    0
+#define P_ROC_MODULE_SELECT_SHIFT                               16
+
+#define P_ROC_MANAGER_SELECT                                    0
+#define P_ROC_BUS_JTAG_SELECT                                   1
+#define P_ROC_BUS_SWITCH_CTRL_SELECT                            2
+#define P_ROC_BUS_DRIVER_CTRL_SELECT                            3
+#define P_ROC_BUS_STATE_CHANGE_PROC_SELECT                      4
+#define P_ROC_BUS_DMD_SELECT                                    5
+#define P_ROC_BUS_UNASSOCIATED_SELECT                           15
+
+#define P3_ROC_MANAGER_SELECT                                   0
+#define P3_ROC_BUS_SPI_SELECT                                   1
+#define P3_ROC_BUS_SWITCH_CTRL_SELECT                           2
+#define P3_ROC_BUS_DRIVER_CTRL_SELECT                           3
+#define P3_ROC_BUS_STATE_CHANGE_PROC_SELECT                     4
+#define P3_ROC_BUS_AUX_CTRL_SELECT                              5
+#define P3_ROC_BUS_ACCELEROMETER_SELECT                         6
+#define P3_ROC_BUS_I2C_SELECT                                   7
+#define P3_ROC_BUS_UNASSOCIATED_SELECT                          15
+
+#define P_ROC_REG_CHIP_ID_ADDR                                  0
+#define P_ROC_REG_VERSION_ADDR                                  1
+#define P_ROC_REG_WATCHDOG_ADDR                                 2
+#define P_ROC_REG_DIPSWITCH_ADDR                                3
+
+#define P_ROC_MANAGER_WATCHDOG_EXPIRED_SHIFT                    30
+#define P_ROC_MANAGER_WATCHDOG_ENABLE_SHIFT                     14
+#define P_ROC_MANAGER_WATCHDOG_RESET_TIME_SHIFT                 0
+#define P_ROC_MANAGER_REUSE_DMD_DATA_FOR_AUX_SHIFT              10
+#define P_ROC_MANAGER_INVERT_DIPSWITCH_1_SHIFT                  9
+
+#define P3_ROC_SPI_OPCODE_SHIFT                                 24
+
+#define P3_ROC_SPI_OPCODE_WR_ENABLE                             0
+#define P3_ROC_SPI_OPCODE_WR_DISABLE                            1
+#define P3_ROC_SPI_OPCODE_RD_ID                                 2
+#define P3_ROC_SPI_OPCODE_RD_STATUS                             3
+#define P3_ROC_SPI_OPCODE_WR_STATUS                             4
+#define P3_ROC_SPI_OPCODE_RD_DATA                               5
+#define P3_ROC_SPI_OPCODE_FRD_DATA                              6
+#define P3_ROC_SPI_OPCODE_PP                                    7
+#define P3_ROC_SPI_OPCODE_SECTOR_ERASE                          8
+#define P3_ROC_SPI_OPCODE_BULK_ERASE                            9
+#define P3_ROC_SPI_OPCODE_DEEP_POWERDN                          10
+#define P3_ROC_SPI_OPCODE_RELEASE                               11
+
+#define P_ROC_JTAG_SHIFT_EXIT_SHIFT                             16
+#define P_ROC_JTAG_SHIFT_NUM_BITS_SHIFT                         0
+
+#define P_ROC_JTAG_CMD_CHANGE_STATE                             0
+#define P_ROC_JTAG_CMD_SHIFT                                    1
+#define P_ROC_JTAG_CMD_TRANSITION                               2
+#define P_ROC_JTAG_CMD_SET_PORTS                                3
+
+#define P_ROC_JTAG_CMD_START_SHIFT                              31
+#define P_ROC_JTAG_CMD_OE_SHIFT                                 30
+#define P_ROC_JTAG_CMD_CMD_SHIFT                                24
+
+#define P_ROC_JTAG_TRANSITION_TCK_MASK_SHIFT                    6
+#define P_ROC_JTAG_TRANSITION_TDO_MASK_SHIFT                    5
+#define P_ROC_JTAG_TRANSITION_TMS_MASK_SHIFT                    4
+#define P_ROC_JTAG_TRANSITION_TCK_SHIFT                         2
+#define P_ROC_JTAG_TRANSITION_TDO_SHIFT                         1
+#define P_ROC_JTAG_TRANSITION_TMS_SHIFT                         0
+
+#define P_ROC_JTAG_STATUS_DONE_SHIFT                            31
+#define P_ROC_JTAG_STATUS_TDI_SHIFT                             16
+
+#define P_ROC_JTAG_COMMAND_REG_BASE_ADDR                        0x0
+#define P_ROC_JTAG_STATUS_REG_BASE_ADDR                         0x1
+#define P_ROC_JTAG_TDO_MEMORY_BASE_ADDR                         0x400
+#define P_ROC_JTAG_TDI_MEMORY_BASE_ADDR                         0x800
+
+#define P_ROC_SWITCH_CTRL_STATE_BASE_ADDR                       4
+#define P_ROC_SWITCH_CTRL_OLD_DEBOUNCE_BASE_ADDR                11
+#define P_ROC_SWITCH_CTRL_DEBOUNCE_BASE_ADDR                    12
+#define P3_ROC_SWITCH_CTRL_STATE_BASE_ADDR                      16
+#define P3_ROC_SWITCH_CTRL_DEBOUNCE_BASE_ADDR                   32
+
+#define P_ROC_EVENT_TYPE_SWITCH                                 0
+#define P_ROC_EVENT_TYPE_DMD                                    1
+#define P_ROC_EVENT_TYPE_BURST_SWITCH                           2
+#define P_ROC_EVENT_TYPE_ACCELEROMETER                          3
+
+#define P_ROC_V1_EVENT_TYPE_MASK                                0xC00
+#define P_ROC_V1_EVENT_TYPE_SHIFT                               10
+#define P_ROC_V2_EVENT_TYPE_MASK                                0xC000
+#define P_ROC_V2_EVENT_TYPE_SHIFT                               14
+
+#define P_ROC_V1_EVENT_SWITCH_NUM_MASK                          0xFF
+#define P_ROC_V2_EVENT_SWITCH_NUM_MASK                          0x7FF
+#define P_ROC_V1_EVENT_SWITCH_STATE_MASK                        0x100
+#define P_ROC_V2_EVENT_SWITCH_STATE_MASK                        0x1000
+#define P_ROC_V1_EVENT_SWITCH_STATE_SHIFT                       8
+#define P_ROC_V2_EVENT_SWITCH_STATE_SHIFT                       12
+#define P_ROC_V1_EVENT_SWITCH_DEBOUNCED_MASK                    0x200
+#define P_ROC_V2_EVENT_SWITCH_DEBOUNCED_MASK                    0x2000
+#define P_ROC_V1_EVENT_SWITCH_DEBOUNCED_SHIFT                   9
+#define P_ROC_V2_EVENT_SWITCH_DEBOUNCED_SHIFT                   13
+#define P_ROC_V1_EVENT_SWITCH_TIMESTAMP_MASK                    0xFFFFF000
+#define P_ROC_V1_EVENT_SWITCH_TIMESTAMP_SHIFT                   12
+#define P_ROC_V2_EVENT_SWITCH_TIMESTAMP_MASK                    0xFFFF0000
+#define P_ROC_V2_EVENT_SWITCH_TIMESTAMP_SHIFT                   16
+#define P_ROC_V2_EVENT_ACCEL_TIMESTAMP_MASK                     0xFFFC0000
+#define P_ROC_V2_EVENT_ACCEL_TIMESTAMP_SHIFT                    18
+
+
+#define P_ROC_DRIVER_CTRL_DECODE_SHIFT                          10
+#define P_ROC_DRIVER_CTRL_REG_DECODE                            0
+#define P_ROC_DRIVER_CONFIG_TABLE_DECODE                        1
+#define P_ROC_DRIVER_AUX_MEM_DECODE                             2
+#define P_ROC_DRIVER_CATCHALL_DECODE                            3
+
+#define P_ROC_DRIVER_GLOBAL_ENABLE_DIRECT_OUTPUTS_SHIFT         31
+#define P_ROC_DRIVER_GLOBAL_GLOBAL_POLARITY_SHIFT               30
+#define P_ROC_DRIVER_GLOBAL_USE_CLEAR_SHIFT                     28
+#define P_ROC_DRIVER_GLOBAL_STROBE_START_SELECT_SHIFT           27
+#define P_ROC_DRIVER_GLOBAL_START_STROBE_TIME_SHIFT             20
+#define P_ROC_DRIVER_GLOBAL_START_STROBE_TIME_MASK              0x07F00000
+#define P_ROC_DRIVER_GLOBAL_MATRIX_ROW_ENABLE_INDEX_1_SHIFT     16
+#define P_ROC_DRIVER_GLOBAL_MATRIX_ROW_ENABLE_INDEX_1_MASK      0x000F0000
+#define P_ROC_DRIVER_GLOBAL_MATRIX_ROW_ENABLE_INDEX_0_SHIFT     12
+#define P_ROC_DRIVER_GLOBAL_MATRIX_ROW_ENABLE_INDEX_0_MASK      0x0000F000
+#define P_ROC_DRIVER_GLOBAL_ACTIVE_LOW_MATRIX_ROWS_SHIFT        11
+#define P_ROC_DRIVER_GLOBAL_ENCODE_ENABLES_SHIFT                10
+#define P_ROC_DRIVER_GLOBAL_TICKLE_WATCHDOG_SHIFT               9
+
+#define P_ROC_DRIVER_GROUP_SLOW_TIME_SHIFT                      12
+#define P_ROC_DRIVER_GROUP_DISABLE_STROBE_AFTER_SHIFT           11
+#define P_ROC_DRIVER_GROUP_ENABLE_INDEX_SHIFT                   7
+#define P_ROC_DRIVER_GROUP_ROW_ACTIVATE_INDEX_SHIFT             4
+#define P_ROC_DRIVER_GROUP_ROW_ENABLE_SELECT_SHIFT              3
+#define P_ROC_DRIVER_GROUP_MATRIXED_SHIFT                       2
+#define P_ROC_DRIVER_GROUP_POLARITY_SHIFT                       1
+#define P_ROC_DRIVER_GROUP_ACTIVE_SHIFT                         0
+
+#define P_ROC_DRIVER_CONFIG_OUTPUT_DRIVE_TIME_SHIFT             0
+#define P_ROC_DRIVER_CONFIG_POLARITY_SHIFT                      8
+#define P_ROC_DRIVER_CONFIG_STATE_SHIFT                         9
+#define P_ROC_DRIVER_CONFIG_UPDATE_SHIFT                        10
+#define P_ROC_DRIVER_CONFIG_WAIT_4_1ST_SLOT_SHIFT               11
+#define P_ROC_DRIVER_CONFIG_TIMESLOT_SHIFT                      16
+#define P_ROC_DRIVER_CONFIG_PATTER_ON_TIME_SHIFT                16
+#define P_ROC_DRIVER_CONFIG_PATTER_OFF_TIME_SHIFT               23
+#define P_ROC_DRIVER_CONFIG_PATTER_ENABLE_SHIFT                 30
+#define P_ROC_DRIVER_CONFIG_FUTURE_ENABLE_SHIFT                 31
+
+#define P_ROC_DRIVER_CONFIG_TABLE_DRIVER_NUM_SHIFT              1
+
+#define P_ROC_DRIVER_AUX_ENTRY_ACTIVE_SHIFT                     31
+#define P_ROC_DRIVER_AUX_OUTPUT_DELAY_SHIFT                     20
+#define P_ROC_DRIVER_AUX_OUTPUT_DELAY_MASK                      0x7ff
+#define P_ROC_DRIVER_AUX_MUX_ENABLES_SHIFT                      19
+#define P_ROC_DRIVER_AUX_COMMAND_SHIFT                          16
+#define P_ROC_DRIVER_AUX_COMMAND_MASK                           0x3
+#define P_ROC_DRIVER_AUX_ENABLES_SHIFT                          12
+#define P_ROC_DRIVER_AUX_ENABLES_MASK                           0xF
+#define P_ROC_DRIVER_AUX_EXTRA_DATA_SHIFT                       8
+#define P_ROC_DRIVER_AUX_EXTRA_DATA_MASK                        0xF
+#define P_ROC_DRIVER_AUX_DATA_SHIFT                             0
+#define P_ROC_DRIVER_AUX_DATA_MASK                              0xFF
+#define P_ROC_DRIVER_AUX_DELAY_TIME_SHIFT                       0
+#define P_ROC_DRIVER_AUX_DELAY_TIME_MASK                        0x3FFF
+#define P_ROC_DRIVER_AUX_JUMP_ADDR_SHIFT                        0
+#define P_ROC_DRIVER_AUX_JUMP_ADDR_MASK                         0xFF
+
+#define P_ROC_DRIVER_AUX_CMD_OUTPUT                             2
+#define P_ROC_DRIVER_AUX_CMD_DELAY                              1
+#define P_ROC_DRIVER_AUX_CMD_JUMP                               0
+
+#define P_ROC_SWITCH_CONFIG_CLEAR_SHIFT                         31
+#define P_ROC_SWITCH_CONFIG_USE_COLUMN_9                        30
+#define P_ROC_SWITCH_CONFIG_USE_COLUMN_8                        29
+#define P_ROC_SWITCH_CONFIG_MS_PER_DM_SCAN_LOOP_SHIFT           24
+#define P_ROC_SWITCH_CONFIG_PULSES_BEFORE_CHECKING_RX_SHIFT     18
+#define P_ROC_SWITCH_CONFIG_INACTIVE_PULSES_AFTER_BURST_SHIFT   12
+#define P_ROC_SWITCH_CONFIG_PULSES_PER_BURST_SHIFT              6
+#define P_ROC_SWITCH_CONFIG_MS_PER_PULSE_HALF_PERIOD_SHIFT      0
+
+#define P_ROC_SWITCH_RULE_DRIVE_OUTPUTS_NOW                     13
+#define P_ROC_SWITCH_RULE_NUM_DEBOUNCE_SHIFT                    9
+#define P_ROC_SWITCH_RULE_NUM_STATE_SHIFT                       8
+#define P_ROC_SWITCH_RULE_NUM_SWITCH_NUM_SHIFT                  0
+#define P_ROC_SWITCH_RULE_NUM_TO_ADDR_SHIFT                     2
+
+#define P_ROC_SWITCH_RULE_RELOAD_ACTIVE_SHIFT                   31
+#define P_ROC_SWITCH_RULE_NOTIFY_HOST_SHIFT                     23
+#define P_ROC_SWITCH_RULE_LINK_ACTIVE_SHIFT                     10
+#define P_ROC_SWITCH_RULE_LINK_ADDRESS_SHIFT                    11
+#define P_ROC_SWITCH_RULE_CHANGE_OUTPUT_SHIFT                   9
+#define P_ROC_SWITCH_RULE_DRIVER_NUM_SHIFT                      0
+
+#define P_ROC_STATE_CHANGE_CONFIG_ADDR                          0x1000
+
+#define P_ROC_DMD_NUM_COLUMNS_SHIFT                             0
+#define P_ROC_DMD_NUM_ROWS_SHIFT                                8
+#define P_ROC_DMD_NUM_SUB_FRAMES_SHIFT                          16
+#define P_ROC_DMD_NUM_FRAME_BUFFERS_SHIFT                       24
+#define P_ROC_DMD_AUTO_INC_WR_POINTER_SHIFT                     29
+#define P_ROC_DMD_ENABLE_FRAME_EVENTS_SHIFT                     30
+#define P_ROC_DMD_ENABLE_SHIFT                                  31
+
+#define P_ROC_DMD_DOTCLK_HALF_PERIOD_SHIFT                      0
+#define P_ROC_DMD_DE_HIGH_CYCLES_SHIFT                          6
+#define P_ROC_DMD_LATCH_HIGH_CYCLES_SHIFT                       16
+#define P_ROC_DMD_RCLK_LOW_CYCLES_SHIFT                         24
+
+#define P_ROC_DMD_DOT_TABLE_BASE_ADDR                           0x1000
+
+#define P_ROC_DRIVER_PDB_ADDR                                   0xC00
+#define P_ROC_DRIVER_PDB_COMMAND_SHIFT                          24
+#define P_ROC_DRIVER_PDB_BOARD_ADDR_SHIFT                       16
+#define P_ROC_DRIVER_PDB_REGISTER_SHIFT                         8
+#define P_ROC_DRIVER_PDB_DATA_SHIFT                             0
+#define P_ROC_DRIVER_PDB_READ_COMMAND                           0x00
+#define P_ROC_DRIVER_PDB_WRITE_COMMAND                          0x01
+#define P_ROC_DRIVER_PDB_CLEAR_ALL_COMMAND                      0x07
+#define P_ROC_DRIVER_PDB_BROADCAST_ADDR                         0x3F
+
+#define p_ROC_DRIVER_PDB_REGISTER_BANK_A                        0
+#define p_ROC_DRIVER_PDB_REGISTER_BANK_B                        1
+
 typedef enum PRLogLevel {
     kPRLogVerbose,
     kPRLogInfo,
@@ -111,7 +366,7 @@ typedef enum PRMachineType {
     kPRMachineWPC95 = 4,
     kPRMachineSternWhitestar = 5,
     kPRMachineSternSAM = 6,
-    kPRMachinePDB = 7,
+    kPRMachinePDB = 7,                  // PinballControllers.com Driver Boards
 } PRMachineType;
 
 // PRHandle Creation and Deletion
@@ -137,6 +392,9 @@ PINPROC_API PRResult PRFlushWriteData(PRHandle handle);
 
 /** Write data out to the P-ROC immediately (does not require a call to PRFlushWriteData). */
 PINPROC_API PRResult PRWriteData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numWriteWords, uint32_t * writeBuffer);
+
+/** Write data buffered to P-ROC (does require a call to PRFlushWriteData). */
+PINPROC_API PRResult PRWriteDataUnbuffered(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numWriteWords, uint32_t * writeBuffer);
 
 /** Read data from the P-ROC. */
 PINPROC_API PRResult PRReadData(PRHandle handle, uint32_t moduleSelect, uint32_t startingAddr, int32_t numReadWords, uint32_t * readBuffer);
@@ -376,6 +634,12 @@ typedef enum PREventType {
     kPREventTypeSwitchClosedNondebounced = 3, /**< The switch has gone from open to closed and the signal has not been debounced. */
     kPREventTypeSwitchOpenNondebounced   = 4, /**< The switch has gone from closed to open and the signal has not been debounced. */
     kPREventTypeDMDFrameDisplayed        = 5, /**< A DMD frame has been displayed. */
+    kPREventTypeBurstSwitchOpen          = 6, /**< A burst switch has gone from closed to open. */
+    kPREventTypeBurstSwitchClosed        = 7, /**< A burst switch has gone from open to closed. */
+    kPREventTypeAccelerometerX           = 8, /**< New value from the accelerometer - X plane. */
+    kPREventTypeAccelerometerY           = 9, /**< New value from the accelerometer - Y plane. */
+    kPREventTypeAccelerometerZ           = 10, /**< New value from the accelerometer - Z plane. */
+    kPREventTypeAccelerometerIRQ         = 11, /**< New interrupt from the accelerometer */
     kPREventTypetLast = kPREventTypeSwitchOpenNondebounced
 } PREventType;
 
@@ -537,7 +801,47 @@ PINPROC_API PRResult PRJTAGReadTDIMemory(PRHandle handle, uint16_t tableOffset, 
 /** Read the JTAG status register for the command complete bit and JTAG pin states. */
 PINPROC_API PRResult PRJTAGGetStatus(PRHandle handle, PRJTAGStatus * status);
 
-/** @} */ // End of DMD
+/** @} */ // End of JTAG
+
+// PD-LED
+
+/**
+ * @defgroup pdled PD-LED Control
+ * @{
+ */
+
+
+typedef struct PRLED {
+    uint8_t boardAddr;
+    uint8_t LEDIndex;
+} PRLED;
+
+typedef struct PRLEDRGB {
+    PRLED* pRedLED;
+    PRLED* pGreenLED;
+    PRLED* pBlueLED;
+} PRLEDRGB;
+
+/** Sets the color of a given PRLED. */
+PINPROC_API PRResult PRLEDColor(PRHandle handle, PRLED * pLED, uint8_t color);
+/** Sets the fade color on a given PRLED. */
+PINPROC_API PRResult PRLEDFadeColor(PRHandle handle, PRLED * pLED, uint8_t fadeColor);
+/** Sets the fade color and rate on a given PRLED. Note: The rate will apply to any future PRLEDFadeColor or PRLEDRGBFadeColor calls on the same PD-LED board. */
+PINPROC_API PRResult PRLEDFade(PRHandle handle, PRLED * pLED, uint8_t fadeColor, uint16_t fadeRate);
+
+/** Sets the fade rate on a given board.  Note: The rate will apply to any future PRLEDFadeColor or PRLEDRGBFadeColor calls on the same PD-LED board. */
+PINPROC_API PRResult PRLEDFadeRate(PRHandle handle, uint8_t boardAddr, uint16_t fadeRate);
+
+/** Sets the color of a given PRLEDRGB. */
+PINPROC_API PRResult PRLEDRGBColor(PRHandle handle, PRLEDRGB * pLED, uint32_t color);
+/** Sets the fade color and rate on a given PRLEDRGB.  Note: The rate will apply to any future PRLEDFadeColor or PRLEDRGBFadeColor calls on any of the referenced PD-LED boards. */
+PINPROC_API PRResult PRLEDRGBFade(PRHandle handle, PRLEDRGB * pLED, uint32_t fadeColor, uint16_t fadeRate);
+/** Sets the fade color on a given PRLEDRGB. */
+PINPROC_API PRResult PRLEDRGBFadeColor(PRHandle handle, PRLEDRGB * pLED, uint32_t fadeColor);
+
+
+/** @} */ // End of PD-LED
+
 
 /** @cond */
 PINPROC_EXTERN_C_END
