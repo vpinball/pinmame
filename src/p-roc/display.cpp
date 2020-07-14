@@ -6,10 +6,6 @@ extern "C" {
 }
 #include "p-roc.h"
 
-// Handle to proc instance
-extern PRHandle proc;
-extern PRMachineType machineType;
-
 // Buffer to hold the next full DMD frame to send to the P-ROC
 UINT8 procdmd[PROC_NUM_DMD_FRAMES][0x200];
 

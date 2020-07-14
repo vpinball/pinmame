@@ -1,5 +1,10 @@
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 
+#if _MSC_VER >= 1700 && defined(inline)
+// C++ doesn't allow defining inline as a macro
+#undef inline
+#endif
+
 #include <stdarg.h>
 
 extern "C" {
@@ -54,14 +59,9 @@ PRMachineType procLoadMachineYAML(char *filename) {
 			fprintf(stderr, "YAML file not found: %s\n", filename);
 			return kPRMachineInvalid;
 		}
-		YAML::Parser parser(fin);
-
-		while(parser) {
-				parser.GetNextDocument(yamlDoc);
-		}
+		yamlDoc = YAML::Load(fin);
                 
-		std::string machineTypeString;
-		yamlDoc["PRGame"]["machineType"] >> machineTypeString;
+		std::string machineTypeString = yamlDoc["PRGame"]["machineType"].as<std::string>();
 		if (machineTypeString == "wpc") {
 			machineType = kPRMachineWPC;
 			fprintf(stderr, "YAML machine type: kPRMachineWPC\n");
@@ -167,7 +167,7 @@ std::string procGetYamlPinmameSettingString(const char *key, const char *default
     std::string retval;
 
     try {
-       yamlDoc["PRPinmame"][key] >> retval;
+       retval = yamlDoc["PRPinmame"][key].as<std::string>();
     }
     catch (...) {
         retval = defaultValue;
@@ -180,7 +180,7 @@ int procGetYamlPinmameSettingInt(const char *key, int defaultValue) {
     int retval;
 
     try {
-       yamlDoc["PRPinmame"][key] >> retval;
+       retval = yamlDoc["PRPinmame"][key].as<int>();
     }
     catch (...) {
         // Not defined in YAML or not numeric
@@ -204,12 +204,12 @@ int procKeyboardWanted(void) {
 void procCheckQuitMethod(void) {
     std::string exitButtonName, numStr;
     exitButtonName = procGetYamlPinmameSettingString("exitButton", "startButton");
-    if (yamlDoc[kSwitchesSection].FindValue(exitButtonName)) {
-        yamlDoc[kSwitchesSection][exitButtonName][kNumberField] >> numStr;
+    if (yamlDoc[kSwitchesSection][exitButtonName]) {
+        numStr = yamlDoc[kSwitchesSection][exitButtonName][kNumberField].as<std::string>();
         exitButton = PRDecode(machineType, numStr.c_str());
         exitButtonHoldTime = procGetYamlPinmameSettingInt("exitButtonHoldTime", 0);
         if (exitButtonHoldTime > 0)
-            printf("\nHold %s (%d) for %dms to quit.\n", exitButtonName.c_str(), exitButton, exitButtonHoldTime);
+            printf("Hold %s (%d) for %dms to quit.\n", exitButtonName.c_str(), exitButton, exitButtonHoldTime);
     }
 }
 
@@ -218,7 +218,7 @@ void procCheckQuitMethod(void) {
 void setPatterDetection(void) {
     autoPatterDetection = (procGetYamlPinmameSettingString("autoPatterDetection", "on") == "on");
     
-    printf("\nAutomatic patter detection : %s\n", autoPatterDetection ? "Enabled" : "Disabled");
+    printf("Automatic patter detection : %s\n", autoPatterDetection ? "Enabled" : "Disabled");
     
 }
 
@@ -228,7 +228,7 @@ void procCheckArduinoRGB(void) {
     std::string port;
 
     try {
-        yamlDoc["PRGame"]["arduino"] >> port;
+        port = yamlDoc["PRGame"]["arduino"].as<std::string>();
     }
     catch (...) {
         port = "none";
@@ -239,7 +239,7 @@ void procCheckArduinoRGB(void) {
         isArduino = true;
         strcpy(arduinoPort, port.c_str());
         procConfigureRGBLamps();
-        printf("\nArduino enabled for RGB control on port %s",arduinoPort);
+        printf("Arduino enabled for RGB control on port %s\n", arduinoPort);
     }
 }
 
@@ -269,10 +269,10 @@ void procClearAuxMemory(void) {
 
 // Initialize the P-ROC hardware.
 int procInitialize(char *yaml_filename) {
-	fprintf(stderr, "\n\n****** Initializing P-ROC with %s\n", yaml_filename);
-        setMachineType(yaml_filename);
-        setPatterDetection();
-        
+	fprintf(stderr, "\n****** Initializing P-ROC with %s\n", yaml_filename);
+	setMachineType(yaml_filename);
+	setPatterDetection();
+
 	if (machineType != kPRMachineInvalid) {
 		proc = PRCreate(machineType);
 		if (proc == kPRHandleInvalid) {

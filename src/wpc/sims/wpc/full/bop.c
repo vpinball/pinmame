@@ -790,7 +790,9 @@ static void init_bop(void) {
   HC4094_oe_w(1, 1);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = bop_wpc_proc_solenoid_handler;
-  // clock on C26, data on C25
-  proc_shiftRegInit(25 + 40, 24 + 40);
+  if (coreGlobals.p_rocEn) {
+    // clock on C26, data on C25
+    proc_shiftRegInit(25 + 40, 24 + 40);
+  }
 #endif
 }

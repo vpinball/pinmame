@@ -339,7 +339,7 @@ static REG_OPTION global_game_options[] =
         {"rompath",            RO_STRING,  &settings.romdirs,          0, 0},
         {"samplepath",         RO_STRING,  &settings.sampledirs,       0, 0},
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-	{"procpath",           RO_STRING,  &settings.procdirs,         0, 0},
+        {"procpath",           RO_STRING,  &settings.procdirs,         0, 0},
 #endif /* PINMAME && PROC_SUPPORT */
         {"inipath",            RO_STRING,  &settings.inidir,           0, 0},
         {"cfg_directory",      RO_STRING,  &settings.cfgdir,           0, 0},
@@ -849,7 +849,7 @@ BOOL OptionsInit()
         set_pathlist(FILETYPE_ROM,_strdup(settings.romdirs));
         set_pathlist(FILETYPE_SAMPLE,_strdup(settings.sampledirs));
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-	set_pathlist(FILETYPE_PROC,_strdup(settings.procdirs));
+        set_pathlist(FILETYPE_PROC,_strdup(settings.procdirs));
 #endif /* PINMAME && PROC_SUPPORT */
 #ifdef MESS
         set_pathlist(FILETYPE_CRC,_strdup(settings.crcdir));

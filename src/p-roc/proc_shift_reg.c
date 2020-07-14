@@ -73,7 +73,7 @@ void proc_shiftRegEnqueue(int bit) {
     shr.bit -= 32;
   }
   if (bit)
-    shr.queue |= (1UL << shr.bit);
+    shr.queue |= ((UINT64)1 << shr.bit);
   ++shr.bit;
   
   if (!shr.timerEnabled) {

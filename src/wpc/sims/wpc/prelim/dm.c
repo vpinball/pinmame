@@ -7,7 +7,7 @@
  Read PZ.c or FH.c if you like more help.
 
  031003 Tom: added support for flashers 37-44 (51-58)
-
+ 2020-07: Tom Collins: complete shots, lamp layout and elevator/claw simulation
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -15,13 +15,20 @@
   --------------------------------------
     +I  L/R Inlane
     +O  L/R Outlane
-    +J  Jet Bumpers
     +-  L/R Slingshot
-     -  Top Slingshot
+    +R  L/R Ramp
+    +L  L/R Loop
      Q  SDTM (Drain Ball)
-
-   More to be added...
-
+     W  Car Crash
+     E  Eyeball/Retina Scan
+     R  Retina Eject Saucer
+     T  Side Ramp
+     Y  Center Ramp
+     U  Underground (Computer)
+   HJK  Jet (3)
+ ZXCVB  Freeze Standup (5)
+   M,.  M-T-L lanes (Bonus X)
+    []  Left/Right Handle Thumb Buttons
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -34,6 +41,8 @@
 /  Local functions
 /-------------------*/
 static int  dm_handleBallState(sim_tBallStatus *ball, int *inports);
+static void dm_handleMech(int mech);
+static void dm_drawMech(BMTYPE **line);
 static void dm_drawStatic(BMTYPE **line);
 static void init_dm(void);
 static int dm_getSol(int solNo);
@@ -41,10 +50,23 @@ static int dm_getSol(int solNo);
 /*-----------------------
   local static variables
  ------------------------*/
-/* Uncomment if you wish to use locals. type variables */
-//static struct {
-//  int
-//} locals;
+#define DM_ELEVATOR_TIME      80
+#define DM_CLAW_SLOT          18
+#define DM_CLAW_MAX           (6 * DM_CLAW_SLOT - 1)
+// value from 0 to 6 indicating where the ball will drop
+#define DM_CLAW_DROP_INDEX    (locals.clawPos / DM_CLAW_SLOT)
+const char *dm_claw_drop[] = {
+  "Elevator", "Simon", "Jets", "Prison", "Freeze", "Acmag"
+};
+static struct {
+  int elevatorPos;    /* Elevator Position, 0 for lowest, DM_ELEVATOR_TIME for highest */
+  int clawPos;        /* Claw Position, 0 for rightmost, DM_CLAW_MAX for leftmost */
+  int clawDirection;  /* Claw Direction +1 for left, -1 for right, 0 for stopped */
+  enum { NORMAL = 0, CRYOCLAW } diverterPos;
+  int ballInElevator;
+  int diverterCount;  /* cycles of dm_handleMech where sDiverterHold not asserted */
+  int magnetCount;    /* if 0, magnet not asserted */
+} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -52,39 +74,37 @@ static int dm_getSol(int solNo);
 WPC_INPUT_PORTS_START(dm,5)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
-    COREPORT_BIT(0x0004,"",		        KEYCODE_R)
-    COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
-    COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
-    COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)
-    COREPORT_BIT(0x0040,"L/R Jet",		KEYCODE_J)
-    COREPORT_BIT(0x0080,"Top Slingshot",		KEYCODE_MINUS)
-    COREPORT_BIT(0x0100,"",			KEYCODE_T)
-    COREPORT_BIT(0x0200,"",			KEYCODE_Y)
-    COREPORT_BIT(0x0400,"",			KEYCODE_U)
-    COREPORT_BIT(0x0800,"",			KEYCODE_I)
-    COREPORT_BIT(0x1000,"",			KEYCODE_O)
-    COREPORT_BIT(0x2000,"",			KEYCODE_A)
-    COREPORT_BIT(0x4000,"",			KEYCODE_S)
-    COREPORT_BIT(0x8000,"Drain",			KEYCODE_Q)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RCONTROL)
+    COREPORT_BITIMP(0x0004,"L/R Ramp",        KEYCODE_R)
+    COREPORT_BITIMP(0x0008,"L/R Outlane",     KEYCODE_O)
+    COREPORT_BITIMP(0x0010,"L/R Loop",        KEYCODE_L)
+    COREPORT_BITIMP(0x0040,"L/R Slingshot",   KEYCODE_MINUS)
+    COREPORT_BITIMP(0x0080,"L/R Inlane",      KEYCODE_I)
+
+    COREPORT_BITIMP(0x0100,"Standup 1",       KEYCODE_Z)
+    COREPORT_BITIMP(0x0200,"Standup 2",       KEYCODE_X)
+    COREPORT_BITIMP(0x0400,"Standup 3",       KEYCODE_C)
+    COREPORT_BITIMP(0x0800,"Standup 4",       KEYCODE_V)
+    COREPORT_BITIMP(0x1000,"Standup 5",       KEYCODE_B)
+    COREPORT_BITIMP(0x2000,"Jet 1",           KEYCODE_H)
+    COREPORT_BITIMP(0x4000,"Jet 2",           KEYCODE_J)
+    COREPORT_BITIMP(0x8000,"Jet 3",           KEYCODE_K)
 
   PORT_START /* 1 */
-    COREPORT_BIT(0x0001,"",			KEYCODE_D)
-    COREPORT_BIT(0x0002,"",			KEYCODE_F)
-    COREPORT_BIT(0x0004,"",			KEYCODE_G)
-    COREPORT_BIT(0x0008,"",			KEYCODE_H)
-    COREPORT_BIT(0x0010,"",			KEYCODE_J)
-    COREPORT_BIT(0x0020,"",			KEYCODE_K)
-    COREPORT_BIT(0x0040,"",			KEYCODE_L)
-    COREPORT_BIT(0x0080,"",			KEYCODE_Z)
-    COREPORT_BIT(0x0100,"",			KEYCODE_X)
-    COREPORT_BIT(0x0200,"",			KEYCODE_C)
-    COREPORT_BIT(0x0400,"",			KEYCODE_V)
-    COREPORT_BIT(0x0800,"",			KEYCODE_B)
-    COREPORT_BIT(0x1000,"",			KEYCODE_N)
-    COREPORT_BIT(0x2000,"",			KEYCODE_M)
-    COREPORT_BIT(0x4000,"",			KEYCODE_COMMA)
+    COREPORT_BIT(   0x0001,"Eyeball",         KEYCODE_E)
+    COREPORT_BIT(   0x0002,"Retina Eject",    KEYCODE_R)
+    COREPORT_BIT(   0x0004,"Car Crash",       KEYCODE_W)
+    COREPORT_BIT(   0x0008,"Center Ramp",     KEYCODE_Y)
+    COREPORT_BIT(   0x0010,"Underground",     KEYCODE_U)
+    COREPORT_BIT(   0x0020,"Side Ramp",       KEYCODE_T)
+    COREPORT_BIT(   0x0100,"Left Thumb",      KEYCODE_OPENBRACE)
+    COREPORT_BIT(   0x0200,"Right Thumb",     KEYCODE_CLOSEBRACE)
+    COREPORT_BIT(   0x0800,"Buy-In",          KEYCODE_2)
+    COREPORT_BITIMP(0x1000,"M Lane",          KEYCODE_M)
+    COREPORT_BITIMP(0x2000,"T Lane",          KEYCODE_COMMA)
+    COREPORT_BITIMP(0x4000,"L Lane",          KEYCODE_STOP)
+    COREPORT_BITIMP(0x8000,"Drain",           KEYCODE_Q)
 
 WPC_INPUT_PORTS_END
 
@@ -92,160 +112,331 @@ WPC_INPUT_PORTS_END
 / Switch definitions
 /--------------------*/
 /* Standard Switches */
-#define swStart      	13
-#define swTilt       	14
-#define swSlamTilt	21
-#define swCoinDoor	22
-#define swTicket     	23
+#define swLaunch        11
+#define swLeftHandle    12
+#define swStart         13
+#define swTilt          14
+#define swLeftOutlane   15
+#define swLeftInlane    16
+#define swRightInlane   17
+#define swRightOutlane  18
 
-/* Other switches */
-#define swLaunch	11
-#define swLeftOutlane	15
-#define swLeftInlane	16
-#define swRightInlane	17
-#define swRightOutlane	18
-#define swShooter	27
-#define swTrough1	31
-#define swTrough2	32
-#define swTrough3	33
-#define swTrough4	34
-#define swTrough5	35
-#define swTroughJam	36
-#define swLeftSling	41
-#define swRightSling	42
-#define swLeftJet	43
-#define swTopSling	44
-#define swRightJet	45
+#define swSlamTilt      21
+#define swCoinDoor      22
+#define swBuyIn         23
+#define swAlwaysClosed  24
+#define swClawPosRight  25  /* Opto */
+#define swClawPosLeft   26  /* Opto */
+#define swShooter       27
+/* Switch 28 not used */
+
+#define swTrough1       31  /* Opto */
+#define swTrough2       32  /* Opto */
+#define swTrough3       33  /* Opto */
+#define swTrough4       34  /* Opto */
+#define swTrough5       35  /* Opto */
+#define swTroughJam     36  /* Opto */
+/* Switch 37 not used */
+#define swStandup5      38
+
+#define swLeftSling     41
+#define swRightSling    42
+#define swLeftJet       43
+#define swTopSling      44
+#define swRightJet      45
+#define swRRampEnter    46
+#define swRRampExit     47
+#define swLoopRight     48
+
+#define swLRampEnter    51
+#define swLRampExit     52
+#define swCenterRamp    53
+#define swUpperRebound  54
+#define swLoopCenter    55  /* in manual as Left Loop */
+#define swStandup2      56
+#define swStandup3      57
+#define swStandup4      58
+
+#define swSRampEnter    61
+#define swSRampExit     62
+#define swRolloverM     63
+#define swRolloverT     64
+#define swRolloverL     65
+#define swRetinaEject   66
+#define swElevatorIndex 67  /* Opto */
+/* Switch 68 not used */
+
+#define swCarChase1     71  /* Opto */
+#define swCarChase2     72  /* Opto */
+#define swTopPopper     73  /* Opto */
+#define swElevatorHold  74  /* Opto */
+#define swElevatorRamp  75
+#define swBottomPopper  76  /* Opto */
+#define swEyeball       77
+#define swStandup1      78
+
+#define swClawSimon     81
+#define swClawJets      82
+#define swClawPrison    83
+#define swClawFreeze    84
+#define swClawAcmag     85
+#define swLoopLeft      86  /* in manual as Upper Left Flipper Gate */
+#define swCarChase3     87
+#define swLowerRebound  88
 
 /*---------------------
 / Solenoid definitions
 /----------------------*/
-#define sTrough		1
-#define sLaunch		3
-#define sKnocker	7
-#define sLeftSling	9
-#define sRightSling	10
-#define sLeftJet	11
-#define sTopSling	12
-#define sRightJet	13
+#define sTrough         1
+#define sBottomPopper   2
+#define sLaunch         3
+#define sTopPopper      4
+#define sDiverterPower  5
+#define sKnocker        7
+#define sLeftSling      9
+#define sRightSling     10
+#define sLeftJet        11
+#define sTopSling       12
+#define sRightJet       13
+#define sRetinaEject    14
+#define sDiverterHold   15
+#define sElevatorMotor  18
+#define sClawLeft       19
+#define sClawRight      20
+#define sClawMagnet     33
 
 /*---------------------
 /  Ball state handling
 /----------------------*/
-enum {stTrough5=SIM_FIRSTSTATE, stTrough4, stTrough3, stTrough2, stTrough1, stTrough, stDrain,
-      stShooter, stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane, stLeftSling, stRightSling, stLeftJet, stTopSling, stRightJet
-	  };
+enum {
+  stTrough5=SIM_FIRSTSTATE, stTrough4, stTrough3, stTrough2, stTrough1, stTrough, stShooter, stDrain,
+  stBallLane, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane,
+  stLeftSling, stRightSling, stLeftJet, stTopSling, stRightJet, stBumpers, stBumpers2, stBumpers3,
+  stRolloverM, stRolloverT, stRolloverL, stCarCrash, stCarCrash2, stCarCrash3,
+  stLLoopUp, stLLoopDn, stCLoopRight, stCLoopLeft, stRLoopUp, stRLoopDn,
+  stTopPopper, stBottomPopper, stEyeball, stRetinaEject,
+  stLRampEnter, stLRampExit, stCRamp, stSRampEnter, stSRampExit, stRRampEnter, stRRampDivert, stRRampExit,
+  stElevatorWait, stOnClaw, stInElevator, stClawSimon, stClawJets, stClawPrison, stClawFreeze, stClawAcmag,
+};
 
 static sim_tState dm_stateDef[] = {
-  {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
+  {"Not Installed", 0, 0,               0,              stDrain,        0, 0, 0, SIM_STNOTEXCL},
   {"Moving"},
-  {"Playfield",		0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
+  {"Playfield",     0, 0,               0,              0,              0, 0, 0, SIM_STNOTEXCL},
 
-  /*Line 1*/
-  {"Trough 5",		1,swTrough5,	0,		stTrough4,	1},
-  {"Trough 4",		1,swTrough4,	0,		stTrough3,	1},
-  {"Trough 3",		1,swTrough3,	0,		stTrough2,	1},
-  {"Trough 2",		1,swTrough2,	0,		stTrough1,	1},
-  {"Trough 1",		1,swTrough1,	sTrough,	stTrough,	1},
-  {"Trough Jam",	1,swTroughJam,  0,		stShooter,	1},
-  {"Drain",		1,0,		0,		stTrough5,	0,	0,	0,	SIM_STNOTEXCL},
+  /* Line 1 */
+  {"Trough 5",      1, swTrough5,       0,              stTrough4,      1},
+  {"Trough 4",      1, swTrough4,       0,              stTrough3,      1},
+  {"Trough 3",      1, swTrough3,       0,              stTrough2,      1},
+  {"Trough 2",      1, swTrough2,       0,              stTrough1,      1},
+  {"Trough 1",      1, swTrough1,       sTrough,        stTrough,       1},
+  {"Trough Jam",    1, swTroughJam,     0,              stShooter,      1},
+  {"Shooter",       1, swShooter,       sLaunch,        stBallLane,     0, 0, 0, SIM_STNOTEXCL | SIM_STSHOOT},
+  {"Drain",         1, 0,               0,              stTrough5,      0, 0, 0, SIM_STNOTEXCL},
 
-  /*Line 2*/
-  {"Shooter",		1,swShooter,	 sLaunch,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
-  {"Ball Lane",		1,0,		 0,		stFree,		7,	0,	0,	SIM_STNOTEXCL},
-  {"Right Outlane",	1,swRightOutlane,0,		stDrain,	15},
-  {"Left Outlane",	1,swLeftOutlane, 0,		stDrain,	15},
-  {"Right Inlane",	1,swRightInlane, 0,		stFree,		5},
-  {"Left Inlane",	1,swLeftInlane,	 0,		stFree,		5},
-  {"Left Slingshot",	1,swLeftSling,	 0,		stFree,		1},
-  {"Rt Slingshot",	1,swRightSling,	 0,		stFree,		1},
-  {"Left Bumper",	1,swLeftJet,	 0,		stFree,		1},
-  {"Top Slingshot",	1,swTopSling,	 0,		stFree,		1},
-  {"Right Bumper",	1,swRightJet,	 0,		stFree,		1},
+  /* Line 2 */
+  /* auto-plunge feeds to upper-left flipper via right loop */
+  {"Ball Lane",     1, 0,               0,              stRLoopUp,      7, 0, 0, SIM_STNOTEXCL},
+  {"Right Outlane", 1, swRightOutlane,  0,              stDrain,        15},
+  {"Left Outlane",  1, swLeftOutlane,   0,              stDrain,        15},
+  {"Right Inlane",  1, swRightInlane,   0,              stFree,         5},
+  {"Left Inlane",   1, swLeftInlane,    0,              stFree,         5},
 
-  /*Line 3*/
+  /* Line 3 */
+  {"Left Sling",    1, swLeftSling,     0,              stFree,         1},
+  {"Right Sling",   1, swRightSling,    0,              stFree,         1},
+  {"Left Bumper",   1, swLeftJet,       0,              stFree,         1},
+  {"Top Sling",     1, swTopSling,      0,              stFree,         1},
+  {"Right Bumper",  1, swRightJet,      0,              stFree,         1},
+  /* TODO: randomize bumper action? */
+  {"Bumpers",       1, swLeftJet,       0,              stBumpers2,     1},
+  {"Bumpers",       1, swRightJet,      0,              stBumpers3,     1},
+  {"Bumpers",       1, swTopSling,      0,              stFree,         1},
 
-  /*Line 4*/
+  /* Line 4 */
+  {"M-t-l",         1, swRolloverM,     0,              stBumpers,      1},
+  {"m-T-l",         1, swRolloverT,     0,              stBumpers,      1},
+  {"m-t-L",         1, swRolloverL,     0,              stBumpers,      1},
+  {"Car Crash 1",   1, swCarChase1,     0,              stCarCrash2,    2},
+  {"Car Crash 2",   1, swCarChase2,     0,              stCarCrash3,    2},
+  {"Car Crash 3",   1, swCarChase3,     0,              stFree,         1},
 
-  /*Line 5*/
+  /* Line 5: loops */
+  {"L. Loop Enter", 1, swLoopLeft,      0,              stCLoopRight,   5},
+  {"L. Loop Exit",  1, swLoopLeft,      0,              stFree,         1},
+  {"Looping Right", 1, swLoopCenter,    0,              stTopPopper,    5},
+  {"Looping Left",  1, swLoopCenter,    0,              stLLoopDn,      5},
+  {"R. Loop Enter", 1, swLoopRight,     0,              stCLoopLeft,    5},
+  {"R. Loop Exit",  1, swLoopRight,     0,              stFree,         1},
 
-  /*Line 6*/
+  /* Line 6 */
+  /* TODO: Top Popper should go to any lane (stRollover{M,T,L}) or stRLoopDn */
+  {"Top Popper",    1, swTopPopper,     sTopPopper,     stRolloverT,    1},
+  {"Bottom Popper", 1, swBottomPopper,  sBottomPopper,  stRightInlane,  1},
+  {"Eyeball",       1, swEyeball,       0,              stRetinaEject,  3},
+  {"Retina Eject",  1, swRetinaEject,   sRetinaEject,   stLeftInlane,   1},
+
+  /* Line 7 */
+  {"L. Ramp Enter",   1, swLRampEnter,  0,              stLRampExit,    5},
+  {"L. Ramp Exit",    1, swLRampExit,   0,              stLeftInlane,   5},
+  /* TODO: Center Ramp should randomly do stTopPopper (15%), stCLoopLeft (15%) or stRolloverM (70%) */
+  {"Center Ramp",     1, swCenterRamp,  0,              stRolloverM,    5},
+  {"Side Ramp Enter", 1, swSRampEnter,  0,              stSRampExit,    5},
+  {"Side Ramp Exit",  1, swSRampExit,   0,              stRetinaEject,  5},
+  /* once claw emulated, update R. Ramp to reference sDiverterHold */
+  {"R. Ramp Enter",   1, swRRampEnter,  0,              stRRampDivert,  3},
+  {"R. Ramp Divert",  1, 0,             0,              0,              0},
+  {"R. Ramp Exit",    1, swRRampExit,   0,              stRightInlane,  5},
+
+  /* Line 8 */
+  {"Wait f/Elevator", 1, 0,              0,             0,              0},
+  {"On Claw",         1, 0,              0,             0,              0},
+  {"In Elevator",     1, 0,              0,             0,              0},
+  {"Claw Simon",      1, swClawSimon,    0,             stBottomPopper, 5},
+  {"Claw Jets",       1, swClawJets,     0,             stBumpers,      5},
+  {"Claw Prison",     1, swClawPrison,   0,             stLLoopDn,      5},
+  {"Claw Freeze",     1, swClawFreeze,   0,             stRetinaEject,  5},
+  {"Claw Acmag",      1, swClawAcmag,    0,             stLeftInlane,   5},
 
   {0}
 };
 
 static int dm_handleBallState(sim_tBallStatus *ball, int *inports) {
-  switch (ball->state)
-	{
-	}
-    return 0;
+  switch (ball->state) {
+  case stRRampDivert:
+    return setState(locals.diverterPos == NORMAL ? stRRampExit : stElevatorWait, 2);
+
+  case stElevatorWait:
+    if (core_getSw(swElevatorIndex)) {
+      return setState(stInElevator, 3);
+    }
+    break;
+
+  case stInElevator:
+    locals.ballInElevator = TRUE;
+    /* pick up ball if magnet on and elevator at 45% to 55% of range */
+    if (locals.magnetCount
+        && abs(locals.elevatorPos - DM_ELEVATOR_TIME / 2) <= (DM_ELEVATOR_TIME / 20))
+    {
+      locals.ballInElevator = FALSE;
+      return setState(stOnClaw, 3);
+    }
+    break;
+
+  case stOnClaw:
+    if (!locals.magnetCount) {
+      /* release ball depending on position */
+      return setState(stInElevator + DM_CLAW_DROP_INDEX, 3);
+    }
   }
+  return 0;
+}
 
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------*/
 
 static sim_tInportData dm_inportData[] = {
-
 /* Port 0 */
-//  {0, 0x0005, st},
-//  {0, 0x0006, st},
+  {0, 0x0005, stLRampEnter},
+  {0, 0x0006, stRRampEnter},
   {0, 0x0009, stLeftOutlane},
   {0, 0x000a, stRightOutlane},
-  {0, 0x0011, stLeftSling},
-  {0, 0x0012, stRightSling},
-  {0, 0x0021, stLeftInlane},
-  {0, 0x0022, stRightInlane},
-  {0, 0x0041, stLeftJet},
-  {0, 0x0042, stRightJet},
-  {0, 0x0080, stTopSling},
-//  {0, 0x0100, st},
-//  {0, 0x0200, st},
-//  {0, 0x0400, st},
-//  {0, 0x0800, st},
-//  {0, 0x1000, st},
-//  {0, 0x2000, st},
-//  {0, 0x4000, st},
-  {0, 0x8000, stDrain},
+  {0, 0x0011, stLLoopUp},
+  {0, 0x0012, stRLoopUp},
+  {0, 0x0041, swLeftSling},
+  {0, 0x0042, swRightSling},
+  {0, 0x0081, stLeftInlane},
+  {0, 0x0082, stRightInlane},
+  {0, 0x0100, swStandup1},
+  {0, 0x0200, swStandup2},
+  {0, 0x0400, swStandup3},
+  {0, 0x0800, swStandup4},
+  {0, 0x1000, swStandup5},
+  {0, 0x2000, swLeftJet},
+  {0, 0x4000, swRightJet},
+  {0, 0x8000, swTopSling},
 
 /* Port 1 */
-//  {1, 0x0001, st},
-//  {1, 0x0002, st},
-//  {1, 0x0004, st},
-//  {1, 0x0008, st},
-//  {1, 0x0010, st},
-//  {1, 0x0020, st},
-//  {1, 0x0040, st},
-//  {1, 0x0080, st},
-//  {1, 0x0100, st},
-//  {1, 0x0200, st},
-//  {1, 0x0400, st},
-//  {1, 0x0800, st},
-//  {1, 0x1000, st},
-//  {1, 0x2000, st},
-//  {1, 0x4000, st},
+  {1, 0x0001, stEyeball},
+  {1, 0x0002, stRetinaEject},
+  {1, 0x0004, stCarCrash},
+  {1, 0x0008, stCRamp},
+  {1, 0x0010, stBottomPopper},  /* Computer/Underground */
+  {1, 0x0020, stSRampEnter},
+
+  /* Thumb buttons on handles valid in any state.  Necessary for secret
+     awards in regular ROMs and video modes in Demolition Time. */
+  {1, 0x0100, swLeftHandle, SIM_STANY},
+  {1, 0x0200, swLaunch, SIM_STANY},
+
+  {1, 0x0800, swBuyIn, SIM_STANY},
+
+  {1, 0x1000, stRolloverM},
+  {1, 0x2000, stRolloverT},
+  {1, 0x4000, stRolloverL},
+  {1, 0x8000, stDrain},
   {0}
 };
 
 /*--------------------
   Drawing information
   --------------------*/
-  static void dm_drawStatic(BMTYPE **line) {
+static core_tLampDisplay dm_lampPos = {
+  { 0,  0}, /* top left */
+  {25, 25}, /* size */
+  {
+  /* Lamp 11; Ball Save */
+  {2, {{22, 10, RED}, {22, 14, RED}}},
+  /* Lamps 12 to 15; Fortress/Museum/Cryoprison/Wasteland multiball */
+  {1, {{23, 12, WHITE}}}, {1, {{22, 12, WHITE}}}, {1, {{20, 12, WHITE}}}, {1, {{21, 12, WHITE}}},
+  /* Lamps 16 to 18; Shoot Again, Access Claw, Left Ramp Explode */
+  {1, {{25, 12, ORANGE}}}, {1, {{19, 4, RED}}}, {1, {{14, 12, ORANGE}}},
 
-/* Help */
+  /* Column 2 */
+  {1, {{13, 18, RED}}}, {1, {{14, 22, ORANGE}}}, {1, {{19, 22, RED}}}, {1, {{17, 18, LBLUE}}},
+  {1, {{16, 16, ORANGE}}}, {1, {{19, 15, LBLUE}}}, {1, {{19, 9, LBLUE}}}, {1, {{17, 6, LBLUE}}},
 
-  core_textOutf(30, 60,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+J = L/R Jet Bumper");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+- = L/R/Top Slingshot");
-  core_textOutf(30, 90,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
-  core_textOutf(30,100,BLACK,"Q = Drain Ball");
-  core_textOutf(30,110,BLACK,"");
-  core_textOutf(30,120,BLACK,"");
-  core_textOutf(30,130,BLACK,"      *** PRELIMINARY ***");
-  core_textOutf(30,140,BLACK,"");
-  core_textOutf(30,150,BLACK,"");
-  core_textOutf(30,160,BLACK,"");
+  /* Column 3 */
+  {1, {{13, 23, RED}}}, {1, {{12, 22, LBLUE}}}, {1, {{12, 20, RED}}}, {1, {{13, 11, RED}}},
+  {1, {{13, 8, RED}}}, {1, {{13, 5, YELLOW}}}, {1, {{13, 7, LBLUE}}}, {1, {{14, 6, YELLOW}}},
+
+  /* Column 4 */
+  {1, {{14, 18, ORANGE}}}, {1, {{15, 17, ORANGE}}}, {1, {{16, 14, ORANGE}}}, {1, {{15, 13, ORANGE}}},
+  {1, {{16, 11, ORANGE}}}, {1, {{15, 10, ORANGE}}}, {1, {{15, 7, YELLOW}}}, {1, {{14, 9, ORANGE}}},
+
+  /* Column 5 */
+  {1, {{6, 15, RED}}}, {1, {{7, 14, RED}}}, {1, {{7, 12, LBLUE}}}, {1, {{7, 10, RED}}},
+  {1, {{9, 14, RED}}}, {1, {{8, 14, RED}}}, {1, {{7, 7, RED}}}, {1, {{5, 14, RED}}},
+
+  /* Column 6 */
+  {1, {{1, 7, RED}}}, {1, {{3, 7, RED}}}, {1, {{4, 5, RED}}}, {1, {{5, 3, RED}}},
+  {1, {{5, 1, RED}}}, {1, {{1, 19, GREEN}}}, {1, {{1, 21, GREEN}}}, {1, {{1, 23, GREEN}}},
+
+  /* Column 7 */
+  {1, {{10, 21, RED}}}, {1, {{7, 18, YELLOW}}}, {1, {{6, 18, LBLUE}}}, { 0 },
+  { 0 }, {1, {{11, 17, LBLUE}}}, {1, {{10, 16, LBLUE}}}, {1, {{15, 4, WHITE}}},
+
+  /* Column 8; Lamps 81-83 center (ACMAG) ramp */
+  {1, {{2, 14, RED}}}, {2, {{2, 12, RED}, {2, 16, RED}}}, {2, {{2, 13, RED}, {2, 15, RED}}},
+  {1, {{4, 14, RED}}}, {1, {{10, 25, RED}}}, {1, {{25, 20, YELLOW}}}, {1, {{25, 23, RED}}},
+  {1, {{25, 3, YELLOW}}}
   }
+};
+
+static void dm_drawStatic(BMTYPE **line) {
+  /* Help */
+  core_textOutf(30, 60, BLACK, "Help on this Simulator:");
+  core_textOutf(30, 70, BLACK, "L/R Ctrl+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 80, BLACK, "L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 90, BLACK, "L/R Ctrl+R/L = L/R Ramp/Loop Shot");
+  core_textOutf(30, 100, BLACK, "Q = Drain Ball  U = Underground");
+  core_textOutf(30, 110, BLACK, "T/Y = Side Ramp/Center Ramp");
+  core_textOutf(18, 120, BLACK, "W/E/R = Car Crash/Eyeball/Retina Eject");
+  core_textOutf(18, 130, BLACK, "H/J/K = Jet Bumpers  M/,/. = MTL Lanes");
+  core_textOutf(18, 140, BLACK, "Z/X/C/V/B = Freeze Standups");
+  core_textOutf(18, 150, BLACK, "[/] = L/R Handle Thumb Buttons");
+}
 
 /*-----------------
 /  ROM definitions
@@ -342,6 +533,21 @@ CORE_CLONEDEF(dm,h6c,  lx4, "Demolition Man (H-6C Competition MOD)",2019,"Willia
 CORE_CLONEDEF(dm,dt099,lx4, "Demolition Man (FreeWPC/Demolition Time 0.99)", 2014,"FreeWPC",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 2014,"FreeWPC",wpc_mDCSS,0)
 
+
+static void dm_drawMech(BMTYPE** line) {
+
+  // Claw position, 'M' if magnet enabled, description of position, '*' if
+  // right ramp diverter feeding claw.
+  core_textOutf(30, 0, BLACK, "Claw: %3u%c %-9s%c", locals.clawPos,
+                locals.magnetCount > 0 ? 'M' : ' ', dm_claw_drop[DM_CLAW_DROP_INDEX],
+                locals.diverterPos == NORMAL ? ' ' : '*');
+  // Elevator position and switch indicators (INDEX and HOLD).
+  core_textOutf(30, 10, BLACK, "Elev: %3u %-5s %-5s",
+                locals.elevatorPos,
+                core_getSw(swElevatorIndex) ? "INDEX" : "",
+                core_getSw(swElevatorHold) ? "HOLD" : "");
+}
+
 /*-----------------------
 / Simulation Definitions
 /-----------------------*/
@@ -364,8 +570,9 @@ static core_tGameData dmGameData = {
   GEN_WPCDCS, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-	0,0,8,0,0,0,0,
-	dm_getSol, NULL, NULL, NULL
+    0,0,8,0,0,0,0,
+    dm_getSol, dm_handleMech, NULL, dm_drawMech,
+    &dm_lampPos
   },
   &dmSimData,
   {
@@ -380,23 +587,53 @@ static core_tGameData dmGameData = {
 #ifdef PROC_SUPPORT
   #include "p-roc/p-roc.h"
   /*
-    Override the flipper enable/disable code in default_wpc_proc_solenoid_handler()
-    with special support for the handles on Demolition Man.
+    Note that dm_dt101 doesn't use solenoids 28/30, so we override the default
+    function to configure switch rules so that procFullTroughDisablesFlippers()
+    will correctly enable both cabinet and handle switches.
+  */
+  void procConfigureFlipperSwitchRules_dm(int enabled)
+  {
+    static const char* coil_name[] = { "FLRM", "FLRH", "FLLM", "FLLH", "FULM", "FULH" };
+    static const char* sw_right[] = { "SF2", "SF6" };
+    static const char* sw_left[] = { "SF4", "SF8" };
+    PRCoilList coils[6];
+    int i;
+
+    for (i = 0; i < 6; ++i) {
+      coils[i].coilNum = PRDecode(kPRMachineWPC, coil_name[i]);
+      coils[i].pulseTime = (i & 1) ? 0 : kFlipperPulseTime;
+      AddIgnoreCoil(coils[i].coilNum);
+    }
+
+    for (i = 0; i < 2; ++i) {
+      ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_right[i]),
+        &coils[0], enabled ? 2 : 0);
+      ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_left[i]),
+        &coils[2], enabled ? 4 : 0);
+    }
+
+    if (!enabled) {
+      // make sure none of the coils are being driven
+      for (i = 0; i < 6; ++i) {
+        procDriveCoilDirect(coils[i].coilNum, FALSE);
+      }
+    }
+  }
+
+  /*
+    Include special handling for the claw motor.  We ignore states where both
+    motors are enabled in order to get smooth movement.
   */
   #define CLAW_MOTOR_OFF    (0)
   #define CLAW_MOTOR_LEFT   (1<<18)
   #define CLAW_MOTOR_RIGHT  (1<<19)
   void dm_wpc_proc_solenoid_handler(int solNum, int enabled, int smoothed) {
-    static const char *coil_name[] = { "FLRM", "FLRH", "FLLM", "FLLH", "FULM", "FULH" };
-    static const char *sw_right[] = { "SF2", "SF6" };
-    static const char *sw_left[]  = { "SF4", "SF8" };
     static int motor_pinmame = 0;
     static int motor_proc = 0;
-    int flippers = -1;
-    
-    if (!smoothed) {
-      // Only process immediate changes to claw motor solenoids (C19 and C20)
-      if (solNum == 18 || solNum == 19) {
+
+    // Only process immediate changes to claw motor solenoids (C19 and C20)
+    if (solNum == 18 || solNum == 19) {
+      if (!smoothed) {
         if (enabled)
           motor_pinmame |= (1 << solNum);
         else
@@ -426,52 +663,8 @@ static core_tGameData dmGameData = {
       }
       return;
     }
-    
-    switch (solNum) {
-      case 18:  // claw motor left
-      case 19:  // claw motor right
-        // Ignore smoothed changes to C19 and C20, handled in non-smoothed case
-        return;
-        
-      case 28:
-        // If game supports this "GameOver" solenoid, it's safe to disable the
-        // flippers here (something that happens when the game starts up) and
-        // rely on solenoid 30 telling us when to enable them.
-        if (enabled)
-          flippers = 0;
-        break;
-      case 30:
-        flippers = enabled;
-        break;
-      default:
-        default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
-        return;
-    }
-    
-    if (flippers != -1) {
-      PRCoilList coils[6];
-      int i;
-      
-      for (i = 0; i < 6; ++i) {
-        coils[i].coilNum = PRDecode(kPRMachineWPC, coil_name[i]);
-        coils[i].pulseTime = (i & 1) ? 0 : kFlipperPulseTime;
-        AddIgnoreCoil(coils[i].coilNum);
-      }
-      
-      for (i = 0; i < 2; ++i) {
-        ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_right[i]),
-          &coils[0], flippers ? 2 : 0);
-        ConfigureWPCFlipperSwitchRule(PRDecode(kPRMachineWPC, sw_left[i]),
-          &coils[2], flippers ? 4 : 0);
-      }
-        
-      if (! flippers) {
-        // make sure none of the coils are being driven
-        for (i = 0; i < 6; ++i) {
-          procDriveCoilDirect(coils[i].coilNum, FALSE);
-        }
-      }
-    }
+
+    default_wpc_proc_solenoid_handler(solNum, enabled, smoothed);
   }
 #endif
 
@@ -480,9 +673,11 @@ static core_tGameData dmGameData = {
 /----------------*/
 static void init_dm(void) {
   core_gameData = &dmGameData;
+  memset(&locals, 0, sizeof locals);
   wpc_set_modsol_aux_board(1);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = dm_wpc_proc_solenoid_handler;
+  procConfigureFlipperSwitchRules = procConfigureFlipperSwitchRules_dm;
 #endif
 }
 
@@ -490,4 +685,96 @@ static int dm_getSol(int solNo) {
   if ((solNo >= CORE_CUSTSOLNO(1)) && (solNo <= CORE_CUSTSOLNO(8)))
     return ((wpc_data[WPC_EXTBOARD1]>>(solNo-CORE_CUSTSOLNO(1)))&0x01);
   return 0;
+}
+
+/*
+  Data logged from a Demolition Man game with P-ROC emulating original ROMs.
+  Time for claw to complete a full swing from right-to-left (or vice versa): 1.15s
+  Time between Elevator Hold clearing and Elevator Index setting (no ball): 0.1s
+
+  General sequence:
+  - Game drives Elevator Motor until Elevator Index set (elevator in lowest position).
+  - Looks for Elevator Hold switch to be enabled, indicating ball on elevator.  (Note
+    that Elevator Hold is also active when Elevator moves away from home position).
+  - Uses claw motor signals to drive claw right until Claw Right switch enabled.
+  - Note that game pulses the drive by enabling both Claw Right and Claw Left instead
+    of just pulsing one or the other between on and off.
+  - Enables Magnet driver.
+  - Runs Elevator Motor and expects Elevator Hold to disable shortly before Elevator
+    Index enabled, which indicates ball is now on Claw Magnet.
+  - Moves claw to the left and instructs player to drop ball.
+  - On startup, game will cycle elevator, claw and magnet to drop any ball in the
+    elevator into the Acmag position (furthest left).
+*/
+static void dm_handleMech(int mech) {
+  /* cryoclaw diverter */
+  if (mech & 0x01) {
+    // Either diverter coil held will send the ball to the cryoclaw
+    if (core_getSol(sDiverterHold) || core_getSol(sDiverterPower)) {
+      locals.diverterCount = 0;
+      if (locals.diverterPos != CRYOCLAW) {
+        locals.diverterPos = CRYOCLAW;
+        wpc_play_sample(0, SAM_DIVERTER);
+      }
+    }
+    else if (locals.diverterPos == CRYOCLAW && locals.diverterCount++ > 25) {
+      // release the diverter if not powered for 25 cycles
+      locals.diverterPos = NORMAL;
+    }
+  }
+
+  /* cryoclaw elevator */
+  if (mech & 0x02) {
+    if (core_getSol(sElevatorMotor)) {
+      if (++locals.elevatorPos == DM_ELEVATOR_TIME) {
+        locals.elevatorPos = 0;
+      }
+    }
+
+    /* Claw Pickup Zone:                      |*********|
+                0% ----- 10% ----- 20% ----- 45% ----- 55% ----- 90% -----
+       Elev. Sw |<-INDEX->|         |<------ HOLD w/o ball ------>|
+    */
+
+    /* elevator at bottom in lower 10% of range */
+    core_setSw(swElevatorIndex, locals.elevatorPos < DM_ELEVATOR_TIME / 10);
+    /* swElevatorHold triggered by ball or elevator rising; note that game
+       expects Elevator Hold to be clear for some amount of time before
+       Elevator Index is set, when lowering an empty elevator. */
+    core_setSw(swElevatorHold, locals.ballInElevator ||
+               (locals.elevatorPos > DM_ELEVATOR_TIME / 5
+                && locals.elevatorPos < DM_ELEVATOR_TIME * 9 / 10));
+  }
+
+  /* cryoclaw magnet */
+  if (mech & 0x04) {
+    // Either diverter coil held will send the ball to the cryoclaw
+    if (core_getSol(sClawMagnet)) {
+      locals.magnetCount = 25;
+    }
+    else if (locals.magnetCount > 0) {
+      locals.magnetCount--;
+    }
+  }
+
+  /* cryoclaw */
+  if (mech & 0x08) {
+    // need to read pulsed solenoid values instead of smoothed values
+    int left = core_getPulsedSol(sClawLeft);
+    int right = core_getPulsedSol(sClawRight);
+    if (!(left && right)) {
+      /* only update when one or none of the solenoids are active */
+      locals.clawDirection = left ? +1 : right ? -1 : 0;
+    }
+
+    if (locals.clawDirection != 0) {
+      locals.clawPos += locals.clawDirection;
+      if (locals.clawPos > DM_CLAW_MAX)
+        locals.clawPos = DM_CLAW_MAX;
+      if (locals.clawPos < 0)
+        locals.clawPos = 0;
+      core_setSw(swClawPosLeft, locals.clawPos == DM_CLAW_MAX);
+      core_setSw(swClawPosRight, locals.clawPos == 0);
+    }
+  }
 }

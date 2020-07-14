@@ -527,8 +527,10 @@ static void init_afm(void) {
   wpc_set_fastflip_addr(0x80);
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = afm_wpc_proc_solenoid_handler;
-  // clock on C37, data on C38
-  proc_shiftRegInit(36 + 32, 37 + 32);
+  if (coreGlobals.p_rocEn) {
+    // clock on C37, data on C38
+    proc_shiftRegInit(36 + 32, 37 + 32);
+  }
 #endif
 }
 
