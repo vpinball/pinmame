@@ -2304,8 +2304,6 @@ int showcopyright(struct mame_bitmap *bitmap)
 	int done;
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	int displayed=0;
-	char top_text[17];
-	char bottom_text[17];
 #endif /* PINMAME && PROC_SUPPORT */
 	char buf[1000];
 	char buf2[256];
@@ -2321,9 +2319,7 @@ int showcopyright(struct mame_bitmap *bitmap)
 	done = 0;
 
 #if defined(PINMAME) && defined(PROC_SUPPORT)
-	sprintf(top_text," PRESS   LFT FLP");
-	sprintf(bottom_text,"                ");
-	procDisplayText(top_text, bottom_text);
+	procDisplayText(" PRESS   LFT FLP", "                ");
 #endif /* PINMAME && PROC_SUPPORT */
 
 	do
@@ -2345,9 +2341,7 @@ int showcopyright(struct mame_bitmap *bitmap)
 		    input_ui_pressed(IPT_UI_LEFT))
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 			if (!displayed) {
-				sprintf(top_text, " PRESS   RGT FLP");
-				sprintf(bottom_text,"                ");
-				procDisplayText(top_text, bottom_text);
+				procDisplayText(" PRESS   RGT FLP", "                ");
 				displayed = 1;
 			}
 #endif /* PINMAME && PROC_SUPPORT */
@@ -2375,8 +2369,6 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 	int sel;
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 	int displayed=0;
-	char top_text[17];
-	char bottom_text[17];
 #endif /* PINMAME && PROC_SUPPORT */
 
 
@@ -2494,10 +2486,7 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 		/* startup info, print MAME version and ask for any key */
 		if (!displayed) {
-                        sprintf(top_text," PRESS   ANY KEY ");
-			sprintf(bottom_text,"                ");
-			
-                        procDisplayText(top_text, bottom_text);
+			procDisplayText(" PRESS   ANY KEY ", "                ");
 			displayed=1;
 		}
 #endif /* PINMAME && PROC_SUPPORT */

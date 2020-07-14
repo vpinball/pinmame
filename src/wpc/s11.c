@@ -213,7 +213,8 @@ static INTERRUPT_GEN(s11_vblank) {
   locals.solenoids = coreGlobals.pulsedSolState;
   locals.extSol = locals.extSolPulse;
 
-#ifdef PROC_SUPPORT 
+#ifdef PROC_SUPPORT
+  if (coreGlobals.p_rocEn) {
   /*
    * Now this code is kind of complicated.  Basically on each iteration, we examine the state of the coils
    * as pinmame has them at the moment.  We compare that to the state of the coils on the previous iteration.
@@ -327,17 +328,20 @@ static INTERRUPT_GEN(s11_vblank) {
                             coreGlobals.lastSol = allSol;
                         }
 		}
+  }
 #endif  //PROC_SUPPORT
   /*-- display --*/
   if ((locals.vblankCount % S11_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
 #ifdef PROC_SUPPORT
-    /* On the Combo-interface for Sys11, driver 63 is the diag LED */
-    if (core_gameData->gen & GEN_ALLS11) {
+    if (coreGlobals.p_rocEn) {
+      /* On the Combo-interface for Sys11, driver 63 is the diag LED */
+      if (core_gameData->gen & GEN_ALLS11) {
         if (coreGlobals.diagnosticLed != locals.diagnosticLed) {
             procDriveCoil(63,locals.diagnosticLed);
         }
+      }
     }
 #endif //PROC_SUPPORT
     coreGlobals.diagnosticLed = locals.diagnosticLed;

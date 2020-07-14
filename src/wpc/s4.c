@@ -366,12 +366,14 @@ static INTERRUPT_GEN(s4_vblank) {
     memset(s4locals.segments,0,sizeof(s4locals.segments));
 
 #ifdef PROC_SUPPORT
-    /* On the Combo-interface for Sys11, driver 63 is the diag LED */
+    if (coreGlobals.p_rocEn) {
+      /* On the Combo-interface for Sys11, driver 63 is the diag LED */
 //    if (core_gameData->gen & GEN_ALLS4) {
 //        if (coreGlobals.diagnosticLed != locals.diagnosticLed) {
 //            procDriveCoil(63,locals.diagnosticLed);
 //        }
 //    }
+    }
 #endif //PROC_SUPPORT
 
     /*update leds*/

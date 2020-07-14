@@ -62,7 +62,8 @@ void procConfigureDefaultSwitchRules(void);
 void procConfigureDriverDefaults(void);
 void procFlipperRelay(int state);
 void procFullTroughDisablesFlippers(void);
-void procConfigureFlipperSwitchRules(int enabled);
+extern void (*procConfigureFlipperSwitchRules)(int enabled);
+void procConfigureFlipperSwitchRules_default(int enabled);
 void procConfigureSwitchRules(int enabled);
 void procConfigureInputMap(void);
 void procKickbackCheck(int num);
@@ -106,6 +107,10 @@ extern int exitButton;
 
 // how long to hold a cabinet button (e.g., startButton) to exit PinMAME
 extern int exitButtonHoldTime;
+
+// Handle to proc instance
+extern PRHandle proc;
+extern PRMachineType machineType;
 
 #ifdef __cplusplus
 }
