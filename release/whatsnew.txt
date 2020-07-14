@@ -40,6 +40,7 @@ Slightly improve YM2151 noise
 
 *** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari
 New:
+Atari: Middle Earth (Prototype or German) - bad dump, not working
 Data East: Michael Jordan 1.30
            Data East Leon Test Chip (version 4)
 Jac van Ham: Formula 1
