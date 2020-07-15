@@ -648,7 +648,7 @@ static WRITE_HANDLER(cslatch2_w) {
 
 const struct sndbrdIntf s11csIntf = {
   "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w,
-  cslatch2_w, NULL,
+  cslatch2_w, soundlatch2_r,
   CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
 };
 
@@ -742,7 +742,7 @@ static const struct pia6821_interface s11cs_pia = {
 };
 
 static WRITE_HANDLER(s11cs_rombank_w) {
-  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion + 0x10000*(data & 0x03) + 0x8000*((data & 0x04)>>2));
+  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion + 0x10000*((data & 0x03) + ((data & 0x08)>>1)) + 0x8000*((data & 0x04)>>2));
 }
 static void s11cs_init(struct sndbrdData *brdData) {
   s11clocals.brdData = *brdData;

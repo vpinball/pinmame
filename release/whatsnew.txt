@@ -45,7 +45,7 @@ Slightly improve YM2151 noise
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew
 New:
 Atari: Middle Earth (Prototype or German) - bad dump, not working
 Data East: Michael Jordan 1.30
@@ -54,6 +54,8 @@ Jac van Ham: Formula 1
              Ice Mania
 Regama: Trebol
 Sport Matic: Flashman
+Taito do Brazil: Football (sound ROMs only)
+Williams: Funhouse (PA-1 sound ROMs)
 
 Correct Dumps:
 Atari: Airborne Avenger (using 20252 sound PROM)

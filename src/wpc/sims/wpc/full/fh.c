@@ -647,6 +647,17 @@ WPC_ROMSTART(fh,d9b,"fh_d9ger.rom",0x040000,CRC(b9759f80) SHA1(979995fc65a616522
 WPC_ROMSTART(fh,905h,"fh_905h.rom",0x080000,CRC(445b632a) SHA1(6e277027a1d025e2b93f0d7736b414ba3a68a4f8)) FH_SOUND_L3 WPC_ROMEND
 WPC_ROMSTART(fh,906h,"fh_906h.rom",0x080000,CRC(2fe830a1) SHA1(f52eeef26ce509a52d7b58783236605dafae47d8)) FH_SOUND_L3 WPC_ROMEND
 
+WPC_ROMSTART(fh,pa1, "u6-l2.rom",   0x20000, CRC(7a8a3278) SHA1(b35c1149862724ea70cc810f14141e51b365e950))
+  SOUNDREGION(0x10000, S11CS_CPUREGION)
+  SOUNDREGION(0x70000, S11CS_ROMREGION)
+    ROM_LOAD("fh_u4.pa1",  0x00000, 0x10000, CRC(9f0a716d) SHA1(3d3ec250b0b4344844ad8ce5bcbb326f934b22d3))
+      ROM_CONTINUE        (0x40000, 0x10000)
+    ROM_LOAD("fh_u19.pa1", 0x10000, 0x10000, CRC(b0fb5ddf) SHA1(138c2aa283f7ced90637e981063f520bf46c57df))
+      ROM_CONTINUE        (0x50000, 0x10000)
+    ROM_LOAD("fh_u20.pa1", 0x20000, 0x10000, CRC(bb864f78) SHA1(ed861bd5df382e7efac103a1acb3d810ee4b15dc))
+      ROM_CONTINUE        (0x60000, 0x10000)
+WPC_ROMEND
+
 WPC_ROMSTART(fh,l2,"u6-l2.rom",0x020000,CRC(7a8a3278) SHA1(b35c1149862724ea70cc810f14141e51b365e950)) FH_SOUND_L2 WPC_ROMEND
 
 WPC_ROMSTART(fh,l3,"u6-l3.rom",0x020000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141)) FH_SOUND_L2 WPC_ROMEND
@@ -670,6 +681,7 @@ CORE_CLONEDEF(fh,l9b,l9,"Funhouse (L-9, SL-3 Improved German translation patch)"
 CORE_CLONEDEF(fh,d9b,l9,"Funhouse (D-9, SL-3 German LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,pa1,l9,"Funhouse (L-2, Prototype PA-1 system 11 sound)",1990,"Williams",wpc_alpha1S,0)
 CORE_CLONEDEF(fh,l2,l9,"Funhouse (L-2)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse (L-3)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d3,l9,"Funhouse (D-3 LED Ghost Fix)",1990,"Williams",wpc_mAlpha2S,0)
@@ -699,6 +711,24 @@ static sim_tSimData fhSimData = {
 /----------------------*/
 static core_tGameData fhGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha, /* generation */
+  {
+    FLIP_SWNO(12,11),   /* Which switches are the flippers */
+    0,0,0,0,0,1,0,
+    NULL, fh_handleMech, NULL, fh_drawMech,
+    &fh_lampPos, fh_samsolmap
+  },
+  &fhSimData,
+  {
+    "",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* Dummy Jaw (Col 5, Row 1) & Superdog opto (Col 5, Row 5) = 0x11) */
+    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor, 0},
+  }
+};
+
+static core_tGameData fhpa1GameData = {
+  GEN_WPCALPHA_1, wpc_dispAlpha, /* generation */
   {
     FLIP_SWNO(12,11),   /* Which switches are the flippers */
     0,0,0,0,0,1,0,
@@ -763,7 +793,7 @@ static core_tGameData fhGameData = {
 /  Game handling
 /----------------*/
 static void init_fh(void) {
-  core_gameData = &fhGameData;
+  core_gameData = strncasecmp(Machine->gamedrv->name, "fh_pa1", 6) ? &fhGameData : &fhpa1GameData;
   locals.divertercount=0;
 #ifdef PROC_SUPPORT
   wpc_proc_solenoid_handler = fh_wpc_proc_solenoid_handler;

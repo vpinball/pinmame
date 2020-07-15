@@ -38,9 +38,23 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0,1}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-//02/79 Apache!
-//03/79 Football
+/*--------------------------------
+/ Football
+/-------------------------------*/
+INITGAME1(football,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART11111(football,"fb1.bin", NO_DUMP,
+                             "fb2.bin", NO_DUMP,
+                             "fb3.bin", NO_DUMP,
+                             "fb4.bin", NO_DUMP,
+                             "fb5.bin", NO_DUMP)
+TAITO_SOUNDROMS11("fb_s1.bin", CRC(457c9b78) SHA1(8c17dff49ad397f0c0d90f5fb45f12920335e25b),
+                  "fb_s2.bin", CRC(48c0e50a) SHA1(dc8d951a84a9ef27882ddc205caeeb92b18ba462))
+TAITO_ROMEND
+#define input_ports_football input_ports_taito
+CORE_GAMEDEFNV(football,"Football",1979,"Taito",taito_old,0)
+
 //03/79 Hot Ball (B Eight Ball, 01/77)
+//??/?? Sultan (G Sinbad, 05/78)
 
 /*--------------------------------
 / Shock
@@ -56,8 +70,6 @@ TAITO_SOUNDROMS11("shock_s1.bin", CRC(1f8543e9) SHA1(209c88198659844aeba1e4c39c0
 TAITO_ROMEND
 #define input_ports_shock input_ports_taito
 CORE_GAMEDEFNV(shock,"Shock",1979,"Taito",taito_old,0)
-
-//??/?? Sultan (G Sinbad, 05/78)
 
 /*--------------------------------
 / Oba-Oba
