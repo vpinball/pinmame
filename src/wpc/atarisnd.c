@@ -1,6 +1,12 @@
 /*----------------------------------------
 /              Atari sound
 /-----------------------------------------*/
+
+//!! Remaining issue: The 1000 point sound on Airborne Avenger sounds quite different on most videos I found.
+//   It's not a dump issue at least, since the sound itself uses waveform 0 (sine wave) and that waveform is used for a bunch of other sounds, which are good.
+//   I think that there's some filtering and/or clipping going on at the DAC output section.
+//   My guess is that it's a side effect from having the volume pot turned up, the manual itself actually mentions distortion.
+
 #include <stdlib.h>
 #include "driver.h"
 #include "core.h"
