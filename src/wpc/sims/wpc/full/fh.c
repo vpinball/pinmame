@@ -681,7 +681,7 @@ CORE_CLONEDEF(fh,l9b,l9,"Funhouse (L-9, SL-3 Improved German translation patch)"
 CORE_CLONEDEF(fh,d9b,l9,"Funhouse (D-9, SL-3 German LED Ghost Fix)",1992,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,905h,l9,"Funhouse (9.05H)",1996,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,906h,l9,"Funhouse (9.06H Coin Play)",1996,"Williams",wpc_mAlpha2S,0)
-CORE_CLONEDEF(fh,pa1,l9,"Funhouse (L-2, Prototype PA-1 system 11 sound)",1990,"Williams",wpc_alpha1S,0)
+CORE_CLONEDEF(fh,pa1,l9,"Funhouse (L-2, Prototype PA-1 system 11 sound)",1990,"Williams",wpc_alpha1S,0) // L-2 is lowest we have, should use P-6 instead
 CORE_CLONEDEF(fh,l2,l9,"Funhouse (L-2)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l3,l9,"Funhouse (L-3)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,d3,l9,"Funhouse (D-3 LED Ghost Fix)",1990,"Williams",wpc_mAlpha2S,0)
