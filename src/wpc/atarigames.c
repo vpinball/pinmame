@@ -48,12 +48,16 @@ core_tLCDLayout atari_disp2[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 //!! potential bad dump(s)?
-// 07028-01.bin : last 256 bytes zero
+// 07028-01.bin : last 256 bytes zero // apparently okay though, as 'the games don't use the waveforms from the upper half'
 // 20252-01.bin : first 256 bytes exactly the same as 07028-01.bin
 
-//!! 82s130.bin (Pascal/dumped from a Superman, BUT the PROM there most likely was not the original one. i.e. replaced) and 20967-01.bin (nuatari) differ in 4 bits "only"! (note: the upper 4bits of each byte in these ROMs must be ignored before comparing them!)
-// So we need to find out which one is really proper or if both are, and are just different revisions
-//ATARI_SNDSTART("20967-01.bin", CRC(08a1c881) SHA1(9422add065aab8a2edc01f11db0916200903f960))
+//!! 82s130.bin (Pascal/dumped from a Superman) and 20967-01.bin (nuatari) differ in 4 bits "only"! (note: the upper 4bits of each byte in these ROMs must be ignored before comparing them!)
+//   So we need to find out which one is really proper or if both are, and are just different revisions
+//   ATARI_SNDSTART("20967-01.bin", CRC(08a1c881) SHA1(9422add065aab8a2edc01f11db0916200903f960))
+//!! Comparing the waves from 82s130.bin and 20967-01.bin, one can find differences in 3 curves, BUT only one of these differences looks odd (weird spike found in wave 7 of 20967-01.bin), maybe that one was a bug?
+//   So maybe 20967-01.bin is an earlier version and 82s130.bin the final?
+//   Note though for the differences in wave 3:
+//    82s130.bin and 20252-01.bin show the same curve there, which may be another indication that 20967-01.bin is just a bad dump, as in there wave 3 has 2 slightly differing values
 
 //Triangle (1976?) never existed as a complete machine, only parts
 
@@ -116,7 +120,7 @@ CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
 INITGAME1(mideartp, atari_disp1, FLIPSW1920, 1, 2)
 ATARI_2_ROMSTART(mideartp,	"c.e0",	CRC(553044c1) SHA1(4ad328eff48b82b32721684d181a339eae304d92) BAD_DUMP,
 							"c.e00",CRC(288cd68d) SHA1(d97d31f59525b785bfa4c3fc8445eb294591bde2) BAD_DUMP)
-ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) //!! correct? nuatari mentions a nonsense ROM (game PROM used in Airborne Avengers)
+ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) //!! correct? nuatari mentions a nonsense ROM (20248 game PROM used in Airborne Avengers)
 ATARI_ROMEND
 CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Atari",gl_mATARI1A,GAME_NOT_WORKING)
 
