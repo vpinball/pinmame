@@ -568,6 +568,7 @@ void wpc_firq(int set, int src) {
 / Emulate the WPC chip
 /-----------------------*/
 READ_HANDLER(wpc_r) {
+  static UINT8 dd_unknown = 0x81;
   switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
       if ((core_gameData->gen & GENWPC_HASWPC95) == 0)
@@ -662,6 +663,25 @@ READ_HANDLER(wpc_r) {
       return 0; /* these can't be read */
     case DMD_FIRQLINE:
       return (wpclocals.firqSrc & WPC_FIRQ_DMD) ? 0x80 : 0x00;
+    case 0x3fd0-WPC_BASE:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_DATA_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_data_r(0)));
+        return sndbrd_0_data_r(0);
+      }
+      break;
+    case 0x3fd2-WPC_BASE:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_CTRL_R: %04x %02x\n", activecpu_get_pc(), sndbrd_0_ctrl_r(0)));
+        return sndbrd_0_ctrl_r(0);
+      }
+      break;
+    case 0x3fd3-WPC_BASE:
+      if (sndbrd_0_type() == SNDBRD_S11CS) {
+        DBGLOG(("DD_UNKNOWN_R: %04x\n", activecpu_get_pc()));
+        dd_unknown = sndbrd_0_ctrl_r(0) & 0x10 ? 0x81 : 0;
+        return dd_unknown;
+      }
+      break;
     default:
       DBGLOG(("wpc_r %4x\n", offset+WPC_BASE));
       break;
@@ -814,8 +834,8 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_SOUNDIF:
       //DBGLOG(("sdata:%2x\n",data));
-      sndbrd_0_data_w(0,data);
-      if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
+      if (sndbrd_0_type() != SNDBRD_S11CS)
+      	sndbrd_0_data_w(0,data);
       break;
     case WPC_SOUNDBACK:
       //DBGLOG(("sctrl:%2x\n",data));

@@ -43,17 +43,17 @@ MEMORY_READ_START(taitos_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
-  { 0x0800, 0x1fff, MRA_ROM }, // 0x800 - 0xfff for sureshot
+  { 0x0800, 0x1fff, MRA_ROM }, // 0x800 - 0xfff for sureshot and football
   { 0x2000, 0x3fff, MRA_ROM }, // for sharkt & lunelle
   { 0x7800, 0x7fff, MRA_ROM }, // for shock
-  { 0x8400, 0x8403, pia_r(SP_PIA0) }, // for shock
+  { 0x8400, 0x8403, pia_r(SP_PIA0) }, // for shock and football
   { 0xf800, 0xffff, MRA_ROM }, // reset vector
 MEMORY_END
 
 MEMORY_WRITE_START(taitos_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(SP_PIA0) },
-  { 0x8400, 0x8403, pia_w(SP_PIA0) }, // for shock
+  { 0x8400, 0x8403, pia_w(SP_PIA0) }, // for shock and football
 MEMORY_END
 
 static void taitos_irq(int state) {
@@ -141,6 +141,16 @@ static void taitos_init(struct sndbrdData *brdData)
 	pia_reset();
 }
 
+static void reset_cpu(int state) {
+	cpu_set_halt_line(0, 0);
+}
+
+static void taitos_diag(int state) {
+	cpu_set_halt_line(0, 1);
+	timer_set(5, 0, reset_cpu);
+	cpu_set_nmi_line(taitos_locals.brdData.cpuNo, state ? PULSE_LINE : CLEAR_LINE);
+}
+
 struct DACinterface TAITO_dacInt =
 {
   1,			/* 1 Chip */
@@ -158,7 +168,7 @@ struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf taitoIntf = {
-  "TAITO", taitos_init, NULL, NULL, taitos_data_w, taitos_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "TAITO", taitos_init, NULL, taitos_diag, taitos_data_w, taitos_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)

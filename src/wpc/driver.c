@@ -2204,13 +2204,17 @@ DRIVERNV(hexagone)      //04/86 L'Hexagone
 // ---------------
 // TAITO GAMES
 // ---------------
-                        //??/?? Apache!
-                        //??/?? Football (W World Cup'78, 05/78)
-                        //??/79 Hot Ball (B Eight Ball, 01/77)
-DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
+DRIVERNV(icecold)       //??/83 Ice Cold Beer (Redemption)
+DRIVERNV(icecoldf)      //??/83 Ice Cold Beer (Redemption Free Play)
+DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
+
+// ---------------
+// TAITO DO BRASIL GAMES
+// ---------------
+DRIVERNV(football)      //03/79 Football (W World Cup'78, 05/78)
+                        //03/79 Hot Ball (B Eight Ball, 01/77)
                         //??/?? Sultan (G Sinbad, 05/78)
-                        //??/78 Roman Victory (Redemption)
-                        //??/78 Space Patrol
+DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
 DRIVERNV(obaoba  )      //??/80 Oba-Oba (B Playboy, 10/77)
 DRIVERNV(obaoba1 )      //??/80 Oba-Oba alternate set
 DRIVERNV(obaobao )      //??/80 Oba-Oba (old hardware)
@@ -2241,9 +2245,6 @@ DRIVERNV(snake   )      //??/82 Snake Machine
 DRIVERNV(gork    )      //??/82 Gork
 DRIVERNV(voleybal)      //??/?? Volley
                         //??/8? Ogar
-DRIVERNV(icecold)       //??/83 Ice Cold Beer (Redemption)
-DRIVERNV(icecoldf)      //??/83 Ice Cold Beer (Redemption Free Play)
-DRIVERNV(zekepeak)      //??/83 Zeke's Peak (Redemption)
 DRIVERNV(mrblack )      //??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(mrblack1)      //??/84 Mr. Black alternate set
 DRIVERNV(mrblkz80)      //??/8? Mr. Black (Z-80 CPU)
@@ -2534,8 +2535,8 @@ DRIVER(bbnny,lu)        //          12/90 B Bugs Bunny's Birthday Ball (LU-2 Eur
 //WPC
 DRIVER(dd,p06)          //WPC-2016: 08/90 B Dr. Dude (P-6 WPC)
 DRIVER(dd,p7)           //          09/90 B Dr. Dude (P-7 WPC)
-                        //WPC-503:  11/90 W Funhouse (L-1)
-DRIVER(fh,l2)           //          12/90 W Funhouse (L-2)
+DRIVER(fh,pa1)          //WPC-503:  11/90 W Funhouse (L-2, sound PA-1)
+DRIVER(fh,l2)           //          11/90 W Funhouse (L-2)
 DRIVER(fh,l3)           //          12/90 W Funhouse (L-3)
 DRIVER(fh,d3)           //                  Funhouse (D-3) LED Ghost Fix
 DRIVER(fh,l4)           //          01/91 W Funhouse (L-4)
