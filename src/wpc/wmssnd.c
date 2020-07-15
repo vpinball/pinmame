@@ -659,9 +659,6 @@ static MEMORY_READ_START(s11cs_readmem)
   { 0x8000, 0xffff, MRA_BANKNO(S11CS_BANK0) },
 MEMORY_END
 
-static WRITE_HANDLER(odd_w) {
-  logerror("Star Trax sound write: %02x:%02x\n", offset, data);
-}
 static MEMORY_WRITE_START(s11cs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
@@ -670,7 +667,7 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x6000, 0x6000, hc55516_0_digit_clock_clear_w },/* 6000-67ff */
   { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
   { 0x7800, 0x7800, s11cs_rombank_w },              /* 7800-7fff */
-  { 0x9c00, 0x9cff, odd_w },
+  { 0x8000, 0xffff, MWA_NOP },
 MEMORY_END
 
 // Mixing volume levels for System 11. [mjr 8/2019]
