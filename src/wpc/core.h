@@ -404,7 +404,7 @@ typedef struct {
   volatile int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
-  volatile int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+  volatile int    diagnosticLed;   /* data relating to diagnostic led(s)*/
 #ifdef PROC_SUPPORT
   int    p_rocEn;         /* P-ROC support enable */
   int    isKickbackLamp[255];
