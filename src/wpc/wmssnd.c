@@ -648,7 +648,7 @@ static WRITE_HANDLER(cslatch2_w) {
 
 const struct sndbrdIntf s11csIntf = {
   "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w,
-  cslatch2_w, soundlatch2_r,
+  cslatch2_w, soundlatch3_r,
   CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
 };
 
