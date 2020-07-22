@@ -425,6 +425,9 @@ CPPFLAGS += \
 LDFLAGS =
 MAPFLAGS =
 
+# Allow duplicate symbol definitions (e.g., non-extern entry in a header file)
+LDFLAGS += -Wl,--allow-multiple-definition
+
 # strip symbols and other metadata in non-symbols builds
 ifndef SYMBOLS
 LDFLAGS += -s
