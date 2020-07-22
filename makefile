@@ -505,6 +505,9 @@ include src/$(TARGET).mak
 include src/rules.mak
 include src/$(MAMEOS)/$(MAMEOS).mak
 ifdef PROC
+# add include directories for libpinproc and yaml-cpp
+CFLAGS += -Iext/pinproc/include -Iext/yaml-cpp/include
+CPPFLAGS += -Iext/pinproc/include -Iext/yaml-cpp/include
 include src/p-roc/p-roc.mak
 endif
 
