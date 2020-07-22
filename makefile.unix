@@ -119,6 +119,14 @@ CFLAGS =
 
 
 ###########################################################################
+# Use C99 and C++11 standards for building.  It's 2020 (or later), we
+# should be able to use these minimums.
+# Note that P-ROC support requires yaml-cpp which itself requires C++11.
+###########################################################################
+CFLAGS += -std=gnu99
+CPPFLAGS += -std=gnu++11
+
+###########################################################################
 # Choose from some preset CFLAGS.  Or, if you want to tweak some more, skip
 # this section.
 ###########################################################################
