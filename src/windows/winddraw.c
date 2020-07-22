@@ -36,7 +36,7 @@
 extern int verbose;
 
 // from video.c
-GUID *screen_guid_ptr;
+extern GUID *screen_guid_ptr;
 
 
 //============================================================
