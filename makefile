@@ -497,6 +497,8 @@ ifdef PROC
 # add include directories for libpinproc and yaml-cpp
 CFLAGS += -Iext/pinproc/include -Iext/yaml-cpp/include
 CPPFLAGS += -Iext/pinproc/include -Iext/yaml-cpp/include
+# add library directories
+LDFLAGS += -Lext/pinproc/lib -Lext/yaml-cpp/lib
 include src/p-roc/p-roc.mak
 endif
 
