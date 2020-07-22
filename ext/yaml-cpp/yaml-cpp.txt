@@ -14,3 +14,7 @@ Visual C++:
 -----------
 Build with: Visual Studio 2019
 Runtime: /MT
+
+MinGW
+-----
+libyaml-cpp.a build with Mingw-W64/i686 (32-bit)

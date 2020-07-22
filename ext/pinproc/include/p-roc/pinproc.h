@@ -351,7 +351,7 @@ PINPROC_API void PRLogSetCallback(PRLogCallback callback); /**< Replaces the def
 
 PINPROC_API void PRLogSetLevel(PRLogLevel level);
 
-PINPROC_API const char *PRGetLastErrorText();
+PINPROC_API const char *PRGetLastErrorText(void);
 
 /**
  * @defgroup device Device Creation & Deletion

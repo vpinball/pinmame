@@ -15,3 +15,7 @@ Visual C++:
 Build with: Visual Studio 2019
 Runtime: /MT
 Specials: FTDI's DLL import lib ftd2xx.lib already linked in(?)
+
+MinGW
+-----
+libpinproc.a built with Mingw-W64/i686 (32-bit)
