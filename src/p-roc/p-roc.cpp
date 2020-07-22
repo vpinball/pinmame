@@ -1,6 +1,6 @@
 #if defined(PINMAME) && defined(PROC_SUPPORT)
 
-#if _MSC_VER >= 1700 && defined(inline)
+#if defined(_MSC_VER) && _MSC_VER >= 1700 && defined(inline)
 // C++ doesn't allow defining inline as a macro
 #undef inline
 #endif
