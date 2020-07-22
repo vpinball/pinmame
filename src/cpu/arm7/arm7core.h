@@ -32,6 +32,13 @@
 #include "driver.h"
 #include "arm7jit.h"
 
+// Declare function pointers as extern everywhere except arm7.c (which includes arm7.h)
+#ifdef ARM7_H
+#define EXTERN
+#else
+#define EXTERN extern
+#endif
+
 /****************************************************************************************************
  *	PUBLIC FUNCTIONS ( to be called directly from cpu implementation )
  ***************************************************************************************************/
@@ -365,20 +372,20 @@ enum
 
 /* Static Vars */
 //Note: for multi-cpu implementation, this approach won't work w/o modification
-WRITE32_HANDLER((*arm7_coproc_do_callback));		//holder for the co processor Data Operations Callback func.
-READ32_HANDLER((*arm7_coproc_rt_r_callback));	//holder for the co processor Register Transfer Read Callback func.
-WRITE32_HANDLER((*arm7_coproc_rt_w_callback));	//holder for the co processor Register Transfer Write Callback Callback func.
+EXTERN WRITE32_HANDLER((*arm7_coproc_do_callback));		//holder for the co processor Data Operations Callback func.
+EXTERN READ32_HANDLER((*arm7_coproc_rt_r_callback));	//holder for the co processor Register Transfer Read Callback func.
+EXTERN WRITE32_HANDLER((*arm7_coproc_rt_w_callback));	//holder for the co processor Register Transfer Write Callback Callback func.
 //holder for the co processor Data Transfer Read & Write Callback funcs
-void (*arm7_coproc_dt_r_callback)(data32_t insn, data32_t* prn, data32_t (*read32)(int addr));		
-void (*arm7_coproc_dt_w_callback)(data32_t insn, data32_t* prn, void (*write32)(int addr, data32_t data));
+EXTERN void (*arm7_coproc_dt_r_callback)(data32_t insn, data32_t* prn, data32_t (*read32)(int addr));		
+EXTERN void (*arm7_coproc_dt_w_callback)(data32_t insn, data32_t* prn, void (*write32)(int addr, data32_t data));
 
 #ifdef MAME_DEBUG
 extern void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode );
 
 //custom dasm callback handlers for co-processor instructions
-char *(*arm7_dasm_cop_dt_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
-char *(*arm7_dasm_cop_rt_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
-char *(*arm7_dasm_cop_do_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
+EXTERN char *(*arm7_dasm_cop_dt_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
+EXTERN char *(*arm7_dasm_cop_rt_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
+EXTERN char *(*arm7_dasm_cop_do_callback)( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0 );
 #endif
 
 #endif /* ARM7CORE_H */

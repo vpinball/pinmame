@@ -44,7 +44,7 @@
 extern int verbose;
 
 // from video.c
-GUID *screen_guid_ptr;
+extern GUID *screen_guid_ptr;
 
 // from wind3dfx.c
 extern UINT32 win_d3d_tfactor;

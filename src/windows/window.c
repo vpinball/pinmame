@@ -102,8 +102,6 @@ int	win_triple_buffer;
 int	win_use_ddraw;
 int	win_use_d3d;
 int	win_dd_hw_stretch;
-int	win_d3d_use_filter;
-int win_d3d_tex_manage;
 int win_force_int_stretch;
 int	win_gfx_width;
 int	win_gfx_height;
