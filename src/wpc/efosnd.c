@@ -31,7 +31,7 @@
 
 static struct {
   UINT8 sndCmd;
-  int clockDiv, initDone, fifoSize, timerCnt, trg3;
+  int clockDiv, initDone, fifoSize, timerCnt, trg3, state0;
   UINT8 fifo[16];
 } sndlocals;
 
@@ -82,16 +82,24 @@ static void init(void) {
   }
 }
 
+static int ctc0_callback(int irqline) {
+  int vector = Z80_VECTOR(1, sndlocals.state0);
+  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xee);
+  return vector;
+}
+
 void ctc_interrupt_0(int state) {
   init();
-// TODO: find out why sound stops altogether once a sample is played
-#ifdef MAME_DEBUG
+  sndlocals.state0 = state;
+  cpu_set_irq_callback(1, ctc0_callback);
+  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xe6);
   cpu_set_irq_line_and_vector(1, 0, state, Z80_VECTOR(1, state));
-#endif
 }
 
 void ctc_interrupt_1(int state) {
   init();
+  cpu_set_irq_callback(1, 0);
+  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xf6);
   cpu_set_irq_line_and_vector(1, 0, state, Z80_VECTOR(0, state));
 }
 
@@ -111,7 +119,7 @@ static void clock_pulse(int dummy) {
   static UINT8 msmData;
   z80ctc_0_trg2_w(0, !(sndlocals.timerCnt % sndlocals.clockDiv)); // controls data fetch rate to MSM chip
   z80ctc_0_trg2_w(0, 0);
-  sndlocals.trg3 = sndlocals.timerCnt > 3;
+  sndlocals.trg3 = (sndlocals.timerCnt % 8) > 3;
   z80ctc_0_trg3_w(0, sndlocals.fifoSize || sndlocals.trg3);
   if (sndlocals.timerCnt == 4) msmData = sho();
   if (sndlocals.fifoSize && sndlocals.timerCnt == 64) {
@@ -119,19 +127,19 @@ static void clock_pulse(int dummy) {
     MSM5205_vclk_w(0, 1);
     MSM5205_vclk_w(0, 0);
   }
-  sndlocals.timerCnt++;
+  sndlocals.timerCnt = (sndlocals.timerCnt + 1) % 512;
 }
 
 static void zsu_init(struct sndbrdData *brdData) {
+  sndlocals.initDone = 0;
   init();
-  z80ctc_init(&ctc_intf);
   timer_pulse(TIME_IN_HZ(1000000),0,clock_pulse);
 }
 
 static WRITE_HANDLER(zsu_data_w) {
   logerror("--> SND CMD: %02x\n", data);
   sndlocals.sndCmd = data;
-  cpu_set_irq_line_and_vector(1, 0, ASSERT_LINE, 0xff);
+  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xff);
 }
 
 const struct sndbrdIntf zsuIntf = {
@@ -142,7 +150,6 @@ static WRITE_HANDLER(ay8910_0_a_w) {
   static int bank;
   if ((data & 3) != bank) {
     bank = data & 3;
-    logerror("BANK: %x\n", bank);
     cpu_setbank(1, memory_region(REGION_USER1) + 0x8000 * bank);
   }
 }
