@@ -19,7 +19,7 @@ Tweaks to Atari Generation 2 emulation, too
 Added Regama driver
 Wico's Af-Tor fully working now
 Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
-E.F.O. sound board mostly working - speech output will sometimes stop the background music
+E.F.O. sound board mostly working - a strange issue with IRQ concurrency remains which sometimes causes a sound hangup
 Sound support for early LTD system III
 More sound found for LTD system 4 (extra lamp data is handled by sound chip port write!)
 More solenoids found for LTD's Force & Haunted Hotel

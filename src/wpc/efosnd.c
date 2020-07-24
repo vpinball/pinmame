@@ -27,11 +27,12 @@
 #include "driver.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "cpu/z80//z80.h"
 #include "machine/z80fmly.h"
 
 static struct {
   UINT8 sndCmd;
-  int clockDiv, initDone, fifoSize, timerCnt, trg3, state0;
+  int clockDiv, initDone, fifoSize, timerCnt, trg3;
   UINT8 fifo[16];
 } sndlocals;
 
@@ -82,25 +83,24 @@ static void init(void) {
   }
 }
 
-static int ctc0_callback(int irqline) {
-  int vector = Z80_VECTOR(1, sndlocals.state0);
-  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xee);
-  return vector;
+// TODO: for some odd reason, sometimes the ZTC irq state is all high bits, causes issues with next IRQ state
+void fix_irq_state(void) {
+  UINT8 irqstate = cpunum_get_reg(1, Z80_DC0);
+  if (irqstate == 0xff) {
+    cpunum_set_reg(1, Z80_DC0, 0);
+  }
 }
 
 void ctc_interrupt_0(int state) {
   init();
-  sndlocals.state0 = state;
-  cpu_set_irq_callback(1, ctc0_callback);
-  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xe6);
-  cpu_set_irq_line_and_vector(1, 0, state, Z80_VECTOR(1, state));
+  fix_irq_state();
+  cpu_set_irq_line_and_vector(1, 0, ASSERT_LINE, Z80_VECTOR(1, state));
 }
 
 void ctc_interrupt_1(int state) {
   init();
-  cpu_set_irq_callback(1, 0);
-  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xf6);
-  cpu_set_irq_line_and_vector(1, 0, state, Z80_VECTOR(0, state));
+  fix_irq_state();
+  cpu_set_irq_line_and_vector(1, 0, ASSERT_LINE, Z80_VECTOR(0, state));
 }
 
 static void shi(UINT8 data) {
@@ -139,7 +139,7 @@ static void zsu_init(struct sndbrdData *brdData) {
 static WRITE_HANDLER(zsu_data_w) {
   logerror("--> SND CMD: %02x\n", data);
   sndlocals.sndCmd = data;
-  cpu_set_irq_line_and_vector(1, 0, PULSE_LINE, 0xff);
+  cpu_set_irq_line_and_vector(1, 0, ASSERT_LINE, 0xff);
 }
 
 const struct sndbrdIntf zsuIntf = {
