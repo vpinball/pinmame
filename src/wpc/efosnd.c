@@ -27,7 +27,7 @@
 #include "driver.h"
 #include "core.h"
 #include "sndbrd.h"
-#include "cpu/z80//z80.h"
+#include "cpu/z80/z80.h"
 #include "machine/z80fmly.h"
 
 static struct {
