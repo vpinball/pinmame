@@ -41,12 +41,12 @@ static WRITE_HANDLER(play1s_data_w) {
   if (data & 0x0f) {
     if (oldData != data) sndlocals.volume = 100;
     oldData = data;
-    discrete_sound_w(8, data & 0x01);
-    discrete_sound_w(4, data & 0x02);
-    discrete_sound_w(2, data & 0x04);
-    discrete_sound_w(1, data & 0x08);
+    discrete_sound_w(1, data & 0x01);
+    discrete_sound_w(2, data & 0x02);
+    discrete_sound_w(4, data & 0x04);
+    discrete_sound_w(8, data & 0x08);
     if (~data & 0x10) { // start fading
-      timer_adjust(sndlocals.timer, 0.02, 0, 0.02);
+      timer_adjust(sndlocals.timer, 0.005, 0, 0.005);
       timer_on = 1;
     } else { // no fading used
       timer_adjust(sndlocals.timer, TIME_NEVER, 0, 0);
