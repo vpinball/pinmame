@@ -22,6 +22,7 @@ Sped up Video Dens games, found more dip switches, switch test, saving NVRAM
 E.F.O. sound board mostly working - a strange issue with IRQ concurrency remains which sometimes causes a sound hangup
 Sound support for early LTD system III
 More sound found for LTD system 4 (extra lamp data is handled by sound chip port write!)
+Inverted sound bits for early Playmatic games, tone frequencies left as noted in the schematics though, seem a little off
 More solenoids found for LTD's Force & Haunted Hotel
 More lamps found for LTD's Space Poker
 Increased IRQ for LTD system III, helps with ball detection in outhole
@@ -54,7 +55,7 @@ Jac van Ham: Formula 1
              Ice Mania
 Regama: Trebol
 Sport Matic: Flashman
-Taito do Brazil: Football (sound ROMs only)
+Taito do Brasil: Football (sound ROMs only)
 
 Correct Dumps:
 Atari: Airborne Avenger (using 20252 sound PROM)
