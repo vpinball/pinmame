@@ -372,13 +372,19 @@ Recording Sounds to a Wave File
   MP3 files, so you can easily end up with 50MB of WAV files
   for just a few minutes of recording!
 
+  There is also an Automatic Sound Dump functionality:
+  Started via 'F6' and skips automatically to the next sound / creates a new file if there
+  is no sound at all anymore (silence) or the length reaches 4mins.
+  The dump stops automatically after soundcommand 0xFF (=max 256 overall generated sounds).
+  There is also an altsound CSV created with the dumps. This one can be
+  altered with lucky1's Altsound Editor.
+
 Recording DMD frames to a Text File
 -----------------------------------
   By creating a folder called 'DmdDump' inside of the PinMAME folder,
   one can then use the 'F6' key to start recording DMD frames to a text file.
   The file is created in the 'DmdDump' directory and contains the name
   of the game.
-
 
 Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
@@ -390,7 +396,6 @@ Accessing Williams/Bally WPC - Hidden Menu
   If you did it correctly, you should see a new choice on the menu:
   EXEC LOCKUPS - B.1 01..... Using the normal Up/Down keys you can cycle through
   the other new choices... Try this on your real machine at home too!
-
 
 Known Bugs
 ----------
