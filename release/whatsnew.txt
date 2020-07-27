@@ -13,8 +13,8 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
-PinMAME32: Added an Automatic Sound Dump functionality:
- Started via F6 (instead of the Recording function via F5) and 
+PinMAME(32): Added an Automatic Sound Dump functionality:
+ Started via 'F6' (instead of the Recording function via 'F5') and 
  skips automatically to the next sound / creates a new file if there
  is no sound at all anymore (silence) or the length reaches 4mins.
  The dump stops automatically after soundcommand 0xFF (=max 256 overall generated sounds).
