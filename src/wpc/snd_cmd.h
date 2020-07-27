@@ -22,14 +22,15 @@ void reinit_pinSound(void);
 #define DCS_COMMS	14	/* # of Sequential Commands to trigger a sound (DCS )*/
 #define WPCS_COMMS	4	/* # of Sequential Commands to trigger a sound (Non-DCS )*/
 #define REPEATKEY	2	/* # of keystrokes pressed before registering
-				   Lower # = keypresses register faster, higher = slower*/
-#define MAXCOMMAND 	256	/* Highest Sound Command # that can be triggered*/
-#define SND_XROW	35  	/* Where to start display of sound command text*/
+							Lower # = keypresses register faster, higher = slower*/
+#define MAXCOMMAND	256	/* Highest Sound Command # that can be triggered*/
+#define SND_XROW	35	/* Where to start display of sound command text*/
 
 /*Keys which affect sound mode & recording*/
 /*-- REMEMBER: Change Help Text displayed on screen to match the keys here --*/
 #define SMDCMD_MODETOGGLE	KEYCODE_F4
 #define SMDCMD_RECORDTOGGLE	KEYCODE_F5
+#define SMDCMD_DUMPTOGGLE	KEYCODE_F6
 #define SMDCMD_NEXT		KEYCODE_RIGHT
 #define SMDCMD_PREV		KEYCODE_LEFT
 #define SMDCMD_UP		KEYCODE_UP
@@ -38,7 +39,7 @@ void reinit_pinSound(void);
 #define SMDCMD_PLAY		KEYCODE_SPACE
 #define SMDCMD_INSERT	KEYCODE_INSERT
 
-#define MAX_CMD_LOG     16
+#define MAX_CMD_LOG		16
 
 
 #endif	/*INC_SNDCMD*/
