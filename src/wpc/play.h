@@ -94,7 +94,26 @@
       COREPORT_DIPSET(0x0002, "5" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "Special award") \
       COREPORT_DIPSET(0x0000, "Replay" ) \
-      COREPORT_DIPSET(0x0004, "Extra ball" )
+      COREPORT_DIPSET(0x0004, "Extra ball" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x00ff, 0x0002, "Credits for small coin") \
+      COREPORT_DIPSET(0x0001, "1/2" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+      COREPORT_DIPSET(0x0004, "3/2" ) \
+      COREPORT_DIPSET(0x0008, "2" ) \
+      COREPORT_DIPSET(0x0010, "3" ) \
+      COREPORT_DIPSET(0x0020, "4" ) \
+      COREPORT_DIPSET(0x0040, "5" ) \
+      COREPORT_DIPSET(0x0080, "6" ) \
+    COREPORT_DIPNAME( 0xff00, 0x0400, "Credits for big coin") \
+      COREPORT_DIPSET(0x0100, "3" ) \
+      COREPORT_DIPSET(0x0200, "4" ) \
+      COREPORT_DIPSET(0x0400, "5" ) \
+      COREPORT_DIPSET(0x0800, "6" ) \
+      COREPORT_DIPSET(0x1000, "7" ) \
+      COREPORT_DIPSET(0x2000, "8" ) \
+      COREPORT_DIPSET(0x4000, "9" ) \
+      COREPORT_DIPSET(0x8000, "10" )
 
 #define PLAYMATIC_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \

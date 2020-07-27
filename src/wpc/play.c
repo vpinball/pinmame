@@ -173,8 +173,8 @@ static int bitColToNum(int tmp)
   return data;
 }
 
+static UINT8 n2data;
 static WRITE_HANDLER(out1_n) {
-  static UINT8 n2data;
   int p = locals.ef[1];
   switch (offset) {
     case 1: // match & credits displays
@@ -217,6 +217,10 @@ static WRITE_HANDLER(out1_n) {
 
 static READ_HANDLER(in1_n) {
   UINT8 data = coreGlobals.swMatrix[offset];
+  if (offset == 7) {
+    data |= (n2data & core_getDip(2)) ? 0 : 0x40;
+    data |= (n2data & core_getDip(3)) ? 0 : 0x80;
+  }
   return offset > 5 ? ~data : data;
 }
 
@@ -451,7 +455,7 @@ MACHINE_DRIVER_START(PLAYMATIC1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC1,NULL,PLAYMATIC)
   MDRV_SWITCH_UPDATE(PLAYMATIC1)
   MDRV_SWITCH_CONV(play_sw2m, play_m2sw)
-  MDRV_DIPS(3)
+  MDRV_DIPS(32)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_IMPORT_FROM(PLAYMATICS1)
 MACHINE_DRIVER_END
