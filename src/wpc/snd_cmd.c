@@ -34,14 +34,25 @@
 #define LOG(x)
 #endif
 
-#ifdef VPINMAME_ALTSOUND // for alternate/external sound processing
- #include "snd_alt.h"
-#endif
-#ifdef VPINMAME_PINSOUND // for PinSound support
+#ifndef _WIN32
+ #include <sys/time.h>
+ static unsigned int timeGetTime()
+ {
+   struct timeval now;
+   gettimeofday(&now, NULL);
+   return now.tv_usec/1000;
+ }
+#else
  #ifndef WIN32_LEAN_AND_MEAN
  //#define WIN32_LEAN_AND_MEAN
  #endif
  #include <windows.h>
+#endif
+
+#ifdef VPINMAME_ALTSOUND // for alternate/external sound processing
+ #include "snd_alt.h"
+#endif
+#ifdef VPINMAME_PINSOUND // for PinSound support
  //#include <timeapi.h>
  //#include <Shlwapi.h>
  #include <tchar.h>
@@ -56,17 +67,6 @@
  static HANDLE hFilePinMAME;
 
  void pinsound_exit();
-#endif
-
-#ifndef _WIN32
-#include <sys/time.h>
-
-static unsigned int timeGetTime()
-{
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  return now.tv_usec/1000;
-}
 #endif
 
 #ifdef MAME_DEBUG
