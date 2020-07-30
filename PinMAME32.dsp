@@ -2085,7 +2085,7 @@ SOURCE=.\src\wpc\sims\wpc\prelim\dh.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sims\wpc\prelim\dm.c
+SOURCE=.\src\wpc\sims\wpc\full\dm.c
 # End Source File
 # Begin Source File
 

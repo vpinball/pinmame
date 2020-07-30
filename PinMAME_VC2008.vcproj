@@ -4307,7 +4307,7 @@
 								>
 							</File>
 							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\dm.c"
+								RelativePath=".\src\wpc\sims\wpc\full\dm.c"
 								>
 							</File>
 							<File
