@@ -1504,7 +1504,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="src\wpc\sims\wpc\prelim\cp.c" />
     <ClCompile Include="src\wpc\sims\wpc\prelim\cv.c" />
     <ClCompile Include="src\wpc\sims\wpc\prelim\dh.c" />
-    <ClCompile Include="src\wpc\sims\wpc\prelim\dm.c" />
+    <ClCompile Include="src\wpc\sims\wpc\full\dm.c" />
     <ClCompile Include="src\wpc\sims\wpc\prelim\dw.c" />
     <ClCompile Include="src\wpc\sims\wpc\prelim\fs.c" />
     <ClCompile Include="src\wpc\sims\wpc\prelim\i500.c" />

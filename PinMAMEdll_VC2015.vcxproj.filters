@@ -1053,7 +1053,7 @@
     <ClCompile Include="src\wpc\sims\wpc\prelim\dh.c">
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
-    <ClCompile Include="src\wpc\sims\wpc\prelim\dm.c">
+    <ClCompile Include="src\wpc\sims\wpc\full\dm.c">
       <Filter>Source Files\PinMAME\sims\wpc\prelim_wpc</Filter>
     </ClCompile>
     <ClCompile Include="src\wpc\sims\wpc\prelim\dw.c">
