@@ -537,17 +537,18 @@ CORE_CLONEDEF(dm,dt101,lx4, "Demolition Man (FreeWPC/Demolition Time 1.01)", 201
 
 
 static void dm_drawMech(BMTYPE** line) {
-
-  // Claw position, 'M' if magnet enabled, description of position, '*' if
-  // right ramp diverter feeding claw.
-  core_textOutf(30, 0, BLACK, "Claw: %3u%c %-9s%c", locals.clawPos,
-                locals.magnetCount > 0 ? 'M' : ' ', dm_claw_drop[DM_CLAW_DROP_INDEX],
-                locals.diverterPos == NORMAL ? ' ' : '*');
-  // Elevator position and switch indicators (INDEX and HOLD).
-  core_textOutf(30, 10, BLACK, "Elev: %3u %-5s %-5s",
-                locals.elevatorPos,
-                core_getSw(swElevatorIndex) ? "INDEX" : "",
-                core_getSw(swElevatorHold) ? "HOLD" : "");
+  if (coreGlobals.simAvail) {
+    // Claw position, 'M' if magnet enabled, description of position, '*' if
+    // right ramp diverter feeding claw.
+      core_textOutf(30, 0, BLACK, "Claw: %3u%c %-9s%c", locals.clawPos,
+                    locals.magnetCount > 0 ? 'M' : ' ', dm_claw_drop[DM_CLAW_DROP_INDEX],
+                    locals.diverterPos == NORMAL ? ' ' : '*');
+      // Elevator position and switch indicators (INDEX and HOLD).
+      core_textOutf(30, 10, BLACK, "Elev: %3u %-5s %-5s",
+                    locals.elevatorPos,
+                    core_getSw(swElevatorIndex) ? "INDEX" : "",
+                    core_getSw(swElevatorHold) ? "HOLD" : "");
+  }
 }
 
 /*-----------------------
