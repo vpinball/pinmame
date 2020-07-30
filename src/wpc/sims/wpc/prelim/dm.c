@@ -251,9 +251,9 @@ static sim_tState dm_stateDef[] = {
   {"Top Sling",     1, swTopSling,      0,              stFree,         1},
   {"Right Bumper",  1, swRightJet,      0,              stFree,         1},
   /* TODO: randomize bumper action? */
-  {"Bumpers",       1, swLeftJet,       0,              stBumpers2,     1},
-  {"Bumpers",       1, swRightJet,      0,              stBumpers3,     1},
-  {"Bumpers",       1, swTopSling,      0,              stFree,         1},
+  {"Bumpers",       1, swLeftJet,       0,              stBumpers2,     3},
+  {"Bumpers",       1, swRightJet,      0,              stBumpers3,     3},
+  {"Bumpers",       1, swTopSling,      0,              stFree,         3},
 
   /* Line 4 */
   {"M-t-l",         1, swRolloverM,     0,              stBumpers,      1},
