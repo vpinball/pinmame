@@ -65,7 +65,7 @@ core_tLCDLayout atari_disp2[] = {
 / The Atarians (11/1976)
 /-------------------------------------------------------------------*/
 INITGAME1(atarians, atari_disp1, FLIP_SWNO(36,37), 1, 0)
-ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
+ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b), // nuatari has exact same roms on webpage
 							"atarian.e00",	CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
 ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
 ATARI_ROMEND
@@ -85,7 +85,7 @@ CORE_CLONEDEFNV(atarianb,atarians,"Atarians, The (MOD working bootleg)",2002,"At
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1, 0)
-ATARI_2_ROMSTART(time2000,	"time.e0",	CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0),
+ATARI_2_ROMSTART(time2000,	"time.e0",	CRC(1e79c133) SHA1(54ce5d59a00334fcec8b12c077d70e3629549af0), // nuatari has exact same roms on webpage
 							"time.e00",	CRC(e380f35c) SHA1(f2b4c508c8b7a2ce9924da97c05fb31d5115f36f))
 ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
 ATARI_ROMEND
@@ -105,22 +105,32 @@ CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,0)
 / Middle Earth (02/1978)
 /-------------------------------------------------------------------*/
 INITGAME1(midearth, atari_disp1, FLIPSW1920, 1, 2)
-ATARI_2_ROMSTART(midearth,	"608.bin",	CRC(28b92faf) SHA1(8585770f4059049f1dcbc0c6ef5718b6ff1a5431),
-							"609.bin",	CRC(589df745) SHA1(4bd3e4f177e8d86bab41f3a14c169b936eeb480a))
+ATARI_2_ROMSTART(midearth,	"608.bin", CRC(28b92faf) SHA1(8585770f4059049f1dcbc0c6ef5718b6ff1a5431), // nuatari has exact same roms on webpage
+							"609.bin", CRC(589df745) SHA1(4bd3e4f177e8d86bab41f3a14c169b936eeb480a))
 ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC))
 ATARI_ROMEND
 CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
+
+/*-------------------------------------------------------------------
+/ Middle Earth (alternate)
+/-------------------------------------------------------------------*/
+INITGAME1(midearta, atari_disp1, FLIPSW1920, 1, 2)
+ATARI_2_ROMSTART(midearta,	"20856-01.BIN",	CRC(8f119e37) SHA1(5a4d63605865f3ceca4c09dbdcd888498c615b89),
+							"20855-01.BIN", CRC(4a9d47ca) SHA1(57c4458822109c3ba2fa53ac1c1cd6e169e51b24))
+ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC))
+ATARI_ROMEND
+CORE_CLONEDEFNV(midearta,midearth,"Middle Earth (alternate)",197?,"Atari",gl_mATARI1A,0)
 
 // pre-production / white main cabinet has different CPU PROMs
 // also a german CPU-PROMs variant exist (which seems to be the same as the pre-production according to nuatari?!)
 
 /*-------------------------------------------------------------------
-/ Middle Earth (pre-production and/or german)
+/ Middle Earth (pre-production and/or german) //!! this is the best we got from nuatari
 /-------------------------------------------------------------------*/
 INITGAME1(mideartp, atari_disp1, FLIPSW1920, 1, 2)
 ATARI_2_ROMSTART(mideartp,	"c.e0",	CRC(553044c1) SHA1(4ad328eff48b82b32721684d181a339eae304d92) BAD_DUMP,
 							"c.e00",CRC(288cd68d) SHA1(d97d31f59525b785bfa4c3fc8445eb294591bde2) BAD_DUMP)
-ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) //!! correct? nuatari mentions a nonsense ROM (20248 game PROM used in Airborne Avengers)
+ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) // confirmed by nuatari
 ATARI_ROMEND
 CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Atari",gl_mATARI1A,GAME_NOT_WORKING)
 
@@ -130,7 +140,7 @@ CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Ata
 INITGAME1(spcrider, atari_disp1, FLIPSW6667, 1, 2)
 ATARI_2_ROMSTART(spcrider,	"spacel.bin",	CRC(66ffb04e) SHA1(42d8b7fb7206b30478f631d0e947c0908dcf5419),
 							"spacer.bin",	CRC(3cf1cd73) SHA1(c46044fb815b439f12fb3e21c470c8b93ebdfd55))
-ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) // nuatari lists 20967-01, manual schematics and parts list 20252-01 though
+ATARI_SNDSTART("82s130.bin", CRC(da1f77b4) SHA1(b21fdc1c6f196c320ec5404013d672c35f95890b)) // 20967-01 // nuatari lists 20967-01 (and claims that all the SR boards (5) he has feature that one), manual schematics and parts list 20252-01 though
 ATARI_ROMEND
 CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,0)
 
