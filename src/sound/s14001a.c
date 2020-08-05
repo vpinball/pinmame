@@ -117,7 +117,6 @@ and off as it normally does during speech). Once START has gone low-high-low, th
 
 UINT8 *m_SpeechRom;
 int stream;
-int VSU1000_amp;
 
 //devcb_write_line m_bsy_handler;
 //devcb_read8 m_ext_read_handler;
@@ -201,9 +200,103 @@ BOOL Clock(void); // called once to toggle external clock twice
 UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2);
 void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDeltaP2, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2);
 UINT8 CalculateOutput(BOOL bVoicedP2, BOOL bXSilenceP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uLOutputP2, UINT8 uIncrementP2, BOOL bAddP2);
+void ClearStatistics();
 void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords);
 
 void s14001a_update(int ch, INT16 *buffer, int length);
+
+UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2)
+{
+	// pick two bits of rom data as delta
+
+	if (bVoicedP2 && (uPPQtrP2 & 0x01)) // mirroring
+		uDeltaAdrP2 ^= 0x03; // count backwards
+
+	// emulate 8 to 2 mux to obtain delta from byte (bigendian)
+	switch (uDeltaAdrP2)
+	{
+	case 0x00:
+		return (uRomDataP2 & 0xC0) >> 6;
+	case 0x01:
+		return (uRomDataP2 & 0x30) >> 4;
+	case 0x02:
+		return (uRomDataP2 & 0x0C) >> 2;
+	case 0x03:
+		return (uRomDataP2 & 0x03) >> 0;
+	default:
+		return 0xFF;
+	}
+}
+
+void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDelta, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2)
+{
+	static const UINT8 uIncrements[4][4] =
+	{
+	//    00  01  10  11
+		{ 3,  3,  1,  1,}, // 00
+		{ 1,  1,  0,  0,}, // 01
+		{ 0,  0,  1,  1,}, // 10
+		{ 1,  1,  3,  3 }, // 11
+	};
+
+	// uPPQtr, pitch period quarter counter; 2 lsb of uLength
+	// bPPStart, start of a pitch period
+	// implemented to mimic silicon (a bit)
+
+	// beginning of a pitch period
+	if (uPPQtrP2 == 0x00 && bPPQStartP2) // note this is done for voiced and unvoiced
+		uDeltaOldP2 = 0x02;
+
+#define MIRROR  (uPPQtrP2&0x01)
+
+	// calculate increment from delta, always done even if silent to update uDeltaOld
+	// in silicon a PLA determined 0,1,3 and add/subtract and passed uDelta to uDeltaOld
+	if (!bVoicedP2 || !MIRROR)
+	{
+		*uIncrementP2 = uIncrements[uDelta][uDeltaOldP2];
+		*bAddP2       = uDelta >= 0x02;
+	}
+	else
+	{
+		*uIncrementP2 = uIncrements[uDeltaOldP2][uDelta];
+		*bAddP2       = uDeltaOldP2 < 0x02;
+	}
+	*uDeltaOldP1 = uDelta;
+	if (bVoicedP2 && bPPQStartP2 && MIRROR)
+		uIncrementP2 = 0; // no change when first starting mirroring
+}
+
+UINT8 CalculateOutput(BOOL bVoiced, BOOL bXSilence, UINT8 uPPQtr, BOOL bPPQStart, UINT8 uLOutput, UINT8 uIncrementP2, BOOL bAddP2)
+{
+	// implemented to mimic silicon (a bit)
+	// limits output to 0x00 and 0x0f
+	UINT8 uTmp; // used for subtraction
+
+#define SILENCE (uPPQtr&0x02)
+
+	// determine output
+	if (bXSilence || (bVoiced && SILENCE))
+		return 7;
+
+	// beginning of a pitch period
+	if ((uPPQtr == 0x00) && bPPQStart) // note this is done for voiced and nonvoiced
+		uLOutput = 7;
+
+	// adder
+	uTmp = uLOutput;
+	if (!bAddP2)
+		uTmp ^= 0x0F; // turns subtraction into addition
+
+	// add 0, 1, 3; limit at 15
+	uTmp += uIncrementP2;
+	if (uTmp > 15)
+		uTmp = 15;
+
+	if (!bAddP2)
+		uTmp ^= 0x0F; // turns addition back to subtraction
+
+	return uTmp;
+}
 
 //-------------------------------------------------
 //  device_start - device-specific startup
@@ -217,14 +310,12 @@ int s14001a_sh_start(const struct MachineSound *msound)
 
 	//!! m_stream = machine().sound().stream_alloc(*this, 0, 1, clock() ? clock() : machine().sample_rate());
 #ifdef PINMAME
-	stream = stream_init("S14001A", 100, 19000, 0, s14001a_update); //!! 19.5kHz to 34.7kHz?
+	stream = stream_init("S14001A", 100, /*19531*/34722, 0, s14001a_update); // 19.5kHz to 34.7kHz, 34722 is what is set by all Stern machines as first clock
 #else
 	stream = stream_init("S14001A", 100, 44100, 0, s14001a_update);
 #endif
 	if (stream == -1)
 		return 1;
-
-	VSU1000_amp = 15;
 
 	// resolve callbacks
 	//m_ext_read_handler.resolve();
@@ -240,7 +331,6 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	m_uDAR04To00P2 = 0;
 	m_uCWARP1 = 0;
 	m_uCWARP2 = 0;
-
 	m_bStopP1 = 0;
 	m_bStopP2 = 0;
 	m_bVoicedP1 = 0;
@@ -262,11 +352,8 @@ int s14001a_sh_start(const struct MachineSound *msound)
 	m_bBusyP1 = 0;
 	m_bStart = 0;
 	m_uWord = 0;
-	m_uNPitchPeriods = 0;
-	m_uNVoiced = 0;
-	m_uNControlWords = 0;
-	//m_uPrintLevel = 0;
 
+	ClearStatistics();
 	m_uOutputP1 = m_uOutputP2 = 7;
 
 	// register for savestates
@@ -326,12 +413,12 @@ void s14001a_sh_stop(void)
 void s14001a_update(int ch, INT16 *buffer, int length)
 {
 	int i;
-	int sample;
 	for (i = 0; i < length; i++)
 	{
+		INT16 sample;
 		Clock();
 		sample = m_uOutputP2 - 7; // range -7..8
-		buffer[i] = (INT16)(sample * 0xf00 * VSU1000_amp / 15);
+		buffer[i] = sample * 0xf00;
 	}
 }
 
@@ -387,17 +474,6 @@ void S14001A_set_rate(int newrate)
 #else
 	VSU1000_freq = newrate;
 #endif
-}
-
-void S14001A_set_volume(int volume)
-{
-	if (stream != -1)
-		stream_update(stream, 0);
-#ifdef PINMAME
-	if (volume < 0) volume = 0;
-	else if (volume > 15) volume = 15;
-#endif
-	VSU1000_amp = volume;
 }
 
 /**************************************************************************
@@ -635,95 +711,12 @@ BOOL Clock(void)
 	return TRUE;
 }
 
-UINT8 Mux8To2(BOOL bVoicedP2, UINT8 uPPQtrP2, UINT8 uDeltaAdrP2, UINT8 uRomDataP2)
+void ClearStatistics()
 {
-	// pick two bits of rom data as delta
-
-	if (bVoicedP2 && uPPQtrP2&0x01) // mirroring
-	{
-		uDeltaAdrP2 ^= 0x03; // count backwards
-	}
-	// emulate 8 to 2 mux to obtain delta from byte (bigendian)
-	switch (uDeltaAdrP2)
-	{
-	case 0x00:
-		return (uRomDataP2&0xC0)>>6;
-	case 0x01:
-		return (uRomDataP2&0x30)>>4;
-	case 0x02:
-		return (uRomDataP2&0x0C)>>2;
-	case 0x03:
-		return (uRomDataP2&0x03)>>0;
-	}
-	return 0xFF;
-}
-
-void CalculateIncrement(BOOL bVoicedP2, UINT8 uPPQtrP2, BOOL bPPQStartP2, UINT8 uDelta, UINT8 uDeltaOldP2, UINT8 *uDeltaOldP1, UINT8 *uIncrementP2, BOOL *bAddP2)
-{
-	static const UINT8 uIncrements[4][4] =
-	{
-	//    00  01  10  11
-		{ 3,  3,  1,  1,}, // 00
-		{ 1,  1,  0,  0,}, // 01
-		{ 0,  0,  1,  1,}, // 10
-		{ 1,  1,  3,  3 }, // 11
-	};
-
-        // uPPQtr, pitch period quarter counter; 2 lsb of uLength
-	// bPPStart, start of a pitch period
-	// implemented to mimic silicon (a bit)
-
-	// beginning of a pitch period
-	if (uPPQtrP2 == 0x00 && bPPQStartP2) // note this is done for voiced and unvoiced
-	{
-		uDeltaOldP2 = 0x02;
-	}
-
-#define MIRROR  (uPPQtrP2&0x01)
-
-	// calculate increment from delta, always done even if silent to update uDeltaOld
-	// in silicon a PLA determined 0,1,3 and add/subtract and passed uDelta to uDeltaOld
-	if (!bVoicedP2 || !MIRROR)
-	{
-		*uIncrementP2 = uIncrements[uDelta][uDeltaOldP2];
-		*bAddP2       = uDelta >= 0x02;
-	}
-	else
-	{
-		*uIncrementP2 = uIncrements[uDeltaOldP2][uDelta];
-		*bAddP2       = uDeltaOldP2 < 0x02;
-	}
-	*uDeltaOldP1 = uDelta;
-	if (bVoicedP2 && bPPQStartP2 && MIRROR) uIncrementP2 = 0; // no change when first starting mirroring
-}
-
-UINT8 CalculateOutput(BOOL bVoiced, BOOL bXSilence, UINT8 uPPQtr, BOOL bPPQStart, UINT8 uLOutput, UINT8 uIncrementP2, BOOL bAddP2)
-{
-	// implemented to mimic silicon (a bit)
-	// limits output to 0x00 and 0x0f
-	UINT8 uTmp; // used for subtraction
-
-#define SILENCE (uPPQtr&0x02)
-
-	// determine output
-	if (bXSilence || (bVoiced && SILENCE)) return 7;
-
-	// beginning of a pitch period
-	if (uPPQtr == 0x00 && bPPQStart) // note this is done for voiced and nonvoiced
-	{
-		uLOutput = 7;
-	}
-
-	// adder
-	uTmp = uLOutput;
-	if (!bAddP2) uTmp ^= 0x0F; // turns subtraction into addition
-
-	// add 0, 1, 3; limit at 15
-	uTmp += uIncrementP2;
-	if (uTmp > 15) uTmp = 15;
-
-	if (!bAddP2) uTmp ^= 0x0F; // turns addition back to subtraction
-	return uTmp;
+	m_uNPitchPeriods = 0;
+	m_uNVoiced       = 0;
+	//m_uPrintLevel    = 0;
+	m_uNControlWords = 0;
 }
 
 void GetStatistics(UINT32 *uNPitchPeriods, UINT32 *uNVoiced, UINT32 *uNControlWords)
