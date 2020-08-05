@@ -374,7 +374,7 @@ static INT16 sineWaveext[16][32000]; // wave triggered by external clock, very r
 
 
 static int setvol(int param) {
-	if ((st300loc.volnr) == 0) return 0;
+	if (st300loc.volnr == 0) return 0;
 	if (st300loc.dir) { // count up
 //		logerror("volume up %04d ind %04d \n",volume300[st300loc.volnr],st300loc.volnr );
 		return volume300[st300loc.volnr];
@@ -409,10 +409,10 @@ static void playsam3(int param) {
 	if ((st300loc.cr3 & 0x80) && (st300loc.timlat3 > 0) && (st300loc.reset == 0)) {		// output is enabled...
 		startvol(0);
 		if (setvol(0) == 0) {
-			logerror("playsam Q2/Q3noise volume off \n");
+			logerror("playsam Q2/Q3 noise volume off\n");
 		}
 		if (setvol(0) == 100) {
-			logerror("playsam Q2/Q3noise volume maximum\n");
+			logerror("playsam Q2/Q3 noise volume maximum\n");
 		}
 
 		mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
@@ -420,10 +420,10 @@ static void playsam3(int param) {
 	} else {	// q3 is not running... //!! exact same code!
 		startvol(0);
 		if (setvol(0) == 0) {
-			logerror("playsam Q2/EXT noise volume off \n");
+			logerror("playsam Q2/EXT noise volume off\n");
 		}
 		if (setvol(0) == 100) {
-			logerror("playsam q2/EXT noise volume maximum\n");
+			logerror("playsam Q2/EXT noise volume maximum\n");
 		}
 
 		mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
@@ -583,19 +583,23 @@ static int st300_sh_start(const struct MachineSound *msound) {
 		snddatst300.c0 = 0;
 	}
 
-	// very very rough approximation sample table for what the real noise generator is doing:
+	// very very rough approximation sample table for what the real noise generator is doing (not that important though, noise is very very rarely triggered on the tables):
 	// original noise sample table in [0]
 	for (i = 0;i < 32000;++i) {
 		//s = (s ? 0 : 1);
 		//if (s) {
-			sineWaveext[0][i] = (INT16)white_noise((float)(32767*0.85)); //rand()*2-32767;
+			float s = white_noise(0.85f)+brown_noise(0.15f);
+			if (s <= -1.0f)
+				s = -32767.f;
+			else if (s >= 1.0f)
+				s = 32767.f;
+			else
+				s *= 32767.f;
+			sineWaveext[0][i] = (INT16)s; //rand()*2-32767;
 		//} else {
 		//	sineWaveext[i] = 0-rand();
 		//}
 	}
-	// add some brown noise to the white noise
-	for (i = 0;i < 32000;++i)
-		sineWaveext[0][i] += (INT16)brown_noise((float)(32767*0.15));
 
 	// box filtered noise sample tables in [1]..[15]
 	for (j = 1; j < 16; ++j) {
@@ -665,13 +669,13 @@ static WRITE_HANDLER(st300_ctrl_w) {
 		playsamext(0);
 		playsam3(0);
 	} else {
-		logerror("st300_CTRL_W xxxx data %02x  \n", data);
+		logerror("st300_CTRL_W xxxx data %02x \n", data);
 		if (data & 0x80) {	// VSU-1000 control write
-			int clock_divisor = 16 - (data & 0x07);
-			logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, ((data >> 3) & 0xf));
+			const int clock_divisor = 16 - (data & 0x07);
+			logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x \n", data, /*data & 0x07*/S14001_CLOCK / clock_divisor / 8, ((data >> 3) & 0xf));
 			/* volume and frequency control goes here */
-			S14001A_set_volume(15-((data >> 3) & 0xf));
-			//m_s14001a->set_output_gain(0, ((data >> 3 & 0xf) + 1) / 16.0); //!! from MAME
+			mixer_set_volume(9, (int)((15-((data >> 3) & 0xf)) / 15.0 * 100.0)); // PinMAME
+			//mixer_set_volume(9, (int)(((data >> 3 & 0xf) + 1) / 16.0 * 100.0)); //!! MAME
 			/* clock control - the first LS161 divides the clock by 9 to 16, the 2nd by 8,
 			   giving a final clock from 19.5kHz to 34.7kHz */
 			S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
@@ -697,7 +701,7 @@ static WRITE_HANDLER(st300_data_w) {
 		snddatst300.timer1 = st300loc.timlat1;
 		w1 = ST300_INTCLOCK / (2 * (snddatst300.timer1 + 1));
 		st300loc.tfre1 = w1;
-//		logerror("%04x: st300_data_w timlat1 loaded %04x  \n", activecpu_get_previouspc(), st300loc.timlat1);
+//		logerror("%04x: st300_data_w timlat1 loaded %04x \n", activecpu_get_previouspc(), st300loc.timlat1);
 		if (st300loc.timlat1 == 0) {
 			mixer_stop_sample(st300loc.channel+1);
 			logerror ("Playsam Q1 off\n");
@@ -707,13 +711,13 @@ static WRITE_HANDLER(st300_data_w) {
 		st300loc.timlat2 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
 		snddatst300.timer2 = st300loc.timlat2;
 		st300loc.tfre2 = ST300_INTCLOCK / (2 * (snddatst300.timer2 + 1));
-//		logerror("%04x: st300_data_w timlat2 loaded %04x freq %04d  \n", activecpu_get_previouspc(), st300loc.timlat2,st300loc.tfre2);
+//		logerror("%04x: st300_data_w timlat2 loaded %04x freq %04d \n", activecpu_get_previouspc(), st300loc.timlat2,st300loc.tfre2);
 	}
 	if (data == 7) {
 		st300loc.timlat3 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
 		snddatst300.timer3 = st300loc.timlat3;
 		st300loc.tfre3 = (ST300_INTCLOCK / (2 * (snddatst300.timer3 + 1)));
-		logerror("%04x: st300_data_w timlat3 loaded %04x freq %04d  \n", activecpu_get_previouspc(), st300loc.timlat3,st300loc.tfre3);
+		logerror("%04x: st300_data_w timlat3 loaded %04x freq %04d \n", activecpu_get_previouspc(), st300loc.timlat3,st300loc.tfre3);
 	}
 	if (data == 1) {
 		st300loc.cr2= snddatst300.ax[data];
