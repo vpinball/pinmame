@@ -23,6 +23,8 @@ static struct {
 static int  atari_sh_start1(const struct MachineSound *msound);
 static int  atari_sh_start2(const struct MachineSound *msound);
 static void atari_sh_stop (void);
+static void atari_sh_reset1(void);
+static void atari_sh_reset2(void);
 static WRITE_HANDLER(atari_data1_w);
 static WRITE_HANDLER(atari_ctrl1_w);
 static WRITE_HANDLER(atari_data_w);
@@ -42,8 +44,8 @@ const struct sndbrdIntf atari1sIntf = {
 const struct sndbrdIntf atari2sIntf = {
   "ATARI2", atari_init, NULL, NULL, atari_data_w, atari_data_w, NULL, atari_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct CustomSound_interface atari1s_custInt = {atari_sh_start1, atari_sh_stop};
-static struct CustomSound_interface atari2s_custInt = {atari_sh_start2, atari_sh_stop};
+static struct CustomSound_interface atari1s_custInt = {atari_sh_start1, atari_sh_stop, NULL, atari_sh_reset1};
+static struct CustomSound_interface atari2s_custInt = {atari_sh_start2, atari_sh_stop, NULL, atari_sh_reset2};
 
 MACHINE_DRIVER_START(atari1s)
   MDRV_SOUND_ADD(CUSTOM, atari1s_custInt)
@@ -143,6 +145,15 @@ static int atari_sh_start2(const struct MachineSound *msound) {
 }
 
 static void atari_sh_stop(void) {
+}
+
+static void atari_sh_reset1(void) {
+  stopSound();
+}
+
+static void atari_sh_reset2(void) {
+  stopSound();
+  stopNoise();
 }
 
 static WRITE_HANDLER(atari_data1_w) {

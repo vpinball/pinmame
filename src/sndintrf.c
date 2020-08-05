@@ -238,6 +238,10 @@ void custom_sh_update(void)
 {
 	if (cust_intf->sh_update) (*cust_intf->sh_update)();
 }
+void custom_sh_reset(void)
+{
+	if (cust_intf->sh_reset) (*cust_intf->sh_reset)();
+}
 #endif
 #if (HAS_DAC)
 int DAC_num(const struct MachineSound *msound) { return ((struct DACinterface*)msound->sound_interface)->num; }
@@ -451,7 +455,7 @@ struct snd_interface sndintf[] =
 		custom_sh_start,
 		custom_sh_stop,
 		custom_sh_update,
-		0
+		custom_sh_reset
 	},
 #endif
 #if (HAS_SAMPLES)

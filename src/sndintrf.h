@@ -435,6 +435,7 @@ struct CustomSound_interface
 	int (*sh_start)(const struct MachineSound *msound);
 	void (*sh_stop)(void);
 	void (*sh_update)(void);
+	void (*sh_reset)(void);
 };
 
 
