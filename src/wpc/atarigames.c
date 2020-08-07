@@ -69,7 +69,7 @@ ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79ac
 							"atarian.e00",	CRC(6066bd63) SHA1(e993497d0ca9f056e18838494089def8bdc265c9))
 ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
 ATARI_ROMEND
-CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,0)
 
 /*-------------------------------------------------------------------
 / Time 2000 (06/1977)
