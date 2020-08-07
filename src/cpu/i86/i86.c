@@ -129,7 +129,7 @@ static void i86_state_register(void)
 void i86_init(void)
 {
 	unsigned int i, j, c;
-	BREGS reg_name[8] = {AL, CL, DL, BL, AH, CH, DH, BH};
+	static const BREGS reg_name[8] = {AL, CL, DL, BL, AH, CH, DH, BH};
 	for (i = 0; i < 256; i++)
 	{
 		for (j = i, c = 0; j > 0; j >>= 1)

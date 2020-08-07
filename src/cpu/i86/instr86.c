@@ -1,6 +1,6 @@
 /****************************************************************************
-*			  real mode i286 emulator v1.4 by Fabrice Frances				*
-*				(initial work based on David Hedley's pcemu)                *
+*             real mode i286 emulator v1.4 by Fabrice Frances               *
+*               (initial work based on David Hedley's pcemu)                *
 ****************************************************************************/
 
 /*
@@ -387,7 +387,7 @@ static void PREFIX86(_rotate_shift_Word)(unsigned ModRM, unsigned count)
 static void PREFIX(rep)(int flagval)
 {
     /* Handles rep- and repnz- prefixes. flagval is the value of ZF for the
-		 loop  to continue for CMPS and SCAS instructions. */
+         loop  to continue for CMPS and SCAS instructions. */
 
 	unsigned next = FETCHOP;
 	unsigned count = I.regs.w[CX];
@@ -424,7 +424,7 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
-			PutMemB(ES,I.regs.w[DI],read_port(I.regs.w[DX]));
+			PutMemB(ES,I.regs.w[DI],read_port_byte(I.regs.w[DX]));
 			I.regs.w[DI] += I.DirVal;
 			ICOUNT -= cycles.rep_ins8_count;
 		}
@@ -435,8 +435,7 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
-			PutMemB(ES,I.regs.w[DI],read_port(I.regs.w[DX]));
-			PutMemB(ES,I.regs.w[DI]+1,read_port(I.regs.w[DX]+1));
+			PutMemW(ES,I.regs.w[DI],read_port_word(I.regs.w[DX]));
 			I.regs.w[DI] += 2 * I.DirVal;
 			ICOUNT -= cycles.rep_ins16_count;
 		}
@@ -447,7 +446,7 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
-			write_port(I.regs.w[DX],GetMemB(DS,I.regs.w[SI]));
+			write_port_byte(I.regs.w[DX],GetMemB(DS,I.regs.w[SI]));
 			I.regs.w[SI] += I.DirVal; /* GOL 11/27/01 */
 			ICOUNT -= cycles.rep_outs8_count;
 		}
@@ -458,8 +457,7 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
-			write_port(I.regs.w[DX],GetMemB(DS,I.regs.w[SI]));
-			write_port(I.regs.w[DX]+1,GetMemB(DS,I.regs.w[SI]+1));
+			write_port_word(I.regs.w[DX],GetMemW(DS,I.regs.w[SI]));
 			I.regs.w[SI] += 2 * I.DirVal; /* GOL 11/27/01 */
 			ICOUNT -= cycles.rep_outs16_count;
 		}
@@ -544,8 +542,7 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
-			PutMemB(ES,I.regs.w[DI],I.regs.b[AL]);
-			PutMemB(ES,I.regs.w[DI]+1,I.regs.b[AH]);
+			PutMemW(ES,I.regs.w[DI],I.regs.w[AX]);
 			I.regs.w[DI] += 2 * I.DirVal;
 			ICOUNT -= cycles.rep_stos16_count;
 		}
@@ -1994,18 +1991,25 @@ static void PREFIX86(_call_far)(void)
 
 static void PREFIX86(_wait)(void)    /* Opcode 0x9b */
 {
-	ICOUNT -= cycles.wait;
+	/*if (I.test_state)
+	{
+		ICOUNT = 0;
+		I.pc--;
+	}
+	else*/
+		ICOUNT -= cycles.wait;
 }
 
 static void PREFIX86(_pushf)(void)    /* Opcode 0x9c */
 {
+	unsigned tmp;
 	ICOUNT -= cycles.pushf;
+
+	tmp = CompressFlags();
 #ifdef I286
-    PUSH( CompressFlags() & ~0xf000 );
-#elif defined V20
-    PUSH( CompressFlags() | 0xe000 );
+    PUSH( tmp &= ~0xf000 );
 #else
-    PUSH( CompressFlags() | 0xf000 );
+    PUSH( tmp | 0xf000 );
 #endif
 }
 
@@ -2020,11 +2024,7 @@ static void PREFIX86(_popf)(void)    /* Opcode 0x9d */
 
 	/* if the IF is set, and an interrupt is pending, signal an interrupt */
 	if (I.IF && I.irq_state)
-#ifdef V20
-		PREFIX(_interrupt)(-1, 0);
-#else
 		PREFIX(_interrupt)(-1);
-#endif
 }
 
 static void PREFIX86(_sahf)(void)    /* Opcode 0x9e */
@@ -2060,8 +2060,7 @@ static void PREFIX86(_mov_axdisp)(void)    /* Opcode 0xa1 */
 	addr += FETCH << 8;
 
 	ICOUNT -= cycles.mov_am16;
-	I.regs.b[AL] = GetMemB(DS, addr);
-	I.regs.b[AH] = GetMemB(DS, addr+1);
+	I.regs.w[AX] = GetMemW(DS, addr);
 }
 
 static void PREFIX86(_mov_dispal)(void)    /* Opcode 0xa2 */
@@ -2083,8 +2082,7 @@ static void PREFIX86(_mov_dispax)(void)    /* Opcode 0xa3 */
 	addr += FETCH << 8;
 
 	ICOUNT -= cycles.mov_ma16;
-	PutMemB(DS, addr, I.regs.b[AL]);
-	PutMemB(DS, addr+1, I.regs.b[AH]);
+	PutMemW(DS, addr, I.regs.w[AX]);
 }
 
 static void PREFIX86(_movsb)(void)    /* Opcode 0xa4 */
@@ -2148,8 +2146,7 @@ static void PREFIX86(_stosb)(void)    /* Opcode 0xaa */
 
 static void PREFIX86(_stosw)(void)    /* Opcode 0xab */
 {
-	PutMemB(ES,I.regs.w[DI],I.regs.b[AL]);
-	PutMemB(ES,I.regs.w[DI]+1,I.regs.b[AH]);
+	PutMemW(ES,I.regs.w[DI],I.regs.w[AX]);
 	I.regs.w[DI] += 2 * I.DirVal;
 	ICOUNT -= cycles.stos16;
 }
@@ -2398,33 +2395,21 @@ static void PREFIX86(_retf)(void)    /* Opcode 0xcb */
 static void PREFIX86(_int3)(void)    /* Opcode 0xcc */
 {
 	ICOUNT -= cycles.int3;
-#ifdef V20
-	PREFIX(_interrupt)(3,0);
-#else
 	PREFIX(_interrupt)(3);
-#endif
 }
 
 static void PREFIX86(_int)(void)    /* Opcode 0xcd */
 {
 	unsigned int_num = FETCH;
 	ICOUNT -= cycles.int_imm;
-#ifdef V20
-	PREFIX(_interrupt)(int_num,0);
-#else
 	PREFIX(_interrupt)(int_num);
-#endif
 }
 
 static void PREFIX86(_into)(void)    /* Opcode 0xce */
 {
 	if (OF) {
 		ICOUNT -= cycles.into_t;
-#ifdef V20
-		PREFIX(_interrupt)(4,0);
-#else
 		PREFIX(_interrupt)(4);
-#endif
 	} else ICOUNT -= cycles.into_nt;
 }
 
@@ -2449,11 +2434,7 @@ static void PREFIX86(_iret)(void)    /* Opcode 0xcf */
 
 	/* if the IF is set, and an interrupt is pending, signal an interrupt */
 	if (I.IF && I.irq_state)
-#ifdef V20
-		PREFIX(_interrupt)(-1, 0);
-#else
 		PREFIX(_interrupt)(-1);
-#endif
 }
 
 static void PREFIX86(_rotshft_b)(void)    /* Opcode 0xd0 */
@@ -2486,7 +2467,6 @@ static void PREFIX86(_aam)(void)    /* Opcode 0xd4 */
 	unsigned mult = FETCH;
 
 	ICOUNT -= cycles.aam;
-#ifndef V20
 	if (mult == 0)
 		PREFIX(_interrupt)(0);
 	else
@@ -2496,17 +2476,6 @@ static void PREFIX86(_aam)(void)    /* Opcode 0xd4 */
 
 		SetSZPF_Word(I.regs.w[AX]);
 	}
-#else
-
-	if (mult == 0)
-		PREFIX(_interrupt)(0,0);
-    else
-    {
-		I.regs.b[AH] = I.regs.b[AL] / 10;
-		I.regs.b[AL] %= 10;
-		SetSZPF_Word(I.regs.w[AX]);
-    }
-#endif
 }
 
 static void PREFIX86(_aad)(void)    /* Opcode 0xd5 */
@@ -2515,25 +2484,12 @@ static void PREFIX86(_aad)(void)    /* Opcode 0xd5 */
 
 	ICOUNT -= cycles.aad;
 
-#ifndef V20
 	I.regs.b[AL] = I.regs.b[AH] * mult + I.regs.b[AL];
 	I.regs.b[AH] = 0;
 
 	SetZF(I.regs.b[AL]);
 	SetPF(I.regs.b[AL]);
 	I.SignVal = 0;
-#else
-/* OB: Opcode works on NEC V-Series but not the Variants 	*/
-/*     one could specify any byte value as operand but the NECs */
-/*     always substitute 0x0a.					*/
-	I.regs.b[AL] = I.regs.b[AH] * 10 + I.regs.b[AL];
-	I.regs.b[AH] = 0;
-
-	SetZF(I.regs.b[AL]);
-	SetPF(I.regs.b[AL]);
-	I.SignVal = 0;
-	mult=0;
-#endif
 }
 
 
@@ -2615,7 +2571,7 @@ static void PREFIX86(_inal)(void)    /* Opcode 0xe4 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.in_imm8;
-	I.regs.b[AL] = read_port(port);
+	I.regs.b[AL] = read_port_byte(port);
 }
 
 static void PREFIX86(_inax)(void)    /* Opcode 0xe5 */
@@ -2623,8 +2579,7 @@ static void PREFIX86(_inax)(void)    /* Opcode 0xe5 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.in_imm16;
-	I.regs.b[AL] = read_port(port);
-	I.regs.b[AH] = read_port(port+1);
+	I.regs.w[AX] = read_port_word(port);
 }
 
 static void PREFIX86(_outal)(void)    /* Opcode 0xe6 */
@@ -2632,7 +2587,7 @@ static void PREFIX86(_outal)(void)    /* Opcode 0xe6 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.out_imm8;
-	write_port(port, I.regs.b[AL]);
+	write_port_byte(port, I.regs.b[AL]);
 }
 
 static void PREFIX86(_outax)(void)    /* Opcode 0xe7 */
@@ -2640,8 +2595,7 @@ static void PREFIX86(_outax)(void)    /* Opcode 0xe7 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.out_imm16;
-	write_port(port, I.regs.b[AL]);
-	write_port(port+1, I.regs.b[AH]);
+	write_port_word(port, I.regs.w[AX]);
 }
 
 static void PREFIX86(_call_d16)(void)    /* Opcode 0xe8 */
@@ -2701,7 +2655,7 @@ static void PREFIX86(_jmp_d8)(void)    /* Opcode 0xeb */
 static void PREFIX86(_inaldx)(void)    /* Opcode 0xec */
 {
 	ICOUNT -= cycles.in_dx8;
-	I.regs.b[AL] = read_port(I.regs.w[DX]);
+	I.regs.b[AL] = read_port_byte(I.regs.w[DX]);
 }
 
 static void PREFIX86(_inaxdx)(void)    /* Opcode 0xed */
@@ -2709,14 +2663,13 @@ static void PREFIX86(_inaxdx)(void)    /* Opcode 0xed */
 	unsigned port = I.regs.w[DX];
 
 	ICOUNT -= cycles.in_dx16;
-	I.regs.b[AL] = read_port(port);
-	I.regs.b[AH] = read_port(port+1);
+	I.regs.w[AX] = read_port_word(port);
 }
 
 static void PREFIX86(_outdxal)(void)    /* Opcode 0xee */
 {
 	ICOUNT -= cycles.out_dx8;
-	write_port(I.regs.w[DX], I.regs.b[AL]);
+	write_port_byte(I.regs.w[DX], I.regs.b[AL]);
 }
 
 static void PREFIX86(_outdxax)(void)    /* Opcode 0xef */
@@ -2724,8 +2677,7 @@ static void PREFIX86(_outdxax)(void)    /* Opcode 0xef */
 	unsigned port = I.regs.w[DX];
 
 	ICOUNT -= cycles.out_dx16;
-	write_port(port, I.regs.b[AL]);
-	write_port(port+1, I.regs.b[AH]);
+	write_port_word(port, I.regs.w[AX]);
 }
 
 /* I think thats not a V20 instruction...*/
@@ -2834,11 +2786,7 @@ static void PREFIX86(_f6pre)(void)
 			{
 				if ((result / tmp) > 0xff)
 				{
-#ifdef V20
-					PREFIX(_interrupt)(0,0);
-#else
 					PREFIX(_interrupt)(0);
-#endif
 					break;
 				}
 				else
@@ -2849,11 +2797,7 @@ static void PREFIX86(_f6pre)(void)
 			}
 			else
 			{
-#ifdef V20
-				PREFIX(_interrupt)(0,0);
-#else
 				PREFIX(_interrupt)(0);
-#endif
 				break;
 			}
 		}
@@ -2872,11 +2816,7 @@ static void PREFIX86(_f6pre)(void)
 
 				if ((result /= (INT16)((INT8)tmp)) > 0xff)
 				{
-#ifdef V20
-					PREFIX(_interrupt)(0,0);
-#else
 					PREFIX(_interrupt)(0);
-#endif
 					break;
 				}
 				else
@@ -2887,11 +2827,7 @@ static void PREFIX86(_f6pre)(void)
 			}
 			else
 			{
-#ifdef V20
-				PREFIX(_interrupt)(0,0);
-#else
 				PREFIX(_interrupt)(0);
-#endif
 				break;
 			}
 		}
@@ -2985,11 +2921,7 @@ static void PREFIX86(_f7pre)(void)
 				tmp2 = result % tmp;
 				if ((result / tmp) > 0xffff)
 				{
-#ifdef V20
-					PREFIX(_interrupt)(0,0);
-#else
 					PREFIX(_interrupt)(0);
-#endif
 					break;
 				}
 				else
@@ -3001,11 +2933,7 @@ static void PREFIX86(_f7pre)(void)
 			}
 			else
 			{
-#ifdef V20
-				PREFIX(_interrupt)(0,0);
-#else
 				PREFIX(_interrupt)(0);
-#endif
 				break;
 			}
 		}
@@ -3022,11 +2950,7 @@ static void PREFIX86(_f7pre)(void)
 				tmp2 = result % (INT32)((INT16)tmp);
 				if ((result /= (INT32)((INT16)tmp)) > 0xffff)
 				{
-#ifdef V20
-					PREFIX(_interrupt)(0,0);
-#else
 					PREFIX(_interrupt)(0);
-#endif
 					break;
 				}
 				else
@@ -3037,11 +2961,7 @@ static void PREFIX86(_f7pre)(void)
 			}
 			else
 			{
-#ifdef V20
-				PREFIX(_interrupt)(0,0);
-#else
 				PREFIX(_interrupt)(0);
-#endif
 				break;
 			}
 		}
@@ -3076,11 +2996,7 @@ static void PREFIX86(_sti)(void)    /* Opcode 0xfb */
 
 	/* if an interrupt is pending, signal an interrupt */
 	if (I.irq_state)
-#ifdef V20
-		PREFIX(_interrupt)(-1, 0);
-#else
 		PREFIX(_interrupt)(-1);
-#endif
 }
 
 static void PREFIX86(_cld)(void)    /* Opcode 0xfc */
@@ -3216,7 +3132,7 @@ static void PREFIX86(_invalid)(void)
 	i286_trap2(ILLEGAL_INSTRUCTION);
 #else
 	 /* makes the cpu loops forever until user resets it */
-	/*{ extern int debug_key_pressed; debug_key_pressed = 1; } */
+	/*{ DEBUGGER_BREAK; } */
 	logerror("illegal instruction %.2x at %.5x\n",PEEKBYTE(I.pc), I.pc);
 	I.pc--;
 	ICOUNT -= 10;
