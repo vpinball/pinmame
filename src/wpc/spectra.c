@@ -64,7 +64,7 @@ static struct riot6532_interface riot6532_intf = {
 
 static MACHINE_INIT(SPECTRA) {
   riot6532_config(0, &riot6532_intf);
-  riot6532_set_clock(0, 905000);
+  riot6532_set_clock(0, 3579545/4);
 }
 
 static MACHINE_RESET(SPECTRA) {
