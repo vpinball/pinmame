@@ -117,6 +117,9 @@ Theatre of Magic 1.3XC (competition MOD) (updated)
 Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
 
+Removed Clones:
+Atarians, The (MOD working bootleg) - the original ROMs work fine after latest emulation patches
+
 
 
 Version 3.2 (October 6th, 2019) - "Sounds good II"

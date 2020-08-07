@@ -72,16 +72,6 @@ ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"Atarians, The",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
-/ The Atarians (working bootleg, one byte differs)
-/-------------------------------------------------------------------*/
-INITGAME1(atarianb, atari_disp1, FLIP_SWNO(36,37), 1, 0)
-ATARI_2_ROMSTART(atarianb,	"atarian.e0",	CRC(45cb0427) SHA1(e286930ca36bdd0f79acefd142d2a5431fa8005b),
-							"atarianb.e00",	CRC(74fc86e4) SHA1(135d75e5c03feae0929fa84caa3c802353cdd94e))
-ATARI_SNDSTART("07028-01.bin", CRC(e8034b5b) SHA1(6959912c530efcc4a0c690800867fb0d1f33627f))
-ATARI_ROMEND
-CORE_CLONEDEFNV(atarianb,atarians,"Atarians, The (MOD working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
-
-/*-------------------------------------------------------------------
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1, 0)
@@ -132,7 +122,7 @@ ATARI_2_ROMSTART(mideartp,	"c.e0",	CRC(553044c1) SHA1(4ad328eff48b82b32721684d18
 							"c.e00",CRC(288cd68d) SHA1(d97d31f59525b785bfa4c3fc8445eb294591bde2) BAD_DUMP)
 ATARI_SNDSTART("20252-01.bin", CRC(3D44551D) SHA1(926100F8169AB20230AD2168F94E6AD65FB1A7DC)) // confirmed by nuatari
 ATARI_ROMEND
-CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Atari",gl_mATARI1A,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(mideartp,midearth,"Middle Earth (Prototype or German)",197?,"Atari",gl_mATARI1A,0)
 
 /*-------------------------------------------------------------------
 / Space Riders (09/1978)
