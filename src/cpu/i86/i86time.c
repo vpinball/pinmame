@@ -15,7 +15,7 @@ struct i86_timing
 	UINT8	daa, das;										/* decimal adjusts */
 	UINT8	cbw, cwd;										/* sign extension */
 	UINT8	hlt, load_ptr, lea, nop, wait, xlat;			/* misc */
-	
+
 	UINT8	jmp_short, jmp_near, jmp_far;					/* direct JMPs */
 	UINT8	jmp_r16, jmp_m16, jmp_m32;						/* indirect JMPs */
 	UINT8	call_near, call_far;							/* direct CALLs */
@@ -35,10 +35,10 @@ struct i86_timing
 	UINT8	mov_sr, mov_sm, mov_rs, mov_ms;					/* move, segment registers */
 	UINT8	xchg_rr8, xchg_rm8;								/* exchange, 8-bit */
 	UINT8	xchg_rr16, xchg_rm16, xchg_ar16;				/* exchange, 16-bit */
-	
+
 	UINT8	push_r16, push_m16, push_seg, pushf;			/* pushes */
 	UINT8	pop_r16, pop_m16, pop_seg, popf;				/* pops */
-	
+
 	UINT8	alu_rr8, alu_rm8, alu_mr8;						/* ALU ops, 8-bit */
 	UINT8	alu_ri8, alu_mi8, alu_mi8_ro;					/* ALU ops, 8-bit immediate */
 	UINT8	alu_rr16, alu_rm16, alu_mr16;					/* ALU ops, 16-bit */
@@ -50,11 +50,11 @@ struct i86_timing
 	UINT8	idiv_r8, idiv_r16, idiv_m8, idiv_m16;			/* IDIV */
 	UINT8	incdec_r8, incdec_r16, incdec_m8, incdec_m16;	/* INC/DEC */
 	UINT8	negnot_r8, negnot_r16, negnot_m8, negnot_m16;	/* NEG/NOT */
-	
+
 	UINT8	rot_reg_1, rot_reg_base, rot_reg_bit;			/* reg shift/rotate */
 	UINT8	rot_m8_1, rot_m8_base, rot_m8_bit;				/* m8 shift/rotate */
 	UINT8	rot_m16_1, rot_m16_base, rot_m16_bit;			/* m16 shift/rotate */
-	
+
 	UINT8	cmps8, rep_cmps8_base, rep_cmps8_count;			/* CMPS 8-bit */
 	UINT8	cmps16, rep_cmps16_base, rep_cmps16_count;		/* CMPS 16-bit */
 	UINT8	scas8, rep_scas8_base, rep_scas8_count;			/* SCAS 8-bit */
@@ -65,9 +65,9 @@ struct i86_timing
 	UINT8	stos16, rep_stos16_base, rep_stos16_count;		/* STOS 16-bit */
 	UINT8	movs8, rep_movs8_base, rep_movs8_count;			/* MOVS 8-bit */
 	UINT8	movs16, rep_movs16_base, rep_movs16_count;		/* MOVS 16-bit */
-	
+
 	void *	check1;											/* marker to make sure we line up */
-	
+
 	UINT8	ins8, rep_ins8_base, rep_ins8_count;			/* (80186) INS 8-bit */
 	UINT8	ins16, rep_ins16_base, rep_ins16_count;			/* (80186) INS 16-bit */
 	UINT8	outs8, rep_outs8_base, rep_outs8_count;			/* (80186) OUTS 8-bit */
@@ -96,7 +96,7 @@ static const struct i86_timing i86_cycles =
 	 4, 4,			/* decimal adjusts */
 	 2, 5,			/* sign extension */
 	 2,24, 2, 2, 3,11,	/* misc */
-	 
+
 	15,15,15,		/* direct JMPs */
 	11,18,24,		/* indirect JMPs */
 	19,28,			/* direct CALLs */
@@ -104,7 +104,7 @@ static const struct i86_timing i86_cycles =
 	20,32,24,31,	/* returns */
 	 4,16, 6,18,	/* conditional JMPs */
 	 5,17, 6,18,	/* loops */
-	
+
 	10,14, 8,12,	/* port reads */
 	10,14, 8,12,	/* port writes */
 
@@ -116,7 +116,7 @@ static const struct i86_timing i86_cycles =
 	 2, 8, 2, 9,	/* move, segment registers */
 	 4,17,			/* exchange, 8-bit */
 	 4,17, 3,		/* exchange, 16-bit */
-	 
+
 	15,24,14,14,	/* pushes */
 	12,25,12,12,	/* pops */
 
@@ -131,11 +131,11 @@ static const struct i86_timing i86_cycles =
 	101,165,107,175,/* IDIV */
 	 3, 2,15,15,	/* INC/DEC */
 	 3, 3,16,16,	/* NEG/NOT */
-	 
+
 	 2, 8, 4,		/* reg shift/rotate */
 	15,20, 4,		/* m8 shift/rotate */
 	15,20, 4,		/* m16 shift/rotate */
-	
+
 	22, 9,21,		/* CMPS 8-bit */
 	22, 9,21,		/* CMPS 16-bit */
 	15, 9,14,		/* SCAS 8-bit */
@@ -146,7 +146,7 @@ static const struct i86_timing i86_cycles =
 	11, 9,10,		/* STOS 16-bit */
 	18, 9,17,		/* MOVS 8-bit */
 	18, 9,17,		/* MOVS 16-bit */
-	
+
 	(void *)-1		/* marker to make sure we line up */
 };
 
@@ -164,7 +164,7 @@ static const struct i86_timing i186_cycles =
 	 4, 4,			/* decimal adjusts */
 	 2, 4,			/* sign extension */
 	 2,18, 6, 2, 6,11,	/* misc */
-	 
+
 	14,14,14,		/* direct JMPs */
 	11,17,26,		/* indirect JMPs */
 	15,23,			/* direct CALLs */
@@ -172,7 +172,7 @@ static const struct i86_timing i186_cycles =
 	16,22,18,25,	/* returns */
 	 4,13, 5,15,	/* conditional JMPs */
 	 6,16, 6,16,	/* loops */
-	
+
 	10,10, 8, 8,	/* port reads */
 	 9, 9, 7, 7,	/* port writes */
 
@@ -184,7 +184,7 @@ static const struct i86_timing i186_cycles =
 	 2,11, 2,11,	/* move, segment registers */
 	 4,17,			/* exchange, 8-bit */
 	 4,17, 3,		/* exchange, 16-bit */
-	 
+
 	10,16, 9, 9,	/* pushes */
 	10,20, 8, 8,	/* pops */
 
@@ -199,11 +199,11 @@ static const struct i86_timing i186_cycles =
 	44,53,50,59,	/* IDIV */
 	 3, 3,15,15,	/* INC/DEC */
 	 3, 3,10,10,	/* NEG/NOT */
-	 
+
 	 2, 5, 1,		/* reg shift/rotate */
 	15,17, 1,		/* m8 shift/rotate */
 	15,17, 1,		/* m16 shift/rotate */
-	
+
 	22, 5,22,		/* CMPS 8-bit */
 	22, 5,22,		/* CMPS 16-bit */
 	15, 5,15,		/* SCAS 8-bit */
@@ -214,7 +214,7 @@ static const struct i86_timing i186_cycles =
 	10, 6, 9,		/* STOS 16-bit */
 	14, 8, 8,		/* MOVS 8-bit */
 	14, 8, 8,		/* MOVS 16-bit */
-	
+
 	(void *)-1,		/* marker to make sure we line up */
 
 	14, 8, 8,		/* (80186) INS 8-bit */
@@ -245,7 +245,7 @@ static const struct i86_timing i286_cycles =
 	 3, 3,			/* decimal adjusts */
 	 2, 2,			/* sign extension */
 	 2, 7, 3, 3, 3, 5,	/* misc */
-	 
+
 	 7, 7,11,		/* direct JMPs */
 	 7,11,26,		/* indirect JMPs */
 	 7,13,			/* direct CALLs */
@@ -253,7 +253,7 @@ static const struct i86_timing i286_cycles =
 	11,15,11,15,	/* returns */
 	 3, 7, 4, 8,	/* conditional JMPs */
 	 4, 8, 4, 8,	/* loops */
-	
+
 	 5, 5, 5, 5,	/* port reads */
 	 3, 3, 3, 3,	/* port writes */
 
@@ -265,7 +265,7 @@ static const struct i86_timing i286_cycles =
 	 2, 5, 2, 3,	/* move, segment registers */
 	 3, 5,			/* exchange, 8-bit */
 	 3, 5, 3,		/* exchange, 16-bit */
-	 
+
 	 5, 5, 3, 3,	/* pushes */
 	 5, 5, 5, 5,	/* pops */
 
@@ -280,11 +280,11 @@ static const struct i86_timing i286_cycles =
 	17,25,20,28,	/* IDIV */
 	 2, 2, 7, 7,	/* INC/DEC */
 	 2, 2, 7, 7,	/* NEG/NOT */
-	 
+
 	 2, 5, 0,		/* reg shift/rotate */
 	 7, 8, 1,		/* m8 shift/rotate */
 	 7, 8, 1,		/* m16 shift/rotate */
-	
+
 	13, 5,12,		/* CMPS 8-bit */
 	13, 5,12,		/* CMPS 16-bit */
 	 9, 5, 8,		/* SCAS 8-bit */
@@ -295,7 +295,7 @@ static const struct i86_timing i286_cycles =
 	 4, 4, 3,		/* STOS 16-bit */
 	 5, 5, 4,		/* MOVS 8-bit */
 	 5, 5, 4,		/* MOVS 16-bit */
-	
+
 	(void *)-1,		/* marker to make sure we line up */
 
 	 5, 5, 4,		/* (80186) INS 8-bit */
