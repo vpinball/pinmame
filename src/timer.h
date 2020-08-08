@@ -32,7 +32,7 @@ extern double sec_to_cycles[];
 #define TIME_NOW              (0.0)
 #define TIME_NEVER            (1.0e30)
 
-#define TIME_TO_CYCLES(cpu,t) ((int)((t) * sec_to_cycles[cpu]))
+#define TIME_TO_CYCLES(cpu,t) ((int)((t) * sec_to_cycles[cpu] + 0.5)) // round
 
 /*-------------------------------------------------
 	internal timer structure
