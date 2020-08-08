@@ -16,6 +16,7 @@
 #include "driver.h"
 #include "state.h"
 #include "ym2151.h"
+#include "../ext/vgm/vgmwrite.h"
 
 #ifndef max
 #define max(x,y) ((x)>(y)?(x):(y))
@@ -205,6 +206,7 @@ typedef struct
 	int output;							/* Flag indicating if the 2151 is outputting sound */
 #endif
 
+	unsigned short vgm_idx;
 } YM2151;
 
 
@@ -996,6 +998,7 @@ void YM2151WriteReg(int n, int r, int v)
 	}
 #endif
 
+	vgm_write(chip->vgm_idx, 0x00, r, v);
 
 	switch(r & 0xe0)
 	{
@@ -1448,6 +1451,8 @@ int YM2151Init(int num, int clock, int rate)
 		YMPSG[i].timer_A = timer_alloc(timer_callback_a);
 		YMPSG[i].timer_B = timer_alloc(timer_callback_b);
 		YMPSG[i].IRQ_clear_timer = timer_alloc(irq_clear_timer_callback);
+
+		YMPSG[i].vgm_idx = vgm_open(VGMC_YM2151, clock);
 
 		YM2151ResetChip(i);
 		/*logerror("YM2151[init] clock=%i sampfreq=%i\n", YMPSG[i].clock, YMPSG[i].sampfreq);*/
