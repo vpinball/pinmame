@@ -73,7 +73,7 @@ static struct YM3812interface alvgs1_ym3812_intf =
 static struct OKIM6295interface alvgs1_okim6295_intf =
 {
 	1,						/* 1 chip */
-	{ 7575.76f },			/* sample rate at 1MHz clock */
+	{ 1000000./132. },		/* sample rate at 1MHz clock */
 	{ ALVGS_ROMREGION },	/* ROM REGION */
 	{ 50 }					/* Volume */
 };

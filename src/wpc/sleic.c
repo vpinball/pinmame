@@ -118,14 +118,14 @@ static struct YM3812interface SLEIC_ym3812_intf =
 static struct OKIM6295interface SLEIC_okim6376_intf =
 {
 	0,					/* 1 chip (but use 0 to indicate 6374 chip) */
-	{ 15151.51f },		/* sampling frequency at 2MHz chip clock */
+	{ 2000000./132. },	/* sampling frequency at 2MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };
 static struct OKIM6295interface SLEIC_okim6376_intf2 =
 {
 	0,					/* 1 chip (but use 0 to indicate 6374 chip)  */
-	{ 30303.03f },		/* sampling frequency at 4MHz chip clock */
+	{ 4000000./132. },  /* sampling frequency at 4MHz chip clock */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };
