@@ -85,7 +85,7 @@ struct via6522
 /******************* convenince macros and defines *******************/
 
 #define V_CYCLES_TO_TIME(c) ((double)(c) * v->cycles_to_sec)
-#define V_TIME_TO_CYCLES(t) ((int)((t) * v->sec_to_cycles))
+#define V_TIME_TO_CYCLES(t) ((int)((t) * v->sec_to_cycles + 0.5)) // round
 
 /* Macros for PCR */
 #define CA1_LOW_TO_HIGH(c)		(c & 0x01)
