@@ -62,7 +62,7 @@ struct riot6532
 };
 
 #define V_CYCLES_TO_TIME(c) ((double)(c) * p->cycles_to_sec)
-#define V_TIME_TO_CYCLES(t) ((int)((t) * p->sec_to_cycles))
+#define V_TIME_TO_CYCLES(t) ((int)((t) * p->sec_to_cycles + 0.5)) // round
 
 
 /******************* convenince macros and defines *******************/
@@ -88,8 +88,6 @@ struct riot6532
 #define C2_STROBE_MODE(c)		(!(c & 0x10))
 #define C2_OUTPUT(c)			(c & 0x20)
 #define C2_INPUT(c)				(!(c & 0x20))
-
-#define IFR_DELAY 3 // 1 in MAME
 
 /******************* static variables *******************/
 
@@ -150,7 +148,7 @@ void riot6532_reset(void)
 	/* zap each structure, preserving the interface and swizzle */
 	for (i = 0; i < MAX_RIOT_6532; i++)
 	{
-		riot[i].timer_divider = 1;
+		riot[i].timer_divider = 1024;
 		riot[i].timer_start   = 0x00;
 		riot[i].timer_irq_enabled = 0;
 
@@ -158,7 +156,7 @@ void riot6532_reset(void)
 
 		if ( riot[i].inUse ) {
 			riot[i].t = timer_alloc(riot_timeout);
-			timer_adjust(riot[i].t,IFR_DELAY*riot[i].cycles_to_sec, i, 0);
+			timer_adjust(riot[i].t,256ul*(UINT32)riot[i].timer_divider*riot[i].cycles_to_sec, i, 0);
 		}
 	}
 }
@@ -230,7 +228,7 @@ static void riot_timeout(int which)
 	}
 	else {
 		LOG(("RIOT%d: Timer IRQ reached.\n", which));
-		timer_reset(p->t, V_CYCLES_TO_TIME(255));
+		timer_reset(p->t, V_CYCLES_TO_TIME(256));
 		p->time = timer_get_time();
 
 		p->irq_state |= RIOT_TIMERIRQ;
@@ -289,11 +287,17 @@ int riot6532_read(int which, int offset)
 				timer_enable(p->t, 1);
 
 			if ( old_timer_enabled ) {
+				const int ttc = V_TIME_TO_CYCLES(timer_get_time() - p->time);
 				if ( p->irq_state & RIOT_TIMERIRQ ) {
-					val = 254 - V_TIME_TO_CYCLES(timer_get_time() - p->time); // 254 is indicated by the s80btest
+					val = 255 - ttc;
 				}
-				else
-					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
+				else {
+					const int diff = (ttc + (p->timer_divider - 1)) / p->timer_divider;
+					val = p->timer_start - diff;
+				}
+
+				if (val < 0)
+					val = 0;
 			}
 			else
 				val = 0x00;
@@ -410,7 +414,7 @@ void riot6532_write(int which, int offset, int data)
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			update_6532_interrupts(p);
 
-			timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
+			timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + 1));
 			p->time = timer_get_time();
 
 			LOG(("RIOT%d write timer = %02X * %04X, %04X\n", which, data, p->timer_divider, offset&0x08));
