@@ -1083,7 +1083,7 @@ MACHINE_DRIVER_END
 //Sound Interface for Strikes N Spares
 static struct OKIM6295interface sns_okim6295_interface = {
 	1,					/* 1 chip */
-	{ 15151.51f },		/* sampling frequency at 2MHz chip clock */
+	{ 2000000./132. },	/* sampling frequency at 2MHz chip clock */
 	{ REGION_USER3 },	/* memory region */
 	{ 75 }				/* volume */
 };

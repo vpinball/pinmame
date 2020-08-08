@@ -1211,7 +1211,8 @@ static WRITE_HANDLER(sound_control_w)
 		logerror("Setting to rom #%d\n", GTS80BS_locals.rom_cs);
 
 		//D4 = 6295 - SS (Data = 1 = 7.575Khz; Data = 0 = 6.06 kHz (at 1MHz oscillation clock!)
-		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)? 7575.76 : 6060.61);
+		//OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)? 7575.76 : 6060.61);
+		OKIM6295_set_pin7(0, 1000000., (GTS80BS_locals.u2_latch>>4)&1);
 
 		//D5 = LED (Active low?)
 		UpdateSoundLEDS(1,~(GTS80BS_locals.u2_latch>>5)&1);
@@ -1295,7 +1296,7 @@ static struct DACinterface GTS3_dacInt =
 
 static struct OKIM6295interface GTS3_okim6295_interface = {
 	1,						/* 1 chip */
-	{ 7575.76f },			/* base frequency */
+	{ 1000000./132. },		/* base frequency */
 	{ GTS3_MEMREG_SROM1 },	/* memory region */
 	{ 50 }
 };

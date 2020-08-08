@@ -232,7 +232,7 @@ PORT_END
 
 static struct OKIM6295interface okim6295_interface = {
 	1,					/* 1 chip */
-	{ 8000 },			/* base frequency, 1056 kHz / 132 */
+	{ 1056000./132. },	/* base frequency, 1056 kHz / 132 */
 	{ REGION_USER1 },	/* memory region */
 	{ 75 }				/* volume */
 };

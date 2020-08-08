@@ -40,6 +40,7 @@
 #include "state.h"
 #include "adpcm.h"
 
+#include "../ext/vgm/vgmwrite.h"
 
 //#define VERBOSE
 
@@ -586,6 +587,7 @@ static int OKIM6295_VOICES = 4;
 
 static INT32 okim6295_command[MAX_OKIM6295];
 static INT32 okim6295_base[MAX_OKIM6295][4];
+static unsigned short okim6295_vgm_idx[MAX_OKIM6295];
 #else
 #define OKIM6295_VOICES		4
 
@@ -638,7 +640,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 
 	/* reset the ADPCM system */
 #ifdef PINMAME // OKI6376 has only 2 voices per chip, activated by num <= 0!
-  if (intf->num < 1) { OKIM6295_VOICES = 2; num_voices = 2; } else
+	if (intf->num < 1) { OKIM6295_VOICES = 2; num_voices = 2; } else
 #endif
 	num_voices = intf->num * OKIM6295_VOICES;
 	compute_tables();
@@ -663,7 +665,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)intf->frequency[chip], i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)intf->frequency[chip], i, adpcm_update); // freq = clock/divisor // int divisor = pin7 ? 132 : 165;
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -671,6 +673,13 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		adpcm[i].region_base = memory_region(intf->region[chip]);
 		adpcm[i].volume = 0x20;
 		adpcm[i].signal = -2;
+	}
+
+	for (i = 0; i < intf->num; i++)
+	{
+		okim6295_vgm_idx[i] = vgm_open(VGMC_OKIM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+		vgm_header_set(okim6295_vgm_idx[i], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
+		vgm_dump_sample_rom(okim6295_vgm_idx[i], 0x01, intf->region[i]);
 	}
 
 	okim6295_state_save_register();
@@ -723,28 +732,44 @@ void OKIM6295_set_bank_base(int which, int base)
 		stream_update(voice->stream, 0);
 		okim6295_base[which][channel] = base;
 	}
+
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0F, (base/0x40000) & 0xFF); //!! ?? see below, seems to work though (e.g. Barbwire)
 }
+/*void okim6295_device::set_rom_bank(int bank)
+{
+	// let's just hope overriding works properly for all drivers
+	device_rom_interface::set_rom_bank(bank);
+	vgm_write(m_vgm_idx, 0x00, 0x0F, bank & 0xFF);
+}*/
 
 
 
 /**********************************************************************************************
 
-     OKIM6295_set_frequency -- dynamically adjusts the frequency of a given ADPCM voice
+     OKIM6295_set_pin7 -- dynamically adjusts the frequency of a given ADPCM voice
 
 ***********************************************************************************************/
 
-void OKIM6295_set_frequency(int which, double frequency)
+void OKIM6295_set_pin7(int which, double clock, unsigned char pin7)
 {
-	int channel;
+	const int divisor = pin7 ? 132 : 165;
+	const unsigned int val = clock;
 
+	int channel;
 	for (channel = 0; channel < OKIM6295_VOICES; channel++)
 	{
 		struct ADPCMVoice *voice = &adpcm[which * OKIM6295_VOICES + channel];
 
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
-		stream_set_sample_rate(voice->stream, (int)frequency);
+		stream_set_sample_rate(voice->stream, clock/divisor);
 	}
+
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0C, pin7 ? 1 : 0);
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x08, (val >>  0) & 0xFF);
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x09, (val >>  8) & 0xFF);
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0A, (val >> 16) & 0xFF);
+	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0B, (val >> 24) & 0xFF);
 }
 
 
@@ -798,6 +823,8 @@ static void OKIM6295_data_w(int num, int data)
 		LOG(("error: OKIM6295_data_w() called with chip = %d, but only %d chips allocated\n", num, num_voices / OKIM6295_VOICES));
 		return;
 	}
+
+	vgm_write(okim6295_vgm_idx[num], 0x00, 0x00, data);
 
 	/* if a command is pending, process the second half */
 	if (okim6295_command[num] != -1)
