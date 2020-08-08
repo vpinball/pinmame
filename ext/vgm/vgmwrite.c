@@ -228,15 +228,15 @@ static size_t wcs2utf16(gd3char_t* dststr, const wchar_t* srcstr, size_t max)
 		{
 			if (srcstr[idxSrc] >= 0x10000)
 			{
+				gd3char_t X, W, HiSurrogate, LoSurrogate;
 #define HI_SURROGATE_START	0xD800
 #define LO_SURROGATE_START	0xDC00
 				// surrogate conversion from http://unicode.org/faq/utf_bom.html
-				gd3char_t X, W;
 				
 				X = (gd3char_t)srcstr[idxSrc];
 				W = ((srcstr[idxSrc] >> 16) & 0x1F) - 1;
-				gd3char_t HiSurrogate = HI_SURROGATE_START | (W << 6) | (X >> 10);
-				gd3char_t LoSurrogate = LO_SURROGATE_START | (X & 0x3FF);
+				HiSurrogate = HI_SURROGATE_START | (W << 6) | (X >> 10);
+				LoSurrogate = LO_SURROGATE_START | (X & 0x3FF);
 				
 				dststr[idxDst] = HiSurrogate;	idxDst ++;
 				dststr[idxDst] = LoSurrogate;	idxDst ++;
