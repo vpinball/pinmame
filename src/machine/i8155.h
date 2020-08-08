@@ -39,15 +39,15 @@
 
 typedef struct
 {
-	int num;							 /* number of chips to emulate */
+	int num;				/* number of chips to emulate */
 
-	mem_read_handler				in_pa_func[MAX_8155];
-	mem_read_handler				in_pb_func[MAX_8155];
-	mem_read_handler				in_pc_func[MAX_8155];
+	mem_read_handler		in_pa_func[MAX_8155];
+	mem_read_handler		in_pb_func[MAX_8155];
+	mem_read_handler		in_pc_func[MAX_8155];
 
-	mem_write_handler			out_pa_func[MAX_8155];
-	mem_write_handler			out_pb_func[MAX_8155];
-	mem_write_handler			out_pc_func[MAX_8155];
+	mem_write_handler		out_pa_func[MAX_8155];
+	mem_write_handler		out_pb_func[MAX_8155];
+	mem_write_handler		out_pc_func[MAX_8155];
 
 	/* this gets called for each change of the TIMER OUT pin (pin 6) */
 	mem_write_handler		out_to_func[MAX_8155];
