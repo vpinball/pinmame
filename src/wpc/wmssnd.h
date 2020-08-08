@@ -79,14 +79,17 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s11cs);
 
 #define S11CS_STDREG \
   SOUNDREGION(0x10000, S11CS_CPUREGION) \
-  SOUNDREGION(0x30000, S11CS_ROMREGION)
+  SOUNDREGION(0x70000, S11CS_ROMREGION)
 
 #define S11CS_ROMLOAD8(start, n, chk) \
   ROM_LOAD(n, start, 0x8000, chk) \
-    ROM_RELOAD(start+0x8000, 0x8000)
+    ROM_RELOAD(start+0x8000, 0x8000) \
+    ROM_RELOAD(start+0x40000, 0x8000) \
+    ROM_RELOAD(start+0x48000, 0x8000)
 
 #define S11CS_ROMLOAD0(start, n, chk) \
-  ROM_LOAD(n, start, 0x10000, chk)
+  ROM_LOAD(n, start, 0x10000, chk) \
+    ROM_RELOAD(start+0x40000, 0x10000)
 
 #define S11CS_SOUNDROM000(n1,chk1,n2,chk2,n3,chk3) \
   S11CS_STDREG \
