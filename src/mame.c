@@ -125,6 +125,7 @@
  #include "lisy/lisy1.h"
  #include "lisy/utils.h"
 #endif /* PINMAME && LISY_SUPPORT */
+#include "../ext/vgm/vgmwrite.h"
 
 /***************************************************************************
 
@@ -439,6 +440,8 @@ static int init_machine(void)
 		goto cant_init_memory;
 	}
 
+	vgm_start(Machine);
+
 	/* call the game driver's init function */
 	if (gamedrv->driver_init)
 		(*gamedrv->driver_init)();
@@ -612,6 +615,8 @@ void run_machine_core(void)
 static void shutdown_machine(void)
 {
 	int i;
+
+	vgm_stop();
 
 #ifdef MESS
 	/* close down any devices */
