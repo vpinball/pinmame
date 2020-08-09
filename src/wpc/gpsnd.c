@@ -363,7 +363,7 @@ static  INT16  volumemsu1[] = {
 //	30,  30,  40, 40, 50, 50, 60, 60, 70, 70,  80,  80,  90,  90,100,100,100       
 //              100,  100,  100, 100, 100, 100, 100, 100, 100, 100,  100,  100,  100,  100,100,100,100
 
-static INT16 sineWaveext[32][32000]; // wave triggered by external clock, very rough approximation for noise generator
+static INT16 sineWaveext[32000]; // wave triggered by external clock, very rough approximation for noise generator
 
 /*-- m6840 interface --*/
 static struct {
@@ -631,7 +631,7 @@ static void gpsm_init(struct sndbrdData *brdData)
 	mixer_set_volume(gps_locals.channel+2,0);  
 	mixer_set_name  (gps_locals.channel+3,"Noise");       // Noise generator
 	mixer_set_volume(gps_locals.channel+3,0);  
-	mixer_play_sample_16(gps_locals.channel+3,sineWaveext, sizeof(sineWaveext), 625000 , 1);
+	mixer_play_sample_16(gps_locals.channel+3,sineWaveext, sizeof(sineWaveext), 625000, 1);
 	gps_locals.stateca1 = 0;
 	timer_set(TIME_IN_NSEC(814000000),0,oneshoot); // fire ca1 only once
 //
