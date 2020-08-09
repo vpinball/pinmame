@@ -90,6 +90,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_green0", NULL, rc_int, &dmd_green0, "0", 0, 255, NULL, "Colorized DMD: green level for 0% intensity" },
 	{ "dmd_blue0", NULL, rc_int, &dmd_blue0, "0", 0, 255, NULL, "Colorized DMD: blue level for 0% intensity" },
 	{ "dmd_opacity", NULL, rc_int, &dmd_opacity, "100", 0, 100, NULL, "Set DMD opacity" },
+
 	{ "resampling_quality", NULL, rc_int, &resampling_quality, "0", 0, 1, NULL, "Quality of the resampling implementation (0=Fast,1=Normal)" },
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 	{ "sound_mode", NULL, rc_int, &sound_mode, "0", 0, 3, NULL, "Sound processing mode (PinMAME, Alternative, PinSound, PinSound + Recordings)" },
@@ -232,10 +233,6 @@ const static char* RunningGameSettings[] = {
 void vpm_frontend_init(void) {
   /* clear all core options */
   memset(&options,0,sizeof(options));
-#if MAMEVER < 6100
-  /* directly define these */
-  options.use_emulated_ym3812 = 1;
-#endif /* MAMEVER */
   /* create the rc object */
   if (!(rc = rc_create()))
     { fprintf (stderr, "error on rc creation\n"); exit(1); }
@@ -244,9 +241,7 @@ void vpm_frontend_init(void) {
   /* need a decent default for debug width/height */
   if (options.debug_width == 0)  options.debug_width = 640;
   if (options.debug_height == 0) options.debug_height = 480;
-#if MAMEVER >= 6100
   options.debug_depth = 8; // Debugger only works with 8 bits?
-#endif /* MAMEVER */
   options.gui_host = 1;
 //#ifdef MAME_DEBUG
 //  options.mame_debug = 1;

@@ -182,13 +182,9 @@ static TMS9928A tms[MAX_VDP];
 ** initialize the palette
 */
 PALETTE_INIT(TMS9928A) {
-#if MAMEVER < 6100
-  memcpy(palette,&TMS9928A_palette, sizeof(TMS9928A_palette));
-#else
   int ii;
   for (ii = 0; ii < TMS9928A_PALETTE_SIZE; ii++)
     palette_set_color(ii,TMS9928A_palette[ii*3+0],TMS9928A_palette[ii*3+1],TMS9928A_palette[ii*3+2]);
-#endif /* MAMEVER */
 }
 
 
