@@ -776,12 +776,9 @@ static PALETTE_INIT(core) {
       rStart += rStep; gStart += gStep; bStart += bStep;
     }
   }
-#if MAMEVER >= 6100
+
   for (ii = 0; ii < sizeof(tmpPalette)/3; ii++)
     palette_set_color(ii, tmpPalette[ii][0], tmpPalette[ii][1], tmpPalette[ii][2]);
-#else /* MAMEVER */
-  memcpy(palette, tmpPalette, sizeof(tmpPalette));
-#endif /* MAMEVER */
 }
 
 /*-----------------------------------

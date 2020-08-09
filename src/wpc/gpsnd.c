@@ -363,7 +363,7 @@ static  INT16  volumemsu1[] = {
 //	30,  30,  40, 40, 50, 50, 60, 60, 70, 70,  80,  80,  90,  90,100,100,100       
 //              100,  100,  100, 100, 100, 100, 100, 100, 100, 100,  100,  100,  100,  100,100,100,100
 
-static  INT16  sineWaveext[32000]; // Noise wave
+static INT16 sineWaveext[32][32000]; // wave triggered by external clock, very rough approximation for noise generator
 
 /*-- m6840 interface --*/
 static struct {
@@ -439,20 +439,17 @@ static WRITE_HANDLER(pia1a_w)
 	logerror("pia1a_w: %02x\n", data);
 	indexq3 = data & 0x0f;
 	indexn = (data & 0xf0) >> 4;
-  	mixer_set_volume(gps_locals.channel+2,volumemsu1[indexq3]);       // q3
+	mixer_set_volume(gps_locals.channel+2,volumemsu1[indexq3]);      // q3
 // pia a channels 4 - 7 seems to be volume of the noise generator
-  	mixer_set_volume(gps_locals.channel+3,volumemsu1[indexn]);       // noise
+	mixer_set_volume(gps_locals.channel+3,volumemsu1[indexn]);       // noise
 }
 
-static void playnoise(int param){
-   int f;
-
-   f = (625000 / 23) / param;
-   mixer_set_sample_frequency(gps_locals.channel+3, f );
-   logerror("*** playsam noise frequenz %08d data  ***\n",f);
+static void playnoise(int param) { // 0..31
+   int f = (625000 / 23) / param;
+   mixer_set_sample_frequency(gps_locals.channel+3, f);
+   logerror("*** playsam noise frequency %08d data  ***\n", f);
    logerror("*** playsam noise param %08d data  ***\n",param);
 }
-
 
 static WRITE_HANDLER(pia1b_w)
 {
@@ -521,39 +518,39 @@ static void oneshoot (int param) {
 
 static void playsam1(int param){
 // timer 1 (q1) is easy wave 
-   if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
-  	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
- 	if (mixer_is_sample_playing(gps_locals.channel))	{	// is already playing
- 		 mixer_set_sample_frequency(gps_locals.channel,(gps_locals.tfre1*sizeof(sineWaveinp) / 2) );
- 	} else	{
-	  	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre1*sizeof(sineWaveinp) / 2, 1);
+  if ((gps_locals.cr1 & 0x80)  && (gps_locals.timlat1 > 0) && (gps_locals.reset == 0))   { // output is enabled...
+	mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), (int)(gps_locals.tfre1*sizeof(sineWaveinp) / 2 / 1.137), 1);
+	if (mixer_is_sample_playing(gps_locals.channel))	{	// is already playing
+		 mixer_set_sample_frequency(gps_locals.channel,(gps_locals.tfre1*sizeof(sineWaveinp) / 2) );
+	} else {
+		mixer_play_sample_16(gps_locals.channel,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre1*sizeof(sineWaveinp) / 2, 1);
 		logerror("*** playsam Q1 start %04d ***\n",gps_locals.tfre1);
 	}
-	}
+  }
 }
 
 static void playsam2(int param){
 // timer 2 (q2) is easy wave 
-   if ((gps_locals.cr2 & 0x80)  && (gps_locals.timlat2 > 0) && (gps_locals.reset == 0))   { // output is enabled...
+  if ((gps_locals.cr2 & 0x80)  && (gps_locals.timlat2 > 0) && (gps_locals.reset == 0))   { // output is enabled...
 	if (mixer_is_sample_playing(gps_locals.channel+1))	{	// is already playing
 		 mixer_set_sample_frequency(gps_locals.channel+1,(gps_locals.tfre2*sizeof(sineWaveinp) / 2) );
-	} else	{
- 		mixer_play_sample_16(gps_locals.channel+1,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre2*sizeof(sineWaveinp) / 2 , 1);
+	} else {
+		mixer_play_sample_16(gps_locals.channel+1,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre2*sizeof(sineWaveinp) / 2 , 1);
 		logerror("*** playsam Q2 start %04d ***\n",gps_locals.tfre2);
 	}
-	}	
+  }
 }
 
 static void playsam3(int param){
 // timer 3 (q3) is easy wave 
-   if ((gps_locals.cr3 & 0x80)  && (gps_locals.timlat3 > 0) && (gps_locals.reset == 0))   { // output is enabled...
- 	if (mixer_is_sample_playing(gps_locals.channel+2))	{	// is already playing
- 		 mixer_set_sample_frequency(gps_locals.channel+2,(gps_locals.tfre3*sizeof(sineWaveinp) / 2) );
- 	} else	{
-	 	mixer_play_sample_16(gps_locals.channel+2,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre3*sizeof(sineWaveinp) / 2 , 1);
+  if ((gps_locals.cr3 & 0x80)  && (gps_locals.timlat3 > 0) && (gps_locals.reset == 0))   { // output is enabled...
+	if (mixer_is_sample_playing(gps_locals.channel+2))	{	// is already playing
+		 mixer_set_sample_frequency(gps_locals.channel+2,(gps_locals.tfre3*sizeof(sineWaveinp) / 2) );
+	} else {
+		mixer_play_sample_16(gps_locals.channel+2,sineWaveinp, sizeof(sineWaveinp), gps_locals.tfre3*sizeof(sineWaveinp) / 2 , 1);
 		logerror("*** playsam Q3 start %04d ***\n",gps_locals.tfre3);
 	}
-	}
+  }
 }
 
 
@@ -563,48 +560,45 @@ static void m6840_pulse (int param) {
 // param = 0x02 -> internal 6840 clock
 // decrase timers and update interface
   if (((gps_locals.cr1 & 0x02) == param) && (gps_locals.cr1 & 0x80) && (gps_locals.reset ==0)) {
-  	if (m6840d.timer1 > 0) {
-        	m6840d.timer1--;
-  	}
-  	if ((m6840d.timer1 == 0) && (gps_locals.timlat1 != 0)) {
-    		m6840d.timer1 = gps_locals.timlat1;
-    		if (gps_locals.timlat1 != gps_locals.timlats1) {
-    			playsam1(0);
-    		}
-    		gps_locals.timlats1 = gps_locals.timlat1;
-    		gps_locals.timp1 =  (gps_locals.timp1 ? 0 : 1);
-    	}
+	if (m6840d.timer1 > 0) {
+		m6840d.timer1--;
+	}
+	if ((m6840d.timer1 == 0) && (gps_locals.timlat1 != 0)) {
+		m6840d.timer1 = gps_locals.timlat1;
+		if (gps_locals.timlat1 != gps_locals.timlats1) {
+			playsam1(0);
+		}
+		gps_locals.timlats1 = gps_locals.timlat1;
+		gps_locals.timp1 =  (gps_locals.timp1 ? 0 : 1);
+	}
   }
   if (((gps_locals.cr2 & 0x02) == param) && (gps_locals.cr2 & 0x80) && (gps_locals.reset ==0)) {
-  	if (m6840d.timer2 > 0) {
-        	m6840d.timer2--;
-  	}
-  	if ((m6840d.timer2 == 0) && (gps_locals.timlat2 != 0)) {
-    		m6840d.timer2 = gps_locals.timlat2;
-    		if (gps_locals.timlat2 != gps_locals.timlats2) {
-    			playsam2(0);
-    		}
-    		gps_locals.timlats2 = gps_locals.timlat2;
-    		gps_locals.timp2 =  (gps_locals.timp2 ? 0 : 1);
-
-    	}
+	if (m6840d.timer2 > 0) {
+		m6840d.timer2--;
+	}
+	if ((m6840d.timer2 == 0) && (gps_locals.timlat2 != 0)) {
+		m6840d.timer2 = gps_locals.timlat2;
+		if (gps_locals.timlat2 != gps_locals.timlats2) {
+			playsam2(0);
+		}
+		gps_locals.timlats2 = gps_locals.timlat2;
+		gps_locals.timp2 =  (gps_locals.timp2 ? 0 : 1);
+	}
   }
 
   if (((gps_locals.cr3 & 0x02) == param) && (gps_locals.cr3 & 0x80) && (gps_locals.reset ==0)) {
-  	if (m6840d.timer3 > 0) {
-        	m6840d.timer3--;
-  	}
-  	if ((m6840d.timer3 == 0) && (gps_locals.timlat3 != 0)) {
-    		m6840d.timer3 = gps_locals.timlat3;
+	if (m6840d.timer3 > 0) {
+		m6840d.timer3--;
+	}
+	if ((m6840d.timer3 == 0) && (gps_locals.timlat3 != 0)) {
+		m6840d.timer3 = gps_locals.timlat3;
 
-    		if (gps_locals.timlat3 != gps_locals.timlats3) {
-    			playsam3(0);
-    		}
-    		gps_locals.timlats3 = gps_locals.timlat3;
-
-
-    		gps_locals.timp3 =  (gps_locals.timp3 ? 0 : 1);
-    	}
+		if (gps_locals.timlat3 != gps_locals.timlats3) {
+			playsam3(0);
+		}
+		gps_locals.timlats3 = gps_locals.timlat3;
+		gps_locals.timp3 =  (gps_locals.timp3 ? 0 : 1);
+	}
   }
 
 }
@@ -614,37 +608,37 @@ static void m6840_pulse (int param) {
 
 static void gpsm_init(struct sndbrdData *brdData)
 {
-  	int mixing_levels[4] = {25,25,25,25};
+	int mixing_levels[4] = {25,25,25,25};
 	int i;
-  	int s = 0;
-  	memset(&gps_locals, 0x00, sizeof(gps_locals));
+	int s = 0;
+	memset(&gps_locals, 0x00, sizeof(gps_locals));
 	gps_locals.brdData = *brdData;
-  	for (i = 0;i < 32000;i++) {
+	for (i = 0;i < 32000;i++) {
     		s =  (s ? 0 : 1);
     		if (s) {
-      			sineWaveext[i] = rand();
+    			sineWaveext[i] = rand();
     		} else
-      			sineWaveext[i] = 0-rand();
-  	}
+    			sineWaveext[i] = 0-rand();
+	}
 	pia_config(GPS_PIA0, PIA_STANDARD_ORDERING, &gps_pia[0]);
 	pia_config(GPS_PIA1, PIA_STANDARD_ORDERING, &gps_pia[1]);
 	gps_locals.channel = mixer_allocate_channels(4, mixing_levels);
-  	mixer_set_name  (gps_locals.channel, "MC6840 #Q1");   // 6840 Output timer 1 (q1) is easy wave
-  	mixer_set_volume(gps_locals.channel,0); 
-  	mixer_set_name  (gps_locals.channel+1,"MC6840 #Q2");  // 6840 Output timer 2 (q2) is easy wave
-  	mixer_set_volume(gps_locals.channel+1,0);  
-  	mixer_set_name  (gps_locals.channel+2,"MC6840 #Q3");  // 6840 Output timer 3 (q3) is easy wave
-  	mixer_set_volume(gps_locals.channel+2,0);  
-  	mixer_set_name  (gps_locals.channel+3,"Noise");       // Noise generator
-  	mixer_set_volume(gps_locals.channel+3,0);  
-   	mixer_play_sample_16(gps_locals.channel+3,sineWaveext, sizeof(sineWaveext), 625000 , 1);
-        gps_locals.stateca1 = 0;
-        timer_set(TIME_IN_NSEC(814000000),0,oneshoot); // fire ca1 only once
+	mixer_set_name  (gps_locals.channel, "MC6840 #Q1");   // 6840 Output timer 1 (q1) is easy wave
+	mixer_set_volume(gps_locals.channel,0); 
+	mixer_set_name  (gps_locals.channel+1,"MC6840 #Q2");  // 6840 Output timer 2 (q2) is easy wave
+	mixer_set_volume(gps_locals.channel+1,0);  
+	mixer_set_name  (gps_locals.channel+2,"MC6840 #Q3");  // 6840 Output timer 3 (q3) is easy wave
+	mixer_set_volume(gps_locals.channel+2,0);  
+	mixer_set_name  (gps_locals.channel+3,"Noise");       // Noise generator
+	mixer_set_volume(gps_locals.channel+3,0);  
+	mixer_play_sample_16(gps_locals.channel+3,sineWaveext, sizeof(sineWaveext), 625000 , 1);
+	gps_locals.stateca1 = 0;
+	timer_set(TIME_IN_NSEC(814000000),0,oneshoot); // fire ca1 only once
 //
 // this time should run to emulate the 6840 correctly, but it is not needed for gameplan games i think
 // because the sound rum never reads back the decreased values from the m6840
 //
-//        timer_pulse(TIME_IN_HZ(MSU1_INTCLOCK),0x02,m6840_pulse); // start internal clock 6840
+//	timer_pulse(TIME_IN_HZ(MSU1_INTCLOCK),0x02,m6840_pulse); // start internal clock 6840
 //
 }
 
@@ -675,9 +669,6 @@ static void softreset (int param) {
 }
 
 
-
-
-
 static WRITE_HANDLER(m6840_w ) {
   int w;
   long int w1;
@@ -688,10 +679,10 @@ static WRITE_HANDLER(m6840_w ) {
 	m6840d.timer1 = gps_locals.timlat1;
 	w1 = MSU1_INTCLOCK / (2 * (m6840d.timer1 + 1));
 	gps_locals.tfre1 = w1;
-    	logerror("%04x: m6840_w  timlat1 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat1,gps_locals.tfre1);
-  	if (gps_locals.timlat1 == 0) {
+	logerror("%04x: m6840_w  timlat1 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat1,gps_locals.tfre1);
+	if (gps_locals.timlat1 == 0) {
 		gps_locals.timlats1 = 0;
-  	 	mixer_stop_sample(gps_locals.channel);
+		mixer_stop_sample(gps_locals.channel);
 		logerror ("Playsam Q1 off\n");
 	}
   }
@@ -699,38 +690,35 @@ static WRITE_HANDLER(m6840_w ) {
 	gps_locals.timlat2 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
 	m6840d.timer2 = gps_locals.timlat2;
 	gps_locals.tfre2 = MSU1_INTCLOCK / (2 * (m6840d.timer2 + 1));
-    	logerror("%04x: m6840_w  timlat2 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat2,gps_locals.tfre2);
-  	if (gps_locals.timlat2 == 0) {
+	logerror("%04x: m6840_w  timlat2 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat2,gps_locals.tfre2);
+	if (gps_locals.timlat2 == 0) {
 		gps_locals.timlats2 = 0;
-  	 	mixer_stop_sample(gps_locals.channel+1);
+		mixer_stop_sample(gps_locals.channel+1);
 		logerror ("Playsam Q2 off\n");
 	}
-
   }
   if (offset == 7) {
 	gps_locals.timlat3 = m6840d.ax[offset] + m6840d.ax[(offset-1)] * 256;
 	m6840d.timer3 = gps_locals.timlat3;
 	gps_locals.tfre3 = (MSU1_INTCLOCK / (2 * (m6840d.timer3 + 1)));
-  	logerror("%04x: m6840_w  timlat3 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat3,gps_locals.tfre3);
-  	if (gps_locals.timlat3 == 0) {
-  	 	mixer_stop_sample(gps_locals.channel+2);
+	logerror("%04x: m6840_w  timlat3 loaded %04x freq %04d  \n", activecpu_get_previouspc(), gps_locals.timlat3,gps_locals.tfre3);
+	if (gps_locals.timlat3 == 0) {
+		mixer_stop_sample(gps_locals.channel+2);
 		gps_locals.timlats3 = 0;
 		logerror ("Playsam Q3 off\n");
 	}
-
-
   }
   if (offset == 1)  {
 	gps_locals.cr2= m6840d.ax[offset];
- 	logerror("%04x: m6840_w  CR2 %02x       ", activecpu_get_previouspc(), gps_locals.cr2);
+	logerror("%04x: m6840_w  CR2 %02x       ", activecpu_get_previouspc(), gps_locals.cr2);
 	if ((gps_locals.cr2 & 0x80) == 0) {
-  	}
+	}
 	if (gps_locals.cr2 & 0x80)  {
 		logerror ("Output enabl ");
-    		if (gps_locals.timlat2 != gps_locals.timlats2) {
-    			playsam2(0);
-    			gps_locals.timlats2 = gps_locals.timlat2;
-    		}
+		if (gps_locals.timlat2 != gps_locals.timlats2) {
+			playsam2(0);
+			gps_locals.timlats2 = gps_locals.timlat2;
+		}
 	} else {
 //		logerror ("Output OFF   ");
 		logerror ("PlaysamQ2off ");	
@@ -743,7 +731,7 @@ static WRITE_HANDLER(m6840_w ) {
 		logerror ("Inter  off    ");
 	}
 	w = (gps_locals.cr2 & 0x38) >> 3;
- 	logerror ("Mode (N 2)   %01x ",w);
+	logerror ("Mode (N 2)   %01x ",w);
 	if (gps_locals.cr2 & 0x04)  {
 		logerror ("count d 8 ");
 	} else {
@@ -755,10 +743,10 @@ static WRITE_HANDLER(m6840_w ) {
 		logerror ("ext clock ");
 	}
 	logerror ("\n");
-        }
+  }
 
-	if (offset == 0) {
-	        if ((gps_locals.cr2 & 0x01) == 0x01) {
+  if (offset == 0) {
+	if ((gps_locals.cr2 & 0x01) == 0x01) {
 			gps_locals.cr1 = m6840d.ax[offset];
 			logerror("%04x: m6840_w  CR1 %02x ", activecpu_get_previouspc(), gps_locals.cr1);
 // check reset very early !!!
@@ -772,10 +760,10 @@ static WRITE_HANDLER(m6840_w ) {
 			}
 			if (gps_locals.cr1 & 0x80)  {
 				logerror ("Output enabl ");
-		    		if (gps_locals.timlat1 != gps_locals.timlats1) {
-    					playsam1(0);
-    					gps_locals.timlats1 = gps_locals.timlat1;
-    				}
+				if (gps_locals.timlat1 != gps_locals.timlats1) {
+					playsam1(0);
+					gps_locals.timlats1 = gps_locals.timlat1;
+				}
 			}
 			else {
 //				logerror ("Output OFF   ");
@@ -804,19 +792,19 @@ static WRITE_HANDLER(m6840_w ) {
 				logerror ("ext clock ");
 			}
 			logerror ("\n");
-        	} else {
+		} else {
 			gps_locals.cr3 = m6840d.ax[offset];
 			logerror("%04x: m6840_w  CR3 %02x       ", activecpu_get_previouspc(), gps_locals.cr3);
 			if (gps_locals.cr3 & 0x80)  {
 				logerror ("Output enabl ");
-		    		if (gps_locals.timlat3 != gps_locals.timlats3) {
-    					playsam3(0);
-    					gps_locals.timlats3 = gps_locals.timlat3;
-    				}
+				if (gps_locals.timlat3 != gps_locals.timlats3) {
+					playsam3(0);
+					gps_locals.timlats3 = gps_locals.timlat3;
+				}
 			} else {
 				logerror ("PlaysamQ3off ");
 				gps_locals.timlats3 = 0;
-				mixer_stop_sample(gps_locals.channel+2);				
+				mixer_stop_sample(gps_locals.channel+2);
 			}
 			if (gps_locals.cr3 & 0x40)  {
 				logerror ("Inter  ENABLE ");
@@ -825,7 +813,7 @@ static WRITE_HANDLER(m6840_w ) {
 				logerror ("Inter  off    ");
 			}
 			w = (gps_locals.cr3 & 0x38) >> 3;
- 			logerror ("Mode (N 2)   %01x ",w);
+			logerror ("Mode (N 2)   %01x ",w);
 			if (gps_locals.cr3 & 0x04)  {
 				logerror ("count d 8 ");
 			} else {
@@ -842,9 +830,9 @@ static WRITE_HANDLER(m6840_w ) {
 				logerror ("clock / 1 ");
 			}
 			logerror ("\n");
-       		}
-       }
-  }
+		}
+	}
+}
 
 
 
@@ -853,7 +841,7 @@ static WRITE_HANDLER(m6840_w ) {
 
 static void pia_cb1_w(int data) {
 	static int last;
-    pia_set_input_cb1(GPS_PIA0, (last = !last));
+	pia_set_input_cb1(GPS_PIA0, (last = !last));
 }
 
 

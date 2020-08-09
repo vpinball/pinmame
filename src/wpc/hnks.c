@@ -66,14 +66,13 @@ static void hnks_irq(int state) {
   cpu_set_irq_line(hnks_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static INT8 samples[2][32];
-static int iBuffer = 0;
-
 void start_samples(void)
 {
-	int i;
+	static INT8 samples[2][32];
+	static int iBuffer = 0;
 
-	unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (hnks_locals.actSamples*0x20);
+	int i;
+	const unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (hnks_locals.actSamples*0x20);
 
 	iBuffer = 1-iBuffer;
 	for (i=0; i<0x20; i++)

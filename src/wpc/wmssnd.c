@@ -1502,10 +1502,11 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   // Let the buffer fill naturally, so the throttling mechanism can work.
 //  stream_update(dcs_dac.stream, 0);
   if (size == 0) /* No data, stop playing */
-    { dcs_dac.status = 0; return; }
+  { dcs_dac.status = 0; return; }
+
   if (dcs_dac.status == 0)
   {
-	  // We have a hard assumption that the rate is always DCS_DEFALT_SAMPLE_RATE,
+	  // We have a hard assumption that the rate is always DCS_DEFAULT_SAMPLE_RATE,
 	  // because we have IIR filters constructed using that rate.  The filters
 	  // would need to be reconfigured here if the sample rate were actually
 	  // changing.  In practice it never does change, but we'll assert it just
@@ -1529,24 +1530,12 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
       dcs_dac.status = 1;
   }
   /*-- size is the size of the buffer not the number of samples --*/
-#if MAMEVER >= 3716
   for (idx = 0; idx < size; idx += memStep) {
     dcs_dac.buffer[dcs_dac.sIn] = mem[idx];
     dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
   }
-#else /* MAMEVER */
-  size /= memStep;
-  sStep = sRate * 65536.0 / (double)(Machine->sample_rate);
-
-  /*-- copy samples into buffer --*/
-  while ((idx>>16) < size) {
-    dcs_dac.buffer[dcs_dac.sIn] = mem[(idx>>16)*memStep];
-    dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
-    idx += sStep;
-  }
-#endif /* MAMEVER */
-
 }
+
 #define DCS_IRQSTEPS 4
 /*--------------------------------------------------*/
 /*-- This should actually be part of the CPU core --*/

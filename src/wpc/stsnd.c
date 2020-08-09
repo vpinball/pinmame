@@ -162,9 +162,9 @@ static int st100b_sh_start(const struct MachineSound *msound) {
 	mixer_play_sample_16(st100loc.channel+3,s100Waveb1, sizeof(s100Waveb1), ST100B_FREQ4*(sizeof(s100Waveb1)/2), 1);
 
 	st100loc.freqb5 = 0;
-	mixer_play_sample_16(st100loc.channel+4,s100Waveb5, sizeof(s100Waveb5), (freqarb5[st100loc.freqb5])*sizeof(s100Waveb5), 1);
+	mixer_play_sample_16(st100loc.channel+4,s100Waveb5, sizeof(s100Waveb5), freqarb5[st100loc.freqb5]*sizeof(s100Waveb5), 1);
 	st100loc.freqb6 = 0;
-	mixer_play_sample_16(st100loc.channel+5,s100Waveb6, sizeof(s100Waveb6), (freqarb6[st100loc.freqb6])*sizeof(s100Waveb6), 1);
+	mixer_play_sample_16(st100loc.channel+5,s100Waveb6, sizeof(s100Waveb6), freqarb6[st100loc.freqb6]*sizeof(s100Waveb6), 1);
 	timer_pulse(TIME_IN_SEC(0.02),0,changefr);
 
 	return 0;
@@ -211,9 +211,9 @@ static int st100_sh_start(const struct MachineSound *msound) {
 	mixer_play_sample_16(st100loc.channel+ 3,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ4*(sizeof(s100Waveb1)/2), 1);
 
 	st100loc.freqb5 = 0;
-	mixer_play_sample_16(st100loc.channel+ 4,s100Waveb5, sizeof(s100Waveb5), (freqarb5[st100loc.freqb5])*sizeof(s100Waveb5), 1);
+	mixer_play_sample_16(st100loc.channel+ 4,s100Waveb5, sizeof(s100Waveb5), freqarb5[st100loc.freqb5]*sizeof(s100Waveb5), 1);
 	st100loc.freqb6 = 0;
-	mixer_play_sample_16(st100loc.channel+ 5,s100Waveb6, sizeof(s100Waveb6), (freqarb6[st100loc.freqb6])*sizeof(s100Waveb6), 1);
+	mixer_play_sample_16(st100loc.channel+ 5,s100Waveb6, sizeof(s100Waveb6), freqarb6[st100loc.freqb6]*sizeof(s100Waveb6), 1);
 	timer_pulse(TIME_IN_SEC(0.02),0,changefr);
 
 	mixer_play_sample_16(st100loc.channel+ 6,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ1*(sizeof(s100Waveb1)/2), 1);	// Electronic chimes base frequency
@@ -461,7 +461,7 @@ static void playsamext(int param){
 	if (st300loc.noise) {	// output is enabled...
 		//mixer_play_sample_16(st300loc.channel+2,sineWaveext, sizeof(sineWaveext), f , 1);
 		//logerror("*** playsam EXT noise frequence %08d data %04d ***\n",f,st300loc.extfreq);
-		mixer_play_sample_16(st300loc.channel + 2, sineWaveext[st300loc.extfreq-1], sizeof(sineWaveext[st300loc.extfreq-1]), 48000, 1);
+		mixer_play_sample_16(st300loc.channel+2, sineWaveext[st300loc.extfreq-1], sizeof(sineWaveext[st300loc.extfreq-1]), 48000, 1);
 		logerror("*** playsam EXT noise data %04d ***\n", st300loc.extfreq);
 	} else {
 		mixer_stop_sample(st300loc.channel+2);
@@ -609,7 +609,7 @@ static int st300_sh_start(const struct MachineSound *msound) {
 			for (k = -j*2; k <= j*2; ++k) // magic, filter down to something that loosely matches the original
 			{
 				int ofs;
-				if ((i + k) < 0)
+				if ((i+k) < 0)
 					ofs = 32000+(i+k);
 				else if ((i+k) >= 32000)
 					ofs = (i+k)-32000;
