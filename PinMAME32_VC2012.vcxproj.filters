@@ -130,6 +130,9 @@
     <Filter Include="Source Files\external">
       <UniqueIdentifier>{e43f3cc5-61e9-49e2-a889-eabf8007d455}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\external\vgm">
+      <UniqueIdentifier>{7064aa94-bbf5-4de4-90ba-898193e6e8bf}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\external\zlib">
       <UniqueIdentifier>{6adf1d3d-5ed5-4159-8c73-fbb40c96315f}</UniqueIdentifier>
     </Filter>
@@ -1900,6 +1903,12 @@
     </ClInclude>
     <ClInclude Include="src\vc\unistd.h">
       <Filter>Source Files\VC</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\vgm\vgmwrite.c">
+      <Filter>Source Files\external\vgm</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\vgm\vgmwrite.h">
+      <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\audit32.h">
       <Filter>Source Files\ui</Filter>

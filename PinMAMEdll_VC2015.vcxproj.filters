@@ -124,6 +124,9 @@
     <Filter Include="Source Files\external">
       <UniqueIdentifier>{11e2cb7e-e1ea-413f-abbe-4bb7e0290389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\external\vgm">
+      <UniqueIdentifier>{3acabe38-a15a-4ea2-bab7-e73115eb7bf8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\external\zlib">
       <UniqueIdentifier>{3acabe38-a15a-4ea2-bab7-e73115eb7bf9}</UniqueIdentifier>
     </Filter>
@@ -1762,6 +1765,12 @@
     </ClInclude>
     <ClInclude Include="src\vc\unistd.h">
       <Filter>Source Files\VC</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\vgm\vgmwrite.c">
+      <Filter>Source Files\external\vgm</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\vgm\vgmwrite.h">
+      <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
     <ClInclude Include="ext\zlib\include\zconf.h">
       <Filter>Source Files\external\zlib</Filter>

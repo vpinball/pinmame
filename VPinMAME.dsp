@@ -3040,6 +3040,20 @@ SOURCE=.\src\win32com\WSHDlgCtrls.h
 # Begin Group "external"
 
 # PROP Default_Filter ""
+# Begin Group "vgm"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ext\vgm\vgmwrite.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ext\vgm\vgmwrite.c
+# End Source File
+# End Group
+
+# PROP Default_Filter ""
 # Begin Group "zlib"
 
 # PROP Default_Filter ""

@@ -1390,6 +1390,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClCompile Include="src\wpc\sims\se\prelim\harley.c" />
     <ClCompile Include="src\wpc\sims\se\prelim\monopoly.c" />
     <ClCompile Include="src\vc\dirent.c" />
+    <ClCompile Include="ext\vgm\vgmwrite.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h" />
@@ -1605,6 +1606,7 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\wpc\zacsnd.h" />
     <ClInclude Include="src\vc\dirent.h" />
     <ClInclude Include="src\vc\unistd.h" />
+    <ClCompile Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
   </ItemGroup>
