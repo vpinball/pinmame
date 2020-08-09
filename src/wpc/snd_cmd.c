@@ -546,7 +546,7 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
 #endif
 
   /*-- handle recording --*/
-  if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY))
+  if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE, REPEATKEY))
     wave_handle();
   if (keyboard_pressed_memory_repeat(SMDCMD_DUMPTOGGLE, REPEATKEY)) {
     if (!wavelocals.dumping)

@@ -32,6 +32,7 @@
 #define IDC_DMDOPACITY                  116
 #define IDC_SOUNDMODE                   117
 #define IDC_RESAMPLEQ                   118
+#define IDC_VGMWRITE                    119
 #define IDC_DMDRED                      120
 #define IDC_DMDGREEN                    121
 #define IDC_DMDBLUE                     122

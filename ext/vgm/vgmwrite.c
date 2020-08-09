@@ -270,7 +270,7 @@ void vgm_start(struct RunningMachine *machine)
 #endif
 	wchar_t vgmNotes[0x50];
 	
-	LOG_VGM_FILE = 1; //!! options_get_int(mame_options(), OPTION_VGMWRITE);
+	LOG_VGM_FILE = pmoptions.vgmwrite;
 	logerror("VGM logging mode: %02X\n", LOG_VGM_FILE);
 	
 	// Reset all files
