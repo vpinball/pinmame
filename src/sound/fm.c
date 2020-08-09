@@ -128,6 +128,7 @@
 #include "ay8910.h"
 #include "fm.h"
 
+#include "../ext/vgm/vgmwrite.h"
 
 /* include external DELTA-T unit (when needed) */
 #if (BUILD_YM2608||BUILD_YM2610||BUILD_YM2610B)
@@ -2026,6 +2027,7 @@ typedef struct
 #endif
 	FM_OPN OPN;				/* OPN state         */
 	FM_CH CH[3];			/* channel state     */
+	unsigned short vgm_idx;
 } YM2203;
 
 static YM2203 *FM2203=NULL;	/* array of YM2203's */
@@ -2232,10 +2234,15 @@ int YM2203Init(int num, int clock, int rate,
 		FM2203[i].OPN.ST.Timer_Handler = TimerHandler;
 		FM2203[i].OPN.ST.IRQ_Handler   = IRQHandler;
 		YM2203ResetChip(i);
+
+		FM2203[i].vgm_idx = vgm_open(VGMC_YM2203, FM2203[i].OPN.ST.clock);
+#define AY8910_LEGACY_OUTPUT        (0x01)
+		vgm_header_set(FM2203[i].vgm_idx, 0x01, AY8910_LEGACY_OUTPUT); //!! psg_flags); // ay8910_device::m_flags
 	}
 #ifdef _STATE_H
 	YM2203_save_state();
 #endif
+
 	return(0);
 }
 
@@ -2263,11 +2270,15 @@ int YM2203Write(int n,int a,UINT8 v)
 
 		/* prescaler select : 2d,2e,2f  */
 		if( v >= 0x2d && v <= 0x2f )
+		{
+			vgm_write(FM2203[n].vgm_idx, 0x00, v, 1);
 			OPNPrescaler_w(OPN , v , 1);
+		}
 	}
 	else
 	{	/* data port */
 		int addr = OPN->ST.address;
+		vgm_write(FM2203[n].vgm_idx, 0x00, addr, v);
 #ifdef _STATE_H
 		FM2203[n].REGS[addr] = v;
 #endif
@@ -2375,8 +2386,10 @@ typedef struct
 	UINT8		adpcm_arrivedEndAddress;
 	YM_DELTAT 	deltaT;				/* Delta-T ADPCM unit	*/
 
-    UINT8		flagmask;			/* YM2608 only */
-	UINT8       irqmask;            /* YM2608 only */
+	UINT8		flagmask;			/* YM2608 only */
+	UINT8		irqmask;			/* YM2608 only */
+
+	unsigned short vgm_idx;
 } YM2610;
 
 /* here is the virtual YM2608 */
@@ -3514,6 +3527,10 @@ int YM2608Init(int num, int clock, int rate,
 		FM2608[i].pcm_size = 0x2000;
 
 		YM2608ResetChip(i);
+
+		FM2608[i].vgm_idx = vgm_open(VGMC_YM2608, FM2608[i].OPN.ST.clock);
+		vgm_header_set(FM2608[i].vgm_idx, 0x01, psg_flags); // ay8910_device::m_flags
+		vgm_write_large_data(FM2608[i].vgm_idx, 0x01, FM2608[i].deltaT.memory_size, 0x00, 0x00, FM2608[i].deltaT.memory);
 	}
 
 	Init_ADPCMATable();
@@ -3637,6 +3654,7 @@ int YM2608Write(int n, int a,UINT8 v)
 		/* prescaler selecter : 2d,2e,2f  */
 		if( v >= 0x2d && v <= 0x2f )
 		{
+			vgm_write(F2608->vgm_idx, 0x00, v, 2);
 			OPNPrescaler_w(OPN , v , 2);
 			F2608->deltaT.freqbase = OPN->ST.freqbase;
 		}
@@ -3647,6 +3665,7 @@ int YM2608Write(int n, int a,UINT8 v)
 			break;	/* verified on real YM2608 */
 
 		addr = OPN->ST.address;
+		vgm_write(F2608->vgm_idx, 0x00, addr, v);
 #ifdef _STATE_H
 		F2608->REGS[addr] = v;
 #endif
@@ -3687,6 +3706,7 @@ int YM2608Write(int n, int a,UINT8 v)
 			break;	/* verified on real YM2608 */
 
 		addr = OPN->ST.address;
+		vgm_write(F2608->vgm_idx, 0x01, addr, v);
 #ifdef _STATE_H
 		F2608->REGS[addr | 0x100] = v;
 #endif
@@ -4226,6 +4246,12 @@ int YM2610Init(int num, int clock, int rate,
 		FM2610[i].deltaT.status_change_EOS_bit = 0x80;	/* status flag: set bit7 on End Of Sample */
 
 		YM2610ResetChip(i);
+
+		FM2610[i].vgm_idx = vgm_open(VGMC_YM2610, FM2610[i].OPN.ST.clock);
+		uint8_t mode_b = (device->type() == YM2610B);
+		vgm_header_set(FM2610[i].vgm_idx, 0x00, mode_b);	// set YM2610B mode
+		vgm_write_large_data(F2610->vgm_idx, 0x01, FM2610[i].pcm_size, 0x00, 0x00, FM2610[i].pcmbuf);
+		vgm_write_large_data(F2610->vgm_idx, 0x02, FM2610[i].deltaT.memory_size, 0x00, 0x00, FM2610[i].deltaT.memory);
 	}
 	Init_ADPCMATable();
 #ifdef _STATE_H
@@ -4336,6 +4362,7 @@ int YM2610Write(int n, int a, UINT8 v)
 			break;	/* verified on real YM2608 */
 
 		addr = OPN->ST.address;
+		vgm_write(F2610->vgm_idx, 0x00, addr, v);
 #ifdef _STATE_H
 		F2610->REGS[addr] = v;
 #endif
@@ -4429,6 +4456,7 @@ int YM2610Write(int n, int a, UINT8 v)
 
 		YM2610UpdateReq(n);
 		addr = OPN->ST.address;
+		vgm_write(F2610->vgm_idx, 0x01, addr, v);
 #ifdef _STATE_H
 		F2610->REGS[addr | 0x100] = v;
 #endif
@@ -4512,6 +4540,8 @@ typedef struct
 	/* dac output (YM2612) */
 	int			dacen;
 	INT32		dacout;
+
+	unsigned short vgm_idx;
 } YM2612;
 
 static int YM2612NumChips;	/* total chip */
@@ -4729,7 +4759,10 @@ int YM2612Init(int num, int clock, int rate,
 		/* Extend handler */
 		FM2612[i].OPN.ST.Timer_Handler = TimerHandler;
 		FM2612[i].OPN.ST.IRQ_Handler   = IRQHandler;
+
 		YM2612ResetChip(i);
+
+		FM2612[i].vgm_idx = vgm_open(VGMC_YM2612, FM2612[i].OPN.ST.clock);
 	}
 #ifdef _STATE_H
 	YM2612_save_state();
@@ -4802,6 +4835,7 @@ int YM2612Write(int n, int a,UINT8 v)
 			break;	/* verified on real YM2608 */
 
 		addr = F2612->OPN.ST.address;
+		vgm_write(F2612->vgm_idx, 0x00, addr, v);
 #ifdef _STATE_H
 		F2612->REGS[addr] = v;
 #endif
@@ -4842,6 +4876,7 @@ int YM2612Write(int n, int a,UINT8 v)
 			break;	/* verified on real YM2608 */
 
 		addr = F2612->OPN.ST.address;
+		vgm_write(F2612->vgm_idx, 0x01, addr, v);
 #ifdef _STATE_H
 		F2612->REGS[addr | 0x100] = v;
 #endif

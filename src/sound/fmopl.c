@@ -74,6 +74,8 @@ Revision History:
 #include "driver.h"		/* use M.A.M.E. */
 #include "fmopl.h"
 
+#include "../ext/vgm/vgmwrite.h"
+
 // old code that had rate not necessarily meet clock/72
 //#define OPL_NOT_EXACT_RATE
 
@@ -322,7 +324,9 @@ typedef struct fm_opl_f {
 #endif
 	double TimerBase;				/* Timer base time (==sampling time)*/
 
-	signed int phase_modulation;    /* phase modulation input (SLOT 2) */
+	unsigned short vgm_idx;
+
+	signed int phase_modulation;	/* phase modulation input (SLOT 2) */
 	signed int output[1];
 #if BUILD_Y8950
 	INT32 output_deltat[4];			/* for Y8950 DELTA-T, chip is mono, that 4 here is just for safety */
@@ -1913,6 +1917,7 @@ static int OPLWrite(FM_OPL *OPL,int a,int v)
 	else
 	{	/* data port */
 		if(OPL->UpdateHandler) OPL->UpdateHandler(OPL->UpdateParam,0);
+		vgm_write(OPL->vgm_idx, 0x00, OPL->address, v);
 		OPLWriteReg(OPL,OPL->address,v);
 	}
 	return OPL->status>>7;
@@ -2051,6 +2056,8 @@ int YM3812Init(int num, int clock, int rate)
 		}
 		/* reset */
 		YM3812ResetChip(i);
+
+		OPL_YM3812[i]->vgm_idx = vgm_open(VGMC_YM3812, clock);
 	}
 
 	return 0;
@@ -2195,6 +2202,8 @@ int YM3526Init(int num, int clock, int rate)
 		}
 		/* reset */
 		YM3526ResetChip(i);
+
+		OPL_YM3526[i]->vgm_idx = vgm_open(VGMC_YM3526, clock);
 	}
 
 	return 0;
@@ -2354,6 +2363,8 @@ int Y8950Init(int num, int clock, int rate)
 		OPL_Y8950[i]->deltat->status_change_BRDY_bit = 0x08;	/* status flag: set bit3 on BRDY (End Of: ADPCM analysis/synthesis, memory reading/writing) */
 		/* reset */
 		Y8950ResetChip(i);
+
+		OPL_Y8950[i]->vgm_idx = vgm_open(VGMC_Y8950, clock);
 	}
 
 	return 0;
@@ -2408,6 +2419,7 @@ void Y8950SetDeltaTMemory(int which, void * deltat_mem_ptr, int deltat_mem_size 
 	FM_OPL		*OPL = OPL_Y8950[which];
 	OPL->deltat->memory = (UINT8 *)(deltat_mem_ptr);
 	OPL->deltat->memory_size = deltat_mem_size;
+	vgm_write_large_data(OPL->vgm_idx, 0x01, OPL->deltat->memory_size, 0x00, 0x00, OPL->deltat->memory);
 }
 
 /*
