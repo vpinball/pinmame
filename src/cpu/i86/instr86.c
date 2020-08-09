@@ -435,7 +435,12 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
+#if (HAS_I88 || HAS_I188)
+			PutMemB(ES,I.regs.w[DI],read_port_byte(I.regs.w[DX]));
+			PutMemB(ES,I.regs.w[DI]+1,read_port_byte(I.regs.w[DX]+1));
+#else
 			PutMemW(ES,I.regs.w[DI],read_port_word(I.regs.w[DX]));
+#endif
 			I.regs.w[DI] += 2 * I.DirVal;
 			ICOUNT -= cycles.rep_ins16_count;
 		}
@@ -457,7 +462,12 @@ static void PREFIX(rep)(int flagval)
 		for (; count > 0; count--)
 		{
 			if (ICOUNT <= 0) { I.pc = I.prevpc; break; }
+#if (HAS_I88 || HAS_I188)
+			write_port_byte(I.regs.w[DX],GetMemB(DS,I.regs.w[SI]));
+			write_port_byte(I.regs.w[DX]+1,GetMemB(DS,I.regs.w[SI]+1));
+#else
 			write_port_word(I.regs.w[DX],GetMemW(DS,I.regs.w[SI]));
+#endif
 			I.regs.w[SI] += 2 * I.DirVal; /* GOL 11/27/01 */
 			ICOUNT -= cycles.rep_outs16_count;
 		}
@@ -2579,7 +2589,12 @@ static void PREFIX86(_inax)(void)    /* Opcode 0xe5 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.in_imm16;
+#if (HAS_I88 || HAS_I188)
+	I.regs.b[AL] = read_port_byte(port);
+	I.regs.b[AH] = read_port_byte(port+1);
+#else
 	I.regs.w[AX] = read_port_word(port);
+#endif
 }
 
 static void PREFIX86(_outal)(void)    /* Opcode 0xe6 */
@@ -2595,7 +2610,12 @@ static void PREFIX86(_outax)(void)    /* Opcode 0xe7 */
 	unsigned port = FETCH;
 
 	ICOUNT -= cycles.out_imm16;
+#if (HAS_I88 || HAS_I188)
+	write_port_byte(port, I.regs.b[AL]);
+	write_port_byte(port+1, I.regs.b[AH]);
+#else
 	write_port_word(port, I.regs.w[AX]);
+#endif
 }
 
 static void PREFIX86(_call_d16)(void)    /* Opcode 0xe8 */
@@ -2663,7 +2683,12 @@ static void PREFIX86(_inaxdx)(void)    /* Opcode 0xed */
 	unsigned port = I.regs.w[DX];
 
 	ICOUNT -= cycles.in_dx16;
+#if (HAS_I88 || HAS_I188)
+	I.regs.b[AL] = read_port_byte(port);
+	I.regs.b[AH] = read_port_byte(port+1);
+#else
 	I.regs.w[AX] = read_port_word(port);
+#endif
 }
 
 static void PREFIX86(_outdxal)(void)    /* Opcode 0xee */
@@ -2677,7 +2702,12 @@ static void PREFIX86(_outdxax)(void)    /* Opcode 0xef */
 	unsigned port = I.regs.w[DX];
 
 	ICOUNT -= cycles.out_dx16;
+#if (HAS_I88 || HAS_I188)
+	write_port_byte(port, I.regs.b[AL]);
+	write_port_byte(port+1, I.regs.b[AH]);
+#else
 	write_port_word(port, I.regs.w[AX]);
+#endif
 }
 
 /* I think thats not a V20 instruction...*/

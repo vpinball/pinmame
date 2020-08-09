@@ -19,7 +19,6 @@
 #include "cpu/i8039/i8039.h"
 #include "sound/adpcm.h"
 #include "sound/3812intf.h"
-#include "machine/pic8259.h"
 #include "sleic.h"
 
 #define SLEIC_VBLANKFREQ   60 /* VBLANK frequency */
@@ -99,12 +98,11 @@ static SWITCH_UPDATE(SLEIC) {
 
 static WRITE_HANDLER(pic_w) {
   logerror("PIC W(%03x->%2x) = %02x\n", offset, offset>>7, data);
-  pic8259_0_w(offset>>7, data);
 }
 
 /* handler called by the 3812 when the internal timers cause an IRQ */
 static void ym3812_irq(int irq) {
-  cpu_set_irq_line(SLEIC_MAIN_CPU, 0, irq ? ASSERT_LINE : CLEAR_LINE);
+//  cpu_set_irq_line(SLEIC_MAIN_CPU, 0, irq ? ASSERT_LINE : CLEAR_LINE);
 }
 
 /*Interfaces*/
@@ -165,20 +163,8 @@ static MEMORY_WRITE_START(SLEIC_Z80_writemem)
   {0xc000,0xc7ff, MWA_RAM},
 MEMORY_END
 
-static WRITE_HANDLER(i80188_write_port3) {
-  logerror("80188 write port %2x = %02x\n", 0x30 + offset, data);
-}
-
-static WRITE_HANDLER(i80188_write_port5) {
-  logerror("80188 write port %2x = %02x\n", 0x50 + offset, data);
-}
-
-static WRITE_HANDLER(i80188_write_port6) {
-  logerror("80188 write port %2x = %02x\n", 0x66 + offset, data);
-}
-
-static WRITE_HANDLER(i80188_write_porta) {
-  logerror("80188 write port %2x = %02x\n", 0xa0 + offset, data);
+static WRITE_HANDLER(i80188_write_port) {
+  logerror("80188 internal w %02x:%x %02x\n", offset / 2, offset % 2, data);
 }
 
 static READ_HANDLER(i8039_read_test) {
@@ -235,10 +221,7 @@ static PORT_READ_START(SLEIC_80188_readport)
 MEMORY_END
 
 static PORT_WRITE_START(SLEIC_80188_writeport)
-  {0xff30,0xff3f, i80188_write_port3},
-  {0xff50,0xff5f, i80188_write_port5},
-  {0xff66,0xff67, i80188_write_port6},
-  {0xffa0,0xffa9, i80188_write_porta},
+  {0xff00,0xffff, i80188_write_port},
 MEMORY_END
 
 static PORT_READ_START(SLEIC_8039_readport)
@@ -259,7 +242,6 @@ MEMORY_END
 
 static MACHINE_INIT(SLEIC) {
   memset(&locals, 0, sizeof locals);
-  pic8259_0_config(SLEIC_MAIN_CPU, 0);
 }
 
 static MACHINE_DRIVER_START(SLEIC)
