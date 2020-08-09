@@ -73,7 +73,7 @@ Taito do Brasil: Football (sound ROMs only)
 
 Correct Dumps:
 Atari: Airborne Avenger (using 20252 sound PROM)
-       Atarians, The (and bootleg) (using 07028 sound PROM)
+       Atarians, The (using 07028 sound PROM)
        Middle Earth (using 20252 sound PROM)
        Time 2000 (using 07028 sound PROM)
 Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
