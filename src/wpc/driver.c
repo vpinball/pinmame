@@ -16,9 +16,7 @@ const struct GameDriver *drivers[] = {
 #  include "driver.c"
 0 /* end of array */
 };
-#if MAMEVER >= 6300
 const struct GameDriver *test_drivers[] = { 0 };
-#endif
 #else /* DRIVER_RECURSIVE */
 
 /* A comment on the "LED Ghost Fix" MODs from https://emmytech.com/arcade/led_ghost_busting/index.html :

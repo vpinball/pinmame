@@ -791,12 +791,12 @@ static void startcm3374a(int param) {
 }
 
 static void startcm3374b(int param) {
-  if ((snslocals.freqb) && (param == 0)) {
+  if (snslocals.freqb && (param == 0)) {
 //    logerror("startcm3374b %x\n",snslocals.freqb);
     mixer_play_sample(snslocals.channel+2, (signed char *)triangleWave, sizeof(triangleWave),(snslocals.freqb*sizeof(triangleWave) / 2 ), 1);
     mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWave, sizeof(sawtoothWave),(snslocals.freqb*sizeof(sawtoothWave) / 2 ), 1);
   }
-  if ((snslocals.freqb) && (param == 1)) {
+  else if (snslocals.freqb && (param == 1)) {
 //    logerror("startcm3374b R %x\n",snslocals.freqb);
     mixer_play_sample(snslocals.channel+2, (signed char *)triangleWaver, sizeof(triangleWaver),(snslocals.freqb*sizeof(triangleWaver) / 2 ), 1);
     mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWaver, sizeof(sawtoothWaver),(snslocals.freqb*sizeof(sawtoothWaver) / 2 ), 1);
