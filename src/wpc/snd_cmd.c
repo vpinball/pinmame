@@ -672,12 +672,16 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
     else { /* command mode */
       /*-- specific help --*/
       core_textOutf(SND_XROW, 65, BLACK, "UP/DOWN     Next/Prev command");
+      core_textOutf(SND_XROW, 75, BLACK, "F5          Record");
+      core_textOutf(SND_XROW, 85, BLACK, "F6          Record Altsound and CSV");
+
       if      ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)) && locals.currCmd->prev)
         { locals.currCmd = locals.currCmd->prev; }
       else if ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) && locals.currCmd->next)
         { locals.currCmd = locals.currCmd->next; }
       else if (keyboard_pressed_memory_repeat(SMDCMD_PLAY, REPEATKEY))
         playCmd(locals.currCmd->length, locals.currCmd->cmd);
+
       core_textOutf(SND_XROW, 95, BLACK, "%-30s",locals.currCmd->name);
       for (ii = 0; ii < MAX_CMD_LENGTH; ii++)
         core_textOutf(SND_XROW + 13*ii, 105, BLACK,
