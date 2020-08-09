@@ -126,7 +126,6 @@
  #include "lisy/utils.h"
 #endif /* PINMAME && LISY_SUPPORT */
 #include "../ext/vgm/vgmwrite.h"
-#include "../ext/vgm/vgmwrite.c" //!! not really needed, but linking error otherwise
 
 /***************************************************************************
 
