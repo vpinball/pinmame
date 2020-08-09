@@ -1307,6 +1307,8 @@
     <ClInclude Include="src\wpc\zacsnd.h" />
     <ClInclude Include="src\vc\dirent.h" />
     <ClInclude Include="src\vc\unistd.h" />
+    <ClInclude Include="ext\vgm\vgmwrite.c" />
+    <ClInclude Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
   </ItemGroup>

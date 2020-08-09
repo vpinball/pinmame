@@ -1654,6 +1654,8 @@ copy "$(TargetDir)$(TargetName).pdb" "$(ProjectDir)"
     <ClInclude Include="src\ui\splitters.h" />
     <ClInclude Include="src\ui\treeview.h" />
     <ClInclude Include="src\ui\win32ui.h" />
+    <ClInclude Include="ext\vgm\vgmwrite.c" />
+    <ClInclude Include="ext\vgm\vgmwrite.h" />
     <ClInclude Include="ext\zlib\include\zconf.h" />
     <ClInclude Include="ext\zlib\include\zlib.h" />
   </ItemGroup>

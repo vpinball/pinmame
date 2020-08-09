@@ -4623,6 +4623,18 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="vgm"
+					>
+					<File
+						RelativePath=".\ext\vgm\vgmwrite.c"
+						>
+					</File>
+					<File
+						RelativePath=".\ext\vgm\vgmwrite.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

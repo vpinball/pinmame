@@ -141,6 +141,9 @@
     <Filter Include="Source Files\external\basicbitmap">
       <UniqueIdentifier>{04845ed9-2191-4b84-b489-705dd4c69b24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\external\vgm">
+      <UniqueIdentifier>{7064aa94-bbf5-4de4-90ba-898193e6e8bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\artwork.c">
@@ -1268,6 +1271,9 @@
     <ClCompile Include="ext\basicbitmap\BasicBitmap_SSE2.cpp">
       <Filter>Source Files\external\basicbitmap</Filter>
     </ClCompile>
+    <ClCompile Include="ext\vgm\vgmwrite.c">
+      <Filter>Source Files\external\vgm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\artwork.h">
@@ -1995,6 +2001,9 @@
     </ClInclude>
     <ClInclude Include="ext\basicbitmap\BasicBitmap_C.h">
       <Filter>Source Files\external\basicbitmap</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\vgm\vgmwrite.h">
+      <Filter>Source Files\external\vgm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
