@@ -108,7 +108,12 @@ static void PREFIX186(_insb)(void)    /* Opcode 0x6c */
 static void PREFIX186(_insw)(void)    /* Opcode 0x6d */
 {
 	ICOUNT -= cycles.ins16;
+#if (HAS_I188)
+	PutMemB(ES,I.regs.w[DI],read_port_byte(I.regs.w[DX]));
+	PutMemB(ES,I.regs.w[DI]+1,read_port_byte(I.regs.w[DX]+1));
+#else
 	PutMemW(ES,I.regs.w[DI],read_port_word(I.regs.w[DX]));
+#endif
 	I.regs.w[DI] += 2 * I.DirVal;
 }
 
@@ -122,7 +127,12 @@ static void PREFIX186(_outsb)(void)    /* Opcode 0x6e */
 static void PREFIX186(_outsw)(void)    /* Opcode 0x6f */
 {
 	ICOUNT -= cycles.outs16;
+#if (HAS_I188)
+	write_port_byte(I.regs.w[DX],GetMemB(DS,I.regs.w[SI]));
+	write_port_byte(I.regs.w[DX]+1,GetMemB(DS,I.regs.w[SI]+1));
+#else
 	write_port_word(I.regs.w[DX],GetMemW(DS,I.regs.w[SI]));
+#endif
 	I.regs.w[SI] += 2 * I.DirVal; /* GOL 11/27/01 */
 }
 
