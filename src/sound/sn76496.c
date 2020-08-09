@@ -36,6 +36,7 @@
 
 #include "driver.h"
 
+#include "../ext/vgm/vgmwrite.h"
 
 #define MAX_OUTPUT 0x7fff
 
@@ -57,6 +58,8 @@ struct SN76496
     INT32 Period[4];
 	INT32 Count[4];
 	INT32 Output[4];
+
+	unsigned short vgm_idx;
 };
 
 
@@ -71,6 +74,8 @@ static void SN76496Write(int chip,int data)
 
 	/* update the output buffer before changing the registers */
 	stream_update(R->Channel,0);
+
+	vgm_write(R->vgm_idx, 0x00, data, 0x00);
 
 	if (data & 0x80)
 	{
@@ -346,6 +351,15 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
         R->FeedbackMask = feedbackmask;
         R->WhitenoiseTaps = noisetaps;
         R->WhitenoiseInvert = noiseinvert;
+
+		R->vgm_idx = vgm_open(VGMC_SN76496, intf->baseclock[chip]); //!!
+		vgm_header_set(R->vgm_idx, 0x01, R->FeedbackMask);
+		vgm_header_set(R->vgm_idx, 0x02, R->WhitenoiseTaps);
+		//!! vgm_header_set(R->vgm_idx, 0x03, m_whitenoise_tap2);
+		vgm_header_set(R->vgm_idx, 0x04, R->WhitenoiseInvert); //!! m_negate);
+		vgm_header_set(R->vgm_idx, 0x05, 0); //!! m_stereo);
+		vgm_header_set(R->vgm_idx, 0x06, 1); //!! m_clock_divider);
+		vgm_header_set(R->vgm_idx, 0x07, 0); //!! m_sega_style_psg); // how ironic that it does just the opposite of its name
 	}
 	return 0;
 }
