@@ -67,6 +67,7 @@
 #include "saa1099.h"
 #include <math.h>
 
+#include "../ext/vgm/vgmwrite.h"
 
 #define LEFT	0x00
 #define RIGHT	0x01
@@ -112,6 +113,8 @@ struct SAA1099
 	int selected_reg;				/* selected register */
 	struct saa1099_channel channels[6];    /* channels */
 	struct saa1099_noise noise[2];	/* noise generators */
+
+	unsigned short vgm_idx;
 };
 
 /* saa1099 chips */
@@ -119,6 +122,7 @@ static struct SAA1099 saa1099[MAX_SAA1099];
 
 /* global parameters */
 static double sample_rate;
+static double master_clock;
 
 static int amplitude_lookup[16] = {
 	 0*32767/16,  1*32767/16,  2*32767/16,	3*32767/16,
@@ -232,9 +236,9 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
     {
 		switch (saa->noise_params[ch])
 		{
-		case 0: saa->noise[ch].freq = 31250.0 * 2; break;
-		case 1: saa->noise[ch].freq = 15625.0 * 2; break;
-		case 2: saa->noise[ch].freq =  7812.5 * 2; break;
+		case 0: saa->noise[ch].freq = master_clock/256.0 * 2; break;
+		case 1: saa->noise[ch].freq = master_clock/512.0 * 2; break;
+		case 2: saa->noise[ch].freq = master_clock/1024.0 * 2; break;
 		case 3: saa->noise[ch].freq = saa->channels[ch * 3].freq; break;
 		}
 	}
@@ -248,7 +252,7 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 		for (ch = 0; ch < 6; ch++)
 		{
             if (saa->channels[ch].freq == 0.0)
-                saa->channels[ch].freq = (double)((2 * 15625) << saa->channels[ch].octave) /
+                saa->channels[ch].freq = (double)((int)(2 * master_clock / 512) << saa->channels[ch].octave) /
                     (511.0 - (double)saa->channels[ch].frequency);
 
             /* check the actual position in the square wave */
@@ -256,7 +260,7 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 			while (saa->channels[ch].counter < 0)
 			{
 				/* calculate new frequency now after the half wave is updated */
-				saa->channels[ch].freq = (double)((2 * 15625) << saa->channels[ch].octave) /
+				saa->channels[ch].freq = (double)((int)(2 * master_clock / 512) << saa->channels[ch].octave) /
 					(511.0 - (double)saa->channels[ch].frequency);
 
 				saa->channels[ch].counter += sample_rate;
@@ -324,7 +328,8 @@ int saa1099_sh_start(const struct MachineSound *msound)
 		return 0;
 
 	/* copy global parameters */
-	sample_rate = 1.0 * Machine->sample_rate;
+	master_clock = 7159000; //!! 4000000 8000000 6000000 ?
+	sample_rate = master_clock / 256.; // 1.0 * Machine->sample_rate; //!!
 
 	/* for each chip allocate one stream */
 	for (i = 0; i < intf->numchips; i++)
@@ -343,6 +348,8 @@ int saa1099_sh_start(const struct MachineSound *msound)
 			vol[j] = MIXER(intf->volume[i][j], j ? MIXER_PAN_RIGHT : MIXER_PAN_LEFT);
 		}
 		saa->stream = stream_init_multi(2, name, vol, (int)sample_rate, i, saa1099_update);
+
+		saa->vgm_idx = vgm_open(VGMC_SAA1099, master_clock);
 	}
 
 	return 0;
@@ -377,11 +384,13 @@ static void saa1099_control_port_w( int chip, int reg, int data )
 static void saa1099_write_port_w( int chip, int offset, int data )
 {
 	struct SAA1099 *saa = &saa1099[chip];
-	int reg = saa->selected_reg;
+	const int reg = saa->selected_reg;
 	int ch;
 
 	/* first update the stream to this point in time */
 	stream_update(saa->stream, 0);
+
+	vgm_write(saa->vgm_idx, 0x00, reg & 0x7F, data);
 
 	switch (reg)
 	{
@@ -506,4 +515,3 @@ WRITE16_HANDLER( saa1099_write_port_1_lsb_w )
 	if (ACCESSING_LSB)
 		saa1099_write_port_w(1, offset, data & 0xff);
 }
-
