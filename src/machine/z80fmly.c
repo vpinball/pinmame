@@ -34,7 +34,7 @@ pending:
 typedef struct
 {
 	int vector;                 /* interrupt vector */
-	int clock;                  /* system clock */
+	//int clock;                  /* system clock */
 	double invclock16;          /* 16/system clock */
 	double invclock256;         /* 256/system clock */
 	void (*intr)(int which);    /* interrupt callback */
@@ -101,7 +101,7 @@ void z80ctc_init (z80ctc_interface *intf)
 
 	for (i = 0; i < intf->num; i++)
 	{
-		ctcs[i].clock = intf->baseclock[i];
+		//ctcs[i].clock = intf->baseclock[i];
 		ctcs[i].invclock16 = 16.0 / (double)intf->baseclock[i];
 		ctcs[i].invclock256 = 256.0 / (double)intf->baseclock[i];
 		ctcs[i].notimer = intf->notimer[i];
