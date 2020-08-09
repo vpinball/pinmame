@@ -15,56 +15,16 @@
 #define NEOFREE
 
 
-#if (MAMEVER >= 6800) && (MAMEVER < 7100)
-#  ifndef INVALID_FILE_ATTRIBUTES
-#    define INVALID_FILE_ATTRIBUTES 0xffffffff
-#  endif
-#  ifndef INVALID_SET_FILE_POINTER
-#    define INVALID_SET_FILE_POINTER 0xffffffff
-#  endif
-#endif // MAMEVER
-#if (MAMEVER >= 6800)
 #  ifndef PI
 #    define PI 3.1415926535897932384626433832795
 #  endif
-#else // MAMEVER < 6800
-#  define CRC(a) 0x##a
-#  define SHA1(a)
-#  define NO_DUMP 0x00000000
-#endif // MAMEVER < 6800
-#if MAMEVER >= 6100
 #define osd_mark_dirty(a,b,c,d)
-#endif /* MAMEVER */
-#if MAMEVER >= 6300
 #define VIDEO_SUPPORTS_DIRTY 0
 #define FILETYPE_PRINTER FILETYPE_MEMCARD
-#endif /* MAMEVER */
-#if MAMEVER < 6300
-#define FILETYPE_WAVE OSD_FILETYPE_WAVEFILE
-#define FILETYPE_HIGHSCORE_DB OSD_FILETYPE_HIGHSCORE_DB
-#define FILETYPE_PRINTER OSD_FILETYPE_MEMCARD
-#define FILETYPE_ROM OSD_FILETYPE_ROM
-#define mame_file void
-#define mame_fopen osd_fopen
-#define mame_fclose osd_fclose
-#define mame_fgets osd_fgets
-#define mame_faccess osd_faccess
-#define mame_fwrite osd_fwrite
-#define mame_fwrite_lsbfirst osd_fwrite_lsbfirst
-#endif /* MAMEVER */
-#if MAMEVER > 3716
 #define BMTYPE UINT16
 #define M65C02_INT_IRQ M65C02_IRQ_LINE
 #define M65C02_INT_NMI INTERRUPT_NMI
 #define VIDEO_MODIFIES_PALETTE 0
-#else  /* MAMEVER */
-#define BMTYPE UINT8
-#define mame_bitmap osd_bitmap
-#define cpu_triggerint(x) cpu_trigger(-2000+(x))
-#define activecpu_get_reg(x) cpu_get_reg(x)
-#define activecpu_set_reg(x,y) cpu_set_reg((x),(y))
-#define activecpu_get_previouspc cpu_getpreviouspc
-#endif /* MAMEVER */
 
 #ifdef _MSC_VER // These must be in the makefile for WIN32 & DOS
 // CPUs
@@ -73,9 +33,7 @@
 #define HAS_M6800    1
 #define HAS_M6803    1
 #define HAS_M6802    1
-#if MAMEVER >= 6300
 #define HAS_ADSP2101 1 // must be defined for 2105 to work
-#endif // MAMEVER
 #define HAS_ADSP2105 1
 #define HAS_Z80      1
 #define HAS_M6502    1
@@ -106,11 +64,7 @@
 
 // Sound
 #define HAS_DAC        1
-#if MAMEVER > 3716
 #define HAS_YM2151_ALT 1
-#else /* MAMEVER */
-#define HAS_YM2151     1
-#endif /* MAMEVER */
 #define HAS_HC55516    1
 #define HAS_MC3417     1
 #define HAS_SAMPLES    1
