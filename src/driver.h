@@ -99,6 +99,7 @@ typedef struct {
 	int alpha_on_dmd;			/* Virtual alphanumeric displays on P-ROC DMD */
 	int virtual_dmd;			/* If we have no screen, then we can suppress the DMD */
 #endif /* PROC_SUPPORT */
+  int vgmwrite;
 } tPMoptions;
 extern tPMoptions pmoptions;
 struct pinMachine {

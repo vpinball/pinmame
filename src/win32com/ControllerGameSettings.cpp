@@ -32,13 +32,14 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtrlColorStatic)
-                MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLeftButtonDown)
+		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLeftButtonDown)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_DOUBLESIZE, OnCheckBox)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_PINDMD, OnCheckBox)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_WINDMD, OnCheckBox)
-                COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_IGNOREROMCRC, OnCheckBox)
-                COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_CABINETMODE, OnCheckBox)
-                COMMAND_ID_HANDLER(IDC_DMD_COLORIZE, OnDmdColorize)
+		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_IGNOREROMCRC, OnCheckBox)
+		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_CABINETMODE, OnCheckBox)
+		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_VGMWRITE, OnCheckBox)
+		COMMAND_ID_HANDLER(IDC_DMD_COLORIZE, OnDmdColorize)
 		COMMAND_CODE_RANGE_HANDLER(IDC_SAMPLERATE, IDC_DMDPERC0, EN_CHANGE, OnEditCtrlChanged)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
@@ -183,6 +184,10 @@ private:
 		VariantClear(&vValue);
 #endif
 
+		pGameSettings->get_Value(CComBSTR("vgmwrite"), &vValue);
+		CheckDlgButton(IDC_VGMWRITE, (vValue.boolVal == VARIANT_TRUE) ? BST_CHECKED : BST_UNCHECKED);
+		VariantClear(&vValue);
+
 		pGameSettings->Release();
 	}
 
@@ -234,6 +239,8 @@ private:
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 		pGameSettings->put_Value(CComBSTR("sound_mode"), CComVariant((int) GetDlgItemInt(IDC_SOUNDMODE,NULL,TRUE)));
 #endif
+
+		pGameSettings->put_Value(CComBSTR("vgmwrite"), CComVariant((BOOL) IsDlgButtonChecked(IDC_VGMWRITE)));
 
 		pGameSettings->Release();
 	}

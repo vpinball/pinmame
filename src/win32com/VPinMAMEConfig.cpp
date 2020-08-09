@@ -55,6 +55,7 @@ int resampling_quality = 0;
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 int sound_mode = 0;
 #endif
+int g_vgmwrite = 0;
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -97,8 +98,11 @@ static struct rc_option vpinmame_opts[] = {
 	/* pinDMD */
 	{ "showpindmd", NULL, rc_bool, &g_fShowPinDMD, "0", 0, 0, NULL, "Show PinDMD display" },
 	{ "showwindmd", NULL, rc_bool, &g_fShowWinDMD, "1", 0, 0, NULL, "Show DMD display" },
+
 	{ "cpu_affinity_mask", NULL, rc_int, &g_cpu_affinity_mask, "0", 0, 0, NULL, "CPU affinity mask" },
 	{ "low_latency_throttle", NULL, rc_bool, &g_low_latency_throttle, "1", 0, 0, NULL, "Distribute CPU execution across one emulated frame to minimize flipper latency" },
+
+	{ "vgmwrite", NULL, rc_bool, &g_vgmwrite, "0", 0, 0, NULL, "Enable to write a VGM of the current session (name is based on romname)" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -209,6 +213,14 @@ const static char* RunningGameSettings[] = {
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
 	"sound_mode",
 #endif
+
+	"showpindmd",
+	"showwindmd",
+
+	"cpu_affinity_mask",
+	"low_latency_throttle",
+
+	"vgmwrite",
 
 	// video_opts
 	"screen",

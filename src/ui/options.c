@@ -324,6 +324,7 @@ static REG_OPTION regGameOpts[] =
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         { "sound_mode",             RO_INT,     &gOpts.sound_mode,        0, 0},
 #endif
+        { "vgmwrite",               RO_BOOL,    &gOpts.vgmwrite,          0, 0},
 #endif /* PINMAME */
 
 };
@@ -813,6 +814,7 @@ BOOL OptionsInit()
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
         global.sound_mode        = 0;
 #endif
+        global.vgmwrite          = FALSE;
 #endif /* PINMAME */
 
         // game_options[x] is valid if game_variables[i].options_loaded == true

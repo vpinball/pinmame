@@ -214,17 +214,18 @@ typedef struct
 	BOOL   leds;
 	int bios;
 #ifdef PINMAME
-        int dmd_red,    dmd_green,   dmd_blue;
-        int dmd_perc66, dmd_perc33,  dmd_perc0;
-        int dmd_only,   dmd_compact, dmd_antialias;
+	int dmd_red,    dmd_green,   dmd_blue;
+	int dmd_perc66, dmd_perc33,  dmd_perc0;
+	int dmd_only,   dmd_compact, dmd_antialias;
 
-		int dmd_colorize;
-		int dmd_red0, dmd_green0, dmd_blue0, dmd_red33, dmd_green33, dmd_blue33, dmd_red66, dmd_green66, dmd_blue66;
-		int dmd_opacity;
-		int resampling_quality;
+	int dmd_colorize;
+	int dmd_red0, dmd_green0, dmd_blue0, dmd_red33, dmd_green33, dmd_blue33, dmd_red66, dmd_green66, dmd_blue66;
+	int dmd_opacity;
+	int resampling_quality;
 #if defined(VPINMAME_ALTSOUND) || defined(VPINMAME_PINSOUND)
-		int sound_mode;
+	int sound_mode;
 #endif
+	int vgmwrite;
 #endif /* PINMAME */
 
 } options_type;
