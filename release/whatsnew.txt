@@ -13,6 +13,10 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
+Added VGM file output support for AY8910, OKI6295, YM2151 sound chips
+ Either use -vgmwrite on the commmand line (PinMAME)
+ or select it in the game options (this requires a restart though, as VGM output requires to track everything)
+
 PinMAME(32): Added an Automatic Sound Dump functionality:
  Started via 'F6' (instead of the Recording function via 'F5') and 
  skips automatically to the next sound / creates a new file if there
