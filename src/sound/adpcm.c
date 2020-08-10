@@ -583,7 +583,7 @@ int ADPCM_playing(int num)
 ***********************************************************************************************/
 
 #ifdef PINMAME
-static int OKIM6295_VOICES = 4;
+static int OKIM6295_VOICES = 4; // set to 2 for OKI6376 in init code
 
 static INT32 okim6295_command[MAX_OKIM6295];
 static INT32 okim6295_base[MAX_OKIM6295][4];
@@ -676,11 +676,11 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 	}
 
 #ifdef PINMAME
-  if (intf->num < 1) {
-		okim6295_vgm_idx[0] = vgm_open(VGMC_OKIM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+	if (intf->num < 1) {
+		okim6295_vgm_idx[0] = vgm_open(VGMC_OKIM6295, intf->frequency[0]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[0], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
-		vgm_dump_sample_rom(okim6295_vgm_idx[0], 0x01, intf->region[i]);
-  } else
+		vgm_dump_sample_rom(okim6295_vgm_idx[0], 0x01, intf->region[0]);
+	} else
 #else
 	for (i = 0; i < intf->num; i++)
 	{
