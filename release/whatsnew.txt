@@ -84,6 +84,7 @@ Williams: Pokerino (correct sound PROM)
 
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
+Baywatch 2.01 (French)
 Big Game (MOD rev. 7)
 Brave Team (Free Play)
 Canasta '86' (Free Play)
