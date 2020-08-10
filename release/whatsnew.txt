@@ -13,7 +13,7 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
-Added VGM file output support for AY8910, OKI6295, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips
+Added VGM file output support for AY8910, OKI6295, OKI6376, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips
  Either use -vgmwrite on the commmand line (PinMAME)
  or select it in the game options (this requires a restart though, as VGM output requires to track everything)
 
@@ -80,6 +80,7 @@ Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2
        Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
 LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
 Micropin: Pentacup (rev. 2, 8085A hardware)
+Sega: Baywatch 4.00 (Dutch) (using A4.00 display ROMs)
 Williams: Pokerino (correct sound PROM)
 
 Clones:
