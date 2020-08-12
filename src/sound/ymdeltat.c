@@ -71,13 +71,13 @@
 
 /* Forecast to next Forecast (rate = *8) */
 /* 1/8 , 3/8 , 5/8 , 7/8 , 9/8 , 11/8 , 13/8 , 15/8 */
-const INT32 ym_deltat_decode_tableB1[16] = {
+static const INT32 ym_deltat_decode_tableB1[16] = {
   1,   3,   5,   7,   9,  11,  13,  15,
   -1,  -3,  -5,  -7,  -9, -11, -13, -15,
 };
 /* delta to next delta (rate= *64) */
 /* 0.9 , 0.9 , 0.9 , 0.9 , 1.2 , 1.6 , 2.0 , 2.4 */
-const INT32 ym_deltat_decode_tableB2[16] = {
+static const INT32 ym_deltat_decode_tableB2[16] = {
   57,  57,  57,  57, 77, 102, 128, 153,
   57,  57,  57,  57, 77, 102, 128, 153
 };
@@ -200,7 +200,8 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 			DELTAT->adpcml   = 0;
 			DELTAT->adpcmd   = YM_DELTAT_DELTA_DEF;
 			DELTAT->now_data = 0;
-
+			if (DELTAT->start > DELTAT->end)
+				logerror("DeltaT-Warning: Start: %06X, End: %06X\n", DELTAT->start, DELTAT->end);
 		}
 
 		if( DELTAT->portstate&0x20 ) /* do we access external memory? */
@@ -426,14 +427,14 @@ void YM_DELTAT_postload(YM_DELTAT *DELTAT,UINT8 *regs)
 {
 	int r;
 
-	/* to keep adpcml */
+	// to keep adpcml
 	DELTAT->volume = 0;
-	/* update */
+	// update
 	for(r=1;r<16;r++)
 		YM_DELTAT_ADPCM_Write(DELTAT,r,regs[r]);
 	DELTAT->reg[0] = regs[0];
 
-	/* current rom data */
+	// current rom data
 	if (DELTAT->memory)
 		DELTAT->now_data = *(DELTAT->memory + (DELTAT->now_addr>>1) );
 
@@ -519,6 +520,7 @@ INLINE void YM_DELTAT_synthesis_from_external_memory(YM_DELTAT *DELTAT)
 			/* WARNING: */
 			/* Side effect: we should take the size of the mapped ROM into account */
 			DELTAT->now_addr &= ( (1<<(24+1))-1);
+			//DELTAT->now_addr &= DELTAT->memory_mask;
 
 			/* store accumulator value */
 			DELTAT->prev_acc = DELTAT->acc;
@@ -639,5 +641,18 @@ value:   START, REC, MEMDAT, REPEAT, SPOFF, x,x,RESET   meaning:
 
 	return;
 }
+
+/*void YM_DELTAT_calc_mem_mask(YM_DELTAT* DELTAT)
+{
+	UINT32 MaskSize;
+	
+	MaskSize = 0x01;
+	while(MaskSize < DELTAT->memory_size)
+		MaskSize <<= 1;
+	
+	DELTAT->memory_mask = (MaskSize << 1) - 1;	// it's Mask<<1 because of the nibbles
+	
+	return;
+}*/
 
 #endif /* YM_INLINE_BLOCK */
