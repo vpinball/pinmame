@@ -54,6 +54,7 @@ Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
 Slightly improve YM2151 noise
+Improve SAA1099 emulation
 
 *** SIMULATOR ***
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
@@ -104,6 +105,7 @@ Junk Yard 1.2C (competition MOD) (updated)
 Lap By Lap (Free Play)
 Laser Ball L-2 (PROM Sound)
 Last Action Hero 1.04 (French), 1.07
+Lethal Weapon 3.00 (unofficial MOD)
 Lord of the Rings, The 3.00
 Meteor (Bonus Count and Sound Fix)
 Meteor (Bonus Count Fix, MOD, Free Play rev. 64)
