@@ -235,9 +235,9 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 	{
 		switch (saa->noise_params[ch])
 		{
-		case 0: saa->noise[ch].freq = master_clock/256.0 * 2; break;
-		case 1: saa->noise[ch].freq = master_clock/512.0 * 2; break;
-		case 2: saa->noise[ch].freq = master_clock/1024.0 * 2; break;
+		case 0: saa->noise[ch].freq = saa->master_clock/256.0 * 2; break;
+		case 1: saa->noise[ch].freq = saa->master_clock/512.0 * 2; break;
+		case 2: saa->noise[ch].freq = saa->master_clock/1024.0 * 2; break;
 		case 3: saa->noise[ch].freq = saa->channels[ch * 3].freq; break;
 		}
 	}
@@ -378,9 +378,9 @@ int saa1099_sh_start(const struct MachineSound *msound)
 			name[j] = buf[j];
 			vol[j] = MIXER(intf->volume[i][j], j ? MIXER_PAN_RIGHT : MIXER_PAN_LEFT);
 		}
-		saa->stream = stream_init_multi(2, name, vol, (int)sample_rate, i, saa1099_update);
+		saa->stream = stream_init_multi(2, name, vol, (int)(saa->sample_rate+0.5), i, saa1099_update);
 
-		saa->vgm_idx = vgm_open(VGMC_SAA1099, master_clock);
+		saa->vgm_idx = vgm_open(VGMC_SAA1099, saa->master_clock);
 	}
 
 	return 0;
