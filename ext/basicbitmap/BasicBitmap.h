@@ -702,6 +702,8 @@ public:
 	// BicubicSampler, (x, y) is float point position
 	IUINT32 SampleBicubic(float x, float y, bool repeat = true) const;
 
+	// Bilinear Sampler, u and v is in the range of [0, 1]
+	IUINT32 Sample2D(float u, float v) const;
 
 	// resample 
 	enum ResampleFilter {

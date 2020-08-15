@@ -6438,6 +6438,11 @@ IUINT32 BasicBitmap::SampleBilinear(float x, float y, bool repeat) const
 	return _pixel_biline_interp(c00, c01, c10, c11, dx, dy);
 }
 
+// Bilinear Sampler, u and v is in the range of [0, 1]
+IUINT32 BasicBitmap::Sample2D(float u, float v) const
+{
+	return SampleBilinear(u * _w + 0.5f, v * _h + 0.5f, true);
+}
 
 //---------------------------------------------------------------------
 // BicubicSampler
