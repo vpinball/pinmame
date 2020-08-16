@@ -418,6 +418,7 @@ WPC_ROMSTART(ww,bfr01,"bigfoot_r01.rom",0x80000,CRC(e4a46acd) SHA1(315162667fcb5
 WPC_ROMSTART(ww,bfr01b,"bigfoot_r01b.rom",0x80000,CRC(1482b28d) SHA1(47929ac7b0e9df27a5f7636cfb32f26a1b024b94)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,bfr01c,"bigfoot_r01c.rom",0x80000,CRC(7d1fea50) SHA1(6018c1346489f97162e04cd1789f13e9af98ef8f)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,bfr01d,"bigfoot_r01d.rom",0x80000,CRC(9bd4289d) SHA1(cdc4e26fed8066f62597220cfd7480c4ec100aa8)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,bfr01e,"bigfoot_r01e.rom",0x80000,CRC(7609b547) SHA1(45bcefbf8c19bfa514ef40364c28156dc5b7392f)) WW_SOUND WPC_ROMEND
 
 WPC_ROMSTART(ww,p8,"ww_p8.u6",    0x80000,CRC(251a7f14) SHA1(8e36efc9a14d3cd31967f072bfc185461022864d))
 WPCS_SOUNDROM248("ww_u18.p2",CRC(7a9ace30) SHA1(996cb73504ef73675c596e6f811047f16fbff0dd), \
@@ -459,11 +460,12 @@ CORE_CLONEDEF(ww,p8,l5,  "White Water (P-8 Prototype, Sound P-2)",1992,"Williams
 CORE_CLONEDEF(ww,p9,l5,  "White Water (P-9 Prototype, Sound P-2 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,p1,l5,  "White Water (P-8 Prototype, Sound P-1)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,p2,l5,  "White Water (P-9 Prototype, Sound P-1 LED Ghost Fix)",1992,"Williams",wpc_mFliptronS,0)
-// The following three builds are almost identical
+// The following four builds are almost identical, 5th one is much later
 CORE_CLONEDEF(ww,bfr01,l5, "White Water (FreeWPC/Bigfoot R0.1)" ,2016,"Aeneas Verhe",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,bfr01b,l5,"White Water (FreeWPC/Bigfoot R0.1b)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,bfr01c,l5,"White Water (FreeWPC/Bigfoot R0.1c)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,bfr01d,l5,"White Water (FreeWPC/Bigfoot R0.1d)",2018,"Aeneas Verhe",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,bfr01e,l5,"White Water (FreeWPC/Bigfoot R0.1e)",2020,"Aeneas Verhe",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
