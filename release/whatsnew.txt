@@ -60,7 +60,7 @@ Improve SAA1099 emulation
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -87,6 +87,7 @@ Williams: Pokerino (correct sound PROM)
 Clones:
 Addams Family, The L-5C (competition MOD) (updated with LED Ghost Fix)
 Baywatch 2.01 (French)
+Bigfoot R0.1e (FreeWPC based rewrite of White Water)
 Big Game (MOD rev. 7)
 Brave Team (Free Play)
 Canasta '86' (Free Play)
@@ -124,6 +125,7 @@ Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
+World Cup Soccer 0.62b (FreeWPC based rewrite)
 
 Removed Clones:
 Atarians, The (MOD working bootleg) - the original ROMs work fine after latest emulation patches

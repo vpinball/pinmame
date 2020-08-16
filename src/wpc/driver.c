@@ -2697,6 +2697,7 @@ DRIVER(ww,bfr01)        //          07/16 W White Water (FreeWPC/Bigfoot R0.1)
 DRIVER(ww,bfr01b)       //          03/18 W White Water (FreeWPC/Bigfoot R0.1b)
 DRIVER(ww,bfr01c)       //          04/18 W White Water (FreeWPC/Bigfoot R0.1c)
 DRIVER(ww,bfr01d)       //          05/18 W White Water (FreeWPC/Bigfoot R0.1d)
+DRIVER(ww,bfr01e)       //          05/20 W White Water (FreeWPC/Bigfoot R0.1e)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,p12)        //                  Bram Stoker's Dracula (P-12) LED Ghost Fix
 DRIVER(drac,l1)         //          02/93 W Bram Stoker's Dracula (L-1)
@@ -2826,6 +2827,7 @@ DRIVER(wcs,p6)          //                  World Cup Soccer (PX-6) LED Ghost Fi
 DRIVER(wcs,f10)         //          ??/??   World Cup Soccer (FreeWPC 0.10)
 DRIVER(wcs,f50)         //          ??/??   World Cup Soccer (FreeWPC 0.50)
 DRIVER(wcs,f62)         //          ??/??   World Cup Soccer (FreeWPC 0.62)
+DRIVER(wcs,f62b)        //          04/20   World Cup Soccer (FreeWPC 0.62b)
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W Flintstones, The (LX-2)
 DRIVER(fs,dx2)          //                  Flintstones, The (DX-2) LED Ghost Fix
