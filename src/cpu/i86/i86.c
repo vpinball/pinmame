@@ -34,7 +34,7 @@ static UINT8 i86_win_layout[] =
 {
 	0, 0, 80, 2,					   /* register window (top rows) */
 	0, 3, 34, 19,					   /* disassembler window (left colums) */
-	35, 3, 45, 10,					   /* memory #1 window (right, upper middle) */
+	35, 3, 45, 9,					   /* memory #1 window (right, upper middle) */
 	35, 13, 45, 9,					   /* memory #2 window (right, lower middle) */
 	0, 23, 80, 1,					   /* command line window (bottom rows) */
 };
