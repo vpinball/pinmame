@@ -4884,7 +4884,10 @@ static void cmd_trace_to_file( void )
 {
 	char *cmd = CMD;
 	const char *filename;
+	static char regname[10];
 	int length;
+	char *s, *d;
+	int l;
 
 	filename = get_file_name( &cmd, &length );
 
@@ -4898,7 +4901,15 @@ static void cmd_trace_to_file( void )
 		UINT8 regs[MAX_REGS];
 		while( *cmd )
 		{
-			regs[regcnt] = get_register_id( &cmd, &length );
+			for( l = 0, s = cmd, d = regname; *s && (isalnum(*s)); l++ )
+				*d++ = *s++;
+
+			*d = '\0';
+			while( isspace(*s) ) s++;
+			d = regname;
+			cmd = s;
+
+			regs[regcnt] = get_register_id( &d, &length );
 			if( regs[ regcnt ] > 0 )
 			{
 				regcnt++;
