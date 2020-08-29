@@ -396,7 +396,7 @@ int ADPCM_sh_start(const struct MachineSound *msound)
 	{
 		/* generate the name and create the stream */
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], intf->frequency, i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], (int)(intf->frequency+0.5), i, adpcm_update);
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -665,7 +665,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)intf->frequency[chip], i, adpcm_update); // freq = clock/divisor // int divisor = pin7 ? 132 : 165;
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)(intf->frequency[chip]+0.5), i, adpcm_update); // freq = clock/divisor // int divisor = pin7 ? 132 : 165;
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -677,14 +677,14 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 
 #ifdef PINMAME
 	if (intf->num < 1) {
-		okim6295_vgm_idx[0] = vgm_open(VGMC_OKIM6295, intf->frequency[0]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+		okim6295_vgm_idx[0] = vgm_open(VGMC_OKIM6295, (int)(intf->frequency[0]*132.+0.5)); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[0], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[0], 0x01, intf->region[0]);
 	} else
 #else
 	for (i = 0; i < intf->num; i++)
 	{
-		okim6295_vgm_idx[i] = vgm_open(VGMC_OKIM6295, intf->frequency[i]*132.); //!! so far all machines use a divisor of 132 initially (pin7=1)
+		okim6295_vgm_idx[i] = vgm_open(VGMC_OKIM6295, (int)(intf->frequency[i]*132.+0.5)); //!! so far all machines use a divisor of 132 initially (pin7=1)
 		vgm_header_set(okim6295_vgm_idx[i], 0x00, 1); //!! pin7); //!! dto.	//PIN7_LOW = 0, PIN7_HIGH = 1
 		vgm_dump_sample_rom(okim6295_vgm_idx[i], 0x01, intf->region[i]);
 	}
@@ -761,7 +761,7 @@ void OKIM6295_set_bank_base(int which, int base)
 void OKIM6295_set_pin7(int which, double clock, unsigned char pin7)
 {
 	const int divisor = pin7 ? 132 : 165;
-	const unsigned int val = clock;
+	const unsigned int val = (unsigned int)(clock+0.5);
 
 	int channel;
 	for (channel = 0; channel < OKIM6295_VOICES; channel++)
@@ -770,7 +770,7 @@ void OKIM6295_set_pin7(int which, double clock, unsigned char pin7)
 
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
-		stream_set_sample_rate(voice->stream, clock/divisor);
+		stream_set_sample_rate(voice->stream, (int)(clock/divisor+0.5));
 	}
 
 	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0C, pin7 ? 1 : 0);

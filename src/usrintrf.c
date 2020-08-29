@@ -2421,13 +2421,11 @@ static int displaygameinfo(struct mame_bitmap *bitmap,int selected)
 		if (sound_clock(&Machine->drv->sound[i]))
 		{
 			if (sound_clock(&Machine->drv->sound[i]) >= 1000000)
-				sprintf(&buf[strlen(buf)]," %d.%06d MHz",
-						sound_clock(&Machine->drv->sound[i]) / 1000000,
-						sound_clock(&Machine->drv->sound[i]) % 1000000);
+				sprintf(&buf[strlen(buf)]," %3.06lf MHz",
+						sound_clock(&Machine->drv->sound[i]) / 1000000.);
 			else
-				sprintf(&buf[strlen(buf)]," %d.%03d kHz",
-						sound_clock(&Machine->drv->sound[i]) / 1000,
-						sound_clock(&Machine->drv->sound[i]) % 1000);
+				sprintf(&buf[strlen(buf)]," %3.03lf kHz",
+						sound_clock(&Machine->drv->sound[i]) / 1000.);
 		}
 
 		strcat(buf,"\n");
