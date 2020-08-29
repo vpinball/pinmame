@@ -17,7 +17,7 @@ BOTH mixing level fields have to be filled using YAC512_VOL() macro */
 struct YMF262interface
 {
 	int num;
-	int baseclock;					/* in Hz, typical clock is 14318180 Hz */
+	double baseclock;				/* in Hz, typical clock is 14318180 Hz */
 	int mixing_levelAB[MAX_262];	/* channels A,B output from DOAB pin (#21 on YMF262-M) */
 	int mixing_levelCD[MAX_262];	/* channels C,D output from DOCD pin (#22 on YMF262-M) */
 	void (*handler[MAX_262])(int irq);

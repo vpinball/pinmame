@@ -73,7 +73,7 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 	int mixed_vol,vol[YM2151_NUMBUF];
 
 	intf = msound->sound_interface;
-	rate = intf->baseclock/64;
+	rate = (int)(intf->baseclock/64 + 0.5);
 
 	if( mode ) FMMode = CHIP_YM2151_ALT;
 	else       FMMode = CHIP_YM2151_DAC;

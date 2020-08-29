@@ -22,7 +22,7 @@
 struct MSM5205interface
 {
 	int num;                       /* total number of chips                 */
-	int baseclock;                 /* master clock (default = 384KHz)       */
+	double baseclock;              /* master clock (default = 384KHz)       */
 	void (*vclk_callback[MAX_MSM5205])(int);   /* VCLK callback  			*/
 	int select[MAX_MSM5205];       /* prescaler / bit width selector        */
 	int mixing_level[MAX_MSM5205]; /* master volume                         */

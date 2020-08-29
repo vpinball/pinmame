@@ -9,29 +9,29 @@
 struct SN76489interface
 {
     int num;	/* total number of 76496 in the machine */
-    int baseclock[MAX_76496];
+    double baseclock[MAX_76496];
     int volume[MAX_76496];
 };
 
 struct SN76489Ainterface
 {
     int num;	/* total number of 76496 in the machine */
-    int baseclock[MAX_76496];
+    double baseclock[MAX_76496];
     int volume[MAX_76496];
 };
 
 struct SN76494interface
 {
     int num;	/* total number of 76496 in the machine */
-    int baseclock[MAX_76496];
+    double baseclock[MAX_76496];
     int volume[MAX_76496];
 };
 
 struct SN76496interface
 {
-	int num;	/* total number of 76496 in the machine */
-	int baseclock[MAX_76496];
-	int volume[MAX_76496];
+    int num;	/* total number of 76496 in the machine */
+    double baseclock[MAX_76496];
+    int volume[MAX_76496];
 };
 
 int SN76489_sh_start(const struct MachineSound *msound);

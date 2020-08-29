@@ -54,7 +54,7 @@
 ** 'clock' is the chip clock in Hz
 ** 'rate' is sampling rate
 */
-int YM2151Init(int num, int clock, int rate);
+int YM2151Init(int num, double clock, int rate);
 
 /* shutdown the YM2151 emulators*/
 void YM2151Shutdown(void);

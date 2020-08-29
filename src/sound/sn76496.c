@@ -289,13 +289,13 @@ static void SN76496_set_gain(int chip,int gain)
 
 
 
-static int SN76496_init(const struct MachineSound *msound,int chip,int clock,int volume)
+static int SN76496_init(const struct MachineSound *msound,int chip,double clock,int volume)
 {
 	int i;
 	struct SN76496 *R = &sn[chip];
 	char name[40];
 
-	int sample_rate = clock/16;
+	int sample_rate = (int)(clock/16 + 0.5);
 
 	sprintf(name,"SN76496 #%d",chip);
 	R->Channel = stream_init(name,volume,sample_rate,chip,SN76496Update);
@@ -346,11 +346,11 @@ static int generic_start(const struct MachineSound *msound, int feedbackmask, in
 
 		SN76496_set_gain(chip,(intf->volume[chip] >> 8) & 0xff);
 
-        R = &sn[chip];
+		R = &sn[chip];
 
-        R->FeedbackMask = feedbackmask;
-        R->WhitenoiseTaps = noisetaps;
-        R->WhitenoiseInvert = noiseinvert;
+		R->FeedbackMask = feedbackmask;
+		R->WhitenoiseTaps = noisetaps;
+		R->WhitenoiseInvert = noiseinvert;
 
 		R->vgm_idx = vgm_open(VGMC_SN76496, intf->baseclock[chip]); //!!
 		vgm_header_set(R->vgm_idx, 0x01, R->FeedbackMask);

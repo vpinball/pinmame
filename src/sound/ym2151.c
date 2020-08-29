@@ -199,7 +199,7 @@ typedef struct
 	void (*irqhandler)(int irq);		/* IRQ function handler */
 	mem_write_handler porthandler;		/* port write function handler */
 
-	unsigned int clock;					/* chip clock in Hz (passed from 2151intf.c) */
+	double clock;						/* chip clock in Hz (passed from 2151intf.c) */
 	unsigned int sampfreq;				/* sampling frequency in Hz (passed from 2151intf.c) */
 
 #ifdef PINMAME
@@ -1412,7 +1412,7 @@ static void ym2151_state_save_register( int numchips )
 *	'clock' is the chip clock in Hz
 *	'rate' is sampling rate (=clock/64)
 */
-int YM2151Init(int num, int clock, int rate)
+int YM2151Init(int num, double clock, int rate)
 {
 	unsigned int i;
 
@@ -1440,10 +1440,10 @@ int YM2151Init(int num, int clock, int rate)
 		init_chip_tables( &YMPSG[i] );
 
 		YMPSG[i].lfo_timer_add = (YMPSG[i].sampfreq == clock/64) ? (1<<LFO_SH) :
-			((1<<LFO_SH)* (long long)clock / (64ll*YMPSG[i].sampfreq));
+			((1<<LFO_SH)* (long long)(clock / (64ll*YMPSG[i].sampfreq) + 0.5));
 
 		YMPSG[i].eg_timer_add  = (YMPSG[i].sampfreq == clock/64) ? (1<<EG_SH) :
-			((1<<EG_SH) * (long long)clock / (64ll*YMPSG[i].sampfreq));
+			((1<<EG_SH) * (long long)(clock / (64ll*YMPSG[i].sampfreq) + 0.5));
 		YMPSG[i].eg_timer_overflow = ( 3 ) * (1<<EG_SH);
 		/*logerror("YM2151[init] eg_timer_add=%8x eg_timer_overflow=%8x\n", YMPSG[i].eg_timer_add, YMPSG[i].eg_timer_overflow);*/
 

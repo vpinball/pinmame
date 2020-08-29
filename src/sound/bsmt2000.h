@@ -17,7 +17,7 @@
 struct BSMT2000interface
 {
         int num;                                /* total number of chips */
-        int baseclock[MAX_BSMT2000];            /* input clock */
+        double baseclock[MAX_BSMT2000];         /* input clock */
         int voices[MAX_BSMT2000];               /* number of voices (11 or 12) */
         int region[MAX_BSMT2000];               /* memory region where the sample ROM lives */
         int mixing_level[MAX_BSMT2000];         /* master volume */

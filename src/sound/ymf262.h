@@ -35,7 +35,7 @@ typedef void (*OPL3_UPDATEHANDLER)(int param,int min_interval_us);
 
 #if BUILD_YMF262
 
-int  YMF262Init(int num, int clock, int rate);
+int  YMF262Init(int num, double clock, int rate);
 void YMF262Shutdown(void);
 void YMF262ResetChip(int which);
 int  YMF262Write(int which, int a, int v);

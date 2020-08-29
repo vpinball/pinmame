@@ -602,7 +602,7 @@ typedef struct
 typedef struct
 {
 	UINT8 index;		/* this chip index (number of chip)	*/
-	int clock;			/* master clock  (Hz)	*/
+	double clock;		/* master clock  (Hz)	*/
 	int rate;			/* sampling rate (Hz)	*/
 	double freqbase;	/* frequency base		*/
 	double TimerBase;	/* Timer base time		*/
@@ -1664,7 +1664,7 @@ static void OPNSetPres(FM_OPN *OPN , int pres , int TimerPres, int SSGpres)
 	OPN->ST.freqbase = (OPN->ST.rate) ? ((double)OPN->ST.clock / OPN->ST.rate) / pres : 0;
 
 #if 0
-	OPN->ST.rate = (double)OPN->ST.clock / pres;
+	OPN->ST.rate = (double)OPN->ST.clock / pres + 0.5;
 	OPN->ST.freqbase = 1.0;
 #endif
 
@@ -2203,7 +2203,7 @@ static void YM2203_save_state(void)
    'clock' is the chip clock in Hz
    'rate' is sampling rate
 */
-int YM2203Init(int num, int clock, int rate,
+int YM2203Init(int num, double clock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
 	int i;
@@ -3477,7 +3477,7 @@ static void YM2608_deltat_status_reset(UINT8 which, UINT8 changebits)
 	FM_STATUS_RESET(&(FM2608[which].OPN.ST), changebits);
 }
 /* YM2608(OPNA) */
-int YM2608Init(int num, int clock, int rate,
+int YM2608Init(int num, double clock, int rate,
                void **pcmrom,int *pcmsize,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
@@ -4198,7 +4198,7 @@ static void YM2610_deltat_status_reset(UINT8 which, UINT8 changebits)
 	FM2610[which].adpcm_arrivedEndAddress &= (~changebits);
 }
 
-int YM2610Init(int num, int clock, int rate,
+int YM2610Init(int num, double clock, int rate,
                void **pcmroma,int *pcmsizea,void **pcmromb,int *pcmsizeb,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 
@@ -4726,7 +4726,7 @@ static void YM2612_save_state(void)
 #endif /* _STATE_H */
 
 /* initialize YM2612 emulator(s) */
-int YM2612Init(int num, int clock, int rate,
+int YM2612Init(int num, double clock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
 	int i;
@@ -5406,7 +5406,7 @@ static void YM2151_save_state(void)
 /* 'num' is the number of virtual YM2151's to allocate     */
 /* 'rate' is sampling rate and 'bufsiz' is the size of the */
 /* buffer that should be updated at each interval          */
-int OPMInit(int num, int clock, int rate,
+int OPMInit(int num, double clock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
     int i;

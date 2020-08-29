@@ -46,7 +46,7 @@ int tms5110_sh_start(const struct MachineSound *msound)
     tms5110_reset();
 
 	/* initialize a stream */
-	stream = stream_init("TMS5110", intf->mixing_level, intf->baseclock/80, 0, tms5110_update);
+	stream = stream_init("TMS5110", intf->mixing_level, (int)(intf->baseclock/80 + 0.5), 0, tms5110_update);
 	if (stream == -1)
 		return 1;
 

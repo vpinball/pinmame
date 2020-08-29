@@ -10,7 +10,7 @@
 struct AY8910interface
 {
 	int num;	/* total number of 8910 in the machine */
-	int baseclock;
+	double baseclock;
 	int mixing_level[MAX_8910];
 	mem_read_handler portAread[MAX_8910];
 	mem_read_handler portBread[MAX_8910];
@@ -21,7 +21,7 @@ struct AY8910interface
 
 void AY8910_reset(int chip);
 
-void AY8910_set_clock(int chip,int _clock);
+void AY8910_set_clock(int chip,double _clock);
 void AY8910_set_volume(int chip,int channel,int volume);
 
 #ifdef PINMAME

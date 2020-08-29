@@ -11,7 +11,7 @@
 typedef struct
 {
 	int num;                                      /* number of CTCs to emulate */
-	int baseclock[MAX_CTC];                           /* timer clock */
+	double baseclock[MAX_CTC];                    /* timer clock */
 	int notimer[MAX_CTC];                         /* timer disablers */
 	void (*intr[MAX_CTC])(int which);             /* callback when change interrupt status */
 	mem_write_handler zc0[MAX_CTC];   /* ZC/TO0 callback */
