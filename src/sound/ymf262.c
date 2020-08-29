@@ -276,7 +276,7 @@ typedef struct {
 	int UpdateParam;				/* stream update parameter		*/
 
 	UINT8 type;						/* chip type					*/
-	int clock;						/* master clock  (Hz)			*/
+	double clock;					/* master clock  (Hz)			*/
 	int rate;						/* sampling rate (Hz)			*/
 #ifdef YMF262_NOT_EXACT_RATE
 	double freqbase;				/* frequency base				*/
@@ -1321,7 +1321,7 @@ static void OPL3_initalize(OPL3 *chip)
 	chip->freqbase = (chip->rate) ? ((double)chip->clock / (8*36)) / chip->rate : 0;
 #else
 	// make sure that rate really matches
-	chip->rate = chip->clock / (8*36);
+	chip->rate = (int)(chip->clock/(8*36) + 0.5);
 #endif
 
 	/* logerror("YMF262: freqbase=%f\n", chip->freqbase); */
@@ -2370,7 +2370,7 @@ static void OPL3ResetChip(OPL3 *chip)
 /* Create one of virtual YMF262 */
 /* 'clock' is chip clock in Hz  */
 /* 'rate'  is sampling rate (=clock/(8*36)) */
-static OPL3 *OPL3Create(int type, int clock, int rate)
+static OPL3 *OPL3Create(int type, double clock, int rate)
 {
 	OPL3 *chip;
 
@@ -2523,7 +2523,7 @@ static OPL3 *YMF262[MAX_OPL3_CHIPS];	/* array of pointers to the YMF262's */
 static int YMF262NumChips = 0;			/* number of chips */
 
 // rate = clock/(8*36)
-int YMF262Init(int num, int clock, int rate)
+int YMF262Init(int num, double clock, int rate)
 {
 	int i;
 

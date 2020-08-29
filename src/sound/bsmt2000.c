@@ -86,7 +86,7 @@ static const UINT8 regmap[8][7] = {
 /* struct describing a single playing voice */
 struct BSMT2000Voice
 {
-	/* external state */
+    /* external state */
     UINT16      reg[REG_TOTAL];         /* 7 registers */
 
     UINT16      fraction;               /* just for temporary sample calc */
@@ -94,16 +94,16 @@ struct BSMT2000Voice
 
 struct BSMT2000Chip
 {
-	int			stream;					/* which stream are we using */
+    int			stream;					/* which stream are we using */
     int			sample_rate;			/* output sample rate */
     INT8 *		region_base;			/* pointer to the base of the region */
-	int			total_banks;			/* number of total banks in the region */
-    UINT32		clock;					/* original clock on the chip */
+    int			total_banks;			/* number of total banks in the region */
+    double		clock;					/* original clock on the chip */
     UINT8		stereo;					/* stereo output? */
     UINT8		voices;					/* number of voices */
     UINT8		adpcm;					/* adpcm enabled? */
     UINT8		last_register;			/* remember last register written before rest */
-    UINT8       mode;                   /* current mode */
+    UINT8		mode;					/* current mode */
     INT32		adpcm_current;			/* current ADPCM sample */
     INT32		adpcm_delta_n;			/* current ADPCM scale factor */
 
@@ -157,7 +157,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 #ifndef PINMAME
         /* mode 0: 24kHz, 12 channel PCM, 1 channel ADPCM, mono */
     case 0:
-        chip->sample_rate = chip->clock / 1000;
+        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
         chip->stereo = 0;
         chip->voices = 12;
         chip->adpcm = 1;
@@ -167,7 +167,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 1: 24kHz, 11 channel PCM, 1 channel ADPCM, stereo */
     case 1:
-        chip->sample_rate = chip->clock / 1000;
+        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
         chip->stereo = 1;
         chip->voices = 11;
         chip->adpcm = 1;
@@ -179,7 +179,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 5: 24kHz, 12 channel PCM, stereo */
     case 5:
-        chip->sample_rate = chip->clock / 1000;
+        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
         chip->stereo = 1;
         chip->voices = 12;
         chip->adpcm = 0;
@@ -188,7 +188,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 6: 34kHz, 8 channel PCM, stereo */
     case 6:
-        chip->sample_rate = chip->clock / 706;
+        chip->sample_rate = (int)(chip->clock / 706 + 0.5);
         chip->stereo = 1;
         chip->voices = 8;
         chip->adpcm = 0;
@@ -197,7 +197,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 7: 32kHz, 9 channel PCM, stereo */
     case 7:
-        chip->sample_rate = chip->clock / 750;
+        chip->sample_rate = (int)(chip->clock / 750 + 0.5);
         chip->stereo = 1;
         chip->voices = 9;
         chip->adpcm = 0;
@@ -482,14 +482,14 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		//Capture other interface flags we need later
 		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
 		//bsmt2000[i].shift_data = intf->shift_data;
-        bsmt2000[i].right_volume_set = 0;
+		bsmt2000[i].right_volume_set = 0;
 		bsmt2000[i].adpcm_77 = 0;
 #else
 		vol[0] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
 #endif /* PINMAME */
 
-        bsmt2000[i].sample_rate = intf->baseclock[i] / 1000;
+        bsmt2000[i].sample_rate = (int)(intf->baseclock[i] / 1000 + 0.5);
         bsmt2000[i].clock = intf->baseclock[i];
 
         // guess initial mode from the parameters, should be not necessary, but f.e. Alvin G. reset is not wired yet, thus also no mode set!
@@ -586,23 +586,23 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
         voice = &chip->voice[voice_index];
 
 #if LOG_COMMANDS
-	    logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, voice_index, regindex, data);
+        logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, voice_index, regindex, data);
 #endif
         /* update the register */
         COMBINE_DATA(&voice->reg[regindex]);
 
 #ifdef PINMAME
-        if (chip->use_de_rom_banking && regindex == REG_BANK)
+	    if (chip->use_de_rom_banking && regindex == REG_BANK)
 	    {
 		    //DE GAMES HAVE FUNKY ROM LOADING - SO WE MESS WITH ROM BANK DATA TO MAKE IT WORK OUT
 		    UINT16 temp = (voice->reg[REG_BANK] & 0x07) |
-			             ((voice->reg[REG_BANK] & 0x18)<<1) |
+				         ((voice->reg[REG_BANK] & 0x18)<<1) |
 				         ((voice->reg[REG_BANK] & 0x20)>>2);
 		    voice->reg[REG_BANK] = temp;
 	    }
 
-        if (regindex == REG_RIGHTVOL)
-            chip->right_volume_set = 1;
+	    if (regindex == REG_RIGHTVOL)
+	        chip->right_volume_set = 1;
 
 		if (regindex == REG_CURRPOS)
 			voice->fraction = 0;
@@ -614,27 +614,27 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
         logerror("BSMT#%d write: %02x = %04X\n", chip - bsmt2000, offset, data);
 #endif
 
-        voice = &chip->voice[ADPCM_VOICE];
- 		switch (offset)
- 		{
+		voice = &chip->voice[ADPCM_VOICE];
+		switch (offset)
+		{
 			//LOOP STOP POSITION
- 			case 0x6d:
- 				COMBINE_DATA(&voice->reg[REG_LOOPEND]);
-                LOG(("REG_LOOPEND=%04X\n", voice->reg[REG_LOOPEND]));
- 				break;
+			case 0x6d:
+				COMBINE_DATA(&voice->reg[REG_LOOPEND]);
+				LOG(("REG_LOOPEND=%04X\n", voice->reg[REG_LOOPEND]));
+				break;
 
- 			//ROM BANK
- 			case 0x6f:
- 				COMBINE_DATA(&voice->reg[REG_BANK]);
+			//ROM BANK
+			case 0x6f:
+				COMBINE_DATA(&voice->reg[REG_BANK]);
 #ifdef PINMAME
 				if(chip->use_de_rom_banking) {
 					UINT16 temp = (voice->reg[REG_BANK] & 0x07) |
-							     ((voice->reg[REG_BANK] & 0x18)<<1) |
+								 ((voice->reg[REG_BANK] & 0x18)<<1) |
 								 ((voice->reg[REG_BANK] & 0x20)>>2);
 					voice->reg[REG_BANK] = temp;
 				}
 #endif
-    			break;
+				break;
 
 			//RATE - USED AS A CONTROL TO TELL CHIP READY TO OUTPUT COMPRESSED DATA (VALUE = 1 FOR VALID DATA)
 			case 0x73:
@@ -642,7 +642,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 #ifdef PINMAME
 				if(voice->reg[REG_RATE] != 0)
 #endif
-                {
+				{
 					/* reset adpcm values also */
 					chip->adpcm_current = 0;
 					chip->adpcm_delta_n = 10;
@@ -651,7 +651,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 
 			//RIGHT CHANNEL VOLUME
 #ifdef PINMAME
-            case 0x6e: // main right channel volume control, used when ADPCM is alreay playing
+			case 0x6e: // main right channel volume control, used when ADPCM is alreay playing
 #endif
 			case 0x74: // right channel volume control, copied on start to 0x6e
 #ifdef PINMAME

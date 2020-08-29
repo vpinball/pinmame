@@ -361,7 +361,7 @@ void machine_remove_sound(struct InternalMachineDriver *machine, const char *tag
 struct InternalMachineDriver
 {
         struct MachineCPU cpu[MAX_CPU];
-        float frames_per_second;
+        double frames_per_second;
         int vblank_duration;
         UINT32 cpu_slices_per_frame;
 

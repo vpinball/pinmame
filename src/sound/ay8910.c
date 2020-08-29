@@ -1262,16 +1262,16 @@ static void AY8910Update(int chip,
 }
 
 
-void AY8910_set_clock(int chip, int clock)
+void AY8910_set_clock(int chip, double clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 
 #ifdef SINGLE_CHANNEL_MIXER
-	stream_set_sample_rate(PSG->Channel, clock/8);
+	stream_set_sample_rate(PSG->Channel, (int)(clock/8 + 0.5));
 #else
 	int ch;
 	for (ch = 0; ch < 3; ch++)
-		stream_set_sample_rate(PSG->Channel + ch, clock/8);
+		stream_set_sample_rate(PSG->Channel + ch, (int)(clock/8 + 0.5));
 #endif
 }
 
@@ -1341,7 +1341,7 @@ void AY8910_sh_reset(void)
 }
 
 static int AY8910_init(const char *chip_name,int chip,
-		int clock,int volume,int sample_rate,
+		double clock,int volume,int sample_rate,
 		mem_read_handler portAread,mem_read_handler portBread,
 		mem_write_handler portAwrite,mem_write_handler portBwrite,
 		int sound_type)
@@ -1365,7 +1365,7 @@ static int AY8910_init(const char *chip_name,int chip,
 	/* fast, therefore again clock/8.                                        */
 // causes crashes with YM2610 games - overflow?
 //	if (options.use_filter)
-		sample_rate = clock/8;
+		sample_rate = (int)(clock/8 + 0.5);
 
 	memset(PSG,0,sizeof(struct AY8910));
 	PSG->PortAread = portAread;

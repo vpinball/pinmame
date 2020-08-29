@@ -136,7 +136,7 @@ typedef void (*FM_IRQHANDLER)(int n,int irq);
 ** 'IRQHandler'    IRQ callback handler when changed IRQ level
 ** return      0 = success
 */
-int YM2203Init(int num, int baseclock, int rate,
+int YM2203Init(int num, double baseclock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
 
 /*

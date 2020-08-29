@@ -74,7 +74,7 @@ int YM2203_sh_start(const struct MachineSound *msound)
 
 	intf = msound->sound_interface;
 
-	rate = intf->baseclock/72; /* ??? */
+	rate = (int)(intf->baseclock/72 + 0.5); /* ??? */
 
 	/* Timer Handler set */
 	FMTimerInit();

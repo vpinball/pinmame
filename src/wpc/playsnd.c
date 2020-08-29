@@ -314,7 +314,7 @@ static WRITE_HANDLER(ay8910_1_porta_w)	{
 }
 struct AY8910interface play4s_8910Int = {
 	2,			/* 2 chips */
-	(int)(3579545.0/2.),	/* 1.79 MHz */
+	3579545.0/2.,	/* 1.79 MHz */
 	{ MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) },	/* Volume */
 	{ 0, 0 },
 	{ 0, 0 },

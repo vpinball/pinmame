@@ -12,7 +12,7 @@
 struct YM3812interface
 {
 	int num;
-	int baseclock;
+	double baseclock;
 	int mixing_level[MAX_3812];
 	void (*handler[MAX_3812])(int linestate);
 };
@@ -22,7 +22,7 @@ struct YM3812interface
 struct Y8950interface
 {
 	int num;
-	int baseclock;
+	double baseclock;
 	int mixing_level[MAX_8950];
 	void (*handler[MAX_8950])(int linestate);
 
