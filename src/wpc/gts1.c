@@ -35,8 +35,7 @@
 /-----------------*/
 static struct {
 	int    vblankCount;
-	int    strobe, swStrobe, bufferFilled;
-	UINT8  dispBuffer[30];
+	int    strobe, swStrobe;
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
@@ -399,7 +398,7 @@ DISCRETE_SOUND_END
 
 static MACHINE_DRIVER_START(GTS1NS)
 	MDRV_IMPORT_FROM(PinMAME)
-	MDRV_CPU_ADD_TAG("mcpu", PPS4, 3579545/18)
+	MDRV_CPU_ADD_TAG("mcpu", PPS4, 3579545.0/18)
 	MDRV_CPU_MEMORY(GTS1_readmem, GTS1_writemem)
 	MDRV_CPU_PORTS(GTS1_readport,GTS1_writeport)
 	MDRV_CPU_VBLANK_INT(GTS1_vblank, 1)
