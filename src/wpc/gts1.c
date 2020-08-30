@@ -127,6 +127,8 @@ static WRITE_HANDLER(disp_w) {
 }
 
 static WRITE_HANDLER(port_w) {
+	static int Data_Reg_A_count = 16;
+	static int Data_Reg_B_count = 16;
 	int device = offset >> 4;
 	int ioport = offset & 0x0f;
 	int sos = data & 0x10;
@@ -262,49 +264,51 @@ static WRITE_HANDLER(port_w) {
 			TRACE(("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu));
 			break;
 		case 0x0d: // U6 GPKD 10788 - Display
-			data = PPS4_get_reg(PPS4_DB); // read display address from data bus (that's how the real chip does it!)
 			TRACE(("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu));
-			switch (data >> 4) {
-				case 0: // switches between buffers
-					if (locals.accu & 0x01)
-						locals.bufferFilled = 0;
-					else {
-						int i; for (i=0; i < 24; i++) disp_w(i, locals.dispBuffer[locals.bufferFilled ? 24 + (i % 6) : i]);
+			switch (data >> 4) { //this is the command for the display chip
+				case 3: // turn on display
+					// not implemented, do we need it?
+					break;
+				case 7: // Blank the display of DB3 and DB4
+					// not implemented, do we need it?
+					break;
+				case 0xb: // Blank the display of DA1, DA2, Da3, DA4, DB1, DB2
+					// not implemented, do we need it?
+					break;
+				case 0xd: // Data Bus I/D5, I/D6,I/D7,I/D9 -> Data Reg. B
+					switch(Data_Reg_B_count) {
+						case 3: case 4: case 5: case 6: case 7: case 8:
+							disp_w(Data_Reg_B_count - 3, locals.accu); //0 ... 5: player 3
+							break;
+						case 11: case 12: case 13: case 14: case 15: case 16:
+							disp_w(Data_Reg_B_count - 5, locals.accu); // 6 ... 11: player 4
+							break;
 					}
+					Data_Reg_B_count--;
+					//we will recieve 16 updates each time
+					if (Data_Reg_B_count <= 0) Data_Reg_B_count = 16;
 					break;
-				case 1: // player three score
-					locals.dispBuffer[data & 0x0f] = locals.accu;
-					disp_w(data & 0x0f, locals.accu);
-					break;
-				case 2: // player four score
-					locals.dispBuffer[6 + (data & 0x0f)] = locals.accu;
-					disp_w(6 + (data & 0x0f), locals.accu);
-					break;
-				case 3: // player one score
-					locals.dispBuffer[12 + (data & 0x0f)] = locals.accu;
-					disp_w(12 + (data & 0x0f), locals.accu);
-					break;
-				case 4: // player two score
-					locals.dispBuffer[18 + (data & 0x0f)] = locals.accu;
-					disp_w(18 + (data & 0x0f), locals.accu);
-					break;
-				case 5: // store the HSTD value in second buffer, and also show it
-					locals.dispBuffer[24 + (data & 0x0f)] = locals.accu;
-					locals.bufferFilled = 1;
-					disp_w(data & 0x0f, locals.accu);
-					disp_w(6 + (data & 0x0f), locals.accu);
-					disp_w(12 + (data & 0x0f), locals.accu);
-					disp_w(18 + (data & 0x0f), locals.accu);
-					break;
-				case 7:
-					disp_w(24 + (data & 0x0f), locals.accu);
-					if ((data & 0x0f) == 3 || (data & 0x0f) == 4)
-						disp_w(40, locals.accu);
-					if ((data & 0x0f) == 6 || (data & 0x0f) == 0x0b)
-						disp_w(41, locals.accu);
+				case 0xe: //  Data Bus I/D5, I/D6,I/D7,I/D9 -> Data Reg. A
+					switch(Data_Reg_A_count) {
+						case 1: case 2:
+							disp_w(Data_Reg_A_count + 39, locals.accu); //40 ... 41 status display  'ball in play' 
+							break;
+						case 3: case 4: case 5: case 6: case 7: case 8:
+							disp_w(Data_Reg_A_count + 9, locals.accu); //12 ... 17: player 1
+							break;
+						case 9: case 10:
+							disp_w(Data_Reg_A_count + 23, locals.accu); //32 ... 33 system1 status display credits
+							break;
+						case 11: case 12: case 13: case 14: case 15: case 16:
+							disp_w(Data_Reg_A_count + 7, locals.accu); //18 ... 23: player 2
+							break;
+					}
+					Data_Reg_A_count--;
+					//we will recieve 16 updates each time
+					if (Data_Reg_A_count <= 0) Data_Reg_A_count = 16;
 					break;
 				default:
-					TRACE(("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu));
+					TRACE(("%03x: unknown command for display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu));
 			}
 			break;
 		default:
@@ -395,7 +399,7 @@ DISCRETE_SOUND_END
 
 static MACHINE_DRIVER_START(GTS1NS)
 	MDRV_IMPORT_FROM(PinMAME)
-	MDRV_CPU_ADD_TAG("mcpu", PPS4, 198864)
+	MDRV_CPU_ADD_TAG("mcpu", PPS4, 3579545/18)
 	MDRV_CPU_MEMORY(GTS1_readmem, GTS1_writemem)
 	MDRV_CPU_PORTS(GTS1_readport,GTS1_writeport)
 	MDRV_CPU_VBLANK_INT(GTS1_vblank, 1)
