@@ -55,6 +55,7 @@ Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
 Slightly improve YM2151 noise
 Improve SAA1099 emulation
+Correct handling of Gottlieb System 1 displays (thanks to bontango)
 
 *** SIMULATOR ***
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
