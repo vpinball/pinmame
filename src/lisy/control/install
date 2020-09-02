@@ -2,3 +2,6 @@ sudo cp lisy80_control /usr/local/bin
 sudo cp lisy1_control /usr/local/bin
 sudo cp lisy35_control /usr/local/bin
 sudo cp picpgm_control /usr/local/bin
+sudo cp lisy_api_control /usr/local/bin
+sudo cp simple_flasher /usr/local/bin
+rm *.o

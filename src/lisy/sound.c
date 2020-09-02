@@ -15,20 +15,81 @@
 #include "sound.h"
 #include "utils.h"
 #include "fadecandy.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 
 //initial value
-static int lisy80_sound_stream_status = LISY80_SOUND_STATUS_IDLE;
+//static int lisy80_sound_stream_status = LISY80_SOUND_STATUS_IDLE;
 
 //our pointers to preloaded sounds
-Mix_Chunk *lisysound[32];   
+Mix_Chunk *lisysound[257];   
+Mix_Chunk *lisysound_alt[LISY35_SOUND_MAX_ALTERNATIVE_FILES][257]; // bank for alternative sounds (used by lisy35)
 
 
 /*
- * open sound device and set parameters
+ * open sound device and set parameters LISY80 Version
  */
 int lisy80_sound_stream_init(void)
+{
+
+  //int audio_rate = 44100;                 //Frequency of audio playback
+  int audio_rate = 48000;                 //Frequency of audio playback
+  Uint16 audio_format = MIX_DEFAULT_FORMAT;       //Format of the audio we're playing
+  int audio_channels = 2;                 //2 channels = stereo
+  int audio_buffers = 2048;               //Size of the audio buffers in memory
+
+ int i;
+ char wav_file_name[80];
+
+
+ /* Initialize only SDL Audio on default device */
+    if(SDL_Init(SDL_INIT_AUDIO) < 0)
+    {
+        return -1;
+    }
+
+  //Initialize SDL_mixer with our chosen audio settings
+  if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
+            printf("Unable to initialize audio: %s\n", Mix_GetError());
+            return(-1);
+        }
+
+  // allocate 64 possible mixing channels
+  Mix_AllocateChannels(64);
+
+    //try to preload all sounds
+    for( i=1; i<=63; i++)
+     {
+       //only for sounds with volume not equal 0
+	if(lisy80_sound_stru[i].volume != 0)
+        {
+          //construct the filename, according to game_nr
+          sprintf(wav_file_name,"%s%03d/%d.wav",LISY80_SOUND_PATH,lisy80_game.gamenr,i);
+          //and load the file
+          lisysound[i] = Mix_LoadWAV(wav_file_name);
+          if(lisysound[i] == NULL) {
+                fprintf(stderr,"Unable to load WAV file: %s\n", Mix_GetError());
+           }
+ 	   else if ( ls80dbg.bitv.sound )
+  	   {
+   	     sprintf(debugbuf,"preload file:%s as sound number %d (Volume:%d)",wav_file_name,i,lisy80_sound_stru[i].volume);
+   	     lisy80_debug(debugbuf);
+  	   }
+	//set volume for each channel ( channel == soundnumber )
+	Mix_Volume( i, lisy80_sound_stru[i].volume);
+      } //volume not zero
+     } // for i
+
+
+ return 0;
+}
+
+/*
+ * open sound device and set parameters LISY35 Version
+ * RTH fix number of mappings at the moment
+ */
+int lisy35_sound_stream_init(void)
 {
 
   int audio_rate = 44100;                 //Frequency of audio playback
@@ -53,34 +114,58 @@ int lisy80_sound_stream_init(void)
         }
 
   // allocate 31 mixing channels
-  Mix_AllocateChannels(31);
+  Mix_AllocateChannels(256);
 
   // set volume to lisy_volume for all allocated channels
   Mix_Volume(-1, lisy_volume);
 
     //try to preload all sounds
-    for( i=1; i<=31; i++)
-     {
-       //there is no sound file 16
-       if ( i==16) continue;
-       //construct the filename, according to game_nr
-       sprintf(wav_file_name,"%s%03d/%d.wav",LISY80_SOUND_PATH,lisy80_game.gamenr,i);
-       //put 'loop' fix to zero for now
-       lisysound[i] = Mix_LoadWAV(wav_file_name);
-       if(lisysound[i] == NULL) {
-                fprintf(stderr,"Unable to load WAV file: %s\n", Mix_GetError());
-        }
- 	else if ( ls80dbg.bitv.sound )
-  	{
-   	  sprintf(debugbuf,"preload file:%s as sound number %d",wav_file_name,i);
-   	  lisy80_debug(debugbuf);
-  	}
-     } // for i
+	for( i=1; i<=255; i++)
+	{
+		if ( lisy35_sound_stru[i].soundnumber != 0)
+		{
+			//construct the filename, according to options red from csv file
+			sprintf(wav_file_name,"/boot/%s/%s.wav",lisy35_sound_stru[i].path,lisy35_sound_stru[i].name);
+			lisysound[i] = Mix_LoadWAV(wav_file_name);
+			if(lisysound[i] == NULL) 
+			{
+				fprintf(stderr,"Unable to load WAV file: %s - %s\n",wav_file_name, Mix_GetError());
+			}
+			else 
+			{
+				lisy35_sound_stru[i].how_many_versions = 1;
+				lisy35_sound_stru[i].last_version_played = 0;
+				if ( ls80dbg.bitv.sound )
+				{
+					sprintf(debugbuf,"preloaded file:%s as sound number %d\n",wav_file_name,i);
+					lisy80_debug(debugbuf);
+				}
+				// see if there are alternative sounds (suffix "-2", "-3", "-4"... at the end of file name, example "sound-3.wav")
+				for ( int alt = 2 ; alt <= LISY35_SOUND_MAX_ALTERNATIVE_FILES + 1; alt++)
+				{
+					sprintf(wav_file_name,"/boot/%s/%s-%d.wav",lisy35_sound_stru[i].path,lisy35_sound_stru[i].name,alt);
+					lisysound_alt[alt - 2][i] = Mix_LoadWAV(wav_file_name);
+					if(lisysound_alt[alt - 2][i] != NULL) 
+					{
+						lisy35_sound_stru[i].how_many_versions++;
+						if (ls80dbg.bitv.sound)
+						{
+							sprintf(debugbuf,"found alternative #%d for sound %d\n",alt,i);
+							lisy80_debug(debugbuf);
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+		}// if soundnumber != 0
+	} // for i
 
 
  return 0;
 }
-
 /*
  * open sound device and set parameters
  */
@@ -155,46 +240,128 @@ void lisy80_sound_stream_destroy(void)
 void lisy80_play_wav(int sound_no)
 {
 
- int ret;
- static int last_sound_played = 0;
+ int i,ret;
+ int loopcount = 0;
+ static int extended = 0;
 
  if ( ls80dbg.bitv.sound )
   {
-   sprintf(debugbuf,"lisy80_play_wav: want to play sound number: %d",sound_no);
+   sprintf(debugbuf,"lisy80_play_wav: want to play sound number: %d (loop:%d not_int_loops:%d)",sound_no,lisy80_sound_stru[sound_no].loop,lisy80_sound_stru[sound_no].not_int_loops);
    lisy80_debug(debugbuf);
   }
 
- //if we are in running state, but current sound is protected and still playing ignore request
- if ( lisy80_sound_stream_status == LISY80_SOUND_STATUS_RUNNING_PROTECTED)
-  {
-    if (Mix_Playing(last_sound_played) != 0)
-      {
-        if ( ls80dbg.bitv.sound ) lisy80_debug("lisy80_sound: in running PROTECTED state, new request ignored\n");
-        return;
-      }
-  }
-
- //if we are in running state, check if old sound is still running
- if ( lisy80_sound_stream_status == LISY80_SOUND_STATUS_RUNNING)
-  {
-    if (Mix_Playing(last_sound_played) != 0)
+ //does this sound mark an extended sound set?
+ if ( lisy80_sound_stru[sound_no].loop == 2 )
+ {
+   extended = 31; //second soundset has a shift of 31
+   if ( ls80dbg.bitv.sound )
     {
-      if ( ls80dbg.bitv.sound ) lisy80_debug("lisy80_sound: old sound still in running state, we cancel it\n");
-      Mix_HaltChannel(last_sound_played);
+     sprintf(debugbuf,"lisy80_play_wav: found extended set: %d",sound_no);
+     lisy80_debug(debugbuf);
     }
+   return; //nothing else todo
+ }
+
+ //sound_number plus extended flag is real soundnumber
+ sound_no += extended;
+
+ if ( lisy80_sound_stru[sound_no].not_int_loops == 0 ) //check if this sound can stop loop sounds
+  {
+   //yes, check running state for all loop sounds and cancel them  if running
+   for(i=1; i<=31; i++)
+    {
+     if (lisy80_sound_stru[i].loop & (Mix_Playing(i) != 0) )
+     {
+      if ( ls80dbg.bitv.sound ) lisy80_debug("found running loop sound, we cancel it\n");
+      Mix_HaltChannel(i);
+     }
+    }//all loop files
   }
 
-  //Play our (pre loaded) sound file on separate channel
-  ret = Mix_PlayChannel( sound_no, lisysound[sound_no], 0);
-  if(ret == -1) {
+ //just play sound on sepearate channel
+   if (  lisy80_sound_stru[sound_no].loop > 0) loopcount = -1; //infinitiv loops
+   ret = Mix_PlayChannel( sound_no, lisysound[sound_no], loopcount);
+   if(ret == -1) {
          fprintf(stderr,"Unable to play WAV file: %s\n", Mix_GetError());
-        }
+     }
 
- //update the state  and store last sound played
- if (  lisy80_sound_stru[sound_no].can_be_interrupted ) lisy80_sound_stream_status = LISY80_SOUND_STATUS_RUNNING;
-   else lisy80_sound_stream_status = LISY80_SOUND_STATUS_RUNNING_PROTECTED;
- last_sound_played = sound_no;
+ extended = 0; //set back flag
+}
 
+/*
+ * LISY35 new sound request
+ * RTH minimal implementation yet
+ */
+void lisy35_play_wav(int sound_no)
+{
+
+	int ret;
+
+	if ( ls80dbg.bitv.sound )
+	{
+		sprintf(debugbuf,"lisy35_play_wav: want to play sound number: %d mapped to sound:%d, for which %d versions are loaded",sound_no,lisy35_sound_stru[sound_no].soundnumber, lisy35_sound_stru[sound_no].how_many_versions);
+		lisy80_debug(debugbuf);
+	}
+
+	//Play our (pre loaded) sound file on separate channel
+	if ( lisy35_sound_stru[sound_no].soundnumber != 0)
+	{
+		Mix_Chunk *soundtoplay;
+		
+		// check if the regular sound must be played, or if there is an alternative sound to play
+		lisy35_sound_stru[sound_no].last_version_played += 1;
+		if (lisy35_sound_stru[sound_no].last_version_played > lisy35_sound_stru[sound_no].how_many_versions)
+		{
+			// if we're at the end of the alternative sound list, go back to sound 1
+			lisy35_sound_stru[sound_no].last_version_played = 1;
+		}
+		if(lisy35_sound_stru[sound_no].last_version_played == 1)
+		{
+			// play from the regular bank of sounds
+			soundtoplay = lisysound[sound_no];
+		}
+		else
+		{
+			// play from the alternative bank of sounds
+			soundtoplay = lisysound_alt[lisy35_sound_stru[sound_no].last_version_played - 2][sound_no];
+		}
+
+		if ( ls80dbg.bitv.sound )
+		{
+			sprintf(debugbuf,"sound version %d playing...", lisy35_sound_stru[sound_no].last_version_played);
+			lisy80_debug(debugbuf);
+		}
+		
+		// decode option
+		// 0=normal play, 1=loop, 2=stop loops
+		int loop = 0;
+		if (lisy35_sound_stru[sound_no].option == LISY35_SOUND_OPTION_LOOP) 
+		{
+			loop = -1;
+		}
+		
+		//check if this sound can stop loop sounds
+		if (lisy35_sound_stru[sound_no].option == LISY35_SOUND_OPTION_STOP_LOOP) 
+		{
+			//yes, check running state for all loop sounds and cancel them if running
+			for(int i=1; i<=257; i++)
+			{
+				if (lisy35_sound_stru[i].soundnumber != 0 && lisy35_sound_stru[i].option == 1 && Mix_Playing(i) != 0) 
+				{
+					if ( ls80dbg.bitv.sound ) lisy80_debug("found running loop, we cancel it\n");
+					Mix_HaltChannel(i);
+				}
+			}
+		}
+  
+		// play sound
+		ret = Mix_PlayChannel( sound_no, soundtoplay, loop);
+		
+		if(ret == -1) 
+		{
+			fprintf(stderr,"Unable to play WAV file: %s\n", Mix_GetError());
+		}
+	}
 }
 
 /*
@@ -272,6 +439,8 @@ int lisy_get_position(void)
 
 
 //set new volume in case postion of poti have changed
+//give back setting made (in percent)
+//for HW_ID 2 set fix to 180 71%  RTH Test
 int lisy_adjust_volume(void)
 {
   static int first = 1;
@@ -281,14 +450,28 @@ int lisy_adjust_volume(void)
   //no poti for hardware 3.11
   if ( lisy_hardware_revision == 311) return(0);
 
+  //hardware 3.20 plus hardware_ID == 2 fix setting
+  if ( ( lisy_hardware_revision == 320) & ( lisy_hardware_ID == 2) )
+  {
+
+     system("/usr/bin/amixer sset PCM 180");
+
+     if ( ls80dbg.bitv.sound)
+     {
+      lisy80_debug("LISY80 with HW_ID 2: fix volume set to 180(71%)");
+     }
+
+    return(180);
+  }
+
 
   //read position
   position = lisy_get_position();
 
-  //we assume pos is in range 600 ... 7500
+  //we assume pos is in range 600 ... 5000
   //and translate that to the SDL range of 0..128
-  //we use steps of 54
-  sdl_volume =  ( position / 54 ) - 10;
+  //we use steps of 36
+  sdl_volume =  ( position / 36 ) - 10;
   if ( sdl_volume > 128 ) sdl_volume = 128; //limit
 
   if ( first)  //first time called, set volume
@@ -304,10 +487,14 @@ int lisy_adjust_volume(void)
  
     // first setting, we do it with amixer for now; range here is 0..100
      amix_volume = (sdl_volume*100) / 128;
+     //set both PCM AND Digital
+     //which is for Hifiberry and Justboom
+     sprintf(debugbuf,"/usr/bin/amixer sset PCM %d\%%",amix_volume);
+     system(debugbuf);
      sprintf(debugbuf,"/usr/bin/amixer sset Digital %d\%%",amix_volume);
      system(debugbuf);
     // first setting, we announce here the volume setting
-     sprintf(debugbuf,"/bin/echo \"Volume set to %d percent\" | /usr/bin/festival --tts",amix_volume);
+    // sprintf(debugbuf,"/bin/echo \"Volume set to %d percent\" | /usr/bin/festival --tts",amix_volume);
      system(debugbuf);
      if ( ls80dbg.bitv.sound)
      {
@@ -322,6 +509,11 @@ int lisy_adjust_volume(void)
     if( (diff = abs(old_position - position )) > 300)
     {
      lisy_volume = sdl_volume; //set global var for SDL
+     amix_volume = (sdl_volume*100) / 128;
+     sprintf(debugbuf,"/usr/bin/amixer sset PCM %d\%%",amix_volume);
+     system(debugbuf);
+     sprintf(debugbuf,"/usr/bin/amixer sset Digital %d\%%",amix_volume);
+     system(debugbuf);
      if ( ls80dbg.bitv.sound)
      {
       sprintf(debugbuf,"new Volume setting initiated: %d",sdl_volume);
@@ -341,7 +533,7 @@ int lisy_adjust_volume(void)
 
   }
 
-  return(1);
+  return(sdl_volume*100) / 128;
 
 }
 
@@ -423,38 +615,3 @@ int mpf_play_mp3(Mix_Music *music)
 
 }
 
-  /*
- //if we are in running state, but current sound is protected and still playing ignore request
- if ( lisy80_sound_stream_status == LISY80_SOUND_STATUS_RUNNING_PROTECTED)
-  {
-    if (Mix_Playing(last_sound_played) != 0)
-      {
-        if ( ls80dbg.bitv.sound ) lisy80_debug("lisy80_sound: in running PROTECTED state, new request ignored\n");
-        return;
-      }
-  }
-
- //if we are in running state, check if old sound is still running
- if ( lisy80_sound_stream_status == LISY80_SOUND_STATUS_RUNNING)
-  {
-    if (Mix_Playing(last_sound_played) != 0)
-    {
-      if ( ls80dbg.bitv.sound ) lisy80_debug("lisy80_sound: old sound still in running state, we cancel it\n");
-      Mix_HaltChannel(last_sound_played);
-    }
-  }
-
-  //Play our (pre loaded) sound file on separate channel
-  ret = Mix_PlayChannel( sound_no, sound[sound_no], 0);
-  if(ret == -1) {
-         printf("Unable to play WAV file: %s\n", Mix_GetError());
-        }
-
- //update the state  and store last sound played
- if (  lisy80_sound_stru[sound_no].can_be_interrupted ) lisy80_sound_stream_status = LISY80_SOUND_STATUS_RUNNING;
-   else lisy80_sound_stream_status = LISY80_SOUND_STATUS_RUNNING_PROTECTED;
- last_sound_played = sound_no;
-
-}
-
-*/

@@ -12,6 +12,7 @@
 #include "switches.h"
 #include "utils.h"
 #include "fadecandy.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 

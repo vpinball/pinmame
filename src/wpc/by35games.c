@@ -678,6 +678,14 @@ BY35_ROMEND
 #define input_ports_ngndshkb input_ports_ngndshkr
 CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Groundshaker (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 90
 
+INITGAME(ngndshkm,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(ngndshkm,"nitr2732s.u2",CRC(e034598c) SHA1(27e2f7db52e4d90028a83da75e51afef82eb8292),
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
+BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
+BY35_ROMEND
+#define input_ports_ngndshkm input_ports_ngndshkr
+CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Groundshaker (7-digit conversion with siren patch)",2019,"Bally / Oliver / Martin",by35_mBY35_51S,0) // rev. 90
+
 /*--------------------------------
 / Silverball Mania
 /-------------------------------*/

@@ -26,7 +26,6 @@
 #include "lisy_home.h"
 #include "lisy.h"
 #include "lisy_mame.h"
-#include "lisyversion.h"
 
 
 //global vars for timing & speed
@@ -42,7 +41,7 @@ t_stru_lisy80_games_csv lisy80_game;
 unsigned char lisy80_has_soundcard = 0;  //there is a pHat soundcard installed
 unsigned char lisy80_has_own_sounds = 0;  //play own sounds rather then usinig piname sound emulation
 
-t_stru_lisy80_sounds_csv lisy80_sound_stru[32];
+t_stru_lisy80_sounds_csv lisy80_sound_stru[64];
 int lisy_volume = 80; //SDL range from 0..128
 
 //global var for coil min pulse time option
@@ -117,7 +116,7 @@ union u_Z28 {
 int lisy80_SOL9;		//we spend an int for SOL9
 unsigned char lisy80_lamp[48];	//all the lamps (48)
 int lisy80_flip_flop[12];
-int old_sounds;		//remember sound settings
+int old_neg_sounds;		//remember sound settings, negated version
 
 
 //init SW portion of lisy80
@@ -125,20 +124,23 @@ void lisy80_init( void )
 {
  int i;
  char s_lisy_software_version[16];
+ unsigned char sw_main,sw_sub,commit;
 
  //do the init on vars
  solenoid_state.byte = 0;
  lisy80_Z28.byte = 0;
  lisy80_SOL9 = 0;
- old_sounds = 15; //because of negated outputs
+ old_neg_sounds = 0; //RTH: change it in SOL pic as it do init with 0, where at startup output is '1111' because of inverter
  for (i=0; i<=47; i++) lisy80_lamp[i]=0;
  for (i=0; i<=11; i++) lisy80_flip_flop[i]=0;
 
  //set signal handler
  lisy80_set_sighandler();
 
+
  //show up on calling terminal
- sprintf(s_lisy_software_version,"%02d.%03d ",LISY_SOFTWARE_MAIN,LISY_SOFTWARE_SUB);
+ lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+ sprintf(s_lisy_software_version,"%d%02d %02d",sw_main,sw_sub,commit);
  fprintf(stderr,"This is LISY (Lisy80) by bontango, Version %s\n",s_lisy_software_version);
 
  //show the 'boot' message
@@ -165,10 +167,14 @@ void lisy80_init( void )
  if ( lisy80_has_soundcard )
  {
   //set volume according to poti
-  lisy_adjust_volume();
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 80 Version %s\" | /usr/bin/festival --tts",s_lisy_software_version);
+  i = lisy_adjust_volume();
+  //speak Welcome Message only if jumper 'sound' set
+ // if ( ls80dbg.bitv.sound)
+ // {
+  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 80 Version %s running on %s Volume is %d percent \" | /usr/bin/festival --tts",s_lisy_software_version,lisy80_game.long_name,i);
   system(debugbuf);
- }
+  }
+ //}
 
  //show green ligth for now, lisy80 is running
  lisy80_set_red_led(0);
@@ -211,10 +217,10 @@ void lisy80_init( void )
    
      if ( ls80dbg.bitv.sound) {
      int i;
-     for(i=1; i<=31; i++)
-       fprintf(stderr,"Sound[%d]: %d %d %d \n",i,lisy80_sound_stru[i].can_be_interrupted,
+     for(i=1; i<=63; i++)
+       fprintf(stderr,"Sound[%d]: %d %d %d \n",i,lisy80_sound_stru[i].volume,
 			lisy80_sound_stru[i].loop,
-			lisy80_sound_stru[i].st_a_catchup);
+			lisy80_sound_stru[i].not_int_loops);
     }
    }
  }
@@ -232,11 +238,15 @@ void lisy80_init( void )
  }
   
  //init LISY_Home if we are running on it
- if ( lisy_hardware_ID == LISY_HOME_HW_ID) 
+ if ( lisy_hardware_ID == LISY_HW_ID_HOME) 
    {
      if ( lisy_home_init_event() < 0)
        fprintf(stderr,"LISY HOME init failed, sound emulation disabled\n");
    }
+ //collect latest informations and start the lisy logger
+ lisy_env.has_soundcard = lisy80_has_soundcard;
+ lisy_env.has_own_sounds = lisy80_has_own_sounds;
+ lisy_logger();
 
 }  //lisy80_init
 
@@ -266,84 +276,15 @@ void lisy80_shutdown(void)
 }
 
 
-static int replay_pushed = 0;
-//take care of special functions
-//check value and give back new value if special function hits
-int lisy80_special_function(int myswitch, int action)
-{
- //we check for option freeplay here
- if (myswitch == LISY80_REPLAY_SWITCH)
-  {
-    //each time the replay switch is released
-    // do a delayed nvram write
-    //and set volume according to position of poti
-    if ( action == 1 ) 
-     { 
-       nvram_delayed_write = NVRAM_DELAY;
-       if ( ls80dbg.bitv.basic) lisy80_debug("NVRAM delayed write initiated by REPLAY Switch");
-
-       //set volume in case position of poti has chnaged
-       //AND we do emulate sound with pi soundcard
-       if ( lisy80_has_soundcard )
-         {
-          lisy_adjust_volume();
-          if ( ls80dbg.bitv.basic) lisy80_debug("Volume setting initiated by REPLAY Switch");
-         }
-     }
-
-   //if freeplay option is not set give back old ret value
-   if (ls80opt.bitv.freeplay == 0) return (myswitch);
-   if (action==0) //closed
-    {
-	//switch closed, let do start counting in lisy80TickleWatchdog
-	replay_pushed = 1;
-        if ( ls80dbg.bitv.switches ) lisy80_debug("Freeplay BETA: play button pressed");
-    }
-   else 
-    { 
-	//stop counting
-	replay_pushed = 0;
-        if ( ls80dbg.bitv.switches )lisy80_debug("Freeplay BETA: play button released");
-    }
-
-   return(509);  //give back something >80
-  }
- //return old value
- return(myswitch);
-}
-
-//switch simulation via internal FIFO
-void lisy80_simulate_switch( int myswitch, int action )
-{
- int i;
-  //we need to do this severall times to fool Gottlieb debounce routine
-  for(i=0; i<=25; i++)
-   {
- 	LISY80_BufferIn ( (unsigned char) myswitch);
-	LISY80_BufferIn ( (unsigned char) action);
-   }
-
-  if ( ls80dbg.bitv.switches )
-  {
-        sprintf(debugbuf,"we simulate switch:%d action:%d",myswitch,action);
-        lisy80_debug(debugbuf);
-  }
-}
-
 //watchdog, this one is called every 15 milliseconds or so
 //depending on spee of PI
 //we do some usefull stuff in here
 void lisy80TickleWatchdog( void )
 {
  static int test_button_count = 0;
- static int replay_pushed_count = 0;
- static int replay_was_pushed = 0;
+ // RTH static int replay_pushed_count = 0;
+ // RTH static int replay_was_pushed = 0;
  static int testbut_interval = 0;
-
-//do update the soundstream  RTH: replaced with SDL queue ?
-//        if (sound_stream && sound_enabled)
-//             	sound_stream_update(sound_stream);
-
 
  //count the tickles
  no_of_tickles++;
@@ -359,75 +300,8 @@ void lisy80TickleWatchdog( void )
    default: nvram_delayed_write--;
 	    break;
   }
-
-
- //we do things here appr. five times  a second
- if ( testbut_interval++  > 10)
- {
-
- //test button is No:7 
- //if it is pressed for around 2-3 seconds, we assume
- //that the user wants to shutdown
- if ( swMatrix[8] & 0x01 )
- {
-  if (test_button_count++ > 13 )
-   lisy_time_to_quit_flag = 1;
- }
- else test_button_count = 0;
-
-//reset one interval
-  testbut_interval = 0;
- }
-
- //check if we need to count for freeplay
- //replay button was pushed
- if (replay_pushed)
- {
-   replay_was_pushed = 1;
-   replay_pushed_count++;
-   //check if is still pushed
-   if(replay_pushed_count>20)
-    {
-        if ( ls80dbg.bitv.basic) lisy80_debug("we simulate coins now");
-	lisy80_simulate_switch( LISY80_LEFTCOIN_SWITCH, 0);
-	lisy80_simulate_switch( LISY80_LEFTCOIN_SWITCH, 1);
-	replay_was_pushed = 0;
-	replay_pushed_count = 0;
-    }
- }
-
- //replay button was pushed
- //but is now released
- if ((replay_was_pushed) && (replay_pushed==0))
- {
-        if ( ls80dbg.bitv.basic) lisy80_debug("replay normal function set");
-	lisy80_simulate_switch( LISY80_REPLAY_SWITCH, 0);
-	lisy80_simulate_switch( LISY80_REPLAY_SWITCH, 1);
-	replay_was_pushed = 0;
-	replay_pushed_count = 0;
- }
 }//watchdog
 
-//we simulate switches here via buffer
-int lisy80_simulated_switch_reader( unsigned char *action )
-{
-
- unsigned char value;
-
- if ( LISY80_BufferOut( &value) == LISY80_BUFFER_SUCCESS)
-  {
-   //next byte in buffer have to be action
-   LISY80_BufferOut ( action);
-   return value;
-  }
- else
-  return 510;
-}
-
-/*
- throttle routine as with sound disabled
- lisy80 runs faster than the org game :-0
-*/
 
 void lisy80_throttle(int riot0b)
 {
@@ -440,6 +314,7 @@ static unsigned int last;
 //on the 'normal' frequency a Gottlieb scan the switches
 // which is appr. each ms (can be 2 ms with PI zero & sound )
 // Note: if riot0b is 1, test showed that we have same spare time than
+
 
 //if val is zero, we have to run at full speed
 if ( g_lisy80_throttle_val == 0) return; 
@@ -454,16 +329,37 @@ if (first)
  // if we are faster than 1000 usec (1 msec)
  // which is the default for g_lisy80_throttle_val
  //we need to slow down a bit
+ //do that in a while loop with updating soudn_stream in between
 
- //see how many micros passed
- now = micros();
- //beware of 'wrap' which happens each 71 minutes
- if ( now < last) now = last; //we had a wrap
+ //do update the soundstream if enabled (pinmame internal sound only)
+ if (sound_stream && sound_enabled) 
+ {
+  do{
+    //do update the soundstream if enabled (pinmame internal sound only)
+    sound_stream_update(sound_stream);
 
- //calculate if we are above minimum sleep time 
- sleeptime = g_lisy80_throttle_val - ( now - last);
- if ( sleeptime > 0)
+   //see how many micros passed
+   now = micros();
+   //beware of 'wrap' which happens each 71 minutes
+   if ( now < last) now = last; //we had a wrap
+
+   //calculate if we are above minimum sleep time 
+   sleeptime = g_lisy80_throttle_val - ( now - last);
+  } while ( sleeptime > 0);
+ }
+ else
+ //if no sound enabled use sleep routine
+  {
+   //see how many micros passed
+    now = micros();
+    //beware of 'wrap' which happens each 71 minutes
+    if ( now < last) now = last; //we had a wrap
+
+    //calculate if we are above minimum sleep time 
+    sleeptime = g_lisy80_throttle_val - ( now - last);
+    if ( sleeptime > 0)
           delayMicroseconds( sleeptime );
+  }
 
  //store current time for next round with speed limitc
  last = micros();
@@ -481,6 +377,7 @@ int ret,bits,ii;
 int simulated_flag;
 unsigned char strobe,returnval,action;
 unsigned char mystrobe,myreturnval;
+static int simulate_coin_flag = 0;
 
 
 //read values from pic
@@ -492,20 +389,67 @@ if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
  {
    if ( ( ret = lisy_udp_switch_reader( &action, 0 )) != 80)
    {
-     sprintf(debugbuf,"LISY35_SWITCH_READER (UDP Server Data received: %d",ret);
+     sprintf(debugbuf,"LISY80_SWITCH_READER (UDP Server Data received: %d",ret);
      lisy80_debug(debugbuf);
    }
  }
 
 
 //do we need a 'special' routine to handle that switch?
+//system80 Test switch
+if ( swMatrix[8] & 0x01 ) //is bit set?
+ {
+    //after 3 secs we initiate shutdown; internal timer 0
+    //def lisy_timer( unsigned int duration, int command, int index)
+    if ( lisy_timer( 3000, 0, 0)) lisy_time_to_quit_flag = 1;
+ }
+ else // bit is zero, reset timer index 0
+ {
+    lisy_timer( 0, 1, 0);
+ }
+
+
+
 // switch 47 (Replay) could mean to add credits in case of Freeplay
-// others to follow
-if (ret==47)
+if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
 {
- ret = lisy80_special_function( ret, action );
+
+//system80 Replay switch strobe:7 ret:4
+ if ( CHECK_BIT(swMatrix[8],4)) //is bit set?
+ {
+    //after 3 secs we simulate coin insert
+    //def lisy_timer( unsigned int duration, int command, int index)
+    if ( lisy_timer( 3000, 0, 1)) { simulate_coin_flag = 1;  lisy_timer( 0, 1, 1); }
+ }
+ else // bit is zero, reset timer index 0
+ {
+    lisy_timer( 0, 1, 1);
+ }
+//do we need to simalte coin insert?
+ if ( simulate_coin_flag )
+ {
+    //simulate coin insert for 50 millisecs via timer 2
+    // left coin ; strobe 7 ret 1
+     SET_BIT(swMatrix[8],1);
+     if ( lisy_timer( 50, 0, 2)) { CLEAR_BIT(swMatrix[8],1); simulate_coin_flag = 0; }
+ }
+ else // bit is zero, reset timer index 0
+ {
+    lisy_timer( 0, 1, 2);
+ }
+}//freeplay option set
+
+//set volume each time replay is pressed
+if ( (ret==LISY80_REPLAY_SWITCH) & ( action == 1))
+{
+       if ( lisy80_has_soundcard )
+         {
+          lisy_adjust_volume();
+          if ( ls80dbg.bitv.basic) lisy80_debug("Volume setting initiated by REPLAY Switch");
+         }
 }
 
+/* RTH
 //if ret >80 lets check if we have switches to simulate in the queue
 simulated_flag=0;
 if (ret >= 80)
@@ -513,6 +457,7 @@ if (ret >= 80)
   if ( ( ret = lisy80_simulated_switch_reader( &action )) < 80)
   	simulated_flag=1;
  }
+*/
 
 //77 switches ; ret < 80 indicates a change
 // values >=80 are for debugging only
@@ -755,6 +700,8 @@ if ( a_or_b == 1)
 void lisy80_coil_handler_a( int data)
 {
 
+ int new_sound;
+
 //read what the RIOT wants to do
 lisy80_riot2_porta.byte = data;
 // SOL9 has an inverter behind
@@ -880,34 +827,35 @@ if (lisy80_SOL9 != lisy80_riot2_porta.bitv1.SOL9 ) {
 //Note: Output is negated because of LS04 at PA0..PA4 (Z27)
 if ( lisy80_riot2_porta.bitv2.SOUND_EN == 0) // Z31 (7408 'AND') sound control enabled
 	 {
-	  if (old_sounds != lisy80_riot2_porta.bitv2.SOUND ) {
+	  if (old_neg_sounds != lisy80_riot2_porta.bitv2.SOUND ) {
 		//set value for LISY80 which is negated because of Z27
 		lisy80_sound.bitv3.S1 = ~lisy80_riot2_porta.bitv3.S1;
 		lisy80_sound.bitv3.S2 = ~lisy80_riot2_porta.bitv3.S2;
 		lisy80_sound.bitv3.S4 = ~lisy80_riot2_porta.bitv3.S4;
 		lisy80_sound.bitv3.S8 = ~lisy80_riot2_porta.bitv3.S8;
+		new_sound = lisy80_sound.bitv2.SOUND; //this is the negated one for the PIC
 		if ( ls80dbg.bitv.sound )
   		{
-        		sprintf(debugbuf,"setting sound to:%d" ,lisy80_sound.bitv2.SOUND + sound16 );
+        		sprintf(debugbuf,"setting sound to:%d" ,new_sound + sound16 );
         		lisy80_debug(debugbuf);
   		}
-	  	lisy80_sound_set(lisy80_sound.bitv2.SOUND);  //set to new value
+	  	lisy80_sound_set(new_sound);  //set to new value
 
 		//JustBoom Sound? we may want to play wav files here
 		//need to add separate sound line here! for sound >16
 		//RTH: need to be changed to 'sndbrd_0_data_w' 
-       		if ( lisy80_has_own_sounds ) lisy80_play_wav(lisy80_sound.bitv2.SOUND + sound16);
+       		if ( lisy80_has_own_sounds ) lisy80_play_wav(new_sound + sound16);
 
 	        //remember old value
-		old_sounds = lisy80_riot2_porta.bitv2.SOUND;
+		old_neg_sounds = lisy80_riot2_porta.bitv2.SOUND;
 	   }
 	}
 else //not enabled, so value is '1111' and output is zero
 	 {
 	  //only if sound changed
-	  if (old_sounds != 15 ) {
-	      old_sounds = 15;
-	      if ( ls80dbg.bitv.sound ) lisy80_debug("setting sound to:0");
+	  if (old_neg_sounds != 15 ) {
+	      old_neg_sounds = 15;
+	      if ( ls80dbg.bitv.sound ) lisy80_debug("sound ctrl not enabled, setting sound to:0");
 	      lisy80_sound_set(0);  // zero
 	   }
 	}
@@ -952,9 +900,9 @@ void lisy80_coil_handler_b( int data)
 	     else sprintf(debugbuf,"LISY80_COIL_HANDLER: Transistor_Q:%d OFF",i+1+offset);
 	lisy80_debug(debugbuf);
        }
-  	   //do a delayd nvram write each time the game over relay ( lamp[0]) is going from zero to one (Game Over)
-	   //this is done in the tickle routine
-  	   if ( ((i + offset) == 0) & (lisy80_lamp[0] == 1) ) 
+  	   //do a delayd nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
+	   //the nvram call is done in the tickle routine
+  	   if ( (i + offset) == 0 ) 
              {
               nvram_delayed_write = NVRAM_DELAY;
               if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM delayed write initiaed by GAME OVER Relay");
@@ -964,7 +912,9 @@ void lisy80_coil_handler_b( int data)
 	   //and set the lamp/coil
 	    if ( new_lamp[i] ) lisy80_coil_set(i+1+offset, 1); else  lisy80_coil_set(i+1+offset, 0);
 
-           //special handling for sound16, which is lamp9/Q10 in case of bigger soundboard
+           //special handling for sound16, 
+           //which is lamp9/Q10 in case of bigger soundboard
+           //and lamp4/Q5 for system80B soundboards
 	   //we have to remember that for sound settings
 	    if ( (core_gameData->hw.soundBoard == SNDBRD_GTS80S) || (core_gameData->hw.soundBoard == SNDBRD_GTS80SP) )
               {
@@ -972,7 +922,30 @@ void lisy80_coil_handler_b( int data)
 	      }
 	    else
               {
-	       if ( ( i+1+offset) == 10 ) {  if ( new_lamp[i] ) sound16=16; else sound16=0; }
+		if (lisy80_game.is80B)
+		{
+	         if ( ( i+1+offset) == 5 ) 
+			{  
+			  if ( new_lamp[i] ) sound16=16; else sound16=0;
+               		  if ( ls80dbg.bitv.sound )
+                		{
+                        	  sprintf(debugbuf," SOUND16 (80B) changed to :%d" ,sound16 );
+                        	  lisy80_debug(debugbuf);
+                		}
+			 }
+                } //80B
+		else
+		{
+	         if ( ( i+1+offset) == 10 ) 
+			{
+			  if ( new_lamp[i] ) sound16=16; else sound16=0;
+               		  if ( ls80dbg.bitv.sound )
+                		{
+                        	  sprintf(debugbuf," SOUND16 (80/80A) changed to :%d" ,sound16 );
+                        	  lisy80_debug(debugbuf);
+                		}
+			 }
+                }
               }
 
   //aditional debug output
@@ -1005,16 +978,16 @@ int lisy80_get_gamename(char *gamename)
   fprintf(stderr,"LISY80: Throttle value is %d\n",g_lisy80_throttle_val);
 
   //other infos are stored in global var
+  //store what we know already
+  strcpy(lisy_env.variant,"LISY80");
+  lisy_env.selection = ret;
+  strcpy(lisy_env.gamename,lisy80_game.gamename);
+  strcpy(lisy_env.long_name,lisy80_game.long_name);
+  lisy_env.throttle = lisy80_game.throttle;
+  lisy_env.clockscale = 0; //not used
+
 
   return ret;
-}
-
-
-//this give back lisy_time_to_quit to cpuexec
-//set by signalhandler
-int lisy_time_to_quit(void)
-{
-  return lisy_time_to_quit_flag;
 }
 
 //read dipswitchsettings for specific game/mpu
@@ -1050,6 +1023,7 @@ int lisy80_nvram_handler_old(int read_or_write, UINT8 *GTS80_pRAM_GTB)
  static eeprom_block_t nvram_block;
  static eeprom_block_t lisy80_block;
  static UINT8 *GTS80_pRAM;
+ unsigned char sw_main,sw_sub,commit;
  int i,ret;
 
  //check content at first time
@@ -1093,12 +1067,15 @@ int lisy80_nvram_handler_old(int read_or_write, UINT8 *GTS80_pRAM_GTB)
     lisy80_block.content.gamenr = lisy80_game.gamenr;
    }
 
+   //get sw version
+   lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+
    //now update statistics
    lisy80_block.content.starts++;
    if(ls80dbg.bitv.basic) lisy80_block.content.debugs++;
    lisy80_block.content.counts[lisy80_game.gamenr]++;
-   lisy80_block.content.Software_Main = LISY_SOFTWARE_MAIN;
-   lisy80_block.content.Software_Sub = LISY_SOFTWARE_SUB;
+   lisy80_block.content.Software_Main = sw_main;
+   lisy80_block.content.Software_Sub = sw_sub;
    ret = lisy_eeprom_256byte_write( lisy80_block.byte, 1);
    if ( ls80dbg.bitv.basic )
    {

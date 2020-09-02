@@ -195,6 +195,7 @@ DRIVERNV(futurspa)      //BY35-781: 12/79 Future Spa
 DRIVERNV(futurspb)      //BY35      11/02 Future Spa (7-digit conversion)
 DRIVERNV(ngndshkr)      //BY35-776: 01/80 Nitro Ground Shaker
 DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
+DRIVERNV(ngndshkm)      //BY35      07/19 Nitro Ground Shaker (7-digit conversion with siren patch)
 DRIVERNV(slbmania)      //BY35-786: 02/80 Silverball Mania
 DRIVERNV(slbmanib)      //BY35      11/02 Silverball Mania (7-digit conversion)
 DRIVERNV(spaceinv)      //BY35-792: 04/80 Space Invaders

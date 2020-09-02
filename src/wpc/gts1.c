@@ -243,20 +243,13 @@ static WRITE_HANDLER(port_w) {
 				if (!locals.ramE2 && locals.ramRW && (group & 4)) // write to nvram
 				{
 					cpu_writemem16(0x1800 + locals.ramAddr, locals.accu);
-#ifdef LISY_SUPPORT
-					lisy1_nvram_handler(1, locals.ramAddr, locals.accu);
-#endif
 				}
 //					memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr] = locals.accu;
 			} else {
 				locals.accu = 0x0f;
 				if (!locals.ramE2 && (group & 1)) // read from nvram
 				{
-#ifndef LISY_SUPPORT
 					locals.accu = cpu_readmem16(0x1800 + locals.ramAddr);
-#else
-					locals.accu = lisy1_nvram_handler(0, locals.ramAddr, 0);
-#endif
 				}
 //					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr];
 			}

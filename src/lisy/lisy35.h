@@ -6,7 +6,7 @@ void lisy35_shutdown(void);
 int  lisy35_get_gamename(char *gamename);
 void lisy35_display_handler( int index, int value );
 unsigned char lisy35_switch_handler( int sys35col );
-void lisy35_solenoid_handler(unsigned char data);
+void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect);
 void lisy35_sound_handler(unsigned char type, unsigned char data);
 void lisy35_lamp_handler( int blanking, int board, int lampadr, int lampdata);
 void lisy35_throttle(void);

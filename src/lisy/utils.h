@@ -25,16 +25,12 @@ void my_itoa(int value, char* str, int base);
 
 int lisy_udp_switch_reader( unsigned char *action, unsigned char do_only_init  );
 
+void lisy_logger(void);
+
+
 
 #define LISY80_BUFFER_FAIL     0
 #define LISY80_BUFFER_SUCCESS  1
-
-//the LISY HW revisions
-#define LISY_HW_LISY1	100		//LISY1
-#define LISY_HW_LISY80_311  311		//LISY80, old HW Version 3.11 (discontinue?)
-#define LISY_HW_LISY35	350		//LISY35 Bally
-#define LISY_HW_LISY80	80		//LISY80 HW320 & LISY_Home
-#define LISY_HW_LISY_W  121		//LISYx_W (Williams) based on LISY_MINI1
 
 //
 //some bit settings routines

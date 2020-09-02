@@ -16,6 +16,7 @@
 #include "hw_lib.h"
 #include "utils.h"
 #include "fadecandy.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 //globale var, used in most routines
@@ -51,6 +52,7 @@ char datchar;
 static unsigned char first_time = 1;
 //we store what is on the displays
 static char player[4][8] = { "       ", "       ","       ","       "};
+static char status[5] = "    ";
 
    //convert dat(int) to datchar for PIC
    switch (dat) {
@@ -70,10 +72,16 @@ static char player[4][8] = { "       ", "       ","       ","       "};
   //with 6digit support just store value for possible debugging
   if (!ls80opt.bitv.sevendigit )
   {
-    if ( display != 0) //not for status display at the moment //RTH
-      player[display-1][digit] = datchar;
-
+    if ( display == 0) 
+     {
+	if(digit<=4) status[digit] = datchar;
+     }
+   else
+     {
+       if (digit <= 7) player[display-1][digit] = datchar;
+     }
   }
+
 
   //with 7digit support we need to modify things
   if (ls80opt.bitv.sevendigit )
@@ -232,6 +240,8 @@ static char player[4][8] = { "       ", "       ","       ","       "};
      printf("Player 2:%s\n",player[1]);
      printf("Player 3:%s\n",player[2]);
      printf("Player 4:%s\n",player[3]);
+     printf("credits:%c%c\n",status[3],status[2]);
+     printf("Ball in play:%c%c\n",status[1],status[0]);
      }
 }
 
@@ -272,12 +282,16 @@ switch (dat) {
     //if ( display != 0) //not for status display at the moment //RTH
       player[display][digit] = datchar;
 
+   //debug?
+   if ( ls80dbg.bitv.displays )
+    {
      printf(" digit  :0123456\n");
      printf("Player 1:%s\n",player[1]);
      printf("Player 2:%s\n",player[2]);
      printf("Player 3:%s\n",player[3]);
      printf("Player 4:%s\n",player[4]);
      printf("status:%s\n",player[0]);
+    }
   }
 
 }

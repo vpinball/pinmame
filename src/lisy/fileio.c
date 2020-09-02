@@ -16,6 +16,7 @@
 #include "fadecandy.h"
 #include "opc.h"
 #include "utils.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 
@@ -898,6 +899,7 @@ int  lisy1_file_get_gamename(t_stru_lisy1_games_csv *lisy1_game)
  unsigned char dip_switch_val;
  int line_no;
  int first_line = 1;
+ float clockscale_int;  //integer clockscale from cfg file, will be devided by 1000;
 
  //get value of dipswitch
  dip_switch_val = display_get_dipsw_value();
@@ -923,6 +925,8 @@ int  lisy1_file_get_gamename(t_stru_lisy1_games_csv *lisy1_game)
      	  strcpy(lisy1_game->long_name,strtok(NULL, ";"));	//game long name
      	  strcpy(lisy1_game->rom_id,strtok(NULL, ";"));		//system 1 rom ID (1 char)
      	  lisy1_game->throttle = atoi(strtok(NULL, ";"));	//throttle value per Gottlieb game
+     	  clockscale_int = atoi(strtok(NULL, ";"));	        //clockscale value per Gottlieb game
+     	  lisy1_game->clockscale = clockscale_int / 1000; 	//clockscale is a float
      	  strcpy(lisy1_game->comment,strtok(NULL, ";"));	//comment if available
           break;
 	}
@@ -1006,6 +1010,7 @@ int  lisy35_file_get_gamename(t_stru_lisy35_games_csv *lisy35_game)
 int  lisy80_file_get_soundopts(void)
 {
 
+ int i;
  char buffer[1024];
  char *line;
  char sound_file_name[80];
@@ -1023,13 +1028,69 @@ int  lisy80_file_get_soundopts(void)
       return -1;
    }
 
+   //init values of sound structure
+   for(i=0; i<=63; i++)
+    {
+	lisy80_sound_stru[i].volume = 0;
+	lisy80_sound_stru[i].loop = 0;
+	lisy80_sound_stru[i].not_int_loops = 0;
+     }
+
    while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
    {
      if (first_line) { first_line=0; continue; } //skip first line (Header)
      sound_no = atoi(strtok(line, ";")); 	//sound number
-     lisy80_sound_stru[sound_no].can_be_interrupted = atoi(strtok(NULL, ";"));	
-     lisy80_sound_stru[sound_no].loop = atoi(strtok(NULL, ";"));	
-     lisy80_sound_stru[sound_no].st_a_catchup = atoi(strtok(NULL, ";"));	
+     //sanity check for soundnumber ( max = 63)
+     if (sound_no < 64)
+	{
+     	 lisy80_sound_stru[sound_no].volume = atoi(strtok(NULL, ";"));	
+     	 lisy80_sound_stru[sound_no].loop = atoi(strtok(NULL, ";"));	
+     	 lisy80_sound_stru[sound_no].not_int_loops = atoi(strtok(NULL, ";"));	
+	}
+     else fprintf(stderr,"soundnumber is too big:%d in lisy80_sound_stru\n",sound_no);
+   } //while
+   fclose(fstream);
+
+  return 0;
+}
+
+//read the csv file for sound opts on /lisy partition
+//give -1 in case we had an error
+//fill structure stru_lisy35_sound_csv
+int  lisy35_file_get_soundopts(void)
+{
+
+ char buffer[1024];
+ char *line;
+ char *str;
+ char sound_file_name[80];
+ int sound_no,i;
+ int first_line = 1;
+ FILE *fstream;
+
+ //construct the filename; using global var lisy35_gamenr
+ sprintf(sound_file_name,"%s%03d%s",LISY35_SOUND_PATH,lisy35_game.gamenr,LISY35_SOUND_FILE);
+
+ fstream = fopen(sound_file_name,"r");
+   if(fstream == NULL)
+   {
+      fprintf(stderr,"\n LISY35: opening %s failed ",sound_file_name);
+      return -1;
+   }
+
+ //init soundnumber to 0
+ for ( i=0; i<=255; i++) lisy35_sound_stru[i].soundnumber = 0;
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     str = strdup(strtok(line, ";"));   //sound number in hex
+     sound_no = strtol(str, NULL, 16); // to be converted
+     //sound_no = atoi(strtok(line, ";")); 	//sound number
+     lisy35_sound_stru[sound_no].soundnumber = sound_no;   // != 0 if mapped
+     lisy35_sound_stru[sound_no].path = strdup(strtok(NULL, ";"));	//path to soundfile
+     lisy35_sound_stru[sound_no].name = strdup(strtok(NULL, ";"));	//name of soundfile
+     lisy35_sound_stru[sound_no].option = atoi(strtok(NULL, ";"));	//option
+     lisy35_sound_stru[sound_no].comment = strdup(strtok(NULL, ";"));	//comment
    } //while
    fclose(fstream);
 
@@ -1048,30 +1109,55 @@ int  lisy1_file_get_coilopts(void)
  int coil_no;
  int first_line = 1;
  FILE *fstream;
+ int gtb_pulse[9];
  int i;
 
- //set lisy1 defaults which is 150 msec
+ //set lisy1 defaults which is 150 msec for coils
  for ( i=0; i<=7; i++) lisy1_coil_min_pulse_time[i] = 150;
 
- //construct the filename; using global var lisy80_gamenr
+ //construct the filename; using global var lisy1_gamenr
  sprintf(coil_file_name,"%s%03d%s",LISY1_COIL_PATH,lisy1_game.gamenr,LISY1_COIL_FILE);
 
+ //try to read the file with game nr
  fstream = fopen(coil_file_name,"r");
+
+  //second try: to read the file with default
+  if(fstream == NULL)
+  {
+    //construct the new filename; using 'default'
+    sprintf(coil_file_name,"%sdefault%s",LISY1_COIL_PATH,LISY1_COIL_FILE);
+    fstream = fopen(coil_file_name,"r");
+   }//second try
+
    if(fstream == NULL)
    {
       fprintf(stderr,"\n LISY1: opening %s failed ",coil_file_name);
       return -1;
    }
 
+   //config file will hav coil numbering 1..8
    while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
    {
      if (first_line) { first_line=0; continue; } //skip first line (Header)
      coil_no = atoi(strtok(line, ";")); 	//coil number
      //range check
-     if ( coil_no <= 7)
-        lisy1_coil_min_pulse_time[coil_no] = atoi(strtok(NULL, ";"));	
+     if ( coil_no <= 8)
+        gtb_pulse[coil_no] = atoi(strtok(NULL, ";"));	
    } //while
    fclose(fstream);
+
+  //change position of OUTHOLE as OUTHOLE is SOL1 internal
+  //so that numbering of coila correspondent with Gottlieb numbering
+  //in order not to need change PIC SW, historical reason
+  lisy1_coil_min_pulse_time[0] = gtb_pulse[2]; //knock
+  lisy1_coil_min_pulse_time[1] = gtb_pulse[3]; //tens
+  lisy1_coil_min_pulse_time[2] = gtb_pulse[4]; //hund
+  lisy1_coil_min_pulse_time[3] = gtb_pulse[5]; //tous
+  lisy1_coil_min_pulse_time[4] = gtb_pulse[1]; //OUTHOLE
+  lisy1_coil_min_pulse_time[5] = gtb_pulse[6]; //SOL6
+  lisy1_coil_min_pulse_time[6] = gtb_pulse[7]; //SOL7
+  lisy1_coil_min_pulse_time[7] = gtb_pulse[8]; //SOL8
+
 
   return 0;
 }
@@ -1236,6 +1322,7 @@ int  lisymini_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game)
  unsigned char dip_switch_val;
  int line_no;
  int first_line = 1;
+ unsigned char found = 0;
 
  //get value of dipswitch
  dip_switch_val = lisymini_get_dip("S2");
@@ -1260,11 +1347,106 @@ int  lisymini_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game)
      	  strcpy(lisymini_game->type,strtok(NULL, ";"));	//game type
      	  lisymini_game->throttle = atoi(strtok(NULL, ";"));	//throttle value per Bally game
      	  strcpy(lisymini_game->comment,strtok(NULL, ";"));	//comment if available
+	  found = 1; //found it
           break;
 	}
    } //while
    fclose(fstream);
 
   //give back the name and the number of the game
-  return(line_no);
+  if (found) return(line_no); else return(-1);
+}
+
+//read the csv file for lisy Home lamp & coil mapping /lisy partition
+//give -1 in case we had an error
+//fill structure 
+int  lisy_file_get_home_mappings(void)
+{
+ char buffer[1024];
+ char *line;
+ char file_name[80];
+ int no;
+ int is_coil;
+ int first_line = 1;
+ FILE *fstream;
+ int i,dum;
+
+
+//map to default 1:1
+for(i=0; i<=48;i++) 
+  { 
+     lisy_home_lamp_map[i].mapped_to_no = i;
+     lisy_home_lamp_map[i].mapped_is_coil = 0;
+     lisy_home_lamp_map[i].r = 255;
+     lisy_home_lamp_map[i].g = 255;
+     lisy_home_lamp_map[i].b = 255;
+   }
+for(i=0; i<=9;i++) 
+  { 
+     lisy_home_coil_map[i].mapped_to_no = i;
+     lisy_home_coil_map[i].mapped_is_coil = 1;
+  }
+
+//LAMPS construct the filename
+//Lamp ;LED=0|COIL=1;Number;Red;Green;Blue;Comment
+sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_LAMP_MAPPING_FILE);
+
+ fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, using defaults for lamps\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     no = atoi(strtok(line, ";")); 	//lamp number
+     if ( no > 48 ) continue; //skip line if lamp number is out of range
+     lisy_home_lamp_map[no].mapped_is_coil = atoi(strtok(NULL, ";")); 	//lamp or coil
+     lisy_home_lamp_map[no].mapped_to_no = atoi(strtok(NULL, ";"));	
+     lisy_home_lamp_map[no].r = atoi(strtok(NULL, ";"));	
+     lisy_home_lamp_map[no].g = atoi(strtok(NULL, ";"));	
+     lisy_home_lamp_map[no].b = atoi(strtok(NULL, ";"));	
+   } //while
+   fclose(fstream);
+  }
+
+//COILS construct the filename
+//Coil;LED=0|COIL=1;Number;Comment
+sprintf(file_name,"%s%s",LISYH_MAPPING_PATH,LISYH_COIL_MAPPING_FILE);
+
+ fstream = fopen(file_name,"r");
+  if(fstream == NULL)
+  {
+      fprintf(stderr,"LISY_Home: opening %s failed, using defaults for coils\n",file_name);
+  }
+  else
+  {
+   first_line = 1;
+   while( (line=fgets(buffer,sizeof(buffer),fstream))!=NULL)
+   {
+     if (first_line) { first_line=0; continue; } //skip first line (Header)
+     no = atoi(strtok(line, ";")); 	//lamp number
+     if ( no > 9 ) continue; //skip line if lamp number is out of range
+     lisy_home_coil_map[no].mapped_is_coil = atoi(strtok(NULL, ";")); 	//lamp or coil
+     lisy_home_coil_map[no].mapped_to_no = atoi(strtok(NULL, ";"));	
+   } //while
+   fclose(fstream);
+  }
+
+/*
+fprintf(stderr,"active LISY HOME mapping: \n");
+for(i=0; i<=47;i++)
+  {
+ printf("  map lamp number:%d TO %s number:%d\n",i,lisy_home_lamp_map[i].mapped_is_coil ? "coil" : "lamp", lisy_home_lamp_map[i].mapped_to_no);
+   }
+for(i=1; i<=9;i++)
+  {
+ printf("  map coil number:%d TO %s number:%d\n",i,lisy_home_coil_map[i].mapped_is_coil ? "coil" : "lamp", lisy_home_coil_map[i].mapped_to_no);
+  }
+*/
+
+ return 0;
 }

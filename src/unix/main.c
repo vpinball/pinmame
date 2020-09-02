@@ -11,7 +11,7 @@
 
 #if defined(LISY_SUPPORT)
 extern int lisy_set_gamename( char *arg_from_main, char *lisy_gamename);
-#include "lisy/lisyversion.h"
+void lisy_get_sw_version( unsigned char *main, unsigned char *sub, unsigned char *commit);
 #endif
 
 /* From video.c. */
@@ -56,11 +56,12 @@ int main(int argc, char **argv)
         //we may want to give back software version only and exit afterwartds
         if (strcmp(argv[1],"-lisyversion") == 0)
            {
+            unsigned char sw_main,sw_sub,commit;
+            lisy_get_sw_version( &sw_main, &sw_sub, &commit);
             //show up on calling terminal
-            fprintf(stdout,"Version %02d.%03d\n",LISY_SOFTWARE_MAIN,LISY_SOFTWARE_SUB);
+            fprintf(stdout,"%d.%d-%d\n",sw_main,sw_sub,commit);
 
-            //give back
-            return(LISY_SOFTWARE_SUB);
+            return(0);
            }
 
         //otherwise lets check what game we need to emulate (lisy.c)

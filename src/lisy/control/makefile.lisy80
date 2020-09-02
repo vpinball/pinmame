@@ -1,9 +1,9 @@
-# lisy80 makefile for lisycontrol
-# bontango 05.2019
+# lisy35 makefile for lisycontrol
+# bontango 12.2018
 
 CC      = /usr/bin/gcc
 CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
-LDFLAGS = -lwiringPi -lSDL2 -lSDL2_mixer
+LDFLAGS = -lwiringPi -lSDL2 -lSDL2_mixer -lpthread -li2c
 #LDFLAGS = -lwiringPi
 #LDFLAGS = -lbcm2835
 # Lisy object path, we use .o files from lisy
@@ -24,6 +24,7 @@ OBJ = $(LOP)lisy80.o \
       $(LOP)opc.o \
       $(LOP)fadecandy.o \
       $(LOP)usbserial.o \
+      $(LOP)lisy_api_com.o \
       $(LOP)lisy_home.o \
       $(LOP)lisy_w.o \
       lisy80_control.o

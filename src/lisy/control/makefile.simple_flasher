@@ -1,0 +1,16 @@
+# for simple_flasher
+
+CC      = /usr/bin/gcc
+CFLAGS  = -Wall -g -D_REENTRANT -DDEBUG
+LDFLAGS = -lwiringPi
+
+OBJ = simple_flasher.o
+
+SW_Test: $(OBJ)
+	$(CC) $(CFLAGS) -o simple_flasher $(OBJ) $(LDFLAGS)
+
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm *.o simple_flasher

@@ -26,7 +26,6 @@
 #include "sound.h"
 #include "lisy.h"
 #include "lisy_mame.h"
-#include "lisyversion.h"
 
 
 //global var for internal game_name structure,
@@ -35,6 +34,11 @@ t_stru_lisy35_games_csv lisy35_game;
 
 //global var for timing and speed
 int g_lisy35_throttle_val = 5000;
+
+//global var for sound options
+unsigned char lisy35_has_soundcard = 0;  //there is a pHat soundcard installed
+unsigned char lisy35_has_own_sounds = 0;  //play own sounds rather then usinig piname sound emulation
+t_stru_lisy35_sounds_csv lisy35_sound_stru[256];
 
 //internal switch Matrix for system1, we need 7 elements
 //as pinmame internal starts with 1
@@ -49,15 +53,18 @@ unsigned char lisy35_J4PIN8_is_strobe = 0;
 //from coils.c
 extern unsigned char lisy35_bally_hw_check_finished;
 
-//internal fpr lisy35.c to have an delayed nvram write
+//internal for lisy35.c 
+//to have an delayed nvram write
 static unsigned char want_to_write_nvram = 0;
+// switch to sound raw mode ( for special cfg 8 )
+static unsigned char lisy35_sound_raw = 0;
 
 //init SW portion of lisy35
 void lisy35_init( void )
 {
  int i,sb;
  char s_lisy_software_version[16];
-
+ unsigned char sw_main,sw_sub,commit;
 
  //do the init on vars
  //for (i=0; i<=36; i++) lisy1_lamp[i]=0;
@@ -66,18 +73,90 @@ void lisy35_init( void )
  lisy80_set_sighandler();
 
  //show up on calling terminal
- sprintf(s_lisy_software_version,"%02d.%03d ",LISY_SOFTWARE_MAIN,LISY_SOFTWARE_SUB);
+ lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+ sprintf(s_lisy_software_version,"%d%02d %02d",sw_main,sw_sub,commit);
  fprintf(stderr,"This is LISY (Lisy35) by bontango, Version %s\n",s_lisy_software_version);
 
  //show the 'boot' message
  display_show_boot_message_lisy35(s_lisy_software_version);
 
- //show green ligth for now, lisy1 is running
+ //check sound options
+ if ( ls80opt.bitv.JustBoom_sound )
+   {
+     lisy35_has_soundcard = 1;
+     if ( ls80dbg.bitv.sound) lisy80_debug("internal soundcard to be activated");
+     //do we want to use pinamme sounds?
+     if ( ls80opt.bitv.test )
+      {
+       if ( ls80dbg.bitv.sound) lisy80_debug("we try to use pinmame sounds");
+      }
+      else
+      {
+        lisy35_has_own_sounds = 1;
+        if ( ls80dbg.bitv.sound) lisy80_debug("we try to use our own sounds");
+      }
+   }
+
+ // try say something about LISY35 if soundcard is installed
+ if ( lisy35_has_soundcard )
+ {
+  //set volume according to poti
+  lisy_adjust_volume();
+  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 35 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy35_game.long_name);
+  system(debugbuf);
+ }
+
+ //show green ligth for now, lisy35 is running
  lisy80_set_red_led(0);
  lisy80_set_yellow_led(0);
  lisy80_set_green_led(1);
 
+ //init own sounds if requested
+ if ( lisy35_has_own_sounds )
+ {
+  //first try to read sound opts, as we NEED them
+  if ( lisy35_file_get_soundopts() < 0 )
+   {
+     fprintf(stderr,"no sound opts file; sound init failed, sound emulation disabled\n");
+     lisy35_has_own_sounds = 0;
+   }
+  else
+   {
+     fprintf(stderr,"info: sound opt file read OK\n");
+
+     if ( ls80dbg.bitv.sound) {
+     int i;
+     for(i=1; i<=255; i++)
+     {
+       if ( lisy35_sound_stru[i].soundnumber != 0 )
+       fprintf(stderr,"Sound[%d]: %s %s %d \n",i,lisy35_sound_stru[i].path,
+                        lisy35_sound_stru[i].name,
+                        lisy35_sound_stru[i].option);
+     }
+    }
+   }
+ }
+
+ if ( lisy35_has_own_sounds )
+ {
+  //now open soundcard, and init soundstream
+  if ( lisy35_sound_stream_init() < 0 )
+   {
+     fprintf(stderr,"sound init failed, sound emulation disabled\n");
+     lisy35_has_own_sounds = 0;
+   }
+ else
+   fprintf(stderr,"info: sound init done\n");
+ }
+
+ //collect latest informations and start the lisy logger
+ lisy_env.has_soundcard = lisy35_has_soundcard;
+ lisy_env.has_own_sounds = lisy35_has_own_sounds;
+ lisy_logger();
+
 }
+
+
 
 //read the csv file on /lisy partition and the DIP switch setting
 //give back gamename accordently and line number
@@ -103,6 +182,15 @@ int lisy35_get_gamename(char *gamename)
     sprintf(debugbuf,"Info: LISY35 Throttle value is %d for this game",g_lisy35_throttle_val);
     lisy80_debug(debugbuf);
     }
+
+  //other infos are stored in global var
+  //store what we know already
+  strcpy(lisy_env.variant,"LISY35");
+  lisy_env.selection = ret;
+  strcpy(lisy_env.gamename,lisy35_game.gamename);
+  strcpy(lisy_env.long_name,lisy35_game.long_name);
+  lisy_env.throttle = lisy35_game.throttle;
+  lisy_env.clockscale = 0; //not used
 
   return ret;
 }
@@ -366,11 +454,12 @@ void lisy35_lamp_handler( int blanking, int board, int input, int inhibit)
                                    0,0,0,0,0,0,0,0,0,0,
                                    0,0,0,0,0,0,0,0,0,0,
                                    0,0,0,0,0,0,0,0,0,0 };
-// four possible variants for Aux Board 2
+// five possible variants for Aux Board 2
 // NO_AUX_BOARD 0  // no aux board
 // AS_2518_43_12_LAMPS 1  // AS-2518-43 12 lamps
 // AS_2518_52_28_LAMPS 2  // AS-2518-52 28 lamps
 // AS_2518_23_60_LAMPS 3  // AS-2518-23 60 lamps
+//  AS_2518_147_LAMP_COMBO 4 //Lamp Solenoid Combo Goldball and Grandslam
  static unsigned char lamp2[60] = { 0,0,0,0,0,0,0,0,0,0,
                                    0,0,0,0,0,0,0,0,0,0,
                                    0,0,0,0,0,0,0,0,0,0,
@@ -389,16 +478,27 @@ void lisy35_lamp_handler( int blanking, int board, int input, int inhibit)
 
  if ( blanking == 0 ) //we set internal the matrix
  {
-  if ( board == 0 )  //main board always a AS-2518-23 60 lamps
+  if ( board == 0 )  //main board is a AS-2518-23 60 lamps or a AS-2518-147 Lamp Solenoid Combo Goldball and Grandslam
   {
-   //is it U1 ?
-   if ( inhibit & 0x01 ) { index = input; lamp[index] = 1; }
-   //is it U2 ?
-   if ( inhibit & 0x02 ) { index = input + 15; lamp[index] = 1; }
-   //is it U3 ?
-   if ( inhibit & 0x04 ) { index = input + 30; lamp[index] = 1; }
-   //is it U4 ?
-   if ( inhibit & 0x08 ) { index = input + 45; lamp[index] = 1; }
+   if ( lisy35_game.aux_lamp_variant == AS_2518_147_LAMP_COMBO)
+	{
+	 //we use 'upper half' of main board, as Combo Board uses 30 lamps with PB2 & PB3 decoded
+	//is it U3 ?
+        if ( inhibit & 0x04 ) { index = input + 30; lamp[index] = 1; }
+        //is it U4 ?
+        if ( inhibit & 0x08 ) { index = input + 45; lamp[index] = 1; }
+	}
+   else
+   	{
+   	//is it U1 ?
+   	if ( inhibit & 0x01 ) { index = input; lamp[index] = 1; }
+   	//is it U2 ?
+   	if ( inhibit & 0x02 ) { index = input + 15; lamp[index] = 1; }
+   	//is it U3 ?
+   	if ( inhibit & 0x04 ) { index = input + 30; lamp[index] = 1; }
+   	//is it U4 ?
+   	if ( inhibit & 0x08 ) { index = input + 45; lamp[index] = 1; }
+	}
   } //this was board 0, main board with 60 lamps
   else if ( board == 1)
   {
@@ -406,9 +506,29 @@ void lisy35_lamp_handler( int blanking, int board, int input, int inhibit)
     {
 	case NO_AUX_BOARD:
         //sanity check
+        if ( ls80dbg.bitv.basic )
+        {
 	   sprintf(debugbuf,"input:%d out of range lamphandler board 1 but no AUX board",input);
 	   lisy80_debug(debugbuf);
+        }
+	   //signal that error
+           lisy80_set_red_led(1);
 	   break;
+
+        case AS_2518_147_LAMP_COMBO:
+        //sanity check
+        if ( ls80dbg.bitv.basic )
+        {
+           //is it U3 ?
+           if ( inhibit & 0x04 ) { index = input + 30; }
+           //is it U4 ?
+           if ( inhibit & 0x08 ) { index = input + 45; }
+
+           sprintf(debugbuf,"index:%d lamphandler board 1: AS_2518_147_LAMP_COMBO, ignored",index);
+           lisy80_debug(debugbuf);
+        }
+           break;
+
 	case AS_2518_43_12_LAMPS:
            //check index
 	   if (input >= 3) break; //index == 3 for this board is rest postion
@@ -447,8 +567,13 @@ void lisy35_lamp_handler( int blanking, int board, int input, int inhibit)
    	   if ( inhibit & 0x08 ) { index = input + 45; lamp2[index] = 1; }
 	    break;
 	default:
+        if ( ls80dbg.bitv.basic )
+        {
            sprintf(debugbuf,"unknow type of Aux board:%d",lisy35_game.aux_lamp_variant);
            lisy80_debug(debugbuf);
+        }
+	   //signal that error
+           lisy80_set_red_led(1);
 	   break;
     }
   } // second board
@@ -535,6 +660,9 @@ if (first)
   //now we have core data so let us set internal soundboard type
   lisy35_set_soundboard_variant();
  }
+
+ //if hw_check is not finished run with full speed, will reduce booting time
+ if ( !lisy35_bally_hw_check_finished ) return;
 
  //do some usefull stuff
  //do we need to write to nvram?
@@ -649,6 +777,18 @@ void lisy35_set_variant(void)
           lisy35_coil_set_direction_J1PIN8(LISY35_PIC_PIN_OUTPUT);
 	  lisy35_J4PIN5_is_strobe = 1;
 	  break;
+	case 8: //Dolly Parton, Harlem, Paragon ; default with sound raw mode
+    	  fprintf(stderr,"Info: default with Sound RAW for %s\n",lisy35_game.long_name);
+	  //switch matrix default
+	  //display default
+	  //all outputs from coil pic to activate
+          lisy35_coil_set_direction_J4PIN5(LISY35_PIC_PIN_OUTPUT);
+          lisy35_coil_set_direction_J4PIN8(LISY35_PIC_PIN_OUTPUT);
+          lisy35_coil_set_direction_J1PIN8(LISY35_PIC_PIN_OUTPUT);
+	  //sound in raw mode because of timing
+          lisy35_coil_set_sound_raw(1);
+	  lisy35_sound_raw = 1;
+	  break;
 	default:
     	  fprintf(stderr,"Info: NO special config for %s\n set to default",lisy35_game.long_name);
 	  //switch matrix default
@@ -684,6 +824,16 @@ void lisy35_set_variant(void)
    if (core_gameData->hw.soundBoard == 0) lisy35_game.soundboard_variant = LISY35_SB_CHIMES; //no soundboard
    else if ((core_gameData->hw.gameSpecific1 & 0x01) == 0) lisy35_game.soundboard_variant = LISY35_SB_STANDARD;
    else lisy35_game.soundboard_variant = LISY35_SB_EXTENDED;
+
+   //if it is an extended soundboard, set the subtype as timing is different for 2581-51 and S&T
+   if ( lisy35_game.soundboard_variant == LISY35_SB_EXTENDED)
+   {
+    if (core_gameData->hw.soundBoard == SNDBRD_BY51) lisy35_coil_set_extended_SB_type(0);
+    //else if (core_gameData->hw.soundBoard == SNDBRD_BY56) lisy35_coil_set_extended_SB_type(0); //Xenon
+	else lisy35_coil_set_extended_SB_type(1);
+   }
+
+   //debug?
    if ( ls80dbg.bitv.basic )
    {
     switch(lisy35_game.soundboard_variant)
@@ -692,10 +842,17 @@ void lisy35_set_variant(void)
      sprintf(debugbuf,"Info: LISY35 will use soundboard variant 0 (Chimes)");
      break;
     case LISY35_SB_STANDARD:
-     sprintf(debugbuf,"Info: LISY35 will use soundboard variant 1 (standard SB)");
+     if(lisy35_sound_raw)
+        sprintf(debugbuf,"Info: LISY35 will use soundboard variant 1 (standard SB in RAW Mode)");
+     else
+        sprintf(debugbuf,"Info: LISY35 will use soundboard variant 1 (standard SB)");
      break;
     case LISY35_SB_EXTENDED:
-     sprintf(debugbuf,"Info: LISY35 will use soundboard variant 2 (EXTENDED SB)");
+      //if ((core_gameData->hw.soundBoard == SNDBRD_BY51) | (core_gameData->hw.soundBoard == SNDBRD_BY56))
+      if ((core_gameData->hw.soundBoard == SNDBRD_BY51) )
+         sprintf(debugbuf,"Info: LISY35 will use soundboard variant 2 (EXTENDED SB Type 2581-51)");
+      else
+         sprintf(debugbuf,"Info: LISY35 will use soundboard variant 2 (EXTENDED SB Type S&T)");
      break;
     }
     lisy80_debug(debugbuf);
@@ -746,6 +903,7 @@ int lisy35_nvram_handler_old(int read_or_write, UINT8 *by35_CMOS_Bally)
  static eeprom_block_t nvram_block;
  static eeprom_block_t lisy35_block;
  static UINT8 *by35_CMOS;
+ unsigned char sw_main,sw_sub,commit;
  int i,ret;
 
  //check content at first time
@@ -789,15 +947,19 @@ int lisy35_nvram_handler_old(int read_or_write, UINT8 *by35_CMOS_Bally)
     lisy35_block.content.gamenr = lisy35_game.gamenr;
    }
 
+  //get sw version
+   lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+
    //now update statistics
    lisy35_block.content.starts++;
    if(ls80dbg.bitv.basic) lisy35_block.content.debugs++;
    if(lisy35_game.gamenr > 63) 
-       lisy35_block.content.counts[63]++; //RTH Limitation from LISY80
+       { lisy35_block.content.counts[63]++; } //RTH Limitation from LISY80
    else
-       lisy35_block.content.counts[lisy35_game.gamenr]++;
-   lisy35_block.content.Software_Main = LISY_SOFTWARE_MAIN;
-   lisy35_block.content.Software_Sub = LISY_SOFTWARE_SUB;
+       { lisy35_block.content.counts[lisy35_game.gamenr]++; }
+
+       lisy35_block.content.Software_Main = sw_main;
+       lisy35_block.content.Software_Sub = sw_sub;
    ret = lisy_eeprom_256byte_write( lisy35_block.byte, 1);
    if ( ls80dbg.bitv.basic )
    {
@@ -835,8 +997,8 @@ int lisy35_nvram_handler_old(int read_or_write, UINT8 *by35_CMOS_Bally)
 }
 
 //solenoid handler
-//called from by35.c only if solenoids are selected
-void lisy35_solenoid_handler(unsigned char data)
+//called from by35.c
+void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
 {
 
  static unsigned char  old_moment_data = 0x0f;  //from init 15 is rest (all OFF)
@@ -857,17 +1019,19 @@ void lisy35_solenoid_handler(unsigned char data)
 
   //handle continous solenois
   //new cont data?
-  if ( old_cont_data != cont_data )
+  if (( old_cont_data != cont_data ) & ( lisy35_bally_hw_check_finished ==1))
   {
     //check for flipper disable
     if( CHECK_BIT( cont_data, 2) && !CHECK_BIT( old_cont_data, 2))
     {
         //lisy35_nvram_handler( 1, NULL);
-        want_to_write_nvram = 1;
+        //want_to_write_nvram = 1; RTH test no delayd write
+	lisy_nvram_write_to_file();
         //debug
         if ( ls80dbg.bitv.basic )
         {
-         lisy80_debug("flipper disabled we do ASK for a nvram write");
+         //lisy80_debug("flipper disabled we do ASK for a nvram write");
+         lisy80_debug("flipper disabled we do a nvram write");
         }
     }
 
@@ -898,6 +1062,9 @@ void lisy35_solenoid_handler(unsigned char data)
     lisy35_cont_coil_set(cont_data);
    }//if new cont data available
 
+ //we look at momentary data only if Solenoids are selected
+ if(!soundselect)
+ {
    //new momentary data?
    if ( ( old_moment_data != moment_data ) )
    {
@@ -911,6 +1078,7 @@ void lisy35_solenoid_handler(unsigned char data)
        lisy80_debug(debugbuf);
      }
    }//if new momentary data available
+  }//solenoids selected
 }//solenoid_handler
 
 
@@ -946,20 +1114,20 @@ unsigned char sound_E;
           //we only send this if it changed from last value
  	  if ( last_sound_select != sound_select )
 	  {
-           lisy35_coil_set_sound_select(sound_select);
+	   //set in sound_raw mode only
+           if (lisy35_sound_raw) lisy35_coil_set_sound_select(sound_select);
            //was there a move from 0->1 for sound select status?
-           if (( last_sound_select == 0) & ( sound_select == 1)) sound_int_occured = 1;
+           if (( last_sound_select == 0) & ( sound_select == 1)) 
+             { 
+              sound_int_occured = 1;
+              if ((ls80dbg.bitv.sound) | (ls80dbg.bitv.coils)) lisy80_debug("sound interrupt occured");
+  	     }
   	   last_sound_select = sound_select;
-           //debug?
-           if ((ls80dbg.bitv.sound) | (ls80dbg.bitv.coils))
-           {
-            sprintf(debugbuf,"switch solenoid/sound select line to:%s", (sound_select) ? "1: Sound activ" : "0: Solenoids activ");
-            lisy80_debug(debugbuf);
-           }
 	  }//sound_select
+
           //send sound_E
-          //we only send this if it changed from last value
- 	  if ( last_sound_E != sound_E )
+          //we only send this if it changed from last value and HW check is over
+ 	  if ( ( last_sound_E != sound_E ) & ( lisy35_bally_hw_check_finished ==1) )
  	  {
   	  lisy35_display_set_soundE(sound_E);
   	  last_sound_E = sound_E;
@@ -991,18 +1159,43 @@ unsigned char sound_E;
    //what soundboardvariant do we have
    if ( lisy35_game.soundboard_variant != LISY35_SB_EXTENDED)
    {
-    //raw mode, just send it
-    lisy35_mom_coil_set(data);
-    //debug?
-    if ( ls80dbg.bitv.sound )
+    //do we have raw or cooked mode
+    if (lisy35_sound_raw)
     {
-      sprintf(debugbuf,"sound data(standard sb): 0x%02x)",16*last_sound_E + data);
-      lisy80_debug(debugbuf);
-    }
-    sound_int_occured = 0;
+     //send sound to PIC
+     lisy35_sound_std_sb_set(data);
+     //debug?
+     if ( ls80dbg.bitv.sound )
+      {
+       sprintf(debugbuf,"sound data(standard sb RAW mode): 0x%02x)",16*last_sound_E + data);
+       lisy80_debug(debugbuf);
+      }
+     count++; //count the bytes
+     if ( count == 2) //second byte, reset int condition
+     {
+     count = 0;
+     sound_int_occured = 0;
+     }
+    }//raw mode
+    else
+     {
+     //send sound to PIC, which will handle timing in cooked mode
+     lisy35_sound_std_sb_set(data);
+     // reset int condition
+     sound_int_occured = 0;
+     //JustBoom Sound? we may want to play wav files here
+     if ( lisy35_has_own_sounds ) lisy35_play_wav(16*last_sound_E + data);
+     //debug?
+     if ( ls80dbg.bitv.sound )
+      {
+       sprintf(debugbuf,"sound data(standard sb): 0x%02x)",16*last_sound_E + data);
+       lisy80_debug(debugbuf);
+      }
+     }//cooked mode
    }//standard SB or chimes
    else
    {
+   //extended soundboard, we do expect two nibble
    if ( count == 0) //first nibble, store it
    {
     first_nybble = data;
@@ -1013,9 +1206,14 @@ unsigned char sound_E;
     //we got second nybble, send with first nybble both to PIC
     lisy35_sound_ext_sb_set(first_nybble); //LSB
     lisy35_sound_ext_sb_set(data); //MSB
-
+     //JustBoom Sound? we may want to play wav files here
+     if ( lisy35_has_own_sounds ) lisy35_play_wav(16*data + first_nybble);
+    //debug?
+    if ( ls80dbg.bitv.sound )
+    {
     sprintf(debugbuf,"sound data(extended sb): 0x%x%x",data,first_nybble);
     lisy80_debug(debugbuf);
+    }
     count = 0;
     sound_int_occured = 0;
    }

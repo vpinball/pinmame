@@ -13,6 +13,8 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
+Updated LISY support to 5.26-20 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+
 Added VGM file output support for AY8910, OKI6295, OKI6376, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips
  Either use -vgmwrite on the commmand line (PinMAME)
  or select it in the game options (this requires a restart though, as VGM output requires to track everything)
@@ -115,6 +117,7 @@ Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)
 Moon Light (Free Play)
 Mundial 90 (Free Play)
 Nine Ball (Ball handling MOD beta18)
+Nitro Groundshaker (7-digit conversion with siren patch)
 Oba-Oba (old hardware)
 Pool Sharks LA-7C (competition MOD) (updated)
 Raid, The (alternate set)

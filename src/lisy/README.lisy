@@ -21,20 +21,20 @@ MAIN SCRIPT  "/usr/local/bin/run_lisy (summary only, for details see comments in
  -> /usr/local/bin/run_lisy_hwcheck -> /usr/local/bin/blink_led
 
 
-Implementation into pinmame
-Files where LISY code is inserted
-makefile.unix -> compile switches, moved to makefile.lisy
-src/mame.c -> lisy_init() & lisy80_error()
-src/usrintrf.c -> check for 'time_to_quit' 
-src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
-src/unix/unix.mak -> link in LISY_OBJ & lisy.mak & SDL,SDL2,wiringpi library
-src/unix/video.c -> fake video, no videooutput with lisy
-src/unix/video-drivers/vid_lisy.c -> part of fake lisy video
-src/unix/sysdep/dsp-drivers/alsa.c -> new alsa code for lisy
-src/wpc/gts80.c -> system80 implementation
-src/wpc/gts1.c -> system1 implementation
-src/wpc/by35.c -> Bally
-src/wpc/s7.c -> Williams
+Implementation into pinmame; Files where LISY code is inserted:
+	makefile.unix -> compile switches, moved to makefile.lisy
+	src/unix/main.c -> lisy_set_gamename( ..) & lisy_version
+	src/mame.c -> lisy_init() & lisy80_error()
+	src/usrintrf.c -> check for 'time_to_quit' 
+	src/unix/unix.mak -> link in LISY_OBJ & lisy.mak & SDL,SDL2,wiringpi and i2c library
+	src/unix/video.c -> fake video, no videooutput with lisy
+	src/unix/video-drivers/vid_lisy.c -> part of fake lisy video
+	src/unix/sysdep/dsp-drivers/alsa.c -> new alsa code for lisy
+	src/wpc/gts80.c -> system80 implementation
+	src/wpc/gts1.c -> system1 implementation
+	src/wpc/by35.c -> Bally
+	src/wpc/s7.c -> Williams
+	src/wpc/sndbrd.c -> sound in general (used for williams only at the moment)
 
 All the sources are under /home/pi/lisy; look for "#define LISY_SUPPORT" in the pinmame source
 Start is in main.c in ./src/unix , we check for "special game names" in the calling command (last argument)
@@ -44,27 +44,38 @@ Special gamen names are:
 - lisy35 -> lisy_variant: 3 - Bally
 - lisy80 -> lisy_variant: 1 - Gottlieb System80 & LISY Home Games based on System80
 - lisy_w -> lisy_variant: 4 - Williams System 3 to System11 via special board, mini LISY only
-Once a lisy variant is identified, lisy_hw_init() from ./src/lisy/lisy.c is called
 
-lisy_hw_init()
-- load the wiringPI library
-- get debug options via "lisy80_dip1_debug_option" ( S1 dip switch 7)
- - calls lisy_hwlib_init for variant 1-3 -> init all the PICs, see details below
- - calls minilisy_hwlib_init for variant 4 -> RTH in test mode
-- calls lisy80_get_dips -> this will read the dip switches via Raspberry GPIO and adding missing  values for K1 and S1
+START:
+lisy_set_gamename is called from main.c
+according to the arguments from lisy (pinamme) the right  hw init routine is called
 
+lisy_hw_init('lisy variant')
+valid variants:
+- lisy1 -> lisy_variant: 2 - Gottlieb System1
+- lisy35 -> lisy_variant: 3 - Bally
+- lisy80 -> lisy_variant: 1 - Gottlieb System80 & LISY Home Games based on System80
+- lisy_m -> lisy_variant: 4 - LISY Mini e.g. Williams System 3 to System11 via APC
+- lisy_apc -> lisy_variant: 5 - LISY APC based on LISY Mini
+the hardware init routine does:
+	- load the wiringPI library
+	- get debug options via "lisy80_dip1_debug_option" ( S1 dip switch 7)
+	- calls lisy_hwlib_init for variant 1-3 -> init all the PICs, see details below
+	- calls minilisy_hwlib_init for variant 4 -> RTH in test mode
+	- calls lisy80_get_dips -> this will read the dip switches via Raspberry GPIO and adding missing  values for K1 and S1
 lisy_hwlib_init()
-- init Display PIC: read Software Version; set lisy_hardware_revision and show on Display
-- init Coil PIC: read Software Version; get Value of 'K3'
-- init Switch PIC;  read Software Version;
-- do read the eeprom (either from 24c04/old version or eeprom from Display & Solenoid PIC)
-- set GPIO for 'trafic light' LEDs
+	- init Display PIC: read Software Version; set lisy_hardware_revision and show on Display
+	- init Coil PIC: read Software Version; get Value of 'K3'
+	- init Switch PIC;  read Software Version;
+	- do read the eeprom (either from 24c04/old version or eeprom from Display & Solenoid PIC)
+	- set GPIO for 'trafic light' LEDs
 minilisy_hwlib_init()
-- RTH: fix settings at the moment 
-- plan is to call diffent systems from here: system:121 is williams
+	- RTH: fix settings at the moment 
+	- plan is to call diffent systems from here: system:121 is williams
 
-main.c calls 'run_game' in mame.c
-we call 'lisy_init' from here. according to lisy_hardware_revision initialion of LISY isoftware part is done
+At this point all the LISY hardware init is done, we now do start the Software init according to the variant
+main.c calls 'run_game' ( init_machine)  in mame.c
+we call 'lisy_init' from here. 
+According to lisy_hardware_revision initialion of LISY software part is done
 
 
-bontango April 2019
+bontango November 2019

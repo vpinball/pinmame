@@ -18,6 +18,7 @@
 #include "fadecandy.h"
 #include "lisy_home.h"
 #include "externals.h"
+#include "lisy.h"
 
 //global var
 union five {
@@ -175,77 +176,21 @@ void lisy80_coil_sound_set( int sound)
 
 }
 
-//sound set via PIC I2C com LISY35
-void lisy35_coil_sound_set( int sound, unsigned char is_extended)
-{
-
- unsigned char lsb,msb;
-
- if ( is_extended ) //we have an extended soundcard, PIC will handle it
- {
-
-   lsb = sound%16;
-   msb = sound/16;
-
-   lisy35_sound_ext_sb_set(lsb);
-   lisy35_sound_ext_sb_set(msb);
-
-   if ( ls80dbg.bitv.sound )
-   {
-        sprintf(debugbuf,"setting lower nybble sound to:%d (extended SB)" ,lsb );
-        lisy80_debug(debugbuf);
-        sprintf(debugbuf,"setting higher nybble sound to:%d (extended SB)" ,msb );
-        lisy80_debug(debugbuf);
-   }
- }
- else
- {
-  //do we need 'soundE' ?
-  if ( sound > 15)
-  {
-   lisy35_display_set_soundE(1);
-   sound = sound - 15;
-  }
-  else
-   lisy35_display_set_soundE(0);
-
-  if ( ls80dbg.bitv.sound )
-   {
-        sprintf(debugbuf,"setting sound to:%d (standard SB)" ,sound );
-        lisy80_debug(debugbuf);
-   }
-
-   //send sound data via PIC internal routine
-   lisy35_sound_std_sb_set(sound);
-
- }
-}
-
-
-//sound set via PIC I2C com LISY1
-void lisy1_coil_sound_set( int sound)
-{
-   //with SYstem 1 we have three coils for sound, meaning 7 possibilities for sound (3 bit)
-   //we may do it the same way as for system80 later
-        if ( sound & 0x01 ) lisy1_coil_set( Q_TENS, 1); else  lisy1_coil_set( Q_TENS, 0);
-        if ( sound & 0x02 ) lisy1_coil_set( Q_HUND, 1); else  lisy1_coil_set( Q_HUND, 0);
-        if ( sound & 0x04 ) lisy1_coil_set( Q_TOUS, 1); else  lisy1_coil_set( Q_TOUS, 0);
-
-if ( ls80dbg.bitv.sound )
-  {
-      if ( sound & 0x01 ) lisy80_debug("sound Q_TENS to 1"); else lisy80_debug("sound Q_TENS to 0");
-      if ( sound & 0x02 ) lisy80_debug("sound Q_HUND to 1"); else lisy80_debug("sound Q_HUND to 0");
-      if ( sound & 0x04 ) lisy80_debug("sound Q_TOUS to 1"); else lisy80_debug("sound Q_TOUS to 0");
-  }
-
-
-}
-
 //coil set via PIC I2C com
+//we do this or lisy1 & lisy80
+//for lisy_home we call lisy_home routine
+//because there may be a mapping
 void coil_coil_set( int coil, int action)
 {
 
-  //now do the setting
+   //eventhandler for LISY_HOME?
+   if ( lisy_hardware_ID == LISY_HW_ID_HOME)
+         {
+		lisy_home_event_handler( LISY_HOME_EVENT_COIL, coil, action, NULL);
+	 }
+   else
+     {
+        //now do the setting
 	--coil;	//we have only 6 bit, so we start at zero for coil 1
 
         // build control byte 
@@ -255,6 +200,7 @@ void coil_coil_set( int coil, int action)
 
         //write to PIC
         lisy80_write_byte_coil_pic(  mydata_coil.byte );
+     }
 
 }
 
@@ -361,7 +307,7 @@ for (i=1; i<=64; i++)
 
 
 /*
-lisy35_coil_set, for test routine only
+lisy35_coil_set, FOR TEST ROUTINE ONLY
 	coil -> nr of coil
 		1..15 momentary solenoids
 		16 ..19 continous solenoids
@@ -398,6 +344,11 @@ void lisy35_coil_set ( int coil, int action)
 				{
 				  if ( action == 1) lisy35_mom_coil_set(coil-1);
 				   else lisy35_mom_coil_set(15);
+    			     	if (  ls80dbg.bitv.coils )
+    				{
+     				 sprintf(debugbuf,"momentary solenoids: %d %s\n",coil-1, action ? "ON" : "OFF");
+     				 lisy80_debug(debugbuf);
+     				}
 				}	
 			break;
 		       case 16:
@@ -618,9 +569,6 @@ void lisy80_coil_set( int coil, int action)
         sprintf(debugbuf,"setting lamp:%d to:%d",coil,action);
         lisy80_debug(debugbuf);
      }
-   //eventhandler for LISY_HOME
-   if ( lisy_hardware_ID == LISY_HOME_HW_ID)
-		lisy_home_event_handler( LISY_HOME_EVENT_LAMP, coil, action, NULL);
 
    //do set fadecandy LED if active and lamp is mapped
    if ( lisy_has_fadecandy && lisy_lamp_to_led_map[coil-1].is_mapped )
@@ -636,8 +584,8 @@ void lisy80_coil_set( int coil, int action)
    else //no mapping, do normal lamp set
      coil_coil_set( coil, action);
 
-  //special action in case we have lamp 44-47 as the system80 does map this fix (reverse) to lamps 48-51
-  if ( ( coil >= 44 ) && ( coil <= 47 ) )
+  //special action in case we have lamp 45-48 as the system80 does map this fix (reverse) to lamps 49-52
+  if ( ( coil >= 45 ) && ( coil <= 48 ) )
    {
    if ( lisy_has_fadecandy && lisy_lamp_to_led_map[coil-1+4].is_mapped )
     {
@@ -768,23 +716,39 @@ void lisy1_coil_set( int coil, int action)
     //debug
     if (ls80dbg.bitv.coils)
      {
-        sprintf(debugbuf,"setting coil:%d to:%d (SOLENOID)",coil,action);
-        lisy80_debug(debugbuf);
+	switch(coil)
+    	{
+        	case Q_KNOCK: 
+        		if ( action ) lisy80_debug("Q_KNOCK on"); else lisy80_debug("Q_KNOCK OFF");
+               	       break;
+        	case Q_OUTH: 
+        		if ( action ) lisy80_debug("Q_OUTH on"); else lisy80_debug("Q_OUTH OFF");
+               	       break;
+        	case Q_SYS1_SOL6: 
+        		if ( action ) lisy80_debug("Q_SYS1_SOL6 on"); else lisy80_debug("Q_SYS1_SOL6 OFF");
+               	       break;
+        	case Q_SYS1_SOL7: 
+        		if ( action ) lisy80_debug("Q_SYS1_SOL7 on"); else lisy80_debug("Q_SYS1_SOL7 OFF");
+               	       break;
+        	case Q_SYS1_SOL8: 
+        		if ( action ) lisy80_debug("Q_SYS1_SOL8 on"); else lisy80_debug("Q_SYS1_SOL8 OFF");
+               	       break;
+        }
      }
 
     //add debug for sound, in case action == ON
-    if ( (ls80dbg.bitv.sound) && ( action == 0) )
+    if ( (ls80dbg.bitv.sound) )
      {
 	switch(coil)
     	{
         	case Q_TENS: 
-        		lisy80_debug("play sound for Q_TENS");
+        		if ( action ) lisy80_debug("play sound for Q_TENS"); else lisy80_debug("sound Q_TENS OFF");
                	       break;
         	case Q_HUND: 
-        		lisy80_debug("play sound for Q_HUND");
+        	        if ( action ) lisy80_debug("play sound for Q_HUND"); else lisy80_debug("sound Q_HUND OFF");
                	       break;
         	case Q_TOUS: 
-        		lisy80_debug("play sound for Q_TOUS");
+        		if ( action ) lisy80_debug("play sound for Q_TOUS"); else lisy80_debug("sound Q_TOUS OFF");
                	       break;
          }
      }
@@ -870,6 +834,48 @@ void lisy35_coil_set_sound_select( unsigned char value)
 
 }
 
+//control the standard sound raw/cooked
+void lisy35_coil_set_sound_raw( unsigned char value)
+{
+
+        // build control byte
+        mydata_coil.bitv3.LAMP = LISY35_COIL_SOUNDRAW;  //special lamp
+        mydata_coil.bitv3.IS_CMD = 0;        //this is a lamp setting
+        mydata_coil.bitv3.ACTION = value;
+
+        //write to PIC
+        lisy80_write_byte_coil_pic(  mydata_coil.byte );
+
+}
+
+//set the type of teh extended SB installed
+// 0 sets to 2581-51 (default)
+// 1 sets to S&T 
+void lisy35_coil_set_extended_SB_type( unsigned char type)
+{
+
+ if (ls80dbg.bitv.basic)
+     {
+       if (type)  lisy80_debug("Soundboard is a S&T");
+        else lisy80_debug("Soundboard is a 2581-51");
+     }
+
+  mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+  mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
+  if(type)
+     mydata_coil.bitv5.EXT_CMD = LISY35_EXT_CMD_SB_IS_SAT;
+  else
+     mydata_coil.bitv5.EXT_CMD = LISY35_EXT_CMD_SB_IS_51;
+
+  //write to PIC
+  lisy80_write_byte_coil_pic(  mydata_coil.byte );
+
+}
+
+
+
+
+
 //set the direction (input/output) of J4PIN5 of coil pic
 // 1 sets to input (default)
 // 0 sets to output 'use with caution'
@@ -947,6 +953,7 @@ void lisy35_coil_set_direction_J1PIN8( unsigned char direction)
 // AS_2518_43_12_LAMPS 1  // AS-2518-43 12 lamps
 // AS_2518_52_28_LAMPS 2  // AS-2518-52 28 lamps
 // AS_2518_23_60_LAMPS 3  // AS-2518-23 60 lamps
+// AS_2518_147_LAMP_COMBO 4 // Combination Solenoid / Lamp Driver Board
 void lisy35_coil_set_lampdriver_variant( unsigned char variant)
 {
 
@@ -967,6 +974,9 @@ void lisy35_coil_set_lampdriver_variant( unsigned char variant)
    case AS_2518_23_60_LAMPS:
        sprintf(debugbuf,"game has a AS-2518-23 60 lamps AUX Lampdriverboard");
        mydata_coil.bitv5.EXT_CMD = LISY35_EXT_CMD_AUX_BOARD_3;
+       break;
+   case AS_2518_147_LAMP_COMBO:
+       sprintf(debugbuf,"game has a AS-2518-147 30 lamps Lampdriverboard, settings to board 1 ignored");
        break;
   }
 
@@ -1008,3 +1018,28 @@ void lisy35_sound_ext_sb_set( unsigned char value )
         lisy80_write_byte_coil_pic( mydata_coil.byte );
 }
 
+//lisy home, select solenoidboard
+void lisyh_coil_select_solenoid_driver(void)
+{
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
+    mydata_coil.bitv5.EXT_CMD = LISYH_EXT_CMD_FIRST_SOLBOARD;
+
+    //write to PIC
+    lisy80_write_byte_coil_pic(  mydata_coil.byte );
+
+}
+
+//lisy home, select lampdriver
+void lisyh_coil_select_lamp_driver(void)
+{
+
+    mydata_coil.bitv5.IS_CMD = 1;        //we are sending a command here
+    mydata_coil.bitv5.COMMAND = LS80COILCMD_EXT_CMD_ID;
+    mydata_coil.bitv5.EXT_CMD = LISYH_EXT_CMD_LED_ROW_1;
+
+    //write to PIC
+    lisy80_write_byte_coil_pic(  mydata_coil.byte );
+
+}
