@@ -300,6 +300,11 @@ static WRITE_HANDLER(pia0ca2_w) {
 /* PIA1:B-W Solenoid/Sound output */
 static WRITE_HANDLER(pia1b_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
+#ifdef LISY_SUPPORT
+     //send to solenoid_handler already here with locals.cb21=Soundselect
+     //as sometimes continous solenoid data changes with Soundselect==0
+     lisy35_solenoid_handler( data , locals.cb21);
+#endif
   // check for extra display connected to solenoids
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
@@ -313,9 +318,6 @@ static WRITE_HANDLER(pia1b_w) {
   }
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21) {
-#ifdef LISY_SUPPORT
-    lisy35_solenoid_handler( data );
-#endif
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
   } else if (core_gameData->hw.gameSpecific1 & BY35GD_MARAUDER) {
     coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
