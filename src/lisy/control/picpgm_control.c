@@ -40,7 +40,7 @@ void do_flash( int sockfd, char *what)
  FILE *fstream;
  char *orgname, *source;
  char *line;
- char buffer[256];
+ char buffer[512];
  int ret_val,line_nu;
  //we trust ASCII values
  //the format here is 'F'
@@ -171,29 +171,37 @@ int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno;
      socklen_t clilen;
-     char buffer[256];
+     char buffer[512];
      char ip_interface[10];
      struct sockaddr_in serv_addr, cli_addr, *myip;
      int n;
      int do_exit = 0;
      struct ifreq ifa;
      char *line;
+     int tries = 0;
 
 
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
      if (sockfd < 0) 
         error("ERROR opening socket");
-     //try to find out our IP on Wlan0
-     strcpy (ifa.ifr_name, "wlan0");
-     strcpy (ip_interface, "WLAN0"); //upercase for message
-     if((n=ioctl(sockfd, SIOCGIFADDR, &ifa)) != 0) 
+
+     //try to find out our IP on eth0
+     strcpy (ifa.ifr_name, "eth0");
+     strcpy (ip_interface, "ETH0"); //upercase for message
+     if((n=ioctl(sockfd, SIOCGIFADDR, &ifa)) != 0)
       {
-	//no IP on WLAN0, we try eth0 now
-        strcpy (ifa.ifr_name, "eth0");
-        strcpy (ip_interface, "ETH0"); //upercase for message
-        if((n=ioctl(sockfd, SIOCGIFADDR, &ifa)) != 0) 
-           strcpy (ifa.ifr_name, "noip");
+        //no IP on eth0, we try wlan0 now, 20 times
+        strcpy (ifa.ifr_name, "wlan0");
+        strcpy (ip_interface, "WLAN0"); //upercase for message
+        do
+        {
+          sleep(1);
+          n=ioctl(sockfd, SIOCGIFADDR, &ifa);
+          tries++;
+        } while ( (n!=0) &( tries<20));
       }
+
+
 
      if(n) //no IP found
      {

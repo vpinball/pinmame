@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "hw_lib.h"
 #include "fadecandy.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 //we reserve 512 pixels which is the max value for one fadecandy

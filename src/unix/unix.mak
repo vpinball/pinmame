@@ -208,6 +208,7 @@ ifdef LISY_X
 MY_LIBS += -lSDL2
 MY_LIBS += -lSDL2_mixer
 MY_LIBS += -lwiringPi
+MY_LIBS += -li2c
 endif
 
 ifdef SEPARATE_LIBM

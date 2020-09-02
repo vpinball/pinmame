@@ -3,6 +3,23 @@
 
 //Version 3.x
 
+//lets collect information about the running hard & software in one place
+typedef struct
+{
+  char variant[20];  // string LISY variant 1,80,35,williams,mini,atari ...
+  int selection; //game selection, usally via S2
+  char gamename[10];  // game name mame fromat (8 chars)
+  char long_name[40];  // game name from csv
+  int throttle;  // throttle value
+  double clockscale;  // clockscale value
+  int disp_sw_ver; //Display PIC Software version
+  int coil_sw_ver; //Coil PIC Software version
+  int switch_sw_ver; //Coil PIC Software version
+  char gitversion[40];    //LISY Softwareversion git format
+  unsigned char has_soundcard; //do we have a soundcard?
+  unsigned char has_own_sounds;  //do we want to play pinmame sounds?
+} t_stru_lisy_env;
+
 //global struct for debug messaging or not, set in lisy80_init
 typedef union {
     unsigned char byte;
@@ -33,6 +50,7 @@ typedef union {
 void lisy80_hwlib_wiringPI_init(void);
 void lisy_hwlib_init( void );
 void lisymini_hwlib_init( void );
+void lisyapc_hwlib_init( void );
 void lisy80_hwlib_shutdown(void);
 
 int lisy80_write_byte_pic( int fd, unsigned char buf);
@@ -88,6 +106,7 @@ struct {
 #define I2C_DEVICE "/dev/i2c-1"
 #define DISP_PIC_ADDR 0x40              // Address of PIC for displays
 #define COIL_PIC_ADDR 0x41              // Address of PIC for coils
+#define APC_ADDR 0x44                   // Address of APC via I2C
 
 //Transistor assigment for the 9 Solenoids LISY80
 #define Q_SOL1 60
@@ -166,7 +185,8 @@ struct {
 #define LISY80_HW320_DATA_D3   13    // Data from Pic ( D3 & D7)
 //others changed in 320
 #define LISY80_HW320_LED_RED 14	//LED to signal errors
-#define LISY_MINI_LED_RED 6	//LED to signal errors LISY_Mini
+#define LISY_MINI_LED_RED 4	//LED to signal errors LISY_Mini
+#define LISY_MINI_LED_GREEN 6	//LED to signal that LISY is running
 
 //sound settings
 #define LISY80_A_PIN     7    //GPIO 4 (7)

@@ -25,7 +25,6 @@
 #include "sound.h"
 #include "lisy.h"
 #include "lisy_mame.h"
-#include "lisyversion.h"
 
 
 //global var for internal game_name structure,
@@ -34,6 +33,7 @@ t_stru_lisy1_games_csv lisy1_game;
 
 //global var for timing and speed
 int g_lisy1_throttle_val = 3000;
+double g_lisy1_clockscale_val = 1;
 
 //internal switch Matrix for system1, we need 7 elements
 //as pinmame internal starts with 1
@@ -67,6 +67,7 @@ void lisy1_init( void )
 {
  int i;
  char s_lisy_software_version[16];
+ unsigned char sw_main,sw_sub,commit;
 
 
  //do the init on vars
@@ -75,8 +76,10 @@ void lisy1_init( void )
  //set signal handler
  lisy80_set_sighandler();
 
+
  //show up on calling terminal
- sprintf(s_lisy_software_version,"%02d.%03d ",LISY_SOFTWARE_MAIN,LISY_SOFTWARE_SUB);
+ lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+ sprintf(s_lisy_software_version,"%d%02d %02d",sw_main,sw_sub,commit);
  fprintf(stderr,"This is LISY (Lisy1) by bontango, Version %s\n",s_lisy_software_version);
 
  //show the 'boot' message
@@ -104,7 +107,7 @@ void lisy1_init( void )
  {
   //set volume according to poti
   lisy_adjust_volume();
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s\" | /usr/bin/festival --tts",s_lisy_software_version);
+  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy1_game.long_name);
   system(debugbuf);
  }
 
@@ -144,7 +147,12 @@ void lisy1_init( void )
  else
    fprintf(stderr,"info: sound init done\n");
  }
-
+ 
+ //collect latest informations and start the lisy logger
+ lisy_env.has_soundcard = lisy1_has_soundcard;
+ lisy_env.has_own_sounds = lisy1_has_own_sounds;
+ lisy_logger();
+ 
 }
 
 //read the csv file on /lisy partition and the DIP switch setting
@@ -165,10 +173,17 @@ int lisy1_get_gamename(char *gamename)
 
   //store throttle value from gamelist to global var
   g_lisy1_throttle_val = lisy1_game.throttle;
-  //give this info on screen
-  fprintf(stderr,"LISY1: Throttle value is %d\n",g_lisy1_throttle_val);
-
+  //store clockscale value from gamelist to global var
+  g_lisy1_clockscale_val = lisy1_game.clockscale;
   //other infos are stored in global var
+
+  //store what we know already
+  strcpy(lisy_env.variant,"LISY1");
+  lisy_env.selection = ret;
+  strcpy(lisy_env.gamename,lisy1_game.gamename);
+  strcpy(lisy_env.long_name,lisy1_game.long_name);
+  lisy_env.throttle = lisy1_game.throttle;
+  lisy_env.clockscale = lisy1_game.clockscale;
 
   return ret;
 }
@@ -227,6 +242,18 @@ if ( value != myvalue[index] )
     has_changed = 1; //for possible debugging only
     //remember
     myvalue[index] = value;
+
+/* from gts1games.c
+static core_tLCDLayout sys1_disp[] = {
+  {0, 0,12,6,CORE_SEG9}, {0,16,18,6,CORE_SEG9},
+  {2, 0, 0,6,CORE_SEG9}, {2,16, 6,6,CORE_SEG9},
+  {4,16,40,2,CORE_SEG7}, {4, 8,32,2,CORE_SEG7},
+  {0}
+};
+core.h :
+struct core_dispLayout {
+  UINT16 top, left, start, length, type;
+*/
 
   switch(index) //we need to recalculate index each time as it has the reverse order for LISY1 compared with LISY80
    {
@@ -318,6 +345,17 @@ static int simulate_coin_flag = 0;
 //read values from pic
 //check if there is an update first
 ret = lisy1_switch_reader( &action );
+//if debug mode is set we get our reedings from udp switchreader in additon
+//but do not overwrite real switches
+if ( ( ls80dbg.bitv.basic ) & ( ret == 80))
+ {
+   if ( ( ret = lisy_udp_switch_reader( &action, 0 )) != 80)
+   {
+     sprintf(debugbuf,"LISY1_SWITCH_READER (UDP Server Data received: %d",ret);
+     lisy80_debug(debugbuf);
+   }
+ }
+
 
 //SLAM handling is reverse in lisy1, meaning 0 is CLOSED
 //we suppress processing of SLAM Switch actions with option slam active
@@ -325,7 +363,8 @@ if ( (ret == 76) && (ls80opt.bitv.slam == 1)) return(swMatrixLISY1[sys1strobe-1]
 
 
 //NOTE: system has has 8*5==40 switches in maximum, counting 00..04;10...14; ...
-//we use 'internal strobe 6' to handle special switches in the same way ( SLAM=06,OUTHOLE=16,RESET=26 )
+//we use 'internal strobe 6' to handle special switches in the same way 
+//SLAM bit7  OUTHOLE bit6 RESET bit5
 if (ret < 80) //ret is switchnumber
       {
 
@@ -368,7 +407,6 @@ if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
  if ( CHECK_BIT(swMatrixLISY1[3],0)) //is bit set?
  {
     //after 3 secs we simulate coin insert via Chute#1; internal timer 1
-    //def lisy_timer( unsigned int duration, int command, int index)
     if ( lisy_timer( 3000, 0, 1)) { simulate_coin_flag = 1;  lisy_timer( 0, 1, 1); }
  }
  else // bit is zero, reset timer index 0
@@ -443,39 +481,11 @@ switch(ioport)
    case 6: lisy1_coil_set( Q_SYS1_SOL7, !enable); break;
    case 7: lisy1_coil_set( Q_SYS1_SOL8, !enable); break;
  }
+ 
+ //possible debugging is done in lisy1_coil_set
+ //as we have look for min pules time there 
   
-if ( ls80dbg.bitv.coils )
-{
-switch(ioport)
- {
-   case 0: sprintf(debugbuf," 0-0-Outhole set to %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 1: sprintf(debugbuf," 0-1-Knocker set to %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 2: sprintf(debugbuf," 0-2-Tens Chime set to %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 3: sprintf(debugbuf," 0-3-Hundred Chime set to %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 4: sprintf(debugbuf," 0-4-Thousend Chime set to %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 5: sprintf(debugbuf," 0-5-Solenoid 6 %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 6: sprintf(debugbuf," 0-6-Solenoid 7 %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
-   case 7: sprintf(debugbuf," 0-7-Solenoid 8 %s",enable ? "OFF" : "ON");
-	   lisy80_debug(debugbuf);
-           break;
- }
-}
-  
-}
+} //lisy1_solenoid_handler
 
 //lamp handler for system1
 void lisy1_lamp_handler( int data, int isld)
@@ -517,16 +527,20 @@ void lisy1_lamp_handler( int data, int isld)
         lisy80_debug(debugbuf);
        }
 
-       //RTH: we may add nvram write later on here, like with system80
-
        //remember
        lisy1_lamp[i+offset] = new_lamp[i];
+       //and set the lamp/coil
+       if ( new_lamp[i] ) lisy1_coil_set(i+1+offset, 1); else  lisy1_coil_set(i+1+offset, 0);
+
+
        //check special cases RTH: will need to moved ot an event handler
        //Q1==Game Over; Q2==Tilt; Q3==HGTD; Q4==Shoot Again fix for all system1
        switch( i+1+offset) //This is the transistor number
         {
          case 1: if ( Q1_first_time ) { Q1_first_time = 0; break; }
                  if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(4);
+                 //do a nvram write each time the game over relay ( lamp[0]) is going to change (Game Over or Game start)
+	         lisy1_nvram_delayed_write = NVRAM_DELAY;
 	         break;
          case 2: if ( Q2_first_time ) { Q2_first_time = 0; break; }
                  if ( new_lamp[i] && lisy1_has_own_sounds ) lisy1_play_wav(5);
@@ -534,8 +548,6 @@ void lisy1_lamp_handler( int data, int isld)
         }
 
 
-       //and set the lamp/coil
-       if ( new_lamp[i] ) lisy1_coil_set(i+1+offset, 1); else  lisy1_coil_set(i+1+offset, 0);
     }
    }
 
@@ -557,6 +569,8 @@ void lisy1TickleWatchdog( void )
 	//lisy1_nvram_handler( 2, 0, 0);  
 	lisy_nvram_write_to_file();
 	lisy1_nvram_delayed_write = 0;
+        //debug
+        if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM delayed write done ");
        }
  }
  else // reset timer index 3
@@ -572,7 +586,7 @@ void lisy1TickleWatchdog( void )
 */
 void lisy1_throttle(void)
 {
-static int first = 1;
+static unsigned char  first = 1;
 unsigned int now;
 int sleeptime;
 static unsigned int last;
@@ -583,19 +597,68 @@ if (first)
   first = 0;
   //store start time first, which is number of microseconds since wiringPiSetup (wiringPI lib)
   last = micros();
- }
+  //print throttle value in debugmode
+  if ( ls80dbg.bitv.basic )
+   {
+   sprintf(debugbuf,"Throttle value is %d",g_lisy1_throttle_val);
+   lisy80_debug(debugbuf);
+   }
 
+ //do clockscaling if requested by file cfg
+ if ( g_lisy1_clockscale_val == 1)
+  {
+  //default value no setting
+  if ( ls80dbg.bitv.basic )
+   {
+   lisy80_debug("clock_scale default, no setting");
+   }
+ }
+ else
+ {
+  cpunum_set_clockscale(0, g_lisy1_clockscale_val);
+  if ( ls80dbg.bitv.basic )
+   {
+   sprintf(debugbuf,"setting clock_scale to %f",g_lisy1_clockscale_val);
+   lisy80_debug(debugbuf);
+   }
+ }
+ }//first
+
+ //g_lisy1_throttle_val
  // if we are faster than throttle value which is per default 3000 usec (3 msec)
  //we need to slow down a bit
+ //lets iterate the best value for cpu scaling from puinmame
 
- //see how many micros passed
- now = micros();
- //beware of 'wrap' which happens each 71 minutes
- if ( now < last) now = last; //we had a wrap
+ //do update the soundstream if enabled (pinmame internal sound only)
+ if (sound_stream && sound_enabled)
+ {
+  do{
+    //do update the soundstream if enabled (pinmame internal sound only)
+    sound_stream_update(sound_stream);
 
- //calculate difference and sleep a bit
- sleeptime = g_lisy1_throttle_val - ( now - last); 
- if (sleeptime > 0) delayMicroseconds ( sleeptime );
+   //see how many micros passed
+   now = micros();
+   //beware of 'wrap' which happens each 71 minutes
+   if ( now < last) now = last; //we had a wrap
+
+   //calculate if we are above minimum sleep time
+   sleeptime = g_lisy1_throttle_val - ( now - last);
+  } while ( sleeptime > 0);
+ }
+ else
+ //if no sound enabled use sleep routine
+  {
+   //see how many micros passed
+    now = micros();
+    //beware of 'wrap' which happens each 71 minutes
+    if ( now < last) now = last; //we had a wrap
+
+    //calculate if we are above minimum sleep time
+    sleeptime = g_lisy1_throttle_val - ( now - last);
+    if ( sleeptime > 0)
+          delayMicroseconds( sleeptime );
+  }
+
 
  //store current time for next round with speed limitc
  last = micros();
@@ -655,7 +718,7 @@ void lisy1_shutdown(void)
 //read_or_write = 0 means read
 // 1 means buffered write
 // 2 means write to eeprom (usually delayed)
-unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsigned char accu)
+unsigned char lisy1_nvram_handler_old(int read_or_write, unsigned char ramAddr, unsigned char accu)
 {
   //printf("lisy1_nvram_handler %s accu:%d ramAddr:%d\n",read_or_write ? "WRITE" : "READ",accu,ramAddr);
 
@@ -663,6 +726,7 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
  static eeprom_block_t nvram_block;
  static eeprom_block_t lisy1_block;
  int i,ret;
+ unsigned char sw_main,sw_sub,commit;
 
  //check content at first time
  if (first_time)
@@ -700,12 +764,16 @@ unsigned char lisy1_nvram_handler(int read_or_write, unsigned char ramAddr, unsi
     lisy1_block.content.gamenr = lisy1_game.gamenr;
    }
 
+
+   //get sw version
+   lisy_get_sw_version( &sw_main, &sw_sub, &commit);
+
    //now update statistics
    lisy1_block.content.starts++;
    if(ls80dbg.bitv.basic) lisy1_block.content.debugs++;
    lisy1_block.content.counts[lisy1_game.gamenr]++;
-   lisy1_block.content.Software_Main = LISY_SOFTWARE_MAIN;
-   lisy1_block.content.Software_Sub = LISY_SOFTWARE_SUB;
+   lisy1_block.content.Software_Main = sw_main;
+   lisy1_block.content.Software_Sub = sw_sub;
    ret = lisy_eeprom_256byte_write( lisy1_block.byte, 1);
    if ( ls80dbg.bitv.basic )
    {

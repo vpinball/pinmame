@@ -24,6 +24,7 @@ LISYOBJS = \
  $(OBJ)/lisy/opc.o \
  $(OBJ)/lisy/fadecandy.o \
  $(OBJ)/lisy/usbserial.o \
+ $(OBJ)/lisy/lisy_api_com.o \
  $(OBJ)/lisy/lisy_mame.o \
  $(OBJ)/lisy/lisy_home.o
 

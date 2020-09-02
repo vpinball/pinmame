@@ -18,6 +18,7 @@ added pic eeprom routines bontango January 2018
 #include <string.h>
 #include <time.h>
 #include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 #include <wiringPi.h>
 #include "utils.h"
 #include "eeprom.h"
@@ -26,6 +27,7 @@ added pic eeprom routines bontango January 2018
 #include "displays.h"
 #include "coils.h"
 #include "fadecandy.h"
+#include "lisy_home.h"
 #include "externals.h"
 
 #define MAX_EEPROM_WRITE_RETRIES 30

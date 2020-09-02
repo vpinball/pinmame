@@ -10,11 +10,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <time.h>
 #include <wiringPi.h>
 //this is for I2C over open&fcntl
 #include <linux/i2c-dev.h>
+#include <linux/i2c.h>
+#include <i2c/smbus.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -30,12 +33,18 @@
 #include "hw_lib.h"
 #include "fadecandy.h"
 #include "usbserial.h"
+#include "lisy_api_com.h"
+#include "lisy_home.h"
 #include "externals.h"
+#include "lisy.h"
 
+
+#define SW_PIC_INIT_DEL_IN_MS 50
 
 //global vars for I2C
 int fd_disp_pic;	//file descriptor for display pic
 int fd_coil_pic;	//file descriptor for coil pic
+//fd_apc via externals.h from lisy_w.c
 
 //local vars for handling values for K1(debug) and part of S1, usually from switch pic
 unsigned char K1_debug_values = 0;
@@ -64,6 +73,8 @@ int lisy_get_hardware_revision(int disp_sw_ver, int *hw_ID)
  * new: eeprom of display & coil pic used, no separate eeprom anymore
  * hardware revision is stored in display pic now
  * 1 .. 40 LISY80
+ *    21 LISY_HOME
+ *    31 LISY80_LED
  * 41 .. 80 LISY1
  * 81 .. 120 LISY35
  * with that, siftware version of PIC has to be is >= 4
@@ -78,6 +89,9 @@ int lisy_get_hardware_revision(int disp_sw_ver, int *hw_ID)
  //we want main version only
  disp_sw_ver =  disp_sw_ver/100;
 
+ //init hw_ID
+ *hw_ID = LISY_HW_ID_NONE;
+ 
  if (disp_sw_ver >= 4)
  {
 
@@ -161,54 +175,112 @@ int lisy_get_hardware_revision(int disp_sw_ver, int *hw_ID)
 void lisymini_hwlib_init( void )
 {
 
+ //set GPIOs for the traffic ligth
+ pinMode ( LISY_MINI_LED_RED, OUTPUT);
+ pinMode ( LISY80_LED_YELLOW, OUTPUT);
+ pinMode ( LISY_MINI_LED_GREEN, OUTPUT);
+
  //lets do debug
  if (ls80dbg.bitv.basic) lisy80_debug("LISY_Mini Hardware init start");
 
  //fix for LISYmini at the moment
  lisy_hardware_revision = LISY_HW_LISY_W;
 
- //show what version this pic is using
- //TBD
-
- //get value of k3 dip; hardware 320 and later  only
+ //get value of k3 dip;
  //3 == no options active
  lisy_K3_value = lisymini_get_dip("K3");
-  //debug
-  if (ls80dbg.bitv.basic)
-  {
-   sprintf(debugbuf,"Minilisy returns for K3 %d",lisy_K3_value);
-   lisy80_debug(debugbuf);
-  }
 
-//now get debug options and 'some' S1 DIPs
-dip_missing_values = lisymini_get_dip("S1");
-//and options for debugging
-K1_debug_values = lisymini_get_dip("K1");
+ //now get debug options
+ K1_debug_values = lisymini_get_dip("K1");
 
  //init usb serial
- if ( lisy_usb_init() >= 0) 
+ fd_api = lisy_usb_init();
+ if ( fd_api >= 0) 
   fprintf(stderr,"Info: usb serial successfull initiated\n");
  else
  {
   fprintf(stderr,"ERROR: cannot open usb serial communication\n");
+ lisy80_set_red_led(1);
+ lisy80_set_yellow_led(0);
+ lisy80_set_green_led(0);
   exit(1);
  }
 
-/*
- //set GPIOs for the traffic ligth
- pinMode ( LISY_MINI_LED_RED, OUTPUT);
- pinMode ( LISY80_LED_YELLOW, OUTPUT);
- pinMode ( LISY80_LED_GREEN, OUTPUT);
+ //do some debug output if requested
+ //number of displays
+ if (ls80dbg.bitv.basic) lisy_api_print_hw_info();
+
+
  //set all the leds controlled by the PI
  lisy80_set_red_led(0);
- lisy80_set_yellow_led(1);
- lisy80_set_green_led(0);
- lisy80_set_dp_led(1);
-
+ lisy80_set_yellow_led(0);
+ lisy80_set_green_led(1);
 
  //init internal FIFO
  LISY80_BufferInit();
-*/ 
+}
+
+
+//Hardware INIT LISY mini (e.g Williams)
+void lisyapc_hwlib_init( void )
+{
+
+ char hw_id_str[80];
+ int ret;
+
+ //set GPIOs for the traffic ligth
+ pinMode ( LISY_MINI_LED_RED, OUTPUT);
+ pinMode ( LISY80_LED_YELLOW, OUTPUT);
+ pinMode ( LISY_MINI_LED_GREEN, OUTPUT);
+
+ //lets do debug
+ if (ls80dbg.bitv.basic) lisy80_debug("LISY APC Hardware init start");
+
+ //fix for LISYmini at the moment
+ lisy_hardware_revision = LISY_HW_LISY_W;
+
+ //get value of k3 dip;
+ //3 == no options active
+ //lisy_K3_value = lisymini_get_dip("K3");
+ lisy_K3_value = 3;
+
+ //now get debug options
+ K1_debug_values = lisymini_get_dip("K1");
+
+ //******************
+ //init I2C serial to APC
+ //******************
+ if ((fd_api = open( I2C_DEVICE,O_RDWR)) < 0)
+     fprintf(stderr,"ERROR: cannot open I2C BUS \n");
+
+ // Set the port options and set the address of the device we wish to speak to
+ if (ioctl(fd_api, I2C_SLAVE, APC_ADDR) < 0)
+ {
+     fprintf(stderr,"ERROR: cannot open I2C communication to APC\n");
+     lisy80_set_red_led(1);
+     lisy80_set_yellow_led(0);
+     lisy80_set_green_led(0);
+     exit(1);
+ }
+else
+     fprintf(stderr,"Info: I2C communication to APC successfull initiated\n");
+
+ //check connected hardware ID
+ ret = lisy_api_get_con_hw( hw_id_str );
+ fprintf(stderr,"Info: hardware ID is %s (%d)\n",hw_id_str,ret);
+
+ //do some debug output if requested
+ //number of displays
+ if (ls80dbg.bitv.basic) lisy_api_print_hw_info();
+
+
+ //set all the leds controlled by the PI
+ lisy80_set_red_led(0);
+ lisy80_set_yellow_led(0);
+ lisy80_set_green_led(1);
+
+ //init internal FIFO
+ LISY80_BufferInit();
 }
 
 
@@ -239,6 +311,8 @@ void lisy_hwlib_init( void )
 
  //get Software version, TODO: to be checked
  disp_sw_ver = display_get_sw_version();
+ //store it global
+ lisy_env.disp_sw_ver = disp_sw_ver;
  if (ls80dbg.bitv.basic)
  {
    sprintf(debugbuf,"Software Display PIC has version %d.%d",disp_sw_ver/100, disp_sw_ver%100);
@@ -274,7 +348,9 @@ void lisy_hwlib_init( void )
         lisy80_error(5);
 
  //get Software version, TODO: to be checked
-   coil_sw_ver = coil_get_sw_version();
+ coil_sw_ver = coil_get_sw_version();
+ //store it global
+ lisy_env.coil_sw_ver = coil_sw_ver;
  if (ls80dbg.bitv.basic)
  {
    sprintf(debugbuf,"Software Coil PIC has version %d.%d",coil_sw_ver/100, coil_sw_ver%100);
@@ -328,7 +404,9 @@ void lisy_hwlib_init( void )
  //now init switch pic and get Software version, debug options and 'some' S1 DIPs
  //for LISY35 we have a separate routine ( lisy35_switch_pic_init() )
  //which is called from main.c via 'lisy35_set_variant' in addition
-   switch_sw_ver = lisy80_switch_pic_init();
+ switch_sw_ver = lisy80_switch_pic_init();
+ //store it global
+ lisy_env.switch_sw_ver = switch_sw_ver;
    if (ls80dbg.bitv.basic)
    {
      sprintf(debugbuf,"Software Switch PIC has version %d.%d",switch_sw_ver/100, switch_sw_ver%100);
@@ -345,7 +423,7 @@ void lisy_hwlib_init( void )
 
  //as the eeprom should be readable at this time
  //print some stats while in debug mode
- if (ls80dbg.bitv.basic == 1 ) lisy_eeprom_printstats();
+ //if (ls80dbg.bitv.basic == 1 ) lisy_eeprom_printstats();
 
  //set GPIOs for the traffic ligth
  if ( lisy_hardware_revision == 311)
@@ -473,29 +551,22 @@ unsigned char lisy80_read_byte_coil_pic(void)
  return(lisy80_read_byte_pic(fd_coil_pic));
 }
 
-
-
-//set the sound LISY80
-void lisy80_sound_set(int sound)
-{
-
-lisy80_coil_sound_set(sound);
-
-}
-
 //set the sound LISY1
 void lisy1_sound_set(int sound)
 {
 
-if ( ls80dbg.bitv.sound )
-  {
-        sprintf(debugbuf,"setting sound to:%d" ,sound );
-        lisy80_debug(debugbuf);
-  }
+  int mysound;
 
-lisy1_coil_sound_set(sound);
+  //sound is solenoids 3..7, so need to shift here
+  if ( sound & 0x01 ) lisy1_coil_set( Q_TENS, 1); else lisy1_coil_set( Q_TENS, 0);
+  if ( sound & 0x02 ) lisy1_coil_set( Q_HUND, 1); else lisy1_coil_set( Q_HUND, 0);
+  if ( sound & 0x04 ) lisy1_coil_set( Q_TOUS, 1); else lisy1_coil_set( Q_TOUS, 0);
+}
 
-
+//set the sound LISY80
+void lisy80_sound_set(int sound)
+{
+  lisy80_coil_sound_set(sound);
 }
 
 // identiyf if buffer on switch PIC is ready
@@ -516,11 +587,11 @@ int lisy80_switch_pic_init(void)
  //do a reset vi MCLR on init
  digitalWrite (LISY80_SWPIC_RESET, 0);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  //set MCLR back to low
  digitalWrite (LISY80_SWPIC_RESET, 1);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
 
  //we do not want to receive data
  digitalWrite (LISY80_ACK_FROM_PI, 0);
@@ -528,15 +599,15 @@ int lisy80_switch_pic_init(void)
  //set init/reset to zero, independent of current state
  digitalWrite (LISY80_INIT, 0);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  //and put to high
  digitalWrite (LISY80_INIT, 1);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  //now the first two "switch values" should be version
  while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
  version = lisy80_read_byte_sw_pic();
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
  subversion = lisy80_read_byte_sw_pic();
 
@@ -545,7 +616,7 @@ int lisy80_switch_pic_init(void)
  // which we use to set debug options
  if ( (subversion > 2) || ( version > 3 ) )
   {
-    delay(100); //100ms delay from wiringpi
+    delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
     while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
     K1_debug_values = lisy80_read_byte_sw_pic();
   }
@@ -554,7 +625,7 @@ int lisy80_switch_pic_init(void)
  // if subversion is >6 or version > 3 fourth byte is part of dipsswitch S1
  if ( (subversion > 6)  || ( version > 3 ) )
   {
-    delay(100); //100ms delay from wiringpi
+    delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
     while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
     dip_missing_values = lisy80_read_byte_sw_pic();
   }
@@ -781,6 +852,10 @@ if ( lisy_hardware_revision == 311 )
   ls80opt.bitv.debug = ~digitalRead(LISY80_HW311_DIP1_S7);
   ls80opt.bitv.autostart = ~digitalRead(LISY80_HW311_DIP1_S8);
 }
+else if ( lisy_hardware_revision == 121 )  //lisy mini
+{
+ ls80opt.byte = lisymini_get_dip("S1");
+}
 else
 {
   //set the mode for DIP Switch 1, Input with pull up enable, 'ON' means pulled to GND
@@ -797,8 +872,8 @@ else
 
   ls80opt.byte |= dip_missing_values;
 
-  //RTH only sevendigit if autostart is on, meaning no MPF support at the moment
-  if (ls80opt.bitv.autostart ) ls80opt.bitv.sevendigit = 0;
+  //RTH only sevendigit if autostart is on (==0), meaning no MPF support at the moment
+  if (ls80opt.bitv.autostart == 1 ) ls80opt.bitv.sevendigit = 0;
 
 }
 
@@ -855,13 +930,31 @@ void toggle_dp_led (void)
 }
 
 //set the LEDs of the 'traffic ligth'
+//red LED is used for error signaling
+//only set if status changed
 void lisy80_set_red_led( int value )
 {
  int dum;
- if ( lisy_hardware_revision == 311) dum = LISY80_HW311_LED_RED; 
- else if ( lisy_hardware_revision == LISY_HW_LISY_W) dum = LISY_MINI_LED_RED; 
- else  dum = LISY80_HW320_LED_RED;
- digitalWrite (dum, value);
+ static unsigned char first = 1;
+ static unsigned int status;
+
+ if (first)
+ {
+   first = 0;
+   // make status != value
+   status = value+1;
+ } 
+
+ //only set if status changed
+ if ( status != value)
+ {
+  if ( lisy_hardware_revision == 311) dum = LISY80_HW311_LED_RED; 
+  else if ( lisy_hardware_revision == LISY_HW_LISY_W) dum = LISY_MINI_LED_RED; 
+  else  dum = LISY80_HW320_LED_RED;
+
+  digitalWrite (dum, value);
+  status = value;
+ }
 }
 
 void lisy80_set_yellow_led( int value )
@@ -871,7 +964,11 @@ void lisy80_set_yellow_led( int value )
 
 void lisy80_set_green_led( int value )
 {
- digitalWrite (LISY80_LED_GREEN, value);
+int dum;
+ if ( lisy_hardware_revision == LISY_HW_LISY_W) dum = LISY_MINI_LED_GREEN; 
+ else  dum = LISY80_LED_GREEN;
+
+ digitalWrite (dum, value);
 }
 
 //discharge function for reading capacitor data
@@ -946,24 +1043,24 @@ void lisy35_switch_pic_init(unsigned char variant)
  //do a reset vi MCLR on init
  digitalWrite (LISY80_SWPIC_RESET, 0);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  //set MCLR back to low
  digitalWrite (LISY80_SWPIC_RESET, 1);
 
 
  //now the switch pic will read INIT & ACK and set switch_variant accordantly
  //we need to give him 'some time' to do so 
- delay(100); // ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
 
  //now we set ACK=0 & INIT=1 which means 'running' for switch PIC
  digitalWrite (LISY80_INIT, 1); digitalWrite (LISY80_ACK_FROM_PI, 0);
  //wait a bit
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
 
  //now the first two "switch values" should be version
  while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
  version = lisy80_read_byte_sw_pic();
- delay(100); //100ms delay from wiringpi
+ delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
  while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
  subversion = lisy80_read_byte_sw_pic();
  // if subversion is >2 or version > 3
@@ -971,7 +1068,7 @@ void lisy35_switch_pic_init(unsigned char variant)
  //which we do not need here as already red by lisy80_switch_init
  if ( (subversion > 2) || ( version > 3 ) )
   {
-    delay(100); //100ms delay from wiringpi
+    delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
     while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
     dum = lisy80_read_byte_sw_pic();
   }
@@ -979,7 +1076,7 @@ void lisy35_switch_pic_init(unsigned char variant)
  //which we do not need here as already red by lisy80_switch_init
   if ( (subversion > 6)  || ( version > 3 ) )
   {
-    delay(100); //100ms delay from wiringpi
+    delay(SW_PIC_INIT_DEL_IN_MS); //ms delay from wiringpi
     while (lisy80_switch_readycheck() == 0); //wait for switch pic to be ready
     dum = lisy80_read_byte_sw_pic();
   }
@@ -996,11 +1093,10 @@ void lisy35_switch_pic_init(unsigned char variant)
 unsigned char lisymini_get_dip( char* wantdip)
 {
 
-
-#define LISYMINI_STROBE_1 0
-#define LISYMINI_STROBE_2 2
-#define LISYMINI_STROBE_3 13
-#define LISYMINI_STROBE_4 25
+#define LISYMINI_STROBE_1 25
+#define LISYMINI_STROBE_2 13
+#define LISYMINI_STROBE_3 2
+#define LISYMINI_STROBE_4 0
 
 #define LISYMINI_RET_1 10
 #define LISYMINI_RET_2 11
@@ -1052,9 +1148,10 @@ digitalWrite (LISYMINI_STROBE_4,1);
 delay(LISYMINI_WAITTIME); //100ms delay from wiringpi
 S2.bitv.eight = digitalRead (LISYMINI_RET_1);
 S2.bitv.four = digitalRead (LISYMINI_RET_2);
-K1.bitv.four = digitalRead (LISYMINI_RET_3);
-K2.bitv.one = digitalRead (LISYMINI_RET_4);
+K1.bitv.five = digitalRead (LISYMINI_RET_3);
+K1.bitv.one = digitalRead (LISYMINI_RET_4);
 S1.bitv.five = digitalRead (LISYMINI_RET_5);
+
 //strobe 3
 digitalWrite (LISYMINI_STROBE_1,0);
 digitalWrite (LISYMINI_STROBE_2,0);
@@ -1064,8 +1161,8 @@ digitalWrite (LISYMINI_STROBE_4,0);
 delay(LISYMINI_WAITTIME); //100ms delay from wiringpi
 S2.bitv.seven = digitalRead (LISYMINI_RET_1);
 S2.bitv.three = digitalRead (LISYMINI_RET_2);
-K1.bitv.three = digitalRead (LISYMINI_RET_3);
-K3.bitv.two = ~digitalRead (LISYMINI_RET_4); //reversed
+K1.bitv.four = digitalRead (LISYMINI_RET_3);
+K3.bitv.two = ~digitalRead (LISYMINI_RET_4);  //k3 is invers
 S1.bitv.four = digitalRead (LISYMINI_RET_5);
 
 //strobe 2
@@ -1077,9 +1174,10 @@ digitalWrite (LISYMINI_STROBE_4,0);
 delay(LISYMINI_WAITTIME); //100ms delay from wiringpi
 S2.bitv.six = digitalRead (LISYMINI_RET_1);
 S2.bitv.two = digitalRead (LISYMINI_RET_2);
-K1.bitv.two = digitalRead (LISYMINI_RET_3);
-K3.bitv.one = ~digitalRead (LISYMINI_RET_4); //reversed
+K1.bitv.three = digitalRead (LISYMINI_RET_3);
+K3.bitv.one = ~digitalRead (LISYMINI_RET_4);  //K3 is invers
 S1.bitv.three = digitalRead (LISYMINI_RET_5);
+
 //strobe 1
 digitalWrite (LISYMINI_STROBE_1,1);
 digitalWrite (LISYMINI_STROBE_2,0);
@@ -1089,8 +1187,8 @@ digitalWrite (LISYMINI_STROBE_4,0);
 delay(LISYMINI_WAITTIME); //100ms delay from wiringpi
 S2.bitv.five = digitalRead (LISYMINI_RET_1);
 S2.bitv.one = digitalRead (LISYMINI_RET_2);
-K1.bitv.one = digitalRead (LISYMINI_RET_3);
-K1.bitv.five = digitalRead (LISYMINI_RET_4);
+K1.bitv.two = digitalRead (LISYMINI_RET_3);
+K2.bitv.one = digitalRead (LISYMINI_RET_4);
 S1.bitv.one = digitalRead (LISYMINI_RET_5);
 
   //only one time

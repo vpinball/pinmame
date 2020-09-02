@@ -12,6 +12,10 @@
    static const struct sndbrdIntf *allsndboards[] = { &noSound,
 #  include "sndbrd.c"
    NULL};
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+#include "lisy/hw_lib.h"
+#include "lisy/lisy.h"
+#endif /* PINMAME && LISY_SUPPORT */
 
 static struct intfData {
   const struct sndbrdIntf *brdIntf;
@@ -70,6 +74,9 @@ void sndbrd_diag(int board, int button) {
 }
 
 void sndbrd_data_w(int board, int data) {
+#if defined(LISY_SUPPORT)
+  lisy_sound_handler( board, data );
+#endif
   const struct sndbrdIntf *b = intf[board].brdIntf;
   if(b && (b->flags & SNDBRD_NOTSOUND)==0)
 	snd_cmd_log(board, data);

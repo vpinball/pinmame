@@ -16,6 +16,9 @@
 #ifdef PROC_SUPPORT
 #include "p-roc/p-roc.h"
 #endif
+#if defined(PINMAME) && defined(LISY_SUPPORT)
+#include "lisy/lisy_w.h"
+#endif /* PINMAME && LISY_SUPPORT */
 
 #define FIXMUX // DataEast Playboy 35th fix
 
@@ -168,6 +171,9 @@ static INTERRUPT_GEN(s11_vblank) {
 		}
 #endif //PROC_SUPPORT
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+#if defined(LISY_SUPPORT)
+    lisy_w_lamp_handler( );
+#endif
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
@@ -177,6 +183,9 @@ static INTERRUPT_GEN(s11_vblank) {
 #ifdef PROC_SUPPORT
     if (!coreGlobals.p_rocEn) {
 #endif
+#ifdef LISY_SUPPORT
+    if (0) { //not with LISY support
+#endif
 
     /*-- special solenoids updated based on switches         -- */
     /*-- but only when no P-ROC, otherwise special solenoids -- */
@@ -185,7 +194,7 @@ static INTERRUPT_GEN(s11_vblank) {
       if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
         locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
-#ifdef PROC_SUPPORT
+#if defined(PROC_SUPPORT) || defined(LISY_SUPPORT)
     }
 #endif
   }
@@ -210,6 +219,9 @@ static INTERRUPT_GEN(s11_vblank) {
 #endif
   coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
   coreGlobals.solenoids2 = locals.extSol << 8;
+#if defined(LISY_SUPPORT)
+   lisy_w_solenoid_handler( ); //RTH: need to add solnoids2 ?
+#endif
   locals.solenoids = coreGlobals.pulsedSolState;
   locals.extSol = locals.extSolPulse;
 
@@ -333,6 +345,9 @@ static INTERRUPT_GEN(s11_vblank) {
   /*-- display --*/
   if ((locals.vblankCount % S11_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+#if defined(LISY_SUPPORT)
+    lisy_w_display_handler( );
+#endif
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
 #ifdef PROC_SUPPORT
     if (coreGlobals.p_rocEn) {
@@ -549,8 +564,19 @@ static WRITE_HANDLER(pia4b_w)
   }
   else
     locals.swCol = data;
+#if defined(LISY_SUPPORT)
+  lisy_w_throttle();
+#endif
 }
-static READ_HANDLER(pia4a_r)  { return core_getSwCol(locals.swCol); }
+
+static READ_HANDLER(pia4a_r)
+{
+#if defined(LISY_SUPPORT)
+  //get the switches from LISY_mini
+  lisy_w_switch_handler();
+#endif
+  return core_getSwCol(locals.swCol);
+}
 
 /*-------
 /  Sound
@@ -680,6 +706,8 @@ static SWITCH_UPDATE(s11) {
 		procGetSwitchEvents();
 #endif
 
+#ifndef LISY_SUPPORT
+//if we have LISY, all switches come from LISY (Matrix[0] has e.g. ADVANCE Button!
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[S11_COMINPORT] & 0x7f00)>>8;
     // All the matrix switches come from the P-ROC, so we only want to read
@@ -688,6 +716,7 @@ static SWITCH_UPDATE(s11) {
     coreGlobals.swMatrix[1] = inports[S11_COMINPORT];
 #endif
   }
+#endif
 
   /*-- Generate interupts for diganostic keys --*/
   cpu_set_nmi_line(0, core_getSw(S11_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
