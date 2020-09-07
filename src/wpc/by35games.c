@@ -1013,8 +1013,8 @@ CORE_GAMEDEFNV(flashgdn,"Flash Gordon",1981,"Bally",by35_mBY35_61S,0)
 #define init_flashgda        init_flashgdn
 BY35_ROMSTARTx00(flashgda,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
                           "7526fn.u6",CRC(00258a56) SHA1(40143d65ee92d20a565d21b6c1c3507d659a38e0))
-BY61_SOUNDROM0xx0(        "834-35_2.532",CRC(dff3f711) SHA1(254a5670775ecb6c347f33af8ba7c350e4cfa550),
-                          "834-36_5.532",CRC(18691897) SHA1(3b445e0756c07d80f14c01af5a7f87744474ae15))
+BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
+                          "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
 BY35_ROMEND
 CORE_CLONEDEFNV(flashgda,flashgdn,"Flash Gordon (Free Play)",2004,"Bally / Oliver",by35_mBY35_61S,0) // rev. 1
 

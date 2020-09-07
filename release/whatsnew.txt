@@ -81,6 +81,7 @@ Atari: Airborne Avenger (using 20252 sound PROM)
        Middle Earth (using 20252 sound PROM)
        Time 2000 (using 07028 sound PROM)
 Bally: Doctor Who P-5, P-6 (using SP-4 U18 sound ROM); also L-2, D-2 (using SL-2 U18 sound ROM)
+       Flash Gordon (Free Play) (using English sound ROMs)
        Twilight Zone P-3, P-4 (using later U14 and U15 sound ROMs, only PA-1 uses SP-1 sound)
 LTD: Time Machine (4 players) - confirmed that currently supported ROMs are correct
 Micropin: Pentacup (rev. 2, 8085A hardware)
