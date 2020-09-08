@@ -254,21 +254,29 @@ CORE_GAMEDEFNV(cpthook,"Captain Hook",1985,"Game Plan",mGP2SM,0)
 /*-------------------------------------------------------------------
 / Lady Sharpshooter (May 1985) - Cocktail Model #830
 /-------------------------------------------------------------------*/
-INITGAME(ladyshot, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+static core_tLCDLayout disp_LSS[] = {
+ {0, 0, 0,7,CORE_SEG7}, {0,24, 8,7,CORE_SEG7},
+ {3,14,33,2,CORE_SEG7}, {3,20,37,2,CORE_SEG7},{0}
+};
+
+// Lady Sharpshooter uses the MSU-2 sound module (unique to this game)
+// which is just an MSU-1 without the 6840, with one PIA only, and an added DAC.
+// So it is essentially working exactly like the later MSU-3 sound board.
+INITGAME(ladyshot, 0,disp_LSS,FLIP_SW(FLIP_L),SNDBRD_GPMSU3,0)
 GP_ROMSTART888(ladyshot,"830a.716",CRC(c055b993) SHA1(a9a7156e5ec0a32db1ffe36b3c6280953a2606ff),
 						"830b.716",CRC(1e3308ea) SHA1(a5955a6a15b33c4cf35105ab524a8e7e03d748b6),
 						"830c.716",CRC(f5e1db15) SHA1(e8168ab37ba30211045fc96b23dad5f06592b38d))
 GP_SOUNDROM0("830.snd",NO_DUMP)
 GP_ROMEND
-CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,0)
+CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM3,0)
 
-INITGAME(ldyshot2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+INITGAME(ldyshot2, 0,disp_LSS,FLIP_SW(FLIP_L),SNDBRD_GPMSU3,0)
 GP_ROMSTART888(ldyshot2,"830a2.716",CRC(2c1f1629) SHA1(9233ce4328d779ff6548cdd5d6819cd368bef313),
 						"830b2.716",CRC(2105a538) SHA1(0360d3e740d8b6f816cfe7fe1fb32ac476251b9f),
 						"830c2.716",CRC(2d96bdde) SHA1(7c03a29a91f03fba9ed5e53a93335113a7cbafb3))
 GP_SOUNDROM0("830.snd",NO_DUMP)
 GP_ROMEND
-CORE_CLONEDEFNV(ldyshot2, ladyshot, "Lady Sharpshooter (alternate set)",1985,"Game Plan",mGP2SM,0)
+CORE_CLONEDEFNV(ldyshot2, ladyshot, "Lady Sharpshooter (alternate set)",1985,"Game Plan",mGP2SM3,0)
 
 /*-------------------------------------------------------------------
 / Andromeda (August 1985) - Model #850
