@@ -201,13 +201,53 @@ CORE_CLONEDEFNV(sys1test,gts1,"System 1 'T' Test Fixture",19??,"Gottlieb",gl_mGT
 
 // other manufacturers
 
-// Sahara Love (C. Tabart, 1984)
+/*-------------------------------------------------------------------
+/ Sahara Love (1984)
+/-------------------------------------------------------------------*/
+INPUT_PORTS_START(sahalove)
+  CORE_PORTS
+  SIM_PORTS(1)
+  GTS1_COMPORTS
+  COREPORT_DIPNAME( 0x0100, 0x0100, "Sound 1")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0100, " on" )
+  COREPORT_DIPNAME( 0x0200, 0x0200, "Sound 2")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0200, " on" )
+  COREPORT_DIPNAME( 0x0400, 0x0000, "Sound 3")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0400, " on" )
+  COREPORT_DIPNAME( 0x0800, 0x0000, "Sound 4")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0800, " on" )
+INPUT_PORTS_END
+static core_tGameData sahaloveGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TABART2}};
+static void init_sahalove(void) {
+  core_gameData = &sahaloveGameData;
+}
+GTS1_2_ROMSTART(sahalove, "u5_cf.bin", CRC(e0d4b405) SHA1(17aadd79c0dcbb336aadd5d203bc6ca866492345),
+                          "u4_ce.bin", CRC(4cd312dd) SHA1(31245daa9972ef8652caee69986585bb8239e86e))
+GTS1_1_ROMSTART(sahalove, "412.cpu",   CRC(84a86b83) SHA1(f331f2ffd7d1b279b4ffbb939aa8649e723f5fac))
+SOUNDREGION(0x10000, REGION_CPU2)
+ROM_LOAD("sahalove.bin",  0,  0x2000,  CRC(3512840a) SHA1(eb36bb78bbf2f8610bc1d71a6651b937db3a5c69))
+GTS1_ROMEND
+CORE_CLONEDEFNV(sahalove,gts1,"Sahara Love",1984,"Christian Tabart (France)",gl_mGTS1TAB2,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / L'Hexagone (04/1986)
 /-------------------------------------------------------------------*/
-GTS1S_INPUT_PORTS_START(hexagone, 1) GTS1_INPUT_PORTS_END
-static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TABART}};
+INPUT_PORTS_START(hexagone)
+  CORE_PORTS
+  SIM_PORTS(1)
+  GTS1_COMPORTS
+  COREPORT_DIPNAME( 0x1000, 0x1000, "Sound 1")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x1000, " on" )
+  COREPORT_DIPNAME( 0x8000, 0x0000, "Sound 2")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x8000, " on" )
+INPUT_PORTS_END
+static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TABART}};
 static void init_hexagone(void) {
 	core_gameData = &hexagoneGameData;
 }
