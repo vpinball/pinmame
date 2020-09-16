@@ -98,7 +98,7 @@ static WRITE_HANDLER(snd_w) {
 	  | ((locals.solenoids & 0x08) >> 2) // 100's chime
 	  | ((locals.solenoids & 0x10) >> 4) // 1000's chime
 	  | (core_getDip(3) & 0x90); // sound dips
-	sndbrd_0_data_w(0, data);
+	sndbrd_0_data_w(offset, data);
 }
 
 static WRITE_HANDLER(lamp_w) {
@@ -114,7 +114,8 @@ static WRITE_HANDLER(lamp_w) {
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0x0f) | (data << 4);
 	else
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0xf0) | data;
-	snd_w(1, 0);
+	if (snd || core_gameData->hw.soundBoard != SNDBRD_TABART2)
+		snd_w(1, 0);
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -426,4 +427,11 @@ MACHINE_DRIVER_START(GTS1TAB)
 	MDRV_IMPORT_FROM(GTS1NS)
 	MDRV_DIPS(26)
 	MDRV_IMPORT_FROM(TABART1)
+MACHINE_DRIVER_END
+
+extern MACHINE_DRIVER_EXTERN(TABART2);
+MACHINE_DRIVER_START(GTS1TAB2)
+	MDRV_IMPORT_FROM(GTS1NS)
+	MDRV_DIPS(28)
+	MDRV_IMPORT_FROM(TABART2)
 MACHINE_DRIVER_END

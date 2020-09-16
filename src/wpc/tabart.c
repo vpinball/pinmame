@@ -7,14 +7,24 @@
 static struct {
   int nmi, outhole, swStrobe;
   UINT8 sndCmd, manCmd;
+  int subtype;
 } sndlocals;
 
 static void tabart_init(struct sndbrdData *brdData) {
-	memset(&sndlocals, 0, sizeof sndlocals);
+  memset(&sndlocals, 0, sizeof sndlocals);
+  memset(memory_region(REGION_CPU2) + 0x4000, 0xff, 0x80); // sahalove needs a clean RAM for sound 05 to work correctly
+  sndlocals.subtype = brdData->subType;
 }
 
 static WRITE_HANDLER(tabart_manCmd_w) {
   static int toggle;
+
+  if (sndlocals.subtype) {
+    sndlocals.sndCmd = data;
+    cpu_set_nmi_line(1, PULSE_LINE);
+    return;
+  }
+
   sndlocals.swStrobe = 0;
   if (!toggle)
     sndlocals.manCmd = data;
@@ -29,6 +39,8 @@ static WRITE_HANDLER(tabart_manCmd_w) {
 
 // This is needed to determine the correct switch row
 static WRITE_HANDLER(tabart_ctrl_w) {
+  if (sndlocals.subtype) return;
+
   sndlocals.swStrobe = data;
   sndlocals.outhole = core_getSw(66) ? 1 : 0;
   if (sndlocals.nmi != (data == 1)) {
@@ -39,6 +51,13 @@ static WRITE_HANDLER(tabart_ctrl_w) {
 
 // GTS1 snd lines order: Dip2, Q, (NC), Dip1, T, Snd3, Snd2, Snd1
 static WRITE_HANDLER(tabart_data_w) {
+  if (sndlocals.subtype) { // Sahara Love: Q (and / or Dip4?), Dip3, Dip2, Dip1, T, Snd3, Snd2, Snd1 ???
+    sndlocals.sndCmd = (data & 0x40 ? 0 : 0x80) | (~data & 0x0f) | ((~core_getDip(3) & 0x0f) << 4);
+    if (!sndlocals.nmi) cpu_set_nmi_line(1, PULSE_LINE);
+    if (sndlocals.nmi) sndlocals.nmi--;
+    return;
+  }
+
   sndlocals.sndCmd = data ^ 0x87;
   sndlocals.outhole = core_getSw(66) ? 1 : 0;
 }
@@ -60,22 +79,22 @@ static READ_HANDLER(ym2203_port_b_r) {
 }
 
 static void tabart_irq(int state) {
-	cpu_set_irq_line(1, 0, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(1, 0, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static struct YM2203interface tabart_ym2203Int = {
-	1,
-	3579545,
-	{ 50 | (30 << 16) }, // uses high 16 bits for YM2203 FM volume!
-	{ ym2203_port_a_r }, { ym2203_port_b_r },
-	{ NULL }, { NULL },
-	{ &tabart_irq }
+  1,
+  3579545,
+  { 50 | (30 << 16) }, // uses high 16 bits for YM2203 FM volume!
+  { ym2203_port_a_r }, { ym2203_port_b_r },
+  { NULL }, { NULL },
+  { &tabart_irq }
 };
 
 static struct YM3526interface tabart_ym3526Int =  {
   1,
-	3579545,
-	{ 30 }
+  3579545,
+  { 30 }
 };
 
 extern READ_HANDLER(YM3526_read_port_0_r);
@@ -103,4 +122,56 @@ MACHINE_DRIVER_START(TABART1)
   MDRV_CPU_MEMORY(tabart1_readmem, tabart1_writemem)
   MDRV_SOUND_ADD(YM2203, tabart_ym2203Int)
   MDRV_SOUND_ADD(YM3526, tabart_ym3526Int)
+MACHINE_DRIVER_END
+
+
+// Sahara Love sound board
+
+static WRITE_HANDLER(m8000_w) {
+  logerror("m8000w %02x\n", data);
+  sndlocals.nmi = 2;
+}
+
+static READ_HANDLER(ay8912a_r) {
+  sndlocals.nmi = 0;
+  return sndlocals.sndCmd;
+}
+
+static WRITE_HANDLER(ay8912a_w) {
+  logerror("AY W %02x\n", data);
+}
+
+static struct AY8910interface tabart_ay8912Int = {
+  1,
+  19660800/16,
+  { 33 },
+  { ay8912a_r }, { NULL },
+  { ay8912a_w }
+};
+
+static MEMORY_READ_START(tabart2_readmem)
+  {0x0000,0x3fff, MRA_ROM},
+  {0x4000,0x407f, MRA_RAM},
+MEMORY_END
+
+static MEMORY_WRITE_START(tabart2_writemem)
+  {0x4000,0x407f, MWA_RAM},
+  {0x8000,0x8000, m8000_w}, // writes accu back to memory on NMI, for what purpose?
+MEMORY_END
+
+static PORT_READ_START(tabart2_readport)
+  {4,4, AY8910_read_port_0_r},
+PORT_END
+
+static PORT_WRITE_START(tabart2_writeport)
+  {0,0, AY8910_control_port_0_w},
+  {1,1, AY8910_write_port_0_w},
+PORT_END
+
+MACHINE_DRIVER_START(TABART2)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 19660800/8)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(tabart2_readmem, tabart2_writemem)
+  MDRV_CPU_PORTS(tabart2_readport, tabart2_writeport)
+  MDRV_SOUND_ADD(AY8910, tabart_ay8912Int)
 MACHINE_DRIVER_END
