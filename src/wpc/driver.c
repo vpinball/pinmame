@@ -2198,7 +2198,7 @@ DRIVER(smanve,101c)     // pinball browser colorized using extend memory
 // ---------------
 // TABART GAMES
 // ---------------
-                        //??/84 Sahara Love
+DRIVERNV(sahalove)      //??/84 Sahara Love
                         //??/85 Le Grand 8
 DRIVERNV(hexagone)      //04/86 L'Hexagone
 
