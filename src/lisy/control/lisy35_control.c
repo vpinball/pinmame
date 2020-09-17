@@ -919,8 +919,10 @@ void send_mom_solenoid_infos( int sockfd )
    for(i=1; i<=5; i++)
     {
      coil_no = j * 5 + i;
-     sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'C%02d\' %s value=\'%s\n%s\' /> </form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
-  sendit( sockfd, buffer);
+     // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
+     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'C%02d\' %s value=\'%s\n%s\' /> </form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
+     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'C%02d\' %s>%s<BR/>%s</button></form>\n",coil_no,colorcode,coil_description_line1[coil_no],coil_description_line2[coil_no]);
+     sendit( sockfd, buffer);
     }
   sprintf(buffer,"<br>\n");
   sendit( sockfd, buffer);
@@ -1140,7 +1142,9 @@ void send_lamp2_infos( int sockfd )
      lamp_no=i*col+j;
      if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
      if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
+     // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
+     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
+     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >L%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,lamp_no,lamp2_description_line1[lamp_no],lamp2_description_line2[lamp_no]);
      sendit( sockfd, buffer);
     }
    sprintf(buffer,"<br>\n");
@@ -1195,7 +1199,9 @@ void send_lamp_infos( int sockfd )
      lamp_no=i*10+j;
      if (lamp[lamp_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
      if (lamp[lamp_no]) sprintf(name,"L%02d_off",lamp_no); else sprintf(name,"L%02d_on",lamp_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\r\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
+     // matiou: replaced <input> with <button> to allow 2 lines of text to describe lamp
+     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'L%02d\r\n%s\n%s\' /> </form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
+     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >L%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,lamp_no,lamp_description_line1[lamp_no],lamp_description_line2[lamp_no]);
      sendit( sockfd, buffer);
     }
    sprintf(buffer,"<br>\n");
@@ -1227,7 +1233,9 @@ void send_cont_solenoid_infos( int sockfd )
     {
      if (cont_sol[sol_no]) strcpy(colorcode,code_yellow); else  strcpy(colorcode,code_blue);
      if (cont_sol[sol_no]) sprintf(name,"O%02d_off",sol_no); else sprintf(name,"O%02d_on",sol_no);
-     sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'%02d \n%s\n%s\' /> </form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
+     // matiou: replaced <input> with <button> to allow 2 lines of text to describe solenoid
+     //sprintf(buffer,"<form action=\'\' method=\'post\'><input type=\'submit\' name=\'%s\' %s value=\'%02d \n%s\n%s\' /> </form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
+     sprintf(buffer,"<form action=\'\' method=\'post\'><button type=\'submit\' name=\'%s\' %s >%02d<BR/>%s<BR/>%s</button></form>\n",name,colorcode,sol_no+15,coil_description_line1[sol_no+15],coil_description_line2[sol_no+15]);
      sendit( sockfd, buffer);
     }
 
@@ -1258,8 +1266,11 @@ void send_soption_infos( int sockfd )
   //now open soundcard, and init soundstream
   if ( lisy35_sound_stream_init() < 0 )
      sprintf(message2,"error: sound init failed, sound emulation disabled<br>\n");
- else
+  else
    sprintf(message2,"info: sound init done<br>\n");
+
+  // matiou: added line below to make sure init code runs only once
+  first = 0;
 
   }//first call
 
@@ -1267,7 +1278,7 @@ void send_soption_infos( int sockfd )
   //start with some header
   // lets aplay give us the soundcards known to the system
   fp = popen("/usr/bin/aplay -l", "r");
-  
+
    while ( fgets(str, sizeof(str)-1, fp) != NULL)
    {
      sprintf(buffer,"%s<br>\n",str);
