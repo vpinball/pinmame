@@ -309,6 +309,8 @@ DRIVERNV(fbclassa)      //BY35      10/04 Fireball Classic (Free Play)
 DRIVERNV(cybrnaut)      //BY35-0B42 05/85 Cybernaut
 DRIVERNV(cybrnaua)      //BY35      10/04 Cybernaut (Free Play)
 DRIVERNV(bigbat)        //BY35-848: ??/84 Big Bat
+//MISC
+DRIVERNV(scotest8)      //BY35:     09/19 Scott's Test ROM (version 8)
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38:08/85 Eight Ball Champ
 DRIVERNV(eballch2)      //6803      08/85 Eight Ball Champ (cheap squeak)

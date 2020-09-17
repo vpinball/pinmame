@@ -1846,3 +1846,16 @@ ROM_START(bullseyn) \
 BY35_ROMEND
 #define input_ports_bullseyn input_ports_bullseye
 CORE_CLONEDEFNV(bullseyn, bullseye,"301/Bullseye (normal pinball scoring)",1986,"Grand Products Inc.",by35_GP,0)
+
+/*--------------------------------
+/ Scott's Test ROM
+/-------------------------------*/
+INITGAME(scotest8,GEN_BY17,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY50,0)
+ROM_START(scotest8)
+  NORMALREGION(0x10000, BY35_CPUREGION)
+    ROM_LOAD("scotest8.732", 0x1000, 0x1000, CRC(199e5d54) SHA1(ff947c232c060ffb796e39da06fc7559a78e04f8))
+    ROM_RELOAD(0xf000, 0x1000)
+  BY50_SOUNDROM("729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+BY35_ROMEND
+#define input_ports_scotest8 input_ports_by35
+CORE_GAMEDEFNV(scotest8,"Scott's Test ROM (version 8)",2019,"Scott Charles",by35_mBY35_50S,0)
