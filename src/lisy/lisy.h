@@ -19,7 +19,7 @@ void lisy_get_sw_version( unsigned char *sw_main, unsigned char *sw_sub, unsigne
 void lisy_sound_handler( unsigned char board, unsigned char data );
 
 
-#define NVRAM_DELAY 500  //delay counter for nvram write
+#define NVRAM_DELAY 200  //delay counter for nvram write ( * 15ms )
 
 //the LISY HW revisions
 #define LISY_HW_LISY1   100             //LISY1
