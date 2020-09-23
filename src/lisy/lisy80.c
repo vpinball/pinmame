@@ -294,11 +294,12 @@ void lisy80TickleWatchdog( void )
   {
     case 0: break;
     case 1: //lisy80_nvram_handler(1, NULL);
-	    lisy_nvram_write_to_file();
-	    nvram_delayed_write--;
-	    break;
+        lisy_nvram_write_to_file();
+        if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM write DONE");
+        nvram_delayed_write--;
+        break;
    default: nvram_delayed_write--;
-	    break;
+        break;
   }
 }//watchdog
 
@@ -409,6 +410,16 @@ if ( swMatrix[8] & 0x01 ) //is bit set?
  }
 
 
+//system80 Replay switch strobe:7 ret:4
+//will initiate a delayed nvram write (for having initals saved on 80B)
+ if ( CHECK_BIT(swMatrix[8],4)) //is bit set?
+ {
+   if(nvram_delayed_write == 0) //only if it is not set anyway
+   {
+     nvram_delayed_write = NVRAM_DELAY;
+     if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM delayed write initiated by CREDIT button");
+   }
+ }
 
 // switch 47 (Replay) could mean to add credits in case of Freeplay
 if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
@@ -905,7 +916,7 @@ void lisy80_coil_handler_b( int data)
   	   if ( (i + offset) == 0 ) 
              {
               nvram_delayed_write = NVRAM_DELAY;
-              if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM delayed write initiaed by GAME OVER Relay");
+              if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM delayed write initiated by GAME OVER Relay");
              }
 	   //remember
 	   lisy80_lamp[i+offset] = new_lamp[i];
