@@ -2424,6 +2424,25 @@ void BasicBitmap::SetPixel(int x, int y, IUINT32 color)
 
 
 //---------------------------------------------------------------------
+// float4 set pixel
+//---------------------------------------------------------------------
+void BasicBitmap::SetPixel(int x, int y, float r, float g, float b, float a)
+{
+	SetPixel(x, y, FloatToColor(r, g, b, a));
+}
+
+
+//---------------------------------------------------------------------
+// float4 get pixel
+//---------------------------------------------------------------------
+void BasicBitmap::GetPixel(int x, int y, float *rgba)
+{
+	IUINT32 cc = GetPixel(x, y);
+	ColorToFloat(cc, rgba);
+}
+
+
+//---------------------------------------------------------------------
 // read pixel
 //---------------------------------------------------------------------
 IUINT32 BasicBitmap::GetPixel(int x, int y) const
@@ -2673,6 +2692,40 @@ IUINT32 BasicBitmap::ARGB2Raw(IUINT32 argb)
 		return argb;
 	}
 	return c;
+}
+
+
+//---------------------------------------------------------------------
+// float4 -> IUINT32
+//---------------------------------------------------------------------
+IUINT32 BasicBitmap::FloatToColor(float r, float g, float b, float a)
+{
+	r = (r < 0.0f)? 0.0f : ((r > 1.0f)? 1.0f : r);
+	g = (g < 0.0f)? 0.0f : ((g > 1.0f)? 1.0f : g);
+	b = (b < 0.0f)? 0.0f : ((b > 1.0f)? 1.0f : b);
+	a = (a < 0.0f)? 0.0f : ((a > 1.0f)? 1.0f : a);
+	int R = (int)(r * 255.5f);
+	int G = (int)(g * 255.5f);
+	int B = (int)(b * 255.5f);
+	int A = (int)(a * 255.5f);
+	R = (R < 0)? 0 : ((R > 255)? 255 : R);
+	G = (G < 0)? 0 : ((G > 255)? 255 : G);
+	B = (B < 0)? 0 : ((B > 255)? 255 : B);
+	A = (A < 0)? 0 : ((A > 255)? 255 : A);
+	return (((IUINT32)A) << 24) | (((IUINT32)R) << 16) | 
+		(((IUINT32)G) << 8) | ((IUINT32)B);
+}
+
+
+//---------------------------------------------------------------------
+// IUINT32 -> float4
+//---------------------------------------------------------------------
+void BasicBitmap::ColorToFloat(IUINT32 color, float *rgba)
+{
+	rgba[0] = (float)((color >> 16) & 0xff) * (float)(1.0/255.0);
+	rgba[1] = (float)((color >>  8) & 0xff) * (float)(1.0/255.0);
+	rgba[2] = (float)((color >>  0) & 0xff) * (float)(1.0/255.0);
+	rgba[3] = (float)((color >> 24) & 0xff) * (float)(1.0/255.0);
 }
 
 
