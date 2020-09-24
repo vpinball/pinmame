@@ -701,6 +701,15 @@ DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae4
 DE_ROMEND
 CORE_CLONEDEF(lw3,300,208,"Lethal Weapon 3 (3.00 unofficial MOD)",2020,"Data East",de_mDEDMD32S2A_hack,0)
 
+DE_ROMSTARTx0(lw3_301,"LW3CPUU.301",CRC(e6a44d10) SHA1(0da68cfaa2667bc34493ae7ba703c06b60171989))
+DE_DMD32ROM44(     "lw3drom1.300",CRC(38f0ab03) SHA1(6ab549c6388aacedadd5a16e937ec0612475a0ac),
+                   "lw3drom0.300",CRC(af9c066b) SHA1(bc3ba45f3031ffec654172f29c8660ac2e606b68))
+DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
+                   "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
+DE_ROMEND
+CORE_CLONEDEF(lw3,301,208,"Lethal Weapon 3 (3.01 unofficial MOD)",2020,"Data East",de_mDEDMD32S2A_hack,0)
+
 /*-------------------------------------------------------------
 / Aaron Spelling - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
