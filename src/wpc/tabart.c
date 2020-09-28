@@ -52,7 +52,7 @@ static WRITE_HANDLER(tabart_ctrl_w) {
 // GTS1 snd lines order: Dip2, Q, (NC), Dip1, T, Snd3, Snd2, Snd1
 static WRITE_HANDLER(tabart_data_w) {
   if (sndlocals.subtype) { // Sahara Love: Q (and / or Dip4?), Dip3, Dip2, Dip1, T, Snd3, Snd2, Snd1 ???
-    sndlocals.sndCmd = (data & 0x40 ? 0 : 0x80) | (~data & 0x0f) | ((~core_getDip(3) & 0x0f) << 4);
+    sndlocals.sndCmd = ((data & 0x40 ? 0 : 0x80) | (~data & 0x0f)) ^ ((~core_getDip(3) & 0x0f) << 4);
     if (!sndlocals.nmi) cpu_set_nmi_line(1, PULSE_LINE);
     if (sndlocals.nmi) sndlocals.nmi--;
     return;

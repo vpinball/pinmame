@@ -208,7 +208,7 @@ INPUT_PORTS_START(sahalove)
   CORE_PORTS
   SIM_PORTS(1)
   GTS1_COMPORTS
-  COREPORT_DIPNAME( 0x0100, 0x0100, "Sound 1")
+  COREPORT_DIPNAME( 0x0100, 0x0000, "Sound 1")
     COREPORT_DIPSET(0x0000, " off" )
     COREPORT_DIPSET(0x0100, " on" )
   COREPORT_DIPNAME( 0x0200, 0x0200, "Sound 2")
@@ -217,11 +217,11 @@ INPUT_PORTS_START(sahalove)
   COREPORT_DIPNAME( 0x0400, 0x0000, "Sound 3")
     COREPORT_DIPSET(0x0000, " off" )
     COREPORT_DIPSET(0x0400, " on" )
-  COREPORT_DIPNAME( 0x0800, 0x0000, "Sound 4")
+  COREPORT_DIPNAME( 0x0800, 0x0800, "Sound 4")
     COREPORT_DIPSET(0x0000, " off" )
     COREPORT_DIPSET(0x0800, " on" )
 INPUT_PORTS_END
-static core_tGameData sahaloveGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TABART2}};
+static core_tGameData sahaloveGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TABART2}};
 static void init_sahalove(void) {
   core_gameData = &sahaloveGameData;
 }
@@ -247,7 +247,7 @@ INPUT_PORTS_START(hexagone)
     COREPORT_DIPSET(0x0000, " off" )
     COREPORT_DIPSET(0x8000, " on" )
 INPUT_PORTS_END
-static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,1,0,SNDBRD_TABART}};
+static core_tGameData hexagoneGameData = {0,sys1_disp,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TABART}};
 static void init_hexagone(void) {
 	core_gameData = &hexagoneGameData;
 }
