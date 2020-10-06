@@ -1478,8 +1478,11 @@ static void writeCRU(int CRUAddr, int Number, UINT16 Value)
 		else if (CRUAddr == 0x0FED)
 			/* MID flag */
 			I.MID_flag = Value & 0x01;
-		else
 			/* External CRU */
+	/* Even though all the registers above are implemented internally, accesses
+    are passed to the external bus, too, and an external device might respond
+    to a write to these CRU address as well (particularly a write to the user
+    flag registers). */
 #endif
 		WRITEPORT(CRUAddr, (Value & 0x01));
 		Value >>= 1;
@@ -1921,7 +1924,7 @@ static void h0040(UINT16 opcode)
 	case 9:   /* LWP */
 		/* LWP --- Load Workspace Pointer register */
 		/* WP = *Reg */
-		I.WP = readword(addr);
+		I.WP = readword(addr) & ~1;
 		break;
 
 #if (TMS99XX_MODEL >= TMS99105A_ID)
@@ -2161,7 +2164,7 @@ static void h0200(UINT16 opcode)
 	case 7:   /* LWPI */
 		/* LWPI -- Load Workspace Pointer Immediate */
 		/* WP = *PC+ */
-		I.WP = fetch();
+		I.WP = fetch() & ~1;
 		CYCLES(10, 4);
 		break;
 	case 8:   /* LIMI */
