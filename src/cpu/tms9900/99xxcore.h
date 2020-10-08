@@ -1176,19 +1176,16 @@ static void reset_decrementer(void)
 {
 	timer_adjust(I.timer, TIME_NEVER, 0, 0);
 
+	/* reload count */
+	I.decrementer_count = I.decrementer_interval;
+
 	/* decrementer / timer enabled ? */
 	I.decrementer_enabled = ((I.flag & 2) && (I.decrementer_interval));
 
-	if (I.decrementer_enabled)
-	{
-		if (I.flag & 1)
-		{	/* decrementer */
-			I.decrementer_count = I.decrementer_interval;
-		}
-		else
-		{	/* timer */
-			timer_adjust(I.timer, TIME_IN_CYCLES(I.decrementer_interval * 16L, cpu_getactivecpu()), 0, 0);
-		}
+	if (I.decrementer_enabled && ! (I.flag & 1))
+	{	/* timer */
+		double period = TIME_IN_CYCLES(I.decrementer_interval * 16L, cpu_getactivecpu());
+		timer_adjust(I.timer, period, 0, period);
 	}
 }
 
@@ -1430,6 +1427,131 @@ static void set_flag1(int val)
 #define WRITEPORT(Port, data) cpu_writeport16(Port, data)
 #endif
 
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
+/* on tms9940, we have to handle internal CRU ports */
+static void write_single_CRU(int port, int data)
+{
+	int mask;
+
+	if (! (port & 0x100))
+	{
+		/*if (cpustate->config & CB0)*/
+		/* External CRU */
+		WRITEPORT(port, (data & 0x01));
+	}
+	else
+	{
+		/* internal CRU */
+		switch ((port >> 4) & 0xf)
+		{
+		case 0x8:
+			if (port == 0x181)
+			{
+				/* clear decrementer interrupt */
+				I.irq_state &= ~2;
+			}
+			if (port >= 0x183) && (port <= 0x186)
+			{
+				/* write configuration register */
+				mask = 1 << (port - 0x183);
+				/* ... */
+			}
+			break;
+
+		case 0x9:
+			if (port <= 0x19D)
+			{
+				/* write decrementer latch */
+				mask = 1 << (port - 0x190);
+				/* ... */
+			}
+			else if (port == 0x19E)
+			{
+				/* set decrementer as timer (1) or event counter (0) */
+				/* ... */
+			}
+			break;
+
+		case 0xA:
+			/* multiprocessor system interface */
+			mask = 1 << (port - 0x1A0);
+			/* ... */
+			break;
+
+		case 0xB:
+			/* flags */
+			mask = 1 << (port - 0x1B0);
+			/* ... */
+			break;
+
+		case 0xC:
+		case 0xD:
+			/* direction for P0-P31 */
+			mask = 1 << (port - 0x1C0);
+			/* ... */
+			break;
+
+		case 0xE:
+		case 0xF:
+			/* data for P0-P31 */
+			mask = 1 << (port - 0x1E0);
+			/* ... */
+			break;
+		}
+	}
+}
+#elif (TMS99XX_MODEL == TMS9995_ID)
+/* on tms9995, we have to handle internal CRU ports */
+static void write_single_CRU(int port, int data)
+{
+	/* Internal CRU */
+	switch (port)
+	{
+	case 0xF70:
+		set_flag0(data & 0x01);
+		break;
+	case 0xF71:
+		set_flag1(data & 0x01);
+		break;
+	case 0xF72:
+	case 0xF73:
+	case 0xF74:
+		break;     /* ignored */
+	case 0xF75:
+	case 0xF76:
+	case 0xF77:
+	case 0xF78:
+	case 0xF79:
+	case 0xF7A:
+	case 0xF7B:
+	case 0xF7C:
+	case 0xF7D:
+	case 0xF7E:
+	case 0xF7F:
+		{	/* user defined flags */
+			int mask = 1 << (port - 0xF70);
+			if (data & 0x01)
+				I.flag |= mask;
+			else
+				I.flag &= ~ mask;
+		}
+		break;
+
+	case 0x0FED:
+		/* MID flag */
+		I.MID_flag = data & 0x01;
+		break;
+	}
+	/* External CRU */
+	/* Even though all the registers above are implemented internally, accesses
+	are passed to the external bus, too, and an external device might respond
+	to a write to these CRU address as well (particularly a write to the user
+	flag registers). */
+	WRITEPORT(port, (data & 0x01));
+}
+#else
+#define write_single_CRU(port, data) WRITEPORT(port, data)
+#endif
 
 /*
 	performs a normal write to CRU bus (used by SBZ, SBO, LDCR : address range 0 -> 0xFFF)
@@ -1460,31 +1582,7 @@ static void writeCRU(int CRUAddr, int Number, UINT16 Value)
 
 	for(count=0; count<Number; count++)
 	{
-#if (TMS99XX_MODEL == TMS9995_ID)
-		if (CRUAddr == 0xF70)
-			set_flag0(Value & 0x01);
-		else if (CRUAddr == 0xF71)
-			set_flag1(Value & 0x01);
-		else if ((CRUAddr >= 0xF72) && (CRUAddr < 0xF75))
-			;     /* ignored */
-		else if ((CRUAddr >= 0xF75) && (CRUAddr < 0xF80))
-		{	/* user defined flags */
-			int mask = 1 << (CRUAddr - 0xF70);
-			if (Value & 0x01)
-				I.flag |= mask;
-			else
-				I.flag &= ~ mask;
-		}
-		else if (CRUAddr == 0x0FED)
-			/* MID flag */
-			I.MID_flag = Value & 0x01;
-			/* External CRU */
-	/* Even though all the registers above are implemented internally, accesses
-    are passed to the external bus, too, and an external device might respond
-    to a write to these CRU address as well (particularly a write to the user
-    flag registers). */
-#endif
-		WRITEPORT(CRUAddr, (Value & 0x01));
+		write_single_CRU(CRUAddr, (Value & 0x01));
 		Value >>= 1;
 		CRUAddr = (CRUAddr + 1) & wCRUAddrMask;
 	}
@@ -1553,28 +1651,111 @@ static void external_instruction_notify(int ext_op_ID)
 */
 #if (TMS99XX_MODEL == TMS9900_ID)
 #define READPORT(Port) cpu_readport16bew_word((Port)<<1)
-#elif (TMS99XX_MODEL != TMS9995_ID)
-#define READPORT(Port) cpu_readport16(Port)
 #else
-/* on tms9995, we have to handle internal CRU port */
-int READPORT(int Port)
+#define READPORT(Port) cpu_readport16(Port)
+#endif
+
+#if (TMS99XX_MODEL == TMS9940_ID) || (TMS99XX_MODEL == TMS9985_ID)
+/* on tms9940, we have to handle internal CRU ports */
+static int read_single_CRU(int port)
 {
-	if (Port == 0x1EE)
+	int reply;
+	int shift;
+
+	if (! (port & 0x20))
+	{
+		/*if (cpustate->config & CB0)*/
+		/* External CRU */
+		reply = READPORT(port, (data & 0x01));
+	}
+	else
+	{
+		/* internal CRU */
+		switch (port)
+		{
+		case 0x10:
+			/* read interrupt state */
+			reply = I.irq_state;
+			break;
+
+		case 0x12:
+			/* read decrementer LSB */
+			/* ... */
+			break;
+		case 0x13:
+			/* read decrementer MSB */
+			/* ... */
+			break;
+
+		case 0x14:
+			/* read multiprocessor system interface LSB */
+			/* ... */
+			break;
+		case 0x15:
+			/* read multiprocessor system interface MSB */
+			/* ... */
+			break;
+
+		case 0x16:
+			/* read flags LSB */
+			/* ... */
+			break;
+		case 0x17:
+			/* read flags MSB */
+			/* ... */
+			break;
+
+		case 0x18:
+		case 0x19:
+		case 0x1A:
+		case 0x1B:
+			/* direction for P0-P31 */
+			shift = (port - 0x18) << 3;
+			/* ... */
+			break;
+
+		case 0x1C:
+		case 0x1D:
+		case 0x1E:
+		case 0x1F:
+			/* data for P0-P31 */
+			shift = (port - 0x1C) << 3;
+			/* ... */
+			break;
+
+		default:
+			reply = 0;
+			break;
+		}
+	}
+
+	return reply;
+}
+#elif (TMS99XX_MODEL == TMS9995_ID)
+/* on tms9995, we have to handle internal CRU ports */
+static int read_single_CRU(int port)
+{
+	switch (port)
+	{
+	case 0x1EE:
 		/* flag, bits 0-7 */
 		return I.flag & 0xFF;
-	else if (Port == 0x1EF)
+	case 0x1EF:
 		/* flag, bits 8-15 */
 		return (I.flag >> 8) & 0xFF;
-	else if (Port == 0x1FD)
-		/* MID flag, and extrernal devices */
+	case 0x1FD:
+		/* MID flag, and external devices */
 		if (I.MID_flag)
-			return cpu_readport16(Port) | 0x10;
+			return READPORT(port) | 0x10;
 		else
-			return cpu_readport16(Port) & ~ 0x10;
-	else
-		/* extrernal devices */
-		return cpu_readport16(Port);
+			return READPORT(port) & ~ 0x10;
+	default:
+		/* external devices */
+		return READPORT(port);
+	}
 }
+#else
+#define read_single_CRU(port) READPORT(port)
 #endif
 
 static UINT16 readCRU(int CRUAddr, int Number)
@@ -1593,52 +1774,45 @@ static UINT16 readCRU(int CRUAddr, int Number)
 	#define rCRUAddrMask 0xFFF
 #endif
 
-	static int BitMask[] =
+	static const int BitMask[] =
 	{
 		0, /* filler - saves a subtract to find mask */
-		0x0100,0x0300,0x0700,0x0F00,0x1F00,0x3F00,0x7F00,0xFF00,
+		0x0001,0x0003,0x0007,0x000F,0x001F,0x003F,0x007F,0x00FF,
 		0x01FF,0x03FF,0x07FF,0x0FFF,0x1FFF,0x3FFF,0x7FFF,0xFFFF
 	};
 
 	int Offset,Location,Value;
 
-	Location = CRUAddr >> 3;
+	/*logerror("Read CRU %x for %x\n",CRUAddr,Number);*/
 
-	LOG(("%04x: Read  CRU  %03x for %2d\n",I.PC,Location,Number));
-
+	Location = (CRUAddr >> 3)  & rCRUAddrMask;
 	Offset   = CRUAddr & 07;
 
-	if (Number <= 8)
+	/* Read 8 bits */
+	Value = read_single_CRU(Location);
+
+	if ((Offset+Number) > 8)
 	{
-		/* Read 16 Bits */
-		Value = (READPORT((Location + 1) & rCRUAddrMask) << 8)
-		                                | READPORT(Location & rCRUAddrMask);
+		/* Read next 8 bits */
+		Location = (Location + 1) & rCRUAddrMask;
+		Value |= read_single_CRU(Location) << 8;
 
-		/* Allow for Offset */
-		Value >>= Offset;
-
-		/* Mask out what we want */
-		Value = (Value << 8) & BitMask[Number];
-
-		/* And update */
-		return (Value>>8);
+		if ((Offset+Number) > 16)
+		{
+			/* Read next 8 bits */
+			Location = (Location + 1) & rCRUAddrMask;
+			Value |= read_single_CRU(Location) << 16;
+		}
 	}
-	else
-	{
-		/* Read 24 Bits */
-		Value = (READPORT((Location + 2) & rCRUAddrMask) << 16)
-		                                | (READPORT((Location + 1) & rCRUAddrMask) << 8)
-		                                | READPORT(Location & rCRUAddrMask);
 
-		/* Allow for Offset */
-		Value >>= Offset;
+	/* Allow for Offset */
+	Value >>= Offset;
 
-		/* Mask out what we want */
-		Value &= BitMask[Number];
+	/* Mask out what we want */
+	Value &= BitMask[Number];
 
-		/* and Update */
-		return Value;
-	}
+	/* And update */
+	return Value;
 }
 
 /**************************************************************************/
@@ -1920,6 +2094,7 @@ static void h0040(UINT16 opcode)
 		/* LST --- Load STatus register */
 		/* ST = *Reg */
 		I.STATUS = readword(addr);
+		getstat();  /* set last_parity */
 		break;
 	case 9:   /* LWP */
 		/* LWP --- Load Workspace Pointer register */
@@ -2204,10 +2379,14 @@ static void h0200(UINT16 opcode)
 	case 12:  /* RTWP */
 		/* RTWP -- Return with Workspace Pointer */
 		/* WP = R13, PC = R14, ST = R15 */
-		I.STATUS = READREG(R15);
+		addr = (I.WP + R13) & ~1;
+		I.WP = readword(addr) & ~1;
+		addr += 2;
+		I.PC = readword(addr) & ~1;
+		addr += 2;
+		I.STATUS = readword(addr);
 		getstat();  /* set last_parity */
-		I.PC = READREG(R14);
-		I.WP = READREG(R13);
+
 		field_interrupt();  /*IM has been modified.*/
 		CYCLES(14, 6);
 		break;
@@ -2877,7 +3056,7 @@ static void h2000(UINT16 opcode)
 	register UINT16 src;
 	register UINT16 value;
 
-	src = decipheraddr(opcode);
+	src = decipheraddr(opcode) & ~1;
 
 	switch ((opcode & 0x1C00) >> 10)
 	{
@@ -2885,7 +3064,6 @@ static void h2000(UINT16 opcode)
 		/* COC --- Compare Ones Corresponding */
 		/* status E bit = (S&D == S) */
 		dest = ((dest+dest) + I.WP) & ~1;
-		src &= ~1;
 		value = readword(src);
 		setst_e(value & readword(dest), value);
 		CYCLES(14, 4);
@@ -2894,7 +3072,6 @@ static void h2000(UINT16 opcode)
 		/* CZC --- Compare Zeroes Corresponding */
 		/* status E bit = (S&~D == S) */
 		dest = ((dest+dest) + I.WP) & ~1;
-		src &= ~1;
 		value = readword(src);
 		setst_e(value & (~ readword(dest)), value);
 		CYCLES(14, 4);
@@ -2903,7 +3080,6 @@ static void h2000(UINT16 opcode)
 		/* XOR --- eXclusive OR */
 		/* D ^= S */
 		dest = ((dest+dest) + I.WP) & ~1;
-		src &= ~1;
 		value = readword(dest) ^ readword(src);
 		setst_lae(value);
 		writeword(dest,value);
@@ -2917,7 +3093,6 @@ static void h2000(UINT16 opcode)
 		/* Results:  D:D+1 = D*S */
 		/* Note that early TMS9995 reportedly perform an extra dummy read in PC space */
 		dest = ((dest+dest) + I.WP) & ~1;
-		src &= ~1;
 		{
 			unsigned long prod = ((unsigned long) readword(dest)) * ((unsigned long) readword(src));
 			writeword(dest, prod >> 16);
@@ -2929,7 +3104,6 @@ static void h2000(UINT16 opcode)
 		/* DIV --- DIVide    (unsigned) */
 		/* D = D/S    D+1 = D%S */
 		dest = ((dest+dest) + I.WP) & ~1;
-		src &= ~1;
 		{
 			UINT16 d = readword(src);
 			UINT16 hi = readword(dest);
