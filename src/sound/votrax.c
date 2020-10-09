@@ -1,6 +1,6 @@
 /**************************************************************************
 
-	Votrax SC-01 Emulator
+	Votrax SC-01 Emulator/Simulation
 
  	Mike@Dissfulfils.co.uk
 	Tom.Haukap@t-online.de
@@ -19,7 +19,7 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 **************************************************************************/
 
 #define OLD_VOTRAX
-// Define to use old sample based emulation, also adapt gts80s.c then accordingly (search for the OLD_VOTRAX)
+// Define to use old sample based emulation, also adapt gts80s.c and taitos.c then accordingly (search for the OLD_VOTRAX)
 //!! marks all spots where the new emulation might be still shaky due to the manual port from MAME
 
 // #define REAL_DEVICE
@@ -440,14 +440,17 @@ void chip_update()
 
 	// Pitch counter.  Equality comparison, so it's possible to make
 	// it miss by manipulating the inflection inputs, but it'll wrap.
-	// There's a delay, hence the +1.
-	votraxsc01_locals.pitch = (votraxsc01_locals.pitch + 1) & 0x7f;
-	if (votraxsc01_locals.pitch == (0x7f ^ (votraxsc01_locals.inflection << 4) ^ votraxsc01_locals.filt_f1) + 1)
+	// There's a delay, hence the +2.
+
+	// Intrinsically pre-divides by two, so we added one bit on the 7
+
+	votraxsc01_locals.pitch = (votraxsc01_locals.pitch + 1) & 0xff;
+	if(votraxsc01_locals.pitch == (0xe0 ^ (votraxsc01_locals.inflection << 5) ^ (votraxsc01_locals.filt_f1 << 1)) + 2)
 		votraxsc01_locals.pitch = 0;
 
 	// Filters are updated in index 1 of the pitch wave, which does
 	// indeed mean four times in a row.
-	if ((votraxsc01_locals.pitch >> 2) == 1)
+	if ((votraxsc01_locals.pitch & 0xf9) == 0x08)
 		filters_commit(0);
 
 	// Noise shift register.  15 bits, with a nxor on the last two
@@ -457,7 +460,7 @@ void chip_update()
 	votraxsc01_locals.cur_noise = !(((votraxsc01_locals.noise >> 14) ^ (votraxsc01_locals.noise >> 13)) & 1);
 
 #if VERBOSE
-	LOG(("tick %02x.%03x 625=%d 208=%d pitch=%02x.%x ns=%04x ni=%d noise=%d cl=%x.%x clf=%d/%d\n", votraxsc01_locals.ticks, votraxsc01_locals.phonetick, tick_625, tick_208, votraxsc01_locals.pitch >> 2, votraxsc01_locals.pitch & 3, votraxsc01_locals.noise, inp, votraxsc01_locals.cur_noise, votraxsc01_locals.closure >> 2, votraxsc01_locals.closure & 3, votraxsc01_locals.rom_closure, votraxsc01_locals.cur_closure));
+	LOG(("tick %02x.%03x 625=%d 208=%d pitch=%02x.%x ns=%04x ni=%d noise=%d cl=%x.%x clf=%d/%d\n", votraxsc01_locals.ticks, votraxsc01_locals.phonetick, tick_625, tick_208, votraxsc01_locals.pitch >> 3, votraxsc01_locals.pitch & 7, votraxsc01_locals.noise, inp, votraxsc01_locals.cur_noise, votraxsc01_locals.closure >> 2, votraxsc01_locals.closure & 3, votraxsc01_locals.rom_closure, votraxsc01_locals.cur_closure));
 #endif
 }
 
@@ -704,8 +707,11 @@ void build_lowpass_filter(double *a, double *b,
 											  double c1t, // Unswitched cap, over amp-op, top
 											  double c1b) // Switched cap, over amp-op, bottom
 {
+	// The caps values puts the cutoff at around 150Hz, put that's no good.
+	// Recordings shows we want it around 4K, so fuzz it.
+
 	// Compute the only coefficient we care about
-	double k = c1b / (votraxsc01_locals.cclock * c1t);
+	double k = c1b / (votraxsc01_locals.cclock * c1t) * (150.0/4000.0);
 
 	// Compute the filter cutoff frequency
 	double fpeak = 1./((2.*M_PI)*k);
@@ -817,7 +823,7 @@ void build_injection_filter(double *a, double *b,
 	double k2 = c2b;
 
 	// Don't pre-warp
-	double zc = 2*votraxsc01_locals.sclock;
+	double zc = 2.*votraxsc01_locals.sclock;
 
 	// Finally compute the result of the z-transform
 	double m = zc*k2;
@@ -828,7 +834,7 @@ void build_injection_filter(double *a, double *b,
 	b[1] = k1 + m;
 
 	// That ends up in a numerically unstable filter.  Neutralize it for now.
-	a[0] = 1;
+	a[0] = 0;
 	a[1] = 0;
 	b[0] = 1;
 	b[1] = 0;
@@ -955,7 +961,7 @@ int analog_calc()
 	// Voice-only path.
 	// 1. Pick up the pitch wave
 
-	v = votraxsc01_locals.pitch >= (9 << 2) ? 0 : s_glottal_wave[votraxsc01_locals.pitch >> 2];
+	v = votraxsc01_locals.pitch >= (9 << 3) ? 0 : s_glottal_wave[votraxsc01_locals.pitch >> 3];
 
 	// 2. Multiply by the initial amplifier.  It's linear on the die,
 	// even if it's not in the patent.
@@ -1007,14 +1013,14 @@ int analog_calc()
 	shift_hist(vn, votraxsc01_locals.vn_4, 4);
 
 	// 13. Apply the glottal closure amplitude, also linear
-	vn = vn * (7 ^ (votraxsc01_locals.cur_closure >> 2)) / 7.0;
+	vn = vn * (7 ^ (votraxsc01_locals.closure >> 2)) / 7.0;
 	shift_hist(vn, votraxsc01_locals.vn_5, 2);
 
 	// 13. Apply the final fixed filter
 	vn = apply_filter(votraxsc01_locals.vn_5, votraxsc01_locals.vn_6, votraxsc01_locals.fx_a, 1, votraxsc01_locals.fx_b, 2);
 	shift_hist(vn, votraxsc01_locals.vn_6, 2);
 
-	return (int)(vn*50000);
+	return (int)(vn*(32768.*1.5)); // *1.5 if would be using float buffer
 }
 
 #else
@@ -1522,7 +1528,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 
 #if !defined(OLD_VOTRAX) && !defined(REAL_DEVICE)
 	// initialize internal state
-	votraxsc01_locals.mainclock = 720000; //3579545/4; //!! votraxsc01_locals.intf->baseFrequency; //!! clock();
+	votraxsc01_locals.mainclock = votraxsc01_locals.intf->baseFrequency[0]; //!! clock();
 	votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 	votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
 	votraxsc01_locals.stream = stream_init("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], (int)votraxsc01_locals.sclock, 0, Votrax_Update);
