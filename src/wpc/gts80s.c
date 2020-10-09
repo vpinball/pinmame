@@ -380,6 +380,10 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 }
 
 /* From flipprojets.fr:
+	The speed variation exists on all MA-216 boards, but is
+	used on very few models, mainly for the TILT message (that speak decreasing
+	speed, and thus more and more deep).
+
 	The SC01-clock frequency is about 720 Khz at normal voice(when the 1408 receive
 	the value #7E at address $3000).The value #7E is about the middle of the
 	range and is used for all messages(except TILT).
@@ -398,7 +402,7 @@ static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
 	if (GTS80SS_locals.boardData.subType)
 		votraxsc01_set_base_frequency(11025+(data*100)); // OLD_VOTRAX
-		//votraxsc01_set_clock(data * 720000 / 0x7E); //!! correct like this? (see comment block above)
+		//votraxsc01_set_clock(max((int)-4500 + (int)data*(int)5750,1)); // approximation for the 2 data points above
 	GTS80SS_locals.device = 3;
 }
 
@@ -665,7 +669,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s8
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 75 },					/* master volume */
-	{ 7000 },				/* initial sampling frequency */
+	{ 7000 },				/* initial sampling frequency */ // OLD_VOTRAX, use 720000 otherwise
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
 
