@@ -14,6 +14,7 @@
  280101 Added '-' as digit to allow shorter commands
  ****************************************************************************/
 
+#include <sys/stat.h>
 #include <ctype.h>
 #include "driver.h"
 #include "core.h"
@@ -891,6 +892,14 @@ static void wave_handle(void) {
 static void wave_next(void) {
   FILE *csv = NULL;
   char csvName[120];
+  struct stat stat_buffer;
+
+  if (stat("wave", &stat_buffer) != 0)
+#if defined(_WIN32)
+    _mkdir("wave");
+#else 
+    mkdir("wave", 0775);
+#endif
 
   sprintf(csvName, "wave\\altsound-%s.csv", Machine->gamedrv->name);
 
