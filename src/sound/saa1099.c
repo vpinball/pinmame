@@ -83,17 +83,17 @@ struct saa1099_channel
 	int envelope[2];		/* envelope (0x00..0x0f or 0x10 == off) */
 
 	/* vars to simulate the square wave */
-	double counter;
-	double freq;
+	int counter;
 	int level;
 };
+#define freq(x) ((511 - x.frequency) << (8 - x.octave)) // clock / ((511 - frequency) * 2^(8 - octave))
 
 /* this structure defines a noise channel */
 struct saa1099_noise
 {
 	/* vars to simulate the noise generator output */
-	double counter;
-	double freq;
+	int counter;
+	int freq;
 	int level;						/* noise polynomal shifter */
 };
 
@@ -113,7 +113,6 @@ struct SAA1099
 	int selected_reg;				/* selected register */
 	struct saa1099_channel channels[6];	/* channels */
 	struct saa1099_noise noise[2];	/* noise generators */
-	double sample_rate;
 	double master_clock;
 
 	unsigned short vgm_idx;
@@ -235,10 +234,10 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 	{
 		switch (saa->noise_params[ch])
 		{
-		case 0: saa->noise[ch].freq = saa->master_clock/256.0 * 2; break;
-		case 1: saa->noise[ch].freq = saa->master_clock/512.0 * 2; break;
-		case 2: saa->noise[ch].freq = saa->master_clock/1024.0 * 2; break;
-		case 3: saa->noise[ch].freq = saa->channels[ch * 3].freq; break;
+		case 0:
+		case 1:
+		case 2: saa->noise[ch].freq = 256 << saa->noise_params[ch]; break;
+		case 3: saa->noise[ch].freq = freq(saa->channels[ch * 3]); break;
 		}
 	}
 
@@ -254,19 +253,10 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 		/* for each channel */
 		for (ch = 0; ch < 6; ch++)
 		{
-			if (saa->channels[ch].freq == 0.0)
-				saa->channels[ch].freq = (double)(clk2div512 << saa->channels[ch].octave) /
-					(511.0 - (double)saa->channels[ch].frequency);
-
 			/* check the actual position in the square wave */
-			saa->channels[ch].counter -= saa->channels[ch].freq;
-			while (saa->channels[ch].counter < 0)
+			while (saa->channels[ch].counter <= 0)
 			{
-				/* calculate new frequency now after the half wave is updated */
-				saa->channels[ch].freq = (double)(clk2div512 << saa->channels[ch].octave) /
-					(511.0 - (double)saa->channels[ch].frequency);
-
-				saa->channels[ch].counter += saa->sample_rate;
+				saa->channels[ch].counter += freq(saa->channels[ch]);
 				saa->channels[ch].level ^= 1;
 
 				/* eventually clock the envelope counters */
@@ -275,74 +265,54 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 				if (ch == 4 && saa->env_clock[1] == 0)
 					saa1099_envelope(chip, 1);
 			}
+			saa->channels[ch].counter -= 256;
 
-#if 0
+			UINT8 level = 0;
+
 			// if the noise is enabled
 			if (saa->channels[ch].noise_enable)
 			{
 				// if the noise level is high (noise 0: chan 0-2, noise 1: chan 3-5)
-				if (saa->noise[ch/3].level & 1)
-				{
-					// subtract to avoid overflows, also use only half amplitude
-					output_l -= saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16;
-					output_r -= saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16;
-				}
+				level ^= saa->noise[ch/3].level & 1;
 			}
 
 			// if the square wave is enabled
 			if (saa->channels[ch].freq_enable)
 			{
 				// if the channel level is high
-				if (saa->channels[ch].level & 1)
-				{
-					output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16;
-					output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16;
-				}
-			}
-#else
-			// Now with bipolar output. -Valley Bell
-			if (saa->channels[ch].noise_enable)
-			{
-				if (saa->noise[ch/3].level & 1)
-				{
-					output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-					output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
-				}
-				else
-				{
-					output_l -= saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-					output_r -= saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
-				}
+				level ^= saa->channels[ch].level & 1;
 			}
 
-			if (saa->channels[ch].freq_enable)
+			if (level)
 			{
-				if (saa->channels[ch].level & 1)
-				{
-					output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-					output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
-				}
-				else
-				{
-					output_l -= saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
-					output_r -= saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
-				}
+#if 0
+				output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 16;
+				output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 16;
+#else
+			// Now with bipolar output. -Valley Bell
+				output_l += saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
+				output_r += saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
 			}
+			else
+			{
+				output_l -= saa->channels[ch].amplitude[ LEFT] * saa->channels[ch].envelope[ LEFT] / 32;
+				output_r -= saa->channels[ch].amplitude[RIGHT] * saa->channels[ch].envelope[RIGHT] / 32;
 #endif
+			}
 		}
 
 		for (ch = 0; ch < 2; ch++)
 		{
 			/* check the actual position in noise generator */
-			saa->noise[ch].counter -= saa->noise[ch].freq;
-			while (saa->noise[ch].counter < 0)
+			while (saa->noise[ch].counter <= 0)
 			{
-				saa->noise[ch].counter += saa->sample_rate;
+				saa->noise[ch].counter += saa->noise[ch].freq; // clock / ((511 - frequency) * 2^(8 - octave)) or clock / 2^(8 + noise period)
 				if( ((saa->noise[ch].level & 0x4000) == 0) == ((saa->noise[ch].level & 0x0040) == 0) )
 					saa->noise[ch].level = (saa->noise[ch].level << 1) | 1;
 				else
 					saa->noise[ch].level <<= 1;
 			}
+			saa->noise[ch].counter -= 256;
 		}
 		/* write sound data to the buffer */
 		buffer[LEFT][j] = output_l / 6;
@@ -362,15 +332,16 @@ int saa1099_sh_start(const struct MachineSound *msound)
 	for (i = 0; i < intf->numchips; i++)
 	{
 		int vol[2];
+		double sample_rate;
 		char buf[2][64];
 		const char *name[2];
 		struct SAA1099 *saa = &saa1099[i];
 
 		memset(saa, 0, sizeof(struct SAA1099));
 
-		saa->master_clock = 7159000; //!! 4000000 8000000 6000000 ?
-		//saa->sample_rate = saa->master_clock / 256.;
-		saa->sample_rate = saa->master_clock / 128.0 * 8;
+		saa->master_clock = 7159090.5; // = XTAL(14'318'181) / 2 //!! 4000000 8000000 6000000 ?
+		sample_rate = saa->master_clock / 256.; // current MAME
+		//sample_rate = saa->master_clock / 128.0 * 8; // previously / VGMPlay
 
 		for (j = 0; j < 2; j++)
 		{
@@ -378,7 +349,7 @@ int saa1099_sh_start(const struct MachineSound *msound)
 			name[j] = buf[j];
 			vol[j] = MIXER(intf->volume[i][j], j ? MIXER_PAN_RIGHT : MIXER_PAN_LEFT);
 		}
-		saa->stream = stream_init_multi(2, name, vol, (int)(saa->sample_rate+0.5), i, saa1099_update);
+		saa->stream = stream_init_multi(2, name, vol, (int)(sample_rate+0.5), i, saa1099_update);
 
 		saa->vgm_idx = vgm_open(VGMC_SAA1099, saa->master_clock);
 	}
@@ -489,7 +460,7 @@ static void saa1099_write_port_w( int chip, int offset, int data )
 			for (i = 0; i < 6; i++)
 			{
 				saa->channels[i].level = 0;
-				saa->channels[i].counter = 0.0;
+				saa->channels[i].counter = freq(saa->channels[i]);
 			}
 		}
 		break;
