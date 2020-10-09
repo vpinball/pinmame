@@ -126,7 +126,7 @@ static WRITE_HANDLER(ay8912_1_data_w)   { AY8910Write(1,1,data); }
 static WRITE_HANDLER(ay8912_1_port_w)	{ logerror("AY8912 #1: port write=%02x\n", data); locals.sndflag = data >> 3; }
 static struct AY8910interface nsm_ay8912Int = {
   2,			/* 2 chips */
-  11052000 / 8,		/* 1.3815 MHz */
+  11052000. / 8.,		/* 1.3815 MHz */
   { MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
   { 0 }, { 0 },
   { ay8912_0_port_w },
@@ -252,21 +252,3 @@ ROM_START(firebird)
 ROM_END
 #define init_firebird init_nsm
 CORE_GAMEDEFNV(firebird,"Hot Fire Birds",1985,"NSM (Germany)",nsm,GAME_NOT_WORKING)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
