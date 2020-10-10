@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #include "driver.h"
 #include "memory.h"
 #include "cpu/m6502/m6502.h"
@@ -401,8 +403,8 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
 	if (GTS80SS_locals.boardData.subType)
-		votraxsc01_set_base_frequency(11025+(data*100)); // OLD_VOTRAX
-		//votraxsc01_set_clock(max((int)-4500 + (int)data*(int)5750,1)); // approximation for the 2 data points above
+		//votraxsc01_set_base_frequency(11025+(data*100)); // OLD_VOTRAX
+		votraxsc01_set_clock(max((int)-4500 + (int)data*(int)5750,1)); // approximation for the 2 data points above
 	GTS80SS_locals.device = 3;
 }
 
@@ -669,7 +671,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s8
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 75 },					/* master volume */
-	{ 7000 },				/* initial sampling frequency */ // OLD_VOTRAX, use 720000 otherwise
+	{ 720000 },				/* initial sampling frequency */ //!! or ~895kHz? or MAME astrocde's 756000? // OLD_VOTRAX: 7000
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
 

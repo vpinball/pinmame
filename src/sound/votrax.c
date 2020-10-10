@@ -1,9 +1,12 @@
+// license:BSD-3-Clause
+
 /**************************************************************************
 
 	Votrax SC-01 Emulator/Simulation
 
- 	Mike@Dissfulfils.co.uk
-	Tom.Haukap@t-online.de
+ 	Mike@Dissfulfils.co.uk (old simulation core)
+	Tom.Haukap@t-online.de (dto.)
+
 	Olivier Galibert (new simulation core)
 
 **************************************************************************
@@ -18,7 +21,7 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 
 **************************************************************************/
 
-#define OLD_VOTRAX
+// #define OLD_VOTRAX
 // Define to use old sample based emulation, also adapt gts80s.c and taitos.c then accordingly (search for the OLD_VOTRAX)
 //!! marks all spots where the new emulation might be still shaky due to the manual port from MAME
 
@@ -299,7 +302,7 @@ void votraxsc01_set_clock(UINT32 newfreq)
 		votraxsc01_locals.mainclock = newfreq;
 		votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 		votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
-		stream_set_sample_rate(votraxsc01_locals.stream, (int)votraxsc01_locals.sclock);
+		stream_set_sample_rate(votraxsc01_locals.stream, (int)(votraxsc01_locals.sclock+0.5));
 		filters_commit(1);
 	}
 }
@@ -315,7 +318,6 @@ void votraxsc01_set_clock(UINT32 newfreq)
 void phone_commit()
 {
 	int i;
-	UINT64 val;
 
 	// Only these two counters are reset on phone change, the rest is
 	// free-running.
@@ -325,7 +327,7 @@ void phone_commit()
 	// In the real chip, the rom is re-read all the time.  Since it's
 	// internal and immutable, no point in not caching it though.
 	for (i = 0; i<64; i++) {
-		val = ((UINT64 *)sc01a_bin)/*(m_rom->base())*/[i];
+		const UINT64 val = ((UINT64 *)sc01a_bin)/*(m_rom->base())*/[i];
 		if (votraxsc01_locals.phone == ((val >> 56) & 0x3f)) {
 			votraxsc01_locals.rom_f1 = BITSWAP4(val, 0, 7, 14, 21);
 			votraxsc01_locals.rom_va = BITSWAP4(val, 1, 8, 15, 22);
@@ -363,7 +365,7 @@ void phone_commit()
 	}
 }
 
-static void interpolate(UINT8 *reg, const UINT8 target)
+static void interpolate(UINT8 * const reg, const UINT8 target)
 {
 	// One step of interpolation, adds one eight of the distance
 	// between the current value and the target.
@@ -648,41 +650,41 @@ void chip_update()
 
 */
 
-void build_standard_filter(double *a, double *b,
-											   double c1t, // Unswitched cap, input, top
-											   double c1b, // Switched cap, input, bottom
-											   double c2t, // Unswitched cap, over first amp-op, top
-											   double c2b, // Switched cap, over first amp-op, bottom
-											   double c3,  // Cap between the two op-amps
-											   double c4)  // Cap over second op-amp
+void build_standard_filter(double * const a, double * const b,
+											   const double c1t, // Unswitched cap, input, top
+											   const double c1b, // Switched cap, input, bottom
+											   const double c2t, // Unswitched cap, over first amp-op, top
+											   const double c2b, // Switched cap, over first amp-op, bottom
+											   const double c3,  // Cap between the two op-amps
+											   const double c4)  // Cap over second op-amp
 {
 	// First compute the three coefficients of H(s).  One can note
 	// that there is as many capacitor values on both sides of the
 	// division, which confirms that the capacity-per-surface-area
 	// is not needed.
-	double k0 = c1t / (votraxsc01_locals.cclock * c1b);
-	double k1 = c4 * c2t / (votraxsc01_locals.cclock * c1b * c3);
-	double k2 = c4 * c2b / (votraxsc01_locals.cclock * votraxsc01_locals.cclock * c1b * c3);
+	const double k0 = c1t / (votraxsc01_locals.cclock * c1b);
+	const double k1 = c4 * c2t / (votraxsc01_locals.cclock * c1b * c3);
+	const double k2 = c4 * c2b / (votraxsc01_locals.cclock * votraxsc01_locals.cclock * c1b * c3);
 
 	// Estimate the filter cutoff frequency
-	double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
+	const double fpeak = sqrt(fabs(k0*k1 - k2))/((2.*M_PI)*k2);
 
 	// Turn that into a warp multiplier
-	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
-	double m0 = zc*k0;
-	double m1 = zc*k1;
-	double m2 = zc*zc*k2;
+	const double m0 = zc*k0;
+	const double m1 = zc*k1;
+	const double m2 = zc*zc*k2;
 
-	a[0] = 1+m0;
-	a[1] = 3+m0;
-	a[2] = 3-m0;
-	a[3] = 1-m0;
-	b[0] = 1+m1+m2;
-	b[1] = 3+m1-m2;
-	b[2] = 3-m1-m2;
-	b[3] = 1-m1+m2;
+	a[0] = 1.+m0;
+	a[1] = 3.+m0;
+	a[2] = 3.-m0;
+	a[3] = 1.-m0;
+	b[0] = 1.+m1+m2;
+	b[1] = 3.+m1-m2;
+	b[2] = 3.-m1-m2;
+	b[3] = 1.-m1+m2;
 }
 
 /*
@@ -703,28 +705,28 @@ void build_standard_filter(double *a, double *b,
   H(s) = Vo/Vi = (R1/R0) * (1 / (1 + s.R1.C1))
 */
 
-void build_lowpass_filter(double *a, double *b,
-											  double c1t, // Unswitched cap, over amp-op, top
-											  double c1b) // Switched cap, over amp-op, bottom
+void build_lowpass_filter(double * const a, double * const b,
+											  const double c1t, // Unswitched cap, over amp-op, top
+											  const double c1b) // Switched cap, over amp-op, bottom
 {
 	// The caps values puts the cutoff at around 150Hz, put that's no good.
 	// Recordings shows we want it around 4K, so fuzz it.
 
 	// Compute the only coefficient we care about
-	double k = c1b / (votraxsc01_locals.cclock * c1t) * (150.0/4000.0);
+	const double k = c1b / (votraxsc01_locals.cclock * c1t) * (150.0/4000.0);
 
 	// Compute the filter cutoff frequency
-	double fpeak = 1./((2.*M_PI)*k);
+	const double fpeak = 1./((2.*M_PI)*k);
 
 	// Turn that into a warp multiplier
-	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
-	double m = zc*k;
+	const double m = zc*k;
 
-	a[0] = 1;
-	b[0] = 1+m;
-	b[1] = 1-m;
+	a[0] = 1.;
+	b[0] = 1.+m;
+	b[1] = 1.-m;
 }
 
 /*
@@ -756,35 +758,35 @@ void build_lowpass_filter(double *a, double *b,
   We assume r0 = r2
 */
 
-void build_noise_shaper_filter(double *a, double *b,
-												   double c1,  // Cap over first amp-op
-												   double c2t, // Unswitched cap between amp-ops, input, top
-												   double c2b, // Switched cap between amp-ops, input, bottom
-												   double c3,  // Cap over second amp-op
-												   double c4)  // Switched cap after second amp-op
+void build_noise_shaper_filter(double * const a, double * const b,
+												   const double c1,  // Cap over first amp-op
+												   const double c2t, // Unswitched cap between amp-ops, input, top
+												   const double c2b, // Switched cap between amp-ops, input, bottom
+												   const double c3,  // Cap over second amp-op
+												   const double c4)  // Switched cap after second amp-op
 {
 	// Coefficients of H(s) = k1*s / (1 + k2*s + k3*s^2)
-	double k0 = c2t*c3*c2b/c4;
-	double k1 = c2t*(votraxsc01_locals.cclock * c2b);
-	double k2 = c1*c2t*c3/(votraxsc01_locals.cclock * c4);
+	const double k0 = c2t*c3*c2b/c4;
+	const double k1 = c2t*(votraxsc01_locals.cclock * c2b);
+	const double k2 = c1*c2t*c3/(votraxsc01_locals.cclock * c4);
 
 	// Estimate the filter cutoff frequency
-	double fpeak = sqrt(1./k2)/(2.*M_PI);
+	const double fpeak = sqrt(1./k2)/(2.*M_PI);
 
 	// Turn that into a warp multiplier
-	double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
+	const double zc = (2.*M_PI)*fpeak/tan(M_PI*fpeak / votraxsc01_locals.sclock);
 
 	// Finally compute the result of the z-transform
-	double m0 = zc*k0;
-	double m1 = zc*k1;
-	double m2 = zc*zc*k2;
+	const double m0 = zc*k0;
+	const double m1 = zc*k1;
+	const double m2 = zc*zc*k2;
 
 	a[0] = m0;
 	a[1] = 0;
 	a[2] = -m0;
-	b[0] = 1+m1+m2;
-	b[1] = 2-2*m2;
-	b[2] = 1-m1+m2;
+	b[0] = 1.+m1+m2;
+	b[1] = 2.-2.*m2;
+	b[2] = 1.-m1+m2;
 }
 
 /*
@@ -810,23 +812,23 @@ void build_noise_shaper_filter(double *a, double *b,
   that H(infinity)=1.
 */
 
-void build_injection_filter(double *a, double *b,
-												double c1b, // Switched cap, input, bottom
-												double c2t, // Unswitched cap, over first amp-op, top
-												double c2b, // Switched cap, over first amp-op, bottom
-												double c3,  // Cap between the two op-amps
-												double c4)  // Cap over second op-amp
+void build_injection_filter(double * const a, double * const b,
+												const double c1b, // Switched cap, input, bottom
+												const double c2t, // Unswitched cap, over first amp-op, top
+												const double c2b, // Switched cap, over first amp-op, bottom
+												const double c3,  // Cap between the two op-amps
+												const double c4)  // Cap over second op-amp
 {
 	// First compute the three coefficients of H(s) = (k0 + k2*s)/(k1 - k2*s)
-	double k0 = votraxsc01_locals.cclock * c2t;
-	double k1 = votraxsc01_locals.cclock * (c1b * c3 / c2t - c2t);
-	double k2 = c2b;
+	const double k0 = votraxsc01_locals.cclock * c2t;
+	const double k1 = votraxsc01_locals.cclock * (c1b * c3 / c2t - c2t);
+	const double k2 = c2b;
 
 	// Don't pre-warp
-	double zc = 2.*votraxsc01_locals.sclock;
+	const double zc = 2.*votraxsc01_locals.sclock;
 
 	// Finally compute the result of the z-transform
-	double m = zc*k2;
+	const double m = zc*k2;
 
 	a[0] = k0 + m;
 	a[1] = k0 - m;
@@ -836,12 +838,12 @@ void build_injection_filter(double *a, double *b,
 	// That ends up in a numerically unstable filter.  Neutralize it for now.
 	a[0] = 0;
 	a[1] = 0;
-	b[0] = 1;
+	b[0] = 1.;
 	b[1] = 0;
 }
 
 // Compute a total capacitor value based on which bits are currently active
-	static unsigned int bits_to_caps(unsigned int value, const unsigned int *caps_values, const size_t N) {
+	static unsigned int bits_to_caps(unsigned int value, const unsigned int * const caps_values, const size_t N) {
 		size_t i;
 		unsigned int total = 0;
 		for(i = 0; i < N; ++i) {
@@ -852,12 +854,12 @@ void build_injection_filter(double *a, double *b,
 		return total;
 	}
 
-static unsigned int f1_caps[4] = { 2546, 4973, 9861, 19724 };
-static unsigned int f2v1_caps[4] = { 1390, 2965, 5875, 11297 };
-static unsigned int f2v2_caps[5] = { 833, 1663, 3164, 6327, 12654 };
-static unsigned int f2n1_caps[4] = { 1390, 2965, 5875, 11297 };
-static unsigned int f2n2_caps[5] = { 833, 1663, 3164, 6327, 12654 };
-static unsigned int f3_caps[4] = { 2226, 4485, 9056, 18111 };
+static const unsigned int f1_caps[4] = { 2546, 4973, 9861, 19724 };
+static const unsigned int f2v1_caps[4] = { 1390, 2965, 5875, 11297 };
+static const unsigned int f2v2_caps[5] = { 833, 1663, 3164, 6327, 12654 };
+static const unsigned int f2n1_caps[4] = { 1390, 2965, 5875, 11297 };
+static const unsigned int f2n2_caps[5] = { 833, 1663, 3164, 6327, 12654 };
+static const unsigned int f3_caps[4] = { 2226, 4485, 9056, 18111 };
 
 void filters_commit(int force)
 {
@@ -937,7 +939,7 @@ void filters_commit(int force)
 }
 
 // Shift a history of values by one and insert the new value at the front
-	static void shift_hist(double val, double *hist_array, size_t N) {
+	static void shift_hist(double val, double * const hist_array, const size_t N) {
 		size_t i;
 		for(i=N-1; i>0; i--)
 			hist_array[i] = hist_array[i-1];
@@ -945,7 +947,7 @@ void filters_commit(int force)
 	}
 
 	// Apply a filter and compute the result. 'a' is applied to x (inputs) and 'b' to y (outputs)
-	static double apply_filter(const double *x, const double *y, const double *a, size_t Na, const double *b, const size_t Nb) {
+	static double apply_filter(const double * const x, const double * const y, const double * const a, const size_t Na, const double * const b, const size_t Nb) {
 		size_t i;
 		double total = 0;
 		for(i=0; i<Na; i++)
@@ -955,7 +957,7 @@ void filters_commit(int force)
 		return total / b[0];
 	}
 
-int analog_calc()
+static float analog_calc()
 {
 	double v,n,n2,vn;
 	// Voice-only path.
@@ -965,7 +967,7 @@ int analog_calc()
 
 	// 2. Multiply by the initial amplifier.  It's linear on the die,
 	// even if it's not in the patent.
-	v = v * votraxsc01_locals.filt_va / 15.0;
+	v = v * votraxsc01_locals.filt_va * (1.0/15.0);
 	shift_hist(v, votraxsc01_locals.voice_1, 4);
 
 	// 3. Apply the f1 filter
@@ -980,7 +982,7 @@ int analog_calc()
 	// 5. Pick up the noise pitch.  Amplitude is linear.  Base
 	// intensity should be checked w.r.t the voice.
 	n = 1e4 * ((votraxsc01_locals.pitch & 0x40 ? votraxsc01_locals.cur_noise : 0) ? 1 : -1);
-	n = n * votraxsc01_locals.filt_fa / 15.0;
+	n = n * votraxsc01_locals.filt_fa * (1.0/15.0);
 	shift_hist(n, votraxsc01_locals.noise_1, 3);
 
 	// 6. Apply the noise shaper
@@ -988,7 +990,7 @@ int analog_calc()
 	shift_hist(n, votraxsc01_locals.noise_2, 3);
 
 	// 7. Scale with the f2 noise input
-	n2 = n * votraxsc01_locals.filt_fc / 15.0;
+	n2 = n * votraxsc01_locals.filt_fc * (1.0/15.0);
 	shift_hist(n2, votraxsc01_locals.noise_3, 2);
 
 	// 8. Apply the f2 filter, noise half,
@@ -1005,7 +1007,7 @@ int analog_calc()
 	shift_hist(vn, votraxsc01_locals.vn_2, 4);
 
 	// 11. Second noise insertion
-	vn += n * (5 + (15 ^ votraxsc01_locals.filt_fc)) / 20.0;
+	vn += n * (5 + (15 ^ votraxsc01_locals.filt_fc)) * (1.0/20.0);
 	shift_hist(vn, votraxsc01_locals.vn_3, 4);
 
 	// 12. Apply the f4 filter
@@ -1013,14 +1015,14 @@ int analog_calc()
 	shift_hist(vn, votraxsc01_locals.vn_4, 4);
 
 	// 13. Apply the glottal closure amplitude, also linear
-	vn = vn * (7 ^ (votraxsc01_locals.closure >> 2)) / 7.0;
+	vn = vn * (7 ^ (votraxsc01_locals.closure >> 2)) * (1.0/7.0);
 	shift_hist(vn, votraxsc01_locals.vn_5, 2);
 
 	// 13. Apply the final fixed filter
 	vn = apply_filter(votraxsc01_locals.vn_5, votraxsc01_locals.vn_6, votraxsc01_locals.fx_a, 1, votraxsc01_locals.fx_b, 2);
 	shift_hist(vn, votraxsc01_locals.vn_6, 2);
 
-	return (int)(vn*(32768.*1.5)); // *1.5 if would be using float buffer
+	return (float)vn; //!! MAME has magic 1.5 here
 }
 
 #else
@@ -1258,7 +1260,7 @@ WRITE_HANDLER(votraxsc01_w)
 	UINT8 prev;
 
 	// only 2 bits matter
-	int inflection = (data >> 6) & 0x03;
+	int inflection = (data >> 6) & 0x03; //!! MAME astrocde also uses: (data & 0x80) ? 0 : 2;
 	//if (votraxsc01_locals.inflection == inflection) //!! original code, due to separate w for inflection in MAME -> does not matter, astrocde has inflection, then -directly- phone write after it
 	//	return;
 
@@ -1295,7 +1297,9 @@ WRITE_HANDLER(votraxsc01_w)
 	Phoneme = data & 0x3F;
 	Intonation = (data >> 6)&0x03;
 
+#if VERBOSE
 	LOG(("Votrax SC-01: %s at intonation %d\n", PhonemeNames[Phoneme], Intonation));
+#endif
 
 #ifndef REAL_DEVICE
 
@@ -1381,6 +1385,8 @@ void votraxsc01_set_volume(int volume) // currently just (ab)used to en/disable 
 static void Votrax_Update(int num, INT16 *buffer, int length)
 {
 #ifndef REAL_DEVICE
+	float* __restrict buffer_f = (float*)buffer;
+
 #if VERBOSE
 	LOG(("Votrax SC-01: update %d\n", length));
 #endif
@@ -1391,27 +1397,29 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		votraxsc01_locals.sample_count++;
 		if (votraxsc01_locals.sample_count & 1)
 			chip_update();
-		buffer[i] = analog_calc();
+		buffer_f[i] = analog_calc();
 		//LOG(("Votrax SC-01: buffer %d\n", ac));
 	}
 #else
 	int samplesToCopy;
 
 	if ( num!=votraxsc01_locals.actIntonation ) {
-		memset(buffer, 0x00, length*sizeof(INT16));
+		memset(buffer_f, 0x00, length*sizeof(float));
 		return;
 	}
 
 	while ( length ) {
+		int i;
 //		if ( votraxsc01_locals.iRemainingSamples==0 ) {
 //			votraxsc01_locals.pActPos = PhonemeData[votraxsc01_locals.actPhoneme].lpStart;
 //			votraxsc01_locals.iRemainingSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength;
 //		}
 
 //		samplesToCopy = (length<=votraxsc01_locals.iRemainingSamples)?length:votraxsc01_locals.iRemainingSamples;
-//
-//		memcpy(buffer, votraxsc01_locals.pActPos, samplesToCopy*sizeof(INT16));
-//		buffer += samplesToCopy;
+
+//		for(i = 0; i < samplesToCopy; ++i)
+//			buffer_f[i] = (float)votraxsc01_locals.pActPos[i] * (float)(1./32768.);
+//		buffer_f += samplesToCopy;
 
 //		votraxsc01_locals.pActPos += samplesToCopy;
 //		votraxsc01_locals.iRemainingSamples -= samplesToCopy;
@@ -1421,8 +1429,8 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		if ( votraxsc01_locals.iDelay ) {
 			samplesToCopy = (length<=votraxsc01_locals.iDelay)?length:votraxsc01_locals.iDelay;
 
-			memset(buffer, 0x00, samplesToCopy*sizeof(INT16));
-			buffer += samplesToCopy;
+			memset(buffer_f, 0x00, samplesToCopy*sizeof(float));
+			buffer_f += samplesToCopy;
 
 			votraxsc01_locals.iDelay -= samplesToCopy;
 
@@ -1448,8 +1456,9 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 
 			samplesToCopy = (length<=votraxsc01_locals.iRemainingSamples)?length:votraxsc01_locals.iRemainingSamples;
 
-			memcpy(buffer, votraxsc01_locals.pActPos, samplesToCopy*sizeof(INT16));
-			buffer += samplesToCopy;
+			for(i = 0; i < samplesToCopy; ++i)
+				buffer_f[i] = (float)votraxsc01_locals.pActPos[i] * (float)(1./32768.);
+			buffer_f += samplesToCopy;
 
 			votraxsc01_locals.pActPos += samplesToCopy;
 			votraxsc01_locals.iRemainingSamples -= samplesToCopy;
@@ -1459,8 +1468,9 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		else {
 			samplesToCopy = (length<=votraxsc01_locals.iSamplesInBuffer)?length:votraxsc01_locals.iSamplesInBuffer;
 
-			memcpy(buffer, votraxsc01_locals.pBufferPos, samplesToCopy*sizeof(INT16));
-			buffer += samplesToCopy;
+			for(i = 0; i < samplesToCopy; ++i)
+				buffer_f[i] = (float)votraxsc01_locals.pBufferPos[i] * (float)(1./32768.);
+			buffer_f += samplesToCopy;
 
 			votraxsc01_locals.pBufferPos += samplesToCopy;
 			votraxsc01_locals.iSamplesInBuffer -= samplesToCopy;
@@ -1531,7 +1541,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 	votraxsc01_locals.mainclock = votraxsc01_locals.intf->baseFrequency[0]; //!! clock();
 	votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 	votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
-	votraxsc01_locals.stream = stream_init("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], (int)votraxsc01_locals.sclock, 0, Votrax_Update);
+	votraxsc01_locals.stream = stream_init_float("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], (int)(votraxsc01_locals.sclock+0.5), 0, Votrax_Update, 1);
 	votraxsc01_locals.timer = timer_alloc(VOTRAXSC01_sh_start_timeout);
 
 	// reset outputs
