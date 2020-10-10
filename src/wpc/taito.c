@@ -231,7 +231,7 @@ static WRITE_HANDLER(dma_commands)
 		int col = (offset<8)?0:4;
 		int rowBit  = (1 << (offset%8));
 		int rowMask = rowBit^0xff;
-		int i = 0;
+		int i;
 
 		for (i=0;i<4;i++) {
 			TAITOlocals.lampMatrix[col] = (TAITOlocals.lampMatrix[col]&rowMask) | ((data&0x08)?rowBit:0);
@@ -304,7 +304,7 @@ MEMORY_END
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
-  MDRV_CPU_ADD_TAG("mcpu", 8080, 17000000/9)
+  MDRV_CPU_ADD_TAG("mcpu", 8080, 17000000./9.)
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, 1)
   MDRV_NVRAM_HANDLER(taito)
@@ -367,7 +367,7 @@ MACHINE_DRIVER_START(taito_old)
   MDRV_IMPORT_FROM(taito_sintetizador)
 
   MDRV_CORE_INIT_RESET_STOP(taito_old,NULL,taito)
-  MDRV_CPU_REPLACE("mcpu", 8080, 19000000/9)
+  MDRV_CPU_REPLACE("mcpu", 8080, 19000000./9.) //!! ??
   MDRV_CPU_MEMORY(taito_readmem_old, taito_writemem_old)
   MDRV_NVRAM_HANDLER(taito_old)
 MACHINE_DRIVER_END

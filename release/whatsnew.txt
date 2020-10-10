@@ -56,7 +56,8 @@ Improve timings for GTS80 machines, especially for Rack 'em up until Tag-Team (1
 Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
 Slightly improve YM2151 noise
-Improve SAA1099 emulation
+Improve SAA1099 emulation (E.F.O.)
+Switch Votrax/SC01 emulation over to real simulation core (some GTS80(A)s and Taitos)
 Correct handling of Gottlieb System 1 displays (thanks to bontango)
 
 *** SIMULATOR ***

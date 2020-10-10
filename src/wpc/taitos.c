@@ -108,7 +108,7 @@ static WRITE_HANDLER(pia0cb2_w)
 {
 	logerror("pia0cb2_w: %x\n", data);
 	if (data && (taitos_locals.brdData.subType & 0x01) == SINTEVOX)
-		votraxsc01_w(0, taitos_locals.votrax_data);
+		votraxsc01_w(0, taitos_locals.votrax_data); // seems to be also including inflection, at least on hawkman (1,2) and cavailero negro (1)
 }
 
 static void votrax_busy(int state)
@@ -160,7 +160,7 @@ struct DACinterface TAITO_dacInt =
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 50 },					/* master volume */
-	{ 8000 },				/* dynamically changing this is currently not supported */ // OLD_VOTRAX, otherwise use 0.6 MHz or 720000 ???
+	{ 600000 },				/* dynamically changing this is currently not supported */ //!! 0.6 MHz ??? // MAME has 720000 as guess // OLD_VOTRAX: 8000
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
 };
 
@@ -172,7 +172,7 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 0.6 MHz ???
+  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) //!! 0.6 MHz ??? // MAME has 1MHz as guess
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
@@ -242,7 +242,7 @@ static READ_HANDLER(unknown100d)
 
 struct AY8910interface TAITO_ay8910Int = {
 	2,			/* 2 chips */
-	2000000,	/* 2 MHz */
+	2000000,	/* 2 MHz */  //!! MAME has XTAL(3'579'545)/2 as guess
 	{ 30, 30 }, /* Volume */
 	{ 0 },
 	{ 0 },
