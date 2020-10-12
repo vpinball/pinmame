@@ -47,6 +47,10 @@
       2x6502, YM2151
 */
 
+#ifndef max
+#define max(x,y) ((x)>(y)?(x):(y))
+#endif
+
 #define DAC_SAMPLE_RATE (4*48000)
 
 /*----------------------------------------
