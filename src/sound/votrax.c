@@ -1022,7 +1022,7 @@ static float analog_calc()
 	vn = apply_filter(votraxsc01_locals.vn_5, votraxsc01_locals.vn_6, votraxsc01_locals.fx_a, 1, votraxsc01_locals.fx_b, 2);
 	shift_hist(vn, votraxsc01_locals.vn_6, 2);
 
-	return (float)vn; //!! MAME has magic 1.5 here
+	return (float)vn * (float)(1.0/2.4); // prevent excessive clipping //!! MAME had a similar magic of * 1.5 here, which is way too loud though
 }
 
 #else
@@ -1397,7 +1397,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		votraxsc01_locals.sample_count++;
 		if (votraxsc01_locals.sample_count & 1)
 			chip_update();
-		buffer_f[i] = analog_calc() / 2.4; // prevent excessive clipping
+		buffer_f[i] = analog_calc();
 		//LOG(("Votrax SC-01: buffer %d\n", ac));
 	}
 #else
