@@ -159,7 +159,7 @@ struct DACinterface TAITO_dacInt =
 
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
-	{ 50 },					/* master volume */
+	{ 75 },					/* master volume */ // OLD_VOTRAX 50
 	{ 720000 },				/* dynamically changing this is currently not supported */ // MAME has 720000 as guess, seems ok // OLD_VOTRAX: 8000
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
 };
