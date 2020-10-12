@@ -139,7 +139,7 @@ MEMORY_END
 
 static void GTS80S_Update(int num, INT16 * const buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
-	float * __restrict buffer_f = (float*)buffer;
+	float * const __restrict buffer_f = (float*)buffer;
 
 	double dCurrentClock = GTS80S_locals.clock[0];
 
@@ -674,7 +674,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = { s80ss_sh_start, s8
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
-	{ 75 },					/* master volume */
+	{ 100 },				/* master volume */ // OLD_VOTRAX 75
 	{ 720000 },				/* initial sampling frequency */ //!! or ~895kHz? or MAME astrocde's 756000? // OLD_VOTRAX: 7000
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
