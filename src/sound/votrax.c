@@ -1397,7 +1397,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		votraxsc01_locals.sample_count++;
 		if (votraxsc01_locals.sample_count & 1)
 			chip_update();
-		buffer_f[i] = analog_calc();
+		buffer_f[i] = analog_calc() / 2.4; // prevent excessive clipping
 		//LOG(("Votrax SC-01: buffer %d\n", ac));
 	}
 #else
