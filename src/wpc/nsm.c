@@ -33,6 +33,7 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  coreGlobals.tmpLampMatrix[8] = 0;
   core_updateSw(TRUE);
 }
 
@@ -200,12 +201,12 @@ static READ_HANDLER(cru_r) {
 }
 
 static WRITE_HANDLER(w7f80) {
-  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0x7f) | data;
+  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0xfe) | data;
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8];
 }
 
 static WRITE_HANDLER(w7fc0) {
-  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0xdf) | (data << 1);
+  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0xfd) | (data << 1);
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8];
 }
 
