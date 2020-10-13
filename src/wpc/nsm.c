@@ -24,7 +24,7 @@ static struct {
   core_tSeg segments;
   UINT8 strobe;
   UINT32 solenoids;
-  int zc, sndflag;
+  int zc, cruCount;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -33,7 +33,6 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-  coreGlobals.solenoids = locals.solenoids;
   core_updateSw(TRUE);
 }
 
@@ -47,6 +46,7 @@ static WRITE_HANDLER(oe_w) {
     HC4094_oe_w(i, 1);
     HC4094_oe_w(i, 0);
   }
+  locals.cruCount = 0;
 }
 
 static WRITE_HANDLER(cru_w) {
@@ -58,6 +58,10 @@ static WRITE_HANDLER(cru_w) {
     HC4094_clock_w(i, 0);
     HC4094_strobe_w(i, 0);
   }
+  locals.cruCount++;
+  if (locals.cruCount >= 72) {
+    oe_w(0, 1);
+  }
 }
 
 static WRITE_HANDLER(parallel_0_out) {
@@ -67,10 +71,21 @@ static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.tmpLampMatrix[locals.strobe] = ~data;
 }
 static WRITE_HANDLER(parallel_2_out) {
-  locals.solenoids = (locals.solenoids & 0xff00) | data;
+  locals.solenoids = (locals.solenoids & 0xffff00) | core_revbyte(data);
+  coreGlobals.solenoids = locals.solenoids;
 }
 static WRITE_HANDLER(parallel_3_out) {
-  locals.solenoids = (locals.solenoids & 0x00ff) | (data << 8);
+  if (data & 0xf0) {
+    locals.solenoids = (locals.solenoids & 0xff00ff) | (0x100 << (0x0f - (data >> 4)));
+  } else {
+    locals.solenoids &= 0xff00ff;
+  }
+  if (data & 0x0f) {
+    locals.solenoids = (locals.solenoids & 0x00ffff) | (0x10000 << (0x0f - (data & 0x0f)));
+  } else {
+    locals.solenoids &= 0x00ffff;
+  }
+  coreGlobals.solenoids = locals.solenoids;
 }
 static WRITE_HANDLER(parallel_4_out) {
   locals.segments[locals.strobe].w = ~data;
@@ -123,22 +138,16 @@ static WRITE_HANDLER(ay8912_0_data_w)   { AY8910Write(0,1,data); }
 static WRITE_HANDLER(ay8912_0_port_w)	{ logerror("AY8912 #0: port write=%02x\n", data); }
 static WRITE_HANDLER(ay8912_1_ctrl_w)   { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8912_1_data_w)   { AY8910Write(1,1,data); }
-static WRITE_HANDLER(ay8912_1_port_w)	{ logerror("AY8912 #1: port write=%02x\n", data); locals.sndflag = data >> 3; }
+static WRITE_HANDLER(ay8912_1_port_w)	{ logerror("AY8912 #1: port write=%02x\n", data); }
 static struct AY8910interface nsm_ay8912Int = {
   2,			/* 2 chips */
   11052000. / 8.,		/* 1.3815 MHz */
-  { MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
+  { 30, 30 },	/* Volume */
   { 0 }, { 0 },
   { ay8912_0_port_w },
   { ay8912_1_port_w },
 };
 
-static READ_HANDLER(read_snd) {
-  return locals.sndflag;
-}
-static READ_HANDLER(read_0) {
-  return 0;
-}
 static READ_HANDLER(read_1) {
   return 1;
 }
@@ -146,8 +155,55 @@ static READ_HANDLER(read_zc) {
   return locals.zc;
 }
 
+static READ_HANDLER(read_diag1) {
+  return coreGlobals.swMatrix[0] & 0x80 ? 0xff : 0;
+}
+static READ_HANDLER(read_diag2) {
+  return coreGlobals.swMatrix[0] & 0x40 ? 0 : 0xff;
+}
+static READ_HANDLER(read_diag3) {
+  return coreGlobals.swMatrix[0] & 0x20 ? 0 : 0xff;
+}
+
+static READ_HANDLER(keypad_r) {
+  static int toggle;
+  toggle = !toggle;
+  return ~coreGlobals.swMatrix[11 + toggle];
+}
+
 static READ_HANDLER(cru_r) {
-  return 0xffff ^ (coreGlobals.swMatrix[1 + (offset & 7)] | (coreGlobals.swMatrix[9 + (offset & 7)] << 8));
+  static int toggle;
+  static int colMap[8] = { 2, 3, 4, 5, 6, 7, 8, 1 };
+  switch (offset) {
+    case 0:
+    case 2:
+      return 0; // unknown
+    case 4:
+      if (toggle) {
+        toggle = 0;
+        return core_revbyte(coreGlobals.swMatrix[colMap[locals.strobe]]);
+      }
+      return 0xf0 ^ core_revbyte(coreGlobals.swMatrix[10]); // SW 72 .. 79 (upper nybble inverted)
+    case 5:
+      toggle = 1;
+      return 0x49 ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1, 4, 5, and 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
+    case 0x0e:
+    case 0x0f:
+      return 0; // unknown
+    default:
+      logerror("cru_r offset %x strobe %d\n", offset, locals.strobe);
+      return 0;
+  }
+}
+
+static WRITE_HANDLER(w7f80) {
+  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0x7f) | data;
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8];
+}
+
+static WRITE_HANDLER(w7fc0) {
+  coreGlobals.tmpLampMatrix[8] = (coreGlobals.tmpLampMatrix[8] & 0xdf) | (data << 1);
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8];
 }
 
 static MEMORY_READ_START(readmem)
@@ -166,19 +222,20 @@ MEMORY_END
 
 static PORT_WRITE_START( writeport )
   { 0x0f70, 0x0f7f, MWA_NOP },  // internal registers
+  { 0x7f80, 0x7f80, w7f80 },	// ???
   { 0x7fb0, 0x7fbf, cru_w },
+  { 0x7fc0, 0x7fc0, w7fc0 },	// ???
   { 0x7fd0, 0x7fd0, oe_w },
 PORT_END
 
 static PORT_READ_START( readport )
   { 0x00,  0x00,  read_1 },		// undervolt perc.
   { 0x10,  0x10,  read_zc },	// antenna
-  { 0x30,  0x30,  read_1 },		// J702 pin 7 (unknown service, default hi)
-  { 0x40,  0x40,  read_1 },		// J702 pin 11 (unknown service, default hi)
+  { 0x30,  0x30,  read_diag1 },	// J702 pin 7 (service connector, default lo)
+  { 0x40,  0x40,  read_diag2 },	// J702 pin 11 (service connector, default hi)
   { 0x50,  0x50,  read_1 },		// batt. test
-  { 0x60,  0x60,  read_snd },	// J703 pin 13 (sound chip #2 analog output, default hi)
-  { 0x1f0, 0x1f0, MRA_NOP },	// ???
-  { 0xfe4, 0xfe4, MRA_NOP },	// ???
+  { 0x60,  0x60,  read_diag3 },	// J702 pin 13 (service connector, default hi)
+  { 0xfe4, 0xfe4, keypad_r },
   { 0xff0, 0xfff, cru_r },
 PORT_END
 
@@ -187,10 +244,10 @@ static MACHINE_INIT(nsm) {
 }
 
 static MACHINE_RESET(nsm) {
-  memset(&locals, 0, sizeof(locals));
   // Disable auto wait state generation on reset
   tms9995reset_param param = { 0 };
   cpunum_reset(0, &param, NULL);
+  memset(&locals, 0, sizeof(locals));
 }
 
 static core_tLCDLayout dispNsm[] = {
@@ -199,21 +256,18 @@ static core_tLCDLayout dispNsm[] = {
 #ifdef MAME_DEBUG
   {6, 9,32,8,CORE_SEG8D},
 #else
-  {6,11,33,2,CORE_SEG8D}, {6,19,37,2,CORE_SEG8D},
+  {6,11,33,2,CORE_SEG8D}, {6,19,38,2,CORE_SEG8D},
 #endif
   {0}
 };
-static core_tGameData nsmGameData = {0,dispNsm};
-static void init_nsm(void) {
-  core_gameData = &nsmGameData;
-}
 
 static SWITCH_UPDATE(nsm) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x01, 1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xe0, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xe3, 10);
+    CORE_SETKEYSW(inports[CORE_COREINPORT+1], 0xfa, 11);
+    CORE_SETKEYSW(inports[CORE_COREINPORT+1] >> 8, 0xfc, 12);
   }
-  cpu_set_irq_line(0, 0, keyboard_pressed_memory_repeat(KEYCODE_M, 1) ? ASSERT_LINE : CLEAR_LINE);
-  cpu_set_irq_line(0, 1, keyboard_pressed_memory_repeat(KEYCODE_COMMA, 1) ? CLEAR_LINE : ASSERT_LINE);
 }
 
 MACHINE_DRIVER_START(nsm)
@@ -227,28 +281,53 @@ MACHINE_DRIVER_START(nsm)
   MDRV_SWITCH_UPDATE(nsm)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_TIMER_ADD(nsm_zc, 100)
+  MDRV_DIPS(1) // needed for extra core inport!
 
   MDRV_SOUND_ADD(AY8910, nsm_ay8912Int)
-  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
-
-// Cosmic Flash (10/85)
-
-// Hot Fire Birds (12/85)
-
-INPUT_PORTS_START(firebird)
+INPUT_PORTS_START(nsm)
   CORE_PORTS
   SIM_PORTS(1)
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001, "Key 1", KEYCODE_1)
+    COREPORT_BIT   (0x0002, "Start",    KEYCODE_1)
+    COREPORT_BIT   (0x0080, "Coin 1",   KEYCODE_3)
+    COREPORT_BIT   (0x0040, "Coin 2",   KEYCODE_4)
+    COREPORT_BIT   (0x0020, "Coin 3",   KEYCODE_5)
+    COREPORT_BIT   (0x0001, "Tilt",     KEYCODE_DEL)
+    COREPORT_BIT   (0x8000, "Test 1",   KEYCODE_7)
+    COREPORT_BITTOG(0x4000, "Test 2",   KEYCODE_8)
+    COREPORT_BITTOG(0x2000, "Test 3",   KEYCODE_9)
+  PORT_START /* 1 */
+    COREPORT_BIT   (0x0020, "Keypad 1", KEYCODE_1_PAD)
+    COREPORT_BIT   (0x0010, "Keypad 2", KEYCODE_2_PAD)
+    COREPORT_BIT   (0x0008, "Keypad 3", KEYCODE_3_PAD)
+    COREPORT_BIT   (0x0400, "Keypad 4", KEYCODE_4_PAD)
+    COREPORT_BIT   (0x0080, "Keypad 5", KEYCODE_5_PAD)
+    COREPORT_BIT   (0x0040, "Keypad 6", KEYCODE_6_PAD)
+    COREPORT_BIT   (0x2000, "Keypad 7", KEYCODE_7_PAD)
+    COREPORT_BIT   (0x1000, "Keypad 8", KEYCODE_8_PAD)
+    COREPORT_BIT   (0x0800, "Keypad 9", KEYCODE_9_PAD)
+    COREPORT_BIT   (0x0002, "Keypad *", KEYCODE_ASTERISK)
+    COREPORT_BIT   (0x8000, "Keypad 0", KEYCODE_0_PAD)
+    COREPORT_BIT   (0x4000, "Keypad #", KEYCODE_ENTER_PAD)
 INPUT_PORTS_END
 
+// The Games (06/85)
+// Cosmic Flash (10/85)
+
+// Hot Fire Birds (12/85)
+static core_tGameData firebirdGameData = {0,dispNsm,{FLIP_SWNO(75,66),2,1}};
+static void init_firebird(void) {
+  core_gameData = &firebirdGameData;
+}
 ROM_START(firebird)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("nsmf02.764", 0x0000, 0x2000, CRC(236b5780) SHA1(19ef6e1fc900e5d94f615a4316f0383ed5ee939c))
     ROM_LOAD("nsmf03.764", 0x2000, 0x2000, CRC(d88c6ef5) SHA1(00edeefaab7e1141741aa132e6f7e56a911573be))
     ROM_LOAD("nsmf04.764", 0x4000, 0x2000, CRC(38a8add4) SHA1(74f781edc31aad07411feacad53c5f6cc73d09f4))
 ROM_END
-#define init_firebird init_nsm
-CORE_GAMEDEFNV(firebird,"Hot Fire Birds",1985,"NSM (Germany)",nsm,GAME_NOT_WORKING)
+#define input_ports_firebird input_ports_nsm
+CORE_GAMEDEFNV(firebird,"Hot Fire Birds",1985,"NSM (Germany)",nsm,GAME_IMPERFECT_GRAPHICS)
+
+// Tag-Team Pinball (??/86)
