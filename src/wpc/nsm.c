@@ -142,12 +142,15 @@ static WRITE_HANDLER(ay8912_1_port_w)	{ logerror("AY8912 #1: port write=%02x\n",
 static struct AY8910interface nsm_ay8912Int = {
   2,			/* 2 chips */
   11052000. / 8.,		/* 1.3815 MHz */
-  { 30, 30 },	/* Volume */
+  { 20, 20 },	/* Volume */
   { 0 }, { 0 },
   { ay8912_0_port_w },
   { ay8912_1_port_w },
 };
 
+static READ_HANDLER(read_0) {
+  return 0;
+}
 static READ_HANDLER(read_1) {
   return 1;
 }
@@ -177,7 +180,7 @@ static READ_HANDLER(cru_r) {
   switch (offset) {
     case 0:
     case 2:
-      return 0; // unknown
+      return 0xff; // unknown
     case 4:
       if (toggle) {
         toggle = 0;
@@ -189,7 +192,7 @@ static READ_HANDLER(cru_r) {
       return 0x49 ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1, 4, 5, and 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
     case 0x0e:
     case 0x0f:
-      return 0; // unknown
+      return 0xff; // unknown
     default:
       logerror("cru_r offset %x strobe %d\n", offset, locals.strobe);
       return 0;
@@ -233,7 +236,7 @@ static PORT_READ_START( readport )
   { 0x10,  0x10,  read_zc },	// antenna
   { 0x30,  0x30,  read_diag1 },	// J702 pin 7 (service connector, default lo)
   { 0x40,  0x40,  read_diag2 },	// J702 pin 11 (service connector, default hi)
-  { 0x50,  0x50,  read_1 },		// batt. test
+  { 0x50,  0x50,  read_0 },		// batt. test, lo for battery voltage ok
   { 0x60,  0x60,  read_diag3 },	// J702 pin 13 (service connector, default hi)
   { 0xfe4, 0xfe4, keypad_r },
   { 0xff0, 0xfff, cru_r },
