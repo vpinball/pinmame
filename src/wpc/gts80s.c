@@ -139,7 +139,7 @@ MEMORY_END
 
 static void GTS80S_Update(int num, INT16 * const buffer, int length) // El Dorado City of Gold, Black Hole (Sound Only), Volcano (Sound Only), Panthera, etc
 {
-	float * const __restrict buffer_f = (float*)buffer;
+	float * __restrict buffer_f = (float*)buffer;
 
 	double dCurrentClock = GTS80S_locals.clock[0];
 

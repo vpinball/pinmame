@@ -253,6 +253,8 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 		/* for each channel */
 		for (ch = 0; ch < 6; ch++)
 		{
+			UINT8 level = 0;
+
 			/* check the actual position in the square wave */
 			while (saa->channels[ch].counter <= 0)
 			{
@@ -266,8 +268,6 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 					saa1099_envelope(chip, 1);
 			}
 			saa->channels[ch].counter -= 256;
-
-			UINT8 level = 0;
 
 			// if the noise is enabled
 			if (saa->channels[ch].noise_enable)
