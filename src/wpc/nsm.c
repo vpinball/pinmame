@@ -179,17 +179,18 @@ static READ_HANDLER(cru_r) {
   static int toggle;
   static int colMap[8] = { 2, 3, 4, 5, 6, 7, 8, 1 };
   switch (offset) {
-    case 0:
+    case 0: // tells the next read from offset 4 that it's 16-bit, meaning to read switch columns 9 and 10 (combining offsets 4 and 5)
+      toggle = 1;
+      return 0; // does not matter
     case 2:
       return 0xff; // unknown
     case 4:
       if (toggle) {
         toggle = 0;
-        return core_revbyte(coreGlobals.swMatrix[colMap[locals.strobe]]);
+        return 0xf0 ^ core_revbyte(coreGlobals.swMatrix[10]); // SW 72 .. 79 (upper nybble inverted)
       }
-      return 0xf0 ^ core_revbyte(coreGlobals.swMatrix[10]); // SW 72 .. 79 (upper nybble inverted)
+      return core_revbyte(coreGlobals.swMatrix[colMap[locals.strobe]]);
     case 5:
-      toggle = 1;
       return 0x49 ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1, 4, 5, and 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
     case 0x0e:
     case 0x0f:
@@ -254,6 +255,15 @@ static MACHINE_RESET(nsm) {
   memset(&locals, 0, sizeof(locals));
 }
 
+static MACHINE_STOP(nsm) {
+  int i;
+  cpu_set_irq_line(0, 0, PULSE_LINE); // IRQ routine saves NVRAM
+  // wait some timeslices before shutdown so the IRQ routine can finish
+  for (i=0; i < 30; i++) {
+    run_one_timeslice();
+  }
+}
+
 static core_tLCDLayout dispNsm[] = {
   {0, 0, 0,8,CORE_SEG8D}, {0,18, 8,8,CORE_SEG8D},
   {3, 0,16,8,CORE_SEG8D}, {3,18,24,8,CORE_SEG8D},
@@ -276,7 +286,7 @@ static SWITCH_UPDATE(nsm) {
 
 MACHINE_DRIVER_START(nsm)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(nsm,nsm,NULL)
+  MDRV_CORE_INIT_RESET_STOP(nsm,nsm,nsm)
   MDRV_CPU_ADD_TAG("mcpu", TMS9995, 11052000)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_PORTS(readport, writeport)
