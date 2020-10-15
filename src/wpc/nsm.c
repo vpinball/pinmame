@@ -153,7 +153,7 @@ static READ_HANDLER(read_ba) {
   return 0;
 }
 static READ_HANDLER(read_uv) {
-  return !locals.uv;
+  return locals.uv ? 0 : locals.zc ? 0 : 0xff;
 }
 static READ_HANDLER(read_zc) {
   return locals.zc;
@@ -234,7 +234,7 @@ static PORT_WRITE_START( writeport )
 PORT_END
 
 static PORT_READ_START( readport )
-  { 0x00,  0x00,  read_uv },	// undervolt perc.
+  { 0x00,  0x00,  read_uv },	// undervolt perc. (also ZC detection on bit 2 somehow!)
   { 0x10,  0x10,  read_zc },	// antenna
   { 0x30,  0x30,  read_diag1 },	// J702 pin 7 (service connector, default lo)
   { 0x40,  0x40,  read_diag2 },	// J702 pin 11 (service connector, default hi)
@@ -260,7 +260,7 @@ static MACHINE_STOP(nsm) {
   locals.uv = 1;
   cpu_set_irq_line(0, 0, PULSE_LINE); // IRQ routine saves NVRAM
   // wait some timeslices before shutdown so the IRQ routine can finish
-  for (i=0; i < 60; i++) {
+  for (i=0; i < 90; i++) {
     run_one_timeslice();
   }
 }
