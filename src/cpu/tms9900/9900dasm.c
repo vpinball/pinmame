@@ -234,6 +234,17 @@ int Dasm9900 (char *buffer, int pc)
 				break;
 		}
 	}
+	else if ((OP & 0xff80) == 0x0080)
+	{
+		if (OP & 0x10)
+		{
+			sprintf (buffer, "lwp  %s", print_arg(0, OP & 0x0f));
+		}
+		else
+		{
+			sprintf (buffer, "lst  %s", print_arg(0, OP & 0x0f));
+		}
+	}
 	else
 		sprintf (buffer, "data >%04x", OP);
 
