@@ -24,7 +24,7 @@ static struct {
   core_tSeg segments;
   UINT8 strobe;
   UINT32 solenoids;
-  int zc, cruCount;
+  int zc, uv, cruCount;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -149,11 +149,11 @@ static struct AY8910interface nsm_ay8912Int = {
   { ay8912_1_port_w },
 };
 
-static READ_HANDLER(read_0) {
+static READ_HANDLER(read_ba) {
   return 0;
 }
-static READ_HANDLER(read_1) {
-  return 1;
+static READ_HANDLER(read_uv) {
+  return !locals.uv;
 }
 static READ_HANDLER(read_zc) {
   return locals.zc;
@@ -191,7 +191,7 @@ static READ_HANDLER(cru_r) {
       }
       return core_revbyte(coreGlobals.swMatrix[colMap[locals.strobe]]);
     case 5:
-      return 0x49 ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1, 4, 5, and 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
+      return 0xcf ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1 .. 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
     case 0x0e:
     case 0x0f:
       return 0xff; // unknown
@@ -234,11 +234,11 @@ static PORT_WRITE_START( writeport )
 PORT_END
 
 static PORT_READ_START( readport )
-  { 0x00,  0x00,  read_1 },		// undervolt perc.
+  { 0x00,  0x00,  read_uv },	// undervolt perc.
   { 0x10,  0x10,  read_zc },	// antenna
   { 0x30,  0x30,  read_diag1 },	// J702 pin 7 (service connector, default lo)
   { 0x40,  0x40,  read_diag2 },	// J702 pin 11 (service connector, default hi)
-  { 0x50,  0x50,  read_0 },		// batt. test, lo for battery voltage ok
+  { 0x50,  0x50,  read_ba },	// batt. test, lo for battery voltage ok
   { 0x60,  0x60,  read_diag3 },	// J702 pin 13 (service connector, default hi)
   { 0xfe4, 0xfe4, keypad_r },
   { 0xff0, 0xfff, cru_r },
@@ -257,9 +257,10 @@ static MACHINE_RESET(nsm) {
 
 static MACHINE_STOP(nsm) {
   int i;
+  locals.uv = 1;
   cpu_set_irq_line(0, 0, PULSE_LINE); // IRQ routine saves NVRAM
   // wait some timeslices before shutdown so the IRQ routine can finish
-  for (i=0; i < 30; i++) {
+  for (i=0; i < 60; i++) {
     run_one_timeslice();
   }
 }
