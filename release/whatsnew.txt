@@ -45,7 +45,7 @@ Doubled ZC frequency for Joctronic games, saving NVRAM
 Enabled coin settings on early Playmatic games
 Support 4-solenoid stepper motor mech used by High Roller Casino, Starship Troopers, and Playboy
 Fixed 8085A DSUB instruction for the H register
-Fixed some bugs in the TMS9995 emulation concerning port data writes / decrementer / CRU, NSM working now (set aside some test warnings)
+Fixed some bugs in the TMS9995 emulation concerning port data writes / decrementer / CRU, NSM working now
 Make color/brightness mappings of Data East 128x16 DMDs match the real hardware
 Fix an old regression of Alvin G. solenoids not firing consistently (most notably breaking Mystery Castle)
 Improve DMD timings for the Sega 192x64 DMD, matching the real one more closely (also a slight improvement for the DE/Sega/Stern 128x32 ones)
@@ -64,7 +64,7 @@ Correct handling of Gottlieb System 1 displays (thanks to bontango)
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -74,6 +74,7 @@ Data East: Leon Test Chip (version 4)
            Michael Jordan 1.30
 Jac van Ham: Formula 1
              Ice Mania
+NSM: Cosmic Flash
 Regama: Trebol
 Sport Matic: Flashman
 Taito do Brasil: Football (sound ROMs only)

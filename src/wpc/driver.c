@@ -1068,8 +1068,11 @@ DRIVERNV(comeback)      //Come Back (198?)
 // ----------------
 // NSM GAMES
 // ----------------
-                        //Cosmic Flash (10/1985)
+                        //The Games (06/85)
+DRIVERNV(cosflnsm)      //Cosmic Flash (10/1985)
 DRIVERNV(firebird)      //Hot Fire Birds (12/1985)
+                        //Tag-Team Pinball (??/86)
+                        //Amazon Hunt (??/8?)
 
 // ----------------
 // PEYPER
