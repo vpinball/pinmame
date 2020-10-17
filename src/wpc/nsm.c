@@ -24,7 +24,7 @@ static struct {
   core_tSeg segments;
   UINT8 strobe;
   UINT32 solenoids;
-  int zc, uv, cruCount;
+  int zc, uv, cruCount, lockRamWrite;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -194,10 +194,20 @@ static READ_HANDLER(cru_r) {
       return 0xcf ^ core_revbyte(coreGlobals.swMatrix[9]); // bits 1 .. 6 are test returns from lamps and solenoids, bit 7 is SW 65 (inverted)
     case 0x0e:
     case 0x0f:
+      locals.lockRamWrite = 0; // seems the only way to enable the write to 0xe600 but don't know really
       return 0xff; // unknown
     default:
       logerror("cru_r offset %x strobe %d\n", offset, locals.strobe);
       return 0;
+  }
+}
+
+static WRITE_HANDLER(we600) {
+  if (offset && (data & 0x10)) {
+    locals.lockRamWrite = 1; // relocks if data bit 5 is set maybe? br test always shows "16"...
+  }
+  if (!locals.lockRamWrite) {
+    generic_nvram[0x600 + offset] = memory_region(REGION_CPU1)[0xe600 + offset] = data;
   }
 }
 
@@ -217,7 +227,7 @@ static MEMORY_READ_START(readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(writemem)
-  { 0xe600, 0xe601, MWA_NOP }, // reports test error "br failed" if this RAM address is (always) writable! But when to unlock it???
+  { 0xe600, 0xe601, we600 }, // reports test error "br failed" if this RAM address is always writable!
   { 0xe000, 0xe7ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   { 0xe800, 0xefff, MWA_RAM }, // not needed / equipped on most games, can't hurt to have it
   { 0xffec, 0xffec, ay8912_0_ctrl_w },
