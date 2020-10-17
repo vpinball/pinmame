@@ -153,7 +153,7 @@ static READ_HANDLER(read_ba) {
   return 0;
 }
 static READ_HANDLER(read_uv) {
-  return locals.uv ? 0 : locals.zc ? 0 : 0xff;
+  return locals.uv ? 0 : 0x05;
 }
 static READ_HANDLER(read_zc) {
   return locals.zc;
@@ -217,8 +217,9 @@ static MEMORY_READ_START(readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(writemem)
+  { 0xe600, 0xe601, MWA_NOP }, // reports test error "br failed" if this RAM address is (always) writable! But when to unlock it???
   { 0xe000, 0xe7ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  { 0xe800, 0xefff, MWA_RAM },
+  { 0xe800, 0xefff, MWA_RAM }, // not needed / equipped on most games, can't hurt to have it
   { 0xffec, 0xffec, ay8912_0_ctrl_w },
   { 0xffed, 0xffed, ay8912_0_data_w },
   { 0xffee, 0xffee, ay8912_1_ctrl_w },
@@ -234,7 +235,7 @@ static PORT_WRITE_START( writeport )
 PORT_END
 
 static PORT_READ_START( readport )
-  { 0x00,  0x00,  read_uv },	// undervolt perc. (also ZC detection on bit 2 somehow!)
+  { 0x00,  0x00,  read_uv },	// undervolt perc. on bit 1, also needs bit 3 set to pass "OE 614" test
   { 0x10,  0x10,  read_zc },	// antenna
   { 0x30,  0x30,  read_diag1 },	// J702 pin 7 (service connector, default lo)
   { 0x40,  0x40,  read_diag2 },	// J702 pin 11 (service connector, default hi)
@@ -328,14 +329,23 @@ INPUT_PORTS_START(nsm)
     COREPORT_BIT   (0x4000, "Keypad #", KEYCODE_ENTER_PAD)
 INPUT_PORTS_END
 
+static core_tGameData nsmGameData = {0,dispNsm,{FLIP_SWNO(75,66),1,1}};
+
 // The Games (06/85)
+
 // Cosmic Flash (10/85)
+static void init_cosflnsm(void) { core_gameData = &nsmGameData; }
+ROM_START(cosflnsm)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("ic602.bin", 0x0000, 0x2000, CRC(1ce79cd7) SHA1(d5caf6d4323cc43a9c4379b51630190bf5799202))
+    ROM_LOAD("ic603.bin", 0x2000, 0x2000, CRC(538de9f8) SHA1(c64942ffa600a2a7a37b986e1a346d351d0b65eb))
+    ROM_LOAD("ic604.bin", 0x4000, 0x2000, CRC(4b52e5d7) SHA1(1547bb7a06ff0bdf55c635b2f4e57b7d93a191ee))
+ROM_END
+#define input_ports_cosflnsm input_ports_nsm
+CORE_GAMEDEFNV(cosflnsm,"Cosmic Flash (NSM)",1985,"NSM (Germany)",nsm,0)
 
 // Hot Fire Birds (12/85)
-static core_tGameData firebirdGameData = {0,dispNsm,{FLIP_SWNO(75,66),2,1}};
-static void init_firebird(void) {
-  core_gameData = &firebirdGameData;
-}
+static void init_firebird(void) { core_gameData = &nsmGameData; }
 ROM_START(firebird)
   NORMALREGION(0x10000, REGION_CPU1)
     ROM_LOAD("nsmf02.764", 0x0000, 0x2000, CRC(236b5780) SHA1(19ef6e1fc900e5d94f615a4316f0383ed5ee939c))
@@ -343,6 +353,7 @@ ROM_START(firebird)
     ROM_LOAD("nsmf04.764", 0x4000, 0x2000, CRC(38a8add4) SHA1(74f781edc31aad07411feacad53c5f6cc73d09f4))
 ROM_END
 #define input_ports_firebird input_ports_nsm
-CORE_GAMEDEFNV(firebird,"Hot Fire Birds",1985,"NSM (Germany)",nsm,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(firebird,"Hot Fire Birds",1985,"NSM (Germany)",nsm,0)
 
 // Tag-Team Pinball (??/86)
+// Amazon Hunt (??/8?)
