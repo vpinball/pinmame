@@ -64,7 +64,7 @@ Correct handling of Gottlieb System 1 displays (thanks to bontango)
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -75,6 +75,7 @@ Data East: Leon Test Chip (version 4)
 Jac van Ham: Formula 1
              Ice Mania
 NSM: Cosmic Flash
+     Games, The
 Regama: Trebol
 Sport Matic: Flashman
 Taito do Brasil: Football (sound ROMs only)

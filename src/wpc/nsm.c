@@ -342,6 +342,15 @@ INPUT_PORTS_END
 static core_tGameData nsmGameData = {0,dispNsm,{FLIP_SWNO(75,66),1,1}};
 
 // The Games (06/85)
+static void init_gamesnsm(void) { core_gameData = &nsmGameData; }
+ROM_START(gamesnsm)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("151595-602.bin", 0x0000, 0x2000, CRC(18f3e309) SHA1(f587d40ddf128f4e040e660c054e98cbebad99c7))
+    ROM_LOAD("151596-603.bin", 0x2000, 0x2000, CRC(fdf1b48b) SHA1(fd63ef5e49aa4b84b10972e118bd54219d680d36))
+    ROM_LOAD("151597-604.bin", 0x4000, 0x2000, CRC(5c8a3547) SHA1(843a56012227a61ff068bc1e14baf090d4a95fe1))
+ROM_END
+#define input_ports_gamesnsm input_ports_nsm
+CORE_GAMEDEFNV(gamesnsm,"Games, The (NSM)",1985,"NSM (Germany)",nsm,0)
 
 // Cosmic Flash (10/85)
 static void init_cosflnsm(void) { core_gameData = &nsmGameData; }
