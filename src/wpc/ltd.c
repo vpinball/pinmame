@@ -95,6 +95,10 @@ static INTERRUPT_GEN(LTD_vblank) {
     locals.solenoids &= 0xff100ff;
     coreGlobals.tmpLampMatrix[6] = 0;
   }
+  if (!strncasecmp(Machine->gamedrv->name, "spcpoker", 8) && (locals.vblankCount % 2) == 0) {
+    locals.solenoids &= 0x1ffff;
+    coreGlobals.tmpLampMatrix[5] = 0;
+  }
   coreGlobals.solenoids = locals.solenoids;
   /*-- display --*/
   if ((locals.vblankCount % LTD_DISPLAYSMOOTH) == 0)
@@ -151,6 +155,11 @@ static WRITE_HANDLER(peri_w) {
         if (data & 0x08) lampStrobe = 0;
         else if (data & 0x80) lampStrobe = 1;
         coreGlobals.tmpLampMatrix[5] = data & 0x77;
+        if (data & 0x77) {
+          locals.solenoids = (locals.solenoids & 0x1ffff) | ((data & 0x77) << 17);
+          coreGlobals.solenoids = locals.solenoids;
+          locals.vblankCount = 0;
+        }
       } else {
         coreGlobals.tmpLampMatrix[offset + 12 * lampStrobe] = data;
       }
