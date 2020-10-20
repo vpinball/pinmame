@@ -11,7 +11,7 @@
 / Taito Sound System
 / Taito uses four different sound boards:
 / - sintetizador
-/ - sintevox (sintetizador with an additional SC-01)
+/ - sintevox (sintetizador with an additional SC-01A)
 / - sintetizador with a daughter board installed
 / - sintevox with a daughter board installed
 /
@@ -160,7 +160,7 @@ struct DACinterface TAITO_dacInt =
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 75 },					/* master volume */ // OLD_VOTRAX 50
-	{ 720000 },				/* dynamically changing this is currently not supported */ // MAME has 720000 as guess, seems ok // OLD_VOTRAX: 8000
+	{ 720000 },				/* dynamically changing this is currently not supported */ // 'About the SC01, it does not have an external oscillator' // OLD_VOTRAX: 8000
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
 };
 
@@ -172,7 +172,7 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) //!! 0.6 MHz ??? // MAME has 1MHz as guess
+  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 'The oscillator frequency of the 74123 is around 2.4MHz. Internally, the processor divides that frequency by 4, resulting in 600KHz.'
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
