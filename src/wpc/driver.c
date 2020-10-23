@@ -481,6 +481,7 @@ DRIVER(hook,501)        //Data East MPU: 03/18 Hook (5.01 unofficial MOD)
 //DMD 128 x 32
 DRIVER(lw3,200)         //Data East MPU: 06/92 Lethal Weapon (2.00)
 DRIVER(lw3,203)         //Data East MPU: 07/92 Lethal Weapon (2.03)
+DRIVER(lw3,e204)        //Data East MPU: 07/92 Lethal Weapon (2.04 English)
 DRIVER(lw3,205)         //Data East MPU: 07/92 Lethal Weapon (2.05)
 DRIVER(lw3,207)         //Data East MPU: 08/92 Lethal Weapon (2.07 Canadian)
 DRIVER(lw3,208)         //Data East MPU: 11/92 Lethal Weapon (2.08)
