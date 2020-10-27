@@ -890,7 +890,7 @@ INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm, unsign
 
 /* calculate output of a standard 2 operator channel
  (or 1st part of a 4-op channel) */
-INLINE void chan_calc( OPL3_CH *CH )
+INLINE void chan_calc( OPL3 *chip, OPL3_CH *CH )
 {
 	OPL3_SLOT *SLOT;
 	unsigned int env;
@@ -925,7 +925,7 @@ INLINE void chan_calc( OPL3_CH *CH )
 }
 
 /* calculate output of a 2nd part of 4-op channel */
-INLINE void chan_calc_ext( OPL3_CH *CH )
+INLINE void chan_calc_ext( OPL3 *chip, OPL3_CH *CH )
 {
 	OPL3_SLOT *SLOT;
 	unsigned int env;
@@ -983,7 +983,7 @@ number   number    BLK/FNUM2 FNUM    Drum  Hat   Drum  Tom  Cymbal
 
 /* calculate rhythm */
 
-INLINE void chan_calc_rhythm( OPL3_CH *CH, unsigned int noise )
+INLINE void chan_calc_rhythm( OPL3 *chip, OPL3_CH *CH, unsigned int noise )
 {
 	OPL3_SLOT *SLOT;
 	signed int out;
@@ -1022,7 +1022,7 @@ INLINE void chan_calc_rhythm( OPL3_CH *CH, unsigned int noise )
 	SLOT++;
 	env = volume_calc(SLOT);
 	if( env < ENV_QUIET )
-		chanout[6] += op_calc(SLOT->Cnt, env, chip->phase_modulation, SLOT->wavetable) * 2;
+		chip->chanout[6] += op_calc(SLOT->Cnt, env, chip->phase_modulation, SLOT->wavetable) * 2;
 
 
 	/* Phase generation is based on: */
@@ -1089,7 +1089,7 @@ INLINE void chan_calc_rhythm( OPL3_CH *CH, unsigned int noise )
 				phase = 0xd0>>2;
 		}
 
-		chanout[7] += op_calc(phase<<FREQ_SH, env, 0, SLOT7_1->wavetable) * 2;
+		chip->chanout[7] += op_calc(phase<<FREQ_SH, env, 0, SLOT7_1->wavetable) * 2;
 	}
 
 	/* Snare Drum (verified on real YM3812) */
@@ -1110,13 +1110,13 @@ INLINE void chan_calc_rhythm( OPL3_CH *CH, unsigned int noise )
 		if (noise)
 			phase ^= 0x100;
 
-		chanout[7] += op_calc(phase<<FREQ_SH, env, 0, SLOT7_2->wavetable) * 2;
+		chip->chanout[7] += op_calc(phase<<FREQ_SH, env, 0, SLOT7_2->wavetable) * 2;
 	}
 
 	/* Tom Tom (verified on real YM3812) */
 	env = volume_calc(SLOT8_1);
 	if( env < ENV_QUIET )
-		chanout[8] += op_calc(SLOT8_1->Cnt, env, 0, SLOT8_1->wavetable) * 2;
+		chip->chanout[8] += op_calc(SLOT8_1->Cnt, env, 0, SLOT8_1->wavetable) * 2;
 
 	/* Top Cymbal (verified on real YM3812) */
 	env = volume_calc(SLOT8_2);
@@ -1143,7 +1143,7 @@ INLINE void chan_calc_rhythm( OPL3_CH *CH, unsigned int noise )
 		if (res2)
 			phase = 0x300;
 
-		chanout[8] += op_calc(phase<<FREQ_SH, env, 0, SLOT8_2->wavetable) * 2;
+		chip->chanout[8] += op_calc(phase<<FREQ_SH, env, 0, SLOT8_2->wavetable) * 2;
 	}
 
 }
@@ -2142,42 +2142,42 @@ static void OPL3WriteReg(OPL3 *chip, int r, int v)
 						CH->SLOT[SLOT1].connect = &chip->phase_modulation;
 						CH->SLOT[SLOT2].connect = &chip->phase_modulation2;
 						(CH+3)->SLOT[SLOT1].connect = &chip->phase_modulation;
-						(CH+3)->SLOT[SLOT2].connect = &chanout[ chan_no + 3 ];
+						(CH+3)->SLOT[SLOT2].connect = &chip->chanout[ chan_no + 3 ];
 					break;
 					case 1:
 						/* 1 -> 2 -\
 						   3 -> 4 -+- out */
 
 						CH->SLOT[SLOT1].connect = &chip->phase_modulation;
-						CH->SLOT[SLOT2].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT2].connect = &chip->chanout[chan_no];
 						(CH+3)->SLOT[SLOT1].connect = &chip->phase_modulation;
-						(CH+3)->SLOT[SLOT2].connect = &chanout[ chan_no + 3 ];
+						(CH+3)->SLOT[SLOT2].connect = &chip->chanout[ chan_no + 3 ];
 					break;
 					case 2:
 						/* 1 -----------\
 						   2 -> 3 -> 4 -+- out */
 
-						CH->SLOT[SLOT1].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT1].connect = &chip->chanout[chan_no];
 						CH->SLOT[SLOT2].connect = &chip->phase_modulation2;
 						(CH+3)->SLOT[SLOT1].connect = &chip->phase_modulation;
-						(CH+3)->SLOT[SLOT2].connect = &chanout[ chan_no + 3 ];
+						(CH+3)->SLOT[SLOT2].connect = &chip->chanout[ chan_no + 3 ];
 					break;
 					case 3:
 						/* 1 ------\
 						   2 -> 3 -+- out
 						   4 ------/     */
-						CH->SLOT[SLOT1].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT1].connect = &chip->chanout[chan_no];
 						CH->SLOT[SLOT2].connect = &chip->phase_modulation2;
-						(CH+3)->SLOT[SLOT1].connect = &chanout[ chan_no + 3 ];
-						(CH+3)->SLOT[SLOT2].connect = &chanout[ chan_no + 3 ];
+						(CH+3)->SLOT[SLOT1].connect = &chip->chanout[ chan_no + 3 ];
+						(CH+3)->SLOT[SLOT2].connect = &chip->chanout[ chan_no + 3 ];
 					break;
 					}
 				}
 				else
 				{
 					/* 2 operators mode */
-					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
-					CH->SLOT[SLOT2].connect = &chanout[(r&0xf)+ch_offset];
+					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chip->chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
+					CH->SLOT[SLOT2].connect = &chip->chanout[(r&0xf)+ch_offset];
 				}
 			break;
 
@@ -2194,57 +2194,57 @@ static void OPL3WriteReg(OPL3 *chip, int r, int v)
 						(CH-3)->SLOT[SLOT1].connect = &chip->phase_modulation;
 						(CH-3)->SLOT[SLOT2].connect = &chip->phase_modulation2;
 						CH->SLOT[SLOT1].connect = &chip->phase_modulation;
-						CH->SLOT[SLOT2].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT2].connect = &chip->chanout[chan_no];
 					break;
 					case 1:
 						/* 1 -> 2 -\
 						   3 -> 4 -+- out */
 
 						(CH-3)->SLOT[SLOT1].connect = &chip->phase_modulation;
-						(CH-3)->SLOT[SLOT2].connect = &chanout[ chan_no - 3 ];
+						(CH-3)->SLOT[SLOT2].connect = &chip->chanout[ chan_no - 3 ];
 						CH->SLOT[SLOT1].connect = &chip->phase_modulation;
-						CH->SLOT[SLOT2].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT2].connect = &chip->chanout[chan_no];
 					break;
 					case 2:
 						/* 1 -----------\
 						   2 -> 3 -> 4 -+- out */
 
-						(CH-3)->SLOT[SLOT1].connect = &chanout[ chan_no - 3 ];
+						(CH-3)->SLOT[SLOT1].connect = &chip->chanout[ chan_no - 3 ];
 						(CH-3)->SLOT[SLOT2].connect = &chip->phase_modulation2;
 						CH->SLOT[SLOT1].connect = &chip->phase_modulation;
-						CH->SLOT[SLOT2].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT2].connect = &chip->chanout[chan_no];
 					break;
 					case 3:
 						/* 1 ------\
 						   2 -> 3 -+- out
 						   4 ------/     */
-						(CH-3)->SLOT[SLOT1].connect = &chanout[ chan_no - 3 ];
+						(CH-3)->SLOT[SLOT1].connect = &chip->chanout[ chan_no - 3 ];
 						(CH-3)->SLOT[SLOT2].connect = &chip->phase_modulation2;
-						CH->SLOT[SLOT1].connect = &chanout[ chan_no ];
-						CH->SLOT[SLOT2].connect = &chanout[ chan_no ];
+						CH->SLOT[SLOT1].connect = &chip->chanout[chan_no];
+						CH->SLOT[SLOT2].connect = &chip->chanout[chan_no];
 					break;
 					}
 				}
 				else
 				{
 					/* 2 operators mode */
-					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
-					CH->SLOT[SLOT2].connect = &chanout[(r&0xf)+ch_offset];
+					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chip->chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
+					CH->SLOT[SLOT2].connect = &chip->chanout[(r&0xf)+ch_offset];
 				}
 			break;
 
 			default:
 					/* 2 operators mode */
-					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
-					CH->SLOT[SLOT2].connect = &chanout[(r&0xf)+ch_offset];
+					CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chip->chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
+					CH->SLOT[SLOT2].connect = &chip->chanout[(r&0xf)+ch_offset];
 			break;
 			}
 		}
 		else
 		{
 			/* OPL2 mode - always 2 operators mode */
-			CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
-			CH->SLOT[SLOT2].connect = &chanout[(r&0xf)+ch_offset];
+			CH->SLOT[SLOT1].connect = CH->SLOT[SLOT1].CON ? &chip->chanout[(r&0xf)+ch_offset] : &chip->phase_modulation;
+			CH->SLOT[SLOT2].connect = &chip->chanout[(r&0xf)+ch_offset];
 		}
 	break;
 
@@ -2643,64 +2643,64 @@ void YMF262UpdateOne(int which, INT16 **buffers, int length)
 
 #if 1
 	/* register set #1 */
-		chan_calc(&chip->P_CH[0]);			/* extended 4op ch#0 part 1 or 2op ch#0 */
+		chan_calc(chip, &chip->P_CH[0]);			/* extended 4op ch#0 part 1 or 2op ch#0 */
 		if (chip->P_CH[0].extended)
-			chan_calc_ext(&chip->P_CH[3]);	/* extended 4op ch#0 part 2 */
+			chan_calc_ext(chip, &chip->P_CH[3]);	/* extended 4op ch#0 part 2 */
 		else
-			chan_calc(&chip->P_CH[3]);		/* standard 2op ch#3 */
+			chan_calc(chip, &chip->P_CH[3]);		/* standard 2op ch#3 */
 
 
-		chan_calc(&chip->P_CH[1]);			/* extended 4op ch#1 part 1 or 2op ch#1 */
+		chan_calc(chip, &chip->P_CH[1]);			/* extended 4op ch#1 part 1 or 2op ch#1 */
 		if (chip->P_CH[1].extended)
-			chan_calc_ext(&chip->P_CH[4]);	/* extended 4op ch#1 part 2 */
+			chan_calc_ext(chip, &chip->P_CH[4]);	/* extended 4op ch#1 part 2 */
 		else
-			chan_calc(&chip->P_CH[4]);		/* standard 2op ch#4 */
+			chan_calc(chip, &chip->P_CH[4]);		/* standard 2op ch#4 */
 
 
-		chan_calc(&chip->P_CH[2]);			/* extended 4op ch#2 part 1 or 2op ch#2 */
+		chan_calc(chip, &chip->P_CH[2]);			/* extended 4op ch#2 part 1 or 2op ch#2 */
 		if (chip->P_CH[2].extended)
-			chan_calc_ext(&chip->P_CH[5]);	/* extended 4op ch#2 part 2 */
+			chan_calc_ext(chip, &chip->P_CH[5]);	/* extended 4op ch#2 part 2 */
 		else
-			chan_calc(&chip->P_CH[5]);		/* standard 2op ch#5 */
+			chan_calc(chip, &chip->P_CH[5]);		/* standard 2op ch#5 */
 
 
 		if(!rhythm)
 		{
-			chan_calc(&chip->P_CH[6]);
-			chan_calc(&chip->P_CH[7]);
-			chan_calc(&chip->P_CH[8]);
+			chan_calc(chip, &chip->P_CH[6]);
+			chan_calc(chip, &chip->P_CH[7]);
+			chan_calc(chip, &chip->P_CH[8]);
 		}
 		else		/* Rhythm part */
 		{
-			chan_calc_rhythm(&chip->P_CH[0], (chip->noise_rng>>0)&1 );
+			chan_calc_rhythm(chip, &chip->P_CH[0], (chip->noise_rng>>0)&1 );
 		}
 
 	/* register set #2 */
-		chan_calc(&chip->P_CH[ 9]);
+		chan_calc(chip, &chip->P_CH[ 9]);
 		if (chip->P_CH[9].extended)
-			chan_calc_ext(&chip->P_CH[12]);
+			chan_calc_ext(chip, &chip->P_CH[12]);
 		else
-			chan_calc(&chip->P_CH[12]);
+			chan_calc(chip, &chip->P_CH[12]);
 
 
-		chan_calc(&chip->P_CH[10]);
+		chan_calc(chip, &chip->P_CH[10]);
 		if (chip->P_CH[10].extended)
-			chan_calc_ext(&chip->P_CH[13]);
+			chan_calc_ext(chip, &chip->P_CH[13]);
 		else
-			chan_calc(&chip->P_CH[13]);
+			chan_calc(chip, &chip->P_CH[13]);
 
 
-		chan_calc(&chip->P_CH[11]);
+		chan_calc(chip, &chip->P_CH[11]);
 		if (chip->P_CH[11].extended)
-			chan_calc_ext(&chip->P_CH[14]);
+			chan_calc_ext(chip, &chip->P_CH[14]);
 		else
-			chan_calc(&chip->P_CH[14]);
+			chan_calc(chip, &chip->P_CH[14]);
 
 
         /* channels 15,16,17 are fixed 2-operator channels only */
-		chan_calc(&chip->P_CH[15]);
-		chan_calc(&chip->P_CH[16]);
-		chan_calc(&chip->P_CH[17]);
+		chan_calc(chip, &chip->P_CH[15]);
+		chan_calc(chip, &chip->P_CH[16]);
+		chan_calc(chip, &chip->P_CH[17]);
 #endif
 //profiler_mark(PROFILER_END);
 
