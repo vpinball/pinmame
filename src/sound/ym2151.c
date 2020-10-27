@@ -1719,7 +1719,7 @@ INLINE void chan7_calc(void)
 	else
 	{
 		if (env < ENV_QUIET)
-			PSG->chanout[7] += op_calc(op+3, env, c2);
+			PSG->chanout[7] += op_calc(op+3, env, PSG->c2);
 	}
 
 	//if (PSG->chanout[7] > +16384)		PSG->chanout[7] = +16384; //!! VGMPlay clips to 10 bit here?
