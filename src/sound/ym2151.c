@@ -48,7 +48,8 @@
 	FILE * cymfile = NULL;
 #endif
 /* struct describing a single operator */
-typedef struct{
+typedef struct
+{
 	UINT32		phase;					/* accumulated operator phase */
 	UINT32		freq;					/* operator frequency count */
 	INT32		dt1;					/* current DT1 (detune 1 phase inc/decrement) value */
@@ -362,7 +363,6 @@ O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16),
 O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16),
 O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16),
 O(16),O(16),O(16),O(16),O(16),O(16),O(16),O(16)
-
 };
 #undef O
 
@@ -377,7 +377,6 @@ O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
 O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
 O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
 O(0),O(0),O(0),O(0),O(0),O(0),O(0),O(0),
-
 
 /* rates 00-11 */
 O(11),O(11),O(11),O(11),
@@ -410,7 +409,6 @@ O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),
 O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),
 O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),
 O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0),O( 0)
-
 };
 #undef O
 
@@ -546,9 +544,6 @@ static YM2151 * YMPSG = NULL;	/* array of YM2151's */
 static unsigned int YMNumChips;	/* total # of YM2151's emulated */
 
 
-/* these variables stay here for speedup purposes only */
-static YM2151 * PSG;
-
 /* save output as raw 16-bit sample */
 /* #define SAVE_SAMPLE */
 /* #define SAVE_SEPARATE_CHANNELS */
@@ -597,7 +592,6 @@ static void init_tables(void)
 	/*logerror("TL_TAB_LEN = %i (%i bytes)\n",TL_TAB_LEN, (int)sizeof(tl_tab));*/
 	/*logerror("ENV_QUIET= %i\n",ENV_QUIET );*/
 
-
 	for (i=0; i<SIN_LEN; i++)
 	{
 		/* non-standard sinus */
@@ -618,7 +612,6 @@ static void init_tables(void)
 		sin_tab[ i ] = n*2 + (m>=0.0? 0: 1 );
 		/*logerror("sin [0x%4x]= %4i (tl_tab value=%8x)\n", i, sin_tab[i],tl_tab[sin_tab[i]]);*/
 	}
-
 
 	/* calculate d1l_tab table */
 	for (i=0; i<16; i++)
@@ -708,13 +701,13 @@ static void init_chip_tables(YM2151 *chip)
 	}
 }
 
-#define KEY_ON(op, key_set){									\
+#define KEY_ON(op, key_set, eg_cnt){									\
 		if (!(op)->key)											\
 		{														\
 			(op)->phase = 0;			/* clear phase */		\
 			(op)->state = EG_ATT;		/* KEY ON = attack */	\
 			(op)->volume += (~(op)->volume *					\
-                           (eg_inc[(op)->eg_sel_ar + ((PSG->eg_cnt>>(op)->eg_sh_ar)&7)])	\
+                           (eg_inc[(op)->eg_sel_ar + ((eg_cnt>>(op)->eg_sh_ar)&7)])	\
                           ) >>4;								\
 			if ((op)->volume <= MIN_ATT_INDEX)					\
 			{													\
@@ -737,25 +730,25 @@ static void init_chip_tables(YM2151 *chip)
 		}														\
 }
 
-INLINE void envelope_KONKOFF(YM2151Operator * op, int v)
+INLINE void envelope_KONKOFF(YM2151 * PSG, YM2151Operator * op, int v)
 {
 	if (v&0x08)	/* M1 */
-		KEY_ON (op+0, 1)
+		KEY_ON (op+0, 1, PSG->eg_cnt)
 	else
 		KEY_OFF(op+0,~1)
 
 	if (v&0x20)	/* M2 */
-		KEY_ON (op+1, 1)
+		KEY_ON (op+1, 1, PSG->eg_cnt)
 	else
 		KEY_OFF(op+1,~1)
 
 	if (v&0x10)	/* C1 */
-		KEY_ON (op+2, 1)
+		KEY_ON (op+2, 1, PSG->eg_cnt)
 	else
 		KEY_OFF(op+2,~1)
 
 	if (v&0x40)	/* C2 */
-		KEY_ON (op+3, 1)
+		KEY_ON (op+3, 1, PSG->eg_cnt)
 	else
 		KEY_OFF(op+3,~1)
 }
@@ -812,7 +805,7 @@ static void timer_callback_chip_busy (int n)
 
 
 
-INLINE void set_connect( YM2151Operator *om1, int cha, int v)
+INLINE void set_connect(YM2151 *PSG, YM2151Operator *om1, int cha, int v)
 {
 	YM2151Operator *om2 = om1+1;
 	YM2151Operator *oc1 = om1+2;
@@ -1031,8 +1024,7 @@ void YM2151WriteReg(int n, int r, int v)
 			break;
 
 		case 0x08:
-			PSG = &YMPSG[n]; /* PSG is used in KEY_ON macro */
-			envelope_KONKOFF(&chip->oper[ (v&7)*4 ], v );
+			envelope_KONKOFF(chip, &chip->oper[ (v&7)*4 ], v );
 			break;
 
 		case 0x0f:	/* noise mode enable, noise period */
@@ -1141,7 +1133,7 @@ void YM2151WriteReg(int n, int r, int v)
 			chip->pan[ (r&7)*2    ] = (v & 0x40) ? ~0 : 0;
 			chip->pan[ (r&7)*2 +1 ] = (v & 0x80) ? ~0 : 0;
 			chip->connect[r&7] = v&7;
-			set_connect(op, r&7, v&7);
+			set_connect(chip, op, r&7, v&7);
 			break;
 
 		case 0x08:	/* Key Code */
@@ -1319,7 +1311,7 @@ static void ym2151_postload_refresh(void)
 	{
 		for (j=0; j<8; j++)
 		{
-			set_connect(&YMPSG[i].oper[j*4], YMPSG[i].connect[j], j);
+			set_connect(&YMPSG[i], &YMPSG[i].oper[j*4], YMPSG[i].connect[j], j);
 		}
 	}
 }
@@ -1613,7 +1605,7 @@ INLINE signed int op_calc1(YM2151Operator * OP, unsigned int env, signed int pm)
 
 #define volume_calc(OP) ((OP)->tl + ((UINT32)(OP)->volume) + (AM & (OP)->AMmask))
 
-INLINE void chan_calc(unsigned int chan)
+INLINE void chan_calc(YM2151 *PSG, unsigned int chan)
 {
 	YM2151Operator *op;
 	unsigned int env;
@@ -1666,7 +1658,7 @@ INLINE void chan_calc(unsigned int chan)
 	op->mem_value = PSG->mem;
 }
 
-INLINE void chan7_calc(void)
+INLINE void chan7_calc(YM2151 *PSG)
 {
 	YM2151Operator *op;
 	unsigned int env;
@@ -1938,7 +1930,7 @@ rate 11 1         |
                                  --
 */
 
-INLINE void advance_eg(void)
+INLINE void advance_eg(YM2151 *PSG)
 {
 	YM2151Operator *op;
 	unsigned int i;
@@ -2020,7 +2012,7 @@ INLINE void advance_eg(void)
 }
 
 
-INLINE void advance(void)
+INLINE void advance(YM2151 *PSG)
 {
 	YM2151Operator *op;
 	unsigned int i;
@@ -2180,7 +2172,7 @@ INLINE void advance(void)
 			i = 32;
 			do
 			{
-				KEY_ON(op, 2);
+				KEY_ON(op, 2, PSG->eg_cnt);
 				op++;
 				i--;
 			}while (i);
@@ -2308,6 +2300,7 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 	int i;
 	signed int outl,outr;
 	SAMP *bufL, *bufR;
+	YM2151 *PSG;
 
 	bufL = buffers[0];
 	bufR = buffers[1];
@@ -2316,7 +2309,7 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 
 	for (i=0; i<length; i++)
 	{
-		advance_eg();
+		advance_eg(PSG);
 
 		PSG->chanout[0] = 0;
 		PSG->chanout[1] = 0;
@@ -2327,21 +2320,21 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		PSG->chanout[6] = 0;
 		PSG->chanout[7] = 0;
 
-		chan_calc(0);
+		chan_calc(PSG,0);
 		SAVE_SINGLE_CHANNEL(0)
-		chan_calc(1);
+		chan_calc(PSG,1);
 		SAVE_SINGLE_CHANNEL(1)
-		chan_calc(2);
+		chan_calc(PSG,2);
 		SAVE_SINGLE_CHANNEL(2)
-		chan_calc(3);
+		chan_calc(PSG,3);
 		SAVE_SINGLE_CHANNEL(3)
-		chan_calc(4);
+		chan_calc(PSG,4);
 		SAVE_SINGLE_CHANNEL(4)
-		chan_calc(5);
+		chan_calc(PSG,5);
 		SAVE_SINGLE_CHANNEL(5)
-		chan_calc(6);
+		chan_calc(PSG,6);
 		SAVE_SINGLE_CHANNEL(6)
-		chan7_calc();
+		chan7_calc(PSG);
 		SAVE_SINGLE_CHANNEL(7)
 
 		outl = PSG->chanout[0] & PSG->pan[0];
@@ -2389,7 +2382,7 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		}
 #endif
 
-		advance();
+		advance(PSG);
 	}
 }
 
