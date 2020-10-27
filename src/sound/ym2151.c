@@ -1,12 +1,33 @@
 // license:GPL-2.0+
-// copyright-holders:Jarek Burczynski
-
-
-/*****************************************************************************
-*
-*	Yamaha YM2151 driver (version 2.150 final beta)
-*
-******************************************************************************/
+// copyright-holders:Jarek Burczynski,Ernesto Corvi
+/*
+** File: ym2151.c - software implementation of YM2151 FM Operator Type-M(OPM)
+**
+** (c) 1997-2002 Jarek Burczynski (s0246@poczta.onet.pl, bujar@mame.net)
+** Some of the optimizing ideas by Tatsuyuki Satoh
+**
+** Version 2.150 final beta May, 11th 2002
+**
+**
+** I would like to thank following people for making this project possible:
+**
+** Beauty Planets - for making a lot of real YM2151 samples and providing
+** additional informations about the chip. Also for the time spent making
+** the samples and the speed of replying to my endless requests.
+**
+** Shigeharu Isoda - for general help, for taking time to scan his YM2151
+** Japanese Manual first of all, and answering MANY of my questions.
+**
+** Nao - for giving me some info about YM2151 and pointing me to Shigeharu.
+** Also for creating fmemu (which I still use to test the emulator).
+**
+** Aaron Giles and Chris Hardy - they made some samples of one of my favourite
+** arcade games so I could compare it to my emulator.
+**
+** Bryan McPhail and Tim (powerjaw) - for making some samples.
+**
+** Ishmair - for the datasheet and motivation.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,10 +56,10 @@ typedef struct{
 	UINT32		dt1_i;					/* DT1 index * 32 */
 	UINT32		dt2;					/* current DT2 (detune 2) value */
 
-	signed int *connect;				/* operator output 'direction' */
+	INT32 *		connect;				/* operator output 'direction' */
 
 	/* only M1 (operator 0) is filled with this data: */
-	signed int *mem_connect;			/* where to put the delayed sample (MEM) */
+	INT32 *		mem_connect;			/* where to put the delayed sample (MEM) */
 	INT32		mem_value;				/* delayed sample (MEM) value */
 
 	/* channel specific data; note: each operator number 0 contains channel specific data */
@@ -81,6 +102,10 @@ typedef struct{
 
 typedef struct
 {
+	INT32       chanout[8];
+	INT32       m2,c1,c2;               /* Phase Modulation input for operators 2,3,4 */
+	INT32       mem;                    /* one sample delay memory */
+
 	YM2151Operator	oper[32];			/* the 32 operators */
 
 	UINT32		pan[16];				/* channels output masks (0xffffffff = enable) */
@@ -88,7 +113,7 @@ typedef struct
 	UINT32		eg_cnt;					/* global envelope generator counter */
 	UINT32		eg_timer;				/* global envelope generator counter works at frequency = chipclock/64/3 */
 	UINT32		eg_timer_add;			/* step of eg_timer */
-	UINT32		eg_timer_overflow;		/* envelope generator timer overlfows every 3 samples (on real chip) */
+	UINT32		eg_timer_overflow;		/* envelope generator timer overflows every 3 samples (on real chip) */
 
 	UINT32		lfo_phase;				/* accumulated LFO phase (0 to 255) */
 	UINT32		lfo_timer;				/* LFO timer						*/
@@ -523,10 +548,6 @@ static unsigned int YMNumChips;	/* total # of YM2151's emulated */
 
 /* these variables stay here for speedup purposes only */
 static YM2151 * PSG;
-static signed int chanout[8];
-static signed int m2,c1,c2; /* Phase Modulation input for operators 2,3,4 */
-static signed int mem;		/* one sample delay memory */
-
 
 /* save output as raw 16-bit sample */
 /* #define SAVE_SAMPLE */
@@ -804,57 +825,57 @@ INLINE void set_connect( YM2151Operator *om1, int cha, int v)
 	{
 	case 0:
 		/* M1---C1---MEM---M2---C2---OUT */
-		om1->connect = &c1;
-		oc1->connect = &mem;
-		om2->connect = &c2;
-		om1->mem_connect = &m2;
+		om1->connect = &PSG->c1;
+		oc1->connect = &PSG->mem;
+		om2->connect = &PSG->c2;
+		om1->mem_connect = &PSG->m2;
 		break;
 
 	case 1:
 		/* M1------+-MEM---M2---C2---OUT */
 		/*      C1-+                     */
-		om1->connect = &mem;
-		oc1->connect = &mem;
-		om2->connect = &c2;
-		om1->mem_connect = &m2;
+		om1->connect = &PSG->mem;
+		oc1->connect = &PSG->mem;
+		om2->connect = &PSG->c2;
+		om1->mem_connect = &PSG->m2;
 		break;
 
 	case 2:
 		/* M1-----------------+-C2---OUT */
 		/*      C1---MEM---M2-+          */
-		om1->connect = &c2;
-		oc1->connect = &mem;
-		om2->connect = &c2;
-		om1->mem_connect = &m2;
+		om1->connect = &PSG->c2;
+		oc1->connect = &PSG->mem;
+		om2->connect = &PSG->c2;
+		om1->mem_connect = &PSG->m2;
 		break;
 
 	case 3:
 		/* M1---C1---MEM------+-C2---OUT */
 		/*                 M2-+          */
-		om1->connect = &c1;
-		oc1->connect = &mem;
-		om2->connect = &c2;
-		om1->mem_connect = &c2;
+		om1->connect = &PSG->c1;
+		oc1->connect = &PSG->mem;
+		om2->connect = &PSG->c2;
+		om1->mem_connect = &PSG->c2;
 		break;
 
 	case 4:
 		/* M1---C1-+-OUT */
 		/* M2---C2-+     */
 		/* MEM: not used */
-		om1->connect = &c1;
-		oc1->connect = &chanout[cha];
-		om2->connect = &c2;
-		om1->mem_connect = &mem;	/* store it anywhere where it will not be used */
+		om1->connect = &PSG->c1;
+		oc1->connect = &PSG->chanout[cha];
+		om2->connect = &PSG->c2;
+		om1->mem_connect = &PSG->mem;   /* store it anywhere where it will not be used */
 		break;
 
 	case 5:
 		/*    +----C1----+     */
 		/* M1-+-MEM---M2-+-OUT */
 		/*    +----C2----+     */
-		om1->connect = 0;	/* special mark */
-		oc1->connect = &chanout[cha];
-		om2->connect = &chanout[cha];
-		om1->mem_connect = &m2;
+		om1->connect = NULL;    /* special mark */
+		oc1->connect = &PSG->chanout[cha];
+		om2->connect = &PSG->chanout[cha];
+		om1->mem_connect = &PSG->m2;
 		break;
 
 	case 6:
@@ -862,10 +883,10 @@ INLINE void set_connect( YM2151Operator *om1, int cha, int v)
 		/*      M2-+-OUT */
 		/*      C2-+     */
 		/* MEM: not used */
-		om1->connect = &c1;
-		oc1->connect = &chanout[cha];
-		om2->connect = &chanout[cha];
-		om1->mem_connect = &mem;	/* store it anywhere where it will not be used */
+		om1->connect = &PSG->c1;
+		oc1->connect = &PSG->chanout[cha];
+		om2->connect = &PSG->chanout[cha];
+		om1->mem_connect = &PSG->mem;   /* store it anywhere where it will not be used */
 		break;
 
 	case 7:
@@ -874,10 +895,10 @@ INLINE void set_connect( YM2151Operator *om1, int cha, int v)
 		/* M2-+     */
 		/* C2-+     */
 		/* MEM: not used*/
-		om1->connect = &chanout[cha];
-		oc1->connect = &chanout[cha];
-		om2->connect = &chanout[cha];
-		om1->mem_connect = &mem;	/* store it anywhere where it will not be used */
+		om1->connect = &PSG->chanout[cha];
+		oc1->connect = &PSG->chanout[cha];
+		om2->connect = &PSG->chanout[cha];
+		om1->mem_connect = &PSG->mem;   /* store it anywhere where it will not be used */
 		break;
 	}
 }
@@ -1512,7 +1533,7 @@ void YM2151ResetChip(int num)
 	/* initialize hardware registers */
 	for (i=0; i<32; i++)
 	{
-		memset(&chip->oper[i],'\0',sizeof(YM2151Operator));
+		memset(&chip->oper[i],0,sizeof(YM2151Operator));
 		chip->oper[i].volume = MAX_ATT_INDEX;
 		chip->oper[i].kc_i = 768; /* min kc_i value */
 	}
@@ -1598,7 +1619,7 @@ INLINE void chan_calc(unsigned int chan)
 	unsigned int env;
 	UINT32 AM = 0;
 
-	m2 = c1 = c2 = mem = 0;
+	PSG->m2 = PSG->c1 = PSG->c2 = PSG->mem = 0;
 	op = &PSG->oper[chan*4];	/* M1 */
 
 	*op->mem_connect = op->mem_value;	/* restore delayed sample (MEM) value to m2 or c2 */
@@ -1612,7 +1633,7 @@ INLINE void chan_calc(unsigned int chan)
 
 		if (!op->connect)
 			/* algorithm 5 */
-			mem = c1 = c2 = op->fb_out_prev;
+			PSG->mem = PSG->c1 = PSG->c2 = op->fb_out_prev;
 		else
 			/* other algorithms */
 			*op->connect = op->fb_out_prev;
@@ -1628,18 +1649,21 @@ INLINE void chan_calc(unsigned int chan)
 
 	env = volume_calc(op+1);	/* M2 */
 	if (env < ENV_QUIET)
-		*(op+1)->connect += op_calc(op+1, env, m2);
+		*(op+1)->connect += op_calc(op+1, env, PSG->m2);
 
 	env = volume_calc(op+2);	/* C1 */
 	if (env < ENV_QUIET)
-		*(op+2)->connect += op_calc(op+2, env, c1);
+		*(op+2)->connect += op_calc(op+2, env, PSG->c1);
 
 	env = volume_calc(op+3);	/* C2 */
 	if (env < ENV_QUIET)
-		chanout[chan]    += op_calc(op+3, env, c2);
+		PSG->chanout[chan]    += op_calc(op+3, env, PSG->c2);
+
+	//if (PSG->chanout[chan] > +16384)			PSG->chanout[chan] = +16384; //!! VGMPlay clips to 10 bit here?
+	//else if (PSG->chanout[chan] < -16384)	PSG->chanout[chan] = -16384;
 
 	/* M1 */
-	op->mem_value = mem;
+	op->mem_value = PSG->mem;
 }
 
 INLINE void chan7_calc(void)
@@ -1648,7 +1672,7 @@ INLINE void chan7_calc(void)
 	unsigned int env;
 	UINT32 AM = 0;
 
-	m2 = c1 = c2 = mem = 0;
+	PSG->m2 = PSG->c1 = PSG->c2 = PSG->mem = 0;
 	op = &PSG->oper[7*4];		/* M1 */
 
 	*op->mem_connect = op->mem_value;	/* restore delayed sample (MEM) value to m2 or c2 */
@@ -1662,7 +1686,7 @@ INLINE void chan7_calc(void)
 
 		if (!op->connect)
 			/* algorithm 5 */
-			mem = c1 = c2 = op->fb_out_prev;
+			PSG->mem = PSG->c1 = PSG->c2 = op->fb_out_prev;
 		else
 			/* other algorithms */
 			*op->connect = op->fb_out_prev;
@@ -1678,29 +1702,31 @@ INLINE void chan7_calc(void)
 
 	env = volume_calc(op+1);	/* M2 */
 	if (env < ENV_QUIET)
-		*(op+1)->connect += op_calc(op+1, env, m2);
+		*(op+1)->connect += op_calc(op+1, env, PSG->m2);
 
 	env = volume_calc(op+2);	/* C1 */
 	if (env < ENV_QUIET)
-		*(op+2)->connect += op_calc(op+2, env, c1);
+		*(op+2)->connect += op_calc(op+2, env, PSG->c1);
 
 	env = volume_calc(op+3);	/* C2 */
 	if (PSG->noise & 0x80)
 	{
-		int noiseout;
-
-		noiseout = 0;
+		INT32 noiseout = 0;
 		if (env < 0x3ff)
 			noiseout = (env ^ 0x3ff) * 2;	/* range of the YM2151 noise output is -2044 to 2040 */
-		chanout[7] += ((PSG->noise_rng&0x10000) ? noiseout: -noiseout); /* bit 16 -> output */
+		PSG->chanout[7] += ((PSG->noise_rng&0x10000) ? noiseout: -noiseout); /* bit 16 -> output */
 	}
 	else
 	{
 		if (env < ENV_QUIET)
-			chanout[7] += op_calc(op+3, env, c2);
+			PSG->chanout[7] += op_calc(op+3, env, c2);
 	}
+
+	//if (PSG->chanout[7] > +16384)		PSG->chanout[7] = +16384; //!! VGMPlay clips to 10 bit here?
+	//else if (PSG->chanout[7] < -16384)	PSG->chanout[7] = -16384;
+
 	/* M1 */
-	op->mem_value = mem;
+	op->mem_value = PSG->mem;
 }
 
 
@@ -2292,14 +2318,14 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 	{
 		advance_eg();
 
-		chanout[0] = 0;
-		chanout[1] = 0;
-		chanout[2] = 0;
-		chanout[3] = 0;
-		chanout[4] = 0;
-		chanout[5] = 0;
-		chanout[6] = 0;
-		chanout[7] = 0;
+		PSG->chanout[0] = 0;
+		PSG->chanout[1] = 0;
+		PSG->chanout[2] = 0;
+		PSG->chanout[3] = 0;
+		PSG->chanout[4] = 0;
+		PSG->chanout[5] = 0;
+		PSG->chanout[6] = 0;
+		PSG->chanout[7] = 0;
 
 		chan_calc(0);
 		SAVE_SINGLE_CHANNEL(0)
@@ -2318,22 +2344,22 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		chan7_calc();
 		SAVE_SINGLE_CHANNEL(7)
 
-		outl = chanout[0] & PSG->pan[0];
-		outr = chanout[0] & PSG->pan[1];
-		outl += (chanout[1] & PSG->pan[2]);
-		outr += (chanout[1] & PSG->pan[3]);
-		outl += (chanout[2] & PSG->pan[4]);
-		outr += (chanout[2] & PSG->pan[5]);
-		outl += (chanout[3] & PSG->pan[6]);
-		outr += (chanout[3] & PSG->pan[7]);
-		outl += (chanout[4] & PSG->pan[8]);
-		outr += (chanout[4] & PSG->pan[9]);
-		outl += (chanout[5] & PSG->pan[10]);
-		outr += (chanout[5] & PSG->pan[11]);
-		outl += (chanout[6] & PSG->pan[12]);
-		outr += (chanout[6] & PSG->pan[13]);
-		outl += (chanout[7] & PSG->pan[14]);
-		outr += (chanout[7] & PSG->pan[15]);
+		outl = PSG->chanout[0] & PSG->pan[0];
+		outr = PSG->chanout[0] & PSG->pan[1];
+		outl += (PSG->chanout[1] & PSG->pan[2]);
+		outr += (PSG->chanout[1] & PSG->pan[3]);
+		outl += (PSG->chanout[2] & PSG->pan[4]);
+		outr += (PSG->chanout[2] & PSG->pan[5]);
+		outl += (PSG->chanout[3] & PSG->pan[6]);
+		outr += (PSG->chanout[3] & PSG->pan[7]);
+		outl += (PSG->chanout[4] & PSG->pan[8]);
+		outr += (PSG->chanout[4] & PSG->pan[9]);
+		outl += (PSG->chanout[5] & PSG->pan[10]);
+		outr += (PSG->chanout[5] & PSG->pan[11]);
+		outl += (PSG->chanout[6] & PSG->pan[12]);
+		outr += (PSG->chanout[6] & PSG->pan[13]);
+		outl += (PSG->chanout[7] & PSG->pan[14]);
+		outr += (PSG->chanout[7] & PSG->pan[15]);
 
 		outl >>= FINAL_SH;
 		outr >>= FINAL_SH;
@@ -2350,7 +2376,7 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 		//Flag if any output coming out of the 2151
 		{
 		static int buffer = 0;
-		if(outl > 0 || outr > 0) {
+		if(outl != 0 || outr != 0) {
 			buffer = 0;
 			PSG->output = 1;
 		}
