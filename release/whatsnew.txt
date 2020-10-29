@@ -57,6 +57,7 @@ Stabilized solenoids 16, 31, and 32 on GamePlan machines
 Loosen up 'fast flips' check for Starship Troopers
 Fix init error (for example corrupted first song) for YM2151
 Slightly improve YM2151 noise
+Slightly improve YM2203 emulation
 Improve SAA1099 emulation (E.F.O.)
 Switch Votrax/SC01 emulation over to real simulation core (some GTS80(A)s and Taitos)
 Correct handling of Gottlieb System 1 displays (thanks to bontango)
