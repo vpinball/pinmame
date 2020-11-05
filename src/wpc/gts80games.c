@@ -2323,6 +2323,35 @@ CORE_CLONEDEFNV(nmovesfp,nmoves, "Night Moves (Free Play)",1989,"Flipprojets",gl
 // Games by other manufacturers
 
 /*-------------------------------------------------------------------
+/ Le Grand 8 (1985)
+/-------------------------------------------------------------------*/
+INPUT_PORTS_START(grand8)
+  CORE_PORTS
+  SIM_PORTS(1)
+  GTS80_COMPORTS
+  GTS80_DIPS
+  PORT_START /* 3 */
+  COREPORT_DIPNAME( 0x0001, 0x0000, "Sound 1")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0001, " on" )
+  COREPORT_DIPNAME( 0x0002, 0x0000, "Sound 2")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0002, " on" )
+  COREPORT_DIPNAME( 0x0004, 0x0000, "Sound 3")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0004, " on" )
+  COREPORT_DIPNAME( 0x0008, 0x0000, "Sound 4")
+    COREPORT_DIPSET(0x0000, " off" )
+    COREPORT_DIPSET(0x0008, " on" )
+INPUT_PORTS_END
+INIT_S80(grand8, dispNumeric1, SNDBRD_TABART3)
+GTS80_1_ROMSTART("652.cpu", CRC(5386e5fb) SHA1(822f47951b702f9c6a1ce674baaab0a596f34413))
+SOUNDREGION(0x10000, REGION_CPU2)
+  ROM_LOAD("grand8.bin", 0, 0x2000, CRC(b7cfaaae) SHA1(60eb4f9bc7b7d11ec6d353b0ae02484cf1c0c9ee))
+GTS80_ROMEND
+CORE_CLONEDEFNV(grand8,gts80,"Grand 8, Le",1985,"Christian Tabart (France)",gl_mGTS80TAB,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
 / ManilaMatic: using entire address space, no multiple mapping needed
 /-------------------------------------------------------------------*/
 static MEMORY_READ_START(manila_readmem)

@@ -130,7 +130,9 @@
       COREPORT_DIPSET(0x4000, DEF_STR(On) ) \
     COREPORT_DIPNAME( 0x8000, 0x8000, "S32") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
-      COREPORT_DIPSET(0x8000, DEF_STR(On) ) \
+      COREPORT_DIPSET(0x8000, DEF_STR(On) )
+
+#define GTS80_SNDDIPS \
   PORT_START /* 3 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "SS:S1: Self Test") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
@@ -170,7 +172,8 @@
     CORE_PORTS \
     SIM_PORTS(balls) \
     GTS80_COMPORTS \
-    GTS80_DIPS
+    GTS80_DIPS \
+    GTS80_SNDDIPS
 
 #define GTS80VID_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
@@ -178,7 +181,8 @@
     SIM_PORTS(balls) \
     GTS80_COMPORTS \
     GTS80VID_COMPORTS \
-    GTS80_DIPS
+    GTS80_DIPS \
+    GTS80_SNDDIPS
 
 #define GTS80_INPUT_PORTS_END INPUT_PORTS_END
 
@@ -298,6 +302,7 @@ extern MACHINE_DRIVER_EXTERN(gts80s);
 extern MACHINE_DRIVER_EXTERN(gts80ss);
 extern MACHINE_DRIVER_EXTERN(gts80sp);
 extern MACHINE_DRIVER_EXTERN(gts80vid);
+extern MACHINE_DRIVER_EXTERN(gts80tab);
 extern MACHINE_DRIVER_EXTERN(gts80b);
 extern MACHINE_DRIVER_EXTERN(gts80bs1);
 extern MACHINE_DRIVER_EXTERN(gts80bs2);
@@ -308,6 +313,7 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3a);
 #define gl_mGTS80SP		gts80sp
 #define gl_mGTS80SS		gts80ss
 #define gl_mGTS80VID	gts80vid
+#define gl_mGTS80TAB	gts80tab
 #define gl_mGTS80B		gts80b
 #define gl_mGTS80BS1	gts80bs1
 #define gl_mGTS80BS2	gts80bs2
