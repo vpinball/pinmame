@@ -21,7 +21,6 @@ static WRITE_HANDLER(tabart_manCmd_w) {
 
   if (sndlocals.subtype) {
     sndlocals.sndCmd = data;
-    cpu_set_nmi_line(1, PULSE_LINE);
     return;
   }
 
@@ -51,10 +50,13 @@ static WRITE_HANDLER(tabart_ctrl_w) {
 
 // GTS1 snd lines order: Dip2, Q, (NC), Dip1, T, Snd3, Snd2, Snd1
 static WRITE_HANDLER(tabart_data_w) {
-  if (sndlocals.subtype) { // Sahara Love: Q (and / or Dip4?), Dip3, Dip2, Dip1, T, Snd3, Snd2, Snd1 ???
+  if (sndlocals.subtype & 1) { // Sahara Love: Q (and / or Dip4?), Dip3, Dip2, Dip1, T, Snd3, Snd2, Snd1 ???
     sndlocals.sndCmd = ((data & 0x40 ? 0 : 0x80) | (~data & 0x0f)) ^ ((~core_getDip(3) & 0x0f) << 4);
-    if (!sndlocals.nmi) cpu_set_nmi_line(1, PULSE_LINE);
-    if (sndlocals.nmi) sndlocals.nmi--;
+    return;
+  }
+
+  if (sndlocals.subtype & 2) { // Le Grand 8: Q (and / or Dip4?), Dip3, Dip2, Dip1, T, Snd3, Snd2, Snd1 ???
+    sndlocals.sndCmd = ((data & 0x40 ? 0 : 0x80) | (~data & 0x0f)) ^ ((~core_getDip(4) & 0x0f) << 4);
     return;
   }
 
@@ -127,11 +129,6 @@ MACHINE_DRIVER_END
 
 // Sahara Love sound board
 
-static WRITE_HANDLER(m8000_w) {
-  logerror("m8000w %02x\n", data);
-  sndlocals.nmi = 2;
-}
-
 static READ_HANDLER(ay8912a_r) {
   sndlocals.nmi = 0;
   return sndlocals.sndCmd;
@@ -156,7 +153,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(tabart2_writemem)
   {0x4000,0x407f, MWA_RAM},
-  {0x8000,0x8000, m8000_w}, // writes accu back to memory on NMI, for what purpose?
+  {0x8000,0x8000, MWA_NOP}, // watchdog: resets CPU if binary counters are not working
 MEMORY_END
 
 static PORT_READ_START(tabart2_readport)
@@ -168,10 +165,16 @@ static PORT_WRITE_START(tabart2_writeport)
   {1,1, AY8910_write_port_0_w},
 PORT_END
 
+static INTERRUPT_GEN(tabart2_irq) {
+  cpu_set_nmi_line(1, PULSE_LINE);
+  cpu_set_irq_line(1, 0, PULSE_LINE); // not actually needed because NMI wins, but still connected
+}
+
 MACHINE_DRIVER_START(TABART2)
   MDRV_CPU_ADD_TAG("scpu", Z80, 19660800/8)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tabart2_readmem, tabart2_writemem)
   MDRV_CPU_PORTS(tabart2_readport, tabart2_writeport)
+  MDRV_CPU_PERIODIC_INT(tabart2_irq, 19660800/131072) // 19660800/4/16/16/16/8 = 150 Hz
   MDRV_SOUND_ADD(AY8910, tabart_ay8912Int)
 MACHINE_DRIVER_END
