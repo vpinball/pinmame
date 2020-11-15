@@ -8,7 +8,7 @@
 #include "math.h"
 
 #define MASTER_CLOCK 10000000
-#define S14001_CLOCK (MASTER_CLOCK / 4)
+#define S14001_CLOCK (MASTER_CLOCK / 4.)
 
 /*----------------------------------------
 / Stern Sound System
@@ -678,7 +678,7 @@ static WRITE_HANDLER(st300_ctrl_w) {
 			//mixer_set_volume(9, (int)(((data >> 3 & 0xf) + 1) / 16.0 * 100.0)); //!! MAME
 			/* clock control - the first LS161 divides the clock by 9 to 16, the 2nd by 8,
 			   giving a final clock from 19.5kHz to 34.7kHz */
-			S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8);
+			S14001A_set_rate(/*data & 0x07*/S14001_CLOCK / clock_divisor / 8.);
 		}
 		else if (data & 0x40)
 		{

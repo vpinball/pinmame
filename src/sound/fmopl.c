@@ -1872,7 +1872,7 @@ static void OPLResetChip(FM_OPL *OPL)
 /* Create one of virtual YM3812/YM3526/Y8950 */
 /* 'clock' is chip clock in Hz  */
 /* 'rate'  is sampling rate (=clock/72) */
-static FM_OPL *OPLCreate(int type, double clock, int rate)
+static FM_OPL *OPLCreate(int type, double clock, double rate)
 {
 	char *ptr;
 	FM_OPL *OPL;
@@ -1910,7 +1910,7 @@ static FM_OPL *OPLCreate(int type, double clock, int rate)
 
 	OPL->type  = type;
 	OPL->clock = clock;
-	OPL->rate  = rate;
+	OPL->rate  = (int)(rate+0.5);
 
 	/* init global tables */
 	OPL_initalize(OPL);
@@ -2068,7 +2068,7 @@ static FM_OPL *OPL_YM3812[MAX_OPL_CHIPS];	/* array of pointers to the YM3812's *
 static int YM3812NumChips = 0;				/* number of chips */
 
 // rate = clock/72
-int YM3812Init(int num, double clock, int rate)
+int YM3812Init(int num, double clock, double rate)
 {
 	int i;
 
@@ -2222,7 +2222,7 @@ static FM_OPL *OPL_YM3526[MAX_OPL_CHIPS];	/* array of pointers to the YM3526's *
 static int YM3526NumChips = 0;				/* number of chips */
 
 // rate = clock/72
-int YM3526Init(int num, double clock, int rate)
+int YM3526Init(int num, double clock, double rate)
 {
 	int i;
 
@@ -2384,7 +2384,7 @@ static void Y8950_deltat_status_reset(UINT8 which, UINT8 changebits)
 }
 
 // rate = clock/72
-int Y8950Init(int num, double clock, int rate)
+int Y8950Init(int num, double clock, double rate)
 {
 	int i;
 

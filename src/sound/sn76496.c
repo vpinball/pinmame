@@ -45,7 +45,6 @@
 struct SN76496
 {
 	int Channel;
-	int SampleRate;
 	int VolTable[16];	    /* volume table         */
 	INT32 Register[8];	    /* registers */
 	INT32 LastRegister;	    /* last register written */
@@ -295,15 +294,13 @@ static int SN76496_init(const struct MachineSound *msound,int chip,double clock,
 	struct SN76496 *R = &sn[chip];
 	char name[40];
 
-	int sample_rate = (int)(clock/16 + 0.5);
+	double sample_rate = clock/16.;
 
 	sprintf(name,"SN76496 #%d",chip);
 	R->Channel = stream_init(name,volume,sample_rate,chip,SN76496Update);
 
 	if (R->Channel == -1)
 		return 1;
-
-	R->SampleRate = sample_rate;
 
 	for (i = 0;i < 4;i++) R->Volume[i] = 0;
 

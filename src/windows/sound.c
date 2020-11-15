@@ -173,7 +173,7 @@ int osd_start_audio_stream(int stereo)
 	}
 
 	// determine the number of samples per frame
-	samples_per_frame = (double)Machine->sample_rate / (double)Machine->drv->frames_per_second;
+	samples_per_frame = Machine->sample_rate / Machine->drv->frames_per_second;
 
 	// compute how many samples to generate the first frame
 	samples_left_over = samples_per_frame;
@@ -588,14 +588,14 @@ static int dsound_init(void)
 	stream_format.wBitsPerSample	= 16;
 	stream_format.wFormatTag		= WAVE_FORMAT_PCM;
 	stream_format.nChannels			= (Machine->drv->sound_attributes & SOUND_SUPPORTS_STEREO) ? 2 : 1;
-	stream_format.nSamplesPerSec	= Machine->sample_rate;
+	stream_format.nSamplesPerSec	= (int)(Machine->sample_rate+0.5);
 	stream_format.nBlockAlign		= stream_format.wBitsPerSample * stream_format.nChannels / 8;
 	stream_format.nAvgBytesPerSec	= stream_format.nSamplesPerSec * stream_format.nBlockAlign;
 
 	// compute the buffer sizes
 	stream_buffer_size = ((UINT64)MAX_BUFFER_SIZE * (UINT64)stream_format.nSamplesPerSec) / 44100;
 	stream_buffer_size = (stream_buffer_size * stream_format.nBlockAlign) / 4;
-	stream_buffer_size = (stream_buffer_size * 30) / Machine->drv->frames_per_second;
+	stream_buffer_size = (UINT32)((stream_buffer_size * 30) / Machine->drv->frames_per_second + 0.5);
 	stream_buffer_size = (stream_buffer_size / 1024) * 1024;
 
 	// compute the upper/lower thresholds

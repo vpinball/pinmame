@@ -302,7 +302,7 @@ void votraxsc01_set_clock(UINT32 newfreq)
 		votraxsc01_locals.mainclock = newfreq;
 		votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 		votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
-		stream_set_sample_rate(votraxsc01_locals.stream, (int)(votraxsc01_locals.sclock+0.5));
+		stream_set_sample_rate(votraxsc01_locals.stream, votraxsc01_locals.sclock);
 		filters_commit(1);
 	}
 }
@@ -1355,7 +1355,7 @@ READ_HANDLER(votraxsc01_status_r)
 }
 
 #ifdef OLD_VOTRAX
-void votraxsc01_set_base_frequency(int baseFrequency)
+void votraxsc01_set_base_frequency(double baseFrequency)
 {
 	int i;
 	if ( baseFrequency>=0 )
@@ -1541,7 +1541,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 	votraxsc01_locals.mainclock = votraxsc01_locals.intf->baseFrequency[0]; //!! clock();
 	votraxsc01_locals.sclock = votraxsc01_locals.mainclock / 18.0;
 	votraxsc01_locals.cclock = votraxsc01_locals.mainclock / 36.0;
-	votraxsc01_locals.stream = stream_init_float("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], (int)(votraxsc01_locals.sclock+0.5), 0, Votrax_Update, 1);
+	votraxsc01_locals.stream = stream_init_float("Votrax - SC01", votraxsc01_locals.intf->mixing_level[0], votraxsc01_locals.sclock, 0, Votrax_Update, 1);
 	votraxsc01_locals.timer = timer_alloc(VOTRAXSC01_sh_start_timeout);
 
 	// reset outputs

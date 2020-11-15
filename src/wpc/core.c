@@ -1844,7 +1844,7 @@ static MACHINE_INIT(core) {
       }
     }
     /*-- Sound enabled ? */
-    if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
+    if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate != 0.)
       coreGlobals.soundEn = TRUE;
 
     /*-- init simulator --*/
@@ -2029,7 +2029,7 @@ UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level
 	return targetlevel;
 }
 
-void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
+void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate)
 {
 	int delta;
 
@@ -2053,7 +2053,7 @@ void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate)
 	{
 		// Over 50ms delta and throttle didn't catch it fast enough.   Drop some samples, but not so
 		// much that we have to restart from a zero buffer.
-		*sOut = sIn - (samplerate * 20 / 1000);
+		*sOut = sIn - (int)(samplerate * 20 / 1000 + 0.5);
 		if (*sOut < 0)
 			*sOut += buffersize;
 

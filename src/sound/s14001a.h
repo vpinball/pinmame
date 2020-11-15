@@ -19,7 +19,7 @@ void s14001a_sh_stop(void);
 int S14001A_bsy_0_r(void);			/* read BUSY pin (pin 40) */
 void S14001A_reg_0_w(int data);		/* write to input latch (6-bit word) */
 void S14001A_rst_0_w(int data);		/* write to RESET/START pin (pin 10) */
-void S14001A_set_rate(int newrate);	/* set VSU-1000 clock divider */
+void S14001A_set_rate(double newrate); /* set VSU-1000 clock divider */
 //!! DECLARE_READ_LINE_MEMBER(romen_r); // ROM /EN (pin 9)
 
 #endif /* __S14001A_H__ */

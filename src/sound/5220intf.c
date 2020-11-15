@@ -47,7 +47,7 @@ int tms5220_sh_start(const struct MachineSound *msound)
     baseclock = intf->baseclock;
 
 	/* initialize a stream */
-	stream = stream_init("TMS5220", intf->mixing_level, (int)(intf->baseclock/80 + 0.5), 0, tms5220_update);
+	stream = stream_init("TMS5220", intf->mixing_level, intf->baseclock/80., 0, tms5220_update);
 	if (stream == -1)
 		return 1;
 
@@ -183,7 +183,7 @@ void tms5220_set_frequency(double frequency)
 	if (stream != -1)
 	{
 		//stream_update(stream, 0); //!! not necessary as clock change only done once on startup, also leads to garbled sound for whatever reason
-		stream_set_sample_rate(stream, (int)(frequency/80 + 0.5));
+		stream_set_sample_rate(stream, frequency/80.);
 	}
 }
 

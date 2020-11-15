@@ -67,13 +67,13 @@ void YM2151UpdateRequest(int chip)
 static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 {
 	int i,j;
-	int rate;// = Machine->sample_rate;
+	double rate;// = Machine->sample_rate;
 	char buf[YM2151_NUMBUF][40];
 	const char *name[YM2151_NUMBUF];
 	int mixed_vol,vol[YM2151_NUMBUF];
 
 	intf = msound->sound_interface;
-	rate = (int)(intf->baseclock/64 + 0.5);
+	rate = intf->baseclock/64.;
 
 	if( mode ) FMMode = CHIP_YM2151_ALT;
 	else       FMMode = CHIP_YM2151_DAC;

@@ -95,7 +95,7 @@ struct BSMT2000Voice
 struct BSMT2000Chip
 {
     int			stream;					/* which stream are we using */
-    int			sample_rate;			/* output sample rate */
+    double		sample_rate;			/* output sample rate */
     INT8 *		region_base;			/* pointer to the base of the region */
     int			total_banks;			/* number of total banks in the region */
     double		clock;					/* original clock on the chip */
@@ -157,7 +157,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 #ifndef PINMAME
         /* mode 0: 24kHz, 12 channel PCM, 1 channel ADPCM, mono */
     case 0:
-        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
+        chip->sample_rate = chip->clock / 1000.;
         chip->stereo = 0;
         chip->voices = 12;
         chip->adpcm = 1;
@@ -167,7 +167,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 1: 24kHz, 11 channel PCM, 1 channel ADPCM, stereo */
     case 1:
-        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
+        chip->sample_rate = chip->clock / 1000.;
         chip->stereo = 1;
         chip->voices = 11;
         chip->adpcm = 1;
@@ -179,7 +179,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 5: 24kHz, 12 channel PCM, stereo */
     case 5:
-        chip->sample_rate = (int)(chip->clock / 1000 + 0.5);
+        chip->sample_rate = chip->clock / 1000.;
         chip->stereo = 1;
         chip->voices = 12;
         chip->adpcm = 0;
@@ -188,7 +188,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 6: 34kHz, 8 channel PCM, stereo */
     case 6:
-        chip->sample_rate = (int)(chip->clock / 706 + 0.5);
+        chip->sample_rate = chip->clock / 706.;
         chip->stereo = 1;
         chip->voices = 8;
         chip->adpcm = 0;
@@ -197,7 +197,7 @@ static void set_mode(struct BSMT2000Chip *chip, int i)
 
         /* mode 7: 32kHz, 9 channel PCM, stereo */
     case 7:
-        chip->sample_rate = (int)(chip->clock / 750 + 0.5);
+        chip->sample_rate = chip->clock / 750.;
         chip->stereo = 1;
         chip->voices = 9;
         chip->adpcm = 0;
@@ -489,7 +489,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
 #endif /* PINMAME */
 
-        bsmt2000[i].sample_rate = (int)(intf->baseclock[i] / 1000 + 0.5);
+        bsmt2000[i].sample_rate = intf->baseclock[i] / 1000.;
         bsmt2000[i].clock = intf->baseclock[i];
 
         // guess initial mode from the parameters, should be not necessary, but f.e. Alvin G. reset is not wired yet, thus also no mode set!

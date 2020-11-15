@@ -398,7 +398,7 @@ static void init_output_filter(struct hc55516_data *chip)
 {
 	// we process samples on the way to the MAME output stream, so use
 	// the MAME stream rate
-	const int freq = stream_get_sample_rate(chip->channel);
+	const double freq = stream_get_sample_rate(chip->channel);
 
 	// set up the filter according to the sound board type
 	switch (chip->output_filter.type)

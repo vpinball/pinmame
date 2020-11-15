@@ -263,10 +263,10 @@ filter* filter_lp_fir_alloc(double freq, const int order) {
 //
 
 void filter2_setup(const int type, const double fc, const double d, const double gain,
-	filter2_context * const __restrict filter2, const unsigned int sample_rate)
+	filter2_context * const __restrict filter2, const double sample_rate)
 {
-	const double two_over_T = 2*sample_rate;
-	const double two_over_T_squared = (double)((long long)(2*sample_rate) * (long long)(2*sample_rate));
+	const double two_over_T = 2.*sample_rate;
+	const double two_over_T_squared = two_over_T*two_over_T;
 
 	/* calculate digital filter coefficents */
 	/*w = (2.0*M_PI)*fc; no pre-warping */
@@ -330,7 +330,7 @@ void filter_setup(const double b0, const double b1, const double b2, const doubl
 
 /* Set up a filter2 structure based on an op-amp multipole bandpass circuit. */
 void filter_opamp_m_bandpass_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
-	filter2_context * const __restrict filter2, const unsigned int sample_rate)
+	filter2_context * const __restrict filter2, const double sample_rate)
 {
 	double r_in, fc, d, gain;
 
@@ -372,7 +372,8 @@ void filter_opamp_m_bandpass_setup(const double r1, const double r2, const doubl
 // analog versions of the filter match exactly, and the best results for
 // low-pass filters are usually at the corner frequency.
 //
-static void filter2_biquad_setup(const double f0, const double c1, const double c2, filter2_context * const __restrict context, const int sample_rate)
+static void filter2_biquad_setup(const double f0, const double c1, const double c2,
+	filter2_context * const __restrict context, const double sample_rate)
 {
 	double gn, cc;
 
@@ -385,8 +386,8 @@ static void filter2_biquad_setup(const double f0, const double c1, const double 
 		w0 -= 2.0 * wdMax;
 
 	// calculate the time step factor, pre-warping to f0
-	gn = w0 / tan(w0 / (2 * sample_rate));
-	//gn = 2 * sample_rate; // without pre-warping
+	gn = w0 / tan(w0 / (2. * sample_rate));
+	//gn = 2. * sample_rate; // without pre-warping
 
 	// calculate the difference equation coefficients
 	cc = 1.0 + gn*c1 + gn*gn*c2;
@@ -411,7 +412,7 @@ static void filter2_biquad_setup(const double f0, const double c1, const double 
 //               GND                               GND          GND
 //
 void filter_rc_lp_setup(const double R1, const double R2, const double R3, const double C1,
-	filter2_context * const __restrict context, const int sample_rate)
+	filter2_context * const __restrict context, const double sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//
@@ -453,7 +454,7 @@ void filter_rc_lp_setup(const double R1, const double R2, const double R3, const
 //              GND        GND
 //
 void filter_mf_lp_setup(const double R1, const double R2, const double R3, const double C1, const double C2,
-	filter2_context * const __restrict context, const int sample_rate)
+	filter2_context * const __restrict context, const double sample_rate)
 {
 	// Continuous-time transfer function for the analog version of
 	// this filter:
@@ -500,7 +501,7 @@ void filter_mf_lp_setup(const double R1, const double R2, const double R3, const
 //                         GND
 //
 void filter_active_lp_setup(const double R1, const double R2, const double R3, const double C1,
-	filter2_context * const __restrict context, const int sample_rate)
+	filter2_context * const __restrict context, const double sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//
@@ -544,7 +545,7 @@ void filter_active_lp_setup(const double R1, const double R2, const double R3, c
 //                               +------------+
 //
 void filter_sallen_key_lp_setup(const double R1, const double R2, const double C1, const double C2,
-	filter2_context * const __restrict context, const int sample_rate)
+	filter2_context * const __restrict context, const double sample_rate)
 {
 	// Continuous-time transfer function for the analog filter:
 	//

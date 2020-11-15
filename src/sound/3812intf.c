@@ -54,13 +54,13 @@ static void TimerHandler_3812(int c,double period)
 int YM3812_sh_start(const struct MachineSound *msound)
 {
 	int i;
-	int rate;// = Machine->sample_rate;
+	double rate;// = Machine->sample_rate;
 
 	intf_3812 = msound->sound_interface;
 	if( intf_3812->num > MAX_3812 ) return 1;
 
 	//if (options.use_filter)
-		rate = (int)(intf_3812->baseclock/72 + 0.5);
+		rate = intf_3812->baseclock/72.;
 
 	/* Timer state clear */
 	memset(Timer_3812,0,sizeof(Timer_3812));
@@ -170,13 +170,13 @@ static void TimerHandler_3526(int c,double period)
 int YM3526_sh_start(const struct MachineSound *msound)
 {
 	int i;
-	int rate;// = Machine->sample_rate;
+	double rate;// = Machine->sample_rate;
 
 	intf_3526 = msound->sound_interface;
 	if( intf_3526->num > MAX_3526 ) return 1;
 
 	//if (options.use_filter)
-		rate = (int)(intf_3526->baseclock/72 + 0.5);
+		rate = intf_3526->baseclock/72.;
 
 	/* Timer state clear */
 	memset(Timer_3526,0,sizeof(Timer_3526));
@@ -306,13 +306,13 @@ static void Y8950KeyboardHandler_w(int chip,unsigned char data)
 int Y8950_sh_start(const struct MachineSound *msound)
 {
 	int i;
-	int rate;// = Machine->sample_rate;
+	double rate;// = Machine->sample_rate;
 
 	intf_8950 = msound->sound_interface;
 	if( intf_8950->num > MAX_8950 ) return 1;
 
 	//if (options.use_filter)
-		rate = (int)(intf_8950->baseclock/72 + 0.5);
+		rate = intf_8950->baseclock/72.;
 
 	/* Timer state clear */
 	memset(Timer_8950,0,sizeof(Timer_8950));

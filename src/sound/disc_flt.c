@@ -141,7 +141,7 @@ static void calculate_filter2_coefficients(double fc, double d, double type,
 	double w;	/* cutoff freq, in radians/sec */
 	double w_squared;
 	double den;	/* temp variable */
-	double two_over_T = 2*Machine->sample_rate;
+	double two_over_T = 2.0*Machine->sample_rate;
 	double two_over_T_squared = two_over_T * two_over_T;
 
 	/* calculate digital filter coefficents */

@@ -1007,7 +1007,7 @@ int SN76477_sh_start(const struct MachineSound *msound)
 			LOG(0,("%s stream_init failed\n", name));
 			return 1;
 		}
-		sn76477[i]->samplerate = Machine->sample_rate ? Machine->sample_rate : 1;
+		sn76477[i]->samplerate = Machine->sample_rate != 0. ? (int)(Machine->sample_rate+0.5) : 1;
 		
 		sn76477[i]->envelope_timer = timer_alloc(vco_envelope_cb);
 		sn76477[i]->oneshot_timer = timer_alloc(oneshot_envelope_cb);

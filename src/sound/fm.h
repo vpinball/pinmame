@@ -136,7 +136,7 @@ typedef void (*FM_IRQHANDLER)(int n,int irq);
 ** 'IRQHandler'    IRQ callback handler when changed IRQ level
 ** return      0 = success
 */
-int YM2203Init(int num, double baseclock, int rate,
+int YM2203Init(int num, double baseclock, double rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
 
 /*
@@ -218,7 +218,7 @@ int YM2612TimerOver(int n, int c );
 
 #if 0 //BUILD_YM2151
 /* -------------------- YM2151(OPM) Interface -------------------- */
-int OPMInit(int num, int baseclock, int rate,
+int OPMInit(int num, int baseclock, double rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
 void OPMShutdown(void);
 void OPMResetChip(int num);

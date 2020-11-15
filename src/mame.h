@@ -115,7 +115,7 @@ struct RunningMachine
 	/* ----- audio-related information ----- */
 
 	/* the digital audio sample rate; 0 if sound is disabled. */
-	int						sample_rate;
+	double					sample_rate;
 
 	/* samples loaded from disk */
 	struct GameSamples *	samples;

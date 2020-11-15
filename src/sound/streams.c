@@ -18,7 +18,7 @@
 
 static int stream_joined_channels[MIXER_MAX_CHANNELS];
 static void *stream_buffer[MIXER_MAX_CHANNELS];
-static int stream_sample_rate[MIXER_MAX_CHANNELS];
+static double stream_sample_rate[MIXER_MAX_CHANNELS];
 static int stream_buffer_pos[MIXER_MAX_CHANNELS];
 static int stream_sample_length[MIXER_MAX_CHANNELS];	/* in usec */
 static int stream_param[MIXER_MAX_CHANNELS];
@@ -117,7 +117,7 @@ void streams_sh_update(void)
 }
 
 int stream_init(const char *name,int default_mixing_level,
-		int sample_rate,
+		double sample_rate,
 		int param,void (*callback)(int param,INT16 *buffer,int length))
 {
 	return stream_init_float(name, default_mixing_level,
@@ -126,7 +126,7 @@ int stream_init(const char *name,int default_mixing_level,
 }
 
 int stream_init_float(const char *name,int default_mixing_level,
-		int sample_rate,
+		double sample_rate,
 		int param,void (*callback)(int param,INT16 *buffer,int length),int is_float)
 {
 	const int channel = mixer_allocate_channel_float(default_mixing_level,is_float);
@@ -144,8 +144,8 @@ int stream_init_float(const char *name,int default_mixing_level,
 
 	stream_sample_rate[channel] = sample_rate;
 	stream_buffer_pos[channel] = 0;
-	if (sample_rate)
-		stream_sample_length[channel] = 1000000 / sample_rate;
+	if (sample_rate != 0.)
+		stream_sample_length[channel] = (int)(1000000. / sample_rate + 0.5);
 	else
 		stream_sample_length[channel] = 0;
 	stream_param[channel] = param;
@@ -154,21 +154,21 @@ int stream_init_float(const char *name,int default_mixing_level,
 	return channel;
 }
 
-void stream_set_sample_rate(int channel, int sample_rate)
+void stream_set_sample_rate(int channel, double sample_rate)
 {
 	if (stream_sample_rate[channel] == sample_rate)
 		return;
 
 	stream_sample_rate[channel] = sample_rate;
-	if (sample_rate)
-		stream_sample_length[channel] = 1000000 / sample_rate;
+	if (sample_rate != 0.)
+		stream_sample_length[channel] = (int)(1000000. / sample_rate + 0.5);
 	else
 		stream_sample_length[channel] = 0;
 	if (stream_buffer_pos[channel] >= stream_sample_length[channel])
 		stream_buffer_pos[channel] = 0;
 }
 
-int stream_get_sample_rate(int channel)
+double stream_get_sample_rate(int channel)
 {
 	return stream_sample_rate[channel];
 }
@@ -180,7 +180,7 @@ void stream_free(int channel)
 }
 
 int stream_init_multi(int channels,const char **names,const int *default_mixing_levels,
-		int sample_rate,
+		double sample_rate,
 		int param,void (*callback)(int param,INT16 **buffer,int length))
 {
 	int i;
@@ -201,8 +201,8 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 
 		stream_sample_rate[channel+i] = sample_rate;
 		stream_buffer_pos[channel+i] = 0;
-		if (sample_rate)
-			stream_sample_length[channel+i] = 1000000 / sample_rate;
+		if (sample_rate != 0.)
+			stream_sample_length[channel+i] = (int)(1000000. / sample_rate + 0.5);
 		else
 			stream_sample_length[channel+i] = 0;
 	}
