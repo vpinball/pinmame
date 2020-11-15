@@ -709,7 +709,7 @@ static void vgm_header_clear(uint16_t vgm_id)
 	return;
 }
 
-uint16_t vgm_open(uint8_t chip_type, int clock)
+uint16_t vgm_open(uint8_t chip_type, double clockd)
 {
 	uint16_t chip_id;
 	uint16_t chip_file;
@@ -717,6 +717,8 @@ uint16_t vgm_open(uint8_t chip_type, int clock)
 	uint32_t chip_val;
 	char vgm_name[0x20];
 	uint8_t use_two;
+
+	int clock = (int)(clockd + 0.5);
 	
 	logerror("vgm_open - Chip Type %02X, Clock %u\n", chip_type, clock);
 	if (! LOG_VGM_FILE || chip_type == 0xFF)

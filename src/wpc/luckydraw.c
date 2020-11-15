@@ -174,7 +174,7 @@ static MACHINE_INIT(mirco) {
 
 MACHINE_DRIVER_START(mirco)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", I8035, 6000000/15) // 8035 has internal divider by 15!
+  MDRV_CPU_ADD_TAG("mcpu", I8035, 6000000./15.) // 8035 has internal divider by 15!
   MDRV_CPU_MEMORY(mirco_readmem, mirco_writemem)
   MDRV_CPU_PORTS(mirco_readport, mirco_writeport)
   MDRV_SWITCH_UPDATE(mirco)

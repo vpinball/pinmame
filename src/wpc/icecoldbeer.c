@@ -210,7 +210,7 @@ static void ice_30hz(int data) {
 MACHINE_DRIVER_START(icecold)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ICE,ICE,ICE)
-  MDRV_CPU_ADD_TAG("mcpu", M6809, 6000000/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6809, 6000000./4.)
   MDRV_CPU_MEMORY(ice_readmem, ice_writemem)
   MDRV_CPU_VBLANK_INT(ice_vblank, 1)
   MDRV_TIMER_ADD(ice_30hz, 30)

@@ -24,7 +24,7 @@
 
 static const struct astrocade_interface *intf;
 
-static int emulation_rate;
+static int emulation_sample_rate;
 static int div_by_N_factor;
 static int buffer_len;
 
@@ -72,10 +72,10 @@ static int randbit = 1;
 
 static void astrocade_update(int num, int newpos)
 {
-	INT16 *buffer = astrocade_buffer[num];
+	INT16 * const buffer = astrocade_buffer[num];
 
 	int pos = sample_pos[num];
-	int i, noise_plus_osc, vib_plus_osc;
+	int i;
 
 	for(i=pos; i<newpos; i++)
 	{
@@ -89,6 +89,7 @@ static void astrocade_update(int num, int newpos)
 
 		if (!mux[num])
 		{
+			int vib_plus_osc;
 			if (current_state_V[num] == -1)
 				vib_plus_osc = (master_osc[num]-vibrato[num])&0xff;
 			else
@@ -99,7 +100,7 @@ static void astrocade_update(int num, int newpos)
 		}
 		else
 		{
-			noise_plus_osc = ((master_osc[num]-(vol_noise8[num]&randbyte)))&0xff;
+			const int noise_plus_osc = ((master_osc[num]-(vol_noise8[num]&randbyte)))&0xff;
 			current_size_A[num] = noise_plus_osc*freq_A[num]/div_by_N_factor;
 			current_size_B[num] = noise_plus_osc*freq_B[num]/div_by_N_factor;
 			current_size_C[num] = noise_plus_osc*freq_C[num]/div_by_N_factor;
@@ -164,18 +165,19 @@ static void astrocade_update(int num, int newpos)
 int astrocade_sh_start(const struct MachineSound *msound)
 {
 	int i;
+	double buffer_len_d, emulation_sample_rate_d;
 
 	intf = msound->sound_interface;
 
 	if (Machine->sample_rate == 0)
-	{
 		return 0;
-	}
 
-	buffer_len = (int)((double)Machine->sample_rate / (double)Machine->drv->frames_per_second / 2.);
+	buffer_len_d = (double)Machine->sample_rate / Machine->drv->frames_per_second / 2.;
+	emulation_sample_rate_d = buffer_len_d * Machine->drv->frames_per_second;
 
-	emulation_rate = (int)((double)buffer_len * (double)Machine->drv->frames_per_second);
-	div_by_N_factor = intf->baseclock/emulation_rate;
+	buffer_len = (int)(buffer_len_d + 0.5);
+	div_by_N_factor = (int)(intf->baseclock/emulation_sample_rate_d + 0.5);
+	emulation_sample_rate = (int)(emulation_sample_rate_d + 0.5);
 
 	channel = mixer_allocate_channels(intf->num,intf->volume);
 	/* reserve buffer */
@@ -324,6 +326,6 @@ void astrocade_sh_update(void)
 		/* reset position , step , count */
 		sample_pos[num] = 0;
 		/* play sound */
-		mixer_play_streamed_sample_16(channel+num,astrocade_buffer[num],buffer_len,emulation_rate);
+		mixer_play_streamed_sample_16(channel+num,astrocade_buffer[num],buffer_len,emulation_sample_rate);
 	}
 }

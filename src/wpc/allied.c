@@ -627,7 +627,7 @@ static MACHINE_STOP(allied) {
 static MACHINE_DRIVER_START(allied)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(allied,NULL,allied)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 3572549/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 3572549./4.)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_DIPS(68)

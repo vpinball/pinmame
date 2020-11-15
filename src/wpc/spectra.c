@@ -155,7 +155,7 @@ static struct SN76477interface spectra_sn76477Int = { 1, { 50 }, /* mixing level
 
 MACHINE_DRIVER_START(spectra)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6502, 3579545/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6502, 3579545./4.)
   MDRV_CPU_MEMORY(cpu_readmem, cpu_writemem)
   MDRV_CPU_VBLANK_INT(spectra_vblank, 1)
   MDRV_TIMER_ADD(spectra_nmi, 120)

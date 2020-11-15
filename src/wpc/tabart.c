@@ -140,7 +140,7 @@ static WRITE_HANDLER(ay8912a_w) {
 
 static struct AY8910interface tabart_ay8912Int = {
   1,
-  19660800/16,
+  19660800./16.,
   { 33 },
   { ay8912a_r }, { NULL },
   { ay8912a_w }
@@ -171,10 +171,10 @@ static INTERRUPT_GEN(tabart2_irq) {
 }
 
 MACHINE_DRIVER_START(TABART2)
-  MDRV_CPU_ADD_TAG("scpu", Z80, 19660800/8)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 19660800./8.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tabart2_readmem, tabart2_writemem)
   MDRV_CPU_PORTS(tabart2_readport, tabart2_writeport)
-  MDRV_CPU_PERIODIC_INT(tabart2_irq, 19660800/131072) // 19660800/4/16/16/16/8 = 150 Hz
+  MDRV_CPU_PERIODIC_INT(tabart2_irq, 19660800./131072.) // 19660800/4/16/16/16/8 = 150 Hz
   MDRV_SOUND_ADD(AY8910, tabart_ay8912Int)
 MACHINE_DRIVER_END

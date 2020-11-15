@@ -10,7 +10,7 @@
 
 void vgm_start(struct RunningMachine *machine);
 void vgm_stop(void);
-uint16_t vgm_open(uint8_t chip_type, int clock);
+uint16_t vgm_open(uint8_t chip_type, double clock);
 void vgm_header_set(uint16_t chip_id, uint8_t attr, uint32_t data);
 void vgm_write(uint16_t chip_id, uint8_t port, uint16_t r, uint8_t v);
 void vgm_write_large_data(uint16_t chip_id, uint8_t type, uint32_t datasize, uint32_t value1, uint32_t value2, const void* data);

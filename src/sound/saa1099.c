@@ -219,7 +219,7 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 {
 	struct SAA1099 *saa = &saa1099[chip];
 	int j, ch;
-	int clk2div512;
+	//int clk2div512;
 
 	/* if the channels are disabled we're done */
 	if (!saa->all_ch_enable)
@@ -242,8 +242,8 @@ static void saa1099_update(int chip, INT16 **buffer, int length)
 	}
 
 	// clock fix thanks to http://www.vogons.org/viewtopic.php?p=344227#p344227
-	//clk2div512 = 2 * saa->master_clock / 512;
-	clk2div512 = (saa->master_clock + 128) / 256;
+	//old: clk2div512 = 2 * saa->master_clock / 512;
+	//new/fixed: clk2div512 = (saa->master_clock + 128) / 256;
 
 	/* fill all data needed */
 	for( j = 0; j < length; j++ )

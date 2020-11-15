@@ -173,7 +173,7 @@ static struct AY8910interface ay8910Int = {
 MACHINE_DRIVER_START(regama)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(regama,regama,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", 8085A, 6144000/2)
+  MDRV_CPU_ADD_TAG("mcpu", 8085A, 6144000./2.)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)

@@ -82,8 +82,8 @@ struct mixer_channel_data
 	unsigned samples_available;
 
 	/* resample state */
-	unsigned from_frequency; // current source frequency
-	unsigned to_frequency;   // current destination frequency
+	double from_frequency; // current source frequency
+	double to_frequency;   // current destination frequency
 
 	int lr_silent_value[2];  // detect complete silence of a channel
 	float lr_silent_value_f[2]; // detect complete silence of a float channel
@@ -164,11 +164,11 @@ static void mixer_apply_reverb_filter(struct mixer_channel_data* const channel, 
 	from_frequency - input frequency
 	restart - restart the resample state
 */
-static void mixer_channel_resample_set(struct mixer_channel_data *channel, const unsigned from_frequency, const int restart)
+static void mixer_channel_resample_set(struct mixer_channel_data *channel, const double from_frequency, const int restart)
 {
-	const unsigned to_frequency = Machine->sample_rate;
+	const double to_frequency = Machine->sample_rate;
 
-	mixerlogerror(("Mixer:mixer_channel_resample_set(%s,%d,%d)\n", channel->name, from_frequency, restart));
+	mixerlogerror(("Mixer:mixer_channel_resample_set(%s,%.2f,%d)\n", channel->name, from_frequency, restart));
 
 	if (restart)
 		channel->frac = 0;
@@ -195,7 +195,7 @@ static void mixer_channel_resample_set(struct mixer_channel_data *channel, const
 	src - source vector, (updated at the exit)
 	src_len - max number of source samples
 */
-static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SRC_STATE* src_state,	const float volume, float* const __restrict dst, const unsigned dst_len, INT16** psrc, unsigned src_len, unsigned left_right)
+static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SRC_STATE* src_state,	const float volume, float* const __restrict dst, const unsigned dst_len, const INT16** psrc, unsigned src_len, unsigned left_right)
 {
 	const unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
@@ -208,7 +208,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	const float scale_copy = channel->is_float ? volume : (float)(volume / 0x8000);
 
 	//limit src_len input length, roughly same as old code did basically:
-	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / (double)channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*(channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
@@ -284,7 +284,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	if (channel->legacy_resample || channel->lr_silence[left_right] || scale_copy == 0.f)
 	{
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
-		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
+		const int step = ((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5);
 		int frac = channel->frac;
 
 		if (channel->is_float)
@@ -349,9 +349,12 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	data.input_frames = src_len;
 	data.output_frames = dst_len;
 	data.end_of_input = 0;
-	data.src_ratio = (double)channel->to_frequency / (double)channel->from_frequency;
+	data.src_ratio = channel->to_frequency / channel->from_frequency;
 
 	src_process(src_state, &data);
+
+	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
+	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
@@ -365,7 +368,7 @@ static unsigned mixer_channel_resample_16(struct mixer_channel_data* channel, SR
 	return (dst_pos - dst_base) & ACCUMULATOR_MASK;
 }
 
-static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC_STATE* src_state, const float volume, float* const __restrict dst, const unsigned dst_len, INT8** psrc, unsigned src_len, const unsigned left_right)
+static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC_STATE* src_state, const float volume, float* const __restrict dst, const unsigned dst_len, const INT8** psrc, unsigned src_len, const unsigned left_right)
 {
 	const unsigned dst_base = (accum_base + channel->samples_available) & ACCUMULATOR_MASK;
 	unsigned dst_pos = dst_base;
@@ -377,7 +380,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 	const float scale_copy = (float)(volume / 0x80);
 
 	//limit src_len input length, roughly same as old code did basically:
-	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*((double)channel->from_frequency / (double)channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
+	src_len = MIN(src_len, MAX((unsigned int)(dst_len*1.2*(channel->from_frequency / channel->to_frequency)),1)); //1.2=magic, limit incoming input, so that not all is immediately processed
 
 	if (src_len == 0 || dst_len == 0)
 		return 0;
@@ -412,7 +415,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 		const INT8* const __restrict src_end = src + src_len;
 		const unsigned dst_pos_end = (dst_pos + dst_len) & ACCUMULATOR_MASK;
 
-		const int step = ((unsigned long long)channel->from_frequency << FRACTION_BITS) / channel->to_frequency;
+		const int step = ((unsigned long long)(channel->from_frequency+0.5) << FRACTION_BITS) / (unsigned long long)(channel->to_frequency+0.5);
 		int frac = channel->frac;
 		src += frac >> FRACTION_BITS;
 		frac &= FRACTION_MASK;
@@ -447,9 +450,12 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 	data.input_frames = src_len;
 	data.output_frames = dst_len;
 	data.end_of_input = 0;
-	data.src_ratio = (double)channel->to_frequency / (double)channel->from_frequency;
+	data.src_ratio = channel->to_frequency / channel->from_frequency;
 
 	src_process(src_state, &data);
+
+	// When using the src_process or src_callback_process APIs and updating the src_ratio field of the SRC_STATE struct,
+	// the library will try to smoothly transition between the conversion ratio of the last call and the conversion ratio of the current call.
 
 	mixer_apply_reverb_filter(channel, out_f, data.output_frames_gen, left_right);
 
@@ -464,7 +470,7 @@ static unsigned mixer_channel_resample_8(struct mixer_channel_data *channel, SRC
 }
 
 /* Mix a 8 bit channel */
-static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel, const float* const volume, const unsigned dst_len, INT8** src, const unsigned src_len)
+static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel, const float* const volume, const unsigned dst_len, const INT8** src, const unsigned src_len)
 {
 	unsigned count;
 
@@ -478,7 +484,7 @@ static unsigned mixer_channel_resample_8_pan(struct mixer_channel_data *channel,
 	} else {
 		/* save */
 		const unsigned save_frac = channel->frac;
-		INT8* const save_src = *src;
+		const INT8* const save_src = *src;
 		count = mixer_channel_resample_8(channel, cl, volume[0], left_accum, dst_len, src, src_len, 0);
 		/* restore */
 		channel->frac = save_frac;
@@ -1132,12 +1138,12 @@ void mixer_write_config(mame_file *f)
 	mixer_play_streamed_sample_16
 ***************************************************************************/
 
-void mixer_play_streamed_sample_16(const int ch, INT16 *data, int len, const int freq)
+void mixer_play_streamed_sample_16(const int ch, INT16 *data, int len, const double freq)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 	float mixing_volume[2];
 
-	mixerlogerror(("Mixer:mixer_play_streamed_sample_16(%s,,%d,%d)\n",channel->name,len,freq));
+	mixerlogerror(("Mixer:mixer_play_streamed_sample_16(%s,%d,%.2f)\n",channel->name,len,freq));
 
 	/* skip if sound is off */
 	if (Machine->sample_rate == 0)
@@ -1177,13 +1183,13 @@ int mixer_samples_this_frame()
 	mixer_need_samples_this_frame
 ***************************************************************************/
 #define EXTRA_SAMPLES 1    // safety margin for sampling rate conversion
-int mixer_need_samples_this_frame(const int channel,const int freq)
+int mixer_need_samples_this_frame(const int channel,const double freq)
 {
 	if (mixer_channel[channel].samples_available > samples_this_frame) // check if still enough samples around
 		return 0;
 
 	return (int)((samples_this_frame - mixer_channel[channel].samples_available)
-			* (INT64)freq / Machine->sample_rate + EXTRA_SAMPLES);
+			* freq / Machine->sample_rate + EXTRA_SAMPLES);
 }
 
 
@@ -1191,11 +1197,11 @@ int mixer_need_samples_this_frame(const int channel,const int freq)
 	mixer_play_sample
 ***************************************************************************/
 
-void mixer_play_sample(const int ch, INT8 *data, const int len, const int freq, const UINT8 loop)
+void mixer_play_sample(const int ch, INT8 *data, const int len, const double freq, const UINT8 loop)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
-	mixerlogerror(("Mixer:mixer_play_sample_8(%s,,%d,%d,%s)\n",channel->name,len,freq,loop ? "loop" : "single"));
+	mixerlogerror(("Mixer:mixer_play_sample_8(%s,%d,%.2f,%s)\n",channel->name,len,freq,loop ? "loop" : "single"));
 
 	/* skip if sound is off, or if this channel is a stream */
 	if (Machine->sample_rate == 0 || channel->is_stream)
@@ -1220,11 +1226,11 @@ void mixer_play_sample(const int ch, INT8 *data, const int len, const int freq, 
 	mixer_play_sample_16
 ***************************************************************************/
 
-void mixer_play_sample_16(const int ch, INT16 *data, const int len, const int freq, const UINT8 loop)
+void mixer_play_sample_16(const int ch, INT16 *data, const int len, const double freq, const UINT8 loop)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
-	mixerlogerror(("Mixer:mixer_play_sample_16(%s,%d,%d,%s)\n",channel->name,len/2,freq,loop ? "loop" : "single"));
+	mixerlogerror(("Mixer:mixer_play_sample_16(%s,%d,%.2f,%s)\n",channel->name,len/2,freq,loop ? "loop" : "single"));
 
 	/* skip if sound is off, or if this channel is a stream */
 	if (Machine->sample_rate == 0 || channel->is_stream)
@@ -1280,14 +1286,14 @@ int mixer_is_sample_playing(const int ch)
 	mixer_set_sample_frequency
 ***************************************************************************/
 
-void mixer_set_sample_frequency(const int ch, const int freq)
+void mixer_set_sample_frequency(const int ch, const double freq)
 {
 	struct mixer_channel_data *channel = &mixer_channel[ch];
 
 	assert( !channel->is_stream );
 
 	if (channel->is_playing) {
-		mixerlogerror(("Mixer:mixer_set_sample_frequency(%s,%d)\n",channel->name,freq));
+		mixerlogerror(("Mixer:mixer_set_sample_frequency(%s,%.2f)\n",channel->name,freq));
 
 		if (channel->from_frequency == freq)
 			return;

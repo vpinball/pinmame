@@ -192,13 +192,13 @@ MEMORY_END
 
 static struct astrocade_interface sndIntf = {
   1,
-  14138000/8,
+  14138000./8.,
   { 75 }
 };
 
 MACHINE_DRIVER_START(MIDWAY)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", Z80, 14138000/8)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 14138000./8.)
   MDRV_CPU_MEMORY(MIDWAY_readmem, MIDWAY_writemem)
   MDRV_CPU_PORTS(midway_readport,midway_writeport)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)

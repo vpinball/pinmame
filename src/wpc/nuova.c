@@ -197,7 +197,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
   // CPU clock adjusted to fit recorded live sample
-  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)

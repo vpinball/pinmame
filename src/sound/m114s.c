@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 /**********************************************************************************************
  *
  *   SGS-Thomson Microelectronics M114S/M114A/M114AF Digital Sound Generator
@@ -714,7 +716,7 @@ static void process_channel_data(struct M114SChip *chip)
 	chip->bytes_read = 0;
 
 	//Copy data to the appropriate channel registers from our temp channel registers
-	memcpy(channel,&chip->tempch_regs,sizeof(chip->tempch_regs));
+	memcpy(&channel->regs,&chip->tempch_regs,sizeof(chip->tempch_regs));
 
 	//Look for the 16 special frequency codes
 	if(channel->regs.frequency >= 0xf0) {
