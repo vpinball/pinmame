@@ -315,7 +315,7 @@ void votraxsc01_set_clock(UINT32 newfreq)
 	((BIT(val,B6) << 6) | (BIT(val,B5) << 5) | (BIT(val,B4) << 4) | \
 		(BIT(val,B3) << 3) | (BIT(val,B2) << 2) | (BIT(val,B1) << 1) | (BIT(val,B0) << 0))
 
-void phone_commit()
+static void phone_commit()
 {
 	int i;
 
@@ -372,7 +372,7 @@ static void interpolate(UINT8 * const reg, const UINT8 target)
 	*reg = *reg - (*reg >> 3) + (target << 1);
 }
 
-void chip_update()
+static void chip_update()
 {
 	int tick_625,tick_208;
 	int inp;
@@ -650,7 +650,7 @@ void chip_update()
 
 */
 
-void build_standard_filter(double * const a, double * const b,
+static void build_standard_filter(double * const a, double * const b,
 											   const double c1t, // Unswitched cap, input, top
 											   const double c1b, // Switched cap, input, bottom
 											   const double c2t, // Unswitched cap, over first amp-op, top
@@ -705,7 +705,7 @@ void build_standard_filter(double * const a, double * const b,
   H(s) = Vo/Vi = (R1/R0) * (1 / (1 + s.R1.C1))
 */
 
-void build_lowpass_filter(double * const a, double * const b,
+static void build_lowpass_filter(double * const a, double * const b,
 											  const double c1t, // Unswitched cap, over amp-op, top
 											  const double c1b) // Switched cap, over amp-op, bottom
 {
@@ -758,7 +758,7 @@ void build_lowpass_filter(double * const a, double * const b,
   We assume r0 = r2
 */
 
-void build_noise_shaper_filter(double * const a, double * const b,
+static void build_noise_shaper_filter(double * const a, double * const b,
 												   const double c1,  // Cap over first amp-op
 												   const double c2t, // Unswitched cap between amp-ops, input, top
 												   const double c2b, // Switched cap between amp-ops, input, bottom
@@ -812,7 +812,7 @@ void build_noise_shaper_filter(double * const a, double * const b,
   that H(infinity)=1.
 */
 
-void build_injection_filter(double * const a, double * const b,
+static void build_injection_filter(double * const a, double * const b,
 												const double c1b, // Switched cap, input, bottom
 												const double c2t, // Unswitched cap, over first amp-op, top
 												const double c2b, // Switched cap, over first amp-op, bottom
@@ -939,7 +939,7 @@ void filters_commit(int force)
 }
 
 // Shift a history of values by one and insert the new value at the front
-	static void shift_hist(double val, double * const hist_array, const size_t N) {
+	static void shift_hist(const double val, double * const hist_array, const size_t N) {
 		size_t i;
 		for(i=N-1; i>0; i--)
 			hist_array[i] = hist_array[i-1];
@@ -1385,7 +1385,7 @@ void votraxsc01_set_volume(int volume) // currently just (ab)used to en/disable 
 static void Votrax_Update(int num, INT16 *buffer, int length)
 {
 #ifndef REAL_DEVICE
-	float* __restrict buffer_f = (float*)buffer;
+	float* const __restrict buffer_f = (float*)buffer;
 
 #if VERBOSE
 	LOG(("Votrax SC-01: update %d\n", length));

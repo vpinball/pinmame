@@ -50,7 +50,7 @@ static struct {
   int isHH;
 } locals;
 
-#define LTD_CPUFREQ	3579545/4
+#define LTD_CPUFREQ	3579545./4.
 
 static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910_set_volume(0, ALL_8910_CHANNELS, 50); AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w) { AY8910_set_volume(0, ALL_8910_CHANNELS, 50); AY8910Write(0,1,data); }

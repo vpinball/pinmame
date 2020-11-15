@@ -947,7 +947,7 @@ MACHINE_DRIVER_START(gpSSU4)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpMSU1)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 3579500/4) // NTSC quartz ???
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579500./4.) // NTSC quartz ???
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps_readmem, gps_writemem)
   MDRV_SOUND_ADD(CUSTOM, msu1_custInt) // uses an MC6840, to be implemented yet!
@@ -962,7 +962,7 @@ MACHINE_DRIVER_END
 
 
 MACHINE_DRIVER_START(gpMSU3)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 3579500/4) // NTSC quartz ???
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579500./4.) // NTSC quartz ???
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps3_readmem, gps3_writemem)
   MDRV_SOUND_ADD(DAC, msu3_dacInt)

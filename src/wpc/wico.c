@@ -250,13 +250,13 @@ MACHINE_DRIVER_START(aftor)
   MDRV_DIAGNOSTIC_LED7
 
   // housekeeping cpu: displays, switches
-  MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8)
+  MDRV_CPU_ADD_TAG("mcpu housekeeping", M6809, WICO_CLOCK_FREQ/8.)
   MDRV_CPU_MEMORY(WICO_0_readmem, WICO_0_writemem)  
   MDRV_CPU_PERIODIC_INT(WICO_irq_housekeeping, 120) // zero crossing
   MDRV_TIMER_ADD(WICO_firq_housekeeping, 750) // time generator
 
   // command cpu: sound, solenoids
-  MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8)
+  MDRV_CPU_ADD_TAG("scpu command", M6809, WICO_CLOCK_FREQ/8.)
   MDRV_CPU_MEMORY(WICO_1_readmem, WICO_1_writemem)
   MDRV_CPU_VBLANK_INT(WICO_vblank, 1)
   MDRV_SOUND_ADD(SN76494, WICO_sn76494Int)

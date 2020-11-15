@@ -1541,7 +1541,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(bmxa,bmx,"BMX (Free Play)",2004,"Bally / Oliver",by35_mBY35_51S,0) // rev. 1
 
 /*-----------------------------------------------------------
-/ Grand Slam (BY35-???: 01/83) - Uses AS2888-51 Sound Board
+/ Grand Slam (BY35-???: 01/83) - Uses AS2518-51 Sound Board     //!! why was this previously thought to be a AS2888-51 ?
 /-----------------------------------------------------------*/
 static core_tLCDLayout granslamDisp[] = {
   DISP_SEG_IMPORT(dispBy6),
@@ -1775,7 +1775,7 @@ static struct DACinterface grand_dacInt = { 1, { 50 }};
 MACHINE_DRIVER_START(by35_GP)
   MDRV_IMPORT_FROM(by35)
   MDRV_DIPS(33)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gpsnd_readmem, gpsnd_writemem)
   MDRV_SOUND_ADD(DAC, grand_dacInt)

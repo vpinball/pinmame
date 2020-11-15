@@ -240,14 +240,14 @@ static void by32_init(struct sndbrdData *brdData) {
 /      3.58MHz
 /
 /  U4  ROM f000-ffff (8000-8fff)
-/ U1-U8 ROM 8000-ffff (vocalizer board)
+/U1-U8 ROM 8000-ffff (vocalizer board)
 /  U10 RAM 0000-007f
 /  U2  PIA 0080-0083 (PIA0)
-/      A:  8910 DA
-/      B0: 8910 BC1
-/      B1: 8910 BDIR
-/      B6: Speach clock
-/      B7: Speach data
+/      A  : 8910 DA
+/      B0 : 8910 BC1
+/      B1 : 8910 BDIR
+/      B6 : Speech clock
+/      B7 : Speech data
 /      CA1: SoundEnable
 /      CB1: fed by 555 timer (not equipped?)
 /      CA2: ? (volume circuit)
@@ -291,7 +291,7 @@ static MEMORY_WRITE_START(sp_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(by51)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545./4.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
   MDRV_INTERLEAVE(500)

@@ -200,7 +200,7 @@ typedef struct
 //CPU Reset Protected Settings
 typedef struct
 {
-	int cpu_freq;								//CPU Clock Frequency (as specified by the Machine Driver)
+	double cpu_freq;							//CPU Clock Frequency (as specified by the Machine Driver)
 	int cpunum;									//CPU num
 	data32_t *page0_ram_ptr;					//holder for the pointer set by the driver to ram @ page 0.
 	data32_t *reset_ram_ptr;					//holder for the pointer set by the driver to ram swap location.
@@ -811,12 +811,12 @@ INLINE void internal_write (int addr, data32_t data)
 								if(TC_RC_TRIGGER(timer_num) && TC_RC_IRQ_ENABLED(timer_num))
 								{
 									//Base clock is the CPU Clock Frequency
-									int freq = at91rs.cpu_freq;
+									double freq = at91rs.cpu_freq;
 									//Account for clock divisor & Register C value
 									freq /= at91.tc_clock[timer_num].tc_cycle_div;
 									freq /= at91.tc_clock[timer_num].tc_regc;
 
-									if(logit) LOG(("Timer TC%d starting up for RC Compare @ Freq: %d\n",timer_num,freq));
+									if(logit) LOG(("Timer TC%d starting up for RC Compare @ Freq: %.2f\n",timer_num,freq));
 
 									//Start up the timer
 									if(at91rs.timer[timer_num])

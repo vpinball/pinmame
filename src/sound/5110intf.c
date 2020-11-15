@@ -163,6 +163,6 @@ void tms5110_set_frequency(int frequency)
 	if (stream != -1)
 	{
 		stream_update(stream, 0);
-		stream_set_sample_rate(stream, frequency / 80);
+		stream_set_sample_rate(stream, (int)(frequency/80. + 0.5));
 	}
 }

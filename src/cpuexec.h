@@ -48,10 +48,10 @@ struct MachineCPU
 	const void *memory_write;				/* struct Memory_WriteAddress */
 	const void *port_read;
 	const void *port_write;
-	void 		(*vblank_interrupt)(void);	/* for interrupts tied to VBLANK */
-	int 		vblank_interrupts_per_frame;/* usually 1 */
-	void 		(*timed_interrupt)(void);	/* for interrupts not tied to VBLANK */
-	double 		timed_interrupts_per_second;
+	void		(*vblank_interrupt)(void);	/* for interrupts tied to VBLANK */
+	double		vblank_interrupts_per_frame;/* usually 1 */
+	void		(*timed_interrupt)(void);	/* for interrupts not tied to VBLANK */
+	double		timed_interrupts_per_second;
 	void *		reset_param;				/* parameter for cpu_reset */
 	const char *tag;
 };

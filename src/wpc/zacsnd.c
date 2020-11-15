@@ -234,7 +234,7 @@ static PORT_WRITE_START(i8035_writeport)
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1346)
-  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000/15) // 8035 has internal divider by 15!
+  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000./15.) // 8035 has internal divider by 15!
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(i8035_readmem, i8035_writemem)
   MDRV_CPU_PORTS(i8035_readport, i8035_writeport)

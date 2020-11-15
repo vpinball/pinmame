@@ -1159,7 +1159,7 @@ int activecpu_geticount(void)
 
 int cpu_scalebyfcount(int value)
 {
-	int result = (int)((double)value * timer_timeelapsed(refresh_timer) * refresh_period_inv);
+	int result = (int)((double)value * timer_timeelapsed(refresh_timer) * refresh_period_inv + 0.5);
 	if (value >= 0)
 		return (result < value) ? result : value;
 	else
@@ -1284,9 +1284,9 @@ double cpu_getscanlineperiod(void)
 int cpu_gethorzbeampos(void)
 {
 	double elapsed_time = timer_timeelapsed(refresh_timer);
-	int scanline = (int)(elapsed_time * scanline_period_inv);
+	int scanline = (int)(elapsed_time * scanline_period_inv + 0.5);
 	double time_since_scanline = elapsed_time - (double)scanline * scanline_period;
-	return (int)(time_since_scanline * scanline_period_inv * (double)Machine->drv->screen_width);
+	return (int)(time_since_scanline * scanline_period_inv * (double)Machine->drv->screen_width + 0.5);
 }
 
 
@@ -1537,7 +1537,7 @@ static void cpu_vblankreset(void)
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
 		if (!(cpu[cpunum].suspend & SUSPEND_REASON_DISABLE))
-			cpu[cpunum].iloops = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame - 1;
+			cpu[cpunum].iloops = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame - 1 + 0.5);
 		else
 			cpu[cpunum].iloops = -1;
 	}
@@ -1806,10 +1806,10 @@ static void cpu_inittimers(void)
 	double ipfd;
 
 	/* allocate a dummy timer at the minimum frequency to break things up */
-	ipf = Machine->drv->cpu_slices_per_frame;
-	if (ipf <= 0)
-		ipf = 1;
-	timeslice_period = TIME_IN_HZ(Machine->drv->frames_per_second * (double)ipf);
+	ipfd = Machine->drv->cpu_slices_per_frame;
+	if (ipfd <= 0.)
+		ipfd = 1.;
+	timeslice_period = TIME_IN_HZ(Machine->drv->frames_per_second * ipfd);
 	timeslice_timer = timer_alloc(cpu_timeslicecallback);
 	timer_adjust(timeslice_timer, timeslice_period, 0, timeslice_period);
 	
@@ -1827,7 +1827,7 @@ static void cpu_inittimers(void)
 	max = 1;
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		ipf = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame;
+		ipf = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame+0.5);
 		if (ipf > max)
 			max = ipf;
 	}
@@ -1840,7 +1840,7 @@ static void cpu_inittimers(void)
 	{
 		for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 		{
-			ipf = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame;
+			ipf = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame+0.5);
 			if (ipf > 0 && (vblank_multiplier % ipf) != 0)
 				break;
 		}
@@ -1852,7 +1852,7 @@ static void cpu_inittimers(void)
 	/* initialize the countdown timers and intervals */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		ipf = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame;
+		ipf = (int)(Machine->drv->cpu[cpunum].vblank_interrupts_per_frame+0.5);
 		if (ipf > 0)
 			cpu[cpunum].vblankint_countdown = cpu[cpunum].vblankint_multiplier = vblank_multiplier / ipf;
 		else
@@ -1874,12 +1874,12 @@ static void cpu_inittimers(void)
 	/* start the CPU interrupt timers */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		ipf = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame;
+		ipfd = Machine->drv->cpu[cpunum].vblank_interrupts_per_frame;
 
 		/* compute the average number of cycles per interrupt */
-		if (ipf <= 0)
-			ipf = 1;
-		cpu[cpunum].vblankint_period = TIME_IN_HZ(Machine->drv->frames_per_second * (double)ipf);
+		if (ipfd <= 0.)
+			ipfd = 1.;
+		cpu[cpunum].vblankint_period = TIME_IN_HZ(Machine->drv->frames_per_second * ipfd);
 		cpu[cpunum].vblankint_timer = timer_alloc(NULL);
 
 		/* see if we need to allocate a CPU timer */

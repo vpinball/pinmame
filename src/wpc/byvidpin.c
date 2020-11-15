@@ -31,7 +31,7 @@
 
         Bally video pins use an AS-2518-133 mpu.
         I believe that some late games such as Grand Slam
-        may have also used the AS-2518-133 mpu.
+        may have also used the AS-2518-133 mpu. // note: the latter is confirmed by Grand Slams manual
 
         This is the same as an  AS-2518-35  mpu except that
         R113 which is fed from J4 by +43v is now CR52 a 1N4148
@@ -568,12 +568,12 @@ const struct core_dispLayout byVP_dispGranny[] = {
 MACHINE_DRIVER_START(byVP1)
   MDRV_IMPORT_FROM(PinMAME)
 
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 3580000/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 3580000./4.)
   MDRV_CPU_MEMORY(byVP_readmem, byVP_writemem)
   MDRV_CPU_VBLANK_INT(byVP_vblank, 1)
   MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ)
 
-  MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
+  MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000./4.)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
   MDRV_INTERLEAVE(100)
   MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ*2)

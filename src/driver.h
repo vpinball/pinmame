@@ -363,7 +363,7 @@ struct InternalMachineDriver
         struct MachineCPU cpu[MAX_CPU];
         double frames_per_second;
         int vblank_duration;
-        UINT32 cpu_slices_per_frame;
+        double cpu_slices_per_frame;
 
         void (*machine_init)(void);
         void (*machine_stop)(void);

@@ -90,7 +90,7 @@ static void play2s_init(struct sndbrdData *brdData) {
 static WRITE_HANDLER(play2s_data_w) {
   sndlocals.freq = data;
   if (mixer_is_sample_playing(sndlocals.channel)) {
-    mixer_set_sample_frequency(sndlocals.channel, 2950000 / 4 / (sndlocals.freq + 1));
+    mixer_set_sample_frequency(sndlocals.channel, 2950000. / 4. / (sndlocals.freq + 1));
   }
 }
 
@@ -98,7 +98,7 @@ static WRITE_HANDLER(play2s_ctrl_w) {
   if (!sndlocals.enSn && (data & 1)) { // sound on to full volume
     timer_adjust(sndlocals.timer, TIME_NEVER, 0, 0);
     if (!mixer_is_sample_playing(sndlocals.channel)) {
-      mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000 / 4 / (sndlocals.freq + 1), 1);
+      mixer_play_sample(sndlocals.channel, (signed char *)squareWave, sizeof(squareWave), 2950000. / 4. / (sndlocals.freq + 1), 1);
     }
     sndlocals.volume = 100;
     mixer_set_volume(sndlocals.channel, sndlocals.volume);
@@ -469,7 +469,7 @@ const struct sndbrdIntf playzsIntf = {
 };
 
 MACHINE_DRIVER_START(PLAYMATICSZ)
-  MDRV_CPU_ADD_TAG("scpu", COP420, 2012160 / 16)
+  MDRV_CPU_ADD_TAG("scpu", COP420, 2012160./16.)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmemz, playsound_writememz)
   MDRV_CPU_PORTS(playsound_readportz, playsound_writeportz)

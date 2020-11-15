@@ -22,8 +22,13 @@ typedef	long	int32_t ;
 
 #define	SRC_MIN_RATIO_DIFF		(1e-20)
 
+#ifndef MAX
 #define	MAX(a,b)	(((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef MIN
 #define	MIN(a,b)	(((a) < (b)) ? (a) : (b))
+#endif
 
 #define	ARRAY_LEN(x)			((int) (sizeof (x) / sizeof ((x) [0])))
 #define OFFSETOF(type,member)	((int) (&((type*) 0)->member))

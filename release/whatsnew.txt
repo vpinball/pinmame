@@ -13,7 +13,7 @@ Fix -listxml for strings that contain embedded tags
 pinPROC : updated library;  VS2019 build
 YAML-cpp: updated to 0.6.3; VS2019 build
 
-Updated LISY support to 5.26-20 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
+Updated LISY support to 5.26-26 (Linux for Gottlieb System1 & System80, Bally, Atari, Williams and 'HOme' Pinballs)
 
 Added VGM file output support for AY8910, OKI6295, OKI6376, SAA1099, YM2151, YM2203, YMF262(OPL3), YM3526, YM3812, Y8950, and SN7648/9X (unsure about the mappings for these latter ones though!) sound chips
  Either use -vgmwrite on the commmand line (PinMAME)
@@ -21,7 +21,7 @@ Added VGM file output support for AY8910, OKI6295, OKI6376, SAA1099, YM2151, YM2
 
 PinMAME(32): Added an Automatic Sound Dump functionality:
  Started via 'F6' (instead of the Recording function via 'F5') and 
- skips automatically to the next sound / creates a new file if there
+ skips automatically to the next sound / creates a new file (in the wave subdir) if there
  is no sound at all anymore (silence) or the length reaches 4mins.
  The dump stops automatically after soundcommand 0xFF (=max 256 overall generated sounds).
  There is also an altsound CSV created with the dumps. This one can be
