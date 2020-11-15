@@ -302,8 +302,12 @@ DCS_SOUNDROM6x("u2-s031.rom",CRC(a265cd93) SHA1(2cebb00119f8fc2022959be2107669c9
                "u7-s031.rom",CRC(d252f599) SHA1(bdce67187c027b713b6ef88f6cd4f025de469929))
 
 WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08)) WD_SOUND WPC_ROMEND
+// There is a bug in WhoDunnit 1.2 where the incorrect floor number is shown when going to the 7th floor:
+// "8TH FLOOR" is incorrectly displayed above the Elevator doors. To fix the bug 0xE4FB needs to be changed from 0x08 to 0x07
+WPC_ROMSTART(wd,12p,"whod1_2p.rom",0x80000,CRC(58154428) SHA1(1433058db63e06f9d7483fa5dbb45eca267c1151)) WD_SOUND WPC_ROMEND
 
 WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08)) WD_G_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,12gp,"whod1_2p.rom",0x80000,CRC(58154428) SHA1(1433058db63e06f9d7483fa5dbb45eca267c1151)) WD_G_SOUND WPC_ROMEND
 
 WPC_ROMSTART(wd,10r,"whod1_0.rom",0x80000,CRC(85c29cfe) SHA1(5156d3699f16ac366c063149113ec78232ba787b)) WD_SOUND WPC_ROMEND
 WPC_ROMSTART(wd,11, "whod1_1.rom",0x80000,CRC(85cab586) SHA1(3940bff8dfa240f8c0ed96c96f58ab66effbdea5)) WD_SOUND WPC_ROMEND
@@ -319,7 +323,9 @@ WPC_ROMSTART(wd,048r,"wd_048r.rom",0x80000,CRC(45653baa) SHA1(788d5195e61605e151
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (wd,12,    "WHO Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,12p,12,"WHO Dunnit (1.2 Elevator text fix)",2020,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,12g,12,"WHO Dunnit (1.2 German Sound)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,12gp,12,"WHO Dunnit (1.2 German Sound / Elevator text fix)",2020,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,11,12, "WHO Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10r,12,"WHO Dunnit (1.0R)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10g,12,"WHO Dunnit (1.0 German Sound)",1995,"Bally",wpc_m95DCSS,0)

@@ -450,6 +450,7 @@ WPC_ROMSTART(ft,l5,"fshtl_5.rom",0x80000,CRC(88847775) SHA1(ab323980b914678e1e3c
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
 
+// If you set "Add a ball" settings, in attract mode it will say "xtra balle" -> this fixes it to "extra ball"
 WPC_ROMSTART(ft,l5p,"fshtd_5p.rom",0x80000,CRC(177d2b0b) SHA1(d5a1397c4e8c5acb8656a80ee6b22116c504f8c8))
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
