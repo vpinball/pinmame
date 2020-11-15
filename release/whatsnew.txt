@@ -66,7 +66,7 @@ Correct handling of Gottlieb System 1 displays (thanks to bontango)
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Victor Fernandez, Flipprojets.fr
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, ClawGrip, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Victor Fernandez, Flipprojets.fr, MLM, Victor Fernandez (City Game), ClawGrip
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -115,6 +115,7 @@ Flintstones, The LX-3
 Funhouse (Prototype System 11 Sound ROMs)
 Iron Man 1.85,1.86(+Vault Editions)
 Junk Yard 1.2C (competition MOD) (updated)
+Jurassic Park 3.05 (misses the matching display ROM though)
 Lap By Lap (Free Play)
 Laser Ball L-2 (PROM Sound)
 Last Action Hero 1.04 (French), 1.07
