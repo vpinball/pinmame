@@ -2370,7 +2370,7 @@ static void OPL3ResetChip(OPL3 *chip)
 /* Create one of virtual YMF262 */
 /* 'clock' is chip clock in Hz  */
 /* 'rate'  is sampling rate (=clock/(8*36)) */
-static OPL3 *OPL3Create(int type, double clock, int rate)
+static OPL3 *OPL3Create(int type, double clock, double rate)
 {
 	OPL3 *chip;
 
@@ -2387,7 +2387,7 @@ static OPL3 *OPL3Create(int type, double clock, int rate)
 
 	chip->type  = type;
 	chip->clock = clock;
-	chip->rate  = rate;
+	chip->rate  = (int)(rate+0.5);
 
 	/* init global tables */
 	OPL3_initalize(chip);
@@ -2523,7 +2523,7 @@ static OPL3 *YMF262[MAX_OPL3_CHIPS];	/* array of pointers to the YMF262's */
 static int YMF262NumChips = 0;			/* number of chips */
 
 // rate = clock/(8*36)
-int YMF262Init(int num, double clock, int rate)
+int YMF262Init(int num, double clock, double rate)
 {
 	int i;
 

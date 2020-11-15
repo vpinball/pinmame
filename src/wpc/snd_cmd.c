@@ -988,10 +988,10 @@ static int wave_open(char *filename) {
   temp16 = intel16(channels);
   wavelocals.offs += mame_fwrite(wavelocals.file, &temp16, 2);
   /* sample rate */
-  temp32 = intel32(Machine->sample_rate);
+  temp32 = intel32((int)(Machine->sample_rate+0.5));
   wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* byte rate */
-  temp32 = intel32(channels * Machine->sample_rate * 2);
+  temp32 = intel32(channels * (int)(Machine->sample_rate+0.5) * 2);
   wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* block align */
   temp16 = intel16(2*channels);

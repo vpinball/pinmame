@@ -78,17 +78,20 @@ typedef struct filter2_context_struct { // could also be reduced to only 2 histo
  * gain - overall filter gain. Set to 1 if not needed.
  */
 void filter2_setup(const int type, const double fc, const double d, const double gain,
-	filter2_context * const __restrict filter2, const unsigned int sample_rate);
+	filter2_context * const __restrict filter2, const double sample_rate);
 
 
 /* Reset the input/output voltages to 0. */
 void filter2_reset(filter2_context * const __restrict filter2);
 
 
+/* 
+ *  Step the filter with a given input, returning the new output.
+ */
 /* Step the filter with input x0. */
 INLINE double filter2_step_with(filter2_context * const __restrict filter2, const double x0)
 {
-	// Form 1 Biquad Section Calc
+	// Form 1 Biquad Section Calc // Direct Form 1 is usually the best choice for fixed point
 	const double y0 = /*a0**/(filter2->b0 * x0 + filter2->b1 * filter2->x1 + filter2->b2 * filter2->x2) - filter2->a1 * filter2->y1 - filter2->a2 * filter2->y2;
 	filter2->x2 = filter2->x1;
 	filter2->x1 = x0;
@@ -127,7 +130,7 @@ void filter_setup(const double b0, const double b1, const double b2, const doubl
  *
  */
 void filter_opamp_m_bandpass_setup(const double r1, const double r2, const double r3, const double c1, const double c2,
-					filter2_context * const __restrict filter2, const unsigned int sample_rate);
+	filter2_context * const __restrict filter2, const double sample_rate);
 
 // 
 // Passive RC low-pass filter (set R2 & R3 = 0 for first variant)
@@ -140,7 +143,7 @@ void filter_opamp_m_bandpass_setup(const double r1, const double r2, const doubl
 //               GND                               GND          GND
 //
 void filter_rc_lp_setup(const double R1, const double R2, const double R3, const double C1,
-	filter2_context * const __restrict context, const int sample_rate);
+	filter2_context * const __restrict context, const double sample_rate);
 
 
 // Multiple Feedback Low-pass Filter
@@ -192,7 +195,7 @@ void filter_rc_lp_setup(const double R1, const double R2, const double R3, const
 // Specify resistor values in Ohms and capacitors in Farads.
 //
 void filter_mf_lp_setup(const double R1, const double R2, const double R3, const double C1, const double C2,
-	filter2_context * const __restrict context, const int sample_rate);
+	filter2_context * const __restrict context, const double sample_rate);
 
 
 // Active single-pole low-pass filter
@@ -222,7 +225,7 @@ void filter_mf_lp_setup(const double R1, const double R2, const double R3, const
 // Specify resistor values in Ohms and capacitors in Farads.
 //
 void filter_active_lp_setup(const double R1, const double R2, const double R3, const double C1,
-	filter2_context * const __restrict context, const int sample_rate);
+	filter2_context * const __restrict context, const double sample_rate);
 
 // Sallen-Key low-pass filter
 //
@@ -247,6 +250,6 @@ void filter_active_lp_setup(const double R1, const double R2, const double R3, c
 // Specify resistor values in Ohms and capacitors in Farads.
 //
 void filter_sallen_key_lp_setup(const double R1, const double R2, const double C1, const double C2,
-	filter2_context * const __restrict context, const int sample_rate);
+	filter2_context * const __restrict context, const double sample_rate);
 
 #endif

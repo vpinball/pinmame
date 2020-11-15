@@ -186,7 +186,7 @@ int sp0250_sh_start( const struct MachineSound *msound )
 	sp0250.drq(ASSERT_LINE);
 	timer_pulse(TIME_IN_HZ(3120000 / CLOCK_DIVIDER), 0, sp0250_timer_tick);
 
-    sp0250.stream = stream_init("SP0250", intf->volume, 3120000 / CLOCK_DIVIDER, 0, sp0250_update);
+    sp0250.stream = stream_init("SP0250", intf->volume, 3120000. / CLOCK_DIVIDER, 0, sp0250_update);
 
 	return 0;
 }

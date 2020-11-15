@@ -299,7 +299,7 @@ int discrete_sh_start (const struct MachineSound *msound)
 	int loop=0,loop2=0,search=0,failed=0;
 
 #ifdef DISCRETE_WAVELOG
-	wav_file = wav_open("discrete.wav", Machine->sample_rate, ((Machine->drv->sound_attributes&SOUND_SUPPORTS_STEREO) == SOUND_SUPPORTS_STEREO) ? 2: 1);
+	wav_file = wav_open("discrete.wav", (int)(Machine->sample_rate+0.5), ((Machine->drv->sound_attributes&SOUND_SUPPORTS_STEREO) == SOUND_SUPPORTS_STEREO) ? 2: 1);
 #endif
 #ifdef DISCRETE_DEBUGLOG
 	if(!disclogfile) disclogfile=fopen("discrete.log", "w");

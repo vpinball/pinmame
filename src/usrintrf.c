@@ -3721,7 +3721,7 @@ static void onscrd_init(void)
 
 	item = 0;
 
-	if (Machine->sample_rate)
+	if (Machine->sample_rate != 0.)
 	{
 		onscrd_fnc[item] = onscrd_volume;
 		onscrd_arg[item] = 0;
@@ -3737,7 +3737,7 @@ static void onscrd_init(void)
 			}
 		}
 
-		/* K.Wilkins Feb2003 Additional of Disrete Sound System ADJUSTMENT sliders */
+		/* K.Wilkins Feb2003 Additional of Discrete Sound System ADJUSTMENT sliders */
 #if HAS_DISCRETE
 		/* See if there is a discrete sound sub-system present */
 		for (soundnum = 0; soundnum < MAX_SOUND; soundnum++)

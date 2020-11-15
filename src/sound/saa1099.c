@@ -349,7 +349,7 @@ int saa1099_sh_start(const struct MachineSound *msound)
 			name[j] = buf[j];
 			vol[j] = MIXER(intf->volume[i][j], j ? MIXER_PAN_RIGHT : MIXER_PAN_LEFT);
 		}
-		saa->stream = stream_init_multi(2, name, vol, (int)(sample_rate+0.5), i, saa1099_update);
+		saa->stream = stream_init_multi(2, name, vol, sample_rate, i, saa1099_update);
 
 		saa->vgm_idx = vgm_open(VGMC_SAA1099, saa->master_clock);
 	}

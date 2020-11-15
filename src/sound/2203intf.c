@@ -68,13 +68,13 @@ static void FMTimerInit( void )
 int YM2203_sh_start(const struct MachineSound *msound)
 {
 	int i;
-	int rate;
+	double rate;
 
 	if (AY8910_sh_start_ym(msound)) return 1;
 
 	intf = msound->sound_interface;
 
-	rate = (int)(intf->baseclock/72 + 0.5); /* ??? */
+	rate = intf->baseclock/72.; /* ??? */
 
 	/* Timer Handler set */
 	FMTimerInit();

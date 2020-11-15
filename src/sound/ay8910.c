@@ -1267,11 +1267,11 @@ void AY8910_set_clock(int chip, double clock)
 	struct AY8910 *PSG = &AYPSG[chip];
 
 #ifdef SINGLE_CHANNEL_MIXER
-	stream_set_sample_rate(PSG->Channel, (int)(clock/8 + 0.5));
+	stream_set_sample_rate(PSG->Channel, clock/8.);
 #else
 	int ch;
 	for (ch = 0; ch < 3; ch++)
-		stream_set_sample_rate(PSG->Channel + ch, (int)(clock/8 + 0.5));
+		stream_set_sample_rate(PSG->Channel + ch, clock/8.);
 #endif
 }
 
@@ -1341,7 +1341,7 @@ void AY8910_sh_reset(void)
 }
 
 static int AY8910_init(const char *chip_name,int chip,
-		double clock,int volume,int sample_rate,
+		double clock,int volume,
 		mem_read_handler portAread,mem_read_handler portBread,
 		mem_write_handler portAwrite,mem_write_handler portBwrite,
 		int sound_type)
@@ -1359,13 +1359,14 @@ static int AY8910_init(const char *chip_name,int chip,
 #endif
 	unsigned char chp_tp_vgm;
 
+	double sample_rate; // = Machine->sample_rate
 	/* the step clock for the tone and noise generators is the chip clock    */
 	/* divided by 8; for the envelope generator of the AY-3-8910, it is half */
 	/* that much (clock/16), but the envelope of the YM2149 goes twice as    */
 	/* fast, therefore again clock/8.                                        */
 // causes crashes with YM2610 games - overflow?
 //	if (options.use_filter)
-		sample_rate = (int)(clock/8 + 0.5);
+		sample_rate = clock/8.;
 
 	memset(PSG,0,sizeof(struct AY8910));
 	PSG->PortAread = portAread;
@@ -1498,7 +1499,6 @@ int AY8910_sh_start(const struct MachineSound *msound)
 	{
 		if (AY8910_init(sound_name(msound),chip+ym_num,intf->baseclock,
 				intf->mixing_level[chip] & 0xffff,
-				Machine->sample_rate,
 				intf->portAread[chip],intf->portBread[chip],
 				intf->portAwrite[chip],intf->portBwrite[chip],
 				msound->sound_type) != 0)
@@ -1528,7 +1528,6 @@ int AY8910_sh_start_ym(const struct MachineSound *msound)
 	{
 		if (AY8910_init(sound_name(msound),chip+num,intf->baseclock,
 				intf->mixing_level[chip] & 0xffff,
-				Machine->sample_rate,
 				intf->portAread[chip],intf->portBread[chip],
 				intf->portAwrite[chip],intf->portBwrite[chip],
 				msound->sound_type) != 0)

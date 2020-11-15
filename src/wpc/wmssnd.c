@@ -1077,7 +1077,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
 /---------------------*/
 /*-- ADSP core functions --*/
 static void adsp_init(data8_t *(*getBootROM)(int soft),
-               void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate));
+               void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate));
 static void adsp_boot(int soft);
 static void adsp_txCallback(int port, INT32 data);
 static WRITE16_HANDLER(adsp_control_w);
@@ -1104,7 +1104,7 @@ int WPC_gWPC95;
 static int dcs_custStart(const struct MachineSound *msound);
 static void dcs_custStop(void);
 static void dcs_dacUpdate(int num, INT16 *buffer, int length);
-static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
+static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate);
 
 /*-- external interface --*/
 static READ_HANDLER(dcs_data_r);
@@ -1495,8 +1495,8 @@ static void dcs_init(struct sndbrdData *brdData) {
 /------------------*/
 /*-- autobuffer SPORT transmission  --*/
 /*-- copy data to transmit into dac buffer --*/
-static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
-  UINT16 *mem = ((UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
+static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, double sRate) {
+  const UINT16 * const mem = ((UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
   int idx;
 
   // Let the buffer fill naturally, so the throttling mechanism can work.
@@ -1521,7 +1521,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
   // If we were not playing before, pre-load buffer with some silence to prevent jumpy starts.
   if (dcs_dac.status == 0)
   {
-      int idx_end = stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1;
+      const int idx_end = (int)(stream_get_sample_rate(dcs_dac.stream) * 20 / 1000 + 1 + 0.5);
       for (idx = 0; idx < idx_end; idx++) {
           dcs_dac.buffer[dcs_dac.sIn] = 0;
           dcs_dac.sIn = (dcs_dac.sIn + 1) & DCS_BUFFER_MASK;
@@ -1552,12 +1552,12 @@ static struct {
  UINT16  ctrlRegs[32];
  void   *irqTimer;
  data8_t *(*getBootROM)(int soft);
- void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
+ void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate);
 } adsp; /* = {{0},NULL,dcs_getBootROM,dcs_txData};*/
 static void adsp_irqGen(int dummy);
 
 static void adsp_init(data8_t *(*getBootROM)(int soft),
-                     void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate)) {
+                     void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, double sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
   /*-- reset control registers etc --*/
@@ -1622,7 +1622,7 @@ static WRITE16_HANDLER(adsp_control_w) {
 static struct {
   UINT16 start;
   UINT16 size, step;
-  int    sRate;
+  double sRate;
   int    iReg;
   int    last;
   int    irqCount;
@@ -1677,8 +1677,8 @@ static void adsp_txCallback(int port, INT32 data) {
     adsp_aBufData.size  = activecpu_get_reg(ADSP2100_L0 + ireg);
     /*-- assume that the first sample comes from the memory position before --*/
     adsp_aBufData.start = activecpu_get_reg(ADSP2100_I0 + ireg) - adsp_aBufData.step;
-    adsp_aBufData.sRate = (int)(Machine->drv->cpu[dcslocals.brdData.cpuNo].cpu_clock /
-                                (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16);
+    adsp_aBufData.sRate = Machine->drv->cpu[dcslocals.brdData.cpuNo].cpu_clock /
+                           (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16;
     adsp_aBufData.iReg = ireg;
     adsp_aBufData.irqCount = adsp_aBufData.last = 0;
     adsp_irqGen(0); /* first part, rest is handled via the timer */

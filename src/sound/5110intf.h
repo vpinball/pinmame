@@ -22,7 +22,7 @@ READ_HANDLER( tms5110_status_r );
 int tms5110_ready_r(void);
 
 void tms5110_reset(void);
-void tms5110_set_frequency(int frequency);
+void tms5110_set_frequency(double frequency);
 
 #endif
 

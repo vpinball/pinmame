@@ -1425,7 +1425,7 @@ static void ym2151_state_save_register( int numchips )
 *	'clock' is the chip clock in Hz
 *	'rate' is sampling rate (=clock/64)
 */
-int YM2151Init(int num, double clock, int rate)
+int YM2151Init(int num, double clock, double rate)
 {
 	unsigned int i;
 
@@ -1447,7 +1447,7 @@ int YM2151Init(int num, double clock, int rate)
 	for (i=0 ; i<YMNumChips; i++)
 	{
 		YMPSG[i].clock = clock;
-		YMPSG[i].sampfreq = rate;
+		YMPSG[i].sampfreq = (int)(rate+0.5);
 		YMPSG[i].irqhandler = NULL;					/* interrupt handler  */
 		YMPSG[i].porthandler = NULL;				/* port write handler */
 		init_chip_tables( &YMPSG[i] );

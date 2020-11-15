@@ -396,7 +396,7 @@ int ADPCM_sh_start(const struct MachineSound *msound)
 	{
 		/* generate the name and create the stream */
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], (int)(intf->frequency+0.5), i, adpcm_update);
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[i], intf->frequency, i, adpcm_update);
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -665,7 +665,7 @@ int OKIM6295_sh_start(const struct MachineSound *msound)
 		else
 #endif
 		sprintf(stream_name, "%s #%d (voice %d)", sound_name(msound), chip, voice);
-		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], (int)(intf->frequency[chip]+0.5), i, adpcm_update); // freq = clock/divisor // int divisor = pin7 ? 132 : 165;
+		adpcm[i].stream = stream_init(stream_name, intf->mixing_level[chip], intf->frequency[chip], i, adpcm_update); // freq = clock/divisor // int divisor = pin7 ? 132 : 165;
 		if (adpcm[i].stream == -1)
 			return 1;
 
@@ -770,7 +770,7 @@ void OKIM6295_set_pin7(int which, double clock, unsigned char pin7)
 
 		/* update the stream and set the new base */
 		stream_update(voice->stream, 0);
-		stream_set_sample_rate(voice->stream, (int)(clock/divisor+0.5));
+		stream_set_sample_rate(voice->stream, clock/divisor);
 	}
 
 	vgm_write(okim6295_vgm_idx[which], 0x00, 0x0C, pin7 ? 1 : 0);

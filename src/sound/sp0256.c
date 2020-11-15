@@ -1186,7 +1186,7 @@ int sp0256_sh_start( const struct MachineSound *msound )
   if( sp0256.drq ) sp0256.drq(ASSERT_LINE);
   if( sp0256.sby ) sp0256.sby(sp0256.sby_line = ASSERT_LINE);
   
-  sp0256.stream = stream_init("SP0256", intf->volume, intf->clock / CLOCK_DIVIDER, 0, sp0256_update);
+  sp0256.stream = stream_init("SP0256", intf->volume, intf->clock / (double)CLOCK_DIVIDER, 0, sp0256_update);
   
   /* -------------------------------------------------------------------- */
   /*  Configure our internal variables.                                   */

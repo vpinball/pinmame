@@ -454,7 +454,7 @@ void state_save_save_finish(void)
 	TRACE(logerror("Finishing save\n"));
 
 	signature = ss_get_signature();
-	if(!Machine->sample_rate)
+	if(Machine->sample_rate == 0.)
 		flags |= SS_NO_SOUND;
 
 #ifndef LSB_FIRST
@@ -518,12 +518,12 @@ int state_save_load_begin(mame_file *file)
 
 	if(ss_dump_array[9] & SS_NO_SOUND)
 	{
-		if(Machine->sample_rate)
+		if(Machine->sample_rate != 0.)
 			usrintf_showmessage("Warning: Game was saved with sound off, but sound is on.  Result may be interesting.");
 	}
 	else
 	{
-		if(!Machine->sample_rate)
+		if(Machine->sample_rate == 0.)
 			usrintf_showmessage("Warning: Game was saved with sound on, but sound is off.  Result may be interesting.");
 	}
 

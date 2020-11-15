@@ -460,7 +460,7 @@ void S14001A_rst_0_w(int data)
 	if (m_bStart) m_uStateP1 = WORDWAIT;
 }
 
-void S14001A_set_rate(int newrate)
+void S14001A_set_rate(double newrate)
 {
 #ifdef PINMAME
 	//static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };

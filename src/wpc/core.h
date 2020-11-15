@@ -391,7 +391,8 @@ typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT]
 typedef struct {
   volatile UINT8  swMatrix[CORE_MAXSWCOL];
   volatile UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
-  volatile UINT8  lampMatrix[CORE_MAXLAMPCOL], tmpLampMatrix[CORE_MAXLAMPCOL];
+  volatile UINT8  lampMatrix[CORE_MAXLAMPCOL];
+  volatile UINT8  tmpLampMatrix[CORE_MAXLAMPCOL];
   volatile UINT8  RGBlamps[CORE_MAXRGBLAMPS];
   core_tSeg segments;     /* segments data from driver */
   UINT16 drawSeg[CORE_SEGCOUNT]; /* segments drawn */
@@ -490,7 +491,7 @@ INLINE void core_update_modulated_light(UINT32 *light, int bit){
 }
 
 extern UINT8 core_calc_modulated_light(UINT32 bits, UINT32 bit_count, UINT8 *prev_level);
-extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, int samplerate);
+extern void core_sound_throttle_adj(int sIn, int *sOut, int buffersize, double samplerate);
 
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, size_t length, UINT8 init);

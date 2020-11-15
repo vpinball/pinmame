@@ -2282,7 +2282,7 @@ static void YM2203_save_state(void)
    'clock' is the chip clock in Hz
    'rate' is sampling rate
 */
-int YM2203Init(int num, double clock, int rate,
+int YM2203Init(int num, double clock, double rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
 	int i;
@@ -2307,7 +2307,7 @@ int YM2203Init(int num, double clock, int rate,
 		FM2203[i].OPN.type = TYPE_YM2203;
 		FM2203[i].OPN.P_CH = FM2203[i].CH;
 		FM2203[i].OPN.ST.clock = clock;
-		FM2203[i].OPN.ST.rate = rate;
+		FM2203[i].OPN.ST.rate = (int)(rate+0.5);
 
 		FM2203[i].OPN.ST.Timer_Handler = TimerHandler;
 		FM2203[i].OPN.ST.IRQ_Handler   = IRQHandler;
@@ -5544,7 +5544,7 @@ static void YM2151_save_state(void)
 /* 'num' is the number of virtual YM2151's to allocate     */
 /* 'rate' is sampling rate and 'bufsiz' is the size of the */
 /* buffer that should be updated at each interval          */
-int OPMInit(int num, double clock, int rate,
+int OPMInit(int num, double clock, double rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
 {
     int i;
