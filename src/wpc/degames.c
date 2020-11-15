@@ -910,6 +910,14 @@ DE2S_SOUNDROM142(      "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2e
 DE_ROMEND
 CORE_CLONEDEF(jupk,g51,513,"Jurassic Park (5.01 German)",1993,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(jupk_305,"jpcpua3.05.bin",CRC(0a9bd439) SHA1(486df3e268c81518ff4d0638517e93b57a8d9d2e))
+DE_DMD32ROM8x(         "jpdspa.501",CRC(04a87d42) SHA1(e13df9a63ec77ec6f97b681ed99216ef3f3af691)) // Not dumped on this set
+DE2S_SOUNDROM142(      "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2ebea475566b90c13),
+                       "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
+                       "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
+DE_ROMEND
+CORE_CLONEDEF(jupk,305,513,"Jurassic Park (3.05)",1993,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
