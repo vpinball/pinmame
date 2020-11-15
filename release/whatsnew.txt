@@ -139,6 +139,7 @@ Striker Xtreme 1.00 (Italian)
 Theatre of Magic 1.3XC (competition MOD) (updated)
 Trident (MOD rev. 23c)
 Twilight Zone L-5, LA-9 (aka PAPA Tournament Version 9.0)
+WHO Dunnit 1.2 (Elevator text fix), 1.2 (German Sound / Elevator text fix)
 World Cup Soccer 0.62b (FreeWPC based rewrite)
 
 Removed Clones:
