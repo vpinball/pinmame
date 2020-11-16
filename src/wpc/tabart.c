@@ -38,14 +38,12 @@ static WRITE_HANDLER(tabart_manCmd_w) {
 
 // This is needed to determine the correct switch row
 static WRITE_HANDLER(tabart_ctrl_w) {
-  if (sndlocals.subtype) return;
+  if (sndlocals.subtype || !data) return;
 
   sndlocals.swStrobe = data;
   sndlocals.outhole = core_getSw(66) ? 1 : 0;
-  if (sndlocals.nmi != (data == 1)) {
-    sndlocals.nmi = (data == 1);
-    cpu_set_nmi_line(1, sndlocals.nmi ? ASSERT_LINE : CLEAR_LINE);
-  }
+  sndlocals.nmi = data == 1;
+  cpu_set_nmi_line(1, sndlocals.nmi ? ASSERT_LINE : CLEAR_LINE);
 }
 
 // GTS1 snd lines order: Dip2, Q, (NC), Dip1, T, Snd3, Snd2, Snd1
@@ -60,7 +58,7 @@ static WRITE_HANDLER(tabart_data_w) {
     return;
   }
 
-  sndlocals.sndCmd = data ^ 0x87;
+  sndlocals.sndCmd = data ^ 0xc7;
   sndlocals.outhole = core_getSw(66) ? 1 : 0;
 }
 
@@ -68,16 +66,15 @@ const struct sndbrdIntf tabartIntf = {
   "TABART", tabart_init, NULL, NULL, tabart_manCmd_w, tabart_data_w, NULL, tabart_ctrl_w
 };
 
-// Tabart cmd order: NMI, Dip2, Dip1, T+Outhole, Q, Snd3, Snd2, Snd1
+// hexagone cmd order: NMI, Dip2, Dip1, Outhole, Q, Snd3, Snd2, Snd1
 static READ_HANDLER(ym2203_port_a_r) {
-  UINT8 cmd = (sndlocals.nmi ? 0 : 0x80) | (sndlocals.outhole ? 0 : 0x10) | ((sndlocals.sndCmd & 0x80) >> 1)
-    | ((sndlocals.sndCmd & 0x40) >> 3) | ((sndlocals.sndCmd & 0x18) << 1) | (sndlocals.sndCmd & 0x07);
-  sndlocals.sndCmd |= 0x4f;  // pull up lines for the next read
+  UINT8 cmd = (sndlocals.nmi ? 0 : 0x80) | (sndlocals.sndCmd & 0x80 ? 0x40 : 0) | (sndlocals.sndCmd & 0x10 ? 0x20 : 0)
+    | (sndlocals.outhole ? 0 : 0x10) | (sndlocals.sndCmd & 0x40 ? 0x08 : 0) | (sndlocals.sndCmd & 0x07);
   return cmd;
 }
 
 static READ_HANDLER(ym2203_port_b_r) {
-  return sndlocals.swStrobe ? ~coreGlobals.swMatrix[sndlocals.swStrobe] : ~sndlocals.manCmd;
+  return sndlocals.swStrobe ? coreGlobals.swMatrix[sndlocals.swStrobe] : ~sndlocals.manCmd;
 }
 
 static void tabart_irq(int state) {
@@ -127,7 +124,7 @@ MACHINE_DRIVER_START(TABART1)
 MACHINE_DRIVER_END
 
 
-// Sahara Love sound board
+// Sahara Love / Le Grand 8 sound board
 
 static READ_HANDLER(ay8912a_r) {
   sndlocals.nmi = 0;
