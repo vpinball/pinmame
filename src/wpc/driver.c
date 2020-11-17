@@ -2421,6 +2421,7 @@ DRIVER(pb,l2)           //          10/86 W Pin-Bot (L-2)
 DRIVER(pb,l3)           //          10/86 W Pin-Bot (L-3)
 DRIVER(pb,l5)           //          10/86 W Pin-Bot (L-5)
 DRIVER(pb,l5h)          //          08/12   Pin-Bot (L-5, Freeplay / solar value mod)
+DRIVER(pb,j1)           //          11/20   Pin-Bot (PEMBOT (no relation) J-1)
 DRIVER(tts,l1)          //S11-919:  ??/86 W Tic-Tac-Strike (L-1, Shuffle)
 DRIVER(tts,l2)          //          ??/86 W Tic-Tac-Strike (L-2, Shuffle)
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
