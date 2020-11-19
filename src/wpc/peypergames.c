@@ -182,3 +182,9 @@ PEYPER_ROMSTART2(ator, "ator_1.bin", NO_DUMP,
                        "ator_2.bin", CRC(21aad5c4) SHA1(e78da5d80682710db34cbbfeae5af54241c73371))
 PEYPER_ROMEND
 CORE_GAMEDEFNV(ator,"Ator",1985,"Video Dens",gl_mPEYPER,0)
+
+INITGAME(ator2, disp6f, 1, 4)
+PEYPER_ROMSTART2(ator2, "ator1.bin", CRC(87967577) SHA1(6586401a4b1a837bacd61d156b44eedaab271479),
+                        "ator2.bin", CRC(832b06ea) SHA1(c70c613fd29d1d560951890bce072cbf45525526))
+PEYPER_ROMEND
+CORE_CLONEDEFNV(ator2,ator,"Ator (2 bumpers)",1985,"Video Dens",gl_mPEYPER,0)

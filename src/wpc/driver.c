@@ -1241,7 +1241,7 @@ DRIVERNV(iomoon)        // Io Moon (1994)
 // ----------------
 DRIVERNV(thrdwrld)      // Third World (1978)
 DRIVERNV(ngtfever)      // Night Fever (1979)
-                        // Storm (1979) - Williams "Flash" clone
+DRIVERNV(storm)         // Storm (1979) - Williams "Flash" clone
 DRIVERNV(odin_dlx)      // Odin De Luxe (1985)
 DRIVERNV(gamatros)      // Gamatron (1986)
 DRIVERNV(solarwar)      // Solar Wars (1986)
@@ -2284,6 +2284,7 @@ DRIVERNV(spectra)       //??/79 Spectra IV
 // VIDEODENS GAMES
 // -----------------------------------
 DRIVERNV(ator)          //??/?? Ator
+DRIVERNV(ator2)         //??/?? Ator (2 bumpers)
 DRIVERNV(papillon)      //??/86 Papillon
 DRIVERNV(break)         //??/86 Break
 
