@@ -445,6 +445,17 @@ PLAYMATIC_ROMEND
 CORE_GAMEDEFNV(ngtfever,"Night Fever",1979,"Sonic (Spain)",gl_mPLAYMATIC1,0)
 
 /*-------------------------------------------------------------------
+/ ??/79 Storm (Sonic)
+/-------------------------------------------------------------------*/
+INITGAME2(storm, play_disp6, 1, SNDBRD_PLAY2)
+PLAYMATIC_ROMSTART8888(storm, "a-1.bin", CRC(12e37664) SHA1(d7095975cd9d4445fd1f4cd711992c7367deae89),
+                              "b-1.bin", CRC(3ac3cea3) SHA1(c6197911d25661cb647ea606eee5f3f1bd9b4ba2),
+                              "c-1.bin", CRC(8bedf1ea) SHA1(7633ebf8a65e3fc7afa21d50aaa441f87a86efd3),
+                              "d-1.bin", CRC(f717ef3e) SHA1(cd5126360471c06539e445fecbf2f0ddeb1b156c))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(storm,"Storm",1979,"Sonic",gl_mPLAYMATIC2,0)
+
+/*-------------------------------------------------------------------
 / ??/84 Flashman (Sport Matic)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispFM[] = {
