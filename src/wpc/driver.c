@@ -2536,6 +2536,7 @@ DRIVER(radcl,p3)        //S11-1904: 06/90 B Radical! (P-3)
 DRIVER(radcl,l1)        //          06/90 B Radical! (L-1)
 DRIVER(radcl,g1)        //          06/90 B Radical! (LG-1)
 DRIVER(radcl,l1c)       //          11/18 B Radical! (L-1C Competition MOD)
+//DRIVER(radcl,l3)      //          11/20 B Radical! (L-3) //also done by Soren, but official now
 DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (Domestic Prototype)
 DRIVER(dd,p6)           //S11-2016: 08/90 B Dr. Dude (PA-6 Prototype)
 DRIVER(dd,lu1)          //          08/90 B Dr. Dude (LU-1 Europe)
@@ -2687,6 +2688,7 @@ DRIVER(cftbl,l4)        //          02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,d4)        //                  Creature from the Black Lagoon (D-4) LED Ghost Fix
 //DRIVER(cftbl,l5c)     //          04/16 B Creature from the Black Lagoon (L-5C) //outdated patch
 DRIVER(cftbl,l4c)       //          02/20 B Creature from the Black Lagoon (L-4C) //patch eccc
+//DRIVER(cftbl,l5)      //          11/20 B Creature from the Black Lagoon (L-5) //also done by Soren, but official now
 DRIVER(hshot,p8)        //WPC-617:  11/92 M Hot Shot Basketball (P-8)
 DRIVER(hshot,p9)        //                  Hot Shot Basketball (P-9) LED Ghost Fix
 DRIVER(ww,p1)           //WPC-518:  11/92 W White Water (P-8, P-1 sound)
@@ -2873,6 +2875,7 @@ DRIVER(rs,da5)          //                  Red & Ted's Road Show (DA-5) LED Gho
 DRIVER(rs,lx5)          //          10/94 W Red & Ted's Road Show (LX-5)
 DRIVER(rs,dx5)          //                  Red & Ted's Road Show (DX-5) LED Ghost Fix
 DRIVER(rs,l6c)          //          05/19 W Red & Ted's Road Show (L6-C Competition MOD)
+//DRIVER(rs,l7)         //          11/20 W Red & Ted's Road Show (L-7) //also done by Soren, but official now
 DRIVER(ts,pa1)          //WPC-532:  11/94 B Shadow, The (PA-1 Prototype)
 DRIVER(ts,pa2)          //                  Shadow, The (PA-2) LED Ghost Fix
 DRIVER(ts,la2)          //          12/94 B Shadow, The (LA-2)
@@ -2979,6 +2982,7 @@ DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
 DRIVER(jy,11)           //          01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //          07/97 W Junk Yard (1.2)
 DRIVER(jy,12c)          //          12/19 W Junk Yard (1.2C Competition MOD)
+//DRIVER(jy,20)         //          11/20 W Junk Yard (2.0) //also done by Soren, but official now
 DRIVER(nbaf,11s)        //WPC-553:  03/97 B NBA Fastbreak (1.1, Sound S0.4)
 DRIVER(nbaf,11)         //          03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //          03/97 B NBA Fastbreak (1.1, Sound S2.0)
