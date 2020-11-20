@@ -4,7 +4,7 @@
    Hardware:
    ---------
 		CPU:     Z80B @ 5 MHz
-			INT: IRQ @ ~1600 Hz (R/C timer, needs to be measured on real machine)
+			INT: IRQ @ ~1600 Hz (R/C timer, needs to be measured on real machine, eg. Video Dens uses a slower rate)
 		IO:      Z80 ports, Intel 8279 KDI chip, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910 @ 2.5 MHz
@@ -16,6 +16,7 @@
 #include "peyper.h"
 #include "sndbrd.h"
 
+#define VD_IRQFREQ         800 /* IRQ frequency for Video Dens games on this hardware */
 #define PEYPER_IRQFREQ    1600 /* IRQ frequency */
 #define PEYPER_CPUFREQ 5000000 /* CPU clock frequency */
 
@@ -214,4 +215,10 @@ MACHINE_DRIVER_START(PEYPER)
   MDRV_SWITCH_UPDATE(PEYPER)
   MDRV_SWITCH_CONV(PEYPER_sw2m,PEYPER_m2sw)
   MDRV_SOUND_ADD(AY8910, PEYPER_ay8910Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(PEYPER_VD)
+  MDRV_IMPORT_FROM(PEYPER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(PEYPER_irq, VD_IRQFREQ)
 MACHINE_DRIVER_END

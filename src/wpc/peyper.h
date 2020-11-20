@@ -230,7 +230,9 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(PEYPER);
+extern MACHINE_DRIVER_EXTERN(PEYPER_VD);
 
 #define gl_mPEYPER		PEYPER
+#define gl_mPEYPER_VD	PEYPER_VD
 
 #endif /* INC_PEYPER */
