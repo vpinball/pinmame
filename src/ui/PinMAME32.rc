@@ -736,7 +736,7 @@ BEGIN
                     WS_TABSTOP,15,135,80,10,0,HIDC_CHEAT
     CONTROL         "Use less CPU time when possible",IDC_SLEEP,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,145,120,10,0,HIDC_SLEEP
-    CONTROL         "Use RDTSC timing system (for desktops)",IDC_OLD_TIMING,
+    CONTROL         "Use RDTSC timing system (UNSUPPORTED)",IDC_OLD_TIMING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,155,95,10,0,
                     HIDC_OLD_TIMING
     CONTROL         "Error log (for developers)",IDC_LOG,"Button",

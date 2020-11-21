@@ -161,7 +161,7 @@ void snd_cmd_exit(void) {
 }
 
 #ifdef VPINMAME_PINSOUND
-void getPinSoundDirectory(char path_pinsound_cwd[2048])
+static void getPinSoundDirectory(char path_pinsound_cwd[2048])
 {
 	char * pos;
 	char tmp_path[2048];
@@ -179,7 +179,7 @@ void getPinSoundDirectory(char path_pinsound_cwd[2048])
 	sprintf(path_pinsound_cwd,"%s\\PinSound\\", tmp_path);
 }
 
-BOOL WriteSlot(const HANDLE hFile, const LPTSTR const lpszMessage)
+static BOOL WriteSlot(const HANDLE hFile, const LPTSTR const lpszMessage)
 {
 	DWORD cbWritten;
 	const BOOL fResult = WriteFile(hFile,
@@ -191,7 +191,7 @@ BOOL WriteSlot(const HANDLE hFile, const LPTSTR const lpszMessage)
 	return fResult ? TRUE : FALSE;
 }
 
-BOOL sendToSlot(const HANDLE hFile, const TCHAR msg_to_pinsound_studio[100])
+static BOOL sendToSlot(const HANDLE hFile, const TCHAR msg_to_pinsound_studio[100])
 {
 	if (hFile != INVALID_HANDLE_VALUE && WriteSlot(hFile, TEXT(msg_to_pinsound_studio)))
 	{
@@ -204,7 +204,7 @@ BOOL sendToSlot(const HANDLE hFile, const TCHAR msg_to_pinsound_studio[100])
 	}
 }
 
-HANDLE makeWriteSlot(const LPTSTR slotName)
+static HANDLE makeWriteSlot(const LPTSTR slotName)
 {
 	const HANDLE hFile = CreateFile(slotName, 
 		GENERIC_WRITE, 
@@ -225,7 +225,7 @@ HANDLE makeWriteSlot(const LPTSTR slotName)
 	return hFile;
 }
 
-HANDLE makeReadSlot(const LPTSTR slotName)
+static HANDLE makeReadSlot(const LPTSTR slotName)
 {
 	const HANDLE hFile = CreateMailslot(slotName,
 		0,                             // no maximum message size
@@ -243,7 +243,7 @@ HANDLE makeReadSlot(const LPTSTR slotName)
 	return hFile;
 }
 
-BOOL readSlot(const HANDLE hFile, char * msg)
+static BOOL readSlot(const HANDLE hFile, char * msg)
 {
 	DWORD   msgSize;
 	DWORD	numRead;
@@ -298,7 +298,7 @@ BOOL readSlot(const HANDLE hFile, char * msg)
 	return FALSE;
 }
 
-void pinsound_exit()
+static void pinsound_exit()
 {
 	// send stop-all command to the PinSound Studio
 	if (pinsound_studio_enabled)
@@ -391,7 +391,7 @@ void reinit_pinSound(void)
 	}
 }
 
-void pinsound_handle(const int boardNo, const int cmd)
+static void pinsound_handle(const int boardNo, const int cmd)
 {
 	if (pinsound_studio_enabled && init_pinsound == FALSE)
 	{

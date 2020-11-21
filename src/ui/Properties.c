@@ -1784,6 +1784,8 @@ static void ResetDataMap(void)
 
 }
 
+static BOOL tmp;
+
 /* Build the control mapping by adding all needed information to the DataMap */
 static void BuildDataMap(void)
 {
@@ -1885,9 +1887,9 @@ static void BuildDataMap(void)
 /*	DataMapAdd(IDC_DEBUG,         DM_BOOL, CT_BUTTON,   &pGameOpts->mame_debug,    DM_BOOL, &pGameOpts->mame_debug,    0, 0, 0);*/
 	DataMapAdd(IDC_LOG,           DM_BOOL, CT_BUTTON,   &pGameOpts->errorlog,      DM_BOOL, &pGameOpts->errorlog,      0, 0, 0);
 	DataMapAdd(IDC_SLEEP,         DM_BOOL, CT_BUTTON,   &pGameOpts->sleep,         DM_BOOL, &pGameOpts->sleep,         0, 0, 0);
-	DataMapAdd(IDC_OLD_TIMING,    DM_BOOL, CT_BUTTON,   &pGameOpts->old_timing,    DM_BOOL, &pGameOpts->old_timing,    0, 0, 0);
+	DataMapAdd(IDC_OLD_TIMING,    DM_BOOL, CT_BUTTON,   &tmp,                      DM_BOOL, &tmp,                      0, 0, 0); //unsupported
 	DataMapAdd(IDC_LEDS,          DM_BOOL, CT_BUTTON,   &pGameOpts->leds,          DM_BOOL, &pGameOpts->leds,          0, 0, 0);
-	DataMapAdd(IDC_BIOS,          DM_INT,  CT_COMBOBOX, &pGameOpts->bios,          DM_INT, &pGameOpts->bios,        0, 0, 0);
+	DataMapAdd(IDC_BIOS,          DM_INT,  CT_COMBOBOX, &pGameOpts->bios,          DM_INT,  &pGameOpts->bios,          0, 0, 0);
 #ifdef MESS
 	DataMapAdd(IDC_USE_NEW_UI,    DM_BOOL, CT_BUTTON,   &pGameOpts->use_new_ui,    DM_BOOL, &pGameOpts->use_new_ui, 0, 0, 0);
 #endif
