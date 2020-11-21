@@ -3,7 +3,7 @@
 ** All rights reserved.
 **
 ** This code is released under 2-clause BSD license. Please see the
-** file at : https://github.com/erikd/libsamplerate/blob/master/COPYING
+** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
 #include <stdio.h>
@@ -14,7 +14,7 @@
 #include "float_cast.h"
 #include "common.h"
 
-static int zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 static void zoh_reset (SRC_PRIVATE *psrc) ;
 
 /*========================================================================================
@@ -34,7 +34,7 @@ typedef struct
 /*----------------------------------------------------------------------------------------
 */
 
-static int
+static enum SRC_ERR
 zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	ZOH_DATA 	*priv ;
 	double		src_ratio, input_index, rem ;
@@ -148,7 +148,7 @@ zoh_get_description (int src_enum)
 	return NULL ;
 } /* zoh_get_descrition */
 
-int
+enum SRC_ERR
 zoh_set_converter (SRC_PRIVATE *psrc, int src_enum)
 {	ZOH_DATA *priv = NULL ;
 
@@ -197,4 +197,3 @@ zoh_reset (SRC_PRIVATE *psrc)
 
 	return ;
 } /* zoh_reset */
-

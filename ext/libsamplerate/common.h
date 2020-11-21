@@ -75,8 +75,9 @@ enum SRC_MODE
 	SRC_MODE_CALLBACK	= 1
 } ;
 
-enum
-{	SRC_ERR_NO_ERROR = 0,
+enum SRC_ERR
+{
+	SRC_ERR_NO_ERROR = 0,
 
 	SRC_ERR_MALLOC_FAILED,
 	SRC_ERR_BAD_STATE,
@@ -108,7 +109,7 @@ enum
 typedef struct SRC_PRIVATE_tag
 {	double	last_ratio, last_position ;
 
-	int		error ;
+	enum SRC_ERR	error ;
 	int		channels ;
 
 	/* SRC_MODE_PROCESS or SRC_MODE_CALLBACK */
@@ -118,16 +119,16 @@ typedef struct SRC_PRIVATE_tag
 	void	*private_data ;
 
 	/* Varispeed process function. */
-	int		(*vari_process) (struct SRC_PRIVATE_tag *psrc, SRC_DATA *data) ;
+	enum SRC_ERR	(*vari_process) (struct SRC_PRIVATE_tag *psrc, SRC_DATA *data) ;
 
 	/* Constant speed process function. */
-	int		(*const_process) (struct SRC_PRIVATE_tag *psrc, SRC_DATA *data) ;
+	enum SRC_ERR	(*const_process) (struct SRC_PRIVATE_tag *psrc, SRC_DATA *data) ;
 
 	/* State reset. */
-	void	(*reset) (struct SRC_PRIVATE_tag *psrc) ;
+	void			(*reset) (struct SRC_PRIVATE_tag *psrc) ;
 
 	/* State clone. */
-	int		(*copy) (struct SRC_PRIVATE_tag *from, struct SRC_PRIVATE_tag *to) ;
+	enum SRC_ERR	(*copy) (struct SRC_PRIVATE_tag *from, struct SRC_PRIVATE_tag *to) ;
 
 	/* Data specific to SRC_MODE_CALLBACK. */
 	src_callback_t	callback_func ;
@@ -140,19 +141,19 @@ typedef struct SRC_PRIVATE_tag
 const char* sinc_get_name (int src_enum) ;
 const char* sinc_get_description (int src_enum) ;
 
-int sinc_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
+enum SRC_ERR sinc_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
 
 /* In src_linear.c */
 const char* linear_get_name (int src_enum) ;
 const char* linear_get_description (int src_enum) ;
 
-int linear_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
+enum SRC_ERR linear_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
 
 /* In src_zoh.c */
 const char* zoh_get_name (int src_enum) ;
 const char* zoh_get_description (int src_enum) ;
 
-int zoh_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
+enum SRC_ERR zoh_set_converter (SRC_PRIVATE *psrc, int src_enum) ;
 
 /*----------------------------------------------------------
 **	Common static inline functions.

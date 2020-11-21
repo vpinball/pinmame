@@ -3,7 +3,7 @@
 ** All rights reserved.
 **
 ** This code is released under 2-clause BSD license. Please see the
-** file at : https://github.com/erikd/libsamplerate/blob/master/COPYING
+** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
 #include <stdio.h>
@@ -14,7 +14,7 @@
 #include "float_cast.h"
 #include "common.h"
 
-static int linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 static void linear_reset (SRC_PRIVATE *psrc) ;
 
 /*========================================================================================
@@ -36,7 +36,7 @@ typedef struct
 /*----------------------------------------------------------------------------------------
 */
 
-static int
+static enum SRC_ERR
 linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	LINEAR_DATA *priv ;
 	double		src_ratio, input_index, rem ;
@@ -157,7 +157,7 @@ linear_get_description (int src_enum)
 	return NULL ;
 } /* linear_get_descrition */
 
-int
+enum SRC_ERR
 linear_set_converter (SRC_PRIVATE *psrc, int src_enum)
 {	LINEAR_DATA *priv = NULL ;
 
@@ -206,4 +206,3 @@ linear_reset (SRC_PRIVATE *psrc)
 
 	return ;
 } /* linear_reset */
-
