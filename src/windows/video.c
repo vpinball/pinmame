@@ -185,6 +185,8 @@ static char *resolution;
 static char *effect;
 static char *aspect;
 
+static int tmp;
+
 // options struct
 struct rc_option video_opts[] =
 {
@@ -223,8 +225,9 @@ struct rc_option video_opts[] =
 	{ "effect", NULL, rc_string, &effect, "none", 0, 0, decode_effect, "specify the blitting effect" },
 	{ "screen_aspect", NULL, rc_string, &aspect, "4:3", 0, 0, decode_aspect, "specify an alternate monitor aspect ratio" },
 	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow " APPNAME " to give back time to the system when it's not needed" },
-	{ "rdtsc", NULL, rc_bool, &win_force_rdtsc, "0", 0, 0, NULL, "prefer RDTSC over QueryPerformanceCounter for timing" },
-	{ "high_priority", NULL, rc_bool, &win_high_priority, "0", 0, 0, NULL, "increase thread priority" },
+
+	{ "rdtsc", NULL, rc_bool, &tmp, "0", 0, 0, NULL, "prefer RDTSC over QueryPerformanceCounter for timing" }, //unsupported
+	{ "high_priority", NULL, rc_bool, &tmp, "0", 0, 0, NULL, "increase thread priority" }, //unsupported
 #ifndef DISABLE_DX7
 	{ NULL, NULL, rc_link, win_d3d_opts, NULL, 0, 0, NULL, NULL },
 #endif

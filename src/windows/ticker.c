@@ -21,8 +21,6 @@
 static cycles_t init_cycle_counter(void);
 static cycles_t performance_cycle_counter(void);
 static cycles_t rdtsc_cycle_counter(void);
-static cycles_t time_cycle_counter(void);
-static cycles_t nop_cycle_counter(void);
 
 
 
@@ -32,11 +30,7 @@ static cycles_t nop_cycle_counter(void);
 
 // global cycle_counter function and divider
 cycles_t		(*cycle_counter)(void) = init_cycle_counter;
-cycles_t		(*ticks_counter)(void) = init_cycle_counter;
 cycles_t		cycles_per_sec;
-int				win_force_rdtsc;
-int				win_high_priority;
-
 
 
 //============================================================
@@ -51,137 +45,24 @@ static cycles_t suspend_time;
 //	init_cycle_counter
 //============================================================
 
-#ifdef _MSC_VER
-
-#ifndef __LP64__
-static int has_rdtsc(void)
-{
-	int nFeatures;
-
-	__asm {
-
-		mov eax, 1
-		cpuid
-		mov nFeatures, edx
-	}
-
-	return ((nFeatures & 0x10) == 0x10) ? TRUE : FALSE;
-}
-#else
-static int has_rdtsc(void)
-{
-	return TRUE;
-}
-#endif
-
-#else
-
-static int has_rdtsc(void)
-{
-	int result;
-
-	__asm__ (
-		"movl $1,%%eax     ; "
-		"xorl %%ebx,%%ebx  ; "
-		"xorl %%ecx,%%ecx  ; "
-		"xorl %%edx,%%edx  ; "
-		"cpuid             ; "
-		"testl $0x10,%%edx ; "
-		"setne %%al        ; "
-		"andl $1,%%eax     ; "
-	:  "=&a" (result)   /* the result has to go in eax */
-	:       /* no inputs */
-	:  "%ebx", "%ecx", "%edx" /* clobbers ebx ecx edx */
-	);
-	return result;
-}
-
-#endif
-
-
-
-//============================================================
-//	init_cycle_counter
-//============================================================
-
 static cycles_t init_cycle_counter(void)
 {
-	cycles_t start, end;
-	DWORD a, b;
-	int priority;
 	LARGE_INTEGER frequency;
 
 	suspend_adjustment = 0;
 	suspend_time = 0;
 
-	if (!win_force_rdtsc && QueryPerformanceFrequency( &frequency ))
+	if (QueryPerformanceFrequency( &frequency ))
 	{
-		// use performance counter if available as it is constant
 		cycle_counter = performance_cycle_counter;
 		logerror("using performance counter for timing ... ");
 		cycles_per_sec = frequency.QuadPart;
-
-		if (has_rdtsc())
-		{
-			ticks_counter = rdtsc_cycle_counter;
-		}
-		else
-		{
-			ticks_counter = nop_cycle_counter;
-		}
+		logerror("cycles/second = %llu\n", cycles_per_sec);
 	}
 	else
 	{
-		if (has_rdtsc())
-		{
-			// if the RDTSC instruction is available use it because
-			// it is more precise and has less overhead than timeGetTime()
-			cycle_counter = rdtsc_cycle_counter;
-			ticks_counter = rdtsc_cycle_counter;
-			logerror("using RDTSC for timing ... ");
-		}
-		else
-		{
-			cycle_counter = time_cycle_counter;
-			ticks_counter = nop_cycle_counter;
-			logerror("using timeGetTime for timing ... ");
-		}
-
-		// temporarily set our priority higher
-		priority = GetThreadPriority(GetCurrentThread());
-		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-
-		// wait for an edge on the timeGetTime call
-		a = timeGetTime();
-		do
-		{
-			b = timeGetTime();
-		} while (a == b);
-
-		// get the starting cycle count
-		start = (*cycle_counter)();
-
-		// now wait for 1/4 second total
-		do
-		{
-			a = timeGetTime();
-		} while (a - b < 250);
-
-		// get the ending cycle count
-		end = (*cycle_counter)();
-
-		// compute ticks_per_sec
-		cycles_per_sec = (end - start) * 4;
-
-		// restore our priority
-		// raise it if the config option is set and the debugger is not active
-		if (win_high_priority && !options.mame_debug && priority == THREAD_PRIORITY_NORMAL)
-			priority = THREAD_PRIORITY_ABOVE_NORMAL;
-		SetThreadPriority(GetCurrentThread(), priority);
+		logerror("NO QueryPerformanceFrequency available");
 	}
-
-	// log the results
-	logerror("cycles/second = %u\n", (int)cycles_per_sec);
 
 	// return the current cycle count
 	return (*cycle_counter)();
@@ -249,30 +130,6 @@ static cycles_t rdtsc_cycle_counter(void)
 #endif
 
 
-
-//============================================================
-//	time_cycle_counter
-//============================================================
-
-static cycles_t time_cycle_counter(void)
-{
-	// use timeGetTime
-	return (cycles_t)timeGetTime();
-}
-
-
-
-//============================================================
-//	nop_cycle_counter
-//============================================================
-
-static cycles_t nop_cycle_counter(void)
-{
-	return 0;
-}
-
-
-
 //============================================================
 //	osd_cycles
 //============================================================
@@ -301,7 +158,7 @@ cycles_t osd_cycles_per_second(void)
 
 cycles_t osd_profiling_ticks(void)
 {
-	return (*ticks_counter)();
+	return rdtsc_cycle_counter(); //!! meh, but only used for profiling
 }
 
 
@@ -413,5 +270,71 @@ void uUnderSleep(const UINT64 u)
 	{
 		Sleep(1); // really pause thread for 1-2ms (depending on OS)
 		QueryPerformanceCounter(&TimerNow);
+	}
+}
+
+//
+
+typedef LONG(CALLBACK* NTSETTIMERRESOLUTION)(IN ULONG DesiredTime,
+	IN BOOLEAN SetResolution,
+	OUT PULONG ActualTime);
+static NTSETTIMERRESOLUTION NtSetTimerResolution;
+
+typedef LONG(CALLBACK* NTQUERYTIMERRESOLUTION)(OUT PULONG MaximumTime,
+	OUT PULONG MinimumTime,
+	OUT PULONG CurrentTime);
+static NTQUERYTIMERRESOLUTION NtQueryTimerResolution;
+
+static HMODULE hNtDll = NULL;
+static ULONG win_timer_old_period = -1;
+
+static TIMECAPS win_timer_caps;
+static MMRESULT win_timer_result = TIMERR_NOCANDO;
+
+void set_lowest_possible_win_timer_resolution()
+{
+	// First crank up the multimedia timer resolution to its max
+	// this gives the system much finer timeslices (usually 1-2ms)
+	win_timer_result = timeGetDevCaps(&win_timer_caps, sizeof(win_timer_caps));
+	if (win_timer_result == TIMERR_NOERROR)
+		timeBeginPeriod(win_timer_caps.wPeriodMin);
+
+	// Then try the even finer sliced (usually 0.5ms) low level variant
+	hNtDll = LoadLibrary("NtDll.dll");
+	if (hNtDll) {
+		NtQueryTimerResolution = (NTQUERYTIMERRESOLUTION)GetProcAddress(hNtDll, "NtQueryTimerResolution");
+		NtSetTimerResolution = (NTSETTIMERRESOLUTION)GetProcAddress(hNtDll, "NtSetTimerResolution");
+		if (NtQueryTimerResolution && NtSetTimerResolution) {
+			ULONG min_period, tmp;
+			NtQueryTimerResolution(&tmp, &min_period, &win_timer_old_period);
+			if (min_period < 4500) // just to not screw around too much with the time (i.e. potential timer improvements in future HW/OSs), limit timer period to 0.45ms (picked 0.45 here instead of 0.5 as apparently some current setups can feature values just slightly below 0.5, so just leave them at this native rate then)
+				min_period = 5000;
+			if (min_period < 10000) // only set this if smaller 1ms, cause otherwise timeBeginPeriod already did the job
+				NtSetTimerResolution(min_period, TRUE, &tmp);
+			else
+				win_timer_old_period = -1;
+		}
+	}
+}
+
+void restore_win_timer_resolution()
+{
+	// restore both timer resolutions
+
+	if (hNtDll) {
+		if (win_timer_old_period != -1)
+		{
+			ULONG tmp;
+			NtSetTimerResolution(win_timer_old_period, FALSE, &tmp);
+			win_timer_old_period = -1;
+		}
+		FreeLibrary(hNtDll);
+		hNtDll = NULL;
+	}
+
+	if (win_timer_result == TIMERR_NOERROR)
+	{
+		timeEndPeriod(win_timer_caps.wPeriodMin);
+		win_timer_result = TIMERR_NOCANDO;
 	}
 }

@@ -763,8 +763,6 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 		sprintf(&pCmdLine[strlen(pCmdLine)], " -record \"%s\"",         g_pRecordName);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%slog",                     pOpts->errorlog        ? "" : "no");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%ssleep",                   pOpts->sleep           ? "" : "no");
-	if (pOpts->old_timing)
-		sprintf(&pCmdLine[strlen(pCmdLine)], " -rdtsc");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sleds",                    pOpts->leds            ? "" : "no");
 
 	if (DriverHasOptionalBIOS(nGameIndex))

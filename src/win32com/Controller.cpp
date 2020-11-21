@@ -61,6 +61,11 @@ extern int synclevel;
 void CreateEventWindow(CController* pController);
 void DestroyEventWindow(CController* pController);
 
+extern "C" { 
+	extern void set_lowest_possible_win_timer_resolution();
+	extern void restore_win_timer_resolution();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 
@@ -145,11 +150,8 @@ void CController::GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVe
  * IController: Class construction and destruction
  *************************************************/
 CController::CController() {
-	MMRESULT result;
+	set_lowest_possible_win_timer_resolution();
 
-	result = timeGetDevCaps(&caps, sizeof(caps));
-	if (result == TIMERR_NOERROR)
-		timeBeginPeriod(caps.wPeriodMin);
 	cli_frontend_init();
 
 	lstrcpy(m_szSplashInfoLine, "");
@@ -202,7 +204,7 @@ CController::CController() {
 CController::~CController() {
 	Stop();
 	CloseHandle(m_hEmuIsRunning);
-	timeEndPeriod(caps.wPeriodMin);
+	restore_win_timer_resolution();
 	m_pGame->Release();
 	m_pGameSettings->Release();
 	m_pGames->Release();
@@ -606,7 +608,7 @@ STDMETHODIMP CController::get_ChangedNVRAM(VARIANT *pVal)
 	if ((g_hEnterThrottle != INVALID_HANDLE_VALUE) && g_iSyncFactor)
 		WaitForSingleObject(g_hEnterThrottle, (synclevel <= 20) ? synclevel : 50);
 	else if (synclevel<0)
-		uSleep(-synclevel * 1000);
+		uSleep(-synclevel*1000);
 
 	/*-- Count changes --*/
 	size_t uCount;

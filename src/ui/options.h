@@ -210,7 +210,6 @@ typedef struct
 	BOOL   mame_debug;
 	BOOL   errorlog;
 	BOOL   sleep;
-	BOOL   old_timing;
 	BOOL   leds;
 	int bios;
 #ifdef PINMAME

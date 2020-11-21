@@ -65,7 +65,6 @@ public:
 private:
 	void GetProductVersion(int *nVersionNo0, int *nVersionNo1, int *nVersionNo2, int *nVersionNo3);
 	static DWORD FAR PASCAL RunController(CController* pController);
-	TIMECAPS caps;
 
 public:
 

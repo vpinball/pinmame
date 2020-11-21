@@ -205,6 +205,8 @@ static REG_OPTION regSettings[] =
 };
 #define NUM_SETTINGS (sizeof(regSettings) / sizeof(regSettings[0]))
 
+static BOOL tmp;
+
 // options in mame32.ini or (gamename).ini
 static REG_OPTION regGameOpts[] =
 {
@@ -296,7 +298,7 @@ static REG_OPTION regGameOpts[] =
         { "debug",                  RO_BOOL,    &gOpts.mame_debug,        0, 0},
         { "log",                    RO_BOOL,    &gOpts.errorlog,          0, 0},
         { "sleep",                  RO_BOOL,    &gOpts.sleep,             0, 0},
-        { "rdtsc",                  RO_BOOL,    &gOpts.old_timing,        0, 0},
+        { "rdtsc",                  RO_BOOL,    &tmp,                     0, 0}, //unsupported
         { "leds",                   RO_BOOL,    &gOpts.leds,              0, 0},
         { "bios",                   RO_INT,     &gOpts.bios,              0, 0},
 #ifdef PINMAME
@@ -786,8 +788,7 @@ BOOL OptionsInit()
         global.mame_debug        = FALSE;
         global.errorlog          = FALSE;
         global.sleep             = FALSE;
-        global.old_timing        = TRUE;
-        global.leds                              = FALSE;
+        global.leds              = FALSE;
         global.bios              = 0;
 #ifdef PINMAME
         global.dmd_red           = 225;
