@@ -28,6 +28,7 @@ CORE_GAMEDEF(phnix,l1,"Phoenix (L-1)",1978,"Williams",s4_mS3S,0)
 /*--------------------------------
 / Flash - Sys.4 (Game #486)
 /-------------------------------*/
+// tournament MODs exist (allentownpinball)
 INITGAMEFULL(flash,s4_disp,SNDBRD_S67S,0,0,19,18,20,42,41,0)
 S4_ROMSTART(flash,l2,"gamerom2.716", CRC(b7c2e4c7) SHA1(00ea34900af679b1b7e2698f4aa2fc9703d54cf2),
                      "yellow1.716", CRC(d251738c) SHA1(65ddbf5c36e429243331a4c5d2339df87a8a7f64),

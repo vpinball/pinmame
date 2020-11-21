@@ -1324,6 +1324,8 @@ DRIVERNV(meteord)       //MPU-200: 05/05 Meteor (/10 Scoring)
 DRIVERNV(meteora2)      //MPU-200: 08/19 Meteor (Bonus Count and Sound Fix)
 DRIVERNV(meteore)       //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, Free Play rev. 64)
 DRIVERNV(meteore7)      //MPU-200: 12/19 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)
+DRIVERNV(meteorf)       //MPU-200: 09/20 Meteor (Bonus Count Fix, MOD, Free Play rev. 65)
+DRIVERNV(meteorf7)      //MPU-200: 09/20 Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 75)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(galaxyps)      //MPU-200: 08/11 Galaxy (Planet Skillshot)
 DRIVERNV(galaxyfp)      //MPU-200: 01/80 Galaxy (Free Play)
@@ -1333,13 +1335,15 @@ DRIVERNV(alifp)         //MPU-200: 03/80 Ali (Free Play)
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(biggamfp)      //MPU-200: 03/80 Big Game (Free Play)
 DRIVERNV(biggameb)      //MPU-200: 11/19 Big Game (MOD rev. 7)
+DRIVERNV(biggamec)      //MPU-200: 10/20 Big Game (MOD rev. 8)
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(seawitfp)      //MPU-200: 05/80 Seawitch (Free Play)
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah (Black cabinet)
 DRIVERNV(cheetahb)      //MPU-200: 06/80 Cheetah (Blue cabinet)
-DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Free Play)
-DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Bonus shot 1/game)
-DRIVERNV(cheetah2)      //MPU-200: 06/80 Cheetah (Bonus shot 1/ball)
+DRIVERNV(cheetafp)      //MPU-200: 06/80 Cheetah (Black cabinet Free Play)
+DRIVERNV(cheetah1)      //MPU-200: 06/80 Cheetah (Black cabinet Bonus shot 1/game)
+DRIVERNV(cheetah2)      //MPU-200: 03/11 Cheetah (Black cabinet Bonus shot 1/ball)
+DRIVERNV(cheetahb2)     //MPU-200: 06/18 Cheetah (Blue cabinet Bonus shot 1/ball)
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
 DRIVERNV(quicksfp)      //MPU-200: 06/80 Quicksilver (Free Play)
 DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
@@ -1348,6 +1352,7 @@ DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev. 9)
 DRIVERNV(flight2k)      //MPU-200: 10/80 Flight 2000
 DRIVERNV(flightfp)      //MPU-200: 10/80 Flight 2000 (Free Play)
 DRIVERNV(flight2m)      //MPU-200: 04/20 Flight 2000 (modified rules rev. 3335)
+DRIVERNV(flight2mb)     //MPU-200: 06/20 Flight 2000 (modified rules & sound rev. 3347)
 DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
 DRIVERNV(ninebafp)      //MPU-200: 12/80 Nine Ball (Free Play)
 DRIVERNV(ninebala)      //MPU-200: 04/20 Nine Ball (Ball handling MOD beta18)
@@ -1369,6 +1374,7 @@ DRIVERNV(dragfifp)      //MPU-200: 01/82 Dragonfist (Free Play)
 DRIVERNV(dragfisb)      //MPU-200: 01/82 Dragonfist (MOD - modified to match instruction card/manual)
 DRIVERNV(dragfib2)      //MPU-200: 01/82 Dragonfist (MOD 2 - modified to match instruction card/manual)
 DRIVERNV(dragfis3)      //MPU-200: 03/20 Dragonfist (MOD 3 rev. 1105)
+DRIVERNV(dragfis3b)     //MPU-200: 06/20 Dragonfist (MOD 3 rev. 1109)
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor 1
 DRIVERNV(orbitofp)      //MPU-200: 04/82 Orbitor 1 (Free Play)
 DRIVERNV(orbitora)      //MPU-200: 04/82 Orbitor 1 (MOD)

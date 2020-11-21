@@ -46,6 +46,7 @@ CORE_CLONEDEF(trizn,t1,l1,"Tri Zone (T-1 Ted Estes)",1979,"Williams",s6_mS6S,0)
 /*--------------------------------
 / Time Warp - Sys.6 (Game #489)
 /-------------------------------*/
+// unofficial "L9" exists: Background sound bug fix, 7 digit scoring, cascading drop bank values on completion (allentownpinball)
 INITGAMEFULL(tmwrp,s6_6digit_disp,0,0,19,20,21,22,23,0)
 S6_ROMSTART(tmwrp,l3,"twarp_l3.716", CRC(1234710a) SHA1(a33e9edb79b6ea4c5982d28a55289897f82b7b3c),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
@@ -54,6 +55,7 @@ S67S_SOUNDROMS8(     "sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea
 S6_ROMEND
 #define input_ports_tmwrp input_ports_s6
 CORE_GAMEDEF(tmwrp,l3,"Time Warp (L-3)",1979,"Williams",s6_mS6S,0)
+// L-3: Fixes bug with background sound cutting out when no score/duplicate outhole entry (is this just an unofficial MOD?)
 
 S6_ROMSTART(tmwrp,l2,"gamerom.716", CRC(b168df09) SHA1(d4c97714636ce51be2e5f8cc5af89e10a2f82ac7),
                      "green1.716", CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),

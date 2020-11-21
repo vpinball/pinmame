@@ -341,6 +341,7 @@ CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2 Prototype)",1988,"Bally",by_m
 / Atlantis (6803-2006: 03/89)
 /-----------------------------------------------------------*/
 // rev. 2 exists but yet undumped (https://pinside.com/pinball/forum/topic/bally-atlantis-ownerss-club-fans-welcome/page/11#post-2697513)
+// also an excessive tournament MOD exists (slochar, allentownpinball)
 INITGAME6803(atlantis,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(atlantis, "u26_cpu.rom",CRC(b98491e1) SHA1(b867e2b24e93c4ee19169fe93c0ebfe0c1e2fc25),
                             "u27_cpu.rom",CRC(8ea2b4db) SHA1(df55a9fb70d1cabad51dc2b089af7904a823e1d8))
