@@ -507,12 +507,13 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
+// tournament MOD exists (9.23) (allentownpinball)
 CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)", 1995,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,93,  92,"Twilight Zone (9.3 LED Ghost Fix)",1998,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)",1998,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,94ch,92,"Twilight Zone (9.4CH Coin Play)",1998,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1 Prototype)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,pa2, 92,"Twilight Zone (PA-2 LED Ghost Fix)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,93,  92,"Twilight Zone (9.3 LED Ghost Fix)", 1995,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)", 1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94ch,92,"Twilight Zone (9.4CH Coin Play)", 1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1 Prototype)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,pa2, 92,"Twilight Zone (PA-2 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p3,  92,"Twilight Zone (P-3 Prototype)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p3d, 92,"Twilight Zone (P-3 LED Ghost Fix)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p4,  92,"Twilight Zone (P-4 Prototype)", 1993,"Bally",wpc_mFliptronS,0)

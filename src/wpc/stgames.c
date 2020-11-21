@@ -96,6 +96,7 @@ CORE_CLONEDEFNV(stingrfp,stingray,"Stingray (Free Play)",1977,"Stern",by35_mST10
 / Stars
 /-------------------------------*/
 // There exists a newer 'A' version, that is so far undumped (25A-ROM-P3A.U2, 25A-ROM-P4A.U6) 
+// also a tournament MOD exists (allentownpinball)
 INITGAME(stars,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
 BY17_ROMSTARTx88(stars, "25A-ROM-P3.U2",CRC(630d05df) SHA1(2baa16265d524297332fa951d9eab3e0e8d26078), /*cpu_u2.716*/
                         "25A-ROM-P4.U6",CRC(57e63d42) SHA1(619ef955553654893c3071d8b70855fee8a5e6a7)) /*cpu_u6.716*/
@@ -185,6 +186,7 @@ CORE_CLONEDEFNV(nugentfp,nugent,"Nugent (Free Play)",1978,"Stern",by35_mST100s,0
 /*--------------------------------
 / Dracula (uses same ROMs as Wildfyre)
 /-------------------------------*/
+// tournament MOD exists "Stern Dracula Tournament Rom V4" https://zacaj.com/p.php?id=19&title=Stern+Dracula+Tournament+Rom+V4
 INITGAME(dracula,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
 BY17_ROMSTARTx88(dracula,"cpu_u2.716",CRC(063f8b5e) SHA1(80434de549102bff829b474603d6736b839b8999),
                          "cpu_u6.716",CRC(00336fbc) SHA1(d2c360b8a80b209ecf4ec02ee19a5234c0364504))
@@ -235,6 +237,7 @@ CORE_CLONEDEFNV(tridentb,trident,"Trident (MOD rev. 23c)",2009,"Stern / Idleman"
 /*--------------------------------
 / Hot Hand - uses MPU-200 inports
 /-------------------------------*/
+// tournament MOD exists (by idleman??)
 INITGAME(hothand,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
 BY17_ROMSTARTx88(hothand,"cpu_u2.716",     CRC(5e79ea2e) SHA1(9b45c59b2076fcb3a35de1dd3ba2444ea852f149),
                          "25AROM_P12AU.U6",CRC(fb955a6f) SHA1(387080d5af318463475797fecff026d6db776a0c)) /*cpu_u6.716*/
@@ -403,6 +406,15 @@ BY35_ROMEND
 #define input_ports_meteore input_ports_st
 CORE_CLONEDEFNV(meteore,meteor,"Meteor (Bonus Count Fix, MOD, Free Play rev. 64)",2019,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(meteorf,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteorf,"meteor65-u1.716", CRC(9ccd236f) SHA1(4261ab6188aa3534459f2818100de19a8c64657f),
+                           "meteor65-u5.716", CRC(d79fa4ee) SHA1(968ced25ae1cb823dedb004211281e6a0e8f178e),
+                           "meteor65-u2.716", CRC(2efca800) SHA1(bb1810d37904fff1226028e70eac45ad9e967dc7),
+                           "meteor65-u6.716", CRC(ccca52d5) SHA1(fbf74dba227517531dac9a3deb2bc44a295697e9))
+BY35_ROMEND
+#define input_ports_meteorf input_ports_st
+CORE_CLONEDEFNV(meteorf,meteor,"Meteor (Bonus Count Fix, MOD, Free Play rev. 65)",2020,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Meteor (7-digit conversion)
 /-------------------------------*/
@@ -441,6 +453,15 @@ ST200_ROMSTART8888(meteore7,"meteor74a-u1.716",CRC(92e9c6a1) SHA1(4b044efd5d3136
 BY35_ROMEND
 #define input_ports_meteore7 input_ports_st
 CORE_CLONEDEFNV(meteore7,meteor,"Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 74)",2019,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(meteorf7,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(meteorf7,"meteor75-u1.716",CRC(7b7ee764) SHA1(860edb5870a4f0c6c243dd7be053e003d3f1cdc6),
+                            "meteor75-u5.716",CRC(98ec3e9d) SHA1(32613c126bda418037e97329f87edb09ee58fb6c),
+                            "meteor75-u2.716",CRC(3f0c5bca) SHA1(da3c887a4dd719926af090cd2c96d6b3b57540b5),
+                            "meteor75-u6.716",CRC(eb1693a6) SHA1(955d7a9292e6bc6fb9e3a9ee41fab9e9ac6077b2))
+BY35_ROMEND
+#define input_ports_meteorf7 input_ports_st
+CORE_CLONEDEFNV(meteorf7,meteor,"Meteor (Bonus Count Fix, MOD, 7-Digit, Free Play rev. 75)",2020,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Galaxy
@@ -547,6 +568,15 @@ BY35_ROMEND
 #define input_ports_biggameb input_ports_st
 CORE_CLONEDEFNV(biggameb,biggame,"Big Game (MOD rev. 7)",2019,"Stern / Idleman",by35_mST200,0)
 
+INITGAME(biggamec,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(biggamec,"big08_u1.716",CRC(b5cdce2d) SHA1(70f0c81d2db71921df8379782320e5b58c0e8a09),
+                            "big08_u5.716",CRC(ed7b5113) SHA1(1a0bcdd288e46bdd2f5f51a8ec0c6c982286213f),
+                            "big7d_u2.716",CRC(5389867f) SHA1(fd4cc8d7ccd7cff72fa883c962567e21117507b9),
+                            "big08_u6.716",CRC(7d83db44) SHA1(cf7a7187e234a9905b0c9d74a18f2915c83f70c0))
+BY35_ROMEND
+#define input_ports_biggamec input_ports_st
+CORE_CLONEDEFNV(biggamec,biggame,"Big Game (MOD rev. 8)",2020,"Stern / Idleman",by35_mST200,0)
+
 /*--------------------------------
 / Seawitch
 /-------------------------------*/
@@ -590,8 +620,8 @@ BY35_ROMEND
 CORE_CLONEDEFNV(cheetahb,cheetah,"Cheetah (Blue cabinet)",1980,"Stern",by35_mST200,0) // different sounds and bonus countdown
 
 INITGAME(cheetafp,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(cheetafp,"fpch_u1.716",CRC(af26e00e) SHA1(9573cf5a56bbd7a534022b43752c7c25042d707b),
-                            "fpch_u5.716",CRC(f6c34e1d) SHA1(732b94196a45c0a818fe5613c106f9aad5eae53e),
+ST200_ROMSTART8888(cheetafp,"fpch_u1.716",      CRC(af26e00e) SHA1(9573cf5a56bbd7a534022b43752c7c25042d707b),
+                            "fpch_u5.716",      CRC(f6c34e1d) SHA1(732b94196a45c0a818fe5613c106f9aad5eae53e),
                             "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
                             "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
@@ -600,21 +630,30 @@ CORE_CLONEDEFNV(cheetafp,cheetah,"Cheetah (Black cabinet Free Play)",1980,"Stern
 
 INITGAME(cheetah1,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(cheetah1,"CHEETAH__R_B20.U1",CRC(6a845d94) SHA1(c272d5895edf2270f5f06fc33345bb4911abbee4),
-                           "bgcpu_u5.716",CRC(fb7e0400) SHA1(81443e93e68d8dfecc3a33d61a1a39e6e9ea34ca),
-                           "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
-                           "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
+                            "bgcpu_u5.716",     CRC(fb7e0400) SHA1(81443e93e68d8dfecc3a33d61a1a39e6e9ea34ca),
+                            "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
+                            "CHEETAH__R_B20.U6",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
 #define input_ports_cheetah1 input_ports_st
 CORE_CLONEDEFNV(cheetah1,cheetah,"Cheetah (Black cabinet Bonus shot 1/game)",1980,"Stern",by35_mST200,0)
 
 INITGAME(cheetah2,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
-ST200_ROMSTART8888(cheetah2,"bbcpu_u1.716",CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
-                           "bbcpu_u5.716",CRC(d4e4b50d) SHA1(c59f465ade7512d129a0e60519ec7066db2cbde9),
-                           "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
-                           "bbcpu_u6.716",CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
+ST200_ROMSTART8888(cheetah2,"bbcpu_u1.716",     CRC(568db33e) SHA1(a62f48f77dc170d88a5bf2d033e92e409839e749),
+                            "bbcpu_u5.716",     CRC(d4e4b50d) SHA1(c59f465ade7512d129a0e60519ec7066db2cbde9),
+                            "CHEETAH__R_B20.U2",CRC(a827a1a1) SHA1(723ebf193b5ce7b19df70e83caa9bb80f2e3fa66),
+                            "bbcpu_u6.716",     CRC(f9e66c18) SHA1(41ba7eecf2ff9305d79cc5ae30c08d5b89f03909))
 BY35_ROMEND
 #define input_ports_cheetah2 input_ports_st
-CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Black cabinet Bonus shot 1/ball)",1980,"Stern",by35_mST200,0)
+CORE_CLONEDEFNV(cheetah2,cheetah,"Cheetah (Black cabinet Bonus shot 1/ball)",2011,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(cheetahb2,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(cheetahb2,"b16_mod.u1",       CRC(137a84a0) SHA1(7e6e69eb154afdc2ac7ee935d7d327eee8065fe1),
+                             "b16_mod.u5"       ,CRC(ec51118f) SHA1(ec8c1fe76ac6283d43d09fa859d2b32fca45c115),
+                             "CHEETAH__X_B16.U2",CRC(f6bd41bc) SHA1(ac94f4ba17c31dfe10ab7efab63d98aa3401e4ae),
+                             "b16_mod.u6",       CRC(d33e0c2f) SHA1(eccf39c030c217f6cd93e58031d5e8f5525d1b7c))
+BY35_ROMEND
+#define input_ports_cheetahb2 input_ports_st
+CORE_CLONEDEFNV(cheetahb2, cheetah, "Cheetah (Blue cabinet Bonus shot 1/ball)", 2018, "Stern / Idleman", by35_mST200, 0)
 
 /*--------------------------------
 / Quicksilver
@@ -702,6 +741,17 @@ VSU100_SOUNDROM_U9(         "snd_u9.716", CRC(d816573c) SHA1(75134a017c34abbb149
 BY35_ROMEND
 #define input_ports_flight2m input_ports_st
 CORE_CLONEDEFNV(flight2m,flight2k,"Flight 2000 (modified rules rev. 3335)",2020,"Stern / Idleman",by35_mST200v,0)
+
+INITGAME(flight2mb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(flight2mb,"f2k-3347M-CPU_U1.716", CRC(fd1c738f) SHA1(527c32a03a1274ca18190ec67a45fc9bb76ef648),
+                             "f2k-3347M-CPU_U5.716", CRC(1e28df6c) SHA1(d6b831d454c419366d687b5beea56aa634d6b2dd),
+                             "f2k-3347M-CPU_U2.716", CRC(f3dee323) SHA1(05170b5092f3ac5b626e229a8b63a2153980ce09),
+                             "f2k-3347M-CPU_U6.716", CRC(1c039bd8) SHA1(20f45d9506e0684e1935a0b09812e639ca3f1119))
+VSU100_SOUNDROM_U9U10(       "f2k-3347M-snd_u9.716", CRC(321ab040) SHA1(572f9ef0b1f7eef000c778ae232340416d27f974),
+                             "f2k-3347M-snd_u10.716",CRC(0b0ec806) SHA1(f00f48ff3c145d78a13d0e28686a06e68c7554b6))
+BY35_ROMEND
+#define input_ports_flight2mb input_ports_st
+CORE_CLONEDEFNV(flight2mb,flight2k,"Flight 2000 (modified rules & sound rev. 3347)",2020,"Stern / Idleman",by35_mST200v,0)
 
 /*--------------------------------
 / Nine Ball
@@ -926,6 +976,15 @@ ST200_ROMSTART8888(dragfis3,"df-1105-u1.716",CRC(5c08ec76) SHA1(56dc76e1bf54054d
 BY35_ROMEND
 #define input_ports_dragfis3 input_ports_st
 CORE_CLONEDEFNV(dragfis3,dragfist,"Dragonfist (MOD 3 rev. 1105)",2020,"Stern / Idleman",by35_mST200,0)
+
+INITGAME(dragfis3b,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(dragfis3b,"df-1109-u1.716",CRC(696e0ca1) SHA1(21c3c8963283eecfc0e62d988eedb5d075637d35),
+                             "df-1109-u5.716",CRC(1eba53d5) SHA1(3a49012dee1d17266e370f047e5f71570334ecd4),
+                             "df-1109-u2.716",CRC(768bb72c) SHA1(99b6fc4949449c9f69dcd5ae68d7b3a5bb68e3ee),
+                             "df-1109-u6.716",CRC(c08edefc) SHA1(12322203b246a7aae00b1a6b7786a24d0ce9808c))
+BY35_ROMEND
+#define input_ports_dragfis3b input_ports_st
+CORE_CLONEDEFNV(dragfis3b,dragfist,"Dragonfist (MOD 3 rev. 1109)",2020,"Stern / Idleman",by35_mST200,0)
 
 /*--------------------------------
 / Dragonfist (bootleg - modified to match instruction card/manual)

@@ -641,6 +641,7 @@ CORE_CLONEDEFNV(futurspb,futurspa,"Future Spa (7-digit conversion)",2004,"Bally 
 /*--------------------------------
 / Space Invaders
 /-------------------------------*/
+// tournament MOD exists (allentownpinball)
 INITGAME(spaceinv,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTART888(spaceinv,"792-10_1.716",CRC(075eba5a) SHA1(7147c2dfb6af1c39bbfb9e98f409baae10d09628),
                           "792-13_2.716",CRC(b87b9e6b) SHA1(eab787ea81409ba88e30a342564944e1fade8124),
@@ -661,6 +662,7 @@ CORE_CLONEDEFNV(spaceinb,spaceinv,"Space Invaders (7-digit conversion)",2004,"Ba
 /*--------------------------------
 / Nitro Groundshaker
 /-------------------------------*/
+// tournament/multiball MOD exists (allentownpinball)
 INITGAME(ngndshkr,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART888(ngndshkr,"776-17_1.716",CRC(f2d44235) SHA1(282106767b5ec5180fa8e7eb2eb5b4766849c920),
                           "776-11_2.716",CRC(b0396b55) SHA1(2d10c4af7ecfa23b64ffb640111b582f44256fd5),
@@ -689,6 +691,7 @@ CORE_CLONEDEFNV(ngndshkm,ngndshkr,"Nitro Groundshaker (7-digit conversion with s
 /*--------------------------------
 / Silverball Mania
 /-------------------------------*/
+// tournament MOD exists (allentownpinball)
 INITGAME(slbmania,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART888(slbmania,"786-16_1.716",CRC(c054733f) SHA1(2699cf940ce40012e2d7554b0b130adcb2bec6d1),
                           "786-17_2.716",CRC(94af0298) SHA1(579eb0290283194d92b172f787d8a9ff54f16a07),
