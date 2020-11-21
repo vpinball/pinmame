@@ -3,7 +3,7 @@
 ** All rights reserved.
 **
 ** This code is released under 2-clause BSD license. Please see the
-** file at : https://github.com/erikd/libsamplerate/blob/master/COPYING
+** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
 #include	<stdio.h>
@@ -279,7 +279,7 @@ src_callback_read (SRC_STATE *state, double src_ratio, long frames, float *data)
 	psrc->saved_frames = src_data.input_frames ;
 
 	if (error != 0)
-	{	psrc->error = error ;
+	{	psrc->error = (SRC_ERROR) error ;
 		return 0 ;
 		} ;
 

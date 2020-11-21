@@ -115,9 +115,6 @@ typedef struct SRC_PRIVATE_tag
 	/* SRC_MODE_PROCESS or SRC_MODE_CALLBACK */
 	enum SRC_MODE	mode ;
 
-	/* Pointer to data to converter specific data. */
-	void	*private_data ;
-
 	/* Varispeed process function. */
 	enum SRC_ERR	(*vari_process) (struct SRC_PRIVATE_tag *psrc, SRC_DATA *data) ;
 
@@ -135,6 +132,9 @@ typedef struct SRC_PRIVATE_tag
 	void			*user_callback_data ;
 	long			saved_frames ;
 	const float		*saved_data ;
+
+	/* Pointer to data to converter specific data. */
+	void			*private_data ;
 } SRC_PRIVATE ;
 
 /* In src_sinc.c */
