@@ -59,16 +59,16 @@ typedef struct
 	float	buffer [] ;
 } SINC_FILTER ;
 
-static int sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static int sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static int sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static int sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static int sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR int sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
+static enum SRC_ERR sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 
-static int prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len) WARN_UNUSED ;
+static enum SRC_ERR prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len) WARN_UNUSED ;
 
 static void sinc_reset (SRC_PRIVATE *psrc) ;
-static int sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to) ;
+static enum SRC_ERR sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to) ;
 
 static inline increment_t
 double_to_fp (double x)
@@ -143,7 +143,7 @@ sinc_get_description (int src_enum)
 	return NULL ;
 } /* sinc_get_descrition */
 
-int
+enum SRC_ERR
 sinc_set_converter (SRC_PRIVATE *psrc, int src_enum)
 {	SINC_FILTER *filter, temp_filter ;
 	increment_t count ;
@@ -263,7 +263,7 @@ sinc_reset (SRC_PRIVATE *psrc)
 	memset (filter->buffer + filter->b_len, 0xAA, filter->channels * sizeof (filter->buffer [0])) ;
 } /* sinc_reset */
 
-static int
+static enum SRC_ERR
 sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to)
 {
 	if (from->private_data == NULL)
@@ -346,7 +346,7 @@ calc_output_single (SINC_FILTER *filter, increment_t increment, increment_t star
 	return (left + right) ;
 } /* calc_output_single */
 
-static int
+static enum SRC_ERR
 sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
 	double		input_index, src_ratio, count, float_increment, terminate, rem ;
@@ -502,7 +502,7 @@ calc_output_stereo (SINC_FILTER *filter, increment_t increment, increment_t star
 		output [ch] = (float) (scale * (left [ch] + right [ch])) ;
 } /* calc_output_stereo */
 
-static int
+static enum SRC_ERR
 sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
 	double		input_index, src_ratio, count, float_increment, terminate, rem ;
@@ -658,7 +658,7 @@ calc_output_quad (SINC_FILTER *filter, increment_t increment, increment_t start_
 		output [ch] = (float) (scale * (left [ch] + right [ch])) ;
 } /* calc_output_quad */
 
-static int
+static enum SRC_ERR
 sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
 	double		input_index, src_ratio, count, float_increment, terminate, rem ;
@@ -813,7 +813,7 @@ calc_output_hex (SINC_FILTER *filter, increment_t increment, increment_t start_f
 		output [ch] = (float) (scale * (left [ch] + right [ch])) ;
 } /* calc_output_hex */
 
-static int
+static enum SRC_ERR
 sinc_hex_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
 	double		input_index, src_ratio, count, float_increment, terminate, rem ;
@@ -978,7 +978,7 @@ calc_output_multi (SINC_FILTER *filter, increment_t increment, increment_t start
 	return ;
 } /* calc_output_multi */
 
-static int
+static enum SRC_ERR
 sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 {	SINC_FILTER *filter ;
 	double		input_index, src_ratio, count, float_increment, terminate, rem ;
@@ -1073,15 +1073,15 @@ sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 /*----------------------------------------------------------------------------------------
 */
 
-static int
+static enum SRC_ERR
 prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len)
 {	int len = 0 ;
 
 	if (filter->b_real_end >= 0)
-		return 0 ;	/* Should be terminating. Just return. */
+		return SRC_ERR_NO_ERROR ;	/* Should be terminating. Just return. */
 
 	if (data->data_in == NULL)
-		return 0 ;
+		return SRC_ERR_NO_ERROR ;
 
 	if (filter->b_current == 0)
 	{	/* Initial state. Set up zeros at the start of the buffer and
@@ -1146,7 +1146,5 @@ prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len)
 		filter->b_end += len ;
 		} ;
 
-	return 0 ;
+	return SRC_ERR_NO_ERROR ;
 } /* prepare_data */
-
-

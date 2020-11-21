@@ -88,7 +88,7 @@ static enum SRC_ERR sinc_quad_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 static enum SRC_ERR sinc_stereo_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 static enum SRC_ERR sinc_mono_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
 
-static int prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len) WARN_UNUSED ;
+static enum SRC_ERR prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len) WARN_UNUSED ;
 
 static void sinc_reset (SRC_PRIVATE *psrc) ;
 static enum SRC_ERR sinc_copy (SRC_PRIVATE *from, SRC_PRIVATE *to) ;
@@ -1210,15 +1210,15 @@ sinc_multichan_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 /*----------------------------------------------------------------------------------------
 */
 
-static int
+static enum SRC_ERR
 prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len)
 {	int len = 0 ;
 
 	if (filter->b_real_end >= 0)
-		return 0 ;	/* Should be terminating. Just return. */
+		return SRC_ERR_NO_ERROR ;	/* Should be terminating. Just return. */
 
 	if (data->data_in == NULL)
-		return 0 ;
+		return SRC_ERR_NO_ERROR ;
 
 	if (filter->b_current == 0)
 	{	/* Initial state. Set up zeros at the start of the buffer and
@@ -1283,7 +1283,7 @@ prepare_data (SINC_FILTER *filter, SRC_DATA *data, int half_filter_chan_len)
 		filter->b_end += len ;
 		} ;
 
-	return 0 ;
+	return SRC_ERR_NO_ERROR ;
 } /* prepare_data */
 
 
