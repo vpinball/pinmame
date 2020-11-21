@@ -279,7 +279,7 @@ src_callback_read (SRC_STATE *state, double src_ratio, long frames, float *data)
 	psrc->saved_frames = src_data.input_frames ;
 
 	if (error != 0)
-	{	psrc->error = (SRC_ERROR) error ;
+	{	psrc->error = (enum SRC_ERR) error ;
 		return 0 ;
 		} ;
 
