@@ -20,7 +20,6 @@
 #include "window.h"
 #include "input.h"
 #include "config.h"
-#include "ticker.h"
 
 
 #define ENABLE_PROFILER		0
