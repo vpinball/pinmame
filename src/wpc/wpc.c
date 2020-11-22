@@ -17,10 +17,12 @@
 #define PRINT_GI_DATA      0 /* printf the GI Data for debugging purposes   */
 #define DEBUG_GI           0 /* debug GI code - more printf stuff basically */
 #define WPC_FAST_FLIP      1
-#define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
+#define WPC_VBLANKDIV      32/* This steers how precise the DMD FIRQ interrupt is (as it depends on the DMD_FIRQLINE) */
+                             /* Best should be 64, but this leads to instability for some machines DMD (e.g. T2)      */
+                             /* Also see notes above the wpc_vblank routine for DMD timings */
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
-#define DMD_FRAMES         3
+#define DMD_FRAMES         3 /* Some early machines like T2 could in some few animations (like T2 attract mode) profit from more shades, but very tricky to get right without flicker ! */
 
 /*-- Smoothing values --*/
 #ifdef PROC_SUPPORT
@@ -29,16 +31,15 @@
 #define WPC_LAMPSMOOTH     1
 #define WPC_DISPLAYSMOOTH  1
 #else
-#define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
-#define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
-#define WPC_MODSOLSMOOTH   28 /* Modulated solenoids - History length to smooth over */
-#define WPC_MODSOLSAMPLE   2  /* Modulated solenoid sampling rate (every n IRQs) */
+#define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this number of VBLANKS (=60Hz/X) */
+#define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS (=60Hz/X) */
+#define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS (=60Hz/X) */
+#define WPC_MODSOLSMOOTH   28/* Modulated solenoids - History length to smooth over (depends on WPC_IRQFREQ) */
+#define WPC_MODSOLSAMPLE   2 /* Modulated solenoid sampling rate (every n IRQs, depends on WPC_IRQFREQ) */
 #endif
 
-
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
-#define WPC_IRQFREQ      976 /* IRQ Frequency-Timed by JD*/
+#define WPC_IRQFREQ        (8000000./8192.) /* IRQ Frequency-Timed by JD (976) */
 
 #define GENWPC_HASDMD      (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))
 #define GENWPC_HASFLIPTRON (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
@@ -46,6 +47,7 @@
 #define GENWPC_HASPIC      (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)
 /*-- protected memory unlock value --*/
 #define WPC_PROTMEMCODE 0xb4
+
 /*---------------------
 /  local WPC functions
 /----------------------*/
@@ -108,22 +110,22 @@ static struct {
   UINT32  solData;        /* current value of solenoids 1-28 */
   UINT8   solFlip, solFlipPulse;  /* current value of flipper solenoids */
   UINT8   nonFlipBits;    /* flipper solenoids not used for flipper (smoothed) */
-  int  vblankCount;                   /* vblank interrupt counter */
+  int     vblankCount;    /* vblank interrupt counter */
   core_tSeg alphaSeg;
   struct {
     UINT8 sData[16];
     UINT8 codeNo[3];
-    UINT8 lastW;             /* last written command */
-    UINT8 sNoS;              /* serial number scrambler */
+    UINT8 lastW;          /* last written command */
+    UINT8 sNoS;           /* serial number scrambler */
     UINT8 count;
     int   codeW;
   } pic;
-  int pageMask;            /* page handling */
-  int firqSrc;             /* source of last firq */
+  int pageMask;           /* page handling */
+  int firqSrc;            /* source of last firq */
   int diagnostic;
-  int zc;						/* zero cross flag */
-  int gi_irqcnt;                /* Count IRQ occurrences for GI Dimming */
-  int gi_active[CORE_MAXGI];    /* Used to check if GI string is accessed at all */
+  int zc;                 /* zero cross flag */
+  int gi_irqcnt;          /* Count IRQ occurrences for GI Dimming */
+  int gi_active[CORE_MAXGI]; /* Used to check if GI string is accessed at all */
   UINT32 solenoidbits[64];
   UINT32 modsol_seen_pulses;
   UINT8 modsol_seen_flip_pulses;
@@ -361,30 +363,28 @@ MACHINE_DRIVER_START(wpc_95S)
 MACHINE_DRIVER_END
 
 /*--------------------------------------------------------------
-/ This is generated WPC_VBLANKDIV times per frame
-/ = every 32/WPC_VBLANKDIV lines.
-/ Generate a FIRQ if it matches the DMD line
+/ This is generated WPC_VBLANKDIV times per frame (=60*WPC_VBLANKDIV Hz)
+/ = every 32/(WPC_VBLANKDIV/2) lines.
+/ Generate a FIRQ if it matches the DMD line (DMD_FIRQLINE), so = 120Hz //!! note that on real machines one gets 122.1 (measured by lucky1) (8000000./65536.), BUT implementing this via a separate timer always leads to flicker on all kinds of machines!
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
 static INTERRUPT_GEN(wpc_vblank) {
 #ifdef PROC_SUPPORT
 	static int gi_last[CORE_MAXGI];
 	int changed_gi[CORE_MAXGI];
-#endif
 
-  wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
-
-#ifdef PROC_SUPPORT
 	if (coreGlobals.p_rocEn) {
 		procTickleWatchdog();
 	}
 #endif
 
+  wpclocals.vblankCount++;
+
   if (core_gameData->gen & GENWPC_HASDMD) {
-    /*-- check if the DMD line matches the requested interrupt line */
-    if ((wpclocals.vblankCount % WPC_VBLANKDIV) == (wpc_data[DMD_FIRQLINE]*WPC_VBLANKDIV/32))
+    /*-- check if the DMD line (roughly) matches the requested interrupt line */
+    if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == (wpc_data[DMD_FIRQLINE]*(WPC_VBLANKDIV/2)/32))
       wpc_firq(TRUE, WPC_FIRQ_DMD);
-    if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) {
+    if ((wpclocals.vblankCount % (WPC_VBLANKDIV/2)) == 0) {
       /*-- This is the real VBLANK interrupt --*/
       dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION) + (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
 #ifdef PROC_SUPPORT
@@ -405,7 +405,7 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  simulates it by pulsing the power to the main (and only) coil.
   /  (I assume this is why the Auto Fire diverter in TZ seems to flicker.)
   /  I simulate the coil position by looking over WPC_SOLSMOOTH vblanks
-  /  and only turns the solenoid off if it has not been pulsed
+  /  and only turn the solenoid off if it has not been pulsed
   /  during that time.
   /-------------------------------------------------------------*/
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_SOLSMOOTH)) == 0) {
@@ -419,11 +419,11 @@ static INTERRUPT_GEN(wpc_vblank) {
     //TODO/PROC: Check implementation
     if (coreGlobals.p_rocEn) {
       int ii;
-      static UINT64 lastSol;
+      static UINT64 lastSol = 0;
       UINT64 allSol = core_getAllSol();
       UINT64 chgSol = (allSol ^ lastSol);
       lastSol = allSol;
-      
+
       if (chgSol) {
         for (ii=0; ii<64; ii++) {
           if (chgSol & 0x1) {
@@ -436,12 +436,12 @@ static INTERRUPT_GEN(wpc_vblank) {
           allSol >>= 1;
         }
       }
-  
+
       // GI
       for (ii = 0; ii < CORE_MAXGI; ii++) {
         changed_gi[ii] = gi_last[ii] != coreGlobals.gi[ii];
         gi_last[ii] = coreGlobals.gi[ii];
-  
+
         if (changed_gi[ii]) {
           procDriveLamp(ii+72, coreGlobals.gi[ii] > 2);
         }
@@ -479,8 +479,8 @@ static INTERRUPT_GEN(wpc_vblank) {
   / vblank we get a steady light.
   /
   / Williams changed the software for the lamphandling at some stage
-  / earlier code (TZ 9.2)   newer code (TZ 9.4)
-  / ------------                    -----------
+  / earlier code (TZ 9.2)       newer code (TZ 9.4)
+  / ------------                -----------
   / Activate Column             Activate rows
   / Activate rows               Activate column
   / wait                        wait
@@ -556,7 +556,7 @@ static INTERRUPT_GEN(wpc_vblank) {
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
 /* The DMD firq must be generated via the WPC but I don't how. */
-void wpc_firq(int set, int src) {
+static void wpc_firq(int set, int src) {
   if (set)
     wpclocals.firqSrc |= src;
   else
@@ -835,7 +835,7 @@ WRITE_HANDLER(wpc_w) {
     case WPC_SOUNDIF:
       //DBGLOG(("sdata:%2x\n",data));
       if (sndbrd_0_type() != SNDBRD_S11CS)
-      	sndbrd_0_data_w(0,data);
+        sndbrd_0_data_w(0,data);
       break;
     case WPC_SOUNDBACK:
       //DBGLOG(("sctrl:%2x\n",data));
@@ -1244,7 +1244,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
     int jj;
     for (jj = 0; jj < 16; jj++) {
       /* Intensity depends on how many times the pixel */
-      /* been on in the last 3 frames                  */
+      /* been on in the last DMD_FRAMES frames         */
       const unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
                                     (dmdlocals.DMDFrames[1][kk] & 0x55) +
                                     (dmdlocals.DMDFrames[2][kk] & 0x55));
@@ -1258,7 +1258,7 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
       g_raw_gtswpc_dmd[kk + 0x400] = dmdlocals.DMDFrames[2][kk];
 #endif
 
-      *line++ = (intens1)    & 0x03;
+      *line++ =  intens1     & 0x03;
       *line++ = (intens2>>1) & 0x03;
       *line++ = (intens1>>2) & 0x03;
       *line++ = (intens2>>3) & 0x03;
