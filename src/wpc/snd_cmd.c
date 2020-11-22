@@ -37,7 +37,7 @@
 
 #ifndef _WIN32
  #include <sys/time.h>
- static unsigned int timeGetTime()
+ static unsigned int timeGetTime2()
  {
    struct timeval now;
    gettimeofday(&now, NULL);
@@ -48,6 +48,15 @@
  //#define WIN32_LEAN_AND_MEAN
  #endif
  #include <windows.h>
+ #ifdef VPINMAME
+ static DWORD timeGetTime2(void) {
+   return timeGetTime();
+ }
+ #else // VPINMAME
+ static DWORD timeGetTime2(void) {
+   return timer_get_time();
+ }
+ #endif
 #endif
 
 #ifdef VPINMAME_ALTSOUND // for alternate/external sound processing
@@ -456,7 +465,7 @@ static void pinsound_handle(const int boardNo, const int cmd)
 				}
 			}
 		}
-		start_time_pinsound_log = timeGetTime();
+		start_time_pinsound_log = timeGetTime2();
 	}
 
 	if (init_pinsound)
@@ -480,7 +489,7 @@ static void pinsound_handle(const int boardNo, const int cmd)
 
 			// write current sound cmd to PSREC file
 			if (fp_pinsound_log) {
-				fprintf(fp_pinsound_log, "%02x %lu\n", cmd, timeGetTime() - start_time_pinsound_log);
+				fprintf(fp_pinsound_log, "%02x %lu\n", cmd, timeGetTime2() - start_time_pinsound_log);
 				fflush(fp_pinsound_log);
 			}
 		}
@@ -966,8 +975,8 @@ static int wave_open(char *filename) {
   wavelocals.file = mame_fopen(Machine->gamedrv->name, filename, FILETYPE_WAVE, 1);
 
   if (!wavelocals.file) return -1;
-  wavelocals.startTick = timeGetTime();
-  wavelocals.silence = timeGetTime();
+  wavelocals.startTick = timeGetTime2();
+  wavelocals.silence = timeGetTime2();
   wavelocals.silentsamples = 0;
   /* write the core header for a WAVE file */
   wavelocals.offs = mame_fwrite(wavelocals.file, "RIFF", 4);
@@ -1043,7 +1052,7 @@ int is_silent(const INT16* const buf, int size)
 void pm_wave_record(INT16 *buffer, int samples) {
   int written = 0;
   if (wavelocals.dumping == 1) {
-		const DWORD tick = timeGetTime();
+		const DWORD tick = timeGetTime2();
 		if (!is_silent(buffer, samples * CHANNELCOUNT))
 			wavelocals.silence = tick;
 
