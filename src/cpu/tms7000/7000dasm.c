@@ -1,3 +1,5 @@
+// license:BSD-3-Clause
+
 #include <stdio.h>
 
 #ifdef MAME_DEBUG
@@ -38,7 +40,7 @@ static oprandinfo of[] = {
 /* 11 */ { {" R%u",		"",			"",			""},		{UI8, DONE, DONE, DONE} },
 /* 12 */ { {" @>%04X(B)","",		"",			""},		{UI16, DONE, DONE, DONE} },
 
-/* 13 */ { {" B,A",		",%s",		"",			""},		{NONE, PCREL, DONE, DONE} },
+/* 13 */ { {" B,A,%s",  "",         "",         ""},        {PCREL, DONE, DONE, DONE} },
 /* 14 */ { {" R%u,A",	",%s",		"",			""},		{UI8, PCREL, DONE, DONE} },
 /* 15 */ { {" R%u,B",	",%s",		"",			""},		{UI8, PCREL, DONE, DONE} },
 /* 16 */ { {" R%u",		",R%u",		",%s",		""},		{UI8, UI8, PCREL, DONE} },
@@ -208,7 +210,7 @@ static opcodeinfo opcodes[] = {
 	{0xE1, "JN", 28 },
 	{0xE6, "JNZ", 28 },
 	{0xE4, "JP", 28 },
-	{0xE5, "JPI", 28 },
+	{0xE5, "JPZ", 28 },
 
 	{0x8A, "LDA", 10 },
 	{0x9A, "LDA", 11 },
