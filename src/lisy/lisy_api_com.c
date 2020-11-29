@@ -23,6 +23,8 @@
 #include "externals.h"
 #include "lisy_api_com.h"
 
+#define LISY_API_SLEEP_TIME 1000 //we sleep 1000us ( 1ms) until we try again to read the answer
+#define LISY_API_NO_OF_RETRIES 100   //we retry number of times
 
 //local vars
 int fd_api;
@@ -30,11 +32,14 @@ static long lisy_api_counter = 0;
 
 //lisy routine for writing to usb serial device
 //we do it here in order to beable to log all bytes send to APC
+//and to be able to repeat command in case apc is not ready
 //exceptions are 'init' and switch poll routine 'lisy_api_ask_for_changed_switch'
 int lisy_api_write( unsigned char *data, int count, int debug  )
 {
 
     int i;
+    unsigned char feedback;
+    unsigned char retries = 0;
     char helpstr[10];
 
     //do some statistics
@@ -60,7 +65,38 @@ int lisy_api_write( unsigned char *data, int count, int debug  )
     }
    }
 
-   return( write( fd_api,data,count));
+ //send command, the read answer
+ //send cmd
+ if ( write( fd_api,data,count) != count ) return(-1);
+
+
+ // repeat reading until feedback (first retruned byte) is number of bytes
+ // 0 means, not read, need to retry
+ // 0xff means internal error
+ do
+ {
+
+   //read feedback (1st byte) which is number of received bytes by APC
+   if ( read(fd_api,&feedback,1) != 1) return (-2);
+
+   //check feedback for errors
+   if ( feedback == 0xff)
+    { return (-3); }
+   else if ( feedback == 0)
+   {
+        if( ++retries > LISY_API_NO_OF_RETRIES ) return(-4);
+        usleep(LISY_API_SLEEP_TIME);
+        //USB debug?
+        if(ls80dbg.bitv.basic)
+        {
+         sprintf(debugbuf,"API_read_byte: cmd (%d) repeated %d times (%d max)",data[0],retries,LISY_API_NO_OF_RETRIES);
+         lisy80_debug(debugbuf);
+        }
+    }
+ } while ( feedback != count);
+
+
+   return(count);
 }
 
 
@@ -90,6 +126,11 @@ int lisy_api_read_string(unsigned char cmd, char *content)
         return -1;
     }
   content[i] = nextbyte;
+  if(ls80dbg.bitv.basic)
+  {
+    sprintf(debugbuf,"API_read_string: Byte no %d is (0x%02x)\"%c\"",i,nextbyte,nextbyte);
+    lisy80_debug(debugbuf);
+  }
   i++;
   } while ( nextbyte != '\0');
 
@@ -165,9 +206,6 @@ int lisy_api_print_hw_info(void)
    char answer[80];
    int i,j,n,ret;
    unsigned char my_switch_status[80];
-
-  //number of displays
-  if ( lisy_api_read_byte(LISY_G_NO_DISP, &no_of_displays) < 0) return (-1);
 
     if ( lisy_api_read_string(LISY_G_LISY_VER, answer) < 0) return (-1);
     sprintf(debugbuf,"LISY_Mini: Client has SW version: %s",answer);
@@ -446,7 +484,9 @@ int lisy_api_send_str_to_disp(unsigned char num, char *str)
 unsigned char lisy_api_ask_for_changed_switch(void)
 {
 
- unsigned char my_switch,cmd;
+ unsigned char feedback,cmd;
+ unsigned char retries = 0;
+ unsigned char my_switch = 0x7f;
  int ret;
 
  //do some statistics
@@ -454,9 +494,41 @@ unsigned char lisy_api_ask_for_changed_switch(void)
 
  //send command
  cmd = LISY_G_CHANGED_SW;
- if ( write( fd_api,&cmd,1) != 1) return (-2);
-//receive answer
- if ( read(fd_api,&my_switch,1) != 1) return (-1);
+
+
+
+ //send command, than read answer
+ //send cmd
+ if ( write( fd_api,&cmd,1) != 1 ) return(-1);
+
+
+ // repeat reading until feedback (first retruned byte) is number of bytes
+ // 0 means, not read, need to retry
+ // 0xff means internal error
+ do
+ {
+
+   //read feedback (1st byte) which is number of received bytes by APC
+   if ( read(fd_api,&feedback,1) != 1) return (-2);
+
+   //check feedback for errors
+   if ( feedback == 0xff)
+    { return (-3); }
+   else if ( feedback == 0)
+   {
+        if( ++retries > LISY_API_NO_OF_RETRIES ) return(-4);
+        usleep(LISY_API_SLEEP_TIME);
+        //USB debug?
+        if(ls80dbg.bitv.basic)
+        {
+         sprintf(debugbuf,"API_read_byte: cmd (%d) repeated %d times (%d max)",cmd,retries,LISY_API_NO_OF_RETRIES);
+         lisy80_debug(debugbuf);
+        }
+    }
+ } while ( feedback != 1);
+
+ //now receive answer
+ if ( read(fd_api,&my_switch,1) != 1) return (-1); 
 
  //USB debug? only if reurn is not 0x7f == no switch changed
  if((ls80dbg.bitv.switches) & ( my_switch != 0x7f))
@@ -739,5 +811,110 @@ int lisy_api_get_con_hw( char *idstr )
   }
 
   return (lisy_api_read_string(LISY_G_HW, idstr));
+}
+
+//get status of (external or virtuel) DIP switch
+unsigned char lisy_api_get_dip_switch( unsigned char number)
+{
+
+  int ret;
+  unsigned char cmd,status;
+  unsigned char cmd_data[2];
+
+  cmd = LISY_G_SW_SETTING;
+
+  //send cmd
+  cmd_data[0] = cmd;
+  //number of setting group
+  cmd_data[1] = 1;
+  //send switch number
+  cmd_data[2] = number;
+
+      //send cmd
+     if ( lisy_api_write( cmd_data,3,ls80dbg.bitv.switches) != 3)
+      {
+        printf("Error get switch status writing to serial\n");
+        return -1;
+      }
+
+ //receive answer
+  if ( ( ret = read(fd_api,&status,1)) != 1)
+    {
+        printf("Error reading from serial dip switch value, return:%d %s\n",ret,strerror(errno));
+        return -1;
+    }
+
+  if(ls80dbg.bitv.basic)
+  {
+    sprintf(debugbuf,"API_get_dip_switch: Dip Switch number %d is %d",number,status);
+    lisy80_debug(debugbuf);
+  }
+
+
+ return status;
+
+}
+
+//Rmake sure connected hardware is of type 'idstr'
+//will also sync in case there are still bytes in the send/recv queue
+int lisy_api_check_con_hw( char *idstr )
+{
+  char nextbyte;
+  int i,n,ret;
+  unsigned char cmd;
+  char content[10];
+
+  cmd = LISY_G_HW;
+
+ if ( ls80dbg.bitv.basic )
+  {
+    sprintf(debugbuf,"check if connected hardware is\"%s\"",idstr);
+    lisy80_debug(debugbuf);
+  }
+
+ //send command
+ if ( lisy_api_write( &cmd,1,ls80dbg.bitv.basic) != 1)
+    {
+        printf("Error writing to serial %s\n",strerror(errno));
+        return -1;
+    }
+
+ //receive answer
+ i=0;
+ do {
+  if ( ( ret = read(fd_api,&nextbyte,1)) != 1)
+    {
+        printf("Error reading from serial, return:%d %s\n",ret,strerror(errno));
+        return -1;
+    }
+  content[i] = nextbyte;
+  if(ls80dbg.bitv.basic)
+  {
+    sprintf(debugbuf,"API_read_string: Byte no %d is (0x%02x)\"%c\"",i,nextbyte,nextbyte);
+    lisy80_debug(debugbuf);
+  }
+
+  //check if idstr mactch content
+  if ( idstr[i] == content[i]) i++;
+
+
+  } while ( strncmp( idstr,content,strlen(idstr)) != 0); //read until idstr is content
+  //will block when not
+
+  //read trailing \0
+    if ( ( ret = read(fd_api,&nextbyte,1)) != 1)
+    {
+        printf("Error reading from serial, return:%d %s\n",ret,strerror(errno));
+        return -1;
+    }
+
+  //USB debug?
+  if(ls80dbg.bitv.basic)
+  {
+    sprintf(debugbuf,"connected HW is: %s",content);
+    lisy80_debug(debugbuf);
+  }
+
+ return(0);
 }
 

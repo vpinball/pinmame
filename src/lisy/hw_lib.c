@@ -221,17 +221,11 @@ void lisymini_hwlib_init( void )
 }
 
 
-//Hardware INIT LISY mini (e.g Williams)
+//Hardware INIT LISY on APC via I2C (e.g Williams)
 void lisyapc_hwlib_init( void )
 {
 
- char hw_id_str[80];
  int ret;
-
- //set GPIOs for the traffic ligth
- pinMode ( LISY_MINI_LED_RED, OUTPUT);
- pinMode ( LISY80_LED_YELLOW, OUTPUT);
- pinMode ( LISY_MINI_LED_GREEN, OUTPUT);
 
  //lets do debug
  if (ls80dbg.bitv.basic) lisy80_debug("LISY APC Hardware init start");
@@ -245,6 +239,7 @@ void lisyapc_hwlib_init( void )
  lisy_K3_value = 3;
 
  //now get debug options
+ //still with LISY Mini at the moment
  K1_debug_values = lisymini_get_dip("K1");
 
  //******************
@@ -257,27 +252,18 @@ void lisyapc_hwlib_init( void )
  if (ioctl(fd_api, I2C_SLAVE, APC_ADDR) < 0)
  {
      fprintf(stderr,"ERROR: cannot open I2C communication to APC\n");
-     lisy80_set_red_led(1);
-     lisy80_set_yellow_led(0);
-     lisy80_set_green_led(0);
      exit(1);
  }
 else
      fprintf(stderr,"Info: I2C communication to APC successfull initiated\n");
 
- //check connected hardware ID
- ret = lisy_api_get_con_hw( hw_id_str );
- fprintf(stderr,"Info: hardware ID is %s (%d)\n",hw_id_str,ret);
+ //make sure  connected hardware ID is APC
+ ret = lisy_api_check_con_hw( "APC" );
+ fprintf(stderr,"Info: check ID for 'APC' returns %d\n",ret);
 
  //do some debug output if requested
  //number of displays
  if (ls80dbg.bitv.basic) lisy_api_print_hw_info();
-
-
- //set all the leds controlled by the PI
- lisy80_set_red_led(0);
- lisy80_set_yellow_led(0);
- lisy80_set_green_led(1);
 
  //init internal FIFO
  LISY80_BufferInit();
@@ -1204,3 +1190,44 @@ S1.bitv.one = digitalRead (LISYMINI_RET_5);
  else return 0;
 
 } 
+
+//read dips connected to lisy_mini
+//which are:
+// part of S1: options
+// S2: game slection (DIP8)
+// K1: debug options (5)
+// K3: option fadecandy/hotspot (2)
+// K2: not used (1)
+unsigned char lisyapc_get_dip( char* wantdip)
+{
+
+typedef union {
+    unsigned char byte;
+    struct {
+    unsigned one:1, two:1, three:1, four:1, five:1, six:1, seven:1, eight:1;
+    //signed b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+        } bitv;
+    } bitfield_t;
+
+static bitfield_t S1,S2,K1,K2,K3;
+static unsigned char first = 1;
+
+//only one time to read
+ if(first)
+ {
+  S1.byte = S2.byte = K1.byte = K2.byte = K3.byte = 0;
+
+
+ }
+
+
+ //give back value wanted
+ if(strcmp(wantdip,"S1") == 0) return S1.byte;
+ else if(strcmp(wantdip,"S2") == 0) return lisy_api_get_dip_switch(3); //S2 i setting 3
+ else if(strcmp(wantdip,"K1") == 0) return K1.byte;
+ else if(strcmp(wantdip,"K2") == 0) return K2.byte;
+ else if(strcmp(wantdip,"K3") == 0) return K3.byte;
+ else return 0;
+
+
+}

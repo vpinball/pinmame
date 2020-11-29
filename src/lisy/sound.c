@@ -37,7 +37,8 @@ int lisy80_sound_stream_init(void)
   int audio_rate = 48000;                 //Frequency of audio playback
   Uint16 audio_format = MIX_DEFAULT_FORMAT;       //Format of the audio we're playing
   int audio_channels = 2;                 //2 channels = stereo
-  int audio_buffers = 2048;               //Size of the audio buffers in memory
+  //int audio_buffers = 2048;               //Size of the audio buffers in memory
+  int audio_buffers = 1024;               //bytes used per outpur sample
 
  int i;
  char wav_file_name[80];
