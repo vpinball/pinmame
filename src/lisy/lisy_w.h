@@ -4,6 +4,7 @@
 void lisy_w_display_handler( void );
 void lisy_w_throttle(void);
 int  lisymini_get_gamename(char *gamename);
+int  lisyapc_get_gamename(char *gamename);
 void lisy_w_solenoid_handler( void );
 void lisy_w_switch_handler( void );
 unsigned char lisy_w_switch_reader( unsigned char *action );

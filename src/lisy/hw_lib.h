@@ -88,6 +88,7 @@ int  lisy80_get_poti_val(void);
 void lisy35_switch_pic_init(unsigned char variant);
 
 unsigned char lisymini_get_dip( char* wantdip);
+unsigned char lisyapc_get_dip( char* wantdip);
 
 
 //vars

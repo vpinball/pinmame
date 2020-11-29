@@ -100,10 +100,21 @@ void lisy35_init( void )
  // try say something about LISY35 if soundcard is installed
  if ( lisy35_has_soundcard )
  {
+  char message[200];
+
   //set volume according to poti
   lisy_adjust_volume();
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 35 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy35_game.long_name);
+  //try to read welcome message from file
+  if ( lisy_file_get_welcome_msg(message) >= 0)
+  {
+    if ( ls80dbg.bitv.basic )
+    {
+      sprintf(debugbuf,"Info: welcome Message is: %s",message);
+      lisy80_debug(debugbuf);
+    }
+  sprintf(debugbuf,"/bin/echo \"%s\" | /usr/bin/festival --tts",message);
   system(debugbuf);
+  }
  }
 
  //show green ligth for now, lisy35 is running
@@ -1077,6 +1088,18 @@ void lisy35_solenoid_handler(unsigned char data, unsigned char soundselect)
        sprintf(debugbuf,"momentary solenoids: %d",moment_data);
        lisy80_debug(debugbuf);
      }
+
+     //JustBoom Sound? in case of chimes we may want to play wav files here
+     if ( lisy35_has_own_sounds ) 
+	{
+	 //play sound if solenoids 4 to 7 are activated 
+	 if ( ( lisy35_game.soundboard_variant == LISY35_SB_CHIMES ) & ( moment_data >= 4 ) & (moment_data <= 7) )
+		{
+		 //we translate solenoids 4..7 to soun ds 1..4
+		 lisy35_play_wav( moment_data -3);
+		}
+	} //has own sounds
+
    }//if new momentary data available
   }//solenoids selected
 }//solenoid_handler

@@ -1154,3 +1154,30 @@ void lisy_mini_shutdown(void)
 
 }
 
+//read the csv file on /lisy partition and the DIP switch setting
+//give back gamename accordently and line number
+// -1 in case we had an error
+//this is called early from unix/main.c
+int lisyapc_get_gamename(char *gamename)
+{
+ int ret;
+
+ //use function from fileio to get more details about the gamne
+ ret =  lisyapc_file_get_gamename( &lisymini_game);
+
+  //give back the name and the number of the game
+  strcpy(gamename,lisymini_game.gamename);
+
+  //store throttle value from gamelist to global var
+  g_lisymini_throttle_val = lisymini_game.throttle;
+
+  //give this info on screen
+  if ( ls80dbg.bitv.basic )
+  {
+    sprintf(debugbuf,"Info: LISYAPC Throttle value is %d for this game",g_lisymini_throttle_val);
+    lisy80_debug(debugbuf);
+    }
+
+  return ret;
+}
+

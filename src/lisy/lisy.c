@@ -226,7 +226,7 @@ int lisy_set_gamename( char *arg_from_main, char *lisy_gamename)
         {
             //do init of LISY_Mini hardware first, as we need to read dip switch from the board to identify game to emulate
             lisy_hw_init(5); //Variant 5
-                if ( (res=lisymini_get_gamename(lisy_gamename)) >= 0)
+                if ( (res=lisyapc_get_gamename(lisy_gamename)) >= 0)
                   {
                    strcpy(arg_from_main,lisy_gamename);
                    fprintf(stderr,"LISY_APC: we are emulating Game No:%d %s\n\r",res,lisy_gamename);

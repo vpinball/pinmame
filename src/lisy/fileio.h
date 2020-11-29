@@ -87,6 +87,9 @@ int lisy35_file_write_dipfile( int mode, char *line );
 int  lisy35_file_get_soundopts(void);
 
 int lisymini_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
+int lisyapc_file_get_gamename(t_stru_lisymini_games_csv *lisymini_game);
+
+int  lisy_file_get_welcome_msg(char *message);
 
 //fadecandy stuff
 int  lisy_file_get_led_mappings(unsigned char system);
@@ -137,7 +140,8 @@ int  lisy_file_get_home_mappings(void);
 /* LISYMINI stuff */
 #define LISYMINI_GAMES_CSV "/boot/lisy/lisy_m/cfg/lisyminigames.csv"
 
-
+/* generalLISY stuff */
+#define LISY_WELCOME_MSG_FILE "/boot/lisy/lisy/Welcome.msg"
 
 #endif  // _FILEIO_H
 

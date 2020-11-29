@@ -294,12 +294,12 @@ void lisy80TickleWatchdog( void )
   {
     case 0: break;
     case 1: //lisy80_nvram_handler(1, NULL);
-        lisy_nvram_write_to_file();
-        if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM write DONE");
-        nvram_delayed_write--;
-        break;
+	    lisy_nvram_write_to_file();
+	    if ( ls80dbg.bitv.basic ) lisy80_debug("NVRAM write DONE");
+	    nvram_delayed_write--;
+	    break;
    default: nvram_delayed_write--;
-        break;
+	    break;
   }
 }//watchdog
 
