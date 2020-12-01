@@ -150,7 +150,7 @@ CC_ROMEND
 CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
-/ Break Shot (05/96)
+/ Breakshot (05/96)
 /-------------------------------------------------------------------*/
 //Version 1.3
 INITGAMEFF(bsv103, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0, 0xa7da)
@@ -161,7 +161,7 @@ CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a))
 CC_ROMEND
-CORE_GAMEDEFNV(bsv103,"Break Shot (1.3)",1996,"Capcom",cc1,0)
+CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc1,0)
 
 //Version 1.2
 INITGAME(bsv102, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
@@ -171,7 +171,7 @@ CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a))
 CC_ROMEND
-CORE_CLONEDEFNV(bsv102, bsv103,"Break Shot (1.2)",1996,"Capcom",cc1,0)
+CORE_CLONEDEFNV(bsv102, bsv103,"Breakshot (1.2)",1996,"Capcom",cc1,0)
 
 //Redemption Version 1.0I
 INITGAME(bsv100r, 6, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
@@ -183,7 +183,7 @@ CAPCOMS_SOUNDROM2a("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a), \
 				   "u30_v10i.bin",CRC(8b7f6c41) SHA1(b564e5af3b60744df54f22940ab53956c4f89ee6))
 CC_ROMEND
-CORE_CLONEDEFNV(bsv100r,bsv103,"Break Shot (Redemption 1.0)",1996,"Capcom",cc1,0)
+CORE_CLONEDEFNV(bsv100r,bsv103,"Breakshot (Redemption 1.0)",1996,"Capcom",cc1,0)
 //Redemption Version 1.2I
 INITGAME(bsv102r, 7, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsv102r, "u1l_v12i.bin",CRC(ed09e463) SHA1(74b4e3e93648e05e66a20f895133f1a0ba2ecb20),
@@ -194,7 +194,7 @@ CAPCOMS_SOUNDROM2a("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a), \
 				   "u30_v10i.bin",CRC(8b7f6c41) SHA1(b564e5af3b60744df54f22940ab53956c4f89ee6))
 CC_ROMEND
-CORE_CLONEDEFNV(bsv102r,bsv103,"Break Shot (Redemption 1.2)",1996,"Capcom",cc1,0)
+CORE_CLONEDEFNV(bsv102r,bsv103,"Breakshot (Redemption 1.2)",1996,"Capcom",cc1,0)
 //Beta Version 1.5
 INITGAME(bsb105, 8, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsb105,  "bsu1l_b1.05", CRC(053684c7) SHA1(cf104a6e9c245523e29989389654c12437d32776),
@@ -203,7 +203,7 @@ CC_ROMSTART_2(bsb105,  "bsu1l_b1.05", CRC(053684c7) SHA1(cf104a6e9c245523e299893
 CAPCOMS_SOUNDROM2b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				   "bsu28_b1.2",  CRC(b65880be) SHA1(d42da68ab58f87516656315ad5d389a444a674ff))
 CC_ROMEND
-CORE_CLONEDEFNV(bsb105,bsv103,"Break Shot (Beta)",1996,"Capcom",cc1,0)
+CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta)",1996,"Capcom",cc1,0)
 
 /*-------------------------------------------------------------------
 / Flipper Football (10/96)
