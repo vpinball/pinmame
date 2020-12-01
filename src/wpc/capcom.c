@@ -558,6 +558,9 @@ static void Skip_Error_Msg(void){
 		case 12:
 			fixaddr = 0x00000784;	//FF101
 			break;
+		case 13:
+			fixaddr = 0x0008a684;	//PP100
+			break;
 		default:
 			break;
   }

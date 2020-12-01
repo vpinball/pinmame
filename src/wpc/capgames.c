@@ -33,6 +33,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 #define capInvSw10 {0, 0x00, 0x01, 0x78, 0x00, 0x00, 0x01}
 #define capInvSw11 {0, 0x01, 0x00, 0x78, 0x88, 0x08, 0x10}
 #define capInvSw12 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
+#define capInvSw13 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
 
 #define INITGAME(name, gameno, disp, balls, sb, lamps) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
@@ -292,3 +293,17 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u31_b18.bin", CRC(07a7d514) SHA1(be8cb4b6d70ccae7821110689b714612c8a0b460))
 CC_ROMEND
 CORE_GAMEDEFNV(kpb105,"Kingpin (Beta 1.05)",1996,"Capcom",cc2,0) // previously known as V1.0 or B1.06
+
+
+// games by other manufacturers below
+
+/*-------------------------------------------------------------------
+/ Pool Player (Illinois Pinball, 2000)
+/-------------------------------------------------------------------*/
+INITGAME(pp100, 13, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
+CC_ROMSTART_2(pp100,  "u1l-v1_0.bin", CRC(cb14635e) SHA1(8d7bb25fdc7ee7f38eaf3cad6326cf678a81b85f),
+                       "u1h-v1_0.bin", CRC(9839ff76) SHA1(79c3a9700d2e68ed7d83e669b2df543bcabf7164))
+CAPCOMS_SOUNDROM2b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
+				   "bsu28_b1.2",  CRC(b65880be) SHA1(d42da68ab58f87516656315ad5d389a444a674ff))
+CC_ROMEND
+CORE_CLONEDEFNV(pp100,bsv103,"Pool Player (1.0)",1996,"Illinois Pinball",cc1,0)
