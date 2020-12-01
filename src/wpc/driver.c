@@ -900,6 +900,11 @@ DRIVERNV(v1)            //V-1 (198?)
 DRIVERNV(bsktball)      //Basket Ball (04/1987)
 
 // ----------------
+// ILLINOIS PINBALL GAMES
+// ----------------
+DRIVERNV(pp100)         // Pool Player v1.0 (2000)
+
+// ----------------
 // INDER GAMES
 // ----------------
                         // Hot and Cold (1978)

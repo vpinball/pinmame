@@ -76,6 +76,7 @@ Christian Tabart: Grand 8, Le (using Gottlieb "Panthera" ROM, and its own sound 
                   Sahara Love (using Gottlieb "Sinbad" ROM, and its own sound board)
 Data East: Leon Test Chip (version 4)
            Michael Jordan 1.30
+Illinois Pinball: Pool Player 1.0
 Jac van Ham: Formula 1
              Ice Mania
 NSM: Cosmic Flash
