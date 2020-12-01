@@ -301,9 +301,9 @@ CORE_GAMEDEFNV(kpb105,"Kingpin (Beta 1.05)",1996,"Capcom",cc2,0) // previously k
 / Pool Player (Illinois Pinball, 2000)
 /-------------------------------------------------------------------*/
 INITGAME(pp100, 13, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
-CC_ROMSTART_2(pp100,  "u1l-v1_0.bin", CRC(cb14635e) SHA1(8d7bb25fdc7ee7f38eaf3cad6326cf678a81b85f),
-                       "u1h-v1_0.bin", CRC(9839ff76) SHA1(79c3a9700d2e68ed7d83e669b2df543bcabf7164))
-CAPCOMS_SOUNDROM2b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
-				   "bsu28_b1.2",  CRC(b65880be) SHA1(d42da68ab58f87516656315ad5d389a444a674ff))
+CC_ROMSTART_2(pp100, "u1l-v1_0.bin", CRC(cb14635e) SHA1(8d7bb25fdc7ee7f38eaf3cad6326cf678a81b85f),
+                     "u1h-v1_0.bin", CRC(9839ff76) SHA1(79c3a9700d2e68ed7d83e669b2df543bcabf7164))
+CAPCOMS_SOUNDROM2b(  "u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),
+                     "bsu28_b1.2",   CRC(b65880be) SHA1(d42da68ab58f87516656315ad5d389a444a674ff))
 CC_ROMEND
-CORE_CLONEDEFNV(pp100,bsv103,"Pool Player (1.0)",1996,"Illinois Pinball",cc1,0)
+CORE_CLONEDEFNV(pp100,bsv103,"Pool Player (1.0)",2000,"Illinois Pinball",cc1,0)
