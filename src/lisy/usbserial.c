@@ -1,5 +1,5 @@
 /*
- USB serial routines for LISY
+ USB and serial routines for LISY
  April 2019
  bontango
 */
@@ -137,5 +137,81 @@ int lisy_usb_init()
     fprintf(stderr,"LISY_Mini: HW Client is: %s \n",answer);
 
   return lisy_usb_serfd;
+}
+
+int lisy_serial_init()
+{
+
+   int i,j,n,ret,tries;
+   int lisy_serfd;
+   char *portname = "/dev/serial0";
+   unsigned char data,cmd;
+   char answer[80];
+
+    //open interface
+    lisy_serfd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
+    if (lisy_serfd < 0) {
+        printf("Error opening %s: %s\n", portname, strerror(errno));
+        return -1;
+    }
+
+    /*baudrate 115200, 8 bits, no parity, 1 stop bit */
+    set_interface_attribs(lisy_serfd, B115200);
+
+
+    //start with asking for Hardware string
+    //for init we reapeat that up to ten times in case
+    //the other side ( Arduino) needs time to resset
+    //set the command first
+    cmd = LISY_G_HW;
+    //and flush buffer
+    sleep(1); //need to wait a bit beofre doing that
+    tcflush(lisy_serfd,TCIOFLUSH);
+    //now send and try to read answer (one byte)
+    ret = tries = 0;
+    do
+    {
+	//send cmd
+     if ( write( lisy_serfd,&cmd,1) != 1)
+      {
+        printf("Error writing to serial %s\n",strerror(errno));
+        return -1;
+      }
+
+      //read answer
+	if ( ( ret = read(lisy_serfd,&data,1)) != 1)
+         {
+	   tries++; //count tries
+	   sleep(1); //wait a second
+	   tcflush(lisy_serfd,TCIOFLUSH); //flush buffers
+	   fprintf(stderr,"send cmd to %s, %d times\n",portname,tries);
+	 }
+    }
+    while( (ret == 0) & ( tries < ARDUINO_NO_TRIES));
+
+
+    //look if we exceeded tries
+    if (tries >= ARDUINO_NO_TRIES) 
+    {
+      fprintf(stderr,"USBSerial: Init failed\n");
+      return (-1);
+    }
+    else { n=0; answer[n] = data; n++; }
+
+    
+    //now read the rest
+    do {
+    if ( ( ret = read(lisy_serfd,&data,1)) != 1)
+    {
+        printf("Error reading from serial, return:%d %s\n",ret,strerror(errno));
+        return -1;
+    }
+    answer[n] = data;
+    n++;
+    } while (( data != '\0') & ( n < 10));
+
+    fprintf(stderr,"LISY_Mini: HW Client is: %s \n",answer);
+
+  return lisy_serfd;
 }
 
