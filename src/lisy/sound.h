@@ -24,6 +24,7 @@ int mpf_play_mp3(Mix_Music *music);
 #define LISY35_SOUND_OPTION_NORMAL 0
 #define LISY35_SOUND_OPTION_LOOP 1
 #define LISY35_SOUND_OPTION_STOP_LOOP 2
+#define LISY35_SOUND_OPTION_SPEECH 3
 
 #endif  // _SOUND_H
 

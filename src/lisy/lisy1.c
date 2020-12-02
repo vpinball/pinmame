@@ -105,10 +105,21 @@ void lisy1_init( void )
  // try say something about LISY80 if soundcard is installed
  if ( lisy1_has_soundcard )
  {
+  char message[200];
   //set volume according to poti
   lisy_adjust_volume();
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy1_game.long_name);
+  //try to read welcome message from file
+  if ( lisy_file_get_welcome_msg(message) >= 0)
+  {
+    if ( ls80dbg.bitv.basic )
+    {
+      sprintf(debugbuf,"Info: welcome Message is: %s",message);
+      lisy80_debug(debugbuf);
+    }
+  sprintf(debugbuf,"/bin/echo \"%s\" | /usr/bin/festival --tts",message);
+//  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 1 Version %s running on %s\" | /usr/bin/festival --tts",s_lisy_software_version,lisy1_game.long_name);
   system(debugbuf);
+  }
  }
 
  //show green ligth for now, lisy1 is running
@@ -400,6 +411,17 @@ if (ret < 80) //ret is switchnumber
  {
     lisy_timer( 0, 1, 0);
  }
+
+//set volume each time replay is pressed
+if ( lisy1_has_soundcard )
+{
+ if ( CHECK_BIT(swMatrixLISY1[3],0)) //is bit set?
+         {
+          lisy_adjust_volume();
+          if ( ls80dbg.bitv.basic) lisy80_debug("Volume setting initiated by REPLAY Switch");
+         }
+}
+
 
 if (ls80opt.bitv.freeplay == 1) //only if freeplay option is set
 {

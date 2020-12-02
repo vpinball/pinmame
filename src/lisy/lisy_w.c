@@ -808,22 +808,52 @@ if ( ret == 71) {
     }
 //advance
 if ( ret == 72) {
-        core_setSw( S11_SWADVANCE, action );
-        if ( ls80dbg.bitv.switches )
-        {
-           sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S11_SWADVANCE(%d) action:%d\n",ret,action);
-           lisy80_debug(debugbuf);
-        }
+ switch(lisymini_game.typeno)
+ {
+        case LISYW_TYPE_SYS7:
+          core_setSw( S7_SWADVANCE, action );
+          if ( ls80dbg.bitv.switches )
+          {
+             sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S7_SWADVANCE(%d) action:%d\n",ret,action);
+             lisy80_debug(debugbuf);
+          }
+	  break;
+        case LISYW_TYPE_SYS9:
+        case LISYW_TYPE_SYS11A:
+          core_setSw( S11_SWADVANCE, action );
+          if ( ls80dbg.bitv.switches )
+          {
+             sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S11_SWADVANCE(%d) action:%d\n",ret,action);
+             lisy80_debug(debugbuf);
+          }
+	  break;
+   }
     }
+
 //up down
 if ( ret == 73) {
-        core_setSw( S11_SWUPDN, action );
-        if ( ls80dbg.bitv.switches )
-        {
-           sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S11_SWUPDN(%d) action:%d\n",ret,action);
-           lisy80_debug(debugbuf);
-        }
+ switch(lisymini_game.typeno)
+ {
+        case LISYW_TYPE_SYS7:
+          core_setSw( S7_SWUPDN, action );
+          if ( ls80dbg.bitv.switches )
+          {
+             sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S7_SWUPDN(%d) action:%d\n",ret,action);
+             lisy80_debug(debugbuf);
+          }
+          break;
+        case LISYW_TYPE_SYS9:
+        case LISYW_TYPE_SYS11A:
+          core_setSw( S11_SWUPDN, action );
+          if ( ls80dbg.bitv.switches )
+          {
+             sprintf(debugbuf,"LISY_W_SWITCH_HANDLER S11_SWUPDN(%d) action:%d\n",ret,action);
+             lisy80_debug(debugbuf);
+          }
+          break;
+   }
     }
+
 if ( ret == 78) {  //not from APC but maybe from udb reader for testing
         core_setSw( S11_SWCPUDIAG, action );
         if ( ls80dbg.bitv.switches )

@@ -334,27 +334,43 @@ void lisy35_play_wav(int sound_no)
 		}
 		
 		// decode option
-		// 0=normal play, 1=loop, 2=stop loops
+		// 0=normal play, 1=loop, 2=stop loops, 3=speech
+
+		// is it sound supposed to be played as a loop ?
 		int loop = 0;
 		if (lisy35_sound_stru[sound_no].option == LISY35_SOUND_OPTION_LOOP) 
 		{
 			loop = -1;
 		}
 		
-		//check if this sound can stop loop sounds
+		// is this sound a "loop stopper" ?
+		// if yes, check if a sound loop is running and stop it
 		if (lisy35_sound_stru[sound_no].option == LISY35_SOUND_OPTION_STOP_LOOP) 
 		{
 			//yes, check running state for all loop sounds and cancel them if running
 			for(int i=1; i<=257; i++)
 			{
-				if (lisy35_sound_stru[i].soundnumber != 0 && lisy35_sound_stru[i].option == 1 && Mix_Playing(i) != 0) 
+				if (Mix_Playing(i) != 0 && lisy35_sound_stru[i].soundnumber != 0 && lisy35_sound_stru[i].option == LISY35_SOUND_OPTION_LOOP) 
 				{
 					if ( ls80dbg.bitv.sound ) lisy80_debug("found running loop, we cancel it\n");
 					Mix_HaltChannel(i);
 				}
 			}
 		}
-  
+
+		// is this sound a speech sound ?
+		// we don't want speech sounds to go over other speech sounds, so stop any other ongoing speech sound
+		if (lisy35_sound_stru[sound_no].option == LISY35_SOUND_OPTION_SPEECH) 
+		{
+			for(int i=1; i<=257; i++)
+			{
+				if (Mix_Playing(i) != 0 && lisy35_sound_stru[i].soundnumber != 0 && lisy35_sound_stru[i].option == LISY35_SOUND_OPTION_SPEECH) 
+				{			
+					Mix_HaltChannel(i);
+				}
+			}
+		}
+
 		// play sound
 		ret = Mix_PlayChannel( sound_no, soundtoplay, loop);
 		

@@ -1,0 +1,14 @@
+parameter for lisy is:
+
+"lisy_m"
+LISY_Mini, connected via USBserial to APC
+lisy_hw_init(4); //Variant 4
+lisymini_hwlib_init();
+
+
+
+"lisy_apc"
+LUSY integrated on APC board, connection via serial
+lisy_hw_init(5); //Variant 5
+lisyapc_hwlib_init();
+

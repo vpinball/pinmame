@@ -221,11 +221,16 @@ void lisymini_hwlib_init( void )
 }
 
 
-//Hardware INIT LISY on APC via I2C (e.g Williams)
+//Hardware INIT LISY on APC via serial (e.g Williams)
 void lisyapc_hwlib_init( void )
 {
 
  int ret;
+
+//set GPIOs for the traffic ligth
+ pinMode ( LISY_MINI_LED_RED, OUTPUT);
+ pinMode ( LISY80_LED_YELLOW, OUTPUT);
+ pinMode ( LISY_MINI_LED_GREEN, OUTPUT);
 
  //lets do debug
  if (ls80dbg.bitv.basic) lisy80_debug("LISY APC Hardware init start");
@@ -239,23 +244,22 @@ void lisyapc_hwlib_init( void )
  lisy_K3_value = 3;
 
  //now get debug options
- //still with LISY Mini at the moment
- K1_debug_values = lisymini_get_dip("K1");
+ //fix to 0 athe moment, RTH todo
+ //K1_debug_values = lisymini_get_dip("K1");
+ K1_debug_values = 0;
 
- //******************
- //init I2C serial to APC
- //******************
- if ((fd_api = open( I2C_DEVICE,O_RDWR)) < 0)
-     fprintf(stderr,"ERROR: cannot open I2C BUS \n");
-
- // Set the port options and set the address of the device we wish to speak to
- if (ioctl(fd_api, I2C_SLAVE, APC_ADDR) < 0)
+ //init usb serial
+ fd_api = lisy_serial_init();
+ if ( fd_api >= 0)
+  fprintf(stderr,"Info: serial com successfull initiated\n");
+ else
  {
-     fprintf(stderr,"ERROR: cannot open I2C communication to APC\n");
-     exit(1);
+  fprintf(stderr,"ERROR: cannot open serial communication\n");
+ lisy80_set_red_led(1);
+ lisy80_set_yellow_led(0);
+ lisy80_set_green_led(0);
+  exit(1);
  }
-else
-     fprintf(stderr,"Info: I2C communication to APC successfull initiated\n");
 
  //make sure  connected hardware ID is APC
  ret = lisy_api_check_con_hw( "APC" );

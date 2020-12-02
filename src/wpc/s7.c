@@ -376,10 +376,14 @@ static struct pia6821_interface s7_pia[] = {
 }};
 
 static SWITCH_UPDATE(s7) {
+
+#ifndef LISY_SUPPORT
+//if we have LISY, all switches come from LISY (Matrix[0] has e.g. ADVANCE Button!)
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[S7_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
   }
+#endif
 
   /*-- Generate interupts for diganostic keys --*/
   cpu_set_nmi_line(0,core_getSw(S7_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);

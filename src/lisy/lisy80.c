@@ -166,15 +166,22 @@ void lisy80_init( void )
  // try say something about LISY80 if soundcard is installed
  if ( lisy80_has_soundcard )
  {
+  char message[200];
   //set volume according to poti
-  i = lisy_adjust_volume();
-  //speak Welcome Message only if jumper 'sound' set
- // if ( ls80dbg.bitv.sound)
- // {
-  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 80 Version %s running on %s Volume is %d percent \" | /usr/bin/festival --tts",s_lisy_software_version,lisy80_game.long_name,i);
+  lisy_adjust_volume();
+  //try to read welcome message from file
+  if ( lisy_file_get_welcome_msg(message) >= 0)
+  {
+    if ( ls80dbg.bitv.basic )
+    {
+      sprintf(debugbuf,"Info: welcome Message is: %s",message);
+      lisy80_debug(debugbuf);
+    }
+  sprintf(debugbuf,"/bin/echo \"%s\" | /usr/bin/festival --tts",message);
+//  sprintf(debugbuf,"/bin/echo \"Welcome to LISY 80 Version %s running on %s Volume is %d percent \" | /usr/bin/festival --tts",s_lisy_software_version,lisy80_game.long_name,i);
   system(debugbuf);
   }
- //}
+ }
 
  //show green ligth for now, lisy80 is running
  lisy80_set_red_led(0);
