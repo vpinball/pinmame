@@ -73,12 +73,12 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 	}
 	
 /*-------------------------------------------------------------------
-/ Goofy Hoops (Romstar game) (??/95)
+/ Goofy Hoops (Romstar game) (04/94)
 /-------------------------------------------------------------------*/
 //Might have different hardware mappings as a quick peek of the code looked different than the pins
-INITGAME(ghv101, 0, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
+INITGAME(ghv101, 0, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_4(ghv101, "u17_v10.bin", CRC(b6a39327),
-                       "u13_v10.bin", CRC(1712f21f),
+                      "u13_v10.bin", CRC(1712f21f),
 			"u23_v11.bin", CRC(f6cac3aa),
 			"u06_v11.bin", CRC(3b6ab802))
 CAPCOMS_SOUNDROM5a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
@@ -88,7 +88,7 @@ CAPCOMS_SOUNDROM5a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323
 		   "u32_v10.bin", CRC(73ee0ecc) SHA1(48aed6f76c0b506bd39430c7f1ea8735db99b8e3), \
 		   "u34_v10.bin", CRC(cd5ea236) SHA1(dded158bc2f8443d2e69834cde87e81661ca7c53))
 CC_ROMEND
-CORE_GAMEDEFNV(ghv101,"Goofy Hoops",1995,"Romstar",cc1,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(ghv101,"Goofy Hoops (Redemption)",1994,"Romstar",cc1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Pinball Magic (10/95)
@@ -105,7 +105,7 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 				  "u29_v10.bin", CRC(74352bcd) SHA1(dc62fd651cf8408330f41b2e5387daecfe1d93d7), \
 				  "u30_v16.bin", CRC(a7c29b8f) SHA1(1d623c3a67a8e4bf39c22bbf0e008fb2f8920351))
 CC_ROMEND
-CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc2,0)
+CORE_GAMEDEFNV(pmv112,"Pinball Magic (1.0.12)",1995,"Capcom",cc2,0)
 //Redemption Version 1.0.12I
 INITGAMEFF(pmv112r, 2, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8, 0x9f3e)
 CC_ROMSTART_4(pmv112r, "u1lv112i.bin",CRC(28d35969) SHA1(e19856402855847286db73c17510614d8b40c882),
@@ -118,7 +118,7 @@ CAPCOMS_SOUNDROM3a("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_v16.bin", CRC(a7c29b8f) SHA1(1d623c3a67a8e4bf39c22bbf0e008fb2f8920351), \
 				   "u31_v19i.bin",CRC(24735815) SHA1(6fbc1f86090ce42ea27805c700d8b132eafa271f))
 CC_ROMEND
-CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption)",1995,"Capcom",cc2,0)
+CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption 1.0.12)",1995,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
 / Airborne (03/96)
@@ -134,7 +134,7 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0
 				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f), \
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21))
 CC_ROMEND
-CORE_GAMEDEFNV(abv106,"Airborne",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(abv106,"Airborne (1.6)",1996,"Capcom",cc2,0)
 //Redemption Version 1.6I
 INITGAME(abv106r, 4, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_4(abv106r, "u1l_v16i.bin",CRC(7d7d2d85) SHA1(5c83022d7c0b61b15455942b3bdd0cf89fc75b57),
@@ -147,10 +147,10 @@ CAPCOMS_SOUNDROM3a("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21), \
 				   "u31_v11i.bin",CRC(57794507) SHA1(9ec7648d948893a37dcda3a9c5ff56c7ce725291))
 CC_ROMEND
-CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc2,0)
+CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption 1.6)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
-/ Breakshot (05/96)
+/ Breakshot (05/96)                    (manual says BREAKSHOT or Breakshot, game says Break Shot, art implies BreakShot)
 /-------------------------------------------------------------------*/
 //Version 1.3
 INITGAMEFF(bsv103, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0, 0xa7da)
@@ -203,7 +203,7 @@ CC_ROMSTART_2(bsb105,  "bsu1l_b1.05", CRC(053684c7) SHA1(cf104a6e9c245523e299893
 CAPCOMS_SOUNDROM2b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				   "bsu28_b1.2",  CRC(b65880be) SHA1(d42da68ab58f87516656315ad5d389a444a674ff))
 CC_ROMEND
-CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta)",1996,"Capcom",cc1,0)
+CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta 1.5)",1996,"Capcom",cc1,0)
 
 /*-------------------------------------------------------------------
 / Flipper Football (10/96)
