@@ -80,5 +80,6 @@ extern void cap_UpdateSoundLEDS(int data);
 extern MACHINE_DRIVER_EXTERN(cc);
 extern MACHINE_DRIVER_EXTERN(cc1);
 extern MACHINE_DRIVER_EXTERN(cc2);
+extern MACHINE_DRIVER_EXTERN(romstar);
 
 #endif /* INC_CAPCOM */

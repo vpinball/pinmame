@@ -103,6 +103,7 @@ static struct {
   int sda;				//SDA line
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
+  int romstarCh;
 #if TEST_FROM_ROM
   void *buffTimer;
   int curr[2];			//Current position we've read from the rom
@@ -678,12 +679,18 @@ static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals_cap, 0, sizeof(locals_cap));
   locals_cap.brdData = *brdData;
   //call reset routine for clearing all data related to a reset
-  capcoms_reset();
+  if (!locals_cap.brdData.subType)
+    capcoms_reset();
 }
 
 WRITE_HANDLER(capcoms_sndCmd_w)
 {
-	send_data_to_8752(data);
+  if (!locals_cap.brdData.subType) {
+    send_data_to_8752(data);
+  } else {
+    data &= 0x7f;
+    mixer_play_sample_16(locals.romstarCh, (INT16 *)(memory_region(CAPCOMS_ROMREGION) + (data << 15)), 0x8000, 11025, 0);
+  }
 }
 
 //Code to feed data from the ROMS directly to the TMS chips for testing
@@ -759,3 +766,19 @@ void cap_FillBuff(int dummy) {
 }
 
 #endif
+
+static int romstar_sh_start(const struct MachineSound *msound) {
+  if (Machine->gamedrv->flags & GAME_NO_SOUND) {
+    return -1;
+  }
+
+  locals.romstarCh = mixer_allocate_channel(50);
+  mixer_set_name(locals.romstarCh, "Samples");
+  return 0;
+}
+static struct CustomSound_interface romstar_custInt = { romstar_sh_start, NULL, NULL, NULL };
+
+MACHINE_DRIVER_START(romstar)
+  MDRV_IMPORT_FROM(cc)
+  MDRV_SOUND_ADD(CUSTOM, romstar_custInt)
+MACHINE_DRIVER_END
