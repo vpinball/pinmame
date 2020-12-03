@@ -346,6 +346,26 @@ S7_ROMEND
 #define input_ports_vrkon input_ports_s7
 CORE_GAMEDEF(vrkon,l1,"Varkon (L-1)",1982,"Williams",s7_mS7S,0)
 
+/*-------------------------------
+/ Spellbinder - Sys.7 - (Game #513) - NOT Released - Developed by Jess Askey see https://github.com/jessaskey/wms_perc
+/-------------------------------*/
+static const core_tLCDLayout dispHypbl[] = {
+  { 0, 0, 1, 7,CORE_SEG87 }, { 0,16, 9, 7,CORE_SEG87 },
+  { 2,10,20, 1,CORE_SEG87 }, { 2,12,28, 1,CORE_SEG87 },
+  { 2,16, 0, 1,CORE_SEG87 }, { 2,18, 8, 1,CORE_SEG87 },
+  { 4, 3,43, 5,CORE_SEG16 }, { 4,13,49, 7,CORE_SEG16 }, {0}
+};
+static core_tGameData splbnGameData = { GEN_S7, dispHypbl, {FLIP_SWNO(33,34), 0, 4}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
+static void init_hypbl(void) { core_gameData = &splbnGameData; }
+#define input_ports_hypbl input_ports_s7
+
+S7_ROMSTART000x(splbn,l0, "ic14.532",    CRC(940a817a) SHA1(2583ff6f6b6985d3ac85b4f120ebb002a10b65af),
+                          "ic17.532",    CRC(b38fde72) SHA1(17ef3ca354431307b6a79992c50cb2491b8a7631),
+                          "ic20.532",    CRC(ff765ebf) SHA1(14d42735291c3f6e112f19bd49a39e00059cf907))
+S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
+S7_ROMEND
+CORE_GAMEDEF(splbn,l0,"Spellbinder (L-0 BETA)",1982,"Williams/JessAskey",s7_mS7S,0)
+
 /*----------------------------------
 /Time Fantasy- Sys.7 (Game #515)
 /----------------------------------*/
