@@ -2389,6 +2389,7 @@ DRIVER(thund,p1)        //S7-508:   06/82 W Thunderball (P-1)
 DRIVER(thund,p2)        //          08/82 W Thunderball (P-2)
 DRIVER(thund,p3)        //          09/82 W Thunderball (P-3)
 DRIVER(vrkon,l1)        //S7-512:   09/82 W Varkon
+DRIVER(splbn,l0)        //S7-513:   12/20 W Spellbinder (L-0 BETA) (never produced)
 DRIVER(wrlok,l3)        //S7-516:   10/82 W Warlok
 DRIVER(dfndr,l4)        //S7-517:   12/82 W Defender
 DRIVER(ratrc,l1)        //S7-5??:   01/83 W Rat Race (never produced)
