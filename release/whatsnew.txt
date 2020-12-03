@@ -67,7 +67,7 @@ Correct handling of Gottlieb System 1 displays (thanks to bontango)
 Demolition Man: Added lamp layout, simulated all major shots (except maybe a weak car crash shot), the elevator and cryoclaw mechanism, along with the right ramp diverter that feeds it, and enabled the Buy-In button
                 (also demonstrates how to show P1-P4 scores at all times)
 
-*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Flipprojets.fr, MLM, Victor Fernandez (City Game), ClawGrip, idealjoker, electrónicavys.es, JunoMan
+*** ROM SUPPORT *** Thanks to Soren, ipdb.org, Silvio Finotti, tecnopinball.org, inkochnito, Carlos Paredes Compan, Matt Morin, Chad Hendrickson, Idleman, jordigahan, Juan (Akiles), barakandl, Dgoett & pinballfan6500, José Renato Castro Milanez & Sergio Munemori, Larry DeMar, Duncan Brown, nuatari, pellew, flippers.be, Tilowil, Scott Charles, Vesperugo, rmcc, Flipprojets.fr, MLM, Victor Fernandez (City Game), ClawGrip, idealjoker, electrónicavys.es, JunoMan, Jess Askey
 New:
 Atari: Middle Earth (alternate)
        Middle Earth (Prototype or German) - bad dump, not working
@@ -76,7 +76,7 @@ Christian Tabart: Grand 8, Le (using Gottlieb "Panthera" ROM, and its own sound 
                   Sahara Love (using Gottlieb "Sinbad" ROM, and its own sound board)
 Data East: Leon Test Chip (version 4)
            Michael Jordan 1.30
-Illinois Pinball: Pool Player 1.0
+Illinois Pinball: Pool Player 1.0 (based on Capcom hardware/similar to Breakshot)
 Jac van Ham: Formula 1
              Ice Mania
 NSM: Cosmic Flash
@@ -85,6 +85,7 @@ Regama: Trebol
 Sonic: Storm
 Sport Matic: Flashman
 Taito do Brasil: Football (sound ROMs only)
+Williams/Jess Askey: Spellbinder
 
 Correct Dumps:
 Atari: Airborne Avenger (using 20252 sound PROM)
