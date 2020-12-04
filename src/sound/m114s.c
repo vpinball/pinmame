@@ -589,7 +589,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 			// M114AF 6 Mhz
 			case 6000000:
 			case 5994560: // from datasheet: 5.99456 MHz
-				m114schip[i].reset_cycles = 6000000 * 0.000085;	// Chip resets in 85us (microseconds)
+				m114schip[i].reset_cycles = intf->baseclock[i] * 0.000085;	// Chip resets in 85us (microseconds)
 				m114schip[i].is_M114A = 0;
 				LOG(("M114S Chip #%d - 6Mhz chip clock not fully supported/tested at this time!\n", i));
 				return 1;
